@@ -1498,3 +1498,24 @@ flags = "base"
 unit = "cseverusworkerhost"
 source = "src/Gruntz/CSeverusWorkerHost.cpp"
 flags = "eh"
+
+[[unit]]
+unit = "latencylist"
+source = "src/Net/LatencyList.cpp"
+flags = "base"
+[[unit]]
+unit = "soundresmap"
+source = "src/Gruntz/SoundResMap.cpp"
+flags = "eh"
+[[unit]]
+unit = "menusparkleserial"
+source = "src/Gruntz/CMenuSparkleSerial.cpp"
+flags = "base"
+[[unit]]
+unit = "projactcache"
+source = "src/Gruntz/ProjActCache.cpp"
+flags = "eh"
+[[unit]]
+unit = "tiletriggerwiring"
+source = "src/Gruntz/TileTriggerWiring.cpp"
+flags = "base"
