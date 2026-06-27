@@ -101,13 +101,7 @@ namespace ApiCallerStubs {
         i32 winapi_015fe0_SendMessageA(i32);
         i32 winapi_017030_GetWindow();
         i32 winapi_032ce0_IntersectRect(i32);
-        i32 winapi_04a9f0_CopyRect_OffsetRect();
-        i32 winapi_057db0_IntersectRect();
         i32 winapi_075c60_CopyRect_SetRect(i32, i32, i32, i32, i32, i32);
-        i32 winapi_0b6b40_timeGetTime_wsprintfA();
-        i32 winapi_0b6e90_SetRect();
-        i32 winapi_0bb700_GetAsyncKeyState_Sleep_timeGetTime_wsprintfA();
-        i32 winapi_0bba10_Sleep(i32);
         i32 winapi_0c46b0_KillTimer_timeGetTime_wsprintfA();
         i32 winapi_0c7ec0_timeGetTime(i32, i32, i32);
         i32 winapi_0d7520_wsprintfA(i32, i32, i32, i32);
@@ -118,8 +112,6 @@ namespace ApiCallerStubs {
         i32 winapi_0f0e20_IntersectRect_PtInRect();
         i32 winapi_0f42f0_PtInRect();
         i32 winapi_0f60f0_IntersectRect();
-        i32 winapi_0fe520_SetRect();
-        i32 winapi_11b3b0_timeGetTime(i32, i32, i32, i32, i32, i32);
         i32 winapi_136fe0_timeGetTime(i32, i32, i32, i32, i32, i32);
         i32 winapi_13f460_CopyRect(i32, i32);
         i32 winapi_1480a0_timeGetTime();
@@ -132,11 +124,6 @@ namespace ApiCallerStubs {
         i32 winapi_1544d0_CopyRect(i32, i32);
         i32 winapi_154750_CopyRect(i32, i32);
         i32 winapi_168080_SetRect(i32, i32, i32, i32, i32, i32, i32, i32);
-        i32 winapi_174fe0_GetDC_ReleaseDC_SelectPalette(i32, i32, i32, i32);
-        i32 winapi_1750e0_GetDC_ReleaseDC_SelectPalette(i32, i32, i32, i32, i32);
-        i32 winapi_1751f0_GetDC_ReleaseDC_SelectPalette(i32, i32, i32);
-        i32 winapi_1752f0_GetDC_ReleaseDC_SelectPalette(i32, i32);
-        i32 winapi_1753f0_GetDC_ReleaseDC_SelectPalette(i32, i32);
         i32 winapi_17c3f0_ShowCursor(
             i32,
             i32,
@@ -170,7 +157,6 @@ namespace ApiCallerStubs {
             i32,
             i32
         );
-        i32 winapi_17e620_GetTickCount(i32, i32, i32);
         i32 winapi_17fe00_timeGetTime(i32);
         i32 winapi_1804a0_PtInRect(i32);
         i32 winapi_1d4a18_FreeLibrary();
@@ -179,7 +165,6 @@ namespace ApiCallerStubs {
             i32,
             i32
         );
-        i32 directx_wrapper_caller_1644a0_DirectDrawCreate_DirectDrawEnumerateA(i32, i32, i32);
         i32 thirdparty_winapi_17c790_SmackWait_4_DispatchMessageA_PeekMessageA_TranslateMessa(
             i32,
             i32
@@ -189,29 +174,22 @@ namespace ApiCallerStubs {
         void BootyState_OnActivate2_vfunc8();
         void LoadCreditzAssets2();
         void BuildWorldLevelKey(i32);
-        void LoadGruntAbilityTuning(i32);
-        void LoadGruntCombatAnimations(i32, i32, i32, i32, i32, i32, i32, i32);
         void LoadGruntDeathAnimations(i32, i32);
         void LoadVehicleGruntAnimations();
         void BuildGruntExitAnimation();
         void LoadBombGruntRunConfig(i32, i32);
         void LoadPickupSprites(i32, i32, i32, i32, i32);
         void LoadBombGruntRunConfig2();
-        void LoadWingzGruntSprites(i32);
         void LoadFreezeSpellAssets();
         void LoadTeleporterGooConfig(i32);
         void LoadGruntCombatTuning(i32, i32, i32, i32, i32);
         void LoadFinishLevelSprite(i32);
         void LoadMonologoSprite();
         void LoadStateImages_vfunc8();
-        void LoadMenuSelectSprite(i32);
         // LoadImageBanks (0x0cffe0), LoadActionTileSprites (0x0db600),
         // LoadLevelSounds (0x0db6c0), LoadLevelImages (0x0db7e0) re-homed as CPlay
         // methods in src/Gruntz/CPlay.cpp.
-        void LoadSBITextEdges(i32);
         void LoadWarlordSprites(i32, i32);
-        void BuildWorldLevelPath(i32);
-        void BuildGruntNamespaceList(i32);
         void LoadLevelPreviewScreen();
         // LoadGruntzPalette (0x0e2d10) re-homed to src/Gruntz/SpriteRefTable.cpp.
         void BuildResourceTabStatusBar(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32);
@@ -233,11 +211,46 @@ namespace ApiCallerStubs {
         );
         void LoadGameAssetNamespaces(i32, i32, i32);
         void UpdateDestructButtonStatusBar2(i32);
-        void LoadGruntSpawnConfig(i32, i32, i32, i32, i32);
         void DebugPrintf();
         void Stub_1c152f(i32);
         void Stub_1ccae7(i32, i32, i32);
         void Stub_1ccbfc(i32, i32, i32, i32);
+    };
+
+    // ---- Proximity-attributed owners (HIGH, both-sides RVA bracket;
+    // docs/tu-spatial-structure.md). These stubs were ThisStubOwnerUnknown;
+    // their real classes live in their own TUs - these are minimal placeholder
+    // hosts so each stub files under its attributed class (matching-neutral). ----
+    struct CDDrawSurfacePair {
+        i32 directx_wrapper_caller_1644a0_DirectDrawCreate_DirectDrawEnumerateA(i32, i32, i32);
+    };
+    struct CFader {
+        i32 winapi_17e620_GetTickCount(i32, i32, i32);
+    };
+    struct CGrunt {
+        i32 winapi_04a9f0_CopyRect_OffsetRect();
+        void LoadGruntAbilityTuning(i32);
+        i32 winapi_057db0_IntersectRect();
+        void LoadGruntCombatAnimations(i32, i32, i32, i32, i32, i32, i32, i32);
+        void LoadWingzGruntSprites(i32);
+    };
+    struct CGruntSpawnConfig {
+        void LoadGruntSpawnConfig(i32, i32, i32, i32, i32);
+        i32 winapi_11b3b0_timeGetTime(i32, i32, i32, i32, i32, i32);
+    };
+    struct CImagePool {
+        i32 winapi_174fe0_GetDC_ReleaseDC_SelectPalette(i32, i32, i32, i32);
+        i32 winapi_1750e0_GetDC_ReleaseDC_SelectPalette(i32, i32, i32, i32, i32);
+        i32 winapi_1751f0_GetDC_ReleaseDC_SelectPalette(i32, i32, i32);
+        i32 winapi_1752f0_GetDC_ReleaseDC_SelectPalette(i32, i32);
+        i32 winapi_1753f0_GetDC_ReleaseDC_SelectPalette(i32, i32);
+    };
+    struct CMulti {
+        i32 winapi_0b6b40_timeGetTime_wsprintfA();
+        i32 winapi_0b6e90_SetRect();
+    };
+    struct CSBI_RectOnly {
+        i32 winapi_0fe520_SetRect();
     };
 
     // @confidence: low
@@ -390,6 +403,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:SendMessageA
     // @stub
+    // proximity: CBattlezDlg@-0x80 | CImgHolderBase@+0x430
     RVA(0x00015fe0, 0xbe)
     i32 ThisStubOwnerUnknown::winapi_015fe0_SendMessageA(i32) {
         return 0;
@@ -406,6 +420,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:GetWindow
     // @stub
+    // proximity: CBattlezDlg@-0xd0 | CBattlezDlgCustom@+0x110
     RVA(0x00017030, 0xc1)
     i32 ThisStubOwnerUnknown::winapi_017030_GetWindow() {
         return 0;
@@ -577,6 +592,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:IntersectRect
     // @stub
+    // proximity: CBattlezSpawnMgr_or_CGruntSpawnMgr@-0xc80 | GridUnit@+0x1710
     RVA(0x00032ce0, 0x448)
     i32 ThisStubOwnerUnknown::winapi_032ce0_IntersectRect(i32) {
         return 0;
@@ -843,7 +859,7 @@ namespace ApiCallerStubs {
     // @source: winapi:CopyRect;OffsetRect
     // @stub
     RVA(0x0004a9f0, 0x1aa)
-    i32 ThisStubOwnerUnknown::winapi_04a9f0_CopyRect_OffsetRect() {
+    i32 CGrunt::winapi_04a9f0_CopyRect_OffsetRect() {
         return 0;
     }
 
@@ -851,13 +867,14 @@ namespace ApiCallerStubs {
     // @source: winapi:IntersectRect
     // @stub
     RVA(0x00057db0, 0x8f8)
-    i32 ThisStubOwnerUnknown::winapi_057db0_IntersectRect() {
+    i32 CGrunt::winapi_057db0_IntersectRect() {
         return 0;
     }
 
     // @confidence: low
     // @source: winapi:CopyRect;SetRect
     // @stub
+    // proximity: CTriggerMgr@-0x170 | CTerrainTileLoader@+0x230
     RVA(0x00075c60, 0x1ba)
     i32 ThisStubOwnerUnknown::winapi_075c60_CopyRect_SetRect(i32, i32, i32, i32, i32, i32) {
         return 0;
@@ -993,7 +1010,6 @@ namespace ApiCallerStubs {
     i32 __stdcall winapi_08f120_CreateProcessA_RegQueryValueA(i32) {
         return 0;
     }
-
 
     // @confidence: low
     // @source: winapi:PostMessageA
@@ -1242,7 +1258,7 @@ namespace ApiCallerStubs {
     // @source: winapi:timeGetTime;wsprintfA
     // @stub
     RVA(0x000b6b40, 0x29e)
-    i32 ThisStubOwnerUnknown::winapi_0b6b40_timeGetTime_wsprintfA() {
+    i32 CMulti::winapi_0b6b40_timeGetTime_wsprintfA() {
         return 0;
     }
 
@@ -1250,7 +1266,7 @@ namespace ApiCallerStubs {
     // @source: winapi:SetRect
     // @stub
     RVA(0x000b6e90, 0x34d)
-    i32 ThisStubOwnerUnknown::winapi_0b6e90_SetRect() {
+    i32 CMulti::winapi_0b6e90_SetRect() {
         return 0;
     }
 
@@ -1367,21 +1383,9 @@ namespace ApiCallerStubs {
         SendMessageA(edit, 0xb6, 0, 0x270f);
     }
 
-    // @confidence: low
-    // @source: winapi:GetAsyncKeyState;Sleep;timeGetTime;wsprintfA
-    // @stub
-    RVA(0x000bb700, 0x265)
-    i32 ThisStubOwnerUnknown::winapi_0bb700_GetAsyncKeyState_Sleep_timeGetTime_wsprintfA() {
-        return 0;
-    }
+    // winapi_0bb700_GetAsyncKeyState_Sleep_timeGetTime_wsprintfA (0x0bb700) re-homed as CNetMgr::winapi_0bb700_GetAsyncKeyState_Sleep_timeGetTime_wsprintfA in src/Stub/CNetMgr.cpp (proximity HIGH).
 
-    // @confidence: low
-    // @source: winapi:Sleep
-    // @stub
-    RVA(0x000bba10, 0x1fb)
-    i32 ThisStubOwnerUnknown::winapi_0bba10_Sleep(i32) {
-        return 0;
-    }
+    // winapi_0bba10_Sleep (0x0bba10) re-homed as CNetMgr::winapi_0bba10_Sleep in src/Stub/CNetMgr.cpp (proximity HIGH).
 
     // @confidence: low
     // @source: winapi:GetDlgItem;SetTimer
@@ -1652,6 +1656,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:KillTimer;timeGetTime;wsprintfA
     // @stub
+    // proximity: CMultiStartDlg@-0x1e70 | CDroppedObject@+0x24a0
     RVA(0x000c46b0, 0x371)
     i32 ThisStubOwnerUnknown::winapi_0c46b0_KillTimer_timeGetTime_wsprintfA() {
         return 0;
@@ -1767,6 +1772,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:timeGetTime
     // @stub
+    // proximity: CDroppedObject@-0x1190 | CTileTriggerContainer@+0x780
     RVA(0x000c7ec0, 0x5f5)
     i32 ThisStubOwnerUnknown::winapi_0c7ec0_timeGetTime(i32, i32, i32) {
         return 0;
@@ -1928,6 +1934,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:wsprintfA
     // @stub
+    // proximity: CLoadingBar@-0xe0 | CArchiveLoadRec@+0x4b0
     RVA(0x000d7520, 0x3b9)
     i32 ThisStubOwnerUnknown::winapi_0d7520_wsprintfA(i32, i32, i32, i32) {
         return 0;
@@ -1939,6 +1946,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:wsprintfA
     // @stub
+    // proximity: CPlay@-0x3b0 | CGameModeObj@+0xa40
     RVA(0x000d95f0, 0x756)
     i32 ThisStubOwnerUnknown::winapi_0d95f0_wsprintfA() {
         return 0;
@@ -2161,6 +2169,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:SetRect
     // @stub
+    // proximity: CFileIO@-0x920 | CSBI_WellGoo@+0x360
     RVA(0x000e6020, 0x288)
     i32
     ThisStubOwnerUnknown::winapi_0e6020_SetRect(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32) {
@@ -2170,6 +2179,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:IntersectRect
     // @stub
+    // proximity: CGrunt@-0x620 | CUserLogic@+0x1b70
     RVA(0x000ecc90, 0x86a)
     i32 ThisStubOwnerUnknown::winapi_0ecc90_IntersectRect() {
         return 0;
@@ -2178,6 +2188,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:PtInRect
     // @stub
+    // proximity: CGrunt@-0x1380 | CUserLogic@+0xe10
     RVA(0x000ed9f0, 0x8dd)
     i32 ThisStubOwnerUnknown::winapi_0ed9f0_PtInRect() {
         return 0;
@@ -2186,6 +2197,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:IntersectRect;PtInRect
     // @stub
+    // proximity: CUserLogic@-0x2620 | CGrunt@+0x18d0
     RVA(0x000f0e20, 0x928)
     i32 ThisStubOwnerUnknown::winapi_0f0e20_IntersectRect_PtInRect() {
         return 0;
@@ -2202,6 +2214,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:PtInRect
     // @stub
+    // proximity: CGrunt@-0x17d0 | CAttract@+0x5f00
     RVA(0x000f42f0, 0x1193)
     i32 ThisStubOwnerUnknown::winapi_0f42f0_PtInRect() {
         return 0;
@@ -2210,6 +2223,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:IntersectRect
     // @stub
+    // proximity: isolated (no near matched neighbour)
     RVA(0x000f60f0, 0xb30)
     i32 ThisStubOwnerUnknown::winapi_0f60f0_IntersectRect() {
         return 0;
@@ -2313,7 +2327,7 @@ namespace ApiCallerStubs {
     // @source: winapi:SetRect
     // @stub
     RVA(0x000fe520, 0xa9)
-    i32 ThisStubOwnerUnknown::winapi_0fe520_SetRect() {
+    i32 CSBI_RectOnly::winapi_0fe520_SetRect() {
         return 0;
     }
 
@@ -2428,7 +2442,7 @@ namespace ApiCallerStubs {
     // @source: winapi:timeGetTime
     // @stub
     RVA(0x0011b3b0, 0x338)
-    i32 ThisStubOwnerUnknown::winapi_11b3b0_timeGetTime(i32, i32, i32, i32, i32, i32) {
+    i32 CGruntSpawnConfig::winapi_11b3b0_timeGetTime(i32, i32, i32, i32, i32, i32) {
         return 0;
     }
 
@@ -2533,6 +2547,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:timeGetTime
     // @stub
+    // proximity: DSoundList@-0x80 | DSoundVoice@+0x80
     RVA(0x00136fe0, 0x7b)
     i32 ThisStubOwnerUnknown::winapi_136fe0_timeGetTime(i32, i32, i32, i32, i32, i32) {
         return 0;
@@ -2742,6 +2757,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: thirdparty:_AIL_allocate_sequence_handle@4;_AIL_init_sequence@12;_AIL_release_sequence_handle@4
     // @stub
+    // proximity: CGruntzSoundZ@-0x300 | DSoundList@+0x4c0
     RVA(0x00138c20, 0x122)
     i32 ThisStubOwnerUnknown::
         thirdparty_138c20_AIL_allocate_sequence_handle_4_AIL_init_sequence_12_AIL_(i32, i32, i32) {
@@ -2934,6 +2950,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:CopyRect
     // @stub
+    // proximity: CDDSurface@-0x4d0 | CFileImage@+0x4b0
     RVA(0x0013f460, 0x2da)
     i32 ThisStubOwnerUnknown::winapi_13f460_CopyRect(i32, i32) {
         return 0;
@@ -3135,6 +3152,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:timeGetTime
     // @stub
+    // proximity: CDDPalette@-0x3d0 | CFileImage@+0x7a0
     RVA(0x001480a0, 0x1a7)
     i32 ThisStubOwnerUnknown::winapi_1480a0_timeGetTime() {
         return 0;
@@ -3143,6 +3161,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:CreateDCA;DeleteDC;GetSystemPaletteEntries
     // @stub
+    // proximity: CDDPalette@-0x8e0 | CFileImage@+0x290
     RVA(0x001485b0, 0x162)
     i32 ThisStubOwnerUnknown::winapi_1485b0_CreateDCA_DeleteDC_GetSystemPaletteEntries() {
         return 0;
@@ -3151,6 +3170,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:CopyRect
     // @stub
+    // proximity: CImage@-0xb0 | CRemusNode@+0x1110
     RVA(0x001538c0, 0x257)
     i32 ThisStubOwnerUnknown::winapi_1538c0_CopyRect(i32, i32) {
         return 0;
@@ -3159,6 +3179,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:CopyRect
     // @stub
+    // proximity: CImage@-0x310 | CRemusNode@+0xeb0
     RVA(0x00153b20, 0x270)
     i32 ThisStubOwnerUnknown::winapi_153b20_CopyRect(i32, i32) {
         return 0;
@@ -3167,6 +3188,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:CopyRect
     // @stub
+    // proximity: CImage@-0x580 | CRemusNode@+0xc40
     RVA(0x00153d90, 0x259)
     i32 ThisStubOwnerUnknown::winapi_153d90_CopyRect(i32, i32) {
         return 0;
@@ -3175,6 +3197,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:CopyRect
     // @stub
+    // proximity: CImage@-0x7e0 | CRemusNode@+0x9e0
     RVA(0x00153ff0, 0x280)
     i32 ThisStubOwnerUnknown::winapi_153ff0_CopyRect(i32, i32) {
         return 0;
@@ -3183,6 +3206,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:CopyRect
     // @stub
+    // proximity: CImage@-0xa60 | CRemusNode@+0x760
     RVA(0x00154270, 0x257)
     i32 ThisStubOwnerUnknown::winapi_154270_CopyRect(i32, i32) {
         return 0;
@@ -3191,6 +3215,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:CopyRect
     // @stub
+    // proximity: CImage@-0xcc0 | CRemusNode@+0x500
     RVA(0x001544d0, 0x275)
     i32 ThisStubOwnerUnknown::winapi_1544d0_CopyRect(i32, i32) {
         return 0;
@@ -3199,6 +3224,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:CopyRect
     // @stub
+    // proximity: CImage@-0xf40 | CRemusNode@+0x280
     RVA(0x00154750, 0x275)
     i32 ThisStubOwnerUnknown::winapi_154750_CopyRect(i32, i32) {
         return 0;
@@ -3345,7 +3371,7 @@ namespace ApiCallerStubs {
     // @source: directx-wrapper-caller:calls 0x141dc0 (DirectDrawCreate;DirectDrawEnumerateA)
     // @stub
     RVA(0x001644a0, 0x19b)
-    i32 ThisStubOwnerUnknown::directx_wrapper_caller_1644a0_DirectDrawCreate_DirectDrawEnumerateA(
+    i32 CDDrawSurfacePair::directx_wrapper_caller_1644a0_DirectDrawCreate_DirectDrawEnumerateA(
         i32,
         i32,
         i32
@@ -3356,6 +3382,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:SetRect
     // @stub
+    // proximity: CGameLevel@-0x1e0 | CWwdGrid@+0x220
     RVA(0x00168080, 0x1f6)
     i32 ThisStubOwnerUnknown::winapi_168080_SetRect(i32, i32, i32, i32, i32, i32, i32, i32) {
         return 0;
@@ -3397,7 +3424,7 @@ namespace ApiCallerStubs {
     // @source: winapi:GetDC;ReleaseDC;SelectPalette
     // @stub
     RVA(0x00174fe0, 0xfe)
-    i32 ThisStubOwnerUnknown::winapi_174fe0_GetDC_ReleaseDC_SelectPalette(i32, i32, i32, i32) {
+    i32 CImagePool::winapi_174fe0_GetDC_ReleaseDC_SelectPalette(i32, i32, i32, i32) {
         return 0;
     }
 
@@ -3405,7 +3432,7 @@ namespace ApiCallerStubs {
     // @source: winapi:GetDC;ReleaseDC;SelectPalette
     // @stub
     RVA(0x001750e0, 0x103)
-    i32 ThisStubOwnerUnknown::winapi_1750e0_GetDC_ReleaseDC_SelectPalette(i32, i32, i32, i32, i32) {
+    i32 CImagePool::winapi_1750e0_GetDC_ReleaseDC_SelectPalette(i32, i32, i32, i32, i32) {
         return 0;
     }
 
@@ -3413,7 +3440,7 @@ namespace ApiCallerStubs {
     // @source: winapi:GetDC;ReleaseDC;SelectPalette
     // @stub
     RVA(0x001751f0, 0xf9)
-    i32 ThisStubOwnerUnknown::winapi_1751f0_GetDC_ReleaseDC_SelectPalette(i32, i32, i32) {
+    i32 CImagePool::winapi_1751f0_GetDC_ReleaseDC_SelectPalette(i32, i32, i32) {
         return 0;
     }
 
@@ -3421,7 +3448,7 @@ namespace ApiCallerStubs {
     // @source: winapi:GetDC;ReleaseDC;SelectPalette
     // @stub
     RVA(0x001752f0, 0xfc)
-    i32 ThisStubOwnerUnknown::winapi_1752f0_GetDC_ReleaseDC_SelectPalette(i32, i32) {
+    i32 CImagePool::winapi_1752f0_GetDC_ReleaseDC_SelectPalette(i32, i32) {
         return 0;
     }
 
@@ -3429,7 +3456,7 @@ namespace ApiCallerStubs {
     // @source: winapi:GetDC;ReleaseDC;SelectPalette
     // @stub
     RVA(0x001753f0, 0xf4)
-    i32 ThisStubOwnerUnknown::winapi_1753f0_GetDC_ReleaseDC_SelectPalette(i32, i32) {
+    i32 CImagePool::winapi_1753f0_GetDC_ReleaseDC_SelectPalette(i32, i32) {
         return 0;
     }
 
@@ -3636,6 +3663,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:ShowCursor
     // @stub
+    // proximity: CDDPageMgr@-0x3b0 | CSeverusWorker@+0x300
     RVA(0x0017c3f0, 0x11f)
     i32 ThisStubOwnerUnknown::winapi_17c3f0_ShowCursor(
         i32,
@@ -3851,6 +3879,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: thirdparty,winapi:_SmackWait@4 | DispatchMessageA;PeekMessageA;TranslateMessage
     // @stub
+    // proximity: CSeverusWorker@-0xa0 | CDDPageMgr@+0xb20
     RVA(0x0017c790, 0x14a)
     i32 ThisStubOwnerUnknown::
         thirdparty_winapi_17c790_SmackWait_4_DispatchMessageA_PeekMessageA_TranslateMessa(
@@ -3863,6 +3892,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: thirdparty:_SmackGoto@8;_SmackWait@4
     // @stub
+    // proximity: CSeverusWorker@-0x1f0 | CDDPageMgr@+0x9d0
     RVA(0x0017c8e0, 0xca)
     i32 ThisStubOwnerUnknown::thirdparty_17c8e0_SmackGoto_8_SmackWait_4(i32, i32) {
         return 0;
@@ -3911,6 +3941,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: thirdparty:_SmackDoFrame@4;_SmackNextFrame@4;_SmackToBuffer@28
     // @stub
+    // proximity: CSeverusWorker@-0x3b0 | CDDPageMgr@+0x810
     RVA(0x0017caa0, 0x13b)
     i32 ThisStubOwnerUnknown::thirdparty_17caa0_SmackDoFrame_4_SmackNextFrame_4_SmackToBuffer_28() {
         return 0;
@@ -3942,13 +3973,14 @@ namespace ApiCallerStubs {
     // @source: winapi:GetTickCount
     // @stub
     RVA(0x0017e620, 0x13b)
-    i32 ThisStubOwnerUnknown::winapi_17e620_GetTickCount(i32, i32, i32) {
+    i32 CFader::winapi_17e620_GetTickCount(i32, i32, i32) {
         return 0;
     }
 
     // @confidence: low
     // @source: winapi:timeGetTime
     // @stub
+    // proximity: CFaderSine@-0x10 | CFaderTileRender@+0x2810
     RVA(0x0017fe00, 0x12d)
     i32 ThisStubOwnerUnknown::winapi_17fe00_timeGetTime(i32) {
         return 0;
@@ -3957,6 +3989,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:PtInRect
     // @stub
+    // proximity: CFaderSine@-0x6b0 | CFaderTileRender@+0x2170
     RVA(0x001804a0, 0x182)
     i32 ThisStubOwnerUnknown::winapi_1804a0_PtInRect(i32) {
         return 0;
@@ -4091,6 +4124,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:FreeLibrary
     // @stub
+    // proximity: isolated (no near matched neighbour)
     RVA(0x001d4a18, 0x3c)
     i32 ThisStubOwnerUnknown::winapi_1d4a18_FreeLibrary() {
         return 0;
@@ -4099,18 +4133,21 @@ namespace ApiCallerStubs {
     // @confidence: med
     // @source: decomp-xref
     // @stub
+    // proximity: CBootyState@-0x690 | CMultiBootyState@+0x590
     RVA(0x0001c8a0, 0xec)
     void ThisStubOwnerUnknown::BootyState_OnActivate2_vfunc8() {}
 
     // @confidence: low
     // @source: decomp-xref
     // @stub
+    // proximity: CCreditsState@-0xc0 | TArray@+0x1e0
     RVA(0x00039dc0, 0x10b)
     void ThisStubOwnerUnknown::LoadCreditzAssets2() {}
 
     // @confidence: med
     // @source: decomp-xref
     // @stub
+    // proximity: CDemoSetup@-0x70 | CAttractIdlePoll@+0x140
     RVA(0x0003c0e0, 0xfb)
     void ThisStubOwnerUnknown::BuildWorldLevelKey(i32) {}
 
@@ -4118,41 +4155,46 @@ namespace ApiCallerStubs {
     // @source: string-xref
     // @stub
     RVA(0x00057100, 0x577)
-    void ThisStubOwnerUnknown::LoadGruntAbilityTuning(i32) {}
+    void CGrunt::LoadGruntAbilityTuning(i32) {}
 
     // @confidence: med
     // @source: string-xref
     // @stub
     RVA(0x000597a0, 0x1345)
-    void ThisStubOwnerUnknown::LoadGruntCombatAnimations(i32, i32, i32, i32, i32, i32, i32, i32) {}
+    void CGrunt::LoadGruntCombatAnimations(i32, i32, i32, i32, i32, i32, i32, i32) {}
 
     // @confidence: med
     // @source: string-xref
     // @stub
+    // proximity: CGrunt@-0xe40 | CUserLogic@+0x1150
     RVA(0x00060150, 0xd90)
     void ThisStubOwnerUnknown::LoadGruntDeathAnimations(i32, i32) {}
 
     // @confidence: med
     // @source: decomp-xref
     // @stub
+    // proximity: CGrunt@-0x610 | CUserLogic@+0x790
     RVA(0x00063db0, 0x32f)
     void ThisStubOwnerUnknown::LoadVehicleGruntAnimations() {}
 
     // @confidence: med
     // @source: decomp-xref
     // @stub
+    // proximity: CGrunt@-0xa10 | CUserLogic@+0x390
     RVA(0x000641b0, 0x2c1)
     void ThisStubOwnerUnknown::BuildGruntExitAnimation() {}
 
     // @confidence: med
     // @source: decomp-xref
     // @stub
+    // proximity: CGrunt@-0xf80 | CUserLogic@+0x430
     RVA(0x00065630, 0x34b)
     void ThisStubOwnerUnknown::LoadBombGruntRunConfig(i32, i32) {}
 
     // @confidence: med
     // @source: string-xref
     // @stub
+    // proximity: CUserLogic@-0x420 | CGrunt@+0x19d0
     RVA(0x00065e80, 0x12b8)
     void ThisStubOwnerUnknown::LoadPickupSprites(i32, i32, i32, i32, i32) {}
 
@@ -4160,23 +4202,26 @@ namespace ApiCallerStubs {
     // @source: string-xref
     // @stub
     RVA(0x00068880, 0x67c)
-    void ThisStubOwnerUnknown::LoadWingzGruntSprites(i32) {}
+    void CGrunt::LoadWingzGruntSprites(i32) {}
 
     // @confidence: med
     // @source: string-xref
     // @stub
+    // proximity: isolated (no near matched neighbour)
     RVA(0x0006eb80, 0x5ef)
     void ThisStubOwnerUnknown::LoadTeleporterGooConfig(i32) {}
 
     // @confidence: med
     // @source: string-xref
     // @stub
+    // proximity: EngineLabelBacklog@-0x600 | CTriggerMgr@+0x4e0
     RVA(0x0007b930, 0x3b7)
     void ThisStubOwnerUnknown::LoadGruntCombatTuning(i32, i32, i32, i32, i32) {}
 
     // @confidence: med
     // @source: decomp-xref
     // @stub
+    // proximity: CTriggerMgr@-0xf0 | EngineLabelBacklog@+0x250
     RVA(0x0007c3d0, 0x1ae)
     void ThisStubOwnerUnknown::LoadFinishLevelSprite(i32) {}
 
@@ -4186,27 +4231,21 @@ namespace ApiCallerStubs {
     // @confidence: med
     // @source: decomp-xref
     // @stub
+    // proximity: CMenuState@-0x250 | CAttract@+0x90
     RVA(0x000a09a0, 0x6a)
     void ThisStubOwnerUnknown::LoadStateImages_vfunc8() {}
 
-    // @confidence: med
-    // @source: decomp-xref
-    // @stub
-    RVA(0x000ba620, 0x14a)
-    void ThisStubOwnerUnknown::LoadMenuSelectSprite(i32) {}
+    // LoadMenuSelectSprite (0x0ba620) re-homed as CNetMgr::LoadMenuSelectSprite in src/Stub/CNetMgr.cpp (proximity HIGH).
 
     // LoadImageBanks (0x0cffe0) re-homed as CPlay::LoadImageBanks in
     // src/Gruntz/CPlay.cpp.
 
-    // @confidence: med
-    // @source: decomp-xref
-    // @stub
-    RVA(0x000d1710, 0x122)
-    void ThisStubOwnerUnknown::LoadSBITextEdges(i32) {}
+    // LoadSBITextEdges (0x0d1710) re-homed as CPlay::LoadSBITextEdges in src/Stub/CPlay.cpp (proximity HIGH).
 
     // @confidence: med
     // @source: string-xref
     // @stub
+    // proximity: CGameModeObj@-0x70 | CPlay@+0x9d0
     RVA(0x000d65d0, 0x7a4)
     void ThisStubOwnerUnknown::LoadWarlordSprites(i32, i32) {}
 
@@ -4219,20 +4258,12 @@ namespace ApiCallerStubs {
     // BuildMusicCategoryTable (0x0dba30) re-homed (byte-exact) as
     // CPlay::BuildMusicCategoryTable in src/Gruntz/CPlay.cpp.
 
-    // @confidence: med
-    // @source: string-xref
-    // @stub
-    RVA(0x000dbc80, 0x309)
-    void ThisStubOwnerUnknown::BuildWorldLevelPath(i32) {}
+    // BuildWorldLevelPath (0x0dbc80) re-homed as CPlay::BuildWorldLevelPath in src/Stub/CPlay.cpp (proximity HIGH).
 
     // SetEffectSpriteDurations (0x0dc060) re-homed (analyzed) as
     // CPlay::SetEffectSpriteDurations in src/Gruntz/CPlay.cpp.
 
-    // @confidence: low
-    // @source: decomp-xref
-    // @stub
-    RVA(0x000dd050, 0x24b)
-    void ThisStubOwnerUnknown::BuildGruntNamespaceList(i32) {}
+    // BuildGruntNamespaceList (0x0dd050) re-homed as CPlay::BuildGruntNamespaceList in src/Stub/CPlay.cpp (proximity HIGH).
 
     // BuildWarlordNameTable (0x0dd340) re-homed (analyzed) as
     // CPlay::BuildWarlordNameTable in src/Gruntz/CPlay.cpp.
@@ -4243,6 +4274,7 @@ namespace ApiCallerStubs {
     // @confidence: med
     // @source: decomp-xref
     // @stub
+    // proximity: CPlay@-0x980 | CProjectile@+0xb40
     RVA(0x000de420, 0x115)
     void ThisStubOwnerUnknown::LoadLevelPreviewScreen() {}
 
@@ -4259,6 +4291,7 @@ namespace ApiCallerStubs {
     // @confidence: med
     // @source: decomp-xref
     // @stub
+    // proximity: CSBI_MenuItem@-0x550 | CSBI_GruntMachine@+0x200
     RVA(0x000e8a70, 0x18c)
     void ThisStubOwnerUnknown::
         BuildResourceTabStatusBar(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32) {}
@@ -4266,6 +4299,7 @@ namespace ApiCallerStubs {
     // @confidence: med
     // @source: decomp-xref
     // @stub
+    // proximity: CSBI_GruntMachine@-0x840 | CSBI_SideTab@+0x200
     RVA(0x000e9600, 0x18c)
     void ThisStubOwnerUnknown::
         BuildStatzTabStatusBar(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32) {}
@@ -4273,6 +4307,7 @@ namespace ApiCallerStubs {
     // @confidence: med
     // @source: decomp-xref
     // @stub
+    // proximity: CSbItem@-0x100 | CSBI_StatzTabGruntBar@+0x280
     RVA(0x000ea1f0, 0x1fa)
     void ThisStubOwnerUnknown::
         BuildMultiplayerTabStatusBar(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32) {}
@@ -4280,12 +4315,14 @@ namespace ApiCallerStubs {
     // @confidence: med
     // @source: string-xref
     // @stub
+    // proximity: CGrunt@-0x7380 | CAttract@+0x350
     RVA(0x000f9ea0, 0x21d)
     void ThisStubOwnerUnknown::LoadGameAssetNamespaces(i32, i32, i32) {}
 
     // @confidence: low
     // @source: decomp-xref
     // @stub
+    // proximity: CSBI_RectOnly@-0xa0 | CSBI_MenuItem@+0x390
     RVA(0x0010bc30, 0x78)
     void ThisStubOwnerUnknown::UpdateDestructButtonStatusBar2(i32) {}
 
@@ -4293,29 +4330,33 @@ namespace ApiCallerStubs {
     // @source: decomp-xref
     // @stub
     RVA(0x0011afb0, 0x321)
-    void ThisStubOwnerUnknown::LoadGruntSpawnConfig(i32, i32, i32, i32, i32) {}
+    void CGruntSpawnConfig::LoadGruntSpawnConfig(i32, i32, i32, i32, i32) {}
 
     // @confidence: low
     // @source: decomp-xref
     // @stub
+    // proximity: CRangeSet@-0x3f0 | CRezList@+0x1e0
     RVA(0x00185000, 0x1a6)
     void ThisStubOwnerUnknown::DebugPrintf() {}
 
     // @confidence: low
     // @source: import:GetFileSize
     // @stub
+    // proximity: isolated (no near matched neighbour)
     RVA(0x001c152f, 0xda)
     void ThisStubOwnerUnknown::Stub_1c152f(i32) {}
 
     // @confidence: med
     // @source: import:RegCloseKey,RegSetValueExA
     // @stub
+    // proximity: CFileIO@-0xd6c1 | CConfigStore@+0x75
     RVA(0x001ccae7, 0x75)
     void ThisStubOwnerUnknown::Stub_1ccae7(i32, i32, i32) {}
 
     // @confidence: med
     // @source: import:RegCloseKey,RegSetValueExA
     // @stub
+    // proximity: isolated (no near matched neighbour)
     RVA(0x001ccbfc, 0xa1)
     void ThisStubOwnerUnknown::Stub_1ccbfc(i32, i32, i32, i32) {}
 
