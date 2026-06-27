@@ -187,7 +187,7 @@ ehfunclets	6	6
 engine_attributed	9	0
 engine_boundary	17	0
 engine_discovered	23	5
-engine_label_stubs	387	105
+engine_label_stubs	381	105
 engine_unmatched_lib	11	0
 engstr	3	1
 eyecandytypetags	4	4
@@ -233,7 +233,7 @@ hash	10	9
 heapdiag	1	0
 helperhost	2	0
 iconloaders	5	1
-image	39	26
+image	40	26
 imagepolyclip	1	0
 imagepool	18	7
 imagerle16encode	1	0
@@ -328,6 +328,7 @@ netsession	2	1
 netsession2	3	2
 netsessionnode	3	2
 netthingdtor	1	1
+netthunks	5	5
 orphanleaves	7	7
 orphanmethods	4	2
 palettebmp	1	0
@@ -1747,7 +1748,6 @@ engine_label_stubs	??0MallocCtor_184960@@QAE@XZ	2.0513	2.0513	1	cpp:e8a4cb0d5b2a
 engine_label_stubs	??0MallocCtor_192390@@QAE@XZ	1.0526	1.0526	1	cpp:e8a4cb0d5b2a	0x192390
 engine_label_stubs	??1CGruntzMapMgr@@QAE@XZ	2.0833	2.0833	1	cpp:45e65336d4b5	0x85d10
 engine_label_stubs	??1CRandomAmbientSound@@UAE@XZ	1.2698	1.2698	1	cpp:e8a4cb0d5b2a	0xbb60
-engine_label_stubs	?AckDropPlayer@CNetMgr@@QAEXH@Z	40.0000	40.0000	1	cpp:2262ffc5f902	0x16d1
 engine_label_stubs	?Append@EditAppendHost_0c2ce0@ApiCallerStubs@@QAEXPAD@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xc2ce0
 engine_label_stubs	?Apply@PalHost_1775f0@ApiCallerStubs@@QAEHPBDH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x1775f0
 engine_label_stubs	?BaseCleanup@CGameModeBase@@QAEXXZ	40.0000	40.0000	1	cpp:2262ffc5f902	0x3f53
@@ -1755,7 +1755,6 @@ engine_label_stubs	?Begin@ActionHost_0d7220@ApiCallerStubs@@QAEHH@Z	100.0000	100
 engine_label_stubs	?Blit1624@CFileImage@@QAEHPAXH@Z	1.4844	1.4844	1	cpp:6bf52155264d	0x13fce0
 engine_label_stubs	?Blit168@CFileImage@@QAEHPAX0H@Z	1.6814	1.6814	1	cpp:6bf52155264d	0x13fbb0
 engine_label_stubs	?Blit2416@CFileImage@@QAEHPAXH@Z	1.5323	1.5323	1	cpp:6bf52155264d	0x13ff80
-engine_label_stubs	?Blit248@CFileImage@@QAEHPAX0H@Z	1.6379	1.6379	1	cpp:6bf52155264d	0x13fe60
 engine_label_stubs	?Blit816@CFileImage@@QAEHPAX0H@Z	0.7037	0.7037	1	cpp:6bf52155264d	0x140420
 engine_label_stubs	?Blit824@CFileImage@@QAEHPAX0H@Z	0.7722	0.7722	1	cpp:6bf52155264d	0x140110
 engine_label_stubs	?Build@CSBI_SideTab@@QAEXXZ	0.9804	0.9804	1	cpp:e8a4cb0d5b2a	0x105070
@@ -1869,7 +1868,6 @@ engine_label_stubs	?RegionLeave@CPlay@@QAEXXZ	40.0000	40.0000	1	cpp:2262ffc5f902
 engine_label_stubs	?RelayHwnd@@YAXPAX@Z	33.3333	33.3333	1	cpp:2262ffc5f902	0x1437e0
 engine_label_stubs	?ReleaseHandle@AilSeq@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x138dd0
 engine_label_stubs	?RemoveTail@CGruntzCmdList@@QAEPAXXZ	9.3333	9.3333	1	cpp:2262ffc5f902	0x1b4a27
-engine_label_stubs	?ReportVersionMsg@CNetMgr@@QAEXPBDH@Z	40.0000	40.0000	1	cpp:2262ffc5f902	0x1af0
 engine_label_stubs	?Reset@RectWnd_fe600@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0xfe600
 engine_label_stubs	?ResetCmdBuffers@CNetSession@@QAEXXZ	40.0000	40.0000	1	cpp:2262ffc5f902	0x4020
 engine_label_stubs	?Resume@AilSeq@ApiCallerStubs@@QAEHH@Z	100.0000	100.0000	1	cpp:e1535087fe94	0x138ed0
@@ -1880,9 +1878,6 @@ engine_label_stubs	?RunDecode1@CFileImage@@QAEHPAX0HH@Z	1.7094	1.7094	1	cpp:e153
 engine_label_stubs	?RunDecode3@CFileImage@@QAEHPAX0HH@Z	0.6826	0.6826	1	cpp:e1535087fe94	0x1453f0
 engine_label_stubs	?SaveGameFile@CFileIO@@QAEXH@Z	0.9709	0.9709	1	cpp:e8a4cb0d5b2a	0xe4b60
 engine_label_stubs	?SelectBestDevice@SFManager@@QAEXXZ	0.3937	0.3937	1	cpp:45e65336d4b5	0xf8970
-engine_label_stubs	?SendNetStat@CNetMgr@@QAEXHIH@Z	40.0000	40.0000	1	cpp:2262ffc5f902	0x2955
-engine_label_stubs	?SendStat3@CNetMgr@@QAEXHIH@Z	40.0000	40.0000	1	cpp:2262ffc5f902	0x3d0a
-engine_label_stubs	?SendStatFlag@CNetMgr@@QAEXHH@Z	40.0000	40.0000	1	cpp:2262ffc5f902	0x2e82
 engine_label_stubs	?Set@RectHost_08c380@ApiCallerStubs@@QAEXHHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x8c380
 engine_label_stubs	?SetLoop@AilSeq@ApiCallerStubs@@QAEHH@Z	100.0000	100.0000	1	cpp:e1535087fe94	0x139030
 engine_label_stubs	?SetTempo@AilSeq@ApiCallerStubs@@QAEHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x138f90
@@ -2598,6 +2593,7 @@ iconloaders	?LoadPowerupIconSprites@EngineLabelBacklog@@QAEHHHHHHH@Z	33.8559	33.
 iconloaders	?LoadToyBoxIcon@EngineLabelBacklog@@QAEHHHHHH@Z	99.9444	99.9444	1	9716aad5572f	0x7a3f0
 image	??1CFileImage@@UAE@XZ	100.0000	100.0000	1	7252e7ab41e8	0x141350
 image	??1CFileImageSurface@@UAE@XZ	100.0000	100.0000	1	8f95b4aa6ff0	0x142360
+image	?Blit248@CFileImage@@QAEHPAX0H@Z	94.3103	94.3103	1	3af3a5a4a2fa	0x13fe60
 image	?Blit@CFileImage@@QAEHPAXH0H@Z	100.0000	100.0000	2	181d8e710203	0x13faa0
 image	?BlitDirect@CFileImage@@QAEHPAXH@Z	70.4941	70.4941	2	d45ef879a365	0x13ece0
 image	?BlitSurf@CFileImage@@QAEHPAXHHHH@Z	100.0000	100.0000	3	f4d5a5e5672c	0x13e0d0
@@ -2605,7 +2601,7 @@ image	?Build_13e9a0@CImageFactory@@QAEHPAVCImageSource@@H@Z	58.0769	58.0769	1	bc
 image	?Clear@CFileImage@@QAEXH@Z	100.0000	100.0000	2	bfee47867379	0x13edb0
 image	?DecodeBmp@CFileImage@@QAEPAXPADPAXI@Z	31.2544	31.2544	4	ee7ec349a997	0x143fc0
 image	?DecodeBmpHeader@CImage@@QAEHPAXHHH0@Z	95.7395	95.7395	5	5af44e6457a4	0x1757c0
-image	?DecodePcx@CFileImage@@QAEPAXPADPAXI@Z	55.7755	55.7755	4	77f8fc32ed4c	0x144ee0
+image	?DecodePcx@CFileImage@@QAEPAXPADPAXI@Z	55.6786	55.6786	4	77f8fc32ed4c	0x144ee0
 image	?DecodePcxData@CFileImage@@QAEHPAX0HHH@Z	86.2370	86.2370	1	ddfed7a9e89e	0x1457a0
 image	?DecodePcxData@CImage@@QAEHPAX00@Z	91.2848	91.2848	4	da60cf2acb73	0x176000
 image	?DecodePcxEx@CFileImage@@QAEHPAD0PAX1@Z	100.0000	100.0000	5	d07ec29ad6b0	0x1459d0
@@ -3056,6 +3052,11 @@ netsessionnode	??1CNetPlayerListNode@@UAE@XZ	100.0000	100.0000	1	f7c44c68b70d	0x
 netsessionnode	??1CNetSessionNode@@UAE@XZ	97.5952	97.5952	1	604a7da9fc61	0x179420
 netsessionnode	?Init@CNetPlayerListNode@@QAEHPAX@Z	100.0000	100.0000	1	cc762f1c337c	0x1795a0
 netthingdtor	??1CNetThing@@QAE@XZ	100.0000	100.0000	1	893ac3836032	0xc5280
+netthunks	?Ilt_AckDropPlayer_16d1@@YAXXZ	100.0000	100.0000	1	071ff8e73252	0x16d1
+netthunks	?Ilt_ReportVersionMsg_1af0@@YAXXZ	100.0000	100.0000	1	88b5497317b1	0x1af0
+netthunks	?Ilt_SendNetStat_2955@@YAXXZ	100.0000	100.0000	1	ee75a30eb9db	0x2955
+netthunks	?Ilt_SendStat3_3d0a@@YAXXZ	100.0000	100.0000	1	40493b9eae4f	0x3d0a
+netthunks	?Ilt_SendStatFlag_2e82@@YAXXZ	100.0000	100.0000	1	a21eb9a2ef83	0x2e82
 orphanleaves	?DtorSub8@COwnerWithSubs@@QAEXXZ	100.0000	100.0000	1	58abcd060f36	0x3cbf0
 orphanleaves	?DtorSubC@COwnerWithSubs@@QAEXXZ	100.0000	100.0000	1	47dbac1cec10	0x3cbc0
 orphanleaves	?FreeGlobal62c25c@@YAXXZ	100.0000	100.0000	1	b38e4759fa2e	0x3ac30

@@ -92,13 +92,7 @@ RVA(0x0013fce0, 0x17f)
 i32 CFileImage::Blit1624(void*, i32) {
     return 0;
 }
-// @confidence: high
-// @source: reloc-correlation (CFileImage::Blit dispatcher)
-// @stub
-RVA(0x0013fe60, 0x11e)
-i32 CFileImage::Blit248(void*, void*, i32) {
-    return 0;
-}
+// Blit248 (0x13fe60) reconstructed in src/Image/Image.cpp.
 // @confidence: high
 // @source: reloc-correlation (CFileImage::Blit dispatcher)
 // @stub

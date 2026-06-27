@@ -780,6 +780,57 @@ i32 CFileImage::Blit(void* src, i32 bitcount, void* palette, i32 mode) {
     return 0;
 }
 
+// ---------------------------------------------------------------------------
+// CFileImage::Blit248  (8bpp src -> 24bpp dest, palette remap)
+// Lock the surface, walk it row-by-row (mode 2 = bottom-up flipped, else top-
+// down) writing each source palette index's RGBQUAD bytes (2,1,0) as 3 dest
+// bytes, then Unlock. Returns 0 if the palette is null or the lock fails.
+// @early-stop
+// 94.3% - both inner conversion loops byte-exact; residual is an edi<->ebp
+// induction-variable allocation swap (src pinned in edi vs retail's ebp, which
+// propagates a different ModRM byte through every src reference in both loops)
+// + retail's `cmp $2,[esp+mode]` memory compare vs our reg-loaded `mov ecx,
+// [mode];cmp ecx,2`. Both stem from `src` being a single live variable across
+// the two branches (loaded before the mode test); a per-branch `src` flips the
+// load late but un-spills `locked` and breaks the `push ecx` frame (drops to
+// 91%). Regalloc-ordering wall (docs/patterns/zero-register-pinning.md).
+RVA(0x0013fe60, 0x11e)
+i32 CFileImage::Blit248(void* srcv, void* palv, i32 mode) {
+    CDDSurface* s = (CDDSurface*)this;
+    u8* pal = (u8*)palv;
+    if (pal == 0) {
+        return 0;
+    }
+    i32 locked = s->Lock(0);
+    if (locked == 0) {
+        return 0;
+    }
+    u8* src = (u8*)srcv;
+    if (mode == 2) {
+        for (i32 row = *(i32*)(s->m_desc + 8) - 1; row >= 0; row--) {
+            u8* dst = (u8*)locked + row * *(i32*)(s->m_desc + 0x10);
+            for (i32 col = 0; col < *(i32*)(s->m_desc + 0xc); col++) {
+                u8 idx = *src++;
+                *dst++ = pal[idx * 4 + 2];
+                *dst++ = pal[idx * 4 + 1];
+                *dst++ = pal[idx * 4];
+            }
+        }
+    } else {
+        for (i32 row = 0; row < *(i32*)(s->m_desc + 8); row++) {
+            u8* dst = (u8*)locked + row * *(i32*)(s->m_desc + 0x10);
+            for (i32 col = 0; col < *(i32*)(s->m_desc + 0xc); col++) {
+                u8 idx = *src++;
+                *dst++ = pal[idx * 4 + 2];
+                *dst++ = pal[idx * 4 + 1];
+                *dst++ = pal[idx * 4];
+            }
+        }
+    }
+    s->m_8->vtbl->Unlock(s->m_8, 0);
+    return 1;
+}
+
 // The CFileImage vtable (reloc-masked .rdata global). The destructor restores the
 // vptr to it before tearing the object down; the class's virtuals live in other
 // (unmatched) TUs, so the vtable is modeled as a DATA extern + a manual stamp

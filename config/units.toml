@@ -755,6 +755,11 @@ source = "src/Net/ChannelSlots.cpp"
 flags = "base"
 
 [[unit]]
+unit = "netthunks"
+source = "src/Net/NetThunks.cpp"
+flags = "base"
+
+[[unit]]
 unit = "winmain"
 source = "src/Gruntz/WinMain.cpp"
 flags = "eh"
