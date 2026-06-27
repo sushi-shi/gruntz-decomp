@@ -1539,6 +1539,16 @@ source = "src/Gruntz/BoundaryLowerDtors.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "boundaryupper2"
+source = "src/Gruntz/BoundaryUpper2.cpp"
+flags = "base"
+
+[[unit]]
+unit = "boundaryupper2eh"
+source = "src/Gruntz/BoundaryUpper2Eh.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "cmovinglogicdtor"
 source = "src/Gruntz/CMovingLogicDtor.cpp"
 flags = "eh"
