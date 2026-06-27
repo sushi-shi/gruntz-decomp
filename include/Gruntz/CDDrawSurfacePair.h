@@ -34,45 +34,33 @@
 
 // The two vtables in the dtor chain: this class's own (0x5eff30) and the
 // grand-base dtor vtable (0x5e8cb4). Reloc-masked DATA externs (the manual
-// stamps reference the RETAIL tables, whose contents are unmatched engine code).
-DATA(0x001eff30)
-extern void* g_surfacePairVtbl;
-DATA(0x001e8cb4)
-extern void* g_surfacePairBaseDtorVtbl; // == g_severusWorkerDtorVtbl / g_remusBaseDtorVtbl
-
 // ---------------------------------------------------------------------------
-// CSurfacePairBase - the polymorphic SeverusWorker base. POLYMORPHIC so the vptr
-// sits at +0x00 and ~CSurfacePairBase is a real non-trivial base subobject dtor
-// (its inline body folds into the leaf ~CDDrawSurfacePair, supplying the /GX EH
-// frame; see docs/patterns/inline-base-dtor-folds-into-leaves.md and
-// eh-dtor-needs-base-subobject.md). Its vtable contents are external engine code,
-// so the vptr is MANUAL-stamped (not compiler-emitted) - the declared virtuals
-// only fix the vptr slot at +0, they are never called from this TU.
+// CSurfacePairBase - the polymorphic SeverusWorker base. Real C++ virtual: the
+// implicit vptr sits at +0x00, the scalar-deleting dtor is slot 1, and the base
+// subobject dtor is EMPTY so cl emits ONLY the implicit grand-base re-stamp
+// (reloc-masks 0x5e8cb4) folded LAST into the leaf ~CDDrawSurfacePair. The base-
+// field resets (m_04/m_08/m_0c) move into the DERIVED dtor body so they precede
+// the grand-base fold (eh-dtor-implicit-vptr-stamp-first.md sub-case 2). The
+// destructible base subobject supplies the leaf dtor's /GX EH frame.
 // ---------------------------------------------------------------------------
 class CSurfacePairBase {
 public:
-    virtual void v00();
-    virtual void v04();
-    virtual void v08();
-    virtual void v0c();
-    virtual void v10();
-    virtual i32 IsValid(); // slot 5 (@0x14) - the "surface ready?" predicate
-
-    // The base-subobject destructor: resets the three base fields and restores the
-    // grand-base vftable. INLINE so it folds into ~CDDrawSurfacePair, exactly as
-    // the retail compiler emitted the base-dtor tail.
-    ~CSurfacePairBase() {
-        m_08 = 0;
-        m_0c = 0;
-        m_04 = -1;
-        *(void**)this = &g_surfacePairBaseDtorVtbl;
-    }
+    virtual void v00();      // slot 0
+    virtual ~CSurfacePairBase(); // slot 1 (scalar-deleting dtor)
+    virtual void v08();      // slot 2
+    virtual void v0c();      // slot 3
+    virtual void v10();      // slot 4
+    virtual i32 IsValid();   // slot 5 (@0x14) - the "surface ready?" predicate
 
     // vptr @+0x00 (implicit, polymorphic)
     i32 m_04;   // +0x04  status word (-1 inactive, 0x63 active)
     i32 m_08;   // +0x08
     void* m_0c; // +0x0c  parent manager (its surface pool at +0x1c)
 };
+
+// Empty body -> cl emits ONLY the implicit grand-base vptr re-stamp (0x5e8cb4),
+// folded into the leaf dtor as the last store.
+inline CSurfacePairBase::~CSurfacePairBase() {}
 
 // CDDrawPtrCollections::RemoveItemA(CPoolItemA*) @0x142160 - reloc-masked
 // __thiscall engine callee modeled as a method on a tiny view so the call falls
@@ -115,7 +103,7 @@ struct CDDrawSurfaceMgr {
 class CDDrawSurfacePair : public CSurfacePairBase {
 public:
     void BltSelf(CDDrawSurfacePair* src);     // 0x03a1d0
-    ~CDDrawSurfacePair();                      // 0x1590f0
+    virtual ~CDDrawSurfacePair();              // 0x1590f0
     i32 Create(i32 w, i32 h, i32 bpp, i32 a3); // 0x163c90  (vtable slot 12)
     i32 RestoreIfLost();                       // 0x163f00
     void TeardownSurface();                    // 0x163e20  (vtable slot 7)

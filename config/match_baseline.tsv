@@ -57,9 +57,9 @@ cddrawsubmgrani	3	1
 cddrawsubmgrdraco	5	2
 cddrawsubmgrleaf	14	4
 cddrawsubmgrleafscan	17	6
-cddrawsurfacemgr	9	5
+cddrawsurfacemgr	9	6
 cddrawsurfacemgrserialize	2	0
-cddrawsurfacepair	9	2
+cddrawsurfacepair	9	3
 cddrawworkercache	4	1
 cddrawworkerlist	11	8
 cddrawworkermapsmall	10	3
@@ -128,7 +128,7 @@ cparticlez	5	4
 cpathhazard	8	4
 cplay	70	30
 crangeset	3	2
-cremusentrylist	2	1
+cremusentrylist	2	2
 cremusnode	4	2
 cremusreadstream	6	4
 crt_streambuf	10	8
@@ -233,7 +233,7 @@ ingameicon	10	5
 ingametext	5	4
 ingameworkerhandlers	3	3
 inputdeviceconfig	1	0
-interfaceobject	2	1
+interfaceobject	2	2
 kitchenslime	7	4
 latencylist	2	2
 leafelementobj	2	2
@@ -309,7 +309,7 @@ netmgrerror	1	1
 netmgrmisc	5	4
 netsession	2	1
 netsession2	3	2
-netsessionnode	3	1
+netsessionnode	3	2
 netthingdtor	1	1
 orphanleaves	7	7
 orphanmethods	4	2
@@ -791,7 +791,7 @@ cddrawsubmgrleafscan	?RemoveKeysEqual_157c70@CDDrawSubMgrLeafScan@@QAEHPBD0@Z	91
 cddrawsubmgrleafscan	?ScanTree_157ee0@CDDrawSubMgrLeafScan@@QAEHPAVDirNode@@PBD1@Z	100.0000	100.0000	2	e7963647e727	0x157ee0
 cddrawsubmgrleafscan	?SumField_1580b0@CDDrawSubMgrLeafScan@@QAEHPBD@Z	68.0233	68.0233	1	d02f4c4286a1	0x1580b0
 cddrawsurfacemgr	??0CDDrawSurfaceMgr@@QAE@XZ	100.0000	100.0000	5	06a0488572fd	0x155840
-cddrawsurfacemgr	??1CDDrawSurfaceMgr@@UAE@XZ	31.3333	31.3333	1	ae3ac5005d6b	0x1558b0
+cddrawsurfacemgr	??1CDDrawSurfaceMgr@@UAE@XZ	100.0000	100.0000	2	a14f65509f82	0x1558b0
 cddrawsurfacemgr	?Cleanup_155e20@CDDrawSurfaceMgr@@QAEXXZ	96.1236	96.1236	1	f8c53c988eee	0x155e20
 cddrawsurfacemgr	?UnknownVirtualMethod14@CDDrawSurfaceMgr@@UAEHXZ	100.0000	100.0000	6	26deb5b232cc	0x155f00
 cddrawsurfacemgr	?UnknownVirtualMethod18@CDDrawSurfaceMgr@@QAEXXZ	0.0998	0.0998	4	06635cbf0579	0x155900
@@ -801,7 +801,7 @@ cddrawsurfacemgr	?UnknownVirtualMethod28@CDDrawSurfaceMgr@@UAEXPAX@Z	100.0000	10
 cddrawsurfacemgr	?UnknownVirtualMethod38@CDDrawSurfaceMgr@@UAEHPAXHHH@Z	100.0000	100.0000	6	4f82654368f6	0x156a90
 cddrawsurfacemgrserialize	?RestoreChildren@CDDrawSurfaceMgr@@QAEHP6AHPAX0HHH@ZPADH@Z	45.5092	45.5092	1	da8039a1ef2c	0x156530
 cddrawsurfacemgrserialize	?SnapshotChildren@CDDrawSurfaceMgr@@QAEHP6AHPAX0HHH@ZHPADH@Z	74.6433	74.6433	1	e074f114cd14	0x156020
-cddrawsurfacepair	??1CDDrawSurfacePair@@QAE@XZ	91.5600	91.5600	1	db5a35e769fe	0x1590f0
+cddrawsurfacepair	??1CDDrawSurfacePair@@UAE@XZ	100.0000	100.0000	1	58bb84a06415	0x1590f0
 cddrawsurfacepair	?BltSelf@CDDrawSurfacePair@@QAEXPAV1@@Z	100.0000	100.0000	1	904242950eca	0x3a1d0
 cddrawsurfacepair	?Create@CDDrawSurfacePair@@QAEHHHHH@Z	96.0198	96.0198	1	a02e29676183	0x163c90
 cddrawsurfacepair	?DrawBox@CDDrawSurfacePair@@QAEXPAHH@Z	52.7371	52.7371	1	e1b13d28ceaa	0x163f40
@@ -1228,7 +1228,7 @@ cplay	?winapi_0d0b30_CopyRect@CPlay@@QAEHH@Z	1.2270	1.2270	2	edf43ed7aef3	0xd0b3
 crangeset	?AddFromString@CRangeSet@@QAEXPAD@Z	92.1466	92.1466	1	11e3952a28d0	0x184c10
 crangeset	?AddRange@CRangeSet@@QAEXII@Z	100.0000	100.0000	1	ed00b3a920e2	0x184be0
 crangeset	?Contains@CRangeSet@@QAE_NI@Z	100.0000	100.0000	1	958ae75d3e77	0x184ba0
-cremusentrylist	??1CRemusEntryList@@QAE@XZ	94.2857	94.2857	1	91c148d29979	0x152e30
+cremusentrylist	??1CRemusEntryList@@UAE@XZ	100.0000	100.0000	1	0f182d7c65db	0x152e30
 cremusentrylist	?DeleteAll@CRemusEntryList@@QAEXXZ	100.0000	100.0000	1	20d4d5477494	0x165730
 cremusnode	??0CRemusNode@@QAE@HHH@Z	60.1176	60.1176	2	9b0a333c3352	0x15b2c0
 cremusnode	??0CRemusNode@@QAE@XZ	100.0000	100.0000	1	9b0a333c3352	0x1549d0
@@ -2691,7 +2691,7 @@ ingameworkerhandlers	?Handler095750@@YAHPAUOwner@@@Z	100.0000	100.0000	1	76ecb60
 ingameworkerhandlers	?Handler095890@@YAHPAUOwner@@@Z	100.0000	100.0000	1	8bf2772ac296	0x95890
 ingameworkerhandlers	?Handler0aa6e0@@YAHPAUOwner@@@Z	100.0000	100.0000	1	f247242b9830	0xaa6e0
 inputdeviceconfig	?LoadInputDeviceConfig@CInputConfig@@QAE?AVCString@@H@Z	77.3265	77.3265	5	a06dac34f93f	0x387c0
-interfaceobject	??1InterfaceObject@@QAE@XZ	89.4000	89.4000	1	8c6e5a007eca	0x179340
+interfaceobject	??1InterfaceObject@@UAE@XZ	100.0000	100.0000	1	aa614845afcc	0x179340
 interfaceobject	?GetName@InterfaceObject@@QAE?AVCString@@XZ	100.0000	100.0000	1	d2dccd8a304e	0x179300
 kitchenslime	??1CKitchenSlime@@UAE@XZ	100.0000	100.0000	1	5d147b2b8ea5	0x13100
 kitchenslime	?FireActivation@CKitchenSlime@@QAEXH@Z	100.0000	100.0000	1	b01b90390ef5	0xb2940
@@ -3036,8 +3036,8 @@ netsession	?FillPlayerList@@YAXPAUHWND__@@PAUSession@@@Z	91.5352	91.5352	1	94ce9
 netsession2	?Init@CNetSession2@@QAEHPAXPAUCNetMgr@@0@Z	100.0000	100.0000	1	e5396ade6fb8	0xbef80
 netsession2	?Reset@CNetSession2@@QAEXXZ	94.1176	94.1176	1	81e94541388a	0xbf150
 netsession2	?Verify@CNetSession2@@QAEHH@Z	100.0000	100.0000	1	ac68f94034e0	0xc0290
-netsessionnode	??1CNetPlayerListNode@@QAE@XZ	93.3333	93.3333	1	22ffe4c6f404	0x1793b0
-netsessionnode	??1CNetSessionNode@@QAE@XZ	90.6429	90.6429	1	19e17967622d	0x179420
+netsessionnode	??1CNetPlayerListNode@@UAE@XZ	100.0000	100.0000	1	f7c44c68b70d	0x1793b0
+netsessionnode	??1CNetSessionNode@@UAE@XZ	97.5952	97.5952	1	604a7da9fc61	0x179420
 netsessionnode	?Init@CNetPlayerListNode@@QAEHPAX@Z	100.0000	100.0000	1	cc762f1c337c	0x1795a0
 netthingdtor	??1CNetThing@@QAE@XZ	100.0000	100.0000	1	893ac3836032	0xc5280
 orphanleaves	?DtorSub8@COwnerWithSubs@@QAEXXZ	100.0000	100.0000	1	58abcd060f36	0x3cbf0

@@ -15,15 +15,6 @@
 
 #include <Gruntz/CRemusEntryList.h>
 
-// The node's own primary vtable (foreign engine datum, reloc-masked DATA()).
-DATA(0x001efba8)
-extern void* g_remusEntryListVtbl; // 0x5efba8
-
-// The grand-base dtor vtable (declared in the header for the inline ~CRemusBase);
-// pin its address here (reloc-masked DATA()).
-DATA(0x005e8cb4)
-extern void* g_remusBaseDtorVtbl; // 0x5e8cb4
-
 // Engine heap free (RezFree, __cdecl, reloc-masked rel32). 0x1b9b82.
 extern "C" void RezFree(void* p); // 0x1b9b82
 
@@ -52,14 +43,12 @@ void CRemusEntryList::DeleteAll() {
 // teardown), then the CObArray member destructs and ~CRemusBase folds in to
 // restore the grand-base vtable. /GX frame from the destructible base+member.
 // ===========================================================================
-// @early-stop
-// EH-state-machine order wall (eh-dtor-vptr-stamp-vs-trylevel-order): body
-// byte-identical, but retail emits the own-vptr stamp before the entry trylevel
-// write (the /GX state machine's order; not steerable from C). Same plateau class
-// as CWwdGrid::~CWwdGrid (0x1682a0, ~93%). Logic complete.
+// Real polymorphic now: cl emits the implicit ??_7CRemusEntryList own-vptr stamp in
+// the ENTRY state (stamp-first, == retail), then DeleteAll, then the member
+// ~RemusObArray (trylevel 0) and ~CRemusBase grand-base re-stamp fold in. /GX frame
+// from the destructible base + member. (eh-dtor-implicit-vptr-stamp-first.md.)
 RVA(0x00152e30, 0x53)
 CRemusEntryList::~CRemusEntryList() {
-    m_vptr = &g_remusEntryListVtbl;
     DeleteAll();
     // m_items.~RemusObArray() (trylevel 0) + ~CRemusBase() (grand-base restore) fold here.
 }

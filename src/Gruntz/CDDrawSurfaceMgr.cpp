@@ -31,7 +31,24 @@ public:
 };
 
 struct MinervaMgr; // defined below; m_28 points at one
-class CDDrawSurfaceMgr {
+
+// The CObject-like grand base (vtable @0x5e8cb4): the implicit vptr @+0x00 + the
+// 5-slot CObject interface, with the scalar-deleting dtor at slot 1. Real
+// polymorphic base subobject: the empty inline virtual dtor makes cl emit the
+// implicit grand-base re-stamp (reloc-masks 0x5e8cb4) folded LAST into
+// ~CDDrawSurfaceMgr, and the destructible base subobject supplies the dtor's /GX
+// EH frame. Placing it here also fixes the derived vtable layout: the dtor lands
+// at slot 1 and UnknownVirtualMethod14 (byte 0x14) at slot 5, etc.
+struct CDDrawSurfaceMgrBase {
+    virtual void V0();      // slot 0 (sub_1bef01)
+    virtual ~CDDrawSurfaceMgrBase(); // slot 1 (scalar-deleting dtor)
+    virtual void V2();      // slot 2 (sub_0028ec)
+    virtual void V3();      // slot 3 (sub_00106e)
+    virtual void V4();      // slot 4 (sub_004034)
+};
+inline CDDrawSurfaceMgrBase::~CDDrawSurfaceMgrBase() {}
+
+class CDDrawSurfaceMgr : public CDDrawSurfaceMgrBase {
 public:
     CDDrawSurfaceMgr();
     virtual ~CDDrawSurfaceMgr();
@@ -76,11 +93,6 @@ extern "C" u32 g_6bf3c0; // draw-clock mirror
 DATA(0x002bf3bc)
 extern "C" u32 g_6bf3bc; // draw-delta mirror
 
-// The base-subobject (CObject-like) dtor vtable restamped at ~CDDrawSurfaceMgr
-// exit; reloc-masked DATA() while the class stays non-polymorphic in this model.
-DATA(0x005e8cb4)
-extern void* g_remusBaseDtorVtbl;
-
 // Polymorphic-delete views for the owned children torn down by Cleanup_155e20.
 // Most children carry the engine scalar-deleting destructor at vtable slot 1
 // (`mov eax,[child]; push 1; call [eax+4]`); the Voldemort surface at +0x20 has
@@ -124,21 +136,15 @@ CDDrawSurfaceMgr::CDDrawSurfaceMgr() {
 
 // ---------------------------------------------------------------------------
 // CDDrawSurfaceMgr::~CDDrawSurfaceMgr() (0x1558b0, __thiscall, /GX)
-// Stamps the derived vptr, runs the owned-child teardown (Cleanup_155e20), then
-// restamps the base-subobject (CObject) dtor vtable.
-// @early-stop
-// eh-dtor-needs-base-subobject wall (docs/patterns/eh-dtor-needs-base-subobject.md):
-// the body (derived vptr stamp + Cleanup_155e20 call + base vptr restamp) is
-// byte-exact, but the retail /GX frame (push -1 / push handler / mov fs:0 +
-// [esp+0x10] trylevel) comes from the non-trivial CObject base subobject the
-// derived-side polymorphic model already supplies — yet this TU keeps the class
-// non-polymorphic at the vtable level (the 13 virtuals are RVA-keyed, the emitted
-// ??_7 does not byte-match), so MSVC emits the dtor frameless. Defer to the final
-// sweep once the full base hierarchy + vtable are modeled.
+// Real polymorphic with the CObject base subobject now: cl emits the implicit
+// ??_7CDDrawSurfaceMgr own-vptr stamp in the ENTRY state (stamp-first), runs the
+// owned-child teardown (Cleanup_155e20), then the empty ~CDDrawSurfaceMgrBase
+// folds the implicit grand-base re-stamp last. The destructible base subobject
+// supplies the /GX EH frame. (eh-dtor-implicit-vptr-stamp-first.md /
+// eh-dtor-needs-base-subobject.md.)
 RVA(0x001558b0, 0x46)
 CDDrawSurfaceMgr::~CDDrawSurfaceMgr() {
     Cleanup_155e20();
-    *(void**)this = &g_remusBaseDtorVtbl;
 }
 
 // ---------------------------------------------------------------------------

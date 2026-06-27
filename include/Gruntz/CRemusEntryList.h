@@ -43,19 +43,24 @@ struct RemusObArray {
     void SetSize(i32 newSize, i32 growBy);
 };
 
-// The "remus" engine base: holds the vptr @ +0x00. Trivial inline ctor (a derived
-// ctor stamps the vptr), non-trivial dtor restoring the grand-base vtable. Modeling
-// it as a real base subobject gives ~CRemusEntryList its /GX EH frame (the derived
-// dtor folds ~CRemusBase's vptr-restore inline).
+// The "remus" engine base (CObject-like, grand-base vtable @0x5e8cb4): the implicit
+// vptr @+0x00 + the 5-slot CObject-style interface (slot0/dtor/slot2/slot3/slot4 ->
+// the shared sub_1bef01/scalar-dtor/sub_0028ec/sub_00106e/sub_004034). Real
+// polymorphic: the empty inline virtual dtor makes cl emit the implicit
+// ??_7CRemusBase grand-base re-stamp (reloc-masks 0x5e8cb4) folded into the leaf
+// dtor, and the destructible base subobject gives ~CRemusEntryList its /GX frame.
 struct CRemusBase {
-    void* m_vptr; // +0x00
+    virtual void RemusV0(); // slot 0 (sub_1bef01)
+    virtual ~CRemusBase();  // slot 1 (scalar-deleting dtor)
+    virtual void RemusV2(); // slot 2 (sub_0028ec)
+    virtual void RemusV3(); // slot 3 (sub_00106e)
+    virtual void RemusV4(); // slot 4 (sub_004034)
     CRemusBase() {}
-    ~CRemusBase(); // INLINE-defined below (folds into the leaf dtor)
 };
 
 class CRemusEntryList : public CRemusBase {
 public:
-    ~CRemusEntryList();
+    virtual ~CRemusEntryList();
     void DeleteAll(); // 0x165730  delete every owned element, free m_buf, RemoveAll
 
     i32 m_04;             // +0x04
@@ -63,11 +68,8 @@ public:
     void* m_buf;          // +0x1c  heap buffer (RezFree'd on teardown)
 };
 
-// The grand-base (CObject-like) dtor vtable restored at ~CRemusBase exit.
-extern void* g_remusBaseDtorVtbl; // 0x5e8cb4
-
-inline CRemusBase::~CRemusBase() {
-    m_vptr = &g_remusBaseDtorVtbl;
-}
+// Empty body -> cl emits ONLY the implicit grand-base vptr re-stamp (0x5e8cb4),
+// folded into the leaf dtor as the last store.
+inline CRemusBase::~CRemusBase() {}
 
 #endif // GRUNTZ_CREMUSENTRYLIST_H

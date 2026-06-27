@@ -950,7 +950,7 @@ flags = "eh"
 [[unit]]
 unit = "cddrawsurfacemgr"
 source = "src/Gruntz/CDDrawSurfaceMgr.cpp"
-flags = "base"
+flags = "eh"
 
 [[unit]]
 unit = "cddrawsurfacemgrserialize"

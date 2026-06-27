@@ -47,21 +47,21 @@ void CDDrawSurfacePair::BltSelf(CDDrawSurfacePair* src) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x1590f0: the (non-deleting) destructor. Stamps this class's own vtable, runs
-// the teardown (remove the surface from the pool), zeroes the width, then the
-// base subobject dtor folds in (zeroes m_08/m_0c, sets m_04=-1, stamps the
-// grand-base dtor vtable). /GX EH frame from the non-trivial base subobject.
-// @early-stop
-// 91.56% - every instruction byte matches retail; the only residual is the EH
-// scope-table pointer (retail `push 0x8`/Unwind@005e1e40 vs our `push 0x0`/$L800
-// funclet) + reloc-masked vtable symbol names (g_surfacePairVtbl, the grand-base
-// dtor vtbl). Documented EH-table-offset wall; objdiff-reloc-scoring.
+// 0x1590f0: the (non-deleting) destructor. Real polymorphic now: cl emits the
+// implicit ??_7CDDrawSurfacePair own-vptr stamp in the ENTRY state (stamp-first),
+// runs TeardownSurface (remove the surface from the pool), zeroes the width and
+// the moved-down base fields, then the empty ~CSurfacePairBase folds in the
+// implicit grand-base re-stamp last. /GX EH frame from the non-trivial base
+// subobject. (eh-dtor-implicit-vptr-stamp-first.md sub-case 2.)
 RVA(0x001590f0, 0x56)
 CDDrawSurfacePair::~CDDrawSurfacePair() {
-    *(void**)this = &g_surfacePairVtbl;
     TeardownSurface();
     m_10 = 0;
-    // ~CSurfacePairBase() folds here: m_08=0; m_0c=0; m_04=-1; stamp grand-base.
+    // base fields, moved out of ~CSurfacePairBase so they precede the grand-stamp:
+    m_08 = 0;
+    m_0c = 0;
+    m_04 = -1;
+    // empty ~CSurfacePairBase() folds the implicit grand-base re-stamp here, last.
 }
 
 // ---------------------------------------------------------------------------

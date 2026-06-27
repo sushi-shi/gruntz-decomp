@@ -30,26 +30,23 @@
 
 // The two node primary vtables + the shared base dtor vtable (foreign engine
 // data; referenced by address as reloc-masked DATA externs while the classes
-// stay non-polymorphic). Names match NetMgr.h's extern "C" decls so the node
-// factories' (AddPlayerNode/AddSessionNode) vtable stamps share the same symbol.
-DATA(0x001f0760)
-extern "C" void* g_netPlayerNodeVtbl; // 0x5f0760
-DATA(0x001f0778)
-extern "C" void* g_netSessionNodeVtbl; // 0x5f0778
-// 0x5e8cb4 (CObject-like grand-base dtor vptr) - already DATA-pinned in the
-// Remus/Severus TUs as g_remusBaseDtorVtbl; declared extern here so the base
-// stamp reloc-masks.
-extern void* g_remusBaseDtorVtbl;
+// The node factories (AddPlayerNode/AddSessionNode, NetMgr.cpp) still stamp the
+// own vtables via the extern "C" g_net*NodeVtbl symbols; here the dtors are real
+// polymorphic so cl emits the implicit ??_7 stamps (reloc-mask the same targets).
 
-// The collection-node base subobject: its dtor restamps the grand-base vptr
-// (0x5e8cb4). Modeled as a value base so the trailing stamp lands AFTER the
-// derived teardown (eh-dtor-subobject-vptr-restore-member.md).
+// The collection-node base (CObject-like, grand-base vtable @0x5e8cb4): the
+// implicit vptr @+0x00 + the 5-slot CObject-style interface. Real polymorphic: the
+// empty inline virtual dtor makes cl emit the implicit grand-base re-stamp
+// (reloc-masks 0x5e8cb4) folded LAST into each leaf dtor, and the destructible
+// base subobject supplies the leaf dtor's /GX EH frame.
 struct CNetNodeBase {
-    void* m_vptr; // +0x00
-    ~CNetNodeBase() {
-        m_vptr = &g_remusBaseDtorVtbl;
-    }
+    virtual void V0();      // slot 0 (sub_1bef01)
+    virtual ~CNetNodeBase(); // slot 1 (scalar-deleting dtor)
+    virtual void V2();      // slot 2 (sub_0028ec)
+    virtual void V3();      // slot 3 (sub_00106e)
+    virtual void V4();      // slot 4 (sub_004034)
 };
+inline CNetNodeBase::~CNetNodeBase() {}
 
 // The shared CWapNodeB string-cleanup helper (Font.cpp 0x179680): frees the two
 // owned buffers at +0x34/+0x38 and clears +0x04. Declared here only so
@@ -63,7 +60,7 @@ struct CWapNodeB {
 // ---------------------------------------------------------------------------
 class CNetPlayerListNode : public CNetNodeBase {
 public:
-    ~CNetPlayerListNode();
+    virtual ~CNetPlayerListNode();
     i32 Init(void* desc);
 
     char m_pad04[0x54 - 0x04]; // +0x04..+0x53  the 0x50-byte DPSESSIONDESC2 copy
@@ -83,7 +80,7 @@ struct CNetSessionDesc {
 // ---------------------------------------------------------------------------
 class CNetSessionNode : public CNetNodeBase {
 public:
-    ~CNetSessionNode();
+    virtual ~CNetSessionNode();
 
     i32 m_04;     // +0x04  cleared on teardown
     CString m_08; // +0x08  name CString
@@ -101,15 +98,12 @@ public:
 // clear to CWapNodeB::FreeStrings, then the base subobject restamps 0x5e8cb4.
 // /GX frame from the destructible base subobject.
 // ===========================================================================
-// @early-stop
-// EH-state-machine order wall (~93.3%, eh-dtor-vptr-stamp-vs-trylevel-order):
-// every instruction matches except the /GX trylevel write ([esp+0x10]=0) and the
-// own-vptr stamp are emitted in the opposite order from retail (retail stamps the
-// vptr then writes the state; the recompile writes the state first). Not steerable
-// from C. Same plateau class as ~CSeverusEntryList (0x1557a0). Logic complete.
+// Real polymorphic now: cl emits the implicit ??_7CNetPlayerListNode own-vptr
+// stamp in the ENTRY state (stamp-first, == retail), then FreeStrings, then the
+// empty ~CNetNodeBase folds the grand-base re-stamp last. /GX frame from the
+// destructible base subobject. (eh-dtor-implicit-vptr-stamp-first.md.)
 RVA(0x001793b0, 0x46)
 CNetPlayerListNode::~CNetPlayerListNode() {
-    m_vptr = &g_netPlayerNodeVtbl;
     ((CWapNodeB*)this)->FreeStrings();
 }
 
@@ -118,14 +112,17 @@ CNetPlayerListNode::~CNetPlayerListNode() {
 // Stamp the most-derived vtable (0x5f0778), clear m_04/m_20, free the two raw
 // buffers (m_18 then m_14), then the CString members + base subobject fold in.
 // ===========================================================================
+// Real polymorphic now: cl emits the implicit ??_7CNetSessionNode own-vptr stamp
+// in the ENTRY state, clears m_04/m_20, frees the two raw buffers, then the two
+// CString members + the empty ~CNetNodeBase (grand-base re-stamp) fold in last.
+// /GX frame from the destructible CString members + base subobject.
 // @early-stop
-// EH-state-machine order wall (eh-dtor-vptr-stamp-vs-trylevel-order): the
-// teardown logic is byte-faithful but the /GX state-machine writes interleave
-// with the field clears in an order MSVC fixes from the member layout, not
-// steerable from C (same plateau class as ~CSeverusEntryList 0x1557a0).
+// 97.6% (was 90.6%): own-vptr stamp now compiler-emitted stamp-first; residual is
+// the /GX trylevel ordering across the two folded ~CString member teardowns vs the
+// grand-base fold - an EH-state-machine schedule detail, not source-steerable. The
+// teardown logic is byte-faithful. Final-sweep candidate.
 RVA(0x00179420, 0x8a)
 CNetSessionNode::~CNetSessionNode() {
-    m_vptr = &g_netSessionNodeVtbl;
     m_04 = 0;
     m_20 = 0;
     if (m_18) {

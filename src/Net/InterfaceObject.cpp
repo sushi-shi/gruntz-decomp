@@ -19,31 +19,28 @@ public:
     char* m_data; // +0x00
 };
 
-// The two vtables stamped as the node's hierarchy is torn down (transitional
-// manual stamps - the node's virtuals aren't modeled, so cl can't emit a matching
-// vtable; reference the retail tables by address as reloc-masked DATA externs).
-DATA(0x001f0748)
-extern void* g_groupNodeVtbl; // 0x5f0748  final (most-derived) vptr
-// g_remusBaseDtorVtbl (0x5e8cb4) is the CObject base dtor-vptr, already DATA-pinned
-// in the Remus/DDraw TUs; declared extern only here so the base stamp reloc-masks.
-extern void* g_remusBaseDtorVtbl; // 0x5e8cb4
-
-// The CObject base subobject: its dtor restamps the base vptr (0x5e8cb4). Modeled
-// as a value base so the trailing stamp lands AFTER the CString member teardown
-// (eh-dtor-subobject-vptr-restore-member.md).
+// The CObject base subobject (CObject-like, grand-base vtable @0x5e8cb4): the
+// implicit vptr @+0x00 + the 5-slot CObject-style interface. Real polymorphic: the
+// empty inline virtual dtor makes cl emit the implicit grand-base re-stamp
+// (reloc-masks 0x5e8cb4) folded LAST into the leaf dtor, after the CString member
+// teardown. The factory (AddGroupNode, NetMgr.cpp) still stamps the own vtable
+// (0x5f0748) via its own manual stamp; here the dtor's own-vptr stamp is the
+// implicit ??_7InterfaceObject (reloc-masks the same target).
 struct InterfaceObjectBase {
-    void* m_vptr; // +0x00
-    ~InterfaceObjectBase() {
-        m_vptr = &g_remusBaseDtorVtbl;
-    }
+    virtual void V0();      // slot 0 (sub_1bef01)
+    virtual ~InterfaceObjectBase(); // slot 1 (scalar-deleting dtor)
+    virtual void V2();      // slot 2 (sub_0028ec)
+    virtual void V3();      // slot 3 (sub_00106e)
+    virtual void V4();      // slot 4 (sub_004034)
 };
+inline InterfaceObjectBase::~InterfaceObjectBase() {}
 
 class InterfaceObject : public InterfaceObjectBase {
 public:
     i32 m_4;     // +0x04
     CString m_8; // +0x08  name
     i32 m_c;     // +0x0c
-    ~InterfaceObject();
+    virtual ~InterfaceObject();
     CString GetName();
 };
 
@@ -54,21 +51,14 @@ CString InterfaceObject::GetName() {
     return m_8;
 }
 
-// InterfaceObject::~InterfaceObject (0x179340) - stamp the most-derived vptr
-// (0x5f0748), zero m_4/m_c, then (member teardown) destruct the +0x8 CString and
-// (base teardown) restamp the CObject base vptr (0x5e8cb4). The CString member's
+// InterfaceObject::~InterfaceObject (0x179340) - real polymorphic now: cl emits
+// the implicit ??_7InterfaceObject own-vptr stamp in the ENTRY state (stamp-first,
+// == retail), zeroes m_4/m_c, then the +0x8 CString member dtor and the empty
+// ~InterfaceObjectBase (grand-base re-stamp) fold in last. The CString member's
 // non-trivial dtor forces the /GX EH frame.
-// @early-stop
-// 89.4% /GX eh-dtor trylevel-sequencing wall (docs/patterns/
-// eh-dtor-vptr-stamp-vs-trylevel-order.md family): the two vptr stamps, the
-// m_4/m_c zeroing, the inline ~CString member teardown and the base vptr restamp
-// are all byte-faithful, but the compiler-generated [esp+N] trylevel writes are
-// scheduled in a slightly different order relative to the user stamps - the /GX
-// EH-state machine's choice, not source-steerable. Logic 100% correct; deferred
-// to the final sweep.
+// (eh-dtor-implicit-vptr-stamp-first.md.)
 RVA(0x00179340, 0x48)
 InterfaceObject::~InterfaceObject() {
-    *(void**)this = &g_groupNodeVtbl;
     m_4 = 0;
     m_c = 0;
 }
