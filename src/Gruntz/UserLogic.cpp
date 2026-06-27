@@ -104,6 +104,7 @@ class CTileSecretTrigger : public CTileTrigger {
 public:
     CTileSecretTrigger(CGameObject* obj); // 0x10fa60
     virtual ~CTileSecretTrigger() OVERRIDE;
+    static void InitActReg();   // 0x10f160 (construct g_tileSecretTriggerActReg over [2000,2010])
     static void RegisterActs(); // 0x10f340 (binds "A"/"B" handlers)
     i32 Act_10f6a0();           // 0x10f6a0 ("A" handler)
     i32 Act_10f970();           // 0x10f970 ("B" handler)
@@ -1407,6 +1408,15 @@ void CTileTrigger::RegisterActs() {
     }
     ((CTileTriggerActEntry*)g_tileTriggerActReg.ResolveEntry(id))->m_fn =
         &CTileTrigger::AdvanceAnim;
+}
+
+// --- CTileSecretTrigger::InitActReg (0x10f160) ---
+// Construct the class's activation-coordinate registry singleton
+// (g_tileSecretTriggerActReg @0x64e7e8) over the fixed range [2000, 2010] via the
+// shared registry ctor (0x408710). Free init thunk; reloc-masked.
+RVA(0x0010f160, 0x15)
+void CTileSecretTrigger::InitActReg() {
+    g_tileSecretTriggerActReg.Construct(2000, 2010);
 }
 
 // --- CTileSecretTrigger::RegisterActs (0x10f340) ---

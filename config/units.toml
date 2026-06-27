@@ -31,6 +31,7 @@ mfc    = ["/nologo", "/c", "/O1", "/MT", "/GX"]
 # registry/COM helper module (0x1bf*-0x1d5*) with ebp frames retained yet fully
 # register-allocated. docs/patterns/o2-optimizer-bailout-framed.md.
 framed = ["/nologo", "/c", "/O2", "/MT", "/Oy-"]
+o1     = ["/nologo", "/c", "/O1", "/MT"]
 
 [[unit]]
 unit = "adler32"
@@ -1706,3 +1707,18 @@ flags = "base"
 unit = "severusworkerdtor"
 source = "src/Gruntz/SeverusWorkerDtor.cpp"
 flags = "eh"
+
+[[unit]]
+unit = "reconbatch2"
+source = "src/Gruntz/ReconBatch2.cpp"
+flags = "base"
+
+[[unit]]
+unit = "reconbatch2o1"
+source = "src/Gruntz/ReconBatch2O1.cpp"
+flags = "o1"
+
+[[unit]]
+unit = "comehfunclets"
+source = "src/Gruntz/ComEhFunclets.cpp"
+flags = "base"
