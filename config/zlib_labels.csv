@@ -7,6 +7,9 @@ rva,name,unit,size,kind
 0x185be0,_inflate,inflate,,func
 0x186010,_inflateSetDictionary,inflate,,func
 0x1860a0,_inflateSync,inflate,,func
+0x1861b0,_deflateInit2_,deflate,,func
+0x1864d0,_deflateReset,deflate,,func
+0x186620,_deflate,deflate,,func
 0x186af0,_deflate_stored,deflate,,func
 0x186c00,_fill_window,deflate,,func
 0x186d30,_read_buf,deflate,,func

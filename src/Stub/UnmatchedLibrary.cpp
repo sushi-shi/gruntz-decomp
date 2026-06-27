@@ -3,23 +3,19 @@
 // the unmatched set. These are NOT reconstruction targets - do not hand-write them;
 // they are matched by USING the statically-linked library or by FID-tagging. Kept as
 // a delinked unit so their RVAs stay covered, but SPLIT OUT of the matching worklist
-// (Unmatched.cpp) so agents do not waste effort on them. Markers: zlib (zcalloc/
-// _tr_*/"1.0.4"), CRT math funclets (__math_exit/log/acos), iostream (ipfx/opfx),
-// debug-heap (__heapchk), SEH (__getptd/__abnormal_termination), $E atexit static-init
-// thunks, AfxWndProc.
+// (Unmatched.cpp) so agents do not waste effort on them. Markers: CRT math funclets
+// (__math_exit/log/acos), iostream (ipfx/opfx), SEH/EH (__getptd/__pxcptinfoptrs/
+// _DestructExceptionObject), $E atexit static-init thunks, AfxWndProc.
+// NOTE (investigation, see docs/unmatched-library-investigation.md): the zlib deflate
+// entry points (deflateInit2_/deflateReset/deflate) were promoted to config/zlib_labels.csv
+// (delinked against vendor/zlib-1.0.4/deflate.c), and 0x118a30 was reclassified as an
+// engine heap-dump diagnostic (moved to Unmatched.cpp - it is NOT CRT/MFC/zlib).
 #include <rva.h>
-RVA(0x00118a30, 0xda)
-void Unmatched_118a30() {} // Unmatched_118a30
 RVA(0x00124848, 0x4e)
 void Unmatched_124848() {} // Unmatched_124848
 RVA(0x00130570, 0x9)
-void Unmatched_130570() {} // Unmatched_130570
-RVA(0x001861b0, 0x21f)
-void Unmatched_1861b0() {} // Unmatched_1861b0
-RVA(0x001864d0, 0x76)
-void Unmatched_1864d0() {} // Unmatched_1864d0
-RVA(0x00186620, 0x2b6)
-void Unmatched_186620() {} // Unmatched_186620
+void Unmatched_130570() {
+} // Unmatched_130570  __pxcptinfoptrs (FID identifies it; stale tracked library_labels.csv)
 RVA(0x0018bf4d, 0xaf)
 void Unmatched_18bf4d() {} // Unmatched_18bf4d
 RVA(0x0018d4cd, 0xae)

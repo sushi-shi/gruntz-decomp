@@ -173,6 +173,9 @@ RVA(0x00115630, 0xa)
 void Unmatched_115630() {} // Unmatched_115630
 RVA(0x001156b0, 0xa)
 void Unmatched_1156b0() {} // Unmatched_1156b0
+RVA(0x00118a30, 0xda)
+void Unmatched_118a30() {
+} // heap-dump diag (engine, was misfiled as lib): HeapWalk via ApiCallerStubs + __heapchk + OutputDebugString
 RVA(0x001190f0, 0xda)
 void Unmatched_1190f0() {} // Unmatched_1190f0
 RVA(0x00119210, 0x66)

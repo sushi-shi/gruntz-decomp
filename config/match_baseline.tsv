@@ -144,7 +144,7 @@ cwwdobjmgr	1	0
 cwwdobjmgrfactories	4	0
 databuffer	7	5
 ddrawpolyfill	1	0
-deflate	6	6
+deflate	9	9
 demosetup	1	1
 dialogs	35	14
 directinputmgr2	36	32
@@ -154,8 +154,8 @@ engine_attributed	15	0
 engine_boundary	196	0
 engine_discovered	51	0
 engine_label_stubs	437	105
-engine_unmatched	176	0
-engine_unmatched_lib	15	0
+engine_unmatched	177	0
+engine_unmatched_lib	11	0
 engstr	3	1
 eyecandytypetags	4	4
 faderradial	1	0
@@ -1153,6 +1153,9 @@ databuffer	?ReadFrom@CDataBuffer@@QAEHPAVCFile@@H@Z	100.0000	100.0000	1	146cd6d2
 databuffer	?Reset@CDataBuffer@@QAEXXZ	100.0000	100.0000	2	75008ba8c576	0x150190
 databuffer	?Set@CDataBuffer@@QAEHIH@Z	100.0000	100.0000	2	637f711a934b	0x1501a0
 ddrawpolyfill	?FillPolygon@@YAHPAUFillVert@@HPAVCDDSurface@@F@Z	67.4485	67.4485	1	44a8c1f046af	0x146fe0
+deflate	_deflate	100.0000	100.0000	1	cpp:343fdff5d853	0x186620
+deflate	_deflateInit2_	100.0000	100.0000	1	cpp:343fdff5d853	0x1861b0
+deflate	_deflateReset	100.0000	100.0000	1	cpp:343fdff5d853	0x1864d0
 deflate	_deflate_fast	100.0000	100.0000	1	3de2151b888f	0x186db0
 deflate	_deflate_slow	100.0000	100.0000	1	963869a51c2d	0x187170
 deflate	_deflate_stored	100.0000	100.0000	1	f3d8403d157d	0x186af0
@@ -2055,6 +2058,7 @@ engine_unmatched	?Unmatched_115220@@YAXXZ	1.2048	1.2048	1	ad26b5348abc	0x115220
 engine_unmatched	?Unmatched_1155b0@@YAXXZ	20.0000	20.0000	1	a61817cd1a7c	0x1155b0
 engine_unmatched	?Unmatched_115630@@YAXXZ	20.0000	20.0000	1	6d5c43404607	0x115630
 engine_unmatched	?Unmatched_1156b0@@YAXXZ	20.0000	20.0000	1	b8007589abe0	0x1156b0
+engine_unmatched	?Unmatched_118a30@@YAXXZ	1.4085	1.4085	1	5d19500e03c1	0x118a30
 engine_unmatched	?Unmatched_1190f0@@YAXXZ	1.4493	1.4493	1	30b339bd7c22	0x1190f0
 engine_unmatched	?Unmatched_119210@@YAXXZ	2.8571	2.8571	1	bf5910f10148	0x119210
 engine_unmatched	?Unmatched_11d100@@YAXXZ	50.0000	50.0000	1	d5bb3f59fef0	0x11d100
@@ -2147,12 +2151,8 @@ engine_unmatched	?Unmatched_1d4bc1@@YAXXZ	25.0000	25.0000	1	ea7b5c4cedde	0x1d4bc
 engine_unmatched	?Unmatched_1d4be7@@YAXXZ	25.0000	25.0000	1	71668764fe00	0x1d4be7
 engine_unmatched	?Unmatched_1d4c0c@@YAXXZ	20.0000	20.0000	1	6462cb804735	0x1d4c0c
 engine_unmatched	?Unmatched_1d4c16@@YAXXZ	25.0000	25.0000	1	255fe6be9029	0x1d4c16
-engine_unmatched_lib	?Unmatched_118a30@@YAXXZ	1.4085	1.4085	1	6c713ebb4708	0x118a30
 engine_unmatched_lib	?Unmatched_124848@@YAXXZ	4.0000	4.0000	1	81c658f8d097	0x124848
-engine_unmatched_lib	?Unmatched_130570@@YAXXZ	33.3333	33.3333	1	6a85e28d912c	0x130570
-engine_unmatched_lib	?Unmatched_1861b0@@YAXXZ	0.5263	0.5263	1	6b7b3c255e6b	0x1861b0
-engine_unmatched_lib	?Unmatched_1864d0@@YAXXZ	2.3256	2.3256	1	8057d22eb5df	0x1864d0
-engine_unmatched_lib	?Unmatched_186620@@YAXXZ	0.3876	0.3876	1	e5f362fc78ca	0x186620
+engine_unmatched_lib	?Unmatched_130570@@YAXXZ	33.3333	33.3333	2	82aafcb7cba9	0x130570
 engine_unmatched_lib	?Unmatched_18bf4d@@YAXXZ	2.1739	2.1739	1	fba7903ca863	0x18bf4d
 engine_unmatched_lib	?Unmatched_18d4cd@@YAXXZ	1.9608	1.9608	1	f0a10689f58c	0x18d4cd
 engine_unmatched_lib	?Unmatched_193080@@YAXXZ	1.4085	1.4085	1	e74709132c7e	0x193080
