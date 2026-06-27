@@ -151,7 +151,7 @@ static char s_CombatTimeout[] = "CombatTimeout";               // s_CombatTimeou
 static const char s_GRUNTZ_DEATHZ_FREEZE[] = "GRUNTZ_DEATHZ_FREEZE";
 
 // LoadFreezeSpellAssets (@0x69d60) finalize keys + bute lookup tag/key (reloc-masked).
-static const char s_GRUNTZ_DEATHZ_SPARKLE[] = "GRUNTZ_DEATHZ_SPARKLE";  // 0x60ee48
+static const char s_GRUNTZ_DEATHZ_SPARKLE[] = "GRUNTZ_DEATHZ_SPARKLE";   // 0x60ee48
 static const char s_GRUNTZ_DEATHZ_UNFREEZE[] = "GRUNTZ_DEATHZ_UNFREEZE"; // 0x60ee1c
 static char s_Spellz[] = "Spellz";                                       // 0x60cca8
 static char s_FreezeDelay[] = "FreezeDelay";                             // 0x60ee38
@@ -1897,8 +1897,9 @@ i32 CGrunt::BuildGruntLoseItemAnimation() {
         return 0;
     }
 
-    CHudSprite* spr = g_pGameRegistry->m_30->m_8
-                          ->CreateSprite(0, m_10->m_5c, m_10->m_60, 0xcf850, s_SingleAnimation, 0x40003);
+    CHudSprite* spr =
+        g_pGameRegistry->m_30->m_8
+            ->CreateSprite(0, m_10->m_5c, m_10->m_60, 0xcf850, s_SingleAnimation, 0x40003);
     spr->ApplyName(s_GRUNTZ_ + m_animSetName + s__LOSEITEM);
     spr->ApplyLookupGeometry(s_GRUNTZ_ + m_animSetName + s__LOSEITEM, 0);
 
@@ -2120,23 +2121,27 @@ static __inline i32 s_CanCommitMove(CGrunt* g, i32 moveX, i32 moveY) {
     i32 stride = board->m_c * 7 * 4; // bytes per board row
     if (dx > 0) {
         if (dy > 0) {
-            if ((cur[0x1d] & 0x20) || (cur[stride + 1] & 0x20) || (*(i32*)(tg - 0x1c) & 0x2000) ||
-                (*(i32*)(tg - stride) & 0x2000))
+            if ((cur[0x1d] & 0x20) || (cur[stride + 1] & 0x20) || (*(i32*)(tg - 0x1c) & 0x2000)
+                || (*(i32*)(tg - stride) & 0x2000)) {
                 return 0;
+            }
         } else {
-            if ((cur[0x1d] & 0x20) || (*(i32*)(cur - stride) & 0x2000) || (*(i32*)(tg - 0x1c) & 0x2000) ||
-                (*(i32*)(tg + stride) & 0x2000))
+            if ((cur[0x1d] & 0x20) || (*(i32*)(cur - stride) & 0x2000)
+                || (*(i32*)(tg - 0x1c) & 0x2000) || (*(i32*)(tg + stride) & 0x2000)) {
                 return 0;
+            }
         }
     } else {
         if (dy > 0) {
-            if ((cur[-0x1b] & 0x20) || (cur[stride + 1] & 0x20) || (*(i32*)(tg + 0x1c) & 0x2000) ||
-                (*(i32*)(tg - stride) & 0x2000))
+            if ((cur[-0x1b] & 0x20) || (cur[stride + 1] & 0x20) || (*(i32*)(tg + 0x1c) & 0x2000)
+                || (*(i32*)(tg - stride) & 0x2000)) {
                 return 0;
+            }
         } else {
-            if ((cur[-0x1b] & 0x20) || (*(i32*)(cur - stride) & 0x2000) || (*(i32*)(tg + 0x1c) & 0x2000) ||
-                (*(i32*)(tg + stride) & 0x2000))
+            if ((cur[-0x1b] & 0x20) || (*(i32*)(cur - stride) & 0x2000)
+                || (*(i32*)(tg + 0x1c) & 0x2000) || (*(i32*)(tg + stride) & 0x2000)) {
                 return 0;
+            }
         }
     }
     return 1;
@@ -3503,7 +3508,7 @@ void CGrunt::RearmEntranceDrop() {
     }
 }
 
-void CGrunt::ApplyMoveKind(i32 v) {} // thunk_0x3c29 (0x57100); external/reloc-masked
+void CGrunt::ApplyMoveKind(i32 v) {}        // thunk_0x3c29 (0x57100); external/reloc-masked
 void CGrunt::RunMoveConfig(i32 a, i32 b) {} // thunk_0x2a40 (0x65630); external/reloc-masked
 
 // ---------------------------------------------------------------------------
@@ -4426,33 +4431,33 @@ RVA(0x00059230, 0x40d)
 i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
     if (mode == 0) {
         switch (m_arrivalState) {
-        case 2:
-            m_2f0 = d;
-            m_2f4 = e;
-            break;
-        case 1:
-        case 4:
-            m_2f0 = d;
-            m_2f4 = e;
-            m_2d4 = 2;
-            break;
-        case 5:
-            m_2f0 = d;
-            m_2f4 = e;
-            m_2d4 = 2;
-            break;
-        case 3:
-        case 6:
-            m_2f0 = d;
-            m_2f4 = e;
-            m_2d4 = 2;
-            break;
-        case 0x11:
-            m_2f0 = d;
-            m_2f4 = e;
-            break;
-        default:
-            break;
+            case 2:
+                m_2f0 = d;
+                m_2f4 = e;
+                break;
+            case 1:
+            case 4:
+                m_2f0 = d;
+                m_2f4 = e;
+                m_2d4 = 2;
+                break;
+            case 5:
+                m_2f0 = d;
+                m_2f4 = e;
+                m_2d4 = 2;
+                break;
+            case 3:
+            case 6:
+                m_2f0 = d;
+                m_2f4 = e;
+                m_2d4 = 2;
+                break;
+            case 0x11:
+                m_2f0 = d;
+                m_2f4 = e;
+                break;
+            default:
+                break;
         }
 
         i32 phase = m_arrivalPhase;
@@ -4473,9 +4478,11 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
                     OnReanchor(0);
                 }
                 if (phase == 3) {
-                    m_tileMgr->CommitTileSlot(m_tileOwnerHi, m_tileOwnerLo, inner->m_5c, inner->m_60);
+                    m_tileMgr
+                        ->CommitTileSlot(m_tileOwnerHi, m_tileOwnerLo, inner->m_5c, inner->m_60);
                 } else {
-                    m_tileMgr->CommitTileSlot2(m_tileOwnerHi, m_tileOwnerLo, inner->m_5c, inner->m_60);
+                    m_tileMgr
+                        ->CommitTileSlot2(m_tileOwnerHi, m_tileOwnerLo, inner->m_5c, inner->m_60);
                 }
             }
         }
@@ -4559,8 +4566,8 @@ void CGrunt::InitDirVectors() {
     double* tbl = (double*)((char*)this + 0x4b0); // 0x78-stride records (15 doubles each)
     const i32 W = 0x78 / 8;                       // 15 doubles per record
 
-    double s = g_dirConst1 / diag;  // 1 / sqrt2
-    double n = g_dirConstN1 / s;    // -1 / (1/sqrt2)
+    double s = g_dirConst1 / diag; // 1 / sqrt2
+    double n = g_dirConstN1 / s;   // -1 / (1/sqrt2)
 
     // Each record: 4 doubles at the cell's +0/8/0x10/0x18. The 9 globals are processed
     // in this fixed order (ab0,ae0,aa0,b28,ac0,b48,ad0,b18,b38).
@@ -4685,7 +4692,8 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
                 i32 yMasked = (inner->m_60 & ~0x1f) + 0x10;
                 i32 xMasked = (inner->m_5c & ~0x1f) + 0x10;
                 if (RectContainsGated(xMasked, yMasked) != 0) {
-                    m_tileMgr->CommitTileSlot(m_tileOwnerHi, m_tileOwnerLo, inner->m_5c, inner->m_60);
+                    m_tileMgr
+                        ->CommitTileSlot(m_tileOwnerHi, m_tileOwnerLo, inner->m_5c, inner->m_60);
                 }
             }
         }
@@ -5134,8 +5142,7 @@ i32 __stdcall CGrunt_SegBoxOverlap(GruntBox* p, GruntSegEnd* e1, GruntSegEnd* e2
 // operand. Source-invariant (reorder / typed-grid / inline all keep edx). Deferred.
 RVA(0x00067b00, 0x92)
 i32 CGrunt::GruntInRadius(i32 col, i32 row) {
-    CGrunt* other =
-        *(CGrunt**)(*(char**)((char*)this + 0x260) + (15 * col + row) * 4 + 0x1c);
+    CGrunt* other = *(CGrunt**)(*(char**)((char*)this + 0x260) + (15 * col + row) * 4 + 0x1c);
     if (other == 0) {
         return 0;
     }
@@ -5426,9 +5433,10 @@ tail:
                 CGruntHud* oh = ((CGrunt*)cellObj)->m_10;
                 i32 cx = oh->m_5c;
                 i32 cy = oh->m_60;
-                if (*(i32*)((char*)this + 0x358) != 0 && m_entranceCommitted != 0 &&
-                    IsInCombatRange(cx, cy)) {
-                    if (!(s_TileFlags(g_gameReg->m_70, m_lastTilePxX >> 5, m_lastTilePxY >> 5) & 0x80)) {
+                if (*(i32*)((char*)this + 0x358) != 0 && m_entranceCommitted != 0
+                    && IsInCombatRange(cx, cy)) {
+                    if (!(s_TileFlags(g_gameReg->m_70, m_lastTilePxX >> 5, m_lastTilePxY >> 5)
+                          & 0x80)) {
                         CommitCombatMove(a2, a3, cx, cy);
                     }
                 }
@@ -5499,8 +5507,8 @@ i32 CGrunt::ResolveArrivalReposition() {
             CGruntHud* oh = occ->m_10;
             if (TileSwitch6(oh->m_5c >> 5, oh->m_60 >> 5, 0, m_arrivalFlags, 1, 0) != 0) {
                 CGruntHud* oh2 = occ->m_10;
-                if (m_tileMgr->CommitTileSlot2(m_tileOwnerHi, m_tileOwnerLo, oh2->m_5c, oh2->m_60) ==
-                    -1) {
+                if (m_tileMgr->CommitTileSlot2(m_tileOwnerHi, m_tileOwnerLo, oh2->m_5c, oh2->m_60)
+                    == -1) {
                     *(i32*)((char*)this + 0x2ec) = 0;
                     if (*(i32*)((char*)this + 0x390) != 0) {
                         CGruntHud* h = m_10;
@@ -5524,10 +5532,9 @@ i32 CGrunt::ResolveArrivalReposition() {
 
     {
         u32 dwell = *(u32*)((char*)this + 0x2ec);
-        if (dwell > 0x3e8 && m_resetApplied == 0 && *(i32*)((char*)this + 0x318) != 0 &&
-            dwell > 0xbb8) {
-            if ((i64)(u32)g_645588 - *(i64*)((char*)this + 0x308) >=
-                *(i64*)((char*)this + 0x310)) {
+        if (dwell > 0x3e8 && m_resetApplied == 0 && *(i32*)((char*)this + 0x318) != 0
+            && dwell > 0xbb8) {
+            if ((i64)(u32)g_645588 - *(i64*)((char*)this + 0x308) >= *(i64*)((char*)this + 0x310)) {
                 goto L8b5;
             }
             CGruntHud* h = m_10;
@@ -5637,11 +5644,20 @@ i32 CGrunt::StepArrivalDefense() {
             }
             if (*(i32*)((char*)this + 0x198) == 0x1e) {
                 ((CGruntTileMgr*)g_gameReg->m_68)
-                    ->CommitTileSlot(m_tileOwnerHi, m_tileOwnerLo, occ->m_10->m_5c, occ->m_10->m_60);
+                    ->CommitTileSlot(
+                        m_tileOwnerHi,
+                        m_tileOwnerLo,
+                        occ->m_10->m_5c,
+                        occ->m_10->m_60
+                    );
                 return 1;
             }
-            CommitNeighbor(occ->m_tileOwnerHi, occ->m_tileOwnerLo, occ->m_lastTilePxX,
-                           occ->m_lastTilePxY);
+            CommitNeighbor(
+                occ->m_tileOwnerHi,
+                occ->m_tileOwnerLo,
+                occ->m_lastTilePxX,
+                occ->m_lastTilePxY
+            );
             return 1;
         c2_occcheck:
             if (occ == 0) {
@@ -5698,13 +5714,22 @@ i32 CGrunt::StepArrivalDefense() {
             }
             if (*(i32*)((char*)this + 0x198) == 0x1e) {
                 ((CGruntTileMgr*)g_gameReg->m_68)
-                    ->CommitTileSlot(m_tileOwnerHi, m_tileOwnerLo, occ->m_10->m_5c, occ->m_10->m_60);
+                    ->CommitTileSlot(
+                        m_tileOwnerHi,
+                        m_tileOwnerLo,
+                        occ->m_10->m_5c,
+                        occ->m_10->m_60
+                    );
                 m_2d4 = 2;
                 return 1;
             }
             if (occ->m_10->m_5c == occ->m_lastTilePxX && occ->m_10->m_60 == occ->m_lastTilePxY) {
-                CommitNeighbor(occ->m_tileOwnerHi, occ->m_tileOwnerLo, occ->m_lastTilePxX,
-                               occ->m_lastTilePxY);
+                CommitNeighbor(
+                    occ->m_tileOwnerHi,
+                    occ->m_tileOwnerLo,
+                    occ->m_lastTilePxX,
+                    occ->m_lastTilePxY
+                );
             }
             m_2d4 = 2;
             return 1;
@@ -5715,13 +5740,17 @@ i32 CGrunt::StepArrivalDefense() {
             if (occ == 0) {
                 goto L_f308a;
             }
-            if (m_poweredUp == 0 && m_stamina >= 0x64 && occ->m_10->m_5c == occ->m_lastTilePxX &&
-                occ->m_10->m_60 == occ->m_lastTilePxY &&
-                RectContains(occ->m_10->m_5c, occ->m_10->m_60) != 0) {
+            if (m_poweredUp == 0 && m_stamina >= 0x64 && occ->m_10->m_5c == occ->m_lastTilePxX
+                && occ->m_10->m_60 == occ->m_lastTilePxY
+                && RectContains(occ->m_10->m_5c, occ->m_10->m_60) != 0) {
                 if (*(i32*)((char*)this + 0x198) == 0x1e) {
                     ((CGruntTileMgr*)g_gameReg->m_68)
-                        ->CommitTileSlot(m_tileOwnerHi, m_tileOwnerLo, occ->m_10->m_5c,
-                                         occ->m_10->m_60);
+                        ->CommitTileSlot(
+                            m_tileOwnerHi,
+                            m_tileOwnerLo,
+                            occ->m_10->m_5c,
+                            occ->m_10->m_60
+                        );
                     return 1;
                 }
                 if (occ->m_10->m_5c != occ->m_lastTilePxX) {
@@ -5730,8 +5759,12 @@ i32 CGrunt::StepArrivalDefense() {
                 if (occ->m_10->m_60 != occ->m_lastTilePxY) {
                     return 1;
                 }
-                CommitNeighbor(occ->m_tileOwnerHi, occ->m_tileOwnerLo, occ->m_lastTilePxX,
-                               occ->m_lastTilePxY);
+                CommitNeighbor(
+                    occ->m_tileOwnerHi,
+                    occ->m_tileOwnerLo,
+                    occ->m_lastTilePxX,
+                    occ->m_lastTilePxY
+                );
                 return 1;
             }
             if (occ == 0) {
@@ -5774,8 +5807,7 @@ i32 CGrunt::StepArrivalDefense() {
             if ((u32) * (u32*)((char*)this + 0x2ec) <= 0xbb8) {
                 return 1;
             }
-            if ((i64)(u32)g_645588 - *(i64*)((char*)this + 0x308) >=
-                *(i64*)((char*)this + 0x310)) {
+            if ((i64)(u32)g_645588 - *(i64*)((char*)this + 0x308) >= *(i64*)((char*)this + 0x310)) {
                 Stub_062e10(1, 1, 0);
                 *(i32*)((char*)this + 0x308) = 0;
                 *(i32*)((char*)this + 0x310) = 0;

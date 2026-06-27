@@ -10,10 +10,10 @@
 
 // The engine binary file reader (destructible stack local -> the /GX frame).
 struct PalFile {
-    PalFile();                                  // 0x1befd7
-    ~PalFile();                                 // 0x1bf121
+    PalFile();                                     // 0x1befd7
+    ~PalFile();                                    // 0x1bf121
     i32 Open(const char* name, i32 mode, i32 err); // 0x1bf200
-    i32 Read(void* buf, i32 len);               // 0x1bf328
+    i32 Read(void* buf, i32 len);                  // 0x1bf328
 };
 
 struct CPalLoader {
@@ -28,18 +28,22 @@ struct CPalLoader {
 RVA(0x00177480, 0x169)
 i32 CPalLoader::LoadBmpPalette(const char* name, i32 unused) {
     PalFile f;
-    if (f.Open(name, 0, 0) == 0)
+    if (f.Open(name, 0, 0) == 0) {
         return 0;
+    }
 
     char fileHdr[14];
-    if (f.Read(fileHdr, 0xe) == 0)
+    if (f.Read(fileHdr, 0xe) == 0) {
         return 0;
+    }
     char infoHdr[40];
-    if (f.Read(infoHdr, 0x28) == 0)
+    if (f.Read(infoHdr, 0x28) == 0) {
         return 0;
+    }
     u8 raw[0x400];
-    if (f.Read(raw, 0x400) == 0)
+    if (f.Read(raw, 0x400) == 0) {
         return 0;
+    }
 
     u8 out[0x400];
     for (i32 i = 0; i < 0x400; i += 4) {

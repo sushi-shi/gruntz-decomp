@@ -279,18 +279,18 @@ public:
 class CDDPalette {
 public:
     i32 LoadFromFile(IDirectDraw2Z* dd, char* filename, u32 flags); // 0x147410
-    i32 Create(IDirectDraw2Z* dd, void* entries, u32 flags);  // 0x147390
-    i32 LoadBmp(IDirectDraw2Z* dd, char* filename, u32 flags); // 0x147590
-    i32 LoadPcx(IDirectDraw2Z* dd, char* filename, u32 flags); // 0x147710
-    i32 CreateRGB(IDirectDraw2Z* dd, void* rgb, u32 flags);   // 0x1474d0
+    i32 Create(IDirectDraw2Z* dd, void* entries, u32 flags);        // 0x147390
+    i32 LoadBmp(IDirectDraw2Z* dd, char* filename, u32 flags);      // 0x147590
+    i32 LoadPcx(IDirectDraw2Z* dd, char* filename, u32 flags);      // 0x147710
+    i32 CreateRGB(IDirectDraw2Z* dd, void* rgb, u32 flags);         // 0x1474d0
     i32 CreateFromTrailing(IDirectDraw2Z* dd, void* data, u32 size,
-                           u32 flags); // 0x147840
-    i32 LoadPal(IDirectDraw2Z* dd, char* filename, u32 flags); // 0x1478c0
+                           u32 flags);                             // 0x147840
+    i32 LoadPal(IDirectDraw2Z* dd, char* filename, u32 flags);     // 0x1478c0
     i32 LoadDefault(IDirectDraw2Z* dd, char* filename, u32 flags); // 0x1479e0
-    void Destroy();                                           // 0x147530
-    i32 GetEntries();                                         // 0x147c30
-    void SetAndNotify(i32 start, i32 count, i32* data, i32 a4); // 0x147aa0
-    void Apply(i32 a1);                                         // 0x147c80 (a1 unused)
+    void Destroy();                                                // 0x147530
+    i32 GetEntries();                                              // 0x147c30
+    void SetAndNotify(i32 start, i32 count, i32* data, i32 a4);    // 0x147aa0
+    void Apply(i32 a1);                                            // 0x147c80 (a1 unused)
     i32 SetRange(i32 start, i32 count, u8 r, u8 g, u8 b,
                  u32 flags); // 0x147cd0
 

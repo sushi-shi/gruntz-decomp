@@ -60,9 +60,19 @@ extern "C" {
     DATA(0x002c4650)
     extern u32(__stdcall* g_pTimeGetTime)(); // PTR_timeGetTime_006c4650
     DATA(0x002c44a4)
-    extern i32(__stdcall* g_pSendMessageA)(i32 hwnd, u32 msg, i32 wp, i32 lp); // PTR_SendMessageA_006c44a4
+    extern i32(__stdcall* g_pSendMessageA)(
+        i32 hwnd,
+        u32 msg,
+        i32 wp,
+        i32 lp
+    ); // PTR_SendMessageA_006c44a4
     DATA(0x002c44c8)
-    extern i32(__stdcall* g_pPostMessageA)(i32 hwnd, u32 msg, i32 wp, i32 lp); // PTR_PostMessageA_006c44c8
+    extern i32(__stdcall* g_pPostMessageA)(
+        i32 hwnd,
+        u32 msg,
+        i32 wp,
+        i32 lp
+    ); // PTR_PostMessageA_006c44c8
     DATA(0x002c4550)
     extern i32(__stdcall* g_pDialogBoxParamA)(
         i32 hInst,
@@ -139,7 +149,7 @@ struct EngObj {
 };
 class CWorldDelete {
 public:
-    virtual void s0();           // slot 0 (+0x00)
+    virtual void s0();            // slot 0 (+0x00)
     virtual void Slot1(i32 flag); // slot 1 (+0x04) flagged scalar-delete
 };
 struct CSettingsWriter {
@@ -425,15 +435,23 @@ extern "C" {
 // C globals pinned by their DATA() RVA so the DIR32 reloc pairs.
 extern i32 g_severusCounterB; // ?g_severusCounterB@@3HA  (0x6bf380)
 extern "C" {
-    DATA(0x00283ea0) extern i32 g_683ea0; // DAT_00683ea0  (red shift-up)
-    DATA(0x00283ea4) extern i32 g_683ea4; // DAT_00683ea4  (green shift-up)
-    DATA(0x00283eac) extern i32 g_683eac; // DAT_00683eac  (red shift-down)
-    DATA(0x00283eb0) extern i32 g_683eb0; // DAT_00683eb0  (green shift-down)
-    DATA(0x00283eb4) extern i32 g_683eb4; // DAT_00683eb4  (blue shift-down)
+    DATA(0x00283ea0)
+    extern i32 g_683ea0; // DAT_00683ea0  (red shift-up)
+    DATA(0x00283ea4)
+    extern i32 g_683ea4; // DAT_00683ea4  (green shift-up)
+    DATA(0x00283eac)
+    extern i32 g_683eac; // DAT_00683eac  (red shift-down)
+    DATA(0x00283eb0)
+    extern i32 g_683eb0; // DAT_00683eb0  (green shift-down)
+    DATA(0x00283eb4)
+    extern i32 g_683eb4; // DAT_00683eb4  (blue shift-down)
     // The world-mode reload globals LoadWorldMode resets (reloc-masked).
-    DATA(0x002455dc) extern i32 g_6455dc; // DAT_006455dc
-    DATA(0x002455e0) extern i32 g_6455e0; // DAT_006455e0
-    DATA(0x002455b4) extern i32 g_6455b4; // DAT_006455b4  (alt-flag, reload kind 1/5)
+    DATA(0x002455dc)
+    extern i32 g_6455dc; // DAT_006455dc
+    DATA(0x002455e0)
+    extern i32 g_6455e0; // DAT_006455e0
+    DATA(0x002455b4)
+    extern i32 g_6455b4; // DAT_006455b4  (alt-flag, reload kind 1/5)
 }
 
 // SetGruntColor reaches a keyed lookup table embedded at +0x10 within the object
@@ -484,8 +502,8 @@ struct CWorldStatusView {
 extern "C" void* RezAlloc(u32 n); // operator new (reloc-masked, __cdecl)
 extern "C" void RezFree(void* p); // _RezFree (operator delete wrapper, __cdecl)
 struct CRezSurface94 {
-    void Teardown();          // FUN_0053abc0 (this) reloc-masked
-    void Build();             // FUN_0053aa10 (this) reloc-masked
+    void Teardown();                // FUN_0053abc0 (this) reloc-masked
+    void Build();                   // FUN_0053aa10 (this) reloc-masked
     i32 Apply(i32 a, i32 b, i32 c); // FUN_0053ad00 (this, *p, 1, 0) reloc-masked
 };
 struct CObListSub {
@@ -497,10 +515,10 @@ struct CObListSub {
 // method; InitInput wires it to the world's +0x28 sub-controller. All reloc-masked.
 struct CInput54 {
     char m_pad0[0x24];
-    i32 m_24;        // +0x24  armed flag
-    void Flush();    // 0x1082-thunk (this) reloc-masked
-    void Arm();      // FUN_0040bcf0 (this) reloc-masked
-    void Disarm();   // FUN_0040bc80 (this) reloc-masked
+    i32 m_24;                                       // +0x24  armed flag
+    void Flush();                                   // 0x1082-thunk (this) reloc-masked
+    void Arm();                                     // FUN_0040bcf0 (this) reloc-masked
+    void Disarm();                                  // FUN_0040bc80 (this) reloc-masked
     i32 InitInput(void* worldSub28, i32 inputFlag); // FUN_0040b5e0 (this, sub28, flag)
 };
 
@@ -1571,8 +1589,9 @@ i32 CGruntzMgr::LoadMonologoSprite() {
     i32 geoB = e->m_14;
     CMonoSprite* found = ((CMonoWorld*)m_world)->m_24->FindSprite("MONOLITH");
     if (found == 0) {
-        CMonoSprite* spr = ((CMonoWorld*)m_world)
-                               ->m_24->CreateSprite(0x20, 0x20, geoA, geoB, -0x19, -0x19, "MONOLITH");
+        CMonoSprite* spr =
+            ((CMonoWorld*)m_world)
+                ->m_24->CreateSprite(0x20, 0x20, geoA, geoB, -0x19, -0x19, "MONOLITH");
         if (spr == 0) {
             return 0;
         }
@@ -2145,7 +2164,7 @@ i32 CGruntzMgr::LoadOptionsSlotName(
 ) {
     if (CheckPlayState()) {
         OptionsSlot* s = (OptionsSlot*)((char*)this + slot * 0x238);
-        if (*(i32*)((char*)s + 0x170) == 0) { // s->m_20 (options base +0x150 +0x20)
+        if (*(i32*)((char*)s + 0x170) == 0) {    // s->m_20 (options base +0x150 +0x20)
             *(CString*)((char*)s + 0x154) = val; // s->m_name (options base +0x150 +0x04)
         }
     }
@@ -3240,7 +3259,11 @@ i32 CGruntzMgr::RunModalDialog(const char* tmpl, void* dlgProc, i32 flag) {
 
     m_modalBusy = 1;
     i32 result = g_pDialogBoxParamA(
-        (i32)((CGameApp*)m_8)->m_c, tmpl, (i32)((CGameWnd*)m_4)->m_4, dlgProc, 0
+        (i32)((CGameApp*)m_8)->m_c,
+        tmpl,
+        (i32)((CGameWnd*)m_4)->m_4,
+        dlgProc,
+        0
     );
     g_64557c = 0;
     m_modalBusy = 0;
@@ -3390,8 +3413,7 @@ i32 CGruntzMgr::CheckDisplayBoundsA() {
         return 1;
     }
     CPointXY pt;
-    CPointXY* p = ((CWorldCoordResolver*)m_world->m_1c)
-                      ->ResolveHi(&pt, m_modeW, m_modeH, m_88);
+    CPointXY* p = ((CWorldCoordResolver*)m_world->m_1c)->ResolveHi(&pt, m_modeW, m_modeH, m_88);
     i32 x = p->x;
     i32 y = p->y;
     if (x > 0x514 || x == -1 || y == -1) {
@@ -3417,8 +3439,7 @@ i32 CGruntzMgr::CheckDisplayBoundsB() {
         return 1;
     }
     CPointXY pt;
-    CPointXY* p = ((CWorldCoordResolver*)m_world->m_1c)
-                      ->ResolveLo(&pt, m_modeW, m_modeH, m_88);
+    CPointXY* p = ((CWorldCoordResolver*)m_world->m_1c)->ResolveLo(&pt, m_modeW, m_modeH, m_88);
     i32 x = p->x;
     i32 y = p->y;
     if (x == -1 || y == -1 || x < 0x140 || y < 0xc8) {
@@ -3446,7 +3467,7 @@ i32 CGruntzMgr::CheckDisplayBoundsB() {
 //
 // The SetVideoMode symbol pairs the @early-stop CheckDisplayBoundsA/B and the
 // RestoreVideoMode/CheckSavedMode call sites (previously the Boundary_08df00 stub).
-struct SvmField {   // m_world->m_24->m_5c: the loaded map's playable extent
+struct SvmField { // m_world->m_24->m_5c: the loaded map's playable extent
     char p0[0x30];
     i32 m_30, m_34; // +0x30/+0x34  field width/height limits
 };
@@ -3454,17 +3475,17 @@ struct SvmWorldView { // m_world->m_24
     char p0[0x5c];
     SvmField* m_5c; // +0x5c
 };
-struct SvmGuts {    // m_curState->m_2dc: the HUD/guts subsystem
-    i32 m_0;        // +0x00  state (0/1 -> which poke order)
+struct SvmGuts { // m_curState->m_2dc: the HUD/guts subsystem
+    i32 m_0;     // +0x00  state (0/1 -> which poke order)
     char p4[0x614 - 4];
-    i32 m_614;      // +0x614  receives the mode height
-    void CallA();   // 0x2b8a (thiscall) reloc-masked
-    void CallB();   // 0x2d5b (thiscall) reloc-masked
+    i32 m_614;    // +0x614  receives the mode height
+    void CallA(); // 0x2b8a (thiscall) reloc-masked
+    void CallB(); // 0x2d5b (thiscall) reloc-masked
 };
 struct SvmStateView { // a view of m_curState (the live play state)
     char p0[0x2dc];
-    SvmGuts* m_2dc;   // +0x2dc
-    void Prep();      // 0x3d55 (thiscall) reloc-masked
+    SvmGuts* m_2dc; // +0x2dc
+    void Prep();    // 0x3d55 (thiscall) reloc-masked
 };
 // The engine display-mode apply (0x155f60, __stdcall(w,h,depth) -> nonzero ok).
 extern "C" i32 __stdcall SvmApply(i32 w, i32 h, i32 depth);
@@ -3569,12 +3590,12 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
 // reloc-masked; signatures pinned to the retail mangled names.
 class CFileIO {
 public:
-    CFileIO();                                    // ??0CFileIO@@QAE@XZ   (0x1befd7)
-    virtual ~CFileIO();                           // ??1CFileIO@@UAE@XZ   (0x1bf121)
+    CFileIO();                                        // ??0CFileIO@@QAE@XZ   (0x1befd7)
+    virtual ~CFileIO();                               // ??1CFileIO@@UAE@XZ   (0x1bf121)
     i32 Open(const char* name, u32 flags, void* err); // ?Open@CFileIO@@QAEHPBDIPAX@Z (0x1bf200)
-    u32 GetLength();                              // ?GetLength@CFileIO@@QAEIXZ (0x1bf505)
-    void Close();                                 // ?Close@CFileIO@@QAEXXZ (0x1bf426)
-    u32 Read(void* buf, u32 len);                // ?Read@CFileIO@@QAEIPAXI@Z (0x1bf328)
+    u32 GetLength();                                  // ?GetLength@CFileIO@@QAEIXZ (0x1bf505)
+    void Close();                                     // ?Close@CFileIO@@QAEXXZ (0x1bf426)
+    u32 Read(void* buf, u32 len);                     // ?Read@CFileIO@@QAEIPAXI@Z (0x1bf328)
     char m_pad[0xc]; // pad to the real CFileIO size (0x10) so the stack layout matches
 };
 

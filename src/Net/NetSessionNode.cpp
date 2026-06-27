@@ -26,7 +26,7 @@
 #include <Mfc.h> // /GX EH-frame helpers
 #include <rva.h>
 #include <Rez/RezMgr.h> // RezAlloc/RezFree (_RezAlloc 0x1b9b46 / _RezFree 0x1b9b82)
-#include <string.h>      // strlen/memcpy (inlined repne scas / rep movs)
+#include <string.h>     // strlen/memcpy (inlined repne scas / rep movs)
 
 // The two node primary vtables + the shared base dtor vtable (foreign engine
 // data; referenced by address as reloc-masked DATA externs while the classes

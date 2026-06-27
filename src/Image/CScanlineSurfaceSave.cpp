@@ -60,13 +60,13 @@ i32 CScanlineSurface::SaveBmp(const char* filename, void* paletteObj) {
     for (i32 z = 0; z < 0x428 / 4; z++) {
         *(i32*)(info + z * 4) = 0;
     }
-    *(i32*)(info + 0x00) = 0x28; // biSize
+    *(i32*)(info + 0x00) = 0x28;  // biSize
     *(i32*)(info + 0x04) = m_438; // biWidth
     *(i32*)(info + 0x08) = m_43c; // biHeight
-    *(i16*)(info + 0x0c) = 1; // biPlanes
-    *(i16*)(info + 0x0e) = 8; // biBitCount
-    *(i32*)(info + 0x10) = 0; // biCompression
-    *(i32*)(info + 0x14) = 0; // biSizeImage
+    *(i16*)(info + 0x0c) = 1;     // biPlanes
+    *(i16*)(info + 0x0e) = 8;     // biBitCount
+    *(i32*)(info + 0x10) = 0;     // biCompression
+    *(i32*)(info + 0x14) = 0;     // biSizeImage
 
     u8* pal = (u8*)obj + 8;
     if (pal == 0) {

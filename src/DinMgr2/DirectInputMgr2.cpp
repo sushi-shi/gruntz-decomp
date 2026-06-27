@@ -156,8 +156,8 @@ struct CDeviceConfigB {
     // wrapper prefix, so these call the shared wrappers (CreateDeviceWrap/SetDataFormat/
     // SetCooperativeLevel/SetProperty) by reinterpreting `this` as CInputDevice*.
     i32 CreateDevJoystick(IDirectInputZ* di, const void* cfg, void* owner, u32 flags); // 0x134630
-    i32 SetupAxes(); // 0x134710
-    i32 IsReady();   // 0x1343a0
+    i32 SetupAxes();                                                                   // 0x134710
+    i32 IsReady();                                                                     // 0x1343a0
 
     void* m_vptr;                   // +0x000  stamped to g_deviceConfigVtblB2 (@0x5ef640)
     IDirectInputDeviceZ* m_device;  // +0x004
@@ -1036,7 +1036,7 @@ struct DIMouseStateZ {
 // this frame that was already latched is cleared from m_currentKeys (so it only
 // reports the press EDGE); a fresh set is latched; a clear unlatches. Inlined per
 // bit (the binary unrolls all eight - same idiom as the keyboard Poll @0x133d00).
-#define MOUSE_EDGE(bit)                                                                             \
+#define MOUSE_EDGE(bit)                                                                            \
     do {                                                                                           \
         if (m_edgeKeys & (bit)) {                                                                  \
             if (m_latchedKeys & (bit)) {                                                           \

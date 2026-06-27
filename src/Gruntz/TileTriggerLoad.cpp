@@ -39,18 +39,18 @@ class CTileTriggerData {
 public:
     i32 LoadV4(CSerialArchive* ar); // 0x1138b0
 
-    void* m_vptr;  // +0x00
-    i32 m_04;      // +0x04
-    i32 m_08;      // +0x08
-    i32 m_0c;      // +0x0c
-    i32 m_10;      // +0x10
-    i32 m_14;      // +0x14
-    i32 m_18;      // +0x18
-    i32 m_1c;      // +0x1c
-    i32 m_20;      // +0x20
-    i32 m_24;      // +0x24 (not read here)
-    i32 m_28;      // +0x28
-    i32 m_2c[24];  // +0x2c..+0x88
+    void* m_vptr; // +0x00
+    i32 m_04;     // +0x04
+    i32 m_08;     // +0x08
+    i32 m_0c;     // +0x0c
+    i32 m_10;     // +0x10
+    i32 m_14;     // +0x14
+    i32 m_18;     // +0x18
+    i32 m_1c;     // +0x1c
+    i32 m_20;     // +0x20
+    i32 m_24;     // +0x24 (not read here)
+    i32 m_28;     // +0x28
+    i32 m_2c[24]; // +0x2c..+0x88
 };
 
 // ===========================================================================
@@ -60,10 +60,12 @@ public:
 // ===========================================================================
 RVA(0x001138b0, 0xb4)
 i32 CTileTriggerData::LoadV4(CSerialArchive* ar) {
-    if (ar == 0)
+    if (ar == 0) {
         return 0;
-    if (g_gameReg->m_30 == 0)
+    }
+    if (g_gameReg->m_30 == 0) {
         return 0;
+    }
     ar->Read(&m_08, 4);
     ar->Read(&m_0c, 4);
     ar->Read(&m_10, 4);

@@ -188,13 +188,25 @@ struct CButeStoreBase2 {
 };
 
 struct CButeStore {
-    void* m_vptrA;            // +0x00  most-derived vptr
-    char m_pad04[4];          // +0x04
-    void* m_vptrB;            // +0x08  second-base vptr
-    char m_pad0c[0x2c - 0xc]; // +0x0c  opaque keyed-store interior
+    void* m_vptrA;             // +0x00  most-derived vptr
+    char m_pad04[4];           // +0x04
+    void* m_vptrB;             // +0x08  second-base vptr
+    char m_pad0c[0x14 - 0xc];  // +0x0c  opaque keyed-store interior
+    i32 m_14;                  // +0x14  reset-to-empty field (Parse zeros it)
+    void* m_root18;            // +0x18  tree root (Parse zeros it)
+    char m_pad1c[0x28 - 0x1c]; // +0x1c  opaque
+    i32 m_28;                  // +0x28  reset-to-empty field (Parse zeros it)
     // The derived clear body (0x16e070): recursively frees the keyed nodes.
     // __thiscall(this, recurse); callee-cleans 4.
     void ClearRecursive(i32 recurse);
+    // Reset-to-empty: free the nodes, then zero the root + the two reset fields.
+    // Inlined into CButeMgr::Parse (the tree-base pointer lands in a register).
+    void Reset() {
+        ClearRecursive(0);
+        m_root18 = 0;
+        m_28 = 0;
+        m_14 = 0;
+    }
     // The primary-base destructor (0x16da60): restore vptr + tear down [this+4].
     void BaseDtor(); // __thiscall(this)
     ~CButeStore() {
@@ -328,6 +340,10 @@ public:
     bool ScanToken(i32 expectType);
     bool ParseTagLine();
     bool Parse();
+    // Open the named .att stream, reset the three stores, run the recursive
+    // group parse, then close+delete the stream. Returns parse success.
+    // (0x3cc20, defined in ButeMgrParse.cpp.)
+    bool Parse(CString filename, int streamBase);
 
     // The variadic error reporter: format `fmt` + varargs into m_errStr, then
     // fire the optional m_errCallback with the message. A variadic member is

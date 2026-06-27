@@ -157,8 +157,8 @@ public:
 // (sibling of 0x159600 @ 66.6%). docs/patterns/rezalloc-placement-new-no-eh-frame.md
 // ===========================================================================
 RVA(0x00159250, 0x185)
-CWwdGameObject* CWwdObjMgr::CreateObject_159250(int a1, int a2, int a3, int a4, int a5, int a6,
-                                                int a7) {
+CWwdGameObject*
+CWwdObjMgr::CreateObject_159250(int a1, int a2, int a3, int a4, int a5, int a6, int a7) {
     char* obj = (char*)RezAlloc(0x190);
     CWwdGameObject* result;
     if (obj != 0) {

@@ -447,10 +447,10 @@ struct CArchiveLoadRec {
     char m_pad1d0[0x2d8 - 0x1d0];
     i32 m_2d8; // +0x2d8
     char m_pad2dc[0x2ec - 0x2dc];
-    i32 m_2ec; // +0x2ec
-    i32 m_2f0; // +0x2f0
-    i32 m_2f4; // +0x2f4
-    i32 m_2f8; // +0x2f8
+    i32 m_2ec;        // +0x2ec
+    i32 m_2f0;        // +0x2f0
+    i32 m_2f4;        // +0x2f4
+    i32 m_2f8;        // +0x2f8
     i32 m_2fc, m_300; // +0x2fc  (8 bytes)
     char m_pad304[0x360 - 0x304];
     i32 m_360, m_364; // +0x360  (8 bytes)
@@ -463,9 +463,9 @@ struct CArchiveLoadRec {
     char m_384[0x3a8 - 0x384]; // +0x384  4 fixed 8-byte entries
     CArchiveSubArray m_3a8[4]; // +0x3a8  4 nested {base,count} sub-arrays
     char m_pad3f8[0x408 - 0x3f8];
-    i32 m_408;   // +0x408
-    i32 m_40c;   // +0x40c
-    char* m_410; // +0x410  default string (copied into the scratch)
+    i32 m_408;                             // +0x408
+    i32 m_40c;                             // +0x40c
+    char* m_410;                           // +0x410  default string (copied into the scratch)
     i32 m_414, m_418, m_41c, m_420, m_424; // +0x414..+0x424
     i16 m_428;                             // +0x428  (2 bytes)
     char m_pad42a[0x470 - 0x42a];
@@ -478,10 +478,10 @@ struct CArchiveLoadRec {
     char m_pad4a0[0x4b0 - 0x4a0];
     i32 m_4b0; // +0x4b0
     char m_pad4b4[0x4cc - 0x4b4];
-    CArchiveMgr* m_4cc; // +0x4cc  object whose +0x24 is an inline name string
-    void* m_4d0;        // +0x4d0  object passed to the default helper
-    i32 m_4d4;          // +0x4d4
-    i32 m_4d8, m_4dc, m_4e0; // +0x4d8..+0x4e0
+    CArchiveMgr* m_4cc;            // +0x4cc  object whose +0x24 is an inline name string
+    void* m_4d0;                   // +0x4d0  object passed to the default helper
+    i32 m_4d4;                     // +0x4d4
+    i32 m_4d8, m_4dc, m_4e0;       // +0x4d8..+0x4e0
     CArchiveDefaultSub* m_4e4_obj; // +0x4e4  object whose +0x188 seeds a default int
     i32 m_4e8, m_4ec, m_4f0, m_4f4, m_4f8, m_4fc, m_500, m_504; // +0x4e8..+0x504
     char m_pad508[0x514 - 0x508];
@@ -712,14 +712,14 @@ i32 CGruntStateRec::Load(CDualReader* s, i32 mode, i32 a2, i32 a3) {
     switch (mode) {
         case 4:
             // --- mode 4: nested sub-records via FillDefault + the +0x30 reader ---
-#define GS_SUBREC(field)                                  \
-    g_serialCounter++;                                    \
-    memset(buf, 0, sizeof(buf));                          \
-    v = 0;                                                \
-    if (field != 0) {                                     \
-        reg->m_10->FillDefault(field, buf, &v);           \
-    }                                                     \
-    s->Read30(buf, 0x80);                                 \
+#define GS_SUBREC(field)                                                                           \
+    g_serialCounter++;                                                                             \
+    memset(buf, 0, sizeof(buf));                                                                   \
+    v = 0;                                                                                         \
+    if (field != 0) {                                                                              \
+        reg->m_10->FillDefault(field, buf, &v);                                                    \
+    }                                                                                              \
+    s->Read30(buf, 0x80);                                                                          \
     s->Read30(&v, 4)
 
             GS_SUBREC(m_30);
@@ -757,34 +757,34 @@ i32 CGruntStateRec::Load(CDualReader* s, i32 mode, i32 a2, i32 a3) {
 
         case 7:
             // --- mode 7: registry refs via the +0x2c reader ---
-#define GS_IDXREF(field)                                            \
-    g_serialCounter++;                                              \
-    s->Read(buf, 0x80);                                             \
-    s->Read(&idx, 4);                                               \
-    if (strlen(buf) != 0) {                                         \
-        i32 i = idx;                                                \
-        out = 0;                                                    \
-        reg->m_10->m_10map.Lookup(buf, &out);                       \
-        CRegTypeTable* tt = (CRegTypeTable*)out;                    \
-        void* r;                                                    \
-        if (tt != 0 && i >= tt->m_64 && i <= tt->m_68) {            \
-            r = tt->m_14[i];                                        \
-        } else {                                                    \
-            r = 0;                                                  \
-        }                                                          \
-        field = r;                                                  \
-    } else {                                                       \
-        field = 0;                                                  \
+#define GS_IDXREF(field)                                                                           \
+    g_serialCounter++;                                                                             \
+    s->Read(buf, 0x80);                                                                            \
+    s->Read(&idx, 4);                                                                              \
+    if (strlen(buf) != 0) {                                                                        \
+        i32 i = idx;                                                                               \
+        out = 0;                                                                                   \
+        reg->m_10->m_10map.Lookup(buf, &out);                                                      \
+        CRegTypeTable* tt = (CRegTypeTable*)out;                                                   \
+        void* r;                                                                                   \
+        if (tt != 0 && i >= tt->m_64 && i <= tt->m_68) {                                           \
+            r = tt->m_14[i];                                                                       \
+        } else {                                                                                   \
+            r = 0;                                                                                 \
+        }                                                                                          \
+        field = r;                                                                                 \
+    } else {                                                                                       \
+        field = 0;                                                                                 \
     }
-#define GS_NAMEREF(field)                                           \
-    g_serialCounter++;                                              \
-    s->Read(buf, 0x80);                                            \
-    if (strlen(buf) != 0) {                                        \
-        out = 0;                                                    \
-        reg->m_10->m_10map.Lookup(buf, &out);                       \
-        field = out;                                                \
-    } else {                                                       \
-        field = 0;                                                  \
+#define GS_NAMEREF(field)                                                                          \
+    g_serialCounter++;                                                                             \
+    s->Read(buf, 0x80);                                                                            \
+    if (strlen(buf) != 0) {                                                                        \
+        out = 0;                                                                                   \
+        reg->m_10->m_10map.Lookup(buf, &out);                                                      \
+        field = out;                                                                               \
+    } else {                                                                                       \
+        field = 0;                                                                                 \
     }
 
             GS_IDXREF(m_30);
@@ -882,35 +882,35 @@ struct CProjList {
 // and m_0c, but the inlined +0x150 record reaches m_c (not m_0c) - the same shape at
 // +0x0c. Reuse CSerialObj for a3; view its name-holder's +0x0c through CSerialNameHolder.
 struct CProjLoadRec {
-    i32 Load(CSerialArchive* s, i32 mode, i32 a2, CSerialObj* a3);    // 0x0e0d40
+    i32 Load(CSerialArchive* s, i32 mode, i32 a2, CSerialObj* a3);      // 0x0e0d40
     i32 ChainLoad(CSerialArchive* s, i32 mode, i32 a2, CSerialObj* a3); // 0x16f4a0
 
     char _00[0x150];
-    CSerialObj* m_150;        // +0x150  a3
-    CSerialObj* m_154;        // +0x154  a3
-    CSerialNameHolder* m_158; // +0x158  a3->m_7c
-    void* m_15c;              // +0x15c  resolved value
-    i32 m_160, m_164, m_168, m_16c; // +0x160  the 0x10-byte blob
+    CSerialObj* m_150;                     // +0x150  a3
+    CSerialObj* m_154;                     // +0x154  a3
+    CSerialNameHolder* m_158;              // +0x158  a3->m_7c
+    void* m_15c;                           // +0x15c  resolved value
+    i32 m_160, m_164, m_168, m_16c;        // +0x160  the 0x10-byte blob
     i32 m_170, m_174, m_178, m_17c, m_180; // +0x170
     i32 _184;
     i32 m_188, m_18c; // +0x188 (8)
     i32 m_190;        // +0x190
     i32 _194;
-    i32 m_198, m_19c; // +0x198 (8)
-    i32 m_1a0, m_1a4; // +0x1a0 (8)
-    i32 m_1a8, m_1ac; // +0x1a8 (8)
-    i32 m_1b0, m_1b4; // +0x1b0 (8)
-    i32 m_1b8, m_1bc; // +0x1b8 (8)
-    i32 m_1c0, m_1c4; // +0x1c0 (8)
-    i32 m_1c8, m_1cc; // +0x1c8 (8)
+    i32 m_198, m_19c;               // +0x198 (8)
+    i32 m_1a0, m_1a4;               // +0x1a0 (8)
+    i32 m_1a8, m_1ac;               // +0x1a8 (8)
+    i32 m_1b0, m_1b4;               // +0x1b0 (8)
+    i32 m_1b8, m_1bc;               // +0x1b8 (8)
+    i32 m_1c0, m_1c4;               // +0x1c0 (8)
+    i32 m_1c8, m_1cc;               // +0x1c8 (8)
     i32 m_1d0, m_1d4, m_1d8, m_1dc; // +0x1d0
-    void* m_1e0[7];   // +0x1e0..+0x1f8  name/idx refs
-    CProjTypeObj* m_1fc; // +0x1fc  type-5 latch
-    i32 m_200;        // +0x200
-    CProjList m_204;  // +0x204  AddTail target
-    CProjNode* m_208; // +0x208  write-path node list
+    void* m_1e0[7];                 // +0x1e0..+0x1f8  name/idx refs
+    CProjTypeObj* m_1fc;            // +0x1fc  type-5 latch
+    i32 m_200;                      // +0x200
+    CProjList m_204;                // +0x204  AddTail target
+    CProjNode* m_208;               // +0x208  write-path node list
     i32 _20c;
-    i32 m_210;        // +0x210
+    i32 m_210; // +0x210
     i32 _214, _218, _21c;
     i32 m_220, m_224; // +0x220, +0x224
 };

@@ -247,8 +247,8 @@ struct StartNode {
 // The list view overlaid on PlayMgrRenderer+0x10: +0x0 aliases the tile-grid ptr,
 // +0x4 is the placed-object list head.
 struct StartList {
-    void* m_0;          // +0x00 (= renderer+0x10)
-    StartNode* m_head;  // +0x04 (= renderer+0x14)
+    void* m_0;         // +0x00 (= renderer+0x10)
+    StartNode* m_head; // +0x04 (= renderer+0x14)
 };
 
 // The "Could not add Grunt..." diagnostic for a failed start placement ($SG .rdata).

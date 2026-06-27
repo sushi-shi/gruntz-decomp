@@ -142,8 +142,7 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
             return 0;
         }
         m_0c = (void*)1;
-        CSymTab* node =
-            new CSymTab(this, 0, g_emptyString, 0, 0, (void*)MakeSymSeed(), m_78, m_7c);
+        CSymTab* node = new CSymTab(this, 0, g_emptyString, 0, 0, (void*)MakeSymSeed(), m_78, m_7c);
         m_root = node;
         ParseRecords(reader, node, (char*)m_buf64, 0);
         return 1;
@@ -170,8 +169,7 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
     if (b != 0) {
         m_3c = 0xa8;
         m_4c = 1;
-        CSymTab* node =
-            new CSymTab(this, 0, g_emptyString, 0, 0, (void*)MakeSymSeed(), m_78, m_7c);
+        CSymTab* node = new CSymTab(this, 0, g_emptyString, 0, 0, (void*)MakeSymSeed(), m_78, m_7c);
         m_root = node;
         return 1;
     }
@@ -192,8 +190,8 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
     if (hdr[0] != 0x0d || hdr[0x3f] != 0x0a || hdr[0x7e] != 0x1a || b != 1) {
         return 0;
     }
-    CSymTab* node = new CSymTab(this, 0, g_emptyString, (void*)m_30, (void*)m_34,
-                               (void*)m_38, m_78, m_7c);
+    CSymTab* node =
+        new CSymTab(this, 0, g_emptyString, (void*)m_30, (void*)m_34, (void*)m_38, m_78, m_7c);
     m_root = node;
     node->ApplyRecursive((i32)reader, m_30, m_34, 0);
     return 1;
@@ -209,14 +207,14 @@ struct SymFindData {
     i32 m_size; // +0x1c
     char m_name[0x108];
 };
-extern "C" i32 SymFindFirst(const char* spec, SymFindData* fd); // 0x11f900
-extern "C" i32 SymFindNext(i32 h, SymFindData* fd);             // 0x11fa30
-extern "C" i32 SymFindClose(i32 h);                             // 0x11fb50
-extern "C" char* _strlwr(char* s);                              // 0x18d330
-extern "C" i32 atoi(const char* s);                             // 0x11ff10
+extern "C" i32 SymFindFirst(const char* spec, SymFindData* fd);                       // 0x11f900
+extern "C" i32 SymFindNext(i32 h, SymFindData* fd);                                   // 0x11fa30
+extern "C" i32 SymFindClose(i32 h);                                                   // 0x11fb50
+extern "C" char* _strlwr(char* s);                                                    // 0x18d330
+extern "C" i32 atoi(const char* s);                                                   // 0x11ff10
 extern "C" void _splitpath(const char* p, char* drv, char* dir, char* fn, char* ext); // 0x18c530
-void SymBuildLeaf(CSymParser* p, void* recArg, void* extKey);   // 0x13b970
-void SymBindRecord(void* rec, char* name, i32 h);               // 0x13cac0
+void SymBuildLeaf(CSymParser* p, void* recArg, void* extKey);                         // 0x13b970
+void SymBindRecord(void* rec, char* name, i32 h);                                     // 0x13cac0
 extern const char g_sepSlash[]; // 0x60cff0  "\\"
 extern const char g_wildcard[]; // 0x61a0a0  "*.*"
 extern const char g_dotDot[];   // 0x5ee8ec  ".."

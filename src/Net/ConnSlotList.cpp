@@ -20,9 +20,9 @@ public:
     // = success). Reloc-masked external (no body in this TU).
     void* AddSlot(const char* name, i32 ping, i32 idx);
 
-    i32 InitModem();   // 0x37c30
-    i32 InitLan();     // 0x37e10
-    i32 InitNet();     // 0x37f00
+    i32 InitModem(); // 0x37c30
+    i32 InitLan();   // 0x37e10
+    i32 InitNet();   // 0x37f00
 };
 
 // ===========================================================================
@@ -32,20 +32,27 @@ public:
 // ===========================================================================
 RVA(0x00037c30, 0xb3)
 i32 CConnSlotList::InitModem() {
-    if (!AddSlot("Automatic", 0, 0))
+    if (!AddSlot("Automatic", 0, 0)) {
         return 0;
-    if (!AddSlot("Very Low Latency [ping < 50]", 2, 10))
+    }
+    if (!AddSlot("Very Low Latency [ping < 50]", 2, 10)) {
         return 0;
-    if (!AddSlot("Low Latency [ping < 100]", 4, 10))
+    }
+    if (!AddSlot("Low Latency [ping < 100]", 4, 10)) {
         return 0;
-    if (!AddSlot("Medium Latency [ping < 200]", 6, 20))
+    }
+    if (!AddSlot("Medium Latency [ping < 200]", 6, 20)) {
         return 0;
-    if (!AddSlot("Medium-High [ping < 250]", 8, 30))
+    }
+    if (!AddSlot("Medium-High [ping < 250]", 8, 30)) {
         return 0;
-    if (!AddSlot("High Latency [ping < 400]", 12, 30))
+    }
+    if (!AddSlot("High Latency [ping < 400]", 12, 30)) {
         return 0;
-    if (!AddSlot("Very High Latency [ping < 550]", 16, 30))
+    }
+    if (!AddSlot("Very High Latency [ping < 550]", 16, 30)) {
         return 0;
+    }
     return AddSlot("Last Resort", 24, 30) != 0;
 }
 
@@ -55,20 +62,27 @@ i32 CConnSlotList::InitModem() {
 // ===========================================================================
 RVA(0x00037e10, 0xb3)
 i32 CConnSlotList::InitLan() {
-    if (!AddSlot("Automatic", 0, 0))
+    if (!AddSlot("Automatic", 0, 0)) {
         return 0;
-    if (!AddSlot("Very Low Latency [ping < 50]", 2, 30))
+    }
+    if (!AddSlot("Very Low Latency [ping < 50]", 2, 30)) {
         return 0;
-    if (!AddSlot("Low Latency [ping < 100]", 4, 30))
+    }
+    if (!AddSlot("Low Latency [ping < 100]", 4, 30)) {
         return 0;
-    if (!AddSlot("Medium Latency [ping < 200]", 6, 30))
+    }
+    if (!AddSlot("Medium Latency [ping < 200]", 6, 30)) {
         return 0;
-    if (!AddSlot("Medium-High [ping < 250]", 8, 30))
+    }
+    if (!AddSlot("Medium-High [ping < 250]", 8, 30)) {
         return 0;
-    if (!AddSlot("High Latency [ping < 400]", 12, 30))
+    }
+    if (!AddSlot("High Latency [ping < 400]", 12, 30)) {
         return 0;
-    if (!AddSlot("Very High Latency [ping < 550]", 16, 30))
+    }
+    if (!AddSlot("Very High Latency [ping < 550]", 16, 30)) {
         return 0;
+    }
     return AddSlot("Last Resort", 24, 30) != 0;
 }
 
@@ -78,19 +92,26 @@ i32 CConnSlotList::InitLan() {
 // ===========================================================================
 RVA(0x00037f00, 0xb3)
 i32 CConnSlotList::InitNet() {
-    if (!AddSlot("Automatic", 0, 0))
+    if (!AddSlot("Automatic", 0, 0)) {
         return 0;
-    if (!AddSlot("Very Low Latency [ping < 50]", 2, 30))
+    }
+    if (!AddSlot("Very Low Latency [ping < 50]", 2, 30)) {
         return 0;
-    if (!AddSlot("Low Latency [ping < 100]", 4, 30))
+    }
+    if (!AddSlot("Low Latency [ping < 100]", 4, 30)) {
         return 0;
-    if (!AddSlot("Medium Latency [ping < 200]", 6, 30))
+    }
+    if (!AddSlot("Medium Latency [ping < 200]", 6, 30)) {
         return 0;
-    if (!AddSlot("Medium-High [ping < 250]", 8, 30))
+    }
+    if (!AddSlot("Medium-High [ping < 250]", 8, 30)) {
         return 0;
-    if (!AddSlot("High Latency [ping < 400]", 12, 30))
+    }
+    if (!AddSlot("High Latency [ping < 400]", 12, 30)) {
         return 0;
-    if (!AddSlot("Very High Latency [ping < 550]", 16, 30))
+    }
+    if (!AddSlot("Very High Latency [ping < 550]", 16, 30)) {
         return 0;
+    }
     return AddSlot("Last Resort", 24, 30) != 0;
 }

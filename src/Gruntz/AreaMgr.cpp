@@ -168,10 +168,12 @@ RVA(0x0009a830, 0xa4)
 CString CSpawnEntry::GetTail() {
     CString tmp;
     i32 len = m_name.GetLength();
-    if (len == 0)
+    if (len == 0) {
         return tmp;
-    if (len > 8)
+    }
+    if (len > 8) {
         tmp = (const char*)m_name + 8;
+    }
     return tmp;
 }
 

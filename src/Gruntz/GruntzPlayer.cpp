@@ -257,8 +257,9 @@ RVA(0x000db050, 0x90)
 CString GetColorName(i32 colorIdx, i32 upper) {
     CString s;
     s = g_colorNames[colorIdx];
-    if (upper)
+    if (upper) {
         s.MakeUpper();
+    }
     return s;
 }
 
@@ -271,7 +272,8 @@ RVA(0x000db110, 0x90)
 CString GetDifficultyName(i32 diffIdx, i32 upper) {
     CString s;
     s = g_difficultyNames[diffIdx];
-    if (upper)
+    if (upper) {
         s.MakeUpper();
+    }
     return s;
 }

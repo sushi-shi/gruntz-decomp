@@ -36,8 +36,8 @@ public:
 
 class CImageSet3 {
 public:
-    i32 Prune_1628d0();   // 0x1628d0
-    i32 GetSize_1633e0(); // 0x1633e0
+    i32 Prune_1628d0();    // 0x1628d0
+    i32 GetSize_1633e0();  // 0x1633e0
     void Cleanup_161bf0(); // 0x161bf0
 
     char m_pad00[0x20];        // +0x00 .. +0x1f (vptr + SeverusWorker base + ...)

@@ -78,10 +78,10 @@ public:
     void ConvertRowDouble(u8* dst, u8* src, i32 count, i32 rowDelta); // 0x14d950
 
     char m_00[0x4];
-    i32 m_04; // +0x04 sprite row width
-    i32 m_08; // +0x08 height
-    u8* m_0c; // +0x0c RLE sprite-stream base
-    i32 m_10; // +0x10 RLE sprite-stream length (byte bound)
+    i32 m_04;         // +0x04 sprite row width
+    i32 m_08;         // +0x08 height
+    u8* m_0c;         // +0x0c RLE sprite-stream base
+    i32 m_10;         // +0x10 RLE sprite-stream length (byte bound)
     i32 m_14;         // +0x14 draw type / row-convert selector
     i32 m_18;         // +0x18 light level (>>3 indexes the LUT bank) / alpha / fill byte
     ShadeDescr* m_1c; // +0x1c palette / source-descriptor pointer

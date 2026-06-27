@@ -222,17 +222,17 @@ extern CButeTree g_buteTree;
 //   Find  0x16da80 (__thiscall ret 8), Insert 0x16d850 (__thiscall ret 0xc),
 //   ActAlloc 0x16d990, RegisterRange 0x408710 (via 0x3742 thunk).
 struct CProjColl {
-    i32 Find(i32 coord, i32 z);          // 0x16da80
-    void RegisterRange(i32 lo, i32 hi);  // 0x408710 (0x0df920 callee)
+    i32 Find(i32 coord, i32 z);         // 0x16da80
+    void RegisterRange(i32 lo, i32 hi); // 0x408710 (0x0df920 callee)
 };
 struct CProjColl2 {
     void Insert(void* coll, void* item, i32 n); // 0x16d850
 };
-extern "C" i32 ProjActAlloc();              // 0x16d990
+extern "C" i32 ProjActAlloc(); // 0x16d990
 DATA(0x002bf464)
-extern void* g_projActCache;                // 0x6bf464 (shared alloc cache)
+extern void* g_projActCache; // 0x6bf464 (shared alloc cache)
 DATA(0x002bf428)
-extern void* g_projActAllocResult;          // 0x6bf428
+extern void* g_projActAllocResult; // 0x6bf428
 
 // R1 - the shared type-name table (@0x6bf650).
 struct CProjTypeEntry;

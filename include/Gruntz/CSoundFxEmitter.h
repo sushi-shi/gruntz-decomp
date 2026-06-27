@@ -44,14 +44,14 @@ public:
     void StopBank0IfActive(); // 0x92030
 };
 namespace Utils {
-namespace WinAPI {
-void ActiveWait(u32 milliseconds); // 0x13dfe0 busy-wait
-}
+    namespace WinAPI {
+        void ActiveWait(u32 milliseconds); // 0x13dfe0 busy-wait
+    }
 } // namespace Utils
 namespace ApiCallerStubs {
-struct ThisStubOwnerUnknown {
-    i32 winapi_17e620_GetTickCount(i32, i32, i32); // 0x17e620 (deferred-op method on the fader)
-};
+    struct ThisStubOwnerUnknown {
+        i32 winapi_17e620_GetTickCount(i32, i32, i32); // 0x17e620 (deferred-op method on the fader)
+    };
 } // namespace ApiCallerStubs
 
 // The resource chain reached through emitter +0x0c.

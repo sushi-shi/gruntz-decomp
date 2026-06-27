@@ -49,8 +49,9 @@ void RgbToHsv(ColorHSV* out, u32 color) {
             h = (float)(b0 - b1) / delta - 4.0f;
         }
         h = h * 60.0f;
-        if (h < 0.0)
+        if (h < 0.0) {
             h = h - -360.0f;
+        }
     }
     out->h = h;
     out->s = s;

@@ -40,20 +40,20 @@ namespace ApiCallerStubs {
     // The GDI surface node (list +0x10). Cleanup is the foreign teardown; SetPalette
     // (this TU) latches the associated palette node ptr.
     struct GdiOwner_175c90 {
-        char m_pad0[0x454];     // +0x000..+0x453
-        i32 m_454;              // +0x454  associated scalar
-        void* m_458;            // +0x458  associated palette node
-        void Cleanup();         // 0x175c90 (foreign, reloc-masked)
+        char m_pad0[0x454];                // +0x000..+0x453
+        i32 m_454;                         // +0x454  associated scalar
+        void* m_458;                       // +0x458  associated palette node
+        void Cleanup();                    // 0x175c90 (foreign, reloc-masked)
         void SetPalette(void* pal, i32 a); // 0x176ad0 (this TU)
     };
 
     // The palette node (list +0x2c). Build is the foreign realizer; the three
     // front-ends are reconstructed in this TU.
     struct PalBuilder_176df0 {
-        i32 m_0;                  // +0x000  realized HPALETTE
-        char m_pad4[0x40c - 0x4]; // +0x004..+0x40b
-        i32 m_40c;                // +0x40c
-        void* m_410;              // +0x410  cached AddTail POSITION
+        i32 m_0;                                     // +0x000  realized HPALETTE
+        char m_pad4[0x40c - 0x4];                    // +0x004..+0x40b
+        i32 m_40c;                                   // +0x40c
+        void* m_410;                                 // +0x410  cached AddTail POSITION
         i32 Build(PALETTEENTRY* entries, i32 flags); // 0x176df0 (foreign, reloc-masked)
         i32 ProcessPal(void* rgb, i32 flags);        // 0x176e70 (this TU)
         i32 ParseDispatch(void* buf, u32 size, i32 type, i32 ctrl); // 0x177040 (this TU)
@@ -81,14 +81,14 @@ using ApiCallerStubs::PalBuilder_176df0;
 // ---------------------------------------------------------------------------
 class CImagePool {
 public:
-    i32 SetHandles(i32 a, i32 b, i32 c);  // 0x174e90
-    void Clear();                          // 0x174eb0
-    void RemovePalette(PalBuilder_176df0* node); // 0x174f30
-    void ClearSurfaces();                  // 0x174f60
-    void ClearPalettes();                  // 0x174fa0
-    PalBuilder_176df0* AddPaletteEntries(PALETTEENTRY* entries, i32 flags); // 0x1754f0
-    PalBuilder_176df0* AddPaletteRGB(void* rgb, i32 flags);                 // 0x175570
-    PalBuilder_176df0* AddImageFile(char* path, i32 arg);                   // 0x1755f0
+    i32 SetHandles(i32 a, i32 b, i32 c);                                          // 0x174e90
+    void Clear();                                                                 // 0x174eb0
+    void RemovePalette(PalBuilder_176df0* node);                                  // 0x174f30
+    void ClearSurfaces();                                                         // 0x174f60
+    void ClearPalettes();                                                         // 0x174fa0
+    PalBuilder_176df0* AddPaletteEntries(PALETTEENTRY* entries, i32 flags);       // 0x1754f0
+    PalBuilder_176df0* AddPaletteRGB(void* rgb, i32 flags);                       // 0x175570
+    PalBuilder_176df0* AddImageFile(char* path, i32 arg);                         // 0x1755f0
     PalBuilder_176df0* AddImageDispatch(void* buf, u32 size, i32 type, i32 ctrl); // 0x175680
 
     i32 m_00;                  // +0x00  resource module handle

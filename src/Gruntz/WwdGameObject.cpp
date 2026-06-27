@@ -111,17 +111,17 @@ struct WwdRenderCtx;
 class CWwdGameObject {
 public:
     // Dispatch entry (0x150a70) and the methods it routes to.
-    i32 Dispatch(i32 a1, i32 type, i32 a3, i32 a4); // 0x150a70
-    i32 ReadState(i32 src);                         // 0x150b00
-    i32 Setup(i32 a1, i32 a2, i32 a3, i32 a4);      // 0x150d60 (vtbl +0x28)
-    i32 Play(i32 a1, i32 type, i32 a3, i32 a4);     // 0x151150 (vtbl +0x3c)
-    i32 Serialize(i32 ar);                          // 0x151320
-    i32 WriteSnapshot(i32 dst);                     // 0x151c00
-    i32 Init(i32 a1, i32 a2, i32 a3, i32 a4);       // 0x15b940
-    i32 ResetAndSetup(i32 a1, i32 a2, i32 a3, i32 a4); // 0x1665e0
+    i32 Dispatch(i32 a1, i32 type, i32 a3, i32 a4);             // 0x150a70
+    i32 ReadState(i32 src);                                     // 0x150b00
+    i32 Setup(i32 a1, i32 a2, i32 a3, i32 a4);                  // 0x150d60 (vtbl +0x28)
+    i32 Play(i32 a1, i32 type, i32 a3, i32 a4);                 // 0x151150 (vtbl +0x3c)
+    i32 Serialize(i32 ar);                                      // 0x151320
+    i32 WriteSnapshot(i32 dst);                                 // 0x151c00
+    i32 Init(i32 a1, i32 a2, i32 a3, i32 a4);                   // 0x15b940
+    i32 ResetAndSetup(i32 a1, i32 a2, i32 a3, i32 a4);          // 0x1665e0
     i32 SetupFlagged(i32 a1, i32 a2, i32 a3, i32 a4, i32 flag); // 0x15c1d0
-    i32 SetupDeferred(i32 a3, i32 a4);              // 0x15bc30
-    void RenderDot(WwdRenderCtx* a);                // 0x1660f0
+    i32 SetupDeferred(i32 a3, i32 a4);                          // 0x15bc30
+    void RenderDot(WwdRenderCtx* a);                            // 0x1660f0
 
     // Sibling helpers (modeled as same-class methods so ecx=this matches).
     i32 Helper164790(i32 a2, i32 a1); // 0x164790  __thiscall
@@ -848,7 +848,7 @@ void CWwdGameObject::RenderDot(WwdRenderCtx* a) {
             i32 col = surf->m_b0 * x;
             *(char*)(base + row + col) = F(this, 0x18c, char);
             void* n = surf->m_08;
-            (*(void(**)(void*, i32))((char*)*(void**)n + 0x80))(n, 0);
+            (*(void (**)(void*, i32))((char*)*(void**)n + 0x80))(n, 0);
         }
     }
     F(this, 0x18, i32) = F(this, 0x5c, i32);

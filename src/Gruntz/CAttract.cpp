@@ -111,7 +111,7 @@ public:
 };
 struct AttractActorList {
     char m_pad00[0x4];
-    i32 m_count;            // +0x04
+    i32 m_count;             // +0x04
     AttractActor* m_data[1]; // +0x08  inline pointer array
 };
 DATA(0x00245574)
@@ -120,8 +120,8 @@ extern AttractActorList* g_actorList;
 // The per-frame time delta (countdown source for m_1b4). C linkage so the symbol
 // pairs with the target's _g_645584 (the convention across the gamemode units).
 extern "C" {
-DATA(0x00245584)
-extern u32 g_645584;
+    DATA(0x00245584)
+    extern u32 g_645584;
 }
 
 // The owner back-ptr (CState::m_4) viewed as the game manager: ReportError fires a
@@ -235,6 +235,48 @@ i32 CAttract::FramePoll() {
             g_pPostMessageA(((CAttractOwner*)m_4)->m_4->m_4, 0x111, 0x8023, 0);
             return 1;
         }
+    }
+    return 1;
+}
+
+// 0x3c220: an attract-family per-frame idle poll (PLACEHOLDER class; m_4 owner /
+// m_520 idle timer). Pump (0x20db) the host, scan g_actorList for the 0x100 exit
+// flag (post WM_COMMAND 0x8023 on the first match), count the idle timer m_520 down
+// by the frame delta, and post WM_COMMAND 0x8027 when it expires. Returns 1.
+// @early-stop
+// 99.55%: every opcode/offset/branch is byte-identical. The residual is (1) the
+// same PostMessageA IAT-absolute scoring artifact the sibling FramePoll documents
+// (target bakes the bare 0x6c44c8, no symbol) and (2) a register-coloring coin-flip
+// (pm <-> ebx/edi vs the 0x100 mask) - the documented regalloc back-edge wall
+// (docs/patterns/zero-register-pinning.md). Not source-steerable; deferred.
+struct CAttractIdlePoll {
+    char _00[4];
+    CAttractOwner* m_4; // +0x04
+    char _08[0x520 - 0x8];
+    u32 m_520;   // +0x520  idle timer
+    void Pump(); // 0x20db (ILT thunk; reloc-masked)
+    i32 Poll();  // 0x3c220
+};
+
+RVA(0x0003c220, 0xa4)
+i32 CAttractIdlePoll::Poll() {
+    Pump();
+    PostMessageFn pm = g_pPostMessageA;
+    AttractActorList* list = g_actorList;
+    i32 n = list->m_count;
+    for (i32 i = 0; i < n; i++) {
+        if (list->m_data[i]->m_2ac & 0x100) {
+            pm(m_4->m_4->m_4, 0x111, 0x8023, 0);
+            break;
+        }
+    }
+    if (g_645584 >= m_520) {
+        m_520 = 0;
+    } else {
+        m_520 -= g_645584;
+    }
+    if (m_520 == 0) {
+        pm(m_4->m_4->m_4, 0x111, 0x8027, 0);
     }
     return 1;
 }

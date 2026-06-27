@@ -21,7 +21,7 @@ public:
     i32 m_0c;
     i32 m_10;
 }; // 0x14 - the shared base; the upper fields (m_14..m_20) belong to whichever
-   // variants actually carry them, so each variant's stack temp is sized to it.
+// variants actually carry them, so each variant's stack temp is sized to it.
 
 // The concrete modes: each derived ctor runs the base ctor, then stamps its type
 // tag (2..6) and that type's defaults. The upper fields a variant writes are

@@ -48,7 +48,8 @@ extern "C" u32 strlen(const char* s);                    // inlined repnz scas a
 
 // CRT path helpers the keyed Find emits by call (0x18c530 _splitpath, 0x18d330
 // _strupr); reloc-masked rel32.
-extern "C" void __cdecl _splitpath(const char* path, char* drive, char* dir, char* fname, char* ext);
+extern "C" void __cdecl
+_splitpath(const char* path, char* drive, char* dir, char* fname, char* ext);
 extern "C" char* __cdecl _strupr(char* s);
 
 // The child-scope hash-node vtable stamped at CSymTab+0x20 (the key-hash interface
@@ -180,8 +181,16 @@ public:
     // the two embedded hash tables (m_subTabs(subN), m_symbols(symN) - the /GX
     // member-construction frame), copy the scope name, then store the rest. The
     // +0x20/+0x34 stamps go in the init list so they precede the member ctors.
-    CSymTab(CSymParser* owner, void* p1, const char* name, void* p3, void* p4,
-            void* p5, i32 subN, i32 symN);
+    CSymTab(
+        CSymParser* owner,
+        void* p1,
+        const char* name,
+        void* p3,
+        void* p4,
+        void* p5,
+        i32 subN,
+        i32 symN
+    );
 
     // ~CSymTab (0x139ee0): walk both tables freeing each entry's record + node,
     // free the owned buffers, null the fields; the two CHashTable members then

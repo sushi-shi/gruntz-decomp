@@ -69,9 +69,9 @@ struct CTmStatusItem {
     void SetMode(i32 mode); // 0x10bb90 (reloc-masked)
 };
 struct CTmWorld {
-    void StopFx(i32 a, i32 b);  // 0xd0120 (__thiscall, reloc-masked)
-    void Refresh();             // 0xda2d0 (__thiscall, reloc-masked)
-    void SetStat(i32 a, i32 b); // 0xd9240 (__thiscall, reloc-masked)
+    void StopFx(i32 a, i32 b);   // 0xd0120 (__thiscall, reloc-masked)
+    void Refresh();              // 0xda2d0 (__thiscall, reloc-masked)
+    void SetStat(i32 a, i32 b);  // 0xd9240 (__thiscall, reloc-masked)
     void Center(i32 cx, i32 cy); // 0xd5f00 (__thiscall, reloc-masked) - scroll-center on a tile
     char p0[0x2dc];
     CTmStatusItem* m_2dc; // +0x2dc  status-bar item
@@ -101,8 +101,8 @@ struct CTmGameReg {
     CTmWorld* m_2c;    // +0x2c  the active world/play object
     CTmRegSub30* m_30; // +0x30  the level/plane grid holder
     char p1[0x34];
-    CTriggerMgr* m_68;    // +0x68  the active trigger manager
-    CGruntzCmdMgr* m_6c;  // +0x6c  the command queue
+    CTriggerMgr* m_68;   // +0x68  the active trigger manager
+    CGruntzCmdMgr* m_6c; // +0x6c  the command queue
 };
 extern CTmGameReg* g_gameReg;
 
@@ -1230,6 +1230,31 @@ i32 CTriggerMgr::SpawnGrunt(i32 col, i32 row, i32 a18, i32 a1c) {
     return 1;
 }
 
+// 0x759e0: GetOriginXY(out) - copy the cached origin pair (+0x174,+0x178) into the
+// caller's slot and return it. `out` (loaded into eax as the store base) is the
+// return value; `ret 4` -> callee cleans the out-ptr.
+RVA(0x000759e0, 0x18)
+CTrigPoint* CTriggerMgr::GetOriginXY(CTrigPoint* out) {
+    out->x = *(i32*)((char*)this + 0x174);
+    out->y = *(i32*)((char*)this + 0x178);
+    return out;
+}
+
+// 0x75a90: TmFlagsAllow(a, b, c) - a __cdecl trigger-flag compatibility test on the
+// shared bits m = a & b: bit 0x20000000 vetoes outright; with no shared bits, allow;
+// otherwise allow only when (a & c) is also set.
+RVA(0x00075a90, 0x27)
+i32 TmFlagsAllow(i32 a, i32 b, i32 c) {
+    i32 m = b & a;
+    if (m & 0x20000000) {
+        return 0;
+    }
+    if (m != 0 && (c & a) == 0) {
+        return 0;
+    }
+    return 1;
+}
+
 // 0x75af0: HitTestCell(x, y, outRow, outCol, exact) - sample the plane tile-attr at
 // (x>>5, y>>5); its high byte is the row, low byte the col. Look up grid[row*15+col]; if
 // live+clickable, either exact-match its world pos (exact) or its 30x30 bounds, then write
@@ -2006,20 +2031,20 @@ struct CTmStatusBuf {
     char p0[0x10c - 0x4];
     i32 m_10c; // +0x10c  sub-state
     char p1[0x548 - 0x110];
-    i32 m_548;     // +0x548
-    void* m_54c;   // +0x54c  the pending buffer to free
+    i32 m_548;   // +0x548
+    void* m_54c; // +0x54c  the pending buffer to free
 };
 // The +0x260 CObArray RemoveAt helper (0x1b5525) + the two build-state notifiers
 // (0x100930 self-ish / 0x104d60) + the pending-fx Pulse (0x3a1c) + RefreshB (0x3e81).
 struct CTmObArray {
     void RemoveAt(i32 idx, i32 n); // 0x1b5525
 };
-extern void Eng_BuildNotifyA(i32 a);            // 0x100930 (thunk 0x12fd)
+extern void Eng_BuildNotifyA(i32 a); // 0x100930 (thunk 0x12fd)
 struct CTmBuildState {
     void Notify(); // 0x104d60 (thunk 0x16ea)
 };
 struct CTmSelfReset {
-    void PulseFx();    // 0x3a1c (this->m_2a0->Pulse path is via self thunk)
+    void PulseFx();       // 0x3a1c (this->m_2a0->Pulse path is via self thunk)
     void RefreshB(i32 a); // 0x3e81
 };
 extern void __cdecl operator delete(void*);
@@ -2252,9 +2277,8 @@ i32 CTriggerMgr::ToggleRegionA() {
         OverlayTick();
         return 1;
     }
-    g_gameReg->m_68->ResetGroup(
-        *(i32*)((char*)cell + 0x17c), *(i32*)((char*)cell + 0x180), 0, 0, 0, 2, 1
-    );
+    g_gameReg->m_68
+        ->ResetGroup(*(i32*)((char*)cell + 0x17c), *(i32*)((char*)cell + 0x180), 0, 0, 0, 2, 1);
     OverlayTick();
     return 1;
 }

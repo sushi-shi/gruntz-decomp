@@ -1,0 +1,273 @@
+0x007fd0   0x44 BODY/game              near:Utils/ApplyRange.cpp       →~EngStr [LAB_005d7d78,?g_vtbl_CUserBase@@3PAPAXA]
+0x008060   0x15 BODY/game              near:Utils/ApplyRange.cpp      
+0x0080e0  0x102 BODY/game              near:Utils/ApplyRange.cpp       →GrowTo,Boundary_16d850 [?g_projActCache@@3PAXA,?g_projActAllocResult@@3PAXA]
+0x008240  0x18d BODY/game              near:Utils/ApplyRange.cpp       →Find,Insert,GrowTo [?s_actKeyA@@3PADA,?g_buteTree@@3VCButeTree@@A,?g_typeCounter@@3HA]
+0x008440   0xfe BODY/game              near:Utils/ApplyRange.cpp       →__ftol,SetAllField18 [_g_645588]
+0x008600   0xcd BODY/game              near:Utils/ApplyRange.cpp       →Chain
+0x008710   0x2b BODY/game              near:Utils/ApplyRange.cpp       →Boundary_16dda0 [?g_zDArrayVtbl@@3QAXA]
+0x00d170   0x74 BODY/game              near:G/CRandomAmbientSound.cpp  →SnapshotChildren ["6R,","ZY,","Gruntz Save Game"]
+0x00fa40    0x6 EASY/typetag(0x3ef)    near:G/CSimpleAnimation.cpp    
+0x010f00    0x6 EASY/typetag(0x429)    near:G/CFortressFlag.cpp       
+0x011bf0    0x6 EASY/typetag(0x428)    near:G/CLevelTimeDtor.cpp      
+0x012020    0x6 EASY/typetag(0x410)    near:G/CGruntHealthSprite.cpp  
+0x0120e0    0x6 EASY/typetag(0x411)    near:G/CGruntStaminaSprite.cpp 
+0x0121a0    0x6 EASY/typetag(0x417)    near:G/CGruntStaminaSprite.cpp 
+0x012cd0    0x6 EASY/typetag(0x41c)    near:G/CToobSpikez.cpp         
+0x012ff0    0x6 EASY/typetag(0x41d)    near:G/RollingBall.cpp         
+0x0132f0    0x6 EASY/typetag(0x425)    near:G/CPathHazard.cpp         
+0x0133b0    0x6 EASY/typetag(0x426)    near:G/CPathHazard.cpp         
+0x0183d0    0x6 EASY/ret-addr          near:G/Dialogs.cpp             
+0x035f10  0x155 BODY/game              near:G/UnknownClassArrays.cpp   →CGrunt_TileSwitch
+0x0363a0   0x41 BODY/game              near:G/UnknownClassArrays.cpp   [_g_mgrSettings]
+0x0378c0   0x40 BODY/game              near:G/VideoConfig.cpp          [_g_mgrSettings,"0I,"]
+0x037910   0x5a BODY/game              near:G/VideoConfig.cpp          →Boundary_037b40,Boundary_037c30,Boundary_037d20 ["$yC"]
+0x0379a0   0x3d BODY/game              near:G/VideoConfig.cpp          →_RezFree,RemoveAll
+0x0379f0   0x57 BODY/game              near:G/VideoConfig.cpp          →Empty,~CString [LAB_005d9988]
+0x037a70   0x9a BODY/game              near:G/VideoConfig.cpp          →operator_new,CString,Empty [LAB_005d99b3]
+0x03ac30    0xa EASY/singleton-jmp     near:G/CDDrawSurfacePair.cpp    →CString ["SetMenuItemBitmaps"]
+0x03c070   0x47 BODY/game              near:Wwd/WwdFile.cpp            →CreateSprite ["DemoMover","DemoSign"]
+0x03c220   0xa4 BODY/game              near:Wwd/WwdFile.cpp            →Render [?g_actorList@@3PAUAttractActor,_g_pPostMessageA,_g_645584]
+0x03c8f0   0x76 BODY/game              near:G/Grunt.cpp               
+0x03cbc0   0x14 BODY/game              near:G/Grunt.cpp                →Boundary_16a240,FuncB
+0x03cbf0   0x14 BODY/game              near:G/Grunt.cpp                →Boundary_16a8e0,FuncB
+0x03cc20  0x14e BODY/game              near:G/Grunt.cpp                →operator_new,MallocCtor_169fb0,~CString [LAB_005d9cb3]
+0x03e120   0x15 BODY/game              near:G/SiriusWorkerHandlers.cpp
+0x03e300  0x18d BODY/game              near:G/SiriusWorkerHandlers.cpp →Find,Insert,GrowTo [?s_actKeyA@@3PADA,?g_buteTree@@3VCButeTree@@A,?g_typeCounter@@3HA]
+0x0555e0 0x12f8 BODY/game              near:G/Grunt.cpp                →Lookup,operator=,DeserializeStrings [_g_mgrSettings,"ZY,",?g_freeList@@3PAXA]
+0x058ee0   0x5c BODY/game              near:G/MotionState.cpp         
+0x06b2e0   0x39 BODY/game              near:G/CDDrawSubMgrLeaf.cpp     →Setup_15c2d0,Advance_15c360 [_g_6bf3bc]
+0x0759e0   0x18 BODY/game              near:G/TriggerMgr.cpp          
+0x075a10   0x12 BODY/game              near:G/TriggerMgr.cpp          
+0x075a40   0x34 BODY/game              near:G/TriggerMgr.cpp          
+0x075a90   0x27 BODY/game              near:G/TriggerMgr.cpp          
+0x07fbb0    0xd BODY/game              near:G/GameObjectCtors.cpp     
+0x07fca0    0xd BODY/game              near:G/GameObjectCtors.cpp     
+0x08cf30   0x55 BODY/game              near:G/GameMode.cpp             →BaseCleanup [LAB_005db9b8,?g_vtbl_CState@@3PAPAXA]
+0x095140   0x6e BODY/game              near:G/BacklogStateLoaders.cpp  →RestoreVideoMode,Method_158d20,Method_158cb0 ["HELP"]
+0x0aa0a0   0xf1 BODY/game              near:G/LogicWorkerHandlers.cpp  →CMenuSparkle,Boundary_16e4f0 [LAB_005dcadb]
+0x0aa1e0   0xf1 BODY/game              near:G/LogicWorkerHandlers.cpp  →CFrontCandy,Boundary_16e4f0 [LAB_005dcafb]
+0x0aa460   0xf1 BODY/game              near:G/LogicWorkerHandlers.cpp  →CFrontCandyAni,Boundary_16e4f0 [LAB_005dcb3b]
+0x0b4330    0x8 BODY/game              near:G/CPathHazard.cpp          →Tick
+0x0b4350   0x7e BODY/game              near:G/CPathHazard.cpp          →Tick [_g_645588,?g_strikeThresh@@3HA,_g_mgrSettings]
+0x0b4cb0   0x56 BODY/game              near:G/GameObjectCtors.cpp      →Boundary_0b4d30 [_g_mgrSettings]
+0x0be030   0x49 BODY/game              near:Io/FileStream.cpp         
+0x0be820   0x49 BODY/game              near:Io/FileStream.cpp         
+0x0bef10    0xd BODY/game              near:Io/FileStream.cpp          →CObList
+0x0bef80   0x51 BODY/game              near:Io/FileStream.cpp         
+0x0bf000   0xd5 BODY/game              near:Io/FileStream.cpp          →Boundary_0c12e0,Boundary_0c10a0,RemoveTail
+0x0bf120   0x11 BODY/game              near:Io/FileStream.cpp         
+0x0bf150   0x58 BODY/game              near:Io/FileStream.cpp         
+0x0bf530   0x3b BODY/game              near:Io/FileStream.cpp          →RemoveTail,operator_new
+0x0bf580   0x10 BODY/game              near:Io/FileStream.cpp          →AddTail
+0x0bf5a0  0x110 BODY/game              near:Io/FileStream.cpp          →ReportError ["c:\proj\incs\netmgr.h"]
+0x0bf700   0x82 BODY/game              near:Io/FileStream.cpp         
+0x0bf7c0   0x95 BODY/game              near:Io/FileStream.cpp          →LoadMenuSelectSprite,OnPlayerLeft,ResetPlayerCommands [switchdataD_004bf86c,switchdataD_004bf858]
+0x0bf9e0   0xfe BODY/game              near:Io/FileStream.cpp          →thunk_FUN_004bd4a0 [s_[end]_00612398]
+0x0bfb40   0xe2 BODY/game              near:Io/FileStream.cpp          →Boundary_0c1230,Boundary_0c12b0
+0x0bfc70   0x9c BODY/game              near:Io/FileStream.cpp          →SetData
+0x0bfd40  0x116 BODY/game              near:Io/FileStream.cpp          →Boundary_0c0fd0
+0x0bfeb0   0xfa BODY/game              near:Io/FileStream.cpp          →Boundary_0c0fd0,SetData
+0x0bfff0   0x5d BODY/game              near:Io/FileStream.cpp         
+0x0c0070   0x15 BODY/game              near:Io/FileStream.cpp         
+0x0c00a0   0x31 BODY/game              near:Io/FileStream.cpp         
+0x0c00f0   0xaf BODY/game              near:Io/FileStream.cpp         
+0x0c01d0   0x8c BODY/game              near:Io/FileStream.cpp         
+0x0c0290   0x63 BODY/game              near:Io/FileStream.cpp          →Boundary_0c1320
+0x0c03f0   0x29 BODY/game              near:Io/FileStream.cpp         
+0x0c0430   0x1f BODY/game              near:Io/FileStream.cpp         
+0x0c0460   0x2e BODY/game              near:Io/FileStream.cpp         
+0x0c04a0   0x37 BODY/game              near:Io/FileStream.cpp         
+0x0c04f0   0x7c BODY/game              near:Io/FileStream.cpp          →Boundary_0c12b0
+0x0c0590  0x1c3 BODY/game              near:Io/FileStream.cpp          →LAB_004c06f1,rand [switchdataD_004c0754,_g_645588]
+0x0c0b10   0x72 BODY/game              near:Io/FileStream.cpp          →Boundary_0c12e0,Boundary_0c10a0
+0x0c0bb0   0x47 BODY/game              near:Io/FileStream.cpp          →Boundary_0c12e0,Boundary_0c10a0
+0x0c0c20   0x3f BODY/game              near:Io/FileStream.cpp          →Boundary_0c12e0,Boundary_0c10a0
+0x0c0c70  0x20f BODY/game              near:Io/FileStream.cpp          →Stub_0b9750,Boundary_0c0fa0,Boundary_0c1010
+0x0c0f10   0x6e BODY/game              near:Io/FileStream.cpp          →Boundary_0c1060,Boundary_0c0fd0,Boundary_0c1010
+0x0c2a20   0x13 BODY/game              near:G/Dialogs.cpp             
+0x0c2a50   0x13 BODY/game              near:G/Dialogs.cpp             
+0x0c2a80   0x13 BODY/game              near:G/Dialogs.cpp             
+0x0c2ab0  0x161 BODY/game              near:G/Dialogs.cpp              →?g_typeDesc2@@3PADA,GetCtrlB,GetCtrlD [_g_pSendMessageA,?g_64bd5c@@3HA]
+0x0c40b0   0x42 BODY/game              near:G/Dialogs.cpp              →BroadcastChannelTable,winapi_0c4230_GetFocus_SendMessageA,FindOptionsSlot [?g_64bd5c@@3HA]
+0x0c4120   0xc2 BODY/game              near:G/Dialogs.cpp              →GetDlgItem,EnableWindow,CString [LAB_005ddb08,?g_64bd5c@@3HA]
+0x0c4b30   0x1f BODY/game              near:G/Dialogs.cpp              →FindOptionsSlot [?g_64bd5c@@3HA]
+0x0c4b60   0x77 BODY/game              near:G/Dialogs.cpp              →ChannelSlots_Get,ReportVersionMsg,ChannelSlots_Set [?g_64bd5c@@3HA,"Someone has already sele"]
+0x0c4c00  0x190 BODY/game              near:G/Dialogs.cpp              →SendStatFlag,GetConfigNameB,GetConfigNameA [LAB_005ddb6e,?g_64bd5c@@3HA,LAB_00404197]
+0x0c5240   0x2c BODY/game              near:G/Dialogs.cpp              →_RezFree,DestroyWindow
+0x0c5280   0x49 LIB/compiler           near:G/Dialogs.cpp              →~CInternetSession [LAB_005ddb98]
+0x0c5f00   0x15 BODY/game              near:G/Dialogs.cpp             
+0x0c60e0  0x18d BODY/game              near:G/Dialogs.cpp              →Find,Insert,GrowTo [?s_actKeyA@@3PADA,?g_buteTree@@3VCButeTree@@A,?g_typeCounter@@3HA]
+0x0c76d0   0x15 BODY/game              near:G/CDroppedObject.cpp      
+0x0c78b0  0x18d BODY/game              near:G/CDroppedObject.cpp       →Find,Insert,GrowTo [?s_actKeyA@@3PADA,?g_buteTree@@3VCButeTree@@A,?g_typeCounter@@3HA]
+0x0d1b60  0xc2f BODY/game              near:G/GameModeObjLifecycle.cpp →PlaceObject,Lookup_05b7e0,PlayIfElapsed_01f940 [switchdataD_004d2790,?g_renderCtx@@3PAXA,_g_644c54]
+0x0d8060  0x6ce BODY/game              near:G/SpriteLoaders.cpp        →SetSize,SetAtGrow,operator= [_g_mgrSettings,?g_freeList@@3PAXA,?g_freeListNodeBias@@3HA]
+0x0de140   0x33 BODY/game              near:G/CPlay.cpp                →Free,RemoveKeysEqual_157c70,BaseCleanup ["PREVIEW"]
+0x0de200   0x85 BODY/game              near:G/CPlay.cpp                →ReportError,winapi_136e20_timeGetTime [?g_wap32FrameDelta@@3HA]
+0x0ebd70  0x366 BODY/game              near:G/SBI_WarlordHead.cpp      →winapi_00cd00_timeGetTime,RecomputePlaneCoords,GetDword [_g_645588,_g_645584,_g_mgrSettings]
+0x0f0130  0x7c0 BODY/game              near:G/UserLogic.cpp            →IndexToPtr,winapi_077df0_PtInRect,RectContains [?g_typeColl@@3UCTypeKeyColl@@A,_g_mgrSettings,_g_645588]
+0x0f0db0   0x48 BODY/game              near:G/UserLogic.cpp            [_g_mgrSettings]
+0x0f71c0  0x721 BODY/game              near:G/Grunt.cpp                →ClassUnknown_28_0311b0,RemoveAll,GetScreenPos [_g_mgrSettings,?g_coordPool@@3UCoordPool@@A]
+0x0f8240  0x5b9 BODY/game              near:G/Grunt.cpp                →IndexToPtr,GruntInRadius,RectContains [?g_typeColl@@3UCTypeKeyColl@@A,_g_mgrSettings,_g_645588]
+0x0f8ec0   0x50 BODY/game              near:G/Grunt.cpp               
+0x0f9160   0xd2 BODY/game              near:G/Grunt.cpp                →sprintf,strstr ["[%s:"]
+0x0f9710    0xa EASY/singleton-jmp     near:Net/NetSession.cpp         →CString
+0x0f9840   0x29 BODY/game              near:Net/NetSession.cpp         →Free,ClearUnknownMap,BaseCleanup
+0x0f9880   0x43 BODY/game              near:Net/NetSession.cpp         →RunTitleSeq ["zI,"]
+0x0fab90   0xaa BODY/game              near:G/CAttract.cpp             →sprintf,ResolveQualified,Method_158b40 ["\SCREENZ\%s"]
+0x0face0  0x17c BODY/game              near:G/CAttract.cpp             →Method_158bc0,CString,LoadStringA [LAB_005de7c8,"zI,","GAME_IMAGEZ"]
+0x0faec0   0x67 BODY/game              near:G/CAttract.cpp             →Method_158c70,winapi_13f460_CopyRect,Flip
+0x0fafa0   0x3b BODY/game              near:G/CAttract.cpp            
+0x0faff0  0x163 BODY/game              near:G/CAttract.cpp            
+0x0fb1c0  0x168 BODY/game              near:G/CAttract.cpp             [_g_mgrSettings]
+0x1084d0  0x96c BODY/game              near:G/SBI_RectOnly.cpp         →LAB_00508e03,ResetViewport,Open [LAB_005dec8b,_g_mgrSettings]
+0x10ebe0  0x18d BODY/game              near:G/CBrickz.cpp              →Find,Insert,GrowTo [?s_actKeyA@@3PADA,?g_buteTree@@3VCButeTree@@A,?g_typeCounter@@3HA]
+0x10f160   0x15 BODY/game              near:G/CBrickz.cpp              [?g_tileSecretTriggerActReg@@3U]
+0x110460   0x64 BODY/game              near:G/TileTriggerSwitchLogic.cpp
+0x1104f0   0x56 BODY/game              near:G/TileTriggerSwitchLogic.cpp
+0x112840    0xc BODY/game              near:G/GruntzApp.cpp            →LoadSwitchDownSprite
+0x112860    0xc BODY/game              near:G/GruntzApp.cpp            →LoadSwitchUpSprite
+0x1128b0   0x88 BODY/game              near:G/TileGridCommand.cpp      →ReportError,ComputeCellFlags [_g_mgrSettings]
+0x114480   0xf1 BODY/game              near:G/CDDrawSubMgrLeafScan.cpp →CToobSpikez,Boundary_16e4f0 [LAB_005df0fb]
+0x114fa0   0x3e BODY/game              near:G/CToobSpikez.cpp          →SaveScreenshot
+0x115220   0xa4 BODY/game              near:G/CToobSpikez.cpp         
+0x1155b0    0xa EASY/singleton-jmp     near:Wap32/EngStr.cpp           →Font [?g_largeFont@@3VFont@@A]
+0x115630    0xa EASY/singleton-jmp     near:Wap32/EngStr.cpp           [?g_mediumFont@@3VFont@@A]
+0x1156b0    0xa EASY/singleton-jmp     near:Wap32/EngStr.cpp           →Font [?g_smallFont@@3VFont@@A]
+0x118a30   0xda LIB/compiler           near:Utils/WinAPI.cpp           →__heapchk,winapi_118b50_OutputDebugStringA,winapi_1206b0_GetLastError_HeapValidate_HeapWalk ["ZH,",s_Checking_heap..._006153c0,s_Walking_heap..._006153ac]
+0x1190f0   0xda BODY/game              near:Utils/WinAPIModule.cpp     →sprintf,CString,~CString [LAB_005df37f,"%i:%02i:%02i"]
+0x119210   0x66 BODY/game              near:Utils/WinAPIModule.cpp    
+0x11d100    0x7 EASY/setvtbl-ctor      near:G/WinMain.cpp             
+0x11e4d0    0xd BODY/game              near:G/WinMain.cpp              ["!8]"]
+0x11e8dc    0x7 EASY/setvtbl-ctor      near:G/WinMain.cpp              [?g_severusWorkerDtorVtbl@@3PAX]
+0x11ebed    0xe BODY/game              near:G/WinMain.cpp              →Delete
+0x11ec00   0x11 BODY/game              near:G/WinMain.cpp             
+0x11ec46    0xe BODY/game              near:G/WinMain.cpp              →Delete
+0x11ec59   0x11 BODY/game              near:G/WinMain.cpp             
+0x11ecc8    0xe BODY/game              near:G/WinMain.cpp              →Delete
+0x11ecdb   0x11 BODY/game              near:G/WinMain.cpp             
+0x11ee10    0x7 GLUE/eh-tramp          near:G/WinMain.cpp             
+0x11ee20    0x7 GLUE/eh-tramp          near:G/WinMain.cpp             
+0x11ee30    0x7 GLUE/eh-tramp          near:G/WinMain.cpp             
+0x11f23d    0x9 BODY/game              near:G/WinMain.cpp             
+0x11f760   0x16 BODY/game              near:G/WinMain.cpp             
+0x124848   0x4e LIB/compiler           near:G/WinMain.cpp              →__getptd,__abnormal_termination
+0x124f0e    0x6 BODY/game              near:G/WinMain.cpp             
+0x130570    0x9 LIB/compiler           near:G/WinMain.cpp              →__getptd
+0x132cca    0x6 GLUE/iat-thunk         near:G/WinMain.cpp              ["xM,"]
+0x132cd0    0x6 GLUE/iat-thunk         near:G/WinMain.cpp             
+0x146550  0x4ca BODY/game              near:Image/Image.cpp            [?g_poolItemVtblae8@@3UCPoolIte]
+0x146a20  0x5b7 BODY/game              near:Image/Image.cpp            →Boundary_145e00,__ftol,Lock
+0x14d5e0  0x345 BODY/game              near:G/CDDrawShadeBlit.cpp      [switchdataD_0054d928,?g_scratch@@3PAEA,?g_blendDescr@@3PAUShadeDescr@]
+0x16e7f0  0x1cf LIB/compiler           near:G/TypeKeyColl.cpp          →operator_new,MallocCtor_169700,_RezFree [?g_logicTypesRegistered@@3HA]
+0x16f6e0   0x76 BODY/game              near:Crypto/Blowfish.cpp        →read,Blowfish_encipher,write
+0x177660    0x6 GLUE/iat-thunk         near:Image/Image.cpp           
+0x17ca10   0x49 BODY/game              near:G/CDirectDrawMgr.cpp      
+0x17ca60   0x35 BODY/game              near:G/CDirectDrawMgr.cpp      
+0x17cbe0   0x97 BODY/game              near:G/CDirectDrawMgr.cpp       [?g_imageProbeTag@@3PAXA]
+0x17cc80  0x109 BODY/game              near:G/CDirectDrawMgr.cpp      
+0x17cdf0  0x1c6 BODY/game              near:G/CDirectDrawMgr.cpp       →LAB_0057ce96
+0x17cfc0  0x2dd BODY/game              near:G/CDirectDrawMgr.cpp       →LAB_0057d266,operator_new [switchdataD_0057d2a0]
+0x17f330   0x51 BODY/game              near:G/CFxModeDesc.cpp          →_RezFree [LAB_005e3728,?g_severusWorkerDtorVtbl@@3PAX]
+0x17f390  0x164 BODY/game              near:G/CFxModeDesc.cpp          →_RezFree,operator_new
+0x17f500   0x23 BODY/game              near:G/CFxModeDesc.cpp         
+0x17f570   0x61 BODY/game              near:G/CFxModeDesc.cpp          →_RezFree,~CFader [LAB_005e3748]
+0x17f5e0   0x7d BODY/game              near:G/CFxModeDesc.cpp          →operator_new
+0x180fb0  0x534 BODY/game              near:G/CFader.cpp               →__ftol
+0x181660   0x40 BODY/game              near:G/CFader.cpp               →MakeAndAddB,Blt
+0x1816a0   0x1c BODY/game              near:G/CFader.cpp               →RemoveItemA
+0x181720   0xb3 BODY/game              near:G/CFader.cpp               →_RezFree,~CFader [LAB_005e37a8]
+0x1817e0  0x315 LIB/compiler           near:G/CFader.cpp               →Init,__ftol,operator_new
+0x181e50  0x7b9 BODY/game              near:G/CFader.cpp               →__ftol,LAB_005821cf,LAB_005821d3
+0x186180   0x25 BODY/game              near:G/MenuItem2.cpp           
+0x1861b0  0x21f LIB/compiler           near:G/MenuItem2.cpp            ["1.0.4",zcalloc,zcfree]
+0x1864d0   0x76 LIB/compiler           near:G/MenuItem2.cpp            →_tr_init
+0x186620  0x2b6 LIB/compiler           near:G/MenuItem2.cpp            →__tr_stored_block ["`Qb"]
+0x1868e0   0x2f BODY/game              near:G/MenuItem2.cpp           
+0x186910   0x72 BODY/game              near:G/MenuItem2.cpp           
+0x186990   0x90 BODY/game              near:G/MenuItem2.cpp           
+0x186a20   0x28 BODY/game              near:G/MenuItem2.cpp           
+0x186a50   0x93 BODY/game              near:G/MenuItem2.cpp           
+0x188860  0x267 BODY/game              near:G/MenuItem2.cpp           
+0x18a190   0x8c BODY/game              near:G/MenuItem2.cpp           
+0x18b780    0x6 GLUE/iat-thunk         near:G/MenuItem2.cpp            ["ZP,"]
+0x18b786    0x6 GLUE/iat-thunk         near:G/MenuItem2.cpp            ["lP,"]
+0x18b78c    0x6 GLUE/iat-thunk         near:G/MenuItem2.cpp           
+0x18b98a    0x6 GLUE/iat-thunk         near:G/MenuItem2.cpp            ["nV,"]
+0x18bcfc    0x6 GLUE/iat-thunk         near:G/MenuItem2.cpp            ["Z`,"]
+0x18bd02    0x6 GLUE/iat-thunk         near:G/MenuItem2.cpp            ["l`,"]
+0x18bebe    0x6 GLUE/iat-thunk         near:G/MenuItem2.cpp            ["Be,"]
+0x18bec4    0x6 GLUE/iat-thunk         near:G/MenuItem2.cpp            ["Re,"]
+0x18beca    0x6 GLUE/iat-thunk         near:G/MenuItem2.cpp            ["he,"]
+0x18bed0    0x6 GLUE/iat-thunk         near:G/MenuItem2.cpp           
+0x18bf4d   0xaf LIB/compiler           near:G/MenuItem2.cpp            →__math_exit,__convertTOStoQNaN,__startOneArgErrorHandling ["log"]
+0x18c1f5   0x28 BODY/game              near:G/MenuItem2.cpp           
+0x18d4cd   0xae LIB/compiler           near:G/MenuItem2.cpp            →__load_CW,__math_exit,__convertTOStoQNaN ["acos"]
+0x18fa90    0x6 GLUE/iat-thunk         near:G/MenuItem2.cpp           
+0x1915a8    0x6 GLUE/iat-thunk         near:G/MenuItem2.cpp           
+0x1915ae    0x6 GLUE/iat-thunk         near:G/MenuItem2.cpp           
+0x1915b4    0x6 GLUE/iat-thunk         near:G/MenuItem2.cpp           
+0x192930   0xb3 LIB/compiler           near:Crt/OStream.cpp            →ipfx,sbumpc,winapi_16c9f0_LeaveCriticalSection
+0x1929f0   0xf1 LIB/compiler           near:Crt/OStream.cpp            →ipfx,Boundary_16cda0,Boundary_16cd50
+0x192af0   0x98 BODY/game              near:Crt/OStream.cpp            →winapi_16c9e0_EnterCriticalSection,winapi_16c9f0_LeaveCriticalSection
+0x192b90   0x9d BODY/game              near:Crt/OStream.cpp            →winapi_16c9e0_EnterCriticalSection,winapi_16c9f0_LeaveCriticalSection
+0x192c30   0x99 BODY/game              near:Crt/OStream.cpp            →winapi_16c9e0_EnterCriticalSection,winapi_16c9f0_LeaveCriticalSection
+0x192cd0  0x1ff LIB/compiler           near:Crt/OStream.cpp            →ipfx,Boundary_16cda0,isxdigit
+0x192ed0  0x1ac LIB/compiler           near:Crt/OStream.cpp            →ipfx,Boundary_16cda0,isdigit
+0x193080   0xb5 LIB/compiler           near:Crt/OStream.cpp            →opfx,operator<<,osfx
+0x193140  0x1fa LIB/compiler           near:Crt/OStream.cpp            →ipfx,Boundary_16b9b0,isdigit
+0x193340   0x61 BODY/game              near:Crt/OStream.cpp           
+0x1933b0  0x28f BODY/game              near:Crt/OStream.cpp            →ClassUnknown_8_16e480,operator_new,LAB_00593626 [?g_projActCache@@3PAXA,?g_projActAllocResult@@3PAXA]
+0x193640   0x40 BODY/game              near:Crt/OStream.cpp           
+0x1936e0   0xd3 BODY/game              near:Crt/OStream.cpp            →realloc,malloc,Boundary_16d850 [?g_projActCache@@3PAXA,?g_projActAllocResult@@3PAXA]
+0x1937c0    0x6 GLUE/iat-thunk         near:Crt/OStream.cpp           
+0x1937c6    0x6 GLUE/iat-thunk         near:Crt/OStream.cpp           
+0x193950   0xc5 LIB/compiler           near:Crt/OStream.cpp            →opfx,sprintf,Boundary_16c2d0
+0x193a20   0x78 LIB/compiler           near:Crt/OStream.cpp            →ipfx,sbumpc,winapi_16c9f0_LeaveCriticalSection
+0x1b9b8d    0x6 EASY/ret-addr          near:Crt/OStream.cpp           
+0x1ba7ff   0x15 BODY/game              near:Crt/OStream.cpp            →Delete [LAB_005ba814]
+0x1baad2   0x15 BODY/game              near:Crt/OStream.cpp            →Delete [LAB_005baae7]
+0x1bade1    0xd LIB/compiler           near:Crt/OStream.cpp            →CWnd
+0x1badee    0xc LIB/compiler           near:Crt/OStream.cpp            →atexit [$E362]
+0x1bae1f    0xd LIB/compiler           near:Crt/OStream.cpp            →CWnd
+0x1bae2c    0xc LIB/compiler           near:Crt/OStream.cpp            →atexit [$E368]
+0x1bae5d    0xd LIB/compiler           near:Crt/OStream.cpp            →CWnd
+0x1bae6a    0xc LIB/compiler           near:Crt/OStream.cpp            →atexit [$E373]
+0x1bae9b    0xd LIB/compiler           near:Crt/OStream.cpp            →CWnd
+0x1baea8    0xc LIB/compiler           near:Crt/OStream.cpp            →atexit [$E378]
+0x1bb075   0x27 LIB/compiler           near:Crt/OStream.cpp            →AfxGetThread,Delete
+0x1bb09f   0x1f BODY/game              near:Crt/OStream.cpp           
+0x1bb315    0x6 EASY/ret-addr          near:Crt/OStream.cpp            [AfxWndProc]
+0x1bb42c   0x3c LIB/compiler           near:Crt/OStream.cpp            →AfxGetThread,Delete [LAB_005bb418]
+0x1bc087   0x16 LIB/compiler           near:Crt/OStream.cpp            →AfxUnlockGlobals,__CxxThrowException@8
+0x1bd989    0x6 EASY/ret-addr          near:Crt/OStream.cpp           
+0x1bd98f   0x1e BODY/game              near:Crt/OStream.cpp            →Delete
+0x1bd9b0   0x1d BODY/game              near:Crt/OStream.cpp           
+0x1bef71    0xe BODY/game              near:Crt/OStream.cpp           
+0x1bff99   0x2a LIB/compiler           near:Io/FileStream.cpp          →Detach,SetEvent,AfxEndThread [LAB_005bffc3]
+0x1c0a41    0x6 BODY/game              near:Io/FileStream.cpp         
+0x1c0fa8    0x9 LIB/compiler           near:Io/FileStream.cpp          →AfxGetModuleThreadState
+0x1c1188   0x17 LIB/compiler           near:Io/FileStream.cpp          →__CxxThrowException@8 [LAB_005c119f]
+0x1c11a5   0x31 LIB/compiler           near:Io/FileStream.cpp          →AfxSetNewHandler
+0x1c741c   0x29 LIB/compiler           near:Io/FileStream.cpp          →Delete,__CxxThrowException@8
+0x1c744f   0x17 BODY/game              near:Io/FileStream.cpp         
+0x1c7e6d    0xb LIB/compiler           near:Io/FileStream.cpp          →~CView ["fN]"]
+0x1c990a    0xe BODY/game              near:Io/FileStream.cpp          →Delete [LAB_005c9918]
+0x1ca095   0x4c BODY/game              near:Io/FileStream.cpp          →Delete [LAB_005ca0e1]
+0x1ca116    0xe BODY/game              near:Io/FileStream.cpp         
+0x1ca249   0x45 BODY/game              near:Io/FileStream.cpp          →Delete [LAB_005ca28e]
+0x1ca2c3    0xe BODY/game              near:Io/FileStream.cpp         
+0x1ce95f    0x9 LIB/compiler           near:G/ConfigStore.cpp          →AfxGetModuleState
+0x1ce973    0xc BODY/game              near:G/ConfigStore.cpp          [LAB_005ce97f]
+0x1d047f    0x7 BODY/game              near:G/ConfigStore.cpp         
+0x1d3184    0xc LIB/compiler           near:G/ConfigStore.cpp          →atexit [LAB_005d3190]
+0x1d31bc    0xc LIB/compiler           near:G/ConfigStore.cpp          →atexit [LAB_005d31c8]
+0x1d3330   0x10 BODY/game              near:G/ConfigStore.cpp          →GetData [CreateObject]
+0x1d3ee4    0xc LIB/compiler           near:G/ConfigStore.cpp          →atexit [LAB_005d3ef0]
+0x1d4239    0xc LIB/compiler           near:G/ConfigStore.cpp          →atexit [LAB_005d4245]
+0x1d4271    0xc LIB/compiler           near:G/ConfigStore.cpp          →atexit [LAB_005d427d]
+0x1d4722    0x7 EASY/setvtbl-ctor      near:G/ConfigStore.cpp         
+0x1d4952   0x16 LIB/compiler           near:G/ConfigStore.cpp          →AfxUnlockGlobals,__CxxThrowException@8
+0x1d4bc1    0xc LIB/compiler           near:G/ConfigStore.cpp          →atexit [LAB_005d4bcd]
+0x1d4be7    0xc LIB/compiler           near:G/ConfigStore.cpp          →atexit [LAB_005d4bf3]
+0x1d4c0c    0xa EASY/singleton-jmp     near:G/ConfigStore.cpp          →AUX_DATA
+0x1d4c16    0xc LIB/compiler           near:G/ConfigStore.cpp          →atexit [LAB_005d4c22]

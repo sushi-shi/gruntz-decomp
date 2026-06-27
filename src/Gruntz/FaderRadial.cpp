@@ -28,12 +28,12 @@ struct FrSurface {
     char p0[0x8];
     void* m_08; // +0x08
     char p0c[0x18 - 0xc];
-    i32 m_18;   // +0x18  width
-    i32 m_1c;   // +0x1c  height
+    i32 m_18; // +0x18  width
+    i32 m_1c; // +0x1c  height
     char p20[0x24 - 0x20];
-    i32 m_20;   // +0x20  row pitch
+    i32 m_20; // +0x20  row pitch
     char p24[0xb0 - 0x24];
-    i32 m_b0;   // +0xb0  column stride
+    i32 m_b0; // +0xb0  column stride
 };
 
 // The 16-byte fade cell.
@@ -50,17 +50,17 @@ struct CFaderRadial {
     void* m_24; // +0x24  default surface
     void* m_28; // +0x28  default palette
     char p2c[0x30 - 0x2c];
-    i32 m_30;   // +0x30  owns-surface flag
+    i32 m_30; // +0x30  owns-surface flag
     char p34[0x38 - 0x34];
     FrSurface* m_38; // +0x38  source surface
     void* m_3c;      // +0x3c  resolved palette
     char p40[0x44 - 0x40];
-    i32 m_44;   // +0x44  max-radius scale
+    i32 m_44; // +0x44  max-radius scale
     char p48[0x4c - 0x48];
     float m_4c;   // +0x4c  radius->fade divisor
     FrCell* m_50; // +0x50  cell buffer
-    i32 m_54;   // +0x54  center x
-    i32 m_58;   // +0x58  center y
+    i32 m_54;     // +0x54  center x
+    i32 m_58;     // +0x58  center y
 };
 
 // @early-stop
@@ -70,15 +70,17 @@ struct CFaderRadial {
 RVA(0x0017fa40, 0x1f3)
 i32 CFaderRadial::Build(FrConfig* cfg) {
     CFaderRadial* self = this;
-    if (cfg->m_04 == 0)
+    if (cfg->m_04 == 0) {
         self->m_3c = self->m_24;
-    else
+    } else {
         self->m_3c = cfg->m_04;
+    }
 
-    if (cfg->m_08 == 0)
+    if (cfg->m_08 == 0) {
         self->m_38 = (FrSurface*)self->m_28;
-    else
+    } else {
         self->m_38 = (FrSurface*)cfg->m_08;
+    }
 
     if (cfg->m_14 == 0) {
         self->m_1c = (void*)self->BuildSurface(*(i32*)((char*)cfg->m_10 + 0xc), 0x10, 0);
@@ -87,8 +89,9 @@ i32 CFaderRadial::Build(FrConfig* cfg) {
         self->m_1c = cfg->m_14;
         self->m_30 = 0;
     }
-    if (self->m_1c == 0)
+    if (self->m_1c == 0) {
         return 0;
+    }
 
     FrSurface* s = self->m_38;
     self->m_4c = (float)s->m_1c * 1.0; // K(0x5f0828)

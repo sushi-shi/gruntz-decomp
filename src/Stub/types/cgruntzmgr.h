@@ -130,21 +130,21 @@ public:
     ~CGruntSpawnLevel();
     void ResetFields();
 
-    i32 fieldUnknown000;                                   // +0x000
-    MgrCString strUnknownString004;                        // +0x004
-    i32 fieldUnknown008;                                   // +0x008
-    char _pad00C[4];                                       // +0x00c
-    i32 fieldUnknown010, fieldUnknown014, fieldUnknown018; // +0x010..0x1b
-    char _pad01C[4];                                       // +0x01c
-    i32 fieldUnknown020;                                   // +0x020
-    char _pad024[4];                                       // +0x024
-    i32 fieldUnknown028, fieldUnknown02C, fieldUnknown030; // +0x028..0x33
-    char _pad034[4];                                       // +0x034
-    CBattlezSpawnMgr_or_CGruntSpawnMgr unknownObjectArrays;                // +0x038 (0x144)
-    char _pad17C[0xA4];                                    // +0x17c
-    i32 fieldUnknown220, fieldUnknown224, fieldUnknown228; // +0x220..
-    i32 fieldUnknown22C, fieldUnknown230;                  // ..0x233
-    char _pad234[4];                                       // +0x234
+    i32 fieldUnknown000;                                    // +0x000
+    MgrCString strUnknownString004;                         // +0x004
+    i32 fieldUnknown008;                                    // +0x008
+    char _pad00C[4];                                        // +0x00c
+    i32 fieldUnknown010, fieldUnknown014, fieldUnknown018;  // +0x010..0x1b
+    char _pad01C[4];                                        // +0x01c
+    i32 fieldUnknown020;                                    // +0x020
+    char _pad024[4];                                        // +0x024
+    i32 fieldUnknown028, fieldUnknown02C, fieldUnknown030;  // +0x028..0x33
+    char _pad034[4];                                        // +0x034
+    CBattlezSpawnMgr_or_CGruntSpawnMgr unknownObjectArrays; // +0x038 (0x144)
+    char _pad17C[0xA4];                                     // +0x17c
+    i32 fieldUnknown220, fieldUnknown224, fieldUnknown228;  // +0x220..
+    i32 fieldUnknown22C, fieldUnknown230;                   // ..0x233
+    char _pad234[4];                                        // +0x234
 }; // 0x238
 
 class CGruntzMgr : public WAP32::CGameMgr {
@@ -204,8 +204,8 @@ public:
     i32 m_voiceVolume;                                     // +0x120  "Voice Volume"
     i32 m_scrollSpeed;                                     // +0x124  "Scroll Speed"
     i32 fieldUnknown128, fieldUnknown12C, fieldUnknown130, fieldUnknown134,
-        fieldUnknown138;                      // +0x128..0x13b
-    char _pad13C[0x14];                       // +0x13c
+        fieldUnknown138;              // +0x128..0x13b
+    char _pad13C[0x14];               // +0x13c
     CGruntSpawnLevel aUnknownObjs[4]; // +0x150 (4 * 0x238 = 0x8e0)
 
     //@address: 00646498  (init 0x482ec0 / dtor 0x482f10)

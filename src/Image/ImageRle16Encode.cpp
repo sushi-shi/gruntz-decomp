@@ -30,10 +30,10 @@ struct CImageRle16 {
     void* EncodeRle16(const u8* src); // 0x1495d0
 
     char _00[0x4];
-    i32 m_4;    // +0x04  width
-    i32 m_8;    // +0x08  height
-    u8* m_c;    // +0x0c  count stream
-    i32 m_10;   // +0x10  output size
+    i32 m_4;  // +0x04  width
+    i32 m_8;  // +0x08  height
+    u8* m_c;  // +0x0c  count stream
+    i32 m_10; // +0x10  output size
     char _14[0x20 - 0x14];
     const u8* m_20; // +0x20  source palette (256 x 4 = {R,G,B,pad})
 };

@@ -1421,7 +1421,14 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02ed90(i32) {
 // the ~CObList/xor/jmp at each early return. No steerable source spelling closes
 // either. Deferred to the final sweep.
 RVA(0x000300c0, 0x190)
-i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_0300c0(i32 unitArg, i32 gx, i32 gy, i32 a4, i32 a5, i32 a6) {
+i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_0300c0(
+    i32 unitArg,
+    i32 gx,
+    i32 gy,
+    i32 a4,
+    i32 a5,
+    i32 a6
+) {
     CObList list(10);
     GridUnit* unit = (GridUnit*)unitArg;
     UnitLevel* lvl = (UnitLevel*)unit->m_010;
@@ -1812,7 +1819,8 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_030990(i32 ax, i32 ay) {
     if (cell == -1) {
         return 0;
     }
-    GridUnit* unit = ((GridUnit**)((char*)(*(void**)((char*)m_004 + 0x68)) + 0x1c))[cell + m_018 * 15];
+    GridUnit* unit =
+        ((GridUnit**)((char*)(*(void**)((char*)m_004 + 0x68)) + 0x1c))[cell + m_018 * 15];
     if (unit == 0) {
         return 0;
     }
@@ -3103,13 +3111,13 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_034c70(i32 unitArg) {
 // The zvec error globals + the return-capture helper + the reporter (the same set
 // ZVec.cpp models). Declared here so the calls/stores reloc-mask.
 DATA(0x001f0428)
-extern void* g_zvecErrToken; // 0x6bf428
+extern void* g_zvecErrToken;     // 0x6bf428
 extern void* zErr_CaptureRetB(); // 0x16d990
 struct ZErrTarget {
     void* m_vptr;
     struct ZErrReporter {
         void Error(void* who, i32 sentinel, i32 code); // 0x16d850
-    }* m_err; // +0x04
+    }* m_err;                                          // +0x04
 };
 RVA(0x00034960, 0x24)
 void CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_034960(i32 sentinel, i32 code) {

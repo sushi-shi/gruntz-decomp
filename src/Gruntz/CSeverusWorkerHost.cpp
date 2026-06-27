@@ -37,10 +37,12 @@ extern "C" void RezFree(void* p);
 RVA(0x00163af0, 0xcd)
 CSeverusWorkerHost::~CSeverusWorkerHost() {
     m_vptr = &g_severusWorkerHostVtbl;
-    if (m_b0 != 0)
+    if (m_b0 != 0) {
         m_b0->PreDestroy();
-    if (m_b0 != 0)
+    }
+    if (m_b0 != 0) {
         delete m_b0;
+    }
     if (m_20 != 0) {
         RezFree(m_20);
         m_20 = 0;

@@ -22,15 +22,15 @@
 struct CTubeBlitParam {
     void Setup(void* src); // 0x15c2d0  CDDrawBlitParam::Setup
 };
-struct CTubeAnimPlayer { // CGrunt::m_154
+struct CTubeAnimPlayer {                    // CGrunt::m_154
     void CacheFirstFrame(const char* name); // 0x150540  CGruntSprite::CacheFirstFrame
     char _00[0x1a0];
     CTubeBlitParam m_1a0; // +0x1a0
     char _1a4[0x1b4 - 0x1a4];
     i32 m_1b4; // +0x1b4
 };
-struct CTubeRecord {  // entrance-record, 0x68-byte stride; element 0 = the CString
-    CString name;     // +0x00
+struct CTubeRecord { // entrance-record, 0x68-byte stride; element 0 = the CString
+    CString name;    // +0x00
     char _04[0x68 - 4];
 };
 struct CTubeMgr2c {
@@ -68,10 +68,10 @@ extern i32 g_typeCount;
 
 // --- the offset-faithful CGrunt view ---------------------------------------
 struct CGruntTube {
-    i32 SetupTubeAnim(i32 isWater); // 0x050a50
-    void Reset30ee();               // 0x30ee
-    void Reset1677(i32 a, i32 b);   // 0x1677
-    void Reset160e(i32 a, i32 b);   // 0x160e
+    i32 SetupTubeAnim(i32 isWater);          // 0x050a50
+    void Reset30ee();                        // 0x30ee
+    void Reset1677(i32 a, i32 b);            // 0x1677
+    void Reset160e(i32 a, i32 b);            // 0x160e
     void ResetGate136b(i32 a, i32 b, i32 c); // 0x136b
 
     char _00[0x14];

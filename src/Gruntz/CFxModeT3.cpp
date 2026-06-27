@@ -47,11 +47,11 @@ struct FxPoint {
 
 // The growable point array embedded at this+0x58 (MFC CArray<FxPoint>).
 struct FxPointArray {
-    void* m_vtbl;     // +0x00
-    FxPoint* m_pData; // +0x04
-    i32 m_nSize;      // +0x08
-    i32 m_nMaxSize;   // +0x0c
-    i32 m_nGrowBy;    // +0x10
+    void* m_vtbl;            // +0x00
+    FxPoint* m_pData;        // +0x04
+    i32 m_nSize;             // +0x08
+    i32 m_nMaxSize;          // +0x0c
+    i32 m_nGrowBy;           // +0x10
     void Init(i32 a, i32 b); // 0x17f390 (external, reloc-masked)
 };
 
@@ -76,14 +76,14 @@ public:
     FxBox* m_24; // +0x24 default src box
     FxBox* m_28; // +0x28 default dst box
     char m_2c[0x3c - 0x2c];
-    FxBox* m_3c; // +0x3c active src box
-    FxBox* m_38; // +0x38 active dst box
-    i32 m_40;    // +0x40
-    i32 m_44;    // +0x44
-    i32 m_48;    // +0x48
-    i32 m_4c;    // +0x4c record-order flag
-    i32 m_50;    // +0x50 columns
-    i32 m_54;    // +0x54 rows
+    FxBox* m_3c;       // +0x3c active src box
+    FxBox* m_38;       // +0x38 active dst box
+    i32 m_40;          // +0x40
+    i32 m_44;          // +0x44
+    i32 m_48;          // +0x48
+    i32 m_4c;          // +0x4c record-order flag
+    i32 m_50;          // +0x50 columns
+    i32 m_54;          // +0x54 rows
     FxPointArray m_58; // +0x58 mesh-point array
 };
 

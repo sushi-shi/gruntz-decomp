@@ -508,6 +508,16 @@ source = "src/Bute/ButeMgr.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "butemgrparse"
+source = "src/Bute/ButeMgrParse.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "gamestaterecordload"
+source = "src/Gruntz/GameStateRecordLoad.cpp"
+flags = "base"
+
+[[unit]]
 unit = "symtab"
 source = "src/Bute/SymTab.cpp"
 flags = "eh"
@@ -1192,6 +1202,81 @@ flags = "base"
 [[unit]]
 unit = "applyrange"
 source = "src/Utils/ApplyRange.cpp"
+flags = "base"
+
+[[unit]]
+unit = "projactregistry"
+source = "src/Gruntz/ProjActRegistry.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "pulsehighlight"
+source = "src/Gruntz/PulseHighlight.cpp"
+flags = "base"
+
+[[unit]]
+unit = "zdarrayderived"
+source = "src/Gruntz/ZDArrayDerived.cpp"
+flags = "base"
+
+[[unit]]
+unit = "orphanleaves"
+source = "src/Gruntz/OrphanLeaves.cpp"
+flags = "base"
+
+[[unit]]
+unit = "trirecordserialize"
+source = "src/Gruntz/TriRecordSerialize.cpp"
+flags = "base"
+
+[[unit]]
+unit = "orphanmethods"
+source = "src/Gruntz/OrphanMethods.cpp"
+flags = "base"
+
+[[unit]]
+unit = "cstateleaf8cf30"
+source = "src/Gruntz/CStateLeaf8cf30.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cmsgdispatch"
+source = "src/Gruntz/CMsgDispatch.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "actreg4"
+source = "src/Gruntz/ActReg4.cpp"
+flags = "base"
+
+[[unit]]
+unit = "ctilescan"
+source = "src/Gruntz/CTileScan.cpp"
+flags = "base"
+
+[[unit]]
+unit = "ckeyedlist"
+source = "src/Gruntz/CKeyedList.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "gamesave"
+source = "src/Io/GameSave.cpp"
+flags = "base"
+
+[[unit]]
+unit = "eyecandytypetags"
+source = "src/Gruntz/EyeCandyTypeTags.cpp"
+flags = "base"
+
+[[unit]]
+unit = "demosetup"
+source = "src/Gruntz/DemoSetup.cpp"
+flags = "base"
+
+[[unit]]
+unit = "bzkinddispatch"
+source = "src/Gruntz/BzKindDispatch.cpp"
 flags = "base"
 
 [[unit]]

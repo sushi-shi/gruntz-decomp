@@ -150,8 +150,11 @@ void operator delete(void*);
 // External, reloc-masked (its /GX EH frame lives there); modeled as a tiny helper
 // so the placement-new `mov ecx,alloc; push ...; call` falls out.
 struct DSoundCloneCtor {
-    DSoundCloneCtor* Construct(IDirectSoundBufferZ* buf, DirectSoundMgr* owner,
-                               DirectSoundMgr* original); // 0x136180
+    DSoundCloneCtor* Construct(
+        IDirectSoundBufferZ* buf,
+        DirectSoundMgr* owner,
+        DirectSoundMgr* original
+    ); // 0x136180
 };
 
 // ---------------------------------------------------------------------------
@@ -880,7 +883,7 @@ i32 DirectSoundMgr::Create(void* hwnd, u32 level, u32 flags) {
 RVA(0x001365e0, 0xf)
 i32 DirectSoundMgr::ReacquireViaCallback() {
     if (m_80 != 0) {
-        i32 (DirectSoundMgr::*cb)() = *(i32(DirectSoundMgr::**)())&m_80;
+        i32 (DirectSoundMgr::*cb)() = *(i32(DirectSoundMgr::**)()) & m_80;
         return (this->*cb)();
     }
     return 0;

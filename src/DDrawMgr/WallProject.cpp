@@ -43,8 +43,19 @@ extern "C" void DrawWallQuad(float* ws, i32 surf, i32 e, i32 f);            // 0
 // calls are the correct shape. Re-attack in the final sweep once an /Oi-intrinsic
 // flag profile exists.
 RVA(0x001471d0, 0x1b4)
-i32 ProjectWallQuad(i32 p0, i32 p1, i32 p2, i32 p3, i32 p4, i32 p5, i32 p6, i32 p7,
-                    i32 p8, i32 p9, i32 p10) {
+i32 ProjectWallQuad(
+    i32 p0,
+    i32 p1,
+    i32 p2,
+    i32 p3,
+    i32 p4,
+    i32 p5,
+    i32 p6,
+    i32 p7,
+    i32 p8,
+    i32 p9,
+    i32 p10
+) {
     i32 dx = p3 - p1;
     i32 dy = p4 - p2;
     double ang = atan2((double)dy, (double)dx);

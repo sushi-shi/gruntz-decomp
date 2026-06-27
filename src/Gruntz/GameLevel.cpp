@@ -627,12 +627,12 @@ struct CImageSet1 {
         *(void**)this = &g_imageSet1Vtbl;
         m_04 = 0;
     }
-    void DtorBase();           // 0x161370  base-subobject dtor (vtable restamp)
-    i32 Parse(void* record);   // 0x166d40  vtbl slot +0x14
-    void* m_vtbl; // +0x00
-    i32 m_04;     // +0x04
-    i32 m_08;     // +0x08
-    i32 m_0c;     // +0x0c
+    void DtorBase();         // 0x161370  base-subobject dtor (vtable restamp)
+    i32 Parse(void* record); // 0x166d40  vtbl slot +0x14
+    void* m_vtbl;            // +0x00
+    i32 m_04;                // +0x04
+    i32 m_08;                // +0x08
+    i32 m_0c;                // +0x0c
 };
 struct CImageSet2 {
     CImageSet2() {
@@ -1049,31 +1049,31 @@ struct ProbePlane {
             px_ = 0;                                                                               \
         } else {                                                                                   \
             ProbePlane* pc_ = (ProbePlane*)(LVL)->m_mainPlane;                                     \
-            if (px_ >= pc_->wrapW) {                                                                \
-                px_ = pc_->wrapW - 1;                                                               \
+            if (px_ >= pc_->wrapW) {                                                               \
+                px_ = pc_->wrapW - 1;                                                              \
             }                                                                                      \
         }                                                                                          \
         if (py_ < 0) {                                                                             \
             py_ = 0;                                                                               \
         } else {                                                                                   \
             ProbePlane* pc_ = (ProbePlane*)(LVL)->m_mainPlane;                                     \
-            if (py_ >= pc_->wrapH) {                                                                \
-                py_ = pc_->wrapH - 1;                                                               \
+            if (py_ >= pc_->wrapH) {                                                               \
+                py_ = pc_->wrapH - 1;                                                              \
             }                                                                                      \
         }                                                                                          \
-        ProbePlane* pl_ = (ProbePlane*)(LVL)->m_mainPlane;                                          \
-        i32 qx_ = px_ >> pl_->shiftX;                                                               \
-        i32 qy_ = py_ >> pl_->shiftY;                                                               \
-        i32 col_ = qx_;                                                                             \
-        i32 subX_ = px_ - (qx_ << pl_->shiftX);                                                     \
-        i32 idx_ = pl_->colOffsets[qy_] + col_;                                                     \
-        i32 subY_ = py_ - (qy_ << pl_->shiftY);                                                     \
-        i32 tile_ = pl_->tileGrid[idx_];                                                            \
-        if (tile_ == TILE_UNINIT || tile_ == TILE_CLEAR) {                                          \
-            (RESULT) = 0;                                                                           \
+        ProbePlane* pl_ = (ProbePlane*)(LVL)->m_mainPlane;                                         \
+        i32 qx_ = px_ >> pl_->shiftX;                                                              \
+        i32 qy_ = py_ >> pl_->shiftY;                                                              \
+        i32 col_ = qx_;                                                                            \
+        i32 subX_ = px_ - (qx_ << pl_->shiftX);                                                    \
+        i32 idx_ = pl_->colOffsets[qy_] + col_;                                                    \
+        i32 subY_ = py_ - (qy_ << pl_->shiftY);                                                    \
+        i32 tile_ = pl_->tileGrid[idx_];                                                           \
+        if (tile_ == TILE_UNINIT || tile_ == TILE_CLEAR) {                                         \
+            (RESULT) = 0;                                                                          \
         } else {                                                                                   \
-            CImageSet* set_ = (CImageSet*)m_imageSets[tile_ & 0xffff];                              \
-            (RESULT) = set_->dummy8(subX_, subY_);                                                  \
+            CImageSet* set_ = (CImageSet*)m_imageSets[tile_ & 0xffff];                             \
+            (RESULT) = set_->dummy8(subX_, subY_);                                                 \
         }                                                                                          \
     } while (0)
 
@@ -1619,76 +1619,75 @@ i32 CGameLevel::ScrollStepXHi(ScrollTarget* tp, i32 x, i32 y, i32* px, i32 flags
     if (yLo > yHi) {
         goto helper;
     }
-looptop:
+looptop: {
+    i32 result;
     {
-        i32 result;
-        {
-            i32 cx = xEnd;
-            if (cx < 0) {
-                cx = 0;
-            } else {
-                ProbePlane* pc = (ProbePlane*)m_mainPlane;
-                if (cx >= pc->wrapW) {
-                    cx = pc->wrapW - 1;
-                }
-            }
-            i32 cy = yLo;
-            if (cy < 0) {
-                cy = 0;
-            } else {
-                ProbePlane* pc = (ProbePlane*)m_mainPlane;
-                if (cy >= pc->wrapH) {
-                    cy = pc->wrapH - 1;
-                }
-            }
-            ProbePlane* pl = (ProbePlane*)m_mainPlane;
-            i32 qx = cx >> pl->shiftX;
-            i32 qy = cy >> pl->shiftY;
-            i32 col = qx;
-            i32 subX = cx - (qx << pl->shiftX);
-            i32 idx = pl->colOffsets[qy] + col;
-            i32 subY = cy - (qy << pl->shiftY);
-            i32 tile = pl->tileGrid[idx];
-            if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
-                result = 0;
-            } else {
-                CImageSet* set = (CImageSet*)m_imageSets[tile & 0xffff];
-                result = set->dummy8(subX, subY);
-            }
-        }
-        if (result == 2 && (t->flags & 0x400)) {
-            result = 0;
-        }
-        if (result == 1 || result == 2) {
-            i32 lo = t->scrollX + t->axisMid;
-            i32 j = xEnd - 1;
-            state |= 0x60000;
-            for (; j > lo; j--) {
-                if (AxisProbe(j, yLo) == 0) {
-                    j -= t->axisMid;
-                    goto have_x;
-                }
-            }
-            j = t->scrollX;
-        have_x:
-            x = j;
-            if (j == t->scrollX) {
-                goto done_eq;
-            }
-        }
-        if (yLo == yHi) {
-            yLo++;
+        i32 cx = xEnd;
+        if (cx < 0) {
+            cx = 0;
         } else {
-            yLo += t->stepY;
-            if (yLo <= yHi) {
-                goto looptop;
+            ProbePlane* pc = (ProbePlane*)m_mainPlane;
+            if (cx >= pc->wrapW) {
+                cx = pc->wrapW - 1;
             }
-            yLo = yHi;
         }
+        i32 cy = yLo;
+        if (cy < 0) {
+            cy = 0;
+        } else {
+            ProbePlane* pc = (ProbePlane*)m_mainPlane;
+            if (cy >= pc->wrapH) {
+                cy = pc->wrapH - 1;
+            }
+        }
+        ProbePlane* pl = (ProbePlane*)m_mainPlane;
+        i32 qx = cx >> pl->shiftX;
+        i32 qy = cy >> pl->shiftY;
+        i32 col = qx;
+        i32 subX = cx - (qx << pl->shiftX);
+        i32 idx = pl->colOffsets[qy] + col;
+        i32 subY = cy - (qy << pl->shiftY);
+        i32 tile = pl->tileGrid[idx];
+        if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
+            result = 0;
+        } else {
+            CImageSet* set = (CImageSet*)m_imageSets[tile & 0xffff];
+            result = set->dummy8(subX, subY);
+        }
+    }
+    if (result == 2 && (t->flags & 0x400)) {
+        result = 0;
+    }
+    if (result == 1 || result == 2) {
+        i32 lo = t->scrollX + t->axisMid;
+        i32 j = xEnd - 1;
+        state |= 0x60000;
+        for (; j > lo; j--) {
+            if (AxisProbe(j, yLo) == 0) {
+                j -= t->axisMid;
+                goto have_x;
+            }
+        }
+        j = t->scrollX;
+    have_x:
+        x = j;
+        if (j == t->scrollX) {
+            goto done_eq;
+        }
+    }
+    if (yLo == yHi) {
+        yLo++;
+    } else {
+        yLo += t->stepY;
         if (yLo <= yHi) {
             goto looptop;
         }
+        yLo = yHi;
     }
+    if (yLo <= yHi) {
+        goto looptop;
+    }
+}
 helper:
     if (BroadPhase(tp, x, y) != 0) {
         *px = t->scrollX;
@@ -1714,76 +1713,75 @@ i32 CGameLevel::ScrollStepXLo(ScrollTarget* tp, i32 x, i32 y, i32* px, i32 flags
     if (yLo > yHi) {
         goto helper;
     }
-looptop:
+looptop: {
+    i32 result;
     {
-        i32 result;
-        {
-            i32 cx = xEnd;
-            if (cx < 0) {
-                cx = 0;
-            } else {
-                ProbePlane* pc = (ProbePlane*)m_mainPlane;
-                if (cx >= pc->wrapW) {
-                    cx = pc->wrapW - 1;
-                }
-            }
-            i32 cy = yLo;
-            if (cy < 0) {
-                cy = 0;
-            } else {
-                ProbePlane* pc = (ProbePlane*)m_mainPlane;
-                if (cy >= pc->wrapH) {
-                    cy = pc->wrapH - 1;
-                }
-            }
-            ProbePlane* pl = (ProbePlane*)m_mainPlane;
-            i32 qx = cx >> pl->shiftX;
-            i32 qy = cy >> pl->shiftY;
-            i32 col = qx;
-            i32 subX = cx - (qx << pl->shiftX);
-            i32 idx = pl->colOffsets[qy] + col;
-            i32 subY = cy - (qy << pl->shiftY);
-            i32 tile = pl->tileGrid[idx];
-            if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
-                result = 0;
-            } else {
-                CImageSet* set = (CImageSet*)m_imageSets[tile & 0xffff];
-                result = set->dummy8(subX, subY);
-            }
-        }
-        if (result == 2 && (t->flags & 0x400)) {
-            result = 0;
-        }
-        if (result == 1 || result == 2) {
-            i32 lo = t->scrollX + t->axisLoA;
-            i32 j = xEnd + 1;
-            state |= 0xa0000;
-            for (; j < lo; j++) {
-                if (AxisProbe(j, yLo) == 0) {
-                    j -= t->axisLoA;
-                    goto have_x;
-                }
-            }
-            j = t->scrollX;
-        have_x:
-            x = j;
-            if (j == t->scrollX) {
-                goto done_eq;
-            }
-        }
-        if (yLo == yHi) {
-            yLo++;
+        i32 cx = xEnd;
+        if (cx < 0) {
+            cx = 0;
         } else {
-            yLo += t->stepY;
-            if (yLo <= yHi) {
-                goto looptop;
+            ProbePlane* pc = (ProbePlane*)m_mainPlane;
+            if (cx >= pc->wrapW) {
+                cx = pc->wrapW - 1;
             }
-            yLo = yHi;
         }
+        i32 cy = yLo;
+        if (cy < 0) {
+            cy = 0;
+        } else {
+            ProbePlane* pc = (ProbePlane*)m_mainPlane;
+            if (cy >= pc->wrapH) {
+                cy = pc->wrapH - 1;
+            }
+        }
+        ProbePlane* pl = (ProbePlane*)m_mainPlane;
+        i32 qx = cx >> pl->shiftX;
+        i32 qy = cy >> pl->shiftY;
+        i32 col = qx;
+        i32 subX = cx - (qx << pl->shiftX);
+        i32 idx = pl->colOffsets[qy] + col;
+        i32 subY = cy - (qy << pl->shiftY);
+        i32 tile = pl->tileGrid[idx];
+        if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
+            result = 0;
+        } else {
+            CImageSet* set = (CImageSet*)m_imageSets[tile & 0xffff];
+            result = set->dummy8(subX, subY);
+        }
+    }
+    if (result == 2 && (t->flags & 0x400)) {
+        result = 0;
+    }
+    if (result == 1 || result == 2) {
+        i32 lo = t->scrollX + t->axisLoA;
+        i32 j = xEnd + 1;
+        state |= 0xa0000;
+        for (; j < lo; j++) {
+            if (AxisProbe(j, yLo) == 0) {
+                j -= t->axisLoA;
+                goto have_x;
+            }
+        }
+        j = t->scrollX;
+    have_x:
+        x = j;
+        if (j == t->scrollX) {
+            goto done_eq;
+        }
+    }
+    if (yLo == yHi) {
+        yLo++;
+    } else {
+        yLo += t->stepY;
         if (yLo <= yHi) {
             goto looptop;
         }
+        yLo = yHi;
     }
+    if (yLo <= yHi) {
+        goto looptop;
+    }
+}
 helper:
     if (BroadPhase(tp, x, y) != 0) {
         *px = t->scrollX;
@@ -1809,76 +1807,75 @@ i32 CGameLevel::ScrollStepYHi(ScrollTarget* tp, i32 x, i32 y, i32* py, i32 flags
     if (col > colHi) {
         goto helper;
     }
-looptop:
+looptop: {
+    i32 result;
     {
-        i32 result;
-        {
-            i32 cx = col;
-            if (cx < 0) {
-                cx = 0;
-            } else {
-                ProbePlane* pc = (ProbePlane*)m_mainPlane;
-                if (cx >= pc->wrapW) {
-                    cx = pc->wrapW - 1;
-                }
-            }
-            i32 cy = fixedY;
-            if (cy < 0) {
-                cy = 0;
-            } else {
-                ProbePlane* pc = (ProbePlane*)m_mainPlane;
-                if (cy >= pc->wrapH) {
-                    cy = pc->wrapH - 1;
-                }
-            }
-            ProbePlane* pl = (ProbePlane*)m_mainPlane;
-            i32 qx = cx >> pl->shiftX;
-            i32 qy = cy >> pl->shiftY;
-            i32 c = qx;
-            i32 subX = cx - (qx << pl->shiftX);
-            i32 idx = pl->colOffsets[qy] + c;
-            i32 subY = cy - (qy << pl->shiftY);
-            i32 tile = pl->tileGrid[idx];
-            if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
-                result = 0;
-            } else {
-                CImageSet* set = (CImageSet*)m_imageSets[tile & 0xffff];
-                result = set->dummy8(subX, subY);
-            }
-        }
-        if (result == 2 && (t->flags & 0x400)) {
-            result = 0;
-        }
-        if (result == 1 || result == 2) {
-            i32 lo = t->scrollY + t->axisHi;
-            i32 j = fixedY - 1;
-            state |= 0x1020000;
-            for (; j > lo; j--) {
-                if (AxisProbe(col, j) == 0) {
-                    j -= t->axisHi;
-                    goto have_y;
-                }
-            }
-            j = t->scrollY;
-        have_y:
-            y = j;
-            if (j == t->scrollY) {
-                goto done_eq;
-            }
-        }
-        if (col == colHi) {
-            col++;
+        i32 cx = col;
+        if (cx < 0) {
+            cx = 0;
         } else {
-            col += t->stepX;
-            if (col <= colHi) {
-                goto looptop;
+            ProbePlane* pc = (ProbePlane*)m_mainPlane;
+            if (cx >= pc->wrapW) {
+                cx = pc->wrapW - 1;
             }
-            col = colHi;
         }
+        i32 cy = fixedY;
+        if (cy < 0) {
+            cy = 0;
+        } else {
+            ProbePlane* pc = (ProbePlane*)m_mainPlane;
+            if (cy >= pc->wrapH) {
+                cy = pc->wrapH - 1;
+            }
+        }
+        ProbePlane* pl = (ProbePlane*)m_mainPlane;
+        i32 qx = cx >> pl->shiftX;
+        i32 qy = cy >> pl->shiftY;
+        i32 c = qx;
+        i32 subX = cx - (qx << pl->shiftX);
+        i32 idx = pl->colOffsets[qy] + c;
+        i32 subY = cy - (qy << pl->shiftY);
+        i32 tile = pl->tileGrid[idx];
+        if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
+            result = 0;
+        } else {
+            CImageSet* set = (CImageSet*)m_imageSets[tile & 0xffff];
+            result = set->dummy8(subX, subY);
+        }
+    }
+    if (result == 2 && (t->flags & 0x400)) {
+        result = 0;
+    }
+    if (result == 1 || result == 2) {
+        i32 lo = t->scrollY + t->axisHi;
+        i32 j = fixedY - 1;
+        state |= 0x1020000;
+        for (; j > lo; j--) {
+            if (AxisProbe(col, j) == 0) {
+                j -= t->axisHi;
+                goto have_y;
+            }
+        }
+        j = t->scrollY;
+    have_y:
+        y = j;
+        if (j == t->scrollY) {
+            goto done_eq;
+        }
+    }
+    if (col == colHi) {
+        col++;
+    } else {
+        col += t->stepX;
         if (col <= colHi) {
             goto looptop;
         }
+        col = colHi;
     }
+    if (col <= colHi) {
+        goto looptop;
+    }
+}
 helper:
     if (BroadPhase(tp, x, y) != 0) {
         *py = t->scrollY;
@@ -1904,76 +1901,75 @@ i32 CGameLevel::ScrollStepYLo(ScrollTarget* tp, i32 x, i32 y, i32* py, i32 flags
     if (col > colHi) {
         goto helper;
     }
-looptop:
+looptop: {
+    i32 result;
     {
-        i32 result;
-        {
-            i32 cx = col;
-            if (cx < 0) {
-                cx = 0;
-            } else {
-                ProbePlane* pc = (ProbePlane*)m_mainPlane;
-                if (cx >= pc->wrapW) {
-                    cx = pc->wrapW - 1;
-                }
-            }
-            i32 cy = fixedY;
-            if (cy < 0) {
-                cy = 0;
-            } else {
-                ProbePlane* pc = (ProbePlane*)m_mainPlane;
-                if (cy >= pc->wrapH) {
-                    cy = pc->wrapH - 1;
-                }
-            }
-            ProbePlane* pl = (ProbePlane*)m_mainPlane;
-            i32 qx = cx >> pl->shiftX;
-            i32 qy = cy >> pl->shiftY;
-            i32 c = qx;
-            i32 subX = cx - (qx << pl->shiftX);
-            i32 idx = pl->colOffsets[qy] + c;
-            i32 subY = cy - (qy << pl->shiftY);
-            i32 tile = pl->tileGrid[idx];
-            if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
-                result = 0;
-            } else {
-                CImageSet* set = (CImageSet*)m_imageSets[tile & 0xffff];
-                result = set->dummy8(subX, subY);
-            }
-        }
-        if (result == 2 && (t->flags & 0x400)) {
-            result = 0;
-        }
-        if (result == 1 || result == 2) {
-            i32 lo = t->scrollY + t->axisLoB;
-            i32 j = fixedY + 1;
-            state |= 0x820000;
-            for (; j < lo; j++) {
-                if (AxisProbe(col, j) == 0) {
-                    j -= t->axisLoB;
-                    goto have_y;
-                }
-            }
-            j = t->scrollY;
-        have_y:
-            y = j;
-            if (j == t->scrollY) {
-                goto done_eq;
-            }
-        }
-        if (col == colHi) {
-            col++;
+        i32 cx = col;
+        if (cx < 0) {
+            cx = 0;
         } else {
-            col += t->stepX;
-            if (col <= colHi) {
-                goto looptop;
+            ProbePlane* pc = (ProbePlane*)m_mainPlane;
+            if (cx >= pc->wrapW) {
+                cx = pc->wrapW - 1;
             }
-            col = colHi;
         }
+        i32 cy = fixedY;
+        if (cy < 0) {
+            cy = 0;
+        } else {
+            ProbePlane* pc = (ProbePlane*)m_mainPlane;
+            if (cy >= pc->wrapH) {
+                cy = pc->wrapH - 1;
+            }
+        }
+        ProbePlane* pl = (ProbePlane*)m_mainPlane;
+        i32 qx = cx >> pl->shiftX;
+        i32 qy = cy >> pl->shiftY;
+        i32 c = qx;
+        i32 subX = cx - (qx << pl->shiftX);
+        i32 idx = pl->colOffsets[qy] + c;
+        i32 subY = cy - (qy << pl->shiftY);
+        i32 tile = pl->tileGrid[idx];
+        if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
+            result = 0;
+        } else {
+            CImageSet* set = (CImageSet*)m_imageSets[tile & 0xffff];
+            result = set->dummy8(subX, subY);
+        }
+    }
+    if (result == 2 && (t->flags & 0x400)) {
+        result = 0;
+    }
+    if (result == 1 || result == 2) {
+        i32 lo = t->scrollY + t->axisLoB;
+        i32 j = fixedY + 1;
+        state |= 0x820000;
+        for (; j < lo; j++) {
+            if (AxisProbe(col, j) == 0) {
+                j -= t->axisLoB;
+                goto have_y;
+            }
+        }
+        j = t->scrollY;
+    have_y:
+        y = j;
+        if (j == t->scrollY) {
+            goto done_eq;
+        }
+    }
+    if (col == colHi) {
+        col++;
+    } else {
+        col += t->stepX;
         if (col <= colHi) {
             goto looptop;
         }
+        col = colHi;
     }
+    if (col <= colHi) {
+        goto looptop;
+    }
+}
 helper:
     if (BroadPhase(tp, x, y) != 0) {
         *py = t->scrollY;

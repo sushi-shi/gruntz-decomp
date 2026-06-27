@@ -325,8 +325,6 @@ void CDDrawSurfacePair::DrawCross(i32 x, i32 y) {
 // 98.67%).  docs/patterns/reread-member-view-pointer.md / zero-register-pinning.md.
 RVA(0x00164660, 0x46)
 i32 CDDrawSurfacePair::Probe_164660() {
-    return m_2c == 0 ||
-           (m_2c->m_8 != 0 && m_2c->m_8->vtbl->IsLost(m_2c->m_8) == 0) ||
-           m_2c->m_8->vtbl->Restore(m_2c->m_8) == 0 ||
-           m_2c->m_8->vtbl->Restore(m_2c->m_8) == 0;
+    return m_2c == 0 || (m_2c->m_8 != 0 && m_2c->m_8->vtbl->IsLost(m_2c->m_8) == 0)
+           || m_2c->m_8->vtbl->Restore(m_2c->m_8) == 0 || m_2c->m_8->vtbl->Restore(m_2c->m_8) == 0;
 }

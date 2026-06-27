@@ -17,8 +17,8 @@
 #include <Ints.h>
 
 // The Rez heap throwing new / nothrow free (0x1b9b46 / 0x1b9b82, both __cdecl).
-void* operator new(u32 size);   // 0x1b9b46
-void operator delete(void* p);  // 0x1b9b82
+void* operator new(u32 size);  // 0x1b9b46
+void operator delete(void* p); // 0x1b9b82
 
 // The serialized reader the type id is read off: vtable slot 11 (+0x2c) is a
 // Read(void* buf, i32 n). Modeled polymorphically so `mov eax,[r]; call [eax+0x2c]`
@@ -57,7 +57,7 @@ struct CTileObj {
 // table. Reached by raw offset (engine struct, modeled minimally).
 struct CTrigBoardGeo {
     char m_pad00[0x24];
-    i32* m_24row;   // +0x24  row base (cell index = m_24row[y] + x)
+    i32* m_24row;                     // +0x24  row base (cell index = m_24row[y] + x)
     char m_pad28[0x20 - 0x28 + 0x20]; // pad to +0x20-relative kept raw below
 };
 struct CTrigBoard {
@@ -88,17 +88,17 @@ struct CTrigLogic {
     char m_pad28[0x70 - 0x28];
     void* m_70; // +0x70  (unused by the object itself; this->m_70 is what id 21 latches)
 
-    CTrigLogic* Ctor3206(); // 0x3206 (ids 1,2,5)
-    CTrigLogic* Ctor3eb3(); // 0x3eb3 (id 3)
-    CTrigLogic* Ctor4192(); // 0x4192 (id 4)
-    CTrigLogic* Ctor2db5(); // 0x2db5 (id 6)
-    CTrigLogic* Ctor332d(); // 0x332d (id 7)
-    CTrigLogic* Ctor2f72(); // 0x2f72 (id 8)
-    CTrigLogic* Ctor43b3(); // 0x43b3 (ids 21,24)
-    CTrigLogic* Ctor2c3e(); // 0x2c3e (id 22)
-    CTrigLogic* Ctor18de(); // 0x18de (id 23)
-    CTrigLogic* Ctor310c(); // 0x310c (id 25)
-    CTrigLogic* Ctor2a4f(); // 0x2a4f (id 26)
+    CTrigLogic* Ctor3206();                      // 0x3206 (ids 1,2,5)
+    CTrigLogic* Ctor3eb3();                      // 0x3eb3 (id 3)
+    CTrigLogic* Ctor4192();                      // 0x4192 (id 4)
+    CTrigLogic* Ctor2db5();                      // 0x2db5 (id 6)
+    CTrigLogic* Ctor332d();                      // 0x332d (id 7)
+    CTrigLogic* Ctor2f72();                      // 0x2f72 (id 8)
+    CTrigLogic* Ctor43b3();                      // 0x43b3 (ids 21,24)
+    CTrigLogic* Ctor2c3e();                      // 0x2c3e (id 22)
+    CTrigLogic* Ctor18de();                      // 0x18de (id 23)
+    CTrigLogic* Ctor310c();                      // 0x310c (id 25)
+    CTrigLogic* Ctor2a4f();                      // 0x2a4f (id 26)
     i32 Reg277f(void* r, i32 k, i32 a2, i32 a3); // 0x277f (ids 1..8)
     i32 Reg1abe(void* r, i32 k, i32 a2, i32 a3); // 0x1abe (ids 21,23..26)
     i32 Reg1d39(void* r, i32 k, i32 a2, i32 a3); // 0x1d39 (id 22)
@@ -114,8 +114,14 @@ struct CTileTriggerFactory {
 };
 
 // Build the 277f-group object: alloc 0x8c, run `ctor`, register, stamp owner+id.
-static void* Reg277fTail(CTileTriggerFactory* self, CTrigLogic* obj, CTrigReader* reader,
-                         i32 a2, i32 a3, i32 id) {
+static void* Reg277fTail(
+    CTileTriggerFactory* self,
+    CTrigLogic* obj,
+    CTrigReader* reader,
+    i32 a2,
+    i32 a3,
+    i32 id
+) {
     if (obj->Reg277f(reader, 7, a2, a3) == 0) {
         return 0;
     }
@@ -125,8 +131,14 @@ static void* Reg277fTail(CTileTriggerFactory* self, CTrigLogic* obj, CTrigReader
 }
 
 // Build the 1abe-group object tail: register, stamp owner+id.
-static void* Reg1abeTail(CTileTriggerFactory* self, CTrigLogic* obj, CTrigReader* reader,
-                         i32 a2, i32 a3, i32 id) {
+static void* Reg1abeTail(
+    CTileTriggerFactory* self,
+    CTrigLogic* obj,
+    CTrigReader* reader,
+    i32 a2,
+    i32 a3,
+    i32 id
+) {
     if (obj->Reg1abe(reader, 7, a2, a3) == 0) {
         return 0;
     }
@@ -154,130 +166,130 @@ void* CTileTriggerFactory::Build(CTrigReader* reader, i32 kind, i32 a2, i32 a3) 
     i32 id;
     reader->Read(&id, 4);
     switch (id) {
-    case 1:
-    case 2:
-    case 5: {
-        CTrigLogic* obj = (CTrigLogic*)::operator new(0x8c);
-        if (obj) {
-            obj = obj->Ctor3206();
+        case 1:
+        case 2:
+        case 5: {
+            CTrigLogic* obj = (CTrigLogic*)::operator new(0x8c);
+            if (obj) {
+                obj = obj->Ctor3206();
+            }
+            return Reg277fTail(this, obj, reader, a2, a3, id);
         }
-        return Reg277fTail(this, obj, reader, a2, a3, id);
-    }
-    case 3: {
-        CTrigLogic* obj = (CTrigLogic*)::operator new(0x8c);
-        if (obj) {
-            obj = obj->Ctor3eb3();
+        case 3: {
+            CTrigLogic* obj = (CTrigLogic*)::operator new(0x8c);
+            if (obj) {
+                obj = obj->Ctor3eb3();
+            }
+            return Reg277fTail(this, obj, reader, a2, a3, id);
         }
-        return Reg277fTail(this, obj, reader, a2, a3, id);
-    }
-    case 4: {
-        CTrigLogic* obj = (CTrigLogic*)::operator new(0x8c);
-        if (obj) {
-            obj = obj->Ctor4192();
+        case 4: {
+            CTrigLogic* obj = (CTrigLogic*)::operator new(0x8c);
+            if (obj) {
+                obj = obj->Ctor4192();
+            }
+            return Reg277fTail(this, obj, reader, a2, a3, id);
         }
-        return Reg277fTail(this, obj, reader, a2, a3, id);
-    }
-    case 6: {
-        CTrigLogic* obj = (CTrigLogic*)::operator new(0x8c);
-        if (obj) {
-            obj = obj->Ctor2db5();
+        case 6: {
+            CTrigLogic* obj = (CTrigLogic*)::operator new(0x8c);
+            if (obj) {
+                obj = obj->Ctor2db5();
+            }
+            return Reg277fTail(this, obj, reader, a2, a3, id);
         }
-        return Reg277fTail(this, obj, reader, a2, a3, id);
-    }
-    case 7: {
-        CTrigLogic* obj = (CTrigLogic*)::operator new(0x8c);
-        if (obj) {
-            obj = obj->Ctor332d();
+        case 7: {
+            CTrigLogic* obj = (CTrigLogic*)::operator new(0x8c);
+            if (obj) {
+                obj = obj->Ctor332d();
+            }
+            return Reg277fTail(this, obj, reader, a2, a3, id);
         }
-        return Reg277fTail(this, obj, reader, a2, a3, id);
-    }
-    case 8: {
-        CTrigLogic* obj = (CTrigLogic*)::operator new(0x8c);
-        if (obj) {
-            obj = obj->Ctor2f72();
+        case 8: {
+            CTrigLogic* obj = (CTrigLogic*)::operator new(0x8c);
+            if (obj) {
+                obj = obj->Ctor2f72();
+            }
+            return Reg277fTail(this, obj, reader, a2, a3, id);
         }
-        return Reg277fTail(this, obj, reader, a2, a3, id);
-    }
-    case 21: {
-        CTrigLogic* obj = (CTrigLogic*)::operator new(0x9c);
-        if (obj) {
-            obj = obj->Ctor43b3();
+        case 21: {
+            CTrigLogic* obj = (CTrigLogic*)::operator new(0x9c);
+            if (obj) {
+                obj = obj->Ctor43b3();
+            }
+            if (obj->Reg1abe(reader, 7, a2, a3) == 0) {
+                return 0;
+            }
+            obj->m_20 = this;
+            obj->m_04 = (void*)id;
+            // resolve the board tile under the object; latch on a 0x67/0x68 tile.
+            CTrigBoard* board = g_mgrSettings->m_30->m_24;
+            i32 x = obj->m_08;
+            i32 y = obj->m_0c;
+            i32* geo = *(i32**)((char*)board + 0x5c);
+            if (x < 0) {
+                x = 0;
+            } else if (x >= geo[0x28 / 4]) {
+                x = geo[0x28 / 4] - 1;
+            }
+            if (y < 0) {
+                y = 0;
+            } else if (y >= geo[0x2c / 4]) {
+                y = geo[0x2c / 4] - 1;
+            }
+            i32* rowbase = (i32*)geo[0x24 / 4];
+            i32 cell = rowbase[y] + x;
+            i32 tile = ((i32*)geo[0x20 / 4])[cell];
+            i32 type;
+            if (tile == (i32)0xeeeeeeee || tile == -1) {
+                type = 0;
+            } else {
+                type = board->m_4c[tile & 0xffff]->TypeId();
+            }
+            if (type == 0x67 || type == 0x68) {
+                this->m_70 = obj;
+            }
+            return obj;
         }
-        if (obj->Reg1abe(reader, 7, a2, a3) == 0) {
+        case 22: {
+            CTrigLogic* obj = (CTrigLogic*)::operator new(0xc8);
+            if (obj) {
+                obj = obj->Ctor2c3e();
+            }
+            if (obj->Reg1d39(reader, 7, a2, a3) == 0) {
+                return 0;
+            }
+            obj->m_20 = this;
+            obj->m_04 = (void*)id;
+            return obj;
+        }
+        case 23: {
+            CTrigLogic* obj = (CTrigLogic*)::operator new(0x9c);
+            if (obj) {
+                obj = obj->Ctor18de();
+            }
+            return Reg1abeTail(this, obj, reader, a2, a3, id);
+        }
+        case 24: {
+            CTrigLogic* obj = (CTrigLogic*)::operator new(0x9c);
+            if (obj) {
+                obj = obj->Ctor43b3();
+            }
+            return Reg1abeTail(this, obj, reader, a2, a3, id);
+        }
+        case 25: {
+            CTrigLogic* obj = (CTrigLogic*)::operator new(0x9c);
+            if (obj) {
+                obj = obj->Ctor310c();
+            }
+            return Reg1abeTail(this, obj, reader, a2, a3, id);
+        }
+        case 26: {
+            CTrigLogic* obj = (CTrigLogic*)::operator new(0x9c);
+            if (obj) {
+                obj = obj->Ctor2a4f();
+            }
+            return Reg1abeTail(this, obj, reader, a2, a3, id);
+        }
+        default:
             return 0;
-        }
-        obj->m_20 = this;
-        obj->m_04 = (void*)id;
-        // resolve the board tile under the object; latch on a 0x67/0x68 tile.
-        CTrigBoard* board = g_mgrSettings->m_30->m_24;
-        i32 x = obj->m_08;
-        i32 y = obj->m_0c;
-        i32* geo = *(i32**)((char*)board + 0x5c);
-        if (x < 0) {
-            x = 0;
-        } else if (x >= geo[0x28 / 4]) {
-            x = geo[0x28 / 4] - 1;
-        }
-        if (y < 0) {
-            y = 0;
-        } else if (y >= geo[0x2c / 4]) {
-            y = geo[0x2c / 4] - 1;
-        }
-        i32* rowbase = (i32*)geo[0x24 / 4];
-        i32 cell = rowbase[y] + x;
-        i32 tile = ((i32*)geo[0x20 / 4])[cell];
-        i32 type;
-        if (tile == (i32)0xeeeeeeee || tile == -1) {
-            type = 0;
-        } else {
-            type = board->m_4c[tile & 0xffff]->TypeId();
-        }
-        if (type == 0x67 || type == 0x68) {
-            this->m_70 = obj;
-        }
-        return obj;
-    }
-    case 22: {
-        CTrigLogic* obj = (CTrigLogic*)::operator new(0xc8);
-        if (obj) {
-            obj = obj->Ctor2c3e();
-        }
-        if (obj->Reg1d39(reader, 7, a2, a3) == 0) {
-            return 0;
-        }
-        obj->m_20 = this;
-        obj->m_04 = (void*)id;
-        return obj;
-    }
-    case 23: {
-        CTrigLogic* obj = (CTrigLogic*)::operator new(0x9c);
-        if (obj) {
-            obj = obj->Ctor18de();
-        }
-        return Reg1abeTail(this, obj, reader, a2, a3, id);
-    }
-    case 24: {
-        CTrigLogic* obj = (CTrigLogic*)::operator new(0x9c);
-        if (obj) {
-            obj = obj->Ctor43b3();
-        }
-        return Reg1abeTail(this, obj, reader, a2, a3, id);
-    }
-    case 25: {
-        CTrigLogic* obj = (CTrigLogic*)::operator new(0x9c);
-        if (obj) {
-            obj = obj->Ctor310c();
-        }
-        return Reg1abeTail(this, obj, reader, a2, a3, id);
-    }
-    case 26: {
-        CTrigLogic* obj = (CTrigLogic*)::operator new(0x9c);
-        if (obj) {
-            obj = obj->Ctor2a4f();
-        }
-        return Reg1abeTail(this, obj, reader, a2, a3, id);
-    }
-    default:
-        return 0;
     }
 }

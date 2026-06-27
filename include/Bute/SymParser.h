@@ -37,26 +37,34 @@ class CSymTab {
 public:
     // The 8-arg ctor (0x139de0) ParseBuffer builds the root scope with; uses the Rez
     // heap so `new CSymTab(...)` drives the operator-new + ctor-throw /GX cleanup.
-    CSymTab(CSymParser* owner, void* p1, const char* name, void* p3, void* p4,
-            void* p5, i32 subN, i32 symN);
-    ~CSymTab();                                        // 0x139ee0
+    CSymTab(
+        CSymParser* owner,
+        void* p1,
+        const char* name,
+        void* p3,
+        void* p4,
+        void* p5,
+        i32 subN,
+        i32 symN
+    );
+    ~CSymTab(); // 0x139ee0
     void* operator new(u32 n) {
         return RezAlloc(n);
     }
     void operator delete(void* p) {
         RezFree(p);
     }
-    void* ResolvePath(const char* path);               // 0x13bae0
-    i32 ResolveQualified(const char* name, void* arg); // 0x13be40
+    void* ResolvePath(const char* path);                // 0x13bae0
+    i32 ResolveQualified(const char* name, void* arg);  // 0x13be40
     i32 ApplyRecursive(i32 a0, i32 a1, i32 a2, i32 a3); // 0x13a580
     // The directory-load helpers ParseRecords drives on the current scope node (all
     // reloc-masked externals on the node CSymTab):
-    void* FindSub(const char* name);             // 0x13a230
-    CSymTab* CreateSub(const char* name);        // 0x13a330
-    void* FindOrAddSym(i32 key);                 // 0x13a940
-    i32 Insert(const char* key, void* arg);      // 0x13a000
+    void* FindSub(const char* name);                   // 0x13a230
+    CSymTab* CreateSub(const char* name);              // 0x13a330
+    void* FindOrAddSym(i32 key);                       // 0x13a940
+    i32 Insert(const char* key, void* arg);            // 0x13a000
     i32 Method4b0(void* a, void* b, void* c, void* d); // 0x13a4b0
-    i32 Method530(void* rec, void* found);       // 0x13a530
+    i32 Method530(void* rec, void* found);             // 0x13a530
 };
 
 // The name->key map / seed builder ParseBuffer reaches: MakeSymSeed (0x13ba70, cdecl,
@@ -80,12 +88,12 @@ extern void* CObjList_purecall_vftbl; // 0x5ef760
 // virtuals are never defined here, so no vtable is emitted in this TU.
 class CObjNode {
 public:
-    virtual void Slot00();         // +0x00
-    virtual void Delete(i32 flag); // +0x04  slot 1 (scalar-deleting dtor)
+    virtual void Slot00();                                 // +0x00
+    virtual void Delete(i32 flag);                         // +0x04  slot 1 (scalar-deleting dtor)
     virtual i32 ReadRaw(i32 a, i32 b, i32 len, void* buf); // +0x08  slot 2 (binary read)
-    virtual void Slot0c();         // +0x0c
-    virtual i32 Read(void* buf, i32 a, i32 b); // +0x10  slot 4 (parse buffer)
-    virtual void* Detach();        // +0x14  slot 5 (teardown/detach)
+    virtual void Slot0c();                                 // +0x0c
+    virtual i32 Read(void* buf, i32 a, i32 b);             // +0x10  slot 4 (parse buffer)
+    virtual void* Detach();                                // +0x14  slot 5 (teardown/detach)
 
     CObjNode* m_next; // +0x04
     CObjNode* m_prev; // +0x08
@@ -211,8 +219,8 @@ public:
     i32 m_60;               // +0x60
     void* m_buf64;          // +0x64
     char m_pad68[0x78 - 0x68];
-    i32 m_78; // +0x78  child-scope m_subTabs bucket count (CSymTab ctor subN)
-    i32 m_7c; // +0x7c  child-scope m_symbols bucket count (CSymTab ctor symN)
+    i32 m_78;              // +0x78  child-scope m_subTabs bucket count (CSymTab ctor subN)
+    i32 m_7c;              // +0x7c  child-scope m_symbols bucket count (CSymTab ctor symN)
     CParserHash m_hash;    // +0x80
     CHashSlotList m_nodes; // +0x88  { head, tail }
     i32 m_90;              // +0x90  number of parse-slot records per allocated block

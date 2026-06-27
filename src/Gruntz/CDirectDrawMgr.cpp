@@ -869,8 +869,8 @@ i32 CDDPalette::LoadBmp(IDirectDraw2Z* dd, char* filename, u32 flags) {
 // names. Deferred to the final sweep. docs/patterns/zero-register-pinning.md.
 RVA(0x00147710, 0x122)
 i32 CDDPalette::LoadPcx(IDirectDraw2Z* dd, char* filename, u32 flags) {
-    u8 pe[0x400];    // expanded PALETTEENTRY[256]
-    u8 rgb[0x300];   // 256 packed RGB triplets (trailing VGA palette)
+    u8 pe[0x400];  // expanded PALETTEENTRY[256]
+    u8 rgb[0x300]; // 256 packed RGB triplets (trailing VGA palette)
     CFileIO file;
     if (file.Open(filename, 0, 0) == 0) {
         return 0;

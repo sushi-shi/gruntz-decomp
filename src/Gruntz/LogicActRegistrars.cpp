@@ -281,7 +281,7 @@ struct CLookupColl {
 DATA(0x002bf650)
 extern CLookupColl g_nameRegColl; // 0x6bf650  (name registry, == g_nameReg)
 DATA(0x00244af0)
-extern CLookupColl g_reg_644af0;  // 0x644af0  (per-class table)
+extern CLookupColl g_reg_644af0; // 0x644af0  (per-class table)
 
 // The 19 action-key strings (s_actKeyA/B come from above; the rest are .rdata
 // string constants named by address). Referenced so the `push key` reloc-masks.
@@ -346,25 +346,25 @@ extern "C" void H_4036f2();
 // per-function inline budget after ~6 sites and calls the rest, but retail unrolls
 // every block); the lookups outline to the shared 0x3864 helper while the node-free
 // loop stays inline.
-#define REGISTER_KEY_644AF0(key, handler)                       \
-    {                                                           \
-        i32 id = (i32)g_buteTree.Find(key);                     \
-        if (id == 0) {                                          \
-            g_buteTree.Insert(key, (void*)g_nextActId);         \
-            id = g_nextActId;                                   \
-            char* slot = g_nameRegColl.Lookup(id);              \
-            i32 n = g_nameRegScratch;                           \
-            void** list = g_nameRegCurList;                     \
-            while (n-- != 0) {                                  \
-                if (list != 0) {                                \
-                    ((CActName*)list)->Free();                  \
-                }                                               \
-                list++;                                         \
-            }                                                   \
-            ((CActName*)slot)->Assign(key);                     \
-            g_nextActId++;                                      \
-        }                                                       \
-        *(void**)g_reg_644af0.Lookup(id) = (void*)(handler);    \
+#define REGISTER_KEY_644AF0(key, handler)                                                          \
+    {                                                                                              \
+        i32 id = (i32)g_buteTree.Find(key);                                                        \
+        if (id == 0) {                                                                             \
+            g_buteTree.Insert(key, (void*)g_nextActId);                                            \
+            id = g_nextActId;                                                                      \
+            char* slot = g_nameRegColl.Lookup(id);                                                 \
+            i32 n = g_nameRegScratch;                                                              \
+            void** list = g_nameRegCurList;                                                        \
+            while (n-- != 0) {                                                                     \
+                if (list != 0) {                                                                   \
+                    ((CActName*)list)->Free();                                                     \
+                }                                                                                  \
+                list++;                                                                            \
+            }                                                                                      \
+            ((CActName*)slot)->Assign(key);                                                        \
+            g_nextActId++;                                                                         \
+        }                                                                                          \
+        *(void**)g_reg_644af0.Lookup(id) = (void*)(handler);                                       \
     }
 
 // @early-stop

@@ -21,24 +21,24 @@ struct CGruntSub10 { // grunt->m_10
     char _00[0x5c];
     i32 m_5c, m_60; // +0x5c, +0x60
 };
-struct CMoveListNode { // pending-coord node
+struct CMoveListNode {     // pending-coord node
     CMoveListNode* m_next; // +0x00
     i32 _04;
     void* m_8; // +0x08
 };
-struct CMoveObList { // CGrunt::m_31c (CObList view)
+struct CMoveObList {           // CGrunt::m_31c (CObList view)
     void* Find1de8(void** it); // 0x1de8
-    void RemoveAll1b48a6();     // 0x1b48a6
+    void RemoveAll1b48a6();    // 0x1b48a6
     char _00[4];
 };
 struct CCoordXY {
     i32 x, y;
 };
-struct CGruntM { // the grunt (esi) + its neighbours
-    void GetTilePos36c0(CCoordXY* out);                    // 0x36c0
+struct CGruntM {                                             // the grunt (esi) + its neighbours
+    void GetTilePos36c0(CCoordXY* out);                      // 0x36c0
     i32 Probe1640(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // 0x1640
-    i32 Check3c4c(i32 a, i32 b);                           // 0x3c4c
-    void Probe3143(CCoordXY* out);                         // 0x3143
+    i32 Check3c4c(i32 a, i32 b);                             // 0x3c4c
+    void Probe3143(CCoordXY* out);                           // 0x3143
 
     char _00[0x10];
     CGruntSub10* m_10; // +0x10
@@ -49,7 +49,7 @@ struct CGruntM { // the grunt (esi) + its neighbours
     char _2d8[0x2ec - 0x2d8];
     i32 m_2ec, m_2f0, m_2f4; // +0x2ec..+0x2f4
     char _2f8[0x31c - 0x2f8];
-    CMoveObList m_31c; // +0x31c
+    CMoveObList m_31c;    // +0x31c
     CMoveListNode* m_320; // +0x320
     char _324[0x328 - 0x324];
     i32 m_328; // +0x328
@@ -60,15 +60,15 @@ struct CMoveGridDims { // mover->m_c
     i32 m_c, m_10; // +0x0c grid width, +0x10 grid height
 };
 
-struct CGruntMover { // this (edi)
-    i32 Step(CGruntM* g); // 0x031610
+struct CGruntMover {                                              // this (edi)
+    i32 Step(CGruntM* g);                                         // 0x031610
     CGruntM* QueryTile4098(i32 x, i32 y, i32 dx, i32 dy);         // 0x4098
-    void Commit42e1(CGruntM* g);                                 // 0x42e1
+    void Commit42e1(CGruntM* g);                                  // 0x42e1
     void Plan293c(CGruntM* g, i32 x, i32 y, i32 a, i32 b, i32 c); // 0x293c
-    void Finish3e4f(CGruntM* g, CGruntM* a);                     // 0x3e4f
+    void Finish3e4f(CGruntM* g, CGruntM* a);                      // 0x3e4f
 
     char _00[0x8];
-    void* m_8; // +0x08  board (CGruntM*[])
+    void* m_8;          // +0x08  board (CGruntM*[])
     CMoveGridDims* m_c; // +0x0c
     char _10[0x94 - 0x10];
     i32 m_94, m_98; // +0x94, +0x98
@@ -91,17 +91,17 @@ static i32 isqrt(i32 v) {
     return (i32)(double)v;
 }
 
-#define MOVE_RECYCLE(g)                                                     \
-    {                                                                       \
-        CMoveListNode* nd = (g)->m_320;                                     \
-        while (nd != 0) {                                                   \
-            CMoveListNode* cur = nd;                                        \
-            nd = nd->m_next;                                                \
-            if (cur->m_8 != 0) {                                            \
-                g_coordPool.Recycle163b(cur->m_8);                         \
-            }                                                               \
-        }                                                                   \
-        (g)->m_31c.RemoveAll1b48a6();                                       \
+#define MOVE_RECYCLE(g)                                                                            \
+    {                                                                                              \
+        CMoveListNode* nd = (g)->m_320;                                                            \
+        while (nd != 0) {                                                                          \
+            CMoveListNode* cur = nd;                                                               \
+            nd = nd->m_next;                                                                       \
+            if (cur->m_8 != 0) {                                                                   \
+                g_coordPool.Recycle163b(cur->m_8);                                                 \
+            }                                                                                      \
+        }                                                                                          \
+        (g)->m_31c.RemoveAll1b48a6();                                                              \
     }
 
 // @early-stop

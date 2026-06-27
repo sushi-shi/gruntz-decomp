@@ -27,9 +27,19 @@ extern i32 g_freeListNodeBias; // ?g_freeListNodeBias@@3HA  @0x64554c
 void* operator new(u32);
 void operator delete(void*);
 
+// The (x,y) pair the +0x174/+0x178 origin accessor writes out.
+struct CTrigPoint {
+    i32 x; // +0x00
+    i32 y; // +0x04
+};
+
 class CTriggerMgr {
 public:
     // --- the small reconstructed leaf interface (retail-RVA order) -------------
+    // 0x759e0: copy the cached origin pair (+0x174,+0x178) into the caller's
+    // out-slot and return it (ret 4 -> callee cleans the out-ptr arg).
+    CTrigPoint* GetOriginXY(CTrigPoint* out);
+
     // 0x6b640: store the supplied object at +0x22c and clear three companion
     // state words; returns 1 (0 when arg is null).
     i32 SetLevel(void* lvl);

@@ -57,20 +57,20 @@ extern "C" int FecLog(char* buf, const char* fmt, ...);
 class CFecFile {
 public:
     i32 ReadArchive(const char* name); // 0x17b5f0
-    void OnFail();                      // 0x17b5a0 (reloc-masked)
+    void OnFail();                     // 0x17b5a0 (reloc-masked)
 
-    i32 m_00;             // +0x00  open-gate (must be nonzero)
-    i32 m_04;             // +0x04  already-open flag
-    i32 m_08;             // +0x08
-    i32 m_0c;             // +0x0c  version major (12-byte header word 0)
-    i32 m_10;             // +0x10  version minor
-    i32 m_14;             // +0x14  entry count
-    char m_18[0x10c];     // +0x18  per-entry record (m_11e WORD + m_120 stride inside)
-    FecStream m_stream;   // +0x124
+    i32 m_00;           // +0x00  open-gate (must be nonzero)
+    i32 m_04;           // +0x04  already-open flag
+    i32 m_08;           // +0x08
+    i32 m_0c;           // +0x0c  version major (12-byte header word 0)
+    i32 m_10;           // +0x10  version minor
+    i32 m_14;           // +0x14  entry count
+    char m_18[0x10c];   // +0x18  per-entry record (m_11e WORD + m_120 stride inside)
+    FecStream m_stream; // +0x124
     char _pad128[0x138 - 0x128];
-    FecIndex m_index;     // +0x138
-    char* m_13c;          // +0x13c  per-entry offset table (dwords)
-    i32 m_140;            // +0x140
+    FecIndex m_index; // +0x138
+    char* m_13c;      // +0x13c  per-entry offset table (dwords)
+    i32 m_140;        // +0x140
 };
 
 // The version WORD (0x11e) + per-entry seek stride (0x120) live inside the m_18
@@ -84,48 +84,60 @@ public:
 // checks is not source-steerable (intermediate live ranges differ).
 RVA(0x0017b5f0, 0x249)
 i32 CFecFile::ReadArchive(const char* name) {
-    if (name == 0)
+    if (name == 0) {
         return 0;
-    if (m_04 != 0)
+    }
+    if (m_04 != 0) {
         return 0;
-    if (m_00 == 0)
+    }
+    if (m_00 == 0) {
         return 0;
-    if (m_stream.Open(name, 0, 0) == 0)
+    }
+    if (m_stream.Open(name, 0, 0) == 0) {
         return 0;
+    }
     m_04 = 1;
 
     char magic[3];
-    if (m_stream.Read(magic, 3) != 3)
+    if (m_stream.Read(magic, 3) != 3) {
         goto fail;
-    if (magic[0] != 'F' || magic[1] != 'E' || magic[2] != 'C')
+    }
+    if (magic[0] != 'F' || magic[1] != 'E' || magic[2] != 'C') {
         goto fail;
-    if (m_stream.Read(&m_0c, 0xc) != 0xc)
+    }
+    if (m_stream.Read(&m_0c, 0xc) != 0xc) {
         goto fail;
+    }
 
     char buf1[0x80];
     char buf2[0x80];
     FecLog(buf1, "Opened FEC File %s", name);
     FecLog(buf2, "FEC File Version: %d.%d Number o", m_0c, m_10, m_14);
 
-    if (m_stream.Read(m_18, 0x10c) != 0x10c)
+    if (m_stream.Read(m_18, 0x10c) != 0x10c) {
         goto fail;
+    }
     {
         u16 w = FEC_W(this);
-        if (m_stream.Seek(w - 0x2b8, 1) != w - 0x19d)
+        if (m_stream.Seek(w - 0x2b8, 1) != w - 0x19d) {
             goto fail;
+        }
         m_index.Op(m_140, w - 0x19d);
 
         for (u16 i = 1; i < (u16)m_14; i++) {
             i32 base = *(i32*)(m_13c + i * 4 - 4);
             i32 stride = FEC_STRIDE(this);
-            if (m_stream.Seek(stride, 1) != base + stride)
+            if (m_stream.Seek(stride, 1) != base + stride) {
                 goto fail;
+            }
             memset(m_18, 0, 0x10c);
-            if (m_stream.Read(m_18, 0x10c) != 0x10c)
+            if (m_stream.Read(m_18, 0x10c) != 0x10c) {
                 goto fail;
+            }
             u16 w2 = FEC_W(this);
-            if (m_stream.Seek(w2 - 0x2b8, 1) != base + stride + w2 - 0x1ac)
+            if (m_stream.Seek(w2 - 0x2b8, 1) != base + stride + w2 - 0x1ac) {
                 goto fail;
+            }
             m_index.Op(m_index.m_08, base + stride + *(i32*)(m_13c + i * 4 - 4) - 0x1ac);
         }
     }

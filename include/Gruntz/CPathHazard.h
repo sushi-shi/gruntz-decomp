@@ -133,6 +133,8 @@ extern "C" i32 __ftol(); // 0x11f570 (declared so the call reloc-masks if needed
 // ---------------------------------------------------------------------------
 class CPathHazard : public CUserLogic {
 public:
+    // GetTypeTag (0x132f0): the 6-byte per-class logic-type id accessor (0x425).
+    i32 GetTypeTag();
     // Tick (virtual slot 16, body 0xb4020): the per-frame driver.
     i32 Tick();
     // BeginLeg (virtual slot 19, body 0xb47e0): compute the unit vector toward

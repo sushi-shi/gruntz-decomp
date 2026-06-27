@@ -169,7 +169,7 @@ struct CBcastListNode {
 };
 struct CBcastMap {
     char m_pad00[0x20];
-    CBcastListNode* m_20;        // +0x20 inner list head
+    CBcastListNode* m_20;            // +0x20 inner list head
     CFindNode* Find(i32 key, i32 n); // 0x1c21
 };
 
@@ -179,7 +179,7 @@ struct CGroupBroadcast {
     char m_pad14[0x24 - 0x14];
     CBcastMap* m_24; // +0x24
     char m_pad28[0x2c - 0x28];
-    i32 m_2c[0x18]; // +0x2c  0-terminated key array
+    i32 m_2c[0x18];  // +0x2c  0-terminated key array
     i32 Broadcast(); // 0x112080
     void Init();     // 0x2e0f
 };

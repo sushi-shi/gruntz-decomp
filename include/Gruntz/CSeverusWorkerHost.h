@@ -18,7 +18,7 @@
 struct CSeverusWorker {
     void* m_vptr;              // +0x00
     char m_pad04[0x70 - 0x04]; // +0x04..+0x6f
-    void* m_70;               // +0x70  base/secondary vtable restamped on teardown
+    void* m_70;                // +0x70  base/secondary vtable restamped on teardown
     void PreDestroy();         // 0x1688b0  (reloc-masked external)
     void DtorImpl();           // 0x1682f0  (reloc-masked external scalar-dtor body)
     ~CSeverusWorker();         // inline: DtorImpl() then restamp m_70

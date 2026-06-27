@@ -57,14 +57,16 @@ void TArray::Serialize(ArcSer* ar) {
             i32 grow = m_growBy;
             if (grow == 0) {
                 grow = m_size / 8;
-                if (grow < 4)
+                if (grow < 4) {
                     grow = 4;
-                else if (grow > 0x400)
+                } else if (grow > 0x400) {
                     grow = 0x400;
+                }
             }
             i32 newcap = m_cap + grow;
-            if (n >= newcap)
+            if (n >= newcap) {
                 newcap = n;
+            }
             i32* nd = (i32*)::operator new(newcap * 4);
             memcpy(nd, m_data, m_size * 4);
             memset(nd + m_size, 0, (n - m_size) * 4);
@@ -77,8 +79,9 @@ void TArray::Serialize(ArcSer* ar) {
         ar->WriteCount(m_size);
     }
 
-    if (ar->m_14 & 1)
+    if (ar->m_14 & 1) {
         ar->WriteData(m_data, m_size * 4);
-    else
+    } else {
         ar->ReadData(m_data, m_size * 4);
+    }
 }

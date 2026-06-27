@@ -9,9 +9,9 @@
 // helpers are the real MFC symbols (operator=/+= /MakeUpper/GetLength), reloc-masked.
 #include <rva.h>
 
-#include <Mfc.h>     // CString + <windows.h>
-#include <direct.h>  // _getcwd
-#include <string.h>  // strstr
+#include <Mfc.h>    // CString + <windows.h>
+#include <direct.h> // _getcwd
+#include <string.h> // strstr
 
 RVA(0x0003b940, 0x19d)
 CString BuildCustomWwdPath(CString name) {

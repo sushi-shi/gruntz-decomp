@@ -542,8 +542,9 @@ extern void* g_planeRenderVtbl; // 0x5f02a8
 // cleanup frame's trylevel/handler bytes are not source-steerable.
 RVA(0x001628f0, 0x1fc)
 i32 WwdFile::RebuildPlanes(i32 base, i32 count) {
-    if (base == 0)
+    if (base == 0) {
         return 0;
+    }
 
     WwdPlaneRender*& worker = WLOADER(WwdPlaneRender*, 0xb0);
     if (worker) {
@@ -555,11 +556,13 @@ i32 WwdFile::RebuildPlanes(i32 base, i32 count) {
 
     WwdRegOwner* reg = WLOADER(WwdRegOwner*, 0xc);
     void* src = reg->m_8;
-    if (src == 0)
+    if (src == 0) {
         return 0;
+    }
     WwdPlaneHdr* hdr = reg->m_24;
-    if (hdr == 0)
+    if (hdr == 0) {
         return 0;
+    }
 
     i32 p0[2] = {hdr->geo[0], hdr->geo[1]};
     i32 p1[2] = {hdr->geo[2], hdr->geo[3]};
@@ -593,8 +596,9 @@ i32 WwdFile::RebuildPlanes(i32 base, i32 count) {
 
     for (i32 i = 0; i < count; i++) {
         i32 r = ReadPlaneObjects((const i32*)base);
-        if (r == 0)
+        if (r == 0) {
             return 0;
+        }
         base += r;
     }
     return 1;
@@ -966,7 +970,14 @@ i32 CPlaneRender::ValidateTiles(char* errOut) {
             if (frame == 0) {
                 result = 0;
                 if (errOut != 0) {
-                    sprintf(msg, "Plane %s: Bad map image set value (%i) at %i,%i\n", m_name, (u32)handle >> 16, col, row);
+                    sprintf(
+                        msg,
+                        "Plane %s: Bad map image set value (%i) at %i,%i\n",
+                        m_name,
+                        (u32)handle >> 16,
+                        col,
+                        row
+                    );
                     strcpy(errOut, msg);
                 }
                 continue;
@@ -981,7 +992,14 @@ i32 CPlaneRender::ValidateTiles(char* errOut) {
             if (resolved == 0) {
                 result = 0;
                 if (errOut != 0) {
-                    sprintf(msg, "Plane %s: Bad map tile value (%i) at %i,%i\n", m_name, tile, col, row);
+                    sprintf(
+                        msg,
+                        "Plane %s: Bad map tile value (%i) at %i,%i\n",
+                        m_name,
+                        tile,
+                        col,
+                        row
+                    );
                     strcpy(errOut, msg);
                 }
             }
@@ -1030,7 +1048,9 @@ void CPlaneRender::ResolveColorKey() {
         return;
     }
 
-    m_144 = (u16)(((u8)((u8)rgb[idx * 4 + 0] >> (u8)g_rDown) << g_rUp) | ((u8)((u8)rgb[idx * 4 + 1] >> (u8)g_gDown) << g_gUp) | (u8)((u8)rgb[idx * 4 + 2] >> (u8)g_bDown));
+    m_144 = (u16)(((u8)((u8)rgb[idx * 4 + 0] >> (u8)g_rDown) << g_rUp)
+                  | ((u8)((u8)rgb[idx * 4 + 1] >> (u8)g_gDown) << g_gUp)
+                  | (u8)((u8)rgb[idx * 4 + 2] >> (u8)g_bDown));
 }
 
 // ---------------------------------------------------------------------------

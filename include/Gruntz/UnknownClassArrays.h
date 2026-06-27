@@ -47,10 +47,10 @@ public:
     i32 Method_02d800(i32, i32, i32, i32);
     i32 Method_02edb0(i32, i32, i32, i32);
     i32 Method_030b20(i32, i32, i32);
-    void* Method_02ad40(i32);  // 0x02ad40  pick a random idle (m_364==0) unit from a band row
-    i32 Method_02c080(i32);    // 0x02c080  trivial: return 1
-    i32 Method_034c70(i32);    // 0x034c70  board-tile spawn check for a queued unit
-    i32 Method_0358a0(i32);    // 0x0358a0  idle-unit retarget / despawn / near-band keep
+    void* Method_02ad40(i32);     // 0x02ad40  pick a random idle (m_364==0) unit from a band row
+    i32 Method_02c080(i32);       // 0x02c080  trivial: return 1
+    i32 Method_034c70(i32);       // 0x034c70  board-tile spawn check for a queued unit
+    i32 Method_0358a0(i32);       // 0x0358a0  idle-unit retarget / despawn / near-band keep
     void Method_034960(i32, i32); // 0x034960  zvec error-report wrapper (this = a _zvec)
     i32 winapi_0267c0_IntersectRect_PtInRect();
     i32 winapi_02a570_IntersectRect(i32);

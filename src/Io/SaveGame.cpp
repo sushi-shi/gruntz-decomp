@@ -18,13 +18,25 @@
 // signature so the rel32 call pairs by mangled name; the slot pointer flows in as
 // the NameItem_09e2d0* it expects (a forward-declared opaque). Reloc-masked.
 namespace ApiCallerStubs {
-struct NameItem_09e2d0;
-void winapi_0e3e80_SetDlgItemTextA(HWND hWnd, NameItem_09e2d0* item, i32 id3, i32 id4, i32 id5,
-                                   i32 id6);
-// The GAME_INFO dialog's variant of the same per-slot labeller (0x9e2d0); same
-// signature, different control-state side effects. Reloc-masked no-body callee.
-void winapi_09e2d0_SetDlgItemTextA(HWND hWnd, NameItem_09e2d0* item, i32 id3, i32 id4, i32 id5,
-                                   i32 id6);
+    struct NameItem_09e2d0;
+    void winapi_0e3e80_SetDlgItemTextA(
+        HWND hWnd,
+        NameItem_09e2d0* item,
+        i32 id3,
+        i32 id4,
+        i32 id5,
+        i32 id6
+    );
+    // The GAME_INFO dialog's variant of the same per-slot labeller (0x9e2d0); same
+    // signature, different control-state side effects. Reloc-masked no-body callee.
+    void winapi_09e2d0_SetDlgItemTextA(
+        HWND hWnd,
+        NameItem_09e2d0* item,
+        i32 id3,
+        i32 id4,
+        i32 id5,
+        i32 id6
+    );
 } // namespace ApiCallerStubs
 
 // ---------------------------------------------------------------------------
@@ -37,26 +49,86 @@ void FillSaveDialog(HWND hWnd, CSaveGame* sg) {
         return;
     }
     using ApiCallerStubs::winapi_0e3e80_SetDlgItemTextA;
-    winapi_0e3e80_SetDlgItemTextA(hWnd, (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(0), 0x435,
-                                  0x490, 0x49a, 0x4a4);
-    winapi_0e3e80_SetDlgItemTextA(hWnd, (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(1), 0x436,
-                                  0x491, 0x49b, 0x4a5);
-    winapi_0e3e80_SetDlgItemTextA(hWnd, (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(2), 0x437,
-                                  0x492, 0x49c, 0x4a6);
-    winapi_0e3e80_SetDlgItemTextA(hWnd, (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(3), 0x438,
-                                  0x493, 0x49d, 0x4a7);
-    winapi_0e3e80_SetDlgItemTextA(hWnd, (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(4), 0x439,
-                                  0x494, 0x49e, 0x4a8);
-    winapi_0e3e80_SetDlgItemTextA(hWnd, (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(5), 0x43a,
-                                  0x495, 0x49f, 0x4a9);
-    winapi_0e3e80_SetDlgItemTextA(hWnd, (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(6), 0x43b,
-                                  0x496, 0x4a0, 0x4aa);
-    winapi_0e3e80_SetDlgItemTextA(hWnd, (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(7), 0x43c,
-                                  0x497, 0x4a1, 0x4ab);
-    winapi_0e3e80_SetDlgItemTextA(hWnd, (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(8), 0x43d,
-                                  0x498, 0x4a2, 0x4ac);
-    winapi_0e3e80_SetDlgItemTextA(hWnd, (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(9), 0x43e,
-                                  0x499, 0x4a3, 0x4ad);
+    winapi_0e3e80_SetDlgItemTextA(
+        hWnd,
+        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(0),
+        0x435,
+        0x490,
+        0x49a,
+        0x4a4
+    );
+    winapi_0e3e80_SetDlgItemTextA(
+        hWnd,
+        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(1),
+        0x436,
+        0x491,
+        0x49b,
+        0x4a5
+    );
+    winapi_0e3e80_SetDlgItemTextA(
+        hWnd,
+        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(2),
+        0x437,
+        0x492,
+        0x49c,
+        0x4a6
+    );
+    winapi_0e3e80_SetDlgItemTextA(
+        hWnd,
+        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(3),
+        0x438,
+        0x493,
+        0x49d,
+        0x4a7
+    );
+    winapi_0e3e80_SetDlgItemTextA(
+        hWnd,
+        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(4),
+        0x439,
+        0x494,
+        0x49e,
+        0x4a8
+    );
+    winapi_0e3e80_SetDlgItemTextA(
+        hWnd,
+        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(5),
+        0x43a,
+        0x495,
+        0x49f,
+        0x4a9
+    );
+    winapi_0e3e80_SetDlgItemTextA(
+        hWnd,
+        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(6),
+        0x43b,
+        0x496,
+        0x4a0,
+        0x4aa
+    );
+    winapi_0e3e80_SetDlgItemTextA(
+        hWnd,
+        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(7),
+        0x43c,
+        0x497,
+        0x4a1,
+        0x4ab
+    );
+    winapi_0e3e80_SetDlgItemTextA(
+        hWnd,
+        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(8),
+        0x43d,
+        0x498,
+        0x4a2,
+        0x4ac
+    );
+    winapi_0e3e80_SetDlgItemTextA(
+        hWnd,
+        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(9),
+        0x43e,
+        0x499,
+        0x4a3,
+        0x4ad
+    );
 }
 
 // ---------------------------------------------------------------------------
@@ -71,26 +143,86 @@ void FillGameInfoDialog(HWND hWnd, CSaveGame* sg) {
         return;
     }
     using ApiCallerStubs::winapi_09e2d0_SetDlgItemTextA;
-    winapi_09e2d0_SetDlgItemTextA(hWnd, (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(0), 0x435,
-                                  0x490, 0x49a, 0x4a4);
-    winapi_09e2d0_SetDlgItemTextA(hWnd, (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(1), 0x436,
-                                  0x491, 0x49b, 0x4a5);
-    winapi_09e2d0_SetDlgItemTextA(hWnd, (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(2), 0x437,
-                                  0x492, 0x49c, 0x4a6);
-    winapi_09e2d0_SetDlgItemTextA(hWnd, (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(3), 0x438,
-                                  0x493, 0x49d, 0x4a7);
-    winapi_09e2d0_SetDlgItemTextA(hWnd, (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(4), 0x439,
-                                  0x494, 0x49e, 0x4a8);
-    winapi_09e2d0_SetDlgItemTextA(hWnd, (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(5), 0x43a,
-                                  0x495, 0x49f, 0x4a9);
-    winapi_09e2d0_SetDlgItemTextA(hWnd, (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(6), 0x43b,
-                                  0x496, 0x4a0, 0x4aa);
-    winapi_09e2d0_SetDlgItemTextA(hWnd, (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(7), 0x43c,
-                                  0x497, 0x4a1, 0x4ab);
-    winapi_09e2d0_SetDlgItemTextA(hWnd, (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(8), 0x43d,
-                                  0x498, 0x4a2, 0x4ac);
-    winapi_09e2d0_SetDlgItemTextA(hWnd, (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(9), 0x43e,
-                                  0x499, 0x4a3, 0x4ad);
+    winapi_09e2d0_SetDlgItemTextA(
+        hWnd,
+        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(0),
+        0x435,
+        0x490,
+        0x49a,
+        0x4a4
+    );
+    winapi_09e2d0_SetDlgItemTextA(
+        hWnd,
+        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(1),
+        0x436,
+        0x491,
+        0x49b,
+        0x4a5
+    );
+    winapi_09e2d0_SetDlgItemTextA(
+        hWnd,
+        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(2),
+        0x437,
+        0x492,
+        0x49c,
+        0x4a6
+    );
+    winapi_09e2d0_SetDlgItemTextA(
+        hWnd,
+        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(3),
+        0x438,
+        0x493,
+        0x49d,
+        0x4a7
+    );
+    winapi_09e2d0_SetDlgItemTextA(
+        hWnd,
+        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(4),
+        0x439,
+        0x494,
+        0x49e,
+        0x4a8
+    );
+    winapi_09e2d0_SetDlgItemTextA(
+        hWnd,
+        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(5),
+        0x43a,
+        0x495,
+        0x49f,
+        0x4a9
+    );
+    winapi_09e2d0_SetDlgItemTextA(
+        hWnd,
+        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(6),
+        0x43b,
+        0x496,
+        0x4a0,
+        0x4aa
+    );
+    winapi_09e2d0_SetDlgItemTextA(
+        hWnd,
+        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(7),
+        0x43c,
+        0x497,
+        0x4a1,
+        0x4ab
+    );
+    winapi_09e2d0_SetDlgItemTextA(
+        hWnd,
+        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(8),
+        0x43d,
+        0x498,
+        0x4a2,
+        0x4ac
+    );
+    winapi_09e2d0_SetDlgItemTextA(
+        hWnd,
+        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(9),
+        0x43e,
+        0x499,
+        0x4a3,
+        0x4ad
+    );
 }
 
 // ---------------------------------------------------------------------------
@@ -288,13 +420,17 @@ i32 CSaveGame::VerifySlot(SaveSlot* slot) {
     CString s(name);
     i32 r = g_gameReg->BuildLevelRezPath(fc == 0, fc, f8, slot->m_04);
     if (r == 0) {
-        g_gameReg->LogError("The level that this game was saved on does not exist!\n\nThis "
-                            "saved game cannot be loaded and should be deleted.");
+        g_gameReg->LogError(
+            "The level that this game was saved on does not exist!\n\nThis "
+            "saved game cannot be loaded and should be deleted."
+        );
         return 0;
     }
     if (slot->m_checksum != r) {
-        g_gameReg->LogError("The level that this game was saved on has changed!\n\nThis "
-                            "saved game cannot be loaded and should be deleted.");
+        g_gameReg->LogError(
+            "The level that this game was saved on has changed!\n\nThis "
+            "saved game cannot be loaded and should be deleted."
+        );
         return 0;
     }
     return 1;

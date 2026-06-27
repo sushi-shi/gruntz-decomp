@@ -58,6 +58,35 @@ public:
     void SetRange(i32 nMin, i32 nMax, i32 bRedraw);
 };
 
+// The CGruntzMgr settings singleton; only the current backbuffer width/height
+// (+0x94/+0x98) are touched here. Modeled minimally (defined inline per-TU in the
+// retail source, cf. CMenuState/CPlay).
+struct CGameMgrSettings {
+    char m_pad0[0x94];
+    i32 m_94; // +0x94  backbuffer width
+    i32 m_98; // +0x98  backbuffer height
+    char m_pad9c[0x10c - 0x9c];
+    i32 m_10c; // +0x10c  "smooth scroll" checkbox state
+    i32 m_110; // +0x110  "show fps" checkbox state
+};
+DATA(0x0024556c)
+extern CGameMgrSettings* g_mgrSettings;
+
+// 0x363a0: GetResolutionCode - map the live backbuffer (width,height) to the
+// resolution combo index (1024x768 -> 3, 800x600 -> 2, else 1).
+RVA(0x000363a0, 0x41)
+i32 GetResolutionCode() {
+    i32 w = g_mgrSettings->m_94;
+    i32 h = g_mgrSettings->m_98;
+    if (w == 0x400 && h == 0x300) {
+        return 3;
+    }
+    if (w == 0x320 && h == 0x258) {
+        return 2;
+    }
+    return 1;
+}
+
 // ---------------------------------------------------------------------------
 // LoadVideoResolutionConfig
 // hDlg            - the owning dialog.
@@ -142,4 +171,19 @@ void SaveVideoResolutionConfig(HWND hDlg, HWND hCombo) {
             return;
     }
     SetWindowTextA(hCaption, szCaption);
+}
+
+// 0x378c0: SaveVideoCheckboxes(hDlg) - latch the two video option checkboxes
+// (IDC 0x46f smooth-scroll, 0x4d5 show-fps) into the settings singleton. No-op
+// when the singleton is not yet live.
+// @early-stop
+// 99.5%: the same deferred-callee-save (push) scheduling coin-flip as this TU's
+// resolution-config pair; logic + offsets byte-exact.
+RVA(0x000378c0, 0x40)
+void SaveVideoCheckboxes(HWND hDlg) {
+    if (g_mgrSettings == 0) {
+        return;
+    }
+    g_mgrSettings->m_10c = IsDlgButtonChecked(hDlg, 0x46f);
+    g_mgrSettings->m_110 = IsDlgButtonChecked(hDlg, 0x4d5);
 }

@@ -77,7 +77,7 @@ void ReadCurve(CButeText& accum, CMovingLogicCurve& c); // 0x16d000
 // retail destruct path).
 class CButeVbaseTeardown {
 public:
-    void DtorReadA(); // 0x1697c0  (read-temp derived teardown)
+    void DtorReadA();  // 0x1697c0  (read-temp derived teardown)
     void DtorWriteB(); // 0x1699c0 (write-temp derived teardown)
     void FuncB();      // 0x169d70 (shared vbase teardown)
 };
@@ -113,9 +113,9 @@ class CMovingLogic {
 public:
     i32 Serialize(CMlSerialArchive* arc, i32 mode, i32 a3, i32 a4); // 0x16f4a0
 
-    void* _vptr;             // +0x00
-    char _04[0x34];          // +0x04
-    CMovingLogicCurve m_38;  // +0x38 (0x108 bytes -> ends at +0x140)
+    void* _vptr;            // +0x00
+    char _04[0x34];         // +0x04
+    CMovingLogicCurve m_38; // +0x38 (0x108 bytes -> ends at +0x140)
     i32 m_140, m_144, m_148, m_14c;
 };
 

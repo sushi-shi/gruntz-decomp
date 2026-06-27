@@ -2103,21 +2103,21 @@ InterfaceObject* CNetMgr::Find(i32 kind) {
     }
     while (item) {
         switch (kind) {
-        case 1:
-            if (item->IsInterface2()) {
-                return item;
-            }
-            break;
-        case 2:
-            if (item->IsInterface1()) {
-                return item;
-            }
-            break;
-        case 5:
-            if (item->IsInterface5()) {
-                return item;
-            }
-            break;
+            case 1:
+                if (item->IsInterface2()) {
+                    return item;
+                }
+                break;
+            case 2:
+                if (item->IsInterface1()) {
+                    return item;
+                }
+                break;
+            case 5:
+                if (item->IsInterface5()) {
+                    return item;
+                }
+                break;
         }
         CGroupNode* cur = *(CGroupNode**)((char*)this + 0x7c);
         if (cur) {

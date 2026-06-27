@@ -17,7 +17,8 @@ struct ImgRect {
 };
 
 // The rasterizer the assembled transform is handed to (0x146550).
-extern void RotateRasterize(void* xform, i32 n, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 a8); // 0x146550
+extern void
+RotateRasterize(void* xform, i32 n, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 a8); // 0x146550
 
 // A rotated corner {x, y} computed for the matrix.
 struct RotCorner {
@@ -31,7 +32,16 @@ struct RotCorner {
 // not source-steerable (~30%).
 RVA(0x00145f60, 0x242)
 void ImageRotateBlit(
-    i32 a1, i32 a2, i32* pivot, i32 a4, ImgRect* in, i32 a6, float angle, float scale, i32 a9, i32 a10
+    i32 a1,
+    i32 a2,
+    i32* pivot,
+    i32 a4,
+    ImgRect* in,
+    i32 a6,
+    float angle,
+    float scale,
+    i32 a9,
+    i32 a10
 ) {
     i32 w = in->m_18;
     i32 h = in->m_1c;

@@ -90,26 +90,26 @@ extern CKSlimeColl2* g_typeColl2;
 // The growable key collection itself (CTypeKeyColl, @0x6bf650). Find probes the
 // sorted node array; the ctors build the backing zDArray.
 struct CTypeKeyColl {
-    void* m_vtbl;    // +0x00
-    void* m_owner;   // +0x04  error-sink / owner (set by the root ctor)
-    i32 m_lo;        // +0x08  index low bound
-    i32 m_hi;        // +0x0c  index high bound
-    void* m_buf;     // +0x10  primary element buffer
-    void* m_buf2;    // +0x14  scratch element
-    i32 m_stride;    // +0x18  element size
-    void* m_cursor;  // +0x1c  (== m_buf)
-    i32 m_count;     // +0x20  (== m_hi - m_lo + 1)
+    void* m_vtbl;             // +0x00
+    void* m_owner;            // +0x04  error-sink / owner (set by the root ctor)
+    i32 m_lo;                 // +0x08  index low bound
+    i32 m_hi;                 // +0x0c  index high bound
+    void* m_buf;              // +0x10  primary element buffer
+    void* m_buf2;             // +0x14  scratch element
+    i32 m_stride;             // +0x18  element size
+    void* m_cursor;           // +0x1c  (== m_buf)
+    i32 m_count;              // +0x20  (== m_hi - m_lo + 1)
     i32 Find(i32 key, i32 z); // 0x16da80
-    void CtorBase(i32 stride, i32 lo, i32 hi, void* scratch); // 0x16de30
+    void CtorBase(i32 stride, i32 lo, i32 hi, void* scratch);           // 0x16de30
     CTypeKeyColl* Construct(i32 stride, i32 lo, i32 hi, void* scratch); // 0x16dda0
 };
 DATA(0x002bf650)
 extern CTypeKeyColl g_typeColl; // 0x6bf650
 
-extern "C" void* AllocFail();            // 0x16e0f0 (records the fatal context)
-extern "C" void* ZAlloc(u32 n);          // 0x120b60 (CRT alloc)
-extern "C" void ZFree(void* p);          // 0x1b9b82 (CRT free / operator delete)
-extern "C" i32 ProjActAlloc();           // 0x16d990
+extern "C" void* AllocFail();   // 0x16e0f0 (records the fatal context)
+extern "C" void* ZAlloc(u32 n); // 0x120b60 (CRT alloc)
+extern "C" void ZFree(void* p); // 0x1b9b82 (CRT free / operator delete)
+extern "C" i32 ProjActAlloc();  // 0x16d990
 
 // The CString slot teardown the node-array free loop walks (one per 4-byte slot).
 struct CStringNode {
@@ -186,13 +186,13 @@ void CTypeKeyColl::CtorBase(i32 stride, i32 lo, i32 hi, void* scratch) {
 // recording the found index (or the insertion point) into +0x04.
 // ===========================================================================
 struct CKeyFinder {
-    void* m_vtbl; // +0x00
-    i32 m_index;  // +0x04  found index / insertion point
-    u16 m_08;     // +0x08
-    u16 m_0a;     // +0x0a  (padding)
-    i32 m_0c;     // +0x0c  = 2
-    i32 m_10;     // +0x10  = 2
-    void* m_owner;// +0x14
+    void* m_vtbl;            // +0x00
+    i32 m_index;             // +0x04  found index / insertion point
+    u16 m_08;                // +0x08
+    u16 m_0a;                // +0x0a  (padding)
+    i32 m_0c;                // +0x0c  = 2
+    i32 m_10;                // +0x10  = 2
+    void* m_owner;           // +0x14
     CKeyFinder(void* owner); // 0x16e1a0
     i32 Find(i32 key);       // 0x16e1d0
 };
@@ -317,7 +317,7 @@ i32 ProjTypeXfer(CXferArchive* ar) {
 struct CButeTree {
     void* m_vtbl; // +0x00
     char pad_04[0x08 - 0x04];
-    void* m_08; // +0x08
+    void* m_08;                     // +0x08
     void Construct(void* a, i32 b); // 0x16dff0
 };
 DATA(0x002bf620)
@@ -374,9 +374,9 @@ struct CButeNode {
 struct CButeTreeFull {
     void* m_vtbl; // +0x00
     char pad_04[0x08 - 0x04];
-    void* m_08vtbl; // +0x08
-    void Teardown(i32 z); // 0x16e070
-    void BaseDtor();      // 0x16da60
+    void* m_08vtbl;              // +0x08
+    void Teardown(i32 z);        // 0x16e070
+    void BaseDtor();             // 0x16da60
     void* ScalarDtor(u32 flags); // 0x16e9c0
 };
 
@@ -472,14 +472,14 @@ extern "C" void Format_18d0f0(char* buf, i32 value, i32 cap); // 0x18d0f0
 
 class CVariantSlot {
 public:
-    void Set(void* key, i32 arg2, i32 arg3);          // 0x16d850
-    void(__cdecl* m_callback)(char* buf, i32 v);      // +0x00 (call [this])
-    i32 m_04;                                         // +0x04 probe index slot
-    u16 m_08;                                         // +0x08 word storage
-    u16 m_0a;                                         // +0x0a
-    i32 m_0c;                                         // +0x0c type tag (1/2/4)
-    i32 m_10;                                         // +0x10
-    char* m_14;                                       // +0x14 label / format text
+    void Set(void* key, i32 arg2, i32 arg3);     // 0x16d850
+    void(__cdecl* m_callback)(char* buf, i32 v); // +0x00 (call [this])
+    i32 m_04;                                    // +0x04 probe index slot
+    u16 m_08;                                    // +0x08 word storage
+    u16 m_0a;                                    // +0x0a
+    i32 m_0c;                                    // +0x0c type tag (1/2/4)
+    i32 m_10;                                    // +0x10
+    char* m_14;                                  // +0x14 label / format text
 };
 
 RVA(0x0016d850, 0x11e)

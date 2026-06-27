@@ -89,9 +89,20 @@ public:
 class CGruntToyTimeSprite : public CGruntSpriteBase {
 public:
     CGruntToyTimeSprite(CSpriteObj* obj);
+    // GetTypeTag (0x120e0): 6-byte per-class logic-type id accessor (0x411).
+    i32 GetTypeTag();
+    // GetToyTime (0x7fca0): tiny __stdcall +0x3f4 accessor (ret 4), sibling of
+    // CGruntWingzTimeSprite::GetWingzTime (+0x3f8). Host modeled minimally below.
+    static i32 __stdcall GetToyTime(struct CToyTimeHost* o);
     char m_pad3c[0x5c - 0x3c];
     i32 m_5c; // +0x5c
     i32 m_60; // +0x60
+};
+
+// The bound object the toy-time accessor reads its +0x3f4 timer field out of.
+struct CToyTimeHost {
+    char m_pad0[0x3f4];
+    i32 m_3f4; // +0x3f4  toy timer value
 };
 
 class CGruntWingzTimeSprite : public CGruntSpriteBase {
@@ -109,6 +120,14 @@ DATA(0x005e79ec)
 extern void* g_gruntToyTimeSpriteVtbl;
 DATA(0x005e77cc)
 extern void* g_gruntWingzTimeSpriteVtbl;
+
+// CGruntToyTimeSprite::GetTypeTag @0x000120e0 - the class's logic-type id (0x411),
+// the 6-byte `mov eax,<id>; ret` archetype. RVA-lowest method in this TU; the
+// plain dtor (@0x12130) lives in the engine_discovered stub unit.
+RVA(0x000120e0, 0x6)
+i32 CGruntToyTimeSprite::GetTypeTag() {
+    return 0x411;
+}
 
 // @confidence: high
 // @source: rtti-vptr
@@ -142,6 +161,13 @@ CGruntToyTimeSprite::CGruntToyTimeSprite(CSpriteObj* obj) : CGruntSpriteBase(obj
     }
     m_5c = 0;
     m_60 = -0x20;
+}
+
+// CGruntToyTimeSprite::GetToyTime @0x0007fca0 - read the bound object's +0x3f4
+// toy-timer field. __stdcall (`mov eax,[esp+4]; mov eax,[eax+0x3f4]; ret 4`).
+RVA(0x0007fca0, 0xd)
+i32 __stdcall CGruntToyTimeSprite::GetToyTime(CToyTimeHost* o) {
+    return o->m_3f4;
 }
 
 // @confidence: high

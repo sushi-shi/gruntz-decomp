@@ -15,14 +15,14 @@
 #include <rva.h>
 
 // Reloc-masked engine vtables (DATA-bound in the factory/node TUs).
-extern void* g_wwd1598d0FinalVtbl; // 0x5f00e8
-extern void* g_wwdObjVtbl;         // 0x5f00a8
-extern void* g_wwdSubVtbl;         // 0x5f0128
+extern void* g_wwd1598d0FinalVtbl;    // 0x5f00e8
+extern void* g_wwdObjVtbl;            // 0x5f00a8
+extern void* g_wwdSubVtbl;            // 0x5f0128
 extern void* g_severusWorkerDtorVtbl; // 0x5e8cb4
-extern void* g_wwdGameObjectVtbl;  // 0x5f0020
-extern void* g_remusNodeVtbl;      // 0x5efbc0
-extern void* g_wwd159250FinalVtbl; // 0x5effd0
-extern void* g_wwd159440FinalVtbl; // 0x5f0060 (own name in CWwdObjMgrFactories.cpp)
+extern void* g_wwdGameObjectVtbl;     // 0x5f0020
+extern void* g_remusNodeVtbl;         // 0x5efbc0
+extern void* g_wwd159250FinalVtbl;    // 0x5effd0
+extern void* g_wwd159440FinalVtbl;    // 0x5f0060 (own name in CWwdObjMgrFactories.cpp)
 
 // An owned polymorphic worker. Its scalar-deleting destructor is vtable slot 1
 // (`mov eax,[ecx]; push 1; call [eax+4]`); declared-only (foreign vtable).
@@ -56,12 +56,12 @@ struct WwdSub {
 };
 
 // Manual scalar-delete of an owned worker pointer (the retail idiom).
-#define WORKER_FREE(p) \
-    do { \
-        if (p) { \
-            (p)->DeleteThis(1); \
-            (p) = 0; \
-        } \
+#define WORKER_FREE(p)                                                                             \
+    do {                                                                                           \
+        if (p) {                                                                                   \
+            (p)->DeleteThis(1);                                                                    \
+            (p) = 0;                                                                               \
+        }                                                                                          \
     } while (0)
 
 // ---------------------------------------------------------------------------
@@ -71,16 +71,16 @@ class CWwdGameObjectA {
 public:
     ~CWwdGameObjectA(); // 0x15b790
 
-    void* m_vptr;  // 0x00
-    i32 m_04;      // 0x04
-    i32 m_08;      // 0x08
-    i32 m_0c;      // 0x0c
+    void* m_vptr; // 0x00
+    i32 m_04;     // 0x04
+    i32 m_08;     // 0x08
+    i32 m_0c;     // 0x0c
     char _p10[0x20 - 0x10];
-    i32 m_20;      // 0x20
+    i32 m_20; // 0x20
     char _p24[0x38 - 0x24];
-    i32 m_38;      // 0x38
+    i32 m_38; // 0x38
     char _p3c[0x5c - 0x3c];
-    i32 m_5c;      // 0x5c
+    i32 m_5c; // 0x5c
     char _p60[0x7c - 0x60];
     WwdWorker* m_7c; // 0x7c
     WwdWorker* m_80; // 0x80
@@ -89,17 +89,17 @@ public:
     char _p8c[0x90 - 0x8c];
     WwdWorker* m_90; // 0x90
     char _p94[0xc0 - 0x94];
-    i32 m_c0;      // 0xc0
+    i32 m_c0; // 0xc0
     char _pc4[0xd8 - 0xc4];
-    i32 m_d8;      // 0xd8
-    WwdName m_dc;  // 0xdc  CString name
+    i32 m_d8;     // 0xd8
+    WwdName m_dc; // 0xdc  CString name
     char _pe0[0x18c - 0xe0];
-    i32 m_18c;     // 0x18c
-    i32 m_190;     // 0x190
-    i32 m_194;     // 0x194
-    i32 m_198;     // 0x198
+    i32 m_18c; // 0x18c
+    i32 m_190; // 0x190
+    i32 m_194; // 0x194
+    i32 m_198; // 0x198
     char _p19c[0x1a0 - 0x19c];
-    WwdSub m_1a0;  // 0x1a0
+    WwdSub m_1a0; // 0x1a0
 };
 
 // @early-stop
@@ -150,16 +150,16 @@ class CWwdGameObjectC {
 public:
     ~CWwdGameObjectC(); // 0x15c070
 
-    void* m_vptr;  // 0x00
-    i32 m_04;      // 0x04
-    i32 m_08;      // 0x08
-    i32 m_0c;      // 0x0c
+    void* m_vptr; // 0x00
+    i32 m_04;     // 0x04
+    i32 m_08;     // 0x08
+    i32 m_0c;     // 0x0c
     char _p10[0x20 - 0x10];
-    i32 m_20;      // 0x20
+    i32 m_20; // 0x20
     char _p24[0x38 - 0x24];
-    i32 m_38;      // 0x38
+    i32 m_38; // 0x38
     char _p3c[0x5c - 0x3c];
-    i32 m_5c;      // 0x5c
+    i32 m_5c; // 0x5c
     char _p60[0x7c - 0x60];
     WwdWorker* m_7c; // 0x7c
     WwdWorker* m_80; // 0x80
@@ -168,12 +168,12 @@ public:
     char _p8c[0x90 - 0x8c];
     WwdWorker* m_90; // 0x90
     char _p94[0xc0 - 0x94];
-    i32 m_c0;      // 0xc0
+    i32 m_c0; // 0xc0
     char _pc4[0xd8 - 0xc4];
-    i32 m_d8;      // 0xd8
-    WwdName m_dc;  // 0xdc
+    i32 m_d8;     // 0xd8
+    WwdName m_dc; // 0xdc
     char _pe0[0x18c - 0xe0];
-    u8 m_18c;      // 0x18c (byte flag)
+    u8 m_18c; // 0x18c (byte flag)
 };
 
 // @early-stop
@@ -224,16 +224,16 @@ public:
     void SubB();     // 0x15b5d0
     void DtorBase(); // 0x429b    (base CRemusNode)
 
-    void* m_vptr;  // 0x00
-    i32 m_04;      // 0x04
-    i32 m_08;      // 0x08
-    i32 m_0c;      // 0x0c
+    void* m_vptr; // 0x00
+    i32 m_04;     // 0x04
+    i32 m_08;     // 0x08
+    i32 m_0c;     // 0x0c
     char _p10[0x20 - 0x10];
-    i32 m_20;      // 0x20
+    i32 m_20; // 0x20
     char _p24[0x38 - 0x24];
-    i32 m_38;      // 0x38
+    i32 m_38; // 0x38
     char _p3c[0x5c - 0x3c];
-    i32 m_5c;      // 0x5c
+    i32 m_5c; // 0x5c
     char _p60[0x7c - 0x60];
     WwdWorker* m_7c; // 0x7c
     WwdWorker* m_80; // 0x80
@@ -242,21 +242,21 @@ public:
     char _p8c[0x90 - 0x8c];
     WwdWorker* m_90; // 0x90
     char _p94[0xc0 - 0x94];
-    i32 m_c0;      // 0xc0
+    i32 m_c0; // 0xc0
     char _pc4[0xd8 - 0xc4];
-    i32 m_d8;      // 0xd8
-    WwdName m_dc;  // 0xdc
+    i32 m_d8;     // 0xd8
+    WwdName m_dc; // 0xdc
     char _pe0[0x18c - 0xe0];
-    i32 m_18c;     // 0x18c
-    i32 m_190;     // 0x190
-    i32 m_194;     // 0x194
-    i32 m_198;     // 0x198
+    i32 m_18c; // 0x18c
+    i32 m_190; // 0x190
+    i32 m_194; // 0x194
+    i32 m_198; // 0x198
     char _p19c[0x1a0 - 0x19c];
-    WwdSub m_1a0;  // 0x1a0
+    WwdSub m_1a0; // 0x1a0
     char _p1b0[0x1dc - 0x1b0];
-    i32 m_1dc;     // 0x1dc  CObList head
+    i32 m_1dc; // 0x1dc  CObList head
     char _p1e0[0x1f8 - 0x1e0];
-    i32 m_1f8;     // 0x1f8
+    i32 m_1f8; // 0x1f8
 };
 
 // @early-stop

@@ -290,7 +290,7 @@ public:
     // Build a DIPROPDWORD on the stack {dwSize=0x14, dwHeaderSize=0x10, dwObj,
     // dwHow, dwData} and hand it to SetProperty(rguid, &prop) (0x134f70).
     i32 SetPropertyDword(const void* rguid, u32 dwObj, u32 dwHow, u32 dwData);
-    i32 Acquire();                                                     // 0x134fb0
+    i32 Acquire(); // 0x134fb0
 
     // --- layout ---------------------------------------------------------------
     void* m_vptr;                   // +0x000  stamped to g_deviceConfigVtblA (@0x5ef628)

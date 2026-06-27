@@ -10,6 +10,14 @@
 // recovered engine identities.
 #include <Gruntz/CGruntWingzTimeSprite.h>
 
+// CGruntWingzTimeSprite::GetTypeTag @0x0121a0 - return the class's logic-type id.
+// The same 6-byte `mov eax,<id>; ret` virtual archetype as CBehindCandy::GetTypeTag
+// (0x00fb70); precedes the [scalar @0x121c0, plain @0x121f0] dtor pair.
+RVA(0x000121a0, 0x6)
+i32 CGruntWingzTimeSprite::GetTypeTag() {
+    return 0x417;
+}
+
 // CGruntWingzTimeSprite::~CGruntWingzTimeSprite @0x0121f0 - the leaf adds no
 // destructible members beyond CUserLogic, so its dtor folds the bare CUserLogic
 // teardown: store the CUserLogic vptr (0x5e705c), inline-destruct the +0x18 link

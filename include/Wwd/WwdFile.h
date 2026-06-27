@@ -72,14 +72,14 @@ public:
     CPlane(void* a, i32 planeIndex, void* c);
     // vtable: +0x28 reader(planeData, blockBase, outCtx) -> nonzero on success.
     virtual i32 dummy0();
-    virtual void dtor(i32 flags);                                     // +0x04  scalar-deleting dtor
-    virtual i32 dummy2();                                             // +0x08
-    virtual i32 dummy3();                                             // +0x0c
-    virtual i32 dummy4();                                             // +0x10
-    virtual i32 dummy5();                                             // +0x14
-    virtual i32 dummy6();                                             // +0x18
-    virtual i32 dummy7();                                             // +0x1c
-    virtual i32 dummy8();                                             // +0x20
+    virtual void dtor(i32 flags); // +0x04  scalar-deleting dtor
+    virtual i32 dummy2();         // +0x08
+    virtual i32 dummy3();         // +0x0c
+    virtual i32 dummy4();         // +0x10
+    virtual i32 dummy5();         // +0x14
+    virtual i32 dummy6();         // +0x18
+    virtual i32 dummy7();         // +0x1c
+    virtual i32 dummy8();         // +0x20
     // +0x24  the object-plane block reader: 6 forwarded args, the plane context
     // (&CGameLevelPlanes::m_planeCtx) as the 7th, and a trailing 8th arg.
     virtual i32 ReadObjects(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, void* outCtx, i32 a7);
@@ -242,13 +242,13 @@ public:
     void Draw(void* ctx);                   // 0x162010  the tile-grid render
     void SetTileSize(i32 tileW, i32 tileH); // 0x161f00  derive wrap dims/fill/shifts
     void WrapCoord(i32* px, i32* py);       // 0x00a000  wrap+transform a world coord
-    i32 CenterScrollA();              // 0x163300
-    i32 CenterScrollB();              // 0x163370
-    void InitScrollRects();           // 0x163420  seed the scroll sub-object rects
-    i32 ValidateTiles(char* errOut);  // 0x163510  scan the tile grid for bad refs
-    void ResolveColorKey();           // 0x163670  pack the +0x144 index to RGB565
-    i32 Save(CWwdStream* s);          // 0x163780  serialize out
-    i32 Load(CWwdStream* s);          // 0x1638c0  serialize in
+    i32 CenterScrollA();                    // 0x163300
+    i32 CenterScrollB();                    // 0x163370
+    void InitScrollRects();                 // 0x163420  seed the scroll sub-object rects
+    i32 ValidateTiles(char* errOut);        // 0x163510  scan the tile grid for bad refs
+    void ResolveColorKey();                 // 0x163670  pack the +0x144 index to RGB565
+    i32 Save(CWwdStream* s);                // 0x163780  serialize out
+    i32 Load(CWwdStream* s);                // 0x1638c0  serialize in
     // 0x0d53a0 (__thiscall, ret 8): index the tile-handle grid by (row, col):
     //   m_tileGrid[m_colOffsets[col] + row].
     i32 GetTileHandle(i32 row, i32 col);
@@ -282,13 +282,13 @@ public:
     i32 m_fillR; // +0x68
     i32 m_fillB; // +0x6c
     u8 pad_70[0x80 - 0x70];
-    i32 m_80, m_84, m_88; // +0x80..+0x88
-    i32 m_shiftX;         // +0x8c
-    i32 m_shiftY;         // +0x90
-    i32 m_94, m_98, m_9c; // +0x94..+0x9c
+    i32 m_80, m_84, m_88;       // +0x80..+0x88
+    i32 m_shiftX;               // +0x8c
+    i32 m_shiftY;               // +0x90
+    i32 m_94, m_98, m_9c;       // +0x94..+0x9c
     CPlaneFrame** m_planeArray; // +0xa0
     u8 pad_a4[0xb0 - 0xa4];
-    CPlaneScroll* m_scroll; // +0xb0
+    CPlaneScroll* m_scroll;   // +0xb0
     char m_name[0xf4 - 0xb4]; // +0xb4  plane name (serialized as a fixed 0x80 field)
     CDDSurface m_surface;     // +0xf4  (empty model, sizeof 1)
     u8 pad_f5[0x144 - 0xf5];

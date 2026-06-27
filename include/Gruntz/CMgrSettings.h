@@ -47,7 +47,7 @@ public:
 class CDDrawWorkerRegistry {
 public:
     char _00[0x10];
-    CMapStringToOb m_10;                            // +0x10
+    CMapStringToOb m_10;                                          // +0x10
     i32 AnyValueMatches_155630(i32 obj, i32 nameBuf, i32 idxPtr); // 0x155630
 };
 
@@ -82,9 +82,9 @@ class CMgrSettings {
 public:
     i32 Serialize(CMgrArchive* arc, i32 mode, i32 a3, i32 a4); // 0x109e00
 
-    i32 m_00, m_04, m_08, m_0c;           // +0x00..+0x0c (m_0c unstreamed)
-    double m_10, m_18, m_20, m_28, m_30;  // +0x10..+0x30
-    void* m_38;                           // +0x38 resolved object reference
+    i32 m_00, m_04, m_08, m_0c;          // +0x00..+0x0c (m_0c unstreamed)
+    double m_10, m_18, m_20, m_28, m_30; // +0x10..+0x30
+    void* m_38;                          // +0x38 resolved object reference
 };
 
 #endif // GRUNTZ_CMGRSETTINGS_H

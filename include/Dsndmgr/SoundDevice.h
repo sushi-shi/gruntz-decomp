@@ -59,11 +59,11 @@ struct SoundSample {
 
 class SoundDevice {
 public:
-    SoundDevice();          // 0x136440  /GX EH base ctor (was the Ghidra placeholder
-                            // "UnknownSalazar"): zero the two intrusive list members,
-                            // stamp the device vptr, BuildVolumeTable, zero the rest.
-    void* ScalarDtor(i32 flag); // 0x1364c0  ??_G vtable slot-0 scalar-deleting dtor:
-                                // ~SoundDevice then (flag&1) operator delete; returns this.
+    SoundDevice();                     // 0x136440  /GX EH base ctor (was the Ghidra placeholder
+                                       // "UnknownSalazar"): zero the two intrusive list members,
+                                       // stamp the device vptr, BuildVolumeTable, zero the rest.
+    void* ScalarDtor(i32 flag);        // 0x1364c0  ??_G vtable slot-0 scalar-deleting dtor:
+                                       // ~SoundDevice then (flag&1) operator delete; returns this.
     ~SoundDevice();                    // 0x136500  /GX EH destructor (vtable 0x5ef6c4) -> Shutdown
     void Shutdown();                   // 0x136690  release every owned buffer, primary, device
     void RemoveBuffer(SoundBuf* node); // 0x136d80  reap voices + release + unlink one buffer
@@ -75,13 +75,20 @@ public:
         WaveFormatX* fmt,
         u32 bytes,
         u32 flags
-    );                                                 // 0x1366f0  CreateSoundBuffer + wrap
-    DirectSoundMgr* AcquireFile(char* path, u32, u32); // 0x136860  fopen+fread whole file -> Acquire
+    ); // 0x1366f0  CreateSoundBuffer + wrap
+    DirectSoundMgr*
+    AcquireFile(char* path, u32, u32);             // 0x136860  fopen+fread whole file -> Acquire
     DirectSoundMgr* Acquire(void* riff, u32, u32); // 0x136910  parse RIFF + CreateBuffer + load
-    i32 ValidateRestore(DirectSoundMgr* buf, WaveFormatX* fmt,
-                        u32 size); // 0x136ab0  gate + PCM check + Restore(buf)
-    i32 ReloadRiff(DirectSoundMgr* buf, void* riff,
-                   u32 a3); // 0x136bd0  re-parse RIFF, optionally downconvert, into an existing buffer
+    i32 ValidateRestore(
+        DirectSoundMgr* buf,
+        WaveFormatX* fmt,
+        u32 size
+    ); // 0x136ab0  gate + PCM check + Restore(buf)
+    i32 ReloadRiff(
+        DirectSoundMgr* buf,
+        void* riff,
+        u32 a3
+    ); // 0x136bd0  re-parse RIFF, optionally downconvert, into an existing buffer
 
     // The volume->attenuation curve (DSNDMGR.CPP): map a 0..100 volume to a DSound
     // hundredths-of-dB attenuation via an acos/pow transfer (static, x87).
@@ -98,12 +105,12 @@ public:
     char m_pad18[0x78 - 0x18];
     i32 m_78; // +0x78  "initialized" flag
     char m_pad7c[0x80 - 0x7c];
-    i32 m_80; // +0x80
+    i32 m_80;                  // +0x80
     IDirectSoundBufferZ* m_84; // +0x84  primary buffer
-    i32 m_88;   // +0x88
-    i32 m_8c;   // +0x8c
-    i32 m_90;   // +0x90
-    void* m_94; // +0x94  cached-sample list/map head
+    i32 m_88;                  // +0x88
+    i32 m_8c;                  // +0x8c
+    i32 m_90;                  // +0x90
+    void* m_94;                // +0x94  cached-sample list/map head
 };
 
 #endif // DSNDMGR_SOUNDDEVICE_H

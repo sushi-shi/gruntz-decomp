@@ -13,12 +13,12 @@ class CNameRecord {
 public:
     i32 SetNames(char* name, char* name2, i32 unused); // 0x118040
 
-    void* m_vptr;              // +0x00 (untouched here)
-    i32 m_04;                  // +0x04 (head of the zeroed body)
-    i32 m_08;                  // +0x08 set to 1 on success
+    void* m_vptr;               // +0x00 (untouched here)
+    i32 m_04;                   // +0x04 (head of the zeroed body)
+    i32 m_08;                   // +0x08 set to 1 on success
     char m_body0c[0x14 - 0x0c]; // +0x0c..+0x13
-    char m_name[0x36 - 0x14];  // +0x14..+0x35  primary name (<=16 chars)
-    char m_name2[0xd8 - 0x36]; // +0x36..+0xd7  secondary string
+    char m_name[0x36 - 0x14];   // +0x14..+0x35  primary name (<=16 chars)
+    char m_name2[0xd8 - 0x36];  // +0x36..+0xd7  secondary string
 };
 
 // ===========================================================================
@@ -35,16 +35,20 @@ public:
 // is a cl scheduling artifact off the live dec flags, not steerable from C.
 RVA(0x00118040, 0xb6)
 i32 CNameRecord::SetNames(char* name, char* name2, i32 unused) {
-    if (name == 0)
+    if (name == 0) {
         return 0;
-    if ((i32)strlen(name) > 16)
+    }
+    if ((i32)strlen(name) > 16) {
         return 0;
-    if (name2 != 0 && (i32)strlen(name) > 64)
+    }
+    if (name2 != 0 && (i32)strlen(name) > 64) {
         return 0;
+    }
     memset(&m_04, 0, 212);
     strcpy(m_name, name);
-    if (name2 != 0)
+    if (name2 != 0) {
         strcpy(m_name2, name2);
+    }
     m_08 = 1;
     return 1;
 }

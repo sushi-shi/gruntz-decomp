@@ -133,6 +133,7 @@ public:
 
 class CVoiceTrigger : public CUserLogic {
 public:
+    i32 GetTypeTag(); // 0x133b0 (per-class logic-type id, 0x426)
     CVoiceTrigger();
     virtual ~CVoiceTrigger() OVERRIDE;
 };
@@ -196,6 +197,7 @@ public:
 
 class CParticlez : public CUserLogic {
 public:
+    i32 GetTypeTag();             // 0x12cd0 (per-class logic-type id, 0x41c)
     CParticlez(CGameObject* obj); // 0x046ad0
     virtual ~CParticlez() OVERRIDE;
 };
@@ -698,6 +700,12 @@ CPathHazard::CPathHazard() {
 }
 
 CVoiceTrigger::~CVoiceTrigger() {}
+// CVoiceTrigger::GetTypeTag @0x133b0 - the per-class logic-type id (0x426), the
+// 6-byte `mov eax,<id>; ret` archetype (plain dtor @0x13400 still a Boundary stub).
+RVA(0x000133b0, 0x6)
+i32 CVoiceTrigger::GetTypeTag() {
+    return 0x426;
+}
 RVA(0x00013470, 0x4b)
 CVoiceTrigger::CVoiceTrigger() {}
 
@@ -883,6 +891,12 @@ i32 CSecretTeleporterTrigger::SpawnTeleporter() {
 
 // --- CParticlez (0x046ad0), vptr 0x5e7614 ---
 CParticlez::~CParticlez() {}
+// CParticlez::GetTypeTag @0x12cd0 - the per-class logic-type id (0x41c), the
+// 6-byte `mov eax,<id>; ret` archetype.
+RVA(0x00012cd0, 0x6)
+i32 CParticlez::GetTypeTag() {
+    return 0x41c;
+}
 RVA(0x00046ad0, 0x15e)
 CParticlez::CParticlez(CGameObject* obj) : CUserLogic(obj) {
     m_30 = m_14->m_1c;
