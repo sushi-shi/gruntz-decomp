@@ -74,8 +74,28 @@ struct CSoundChannelList {
     i32 m_blockSize;    // +0x14
     i32 m_count;        // +0x18
 
-    void RemoveAll();     // 0x1b48a6
-    ~CSoundChannelList(); // 0x1b48c6
+    void* AddTail(void* p); // 0x1b4991  (returns the new node)
+    void RemoveAll();       // 0x1b48a6
+    ~CSoundChannelList();   // 0x1b48c6
+};
+
+// The new sound-channel object the Create* factories allocate + add to the list.
+// Modeled minimally: a polymorphic scalar-deleting dtor at vtable slot 0, the
+// fields the factories seed (m_04/m_08/m_14/m_3c), and the non-virtual one-time
+// Init overloads (reached by direct rel32 -> ILT thunk, reloc-masked). The retail
+// vtable is referenced only by address when an instance is created.
+struct SoundChannelNew {
+    virtual void ScalarDtor(i32 flag); // slot 0
+    i32 m_04;                          // +0x04
+    i32 m_08;                          // +0x08
+    char m_pad0c[0x14 - 0x0c];
+    i32 m_14; // +0x14
+    char m_pad18[0x3c - 0x18];
+    i32 m_3c; // +0x3c
+
+    i32 Init6(void* world, i32 a1, i32 a2, void* a3, i32 a4, i32 a5);
+    i32 Init5(i32 a0, i32 a1, void* a2, i32 a3, i32 a4);
+    void Init2(i32 a0, i32 a1, i32 a2, i32 a3);
 };
 
 // The world/level object the sound hangs off. Only its +0x2c slot is read here
@@ -95,6 +115,17 @@ public:
     void Retune(i32 pan, i32 vol);   // 0x00bd60
     void Deactivate();               // 0x00b620  (sibling, defined elsewhere)
     ~CWorldSoundSet();               // 0x085ed0
+
+    // Factories: allocate + seed a sound channel, run its one-time Init, and (on
+    // success) append it to m_list. The rtti-vptr heuristic mislabeled these as
+    // CAmbientSound / CAmbientPosSound / CRandomAmbientSound members (they only
+    // reference those classes' vtables); the `this` is this CWorldSoundSet owner.
+    SoundChannelNew* CreateAmbient6_b6a0(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4);
+    SoundChannelNew* CreateAmbient5_b7b0(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4);
+    SoundChannelNew* CreatePos6_b850(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4);
+    SoundChannelNew* CreatePos5_b960(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4);
+    SoundChannelNew* CreateRandom_bb60(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5,
+                                       i32 a6, i32 a7, i32 a8);
 
     CRandomAmbientWorld* m_world; // +0x00
     void* m_04;                   // +0x04

@@ -34,14 +34,17 @@ public:
     virtual i32 Init(i32 a1, i32 a2, i32 a3); // +0x14  one-time setup (3 args)
     virtual i32 Init2(i32 a1, i32 a2);        // +0x18  alternate setup (2 args)
     virtual void Slot1C();                    // +0x1c
-    virtual void Slot20();                    // +0x20
+    virtual i32 Slot20();                     // +0x20  "is started" gate (IsBusy)
     virtual i32 Play(i32 hDriver, i32 a2);    // +0x24
-    virtual void Slot28();                    // +0x28
-    virtual void Slot2C();                    // +0x2c
+    virtual i32 Slot28();                     // +0x28  StopAll forwards here
+    virtual i32 Slot2C(i32 a1);               // +0x2c  StopBank forwards here
     virtual i32 Stop();                       // +0x30  stop / status query
 
-    char m_pad0[0x48]; // through +0x44..+0x5c seeded by the create helpers
-    i32 m_48;          // +0x48  per-bank flag the manager re-sync path reads
+    i32 IsBusy(); // RVA 0x138f60 - Slot20() gate + AIL_sequence_status(m_58)
+
+    char m_pad0[0x54]; // +0x04 .. +0x58 seeded by the create helpers
+    i32 m_58;          // +0x58  AIL sequence handle (queried by IsBusy)
+    i32 m_5c;          // +0x5c
 };
 
 class CGruntzSoundZ : public CMapStringToOb {
@@ -58,7 +61,8 @@ public:
     i32 Play_138840(i32 a1, i32 a2);
     void StopCurrent_1388a0();
     i32 Restart_1388c0(i32 a1);
-    void StopAll_1388f0();
+    i32 StopAll_1388f0();
+    i32 StopBank_138900(i32 a1);
     i32 IsPlaying_138920();
 
     CGruntzSoundInnerZ* m_pCurrent; // +0x1c

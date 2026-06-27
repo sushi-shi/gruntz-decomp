@@ -28,6 +28,10 @@
 DATA(0x001ef700)
 extern void* g_innerSoundVtbl;
 
+// Miles Sound System (AIL) sequence-status query, reached through the IAT
+// (call ds:[__imp__AIL_sequence_status@4]); used by CGruntzSoundInnerZ::IsBusy.
+extern "C" __declspec(dllimport) i32 __stdcall AIL_sequence_status(i32 seq);
+
 // ---------------------------------------------------------------------------
 // ~CGruntzSoundZ scalar destructor: stop/flush everything via Shutdown (a
 // __thiscall method defined in the sibling AIL TU, so this call is a reloc-masked
@@ -267,4 +271,43 @@ i32 CGruntzSoundZ::IsPlaying_138920() {
         return 0;
     }
     return m_pCurrent->Stop();
+}
+
+// ---------------------------------------------------------------------------
+// StopAll: forward to the current bank's "stop all" slot (vtable +0x28); 0 if
+// none. Tail-call (mov eax,[m_pCurrent]; jmp [eax+0x28]).
+RVA(0x001388f0, 0xf)
+i32 CGruntzSoundZ::StopAll_1388f0() {
+    if (m_pCurrent == 0) {
+        return 0;
+    }
+    return m_pCurrent->Slot28();
+}
+
+// ---------------------------------------------------------------------------
+// StopBank: forward `a1` to the current bank's "stop bank" slot (vtable +0x2c);
+// 0 if none.
+RVA(0x00138900, 0x19)
+i32 CGruntzSoundZ::StopBank_138900(i32 a1) {
+    if (m_pCurrent == 0) {
+        return 0;
+    }
+    return m_pCurrent->Slot2C(a1);
+}
+
+// ---------------------------------------------------------------------------
+// CGruntzSoundInnerZ::IsBusy (0x138f60): if the bank's "is started" gate (vtable
+// +0x20) is clear, not busy; otherwise query the AIL sequence status of the
+// bank's MIDI handle (m_58) and report busy for PLAYING (4) / PLAYINGBUTRELEASED
+// (0x10).
+RVA(0x00138f60, 0x2d)
+i32 CGruntzSoundInnerZ::IsBusy() {
+    if (Slot20() == 0) {
+        return 0;
+    }
+    i32 status = AIL_sequence_status(m_58);
+    if (status == 4 || status == 0x10) {
+        return 1;
+    }
+    return 0;
 }

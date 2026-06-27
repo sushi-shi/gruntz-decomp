@@ -287,6 +287,14 @@ source = "src/Gruntz/TileTriggerLogic.cpp"
 flags = "base"
 
 [[unit]]
+# 18-byte derived tile-trigger logic ctors homed from src/Stub/ (9 leaf classes;
+# each chains its engine base ctor + stamps its leaf vftable). Own TU so the base
+# ctor stays an external reloc-masked call (defined in tiletriggerlogic/switch).
+unit = "tiletriggerderivedctors"
+source = "src/Gruntz/TileTriggerDerivedCtors.cpp"
+flags = "base"
+
+[[unit]]
 unit = "triggermgr"
 source = "src/Gruntz/TriggerMgr.cpp"
 flags = "base"

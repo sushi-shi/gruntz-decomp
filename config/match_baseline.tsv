@@ -55,7 +55,7 @@ cattract	15	8
 cbehindcandy	2	2
 cbehindcandyani	4	3
 cbrickz	1	0
-ccheckpointtrigger	1	1
+ccheckpointtrigger	2	2
 ccursorsnapsprite	2	2
 cddpagemgr	2	1
 cddrawchildgroup	9	5
@@ -187,7 +187,7 @@ ehfunclets	6	6
 engine_attributed	9	0
 engine_boundary	17	0
 engine_discovered	23	5
-engine_label_stubs	381	105
+engine_label_stubs	363	96
 engine_unmatched_lib	11	0
 engstr	3	1
 eyecandytypetags	4	4
@@ -227,7 +227,7 @@ gruntzcmdmgr	12	10
 gruntzcommand	15	15
 gruntzmgr	92	63
 gruntzplayer	8	3
-gruntzsoundz	12	11
+gruntzsoundz	15	14
 gruntzwnd	9	8
 hash	10	9
 heapdiag	1	0
@@ -405,6 +405,7 @@ tileactionevent	7	4
 tilegridcommand	6	3
 tileswitchlogic	17	9
 tiletriggercontainer	15	4
+tiletriggerderivedctors	9	9
 tiletriggerfactory	1	0
 tiletriggerload	1	1
 tiletriggerlogic	2	1
@@ -434,7 +435,7 @@ winapi	5	3
 winapicdrom	1	0
 winapimodule	1	0
 winmain	1	1
-worldsoundset	8	5
+worldsoundset	13	10
 wormhole	8	3
 wwdfile	21	3
 wwdgameobject	13	6
@@ -800,6 +801,7 @@ cbehindcandyani	?InitActReg@CBehindCandyAni@@SAXXZ	100.0000	100.0000	1	0d9455b8c
 cbehindcandyani	?RegisterActs@CBehindCandyAni@@SAXXZ	92.9130	92.9130	1	29528d9538e4	0xad9b0
 cbrickz	??0CBrickz@@QAE@PAUCGameObject@@@Z	91.6759	91.6759	1	86c4f819f256	0x10e800
 ccheckpointtrigger	??1CCheckpointTrigger@@UAE@XZ	100.0000	100.0000	1	6af861462cfe	0x11480
+ccheckpointtrigger	?InitActReg@CCheckpointTrigger@@SAXXZ	100.0000	100.0000	1	b1a3bf2c0848	0x10ea00
 ccursorsnapsprite	??1CCursorSnapSprite@@UAE@XZ	100.0000	100.0000	1	2eab333c770e	0x11920
 ccursorsnapsprite	?Serialize@CCursorSnapSprite@@QAEHHHHH@Z	100.0000	100.0000	1	1ff3ed4ebd3b	0x11880
 cddpagemgr	?FreeAll@CDDPageMgr@@QAEHXZ	100.0000	100.0000	1	cebbfee958ab	0x17d6b0
@@ -1679,8 +1681,6 @@ engine_label_stubs	??0CBoomerang@@QAE@H@Z	97.3077	97.3077	1	cpp:6bf52155264d	0xe
 engine_label_stubs	??0CButeNodeBase@@QAE@PAXH@Z	59.5806	59.5806	1	cpp:2262ffc5f902	0x16dff0
 engine_label_stubs	??0CButeNodeEntry@@QAE@HPAX@Z	100.0000	100.0000	1	cpp:590eddff1627	0x16df70
 engine_label_stubs	??0CCheckpointTrigger@@QAE@H@Z	1.3554	1.3554	1	cpp:6bf52155264d	0x10ee20
-engine_label_stubs	??0CCheckpointTriggerSwitchLogic@@QAE@XZ	100.0000	100.0000	1	cpp:45e65336d4b5	0x1127f0
-engine_label_stubs	??0CCoveredPowerupLogic@@QAE@XZ	100.0000	100.0000	1	cpp:45e65336d4b5	0x112240
 engine_label_stubs	??0CCursorSnapSprite@@QAE@H@Z	1.7822	1.7822	1	cpp:6bf52155264d	0x3a340
 engine_label_stubs	??0CDoNothing@@QAE@H@Z	1.5385	1.5385	1	cpp:6bf52155264d	0xac1d0
 engine_label_stubs	??0CDoNothingNormal@@QAE@XZ	2.4194	2.4194	1	cpp:45e65336d4b5	0xa9e00
@@ -1690,7 +1690,6 @@ engine_label_stubs	??0CExitTrigger@@QAE@H@Z	0.9890	0.9890	1	cpp:6bf52155264d	0x3
 engine_label_stubs	??0CExplosion@@QAE@H@Z	2.2959	2.2959	1	cpp:6bf52155264d	0x470e0
 engine_label_stubs	??0CEyeCandyAni@@QAE@H@Z	1.6014	1.6014	1	cpp:6bf52155264d	0xac870
 engine_label_stubs	??0CFortressFlag@@QAE@H@Z	1.6667	1.6667	1	cpp:6bf52155264d	0x45d30
-engine_label_stubs	??0CGiantRockLogic@@QAE@XZ	100.0000	100.0000	1	cpp:45e65336d4b5	0x112210
 engine_label_stubs	??0CGruntCreationPoint@@QAE@H@Z	1.6187	1.6187	1	cpp:6bf52155264d	0x3e520
 engine_label_stubs	??0CGruntPuddle@@QAE@H@Z	1.8926	1.8926	1	cpp:6bf52155264d	0x40490
 engine_label_stubs	??0CGruntStartingPoint@@QAE@H@Z	1.8182	1.8182	1	cpp:6bf52155264d	0x3df30
@@ -1707,12 +1706,6 @@ engine_label_stubs	??0CRollingBall@@QAE@H@Z	0.7869	0.7869	1	cpp:6bf52155264d	0xa
 engine_label_stubs	??0CSBI_ImageSet@@QAE@XZ	0.2465	0.2465	1	cpp:45e65336d4b5	0x101580
 engine_label_stubs	??0CSpotLight@@QAE@H@Z	1.2500	1.2500	1	cpp:6bf52155264d	0xb1200
 engine_label_stubs	??0CStatusBarSprite@@QAE@H@Z	2.3854	2.3854	1	cpp:6bf52155264d	0x10c230
-engine_label_stubs	??0CTileExclusiveTriggerSwitchLogic@@QAE@XZ	100.0000	100.0000	1	cpp:45e65336d4b5	0x112050
-engine_label_stubs	??0CTileMultiTriggerSwitchLogic@@QAE@XZ	100.0000	100.0000	1	cpp:45e65336d4b5	0x111f10
-engine_label_stubs	??0CTileSecretTriggerLogic@@QAE@XZ	100.0000	100.0000	1	cpp:45e65336d4b5	0x112760
-engine_label_stubs	??0CTileSecretTriggerSwitchLogic@@QAE@XZ	100.0000	100.0000	1	cpp:45e65336d4b5	0x112790
-engine_label_stubs	??0CTileTimeTriggerLogic@@QAE@XZ	100.0000	100.0000	1	cpp:45e65336d4b5	0x112270
-engine_label_stubs	??0CTileTimeTriggerSwitchLogic@@QAE@XZ	100.0000	100.0000	1	cpp:45e65336d4b5	0x1127c0
 engine_label_stubs	??0CTimeBomb@@QAE@H@Z	1.4516	1.4516	1	cpp:6bf52155264d	0xe1b90
 engine_label_stubs	??0CToyPeek@@QAE@H@Z	2.1204	2.1204	1	cpp:6bf52155264d	0x98140
 engine_label_stubs	??0CWayPoint@@QAE@H@Z	2.5455	2.5455	1	cpp:6bf52155264d	0xae3f0
@@ -1747,7 +1740,6 @@ engine_label_stubs	??0MallocCtor_1816c0@@QAE@XZ	9.3333	9.3333	1	cpp:e8a4cb0d5b2a
 engine_label_stubs	??0MallocCtor_184960@@QAE@XZ	2.0513	2.0513	1	cpp:e8a4cb0d5b2a	0x184960
 engine_label_stubs	??0MallocCtor_192390@@QAE@XZ	1.0526	1.0526	1	cpp:e8a4cb0d5b2a	0x192390
 engine_label_stubs	??1CGruntzMapMgr@@QAE@XZ	2.0833	2.0833	1	cpp:45e65336d4b5	0x85d10
-engine_label_stubs	??1CRandomAmbientSound@@UAE@XZ	1.2698	1.2698	1	cpp:e8a4cb0d5b2a	0xbb60
 engine_label_stubs	?Append@EditAppendHost_0c2ce0@ApiCallerStubs@@QAEXPAD@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xc2ce0
 engine_label_stubs	?Apply@PalHost_1775f0@ApiCallerStubs@@QAEHPBDH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x1775f0
 engine_label_stubs	?BaseCleanup@CGameModeBase@@QAEXXZ	40.0000	40.0000	1	cpp:2262ffc5f902	0x3f53
@@ -1810,10 +1802,8 @@ engine_label_stubs	?HandleFortConquered@EngineLabelBacklog@@YAXXZ	0.2710	0.2710	
 engine_label_stubs	?Init@AilHost_138490@ApiCallerStubs@@QAEHHHH@Z	99.8077	99.8077	1	cpp:6bf52155264d	0x138490
 engine_label_stubs	?Init@Region_182ab0@ApiCallerStubs@@QAEHPAUTileSrcHost_182ab0@2@HPAUtagRECT@@HHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x182ab0
 engine_label_stubs	?Init@RezSync@@QAEXHH@Z	0.0562	0.0562	1	cpp:6bf52155264d	0x83450
-engine_label_stubs	?InitActReg@CCheckpointTrigger@@SAXXZ	100.0000	100.0000	1	cpp:590eddff1627	0x10ea00
 engine_label_stubs	?InitCFileIOMember@CGruntzMgr@@QAEXXZ	3.0303	3.0303	1	cpp:45e65336d4b5	0x8fea0
 engine_label_stubs	?Insert@CButeTree@@QAEXPBDPAX@Z	0.5155	0.5155	1	cpp:2262ffc5f902	0x16db90
-engine_label_stubs	?IsBusy@CGruntzSoundInnerZ@@QAEHXZ	9.5238	9.5238	1	cpp:2262ffc5f902	0x138f60
 engine_label_stubs	?Key@CmdHost_014720@ApiCallerStubs@@QAEHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x14720
 engine_label_stubs	?Key@CmdHost_039440@ApiCallerStubs@@QAEHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x39440
 engine_label_stubs	?Key@CmdHost_0953f0@ApiCallerStubs@@QAEHHH@Z	100.0000	100.0000	1	cpp:e1535087fe94	0x953f0
@@ -1826,7 +1816,7 @@ engine_label_stubs	?LoadAttributes@CTeleporter@@QAEXXZ	0.4274	0.4274	1	cpp:45e65
 engine_label_stubs	?LoadAttributes@CTimeBomb@@QAEXXZ	0.7246	0.7246	1	cpp:45e65336d4b5	0xe1e60
 engine_label_stubs	?LoadBootyCheatState@EngineLabelBacklog@@YGXHHH@Z	0.3788	0.3788	1	cpp:6bf52155264d	0x18830
 engine_label_stubs	?LoadBridgeMoveSprites@EngineLabelBacklog@@YGXH@Z	0.6536	0.6536	1	cpp:6bf52155264d	0x110860
-engine_label_stubs	?LoadByExt@CFileImage@@QAEHPAVCFileImageInfo@@PADHH@Z	99.8899	99.8899	1	cpp:590eddff1627	0x148940
+engine_label_stubs	?LoadByExt@CFileImage@@QAEHPAVCFileImageInfo@@PADHH@Z	100.0000	100.0000	1	cpp:590eddff1627	0x148940
 engine_label_stubs	?LoadCustomWorldInfo@EngineLabelBacklog@@YAHPAX@Z	100.0000	100.0000	1	cpp:aab6e5a6e511	0x3b7c0
 engine_label_stubs	?LoadDroppedObjectEffects@CDroppedObject@@QAEXXZ	0.6289	0.6289	1	cpp:e8a4cb0d5b2a	0xc7090
 engine_label_stubs	?LoadGruntCombatAnimations@CGrunt@ApiCallerStubs@@QAEXHHHHHHHH@Z	0.0777	0.0777	1	cpp:590eddff1627	0x597a0
@@ -1892,12 +1882,6 @@ engine_label_stubs	?Shutdown@AilMgr_1384f0@ApiCallerStubs@@QAEXXZ	100.0000	100.0
 engine_label_stubs	?Snapshot@PalCache_17cd90@ApiCallerStubs@@QAEXPAX@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x17cd90
 engine_label_stubs	?StartUpPrompt@EngineLabelBacklog@@YAXXZ	0.4950	0.4950	1	cpp:45e65336d4b5	0x1f9b0
 engine_label_stubs	?Stop@AilSeq@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x138e60
-engine_label_stubs	?StopAll@CGruntzSoundZ@@QAEXXZ	14.2857	14.2857	1	cpp:2262ffc5f902	0x1388f0
-engine_label_stubs	?StopBank@CGruntzSoundZ@@QAEXH@Z	10.0000	10.0000	1	cpp:2262ffc5f902	0x138900
-engine_label_stubs	?Stub_00b6a0@CAmbientSound@@QAEXHHHHH@Z	1.8182	1.8182	1	cpp:6bf52155264d	0xb6a0
-engine_label_stubs	?Stub_00b7b0@CAmbientSound@@QAEXHHHHH@Z	1.8868	1.8868	1	cpp:6bf52155264d	0xb7b0
-engine_label_stubs	?Stub_00b850@CAmbientPosSound@@QAEXHHHHH@Z	1.8182	1.8182	1	cpp:6bf52155264d	0xb850
-engine_label_stubs	?Stub_00b960@CAmbientPosSound@@QAEXHHHHH@Z	1.8868	1.8868	1	cpp:6bf52155264d	0xb960
 engine_label_stubs	?Stub_01fd70@EngineLabelBacklog@@YAHPAD@Z	100.0000	100.0000	1	cpp:e8a4cb0d5b2a	0x1fd70
 engine_label_stubs	?Stub_0f90f0@EngineLabelBacklog@@YAHPAD@Z	100.0000	100.0000	1	cpp:e8a4cb0d5b2a	0xf90f0
 engine_label_stubs	?Stub_18c780@EngineLabelBacklog@@YAXXZ	0.3891	0.3891	1	cpp:45e65336d4b5	0x18c780
@@ -2556,13 +2540,16 @@ gruntzsoundz	??1CGruntzSoundZ@@UAE@XZ	91.5790	91.5790	1	eadd9784e22d	0x86040
 gruntzsoundz	?CreateBank2_1385e0@CGruntzSoundZ@@QAEPAVCGruntzSoundInnerZ@@HH@Z	100.0000	100.0000	1	70c23a95a540	0x1385e0
 gruntzsoundz	?CreateBank_138670@CGruntzSoundZ@@QAEPAVCGruntzSoundInnerZ@@HHH@Z	100.0000	100.0000	2	b662c03967cb	0x138670
 gruntzsoundz	?Insert_138700@CGruntzSoundZ@@QAEXPAVCGruntzSoundInnerZ@@@Z	100.0000	100.0000	1	278c200139dc	0x138700
+gruntzsoundz	?IsBusy@CGruntzSoundInnerZ@@QAEHXZ	100.0000	100.0000	1	ff67b00529a2	0x138f60
 gruntzsoundz	?IsPlaying_138920@CGruntzSoundZ@@QAEHXZ	100.0000	100.0000	2	11607c292047	0x138920
 gruntzsoundz	?Lookup_138730@CGruntzSoundZ@@QAEPAVCGruntzSoundInnerZ@@PBD@Z	100.0000	100.0000	1	4546bf9e6b66	0x138730
 gruntzsoundz	?PlayCreate2_138780@CGruntzSoundZ@@QAEHHHH@Z	100.0000	100.0000	1	2810e1019b36	0x138780
 gruntzsoundz	?PlayCreate3_1387e0@CGruntzSoundZ@@QAEHHHHH@Z	100.0000	100.0000	1	26f255a3d1bd	0x1387e0
 gruntzsoundz	?Play_138840@CGruntzSoundZ@@QAEHHH@Z	100.0000	100.0000	2	c415231b70de	0x138840
 gruntzsoundz	?Restart_1388c0@CGruntzSoundZ@@QAEHH@Z	100.0000	100.0000	1	4fba09065a91	0x1388c0
+gruntzsoundz	?StopAll_1388f0@CGruntzSoundZ@@QAEHXZ	100.0000	100.0000	1	f81c3b88820b	0x1388f0
 gruntzsoundz	?StopAndFlush_138530@CGruntzSoundZ@@QAEXXZ	100.0000	100.0000	1	fc55b1345f19	0x138530
+gruntzsoundz	?StopBank_138900@CGruntzSoundZ@@QAEHH@Z	100.0000	100.0000	1	66c7925b2b7d	0x138900
 gruntzsoundz	?StopCurrent_1388a0@CGruntzSoundZ@@QAEXXZ	100.0000	100.0000	1	99f267d9da6f	0x1388a0
 gruntzwnd	??0CGruntzWnd@@QAE@XZ	100.0000	100.0000	5	cce3fed8f7f8	0x94640
 gruntzwnd	??1CGruntzWnd@@UAE@XZ	100.0000	100.0000	1	e178d8d8603b	0x946a0
@@ -3505,6 +3492,15 @@ tiletriggercontainer	?Serialize@CTileTriggerContainer@@QAEHPAUTtcStream@@HHH@Z	2
 tiletriggercontainer	?SerializeApplyA@@YGHPAUTtcStream@@HHHPAUTtcSwitchObj@@@Z	57.3077	57.3077	2	a1a03c04f1a2	0x117630
 tiletriggercontainer	?SerializeApplyB@@YGHPAUTtcStream@@HHHPAUTtcSwitchObj@@@Z	63.2576	63.2576	2	fe53fda39900	0x117710
 tiletriggercontainer	?SetCell@CTileTriggerContainer@@QAEHHHH@Z	77.9559	77.9559	1	cd7922705e40	0x117f60
+tiletriggerderivedctors	??0CCheckpointTriggerSwitchLogic@@QAE@XZ	100.0000	100.0000	1	357254543f7f	0x1127f0
+tiletriggerderivedctors	??0CCoveredPowerupLogic@@QAE@XZ	100.0000	100.0000	1	1a54a6aa172e	0x112240
+tiletriggerderivedctors	??0CGiantRockLogic@@QAE@XZ	100.0000	100.0000	1	e152efa95159	0x112210
+tiletriggerderivedctors	??0CTileExclusiveTriggerSwitchLogic@@QAE@XZ	100.0000	100.0000	1	3099237b41f9	0x112050
+tiletriggerderivedctors	??0CTileMultiTriggerSwitchLogic@@QAE@XZ	100.0000	100.0000	1	0f872fee4ec8	0x111f10
+tiletriggerderivedctors	??0CTileSecretTriggerLogic@@QAE@XZ	100.0000	100.0000	1	0d4e1bda85a0	0x112760
+tiletriggerderivedctors	??0CTileSecretTriggerSwitchLogic@@QAE@XZ	100.0000	100.0000	1	4a14c05c0fee	0x112790
+tiletriggerderivedctors	??0CTileTimeTriggerLogic@@QAE@XZ	100.0000	100.0000	1	a391f789ea7c	0x112270
+tiletriggerderivedctors	??0CTileTimeTriggerSwitchLogic@@QAE@XZ	100.0000	100.0000	1	fa6edfa33284	0x1127c0
 tiletriggerfactory	?Build@CTileTriggerFactory@@QAEPAXPAUCTrigReader@@HHH@Z	26.4732	26.4732	2	d426f3c13acf	0x117800
 tiletriggerload	?LoadV4@CTileTriggerData@@QAEHPAVCSerialArchive@@@Z	100.0000	100.0000	2	2251b0b12299	0x1138b0
 tiletriggerlogic	??0CTileTriggerLogic@@QAE@XZ	100.0000	100.0000	5	94795c513302	0x1107f0
@@ -3754,6 +3750,11 @@ winapicdrom	?CheckCdRomRegistry@WinAPI@Utils@@YADXZ	76.1429	76.1429	4	c6ba621c6b
 winapimodule	?LegacyFindModule@WinAPI@Utils@@YAHKKPAXK@Z	99.9000	99.9000	4	f574baeadf5f	0x118f60
 winmain	_WinMain@16	100.0000	100.0000	6	a459e7cdd0d6	0x11c860
 worldsoundset	??1CWorldSoundSet@@QAE@XZ	100.0000	100.0000	1	575205cf84c8	0x85ed0
+worldsoundset	?CreateAmbient5_b7b0@CWorldSoundSet@@QAEPAUSoundChannelNew@@HHHHH@Z	100.0000	100.0000	1	c513b4a3bb31	0xb7b0
+worldsoundset	?CreateAmbient6_b6a0@CWorldSoundSet@@QAEPAUSoundChannelNew@@HHHHH@Z	100.0000	100.0000	1	d512bb7922a6	0xb6a0
+worldsoundset	?CreatePos5_b960@CWorldSoundSet@@QAEPAUSoundChannelNew@@HHHHH@Z	100.0000	100.0000	1	3955ee91a777	0xb960
+worldsoundset	?CreatePos6_b850@CWorldSoundSet@@QAEPAUSoundChannelNew@@HHHHH@Z	100.0000	100.0000	1	56e2a90a42a4	0xb850
+worldsoundset	?CreateRandom_bb60@CWorldSoundSet@@QAEPAUSoundChannelNew@@HHHHHHHHH@Z	100.0000	100.0000	1	68de81ce5e88	0xbb60
 worldsoundset	?Init@CWorldSoundSet@@QAEHPAX0@Z	100.0000	100.0000	1	316fab8b3cce	0xb5e0
 worldsoundset	?Recompute@CSoundChannel@@QAEXH@Z	97.9268	97.9268	2	064a4876353e	0xbf10
 worldsoundset	?Restart@CWorldSoundSet@@QAEXPAX@Z	100.0000	100.0000	1	00f3d4b65497	0xbc30

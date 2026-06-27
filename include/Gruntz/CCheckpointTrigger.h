@@ -9,7 +9,8 @@
 
 class CCheckpointTrigger : public CUserLogic {
 public:
-    ~CCheckpointTrigger(); // 0x011480 (folds the CUserLogic teardown)
+    ~CCheckpointTrigger();    // 0x011480 (folds the CUserLogic teardown)
+    static void InitActReg(); // 0x10ea00 (constructs g_checkpointActReg @0x64e7c0)
     char m_pad40[0x54 - 0x40];
 };
 SIZE(CCheckpointTrigger, 0x54);
