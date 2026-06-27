@@ -103,13 +103,11 @@ struct PreviewMgr {
 
 // The bute datum the screen namespace is interned under (?g_screenTag@@3HA
 // @0x504358); referenced by address so the DIR32 operand reloc-masks.
-DATA(0x00104358)
 extern i32 g_screenTag;
 
 // The engine's per-frame clock delta (?g_wap32FrameDelta@@3HA @0x653c74). Signed
 // in the engine, but the timer compare/subtract below promote against the unsigned
 // +0x1b8 timer (the unsigned ja/jb the countdown uses).
-DATA(0x00253c74)
 extern i32 g_wap32FrameDelta;
 
 class CPreviewState {

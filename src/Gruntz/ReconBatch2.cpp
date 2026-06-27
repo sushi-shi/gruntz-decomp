@@ -11,7 +11,6 @@
 // 0x001b9b8d (6B) - getter that returns the address of a global descriptor
 // (PTR_DAT_006156f4). `mov eax, OFFSET g; ret`.
 // ===========================================================================
-DATA(0x002156f4)
 extern void* g_desc_6156f4;
 RVA(0x001b9b8d, 0x6)
 void** Get_1b9b8d() {
@@ -197,7 +196,6 @@ void CGameModeBase::Reset() {
     BaseCleanup();
 }
 
-DATA(0x002135e8)
 extern char s_PREVIEW_6135e8[]; // "PREVIEW"
 // @early-stop
 // regalloc wall (topic:wall topic:regalloc): same m_28-intermediate register
@@ -303,9 +301,7 @@ struct KeyRecv_f8ec0 {
     char m_pad0[0x34];
     Slot34Fn_f8ec0 m_34; // +0x34 cdecl callback slot
 };
-DATA(0x0024e0b8)
 extern void* g_initFlag_64e0b8;
-DATA(0x0024e0b0)
 extern KeyRecv_f8ec0* g_keyRecv_64e0b0;
 DATA(0x0024dace)
 extern WORD g_word_64dace;
@@ -409,7 +405,6 @@ void Tree_193340::Walk(WalkCb_193340 cb, i32 ctx, TNode_193340* node) {
 // the front surface with arg0, Flip the back surface, then Refresh again.
 // __thiscall(arg0). m_c->m_4 is reloaded each statement (not cached across).
 // ===========================================================================
-DATA(0x0024e360)
 extern i32 g_suppress_64e360;
 // The +0x2c surface controller (CopyRect 0x13f460, Flip 0x13e850), no-body.
 struct SurfCtl_faec0 {

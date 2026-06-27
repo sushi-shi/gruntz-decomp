@@ -115,13 +115,9 @@ i32 g_volumeTable[100];
 
 // The x87 transfer-curve constants VolumeToAttenuation reads (.rdata doubles);
 // reloc-masked DIR32 operands, named here so the references pair.
-DATA(0x001ef698)
 extern const double c_volScale; // 0x5ef698  v / c_volScale, and the final * c_volScale
-DATA(0x001ef6a0)
 extern const double c_volNum; // 0x5ef6a0  numerator of the reciprocal
-DATA(0x001ef6a8)
 extern const double c_powExp; // 0x5ef6a8  pow() exponent
-DATA(0x001ef6b0)
 extern const double c_acosNorm; // 0x5ef6b0  acos() normalizer arg
 
 // The engine global operator delete (RezFree-backed, 0x1b9b82) the scalar-deleting

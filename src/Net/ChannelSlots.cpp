@@ -7,7 +7,6 @@
 #include <Ints.h>
 #include <rva.h>
 
-DATA(0x0024c3f0)
 extern "C" i32 g_64c3f0[17];
 
 // 0x0db1d0 - reset every slot to "free" (1).

@@ -285,39 +285,22 @@ extern CLookupColl g_reg_644af0; // 0x644af0  (per-class table)
 
 // The 19 action-key strings (s_actKeyA/B come from above; the rest are .rdata
 // string constants named by address). Referenced so the `push key` reloc-masks.
-DATA(0x0020cc90)
 extern char k_60cc90[];
-DATA(0x0020cca4)
 extern char k_60cca4[];
-DATA(0x0020d2ec)
 extern char k_60d2ec[];
-DATA(0x0020d2e8)
 extern char k_60d2e8[];
-DATA(0x0020cc9c)
 extern char k_60cc9c[];
-DATA(0x0020d7fc)
 extern char k_60d7fc[];
-DATA(0x0020cca0)
 extern char k_60cca0[];
-DATA(0x0020cc94)
 extern char k_60cc94[];
-DATA(0x0020d7f8)
 extern char k_60d7f8[];
-DATA(0x0020cc98)
 extern char k_60cc98[];
-DATA(0x0020d7f4)
 extern char k_60d7f4[];
-DATA(0x0020dc04)
 extern char k_60dc04[];
-DATA(0x0020dc0c)
 extern char k_60dc0c[];
-DATA(0x0020beb8)
 extern char k_60beb8[];
-DATA(0x0020dc08)
 extern char k_60dc08[];
-DATA(0x0020bebc)
 extern char k_60bebc[];
-DATA(0x0020df94)
 extern char k_60df94[];
 
 // The 19 per-action handler entries (ILT thunks), referenced by address.

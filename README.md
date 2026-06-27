@@ -36,6 +36,7 @@ _Started units alone: 1,598/3,393 fns exact, 48.54% fuzzy over 973,883 of 974,75
 | `Utils`       |     8 |     16 / 20 (80.0%) | 78.8% |     78.8% |
 | `Crt`         |     1 |      8 / 10 (80.0%) | 89.3% |     89.3% |
 | `Crypto`      |     1 |       3 / 4 (75.0%) | 99.8% |     99.8% |
+| `Globals.cpp` |     1 |        0 / 0 (0.0%) |  0.0% |      0.0% |
 | `(unmatched)` |     — |       0 / 58 (0.0%) |  0.0% |      0.0% |
 
 _Excluded from the % above — generated/library code, not independent reconstruction targets:_

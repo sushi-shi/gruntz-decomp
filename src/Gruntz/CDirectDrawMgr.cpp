@@ -78,7 +78,6 @@ static const char s_extPal[] = ".PAL";
 // The process-wide DirectDraw object + the CDirectDrawMgr singleton (.data).
 DATA(0x00283ee8)
 extern "C" IDirectDraw2Z* g_DirectDraw; // 0x683ee8
-DATA(0x002bed00)
 extern "C" CDirectDrawMgr* g_DirectDrawMgr; // 0x6bed00
 
 // ===========================================================================
@@ -236,7 +235,6 @@ extern i32 g_bDown; // 0x683eb4
 // G @0x653c9e, B @+0x10000, R @+0x20000. Indexed by a byte offset built from the
 // (a<<11) block + 2*n. Modeled as one base so the three writes keep retail's three
 // independent disp32 encodings (each masked by its own DIR32 reloc).
-DATA(0x00253c9e)
 extern u8 g_clut[]; // 0x653c9e (G; B=+0x10000, R=+0x20000)
 
 // BuildColorChannelTables (0x13f740, __cdecl) - precompute the per-channel CLUTs that

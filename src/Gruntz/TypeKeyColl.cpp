@@ -62,7 +62,6 @@ DATA(0x002bf66c)
 extern void* g_typeNodes;
 
 // The deeper-base ctor argument (a data tag global at 0x6bf468).
-DATA(0x002bf468)
 extern u8 g_zArrayTag;
 
 // The "Inconsistent bounds" / "out of memory" message strings are emitted as
@@ -198,7 +197,6 @@ struct CKeyFinder {
 };
 
 // The sorted key array + its element count (12-byte records).
-DATA(0x002bf498)
 extern i32 g_keyArray[];
 DATA(0x002bf618)
 extern i32 g_keyCount;
@@ -322,7 +320,6 @@ struct CButeTree {
 };
 DATA(0x002bf620)
 extern CButeTree g_buteTree;
-DATA(0x0016ea10)
 extern void* g_buteTreeArg; // 0x56ea10 (ctor argument)
 
 RVA(0x0016e6a0, 0x26)

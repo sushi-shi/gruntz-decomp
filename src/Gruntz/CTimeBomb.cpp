@@ -32,21 +32,14 @@ struct CTBombColl2 {
 };
 extern "C" i32 ActAlloc(); // 0x16d990
 
-DATA(0x0024c788)
 extern i32 g_tbombLo;
-DATA(0x0024c78c)
 extern i32 g_tbombHi;
-DATA(0x0024c790)
 extern char* g_tbombBase;
-DATA(0x0024c798)
 extern i32 g_tbombStride;
-DATA(0x0024c794)
 extern CTBombEntry* g_tbombCur;
-DATA(0x0024c7a0)
 extern i32 g_tbombScratch;
 DATA(0x0024c780)
 extern CTBombColl g_tbombColl;
-DATA(0x0024c784)
 extern CTBombColl2* g_tbombColl2;
 DATA(0x002bf464)
 extern void* g_actCache;

@@ -899,7 +899,6 @@ public:
 };
 DATA(0x00253c88)
 extern CImageCache g_imageCache; // 0x653c88
-DATA(0x00253c90)
 extern i32 g_imageCacheIndex; // 0x653c90
 
 // The owner of the factory (this) is not touched by the body; modeled as an

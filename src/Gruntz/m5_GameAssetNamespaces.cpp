@@ -9,7 +9,6 @@
 
 DATA(0x006bf37c)
 extern i32 g_severusCounterA;
-DATA(0x00651614)
 extern i32 g_buildNumber;
 
 class CSymParser {

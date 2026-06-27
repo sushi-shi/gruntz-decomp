@@ -24,7 +24,6 @@ DATA(0x001efb10)
 extern float g_c10;
 DATA(0x001efb20)
 extern float g_c20;
-DATA(0x001efb24)
 extern float g_c24;
 
 // A draw param the draw helper consumes (0x6becf8).

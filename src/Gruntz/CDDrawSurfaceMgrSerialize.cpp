@@ -104,7 +104,6 @@ struct RemusChild {
 // CTime::GetLocalTm(struct tm*) (0x1b30f0).
 
 // The global record id mirrored into the serialized header (header[0x114]).
-DATA(0x0061ab14)
 extern "C" u32 g_61ab14;
 
 // ---------------------------------------------------------------------------

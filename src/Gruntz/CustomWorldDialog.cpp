@@ -20,7 +20,6 @@ DATA(0x0022c25c)
 extern CString g_str62c25c; // 0x62c25c
 DATA(0x0022c264)
 extern CString g_str62c264; // 0x62c264
-DATA(0x0022c268)
 extern i32 g_dat62c268; // 0x62c268
 DATA(0x0022c26c)
 extern i32 g_dat62c26c; // 0x62c26c

@@ -1993,3 +1993,8 @@ flags = "eh"
 unit = "cmdscrollapply"
 source = "src/Gruntz/CmdScrollApply.cpp"
 flags = "base"
+
+[[unit]]
+unit = "globals"
+source = "src/Globals.cpp"
+flags = "base"

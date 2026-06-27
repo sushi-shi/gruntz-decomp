@@ -24,7 +24,6 @@ DATA(0x002bf3bc)
 extern "C" u32 g_6bf3bc;
 
 // A .data global the ctor copies into the bound object's +0x124 (DAT_0064553c).
-DATA(0x0024553c)
 extern "C" i32 g_64553c;
 
 // ---------------------------------------------------------------------------
@@ -147,21 +146,14 @@ struct CHaznColl2 {
 };
 extern "C" i32 ActAlloc(); // 0x16d990
 
-DATA(0x0024e3d8)
 extern i32 g_haznLo;
-DATA(0x0024e3dc)
 extern i32 g_haznHi;
-DATA(0x0024e3e0)
 extern char* g_haznBase;
-DATA(0x0024e3e8)
 extern i32 g_haznStride;
-DATA(0x0024e3e4)
 extern CHaznEntry* g_haznCur;
-DATA(0x0024e3f0)
 extern i32 g_haznScratch;
 DATA(0x0024e3d0)
 extern CHaznColl g_haznColl;
-DATA(0x0024e3d4)
 extern CHaznColl2* g_haznColl2;
 DATA(0x002bf464)
 extern void* g_actCache;

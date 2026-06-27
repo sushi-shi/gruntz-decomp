@@ -737,7 +737,6 @@ struct CChatLog {
 // The shared scratch buffer the toggle-message formatter renders "<item> is
 // ON/OFF" into before logging it (reloc-masked DATA ref). The format helper is
 // the statically-linked CRT sprintf (FUN_0051f890; reloc-masked call).
-DATA(0x002452d8)
 extern "C" char g_msgScratch[]; // 0x6452d8
 
 // -------------------------------------------------------------------------

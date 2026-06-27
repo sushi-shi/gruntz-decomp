@@ -39,21 +39,14 @@ struct CVTrigColl2 {
 };
 extern "C" i32 ActAlloc(); // 0x16d990
 
-DATA(0x00251508)
 extern i32 g_vtrigLo;
-DATA(0x0025150c)
 extern i32 g_vtrigHi;
-DATA(0x00251510)
 extern char* g_vtrigBase;
-DATA(0x00251518)
 extern i32 g_vtrigStride;
-DATA(0x00251514)
 extern CVTrigEntry* g_vtrigCur;
-DATA(0x00251520)
 extern i32 g_vtrigScratch;
 DATA(0x00251500)
 extern CVTrigColl g_vtrigColl;
-DATA(0x00251504)
 extern CVTrigColl2* g_vtrigColl2;
 DATA(0x002bf464)
 extern void* g_actCache;

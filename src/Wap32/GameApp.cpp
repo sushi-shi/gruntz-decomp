@@ -8,16 +8,12 @@
 #include <stdio.h>
 // timeGetTime (WINMM frame clock) comes from <Mfc.h>'s central decl (via <Wap32.h>).
 
-DATA(0x00253c70)
 extern i32 g_wap32Now;
-DATA(0x00253c74)
 extern i32 g_wap32FrameDelta;
 DATA(0x00253c78)
 extern i32 g_wap32ClockReset;
 // Two run-state timing defaults CGameMgr::Run seeds to 0x64 (100).
-DATA(0x00253c7c)
 extern i32 g_wap32Run7c;
-DATA(0x00253c80)
 extern i32 g_wap32Run80;
 
 // Instance counter (bumped per ctor). Shared

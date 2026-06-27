@@ -126,21 +126,14 @@ struct CToobColl2 {
 };
 extern "C" i32 ActAlloc(); // 0x16d990
 
-DATA(0x0024e980)
 extern i32 g_toobLo;
-DATA(0x0024e984)
 extern i32 g_toobHi;
-DATA(0x0024e988)
 extern char* g_toobBase;
-DATA(0x0024e990)
 extern i32 g_toobStride;
-DATA(0x0024e98c)
 extern CToobEntry* g_toobCur;
-DATA(0x0024e998)
 extern i32 g_toobScratch;
 DATA(0x0024e978)
 extern CToobColl g_toobColl;
-DATA(0x0024e97c)
 extern CToobColl2* g_toobColl2;
 DATA(0x002bf464)
 extern void* g_actCache;

@@ -16,7 +16,6 @@
 #include <rva.h>
 
 // The 14-byte "BM" BITMAPFILEHEADER template copied up front ($SG .rdata).
-DATA(0x0021aabc)
 extern char g_bmpHeaderTemplate[]; // 0x61aabc
 
 // The stack CFile temp: ctor/dtor act on the object base; the engine writer's Open lives

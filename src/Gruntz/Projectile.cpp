@@ -14,9 +14,7 @@
 // StepMotion's two motion-phase thresholds (.rdata doubles) + the int amplitude
 // global it folds into the trajectory (loaded as a double via fild). DATA pins so
 // the fcomp/mov loads reloc-mask against the named symbols.
-DATA(0x001eaae8)
 extern const double g_projPhase0;
-DATA(0x001eab00)
 extern const double g_projPhase1;
 DATA(0x00245584)
 extern i32 g_645584;
@@ -259,21 +257,14 @@ extern i32 g_projTypeCounter; // 0x61aea8 (global type counter)
 
 // R2 - the projectile's per-coordinate activation table (@0x64c758).
 struct CProjActEntry;
-DATA(0x0024c760)
 extern i32 g_projActLo;
-DATA(0x0024c764)
 extern i32 g_projActHi;
-DATA(0x0024c768)
 extern char* g_projActBase;
-DATA(0x0024c770)
 extern i32 g_projActStride;
-DATA(0x0024c76c)
 extern CProjActEntry* g_projActCur;
-DATA(0x0024c778)
 extern i32 g_projActScratch;
 DATA(0x0024c758)
 extern CProjColl g_projActColl;
-DATA(0x0024c75c)
 extern CProjColl2* g_projActColl2;
 
 // The CString slot teardown (0x1b9b93 __thiscall) + name assign (0x1b9e74).

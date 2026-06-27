@@ -276,7 +276,6 @@ extern WwdGameReg* g_gameReg;
 
 // A render-context object the cell-probe call site passes through (DAT_00644ca4 @
 // VA 0x644ca4). Reloc-masked DATA.
-DATA(0x00244ca4)
 extern void* g_renderCtx;
 
 // One animation-name record: its first dword is the C-string name (record->m_0).
@@ -339,7 +338,6 @@ struct UnitMutator {
 
 // The difficulty/spawn scale factor (?g_diffScale@@3MB, a `const float` @ VA
 // 0x5e96ec). Reloc-masked DATA; read by the fild/fmul spawn-budget computation.
-DATA(0x001e96ec)
 extern const float g_diffScale;
 
 // ===========================================================================
@@ -2294,11 +2292,8 @@ endZero:
 // The board-step run flag + the result cell it records (the (col,row) of the cell
 // that satisfied the step). Reloc-masked DATA; the recursive flood-fill clears
 // g_stepRun and stamps g_stepCol / g_stepRow when it commits.
-DATA(0x0022b6dc)
 extern i32 g_stepRun;
-DATA(0x0022b730)
 extern i32 g_stepCol;
-DATA(0x0022b734)
 extern i32 g_stepRow;
 
 // The query object held at this->m_014: ResolveCell (RVA 0x011171d0... thunk
@@ -3110,7 +3105,6 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_034c70(i32 unitArg) {
 // ===========================================================================
 // The zvec error globals + the return-capture helper + the reporter (the same set
 // ZVec.cpp models). Declared here so the calls/stores reloc-mask.
-DATA(0x001f0428)
 extern void* g_zvecErrToken;     // 0x6bf428
 extern void* zErr_CaptureRetB(); // 0x16d990
 struct ZErrTarget {

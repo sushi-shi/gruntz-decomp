@@ -28,11 +28,8 @@ DATA(0x00283eb4)
 extern i32 g_bDown; // 0x683eb4
 
 // The three 2048-byte-strided translucency LUT banks selected by the light level.
-DATA(0x00253ca0)
 extern u8 g_lutBank1_653ca0[];
-DATA(0x00263ca0)
 extern u8 g_lutBank2_663ca0[];
-DATA(0x00273ca0)
 extern u8 g_lutBank0_673ca0[];
 
 RVA(0x001497f0, 0x154)
@@ -445,7 +442,6 @@ void CDDrawShadeBlit::BlitLoop(ShadeRect* p0, ShadeSrc* src, ShadeRect* clip, i3
 // The global scratch line the row converter saves the destination into before an
 // in-place blend (DAT_006bed08), and the secondary palette/format descriptor
 // (DAT_006bf218) used by the 16-bit alpha path. Reloc-masked.
-DATA(0x002bed08)
 extern u8 g_scratch[]; // 0x6bed08
 DATA(0x002bf218)
 extern ShadeDescr* g_blendDescr; // 0x6bf218

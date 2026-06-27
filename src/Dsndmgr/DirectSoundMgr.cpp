@@ -95,7 +95,6 @@ extern i32 g_volumeTable[100];
 // The pan lookup table SetPanByIndex indexes (0x653c48, immediately after the
 // volume table). Read at indices <= 0 from this base: a positive arg reads the
 // negated entry, a negative arg the entry direct.
-DATA(0x00253c48)
 extern i32 g_panTable[];
 
 // The 0x28-byte "playing voice" node minted by CloneAndPlay. Its 6-arg __thiscall

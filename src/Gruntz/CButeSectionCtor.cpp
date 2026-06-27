@@ -19,13 +19,11 @@
 #include <rva.h>
 
 // The stream base ctor argument tag (a .text descriptor @0x574de0).
-DATA(0x00174de0)
 extern u8 g_streamTag; // 0x574de0
 
 // The embedded streams' derived vtable + its +0x08 data pointer (reloc-masked).
 DATA(0x001f0510)
 extern void* g_streamVtbl; // 0x5f0510  (scalar-deleting dtor table)
-DATA(0x001f0514)
 extern void* g_streamData; // 0x5f0514
 
 // Sub-object ctors / leaves (all __thiscall, no body -> rel32 reloc-masks).

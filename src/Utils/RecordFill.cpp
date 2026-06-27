@@ -16,7 +16,6 @@ void __stdcall ZeroRecords(void* dst, int count) {
 
 // The ds:-relative scale constant (VA 0x6256f0) the classifier multiplies by.
 extern double g_scale6256f0;
-DATA(0x002256f0)
 extern double g_scale6256f0;
 
 // ---------------------------------------------------------------------------

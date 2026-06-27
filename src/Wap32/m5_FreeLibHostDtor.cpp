@@ -18,7 +18,6 @@ extern void* const Vtbl_5eb6c4;
 extern void* const Vtbl_5ec26c;
 
 // The FreeLibrary IAT entry (retail calls it indirectly: ff 15 [0x6c3fdc]).
-DATA(0x006c3fdc)
 extern int(__stdcall* g_impFreeLibrary)(void*);
 
 RVA(0x001d4a18, 0x3c)

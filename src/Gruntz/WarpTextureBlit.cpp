@@ -48,23 +48,16 @@ DATA(0x002856f8)
 extern i32 g_warpEdgeR[]; // 0x6856f8
 
 // The rasterizer global scratch (all reloc-masked DATA).
-DATA(0x002becfc)
 extern i16 g_warpColorkey; // 0x6becfc
-DATA(0x002a16f8)
 extern i32 g_warpTexBase; // 0x6a16f8  (locked texture base)
 DATA(0x002a2ce8)
 extern i32 g_warpDestRow; // 0x6a2ce8  (current dest scanline base)
-DATA(0x002becf0)
 extern i32 g_warpUMask; // 0x6becf0  (texture index row-mask)
 DATA(0x002becf4)
 extern i32 g_warpDestPtr; // 0x6becf4  (current dest pixel ptr)
-DATA(0x002856f0)
 extern i32 g_warpU; // 0x6856f0  (u accumulator)
-DATA(0x002856f4)
 extern i32 g_warpV; // 0x6856f4  (v accumulator)
-DATA(0x002a16fc)
 extern i32 g_warpUStep; // 0x6a16fc  (u per-pixel step)
-DATA(0x002a1700)
 extern i32 g_warpVStep; // 0x6a1700  (v per-pixel step)
 
 // The fixed-point scale constants (0x5efb18, 0x5efb1c = its negation).

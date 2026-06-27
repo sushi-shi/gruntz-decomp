@@ -39,7 +39,6 @@ struct DecodeSrc {
 #pragma pack(pop)
 
 // The DecodeRun grayscale-ramp scratch (reloc-masked global at 0x683ef0; 0x400 bytes).
-DATA(0x00283ef0)
 extern u8 g_683ef0[];
 
 // The inner blit/decode worker 0x141280 forwards into (reloc-masked __thiscall). It
@@ -54,11 +53,9 @@ struct ImageWorkerThis {
 
 // The 256*3 grayscale-ramp scratch buffer the 24-bit decode-convert path fills
 // (reloc-masked global at 0x684af0; +0x401 = the running write cursor, +0x801 = end).
-DATA(0x00684af0)
 extern u8 g_grayRamp[];
 
 // The format string the save/decode path scans with strlen (reloc-masked).
-DATA(0x0061aabc)
 extern char g_imageTag[];
 
 // ---------------------------------------------------------------------------

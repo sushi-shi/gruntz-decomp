@@ -123,11 +123,9 @@ extern void* g_severusWorkerBaseVtbl;
 DATA(0x001efbe8)
 extern void* g_severusWorkerVtbl;
 
-DATA(0x002bf318)
 extern i32 g_severusScratch[25];
 DATA(0x002bf37c)
 extern i32 g_severusCounterA;
-DATA(0x002bf380)
 extern i32 g_severusCounterB;
 
 // ---------------------------------------------------------------------------

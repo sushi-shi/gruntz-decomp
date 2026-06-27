@@ -143,19 +143,12 @@ void CShadeTableCache::FreeNodes() {
 
 // Luma-shift float constants at 0x5efb40..0x5efb5c (the gamma/luminance build).
 // Reloc-masked .rdata literals; named so the operands pair.
-DATA(0x001efb40)
 extern float g_one; // 1.0
-DATA(0x001efb44)
 extern float g_255; // 255.0
-DATA(0x001efb48)
 extern float g_p01; // 0.01
-DATA(0x001efb4c)
 extern float g_lumaR; // 0.5859375
-DATA(0x001efb50)
 extern float g_lumaG; // 0.296875
-DATA(0x001efb54)
 extern float g_lumaB; // 0.109375
-DATA(0x001efb58)
 extern float g_inv255; // 1/255
 DATA(0x001efb5c)
 extern float g_negone; // -1.0

@@ -17,7 +17,6 @@ struct CDebugSink {
 DATA(0x006bf850)
 extern CDebugSink g_6bf850;
 
-DATA(0x006bf8dc)
 extern i32 g_6bf8dc; // debug-output mode
 
 class CDebugConfig {

@@ -73,7 +73,6 @@ DATA(0x0024556c)
 extern CGruntzMgr* g_mgrSettings; // 0x64556c
 DATA(0x000453d8)
 extern CButeMgr g_buteMgr; // 0x6453d8
-DATA(0x0024c27c)
 extern ScrollView* g_backView; // 0x64c27c
 DATA(0x00245588)
 extern u32 g_frameTime; // 0x645588
@@ -81,23 +80,15 @@ DATA(0x00245584)
 extern u32 g_frameDelta; // 0x645584
 DATA(0x0024cfc0)
 extern u32 g_scrollClock; // 0x64cfc0
-DATA(0x0024cfc4)
 extern u32 g_scrollTimer; // 0x64cfc4
-DATA(0x00245508)
 extern i32 g_panMinX; // 0x645508
-DATA(0x0024550c)
 extern i32 g_panMaxX; // 0x64550c
-DATA(0x002452a4)
 extern i32 g_jitterX; // 0x6452a4
-DATA(0x002452cc)
 extern i32 g_jitterY; // 0x6452cc
-DATA(0x0024cfd0)
 extern i32 g_lastScrollX; // 0x64cfd0
-DATA(0x0024cfd4)
 extern i32 g_lastScrollY; // 0x64cfd4
 DATA(0x0024cfb0)
 extern i64 g_scrollAccum; // 0x64cfb0 (64-bit)
-DATA(0x0024cfb8)
 extern i64 g_scrollLimit; // 0x64cfb8 (64-bit)
 
 // timeGetTime-driven random value in [lo, hi]; inlined three times by retail.

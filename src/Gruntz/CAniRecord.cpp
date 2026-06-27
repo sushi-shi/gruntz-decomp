@@ -43,7 +43,6 @@ extern void* g_aniRecordVtbl; // 0x5f02c0 - the primary base vftable (slot-1 dto
 
 // g_aniParsedNameLen (0x6bf3c4): the parsed name length the catalog builder uses
 // to advance the record stream cursor; Parse sets it (strlen of the name).
-DATA(0x002bf3c4)
 extern i32 g_aniParsedNameLen;
 
 // Global operator new (engine NAFXCW _RezAlloc @0x1b9b46); external/no-body.

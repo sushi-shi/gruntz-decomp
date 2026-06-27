@@ -64,7 +64,6 @@ public:
 };
 
 // The screen-type tag (DAT_00504358) ResolveScreen keys off.
-DATA(0x00104358)
 extern i32 g_screenTag;
 
 // The menu page worker (m_c->m_04 re-typed): its fader (0x158b40, ret 8) runs the
@@ -114,7 +113,6 @@ struct AttractActorList {
     i32 m_count;             // +0x04
     AttractActor* m_data[1]; // +0x08  inline pointer array
 };
-DATA(0x00245574)
 extern AttractActorList* g_actorList;
 
 // The per-frame time delta (countdown source for m_1b4). C linkage so the symbol

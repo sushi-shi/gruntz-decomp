@@ -142,7 +142,6 @@ extern MenuGameReg* g_gameReg;
 
 // The multiplayer-availability gate (DAT_006455ec): nonzero disables the
 // multiplayer/network-gated items.
-DATA(0x006455ec)
 extern i32 g_multiplayerAvail;
 
 // Forward so RegisterPage(arg,...) mangles onto MenuHost.

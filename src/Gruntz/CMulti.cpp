@@ -25,7 +25,6 @@ DATA(0x002455fc)
 extern "C" i32 g_6455fc; // 0x6455fc  cleared at session start
 DATA(0x00244c54)
 extern "C" i32 g_644c54; // 0x644c54  default cue wParam (= *host)
-DATA(0x00248cec)
 extern "C" i32 g_648cec; // 0x648cec
 DATA(0x00245580)
 extern "C" u32 g_645580; // 0x645580  draw clock
@@ -33,11 +32,8 @@ DATA(0x00245584)
 extern "C" u32 g_645584; // 0x645584  delta cap
 DATA(0x00245588)
 extern "C" u32 g_645588; // 0x645588  accum clock
-DATA(0x00248d14)
 extern "C" u32 g_648d14; // 0x648d14  drop-throttle deadline
-DATA(0x00211d88)
 extern "C" i32 g_611d88; // 0x611d88  saved dropped-player id
-DATA(0x0020fab8)
 extern "C" i32 g_60fab8[4]; // 0x60fab8  the 16-byte net-bind template
 
 // The game-manager singleton + a divisor for the TITLE%d index.
@@ -106,9 +102,7 @@ extern void* g_vtbl_CState[]; // 0x5ea21c
 // The DirectPlay error globals (shared with CNetMgr::ReportError; same .data
 // addresses, re-declared TU-local so the DIR32 operands reloc-mask).
 // ---------------------------------------------------------------------------
-DATA(0x002bf6fc)
 extern "C" i32 g_code; // 0x6bf6fc  hr & 0xffff (the (%i) arg)
-DATA(0x002bf700)
 extern "C" char g_szCode[]; // 0x6bf700  error-code name buffer
 
 // ---------------------------------------------------------------------------

@@ -33,9 +33,7 @@ extern i32 g_serialCount;
 
 // The per-player config name tables the two free getters below index by enum.
 // Each is an array of char* into the rodata string pool. Reloc-masked DATA.
-DATA(0x00612f78)
 extern char* g_colorNames[]; // "Color 0".."Color 7"
-DATA(0x00612fc0)
 extern char* g_difficultyNames[]; // "Easy"/"Normal"/"Hard"
 
 // The archive/order object Serialize streams through. Its field-transfer entries

@@ -111,7 +111,6 @@ struct CSlimeEntity {
 };
 
 // 32.0 (the per-tile-time -> per-frame-speed reciprocal numerator).
-DATA(0x001ea3e0)
 extern const double g_slimeSpeedNum; // VA 0x5ea3e0
 
 // Per-frame scroll/scale factor (.data int) Tick multiplies into m_58 to get the
@@ -183,21 +182,14 @@ struct CKSlimeColl2 {
 };
 extern "C" i32 ActAlloc(); // 0x16d990
 
-DATA(0x00246230)
 extern i32 g_kslimeLo;
-DATA(0x00246234)
 extern i32 g_kslimeHi;
-DATA(0x00246238)
 extern char* g_kslimeBase;
-DATA(0x00246240)
 extern i32 g_kslimeStride;
-DATA(0x0024623c)
 extern CKSlimeEntry* g_kslimeCur;
-DATA(0x00246248)
 extern i32 g_kslimeScratch;
 DATA(0x00246228)
 extern CKSlimeColl g_kslimeColl;
-DATA(0x0024622c)
 extern CKSlimeColl2* g_kslimeColl2;
 DATA(0x002bf464)
 extern void* g_actCache;

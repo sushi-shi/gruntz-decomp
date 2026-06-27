@@ -62,9 +62,7 @@ extern CGameReg* g_gameReg;
 
 // File-scope sinks the IDOK path stores the two edit-field values into before
 // the (optional) registry write (reloc-masked DIR32 stores).
-DATA(0x00212610)
 extern i32 g_warpX; // 0x612610
-DATA(0x00212614)
 extern i32 g_warpY; // 0x612614
 
 // ---------------------------------------------------------------------------

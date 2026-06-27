@@ -109,7 +109,6 @@ struct GLSMapMgr { // this->m_2dc
 struct GLSResetMgr {
     void Reset(); // FUN_00533110 __thiscall
 };
-DATA(0x00645570)
 extern GLSResetMgr* g_glsResetMgr;
 // The game-manager singleton (0x64556c); mangled ?g_gameReg@@3PAUWwdGameReg@@A.
 struct WwdGameReg;

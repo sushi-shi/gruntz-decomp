@@ -35,7 +35,6 @@ public:
     // (reloc-masked rel32; same archetype as DirectInputMgr2::GetErrorString).
     static void GetErrorString(char* file, i32 line, i32 hr); // 0x141400
 };
-DATA(0x002bed00)
 extern "C" CDirectDrawMgr* g_DirectDrawMgr; // 0x6bed00
 
 // The DDrawMgr source-path $SG the surface/palette methods pass to GetErrorString.

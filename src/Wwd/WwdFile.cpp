@@ -36,9 +36,7 @@
 // The shared map-name scratch buffer GetMapBaseName strcpy's the path into
 // (0x62c010), plus its 4-byte predecessor slot (0x62c00c) the extension-truncation
 // store indexes through. Reloc-masked DATA pins.
-DATA(0x0062c00c)
 extern char g_mapNamePre[4];
-DATA(0x0062c010)
 extern char g_mapNameBuf[0x200];
 
 // ---------------------------------------------------------------------------

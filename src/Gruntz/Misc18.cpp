@@ -89,10 +89,10 @@ void BitFlush(BitBuf* b) {
 extern "C" void* memset(void* d, i32 c, unsigned int n);
 
 // Four u16 fields of the current mode's record in a 0xc-stride constant table.
-DATA(0x00224fe8) extern u16 g_modeTab_e8;  // 0x624fe8
-DATA(0x00224fea) extern u16 g_modeTab_ea;  // 0x624fea
-DATA(0x00224fec) extern u16 g_modeTab_ec;  // 0x624fec
-DATA(0x00224fee) extern u16 g_modeTab_ee;  // 0x624fee
+extern u16 g_modeTab_e8;  // 0x624fe8
+extern u16 g_modeTab_ea;  // 0x624fea
+extern u16 g_modeTab_ec;  // 0x624fec
+extern u16 g_modeTab_ee;  // 0x624fee
 
 struct Coder {
     char pad00[0x20];

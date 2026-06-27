@@ -26,9 +26,7 @@ extern i32 g_64bd5c; // the file-scope int sink (reloc-masked DATA symbol)
 
 // The per-dialog static MFC message maps (each GetMessageMap returns &<map>).
 // Referenced as reloc-masked DATA externs (RVA = VA - 0x400000).
-DATA(0x001e8d10)
 extern const i32 g_msgmap_CBattlezDlgColors;
-DATA(0x001e94b8)
 extern const i32 g_msgmap_CCheckpointDlg;
 
 // ---------------------------------------------------------------------------

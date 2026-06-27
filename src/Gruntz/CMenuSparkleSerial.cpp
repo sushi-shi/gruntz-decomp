@@ -6,9 +6,7 @@
 #include <Gruntz/CMenuSparkleSerial.h>
 
 // The two serialized 4-byte globals (.data). Reloc-masked DIR32 referents.
-DATA(0x001ea3d4)
 extern i32 g_5ea3d4; // 0x5ea3d4
-DATA(0x001ea3d8)
 extern i32 g_5ea3d8; // 0x5ea3d8
 
 // ===========================================================================

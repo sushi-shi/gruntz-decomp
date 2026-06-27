@@ -58,11 +58,8 @@ extern "C" void __stdcall SetAtGrow(i32 arrayHandle, void* node);
 // DIR32 reloc to the descriptor on its immediate (imm32 = &descN + 5). Modeling the
 // RHS as `(int)(&descN + 5)` reproduces that relocation byte-for-byte. The records
 // are never dereferenced - only their address rides the immediate.
-DATA(0x00051510)
 extern char g_typeDesc1[];
-DATA(0x000c2640)
 extern char g_typeDesc2[];
-DATA(0x0000b620)
 extern char g_typeDesc3[];
 
 // The C runtime PRNG (reloc-masked).
@@ -70,11 +67,9 @@ extern "C" i32 rand(void);
 
 // The FP scale constant the difficulty rescale multiplies by (a 4-byte float in
 // .data; fmuls reads it). Reloc-masked const datum.
-DATA(0x001e96ec)
 extern const float g_diffScale;
 
 // The difficulty-tier sink the rescale stamps (5 Hard / 10 Normal / 20 Easy).
-DATA(0x0022b738)
 extern i32 g_diffTier;
 
 // ---------------------------------------------------------------------------

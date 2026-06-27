@@ -51,10 +51,10 @@ struct CPtrList0c {
     void* RemoveHead();  // 0x1b4a03
 };
 DATA(0x0024aca8) extern CPtrList0c g_pool;  // 0x64aca8
-DATA(0x0024acb4) extern i32 g_poolCount;    // 0x64acb4 (g_pool.m_count)
+extern i32 g_poolCount;    // 0x64acb4 (g_pool.m_count)
 
 // The "[end]"-tagged broadcast scratch buffer for the receive loop (0x800 B).
-DATA(0x00249858) extern char g_649858[0x800];  // 0x649858
+extern char g_649858[0x800];  // 0x649858
 
 // --- The per-slot descriptor pointed to by m_0c --------------------------------
 struct SlotInfo {
@@ -356,19 +356,19 @@ i32 CLobbySync::SendAll() {
 // The two outgoing-packet staging buffers (BSS).  Ghidra split each into one
 // DAT symbol per written field offset, so we declare each offset as its own
 // labeled extern for the abs stores to reloc-pair.
-DATA(0x0024a058) extern unsigned char gB_flag;  // 0x64a058
-DATA(0x0024a059) extern i32 gB_val;             // 0x64a059
-DATA(0x0024a05d) extern i32 gB_m14;             // 0x64a05d
-DATA(0x0024a061) extern i32 gB_e04;             // 0x64a061
-DATA(0x0024a065) extern unsigned char gB_e08;   // 0x64a065
-DATA(0x0024a066) extern unsigned char gB_data;  // 0x64a066
+extern unsigned char gB_flag;  // 0x64a058
+extern i32 gB_val;             // 0x64a059
+extern i32 gB_m14;             // 0x64a05d
+extern i32 gB_e04;             // 0x64a061
+extern unsigned char gB_e08;   // 0x64a065
+extern unsigned char gB_data;  // 0x64a066
 
-DATA(0x0024a8a8) extern unsigned char gA_flag;  // 0x64a8a8
-DATA(0x0024a8a9) extern unsigned char gA_slot;  // 0x64a8a9
-DATA(0x0024a8aa) extern i32 gA_seq;             // 0x64a8aa
-DATA(0x0024a8b2) extern i32 gA_e04;             // 0x64a8b2
-DATA(0x0024a8b6) extern unsigned char gA_e08;   // 0x64a8b6
-DATA(0x0024a8b7) extern unsigned char gA_data;  // 0x64a8b7
+extern unsigned char gA_flag;  // 0x64a8a8
+extern unsigned char gA_slot;  // 0x64a8a9
+extern i32 gA_seq;             // 0x64a8aa
+extern i32 gA_e04;             // 0x64a8b2
+extern unsigned char gA_e08;   // 0x64a8b6
+extern unsigned char gA_data;  // 0x64a8b7
 
 // @early-stop
 // regalloc cascade (~84%): logic byte-exact; ecx/edx + esi/eax allocation for the

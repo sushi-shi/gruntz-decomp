@@ -9,7 +9,6 @@
 
 // ---------------------------------------------------------------------------
 // 0x183d0: return the address of a fixed global (a runtime-class / map pointer).
-DATA(0x001e8e98)
 extern void* g_5e8e98;
 
 RVA(0x000183d0, 0x6)

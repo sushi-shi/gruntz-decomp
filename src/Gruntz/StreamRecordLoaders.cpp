@@ -423,7 +423,6 @@ struct CArchiveMgr {
 };
 
 // The global default sink one raw field reads into (DAT_00612618).
-DATA(0x00212618)
 extern i32 g_archiveDefault612618;
 
 // One outer entry of the m_3a8 nested-array block: {void** base; i32 count}.

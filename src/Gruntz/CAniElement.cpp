@@ -31,7 +31,6 @@ extern void* g_aniRecordVtbl;
 
 // Set by the record parser (0x168c60) to the parsed name length; the builder uses
 // it to advance the record-stream cursor. 0x6bf3c4 -> file RVA 0x2bf3c4.
-DATA(0x002bf3c4)
 extern i32 g_aniParsedNameLen;
 
 // The 'ANI' source entry's tag reader / parse session (RemusParseSource family,

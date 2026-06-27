@@ -245,7 +245,6 @@ public:
 // cap (0x800) and the flags arg. Reloc-masked C++ globals.
 DATA(0x002bf37c)
 extern i32 g_severusCounterA;
-DATA(0x002bf380)
 extern i32 g_severusCounterB;
 
 // ClassUnknown_36 (0x14dd90): a __stdcall(i32, i32) post-load notify the slot-13

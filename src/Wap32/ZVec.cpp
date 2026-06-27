@@ -35,9 +35,7 @@ struct zMemberPtrSlot {
 };
 
 // The error-report globals + the "out of memory" message.
-DATA(0x001f0464)
 extern u32 g_zvecErrSentinel; // 0x6bf464
-DATA(0x001f0428)
 extern void* g_zvecErrToken; // 0x6bf428
 DATA(0x0021adf4)
 extern const char s_out_of_memory[]; // 0x61adf4

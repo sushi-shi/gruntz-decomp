@@ -222,7 +222,6 @@ i32 CBattlezData::InBounds(i32 unused) {
 // 0xfce00 - ratio over the current group of 4 records: (Sum m_24) / (Sum m_3c),
 // or 0 when the m_3c sum is zero. Both sums are accumulated in float (fild);
 // g_zeroF (0.0f) seeds the accumulators and the divide-by-zero guard.
-DATA(0x005eab40)
 extern float g_zeroF;
 RVA(0x000fce00, 0x56)
 float CBattlezData::GroupRatio() {

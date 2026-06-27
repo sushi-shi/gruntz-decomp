@@ -454,21 +454,14 @@ struct CActColl2 {
 };
 extern "C" i32 ActAlloc(); // 0x16d990
 
-DATA(0x00244690)
 extern i32 g_actLo;
-DATA(0x00244694)
 extern i32 g_actHi;
-DATA(0x00244698)
 extern char* g_actBase;
-DATA(0x002446a0)
 extern i32 g_actStride;
-DATA(0x0024469c)
 extern CActEntry* g_actCur;
-DATA(0x002446a8)
 extern i32 g_actScratch;
 DATA(0x00244688)
 extern CActColl g_actColl;
-DATA(0x0024468c)
 extern CActColl2* g_actColl2;
 DATA(0x002bf464)
 extern void* g_actCache;

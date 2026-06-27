@@ -71,6 +71,12 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 REPO = next((p for p in SCRIPT_DIR.parents if (p / "flake.nix").exists()), SCRIPT_DIR)
 INC = str(REPO / "include")   # repo-local headers (mirror src/) live here; on the clang -I path
 
+# The single consolidated-globals unit (src/Globals.cpp). Its DATA() rows are
+# TRUSTED: the base obj is all unused externs (no symbols), so the authority
+# check cannot confirm them - but each name was authority-checked in the matched
+# TU it came from before `gruntz.analysis.consolidate_globals` moved it here.
+GLOBALS_UNIT = "globals"
+
 TARGET = "i686-pc-windows-msvc"
 MSC_COMPAT = "1100"
 MS_FLAGS = [f"--target={TARGET}", f"-fms-compatibility-version={MSC_COMPAT}",
@@ -338,6 +344,36 @@ def load_compdb(path):
     return out
 
 
+def blank_comments(text):
+    """Copy of `text` with // and /* */ comment bodies blanked to spaces (newlines
+    kept, so offsets/line numbers are unchanged). Lets DATA_MACRO_RE match only real
+    code - a `DATA(0x..)` written inside a COMMENT must not be read as a binding
+    (it would steal the next VarDecl and double-bind the address)."""
+    out = list(text)
+    n, i, st = len(text), 0, "code"
+    while i < n:
+        c = text[i]
+        if st == "code":
+            if c == "/" and i + 1 < n and text[i + 1] == "/":
+                while i < n and text[i] != "\n":
+                    out[i] = " "; i += 1
+                continue
+            if c == "/" and i + 1 < n and text[i + 1] == "*":
+                while i < n and not (text[i] == "*" and i + 1 < n and text[i + 1] == "/"):
+                    if text[i] != "\n":
+                        out[i] = " "
+                    i += 1
+                continue
+            if c in "\"'":
+                st = c
+        elif c == "\\":
+            i += 2; continue
+        elif c == st:
+            st = "code"
+        i += 1
+    return "".join(out)
+
+
 def data_labels(text, ast, main_file):
     """[(rva, mangledName, qualType)] for each DATA(0x..) macro bound to the AST
     VarDecl just below it (by line). The variable pool and macro sites never cross
@@ -348,7 +384,7 @@ def data_labels(text, ast, main_file):
                       for (mn, off, qt) in collect_vars(ast, main_file))
     out = []
     line_no = 1
-    for m in re.finditer(r"[^\n]*\n", text):
+    for m in re.finditer(r"[^\n]*\n", blank_comments(text)):
         seg = m.group(0)
         dm = DATA_MACRO_RE.search(seg)
         if dm:
@@ -624,6 +660,27 @@ def write_symbol_names(rows, addr_sites, out, misses=None):
             log(f"ERROR duplicate RVA 0x{rva:06x}: {where}")
         log(f"{len(dup_addrs)} duplicate RVA label(s); refusing to write {out}")
         return 1
+    # RE-PROLIFERATION GUARD (data): a global consolidated into the trusted
+    # `globals` unit (src/Globals.cpp, by gruntz.analysis.consolidate_globals) is
+    # the SINGLE DATA() binding for its address. If the SAME (rva, name) DATA also
+    # appears in another unit, a matcher re-declared an already-consolidated
+    # global - a hard error (mirrors the function dup-RVA guard). Differently-NAMED
+    # data at one rva (the engine-global modelling backlog + auto vtable/string
+    # symbols) stays keep-last+WARN below, so this never false-fires on those.
+    glob_sites = {}
+    for rva, name, unit, _size, kind in rows:
+        if kind == "data":
+            glob_sites.setdefault((rva, name), set()).add(unit)
+    reprol = {k: u for k, u in glob_sites.items()
+              if GLOBALS_UNIT in u and len(u) > 1}
+    if reprol:
+        for (rva, name), units in sorted(reprol.items()):
+            others = ", ".join(sorted(u for u in units if u != GLOBALS_UNIT))
+            log(f"ERROR re-declared consolidated global 0x{rva:06x} {name}: "
+                f"in '{GLOBALS_UNIT}' and also {others} - move it back to "
+                f"src/Globals.cpp only (it is declared via <Globals.h>)")
+        log(f"{len(reprol)} re-proliferated global(s); refusing to write {out}")
+        return 1
     rows.sort()
     # DATA dedup: the same `extern` declared in N TUs emits N rows for one rva.
     # synth_pdb keys by rva (last wins), so collapse to one data row per rva. If
@@ -884,7 +941,10 @@ def main():
                 if cand is None:
                     misses.append((rva, None, unit, "no VarDecl below DATA()"))
                     continue
-                if obj_syms is None or cand in all_syms:
+                # The `globals` unit is trusted (see GLOBALS_UNIT): its externs are
+                # never referenced in its own base obj, so bypass the authority
+                # check (the names came pre-checked from the matched TUs).
+                if obj_syms is None or cand in all_syms or unit == GLOBALS_UNIT:
                     rows.append((rva, cand, unit, None, "data"))
                     # remember the declared type so apply.py can type the global
                     global_meta[rva] = {"name": cand, "type": qtype, "unit": unit}

@@ -22,7 +22,6 @@ void* operator new(u32 n);
 
 // The shared default-attribute descriptor pointer the stream ctor takes (the
 // value stored at 0x5f03e0 is pushed as the 3rd ctor arg).
-DATA(0x001f03e0)
 extern "C" void* g_pButeDefaults; // 0x5f03e0
 
 // ---------------------------------------------------------------------------

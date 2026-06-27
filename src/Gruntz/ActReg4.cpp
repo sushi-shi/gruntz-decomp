@@ -59,19 +59,12 @@ struct CActReg4 {
 };
 DATA(0x002446d8)
 extern CActReg4 g_actReg4;
-DATA(0x002446dc)
 extern struct CActReg4Coll2* g_actReg4Coll2;
-DATA(0x002446e0)
 extern i32 g_actReg4Lo;
-DATA(0x002446e4)
 extern i32 g_actReg4Hi;
-DATA(0x002446e8)
 extern char* g_actReg4Base;
-DATA(0x002446ec)
 extern struct R4Entry* g_actReg4Cur;
-DATA(0x002446f0)
 extern i32 g_actReg4Stride;
-DATA(0x002446f8)
 extern i32 g_actReg4Scratch;
 struct CActReg4Coll2 {
     void Insert(void* coll, void* item, i32 n); // 0x16d850

@@ -191,7 +191,6 @@ extern WwdGameReg* g_gameReg;
 // (DAT_00644c54) the 0x4017e4 case compares against.
 DATA(0x00645544)
 extern void** g_freeList;
-DATA(0x00644c54)
 extern i32 g_tileKindMagic;
 
 // The "Bad <kind> at: x=%d, y=%d" diagnostic format strings ($SG .rdata).

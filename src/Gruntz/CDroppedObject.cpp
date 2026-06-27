@@ -35,21 +35,14 @@ struct CDropColl2 {
 };
 extern "C" i32 ActAlloc(); // 0x16d990
 
-DATA(0x0024bee0)
 extern i32 g_dropLo;
-DATA(0x0024bee4)
 extern i32 g_dropHi;
-DATA(0x0024bee8)
 extern char* g_dropBase;
-DATA(0x0024bef0)
 extern i32 g_dropStride;
-DATA(0x0024beec)
 extern CDropEntry* g_dropCur;
-DATA(0x0024bef8)
 extern i32 g_dropScratch;
 DATA(0x0024bed8)
 extern CDropColl g_dropColl;
-DATA(0x0024bedc)
 extern CDropColl2* g_dropColl2;
 DATA(0x002bf464)
 extern void* g_actCache;

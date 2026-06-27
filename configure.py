@@ -381,10 +381,16 @@ def write_dummy(path: Path) -> None:
 
 
 def units_with_named_functions(names_csv: Path) -> set:
-    """Units that have >=1 row in symbol_names.csv (so the delinker emits a
-    <unit>.c.obj for them). This is the INTENT that decides objdiff's
+    """Units that have >=1 FUNCTION row in symbol_names.csv (so the delinker emits
+    a <unit>.c.obj for them). This is the INTENT that decides objdiff's
     target_path - we cannot probe the filesystem because configure.py runs
-    BEFORE ninja builds the objs."""
+    BEFORE ninja builds the objs.
+
+    Only `kind == func` rows count: the delinker buckets functions into a per-unit
+    <unit>.c.obj, but routes ALL data symbols into one synthetic module (keyed by
+    rva->name, see synth_pdb.apply_named_data). So a DATA-ONLY unit - notably the
+    consolidated-globals unit (src/Globals.cpp) - never gets a target obj and must
+    pair with the empty dummy.obj."""
     units = set()
     if not names_csv.exists():
         return units
@@ -393,7 +399,7 @@ def units_with_named_functions(names_csv: Path) -> set:
         rows = [ln for ln in f if not ln.lstrip().startswith("#")]
     for row in csv.DictReader(rows):
         unit = (row.get("unit") or "").strip()
-        if unit:
+        if unit and (row.get("kind") or "func").strip() != "data":
             units.add(unit)
     return units
 

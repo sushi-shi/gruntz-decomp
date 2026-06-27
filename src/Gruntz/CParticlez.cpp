@@ -34,21 +34,14 @@ struct CPartColl2 {
 };
 extern "C" i32 ActAlloc(); // 0x16d990
 
-DATA(0x00244878)
 extern i32 g_partLo;
-DATA(0x0024487c)
 extern i32 g_partHi;
-DATA(0x00244880)
 extern char* g_partBase;
-DATA(0x00244888)
 extern i32 g_partStride;
-DATA(0x00244884)
 extern CPartEntry* g_partCur;
-DATA(0x00244890)
 extern i32 g_partScratch;
 DATA(0x00244870)
 extern CPartColl g_partColl;
-DATA(0x00244874)
 extern CPartColl2* g_partColl2;
 DATA(0x002bf464)
 extern void* g_actCache;
