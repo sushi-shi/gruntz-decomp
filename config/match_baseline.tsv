@@ -26,6 +26,7 @@ backlogstateloaders	3	3
 battlezdata	30	27
 battlezmapconfig	1	0
 bitarray	1	1
+bitstreamblowfish	1	0
 bitstreampack	1	0
 blowfish	4	3
 boundaryleaflogic	15	15
@@ -114,6 +115,10 @@ cimageset3	3	3
 cimagespriteblit	5	0
 circleshadeblit	1	0
 ckeyedlist	3	2
+classunknown30	1	0
+classunknown43	1	0
+classunknown48	1	0
+classunknown9	1	1
 cleveltimedtor	1	1
 clightfx	4	2
 clightfxeh	1	1
@@ -153,6 +158,7 @@ csimpleanimation	4	3
 csingleanimation	1	1
 csingleframemessage	2	1
 csoundfxemitter	5	2
+cspotlight	1	0
 cstateleaf8cf30	1	1
 cstatichazard	6	2
 cstatusbarmgr	2	1
@@ -180,7 +186,7 @@ dsoundvoice	2	1
 ehfunclets	6	6
 engine_attributed	9	0
 engine_boundary	17	0
-engine_discovered	29	5
+engine_discovered	23	5
 engine_label_stubs	387	105
 engine_unmatched_lib	11	0
 engstr	3	1
@@ -504,6 +510,7 @@ battlezdata	?SumGroupField3c@CBattlezData@@QAEHXZ	100.0000	100.0000	1	e396d834d6
 battlezdata	?SumWinRow@CBattlezData@@QAEHH@Z	100.0000	100.0000	2	f7cb273e44cf	0xfccb0
 battlezmapconfig	?LoadConfig@CBattlezMapConfig@@QAEHPAUCLevelInfo@@HH@Z	85.9933	85.9933	4	f06ecd871376	0x25020
 bitarray	?SetBit@CBitArray@@QAEPAU1@I@Z	100.0000	100.0000	1	da78fe96314c	0x193640
+bitstreamblowfish	?BitStreamBlowfishDecode@@YGXPAUBitReader@@PAUSink@@@Z	99.9792	99.9792	1	c110146bb62a	0x16f760
 bitstreampack	?BitEmitMarker@@YAXPAUBitState@@@Z	59.1309	59.1309	1	741128f022a8	0x188860
 blowfish	?Blowfish_InitKey@@YGXPAE@Z	100.0000	100.0000	1	181b6b1750bf	0x16f6c0
 blowfish	?Blowfish_decipher@@YAXPAI0@Z	99.5000	99.5000	2	c61014aad094	0x16fc70
@@ -1212,6 +1219,10 @@ circleshadeblit	?Render@CircleShadeBlit@@QAEXHHHHHH@Z	54.5197	54.5197	1	cb51e991
 ckeyedlist	??1CNode@@QAE@XZ	100.0000	100.0000	1	7894cc5a002b	0x379f0
 ckeyedlist	?AddNode@CKeyedList@@QAEPAUCNode@@PBDHH@Z	83.7778	83.7778	1	58602dffad36	0x37a70
 ckeyedlist	?Clear@CKeyedList@@QAEXXZ	100.0000	100.0000	1	ef11cb79e338	0x379a0
+classunknown30	?GetStr_09a260@ClassUnknown_30@@QAE?AVCString@@XZ	66.7273	66.7273	1	31bcce7f8a13	0x9a260
+classunknown43	?Update_0f7d90@ClassUnknown_43@@QAEHXZ	97.9915	97.9915	1	9853ff39706a	0xf7d90
+classunknown48	??1ClassUnknown_48@@QAE@XZ	98.3099	98.3099	1	7562fdf0909f	0x139cf0
+classunknown9	??0ClassUnknown_9@@QAE@VCString@@PAX@Z	100.0000	100.0000	1	6fad1c99845b	0x11c630
 cleveltimedtor	??1CLevelTime@@UAE@XZ	100.0000	100.0000	1	baf48340916e	0x11a50
 clightfx	?Activate@CLightFx@@QAEHHHHH@Z	86.7407	86.7407	1	017ace156fac	0x9d520
 clightfx	?InitActReg@CLightFx@@SAXXZ	100.0000	100.0000	1	4b1f90b40c30	0x9d140
@@ -1430,6 +1441,7 @@ csoundfxemitter	?Method_fa550@CSoundFxEmitter@@QAEHHHHH@Z	98.6759	98.6759	1	b09a
 csoundfxemitter	?Method_fa790@CSoundFxEmitter@@QAEHHHH@Z	99.0566	99.0566	1	5f485411371f	0xfa790
 csoundfxemitter	?Method_fa8f0@CSoundFxEmitter@@QAEHHHHH@Z	98.3913	98.3913	1	1bdce35cd6f7	0xfa8f0
 csoundfxemitter	?Method_faa60@CSoundFxEmitter@@QAEHHHH@Z	100.0000	100.0000	1	a3c39096f465	0xfaa60
+cspotlight	?Update_0b1ee0@CSpotLight@@QAEHXZ	56.6180	56.6180	1	b26a2794af0b	0xb1ee0
 cstateleaf8cf30	??1CStateLeaf8cf30@@UAE@XZ	100.0000	100.0000	1	1de116667397	0x8cf30
 cstatichazard	??0CStaticHazard@@QAE@PAUCGameObject@@@Z	82.5635	82.5635	1	1756e20b6c41	0xfb7a0
 cstatichazard	??1CStaticHazard@@UAE@XZ	100.0000	100.0000	1	2c9522f3c281	0x12b30
@@ -1645,28 +1657,22 @@ engine_discovered	?CGruntzSingleCommand_11f618@CGruntzSingleCommand@@QAEXXZ	10.0
 engine_discovered	?CGruntzSingleCommand_18c022@CGruntzSingleCommand@@QAEXXZ	0.7874	0.7874	1	ad61ecca3c94	0x18c022
 engine_discovered	?CPlay_0d53d0@CPlay@@QAEXXZ	0.3049	0.3049	1	da0931b106f5	0xd53d0
 engine_discovered	?CPlay_0d9290@CPlay@@QAEXXZ	0.5076	0.5076	1	40021240a52e	0xd9290
-engine_discovered	?CSpotLight_0b1ee0@CSpotLight@@QAEXXZ	1.1236	1.1236	1	bf45931dd31b	0xb1ee0
 engine_discovered	?CUserLogic_16ea90@CUserLogic@@QAEXXZ	0.6061	0.6061	3	68eaea7fe177	0x16ea90
 engine_discovered	?ClassUnknown_13_1154b0@ClassUnknown_13@@QAEXXZ	3.5714	3.5714	1	99d2c63fa454	0x1154b0
 engine_discovered	?ClassUnknown_13_115520@ClassUnknown_13@@QAEXXZ	3.5714	3.5714	1	38f7529b511c	0x115520
 engine_discovered	?ClassUnknown_15_1d38a1@ClassUnknown_15@@QAEXXZ	33.3333	33.3333	1	8a73c498fe1d	0x1d38a1
 engine_discovered	?ClassUnknown_16_1d496b@ClassUnknown_16@@QAEXXZ	3.6364	3.6364	1	2d71a7c5a87b	0x1d496b
 engine_discovered	?ClassUnknown_1_150040@ClassUnknown_1@@QAEXXZ	0.3226	0.3226	1	94d4856b31c0	0x150040
-engine_discovered	?ClassUnknown_30_09a260@ClassUnknown_30@@QAEXXZ	3.6364	3.6364	1	b118d81c9fd4	0x9a260
 engine_discovered	?ClassUnknown_33_11f6b9@ClassUnknown_33@@QAEXXZ	9.0909	9.0909	1	835f56f8e975	0x11f6b9
 engine_discovered	?ClassUnknown_35_021c40@ClassUnknown_35@@QAEXXZ	20.0000	20.0000	1	bd60ba24335c	0x21c40
 engine_discovered	?ClassUnknown_42_0f1c70@ClassUnknown_42@@QAEXXZ	0.2083	0.2083	1	13817749a220	0xf1c70
-engine_discovered	?ClassUnknown_43_0f7d90@ClassUnknown_43@@QAEXXZ	0.8475	0.8475	1	f9172decb881	0xf7d90
 engine_discovered	?ClassUnknown_45_08c3b0@ClassUnknown_45@@QAEXXZ	25.0000	25.0000	1	56bcb11dba0e	0x8c3b0
-engine_discovered	?ClassUnknown_48_139cf0@ClassUnknown_48@@QAEXXZ	1.4085	1.4085	1	800fe23127ad	0x139cf0
-engine_discovered	?ClassUnknown_4_16f760@ClassUnknown_4@@QAEXXZ	0.8333	0.8333	1	73bd428e7925	0x16f760
 engine_discovered	?ClassUnknown_50_16dfc0@ClassUnknown_50@@QAEXXZ	100.0000	100.0000	2	be157675388e	0x16dfc0
 engine_discovered	?ClassUnknown_51_11eaf5@ClassUnknown_51@@QAEXXZ	100.0000	100.0000	2	7eb65afb5eb1	0x11eaf5
 engine_discovered	?ClassUnknown_52_11eaa8@ClassUnknown_52@@QAEXXZ	100.0000	100.0000	2	5ced1ddf8f8b	0x11eaa8
 engine_discovered	?ClassUnknown_53_11cf30@ClassUnknown_53@@QAEXXZ	100.0000	100.0000	2	e034c3d64bcf	0x11cf30
 engine_discovered	?ClassUnknown_54_11cee3@ClassUnknown_54@@QAEXXZ	100.0000	100.0000	2	88d0052ef9f3	0x11cee3
 engine_discovered	?ClassUnknown_55_016460@ClassUnknown_55@@QAEXXZ	5.5556	5.5556	1	12ce854e384b	0x16460
-engine_discovered	?ClassUnknown_9_11c630@ClassUnknown_9@@QAEXXZ	1.4286	1.4286	1	a139bcb44349	0x11c630
 engine_label_stubs	??0CActionArea@@QAE@H@Z	2.1226	2.1226	1	cpp:6bf52155264d	0x7da0
 engine_label_stubs	??0CBoomerang@@QAE@H@Z	97.3077	97.3077	1	cpp:6bf52155264d	0xe0650
 engine_label_stubs	??0CButeNodeBase@@QAE@PAXH@Z	59.5806	59.5806	1	cpp:2262ffc5f902	0x16dff0

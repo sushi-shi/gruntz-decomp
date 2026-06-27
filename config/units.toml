@@ -669,6 +669,43 @@ source = "src/Stub/Discovered.cpp"
 flags = "base"
 
 [[unit]]
+# ClassUnknown_30::GetStr (CString-by-value return) re-homed from Discovered.cpp.
+unit = "classunknown30"
+source = "src/Gruntz/ClassUnknown30.cpp"
+flags = "base"
+
+[[unit]]
+# ClassUnknown_9 ctor (by-value CString arg -> /GX) re-homed from Discovered.cpp.
+unit = "classunknown9"
+source = "src/Gruntz/ClassUnknown9.cpp"
+flags = "eh"
+
+[[unit]]
+# ClassUnknown_43 per-tick manager Update re-homed from Discovered.cpp.
+unit = "classunknown43"
+source = "src/Gruntz/ClassUnknown43.cpp"
+flags = "base"
+
+[[unit]]
+# __stdcall Blowfish bit-decode loop (0x16f760), trace mis-attributed to
+# ClassUnknown_4; re-homed from Discovered.cpp.
+unit = "bitstreamblowfish"
+source = "src/Gruntz/BitStreamBlowfish.cpp"
+flags = "base"
+
+[[unit]]
+# ClassUnknown_48::Clear (0x139cf0) intrusive-list drain (/GX) re-homed from Discovered.cpp.
+unit = "classunknown48"
+source = "src/Gruntz/ClassUnknown48.cpp"
+flags = "eh"
+
+[[unit]]
+# CSpotLight::Update (0x0b1ee0) x87 rotation re-homed from Discovered.cpp.
+unit = "cspotlight"
+source = "src/Gruntz/CSpotLight.cpp"
+flags = "base"
+
+[[unit]]
 # proximity-attributed class memberships (gruntz.analysis.gen_attributed_stubs); own
 # TU, same minimal-decl pattern as engine_discovered (conflict-free across units).
 unit = "engine_attributed"

@@ -38,8 +38,7 @@ RVA(0x000d9290, 0x2a7)
 void CPlay::CPlay_0d9290() {}
 
 // ---- CSpotLight ----
-RVA(0x000b1ee0, 0x11d)
-void CSpotLight::CSpotLight_0b1ee0() {}
+// 0x0b1ee0 re-homed (reconstructed) as Update_0b1ee0 in src/Gruntz/CSpotLight.cpp.
 
 // ---- CUserLogic ----
 RVA(0x0016ea90, 0x234)
@@ -73,8 +72,7 @@ void ClassUnknown_16::ClassUnknown_16_1d496b() {}
 // 0x16e360 re-homed (reconstructed) as Reg23::Add in src/Gruntz/Registry23.cpp.
 
 // ---- ClassUnknown_30 ----
-RVA(0x0009a260, 0x1d)
-void ClassUnknown_30::ClassUnknown_30_09a260() {}
+// 0x09a260 re-homed (reconstructed) as GetStr_09a260 in src/Gruntz/ClassUnknown30.cpp.
 
 // ---- ClassUnknown_33 ----
 RVA(0x0011f6b9, 0x17)
@@ -85,24 +83,22 @@ RVA(0x00021c40, 0x8)
 void ClassUnknown_35::ClassUnknown_35_021c40() {}
 
 // ---- ClassUnknown_4 ----
-RVA(0x0016f760, 0x82)
-void ClassUnknown_4::ClassUnknown_4_16f760() {}
+// 0x16f760 re-homed (reconstructed) as BitStreamBlowfishDecode (__stdcall free fn,
+// trace mis-attribution) in src/Gruntz/BitStreamBlowfish.cpp.
 
 // ---- ClassUnknown_42 ----
 RVA(0x000f1c70, 0x60d)
 void ClassUnknown_42::ClassUnknown_42_0f1c70() {}
 
 // ---- ClassUnknown_43 ----
-RVA(0x000f7d90, 0x171)
-void ClassUnknown_43::ClassUnknown_43_0f7d90() {}
+// 0x0f7d90 re-homed (reconstructed) as Update_0f7d90 in src/Gruntz/ClassUnknown43.cpp.
 
 // ---- ClassUnknown_45 ----
 RVA(0x0008c3b0, 0x10)
 void ClassUnknown_45::ClassUnknown_45_08c3b0() {}
 
 // ---- ClassUnknown_48 ----
-RVA(0x00139cf0, 0xd7)
-void ClassUnknown_48::ClassUnknown_48_139cf0() {}
+// 0x139cf0 re-homed (reconstructed) as Clear_139cf0 in src/Gruntz/ClassUnknown48.cpp.
 
 // ---- ClassUnknown_50 ----
 RVA(0x0016dfc0, 0x7)
@@ -129,5 +125,4 @@ RVA(0x00016460, 0x46)
 void ClassUnknown_55::ClassUnknown_55_016460() {}
 
 // ---- ClassUnknown_9 ----
-RVA(0x0011c630, 0x6e)
-void ClassUnknown_9::ClassUnknown_9_11c630() {}
+// 0x11c630 re-homed (reconstructed) as the ctor in src/Gruntz/ClassUnknown9.cpp.
