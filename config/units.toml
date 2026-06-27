@@ -1429,6 +1429,21 @@ source = "src/Gruntz/CLevelTimeDtor.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "boundaryleaflogic"
+source = "src/Gruntz/BoundaryLeafLogic.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "boundarymisc"
+source = "src/Gruntz/BoundaryMisc.cpp"
+flags = "base"
+
+[[unit]]
+unit = "boundarythunks"
+source = "src/Gruntz/BoundaryThunks.cpp"
+flags = "base"
+
+[[unit]]
 unit = "cmovinglogicdtor"
 source = "src/Gruntz/CMovingLogicDtor.cpp"
 flags = "eh"
