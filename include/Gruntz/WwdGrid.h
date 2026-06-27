@@ -47,24 +47,33 @@ struct BucketHead {
     void Unlink_1391e0(WwdRegion* node);
 };
 
-// The "remus" engine base: holds the vptr @ +0x00. Trivial inline ctor (no vptr
-// stamp - a derived ctor stamps it), and a non-trivial dtor that restores the
-// base vtable. Modeling it as a real base subobject gives ~CWwdGrid its /GX EH
-// frame (the derived dtor folds ~CRemusBase's vptr-restore inline). The vptr is
-// managed by manual stamps while the full vtable contents aren't reproduced.
+// The "remus" engine base (CObject-like, vtable @0x5e8cb4): the implicit vptr
+// @+0x00 + the 5-slot CObject-style interface (GetRuntimeClass/dtor/Serialize/
+// AssertValid/Dump -> the shared sub_1bef01/scalar-dtor/sub_0028ec/sub_00106e/
+// sub_004034). Real polymorphic: the empty inline virtual dtor makes cl emit the
+// implicit ??_7CRemusBase grand-base re-stamp (reloc-masks 0x5e8cb4) folded into
+// every leaf dtor, and the destructible base subobject gives ~CWwdGrid its /GX
+// frame. The 4 non-dtor virtuals live in sibling TUs (declared, reloc-masked).
 struct CRemusBase {
-    void* m_vptr; // +0x00
+    virtual void RemusV0();  // slot 0 (sub_1bef01)
+    virtual ~CRemusBase();   // slot 1 (scalar-deleting dtor)
+    virtual void RemusV2();  // slot 2 (sub_0028ec)
+    virtual void RemusV3();  // slot 3 (sub_00106e)
+    virtual void RemusV4();  // slot 4 (sub_004034)
     CRemusBase() {}
-    ~CRemusBase(); // INLINE-defined below (folds into every leaf dtor)
 };
 
-// CWwdGrid derives from CRemusBase (manual-vptr model: the ctor never stamps the
-// vptr - a derived ctor does - and the dtor folds the base teardown).
+// CWwdGrid derives from CRemusBase. Real polymorphic now: the ctor gets the
+// implicit ??_7CWwdGrid vptr stamp, ~CWwdGrid the implicit stamp-first re-stamp,
+// and the per-object query callback is the pure virtual OnFound at slot 5 (vtbl
+// +0x14, == retail's __purecall slot). cl emits ??_7CWwdGrid (slot relocs mask
+// the 0x5f0328 target).
 class CWwdGrid : public CRemusBase {
 public:
     // ctor: build the grid over rect (x0,y0,x1,y1) with cell sizes cellW/cellH.
     CWwdGrid(i32 x0, i32 y0, i32 x1, i32 y1, i32 cellW, i32 cellH);
-    ~CWwdGrid();
+    virtual ~CWwdGrid();
+    virtual void OnFound(WwdRegion* r) = 0; // slot 5 (vtbl+0x14, __purecall)
 
     void FreeBuckets();
     i32 Add(WwdRegion* r);
@@ -90,22 +99,9 @@ public:
     BucketHead* m_buckets; // +0x40
 };
 
-// The grid's vtable: the per-object callback at +0x14 is a single-inheritance
-// PMF (4 bytes, thiscall by default) - CWwdGrid is now complete so it stays 4B.
-struct CWwdGridVtbl {
-    void* m_slot00;                          // +0x00
-    void* m_dtor;                            // +0x04 scalar-deleting dtor
-    void* m_slot08[(0x14 - 0x08) / 4];       // +0x08..+0x10
-    void (CWwdGrid::*m_onFound)(WwdRegion*); // +0x14 per-object callback
-};
-
-// The parent "remus" base vtable; ~CRemusBase restores it (DATA() in the .cpp).
-extern CWwdGridVtbl g_remusBaseDtorVtbl; // 0x5e8cb4
-
 // INLINE so every leaf dtor (~CWwdGrid) FOLDS the base teardown rather than
 // emitting `call ??1CRemusBase`; the /GX frame still falls out of the real base.
-inline CRemusBase::~CRemusBase() {
-    m_vptr = &g_remusBaseDtorVtbl;
-}
+// Empty body -> cl emits ONLY the implicit grand-base vptr re-stamp (0x5e8cb4).
+inline CRemusBase::~CRemusBase() {}
 
 #endif // GRUNTZ_WWDGRID_H

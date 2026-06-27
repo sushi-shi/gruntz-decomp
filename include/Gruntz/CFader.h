@@ -29,21 +29,27 @@
 
 #include <DDrawMgr/ShadeTableCache.h> // CShadeTableCache / CShadeTable (the +0x04 cache)
 
-// The fader vftable + the grand-base dtor vtable, stamped by the ctor/dtor as
-// reloc-masked DIR32 data. (g_remusBaseDtorVtbl is also declared in CFaderMgr.h;
-// each TU declares its own extern - one definition per address, reloc-masked.)
-DATA(0x001f07a8)
-extern void* g_faderVtbl; // 0x5f07a8 - the CFader base vftable
+// CFader is a real polymorphic class (vftable @0x5f07a8, 5 slots): the virtual
+// dtor (slot 0), two pure virtuals (slots 1/2, == &__purecall), and two engine
+// virtuals at 0x17e790/0x17e7a0 (slots 3/4, defined in sibling TUs). Declaring
+// them makes MSVC emit ??_7CFader and auto-stamp the implicit vptr in the ctor/
+// dtor; the slot relocs + the stamp reloc-mask against the (differently-named)
+// target symbols. No manual g_faderVtbl stamp needed.
 
 class CFader {
 public:
-    CFader();                     // 0x17e450
-    ~CFader();                    // 0x17e4a0  (/GX EH frame)
+    CFader();              // 0x17e450
+    virtual ~CFader();     // 0x17e4a0  (/GX EH frame; vtable slot 0)
+    virtual void v1() = 0; // slot 1 (__purecall)
+    virtual void v2() = 0; // slot 2 (__purecall)
+    virtual void v3();     // slot 3 (0x17e790, sibling TU)
+    virtual void v4();     // slot 4 (0x17e7a0, sibling TU)
+
     void Wait(i32 delay);         // 0x17e510 - busy-wait until GetTickCount >= now+delay
     void SetTimers(i32 a, i32 b); // 0x17e760 - store m_24/m_28
     void Set2c(i32 v);            // 0x17e780 - store m_2c
 
-    void* m_vptr;             // +0x00
+    // implicit vptr        // +0x00
     CShadeTableCache m_cache; // +0x04 (0x18 bytes)
     CShadeTable* m_table;     // +0x1c
     i32 m_20;                 // +0x20

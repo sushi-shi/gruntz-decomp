@@ -75,7 +75,7 @@ cdroppedobjectshadow	1	1
 cexittrigger	2	2
 cexplosion	1	1
 ceyecandy	2	2
-cfader	6	5
+cfader	6	6
 cfadermgr	8	5
 cfileimage	8	2
 cfixedptrarray32	3	2
@@ -414,7 +414,7 @@ wormhole	8	3
 wwdfile	21	3
 wwdgameobject	13	6
 wwdgameobjecteh	5	0
-wwdgrid	7	4
+wwdgrid	7	5
 wwdspatialmgr	15	8
 zdarrayderived	1	1
 zutil	2	2
@@ -907,9 +907,9 @@ cexittrigger	?GetTypeTag@CExitTrigger@@QAEHXZ	100.0000	100.0000	1	c68ad601ed76	0
 cexplosion	??1CExplosion@@UAE@XZ	100.0000	100.0000	1	937d43f67fbf	0x12ec0
 ceyecandy	??1CEyeCandy@@UAE@XZ	100.0000	100.0000	1	394f31033131	0xfd60
 ceyecandy	?GetTypeTag@CEyeCandy@@QAEHXZ	100.0000	100.0000	1	77b6788a5a6a	0xfca0
-cfader	??0CFader@@QAE@XZ	100.0000	100.0000	1	78cd95dd8e45	0x17e450
-cfader	??1CFader@@QAE@XZ	88.2759	88.2759	1	fdbfb44a3d6b	0x17e4a0
-cfader	??1CFaderSine@@QAE@XZ	100.0000	100.0000	1	ae93aa6df1fe	0x17fdf0
+cfader	??0CFader@@QAE@XZ	100.0000	100.0000	2	3b346dbe5e0b	0x17e450
+cfader	??1CFader@@UAE@XZ	100.0000	100.0000	1	33aebdeede51	0x17e4a0
+cfader	??1CFaderSine@@UAE@XZ	100.0000	100.0000	1	983830fb6b19	0x17fdf0
 cfader	?Set2c@CFader@@QAEXH@Z	100.0000	100.0000	1	ede94c0e181f	0x17e780
 cfader	?SetTimers@CFader@@QAEXHH@Z	100.0000	100.0000	1	f5abacb4e2fd	0x17e760
 cfader	?Wait@CFader@@QAEXH@Z	100.0000	100.0000	1	22403b8571db	0x17e510
@@ -3783,12 +3783,12 @@ wwdgameobjecteh	??1CWwdGameObjectB@@QAE@XZ	70.7424	70.7424	1	c7fb487544c2	0x15bd
 wwdgameobjecteh	??1CWwdGameObjectC@@UAE@XZ	93.6346	93.6346	1	af996333ea4c	0x15c070
 wwdgameobjecteh	??1CWwdGameObjectE@@UAE@XZ	88.7941	88.7941	1	e20ec4de9067	0x15b4f0
 wwdgameobjecteh	??1CWwdGameObjectF@@UAE@XZ	93.4466	93.4466	1	fc1f680ea25f	0x15bad0
-wwdgrid	??0CWwdGrid@@QAE@HHHHHH@Z	75.2308	75.2308	2	ad6dbdc254bc	0x1915c0
-wwdgrid	??1CWwdGrid@@QAE@XZ	93.3333	93.3333	1	89dd27ea66ce	0x1682a0
+wwdgrid	??0CWwdGrid@@QAE@HHHHHH@Z	74.1539	74.1539	2	ad6dbdc254bc	0x1915c0
+wwdgrid	??1CWwdGrid@@UAE@XZ	100.0000	100.0000	1	11d416630cb6	0x1682a0
 wwdgrid	?Add@CWwdGrid@@QAEHPAUWwdRegion@@@Z	100.0000	100.0000	2	a84967689776	0x191840
 wwdgrid	?Clear@CWwdGrid@@QAEHXZ	100.0000	100.0000	2	3fa965687146	0x191a70
 wwdgrid	?FreeBuckets@CWwdGrid@@QAEXXZ	100.0000	100.0000	2	ea8c19f6d6f0	0x191800
-wwdgrid	?Query@CWwdGrid@@QAEHHHHHH@Z	99.7188	99.7188	2	9051339366a4	0x1918c0
+wwdgrid	?Query@CWwdGrid@@QAEHHHHHH@Z	99.7188	99.7188	3	68bcd2e8a5c6	0x1918c0
 wwdgrid	?Remove@CWwdGrid@@QAEXPAUWwdRegion@@@Z	100.0000	100.0000	2	40d0b5598a9f	0x191890
 wwdspatialmgr	?CountInRect@CWwdSpatialMgr@@QAEHPAVCWwdGrid@@@Z	86.1539	86.1539	3	901c39b3a8ff	0x168460
 wwdspatialmgr	?FlushAll@CWwdSpatialMgr@@QAEHXZ	100.0000	100.0000	1	9038dde5139b	0x168960

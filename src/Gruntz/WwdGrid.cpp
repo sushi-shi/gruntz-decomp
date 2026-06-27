@@ -8,17 +8,6 @@
 
 // --- reloc-masked engine externs -------------------------------------------
 
-// The grid's own vtable (abstract base) and the parent "remus" base vtable; the
-// dtor stamps its own during teardown then the base dtor restores the parent.
-// Both are reloc-masked DATA() externs (transitional manual-vtable model: the
-// ctor never stamps the vptr, so emitting a compiler vtable would diverge).
-// g_remusBaseDtorVtbl is declared in the header (used by the inline ~CRemusBase);
-// pin its address here.
-DATA(0x005f0328)
-extern CWwdGridVtbl g_wwdGridVtbl;
-DATA(0x005e8cb4)
-extern CWwdGridVtbl g_remusBaseDtorVtbl;
-
 // The engine bucket-array deallocator path: the MSVC vector dtor iterator
 // (__ehvec_dtor, __stdcall - callee-clean, NO `add esp` after the call) over the
 // element dtor, then RezFree of the backing block. (The ctor's alloc + element
@@ -34,14 +23,12 @@ extern "C" double pow(double, double);
 // (folded inline) then restores the parent vtable. /GX frame from the base
 // subobject teardown.
 // ===========================================================================
-// @early-stop
-// EH-state-machine order wall (~93%): body byte-identical, but retail emits the
-// own-vptr stamp (mov [esi],&vtbl) BEFORE the entry trylevel-0 write
-// (mov [esp+0x10],0); the recompile emits them swapped. Not steerable from C.
-// See docs/patterns/eh-dtor-vptr-stamp-vs-trylevel-order.md.
+// Real polymorphic now: cl emits the implicit ??_7CWwdGrid own-vptr stamp in the
+// ENTRY state (stamp-first, == retail), then FreeBuckets, then the ~CRemusBase
+// grand-base re-stamp folds in. /GX frame from the destructible base subobject.
+// (eh-dtor-implicit-vptr-stamp-first.md.)
 RVA(0x001682a0, 0x46)
 CWwdGrid::~CWwdGrid() {
-    m_vptr = &g_wwdGridVtbl;
     FreeBuckets();
 }
 
@@ -146,7 +133,7 @@ i32 CWwdGrid::Query(i32 a0, i32 a1, i32 a2, i32 a3, i32 doRemove) {
                                 r->m_bucket = 0;
                                 --m_count;
                             }
-                            (this->*(((CWwdGridVtbl*)m_vptr)->m_onFound))(r);
+                            OnFound(r);
                             ++fired;
                         }
                         r = next;
@@ -186,13 +173,15 @@ i32 CWwdGrid::Clear() {
 // (count cookie + vector-constructed 8-byte heads). /GX frame from the alloc EH.
 // ===========================================================================
 // @early-stop
-// ~75%: three stacked walls, all logic byte-faithful. (1) the log2/pow x87 path
+// ~74%: three stacked walls, all logic byte-faithful. (1) the log2/pow x87 path
 // (fldln2/fld 2.0/fyl2x/fdiv/__ftol/__CIpow) has a non-steerable FP-stack
-// schedule (docs/patterns/x87-fp-stack-schedule.md). (2) the real CRemusBase
-// subobject shifts the /GX __ehfuncinfo state-id base
-// (docs/patterns/eh-state-numbering-base.md) - the trade that took the dtor
-// 31%->93%. (3) the 4 rect-field stores fuse to a `lea edx,[esi+0x28]`
-// pointer-block in retail but stay direct member stores here (regalloc choice).
+// schedule (docs/patterns/x87-fp-stack-schedule.md). (2) the real polymorphic
+// CRemusBase subobject shifts the /GX __ehfuncinfo state-id base
+// (docs/patterns/eh-state-numbering-base.md) - the trade that took the dtor to
+// 100% (real-virtual implicit stamp-first). (3) the 4 rect-field stores fuse to a
+// `lea edx,[esi+0x28]` pointer-block in retail but stay direct member stores here
+// (regalloc choice). The implicit ctor vptr-stamp is now compiler-emitted (the
+// abstract base's __purecall vtable), matching retail's polymorphic construction.
 RVA(0x001915c0, 0x15d)
 CWwdGrid::CWwdGrid(i32 x0, i32 y0, i32 x1, i32 y1, i32 cellW, i32 cellH) {
     m_count = 0;

@@ -20,7 +20,6 @@
 // ===========================================================================
 RVA(0x0017e450, 0x23)
 CFader::CFader() {
-    m_vptr = &g_faderVtbl;
     m_table = 0;
     m_flag = 1;
 }
@@ -30,15 +29,11 @@ CFader::CFader() {
 // table from the cache when armed, then destruct the cache subobject (0x14de50).
 // The destructible m_cache member forces the /GX EH frame.
 // ===========================================================================
-// @early-stop
-// /GX EH-state wall (docs/patterns/eh-dtor-vptr-stamp-vs-trylevel-order.md +
-// eh-state-numbering-base.md): body byte-identical; residue is (1) the vptr stamp
-// scheduled after the m_table load vs retail's stamp-first, and (2) the
-// __ehfuncinfo state id (push 0xb vs 0x0) - a fresh single-EH-fn TU can't
-// reproduce retail's EH-state index. Not source-steerable. ~88%.
+// Real polymorphic now: cl emits the implicit ??_7CFader vptr re-stamp in the
+// ENTRY state (stamp-first, == retail), and the destructible m_cache member folds
+// in to supply the /GX frame. (eh-dtor-implicit-vptr-stamp-first.md sub-case 1.)
 RVA(0x0017e4a0, 0x69)
 CFader::~CFader() {
-    m_vptr = &g_faderVtbl;
     if (m_table && m_flag) {
         m_cache.FindRemove(m_table);
         m_table = 0;
@@ -75,25 +70,20 @@ void CFader::Set2c(i32 v) {
 
 // ===========================================================================
 // CFaderSine - the case-"3" / jump-index-2 fader subtype (CFaderMgr::Add allocates
-// 0x7d5c bytes for it). Its motion virtual (0x17ff30) drives a sine-curve scroll
-// over a large embedded table; only its destructor is reconstructed here (the
-// ctor/motion virtuals live in sibling TUs). The subtype vftable (0x5f0848) is
-// stamped manually as reloc-masked DIR32 data - a transitional workaround while
-// the subtype's vtable contents are unmodeled (declaring virtuals here would emit
-// a divergent ??_7). Name is descriptive (no RTTI / naming string survives).
+// 0x7d5c bytes for it). Its motion virtuals (0x17ff30 / 0x180400) override the two
+// CFader pure virtuals (slots 1/2); slots 3/4 are inherited. Real polymorphic now:
+// the empty ~CFaderSine stamps ??_7CFaderSine then tail-calls ~CFader, and cl emits
+// ??_7CFaderSine (slots reloc-mask the 0x5f0848 target). Name is descriptive.
 // ===========================================================================
-DATA(0x001f0848)
-extern void* g_faderSineVtbl; // 0x5f0848 - the CFaderSine vftable
-
 class CFaderSine : public CFader {
 public:
-    ~CFaderSine(); // 0x17fdf0
+    virtual ~CFaderSine(); // 0x17fdf0
+    virtual void v1();     // slot 1 -> 0x17ff30 (overrides CFader pure)
+    virtual void v2();     // slot 2 -> 0x180400 (overrides CFader pure)
 };
 
 // ===========================================================================
-// 0x17fdf0 - ~CFaderSine(): restore the subtype vftable, then tail-call ~CFader().
+// 0x17fdf0 - ~CFaderSine(): stamp the subtype vftable, then tail-call ~CFader().
 // ===========================================================================
 RVA(0x0017fdf0, 0xb)
-CFaderSine::~CFaderSine() {
-    m_vptr = &g_faderSineVtbl;
-}
+CFaderSine::~CFaderSine() {}
