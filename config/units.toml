@@ -1629,6 +1629,16 @@ source = "src/Gruntz/BoundaryUpper2Eh.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "boundarytail"
+source = "src/Gruntz/BoundaryTail.cpp"
+flags = "base"
+
+[[unit]]
+unit = "boundarytaileh"
+source = "src/Gruntz/BoundaryTailEh.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "cmovinglogicdtor"
 source = "src/Gruntz/CMovingLogicDtor.cpp"
 flags = "eh"

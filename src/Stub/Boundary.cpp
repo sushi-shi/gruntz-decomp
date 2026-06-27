@@ -6,37 +6,17 @@
 // unit; delinked + objdiff'd like any backlog stub.
 #include <rva.h>
 
-RVA(0x0000bdd0, 0x53)
-void Boundary_00bdd0() {} // proximity: CWorldSoundSet@-0x70 | CRandomAmbientSound@+0x80
-RVA(0x00023d90, 0x64)
-void Boundary_023d90() {} // proximity: CGruntzCmdMgr@-0x80 | CGruntzCommand@+0x90
-RVA(0x00038120, 0x1d)
-void Boundary_038120() {} // proximity: CWnd@-0x1080 | StateMgrBZ@+0x1a0
-RVA(0x000788d0, 0x64)
-void Boundary_0788d0() {} // proximity: CTriggerMgr@-0x50 | EngineLabelBacklog@+0x90
-RVA(0x00085500, 0x23)
-void Boundary_085500() {} // proximity: CMapLogic@-0x80 | CSaveGame@+0x650
 RVA(0x0008c830, 0xaf)
 void Boundary_08c830() {} // proximity: CState@-0xe0 | CPlay@+0xe0
 RVA(0x0008d0d0, 0xc4)
 void Boundary_08d0d0() {} // proximity: CMenuState@-0x270 | CMulti@+0x1a0
-RVA(0x00118330, 0x57)
-void Boundary_118330() {} // proximity: CTileTriggerContainer@-0x3d0 | CGruntVoice@+0x17b0
 RVA(0x00138aa0, 0x175)
 void Boundary_138aa0() {} // proximity: CGruntzSoundZ@-0x180 | DSoundList@+0x640
 RVA(0x0013a4b0, 0x75)
 void Boundary_13a4b0() {} // proximity: CSymTab@-0x1a0 | CSymParser@+0x710
 RVA(0x0013ab00, 0xac)
 void Boundary_13ab00() {} // proximity: CSymTab@-0x7f0 | CSymParser@+0xc0
-RVA(0x0013df30, 0xaf)
-void Boundary_13df30() {} // proximity: WAP32@-0x90 | CFileImage@+0x1a0
-RVA(0x00148250, 0x61)
-void Boundary_148250() {} // proximity: CDDPalette@-0x580 | CFileImage@+0x5f0
 RVA(0x001493b0, 0xfd)
 void Boundary_1493b0() {} // proximity: CImageOwned@-0x2e0 | CDDrawShadeBlit@+0x440
 RVA(0x001503f0, 0xdc)
 void Boundary_1503f0() {} // proximity: CDataBuffer@-0x30 | CGruntSprite@+0xe0
-RVA(0x001578b0, 0x51)
-void Boundary_1578b0() {} // proximity: CFileMemBase@-0x60 | CFileMem@+0xd0
-RVA(0x00176d20, 0x71)
-void Boundary_176d20() {} // proximity: CImage@-0x550 | CNetMgr@+0x980

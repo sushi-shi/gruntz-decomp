@@ -34,6 +34,8 @@ boundarylowerdtors	6	5
 boundarylowermethods	30	19
 boundarylowerthunks	26	26
 boundarymisc	13	11
+boundarytail	9	2
+boundarytaileh	1	0
 boundarythunks	15	15
 boundaryupper	33	30
 boundaryupper2	26	19
@@ -188,7 +190,7 @@ discoveredsmall	9	9
 dsoundvoice	2	1
 ehfunclets	6	6
 engine_attributed	9	0
-engine_boundary	17	0
+engine_boundary	7	0
 engine_discovered	22	5
 engine_label_stubs	340	96
 engine_unmatched_lib	11	0
@@ -613,6 +615,16 @@ boundarymisc	?Run@CGuardedDispatch1f870@@QAEHXZ	100.0000	100.0000	1	483d8e6e5f0c
 boundarymisc	?StampVptr@CVtblStamp87b0@@QAEXXZ	100.0000	100.0000	1	25639f4e5de9	0x87b0
 boundarymisc	?StampVptr@CVtblStampB940@@QAEXXZ	100.0000	100.0000	1	9c0f8574f087	0xb940
 boundarymisc	?TileSwitch29af0@@YGXPAUCTileSwitch29af0@@HHHHH@Z	100.0000	100.0000	1	558082259557	0x29af0
+boundarytail	?Blit@CObj23d90@@QAEXHHHHH@Z	50.4474	50.4474	1	26a8ee853016	0x23d90
+boundarytail	?BuildRecord118330@@YAHPAUOut118330@@@Z	92.6667	92.6667	1	66a6d8f7f7f7	0x118330
+boundarytail	?Dispatch@CObj_bdd0@@QAEPAXPAUArg1_bdd0@@PBDHHHH@Z	100.0000	100.0000	1	fbeffa950bde	0xbdd0
+boundarytail	?Fill@CImg176d20@@QAEXPAUFillRect176d20@@H@Z	91.3043	91.3043	1	3337862c0c6f	0x176d20
+boundarytail	?Flush@CBlit148250@@QAEXXZ	100.0000	100.0000	1	936c1cbb24f3	0x148250
+boundarytail	?GetName@Obj38120@@QAE?AVCString@@XZ	66.7273	66.7273	1	76c2bc684825	0x38120
+boundarytail	?GetName@Obj85500@@QAE?AVCString@@XZ	74.5000	74.5000	1	c798a7feb39e	0x85500
+boundarytail	?PositionUpdate@CSnd788d0@@QAEHXZ	65.3448	65.3448	1	a7c1ff565747	0x788d0
+boundarytail	?WaitKeyEdge@@YAXHH@Z	97.0422	97.0422	1	fccae64ad893	0x13df30
+boundarytaileh	??1CFmb1578b0@@QAE@XZ	91.0000	91.0000	1	733b6b91b074	0x1578b0
 boundarythunks	?ButeMgrFlush82b20@@YAXXZ	100.0000	100.0000	1	d388b45bede6	0x82b20
 boundarythunks	?Ctor@CAbstract137330@@QAEXXZ	100.0000	100.0000	1	c8de40e9e6e2	0x137330
 boundarythunks	?Ctor@CAbstract13aaf0@@QAEXXZ	100.0000	100.0000	1	f7c52e3a9403	0x13aaf0
@@ -1658,23 +1670,13 @@ engine_attributed	?streambuf_16b360@streambuf@@QAEXXZ	5.2632	5.2632	2	474b2744d4
 engine_attributed	?strstreambuf_1692c0@strstreambuf@@QAEXXZ	0.7692	0.7692	2	88673457090a	0x1692c0
 engine_attributed	?strstreambuf_1693f0@strstreambuf@@QAEXXZ	6.6667	6.6667	2	b5bab2d048b4	0x1693f0
 engine_attributed	?strstreambuf_169400@strstreambuf@@QAEXXZ	0.7407	0.7407	2	da6c1a23235f	0x169400
-engine_boundary	?Boundary_00bdd0@@YAXXZ	1.2500	1.2500	2	504d18ca1007	0xbdd0
-engine_boundary	?Boundary_023d90@@YAXXZ	1.0526	1.0526	2	2999679ada02	0x23d90
-engine_boundary	?Boundary_038120@@YAXXZ	3.6364	3.6364	2	bcf7d5189930	0x38120
-engine_boundary	?Boundary_0788d0@@YAXXZ	3.4483	3.4483	2	1393dc22de23	0x788d0
-engine_boundary	?Boundary_085500@@YAXXZ	3.3333	3.3333	2	1c18e35877b6	0x85500
 engine_boundary	?Boundary_08c830@@YAXXZ	2.5000	2.5000	2	3cb332bfb432	0x8c830
 engine_boundary	?Boundary_08d0d0@@YAXXZ	2.2727	2.2727	2	6ffb2785f51b	0x8d0d0
-engine_boundary	?Boundary_118330@@YAXXZ	3.3333	3.3333	2	0e86d7342def	0x118330
 engine_boundary	?Boundary_138aa0@@YAXXZ	0.3509	0.3509	2	30a1af20adfb	0x138aa0
 engine_boundary	?Boundary_13a4b0@@YAXXZ	0.7547	0.7547	2	bb86271d7ac2	0x13a4b0
 engine_boundary	?Boundary_13ab00@@YAXXZ	0.9756	0.9756	2	aa33f2aa31af	0x13ab00
-engine_boundary	?Boundary_13df30@@YAXXZ	1.4085	1.4085	2	21b498f8b22e	0x13df30
-engine_boundary	?Boundary_148250@@YAXXZ	2.5641	2.5641	2	0d2c81d68da1	0x148250
 engine_boundary	?Boundary_1493b0@@YAXXZ	0.5263	0.5263	2	dd555e7e5ecb	0x1493b0
 engine_boundary	?Boundary_1503f0@@YAXXZ	0.6780	0.6780	2	16d132d3bd3c	0x1503f0
-engine_boundary	?Boundary_1578b0@@YAXXZ	5.0000	5.0000	2	3920e5309778	0x1578b0
-engine_boundary	?Boundary_176d20@@YAXXZ	0.8696	0.8696	2	3a0a8e740969	0x176d20
 engine_discovered	?CButeStore_174d70@CButeStore@@QAEXXZ	3.2258	3.2258	1	cc31d37bf9e8	0x174d70
 engine_discovered	?CGrunt_0ef6b0@CGrunt@@QAEXXZ	0.2151	0.2151	1	5d439146fea0	0xef6b0
 engine_discovered	?CGruntzMgr_08b960@CGruntzMgr@@QAEXXZ	0.0907	0.0907	3	4a22ea071af3	0x8b960
