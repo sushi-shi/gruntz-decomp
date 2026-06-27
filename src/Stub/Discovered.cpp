@@ -4,6 +4,13 @@
 #include <rva.h>
 #include <Stub/discovered.h>
 
+// Base vtable restored by ~CSeverusWorker-derived dtors (0x5e8cb4); these 7-byte
+// `mov [ecx],&vtbl; ret` thunks are the still-manual vtable stamps for those
+// classes (kept as the manual stamp, not yet modelled as real virtuals).
+extern void* g_severusWorkerDtorVtbl;
+// scalar-deleting-destructor vtable at 0x5f04d8 stamped by ClassUnknown_50.
+extern void* g_vtbl5f04d8;
+
 // ---- CButeStore ----
 RVA(0x00174d70, 0x70)
 void CButeStore::CButeStore_174d70() {}
@@ -19,8 +26,7 @@ void CGruntzMgr::CGruntzMgr_08b960() {}
 // ---- CGruntzSingleCommand ----
 RVA(0x0011f618, 0x14)
 void CGruntzSingleCommand::CGruntzSingleCommand_11f618() {}
-RVA(0x00135110, 0x8e)
-void CGruntzSingleCommand::CGruntzSingleCommand_135110() {}
+// 0x135110 re-homed (reconstructed) as ComputeCmdPercent in src/Gruntz/GruntCmdPercent.cpp.
 RVA(0x0018c022, 0x1d3)
 void CGruntzSingleCommand::CGruntzSingleCommand_18c022() {}
 
@@ -44,8 +50,7 @@ RVA(0x00150040, 0x136)
 void ClassUnknown_1::ClassUnknown_1_150040() {}
 
 // ---- ClassUnknown_11 ----
-RVA(0x0014dd90, 0x74)
-void ClassUnknown_11::ClassUnknown_11_14dd90() {}
+// 0x14dd90 re-homed (reconstructed) as ShadeSelector::Select in src/Gruntz/ShadeDescrTable.cpp.
 
 // ---- ClassUnknown_13 ----
 RVA(0x001154b0, 0x45)
@@ -62,12 +67,10 @@ RVA(0x001d496b, 0x1e)
 void ClassUnknown_16::ClassUnknown_16_1d496b() {}
 
 // ---- ClassUnknown_2 ----
-RVA(0x0014dcf0, 0x69)
-void ClassUnknown_2::ClassUnknown_2_14dcf0() {}
+// 0x14dcf0 re-homed (reconstructed) as SetShadeDescr in src/Gruntz/ShadeDescrTable.cpp.
 
 // ---- ClassUnknown_23 ----
-RVA(0x0016e360, 0x11a)
-void ClassUnknown_23::ClassUnknown_23_16e360() {}
+// 0x16e360 re-homed (reconstructed) as Reg23::Add in src/Gruntz/Registry23.cpp.
 
 // ---- ClassUnknown_30 ----
 RVA(0x0009a260, 0x1d)
@@ -103,23 +106,23 @@ void ClassUnknown_48::ClassUnknown_48_139cf0() {}
 
 // ---- ClassUnknown_50 ----
 RVA(0x0016dfc0, 0x7)
-void ClassUnknown_50::ClassUnknown_50_16dfc0() {}
+void ClassUnknown_50::ClassUnknown_50_16dfc0() { *(void**)this = &g_vtbl5f04d8; }
 
 // ---- ClassUnknown_51 ----
 RVA(0x0011eaf5, 0x7)
-void ClassUnknown_51::ClassUnknown_51_11eaf5() {}
+void ClassUnknown_51::ClassUnknown_51_11eaf5() { *(void**)this = &g_severusWorkerDtorVtbl; }
 
 // ---- ClassUnknown_52 ----
 RVA(0x0011eaa8, 0x7)
-void ClassUnknown_52::ClassUnknown_52_11eaa8() {}
+void ClassUnknown_52::ClassUnknown_52_11eaa8() { *(void**)this = &g_severusWorkerDtorVtbl; }
 
 // ---- ClassUnknown_53 ----
 RVA(0x0011cf30, 0x7)
-void ClassUnknown_53::ClassUnknown_53_11cf30() {}
+void ClassUnknown_53::ClassUnknown_53_11cf30() { *(void**)this = &g_severusWorkerDtorVtbl; }
 
 // ---- ClassUnknown_54 ----
 RVA(0x0011cee3, 0x7)
-void ClassUnknown_54::ClassUnknown_54_11cee3() {}
+void ClassUnknown_54::ClassUnknown_54_11cee3() { *(void**)this = &g_severusWorkerDtorVtbl; }
 
 // ---- ClassUnknown_55 ----
 RVA(0x00016460, 0x46)

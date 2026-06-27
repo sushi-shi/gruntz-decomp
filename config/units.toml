@@ -43,6 +43,9 @@ mfc    = ["/nologo", "/c", "/O1", "/MT", "/GX"]
 # register-allocated. docs/patterns/o2-optimizer-bailout-framed.md.
 framed = ["/nologo", "/c", "/O2", "/MT", "/Oy-"]
 o1     = ["/nologo", "/c", "/O1", "/MT"]
+# unoptimized + intrinsics: full ebp frame, every local/arg through memory, plain
+# idiv (no strength reduction), yet pow/etc. via the __CIxxx FP intrinsic (/Oi).
+odi    = ["/nologo", "/c", "/Od", "/Oi", "/MT"]
 
 [[unit]]
 unit = "adler32"
@@ -599,6 +602,25 @@ flags = "base"
 unit = "gruntzcommand"
 source = "src/Gruntz/GruntzCommand.cpp"
 flags = "base"
+
+[[unit]]
+# trace-discovered ShadeDescr* global selector pair (re-homed from Discovered.cpp).
+unit = "shadedescrtable"
+source = "src/Gruntz/ShadeDescrTable.cpp"
+flags = "base"
+
+[[unit]]
+# global keyed record table insert/update/remove (re-homed from Discovered.cpp).
+unit = "registry23"
+source = "src/Gruntz/Registry23.cpp"
+flags = "base"
+
+[[unit]]
+# percentage transfer curve helper (re-homed from Discovered.cpp). /O1 (favor
+# size): ebp frame retained, idiv-by-100 (no magic-number strength reduction).
+unit = "gruntcmdpercent"
+source = "src/Gruntz/GruntCmdPercent.cpp"
+flags = "odi"
 
 [[unit]]
 unit = "gruntzcmdmgr"

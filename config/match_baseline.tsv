@@ -171,7 +171,7 @@ dsoundvoice	2	1
 ehfunclets	6	6
 engine_attributed	9	0
 engine_boundary	153	0
-engine_discovered	33	0
+engine_discovered	29	5
 engine_label_stubs	393	106
 engine_unmatched_lib	11	0
 engstr	3	1
@@ -198,6 +198,7 @@ gametext	4	3
 gamewnd	9	8
 groupops	2	0
 grunt	89	16
+gruntcmdpercent	1	1
 gruntdatarecord	2	2
 gruntmovestep	1	0
 gruntpuddle	4	2
@@ -327,6 +328,7 @@ reconbatch2	19	14
 reconbatch2o1	5	4
 recordfill	2	2
 reghelpers	2	0
+registry23	1	0
 registryhelper	8	8
 rezfile	6	6
 rezlist	2	2
@@ -356,6 +358,7 @@ sbi_wellgoo	1	0
 sbi_wellgoo_eh	1	1
 scattersamples	2	1
 severusworkerdtor	1	1
+shadedescrtable	2	0
 shadetablecache	19	3
 siriusworkerhandlers	4	4
 sounddevice	16	8
@@ -1625,20 +1628,16 @@ engine_discovered	?CButeStore_174d70@CButeStore@@QAEXXZ	3.2258	3.2258	1	cc31d37b
 engine_discovered	?CGrunt_0ef6b0@CGrunt@@QAEXXZ	0.2151	0.2151	1	5d439146fea0	0xef6b0
 engine_discovered	?CGruntzMgr_08b960@CGruntzMgr@@QAEXXZ	0.0907	0.0907	3	4a22ea071af3	0x8b960
 engine_discovered	?CGruntzSingleCommand_11f618@CGruntzSingleCommand@@QAEXXZ	10.0000	10.0000	1	4a4d0e24746c	0x11f618
-engine_discovered	?CGruntzSingleCommand_135110@CGruntzSingleCommand@@QAEXXZ	2.2222	2.2222	1	f22ab9d5f83e	0x135110
 engine_discovered	?CGruntzSingleCommand_18c022@CGruntzSingleCommand@@QAEXXZ	0.7874	0.7874	1	ad61ecca3c94	0x18c022
 engine_discovered	?CPlay_0d53d0@CPlay@@QAEXXZ	0.3049	0.3049	1	da0931b106f5	0xd53d0
 engine_discovered	?CPlay_0d9290@CPlay@@QAEXXZ	0.5076	0.5076	1	40021240a52e	0xd9290
 engine_discovered	?CSpotLight_0b1ee0@CSpotLight@@QAEXXZ	1.1236	1.1236	1	bf45931dd31b	0xb1ee0
 engine_discovered	?CUserLogic_16ea90@CUserLogic@@QAEXXZ	0.6061	0.6061	3	68eaea7fe177	0x16ea90
-engine_discovered	?ClassUnknown_11_14dd90@ClassUnknown_11@@QAEXXZ	1.2500	1.2500	1	2a927f12c10c	0x14dd90
 engine_discovered	?ClassUnknown_13_1154b0@ClassUnknown_13@@QAEXXZ	3.5714	3.5714	1	99d2c63fa454	0x1154b0
 engine_discovered	?ClassUnknown_13_115520@ClassUnknown_13@@QAEXXZ	3.5714	3.5714	1	38f7529b511c	0x115520
 engine_discovered	?ClassUnknown_15_1d38a1@ClassUnknown_15@@QAEXXZ	33.3333	33.3333	1	8a73c498fe1d	0x1d38a1
 engine_discovered	?ClassUnknown_16_1d496b@ClassUnknown_16@@QAEXXZ	3.6364	3.6364	1	2d71a7c5a87b	0x1d496b
 engine_discovered	?ClassUnknown_1_150040@ClassUnknown_1@@QAEXXZ	0.3226	0.3226	1	94d4856b31c0	0x150040
-engine_discovered	?ClassUnknown_23_16e360@ClassUnknown_23@@QAEXXZ	0.4000	0.4000	1	a6abd90b571d	0x16e360
-engine_discovered	?ClassUnknown_2_14dcf0@ClassUnknown_2@@QAEXXZ	3.4483	3.4483	1	7a56aca86a0e	0x14dcf0
 engine_discovered	?ClassUnknown_30_09a260@ClassUnknown_30@@QAEXXZ	3.6364	3.6364	1	b118d81c9fd4	0x9a260
 engine_discovered	?ClassUnknown_33_11f6b9@ClassUnknown_33@@QAEXXZ	9.0909	9.0909	1	835f56f8e975	0x11f6b9
 engine_discovered	?ClassUnknown_35_021c40@ClassUnknown_35@@QAEXXZ	20.0000	20.0000	1	bd60ba24335c	0x21c40
@@ -1647,11 +1646,11 @@ engine_discovered	?ClassUnknown_43_0f7d90@ClassUnknown_43@@QAEXXZ	0.8475	0.8475	
 engine_discovered	?ClassUnknown_45_08c3b0@ClassUnknown_45@@QAEXXZ	25.0000	25.0000	1	56bcb11dba0e	0x8c3b0
 engine_discovered	?ClassUnknown_48_139cf0@ClassUnknown_48@@QAEXXZ	1.4085	1.4085	1	800fe23127ad	0x139cf0
 engine_discovered	?ClassUnknown_4_16f760@ClassUnknown_4@@QAEXXZ	0.8333	0.8333	1	73bd428e7925	0x16f760
-engine_discovered	?ClassUnknown_50_16dfc0@ClassUnknown_50@@QAEXXZ	50.0000	50.0000	1	3c9012c91001	0x16dfc0
-engine_discovered	?ClassUnknown_51_11eaf5@ClassUnknown_51@@QAEXXZ	50.0000	50.0000	1	d5c1f8599a06	0x11eaf5
-engine_discovered	?ClassUnknown_52_11eaa8@ClassUnknown_52@@QAEXXZ	50.0000	50.0000	1	d141a06dc1b8	0x11eaa8
-engine_discovered	?ClassUnknown_53_11cf30@ClassUnknown_53@@QAEXXZ	50.0000	50.0000	1	28c43c457195	0x11cf30
-engine_discovered	?ClassUnknown_54_11cee3@ClassUnknown_54@@QAEXXZ	50.0000	50.0000	1	2e6c6c51c1c2	0x11cee3
+engine_discovered	?ClassUnknown_50_16dfc0@ClassUnknown_50@@QAEXXZ	100.0000	100.0000	2	be157675388e	0x16dfc0
+engine_discovered	?ClassUnknown_51_11eaf5@ClassUnknown_51@@QAEXXZ	100.0000	100.0000	2	7eb65afb5eb1	0x11eaf5
+engine_discovered	?ClassUnknown_52_11eaa8@ClassUnknown_52@@QAEXXZ	100.0000	100.0000	2	5ced1ddf8f8b	0x11eaa8
+engine_discovered	?ClassUnknown_53_11cf30@ClassUnknown_53@@QAEXXZ	100.0000	100.0000	2	e034c3d64bcf	0x11cf30
+engine_discovered	?ClassUnknown_54_11cee3@ClassUnknown_54@@QAEXXZ	100.0000	100.0000	2	88d0052ef9f3	0x11cee3
 engine_discovered	?ClassUnknown_55_016460@ClassUnknown_55@@QAEXXZ	5.5556	5.5556	1	12ce854e384b	0x16460
 engine_discovered	?ClassUnknown_9_11c630@ClassUnknown_9@@QAEXXZ	1.4286	1.4286	1	a139bcb44349	0x11c630
 engine_label_stubs	??0CActionArea@@QAE@H@Z	2.1226	2.1226	1	cpp:6bf52155264d	0x7da0
@@ -2373,6 +2372,7 @@ grunt	?UpdateArrival@CGrunt@@QAEHHH@Z	70.0360	70.0360	2	e681bf3b93db	0x62110
 grunt	?UpdateEntranceAnim@CGrunt@@QAEHXZ	88.3088	88.3088	1	277e290dabfb	0x690a0
 grunt	?UpdateGruntStatus@CGrunt@@QAEHXZ	94.5000	94.5000	3	2b7c880860ba	0x617c0
 grunt	?winapi_04a9f0_CopyRect_OffsetRect@CGrunt@@QAEHXZ	100.0000	100.0000	1	dbbfdbcac471	0x4a9f0
+gruntcmdpercent	?ComputeCmdPercent@@YAHH@Z	100.0000	100.0000	1	4c48926cc60c	0x135110
 gruntdatarecord	?DeserializeStrings@GruntDataRecord@@QAEHPAUDataWriter@@@Z	100.0000	100.0000	1	d96d2c87cdd6	0x56eb0
 gruntdatarecord	?SerializeStrings@GruntDataRecord@@QAEHPAUDataWriter@@@Z	100.0000	100.0000	1	71ad52c7e3da	0x56da0
 gruntmovestep	?Step@CGruntMover@@QAEHPAUCGruntM@@@Z	18.1429	18.1429	1	27431664e366	0x31610
@@ -3112,6 +3112,7 @@ recordfill	?IntegerScale@@YAXXZ	100.0000	100.0000	1	75e29ae82c34	0x18c1f5
 recordfill	?ZeroRecords@@YGXPAXH@Z	100.0000	100.0000	1	aed5c7f7274a	0x17f500
 reghelpers	?ClsidToInProcServer@@YGHPADPAVCString@@@Z	62.4328	62.4328	1	7ffbd48033a1	0x1bf702
 reghelpers	?GetWheelScrollLines@@YAHH@Z	58.0099	58.0099	1	d2271dd4179f	0x1c7cb3
+registry23	?Add@Reg23@@QAEPAXPAX0@Z	18.2500	18.2500	1	10de49823ea6	0x16e360
 registryhelper	?Close@RegistryHelper@Utils@@QAEXXZ	100.0000	100.0000	4	384a98aaca34	0x139330
 registryhelper	?GetRegistryKey@RegistryHelper@Utils@@QAEHPAUHKEY__@@PADPAPAU3@@Z	100.0000	100.0000	3	90d7795268cd	0x139650
 registryhelper	?GetValueDword@RegistryHelper@Utils@@QAEKPADK@Z	100.0000	100.0000	4	8557af160863	0x1395d0
@@ -3285,6 +3286,8 @@ sbi_wellgoo_eh	??1CSBI_WellGoo@@UAE@XZ	100.0000	100.0000	1	ecc4144cec7a	0x104bb0
 scattersamples	?IsPrime@@YAHH@Z	100.0000	100.0000	1	3d4ae8c20789	0x182a80
 scattersamples	?ScatterSamples@@YAXPAHHHH@Z	59.2162	59.2162	1	345a3c1c24dd	0x182940
 severusworkerdtor	??1CSeverusWorkerX@@UAE@XZ	100.0000	100.0000	1	ac004e95dba5	0x17f330
+shadedescrtable	?Select@ShadeSelector@@QAEXHPAUShadeDescr@@@Z	68.5938	68.5938	1	53dd69440698	0x14dd90
+shadedescrtable	?SetShadeDescr@@YAXPAUShadeDescr@@H@Z	61.8966	61.8966	1	4f6dd40482ce	0x14dcf0
 shadetablecache	??0CShadeTableCache@@QAE@XZ	100.0000	100.0000	1	8d165746ed6f	0x14de30
 shadetablecache	??1CShadeTableCache@@QAE@XZ	80.1333	80.1333	2	d4743b4c108f	0x14de50
 shadetablecache	?AddFromArray@CShadeTableCache@@QAEPAUCShadeTable@@PBD@Z	74.0798	74.0798	1	b231c6aba23f	0x14f6c0
