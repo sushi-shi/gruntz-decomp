@@ -56,7 +56,7 @@ extern "C" {
     // @stub
     RVA(0x0011fdf0, 0xd0)
     SYMBOL(_RezStricmp)
-    i32 RezStricmp() {
+    i32 RezStricmp(const char*, const char*) {
         return 0;
     }
     // @confidence: med
@@ -64,7 +64,7 @@ extern "C" {
     // @stub
     RVA(0x00120680, 0x27)
     SYMBOL(_RezStrrchr)
-    i32 RezStrrchr() {
+    char* RezStrrchr(const char*, i32) {
         return 0;
     }
     // @confidence: med
