@@ -1,10 +1,2 @@
 #include <rva.h>
-// CWayPoint.cpp - engine-label stubs for CWayPoint.
-
-#include <Stub/CWayPoint.h>
-
-// @confidence: med
-// @source: rtti-vptr
-// @stub
-RVA(0x000ae3f0, 0x18f)
-CWayPoint::CWayPoint(i32) {}
+// CWayPoint.cpp - the ctor (0xae3f0) graduated to src/Gruntz/CWayPoint.cpp.

@@ -69,6 +69,7 @@ extern char g_puddleSpriteKey[]; // s_..._0060c1c0
 // ---------------------------------------------------------------------------
 class CGruntPuddle : public CUserLogic {
 public:
+    CGruntPuddle(CGameObject* obj);   // 0x040490
     virtual ~CGruntPuddle() OVERRIDE; // 0x010d10
 
     i32 Place(i32 a0, i32 a1, i32 a2, i32 a3); // 0x040c30

@@ -1,10 +1,2 @@
 #include <rva.h>
-// CGuardPoint.cpp - engine-label stubs for CGuardPoint.
-
-#include <Stub/CGuardPoint.h>
-
-// @confidence: med
-// @source: rtti-vptr
-// @stub
-RVA(0x000ae5f0, 0x18f)
-CGuardPoint::CGuardPoint(i32) {}
+// CGuardPoint.cpp - the ctor graduated to its src/Gruntz TU.

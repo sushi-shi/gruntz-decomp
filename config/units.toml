@@ -1306,6 +1306,21 @@ source = "src/Gruntz/CWayPoint.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "ctoypeek"
+source = "src/Gruntz/CToyPeek.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cactionarea"
+source = "src/Gruntz/CActionArea.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "ceyecandyani"
+source = "src/Gruntz/CEyeCandyAni.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "butestoreclear"
 source = "src/Bute/ButeStoreClear.cpp"
 flags = "base"

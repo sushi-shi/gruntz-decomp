@@ -19,6 +19,7 @@
 
 class CLightFx : public CUserLogic {
 public:
+    CLightFx(CGameObject* obj); // 0x9cf00
     // 0x9d140  InitActReg - construct the class's coordinate registry singleton
     // (g_lightFxActReg @0x645ad0) over the fixed [2000, 2010] range. Static.
     static void InitActReg();

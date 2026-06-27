@@ -10,7 +10,8 @@
 
 class CWayPoint : public CUserLogic {
 public:
-    ~CWayPoint(); // 0x102e0 (folds the CUserLogic teardown)
+    CWayPoint(CGameObject* obj); // 0xae3f0
+    ~CWayPoint();                // 0x102e0 (folds the CUserLogic teardown)
     char m_pad40[0x54 - 0x40];
 };
 SIZE(CWayPoint, 0x54);

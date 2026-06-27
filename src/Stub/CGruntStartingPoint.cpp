@@ -1,10 +1,3 @@
 #include <rva.h>
-// CGruntStartingPoint.cpp - engine-label stubs for CGruntStartingPoint.
-
-#include <Stub/CGruntStartingPoint.h>
-
-// @confidence: med
-// @source: rtti-vptr
-// @stub
-RVA(0x0003df30, 0x161)
-CGruntStartingPoint::CGruntStartingPoint(i32) {}
+// CGruntStartingPoint.cpp - the ctor (0x3df30) graduated to
+// src/Gruntz/CGruntStartingPoint.cpp.

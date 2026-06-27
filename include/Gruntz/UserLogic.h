@@ -162,7 +162,9 @@ struct CGameObject {
     CSiriusWorker* m_88; // +0x88  lazily-built worker (EnsureWorker88)
     char m_pad8c[0x90 - 0x8c];
     CSiriusWorker* m_90; // +0x90  lazily-built worker (EnsureWorker90)
-    char m_pad94[0x164 - 0x94];
+    char m_pad94[0x124 - 0x94];
+    i32 m_124; // +0x124  sprite-selector row key (leaf ctors pass it to ApplyLookupSprite)
+    char m_pad128[0x164 - 0x128];
     i32 m_164; // +0x164
     i32 m_168; // +0x168
     char m_pad16c[0x198 - 0x16c];

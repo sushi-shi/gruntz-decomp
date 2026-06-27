@@ -121,6 +121,58 @@ extern WwdGameReg* g_gameReg;
 RVA(0x00010e90, 0x44)
 CFortressFlag::~CFortressFlag() {}
 
+// CFortressFlag::CFortressFlag @0x045d30 - fold the shared CUserLogic(obj) init,
+// run the eyecandy z-clamp, pick the flag's faction name (a 4-way switch on the
+// sprite-selector m_124: KING/NAPOLEAN/PATTON/VIKING - any other selector hides
+// the sub-object and bails), name + cycle-geometry the bound object, bind the "A"
+// bute node, then resolve the selected sprite handle from g_gameReg's ref-index
+// array and stamp it back (+0x58/+0x50/+0x4c). GetByIndex (0x4165) is the engine
+// routine GetSel thunks to, so the reused GetSel call reloc-masks.
+//
+// @early-stop
+// eh-ctor-vptr-restamp-position wall (docs/patterns/eh-ctor-vptr-restamp-position.md):
+// body byte-identical (incl. the m_124 jump table); residual is the /GX leaf-vptr
+// re-stamp position + EH-state ids.
+RVA(0x00045d30, 0x203)
+CFortressFlag::CFortressFlag(CGameObject* obj) : CUserLogic(obj) {
+    CGameObject* o = m_10;
+    i32 v = o->m_198->m_1c + o->m_60 + 0x186a0;
+    if (o->m_74 != v) {
+        o->m_74 = v;
+        o->m_08 |= 0x20000;
+    }
+    const char* name;
+    switch (m_10->m_124) {
+    case 0:
+        name = "GAME_FORTRESSFLAGZ_KING";
+        break;
+    case 1:
+        name = "GAME_FORTRESSFLAGZ_NAPOLEAN";
+        break;
+    case 2:
+        name = "GAME_FORTRESSFLAGZ_PATTON";
+        break;
+    case 3:
+        name = "GAME_FORTRESSFLAGZ_VIKING";
+        break;
+    default:
+        m_38->m_08 |= 0x10000;
+        return;
+    }
+    m_38->ApplyName(name);
+    m_30 = m_14->m_1c;
+    m_14->m_1c = g_buteTree.Find(s_actKeyA);
+    m_40 = m_38->m_1b4;
+    m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
+    m_38->m_08 |= 3;
+    i32 idx = g_gameReg->m_158[m_10->m_124 * 71].m_idx;
+    i32 sel = g_gameReg->m_74->GetSel(idx, 0);
+    CFlagSprite* spr = (CFlagSprite*)m_10;
+    spr->m_58 = 1;
+    spr->m_50 = 0xa;
+    spr->m_4c = sel;
+}
+
 // CFortressFlag::InitActReg @0x046000 - construct the class's activation-
 // coordinate registry singleton (g_fortressFlagActReg @0x644638) over the fixed
 // range [2000, 2010] via the shared registry ctor (0x408710). Free init thunk.

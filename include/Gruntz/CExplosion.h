@@ -10,7 +10,8 @@
 
 class CExplosion : public CUserLogic {
 public:
-    ~CExplosion(); // 0x12ec0 (folds the CUserLogic teardown)
+    CExplosion(CGameObject* obj); // 0x470e0
+    ~CExplosion();                // 0x12ec0 (folds the CUserLogic teardown)
     char m_pad40[0x54 - 0x40];
 };
 SIZE(CExplosion, 0x54);

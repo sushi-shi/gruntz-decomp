@@ -1,10 +1,2 @@
 #include <rva.h>
-// CLevelTime.cpp - engine-label stubs for CLevelTime.
-
-#include <Stub/CLevelTime.h>
-
-// @confidence: med
-// @source: rtti-vptr
-// @stub
-RVA(0x0009b8b0, 0x18f)
-CLevelTime::CLevelTime(i32) {}
+// CLevelTime.cpp - the ctor graduated to its src/Gruntz TU.

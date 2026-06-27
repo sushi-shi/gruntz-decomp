@@ -25,3 +25,27 @@ i32 CDoNothing::GetTypeTag() {
 // enough for cl.
 RVA(0x0000f770, 0x44)
 CDoNothing::~CDoNothing() {}
+
+// CDoNothing::CDoNothing @0xac1d0 - fold the shared CUserLogic(obj) init (with the
+// built-in logic types inlined-registered), flag the sub-object, then run the
+// shared BigActHeight "big-act" de-prioritize tail (the SAME archetype as
+// CSimpleAnimation / CEyeCandy).
+// @early-stop
+// eh-ctor-vptr-restamp-position wall (docs/patterns/eh-ctor-vptr-restamp-position.md):
+// body byte-identical; residual is the /GX leaf-vptr re-stamp position + EH-state ids.
+RVA(0x000ac1d0, 0x1a5)
+CDoNothing::CDoNothing(CGameObject* obj) : CUserLogic(obj) {
+    m_38->m_08 |= 1;
+    CGameObjLayer* aux = m_10->m_198;
+    if (aux != 0) {
+        if (aux->m_10 >= g_buteMgr.GetInt("World", "BigActHeight")
+            || m_10->m_198->m_14 >= g_buteMgr.GetInt("World", "BigActHeight")) {
+            if (m_10->m_7c != 0) {
+                m_10->m_7c->m_08 &= ~6;
+                m_10->m_7c->m_08 |= 1;
+                m_38->m_08 &= ~0x1000002;
+                m_38->m_08 |= 0x800000;
+            }
+        }
+    }
+}

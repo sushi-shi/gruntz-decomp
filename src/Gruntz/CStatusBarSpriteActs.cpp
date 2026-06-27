@@ -16,9 +16,12 @@
 
 class CStatusBarSprite : public CUserLogic {
 public:
-    static void InitActReg();   // 0x10c430
-    static void RegisterActs(); // 0x10c610
-    i32 AdvanceAnim();          // 0x10c810 (the per-frame handler PMF; body in the stub TU)
+    CStatusBarSprite(CGameObject* obj); // 0x10c230
+    static void InitActReg();           // 0x10c430
+    static void RegisterActs();         // 0x10c610
+    i32 AdvanceAnim();                  // 0x10c810 (the per-frame handler PMF; body in the stub TU)
+
+    i32 m_40; // +0x40  geometry id (m_38->m_1b4 snapshot)
 };
 
 // The handler entry the per-class registry yields: its first dword receives the
@@ -62,6 +65,26 @@ struct CStatusBarSpriteActReg {
 };
 DATA(0x0024e670)
 extern CStatusBarSpriteActReg g_statusBarSpriteActReg; // 0x64e670
+
+// CStatusBarSprite::CStatusBarSprite @0x10c230 - fold the shared CUserLogic(obj)
+// init, name the bound object "GAME_STATUSBARSPRITE", snapshot the geometry id,
+// apply the single-image-ani geometry, bind the "A" bute node and lock the draw
+// order to 0xf4240.
+// @early-stop
+// eh-ctor-vptr-restamp-position wall (docs/patterns/eh-ctor-vptr-restamp-position.md):
+// body byte-identical; residual is the /GX leaf-vptr re-stamp position + EH-state ids.
+RVA(0x0010c230, 0x178)
+CStatusBarSprite::CStatusBarSprite(CGameObject* obj) : CUserLogic(obj) {
+    m_38->ApplyName("GAME_STATUSBARSPRITE");
+    m_40 = m_38->m_1b4;
+    m_38->ApplyLookupGeometry("GAME_SINGLEIMAGEANI", 0);
+    m_30 = m_14->m_1c;
+    m_14->m_1c = g_buteTree.Find(s_actKeyA);
+    if (m_10->m_74 != 0xf4240) {
+        m_10->m_74 = 0xf4240;
+        m_10->m_08 |= 0x20000;
+    }
+}
 
 // CStatusBarSprite::InitActReg @0x10c430 - construct the class's activation-
 // coordinate registry singleton (g_statusBarSpriteActReg @0x64e670) over the fixed

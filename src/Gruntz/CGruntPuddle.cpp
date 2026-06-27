@@ -24,6 +24,34 @@ RVA(0x00010d10, 0x44)
 CGruntPuddle::~CGruntPuddle() {}
 
 // ===========================================================================
+// CGruntPuddle::CGruntPuddle  (0x040490)
+// ===========================================================================
+// Fold the shared CUserLogic(obj) init, then flag the sub-object, lock the draw
+// order to 0xa, name + apply the puddle sprite, bind the "A" bute node, snap the
+// owner to its tile center, and seed the placed-state fields (+0x5c/+0x60).
+// @early-stop
+// eh-ctor-vptr-restamp-position wall (docs/patterns/eh-ctor-vptr-restamp-position.md):
+// body byte-identical; residual is the /GX leaf-vptr re-stamp position + EH-state ids.
+RVA(0x00040490, 0x1ab)
+CGruntPuddle::CGruntPuddle(CGameObject* obj) : CUserLogic(obj) {
+    m_38->m_08 |= 2;
+    if (m_10->m_74 != 0xa) {
+        m_10->m_74 = 0xa;
+        m_10->m_08 |= 0x20000;
+    }
+    m_38->ApplyName("GRUNTZ_GRUNTPUDDLE");
+    m_40 = m_38->m_1b4;
+    m_38->ApplyLookupGeometry("GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE1", 0);
+    m_30 = m_14->m_1c;
+    m_14->m_1c = g_buteTree.Find("A");
+    m_38->m_40 |= 1;
+    m_10->m_5c = (m_10->m_5c & ~0x1f) + 0x10;
+    m_10->m_60 = (m_10->m_60 & ~0x1f) + 0x10;
+    m_5c = 1;
+    m_60 = 0;
+}
+
+// ===========================================================================
 // CGruntPuddle::Place  (0x040c30)
 // ===========================================================================
 // Seed the puddle into a tile cell. Snapshot the owning object's tile (x,y) from

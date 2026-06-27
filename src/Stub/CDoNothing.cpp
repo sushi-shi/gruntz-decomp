@@ -1,10 +1,2 @@
 #include <rva.h>
-// CDoNothing.cpp - engine-label stubs for CDoNothing.
-
-#include <Stub/CDoNothing.h>
-
-// @confidence: med
-// @source: rtti-vptr
-// @stub
-RVA(0x000ac1d0, 0x1a5)
-CDoNothing::CDoNothing(i32) {}
+// CDoNothing.cpp - the ctor graduated to its src/Gruntz TU.

@@ -21,8 +21,9 @@
 
 class CDoNothing : public CUserLogic {
 public:
-    i32 GetTypeTag(); // 0x00f6b0 (returns the class logic-type id 0x3ec)
-    ~CDoNothing();    // 0x00f770 (folds the CUserLogic teardown)
+    CDoNothing(CGameObject* obj); // 0xac1d0
+    i32 GetTypeTag();             // 0x00f6b0 (returns the class logic-type id 0x3ec)
+    ~CDoNothing();                // 0x00f770 (folds the CUserLogic teardown)
 };
 
 #endif // GRUNTZ_CDONOTHING_H
