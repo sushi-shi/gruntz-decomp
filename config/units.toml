@@ -508,6 +508,11 @@ source = "src/Bute/ButeMgr.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "butemgrparse"
+source = "src/Bute/ButeMgrParse.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "symtab"
 source = "src/Bute/SymTab.cpp"
 flags = "eh"
