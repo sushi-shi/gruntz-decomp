@@ -1896,6 +1896,16 @@ source = "src/Gruntz/m5_LevelPreview.cpp"
 flags = "base"
 
 [[unit]]
+unit = "timestring"
+source = "src/Gruntz/TimeString.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cimageprobe"
+source = "src/Gruntz/CImageProbe.cpp"
+flags = "base"
+
+[[unit]]
 unit = "m5_lighteffectsetup"
 source = "src/DDrawMgr/m5_LightEffectSetup.cpp"
 flags = "base"

@@ -10,6 +10,97 @@
 // recovered engine identities.
 #include <Gruntz/CToobSpikez.h>
 
+// ===========================================================================
+// CToobSpikez logic dispatcher (0x114480) - the __cdecl per-object message pump
+// the activation engine calls each phase. The bound CGameObject carries its
+// logic record at +0x7c; that record's phase code (+0x1c) selects which CUserLogic
+// virtual to run on the live CToobSpikez instance (+0x18). Phase 0 instantiates
+// the CToobSpikez (operator new(0x54) + ctor under the /GX ctor-in-flight frame),
+// runs its slot-6 init, latches it, and arms the idle sentinel (0x3e8). The phase
+// codes 0x1d/0x1e/0x50-0x53 map to the CUserLogic vtable slots; the idle sentinel
+// is a no-op; any other code falls to the shared logic-error reporter. The
+// instance is modeled as a local 0x54-byte polymorphic view (16 thiscall slots,
+// external ctor reloc-masked); only offsets + slot indices are load-bearing.
+// ===========================================================================
+struct CGameObjLogic;
+
+// The CToobSpikez logic instance, viewed through its CUserLogic+leaf vtable
+// (slots 6/10..15 are the dispatched phase handlers). External ctor 0x1145c0.
+class CToobLogicInst {
+public:
+    CToobLogicInst(CGameObjLogic* obj); // 0x1145c0 (CToobSpikez ctor; reloc-masked)
+    virtual void v0();
+    virtual void v1();
+    virtual void v2();
+    virtual void v3();
+    virtual void v4();
+    virtual void v5();
+    virtual void v6();  // slot 6  (+0x18) phase-0 init
+    virtual void v7();
+    virtual void v8();
+    virtual void v9();
+    virtual void v10(); // slot 10 (+0x28) phase 0x1e
+    virtual void v11(); // slot 11 (+0x2c) phase 0x1d
+    virtual void v12(); // slot 12 (+0x30) phase 0x52
+    virtual void v13(); // slot 13 (+0x34) phase 0x51
+    virtual void v14(); // slot 14 (+0x38) phase 0x50
+    virtual void v15(); // slot 15 (+0x3c) phase 0x53
+    char m_pad04[0x54 - 0x04];
+};
+
+// The bound object's logic record at CGameObject+0x7c.
+struct CToobLogicRec {
+    char m_pad00[0x18];
+    CToobLogicInst* m_18; // +0x18 live instance
+    u32 m_1c;             // +0x1c phase code (unsigned -> ja/jae switch compares)
+};
+struct CGameObjLogic {
+    char m_pad00[0x7c];
+    CToobLogicRec* m_7c; // +0x7c
+};
+
+// The shared logic-error reporter (0x16e4f0, __cdecl) for an unknown phase.
+extern void ToobLogicError(CToobLogicInst* inst);
+
+// 0x114480: dispatch the bound object's current logic phase.
+RVA(0x00114480, 0xf1)
+i32 ToobSpikezLogic(CGameObjLogic* obj) {
+    CToobLogicRec* rec = obj->m_7c;
+    switch (rec->m_1c) {
+    case 0: {
+        rec->m_1c = 0x3e8;
+        CToobLogicInst* inst = new CToobLogicInst(obj);
+        inst->v6();
+        rec->m_18 = inst;
+        break;
+    }
+    case 0x1d:
+        rec->m_18->v11();
+        break;
+    case 0x1e:
+        rec->m_18->v10();
+        break;
+    case 0x50:
+        rec->m_18->v14();
+        break;
+    case 0x51:
+        rec->m_18->v13();
+        break;
+    case 0x52:
+        rec->m_18->v12();
+        break;
+    case 0x53:
+        rec->m_18->v15();
+        break;
+    case 0x3e8:
+        break;
+    default:
+        ToobLogicError(rec->m_18);
+        break;
+    }
+    return 1;
+}
+
 // ---------------------------------------------------------------------------
 // The per-coordinate activation registry CToobSpikez::FireActivation
 // (0x114860) dispatches through - the SAME archetype as CTimeBomb::FireActivation

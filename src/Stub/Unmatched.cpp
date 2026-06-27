@@ -11,29 +11,19 @@ RVA(0x000d1b60, 0xc2f)
 void Unmatched_0d1b60() {} // Unmatched_0d1b60
 RVA(0x000d8060, 0x6ce)
 void Unmatched_0d8060() {} // Unmatched_0d8060
-RVA(0x000de200, 0x85)
-void Unmatched_0de200() {} // Unmatched_0de200
 RVA(0x000f0130, 0x7c0)
 void Unmatched_0f0130() {} // Unmatched_0f0130
 RVA(0x000f71c0, 0x721)
 void Unmatched_0f71c0() {} // Unmatched_0f71c0
 RVA(0x000f8240, 0x5b9)
 void Unmatched_0f8240() {} // Unmatched_0f8240
-RVA(0x000fab90, 0xaa)
-void Unmatched_0fab90() {} // Unmatched_0fab90
 RVA(0x001084d0, 0x96c)
 void Unmatched_1084d0() {} // Unmatched_1084d0
-RVA(0x00114480, 0xf1)
-void Unmatched_114480() {} // Unmatched_114480
 RVA(0x00118a30, 0xda)
 void Unmatched_118a30() {
 } // heap-dump diag (engine, was misfiled as lib): HeapWalk via ApiCallerStubs + __heapchk + OutputDebugString
-RVA(0x001190f0, 0xda)
-void Unmatched_1190f0() {} // Unmatched_1190f0
 RVA(0x00146a20, 0x5b7)
 void Unmatched_146a20() {} // Unmatched_146a20
-RVA(0x0017cbe0, 0x97)
-void Unmatched_17cbe0() {} // Unmatched_17cbe0
 RVA(0x0017cdf0, 0x1c6)
 void Unmatched_17cdf0() {} // Unmatched_17cdf0
 RVA(0x0017cfc0, 0x2dd)
