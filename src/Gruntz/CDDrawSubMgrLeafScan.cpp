@@ -68,11 +68,11 @@ public:
     i32 StartPrimary_137200(); // 0x137200
 };
 
-// The two vtables in the dtor chain: this sibling's own (0x5efca0) and the
-// grand-base dtor vtable (0x5e8cb4). Modeled with the transitional manual stamp
-// because this sibling's vtable contents are not modeled here.
-DATA(0x005efca0)
-extern void* g_leafScanVtbl;
+// The grand-base dtor vtable (0x5e8cb4) - still referenced by the FOREIGN element
+// base (LeafElementBase) below, which stays a manual stamp (the 0x1c element's
+// ctor/full vtable live in unmatched TUs). The sub-manager's OWN vtable (0x5efca0)
+// is no longer an extern: CDDrawSubMgrLeafScan is now real-polymorphic, so cl emits
+// ??_7CDDrawSubMgrLeafScan + the implicit grand-base re-stamp (see below).
 DATA(0x005e8cb4)
 extern void* g_remusBaseDtorVtbl;
 
@@ -207,25 +207,31 @@ extern "C" void RezFree(void* p);
 void* operator new(u32 n);
 
 // ---------------------------------------------------------------------------
-// The shared base: vptr + status word at +0x04 + handle at +0x0c. Its (inlined)
-// destructor resets those fields and stamps the grand-base dtor vtable -- this is
-// the tail the derived dtor chains into AFTER the map member is destroyed.
+// The shared CObject-like grand-base: vptr + status word at +0x04 + handle at
+// +0x0c. Modeled as a REAL polymorphic base (its 5-slot vtable is the shared
+// g_remusBaseDtorVtbl @0x5e8cb4) so cl emits the implicit grand-base vptr re-stamp
+// (masks 0x5e8cb4) at the derived dtor's tail -- no manual `*(void**)this = &g_*Vtbl`.
+// Its virtual ~ holds the field resets; the base transition stamp is implicit. This
+// is the tail the derived dtor chains into AFTER the map member is destroyed.
 // ---------------------------------------------------------------------------
 class LeafScanBase {
 public:
-    ~LeafScanBase();
+    virtual void Slot00();     // [0] sub_1bef01
+    virtual ~LeafScanBase();   // [1] scalar-deleting dtor
+    virtual void Slot08();     // [2] sub_0028ec
+    virtual void Slot0C();     // [3] sub_00106e
+    virtual void Slot10();     // [4] sub_004034
 
-    void* m_vptr;              // +0x00
     i32 m_04;                  // +0x04  -1 when inactive
     char m_pad08[0x0c - 0x08]; // +0x08..0x0b
     i32 m_0c;                  // +0x0c  parent/root handle
+    LeafScanBase() {}
 };
 
 inline LeafScanBase::~LeafScanBase() {
     m_04 = -1;
     *(i32*)&m_pad08[0] = 0; // +0x08 = 0
     m_0c = 0;
-    m_vptr = &g_remusBaseDtorVtbl;
 }
 
 // ---------------------------------------------------------------------------
@@ -236,6 +242,16 @@ inline LeafScanBase::~LeafScanBase() {
 // ---------------------------------------------------------------------------
 class CDDrawSubMgrLeafScan : public LeafScanBase {
 public:
+    // The leaf vtable (??_7CDDrawSubMgrLeafScan @0x5efca0) is 9 slots: 5 shared
+    // CObject slots from LeafScanBase (slot 1 = the virtual dtor below), then 4 leaf
+    // virtuals at slots 5..8. Slots 5/7 point to functions in the sibling
+    // CDDrawSubMgrLeaf TU (0x157530 / 0x157ae0) and 6/8 are unreconstructed, so all
+    // four are declared-only here -> reloc-masked vtable references.
+    virtual i32 Vslot14_157530();   // [5] 0x157530 (CDDrawMapHolder::VirtualMethodUnknown14)
+    virtual void Vslot18_001c08();  // [6] 0x001c08 (declared-only)
+    virtual void Vslot1C_157ae0();  // [7] 0x157ae0 (CDDrawSubMgrLeaf::VirtualMethodUnknown18)
+    virtual void Vslot20_154a00();  // [8] 0x154a00 (declared-only)
+
     i32 RefreshAsset_114120(const char* key);
     LeafElementObj* CreateEntry_157d70(const char* key, void* arg2);
     LeafElementObj* CreateEntry2_157e00(const char* key, void* arg2);
@@ -250,7 +266,7 @@ public:
     CString FindKeyOfValue_158570(LeafScanValue* target);
     i32 MatchSub_1584f0(LeafScanSoundArg* arg1, i32 arg2);
 
-    ~CDDrawSubMgrLeafScan();
+    virtual ~CDDrawSubMgrLeafScan(); // overrides slot [1]
 
     CMapStringToOb m_10; // +0x10  keyed asset cache (ends +0x2c)
     SoundDevice* m_2c;   // +0x2c  held DSound device
@@ -360,21 +376,22 @@ CObject* CDDrawSubMgrLeafScan::Lookup_05b7e0(const char* key) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x157570: the (non-deleting) destructor. Stamps this class's vtable, runs the
-// VM18 cleanup (clears the map + zeroes +0x2c), the +0x10 map's own destructor,
-// resets the base fields, then chains to the grand-base dtor vtable. /GX EH frame
-// (VM18 / map dtor may throw).
+// 0x157570: the (non-deleting) destructor. Now a real virtual dtor: cl stamps
+// ??_7CDDrawSubMgrLeafScan (masks g_leafScanVtbl @0x5efca0) at entry, runs the VM18
+// cleanup (clears the map + zeroes +0x2c), the +0x10 map's own destructor, then the
+// LeafScanBase grand-base teardown (field resets + implicit ??_7-base re-stamp masking
+// 0x5e8cb4). No manual `m_vptr = &g_*Vtbl`. /GX EH frame (VM18 / map dtor may throw).
 // @early-stop
-// 95% — reloc-masked plateau: every code byte matches retail (confirmed by the
-// instruction-by-instruction objdiff); the only residual rows are differently-
-// named symbol operands (the EH unwind label, the VM18 / ~CMapStringToOb thunk
-// addresses, and the two vtable DATA symbols). objdiff-reloc-scoring.
+// vptr-position wall (~95%, twin of CSeverusEntryList/CDDrawSubMgrLeaf): every code
+// byte matches retail EXCEPT the grand-base re-stamp position (cl emits it before the
+// m_04/m_08/m_0c resets; the implicit base transition forces stamp-first, retail sinks
+// it after) + the reloc-masked EH unwind / VM18 / ~CMapStringToOb / vtable symbol
+// names. objdiff-reloc-scoring.
 RVA(0x00157570, 0x68)
 CDDrawSubMgrLeafScan::~CDDrawSubMgrLeafScan() {
-    m_vptr = &g_leafScanVtbl;
     ((LeafScanVM18Sink*)this)->VM18();
     // m_10 (CMapStringToOb) member dtor auto-fires here, then the LeafScanBase
-    // destructor resets +0x04/+0x08/+0x0c and stamps the grand-base vtable.
+    // destructor resets +0x04/+0x08/+0x0c and restamps the grand-base vtable.
 }
 
 // ---------------------------------------------------------------------------

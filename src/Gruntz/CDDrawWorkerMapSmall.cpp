@@ -69,37 +69,43 @@ struct AlbusWorkerObj : public AlbusWorker {
     i32 m_10; // +0x10  = 0
 }; // 0x14
 
-// The foreign worker vftable, referenced as DIR32 data (RVA = VA-0x400000).
+// The foreign worker vftable, referenced as DIR32 data (RVA = VA-0x400000). The
+// worker class's own ctor/full vtable live in other (unmatched) TUs, so this stays
+// the transitional manual stamp; the worker is never constructed here, only the
+// raw heap block is stamped + dispatched.
 DATA(0x001f02d8)
 extern void* g_albusWorkerVtbl;
 
-// The class's own vftable (stamped at ~CDDrawWorkerMapSmall entry) and the
-// CObject-base teardown vftable (restamped by the base subobject's destructor at
-// dtor exit). Manual-vtable model (the class's virtuals live in other, unmatched
-// TUs), so both are reloc-masked DATA() externs.
-DATA(0x001efcc8)
-extern void* g_albusClassVtbl; // 0x5efcc8
-DATA(0x001e8cb4)
-extern void* g_remusBaseDtorVtbl; // 0x5e8cb4
-
-// The base sub-object occupying CDDrawWorkerMapSmall+0x00..+0x0f (vptr + three
-// fields). Its destructor is the dtor's trailing teardown: zero the fields and
-// restore the base vftable. Declared first (a base class) so the compiler schedules
-// it as the LAST member-teardown of ~CDDrawWorkerMapSmall, after the three maps,
-// matching the retail `[esi+0x4]=-1 / [esi+0x8]=0 / [esi+0xc]=0 / [esi]=base-vtbl`
-// tail.
+// The CObject-like grand-base shared by the whole "Harry Potter" surface family
+// (its dtor vtable is g_remusBaseDtorVtbl @0x5e8cb4 = the 5-slot CObject interface
+// sub_1bef01 / scalar-dtor / sub_0028ec / sub_00106e / sub_004034). Modeled as a
+// REAL polymorphic base so cl emits the implicit grand-base vptr re-stamp (masks
+// 0x5e8cb4) at ~CDDrawWorkerMapSmall's tail and stamps ??_7CDDrawWorkerMapSmall at
+// its entry - no manual `*(void**)this = &g_*Vtbl`. The vptr is implicit at +0x00;
+// the three managed fields (reset on teardown) follow. The base's virtual dtor body
+// holds the field resets; being polymorphic + having the destructible CMapStringToOb
+// members gives ~CDDrawWorkerMapSmall its /GX frame.
 struct AlbusMapBase {
-    void* m_vptr; // +0x00
-    i32 m_04;     // +0x04
-    i32 m_08;     // +0x08
-    i32 m_0c;     // +0x0c  parent HarryPotter handle
-    ~AlbusMapBase() {
-        m_04 = -1;
-        m_08 = 0;
-        m_0c = 0;
-        m_vptr = &g_remusBaseDtorVtbl;
-    }
+    virtual void Slot00();            // [0] grand-base sub_1bef01
+    virtual ~AlbusMapBase();          // [1] scalar-deleting dtor
+    virtual void Slot08();            // [2] sub_0028ec
+    virtual void Slot0C();            // [3] sub_00106e
+    virtual void Slot10();            // [4] sub_004034
+
+    i32 m_04; // +0x04
+    i32 m_08; // +0x08
+    i32 m_0c; // +0x0c  parent HarryPotter handle
+    AlbusMapBase() {}
 };
+
+// Field resets only -> cl emits the implicit ??_7-base re-stamp (masks 0x5e8cb4) as
+// the dtor's tail. (vptr-position wall: cl sinks the stamp before/after the resets
+// per its EH-state schedule; see ~CDDrawWorkerMapSmall.)
+inline AlbusMapBase::~AlbusMapBase() {
+    m_04 = -1;
+    m_08 = 0;
+    m_0c = 0;
+}
 
 // ---------------------------------------------------------------------------
 // CDDrawWorkerMapSmall - only the load-bearing offsets are modeled: m_0c (parent handle,
@@ -110,23 +116,31 @@ struct AlbusMapBase {
 // ---------------------------------------------------------------------------
 class CDDrawWorkerMapSmall : public AlbusMapBase {
 public:
-    ~CDDrawWorkerMapSmall();
-    i32 VirtualMethodUnknown14();
-    void VirtualMethodUnknown1C();
-    void* VirtualMethodUnknown28(i32 a1, const char* key, i32 a3);
-    void* VirtualMethodUnknown2C(i32 a1, const char* key, i32 a3);
+    // The leaf vtable (??_7CDDrawWorkerMapSmall @0x5efcc8) is 13 slots: the 5 shared
+    // CObject slots from AlbusMapBase, then 8 leaf virtuals at slots 5..12. They are
+    // declared here in slot order so cl lays the emitted vtable out byte-for-byte
+    // (the unreconstructed slots 6/8 are declared-only -> reloc-masked references).
+    virtual i32 VirtualMethodUnknown14();                       // [5]  0x156cd0
+    virtual void Slot18_156db0();                               // [6]  0x156db0 (declared-only)
+    virtual void VirtualMethodUnknown1C();                      // [7]  0x165810
+    virtual void Slot20_156cf0();                               // [8]  0x156cf0 (declared-only)
+    virtual void Stub_1658c0();                                 // [9]  0x1658c0
+    virtual void* VirtualMethodUnknown28(i32 a1, const char* key, i32 a3); // [10] 0x165990
+    virtual void* VirtualMethodUnknown2C(i32 a1, const char* key, i32 a3); // [11] 0x165a10
+    virtual void Stub_165a90();                                 // [12] 0x165a90
+    virtual ~CDDrawWorkerMapSmall();                            // overrides slot [1]
+
+    // VirtualMethodUnknown20 (0x157600) is NOT a vtable slot - a plain method.
     i32 VirtualMethodUnknown20();
 
-    // m_vptr/m_04/m_08/m_0c are inherited from AlbusMapBase (+0x00..+0x0f).
+    // m_04/m_08/m_0c (and the implicit vptr) are inherited from AlbusMapBase.
     CMapStringToOb m_10; // +0x10  m_unknownMap1 (0x10..0x2b)
     CMapStringToOb m_2c; // +0x2c  m_unknownMap2 (0x2c..0x47)
     CMapStringToOb m_48; // +0x48  m_unknownMap3 (0x48..0x63)
     i32 m_64;            // +0x64  entry counter cleared by the teardown
 
-    // Engine-label backlog stubs.
+    // Engine-label backlog stubs (non-vtable).
     void Stub_157610();
-    void Stub_1658c0();
-    void Stub_165a90();
     void Stub_165b90();
 };
 
@@ -158,29 +172,28 @@ fail:
 }
 
 // ---------------------------------------------------------------------------
-// ~CDDrawWorkerMapSmall (0x156d20, __thiscall, /GX): stamp the class vftable, run the
-// map teardown (VirtualMethodUnknown1C), then let the compiler destruct the three
-// CMapStringToOb members (reverse decl order, descending trylevels 2/1/0) and the
-// AlbusMapBase sub-object (the trailing field-zero + base-vptr restore). The /GX
-// member-teardown frame is recovered by modeling the three maps as real destructible
-// CMapStringToOb value members + the AlbusMapBase base sub-object with a real
-// destructor (docs/patterns/eh-dtor-model-members-as-destructible.md +
-// eh-dtor-subobject-vptr-restore-member.md); the TU's "eh" flag supplies /GX.
+// ~CDDrawWorkerMapSmall (0x156d20, __thiscall, /GX): now a REAL virtual dtor. cl
+// stamps ??_7CDDrawWorkerMapSmall (masks g_albusClassVtbl @0x5efcc8) at entry, runs
+// the map teardown (VirtualMethodUnknown1C), then destructs the three CMapStringToOb
+// members (reverse decl order, descending trylevels) and the AlbusMapBase grand-base
+// (field resets + implicit ??_7-base re-stamp masking 0x5e8cb4). No manual stamp.
+// The /GX member-teardown frame falls out of the destructible CMapStringToOb members
+// + the polymorphic base (docs/patterns/eh-dtor-model-members-as-destructible.md).
 //
 // @early-stop
-// reloc-typing scoring artifact (docs/patterns/reloc-typing-vptr-global.md): EVERY
-// code byte matches retail (verified llvm-objdump -dr base vs target) - the entry/
-// exit vptr stamps, the 0x3/2/1/0 trylevel chain, the three reverse-order
-// ~CMapStringToOb member calls, and the AlbusMapBase reset are byte-identical. The
-// ~96% fuzzy cap is purely differently-named reloc operands: the EH Unwind/handler
-// table symbol ($L vs Unwind@..), the member dtor (mine ??1CMapStringToOb canonical
-// vs the target's FLIRT ~CInternetSession alias), and the base-vtbl global placeholder
-// name. Not steerable; this is the reloc-masked plateau (= done).
+// vptr-position wall (~94%, twin of CSeverusEntryList::~CSeverusEntryList): every
+// instruction matches retail EXCEPT the grand-base vptr re-stamp POSITION - cl emits
+// `mov [esi],??_7AlbusMapBase` BEFORE the m_04/m_08/m_0c resets (base-dtor entry
+// stamp), retail sinks it AFTER (verified llvm-objdump -dr base vs target on
+// CSeverusEntryList: base 0x41 stamp-then-resets, target 0x9a resets-then-stamp). The
+// implicit base transition forces stamp-first; not source-steerable (the manual model
+// could write the stamp last, but that is the decompiler hack we are removing - real
+// devs' polymorphic shape per correctness-not-artifacts). Plus the reloc-masked EH
+// Unwind/handler/member-dtor/vtable symbol names. Logic complete.
 RVA(0x00156d20, 0x82)
 CDDrawWorkerMapSmall::~CDDrawWorkerMapSmall() {
-    m_vptr = &g_albusClassVtbl;
     VirtualMethodUnknown1C();
-    // m_48 / m_2c / m_10 (reverse decl order) and the AlbusMapBase sub-object
+    // m_48 / m_2c / m_10 (reverse decl order) and the AlbusMapBase grand-base
     // auto-destruct here under the /GX member-teardown trylevels.
 }
 

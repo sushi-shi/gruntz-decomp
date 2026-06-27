@@ -48,41 +48,51 @@ public:
     ~CDDrawMapHolder();
 };
 
-// The catalog's primary vftable + the CObject grand-base dtor vtable, stamped by
-// the destructors (reloc-masked DIR32 data). Declared early so the base dtor can
-// reference the base vtable.
-DATA(0x001efc78)
-extern void* g_catalogVtbl; // 0x5efc78 - the leaf primary vftable
-DATA(0x001e8cb4)
-extern void* g_remusBaseDtorVtbl; // 0x5e8cb4 - the CObject base dtor vtable
-
-// CDDrawSubMgrLucius - the family base subobject (+0x04..+0x0c). Its destructor
-// resets the three header fields and restores the CObject base vtable; modeled so
-// the leaf destructor's teardown ORDER (derived map member first, then this base)
-// reproduces retail's `~CMapStringToOb` BEFORE the field stores.
+// CDDrawSubMgrLucius - the CObject-like family grand-base (vptr + the three header
+// fields +0x04..+0x0c). Modeled as a REAL polymorphic base (its 5-slot vtable is
+// the shared g_remusBaseDtorVtbl @0x5e8cb4 = sub_1bef01 / scalar-dtor / sub_0028ec /
+// sub_00106e / sub_004034) so cl emits the implicit grand-base vptr re-stamp (masks
+// 0x5e8cb4) at the leaf dtor's tail - no manual `*(void**)this = &g_remusBaseDtorVtbl`.
+// Slot 1 is a REGULAR virtual (not a C++ dtor) so the leaf can override it with its
+// explicit ??_G scalar-deleting destructor ScalarDtor_1577c0 WITHOUT cl auto-generating
+// a clashing ??_G. The field resets live in the non-virtual ~ (its body); the base
+// transition stamp is implicit (the leaf dtor teardown ORDER: ~CMapStringToOb member
+// BEFORE the field stores reproduces retail).
 class CDDrawSubMgrLucius {
 public:
+    virtual void Slot00();             // [0] sub_1bef01
+    virtual void* ScalarDtor(i32 flag); // [1] scalar-deleting dtor (regular virtual)
+    virtual void Slot08();             // [2] sub_0028ec
+    virtual void Slot0C();             // [3] sub_00106e
+    virtual void Slot10();             // [4] sub_004034
     ~CDDrawSubMgrLucius();
 
-    void* m_vptr; // +0x00
-    i32 m_04;     // +0x04  -1 when inactive
-    i32 m_08;     // +0x08
-    i32 m_0c;     // +0x0c  parent/root handle
+    i32 m_04; // +0x04  -1 when inactive
+    i32 m_08; // +0x08
+    i32 m_0c; // +0x0c  parent/root handle
+    CDDrawSubMgrLucius() {}
 };
 
 inline CDDrawSubMgrLucius::~CDDrawSubMgrLucius() {
     m_04 = -1;
     m_08 = 0;
     m_0c = 0;
-    m_vptr = &g_remusBaseDtorVtbl;
 }
 
 class CDDrawSubMgrLeaf : public CDDrawSubMgrLucius {
 public:
-    i32 VirtualMethodUnknown14();
-    void VirtualMethodUnknown18();
-    void VirtualMethodUnknown1C();
+    // The leaf vtable (??_7CDDrawSubMgrLeaf @0x5efc78) is 9 slots: 5 shared CObject
+    // slots from CDDrawSubMgrLucius (slot 1 overridden below by ScalarDtor_1577c0),
+    // then 4 leaf virtuals at slots 5..8 in declaration order (the unreconstructed
+    // slots 6/8 are declared-only -> reloc-masked references).
+    void* ScalarDtor(i32 flag) OVERRIDE;  // [1] ??_G scalar-deleting destructor (0x1577c0)
+    virtual i32 VirtualMethodUnknown14(); // [5] 0x1577a0
+    virtual void Slot18_152640();               // [6] 0x152640 (declared-only)
+    virtual void VirtualMethodUnknown1C();      // [7] 0x152650
+    virtual void Slot20_154a00();               // [8] 0x154a00 (declared-only)
 
+    // Non-vtable members.
+    void VirtualMethodUnknown18(); // 0x157ae0 (not a vtable slot)
     CObject* LookupValue_06b2a0(const char* key);
     void RemoveValue_152660(CCatalogNode* target);
     void FreeAll_152720();
@@ -90,7 +100,6 @@ public:
     i32 HasKeyPrefix_152c50(const char* str);
     CString KeyOfValue_152d30(CObject* target);
     ~CDDrawSubMgrLeaf();
-    void* ScalarDtor_1577c0(i32 flag); // ??_G scalar-deleting destructor
 
     CMapStringToOb m_10; // +0x10  m_map
 };
@@ -280,38 +289,36 @@ CString CDDrawSubMgrLeaf::KeyOfValue_152d30(CObject* target) {
 }
 
 // ---------------------------------------------------------------------------
-// Destructor (real ??1 body; the scalar-deleting ??_G at 0x1577c0 calls it):
-// stamp own vtable, cleanup virtual (FreeAll), then the embedded map dtor and the
-// CDDrawSubMgrLucius base dtor (resets the three header fields + restores the
-// CObject base vtable). The base-subobject model reproduces retail's teardown
-// ORDER (~CMapStringToOb before the field stores) - 65%->95%. /GX EH frame.
+// Destructor (real ??1 body; the scalar-deleting ScalarDtor at 0x1577c0 calls it):
+// now a real polymorphic teardown. cl stamps ??_7CDDrawSubMgrLeaf (masks g_catalogVtbl
+// @0x5efc78) at entry, runs the cleanup virtual (FreeAll/VM1C), then the embedded map
+// dtor and the CDDrawSubMgrLucius grand-base dtor (field resets + implicit ??_7-base
+// re-stamp masking 0x5e8cb4). No manual `m_vptr = &g_*Vtbl`. /GX EH frame.
 // @early-stop
-// reloc-masked EH-state push (~95%) - the instruction stream is byte-identical to
-// retail; the only residue is the entry `push <ehfuncinfo>` operand (state-index
-// constant, reloc-masked). docs/patterns/eh-state-numbering-base.md.
+// vptr-position wall + reloc-masked EH-state push (~95%): the instruction stream is
+// byte-identical to retail EXCEPT the grand-base re-stamp position (cl emits it before
+// the m_04/m_08/m_0c resets; retail sinks it after - the implicit base transition
+// forces stamp-first; same wall as CSeverusEntryList/CDDrawWorkerMapSmall) + the entry
+// `push <ehfuncinfo>` reloc operand. docs/patterns/eh-state-numbering-base.md.
 RVA(0x001577e0, 0x68)
 CDDrawSubMgrLeaf::~CDDrawSubMgrLeaf() {
-    m_vptr = &g_catalogVtbl;
     VirtualMethodUnknown1C();
     // implicit: ~m_10 (CMapStringToOb), then ~CDDrawSubMgrLucius (resets the three
-    // header fields + restores the base vtable) - reproduces retail's teardown order.
+    // header fields + restamps the base vtable) - reproduces retail's teardown order.
 }
 
 // operator delete (called by the scalar-deleting dtor under the delete flag).
 void operator delete(void*);
 
 // ---------------------------------------------------------------------------
-// Scalar-deleting destructor (the vtable slot+4 thunk): run the real ~, then
+// Scalar-deleting destructor (the vtable slot+4 override): run the real ~, then
 // operator delete this if the low flag bit is set. Out-of-line dtor -> the
-// thunk emits `call ??1`. SYMBOL() pins the ??_G mangling (reloc-masked).
-// @early-stop
-// EH-dtor wall - the real ??1 destructor's member-dtor ordering / EH-state
-// scheduling does not byte-match (the ~CMapStringToOb member dtor runs after the
-// field resets in our model but in the middle in retail). The ??_G thunk shape
-// matches; deferred to the final sweep. docs/patterns/eh-dtor-needs-base-subobject.md.
+// thunk emits `call ??1`. SYMBOL() pins the ??_G mangling (reloc-masked); it
+// overrides CDDrawSubMgrLucius's slot-1 regular virtual so the leaf vtable carries
+// it at slot 1 WITHOUT cl auto-generating a clashing ??_G.
 SYMBOL(??_GCDDrawSubMgrLeaf @@UAEPAXI@Z)
 RVA(0x001577c0, 0x1e)
-void* CDDrawSubMgrLeaf::ScalarDtor_1577c0(i32 flag) {
+void* CDDrawSubMgrLeaf::ScalarDtor(i32 flag) {
     this->~CDDrawSubMgrLeaf();
     if (flag & 1) {
         operator delete(this);
