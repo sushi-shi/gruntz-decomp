@@ -1561,6 +1561,14 @@ unit = "faderradial"
 source = "src/Gruntz/FaderRadial.cpp"
 flags = "base"
 [[unit]]
+unit = "circleshadeblit"
+source = "src/Gruntz/CircleShadeBlit.cpp"
+flags = "base"
+[[unit]]
+unit = "warptextureblit"
+source = "src/Gruntz/WarpTextureBlit.cpp"
+flags = "base"
+[[unit]]
 unit = "imagerotate"
 source = "src/Gruntz/ImageRotate.cpp"
 flags = "base"

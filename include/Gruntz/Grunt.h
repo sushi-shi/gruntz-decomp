@@ -675,6 +675,74 @@ struct CGruntListNode {
 // in the .cpp; the Save serialize loop's name-table lookup helper.
 class CArchive; // (unused MFC fwd; Save uses CGruntArchive)
 
+// ---------------------------------------------------------------------------
+// CGrunt::Load(ar) @0xd8060 support - the symmetric inverse of Save (each member
+// read back via ar->Read, vtable slot +0x2c). It rebuilds the grunt's owned
+// node-collections from the global coord free-list and re-resolves anim/object
+// names through the resource manager (g_gameReg->m_30).
+//
+// The CObArray-family collections it rebuilds (this+0x370, the 4x stride-0x14
+// group at this+0x3a4, this+0x488). Each is the engine CObArray {vtbl, m_data,
+// m_count, m_max, m_grow} (0x14 bytes); SetSize/SetAtGrow are external (reloc-
+// masked). The recycled nodes ride the same g_gruntFreeList pool as the movement
+// machines (node usable area = head+4; head[0] = next).
+struct GruntLoadColl {
+    void SetSize(i32 n, i32 grow);    // 0x1b4f75
+    void SetAtGrow(i32 idx, void* p); // 0x1b5144
+    void* m_vtbl;                     // +0x00
+    void** m_data;                    // +0x04
+    i32 m_count;                      // +0x08
+    i32 m_max;                        // +0x0c
+    i32 m_grow;                       // +0x10
+};
+
+// The CString member the load streams a 0x200-byte buffer into (this+0x410);
+// operator=(const char*) is external (0x1b9e74, reloc-masked).
+struct GruntLoadStr {
+    void Assign(const char* s); // operator= 0x1b9e74
+};
+
+// The anim-name id table entry resolved through res->m_10's CMapStringToOb (+0x10,
+// Lookup 0x1b8008): a range [m_64..m_68] and the id array at +0x14.
+struct GruntIdEntry {
+    char m_pad0[0x14];
+    i32* m_14; // +0x14  id array
+    char m_pad18[0x64 - 0x18];
+    i32 m_64; // +0x64  lo index
+    i32 m_68; // +0x68  hi index
+};
+struct GruntNameIdMap {                                   // res->m_10 + 0x10
+    i32 Lookup(const char* key, GruntIdEntry** out);      // 0x1b8008
+    i32 LookupNode(const char* key, void** out);          // 0x1b8008 (2nd block: raw entry)
+};
+// The object-table entry resolved through res->m_8's map (+0x48, Lookup 0x1b8760).
+// Validated by a virtual kind() at vtable slot +0x20 (== 5 -> keep).
+class GruntObjEntry {
+public:
+    virtual void s00();
+    virtual void s04();
+    virtual void s08();
+    virtual void s0c();
+    virtual void s10();
+    virtual void s14();
+    virtual void s18();
+    virtual void s1c();
+    virtual i32 Kind(); // vtable slot +0x20
+};
+struct GruntObjMap {                                  // res->m_8 + 0x48
+    i32 Lookup(void* key, GruntObjEntry** out);       // 0x1b8760
+};
+// The resource manager (g_gameReg->m_30): m_8 owns the object map, m_10 the
+// sprite/name manager (with the CMapStringToOb at +0x10).
+struct GruntResMgr {
+    char m_pad0[0x8];
+    char* m_8; // +0x08
+    char m_pad0c[0x10 - 0xc];
+    char* m_10; // +0x10
+};
+// The global DAT_00612618 dword the load streams a record into (reloc-masked).
+extern i32 g_load612618;
+
 // A small owned sub-object the grunt destroys on teardown (slots +0x424/+0x428).
 // Free() is __thiscall, no args, reloc-masked.
 class CGruntSub {
@@ -1071,6 +1139,7 @@ public:
     i32 UpdateEntranceAnim();               // @0x690a0 entrance-anim/arrival update step
     void ApplyMoveKind(i32 v);              // @0x57100 (thunk_0x3c29) 1-arg move-kind apply
     i32 Save(CGruntArchive* ar);            // @0x53f90 serialize
+    i32 Load(CGruntArchive* ar);            // @0xd8060 deserialize (Read inverse of Save)
     void ClearAllSprites();                 // @0x4b240
     i32 CommitArrival();                    // @0x4b130
     void ClearSubA();                       // @0x57c10
@@ -1204,6 +1273,13 @@ public:
     // and commit/neighbor-link onto it or, on the no-occupant path, re-roll a random
     // in-region defender target + fire the on-screen entrance cue + reset the idle timer.
     i32 StepArrivalDefense();
+    // @0xf8240 (ret 0 -> 1) - the leaner sibling of StepArrivalDefense. Gated on the
+    // current anim not being "I"; same m_2d4 (0/1/2) defender dispatch over the grid
+    // occupant, but without the m_neighborValid/m_198 CommitTileSlot arms (straight to
+    // CommitNeighbor), sets the +0x2ec dwell to 0x1f4 on a state-1 latch, and the
+    // state-0 path commits the occupant's tile slot on a rand%100 roll + re-rolls a
+    // random in-region target / resets the idle timer.
+    i32 StepArrivalDefenseLean();
     // CUserLogic::GetScreenPos (0x29a50) reached on the occupant grunt: copies its
     // m_10->{m_5c,m_60} into the out point. External/reloc-masked.
     void GetScreenPos(struct GruntTilePos* out); // 0x29a50

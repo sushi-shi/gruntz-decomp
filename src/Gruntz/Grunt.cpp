@@ -3325,6 +3325,221 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     return 1;
 }
 
+// The global DAT_00612618 dword the load streams a record into.
+i32 g_load612618;
+
+// ---------------------------------------------------------------------------
+// CGrunt::Load(ar)  @0xd8060  (__thiscall, ret 4) - the Read inverse of Save.
+// Bails (return 0) if the archive or the resource manager (g_gameReg->m_30) is
+// null. Reads back the sprite-id + arrival fields, rebuilds the owned node
+// collections (this+0x370, the four at this+0x3a4, this+0x488) by recycling each
+// existing node back onto the global coord free-list, clearing the array, then
+// re-popping fresh nodes for each streamed record. Resolves the two anim-name id
+// records (this+0x4d0/0x4cc) + the object record (this+0x4e4, validated by the
+// engine kind() vtable slot 0x20 == 5; a found-but-invalid record fails the load),
+// streams the ~70 plain fields, then rebuilds the trailing collection.
+// @early-stop
+// reloc-masked-extern plateau (Save's symmetric pair): the field/record Read
+// stream, the freelist recycle + CObArray SetSize/SetAtGrow rebuild loops, the
+// resource-mgr name/object lookups and the load-fail bail are reconstructed in
+// shape/order. Residue is the ~90 archive-Read + collection + map-lookup call
+// operands pairing to differently named retail symbols (the whole referent set
+// is external). Final sweep.
+RVA(0x000d8060, 0x6ce)
+i32 CGrunt::Load(CGruntArchive* ar) {
+    if (ar == 0) {
+        return 0;
+    }
+    GruntResMgr* res = (GruntResMgr*)g_gameReg->m_30;
+    if (res == 0) {
+        return 0;
+    }
+
+    ar->Read((char*)this + 0x1bc, 4);
+    ar->Read((char*)this + 0x1c0, 4);
+    ar->Read((char*)this + 0x1cc, 4);
+    ar->Read((char*)this + 0x2d8, 4);
+    ar->Read((char*)this + 0x2ec, 4);
+    ar->Read((char*)this + 0x2f0, 4);
+    ar->Read((char*)this + 0x2f4, 4);
+    ar->Read((char*)this + 0x2f8, 4);
+    ar->Read((char*)this + 0x2fc, 8);
+    ar->Read((char*)this + 0x360, 8);
+    ar->Read((char*)this + 0x368, 4);
+    ar->Read((char*)this + 0x36c, 4);
+
+    {
+        GruntLoadColl* coll = (GruntLoadColl*)((char*)this + 0x370);
+        for (i32 i = 0; i < coll->m_count; i++) {
+            void* node = coll->m_data[i];
+            if (node) {
+                void** p = (void**)((char*)node - g_gruntFreeListBias);
+                *p = g_gruntFreeList;
+                g_gruntFreeList = p;
+            }
+        }
+        coll->SetSize(0, -1);
+        i32 n;
+        ar->Read(&n, 4);
+        for (u32 j = 0; j < (u32)n; j++) {
+            void* node = 0;
+            void** head = (void**)g_gruntFreeList;
+            void* next = *head;
+            if (next) {
+                node = (char*)head + 4;
+                g_gruntFreeList = next;
+            }
+            ar->Read(node, 8);
+            coll->SetAtGrow(coll->m_count, node);
+        }
+    }
+
+    ar->Read((char*)this + 0x384, 8);
+    ar->Read((char*)this + 0x38c, 8);
+    ar->Read((char*)this + 0x394, 8);
+    ar->Read((char*)this + 0x39c, 8);
+
+    {
+        GruntLoadColl* coll = (GruntLoadColl*)((char*)this + 0x3a4);
+        i32 k = 4;
+        do {
+            for (i32 i = 0; i < coll->m_count; i++) {
+                void* node = coll->m_data[i];
+                if (node) {
+                    void** p = (void**)((char*)node - g_gruntFreeListBias);
+                    *p = g_gruntFreeList;
+                    g_gruntFreeList = p;
+                }
+            }
+            coll->SetSize(0, -1);
+            i32 n;
+            ar->Read(&n, 4);
+            for (u32 j = 0; j < (u32)n; j++) {
+                void* node = 0;
+                void** head = (void**)g_gruntFreeList;
+                void* next = *head;
+                if (next) {
+                    node = (char*)head + 4;
+                    g_gruntFreeList = next;
+                }
+                ar->Read(node, 8);
+                coll->SetAtGrow(coll->m_count, node);
+            }
+            coll = (GruntLoadColl*)((char*)coll + 0x14);
+        } while (--k);
+    }
+
+    ar->Read((char*)this + 0x408, 4);
+    g_serialCounter++;
+    char buf512[0x200];
+    ar->Read(buf512, 0x200);
+    ((GruntLoadStr*)((char*)this + 0x410))->Assign(buf512);
+    ar->Read((char*)this + 0x40c, 4);
+    ar->Read(&g_load612618, 4);
+
+    g_serialCounter++;
+    char buf80a[0x80];
+    ar->Read(buf80a, 0x80);
+    i32 idx;
+    ar->Read(&idx, 4);
+    if (strlen(buf80a) == 0) {
+        *(i32*)((char*)this + 0x4d0) = 0;
+    } else {
+        GruntIdEntry* entry = 0;
+        ((GruntNameIdMap*)(res->m_10 + 0x10))->Lookup(buf80a, &entry);
+        if (entry == 0 || idx < entry->m_64 || idx > entry->m_68) {
+            *(i32*)((char*)this + 0x4d0) = 0;
+        } else {
+            *(i32*)((char*)this + 0x4d0) = entry->m_14[idx];
+        }
+    }
+
+    g_serialCounter++;
+    char buf80b[0x80];
+    ar->Read(buf80b, 0x80);
+    void* entry2 = 0;
+    if (strlen(buf80b) == 0) {
+        *(i32*)((char*)this + 0x4cc) = 0;
+    } else {
+        ((GruntNameIdMap*)(res->m_10 + 0x10))->LookupNode(buf80b, &entry2);
+        *(i32*)((char*)this + 0x4cc) = (i32)entry2;
+    }
+
+    ar->Read((char*)this + 0x4d8, 4);
+    ar->Read((char*)this + 0x4dc, 4);
+    ar->Read((char*)this + 0x4e0, 4);
+    g_serialCounter++;
+    i32 v;
+    ar->Read(&v, 4);
+    GruntObjEntry* oe = 0;
+    ((GruntObjMap*)(res->m_8 + 0x48))->Lookup(entry2, &oe);
+    i32 ve;
+    if (oe == 0) {
+        ve = 0;
+    } else {
+        ve = oe->Kind() == 5 ? (i32)oe : 0;
+    }
+    *(i32*)((char*)this + 0x4e4) = ve;
+    if (ve == 0 && entry2 != 0) {
+        return 0;
+    }
+
+    ar->Read((char*)this + 0x4e8, 4);
+    ar->Read((char*)this + 0x4ec, 4);
+    ar->Read((char*)this + 0x4f4, 4);
+    ar->Read((char*)this + 0x1c4, 4);
+    ar->Read((char*)this + 0x484, 4);
+    ar->Read((char*)this + 0x4f8, 4);
+    ar->Read((char*)this + 0x4fc, 4);
+    ar->Read((char*)this + 0x500, 4);
+    ar->Read((char*)this + 0x4f0, 4);
+    ar->Read((char*)this + 0x504, 4);
+    ar->Read((char*)this + 0x414, 4);
+    ar->Read((char*)this + 0x418, 4);
+    ar->Read((char*)this + 0x41c, 4);
+    ar->Read((char*)this + 0x420, 4);
+    ar->Read((char*)this + 0x424, 4);
+    ar->Read((char*)this + 0x428, 2);
+    ar->Read((char*)this + 0x470, 4);
+    ar->Read((char*)this + 0x474, 4);
+    ar->Read((char*)this + 0x478, 4);
+    ar->Read((char*)this + 0x47c, 4);
+    ar->Read((char*)this + 0x480, 4);
+    ar->Read((char*)this + 0x4b0, 4);
+    ar->Read((char*)this + 0x4d4, 4);
+    ar->Read((char*)this + 0x49c, 4);
+    *(i32*)((char*)this + 0x510) = 2;
+    ar->Read((char*)this + 0x514, 4);
+
+    i32 n488;
+    ar->Read(&n488, 4);
+    {
+        GruntLoadColl* coll = (GruntLoadColl*)((char*)this + 0x488);
+        for (i32 i = 0; i < coll->m_count; i++) {
+            void* node = coll->m_data[i];
+            if (node) {
+                void** p = (void**)((char*)node - g_gruntFreeListBias);
+                *p = g_gruntFreeList;
+                g_gruntFreeList = p;
+            }
+        }
+        coll->SetSize(0, -1);
+        coll->SetSize(n488, -1);
+        for (u32 j = 0; j < (u32)n488; j++) {
+            void* node = 0;
+            void** head = (void**)g_gruntFreeList;
+            void* next = *head;
+            if (next) {
+                node = (char*)head + 4;
+                g_gruntFreeList = next;
+            }
+            ar->Read(node, 8);
+            coll->m_data[j] = node;
+        }
+    }
+    return 1;
+}
+
 // @early-stop
 // reloc-masked-extern plateau: instruction stream byte-exact (verified
 // llvm-objdump - prologue, geometry call, desc/frame read, cell-index math
@@ -6213,6 +6428,218 @@ i32 CGrunt::StepArrivalDefense() {
                     outY += GruntRand() % spanY;
                 }
                 if (outX < g_gameReg->m_70->m_c && outY < g_gameReg->m_70->m_10) {
+                    TileSwitch6(outX, outY, 0, m_arrivalFlags, 1, 0);
+                }
+                i32 m328 = *(i32*)((char*)this + 0x328);
+                if (m328 != 0) {
+                    i32 mx = spanX > spanY ? spanX : spanY;
+                    if (m328 > mx) {
+                        SetEntrancePos(1, 1);
+                    }
+                }
+            }
+            *(i32*)((char*)this + 0x2ec) = 0;
+            return 1;
+
+        default:
+            return 1;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// CGrunt::StepArrivalDefenseLean()   @0xf8240   (__thiscall, ret 0 -> 1)
+// The leaner twin of StepArrivalDefense. First gate: if the current anim name is
+// "I" (arrival pose), do nothing. Latch the defender position to the last tile,
+// then dispatch on m_2d4 (0/1/2) over the stored grid occupant. Unlike the big
+// sibling there are no m_neighborValid / m_198==0x1e CommitTileSlot arms - the
+// settled-on-screen occupant goes straight to CommitNeighbor; the gate-miss /
+// not-in-radius paths latch m_2d4=1 + the +0x2ec dwell=0x1f4 and fire the
+// on-screen cue. State 0 commits the occupant's tile slot on a rand%100 roll, else
+// (dwell elapsed) re-rolls a random in-region target / resets the idle timer.
+// @early-stop
+// shared StepArrivalDefense regalloc/scheduling wall: the m_2d4 subtract-chain
+// switch, the 15-wide grid index, the in-radius/committed/settled/on-screen gates,
+// the dual cue blocks (store-before vs store-after), the 64-bit sbb idle-timer, the
+// idiv/rand in-region re-roll + abs spans and the max-spread SetEntrancePos
+// escalation are reconstructed in shape/order. Residue is the MSVC /O2 idiv/rand
+// scheduling + the ebx zero-register tail sharing (same family as the twin).
+RVA(0x000f8240, 0x5b9)
+i32 CGrunt::StepArrivalDefenseLean() {
+    m_defenderX = m_lastTilePxX;
+    m_defenderY = m_lastTilePxY;
+    if (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeI) == 0) {
+        return 1;
+    }
+    CGrunt* occ;
+    switch (m_2d4) {
+        case 2:
+            if (m_poweredUp == 0) {
+                m_2d4 = 1;
+                return 1;
+            }
+            occ = *(CGrunt**)((char*)m_tileMgr + (m_2f4 + 15 * m_2f0) * 4 + 0x1c);
+            if (occ == 0) {
+                m_2d4 = 0;
+                return 1;
+            }
+            if (GruntInRadius(occ->m_tileOwnerHi, occ->m_tileOwnerLo) == 0) {
+                goto c2_occcheck;
+            }
+            if (occ->m_entranceCommitted == 0) {
+                goto c2_occcheck;
+            }
+            if (*(i32*)((char*)this + 0x218) != 0) {
+                return 1;
+            }
+            if (m_stamina < 0x64) {
+                return 1;
+            }
+            if (RectContains(occ->m_10->m_5c, occ->m_10->m_60) == 0) {
+                goto c2_miss;
+            }
+            if (occ->m_10->m_5c != occ->m_lastTilePxX) {
+                goto c2_miss;
+            }
+            if (occ->m_10->m_60 != occ->m_lastTilePxY) {
+                goto c2_miss;
+            }
+            CommitNeighbor(
+                occ->m_tileOwnerHi,
+                occ->m_tileOwnerLo,
+                occ->m_lastTilePxX,
+                occ->m_lastTilePxY
+            );
+            return 1;
+        c2_miss:
+            {
+                CGruntHud* h = m_10;
+                i32 vx = h->m_5c;
+                i32 vy = h->m_60;
+                char* m24 = *(char**)((char*)g_gameReg->m_30 + 0x24);
+                i32* rect = (i32*)(*(char**)(m24 + 0x5c) + 0x40);
+                if (vx < rect[2] && vx >= rect[0] && vy < rect[3] && vy >= rect[1]) {
+                    g_gameReg->m_60->CueA(this, 0x366, -1, 0, -1, -1);
+                }
+            }
+            m_2d4 = 1;
+            *(i32*)((char*)this + 0x2ec) = 0x1f4;
+            return 1;
+        c2_occcheck:
+            if (occ == 0) {
+                m_2d4 = 0;
+                return 1;
+            }
+            m_2d4 = 1;
+            *(i32*)((char*)this + 0x2ec) = 0x1f4;
+            {
+                CGruntHud* h = m_10;
+                i32 vx = h->m_5c;
+                i32 vy = h->m_60;
+                char* m24 = *(char**)((char*)g_gameReg->m_30 + 0x24);
+                i32* rect = (i32*)(*(char**)(m24 + 0x5c) + 0x40);
+                if (vx < rect[2] && vx >= rect[0] && vy < rect[3] && vy >= rect[1]) {
+                    g_gameReg->m_60->CueA(this, 0x366, -1, 0, -1, -1);
+                }
+            }
+            return 1;
+
+        case 1: {
+            occ = *(CGrunt**)((char*)m_tileMgr + (m_2f4 + 15 * m_2f0) * 4 + 0x1c);
+            CGrunt* g = m_tileMgr->GetOccupant(this);
+            if (g != 0 && g != occ) {
+                m_2f0 = -1;
+                m_2d4 = 0;
+                m_2f4 = -1;
+                return 1;
+            }
+            if (occ == 0) {
+                m_2d4 = 0;
+                return 1;
+            }
+            if (occ->m_entranceCommitted == 0) {
+                m_2d4 = 0;
+                return 1;
+            }
+            if (GruntInRadius(occ->m_tileOwnerHi, occ->m_tileOwnerLo) == 0) {
+                m_2d4 = 0;
+                return 1;
+            }
+            if ((u32) * (u32*)((char*)this + 0x2ec) > 0x1f4) {
+                StepArrivalDrop(occ->m_lastTilePxX, occ->m_lastTilePxY, 0, m_arrivalFlags, 1, 0);
+                *(i32*)((char*)this + 0x2ec) = 0;
+            }
+            if (m_poweredUp != 0) {
+                return 1;
+            }
+            if (m_stamina < 0x64) {
+                return 1;
+            }
+            if (RectContains(occ->m_10->m_5c, occ->m_10->m_60) == 0) {
+                return 1;
+            }
+            if (occ->m_10->m_5c != occ->m_lastTilePxX) {
+                return 1;
+            }
+            if (occ->m_10->m_60 != occ->m_lastTilePxY) {
+                return 1;
+            }
+            CommitNeighbor(
+                occ->m_tileOwnerHi,
+                occ->m_tileOwnerLo,
+                occ->m_lastTilePxX,
+                occ->m_lastTilePxY
+            );
+            m_2d4 = 2;
+            return 1;
+        }
+
+        case 0:
+            occ = m_tileMgr->GetOccupant(this);
+            if (GruntRand() % 0x64 == 0 && m_health > 0x1a && occ != 0 && m_stamina >= 0x64
+                && GruntInRadius(occ->m_tileOwnerHi, occ->m_tileOwnerLo) != 0) {
+                m_tileMgr->CommitTileSlot2(
+                    m_tileOwnerHi,
+                    m_tileOwnerLo,
+                    m_lastTilePxX,
+                    m_lastTilePxY
+                );
+                return 1;
+            }
+            if (m_resetApplied != 0) {
+                return 1;
+            }
+            if (*(i32*)((char*)this + 0x318) == 0) {
+                return 1;
+            }
+            if ((u32) * (u32*)((char*)this + 0x2ec) <= 0xbb8) {
+                return 1;
+            }
+            if ((i64)(u32)g_645588 - *(i64*)((char*)this + 0x308)
+                >= *(i64*)((char*)this + 0x310)) {
+                Stub_062e10(1, 1, 0);
+                *(i32*)((char*)this + 0x310) = GruntRand() % 0x7530 + 0x7530;
+                *(i32*)((char*)this + 0x314) = 0;
+                *(i32*)((char*)this + 0x308) = (i32)g_645588;
+                *(i32*)((char*)this + 0x30c) = 0;
+                *(i32*)((char*)this + 0x2ec) = 0;
+                return 1;
+            }
+            {
+                CGruntHud* h = m_10;
+                i32 baseX = h->m_134;
+                i32 spanX = abs(h->m_13c - baseX);
+                i32 baseY = h->m_138;
+                i32 spanY = abs(h->m_140 - baseY);
+                i32 outX = baseX;
+                if (spanX != 0) {
+                    outX += GruntRand() % spanX;
+                }
+                i32 outY = baseY;
+                if (spanY != 0) {
+                    outY += GruntRand() % spanY;
+                }
+                GruntBoard* bd = g_gameReg->m_70;
+                if ((u32)outX < (u32)bd->m_c && (u32)outY < (u32)bd->m_10) {
                     TileSwitch6(outX, outY, 0, m_arrivalFlags, 1, 0);
                 }
                 i32 m328 = *(i32*)((char*)this + 0x328);
