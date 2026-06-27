@@ -184,23 +184,9 @@ namespace ApiCallerStubs {
         void LoadWarlordSprites(i32, i32);
         void LoadLevelPreviewScreen();
         // LoadGruntzPalette (0x0e2d10) re-homed to src/Gruntz/SpriteRefTable.cpp.
-        void BuildResourceTabStatusBar(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32);
-        void
-            BuildStatzTabStatusBar(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32);
-        void BuildMultiplayerTabStatusBar(
-            i32,
-            i32,
-            i32,
-            i32,
-            i32,
-            i32,
-            i32,
-            i32,
-            i32,
-            i32,
-            i32,
-            i32
-        );
+        // BuildResourceTabStatusBar (0xe8a70), BuildStatzTabStatusBar (0xe9600) and
+        // BuildMultiplayerTabStatusBar (0xea1f0) re-homed as CSbTab methods in
+        // src/Gruntz/StatusBarTabBuilders.cpp.
         void LoadGameAssetNamespaces(i32, i32, i32);
         void UpdateDestructButtonStatusBar2(i32);
         void DebugPrintf();
@@ -223,7 +209,8 @@ namespace ApiCallerStubs {
         void LoadWingzGruntSprites(i32);
     };
     struct CGruntSpawnConfig {
-        void LoadGruntSpawnConfig(i32, i32, i32, i32, i32);
+        // LoadGruntSpawnConfig (0x11afb0) re-homed as a real CGruntSpawnConfig method
+        // in src/Gruntz/CGruntSpawnConfig.cpp.
         i32 winapi_11b3b0_timeGetTime(i32, i32, i32, i32, i32, i32);
     };
     struct CMulti {
@@ -4077,37 +4064,12 @@ namespace ApiCallerStubs {
     // src/Gruntz/SpriteRefTable.cpp (the trace owner; m_4 == CSpriteRefTable::m_04).
     // Its CPalette* loader-view structs remain defined in Backlog.cpp.
 
-    // @confidence: med
-    // @source: decomp-xref
-    // @stub
-    // proximity: CSBI_MenuItem@-0x550 | CSBI_GruntMachine@+0x200
-    RVA(0x000e8a70, 0x18c)
-    void ThisStubOwnerUnknown::
-        BuildResourceTabStatusBar(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32) {}
+    // BuildResourceTabStatusBar (0xe8a70), BuildStatzTabStatusBar (0xe9600) and
+    // BuildMultiplayerTabStatusBar (0xea1f0) re-homed as CSbTab methods in
+    // src/Gruntz/StatusBarTabBuilders.cpp.
 
-    // @confidence: med
-    // @source: decomp-xref
-    // @stub
-    // proximity: CSBI_GruntMachine@-0x840 | CSBI_SideTab@+0x200
-    RVA(0x000e9600, 0x18c)
-    void ThisStubOwnerUnknown::
-        BuildStatzTabStatusBar(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32) {}
-
-    // @confidence: med
-    // @source: decomp-xref
-    // @stub
-    // proximity: CSbItem@-0x100 | CSBI_StatzTabGruntBar@+0x280
-    RVA(0x000ea1f0, 0x1fa)
-    void ThisStubOwnerUnknown::
-        BuildMultiplayerTabStatusBar(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32) {}
-
-
-
-    // @confidence: med
-    // @source: decomp-xref
-    // @stub
-    RVA(0x0011afb0, 0x321)
-    void CGruntSpawnConfig::LoadGruntSpawnConfig(i32, i32, i32, i32, i32) {}
+    // LoadGruntSpawnConfig (0x11afb0) re-homed as a real CGruntSpawnConfig method
+    // in src/Gruntz/CGruntSpawnConfig.cpp.
 
 
 

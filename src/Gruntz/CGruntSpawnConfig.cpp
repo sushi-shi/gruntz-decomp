@@ -11,6 +11,7 @@
 // header for the recovered layout + the conflated-region note.
 #include <Gruntz/CGruntSpawnConfig.h>
 
+#include <Bute/ButeMgr.h> // CButeMgr g_buteMgr (GetIntDef)
 #include <rva.h>
 
 // ===========================================================================
@@ -182,6 +183,159 @@ RVA(0x0011af90, 0xb)
 void CGruntSpawnConfig::ClearSprites() {
     m_08 = 0;
     m_0c = 0;
+}
+
+// The bute manager singleton (?g_buteMgr, RVA 0x2453d8); DATA label owned by the
+// bute TU, declared extern here so the `ecx=&g_buteMgr; call GetIntDef` reloc-masks.
+extern CButeMgr g_buteMgr;
+
+// ===========================================================================
+// CGruntSpawnConfig::LoadGruntSpawnConfig  (0x11afb0)
+// ===========================================================================
+// The percent/priority-gated voice spawn driver. Ensure the voices are loaded and
+// the owner is ready, then read the per-section percent/priority from the bute
+// config (formatted "SG%i"/"G%i" section names), roll the percent gate, skip if a
+// higher-priority voice is already active, pick a weighted entry, duck the
+// currently-playing voice's volume, open/configure the chosen stream, and play it.
+// /GX EH frame from the two CString temporaries.
+//
+// @early-stop
+// /GX EH-state-numbering wall (docs/patterns/eh-state-numbering-base.md, topic:eh):
+// the instruction selection, the volume-duck branch tree, the stream open/configure
+// path, and the two CString Format/dtor temporaries are byte-faithful; the residual
+// is the trylevel slot threading + the shared scope-exit dtor block the /GX state
+// machine emits (the early-out gotos all funnel through one CString teardown, where
+// retail's state ids differ). Logic complete; deferred to the final sweep.
+// g_gameReg viewed for the LCG rand (__thiscall, ecx = the registry) + the master
+// volume the duck halves.
+struct CSpawnReg {
+    i32 Rand(); // 0xcd00 (via ILT 0x39ae)
+    char m_pad00[0x120];
+    i32 m_120; // +0x120  master volume
+};
+// The bute config gate (param_1): m_10->m_188 is the currently-active voice id.
+struct CSpawnGateInner {
+    char m_pad00[0x188];
+    i32 m_188; // +0x188
+};
+struct CSpawnGate {
+    char m_pad00[0x10];
+    CSpawnGateInner* m_10; // +0x10
+};
+// One owned voice stream (m_10/m_14): a DirectSoundMgr with a +0x6c releasable
+// sub-sprite, plus the source/configure/volume setters.
+struct CSpawnStream {
+    i32 SetSource(i32 src);                       // 0x1374c0
+    i32 Configure(i32 a, i32 b, i32 c, i32 d);    // 0x137520
+    void SetVolumeByIndex(i32 vol);               // 0x1355c0
+    char m_pad00[0x6c];
+    CSpriteReleasable m_6c; // +0x6c  (Release, 0x137f00)
+};
+// The stream factory hung off the config tree (m_04->m_20).
+struct CSpawnStreamFactory {
+    CSpawnStream* OpenStream(i32 src, i32 a, i32 b, i32 c, i32 d, i32 e); // 0x137900
+};
+struct CSpawnConfigTree {
+    char m_pad00[0x20];
+    CSpawnStreamFactory* m_20; // +0x20
+};
+
+// The game registry pointer at *0x64556c (reloc-masked DATA; DATA label owned by
+// another TU, but a fresh decl here is byte-neutral - the reference is by address).
+DATA(0x0064556c)
+extern CSpawnReg* g_gameReg;
+
+RVA(0x0011afb0, 0x321)
+BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
+    i32 param_1,
+    i32 param_2,
+    i32 param_3,
+    i32 param_4,
+    i32 param_5
+) {
+    if (m_08 == 0 && !LoadGruntVoices()) {
+        return 0;
+    }
+    if (param_1 == 0) {
+        return 0;
+    }
+    if (!IsReady()) {
+        return 0;
+    }
+    void* index = GetButeSlot((CSpawnButeConfig*)param_1, (CSpawnButeTarget*)param_2);
+    CString local_10;
+    CString local_14;
+    local_14.Format("SG%i", (int)index);
+    local_10.Format("G%i", param_2);
+    if (param_5 == -1) {
+        param_5 = g_buteMgr.GetIntDef((char*)(LPCTSTR)local_14, "Per", -1);
+        if (param_5 == -1) {
+            param_5 = g_buteMgr.GetIntDef("GruntPercent", (char*)(LPCTSTR)local_10, 0);
+        }
+    }
+    if (param_5 < 100 && param_5 < g_gameReg->Rand() % 0x65) {
+        return 0;
+    }
+    if (param_4 == -1) {
+        param_4 = g_buteMgr.GetIntDef((char*)(LPCTSTR)local_14, "Pri", -1);
+        if (param_4 == -1) {
+            param_4 = g_buteMgr.GetIntDef("GruntPriority", (char*)(LPCTSTR)local_10, 1);
+        }
+    }
+    CSpawnVoice** voices = (CSpawnVoice**)&m_08;
+    for (i32 i = 0; i < 2; i++) {
+        if (param_4 <= voices[i]->m_6c) {
+            return 0;
+        }
+    }
+    i32 src = PickWeighted((i32)index, param_3);
+    if (src == 0 || ((CSpawnConfigTree*)m_04)->m_20 == 0) {
+        return 0;
+    }
+    CSpawnVoice* v8 = (CSpawnVoice*)m_08;
+    CSpawnVoice* v0c = (CSpawnVoice*)m_0c;
+    i32 a = v8->m_6c;
+    i32 b = v0c->m_6c;
+    i32 c = v8->m_68;
+    i32 d = v0c->m_68;
+    CSpawnStream** streams = (CSpawnStream**)&m_10;
+    CSpawnGate* gate = (CSpawnGate*)param_1;
+    i32 chosen;
+    if (b < a) {
+        chosen = 1;
+        if (c == gate->m_10->m_188) {
+            chosen = 0;
+            if (b != 0 && streams[1] != 0) {
+                streams[1]->SetVolumeByIndex(g_gameReg->m_120 / 2);
+            }
+        } else if (a != 0 && streams[0] != 0) {
+            streams[0]->SetVolumeByIndex(g_gameReg->m_120 / 2);
+        }
+    } else {
+        chosen = 0;
+        if (d == gate->m_10->m_188) {
+            chosen = 1;
+            if (a != 0 && streams[0] != 0) {
+                streams[0]->SetVolumeByIndex(g_gameReg->m_120 / 2);
+            }
+        } else if (b != 0 && streams[1] != 0) {
+            streams[1]->SetVolumeByIndex(g_gameReg->m_120 / 2);
+        }
+    }
+    if (streams[chosen] == 0) {
+        streams[chosen] = ((CSpawnConfigTree*)m_04)->m_20->OpenStream(src, 0x5000, 0x1400, 0x100e0, 0, 0);
+        if (streams[chosen] == 0) {
+            return 0;
+        }
+    }
+    CSpawnStream* stream = streams[chosen];
+    i32 vol = m_2c;
+    stream->m_6c.Release();
+    if (stream->SetSource(src) != 0) {
+        stream->Configure(vol, 0, 0, 0);
+    }
+    CSpawnVoice* voice = voices[chosen];
+    return voice->Setup(gate->m_10->m_188, (i32)stream, param_4, 0) != 0;
 }
 
 // ===========================================================================

@@ -345,6 +345,11 @@ source = "src/Gruntz/CGruntSpawnConfig.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "statusbartabbuilders"
+source = "src/Gruntz/StatusBarTabBuilders.cpp"
+flags = "base"
+
+[[unit]]
 unit = "cheatmgr"
 source = "src/Gruntz/CheatMgr.cpp"
 flags = "eh"

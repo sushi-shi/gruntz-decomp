@@ -111,6 +111,10 @@ public:
     void* GetButeSlot(CSpawnButeConfig*, CSpawnButeTarget*); // 0x11bba0
     i32 PickWeighted(i32 index, i32 seed);                   // 0x11bee0
     BOOL BuildVoiceList();                                   // 0x11c1a0
+    // The percent/priority-gated voice spawn driver (0x11afb0); re-homed from the
+    // ApiCaller backlog. param_1=config, param_2=target/index, param_3=pick seed,
+    // param_4=priority, param_5=percent.
+    BOOL LoadGruntSpawnConfig(i32 param_1, i32 param_2, i32 param_3, i32 param_4, i32 param_5);
     void* BuildVoiceSoundList(i32 i); // 0x11c210 (defined in another TU; reloc-masked)
     void StopVoice(i32 id);           // 0x11c730 (selective per-id voice teardown)
     void DtorBody();                  // 0x11c7b0 (the 2-iter pair teardown)
@@ -157,9 +161,11 @@ struct CSpawnSpriteSource {
 // its Reset (0x11a870, __thiscall); reloc-masked. m_68 holds the voice id the
 // selective teardown (0x11c730) matches against.
 struct CSpawnVoice {
-    void Reset(); // 0x11a870
+    void Reset();                              // 0x11a870
+    i32 Setup(i32 a, i32 stream, i32 c, i32 d); // 0x11a7b7 (LoadGruntSpawnConfig play start)
     char m_pad00[0x68];
     i32 m_68; // +0x68  voice id
+    i32 m_6c; // +0x6c  priority/rank (LoadGruntSpawnConfig gates on it)
 };
 
 // The "GruntVoice" sound descriptor blob the loader pushes (s_GruntVoice_0060a638).
