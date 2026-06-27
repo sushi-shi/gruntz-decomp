@@ -1722,3 +1722,44 @@ flags = "o1"
 unit = "comehfunclets"
 source = "src/Gruntz/ComEhFunclets.cpp"
 flags = "base"
+
+[[unit]]
+unit = "bitarray"
+source = "src/Utils/BitArray.cpp"
+flags = "base"
+[[unit]]
+unit = "msgpacket"
+source = "src/Net/MsgPacket.cpp"
+flags = "base"
+[[unit]]
+unit = "triggersound"
+source = "src/Gruntz/TriggerSound.cpp"
+flags = "base"
+[[unit]]
+unit = "surfacepalette"
+source = "src/Image/PaletteReset.cpp"
+flags = "base"
+[[unit]]
+unit = "netcmdmgr"
+source = "src/Net/NetCmdMgr.cpp"
+flags = "base"
+[[unit]]
+unit = "m3mfcleaves"
+source = "src/Stub/M3MfcLeaves.cpp"
+flags = "base"
+[[unit]]
+unit = "netsession2"
+source = "src/Net/NetSession2.cpp"
+flags = "base"
+[[unit]]
+unit = "m3ehfunclets"
+source = "src/Wap32/M3EhFunclets.cpp"
+flags = "base"
+[[unit]]
+unit = "m3compilerthunks"
+source = "src/Wap32/M3CompilerThunks.cpp"
+flags = "base"
+[[unit]]
+unit = "netthingdtor"
+source = "src/Net/NetThingDtor.cpp"
+flags = "eh"

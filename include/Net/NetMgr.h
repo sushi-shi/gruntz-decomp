@@ -233,6 +233,8 @@ struct CNetCmdSlot {
     i32 m_4c[3];    // +0x4c  command-range A (reset to -1)
     i32 m_58[3];    // +0x58  command-range B (reset to -1)
 
+    void ResetAll();                     // c0bb0  zero all fields (incl. m_0/m_c/m_1c) + ranges
+    void AdvanceSeq(i32 id);             // c0f10  fold an ack id into the high-water window
     void RaiseMax(i32 v);                // c0fa0  keep the high-water sequence
     void ResetTriple(i32* p);            // c10a0  splat -1 over three dwords
     void AddCmd(CNetCmd* cmd);           // c1170  enqueue a command (dedup by seq)

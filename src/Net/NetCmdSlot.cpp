@@ -34,6 +34,78 @@ struct CObListNode {
 // AddTail's the node onto a global recycle list. External (reloc-masked).
 extern void RecycleCmd(void* cmd);
 
+// The three __stdcall id-set helpers are defined further down (RVA order puts
+// CNetSession::ResetCmdBuffers / the slot resets above them); forward-declare so
+// AdvanceSeq below can fold its window through them.
+i32 __stdcall NetCmdIdFind(i32* arr, i32 v);
+void __stdcall NetCmdIdAdd(i32* arr, i32 v);
+void __stdcall NetCmdIdClear(i32* arr, i32 v);
+
+// ---------------------------------------------------------------------------
+// CNetSession::ResetCmdBuffers (0x0c0070, __thiscall) - zero the +0x10 head of
+// each of the four inline command slots.
+// ---------------------------------------------------------------------------
+RVA(0x000c0070, 0x15)
+void CNetSession::ResetCmdBuffers() {
+    for (i32 i = 0; i < 4; i++) {
+        m_slots[i].m_10 = 0;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// CNetCmdSlot::ResetAll (0x0c0bb0, __thiscall) - full wipe: zero every scalar
+// field (incl. m_0/m_c/m_1c), drain the queue, then splat both command ranges.
+// ---------------------------------------------------------------------------
+// @early-stop
+// zero-register-pinning wall (73.7%): logic byte-exact. Retail re-materializes
+// the splat constant (`xor eax,eax` twice, around ClearCmds) and saves only esi;
+// cl instead pins 0 in callee-saved edi across the call (one xor + an extra
+// push/pop edi). A regalloc coin-flip identical to ResetTriple/AllSlotsReady in
+// this TU (docs/patterns/zero-register-pinning.md); not source-steerable. Final sweep.
+RVA(0x000c0bb0, 0x47)
+void CNetCmdSlot::ResetAll() {
+    m_0 = 0;
+    m_4 = 0;
+    m_8 = 0;
+    m_c = 0;
+    m_10 = 0;
+    m_14 = 0;
+    m_18 = 0;
+    m_1c = 0;
+    ClearCmds();
+    m_3c = 0;
+    m_40 = 0;
+    m_44 = 0;
+    m_48 = 0;
+    ResetTriple(m_4c);
+    ResetTriple(m_58);
+}
+
+// ---------------------------------------------------------------------------
+// CNetCmdSlot::AdvanceSeq (0x0c0f10, __thiscall) - fold an acknowledged id into
+// the high-water window: if it is exactly m_14+1, retire it (and every
+// already-present successor) out of range A; otherwise just record it.
+// ---------------------------------------------------------------------------
+// @early-stop
+// this-in-ecx residency wall (86.6%): logic + control flow byte-exact. Retail
+// refreshes `mov ecx,esi` (this) before each __stdcall NetCmdId* call even though
+// the convention ignores ecx (4 redundant moves cl omits); the optimizer keeps
+// `this` resident in ecx as well as esi. Same flavor as the framed-module
+// this-residency idiom; not source-steerable here. Final sweep.
+RVA(0x000c0f10, 0x6e)
+void CNetCmdSlot::AdvanceSeq(i32 id) {
+    if (m_14 + 1 == id) {
+        NetCmdIdClear(m_4c, m_14);
+        m_14++;
+        while (NetCmdIdFind(m_4c, m_14 + 1)) {
+            m_14++;
+            NetCmdIdClear(m_4c, m_14);
+        }
+    } else {
+        NetCmdIdAdd(m_4c, id);
+    }
+}
+
 // ---------------------------------------------------------------------------
 // CNetCmdSlot::RaiseMax (0x0c0fa0, __thiscall) - keep the high-water sequence.
 // ---------------------------------------------------------------------------
