@@ -1460,3 +1460,24 @@ flags = "framed"
 unit = "cscanlinesurfacesave"
 source = "src/Image/CScanlineSurfaceSave.cpp"
 flags = "eh"
+
+[[unit]]
+unit = "customwwdpath"
+source = "src/Wwd/CustomWwdPath.cpp"
+flags = "eh"
+[[unit]]
+unit = "grunttubeanim"
+source = "src/Gruntz/GruntTubeAnim.cpp"
+flags = "base"
+[[unit]]
+unit = "imagerle16encode"
+source = "src/Image/ImageRle16Encode.cpp"
+flags = "base"
+[[unit]]
+unit = "wallproject"
+source = "src/DDrawMgr/WallProject.cpp"
+flags = "base"
+[[unit]]
+unit = "gruntmovestep"
+source = "src/Gruntz/GruntMoveStep.cpp"
+flags = "base"

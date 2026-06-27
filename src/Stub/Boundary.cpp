@@ -70,8 +70,6 @@ RVA(0x00024ac0, 0x20)
 void Boundary_024ac0() {} // proximity: CGruntzCmdMgr@-0x30 | UnknownClassArrays@+0x300
 RVA(0x00029af0, 0x3b)
 void Boundary_029af0() {} // proximity: CUserLogic@-0xa0 | UnknownClassArrays@+0x50
-RVA(0x00031610, 0x501)
-void Boundary_031610() {} // proximity: _zvec@-0x370 | CGrunt@+0x660
 RVA(0x00037870, 0x3c)
 void Boundary_037870() {} // proximity: CWnd@-0x7d0 | StateMgrBZ@+0xa50
 RVA(0x00037b40, 0xb3)
@@ -100,14 +98,10 @@ RVA(0x0003ad30, 0xa)
 void Boundary_03ad30() {} // proximity: CDDrawSurfacePair@-0xb60 | WwdFile@+0x740
 RVA(0x0003ad90, 0x97)
 void Boundary_03ad90() {} // proximity: CDDrawSurfacePair@-0xbc0 | WwdFile@+0x6e0
-RVA(0x0003b940, 0x19d)
-void Boundary_03b940() {} // proximity: WwdFile@-0x4d0 | CGruntCreationPoint@+0x3380
 RVA(0x0003bb50, 0x128)
 void Boundary_03bb50() {} // proximity: WwdFile@-0x6e0 | CGruntCreationPoint@+0x3170
 RVA(0x000464e0, 0x74)
 void Boundary_0464e0() {} // proximity: CFortressFlag@-0xd0 | CParticlez@+0x5f0
-RVA(0x00050a50, 0x1c5)
-void Boundary_050a50() {} // proximity: CUserLogic@-0x2d00 | CGrunt@+0x760
 RVA(0x00050ca0, 0x2b)
 void Boundary_050ca0() {} // proximity: CUserLogic@-0x2f50 | CGrunt@+0x510
 RVA(0x00056f80, 0x8e)
@@ -208,8 +202,6 @@ RVA(0x000db2f0, 0x2b)
 void Boundary_0db2f0() {} // proximity: GruntzPlayer@-0x340 | CPlay@+0x13e0
 RVA(0x000db750, 0x70)
 void Boundary_0db750() {} // proximity: GruntzPlayer@-0x7a0 | CPlay@+0xf80
-RVA(0x000e0d40, 0x6c2)
-void Boundary_0e0d40() {} // proximity: CProjectile@-0x230 | CTimeBomb@+0xaf0
 RVA(0x000e17b0, 0x15)
 void Boundary_0e17b0() {} // proximity: CProjectile@-0xca0 | CTimeBomb@+0x80
 RVA(0x000e56b0, 0x8)
@@ -356,8 +348,6 @@ RVA(0x00143c20, 0x84)
 void Boundary_143c20() {} // proximity: CDDrawPtrCollections@-0xc60 | CFileImage@+0x3a0
 RVA(0x00145e00, 0x26)
 void Boundary_145e00() {} // proximity: CFileImage@-0x130 | CDDPalette@+0x1590
-RVA(0x001471d0, 0x1b4)
-void Boundary_1471d0() {} // proximity: CFileImage@-0x1500 | CDDPalette@+0x1c0
 RVA(0x00148250, 0x61)
 void Boundary_148250() {} // proximity: CDDPalette@-0x580 | CFileImage@+0x5f0
 RVA(0x00148a50, 0x6b)
@@ -372,8 +362,6 @@ RVA(0x00148cc0, 0x18)
 void Boundary_148cc0() {} // proximity: CFileImage@-0x430 | CImageOwned@+0x20
 RVA(0x001493b0, 0xfd)
 void Boundary_1493b0() {} // proximity: CImageOwned@-0x2e0 | CDDrawShadeBlit@+0x440
-RVA(0x001495d0, 0x1a6)
-void Boundary_1495d0() {} // proximity: CImageOwned@-0x500 | CDDrawShadeBlit@+0x220
 RVA(0x0014fe30, 0x51)
 void Boundary_14fe30() {} // proximity: CShadeTableCache@-0x2b0 | CDataBuffer@+0x350
 RVA(0x001503f0, 0xdc)

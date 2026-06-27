@@ -124,6 +124,7 @@ cstatusbarspriteacts	2	1
 cteleporter	3	2
 ctimebomb	3	2
 ctoobspikez	4	3
+customwwdpath	1	1
 cvoicetrigger	4	3
 cwaypoint	1	1
 cwormholeacts	2	1
@@ -137,7 +138,7 @@ directinputmgr2	36	32
 directsoundmgr	39	29
 dsoundvoice	2	1
 engine_attributed	15	0
-engine_boundary	231	0
+engine_boundary	225	0
 engine_discovered	51	0
 engine_label_stubs	437	105
 engine_unmatched	264	0
@@ -162,8 +163,10 @@ gamewnd	9	8
 groupops	2	0
 grunt	81	15
 gruntdatarecord	2	2
+gruntmovestep	1	0
 gruntpuddle	4	2
 gruntspawnconfig	15	8
+grunttubeanim	1	0
 gruntvoice	5	4
 gruntzapp	10	9
 gruntzcmdmgr	12	10
@@ -178,6 +181,7 @@ iconloaders	5	1
 image	39	24
 imagepolyclip	1	0
 imagepool	13	7
+imagerle16encode	1	0
 imagerotate	1	0
 imagesavebmp	1	0
 imageset	7	4
@@ -260,7 +264,7 @@ statemgrbz	5	3
 statusbaritem	2	1
 statusbarupdaters	7	0
 streamfeeder	9	7
-streamrecordloaders	4	0
+streamrecordloaders	5	0
 streamvoice	5	3
 symparser	10	5
 symtab	19	10
@@ -283,6 +287,7 @@ unknownclassincgruntzmgr	2	0
 userbaselink	10	0
 userlogic	62	25
 videoconfig	2	0
+wallproject	1	0
 warlord	10	3
 warpstonefly	3	2
 winapi	5	3
@@ -1071,6 +1076,7 @@ ctoobspikez	??1CToobSpikez@@UAE@XZ	100.0000	100.0000	1	550e0ced02c4	0x12c60
 ctoobspikez	?FireActivation@CToobSpikez@@QAEXH@Z	100.0000	100.0000	1	44f507f426d2	0x114860
 ctoobspikez	?RegisterActs@CToobSpikez@@QAEXXZ	92.9130	92.9130	1	753529566a46	0x1149c0
 ctoobspikez	?Register_1147e0@CToobSpikez@@QAEXXZ	100.0000	100.0000	1	5a4beef40a63	0x1147e0
+customwwdpath	?BuildCustomWwdPath@@YA?AVCString@@V1@@Z	100.0000	100.0000	1	5fdf7d205a8d	0x3b940
 cvoicetrigger	??1CVoiceTrigger@@UAE@XZ	100.0000	100.0000	1	8939b1cb3841	0x135a0
 cvoicetrigger	?InitActReg@CVoiceTrigger@@SAXXZ	100.0000	100.0000	1	a1ec03ca782c	0x11a320
 cvoicetrigger	?RegisterActs@CVoiceTrigger@@QAEXXZ	92.9130	92.9130	1	eb83cede4e29	0x11a500
@@ -1256,7 +1262,6 @@ engine_boundary	?Boundary_023960@@YAXXZ	25.0000	25.0000	2	45c986cc6a25	0x23960
 engine_boundary	?Boundary_023d90@@YAXXZ	1.0526	1.0526	2	2999679ada02	0x23d90
 engine_boundary	?Boundary_024ac0@@YAXXZ	3.6364	3.6364	2	97599e6128a4	0x24ac0
 engine_boundary	?Boundary_029af0@@YAXXZ	2.1053	2.1053	2	efc261072fd9	0x29af0
-engine_boundary	?Boundary_031610@@YAXXZ	0.1020	0.1020	2	f83341bafa0f	0x31610
 engine_boundary	?Boundary_037870@@YAXXZ	4.7619	4.7619	2	8512d0f5f358	0x37870
 engine_boundary	?Boundary_037b40@@YAXXZ	1.3514	1.3514	2	536cccd799df	0x37b40
 engine_boundary	?Boundary_037c30@@YAXXZ	1.3514	1.3514	2	dbd6bf68ce39	0x37c30
@@ -1271,10 +1276,8 @@ engine_boundary	?Boundary_03a530@@YAXXZ	20.0000	20.0000	2	eb9c4742cc52	0x3a530
 engine_boundary	?Boundary_03acb0@@YAXXZ	20.0000	20.0000	2	fa35c1036fd9	0x3acb0
 engine_boundary	?Boundary_03ad30@@YAXXZ	20.0000	20.0000	2	0c9ab0afd82d	0x3ad30
 engine_boundary	?Boundary_03ad90@@YAXXZ	2.3810	2.3810	2	afd3d289d51d	0x3ad90
-engine_boundary	?Boundary_03b940@@YAXXZ	1.0417	1.0417	2	a315cf6c4613	0x3b940
 engine_boundary	?Boundary_03bb50@@YAXXZ	1.0309	1.0309	2	c744a5355303	0x3bb50
 engine_boundary	?Boundary_0464e0@@YAXXZ	0.8889	0.8889	2	bc437931fe61	0x464e0
-engine_boundary	?Boundary_050a50@@YAXXZ	0.2597	0.2597	2	13f1f15b0e47	0x50a50
 engine_boundary	?Boundary_050ca0@@YAXXZ	3.3333	3.3333	2	fcc8fa22d59c	0x50ca0
 engine_boundary	?Boundary_056f80@@YAXXZ	0.8333	0.8333	2	d31b844b95ba	0x56f80
 engine_boundary	?Boundary_05bc50@@YAXXZ	20.0000	20.0000	2	aff6b7b7bff4	0x5bc50
@@ -1325,7 +1328,6 @@ engine_boundary	?Boundary_0d5e20@@YAXXZ	2.8571	2.8571	2	4e874c49ff68	0xd5e20
 engine_boundary	?Boundary_0db200@@YAXXZ	1.2121	1.2121	2	670ebbd319aa	0xdb200
 engine_boundary	?Boundary_0db2f0@@YAXXZ	5.8824	5.8824	2	72ad3c318ebb	0xdb2f0
 engine_boundary	?Boundary_0db750@@YAXXZ	1.1111	1.1111	2	f141ea19058a	0xdb750
-engine_boundary	?Boundary_0e0d40@@YAXXZ	0.0670	0.0670	2	896f840c3230	0xe0d40
 engine_boundary	?Boundary_0e17b0@@YAXXZ	20.0000	20.0000	2	b820227d73c6	0xe17b0
 engine_boundary	?Boundary_0e56b0@@YAXXZ	50.0000	50.0000	2	6cdec715c748	0xe56b0
 engine_boundary	?Boundary_0ea170@@YAXXZ	1.0000	1.0000	2	fe8eb0cdc74c	0xea170
@@ -1399,7 +1401,6 @@ engine_boundary	?Boundary_1437f0@@YAXXZ	11.1111	11.1111	2	2caa9f97b022	0x1437f0
 engine_boundary	?Boundary_143950@@YAXXZ	1.1765	1.1765	2	290aac6d0dd2	0x143950
 engine_boundary	?Boundary_143c20@@YAXXZ	0.8696	0.8696	2	0ca2d366574b	0x143c20
 engine_boundary	?Boundary_145e00@@YAXXZ	5.8824	5.8824	2	04ce92668c7c	0x145e00
-engine_boundary	?Boundary_1471d0@@YAXXZ	0.7194	0.7194	2	cb287faca66f	0x1471d0
 engine_boundary	?Boundary_148250@@YAXXZ	2.5641	2.5641	2	0d2c81d68da1	0x148250
 engine_boundary	?Boundary_148a50@@YAXXZ	1.2903	1.2903	2	66ec2413ec96	0x148a50
 engine_boundary	?Boundary_148af0@@YAXXZ	1.2121	1.2121	2	b4ad79dd710b	0x148af0
@@ -1407,7 +1408,6 @@ engine_boundary	?Boundary_148b50@@YAXXZ	2.2222	2.2222	2	89303a019409	0x148b50
 engine_boundary	?Boundary_148c40@@YAXXZ	1.2500	1.2500	2	85adc477de01	0x148c40
 engine_boundary	?Boundary_148cc0@@YAXXZ	4.4444	4.4444	2	a4a5142d88fe	0x148cc0
 engine_boundary	?Boundary_1493b0@@YAXXZ	0.5263	0.5263	2	dd555e7e5ecb	0x1493b0
-engine_boundary	?Boundary_1495d0@@YAXXZ	0.2721	0.2721	2	2ee1047f03d3	0x1495d0
 engine_boundary	?Boundary_14fe30@@YAXXZ	4.3478	4.3478	2	e94dd8e6ca00	0x14fe30
 engine_boundary	?Boundary_1503f0@@YAXXZ	0.6780	0.6780	2	16d132d3bd3c	0x1503f0
 engine_boundary	?Boundary_1509c0@@YAXXZ	1.0989	1.0989	2	678d73c75fc9	0x1509c0
@@ -2506,6 +2506,7 @@ grunt	?UpdateEntranceAnim@CGrunt@@QAEHXZ	88.3088	88.3088	1	277e290dabfb	0x690a0
 grunt	?UpdateGruntStatus@CGrunt@@QAEHXZ	94.5000	94.5000	3	2b7c880860ba	0x617c0
 gruntdatarecord	?DeserializeStrings@GruntDataRecord@@QAEHPAUDataWriter@@@Z	100.0000	100.0000	1	d96d2c87cdd6	0x56eb0
 gruntdatarecord	?SerializeStrings@GruntDataRecord@@QAEHPAUDataWriter@@@Z	100.0000	100.0000	1	71ad52c7e3da	0x56da0
+gruntmovestep	?Step@CGruntMover@@QAEHPAUCGruntM@@@Z	18.1429	18.1429	1	27431664e366	0x31610
 gruntpuddle	??1CGruntPuddle@@UAE@XZ	100.0000	100.0000	1	d8797374243c	0x10d10
 gruntpuddle	?Place@CGruntPuddle@@QAEHHHHH@Z	73.5400	73.5400	2	f8ec38ad7367	0x40c30
 gruntpuddle	?Remove@CGruntPuddle@@QAEHXZ	71.3000	71.3000	2	bcf839e386ba	0x40d20
@@ -2525,6 +2526,7 @@ gruntspawnconfig	?LoadGruntVoices@CGruntSpawnConfig@@QAEHXZ	95.3488	95.3488	2	78
 gruntspawnconfig	?PickWeighted@CGruntSpawnConfig@@QAEHHH@Z	1.0870	1.0870	1	b9cc209559f5	0x11bee0
 gruntspawnconfig	?ResetPicks@CGruntSpawnConfig@@QAEXXZ	100.0000	100.0000	1	6d4d20bac4c4	0x11c7f0
 gruntspawnconfig	?StopVoice@CGruntSpawnConfig@@QAEXH@Z	100.0000	100.0000	1	3b4c120126c9	0x11c730
+grunttubeanim	?SetupTubeAnim@CGruntTube@@QAEHH@Z	72.3636	72.3636	1	bc25d7867fff	0x50a50
 gruntvoice	??1CGruntVoice@@UAE@XZ	100.0000	100.0000	1	800298c90ba0	0x119ae0
 gruntvoice	?Dispatch@CGruntVoice@@QAEXH@Z	100.0000	100.0000	2	254b7ed0b958	0x119e40
 gruntvoice	?InitActReg@CGruntVoice@@SAXXZ	100.0000	100.0000	1	e700d1dbab0c	0x119dc0
@@ -2757,6 +2759,7 @@ imagepool	?ProcessPal@PalBuilder_176df0@ApiCallerStubs@@QAEHPAXH@Z	99.8621	99.86
 imagepool	?RemovePalette@CImagePool@@QAEXPAUPalBuilder_176df0@ApiCallerStubs@@@Z	100.0000	100.0000	1	1dc2cba2336a	0x174f30
 imagepool	?SetHandles@CImagePool@@QAEHHHH@Z	99.5000	99.5000	1	595da9f86264	0x174e90
 imagepool	?SetPalette@GdiOwner_175c90@ApiCallerStubs@@QAEXPAXH@Z	100.0000	100.0000	1	6e6ebb51b1d0	0x176ad0
+imagerle16encode	?EncodeRle16@CImageRle16@@QAEPAXPBE@Z	65.3946	65.3946	1	7101f253e038	0x1495d0
 imagerotate	?ImageRotateBlit@@YAXHHPAHHPAUImgRect@@HMMHH@Z	32.3353	32.3353	1	189d1bf9dbf5	0x145f60
 imagesavebmp	?SaveBmp@CImageSaver@@QAEHVCString@@HHHHHHHH@Z	18.8182	18.8182	1	2832cdff28e1	0x149250
 imageset	?CreateFrame24@CImageSet@@QAEPAVCImageFrame@@HHHH@Z	99.0800	99.0800	1	81321783b07c	0x152110
@@ -3322,6 +3325,7 @@ streamfeeder	?SeedWindow@StreamFeeder@@QAEHPAXII@Z	100.0000	100.0000	1	edea263e6
 streamrecordloaders	?Load@CArchiveLoadRec@@QAEHPAVCArchiveReader@@@Z	99.7718	99.7718	1	7b195ebceee3	0xd79d0
 streamrecordloaders	?Load@CEventLoadRec@@QAEHPAVCStreamReader@@@Z	93.9657	93.9657	1	10830728f95d	0x9c650
 streamrecordloaders	?Load@CGruntStateRec@@QAEHPAVCDualReader@@HHH@Z	90.5323	90.5323	1	621affc80fc6	0xea990
+streamrecordloaders	?Load@CProjLoadRec@@QAEHPAVCSerialArchive@@HHPAVCSerialObj@@@Z	84.0770	84.0770	1	f64a34612a85	0xe0d40
 streamrecordloaders	?Load@CTriggerLoadRec@@QAEHPAVCStreamReader@@@Z	92.2366	92.2366	1	53a7a4f4c4fa	0x9bb0
 streamvoice	??0StreamVoice@@QAE@PAUIDirectSoundBufferZ@@PAVDirectSoundMgr@@HH@Z	35.8824	35.8824	1	32868b69f13b	0x1375b0
 streamvoice	??1StreamVoice@@QAE@XZ	42.4643	42.4643	1	59cc0331f52c	0x137650
@@ -3613,6 +3617,7 @@ userlogic	?winapi_064540_PostMessageA@CUserLogic@@QAEHXZ	2.5974	2.5974	2	1604491
 userlogic	?winapi_0ee800_IntersectRect_PtInRect@CUserLogic@@QAEHXZ	0.2653	0.2653	2	f2ccbcb9c820	0xee800
 videoconfig	?LoadVideoResolutionConfig@@YAXPAXHH@Z	97.2737	97.2737	7	65cf3f7da201	0x36f30
 videoconfig	?SaveVideoResolutionConfig@@YAXPAX0@Z	88.8148	88.8148	6	6a3159e5dbaa	0x370a0
+wallproject	?ProjectWallQuad@@YAHHHHHHHHHHHH@Z	39.5180	39.5180	1	d4b41fa384da	0x1471d0
 warlord	??0CWarlord@@QAE@H@Z	3.5796	3.5796	1	b29f645c5e90	0x42d40
 warlord	??1CWarlord@@UAE@XZ	73.9524	73.9524	1	0524876559f2	0x107f0
 warlord	?BuildFortSplashParticles@CWarlord@@QAEXXZ	1.1905	1.1905	1	46da92888935	0x44f80
