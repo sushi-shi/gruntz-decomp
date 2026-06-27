@@ -7,6 +7,9 @@
 
 struct CCoveredPowerupLogicBase {
     CCoveredPowerupLogicBase();
+    // real polymorphic base: 1 declared-only virtual(s) so cl
+    // emits the leaf ??_7 + implicit ctor vptr-stamp (RTTI auto-named).
+    virtual void Vf0();
 };
 
 class CCoveredPowerupLogic : public CCoveredPowerupLogicBase {
@@ -14,13 +17,13 @@ public:
     CCoveredPowerupLogic();
 };
 
-// Derived vftable, referenced as DIR32 data (RVA = VA - 0x400000).
-DATA(0x005eaef4)
-extern void* g_coveredPowerupLogicVtbl;
+// Leaf ??_7 vftable now emitted by cl + named on the target automatically
+// (RTTI auto-namer); the manual struct stamp is gone.
 
 // @confidence: high
 // @source: rtti-vptr
 RVA(0x00112240, 0x12)
 CCoveredPowerupLogic::CCoveredPowerupLogic() {
-    *(void**)this = &g_coveredPowerupLogicVtbl;
+    // base ctor call + vptr stamp are now both implicit (real
+    // polymorphic class) - replaces the manual struct stamp.
 }

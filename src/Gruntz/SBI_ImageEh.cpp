@@ -1,48 +1,56 @@
 #include <rva.h>
 #include <Ints.h>
-// SBI_ImageEh.cpp - the /GX EH-framed CSBI_Image scalar destructor, split off the
+// SBI_ImageEh.cpp - the /GX EH-framed CSBI_Image destructor, split off the
 // frameless sbi_image TU (C:\Proj\Gruntz). MSVC5's /GX frames the dtor's
 // base-subobject teardown walk; it cannot share the base TU's frameless flags.
 // The split is matching-neutral (each function is RVA-keyed).
+//
+// REAL polymorphic hierarchy now:  CSBI_Image : CSBI_RectOnly : CStatusBarItem.
+// Each level has a non-trivial (inline) virtual destructor that calls its member
+// teardown helper; MSVC folds the two base dtors into the most-derived ~CSBI_Image
+// and - because the base subobjects are non-trivial - emits the full /GX SEH frame
+// (push -1/handler/fs:0 + the 0/1/-1 trylevel stamps) plus the per-level vptr
+// re-stamps. The three vftables ??_7CStatusBarItem / ??_7CSBI_RectOnly /
+// ??_7CSBI_Image auto-derive on the target (RTTI; config/vtable_names.csv),
+// replacing the transitional manual `*(void**)this = &g_vtbl_*` stamps.
 
-// The retail vtables stamped as the destructor unwinds the hierarchy
-//   CSBI_Image : CSBI_RectOnly : CStatusBarItem
-// reproduced by address (DATA() externs, reloc-masked) - the transitional
-// manual-stamp device while the full hierarchy's vtables are not yet modeled.
-DATA(0x001eac0c)
-extern void* g_vtbl_image[]; // 0x5eac0c (CSBI_Image most-derived subobject)
-DATA(0x001eab8c)
-extern void* g_vtbl_rectBase[]; // 0x5eab8c (CSBI_RectOnly base subobject)
-DATA(0x001eabcc)
-extern void* g_vtbl_statusBase[]; // 0x5eabcc (CStatusBarItem base subobject)
+// CStatusBarItem grand-base (vtable 0x5eabcc, 11 slots = vdtor + 10 virtuals).
+struct CStatusBarItem {
+    virtual ~CStatusBarItem();
+    virtual void Vf1();
+    virtual void Vf2();
+    virtual void Vf3();
+    virtual void Vf4();
+    virtual void Vf5();
+    virtual void Vf6();
+    virtual void Vf7();
+    virtual void Vf8();
+    virtual void Vf9();
+    virtual void Vf10();
+    void DtorStatus(); // 0x10bfa0  CStatusBarItem base teardown
+    char m_pad[0x60 - 0x04];
+};
+inline CStatusBarItem::~CStatusBarItem() { DtorStatus(); }
 
-class CSBI_Image {
-public:
-    ~CSBI_Image();
-    void DtorImage();  // 0xe6d90  most-derived (Image) member teardown
-    void DtorRect();   // 0xe8760  CSBI_RectOnly base teardown
-    void DtorStatus(); // 0x10bfa0 CStatusBarItem base teardown
-    char m_pad[0x60];
+// CSBI_RectOnly base (vtable 0x5eab8c, 11 slots; overrides the vdtor -> own vtable).
+struct CSBI_RectOnly : CStatusBarItem {
+    virtual ~CSBI_RectOnly();
+    void DtorRect(); // 0xe8760  CSBI_RectOnly base teardown
+};
+inline CSBI_RectOnly::~CSBI_RectOnly() { DtorRect(); }
+
+// CSBI_Image most-derived (vtable 0x5eac0c, 12 slots = vdtor + 10 + 1 new).
+struct CSBI_Image : CSBI_RectOnly {
+    virtual ~CSBI_Image();
+    virtual void Vf11();
+    void DtorImage(); // 0xe6d90  most-derived (Image) member teardown
 };
 
-// The scalar destructor walks the base-subobject chain: before tearing down each
-// base it re-stamps the vptr to that base's retail vtable, then calls that base's
-// teardown. /GX frames the whole walk (the 0/1/-1 trylevel writes are the
-// EH-state machine's, auto-generated).
-// @early-stop
-// ~43% (eh-dtor-needs-base-subobject wall): the three vptr-stamp + dtor-call pairs
-// are byte-exact, but the whole /GX SEH frame (push -1/handler/fs:0 + the 0/1/-1
-// trylevel stamps) is MISSING - MSVC only frames a dtor whose base SUBOBJECT has a
-// non-trivial dtor, which the manual-vptr non-polymorphic model can't express.
-// Documented wall (docs/patterns/eh-dtor-needs-base-subobject.md); the real base
-// hierarchy would re-shape the ctor + emit a ??_7/??_G and regress the frameless
-// leaves. Deferred to the final sweep (whole-class model).
+// The most-derived destructor: stamp ??_7CSBI_Image, run DtorImage, then MSVC
+// folds the base dtors (stamp ??_7CSBI_RectOnly + DtorRect, stamp
+// ??_7CStatusBarItem + DtorStatus). The non-trivial base subobjects supply the /GX
+// frame and the 0/1/-1 trylevel stamps.
 RVA(0x00100870, 0x6a)
 CSBI_Image::~CSBI_Image() {
-    *(void**)this = g_vtbl_image;
     DtorImage();
-    *(void**)this = g_vtbl_rectBase;
-    DtorRect();
-    *(void**)this = g_vtbl_statusBase;
-    DtorStatus();
 }

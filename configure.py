@@ -132,6 +132,9 @@ def load_manifest(path: Path) -> dict:
     # Named flag profiles ([flags] table): EVERY [[unit]] selects one with
     # `flags = "<name>"`. The profiles ARE the full flag sets - there is no
     # separate global default to inherit, so each TU's flag choice is explicit.
+    # A unit may additionally set `extra = ["/GR", ...]` to append per-TU flags
+    # on top of its profile (the per-TU /GR RTTI / /GX EH knob). Optional; absent
+    # == unchanged, so it is matching-neutral until a unit opts in.
     profiles = data.get("flags", {})
     if not profiles:
         raise SystemExit(f"{path}: [flags] must define at least one profile")
@@ -150,7 +153,15 @@ def load_manifest(path: Path) -> dict:
             raise SystemExit(f"{path}: unit '{u['unit']}' references unknown "
                              f"flags profile '{u['flags']}' "
                              f"(defined: {sorted(profiles)})")
-        u["cflags"] = profiles[u["flags"]]
+        # Copy the profile (never mutate the shared list) then append optional
+        # per-TU `extra` flags - the /GR (RTTI; MSVC5 default OFF) / /GX (EH) knob.
+        u["cflags"] = list(profiles[u["flags"]])
+        extra = u.get("extra", [])
+        if extra:
+            if not isinstance(extra, list) or not all(isinstance(x, str) for x in extra):
+                raise SystemExit(f"{path}: unit '{u['unit']}' 'extra' must be a "
+                                 f"list of strings (got {extra!r})")
+            u["cflags"] = u["cflags"] + extra
     return data
 
 
@@ -251,6 +262,10 @@ def emit_ninja(manifest: dict, out: Path) -> None:
         compdb_dep = [COMPDB] if (REPO / COMPDB).exists() else []
         zlib_dep = (["config/zlib_labels.csv"]
                     if (REPO / "config/zlib_labels.csv").exists() else [])
+        # the deterministic ??_7 vtable-name map labels.py auto-applies (gruntz
+        # build re-runs gen_labels when it changes).
+        zlib_dep += (["config/vtable_names.csv"]
+                     if (REPO / "config/vtable_names.csv").exists() else [])
         frags, func_frags, glob_frags = [], [], []
         for u in units:
             frag = f"{LABELS_DIR}/{u['unit']}.csv"

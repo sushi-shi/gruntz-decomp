@@ -46,6 +46,15 @@ public:
 // cover the touched offsets.  Size ~0x8c (0x2c base + 0x60 m_block).
 class CTileTriggerSwitchLogic {
 public:
+    // The 4 retail vtable slots (0x5eae8c). Real virtuals now -> cl emits the
+    // ??_7 vftable + the implicit ctor vptr-stamp (replaces the manual struct
+    // stamp). Bodies live in unmatched engine TUs; declared-only here, named on
+    // the target via deterministic @data-symbol/@rva-symbol in the .cpp.
+    virtual void Vf0(); // slot 0 -> 0x001749
+    virtual void Vf1(); // slot 1 -> 0x0022e8
+    virtual void Vf2(); // slot 2 -> 0x002e0f
+    virtual void Vf3(); // slot 3 -> 0x0037e2
+
     CTileTriggerSwitchLogic();
     i32 FindIndexByKey(i32 key);
     i32 VerifyBlockLinksB(); // 0x111f40 (FindChild(key, 3) variant)
@@ -82,7 +91,7 @@ public:
     void CTileTriggerSwitchLogic_115f60();
     void BuildRockBreakInGameText();
 
-    void* m_vptr;                     // +0x00  vtable (0x5eae8c, stamped in ctor)
+    // +0x00  implicit vptr (real virtuals above; was an explicit m_vptr struct stamp)
     i32 m_04;                         // +0x04  list head (owner) / key (data obj)
     i32 m_08;                         // +0x08  (not accessed here)
     i32 m_0c;                         // +0x0c  (not accessed here)

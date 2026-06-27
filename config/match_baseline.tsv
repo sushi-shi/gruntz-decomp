@@ -284,24 +284,24 @@ rezmgr	15	10
 rollingball	5	3
 savegame	21	15
 sbi_gruntmachine	3	2
-sbi_gruntmachine_eh	1	0
+sbi_gruntmachine_eh	1	1
 sbi_image	1	0
-sbi_image_eh	1	0
+sbi_image_eh	1	1
 sbi_imageset	1	0
-sbi_imagesetani_eh	1	0
+sbi_imagesetani_eh	1	1
 sbi_menuitem	12	7
-sbi_menuitem_eh	1	0
+sbi_menuitem_eh	1	1
 sbi_rectonly	69	28
 sbi_rectonly_eh	4	1
 sbi_sidetab	4	2
-sbi_sidetab_eh	1	0
-sbi_statztabarrow_eh	1	0
+sbi_sidetab_eh	1	1
+sbi_statztabarrow_eh	1	1
 sbi_statztabgruntbar	3	2
-sbi_statztabgruntbar_eh	1	0
+sbi_statztabgruntbar_eh	1	1
 sbi_warlordhead	5	2
-sbi_warlordhead_eh	1	0
+sbi_warlordhead_eh	1	1
 sbi_wellgoo	1	0
-sbi_wellgoo_eh	1	0
+sbi_wellgoo_eh	1	1
 scattersamples	2	1
 severusworkerdtor	1	0
 shadetablecache	19	3
@@ -2293,11 +2293,11 @@ gamemodeobjlifecycle	?ClearPlacedObjects@CGameModeObj@@QAEHXZ	53.9750	53.9750	1	
 gamemodeobjlifecycle	?FlushPendingOps@CGameModeObj@@QAEHXZ	100.0000	100.0000	1	27f585a8a2ff	0xda2d0
 gamemodeobjlifecycle	?ReleaseLevelOverlay@CGameModeObj@@QAEHH@Z	100.0000	100.0000	1	036396bebe2f	0xd6560
 gamemodeobjlifecycle	?SetCursorFrame@CGameModeObj@@QAEHH@Z	100.0000	100.0000	1	98c98e0a8044	0xd1b30
-gameobjectctors	??0CGruntStaminaSprite@@QAE@PAUCSpriteObj@@@Z	94.7619	94.7619	2	432dc16b6366	0x7fae0
-gameobjectctors	??0CGruntToyTimeSprite@@QAE@PAUCSpriteObj@@@Z	94.7619	94.7619	2	83fe8ba17874	0x7fbd0
-gameobjectctors	??0CGruntWingzTimeSprite@@QAE@PAUCSpriteObj@@@Z	94.7619	94.7619	2	d29f9444e61a	0x7fcc0
-gameobjectctors	??0CRainCloud@@QAE@PAUCHazardObj@@@Z	100.0000	100.0000	3	5f425e89f780	0xb49b0
-gameobjectctors	??0CUFO@@QAE@PAUCHazardObj@@@Z	81.0227	81.0227	3	529d99d92540	0xb4a90
+gameobjectctors	??0CGruntStaminaSprite@@QAE@PAUCSpriteObj@@@Z	94.7619	94.7619	3	169495affd03	0x7fae0
+gameobjectctors	??0CGruntToyTimeSprite@@QAE@PAUCSpriteObj@@@Z	94.7619	94.7619	3	5cc9edcada2e	0x7fbd0
+gameobjectctors	??0CGruntWingzTimeSprite@@QAE@PAUCSpriteObj@@@Z	94.7619	94.7619	3	3f0e70425f80	0x7fcc0
+gameobjectctors	??0CRainCloud@@QAE@PAUCHazardObj@@@Z	100.0000	100.0000	4	5d1fe1550086	0xb49b0
+gameobjectctors	??0CUFO@@QAE@PAUCHazardObj@@@Z	81.0227	81.0227	4	e1c3181bcc49	0xb4a90
 gameobjectctors	?GetToyTime@CGruntToyTimeSprite@@SGHPAUCToyTimeHost@@@Z	100.0000	100.0000	1	d1003936dd49	0x7fca0
 gameobjectctors	?GetTypeTag@CGruntToyTimeSprite@@QAEHXZ	100.0000	100.0000	1	3f4adcb11671	0x120e0
 gameobjectctors	?Serialize@CUFO@@QAEHPAXHHH@Z	100.0000	100.0000	1	e328f3778feb	0xb4d30
@@ -3123,11 +3123,11 @@ savegame	?VerifySlot@CSaveGame@@QAEHPAUSaveSlot@@@Z	43.9830	43.9830	2	2e50dc6efa
 sbi_gruntmachine	?Render@CSBI_GruntMachine@@QAEHH@Z	87.3590	87.3590	1	d8c0e8492784	0xe8cb0
 sbi_gruntmachine	?Reset@CSBI_GruntMachine@@QAEXXZ	100.0000	100.0000	1	539d6616e793	0xe8c70
 sbi_gruntmachine	?SetFrames@CSBI_GruntMachine@@QAEXHH@Z	100.0000	100.0000	1	90c8ff4c6d8d	0xe8dc0
-sbi_gruntmachine_eh	??1CSBI_GruntMachine@@QAE@XZ	34.2381	34.2381	1	00ec75e74a8e	0x104ce0
+sbi_gruntmachine_eh	??1CSBI_GruntMachine@@UAE@XZ	100.0000	100.0000	1	39b102f07725	0x104ce0
 sbi_image	?SetupImage@CSBI_Image@@QAEHHPAUCImageCfgHost@@HHHHHHHHH@Z	64.7500	64.7500	2	2facdd2dfb73	0xe6c80
-sbi_image_eh	??1CSBI_Image@@QAE@XZ	42.7200	42.7200	1	b3fa0dd28c09	0x100870
+sbi_image_eh	??1CSBI_Image@@UAE@XZ	100.0000	100.0000	1	bb1ec3b102a6	0x100870
 sbi_imageset	?Serialize@CSBI_ImageSet@@QAEHPAUCImageSetStream@@HHH@Z	99.1803	99.1803	2	30e578b47581	0xe74f0
-sbi_imagesetani_eh	??1CSBI_ImageSetAni@@QAE@XZ	43.6061	43.6061	1	243d2ce2455f	0x1047f0
+sbi_imagesetani_eh	??1CSBI_ImageSetAni@@UAE@XZ	100.0000	100.0000	1	7354647071fa	0x1047f0
 sbi_menuitem	?Blit@CSBI_MenuItem@@QAEHXZ	100.0000	100.0000	1	89b04f10c391	0xe84f0
 sbi_menuitem	?ClearFrame2@CSBI_MenuItem@@QAEXXZ	100.0000	100.0000	1	54de26b0f1b5	0xe81a0
 sbi_menuitem	?ClearFrame@CSBI_MenuItem@@QAEXXZ	100.0000	100.0000	1	b89098c623b9	0xe6d90
@@ -3140,7 +3140,7 @@ sbi_menuitem	?SerializeChain@CSBI_MenuItem@@QAEHPAXHHH@Z	84.9697	84.9697	2	0a90b
 sbi_menuitem	?SerializeFields@CSBI_MenuItem@@QAEHPAXHHH@Z	100.0000	100.0000	2	dad5e24b70f6	0x10bfc0
 sbi_menuitem	?SetState@CSBI_MenuItem@@QAEHHH@Z	93.1020	93.1020	1	77d598c9a000	0xe8310
 sbi_menuitem	?SetSubtype@CSBI_MenuItem@@QAEXXZ	100.0000	100.0000	1	ef8f234ee98d	0x1005b0
-sbi_menuitem_eh	??1CSBI_MenuItem@@QAE@XZ	43.0345	43.0345	1	922b51808a58	0x1007d0
+sbi_menuitem_eh	??1CSBI_MenuItem@@UAE@XZ	100.0000	100.0000	1	277d976bfa62	0x1007d0
 sbi_rectonly	??0CSBI_RectOnly@@QAE@XZ	100.0000	100.0000	6	9bee20d45286	0x101fa0
 sbi_rectonly	?ActivateSlot@CSBI_RectOnly@@QAEHH@Z	68.2963	68.2963	1	eb6101eb1e9a	0x10b930
 sbi_rectonly	?AdvanceGauge@CSBI_RectOnly@@QAEXH@Z	100.0000	100.0000	2	ea00c64bd531	0x105750
@@ -3218,20 +3218,20 @@ sbi_sidetab	?BuildHandle@CSBI_SideTab@@QAEHXZ	86.0101	86.0101	1	26533806f547	0xe
 sbi_sidetab	?Refresh@CSBI_SideTab@@QAEHH@Z	100.0000	100.0000	1	333133b9c736	0xe9820
 sbi_sidetab	?Render@CSBI_SideTab@@QAEHH@Z	87.8438	87.8438	1	1361c82e0ba1	0xe99c0
 sbi_sidetab	?Reset@CSBI_SideTab@@QAEXXZ	100.0000	100.0000	1	fc1e8fed52ab	0xe9800
-sbi_sidetab_eh	??1CSBI_SideTab@@QAE@XZ	34.2381	34.2381	1	1bca8911fa32	0x105200
-sbi_statztabarrow_eh	??1CSBI_StatzTabArrow@@QAE@XZ	43.7568	43.7568	1	f23500002d18	0x1048f0
+sbi_sidetab_eh	??1CSBI_SideTab@@UAE@XZ	100.0000	100.0000	1	65f4d63ef8b0	0x105200
+sbi_statztabarrow_eh	??1CSBI_StatzTabArrow@@UAE@XZ	100.0000	100.0000	1	15ca01b68391	0x1048f0
 sbi_statztabgruntbar	?Poll@CSBI_StatzTabGruntBar@@QAEHH@Z	100.0000	100.0000	1	6f194a6de0a2	0xea4b0
 sbi_statztabgruntbar	?Reset@CSBI_StatzTabGruntBar@@QAEXXZ	100.0000	100.0000	1	776b5b18c203	0xea470
 sbi_statztabgruntbar	?Update@CSBI_StatzTabGruntBar@@QAEHXZ	91.6923	91.6923	1	065f88460c02	0xea6c0
-sbi_statztabgruntbar_eh	??1CSBI_StatzTabGruntBar@@QAE@XZ	34.2381	34.2381	1	535b4502aced	0x104b00
+sbi_statztabgruntbar_eh	??1CSBI_StatzTabGruntBar@@UAE@XZ	100.0000	100.0000	1	602538baa837	0x104b00
 sbi_warlordhead	?Render@CSBI_WarlordHead@@QAEHH@Z	86.9054	86.9054	1	9b308dc210c6	0xeb880
 sbi_warlordhead	?Serialize@CSBI_WarlordHead@@QAEHPAUCImageSetStream@@HHH@Z	100.0000	100.0000	1	b6cb91fa6424	0xe7cd0
 sbi_warlordhead	?SetState@CSBI_WarlordHead@@QAEHH@Z	100.0000	100.0000	1	034d997853c4	0xeb830
 sbi_warlordhead	?SetupImage@CSBI_WarlordHead@@QAEHHHHHHHHHHHH@Z	46.2105	46.2105	1	16d818a3069c	0xeb6b0
 sbi_warlordhead	?ShowFrames@CSBI_WarlordHead@@QAEHHH@Z	92.2716	92.2716	1	73cec54353b2	0xeb740
-sbi_warlordhead_eh	??1CSBI_WarlordHead@@QAE@XZ	43.6061	43.6061	1	bcabec3f0b56	0x104a00
+sbi_warlordhead_eh	??1CSBI_WarlordHead@@UAE@XZ	100.0000	100.0000	1	7b4689ef7bd9	0x104a00
 sbi_wellgoo	?Tick@CSBI_WellGoo@@QAEHXZ	83.0000	83.0000	1	34178faa97ab	0xe6380
-sbi_wellgoo_eh	??1CSBI_WellGoo@@QAE@XZ	51.0833	51.0833	1	6be06cd88e2a	0x104bb0
+sbi_wellgoo_eh	??1CSBI_WellGoo@@UAE@XZ	100.0000	100.0000	1	ecc4144cec7a	0x104bb0
 scattersamples	?IsPrime@@YAHH@Z	100.0000	100.0000	1	3d4ae8c20789	0x182a80
 scattersamples	?ScatterSamples@@YAXPAHHHH@Z	59.2162	59.2162	1	345a3c1c24dd	0x182940
 severusworkerdtor	??1CSeverusWorkerX@@QAE@XZ	87.8261	87.8261	1	4dcdb44701a6	0x17f330
@@ -3397,7 +3397,7 @@ tilegridcommand	?Classify@CTileGridCommand@@QAEHH@Z	95.9578	95.9578	1	a4fd29c72a
 tilegridcommand	?Deserialize@CTileGridCommand@@QAEHPAVTgcStream@@@Z	100.0000	100.0000	1	2a2453039cdc	0x113c10
 tilegridcommand	?RecordMove@CTileGridCommand@@QAEXXZ	100.0000	100.0000	1	23f12c9ec885	0x112880
 tilegridcommand	?Serialize@CTileGridCommand@@QAEHPAVTgcStream@@@Z	100.0000	100.0000	2	b1fae33460f5	0x113ae0
-tileswitchlogic	??0CTileTriggerSwitchLogic@@QAE@XZ	100.0000	100.0000	5	a1db8cb5a037	0x110430
+tileswitchlogic	??0CTileTriggerSwitchLogic@@QAE@XZ	100.0000	100.0000	6	529bf9cb6306	0x110430
 tileswitchlogic	?ApplyByType@CTileTriggerSwitchLogic@@QAEHPAXHHH@Z	100.0000	100.0000	3	52356dd82278	0x113d40
 tileswitchlogic	?BuildRockBreakInGameText@CTileTriggerSwitchLogic@@QAEXXZ	0.5464	0.5464	1	a6548c9bdd8e	0x1122a0
 tileswitchlogic	?CTileTriggerSwitchLogic_115f60@CTileTriggerSwitchLogic@@QAEXXZ	0.2198	0.2198	2	fedab5b88bae	0x115f60
@@ -3407,7 +3407,7 @@ tileswitchlogic	?FindIndexByKey@CTileTriggerSwitchLogic@@QAEHH@Z	100.0000	100.00
 tileswitchlogic	?GetFlag74@CTileTriggerSwitchLogic@@QAEHXZ	100.0000	100.0000	2	89a90096d3b7	0x115f00
 tileswitchlogic	?LoadFlag74@CTileTriggerSwitchLogic@@QAEHPAVCSerialStream@@@Z	100.0000	100.0000	1	39f76f356bc6	0x117e70
 tileswitchlogic	?LoadState@CTileTriggerSwitchLogic@@QAEHPAVCSerialStream@@@Z	100.0000	100.0000	1	918da928681e	0x1139a0
-tileswitchlogic	?RemoveByKeys@CTileTriggerSwitchLogic@@QAEHHH@Z	96.2791	96.2791	2	fc58a314a1eb	0x116320
+tileswitchlogic	?RemoveByKeys@CTileTriggerSwitchLogic@@QAEHHH@Z	93.9535	93.9535	3	3060d63483a1	0x116320
 tileswitchlogic	?ScanNeighborhood@CTileTriggerSwitchLogic@@QAEHHH@Z	76.2600	76.2600	2	a020770dd925	0x117ec0
 tileswitchlogic	?SerializeMatrix@CTileTriggerSwitchLogic@@QAEHPAVCSerialStream@@@Z	95.0909	95.0909	2	9a34a3e5b7d2	0x113dd0
 tileswitchlogic	?TransferFlag74@CTileTriggerSwitchLogic@@QAEHPAVCSerialStream@@@Z	100.0000	100.0000	2	b5b02a407d1e	0x117e20

@@ -60,15 +60,32 @@ struct CSpriteObjAux {
 };
 
 // --- out-of-line base shell (reloc-masks to CGruntSprite ctor 0x7eb00) ------
-// NON-polymorphic (explicit m_vptr @+0): the leaf vptr is stamped by an explicit
-// `*(void**)this = &g_...Vtbl` user store written FIRST, so MSVC5 schedules it at
-// the ctor's ENTRY EH state (before the first throwing call's state region),
-// matching retail's `mov [esi],vtbl` right after the base ctor. The base ctor is
-// DECLARED only (out-of-line; its `call` reloc-masks to 0x7eb00).
+// Real polymorphic base now: 17 declared-only virtuals (bodies in engine TUs)
+// make cl emit each leaf's ??_7 vftable + the IMPLICIT post-base-ctor vptr stamp,
+// replacing the explicit `*(void**)this = &g_...Vtbl` store. Leaf vtable names
+// auto-derive (RTTI; config/vtable_names.csv). The base ctor stays DECLARED only
+// (out-of-line; its `call` reloc-masks to 0x7eb00).
 struct CGruntSpriteBase {
     CGruntSpriteBase(CSpriteObj* obj);
     ~CGruntSpriteBase(); // out-of-line; unwound on throw
-    void* m_vptr;        // +0x00
+    virtual void Vf0();
+    virtual void Vf1();
+    virtual void Vf2();
+    virtual void Vf3();
+    virtual void Vf4();
+    virtual void Vf5();
+    virtual void Vf6();
+    virtual void Vf7();
+    virtual void Vf8();
+    virtual void Vf9();
+    virtual void Vf10();
+    virtual void Vf11();
+    virtual void Vf12();
+    virtual void Vf13();
+    virtual void Vf14();
+    virtual void Vf15();
+    virtual void Vf16();
+    // +0x00  implicit vptr (was an explicit m_vptr struct stamp)
     char m_pad04[0x10 - 0x04];
     CSpriteObj* m_10;    // +0x10
     CSpriteObjAux* m_14; // +0x14
@@ -113,13 +130,8 @@ public:
     i32 m_60; // +0x60
 };
 
-// Leaf vftables, referenced as DIR32 data.
-DATA(0x005e7a44)
-extern void* g_gruntStaminaSpriteVtbl;
-DATA(0x005e79ec)
-extern void* g_gruntToyTimeSpriteVtbl;
-DATA(0x005e77cc)
-extern void* g_gruntWingzTimeSpriteVtbl;
+// Leaf vftables (??_7CGrunt{Stamina,ToyTime,WingzTime}Sprite@@6B@) are now
+// emitted by cl and named on the target automatically (RTTI auto-namer).
 
 // CGruntToyTimeSprite::GetTypeTag @0x000120e0 - the class's logic-type id (0x411),
 // the 6-byte `mov eax,<id>; ret` archetype. RVA-lowest method in this TU; the
@@ -133,7 +145,6 @@ i32 CGruntToyTimeSprite::GetTypeTag() {
 // @source: rtti-vptr
 RVA(0x0007fae0, 0xa0)
 CGruntStaminaSprite::CGruntStaminaSprite(CSpriteObj* obj) : CGruntSpriteBase(obj) {
-    *(void**)this = &g_gruntStaminaSpriteVtbl;
     m_38->ApplyLookupSprite("GAME_GRUNTSTAMINASPRITE", 1);
     m_30 = m_14->m_1c;
     m_14->m_1c = g_buteTree.Find("A");
@@ -150,7 +161,6 @@ CGruntStaminaSprite::CGruntStaminaSprite(CSpriteObj* obj) : CGruntSpriteBase(obj
 // @source: rtti-vptr
 RVA(0x0007fbd0, 0xa0)
 CGruntToyTimeSprite::CGruntToyTimeSprite(CSpriteObj* obj) : CGruntSpriteBase(obj) {
-    *(void**)this = &g_gruntToyTimeSpriteVtbl;
     m_38->ApplyLookupSprite("GAME_GRUNTTOYTIMESPRITE", 1);
     m_30 = m_14->m_1c;
     m_14->m_1c = g_buteTree.Find("A");
@@ -174,7 +184,6 @@ i32 __stdcall CGruntToyTimeSprite::GetToyTime(CToyTimeHost* o) {
 // @source: rtti-vptr
 RVA(0x0007fcc0, 0xa0)
 CGruntWingzTimeSprite::CGruntWingzTimeSprite(CSpriteObj* obj) : CGruntSpriteBase(obj) {
-    *(void**)this = &g_gruntWingzTimeSpriteVtbl;
     m_38->ApplyLookupSprite("GAME_GRUNTWINGZTIMESPRITE", 1);
     m_30 = m_14->m_1c;
     m_14->m_1c = g_buteTree.Find("A");
@@ -286,13 +295,35 @@ struct CSpotLightFactory {
 };
 
 // --- out-of-line base shell (reloc-masks to CPathHazard ctor 0xb35a0) -------
-// NON-polymorphic (explicit m_vptr @+0): each leaf stamps its own vptr via an
-// explicit `*(void**)this = &g_...Vtbl` store written FIRST (same rationale as
-// the sprite ctors above). The base ctor is DECLARED only.
+// Real polymorphic base now (21 declared-only virtuals): cl emits each leaf's
+// ??_7 + the implicit post-base-ctor vptr stamp; leaf vtable names auto-derive
+// (RTTI). Replaces the explicit `*(void**)this = &g_...Vtbl`. The base ctor is
+// DECLARED only (out-of-line; its `call` reloc-masks to 0xb35a0).
 struct CPathHazardBase {
     CPathHazardBase(CHazardObj* obj);
     ~CPathHazardBase(); // out-of-line; unwound on throw
-    void* m_vptr;       // +0x00
+    virtual void Vf0();
+    virtual void Vf1();
+    virtual void Vf2();
+    virtual void Vf3();
+    virtual void Vf4();
+    virtual void Vf5();
+    virtual void Vf6();
+    virtual void Vf7();
+    virtual void Vf8();
+    virtual void Vf9();
+    virtual void Vf10();
+    virtual void Vf11();
+    virtual void Vf12();
+    virtual void Vf13();
+    virtual void Vf14();
+    virtual void Vf15();
+    virtual void Vf16();
+    virtual void Vf17();
+    virtual void Vf18();
+    virtual void Vf19();
+    virtual void Vf20();
+    // +0x00  implicit vptr (was an explicit m_vptr struct stamp)
     char m_pad04[0x10 - 0x04];
     CHazardObj* m_10; // +0x10  (== obj)
     char m_pad14[0x38 - 0x14];
@@ -313,17 +344,14 @@ public:
     i32 SerializeChain(void* stream, i32 tag, i32 c, i32 d); // 0x16e7f0 (base chain; call-only)
 };
 
-DATA(0x005e7324)
-extern void* g_rainCloudVtbl;
-DATA(0x005e72b4)
-extern void* g_ufoVtbl;
+// Leaf vftables (??_7CRainCloud@@6B@ / ??_7CUFO@@6B@) are emitted by cl and
+// named on the target automatically (RTTI auto-namer).
 
 // @confidence: high
 // @source: rtti-vptr
 RVA(0x000b49b0, 0xa8)
 CRainCloud::CRainCloud(CHazardObj* obj) : CPathHazardBase(obj) {
     CHazardObj* o = m_10;
-    *(void**)this = &g_rainCloudVtbl;
     i32 n = g_gameReg->m_78->m_28;
     o->m_58 = 1;
     o->m_50 = 0x7;
@@ -341,7 +369,6 @@ CRainCloud::CRainCloud(CHazardObj* obj) : CPathHazardBase(obj) {
 RVA(0x000b4a90, 0x145)
 CUFO::CUFO(CHazardObj* obj) : CPathHazardBase(obj) {
     CHazardObj* o = m_10;
-    *(void**)this = &g_ufoVtbl;
     i32 sx = o->m_5c;
     i32 sy = o->m_60;
     m_40 = m_38->m_1b4;

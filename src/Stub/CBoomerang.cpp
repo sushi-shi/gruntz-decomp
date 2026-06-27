@@ -6,16 +6,34 @@
 // reloc-masked rel32 call via thunk 0x37d8), re-stamp the derived vftable into
 // [this], then OR a flag bit into the m_154 sub-object's [+8] dword.
 //
-// WALL (manual-vptr-store schedule): retail emits the vptr store BEFORE the
-// m_154 load; MSVC5 /O2 fills the post-base-call latency slot with the
-// independent m_154 load and sinks the manual store after it. The store-first
-// order is only reachable from a compiler-IMPLICIT vptr init, which here needs a
-// 12-slot in-TU vtable pointing at engine fns in other TUs (diverges) AND shifts
-// the layout by 4 (vptr@0). Reconstruction is otherwise byte-exact; ~97.3%.
-
+// Real polymorphic base now (18 declared-only virtuals): cl emits ??_7CBoomerang
+// + the IMPLICIT post-base-ctor vptr stamp, and the leaf vtable name
+// ??_7CBoomerang@@6B@ auto-derives (RTTI; config/vtable_names.csv). The base ctor
+// stays DECLARED only (out-of-line; its `call` reloc-masks via thunk 0x37d8). The
+// conversion is matching-neutral: cl still /O2-sinks the vptr store after the
+// independent m_154 load (the documented schedule wall below), so the recovery
+// restores the true polymorphic shape without changing the residual.
 struct CProjectileBase {
     CProjectileBase(i32 a);
-    void* m_vptr; // +0x00 (the vftable slot the derived ctor re-stamps)
+    virtual void Vf0();
+    virtual void Vf1();
+    virtual void Vf2();
+    virtual void Vf3();
+    virtual void Vf4();
+    virtual void Vf5();
+    virtual void Vf6();
+    virtual void Vf7();
+    virtual void Vf8();
+    virtual void Vf9();
+    virtual void Vf10();
+    virtual void Vf11();
+    virtual void Vf12();
+    virtual void Vf13();
+    virtual void Vf14();
+    virtual void Vf15();
+    virtual void Vf16();
+    virtual void Vf17();
+    // +0x00  implicit vptr (the vftable slot the derived ctor re-stamps)
 };
 
 // The +0x154 sub-object whose [+8] dword gets the flag OR.
@@ -31,14 +49,19 @@ public:
     CBoomerangAux* m_154;      // +0x154
 };
 
-// Derived vftable, referenced as DIR32 data (RVA = VA - 0x400000).
-DATA(0x005e792c)
-extern void* g_boomerangVtbl;
+// Leaf vftable ??_7CBoomerang@@6B@ now emitted by cl + named on the target
+// automatically (RTTI auto-namer); the manual struct stamp is gone.
 
 // @confidence: high
 // @source: rtti-vptr
+// @early-stop
+// vptr-store-schedule wall (~97.3%): retail emits the implicit vptr store BEFORE
+// the m_154 load; MSVC5 /O2 fills the post-base-call latency slot with the
+// independent m_154 load and sinks the store after it. Now a real polymorphic
+// class (implicit vptr init), so the store is no longer source-orderable - the
+// schedule is the optimizer's, not steerable. Byte-exact otherwise.
 RVA(0x000e0650, 0x2b)
 CBoomerang::CBoomerang(i32 a) : CProjectileBase(a) {
-    *(void**)this = &g_boomerangVtbl;
+    // vptr stamp is now IMPLICIT (real polymorphic class).
     m_154->m_08 |= 0x2000002;
 }
