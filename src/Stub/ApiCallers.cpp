@@ -175,9 +175,6 @@ namespace ApiCallerStubs {
         void LoadCreditzAssets2();
         void BuildWorldLevelKey(i32);
         void LoadGruntDeathAnimations(i32, i32);
-        void LoadVehicleGruntAnimations();
-        void BuildGruntExitAnimation();
-        void LoadBombGruntRunConfig(i32, i32);
         void LoadPickupSprites(i32, i32, i32, i32, i32);
         void LoadBombGruntRunConfig2();
         void LoadFreezeSpellAssets();
@@ -4170,26 +4167,14 @@ namespace ApiCallerStubs {
     RVA(0x00060150, 0xd90)
     void ThisStubOwnerUnknown::LoadGruntDeathAnimations(i32, i32) {}
 
-    // @confidence: med
-    // @source: decomp-xref
-    // @stub
-    // proximity: CGrunt@-0x610 | CUserLogic@+0x790
-    RVA(0x00063db0, 0x32f)
-    void ThisStubOwnerUnknown::LoadVehicleGruntAnimations() {}
+    // LoadVehicleGruntAnimations (0x63db0) re-homed as
+    // CGrunt::LoadVehicleGruntAnimations in src/Gruntz/Grunt.cpp (trace owner CGrunt).
 
-    // @confidence: med
-    // @source: decomp-xref
-    // @stub
-    // proximity: CGrunt@-0xa10 | CUserLogic@+0x390
-    RVA(0x000641b0, 0x2c1)
-    void ThisStubOwnerUnknown::BuildGruntExitAnimation() {}
+    // BuildGruntExitAnimation (0x641b0) re-homed as CGrunt::BuildGruntExitAnimation
+    // in src/Gruntz/Grunt.cpp (the trace owner; sibling of BuildEntranceAnimation).
 
-    // @confidence: med
-    // @source: decomp-xref
-    // @stub
-    // proximity: CGrunt@-0xf80 | CUserLogic@+0x430
-    RVA(0x00065630, 0x34b)
-    void ThisStubOwnerUnknown::LoadBombGruntRunConfig(i32, i32) {}
+    // LoadBombGruntRunConfig (0x65630) re-homed as CGrunt::RunMoveConfig in
+    // src/Gruntz/Grunt.cpp (trace owner CGrunt; the move-config / entrance dispatch).
 
     // @confidence: med
     // @source: string-xref

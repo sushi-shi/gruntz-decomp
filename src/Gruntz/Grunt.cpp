@@ -1123,6 +1123,17 @@ static const char s_GRUNTZ_ENTRANCEZ_DROP[] = "GRUNTZ_ENTRANCEZ_DROP";
 static const char s_GRUNTZ_ENTRANCEZ_RESSURECT[] = "GRUNTZ_ENTRANCEZ_RESSURECT";
 static const char s_GRUNTZ_DEATHZ_MELT[] = "GRUNTZ_DEATHZ_MELT";
 
+// BuildGruntExitAnimation (@0x641b0) keys (reloc-masked .rodata).
+static const char s_exitKeyB[] = "B";                          // 0x60d1bc
+static const char s_GRUNTZ_EXITZ[] = "GRUNTZ_EXITZ";           // 0x60bd28
+static const char s_GRUNTZ_EXITZ_ONE[] = "GRUNTZ_EXITZ_ONE";   // 0x60e250
+static const char s_GRUNTZ_EXITZ_TWO[] = "GRUNTZ_EXITZ_TWO";   // 0x60e23c
+static const char s_GRUNTZ_EXITZ_THREE[] = "GRUNTZ_EXITZ_THREE"; // 0x60e224
+
+// LoadVehicleGruntAnimations (@0x63db0) vehicle-grunt looping-sound keys.
+static const char s_GRUNTZ_GOKARTGRUNT[] = "GRUNTZ_GOKARTGRUNT_GOKARTGRUNTLOOP";   // 0x60e1f8
+static const char s_GRUNTZ_BIGWHEELGRUNT[] = "GRUNTZ_BIGWHEELGRUNT_BIGWHEELGRUNTLOOP"; // 0x60e1c8
+
 RVA(0x00067bd0, 0x2ef)
 void CGrunt::BuildEntranceAnimation(i32 mode) {
     m_prevAnimSetNode = (i32)m_14->m_1c;
@@ -3508,8 +3519,326 @@ void CGrunt::RearmEntranceDrop() {
     }
 }
 
-void CGrunt::ApplyMoveKind(i32 v) {}        // thunk_0x3c29 (0x57100); external/reloc-masked
-void CGrunt::RunMoveConfig(i32 a, i32 b) {} // thunk_0x2a40 (0x65630); external/reloc-masked
+void CGrunt::ApplyMoveKind(i32 v) {} // thunk_0x3c29 (0x57100); external/reloc-masked
+
+// ---------------------------------------------------------------------------
+// CGrunt::BuildGruntExitAnimation()   @0x641b0   (__thiscall, ret 0)
+// Sibling of BuildEntranceAnimation: bail if the exit anim is already running
+// (m_368!=0), tear down the running anim state (StepAnimDispatchB/ClearSubA/B),
+// clear the per-grunt sprite-state bit (m_10->m_40 &= ~8), retire all 7 HUD stat
+// sprites (|= 0x10000 then null the slot), drop the powered-up reset, commit the
+// struck tile, latch a fresh "B" anim-set node, then rand-bucket the EXITZ_ONE/
+// TWO/THREE variant (each: lookup sprite + on-screen cue 0x384/5/6), and finally
+// drive the exit holder + apply the "GRUNTZ_EXITZ" first-frame geometry.
+RVA(0x000641b0, 0x2c1)
+i32 CGrunt::BuildGruntExitAnimation() {
+    if (*(i32*)((char*)this + 0x368) != 0) {
+        return 0;
+    }
+
+    StepAnimDispatchB();
+    ClearSubA();
+    ClearSubB();
+
+    m_10->m_40 &= ~8;
+    m_entranceCommitted = 0;
+    *(i32*)((char*)this + 0x368) = 1;
+
+    if (m_healthSprite) {
+        m_healthSprite->m_8 |= 0x10000;
+        m_healthSprite = 0;
+    }
+    if (m_staminaSprite) {
+        m_staminaSprite->m_8 |= 0x10000;
+        m_staminaSprite = 0;
+    }
+    if (m_toySprite) {
+        m_toySprite->m_8 |= 0x10000;
+        m_toySprite = 0;
+    }
+    if (m_toyTimeSprite) {
+        m_toyTimeSprite->m_8 |= 0x10000;
+        m_toyTimeSprite = 0;
+    }
+    if (m_wingzTimeSprite) {
+        m_wingzTimeSprite->m_8 |= 0x10000;
+        m_wingzTimeSprite = 0;
+    }
+    if (m_powerupSprite) {
+        m_powerupSprite->m_8 |= 0x10000;
+        m_powerupSprite = 0;
+    }
+    if (m_selectedSprite) {
+        m_selectedSprite->m_8 |= 0x10000;
+        m_selectedSprite = 0;
+    }
+
+    m_gruntKind = 0;
+    if (m_poweredUp != 0 && m_neighborValid == 0) {
+        m_entranceActive = 0;
+        *(i32*)((char*)this + 0x218) = 0;
+        m_neighborValid = 0;
+        m_poweredUp = 0;
+        Stub_062e10(1, 0, 0);
+    }
+
+    m_entranceActive = 1;
+    m_tileMgr->CommitStruckTile(m_tileOwnerHi, m_tileOwnerLo, 1);
+
+    m_prevAnimSetNode = (i32)m_14->m_1c;
+    m_14->m_1c = (void*)EntranceLookupAnimSet(s_exitKeyB);
+
+    CSprite* found;
+    i32 r = GruntRand() % 0x1e1;
+    if (r > 0x140) {
+        found = m_154->m_c->m_2c->LookupValue(s_GRUNTZ_EXITZ_ONE);
+        CGameRegistry* g = g_pGameRegistry;
+        if (GruntPointVisible(g->m_30->m_24->m_5c + 0x40, m_10->m_5c, m_10->m_60)) {
+            g->m_60->CueA(this, 0x384, -1, 0, -1, -1);
+        }
+    } else if (r > 0xa0) {
+        found = m_154->m_c->m_2c->LookupValue(s_GRUNTZ_EXITZ_TWO);
+        CGameRegistry* g = g_pGameRegistry;
+        if (GruntPointVisible(g->m_30->m_24->m_5c + 0x40, m_10->m_5c, m_10->m_60)) {
+            g->m_60->CueA(this, 0x385, -1, 0, -1, -1);
+        }
+    } else {
+        found = m_154->m_c->m_2c->LookupValue(s_GRUNTZ_EXITZ_THREE);
+        CGameRegistry* g = g_pGameRegistry;
+        if (GruntPointVisible(g->m_30->m_24->m_5c + 0x40, m_10->m_5c, m_10->m_60)) {
+            g->m_60->CueA(this, 0x386, -1, 0, -1, -1);
+        }
+    }
+
+    ((CGruntExitHolder*)((char*)this + 0x150))->Apply(found, 0);
+    i32* elem = m_154->m_1b4->At(0);
+    i32 frame = elem[0x14 / 4];
+    m_154->GameApplyLookupSprite(s_GRUNTZ_EXITZ, frame);
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// CGrunt::LoadVehicleGruntAnimations()   @0x63db0   (__thiscall, ret 0)
+// Re-arms the vehicle-grunt (gokart/bigwheel) entrance: re-seeds the entrance
+// player geometry, and on the armed-but-not-running gate (m_1a0.m_28!=0 &&
+// m_1a0.m_20==0) (re)creates the HUD stat sprites when arrived, latches the idle
+// ("A") anim-set node, reloads the type table and commits the arrival when the
+// last tile carries the 0x80 attribute. Otherwise it runs the two entrance time-
+// window cue tiers (a 64-bit elapsed-time compare against the +0x810/+0x820 safe-
+// time anchors): the past-safe path stamps the TOY-BREAK pose + fires cue 0xc, and
+// the within-window path fires cue 0xd and dispatches the looping vehicle sound by
+// kind (m_170 0x1a=gokart, 0x19=bigwheel).
+//
+// @early-stop
+// ~93.8%: CFG, every member offset, the 64-bit elapsed-time compares, all three
+// visibility gates + cue ids, and the kind dispatch are byte-faithful. Residue =
+// (a) the TU-wide GruntStrGetBuffer model is __cdecl(str,minLen) but retail calls
+// it __thiscall(this=&m_448) (`lea ecx; push 0; call` vs my `push 0; push &str;
+// call; add esp,8`) - a Grunt.h-wide model change touching ~14 matched callers,
+// deferred to the final sweep; (b) the toy-break-setup edx/eax push-order +
+// elapsed `xor` register coin-flips (the documented regalloc tail).
+RVA(0x00063db0, 0x32f)
+void CGrunt::LoadVehicleGruntAnimations() {
+    m_154->m_1a0.SetGeoSourceR(g_defaultGeo);
+
+    char* sub = (char*)&m_154->m_1a0;
+    if (*(i32*)(sub + 0x28) != 0 && *(i32*)(sub + 0x20) == 0) {
+        if (m_arrived) {
+            CreateHealthSprite();
+            CreateStaminaSprite();
+            CreateToySprite();
+        }
+        m_prevAnimSetNode = (i32)m_14->m_1c;
+        m_14->m_1c = (void*)EntranceLookupAnimSet(s_animKeyA);
+        LoadGruntTypeTable(*(i32*)((char*)this + 0x19c), 1, 0, 0);
+        m_entranceActive = 0;
+
+        CTileGrid* grid = g_pGameRegistry->m_70;
+        i32 tx = m_lastTilePxX >> 5;
+        i32 ty = m_lastTilePxY >> 5;
+        i32 flags;
+        if ((u32)tx >= (u32)grid->m_c || (u32)ty >= (u32)grid->m_10) {
+            flags = 1;
+        } else {
+            flags = ((i32*)grid->m_8[ty])[tx * 7];
+        }
+        if (flags & 0x80) {
+            SetEntrancePos(1, 1);
+            m_tileMgr->CommitArrivalMove(this, m_lastTilePxX, m_lastTilePxY);
+        }
+        return;
+    }
+
+    i64 elapsed = (i64)(u64)g_645588 - *(i64*)((char*)this + 0x810);
+    if (elapsed >= *(i64*)((char*)this + 0x818)) {
+        if (*(i32*)((char*)this + 0x228) == 0 && m_10->m_5c == m_lastTilePxX && m_10->m_60 == m_lastTilePxY) {
+            if (m_toyTimeSprite) {
+                m_toyTimeSprite->m_8 |= 0x10000;
+                m_toyTimeSprite = 0;
+            }
+            SetEntrancePos(1, 1);
+            *(i32*)((char*)this + 0x228) = 1;
+            m_prevEntranceDesc = (i32)m_154->m_1b4;
+            m_154->SetGeometryEx(m_poseToyBreak, 0);
+
+            CEntranceAnimDescColl* desc = m_154->m_1b4;
+            i32* elem = desc->m_10 > 0 ? *desc->m_c : 0;
+            char* buf = GruntStrGetBuffer((char*)this + 0x448, 0);
+            m_154->GameApplyLookupSprite(buf, elem[0x14 / 4]);
+
+            CGruntHud* h = m_10;
+            CGameRegistry* g = g_pGameRegistry;
+            i32 x = h->m_5c;
+            i32 y = h->m_60;
+            i32* rect = (i32*)(g->m_30->m_24->m_5c + 0x40);
+            if (x < rect[2] && x >= rect[0] && y < rect[3] && y >= rect[1]) {
+                g->m_60->CueSpawn(this, 0xc, -1, -1, -1);
+                ClearSubA();
+                return;
+            }
+        }
+        ClearSubA();
+        return;
+    }
+
+    i64 elapsed2 = (i64)(u64)g_645588 - *(i64*)((char*)this + 0x820);
+    if (elapsed2 >= *(i64*)((char*)this + 0x828)) {
+        CGruntHud* h = m_10;
+        CGameRegistry* g = g_pGameRegistry;
+        i32 x = h->m_5c;
+        i32 y = h->m_60;
+        i32* rect = (i32*)(g->m_30->m_24->m_5c + 0x40);
+        if (x < rect[2] && x >= rect[0] && y < rect[3] && y >= rect[1]) {
+            g->m_60->CueSpawn(this, 0xd, -1, -1, -1);
+        }
+    }
+
+    CGruntHud* h2 = m_10;
+    CGameRegistry* g2 = g_pGameRegistry;
+    i32 hx = h2->m_5c;
+    i32 hy = h2->m_60;
+    if (hx < g2->m_144 && hx >= g2->m_13c && hy < g2->m_148 && hy >= g2->m_140) {
+        if (m_entranceReason == 0x1a) {
+            EnsureStruckSlot(s_GRUNTZ_GOKARTGRUNT);
+            return;
+        }
+        if (m_entranceReason == 0x19) {
+            EnsureStruckSlot(s_GRUNTZ_BIGWHEELGRUNT);
+            return;
+        }
+        return;
+    }
+    ClearSubA();
+}
+
+// ---------------------------------------------------------------------------
+// CGrunt::RunMoveConfig(a, b)   @0x65630   (__thiscall, ret 8)
+// The move-config / entrance-reason dispatch. If the current anim is the "I"
+// (idle) record it commits the tile load; otherwise (when on-screen) it fires the
+// move cue (8). It then plays the move sound at (a,b), records the move tile
+// (m_3e4/m_3e8), drops the powered-up reset, and dispatches on m_entranceReason:
+//   1    -> BOMBGRUNT run config ("M" anim set + RunningTimePerTile bute read)
+//   0x12 -> "N" anim set + toggle m_234
+//   0x13 -> "I" anim set + random idle/item variant cue (CueA), pose m_3d0[poseIdx]
+//   else -> "I" anim set
+// and applies the resolved pose geometry + entrance-cell name to the player.
+//
+// @early-stop
+// ~72%: full CFG, the m_entranceReason switch (1/0x12/0x13/else), the inline
+// strcmp (eq=sete idiom, shared with StepArrivalCommit), all bute reads, both cue
+// variants, and the entrance-cell pose/name tail are byte-faithful. Residue = a
+// whole-function stack-frame coin-flip: retail allocates 0xc scratch locals (it
+// spills the entrance-cell triple + an extra temp for the cell-stride math),
+// where cl reuses registers and allocates 4 - shifting every [esp+N] arg/local
+// offset by 8 and cascading a register-renumber through the 843-byte body. No
+// source lever forces the larger frame; deferred to the final sweep.
+RVA(0x00065630, 0x34b)
+void CGrunt::RunMoveConfig(i32 a, i32 b) {
+    i32 poseIdx = 0; // ebx
+
+    i32 eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeI) == 0);
+    if (eq) {
+        m_tileMgr->Load6(m_tileOwnerHi, m_tileOwnerLo, *(i32*)((char*)this + 0x3e4),
+                         *(i32*)((char*)this + 0x3e8), m_entranceReason, -1);
+    } else {
+        CGruntHud* h = m_10;
+        CGameRegistry* g = g_pGameRegistry;
+        i32* rect = (i32*)(g->m_30->m_24->m_5c + 0x40);
+        if (GruntPointVisible((i32)rect, h->m_5c, h->m_60)) {
+            g->m_60->CueSpawn(this, 8, -1, -1, -1);
+        }
+    }
+
+    PlayMoveSoundAtTile(a, b);
+    *(i32*)((char*)this + 0x3e4) = a;
+    *(i32*)((char*)this + 0x3e8) = b;
+    if (m_poweredUp != 0 && m_neighborValid == 0) {
+        m_entranceActive = 0;
+        *(i32*)((char*)this + 0x218) = 0;
+        m_neighborValid = 0;
+        m_poweredUp = 0;
+        Stub_062e10(1, 0, 0);
+    }
+
+    if (m_entranceReason == 1) {
+        m_prevAnimSetNode = (i32)m_14->m_1c;
+        m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeM);
+        m_10->m_40 &= ~8;
+        m_timePerTile = g_buteMgr.GetDwordDef(s_BOMBGRUNT, s_RunningTimePerTile, 0x64);
+        m_entranceActive = 1;
+        m_22c = 1;
+        SetEntrancePos(1, 1);
+    } else if (m_entranceReason == 0x12) {
+        m_entranceActive = 1;
+        m_prevAnimSetNode = (i32)m_14->m_1c;
+        m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeN);
+        *(i32*)((char*)this + 0x234) = (*(i32*)((char*)this + 0x234) == 0);
+    } else if (m_entranceReason == 0x13) {
+        i32 base;
+        if (GruntRand() % 0x64 < 0x50) {
+            poseIdx = 1;
+            base = 0x41a;
+        } else {
+            poseIdx = 0;
+            base = 0x424;
+        }
+
+        i32 variant = *(i32*)((char*)this + 0x374);
+        *(i32*)((char*)this + 0x380) = variant;
+        if (variant == 0) {
+            i32 n = (g_pGameRegistry->m_134 == 1) ? 3 : 6;
+            *(i32*)((char*)this + 0x380) = GruntRand() % n + 1;
+        }
+
+        i32 cueId = base + *(i32*)((char*)this + 0x380) - 1;
+        CGruntHud* h = m_10;
+        CGameRegistry* g = g_pGameRegistry;
+        i32 x = h->m_5c;
+        i32 y = h->m_60;
+        i32* rect = (i32*)(g->m_30->m_24->m_5c + 0x40);
+        if (x < rect[2] && x >= rect[0] && y < rect[3] && y >= rect[1]) {
+            g->m_60->CueA(this, cueId, -1, 0, -1, -1);
+        }
+
+        m_prevAnimSetNode = (i32)m_14->m_1c;
+        m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeI);
+        m_entranceActive = 1;
+        SetEntrancePos(1, 1);
+    } else {
+        m_prevAnimSetNode = (i32)m_14->m_1c;
+        m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeI);
+        SetEntrancePos(1, 1);
+    }
+
+    m_prevEntranceDesc = (i32)m_154->m_1b4;
+    m_154->m_1a0.SetGeometry(*(i32*)((char*)this + poseIdx * 4 + 0x3d0));
+
+    i32 col = m_entranceCell[0];
+    i32 row = m_entranceCell[1];
+    char* cell = (char*)this + (3 * col + row + 0xb) * 0x68;
+    char* name = GruntStrGetBuffer(cell, 0);
+    m_154->GameApplyName(name);
+}
 
 // ---------------------------------------------------------------------------
 // CGrunt::UpdateEntranceAnim()   @0x690a0   (__thiscall, ret 0)

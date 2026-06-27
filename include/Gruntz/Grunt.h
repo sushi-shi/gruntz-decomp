@@ -87,7 +87,9 @@ struct CCueRect {
 struct CGruntHud {
     char m_pad0[0x8];
     i32 m_8; // +0x08   (dirty-flag word; BuildEntrance |= 0x20000)
-    char m_padc[0x4c - 0xc];
+    char m_padc[0x40 - 0xc];
+    i32 m_40; // +0x40   (sprite-state flag word; ExitAnim/RunConfig clears bit 8)
+    char m_pad44[0x4c - 0x44];
     i32 m_4c; // +0x4c   (SelectMoveIcon: = GetSel result)
     i32 m_50; // +0x50   (SelectMoveIcon: = 0xa)
     char m_pad54[0x58 - 0x54];
@@ -250,8 +252,19 @@ public:
 };
 
 struct CEntranceSpriteMgr {
+    // 1-arg lookup returning the resolved sprite directly (the EXIT/RUN loaders
+    // use this form; the 2-arg m_10map.Lookup writes through an out-param instead).
+    CSprite* LookupValue(const char* name); // 0x6b2a0
+
     char m_pad0[0x10];
     CEntranceHashTable m_10map; // +0x10
+};
+
+// The grunt's exit-animation holder at CGrunt+0x150 (a 4-byte member just before
+// the entrance player pointer). BuildGruntExitAnimation drives its Apply (0x6b2e0,
+// 2-arg __thiscall) with the resolved sprite. External/no-body (reloc-masked).
+struct CGruntExitHolder {
+    void Apply(CSprite* spr, i32 flag); // 0x6b2e0
 };
 
 struct CEntranceResMgr {
@@ -262,6 +275,10 @@ struct CEntranceResMgr {
 // The active-anim descriptor the entrance player exposes (its first element's
 // +0x14 frame number is the 2nd arg the frame helper consumes).
 struct CEntranceAnimDescColl {
+    // Bounds-checked indexer (FUN_0046b270): returns the idx'th element ptr (or 0
+    // when out of range). The EXIT/RUN loaders read elem[+0x14] (frame number).
+    i32* At(i32 idx); // 0x6b270
+
     char m_pad0[0xc];
     i32** m_c; // +0x0c  element vector (first elem = *m_c)
     i32 m_10;  // +0x10  element count (>0 gate)
@@ -576,6 +593,8 @@ public:
     void CommitStruckTile(i32 ownerHi, i32 ownerLo, i32 flag); // 0x78260
     // The run-start drop notify at the grunt's HUD pos (thunk_0x2fb3 -> 0x7b330), 4 args.
     void NotifyMoveAt(i32 px, i32 py, i32 a, i32 b); // 0x7b330
+    // RunMoveConfig's I-pose tile load (thunk_0x3945 -> 0x75e90), 6 args. External.
+    void Load6(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // 0x75e90
 };
 
 // The on-screen point-visibility predicate the arrival/update steps gate the cue
@@ -843,8 +862,13 @@ public:
     // the current anim name + dispatches on its type code (A/D/I/G/L/P/O/J/N/M), then
     // runs the shared arrival/clear-sprites/DEATHZ_FREEZE finalize tail.
     i32 StepArrivalCommit();
-    // @0x65630 (2-arg this-method the I-arm of CommitNeighbor runs); external thunk.
+    // @0x65630 (2-arg this-method the I-arm of CommitNeighbor runs).
     void RunMoveConfig(i32 a, i32 b);
+    // @0x641b0 - tears down the grunt's HUD sprites + plays the "GRUNTZ_EXITZ" exit
+    // animation (rand-bucketed ONE/TWO/THREE variant + on-screen cue). __thiscall ret 0.
+    i32 BuildGruntExitAnimation();
+    // @0x63db0 - (re)loads the vehicle-grunt (gokart/bigwheel) entrance animation set.
+    void LoadVehicleGruntAnimations();
 
     // @0x57890 (__thiscall ret 0, /GX) - when the entrance reason is a lose-item
     // pose (0x12/0x16/0xe), spawn the one-shot "SingleAnimation" GRUNTZ_<set>_LOSEITEM
