@@ -17,8 +17,16 @@
 
 #include <Ints.h>
 
+class CString; // MFC CString (4-byte m_pszData); modeled locally in ConfigStoreRead.cpp
+
 class CConfigStore {
 public:
+    // 0x1d5029 __thiscall: read a string value, returned by value. Registry mode
+    // RegQueryValueEx into a CString buffer; INI mode GetPrivateProfileString.
+    CString GetString(char* szSection, char* szKey, char* szDefault);
+    // 0x1d513b __thiscall: read a binary blob (registry REG_BINARY; INI mode reads
+    // the A-P nibble-encoded string WriteProfileBinary wrote and decodes it).
+    i32 GetBinary(char* szSection, char* szKey, void** ppData, i32* pLen);
     // 0x1ccb5c __thiscall: write/delete a string value (szKey==0 -> delete the
     // section subkey, szValue==0 -> delete the value, else RegSetValueEx REG_SZ;
     // INI fallback writes via WritePrivateProfileString).

@@ -147,30 +147,10 @@ public:
     void Add(char* key);      // FUN_001ba0c8 __thiscall
 };
 
-// MFC CString modeled by its GetBuffer/ReleaseBuffer (reloc-masked __thiscall
-// externals) for the COM-registry helper Stub_1bf702. (engine_label_stubs pulls
-// <windows.h> first, so the real <afx.h> can't follow.)
-struct EngCString {
-    char* m_pszData;
-    char* GetBuffer(i32 nMinBufLength); // CString::GetBuffer, FUN_001ba11c
-    void ReleaseBuffer(i32 nNewLength); // CString::ReleaseBuffer, FUN_001ba16b
-};
-
-// CConfigStore - the engine's registry-or-INI config wrapper. When m_7c (a
-// registry subkey path under HKCU\Software\...) is set the value getters go
-// through ADVAPI32!Reg*; when it is null they fall back to GetPrivateProfile*
-// against the INI file named by m_90. Only offsets are load-bearing.
-class CConfigStore {
-public:
-    HKEY OpenRoot();              // Stub_1d4ee3  __thiscall, opens HKCU\Software\<m_7c>
-    HKEY OpenSubKey(char* szSub); // Stub_1d4f77  __thiscall
-    i32 GetInt(char* szSection, char* szKey, i32 nDefault); // Stub_1d4fbd
-
-    char m_pad00[0x7c];
-    char* m_7c; // +0x7c  registry subkey path (null -> use INI)
-    char m_pad80[0x90 - 0x80];
-    char* m_90; // +0x90  INI file path (used in INI fallback)
-};
+// CConfigStore (the 0x1bf*-0x1d5* registry/INI config wrapper) graduated to
+// src/Gruntz/ConfigStore.{h,cpp} + ConfigStoreRead.cpp (GetString/GetBinary) +
+// m5_ConfigStoreWrite.cpp, all on the `framed` profile; the COM/mouse-wheel
+// helpers (0x1bf702/0x1c7cb3) moved to src/Gruntz/RegHelpers.cpp.
 
 namespace EngineLabelBacklog {
 
@@ -211,7 +191,6 @@ namespace EngineLabelBacklog {
     void __stdcall BuildAssetNamespacePrefixes(i32, i32, i32, i32);
     void DrawSaveGameMenu();
     void BuildLevelTitleString();
-    void BuildSoundFontPath();
     i32 Stub_0f90f0(char* szPath);
     void LoadStatzTabToggleSprite();
     // BuildStatzTabSmall_vfunc1 reconstructed as CStatzTabSmall::BuildSmall below.
@@ -231,14 +210,9 @@ namespace EngineLabelBacklog {
     void _tr_init();
     void _ct_init();
     void Stub_18c780();
-    i32 __stdcall Stub_1bf702(char* szClsid, EngCString* out);
     void __stdcall Stub_1bf8f8(i32, i32);
     void __stdcall Stub_1c1609(i32, i32);
     void __stdcall Stub_1c176a(i32, i32);
-    void Stub_1c7cb3();
-    void __stdcall Stub_1ccb5c(i32, i32, i32);
-    void __stdcall Stub_1d5029(i32, i32, i32, i32);
-    void __stdcall Stub_1d513b(i32, i32, i32, i32);
 } // namespace EngineLabelBacklog
 
 // @confidence: high
@@ -1262,12 +1236,7 @@ void EngineLabelBacklog::BuildLevelTitleString() {}
 RVA(0x000f8970, 0x3b4)
 void SFManager::SelectBestDevice() {}
 
-// @confidence: high
-// @source: string-xref
-// @proximity: CGrunt@-0x6840 | CAttract@+0x13d0 (boundary - pick one)
-// @stub
-RVA(0x000f8f30, 0x160)
-void EngineLabelBacklog::BuildSoundFontPath() {}
+// BuildSoundFontPath (0xf8f30) graduated to src/Gruntz/SoundFontPath.cpp.
 
 // @source: import:OpenFile
 // FileExists - tests a path via OpenFile(OF_EXIST). Re-emitted copy of
@@ -1439,42 +1408,8 @@ void EngineLabelBacklog::_ct_init() {}
 RVA(0x0018c780, 0x33f)
 void EngineLabelBacklog::Stub_18c780() {}
 
-// The empty global string used as RegQueryValueEx's value name (default value).
-extern "C" char g_emptyString[]; // 0x6293f4
-
-// @source: import:RegQueryValueExA
-// Stub_1bf702 - reads HKCR\CLSID\<szClsid>\InProcServer32's default value into
-// the out CString (the COM in-proc server DLL path). Returns whether it
-// succeeded; closes every opened key on the way out.
-// @early-stop
-// frame-pointer wall (~55%): retail compiles this 0x1bf*-0x1d5* registry/COM
-// helper module WITH frame pointers (push ebp/mov ebp,esp); this frameless /O2
-// aggregate recompiles it esp-relative. Logic + all externs + string constants
-// match. Belongs in a /Oy- TU in the final sweep. docs/patterns/o2-optimizer-bailout-framed.md.
-RVA(0x001bf702, 0xac)
-i32 __stdcall EngineLabelBacklog::Stub_1bf702(char* szClsid, EngCString* out) {
-    HKEY hClsidRoot = 0;
-    HKEY hClsid = 0;
-    HKEY hServer;
-    DWORD dwType;
-    i32 result = 0;
-
-    if (RegOpenKeyA((HKEY)0x80000000 /*HKCR*/, "CLSID", &hClsidRoot) == 0) {
-        if (RegOpenKeyA(hClsidRoot, szClsid, &hClsid) == 0) {
-            if (RegOpenKeyA(hClsid, "InProcServer32", &hServer) == 0) {
-                DWORD cb = 0x104;
-                char* pszBuf = out->GetBuffer(0x104);
-                i32 rc = RegQueryValueExA(hServer, g_emptyString, 0, &dwType, (LPBYTE)pszBuf, &cb);
-                out->ReleaseBuffer(-1);
-                result = (rc == 0);
-                RegCloseKey(hServer);
-            }
-            RegCloseKey(hClsid);
-        }
-        RegCloseKey(hClsidRoot);
-    }
-    return result;
-}
+// Stub_1bf702 (the HKCR\CLSID InProcServer32 COM-path reader) graduated to
+// src/Gruntz/RegHelpers.cpp (framed) as ClsidToInProcServer.
 
 // @confidence: low
 // @source: import:FindFirstFileA
@@ -1494,44 +1429,8 @@ void __stdcall EngineLabelBacklog::Stub_1c1609(i32, i32) {}
 RVA(0x001c176a, 0x12d)
 void __stdcall EngineLabelBacklog::Stub_1c176a(i32, i32) {}
 
-// @confidence: med
-// @source: import:RegCloseKey,RegOpenKeyExA,RegQueryValueExA
-// @stub
-RVA(0x001c7cb3, 0x177)
-void EngineLabelBacklog::Stub_1c7cb3() {}
-
-// @confidence: med
-// @source: import:RegCloseKey,RegSetValueExA
-// @stub
-void __stdcall EngineLabelBacklog::Stub_1ccb5c(i32, i32, i32) {}
-
-// @source: import:RegOpenKeyExA
-// CConfigStore::OpenRoot - opens/creates HKCU\Software\<m_7c>\<m_90> and returns
-// the deepest key (0 on failure), closing the two intermediate keys.
-// @early-stop
-// frame-pointer/regalloc wall (~54%): retail keeps an ebp frame + caches `this`
-// in ebx; the /O2 recompile of the same logic comes out frameless with this in
-// esi. Logic correct; all externs named. See docs/patterns/o2-optimizer-bailout-framed.md.
-HKEY CConfigStore::OpenRoot() {
-    HKEY hSoftware = 0;
-    HKEY hMid = 0;
-    HKEY hResult = 0;
-    DWORD dwDisp;
-    CConfigStore* self = this;
-
-    if (RegOpenKeyExA((HKEY)0x80000001, "Software", 0, 0x2001f, &hSoftware) == 0
-        && RegCreateKeyExA(hSoftware, m_7c, 0, 0, 0, 0x2001f, 0, &hMid, &dwDisp) == 0) {
-        RegCreateKeyExA(hMid, self->m_90, 0, 0, 0, 0x2001f, 0, &hResult, &dwDisp);
-    }
-
-    if (hSoftware) {
-        RegCloseKey(hSoftware);
-    }
-    if (hMid) {
-        RegCloseKey(hMid);
-    }
-    return hResult;
-}
+// Stub_1c7cb3 (GetWheelScrollLines) graduated to src/Gruntz/RegHelpers.cpp;
+// Stub_1ccb5c, OpenRoot, OpenSubKey, GetInt graduated to the CConfigStore TUs.
 
 // @source: import:OpenFile
 // FileExists - tests a path via OpenFile(OF_EXIST). Re-emitted copy of
@@ -1549,63 +1448,5 @@ i32 EngineLabelBacklog::Stub_01fd70(char* szPath) {
     return OpenFile(szPath, &of, 0x4000 /*OF_EXIST*/) != -1;
 }
 
-// @source: import:RegCloseKey,RegCreateKeyExA
-// CConfigStore::OpenSubKey - opens szSub under the OpenRoot() key, then closes
-// the root and returns the opened subkey (0 on failure).
-// @early-stop
-// frame-pointer/regalloc wall (~55%): same ebp-frame divergence as OpenRoot.
-// Logic correct; all externs named. See docs/patterns/o2-optimizer-bailout-framed.md.
-HKEY CConfigStore::OpenSubKey(char* szSub) {
-    HKEY hResult = 0;
-    DWORD dwDisp;
-
-    HKEY hRoot = OpenRoot();
-    if (hRoot == 0) {
-        return 0;
-    }
-
-    RegCreateKeyExA(hRoot, szSub, 0, 0, 0, 0x2001f, 0, &hResult, &dwDisp);
-    RegCloseKey(hRoot);
-    return hResult;
-}
-
-// @source: import:RegCloseKey,RegQueryValueExA
-// CConfigStore::GetInt - reads an integer value: through the registry when m_7c
-// is set (open szSection subkey, RegQueryValueEx szKey), else via the INI file
-// m_90 (GetPrivateProfileInt). Returns nDefault on any failure.
-// @early-stop
-// frame-pointer/regalloc wall (~24%): retail reuses the szSection arg slot as
-// cbData and keeps an ebp frame; the recompile allocates a fresh cbData local +
-// frameless. Logic correct; all externs named. docs/patterns/o2-optimizer-bailout-framed.md.
-i32 CConfigStore::GetInt(char* szSection, char* szKey, i32 nDefault) {
-    DWORD dwType;
-    DWORD dwData;
-
-    if (m_7c != 0) {
-        HKEY hKey = OpenSubKey(szSection);
-        if (hKey == 0) {
-            return nDefault;
-        }
-        DWORD cbData = 4;
-        i32 rc = RegQueryValueExA(hKey, szKey, 0, &dwType, (LPBYTE)&dwData, &cbData);
-        RegCloseKey(hKey);
-        if (rc == 0) {
-            return dwData;
-        }
-        return nDefault;
-    }
-
-    return GetPrivateProfileIntA(szSection, szKey, nDefault, m_90);
-}
-
-// @confidence: med
-// @source: import:RegCloseKey
-// @stub
-RVA(0x001d5029, 0x112)
-void __stdcall EngineLabelBacklog::Stub_1d5029(i32, i32, i32, i32) {}
-
-// @confidence: med
-// @source: import:RegCloseKey
-// @stub
-RVA(0x001d513b, 0x11b)
-void __stdcall EngineLabelBacklog::Stub_1d513b(i32, i32, i32, i32) {}
+// Stub_1d5029 (CConfigStore::GetString) and Stub_1d513b (CConfigStore::GetBinary)
+// graduated to src/Gruntz/ConfigStoreRead.cpp (framed + /GX).

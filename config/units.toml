@@ -130,6 +130,25 @@ source = "src/Gruntz/m5_ConfigStoreWrite.cpp"
 flags = "framed"
 
 [[unit]]
+# CConfigStore::GetString/GetBinary - framed module getters that build a CString
+# temp, so /Oy- (framed) + /GX (the EH frame for the destructible CString).
+unit = "configstoreread"
+source = "src/Gruntz/ConfigStoreRead.cpp"
+flags = "framed"
+extra = ["/GX"]
+
+[[unit]]
+# 0x1bf*-0x1c7* registry/COM/mouse-wheel helpers - framed (/O2 /Oy-).
+unit = "reghelpers"
+source = "src/Gruntz/RegHelpers.cpp"
+flags = "framed"
+
+[[unit]]
+unit = "soundfontpath"
+source = "src/Gruntz/SoundFontPath.cpp"
+flags = "base"
+
+[[unit]]
 unit = "statusbaritem"
 source = "src/Gruntz/StatusBarItem.cpp"
 flags = "base"
