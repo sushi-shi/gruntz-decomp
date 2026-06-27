@@ -513,6 +513,11 @@ source = "src/Bute/ButeMgrParse.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "gamestaterecordload"
+source = "src/Gruntz/GameStateRecordLoad.cpp"
+flags = "base"
+
+[[unit]]
 unit = "symtab"
 source = "src/Bute/SymTab.cpp"
 flags = "eh"
