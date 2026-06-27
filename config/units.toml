@@ -1899,3 +1899,18 @@ flags = "base"
 unit = "m5_gameassetnamespaces"
 source = "src/Gruntz/m5_GameAssetNamespaces.cpp"
 flags = "base"
+
+[[unit]]
+unit = "m2_bracketvalue"
+source = "src/Gruntz/BracketValueParse.cpp"
+flags = "base"
+
+[[unit]]
+unit = "m2_obj5f0890dtor"
+source = "src/Gruntz/Obj5f0890Dtor.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "m2_mgrslotswap"
+source = "src/Gruntz/MgrSlotSwap.cpp"
+flags = "base"
