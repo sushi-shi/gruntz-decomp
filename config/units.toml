@@ -592,6 +592,13 @@ unit = "engine_unmatched"
 source = "src/Stub/Unmatched.cpp"
 flags = "base"
 
+# engine_unmatched_lib: the CRT/MFC/zlib library implementations split out of the
+# worklist (UnmatchedLibrary.cpp) - NOT reconstruction targets.
+[[unit]]
+unit = "engine_unmatched_lib"
+source = "src/Stub/UnmatchedLibrary.cpp"
+flags = "base"
+
 [[unit]]
 # MSVC5 LIBCMT iostreams `streambuf` base (non-EH leaves).
 unit = "crt_streambuf"
