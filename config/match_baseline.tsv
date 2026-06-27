@@ -187,7 +187,7 @@ ehfunclets	6	6
 engine_attributed	9	0
 engine_boundary	17	0
 engine_discovered	23	5
-engine_label_stubs	358	96
+engine_label_stubs	355	96
 engine_unmatched_lib	11	0
 engstr	3	1
 eyecandytypetags	4	4
@@ -258,6 +258,7 @@ levelsync	1	0
 leveltilevalidation	3	0
 lightfxmgr	3	3
 loadlevelbymode	1	0
+loadobjectresources	3	0
 logicactreg	3	0
 logicactregistrars	6	0
 logicdispatchinit	3	3
@@ -1824,9 +1825,6 @@ engine_label_stubs	?LoadGruntDeathAnimations@ThisStubOwnerUnknown@ApiCallerStubs
 engine_label_stubs	?LoadGruntResurrectTuning@CGruntResurrector@@QAEHHHH@Z	65.4807	65.4807	1	cpp:590eddff1627	0x7be60
 engine_label_stubs	?LoadMenuSelectSprite@CNetMgr@@QAEXH@Z	0.8264	0.8264	1	cpp:590eddff1627	0xba620
 engine_label_stubs	?LoadMenuStateAssets@EngineLabelBacklog@@YGXHHH@Z	0.3922	0.3922	1	cpp:6bf52155264d	0x9fe50
-engine_label_stubs	?LoadObjectAnimResources@EngineLabelBacklog@@YGXHH@Z	0.5747	0.5747	1	cpp:6bf52155264d	0x9ac20
-engine_label_stubs	?LoadObjectImageResources@EngineLabelBacklog@@YGXHH@Z	0.5556	0.5556	1	cpp:6bf52155264d	0x9a510
-engine_label_stubs	?LoadObjectSoundResources@EngineLabelBacklog@@YGXHH@Z	0.5747	0.5747	1	cpp:6bf52155264d	0x9a910
 engine_label_stubs	?LoadPickupSprites@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXHHHHH@Z	0.0833	0.0833	1	cpp:e8a4cb0d5b2a	0x65e80
 engine_label_stubs	?LoadProjectileEffects@CProjectile@@QAEXXZ	0.2165	0.2165	1	cpp:e8a4cb0d5b2a	0xdfd00
 engine_label_stubs	?LoadProjectileSprites@CProjectile@@QAEXHHHHHHH@Z	0.2183	0.2183	1	cpp:6bf52155264d	0xdf050
@@ -2711,6 +2709,9 @@ lightfxmgr	?Init@CLightFxMgr@@QAEHPAVCGameRegistry@@PAX@Z	100.0000	100.0000	1	ca
 lightfxmgr	?Push@CLightFxMgr@@QAEHPAVCImageSet@@HH@Z	100.0000	100.0000	1	230e8d70c35c	0x9dcb0
 lightfxmgr	?Reset@CLightFxMgr@@QAEXXZ	100.0000	100.0000	1	9e70786cf034	0x9dc80
 loadlevelbymode	?LoadByMode@CPlayLevelLoad@@QAEHH@Z	34.8503	34.8503	2	10b320b3c10a	0xca200
+loadobjectresources	?LoadObjectAnimResources@CObjResTree@@QAEHPAUObjSpawnEntry@@PAUObjResLookup@@@Z	88.3103	88.3103	1	3f06cd9e89f7	0x9ac20
+loadobjectresources	?LoadObjectImageResources@CObjResTree@@QAEHPAUObjSpawnEntry@@PAUObjResLookup@@@Z	88.6611	88.6611	1	6d19727a943f	0x9a510
+loadobjectresources	?LoadObjectSoundResources@CObjResTree@@QAEHPAUObjSpawnEntry@@PAUObjResLookup@@@Z	88.3103	88.3103	1	6ace20e25485	0x9a910
 logicactreg	?RegisterXLogic_62bfa0@@YAXXZ	91.1739	91.1739	1	4bad5388934b	0x3a710
 logicactreg	?RegisterXLogic_6447f8@@YAXXZ	91.1739	91.1739	1	d5fa5b0956b7	0x474b0
 logicactreg	?RegisterXLogic_646010@@YAXXZ	91.1739	91.1739	1	b3bf8e9b5058	0xadfc0

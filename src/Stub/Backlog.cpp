@@ -177,9 +177,6 @@ namespace EngineLabelBacklog {
     void __stdcall BuildRockBreakParticles(i32, i32, i32, i32);
     void LoadPowerupIconSprites();
     void __stdcall BuildLevelRezPath(i32, i32, i32, i32, i32);
-    void __stdcall LoadObjectImageResources(i32, i32);
-    void __stdcall LoadObjectSoundResources(i32, i32);
-    void __stdcall LoadObjectAnimResources(i32, i32);
     void __stdcall LoadMenuStateAssets(i32, i32, i32);
     void LoadAreaLevelTable();
     void LoadRollingBallHazardSprites();
@@ -1148,26 +1145,9 @@ i32 CHelpBookSprite::Update() {
     return 0;
 }
 
-// @confidence: med
-// @source: decomp-xref
-// @proximity: CSpawnEntry@-0xc0 | CAreaMgr@+0xf20 (boundary - pick one)
-// @stub
-RVA(0x0009a510, 0x275)
-void __stdcall EngineLabelBacklog::LoadObjectImageResources(i32, i32) {}
-
-// @confidence: med
-// @source: decomp-xref
-// @proximity: CSpawnEntry@-0x4c0 | CAreaMgr@+0xb20 (boundary - pick one)
-// @stub
-RVA(0x0009a910, 0x261)
-void __stdcall EngineLabelBacklog::LoadObjectSoundResources(i32, i32) {}
-
-// @confidence: med
-// @source: decomp-xref
-// @proximity: CSpawnEntry@-0x7d0 | CAreaMgr@+0x810 (boundary - pick one)
-// @stub
-RVA(0x0009ac20, 0x261)
-void __stdcall EngineLabelBacklog::LoadObjectAnimResources(i32, i32) {}
+// LoadObject{Image,Sound,Anim}Resources (0x9a510/0x9a910/0x9ac20) graduated to
+// src/Gruntz/LoadObjectResources.cpp (eh unit) as the CObjResTree OBJECTZ_ asset
+// reconcilers; their destructible local CObList gives them the /GX frame.
 
 // @confidence: med
 // @source: string-xref
