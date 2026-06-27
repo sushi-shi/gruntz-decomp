@@ -755,6 +755,99 @@ void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
 }
 
 // ===========================================================================
+// 0x14d5e0 - ConvertRowDoubleFwd: the forward (left-to-right) twin of
+// ConvertRowDouble. Writes each converted pixel to dst AND dst+rowDelta, walking
+// dst and the saved-dest scratch line UP. Dense (m_14-2) jump table over cases
+// 2/3/7/8 (4/5/6 fall through). Case 3 is symmetric (both rows get the m_18 LUT of
+// the saved dest; src is unused). __thiscall, ret 0x10.
+// ===========================================================================
+// @early-stop
+// Same family wall as ConvertRow/ConvertRowFlip/ConvertRowDouble (~56%): the
+// jump-table .rdata scoring artifact (docs/patterns/jumptable-data-overlap.md) +
+// the predecrement-guard-lea-recover-count regalloc shape
+// (docs/patterns/predecrement-guard-lea-recover-count.md), here with the dual-store
+// thread (retail recomputes the blended pixel for the second store - reproduced by
+// writing the index expression twice). Per-pixel blend math is byte-faithful; the
+// spill/recompute schedule parks it. Deferred to the row-converter final sweep.
+RVA(0x0014d5e0, 0x345)
+void CDDrawShadeBlit::ConvertRowDoubleFwd(u8* dst, u8* src, i32 count, i32 rowDelta) {
+    i32 i;
+    switch (m_14) {
+        case 2: {
+            u8* base = m_1c->m_08;
+            memcpy(g_scratch, dst, count);
+            u8* sc = g_scratch;
+            for (i = count; i > 0; i--) {
+                dst[0] = base[(*sc << 8) + *src];
+                dst[rowDelta] = base[(*sc << 8) + *src];
+                dst++;
+                sc++;
+                src++;
+            }
+            break;
+        }
+        case 3: {
+            i32 pal = (i32)m_1c->m_08;
+            memcpy(g_scratch, dst, count);
+            u8* sc = g_scratch;
+            for (i = count; i > 0; i--) {
+                dst[0] = ((u8*)m_18)[(*sc << 8) + pal];
+                dst[rowDelta] = ((u8*)m_18)[(*sc << 8) + pal];
+                dst++;
+                sc++;
+            }
+            break;
+        }
+        case 7: {
+            u16* pal1 = (u16*)m_1c->m_08;
+            u16* pal2 = (u16*)g_blendDescr->m_08;
+            memcpy(g_scratch, dst, count * 2);
+            u16* sc = (u16*)g_scratch;
+            i32 rd = rowDelta & ~1;
+            for (i = count; i > 0; i--) {
+                u32 idx = pal2[*sc++];
+                idx += (*src++ >> 4) << 12;
+                u16 v = pal1[idx];
+                *(u16*)dst = v;
+                *(u16*)(dst + rd) = v;
+                dst += 2;
+            }
+            break;
+        }
+        case 8: {
+            memcpy(g_scratch, dst, count * 2);
+            u16* sc = (u16*)g_scratch;
+            u16* ss = (u16*)src;
+            i32 rd = rowDelta & ~1;
+            if (m_2c) {
+                for (i = count; i > 0; i--) {
+                    u32 d = *sc++;
+                    u32 a = *ss++;
+                    u32 r = ((u16*)m_30)[(a >> 0xa) + ((d >> 5) & 0xffe0)];
+                    r |= ((u16*)m_34)[((a >> 5) & 0x1f) + (((d >> 5) & 0x1f) << 5)];
+                    r |= ((u16*)m_38)[(a & 0x1f) + ((d & 0x1f) << 5)];
+                    *(u16*)dst = (u16)r;
+                    *(u16*)(dst + rd) = (u16)r;
+                    dst += 2;
+                }
+            } else {
+                for (i = count; i > 0; i--) {
+                    u32 d = *sc++;
+                    u32 a = *ss++;
+                    u32 r = ((u16*)m_30)[(a >> 0xb) + ((d >> 6) & 0xffe0)];
+                    r |= ((u16*)m_34)[((a >> 6) & 0x1f) + (((d >> 6) & 0x1f) << 5)];
+                    r |= ((u16*)m_38)[(a & 0x1f) + ((d & 0x1f) << 5)];
+                    *(u16*)dst = (u16)r;
+                    *(u16*)(dst + rd) = (u16)r;
+                    dst += 2;
+                }
+            }
+            break;
+        }
+    }
+}
+
+// ===========================================================================
 // 0x14d950 - ConvertRowDouble: the vertical-double row converter (writes every
 // converted pixel to dst AND dst+rowDelta). Five (m_14-2) cases (2/3/7/8; 4/5/6
 // fall through to the empty default). The byte cases reverse-walk dst with the

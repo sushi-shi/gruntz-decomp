@@ -47,7 +47,7 @@ ccursorsnapsprite	2	2
 cddpagemgr	2	1
 cddrawchildgroup	9	5
 cddrawptrcollections	31	15
-cddrawshadeblit	8	1
+cddrawshadeblit	9	1
 cddrawsubmgr	58	32
 cddrawsubmgrani	3	1
 cddrawsubmgrdraco	5	2
@@ -161,11 +161,12 @@ engine_attributed	15	0
 engine_boundary	196	0
 engine_discovered	51	0
 engine_label_stubs	407	105
-engine_unmatched	23	0
+engine_unmatched	19	0
 engine_unmatched_lib	11	0
 engstr	3	1
 eyecandytypetags	4	4
 faderradial	1	0
+fadershapesetup	1	0
 fadertilerender	1	0
 feccrypt	3	2
 filemem	9	8
@@ -279,6 +280,7 @@ menuitem	14	11
 menuitem2	5	2
 menupage	31	16
 menusparkleserial	1	1
+mgrautoscroll	1	0
 mgrlistfind	1	0
 mgrtokenquery	1	1
 motionstate	6	5
@@ -298,6 +300,7 @@ orphanleaves	7	7
 orphanmethods	4	2
 palettebmp	1	0
 palettecopy	1	0
+polyclipraster	1	0
 projactcache	2	1
 projactregistry	4	3
 projectile	10	4
@@ -621,8 +624,9 @@ cddrawshadeblit	?BlitLoop@CDDrawShadeBlit@@QAEXPAUShadeRect@@PAUShadeSrc@@0H@Z	0
 cddrawshadeblit	?BlitMode_149950@CDDrawShadeBlit@@QAEXPAUShadeRect@@PAUShadeSrc@@0H@Z	31.4438	31.4438	1	f5ffbe02f6d8	0x149950
 cddrawshadeblit	?BlitMode_149d00@CDDrawShadeBlit@@QAEXPAUShadeRect@@PAUShadeSrc@@0H@Z	29.3712	29.3712	1	01f2ae556690	0x149d00
 cddrawshadeblit	?BlitMode_14b770@CDDrawShadeBlit@@QAEXPAUShadeRect@@PAUShadeSrc@@0H@Z	0.0637	0.0637	1	17d63d847449	0x14b770
-cddrawshadeblit	?ConvertRow@CDDrawShadeBlit@@QAEXPAE0H@Z	56.2500	56.2500	1	c75acd3c59f2	0x14c9f0
-cddrawshadeblit	?ConvertRowDouble@CDDrawShadeBlit@@QAEXPAE0HH@Z	49.8813	49.8813	1	b366f666933c	0x14d950
+cddrawshadeblit	?ConvertRow@CDDrawShadeBlit@@QAEXPAE0H@Z	55.7154	55.7154	1	c75acd3c59f2	0x14c9f0
+cddrawshadeblit	?ConvertRowDouble@CDDrawShadeBlit@@QAEXPAE0HH@Z	51.2031	51.2031	1	b366f666933c	0x14d950
+cddrawshadeblit	?ConvertRowDoubleFwd@CDDrawShadeBlit@@QAEXPAE0HH@Z	57.5395	57.5395	1	2fb91a179d05	0x14d5e0
 cddrawshadeblit	?ConvertRowFlip@CDDrawShadeBlit@@QAEXPAE0H@Z	53.7083	53.7083	1	85e6a9ce6294	0x14cfc0
 cddrawsubmgr	??0CDDrawSubMgr@@QAE@PAVCDDrawSurfaceMgr@@HH@Z	100.0000	100.0000	6	af4f6a250fe2	0x156cb0
 cddrawsubmgr	??0CSeverusWorker3@@QAE@HHH@Z	100.0000	100.0000	1	0ce29eacd207	0x158f30
@@ -2038,7 +2042,6 @@ engine_unmatched	?Unmatched_0c0c70@@YAXXZ	0.2000	0.2000	1	840ea28b587c	0xc0c70
 engine_unmatched	?Unmatched_0d1b60@@YAXXZ	0.0452	0.0452	1	c68199c5794a	0xd1b60
 engine_unmatched	?Unmatched_0d8060@@YAXXZ	0.0658	0.0658	1	70c2e4e53ae8	0xd8060
 engine_unmatched	?Unmatched_0de200@@YAXXZ	2.1739	2.1739	1	b78e04f65416	0xde200
-engine_unmatched	?Unmatched_0ebd70@@YAXXZ	0.3774	0.3774	1	bd5ad318d981	0xebd70
 engine_unmatched	?Unmatched_0f0130@@YAXXZ	0.1761	0.1761	1	ad8cb88c7979	0xf0130
 engine_unmatched	?Unmatched_0f71c0@@YAXXZ	0.1789	0.1789	1	f03b261cc267	0xf71c0
 engine_unmatched	?Unmatched_0f8240@@YAXXZ	0.2257	0.2257	1	3ea41b268007	0xf8240
@@ -2047,14 +2050,11 @@ engine_unmatched	?Unmatched_1084d0@@YAXXZ	0.0438	0.0438	1	733c20a72572	0x1084d0
 engine_unmatched	?Unmatched_114480@@YAXXZ	1.1905	1.1905	1	44269c7ee8d9	0x114480
 engine_unmatched	?Unmatched_118a30@@YAXXZ	1.4085	1.4085	1	5d19500e03c1	0x118a30
 engine_unmatched	?Unmatched_1190f0@@YAXXZ	1.4493	1.4493	1	30b339bd7c22	0x1190f0
-engine_unmatched	?Unmatched_146550@@YAXXZ	0.2232	0.2232	1	0ab3f0923a57	0x146550
 engine_unmatched	?Unmatched_146a20@@YAXXZ	0.2198	0.2198	1	dbe19730debd	0x146a20
-engine_unmatched	?Unmatched_14d5e0@@YAXXZ	0.1316	0.1316	1	5aad3eaac12c	0x14d5e0
 engine_unmatched	?Unmatched_17cbe0@@YAXXZ	1.6949	1.6949	1	fca74341e8e5	0x17cbe0
 engine_unmatched	?Unmatched_17cdf0@@YAXXZ	0.2632	0.2632	1	5b24239a6df0	0x17cdf0
 engine_unmatched	?Unmatched_17cfc0@@YAXXZ	0.2062	0.2062	1	eae9d3b1bc0c	0x17cfc0
 engine_unmatched	?Unmatched_180fb0@@YAXXZ	0.0928	0.0928	1	06ef34252706	0x180fb0
-engine_unmatched	?Unmatched_1817e0@@YAXXZ	0.1575	0.1575	1	b5e71d91b317	0x1817e0
 engine_unmatched	?Unmatched_181e50@@YAXXZ	0.0648	0.0648	1	955d1d4e182f	0x181e50
 engine_unmatched	?Unmatched_1933b0@@YAXXZ	0.1702	0.1702	1	8d74db23dbae	0x1933b0
 engine_unmatched_lib	?Unmatched_124848@@YAXXZ	4.0000	4.0000	1	81c658f8d097	0x124848
@@ -2076,6 +2076,7 @@ eyecandytypetags	?GetTypeTag@CTileLogicTag41d@@QAEHXZ	100.0000	100.0000	1	295ea9
 eyecandytypetags	?GetTypeTag@CTileLogicTag428@@QAEHXZ	100.0000	100.0000	1	8dd0fe603a69	0x11bf0
 eyecandytypetags	?GetTypeTag@CTileLogicTag429@@QAEHXZ	100.0000	100.0000	1	a1b467d86c3d	0x10f00
 faderradial	?Build@CFaderRadial@@QAEHPAUFrConfig@@@Z	63.2690	63.2690	2	0dcdc6f34b74	0x17fa40
+fadershapesetup	?Setup@CFaderShape@@QAEHPAUFInit@@@Z	40.6732	40.6732	1	cb2d7152a556	0x1817e0
 fadertilerender	?RenderTile@CFaderTileRender@@QAEXHH@Z	59.0975	59.0975	1	493537d54304	0x182610
 feccrypt	?FecDecode@@YGXPBDPADG@Z	100.0000	100.0000	1	5b0e31c468f8	0x17bfe0
 feccrypt	?FecEncode@@YGXPBDPAD@Z	100.0000	100.0000	1	6bc3315ae515	0x17bf70
@@ -2896,6 +2897,7 @@ menupage	?SelectFwd2@CMenuPage@@QAEHXZ	62.0000	62.0000	1	be98c737a2a4	0x184230
 menupage	?SetFocus@CMenuPage@@QAEHPAVCMenuItem@@H@Z	100.0000	100.0000	1	20f58cb55e3b	0x183ad0
 menupage	?Switch@CMenuPage@@QAEHH@Z	100.0000	100.0000	1	493ec45e749b	0x183df0
 menusparkleserial	?Serialize@CMenuSparkle@@QAEHPAVCMsSerialArchive@@HHH@Z	100.0000	100.0000	1	69a5586462c4	0xae1c0
+mgrautoscroll	?UpdateMgrScroll@@YAXPAUCGruntzMgr@@PAHHH@Z	59.8226	59.8226	1	45f632414bce	0xebd70
 mgrlistfind	?MgrListFind@@YAHHH@Z	73.2188	73.2188	1	3f1ad7a54cca	0xf0db0
 mgrtokenquery	?QueryToken@@YAHH@Z	100.0000	100.0000	1	33f0fb7f4951	0x99d10
 motionstate	??0CMotionState@@QAE@XZ	100.0000	100.0000	1	24ca6b679299	0x136d0
@@ -3040,6 +3042,7 @@ orphanmethods	?Step@CState95@@QAEHH@Z	100.0000	100.0000	1	676520cbbd0b	0x95140
 orphanmethods	?Tick@CStrikeEffect@@QAEHXZ	98.9429	98.9429	1	4e61b877ab77	0xb4350
 palettebmp	?LoadBmpPalette@CPalLoader@@QAEHPBDH@Z	98.4889	98.4889	2	dc1d1e374304	0x177480
 palettecopy	?UploadPalette@CPaletteHost@@QAEXXZ	61.1613	61.1613	1	a0802ff9a4b4	0x17ca10
+polyclipraster	?RotateRasterize@@YAHPAUClipVtx@@HHHHHHHHH@Z	53.4152	53.4152	1	0f617ce05cfb	0x146550
 projactcache	??0zBitVec@@QAE@HH@Z	77.7679	77.7679	1	cebeacca76fa	0x16d790
 projactcache	?EnsureSize@zBitVec@@QAEHH@Z	100.0000	100.0000	1	151b7a363677	0x1936e0
 projactregistry	??1CProjActOwner@@UAE@XZ	100.0000	100.0000	1	3a018279bc02	0x7fd0

@@ -73,6 +73,11 @@ public:
     // cases, but dst is walked DOWN and the saved-dest scratch line is read back to
     // front. Used by the selected (mirrored) blit path BlitMode_14b770.
     void ConvertRowFlip(u8* dst, u8* src, i32 count); // 0x14cfc0
+    // The forward (left-to-right) twin of ConvertRowDouble: same dual-write (dst and
+    // dst+rowDelta), but dst and the saved-dest scratch line walk UP. Dense (m_14-2)
+    // jump table over cases 2/3/7/8 (4/5/6 fall through). Case 3 is symmetric (both
+    // rows get the m_18 LUT of the saved dest; src is unused).
+    void ConvertRowDoubleFwd(u8* dst, u8* src, i32 count, i32 rowDelta); // 0x14d5e0
     // The dual-write (vertical-double) row converter: each pixel is written to dst
     // and dst+rowDelta. Five (m_14-2) blend cases (2/3/7/8); 4/5/6 fall through.
     void ConvertRowDouble(u8* dst, u8* src, i32 count, i32 rowDelta); // 0x14d950

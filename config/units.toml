@@ -884,6 +884,21 @@ source = "src/Gruntz/CDDrawShadeBlit.cpp"
 flags = "base"
 
 [[unit]]
+unit = "mgrautoscroll"
+source = "src/Gruntz/MgrAutoScroll.cpp"
+flags = "base"
+
+[[unit]]
+unit = "fadershapesetup"
+source = "src/Gruntz/FaderShapeSetup.cpp"
+flags = "base"
+
+[[unit]]
+unit = "polyclipraster"
+source = "src/Gruntz/PolyClipRaster.cpp"
+flags = "base"
+
+[[unit]]
 unit = "cddrawworkerlist"
 source = "src/Gruntz/CDDrawWorkerList.cpp"
 flags = "base"
