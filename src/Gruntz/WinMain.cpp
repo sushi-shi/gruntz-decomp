@@ -31,6 +31,7 @@
 // and the WM_* / SC_RESTORE / CW_USEDEFAULT / VK_CONTROL / VK_SHIFT literals.
 #include <Mfc.h>
 #include <Wap32/Wap32.h>
+#include <Gruntz/Enums.h>
 #include <rva.h>
 
 #define VK_DOLLAR 0x24 // == VK_HOME (the developer hot-key's third key)
@@ -123,7 +124,7 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, i32 nShow
                 SendMessageA(hPrev, WM_SYSCOMMAND, SC_RESTORE, 0);
             }
             if (lpCmdLine != 0 && SubstringMatch(lpCmdLine, "LOBBYLAUNCH") != 0) {
-                PostMessageA(hPrev, WM_COMMAND, 0x80b7, 0);
+                PostMessageA(hPrev, WM_COMMAND, LOBBYLAUNCH, 0);
             }
         }
         return 0;

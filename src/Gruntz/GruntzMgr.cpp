@@ -17,6 +17,7 @@
 // WINMM timeGetTime decl (the per-frame draw clock).
 #include <Mfc.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/Enums.h>
 #include <rva.h>
 #include <stdio.h>  // engine sprintf (reloc-masked) for the toggle-message formatter
 #include <string.h> // engine strstr (reloc-masked) for the Battlez header probe
@@ -1708,7 +1709,7 @@ i32 CGruntzMgr::SetColorDepth(i32 depth) {
 // world's mode-set vtable (slot 6, 640x480), registers the mode-reset callback,
 // stamps the view's tile region to 0xe, rebuilds the world objects, resolves +
 // applies the rez path (a CString temp gives the /GX frame), then rebuilds the
-// input object (+0x54) and re-arms it per the m_104 gate, finally re-storing the
+// input object (+0x54) and re-arms it per the m_isAmbientEnabled gate, finally re-storing the
 // input flag. Each engine reject surfaces an error and returns 0.
 // @early-stop
 // big /GX state-machine reload (~27%): the whole flow + per-stage error ladder
@@ -1725,7 +1726,7 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
     if (m_world == 0) {
         return 0;
     }
-    if (m_88 == mode) {
+    if (m_colorDepth == mode) {
         return 1;
     }
     if (mode != 8 && mode != 0x10) {
@@ -1747,17 +1748,17 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
     }
     m_34 = 0;
 
-    m_88 = mode;
+    m_colorDepth = mode;
     g_6455e0 = 0;
     g_6455dc = 0;
-    if (m_88 == 0x10) {
+    if (m_colorDepth == 0x10) {
         g_6455dc = 1;
     }
 
     ((CWorldModeIface*)m_world)->Notify();
     i32 kind = (g_6455b4 == 0) ? 1 : 5;
     if (((CWorldModeIface*)m_world)
-            ->SetVideoMode((i32)((CGameWnd*)m_4)->m_4, 0x280, 0x1e0, m_88, kind)
+            ->SetVideoMode((i32)((CGameWnd*)m_4)->m_4, 0x280, 0x1e0, m_colorDepth, kind)
         == 0) {
         ReportWorldStatus(0x43f);
         return 0;
@@ -1793,7 +1794,7 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
         return 0;
     }
 
-    SetColorDepth(m_88);
+    SetColorDepth(m_colorDepth);
 
     CInput54* in2 = (CInput54*)m_inputState;
     if (in2) {
@@ -1820,7 +1821,7 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
     }
 
     CInput54* cur = (CInput54*)m_inputState;
-    if (m_104 != 0) {
+    if (m_isAmbientEnabled != 0) {
         if (cur->m_24 == 0) {
             cur->m_24 = 1;
             cur->Arm();
@@ -1878,7 +1879,7 @@ i32 CGruntzMgr::ResetWorldState(i32 notify) {
 
     BeginWaitCursor();
 
-    if (m_88 == 8) {
+    if (m_colorDepth == 8) {
         if (LoadWorldMode(0x10) == 0) {
             ReportError(0x801f, 0x443);
             EndWaitCursor();
@@ -2429,7 +2430,7 @@ i32 CGruntzMgr::SaveState(CSerializerZ* ar) {
     ar->Serialize(&g_6455a4, 4);
     ar->Serialize(&g_6455ac, 4);
     ar->Serialize(&g_6455f8, 4);
-    ar->Serialize(&m_118, 4);
+    ar->Serialize(&m_isEasyMode, 4);
     ar->Serialize(&g_6455e8, 4);
     ar->Serialize(&g_6452a4, 4);
     ar->Serialize(&g_6452cc, 4);
@@ -2484,7 +2485,7 @@ i32 CGruntzMgr::LoadState(CSerializerZ* ar) {
     ar->Transfer(&g_6455a4, 4);
     ar->Transfer(&g_6455ac, 4);
     ar->Transfer(&g_6455f8, 4);
-    ar->Transfer(&m_118, 4);
+    ar->Transfer(&m_isEasyMode, 4);
     ar->Transfer(&g_6455e8, 4);
     ar->Transfer(&g_6452a4, 4);
     ar->Transfer(&g_6452cc, 4);
@@ -2972,15 +2973,15 @@ void CGruntzMgr::UnknownClose() {
     OpenSettingsStore();
     CSettingsWriter* cfg = (CSettingsWriter*)m_38;
     if (cfg) {
-        cfg->WriteInt("Num_Runs", m_80);
-        cfg->WriteInt("Num_Movies", m_84);
+        cfg->WriteInt("Num_Runs", m_numRuns);
+        cfg->WriteInt("Num_Movies", m_numMovies);
         cfg->WriteInt("Sound", m_10);
-        cfg->WriteInt("Voice", m_100);
-        cfg->WriteInt("Ambient", m_104);
+        cfg->WriteInt("Voice", m_isVoiceEnabled);
+        cfg->WriteInt("Ambient", m_isAmbientEnabled);
         cfg->WriteInt("Music", m_14);
-        cfg->WriteInt("Interlaced", m_108);
-        cfg->WriteInt("High_Detail", m_10c);
-        cfg->WriteInt("Effects", m_110);
+        cfg->WriteInt("Interlaced", m_isInterlaced);
+        cfg->WriteInt("High_Detail", m_isHighDetail);
+        cfg->WriteInt("Effects", m_isEffectsEnabled);
         cfg->WriteInt("Disable_Joystick", g_6455c8);
         if (m_sound) {
             cfg->WriteInt("Music_Volume", m_sound->GetMusicVolume());
@@ -2991,17 +2992,17 @@ void CGruntzMgr::UnknownClose() {
         if (m_world && m_world->m_28) {
             cfg->WriteInt("Sound_Volume", g_61ab24);
         }
-        cfg->WriteInt("Scroll_Speed", m_124);
-        cfg->WriteInt("Easy_Mode", m_118);
-        i32 res = 1;
+        cfg->WriteInt("Scroll_Speed", m_scrollSpeed);
+        cfg->WriteInt("Easy_Mode", m_isEasyMode);
+        i32 res = RES_640x480;
         if (m_savedModeW == 0x400 && m_savedModeH == 0x300) {
-            res = 3;
+            res = RES_1024x768;
         } else if (m_savedModeW == 0x320 && m_savedModeH == 0x258) {
-            res = 2;
+            res = RES_800x600;
         }
         cfg->WriteInt("Resolution", res);
-        cfg->WriteInt("Checkpoint_Prompts", m_b8);
-        cfg->WriteInt("Enable_HiColor", m_88 == 0x10 ? 1 : 0);
+        cfg->WriteInt("Checkpoint_Prompts", m_isCheckpointPrompts);
+        cfg->WriteInt("Enable_HiColor", m_colorDepth == 0x10 ? 1 : 0);
         cfg->WriteInt("Enable_TrueColor", 0);
     }
     ClearStateStack();
@@ -3159,12 +3160,12 @@ void CGruntzMgr::AccrueScoreTime() {
 
 // -------------------------------------------------------------------------
 // CGruntzMgr::OnCheckpointReached (0x08e6c0; /GX EH; the SendMessageA-wrapping
-// checkpoint prompt). When checkpoint prompts are enabled (m_b8), pops a modal
+// checkpoint prompt). When checkpoint prompts are enabled (m_isCheckpointPrompts), pops a modal
 // dialog and - if it returns 1 ("yes") - SendMessageA WM_COMMAND 0x80cf to the game
 // window. The destructible dialog local gives the /GX frame.
 RVA(0x0008e6c0, 0x85)
 void CGruntzMgr::OnCheckpointReached() {
-    if (m_b8 == 0) {
+    if (m_isCheckpointPrompts == 0) {
         return;
     }
     CCheckpointDlg dlg(0);
@@ -3342,30 +3343,30 @@ CGruntzMgr::CGruntzMgr() {
     m_b0 = 0;
     m_b4 = 0;
     m_114 = 0;
-    m_b8 = 1;
+    m_isCheckpointPrompts = 1;
     m_connSettings = 0;
     m_saveInfoRec = 0;
-    m_80 = 0;
-    m_84 = 0;
+    m_numRuns = 0;
+    m_numMovies = 0;
     m_cc = 0x1e;
     m_modeW = 0;
     m_modeH = 0;
-    m_88 = 0x10;
+    m_colorDepth = 0x10;
     m_f4 = 1;
     m_f8 = 0;
     m_fc = 0;
     m_14 = 1;
     m_10 = 1;
-    m_100 = 1;
-    m_104 = 1;
-    m_108 = 0;
-    m_118 = 0;
+    m_isVoiceEnabled = 1;
+    m_isAmbientEnabled = 1;
+    m_isInterlaced = 0;
+    m_isEasyMode = 0;
     m_130 = 0;
     m_128 = 0;
     m_12c = 0;
     m_134 = 0;
-    m_10c = 1;
-    m_110 = 1;
+    m_isHighDetail = 1;
+    m_isEffectsEnabled = 1;
     m_optionsCount = 3;
 }
 
@@ -3412,7 +3413,7 @@ i32 CGruntzMgr::CheckDisplayBoundsA() {
         return 1;
     }
     CPointXY pt;
-    CPointXY* p = ((CWorldCoordResolver*)m_world->m_1c)->ResolveHi(&pt, m_modeW, m_modeH, m_88);
+    CPointXY* p = ((CWorldCoordResolver*)m_world->m_1c)->ResolveHi(&pt, m_modeW, m_modeH, m_colorDepth);
     i32 x = p->x;
     i32 y = p->y;
     if (x > 0x514 || x == -1 || y == -1) {
@@ -3438,7 +3439,7 @@ i32 CGruntzMgr::CheckDisplayBoundsB() {
         return 1;
     }
     CPointXY pt;
-    CPointXY* p = ((CWorldCoordResolver*)m_world->m_1c)->ResolveLo(&pt, m_modeW, m_modeH, m_88);
+    CPointXY* p = ((CWorldCoordResolver*)m_world->m_1c)->ResolveLo(&pt, m_modeW, m_modeH, m_colorDepth);
     i32 x = p->x;
     i32 y = p->y;
     if (x == -1 || y == -1 || x < 0x140 || y < 0xc8) {
@@ -3456,7 +3457,7 @@ i32 CGruntzMgr::CheckDisplayBoundsB() {
 
 // ---------------------------------------------------------------------------
 // CGruntzMgr::SetVideoMode (0x08df00; ret 0xc). Switch the display to (w,h) at
-// the current bit depth (m_88). No-op if already at (w,h). When the live state is
+// the current bit depth (m_colorDepth). No-op if already at (w,h). When the live state is
 // playable (Update() in {3,0x11}) and the new size exceeds the loaded map's
 // playable field (m_world->m_24->m_5c->{m_30,m_34}), it refuses: pokes the HUD
 // guts subsystem (m_2dc) and surfaces the "map too small" modal, returning 0.
@@ -3540,7 +3541,7 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
             }
         }
     }
-    if (!SvmApply(w, h, m_88)) {
+    if (!SvmApply(w, h, m_colorDepth)) {
         return 0;
     }
     while (g_pShowCursor(0) >= 0) {
@@ -3570,7 +3571,7 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
     if (g_645600 != 0) {
         g_645600 = 0;
         char buf[0x70];
-        sprintf(buf, "Resolution is now %ix%ix%i", m_modeW, m_modeH, m_88);
+        sprintf(buf, "Resolution is now %ix%ix%i", m_modeW, m_modeH, m_colorDepth);
         LogLine(buf);
     }
     return 1;

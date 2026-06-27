@@ -307,8 +307,9 @@ public:
     i32 m_cmdNotify;      // +0x70  command sink (vtbl slot 1) + cell-height notify
     i32 m_74, m_78;       // +0x74, +0x78
     i32 m_scoreHud;       // +0x7c  HUD/score accumulator + command sink
-    i32 m_80, m_84;       // +0x80, +0x84
-    i32 m_88;             // +0x88  (=0x10 in ctor)
+    i32 m_numRuns;        // +0x80  "Num_Runs"   (launch counter; UnknownClose WriteInt)
+    i32 m_numMovies;      // +0x84  "Num_Movies" (movie-playback counter)
+    i32 m_colorDepth;     // +0x88  live color depth (bpp): 8/16(=HiColor)/24 (=0x10 in ctor)
     i32 m_modeW, m_modeH; // +0x8c, +0x90  live video mode (w, h)
     i32 m_savedModeW, m_savedModeH; // +0x94, +0x98  saved/last-good mode (w, h)
     i32 m_lobbyResult;              // +0x9c  lobby-connect success flag (1/0)
@@ -316,7 +317,7 @@ public:
     i32 m_a4, m_a8;                 // +0xa4, +0xa8
     i32 m_modalBusy;                // +0xac  modal-UI/cursor-busy gate
     i32 m_b0, m_b4;                 // +0xb0, +0xb4
-    i32 m_b8;                       // +0xb8  (=1 in ctor)
+    i32 m_isCheckpointPrompts;      // +0xb8  "Checkpoint_Prompts" enable (=1 in ctor)
     i32 m_saveInfoRec;              // +0xbc  last FillSaveInfo dst record
     IDirectPlayLobbyZ* m_lobby;     // +0xc0  the lobby interface (Released/recreated)
     void* m_connSettings;           // +0xc4  the launch connection-settings buffer
@@ -330,13 +331,16 @@ public:
     CString m_strMoviePath;         // +0xf0  resolved movie path (EH state 3)
     i32 m_f4;                       // +0xf4  (=1 in ctor)
     i32 m_f8, m_fc;                 // +0xf8, +0xfc
-    i32 m_100, m_104, m_108;        // +0x100..+0x108  (m_100/m_104 =1 in ctor)
-    i32 m_10c, m_110;               // +0x10c, +0x110  (=1 in ctor)
+    i32 m_isVoiceEnabled;           // +0x100  "Voice"      enable (=1 in ctor)
+    i32 m_isAmbientEnabled;         // +0x104  "Ambient"    enable (=1 in ctor)
+    i32 m_isInterlaced;             // +0x108  "Interlaced" flag
+    i32 m_isHighDetail;             // +0x10c  "High_Detail" flag (=1 in ctor)
+    i32 m_isEffectsEnabled;         // +0x110  "Effects"    enable (=1 in ctor)
     i32 m_114;                      // +0x114
-    i32 m_118;                      // +0x118
+    i32 m_isEasyMode;               // +0x118  "Easy_Mode" flag
     i32 m_inputFlag;                // +0x11c  StoreInputFlag target
     i32 m_inputStateVal;            // +0x120  StoreInputState target
-    i32 m_124;                      // +0x124
+    i32 m_scrollSpeed;              // +0x124  "Scroll_Speed"
     i32 m_128, m_12c, m_130, m_134; // +0x128..+0x134  (m_134==3 -> "won"; FillSaveInfo)
     i32 m_optionsCount;             // +0x138  options-cycle high index (=3 in ctor -> 4 slots)
     i32 m_viewOriginL, m_viewOriginT, m_viewOriginR,

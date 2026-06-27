@@ -24,6 +24,7 @@
 // /O2 /Oi MSVC5 expands it inline to repnz scasb + rep movs (the suffix-append
 // idiom in the disassembly).
 #include <Win32.h>
+#include <Gruntz/Enums.h>
 #include <string.h>
 
 // Control-ID literal (kept local, not from <windows.h>).
@@ -79,12 +80,12 @@ i32 GetResolutionCode() {
     i32 w = g_mgrSettings->m_94;
     i32 h = g_mgrSettings->m_98;
     if (w == 0x400 && h == 0x300) {
-        return 3;
+        return RES_1024x768;
     }
     if (w == 0x320 && h == 0x258) {
-        return 2;
+        return RES_800x600;
     }
-    return 1;
+    return RES_640x480;
 }
 
 // ---------------------------------------------------------------------------
@@ -121,13 +122,13 @@ void LoadVideoResolutionConfig(HWND hDlg, i32 nIDCombo, i32 nSel) {
 
     char szCaption[64] = "Video Resolution ";
     switch (g_videoResolutionMode) {
-        case 1:
+        case RES_640x480:
             strcat(szCaption, "(640x480)");
             break;
-        case 2:
+        case RES_800x600:
             strcat(szCaption, "(800x600)");
             break;
-        case 3:
+        case RES_1024x768:
             strcat(szCaption, "(1024x768)");
             break;
         default:
@@ -158,13 +159,13 @@ void SaveVideoResolutionConfig(HWND hDlg, HWND hCombo) {
 
     char szCaption[64] = "Video Resolution ";
     switch (g_videoResolutionMode) {
-        case 1:
+        case RES_640x480:
             strcat(szCaption, "(640x480)");
             break;
-        case 2:
+        case RES_800x600:
             strcat(szCaption, "(800x600)");
             break;
-        case 3:
+        case RES_1024x768:
             strcat(szCaption, "(1024x768)");
             break;
         default:
