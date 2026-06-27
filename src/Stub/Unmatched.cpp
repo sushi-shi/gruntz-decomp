@@ -27,8 +27,6 @@ RVA(0x000c00f0, 0xaf)
 void Unmatched_0c00f0() {} // Unmatched_0c00f0
 RVA(0x000c01d0, 0x8c)
 void Unmatched_0c01d0() {} // Unmatched_0c01d0
-RVA(0x000c0590, 0x1c3)
-void Unmatched_0c0590() {} // Unmatched_0c0590
 RVA(0x000c0c70, 0x20f)
 void Unmatched_0c0c70() {} // Unmatched_0c0c70
 RVA(0x000c2ab0, 0x161)
@@ -37,10 +35,6 @@ RVA(0x000c4120, 0xc2)
 void Unmatched_0c4120() {} // Unmatched_0c4120
 RVA(0x000c4c00, 0x190)
 void Unmatched_0c4c00() {} // Unmatched_0c4c00
-RVA(0x000c60e0, 0x18d)
-void Unmatched_0c60e0() {} // Unmatched_0c60e0
-RVA(0x000c78b0, 0x18d)
-void Unmatched_0c78b0() {} // Unmatched_0c78b0
 RVA(0x000d1b60, 0xc2f)
 void Unmatched_0d1b60() {} // Unmatched_0d1b60
 RVA(0x000d8060, 0x6ce)
@@ -63,12 +57,8 @@ RVA(0x000face0, 0x17c)
 void Unmatched_0face0() {} // Unmatched_0face0
 RVA(0x000faff0, 0x163)
 void Unmatched_0faff0() {} // Unmatched_0faff0
-RVA(0x000fb1c0, 0x168)
-void Unmatched_0fb1c0() {} // Unmatched_0fb1c0
 RVA(0x001084d0, 0x96c)
 void Unmatched_1084d0() {} // Unmatched_1084d0
-RVA(0x0010ebe0, 0x18d)
-void Unmatched_10ebe0() {} // Unmatched_10ebe0
 RVA(0x001128b0, 0x88)
 void Unmatched_1128b0() {} // Unmatched_1128b0
 RVA(0x00114480, 0xf1)
@@ -96,8 +86,6 @@ RVA(0x0017cdf0, 0x1c6)
 void Unmatched_17cdf0() {} // Unmatched_17cdf0
 RVA(0x0017cfc0, 0x2dd)
 void Unmatched_17cfc0() {} // Unmatched_17cfc0
-RVA(0x0017f390, 0x164)
-void Unmatched_17f390() {} // Unmatched_17f390
 RVA(0x0017f5e0, 0x7d)
 void Unmatched_17f5e0() {} // Unmatched_17f5e0
 RVA(0x00180fb0, 0x534)

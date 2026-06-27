@@ -159,7 +159,7 @@ engine_attributed	15	0
 engine_boundary	196	0
 engine_discovered	51	0
 engine_label_stubs	437	105
-engine_unmatched	57	0
+engine_unmatched	51	0
 engine_unmatched_lib	11	0
 engstr	3	1
 eyecandytypetags	4	4
@@ -239,6 +239,10 @@ m1_packetpool	2	2
 m1_ringbuffer	2	2
 m1_timesplit	1	1
 m1_wapmisc	5	5
+m2_actregsiblings	3	0
+m2_arraye40	1	0
+m2_gamechecksum	1	0
+m2_mgrobjserialize	1	1
 m3compilerthunks	3	3
 m3ehfunclets	12	9
 m3mfcleaves	2	2
@@ -2037,13 +2041,10 @@ engine_unmatched	?Unmatched_0bfd40@@YAXXZ	0.8264	0.8264	1	70ecf45f8759	0xbfd40
 engine_unmatched	?Unmatched_0bfeb0@@YAXXZ	0.4211	0.4211	1	890c0959e886	0xbfeb0
 engine_unmatched	?Unmatched_0c00f0@@YAXXZ	1.2987	1.2987	1	f0e07c33a177	0xc00f0
 engine_unmatched	?Unmatched_0c01d0@@YAXXZ	1.5385	1.5385	1	b22a2075d92c	0xc01d0
-engine_unmatched	?Unmatched_0c0590@@YAXXZ	0.8000	0.8000	1	1497411168eb	0xc0590
 engine_unmatched	?Unmatched_0c0c70@@YAXXZ	0.2000	0.2000	1	840ea28b587c	0xc0c70
 engine_unmatched	?Unmatched_0c2ab0@@YAXXZ	0.3125	0.3125	1	6ac6965e1e89	0xc2ab0
 engine_unmatched	?Unmatched_0c4120@@YAXXZ	1.9608	1.9608	1	64c637078a55	0xc4120
 engine_unmatched	?Unmatched_0c4c00@@YAXXZ	0.8850	0.8850	1	19d815e2fcce	0xc4c00
-engine_unmatched	?Unmatched_0c60e0@@YAXXZ	0.8696	0.8696	1	d182ef08ce02	0xc60e0
-engine_unmatched	?Unmatched_0c78b0@@YAXXZ	0.8696	0.8696	1	69de4cf90a37	0xc78b0
 engine_unmatched	?Unmatched_0d1b60@@YAXXZ	0.0452	0.0452	1	c68199c5794a	0xd1b60
 engine_unmatched	?Unmatched_0d8060@@YAXXZ	0.0658	0.0658	1	70c2e4e53ae8	0xd8060
 engine_unmatched	?Unmatched_0de200@@YAXXZ	2.1739	2.1739	1	b78e04f65416	0xde200
@@ -2055,9 +2056,7 @@ engine_unmatched	?Unmatched_0f9160@@YAXXZ	1.1236	1.1236	1	847d68f7f5be	0xf9160
 engine_unmatched	?Unmatched_0fab90@@YAXXZ	0.6250	0.6250	1	9a3e332420a6	0xfab90
 engine_unmatched	?Unmatched_0face0@@YAXXZ	0.8065	0.8065	1	b8d7ece1db26	0xface0
 engine_unmatched	?Unmatched_0faff0@@YAXXZ	0.2721	0.2721	1	359bf10acf18	0xfaff0
-engine_unmatched	?Unmatched_0fb1c0@@YAXXZ	0.2703	0.2703	1	7d2f0ecb0267	0xfb1c0
 engine_unmatched	?Unmatched_1084d0@@YAXXZ	0.0438	0.0438	1	733c20a72572	0x1084d0
-engine_unmatched	?Unmatched_10ebe0@@YAXXZ	0.8696	0.8696	1	58355f5f537a	0x10ebe0
 engine_unmatched	?Unmatched_1128b0@@YAXXZ	1.8868	1.8868	1	6344e0a3238e	0x1128b0
 engine_unmatched	?Unmatched_114480@@YAXXZ	1.1905	1.1905	1	44269c7ee8d9	0x114480
 engine_unmatched	?Unmatched_115220@@YAXXZ	1.2048	1.2048	1	ad26b5348abc	0x115220
@@ -2071,7 +2070,6 @@ engine_unmatched	?Unmatched_17cbe0@@YAXXZ	1.6949	1.6949	1	fca74341e8e5	0x17cbe0
 engine_unmatched	?Unmatched_17cc80@@YAXXZ	0.9434	0.9434	1	ee9ab81aa27b	0x17cc80
 engine_unmatched	?Unmatched_17cdf0@@YAXXZ	0.2632	0.2632	1	5b24239a6df0	0x17cdf0
 engine_unmatched	?Unmatched_17cfc0@@YAXXZ	0.2062	0.2062	1	eae9d3b1bc0c	0x17cfc0
-engine_unmatched	?Unmatched_17f390@@YAXXZ	0.2759	0.2759	1	384b651463e8	0x17f390
 engine_unmatched	?Unmatched_17f5e0@@YAXXZ	0.9302	0.9302	1	4d13ebefdf45	0x17f5e0
 engine_unmatched	?Unmatched_180fb0@@YAXXZ	0.0928	0.0928	1	06ef34252706	0x180fb0
 engine_unmatched	?Unmatched_181720@@YAXXZ	1.8182	1.8182	1	1bb1fb623642	0x181720
@@ -2783,6 +2781,12 @@ m1_wapmisc	?Stamp@CStamp11d100@@QAEXXZ	100.0000	100.0000	1	7b042a7173a0	0x11d100
 m1_wapmisc	?Unmatched_1155b0@@YAXXZ	100.0000	100.0000	1	12adb9fe0c43	0x1155b0
 m1_wapmisc	?Unmatched_1bae5d@@YAXXZ	100.0000	100.0000	1	c66d0b1641b5	0x1bae5d
 m1_wapmisc	?Unmatched_c76d0@@YAXXZ	100.0000	100.0000	1	ac745f746f9f	0xc76d0
+m2_actregsiblings	?CSiblingActorA_RegisterActs@@YAXXZ	91.1739	91.1739	1	b79a7edb78b6	0xc60e0
+m2_actregsiblings	?CSiblingActorB_RegisterActs@@YAXXZ	91.1739	91.1739	1	b05bb9e9d0ab	0xc78b0
+m2_actregsiblings	?RegisterActs@CCheckpointTrigger@@SAXXZ	91.1739	91.1739	1	ce6a50d68707	0x10ebe0
+m2_arraye40	?SetSize@CArrayE40@@QAEXHH@Z	95.9035	95.9035	1	fb49215ba665	0x17f390
+m2_gamechecksum	?ComputeSignature@CGameSyncSig@@QAEHXZ	57.6800	57.6800	1	aeb0d70abc71	0xc0590
+m2_mgrobjserialize	?Save@CMgrPersistObj@@QAEHPAUCMgrWriter@@@Z	100.0000	100.0000	1	f87d32fcdbfe	0xfb1c0
 m3compilerthunks	?Init_smallFont@@YAXXZ	100.0000	100.0000	1	a54650f185d0	0x1156b0
 m3compilerthunks	?Thunk_1bade1@@YAXXZ	100.0000	100.0000	1	ecf4ec1e6a48	0x1bade1
 m3compilerthunks	?Thunk_1d3330@@YAXXZ	100.0000	100.0000	1	5887a109803e	0x1d3330

@@ -1774,3 +1774,20 @@ flags = "base"
 unit = "netthingdtor"
 source = "src/Net/NetThingDtor.cpp"
 flags = "eh"
+
+[[unit]]
+unit = "m2_actregsiblings"
+source = "src/Gruntz/m2_ActRegSiblings.cpp"
+flags = "eh"
+[[unit]]
+unit = "m2_mgrobjserialize"
+source = "src/Gruntz/m2_MgrObjSerialize.cpp"
+flags = "base"
+[[unit]]
+unit = "m2_arraye40"
+source = "src/Gruntz/m2_ArrayE40.cpp"
+flags = "base"
+[[unit]]
+unit = "m2_gamechecksum"
+source = "src/Gruntz/m2_GameChecksum.cpp"
+flags = "base"
