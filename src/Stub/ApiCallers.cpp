@@ -116,12 +116,7 @@ namespace ApiCallerStubs {
         i32 winapi_13f460_CopyRect(i32, i32);
         i32 winapi_1480a0_timeGetTime();
         i32 winapi_1485b0_CreateDCA_DeleteDC_GetSystemPaletteEntries();
-        i32 winapi_1538c0_CopyRect(i32, i32);
-        i32 winapi_153b20_CopyRect(i32, i32);
-        i32 winapi_153d90_CopyRect(i32, i32);
         i32 winapi_153ff0_CopyRect(i32, i32);
-        i32 winapi_154270_CopyRect(i32, i32);
-        i32 winapi_1544d0_CopyRect(i32, i32);
         i32 winapi_154750_CopyRect(i32, i32);
         i32 winapi_168080_SetRect(i32, i32, i32, i32, i32, i32, i32, i32);
         i32 winapi_17c3f0_ShowCursor(
@@ -3119,54 +3114,9 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:CopyRect
     // @stub
-    // proximity: CImage@-0xb0 | CRemusNode@+0x1110
-    RVA(0x001538c0, 0x257)
-    i32 ThisStubOwnerUnknown::winapi_1538c0_CopyRect(i32, i32) {
-        return 0;
-    }
-
-    // @confidence: low
-    // @source: winapi:CopyRect
-    // @stub
-    // proximity: CImage@-0x310 | CRemusNode@+0xeb0
-    RVA(0x00153b20, 0x270)
-    i32 ThisStubOwnerUnknown::winapi_153b20_CopyRect(i32, i32) {
-        return 0;
-    }
-
-    // @confidence: low
-    // @source: winapi:CopyRect
-    // @stub
-    // proximity: CImage@-0x580 | CRemusNode@+0xc40
-    RVA(0x00153d90, 0x259)
-    i32 ThisStubOwnerUnknown::winapi_153d90_CopyRect(i32, i32) {
-        return 0;
-    }
-
-    // @confidence: low
-    // @source: winapi:CopyRect
-    // @stub
     // proximity: CImage@-0x7e0 | CRemusNode@+0x9e0
     RVA(0x00153ff0, 0x280)
     i32 ThisStubOwnerUnknown::winapi_153ff0_CopyRect(i32, i32) {
-        return 0;
-    }
-
-    // @confidence: low
-    // @source: winapi:CopyRect
-    // @stub
-    // proximity: CImage@-0xa60 | CRemusNode@+0x760
-    RVA(0x00154270, 0x257)
-    i32 ThisStubOwnerUnknown::winapi_154270_CopyRect(i32, i32) {
-        return 0;
-    }
-
-    // @confidence: low
-    // @source: winapi:CopyRect
-    // @stub
-    // proximity: CImage@-0xcc0 | CRemusNode@+0x500
-    RVA(0x001544d0, 0x275)
-    i32 ThisStubOwnerUnknown::winapi_1544d0_CopyRect(i32, i32) {
         return 0;
     }
 

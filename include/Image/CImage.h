@@ -33,6 +33,7 @@
 #include <Ints.h>
 
 class CString; // MFC CString (4-byte m_pszData ptr); full type in CImageOwned.cpp
+class CBlitInfo; // the sprite blit/draw request (esi); defined in CImageSpriteBlit.cpp
 
 // The two vtables in the dtor chain: this class's own (0x5eaa2c) and the
 // grand-base CObject dtor vtable (0x5e8cb4 = g_remusBaseDtorVtbl). Reloc-masked
@@ -183,15 +184,36 @@ public:
     i32* m_10; // +0x10  active surface (its +0x18 is the format)
 };
 
+// A plain {left, top, right, bottom} rect (the sprite blitters copy the parent
+// clip rect into a stack BlitRect before CopyRect'ing it into the working rect).
+struct BlitRect {
+    i32 m_00; // left
+    i32 m_04; // top
+    i32 m_08; // right
+    i32 m_0c; // bottom
+};
+
+// The clip-region owner reached through CImageParent::m_24 by the sprite blitters:
+// its +0x10 is the active clip RECT (copied to a local, then CopyRect'd before
+// clamping).
+class CBlitClipOwner {
+public:
+    char _00[0x10];
+    BlitRect m_10; // +0x10  clip RECT {left, top, right, bottom}
+};
+
 // The +0x0c parent (CDDrawPtrCollections): its surface pool sits at +0x1c, and a
 // display-mode descriptor at +0x04 (chased by BuildSlot13 for the build format).
-// FreeAll and LoadDispatch reach the pool through it.
+// FreeAll and LoadDispatch reach the pool through it; the sprite blitters reach the
+// clip-region owner at +0x24.
 class CImageParent {
 public:
     char _00[0x04];
     CDDrawSurfaceDesc* m_04; // +0x04  display-mode descriptor
     char _08[0x1c - 0x08];
     CImageSurfacePool* m_1c; // +0x1c  the surface pool
+    char _20[0x24 - 0x20];
+    CBlitClipOwner* m_24; // +0x24  clip-region owner (its +0x10 is the clip RECT)
 };
 
 // The frame descriptor passed to LoadDispatch / through the Resolve dispatch: a
@@ -244,6 +266,17 @@ public:
     virtual ~CImage();                           // 0x0d5e80
     void RenderFrame(void* a, void* b, void* c, void* d);                    // 0x153790
     void RenderFrameClipped(void* a, void* b, void* c, void* d, void* rect); // 0x153810
+
+    // The 5 sprite blit/clip routines (0x1538c0..0x1544d0): compute the on-screen
+    // sprite rect (with optional X/Y flip in the anchor math + an optional m_3c
+    // coordinate transform), clip it against either the parent clip RECT or the
+    // worker clip box, then blit via CDDSurface::BltEx (surface variants) or
+    // CDDrawShadeBlit::Blit (shaded variants). See src/Image/CImageSpriteBlit.cpp.
+    void BlitNorm(CBlitInfo* info, CImage* dst);       // 0x1538c0  no flip, surface
+    void BlitFlipV(CBlitInfo* info, CImage* dst);      // 0x153b20  Y flip, surface
+    void BlitFlipH(CBlitInfo* info, CImage* dst);      // 0x153d90  X flip, surface
+    void BlitShadeNorm(CBlitInfo* info, CImage* dst);  // 0x154270  no flip, shaded
+    void BlitShadeFlipV(CBlitInfo* info, CImage* dst); // 0x1544d0  Y flip, shaded
 
     // --- layout (continues the base; base ends at +0x10) ----------------------
     i32 m_10;                // +0x10  width  (from item->m_1c)

@@ -96,6 +96,7 @@ cimage	11	7
 cimageowned	4	2
 cimageprobe	1	1
 cimageset3	3	3
+cimagespriteblit	5	0
 circleshadeblit	1	0
 ckeyedlist	3	2
 cleveltimedtor	1	1
@@ -162,7 +163,7 @@ ehfunclets	6	6
 engine_attributed	15	0
 engine_boundary	196	0
 engine_discovered	51	0
-engine_label_stubs	407	105
+engine_label_stubs	402	105
 engine_unmatched	6	0
 engine_unmatched_lib	11	0
 engstr	3	1
@@ -987,6 +988,11 @@ cimageprobe	?Init@CImageProbe@@QAEHXZ	100.0000	100.0000	1	2b46baccc913	0x17cbe0
 cimageset3	?Cleanup_161bf0@CImageSet3@@QAEXXZ	100.0000	100.0000	1	e6669699495e	0x161bf0
 cimageset3	?GetSize_1633e0@CImageSet3@@QAEHXZ	100.0000	100.0000	1	33643861e3a8	0x1633e0
 cimageset3	?Prune_1628d0@CImageSet3@@QAEHXZ	100.0000	100.0000	1	b81263dd19cb	0x1628d0
+cimagespriteblit	?BlitFlipH@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	82.8060	82.8060	1	cf66c6ff4fdd	0x153d90
+cimagespriteblit	?BlitFlipV@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	80.5700	80.5700	1	b3aa1a55c9d2	0x153b20
+cimagespriteblit	?BlitNorm@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	98.5829	98.5829	1	6821789c58ef	0x1538c0
+cimagespriteblit	?BlitShadeFlipV@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	73.2440	73.2440	1	61eea29b3a06	0x1544d0
+cimagespriteblit	?BlitShadeNorm@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	99.8522	99.8522	1	0b8df3bbe25e	0x154270
 circleshadeblit	?Render@CircleShadeBlit@@QAEXHHHHHH@Z	54.5197	54.5197	1	cb51e9919710	0x180fb0
 ckeyedlist	??1CNode@@QAE@XZ	100.0000	100.0000	1	7894cc5a002b	0x379f0
 ckeyedlist	?AddNode@CKeyedList@@QAEPAUCNode@@PBDHH@Z	83.7778	83.7778	1	58602dffad36	0x37a70
@@ -2010,12 +2016,7 @@ engine_label_stubs	?winapi_1206b0_GetLastError_HeapValidate_HeapWalk@ApiCallerSt
 engine_label_stubs	?winapi_123d10_GetCurrentThreadId_TlsSetValue@ApiCallerStubs@@YAHXZ	2.8571	2.8571	1	cpp:e1535087fe94	0x123d10
 engine_label_stubs	?winapi_13f460_CopyRect@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHHH@Z	0.9091	0.9091	1	cpp:e8a4cb0d5b2a	0x13f460
 engine_label_stubs	?winapi_1485b0_CreateDCA_DeleteDC_GetSystemPaletteEntries@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHXZ	1.6129	1.6129	1	cpp:e8a4cb0d5b2a	0x1485b0
-engine_label_stubs	?winapi_1538c0_CopyRect@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHHH@Z	0.7035	0.7035	1	cpp:e8a4cb0d5b2a	0x1538c0
-engine_label_stubs	?winapi_153b20_CopyRect@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHHH@Z	0.9179	0.9179	1	cpp:e8a4cb0d5b2a	0x153b20
-engine_label_stubs	?winapi_153d90_CopyRect@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHHH@Z	0.9453	0.9453	1	cpp:e8a4cb0d5b2a	0x153d90
 engine_label_stubs	?winapi_153ff0_CopyRect@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHHH@Z	0.8920	0.8920	1	cpp:e8a4cb0d5b2a	0x153ff0
-engine_label_stubs	?winapi_154270_CopyRect@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHHH@Z	0.9360	0.9360	1	cpp:e8a4cb0d5b2a	0x154270
-engine_label_stubs	?winapi_1544d0_CopyRect@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHHH@Z	0.9091	0.9091	1	cpp:e8a4cb0d5b2a	0x1544d0
 engine_label_stubs	?winapi_154750_CopyRect@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHHH@Z	0.9091	0.9091	1	cpp:e8a4cb0d5b2a	0x154750
 engine_label_stubs	?winapi_15cbe0_timeGetTime@ApiCallerStubs@@YAHXZ	100.0000	100.0000	1	cpp:e1535087fe94	0x15cbe0
 engine_label_stubs	?winapi_168080_SetRect@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHHHHHHHHH@Z	1.0471	1.0471	1	cpp:e8a4cb0d5b2a	0x168080

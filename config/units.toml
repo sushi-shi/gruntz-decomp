@@ -440,6 +440,11 @@ source = "src/Image/CImage.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "cimagespriteblit"
+source = "src/Image/CImageSpriteBlit.cpp"
+flags = "base"
+
+[[unit]]
 unit = "cscanlinesurface"
 source = "src/Image/CScanlineSurface.cpp"
 flags = "base"
