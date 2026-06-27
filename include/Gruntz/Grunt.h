@@ -1057,6 +1057,7 @@ public:
     void ArrivalHook5();
     i32 CanShowStamina();              // @0x514a0
     void SetEntrancePos(i32 a, i32 b); // @0x4d060 (ret 8)
+    void EntranceTileOffset(i32* out); // @0x56f80 (ret 4) adjacent-tile pixel pos
     void ComputeFacing(double dt);     // @0x57060 (ret 8)
     void FreeNameList();               // @0x48360
     i32 ResetGeometry();               // @0x616e0

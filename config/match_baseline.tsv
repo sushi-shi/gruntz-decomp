@@ -41,7 +41,7 @@ cbrickz	1	0
 ccursorsnapsprite	2	2
 cddpagemgr	2	1
 cddrawchildgroup	9	5
-cddrawptrcollections	30	14
+cddrawptrcollections	31	15
 cddrawshadeblit	8	1
 cddrawsubmgr	58	32
 cddrawsubmgrani	3	1
@@ -85,7 +85,7 @@ chatbox	27	20
 chatbox_eh	1	1
 chatboxowner	7	2
 cheatmgr	7	4
-cimage	10	6
+cimage	11	6
 cimageowned	4	2
 cimageset3	3	3
 cleveltimedtor	1	1
@@ -143,7 +143,7 @@ directinputmgr2	36	32
 directsoundmgr	39	29
 dsoundvoice	2	1
 engine_attributed	15	0
-engine_boundary	201	0
+engine_boundary	196	0
 engine_discovered	51	0
 engine_label_stubs	437	105
 engine_unmatched	264	0
@@ -166,7 +166,7 @@ gameobjectctors	6	2
 gametext	4	3
 gamewnd	9	8
 groupops	2	0
-grunt	82	15
+grunt	83	15
 gruntdatarecord	2	2
 gruntmovestep	1	0
 gruntpuddle	4	2
@@ -189,7 +189,7 @@ imagepool	13	7
 imagerle16encode	1	0
 imagerotate	1	0
 imagesavebmp	1	0
-imageset	7	4
+imageset	8	4
 infblock	5	4
 infcodes	3	2
 inffast	1	1
@@ -277,7 +277,7 @@ streamfeeder	9	7
 streamrecordloaders	5	0
 streamvoice	5	3
 symparser	10	5
-symtab	19	10
+symtab	20	10
 terraintileloader	1	0
 tileactionevent	7	4
 tilegridcommand	6	3
@@ -505,6 +505,7 @@ cddrawptrcollections	?AddItemA@CDDrawPtrCollections@@QAEXPAVCPoolItemA@@@Z	100.0
 cddrawptrcollections	?AddItemB@CDDrawPtrCollections@@QAEXPAUCPoolItemB@@@Z	100.0000	100.0000	1	49c9c58ce9de	0x142eb0
 cddrawptrcollections	?Clear@CDDrawPtrCollections@@QAEXH@Z	100.0000	100.0000	1	e67bb1393aec	0x142060
 cddrawptrcollections	?ComputeColorMasks@CDDrawPtrCollections@@QAEHXZ	100.0000	100.0000	1	56947f610115	0x143b20
+cddrawptrcollections	?ConfigureSurface@CDDrawPtrCollections@@QAEHHHHHH@Z	100.0000	100.0000	1	a21244aa5783	0x143c20
 cddrawptrcollections	?Create7f0_1@CDDrawPtrCollections@@QAEPAVCPoolItemA@@H@Z	55.6562	55.6562	1	5028e9edc5a1	0x1421a0
 cddrawptrcollections	?CreateA@CDDrawPtrCollections@@QAEPAVCPoolItemA@@HHHHH@Z	60.5278	60.5278	1	d45039d45b2e	0x142260
 cddrawptrcollections	?CreateB@CDDrawPtrCollections@@QAEPAVCPoolItemA@@HHHHH@Z	60.5278	60.5278	1	235115dc5be2	0x1423c0
@@ -867,6 +868,7 @@ cimage	??1CImage@@QAE@XZ	94.2857	94.2857	1	3a970ca1c753	0xd5e80
 cimage	?BuildSlot13@CImage@@QAEHPAVCImageFrameDesc@@PAX@Z	98.7000	98.7000	1	cd9ab49c2f5c	0x153180
 cimage	?CopyFrom@CImage@@QAEHPAV1@@Z	100.0000	100.0000	1	cbde75f4bdc5	0x1532b0
 cimage	?Create24@CImage@@QAEHPAVCImageFrameDesc@@HH@Z	100.0000	100.0000	1	d26457d6ef2e	0x1530e0
+cimage	?Create@CImage@@QAEHPAVCImageFrameDesc@@H@Z	99.0909	99.0909	1	265411fcc2f9	0x152e90
 cimage	?FreeAll@CImage@@QAEXXZ	100.0000	100.0000	1	fc4b51958392	0x153260
 cimage	?LoadDispatch@CImage@@QAEHPAVCImageFrameDesc@@IPAXH@Z	99.8611	99.8611	2	2044bead9ce7	0x152fb0
 cimage	?Reload@CImage@@QAEHPAVCImageSource@@H@Z	99.4000	99.4000	1	e20e8f38a9a4	0x153380
@@ -1291,7 +1293,6 @@ engine_boundary	?Boundary_03acb0@@YAXXZ	20.0000	20.0000	2	fa35c1036fd9	0x3acb0
 engine_boundary	?Boundary_03ad30@@YAXXZ	20.0000	20.0000	2	0c9ab0afd82d	0x3ad30
 engine_boundary	?Boundary_0464e0@@YAXXZ	0.8889	0.8889	2	bc437931fe61	0x464e0
 engine_boundary	?Boundary_050ca0@@YAXXZ	3.3333	3.3333	2	fcc8fa22d59c	0x50ca0
-engine_boundary	?Boundary_056f80@@YAXXZ	0.8333	0.8333	2	d31b844b95ba	0x56f80
 engine_boundary	?Boundary_05bc50@@YAXXZ	20.0000	20.0000	2	aff6b7b7bff4	0x5bc50
 engine_boundary	?Boundary_077dc0@@YAXXZ	4.4444	4.4444	2	7532af087362	0x77dc0
 engine_boundary	?Boundary_0788d0@@YAXXZ	3.4483	3.4483	2	1393dc22de23	0x788d0
@@ -1373,7 +1374,6 @@ engine_boundary	?Boundary_138a50@@YAXXZ	5.5556	5.5556	2	af646272dd3e	0x138a50
 engine_boundary	?Boundary_138aa0@@YAXXZ	0.3509	0.3509	2	30a1af20adfb	0x138aa0
 engine_boundary	?Boundary_138f20@@YAXXZ	3.8462	3.8462	2	2a499685d3b6	0x138f20
 engine_boundary	?Boundary_1396f0@@YAXXZ	11.1111	11.1111	2	23b02398b1a2	0x1396f0
-engine_boundary	?Boundary_139710@@YAXXZ	0.7407	0.7407	2	c45b8e52eccf	0x139710
 engine_boundary	?Boundary_13a4b0@@YAXXZ	0.7547	0.7547	2	bb86271d7ac2	0x13a4b0
 engine_boundary	?Boundary_13a530@@YAXXZ	1.6667	1.6667	2	4e006172a643	0x13a530
 engine_boundary	?Boundary_13aaf0@@YAXXZ	50.0000	50.0000	2	0025f8629596	0x13aaf0
@@ -1404,7 +1404,6 @@ engine_boundary	?Boundary_143510@@YAXXZ	0.8511	0.8511	2	6594b5a851c9	0x143510
 engine_boundary	?Boundary_143590@@YAXXZ	0.8000	0.8000	2	3a88fead4514	0x143590
 engine_boundary	?Boundary_1437f0@@YAXXZ	11.1111	11.1111	2	2caa9f97b022	0x1437f0
 engine_boundary	?Boundary_143950@@YAXXZ	1.1765	1.1765	2	290aac6d0dd2	0x143950
-engine_boundary	?Boundary_143c20@@YAXXZ	0.8696	0.8696	2	0ca2d366574b	0x143c20
 engine_boundary	?Boundary_145e00@@YAXXZ	5.8824	5.8824	2	04ce92668c7c	0x145e00
 engine_boundary	?Boundary_148250@@YAXXZ	2.5641	2.5641	2	0d2c81d68da1	0x148250
 engine_boundary	?Boundary_148a50@@YAXXZ	1.2903	1.2903	2	66ec2413ec96	0x148a50
@@ -1418,8 +1417,6 @@ engine_boundary	?Boundary_1503f0@@YAXXZ	0.6780	0.6780	2	16d132d3bd3c	0x1503f0
 engine_boundary	?Boundary_1509c0@@YAXXZ	1.0989	1.0989	2	678d73c75fc9	0x1509c0
 engine_boundary	?Boundary_151d20@@YAXXZ	1.6000	1.6000	2	fe9fba626f35	0x151d20
 engine_boundary	?Boundary_151e70@@YAXXZ	4.1667	4.1667	2	4bdea990bc4b	0x151e70
-engine_boundary	?Boundary_1523f0@@YAXXZ	0.7547	0.7547	2	be70907b11bd	0x1523f0
-engine_boundary	?Boundary_152e90@@YAXXZ	0.9091	0.9091	2	65adaa617499	0x152e90
 engine_boundary	?Boundary_1570d0@@YAXXZ	6.6667	6.6667	2	b4668a6fa173	0x1570d0
 engine_boundary	?Boundary_157240@@YAXXZ	6.6667	6.6667	2	b83812631c11	0x157240
 engine_boundary	?Boundary_1578b0@@YAXXZ	5.0000	5.0000	2	3920e5309778	0x1578b0
@@ -2425,7 +2422,7 @@ grunt	?BeginAttack@CGrunt@@QAEHHH@Z	53.7917	53.7917	1	3d02da5c24cc	0x5b570
 grunt	?BuildEntranceAnimation@CGrunt@@QAEXH@Z	71.4562	71.4562	6	31017869150f	0x67bd0
 grunt	?BuildGruntLoseItemAnimation@CGrunt@@QAEHXZ	99.9032	99.9032	1	38742e98c150	0x57890
 grunt	?CGrunt_IsSameType@@YA_NPAVCGrunt@@0@Z	100.0000	100.0000	1	04ada45b6431	0x3c7f0
-grunt	?CGrunt_SegBoxOverlap@@YGHPAUGruntBox@@PAUGruntSegEnd@@1@Z	78.7723	78.7723	1	bb4ee352e2c0	0x62b70
+grunt	?CGrunt_SegBoxOverlap@@YGHPAUGruntBox@@PAUGruntSegEnd@@1@Z	78.7228	78.7228	1	bb4ee352e2c0	0x62b70
 grunt	?CGrunt_TileSwitch@@YGXHHHHHH@Z	66.2000	66.2000	2	e4d83b1d7834	0x4b320
 grunt	?CanShowStamina@CGrunt@@QAEHXZ	100.0000	100.0000	3	e5851737e25e	0x514a0
 grunt	?ClaimSwitchTile@CGrunt@@QAEHXZ	61.5954	61.5954	1	564a86c19254	0x52c70
@@ -2447,11 +2444,12 @@ grunt	?DestroyAnims@CGrunt@@QAEXXZ	100.0000	100.0000	1	96a5e454ab14	0x57d80
 grunt	?DispatchVtbl24@CGrunt@@QAEXXZ	100.0000	100.0000	1	bc3bd12b926d	0x6b260
 grunt	?EnsureStruckSlot@CGrunt@@QAEXPBD@Z	88.2250	88.2250	1	0158101705e2	0x57b70
 grunt	?EnsureStruckVoice@CGrunt@@QAEXPBD@Z	100.0000	100.0000	1	63219e2db42a	0x57c40
+grunt	?EntranceTileOffset@CGrunt@@QAEXPAH@Z	60.6042	60.6042	1	afc8af3766a4	0x56f80
 grunt	?FindGridNeighbor@CGrunt@@QAEPAV1@H@Z	100.0000	100.0000	3	61dd38cb1b46	0x5b6f0
 grunt	?FinishEntranceMove@CGrunt@@QAEHXZ	100.0000	100.0000	1	a2a92c839b90	0x69fd0
 grunt	?FreeNameList@CGrunt@@QAEXXZ	76.9512	76.9512	2	2e3438eb07ba	0x48360
 grunt	?GetTilePos@CGrunt@@QAEPAUGruntTilePos@@PAU2@@Z	85.3000	85.3000	1	995269eb1311	0x31c70
-grunt	?GruntInRadius@CGrunt@@QAEHHH@Z	35.7143	35.7143	1	d9edebac6a79	0x67b00
+grunt	?GruntInRadius@CGrunt@@QAEHHH@Z	35.7347	35.7347	1	d9edebac6a79	0x67b00
 grunt	?InitDirVectors@CGrunt@@QAEXXZ	37.3394	37.3394	1	1b1f255f448b	0x5caa0
 grunt	?LoadAnimNameTable@CGrunt@@QAEXHH@Z	75.9312	75.9312	3	f341d57d748b	0x49c60
 grunt	?LoadEntranceConfig@CGrunt@@QAEXXZ	78.8377	78.8377	6	7a2efa979b8d	0x67f80
@@ -2764,6 +2762,7 @@ imageset	?CreateFrame24@CImageSet@@QAEPAVCImageFrame@@HHHH@Z	99.0800	99.0800	1	8
 imageset	?CreateFrame28@CImageSet@@QAEPAVCImageFrame@@HHHH@Z	99.0921	99.0921	1	5ecfd5556ac6	0x152060
 imageset	?CreateFrame30@CImageSet@@QAEPAVCImageFrame@@HHH@Z	99.0548	99.0548	1	6ae3972c582a	0x151fb0
 imageset	?FindFrame@CImageSet@@QAEHPAVCImageFrame@@PADPAH@Z	100.0000	100.0000	2	943441ee77bf	0x1525c0
+imageset	?GetMemoryUsage@CImageSet@@QAEHH@Z	99.9623	99.9623	1	a6a810c7d721	0x1523f0
 imageset	?SetAllField18@CImageSet@@QAEHH@Z	100.0000	100.0000	1	a7a2fafe1b75	0x1524d0
 imageset	?SetAllFormats@CImageSet@@QAEHH@Z	100.0000	100.0000	2	e56fd86959b1	0x152520
 imageset	?SetAllTypes@CImageSet@@QAEHH@Z	100.0000	100.0000	1	dcefa349e4ec	0x152480
@@ -3352,6 +3351,7 @@ symtab	??0CSymTab@@QAE@PAUCSymParser@@PAXPBD111HH@Z	97.3333	97.3333	1	cf88b96a8a
 symtab	??1CSymTab@@QAE@XZ	88.7245	88.7245	2	ea710bd4bd0f	0x139ee0
 symtab	?ApplyRange@CSymTab@@QAEHHHHH@Z	75.6782	75.6782	1	1627b21b3a9f	0x13a640
 symtab	?ApplyRecursive@CSymTab@@QAEHHHHH@Z	70.4657	70.4657	1	45e873862fc9	0x13a580
+symtab	?Build@CSymLeafBuilder@@QAEXPAXPBD000000000@Z	96.2963	96.2963	1	1b2d3d37a016	0x139710
 symtab	?CreateSub@CSymTab@@QAEPAV1@PBD@Z	79.5000	79.5000	1	582583c35490	0x13a330
 symtab	?Find@CSymTab@@QAEPAXPBD@Z	100.0000	100.0000	1	5c207117a72f	0x13a040
 symtab	?FindOrAddSym@CSymTab@@QAEPAXH@Z	85.7746	85.7746	1	173421f84e4f	0x13a940

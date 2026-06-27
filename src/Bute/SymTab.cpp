@@ -44,6 +44,61 @@ static i32 IsTokenChar(const char* delims, char ch) {
     return 0;
 }
 
+// The 11-arg leaf-record builder's record shape (the parse slot the owner pops). The
+// leaf builder fills it from a parse-stream record: the strdup'd name at +0x00, the
+// owning scope at +0x10, the back-pointer to the symbol record at +0x04, three parse
+// values (f1/f2/f3) at +0x14/+0x08/+0x0c, the source stream at +0x34, a self-pointer
+// at +0x30, and two zeroed counters (+0x18/+0x38). ApplyRange reads +0x0c (added into
+// m_10) and +0x14 (the min/max accumulator key) back out. Field names are placeholders.
+struct CSymLeafBuilder {
+    void Build(void* owner, const char* name, void* f4, void* rec, void* str2, void* f3,
+               void* f1, void* f2, void* f6, void* arr, void* stream); // 0x139710
+    char* m_00;            // +0x00  strdup(name) (or null)
+    void* m_04;            // +0x04  rec
+    void* m_08;            // +0x08  f2
+    i32 m_0c;              // +0x0c  f3   (read by ApplyRange)
+    void* m_10;            // +0x10  owning scope
+    i32 m_14;              // +0x14  f1   (read by ApplyRange)
+    i32 m_18;              // +0x18  = 0
+    char m_pad1c[0x30 - 0x1c];
+    void* m_30;            // +0x30  self
+    void* m_34;            // +0x34  source stream
+    i32 m_38;              // +0x38  = 0
+};
+
+// CSymLeafBuilder::Build (0x139710): populate a freshly-popped leaf-record slot from a
+// parse-stream record. The name is duplicated through the throwing ::operator new
+// (0x1b9b46) when present, else stored as-is (null). __thiscall, callee-cleans its 11
+// stack args (ret 0x2c). f4/str2/f6/arr are forwarded by the caller but consumed by a
+// later stage, not stored here.
+// @early-stop
+// reloc-name plateau: all 141 instructions are byte-identical to retail (verified
+// llvm-objdump base vs target). The 96.30% residual is purely the one ::operator new
+// `call rel32` pairing base's ??2@YAPAXI@Z against the delinker's name for 0x1b9b46
+// (RezAlloc) - the same documented scoring artifact the CSymTab ctor below carries.
+RVA(0x00139710, 0x8d)
+void CSymLeafBuilder::Build(void* owner, const char* name, void* f4, void* rec,
+                            void* str2, void* f3, void* f1, void* f2, void* f6,
+                            void* arr, void* stream) {
+    m_34 = stream;
+    m_10 = owner;
+    if (name == 0) {
+        m_00 = (char*)name;
+    } else {
+        m_00 = (char*)::operator new(strlen(name) + 1);
+        if (m_00) {
+            strcpy(m_00, name);
+        }
+    }
+    m_04 = rec;
+    m_0c = (i32)f3;
+    m_14 = (i32)f1;
+    m_08 = f2;
+    m_38 = 0;
+    m_18 = 0;
+    m_30 = this;
+}
+
 // ctor (0x139de0): stamp the +0x20 hash-node vtable + a zeroed +0x34 (both in the
 // init list so they precede the member ctors), build the two embedded hash tables
 // (m_subTabs(subN) then m_symbols(symN) - the /GX member-construction trylevels go
@@ -338,18 +393,8 @@ struct CSymRangeStream {
     virtual i32 Read(i32 pos, i32 zero, i32 len, void* buf); // slot 2 (+0x8)
 };
 
-// The 11-arg leaf-record builder at 0x139710 (__thiscall on a parse slot popped from
-// the owner; callee-cleans its 11 stack args, ret 0x2c). Reloc-masked extern -- only
-// the call shape (the 11 reversed pushes) is load-bearing.
-struct CSymLeafBuilder {
-    i32 Build(void* owner, void* name, void* f4, void* rec, void* str2, void* f3,
-              void* f1, void* f2, void* f6, void* arr, void* a0); // 0x139710
-    void* m_00;
-    char m_pad04[0x0c - 0x04];
-    i32 m_0c; // +0x0c
-    char m_pad10[0x14 - 0x10];
-    i32 m_14; // +0x14
-};
+// CSymLeafBuilder (the 11-arg leaf-record builder, 0x139710) is defined at the top
+// of this TU in retail-RVA order; ApplyRange below uses it.
 
 // The owner's parse-slot pool (CSymParser::PopParseSlot @0x13c0c0). Reloc-masked.
 struct CSymSlotPool {

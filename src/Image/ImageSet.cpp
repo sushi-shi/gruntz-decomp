@@ -180,6 +180,41 @@ CImageFrame* CImageSet::CreateFrame24(i32 a0, i32 a1, i32 index, i32 a3) {
     return nf;
 }
 
+// GetMemoryUsage - 0x1523f0 (__thiscall, ret 4). Walk every populated frame in
+// [m_minIndex, m_maxIndex] (the same inlined bounds-checked GetAt) and accumulate its
+// decoded byte size: width*height, doubled for a 16bpp held surface or tripled for
+// 24bpp, overridden by the owned object's exact count when one is present, plus a fixed
+// 0x34-byte per-frame overhead when `raw` is 0. No destructible locals -> plain /O2.
+// @early-stop
+// 99.96% - every instruction byte-identical except the commutative `width*height` imul:
+// retail keeps m_14 in esi and reads m_10 as the imul memory operand; cl canonicalizes
+// to the reverse (keeps m_10, reads m_14) for EVERY spelling (a*b, b*a, temp + *=). A
+// 2-byte (displacement) instruction-selection canonicalization, not source-steerable.
+RVA(0x001523f0, 0x82)
+i32 CImageSet::GetMemoryUsage(i32 raw) {
+    i32 sum = 0;
+    for (i32 i = m_minIndex; i <= m_maxIndex; i++) {
+        CImageFrame* frame = GetAt(i);
+        if (frame) {
+            i32 size = frame->m_14 * frame->m_10;
+            if (frame->m_2c && frame->m_2c->m_a8 == 0x10) {
+                size += size;
+            }
+            if (frame->m_2c && frame->m_2c->m_a8 == 0x18) {
+                size = size * 3;
+            }
+            if (frame->m_format) {
+                size = frame->m_format->m_10;
+            }
+            if (raw == 0) {
+                size += 0x34;
+            }
+            sum += size;
+        }
+    }
+    return sum;
+}
+
 // SetAllTypes - 0x152480 (__thiscall, ret 4). Returns the number of frames touched.
 RVA(0x00152480, 0x4e)
 i32 CImageSet::SetAllTypes(i32 type) {

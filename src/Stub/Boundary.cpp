@@ -88,8 +88,6 @@ RVA(0x000464e0, 0x74)
 void Boundary_0464e0() {} // proximity: CFortressFlag@-0xd0 | CParticlez@+0x5f0
 RVA(0x00050ca0, 0x2b)
 void Boundary_050ca0() {} // proximity: CUserLogic@-0x2f50 | CGrunt@+0x510
-RVA(0x00056f80, 0x8e)
-void Boundary_056f80() {} // proximity: GruntDataRecord@-0x1e0 | CGrunt@+0xe0
 RVA(0x0005bc50, 0x15)
 void Boundary_05bc50() {} // proximity: CDDrawSubMgrLeafScan@-0x470 | CGrunt@+0xe50
 RVA(0x00077dc0, 0x1d)
@@ -252,8 +250,6 @@ RVA(0x00138f20, 0x3a)
 void Boundary_138f20() {} // proximity: CGruntzSoundZ@-0x600 | DSoundList@+0x1c0
 RVA(0x001396f0, 0x1a)
 void Boundary_1396f0() {} // proximity: RegistryHelper@-0xa0 | CRemusReadStream@+0x3f0
-RVA(0x00139710, 0x8d)
-void Boundary_139710() {} // proximity: RegistryHelper@-0xc0 | CRemusReadStream@+0x3d0
 RVA(0x0013a4b0, 0x75)
 void Boundary_13a4b0() {} // proximity: CSymTab@-0x1a0 | CSymParser@+0x710
 RVA(0x0013a530, 0x47)
@@ -314,8 +310,6 @@ RVA(0x001437f0, 0x1b)
 void Boundary_1437f0() {} // proximity: CDDrawPtrCollections@-0x830 | CFileImage@+0x7d0
 RVA(0x00143950, 0x56)
 void Boundary_143950() {} // proximity: CDDrawPtrCollections@-0x990 | CFileImage@+0x670
-RVA(0x00143c20, 0x84)
-void Boundary_143c20() {} // proximity: CDDrawPtrCollections@-0xc60 | CFileImage@+0x3a0
 RVA(0x00145e00, 0x26)
 void Boundary_145e00() {} // proximity: CFileImage@-0x130 | CDDPalette@+0x1590
 RVA(0x00148250, 0x61)
@@ -342,10 +336,6 @@ RVA(0x00151d20, 0x3a)
 void Boundary_151d20() {} // proximity: CWwdGameObject@-0x120 | CLogicRecord@+0x80
 RVA(0x00151e70, 0x3b)
 void Boundary_151e70() {} // proximity: CLogicRecord@-0x50 | CSeverusEntryList@+0x40
-RVA(0x001523f0, 0x82)
-void Boundary_1523f0() {} // proximity: CSprite@-0x4f0 | CImageSet@+0x90
-RVA(0x00152e90, 0x8b)
-void Boundary_152e90() {} // proximity: CRemusEntryList@-0x60 | CImage@+0x90
 RVA(0x001570d0, 0x39)
 void Boundary_1570d0() {} // proximity: CDDrawWorkerList@-0x100 | CDDrawWorkerA@+0x40
 RVA(0x00157240, 0x3c)

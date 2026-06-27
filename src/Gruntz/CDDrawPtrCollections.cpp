@@ -270,6 +270,9 @@ struct CCachedSurfaceVtbl {
     i32(__stdcall* GetSurfaceDesc)(CCachedSurface*, void* desc); // +0x30
     char _34[0x4c - 0x34];
     void(__stdcall* Restore)(CCachedSurface*); // +0x4c
+    char _50[0x54 - 0x50];
+    // +0x54  reconfigure the surface (5 forwarded args); returns an HRESULT.
+    i32(__stdcall* Configure)(CCachedSurface*, i32, i32, i32, i32, i32);
 };
 
 // ---------------------------------------------------------------------------
@@ -313,6 +316,9 @@ public:
     // Derive the R/G/B low-bit shift + 8-minus-count tables from the cached surface's
     // pixel format, then apply (Func13f740). __thiscall, no stack args (0x143b20).
     i32 ComputeColorMasks();                                   // 0x143b20
+    // Reconfigure the cached surface (vtbl +0x54) and, on success, recompute the color
+    // masks; report + latch the failure code on either error. 0x143c20.
+    i32 ConfigureSurface(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4); // 0x143c20
 
     CCachedSurface* m_surf0; // +0x00 - cached surface object (Release on Clear)
     CCachedSurface* m_surf4; // +0x04 - cached surface object (Release on Clear)
@@ -1116,4 +1122,30 @@ i32 CDDrawPtrCollections::ComputeColorMasks() {
 
     Boundary_13f740();
     return 1;
+}
+
+// ---------------------------------------------------------------------------
+// ConfigureSurface (0x143c20).  Reconfigure the cached surface through its vtbl +0x54
+// slot (the five args forwarded verbatim).  On a non-zero HRESULT, report through
+// GetErrorString, latch fieldUnknown944 = 0x3ec if unset, and return the HRESULT.
+// Otherwise recompute the color masks; if that fails, latch fieldUnknown944 = 0x3ed
+// if unset and return E_FAIL (0x80004005).  __thiscall, ret 0x14 (5 stack args). No EH.
+// ---------------------------------------------------------------------------
+RVA(0x00143c20, 0x84)
+i32 CDDrawPtrCollections::ConfigureSurface(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
+    i32 hr = m_surf0->vtbl->Configure(m_surf0, a0, a1, a2, a3, a4);
+    if (hr != 0) {
+        CDirectDrawMgr::GetErrorString(DDRAWMGR_FILE, 0x8a2, hr);
+        if (fieldUnknown944 == 0) {
+            fieldUnknown944 = 0x3ec;
+        }
+        return hr;
+    }
+    if (ComputeColorMasks() == 0) {
+        hr = (i32)0x80004005;
+        if (fieldUnknown944 == 0) {
+            fieldUnknown944 = 0x3ed;
+        }
+    }
+    return hr;
 }

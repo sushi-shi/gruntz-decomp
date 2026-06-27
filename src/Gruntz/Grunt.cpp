@@ -2641,6 +2641,58 @@ void CGrunt::FreeNameList() {
     }
 }
 
+// CGrunt::EntranceTileOffset(out) @0x56f80 - the pixel position of the tile adjacent
+// to the grunt's last occupied tile (m_lastTilePxX/Y) in the entrance-cell direction
+// (m_entranceCell[2], a 1..8 compass code: 1=N, 2=NE, 3=E, 4=SE, 5=S, 6=SW, 7=W, 8=NW;
+// any other value leaves the position unchanged). One tile step is 0x20 px. Writes the
+// (x, y) pair through `out`. __thiscall, ret 4.
+// @early-stop
+// register-pinning / tail-merge wall (~60%): the 8-entry jump table + the per-case
+// ±0x20 deltas are logically exact. Retail pins y in the callee-saved esi (push esi),
+// which lets it TAIL-MERGE every case into one shared `mov eax,[esp+8]; mov [eax],edx;
+// mov [eax+4],esi; pop esi; ret` epilogue (the cardinal cases enter mid-block, skipping
+// the diagonal's first sub). cl allocates volatiles (x->eax, y->edx) with nothing to
+// restore, so it DUPLICATES the tiny store+ret into all 8 case blocks instead of
+// merging. The esi choice (zero-register-pinning) is the root and is not source-
+// steerable; the cascading register operands + duplicated tails are the residual.
+RVA(0x00056f80, 0x8e)
+void CGrunt::EntranceTileOffset(i32* out) {
+    i32 x = m_lastTilePxX;
+    i32 y = m_lastTilePxY;
+    switch (m_entranceCell[2]) {
+        case 1:
+            y -= 0x20;
+            break;
+        case 2:
+            x += 0x20;
+            y -= 0x20;
+            break;
+        case 3:
+            x += 0x20;
+            break;
+        case 4:
+            x += 0x20;
+            y += 0x20;
+            break;
+        case 5:
+            y += 0x20;
+            break;
+        case 6:
+            x -= 0x20;
+            y += 0x20;
+            break;
+        case 7:
+            x -= 0x20;
+            break;
+        case 8:
+            x -= 0x20;
+            y -= 0x20;
+            break;
+    }
+    out[0] = x;
+    out[1] = y;
+}
+
 // @early-stop
 // FP instruction-scheduling wall: logic + offsets exact, but MSVC's x87 stack
 // scheduling for the magnitude/normalize rarely matches from C source (an x87

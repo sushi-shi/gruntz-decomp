@@ -129,6 +129,7 @@ public:
     void RemoveItemA(void* item);                                          // 0x142160
     CImageSurfaceItem* CreateA(i32 desc, i32 mode, void* a, i32 b, i32 c); // 0x142260
     CImageSurfaceItem* CreateB(i32 desc, i32 mode, void* a, i32 b, i32 c); // 0x1423c0
+    CImageSurfaceItem* CreateC(i32 desc, i32 cap, i32 flags);              // 0x142560
 };
 
 // The owned +0x30 object (a 0x3c-byte buffer holder built by BuildSlot13): a
@@ -236,6 +237,7 @@ void __stdcall ImageNotify(i32 a, i32 b); // 0x14dd90
 
 class CImage : public CImageBase {
 public:
+    i32 Create(CImageFrameDesc* desc, i32 keyed);                      // 0x152e90  (vtable slot 12)
     i32 Resolve(CImageSource* src, i32 arg);                           // 0x152f20  (vtable slot 11)
     i32 LoadDispatch(CImageFrameDesc* desc, u32 mode, void* a, i32 b); // 0x152fb0  (vtable slot 10)
     i32 Create24(CImageFrameDesc* desc, i32 mode, i32 keyed); // 0x1530e0  (vtable slot 9)

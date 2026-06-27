@@ -25,9 +25,18 @@ class CImageFormat {
 public:
     void SetType(i32 type, i32 noResolve); // 0x14dd90 (__thiscall, ret 8)
 
-    char m_pad00[0x18];
+    char m_pad00[0x10];
+    i32 m_10; // +0x10  decoded byte count (read by GetMemoryUsage)
+    char m_pad14[0x18 - 0x14];
     i32 m_18; // +0x18  field written directly by SetAllField18 (0x1524d0)
     i32 m_1c; // +0x1c  resolved format word (written directly by SetAllFormats)
+};
+
+// The frame's held surface (m_2c): a pool surface whose +0xa8 holds the bit depth
+// (0x10 = 16bpp, 0x18 = 24bpp), used by GetMemoryUsage to scale the pixel count.
+struct CImageFrameSurface {
+    char m_pad00[0xa8];
+    i32 m_a8; // +0xa8  bit depth
 };
 
 // The frame as seen by CImageSet: only the +0x30 format sub-object is used. The
@@ -39,11 +48,11 @@ public:
     i32 m_4;      // +0x04  frame index
     i32 m_8;      // +0x08
     void* m_c;    // +0x0c  owner (the CImageSet's +0xc)
-    i32 m_10;     // +0x10
-    i32 m_14;     // +0x14
+    i32 m_10;     // +0x10  width  (GetMemoryUsage: pixel-count factor)
+    i32 m_14;     // +0x14  height (GetMemoryUsage: pixel-count factor)
     char m_pad18[0x2c - 0x18];
-    i32 m_2c;               // +0x2c
-    CImageFormat* m_format; // +0x30  format/state helper (factory inits to null)
+    CImageFrameSurface* m_2c; // +0x2c  held surface (its +0xa8 = bit depth)
+    CImageFormat* m_format;   // +0x30  format/state helper (factory inits to null)
 };
 
 class CImageSet {
@@ -58,6 +67,11 @@ public:
 
     // Same walk, writing `value` into each populated frame's format +0x18.
     i32 SetAllField18(i32 value); // 0x1524d0
+
+    // Sum the decoded byte size of every populated frame (width*height scaled by the
+    // held surface's bit depth, or the owned object's exact count when present). When
+    // `raw` is 0 each frame also carries a fixed 0x34-byte overhead. 0x1523f0.
+    i32 GetMemoryUsage(i32 raw); // 0x1523f0
 
     // Linear-search the frame array for `frame`; on a hit, copy the set's name into
     // `outName` (when non-null) and store the matched array index through `outIndex`

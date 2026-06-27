@@ -37,6 +37,47 @@ inline i32 CImageLoadDispatch::LoadVirtual(CImageFrameDesc* desc, u32 mode, void
 }
 
 // ---------------------------------------------------------------------------
+// 0x152e90 (vtable slot 12): Create. The Create24 sibling without the mode args:
+// allocate a surface from the parent pool's 3-arg create (CreateC @0x142560) for
+// (desc, capArg, flagsArg) - where flagsArg = keyed ? g_severusCounterB : -1 and
+// capArg = g_severusCounterA ? 0x800 : 0 - then cache the surface geometry (w/h,
+// halved) and clear the m_20/m_24 origin. __thiscall, ret 8 (2 stack args).
+// @early-stop
+// 99.09% - structurally identical to the 100% sibling Create24, plus the two
+// g_severusCounterA/B DIR32 reloc artifacts. The lone code residual is the geometry
+// temp register: retail caches w(item->m_1c) in edx and h in ecx; cl (with one fewer
+// call arg than Create24) swaps them to ecx/edx. The 3-vs-5-arg call shifts the post-
+// call allocator state - not steerable from Create's own source.
+// ---------------------------------------------------------------------------
+RVA(0x00152e90, 0x8b)
+i32 CImage::Create(CImageFrameDesc* desc, i32 keyed) {
+    i32 flagsArg = (keyed != 0) ? g_severusCounterB : -1;
+    i32 capArg = 0;
+    if (g_severusCounterA != 0) {
+        capArg = 0x800;
+    }
+    CImageSurfaceItem* item = m_0c->m_1c->CreateC((i32)desc, capArg, flagsArg);
+    m_2c = item;
+    if (item == 0) {
+        return 0;
+    }
+    i32 w = item->m_1c;
+    m_10 = w;
+    i32 h = item->m_18;
+    m_14 = h;
+    m_18 = w >> 1;
+    m_1c = h >> 1;
+    if (item->m_bc != 0) {
+        m_28 = 0x11;
+    } else {
+        m_28 = 0x10;
+    }
+    m_20 = 0;
+    m_24 = 0;
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
 // 0x152f20 (vtable slot 11): Resolve. Read the source's 3-char format tag, map it
 // to a format index (BMP=1, "CPX"=2, "RID"=3, "PID"=4), prime the source, then
 // dispatch the +0x28 load virtual (LoadDispatch) with (resolved, index, src->m_0c,
