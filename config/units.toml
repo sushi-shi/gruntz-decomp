@@ -1791,3 +1791,24 @@ flags = "base"
 unit = "m2_gamechecksum"
 source = "src/Gruntz/m2_GameChecksum.cpp"
 flags = "base"
+
+[[unit]]
+unit = "m1_lobbysync"
+source = "src/Gruntz/LobbySync.cpp"
+flags = "base"
+[[unit]]
+unit = "m1_fadersetup"
+source = "src/Gruntz/FaderElemSetup.cpp"
+flags = "base"
+[[unit]]
+unit = "m1_glyphstr"
+source = "src/Gruntz/GlyphStringDraw.cpp"
+flags = "base"
+[[unit]]
+unit = "m1_misc18"
+source = "src/Gruntz/Misc18.cpp"
+flags = "base"
+[[unit]]
+unit = "m1_saverecload"
+source = "src/Gruntz/SaveRecordLoad.cpp"
+flags = "base"

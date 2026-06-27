@@ -9,24 +9,8 @@ RVA(0x000bf000, 0xd5)
 void Unmatched_0bf000() {} // Unmatched_0bf000
 RVA(0x000bf5a0, 0x110)
 void Unmatched_0bf5a0() {} // Unmatched_0bf5a0
-RVA(0x000bf700, 0x82)
-void Unmatched_0bf700() {} // Unmatched_0bf700
-RVA(0x000bf7c0, 0x95)
-void Unmatched_0bf7c0() {} // Unmatched_0bf7c0
 RVA(0x000bf9e0, 0xfe)
 void Unmatched_0bf9e0() {} // Unmatched_0bf9e0
-RVA(0x000bfb40, 0xe2)
-void Unmatched_0bfb40() {} // Unmatched_0bfb40
-RVA(0x000bfc70, 0x9c)
-void Unmatched_0bfc70() {} // Unmatched_0bfc70
-RVA(0x000bfd40, 0x116)
-void Unmatched_0bfd40() {} // Unmatched_0bfd40
-RVA(0x000bfeb0, 0xfa)
-void Unmatched_0bfeb0() {} // Unmatched_0bfeb0
-RVA(0x000c00f0, 0xaf)
-void Unmatched_0c00f0() {} // Unmatched_0c00f0
-RVA(0x000c01d0, 0x8c)
-void Unmatched_0c01d0() {} // Unmatched_0c01d0
 RVA(0x000c0c70, 0x20f)
 void Unmatched_0c0c70() {} // Unmatched_0c0c70
 RVA(0x000c2ab0, 0x161)
@@ -55,16 +39,12 @@ RVA(0x000fab90, 0xaa)
 void Unmatched_0fab90() {} // Unmatched_0fab90
 RVA(0x000face0, 0x17c)
 void Unmatched_0face0() {} // Unmatched_0face0
-RVA(0x000faff0, 0x163)
-void Unmatched_0faff0() {} // Unmatched_0faff0
 RVA(0x001084d0, 0x96c)
 void Unmatched_1084d0() {} // Unmatched_1084d0
 RVA(0x001128b0, 0x88)
 void Unmatched_1128b0() {} // Unmatched_1128b0
 RVA(0x00114480, 0xf1)
 void Unmatched_114480() {} // Unmatched_114480
-RVA(0x00115220, 0xa4)
-void Unmatched_115220() {} // Unmatched_115220
 RVA(0x00118a30, 0xda)
 void Unmatched_118a30() {
 } // heap-dump diag (engine, was misfiled as lib): HeapWalk via ApiCallerStubs + __heapchk + OutputDebugString
@@ -86,8 +66,6 @@ RVA(0x0017cdf0, 0x1c6)
 void Unmatched_17cdf0() {} // Unmatched_17cdf0
 RVA(0x0017cfc0, 0x2dd)
 void Unmatched_17cfc0() {} // Unmatched_17cfc0
-RVA(0x0017f5e0, 0x7d)
-void Unmatched_17f5e0() {} // Unmatched_17f5e0
 RVA(0x00180fb0, 0x534)
 void Unmatched_180fb0() {} // Unmatched_180fb0
 RVA(0x00181720, 0xb3)
@@ -96,14 +74,8 @@ RVA(0x001817e0, 0x315)
 void Unmatched_1817e0() {} // Unmatched_1817e0
 RVA(0x00181e50, 0x7b9)
 void Unmatched_181e50() {} // Unmatched_181e50
-RVA(0x00186990, 0x90)
-void Unmatched_186990() {} // Unmatched_186990
-RVA(0x00186a50, 0x93)
-void Unmatched_186a50() {} // Unmatched_186a50
 RVA(0x00188860, 0x267)
 void Unmatched_188860() {} // Unmatched_188860
-RVA(0x0018a190, 0x8c)
-void Unmatched_18a190() {} // Unmatched_18a190
 RVA(0x001933b0, 0x28f)
 void Unmatched_1933b0() {} // Unmatched_1933b0
 RVA(0x001936e0, 0xd3)

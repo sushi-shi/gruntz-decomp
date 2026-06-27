@@ -159,7 +159,7 @@ engine_attributed	15	0
 engine_boundary	196	0
 engine_discovered	51	0
 engine_label_stubs	437	105
-engine_unmatched	51	0
+engine_unmatched	37	0
 engine_unmatched_lib	11	0
 engstr	3	1
 eyecandytypetags	4	4
@@ -234,9 +234,14 @@ m1_apphelpers	3	3
 m1_cluster0c	3	2
 m1_ehfunclets	11	11
 m1_faderdtor	1	1
+m1_fadersetup	1	0
+m1_glyphstr	1	1
 m1_glyphtable	2	2
+m1_lobbysync	8	3
+m1_misc18	3	0
 m1_packetpool	2	2
 m1_ringbuffer	2	2
+m1_saverecload	1	0
 m1_timesplit	1	1
 m1_wapmisc	5	5
 m2_actregsiblings	3	0
@@ -2032,15 +2037,7 @@ engine_label_stubs	_SubstringMatch	2.8986	2.8986	1	cpp:2262ffc5f902	0x120090
 engine_label_stubs	_VersionScan	8.6957	8.6957	1	cpp:2262ffc5f902	0x120900
 engine_unmatched	?Unmatched_0bf000@@YAXXZ	1.3699	1.3699	1	734348443213	0xbf000
 engine_unmatched	?Unmatched_0bf5a0@@YAXXZ	0.4040	0.4040	1	1198bc51bb89	0xbf5a0
-engine_unmatched	?Unmatched_0bf700@@YAXXZ	0.6667	0.6667	1	906bcdb9d58b	0xbf700
-engine_unmatched	?Unmatched_0bf7c0@@YAXXZ	0.7143	0.7143	1	886d1f1b2b71	0xbf7c0
 engine_unmatched	?Unmatched_0bf9e0@@YAXXZ	1.0753	1.0753	1	beb45c56cf6c	0xbf9e0
-engine_unmatched	?Unmatched_0bfb40@@YAXXZ	1.2346	1.2346	1	65cabeb638cb	0xbfb40
-engine_unmatched	?Unmatched_0bfc70@@YAXXZ	0.7018	0.7018	1	7da1fdc17e50	0xbfc70
-engine_unmatched	?Unmatched_0bfd40@@YAXXZ	0.8264	0.8264	1	70ecf45f8759	0xbfd40
-engine_unmatched	?Unmatched_0bfeb0@@YAXXZ	0.4211	0.4211	1	890c0959e886	0xbfeb0
-engine_unmatched	?Unmatched_0c00f0@@YAXXZ	1.2987	1.2987	1	f0e07c33a177	0xc00f0
-engine_unmatched	?Unmatched_0c01d0@@YAXXZ	1.5385	1.5385	1	b22a2075d92c	0xc01d0
 engine_unmatched	?Unmatched_0c0c70@@YAXXZ	0.2000	0.2000	1	840ea28b587c	0xc0c70
 engine_unmatched	?Unmatched_0c2ab0@@YAXXZ	0.3125	0.3125	1	6ac6965e1e89	0xc2ab0
 engine_unmatched	?Unmatched_0c4120@@YAXXZ	1.9608	1.9608	1	64c637078a55	0xc4120
@@ -2055,11 +2052,9 @@ engine_unmatched	?Unmatched_0f8240@@YAXXZ	0.2257	0.2257	1	3ea41b268007	0xf8240
 engine_unmatched	?Unmatched_0f9160@@YAXXZ	1.1236	1.1236	1	847d68f7f5be	0xf9160
 engine_unmatched	?Unmatched_0fab90@@YAXXZ	0.6250	0.6250	1	9a3e332420a6	0xfab90
 engine_unmatched	?Unmatched_0face0@@YAXXZ	0.8065	0.8065	1	b8d7ece1db26	0xface0
-engine_unmatched	?Unmatched_0faff0@@YAXXZ	0.2721	0.2721	1	359bf10acf18	0xfaff0
 engine_unmatched	?Unmatched_1084d0@@YAXXZ	0.0438	0.0438	1	733c20a72572	0x1084d0
 engine_unmatched	?Unmatched_1128b0@@YAXXZ	1.8868	1.8868	1	6344e0a3238e	0x1128b0
 engine_unmatched	?Unmatched_114480@@YAXXZ	1.1905	1.1905	1	44269c7ee8d9	0x114480
-engine_unmatched	?Unmatched_115220@@YAXXZ	1.2048	1.2048	1	ad26b5348abc	0x115220
 engine_unmatched	?Unmatched_118a30@@YAXXZ	1.4085	1.4085	1	5d19500e03c1	0x118a30
 engine_unmatched	?Unmatched_1190f0@@YAXXZ	1.4493	1.4493	1	30b339bd7c22	0x1190f0
 engine_unmatched	?Unmatched_146550@@YAXXZ	0.2232	0.2232	1	0ab3f0923a57	0x146550
@@ -2070,15 +2065,11 @@ engine_unmatched	?Unmatched_17cbe0@@YAXXZ	1.6949	1.6949	1	fca74341e8e5	0x17cbe0
 engine_unmatched	?Unmatched_17cc80@@YAXXZ	0.9434	0.9434	1	ee9ab81aa27b	0x17cc80
 engine_unmatched	?Unmatched_17cdf0@@YAXXZ	0.2632	0.2632	1	5b24239a6df0	0x17cdf0
 engine_unmatched	?Unmatched_17cfc0@@YAXXZ	0.2062	0.2062	1	eae9d3b1bc0c	0x17cfc0
-engine_unmatched	?Unmatched_17f5e0@@YAXXZ	0.9302	0.9302	1	4d13ebefdf45	0x17f5e0
 engine_unmatched	?Unmatched_180fb0@@YAXXZ	0.0928	0.0928	1	06ef34252706	0x180fb0
 engine_unmatched	?Unmatched_181720@@YAXXZ	1.8182	1.8182	1	1bb1fb623642	0x181720
 engine_unmatched	?Unmatched_1817e0@@YAXXZ	0.1575	0.1575	1	b5e71d91b317	0x1817e0
 engine_unmatched	?Unmatched_181e50@@YAXXZ	0.0648	0.0648	1	955d1d4e182f	0x181e50
-engine_unmatched	?Unmatched_186990@@YAXXZ	1.5873	1.5873	1	3a0e55baed32	0x186990
-engine_unmatched	?Unmatched_186a50@@YAXXZ	2.0833	2.0833	1	e0aa6a3651a8	0x186a50
 engine_unmatched	?Unmatched_188860@@YAXXZ	0.5952	0.5952	1	4b8d88bbbea0	0x188860
-engine_unmatched	?Unmatched_18a190@@YAXXZ	2.2222	2.2222	1	e1f27bf1b0bf	0x18a190
 engine_unmatched	?Unmatched_1933b0@@YAXXZ	0.1702	0.1702	1	8d74db23dbae	0x1933b0
 engine_unmatched	?Unmatched_1936e0@@YAXXZ	0.4706	0.4706	1	4feb64b1e41c	0x1936e0
 engine_unmatched_lib	?Unmatched_124848@@YAXXZ	4.0000	4.0000	1	81c658f8d097	0x124848
@@ -2769,12 +2760,26 @@ m1_ehfunclets	?Unmatched_1ca2c3@@YAXXZ	100.0000	100.0000	1	d94cf78ebda1	0x1ca2c3
 m1_ehfunclets	?Unmatched_1d3184@@YAXXZ	100.0000	100.0000	1	ab6930993936	0x1d3184
 m1_ehfunclets	?Unmatched_1d4271@@YAXXZ	100.0000	100.0000	1	02cb9635db35	0x1d4271
 m1_faderdtor	?Dtor_17f570@@YAXXZ	100.0000	100.0000	1	7bff198f1995	0x17f570
+m1_fadersetup	?Apply@CFaderElem@@QAEHPAUFaderArg@@@Z	89.7442	89.7442	1	21bc0bf2b9ee	0x17f5e0
+m1_glyphstr	?DrawGlyphString@@YAHPAUDrawCtx@@HHPBDPAUGlyphFont@@H@Z	100.0000	100.0000	1	e8c0af3b27fe	0x115220
 m1_glyphtable	?Get@GlyphTable@@QAEHH@Z	100.0000	100.0000	1	db897731bcf2	0xc0430
 m1_glyphtable	?Set@GlyphTable@@QAEXHH@Z	100.0000	100.0000	1	69ba9e995038	0xc03f0
+m1_lobbysync	?Advance@CLobbySync@@QAEHXZ	100.0000	100.0000	1	ed46b7912bbb	0xc01d0
+m1_lobbysync	?Dispatch@CLobbySync@@QAEHHPAULobbyMsg@@H@Z	93.1667	93.1667	1	ad943a23c407	0xbf700
+m1_lobbysync	?DispatchMsg@CLobbySync@@QAEHPAULobbyMsg@@H@Z	0.0000	0.0000	1	a88be10c664b	0xbf7c0
+m1_lobbysync	?M_bfc70@CCluster0c@@QAEHHPAUGruntRec@@HHH@Z	90.2632	90.2632	1	b7176a0d95bb	0xbfc70
+m1_lobbysync	?Reconcile@CLobbySync@@QAEXXZ	100.0000	100.0000	1	139d138e8b71	0xc00f0
+m1_lobbysync	?SendAll@CLobbySync@@QAEHXZ	67.4321	67.4321	1	0a585184c2da	0xbfb40
+m1_lobbysync	?SendBatch@CLobbySync@@QAEHXZ	100.0000	100.0000	1	0a2e5e55933e	0xbfd40
+m1_lobbysync	?SendOne@CLobbySync@@QAEHPAUCCluster0c@@H@Z	84.2105	84.2105	1	6fc308620036	0xbfeb0
+m1_misc18	?BitFlush@@YAXPAUBitBuf@@@Z	83.5111	83.5111	1	dbb5ef1f96db	0x18a190
+m1_misc18	?CoderReset@@YAXPAUCoder@@@Z	97.4792	97.4792	1	1deea5ae1c02	0x186a50
+m1_misc18	?RecFree@@YAHPAUFreeOwner@@@Z	75.7936	75.7936	1	aeab003ccc13	0x186990
 m1_packetpool	?Unmatched_bef10@@YAXXZ	100.0000	100.0000	1	34d60f4d27ed	0xbef10
 m1_packetpool	?Unmatched_bf530@@YAPAXH@Z	100.0000	100.0000	1	096be294be27	0xbf530
 m1_ringbuffer	?Unmatched_186180@@YAHHHHH@Z	100.0000	100.0000	1	5bf16c15818b	0x186180
 m1_ringbuffer	?Unmatched_186910@@YAXPAURingCtx@@@Z	100.0000	100.0000	1	c2752fb3ddb6	0x186910
+m1_saverecload	?Load@SaveRecord@@QAEHPAULoadStream@@@Z	95.9116	95.9116	1	0c913ca99786	0xfaff0
 m1_timesplit	?Unmatched_119210@@YAXIPAI00@Z	100.0000	100.0000	1	253cc00a135c	0x119210
 m1_wapmisc	?Dtor_1c7e6d@@YAXXZ	100.0000	100.0000	1	9dc3f0fdbb25	0x1c7e6d
 m1_wapmisc	?Stamp@CStamp11d100@@QAEXXZ	100.0000	100.0000	1	7b042a7173a0	0x11d100
