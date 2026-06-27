@@ -1448,6 +1448,16 @@ source = "src/Gruntz/CDDPageMgr.cpp"
 flags = "base"
 
 [[unit]]
+unit = "cddscreen"
+source = "src/Gruntz/CDDScreen.cpp"
+flags = "base"
+
+[[unit]]
+unit = "bitstreampack"
+source = "src/Gruntz/BitStreamPack.cpp"
+flags = "base"
+
+[[unit]]
 unit = "cimageset3"
 source = "src/Gruntz/CImageSet3.cpp"
 flags = "base"

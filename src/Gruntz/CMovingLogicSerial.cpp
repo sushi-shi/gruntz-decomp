@@ -102,3 +102,64 @@ i32 CMovingLogic::Serialize(CMlSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
     }
     return ((CMovingLogicBase*)this)->Serialize(arc, mode, a3, a4) != 0;
 }
+
+// ---------------------------------------------------------------------------
+// 0x16e7f0 - CMovingLogicBase::Serialize(arc, mode, a3, a4): the base-class
+// round-trip 0x16f4a0 chains to. mode 4 = write (append the name text, length-
+// prefix it, write the three trailing ints + g_logicTypesRegistered); mode 7 =
+// read (RezAlloc + read the text, parse the name back, read the four ints, then
+// seed the back-pointers/m_14 from the context arg and stamp m_28=0x3e9).
+// @early-stop
+// Same virtual-base accumulator-temp wall as the derived Serialize 0x16f4a0
+// (sibling, 66.6%): CButeWriteTemp/CButeReadTemp construct at the full object but
+// the destruct helpers + the inlined text-length probe act on the vbase subobject
+// (the `mov ecx,[esp+ecx+0x14]` vbase-offset lookup), which is not reproducible
+// from a source-level temp. The read/write dispatch, the archive Read/Write
+// virtual calls, RezAlloc/RezFree, WriteName/ReadName, the three trailing-int +
+// g_logicTypesRegistered transfers and the read-mode back-pointer seeding are all
+// byte-faithful. Logic complete; deferred to the final sweep with its sibling.
+RVA(0x0016e7f0, 0x1cf)
+i32 CMovingLogicBase::Serialize(CMlSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
+    if (arc == 0) {
+        return 0;
+    }
+    if (mode == 4) {
+        // WRITE: render the name to bute text, length-prefix it, append ints.
+        char buf[0x100];
+        CButeWriteTemp accum;
+        accum.Ctor(buf, 0x100, 2, 1);
+        WriteName(&accum, &m_18);
+        i32 len = accum.Length();
+        arc->Write(&len, 4);
+        arc->Write(accum.GetBuffer(), len);
+        arc->Write(&m_28, 4);
+        arc->Write(&m_2c, 4);
+        arc->Write(&g_logicTypesRegistered, 4);
+        arc->Write(&m_30, 4);
+        accum.m_vbase.DtorWriteB();
+        accum.m_vbase.FuncB();
+    } else if (mode == 7) {
+        // READ: pull the length-prefixed text, parse the name back, read the ints.
+        i32 len;
+        arc->Read(&len, 4);
+        void* buf = RezAlloc(len);
+        arc->Read(buf, len);
+        CButeReadTemp accum;
+        accum.Ctor(buf, len, 1);
+        ReadName(&accum, &m_18);
+        RezFree(buf);
+        arc->Read(&m_28, 4);
+        arc->Read(&m_2c, 4);
+        arc->Read(&g_logicTypesRegistered, 4);
+        arc->Read(&m_30, 4);
+        m_c = (void*)a4;
+        m_10 = (void*)a4;
+        m_14 = ((CMlSerialCtx*)a4)->m_7c;
+        m_4 = 0;
+        m_8 = 0;
+        m_28 = 0x3e9;
+        accum.m_vbase.DtorReadA();
+        accum.m_vbase.FuncB();
+    }
+    return 1;
+}

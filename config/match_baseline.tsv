@@ -26,6 +26,7 @@ backlogstateloaders	3	3
 battlezdata	30	27
 battlezmapconfig	1	0
 bitarray	1	1
+bitstreampack	1	0
 blowfish	4	3
 brickz	15	3
 butemgr	42	27
@@ -60,6 +61,7 @@ cddrawworkerlist	11	8
 cddrawworkermapsmall	10	3
 cddrawworkerregistry	26	12
 cddrawworkers	4	4
+cddscreen	1	1
 cdirectdrawmgr	28	11
 cdonothing	2	2
 cdonothingnormaldtor	1	1
@@ -102,7 +104,7 @@ clobbyobjb	3	2
 cmenustate	3	2
 cmgrsettings	1	0
 cmovinglogicdtor	1	1
-cmovinglogicserial	2	1
+cmovinglogicserial	3	1
 cmsgdispatch	3	3
 cmulti	16	7
 cobjectdropper	1	1
@@ -159,7 +161,7 @@ engine_attributed	15	0
 engine_boundary	196	0
 engine_discovered	51	0
 engine_label_stubs	407	105
-engine_unmatched	27	0
+engine_unmatched	23	0
 engine_unmatched_lib	11	0
 engstr	3	1
 eyecandytypetags	4	4
@@ -296,7 +298,7 @@ orphanleaves	7	7
 orphanmethods	4	2
 palettebmp	1	0
 palettecopy	1	0
-projactcache	1	0
+projactcache	2	1
 projactregistry	4	3
 projectile	10	4
 pulsehighlight	2	2
@@ -463,6 +465,7 @@ battlezdata	?SumGroupField3c@CBattlezData@@QAEHXZ	100.0000	100.0000	1	e396d834d6
 battlezdata	?SumWinRow@CBattlezData@@QAEHH@Z	100.0000	100.0000	2	f7cb273e44cf	0xfccb0
 battlezmapconfig	?LoadConfig@CBattlezMapConfig@@QAEHPAUCLevelInfo@@HH@Z	85.9933	85.9933	4	f06ecd871376	0x25020
 bitarray	?SetBit@CBitArray@@QAEPAU1@I@Z	100.0000	100.0000	1	da78fe96314c	0x193640
+bitstreampack	?BitEmitMarker@@YAXPAUBitState@@@Z	59.1309	59.1309	1	741128f022a8	0x188860
 blowfish	?Blowfish_InitKey@@YGXPAE@Z	100.0000	100.0000	1	181b6b1750bf	0x16f6c0
 blowfish	?Blowfish_decipher@@YAXPAI0@Z	99.5000	99.5000	2	c61014aad094	0x16fc70
 blowfish	?Blowfish_encipher@@YAXPAI0@Z	100.0000	100.0000	1	3b9987755e2b	0x16f7f0
@@ -793,6 +796,7 @@ cddrawworkers	?Vfunc2C@CDDrawWorkerA@@QAEHHHH@Z	100.0000	100.0000	6	2a93c347cffa
 cddrawworkers	?Vfunc2C@CDDrawWorkerB@@QAEHHHH@Z	100.0000	100.0000	6	8a45134b16f4	0x1572f0
 cddrawworkers	?Vfunc30@CDDrawWorkerB@@QAEHHHHH@Z	100.0000	100.0000	1	e3442c1eb798	0x1572b0
 cddrawworkers	?Vfunc34@CDDrawWorkerB@@QAEHHHHH@Z	100.0000	100.0000	6	a96a95c53a2d	0x157280
+cddscreen	?HandleError@CDDScreen@@QAEXXZ	100.0000	100.0000	1	66b7cedc1a51	0x17cc80
 cdirectdrawmgr	?Apply@CDDPalette@@QAEXH@Z	97.5758	97.5758	1	c2b7f4717ef4	0x147c80
 cdirectdrawmgr	?Blt@CDDSurface@@QAEHPAV1@@Z	100.0000	100.0000	3	f79e89a0ee67	0x13ee60
 cdirectdrawmgr	?BltEx@CDDSurface@@QAEHPAXPAV1@0I0@Z	100.0000	100.0000	2	50e520fe06c6	0x13eef0
@@ -1012,6 +1016,7 @@ cmenustate	?ReadyGate@CMenuState@@QAEHXZ	100.0000	100.0000	1	6ea0d4b831d8	0xa0d4
 cmgrsettings	?Serialize@CMgrSettings@@QAEHPAVCMgrArchive@@HHH@Z	89.0526	89.0526	1	33278cd2791a	0x109e00
 cmovinglogicdtor	??1CMovingLogic@@UAE@XZ	100.0000	100.0000	1	9d256360ef43	0x13bd0
 cmovinglogicserial	?Serialize@CMovingLogic@@QAEHPAVCMlSerialArchive@@HHH@Z	66.5671	66.5671	1	f4d139f5ece5	0x16f4a0
+cmovinglogicserial	?Serialize@CMovingLogicBase@@QAEHPAVCMlSerialArchive@@HHH@Z	51.4430	51.4430	1	7339929ac026	0x16e7f0
 cmovinglogicserial	?WriteCurve@@YAAAVCButeText@@AAV1@ABUCMovingLogicCurve@@@Z	100.0000	100.0000	1	a35c198fc271	0x16cdd0
 cmsgdispatch	?Dispatch_aa0a0@@YAHPAUCMsg@@@Z	100.0000	100.0000	1	482f4c54567e	0xaa0a0
 cmsgdispatch	?Dispatch_aa1e0@@YAHPAUCMsg@@@Z	100.0000	100.0000	1	1976412462fe	0xaa1e0
@@ -2045,17 +2050,13 @@ engine_unmatched	?Unmatched_1190f0@@YAXXZ	1.4493	1.4493	1	30b339bd7c22	0x1190f0
 engine_unmatched	?Unmatched_146550@@YAXXZ	0.2232	0.2232	1	0ab3f0923a57	0x146550
 engine_unmatched	?Unmatched_146a20@@YAXXZ	0.2198	0.2198	1	dbe19730debd	0x146a20
 engine_unmatched	?Unmatched_14d5e0@@YAXXZ	0.1316	0.1316	1	5aad3eaac12c	0x14d5e0
-engine_unmatched	?Unmatched_16e7f0@@YAXXZ	0.2532	0.2532	1	48c03834226b	0x16e7f0
 engine_unmatched	?Unmatched_17cbe0@@YAXXZ	1.6949	1.6949	1	fca74341e8e5	0x17cbe0
-engine_unmatched	?Unmatched_17cc80@@YAXXZ	0.9434	0.9434	1	ee9ab81aa27b	0x17cc80
 engine_unmatched	?Unmatched_17cdf0@@YAXXZ	0.2632	0.2632	1	5b24239a6df0	0x17cdf0
 engine_unmatched	?Unmatched_17cfc0@@YAXXZ	0.2062	0.2062	1	eae9d3b1bc0c	0x17cfc0
 engine_unmatched	?Unmatched_180fb0@@YAXXZ	0.0928	0.0928	1	06ef34252706	0x180fb0
 engine_unmatched	?Unmatched_1817e0@@YAXXZ	0.1575	0.1575	1	b5e71d91b317	0x1817e0
 engine_unmatched	?Unmatched_181e50@@YAXXZ	0.0648	0.0648	1	955d1d4e182f	0x181e50
-engine_unmatched	?Unmatched_188860@@YAXXZ	0.5952	0.5952	1	4b8d88bbbea0	0x188860
 engine_unmatched	?Unmatched_1933b0@@YAXXZ	0.1702	0.1702	1	8d74db23dbae	0x1933b0
-engine_unmatched	?Unmatched_1936e0@@YAXXZ	0.4706	0.4706	1	4feb64b1e41c	0x1936e0
 engine_unmatched_lib	?Unmatched_124848@@YAXXZ	4.0000	4.0000	1	81c658f8d097	0x124848
 engine_unmatched_lib	?Unmatched_130570@@YAXXZ	33.3333	33.3333	2	82aafcb7cba9	0x130570
 engine_unmatched_lib	?Unmatched_18bf4d@@YAXXZ	2.1739	2.1739	1	fba7903ca863	0x18bf4d
@@ -3040,6 +3041,7 @@ orphanmethods	?Tick@CStrikeEffect@@QAEHXZ	98.9429	98.9429	1	4e61b877ab77	0xb4350
 palettebmp	?LoadBmpPalette@CPalLoader@@QAEHPBDH@Z	98.4889	98.4889	2	dc1d1e374304	0x177480
 palettecopy	?UploadPalette@CPaletteHost@@QAEXXZ	61.1613	61.1613	1	a0802ff9a4b4	0x17ca10
 projactcache	??0zBitVec@@QAE@HH@Z	77.7679	77.7679	1	cebeacca76fa	0x16d790
+projactcache	?EnsureSize@zBitVec@@QAEHH@Z	100.0000	100.0000	1	151b7a363677	0x1936e0
 projactregistry	??1CProjActOwner@@UAE@XZ	100.0000	100.0000	1	3a018279bc02	0x7fd0
 projactregistry	?FireActivation@CProjActObj@@QAEXH@Z	100.0000	100.0000	1	11e9b3a5f0e8	0x80e0
 projactregistry	?ProjActRegisterDefaults@@YAXXZ	100.0000	100.0000	1	a25c8147a240	0x8060

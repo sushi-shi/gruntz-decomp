@@ -38,12 +38,8 @@ RVA(0x00146a20, 0x5b7)
 void Unmatched_146a20() {} // Unmatched_146a20
 RVA(0x0014d5e0, 0x345)
 void Unmatched_14d5e0() {} // Unmatched_14d5e0
-RVA(0x0016e7f0, 0x1cf)
-void Unmatched_16e7f0() {} // Unmatched_16e7f0
 RVA(0x0017cbe0, 0x97)
 void Unmatched_17cbe0() {} // Unmatched_17cbe0
-RVA(0x0017cc80, 0x109)
-void Unmatched_17cc80() {} // Unmatched_17cc80
 RVA(0x0017cdf0, 0x1c6)
 void Unmatched_17cdf0() {} // Unmatched_17cdf0
 RVA(0x0017cfc0, 0x2dd)
@@ -54,9 +50,5 @@ RVA(0x001817e0, 0x315)
 void Unmatched_1817e0() {} // Unmatched_1817e0
 RVA(0x00181e50, 0x7b9)
 void Unmatched_181e50() {} // Unmatched_181e50
-RVA(0x00188860, 0x267)
-void Unmatched_188860() {} // Unmatched_188860
 RVA(0x001933b0, 0x28f)
 void Unmatched_1933b0() {} // Unmatched_1933b0
-RVA(0x001936e0, 0xd3)
-void Unmatched_1936e0() {} // Unmatched_1936e0

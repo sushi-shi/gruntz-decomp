@@ -101,11 +101,40 @@ public:
     char _10[0x130];
 };
 
-// CMovingLogic's base class providing the chained Serialize (0x16e7f0). Modeled
-// as a standalone view; the derived Serialize forwards `this` unchanged.
+// The bute-text name transfer helpers (reloc-masked __cdecl externs): append the
+// CString member's text to the accumulator / parse it back. Same role as
+// WriteCurve/ReadCurve but for the name string at +0x18.
+void WriteName(void* accum, void* pstr); // 0x193080
+void ReadName(void* accum, void* pstr);  // 0x193140
+
+// The persisted "logic types registered" cell (.data 0x6bf674) the base Serialize
+// streams alongside the three trailing ints.
+DATA(0x002bf674)
+extern i32 g_logicTypesRegistered; // 0x6bf674 (?g_logicTypesRegistered@@3HA)
+
+// The read-mode context arg: m_14 is seeded from ctx->m_7c.
+struct CMlSerialCtx {
+    char _00[0x7c];
+    i32 m_7c; // +0x7c
+};
+
+// CMovingLogic's base class providing the chained Serialize (0x16e7f0): persist
+// the name string + three trailing ints + g_logicTypesRegistered, and on read
+// seed the back-pointers (m_c/m_10) and m_14 from the context arg.
 class CMovingLogicBase {
 public:
     i32 Serialize(CMlSerialArchive* arc, i32 mode, i32 a3, i32 a4); // 0x16e7f0
+
+    void* _vptr;     // +0x00
+    i32 m_4;         // +0x04
+    i32 m_8;         // +0x08
+    void* m_c;       // +0x0c
+    void* m_10;      // +0x10
+    i32 m_14;        // +0x14
+    char m_18[0x10]; // +0x18  name CString (helpers take &m_18)
+    i32 m_28;        // +0x28
+    i32 m_2c;        // +0x2c
+    i32 m_30;        // +0x30
 };
 
 // CMovingLogic: vtable + the 0x108-byte curve at +0x38 + four trailing ints.
