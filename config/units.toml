@@ -1628,3 +1628,40 @@ flags = "base"
 unit = "customworlddialog"
 source = "src/Gruntz/CustomWorldDialog.cpp"
 flags = "base"
+
+[[unit]]
+unit = "m1_ehfunclets"
+source = "src/Wap32/EhUnwindFunclets.cpp"
+flags = "base"
+[[unit]]
+unit = "m1_packetpool"
+source = "src/Net/PacketPool.cpp"
+flags = "base"
+[[unit]]
+unit = "m1_glyphtable"
+source = "src/Gruntz/GlyphTable.cpp"
+flags = "base"
+[[unit]]
+unit = "m1_cluster0c"
+source = "src/Gruntz/Cluster0c.cpp"
+flags = "base"
+[[unit]]
+unit = "m1_apphelpers"
+source = "src/Gruntz/AppHelpers.cpp"
+flags = "base"
+[[unit]]
+unit = "m1_timesplit"
+source = "src/Utils/TimeSplit.cpp"
+flags = "base"
+[[unit]]
+unit = "m1_ringbuffer"
+source = "src/Wap32/RingBuffer.cpp"
+flags = "base"
+[[unit]]
+unit = "m1_wapmisc"
+source = "src/Wap32/WapMisc.cpp"
+flags = "base"
+[[unit]]
+unit = "m1_faderdtor"
+source = "src/Wap32/FaderDtor.cpp"
+flags = "base"
