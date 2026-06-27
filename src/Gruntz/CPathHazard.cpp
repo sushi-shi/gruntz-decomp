@@ -174,6 +174,125 @@ i32 CPathHazard::GetTypeTag() {
 RVA(0x00013340, 0x44)
 CPathHazard::~CPathHazard() {}
 
+// The bound CGameObject viewed by the ctor: it reads the screen position (m_5c/
+// m_60), the layer key (m_74), the flags (m_08), and the raw waypoint coordinate
+// arrays (the 12 ints at +0x134, the 4 ints at +0x64, and the 8 ints at
+// m_7c->+0xf0). The hazard scales each tile coordinate to a pixel centre
+// (coord*0x20 + 0x10). Only the touched offsets are modeled.
+struct CPathCtorSub { // m_10->m_7c (the per-tile-time + extra waypoint owner)
+    char m_pad00[0xbc];
+    i32 m_bc; // +0xbc per-tile time (0 -> read PathHazardTimePerTile)
+    char m_padc0[0xf0 - 0xc0];
+    i32 m_f0, m_f4, m_f8, m_fc, m_100, m_104, m_108, m_10c; // +0xf0..0x10c (8 coords)
+};
+struct CPathCtorObj {
+    char m_pad00[0x08];
+    i32 m_08; // +0x08 flags
+    char m_pad0c[0x5c - 0x0c];
+    i32 m_5c, m_60;             // +0x5c, +0x60 screen position (wp[0])
+    i32 m_64, m_68, m_6c, m_70; // +0x64..0x70 (4 coords)
+    i32 m_74;                   // +0x74 layer key
+    char m_pad78[0x7c - 0x78];
+    CPathCtorSub* m_7c; // +0x7c
+    char m_pad80[0x134 - 0x80];
+    i32 m_134, m_138, m_13c, m_140, m_144, m_148, m_14c, m_150, m_154, m_158, m_15c,
+        m_160; // +0x134..0x160 (12 coords)
+};
+
+// CPathHazard::CPathHazard @0xb35a0 - fold the shared CUserLogic(obj) init, then
+// build the hazard's waypoint path: snap the bound object's screen position to the
+// tile grid (the m_60/m_68 doubles + the m_74 layer key), then scale the raw
+// per-tile waypoint coordinates (the 12 ints at obj+0x134, the 4 at obj+0x64, the
+// 8 at obj->m_7c+0xf0) to pixel centres (coord*0x20 + 0x10) into the +0x90
+// waypoint array (wp[0] is the unscaled start). Find the path length (the first
+// waypoint equal to the (0x10,0x10) sentinel), seed the per-tile time
+// (PathHazardTimePerTile when unset), start the first leg, and on success bind the
+// "A" bute node + cycle geometry (else hide the object).
+//
+// @early-stop
+// register-pinning/eh-ctor-vptr-restamp wall (docs/patterns/zero-register-pinning.md,
+// eh-ctor-vptr-restamp-position.md): body byte-faithful (the i64 zeroing, the 24
+// scaled waypoint copies with 0x10 pinned in ebx, the sentinel search loop, the
+// bute/geometry tail all match retail). Residual is the /GX leaf-vptr re-stamp
+// position + retail's walking-pointer reuse of the copy's ecx in the search loop
+// (a regalloc artifact, not source-steerable).
+RVA(0x000b35a0, 0x401)
+CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj) {
+    *(i64*)&m_108 = 0;
+    *(i64*)&m_110 = 0;
+    *(i64*)&m_120 = 0;
+    *(i64*)&m_128 = 0;
+
+    m_38->m_08 |= 0x2000002;
+
+    CPathCtorObj* o = (CPathCtorObj*)m_10;
+    i32 snapX = (o->m_5c & ~0x1f) + 0x10;
+    i32 snapY = (o->m_60 & ~0x1f) + 0x10;
+    o->m_5c = snapX;
+    m_60 = (double)snapX;
+    o->m_60 = snapY;
+    m_68 = (double)snapY;
+    if (o->m_74 != 0xcf850) {
+        o->m_74 = 0xcf850;
+        o->m_08 |= 0x20000;
+    }
+
+    m_wp[0].x = o->m_5c;
+    m_wp[0].y = o->m_60;
+    m_wp[1].x = (o->m_134 << 5) + 0x10;
+    m_wp[1].y = (o->m_138 << 5) + 0x10;
+    m_wp[2].x = (o->m_13c << 5) + 0x10;
+    m_wp[2].y = (o->m_140 << 5) + 0x10;
+    m_wp[3].x = (o->m_144 << 5) + 0x10;
+    m_wp[3].y = (o->m_148 << 5) + 0x10;
+    m_wp[4].x = (o->m_14c << 5) + 0x10;
+    m_wp[4].y = (o->m_150 << 5) + 0x10;
+    m_wp[5].x = (o->m_154 << 5) + 0x10;
+    m_wp[5].y = (o->m_158 << 5) + 0x10;
+    m_wp[6].x = (o->m_15c << 5) + 0x10;
+    m_wp[6].y = (o->m_160 << 5) + 0x10;
+    m_wp[7].x = (o->m_64 << 5) + 0x10;
+    m_wp[7].y = (o->m_68 << 5) + 0x10;
+    m_wp[8].x = (o->m_6c << 5) + 0x10;
+    m_wp[8].y = (o->m_70 << 5) + 0x10;
+    m_wp[9].x = (o->m_7c->m_f0 << 5) + 0x10;
+    m_wp[9].y = (o->m_7c->m_f4 << 5) + 0x10;
+    m_wp[10].x = (o->m_7c->m_f8 << 5) + 0x10;
+    m_wp[10].y = (o->m_7c->m_fc << 5) + 0x10;
+    m_wp[11].x = (o->m_7c->m_100 << 5) + 0x10;
+    m_wp[11].y = (o->m_7c->m_104 << 5) + 0x10;
+    m_wp[12].x = (o->m_7c->m_108 << 5) + 0x10;
+    m_wp[12].y = (o->m_7c->m_10c << 5) + 0x10;
+
+    i32 i = 1;
+    i32 found = 0;
+    while (found == 0) {
+        if (m_wp[i].x == 0x10 && m_wp[i].y == 0x10) {
+            found = 1;
+        } else {
+            i++;
+        }
+        if (i >= 13) {
+            break;
+        }
+    }
+    m_104 = i;
+    m_f8 = 0;
+
+    if (o->m_7c->m_bc == 0) {
+        o->m_7c->m_bc = g_buteMgr.GetDwordDef("Hazardz", "PathHazardTimePerTile", 1000);
+    }
+
+    if (StartPath() == 0) {
+        m_38->m_08 |= 0x10000;
+    } else {
+        m_30 = m_14->m_1c;
+        m_14->m_1c = g_buteTree.Find("A");
+        m_40 = m_38->m_1b4;
+        m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
+    }
+}
+
 // CPathHazard::Tick @0x0b4020 (virtual slot 16) - the per-frame driver. Advance
 // the +0x1a0 sub-mgr; run the on-screen visibility/hit gate (unless the registry
 // is in the no-window mode); if the bound object has reached the current

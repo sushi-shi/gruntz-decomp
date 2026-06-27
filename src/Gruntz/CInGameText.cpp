@@ -100,6 +100,71 @@ static inline i32 ResolveSlot(_zvec* v, i32 idx) {
 RVA(0x00011dc0, 0x44)
 CInGameText::~CInGameText() {}
 
+// The global game registry (WwdGameReg, RVA 0x24556c). m_134 is the place mode
+// (==2 hides at construction); m_118 the has-window gate the on-screen check
+// polls. Only the touched fields are modeled; wwdfile owns the DATA label.
+struct CTextGameReg {
+    char m_pad0[0x118];
+    i32 m_118; // +0x118 has-window flag
+    char m_pad11c[0x134 - 0x11c];
+    i32 m_134; // +0x134 mode discriminator
+};
+DATA(0x0024556c)
+extern CTextGameReg* g_gameReg;
+
+// CInGameText::CInGameText @0x099110 - fold the shared CUserLogic(obj) init, then
+// (unless the registry is in the no-place mode m_134==2) bind the "A" bute node,
+// the cycle geometry, the "GAME_HELPBOX" sprite name; flag the sub-object; run the
+// on-screen visibility gate keyed by the bound object's place mode (m_128); and on
+// the visible path snap the screen position to the tile grid + seed the +0x74
+// layer key and the +0x54/+0x58 scalars to -1.
+//
+// @early-stop
+// register-pinning/eh-ctor-vptr-restamp wall (docs/patterns/zero-register-pinning.md,
+// eh-ctor-vptr-restamp-position.md): body byte-faithful (every op/offset/imm/string
+// + the m_128 visibility branch tangle match retail; constant 2 pins in ebx like
+// retail). Residual is the /GX leaf-vptr re-stamp position + the visibility-gate
+// branch-polarity (retail emits `je visible` where structured C emits `jne hide`).
+RVA(0x00099110, 0x215)
+CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj) {
+    if (g_gameReg->m_134 == 2) {
+        m_38->m_08 |= 0x10000;
+        return;
+    }
+    m_30 = m_14->m_1c;
+    m_14->m_1c = g_buteTree.Find("A");
+    m_40 = m_38->m_1b4;
+    m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
+    m_38->ApplyName("GAME_HELPBOX");
+    m_38->m_08 |= 2;
+
+    i32 vis = m_10->m_128;
+    if (vis == 1) {
+        if (g_gameReg->m_118 == 0) {
+            m_38->m_08 |= 0x10000;
+            return;
+        }
+        if (g_gameReg->m_134 != 1) {
+            m_38->m_08 |= 0x10000;
+            return;
+        }
+    } else if (vis == 2) {
+        if (g_gameReg->m_118 != 0 && g_gameReg->m_134 == 1) {
+            m_38->m_08 |= 0x10000;
+            return;
+        }
+    }
+
+    m_10->m_5c = (m_10->m_5c & ~0x1f) + 0x10;
+    m_10->m_60 = (m_10->m_60 & ~0x1f) + 0x10;
+    if (m_10->m_74 != 0x17318) {
+        m_10->m_74 = 0x17318;
+        m_10->m_08 |= 0x20000;
+    }
+    m_54 = -1;
+    m_58 = -1;
+}
+
 // The activation-coordinate registry view of the dispatch table (g_textDispatch
 // @0x645950): InitActReg builds it over the fixed [2000, 2010] range via the
 // shared registry ctor (0x408710, __thiscall ret 8).

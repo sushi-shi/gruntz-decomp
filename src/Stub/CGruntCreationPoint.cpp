@@ -3,8 +3,5 @@
 
 #include <Stub/CGruntCreationPoint.h>
 
-// @confidence: med
-// @source: rtti-vptr
-// @stub
-RVA(0x0003e520, 0x1fd)
-CGruntCreationPoint::CGruntCreationPoint(i32) {}
+// CGruntCreationPoint::CGruntCreationPoint @0x3e520 graduated to
+// src/Gruntz/CGruntCreationPoint.cpp.

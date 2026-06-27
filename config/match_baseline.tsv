@@ -97,7 +97,7 @@ cfixedptrarray32	3	2
 cfortressflag	6	4
 cfrontcandyani	4	3
 cfxmodedesc	7	6
-cgruntcreationpoint	4	3
+cgruntcreationpoint	5	3
 cgrunthealthsprite	4	3
 cgruntpowerupsprite	6	5
 cgruntselectedsprite	5	3
@@ -137,7 +137,7 @@ cmovinglogicdtor	1	1
 cmovinglogicserial	3	1
 cmsgdispatch	3	3
 cmulti	16	7
-cobjectdropper	1	1
+cobjectdropper	2	1
 colorhsv	1	0
 comehfunclets	5	5
 comhelperthunks	7	7
@@ -145,7 +145,7 @@ configstore	4	0
 configstoreread	2	0
 connslotlist	3	3
 cparticlez	5	4
-cpathhazard	8	4
+cpathhazard	9	4
 cplay	70	30
 crangeset	3	2
 cremusentrylist	2	2
@@ -194,7 +194,7 @@ ehfunclets	6	6
 engine_attributed	7	0
 engine_boundary	7	0
 engine_discovered	22	5
-engine_label_stubs	330	97
+engine_label_stubs	324	97
 engine_unmatched_lib	11	0
 engstr	3	1
 eyecandytypetags	4	4
@@ -256,11 +256,11 @@ inflate	7	6
 inftrees	6	6
 infutil	1	1
 ingameicon	10	5
-ingametext	5	4
+ingametext	6	4
 ingameworkerhandlers	3	3
 inputdeviceconfig	1	0
 interfaceobject	2	2
-kitchenslime	7	4
+kitchenslime	8	4
 latencylist	2	2
 leafelementobj	2	2
 levelsync	1	0
@@ -361,7 +361,7 @@ registryhelper	8	8
 rezfile	6	6
 rezlist	2	2
 rezmgr	15	10
-rollingball	5	3
+rollingball	6	3
 savegame	21	15
 savescreenshot	1	0
 sbi_gruntmachine	3	2
@@ -1151,6 +1151,7 @@ cfxmodedesc	??0CFxModeT4@@QAE@XZ	100.0000	100.0000	1	747c8589248b	0x17e8b0
 cfxmodedesc	??0CFxModeT5@@QAE@XZ	100.0000	100.0000	1	dad13d941e04	0x17e8e0
 cfxmodedesc	??0CFxModeT6@@QAE@XZ	100.0000	100.0000	1	1dd6f88f62d8	0x17e910
 cfxmodedesc	?MakeButeSectionKey@@YAHPADPBD1@Z	100.0000	100.0000	1	c9630b01af12	0xf9280
+cgruntcreationpoint	??0CGruntCreationPoint@@QAE@PAUCGameObject@@@Z	80.1295	80.1295	1	8f1fe6a1fe91	0x3e520
 cgruntcreationpoint	??1CGruntCreationPoint@@UAE@XZ	100.0000	100.0000	1	887125215466	0x10730
 cgruntcreationpoint	?AdvanceAnim@CGruntCreationPoint@@QAEHXZ	100.0000	100.0000	1	f79597535ca0	0x3ecc0
 cgruntcreationpoint	?InitActReg@CGruntCreationPoint@@SAXXZ	100.0000	100.0000	1	79c2615e560b	0x3e8e0
@@ -1328,6 +1329,7 @@ cmulti	?StartSession@CMulti@@QAEHHH@Z	98.4571	98.4571	1	819ff4c73d1c	0xb6580
 cmulti	?StartTitle@CMulti@@QAEHXZ	36.2880	36.2880	1	6fd7349a26cb	0xb72c0
 cmulti	?Teardown@CMulti@@QAEXXZ	100.0000	100.0000	1	40a558486d68	0xb6110
 cmulti	?Tick@CMulti@@QAEHXZ	85.9939	85.9939	1	93a3a8d8b95c	0xb6890
+cobjectdropper	??0CObjectDropper@@QAE@PAUCGameObject@@@Z	86.0249	86.0249	1	a7b1aa0f1029	0xc59f0
 cobjectdropper	??1CObjectDropper@@UAE@XZ	100.0000	100.0000	1	c595e9e386aa	0x124f0
 colorhsv	?RgbToHsv@@YAXPAUColorHSV@@I@Z	45.7699	45.7699	2	671fce63329c	0x14fcc0
 comehfunclets	?Funclet_11ec59@@YAXXZ	100.0000	100.0000	1	b4360828a3a9	0x11ec59
@@ -1356,6 +1358,7 @@ cparticlez	?FireActivation@CParticlez@@QAEXH@Z	100.0000	100.0000	1	13bf97e742a3	
 cparticlez	?InitActReg@CParticlez@@SAXXZ	100.0000	100.0000	1	913801e82692	0x46cb0
 cparticlez	?RegisterActs@CParticlez@@SAXXZ	92.9130	92.9130	1	5449c01d1d37	0x46e90
 cparticlez	?Update@CParticlez@@QAEHXZ	100.0000	100.0000	1	8283acc5ef84	0x47090
+cpathhazard	??0CPathHazard@@QAE@PAUCGameObject@@@Z	91.3233	91.3233	1	6cff72b2da29	0xb35a0
 cpathhazard	??1CLightningHazard@@UAE@XZ	100.0000	100.0000	1	f8326e95f521	0x13280
 cpathhazard	??1CPathHazard@@UAE@XZ	100.0000	100.0000	1	60974e654df7	0x13340
 cpathhazard	?ArmStrike@CLightningHazard@@QAEHHH@Z	94.9296	94.9296	1	07bf1d0e6736	0xb4640
@@ -1716,14 +1719,9 @@ engine_label_stubs	??0CButeNodeEntry@@QAE@HPAX@Z	100.0000	100.0000	1	cpp:590eddf
 engine_label_stubs	??0CCheckpointTrigger@@QAE@H@Z	1.3554	1.3554	1	cpp:6bf52155264d	0x10ee20
 engine_label_stubs	??0CDoNothingNormal@@QAE@XZ	2.4194	2.4194	1	cpp:45e65336d4b5	0xa9e00
 engine_label_stubs	??0CExitTrigger@@QAE@H@Z	0.9890	0.9890	1	cpp:6bf52155264d	0x3ecf0
-engine_label_stubs	??0CGruntCreationPoint@@QAE@H@Z	1.6187	1.6187	1	cpp:6bf52155264d	0x3e520
 engine_label_stubs	??0CGruntVoice@@QAE@H@Z	1.2500	1.2500	1	cpp:6bf52155264d	0x1198a0
 engine_label_stubs	??0CInGameIcon@@QAE@H@Z	0.1063	0.0981	1	cpp:6bf52155264d	0x95b10
-engine_label_stubs	??0CInGameText@@QAE@H@Z	1.2414	1.2414	1	cpp:6bf52155264d	0x99110
-engine_label_stubs	??0CKitchenSlime@@QAE@H@Z	0.5960	0.5960	1	cpp:6bf52155264d	0xb23a0
 engine_label_stubs	??0CMovingLogic@@QAE@XZ	2.2772	2.2772	1	cpp:45e65336d4b5	0x13940
-engine_label_stubs	??0CObjectDropper@@QAE@H@Z	0.6406	0.6406	1	cpp:6bf52155264d	0xc59f0
-engine_label_stubs	??0CRollingBall@@QAE@H@Z	0.7869	0.7869	1	cpp:6bf52155264d	0xaf820
 engine_label_stubs	??0CSBI_ImageSet@@QAE@XZ	0.2465	0.2465	1	cpp:45e65336d4b5	0x101580
 engine_label_stubs	??0CSpotLight@@QAE@H@Z	1.2500	1.2500	1	cpp:6bf52155264d	0xb1200
 engine_label_stubs	??0MallocCtor_135b10@@QAE@XZ	2.5000	2.5000	1	cpp:e8a4cb0d5b2a	0x135b10
@@ -1775,7 +1773,6 @@ engine_label_stubs	?BuildVoiceSoundList@EngineLabelBacklog@@YGXH@Z	0.5236	0.5236
 engine_label_stubs	?BuildWorldLevelPath@CPlay@@QAEXH@Z	0.4484	0.4484	1	cpp:590eddff1627	0xdbc80
 engine_label_stubs	?CGruntzCommand_0242f0@CGruntzCommand@@QAEXXZ	50.0000	50.0000	1	cpp:45e65336d4b5	0x242f0
 engine_label_stubs	?CGruntzCommand_024430@CGruntzCommand@@QAEXXZ	50.0000	50.0000	1	cpp:45e65336d4b5	0x24430
-engine_label_stubs	?CPathHazard_0b35a0@CPathHazard@@QAEXH@Z	0.3759	0.3759	1	cpp:6bf52155264d	0xb35a0
 engine_label_stubs	?CProjectile_0dec60@CProjectile@@QAEXH@Z	0.6329	0.6329	1	cpp:6bf52155264d	0xdec60
 engine_label_stubs	?CUserLogic_0138d0@CUserLogic@@QAEXXZ	5.0000	5.0000	1	cpp:45e65336d4b5	0x138d0
 engine_label_stubs	?CUserLogic_058cd0@CUserLogic@@QAEXH@Z	0.8929	0.8929	1	cpp:6bf52155264d	0x58cd0
@@ -2687,6 +2684,7 @@ ingameicon	?RegisterIconActions@@YAXXZ	87.0000	87.0000	1	1762bee03e85	0x979e0
 ingameicon	?RegisterIconState@@YAXXZ	96.4783	96.4783	1	899dde6a8598	0x97f40
 ingameicon	?Serialize@CInGameIcon@@QAEHPAVCArchive@@HHH@Z	0.6826	0.6826	2	958d1db3464e	0x98c90
 ingameicon	?SetField54@CInGameIcon@@QAEXH@Z	100.0000	100.0000	2	996198841286	0x99b10
+ingametext	??0CInGameText@@QAE@PAUCGameObject@@@Z	91.0414	91.0414	1	35c063c4e734	0x99110
 ingametext	??1CInGameText@@UAE@XZ	100.0000	100.0000	1	f69bd50df17d	0x11dc0
 ingametext	?Dispatch@CInGameText@@QAEXH@Z	100.0000	100.0000	1	732a6ae0ef8a	0x99460
 ingametext	?InitActReg@CInGameText@@SAXXZ	100.0000	100.0000	1	e96177786be5	0x993e0
@@ -2698,6 +2696,7 @@ ingameworkerhandlers	?Handler0aa6e0@@YAHPAUOwner@@@Z	100.0000	100.0000	1	f247242
 inputdeviceconfig	?LoadInputDeviceConfig@CInputConfig@@QAE?AVCString@@H@Z	77.3265	77.3265	5	a06dac34f93f	0x387c0
 interfaceobject	??1InterfaceObject@@UAE@XZ	100.0000	100.0000	1	aa614845afcc	0x179340
 interfaceobject	?GetName@InterfaceObject@@QAE?AVCString@@XZ	100.0000	100.0000	1	d2dccd8a304e	0x179300
+kitchenslime	??0CKitchenSlime@@QAE@PAUCGameObject@@@Z	79.3907	79.3907	1	e330fd08f7a7	0xb23a0
 kitchenslime	??1CKitchenSlime@@UAE@XZ	100.0000	100.0000	1	5d147b2b8ea5	0x13100
 kitchenslime	?FireActivation@CKitchenSlime@@QAEXH@Z	100.0000	100.0000	1	b01b90390ef5	0xb2940
 kitchenslime	?LoadSprites@CKitchenSlime@@QAEHXZ	69.1992	69.1992	3	aca206c4359f	0xb3160
@@ -3158,6 +3157,7 @@ rezmgr	?PerFrameTick@RezMgr@@UAEHXZ	100.0000	100.0000	5	f48f8cfdbf55	0x8b740
 rezmgr	?Read@CRezItm@@QAEHHHIPAX@Z	100.0000	100.0000	2	317d2c857ebf	0x13c600
 rezmgr	?Stub_13b0c0@CRezDir@@QAEXXZ	0.2139	0.2139	2	0caf2154eccf	0x13b0c0
 rezmgr	?Write@CRezItm@@QAEHHHIPAX@Z	100.0000	100.0000	2	e4e65b9964df	0x13c6c0
+rollingball	??0CRollingBall@@QAE@PAUCGameObject@@@Z	78.6804	78.6804	1	38dbcbe0cf1f	0xaf820
 rollingball	??1CRollingBall@@UAE@XZ	100.0000	100.0000	1	9f5ff559b5b3	0x12f80
 rollingball	?InitActReg@CRollingBall@@SAXXZ	100.0000	100.0000	1	683351f53157	0xafd60
 rollingball	?RegisterActs@CRollingBall@@SAXXZ	92.9130	92.9130	1	a7984852a451	0xaff40

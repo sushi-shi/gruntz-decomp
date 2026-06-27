@@ -63,7 +63,7 @@ struct CRbArchive {
 // ---------------------------------------------------------------------------
 class CRollingBall : public CUserLogic {
 public:
-    CRollingBall(i32);                // 0x0af820 (1-arg; still stubbed)
+    CRollingBall(CGameObject* obj);   // 0x0af820 (folds CUserLogic(obj) + the ball setup)
     virtual ~CRollingBall() OVERRIDE; // 0x012f80 (folds the bare CUserLogic teardown)
 
     // Construct the class's activation-coordinate registry (g_rollingBallActReg
@@ -77,7 +77,8 @@ public:
     i32 Update();                                         // 0x0b0140
 
     // --- CRollingBall own fields (placeholders; offsets load-bearing) ---
-    char m_pad40[0x58 - 0x40]; // CUserLogic ends +0x40
+    i32 m_40;                  // +0x40  geometry id (m_38->m_1b4 snapshot)
+    char m_pad44[0x58 - 0x44]; // CUserLogic ends +0x40
     double m_58;               // +0x58  per-tile move time (1000/RollingBallTimePerTile)
     double m_60;               // +0x60  sub-tile X position
     double m_68;               // +0x68  sub-tile Y position

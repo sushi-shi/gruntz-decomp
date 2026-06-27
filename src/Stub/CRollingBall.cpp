@@ -3,8 +3,4 @@
 
 #include <Stub/CRollingBall.h>
 
-// @confidence: med
-// @source: rtti-vptr
-// @stub
-RVA(0x000af820, 0x40d)
-CRollingBall::CRollingBall(i32) {}
+// CRollingBall::CRollingBall @0x0af820 graduated to src/Gruntz/RollingBall.cpp.

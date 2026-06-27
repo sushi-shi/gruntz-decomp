@@ -3,8 +3,4 @@
 
 #include <Stub/CInGameText.h>
 
-// @confidence: med
-// @source: rtti-vptr
-// @stub
-RVA(0x00099110, 0x215)
-CInGameText::CInGameText(i32) {}
+// CInGameText::CInGameText @0x099110 graduated to src/Gruntz/CInGameText.cpp.

@@ -40,6 +40,7 @@
 #include <Gruntz/RollingBall.h>     // CRollingBall : CUserLogic (+ the /GX CString temps)
 
 #include <rva.h>
+#include <string.h> // inline strcmp for the ctor's direction-name match
 
 // The handler entry the per-class registry yields: its first dword receives the
 // per-frame handler PMF (Update, a 4-byte code ptr on this single-inheritance
@@ -131,6 +132,154 @@ static i32 VtblResolve(void* ent) {
 // destructible link forces the /GX EH frame. The empty body is enough.
 RVA(0x00012f80, 0x44)
 CRollingBall::~CRollingBall() {}
+
+// The CString temp the direction-name match builds (static-linked MFC CString
+// helpers, modeled NO-body so the calls reloc-mask): MiniStr() = 0x1b9b93,
+// operator=(LPCSTR) = 0x1b9e74, ~MiniStr() = 0x1b9cde. The real C++ dtor makes
+// MSVC emit the temp's /GX cleanup state like retail.
+struct CRbMiniStr {
+    char* m_buf; // +0x00 the strcmp operand
+    CRbMiniStr();
+    ~CRbMiniStr();
+    CRbMiniStr& operator=(const char* s);
+};
+
+// The bound CGameObject viewed by the ctor (m_10 == m_38). Only the touched
+// offsets are modeled.
+struct CRbCtorSub { // m_10->m_7c (per-tile-time owner)
+    char m_pad00[0xbc];
+    i32 m_bc; // +0xbc per-tile time
+};
+struct CRbCtorObj {
+    char m_pad00[0x08];
+    i32 m_08; // +0x08 flags
+    char m_pad0c[0x5c - 0x0c];
+    i32 m_5c; // +0x5c screen X
+    i32 m_60; // +0x60 screen Y
+    char m_pad64[0x74 - 0x64];
+    i32 m_74; // +0x74 layer key
+    char m_pad78[0x7c - 0x78];
+    CRbCtorSub* m_7c; // +0x7c
+    char m_pad80[0x118 - 0x80];
+    i32 m_118; // +0x118 active flag (snapshot into m_90)
+    char m_pad11c[0x124 - 0x11c];
+    i32 m_124; // +0x124 place mode (== 1 -> no time bonus)
+    char m_pad128[0x12c - 0x128];
+    i32 m_12c; // +0x12c travel direction (1..4)
+    char m_pad130[0x144 - 0x130];
+    i32 m_144; // +0x144 rect base
+    i32 m_148; // +0x148
+    i32 m_14c; // +0x14c
+    i32 m_150; // +0x150
+    char m_pad154[0x194 - 0x154];
+    void* m_194; // +0x194 sprite/name record (dir name at +0x24)
+    char m_pad198[0x1b4 - 0x198];
+    i32 m_1b4; // +0x1b4 cycle-geometry id
+};
+
+// The global game registry (WwdGameReg @0x64556c; g_64556c masks _g_mgrSettings).
+// m_118 the has-window gate; m_134 the mode discriminator (the time-bonus gate).
+struct CRbReg {
+    char m_pad00[0x118];
+    i32 m_118; // +0x118
+    char m_pad11c[0x134 - 0x11c];
+    i32 m_134; // +0x134
+};
+
+// 32.0 (the per-tile-time -> per-frame-speed reciprocal numerator), VA 0x5ea3e0
+// (?g_slimeSpeedNum@@3NB; the consolidated global is pinned via <Globals.h>, so
+// reference it as a plain extern - the same way KitchenSlime's LoadSprites does).
+extern const double g_slimeSpeedNum;
+
+// g_buteTree (the "A" node store) comes from <Gruntz/ActNameRegistry.h>; g_buteMgr
+// (the per-tile-time GetDwordDef) from <Bute/ButeMgr.h> via UserLogic.h.
+
+// CRollingBall::CRollingBall @0xaf820 - fold the shared CUserLogic(obj) init, bind
+// the cycle geometry + "A" bute node, snap the bound object to the tile grid + seed
+// the +0x74 layer key, match the ball's direction name
+// (LEVEL_ROLLINGBALL_{NORTH,EAST,SOUTH,WEST}) into the travel vector + direction id,
+// then read the per-tile time (RollingBallTimePerTile, +1000 in the windowed mode)
+// into the per-frame speed and seed the timer block.
+//
+// @early-stop
+// inline-strcmp + register-pinning + eh wall (docs/patterns/strcmp-eq-bool-local-setcc.md,
+// zero-register-pinning.md, eh-ctor-vptr-restamp-position.md): body byte-faithful
+// (the four unrolled inline-strcmp loops, the CString temp EH, the snap + layer key,
+// the time-bonus gate + 32.0/time divide, the timer block). Residual is the strcmp
+// result-reg alloc, the shared dy=0 store fold, and the /GX leaf-vptr re-stamp
+// position. Not source-steerable (global regalloc/EH numbering).
+RVA(0x000af820, 0x40d)
+CRollingBall::CRollingBall(CGameObject* obj) : CUserLogic(obj) {
+    m_88 = 0;
+    m_90 = 0;
+    m_8c = 0;
+    m_94 = 0;
+    m_40 = m_38->m_1b4;
+    m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
+    m_30 = m_14->m_1c;
+    m_14->m_1c = g_buteTree.Find("A");
+    m_38->m_08 |= 0x2000002;
+
+    CRbCtorObj* o = (CRbCtorObj*)m_10;
+    i32 snapX = (o->m_5c & ~0x1f) + 0x10;
+    i32 snapY = (o->m_60 & ~0x1f) + 0x10;
+    o->m_5c = snapX;
+    m_60 = (double)snapX;
+    o->m_60 = snapY;
+    m_68 = (double)snapY;
+    if (o->m_74 != snapY + 0x186a0) {
+        o->m_74 = snapY + 0x186a0;
+        o->m_08 |= 0x20000;
+    }
+
+    CRbCtorObj* obj38 = (CRbCtorObj*)m_38;
+    if (obj38->m_194 != 0) {
+        CRbMiniStr name;
+        name = (char*)obj38->m_194 + 0x24;
+        const char* s = name.m_buf;
+        if (strcmp(s, "LEVEL_ROLLINGBALL_NORTH") == 0) {
+            o->m_12c = 1;
+            m_70 = 0;
+            m_74 = -1;
+        } else if (strcmp(s, "LEVEL_ROLLINGBALL_EAST") == 0) {
+            o->m_12c = 2;
+            m_70 = 1;
+            m_74 = 0;
+        } else if (strcmp(s, "LEVEL_ROLLINGBALL_SOUTH") == 0) {
+            o->m_12c = 3;
+            m_70 = 0;
+            m_74 = 1;
+        } else if (strcmp(s, "LEVEL_ROLLINGBALL_WEST") == 0) {
+            o->m_12c = 4;
+            m_70 = -1;
+            m_74 = 0;
+        }
+    }
+
+    i32 time = o->m_7c->m_bc;
+    if (time == 0) {
+        time = g_buteMgr.GetDwordDef("Hazardz", "RollingBallTimePerTile", 1000);
+    }
+    CRbReg* reg = (CRbReg*)g_64556c;
+    if (reg->m_118 != 0 && reg->m_134 == 1 && o->m_124 != 1) {
+        time += 1000;
+    }
+    m_90 = o->m_118;
+    m_94 = 0;
+    m_88 = g_645588;
+    m_8c = 0;
+    m_78 = snapY;
+    m_7c = snapY;
+    m_80 = 0;
+    m_84 = 0;
+    m_58 = g_slimeSpeedNum / (double)(i64)(u32)time;
+    o->m_144 = 0;
+    o->m_14c = 0;
+    o->m_148 = 0;
+    o->m_150 = 0;
+    m_98 = 0;
+    m_9c = 0;
+}
 
 // CRollingBall::InitActReg @0x0afd60 - construct the class's activation-coordinate
 // registry singleton (g_rollingBallActReg @0x6461b0) over the fixed range

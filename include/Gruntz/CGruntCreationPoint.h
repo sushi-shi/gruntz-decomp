@@ -23,6 +23,7 @@
 
 class CGruntCreationPoint : public CUserLogic {
 public:
+    CGruntCreationPoint(CGameObject* obj); // 0x3e520 (folds CUserLogic(obj) + tail)
     // Construct the class's activation-coordinate registry (g_creationPointActReg
     // @0x644700) over the fixed [2000,2010] range; free init thunk, reloc-masked.
     static void InitActReg(); // 0x03e8e0
@@ -31,6 +32,8 @@ public:
     static void RegisterActs(); // 0x03eac0
     i32 AdvanceAnim(); // 0x03ecc0 (re-target bound anim to the draw-delta; ret 0)
     ~CGruntCreationPoint(); // 0x010730 (folds the CUserLogic teardown)
+
+    i32 m_40; // +0x40  geometry id (m_38->m_1b4 snapshot)
 };
 
 #endif // GRUNTZ_CGRUNTCREATIONPOINT_H

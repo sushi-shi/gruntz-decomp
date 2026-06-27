@@ -3,8 +3,4 @@
 
 #include <Stub/CObjectDropper.h>
 
-// @confidence: med
-// @source: rtti-vptr
-// @stub
-RVA(0x000c59f0, 0x3e3)
-CObjectDropper::CObjectDropper(i32) {}
+// CObjectDropper::CObjectDropper @0xc59f0 graduated to src/Gruntz/CObjectDropper.cpp.

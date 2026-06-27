@@ -1,4 +1,5 @@
 #include <rva.h>
+#include <string.h> // inline strcmp for the ctor's direction-name match
 #include <Bute/ButeMgr.h>
 #include <Gruntz/UserLogic.h> // CUserLogic base (CKitchenSlime : CUserLogic) for the leaf-dtor fold
 // KitchenSlime.cpp - CKitchenSlime::LoadSprites @0x0b3160 (C:\Proj\Gruntz). The
@@ -143,9 +144,11 @@ public:
     i32 Serialize(void* stream, i32 tag, i32 c, i32 d);      // 0x0b2ff0
     i32 SerializeChain(void* stream, i32 tag, i32 c, i32 d); // 0x16e7f0 (inherited base chain)
     i32 LoadSprites();
-    ~CKitchenSlime(); // 0x013100 (folds the CUserLogic teardown)
+    CKitchenSlime(CGameObject* obj); // 0x0b23a0 (folds CUserLogic(obj) + the slime setup)
+    ~CKitchenSlime();                // 0x013100 (folds the CUserLogic teardown)
 
-    char m_pad40[0x58 - 0x40];
+    i32 m_40; // +0x40  geometry id (m_38->m_1b4 snapshot)
+    char m_pad44[0x58 - 0x44];
     double m_58; // +0x58  per-frame speed
     double m_60; // +0x60  accumulated dx (double)
     double m_68; // +0x68  accumulated dy (double)
@@ -235,6 +238,130 @@ extern "C" double fabs(double);
 // dtors (UserLogic.cpp 0x10ab0 / 0x11540); the empty body is enough for cl.
 RVA(0x00013100, 0x44)
 CKitchenSlime::~CKitchenSlime() {}
+
+// The global bute store the ctor binds the "A" node through (g_buteTree @0x6bf620;
+// Find 0x16d190). Declared here so the ctor's lookup reloc-masks.
+DATA(0x002bf620)
+extern CButeTree g_buteTree;
+
+// The CString temp the direction-name match builds (the static-linked MFC CString
+// helpers, modeled NO-body so the calls reloc-mask): MiniStr() = 0x1b9b93,
+// operator=(LPCSTR) = 0x1b9e74, ~MiniStr() = 0x1b9cde. The real C++ dtor makes
+// MSVC emit the temp's /GX cleanup state like retail.
+struct CSlimeMiniStr {
+    char* m_buf; // +0x00 the strcmp operand
+    CSlimeMiniStr();
+    ~CSlimeMiniStr();
+    CSlimeMiniStr& operator=(const char* s);
+};
+
+// The bound CGameObject viewed by the ctor (m_10 == m_38). The slime reads the
+// screen position (m_5c/m_60), the layer key (m_74), the flags (m_08), the travel
+// window (m_134..m_140) clamped from the raw target tile (m_164/m_168), the
+// direction name (m_194+0x24), and re-seeds the rect (m_144..m_150). Only the
+// touched offsets are modeled.
+struct CSlimeCtorObj {
+    char m_pad00[0x08];
+    i32 m_08; // +0x08 flags
+    char m_pad0c[0x5c - 0x0c];
+    i32 m_5c; // +0x5c screen X
+    i32 m_60; // +0x60 screen Y
+    char m_pad64[0x74 - 0x64];
+    i32 m_74; // +0x74 layer key
+    char m_pad78[0x124 - 0x78];
+    i32 m_124; // +0x124 travel direction (1..4)
+    char m_pad128[0x134 - 0x128];
+    i32 m_134; // +0x134 window min X
+    i32 m_138; // +0x138 window min Y
+    i32 m_13c; // +0x13c window max X
+    i32 m_140; // +0x140 window max Y
+    i32 m_144; // +0x144 rect base
+    i32 m_148; // +0x148
+    i32 m_14c; // +0x14c
+    i32 m_150; // +0x150
+    char m_pad154[0x164 - 0x154];
+    i32 m_164; // +0x164 target tile X (raw -> scaled in place)
+    i32 m_168; // +0x168 target tile Y
+    char m_pad16c[0x194 - 0x16c];
+    void* m_194; // +0x194 sprite/name record (dir name at +0x24)
+    char m_pad198[0x1b4 - 0x198];
+    i32 m_1b4; // +0x1b4 cycle-geometry id
+};
+
+// CKitchenSlime::CKitchenSlime @0x0b23a0 - fold the shared CUserLogic(obj) init,
+// snap the bound object to the tile grid (m_60/m_68 doubles + m_74 layer key +
+// the m_80/m_84 tile coords), scale the raw target tile (m_164/m_168) to pixels
+// and compute the travel window (min/max of the start and target), match the
+// slime's direction name (LEVEL_KITCHENSLIME_{NORTH,EAST,SOUTH,WEST}) into the
+// direction id, then run LoadSprites for the first leg, bind the "A" bute node +
+// cycle geometry, and clear the bound sprite's rect.
+//
+// @early-stop
+// inline-strcmp + min/max-polarity + eh wall (docs/patterns/strcmp-eq-bool-local-setcc.md,
+// zero-register-pinning.md, eh-ctor-vptr-restamp-position.md): body byte-faithful
+// (the four unrolled inline-strcmp loops + CString temp EH, the min/max window
+// clamp, the LoadSprites/bute/geometry tail). Residual is the strcmp result-reg
+// alloc, the cmov-vs-branch min/max selection polarity, and the /GX leaf-vptr
+// re-stamp position. Not source-steerable (global regalloc/EH numbering).
+RVA(0x000b23a0, 0x3f8)
+CKitchenSlime::CKitchenSlime(CGameObject* obj) : CUserLogic(obj) {
+    m_38->m_08 |= 0x2000002;
+
+    CSlimeCtorObj* o = (CSlimeCtorObj*)m_10;
+    i32 snapX = (o->m_5c & ~0x1f) + 0x10;
+    i32 snapY = (o->m_60 & ~0x1f) + 0x10;
+    o->m_5c = snapX;
+    m_60 = (double)snapX;
+    o->m_60 = snapY;
+    m_68 = (double)snapY;
+    if (o->m_74 != 0x13) {
+        o->m_74 = 0x13;
+        o->m_08 |= 0x20000;
+    }
+    m_84 = snapY;
+    m_80 = snapX;
+
+    o->m_164 = (o->m_164 << 5) + 0x10;
+    o->m_168 = (o->m_168 << 5) + 0x10;
+    if (o->m_5c == o->m_164 && o->m_60 == o->m_168) {
+        m_38->m_08 |= 0x10000;
+        return;
+    }
+    o->m_134 = (o->m_5c < o->m_164) ? o->m_5c : o->m_164;
+    o->m_13c = (o->m_5c <= o->m_164) ? o->m_164 : o->m_5c;
+    o->m_138 = (o->m_60 >= o->m_168) ? o->m_168 : o->m_60;
+    o->m_140 = (o->m_60 <= o->m_168) ? o->m_168 : o->m_60;
+
+    CSlimeCtorObj* obj38 = (CSlimeCtorObj*)m_38;
+    if (obj38->m_194 != 0) {
+        CSlimeMiniStr name;
+        name = (char*)obj38->m_194 + 0x24;
+        const char* s = name.m_buf;
+        if (strcmp(s, "LEVEL_KITCHENSLIME_NORTH") == 0) {
+            o->m_124 = 1;
+        } else if (strcmp(s, "LEVEL_KITCHENSLIME_EAST") == 0) {
+            o->m_124 = 2;
+        } else if (strcmp(s, "LEVEL_KITCHENSLIME_SOUTH") == 0) {
+            o->m_124 = 3;
+        } else if (strcmp(s, "LEVEL_KITCHENSLIME_WEST") == 0) {
+            o->m_124 = 4;
+        }
+    }
+
+    m_88 = 0;
+    m_8c = 0;
+    if (LoadSprites() == 0) {
+        m_38->m_08 |= 0x10000;
+    }
+    m_30 = m_14->m_1c;
+    m_14->m_1c = g_buteTree.Find("A");
+    m_40 = m_38->m_1b4;
+    m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
+    o->m_144 = 0;
+    o->m_14c = 0;
+    o->m_148 = 0;
+    o->m_150 = 0;
+}
 
 // ---------------------------------------------------------------------------
 // The shared game-object type-name registry (R1, @0x6bf650) the level-object

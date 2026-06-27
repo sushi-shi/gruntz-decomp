@@ -57,6 +57,7 @@ public:
 // ---------------------------------------------------------------------------
 class CInGameText : public CUserLogic {
 public:
+    CInGameText(CGameObject* obj);   // 0x099110 (folds CUserLogic(obj) + on-screen tail)
     virtual ~CInGameText() OVERRIDE; // 0x011dc0
 
     static void InitActReg();                               // 0x0993e0
@@ -64,7 +65,8 @@ public:
     i32 Serialize(CTextArchive* ar, i32 tag, i32 a, i32 b); // 0x099a30
 
     // --- CInGameText own fields (placeholders; offsets load-bearing) ---
-    char m_pad40[0x54 - 0x40]; // +0x40..+0x53 (inherited tail / own scratch)
+    i32 m_40;                  // +0x40  geometry id (m_38->m_1b4 snapshot)
+    char m_pad44[0x54 - 0x44]; // +0x44..+0x53 (inherited tail / own scratch)
     i32 m_54;                  // +0x54  serialized scalar
     i32 m_58;                  // +0x58  serialized scalar
 };
