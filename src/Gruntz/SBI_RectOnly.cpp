@@ -344,6 +344,12 @@ public:
     // ----- third batch -----
     void AdvanceTab(i32 reverse); // 0x10b4f0 periodic highlight-cursor tick
 
+    // ----- fourth batch: the rect-only HUD placement (0xfe520) + its siblings ---
+    i32 winapi_0fe520_SetRect();
+    void RectNotify(i32);     // call 0x194c (__thiscall, 1 arg)
+    i32 RectProbe();          // call 0x3a08 (__thiscall, returns int)
+    void RectApply(i32, i32); // call 0x1d61 (__thiscall, 2 args)
+
     // ----- layout (placeholders; offsets are the load-bearing fact) -----
     i32 m_2c; // +0x2c  Setup arg1 (vtable-slot-2 setup target)
     i32 m_30; // +0x30
@@ -480,6 +486,7 @@ struct CSbiGameMgr {
 struct CSbiSubMgr {
     i32 ScrollTo(i32 x, i32 y);       // __thiscall, 2 args (FUN_004d5f00)
     void SetState(i32 cur, i32 prev); // __thiscall, 2 args (call 0xfe3e0 site -> 0x3f8a)
+    void Refresh();                   // __thiscall, no args (call 0xfe520 site -> 0x3d55)
     char m_pad0[0x4f0];
     i32 m_4f0; // +0x4f0  highlight-busy flag (non-zero => bail)
 };
@@ -535,6 +542,18 @@ struct CGameReg {
     char m_pad94[0x134 - 0x94];
     i32 m_134;                      // +0x134  game-over/exit gate
     void ReportError(i32 a, i32 b); // __thiscall
+    // The cursor/view extent accessor: returns {m_8c, m_90} by value. Inlined at the
+    // 0xfe520 placement site; the struct return materializes both fields on the stack
+    // (the y store survives as a dead spill).
+    struct ViewExtent {
+        i32 x, y;
+    };
+    ViewExtent ViewSize() {
+        ViewExtent v;
+        v.x = m_8c;
+        v.y = m_90;
+        return v;
+    }
 };
 DATA(0x0024556c)
 extern CGameReg* g_gameReg;
@@ -2373,6 +2392,37 @@ i32 CSBI_RectOnly::SetState(i32 state) {
     old = *(i32*)this;
     *(i32*)this = state;
     g_gameReg->m_2c->SetState(state, old);
+    return 1;
+}
+
+// 0xfe520 - place the rect-only HUD panel: gated on the mode (m_548) and the
+// offset-0 subtype tag; pre-teardown notify, set the right-anchored 0xa0-wide
+// full-height rect (+0x10) from the view width (g_gameReg->m_8c), notify, refresh
+// the highlight sub-manager, then probe-and-apply (m_10c). On probe failure log
+// the placement error and bail. Returns 1.
+RVA(0x000fe520, 0xa9)
+i32 CSBI_RectOnly::winapi_0fe520_SetRect() {
+    if (m_548 != 0) {
+        return 1;
+    }
+    if (*(i32*)this == 0) {
+        return 1;
+    }
+    TeardownNotify(1);
+    // Retail reads the view extent (m_8c,m_90) as a POINT but only uses x for the
+    // rect; the y store survives as a dead 8-byte-frame spill. `volatile` reproduces
+    // that preserved store (a plain local is dead-eliminated by MSVC5 /O2).
+    i32 w = g_gameReg->m_8c;
+    volatile POINT pt;
+    pt.y = g_gameReg->m_90;
+    SetRect((LPRECT)((char*)this + 0x10), w - 0xa0, 0, w, 0x1e0);
+    RectNotify(0);
+    g_gameReg->m_2c->Refresh();
+    if (RectProbe() == 0) {
+        g_gameReg->ReportError(kActivateErrId, 0x449);
+        return 0;
+    }
+    RectApply(m_activeTab, 3);
     return 1;
 }
 

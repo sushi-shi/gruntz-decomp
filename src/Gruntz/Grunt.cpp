@@ -1463,6 +1463,55 @@ CGrunt::~CGrunt() {
 }
 
 // ---------------------------------------------------------------------------
+// CGrunt::winapi_04a9f0_CopyRect_OffsetRect   @0x4a9f0   (__thiscall, ret 0)
+// Resolve the grunt under this grunt's HUD center; if none, return 0. Otherwise
+// build the candidate rect = its entrance rect (m_154 + 0x144) offset by its HUD
+// origin, then probe 4 segments (each two POINTs +-1000px through this grunt's HUD
+// center): vertical, horizontal, and the two diagonals. Return 1 on the first hit.
+RVA(0x0004a9f0, 0x1aa)
+i32 CGrunt::winapi_04a9f0_CopyRect_OffsetRect() {
+    CGrunt* tgt = m_tileMgr->FindAtPixel(m_10->m_5c, m_10->m_60);
+    if (tgt == 0) {
+        return 0;
+    }
+    RECT r;
+    CopyRect(&r, (LPRECT)((char*)tgt->m_154 + 0x144));
+    CGruntHud* th = tgt->m_10;
+    OffsetRect(&r, th->m_5c, th->m_60);
+
+    POINT a, b;
+
+    b.x = m_10->m_5c;
+    b.y = m_10->m_60 - 0x3e8;
+    a.x = m_10->m_5c;
+    a.y = m_10->m_60 + 0x3e8;
+    if (RectSegProbe(&r, &b, &a)) {
+        return 1;
+    }
+
+    b.x = m_10->m_5c - 0x3e8;
+    b.y = m_10->m_60;
+    a.x = m_10->m_5c + 0x3e8;
+    a.y = m_10->m_60;
+    if (RectSegProbe(&r, &b, &a)) {
+        return 1;
+    }
+
+    b.x = m_10->m_5c - 0x3e8;
+    b.y = m_10->m_60 - 0x3e8;
+    a.x = m_10->m_5c + 0x3e8;
+    a.y = m_10->m_60 + 0x3e8;
+    if (RectSegProbe(&r, &b, &a)) {
+        return 1;
+    }
+
+    b.x = m_10->m_5c - 0x3e8;
+    b.y = m_10->m_60 + 0x3e8;
+    a.x = m_10->m_5c + 0x3e8;
+    a.y = m_10->m_60 - 0x3e8;
+    return RectSegProbe(&r, &b, &a) != 0;
+}
+
 // CGrunt::PlaySound(range, rec)   @0x4ac10   (__thiscall, ret 0x10)
 // The directional grunt-voice entrance handler PlayMoveSound fires. `rec` is the
 // 3-DWORD compass voice record passed by value {col, row, flag}; the latched cell

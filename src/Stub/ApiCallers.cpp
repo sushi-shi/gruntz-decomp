@@ -218,14 +218,10 @@ namespace ApiCallerStubs {
     // docs/tu-spatial-structure.md). These stubs were ThisStubOwnerUnknown;
     // their real classes live in their own TUs - these are minimal placeholder
     // hosts so each stub files under its attributed class (matching-neutral). ----
-    struct CDDrawSurfacePair {
-        i32 directx_wrapper_caller_1644a0_DirectDrawCreate_DirectDrawEnumerateA(i32, i32, i32);
-    };
     struct CFader {
         i32 winapi_17e620_GetTickCount(i32, i32, i32);
     };
     struct CGrunt {
-        i32 winapi_04a9f0_CopyRect_OffsetRect();
         void LoadGruntAbilityTuning(i32);
         i32 winapi_057db0_IntersectRect();
         void LoadGruntCombatAnimations(i32, i32, i32, i32, i32, i32, i32, i32);
@@ -235,19 +231,9 @@ namespace ApiCallerStubs {
         void LoadGruntSpawnConfig(i32, i32, i32, i32, i32);
         i32 winapi_11b3b0_timeGetTime(i32, i32, i32, i32, i32, i32);
     };
-    struct CImagePool {
-        i32 winapi_174fe0_GetDC_ReleaseDC_SelectPalette(i32, i32, i32, i32);
-        i32 winapi_1750e0_GetDC_ReleaseDC_SelectPalette(i32, i32, i32, i32, i32);
-        i32 winapi_1751f0_GetDC_ReleaseDC_SelectPalette(i32, i32, i32);
-        i32 winapi_1752f0_GetDC_ReleaseDC_SelectPalette(i32, i32);
-        i32 winapi_1753f0_GetDC_ReleaseDC_SelectPalette(i32, i32);
-    };
     struct CMulti {
         i32 winapi_0b6b40_timeGetTime_wsprintfA();
         i32 winapi_0b6e90_SetRect();
-    };
-    struct CSBI_RectOnly {
-        i32 winapi_0fe520_SetRect();
     };
 
     // @confidence: low
@@ -852,13 +838,8 @@ namespace ApiCallerStubs {
         return 0;
     }
 
-    // @confidence: low
-    // @source: winapi:CopyRect;OffsetRect
-    // @stub
-    RVA(0x0004a9f0, 0x1aa)
-    i32 CGrunt::winapi_04a9f0_CopyRect_OffsetRect() {
-        return 0;
-    }
+    // 0x4a9f0 (CGrunt::winapi_04a9f0_CopyRect_OffsetRect) reconstructed in
+    // src/Gruntz/Grunt.cpp.
 
     // @confidence: low
     // @source: winapi:IntersectRect
@@ -2320,13 +2301,8 @@ namespace ApiCallerStubs {
         return 1;
     }
 
-    // @confidence: low
-    // @source: winapi:SetRect
-    // @stub
-    RVA(0x000fe520, 0xa9)
-    i32 CSBI_RectOnly::winapi_0fe520_SetRect() {
-        return 0;
-    }
+    // 0xfe520 (CSBI_RectOnly::winapi_0fe520_SetRect) reconstructed in
+    // src/Gruntz/SBI_RectOnly.cpp.
 
     // @confidence: low
     // @source: winapi:SetRect
@@ -3364,17 +3340,8 @@ namespace ApiCallerStubs {
         w->m_8->Done(hdc);
     }
 
-    // @confidence: low
-    // @source: directx-wrapper-caller:calls 0x141dc0 (DirectDrawCreate;DirectDrawEnumerateA)
-    // @stub
-    RVA(0x001644a0, 0x19b)
-    i32 CDDrawSurfacePair::directx_wrapper_caller_1644a0_DirectDrawCreate_DirectDrawEnumerateA(
-        i32,
-        i32,
-        i32
-    ) {
-        return 0;
-    }
+    // 0x1644a0 (CDDrawSurfacePair::directx_wrapper_caller_1644a0_...) reconstructed
+    // in src/Gruntz/CDDrawSurfacePair.cpp.
 
     // @confidence: low
     // @source: winapi:SetRect
@@ -3417,45 +3384,8 @@ namespace ApiCallerStubs {
         LeaveCriticalSection(cs);
     }
 
-    // @confidence: low
-    // @source: winapi:GetDC;ReleaseDC;SelectPalette
-    // @stub
-    RVA(0x00174fe0, 0xfe)
-    i32 CImagePool::winapi_174fe0_GetDC_ReleaseDC_SelectPalette(i32, i32, i32, i32) {
-        return 0;
-    }
-
-    // @confidence: low
-    // @source: winapi:GetDC;ReleaseDC;SelectPalette
-    // @stub
-    RVA(0x001750e0, 0x103)
-    i32 CImagePool::winapi_1750e0_GetDC_ReleaseDC_SelectPalette(i32, i32, i32, i32, i32) {
-        return 0;
-    }
-
-    // @confidence: low
-    // @source: winapi:GetDC;ReleaseDC;SelectPalette
-    // @stub
-    RVA(0x001751f0, 0xf9)
-    i32 CImagePool::winapi_1751f0_GetDC_ReleaseDC_SelectPalette(i32, i32, i32) {
-        return 0;
-    }
-
-    // @confidence: low
-    // @source: winapi:GetDC;ReleaseDC;SelectPalette
-    // @stub
-    RVA(0x001752f0, 0xfc)
-    i32 CImagePool::winapi_1752f0_GetDC_ReleaseDC_SelectPalette(i32, i32) {
-        return 0;
-    }
-
-    // @confidence: low
-    // @source: winapi:GetDC;ReleaseDC;SelectPalette
-    // @stub
-    RVA(0x001753f0, 0xf4)
-    i32 CImagePool::winapi_1753f0_GetDC_ReleaseDC_SelectPalette(i32, i32) {
-        return 0;
-    }
+    // The five CImagePool surface-node factories (0x174fe0/0x1750e0/0x1751f0/
+    // 0x1752f0/0x1753f0) are reconstructed in src/Image/ImagePool.cpp.
 
     // 0x1757c0 (CreateDIBSection) removed: already matched as CImage::DecodeBmpHeader in src/Image/Image.cpp.
 

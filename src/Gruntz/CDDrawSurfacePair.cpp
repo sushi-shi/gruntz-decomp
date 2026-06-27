@@ -313,6 +313,122 @@ void CDDrawSurfacePair::DrawCross(i32 x, i32 y) {
 }
 
 // ---------------------------------------------------------------------------
+// 0x1644a0: create the DirectDraw mode surface. Cache {w,h,bpp}, build the device
+// surface through the pool (mode 0x11 for w>320 else 0x51; fullscreen bit from
+// mgr->m_34), then attach + validate it. Each failure path stashes an error code
+// in mgr->m_38 (only if not already set): 0x80e9..0x80ed for the five pool error
+// codes, 0xbb9 for an unknown/zero pool error, 0xbba for an attach/validate miss.
+// ---------------------------------------------------------------------------
+// A minimal vtable view of the attached surface (slot 5 @+0x14 = the readiness
+// predicate). Declared-only virtuals fix the slot; never instantiated here.
+class CDDAttachedSurface {
+public:
+    virtual void v00();
+    virtual void v04();
+    virtual void v08();
+    virtual void v0c();
+    virtual void v10();
+    virtual i32 IsReady(); // slot 5 (@0x14)
+};
+
+// @early-stop
+// ~87.4%: the prologue, the mode/fullscreen branches, the pool call, and all seven
+// error blocks (the five 0x80e9..0x80ed switch cases + both 0xbb9 + the 0xbba) are
+// byte-identical. Residual: MSVC5 cross-jumps (merges) the two byte-identical 0xbb9
+// blocks (switch-default + err==0) that retail emitted as separate copies, which
+// shifts the trailing success + 0xbba blocks. A block-merge/layout artifact, not a
+// source lever (the two paths are genuinely identical code). Logic byte-faithful.
+RVA(0x001644a0, 0x19b)
+i32 CDDrawSurfacePair::directx_wrapper_caller_1644a0_DirectDrawCreate_DirectDrawEnumerateA(
+    i32 w,
+    i32 h,
+    i32 bpp
+) {
+    CDDrawSurfaceMgr* mgr = (CDDrawSurfaceMgr*)m_0c;
+    m_10 = w;
+    m_14 = h;
+    m_18 = bpp;
+    CDDrawSurfacePool* pool = mgr->m_1c;
+    i32 mode = 0x11;
+    if (w <= 0x140) {
+        mode = 0x51;
+    }
+    i32 hr;
+    if (mgr->m_34 & 0x10) {
+        hr = pool->CreateModeSurface(mgr->m_30, 2, w, h, bpp, mode);
+    } else {
+        hr = pool->CreateModeSurface(mgr->m_30, 0, w, h, bpp, mode);
+    }
+    if (hr == 0) {
+        i32 err = pool->m_944;
+        if (err != 0) {
+            switch (err) {
+            case 0x3e9: {
+                CDDrawSurfaceMgr* m = (CDDrawSurfaceMgr*)m_0c;
+                if (m->m_38 == 0) {
+                    m->m_38 = 0x80e9;
+                }
+                return 0;
+            }
+            case 0x3ea: {
+                CDDrawSurfaceMgr* m = (CDDrawSurfaceMgr*)m_0c;
+                if (m->m_38 == 0) {
+                    m->m_38 = 0x80ea;
+                }
+                return 0;
+            }
+            case 0x3eb: {
+                CDDrawSurfaceMgr* m = (CDDrawSurfaceMgr*)m_0c;
+                if (m->m_38 == 0) {
+                    m->m_38 = 0x80eb;
+                }
+                return 0;
+            }
+            case 0x3ec: {
+                CDDrawSurfaceMgr* m = (CDDrawSurfaceMgr*)m_0c;
+                if (m->m_38 == 0) {
+                    m->m_38 = 0x80ec;
+                }
+                return 0;
+            }
+            case 0x3ed: {
+                CDDrawSurfaceMgr* m = (CDDrawSurfaceMgr*)m_0c;
+                if (m->m_38 == 0) {
+                    m->m_38 = 0x80ed;
+                }
+                return 0;
+            }
+            }
+            CDDrawSurfaceMgr* md = (CDDrawSurfaceMgr*)m_0c;
+            if (md->m_38 == 0) {
+                md->m_38 = 0xbb9;
+            }
+            return 0;
+        }
+        CDDrawSurfaceMgr* m4 = (CDDrawSurfaceMgr*)m_0c;
+        if (m4->m_38 == 0) {
+            m4->m_38 = 0xbb9;
+        }
+        return 0;
+    }
+    CDDrawSurfaceMgr* m2 = (CDDrawSurfaceMgr*)m_0c;
+    i32 amode = 1;
+    if (m2->m_34 & 2) {
+        amode = 2;
+    }
+    CDDSurface* surf = pool->AttachMode(amode);
+    m_2c = surf;
+    if (surf != 0 && ((CDDAttachedSurface*)surf)->IsReady()) {
+        return 1;
+    }
+    CDDrawSurfaceMgr* m3 = (CDDrawSurfaceMgr*)m_0c;
+    if (m3->m_38 == 0) {
+        m3->m_38 = 0xbba;
+    }
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
 // 0x164660: surface-lost probe (the RestoreIfLost twin).  With no surface, report
 // "needs work" (1).  Otherwise, if the held IDirectDrawSurface is present and not
 // lost (IsLost @+0x60 == DD_OK), report 1; else attempt Restore (@+0x6c) twice,

@@ -88,6 +88,12 @@ extern i32 MapLookup(void* map, void* key, void*& out); // CMapPtrToPtr::Lookup
 #include <Bute/ButeMgr.h>
 DATA(0x002453d8)
 extern CButeMgr g_buteMgr;
+
+// The shared engine text renderer (src/Wap32/EngStr.cpp, __cdecl). Forward-declared
+// with the exact struct/signature so the call reloc-masks against EngStr.cpp's symbol.
+struct EngStrRenderObj;
+void EngStr_DrawText(EngStrRenderObj* obj, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7,
+                     i32 a8);
 #define g_buteText (&g_buteMgr)
 
 // ---- StepInputA / PlayCueAt leaf engine callees (free fns / reloc-masked). ----
@@ -1281,6 +1287,35 @@ i32 CPlay::StepInputA() {
         Eng_InputDispatch(0, 0, r);
     }
     return 1;
+}
+
+// ===========================================================================
+// CPlay::LoadSBITextEdges (0x0d1710) - draw the status-bar text `name` clamped to
+// the viewport rect inset by the "Font" Text{Left,Top,Right,Bottom}Edge margins,
+// then arm a 2-frame step countdown. /GX EH frame (the CString local).
+// ===========================================================================
+// @early-stop
+// ~97.8%: every instruction matches except retail reserves a 0x24 local frame vs
+// our 0x18, which shifts the [esp+N] displacements by 0xc throughout. The ctor/
+// assign/GetInt x4/SetRect/EngStr_DrawText sequence + the single `top` spill are
+// byte-identical; the residual is MSVC's total-frame/EH-scratch sizing (tried rect-
+// before-CString reorder, no change). Logic byte-faithful.
+RVA(0x000d1710, 0x122)
+void CPlay::LoadSBITextEdges(char* name) {
+    CString s;
+    s = name;
+
+    RECT rect;
+    RECT& vp = m_c->m_24->m_viewport;
+    i32 l = vp.left, t = vp.top, r = vp.right, b = vp.bottom;
+    i32 bottom = b - g_buteText->GetInt("Font", "TextBottomEdge");
+    i32 right = r - g_buteText->GetInt("Font", "TextRightEdge");
+    i32 top = t + g_buteText->GetInt("Font", "TextTopEdge");
+    i32 left = l + g_buteText->GetInt("Font", "TextLeftEdge");
+    SetRect(&rect, left, top, right, bottom);
+
+    EngStr_DrawText((EngStrRenderObj*)m_c, (i32)&s, (i32)&rect, 0x78, 1, 0xff, 0xff, 0, 1);
+    m_stepCountdown = 2;
 }
 
 // ===========================================================================
@@ -3802,6 +3837,44 @@ i32 CPlay::AddLevelGruntz() {
             return 0;
         }
         g->m_08 |= 0x10000;
+    }
+    return 1;
+}
+
+// BuildGruntNamespaceList (0x0dd050) - register the seven core grunt asset
+// namespaces (NORMALGRUNT/DEATHZ/ENTRANCEZ/EXITZ/GRUNTPUDDLE/PICKUPS/BOMBGRUNT)
+// in order; bail (return 0) on the first that fails to bind. The CString name temp
+// forces the /GX EH frame. __thiscall(arg), ret 4.
+RVA(0x000dd050, 0x24b)
+i32 CPlay::BuildGruntNamespaceList(i32 arg) {
+    CString s;
+    s = "NORMALGRUNT";
+    if (!RegisterNamespace(s, 1, 0, arg)) {
+        return 0;
+    }
+    s = "DEATHZ";
+    if (!RegisterNamespace(s, 1, 0, arg)) {
+        return 0;
+    }
+    s = "ENTRANCEZ";
+    if (!RegisterNamespace(s, 1, 0, arg)) {
+        return 0;
+    }
+    s = "EXITZ";
+    if (!RegisterNamespace(s, 1, 0, arg)) {
+        return 0;
+    }
+    s = "GRUNTPUDDLE";
+    if (!RegisterNamespace(s, 1, 0, arg)) {
+        return 0;
+    }
+    s = "PICKUPS";
+    if (!RegisterNamespace(s, 1, 0, arg)) {
+        return 0;
+    }
+    s = "BOMBGRUNT";
+    if (!RegisterNamespace(s, 1, 0, arg)) {
+        return 0;
     }
     return 1;
 }

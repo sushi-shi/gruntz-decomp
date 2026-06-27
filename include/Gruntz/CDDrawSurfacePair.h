@@ -84,6 +84,10 @@ public:
     CDDSurface* AcquireA(i32 a, i32 b);                        // 0x143630
     CDDSurface* MakeAndAddB(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x142e60
     CDDSurface* CreateB(i32 a, i32 b, i32 c, i32 d, i32 e);     // 0x1423c0
+    i32 CreateModeSurface(i32 fmt, i32 fs, i32 w, i32 h, i32 bpp, i32 mode); // 0x141dc0
+    CDDSurface* AttachMode(i32 mode);                                        // 0x142b70
+    char _pad0[0x944];
+    i32 m_944; // +0x944  last DirectDraw error stash
 };
 
 // CDDrawSurfaceMgr - the parent manager view m_0c points at: a pixel-format chain
@@ -102,7 +106,9 @@ struct CDDrawSurfaceMgr {
     CDDrawSurfChainA* m_4; // +0x04  pixel-format chain
     char _pad8[0x1c - 0x08];
     CDDrawSurfacePool* m_1c; // +0x1c  surface pool
-    char _pad20[0x38 - 0x20];
+    char _pad20[0x30 - 0x20];
+    i32 m_30; // +0x30  device/context handle
+    i32 m_34; // +0x34  caps flags (bit4 = fullscreen, bit1 = double-buffer)
     i32 m_38; // +0x38  last-error word
 };
 
@@ -115,6 +121,11 @@ public:
     void TeardownSurface();                    // 0x163e20  (vtable slot 7)
     void DrawBox(i32* rect, i32 color);        // 0x163f40
     void DrawCross(i32 x, i32 y);              // 0x164180
+    // 0x1644a0 - the DirectDraw mode-surface creator: cache {w,h,bpp}, ask the pool
+    // to create the device surface (mode 0x11 if w>320 else 0x51; fullscreen bit
+    // from mgr->m_34), then attach + validate it; on any failure stash a 0x80e9..ed
+    // / 0xbb9 / 0xbba error in mgr->m_38.
+    i32 directx_wrapper_caller_1644a0_DirectDrawCreate_DirectDrawEnumerateA(i32 w, i32 h, i32 bpp);
     i32 Probe_164660();                        // 0x164660  (surface-lost probe)
 
     // --- layout (continues the base; base ends at +0x10) ----------------------

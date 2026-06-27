@@ -564,6 +564,7 @@ public:
     void PostWire();                            // WireTileSwitchLogic (0-arg)
     void NotifyArrival(i32 a, i32 b);           // thunk_FUN_0046da60 (2-arg)
     CGrunt* GetOccupant(CGrunt* g);             // FUN_00477df0 (1-arg, returns grunt)
+    CGrunt* FindAtPixel(i32 x, i32 y);          // call 0x2b67 (grunt under a HUD pixel)
     i32 LookupTile(i32 x, i32 y, i32* outA, i32* outB, i32 flag); // FUN_00475af0 (ret 0x14)
     // The grunt anim-dispatch state machines drive the tile-mgr through two more
     // thunks (external/no-body, reloc-masked): a 6-arg arrival notify and a 4-arg
@@ -893,6 +894,13 @@ public:
     i32 ResolveAnimation(); // (generic / "_JOY")
     i32 ResolveIdleAnimation();
     i32 ResolveBattlecryAnimation();
+
+    // @0x4a9f0 (ret 0) - the 4-way reachability probe: resolve the grunt under the
+    // HUD center (m_tileMgr->FindAtPixel), copy its entrance rect (+0x144) offset by
+    // its HUD origin, then test 4 segments (vertical / horizontal / two diagonals,
+    // +-1000 px) through the grunt's own HUD center; return 1 on the first hit.
+    i32 winapi_04a9f0_CopyRect_OffsetRect();
+    i32 RectSegProbe(void* r, void* a, void* b); // call 0x4138 (__thiscall, 3 args)
 
     char m_pad0[0x10];
     CGruntHud* m_10;       // +0x10
