@@ -26,6 +26,12 @@ public:
     HKEY OpenRoot();                                        // 0x1d4ee3 __thiscall
     HKEY OpenSubKey(char* szSub);                           // 0x1d4f77 __thiscall
     i32 GetInt(char* szSection, char* szKey, i32 nDefault); // 0x1d4fbd __thiscall
+    // 0x1ccae7 __thiscall: registry-mode writes a REG_DWORD, INI-mode formats the
+    // value with "%d" and forwards to WritePrivateProfileString.
+    i32 WriteProfileInt(char* szSection, char* szKey, i32 nValue);
+    // 0x1ccbfc __thiscall: registry-mode writes REG_BINARY; INI-mode hex-encodes
+    // the bytes (each nibble + 'A') and forwards through WriteString.
+    i32 WriteProfileBinary(char* szSection, char* szKey, BYTE* pData, u32 nBytes);
 
     char m_pad00[0x7c];
     char* m_7c; // +0x7c  registry subkey path (null -> use INI)

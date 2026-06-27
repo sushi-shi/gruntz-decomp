@@ -125,6 +125,11 @@ source = "src/Gruntz/ConfigStore.cpp"
 flags = "framed"
 
 [[unit]]
+unit = "m5_configstorewrite"
+source = "src/Gruntz/m5_ConfigStoreWrite.cpp"
+flags = "framed"
+
+[[unit]]
 unit = "statusbaritem"
 source = "src/Gruntz/StatusBarItem.cpp"
 flags = "base"
@@ -1204,6 +1209,11 @@ source = "src/DDrawMgr/ShadeTableCache.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "m5_palettelerp"
+source = "src/DDrawMgr/m5_PaletteLerp.cpp"
+flags = "base"
+
+[[unit]]
 unit = "battlezdata"
 source = "src/Gruntz/BattlezData.cpp"
 flags = "base"
@@ -1825,3 +1835,67 @@ flags = "eh"
 unit = "sbi_imageset_eh"
 source = "src/Gruntz/SBI_ImageSetEh.cpp"
 flags = "eh"
+[[unit]]
+unit = "m5_destructbutton"
+source = "src/Gruntz/m5_DestructButton.cpp"
+flags = "base"
+
+[[unit]]
+unit = "m5_stateimages"
+source = "src/Gruntz/m5_StateImages.cpp"
+flags = "base"
+
+[[unit]]
+unit = "m5_finishlevelsprite"
+source = "src/Gruntz/m5_FinishLevelSprite.cpp"
+flags = "base"
+
+[[unit]]
+unit = "m5_creditzassets"
+source = "src/Gruntz/m5_CreditzAssets.cpp"
+flags = "base"
+
+[[unit]]
+unit = "m5_debugprintf"
+source = "src/Gruntz/m5_DebugPrintf.cpp"
+flags = "base"
+
+[[unit]]
+unit = "m5_battlezdlgrow"
+source = "src/Gruntz/m5_BattlezDlgRow.cpp"
+flags = "base"
+
+[[unit]]
+unit = "m5_levelpreview"
+source = "src/Gruntz/m5_LevelPreview.cpp"
+flags = "base"
+
+[[unit]]
+unit = "m5_lighteffectsetup"
+source = "src/DDrawMgr/m5_LightEffectSetup.cpp"
+flags = "base"
+
+[[unit]]
+unit = "m5_worldlevelkey"
+source = "src/Gruntz/m5_WorldLevelKey.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "m5_filegetstatus"
+source = "src/Gruntz/m5_FileGetStatus.cpp"
+flags = "framed"
+
+[[unit]]
+unit = "m5_freelibhostdtor"
+source = "src/Wap32/m5_FreeLibHostDtor.cpp"
+flags = "framed"
+
+[[unit]]
+unit = "m5_soundtickctor"
+source = "src/Gruntz/m5_SoundTickCtor.cpp"
+flags = "base"
+
+[[unit]]
+unit = "m5_gameassetnamespaces"
+source = "src/Gruntz/m5_GameAssetNamespaces.cpp"
+flags = "base"

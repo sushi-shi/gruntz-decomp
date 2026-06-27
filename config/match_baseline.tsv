@@ -158,7 +158,7 @@ ehfunclets	6	6
 engine_attributed	15	0
 engine_boundary	196	0
 engine_discovered	51	0
-engine_label_stubs	424	105
+engine_label_stubs	407	105
 engine_unmatched	30	0
 engine_unmatched_lib	11	0
 engstr	3	1
@@ -252,6 +252,21 @@ m2_mgrobjserialize	2	1
 m3compilerthunks	3	3
 m3ehfunclets	12	9
 m3mfcleaves	2	2
+m5_battlezdlgrow	1	0
+m5_configstorewrite	2	0
+m5_creditzassets	1	1
+m5_debugprintf	1	1
+m5_destructbutton	1	1
+m5_filegetstatus	1	0
+m5_finishlevelsprite	1	0
+m5_freelibhostdtor	1	1
+m5_gameassetnamespaces	1	0
+m5_levelpreview	1	0
+m5_lighteffectsetup	1	0
+m5_palettelerp	1	1
+m5_soundtickctor	1	1
+m5_stateimages	2	2
+m5_worldlevelkey	1	1
 mainmenubuilder	1	0
 maplogic	5	4
 mapmgr	9	7
@@ -1689,7 +1704,6 @@ engine_label_stubs	?Blit2416@CFileImage@@QAEHPAXH@Z	1.5323	1.5323	1	cpp:6bf52155
 engine_label_stubs	?Blit248@CFileImage@@QAEHPAX0H@Z	1.6379	1.6379	1	cpp:6bf52155264d	0x13fe60
 engine_label_stubs	?Blit816@CFileImage@@QAEHPAX0H@Z	0.7037	0.7037	1	cpp:6bf52155264d	0x140420
 engine_label_stubs	?Blit824@CFileImage@@QAEHPAX0H@Z	0.7722	0.7722	1	cpp:6bf52155264d	0x140110
-engine_label_stubs	?BootyState_OnActivate2_vfunc8@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXXZ	1.0753	1.0753	1	cpp:e8a4cb0d5b2a	0x1c8a0
 engine_label_stubs	?Build@CSBI_SideTab@@QAEXXZ	0.9804	0.9804	1	cpp:e8a4cb0d5b2a	0x105070
 engine_label_stubs	?Build@GeoHost_161e80@ApiCallerStubs@@QAEXPAUtagRECT@@@Z	90.4318	90.4318	1	cpp:e1535087fe94	0x161e80
 engine_label_stubs	?Build@PalBuilder_176df0@ApiCallerStubs@@QAEHPAUtagPALETTEENTRY@@H@Z	62.0750	62.0750	1	cpp:6bf52155264d	0x176df0
@@ -1707,7 +1721,6 @@ engine_label_stubs	?BuildSmall@CStatzTabSmall@@QAEHHHHHHPAUCStatzRect60@@HHH@Z	6
 engine_label_stubs	?BuildSoundFontPath@EngineLabelBacklog@@YAXXZ	1.0989	1.0989	1	cpp:45e65336d4b5	0xf8f30
 engine_label_stubs	?BuildStatzTabStatusBar@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXHHHHHHHHHHHHH@Z	0.7463	0.7463	1	cpp:e8a4cb0d5b2a	0xe9600
 engine_label_stubs	?BuildVoiceSoundList@EngineLabelBacklog@@YGXH@Z	0.5236	0.5236	1	cpp:6bf52155264d	0x11c210
-engine_label_stubs	?BuildWorldLevelKey@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXH@Z	1.4286	1.4286	1	cpp:e8a4cb0d5b2a	0x3c0e0
 engine_label_stubs	?BuildWorldLevelPath@CPlay@@QAEXH@Z	0.4484	0.4484	1	cpp:590eddff1627	0xdbc80
 engine_label_stubs	?CGruntzCommand_0242f0@CGruntzCommand@@QAEXXZ	50.0000	50.0000	1	cpp:45e65336d4b5	0x242f0
 engine_label_stubs	?CGruntzCommand_024430@CGruntzCommand@@QAEXXZ	50.0000	50.0000	1	cpp:45e65336d4b5	0x24430
@@ -1723,7 +1736,6 @@ engine_label_stubs	?Clip@ClipHost_02b340@ApiCallerStubs@@QAEXPBUtagRECT@@@Z	81.3
 engine_label_stubs	?Close@SmackHost_17c9b0@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:e1535087fe94	0x17c9b0
 engine_label_stubs	?Copy@RectHost_115b30@ApiCallerStubs@@QAEPAU12@PBUtagRECT@@@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x115b30
 engine_label_stubs	?CreateGameObjectByName@EngineLabelBacklog@@YAXXZ	0.1996	0.1996	1	cpp:45e65336d4b5	0xa3b0
-engine_label_stubs	?DebugPrintf@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXXZ	0.8696	0.8696	1	cpp:e8a4cb0d5b2a	0x185000
 engine_label_stubs	?DecodeBlit@CImage@@QAEHPAX0HHH0@Z	2.7778	2.7778	1	cpp:e1535087fe94	0x175930
 engine_label_stubs	?DecodeRun24@CFileImage@@QAEHPAX@Z	0.6472	0.6472	1	cpp:e1535087fe94	0x140c50
 engine_label_stubs	?DecodeRun8@CFileImage@@QAEHPAX@Z	1.5385	1.5385	1	cpp:e1535087fe94	0x140aa0
@@ -1767,11 +1779,8 @@ engine_label_stubs	?LoadAttributes@CTeleporter@@QAEXXZ	0.4274	0.4274	1	cpp:45e65
 engine_label_stubs	?LoadAttributes@CTimeBomb@@QAEXXZ	0.7246	0.7246	1	cpp:45e65336d4b5	0xe1e60
 engine_label_stubs	?LoadBootyCheatState@EngineLabelBacklog@@YGXHHH@Z	0.3788	0.3788	1	cpp:6bf52155264d	0x18830
 engine_label_stubs	?LoadBridgeMoveSprites@EngineLabelBacklog@@YGXH@Z	0.6536	0.6536	1	cpp:6bf52155264d	0x110860
-engine_label_stubs	?LoadCreditzAssets2@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXXZ	1.1364	1.1364	1	cpp:e8a4cb0d5b2a	0x39dc0
 engine_label_stubs	?LoadCustomWorldInfo@EngineLabelBacklog@@YAHPAX@Z	100.0000	100.0000	1	cpp:aab6e5a6e511	0x3b7c0
 engine_label_stubs	?LoadDroppedObjectEffects@CDroppedObject@@QAEXXZ	0.6289	0.6289	1	cpp:e8a4cb0d5b2a	0xc7090
-engine_label_stubs	?LoadFinishLevelSprite@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXH@Z	0.9804	0.9804	1	cpp:e8a4cb0d5b2a	0x7c3d0
-engine_label_stubs	?LoadGameAssetNamespaces@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXHHH@Z	0.5525	0.5525	1	cpp:e8a4cb0d5b2a	0xf9ea0
 engine_label_stubs	?LoadGruntAbilityTuning@CGrunt@ApiCallerStubs@@QAEXH@Z	0.2538	0.2538	1	cpp:590eddff1627	0x57100
 engine_label_stubs	?LoadGruntCombatAnimations@CGrunt@ApiCallerStubs@@QAEXHHHHHHHH@Z	0.0777	0.0777	1	cpp:590eddff1627	0x597a0
 engine_label_stubs	?LoadGruntCombatTuning@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXHHHHH@Z	0.3650	0.3650	1	cpp:e8a4cb0d5b2a	0x7b930
@@ -1779,7 +1788,6 @@ engine_label_stubs	?LoadGruntDeathAnimations@ThisStubOwnerUnknown@ApiCallerStubs
 engine_label_stubs	?LoadGruntResurrectTuning@EngineLabelBacklog@@YGXHHH@Z	0.5525	0.5525	1	cpp:6bf52155264d	0x7be60
 engine_label_stubs	?LoadGruntSpawnConfig@CGruntSpawnConfig@ApiCallerStubs@@QAEXHHHHH@Z	0.4049	0.4049	1	cpp:590eddff1627	0x11afb0
 engine_label_stubs	?LoadHelpBookSprite@EngineLabelBacklog@@YAXXZ	0.5988	0.5988	1	cpp:45e65336d4b5	0x997c0
-engine_label_stubs	?LoadLevelPreviewScreen@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXXZ	1.0526	1.0526	1	cpp:e8a4cb0d5b2a	0xde420
 engine_label_stubs	?LoadMenuSelectSprite@CNetMgr@@QAEXH@Z	0.8264	0.8264	1	cpp:590eddff1627	0xba620
 engine_label_stubs	?LoadMenuStateAssets@EngineLabelBacklog@@YGXHHH@Z	0.3922	0.3922	1	cpp:6bf52155264d	0x9fe50
 engine_label_stubs	?LoadObjectAnimResources@EngineLabelBacklog@@YGXHH@Z	0.5747	0.5747	1	cpp:6bf52155264d	0x9ac20
@@ -1789,7 +1797,6 @@ engine_label_stubs	?LoadPickupSprites@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXH
 engine_label_stubs	?LoadProjectileEffects@CProjectile@@QAEXXZ	0.2165	0.2165	1	cpp:e8a4cb0d5b2a	0xdfd00
 engine_label_stubs	?LoadProjectileSprites@CProjectile@@QAEXHHHHHHH@Z	0.2183	0.2183	1	cpp:6bf52155264d	0xdf050
 engine_label_stubs	?LoadSounds@CSplashState@@QAEHHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xf9780
-engine_label_stubs	?LoadStateImages_vfunc8@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXXZ	2.2222	2.2222	1	cpp:e8a4cb0d5b2a	0xa09a0
 engine_label_stubs	?LoadTeleporterGooConfig@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXH@Z	0.2262	0.2262	1	cpp:e8a4cb0d5b2a	0x6eb80
 engine_label_stubs	?LoadVehicleGruntSprites@EngineLabelBacklog@@YGXH@Z	0.3597	0.3597	1	cpp:6bf52155264d	0x50ce0
 engine_label_stubs	?LoadWarlordSprites@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXHH@Z	0.1675	0.1675	1	cpp:e8a4cb0d5b2a	0xd65d0
@@ -1859,12 +1866,9 @@ engine_label_stubs	?Stub_148940@EngineLabelBacklog@@YGXHHHH@Z	0.9174	0.9174	1	cp
 engine_label_stubs	?Stub_18c780@EngineLabelBacklog@@YAXXZ	0.3891	0.3891	1	cpp:45e65336d4b5	0x18c780
 engine_label_stubs	?Stub_1bf702@EngineLabelBacklog@@YGHPADPAUEngCString@@@Z	54.8060	54.8060	1	cpp:e8a4cb0d5b2a	0x1bf702
 engine_label_stubs	?Stub_1bf8f8@EngineLabelBacklog@@YGXHH@Z	1.3333	1.3333	1	cpp:6bf52155264d	0x1bf8f8
-engine_label_stubs	?Stub_1c152f@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXH@Z	1.1765	1.1765	1	cpp:e8a4cb0d5b2a	0x1c152f
 engine_label_stubs	?Stub_1c1609@EngineLabelBacklog@@YGXHH@Z	1.5625	1.5625	1	cpp:6bf52155264d	0x1c1609
 engine_label_stubs	?Stub_1c176a@EngineLabelBacklog@@YGXHH@Z	0.8403	0.8403	1	cpp:6bf52155264d	0x1c176a
 engine_label_stubs	?Stub_1c7cb3@EngineLabelBacklog@@YAXXZ	0.9901	0.9901	1	cpp:45e65336d4b5	0x1c7cb3
-engine_label_stubs	?Stub_1ccae7@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXHHH@Z	2.2727	2.2727	1	cpp:e8a4cb0d5b2a	0x1ccae7
-engine_label_stubs	?Stub_1ccbfc@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXHHHH@Z	1.4493	1.4493	1	cpp:e8a4cb0d5b2a	0x1ccbfc
 engine_label_stubs	?Stub_1d5029@EngineLabelBacklog@@YGXHHHH@Z	1.1236	1.1236	1	cpp:6bf52155264d	0x1d5029
 engine_label_stubs	?Stub_1d513b@EngineLabelBacklog@@YGXHHHH@Z	0.8929	0.8929	1	cpp:6bf52155264d	0x1d513b
 engine_label_stubs	?Teardown@CursHost_17c510@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x17c510
@@ -1878,7 +1882,6 @@ engine_label_stubs	?Update3@SelHost_0c4ee0@ApiCallerStubs@@QAEXXZ	100.0000	100.0
 engine_label_stubs	?Update@SelHost_0c4f80@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:e1535087fe94	0xc4f80
 engine_label_stubs	?UpdateBootyWalkingGruntz@EngineLabelBacklog@@YAXXZ	0.1898	0.1898	1	cpp:45e65336d4b5	0x1b690
 engine_label_stubs	?UpdateClock@RezMgr@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x13ddc0
-engine_label_stubs	?UpdateDestructButtonStatusBar2@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXH@Z	3.5714	3.5714	1	cpp:e8a4cb0d5b2a	0x10bc30
 engine_label_stubs	?Validate@VrHost_094bc0@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x94bc0
 engine_label_stubs	?directx_wrapper_caller_137720_DSOUND_1_DirectSoundCreate@ApiCallerStubs@@YGHHH@Z	98.5714	98.5714	1	cpp:6bf52155264d	0x137720
 engine_label_stubs	?directx_wrapper_caller_17c2a0_DirectDrawCreate@ApiCallerStubs@@YGHHH@Z	1.9417	1.9417	1	cpp:6bf52155264d	0x17c2a0
@@ -1899,7 +1902,6 @@ engine_label_stubs	?winapi_015cc0_SendMessageA@ApiCallerStubs@@YGHHH@Z	79.8182	7
 engine_label_stubs	?winapi_015d00_SendMessageA@ApiCallerStubs@@YGXH@Z	100.0000	100.0000	1	cpp:e1535087fe94	0x15d00
 engine_label_stubs	?winapi_015d30_SendMessageA@ApiCallerStubs@@YGHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x15d30
 engine_label_stubs	?winapi_015d70_SendMessageA@ApiCallerStubs@@YGHHH@Z	80.9167	80.9167	1	cpp:6bf52155264d	0x15d70
-engine_label_stubs	?winapi_015fe0_SendMessageA@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHH@Z	2.0000	2.0000	1	cpp:e8a4cb0d5b2a	0x15fe0
 engine_label_stubs	?winapi_0160f0_CreateSolidBrush_FillRect_GetClientRect@ApiCallerStubs@@YAHXZ	1.1765	1.1765	1	cpp:e1535087fe94	0x160f0
 engine_label_stubs	?winapi_017030_GetWindow@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHXZ	2.7451	2.7451	1	cpp:e8a4cb0d5b2a	0x17030
 engine_label_stubs	?winapi_0180e0_SendMessageA@ApiCallerStubs@@YGHH@Z	0.8696	0.8696	1	cpp:6bf52155264d	0x180e0
@@ -1985,9 +1987,7 @@ engine_label_stubs	?winapi_11b3b0_timeGetTime@CGruntSpawnConfig@ApiCallerStubs@@
 engine_label_stubs	?winapi_11b7c0_timeGetTime@ApiCallerStubs@@YGHHHHHH@Z	0.8299	0.8299	1	cpp:6bf52155264d	0x11b7c0
 engine_label_stubs	?winapi_1206b0_GetLastError_HeapValidate_HeapWalk@ApiCallerStubs@@YAHXZ	1.3669	1.3669	1	cpp:e1535087fe94	0x1206b0
 engine_label_stubs	?winapi_123d10_GetCurrentThreadId_TlsSetValue@ApiCallerStubs@@YAHXZ	2.8571	2.8571	1	cpp:e1535087fe94	0x123d10
-engine_label_stubs	?winapi_136fe0_timeGetTime@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHHHHHHH@Z	4.2424	4.2424	1	cpp:e8a4cb0d5b2a	0x136fe0
 engine_label_stubs	?winapi_13f460_CopyRect@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHHH@Z	0.9091	0.9091	1	cpp:e8a4cb0d5b2a	0x13f460
-engine_label_stubs	?winapi_1480a0_timeGetTime@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHXZ	1.2579	1.2579	1	cpp:e8a4cb0d5b2a	0x1480a0
 engine_label_stubs	?winapi_1485b0_CreateDCA_DeleteDC_GetSystemPaletteEntries@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHXZ	1.6129	1.6129	1	cpp:e8a4cb0d5b2a	0x1485b0
 engine_label_stubs	?winapi_1538c0_CopyRect@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHHH@Z	0.7035	0.7035	1	cpp:e8a4cb0d5b2a	0x1538c0
 engine_label_stubs	?winapi_153b20_CopyRect@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHHH@Z	0.9179	0.9179	1	cpp:e8a4cb0d5b2a	0x153b20
@@ -2009,14 +2009,12 @@ engine_label_stubs	?winapi_179e70_IntersectRect@ApiCallerStubs@@YGHHHHHHHHHH@Z	0
 engine_label_stubs	?winapi_17c3f0_ShowCursor@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH@Z	1.8269	1.8269	1	cpp:e8a4cb0d5b2a	0x17c3f0
 engine_label_stubs	?winapi_17e620_GetTickCount@CFader@ApiCallerStubs@@QAEHHHH@Z	1.7925	1.7925	1	cpp:590eddff1627	0x17e620
 engine_label_stubs	?winapi_17fe00_timeGetTime@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHH@Z	1.9608	1.9608	1	cpp:e8a4cb0d5b2a	0x17fe00
-engine_label_stubs	?winapi_1804a0_PtInRect@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHH@Z	1.3380	1.3380	1	cpp:e8a4cb0d5b2a	0x1804a0
 engine_label_stubs	?winapi_1ba677_CreateDialogIndirectParamA_GetSystemMetrics_GlobalLock@ApiCallerStubs@@YAHXZ	0.9559	0.9559	1	cpp:e1535087fe94	0x1ba677
 engine_label_stubs	?winapi_1ba819_DestroyWindow_GlobalFree_GlobalUnlock@ApiCallerStubs@@YGHHHH@Z	4.3182	4.3182	1	cpp:6bf52155264d	0x1ba819
 engine_label_stubs	?winapi_1ba9d2_EnableWindow_FindResourceA_IsWindowEnabled_LoadResource_@ApiCallerStubs@@YAHXZ	1.4130	1.4130	1	cpp:e1535087fe94	0x1ba9d2
 engine_label_stubs	?winapi_1baaef_EnableWindow_GetActiveWindow_SetActiveWindow@ApiCallerStubs@@YAHXZ	5.3846	5.3846	1	cpp:e1535087fe94	0x1baaef
 engine_label_stubs	?winapi_1bb31b_CallWindowProcA_GetPropA_RemovePropA_SetWindowLongA@ApiCallerStubs@@YGHHHHH@Z	1.9588	1.9588	1	cpp:6bf52155264d	0x1bb31b
 engine_label_stubs	?winapi_1bbff4_GetClassInfoA_RegisterClassA@ApiCallerStubs@@YGHH@Z	3.8462	3.8462	1	cpp:6bf52155264d	0x1bbff4
-engine_label_stubs	?winapi_1d4a18_FreeLibrary@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHXZ	6.6667	6.6667	1	cpp:e8a4cb0d5b2a	0x1d4a18
 engine_label_stubs	_CheckExePath	0.0000	0.0000	1	cpp:2262ffc5f902	0x2e6e
 engine_label_stubs	_Eng_RegionCueA	0.0000	0.0000	1	cpp:2262ffc5f902	0x3936
 engine_label_stubs	_MultiDispatch@12	0.0000	0.0000	1	cpp:2262ffc5f902	0x3cab
@@ -2811,6 +2809,23 @@ m3ehfunclets	?Funclet_1d4952@@YAXXZ	100.0000	100.0000	1	326d08106eb6	0x1d4952
 m3ehfunclets	?Funclet_1d4be7@@YAXXZ	85.0000	85.0000	1	0acdb09ac0cf	0x1d4be7
 m3mfcleaves	?GetActive@CDdeView@@QAEHXZ	100.0000	100.0000	1	c20a38911429	0x1d047f
 m3mfcleaves	?ModuleStateField30@@YAHXZ	100.0000	100.0000	1	bf3a2e7a831a	0x1ce95f
+m5_battlezdlgrow	?ToggleRow@CBattlezDlg@@QAEHH@Z	82.0714	82.0714	1	771e46ac628e	0x15fe0
+m5_configstorewrite	?WriteProfileBinary@CConfigStore@@QAEHPAD0PAEI@Z	29.3913	29.3913	1	ebafc7deec10	0x1ccbfc
+m5_configstorewrite	?WriteProfileInt@CConfigStore@@QAEHPAD0H@Z	47.0455	47.0455	1	52d1ac54cb5a	0x1ccae7
+m5_creditzassets	?LoadCreditzAssets@CCreditsState@@QAEXXZ	100.0000	100.0000	1	301211db2fb6	0x39dc0
+m5_debugprintf	?InitFromEnv@CDebugConfig@@QAEPAV1@XZ	100.0000	100.0000	1	9c7af45f7192	0x185000
+m5_destructbutton	?UpdateDestructButton@CSBI_RectOnly@@QAEXH@Z	100.0000	100.0000	1	6a157acbc0f9	0x10bc30
+m5_filegetstatus	?GetStatus@CFile@@QAEHPAUCFileStatus@@@Z	42.5882	42.5882	1	6c0966959ae9	0x1c152f
+m5_finishlevelsprite	?LoadFinishLevelSprite@CFinishLevelState@@QAEXH@Z	58.1863	58.1863	1	69a53edd1eb6	0x7c3d0
+m5_freelibhostdtor	?FreeLibHost_Dtor@@YAHXZ	100.0000	100.0000	1	784aecf4b678	0x1d4a18
+m5_gameassetnamespaces	?LoadGameAssetNamespaces@CAssetLoader@@QAEXPAUAssetMgr@@HH@Z	72.7569	72.7569	1	693b148c3200	0xf9ea0
+m5_levelpreview	?LoadLevelPreviewScreen@CPreviewState@@QAEXXZ	94.7368	94.7368	1	b6190ca09a08	0xde420
+m5_lighteffectsetup	?Setup@CLightEffect@@QAEHPAULightDesc@@@Z	92.2465	92.2465	1	bad170dabaae	0x1804a0
+m5_palettelerp	?Tick@PaletteLerp@@QAEHXZ	100.0000	100.0000	1	65633700ddb4	0x1480a0
+m5_soundtickctor	?SoundTick_Ctor@@YAHXZ	100.0000	100.0000	1	eb13fef5cc82	0x136fe0
+m5_stateimages	?LoadStateImages@CImageState@@QAEHXZ	100.0000	100.0000	1	4d5c29c4f8ad	0xa09a0
+m5_stateimages	?OnActivate2@CBootyState@@QAEHXZ	100.0000	100.0000	1	9339daaf41bd	0x1c8a0
+m5_worldlevelkey	?BuildWorldLevelKey@CWorldState@@QAEHH@Z	100.0000	100.0000	1	d5f9fc215621	0x3c0e0
 mainmenubuilder	?BuildMainMenuTree@@YAXPAX@Z	77.6725	77.6725	2	77164b63ab1c	0xa11d0
 maplogic	??1CMapLogic@@UAE@XZ	100.0000	100.0000	1	baec3be51eff	0x113c0
 maplogic	?FreeNodes@CMapLogic@@QAEXXZ	100.0000	100.0000	2	8cb172a03e69	0x85480

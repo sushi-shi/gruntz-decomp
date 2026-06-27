@@ -383,14 +383,6 @@ namespace ApiCallerStubs {
         return SendMessageA(it->m_hwnd, 0x14e, wParam - 1, 0);
     }
 
-    // @confidence: low
-    // @source: winapi:SendMessageA
-    // @stub
-    // proximity: CBattlezDlg@-0x80 | CImgHolderBase@+0x430
-    RVA(0x00015fe0, 0xbe)
-    i32 ThisStubOwnerUnknown::winapi_015fe0_SendMessageA(i32) {
-        return 0;
-    }
 
     // @confidence: low
     // @source: winapi:CreateSolidBrush;FillRect;GetClientRect
@@ -2517,14 +2509,6 @@ namespace ApiCallerStubs {
         return Use136bd0(probe, data, arg);
     }
 
-    // @confidence: low
-    // @source: winapi:timeGetTime
-    // @stub
-    // proximity: DSoundList@-0x80 | DSoundVoice@+0x80
-    RVA(0x00136fe0, 0x7b)
-    i32 ThisStubOwnerUnknown::winapi_136fe0_timeGetTime(i32, i32, i32, i32, i32, i32) {
-        return 0;
-    }
 
     // @confidence: low
     // @source: directx-wrapper-caller:calls 0x136550 (DSOUND.#1_DirectSoundCreate)
@@ -3122,14 +3106,6 @@ namespace ApiCallerStubs {
         Finalize();
     }
 
-    // @confidence: low
-    // @source: winapi:timeGetTime
-    // @stub
-    // proximity: CDDPalette@-0x3d0 | CFileImage@+0x7a0
-    RVA(0x001480a0, 0x1a7)
-    i32 ThisStubOwnerUnknown::winapi_1480a0_timeGetTime() {
-        return 0;
-    }
 
     // @confidence: low
     // @source: winapi:CreateDCA;DeleteDC;GetSystemPaletteEntries
@@ -3913,14 +3889,6 @@ namespace ApiCallerStubs {
         return 0;
     }
 
-    // @confidence: low
-    // @source: winapi:PtInRect
-    // @stub
-    // proximity: CFaderSine@-0x6b0 | CFaderTileRender@+0x2170
-    RVA(0x001804a0, 0x182)
-    i32 ThisStubOwnerUnknown::winapi_1804a0_PtInRect(i32) {
-        return 0;
-    }
 
     // @confidence: low
     // @source: winapi:CopyRect
@@ -4048,35 +4016,9 @@ namespace ApiCallerStubs {
         }
     }
 
-    // @confidence: low
-    // @source: winapi:FreeLibrary
-    // @stub
-    // proximity: isolated (no near matched neighbour)
-    RVA(0x001d4a18, 0x3c)
-    i32 ThisStubOwnerUnknown::winapi_1d4a18_FreeLibrary() {
-        return 0;
-    }
 
-    // @confidence: med
-    // @source: decomp-xref
-    // @stub
-    // proximity: CBootyState@-0x690 | CMultiBootyState@+0x590
-    RVA(0x0001c8a0, 0xec)
-    void ThisStubOwnerUnknown::BootyState_OnActivate2_vfunc8() {}
 
-    // @confidence: low
-    // @source: decomp-xref
-    // @stub
-    // proximity: CCreditsState@-0xc0 | TArray@+0x1e0
-    RVA(0x00039dc0, 0x10b)
-    void ThisStubOwnerUnknown::LoadCreditzAssets2() {}
 
-    // @confidence: med
-    // @source: decomp-xref
-    // @stub
-    // proximity: CDemoSetup@-0x70 | CAttractIdlePoll@+0x140
-    RVA(0x0003c0e0, 0xfb)
-    void ThisStubOwnerUnknown::BuildWorldLevelKey(i32) {}
 
     // @confidence: med
     // @source: string-xref
@@ -4133,22 +4075,10 @@ namespace ApiCallerStubs {
     RVA(0x0007b930, 0x3b7)
     void ThisStubOwnerUnknown::LoadGruntCombatTuning(i32, i32, i32, i32, i32) {}
 
-    // @confidence: med
-    // @source: decomp-xref
-    // @stub
-    // proximity: CTriggerMgr@-0xf0 | EngineLabelBacklog@+0x250
-    RVA(0x0007c3d0, 0x1ae)
-    void ThisStubOwnerUnknown::LoadFinishLevelSprite(i32) {}
 
     // LoadMonologoSprite (0x090d10) re-homed as CGruntzMgr::LoadMonologoSprite in
     // src/Gruntz/GruntzMgr.cpp (the trace owner; this in ecx == CGruntzMgr).
 
-    // @confidence: med
-    // @source: decomp-xref
-    // @stub
-    // proximity: CMenuState@-0x250 | CAttract@+0x90
-    RVA(0x000a09a0, 0x6a)
-    void ThisStubOwnerUnknown::LoadStateImages_vfunc8() {}
 
     // LoadMenuSelectSprite (0x0ba620) re-homed as CNetMgr::LoadMenuSelectSprite in src/Stub/CNetMgr.cpp (proximity HIGH).
 
@@ -4186,12 +4116,6 @@ namespace ApiCallerStubs {
     // BuildSpriteImageKeyTable (0x0dd540) and BuildAnizKeyTable (0x0ddaa0) re-homed
     // (byte-exact) as CPlay methods in src/Gruntz/CPlay.cpp.
 
-    // @confidence: med
-    // @source: decomp-xref
-    // @stub
-    // proximity: CPlay@-0x980 | CProjectile@+0xb40
-    RVA(0x000de420, 0x115)
-    void ThisStubOwnerUnknown::LoadLevelPreviewScreen() {}
 
     // BuildToolToyColorTable (0x0e2400) re-homed (byte-exact) as
     // CSpriteRefTable::BuildToolToyColorTable in src/Gruntz/SpriteRefTable.cpp.
@@ -4227,19 +4151,7 @@ namespace ApiCallerStubs {
     void ThisStubOwnerUnknown::
         BuildMultiplayerTabStatusBar(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32) {}
 
-    // @confidence: med
-    // @source: string-xref
-    // @stub
-    // proximity: CGrunt@-0x7380 | CAttract@+0x350
-    RVA(0x000f9ea0, 0x21d)
-    void ThisStubOwnerUnknown::LoadGameAssetNamespaces(i32, i32, i32) {}
 
-    // @confidence: low
-    // @source: decomp-xref
-    // @stub
-    // proximity: CSBI_RectOnly@-0xa0 | CSBI_MenuItem@+0x390
-    RVA(0x0010bc30, 0x78)
-    void ThisStubOwnerUnknown::UpdateDestructButtonStatusBar2(i32) {}
 
     // @confidence: med
     // @source: decomp-xref
@@ -4247,32 +4159,6 @@ namespace ApiCallerStubs {
     RVA(0x0011afb0, 0x321)
     void CGruntSpawnConfig::LoadGruntSpawnConfig(i32, i32, i32, i32, i32) {}
 
-    // @confidence: low
-    // @source: decomp-xref
-    // @stub
-    // proximity: CRangeSet@-0x3f0 | CRezList@+0x1e0
-    RVA(0x00185000, 0x1a6)
-    void ThisStubOwnerUnknown::DebugPrintf() {}
 
-    // @confidence: low
-    // @source: import:GetFileSize
-    // @stub
-    // proximity: isolated (no near matched neighbour)
-    RVA(0x001c152f, 0xda)
-    void ThisStubOwnerUnknown::Stub_1c152f(i32) {}
-
-    // @confidence: med
-    // @source: import:RegCloseKey,RegSetValueExA
-    // @stub
-    // proximity: CFileIO@-0xd6c1 | CConfigStore@+0x75
-    RVA(0x001ccae7, 0x75)
-    void ThisStubOwnerUnknown::Stub_1ccae7(i32, i32, i32) {}
-
-    // @confidence: med
-    // @source: import:RegCloseKey,RegSetValueExA
-    // @stub
-    // proximity: isolated (no near matched neighbour)
-    RVA(0x001ccbfc, 0xa1)
-    void ThisStubOwnerUnknown::Stub_1ccbfc(i32, i32, i32, i32) {}
 
 } // namespace ApiCallerStubs
