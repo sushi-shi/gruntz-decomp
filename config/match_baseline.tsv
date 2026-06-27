@@ -1811,7 +1811,7 @@ engine_label_stubs	?Key@CmdHost_014720@ApiCallerStubs@@QAEHHH@Z	100.0000	100.000
 engine_label_stubs	?Key@CmdHost_039440@ApiCallerStubs@@QAEHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x39440
 engine_label_stubs	?Key@CmdHost_0953f0@ApiCallerStubs@@QAEHHH@Z	100.0000	100.0000	1	cpp:e1535087fe94	0x953f0
 engine_label_stubs	?Load@PalLoad_1479e0@ApiCallerStubs@@QAEHHPADH@Z	89.7286	89.7286	1	cpp:6bf52155264d	0x1479e0
-engine_label_stubs	?Load@ResLoad_144270@ApiCallerStubs@@QAEHHPADH@Z	86.9885	86.9885	1	cpp:6bf52155264d	0x144270
+engine_label_stubs	?Load@ResLoad_144270@ApiCallerStubs@@QAEHHPADH@Z	86.9310	86.9310	1	cpp:6bf52155264d	0x144270
 engine_label_stubs	?Load@StrHost_0b7ec0@ApiCallerStubs@@QAEXHH@Z	100.0000	100.0000	1	cpp:e1535087fe94	0xb7ec0
 engine_label_stubs	?LoadAttributes@CBrickz@@QAEXHH@Z	0.1490	0.1490	1	cpp:6bf52155264d	0x810f0
 engine_label_stubs	?LoadAttributes@CDroppedObjectShadow@@QAEXXZ	0.4444	0.4444	1	cpp:45e65336d4b5	0xc62e0
@@ -1825,7 +1825,6 @@ engine_label_stubs	?LoadDroppedObjectEffects@CDroppedObject@@QAEXXZ	0.6289	0.628
 engine_label_stubs	?LoadGruntCombatAnimations@CGrunt@ApiCallerStubs@@QAEXHHHHHHHH@Z	0.0777	0.0777	1	cpp:590eddff1627	0x597a0
 engine_label_stubs	?LoadGruntDeathAnimations@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXHH@Z	0.1015	0.1015	1	cpp:e8a4cb0d5b2a	0x60150
 engine_label_stubs	?LoadGruntResurrectTuning@CGruntResurrector@@QAEHHHH@Z	65.4807	65.4807	1	cpp:590eddff1627	0x7be60
-engine_label_stubs	?LoadHelpBookSprite@EngineLabelBacklog@@YAXXZ	0.5988	0.5988	1	cpp:45e65336d4b5	0x997c0
 engine_label_stubs	?LoadMenuSelectSprite@CNetMgr@@QAEXH@Z	0.8264	0.8264	1	cpp:590eddff1627	0xba620
 engine_label_stubs	?LoadMenuStateAssets@EngineLabelBacklog@@YGXHHH@Z	0.3922	0.3922	1	cpp:6bf52155264d	0x9fe50
 engine_label_stubs	?LoadObjectAnimResources@EngineLabelBacklog@@YGXHH@Z	0.5747	0.5747	1	cpp:6bf52155264d	0x9ac20
@@ -1910,6 +1909,7 @@ engine_label_stubs	?Tune1770e0@PalBuilder_176df0@ApiCallerStubs@@QAEXXZ	100.0000
 engine_label_stubs	?Update0@SelHost_0c4ee0@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:6bf52155264d	0xc4ee0
 engine_label_stubs	?Update1@SelHost_0c4ee0@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:6bf52155264d	0xc4f30
 engine_label_stubs	?Update3@SelHost_0c4ee0@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:6bf52155264d	0xc4fd0
+engine_label_stubs	?Update@CHelpBookSprite@@QAEHXZ	75.7485	75.7485	1	cpp:590eddff1627	0x997c0
 engine_label_stubs	?Update@SelHost_0c4f80@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:e1535087fe94	0xc4f80
 engine_label_stubs	?UpdateBootyWalkingGruntz@EngineLabelBacklog@@YAXXZ	0.1898	0.1898	1	cpp:45e65336d4b5	0x1b690
 engine_label_stubs	?UpdateClock@RezMgr@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x13ddc0
