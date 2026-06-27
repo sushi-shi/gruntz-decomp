@@ -78,67 +78,10 @@ i32 CFileImage::LoadByExt(CFileImageInfo* info, char* path, i32 flags, i32 a4) {
     return 1;
 }
 
-// @confidence: high
-// @source: reloc-correlation (CFileImage::Blit dispatcher)
-// @stub
-RVA(0x0013fbb0, 0x126)
-i32 CFileImage::Blit168(void*, void*, i32) {
-    return 0;
-}
-// @confidence: high
-// @source: reloc-correlation (CFileImage::Blit dispatcher)
-// @stub
-RVA(0x0013fce0, 0x17f)
-i32 CFileImage::Blit1624(void*, i32) {
-    return 0;
-}
-// Blit248 (0x13fe60) reconstructed in src/Image/Image.cpp.
-// @confidence: high
-// @source: reloc-correlation (CFileImage::Blit dispatcher)
-// @stub
-RVA(0x0013ff80, 0x184)
-i32 CFileImage::Blit2416(void*, i32) {
-    return 0;
-}
-// @confidence: high
-// @source: reloc-correlation (CFileImage::Blit dispatcher)
-// @stub
-RVA(0x00140110, 0x30b)
-i32 CFileImage::Blit824(void*, void*, i32) {
-    return 0;
-}
-// @confidence: high
-// @source: reloc-correlation (CFileImage::Blit dispatcher)
-// @stub
-RVA(0x00140420, 0x34f)
-i32 CFileImage::Blit816(void*, void*, i32) {
-    return 0;
-}
-// @confidence: high
-// @source: reloc-correlation (CFileImage decoders)
-// @stub
-RVA(0x00140aa0, 0x1a3)
-i32 CFileImage::DecodeRun8(void*) {
-    return 0;
-}
-// @confidence: high
-// @source: reloc-correlation (CFileImage::DecodePcx)
-// @stub
-RVA(0x00140c50, 0x3e2)
-i32 CFileImage::DecodeRun24(void*) {
-    return 0;
-}
-// @confidence: high
-// @source: reloc-correlation (CFileImage decoders)
-// @stub
-RVA(0x00145270, 0x17a)
-i32 CFileImage::RunDecode1(void*, void*, i32, i32) {
-    return 0;
-}
-// @confidence: high
-// @source: reloc-correlation (CFileImage::DecodePcx)
-// @stub
-RVA(0x001453f0, 0x3ac)
-i32 CFileImage::RunDecode3(void*, void*, i32, i32) {
-    return 0;
-}
+// Blit168 (0x13fbb0), Blit1624 (0x13fce0), Blit2416 (0x13ff80) reconstructed in
+// src/Image/CFileImageBlit.cpp. Blit248 (0x13fe60) in src/Image/Image.cpp.
+// Blit824 (0x140110) reconstructed in src/Image/CFileImageBlit.cpp.
+// Blit816 (0x140420) reconstructed in src/Image/CFileImageBlit.cpp.
+// DecodeRun8 (0x140aa0) reconstructed in src/Image/CFileImageRunDecode.cpp.
+// DecodeRun24 (0x140c50), RunDecode1 (0x145270), RunDecode3 (0x1453f0)
+// reconstructed in src/Image/CFileImageRunDecode.cpp.

@@ -46,6 +46,7 @@ o1     = ["/nologo", "/c", "/O1", "/MT"]
 # unoptimized + intrinsics: full ebp frame, every local/arg through memory, plain
 # idiv (no strength reduction), yet pow/etc. via the __CIxxx FP intrinsic (/Oi).
 odi    = ["/nologo", "/c", "/Od", "/Oi", "/MT"]
+od     = ["/nologo", "/c", "/Od", "/MT"]
 
 [[unit]]
 unit = "adler32"
@@ -518,6 +519,16 @@ flags = "base"
 unit = "cfileimage"
 source = "src/Image/CFileImage.cpp"
 flags = "eh"
+
+[[unit]]
+unit = "cfileimageblit"
+source = "src/Image/CFileImageBlit.cpp"
+flags = "base"
+
+[[unit]]
+unit = "cfileimagerundecode"
+source = "src/Image/CFileImageRunDecode.cpp"
+flags = "od"
 
 [[unit]]
 unit = "registryhelper"
