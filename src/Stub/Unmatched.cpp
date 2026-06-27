@@ -281,20 +281,6 @@ RVA(0x0018c1f5, 0x28)
 void Unmatched_18c1f5() {} // Unmatched_18c1f5
 RVA(0x0018d4cd, 0xae)
 void Unmatched_18d4cd() {} // Unmatched_18d4cd
-RVA(0x00192930, 0xb3)
-void Unmatched_192930() {} // Unmatched_192930
-RVA(0x001929f0, 0xf1)
-void Unmatched_1929f0() {} // Unmatched_1929f0
-RVA(0x00192af0, 0x98)
-void Unmatched_192af0() {} // Unmatched_192af0
-RVA(0x00192b90, 0x9d)
-void Unmatched_192b90() {} // Unmatched_192b90
-RVA(0x00192c30, 0x99)
-void Unmatched_192c30() {} // Unmatched_192c30
-RVA(0x00192cd0, 0x1ff)
-void Unmatched_192cd0() {} // Unmatched_192cd0
-RVA(0x00192ed0, 0x1ac)
-void Unmatched_192ed0() {} // Unmatched_192ed0
 RVA(0x00193080, 0xb5)
 void Unmatched_193080() {} // Unmatched_193080
 RVA(0x00193140, 0x1fa)
@@ -307,10 +293,6 @@ RVA(0x00193640, 0x40)
 void Unmatched_193640() {} // Unmatched_193640
 RVA(0x001936e0, 0xd3)
 void Unmatched_1936e0() {} // Unmatched_1936e0
-RVA(0x00193950, 0xc5)
-void Unmatched_193950() {} // Unmatched_193950
-RVA(0x00193a20, 0x78)
-void Unmatched_193a20() {} // Unmatched_193a20
 RVA(0x001b9b8d, 0x6)
 void Unmatched_1b9b8d() {} // Unmatched_1b9b8d
 RVA(0x001ba7ff, 0x15)

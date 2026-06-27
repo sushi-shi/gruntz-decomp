@@ -75,7 +75,7 @@ public:
     virtual void Vslot25();
     virtual void Vslot26();
     virtual void RenderSlow(); // slot 39 (+0x9c)
-    virtual void RenderFast(); // slot 40 (+0xa0)
+    virtual i32 RenderFast();  // slot 40 (+0xa0)  (the profiled frames read its update count)
 
     // Non-virtual leaf (matched): seeds the begin-clear params.
     i32 SetBeginClearParams(i32 unused, i32 arg2, i32 arg3);

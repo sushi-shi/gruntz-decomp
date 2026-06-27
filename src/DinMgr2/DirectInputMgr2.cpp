@@ -156,8 +156,8 @@ struct CDeviceConfigB {
     // wrapper prefix, so these call the shared wrappers (CreateDeviceWrap/SetDataFormat/
     // SetCooperativeLevel/SetProperty) by reinterpreting `this` as CInputDevice*.
     i32 CreateDevJoystick(IDirectInputZ* di, const void* cfg, void* owner, u32 flags); // 0x134630
-    i32 SetupAxes(); // 0x134710
-    i32 IsReady();   // 0x1343a0
+    i32 SetupAxes();                                                                   // 0x134710
+    i32 IsReady();                                                                     // 0x1343a0
 
     void* m_vptr;                   // +0x000  stamped to g_deviceConfigVtblB2 (@0x5ef640)
     IDirectInputDeviceZ* m_device;  // +0x004
@@ -1010,6 +1010,183 @@ i32 CDeviceConfigB::IsReady() {
     return m_device2 != 0;
 }
 
+// The DirectInput mouse snapshot the +0x2a0 buffer holds for a mouse device
+// (DIMOUSESTATE): the relative axis deltas + the four button-down bytes (bit 0x80
+// is "down"). PollMouse reads lX/lY (lZ is ignored) and rgbButtons[0..3].
+struct DIMouseStateZ {
+    i32 lX;           // +0x00
+    i32 lY;           // +0x04
+    i32 lZ;           // +0x08 (unread)
+    u8 rgbButtons[4]; // +0x0c
+};
+
+// The packed mouse-flag bits PollMouse computes into m_currentKeys: the four
+// button-down bits (low nibble) + the four direction bits (the top nibble).
+#define MOUSE_BTN0 0x00000001
+#define MOUSE_BTN1 0x00000002
+#define MOUSE_BTN2 0x00000004
+#define MOUSE_BTN3 0x00000008
+#define MOUSE_LEFT 0x10000000  // lX < 0
+#define MOUSE_RIGHT 0x20000000 // lX > 0
+#define MOUSE_UP 0x40000000    // lY < 0
+#define MOUSE_DOWN 0x80000000  // lY > 0
+
+// One bit's edge reconcile: m_edgeKeys holds this frame's raw flags (snapshot of
+// m_currentKeys), m_latchedKeys the persistent "already counted" latch. A bit set
+// this frame that was already latched is cleared from m_currentKeys (so it only
+// reports the press EDGE); a fresh set is latched; a clear unlatches. Inlined per
+// bit (the binary unrolls all eight - same idiom as the keyboard Poll @0x133d00).
+#define MOUSE_EDGE(bit)                                                                            \
+    do {                                                                                           \
+        if (m_edgeKeys & (bit)) {                                                                  \
+            if (m_latchedKeys & (bit)) {                                                           \
+                m_currentKeys &= ~(u32)(bit);                                                      \
+            } else {                                                                               \
+                m_latchedKeys |= (bit);                                                            \
+            }                                                                                      \
+        } else {                                                                                   \
+            m_latchedKeys &= ~(u32)(bit);                                                          \
+        }                                                                                          \
+    } while (0)
+
+// CInputDevice::PollMouse (0x1343b0, __thiscall no args). Refresh the +0x2a0
+// DIMOUSESTATE via ReadState, pack the axis-direction + button-down flags into
+// m_currentKeys, then edge-reconcile each of the eight bits against m_latchedKeys.
+RVA(0x001343b0, 0x27e)
+i32 CInputDevice::PollMouse() {
+    m_currentKeys = 0;
+    m_edgeKeys = 0;
+    if (ReadState() == 0) {
+        return 0;
+    }
+    DIMouseStateZ* ms = (DIMouseStateZ*)m_stateBuffer;
+    if (ms == 0) {
+        return 0;
+    }
+    if (ms->lX < 0) {
+        m_currentKeys |= MOUSE_LEFT;
+    }
+    if (ms->lX > 0) {
+        m_currentKeys |= MOUSE_RIGHT;
+    }
+    if (ms->lY < 0) {
+        m_currentKeys |= MOUSE_UP;
+    }
+    if (ms->lY > 0) {
+        m_currentKeys |= MOUSE_DOWN;
+    }
+    if (ms->rgbButtons[0] & 0x80) {
+        m_currentKeys |= MOUSE_BTN0;
+    }
+    if (ms->rgbButtons[1] & 0x80) {
+        m_currentKeys |= MOUSE_BTN1;
+    }
+    if (ms->rgbButtons[2] & 0x80) {
+        m_currentKeys |= MOUSE_BTN2;
+    }
+    if (ms->rgbButtons[3] & 0x80) {
+        m_currentKeys |= MOUSE_BTN3;
+    }
+    m_edgeKeys = m_currentKeys;
+    MOUSE_EDGE(MOUSE_BTN0);
+    MOUSE_EDGE(MOUSE_BTN1);
+    MOUSE_EDGE(MOUSE_BTN2);
+    MOUSE_EDGE(MOUSE_BTN3);
+    MOUSE_EDGE(MOUSE_LEFT);
+    MOUSE_EDGE(MOUSE_RIGHT);
+    MOUSE_EDGE(MOUSE_UP);
+    MOUSE_EDGE(MOUSE_DOWN);
+    return 1;
+}
+
+// The DirectInput joystick snapshot the +0x2a0 buffer holds for a joystick device
+// (DIJOYSTATE2): the lX/lY axes then, at +0x30, the 128-button array (bit 0x80 is
+// "down"). PollJoystick reads lX/lY and the first ten buttons.
+struct DIJoyState2Z {
+    i32 lX; // +0x00
+    i32 lY; // +0x04
+    char pad08[0x30 - 0x08];
+    u8 rgbButtons[10]; // +0x30 (DIJOYSTATE2 has 128; only ten are mapped)
+};
+
+// CInputDevice::PollJoystick (0x1347d0, __thiscall no args). Poll() the device,
+// ReadState the +0x2a0 DIJOYSTATE2, pack the axis-direction + ten button-down bits
+// into m_currentKeys, then edge-reconcile each of the fourteen bits against
+// m_latchedKeys. Same archetype as PollMouse with the extra Poll() pre-step.
+RVA(0x001347d0, 0x40a)
+i32 CInputDevice::PollJoystick() {
+    m_currentKeys = 0;
+    m_edgeKeys = 0;
+    if (PollDevice() == 0) {
+        return 0;
+    }
+    if (ReadState() == 0) {
+        return 0;
+    }
+    DIJoyState2Z* js = (DIJoyState2Z*)m_stateBuffer;
+    if (js == 0) {
+        return 0;
+    }
+    if (js->lX < 0) {
+        m_currentKeys |= MOUSE_LEFT;
+    }
+    if (js->lX > 0) {
+        m_currentKeys |= MOUSE_RIGHT;
+    }
+    if (js->lY < 0) {
+        m_currentKeys |= MOUSE_UP;
+    }
+    if (js->lY > 0) {
+        m_currentKeys |= MOUSE_DOWN;
+    }
+    if (js->rgbButtons[0] & 0x80) {
+        m_currentKeys |= 0x1;
+    }
+    if (js->rgbButtons[1] & 0x80) {
+        m_currentKeys |= 0x2;
+    }
+    if (js->rgbButtons[2] & 0x80) {
+        m_currentKeys |= 0x4;
+    }
+    if (js->rgbButtons[3] & 0x80) {
+        m_currentKeys |= 0x8;
+    }
+    if (js->rgbButtons[4] & 0x80) {
+        m_currentKeys |= 0x10;
+    }
+    if (js->rgbButtons[5] & 0x80) {
+        m_currentKeys |= 0x20;
+    }
+    if (js->rgbButtons[6] & 0x80) {
+        m_currentKeys |= 0x40;
+    }
+    if (js->rgbButtons[7] & 0x80) {
+        m_currentKeys |= 0x80;
+    }
+    if (js->rgbButtons[8] & 0x80) {
+        m_currentKeys |= 0x100;
+    }
+    if (js->rgbButtons[9] & 0x80) {
+        m_currentKeys |= 0x200;
+    }
+    m_edgeKeys = m_currentKeys;
+    MOUSE_EDGE(0x1);
+    MOUSE_EDGE(0x2);
+    MOUSE_EDGE(0x4);
+    MOUSE_EDGE(0x8);
+    MOUSE_EDGE(0x10);
+    MOUSE_EDGE(0x20);
+    MOUSE_EDGE(0x40);
+    MOUSE_EDGE(0x80);
+    MOUSE_EDGE(0x100);
+    MOUSE_EDGE(0x200);
+    MOUSE_EDGE(MOUSE_LEFT);
+    MOUSE_EDGE(MOUSE_RIGHT);
+    MOUSE_EDGE(MOUSE_UP);
+    MOUSE_EDGE(MOUSE_DOWN);
+    return 1;
+}
+
 // CDeviceConfigB::CreateDevJoystick (__thiscall, ret 0x10 => 4 args). The joystick-device
 // bring-up the enum-devices callback drives: same shape as CreateDev (mouse) but the
 // joystick data format, a 0x110-byte DIJOYSTATE2 snapshot buffer, and a SetupAxes()
@@ -1230,5 +1407,28 @@ i32 CInputDevice::Acquire() {
 RVA(0x00134fe0, 0x13)
 i32 CInputDevice::Unacquire() {
     i32 hr = m_device2->vtbl->Unacquire(m_device2);
+    return hr == 0;
+}
+
+// CInputDevice::PollDevice (__thiscall, no args). The PollJoystick pre-step:
+// IDirectInputDevice2::Poll (slot +0x64) refreshes the buffered device. On success
+// returns 1; on DIERR_INPUTLOST/NOTACQUIRED it re-Acquires (return 0 if that fails)
+// and re-Polls once. A remaining nonzero HRESULT is reported through GetErrorString
+// (InputDevice.cpp:0x1e5); returns whether the final HRESULT was success (0).
+RVA(0x00135040, 0x65)
+i32 CInputDevice::PollDevice() {
+    i32 hr = m_device2->vtbl->Poll(m_device2);
+    if (hr == 0) {
+        return 1;
+    }
+    if (hr == (i32)DIERR_INPUTLOST || hr == (i32)DIERR_NOTACQUIRED) {
+        if (Acquire() == 0) {
+            return 0;
+        }
+        hr = m_device2->vtbl->Poll(m_device2);
+    }
+    if (hr != 0) {
+        DirectInputMgr2::GetErrorString(INPUTDEVICE_FILE, 0x1e5, hr);
+    }
     return hr == 0;
 }

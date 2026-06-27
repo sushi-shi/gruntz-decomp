@@ -309,6 +309,8 @@ public:
 class CUFO : public CPathHazardBase {
 public:
     CUFO(CHazardObj* obj);
+    i32 Serialize(void* stream, i32 tag, i32 c, i32 d);      // 0x0b4d30
+    i32 SerializeChain(void* stream, i32 tag, i32 c, i32 d); // 0x16e7f0 (base chain; call-only)
 };
 
 DATA(0x005e7324)
@@ -367,6 +369,113 @@ CUFO::CUFO(CHazardObj* obj) : CPathHazardBase(obj) {
     m_10->m_14c = 0;
     m_10->m_148 = 0;
     m_10->m_150 = 0;
+}
+
+// ---------------------------------------------------------------------------
+// CUFO::Serialize (0x0b4d30) - the UFO's serialize override. Same archetype as
+// CKitchenSlime::Serialize: chain the shared CUserLogic serialize (0x16e7f0) and
+// the +0x34 serializable sub-object (0x408c00 via the 0x1aff thunk) first - bail
+// on either failure - then transfer the per-instance state. The state is three
+// tag-gated groups (tag 7 = read via slot 0x2c, tag 4 = transfer via slot 0x30):
+// two quad-pairs (a shared-pointer helper) then a big block of seven quadwords,
+// a thirteen-element quadword array (a loop) and five dwords.
+// ---------------------------------------------------------------------------
+
+// The serialization stream: vtable slot 0x2c (index 11) reads n bytes, slot 0x30
+// (index 12) transfers n bytes (reloc-masked indirect calls; only the slot offsets
+// are load-bearing - same shape as CKitchenSlime's CSlimeStream).
+class CHazardStream {
+public:
+    virtual void Slot00();
+    virtual void Slot04();
+    virtual void Slot08();
+    virtual void Slot0C();
+    virtual void Slot10();
+    virtual void Slot14();
+    virtual void Slot18();
+    virtual void Slot1C();
+    virtual void Slot20();
+    virtual void Slot24();
+    virtual void Slot28();
+    virtual void Read(void* buf, i32 n);     // +0x2c (slot 11)
+    virtual void Transfer(void* buf, i32 n); // +0x30 (slot 12)
+};
+
+// The +0x34 serializable sub-object the UFO chains into (Chain @0x408c00 via the
+// 0x1aff thunk; same sub-chain CKitchenSlime uses).
+struct CHazardSerialSub {
+    i32 Chain(void* s, i32 tag, i32 c, i32 d); // 0x408c00
+};
+
+// One tag-gated quad-pair (two adjacent 8-byte fields), shared between two state
+// vectors. Inlined with the field pointer as a parameter so cl computes the base
+// once (lea) and the second field as base+8 (add) - the retail group-1/group-2 shape.
+static inline void SerQuadPair(CHazardStream* s, i32 tag, char* p) {
+    if (tag != 4) {
+        if (tag == 7) {
+            s->Read(p, 8);
+            s->Read(p + 8, 8);
+        }
+    } else {
+        s->Transfer(p, 8);
+        s->Transfer(p + 8, 8);
+    }
+}
+
+RVA(0x000b4d30, 0x287)
+i32 CUFO::Serialize(void* stream, i32 tag, i32 c, i32 d) {
+    CHazardStream* s = (CHazardStream*)stream;
+    char* B = (char*)this;
+    if (SerializeChain(stream, tag, c, d) == 0) {
+        return 0;
+    }
+    if (((CHazardSerialSub*)(B + 0x34))->Chain(stream, tag, c, d) == 0) {
+        return 0;
+    }
+    SerQuadPair(s, tag, B + 0x108);
+    SerQuadPair(s, tag, B + 0x120);
+    if (tag != 4) {
+        if (tag == 7) {
+            s->Read(B + 0x58, 8);
+            s->Read(B + 0x60, 8);
+            s->Read(B + 0x68, 8);
+            s->Read(B + 0x70, 8);
+            s->Read(B + 0x78, 8);
+            s->Read(B + 0x80, 8);
+            s->Read(B + 0x88, 8);
+            char* p = B + 0x90;
+            i32 n = 13;
+            do {
+                s->Read(p, 8);
+                p += 8;
+            } while (--n != 0);
+            s->Read(B + 0xf8, 4);
+            s->Read(B + 0xfc, 4);
+            s->Read(B + 0x100, 4);
+            s->Read(B + 0x104, 4);
+            s->Read(B + 0x118, 4);
+        }
+    } else {
+        s->Transfer(B + 0x58, 8);
+        s->Transfer(B + 0x60, 8);
+        s->Transfer(B + 0x68, 8);
+        s->Transfer(B + 0x70, 8);
+        s->Transfer(B + 0x78, 8);
+        s->Transfer(B + 0x80, 8);
+        s->Transfer(B + 0x88, 8);
+        char* p = B + 0x90;
+        i32 n = 13;
+        do {
+            s->Transfer(p, 8);
+            p += 8;
+        } while (--n != 0);
+        s->Transfer(B + 0xf8, 4);
+        s->Transfer(B + 0xfc, 4);
+        s->Transfer(B + 0x100, 4);
+        s->Transfer(B + 0x104, 4);
+        s->Transfer(B + 0x118, 4);
+    }
+    return 1;
 }
 
 // size 0x64 recovered from operator-new sites (gruntz.analysis.news)

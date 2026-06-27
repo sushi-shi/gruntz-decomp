@@ -222,17 +222,17 @@ extern CButeTree g_buteTree;
 //   Find  0x16da80 (__thiscall ret 8), Insert 0x16d850 (__thiscall ret 0xc),
 //   ActAlloc 0x16d990, RegisterRange 0x408710 (via 0x3742 thunk).
 struct CProjColl {
-    i32 Find(i32 coord, i32 z);          // 0x16da80
-    void RegisterRange(i32 lo, i32 hi);  // 0x408710 (0x0df920 callee)
+    i32 Find(i32 coord, i32 z);         // 0x16da80
+    void RegisterRange(i32 lo, i32 hi); // 0x408710 (0x0df920 callee)
 };
 struct CProjColl2 {
     void Insert(void* coll, void* item, i32 n); // 0x16d850
 };
-extern "C" i32 ProjActAlloc();              // 0x16d990
+extern "C" i32 ProjActAlloc(); // 0x16d990
 DATA(0x002bf464)
-extern void* g_projActCache;                // 0x6bf464 (shared alloc cache)
+extern void* g_projActCache; // 0x6bf464 (shared alloc cache)
 DATA(0x002bf428)
-extern void* g_projActAllocResult;          // 0x6bf428
+extern void* g_projActAllocResult; // 0x6bf428
 
 // R1 - the shared type-name table (@0x6bf650).
 struct CProjTypeEntry;
@@ -559,4 +559,30 @@ i32 CProjectile::LaunchSound(const char* key) {
     }
     m_200->Play(g_gameReg->m_11c, 0, 0, 1);
     return 1;
+}
+
+// ===========================================================================
+// 0x0ade60 - per-coordinate projectile-action dispatch.  Resolves the activation
+// entry for `coord` (R2 lookup, inlined); if the entry's leading handler slot is
+// non-null, re-resolves the entry and invokes the handler (__thiscall) on this
+// dispatcher object.  Same global-table-driven shape as ProjActLookup's callers.
+// ===========================================================================
+class CProjActDispatcher {
+public:
+    void Dispatch(i32 coord); // 0x0ade60
+};
+
+// The entry's leading slot is a __thiscall handler taking this dispatcher; MSVC5
+// rejects the __thiscall keyword, so model it as a single-inheritance member
+// pointer (a bare 4-byte code address) reinterpreted from the entry word.
+typedef void (CProjActDispatcher::*ProjActHandler)();
+
+RVA(0x000ade60, 0x102)
+void CProjActDispatcher::Dispatch(i32 coord) {
+    CProjActEntry* e = ProjActLookup(coord);
+    if (*(void**)e != 0) {
+        CProjActEntry* e2 = ProjActLookup(coord);
+        ProjActHandler h = *(ProjActHandler*)e2;
+        (this->*h)();
+    }
 }

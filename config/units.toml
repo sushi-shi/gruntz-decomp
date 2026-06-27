@@ -599,24 +599,6 @@ source = "src/Crt/StreamBuf.cpp"
 flags = "base"
 
 [[unit]]
-# MSVC5 LIBCMT iostreams `strstreambuf` (ctor/dtor carry the /GX SEH frame).
-unit = "crt_strstreambuf"
-source = "src/Crt/StrStreamBuf.cpp"
-flags = "eh"
-
-[[unit]]
-# MSVC5 LIBCMT iostreams `ostream` member functions (non-EH leaves).
-unit = "crt_ostream"
-source = "src/Crt/OStream.cpp"
-flags = "base"
-
-[[unit]]
-# MSVC5 LIBCMT iostreams `istream` member functions (non-EH leaves).
-unit = "crt_istream"
-source = "src/Crt/IStream.cpp"
-flags = "base"
-
-[[unit]]
 unit = "netmgr"
 source = "src/Net/NetMgr.cpp"
 flags = "eh"
@@ -945,11 +927,6 @@ flags = "eh"
 [[unit]]
 unit = "tilegridcommand"
 source = "src/Gruntz/TileGridCommand.cpp"
-flags = "base"
-
-[[unit]]
-unit = "unknownsalazar"
-source = "src/Dsndmgr/UnknownSalazar.cpp"
 flags = "base"
 
 [[unit]]
@@ -1439,4 +1416,153 @@ flags = "base"
 [[unit]]
 unit = "cddpagemgr"
 source = "src/Gruntz/CDDPageMgr.cpp"
+flags = "base"
+
+[[unit]]
+unit = "cimageset3"
+source = "src/Gruntz/CImageSet3.cpp"
+flags = "base"
+
+[[unit]]
+unit = "canielementeh"
+source = "src/Gruntz/CAniElementEh.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "netcmdslot"
+source = "src/Net/NetCmdSlot.cpp"
+flags = "base"
+
+[[unit]]
+unit = "netsessionnode"
+source = "src/Net/NetSessionNode.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "imagepool"
+source = "src/Image/ImagePool.cpp"
+flags = "base"
+
+[[unit]]
+unit = "cwwdobjmgrfactories"
+source = "src/Gruntz/CWwdObjMgrFactories.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cmovinglogicserial"
+source = "src/Gruntz/CMovingLogicSerial.cpp"
+flags = "base"
+
+[[unit]]
+unit = "streamrecordloaders"
+source = "src/Gruntz/StreamRecordLoaders.cpp"
+flags = "base"
+
+[[unit]]
+unit = "statedispatch"
+source = "src/Gruntz/StateDispatch.cpp"
+flags = "base"
+[[unit]]
+unit = "groupops"
+source = "src/Gruntz/GroupOps.cpp"
+flags = "base"
+[[unit]]
+unit = "butesectionctor"
+source = "src/Gruntz/CButeSectionCtor.cpp"
+flags = "base"
+
+[[unit]]
+unit = "logicactregistrars"
+source = "src/Gruntz/LogicActRegistrars.cpp"
+flags = "base"
+
+[[unit]]
+unit = "logicactreg"
+source = "src/Gruntz/LogicActReg.cpp"
+flags = "base"
+
+[[unit]]
+unit = "csoundfxemitter"
+source = "src/Gruntz/CSoundFxEmitter.cpp"
+flags = "base"
+[[unit]]
+unit = "cmgrsettings"
+source = "src/Gruntz/CMgrSettings.cpp"
+flags = "base"
+
+[[unit]]
+unit = "wwdgameobjecteh"
+source = "src/Gruntz/WwdGameObjectEh.cpp"
+flags = "eh"
+[[unit]]
+unit = "colorhsv"
+source = "src/Gruntz/ColorHsv.cpp"
+flags = "base"
+[[unit]]
+unit = "arrayserialize"
+source = "src/Gruntz/ArraySerialize.cpp"
+flags = "base"
+[[unit]]
+unit = "faderradial"
+source = "src/Gruntz/FaderRadial.cpp"
+flags = "base"
+[[unit]]
+unit = "imagerotate"
+source = "src/Gruntz/ImageRotate.cpp"
+flags = "base"
+[[unit]]
+unit = "palettebmp"
+source = "src/Gruntz/PaletteBmp.cpp"
+flags = "eh"
+[[unit]]
+unit = "imagesavebmp"
+source = "src/Gruntz/ImageSaveBmp.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "imagepolyclip"
+source = "src/Image/ImagePolyClip.cpp"
+flags = "base"
+[[unit]]
+unit = "fadertilerender"
+source = "src/Gruntz/CFaderTileRender.cpp"
+flags = "base"
+[[unit]]
+unit = "fxmodet3"
+source = "src/Gruntz/CFxModeT3.cpp"
+flags = "base"
+
+[[unit]]
+unit = "tiletriggerfactory"
+source = "src/Gruntz/TileTriggerFactory.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "ddrawpolyfill"
+source = "src/Gruntz/DDrawPolyFill.cpp"
+flags = "framed"
+[[unit]]
+unit = "cscanlinesurfacesave"
+source = "src/Image/CScanlineSurfaceSave.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "customwwdpath"
+source = "src/Wwd/CustomWwdPath.cpp"
+flags = "eh"
+[[unit]]
+unit = "grunttubeanim"
+source = "src/Gruntz/GruntTubeAnim.cpp"
+flags = "base"
+[[unit]]
+unit = "imagerle16encode"
+source = "src/Image/ImageRle16Encode.cpp"
+flags = "base"
+[[unit]]
+unit = "wallproject"
+source = "src/DDrawMgr/WallProject.cpp"
+flags = "base"
+[[unit]]
+unit = "gruntmovestep"
+source = "src/Gruntz/GruntMoveStep.cpp"
 flags = "base"

@@ -2063,6 +2063,74 @@ i32 CNetMgr::EnumSessions(void* desc, void* ctx) {
 }
 
 // ---------------------------------------------------------------------------
+// CNetMgr::Find (0x179270, __thiscall, ret 4) - the group-list lookup.
+// The +0x1c group CObList holds InterfaceObject payload nodes (CNode shape:
+// next@+0, data@+8). For each payload, the service-provider class `kind` selects
+// one of the GUID predicates (Font.cpp InterfaceObject::IsInterfaceX, reloc-
+// masked): kind 1 -> IsInterface2, kind 2 -> IsInterface1, kind 5 -> IsInterface5;
+// return the first payload that matches. The running POSITION is cached at +0x7c
+// (the m_groupSelId slot, reused as the GetNext cursor). Raw +0x20/+0x7c offset
+// access keeps the codegen independent of the dual-purpose field names.
+// ---------------------------------------------------------------------------
+struct InterfaceObject {
+    i32 IsInterface1(); // 0x1794b0
+    i32 IsInterface2(); // 0x1794e0
+    i32 IsInterface5(); // 0x179570
+};
+struct CGroupNode {
+    CGroupNode* m_next;      // +0x00
+    void* m_4;               // +0x04
+    InterfaceObject* m_data; // +0x08
+};
+
+// @early-stop
+// linked-list advance regalloc wall (~94.9%): the head-load + the kind switch +
+// the three predicate calls are byte-exact; only the GetNext advance differs -
+// retail conservatively reloads the +0x7c cursor into a 2nd register (edx) for
+// the ->next read while routing ->data through eax, the recompile derefs both
+// from one register. Aliasing-conservatism choice, not source-steerable. See
+// docs/patterns/linked-list-walk-node-eax-rotation.md. Logic complete.
+RVA(0x00179270, 0x89)
+InterfaceObject* CNetMgr::Find(i32 kind) {
+    CGroupNode* node = *(CGroupNode**)((char*)this + 0x20);
+    *(CGroupNode**)((char*)this + 0x7c) = node;
+    InterfaceObject* item;
+    if (node) {
+        *(CGroupNode**)((char*)this + 0x7c) = node->m_next;
+        item = node->m_data;
+    } else {
+        item = 0;
+    }
+    while (item) {
+        switch (kind) {
+            case 1:
+                if (item->IsInterface2()) {
+                    return item;
+                }
+                break;
+            case 2:
+                if (item->IsInterface1()) {
+                    return item;
+                }
+                break;
+            case 5:
+                if (item->IsInterface5()) {
+                    return item;
+                }
+                break;
+        }
+        CGroupNode* cur = *(CGroupNode**)((char*)this + 0x7c);
+        if (cur) {
+            item = cur->m_data;
+            *(CGroupNode**)((char*)this + 0x7c) = cur->m_next;
+        } else {
+            item = 0;
+        }
+    }
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
 // CNetSessionNode::InitSession (0x1796c0, __thiscall) - the 4-arg body the
 // session-node ctor (AddSessionNode) runs on the fresh 0x24-byte node: store the
 // dword id (+0x4) and the second dword (+0x10), assign the two name CStrings

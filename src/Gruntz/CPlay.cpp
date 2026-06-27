@@ -639,6 +639,132 @@ void CPlay::OnExit() {
 }
 
 // ===========================================================================
+// CPlay::ModeCleanup (0x0cb740) - vtable slot 0x22 mode/state-exit teardown.
+// For each live sub-object of the view holder (m_c) and the world (m_4) it runs
+// that object's teardown method (two are virtual). Self-contained (no DIR32
+// relocs); the view ptr is re-read before every block (no cached local). The
+// sub-object offsets here differ from Render's CView typing, so a local view-cast
+// keeps Render's member typing untouched.
+// ===========================================================================
+// Two renderer/draw sub-objects torn down through a vtable slot. Dummy virtuals
+// pad the slot index so `o->Teardown()` lowers to `mov edx,[o]; call [edx+slot]`.
+struct CExitV58 { // teardown at vtable +0x58 (slot 22)
+    virtual void s00();
+    virtual void s01();
+    virtual void s02();
+    virtual void s03();
+    virtual void s04();
+    virtual void s05();
+    virtual void s06();
+    virtual void s07();
+    virtual void s08();
+    virtual void s09();
+    virtual void s0a();
+    virtual void s0b();
+    virtual void s0c();
+    virtual void s0d();
+    virtual void s0e();
+    virtual void s0f();
+    virtual void s10();
+    virtual void s11();
+    virtual void s12();
+    virtual void s13();
+    virtual void s14();
+    virtual void s15();
+    virtual void Teardown(); // slot 22 (+0x58)
+};
+struct CExitV44 { // teardown at vtable +0x44 (slot 17)
+    virtual void s00();
+    virtual void s01();
+    virtual void s02();
+    virtual void s03();
+    virtual void s04();
+    virtual void s05();
+    virtual void s06();
+    virtual void s07();
+    virtual void s08();
+    virtual void s09();
+    virtual void s0a();
+    virtual void s0b();
+    virtual void s0c();
+    virtual void s0d();
+    virtual void s0e();
+    virtual void s0f();
+    virtual void s10();
+    virtual void Teardown(); // slot 17 (+0x44)
+};
+// The view holder (this->m_c) as the exit walk reads it.
+struct CExitView {
+    char p0[0x8];
+    struct M8 {
+        void Refresh(); // 0x159ef0
+    }* m_8;             // +0x8
+    struct Mc {
+        void Teardown(); // 0x163c60
+    }* m_c;              // +0xc
+    CExitV58* m_10;      // +0x10  virtual slot 0x58
+    char p14[0x24 - 0x14];
+    CExitV44* m_24; // +0x24  virtual slot 0x44
+    struct M28 {
+        char p0[0x2c];
+        struct Inner {
+            void Teardown(); // 0x137a80
+        }* m_2c;             // +0x2c
+        void Release();      // 0x157bc0
+    }* m_28;                 // +0x28
+    struct M2c {
+        void Teardown(); // 0x152720
+    }* m_2c;             // +0x2c
+};
+// The world (this->m_4) as the exit walk reads it.
+struct CExitWorld {
+    char p0[0x48];
+    struct M48 {
+        void Teardown(); // 0x138530
+    }* m_48;             // +0x48
+    char p4c[0x54 - 0x4c];
+    struct M54 {
+        void Reset(); // 0x28ab thunk
+    }* m_54;          // +0x54
+};
+
+// @early-stop
+// reload-register regalloc tail (99.62%): logic byte-exact and every call reloc
+// pairs; the only residual is 4 bytes - the intermediate register cl picks for the
+// re-read of m_c before `m_28->Release` and of m_4 before `m_54->Reset` (cl folds
+// into ecx/edx, retail loads via eax/ecx). The view ptr IS re-read each block as
+// retail does; this is the reread-member-view-pointer.md regalloc residual, not
+// source-steerable (the surrounding standalone blocks already match). Final sweep.
+RVA(0x000cb740, 0x8f)
+void CPlay::ModeCleanup() {
+    if (m_c) {
+        if (((CExitView*)m_c)->m_28->m_2c) {
+            ((CExitView*)m_c)->m_28->m_2c->Teardown();
+        }
+        ((CExitView*)m_c)->m_28->Release();
+    }
+    if (m_4) {
+        ((CExitWorld*)m_4)->m_48->Teardown();
+        ((CExitWorld*)m_4)->m_54->Reset();
+    }
+    if (m_c) {
+        ((CExitView*)m_c)->m_10->Teardown();
+    }
+    if (m_c) {
+        ((CExitView*)m_c)->m_2c->Teardown();
+    }
+    if (m_c) {
+        ((CExitView*)m_c)->m_24->Teardown();
+    }
+    if (m_c) {
+        ((CExitView*)m_c)->m_8->Refresh();
+    }
+    if (m_c) {
+        ((CExitView*)m_c)->m_c->Teardown();
+    }
+}
+
+// ===========================================================================
 // CPlay::OnKeyCommand (0x0cbaf0) - the PLAY-state keyboard/UI command dispatcher.
 // Early-outs on the HUD-suppress gate, then a priority chain: resume from a paused/
 // disabled frame (re-arm the in-game mode), bail to ReportError if the per-frame
@@ -1282,6 +1408,160 @@ i32 CPlay::DrawWorldFrames() {
     }
     m_4w()->m_68->StepFull(saveNow, saveDelta, saveAccum); // tail step
     return steps;
+}
+
+// ===========================================================================
+// The dev frame profiler (CPlay::ProfileDeltaFrame / ProfileInputFrame).
+// Instrumented variants of the world-draw + present that bracket each phase with
+// the cached timeGetTime fn-ptr (g_pTimeGetTime, pinned in a callee-saved reg)
+// and emit a per-phase timing line through the variadic logger ProfLog into the
+// shared text sink g_profSink.
+// ===========================================================================
+extern "C" {
+    DATA(0x002c4650)
+    extern u32(__stdcall* g_pTimeGetTime)(); // PTR_timeGetTime_006c4650
+    // The profiler line sink (a global text buffer; its ADDRESS is the logger arg).
+    DATA(0x00245524)
+    extern i32 g_profSink; // DAT_00645524
+    // The variadic profiler logger (cdecl). 0x1b2cf5.
+    void ProfLog(void* sink, const char* fmt, ...);
+}
+// The two timing accumulators ProfileInputFrame folds the back-half phases into.
+extern "C" {
+    DATA(0x0024c284)
+    extern i32 g_profAccA; // DAT_0064c284
+    DATA(0x0024c288)
+    extern i32 g_profAccB; // DAT_0064c288
+}
+
+// The draw-surface flush sink (m_c->m_4->m_10->m_2c) torn through a thiscall flush.
+struct CProfFlush {
+    void Flush(i32 z); // 0x13e850 (thiscall)
+};
+
+// ===========================================================================
+// CPlay::ProfileDeltaFrame (0x0ca0a0) - the simple profiled frame: run the
+// frame-rate split (RenderFast/Slow), world-blit, push-view + present, then log
+// "Delta/Update/Draw/NumUpdates", flush, and run the final camera draw-B.
+// ===========================================================================
+RVA(0x000ca0a0, 0x101)
+i32 CPlay::ProfileDeltaFrame() {
+    u32(__stdcall * tg)() = g_pTimeGetTime;
+    i32 updates = 0;
+    u32 t0 = tg();
+    u32 d = g_645584;
+    if (d > 0x12 && d < 0xc8) {
+        updates = RenderFast();
+    } else {
+        RenderSlow();
+    }
+    i32 renderMs = (i32)(tg() - t0);
+    m_4w()->m_54->Blit(m_c->m_24->m_5c->m_84, m_c->m_24->m_5c->m_88);
+    u32 t2 = tg();
+    m_c->m_24->PushView(m_c->m_4->m_14, m_c->m_8);
+    m_c->m_c->Present((i32)m_c->m_4->m_14, (i32)m_c->m_4->m_18);
+    i32 presentMs = (i32)(tg() - t2);
+    ProfLog(
+        &g_profSink,
+        "Delta=%i, Update=%i, Draw=%i, NumUpdates=%i    ",
+        (i32)g_645584,
+        renderMs,
+        presentMs,
+        updates
+    );
+    ProfFlushTail();
+    ((CProfFlush*)m_c->m_4->m_10->m_2c)->Flush(0);
+    if (m_c->m_24->m_5c != 0) {
+        m_c->m_24->m_5c->DrawB();
+    }
+    return 1;
+}
+
+// The profiled-frame report tail (cdecl free fn, 3 args): the manager singleton,
+// the guts subsystem and the region-0 gate. 0xebd70. reloc-masked.
+extern "C" void ProfReport(void* mgr, void* guts, i32 gate);
+
+// ===========================================================================
+// CPlay::ProfileInputFrame (0x0c9e40) - the fully-instrumented frame: nine
+// timeGetTime-bracketed phases (input/activate/deact/update/hit-test/draw/fixed/
+// status-bar) logged in one "Input=.." line, then the flush + camera draw-B whose
+// times are stashed in the cross-frame accumulators (g_profAccA/g_profAccB read
+// at log time = the PREVIOUS frame's flush/draw-B). __thiscall, ret 0.
+// ===========================================================================
+// @early-stop
+// profiler-scheduling wall: the body is the complete, correct reconstruction (the
+// nine phase brackets in order, the BeginScene(1)/m_68->Step/m_guts->Step update
+// block, the PushView/Present draw block, the m_guts status-bar tick, the 11-arg
+// ProfLog with the cross-frame g_profAccA/g_profAccB accumulators, then the timed
+// flush + draw-B writing those globals for next frame, and the ProfReport tail).
+// MSVC pins the g_pTimeGetTime fn-ptr in esi across all 14 calls as retail does,
+// but the seven live phase-times spill to a different set of stack slots / the
+// ebx/ebp coloring of deact/update differs, so the slot-reuse schedule diverges
+// despite identical logic. Same idiom as ProfileDeltaFrame (byte-exact); the extra
+// phases push it onto the documented register/stack-scheduling plateau. Deferred
+// to the final sweep. docs/patterns/zero-register-pinning.md.
+RVA(0x000c9e40, 0x1d7)
+i32 CPlay::ProfileInputFrame() {
+    m_4w()->m_54->Blit(m_c->m_24->m_5c->m_84, m_c->m_24->m_5c->m_88); // untimed
+    u32(__stdcall * tg)() = g_pTimeGetTime;
+
+    u32 t1 = tg();
+    Vslot26(); // this->vtbl[+0x98]
+    i32 activateMs = (i32)(tg() - t1);
+
+    u32 t3 = tg();
+    if (m_c->m_24->m_5c != 0) {
+        m_c->m_24->m_5c->DrawA();
+    }
+    i32 deactMs = (i32)(tg() - t3);
+
+    u32 t5 = tg();
+    m_c->m_8->BeginScene(1);
+    m_4w()->m_68->Step((i32)g_645584);
+    m_guts->Step((i32)g_645584);
+    i32 updateMs = (i32)(tg() - t5);
+
+    u32 t7 = tg();
+    i32 hitTestMs = (i32)(tg() - t7);
+
+    u32 t9 = tg();
+    m_c->m_24->PushView(m_c->m_4->m_14, m_c->m_8);
+    i32 drawMs = (i32)(tg() - t9);
+
+    u32 t11 = tg();
+    m_c->m_c->Present((i32)m_c->m_4->m_14, (i32)m_c->m_4->m_18);
+    i32 fixedMs = (i32)(tg() - t11);
+
+    u32 t13 = tg();
+    m_guts->StatusBarTick(); // 0xfe6b0
+    i32 statusBarMs = (i32)(tg() - t13);
+
+    ProfLog(
+        &g_profSink,
+        "Input=%i, Activate=%i, Deact=%i, Update=%i, HitTest=%i, Draw=%i, Fixed=%i, "
+        "StatusBar=%i, Flip=%i  ",
+        activateMs,
+        deactMs,
+        g_profAccA,
+        updateMs,
+        hitTestMs,
+        drawMs,
+        fixedMs,
+        statusBarMs,
+        g_profAccB
+    );
+
+    ProfFlushTail();
+    g_profAccB = (i32)tg();
+    ((CProfFlush*)m_c->m_4->m_10->m_2c)->Flush(0);
+    g_profAccB = (i32)(tg() - (u32)g_profAccB);
+    g_profAccA = (i32)tg();
+    if (m_c->m_24->m_5c != 0) {
+        m_c->m_24->m_5c->DrawB();
+    }
+    g_profAccA = (i32)(tg() - (u32)g_profAccA);
+    ProfReport(g_64556c, m_guts, m_region0Gate);
+    return 1;
 }
 
 // ===========================================================================
@@ -3073,6 +3353,457 @@ void CPlay::FreeListTeardown() {
         ((CRtRow*)((char*)self->m_4 + 0x188 + off))->ResetB();
     }
     self->m_49c = -1;
+}
+
+// ---------------------------------------------------------------------------
+// CPlayDtorBody (0x0c8700): the ~CPlay teardown body. Frees the per-frame
+// workers, clears the four g_mgrSettings config rows, flushes the free-list
+// arrays, then chains the base (CState) dtor. Same free-list idiom as
+// FreeListTeardown (the m_374/m_3a4[4]/m_48c flush).
+// ---------------------------------------------------------------------------
+struct DtorWorkerA {
+    void Dtor(); // 0x10be thunk  (m_320)
+};
+struct DtorWorkerB {
+    void Dtor(); // 0x1438 thunk  (m_2dc)
+};
+struct DtorWorkerC {
+    void Dtor(); // 0x285b thunk  (m_2e0)
+};
+struct DtorWorkerD {
+    void Dtor(); // 0x1cad thunk  (m_2e4)
+};
+struct DtorWorkerE {
+    void Dtor(); // 0x14ce thunk  (m_3f4)
+};
+struct DtorObList {
+    void Dtor(); // 0x1b9c69 thunk  (m_4 + 0xc8 CObList)
+};
+struct DtorSub5c {
+    void Dtor(); // 0x128a thunk  (m_4->m_5c)
+};
+struct DtorWorld { // this->m_4
+    char p0[0x5c];
+    DtorSub5c* m_5c; // +0x5c
+    char p60[0x128 - 0x60];
+    i32 m_128; // +0x128
+};
+
+struct CDtorThis {
+    // Slot +0x80 (index 32) is the only virtual dispatched; declare the leading
+    // 32 slots so `mov eax,[this]; call [eax+0x80]` falls out as __thiscall.
+    virtual void v00();
+    virtual void v01();
+    virtual void v02();
+    virtual void v03();
+    virtual void v04();
+    virtual void v05();
+    virtual void v06();
+    virtual void v07();
+    virtual void v08();
+    virtual void v09();
+    virtual void v10();
+    virtual void v11();
+    virtual void v12();
+    virtual void v13();
+    virtual void v14();
+    virtual void v15();
+    virtual void v16();
+    virtual void v17();
+    virtual void v18();
+    virtual void v19();
+    virtual void v20();
+    virtual void v21();
+    virtual void v22();
+    virtual void v23();
+    virtual void v24();
+    virtual void v25();
+    virtual void v26();
+    virtual void v27();
+    virtual void v28();
+    virtual void v29();
+    virtual void v30();
+    virtual void v31();
+    virtual void Vfunc80(); // +0x80
+    void BaseDtor();        // 0x3f53 thunk  (base CState dtor)
+
+    char p0[0x4];
+    DtorWorld* m_4; // +0x04
+    char p8[0x1d0 - 0x8];
+    i32 m_1d0; // +0x1d0
+    char p1d4[0x2dc - 0x1d4];
+    DtorWorkerB* m_2dc; // +0x2dc
+    DtorWorkerC* m_2e0; // +0x2e0
+    DtorWorkerD* m_2e4; // +0x2e4
+    char p2e8[0x320 - 0x2e8];
+    DtorWorkerA* m_320; // +0x320
+    char p324[0x370 - 0x324];
+    CRtArr m_370; // +0x370
+    char p384[0x3a4 - 0x384];
+    CRtArr m_3a4[4];    // +0x3a4
+    DtorWorkerE* m_3f4; // +0x3f4
+    char p3f8[0x488 - 0x3f8];
+    CRtArr m_488; // +0x488
+    i32 m_49c;    // +0x49c
+};
+
+// @early-stop
+// hard-regalloc wall: ebp pinned to the zero-const + the cached free-list head
+// in edx across the m_374/m_3a4/m_48c flush loops are not source-steerable
+// (same coloring plateau as FreeListTeardown 0xcb480, ~99%).
+RVA(0x000c8700, 0x1f4)
+void CPlay::CPlayDtorBody() {
+    CDtorThis* self = (CDtorThis*)this;
+    i32 i;
+    if (self->m_320) {
+        self->m_320->Dtor();
+        ::operator delete(self->m_320);
+        self->m_320 = 0;
+    }
+    self->Vfunc80();
+    if (self->m_4) {
+        self->m_4->m_128 = 0;
+        ((DtorObList*)((char*)self->m_4 + 0xc8))->Dtor();
+    }
+    self->m_1d0 = 0;
+    i32 off = 0;
+    do {
+        off += 0x238;
+        *(i32*)((char*)g_64556c + off - 0xc8) = 0;
+    } while (off < 0x8e0);
+    if (self->m_4 && self->m_4->m_5c) {
+        self->m_4->m_5c->Dtor();
+    }
+    if (self->m_2dc) {
+        self->m_2dc->Dtor();
+        ::operator delete(self->m_2dc);
+        self->m_2dc = 0;
+    }
+    if (self->m_2e0) {
+        self->m_2e0->Dtor();
+        ::operator delete(self->m_2e0);
+        self->m_2e0 = 0;
+    }
+    if (self->m_2e4) {
+        self->m_2e4->Dtor();
+        ::operator delete(self->m_2e4);
+        self->m_2e4 = 0;
+    }
+    if (self->m_3f4) {
+        self->m_3f4->Dtor();
+        ::operator delete(self->m_3f4);
+        self->m_3f4 = 0;
+    }
+    for (i = 0; i < self->m_370.m_count; i++) {
+        void* node = self->m_370.m_data[i];
+        if (node != 0) {
+            void** p = (void**)((char*)node - g_freeListNodeBias);
+            *p = g_freeList;
+            g_freeList = p;
+        }
+    }
+    self->m_370.SetSize(0, -1);
+    for (i32 k = 0; k < 4; k++) {
+        for (i = 0; i < self->m_3a4[k].m_count; i++) {
+            void* node = self->m_3a4[k].m_data[i];
+            if (node != 0) {
+                void** p = (void**)((char*)node - g_freeListNodeBias);
+                *p = g_freeList;
+                g_freeList = p;
+            }
+        }
+        self->m_3a4[k].SetSize(0, -1);
+    }
+    for (i = 0; i < self->m_488.m_count; i++) {
+        void* node = self->m_488.m_data[i];
+        if (node != 0) {
+            void** p = (void**)((char*)node - g_freeListNodeBias);
+            *p = g_freeList;
+            g_freeList = p;
+        }
+    }
+    self->m_49c = -1;
+    self->m_488.SetSize(0, -1);
+    self->BaseDtor();
+}
+
+// ---------------------------------------------------------------------------
+// EnterMode (0x0d6fa0): the mode-enter gate. Pause the guts + world, optionally
+// run the deferred draw, (re)install the renderer view, then re-arm the guts and
+// (mode 9) latch the saved game clock. A dense chain of CPlay/registry thunks.
+// ---------------------------------------------------------------------------
+struct EmGuts {      // this->m_2dc
+    void Pause();    // 0x125d
+    void StepZ(i32); // 0x34bd
+    void Resume();   // 0x21b7
+};
+struct EmRegN {    // g_64556c
+    void Notify(); // 0x12ee
+};
+struct EmHdr2c {      // m_c->m_4->m_14->m_2c
+    void Recede(i32); // 0x13e760
+};
+struct EmHdr14 {
+    char p0[0x2c];
+    EmHdr2c* m_2c; // +0x2c
+};
+struct EmCWorld {            // m_c->m_4
+    i32 Sub158d20();         // 0x158d20
+    i32 Sub158cb0(i32, i32); // 0x158cb0
+    void Sub158e90();        // 0x158e90
+    char p0[0x14];
+    EmHdr14* m_14; // +0x14
+    i32 m_18;      // +0x18
+};
+struct EmRendVtbl {
+    void* s[0x34 / 4];
+    void (*Present)(void*, EmHdr14*, i32);
+};
+struct EmRendC { // m_c->m_c
+    EmRendVtbl* vtbl;
+};
+struct EmReg24Sub {                  // m_c->m_24
+    void BuildView(EmHdr14*, void*); // 0x15dc90
+    char p0[0x5c];
+    void* m_5c; // +0x5c
+};
+struct EmResMgr { // this->m_c
+    char p0[0x4];
+    EmCWorld* m_4; // +0x04
+    void* m_8;     // +0x08
+    EmRendC* m_c;  // +0x0c
+    char p10[0x24 - 0x10];
+    EmReg24Sub* m_24; // +0x24
+};
+struct EmWorld {    // this->m_4
+    void Refresh(); // 0x3d23
+    char p0[0x10];
+    i32 m_10; // +0x10
+    char p14[0x54 - 0x14];
+    void* m_54; // +0x54
+};
+struct EmSink5c {  // m_c->m_24->m_5c
+    void Notify(); // 0x163370
+};
+struct EmSub54 {  // m_4->m_54
+    void Reset(); // 0x18e8
+};
+
+struct EmThis {
+    void DeferredDraw();               // 0x1ae6  (this)
+    void ArmTimer(i32, i32, i32, i32); // 0x1843  (this)
+    void FinishMode();                 // 0x3a71  (this)
+
+    char p0[0x4];
+    EmWorld* m_4; // +0x04
+    char p8[0xc - 0x8];
+    EmResMgr* m_c; // +0x0c
+    char p10[0x1a8 - 0x10];
+    i32 m_1a8, m_1ac, m_1b0; // +0x1a8..
+    char p1b4[0x1c4 - 0x1b4];
+    i32 m_1c4; // +0x1c4
+    char p1c8[0x1cc - 0x1c8];
+    i32 m_1cc; // +0x1cc
+    char p1d0[0x2dc - 0x1d0];
+    EmGuts* m_2dc; // +0x2dc
+    char p2e0[0x470 - 0x2e0];
+    i32 m_470; // +0x470
+    i32 m_474; // +0x474
+    char p478[0x484 - 0x478];
+    i32 m_484; // +0x484
+};
+
+extern "C" i32 g_645588_clk; // 0x645588 (game clock latch)
+
+// Reuse the registry's external WorldSubstep thunk (0x2356).
+void EmRegWorldStep(EmRegN* reg, EmGuts* guts, i32 a); // 0x2356  cdecl(reg, guts, a)
+
+// @early-stop
+// large state-machine wall: the mode dispatch + renderer reinstall + guts re-arm
+// are faithful, but the whole ILT-thunk referent set (~15 unnamed CPlay/registry
+// leaves) keeps it reloc-fuzzy; codegen plateau, not source-steerable.
+RVA(0x000d6fa0, 0x1fa)
+i32 CPlay::EnterMode(i32 mode) {
+    EmThis* self = (EmThis*)this;
+    ((EmRegN*)g_64556c)->Notify();
+    self->m_2dc->Pause();
+    self->m_2dc->StepZ(0);
+    self->m_4->Refresh();
+
+    if (self->m_1c4 != 0) {
+        self->m_1c4 = 0;
+        self->m_c->m_4->m_14->m_2c->Recede(0);
+        EmRegWorldStep((EmRegN*)g_64556c, self->m_2dc, self->m_470);
+        if (self->m_474 != 0) {
+            self->DeferredDraw();
+        } else {
+            self->m_c->m_24->BuildView(self->m_c->m_4->m_14, self->m_c->m_8);
+            self->m_c->m_c->vtbl
+                ->Present(self->m_c->m_c, self->m_c->m_4->m_14, self->m_c->m_4->m_18);
+        }
+        self->m_2dc->Pause();
+        self->m_2dc->Resume();
+    } else {
+        if (self->m_474 != 0) {
+            self->DeferredDraw();
+        } else {
+            self->m_c->m_24->BuildView(self->m_c->m_4->m_14, self->m_c->m_8);
+            self->m_c->m_c->vtbl
+                ->Present(self->m_c->m_c, self->m_c->m_4->m_14, self->m_c->m_4->m_18);
+        }
+        self->m_2dc->Pause();
+        self->m_2dc->Resume();
+        if (mode == 9) {
+            if (self->m_c->m_4->Sub158d20() != 0) {
+                goto finish;
+            }
+            if (self->m_c->m_4->Sub158cb0(0, 0x30000) != 0) {
+                goto finish;
+            }
+            return 0;
+        }
+        self->m_c->m_4->m_14->m_2c->Recede(0);
+    }
+
+finish:
+    self->m_c->m_4->Sub158e90();
+    self->ArmTimer(0x50, 0x3e8, 0, 1);
+    if (self->m_c->m_24->m_5c != 0) {
+        ((EmSink5c*)self->m_c->m_24->m_5c)->Notify();
+    }
+    self->m_4->Refresh();
+    self->m_1a8 = 0;
+    self->m_1ac = 0;
+    self->m_1b0 = 0;
+    if (self->m_4->m_10 != 0 && mode != 9) {
+        ((EmSub54*)self->m_4->m_54)->Reset();
+    }
+    if (mode == 9) {
+        g_645588_clk = self->m_1cc;
+    }
+    self->m_2dc->Pause();
+    self->FinishMode();
+    self->m_484 = 0;
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// AddLevelGruntz (0x0d5960): walk the registry's object list; for each valid
+// grunt object (vtable-id 0x4024a5, not the placeholder m_124) register it with
+// the session via the world's +0x68 sink. On a -1 failure, format + log the
+// "Could not add Grunt: Player=%d" message (a CString temp -> /GX frame).
+// ---------------------------------------------------------------------------
+struct AgGrunt { // node->m_8
+    char p0[0x8];
+    u32 m_08; // +0x08  flag bits
+    char p0c[0x5c - 0xc];
+    i32 m_5c; // +0x5c
+    i32 m_60; // +0x60
+    char p64[0x7c - 0x64];
+    i32* m_7c; // +0x7c  type record (m_7c[4]==id, m_7c[0xb]/[0xc] params)
+    char p80[0x114 - 0x80];
+    i32 m_114; // +0x114
+    i32 m_118; // +0x118
+    i32 m_11c; // +0x11c
+    i32 m_120; // +0x120
+    i32 m_124; // +0x124  placeholder/type token
+    i32 m_128; // +0x128
+    i32 m_12c; // +0x12c
+    char p130[0x134 - 0x130];
+    i32 m_134; // +0x134
+};
+struct AgNode {
+    AgNode* m_next; // +0x00
+    char p4[0x8 - 0x4];
+    AgGrunt* m_8; // +0x08
+};
+struct AgListHdr {
+    char p0[0x4];
+    AgNode* m_head; // +0x04
+};
+struct AgWorldSink { // this->m_4->m_68
+    // 0x40bb: register one grunt (13 args). __thiscall.
+    i32 AddGrunt(
+        i32 token,
+        i32 x,
+        i32 y,
+        i32 cap,
+        i32 z,
+        i32 a,
+        i32 b,
+        i32 c,
+        i32 d,
+        i32 cfg2,
+        i32 recA,
+        i32 recB,
+        i32* rec
+    );
+};
+struct AgWorld { // this->m_4
+    char p0[0x68];
+    AgWorldSink* m_68; // +0x68
+};
+struct AgResMgr { // this->m_c
+    char p0[0x8];
+    void* m_8; // +0x08  -> list owner (+0x10 = embedded list)
+};
+struct AgThis {
+    char p0[0x4];
+    AgWorld* m_4; // +0x04
+    char p8[0xc - 0x8];
+    AgResMgr* m_c; // +0x0c
+};
+
+extern i32 g_644c54;                             // 0x644c54 placeholder token
+void AgFormat(CString* s, const char* fmt, ...); // 0x1b2cf5 CString::Format
+void AgLog(CGameRegistry* reg, const char* msg); // 0x417e
+
+// @early-stop
+// /GX list-walk wall: the registration loop + CString error log are faithful, but
+// the 13-arg AddGrunt + CString-temp EH frame keep it reloc-fuzzy.
+RVA(0x000d5960, 0x160)
+i32 CPlay::AddLevelGruntz() {
+    AgThis* self = (AgThis*)this;
+    AgListHdr* lst = (AgListHdr*)((char*)self->m_c->m_8 + 0x10);
+    AgNode* node = lst->m_head;
+    while (node != 0) {
+        AgGrunt* g = node->m_8;
+        node = node->m_next;
+        if (g == 0) {
+            continue;
+        }
+        if (g->m_7c[4] != 0x4024a5) {
+            continue;
+        }
+        if (g->m_124 == g_644c54) {
+            continue;
+        }
+        i32 x = ((g->m_5c & ~0x1f) + 0x10);
+        i32 y = ((g->m_60 & ~0x1f) + 0x10);
+        i32 r = self->m_4->m_68->AddGrunt(
+            g->m_124,
+            y,
+            x,
+            0x186a0,
+            0,
+            g->m_114,
+            g->m_11c,
+            g->m_120,
+            g->m_118,
+            g->m_12c,
+            g->m_7c[0xb],
+            g->m_7c[0xc],
+            &g->m_134
+        );
+        if (r == -1) {
+            CString msg;
+            AgFormat(&msg, "Could not add Grunt: Player=%d", g->m_124, y, x);
+            AgLog(g_64556c, (const char*)msg);
+            return 0;
+        }
+        g->m_08 |= 0x10000;
+    }
+    return 1;
 }
 
 // BuildWarlordNameTable (0x0dd340) - verify warlord ids 2..0x20 are present, then

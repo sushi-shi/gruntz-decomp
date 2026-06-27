@@ -35,6 +35,8 @@ struct CTmOverlay {
     void Tick();   // 0x97f0  (reloc-masked)
     i32 Release(); // 0x94c0  (reloc-masked) - ret used by OverlayRelease
     void Clear();  // 0x92e0  (reloc-masked) - destruct without freeing
+    char p0[0x2c];
+    i32 m_2c; // +0x2c  active flag gating the per-frame OverlayTick
 };
 
 // The goal object at CTriggerMgr+0x23c; ResetAll ORs 0x10000 into its +0x8 flags.
@@ -67,21 +69,38 @@ struct CTmStatusItem {
     void SetMode(i32 mode); // 0x10bb90 (reloc-masked)
 };
 struct CTmWorld {
-    void StopFx(i32 a, i32 b);  // 0xd0120 (__thiscall, reloc-masked)
-    void Refresh();             // 0xda2d0 (__thiscall, reloc-masked)
-    void SetStat(i32 a, i32 b); // 0xd9240 (__thiscall, reloc-masked)
+    void StopFx(i32 a, i32 b);   // 0xd0120 (__thiscall, reloc-masked)
+    void Refresh();              // 0xda2d0 (__thiscall, reloc-masked)
+    void SetStat(i32 a, i32 b);  // 0xd9240 (__thiscall, reloc-masked)
+    void Center(i32 cx, i32 cy); // 0xd5f00 (__thiscall, reloc-masked) - scroll-center on a tile
     char p0[0x2dc];
     CTmStatusItem* m_2dc; // +0x2dc  status-bar item
     char p1[0x504 - 0x2e0];
     void* m_504; // +0x504  pending-fx flag
+};
+// The level/plane grid the active-selection center reads its dims from: the chain
+// g_gameReg->m_30->m_24->m_5c lands on a CTmGrid whose +0x30/+0x34 are (cols,rows).
+struct CTmGrid {
+    char p0[0x30];
+    i32 m_30; // +0x30  grid cols
+    i32 m_34; // +0x34  grid rows
+};
+struct CTmGridHolder {
+    char p0[0x5c];
+    CTmGrid* m_5c; // +0x5c  the grid object
+};
+struct CTmRegSub30 {
+    char p0[0x24];
+    CTmGridHolder* m_24; // +0x24
 };
 class CGruntzCmdMgr;
 struct CTmGameReg {
     void* PickPausedThenPlayState();       // 0x929b0 (reloc-masked) - the play/pause state obj
     void ReportError(i32 code, i32 flags); // 0x8dc60 (reloc-masked)
     char p0[0x2c];
-    CTmWorld* m_2c; // +0x2c  the active world/play object
-    char p1[0x38];
+    CTmWorld* m_2c;    // +0x2c  the active world/play object
+    CTmRegSub30* m_30; // +0x30  the level/plane grid holder
+    char p1[0x34];
     CTriggerMgr* m_68;   // +0x68  the active trigger manager
     CGruntzCmdMgr* m_6c; // +0x6c  the command queue
 };
@@ -2141,6 +2160,79 @@ i32 CTriggerMgr::RebuildSelectionList(i32 idx) {
         sel->AddTail(dst);
     }
     *(i32*)((char*)this + 0x3e8) = -1;
+    return 1;
+}
+
+// 0x7cd40: CenterSelectionGroup(slot) - ResetAll, tick the live overlay, then walk the
+// slot's selection list (+0x2d4[slot*0x1c]). For each node look up grid[15*x+y]: if the
+// cell is live, ResetCell(x,y,1,0) and (on the second pass for the same slot, m_3e8==slot)
+// fold its display pos into a running bbox seeded from the level grid dims; if dead, recycle
+// the node back to the free list and RemoveAt it from the slot list. On the centering pass
+// scroll the world to the bbox centre and clear m_3e8; else latch m_3e8=slot. ret 1 (0 when
+// the slot list is empty).
+// @early-stop
+// regalloc wall (~87%): logic + offsets + all reloc-masked externs (ResetAll/OverlayTick/
+// ResetCell/RemoveAt/Center/g_freeList*/g_gameReg) byte-exact, but retail pins this=ebp,
+// node=esi, y=edi (a perfect 5-reg fit); our cl swaps this/node into esi/ebp and spills
+// `this` to the stack, reusing esi for y. Same systematic esi<->ebp swap the rest of this
+// TU exhibits; not source-steerable. topic:wall.
+RVA(0x0007cd40, 0x18f)
+i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
+    ResetAll();
+    char* self = (char*)this;
+    CTmOverlay* ov = *(CTmOverlay**)(self + 0x25c);
+    if (ov != 0 && ov->m_2c != 0) {
+        OverlayTick();
+    }
+    CTmNode* n = *(CTmNode**)(self + slot * 0x1c + 0x2d4);
+    char* base = self + slot * 0x1c;
+    if (n == 0) {
+        *(i32*)(self + 0x3e8) = -1;
+        return 0;
+    }
+    i32 maxX = 0;
+    i32 maxY = 0;
+    CTmGrid* grid = g_gameReg->m_30->m_24->m_5c;
+    i32 minX = grid->m_30 - 1;
+    i32 minY = grid->m_34 - 1;
+    do {
+        CTmNode* cur = n;
+        n = n->m_next;
+        i32* payload = cur->m_payload;
+        i32 idx = payload[1] + 15 * payload[0];
+        CTmGrunt* cell = *(CTmGrunt**)(self + idx * 4 + 0x1c);
+        if (cell != 0) {
+            ResetCell(payload[0], payload[1], 1, 0);
+            if (*(i32*)(self + 0x3e8) == slot) {
+                i32* disp = *(i32**)((char*)cell + 0x10);
+                i32 x = disp[0x5c / 4];
+                i32 y = disp[0x60 / 4];
+                if (x < minX) {
+                    minX = x;
+                }
+                if (x > maxX) {
+                    maxX = x;
+                }
+                if (y < minY) {
+                    minY = y;
+                }
+                if (y > maxY) {
+                    maxY = y;
+                }
+            }
+        } else {
+            void** node = (void**)((char*)payload - g_freeListNodeBias);
+            *node = g_freeList;
+            g_freeList = node;
+            ((CTmPtrList*)(base + 0x2d0))->RemoveAt(cur);
+        }
+    } while (n != 0);
+    if (*(i32*)(self + 0x3e8) == slot) {
+        g_gameReg->m_2c->Center(minX + (maxX - minX) / 2, minY + (maxY - minY) / 2);
+        *(i32*)(self + 0x3e8) = -1;
+        return 1;
+    }
+    *(i32*)(self + 0x3e8) = slot;
     return 1;
 }
 

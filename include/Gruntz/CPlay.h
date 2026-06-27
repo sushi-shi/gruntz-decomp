@@ -291,7 +291,8 @@ public:
     i32 ResetViewport(); // 0x0d8c60 (thiscall on this)
     // CPlay state-exit teardown (THIS TU): ready-gate, slot-21 notify, renderer
     // refresh, then clear the registry's per-frame words + run its +0x70 teardown.
-    void OnExit(); // 0x0cb400
+    void OnExit();      // 0x0cb400
+    void ModeCleanup(); // 0x0cb740  vtable slot 0x22 mode/state-exit teardown
 
     // --- leaf sub-helpers the THIS-TU functions call (external, reloc-masked) ---
     void StepC_ModeA(i32 z); // (thiscall, 1 arg) StepC m_viewMode==1
@@ -317,10 +318,15 @@ public:
     void SnapWalk();
 
     // --- the trace-discovered CPlay sub-steps reconstructed in this TU ---
-    void ApplyGameOptions();                    // 0x036be0 (THIS TU)
-    void DrawWorldFrame();                      // 0x0c9c20 (THIS TU)
-    i32 DrawWorldFrames();                      // 0x0c9cc0 (THIS TU)
-    i32 DispatchHudClick(i32, i32, i32);        // 0x0ce530 (THIS TU)
+    void ApplyGameOptions(); // 0x036be0 (THIS TU)
+    void DrawWorldFrame();   // 0x0c9c20 (THIS TU)
+    i32 DrawWorldFrames();   // 0x0c9cc0 (THIS TU)
+    // The two timeGetTime-instrumented frame variants (the dev profiler builds the
+    // "Delta=.." / "Input=.." timing lines via the cached g_pTimeGetTime fn-ptr).
+    i32 ProfileDeltaFrame();             // 0x0ca0a0 (THIS TU)
+    i32 ProfileInputFrame();             // 0x0c9e40 (THIS TU)
+    void ProfFlushTail();                // 0x0cf770 (thiscall on this, reloc-masked tail step)
+    i32 DispatchHudClick(i32, i32, i32); // 0x0ce530 (THIS TU)
     i32 BeginGridWalk(i32, i32, i32, i32, i32); // 0x0d0920 (THIS TU)
     i32 StepGridWalk(i32 dt);                   // 0x0d0a60 (THIS TU)
     i32 HandleDragMove(i32 a, i32 x, i32 y);    // 0x0d0db0 (THIS TU)
@@ -390,6 +396,13 @@ public:
     // FreeListTeardown (0x0cb480): release the per-level allocations back onto the
     // global free list (m_374[]/m_3ac[]/m_48c[] arrays + the per-type config rows).
     void FreeListTeardown(); // 0x0cb480
+    // CPlayDtorBody (0x0c8700): the ~CPlay teardown body - free the per-frame
+    // workers (m_320/m_2dc/m_2e0/m_2e4/m_3f4), clear the four g_mgrSettings config
+    // rows, flush the m_370/m_3a4[4]/m_488 free-list arrays, then run the base dtor.
+    void CPlayDtorBody(); // 0x0c8700
+    // AddLevelGruntz (0x0d5960): walk the registry object list and register each
+    // valid grunt object with the session; logs "Could not add Grunt" on failure.
+    i32 AddLevelGruntz(); // 0x0d5960
     // SetEffectSpriteDurations (0x0dc060): stamp the +0x18 duration on each named
     // effect-sound descriptor looked up in the sound registry's name map.
     i32 SetEffectSpriteDurations(); // 0x0dc060
@@ -417,6 +430,8 @@ public:
     struct GutsSubsystem {
         // 0x34bd: a per-frame guts step (thiscall(now)). reloc-masked.
         void Step(i32 now);
+        // 0xfe6b0: the profiled-frame status-bar tick (thiscall, no arg). reloc-masked.
+        void StatusBarTick();
         // 0x4ff9d0: a HUD click-at-point dispatch (thiscall(a, x, y)). reloc-masked.
         void HudClickAt(i32 a, i32 x, i32 y);
         // 0x4ff9f0: the drag-select press/move dispatch (thiscall(a, x, y)). reloc-masked.

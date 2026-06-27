@@ -69,12 +69,19 @@ public:
     // The per-row format converter the inner blit loops call: dispatches on
     // (m_14 - 2) to one of nine palette/blend conversions over a row.
     void ConvertRow(u8* dst, u8* src, i32 count); // 0x14c9f0
+    // The h-flipped (right-to-left) twin of ConvertRow: same nine (m_14-2) blend
+    // cases, but dst is walked DOWN and the saved-dest scratch line is read back to
+    // front. Used by the selected (mirrored) blit path BlitMode_14b770.
+    void ConvertRowFlip(u8* dst, u8* src, i32 count); // 0x14cfc0
+    // The dual-write (vertical-double) row converter: each pixel is written to dst
+    // and dst+rowDelta. Five (m_14-2) blend cases (2/3/7/8); 4/5/6 fall through.
+    void ConvertRowDouble(u8* dst, u8* src, i32 count, i32 rowDelta); // 0x14d950
 
     char m_00[0x4];
-    i32 m_04; // +0x04 sprite row width
-    i32 m_08; // +0x08 height
-    u8* m_0c; // +0x0c RLE sprite-stream base
-    i32 m_10; // +0x10 RLE sprite-stream length (byte bound)
+    i32 m_04;         // +0x04 sprite row width
+    i32 m_08;         // +0x08 height
+    u8* m_0c;         // +0x0c RLE sprite-stream base
+    i32 m_10;         // +0x10 RLE sprite-stream length (byte bound)
     i32 m_14;         // +0x14 draw type / row-convert selector
     i32 m_18;         // +0x18 light level (>>3 indexes the LUT bank) / alpha / fill byte
     ShadeDescr* m_1c; // +0x1c palette / source-descriptor pointer

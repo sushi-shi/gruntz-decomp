@@ -77,10 +77,41 @@ struct CWhRect {
     i32 m_c;
 };
 
+// The serialization stream (Serialize arg1): a real polymorphic object with
+// ReadBytes at vtable slot 0x2c and WriteBytes at slot 0x30, both __thiscall
+// (buf, len). Same CImageSetStream shape the rest of the SBI image chain uses;
+// every call through it lowers to `mov edx,[s]; call [edx+0x2c|0x30]`.
+struct CImageSetStream {
+    virtual void Vf0();
+    virtual void Vf1();
+    virtual void Vf2();
+    virtual void Vf3();
+    virtual void Vf4();
+    virtual void Vf5();
+    virtual void Vf6();
+    virtual void Vf7();
+    virtual void Vf8();
+    virtual void Vf9();
+    virtual void Vfa();
+    virtual void ReadBytes(void* buf, i32 len);  // slot 0x2c
+    virtual void WriteBytes(void* buf, i32 len); // slot 0x30
+};
+
+// The immediate base (CSBI_ImageSet, 0xe74f0 vtable slot 1). Declared only so the
+// base-serialize call emits the real ?Serialize@CSBI_ImageSet@@... external; the
+// reloc pairs against SBI_ImageSet.cpp's definition at 0xe74f0.
+class CSBI_ImageSet {
+public:
+    i32 Serialize(CImageSetStream* s, i32 mode, i32 a3, i32 a4); // 0xe74f0
+};
+
 // ---------------------------------------------------------------------------
 // CSBI_WarlordHead - the warlord-head status-bar item.
 class CSBI_WarlordHead {
 public:
+    // vtable slot 1 (0xe7cd0): serialize the head's six persistent ints
+    // (m_3c..m_50), then chain to the CSBI_ImageSet base serialize (0xe74f0).
+    i32 Serialize(CImageSetStream* s, i32 mode, i32 a3, i32 a4);
     // vtable slot 11 (0xeb6b0): forward all 11 args to the ImageSet base setup; on
     // success latch the initial state (SetState(0)) and report 1.
     i32 SetupImage(
@@ -122,6 +153,11 @@ public:
     CWhConfig* m_34; // +0x34  resolved config record (frame table host)
     i32 m_38;        // +0x38  state/index (SetState writes 1 or 2; Render indexes by it)
     i32 m_3c;        // +0x3c  direction (SetState writes the raw dir; Render compares vs 1)
+    i32 m_40;        // +0x40  persistent serialized ints (Serialize save/load block)
+    i32 m_44;        // +0x44
+    i32 m_48;        // +0x48
+    i32 m_4c;        // +0x4c
+    i32 m_50;        // +0x50
 };
 
 // The frame sprite show/hide notifier (0x14dd90, __stdcall, ret 8).

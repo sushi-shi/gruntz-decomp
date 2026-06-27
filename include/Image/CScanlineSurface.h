@@ -27,6 +27,10 @@ public:
     // 0x175d50: fill the whole surface with the low byte of `value`.
     void Fill(i32 value);
 
+    // 0x176b30: write the 8bpp surface out as an 8-bit BMP (file header + info + palette
+    // + bottom-up scanlines) through a stack CFile. /GX EH; in CScanlineSurfaceSave.cpp.
+    i32 SaveBmp(const char* filename, void* paletteObj);
+
     // External (out-of-line) members this TU calls but does not define -> the
     // `call rel32` reloc-masks.
     i32 Create(void* a0, i32 w, i32 h, i32 bpp, i32 flag); // 0x1757c0

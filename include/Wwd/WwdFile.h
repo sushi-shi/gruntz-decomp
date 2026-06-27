@@ -240,13 +240,13 @@ public:
     void Draw(void* ctx);                   // 0x162010  the tile-grid render
     void SetTileSize(i32 tileW, i32 tileH); // 0x161f00  derive wrap dims/fill/shifts
     void WrapCoord(i32* px, i32* py);       // 0x00a000  wrap+transform a world coord
-    i32 CenterScrollA();              // 0x163300
-    i32 CenterScrollB();              // 0x163370
-    void InitScrollRects();           // 0x163420  seed the scroll sub-object rects
-    i32 ValidateTiles(char* errOut);  // 0x163510  scan the tile grid for bad refs
-    void ResolveColorKey();           // 0x163670  pack the +0x144 index to RGB565
-    i32 Save(CWwdStream* s);          // 0x163780  serialize out
-    i32 Load(CWwdStream* s);          // 0x1638c0  serialize in
+    i32 CenterScrollA();                    // 0x163300
+    i32 CenterScrollB();                    // 0x163370
+    void InitScrollRects();                 // 0x163420  seed the scroll sub-object rects
+    i32 ValidateTiles(char* errOut);        // 0x163510  scan the tile grid for bad refs
+    void ResolveColorKey();                 // 0x163670  pack the +0x144 index to RGB565
+    i32 Save(CWwdStream* s);                // 0x163780  serialize out
+    i32 Load(CWwdStream* s);                // 0x1638c0  serialize in
     // 0x0d53a0 (__thiscall, ret 8): index the tile-handle grid by (row, col):
     //   m_tileGrid[m_colOffsets[col] + row].
     i32 GetTileHandle(i32 row, i32 col);
@@ -280,13 +280,13 @@ public:
     i32 m_fillR; // +0x68
     i32 m_fillB; // +0x6c
     u8 pad_70[0x80 - 0x70];
-    i32 m_80, m_84, m_88; // +0x80..+0x88
-    i32 m_shiftX;         // +0x8c
-    i32 m_shiftY;         // +0x90
-    i32 m_94, m_98, m_9c; // +0x94..+0x9c
+    i32 m_80, m_84, m_88;       // +0x80..+0x88
+    i32 m_shiftX;               // +0x8c
+    i32 m_shiftY;               // +0x90
+    i32 m_94, m_98, m_9c;       // +0x94..+0x9c
     CPlaneFrame** m_planeArray; // +0xa0
     u8 pad_a4[0xb0 - 0xa4];
-    CPlaneScroll* m_scroll; // +0xb0
+    CPlaneScroll* m_scroll;   // +0xb0
     char m_name[0xf4 - 0xb4]; // +0xb4  plane name (serialized as a fixed 0x80 field)
     CDDSurface m_surface;     // +0xf4  (empty model, sizeof 1)
     u8 pad_f5[0x144 - 0xf5];
@@ -363,6 +363,9 @@ class WwdFile {
 public:
     static i32 ValidateMainBlock(CString name);
     i32 ReadPlaneObjects(const i32* src);
+    // 0x1628f0: free the old +0xb0 plane-render worker, allocate+init a fresh one
+    // from the level header geometry, then ReadPlaneObjects `count` times.
+    i32 RebuildPlanes(i32 base, i32 count);
 };
 
 #endif // SRC_WWD_WWDFILE_H

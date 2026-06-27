@@ -1,0 +1,90 @@
+// CMgrSettings.h - a small persisted settings record (0x3c bytes) whose Serialize
+// (0x109e00) streams three ints + five doubles through a CArchive-like stream,
+// then round-trips a named-object reference (a 0x80 name + an index) through the
+// game registry: READ resolves name->record via CMapStringToOb::Lookup and indexes
+// the record's bounded element array into m_38; WRITE re-derives the name+index
+// from m_38 via CDDrawWorkerRegistry::AnyValueMatches and writes them back.
+//
+// Same registry round-trip shape as CSerialSub34/the g_gameReg singleton; field
+// names are placeholders (offsets + code bytes load-bearing).
+#ifndef GRUNTZ_CMGRSETTINGS_H
+#define GRUNTZ_CMGRSETTINGS_H
+
+#include <Ints.h>
+#include <rva.h>
+
+// The serialize stream: a polymorphic CArchive-like whose vtable holds Read @
+// +0x2c and Write @ +0x30 (typed PMF vtable, reloc-masked dispatch).
+struct CMgrArchiveVtbl;
+class CMgrArchive {
+public:
+    CMgrArchiveVtbl* vptr; // +0x00
+    void Read(void* buf, i32 len);
+    void Write(const void* buf, i32 len);
+};
+typedef void (CMgrArchive::*CMgrIoFn)(void*, i32);
+struct CMgrArchiveVtbl {
+    char _00[0x2c];
+    CMgrIoFn Read;  // [0x2c]
+    CMgrIoFn Write; // [0x30]
+};
+inline void CMgrArchive::Read(void* buf, i32 len) {
+    (this->*(vptr->Read))(buf, len);
+}
+inline void CMgrArchive::Write(const void* buf, i32 len) {
+    (this->*(vptr->Write))((void*)buf, len);
+}
+
+// The MFC name->object map (Lookup 0x1b8008, reloc-masked by mangled name).
+class CObject;
+class CMapStringToOb {
+public:
+    i32 Lookup(const char* key, CObject*& rValue) const; // 0x1b8008
+};
+
+// The registry leaf reached as g_gameReg->m_30->m_10: a CDDrawWorkerRegistry with
+// the name map at +0x10 (read path) and the reverse name+index probe (write path).
+class CDDrawWorkerRegistry {
+public:
+    char _00[0x10];
+    CMapStringToOb m_10;                                          // +0x10
+    i32 AnyValueMatches_155630(i32 obj, i32 nameBuf, i32 idxPtr); // 0x155630
+};
+
+// The record CMapStringToOb::Lookup yields, viewed as a bounded element array.
+struct CMgrLookupRec {
+    char _00[0x14];
+    void** m_14; // +0x14 element array
+    char _18[0x64 - 0x18];
+    i32 m_64; // +0x64 lo index (inclusive)
+    i32 m_68; // +0x68 hi index (inclusive)
+};
+
+// g_gameReg singleton chain (CGameReg* @ RVA 0x24556c; +0x30 active holder; its
+// +0x10 is the registry leaf).
+struct CMgrActiveHolder {
+    char _00[0x10];
+    CDDrawWorkerRegistry* m_10; // +0x10
+};
+struct CGameReg {
+    char _00[0x30];
+    CMgrActiveHolder* m_30; // +0x30
+};
+DATA(0x0024556c)
+extern CGameReg* g_gameReg;
+
+// Per-serialize round counter the archive bumps.
+DATA(0x00229ad0)
+extern i32 g_serialCount;
+
+// The settings record itself.
+class CMgrSettings {
+public:
+    i32 Serialize(CMgrArchive* arc, i32 mode, i32 a3, i32 a4); // 0x109e00
+
+    i32 m_00, m_04, m_08, m_0c;          // +0x00..+0x0c (m_0c unstreamed)
+    double m_10, m_18, m_20, m_28, m_30; // +0x10..+0x30
+    void* m_38;                          // +0x38 resolved object reference
+};
+
+#endif // GRUNTZ_CMGRSETTINGS_H

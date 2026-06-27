@@ -216,6 +216,92 @@ i32 CDDSurface::BltFast(u32 x, u32 y, CDDSurface* src, void* srcRect, u32 trans)
     return hr;
 }
 
+// The live screen RGB-format shift table (same globals ShadeTableCache reads): the
+// per-channel "up" shifts (ea0/ea4/ea8 = R/G/B) and the device "down" widths
+// (eac/eb0/eb4). Reloc-masked DIR32.
+DATA(0x00283ea0)
+extern i32 g_rUp; // 0x683ea0
+DATA(0x00283ea4)
+extern i32 g_gUp; // 0x683ea4
+DATA(0x00283ea8)
+extern i32 g_bUp; // 0x683ea8
+DATA(0x00283eac)
+extern i32 g_rDown; // 0x683eac
+DATA(0x00283eb0)
+extern i32 g_gDown; // 0x683eb0
+DATA(0x00283eb4)
+extern i32 g_bDown; // 0x683eb4
+
+// The three 64 KB RGB channel-spread lookup tables, one contiguous 0x30000 block:
+// G @0x653c9e, B @+0x10000, R @+0x20000. Indexed by a byte offset built from the
+// (a<<11) block + 2*n. Modeled as one base so the three writes keep retail's three
+// independent disp32 encodings (each masked by its own DIR32 reloc).
+DATA(0x00253c9e)
+extern u8 g_clut[]; // 0x653c9e (G; B=+0x10000, R=+0x20000)
+
+// BuildColorChannelTables (0x13f740, __cdecl) - precompute the per-channel CLUTs that
+// map a (row, hi, lo) triple onto a packed 16-bit colour. The 32x32x32 nest folds a
+// row/col interpolation (rounded /32) into a channel sum that is shifted into the R/G/B
+// field positions. The common 555 device (rUp==0xa, gUp==5, all downs==3) takes a fast
+// path with hard-coded R<<10 / G<<5 shifts; every other format re-reads the live shifts
+// per write (green gets an extra <<1).
+// @early-stop
+// scheduling tail (~97%): logic + the (a<<11)+2n index + the single-base disp32 table
+// writes are byte-exact; retail computes the blue `sum<<bShift` one slot earlier (before
+// the green store) than our cl schedules it. Hoisting it into a temp spills (regresses to
+// ~90%); not source-steerable. Entropy tail. topic:wall.
+RVA(0x0013f740, 0x1c8)
+void BuildColorChannelTables() {
+    if (g_rDown == 3 && g_gDown == 3 && g_bDown == 3 && g_rUp == 0xa && g_gUp == 5) {
+        i32 bShift = g_bUp;
+        i32 a = 0;
+        i32 stepA = 0x20;
+        do {
+            i32 base = a << 0xb;
+            i32 varB = 0;
+            i32 countB = 0x20;
+            do {
+                i32 bDiv = varB / 32;
+                i32 varD = 0;
+                i32 k = 0x20;
+                do {
+                    base += 2;
+                    i32 sum = varD / 32 + bDiv;
+                    *(i16*)(g_clut + 0x20000 + base) = (i16)(sum << 0xa);
+                    *(i16*)(g_clut + base) = (i16)(sum << 5);
+                    *(i16*)(g_clut + 0x10000 + base) = (i16)(sum << bShift);
+                    varD += stepA;
+                } while (--k != 0);
+                varB += a;
+            } while (--countB != 0);
+            a++;
+        } while (--stepA > 0);
+    } else {
+        i32 a = 0;
+        i32 stepA = 0x20;
+        do {
+            i32 base = a << 0xb;
+            i32 varB = 0;
+            i32 countB = 0x20;
+            do {
+                i32 bDiv = varB / 32;
+                i32 varD = 0;
+                i32 k = 0x20;
+                do {
+                    base += 2;
+                    i32 sum = varD / 32 + bDiv;
+                    *(i16*)(g_clut + 0x20000 + base) = (i16)(sum << g_rUp);
+                    *(i16*)(g_clut + base) = (i16)((sum << g_gUp) << 1);
+                    *(i16*)(g_clut + 0x10000 + base) = (i16)(sum << g_bUp);
+                    varD += stepA;
+                } while (--k != 0);
+                varB += a;
+            } while (--countB != 0);
+            a++;
+        } while (--stepA > 0);
+    }
+}
+
 // CDDSurface::GetColorKey (__thiscall). GetColorKey(8, &local); NOCOLORKEY is a
 // non-error returning -1; on success returns the key, on error reports + -1.
 RVA(0x0013fa60, 0x40)
@@ -783,8 +869,8 @@ i32 CDDPalette::LoadBmp(IDirectDraw2Z* dd, char* filename, u32 flags) {
 // names. Deferred to the final sweep. docs/patterns/zero-register-pinning.md.
 RVA(0x00147710, 0x122)
 i32 CDDPalette::LoadPcx(IDirectDraw2Z* dd, char* filename, u32 flags) {
-    u8 pe[0x400];    // expanded PALETTEENTRY[256]
-    u8 rgb[0x300];   // 256 packed RGB triplets (trailing VGA palette)
+    u8 pe[0x400];  // expanded PALETTEENTRY[256]
+    u8 rgb[0x300]; // 256 packed RGB triplets (trailing VGA palette)
     CFileIO file;
     if (file.Open(filename, 0, 0) == 0) {
         return 0;
@@ -1116,4 +1202,154 @@ i32 CDDPageMgr::CheckMode16() {
         return 1;
     }
     return 0;
+}
+
+// ===========================================================================
+// CDirectDrawMgr pool-item collection helpers (DDRAWMGR.CPP).  The pool item
+// list is a CObArray at +0x4b4; SetupCaps tears the list down, re-enumerates the
+// device's display modes (rebuilding a global mode array) and re-sorts the pool;
+// CreatePoolItem builds + initialises one pool item from a descriptor source.
+// ===========================================================================
+// Engine heap free / operator new (reloc-masked __cdecl leaves).
+extern "C" void RezFree(void* p);             // 0x1b9b82
+extern "C" void* DdOperatorNew(unsigned int); // 0x1b9b46
+
+// The pool-item CObArray sub-object (raw view at +0x4b4): SetSize(0,-1) clears it,
+// SetAtGrow(m_nSize, x) is MFC CObArray::Add's out-of-line tail.
+struct CDdObArray {
+    void* m_vtbl;                   // +0x00
+    void** m_pData;                 // +0x04
+    i32 m_nSize;                    // +0x08
+    i32 m_nMaxSize;                 // +0x0c
+    i32 m_nGrowBy;                  // +0x10
+    void SetSize(i32 n, i32 grow);  // 0x1b4f75
+    void SetAtGrow(i32 n, void* x); // 0x1b5144
+};
+
+// The transient global mode array EnumDisplayModes rebuilds (a CObArray @0x683ec8).
+DATA(0x00283ec8)
+extern CDdObArray g_modeArray;
+
+// The pool comparator (this->Compare, 0x1433d0) and the AddPoolItem publisher.
+struct CDdPoolThis {
+    i32 Compare(void* a, void* b); // 0x1433d0
+    void AddPoolItem(void* item);  // 0x142100
+};
+
+// IDirectDraw EnumDisplayModes lives at vtable +0x20 (slot 8); reach it through a
+// local vtable view so the shared IDirectDraw2Z struct is untouched.
+struct CDdEnumVtbl {
+    char m_pad00[0x20];
+    i32(__stdcall* EnumModes)(IDirectDraw2Z*, u32, void*, void*, void*); // +0x20
+};
+// The EnumDisplayModes callback (0x143390); only its address is referenced.
+extern "C" void DdEnumModesCallback(); // 0x143390
+
+// @early-stop
+// 81% - regalloc/induction wall: the free loop, RemoveAll/Add (SetSize/SetAtGrow)
+// calls, EnumDisplayModes + GetErrorString and the selection sort are byte-faithful,
+// but retail colours the sort's outer index as a byte offset alongside a separate
+// counter, an induction shape the recompile doesn't reproduce.  No EH frame.
+RVA(0x00143240, 0x143)
+void CDirectDrawMgr::SetupCaps() {
+    CDdObArray* arr = (CDdObArray*)((char*)this + 0x4b4);
+    for (i32 i = 0; i < arr->m_nSize; i++) {
+        RezFree(arr->m_pData[i]);
+    }
+    arr->SetSize(0, -1);
+    g_modeArray.SetSize(0, -1);
+    i32 hr = ((CDdEnumVtbl*)m_0->vtbl)->EnumModes(m_0, 0, 0, 0, (void*)DdEnumModesCallback);
+    if (hr != 0) {
+        CDirectDrawMgr::GetErrorString(DDRAWMGR_FILE, 0x507, hr);
+    }
+    for (i32 j = 0; j < g_modeArray.m_nSize; j++) {
+        arr->SetAtGrow(arr->m_nSize, g_modeArray.m_pData[j]);
+    }
+    g_modeArray.SetSize(0, -1);
+    i32 n = arr->m_nSize;
+    for (i32 a = 0; a < n - 1; a++) {
+        for (i32 b = a + 1; b < n; b++) {
+            if (((CDdPoolThis*)this)->Compare(arr->m_pData[a], arr->m_pData[b])) {
+                void* tmp = arr->m_pData[a];
+                arr->m_pData[a] = arr->m_pData[b];
+                arr->m_pData[b] = tmp;
+            }
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// CDirectDrawMgr::CreatePoolItem (0x143630) - EH-framed factory.  Pulls a
+// descriptor out of arg0's source object (slot +0x30), reports a failure through
+// GetErrorString, else operator-new's the 0xc0-byte pool item, constructs its
+// +0x94 sub-object + stamps the vtable, runs the item's Init (slot +0x04) and
+// publishes it (AddPoolItem); a failed Init scalar-deletes (slot +0x00) the item.
+// @early-stop
+// operator-new ctor-in-flight EH frame: the descriptor call, construction, field
+// stores + Init/Dtor dispatch are byte-faithful, but retail carries the throwing
+// new's /GX cleanup frame (push -1/fs:0 + trylevel) the manual operator-new body
+// omits.  docs/patterns/rezalloc-placement-new-no-eh-frame.md family.
+// ---------------------------------------------------------------------------
+// The descriptor source (arg0->m_8): a COM-style interface; slot +0x30 fills the
+// two out params.  Reloc-masked __stdcall.
+struct CDdDescSrc {
+    struct Vtbl {
+        char m_pad00[0x30];
+        i32(__stdcall* Make)(CDdDescSrc*, void* outB, void* outA); // +0x30
+    }* vtbl;
+};
+struct CDdCreateArg {
+    char m_pad00[8];
+    CDdDescSrc* m_8; // +0x08 descriptor source
+};
+
+// The pool item: vtable stamped by address; Init (+0x04) / scalar-dtor (+0x00) are
+// thiscall, modeled as single-inheritance member pointers (a 4-byte code addr).
+struct CDdPoolItem;
+struct CDdPoolVtbl {
+    i32 (CDdPoolItem::*Dtor)(i32);   // +0x00
+    i32 (CDdPoolItem::*Init)(void*); // +0x04
+};
+DATA(0x001ef7f0)
+extern CDdPoolVtbl g_poolItemVtbl; // 0x5ef7f0
+
+struct CDdPoolSub {
+    void Ctor(); // 0x1b4f0b  (+0x94 sub-object ctor)
+};
+struct CDdPoolItem {
+    CDdPoolVtbl* m_vtbl; // +0x00
+};
+
+RVA(0x00143630, 0x10d)
+void* CDirectDrawMgr::CreatePoolItem(void* arg0v, void* arg1) {
+    CDdCreateArg* arg0 = (CDdCreateArg*)arg0v;
+    void* outA = 0;
+    void* outB;
+    i32 hr = arg0->m_8->vtbl->Make(arg0->m_8, &outB, &outA);
+    if (hr != 0) {
+        CDirectDrawMgr::GetErrorString(DDRAWMGR_FILE, 0x6ae, hr);
+        return 0;
+    }
+    char* item = (char*)DdOperatorNew(0xc0);
+    if (item != 0) {
+        ((CDdPoolSub*)(item + 0x94))->Ctor();
+        *(void**)item = &g_poolItemVtbl;
+        *(i32*)(item + 0x08) = 0;
+        *(i32*)(item + 0x0c) = 0;
+        *(i32*)(item + 0x04) = 0;
+        *(i32*)(item + 0x7c) = 0;
+        *(i32*)(item + 0xa8) = 0;
+        *(i32*)(item + 0xb8) = 0;
+    } else {
+        item = 0;
+    }
+    CDdPoolItem* pi = (CDdPoolItem*)item;
+    if ((pi->*(pi->m_vtbl->Init))(outA) == 0) {
+        if (item != 0) {
+            (pi->*(pi->m_vtbl->Dtor))(1);
+        }
+        return 0;
+    }
+    ((CDdPoolThis*)this)->AddPoolItem(item);
+    return item;
 }

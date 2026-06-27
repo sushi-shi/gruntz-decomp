@@ -52,11 +52,12 @@ struct TileLogicObj {
     char m_pad80[0x114 - 0x80];
     i32 m_114; // +0x114
     i32 m_118; // +0x118
-    char m_pad11c[0x120 - 0x11c];
+    i32 m_11c; // +0x11c
     i32 m_120; // +0x120
     i32 m_124; // +0x124  switch kind / tile kind
     i32 m_128; // +0x128
-    char m_pad12c[0x134 - 0x12c];
+    i32 m_12c; // +0x12c
+    char m_pad130[0x134 - 0x130];
     RECT m_134; // +0x134
     RECT m_144; // +0x144
     RECT m_154; // +0x154
@@ -136,16 +137,52 @@ struct WwdGameRegInner {
     char m_pad00[0x3c];
     i32 m_3c; // +0x3c
 };
+// The trigger-grid manager (g_gameReg->m_68 = CTriggerMgr): PlaceObject builds and
+// registers a tile object, returning its grid index or -1 on failure. 0x6b6d0,
+// __thiscall, reloc-masked.
+struct PlaceGridMgr {
+    i32 PlaceObject(
+        i32 a8,
+        i32 ax,
+        i32 ay,
+        i32 col,
+        i32 row,
+        i32 kind,
+        i32 a18,
+        i32 a1c,
+        i32 a20,
+        i32 a24,
+        i32 a28,
+        i32 a2c,
+        i32 a30
+    ); // 0x6b6d0
+};
+// The command queue (g_gameReg->m_6c = CGruntzCmdMgr): EnqueueSingle broadcasts a
+// single placed-grunt op. 0x23c30, __thiscall, reloc-masked.
+struct StartCmdMgr {
+    void EnqueueSingle(i32 a, char b, char c, char d, i32 e, i32 f, char g, char h); // 0x23c30
+};
+// A per-player start record in the g_gameReg+0x150 array (stride 568 = 0x238); its
+// +0x228 is the cap on start gruntz to place for that player.
+struct WwdStartPlayer {
+    char m_pad00[0x228];
+    i32 m_228; // +0x228  start-grunt cap
+    char m_pad22c[0x238 - 0x22c];
+};
 struct WwdGameReg {
     void LogTileError(const char* msg); // 0x48ef10 (via 0x417e thunk)
-    char m_pad00[0x70];
-    WwdGameGrid* m_70; // +0x70  coarse-cell grid
+    char m_pad00[0x68];
+    PlaceGridMgr* m_68; // +0x68  the playfield trigger grid (PlaceObject)
+    StartCmdMgr* m_6c;  // +0x6c  the command queue (EnqueueSingle)
+    WwdGameGrid* m_70;  // +0x70  coarse-cell grid
     char m_pad74[0x7c - 0x74];
     WwdGameRegInner* m_7c; // +0x7c
     char m_pad80[0x118 - 0x80];
     i32 m_118; // +0x118
     char m_pad11c[0x134 - 0x11c];
     i32 m_134; // +0x134
+    char m_pad138[0x150 - 0x138];
+    WwdStartPlayer m_150[8]; // +0x150  per-player start records
 };
 DATA(0x0064556c)
 extern WwdGameReg* g_gameReg;
@@ -200,16 +237,36 @@ struct PlayMgr {
     PlayMgrRenderer* m_08; // +0x08
 };
 
+// The placed-object list node embedded at PlayMgrRenderer+0x10 (head at +0x14). An
+// MFC CPtrList node: pNext@+0, pPrev@+4, data@+8.
+struct StartNode {
+    StartNode* m_next;    // +0x00  pNext
+    char m_pad04[0x4];    // +0x04  pPrev
+    TileLogicObj* m_data; // +0x08  the placed tile/start object
+};
+// The list view overlaid on PlayMgrRenderer+0x10: +0x0 aliases the tile-grid ptr,
+// +0x4 is the placed-object list head.
+struct StartList {
+    void* m_0;         // +0x00 (= renderer+0x10)
+    StartNode* m_head; // +0x04 (= renderer+0x14)
+};
+
+// The "Could not add Grunt..." diagnostic for a failed start placement ($SG .rdata).
+static char s_CouldNotAdd[] = "Could not add Grunt: Player=%d, x=%d, y=%d";
+
 // ---------------------------------------------------------------------------
-// The level/world object: m_0c the play manager, m_2dc the playfield grid
-// manager, m_2e4 the trigger registrar.
+// The level/world object: m_4 the game-registry back-ptr, m_0c the play manager,
+// m_2dc the playfield grid manager, m_2e4 the trigger registrar.
 // ---------------------------------------------------------------------------
 class CLevelValidator {
 public:
     i32 ValidateLevelTiles();
+    i32 PlaceStartGruntz();                         // 0x0d2b20
     i32 PositionBridgeToggle(i32 mode, i32 unused); // 0x0d5b20
 
-    char m_pad00[0xc];
+    char m_pad00[0x4];
+    WwdGameReg* m_4; // +0x04  game registry back-ptr
+    char m_pad08[0xc - 0x8];
     PlayMgr* m_0c; // +0x0c
     char m_pad10[0x2dc - 0x10];
     PlayfieldMgr* m_2dc; // +0x2dc
@@ -242,6 +299,96 @@ static i32 LookupTileType(TileGrid* grid, i32 x, i32 y) {
     }
     TileClass* tc = grid->m_4c[cell & 0xffff];
     return tc->m_vtbl->GetTypeId(tc, x - (tx << g->m_8c), y - (ty << g->m_90));
+}
+
+// ===========================================================================
+// CLevelValidator::PlaceStartGruntz  (0x0d2b20) - /GX EH method. Walk the placed-
+// object list (renderer+0x10): for each "start grunt" object (identity 0x4024a5)
+// PlaceObject it into the trigger grid at its snapped tile centre, OR'ing in the
+// 0x10000 "placed" flag; on PlaceObject failure build a "Could not add Grunt..."
+// CString and log it through g_gameReg, returning 0. For "player marker" objects
+// (identity 0x4017e4) in a non-active game, EnqueueSingle one op per player up to
+// the player's start cap (g_gameReg+0x150[magic].m_228). ret 1.
+// ===========================================================================
+// @early-stop
+// /GX-EH + regalloc wall (~65%): every instruction/branch and the reloc-masked externs
+// (PlaceObject/EnqueueSingle/LogTileError/CString Format+ctor+dtor) reproduce, incl. the
+// two vacuous address-null guards and the stride-568 player-slot `lea` - but retail homes
+// `this` in ebp (re-reading m_4 + spilling counter/flag14 to the EH frame) while our cl
+// keeps `this` in ecx and enregisters counter/flag14, a systematic register rename across
+// the whole body. Same EH/regalloc wall ValidateLevelTiles (this TU) hits. topic:wall.
+RVA(0x000d2b20, 0x21f)
+i32 CLevelValidator::PlaceStartGruntz() {
+    StartList* list = (StartList*)((char*)m_0c->m_08 + 0x10);
+    if (list == 0) {
+        return 0;
+    }
+    WwdGameReg* reg = m_4;
+    StartNode* node = list->m_head;
+    i32 result = 1;
+    i32 counter = 0;
+    i32 flag14 = 0;
+    if (reg->m_134 == 1) {
+        flag14 = 1;
+    }
+    if (node == 0) {
+        return result;
+    }
+    do {
+        TileLogicObj* obj = node->m_data;
+        StartNode* next = node->m_next;
+        if (obj != 0) {
+            char* aux = (char*)obj->m_7c;
+            void* who = *(void**)(aux + 0x10);
+            if (who == (void*)0x4024a5) {
+                i32 idx = reg->m_68->PlaceObject(
+                    obj->m_124,
+                    (obj->m_5c & ~0x1f) + 0x10,
+                    (obj->m_60 & ~0x1f) + 0x10,
+                    100000,
+                    flag14,
+                    obj->m_114,
+                    obj->m_11c,
+                    obj->m_120,
+                    obj->m_118,
+                    obj->m_12c,
+                    *(i32*)(aux + 0x2c),
+                    *(i32*)(aux + 0x30),
+                    (i32)&obj->m_134
+                );
+                if (idx == -1) {
+                    CString s;
+                    s.Format(
+                        s_CouldNotAdd,
+                        obj->m_124,
+                        (obj->m_5c & ~0x1f) + 0x10,
+                        (obj->m_60 & ~0x1f) + 0x10
+                    );
+                    g_gameReg->LogTileError((const char*)(LPCSTR)s);
+                    return 0;
+                }
+                obj->m_08 |= 0x10000;
+            } else if (g_gameReg->m_134 != 1 && who == (void*)0x4017e4
+                       && obj->m_124 == g_tileKindMagic) {
+                WwdStartPlayer* e = &g_gameReg->m_150[g_tileKindMagic];
+                if (e != 0 && counter < e->m_228) {
+                    reg->m_6c->EnqueueSingle(
+                        result,
+                        (char)obj->m_124,
+                        0,
+                        0,
+                        (obj->m_5c & ~0x1f) + 0x10,
+                        (obj->m_60 & ~0x1f) + 0x10,
+                        0,
+                        0
+                    );
+                    counter++;
+                }
+            }
+        }
+        node = next;
+    } while (node != 0);
+    return result;
 }
 
 // ===========================================================================

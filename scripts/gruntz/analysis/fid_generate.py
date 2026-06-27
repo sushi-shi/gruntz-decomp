@@ -75,11 +75,12 @@ def main() -> None:
     libdir = Path(msvc) / "lib"
     unpack_lib(libdir / "LIBCMT.LIB", WORK / "libcmt_objs")
     unpack_lib(libdir / "NAFXCW.LIB", WORK / "nafxcw_objs")
+    unpack_lib(libdir / "LIBCIMT.LIB", WORK / "libcimt_objs")  # C++ iostream (filebuf/streambuf/ostream/strstream)
 
     # 2. extract masked signatures
     sigs = WORK / "sigs.pkl"
     sh(sys.executable, "-m", "gruntz.analysis.fid.coff_sig",
-       WORK / "libcmt_objs", WORK / "nafxcw_objs", sigs, 1)
+       WORK / "libcmt_objs", WORK / "nafxcw_objs", WORK / "libcimt_objs", sigs, 1)
 
     # 3. anchored matches (classify also writes WORK/library_labels.csv next to its out-csv)
     sh(sys.executable, "-m", "gruntz.analysis.fid.classify", sigs, exe, FUNCS, WORK / "matches.csv")

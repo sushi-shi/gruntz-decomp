@@ -87,10 +87,10 @@ extern void* const g_DirectSoundBaseVtbl[];
 // __cdecl helper (0x135110): caller pops the one arg (`add esp,4`).
 extern "C" i32 ConvertVolumeToPercent(i32 vol);
 
-// The 100-entry volume lookup table SetVolumeByIndex indexes (0x653ab8). Defined
-// (and filled at startup) in UnknownSalazar.cpp as g_salazarLookupTable; only
-// referenced here, so no DATA() (the definition carries the label).
-extern i32 g_salazarLookupTable[100];
+// The volume->attenuation lookup table SetVolumeByIndex indexes (0x653ab8). Defined
+// (and filled at startup) in SoundDevice.cpp as g_volumeTable; only referenced here,
+// so no DATA() (the definition carries the label).
+extern i32 g_volumeTable[100];
 
 // The pan lookup table SetPanByIndex indexes (0x653c48, immediately after the
 // volume table). Read at indices <= 0 from this base: a positive arg reads the
@@ -150,8 +150,11 @@ void operator delete(void*);
 // External, reloc-masked (its /GX EH frame lives there); modeled as a tiny helper
 // so the placement-new `mov ecx,alloc; push ...; call` falls out.
 struct DSoundCloneCtor {
-    DSoundCloneCtor* Construct(IDirectSoundBufferZ* buf, DirectSoundMgr* owner,
-                               DirectSoundMgr* original); // 0x136180
+    DSoundCloneCtor* Construct(
+        IDirectSoundBufferZ* buf,
+        DirectSoundMgr* owner,
+        DirectSoundMgr* original
+    ); // 0x136180
 };
 
 // ---------------------------------------------------------------------------
@@ -352,7 +355,7 @@ i32 DirectSoundMgr::SetVolumeByIndex(i32 idx) {
     if (m_owner->m_initialized == 0) {
         return 0;
     }
-    return SetVolume(g_salazarLookupTable[idx]);
+    return SetVolume(g_volumeTable[idx]);
 }
 
 // ---------------------------------------------------------------------------
@@ -880,7 +883,7 @@ i32 DirectSoundMgr::Create(void* hwnd, u32 level, u32 flags) {
 RVA(0x001365e0, 0xf)
 i32 DirectSoundMgr::ReacquireViaCallback() {
     if (m_80 != 0) {
-        i32 (DirectSoundMgr::*cb)() = *(i32(DirectSoundMgr::**)())&m_80;
+        i32 (DirectSoundMgr::*cb)() = *(i32(DirectSoundMgr::**)()) & m_80;
         return (this->*cb)();
     }
     return 0;

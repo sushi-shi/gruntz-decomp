@@ -61,6 +61,7 @@ struct IDirectInputZ {
 //   +0x24 (slot 9)  GetDeviceState     (DWORD cb, LPVOID data)
 //   +0x2c (slot 11) SetDataFormat      (LPCDIDATAFORMAT)
 //   +0x34 (slot 13) SetCooperativeLevel(HWND, DWORD)
+//   +0x64 (slot 25) Poll               () [IDirectInputDevice2]
 // ---------------------------------------------------------------------------
 struct IDirectInputDeviceZ {
     struct Vtbl {
@@ -77,6 +78,8 @@ struct IDirectInputDeviceZ {
         char m_pad30[0x34 - 0x30];
         i32(__stdcall* SetCooperativeLevel)(IDirectInputDeviceZ*, void* hwnd,
                                             u32 flags); // +0x34
+        char m_pad38[0x64 - 0x38];
+        i32(__stdcall* Poll)(IDirectInputDeviceZ*); // +0x64 (IDirectInputDevice2::Poll)
     }* vtbl;
 };
 
@@ -250,6 +253,20 @@ public:
     // packing the current/edge flags into +0x2ac/+0x2b0/+0x2a8.
     i32 Poll(); // 0x133d00
 
+    // PollMouse (0x1343b0): mouse-device per-frame read. ReadState()s the +0x2a0
+    // DIMOUSESTATE snapshot, packs the lX/lY direction + 4 button-down bits into
+    // m_currentKeys, then edge-reconciles against m_latchedKeys (press edges).
+    i32 PollMouse(); // 0x1343b0
+
+    // PollJoystick (0x1347d0): joystick variant - a SetupAxes-style pre-step
+    // (0x135040) then the same ReadState + edge-reconcile over a DIJOYSTATE2 snapshot.
+    i32 PollJoystick(); // 0x1347d0
+
+    // PollDevice (0x135040): IDirectInputDevice2::Poll() pre-step PollJoystick runs
+    // before sampling the joystick. On INPUTLOST/NOTACQUIRED it re-Acquires and
+    // re-Polls once; a nonzero HRESULT is reported through GetErrorString.
+    i32 PollDevice(); // 0x135040
+
     // CreateDeviceWrap (0x134260): validates (di, guid), runs Create, then the +0x14
     // virtual configure step. ret 0xc => 3 args.
     i32 CreateDeviceWrap(IDirectInputZ* di, const void* guid, void* hwnd); // 0x134260
@@ -273,7 +290,7 @@ public:
     // Build a DIPROPDWORD on the stack {dwSize=0x14, dwHeaderSize=0x10, dwObj,
     // dwHow, dwData} and hand it to SetProperty(rguid, &prop) (0x134f70).
     i32 SetPropertyDword(const void* rguid, u32 dwObj, u32 dwHow, u32 dwData);
-    i32 Acquire();                                                     // 0x134fb0
+    i32 Acquire(); // 0x134fb0
 
     // --- layout ---------------------------------------------------------------
     void* m_vptr;                   // +0x000  stamped to g_deviceConfigVtblA (@0x5ef628)

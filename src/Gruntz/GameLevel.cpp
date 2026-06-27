@@ -627,12 +627,12 @@ struct CImageSet1 {
         *(void**)this = &g_imageSet1Vtbl;
         m_04 = 0;
     }
-    void DtorBase();           // 0x161370  base-subobject dtor (vtable restamp)
-    i32 Parse(void* record);   // 0x166d40  vtbl slot +0x14
-    void* m_vtbl; // +0x00
-    i32 m_04;     // +0x04
-    i32 m_08;     // +0x08
-    i32 m_0c;     // +0x0c
+    void DtorBase();         // 0x161370  base-subobject dtor (vtable restamp)
+    i32 Parse(void* record); // 0x166d40  vtbl slot +0x14
+    void* m_vtbl;            // +0x00
+    i32 m_04;                // +0x04
+    i32 m_08;                // +0x08
+    i32 m_0c;                // +0x0c
 };
 struct CImageSet2 {
     CImageSet2() {
@@ -1049,31 +1049,31 @@ struct ProbePlane {
             px_ = 0;                                                                               \
         } else {                                                                                   \
             ProbePlane* pc_ = (ProbePlane*)(LVL)->m_mainPlane;                                     \
-            if (px_ >= pc_->wrapW) {                                                                \
-                px_ = pc_->wrapW - 1;                                                               \
+            if (px_ >= pc_->wrapW) {                                                               \
+                px_ = pc_->wrapW - 1;                                                              \
             }                                                                                      \
         }                                                                                          \
         if (py_ < 0) {                                                                             \
             py_ = 0;                                                                               \
         } else {                                                                                   \
             ProbePlane* pc_ = (ProbePlane*)(LVL)->m_mainPlane;                                     \
-            if (py_ >= pc_->wrapH) {                                                                \
-                py_ = pc_->wrapH - 1;                                                               \
+            if (py_ >= pc_->wrapH) {                                                               \
+                py_ = pc_->wrapH - 1;                                                              \
             }                                                                                      \
         }                                                                                          \
-        ProbePlane* pl_ = (ProbePlane*)(LVL)->m_mainPlane;                                          \
-        i32 qx_ = px_ >> pl_->shiftX;                                                               \
-        i32 qy_ = py_ >> pl_->shiftY;                                                               \
-        i32 col_ = qx_;                                                                             \
-        i32 subX_ = px_ - (qx_ << pl_->shiftX);                                                     \
-        i32 idx_ = pl_->colOffsets[qy_] + col_;                                                     \
-        i32 subY_ = py_ - (qy_ << pl_->shiftY);                                                     \
-        i32 tile_ = pl_->tileGrid[idx_];                                                            \
-        if (tile_ == TILE_UNINIT || tile_ == TILE_CLEAR) {                                          \
-            (RESULT) = 0;                                                                           \
+        ProbePlane* pl_ = (ProbePlane*)(LVL)->m_mainPlane;                                         \
+        i32 qx_ = px_ >> pl_->shiftX;                                                              \
+        i32 qy_ = py_ >> pl_->shiftY;                                                              \
+        i32 col_ = qx_;                                                                            \
+        i32 subX_ = px_ - (qx_ << pl_->shiftX);                                                    \
+        i32 idx_ = pl_->colOffsets[qy_] + col_;                                                    \
+        i32 subY_ = py_ - (qy_ << pl_->shiftY);                                                    \
+        i32 tile_ = pl_->tileGrid[idx_];                                                           \
+        if (tile_ == TILE_UNINIT || tile_ == TILE_CLEAR) {                                         \
+            (RESULT) = 0;                                                                          \
         } else {                                                                                   \
-            CImageSet* set_ = (CImageSet*)m_imageSets[tile_ & 0xffff];                              \
-            (RESULT) = set_->dummy8(subX_, subY_);                                                  \
+            CImageSet* set_ = (CImageSet*)m_imageSets[tile_ & 0xffff];                             \
+            (RESULT) = set_->dummy8(subX_, subY_);                                                 \
         }                                                                                          \
     } while (0)
 
@@ -1590,6 +1590,505 @@ i32 CGameLevel::ScrollKindDispatch12(ScrollTarget* t, i32 x, i32 y, i32 flags) {
     t->scrollX = x;
     t->scrollY = y;
     return result;
+}
+
+// ===========================================================================
+// The four axis steppers (ScrollStepXHi/XLo/YHi/YLo @0x167260/450/640/830).
+// All __thiscall (this=level), ret 0x14. Each sweeps the OTHER axis across a tile
+// region [t->axis brackets], inlining the per-tile probe (== AxisProbe). When a
+// probed tile reports a blocking kind (1/2), it scans the resolved axis inward via
+// AxisProbe to find the first clear coord, accumulating a state-flag word. Finally
+// it tails into BroadPhase to test moving objects, writing the resolved scroll coord
+// back through the out-pointer and returning the state word.
+//   X-variants resolve X (out = &x, scroll +0x5c, step +0xfc, outer Y over +138..+140);
+//   Y-variants resolve Y (out = &y, scroll +0x60, step +0xf8, outer X over +134..+13c).
+//   Hi-variants fix the high edge (+0x13c / +0x140) and scan down; Lo-variants fix the
+//   low edge (+0x134 / +0x138) and scan up. Field names via EditTarget (file-scope).
+// ===========================================================================
+
+// ScrollStepXHi - 0x167260. Fixed X = high edge (x + axisMid); sweep Y, scan X down.
+// @early-stop
+// regalloc coin-flip: retail pins resolvedX in esi from prologue; MSVC5 reuses esi for the scan index (no source lever forces it)
+RVA(0x00167260, 0x1ef)
+i32 CGameLevel::ScrollStepXHi(ScrollTarget* tp, i32 x, i32 y, i32* px, i32 flags) {
+    EditTarget* t = (EditTarget*)tp;
+    i32 xEnd = x + t->axisMid;
+    i32 yHi = t->axisHi + y;
+    i32 yLo = t->axisLoB + y;
+    i32 state = 0;
+    if (yLo > yHi) {
+        goto helper;
+    }
+looptop: {
+    i32 result;
+    {
+        i32 cx = xEnd;
+        if (cx < 0) {
+            cx = 0;
+        } else {
+            ProbePlane* pc = (ProbePlane*)m_mainPlane;
+            if (cx >= pc->wrapW) {
+                cx = pc->wrapW - 1;
+            }
+        }
+        i32 cy = yLo;
+        if (cy < 0) {
+            cy = 0;
+        } else {
+            ProbePlane* pc = (ProbePlane*)m_mainPlane;
+            if (cy >= pc->wrapH) {
+                cy = pc->wrapH - 1;
+            }
+        }
+        ProbePlane* pl = (ProbePlane*)m_mainPlane;
+        i32 qx = cx >> pl->shiftX;
+        i32 qy = cy >> pl->shiftY;
+        i32 col = qx;
+        i32 subX = cx - (qx << pl->shiftX);
+        i32 idx = pl->colOffsets[qy] + col;
+        i32 subY = cy - (qy << pl->shiftY);
+        i32 tile = pl->tileGrid[idx];
+        if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
+            result = 0;
+        } else {
+            CImageSet* set = (CImageSet*)m_imageSets[tile & 0xffff];
+            result = set->dummy8(subX, subY);
+        }
+    }
+    if (result == 2 && (t->flags & 0x400)) {
+        result = 0;
+    }
+    if (result == 1 || result == 2) {
+        i32 lo = t->scrollX + t->axisMid;
+        i32 j = xEnd - 1;
+        state |= 0x60000;
+        for (; j > lo; j--) {
+            if (AxisProbe(j, yLo) == 0) {
+                j -= t->axisMid;
+                goto have_x;
+            }
+        }
+        j = t->scrollX;
+    have_x:
+        x = j;
+        if (j == t->scrollX) {
+            goto done_eq;
+        }
+    }
+    if (yLo == yHi) {
+        yLo++;
+    } else {
+        yLo += t->stepY;
+        if (yLo <= yHi) {
+            goto looptop;
+        }
+        yLo = yHi;
+    }
+    if (yLo <= yHi) {
+        goto looptop;
+    }
+}
+helper:
+    if (BroadPhase(tp, x, y) != 0) {
+        *px = t->scrollX;
+        return state | 0x22000000;
+    }
+    *px = x;
+    return state;
+done_eq:
+    *px = t->scrollX;
+    return state;
+}
+
+// ScrollStepXLo - 0x167450. Fixed X = low edge (x + axisLoA); sweep Y, scan X up.
+// @early-stop
+// regalloc coin-flip: retail pins resolvedX in esi from prologue; MSVC5 reuses esi for the scan index (no source lever forces it)
+RVA(0x00167450, 0x1ef)
+i32 CGameLevel::ScrollStepXLo(ScrollTarget* tp, i32 x, i32 y, i32* px, i32 flags) {
+    EditTarget* t = (EditTarget*)tp;
+    i32 xEnd = x + t->axisLoA;
+    i32 yHi = t->axisHi + y;
+    i32 yLo = t->axisLoB + y;
+    i32 state = 0;
+    if (yLo > yHi) {
+        goto helper;
+    }
+looptop: {
+    i32 result;
+    {
+        i32 cx = xEnd;
+        if (cx < 0) {
+            cx = 0;
+        } else {
+            ProbePlane* pc = (ProbePlane*)m_mainPlane;
+            if (cx >= pc->wrapW) {
+                cx = pc->wrapW - 1;
+            }
+        }
+        i32 cy = yLo;
+        if (cy < 0) {
+            cy = 0;
+        } else {
+            ProbePlane* pc = (ProbePlane*)m_mainPlane;
+            if (cy >= pc->wrapH) {
+                cy = pc->wrapH - 1;
+            }
+        }
+        ProbePlane* pl = (ProbePlane*)m_mainPlane;
+        i32 qx = cx >> pl->shiftX;
+        i32 qy = cy >> pl->shiftY;
+        i32 col = qx;
+        i32 subX = cx - (qx << pl->shiftX);
+        i32 idx = pl->colOffsets[qy] + col;
+        i32 subY = cy - (qy << pl->shiftY);
+        i32 tile = pl->tileGrid[idx];
+        if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
+            result = 0;
+        } else {
+            CImageSet* set = (CImageSet*)m_imageSets[tile & 0xffff];
+            result = set->dummy8(subX, subY);
+        }
+    }
+    if (result == 2 && (t->flags & 0x400)) {
+        result = 0;
+    }
+    if (result == 1 || result == 2) {
+        i32 lo = t->scrollX + t->axisLoA;
+        i32 j = xEnd + 1;
+        state |= 0xa0000;
+        for (; j < lo; j++) {
+            if (AxisProbe(j, yLo) == 0) {
+                j -= t->axisLoA;
+                goto have_x;
+            }
+        }
+        j = t->scrollX;
+    have_x:
+        x = j;
+        if (j == t->scrollX) {
+            goto done_eq;
+        }
+    }
+    if (yLo == yHi) {
+        yLo++;
+    } else {
+        yLo += t->stepY;
+        if (yLo <= yHi) {
+            goto looptop;
+        }
+        yLo = yHi;
+    }
+    if (yLo <= yHi) {
+        goto looptop;
+    }
+}
+helper:
+    if (BroadPhase(tp, x, y) != 0) {
+        *px = t->scrollX;
+        return state | 0x82000000;
+    }
+    *px = x;
+    return state;
+done_eq:
+    *px = t->scrollX;
+    return state;
+}
+
+// ScrollStepYHi - 0x167640. Fixed Y = high edge (y + axisHi); sweep X, scan Y down.
+// @early-stop
+// regalloc coin-flip: retail pins resolvedX in esi from prologue; MSVC5 reuses esi for the scan index (no source lever forces it)
+RVA(0x00167640, 0x1eb)
+i32 CGameLevel::ScrollStepYHi(ScrollTarget* tp, i32 x, i32 y, i32* py, i32 flags) {
+    EditTarget* t = (EditTarget*)tp;
+    i32 colHi = t->axisMid + x;
+    i32 fixedY = y + t->axisHi;
+    i32 col = t->axisLoA + x;
+    i32 state = 0;
+    if (col > colHi) {
+        goto helper;
+    }
+looptop: {
+    i32 result;
+    {
+        i32 cx = col;
+        if (cx < 0) {
+            cx = 0;
+        } else {
+            ProbePlane* pc = (ProbePlane*)m_mainPlane;
+            if (cx >= pc->wrapW) {
+                cx = pc->wrapW - 1;
+            }
+        }
+        i32 cy = fixedY;
+        if (cy < 0) {
+            cy = 0;
+        } else {
+            ProbePlane* pc = (ProbePlane*)m_mainPlane;
+            if (cy >= pc->wrapH) {
+                cy = pc->wrapH - 1;
+            }
+        }
+        ProbePlane* pl = (ProbePlane*)m_mainPlane;
+        i32 qx = cx >> pl->shiftX;
+        i32 qy = cy >> pl->shiftY;
+        i32 c = qx;
+        i32 subX = cx - (qx << pl->shiftX);
+        i32 idx = pl->colOffsets[qy] + c;
+        i32 subY = cy - (qy << pl->shiftY);
+        i32 tile = pl->tileGrid[idx];
+        if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
+            result = 0;
+        } else {
+            CImageSet* set = (CImageSet*)m_imageSets[tile & 0xffff];
+            result = set->dummy8(subX, subY);
+        }
+    }
+    if (result == 2 && (t->flags & 0x400)) {
+        result = 0;
+    }
+    if (result == 1 || result == 2) {
+        i32 lo = t->scrollY + t->axisHi;
+        i32 j = fixedY - 1;
+        state |= 0x1020000;
+        for (; j > lo; j--) {
+            if (AxisProbe(col, j) == 0) {
+                j -= t->axisHi;
+                goto have_y;
+            }
+        }
+        j = t->scrollY;
+    have_y:
+        y = j;
+        if (j == t->scrollY) {
+            goto done_eq;
+        }
+    }
+    if (col == colHi) {
+        col++;
+    } else {
+        col += t->stepX;
+        if (col <= colHi) {
+            goto looptop;
+        }
+        col = colHi;
+    }
+    if (col <= colHi) {
+        goto looptop;
+    }
+}
+helper:
+    if (BroadPhase(tp, x, y) != 0) {
+        *py = t->scrollY;
+        return state | 0x42000000;
+    }
+    *py = y;
+    return state;
+done_eq:
+    *py = t->scrollY;
+    return state;
+}
+
+// ScrollStepYLo - 0x167830. Fixed Y = low edge (y + axisLoB); sweep X, scan Y up.
+// @early-stop
+// regalloc coin-flip: retail pins resolvedX in esi from prologue; MSVC5 reuses esi for the scan index (no source lever forces it)
+RVA(0x00167830, 0x1eb)
+i32 CGameLevel::ScrollStepYLo(ScrollTarget* tp, i32 x, i32 y, i32* py, i32 flags) {
+    EditTarget* t = (EditTarget*)tp;
+    i32 colHi = t->axisMid + x;
+    i32 fixedY = y + t->axisLoB;
+    i32 col = t->axisLoA + x;
+    i32 state = 0;
+    if (col > colHi) {
+        goto helper;
+    }
+looptop: {
+    i32 result;
+    {
+        i32 cx = col;
+        if (cx < 0) {
+            cx = 0;
+        } else {
+            ProbePlane* pc = (ProbePlane*)m_mainPlane;
+            if (cx >= pc->wrapW) {
+                cx = pc->wrapW - 1;
+            }
+        }
+        i32 cy = fixedY;
+        if (cy < 0) {
+            cy = 0;
+        } else {
+            ProbePlane* pc = (ProbePlane*)m_mainPlane;
+            if (cy >= pc->wrapH) {
+                cy = pc->wrapH - 1;
+            }
+        }
+        ProbePlane* pl = (ProbePlane*)m_mainPlane;
+        i32 qx = cx >> pl->shiftX;
+        i32 qy = cy >> pl->shiftY;
+        i32 c = qx;
+        i32 subX = cx - (qx << pl->shiftX);
+        i32 idx = pl->colOffsets[qy] + c;
+        i32 subY = cy - (qy << pl->shiftY);
+        i32 tile = pl->tileGrid[idx];
+        if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
+            result = 0;
+        } else {
+            CImageSet* set = (CImageSet*)m_imageSets[tile & 0xffff];
+            result = set->dummy8(subX, subY);
+        }
+    }
+    if (result == 2 && (t->flags & 0x400)) {
+        result = 0;
+    }
+    if (result == 1 || result == 2) {
+        i32 lo = t->scrollY + t->axisLoB;
+        i32 j = fixedY + 1;
+        state |= 0x820000;
+        for (; j < lo; j++) {
+            if (AxisProbe(col, j) == 0) {
+                j -= t->axisLoB;
+                goto have_y;
+            }
+        }
+        j = t->scrollY;
+    have_y:
+        y = j;
+        if (j == t->scrollY) {
+            goto done_eq;
+        }
+    }
+    if (col == colHi) {
+        col++;
+    } else {
+        col += t->stepX;
+        if (col <= colHi) {
+            goto looptop;
+        }
+        col = colHi;
+    }
+    if (col <= colHi) {
+        goto looptop;
+    }
+}
+helper:
+    if (BroadPhase(tp, x, y) != 0) {
+        *py = t->scrollY;
+        return state | 0x12000000;
+    }
+    *py = y;
+    return state;
+done_eq:
+    *py = t->scrollY;
+    return state;
+}
+
+// ===========================================================================
+// BroadPhase - 0x167ea0 (__thiscall, ret 0xc). The AABB broad-phase the steppers
+// tail into. `t` is the moving box (an EditTarget viewed as a BPObj); it walks the
+// owner's object chain and, for every other active object whose collision masks
+// intersect and whose box is set (+0x134 != sentinel), tests whether t currently
+// overlaps it. If NOT (a separation on any axis) but t's CANDIDATE box (at candX,
+// candY) WOULD overlap, it fires t's +0x90 notifier; on a nonzero reply it fires the
+// object's own +0x90 notifier (when the masks still intersect) and returns 1. 0 if
+// no object triggers.
+// ===========================================================================
+
+// A game object in the broad-phase chain. The brackets at +0x134..+0x140 are the
+// object-local AABB (added to the +0x5c/+0x60 world origin); +0x90 is the notifier
+// dispatcher (its +0x10 slot is the callback); +0xe8/+0xf4 the collision masks.
+struct BPNotifier {
+    char pad_0[0x10];
+    i32 (*notify)(void* obj); // +0x10
+};
+struct BPObj {
+    char pad_0[0x08];
+    u32 flags; // +0x08  (bit 0x100 = active)
+    char pad_c[0x5c - 0x0c];
+    i32 originX; // +0x5c
+    i32 originY; // +0x60
+    char pad_64[0x90 - 0x64];
+    BPNotifier* notifier; // +0x90
+    BPObj* backPtr;       // +0x94
+    char pad_98[0xe8 - 0x98];
+    u32 maskA; // +0xe8
+    char pad_ec[0xf4 - 0xec];
+    u32 maskB; // +0xf4
+    char pad_f8[0x134 - 0xf8];
+    i32 boxL; // +0x134
+    i32 boxB; // +0x138
+    i32 boxR; // +0x13c
+    i32 boxT; // +0x140
+};
+
+// The owner's object chain: this->m_owner (+0xc) -> +0x8 (chain mgr) -> +0x14 (head).
+// Each node holds the next link at +0x00 and the object pointer at +0x08.
+struct BPNode {
+    BPNode* next; // +0x00
+    char pad_4[0x08 - 0x04];
+    BPObj* obj; // +0x08
+};
+struct BPChainMgr {
+    char pad_0[0x14];
+    BPNode* head; // +0x14
+};
+struct BPOwner {
+    char pad_0[0x08];
+    BPChainMgr* mgr; // +0x08
+};
+
+// @early-stop
+// regalloc coin-flip: retail pins resolvedX in esi from prologue; MSVC5 reuses esi for the scan index (no source lever forces it)
+RVA(0x00167ea0, 0x1b9)
+i32 CGameLevel::BroadPhase(ScrollTarget* tp, i32 candX, i32 candY) {
+    BPObj* t = (BPObj*)tp;
+    if (!(t->flags & 0x100)) {
+        return 0;
+    }
+    BPNode* node = ((BPOwner*)m_owner)->mgr->head;
+    if (node == 0) {
+        return 0;
+    }
+    do {
+        BPNode* nx = node->next;
+        BPObj* obj = node->obj;
+        if (obj != t && (obj->flags & 0x100) && (t->maskB & obj->maskA)
+            && t->boxL != (i32)0x80000000 && obj->boxL != (i32)0x80000000) {
+            i32 tLeft = t->boxL + t->originX;
+            i32 tBot = t->boxB + t->originY;
+            i32 tRight = t->originX + t->boxR;
+            i32 tTop = t->boxT + t->originY;
+            i32 oLeft = obj->originX + obj->boxL;
+            i32 oBot = obj->boxB + obj->originY;
+            i32 oTop = obj->originY + obj->boxT;
+            i32 oRight = obj->originX + obj->boxR;
+            if (tLeft > oRight || tRight < oLeft || tBot > oTop || tTop < oBot) {
+                i32 cLeft = candX + t->boxL;
+                i32 cRight = t->boxR + candX;
+                i32 cBot = t->boxB + candY;
+                i32 cTop = t->boxT + candY;
+                if (cLeft <= oRight && cRight >= oLeft && cBot <= oTop && cTop >= oBot) {
+                    i32 fire;
+                    if (t->notifier != 0) {
+                        t->backPtr = obj;
+                        fire = t->notifier->notify(t);
+                    } else {
+                        fire = 1;
+                    }
+                    if (fire != 0) {
+                        if (t->maskB & obj->maskA) {
+                            if (obj->notifier != 0) {
+                                obj->backPtr = t;
+                                obj->notifier->notify(obj);
+                            }
+                        }
+                        return 1;
+                    }
+                }
+            }
+        }
+        node = nx;
+    } while (node != 0);
+    return 0;
 }
 
 // ---------------------------------------------------------------------------
