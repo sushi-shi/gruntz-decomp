@@ -585,6 +585,139 @@ void CBattlezDlg::ReadCtrlBText(i32 index) {
     GetCtrlB(index)->GetWindowText(s);
 }
 
+// ===========================================================================
+// CNetMgr::ShowMultiStartDlg @0x0b86c0  (/GX EH frame)
+// Homed in the CMultiStartDlg TU: it STACK-constructs a CMultiStartDlg and runs
+// it modally, so it needs this TU's dialog models (NetMgr.cpp's <Mfc.h>-based
+// CNetMgr/CWnd world is header-incompatible with this file's minimal-MFC models).
+// `this` is the CNetMgr, modeled minimally as CNetMgrLite over only the touched
+// offsets (m_4/m_c/m_528/m_538/m_5c0); the class name is cosmetic - retail carries
+// no symbols, objdiff matches by RVA. On modal result 1 it either nudges the
+// host (Sub386e, m_528 set) or, when sound is enabled, re-fires the kill cue
+// throttled by g_killCueClock, then Sleeps 250ms; otherwise it tears down the
+// pending local player and reports removal. The dlg's CObList/CString/CDialog
+// member dtors unwind inline across the three /GX exits.
+// ===========================================================================
+// @early-stop
+// 81% - EH dtor-emission wall. Retail INLINES the three CMultiStartDlg member
+// dtors (~CObList m_74 @0x1b5d78, ~CString m_70 @0x1b9cde, ~CDialog base
+// @0x1ba51d) with per-site states 2/1, 4/3, 6/5 at each of the three /GX exits;
+// our build instead emits ONE out-of-line `call ~CMultiStartDlg` per exit. The
+// inline form only falls out when the class dtor is implicit, but CMultiStartDlg
+// must keep its explicit out-of-line ~CMultiStartDlg (the matched/parked function
+// @0x0b8960) - so the member-dtor inlining cannot be steered without regressing
+// that. All control flow + the logic (modal run, m_528/FindRec/m_538 teardown,
+// the registry GAME_KEY cue throttle, Sleep) is byte-aligned; only the three
+// cleanup sites differ.
+DATA(0x00248ce0)
+extern i32 g_dlgResultSink; // DAT_00648ce0 (cleared after the modal run)
+DATA(0x0021ab20)
+extern i32 g_sndEnabled; // ?g_sndEnabled@@3HA
+DATA(0x0021ab24)
+extern i32 g_sndCueTag; // ?g_sndCueTag@@3HA
+DATA(0x002bf3c0)
+extern i32 g_killCueClock; // _g_killCueClock
+DATA(0x00211ec4)
+extern char s_GameKey[]; // s_GAME_KEY_00611ec4 (registry key literal)
+
+// The cue emitter held at record+0x10; Trigger @0x1360d0 (__thiscall, 4 args).
+struct CCueEmitter {
+    void Trigger(i32 cue, i32 a, i32 b, i32 c);
+};
+// The FindRec / registry-lookup record. Only the touched fields are named.
+struct CNetCueRec {
+    char m_pad0[8];
+    i32 m_8; // +0x08
+    char m_padc[0x10 - 0xc];
+    CCueEmitter* m_10; // +0x10
+    i32 m_14;          // +0x14  last-fire clock
+    i32 m_18;          // +0x18  min interval
+    char m_pad1c[0x20 - 0x1c];
+    i32 m_20; // +0x20
+};
+// The embedded registry/bute object at (m_c->m_28 + 0x10); Lookup @0x1b8438.
+struct CRegBute {
+    i32 Lookup(const char* key, CNetCueRec** out);
+};
+struct CNetCfgSub { // m_c->m_28
+    char m_pad0[0x30];
+    i32 m_30; // +0x30
+};
+struct CNetCfg { // m_c
+    char m_pad0[0x28];
+    CNetCfgSub* m_28; // +0x28
+};
+struct CNetDlgHost { // m_4 (runs the dialog, finds the local player record)
+    i32 RunDlg(void* dlg, i32 flag); // 0x196f
+    CNetCueRec* FindRec(i32 id);     // 0x2e00
+};
+// cdecl ILT-thunk helpers.
+void NetCueReset_3bbb(i32 a, i32 b); // 0x3bbb
+void DlgSleep_13dfe0(i32 ms);        // 0x13dfe0
+
+class CNetMgrLite {
+public:
+    char m_pad0[4];
+    CNetDlgHost* m_4; // +0x04
+    char m_pad8[0xc - 8];
+    CNetCfg* m_c; // +0x0c
+    char m_pad10[0x528 - 0x10];
+    i32 m_528; // +0x528
+    char m_pad52c[0x538 - 0x52c];
+    i32 m_538; // +0x538
+    char m_pad53c[0x5c0 - 0x53c];
+    i32 m_5c0; // +0x5c0
+
+    i32 ShowMultiStartDlg();    // 0x0b86c0
+    void Sub1d70(i32 a);        // 0x1d70   __thiscall self-call
+    void Sub2e82(i32 a, i32 b); // 0x2e82   __thiscall self-call
+    void Sub386e();             // 0x386e   __thiscall self-call
+};
+
+RVA(0x000b86c0, 0x206)
+i32 CNetMgrLite::ShowMultiStartDlg() {
+    CMultiStartDlg dlg((i32)m_4, 0);
+    i32 r = m_4->RunDlg(&dlg, 0);
+    g_dlgResultSink = 0;
+    if (r != 1) {
+        if (m_528 != 0) {
+            CNetCueRec* rec = m_4->FindRec(m_5c0);
+            if (rec == 0) {
+                return 0;
+            }
+            rec->m_20 = 0;
+            NetCueReset_3bbb(rec->m_8, 1);
+            Sub1d70(0);
+        }
+        if (m_528 == 0 && m_538 == 0) {
+            Sub2e82(0x3ea, 1);
+        }
+        return 0;
+    }
+    // r == 1
+    if (m_528 != 0) {
+        Sub386e();
+    } else {
+        if (m_c->m_28->m_30 == 0) {
+            CNetCueRec* rec = 0;
+            ((CRegBute*)((char*)m_c->m_28 + 0x10))->Lookup(s_GameKey, &rec);
+            if (rec != 0) {
+                i32 snd = g_sndEnabled;
+                i32 cue = g_sndCueTag;
+                if (snd != 0) {
+                    i32 clk = g_killCueClock;
+                    if ((u32)(clk - rec->m_14) >= (u32)rec->m_18) {
+                        rec->m_14 = clk;
+                        rec->m_10->Trigger(cue, 0, 0, 0);
+                    }
+                }
+            }
+        }
+        DlgSleep_13dfe0(0xfa);
+    }
+    return 1;
+}
+
 // ~CMultiStartDlg @0x0b8960 - destroy the CObList member m_74 then the CString
 // member m_70, then chain the NAFXCW ~CDialog base dtor (all reloc-masked). /GX
 // frame unwinds the half-torn object across the member dtors.

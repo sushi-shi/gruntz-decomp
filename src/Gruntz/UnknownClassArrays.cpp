@@ -85,7 +85,7 @@ struct Serializer {
     virtual void v8();
     virtual void v9();
     virtual void v10();
-    virtual void v11();
+    virtual void Read(void* buf, u32 count);        // +0x2c (index 11)
     virtual void Write(const void* buf, u32 count); // +0x30 (index 12)
 };
 
@@ -947,6 +947,153 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Serialize_02b420(void* arArg) {
     ar->Write(&n, 4);
     for (i = 0; i < n; i++) {
         ar->Write(m_0dc[i], 8);
+    }
+    return 1;
+}
+
+// ===========================================================================
+// CBattlezSpawnMgr_or_CGruntSpawnMgr::Deserialize_02b950  @0x02b950
+// The read mirror of Serialize_02b420: pull every config scalar back out of the
+// archive through its Read(buf,count) vtable slot (+0x2c), then the four growable
+// arrays + the inline 4-dword block. The two CDWordArrays read a count then that
+// many dwords; the two CPtrArrays first recycle their current element nodes onto
+// g_freeList, resize, then allocate one fresh node per element (8-byte payload).
+// ===========================================================================
+// @early-stop
+// 99.5% - regalloc/scheduling wall in the two freelist-pop alloc loops. Retail
+// emits `mov edx,ecx; lea ebx,[eax+4]; mov g_freeList,edx` (store the popped
+// *node via an edx copy, AFTER the payload lea) and picks ecx for the m_pData
+// reload; every source spelling tried lowers to the equivalent direct
+// `mov g_freeList,ecx` (no copy) + eax for m_pData. The two forms are pure
+// register-scheduling noise - proven by CTriggerMgr's own two structurally
+// identical alloc loops compiling to BOTH (0x7ad40 direct-ecx vs 0x7ad9b
+// edx-copy). ~8 residual bytes across 1299; all logic byte-exact otherwise.
+RVA(0x0002b950, 0x513)
+i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Deserialize_02b950(void* arArg) {
+    Serializer* ar = (Serializer*)arArg;
+    if (ar == 0) {
+        return 0;
+    }
+    ar->Read(&m_000, 4);
+    ar->Read(&m_018, 4);
+    ar->Read(&m_01c, 4);
+    ar->Read(&m_020, 4);
+    ar->Read(&m_024, 4);
+    ar->Read(&m_028, 4);
+    ar->Read(&m_02c, 4);
+    ar->Read(&m_030, 4);
+    ar->Read(&m_034, 4);
+    ar->Read(&m_038, 4);
+    ar->Read(&m_03c, 4);
+    ar->Read(&m_040, 4);
+    ar->Read(&m_044, 4);
+    ar->Read(&m_048, 4);
+    ar->Read(&m_054, 4);
+    ar->Read(&m_050, 4);
+    ar->Read(&m_058, 4);
+    ar->Read(&m_04c, 4);
+    ar->Read(&m_05c, 4);
+    ar->Read(&m_060, 4);
+    ar->Read(&m_064, 4);
+    ar->Read(&m_068, 4);
+    ar->Read(&m_06c, 4);
+    ar->Read(&m_070, 4);
+    ar->Read(&m_074, 4);
+    ar->Read(&m_088, 4);
+    ar->Read(&m_08c, 4);
+    ar->Read(&m_090, 4);
+    ar->Read(&m_094, 4);
+    ar->Read(&m_098, 4);
+    ar->Read(&m_09c, 4);
+    ar->Read(&m_0a0, 4);
+    ar->Read(&m_0a4, 4);
+    ar->Read(&m_0a8, 4);
+    ar->Read(&m_0ac, 4);
+    ar->Read(&m_0b0, 4);
+    ar->Read(&m_0b4, 4);
+    ar->Read(&m_0b8, 4);
+    ar->Read(&m_0bc, 4);
+    ar->Read(&m_0c0, 4);
+    ar->Read(&m_0c4, 4);
+    ar->Read(&m_0c8, 4);
+    ar->Read(&m_0cc, 4);
+    ar->Read(&m_0d0, 8);
+    ar->Read(&m_0d8, 4);
+    ar->Read(&m_13c, 4);
+    ar->Read(&m_140, 4);
+    ar->Read(&m_144, 4);
+    ar->Read(&m_148, 4);
+    ar->Read(&m_14c, 4);
+
+    u32 i;
+    i32 j;
+    int count;
+    DWORD tmp;
+
+    ar->Read(&count, 4);
+    m_104.SetSize(0, -1);
+    m_104.SetSize(count, -1);
+    for (i = 0; i < (u32)count; i++) {
+        ar->Read(&tmp, 4);
+        m_104[i] = tmp;
+    }
+
+    ar->Read(&count, 4);
+    m_118.SetSize(0, -1);
+    m_118.SetSize(count, -1);
+    for (i = 0; i < (u32)count; i++) {
+        ar->Read(&tmp, 4);
+        m_118[i] = tmp;
+    }
+
+    i32* p = &m_12c;
+    for (i32 k = 0; k < 4; k++) {
+        ar->Read(p, 4);
+        p++;
+    }
+
+    for (j = 0; j < m_0f0.GetSize(); j++) {
+        void* q = m_0f0[j];
+        if (q != 0) {
+            void** node = (void**)((char*)q - g_freeListNodeBias);
+            *node = g_freeList;
+            g_freeList = node;
+        }
+    }
+    m_0f0.SetSize(0, -1);
+    ar->Read(&count, 4);
+    m_0f0.SetSize(count, -1);
+    for (i = 0; i < (u32)count; i++) {
+        void* node = g_freeList;
+        void* payload = 0;
+        if (*(void**)node != 0) {
+            payload = (char*)node + 4;
+            g_freeList = *(void**)node;
+        }
+        ar->Read(payload, 8);
+        m_0f0[i] = payload;
+    }
+
+    for (j = 0; j < m_0dc.GetSize(); j++) {
+        void* q = m_0dc[j];
+        if (q != 0) {
+            void** node = (void**)((char*)q - g_freeListNodeBias);
+            *node = g_freeList;
+            g_freeList = node;
+        }
+    }
+    m_0dc.SetSize(0, -1);
+    ar->Read(&count, 4);
+    m_0dc.SetSize(count, -1);
+    for (i = 0; i < (u32)count; i++) {
+        void* node = g_freeList;
+        void* payload = 0;
+        if (*(void**)node != 0) {
+            payload = (char*)node + 4;
+            g_freeList = *(void**)node;
+        }
+        ar->Read(payload, 8);
+        m_0dc[i] = payload;
     }
     return 1;
 }

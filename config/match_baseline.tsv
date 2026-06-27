@@ -183,13 +183,13 @@ databuffer	7	5
 ddrawpolyfill	1	0
 deflate	9	9
 demosetup	1	1
-dialogs	35	15
+dialogs	36	15
 directinputmgr2	36	32
 directsoundmgr	39	29
 discoveredsmall	9	9
 dsoundvoice	2	1
 ehfunclets	6	6
-engine_attributed	9	0
+engine_attributed	7	0
 engine_boundary	7	0
 engine_discovered	22	5
 engine_label_stubs	340	96
@@ -427,7 +427,7 @@ triggersound	1	1
 trirecordserialize	2	2
 typekeycoll	10	5
 uncompr	1	1
-unknownclassarrays	40	10
+unknownclassarrays	41	10
 unknownclassincgruntzmgr	2	0
 userbaselink	10	0
 userlogic	65	28
@@ -1563,6 +1563,7 @@ dialogs	?ReadCtrlBText@CBattlezDlg@@QAEXH@Z	69.1389	69.1389	1	6df8807040af	0x173
 dialogs	?RestampBase_16410@CImgHolderBase@@QAEXXZ	100.0000	100.0000	1	77e1b4009894	0x16410
 dialogs	?SetCtrlBText@CBattlezDlg@@QAEXHPBD@Z	100.0000	100.0000	2	3b905b2c10b8	0x15db0
 dialogs	?SetSlotValue@CBattlezDlg@@QAEHHH@Z	100.0000	100.0000	2	b1675baacc7b	0x17460
+dialogs	?ShowMultiStartDlg@CNetMgrLite@@QAEHXZ	81.3566	81.3566	1	06e6521fdf90	0xb86c0
 dialogs	?UpdateSlot@CMultiStartDlg@@QAEHXZ	91.8571	91.8571	1	583597665330	0xc1fd0
 dialogs	?winapi_016cd0_InvalidateRect@CBattlezDlg@@QAEHXZ	3.1111	3.1111	2	da2d8f0cc322	0x16cd0
 dialogs	?winapi_016dc0_InvalidateRect@CBattlezDlg@@QAEHXZ	3.1111	3.1111	2	b6f0b2a1e69f	0x16dc0
@@ -1661,9 +1662,7 @@ ehfunclets	?Funclet_1bd98f@@YAXXZ	100.0000	100.0000	1	6f313d2acec3	0x1bd98f
 ehfunclets	?Funclet_1bff99@@YAXXZ	100.0000	100.0000	1	75ed351a28e5	0x1bff99
 ehfunclets	?Funclet_1c1188@@YAXXZ	100.0000	100.0000	1	4ffcf8d636f7	0x1c1188
 ehfunclets	?Funclet_1ca116@@YAXXZ	100.0000	100.0000	1	4dd8201534e7	0x1ca116
-engine_attributed	?CNetMgr_0b86c0@CNetMgr@@QAEXXZ	0.7752	0.7752	3	a51b44030698	0xb86c0
 engine_attributed	?CTriggerMgr_07abc0@CTriggerMgr@@QAEXXZ	0.0948	0.0948	2	038c7b099177	0x7abc0
-engine_attributed	?UnknownClassArrays_02b950@CBattlezSpawnMgr_or_CGruntSpawnMgr@@QAEXXZ	0.0787	0.0787	2	e6b5374536b3	0x2b950
 engine_attributed	?istream_16a490@istream@@QAEXXZ	0.8889	0.8889	2	827c5011e266	0x16a490
 engine_attributed	?streambuf_16b340@streambuf@@QAEXXZ	6.2500	6.2500	2	47f211096bd3	0x16b340
 engine_attributed	?streambuf_16b360@streambuf@@QAEXXZ	5.2632	5.2632	2	474b2744d48d	0x16b360
@@ -3613,6 +3612,7 @@ uncompr	_uncompress	100.0000	100.0000	1	b40cccad8cc9	0x185320
 unknownclassarrays	??0CBattlezSpawnMgr_or_CGruntSpawnMgr@@QAE@XZ	93.3108	93.3108	1	8d8712456739	0x24dc0
 unknownclassarrays	??1CBattlezSpawnMgr_or_CGruntSpawnMgr@@QAE@XZ	100.0000	100.0000	1	654dbc566216	0x24f80
 unknownclassarrays	?Clear_02ade0@CBattlezSpawnMgr_or_CGruntSpawnMgr@@QAEXXZ	100.0000	100.0000	1	c1b25660981d	0x2ade0
+unknownclassarrays	?Deserialize_02b950@CBattlezSpawnMgr_or_CGruntSpawnMgr@@QAEHPAX@Z	99.5079	99.5079	1	9f118234db8b	0x2b950
 unknownclassarrays	?FreeArrays@CBattlezSpawnMgr_or_CGruntSpawnMgr@@QAEXXZ	100.0000	100.0000	1	a876ea97a657	0x25ca0
 unknownclassarrays	?Method_025c20@CBattlezSpawnMgr_or_CGruntSpawnMgr@@QAEHXZ	100.0000	100.0000	1	9ded8b5f556b	0x25c20
 unknownclassarrays	?Method_025d90@CBattlezSpawnMgr_or_CGruntSpawnMgr@@QAEHXZ	75.6087	75.6087	1	6966006217ef	0x25d90

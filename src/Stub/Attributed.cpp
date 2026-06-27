@@ -16,8 +16,9 @@
 // ~CString 0x1b9cde) and a CStringList @+0x74 ([esp+0x84], ~CObject 0x1b5d78) over
 // a CDialog base (0x1ba51d) - the 3-member /GX unwind (states 2/1, 4/3, 6/5 per
 // exit) is the CMultiStartDlg dtor sequence; needs the dialog class modeled first.
-RVA(0x000b86c0, 0x206)
-void CNetMgr::CNetMgr_0b86c0() {} // high; large /GX EH func, final-sweep
+// b86c0: CNetMgr::ShowMultiStartDlg reconstructed in src/Gruntz/Dialogs.cpp
+// (as CNetMgrLite::ShowMultiStartDlg - homed in the CMultiStartDlg TU since it
+// stack-constructs that dialog; NetMgr.cpp's <Mfc.h> world is header-incompatible).
 // b8960: WRONG CLASS - this is a CDialog-derived dtor (base ~CDialog @1ba51d
 // vtbl 0x5eb174; CString member @+0x70; CStringList member @+0x74 via
 // ~CObject-based dtor @1b5d78). CNetMgr+0x70/+0x74 are i32 selection latches
@@ -36,15 +37,6 @@ void CNetMgr::CNetMgr_0b86c0() {} // high; large /GX EH func, final-sweep
 // vtable + the full field list enumerated in order; leaf-first redo for the final sweep.
 RVA(0x0007abc0, 0x4b6)
 void CTriggerMgr::CTriggerMgr_07abc0() {} // high
-
-// ---- CBattlezSpawnMgr_or_CGruntSpawnMgr ----
-// DEFERRED (matcher-4): 1299-byte serializer (NO EH; home -> the real spawn-mgr TU).
-// __thiscall(serializer*) returning eax; bails when the arg is null, else drives a
-// long run of `call [eax+0x2c]` (the archive read/write-field slot) over the class's
-// arrays/fields. No EH frame, so a faithful field-by-field enumeration should match
-// high - just long; leaf-first redo for the final sweep.
-RVA(0x0002b950, 0x513)
-void CBattlezSpawnMgr_or_CGruntSpawnMgr::UnknownClassArrays_02b950() {} // high
 
 // ---- istream ----
 RVA(0x0016a490, 0x7a)

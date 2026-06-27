@@ -9,7 +9,6 @@
 
 class CNetMgr {
 public:
-    void CNetMgr_0b86c0();
     void CNetMgr_0b8fc0();
     void CNetMgr_0bbc90();
     void CNetMgr_0bbec0();
@@ -20,10 +19,6 @@ public:
 class CTriggerMgr {
 public:
     void CTriggerMgr_07abc0();
-};
-class CBattlezSpawnMgr_or_CGruntSpawnMgr {
-public:
-    void UnknownClassArrays_02b950();
 };
 class istream {
 public:
