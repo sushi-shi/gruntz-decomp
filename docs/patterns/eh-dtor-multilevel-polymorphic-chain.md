@@ -34,3 +34,17 @@ STEERABLE — the per-level teardown call is reloc-masked, so one uniform chain 
 every leaf regardless of which engine fn each level calls. Evidence: 9 SBI leaf dtors
 (`~CSBI_Image` 0x100870 … `~CSBI_StatzTabArrow` 0x1048f0, `~CSBI_WellGoo` 0x104bb0)
 all 43%→100%. Resolves the `eh-dtor-needs-base-subobject` wall for the RTTI-catalog case.
+
+**Dual-dtor TU → SPLIT, one TU per leaf.** When TWO leaves on the SAME chain are
+RVA-keyed in the same source (e.g. `~CSBI_RectOnly` 0x100700 AND `~CSBI_ImageSet`
+0x102000, both over `…CSBI_RectOnly : CStatusBarItem`), they CANNOT share a TU: the
+shared mid-chain base (`CSBI_RectOnly`) must be the **out-of-line RVA-keyed leaf** in
+one and an **inline base** (folded into the deeper leaf) in the other — one class
+cannot be both in a single TU. Give each leaf its own TU (`SBI_RectOnlyDtorEh.cpp` =
+2-level chain, `SBI_ImageSetEh.cpp` = 4-level chain), each defining its full chain
+locally with the bases below it `inline` and only its own leaf out-of-line. Matching-
+neutral (RVA-keyed); the dtor mangling flips `??1…@@QAE@XZ`→`@@UAE@XZ` (now virtual) —
+expected, auto-derived. Drop the old manual-stamp model's `g_vtbl_*` DATA externs from
+the source: unreferenced externs aren't in the base obj so they don't name anything,
+and the catalog auto-namer names every `??_7…@@6B@` the new chains emit. Evidence:
+0x100700 34%→100%, 0x102000 43%→100% (the dual-dtor TU the 9-leaf pass left parked).

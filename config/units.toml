@@ -1812,3 +1812,12 @@ flags = "base"
 unit = "m1_saverecload"
 source = "src/Gruntz/SaveRecordLoad.cpp"
 flags = "base"
+
+[[unit]]
+unit = "sbi_rectonlydtor_eh"
+source = "src/Gruntz/SBI_RectOnlyDtorEh.cpp"
+flags = "eh"
+[[unit]]
+unit = "sbi_imageset_eh"
+source = "src/Gruntz/SBI_ImageSetEh.cpp"
+flags = "eh"

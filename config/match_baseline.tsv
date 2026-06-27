@@ -297,11 +297,13 @@ sbi_gruntmachine_eh	1	1
 sbi_image	1	0
 sbi_image_eh	1	1
 sbi_imageset	1	0
+sbi_imageset_eh	1	1
 sbi_imagesetani_eh	1	1
 sbi_menuitem	12	7
 sbi_menuitem_eh	1	1
 sbi_rectonly	69	28
-sbi_rectonly_eh	4	1
+sbi_rectonly_eh	2	1
+sbi_rectonlydtor_eh	1	1
 sbi_sidetab	4	2
 sbi_sidetab_eh	1	1
 sbi_statztabarrow_eh	1	1
@@ -3136,6 +3138,7 @@ sbi_gruntmachine_eh	??1CSBI_GruntMachine@@UAE@XZ	100.0000	100.0000	1	39b102f0772
 sbi_image	?SetupImage@CSBI_Image@@QAEHHPAUCImageCfgHost@@HHHHHHHHH@Z	64.7500	64.7500	2	2facdd2dfb73	0xe6c80
 sbi_image_eh	??1CSBI_Image@@UAE@XZ	100.0000	100.0000	1	bb1ec3b102a6	0x100870
 sbi_imageset	?Serialize@CSBI_ImageSet@@QAEHPAUCImageSetStream@@HHH@Z	99.1803	99.1803	2	30e578b47581	0xe74f0
+sbi_imageset_eh	??1CSBI_ImageSet@@UAE@XZ	100.0000	100.0000	1	ba8883e75b4c	0x102000
 sbi_imagesetani_eh	??1CSBI_ImageSetAni@@UAE@XZ	100.0000	100.0000	1	7354647071fa	0x1047f0
 sbi_menuitem	?Blit@CSBI_MenuItem@@QAEHXZ	100.0000	100.0000	1	89b04f10c391	0xe84f0
 sbi_menuitem	?ClearFrame2@CSBI_MenuItem@@QAEXXZ	100.0000	100.0000	1	54de26b0f1b5	0xe81a0
@@ -3219,10 +3222,9 @@ sbi_rectonly	?UpdateRezMachineSnoozeStatusBar@CSBI_RectOnly@@QAEXXZ	3.4483	3.448
 sbi_rectonly	?UpdateRezMachineWakeStatusBar@CSBI_RectOnly@@QAEXXZ	3.2258	3.2258	1	74fc495868ec	0x107a10
 sbi_rectonly	?UpdateStatusBarTabHighlight@CSBI_RectOnly@@QAEXHHH@Z	0.1099	0.1099	2	5350e63b18c5	0xfe910
 sbi_rectonly	?winapi_107d00_SetRect@CSBI_RectOnly@@QAEHXZ	0.5155	0.5155	2	010307708fab	0x107d00
-sbi_rectonly_eh	??1CSBI_ImageSet@@QAE@XZ	43.0345	43.0345	1	c0e32f2f35be	0x102000
-sbi_rectonly_eh	??1CSBI_RectOnly@@QAE@XZ	34.2381	34.2381	2	d10384bf9660	0x100700
 sbi_rectonly_eh	?DtorMembers@CSBI_RectOnly@@QAEXXZ	49.1923	49.1923	1	4c6d76b17d3f	0xc8980
 sbi_rectonly_eh	?EnsureSub@CSBI_RectOnly@@QAEHHHH@Z	100.0000	100.0000	2	de84c5225915	0x109ad0
+sbi_rectonlydtor_eh	??1CSBI_RectOnly@@UAE@XZ	100.0000	100.0000	1	857773112dad	0x100700
 sbi_sidetab	?BuildHandle@CSBI_SideTab@@QAEHXZ	86.0101	86.0101	1	26533806f547	0xe9850
 sbi_sidetab	?Refresh@CSBI_SideTab@@QAEHH@Z	100.0000	100.0000	1	333133b9c736	0xe9820
 sbi_sidetab	?Render@CSBI_SideTab@@QAEHH@Z	87.8438	87.8438	1	1361c82e0ba1	0xe99c0

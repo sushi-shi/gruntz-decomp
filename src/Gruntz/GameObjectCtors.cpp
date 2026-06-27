@@ -143,6 +143,13 @@ i32 CGruntToyTimeSprite::GetTypeTag() {
 
 // @confidence: high
 // @source: rtti-vptr
+// @early-stop
+// eh-ctor-vptr-restamp-position wall (94.76%): real polymorphic base, body+offsets
+// byte-identical; the single residual is the leaf vptr re-stamp (mov [esi],&??_7)
+// which MSVC5's /GX EH-state machine sinks INTO the first throwing call's state 0
+// (after the m_38 load) instead of retail's eager post-base-ctor stamp. NOT
+// steerable by source spelling (doc names this exact ctor). See
+// docs/patterns/eh-ctor-vptr-restamp-position.md. Deferred to the final sweep.
 RVA(0x0007fae0, 0xa0)
 CGruntStaminaSprite::CGruntStaminaSprite(CSpriteObj* obj) : CGruntSpriteBase(obj) {
     m_38->ApplyLookupSprite("GAME_GRUNTSTAMINASPRITE", 1);
@@ -159,6 +166,11 @@ CGruntStaminaSprite::CGruntStaminaSprite(CSpriteObj* obj) : CGruntSpriteBase(obj
 
 // @confidence: high
 // @source: rtti-vptr
+// @early-stop
+// eh-ctor-vptr-restamp-position wall (94.76%): same as CGruntStaminaSprite above -
+// real polymorphic base, body byte-identical, only the leaf vptr re-stamp lands in
+// the throwing call's EH state 0 instead of eagerly post-base. NOT source-steerable
+// (docs/patterns/eh-ctor-vptr-restamp-position.md). Deferred to the final sweep.
 RVA(0x0007fbd0, 0xa0)
 CGruntToyTimeSprite::CGruntToyTimeSprite(CSpriteObj* obj) : CGruntSpriteBase(obj) {
     m_38->ApplyLookupSprite("GAME_GRUNTTOYTIMESPRITE", 1);
@@ -182,6 +194,11 @@ i32 __stdcall CGruntToyTimeSprite::GetToyTime(CToyTimeHost* o) {
 
 // @confidence: high
 // @source: rtti-vptr
+// @early-stop
+// eh-ctor-vptr-restamp-position wall (94.76%): same as the two sprite ctors above -
+// real polymorphic base, body byte-identical, only the leaf vptr re-stamp lands in
+// the throwing call's EH state 0 instead of eagerly post-base. NOT source-steerable
+// (docs/patterns/eh-ctor-vptr-restamp-position.md). Deferred to the final sweep.
 RVA(0x0007fcc0, 0xa0)
 CGruntWingzTimeSprite::CGruntWingzTimeSprite(CSpriteObj* obj) : CGruntSpriteBase(obj) {
     m_38->ApplyLookupSprite("GAME_GRUNTWINGZTIMESPRITE", 1);
@@ -366,6 +383,16 @@ CRainCloud::CRainCloud(CHazardObj* obj) : CPathHazardBase(obj) {
 
 // @confidence: high
 // @source: rtti-vptr
+// @early-stop
+// dead-spill + EH-state wall (~81%): logic/offsets/CFG/the spotlight loop/Spawn arg
+// marshaling all match retail. Two non-steerable /O2 residues: (1) retail loads sy =
+// o->m_60 and spills it to [esp+0x30] but NEVER reloads it - a DEAD load+spill MSVC5
+// keeps in retail yet our recompile (same compiler) DCEs, so retail's frame reserves
+// 8 bytes vs our 4, shifting every [esp+N] (incl. the EH trylevel slot) by 4 and
+// cascading; making sy "used" to recover the dead spill would change semantics. (2)
+// the eh-ctor-vptr-restamp-position late-stamp (same wall as the sprite ctors). The
+// dead-store half is the entropy-tail artifact of docs/patterns/reloc-typing-vptr-
+// global.md / SBI_ImageSet::Serialize. Deferred to the final sweep.
 RVA(0x000b4a90, 0x145)
 CUFO::CUFO(CHazardObj* obj) : CPathHazardBase(obj) {
     CHazardObj* o = m_10;
