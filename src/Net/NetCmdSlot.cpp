@@ -41,6 +41,83 @@ i32 __stdcall NetCmdIdFind(i32* arr, i32 v);
 void __stdcall NetCmdIdAdd(i32* arr, i32 v);
 void __stdcall NetCmdIdClear(i32* arr, i32 v);
 
+// ProcessCmd's externals (all reloc-masked rel32 callees / inline intrinsics).
+extern "C" void* memcpy(void* d, const void* s, u32 n);
+#pragma intrinsic(memcpy)
+
+// The recycled-command-packet allocator (0xbf530, __cdecl): hands back a node from
+// the global packet pool. Modeled by its delinker name so the call is named.
+void* Unmatched_bf530(i32 zero); // 0xbf530
+
+// A parsed grunt command the record's per-entry stream produces. Allocated by one
+// of two static factories, parsed in place through vtable slot 7, then enqueued.
+// Modeled polymorphically so `obj->Parse()` emits the slot-7 thiscall dispatch; no
+// virtual is defined here so cl emits no vtable.
+class CGruntzCommand {
+public:
+    virtual void v0();
+    virtual void v1();
+    virtual void v2();
+    virtual void v3();
+    virtual void v4();
+    virtual void v5();
+    virtual void v6();
+    virtual i32 Parse(void* data, i32 len); // +0x1c (slot 7)
+
+    char m_pad4[0xc - 0x4];
+    i32 m_c; // +0x0c  "submitted" flag
+};
+class CGruntzSingleCommand : public CGruntzCommand {
+public:
+    static CGruntzSingleCommand* Allocate(); // 0x24220
+};
+class CGruntzMultiCommand : public CGruntzCommand {
+public:
+    static CGruntzMultiCommand* Allocate(); // 0x24360
+};
+
+// The per-game command manager reached through CNetMgr->m_4->m_6c; ProcessCmd
+// hands each parsed grunt command to it.
+struct CGruntzCmdMgr {
+    void EnqueueCommand(i32 a, void* cmd); // 0x23d10
+};
+struct CNetMgrSub {
+    char m_pad0[0x6c];
+    CGruntzCmdMgr* m_6c; // +0x6c
+};
+
+// The CNetMgr the slot caches at +0x1c, seen here through three members: the +0x4
+// sub-object (whose +0x6c is the grunt command manager), the DirectPlay session at
+// +0x520, and DispatchRecvMsg (0xb9750) for the high-bit relay command.
+struct CNetMgrView {
+    char m_pad0[4];
+    CNetMgrSub* m_4; // +0x04
+    char m_pad8[0x520 - 8];
+    CNetSession* m_520; // +0x520  the session sub-object
+
+    i32 DispatchRecv(i32 sender, void* buf, i32 size); // 0xb9750
+};
+
+// The command record's fixed header (after the opcode/parity prefix): a sequence
+// number, two control words and a per-entry count byte; the payload follows.
+struct CNetCmdHdr {
+    i32 m_0; // +0x0  sequence
+    i32 m_4; // +0x4  window base
+    i32 m_8; // +0x8  flags word
+    u8 m_c;  // +0xc  entry count
+};
+
+// The recycled command packet AddCmd queues: sequence, owning slot, a flag byte,
+// the payload length and the inline payload copy.
+struct CNetCmdPacket {
+    i32 m_0;   // +0x0  sequence
+    void* m_4; // +0x4  owning slot (this)
+    u8 m_8;    // +0x8  flag byte
+    char m_pad9[0xc - 9];
+    i32 m_c;      // +0xc  payload length
+    char m_10[1]; // +0x10 payload
+};
+
 // ---------------------------------------------------------------------------
 // CNetSession::ResetCmdBuffers (0x0c0070, __thiscall) - zero the +0x10 head of
 // each of the four inline command slots.
@@ -79,6 +156,122 @@ void CNetCmdSlot::ResetAll() {
     m_48 = 0;
     ResetTriple(m_4c);
     ResetTriple(m_58);
+}
+
+// ---------------------------------------------------------------------------
+// CNetCmdSlot::ProcessCmd (0x0c0c70, __thiscall) - parse one incoming command
+// record (opcode + parity prefix, a fixed header, then a per-entry payload).
+// Bit 7 relays the record straight to the net manager. Even/odd records gate on
+// the slot's reset guard; matched records bump the high-water windows, queue a
+// recycled copy of the payload, and unpack each entry into a grunt command that is
+// submitted to the per-game command manager.
+// ---------------------------------------------------------------------------
+// @early-stop
+// regalloc + this-residency wall (~75%): the full control flow is byte-faithful -
+// the opcode/parity dispatch (recovered as two independent `if` guards), the bit-7
+// relay, the FindCmdSlot ack-flag set, RaiseMax/NetCmdIdAdd/NetCmdIdClear/
+// NetCmdIdFind/AdvanceSeq window updates, the Unmatched_bf530 packet alloc + inline
+// payload memcpy + AddCmd, and the per-entry Single/MultiCommand parse loop with the
+// vtable-slot-7 dispatch + EnqueueCommand. Three unsteerable MSVC5 /O2 choices
+// remain: (a) cl pins `this` in ebp where retail keeps it in esi + a [esp+0x18]
+// reload (a callee-saved-register coin-flip that cascades); (b) the redundant
+// `mov ecx,esi` retail refreshes before each __stdcall NetCmdId* call (the same
+// this-residency idiom that parks this TU's AdvanceSeq at 86.6%); (c) retail walks
+// the header through an advancing cursor with grouped byte-counter decrements
+// (-8/-4/-1) where cl folds the offsets (p+13, rem-13). No source lever; final sweep.
+RVA(0x000c0c70, 0x20f)
+i32 CNetCmdSlot::ProcessCmd(i32 playerId, void* rec, i32 size) {
+    if (rec == 0) {
+        return 0;
+    }
+    u8 opcode = *(u8*)rec;
+    i32 odd = opcode & 1;
+    char* p = (char*)rec + 1;
+    if (m_0 != 3) {
+        return 1;
+    }
+    if (opcode & 0x80) {
+        return ((CNetMgrView*)m_1c)->DispatchRecv(m_c[6], rec, size);
+    }
+    if (odd == 0) {
+        if (m_4 != 0) {
+            return 1;
+        }
+    }
+    if (odd) {
+        if (m_4 == 0) {
+            return 1;
+        }
+    }
+
+    i32 rem = size - 1;
+    if (odd) {
+        p++;
+        rem--;
+    }
+    CNetCmdHdr* h = (CNetCmdHdr*)p;
+    i32 seq = h->m_0;
+    i32 base = h->m_4;
+    i32 flags = h->m_8;
+    u8 count = h->m_c;
+    char* cursor = p + 13;
+    rem -= 13;
+
+    if (m_4 != 0 && odd) {
+        CNetCmdSlot* slot = ((CNetMgrView*)m_1c)->m_520->FindCmdSlot(playerId);
+        if (slot == 0) {
+            return 0;
+        }
+        if (opcode & 2) {
+            i32 pid = slot->m_c[0] & 0xff;
+            (&m_3c)[pid] = 1;
+            if (seq > m_8) {
+                m_8 = seq;
+            }
+        }
+    }
+
+    RaiseMax(base);
+    if (opcode & 0x10) {
+        NetCmdIdAdd(m_58, base + 2);
+    } else if (opcode & 0x20) {
+        NetCmdIdAdd(m_58, base + 3);
+    }
+    NetCmdIdClear(m_58, base + 1);
+
+    if (m_14 >= seq) {
+        return 1;
+    }
+    if (NetCmdIdFind(m_4c, seq)) {
+        return 1;
+    }
+    AdvanceSeq(seq);
+
+    CNetCmdPacket* pkt = (CNetCmdPacket*)Unmatched_bf530(0);
+    pkt->m_0 = seq;
+    pkt->m_4 = this;
+    pkt->m_8 = (u8)flags;
+    pkt->m_c = rem;
+    memcpy(pkt->m_10, cursor, rem);
+    AddCmd((CNetCmd*)pkt);
+
+    for (i32 i = count & 0xff; i > 0; i--) {
+        u8 b = *(u8*)cursor;
+        CGruntzCommand* obj;
+        if (b & 1) {
+            obj = CGruntzSingleCommand::Allocate();
+        } else if (b & 2) {
+            obj = CGruntzMultiCommand::Allocate();
+        } else {
+            continue;
+        }
+        i32 consumed = obj->Parse(cursor, rem);
+        obj->m_c = 1;
+        ((CNetMgrView*)m_1c)->m_4->m_6c->EnqueueCommand(0, obj);
+        rem -= consumed;
+        cursor += consumed;
+    }
+    return 1;
 }
 
 // ---------------------------------------------------------------------------

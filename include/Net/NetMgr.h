@@ -245,6 +245,7 @@ struct CNetCmdSlot {
     void Touch();                        // c1390  latch the slot (sets +4, +8)
     void FullReset();                    // c0c20  zero the command fields + both ranges
     i32 Init(i32 a1, i32* a2, i32 a3);   // c0b10  seed a fresh slot, then ClearCmds + reset both ranges
+    i32 ProcessCmd(i32 playerId, void* rec, i32 size); // c0c70  parse/dispatch a command record
 };
 
 // The DirectPlay session sub-object at CNetMgr+0x520. Two helpers are reached

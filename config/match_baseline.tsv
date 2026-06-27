@@ -61,7 +61,7 @@ cddrawworkerlist	11	8
 cddrawworkermapsmall	10	3
 cddrawworkerregistry	26	12
 cddrawworkers	4	4
-cddscreen	1	1
+cddscreen	3	1
 cdirectdrawmgr	28	11
 cdonothing	2	2
 cdonothingnormaldtor	1	1
@@ -163,7 +163,7 @@ engine_attributed	15	0
 engine_boundary	196	0
 engine_discovered	51	0
 engine_label_stubs	407	105
-engine_unmatched	10	0
+engine_unmatched	6	0
 engine_unmatched_lib	11	0
 engstr	3	1
 eyecandytypetags	4	4
@@ -290,7 +290,7 @@ msgpacket	2	2
 namerecord	1	0
 netcmdmgr	1	1
 netcmdsession	5	4
-netcmdslot	15	11
+netcmdslot	16	11
 netmgr	84	46
 netmgrerror	1	1
 netmgrmisc	5	4
@@ -303,7 +303,7 @@ orphanmethods	4	2
 palettebmp	1	0
 palettecopy	1	0
 polyclipraster	1	0
-projactcache	2	1
+projactcache	3	1
 projactregistry	4	3
 projectile	10	4
 pulsehighlight	2	2
@@ -804,6 +804,8 @@ cddrawworkers	?Vfunc2C@CDDrawWorkerA@@QAEHHHH@Z	100.0000	100.0000	6	2a93c347cffa
 cddrawworkers	?Vfunc2C@CDDrawWorkerB@@QAEHHHH@Z	100.0000	100.0000	6	8a45134b16f4	0x1572f0
 cddrawworkers	?Vfunc30@CDDrawWorkerB@@QAEHHHHH@Z	100.0000	100.0000	1	e3442c1eb798	0x1572b0
 cddrawworkers	?Vfunc34@CDDrawWorkerB@@QAEHHHHH@Z	100.0000	100.0000	6	a96a95c53a2d	0x157280
+cddscreen	?BlitRegion@CDDScreen@@QAEHHHHH@Z	90.7763	90.7763	1	0405fefadc87	0x17cdf0
+cddscreen	?Configure@CDDScreen@@QAEHHHPAUDDPoint@@PAUDDRect@@@Z	97.3969	97.3969	1	1791bf533e70	0x17cfc0
 cddscreen	?HandleError@CDDScreen@@QAEXXZ	100.0000	100.0000	1	66b7cedc1a51	0x17cc80
 cdirectdrawmgr	?Apply@CDDPalette@@QAEXH@Z	97.5758	97.5758	1	c2b7f4717ef4	0x147c80
 cdirectdrawmgr	?Blt@CDDSurface@@QAEHPAV1@@Z	100.0000	100.0000	3	f79e89a0ee67	0x13ee60
@@ -2045,16 +2047,12 @@ engine_label_stubs	_RezStrrchr	8.6957	8.6957	1	cpp:2262ffc5f902	0x120680
 engine_label_stubs	_StartupGate	0.0000	0.0000	1	cpp:2262ffc5f902	0x2f59
 engine_label_stubs	_SubstringMatch	2.8986	2.8986	1	cpp:2262ffc5f902	0x120090
 engine_label_stubs	_VersionScan	8.6957	8.6957	1	cpp:2262ffc5f902	0x120900
-engine_unmatched	?Unmatched_0c0c70@@YAXXZ	0.2000	0.2000	1	840ea28b587c	0xc0c70
 engine_unmatched	?Unmatched_0d1b60@@YAXXZ	0.0452	0.0452	1	c68199c5794a	0xd1b60
 engine_unmatched	?Unmatched_0f0130@@YAXXZ	0.1761	0.1761	1	ad8cb88c7979	0xf0130
 engine_unmatched	?Unmatched_0f71c0@@YAXXZ	0.1789	0.1789	1	f03b261cc267	0xf71c0
 engine_unmatched	?Unmatched_1084d0@@YAXXZ	0.0438	0.0438	1	733c20a72572	0x1084d0
 engine_unmatched	?Unmatched_118a30@@YAXXZ	1.4085	1.4085	1	5d19500e03c1	0x118a30
-engine_unmatched	?Unmatched_17cdf0@@YAXXZ	0.2632	0.2632	1	5b24239a6df0	0x17cdf0
-engine_unmatched	?Unmatched_17cfc0@@YAXXZ	0.2062	0.2062	1	eae9d3b1bc0c	0x17cfc0
 engine_unmatched	?Unmatched_181e50@@YAXXZ	0.0648	0.0648	1	955d1d4e182f	0x181e50
-engine_unmatched	?Unmatched_1933b0@@YAXXZ	0.1702	0.1702	1	8d74db23dbae	0x1933b0
 engine_unmatched_lib	?Unmatched_124848@@YAXXZ	4.0000	4.0000	1	81c658f8d097	0x124848
 engine_unmatched_lib	?Unmatched_130570@@YAXXZ	33.3333	33.3333	2	82aafcb7cba9	0x130570
 engine_unmatched_lib	?Unmatched_18bf4d@@YAXXZ	2.1739	2.1739	1	fba7903ca863	0x18bf4d
@@ -2926,6 +2924,7 @@ netcmdslot	?GetRange@CNetCmdSlot@@QAEXPAH0@Z	100.0000	100.0000	1	f6a5342b0a43	0x
 netcmdslot	?NetCmdIdAdd@@YGXPAHH@Z	100.0000	100.0000	1	0ea326438a3a	0xc1010
 netcmdslot	?NetCmdIdClear@@YGXPAHH@Z	100.0000	100.0000	1	61ec535a3595	0xc1060
 netcmdslot	?NetCmdIdFind@@YGHPAHH@Z	100.0000	100.0000	1	e06feaba51c4	0xc0fd0
+netcmdslot	?ProcessCmd@CNetCmdSlot@@QAEHHPAXH@Z	74.9950	74.9950	1	ca6b61c9b98b	0xc0c70
 netcmdslot	?RaiseMax@CNetCmdSlot@@QAEXH@Z	100.0000	100.0000	1	422670451b5f	0xc0fa0
 netcmdslot	?RemoveCmd@CNetCmdSlot@@QAEXH@Z	100.0000	100.0000	1	df62c77e645e	0xc11b0
 netcmdslot	?ResetAll@CNetCmdSlot@@QAEXXZ	73.6667	73.6667	1	e225fb4f97a4	0xc0bb0
@@ -3047,6 +3046,7 @@ palettecopy	?UploadPalette@CPaletteHost@@QAEXXZ	61.1613	61.1613	1	a0802ff9a4b4	0
 polyclipraster	?RotateRasterize@@YAHPAUClipVtx@@HHHHHHHHH@Z	53.4152	53.4152	1	0f617ce05cfb	0x146550
 projactcache	??0zBitVec@@QAE@HH@Z	77.7679	77.7679	1	cebeacca76fa	0x16d790
 projactcache	?EnsureSize@zBitVec@@QAEHH@Z	100.0000	100.0000	1	151b7a363677	0x1936e0
+projactcache	?Insert@CProjActMap@@QAEPAXPBDPAX@Z	57.9532	57.9532	1	08fb691d7565	0x1933b0
 projactregistry	??1CProjActOwner@@UAE@XZ	100.0000	100.0000	1	3a018279bc02	0x7fd0
 projactregistry	?FireActivation@CProjActObj@@QAEXH@Z	100.0000	100.0000	1	11e9b3a5f0e8	0x80e0
 projactregistry	?ProjActRegisterDefaults@@YAXXZ	100.0000	100.0000	1	a25c8147a240	0x8060

@@ -35,10 +35,35 @@ DATA(0x002bf464)
 extern void* g_projActCache; // 0x6bf464 (?g_projActCache@@3PAXA)
 DATA(0x002bf428)
 extern void* g_projActAllocResult; // 0x6bf428 (?g_projActAllocResult@@3PAXA)
+DATA(0x002bf454)
+extern void* g_projActName; // 0x6bf454 (the bad-arg diagnostic record cell)
 
 // _ReturnAddress()-style helper (0x16e0f0: mov eax,[ebp+4]; ret) - records where
 // the failing allocation was requested. Reloc-masked (no body).
 void* GetCallerRetAddr(); // 0x16e0f0
+
+// The engine heap allocator (NAFXCW operator new replacement). _RezAlloc (named).
+extern "C" void* RezAlloc(u32 size); // 0x1b9b46
+
+// The first-differing-bit helper (__cdecl): the crit-bit index where two keys
+// diverge. Reloc-masked (the delinker's name for 0x16e480 is unrelated).
+extern "C" i32 FirstDiffBit(const char* a, const char* b); // 0x16e480
+
+// Inline CRT string intrinsics the trie insert lowers to (repnz scas / sbb idiom
+// / rep movs). Declared so MSVC5 /O2 inlines them.
+extern "C" u32 strlen(const char* s);
+extern "C" i32 strcmp(const char* a, const char* b);
+extern "C" void* memcpy(void* d, const void* s, u32 n);
+
+// One crit-bit trie node (20 bytes): two child links, the crit-bit index, the
+// owned key copy, and the stored value.
+struct CTrieNode {
+    CTrieNode* m_0; // +0x0  child[0]
+    CTrieNode* m_4; // +0x4  child[1]
+    i32 m_8;        // +0x8  crit-bit index
+    char* m_c;      // +0xc  owned key copy
+    void* m_10;     // +0x10 stored value
+};
 
 // The +0x04 error sink: on a sizing failure the container reports through it.
 class CVariantSlot {
@@ -63,6 +88,24 @@ public:
     zBitVec(i32 idx, i32 sizehint); // 0x16d790
     i32 SetSize(i32 n);             // 0x16e100 (?SetSize@zBitVec@@QAEHH@Z)
     i32 EnsureSize(i32 nbits);      // 0x1936e0 (grow + preserve, reports OOM)
+};
+
+// The string-keyed crit-bit trie (the projectile-action name -> value map). Shares
+// the CContainerErr error-record idiom (the +0x04 CVariantSlot error sink). The
+// working state spans +0x14..+0x28. Field names are placeholders.
+class CProjActMap {
+public:
+    void* Insert(const char* key, void* value); // 0x1933b0
+
+    void* m_vptr;      // +0x00
+    CVariantSlot* m_4; // +0x04  error sink
+    char m_pad8[0x14 - 0x8];
+    i32 m_14;        // +0x14  node count
+    CTrieNode* m_18; // +0x18  root
+    CTrieNode* m_1c; // +0x1c  descent cursor
+    CTrieNode* m_20; // +0x20  candidate child
+    i32 m_24;        // +0x24  key bit-length (strlen*8)
+    i32 m_28;        // +0x28  cleared on entry
 };
 
 #endif // GRUNTZ_PROJACTCACHE_H
