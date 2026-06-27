@@ -5,20 +5,8 @@
 // library implementations have been split out into UnmatchedLibrary.cpp (do NOT
 // hand-reconstruct those - use the library / FID-tag them).
 #include <rva.h>
-RVA(0x000bf000, 0xd5)
-void Unmatched_0bf000() {} // Unmatched_0bf000
-RVA(0x000bf5a0, 0x110)
-void Unmatched_0bf5a0() {} // Unmatched_0bf5a0
-RVA(0x000bf9e0, 0xfe)
-void Unmatched_0bf9e0() {} // Unmatched_0bf9e0
 RVA(0x000c0c70, 0x20f)
 void Unmatched_0c0c70() {} // Unmatched_0c0c70
-RVA(0x000c2ab0, 0x161)
-void Unmatched_0c2ab0() {} // Unmatched_0c2ab0
-RVA(0x000c4120, 0xc2)
-void Unmatched_0c4120() {} // Unmatched_0c4120
-RVA(0x000c4c00, 0x190)
-void Unmatched_0c4c00() {} // Unmatched_0c4c00
 RVA(0x000d1b60, 0xc2f)
 void Unmatched_0d1b60() {} // Unmatched_0d1b60
 RVA(0x000d8060, 0x6ce)
@@ -37,8 +25,6 @@ RVA(0x000f9160, 0xd2)
 void Unmatched_0f9160() {} // Unmatched_0f9160
 RVA(0x000fab90, 0xaa)
 void Unmatched_0fab90() {} // Unmatched_0fab90
-RVA(0x000face0, 0x17c)
-void Unmatched_0face0() {} // Unmatched_0face0
 RVA(0x001084d0, 0x96c)
 void Unmatched_1084d0() {} // Unmatched_1084d0
 RVA(0x001128b0, 0x88)

@@ -6,13 +6,55 @@
 // here we only declare the slot methods we call (declared-only -> reloc-masked).
 #include <Ints.h>
 #include <rva.h>
+#include <Rez/RezMgr.h>
 
 extern "C" void* memcpy(void* d, const void* s, unsigned int n);
+extern "C" void* memset(void* d, int c, unsigned int n);
 
-// --- CNetMgr (only the slot we call) -------------------------------------------
+// --- The networking endpoint reached through CNetMgr::m_18.  Its dispatch table
+// at +0 holds __stdcall fn ptrs (the object is the explicit 1st arg). ----------
+struct CNetEndpoint;
+struct CNetEndpointVtbl {
+    char pad00[0x44];
+    i32(__stdcall* Recv)(CNetEndpoint*, i32, i32*);                     // +0x44
+    char pad48[0x64 - 0x48];
+    i32(__stdcall* Read)(CNetEndpoint*, i32*, i32*, i32, void*, i32*);  // +0x64
+};
+struct CNetEndpoint {
+    CNetEndpointVtbl* vtbl;
+};
+
+// --- CNetMgr (only the slots we call) ------------------------------------------
 struct CNetMgr {
+    char pad00[0x18];
+    CNetEndpoint* m_18;  // +0x18 endpoint
     i32 SetData(i32 a, i32 b, i32 c, i32 d, i32 e);  // 0x178fc0
 };
+
+// --- A per-channel serializable grunt object (m_1b0 table element). -----------
+struct CSyncObj {
+    virtual void v0();
+    virtual void v1();
+    virtual void v2();
+    virtual void v3();
+    virtual void v4();
+    virtual void v5();
+    virtual void v6();
+    virtual void v7();
+    virtual i32 Serialize(char* buf, i32 max);  // slot 8 -> vtbl+0x20
+};
+void NoopSync(CSyncObj* p);  // 0xbfb20 (empty)
+
+// --- The recycled-node free pool drained at the tail of Reset. ----------------
+struct CPtrList0c {
+    void* RemoveTail();  // 0x1b4a27
+    void* RemoveHead();  // 0x1b4a03
+};
+DATA(0x0024aca8) extern CPtrList0c g_pool;  // 0x64aca8
+DATA(0x0024acb4) extern i32 g_poolCount;    // 0x64acb4 (g_pool.m_count)
+
+// The "[end]"-tagged broadcast scratch buffer for the receive loop (0x800 B).
+DATA(0x00249858) extern char g_649858[0x800];  // 0x649858
 
 // --- The per-slot descriptor pointed to by m_0c --------------------------------
 struct SlotInfo {
@@ -43,7 +85,8 @@ struct CCluster0c {
     i32 m_10;          // +0x10
     i32 m_14;          // +0x14
     i32 m_18;          // +0x18
-    char pad1c[0x4c - 0x1c];
+    i32 m_1c;          // +0x1c
+    char pad20[0x4c - 0x20];
     char m_4c[0x58 - 0x4c];  // +0x4c sub-object
     char m_58[0x5c - 0x58];  // +0x58 sub-object
     char pad5c[0x64 - 0x5c];
@@ -55,14 +98,20 @@ struct CCluster0c {
     void M_c11b0(i32 v);                 // 0xc11b0
     i32 M_c0c70(i32 a, void* b, i32 c);  // 0xc0c70
     i32 M_bfc70(i32 seq, GruntRec* rec, i32 flag, i32 slot, i32 gruntId); // 0xbfc70
+    void ClearList();                    // 0xc12e0 (recycle list at +0x20 to pool)
+    void InitSub3c();                    // 0xbf120 (zero +0x3c..0x48)
+    void InitNeg(void* p);               // 0xc10a0 (3 dwords of *p = -1)
 };
 
 // --- The game/session manager pointed to by CLobbySync::m_04 -------------------
 struct CGameMgr {
+    char pad000[0x564];
+    i32 m_564;                             // +0x564 net busy flag
     void LoadMenuSelectSprite(void* m);    // 0xba620
     void OnPlayerLeft(void* p);            // 0xba3b0
     void ResetPlayerCommands(void* p);     // 0xbcf20
     i32 HandleControlMsg(void* m, i32 a);  // 0xba1a0
+    void WriteTag(const char* tag);        // 0xbd4a0 (no-op stub)
 };
 
 // --- A control/command message (CLobbySync messages) ---------------------------
@@ -92,11 +141,18 @@ struct CLobbySync {
     i32 SendAll();                                // 0xbfb40
     i32 Dispatch(i32 a, LobbyMsg* b, i32 c);      // 0xbf700
     i32 DispatchMsg(LobbyMsg* m, i32 arg2);       // 0xbf7c0
+    void Reset();                                 // 0xbf000
+    i32 Poll(i32 delta);                          // 0xbf5a0
+    i32 Tick();                                   // 0xbf9e0
     // siblings (declared-only -> reloc-masked)
     CCluster0c* M_c00a0(i32 a);                   // 0xc00a0
     i32 M_c0290(i32 v);                           // 0xc0290
     i32 SendOne(CCluster0c* s, i32 v);            // 0xbfeb0
+    i32 Checksum();                               // 0xc0590
+    CSyncObj* GetSlotPtr(i32 v);                  // 0xc0430
 };
+
+void ReportError(const char* file, i32 line, i32 code, i32 extra);  // 0x1776a0
 
 // 0xc01d0
 RVA(0x000c01d0, 0x8c)
@@ -358,4 +414,135 @@ i32 CCluster0c::M_bfc70(i32 seq, GruntRec* rec, i32 flag, i32 slot, i32 gruntId)
     gA_e08 = rec->m_08;
     memcpy(&gA_data, rec->m_10, rec->m_0c);
     return ((CNetMgr*)m_08)->SetData(m_0c->m_04, gruntId, 0, (i32)&gA_flag, rec->m_0c + 0xf) == 0;
+}
+
+// @early-stop
+// regalloc/scheduling wall (~85%): instruction sequence byte-faithful, but retail
+// centers the per-slot store base at slot+8 (keeping edi=slot for the thiscall
+// `this`) and spills the loop counter to [esp+0x10]; this cl uses one pointer
+// (esi=slot) + counter in edi.  Same store order/values; callees+pool reloc-masked.
+// 0xbf000  Reset: recycle each channel slot, clear the id-map + record table,
+// then drain the recycled-node free pool.
+RVA(0x000bf000, 0xd5)
+void CLobbySync::Reset() {
+    m_00 = 0;
+    m_04 = 0;
+    m_08 = 0;
+    m_0c = 0;
+    m_10 = 0;
+    m_14 = 0;
+    m_18 = 0;
+    m_1c = 1;
+    CCluster0c* s = m_20;
+    i32 n = 4;
+    do {
+        s->m_04 = 0;
+        s->m_08 = 0;
+        s->m_00 = 0;
+        s->m_0c = 0;
+        s->m_10 = 0;
+        s->m_14 = 0;
+        s->m_18 = 0;
+        s->m_1c = 0;
+        s->ClearList();
+        s->InitSub3c();
+        s->InitNeg(&s->m_4c);
+        s->InitNeg(&s->m_58);
+        s++;
+    } while (--n);
+    for (i32 j = 0; j < 0x80; j++)
+        m_1b0[j] = 0;
+    GruntRec* r = m_3b0;
+    i32 k = 0x80;
+    do {
+        r->m_00 = 0;
+        r->m_08 = 0;
+        r->m_0c = 0;
+        r->m_04 = 0;
+        r++;
+    } while (--k);
+    while (g_poolCount != 0) {
+        void* p = g_pool.RemoveTail();
+        if (p)
+            RezFree(p);
+    }
+}
+
+// @early-stop
+// regalloc cascade (~63%): logic byte-faithful; retail pins `this` in edi, hoists
+// the slot `== 3` test constant into esi, and parks `len` in the reused incoming
+// arg slot (3 distinct stack locals).  This cl pins `this` in esi and coalesces a
+// stack local into a register; the consequent register renames cascade the body.
+// 0xbf5a0  Poll: advance active slots by `delta`, then drain the endpoint's
+// incoming packet queue, dispatching foreign packets.
+RVA(0x000bf5a0, 0x110)
+i32 CLobbySync::Poll(i32 delta) {
+    CCluster0c* s = m_20;
+    i32 n = 4;
+    do {
+        if (s->m_00 == 3)
+            s->m_10 += delta;
+        s++;
+    } while (--n);
+
+    i32 avail;
+    if (m_0c == 0) {
+        avail = 0;
+    } else {
+        i32 got;
+        CNetEndpoint* ep = m_08->m_18;
+        i32 r = ep->vtbl->Recv(ep, m_0c->m_04, &got);
+        avail = (r == 0) ? got : 0;
+    }
+
+    i32 a = 0;
+    i32 received = 0;
+    while (avail > 0 && m_04->m_564 == 0) {
+        i32 len = 0x800;
+        i32 chan = m_0c->m_04;
+        CNetEndpoint* ep = m_08->m_18;
+        i32 st = ep->vtbl->Read(ep, &a, &chan, 1, g_649858, &len);
+        if (st != 0) {
+            ReportError("c:\\proj\\incs\\netmgr.h", 0x141, st, 0);
+            if (st != 0)
+                break;
+        }
+        received++;
+        avail--;
+        if (a != m_0c->m_04)
+            Dispatch(a, (LobbyMsg*)g_649858, len);
+    }
+    return received;
+}
+
+// @early-stop
+// regalloc tie (~85%): instruction sequence byte-identical except retail holds
+// `this` in ebp where this cl holds it in ebx (cascading esi/edi/ebx renames);
+// the callee-save register pick is function-specific and non-steerable.
+// 0xbf9e0  Tick: at the reconcile boundary, snapshot every channel's grunt
+// state into the current record, broadcast, then flush the pending batches.
+RVA(0x000bf9e0, 0xfe)
+i32 CLobbySync::Tick() {
+    if (m_14 == 0 && (m_10 + 1) % m_1c == 0) {
+        i32 seq = m_18 + 2;
+        GruntRec* rec = &m_3b0[seq % 0x80];
+        rec->m_00 = seq;
+        rec->m_0c = 0;
+        rec->m_08 = 0;
+        rec->m_04 = Checksum();
+        char* payload = rec->m_10;
+        i32 next = seq + 1;
+        for (i32 t = seq * m_1c; t < next * m_1c; t++) {
+            CSyncObj* obj = GetSlotPtr(t);
+            if (obj) {
+                NoopSync(obj);
+                rec->m_08++;
+                payload += obj->Serialize(payload, (char*)rec - payload + 0x410);
+            }
+        }
+        m_04->WriteTag("[end]\n");
+        rec->m_0c = (i32)(payload - (char*)rec - 0x10);
+        m_14 = 1;
+    }
+    return SendBatch() + SendAll();
 }

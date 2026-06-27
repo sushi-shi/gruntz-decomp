@@ -159,7 +159,7 @@ engine_attributed	15	0
 engine_boundary	196	0
 engine_discovered	51	0
 engine_label_stubs	424	105
-engine_unmatched	37	0
+engine_unmatched	30	0
 engine_unmatched_lib	11	0
 engstr	3	1
 eyecandytypetags	4	4
@@ -237,8 +237,9 @@ m1_faderdtor	1	1
 m1_fadersetup	1	0
 m1_glyphstr	1	1
 m1_glyphtable	2	2
-m1_lobbysync	8	3
+m1_lobbysync	11	3
 m1_misc18	3	0
+m1_netgamedlg	3	0
 m1_packetpool	2	2
 m1_ringbuffer	2	2
 m1_saverecload	1	0
@@ -247,7 +248,7 @@ m1_wapmisc	5	5
 m2_actregsiblings	3	0
 m2_arraye40	1	0
 m2_gamechecksum	1	0
-m2_mgrobjserialize	1	1
+m2_mgrobjserialize	2	1
 m3compilerthunks	3	3
 m3ehfunclets	12	9
 m3mfcleaves	2	2
@@ -2027,13 +2028,7 @@ engine_label_stubs	_RezStrrchr	8.6957	8.6957	1	cpp:2262ffc5f902	0x120680
 engine_label_stubs	_StartupGate	0.0000	0.0000	1	cpp:2262ffc5f902	0x2f59
 engine_label_stubs	_SubstringMatch	2.8986	2.8986	1	cpp:2262ffc5f902	0x120090
 engine_label_stubs	_VersionScan	8.6957	8.6957	1	cpp:2262ffc5f902	0x120900
-engine_unmatched	?Unmatched_0bf000@@YAXXZ	1.3699	1.3699	1	734348443213	0xbf000
-engine_unmatched	?Unmatched_0bf5a0@@YAXXZ	0.4040	0.4040	1	1198bc51bb89	0xbf5a0
-engine_unmatched	?Unmatched_0bf9e0@@YAXXZ	1.0753	1.0753	1	beb45c56cf6c	0xbf9e0
 engine_unmatched	?Unmatched_0c0c70@@YAXXZ	0.2000	0.2000	1	840ea28b587c	0xc0c70
-engine_unmatched	?Unmatched_0c2ab0@@YAXXZ	0.3125	0.3125	1	6ac6965e1e89	0xc2ab0
-engine_unmatched	?Unmatched_0c4120@@YAXXZ	1.9608	1.9608	1	64c637078a55	0xc4120
-engine_unmatched	?Unmatched_0c4c00@@YAXXZ	0.8850	0.8850	1	19d815e2fcce	0xc4c00
 engine_unmatched	?Unmatched_0d1b60@@YAXXZ	0.0452	0.0452	1	c68199c5794a	0xd1b60
 engine_unmatched	?Unmatched_0d8060@@YAXXZ	0.0658	0.0658	1	70c2e4e53ae8	0xd8060
 engine_unmatched	?Unmatched_0de200@@YAXXZ	2.1739	2.1739	1	b78e04f65416	0xde200
@@ -2043,7 +2038,6 @@ engine_unmatched	?Unmatched_0f71c0@@YAXXZ	0.1789	0.1789	1	f03b261cc267	0xf71c0
 engine_unmatched	?Unmatched_0f8240@@YAXXZ	0.2257	0.2257	1	3ea41b268007	0xf8240
 engine_unmatched	?Unmatched_0f9160@@YAXXZ	1.1236	1.1236	1	847d68f7f5be	0xf9160
 engine_unmatched	?Unmatched_0fab90@@YAXXZ	0.6250	0.6250	1	9a3e332420a6	0xfab90
-engine_unmatched	?Unmatched_0face0@@YAXXZ	0.8065	0.8065	1	b8d7ece1db26	0xface0
 engine_unmatched	?Unmatched_1084d0@@YAXXZ	0.0438	0.0438	1	733c20a72572	0x1084d0
 engine_unmatched	?Unmatched_1128b0@@YAXXZ	1.8868	1.8868	1	6344e0a3238e	0x1128b0
 engine_unmatched	?Unmatched_114480@@YAXXZ	1.1905	1.1905	1	44269c7ee8d9	0x114480
@@ -2769,13 +2763,19 @@ m1_lobbysync	?Advance@CLobbySync@@QAEHXZ	100.0000	100.0000	1	ed46b7912bbb	0xc01d
 m1_lobbysync	?Dispatch@CLobbySync@@QAEHHPAULobbyMsg@@H@Z	93.1667	93.1667	1	ad943a23c407	0xbf700
 m1_lobbysync	?DispatchMsg@CLobbySync@@QAEHPAULobbyMsg@@H@Z	0.0000	0.0000	1	a88be10c664b	0xbf7c0
 m1_lobbysync	?M_bfc70@CCluster0c@@QAEHHPAUGruntRec@@HHH@Z	90.2632	90.2632	1	b7176a0d95bb	0xbfc70
+m1_lobbysync	?Poll@CLobbySync@@QAEHH@Z	62.8081	62.8081	1	892c719e78db	0xbf5a0
 m1_lobbysync	?Reconcile@CLobbySync@@QAEXXZ	100.0000	100.0000	1	139d138e8b71	0xc00f0
+m1_lobbysync	?Reset@CLobbySync@@QAEXXZ	84.7260	84.7260	1	ee547fbcfd8f	0xbf000
 m1_lobbysync	?SendAll@CLobbySync@@QAEHXZ	67.4321	67.4321	1	0a585184c2da	0xbfb40
 m1_lobbysync	?SendBatch@CLobbySync@@QAEHXZ	100.0000	100.0000	1	0a2e5e55933e	0xbfd40
 m1_lobbysync	?SendOne@CLobbySync@@QAEHPAUCCluster0c@@H@Z	84.2105	84.2105	1	6fc308620036	0xbfeb0
+m1_lobbysync	?Tick@CLobbySync@@QAEHXZ	84.8495	84.8495	1	1e27dec54f69	0xbf9e0
 m1_misc18	?BitFlush@@YAXPAUBitBuf@@@Z	83.5111	83.5111	1	dbb5ef1f96db	0x18a190
 m1_misc18	?CoderReset@@YAXPAUCoder@@@Z	97.4792	97.4792	1	1deea5ae1c02	0x186a50
 m1_misc18	?RecFree@@YAHPAUFreeOwner@@@Z	75.7936	75.7936	1	aeab003ccc13	0x186990
+m1_netgamedlg	?EnableControls@CNetGameDlg@@QAEHXZ	84.2549	84.2549	1	aa09d1b3a120	0xc4120
+m1_netgamedlg	?UpdateSlot@CNetGameDlg@@QAEXH@Z	69.3281	69.3281	1	7e5ddeebc2b9	0xc2ab0
+m1_netgamedlg	?VerifyCustomLevel@CNetGameDlg@@QAEXXZ	54.5664	54.5664	1	b68ade55854e	0xc4c00
 m1_packetpool	?Unmatched_bef10@@YAXXZ	100.0000	100.0000	1	34d60f4d27ed	0xbef10
 m1_packetpool	?Unmatched_bf530@@YAPAXH@Z	100.0000	100.0000	1	096be294be27	0xbf530
 m1_ringbuffer	?Unmatched_186180@@YAHHHHH@Z	100.0000	100.0000	1	5bf16c15818b	0x186180
@@ -2792,6 +2792,7 @@ m2_actregsiblings	?CSiblingActorB_RegisterActs@@YAXXZ	91.1739	91.1739	1	b05bb9e9
 m2_actregsiblings	?RegisterActs@CCheckpointTrigger@@SAXXZ	91.1739	91.1739	1	ce6a50d68707	0x10ebe0
 m2_arraye40	?SetSize@CArrayE40@@QAEXHH@Z	95.9035	95.9035	1	fb49215ba665	0x17f390
 m2_gamechecksum	?ComputeSignature@CGameSyncSig@@QAEHXZ	57.6800	57.6800	1	aeb0d70abc71	0xc0590
+m2_mgrobjserialize	?Init@CMgrPersistObj@@QAEHXZ	96.1048	96.1048	1	1d37ce7511ec	0xface0
 m2_mgrobjserialize	?Save@CMgrPersistObj@@QAEHPAUCMgrWriter@@@Z	100.0000	100.0000	1	f87d32fcdbfe	0xfb1c0
 m3compilerthunks	?Init_smallFont@@YAXXZ	100.0000	100.0000	1	a54650f185d0	0x1156b0
 m3compilerthunks	?Thunk_1bade1@@YAXXZ	100.0000	100.0000	1	ecf4ec1e6a48	0x1bade1

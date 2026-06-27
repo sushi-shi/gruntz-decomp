@@ -1782,7 +1782,7 @@ flags = "eh"
 [[unit]]
 unit = "m2_mgrobjserialize"
 source = "src/Gruntz/m2_MgrObjSerialize.cpp"
-flags = "base"
+flags = "eh"
 [[unit]]
 unit = "m2_arraye40"
 source = "src/Gruntz/m2_ArrayE40.cpp"
@@ -1796,6 +1796,10 @@ flags = "base"
 unit = "m1_lobbysync"
 source = "src/Gruntz/LobbySync.cpp"
 flags = "base"
+[[unit]]
+unit = "m1_netgamedlg"
+source = "src/Gruntz/NetGameDlg.cpp"
+flags = "eh"
 [[unit]]
 unit = "m1_fadersetup"
 source = "src/Gruntz/FaderElemSetup.cpp"
