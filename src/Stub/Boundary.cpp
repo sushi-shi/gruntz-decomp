@@ -74,8 +74,6 @@ RVA(0x00037870, 0x3c)
 void Boundary_037870() {} // proximity: CWnd@-0x7d0 | StateMgrBZ@+0xa50
 RVA(0x00038120, 0x1d)
 void Boundary_038120() {} // proximity: CWnd@-0x1080 | StateMgrBZ@+0x1a0
-RVA(0x00038fc0, 0xa5)
-void Boundary_038fc0() {} // proximity: CCreditsState@-0xc0 | CAttract@+0x1a0
 RVA(0x000390a0, 0x5d)
 void Boundary_0390a0() {} // proximity: CCreditsState@-0x1a0 | CAttract@+0xc0
 RVA(0x00039f20, 0x51)
@@ -86,8 +84,6 @@ RVA(0x0003acb0, 0xa)
 void Boundary_03acb0() {} // proximity: CDDrawSurfacePair@-0xae0 | WwdFile@+0x7c0
 RVA(0x0003ad30, 0xa)
 void Boundary_03ad30() {} // proximity: CDDrawSurfacePair@-0xb60 | WwdFile@+0x740
-RVA(0x0003ad90, 0x97)
-void Boundary_03ad90() {} // proximity: CDDrawSurfacePair@-0xbc0 | WwdFile@+0x6e0
 RVA(0x000464e0, 0x74)
 void Boundary_0464e0() {} // proximity: CFortressFlag@-0xd0 | CParticlez@+0x5f0
 RVA(0x00050ca0, 0x2b)
@@ -204,8 +200,6 @@ RVA(0x00104c80, 0x1f)
 void Boundary_104c80() {} // proximity: CSBI_WellGoo@-0xd0 | CSBI_GruntMachine@+0x60
 RVA(0x00104dd0, 0x6b)
 void Boundary_104dd0() {} // proximity: CSBI_RectOnly@-0x70 | EngineLabelBacklog@+0x90
-RVA(0x0010b4f0, 0xaa)
-void Boundary_10b4f0() {} // proximity: EngineLabelBacklog@-0x1d0 | CSBI_RectOnly@+0xe0
 RVA(0x0010bbe0, 0x34)
 void Boundary_10bbe0() {} // proximity: CSBI_RectOnly@-0x50 | CSBI_MenuItem@+0x3e0
 RVA(0x00112bf0, 0x5e)
@@ -394,8 +388,6 @@ RVA(0x0017b5a0, 0x48)
 void Boundary_17b5a0() {} // proximity: TextRange@-0xa0 | CDDPageMgr@+0xaa0
 RVA(0x0017b840, 0x53)
 void Boundary_17b840() {} // proximity: TextRange@-0x340 | CDDPageMgr@+0x800
-RVA(0x0017c6f0, 0x9c)
-void Boundary_17c6f0() {} // proximity: CDDPageMgr@-0x6b0 | CFaderMgr@+0x1220
 RVA(0x0017e230, 0xc)
 void Boundary_17e230() {} // proximity: CFaderMgr@-0x60 | CFader@+0x220
 RVA(0x0017e240, 0x51)
@@ -412,11 +404,7 @@ RVA(0x00180450, 0x4f)
 void Boundary_180450() {} // proximity: CFaderSine@-0x660 | CChatBox@+0x26e0
 RVA(0x001847a0, 0xa)
 void Boundary_1847a0() {} // proximity: CMenuItem@-0x70 | CHashBase@+0x2a0
-RVA(0x001847e0, 0xa6)
-void Boundary_1847e0() {} // proximity: CMenuItem@-0xb0 | CHashBase@+0x260
 RVA(0x00184b70, 0xa)
 void Boundary_184b70() {} // proximity: CHashBase@-0x30 | CMenuItem@+0x8f0
 RVA(0x00184fb0, 0x15)
 void Boundary_184fb0() {} // proximity: CHashBase@-0x470 | CMenuItem@+0x4b0
-RVA(0x001853b0, 0xa6)
-void Boundary_1853b0() {} // proximity: CHashBase@-0x870 | CMenuItem@+0xb0

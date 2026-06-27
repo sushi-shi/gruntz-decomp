@@ -11,11 +11,17 @@
 #include <rva.h>
 
 #include <Gruntz/MenuItem.h>
+#include <Gruntz/MenuItem2.h>
 
 // The vtable is stamped by address (its full contents span other clusters, so we
 // don't emit a ??_7 here that would collide with MenuPage's DATA(0x005f08c0)).
 DATA(0x005f08c0)
 extern void* g_menuItemVtbl;
+
+// The derived (CMenuItem2) vtable, stamped at the top of ~CMenuItem2 before its
+// own slot-0xc teardown hook. Reloc-masked DATA() (manual-stamp device).
+DATA(0x005f08f8)
+extern void* g_menuItem2Vtbl;
 
 // ===========================================================================
 
@@ -51,6 +57,9 @@ CString CMenuItem::GetField58() {
 
 // 0x184690 - destructor: re-stamp the vtable, run the slot-0xc teardown hook,
 // then destroy the six CString members (auto, reverse declaration order).
+// Marked `inline` so the derived ~CMenuItem2 (0x1847e0) inlines this base teardown
+// like retail did (/Ob1 only inlines inline-marked fns); MSVC still emits this
+// out-of-line COMDAT because the derived dtor odr-uses it. Keep the `inline`.
 // @early-stop
 // reloc-masking scoring artifact (~96.6%): every instruction is byte-identical to
 // retail (verified mnemonic-for-mnemonic, base vs delinked target) -- the only
@@ -58,7 +67,7 @@ CString CMenuItem::GetField58() {
 // retail's ??_7 at 0x5f08c0, a differently-named symbol). Code is a full match;
 // see docs/patterns/reloc-typing-vptr-global.md (topic:scoring-artifact).
 RVA(0x00184690, 0x91)
-CMenuItem::~CMenuItem() {
+inline CMenuItem::~CMenuItem() {
     m_vptr = &g_menuItemVtbl;
     Dispatch0c();
 }
@@ -77,6 +86,29 @@ void CMenuItem::Reset() {
     m_50.Empty();
     m_54.Empty();
     m_58.Empty();
+}
+
+// 0x1847e0 - CMenuItem2 destructor: stamp the derived vtable, run its slot-0xc
+// teardown hook, then the inlined base ~CMenuItem (re-stamp the base vtable, its
+// own slot-0xc hook, and the six CString member dtors). Defined in this TU (not
+// menuitem2) because retail emitted it adjacent to ~CMenuItem (0x184690) so MSVC
+// could inline the base teardown; the /GX EH frame falls out of the destructible
+// CString members the base owns.
+// @early-stop
+// ~92.3% (eh-dtor-vptr-stamp-vs-trylevel-order wall): the full instruction stream
+// is byte-identical to retail EXCEPT the two entry vptr stores - retail schedules
+// each `mov [this],<vtbl>` BEFORE its `mov [esp+0x10],<trylevel>` write, our /GX
+// emits the trylevel write first. Not steerable from C (the EH-state machine's
+// order); same plateau as CSeverusEntryList::~CSeverusEntryList. The base
+// ~CMenuItem inlines correctly: marking 0x184690 `inline` lets /Ob1 reproduce
+// retail's inline-into-derived teardown, and MSVC still emits the 0x184690 COMDAT
+// because this derived dtor odr-uses it. docs/patterns/eh-dtor-vptr-stamp-vs-trylevel-order.md.
+RVA(0x001847e0, 0xa6)
+CMenuItem2::~CMenuItem2() {
+    m_vptr = &g_menuItem2Vtbl;
+    Dispatch0c();
+    // base ~CMenuItem inlined here: stamps g_menuItemVtbl, its Dispatch0c hook,
+    // and destroys m_58/m_54/m_50/m_4c/m_14/m_10 (reverse declaration order).
 }
 
 // 0x185460 - configure the item from a template (a0) + strings; resolve the

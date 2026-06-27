@@ -1519,3 +1519,20 @@ flags = "eh"
 unit = "tiletriggerwiring"
 source = "src/Gruntz/TileTriggerWiring.cpp"
 flags = "base"
+
+[[unit]]
+unit = "cseverusworker"
+source = "src/Gruntz/CSeverusWorker.cpp"
+flags = "base"
+[[unit]]
+unit = "cseverusworkereh"
+source = "src/Gruntz/CSeverusWorkerEh.cpp"
+flags = "eh"
+[[unit]]
+unit = "wapuncompress"
+source = "src/Gruntz/WapUncompress.cpp"
+flags = "base"
+[[unit]]
+unit = "customworlddialog"
+source = "src/Gruntz/CustomWorldDialog.cpp"
+flags = "base"

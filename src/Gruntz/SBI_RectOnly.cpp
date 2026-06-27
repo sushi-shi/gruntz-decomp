@@ -341,6 +341,9 @@ public:
     void ReportLog(i32 a, i32 b, i32 c); // call 0x1276
     i32 ReportApply(i32 a, i32 b);       // call 0x213f
 
+    // ----- third batch -----
+    void AdvanceTab(i32 reverse); // 0x10b4f0 periodic highlight-cursor tick
+
     // ----- layout (placeholders; offsets are the load-bearing fact) -----
     i32 m_2c; // +0x2c  Setup arg1 (vtable-slot-2 setup target)
     i32 m_30; // +0x30
@@ -429,8 +432,8 @@ public:
     CSbiSlotPtr* m_modeNotify; // +0x570  notify target
     i32 m_modeArmed;           // +0x574
     char m_pad578[0x61c - 0x578];
-    i32 m_61c[4]; // +0x61c  trailing dword block (cleared on reset)
-    char m_pad62c[0x630 - 0x62c];
+    i32 m_61c[4];   // +0x61c  trailing dword block (cleared on reset)
+    i32 m_tabCycle; // +0x62c  4-state highlight cursor (AdvanceTab cycles 0..3)
 };
 
 // An unnamed engine DWORD global read by the HUD-rect group setters.
@@ -1138,6 +1141,42 @@ i32 CSBI_RectOnly::Deserialize(CSbiStream* s) {
         m_ptrTable[n] = node;
     }
     return 1;
+}
+
+// Periodic highlight-cursor tick (RVA-ascending). Bail while the suppress flag
+// (m_548) is set or the game is over (g_gameReg->m_134==1). If this is the
+// subtype-2 cursor item, refresh its state first. When the active tab is not the
+// gauge tab (4), latch it inactive (SetTabState(4,3)) and Deactivate; otherwise
+// advance the 4-state cursor (forward wraps 4->0; the `reverse` path only guards
+// the signed-overflow wrap), then refresh the widgets and re-arm.
+RVA(0x0010b4f0, 0xaa)
+void CSBI_RectOnly::AdvanceTab(i32 reverse) {
+    if (m_548 != 0) {
+        return;
+    }
+    if (g_gameReg->m_134 == 1) {
+        return;
+    }
+    if (*(i32*)this == kSubtypeTag) {
+        RefreshState();
+    }
+    if (m_activeTab != 4) {
+        SetTabState(4, 3);
+        Deactivate();
+        return;
+    }
+    if (reverse != 0) {
+        if (++m_tabCycle < 0) {
+            m_tabCycle = 3;
+        }
+    } else {
+        if (++m_tabCycle >= 4) {
+            m_tabCycle = 0;
+        }
+    }
+    ResetWidgets(0);
+    TryActivate();
+    Deactivate();
 }
 
 // Highlight-click handler for group 0 (rows m_hlGrid[0..3]): bail if the busy
