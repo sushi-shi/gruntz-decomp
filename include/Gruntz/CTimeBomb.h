@@ -23,9 +23,18 @@
 
 class CTimeBomb : public CUserLogic {
 public:
+    CTimeBomb(CGameObject* obj);    // 0x0e1b90 (1-arg leaf ctor)
     void FireActivation(i32 coord); // 0x0e1830
     void RegisterActs();            // 0x0e1990 (binds the logic handler to key "A")
     ~CTimeBomb();                   // 0x012a70 (folds the CUserLogic teardown)
+
+    i32 m_40; // +0x40  m_38->m_1b4 snapshot
+    char m_pad44[0x54 - 0x44];
+    i32 m_54; // +0x54
+    i32 m_58; // +0x58  running-clock base
+    i32 m_5c; // +0x5c
+    i32 m_60; // +0x60  per-tile time
+    i32 m_64; // +0x64
 };
 
 #endif // GRUNTZ_CTIMEBOMB_H

@@ -249,6 +249,39 @@ BOOL CFileIO::Open(const char* lpszFileName, u32 nOpenFlags, void* pError) {
     return 1;
 }
 
+// ---------------------------------------------------------------------------
+// CFileIO::GetLength
+// Snapshot the current position (Seek 0,current), seek to the end for the length
+// (Seek 0,end), then restore (Seek cur,begin); return the length. Seek is the
+// CFile-family virtual at vtable slot 12 (+0x30) - dispatched through a small
+// placeholder-virtual view (slots 0-11 fix the offset) so each Seek reloads the
+// vptr (matching the retail virtual call) without disturbing CFileIO's own
+// reloc-masked vtable.
+class CFileIODispatch {
+public:
+    virtual void Slot0();
+    virtual void Slot1();
+    virtual void Slot2();
+    virtual void Slot3();
+    virtual void Slot4();
+    virtual void Slot5();
+    virtual void Slot6();
+    virtual void Slot7();
+    virtual void Slot8();
+    virtual void Slot9();
+    virtual void Slot10();
+    virtual void Slot11();
+    virtual LONG Seek(LONG off, i32 from); // +0x30  slot 12
+};
+RVA(0x001bf505, 0x2d)
+u32 CFileIO::GetLength() {
+    CFileIODispatch* f = (CFileIODispatch*)this;
+    LONG cur = f->Seek(0, 1 /*current*/);
+    LONG len = f->Seek(0, 2 /*end*/);
+    f->Seek(cur, 0 /*begin*/);
+    return (u32)len;
+}
+
 // -------------------------------------------------------------------------
 // Engine-label backlog stubs.
 // -------------------------------------------------------------------------

@@ -9,8 +9,5 @@
 RVA(0x000c62e0, 0x2dd)
 void CDroppedObjectShadow::LoadAttributes() {}
 
-// @confidence: med
-// @source: rtti-vptr
-// @stub
-RVA(0x000c7490, 0x1a6)
-CDroppedObjectShadow::CDroppedObjectShadow(i32) {}
+// CDroppedObjectShadow(CGameObject*) (0xc7490) reconstructed in
+// src/Gruntz/CDroppedObjectShadow.cpp (@early-stop, EH-state wall).

@@ -32,7 +32,7 @@ blowfish	4	3
 boundaryleaflogic	15	15
 boundarylowerdtors	6	5
 boundarylowermethods	30	19
-boundarylowerthunks	25	25
+boundarylowerthunks	26	26
 boundarymisc	13	11
 boundarythunks	15	15
 boundaryupper	33	30
@@ -79,8 +79,8 @@ cddsurfacedtor	1	0
 cdirectdrawmgr	28	11
 cdonothing	2	2
 cdonothingnormaldtor	1	1
-cdroppedobject	4	3
-cdroppedobjectshadow	1	1
+cdroppedobject	5	3
+cdroppedobjectshadow	2	1
 cexittrigger	2	2
 cexplosion	1	1
 ceyecandy	2	2
@@ -165,7 +165,7 @@ cstatusbarmgr	2	1
 cstatusbarspriteacts	2	1
 cteleporter	3	2
 ctilescan	1	0
-ctimebomb	3	2
+ctimebomb	4	2
 ctoobspikez	5	4
 customworlddialog	1	0
 customwwdpath	1	1
@@ -187,7 +187,7 @@ ehfunclets	6	6
 engine_attributed	9	0
 engine_boundary	17	0
 engine_discovered	23	5
-engine_label_stubs	363	96
+engine_label_stubs	358	96
 engine_unmatched_lib	11	0
 engstr	3	1
 eyecandytypetags	4	4
@@ -196,7 +196,7 @@ fadershapesetup	1	0
 fadertilerender	2	0
 feccrypt	3	2
 filemem	9	8
-filestream	13	9
+filestream	14	10
 font	24	12
 fontconfig	9	5
 fonts	2	1
@@ -586,6 +586,7 @@ boundarylowerthunks	?RegRangee17b0@@YAXXZ	100.0000	100.0000	1	1bb939a67b28	0xe17
 boundarylowerthunks	?RegRangefbb70@@YAXXZ	100.0000	100.0000	1	657a7a95f75e	0xfbb70
 boundarylowerthunks	?Register82aa0@@YAXXZ	100.0000	100.0000	1	e95f5655062c	0x82aa0
 boundarylowerthunks	?ResetCoordPool82fa0@@YAXXZ	100.0000	100.0000	1	d86686234bea	0x82fa0
+boundarylowerthunks	?ScalarDtor@CScalarDtor855a0@@QAEPAXI@Z	100.0000	100.0000	1	4afa5ee65b8e	0x855a0
 boundarylowerthunks	?Set@CSettere56b0@@QAEXXZ	100.0000	100.0000	1	2e845800230c	0xe56b0
 boundarylowerthunks	?StrFree3acb0@@YAXXZ	100.0000	100.0000	1	40c78f1f2bf4	0x3acb0
 boundarylowerthunks	?StrFree3ad30@@YAXXZ	100.0000	100.0000	1	1f30d8d2c91f	0x3ad30
@@ -1062,10 +1063,12 @@ cdirectdrawmgr	?SetupCaps@CDirectDrawMgr@@QAEXXZ	80.9730	80.9730	1	faf8772608a6	
 cdonothing	??1CDoNothing@@UAE@XZ	100.0000	100.0000	1	a06511f63ae0	0xf770
 cdonothing	?GetTypeTag@CDoNothing@@QAEHXZ	100.0000	100.0000	1	6ca2183a4b81	0xf6b0
 cdonothingnormaldtor	??1CDoNothingNormal@@UAE@XZ	100.0000	100.0000	1	9d57e19fe32a	0xf8a0
+cdroppedobject	??0CDroppedObject@@QAE@PAUCGameObject@@@Z	88.1269	88.1269	1	9362852a3a42	0xc68b0
 cdroppedobject	??1CDroppedObject@@UAE@XZ	100.0000	100.0000	1	dd689e9b78c2	0x125b0
 cdroppedobject	?FireActivation@CDroppedObject@@QAEXH@Z	100.0000	100.0000	1	58092acd8cf9	0xc6bd0
 cdroppedobject	?RegisterActs@CDroppedObject@@SAXXZ	78.5473	78.5473	1	ddf90768718f	0xc6d30
 cdroppedobject	?RegisterRange@CDroppedObject@@SAXXZ	100.0000	100.0000	1	f8dddf603c11	0xc6b50
+cdroppedobjectshadow	??0CDroppedObjectShadow@@QAE@PAUCGameObject@@@Z	85.0841	85.0841	1	1fd04e6fbc9e	0xc7490
 cdroppedobjectshadow	??1CDroppedObjectShadow@@UAE@XZ	100.0000	100.0000	1	590f3131b16f	0x12670
 cexittrigger	??1CExitTrigger@@UAE@XZ	100.0000	100.0000	1	db4d24e6c64d	0x108c0
 cexittrigger	?GetTypeTag@CExitTrigger@@QAEHXZ	100.0000	100.0000	1	c68ad601ed76	0x10870
@@ -1460,6 +1463,7 @@ cteleporter	??1CTeleporter@@UAE@XZ	100.0000	100.0000	1	0aa6d090845e	0x10dd0
 cteleporter	?Begin@CTeleporter@@QAEHXZ	87.6667	87.6667	1	ac212a968adf	0x419e0
 cteleporter	?InitActReg@CTeleporter@@SAXXZ	100.0000	100.0000	1	16ec1bd1d09e	0x414a0
 ctilescan	?Scan@CTileScan@@QAEHPAUCScanArg@@@Z	71.2269	71.2269	1	f98f3f2ec20a	0x35f10
+ctimebomb	??0CTimeBomb@@QAE@PAUCGameObject@@@Z	83.4645	83.4645	1	ab7c2d306f6d	0xe1b90
 ctimebomb	??1CTimeBomb@@UAE@XZ	100.0000	100.0000	1	82a73e5a479d	0x12a70
 ctimebomb	?FireActivation@CTimeBomb@@QAEXH@Z	100.0000	100.0000	1	f49df59995b0	0xe1830
 ctimebomb	?RegisterActs@CTimeBomb@@QAEXXZ	92.9130	92.9130	1	908d9bceacb1	0xe1990
@@ -1684,8 +1688,6 @@ engine_label_stubs	??0CCheckpointTrigger@@QAE@H@Z	1.3554	1.3554	1	cpp:6bf5215526
 engine_label_stubs	??0CCursorSnapSprite@@QAE@H@Z	1.7822	1.7822	1	cpp:6bf52155264d	0x3a340
 engine_label_stubs	??0CDoNothing@@QAE@H@Z	1.5385	1.5385	1	cpp:6bf52155264d	0xac1d0
 engine_label_stubs	??0CDoNothingNormal@@QAE@XZ	2.4194	2.4194	1	cpp:45e65336d4b5	0xa9e00
-engine_label_stubs	??0CDroppedObject@@QAE@H@Z	1.3433	1.3433	1	cpp:6bf52155264d	0xc68b0
-engine_label_stubs	??0CDroppedObjectShadow@@QAE@H@Z	1.6822	1.6822	1	cpp:6bf52155264d	0xc7490
 engine_label_stubs	??0CExitTrigger@@QAE@H@Z	0.9890	0.9890	1	cpp:6bf52155264d	0x3ecf0
 engine_label_stubs	??0CExplosion@@QAE@H@Z	2.2959	2.2959	1	cpp:6bf52155264d	0x470e0
 engine_label_stubs	??0CEyeCandyAni@@QAE@H@Z	1.6014	1.6014	1	cpp:6bf52155264d	0xac870
@@ -1706,7 +1708,6 @@ engine_label_stubs	??0CRollingBall@@QAE@H@Z	0.7869	0.7869	1	cpp:6bf52155264d	0xa
 engine_label_stubs	??0CSBI_ImageSet@@QAE@XZ	0.2465	0.2465	1	cpp:45e65336d4b5	0x101580
 engine_label_stubs	??0CSpotLight@@QAE@H@Z	1.2500	1.2500	1	cpp:6bf52155264d	0xb1200
 engine_label_stubs	??0CStatusBarSprite@@QAE@H@Z	2.3854	2.3854	1	cpp:6bf52155264d	0x10c230
-engine_label_stubs	??0CTimeBomb@@QAE@H@Z	1.4516	1.4516	1	cpp:6bf52155264d	0xe1b90
 engine_label_stubs	??0CToyPeek@@QAE@H@Z	2.1204	2.1204	1	cpp:6bf52155264d	0x98140
 engine_label_stubs	??0CWayPoint@@QAE@H@Z	2.5455	2.5455	1	cpp:6bf52155264d	0xae3f0
 engine_label_stubs	??0MallocCtor_135b10@@QAE@XZ	2.5000	2.5000	1	cpp:e8a4cb0d5b2a	0x135b10
@@ -1796,7 +1797,6 @@ engine_label_stubs	?Free@VoldemortObj@@QAEXXZ	4.0000	4.0000	1	cpp:2262ffc5f902	0
 engine_label_stubs	?FuncA@CButeMgrHelper@@QAEXXZ	10.0000	10.0000	1	cpp:2262ffc5f902	0x169be0
 engine_label_stubs	?FuncB@CButeMgrHelper@@QAEXXZ	90.3571	90.3571	1	cpp:2262ffc5f902	0x169d70
 engine_label_stubs	?GetItem@CStatusBarMgr@@QAEPAVCStatusBarItem2@@XZ	90.3125	90.3125	1	cpp:2262ffc5f902	0x135d70
-engine_label_stubs	?GetLength@CFileIO@@QAEIXZ	5.6000	5.6000	1	cpp:2262ffc5f902	0x1bf505
 engine_label_stubs	?GetRect@RectQuery_08e3a0@ApiCallerStubs@@QAEXPAUtagRECT@@@Z	85.1200	85.1200	1	cpp:6bf52155264d	0x8e3a0
 engine_label_stubs	?HandleFortConquered@EngineLabelBacklog@@YAXXZ	0.2710	0.2710	1	cpp:45e65336d4b5	0x3f5f0
 engine_label_stubs	?Init@AilHost_138490@ApiCallerStubs@@QAEHHHH@Z	99.8077	99.8077	1	cpp:6bf52155264d	0x138490
@@ -1903,7 +1903,6 @@ engine_label_stubs	?UpdateClock@RezMgr@@QAEHXZ	100.0000	100.0000	1	cpp:6bf521552
 engine_label_stubs	?Validate@VrHost_094bc0@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x94bc0
 engine_label_stubs	?directx_wrapper_caller_137720_DSOUND_1_DirectSoundCreate@ApiCallerStubs@@YGHHH@Z	98.5714	98.5714	1	cpp:6bf52155264d	0x137720
 engine_label_stubs	?directx_wrapper_caller_17c2a0_DirectDrawCreate@ApiCallerStubs@@YGHHH@Z	1.9417	1.9417	1	cpp:6bf52155264d	0x17c2a0
-engine_label_stubs	?scalar_deleting_destructor@CGameMgrDerived@@QAEXH@Z	8.3333	8.3333	1	cpp:6bf52155264d	0x855a0
 engine_label_stubs	?thirdparty_138950_AIL_set_XMIDI_master_volume_8@ApiCallerStubs@@YGHH@Z	100.0000	100.0000	1	cpp:e1535087fe94	0x138950
 engine_label_stubs	?thirdparty_1389c0_AIL_XMIDI_master_volume_4@ApiCallerStubs@@YAHXZ	91.2963	91.2963	1	cpp:e1535087fe94	0x1389c0
 engine_label_stubs	?thirdparty_138c20_AIL_allocate_sequence_handle_4_AIL_init_sequence_12_AIL_@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHHHH@Z	1.6529	1.6529	1	cpp:e8a4cb0d5b2a	0x138c20
@@ -2078,6 +2077,7 @@ filestream	??0CFileIO@@QAE@XZ	100.0000	100.0000	4	71072e81b26d	0x1befd7
 filestream	??1CFileIO@@UAE@XZ	100.0000	100.0000	4	53a856f67760	0x1bf121
 filestream	??_GCFileIO@@UAEPAXI@Z	100.0000	100.0000	1	cpp:18a02430cff4	0x1bf017
 filestream	?Close@CFileIO@@QAEXXZ	100.0000	100.0000	4	9420384bcc01	0x1bf426
+filestream	?GetLength@CFileIO@@QAEIXZ	100.0000	100.0000	1	e6db30ca0a1a	0x1bf505
 filestream	?GetPosition@CFileIO@@QAEJXZ	100.0000	100.0000	4	7114720e1b32	0x1bf3dc
 filestream	?Open@CFileIO@@QAEHPBDIPAX@Z	95.7798	95.7798	5	7b51b9c0f9cb	0x1bf200
 filestream	?Read@CFileIO@@QAEIPAXI@Z	100.0000	100.0000	5	a56b90957c6e	0x1bf328

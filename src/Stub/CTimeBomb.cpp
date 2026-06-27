@@ -3,11 +3,8 @@
 
 #include <Stub/CTimeBomb.h>
 
-// @confidence: med
-// @source: rtti-vptr
-// @stub
-RVA(0x000e1b90, 0x23d)
-CTimeBomb::CTimeBomb(i32) {}
+// CTimeBomb(CGameObject*) (0xe1b90) reconstructed in src/Gruntz/CTimeBomb.cpp
+// (@early-stop, EH-state wall).
 
 // @confidence: high
 // @source: decomp-xref

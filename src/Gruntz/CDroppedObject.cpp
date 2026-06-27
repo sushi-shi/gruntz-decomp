@@ -147,6 +147,47 @@ static inline CDropEntry* DropLookup(i32 coord) {
 RVA(0x000125b0, 0x44)
 CDroppedObject::~CDroppedObject() {}
 
+#include <Bute/ButeMgr.h> // CButeMgr (g_buteMgr GetIntDef/GetDwordDef)
+extern CButeMgr g_buteMgr;
+
+// ---------------------------------------------------------------------------
+// CDroppedObject::CDroppedObject(CGameObject*) @0xc68b0 - the 1-arg leaf ctor:
+// the standard CUserLogic(obj) init (folded inline) plus the dropped-object tail
+// - cache the anim-set node off the "A" bute key, snapshot m_38->m_1b4, apply the
+// dropped-object sprite/geometry, raise the bound object's logic/collision bits,
+// snap the bound object's screen position to the tile grid, then bias its Y by the
+// bute "DroppedObjectYOffset" (storing the result as a double) and seed the
+// per-tile time as 32.0 / bute "DroppedObjectTimePerTile". Constructs a throwing
+// CUserBaseLink, so MSVC emits the /GX EH frame.
+//
+// @early-stop
+// EH-state-numbering wall (docs/patterns/eh-state-numbering-base.md): the body is
+// byte-faithful to retail (the CUserLogic init, the anim-set cache, the
+// ApplyName/ApplyLookupGeometry pair, the tile snap, both bute reads + the int->
+// double conversions); the residue is this ctor's own __ehfuncinfo state numbering,
+// the constant-enregistration coin-flip, and the `and al,0xe0` vs `and eax,~0x1f`
+// byte-AND codegen pick. The SAME plateau as CBrickz / the other bute ctors; not
+// source-steerable. Parked for the final sweep.
+RVA(0x000c68b0, 0x1f5)
+CDroppedObject::CDroppedObject(CGameObject* obj) : CUserLogic(obj) {
+    m_30 = m_14->m_1c;
+    m_14->m_1c = g_buteTree.Find("A");
+    m_38->ApplyName("LEVEL_OBJECTDROPPER_OBJECT");
+    m_40 = m_38->m_1b4;
+    m_38->ApplyLookupGeometry("LEVEL_DROPPEDOBJECT", 0);
+    m_38->m_08 |= 0x2000002;
+    i32 adjY = (m_10->m_60 & ~0x1f) + 0x10;
+    m_68 = adjY;
+    m_10->m_5c = (m_10->m_5c & ~0x1f) + 0x10;
+    m_10->m_60 = adjY - g_buteMgr.GetIntDef("Hazardz", "DroppedObjectYOffset", 0x140);
+    m_60 = (double)m_10->m_60;
+    if (m_10->m_74 != 0xcf851) {
+        m_10->m_74 = 0xcf851;
+        m_10->m_08 |= 0x20000;
+    }
+    m_58 = 32.0 / (double)(u32)g_buteMgr.GetDwordDef("Hazardz", "DroppedObjectTimePerTile", 0x3e8);
+}
+
 // CDroppedObject::RegisterRange @0x0c6b50 - seed the dropped-object activation
 // table's fast-range bounds via the shared zDArray registry ctor
 // (RegisterRange(0x7d0, 0x7da), 0x408710 through the 0x3742 ILT thunk). A static

@@ -146,6 +146,102 @@ extern i32 TBombLogic_e1e60();
 RVA(0x00012a70, 0x44)
 CTimeBomb::~CTimeBomb() {}
 
+#include <Bute/ButeMgr.h> // CButeMgr (g_buteMgr GetIntDef)
+extern CButeMgr g_buteMgr;
+
+// The running game clock (DAT_00645588) the ctor seeds m_58 from.
+extern "C" u32 g_645588;
+
+// The bound game object (CUserLogic m_10/m_38 both point at it): the timebomb
+// reads offsets past what CGameObject models, so the inherited pointer is cast to
+// this TU-local view (the CStaticHazard/CTeleporter bound-object idiom). Re-read
+// m_10/m_38 per access so each member load matches retail's reload.
+struct TBombObj {
+    void ApplyName(const char* key);                     // 0x150540
+    void ApplyLookupGeometry(const char* key, i32 flag); // 0x1505b0
+    char m_pad00[0x08];
+    i32 m_08; // +0x08  flag word
+    char m_pad0c[0x5c - 0x0c];
+    i32 m_5c; // +0x5c  screen X
+    i32 m_60; // +0x60  screen Y
+    char m_pad64[0x74 - 0x64];
+    i32 m_74; // +0x74  z gate
+    char m_pad78[0x120 - 0x78];
+    i32 m_120; // +0x120  per-tile time gate
+    i32 m_124; // +0x124
+    char m_pad128[0x1b4 - 0x128];
+    i32 m_1b4; // +0x1b4  active-anim descriptor pointer
+};
+
+// The game registry singleton's collision grid (g_gameReg->m_70): an 0x1c-byte
+// cell grid (m_8[row] -> cell-row base; cols 0x1c B apart) bounded by m_c x m_10.
+struct TBombGrid {
+    char m_pad00[0x08];
+    char** m_8; // +0x08  row table
+    i32 m_c;    // +0x0c  width  (col bound)
+    i32 m_10;   // +0x10  height (row bound)
+};
+struct TBombGameReg {
+    char m_pad00[0x70];
+    TBombGrid* m_70; // +0x70
+};
+DATA(0x0024556c)
+extern TBombGameReg* g_gameReg;
+
+// ---------------------------------------------------------------------------
+// CTimeBomb::CTimeBomb(CGameObject*) @0xe1b90 - the 1-arg leaf ctor: the standard
+// CUserLogic(obj) init (folded inline) plus the timebomb tail - raise the bound
+// object's logic/collision bits, set its z gate, apply the GAME_TIMEBOMB sprite,
+// cache the anim-set node off the "A" bute key, snapshot m_38->m_1b4, then pick
+// the FAST (per-tile-time>0) or SLOW (bute TimeBombSlowTime) geometry + running
+// clock, mark the collision-grid cell at the bound object's tile, and arm the
+// bound object's per-tile-time gate (-1). Constructs a throwing CUserBaseLink, so
+// MSVC emits the /GX EH frame.
+//
+// @early-stop
+// EH-state-numbering wall (docs/patterns/eh-state-numbering-base.md): the body is
+// byte-identical to retail (the CUserLogic init, the two flag RMWs, the
+// ApplyName/anim-cache, the FAST/SLOW branch, the >>5 grid-cell mark, the m_124
+// arm); the residue is this ctor's own __ehfuncinfo state numbering + the 1-slot
+// callee-saved scheduling delta MSVC coin-flips. The SAME plateau as
+// CBrickz::CBrickz / CStaticHazard::CStaticHazard; not source-steerable. Parked
+// for the final sweep.
+RVA(0x000e1b90, 0x23d)
+CTimeBomb::CTimeBomb(CGameObject* obj) : CUserLogic(obj) {
+    ((TBombObj*)m_38)->m_08 |= 0x2000002;
+    if (((TBombObj*)m_10)->m_74 != 0xf) {
+        ((TBombObj*)m_10)->m_74 = 0xf;
+        ((TBombObj*)m_10)->m_08 |= 0x20000;
+    }
+    ((TBombObj*)m_38)->ApplyName("GAME_TIMEBOMB");
+    m_30 = m_14->m_1c;
+    m_14->m_1c = g_buteTree.Find("A");
+    m_40 = ((TBombObj*)m_38)->m_1b4;
+    if (((TBombObj*)m_10)->m_120 > 0) {
+        ((TBombObj*)m_38)->ApplyLookupGeometry("GAME_TIMEBOMBFAST", 0);
+        m_60 = ((TBombObj*)m_10)->m_120;
+        m_64 = 0;
+        m_58 = g_645588;
+        m_5c = 0;
+        m_54 = 1;
+    } else {
+        ((TBombObj*)m_38)->ApplyLookupGeometry("GAME_TIMEBOMBSLOW", 0);
+        m_60 = (i32)g_buteMgr.GetDwordDef("Projectile", "TimeBombSlowTime", 0xfa0);
+        m_64 = 0;
+        m_58 = g_645588;
+        m_5c = 0;
+        m_54 = 0;
+    }
+    i32 cx = ((TBombObj*)m_10)->m_5c >> 5;
+    i32 cy = ((TBombObj*)m_10)->m_60 >> 5;
+    TBombGrid* g = g_gameReg->m_70;
+    if (cx < g->m_c && cy < g->m_10) {
+        char* row = g->m_8[cy];
+        *(i32*)(row + cx * 0x1c) |= 0x1000000;
+    }
+    ((TBombObj*)m_10)->m_124 = -1;
+}
+
 // CTimeBomb::FireActivation @0x0e1830 - look the activation coordinate up in the
 // timebomb's per-coordinate registry; if the entry has a registered handler, look
 // it up again and dispatch it __thiscall on this. Same archetype as

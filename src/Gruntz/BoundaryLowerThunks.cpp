@@ -145,6 +145,30 @@ void CTeardown85540::Teardown() {
 }
 
 // ===========================================================================
+// 0x0855a0 - the scalar-deleting-destructor twin of CTeardown85540: stamp the
+// same base vtable (0x5e9b8c), run the base teardown (0x13ddb0 = CGameMgr::
+// UnknownClose), then (flags&1) RezFree(this) and return this. Retail labelled it
+// CGameMgrDerived::`scalar deleting destructor'; the body is the manual teardown,
+// so it homes next to its 0x85540 sibling. RezFree (0x1b9b82, _RezFree) is the
+// engine's allocator free for this Rez-managed object.
+// ===========================================================================
+extern "C" void RezFree(void* p); // 0x1b9b82 (_RezFree)
+struct CScalarDtor855a0 {
+    void* vptr;
+    void Base13ddb0(); // 0x13ddb0 (reloc-masked)
+    void* ScalarDtor(u32 flags);
+};
+RVA(0x000855a0, 0x24)
+void* CScalarDtor855a0::ScalarDtor(u32 flags) {
+    vptr = (void*)&g_vtbl_5e9b8c;
+    Base13ddb0();
+    if (flags & 1) {
+        RezFree(this);
+    }
+    return this;
+}
+
+// ===========================================================================
 // 0x094c10 - teardown: stamp the vtable (0x5ea344), run the base teardown
 // (0x13cfb0) and clear the singleton pointer (0x653c68). __thiscall.
 // ===========================================================================

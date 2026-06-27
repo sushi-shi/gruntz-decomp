@@ -146,7 +146,11 @@ struct CGameObject {
     i32 m_38; // +0x38
     char m_pad3c[0x40 - 0x3c];
     i32 m_40; // +0x40
-    char m_pad44[0x5c - 0x44];
+    char m_pad44[0x4c - 0x44];
+    i32 m_4c; // +0x4c
+    i32 m_50; // +0x50
+    char m_pad54[0x58 - 0x54];
+    i32 m_58; // +0x58
     i32 m_5c; // +0x5c
     i32 m_60; // +0x60
     char m_pad64[0x74 - 0x64];

@@ -3,11 +3,8 @@
 
 #include <Stub/CDroppedObject.h>
 
-// @confidence: med
-// @source: rtti-vptr
-// @stub
-RVA(0x000c68b0, 0x1f5)
-CDroppedObject::CDroppedObject(i32) {}
+// CDroppedObject(CGameObject*) (0xc68b0) reconstructed in
+// src/Gruntz/CDroppedObject.cpp (@early-stop, EH-state wall).
 
 // @confidence: med
 // @source: string-xref

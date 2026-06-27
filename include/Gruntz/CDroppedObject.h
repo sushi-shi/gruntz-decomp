@@ -23,10 +23,17 @@
 
 class CDroppedObject : public CUserLogic {
 public:
-    static void RegisterRange();    // 0x0c6b50 (seed the activation table's fast range)
-    static void RegisterActs();     // 0x0c6d30
-    void FireActivation(i32 coord); // 0x0c6bd0
-    ~CDroppedObject();              // 0x0125b0 (folds the CUserLogic teardown)
+    CDroppedObject(CGameObject* obj); // 0x0c68b0 (1-arg leaf ctor)
+    static void RegisterRange();      // 0x0c6b50 (seed the activation table's fast range)
+    static void RegisterActs();       // 0x0c6d30
+    void FireActivation(i32 coord);   // 0x0c6bd0
+    ~CDroppedObject();                // 0x0125b0 (folds the CUserLogic teardown)
+
+    i32 m_40; // +0x40  m_38->m_1b4 snapshot
+    char m_pad44[0x58 - 0x44];
+    double m_58; // +0x58  per-tile time (32.0 / TimePerTile)
+    double m_60; // +0x60  adjusted screen Y
+    i32 m_68;    // +0x68  pre-offset screen Y
 };
 
 #endif // GRUNTZ_CDROPPEDOBJECT_H
