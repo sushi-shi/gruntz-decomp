@@ -1136,12 +1136,9 @@ i32 CHelpBookSprite::Update() {
 // src/Gruntz/LoadObjectResources.cpp (eh unit) as the CObjResTree OBJECTZ_ asset
 // reconcilers; their destructible local CObList gives them the /GX frame.
 
-// @confidence: med
-// @source: string-xref
-// @proximity: CMapVisitTarget@-0x660 | CChatBox@+0x430 (boundary - pick one)
-// @stub
-RVA(0x0009fe50, 0x343)
-void __stdcall EngineLabelBacklog::LoadMenuStateAssets(i32, i32, i32) {}
+// LoadMenuStateAssets (0x09fe50) graduated to src/Gruntz/MenuStateAssets.cpp as
+// CMenuState::LoadAssets (the MENU game-state asset loader; /GX EH frame from the
+// heap menu HUD object's CObList + 2 CString members).
 
 // 0x000a11d0 (6157 B) is NOT a level-table loader - the $SG string set
 // ("MENU.MAINMENU.TITLE", "SINGLEPLAYER", ...) identifies it as the main-menu
@@ -1567,12 +1564,9 @@ i32 CGameInfo::FormatGameInfoString() {
     return 0;
 }
 
-// @confidence: med
-// @source: decomp-xref
-// @proximity: CGruntSpawnConfig@-0x70 | CSpawnEntry@+0x350 (boundary - pick one)
-// @stub
-RVA(0x0011c210, 0x29d)
-void __stdcall EngineLabelBacklog::BuildVoiceSoundList(i32) {}
+// BuildVoiceSoundList (0x11c210) graduated to src/Gruntz/VoiceSoundList.cpp as
+// CVoiceBuilder::BuildVoiceSoundList (the [SG<n>] VOICES_<dir>[_<sub>] CStringList
+// builder; /GX EH frame from the four CString temps + the heap CStringList node).
 
 // CRT lowio/startup internals (FID-anchored in config/library_labels.csv as
 // __findfirst / __write_lk / __sopen / __lseek_lk / __read_lk / __NMSG_WRITE);

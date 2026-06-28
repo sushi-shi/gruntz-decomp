@@ -356,6 +356,16 @@ source = "src/Gruntz/RollingBall.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "menustateassets"
+source = "src/Gruntz/MenuStateAssets.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "voicesoundlist"
+source = "src/Gruntz/VoiceSoundList.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "tilewireswitchlogic"
 source = "src/Gruntz/TileSwitchLogic.cpp"
 flags = "eh"
