@@ -199,7 +199,7 @@ dsoundvoice	2	1
 ehfunclets	6	6
 engine_attributed	7	0
 engine_discovered	22	5
-engine_label_stubs	309	97
+engine_label_stubs	308	97
 engine_unmatched_lib	11	0
 engstr	3	1
 eyecandytypetags	4	4
@@ -224,6 +224,7 @@ gamesave	1	1
 gamestaterecordload	1	0
 gametext	4	3
 gamewnd	9	8
+goowellmgr	1	0
 groupops	2	0
 grunt	89	16
 gruntarrivalstep	1	0
@@ -1838,7 +1839,6 @@ engine_label_stubs	?LoadPickupSprites@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXH
 engine_label_stubs	?LoadProjectileEffects@CProjectile@@QAEXXZ	0.2165	0.2165	1	cpp:e8a4cb0d5b2a	0xdfd00
 engine_label_stubs	?LoadProjectileSprites@CProjectile@@QAEXHHHHHHH@Z	0.2183	0.2183	1	cpp:6bf52155264d	0xdf050
 engine_label_stubs	?LoadSounds@CSplashState@@QAEHHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xf9780
-engine_label_stubs	?LoadTeleporterGooConfig@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXH@Z	0.2262	0.2262	1	cpp:e8a4cb0d5b2a	0x6eb80
 engine_label_stubs	?LoadVehicleGruntSprites@EngineLabelBacklog@@YGXH@Z	0.3597	0.3597	1	cpp:6bf52155264d	0x50ce0
 engine_label_stubs	?LoadWarlordSprites@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXHH@Z	0.1675	0.1675	1	cpp:e8a4cb0d5b2a	0xd65d0
 engine_label_stubs	?LoadWave@WaveHost2_136ce0@ApiCallerStubs@@QAEHPAUWaveProbe_136ce0@2@PBDH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x136ce0
@@ -2277,6 +2277,7 @@ gamewnd	?OnActivateApp@CGameWnd@@UAEHIJ@Z	100.0000	100.0000	1	9f7546976a20	0x13d
 gamewnd	?OnClose@CGameWnd@@UAEHXZ	100.0000	100.0000	1	afe18af98c56	0x13d4c0
 gamewnd	?PumpMessages@CGameWnd@@QAEXIH@Z	100.0000	100.0000	1	00d21758f5d6	0x13d4e0
 gamewnd	?QuitMessageLoop@CGameWnd@@UAEHXZ	100.0000	100.0000	4	f2de6543e99e	0x13d490
+goowellmgr	?LoadTeleporterGooConfig@CGooWellMgr@@QAEHH@Z	96.3620	96.3620	1	0a61df672ccc	0x6eb80
 groupops	?Broadcast@CGroupBroadcast@@QAEHXZ	84.2364	84.2364	1	4587301968b6	0x112080
 groupops	?CenterOnGroup@CGroupSel@@QAEHH@Z	82.6018	82.6018	1	37e209e587c4	0x7cf40
 grunt	??1CGrunt@@QAE@XZ	55.5455	55.5455	1	7103cc50662d	0xf2f0

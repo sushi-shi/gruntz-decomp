@@ -172,7 +172,6 @@ namespace ApiCallerStubs {
         void LoadPickupSprites(i32, i32, i32, i32, i32);
         void LoadBombGruntRunConfig2();
         void LoadFreezeSpellAssets();
-        void LoadTeleporterGooConfig(i32);
         void LoadFinishLevelSprite(i32);
         void LoadMonologoSprite();
         void LoadStateImages_vfunc8();
@@ -3984,12 +3983,9 @@ namespace ApiCallerStubs {
     // LoadWingzGruntSprites (0x68880) re-homed as CGrunt::LoadWingzGruntSprites
     // in src/Gruntz/GruntAssetLoaders.cpp.
 
-    // @confidence: med
-    // @source: string-xref
-    // @stub
-    // proximity: isolated (no near matched neighbour)
-    RVA(0x0006eb80, 0x5ef)
-    void ThisStubOwnerUnknown::LoadTeleporterGooConfig(i32) {}
+    // LoadTeleporterGooConfig (0x6eb80) re-homed as CGooWellMgr::LoadTeleporterGooConfig
+    // in src/Gruntz/GooWellMgr.cpp (owner = g_gameReg->m_68's class, the goo-well /
+    // respawn / win-condition manager).
 
     // LoadGruntCombatTuning (0x7b930) re-homed as CGruntTileMgr::CombatCue in
     // src/Gruntz/CGruntTileMgr.cpp (owner = CGrunt::m_260's class).

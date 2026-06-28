@@ -1476,6 +1476,11 @@ source = "src/Gruntz/BattlezData.cpp"
 flags = "base"
 
 [[unit]]
+unit = "goowellmgr"
+source = "src/Gruntz/GooWellMgr.cpp"
+flags = "base"
+
+[[unit]]
 unit = "cfadermgr"
 source = "src/Gruntz/CFaderMgr.cpp"
 flags = "eh"
