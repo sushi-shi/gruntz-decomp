@@ -29,15 +29,15 @@ struct WarpVtx {
     char pad[0x1c - 0x10];
 };
 
-// The locked surface (src texture + dest): m_8 = the lock object (vtable slot 0x80
-// = Unlock), m_1c = width, m_20 = row pitch.
+// The locked surface (src texture + dest): m_lockOwner owns Unlock via vtable
+// slot 0x80.
 struct WarpSurf {
     i32 Lock(i32 mode); // 0x13e6d0 (__thiscall, returns the locked base)
     char p0[0x8];
-    void* m_8; // +0x08  the lock owner (Unlock via vtable +0x80)
+    void* m_lockOwner; // +0x08
     char p0c[0x1c - 0xc];
-    i32 m_1c; // +0x1c  width
-    i32 m_20; // +0x20  row pitch
+    i32 m_width;    // +0x1c
+    i32 m_rowPitch; // +0x20
 };
 
 // Per-scanline edge tables (left = 0x6a2cf0, right = 0x6856f8): an array of 0x1c-
@@ -49,16 +49,16 @@ extern i32 g_warpEdgeR[]; // 0x6856f8
 
 // The rasterizer global scratch (all reloc-masked DATA).
 extern i16 g_warpColorkey; // 0x6becfc
-extern i32 g_warpTexBase; // 0x6a16f8  (locked texture base)
+extern i32 g_warpTexBase;  // 0x6a16f8  (locked texture base)
 DATA(0x002a2ce8)
 extern i32 g_warpDestRow; // 0x6a2ce8  (current dest scanline base)
-extern i32 g_warpUMask; // 0x6becf0  (texture index row-mask)
+extern i32 g_warpUMask;   // 0x6becf0  (texture index row-mask)
 DATA(0x002becf4)
 extern i32 g_warpDestPtr; // 0x6becf4  (current dest pixel ptr)
-extern i32 g_warpU; // 0x6856f0  (u accumulator)
-extern i32 g_warpV; // 0x6856f4  (v accumulator)
-extern i32 g_warpUStep; // 0x6a16fc  (u per-pixel step)
-extern i32 g_warpVStep; // 0x6a1700  (v per-pixel step)
+extern i32 g_warpU;       // 0x6856f0  (u accumulator)
+extern i32 g_warpV;       // 0x6856f4  (v accumulator)
+extern i32 g_warpUStep;   // 0x6a16fc  (u per-pixel step)
+extern i32 g_warpVStep;   // 0x6a1700  (v per-pixel step)
 
 // The fixed-point scale constants (0x5efb18, 0x5efb1c = its negation).
 DATA(0x001efb18)
@@ -81,7 +81,7 @@ RVA(0x00146a20, 0x5b7)
 i32 WarpTextureBlit(WarpVtx* va, i32 n, WarpSurf* dst, WarpSurf* src, i32 mode, i32 colorkey) {
     i32 minY = 0x1001;
     i32 maxY = -1;
-    if (WarpIsPow2(src->m_1c) == 0) {
+    if (WarpIsPow2(src->m_width) == 0) {
         return 0;
     }
     g_warpColorkey = (i16)colorkey;
@@ -91,7 +91,7 @@ i32 WarpTextureBlit(WarpVtx* va, i32 n, WarpSurf* dst, WarpSurf* src, i32 mode, 
     {
         i32 m = 1;
         for (i32 b = 0; b < 0x20; b++) {
-            if (src->m_1c & m) {
+            if (src->m_width & m) {
                 shift = b;
                 break;
             }
@@ -159,9 +159,9 @@ i32 WarpTextureBlit(WarpVtx* va, i32 n, WarpSurf* dst, WarpSurf* src, i32 mode, 
 
     g_warpTexBase = src->Lock(0);
     i32 destBase = dst->Lock(0);
-    i32 dstPitch = dst->m_20;
+    i32 dstPitch = dst->m_rowPitch;
     g_warpDestRow = destBase + dstPitch * minY;
-    g_warpUMask = ((src->m_1c + 0x3ffff) << 0xe) << shift;
+    g_warpUMask = ((src->m_width + 0x3ffff) << 0xe) << shift;
 
     i32 rows = maxY - minY;
     if (mode == 0) {
@@ -195,7 +195,7 @@ i32 WarpTextureBlit(WarpVtx* va, i32 n, WarpSurf* dst, WarpSurf* src, i32 mode, 
             }
             lp = (i32*)((char*)lp + 0x1c);
             rp = (i32*)((char*)rp + 0x1c);
-            g_warpDestRow += dst->m_20;
+            g_warpDestRow += dst->m_rowPitch;
         }
     } else if (g_warpColorkey == 0) {
         // ---- skip-zero ----
@@ -232,7 +232,7 @@ i32 WarpTextureBlit(WarpVtx* va, i32 n, WarpSurf* dst, WarpSurf* src, i32 mode, 
             }
             lp = (i32*)((char*)lp + 0x1c);
             rp = (i32*)((char*)rp + 0x1c);
-            g_warpDestRow += dst->m_20;
+            g_warpDestRow += dst->m_rowPitch;
         }
     } else {
         // ---- skip-colorkey ----
@@ -269,11 +269,11 @@ i32 WarpTextureBlit(WarpVtx* va, i32 n, WarpSurf* dst, WarpSurf* src, i32 mode, 
             }
             lp = (i32*)((char*)lp + 0x1c);
             rp = (i32*)((char*)rp + 0x1c);
-            g_warpDestRow += dst->m_20;
+            g_warpDestRow += dst->m_rowPitch;
         }
     }
 
-    (*(void (**)(void*, i32))(*(void***)src->m_8 + 0x80 / 4))(src->m_8, 0);
-    (*(void (**)(void*, i32))(*(void***)dst->m_8 + 0x80 / 4))(dst->m_8, 0);
+    (*(void (**)(void*, i32))(*(void***)src->m_lockOwner + 0x80 / 4))(src->m_lockOwner, 0);
+    (*(void (**)(void*, i32))(*(void***)dst->m_lockOwner + 0x80 / 4))(dst->m_lockOwner, 0);
     return 1;
 }
