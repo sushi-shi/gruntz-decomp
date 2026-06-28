@@ -1773,6 +1773,12 @@ flags = "base"
 unit = "rezlist"
 source = "src/Rez/RezList.cpp"
 flags = "base"
+
+[[unit]]
+unit = "rezutil"
+source = "src/Rez/RezUtil.cpp"
+flags = "o1"
+
 [[unit]]
 unit = "typekeycoll"
 source = "src/Gruntz/TypeKeyColl.cpp"

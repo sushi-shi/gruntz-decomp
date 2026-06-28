@@ -199,7 +199,7 @@ dsoundvoice	2	1
 ehfunclets	6	6
 engine_attributed	7	0
 engine_discovered	22	5
-engine_label_stubs	301	98
+engine_label_stubs	300	104
 engine_unmatched_lib	11	0
 engstr	3	1
 eyecandytypetags	4	4
@@ -370,6 +370,7 @@ registryhelper	8	8
 rezfile	6	6
 rezlist	2	2
 rezmgr	15	10
+rezutil	1	1
 rollingball	6	3
 savegame	21	15
 savescreenshot	1	0
@@ -1863,7 +1864,7 @@ engine_label_stubs	?Post@CmdHost_090220@ApiCallerStubs@@QAEXH@Z	100.0000	100.000
 engine_label_stubs	?Quickload@QlHost_092710@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x92710
 engine_label_stubs	?RegionEnter@CPlay@@QAEXXZ	40.0000	40.0000	1	cpp:2262ffc5f902	0x1b9a
 engine_label_stubs	?RegionLeave@CPlay@@QAEXXZ	40.0000	40.0000	1	cpp:2262ffc5f902	0x19f1
-engine_label_stubs	?RelayHwnd@@YAXPAX@Z	33.3333	33.3333	1	cpp:2262ffc5f902	0x1437e0
+engine_label_stubs	?RelayHwnd@@YAXP6AHXZ@Z	100.0000	100.0000	1	cpp:e832e75e29a5	0x1437e0
 engine_label_stubs	?ReleaseHandle@AilSeq@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x138dd0
 engine_label_stubs	?RemoveTail@CGruntzCmdList@@QAEPAXXZ	9.3333	9.3333	1	cpp:2262ffc5f902	0x1b4a27
 engine_label_stubs	?Reset@RectWnd_fe600@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0xfe600
@@ -2029,15 +2030,14 @@ engine_label_stubs	?winapi_1ba9d2_EnableWindow_FindResourceA_IsWindowEnabled_Loa
 engine_label_stubs	?winapi_1baaef_EnableWindow_GetActiveWindow_SetActiveWindow@ApiCallerStubs@@YAHXZ	5.3846	5.3846	1	cpp:e1535087fe94	0x1baaef
 engine_label_stubs	?winapi_1bb31b_CallWindowProcA_GetPropA_RemovePropA_SetWindowLongA@ApiCallerStubs@@YGHHHHH@Z	1.9588	1.9588	1	cpp:6bf52155264d	0x1bb31b
 engine_label_stubs	?winapi_1bbff4_GetClassInfoA_RegisterClassA@ApiCallerStubs@@YGHH@Z	3.8462	3.8462	1	cpp:6bf52155264d	0x1bbff4
-engine_label_stubs	_CheckExePath	0.0000	0.0000	1	cpp:2262ffc5f902	0x2e6e
-engine_label_stubs	_Eng_RegionCueA	0.0000	0.0000	1	cpp:2262ffc5f902	0x3936
-engine_label_stubs	_MultiDispatch@12	0.0000	0.0000	1	cpp:2262ffc5f902	0x3cab
+engine_label_stubs	_CheckExePath	100.0000	100.0000	1	cpp:2262ffc5f902	0x2e6e
+engine_label_stubs	_Eng_RegionCueA	100.0000	100.0000	1	cpp:2262ffc5f902	0x3936
+engine_label_stubs	_MultiDispatch@12	100.0000	100.0000	1	cpp:2262ffc5f902	0x3cab
 engine_label_stubs	_RezAlloc	5.1852	5.1852	1	cpp:2262ffc5f902	0x1b9b46
-engine_label_stubs	_RezAssertFail	5.6000	5.6000	1	cpp:2262ffc5f902	0x184e00
-engine_label_stubs	_RezFree	35.0000	35.0000	1	cpp:e1535087fe94	0x1b9b82
+engine_label_stubs	_RezAssertFail	100.0000	100.0000	1	cpp:2262ffc5f902	0x184e00
 engine_label_stubs	_RezStricmp	2.2353	2.2353	1	cpp:2262ffc5f902	0x11fdf0
 engine_label_stubs	_RezStrrchr	8.6957	8.6957	1	cpp:2262ffc5f902	0x120680
-engine_label_stubs	_StartupGate	0.0000	0.0000	1	cpp:2262ffc5f902	0x2f59
+engine_label_stubs	_StartupGate	100.0000	100.0000	1	cpp:2262ffc5f902	0x2f59
 engine_label_stubs	_SubstringMatch	2.8986	2.8986	1	cpp:2262ffc5f902	0x120090
 engine_label_stubs	_VersionScan	8.6957	8.6957	1	cpp:2262ffc5f902	0x120900
 engine_unmatched_lib	?Unmatched_124848@@YAXXZ	4.0000	4.0000	1	81c658f8d097	0x124848
@@ -3165,6 +3165,7 @@ rezmgr	?PerFrameTick@RezMgr@@UAEHXZ	100.0000	100.0000	5	f48f8cfdbf55	0x8b740
 rezmgr	?Read@CRezItm@@QAEHHHIPAX@Z	100.0000	100.0000	2	317d2c857ebf	0x13c600
 rezmgr	?Stub_13b0c0@CRezDir@@QAEXXZ	0.2139	0.2139	2	0caf2154eccf	0x13b0c0
 rezmgr	?Write@CRezItm@@QAEHHHIPAX@Z	100.0000	100.0000	2	e4e65b9964df	0x13c6c0
+rezutil	_RezFree	100.0000	100.0000	1	fe93430adc1a	0x1b9b82
 rollingball	??0CRollingBall@@QAE@PAUCGameObject@@@Z	78.6804	78.6804	1	38dbcbe0cf1f	0xaf820
 rollingball	??1CRollingBall@@UAE@XZ	100.0000	100.0000	1	9f5ff559b5b3	0x12f80
 rollingball	?InitActReg@CRollingBall@@SAXXZ	100.0000	100.0000	1	683351f53157	0xafd60
