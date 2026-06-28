@@ -1330,12 +1330,8 @@ struct CPaletteOwner {
 RVA(0x000e3f40, 0x3d6)
 void EngineLabelBacklog::DrawSaveGameMenu() {}
 
-// @confidence: med
-// @source: string-xref
-// @proximity: CSpriteRef@-0x1200 | CSaveGame@+0x840 (boundary - pick one)
-// @stub
-RVA(0x000e44e0, 0x2b2)
-void EngineLabelBacklog::BuildLevelTitleString() {}
+// BuildLevelTitleString (0xe44e0) graduated to src/Gruntz/LevelInfoDlg.cpp (the
+// level-select dialog title/preview helper).
 
 // SelectBestDevice (0xf8970) graduated to src/Gruntz/SFSelectDevice.cpp as
 // SFManager_SelectBestDevice (the SFMAN32.DLL music-device picker on the same

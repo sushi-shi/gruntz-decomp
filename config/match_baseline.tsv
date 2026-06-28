@@ -199,7 +199,7 @@ dsoundvoice	2	1
 ehfunclets	6	6
 engine_attributed	7	0
 engine_discovered	22	5
-engine_label_stubs	308	97
+engine_label_stubs	307	97
 engine_unmatched_lib	11	0
 engstr	3	1
 eyecandytypetags	4	4
@@ -270,6 +270,7 @@ interfaceobject	2	2
 kitchenslime	8	4
 latencylist	2	2
 leafelementobj	2	2
+levelinfodlg	1	0
 levelsync	1	0
 leveltilevalidation	3	0
 lightfxmgr	3	3
@@ -1778,7 +1779,6 @@ engine_label_stubs	?Build@GeoHost_161e80@ApiCallerStubs@@QAEXPAUtagRECT@@@Z	90.4
 engine_label_stubs	?Build@PalBuilder_176df0@ApiCallerStubs@@QAEHPAUtagPALETTEENTRY@@H@Z	62.0750	62.0750	1	cpp:6bf52155264d	0x176df0
 engine_label_stubs	?BuildAssetNamespacePrefixes@EngineLabelBacklog@@YGXHHHH@Z	0.2933	0.2933	1	cpp:6bf52155264d	0xdca70
 engine_label_stubs	?BuildLevelRezPath@EngineLabelBacklog@@YGXHHHHH@Z	0.3731	0.3731	1	cpp:6bf52155264d	0x93d40
-engine_label_stubs	?BuildLevelTitleString@EngineLabelBacklog@@YAXXZ	0.5000	0.5000	1	cpp:45e65336d4b5	0xe44e0
 engine_label_stubs	?BuildPowerupIconKeys@EngineLabelBacklog@@YGXPAVPowerupKeyRegistry@@H@Z	53.5443	53.5443	1	cpp:e8a4cb0d5b2a	0x1e720
 engine_label_stubs	?BuildRockBreakParticles@EngineLabelBacklog@@YGXHHHH@Z	0.3344	0.3344	1	cpp:6bf52155264d	0x7b440
 engine_label_stubs	?BuildSmall@CStatzTabSmall@@QAEHHHHHHPAUCStatzRect60@@HHH@Z	62.3936	62.3936	1	cpp:aab6e5a6e511	0x112a50
@@ -2714,6 +2714,7 @@ latencylist	?PopulateModemFast@CLatencyList@@QAEHXZ	100.0000	100.0000	1	f54745ae
 latencylist	?PopulateModemSlow@CLatencyList@@QAEHXZ	100.0000	100.0000	1	cfacc7c87a46	0x37b40
 leafelementobj	?LoadSoundA@LeafElementObj@@QAEHPAX@Z	100.0000	100.0000	1	8d497acabb49	0x1586e0
 leafelementobj	?LoadSoundB@LeafElementObj@@QAEHPAX@Z	100.0000	100.0000	1	e7de8a913105	0x158720
+levelinfodlg	?BuildLevelTitleString@@YAXPAUHWND__@@HPAUCLevelInfo@@@Z	94.4600	94.4600	1	f3b133959f0f	0xe44e0
 levelsync	?Sync@CLevelSync@@QAEHPAUSyncStream@@HHH@Z	47.0701	47.0701	1	d92c6f9004d9	0x1084d0
 leveltilevalidation	?PlaceStartGruntz@CLevelValidator@@QAEHXZ	65.2349	65.2349	1	da7e240d5f7c	0xd2b20
 leveltilevalidation	?PositionBridgeToggle@CLevelValidator@@QAEHHH@Z	91.2321	91.2321	1	939f7480c9e7	0xd5b20

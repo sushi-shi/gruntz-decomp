@@ -124,6 +124,11 @@ source = "src/Gruntz/CBrickz.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "levelinfodlg"
+source = "src/Gruntz/LevelInfoDlg.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "configstore"
 source = "src/Gruntz/ConfigStore.cpp"
 flags = "framed"
