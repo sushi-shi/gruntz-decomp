@@ -937,6 +937,13 @@ source = "src/Gruntz/BacklogStateLoaders.cpp"
 flags = "base"
 
 [[unit]]
+# Booty/secret-state HUD message overlays (string-xref cluster): a destructible
+# MFC CString temp per banner -> /GX exception frame.
+unit = "bootymessages"
+source = "src/Gruntz/BootyMessages.cpp"
+flags = "eh"
+
+[[unit]]
 # LoadObject{Image,Sound,Anim}Resources trio (0x9a510/0x9a910/0x9ac20): the
 # OBJECTZ_ namespace asset reconcilers; a destructible local CObList -> /GX.
 unit = "loadobjectresources"

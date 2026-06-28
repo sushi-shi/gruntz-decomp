@@ -152,11 +152,8 @@ public:
 namespace EngineLabelBacklog {
 
     void __stdcall LoadBootyCheatState(i32, i32, i32);
-    void ShowSecretBonusMessage();
     void UpdateBootyWalkingGruntz();
     void BuildBootyPerfectAnimation();
-    void ShowLevelCompleteMessage();
-    void BuildBootyGruntIdleAnimation();
     void __stdcall BuildPowerupIconKeys(PowerupKeyRegistry* reg, i32 key);
     void DrawBattleStats();
     void StartUpPrompt();
@@ -244,12 +241,9 @@ i32 BootyState::vfunc_9(i32) {
     return 1;
 }
 
-// @confidence: med
-// @source: string-xref
-// @proximity: CBootyState@-0x270 | CState@+0x640 (boundary - pick one)
-// @stub
-RVA(0x00018f00, 0x4fb)
-void EngineLabelBacklog::ShowSecretBonusMessage() {}
+// ShowSecretBonusMessage (0x18f00) graduated to src/Gruntz/BootyMessages.cpp as
+// BzState::ShowSecretBonusMessage (the "Secret of Secretz" / "Secret Bonus
+// Acquired" cipher-decoded HUD overlays; CString temps give it the /GX frame).
 
 // BuildGruntSprintAnimation @0x019920 graduated to src/Gruntz/GruntSprintAnim.cpp
 // (eh unit) as CGruntSprintAnim::BuildGruntSprintAnimation - the /GX directional
@@ -288,17 +282,13 @@ void EngineLabelBacklog::UpdateBootyWalkingGruntz() {}
 
 // BuildBootyPerfectAnimation @0x01c070 graduated to src/Gruntz/IconLoaders.cpp.
 
-// @confidence: med
-// @source: string-xref
-// @stub
-RVA(0x0001c9d0, 0x351)
-void EngineLabelBacklog::ShowLevelCompleteMessage() {}
+// ShowLevelCompleteMessage (0x1c9d0) graduated to src/Gruntz/BootyMessages.cpp as
+// BzState::ShowLevelCompleteMessage (the level/world-complete + WARP-letterz HUD
+// banners; a destructible CString temp gives it the /GX frame).
 
-// @confidence: med
-// @source: decomp-xref
-// @stub
-RVA(0x0001ce60, 0x450)
-void EngineLabelBacklog::BuildBootyGruntIdleAnimation() {}
+// BuildBootyGruntIdleAnimation (0x1ce60) graduated to src/Gruntz/BootyMessages.cpp
+// as BzState::BuildBootyGruntIdleAnimation (the per-frame booty idle-grunt state
+// machine + WARP "GRUNTZ_PICKUPS_<L>" CString builder; CString temps give /GX).
 
 // @source: string-xref
 // BuildPowerupIconKeys - seeds the "GAME_INGAMEICONZ" icon-key group then

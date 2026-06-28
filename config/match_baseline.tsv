@@ -29,6 +29,7 @@ bitarray	1	1
 bitstreamblowfish	1	0
 bitstreampack	1	0
 blowfish	4	3
+bootymessages	3	0
 boundaryleaflogic	15	15
 boundarylowerdtors	6	5
 boundarylowermethods	30	19
@@ -198,7 +199,7 @@ dsoundvoice	2	1
 ehfunclets	6	6
 engine_attributed	7	0
 engine_discovered	22	5
-engine_label_stubs	312	97
+engine_label_stubs	309	97
 engine_unmatched_lib	11	0
 engstr	3	1
 eyecandytypetags	4	4
@@ -539,6 +540,9 @@ blowfish	?Blowfish_InitKey@@YGXPAE@Z	100.0000	100.0000	1	181b6b1750bf	0x16f6c0
 blowfish	?Blowfish_decipher@@YAXPAI0@Z	99.5000	99.5000	2	c61014aad094	0x16fc70
 blowfish	?Blowfish_encipher@@YAXPAI0@Z	100.0000	100.0000	1	3b9987755e2b	0x16f7f0
 blowfish	?InitializeBlowfish@@YAFPAEF@Z	100.0000	100.0000	2	0fe7c64cfdb4	0x170100
+bootymessages	?BuildBootyGruntIdleAnimation@BzState@@QAEHXZ	54.7278	54.7278	1	9c1167874ee4	0x1ce60
+bootymessages	?ShowLevelCompleteMessage@BzState@@QAEXXZ	98.0342	98.0342	1	d13953f626eb	0x1c9d0
+bootymessages	?ShowSecretBonusMessage@BzState@@QAEHXZ	93.1850	93.1850	1	9cff5d891555	0x18f00
 boundaryleaflogic	??1L_101b0@@UAE@XZ	100.0000	100.0000	1	8ca1089d5905	0x101b0
 boundaryleaflogic	??1L_10fc0@@UAE@XZ	100.0000	100.0000	1	a623401a6b3b	0x10fc0
 boundaryleaflogic	??1L_11b80@@UAE@XZ	100.0000	100.0000	1	0ab24e93ac4d	0x11b80
@@ -1772,7 +1776,6 @@ engine_label_stubs	?Begin@ActionHost_0d7220@ApiCallerStubs@@QAEHH@Z	100.0000	100
 engine_label_stubs	?Build@GeoHost_161e80@ApiCallerStubs@@QAEXPAUtagRECT@@@Z	90.4318	90.4318	1	cpp:e1535087fe94	0x161e80
 engine_label_stubs	?Build@PalBuilder_176df0@ApiCallerStubs@@QAEHPAUtagPALETTEENTRY@@H@Z	62.0750	62.0750	1	cpp:6bf52155264d	0x176df0
 engine_label_stubs	?BuildAssetNamespacePrefixes@EngineLabelBacklog@@YGXHHHH@Z	0.2933	0.2933	1	cpp:6bf52155264d	0xdca70
-engine_label_stubs	?BuildBootyGruntIdleAnimation@EngineLabelBacklog@@YAXXZ	0.3058	0.3058	1	cpp:45e65336d4b5	0x1ce60
 engine_label_stubs	?BuildLevelRezPath@EngineLabelBacklog@@YGXHHHHH@Z	0.3731	0.3731	1	cpp:6bf52155264d	0x93d40
 engine_label_stubs	?BuildLevelTitleString@EngineLabelBacklog@@YAXXZ	0.5000	0.5000	1	cpp:45e65336d4b5	0xe44e0
 engine_label_stubs	?BuildPowerupIconKeys@EngineLabelBacklog@@YGXPAVPowerupKeyRegistry@@H@Z	53.5443	53.5443	1	cpp:e8a4cb0d5b2a	0x1e720
@@ -1877,8 +1880,6 @@ engine_label_stubs	?Setup4@PalCtx_147f30@ApiCallerStubs@@QAEXHHHH@Z	99.6226	99.6
 engine_label_stubs	?Setup6@PalCtx_147f30@ApiCallerStubs@@QAEXHHDDDH@Z	99.6552	99.6552	1	cpp:6bf52155264d	0x147f30
 engine_label_stubs	?Show@BlitHost_0d00a0@ApiCallerStubs@@QAEXH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xd00a0
 engine_label_stubs	?Show@MsgHost_08ee70@ApiCallerStubs@@QAEHHH@Z	98.4815	98.4815	1	cpp:6bf52155264d	0x8ee70
-engine_label_stubs	?ShowLevelCompleteMessage@EngineLabelBacklog@@YAXXZ	0.4274	0.4274	1	cpp:45e65336d4b5	0x1c9d0
-engine_label_stubs	?ShowSecretBonusMessage@EngineLabelBacklog@@YAXXZ	0.2500	0.2500	1	cpp:45e65336d4b5	0x18f00
 engine_label_stubs	?Shutdown@AilMgr_1384f0@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x1384f0
 engine_label_stubs	?Snapshot@PalCache_17cd90@ApiCallerStubs@@QAEXPAX@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x17cd90
 engine_label_stubs	?StartUpPrompt@EngineLabelBacklog@@YAXXZ	0.4950	0.4950	1	cpp:45e65336d4b5	0x1f9b0
