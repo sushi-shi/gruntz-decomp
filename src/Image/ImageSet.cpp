@@ -66,13 +66,13 @@ CImageFrame* CImageSet::CreateFrame30(i32 a0, i32 index, i32 a2) {
     CImageFrame* nf;
     if (mem != 0) {
         CImageFrame* f = (CImageFrame*)mem;
-        f->m_4 = index;
+        f->m_index = index;
         f->m_8 = 0;
-        f->m_c = m_owner;
+        f->m_owner = m_owner;
         f->m_vptr = &g_imageFrameVtbl;
-        f->m_10 = 0;
-        f->m_14 = 0;
-        f->m_2c = 0;
+        f->m_width = 0;
+        f->m_height = 0;
+        f->m_surface = 0;
         f->m_format = 0;
         nf = f;
     } else {
@@ -108,13 +108,13 @@ CImageFrame* CImageSet::CreateFrame28(i32 a0, i32 a1, i32 index, i32 a3) {
     CImageFrame* nf;
     if (mem != 0) {
         CImageFrame* f = (CImageFrame*)mem;
-        f->m_4 = index;
+        f->m_index = index;
         f->m_8 = 0;
-        f->m_c = m_owner;
+        f->m_owner = m_owner;
         f->m_vptr = &g_imageFrameVtbl;
-        f->m_10 = 0;
-        f->m_14 = 0;
-        f->m_2c = 0;
+        f->m_width = 0;
+        f->m_height = 0;
+        f->m_surface = 0;
         f->m_format = 0;
         nf = f;
     } else {
@@ -150,13 +150,13 @@ CImageFrame* CImageSet::CreateFrame24(i32 a0, i32 a1, i32 index, i32 a3) {
     CImageFrame* nf;
     if (mem != 0) {
         CImageFrame* f = (CImageFrame*)mem;
-        f->m_4 = index;
+        f->m_index = index;
         f->m_8 = 0;
-        f->m_c = m_owner;
+        f->m_owner = m_owner;
         f->m_vptr = &g_imageFrameVtbl;
-        f->m_10 = 0;
-        f->m_14 = 0;
-        f->m_2c = 0;
+        f->m_width = 0;
+        f->m_height = 0;
+        f->m_surface = 0;
         f->m_format = 0;
         nf = f;
     } else {
@@ -187,8 +187,8 @@ CImageFrame* CImageSet::CreateFrame24(i32 a0, i32 a1, i32 index, i32 a3) {
 // 0x34-byte per-frame overhead when `raw` is 0. No destructible locals -> plain /O2.
 // @early-stop
 // 99.96% - every instruction byte-identical except the commutative `width*height` imul:
-// retail keeps m_14 in esi and reads m_10 as the imul memory operand; cl canonicalizes
-// to the reverse (keeps m_10, reads m_14) for EVERY spelling (a*b, b*a, temp + *=). A
+// retail keeps m_height in esi and reads m_width as the imul memory operand; cl canonicalizes
+// to the reverse (keeps m_width, reads m_height) for EVERY spelling (a*b, b*a, temp + *=). A
 // 2-byte (displacement) instruction-selection canonicalization, not source-steerable.
 RVA(0x001523f0, 0x82)
 i32 CImageSet::GetMemoryUsage(i32 raw) {
@@ -196,15 +196,15 @@ i32 CImageSet::GetMemoryUsage(i32 raw) {
     for (i32 i = m_minIndex; i <= m_maxIndex; i++) {
         CImageFrame* frame = GetAt(i);
         if (frame) {
-            i32 size = frame->m_14 * frame->m_10;
-            if (frame->m_2c && frame->m_2c->m_a8 == 0x10) {
+            i32 size = frame->m_height * frame->m_width;
+            if (frame->m_surface && frame->m_surface->m_bitDepth == 0x10) {
                 size += size;
             }
-            if (frame->m_2c && frame->m_2c->m_a8 == 0x18) {
+            if (frame->m_surface && frame->m_surface->m_bitDepth == 0x18) {
                 size = size * 3;
             }
             if (frame->m_format) {
-                size = frame->m_format->m_10;
+                size = frame->m_format->m_decodedByteCount;
             }
             if (raw == 0) {
                 size += 0x34;
@@ -256,7 +256,7 @@ i32 CImageSet::SetAllFormats(i32 format) {
     for (i32 i = m_minIndex; i <= m_maxIndex; i++) {
         CImageFrame* frame = GetAt(i);
         if (frame && frame->m_format) {
-            frame->m_format->m_1c = format;
+            frame->m_format->m_resolvedFormat = format;
             count++;
         }
     }
