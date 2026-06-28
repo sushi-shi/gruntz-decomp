@@ -411,6 +411,11 @@ source = "src/Gruntz/StatusBarTabBuilders.cpp"
 flags = "base"
 
 [[unit]]
+unit = "statusbargamemenu"
+source = "src/Gruntz/StatusBarGameMenu.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "cheatmgr"
 source = "src/Gruntz/CheatMgr.cpp"
 flags = "eh"

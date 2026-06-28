@@ -6,7 +6,5 @@
 // unit; delinked + objdiff'd like any backlog stub.
 #include <rva.h>
 
-RVA(0x0013ab00, 0xac)
-void Boundary_13ab00() {} // proximity: CSymTab@-0x7f0 | CSymParser@+0xc0
-RVA(0x001493b0, 0xfd)
-void Boundary_1493b0() {} // proximity: CImageOwned@-0x2e0 | CDDrawShadeBlit@+0x440
+// (drained) 0x13ab00 -> CSymParser 3-arg ctor (src/Bute/SymParser.cpp);
+//          0x1493b0 -> CImageOwned::Rebuild   (src/Image/CImageOwned.cpp).

@@ -81,7 +81,6 @@
 #include "CProjectile.cpp"
 #include "CRollingBall.cpp"
 #include "CSBI_Image.cpp"
-#include "CSBI_ImageSet.cpp"
 #include "CSBI_SideTab.cpp"
 #include "CSplashState.cpp"
 #include "CSpotLight.cpp"

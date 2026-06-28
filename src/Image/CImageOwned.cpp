@@ -254,3 +254,53 @@ i32 CImageOwned::Build(CImageBuildDesc* src, i32 size, i32 fmt) {
     }
     return 1;
 }
+
+// ---------------------------------------------------------------------------
+// 0x1493b0: Rebuild - when the owned object is in format-state 1, build an 8-dword
+// frame descriptor out of the current dimensions/key + the two caller ints and the
+// by-value name, then hand it to DecodeFrame (0x149250). The `name` CString arrives
+// by value -> the callee destroys it (the early-return path also runs ~CString),
+// which forces the /GX EH frame. __thiscall, ret 0xc. Returns DecodeFrame's result,
+// or 0 when m_28 != 1.
+//
+// The descriptor's flags word (desc.f1) is computed in a register but its store was
+// eliminated in retail (a partial-dead-store the optimizer left half-done): the
+// branch chain (0x3d/0xbd | 0x100 | 0x80) is emitted, the result clobbered without a
+// write. We keep the assignment (the only faithful source) so the chain stays live.
+// @early-stop
+// ~90% dead-store + regalloc wall: the m_28 guard, the whole descriptor build, the
+// by-value CString + rep-movs desc passing, and the DecodeFrame tail are byte-exact.
+// The residual is a register coin-flip in the (dead) flags computation: retail pins
+// m_20 in eax and the flags accumulator in esi (so `or esi,0x100` / `or esi,0x80`,
+// 32-bit), where our cl pins flags in eax / m_20 in esi (`or ah,1` / `or al,0x80`,
+// 8-bit sub-register). Retail also ELIMINATES the `mov [..],flags` store entirely
+// (a partial-DCE artifact) while cl keeps it parked past the struct copy (dead).
+// Neither the register pinning nor the half-DCE is source-steerable under /O2.
+// ---------------------------------------------------------------------------
+RVA(0x001493b0, 0xfd)
+i32 CImageOwned::Rebuild(CString name, i32 a1, i32 a2) {
+    if (m_28 != 1) {
+        return 0;
+    }
+    CImageFrameRebuildDesc desc;
+    i32 flags = 0x3d;
+    if (m_20 != 0) {
+        flags = 0xbd;
+    }
+    desc.f0 = 0;
+    desc.f2 = m_04;
+    desc.f4 = a1;
+    desc.f3 = m_08;
+    desc.f5 = a2;
+    desc.f6 = 0;
+    desc.f7 = 0;
+    if (m_24 != -1) {
+        flags |= 0x100;
+        desc.f6 = (u8)m_24;
+    }
+    if (m_20 != 0) {
+        flags |= 0x80;
+    }
+    desc.f1 = flags;
+    return DecodeFrame(name, desc);
+}

@@ -136,6 +136,22 @@ public:
 // buffers; Teardown (0x148d10) RezFree's both. CImageBuildDesc (below) holds the
 // desc fields Build reads. Reloc-masked __thiscall throughout.
 class CImageBuildDesc;
+
+// The 8-dword (0x20) by-value frame descriptor Rebuild builds on the stack and
+// hands to DecodeFrame: [0]=0, [1]=flags, [2]=m_04 (width), [3]=m_08 (height),
+// [4]/[5]=the two int args, [6]=the low byte of m_24 (key, 0 when m_24==-1),
+// [7]=0. Only the layout is load-bearing (passed whole via rep movs).
+struct CImageFrameRebuildDesc {
+    i32 f0;
+    i32 f1;
+    i32 f2;
+    i32 f3;
+    i32 f4;
+    i32 f5;
+    i32 f6;
+    i32 f7;
+};
+
 class CImageOwned {
 public:
     CImageOwned();                                      // 0x148ce0
@@ -145,6 +161,10 @@ public:
     i32 Build(CImageBuildDesc* src, i32 size, i32 fmt); // 0x1490d0
     void* Remap(void* pixels);                          // 0x1495d0  (palette-remap, external)
     void Teardown();                                    // 0x148d10
+    // 0x149250 (external/reloc-masked) and 0x1493b0 (Rebuild): when the owned
+    // object is in format-state 1, build the descriptor and decode a frame.
+    i32 DecodeFrame(CString name, CImageFrameRebuildDesc desc); // 0x149250
+    i32 Rebuild(CString name, i32 a1, i32 a2);                  // 0x1493b0
 
     i32 m_00;   // +0x00
     i32 m_04;   // +0x04  src->m_08

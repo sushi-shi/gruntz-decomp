@@ -134,17 +134,30 @@ struct CSlotNode {
 // a thin local subclass whose teardown is RemoveAll. Same 8-byte layout (no new
 // fields); only this TU sees the destructor, so Hash.h's siblings are unaffected.
 struct CParserHash : public CHashBase {
+    // 0x184960: the +0x80 hash-table member's 1-arg constructor. Modeled as a method
+    // (the call shape is `lea ecx,[this+0x80]; push n; call`) so the 3-arg CSymParser
+    // ctor's member-init lowers without re-touching Hash.h's shared CHashBase.
+    void Init(i32 n); // 0x184960
     ~CParserHash() {
         RemoveAll();
     }
 };
+
+// The +0x10 list sub-object vtable the CONSTRUCTORS stamp (0x5ef75c) - 4 bytes ahead
+// of the 0x5ef760 the destructor restores (a distinct MI sub-vtable slot). Reloc-
+// masked DATA() extern.
+extern void* CObjList_ctor_vftbl; // 0x5ef75c
 
 // ---------------------------------------------------------------------------
 // CSymParser - the Remus parser/owner.
 // ---------------------------------------------------------------------------
 class CSymParser {
 public:
-    // ctor (0x13aa10) - lives in another (unmatched) TU; declared for shape only.
+    // The default ctor (0x13aa10) lives in another (unmatched) TU - declared (no body)
+    // so the 3-arg ctor's discarded temp `CSymParser tmp;` lowers to a reloc-masked
+    // call; and the 3-arg buffer ctor (0x13ab00) defined in SymParser.cpp.
+    CSymParser();                            // 0x13aa10 (external)
+    CSymParser(void* buf, i32 a2, i32 a3);   // 0x13ab00
 
     // ~CSymParser (0x13abc0): the /GX scalar destructor. Clear(0) if armed, tear
     // down the +0x10 object list, the heap root CSymTab, the owned buffers and the

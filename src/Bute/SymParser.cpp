@@ -14,6 +14,41 @@ DATA(0x005ef750)
 void* CSymParser_vftable;
 DATA(0x005ef760)
 void* CObjList_purecall_vftbl;
+DATA(0x005ef75c)
+void* CObjList_ctor_vftbl;
+
+// 0x13ab00: the 3-arg buffer constructor. Construct the sub-object members (the +0x10
+// object list, the +0x80 hash table, the +0x88 node list) + stamp the primary vtable,
+// build-then-discard a default CSymParser temp, then drive the buffer through
+// ParseBuffer. The destructible members + the temp force the /GX EH frame. __thiscall,
+// ret 0xc; returns `this`. (The default ctor 0x13aa10 the temp uses lives in another,
+// unmatched TU - a reloc-masked call.)
+// @early-stop
+// ~77%, all teardown/build bytes exact: the /GX frame, the member-init store sequence
+// (m_list head/tail/vtbl 0x5ef75c, the +0x80 hash Init(1), the +0x88 node-list
+// head/tail, the primary vtbl 0x5ef750), the discarded default-temp ctor/dtor pair and
+// the ParseBuffer 3-arg tail are byte-identical. The residual is the documented /GX
+// trylevel state-NUMBERING wall (docs/patterns/eh-state-numbering-base.md): retail
+// seeds the member-cleanup trylevel slot [esp+0xac] to 0 (edi) and the temp's state
+// byte [esp+0xa8] to 2, where our cl seeds [esp+0xac] to 1 - an off-by-one in the
+// state base - plus a 1-instruction scheduling coin-flip (retail emits the m_list
+// stores before the hash `push 1`; cl hoists the push) and the reloc-named default-ctor
+// / 0x184960 / ParseBuffer operands (scoring artifact). Logic complete; parked for the
+// final sweep.
+RVA(0x0013ab00, 0xac)
+CSymParser::CSymParser(void* buf, i32 a2, i32 a3) {
+    m_list.m_head = 0;
+    m_list.m_tail = 0;
+    m_list.m_vtbl = &CObjList_ctor_vftbl;
+    m_hash.Init(1);
+    m_nodes.m_head = 0;
+    m_nodes.m_tail = 0;
+    m_vtbl = &CSymParser_vftable;
+    {
+        CSymParser tmp;
+    }
+    ParseBuffer(buf, a2, a3);
+}
 
 // ~CSymParser (0x13abc0): the /GX scalar destructor. Re-stamp the primary vtable,
 // run Clear(0) if armed (m_0c), drain the +0x10 object list, free the heap root
