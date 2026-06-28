@@ -2,9 +2,9 @@
 // DSoundList/CGruntzSoundZ neighbourhood; engine_boundary 0x138aa0). The method
 // `Load(name, arg)` either forwards to the slot-0x3c handler when the name is the
 // special ".." token, or opens `name` as a file, slurps it whole into the owned
-// +0x5c buffer (operator new), and hands it to the slot-0x14 decode virtual. The
-// local CFile (a throwing ctor) forces the /GX EH frame. Field names are
-// placeholders; only the OFFSETS + the emitted bytes are load-bearing.
+// load buffer (operator new), and hands it to the slot-0x14 decode virtual. The
+// local CFile (a throwing ctor) forces the /GX EH frame. Offsets + emitted bytes
+// are load-bearing.
 #include <Ints.h>
 #include <rva.h>
 
@@ -33,11 +33,11 @@ struct RezFile {
 // declared (not defined here) so the class never emits a vtable in this TU; the calls
 // lower to `mov eax,[this]; call [eax+N]`. The owned load buffer lives at +0x5c.
 struct CSoundBank {
-    virtual void s00(); // +0x00
-    virtual void s01(); // +0x04
-    virtual void s02(); // +0x08
-    virtual void s03(); // +0x0c
-    virtual void s04(); // +0x10
+    virtual void s00();                               // +0x00
+    virtual void s01();                               // +0x04
+    virtual void s02();                               // +0x08
+    virtual void s03();                               // +0x0c
+    virtual void s04();                               // +0x10
     virtual i32 DecodeBuf(void* buf, i32 len, i32 a); // slot 5  (+0x14)
     virtual void s06();                               // +0x18
     virtual void s07();                               // +0x1c
@@ -51,20 +51,20 @@ struct CSoundBank {
     virtual i32 LoadSpecial(const char* path, i32 a); // slot 15 (+0x3c)
 
     char m_pad04[0x5c - 0x04];
-    void* m_5c; // +0x5c  owned load buffer
+    void* m_loadBuffer; // +0x5c  owned load buffer
 
     i32 Load(const char* path, i32 a1); // 0x138aa0
 };
 
 // 0x138aa0 - Load: the special ".." name forwards to the slot-0x3c handler; otherwise
-// open `path`, require >= 4 bytes, slurp it whole into the owned +0x5c buffer, and run
+// open `path`, require >= 4 bytes, slurp it whole into the owned load buffer, and run
 // the slot-0x14 decode. Each failure tears down the local CFile and returns 0; the
 // CFile's throwing ctor forces the /GX frame. __thiscall, ret 8.
 //
 // @early-stop
 // /GX EH-frame + reloc-name wall: the ".."-token branch, the CFile open/GetLength/new/
-// Read/decode chain, the slot-0x14/0x3c vtable dispatches and the m_5c store are byte-
-// faithful, but the local CFile's stack-slot scheduling inside the /GX frame + the
+// Read/decode chain, the slot-0x14/0x3c vtable dispatches and the load-buffer store
+// are byte-faithful, but the local CFile's stack-slot scheduling inside the /GX frame + the
 // EH-state numbering (the documented eh-scoped-local wall) and the differently-named
 // SbNameCmp/operator-new reloc operands diverge. Logic complete; final sweep.
 RVA(0x00138aa0, 0x175)
@@ -74,18 +74,18 @@ i32 CSoundBank::Load(const char* path, i32 a1) {
         if (!file.Open(path, 0, 0)) {
             return 0;
         }
-        i32 len = file.GetLength();
-        if (len < 4) {
+        i32 length = file.GetLength();
+        if (length < 4) {
             return 0;
         }
-        m_5c = operator new(len);
-        if (m_5c == 0) {
+        m_loadBuffer = operator new(length);
+        if (m_loadBuffer == 0) {
             return 0;
         }
-        if (file.Read(m_5c, len) != len) {
+        if (file.Read(m_loadBuffer, length) != length) {
             return 0;
         }
-        return DecodeBuf(m_5c, len, a1);
+        return DecodeBuf(m_loadBuffer, length, a1);
     }
     return LoadSpecial(path, a1);
 }
