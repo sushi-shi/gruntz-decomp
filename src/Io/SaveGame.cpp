@@ -345,13 +345,13 @@ i32 CSaveGame::FillSlot(SaveSlot* dst, const char* name, void* src) {
         return 0;
     }
     dst->m_type = 1;
-    dst->m_04 = *(i32*)((char*)*(void**)((char*)src + 0x2c) + 0x1c);
+    dst->m_levelId = *(i32*)((char*)*(void**)((char*)src + 0x2c) + 0x1c);
     dst->m_08 = 0;
     dst->m_0c = 1;
     if (*(i32*)((char*)*(void**)((char*)src + 0x44) + 0x124) != 0) {
         dst->m_type = 3;
     }
-    strncpy(dst->m_14, name, 0x20);
+    strncpy(dst->m_name, name, 0x20);
     dst->m_checksum = Register(dst);
     return 1;
 }
@@ -367,7 +367,7 @@ i32 CSaveGame::CopySlot(SaveSlot* dst, const SaveSlot* src) {
         return 0;
     }
     dst->m_type = src->m_type;
-    dst->m_04 = src->m_04;
+    dst->m_levelId = src->m_levelId;
     dst->m_08 = src->m_08;
     dst->m_0c = src->m_0c;
     dst->m_checksum = src->m_checksum;
@@ -386,7 +386,7 @@ i32 CSaveGame::FillSlot2(SaveSlot* dst, i32 name, void* src) {
         return 0;
     }
     dst->m_type = 1;
-    dst->m_04 = name;
+    dst->m_levelId = name;
     dst->m_08 = 0;
     if (*(i32*)((char*)*(void**)((char*)src + 0x44) + 0x124) != 0) {
         dst->m_type = 3;
@@ -418,7 +418,7 @@ i32 CSaveGame::VerifySlot(SaveSlot* slot) {
     i32 f8 = *(i32*)((char*)slot + 0xf8);
     const char* name = (fc == 0 && f8 == 0) ? g_emptyString : ((char*)slot + 0x75);
     CString s(name);
-    i32 r = g_gameReg->BuildLevelRezPath(fc == 0, fc, f8, slot->m_04);
+    i32 r = g_gameReg->BuildLevelRezPath(fc == 0, fc, f8, slot->m_levelId);
     if (r == 0) {
         g_gameReg->LogError(
             "The level that this game was saved on does not exist!\n\nThis "
@@ -455,7 +455,7 @@ i32 CSaveGame::Register(SaveSlot* slot) {
     i32 f8 = *(i32*)((char*)slot + 0xf8);
     const char* name = (fc == 0 && f8 == 0) ? g_emptyString : ((char*)slot + 0x75);
     CString s(name);
-    return g_gameReg->BuildLevelRezPath(fc == 0, fc, f8, slot->m_04);
+    return g_gameReg->BuildLevelRezPath(fc == 0, fc, f8, slot->m_levelId);
 }
 
 // ---------------------------------------------------------------------------

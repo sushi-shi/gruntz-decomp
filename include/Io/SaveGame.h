@@ -11,8 +11,8 @@
 // correctness-over-artifacts doctrine; the build pairs objects by unit name, so
 // the separate TU is matching-neutral.
 //
-// Field names are placeholders (m_<hexoffset>); only the OFFSETS + code bytes are
-// load-bearing (campaign doctrine). Layout recovered from the ctor-less leaf
+// Some field names remain placeholders (m_<hexoffset>) where recovered source
+// does not yet reveal semantics. Layout recovered from the ctor-less leaf
 // accessors (Init zeroes [this+0x18]; GetSlot returns this+0xa24+i*0x100).
 //
 //   +0x00  m_str0   : CString (destroyed last in the dtor)
@@ -47,13 +47,13 @@ extern "C" char g_emptyString[];
 // ---------------------------------------------------------------------------
 // A single 0x100-byte saved-game slot record.
 struct SaveSlot {
-    i32 m_type;      // +0x00  (1 = normal, 3 = ...)
-    i32 m_04;        // +0x04
-    i32 m_08;        // +0x08
-    i32 m_0c;        // +0x0c
-    i32 m_checksum;  // +0x10  (Register(this) result)
-    char m_14[0x20]; // +0x14  (name, strncpy'd 0x20)
-    char m_34[0xcc]; // +0x34  pad to 0x100
+    i32 m_type;        // +0x00  (1 = normal, 3 = ...)
+    i32 m_levelId;     // +0x04
+    i32 m_08;          // +0x08
+    i32 m_0c;          // +0x0c
+    i32 m_checksum;    // +0x10  (Register(this) result)
+    char m_name[0x20]; // +0x14  (name, strncpy'd 0x20)
+    char m_34[0xcc];   // +0x34  pad to 0x100
 };
 
 class CSaveGame {
