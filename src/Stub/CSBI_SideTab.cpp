@@ -5,15 +5,5 @@
 // real scalar destructor is reconstructed at 0x105200 (src/Gruntz/SBI_SideTabEh.cpp).
 // 0x105070 is a factory: it `new`s a 0x5c-byte object, stamps the 0x5eae3c
 // (CSBI_SideTab) vptr and initializes the fields - a builder, not the destructor.
-// Relabeled `Build` to free the ??1 name for the real dtor.
-
-class CSBI_SideTab {
-public:
-    void Build();
-};
-
-// @confidence: low
-// @source: rtti-vptr
-// @stub
-RVA(0x00105070, 0x10e)
-void CSBI_SideTab::Build() {}
+// Relabeled `Build` to free the ??1 name for the real dtor. The Build factory
+// (0x105070) is reconstructed in src/Gruntz/SBI_SideTabBuild.cpp. Nothing left here.

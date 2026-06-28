@@ -203,6 +203,11 @@ source = "src/Gruntz/SBI_SideTabEh.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "sbi_sidetab_build"
+source = "src/Gruntz/SBI_SideTabBuild.cpp"
+flags = "base"
+
+[[unit]]
 unit = "sbi_image"
 source = "src/Gruntz/SBI_Image.cpp"
 flags = "base"
@@ -739,6 +744,12 @@ flags = "eh"
 unit = "cspotlight"
 source = "src/Gruntz/CSpotLight.cpp"
 flags = "base"
+
+[[unit]]
+# CSpotLight 1-arg ctor (0x0b1200); /GX EH frame (throwing CUserBaseLink base).
+unit = "cspotlightctor"
+source = "src/Gruntz/CSpotLightCtor.cpp"
+flags = "eh"
 
 [[unit]]
 # proximity-attributed class memberships (gruntz.analysis.gen_attributed_stubs); own
@@ -1680,6 +1691,11 @@ flags = "eh"
 [[unit]]
 unit = "cmovinglogicdtor"
 source = "src/Gruntz/CMovingLogicDtor.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cmovinglogicctor"
+source = "src/Gruntz/CMovingLogicCtor.cpp"
 flags = "eh"
 
 [[unit]]

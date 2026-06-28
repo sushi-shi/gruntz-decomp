@@ -1,0 +1,136 @@
+// CSpotLightCtor.cpp - the 1-arg CSpotLight constructor (0xb1200), re-homed from
+// src/Stub/CSpotLight.cpp (C:\Proj\Gruntz).
+//
+// CSpotLight : CUserLogic (vftable 0x5e75bc). The ctor folds the shared inline
+// CUserLogic(CGameObject*) base init (link + RegisterLogicTypesOnce + the three
+// AddLogic* + the m_04..m_3c stores), stamps its own vptr, re-resolves the bute
+// "A" node into the bound object's aux, snaps the object's screen position onto the
+// 0x20 grid and seeds the rotation offsets (m_70/m_78/m_60/m_68/m_80/m_88), then
+// reads the SpotLightTime / settings-table tuning and seeds the per-tick state.
+//
+// The standalone ctor lives in its OWN TU so the existing flat CSpotLight carcass +
+// the matched Update (src/Gruntz/CSpotLight.cpp) are untouched. Field names are
+// placeholders; the OFFSETS + code bytes are the load-bearing facts. The throwing
+// CUserBaseLink in the CUserLogic base forces the /GX EH frame -> eh.
+#include <Mfc.h>
+#include <Gruntz/UserLogic.h> // CUserLogic / CGameObject base init + g_buteMgr
+#include <Bute/ButeMgr.h>     // CButeTree / CButeMgr
+#include <rva.h>
+
+// The bute store the "A" activation node is resolved through (g_buteTree @0x6bf620,
+// Find @0x16d190); declared extern so the call reloc-masks (the Stub TU owns it).
+DATA(0x002bf620)
+extern CButeTree g_buteTree;
+
+// The two .rdata scale doubles the per-tick rate folds in (0x5ea3f0 numerator /
+// 0x5ea3f8 multiplier). Reloc-masked; the literal value is irrelevant to the match.
+extern const double g_spotRateNum; // 0x5ea3f0
+extern const double g_spotRateMul; // 0x5ea3f8
+
+// The settings/registry singleton (0x64556c): m_78 -> the per-frame light-color
+// table the ctor indexes by m_11c (+0x14 base), m_134 the alpha-blend gate.
+struct CSpotMgrTable {
+    char m_pad00[0x14];
+    i32 m_arr[1]; // +0x14
+};
+struct CSpotMgrReg {
+    char m_pad00[0x78];
+    CSpotMgrTable* m_78; // +0x78
+    char m_pad7c[0x134 - 0x7c];
+    i32 m_134; // +0x134
+};
+extern "C" CSpotMgrReg* g_mgrSettings; // 0x64556c
+
+// ---------------------------------------------------------------------------
+// CSpotLight : CUserLogic - the light eyecandy logic. Own fields begin past the
+// CUserLogic base (+0x40): the rotation/offset doubles + the per-tick state ints.
+class CSpotLight : public CUserLogic {
+public:
+    CSpotLight(CGameObject* obj); // 0xb1200
+    virtual ~CSpotLight() OVERRIDE;
+
+    char m_pad40[0x58 - 0x40];
+    double m_58; // +0x58  per-tick rate
+    double m_60; // +0x60
+    double m_68; // +0x68
+    double m_70; // +0x70
+    double m_78; // +0x78
+    double m_80; // +0x80
+    double m_88; // +0x88
+    double m_90; // +0x90  pi or 0
+    i32 m_98;    // +0x98
+    i32 m_9c;    // +0x9c
+    i32 m_a0;    // +0xa0
+    i32 m_a4;    // +0xa4
+};
+
+// Out-of-line vtable anchor (gives CSpotLight a real vftable so the ctor's vptr
+// store falls out). Body not matched.
+CSpotLight::~CSpotLight() {}
+
+RVA(0x000b1200, 0x2cb)
+// @early-stop
+// x87 fp-stack-schedule wall (docs/patterns/x87-fp-stack-schedule.md, topic:wall):
+// the /GX EH frame, the folded CUserLogic(obj) base init, the bute "A" re-resolve,
+// the 0x20-grid snap + m_124/m_120 adjust, the SpotLightTime/settings tuning and
+// every integer field store are byte-faithful; the residual is the rotation block
+// that derives m_60/m_68/m_80/m_88 from m_70/m_78 - its fld/fsub/fxch stack
+// ordering is not steerable from C (same wall as CSpotLight::Update @0xb1ee0).
+// Logic complete; deferred to the final sweep.
+CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj) {
+    m_30 = m_14->m_1c;
+    m_14->m_1c = g_buteTree.Find("A");
+    m_38->m_08 |= 2;
+
+    i32 ax = (m_10->m_5c & ~0x1f) + 0x10;
+    i32 cx = (m_10->m_60 & ~0x1f) + 0x10;
+    m_70 = (double)ax;
+    m_78 = (double)cx;
+    i32 nx;
+    if (m_10->m_124 == 0) {
+        nx = ax - 0x20;
+    } else {
+        nx = ax - m_10->m_124 * 32;
+    }
+    m_10->m_5c = nx;
+    m_10->m_60 = cx;
+    m_60 = (double)nx;
+    m_68 = m_78;
+    if (m_10->m_74 != 0xcf850) {
+        m_10->m_74 = 0xcf850;
+        m_10->m_08 |= 0x20000;
+    }
+    m_80 = m_70 - m_60;
+    m_88 = m_78 - m_68;
+
+    u32 v;
+    if (m_10->m_120 == 0) {
+        v = g_buteMgr.GetDwordDef("Hazardz", "SpotLightTime", 0xbb8);
+    } else {
+        v = m_10->m_120;
+    }
+    m_58 = g_spotRateNum / (double)(u32)v;
+    if (m_10->m_12c == 1) {
+        m_58 = m_58 * g_spotRateMul;
+    }
+    if (m_10->m_118 == 1) {
+        m_90 = 3.1415927;
+    } else {
+        m_90 = 0;
+    }
+    i32 looked = g_mgrSettings->m_78->m_arr[m_10->m_11c];
+    m_10->m_58 = 1;
+    m_10->m_50 = 7;
+    m_10->m_4c = looked;
+    m_98 = 0;
+    m_10->m_144 = 0;
+    m_10->m_14c = 0;
+    m_10->m_148 = 0;
+    m_10->m_150 = 0;
+    m_9c = -1;
+    m_a0 = -1;
+    m_a4 = 0;
+    if (g_mgrSettings->m_134 == 1) {
+        m_a4 = 1;
+    }
+}

@@ -1,10 +1,6 @@
 #include <rva.h>
 // CSpotLight.cpp - engine-label stubs for CSpotLight.
-
-#include <Stub/CSpotLight.h>
-
-// @confidence: med
-// @source: rtti-vptr
-// @stub
-RVA(0x000b1200, 0x2cb)
-CSpotLight::CSpotLight(i32) {}
+//
+// The 1-arg ctor (0xb1200) is reconstructed in src/Gruntz/CSpotLightCtor.cpp (its
+// own TU so the existing flat carcass + matched Update here stay untouched).
+// Nothing left to stub.

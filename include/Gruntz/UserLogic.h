@@ -162,10 +162,19 @@ struct CGameObject {
     CSiriusWorker* m_88; // +0x88  lazily-built worker (EnsureWorker88)
     char m_pad8c[0x90 - 0x8c];
     CSiriusWorker* m_90; // +0x90  lazily-built worker (EnsureWorker90)
-    char m_pad94[0x124 - 0x94];
+    char m_pad94[0x118 - 0x94];
+    i32 m_118; // +0x118  CSpotLight ctor: pi/0 mode gate
+    i32 m_11c; // +0x11c  CSpotLight ctor: settings-table index
+    i32 m_120; // +0x120  CSpotLight ctor: SpotLightTime override
     i32 m_124; // +0x124  sprite-selector row key (leaf ctors pass it to ApplyLookupSprite)
     i32 m_128; // +0x128  visibility/place mode (1 or 2; the on-screen gate discriminator)
-    char m_pad12c[0x164 - 0x12c];
+    i32 m_12c; // +0x12c  CSpotLight ctor: m_58 scale gate
+    char m_pad130[0x144 - 0x130];
+    i32 m_144; // +0x144  (CSpotLight ctor zeros 0x144/0x148/0x14c/0x150)
+    i32 m_148; // +0x148
+    i32 m_14c; // +0x14c
+    i32 m_150; // +0x150
+    char m_pad154[0x164 - 0x154];
     i32 m_164; // +0x164
     i32 m_168; // +0x168
     char m_pad16c[0x198 - 0x16c];
