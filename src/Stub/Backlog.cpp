@@ -156,12 +156,10 @@ namespace EngineLabelBacklog {
     void BuildBootyPerfectAnimation();
     void __stdcall BuildPowerupIconKeys(PowerupKeyRegistry* reg, i32 key);
     void DrawBattleStats();
-    void StartUpPrompt();
     i32 Stub_01fd70(char* szPath);
     i32 LoadCustomWorldInfo(HWND hDlg);
     // LoadHelpBookSprite reconstructed as CHelpBookSprite::Update below.
     void HandleFortConquered();
-    void __stdcall LoadVehicleGruntSprites(i32);
     void __stdcall WireTileSwitchLogic(i32, i32, i32);
     void __stdcall LoadTerrainTileSprites(i32, i32, i32, i32, i32, i32);
     void LoadCameraSprite();
@@ -497,12 +495,9 @@ i32 BootyState::OnActivate_vfunc8() {
     return 1;
 }
 
-// @confidence: high
-// @source: tomalla
-// @proximity: LeafCue@-0x70 | CChatBoxOwner@+0xb30 (boundary - pick one)
-// @stub
-RVA(0x0001f9b0, 0x2d2)
-void EngineLabelBacklog::StartUpPrompt() {}
+// StartUpPrompt (0x1f9b0) graduated to src/Gruntz/StartUpPrompt.cpp as the free
+// __cdecl StartUpPrompt - the launch CD-ROM/Spawn-Mode prompt (CString temps +
+// the BeginWaitCursor/EndWaitCursor scope give it the /GX exception frame).
 
 // ---------------------------------------------------------------------------
 // LoadChatBoxSprite - looks up the "GAME_CHATBOX" sprite set in
@@ -730,12 +725,9 @@ i32 EngineLabelBacklog::LoadCustomWorldInfo(HWND hDlg) {
 RVA(0x0003f5f0, 0x526)
 void EngineLabelBacklog::HandleFortConquered() {}
 
-// @confidence: med
-// @source: string-xref
-// @proximity: CUserLogic@-0x2f90 | CGrunt@+0x4d0 (boundary - pick one)
-// @stub
-RVA(0x00050ce0, 0x399)
-void __stdcall EngineLabelBacklog::LoadVehicleGruntSprites(i32) {}
+// LoadVehicleGruntSprites (0x50ce0) graduated to src/Gruntz/VehicleGruntSprites.cpp
+// as CGruntCmdObj::LoadVehicleGruntSprites (__thiscall, not __stdcall): the 10-way
+// vehicle-grunt sprite-set registrar; its CString name temp gives it the /GX frame.
 
 // @confidence: med
 // @source: decomp-xref

@@ -199,7 +199,7 @@ dsoundvoice	2	1
 ehfunclets	6	6
 engine_attributed	7	0
 engine_discovered	22	5
-engine_label_stubs	307	97
+engine_label_stubs	305	98
 engine_unmatched_lib	11	0
 engstr	3	1
 eyecandytypetags	4	4
@@ -411,6 +411,7 @@ spriteloaders	10	5
 spriteref	2	1
 spritereftable	10	8
 spriteresource	10	3
+startupprompt	1	0
 statedispatch	1	0
 statemgrbz	5	3
 statusbargamemenu	1	0
@@ -447,6 +448,7 @@ unknownclassarrays	41	10
 unknownclassincgruntzmgr	2	0
 userbaselink	10	0
 userlogic	65	28
+vehiclegruntsprites	1	0
 videoconfig	4	1
 voicesoundlist	1	0
 vtblforward	1	1
@@ -1227,7 +1229,7 @@ chatbox	?HitTest2@CChatBox@@QAEHXZ	100.0000	100.0000	3	6b8028b9870b	0x183230
 chatbox	?HitTest3@CChatBox@@QAEHXZ	100.0000	100.0000	1	297f2fc11ffe	0x1831d0
 chatbox	?HitTest4@CChatBox@@QAEHXZ	100.0000	100.0000	1	f3916b09ecac	0x1831f0
 chatbox	?Init@CChatBox@@QAEXXZ	100.0000	100.0000	1	ee723d15e54c	0xa0280
-chatbox	?OnFlag00000003@CChatBox@@QAEHXZ	100.0000	100.0000	1	7158fc3ec0a9	0x182d60
+chatbox	?OnFlag00000003@CChatBox@@QAEHXZ	100.0000	100.0000	2	1a6c5e42cfc2	0x182d60
 chatbox	?OnFlag00000100@CChatBox@@QAEHXZ	100.0000	100.0000	1	10ea0991314e	0x182d80
 chatbox	?OnFlag10000000@CChatBox@@QAEHXZ	100.0000	100.0000	1	7cc1756bc045	0x183130
 chatbox	?OnFlag20000000@CChatBox@@QAEHXZ	100.0000	100.0000	1	da225472fd8f	0x183150
@@ -1829,7 +1831,7 @@ engine_label_stubs	?LoadAttributes@CDroppedObjectShadow@@QAEXXZ	0.4444	0.4444	1	
 engine_label_stubs	?LoadAttributes@CTeleporter@@QAEXXZ	0.4274	0.4274	1	cpp:45e65336d4b5	0x41aa0
 engine_label_stubs	?LoadAttributes@CTimeBomb@@QAEXXZ	0.7246	0.7246	1	cpp:45e65336d4b5	0xe1e60
 engine_label_stubs	?LoadBootyCheatState@EngineLabelBacklog@@YGXHHH@Z	0.3788	0.3788	1	cpp:6bf52155264d	0x18830
-engine_label_stubs	?LoadByExt@CFileImage@@QAEHPAVCFileImageInfo@@PADHH@Z	99.8899	99.8899	1	cpp:590eddff1627	0x148940
+engine_label_stubs	?LoadByExt@CFileImage@@QAEHPAVCFileImageInfo@@PADHH@Z	100.0000	100.0000	1	cpp:590eddff1627	0x148940
 engine_label_stubs	?LoadCustomWorldInfo@EngineLabelBacklog@@YAHPAX@Z	100.0000	100.0000	1	cpp:aab6e5a6e511	0x3b7c0
 engine_label_stubs	?LoadDroppedObjectEffects@CDroppedObject@@QAEXXZ	0.6289	0.6289	1	cpp:e8a4cb0d5b2a	0xc7090
 engine_label_stubs	?LoadGruntCombatAnimations@CGrunt@ApiCallerStubs@@QAEXHHHHHHHH@Z	0.0777	0.0777	1	cpp:590eddff1627	0x597a0
@@ -1839,7 +1841,6 @@ engine_label_stubs	?LoadPickupSprites@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXH
 engine_label_stubs	?LoadProjectileEffects@CProjectile@@QAEXXZ	0.2165	0.2165	1	cpp:e8a4cb0d5b2a	0xdfd00
 engine_label_stubs	?LoadProjectileSprites@CProjectile@@QAEXHHHHHHH@Z	0.2183	0.2183	1	cpp:6bf52155264d	0xdf050
 engine_label_stubs	?LoadSounds@CSplashState@@QAEHHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xf9780
-engine_label_stubs	?LoadVehicleGruntSprites@EngineLabelBacklog@@YGXH@Z	0.3597	0.3597	1	cpp:6bf52155264d	0x50ce0
 engine_label_stubs	?LoadWarlordSprites@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXHH@Z	0.1675	0.1675	1	cpp:e8a4cb0d5b2a	0xd65d0
 engine_label_stubs	?LoadWave@WaveHost2_136ce0@ApiCallerStubs@@QAEHPAUWaveProbe_136ce0@2@PBDH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x136ce0
 engine_label_stubs	?LoadWave@WaveHost_136a30@ApiCallerStubs@@QAEHPBDHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x136a30
@@ -1882,7 +1883,6 @@ engine_label_stubs	?Show@BlitHost_0d00a0@ApiCallerStubs@@QAEXH@Z	100.0000	100.00
 engine_label_stubs	?Show@MsgHost_08ee70@ApiCallerStubs@@QAEHHH@Z	98.4815	98.4815	1	cpp:6bf52155264d	0x8ee70
 engine_label_stubs	?Shutdown@AilMgr_1384f0@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x1384f0
 engine_label_stubs	?Snapshot@PalCache_17cd90@ApiCallerStubs@@QAEXPAX@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x17cd90
-engine_label_stubs	?StartUpPrompt@EngineLabelBacklog@@YAXXZ	0.4950	0.4950	1	cpp:45e65336d4b5	0x1f9b0
 engine_label_stubs	?Stop@AilSeq@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x138e60
 engine_label_stubs	?Stub_01fd70@EngineLabelBacklog@@YAHPAD@Z	100.0000	100.0000	1	cpp:e8a4cb0d5b2a	0x1fd70
 engine_label_stubs	?Stub_0f90f0@EngineLabelBacklog@@YAHPAD@Z	100.0000	100.0000	1	cpp:e8a4cb0d5b2a	0xf90f0
@@ -3398,6 +3398,7 @@ spriteresource	?CreateSprite@CSpriteFactory@@QAEPAUCSprite@@HHHHPBDH@Z	94.1176	9
 spriteresource	?GetFrame@CSprite@@QAEHH@Z	100.0000	100.0000	1	48906c68982d	0x15cc30
 spriteresource	?InsertFrame@CSprite@@QAEPAUCFrameWorker@@PAXHH@Z	84.3836	84.3836	1	8e337ce61c66	0x151f00
 spriteresource	?LookupAnimSprite@CGruntAnimPlayer@@QAEHPBD@Z	73.0435	73.0435	1	07b112262249	0x150610
+startupprompt	?StartUpPrompt@@YAHPAUHWND__@@@Z	97.9951	97.9951	1	a3e252acbdce	0x1f9b0
 statedispatch	?StateDispatch@@YGHPAUCStateCtx@@HH@Z	32.4881	32.4881	1	59d826efce87	0x9b770
 statemgrbz	?Build@StateMgrBZ@@QAEHPAUSbzInputManager@@H@Z	94.7384	94.7384	3	80ed1d5c6cdf	0x383b0
 statemgrbz	?Flush@StateMgrBZ@@QAEHXZ	74.0612	74.0612	2	6dc0743b6fd8	0x385e0
@@ -3744,6 +3745,7 @@ userlogic	?SpawnTeleporter@CSecretTeleporterTrigger@@QAEHXZ	100.0000	100.0000	3	
 userlogic	?winapi_04d800_CopyRect@CUserLogic@@QAEHHHHHHHHHHHHH@Z	0.6786	0.6786	3	afc4a7cad8e5	0x4d800
 userlogic	?winapi_064540_PostMessageA@CUserLogic@@QAEHXZ	2.5974	2.5974	2	160449116f17	0x64540
 userlogic	?winapi_0ee800_IntersectRect_PtInRect@CUserLogic@@QAEHXZ	0.2653	0.2653	2	f2ccbcb9c820	0xee800
+vehiclegruntsprites	?LoadVehicleGruntSprites@CGruntCmdObj@@QAEHH@Z	37.2626	37.2626	1	9178be6d1f60	0x50ce0
 videoconfig	?GetResolutionCode@@YAHXZ	100.0000	100.0000	2	d5dadac49ea7	0x363a0
 videoconfig	?LoadVideoResolutionConfig@@YAXPAXHH@Z	97.2737	97.2737	8	e6f5fec6b5c4	0x36f30
 videoconfig	?SaveVideoCheckboxes@@YAXPAX@Z	99.5000	99.5000	1	3ee4b1c6c6fb	0x378c0

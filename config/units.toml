@@ -949,6 +949,20 @@ source = "src/Gruntz/BootyMessages.cpp"
 flags = "eh"
 
 [[unit]]
+# Launch CD-ROM / Spawn-Mode prompt (StartUpPrompt): two CString temps + the
+# BeginWaitCursor/EndWaitCursor scope -> /GX exception frame.
+unit = "startupprompt"
+source = "src/Gruntz/StartUpPrompt.cpp"
+flags = "eh"
+
+[[unit]]
+# LoadVehicleGruntSprites: 10-way vehicle-grunt sprite-set registrar with a
+# destructible CString name temp -> /GX exception frame.
+unit = "vehiclegruntsprites"
+source = "src/Gruntz/VehicleGruntSprites.cpp"
+flags = "eh"
+
+[[unit]]
 # LoadObject{Image,Sound,Anim}Resources trio (0x9a510/0x9a910/0x9ac20): the
 # OBJECTZ_ namespace asset reconcilers; a destructible local CObList -> /GX.
 unit = "loadobjectresources"
