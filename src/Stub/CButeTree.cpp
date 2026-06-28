@@ -14,7 +14,7 @@
 class CButeTree {
 public:
     void* Find(const char* key);
-    void Insert(const char* key, void* pNode);
+    void* Insert(const char* key, void* pNode);
 };
 
 // The global bute store instance the game-object ctors query for their "A" node
@@ -23,16 +23,6 @@ public:
 DATA(0x002bf620)
 extern CButeTree g_buteTree;
 
-// @confidence: high
-// @source: reloc-correlation (10 callers, unanimous)
-// @stub
-RVA(0x0016d190, 0x101)
-void* CButeTree::Find(const char*) {
-    return 0;
-}
-
-// @confidence: med
-// @source: reloc-correlation
-// @stub
-RVA(0x0016db90, 0x206)
-void CButeTree::Insert(const char*, void*) {}
+// Find (0x16d190) + Insert (0x16db90) are reconstructed in src/Bute/ButeTree.cpp
+// (the `butetree` unit). This file keeps only the shared CButeTree / g_buteTree
+// declarations the remaining Stub game-object ctors reference.

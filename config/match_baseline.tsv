@@ -48,6 +48,7 @@ butemgr	42	27
 butemgrparse	1	0
 butesectionctor	1	0
 butestoreclear	1	1
+butetree	3	1
 bzkinddispatch	1	0
 cactionarea	1	0
 cambientsound	4	3
@@ -195,7 +196,7 @@ ehfunclets	6	6
 engine_attributed	7	0
 engine_boundary	7	0
 engine_discovered	22	5
-engine_label_stubs	321	96
+engine_label_stubs	319	96
 engine_unmatched_lib	11	0
 engstr	3	1
 eyecandytypetags	4	4
@@ -783,6 +784,9 @@ butemgr	?SkipToTag@CButeMgr@@QAE_NXZ	78.1429	78.1429	2	672209f4feee	0x171160
 butemgrparse	?Parse@CButeMgr@@QAE_NVCString@@H@Z	98.8365	98.8365	1	9ce940813d71	0x3cc20
 butesectionctor	?Construct@CButeSection@@QAEPAV1@XZ	4.9342	4.9342	1	53fa6314a541	0x170210
 butestoreclear	?ClearRecursive@CButeStore@@QAEXH@Z	100.0000	100.0000	1	2c7ef99ca5ed	0x16e070
+butetree	?Find@CButeTree@@QAEPAXPBD@Z	90.6038	90.6038	1	241652afcec6	0x16d190
+butetree	?GetCallerRetAddr@@YAPAXXZ	100.0000	100.0000	1	754d005dde7b	0x16e0f0
+butetree	?Insert@CButeTree@@QAEPAXPBDPAX@Z	53.3041	53.3041	1	655c648f9e0b	0x16db90
 bzkinddispatch	?Dispatch@CBzKindDispatch@@QAEHH@Z	79.1379	79.1379	1	89b89a7bb1a2	0x37910
 cactionarea	??0CActionArea@@QAE@PAUCGameObject@@@Z	93.9057	93.9057	1	c13beac04fcc	0x7da0
 cambientsound	??1CAmbientSound@@QAE@XZ	100.0000	100.0000	1	56dbfa3599ca	0xb790
@@ -1795,7 +1799,6 @@ engine_label_stubs	?DrawDebugStats@EngineLabelBacklog@@YAXXZ	0.3390	0.3390	1	cpp
 engine_label_stubs	?DrawLabel@DrawHost2_164420@ApiCallerStubs@@QAEXPAUtagRECT@@PAD@Z	95.0000	95.0000	1	cpp:6bf52155264d	0x164420
 engine_label_stubs	?DrawSaveGameMenu@EngineLabelBacklog@@YAXXZ	0.3436	0.3436	1	cpp:45e65336d4b5	0xe3f40
 engine_label_stubs	?ErrorThunk_08dd80@CDirectDrawMgr@@QAEXXZ	5.0000	5.0000	1	cpp:45e65336d4b5	0x8dd80
-engine_label_stubs	?Find@CButeTree@@QAEPAXPBD@Z	1.8868	1.8868	1	cpp:0f6a941a1e75	0x16d190
 engine_label_stubs	?First@RezColl@@QAEPAURezNode@@XZ	11.1111	11.1111	1	cpp:2262ffc5f902	0x184ae0
 engine_label_stubs	?Flip@CoinHost_0da200@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:e1535087fe94	0xda200
 engine_label_stubs	?FormatGameInfoString@CGameInfo@@QAEHXZ	100.0000	100.0000	1	cpp:7e7ce1192d49	0x1183b0
@@ -1811,7 +1814,6 @@ engine_label_stubs	?Init@AilHost_138490@ApiCallerStubs@@QAEHHHH@Z	99.8077	99.807
 engine_label_stubs	?Init@Region_182ab0@ApiCallerStubs@@QAEHPAUTileSrcHost_182ab0@2@HPAUtagRECT@@HHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x182ab0
 engine_label_stubs	?Init@RezSync@@QAEXHH@Z	0.0562	0.0562	1	cpp:6bf52155264d	0x83450
 engine_label_stubs	?InitCFileIOMember@CGruntzMgr@@QAEXXZ	3.0303	3.0303	1	cpp:45e65336d4b5	0x8fea0
-engine_label_stubs	?Insert@CButeTree@@QAEXPBDPAX@Z	0.5155	0.5155	1	cpp:2262ffc5f902	0x16db90
 engine_label_stubs	?Key@CmdHost_014720@ApiCallerStubs@@QAEHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x14720
 engine_label_stubs	?Key@CmdHost_039440@ApiCallerStubs@@QAEHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x39440
 engine_label_stubs	?Key@CmdHost_0953f0@ApiCallerStubs@@QAEHHH@Z	100.0000	100.0000	1	cpp:e1535087fe94	0x953f0

@@ -616,6 +616,14 @@ source = "src/Bute/SymParser.cpp"
 flags = "eh"
 
 [[unit]]
+# CButeTree::Find/Insert - the string-keyed crit-bit (PATRICIA) trie. No
+# destructible locals -> /base (no /GX EH frame); strlen/strcmp/strcpy come from
+# /O2's /Oi intrinsics.
+unit = "butetree"
+source = "src/Bute/ButeTree.cpp"
+flags = "base"
+
+[[unit]]
 unit = "winapi"
 source = "src/Utils/WinAPI.cpp"
 flags = "eh"

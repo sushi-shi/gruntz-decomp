@@ -156,8 +156,9 @@ class CButeTree {
 public:
     // The shared find-by-key helper (__thiscall).
     void* Find(const char* key);
-    // Insert a key/value node (__thiscall).
-    void Insert(const char* key, void* pNode);
+    // Insert a key/value node (__thiscall). Returns the stored value (the retail
+    // body's trailing `mov eax,value`); callers discard it. Body in src/Bute/ButeTree.cpp.
+    void* Insert(const char* key, void* pNode);
     // Apply a callback to each matching node (__thiscall: push flag/ctx/fn,
     // callee-cleanup). Reloc-masked external/no-body.
     void Walk(void (*fn)(), void* ctx, i32 flag);
