@@ -188,8 +188,8 @@ SoundDevice::SoundDevice() {
     BuildVolumeTable();
     m_80 = 0;
     m_primaryBuffer = 0;
-    m_88 = 0;
-    m_8c = 0;
+    m_coopLevel = 0;
+    m_bufferFlags = 0;
     m_force8Bit = 0;
 }
 

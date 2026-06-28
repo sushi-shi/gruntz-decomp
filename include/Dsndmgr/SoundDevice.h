@@ -107,8 +107,8 @@ public:
     char m_pad7c[0x80 - 0x7c];
     i32 m_80;                             // +0x80
     IDirectSoundBufferZ* m_primaryBuffer; // +0x84
-    i32 m_88;                             // +0x88
-    i32 m_8c;                             // +0x8c
+    i32 m_coopLevel;                      // +0x88  cooperative level
+    u32 m_bufferFlags;                    // +0x8c  buffer-desc flags
     i32 m_force8Bit;                      // +0x90
     void* m_94;                           // +0x94  cached-sample list/map head
 };
