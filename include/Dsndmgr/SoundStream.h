@@ -29,11 +29,11 @@ class SoundStream;
 struct StreamSource {
     void* m_vtbl; // +0x00
     char m_pad04[0x0c - 0x04];
-    u32 m_0c; // +0x0c  source length
+    u32 m_length; // +0x0c  source length
     char m_pad10[0x18 - 0x10];
-    u32 m_18; // +0x18  read cursor / file position
+    u32 m_position; // +0x18  read cursor / file position
 
-    i32 Seek(i32 pos);                  // 0x139ae0  m_18 = pos
+    i32 Seek(i32 pos);                  // 0x139ae0  m_position = pos
     i32 Read(void* buf, i32 n, i32 at); // 0x139af0  read n bytes (at == -1: current)
 };
 
@@ -69,17 +69,17 @@ struct StreamVoice {
     void* m_pad08;                // +0x08
     IDirectSoundBufferZ* m_buf0c; // +0x0c  the IDirectSoundBuffer to release
     char m_pad10[0x28 - 0x10];
-    u32 m_28; // +0x28  duration-ms (= m_2c*1000/m_3c)
-    u32 m_2c; // +0x2c  byte length
+    u32 m_durationMs; // +0x28  duration-ms (= m_byteLength*1000/m_avgBytesDivisor)
+    u32 m_byteLength; // +0x2c  byte length
     char m_pad30[0x38 - 0x30];
-    u32 m_38; // +0x38  avg-bytes-per-sec
-    u32 m_3c; // +0x3c  avg-bytes-per-sec (divisor)
+    u32 m_avgBytesPerSec;  // +0x38  avg-bytes-per-sec
+    u32 m_avgBytesDivisor; // +0x3c  avg-bytes-per-sec (divisor)
     char m_pad40[0x6c - 0x40];
     StreamFeeder m_feeder; // +0x6c  embedded streaming feeder sub-object
 
     // ctor 0x1375b0(IDirectSoundBuffer* buf, SoundStream* owner, int a, int b).
     StreamVoice(IDirectSoundBufferZ* buf, SoundStream* owner, i32 a, i32 b);
-    void ComputeDuration(); // 0x1359a0  m_28 = m_2c*1000/m_3c
+    void ComputeDuration(); // 0x1359a0  m_durationMs = m_byteLength*1000/m_avgBytesDivisor
 };
 
 // WaveFormatX now lives in <Dsndmgr/SoundDevice.h> (shared by the device's
@@ -87,9 +87,9 @@ struct StreamVoice {
 
 class SoundStream : public SoundDevice {
 public:
-    SoundStream();             // 0x1376d0  base ctor + zero m_94/m_98 + stamp 0x5ef6ec
+    SoundStream();              // 0x1376d0  base ctor + zero m_94/m_98 + stamp 0x5ef6ec
     void* ScalarDtor(i32 flag); // 0x1376f0  ??_G: ~SoundStream then operator delete
-    ~SoundStream(); // 0x137710  restamp vptr (0x5ef6ec) then ~SoundDevice
+    ~SoundStream();             // 0x137710  restamp vptr (0x5ef6ec) then ~SoundDevice
     StreamVoice* CreateStreamBuffer(WaveFormatX* fmt, u32 bytes, i32 a, i32 b, i32 c);
     // 0x137780
     StreamVoice* OpenStream(StreamSource* src, i32 p1, i32 p2, i32 p3, i32 p4, i32 p5);

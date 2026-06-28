@@ -148,9 +148,9 @@ StreamVoice* SoundStream::CreateStreamBuffer(WaveFormatX* fmt, u32 bytes, i32 a,
         voice = new (voice) StreamVoice(out, this, b, c);
     }
     ((StreamList*)&m_94)->Insert(voice ? &voice->m_link : 0);
-    voice->m_38 = fmt->nAvgBytesPerSec;
-    voice->m_3c = fmt->nAvgBytesPerSec;
-    voice->m_2c = bytes;
+    voice->m_avgBytesPerSec = fmt->nAvgBytesPerSec;
+    voice->m_avgBytesDivisor = fmt->nAvgBytesPerSec;
+    voice->m_byteLength = bytes;
     voice->ComputeDuration();
     return voice;
 }
@@ -246,17 +246,17 @@ i32 SoundStream::ParseWave(
         return 0;
     }
 
-    u32 end = src->m_18 + riffSize - 4;
-    if (end > src->m_0c) {
-        end = src->m_0c;
+    u32 end = src->m_position + riffSize - 4;
+    if (end > src->m_length) {
+        end = src->m_length;
     }
-    while (src->m_18 < end) {
+    while (src->m_position < end) {
         u32 chunkId;
         u32 chunkSize;
         src->Read(&chunkId, 4, -1);
         src->Read(&chunkSize, 4, -1);
         if (chunkId == 0x20746d66) {
-            i32 next = src->m_18 + chunkSize;
+            i32 next = src->m_position + chunkSize;
             i32 n = chunkSize;
             if (n >= 0x12) {
                 n = 0x12;
@@ -265,15 +265,15 @@ i32 SoundStream::ParseWave(
             src->Seek(next);
             gotFmt = 1;
         } else if (chunkId == 0x61746164) {
-            *outDataOff = src->m_18;
+            *outDataOff = src->m_position;
             *outDataLen = chunkSize;
             gotData = 1;
         }
         if (gotFmt && gotData) {
             return 1;
         }
-        if ((src->m_18 & 1) == 1) {
-            src->Seek(src->m_18 + 1);
+        if ((src->m_position & 1) == 1) {
+            src->Seek(src->m_position + 1);
         }
     }
     return 0;
