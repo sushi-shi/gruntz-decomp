@@ -27,3 +27,116 @@ RVA(0x0010ea00, 0x15)
 void CCheckpointTrigger::InitActReg() {
     g_checkpointActReg.Construct(2000, 2010);
 }
+
+#include <Bute/ButeMgr.h> // CButeTree (g_buteTree Find)
+#include <string.h>       // memset (inlined rep stosd)
+
+extern CButeTree g_buteTree; // ?g_buteTree@@3VCButeTree@@A @0x6bf620
+DATA(0x0020a454)
+extern char s_actKeyA[]; // "A"
+
+// The most-derived CCheckpointTrigger vftable (0x5e7ebc); the ctor stamps it by
+// address (reloc-masked DATA store) - a transitional manual stamp while the
+// class's virtuals live in other TUs.
+DATA(0x001e7ebc)
+extern void* g_checkpointVtbl;
+
+// The bound CGameObject (m_10) viewed by the ctor: +0x08 flag word, +0x198 layer
+// (its +0x1c base offset), +0x60 screen Y / +0x74 z-key, and the 15-dword captured
+// checkpoint state spread over the bute-config blocks at +0x134..+0x160 (12) plus
+// +0x64..+0x6c (3). Several of those blocks carry a 0x80000000 sentinel the ctor
+// clamps to 0 before capturing. Only the touched offsets are modeled.
+struct ChkLayer {
+    char m_pad00[0x1c];
+    i32 m_1c; // +0x1c
+};
+struct ChkObj {
+    char m_pad00[0x08];
+    i32 m_08; // +0x08  flag word
+    char m_pad0c[0x60 - 0x0c];
+    i32 m_60; // +0x60  screen Y
+    i32 m_64; // +0x64
+    i32 m_68; // +0x68
+    i32 m_6c; // +0x6c
+    char m_pad70[0x74 - 0x70];
+    i32 m_74; // +0x74  z-key
+    char m_pad78[0x134 - 0x78];
+    i32 m_134; // +0x134
+    i32 m_138; // +0x138
+    i32 m_13c; // +0x13c
+    i32 m_140; // +0x140
+    i32 m_144; // +0x144
+    i32 m_148; // +0x148
+    i32 m_14c; // +0x14c
+    i32 m_150; // +0x150
+    i32 m_154; // +0x154
+    i32 m_158; // +0x158
+    i32 m_15c; // +0x15c
+    i32 m_160; // +0x160
+    char m_pad164[0x198 - 0x164];
+    ChkLayer* m_198; // +0x198  layer
+};
+
+// CCheckpointTrigger::CCheckpointTrigger(CGameObject*) @0x10ee20 - the 1-arg leaf
+// ctor: the standard CUserLogic(obj) init (folded inline) plus the checkpoint tail
+// - stamp the leaf vftable, cache the "A" bute node, raise the bound object's two
+// logic bits, recompute its z-key from the layer base + screen Y, then capture the
+// checkpoint state: zero the 15-dword block, clamp the four 0x80000000 sentinels to
+// 0, copy the 12 config dwords (+0x134..+0x160) and 3 more (+0x64..+0x6c) into the
+// leaf, and find the first empty slot. Constructs a throwing CUserBaseLink, so MSVC
+// emits the /GX EH frame.
+//
+// @early-stop
+// EH-state-numbering wall (docs/patterns/eh-state-numbering-base.md): the body is
+// byte-faithful (the CUserLogic init, the leaf vptr stamp, the "A" cache, the two
+// flag RMWs, the z-key recompute, the memset, the four sentinel clamps, the 15-dword
+// capture, the first-empty find loop); the residue is this ctor's own __ehfuncinfo
+// state numbering + the zero-register-pinning callee-saved choice (the shared
+// CUserLogic-init wall). The SAME plateau as CTimeBomb / the other bute ctors; not
+// source-steerable. Parked for the final sweep.
+RVA(0x0010ee20, 0x27d)
+CCheckpointTrigger::CCheckpointTrigger(CGameObject* obj) : CUserLogic(obj) {
+    *(void**)this = &g_checkpointVtbl;
+    m_30 = m_14->m_1c;
+    m_14->m_1c = g_buteTree.Find(s_actKeyA);
+    m_38->m_08 |= 2;
+    m_38->m_08 |= 1;
+    i32 zk = ((ChkObj*)m_10)->m_198->m_1c + ((ChkObj*)m_10)->m_60 + 0x186a0;
+    if (((ChkObj*)m_10)->m_74 != zk) {
+        ((ChkObj*)m_10)->m_74 = zk;
+        ((ChkObj*)m_10)->m_08 |= 0x20000;
+    }
+    memset(m_54, 0, sizeof(m_54));
+    if (((ChkObj*)m_10)->m_134 == 0x80000000) {
+        ((ChkObj*)m_10)->m_134 = 0;
+    }
+    if (((ChkObj*)m_10)->m_144 == 0x80000000) {
+        ((ChkObj*)m_10)->m_144 = 0;
+    }
+    if (((ChkObj*)m_10)->m_154 == 0x80000000) {
+        ((ChkObj*)m_10)->m_154 = 0;
+    }
+    if (((ChkObj*)m_10)->m_64 == 0x80000000) {
+        ((ChkObj*)m_10)->m_64 = 0;
+    }
+    m_54[0] = ((ChkObj*)m_10)->m_134;
+    m_54[1] = ((ChkObj*)m_10)->m_138;
+    m_54[2] = ((ChkObj*)m_10)->m_13c;
+    m_54[3] = ((ChkObj*)m_10)->m_140;
+    m_54[4] = ((ChkObj*)m_10)->m_144;
+    m_54[5] = ((ChkObj*)m_10)->m_148;
+    m_54[6] = ((ChkObj*)m_10)->m_14c;
+    m_54[7] = ((ChkObj*)m_10)->m_150;
+    m_54[8] = ((ChkObj*)m_10)->m_154;
+    m_54[9] = ((ChkObj*)m_10)->m_158;
+    m_54[10] = ((ChkObj*)m_10)->m_15c;
+    m_54[11] = ((ChkObj*)m_10)->m_160;
+    m_54[12] = ((ChkObj*)m_10)->m_64;
+    m_54[13] = ((ChkObj*)m_10)->m_68;
+    m_54[14] = ((ChkObj*)m_10)->m_6c;
+    for (m_90 = 0; m_90 < 15; m_90++) {
+        if (m_54[m_90] == 0) {
+            break;
+        }
+    }
+}

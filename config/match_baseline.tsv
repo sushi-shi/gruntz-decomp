@@ -61,7 +61,7 @@ cattract	15	8
 cbehindcandy	2	2
 cbehindcandyani	4	3
 cbrickz	1	0
-ccheckpointtrigger	2	2
+ccheckpointtrigger	3	2
 ccursorsnapsprite	3	2
 cddpagemgr	2	1
 cddrawchildgroup	9	5
@@ -87,7 +87,7 @@ cdonothing	3	2
 cdonothingnormaldtor	1	1
 cdroppedobject	5	3
 cdroppedobjectshadow	2	1
-cexittrigger	2	2
+cexittrigger	3	2
 cexplosion	2	1
 ceyecandy	2	2
 ceyecandyani	1	0
@@ -177,12 +177,12 @@ cstatusbarmgr	2	1
 cstatusbarspriteacts	3	1
 cteleporter	3	2
 ctilescan	1	0
-ctimebomb	4	2
+ctimebomb	5	2
 ctoobspikez	5	4
 ctoypeek	1	0
 customworlddialog	1	0
 customwwdpath	1	1
-cvoicetrigger	4	3
+cvoicetrigger	5	3
 cwaypoint	2	1
 cwormholeacts	2	1
 cwwdobjmgr	1	0
@@ -199,7 +199,7 @@ dsoundvoice	2	1
 ehfunclets	6	6
 engine_attributed	7	0
 engine_discovered	22	5
-engine_label_stubs	305	98
+engine_label_stubs	301	98
 engine_unmatched_lib	11	0
 engstr	3	1
 eyecandytypetags	4	4
@@ -845,6 +845,7 @@ cbehindcandyani	?AdvanceAnim@CBehindCandyAni@@QAEHXZ	100.0000	100.0000	1	4d7ee7a
 cbehindcandyani	?InitActReg@CBehindCandyAni@@SAXXZ	100.0000	100.0000	1	0d9455b8c944	0xad7d0
 cbehindcandyani	?RegisterActs@CBehindCandyAni@@SAXXZ	92.9130	92.9130	1	29528d9538e4	0xad9b0
 cbrickz	??0CBrickz@@QAE@PAUCGameObject@@@Z	91.6759	91.6759	1	86c4f819f256	0x10e800
+ccheckpointtrigger	??0CCheckpointTrigger@@QAE@PAUCGameObject@@@Z	87.2590	87.2590	1	9b9708bcda3f	0x10ee20
 ccheckpointtrigger	??1CCheckpointTrigger@@UAE@XZ	100.0000	100.0000	1	6af861462cfe	0x11480
 ccheckpointtrigger	?InitActReg@CCheckpointTrigger@@SAXXZ	100.0000	100.0000	1	b1a3bf2c0848	0x10ea00
 ccursorsnapsprite	??0CCursorSnapSprite@@QAE@PAUCGameObject@@@Z	96.0396	96.0396	1	637560376c2b	0x3a340
@@ -1116,6 +1117,7 @@ cdroppedobject	?RegisterActs@CDroppedObject@@SAXXZ	78.5473	78.5473	1	ddf90768718
 cdroppedobject	?RegisterRange@CDroppedObject@@SAXXZ	100.0000	100.0000	1	f8dddf603c11	0xc6b50
 cdroppedobjectshadow	??0CDroppedObjectShadow@@QAE@PAUCGameObject@@@Z	85.0841	85.0841	1	1fd04e6fbc9e	0xc7490
 cdroppedobjectshadow	??1CDroppedObjectShadow@@UAE@XZ	100.0000	100.0000	1	590f3131b16f	0x12670
+cexittrigger	??0CExitTrigger@@QAE@PAUCGameObject@@@Z	89.3461	89.3461	1	7fb8276496aa	0x3ecf0
 cexittrigger	??1CExitTrigger@@UAE@XZ	100.0000	100.0000	1	db4d24e6c64d	0x108c0
 cexittrigger	?GetTypeTag@CExitTrigger@@QAEHXZ	100.0000	100.0000	1	c68ad601ed76	0x10870
 cexplosion	??0CExplosion@@QAE@PAUCGameObject@@@Z	91.6837	91.6837	1	9ef78df53e88	0x470e0
@@ -1537,6 +1539,7 @@ ctilescan	?Scan@CTileScan@@QAEHPAUCScanArg@@@Z	71.2269	71.2269	1	f98f3f2ec20a	0x
 ctimebomb	??0CTimeBomb@@QAE@PAUCGameObject@@@Z	83.4645	83.4645	1	ab7c2d306f6d	0xe1b90
 ctimebomb	??1CTimeBomb@@UAE@XZ	100.0000	100.0000	1	82a73e5a479d	0x12a70
 ctimebomb	?FireActivation@CTimeBomb@@QAEXH@Z	100.0000	100.0000	1	f49df59995b0	0xe1830
+ctimebomb	?LoadAttributes@CTimeBomb@@QAEHXZ	90.5000	90.5000	1	5bb17b1d214f	0xe1e60
 ctimebomb	?RegisterActs@CTimeBomb@@QAEXXZ	92.9130	92.9130	1	908d9bceacb1	0xe1990
 ctoobspikez	??1CToobSpikez@@UAE@XZ	100.0000	100.0000	1	550e0ced02c4	0x12c60
 ctoobspikez	?FireActivation@CToobSpikez@@QAEXH@Z	100.0000	100.0000	1	44f507f426d2	0x114860
@@ -1546,6 +1549,7 @@ ctoobspikez	?ToobSpikezLogic@@YAHPAUCGameObjLogic@@@Z	100.0000	100.0000	1	7f7f1d
 ctoypeek	??0CToyPeek@@QAE@PAUCGameObject@@@Z	86.4352	86.4352	1	5a92518e8b9e	0x98140
 customworlddialog	?RunCustomWorldDialog@@YA?AVCString@@HPAV1@@Z	72.6905	72.6905	1	28dacb60a137	0x3ad90
 customwwdpath	?BuildCustomWwdPath@@YA?AVCString@@V1@@Z	100.0000	100.0000	1	5fdf7d205a8d	0x3b940
+cvoicetrigger	??0CVoiceTrigger@@QAE@PAUCGameObject@@@Z	88.5833	88.5833	1	9e5b444f9cfd	0x119b50
 cvoicetrigger	??1CVoiceTrigger@@UAE@XZ	100.0000	100.0000	1	8939b1cb3841	0x135a0
 cvoicetrigger	?InitActReg@CVoiceTrigger@@SAXXZ	100.0000	100.0000	1	a1ec03ca782c	0x11a320
 cvoicetrigger	?RegisterActs@CVoiceTrigger@@QAEXXZ	92.9130	92.9130	1	eb83cede4e29	0x11a500
@@ -1738,9 +1742,7 @@ engine_discovered	?ClassUnknown_55_016460@ClassUnknown_55@@QAEXXZ	5.5556	5.5556	
 engine_label_stubs	??0CBoomerang@@QAE@H@Z	97.3077	97.3077	1	cpp:6bf52155264d	0xe0650
 engine_label_stubs	??0CButeNodeBase@@QAE@PAXH@Z	59.5806	59.5806	1	cpp:2262ffc5f902	0x16dff0
 engine_label_stubs	??0CButeNodeEntry@@QAE@HPAX@Z	100.0000	100.0000	1	cpp:590eddff1627	0x16df70
-engine_label_stubs	??0CCheckpointTrigger@@QAE@H@Z	1.3554	1.3554	1	cpp:6bf52155264d	0x10ee20
 engine_label_stubs	??0CDoNothingNormal@@QAE@XZ	2.4194	2.4194	1	cpp:45e65336d4b5	0xa9e00
-engine_label_stubs	??0CExitTrigger@@QAE@H@Z	0.9890	0.9890	1	cpp:6bf52155264d	0x3ecf0
 engine_label_stubs	??0CInGameIcon@@QAE@H@Z	0.1063	0.0981	1	cpp:6bf52155264d	0x95b10
 engine_label_stubs	??0MallocCtor_135b10@@QAE@XZ	2.5000	2.5000	1	cpp:e8a4cb0d5b2a	0x135b10
 engine_label_stubs	??0MallocCtor_136180@@QAE@XZ	2.0513	2.0513	1	cpp:e8a4cb0d5b2a	0x136180
@@ -1791,7 +1793,6 @@ engine_label_stubs	?CGruntzCommand_024430@CGruntzCommand@@QAEXXZ	50.0000	50.0000
 engine_label_stubs	?CProjectile_0dec60@CProjectile@@QAEXH@Z	0.6329	0.6329	1	cpp:6bf52155264d	0xdec60
 engine_label_stubs	?CUserLogic_0138d0@CUserLogic@@QAEXXZ	5.0000	5.0000	1	cpp:45e65336d4b5	0x138d0
 engine_label_stubs	?CUserLogic_058cd0@CUserLogic@@QAEXH@Z	0.8929	0.8929	1	cpp:6bf52155264d	0x58cd0
-engine_label_stubs	?CVoiceTrigger_119b50@CVoiceTrigger@@QAEXH@Z	0.8333	0.8333	1	cpp:6bf52155264d	0x119b50
 engine_label_stubs	?Cancel@CmdHost_0de590@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:6bf52155264d	0xde590
 engine_label_stubs	?Check@KeyHost_01f8a0@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x1f8a0
 engine_label_stubs	?Cleanup@GdiOwner_175c90@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x175c90
@@ -1829,7 +1830,6 @@ engine_label_stubs	?Load@StrHost_0b7ec0@ApiCallerStubs@@QAEXHH@Z	100.0000	100.00
 engine_label_stubs	?LoadAttributes@CBrickz@@QAEXHH@Z	0.1490	0.1490	1	cpp:6bf52155264d	0x810f0
 engine_label_stubs	?LoadAttributes@CDroppedObjectShadow@@QAEXXZ	0.4444	0.4444	1	cpp:45e65336d4b5	0xc62e0
 engine_label_stubs	?LoadAttributes@CTeleporter@@QAEXXZ	0.4274	0.4274	1	cpp:45e65336d4b5	0x41aa0
-engine_label_stubs	?LoadAttributes@CTimeBomb@@QAEXXZ	0.7246	0.7246	1	cpp:45e65336d4b5	0xe1e60
 engine_label_stubs	?LoadBootyCheatState@EngineLabelBacklog@@YGXHHH@Z	0.3788	0.3788	1	cpp:6bf52155264d	0x18830
 engine_label_stubs	?LoadByExt@CFileImage@@QAEHPAVCFileImageInfo@@PADHH@Z	100.0000	100.0000	1	cpp:590eddff1627	0x148940
 engine_label_stubs	?LoadCustomWorldInfo@EngineLabelBacklog@@YAHPAX@Z	100.0000	100.0000	1	cpp:aab6e5a6e511	0x3b7c0

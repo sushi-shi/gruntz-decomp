@@ -15,11 +15,41 @@
 
 class CVoiceTrigger : public CUserLogic {
 public:
-    static void InitActReg(); // 0x11a320 (constructs g_vtrigColl @0x651500)
-    void RegisterActs();      // 0x11a500 (binds Tick to the activation key "A")
-    i32 Tick();               // 0x11a700
-    ~CVoiceTrigger();         // 0x0135a0 (folds the CUserLogic teardown)
+    CVoiceTrigger(CGameObject* obj); // 0x119b50 (1-arg leaf ctor)
+    static void InitActReg();        // 0x11a320 (constructs g_vtrigColl @0x651500)
+    void RegisterActs();             // 0x11a500 (binds Tick to the activation key "A")
+    i32 Tick();                      // 0x11a700
+    ~CVoiceTrigger();                // 0x0135a0 (folds the CUserLogic teardown)
 };
+
+// The bound CGameObject (m_10/m_38) viewed by the ctor: the tile-config bound
+// counts at +0x134..+0x140 and the derived screen-rect bounds at +0x144..+0x150
+// (the SAME shape CExitTrigger/CCheckpointTrigger seed). +0x08 flag word, +0x40
+// pending bit. Only the touched offsets are modeled.
+struct VTrigCtorObj {
+    char m_pad00[0x08];
+    i32 m_08; // +0x08  flag word
+    char m_pad0c[0x40 - 0x0c];
+    i32 m_40; // +0x40  pending bit
+    char m_pad44[0x5c - 0x44];
+    i32 m_5c; // +0x5c  screen X
+    i32 m_60; // +0x60  screen Y
+    char m_pad64[0x134 - 0x64];
+    i32 m_134; // +0x134  left tile span
+    i32 m_138; // +0x138  top tile span
+    i32 m_13c; // +0x13c  right tile span
+    i32 m_140; // +0x140  bottom tile span
+    i32 m_144; // +0x144  derived left bound
+    i32 m_148; // +0x148  derived top bound
+    i32 m_14c; // +0x14c  derived right bound
+    i32 m_150; // +0x150  derived bottom bound
+};
+
+// The most-derived CVoiceTrigger vftable (0x5e885c); the ctor stamps it by address
+// (reloc-masked DATA store) - a transitional manual stamp while the class's
+// virtuals live in other TUs.
+DATA(0x001e885c)
+extern void* g_voiceTriggerVtbl;
 
 // ---------------------------------------------------------------------------
 // The activation registry CVoiceTrigger::RegisterActs (0x11a500) binds into - the
@@ -201,6 +231,36 @@ extern "C" i32 g_644c54;
 // ~CSecretTeleporterTrigger @0x010ab0; the empty body is enough for cl.
 RVA(0x000135a0, 0x44)
 CVoiceTrigger::~CVoiceTrigger() {}
+
+// CVoiceTrigger::CVoiceTrigger(CGameObject*) @0x119b50 - the 1-arg leaf ctor: the
+// standard CUserLogic(obj) init (folded inline) plus the voice-trigger tail -
+// stamp the leaf vftable, raise the bound object's logic + pending bits, cache the
+// "A" bute node, snap the bound object's screen position to the 0x20 tile grid,
+// then derive the on-screen probe rect from the per-side tile spans (m_134..m_140).
+// Constructs a throwing CUserBaseLink, so MSVC emits the /GX EH frame.
+//
+// @early-stop
+// EH-state-numbering wall (docs/patterns/eh-state-numbering-base.md): the body is
+// byte-faithful (the CUserLogic init, the leaf vptr stamp, the two flag RMWs, the
+// "A" cache, the two tile snaps, the four rect derivations); the residue is this
+// ctor's own __ehfuncinfo state numbering + the leaf vptr-restamp scheduling
+// position (docs/patterns/eh-ctor-vptr-restamp-position.md) + the `and al,0xe0`
+// byte-AND codegen pick. The SAME plateau as CTimeBomb / the other bute ctors; not
+// source-steerable. Parked for the final sweep.
+RVA(0x00119b50, 0x1ce)
+CVoiceTrigger::CVoiceTrigger(CGameObject* obj) : CUserLogic(obj) {
+    *(void**)this = &g_voiceTriggerVtbl;
+    ((VTrigCtorObj*)m_38)->m_08 |= 2;
+    ((VTrigCtorObj*)m_38)->m_40 |= 1;
+    m_30 = m_14->m_1c;
+    m_14->m_1c = g_buteTree.Find(s_actKeyA);
+    ((VTrigCtorObj*)m_10)->m_5c = (((VTrigCtorObj*)m_10)->m_5c & ~0x1f) + 0x10;
+    ((VTrigCtorObj*)m_10)->m_60 = (((VTrigCtorObj*)m_10)->m_60 & ~0x1f) + 0x10;
+    ((VTrigCtorObj*)m_10)->m_144 = ((VTrigCtorObj*)m_10)->m_5c - (((VTrigCtorObj*)m_10)->m_134 << 5) - 7;
+    ((VTrigCtorObj*)m_10)->m_14c = ((VTrigCtorObj*)m_10)->m_5c + (((VTrigCtorObj*)m_10)->m_13c << 5) + 7;
+    ((VTrigCtorObj*)m_10)->m_148 = ((VTrigCtorObj*)m_10)->m_60 - (((VTrigCtorObj*)m_10)->m_138 << 5) - 7;
+    ((VTrigCtorObj*)m_10)->m_150 = ((VTrigCtorObj*)m_10)->m_60 + (((VTrigCtorObj*)m_10)->m_140 << 5) + 7;
+}
 
 // CVoiceTrigger::InitActReg @0x11a320 - construct the trigger's OWN activation-
 // coordinate registry singleton (g_vtrigColl @0x651500) over the fixed range

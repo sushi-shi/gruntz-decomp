@@ -181,9 +181,17 @@ struct TBombGrid {
     i32 m_c;    // +0x0c  width  (col bound)
     i32 m_10;   // +0x10  height (row bound)
 };
+// The registry's tile-manager (g_gameReg->m_68): the per-frame detonate path
+// posts the bomb's tile event to it via NotifyMoveAt (thunk 0x2fb3 -> 0x7b330,
+// 4 args). Modeled NO-body so the call reloc-masks.
+struct TBombTileMgr {
+    void NotifyMoveAt(i32 px, i32 py, i32 a, i32 b); // 0x7b330
+};
 struct TBombGameReg {
-    char m_pad00[0x70];
-    TBombGrid* m_70; // +0x70
+    char m_pad00[0x68];
+    TBombTileMgr* m_68;        // +0x68  tile-manager (detonate NotifyMoveAt)
+    char m_pad6c[0x70 - 0x6c]; // +0x6c
+    TBombGrid* m_70;           // +0x70
 };
 DATA(0x0024556c)
 extern TBombGameReg* g_gameReg;
@@ -285,4 +293,82 @@ void CTimeBomb::RegisterActs() {
         g_nextActId++;
     }
     *(void**)TBombLookup(id) = (void*)&TBombLogic_e1e60;
+}
+
+// The +0x1a0 animation sub-mgr the per-frame step advances each draw-delta
+// (Advance 0x15c360, __thiscall ret 4) - the SAME engine sink CTeleporter::Begin
+// drives. The draw-delta mirror (g_6bf3bc) is consumed by the advance.
+struct TBombAnimSink {
+    void Advance(u32 ctx); // 0x15c360
+};
+DATA(0x002bf3bc)
+extern "C" u32 g_6bf3bc;
+
+// The collision-grid cell lookup the per-frame step folds in three times: the
+// initial state read (out-of-bounds reads as 1) and the two detonate-path
+// clears. Same grid shape the ctor marks; the bounds compares are UNSIGNED.
+static inline i32 TBombGridCell(CGameObject* obj) {
+    TBombGrid* g = g_gameReg->m_70;
+    i32 cx = obj->m_5c >> 5;
+    i32 cy = obj->m_60 >> 5;
+    if ((u32)cx < (u32)g->m_c && (u32)cy < (u32)g->m_10) {
+        char* row = g->m_8[cy];
+        return *(i32*)(row + cx * 0x1c);
+    }
+    return 1;
+}
+static inline void TBombGridClear(CGameObject* obj) {
+    TBombGrid* g = g_gameReg->m_70;
+    i32 cx = obj->m_5c >> 5;
+    i32 cy = obj->m_60 >> 5;
+    if ((u32)cx < (u32)g->m_c && (u32)cy < (u32)g->m_10) {
+        char* row = g->m_8[cy];
+        *(i32*)(row + cx * 0x1c) &= ~0x1000000;
+    }
+}
+
+// CTimeBomb::LoadAttributes @0x0e1e60 - the bomb's per-frame logic step. Read the
+// bomb's tile state; if it sits under a blocking/hazard cell, raise m_38's pending
+// flag, clear the cell's owner bit, and bail. Otherwise advance the anim sink and
+// gate on the 64-bit running-clock timer (m_58/m_5c base vs m_60/m_64 duration);
+// once it expires, either re-arm the FAST phase (m_54==0 -> apply GAME_TIMEBOMBFAST,
+// reload the Projectile/TimeBombFastTime duration) or, on the second expiry
+// (m_54!=0), detonate: raise m_38's flag, clear the cell, and post the tile event
+// to the registry's tile-manager (NotifyMoveAt). Returns 0 on every path.
+//
+// @early-stop
+// regalloc/scheduling wall (~90.5%, docs/patterns/zero-register-pinning.md +
+// reread-member-view-pointer.md): the body is byte-faithful - the grid lookup,
+// the `(cell&0x939)||(cell&2)` split test, the 64-bit clock-elapsed compare, the
+// FAST re-arm bute read, and both detonate blocks all match. The residue is the
+// coin-flip that pins the bound object (m_10) in eax vs ecx, which cascades into
+// the screen-coord load order at the three inlined grid sites; plus the i64
+// jl/jg branch-emission order and the NotifyMoveAt arg-push schedule. Not
+// source-steerable (cy-first reordering regressed it). Parked for the final sweep.
+RVA(0x000e1e60, 0x1ac)
+i32 CTimeBomb::LoadAttributes() {
+    i32 cell = TBombGridCell(m_10);
+    if ((cell & 0x939) || (cell & 2)) {
+        m_38->m_08 |= 0x10000;
+        TBombGridClear(m_10);
+        return 0;
+    }
+    ((TBombAnimSink*)((char*)m_38 + 0x1a0))->Advance(g_6bf3bc);
+    if ((i64)g_645588 - *(i64*)&m_58 < *(i64*)&m_60) {
+        return 0;
+    }
+    if (m_54 == 0) {
+        m_40 = m_38->m_1b4;
+        m_38->ApplyLookupGeometry("GAME_TIMEBOMBFAST", 0);
+        m_60 = (i32)g_buteMgr.GetDwordDef("Projectile", "TimeBombFastTime", 0x3e8);
+        m_64 = 0;
+        m_58 = (i32)g_645588;
+        m_5c = 0;
+        m_54 = 1;
+        return 0;
+    }
+    m_38->m_08 |= 0x10000;
+    TBombGridClear(m_10);
+    g_gameReg->m_68->NotifyMoveAt(m_10->m_5c, m_10->m_60, m_10->m_124, 1);
+    return 0;
 }
