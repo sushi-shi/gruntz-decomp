@@ -17,55 +17,54 @@
 // ===========================================================================
 // CenterOnGroup (0x7cf40)
 // ===========================================================================
-// The view-centre helper reached as g_gameReg->m_2c->Center(x, y) (0x2e28 thunk).
+// The view-centre helper reached from the game registry.
 struct CCenterTarget {
     i32 Center(i32 x, i32 y); // 0x2e28
 };
-// The map dimensions: gameReg->m_30->m_24->m_5c -> {width @0x30, height @0x34}.
 struct CMapDims {
     char m_pad00[0x30];
-    i32 m_30; // +0x30 width
-    i32 m_34; // +0x34 height
+    i32 m_width;  // +0x30
+    i32 m_height; // +0x34
 };
 struct CMapHolderB {
     char m_pad00[0x5c];
-    CMapDims* m_5c; // +0x5c
+    CMapDims* m_dims; // +0x5c
 };
 struct CMapHolderA {
     char m_pad00[0x24];
-    CMapHolderB* m_24; // +0x24
+    CMapHolderB* m_mapHolder; // +0x24
 };
 struct CGameRegSel {
     char m_pad00[0x2c];
-    CCenterTarget* m_2c; // +0x2c
-    CMapHolderA* m_30;   // +0x30
+    CCenterTarget* m_centerTarget; // +0x2c
+    CMapHolderA* m_mapHolder;      // +0x30
 };
 DATA(0x0024556c)
 extern CGameRegSel* g_gameRegSel; // 0x64556c
 
-// A selected cell's grunt (cell->m_10) carries its tile position at +0x5c/+0x60.
+// A selected cell's grunt carries its tile position at +0x5c/+0x60.
 struct CSelGrunt {
     char m_pad00[0x5c];
-    i32 m_5c; // +0x5c x
-    i32 m_60; // +0x60 y
+    i32 m_tileX; // +0x5c
+    i32 m_tileY; // +0x60
 };
 // A grid cell: +0x10 the grunt, +0x1ec/+0x1f0 the latch values.
 struct CGridCell {
     char m_pad00[0x10];
-    CSelGrunt* m_10; // +0x10
+    CSelGrunt* m_grunt; // +0x10
     char m_pad14[0x1ec - 0x14];
     i32 m_1ec; // +0x1ec
     i32 m_1f0; // +0x1f0
 };
 // A selection list node: next @0, the cell-key object @0x08.
 struct CSelKey {
-    i32 m_0; // +0x00 grid x-ish
-    i32 m_4; // +0x04 grid y-ish
+    i32 m_gridX; // +0x00
+    i32 m_gridY; // +0x04
 };
 struct CSelNode {
     CSelNode* m_next; // +0x00
     void* m_pad04;
-    CSelKey* m_8; // +0x08
+    CSelKey* m_key; // +0x08
 };
 
 struct CGroupSel {
@@ -84,48 +83,48 @@ struct CGroupSel {
 // residual is min/max register colouring + the doubled grid-lookup spill.  No EH.
 RVA(0x0007cf40, 0x12e)
 i32 CGroupSel::CenterOnGroup(i32 doSelect) {
-    CSelNode* n = *(CSelNode**)((char*)this + 0x244);
-    if (n == 0) {
+    CSelNode* node = *(CSelNode**)((char*)this + 0x244);
+    if (node == 0) {
         return 0;
     }
-    CMapDims* dims = g_gameRegSel->m_30->m_24->m_5c;
-    i32 minX = dims->m_30 - 1;
-    i32 minY = dims->m_34 - 1;
+    CMapDims* dims = g_gameRegSel->m_mapHolder->m_mapHolder->m_dims;
+    i32 minX = dims->m_width - 1;
+    i32 minY = dims->m_height - 1;
     i32 maxX = 0;
     i32 maxY = 0;
     i32 count = 0;
     do {
-        CSelKey* k = n->m_8;
-        n = n->m_next;
-        CGridCell* cell = m_grid[k->m_0 * 15 + k->m_4];
+        CSelKey* key = node->m_key;
+        node = node->m_next;
+        CGridCell* cell = m_grid[key->m_gridX * 15 + key->m_gridY];
         if (cell != 0) {
             count++;
-            CSelGrunt* g = cell->m_10;
-            i32 gx = g->m_5c;
-            i32 gy = g->m_60;
-            if (gx < minX) {
-                minX = gx;
+            CSelGrunt* grunt = cell->m_grunt;
+            i32 gruntX = grunt->m_tileX;
+            i32 gruntY = grunt->m_tileY;
+            if (gruntX < minX) {
+                minX = gruntX;
             }
-            if (gx > maxX) {
-                maxX = gx;
+            if (gruntX > maxX) {
+                maxX = gruntX;
             }
-            if (gy < minY) {
-                minY = gy;
+            if (gruntY < minY) {
+                minY = gruntY;
             }
-            if (gy > maxY) {
-                maxY = gy;
+            if (gruntY > maxY) {
+                maxY = gruntY;
             }
         }
-    } while (n != 0);
+    } while (node != 0);
     i32 cy = minY + (maxY - minY) / 2;
     i32 cx = minX + (maxX - minX) / 2;
-    i32 r = g_gameRegSel->m_2c->Center(cx, cy);
-    if (r != 0 && count == 1 && *(i32*)((char*)this + 0x24c) == 1) {
-        CSelKey* head = (*(CSelNode**)((char*)this + 0x244))->m_8;
-        CGridCell* cell2 = m_grid[head->m_0 * 15 + head->m_4];
-        if (cell2 != 0) {
-            i32 v1f0 = cell2->m_1f0;
-            i32 v1ec = cell2->m_1ec;
+    i32 centerResult = g_gameRegSel->m_centerTarget->Center(cx, cy);
+    if (centerResult != 0 && count == 1 && *(i32*)((char*)this + 0x24c) == 1) {
+        CSelKey* head = (*(CSelNode**)((char*)this + 0x244))->m_key;
+        CGridCell* selectedCell = m_grid[head->m_gridX * 15 + head->m_gridY];
+        if (selectedCell != 0) {
+            i32 v1f0 = selectedCell->m_1f0;
+            i32 v1ec = selectedCell->m_1ec;
             if (TrySelect(v1ec, v1f0)) {
                 *(i32*)((char*)this + 0x234) = v1ec;
                 *(i32*)((char*)this + 0x238) = v1f0;
@@ -154,8 +153,8 @@ struct CFindNode {
     virtual void v08();
     virtual void v0c(); // +0x0c prepare
     char m_pad10[0x10 - 0x04];
-    i32 m_10; // +0x10 key
-    i32 m_14; // +0x14 flag
+    i32 m_key;  // +0x10
+    i32 m_flag; // +0x14
 };
 // An inner-list member: virtual destroy at slot 0, non-virtual Match (0x1fa5).
 struct CBcastMember {
@@ -165,23 +164,23 @@ struct CBcastMember {
 struct CBcastListNode {
     CBcastListNode* m_next; // +0x00
     void* m_pad04;
-    CBcastMember* m_8; // +0x08
+    CBcastMember* m_member; // +0x08
 };
 struct CBcastMap {
     char m_pad00[0x20];
-    CBcastListNode* m_20;            // +0x20 inner list head
+    CBcastListNode* m_members;       // +0x20
     CFindNode* Find(i32 key, i32 n); // 0x1c21
 };
 
 struct CGroupBroadcast {
     char m_pad00[0x10];
-    i32 m_10; // +0x10  compared with each node's key
+    i32 m_key; // +0x10
     char m_pad14[0x24 - 0x14];
-    CBcastMap* m_24; // +0x24
+    CBcastMap* m_map; // +0x24
     char m_pad28[0x2c - 0x28];
-    i32 m_2c[0x18];  // +0x2c  0-terminated key array
-    i32 Broadcast(); // 0x112080
-    void Init();     // 0x2e0f
+    i32 m_keys[0x18]; // +0x2c  0-terminated key array
+    i32 Broadcast();  // 0x112080
+    void Init();      // 0x2e0f
 };
 
 // @early-stop
@@ -192,25 +191,25 @@ RVA(0x00112080, 0x138)
 i32 CGroupBroadcast::Broadcast() {
     Init();
     i32 counter = 0;
-    i32* p = &m_2c[0];
-    i32 i = 0;
+    i32* keyPtr = &m_keys[0];
+    i32 keyIndex = 0;
     i32 done = 0;
     do {
-        if (i >= 0x18) {
+        if (keyIndex >= 0x18) {
             return 1;
         }
-        CFindNode* node = m_24->Find(*p, 4);
+        CFindNode* node = m_map->Find(*keyPtr, 4);
         if (node == 0) {
             g_gameRegDiag->Report(0x80dd, 0x44f);
             return 0;
         }
-        if (node->m_10 != m_10 && node->m_14 != 0) {
+        if (node->m_key != m_key && node->m_flag != 0) {
             node->v0c();
             i32 any = 0;
-            for (CBcastListNode* it = m_24->m_20; it != 0; it = it->m_next) {
-                CBcastMember* o = it->m_8;
-                if (o != 0 && o->Match(node->m_10)) {
-                    o->v00();
+            for (CBcastListNode* it = m_map->m_members; it != 0; it = it->m_next) {
+                CBcastMember* member = it->m_member;
+                if (member != 0 && member->Match(node->m_key)) {
+                    member->v00();
                     counter++;
                     any = 1;
                 }
@@ -220,9 +219,9 @@ i32 CGroupBroadcast::Broadcast() {
                 return 0;
             }
         }
-        i32 next = p[1];
-        p++;
-        i++;
+        i32 next = keyPtr[1];
+        keyPtr++;
+        keyIndex++;
         if (next == 0) {
             done = 1;
         }
