@@ -40,11 +40,11 @@ public:
     virtual i32 Slot2C(i32 a1);               // +0x2c  StopBank forwards here
     virtual i32 Stop();                       // +0x30  stop / status query
 
-    i32 IsBusy(); // RVA 0x138f60 - Slot20() gate + AIL_sequence_status(m_58)
+    i32 IsBusy(); // RVA 0x138f60 - Slot20() gate + AIL_sequence_status(m_sequenceHandle)
 
-    char m_pad0[0x54]; // +0x04 .. +0x58 seeded by the create helpers
-    i32 m_58;          // +0x58  AIL sequence handle (queried by IsBusy)
-    i32 m_5c;          // +0x5c
+    char m_pad0[0x54];    // +0x04 .. +0x58 seeded by the create helpers
+    i32 m_sequenceHandle; // +0x58  AIL sequence handle (queried by IsBusy)
+    i32 m_5c;             // +0x5c
 };
 
 class CGruntzSoundZ : public CMapStringToOb {
