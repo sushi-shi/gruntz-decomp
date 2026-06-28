@@ -19,7 +19,7 @@ struct CDDrawSurfaceMgr {
 // The game-state host being saved; its +0x30 is the bound surface manager.
 struct CGameSaveHost {
     char m_pad0[0x30];
-    CDDrawSurfaceMgr* m_30; // +0x30
+    CDDrawSurfaceMgr* m_surfaceMgr; // +0x30
 };
 
 // The 0x24-dword snapshot scratch buffer (zeroed each save) + the serialize
@@ -46,7 +46,7 @@ i32 SaveGame(CGameSaveHost* host, char* name) {
     g_serialCounter = 0;
     memset(g_saveBuf, 0, 0x90);
     g_saveBuf[0] = 1;
-    CDDrawSurfaceMgr* mgr = host->m_30;
+    CDDrawSurfaceMgr* mgr = host->m_surfaceMgr;
     if (mgr == 0) {
         return 0;
     }
