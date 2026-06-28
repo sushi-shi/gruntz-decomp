@@ -40,20 +40,20 @@ namespace ApiCallerStubs {
     // The GDI surface node (list +0x10). Cleanup is the foreign teardown; SetPalette
     // (this TU) latches the associated palette node ptr.
     struct GdiOwner_175c90 {
-        char m_pad0[0x428]; // +0x000..+0x427
-        i32 m_428;          // +0x428
-        i32 m_42c;          // +0x42c
-        i32 m_430;          // +0x430
-        i32 m_434;          // +0x434
-        i32 m_438;          // +0x438
-        i32 m_43c;          // +0x43c
-        i32 m_440;          // +0x440 (not zeroed by the inlined ctor)
-        i32 m_444;          // +0x444
-        i32 m_448;          // +0x448
-        i32 m_44c;          // +0x44c  cached AddTail POSITION
-        i32 m_450;          // +0x450 (not zeroed by the inlined ctor)
-        i32 m_454;          // +0x454  associated scalar
-        void* m_458;        // +0x458  associated palette node
+        char m_pad0[0x428];                // +0x000..+0x427
+        i32 m_428;                         // +0x428
+        i32 m_42c;                         // +0x42c
+        i32 m_430;                         // +0x430
+        i32 m_434;                         // +0x434
+        i32 m_438;                         // +0x438
+        i32 m_43c;                         // +0x43c
+        i32 m_440;                         // +0x440 (not zeroed by the inlined ctor)
+        i32 m_444;                         // +0x444
+        i32 m_448;                         // +0x448
+        i32 m_listPosition;                // +0x44c  cached AddTail POSITION
+        i32 m_450;                         // +0x450 (not zeroed by the inlined ctor)
+        i32 m_paletteValue;                // +0x454  associated scalar
+        void* m_paletteNode;               // +0x458  associated palette node
         void Cleanup();                    // 0x175c90 (foreign, reloc-masked)
         void SetPalette(void* pal, i32 a); // 0x176ad0 (this TU)
     };
@@ -61,10 +61,10 @@ namespace ApiCallerStubs {
     // The palette node (list +0x2c). Build is the foreign realizer; the three
     // front-ends are reconstructed in this TU.
     struct PalBuilder_176df0 {
-        i32 m_0;                                     // +0x000  realized HPALETTE
+        i32 m_paletteHandle;                         // +0x000  realized HPALETTE
         char m_pad4[0x40c - 0x4];                    // +0x004..+0x40b
         i32 m_40c;                                   // +0x40c
-        void* m_410;                                 // +0x410  cached AddTail POSITION
+        void* m_listPosition;                        // +0x410  cached AddTail POSITION
         i32 Build(PALETTEENTRY* entries, i32 flags); // 0x176df0 (foreign, reloc-masked)
         i32 ProcessPal(void* rgb, i32 flags);        // 0x176e70 (this TU)
         i32 ParseDispatch(void* buf, u32 size, i32 type, i32 ctrl); // 0x177040 (this TU)
@@ -95,8 +95,8 @@ using ApiCallerStubs::PalBuilder_176df0;
 class CImage {
 public:
     i32 DecodeBmpHeader(void* a2, i32 width, i32 height, i32 bitcount, void* a3); // 0x1757c0
-    i32 DecodeBlit(void*, void*, i32, i32, i32, void*);                          // 0x175930
-    i32 LoadFromRez(char* name, void* a2, void* a3);                             // 0x175a90
+    i32 DecodeBlit(void*, void*, i32, i32, i32, void*);                           // 0x175930
+    i32 LoadFromRez(char* name, void* a2, void* a3);                              // 0x175a90
 };
 class CScanlineSurface {
 public:
@@ -119,19 +119,19 @@ public:
     PalBuilder_176df0* AddImageFile(char* path, i32 arg);                         // 0x1755f0
     PalBuilder_176df0* AddImageDispatch(void* buf, u32 size, i32 type, i32 ctrl); // 0x175680
 
-    GdiOwner_175c90* AddSurfaceBmp(i32 a1, i32 a2, i32 a3, i32 a4);     // 0x174fe0
+    GdiOwner_175c90* AddSurfaceBmp(i32 a1, i32 a2, i32 a3, i32 a4);          // 0x174fe0
     GdiOwner_175c90* AddSurfaceBlit(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5); // 0x1750e0
-    GdiOwner_175c90* AddSurfaceOp(i32 a1, i32 a2, i32 a3);              // 0x1751f0
-    GdiOwner_175c90* AddSurfaceRez(i32 a1, i32 a2);                     // 0x1752f0
-    GdiOwner_175c90* AddSurfaceConvert(i32 a1, i32 a2);                 // 0x1753f0
+    GdiOwner_175c90* AddSurfaceOp(i32 a1, i32 a2, i32 a3);                   // 0x1751f0
+    GdiOwner_175c90* AddSurfaceRez(i32 a1, i32 a2);                          // 0x1752f0
+    GdiOwner_175c90* AddSurfaceConvert(i32 a1, i32 a2);                      // 0x1753f0
 
-    i32 m_00;           // +0x00  resource module handle
-    i32 m_04;           // +0x04  source HWND (GetDC/ReleaseDC)
-    i32 m_08;           // +0x08
-    i32 m_0c;           // +0x0c  selected HPALETTE to restore
-    CObList m_surfaces; // +0x10  GDI surface nodes (m_pHead @+0x14)
-    CObList m_palettes; // +0x2c  palette nodes (m_pHead @+0x30)
-    i32 m_48;           // +0x48
+    i32 m_resourceModule; // +0x00  resource module handle
+    i32 m_sourceHwnd;     // +0x04  source HWND (GetDC/ReleaseDC)
+    i32 m_08;             // +0x08
+    i32 m_restorePalette; // +0x0c  selected HPALETTE to restore
+    CObList m_surfaces;   // +0x10  GDI surface nodes (m_pHead @+0x14)
+    CObList m_palettes;   // +0x2c  palette nodes (m_pHead @+0x30)
+    i32 m_48;             // +0x48
 };
 
 // ===========================================================================
@@ -139,9 +139,9 @@ public:
 // ===========================================================================
 RVA(0x00174e90, 0x1c)
 i32 CImagePool::SetHandles(i32 a, i32 b, i32 c) {
-    m_00 = a;
+    m_resourceModule = a;
     m_08 = c;
-    m_04 = b;
+    m_sourceHwnd = b;
     return 1;
 }
 
@@ -152,8 +152,8 @@ RVA(0x00174eb0, 0x1b)
 void CImagePool::Clear() {
     ClearSurfaces();
     ClearPalettes();
-    m_00 = 0;
-    m_04 = 0;
+    m_resourceModule = 0;
+    m_sourceHwnd = 0;
     m_08 = 0;
 }
 
@@ -166,8 +166,8 @@ void CImagePool::RemovePalette(PalBuilder_176df0* node) {
     if (!node) {
         return;
     }
-    if (node->m_410) {
-        m_palettes.RemoveAt((POSITION)node->m_410);
+    if (node->m_listPosition) {
+        m_palettes.RemoveAt((POSITION)node->m_listPosition);
     }
     ((DeleteObjHost_177070*)node)->Run();
     RezFree(node);
@@ -227,7 +227,7 @@ void CImagePool::ClearPalettes() {
 // swaps the two callee-saved regs. Code byte-identical otherwise.
 RVA(0x00174fe0, 0xfe)
 GdiOwner_175c90* CImagePool::AddSurfaceBmp(i32 a1, i32 a2, i32 a3, i32 a4) {
-    HDC hdc = GetDC((HWND)m_04);
+    HDC hdc = GetDC((HWND)m_sourceHwnd);
     GdiOwner_175c90* node;
     GdiOwner_175c90* raw = (GdiOwner_175c90*)RezAlloc(0x45c);
     if (raw) {
@@ -239,31 +239,31 @@ GdiOwner_175c90* CImagePool::AddSurfaceBmp(i32 a1, i32 a2, i32 a3, i32 a4) {
         raw->m_43c = 0;
         raw->m_444 = 0;
         raw->m_448 = 0;
-        raw->m_44c = 0;
-        raw->m_454 = 0;
-        raw->m_458 = 0;
+        raw->m_listPosition = 0;
+        raw->m_paletteValue = 0;
+        raw->m_paletteNode = 0;
         node = raw;
     } else {
         node = 0;
     }
     if (((CImage*)node)->DecodeBmpHeader((void*)hdc, a1, a2, a3, (void*)a4) == 0) {
-        if (m_0c) {
-            SelectPalette(hdc, (HPALETTE)m_0c, FALSE);
-            m_0c = 0;
+        if (m_restorePalette) {
+            SelectPalette(hdc, (HPALETTE)m_restorePalette, FALSE);
+            m_restorePalette = 0;
         }
-        ReleaseDC((HWND)m_04, hdc);
+        ReleaseDC((HWND)m_sourceHwnd, hdc);
         if (node) {
             node->Cleanup();
             RezFree(node);
         }
         return 0;
     }
-    node->m_44c = (i32)m_surfaces.AddTail((CObject*)node);
-    if (m_0c) {
-        SelectPalette(hdc, (HPALETTE)m_0c, FALSE);
-        m_0c = 0;
+    node->m_listPosition = (i32)m_surfaces.AddTail((CObject*)node);
+    if (m_restorePalette) {
+        SelectPalette(hdc, (HPALETTE)m_restorePalette, FALSE);
+        m_restorePalette = 0;
     }
-    ReleaseDC((HWND)m_04, hdc);
+    ReleaseDC((HWND)m_sourceHwnd, hdc);
     return node;
 }
 
@@ -271,7 +271,7 @@ GdiOwner_175c90* CImagePool::AddSurfaceBmp(i32 a1, i32 a2, i32 a3, i32 a4) {
 // regalloc tie-break: node<->edi / zero<->ebx swap vs retail (see AddSurfaceBmp).
 RVA(0x001750e0, 0x103)
 GdiOwner_175c90* CImagePool::AddSurfaceBlit(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
-    HDC hdc = GetDC((HWND)m_04);
+    HDC hdc = GetDC((HWND)m_sourceHwnd);
     GdiOwner_175c90* node;
     GdiOwner_175c90* raw = (GdiOwner_175c90*)RezAlloc(0x45c);
     if (raw) {
@@ -283,31 +283,31 @@ GdiOwner_175c90* CImagePool::AddSurfaceBlit(i32 a1, i32 a2, i32 a3, i32 a4, i32 
         raw->m_43c = 0;
         raw->m_444 = 0;
         raw->m_448 = 0;
-        raw->m_44c = 0;
-        raw->m_454 = 0;
-        raw->m_458 = 0;
+        raw->m_listPosition = 0;
+        raw->m_paletteValue = 0;
+        raw->m_paletteNode = 0;
         node = raw;
     } else {
         node = 0;
     }
     if (((CImage*)node)->DecodeBlit((void*)a1, (void*)hdc, a2, a3, a4, (void*)a5) == 0) {
-        if (m_0c) {
-            SelectPalette(hdc, (HPALETTE)m_0c, FALSE);
-            m_0c = 0;
+        if (m_restorePalette) {
+            SelectPalette(hdc, (HPALETTE)m_restorePalette, FALSE);
+            m_restorePalette = 0;
         }
-        ReleaseDC((HWND)m_04, hdc);
+        ReleaseDC((HWND)m_sourceHwnd, hdc);
         if (node) {
             node->Cleanup();
             RezFree(node);
         }
         return 0;
     }
-    node->m_44c = (i32)m_surfaces.AddTail((CObject*)node);
-    if (m_0c) {
-        SelectPalette(hdc, (HPALETTE)m_0c, FALSE);
-        m_0c = 0;
+    node->m_listPosition = (i32)m_surfaces.AddTail((CObject*)node);
+    if (m_restorePalette) {
+        SelectPalette(hdc, (HPALETTE)m_restorePalette, FALSE);
+        m_restorePalette = 0;
     }
-    ReleaseDC((HWND)m_04, hdc);
+    ReleaseDC((HWND)m_sourceHwnd, hdc);
     return node;
 }
 
@@ -315,7 +315,7 @@ GdiOwner_175c90* CImagePool::AddSurfaceBlit(i32 a1, i32 a2, i32 a3, i32 a4, i32 
 // regalloc tie-break: node<->edi / zero<->ebx swap vs retail (see AddSurfaceBmp).
 RVA(0x001751f0, 0xf9)
 GdiOwner_175c90* CImagePool::AddSurfaceOp(i32 a1, i32 a2, i32 a3) {
-    HDC hdc = GetDC((HWND)m_04);
+    HDC hdc = GetDC((HWND)m_sourceHwnd);
     GdiOwner_175c90* node;
     GdiOwner_175c90* raw = (GdiOwner_175c90*)RezAlloc(0x45c);
     if (raw) {
@@ -327,31 +327,31 @@ GdiOwner_175c90* CImagePool::AddSurfaceOp(i32 a1, i32 a2, i32 a3) {
         raw->m_43c = 0;
         raw->m_444 = 0;
         raw->m_448 = 0;
-        raw->m_44c = 0;
-        raw->m_454 = 0;
-        raw->m_458 = 0;
+        raw->m_listPosition = 0;
+        raw->m_paletteValue = 0;
+        raw->m_paletteNode = 0;
         node = raw;
     } else {
         node = 0;
     }
     if (((CScanlineSurface*)node)->Dispatch175a00(a1, a2, (i32)hdc, a3) == 0) {
-        if (m_0c) {
-            SelectPalette(hdc, (HPALETTE)m_0c, FALSE);
-            m_0c = 0;
+        if (m_restorePalette) {
+            SelectPalette(hdc, (HPALETTE)m_restorePalette, FALSE);
+            m_restorePalette = 0;
         }
-        ReleaseDC((HWND)m_04, hdc);
+        ReleaseDC((HWND)m_sourceHwnd, hdc);
         if (node) {
             node->Cleanup();
             RezFree(node);
         }
         return 0;
     }
-    node->m_44c = (i32)m_surfaces.AddTail((CObject*)node);
-    if (m_0c) {
-        SelectPalette(hdc, (HPALETTE)m_0c, FALSE);
-        m_0c = 0;
+    node->m_listPosition = (i32)m_surfaces.AddTail((CObject*)node);
+    if (m_restorePalette) {
+        SelectPalette(hdc, (HPALETTE)m_restorePalette, FALSE);
+        m_restorePalette = 0;
     }
-    ReleaseDC((HWND)m_04, hdc);
+    ReleaseDC((HWND)m_sourceHwnd, hdc);
     return node;
 }
 
@@ -359,8 +359,8 @@ GdiOwner_175c90* CImagePool::AddSurfaceOp(i32 a1, i32 a2, i32 a3) {
 // regalloc tie-break: node<->edi / zero<->ebx swap vs retail (see AddSurfaceBmp).
 RVA(0x001752f0, 0xfc)
 GdiOwner_175c90* CImagePool::AddSurfaceRez(i32 a1, i32 a2) {
-    HDC hdc = GetDC((HWND)m_04);
-    g_hResModule = (void*)m_00;
+    HDC hdc = GetDC((HWND)m_sourceHwnd);
+    g_hResModule = (void*)m_resourceModule;
     GdiOwner_175c90* node;
     GdiOwner_175c90* raw = (GdiOwner_175c90*)RezAlloc(0x45c);
     if (raw) {
@@ -372,31 +372,31 @@ GdiOwner_175c90* CImagePool::AddSurfaceRez(i32 a1, i32 a2) {
         raw->m_43c = 0;
         raw->m_444 = 0;
         raw->m_448 = 0;
-        raw->m_44c = 0;
-        raw->m_454 = 0;
-        raw->m_458 = 0;
+        raw->m_listPosition = 0;
+        raw->m_paletteValue = 0;
+        raw->m_paletteNode = 0;
         node = raw;
     } else {
         node = 0;
     }
     if (((CImage*)node)->LoadFromRez((char*)a1, (void*)hdc, (void*)a2) == 0) {
-        if (m_0c) {
-            SelectPalette(hdc, (HPALETTE)m_0c, FALSE);
-            m_0c = 0;
+        if (m_restorePalette) {
+            SelectPalette(hdc, (HPALETTE)m_restorePalette, FALSE);
+            m_restorePalette = 0;
         }
-        ReleaseDC((HWND)m_04, hdc);
+        ReleaseDC((HWND)m_sourceHwnd, hdc);
         if (node) {
             node->Cleanup();
             RezFree(node);
         }
         return 0;
     }
-    node->m_44c = (i32)m_surfaces.AddTail((CObject*)node);
-    if (m_0c) {
-        SelectPalette(hdc, (HPALETTE)m_0c, FALSE);
-        m_0c = 0;
+    node->m_listPosition = (i32)m_surfaces.AddTail((CObject*)node);
+    if (m_restorePalette) {
+        SelectPalette(hdc, (HPALETTE)m_restorePalette, FALSE);
+        m_restorePalette = 0;
     }
-    ReleaseDC((HWND)m_04, hdc);
+    ReleaseDC((HWND)m_sourceHwnd, hdc);
     return node;
 }
 
@@ -404,7 +404,7 @@ GdiOwner_175c90* CImagePool::AddSurfaceRez(i32 a1, i32 a2) {
 // regalloc tie-break: node<->edi / zero<->ebx swap vs retail (see AddSurfaceBmp).
 RVA(0x001753f0, 0xf4)
 GdiOwner_175c90* CImagePool::AddSurfaceConvert(i32 a1, i32 a2) {
-    HDC hdc = GetDC((HWND)m_04);
+    HDC hdc = GetDC((HWND)m_sourceHwnd);
     GdiOwner_175c90* node;
     GdiOwner_175c90* raw = (GdiOwner_175c90*)RezAlloc(0x45c);
     if (raw) {
@@ -416,32 +416,32 @@ GdiOwner_175c90* CImagePool::AddSurfaceConvert(i32 a1, i32 a2) {
         raw->m_43c = 0;
         raw->m_444 = 0;
         raw->m_448 = 0;
-        raw->m_44c = 0;
-        raw->m_454 = 0;
-        raw->m_458 = 0;
+        raw->m_listPosition = 0;
+        raw->m_paletteValue = 0;
+        raw->m_paletteNode = 0;
         node = raw;
     } else {
         node = 0;
     }
-    if (((CScanlineSurface*)node)->Convert8To16((void*)hdc, (CScanlineSurface*)a1, (void*)a2) ==
-        0) {
-        if (m_0c) {
-            SelectPalette(hdc, (HPALETTE)m_0c, FALSE);
-            m_0c = 0;
+    if (((CScanlineSurface*)node)->Convert8To16((void*)hdc, (CScanlineSurface*)a1, (void*)a2)
+        == 0) {
+        if (m_restorePalette) {
+            SelectPalette(hdc, (HPALETTE)m_restorePalette, FALSE);
+            m_restorePalette = 0;
         }
-        ReleaseDC((HWND)m_04, hdc);
+        ReleaseDC((HWND)m_sourceHwnd, hdc);
         if (node) {
             node->Cleanup();
             RezFree(node);
         }
         return 0;
     }
-    node->m_44c = (i32)m_surfaces.AddTail((CObject*)node);
-    if (m_0c) {
-        SelectPalette(hdc, (HPALETTE)m_0c, FALSE);
-        m_0c = 0;
+    node->m_listPosition = (i32)m_surfaces.AddTail((CObject*)node);
+    if (m_restorePalette) {
+        SelectPalette(hdc, (HPALETTE)m_restorePalette, FALSE);
+        m_restorePalette = 0;
     }
-    ReleaseDC((HWND)m_04, hdc);
+    ReleaseDC((HWND)m_sourceHwnd, hdc);
     return node;
 }
 
@@ -456,16 +456,16 @@ GdiOwner_175c90* CImagePool::AddSurfaceConvert(i32 a1, i32 a2) {
 // this-register regalloc wall (~99%): every instruction matches except retail
 // pins `this` in edi while the recompile picks ebx (perturbing the prologue
 // pushes + the AddTail `lea 0x2c(this)`). The sibling AddImageFile reaches 100%
-// only because its early m_00 read pins `this`=edi; with `this` first used at the
+// only because its early m_resourceModule read pins `this`=edi; with `this` first used at the
 // tail there is no source lever. Logic byte-identical.
 RVA(0x001754f0, 0x7b)
 PalBuilder_176df0* CImagePool::AddPaletteEntries(PALETTEENTRY* entries, i32 flags) {
     PalBuilder_176df0* node;
     PalBuilder_176df0* raw = (PalBuilder_176df0*)RezAlloc(0x414);
     if (raw) {
-        raw->m_0 = 0;
+        raw->m_paletteHandle = 0;
         raw->m_40c = 0;
-        raw->m_410 = 0;
+        raw->m_listPosition = 0;
         node = raw;
     } else {
         node = 0;
@@ -477,7 +477,7 @@ PalBuilder_176df0* CImagePool::AddPaletteEntries(PALETTEENTRY* entries, i32 flag
         }
         return 0;
     }
-    node->m_410 = m_palettes.AddTail((CObject*)node);
+    node->m_listPosition = m_palettes.AddTail((CObject*)node);
     return node;
 }
 
@@ -489,9 +489,9 @@ PalBuilder_176df0* CImagePool::AddPaletteRGB(void* rgb, i32 flags) {
     PalBuilder_176df0* node;
     PalBuilder_176df0* raw = (PalBuilder_176df0*)RezAlloc(0x414);
     if (raw) {
-        raw->m_0 = 0;
+        raw->m_paletteHandle = 0;
         raw->m_40c = 0;
-        raw->m_410 = 0;
+        raw->m_listPosition = 0;
         node = raw;
     } else {
         node = 0;
@@ -503,19 +503,19 @@ PalBuilder_176df0* CImagePool::AddPaletteRGB(void* rgb, i32 flags) {
         }
         return 0;
     }
-    node->m_410 = m_palettes.AddTail((CObject*)node);
+    node->m_listPosition = m_palettes.AddTail((CObject*)node);
     return node;
 }
 
 RVA(0x001755f0, 0x82)
 PalBuilder_176df0* CImagePool::AddImageFile(char* path, i32 arg) {
-    g_hResModule = (void*)m_00;
+    g_hResModule = (void*)m_resourceModule;
     PalBuilder_176df0* node;
     PalBuilder_176df0* raw = (PalBuilder_176df0*)RezAlloc(0x414);
     if (raw) {
-        raw->m_0 = 0;
+        raw->m_paletteHandle = 0;
         raw->m_40c = 0;
-        raw->m_410 = 0;
+        raw->m_listPosition = 0;
         node = raw;
     } else {
         node = 0;
@@ -527,7 +527,7 @@ PalBuilder_176df0* CImagePool::AddImageFile(char* path, i32 arg) {
         }
         return 0;
     }
-    node->m_410 = m_palettes.AddTail((CObject*)node);
+    node->m_listPosition = m_palettes.AddTail((CObject*)node);
     return node;
 }
 
@@ -539,9 +539,9 @@ PalBuilder_176df0* CImagePool::AddImageDispatch(void* buf, u32 size, i32 type, i
     PalBuilder_176df0* node;
     PalBuilder_176df0* raw = (PalBuilder_176df0*)RezAlloc(0x414);
     if (raw) {
-        raw->m_0 = 0;
+        raw->m_paletteHandle = 0;
         raw->m_40c = 0;
-        raw->m_410 = 0;
+        raw->m_listPosition = 0;
         node = raw;
     } else {
         node = 0;
@@ -553,7 +553,7 @@ PalBuilder_176df0* CImagePool::AddImageDispatch(void* buf, u32 size, i32 type, i
         }
         return 0;
     }
-    node->m_410 = m_palettes.AddTail((CObject*)node);
+    node->m_listPosition = m_palettes.AddTail((CObject*)node);
     return node;
 }
 
@@ -563,8 +563,8 @@ PalBuilder_176df0* CImagePool::AddImageDispatch(void* buf, u32 size, i32 type, i
 // ===========================================================================
 RVA(0x00176ad0, 0x17)
 void ApiCallerStubs::GdiOwner_175c90::SetPalette(void* pal, i32 a) {
-    m_458 = pal;
-    m_454 = a;
+    m_paletteNode = pal;
+    m_paletteValue = a;
 }
 
 // ===========================================================================
