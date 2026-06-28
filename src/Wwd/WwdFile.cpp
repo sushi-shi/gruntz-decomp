@@ -41,16 +41,16 @@ extern char g_mapNameBuf[0x200];
 
 // ---------------------------------------------------------------------------
 // The game registry global (?g_gameReg@@3PAUCGameReg@@A @ VA 0x64556c). Only the
-// chain ValidateMainBlock walks is modeled here (m_30 -> m_24, a filename);
+// chain ValidateMainBlock walks is modeled here (m_activeSlot -> m_path, a filename);
 // the full CGameReg layout lives in src/Gruntz/CStatusBarMgr.cpp. Offsets are the
 // only load-bearing thing (campaign doctrine), so a TU-local view is matching-neutral.
 struct WwdGameRegSlot {
     char pad_0[0x24];
-    char* m_24; // +0x24  a WWD path / numeric-tail string CheckHeader validates
+    char* m_path; // +0x24  a WWD path / numeric-tail string CheckHeader validates
 };
 struct WwdGameReg {
     char pad_0[0x30];
-    WwdGameRegSlot* m_30; // +0x30
+    WwdGameRegSlot* m_activeSlot; // +0x30
 };
 DATA(0x0024556c)
 extern WwdGameReg* g_gameReg;
@@ -107,7 +107,7 @@ void CPlaneRender::WrapCoord(i32* px, i32* py) {
 // for the three reject paths, else the integer parsed from the first digit run
 // of the validated header:
 //   1. the CString must be non-empty (its length, at pszData-8, != 0);
-//   2. g_gameReg->m_30->m_24 (a filename) must be non-null;
+//   2. g_gameReg->m_activeSlot->m_path (a filename) must be non-null;
 //   3. CheckHeader(that filename) into a 0x100 stack buffer must succeed.
 // Then skip leading non-digits and atoi() the first digit run. The CString is
 // unused beyond its non-empty check; `this` is never touched -> static.
@@ -118,11 +118,11 @@ i32 WwdFile::ValidateMainBlock(CString name) {
     if (name.GetLength() == 0) {
         return -1;
     }
-    if (g_gameReg->m_30->m_24 == 0) {
+    if (g_gameReg->m_activeSlot->m_path == 0) {
         return -1;
     }
 
-    if (WwdFile_CheckHeader(g_gameReg->m_30->m_24, header) == 0) {
+    if (WwdFile_CheckHeader(g_gameReg->m_activeSlot->m_path, header) == 0) {
         return -1;
     }
 
@@ -403,15 +403,15 @@ void CPlaneRender::Draw(void* /*ctx*/) {}
 // ===========================================================================
 
 // The level/plane loader `this`. Only the members ReadPlaneObjects touches are
-// pinned (offsets are the load-bearing thing): m_c (the map/asset owner), and
-// m_30/m_34 (the grid extents the object x/y are range-checked against). m_c is
+// pinned (offsets are the load-bearing thing): m_owner (the map/asset owner), and
+// m_gridWidth/m_gridHeight (the grid extents the object x/y are range-checked against). m_owner is
 // read both as the ctor's owner arg and for the image-set CMapStringToOb lookup.
 struct WwdLevelLoader {
     char pad_0[0xc];
-    void* m_c; // +0x0C  asset/map owner (ctor arg; holds the imageset map)
+    void* m_owner; // +0x0C  asset/map owner (ctor arg; holds the imageset map)
     char pad_10[0x30 - 0x10];
-    i32 m_30; // +0x30  grid width  (object x must be in [0, m_30))
-    i32 m_34; // +0x34  grid height (object y must be in [0, m_34))
+    i32 m_gridWidth;  // +0x30  grid width  (object x must be in [0, m_gridWidth))
+    i32 m_gridHeight; // +0x34  grid height (object y must be in [0, m_gridHeight))
 };
 
 // The +0x7C sub-object (an animation/geometry block) the load virtual creates;
@@ -440,21 +440,23 @@ struct WwdGameObj {
     char pad_4[0x8 - 0x4];
     u32 m_flags; // +0x008
     char pad_c[0x40 - 0xc];
-    i32 m_40; // +0x040
+    i32 m_drawFlags; // +0x040
     char pad_44[0x64 - 0x44];
-    i32 m_64, m_68, m_6c, m_70; // +0x064..+0x070
+    i32 m_clipRectLeft, m_clipRectTop, m_clipRectRight, m_clipRectBottom; // +0x064..+0x070
     char pad_74[0x7c - 0x74];
-    WwdObjAnim* m_7c; // +0x07C  the sub-object the load virtual builds
+    WwdObjAnim* m_anim; // +0x07C  the sub-object the load virtual builds
     char pad_80[0xdc - 0x80];
-    CString m_dc; // +0x0DC  imageSet name (assigned)
+    CString m_imageSetName; // +0x0DC  imageSet name (assigned)
     char pad_e0[0xe8 - 0xe0];
     i32 m_e8, m_ec; // +0x0E8, +0x0EC
     char pad_f0[0xf8 - 0xf0];
     i32 m_f8, m_fc; // +0x0F8, +0x0FC
     char pad_100[0x114 - 0x100];
-    i32 m_114, m_118, m_11c, m_120, m_124, m_128; // +0x114..
+    i32 m_score, m_points, m_powerup, m_damage, m_smarts, m_health; // +0x114..
     i32 m_12c, m_130;
-    i32 m_134, m_138, m_13c, m_140, m_144, m_148, m_14c, m_150, m_154, m_158, m_15c, m_160; // rects
+    i32 m_moveRectLeft, m_moveRectTop, m_moveRectRight, m_moveRectBottom;
+    i32 m_hitRectLeft, m_hitRectTop, m_hitRectRight, m_hitRectBottom;
+    i32 m_attackRectLeft, m_attackRectTop, m_attackRectRight, m_attackRectBottom;
     i32 m_164, m_168;
     char pad_16c[0x18c - 0x16c];
     i32 m_18c, m_190, m_194, m_198, m_19c; // +0x18C.. (zeroed in the ctor-stamp)
@@ -625,13 +627,13 @@ i32 WwdFile::ReadPlaneObjects(const i32* src) {
         return 0;
     }
 
-    ((WwdGameObjMethods*)obj)->Construct(loader->m_c, id, 0);
+    ((WwdGameObjMethods*)obj)->Construct(loader->m_owner, id, 0);
 
     // Construct the embedded sub-object at +0x1A0, then re-stamp both vtables (the
     // base ctors leave a base vtable; ReadPlaneObjects promotes both to their
     // derived types) and zero the trailing fields the derived layout adds.
     WwdObjAnimInit* subInit = (WwdObjAnimInit*)((char*)obj + 0x1a0);
-    ((WwdSubMgrCtor*)subInit)->Construct(loader->m_c, id, 0);
+    ((WwdSubMgrCtor*)subInit)->Construct(loader->m_owner, id, 0);
     *(void**)subInit = &g_wwdSubVtbl;
     subInit->z10 = 0;
     subInit->z14 = 0;
@@ -684,7 +686,7 @@ i32 WwdFile::ReadPlaneObjects(const i32* src) {
 
     // Grid bounds check on x/y; failure deletes the object and returns the bytes
     // consumed so far (so the caller still advances over the bad record).
-    if (x < 0 || x >= loader->m_30 || y < 0 || y >= loader->m_34) {
+    if (x < 0 || x >= loader->m_gridWidth || y < 0 || y >= loader->m_gridHeight) {
         obj->Delete(1);
         return (i32)(strCursor - (const char*)src);
     }
@@ -693,7 +695,7 @@ i32 WwdFile::ReadPlaneObjects(const i32* src) {
     i32 loaded = 1;
     if (imageSet.GetLength() != 0) {
         void* found = 0;
-        WwdStringToObMap* map = (WwdStringToObMap*)((char*)loader->m_c + 0x14 + 0x10);
+        WwdStringToObMap* map = (WwdStringToObMap*)((char*)loader->m_owner + 0x14 + 0x10);
         loaded = map->Lookup((const char*)imageSet, found);
     }
 
@@ -710,7 +712,7 @@ i32 WwdFile::ReadPlaneObjects(const i32* src) {
 
     obj->m_flags |= 0x40000;
 
-    WwdObjAnim* anim = obj->m_7c;
+    WwdObjAnim* anim = obj->m_anim;
     if (anim == 0) {
         obj->Delete(1);
         return 0;
@@ -733,52 +735,52 @@ i32 WwdFile::ReadPlaneObjects(const i32* src) {
         ((WwdGameObjMethods*)obj)->SetLogic((const char*)sound);
     }
 
-    // Apply imageSet -> object's m_dc.
+    // Apply imageSet -> object's m_imageSetName.
     if (imageSet.GetLength() != 0) {
-        obj->m_dc = (const char*)imageSet;
+        obj->m_imageSetName = (const char*)imageSet;
     }
 
     // Scatter the trailing record fields. `p` advances through the record from
     // its dynamic-flags field onward.
     const i32* p = &src[10]; // record +0x28 (skip addFlags @+0x24)
 
-    obj->m_flags |= (u32)*p++; // dynamicFlags
-    obj->m_40 = *p++;          // drawFlags
-    sub[0x28 / 4] = *p++;      // userFlags
-    obj->m_114 = *p++;         // score
-    obj->m_118 = *p++;         // points
-    obj->m_11c = *p++;         // powerup
-    obj->m_120 = *p++;         // damage
-    obj->m_124 = *p++;         // smarts
-    obj->m_128 = *p++;         // health
-    obj->m_134 = *p++;         // moveRect.l
-    obj->m_138 = *p++;         // moveRect.t
-    obj->m_13c = *p++;         // moveRect.r
-    obj->m_140 = *p++;         // moveRect.b
-    obj->m_144 = *p++;         // hitRect.l
-    obj->m_148 = *p++;         // hitRect.t
-    obj->m_14c = *p++;         // hitRect.r
-    obj->m_150 = *p++;         // hitRect.b
-    obj->m_154 = *p++;         // attackRect.l
-    obj->m_158 = *p++;         // attackRect.t
-    obj->m_15c = *p++;         // attackRect.r
-    obj->m_160 = *p++;         // attackRect.b
-    obj->m_64 = *p++;          // clipRect.l
-    obj->m_68 = *p++;          // clipRect.t
-    obj->m_6c = *p++;          // clipRect.r
-    obj->m_70 = *p++;          // clipRect.b
+    obj->m_flags |= (u32)*p++;      // dynamicFlags
+    obj->m_drawFlags = *p++;        // drawFlags
+    sub[0x28 / 4] = *p++;           // userFlags
+    obj->m_score = *p++;            // score
+    obj->m_points = *p++;           // points
+    obj->m_powerup = *p++;          // powerup
+    obj->m_damage = *p++;           // damage
+    obj->m_smarts = *p++;           // smarts
+    obj->m_health = *p++;           // health
+    obj->m_moveRectLeft = *p++;     // moveRect.l
+    obj->m_moveRectTop = *p++;      // moveRect.t
+    obj->m_moveRectRight = *p++;    // moveRect.r
+    obj->m_moveRectBottom = *p++;   // moveRect.b
+    obj->m_hitRectLeft = *p++;      // hitRect.l
+    obj->m_hitRectTop = *p++;       // hitRect.t
+    obj->m_hitRectRight = *p++;     // hitRect.r
+    obj->m_hitRectBottom = *p++;    // hitRect.b
+    obj->m_attackRectLeft = *p++;   // attackRect.l
+    obj->m_attackRectTop = *p++;    // attackRect.t
+    obj->m_attackRectRight = *p++;  // attackRect.r
+    obj->m_attackRectBottom = *p++; // attackRect.b
+    obj->m_clipRectLeft = *p++;     // clipRect.l
+    obj->m_clipRectTop = *p++;      // clipRect.t
+    obj->m_clipRectRight = *p++;    // clipRect.r
+    obj->m_clipRectBottom = *p++;   // clipRect.b
 
-    if (obj->m_144 == 0 && obj->m_14c == 0) {
-        obj->m_144 = (i32)0x80000000;
+    if (obj->m_hitRectLeft == 0 && obj->m_hitRectRight == 0) {
+        obj->m_hitRectLeft = (i32)0x80000000;
     }
-    if (obj->m_134 == 0 && obj->m_13c == 0) {
-        obj->m_134 = (i32)0x80000000;
+    if (obj->m_moveRectLeft == 0 && obj->m_moveRectRight == 0) {
+        obj->m_moveRectLeft = (i32)0x80000000;
     }
-    if (obj->m_64 == 0 && obj->m_6c == 0) {
-        obj->m_64 = (i32)0x80000000;
+    if (obj->m_clipRectLeft == 0 && obj->m_clipRectRight == 0) {
+        obj->m_clipRectLeft = (i32)0x80000000;
     }
-    if (obj->m_154 == 0 && obj->m_15c == 0) {
-        obj->m_154 = (i32)0x80000000;
+    if (obj->m_attackRectLeft == 0 && obj->m_attackRectRight == 0) {
+        obj->m_attackRectLeft = (i32)0x80000000;
     }
 
     sub[0xf0 / 4] = *p++;
