@@ -151,7 +151,6 @@ public:
 
 namespace EngineLabelBacklog {
 
-    void CreateGameObjectByName();
     void __stdcall LoadBootyCheatState(i32, i32, i32);
     void ShowSecretBonusMessage();
     void UpdateBootyWalkingGruntz();
@@ -203,12 +202,8 @@ namespace EngineLabelBacklog {
     void __stdcall Stub_1c176a(i32, i32);
 } // namespace EngineLabelBacklog
 
-// @confidence: high
-// @source: string-xref
-// @proximity: CPlaneRender@-0x3b0 | Utils@+0xd60 (boundary - pick one)
-// @stub
-RVA(0x0000a3b0, 0x6e2)
-void EngineLabelBacklog::CreateGameObjectByName() {}
+// CreateGameObjectByName (0xa3b0) graduated to src/Gruntz/GameObjectFactory.cpp as
+// RegisterGameObjectTypes (the uniform 73-entry object-type factory registrar).
 
 // @confidence: low
 // @source: string-xref

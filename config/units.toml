@@ -883,6 +883,11 @@ source = "src/Gruntz/IconLoaders.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "gameobjectfactory"
+source = "src/Gruntz/GameObjectFactory.cpp"
+flags = "base"
+
+[[unit]]
 unit = "gruntsprintanim"
 source = "src/Gruntz/GruntSprintAnim.cpp"
 flags = "eh"

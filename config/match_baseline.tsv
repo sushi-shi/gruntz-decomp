@@ -195,7 +195,7 @@ ehfunclets	6	6
 engine_attributed	7	0
 engine_boundary	7	0
 engine_discovered	22	5
-engine_label_stubs	322	97
+engine_label_stubs	321	96
 engine_unmatched_lib	11	0
 engstr	3	1
 eyecandytypetags	4	4
@@ -215,6 +215,7 @@ gamelevel	60	24
 gamemode	44	21
 gamemodeobjlifecycle	4	3
 gameobjectctors	8	4
+gameobjectfactory	1	1
 gamesave	1	1
 gamestaterecordload	1	0
 gametext	4	3
@@ -1786,7 +1787,6 @@ engine_label_stubs	?Cleanup@GdiOwner_175c90@ApiCallerStubs@@QAEXXZ	100.0000	100.
 engine_label_stubs	?Clip@ClipHost_02b340@ApiCallerStubs@@QAEXPBUtagRECT@@@Z	81.3000	81.3000	1	cpp:6bf52155264d	0x2b340
 engine_label_stubs	?Close@SmackHost_17c9b0@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:e1535087fe94	0x17c9b0
 engine_label_stubs	?Copy@RectHost_115b30@ApiCallerStubs@@QAEPAU12@PBUtagRECT@@@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x115b30
-engine_label_stubs	?CreateGameObjectByName@EngineLabelBacklog@@YAXXZ	0.1996	0.1996	1	cpp:45e65336d4b5	0xa3b0
 engine_label_stubs	?DecodeBlit@CImage@@QAEHPAX0HHH0@Z	2.7778	2.7778	1	cpp:e1535087fe94	0x175930
 engine_label_stubs	?Dispatch@Dispatcher_0cfbd0@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:e1535087fe94	0xcfbd0
 engine_label_stubs	?DrawBattleStats@EngineLabelBacklog@@YAXXZ	0.2445	0.2445	1	cpp:45e65336d4b5	0x1ed30
@@ -1823,7 +1823,7 @@ engine_label_stubs	?LoadAttributes@CDroppedObjectShadow@@QAEXXZ	0.4444	0.4444	1	
 engine_label_stubs	?LoadAttributes@CTeleporter@@QAEXXZ	0.4274	0.4274	1	cpp:45e65336d4b5	0x41aa0
 engine_label_stubs	?LoadAttributes@CTimeBomb@@QAEXXZ	0.7246	0.7246	1	cpp:45e65336d4b5	0xe1e60
 engine_label_stubs	?LoadBootyCheatState@EngineLabelBacklog@@YGXHHH@Z	0.3788	0.3788	1	cpp:6bf52155264d	0x18830
-engine_label_stubs	?LoadByExt@CFileImage@@QAEHPAVCFileImageInfo@@PADHH@Z	100.0000	100.0000	1	cpp:590eddff1627	0x148940
+engine_label_stubs	?LoadByExt@CFileImage@@QAEHPAVCFileImageInfo@@PADHH@Z	99.8899	99.8899	1	cpp:590eddff1627	0x148940
 engine_label_stubs	?LoadCustomWorldInfo@EngineLabelBacklog@@YAHPAX@Z	100.0000	100.0000	1	cpp:aab6e5a6e511	0x3b7c0
 engine_label_stubs	?LoadDroppedObjectEffects@CDroppedObject@@QAEXXZ	0.6289	0.6289	1	cpp:e8a4cb0d5b2a	0xc7090
 engine_label_stubs	?LoadGruntCombatAnimations@CGrunt@ApiCallerStubs@@QAEXHHHHHHHH@Z	0.0777	0.0777	1	cpp:590eddff1627	0x597a0
@@ -2259,6 +2259,7 @@ gameobjectctors	??0CUFO@@QAE@PAUCHazardObj@@@Z	81.0227	81.0227	4	e1c3181bcc49	0x
 gameobjectctors	?GetToyTime@CGruntToyTimeSprite@@SGHPAUCToyTimeHost@@@Z	100.0000	100.0000	1	d1003936dd49	0x7fca0
 gameobjectctors	?GetTypeTag@CGruntToyTimeSprite@@QAEHXZ	100.0000	100.0000	1	3f4adcb11671	0x120e0
 gameobjectctors	?Serialize@CUFO@@QAEHPAXHHH@Z	100.0000	100.0000	1	e328f3778feb	0xb4d30
+gameobjectfactory	?RegisterGameObjectTypes@@YAXPAUGameObjFactoryCtx@@@Z	100.0000	100.0000	1	8d61c8fad5bf	0xa3b0
 gamesave	?SaveGame@@YAHPAUCGameSaveHost@@PAD@Z	100.0000	100.0000	1	11a1d810f9a0	0xd170
 gamestaterecordload	?Load@CGameStateRecord@@QAEHPAUCRecReader@@@Z	91.7597	91.7597	1	1f5405b3b95c	0x555e0
 gametext	??0CContainerErr@@QAE@PBD@Z	100.0000	100.0000	4	754ef1da6bee	0x16d9c0
