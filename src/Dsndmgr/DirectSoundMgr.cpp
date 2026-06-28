@@ -144,8 +144,8 @@ void operator delete(void*);
 
 // The clone-instance ctor (0x136180, __thiscall ret 0xc => 3 args): chains the
 // base DirectSoundMgr ctor (0x1351d0), stamps the clone vtbl (0x5ef6c0), seeds the
-// clone back-pointer (m_4c=self), the original-buffer back-ptr (m_54), m_50=1, the
-// copied param block (m_2c/m_30/m_34/m_38/m_3c) and ComputeDuration (0x1359a0).
+// clone back-pointer (m_4c=self), the original-buffer back-ptr (m_reacquireOwner),
+// m_50=1, the copied param block (sample/reacquire/rate fields) and ComputeDuration (0x1359a0).
 // External, reloc-masked (its /GX EH frame lives there); modeled as a tiny helper
 // so the placement-new `mov ecx,alloc; push ...; call` falls out.
 struct DSoundCloneCtor {
@@ -176,11 +176,11 @@ DirectSoundMgr::DirectSoundMgr(IDirectSoundBufferZ* buf, DirectSoundMgr* owner) 
     m_buffer = buf;
     m_owner = owner;
     m_device = 0;
-    m_28 = 0;
-    m_30 = 0;
-    m_34 = 0;
-    m_38 = 0;
-    m_3c = 0;
+    m_durationMs = 0;
+    m_reacquireCb = 0;
+    m_reacquireCtx = 0;
+    m_rateBase = 0;
+    m_sampleRate = 0;
     if (buf == 0) {
         return;
     }
@@ -237,18 +237,17 @@ i32 DirectSoundMgr::Restore() {
 
 // ---------------------------------------------------------------------------
 // DirectSoundMgr::ReacquireBuffer (__thiscall). Gated on the owning manager's init
-// flag. If an instance-specific reacquire callback is installed (m_30, a __cdecl
-// fn-ptr taking (m_34, this)), invoke it and return 1 on success; otherwise tail
-// into the owner's ReacquireViaCallback (0x1365e0). m_30/m_34 are the per-buffer
-// callback + context (zero-inited in the ctor).
+// flag. If an instance-specific reacquire callback is installed (a __cdecl fn-ptr
+// taking the context and this), invoke it and return 1 on success; otherwise tail
+// into the owner's ReacquireViaCallback (0x1365e0).
 RVA(0x00135340, 0x37)
 i32 DirectSoundMgr::ReacquireBuffer() {
     if (m_owner->m_initialized == 0) {
         return 0;
     }
-    i32(__cdecl * cb)(i32, DirectSoundMgr*) = (i32(__cdecl*)(i32, DirectSoundMgr*))m_30;
+    i32(__cdecl * cb)(i32, DirectSoundMgr*) = (i32(__cdecl*)(i32, DirectSoundMgr*))m_reacquireCb;
     if (cb != 0) {
-        if (cb(m_34, this) != 0) {
+        if (cb(m_reacquireCtx, this) != 0) {
             return 1;
         }
     }
@@ -490,8 +489,8 @@ i32 DirectSoundMgr::SetFrequency(u32 freq) {
 // ---------------------------------------------------------------------------
 // DirectSoundMgr::SetField2 (__thiscall, 1 arg). Gated on init. Adjusts playback
 // frequency by `pct` percent of the cached base (clamped to [101, 99999]) via
-// SetFrequency, records the matching m_3c rate (pct% of m_38), then recomputes the
-// duration. The SetFrequency result is what is returned. Signed mul/div by 100.
+// SetFrequency, records the matching sample rate (pct% of m_rateBase), then
+// recomputes the duration. The SetFrequency result is what is returned.
 RVA(0x00135920, 0x80)
 i32 DirectSoundMgr::SetField2(i32 pct) {
     if (m_owner->m_initialized == 0) {
@@ -505,18 +504,18 @@ i32 DirectSoundMgr::SetField2(i32 pct) {
         v = 0x65;
     }
     i32 r = SetFrequency(v);
-    m_3c = pct * m_38 / 100 + m_38;
+    m_sampleRate = pct * m_rateBase / 100 + m_rateBase;
     ComputeDuration();
     return r;
 }
 
 // ---------------------------------------------------------------------------
-// DirectSoundMgr::ComputeDuration (__thiscall, no args). m_28 = m_2c*1000/m_3c
-// (unsigned), the playback duration in ms from the sample count and the (freshly
-// set) sample rate. The *1000 is the strength-reduced lea*5/*5/*5/shl3 chain.
+// DirectSoundMgr::ComputeDuration (__thiscall, no args). Duration in ms from the
+// sample count and the (freshly set) sample rate. The *1000 is the strength-reduced
+// lea*5/*5/*5/shl3 chain.
 RVA(0x001359a0, 0x18)
 void DirectSoundMgr::ComputeDuration() {
-    m_28 = m_2c * 1000 / m_3c;
+    m_durationMs = m_sampleCount * 1000 / m_sampleRate;
 }
 
 // ---------------------------------------------------------------------------
@@ -760,7 +759,7 @@ void DirectSoundMgr::BaseDtor() {
 
 // ---------------------------------------------------------------------------
 // DirectSoundMgr::Play (__thiscall, no args). Gated on init. Plays the buffer with
-// the +0x14 looping flag; on DSERR_BUFFERLOST asks m_54 to reacquire and retries
+// the +0x14 looping flag; on DSERR_BUFFERLOST asks m_reacquireOwner to reacquire and retries
 // once. A retry failure or a non-buffer-lost HRESULT is reported via GetErrorString;
 // a failed reacquire returns 0 silently. Same shape as Lock (0x136370).
 RVA(0x00136270, 0x8b)
@@ -771,7 +770,7 @@ i32 DirectSoundMgr::Play() {
     i32 hr = m_buffer->vtbl->Play(m_buffer, 0, 0, *(u32*)((char*)this + 0x14)) != 0;
     if (hr != 0) {
         if (hr == (i32)0x88780096) {
-            if (m_54->ReacquireBuffer() == 0) {
+            if (m_reacquireOwner->ReacquireBuffer() == 0) {
                 return 0;
             }
             i32 hr2 = m_buffer->vtbl->Play(m_buffer, 0, 0, *(u32*)((char*)this + 0x14)) != 0;
@@ -817,7 +816,7 @@ i32 DirectSoundMgr::ApplyAndPlay(i32 vol, i32 pan, i32 freq, i32 d) {
 
 // ---------------------------------------------------------------------------
 // DirectSoundMgr::Lock (__thiscall, 7 args). Pass-through IDirectSoundBuffer::Lock;
-// on DSERR_BUFFERLOST (0x88780096) it asks m_54 to reacquire the buffer and, if that
+// on DSERR_BUFFERLOST (0x88780096) it asks m_reacquireOwner to reacquire the buffer and, if that
 // succeeds, retries the Lock once. A retry failure or a non-buffer-lost HRESULT is
 // reported via GetErrorString; a failed reacquire returns 0 silently.
 // @early-stop
@@ -836,7 +835,7 @@ i32 DirectSoundMgr::Lock(u32 off, u32 bytes, void** p1, u32* n1, void** p2, u32*
         return 1;
     }
     if (hr == (i32)0x88780096) {
-        if (m_54->ReacquireBuffer() == 0) {
+        if (m_reacquireOwner->ReacquireBuffer() == 0) {
             return 0;
         }
         hr = m_buffer->vtbl->Lock(m_buffer, off, bytes, p1, n1, p2, n2, flags) != 0;
@@ -877,12 +876,12 @@ i32 DirectSoundMgr::Create(void* hwnd, u32 level, u32 flags) {
 
 // ---------------------------------------------------------------------------
 // DirectSoundMgr::ReacquireViaCallback (__thiscall). Tail-dispatch through the
-// installed reacquire callback fn-ptr (m_80, a __thiscall on the manager); returns
+// installed reacquire callback fn-ptr (m_reacquireMethod, a __thiscall on the manager); returns
 // its result, or 0 when no callback is installed. (mov eax,[ecx+0x80]; jmp eax)
 RVA(0x001365e0, 0xf)
 i32 DirectSoundMgr::ReacquireViaCallback() {
-    if (m_80 != 0) {
-        i32 (DirectSoundMgr::*cb)() = *(i32(DirectSoundMgr::**)()) & m_80;
+    if (m_reacquireMethod != 0) {
+        i32 (DirectSoundMgr::*cb)() = *(i32(DirectSoundMgr::**)()) & m_reacquireMethod;
         return (this->*cb)();
     }
     return 0;
