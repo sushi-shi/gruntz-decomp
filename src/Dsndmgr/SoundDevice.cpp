@@ -38,13 +38,13 @@ struct SampleVoice {
     void* m_vtbl;        // +0x00  (retail vtable 0x5ef6bc; virtuals external)
     SampleVoice* m_link; // +0x04  owned-buffer-list link, biased +4 (POSITION)
     char m_pad08[0x18 - 0x08];
-    u32 m_18; // +0x18  format word (wFormatTag|nChannels of the WAVEFORMATEX)
+    u32 m_formatWord; // +0x18  format word (wFormatTag|nChannels of the WAVEFORMATEX)
     char m_pad1c[0x28 - 0x1c];
-    u32 m_28; // +0x28  duration-ms (= m_2c*1000/m_3c)
-    u32 m_2c; // +0x2c  byte count
+    u32 m_durationMs; // +0x28  duration-ms (= byteCount*1000/avgBytesDivisor)
+    u32 m_byteCount;  // +0x2c  byte count
     char m_pad30[0x38 - 0x30];
-    u32 m_38; // +0x38  avg-bytes-per-sec
-    u32 m_3c; // +0x3c  avg-bytes-per-sec (divisor)
+    u32 m_avgBytesPerSec;  // +0x38  avg-bytes-per-sec
+    u32 m_avgBytesDivisor; // +0x3c  avg-bytes-per-sec (divisor)
     char m_pad40[0x60 - 0x40];
 
     void BaseInit(IDirectSoundBufferZ* buf, SoundDevice* owner); // 0x135b10
@@ -116,8 +116,8 @@ i32 g_volumeTable[100];
 // The x87 transfer-curve constants VolumeToAttenuation reads (.rdata doubles);
 // reloc-masked DIR32 operands, named here so the references pair.
 extern const double c_volScale; // 0x5ef698  v / c_volScale, and the final * c_volScale
-extern const double c_volNum; // 0x5ef6a0  numerator of the reciprocal
-extern const double c_powExp; // 0x5ef6a8  pow() exponent
+extern const double c_volNum;   // 0x5ef6a0  numerator of the reciprocal
+extern const double c_powExp;   // 0x5ef6a8  pow() exponent
 extern const double c_acosNorm; // 0x5ef6b0  acos() normalizer arg
 
 // The engine global operator delete (RezFree-backed, 0x1b9b82) the scalar-deleting
@@ -305,11 +305,11 @@ DirectSoundMgr* SoundDevice::CreateBuffer(WaveFormatX* fmt, u32 bytes, u32 flags
         voice = new (voice) SampleVoice;
         voice->BaseInit(out, this);
     }
-    voice->m_18 = *(u32*)&fmt->wFormatTag;
+    voice->m_formatWord = *(u32*)&fmt->wFormatTag;
     ((SoundBufList*)&m_04_head)->Insert(voice ? &voice->m_link : 0);
-    voice->m_38 = fmt->nAvgBytesPerSec;
-    voice->m_3c = fmt->nAvgBytesPerSec;
-    voice->m_2c = bytes;
+    voice->m_avgBytesPerSec = fmt->nAvgBytesPerSec;
+    voice->m_avgBytesDivisor = fmt->nAvgBytesPerSec;
+    voice->m_byteCount = bytes;
     voice->ComputeDuration();
     return (DirectSoundMgr*)voice;
 }
