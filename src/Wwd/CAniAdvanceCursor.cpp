@@ -15,13 +15,13 @@ class CAniAdvanceCursor {
 public:
     CAniAdvanceCursor(i32 a1, i32 a2, i32 a3);
 
-    void* m_0; // +0x00 vptr (g_wwdSubVtbl)
-    i32 m_4;   // +0x04
-    i32 m_8;   // +0x08
-    i32 m_c;   // +0x0c
-    i32 m_10;  // +0x10
-    i32 m_14;  // +0x14
-    i32 m_18;  // +0x18
+    void* m_vptr; // +0x00 vptr (g_wwdSubVtbl)
+    i32 m_4;      // +0x04
+    i32 m_8;      // +0x08
+    i32 m_c;      // +0x0c
+    i32 m_10;     // +0x10
+    i32 m_14;     // +0x14
+    i32 m_18;     // +0x18
 };
 
 // Arg-stores ordered so cl pins a3 (the edx-held value) by writing it second -
@@ -31,7 +31,7 @@ CAniAdvanceCursor::CAniAdvanceCursor(i32 a1, i32 a2, i32 a3) {
     m_4 = a2;
     m_8 = a3;
     m_c = a1;
-    *(void**)this = &g_wwdSubVtbl;
+    m_vptr = &g_wwdSubVtbl;
     m_10 = 0;
     m_14 = 0;
     m_18 = 0;
