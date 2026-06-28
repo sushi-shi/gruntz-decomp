@@ -9,7 +9,8 @@
 // CDDrawShadeBlit). FindRemove(key) unlinks+destroys a table by its key field.
 //
 // Field names are placeholders (m_<hexoffset>); only offsets + code bytes are
-// load-bearing. The class is a leading gate field m_00 (+0x00) followed by the
+// load-bearing. The class is a leading init/free gate field m_initialized
+// (+0x00) followed by the
 // embedded polymorphic element-array subobject m_arr (+0x04): its vtable at
 // +0x04, m_pData at +0x08, m_nSize at +0x0c, m_nMaxSize at +0x10, m_nGrowBy at
 // +0x14. The cache's destructor inlines the array subobject's teardown (restore
@@ -66,25 +67,25 @@ struct PalEntry {
 
 class CShadeTableCache {
 public:
-    CShadeTableCache();                 // 0x14de30
-    ~CShadeTableCache();                // 0x14de50
-    i32 Init();                         // 0x14dec0
-    void FreeNodes();                   // 0x14ded0
+    CShadeTableCache();  // 0x14de30
+    ~CShadeTableCache(); // 0x14de50
+    i32 Init();          // 0x14dec0
+    void FreeNodes();    // 0x14ded0
     // 0x14df40 - a two-phase per-palette brightness-pulse ramp (fade-in over nA
     // steps, +16 highlight, fade-out over nB steps), mapped to nearest palette.
     CShadeTable* FlashTable(PalEntry* pal, i32 nA, i32 nB, i32 startPct, i32 endPct);
     CShadeTable* HsvShiftTable(PalEntry* pal, i32 steps, i32 packedColor); // 0x14e540
     CShadeTable* HueRampTable(PalEntry* pal, i32 steps, i32 packedColor);  // 0x14e830
-    CShadeTable* GammaTable(PalEntry* pal, i32 wRow, i32 wCol);         // 0x14e9f0
-    CShadeTable* LumaSortTable(PalEntry* pal);                          // 0x14ec00
-    CShadeTable* HueSortTable(PalEntry* pal);                           // 0x14ede0
-    CShadeTable* AddFromArray(const char* name);                       // 0x14f6c0
-    CShadeTable* AddFromFile(const char* name, i32 size);              // 0x14f8b0
-    CShadeTable* GreyTable();           // 0x14eef0
-    CShadeTable* AddTable(float scale); // 0x14f080
-    CShadeTable* SubTable(i32 color);   // 0x14f310
-    CShadeTable* AlphaTable(u8* pal);   // 0x14f5b0
-    void FindRemove(CShadeTable* t);    // 0x14fb80
+    CShadeTable* GammaTable(PalEntry* pal, i32 wRow, i32 wCol);            // 0x14e9f0
+    CShadeTable* LumaSortTable(PalEntry* pal);                             // 0x14ec00
+    CShadeTable* HueSortTable(PalEntry* pal);                              // 0x14ede0
+    CShadeTable* AddFromArray(const char* name);                           // 0x14f6c0
+    CShadeTable* AddFromFile(const char* name, i32 size);                  // 0x14f8b0
+    CShadeTable* GreyTable();                                              // 0x14eef0
+    CShadeTable* AddTable(float scale);                                    // 0x14f080
+    CShadeTable* SubTable(i32 color);                                      // 0x14f310
+    CShadeTable* AlphaTable(u8* pal);                                      // 0x14f5b0
+    void FindRemove(CShadeTable* t);                                       // 0x14fb80
 
     // 0x14fa60 - __cdecl qsort comparator: sort palette indices by hue.
     static i32 __cdecl CompareHue(const void* a, const void* b);
@@ -94,7 +95,7 @@ public:
     // index. The shade-table builders use it to remap a source color into `pal`.
     static i32 __cdecl FindNearestColor(PalEntry* pal, i32 r, i32 g, i32 b);
 
-    i32 m_00;               // +0x00 gate
+    i32 m_initialized;      // +0x00 gate
     CShadeTableArray m_arr; // +0x04 element array subobject
 };
 
