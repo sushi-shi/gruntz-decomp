@@ -11,8 +11,8 @@
 //       +0x0c  m_name : the stream name (MFC CString)
 //   CFileMem : CFileMemBase - vtable 0x005efe30 (derived dtor 0x00157980):
 //       +0x10  m_file : underlying CFileIO (the physical KERNEL32 file)
-//       +0x20  m_20   : current length / position
-//       +0x24  m_24   : bytes consumed
+//       +0x20  m_length   : current stream length
+//       +0x24  m_position : current consumed/write position
 //
 // Field names are placeholders (m_<hexoffset>); only OFFSETS + code bytes are
 // load-bearing (campaign doctrine). The CString member (a class with a dtor)
@@ -57,8 +57,8 @@ public:
     i32 Write(const void* buf, i32 n);           // 0x00165f50
 
     CFileIO m_file; // +0x10
-    i32 m_20;       // +0x20
-    i32 m_24;       // +0x24
+    i32 m_length;   // +0x20
+    i32 m_position; // +0x24
 
     // The base sub-object's own Close/Reset (vtable 0x005efe68 slot +0xc).
     void ResetBase(); // 0x00157a40

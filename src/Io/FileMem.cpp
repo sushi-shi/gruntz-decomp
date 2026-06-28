@@ -118,11 +118,11 @@ void CFileMem::ResetBase() {
 
 // ---------------------------------------------------------------------------
 // CFileMem::Reset  (0x00157a50)  (derived vtable slot +0xc)
-// Zero the position pair + the two base scalars, tail-jump CString::Empty.
+// Zero the length/position pair + the two base scalars, tail-jump CString::Empty.
 RVA(0x00157a50, 0x16)
 void CFileMem::Reset() {
-    m_20 = 0;
-    m_24 = 0;
+    m_length = 0;
+    m_position = 0;
     m_4 = 0;
     m_8 = 0;
     m_name.Empty();
@@ -144,7 +144,7 @@ i32 CFileMem::SetName(const char* name, i32 a, i32 b) {
 // If the name is empty, fail. Otherwise dispatch on the base virtual at slot
 // +0x1c (a read-vs-create predicate): when set, open the inner file read-only
 // and record its length; else open it for create (flags 0x1001) and zero the
-// position pair. Returns 1 on a successful open, 0 on failure.
+// length/position pair. Returns 1 on a successful open, 0 on failure.
 RVA(0x00165e60, 0x82)
 i32 CFileMem::Open() {
     if (m_name.GetLength() == 0) {
@@ -155,16 +155,16 @@ i32 CFileMem::Open() {
         if (!((CFileIOView*)&m_file)->Open((const char*)m_name, 0, 0)) {
             return 0;
         }
-        m_20 = ((CFileIOView*)&m_file)->GetLength();
-        m_24 = 0;
+        m_length = ((CFileIOView*)&m_file)->GetLength();
+        m_position = 0;
         return 1;
     }
 
     if (!((CFileIOView*)&m_file)->Open((const char*)m_name, 0x1001, 0)) {
         return 0;
     }
-    m_20 = 0;
-    m_24 = 0;
+    m_length = 0;
+    m_position = 0;
     return 1;
 }
 
@@ -180,7 +180,7 @@ i32 CFileMem::Ready() {
 // ---------------------------------------------------------------------------
 // CFileMem::Read  (0x00165f00)
 // Read n bytes through the inner CFileIO (vtable +0x3c), advancing only the
-// consumed-count m_24 by n. buf==0 -> early no-op (eax left = buf = 0); n==0 ->
+// current position by n. buf==0 -> early no-op (eax left = buf = 0); n==0 ->
 // return 0. Fails (0) if the inner Read returns fewer than n bytes; else 1.
 RVA(0x00165f00, 0x48)
 i32 CFileMem::Read(void* buf, i32 n) {
@@ -193,14 +193,15 @@ i32 CFileMem::Read(void* buf, i32 n) {
     if (((CFileIOView*)&m_file)->Read(buf, n) != n) {
         return 0;
     }
-    m_24 += n;
+    m_position += n;
     return 1;
 }
 
 // ---------------------------------------------------------------------------
 // CFileMem::Write  (0x00165f50)
-// Write n bytes through the inner CFileIO (vtable +0x40), advancing the position
-// pair by n. buf==0 -> early no-op; n==0 -> return 0. Returns 1 on a write.
+// Write n bytes through the inner CFileIO (vtable +0x40), advancing the
+// length/position pair by n. buf==0 -> early no-op; n==0 -> return 0. Returns 1
+// on a write.
 RVA(0x00165f50, 0x45)
 i32 CFileMem::Write(const void* buf, i32 n) {
     if (buf == 0) {
@@ -210,7 +211,7 @@ i32 CFileMem::Write(const void* buf, i32 n) {
         return 0;
     }
     ((CFileIOView*)&m_file)->Write(buf, n);
-    m_20 += n;
-    m_24 += n;
+    m_length += n;
+    m_position += n;
     return 1;
 }
