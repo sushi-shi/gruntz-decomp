@@ -199,7 +199,7 @@ dsoundvoice	2	1
 ehfunclets	6	6
 engine_attributed	7	0
 engine_discovered	22	5
-engine_label_stubs	300	104
+engine_label_stubs	300	109
 engine_unmatched_lib	11	0
 engstr	3	1
 eyecandytypetags	4	4
@@ -1826,13 +1826,13 @@ engine_label_stubs	?Key@CmdHost_014720@ApiCallerStubs@@QAEHHH@Z	100.0000	100.000
 engine_label_stubs	?Key@CmdHost_039440@ApiCallerStubs@@QAEHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x39440
 engine_label_stubs	?Key@CmdHost_0953f0@ApiCallerStubs@@QAEHHH@Z	100.0000	100.0000	1	cpp:e1535087fe94	0x953f0
 engine_label_stubs	?Load@PalLoad_1479e0@ApiCallerStubs@@QAEHHPADH@Z	89.7286	89.7286	1	cpp:6bf52155264d	0x1479e0
-engine_label_stubs	?Load@ResLoad_144270@ApiCallerStubs@@QAEHHPADH@Z	86.9310	86.9310	1	cpp:6bf52155264d	0x144270
+engine_label_stubs	?Load@ResLoad_144270@ApiCallerStubs@@QAEHHPADH@Z	86.9885	86.9885	1	cpp:6bf52155264d	0x144270
 engine_label_stubs	?Load@StrHost_0b7ec0@ApiCallerStubs@@QAEXHH@Z	100.0000	100.0000	1	cpp:e1535087fe94	0xb7ec0
 engine_label_stubs	?LoadAttributes@CBrickz@@QAEXHH@Z	0.1490	0.1490	1	cpp:6bf52155264d	0x810f0
 engine_label_stubs	?LoadAttributes@CDroppedObjectShadow@@QAEXXZ	0.4444	0.4444	1	cpp:45e65336d4b5	0xc62e0
 engine_label_stubs	?LoadAttributes@CTeleporter@@QAEXXZ	0.4274	0.4274	1	cpp:45e65336d4b5	0x41aa0
 engine_label_stubs	?LoadBootyCheatState@EngineLabelBacklog@@YGXHHH@Z	0.3788	0.3788	1	cpp:6bf52155264d	0x18830
-engine_label_stubs	?LoadByExt@CFileImage@@QAEHPAVCFileImageInfo@@PADHH@Z	100.0000	100.0000	1	cpp:590eddff1627	0x148940
+engine_label_stubs	?LoadByExt@CFileImage@@QAEHPAVCFileImageInfo@@PADHH@Z	99.8899	99.8899	1	cpp:590eddff1627	0x148940
 engine_label_stubs	?LoadCustomWorldInfo@EngineLabelBacklog@@YAHPAX@Z	100.0000	100.0000	1	cpp:aab6e5a6e511	0x3b7c0
 engine_label_stubs	?LoadDroppedObjectEffects@CDroppedObject@@QAEXXZ	0.6289	0.6289	1	cpp:e8a4cb0d5b2a	0xc7090
 engine_label_stubs	?LoadGruntCombatAnimations@CGrunt@ApiCallerStubs@@QAEXHHHHHHHH@Z	0.0777	0.0777	1	cpp:590eddff1627	0x597a0
@@ -1851,6 +1851,7 @@ engine_label_stubs	?Notify@ModeHost_08f480@ApiCallerStubs@@QAEHXZ	100.0000	100.0
 engine_label_stubs	?OnActivate_vfunc8@BootyState@@QAEHXZ	100.0000	100.0000	1	cpp:e8a4cb0d5b2a	0x1f6f0
 engine_label_stubs	?OnClick@ClickHost_0394b0@ApiCallerStubs@@QAEHHHH@Z	50.5500	50.5500	1	cpp:e1535087fe94	0x394b0
 engine_label_stubs	?OnInitDialog@TimerDlg_0c2cb0@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:e1535087fe94	0xc2cb0
+engine_label_stubs	?OnReset@ReplayDlg_c3e30@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:e832e75e29a5	0xc3e30
 engine_label_stubs	?Open@DPlayHost_0b77a0@ApiCallerStubs@@QAEHXZ	98.3607	98.3607	1	cpp:6bf52155264d	0xb77a0
 engine_label_stubs	?Open@Screen_0fe460@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:e1535087fe94	0xfe460
 engine_label_stubs	?OpenHi@SmkPlayer_17c570@ApiCallerStubs@@QAEHHHHHH@Z	70.7324	70.7324	1	cpp:6bf52155264d	0x17c630
@@ -1915,7 +1916,7 @@ engine_label_stubs	?thirdparty_winapi_17c790_SmackWait_4_DispatchMessageA_PeekMe
 engine_label_stubs	?vfunc_16@StatusBarItem@@QAEXHHH@Z	0.3484	0.3484	1	cpp:6bf52155264d	0xce660
 engine_label_stubs	?vfunc_9@BootyState@@QAEHH@Z	94.7973	94.7973	1	cpp:aab6e5a6e511	0x18d30
 engine_label_stubs	?vfunc_9@Projectile@@QAEXXZ	0.3891	0.3891	1	cpp:45e65336d4b5	0x61cb0
-engine_label_stubs	?winapi_00c840_CopyRect_SetRect@ApiCallerStubs@@YAHXZ	1.3084	1.3084	1	cpp:e1535087fe94	0xc840
+engine_label_stubs	?winapi_00c840_CopyRect_SetRect@ApiCallerStubs@@YAHPAUObj_c840@1@@Z	93.8598	93.8598	1	cpp:e832e75e29a5	0xc840
 engine_label_stubs	?winapi_00cd00_timeGetTime@ApiCallerStubs@@YAHXZ	100.0000	100.0000	1	cpp:e1535087fe94	0xcd00
 engine_label_stubs	?winapi_014d00_GetWindow_GetWindowLongA_SetWindowLongA@ApiCallerStubs@@YGHH@Z	0.2387	0.2387	1	cpp:6bf52155264d	0x14d00
 engine_label_stubs	?winapi_015cc0_SendMessageA@ApiCallerStubs@@YGHHH@Z	79.8182	79.8182	1	cpp:6bf52155264d	0x15cc0
@@ -1946,14 +1947,14 @@ engine_label_stubs	?winapi_038220_GetDlgItem@ApiCallerStubs@@YGHPAXHPAH1@Z	100.0
 engine_label_stubs	?winapi_039a60_CreateRectRgn_DrawTextA_SetRect@ApiCallerStubs@@YAHXZ	1.5079	1.5079	1	cpp:e1535087fe94	0x39a60
 engine_label_stubs	?winapi_03af90_GetDlgItem_SendMessageA@ApiCallerStubs@@YAHXZ	1.5574	1.5574	1	cpp:e1535087fe94	0x3af90
 engine_label_stubs	?winapi_03b1a0_GetDlgItem@ApiCallerStubs@@YAHXZ	1.4894	1.4894	1	cpp:e1535087fe94	0x3b1a0
-engine_label_stubs	?winapi_03b310_GetDlgItem@ApiCallerStubs@@YAHXZ	2.2989	2.2989	1	cpp:e1535087fe94	0x3b310
+engine_label_stubs	?winapi_03b310_GetDlgItem@ApiCallerStubs@@YAHPAX@Z	100.0000	100.0000	1	cpp:e832e75e29a5	0x3b310
 engine_label_stubs	?winapi_057db0_IntersectRect@CGrunt@ApiCallerStubs@@QAEHXZ	0.2665	0.2665	1	cpp:590eddff1627	0x57db0
 engine_label_stubs	?winapi_075c60_CopyRect_SetRect@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHHHHHHH@Z	1.2418	1.2418	1	cpp:e8a4cb0d5b2a	0x75c60
 engine_label_stubs	?winapi_077df0_PtInRect@ApiCallerStubs@@YGHH@Z	1.9417	1.9417	1	cpp:6bf52155264d	0x77df0
 engine_label_stubs	?winapi_078060_SetRect@ApiCallerStubs@@YGHHHHHH@Z	1.5447	1.5447	1	cpp:6bf52155264d	0x78060
 engine_label_stubs	?winapi_0862f0_PostMessageA_wsprintfA@ApiCallerStubs@@YGHHHH@Z	0.0448	0.0448	1	cpp:6bf52155264d	0x862f0
 engine_label_stubs	?winapi_08f120_CreateProcessA_RegQueryValueA@ApiCallerStubs@@YGHH@Z	1.7241	1.7241	1	cpp:6bf52155264d	0x8f120
-engine_label_stubs	?winapi_090860_CreateProcessA_wsprintfA@ApiCallerStubs@@YGHHH@Z	2.8169	2.8169	1	cpp:6bf52155264d	0x90860
+engine_label_stubs	?winapi_090860_CreateProcessA_wsprintfA@ApiCallerStubs@@YGHPAD0@Z	100.0000	100.0000	1	cpp:e832e75e29a5	0x90860
 engine_label_stubs	?winapi_092ab0_EndDialog@ApiCallerStubs@@YGHHHHH@Z	1.0929	1.0929	1	cpp:6bf52155264d	0x92ab0
 engine_label_stubs	?winapi_092f00_PostMessageA@CGruntzMgr@@QAEHXZ	1.6529	1.6529	1	cpp:e8a4cb0d5b2a	0x92f00
 engine_label_stubs	?winapi_09dff0_EndDialog@ApiCallerStubs@@YGHPAXHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x9dff0
@@ -1966,11 +1967,11 @@ engine_label_stubs	?winapi_0bb700_GetAsyncKeyState_Sleep_timeGetTime_wsprintfA@C
 engine_label_stubs	?winapi_0bba10_Sleep@CNetMgr@@QAEHH@Z	1.2346	1.2346	1	cpp:590eddff1627	0xbba10
 engine_label_stubs	?winapi_0bda00_GetDlgItem_SetTimer@ApiCallerStubs@@YAXPAX0@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xbda00
 engine_label_stubs	?winapi_0bdb90_GetDlgItem_SetTimer@ApiCallerStubs@@YAXPAX0@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xbdb90
-engine_label_stubs	?winapi_0bdc00_EndDialog_KillTimer@ApiCallerStubs@@YGHHHHH@Z	2.1277	2.1277	1	cpp:6bf52155264d	0xbdc00
+engine_label_stubs	?winapi_0bdc00_EndDialog_KillTimer@ApiCallerStubs@@YGHPAXIIH@Z	100.0000	100.0000	1	cpp:e832e75e29a5	0xbdc00
 engine_label_stubs	?winapi_0bdd60_GetDlgItem_SetTimer@ApiCallerStubs@@YAXPAX0@Z	100.0000	100.0000	1	cpp:e1535087fe94	0xbdd60
 engine_label_stubs	?winapi_0bdfe0_GetDlgItem_SetTimer@ApiCallerStubs@@YAXPAX0@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xbdfe0
 engine_label_stubs	?winapi_0be0a0_EndDialog_KillTimer_PostMessageA@ApiCallerStubs@@YGHHHHH@Z	1.3605	1.3605	1	cpp:6bf52155264d	0xbe0a0
-engine_label_stubs	?winapi_0be2f0_GetDlgItem_SetDlgItemTextA_SetTimer@ApiCallerStubs@@YAHXZ	2.6415	2.6415	1	cpp:e1535087fe94	0xbe2f0
+engine_label_stubs	?winapi_0be2f0_GetDlgItem_SetDlgItemTextA_SetTimer@ApiCallerStubs@@YAXPAX0@Z	100.0000	100.0000	1	cpp:e832e75e29a5	0xbe2f0
 engine_label_stubs	?winapi_0be400_GetWindowTextA_SetWindowTextA@ApiCallerStubs@@YAXPAX0@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xbe400
 engine_label_stubs	?winapi_0be490_EndDialog_KillTimer@ApiCallerStubs@@YAXPAXPAUSessionHost_0be490@1@@Z	100.0000	100.0000	1	cpp:e1535087fe94	0xbe490
 engine_label_stubs	?winapi_0be760_GetDlgItem_SetDlgItemTextA_SetTimer@ApiCallerStubs@@YAXPAX0@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xbe760
@@ -1978,7 +1979,6 @@ engine_label_stubs	?winapi_0c1840_GetWindow_GetWindowLongA_SetWindowLongA@ApiCal
 engine_label_stubs	?winapi_0c1aa0_GetWindow_SendMessageA@ApiCallerStubs@@YAHXZ	0.7480	0.7480	1	cpp:e1535087fe94	0xc1aa0
 engine_label_stubs	?winapi_0c2980_SendMessageA@ApiCallerStubs@@YGXHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xc2980
 engine_label_stubs	?winapi_0c2e20_CreateSolidBrush_FillRect_GetClientRect@ApiCallerStubs@@YAHXZ	1.2658	1.2658	1	cpp:e1535087fe94	0xc2e20
-engine_label_stubs	?winapi_0c3e30_SendMessageA@ApiCallerStubs@@YAHXZ	2.1212	2.1212	1	cpp:e1535087fe94	0xc3e30
 engine_label_stubs	?winapi_0c4230_GetFocus_SendMessageA@ApiCallerStubs@@YGHH@Z	0.6757	0.6757	1	cpp:6bf52155264d	0xc4230
 engine_label_stubs	?winapi_0c46b0_KillTimer_timeGetTime_wsprintfA@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHXZ	0.7336	0.7336	1	cpp:e8a4cb0d5b2a	0xc46b0
 engine_label_stubs	?winapi_0c7ec0_timeGetTime@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHHHH@Z	0.5181	0.5181	1	cpp:e8a4cb0d5b2a	0xc7ec0
@@ -1998,7 +1998,7 @@ engine_label_stubs	?winapi_0f36a0_IntersectRect@ApiCallerStubs@@YAHXZ	0.3161	0.3
 engine_label_stubs	?winapi_0f42f0_PtInRect@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHXZ	0.1617	0.1617	1	cpp:e8a4cb0d5b2a	0xf42f0
 engine_label_stubs	?winapi_0f60f0_IntersectRect@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHXZ	0.2225	0.2225	1	cpp:e8a4cb0d5b2a	0xf60f0
 engine_label_stubs	?winapi_0f8e20_FreeLibrary@ApiCallerStubs@@YAXXZ	100.0000	100.0000	1	cpp:6bf52155264d	0xf8e20
-engine_label_stubs	?winapi_115300_SetRect@ApiCallerStubs@@YAHXZ	1.7544	1.7544	1	cpp:e1535087fe94	0x115300
+engine_label_stubs	?winapi_115300_SetRect@ApiCallerStubs@@YAHPAULayerHost_115300@1@PAURectSrc_115300@1@HHHH@Z	100.0000	100.0000	1	cpp:e832e75e29a5	0x115300
 engine_label_stubs	?winapi_115930_CopyRect_OffsetRect@ApiCallerStubs@@YAHXZ	1.5267	1.5267	1	cpp:e1535087fe94	0x115930
 engine_label_stubs	?winapi_118930_SetActiveWindow_SetFocus@ApiCallerStubs@@YAXPAX@Z	100.0000	100.0000	1	cpp:e1535087fe94	0x118930
 engine_label_stubs	?winapi_118b50_OutputDebugStringA@ApiCallerStubs@@YAXH@Z	69.3478	69.3478	1	cpp:6bf52155264d	0x118b50

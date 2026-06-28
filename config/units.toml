@@ -712,6 +712,7 @@ flags = "eh"
 unit = "engine_label_stubs"
 source = "src/Stub/All.cpp"
 flags = "base"
+extra = ["/GX"]
 
 [[unit]]
 # trace-discovered class memberships (gruntz.analysis.gen_class_stubs); own TU so

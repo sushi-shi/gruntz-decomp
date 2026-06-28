@@ -19,7 +19,8 @@ struct CGameReg {
     GameWnd* m_4; // +0x04 (m_4->m_4 is the top-level HWND)
     char m_pad8[0x2c - 8];
     void* m_2c; // +0x2c
-    char m_pad30[0x58 - 0x30];
+    char m_pad30[0x54 - 0x30];
+    void* m_54; // +0x54
     void* m_58; // +0x58
     char m_pad5c[0x100 - 0x5c];
     i32 m_100; // +0x100
@@ -215,10 +216,95 @@ namespace ApiCallerStubs {
 
     // @confidence: low
     // @source: winapi:CopyRect;SetRect
-    // @stub
+    // The action/logic record hung off the object's m_7c; m_10 is its handler fn ptr
+    // (compared against the default handler at LAB_00402d15 to set a flag bit).
+    struct ActionRec_c840 {
+        char m_pad0[0x10];
+        void* m_10; // +0x10 handler
+        char m_pad14[0x1c - 0x14];
+        i32 m_1c; // +0x1c state
+        char m_pad20[0x2c - 0x20];
+        i32 m_2c; // +0x2c
+        i32 m_30; // +0x30
+        i32 m_34; // +0x34
+        i32 m_38; // +0x38
+    };
+    // The placed sprite record returned by the emit helpers; its RECT is at +0x28.
+    struct PlacedRec_c840 {
+        char m_pad0[0x28];
+        RECT m_28; // +0x28
+    };
+    struct Slot19c_c840 {
+        char m_pad0[0x10];
+        void* m_10; // +0x10
+    };
+    struct Obj_c840 {
+        char m_pad0[8];
+        i32 m_8; // +0x08 flags
+        char m_pad0c[0x40 - 0xc];
+        i32 m_40; // +0x40 flags
+        char m_pad44[0x7c - 0x44];
+        ActionRec_c840* m_7c; // +0x7c
+        char m_pad80[0x120 - 0x80];
+        i32 m_120; // +0x120
+        char m_pad124[0x134 - 0x124];
+        i32 m_134; // +0x134
+        i32 m_138; // +0x138
+        i32 m_13c; // +0x13c
+        i32 m_140; // +0x140
+        RECT m_144; // +0x144
+        RECT m_154; // +0x154 (m_158 == m_154.top)
+        char m_pad164[0x19c - 0x164];
+        Slot19c_c840* m_19c; // +0x19c
+    };
+    // The default action handler, only its address matters (LAB_00402d15).
+    extern "C" void DefaultActionHandler_2d15();
+    // Emit helpers (__stdcall, ILT jmp-thunks) -> the placed sprite record.
+    PlacedRec_c840* __stdcall EmitSpriteFull_3c97(void* tex, i32 z, RECT* rc, i32 a, i32 b, i32 c,
+                                                  i32 d, i32 e, i32 f); // RVA 0x3c97
+    PlacedRec_c840* __stdcall EmitSpriteSimple_2ad6(void* tex, i32 z, RECT* rc, i32 a,
+                                                    i32 b); // RVA 0x2ad6
+    // __cdecl(obj): commit the object's pending action into the active sprite layer.
+    // @early-stop
+    // arg-load scheduling wall (~94%): body byte-exact through the flag math and both
+    // exits; the residual is MSVC's just-in-time vs pre-load interleaving of the Emit*
+    // member-arg loads (same push order, same args) + the g_gameReg->m_54 test landing
+    // in eax vs retail's ecx. Same instructions, different temp-register rotation.
     RVA(0x0000c840, 0x13d)
-    i32 winapi_00c840_CopyRect_SetRect() {
-        return 0;
+    i32 winapi_00c840_CopyRect_SetRect(Obj_c840* obj) {
+        ActionRec_c840* rec = obj->m_7c;
+        if (rec->m_1c == 0) {
+            obj->m_8 |= 1;
+            obj->m_40 |= 1;
+            if (rec->m_10 == (void*)DefaultActionHandler_2d15) {
+                obj->m_8 |= 2;
+            } else {
+                obj->m_8 &= ~2;
+            }
+            Slot19c_c840* slot = obj->m_19c;
+            if (slot && g_gameReg) {
+                RECT rc;
+                CopyRect(&rc, &obj->m_144);
+                if (rec->m_2c > 0 || rec->m_30 > 0) {
+                    SetRect(&rc, rec->m_2c, rec->m_34, rec->m_30, rec->m_38);
+                }
+                if (g_gameReg->m_54) {
+                    PlacedRec_c840* placed;
+                    if (obj->m_138 > 0) {
+                        placed = EmitSpriteFull_3c97(slot->m_10, 0x64, &rc, obj->m_120, obj->m_134,
+                                                     obj->m_138, obj->m_13c, obj->m_140, 0);
+                    } else {
+                        placed = EmitSpriteSimple_2ad6(slot->m_10, 0x64, &rc, obj->m_120, 0);
+                    }
+                    if (placed && obj->m_154.top > 0) {
+                        placed->m_28 = obj->m_154;
+                    }
+                }
+            }
+            obj->m_8 |= 0x10000;
+            rec->m_1c = 5;
+        }
+        return 1;
     }
 
     // @confidence: low
@@ -801,10 +887,49 @@ namespace ApiCallerStubs {
 
     // @confidence: low
     // @source: winapi:GetDlgItem
-    // @stub
+    // The shared MFC CString scratch globals used to assemble custom-level paths;
+    // m_data (the CString data ptr) is at offset 0.
+    struct GameCStr_62c25c {
+        char* m_data; // +0x00
+        void Assign(const char* s); // operator=  RVA 0x1b9e74 (thiscall)
+        void Append(const char* s); // operator+= RVA 0x1ba0c8 (thiscall)
+        void Reset();               // RVA 0x1b9c69 (thiscall)
+    };
+    DATA(0x0062c25c)
+    extern GameCStr_62c25c g_customPath;
+    DATA(0x0062c264)
+    extern GameCStr_62c25c g_customName;
+    i32 GetGameRootDir_11fc10(char* buf, i32 size);   // RVA 0x11fc10 (cdecl)
+    i32 FileExists_4282(const char* path);            // RVA 0x4282 (cdecl)
+    // __cdecl(hWnd): build "<root>\Custom\<sel>.WWD" for the selected custom level.
     RVA(0x0003b310, 0x10d)
-    i32 winapi_03b310_GetDlgItem() {
-        return 0;
+    i32 winapi_03b310_GetDlgItem(HWND hWnd) {
+        char itemText[256];
+        char dirBuf[256];
+        HWND lb = GetDlgItem(hWnd, 0x3fc);
+        if (!lb) {
+            return 0;
+        }
+        i32 sel = SendMessageA(lb, 0x188, 0, 0);
+        if (sel == -1) {
+            return 0;
+        }
+        if (SendMessageA(lb, 0x189, sel, (LPARAM)itemText) == -1) {
+            return 0;
+        }
+        if (!GetGameRootDir_11fc10(dirBuf, 0xfe)) {
+            return 0;
+        }
+        g_customPath.Assign(dirBuf);
+        g_customPath.Append("\\Custom\\");
+        g_customPath.Append(itemText);
+        g_customPath.Append(".WWD");
+        if (!FileExists_4282(g_customPath.m_data)) {
+            g_customPath.Reset();
+            return 0;
+        }
+        g_customName.Assign(itemText);
+        return 1;
     }
 
     // 0x4a9f0 (CGrunt::winapi_04a9f0_CopyRect_OffsetRect) reconstructed in
@@ -1018,10 +1143,28 @@ namespace ApiCallerStubs {
 
     // @confidence: low
     // @source: winapi:CreateProcessA;wsprintfA
-    // @stub
+    // __stdcall(exe, dir): build "<dir>\<exe>" and launch it with dir as the cwd.
     RVA(0x00090860, 0xd3)
-    i32 __stdcall winapi_090860_CreateProcessA_wsprintfA(i32, i32) {
-        return 0;
+    i32 __stdcall winapi_090860_CreateProcessA_wsprintfA(char* exe, char* dir) {
+        char cmdline[256];
+        STARTUPINFOA si;
+        PROCESS_INFORMATION pi;
+        memset(&si, 0, sizeof(si));
+        si.cb = sizeof(si);
+        if (dir && *dir) {
+            i32 len = strlen(dir);
+            if (len > 0 && dir[len - 1] == '\\') {
+                wsprintfA(cmdline, "%s%s", dir, exe);
+            } else {
+                wsprintfA(cmdline, "%s\\%s", dir, exe);
+            }
+        } else {
+            wsprintfA(cmdline, "%s", exe);
+        }
+        if (dir && *dir == 0) {
+            dir = 0;
+        }
+        return CreateProcessA(0, cmdline, 0, 0, 0, 0, 0, dir, &si, &pi);
     }
 
     // @confidence: low
@@ -1362,9 +1505,53 @@ namespace ApiCallerStubs {
 
     // @confidence: low
     // @source: winapi:EndDialog;KillTimer
-    // @stub
+    // DAT_0064557c: the active modeless dialog HWND, cached on entry/init.
+    DATA(0x0064557c)
+    extern HWND g_curDlg_64557c;
+    // The chat/lobby PeerSession singleton at DAT_006496ac (defined fully below;
+    // forward-declared here so the lobby DlgProc, earlier in RVA order, can name it).
+    struct PeerSession_0be490;
+    extern PeerSession_0be490* g_peerSession;
+    // Lobby DlgProc helpers (cdecl, reached through ILT jmp-thunks).
+    i32 PreHandleLobbyMsg_38c3(HWND, u32, u32, i32);      // RVA 0x38c3 -> 0x1192d0
+    void OnLobbyInit_2c66(HWND, PeerSession_0be490*);     // RVA 0x2c66
+    void OnLobbyTimerA_265d(HWND, PeerSession_0be490*);   // RVA 0x265d
+    void OnLobbyTimerB_154b(HWND, PeerSession_0be490*);   // RVA 0x154b
+    void OnLobbyCancel_2ae0(HWND, PeerSession_0be490*);   // RVA 0x2ae0
+    // __stdcall DlgProc(hWnd, msg, wParam, lParam): the network-lobby dialog proc.
     RVA(0x000bdc00, 0x10c)
-    i32 __stdcall winapi_0bdc00_EndDialog_KillTimer(i32, i32, i32, i32) {
+    i32 __stdcall winapi_0bdc00_EndDialog_KillTimer(HWND hWnd, u32 msg, u32 wParam, i32 lParam) {
+        g_curDlg_64557c = hWnd;
+        if (PreHandleLobbyMsg_38c3(hWnd, msg, wParam, lParam)) {
+            return 1;
+        }
+        switch (msg) {
+        case 0x110:
+            g_curDlg_64557c = hWnd;
+            g_peerSession = (PeerSession_0be490*)g_gameReg->m_2c;
+            OnLobbyInit_2c66(hWnd, g_peerSession);
+            return 1;
+        case 0x111:
+            if (wParam == 0x4f7) {
+                KillTimer(hWnd, 1);
+                EndDialog(hWnd, wParam);
+                return 1;
+            }
+            if (wParam == 0x4ce) {
+                KillTimer(hWnd, 1);
+                EndDialog(hWnd, wParam);
+                return 1;
+            }
+            if (wParam == 0x4c6) {
+                OnLobbyCancel_2ae0(hWnd, g_peerSession);
+                return 1;
+            }
+            break;
+        case 0x113:
+            OnLobbyTimerA_265d(hWnd, g_peerSession);
+            OnLobbyTimerB_154b(hWnd, g_peerSession);
+            return 1;
+        }
         return 0;
     }
 
@@ -1405,10 +1592,31 @@ namespace ApiCallerStubs {
 
     // @confidence: low
     // @source: winapi:GetDlgItem;SetDlgItemTextA;SetTimer
-    // @stub
+    // A scratch CString (m_data at +0; CStringData length is 8 bytes before m_data).
+    struct GameCStr_be2f0 {
+        char* m_data;        // +0x00
+        GameCStr_be2f0();    // ctor RVA 0x1b9b93 (thiscall)
+        ~GameCStr_be2f0();   // dtor RVA 0x1b9cde (thiscall)
+    };
+    // The "client status" CString global (?g_6473d8@@3VCString@@A).
+    DATA(0x006473d8)
+    extern GameCStr_be2f0 g_clientStatus;
+    void FormatCStr_1b2cf5(GameCStr_be2f0* dst, const char* fmt, const char* a); // RVA 0x1b2cf5
+    void InitDropPrompt_be3e0(HWND hWnd, void* ctx); // thunk 0x2185 -> 0xbe3e0 (cdecl)
+    // __cdecl(hWnd, ctx): show the "not receiving data" banner, init, arm a timer.
     RVA(0x000be2f0, 0xb9)
-    i32 winapi_0be2f0_GetDlgItem_SetDlgItemTextA_SetTimer() {
-        return 0;
+    void winapi_0be2f0_GetDlgItem_SetDlgItemTextA_SetTimer(HWND hWnd, void* ctx) {
+        if (hWnd && ctx) {
+            GameCStr_be2f0 banner;
+            if (*(i32*)(g_clientStatus.m_data - 8) != 0) {
+                FormatCStr_1b2cf5(&banner, "Not Receiving Data From Client: %s",
+                                  g_clientStatus.m_data);
+                SetDlgItemTextA(hWnd, 0x44b, banner.m_data);
+            }
+            InitDropPrompt_be3e0(hWnd, ctx);
+            SetTimer(hWnd, 1, 0x2ee, 0);
+            g_dlgItem_648ce0 = GetDlgItem(hWnd, 0x4b6);
+        }
     }
 
     // @confidence: low
@@ -1586,10 +1794,59 @@ namespace ApiCallerStubs {
 
     // @confidence: low
     // @source: winapi:SendMessageA
-    // @stub
+    // A scratch CString with the MFC ctor/dtor/operator= (m_data at +0).
+    struct CStr_c3e30 {
+        char* m_data;       // +0x00
+        CStr_c3e30();       // ctor RVA 0x1b9b93 (thiscall)
+        ~CStr_c3e30();      // dtor RVA 0x1b9cde (thiscall)
+        void Assign(const char* s); // operator= RVA 0x1b9e74 (thiscall)
+    };
+    // A dialog-item CWnd (HWND at +0x1c) refreshed from the model.
+    struct CWndItem_c3e30 {
+        char m_pad0[0x1c];
+        HWND m_1c; // +0x1c
+        void Refresh1ce7db(i32 sel, CStr_c3e30* out); // thiscall RVA 0x1ce7db
+    };
+    // The replay/recording model singleton at DAT_0064bd5c.
+    struct ReplayModel_64bd5c {
+        char m_pad0[0x528];
+        i32 m_528; // +0x528 enabled gate
+        char m_pad52c[0x5b0 - 0x52c];
+        i32 m_5b0;        // +0x5b0
+        CStr_c3e30 m_5b4; // +0x5b4
+        CStr_c3e30 m_5b8; // +0x5b8
+        void Commit3ada(i32); // thiscall thunk RVA 0x3ada
+    };
+    DATA(0x0064bd5c)
+    extern ReplayModel_64bd5c* g_replayModel;
+    extern "C" char g_emptyStr_6293f4[]; // 0x6293f4
+    // The host dialog; m_6c is a dirty flag, GetItem27d resolves a child CWnd.
+    struct ReplayDlg_c3e30 {
+        char m_pad0[0x6c];
+        i32 m_6c; // +0x6c
+        CWndItem_c3e30* GetItem27d(i32 id); // thiscall RVA 0x1be27d
+        void OnReset();
+    };
+    // __thiscall(): reset the replay name field and refresh the selected item.
     RVA(0x000c3e30, 0xfe)
-    i32 winapi_0c3e30_SendMessageA() {
-        return 0;
+    void ReplayDlg_c3e30::OnReset() {
+        if (g_replayModel->m_528 != 0) {
+            CWndItem_c3e30* item = GetItem27d(0x4ff);
+            if (item != 0) {
+                i32 r = SendMessageA(item->m_1c, 0x147, 0, 0);
+                if (r != -1) {
+                    CStr_c3e30 name;
+                    item->Refresh1ce7db(r, &name);
+                    if (*(i32*)(name.m_data - 8) != 0) {
+                        m_6c = 0;
+                    }
+                    g_replayModel->m_5b0 = 0;
+                    g_replayModel->m_5b8.Assign(g_emptyStr_6293f4);
+                    g_replayModel->m_5b4.Assign(name.m_data);
+                    g_replayModel->Commit3ada(0);
+                }
+            }
+        }
     }
 
     // @confidence: low
@@ -2301,10 +2558,73 @@ namespace ApiCallerStubs {
 
     // @confidence: low
     // @source: winapi:SetRect
-    // @stub
+    // The blit target reached through the layer node (node->m_2c); Blit13ef90 paints
+    // a rect-source into a destination rect with the given mode flags.
+    struct BlitTarget_115300 {
+        void Blit13ef90(i32 dx, i32 dy, void* src, RECT* rc, i32 flags); // thiscall RVA 0x13ef90
+    };
+    struct LayerNode_115300 {
+        char m_pad0[0x2c];
+        BlitTarget_115300* m_2c; // +0x2c
+    };
+    struct LayerSet_115300 {
+        char m_pad0[0x10];
+        LayerNode_115300* m_10; // +0x10
+        LayerNode_115300* m_14; // +0x14
+    };
+    struct LayerHost_115300 {
+        char m_pad0[4];
+        LayerSet_115300* m_4; // +0x04
+    };
+    struct RectSrc_115300 {
+        char m_pad0[0x10];
+        i32 m_10; // +0x10 width
+        i32 m_14; // +0x14 height
+        i32 m_18; // +0x18 origin x
+        i32 m_1c; // +0x1c origin y
+        char m_pad20[0x2c - 0x20];
+        void* m_2c; // +0x2c
+    };
+    // __cdecl(host, src, x, y, useFront, mode): blit src into the active layer node.
     RVA(0x00115300, 0xf5)
-    i32 winapi_115300_SetRect() {
-        return 0;
+    i32 winapi_115300_SetRect(LayerHost_115300* host, RectSrc_115300* src, i32 x, i32 y, i32 useFront, i32 mode) {
+        if (!host) {
+            return 0;
+        }
+        if (!src) {
+            return 0;
+        }
+        LayerNode_115300* node;
+        if (useFront) {
+            node = host->m_4->m_10;
+            if (!node) {
+                return 0;
+            }
+        } else {
+            node = host->m_4->m_14;
+            if (!node) {
+                return 0;
+            }
+        }
+        BlitTarget_115300* dst = node->m_2c;
+        if (!dst) {
+            return 0;
+        }
+        void* srcHandle = src->m_2c;
+        if (!srcHandle) {
+            return 0;
+        }
+        i32 dx = x - src->m_18;
+        i32 dy = y - src->m_1c;
+        RECT rc;
+        SetRect(&rc, 0, 0, src->m_10 - 1, src->m_14 - 1);
+        RECT rc2 = rc;
+        i32 flags = 0x10;
+        if (mode) {
+            flags = 0x11;
+        }
+        dst->Blit13ef90(dx, dy, srcHandle, &rc2, flags);
+        return 1;
     }
 
     // @confidence: low
