@@ -16,7 +16,6 @@ extern CButeMgrHelper_ScalarDeletingDestructor g_func_b_destructor;
 
 class CButeMgrHelper {
 public:
-    void FuncA();
     void FuncB();
 
     CButeMgrHelper_ScalarDeletingDestructor* m_0;
@@ -28,11 +27,27 @@ public:
     i32 m_34;
     i32 m_38;
 };
-// @confidence: med
-// @source: reloc-correlation (1 caller)
-// @stub
+// FuncA (0x169be0): the virtual-base-class displacement adjustor `vtordisp` thunk
+// MSVC auto-generates for a vbase ctor: load the vbtable handle at [this-0x14], read
+// the +4 displacement, stamp the most-derived vtable (0x5f0394) at that displaced
+// slot, then tail-jmp the real ctor body (0x16c950). C++ can't express the vbase
+// adjustor directly, so it is emitted as a __declspec(naked) thunk; RVA-keyed pairing
+// absorbs the FuncA-vs-?vtordisp name mismatch and the two reloc operands mask.
+DATA(0x005f0394)
+extern void* g_butemgrhelper_vtbl_5f0394;
+extern "C" void CButeMgrHelper_VbaseCtorBody(); // 0x16c950 (jmp target)
+
+// A free naked thunk (clang rejects `naked` on member functions; the body is the
+// raw vbase-adjustor, `this` arrives in ecx as for the original __thiscall thunk).
 RVA(0x00169be0, 0x13)
-void CButeMgrHelper::FuncA() {}
+__declspec(naked) void CButeMgrHelper_FuncA() {
+    __asm {
+        mov eax, [ecx - 0x14]
+        mov edx, [eax + 4]
+        mov dword ptr [edx + ecx - 0x14], offset g_butemgrhelper_vtbl_5f0394
+        jmp CButeMgrHelper_VbaseCtorBody
+    }
+}
 // @confidence: med
 // @source: reloc-correlation (1 caller)
 // @stub

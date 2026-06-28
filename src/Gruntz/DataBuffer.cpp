@@ -105,3 +105,19 @@ void CDataBuffer::Free() {
     }
     m_00 = 0;
 }
+
+// 0x1503f0 - SaveToFile: create `path` (modeCreate|modeWrite), write the 4-byte
+// element count then the blob, close. The by-value CString arg (destructed at exit,
+// outermost cleanup) + the local CFile -> /GX EH frame; on an Open failure the CFile
+// is destructed and 0 returned. ret 4 (the CString is one dword).
+RVA(0x001503f0, 0xdc)
+i32 CDataBuffer::SaveToFile(CString path) {
+    CFile file;
+    if (!file.Open(path, CFile::modeCreate | CFile::modeWrite, 0)) {
+        return 0;
+    }
+    file.Write(&m_04, 4);
+    file.Write(m_08, m_04);
+    file.Close();
+    return 1;
+}

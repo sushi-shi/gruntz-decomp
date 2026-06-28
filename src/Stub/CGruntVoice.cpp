@@ -1,13 +1,4 @@
 #include <rva.h>
-// CGruntVoice.cpp - engine-label stubs for CGruntVoice.
-
-class CGruntVoice {
-public:
-    CGruntVoice(i32);
-};
-
-// @confidence: med
-// @source: rtti-vptr
-// @stub
-RVA(0x001198a0, 0x195)
-CGruntVoice::CGruntVoice(i32) {}
+// CGruntVoice.cpp - drained. The ctor (0x1198a0) was reconstructed and homed into
+// the real class TU src/Gruntz/CGruntVoice.cpp (unit "cgruntvoice"); nothing remains
+// here. Kept (empty) so All.cpp's #include stays valid.

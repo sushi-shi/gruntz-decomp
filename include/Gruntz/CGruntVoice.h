@@ -103,6 +103,7 @@ extern void* g_actAllocResult;
 // ---------------------------------------------------------------------------
 class CGruntVoice : public CUserLogic {
 public:
+    CGruntVoice(CGameObject* obj);   // 0x1198a0 (folds CUserLogic(obj) + the voice tail)
     virtual ~CGruntVoice() OVERRIDE; // 0x119ae0
 
     static void InitActReg();                        // 0x119dc0 (construct g_vactColl over [2000,2010])

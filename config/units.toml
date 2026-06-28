@@ -827,6 +827,11 @@ source = "src/Gruntz/CPlay.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "cplaydtor"
+source = "src/Gruntz/CPlayDtor.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "font"
 source = "src/Font/Font.cpp"
 flags = "eh"
@@ -1257,6 +1262,11 @@ flags = "eh"
 unit = "soundvoicelist"
 source = "src/Dsndmgr/SoundVoiceList.cpp"
 flags = "base"
+
+[[unit]]
+unit = "soundbankload"
+source = "src/Dsndmgr/SoundBankLoad.cpp"
+flags = "eh"
 
 [[unit]]
 unit = "soundstream"

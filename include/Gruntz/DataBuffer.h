@@ -34,6 +34,11 @@ public:
     i32 LoadFromFile(const char* path, i32 id); // 0x150250
     i32 LoadFromMem(void* buf, u32 len, i32 id); // 0x150330
 
+    // SaveToFile (0x1503f0): create `path`, write the 4-byte count then the blob
+    // bytes through a local CFile, close. The by-value CString arg + the local CFile
+    // both destruct on every path -> /GX EH frame. ret 4.
+    i32 SaveToFile(CString path); // 0x1503f0
+
     i32 m_00;
     u32 m_04;
     void* m_08;

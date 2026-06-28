@@ -6,17 +6,7 @@
 // unit; delinked + objdiff'd like any backlog stub.
 #include <rva.h>
 
-RVA(0x0008c830, 0xaf)
-void Boundary_08c830() {} // proximity: CState@-0xe0 | CPlay@+0xe0
-RVA(0x0008d0d0, 0xc4)
-void Boundary_08d0d0() {} // proximity: CMenuState@-0x270 | CMulti@+0x1a0
-RVA(0x00138aa0, 0x175)
-void Boundary_138aa0() {} // proximity: CGruntzSoundZ@-0x180 | DSoundList@+0x640
-RVA(0x0013a4b0, 0x75)
-void Boundary_13a4b0() {} // proximity: CSymTab@-0x1a0 | CSymParser@+0x710
 RVA(0x0013ab00, 0xac)
 void Boundary_13ab00() {} // proximity: CSymTab@-0x7f0 | CSymParser@+0xc0
 RVA(0x001493b0, 0xfd)
 void Boundary_1493b0() {} // proximity: CImageOwned@-0x2e0 | CDDrawShadeBlit@+0x440
-RVA(0x001503f0, 0xdc)
-void Boundary_1503f0() {} // proximity: CDataBuffer@-0x30 | CGruntSprite@+0xe0

@@ -136,12 +136,16 @@ public:
 struct CSymParser {
     // Map an upcased extension/name to its int key (0x13b910); reloc-masked __thiscall.
     void* ResolveName(const char* s); // 0x13b910
+    // Pop the first parse-slot record out of the parser's hash pool (0x13c0c0);
+    // reloc-masked __thiscall. Method4b0 builds a leaf record into a fresh slot.
+    void* PopParseSlot(); // 0x13c0c0
 
     char m_pad00[0x4];
     const char* m_delims; // +0x04  delimiter set the tokenizer splits on
     char m_pad08[0x58 - 0x8];
     i32 m_58; // +0x58  longest scope-name length seen (tracked when adding scopes)
-    char m_pad5c[0x68 - 0x5c];
+    i32 m_5c; // +0x5c  longest leaf-name length seen (tracked by Method4b0)
+    char m_pad60[0x68 - 0x60];
     i32 m_68; // +0x68  flag forwarded to the +0x38 walk (passed as m_68 == 0)
     i32 m_6c; // +0x6c  selects the leaf-record ctor variant (Init4 vs Init3)
     i32 m_70; // +0x70  leaf-record ctor arg
@@ -224,6 +228,11 @@ public:
     // (a0-stream) records into a temp buffer and folds each into this scope's tables
     // (sub-scope records -> m_subTabs; leaf records -> the leaf builder + m_symbols).
     i32 ApplyRange(i32 a0, i32 a1, i32 a2, i32 a3); // 0x13a640
+
+    // Method4b0 (0x13a4b0): pop a fresh parse-slot, build a leaf record into it from
+    // (name=a1, rec=a2, f4=a0, stream=a3), splice it into rec's +0x24 sub-table, and
+    // bump the parser's longest-leaf-name counter (m_owner->m_5c). Returns the slot.
+    i32 Method4b0(void* a0, void* a1, void* a2, void* a3); // 0x13a4b0
 
     // The leaf-merge helper ApplyRange calls when a leaf record's +0x24 sub-table walk
     // already has the key (0x13a530, __thiscall(rec, found)). Reloc-masked extern.

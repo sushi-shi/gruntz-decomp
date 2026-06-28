@@ -350,6 +350,35 @@ CSymTab* CSymTab::CreateSub(const char* name) {
     return child;
 }
 
+// Method4b0 (0x13a4b0): pop a fresh parse-slot record out of the owner's pool, fill it
+// from this leaf record (the 11-arg CSymLeafBuilder::Build with the MakeSymSeed leftover-
+// args trick: f2 = the seed, str2/f3/f1 = 0, f6/arr/stream the carried leftover slots),
+// splice the built slot's +0x1c hash node into rec's (+0x24) sub-table, then bump the
+// parser's longest-leaf-name counter (m_owner->m_5c). Returns the popped slot. Non-EH
+// (no destructible local) so no /GX frame despite the eh-profile unit. __thiscall, ret 0x10.
+// 0x13ba70 is reached here as a __thiscall on the owning parser (Method4b0 reloads
+// ecx=m_owner before the call), unlike the free-call ctor sites; same physical seed
+// builder, just dispatched with a `this`. RVA-keyed pairing absorbs the mangling.
+struct CSymSeedOwner {
+    i32 MakeSeed(); // 0x13ba70 (__thiscall on m_owner)
+};
+
+RVA(0x0013a4b0, 0x75)
+i32 CSymTab::Method4b0(void* a0, void* a1, void* a2, void* a3) {
+    CSymLeafBuilder* slot = (CSymLeafBuilder*)m_owner->PopParseSlot();
+    if (slot == 0) {
+        return (i32)slot;
+    }
+    slot->Build(this, (const char*)a1, a0, a2, 0, 0, 0,
+                (void*)((CSymSeedOwner*)m_owner)->MakeSeed(), 0, 0, a3);
+    ((CHashTable*)((char*)a2 + 0x24))->Insert((char*)slot + 0x1c);
+    u32 len = strlen((char*)a1);
+    if ((u32)m_owner->m_5c <= len) {
+        m_owner->m_5c = len + 1;
+    }
+    return (i32)slot;
+}
+
 // ApplyRecursive (0x13a580): a2 == 0 is a no-op returning 1. Otherwise null each
 // child scope's m_04, run the big range pass (ApplyRange, 0x13a640) over this scope,
 // then recurse into every child whose m_04 the pass set, ANDing the results.
