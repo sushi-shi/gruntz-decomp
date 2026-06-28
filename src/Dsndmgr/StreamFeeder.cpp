@@ -116,23 +116,23 @@ i32 StreamFeeder::CopyWindow(void* dst1, u32 n1, u32* got1, void* dst2, u32 n2, 
 RVA(0x00137cd0, 0x1a)
 StreamFeeder::StreamFeeder() {
     *(void**)this = (void*)g_StreamFeederVtbl;
-    m_8 = 0;
-    m_18 = 0;
-    m_c = 0;
-    m_1c = 0;
-    m_28 = 0;
+    m_buffer = 0;
+    m_armed = 0;
+    m_bufferCursor = 0;
+    m_playing = 0;
+    m_lastTickTime = 0;
 }
 
 // ---------------------------------------------------------------------------
 // StreamFeeder::Cleanup (0x137cf0, __thiscall - the dtor body). Restamp the
-// vptr, tear down the armed buffer, clear m_8.
+// vptr, tear down the armed buffer, clear m_buffer.
 RVA(0x00137cf0, 0x20)
 void StreamFeeder::Cleanup() {
     *(void**)this = (void*)g_StreamFeederVtbl;
-    if (m_18 != 0) {
+    if (m_armed != 0) {
         FeederReset(1);
     }
-    m_8 = 0;
+    m_buffer = 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -141,46 +141,46 @@ void StreamFeeder::Cleanup() {
 // the owner, and disarm.
 RVA(0x00137dc0, 0x43)
 void StreamFeeder::FeederReset(i32 doStop) {
-    if (m_18 != 0) {
-        if (m_1c != 0) {
+    if (m_armed != 0) {
+        if (m_playing != 0) {
             Pause();
         }
         (this->*vslot(m_vtbl, 2))(); // OnDrain (slot 2)
         if (doStop != 0) {
-            m_4->RemoveBuffer(m_8);
+            m_owner->RemoveBuffer(m_buffer);
         }
-        m_8 = 0;
-        m_18 = 0;
+        m_buffer = 0;
+        m_armed = 0;
     }
 }
 
 // ---------------------------------------------------------------------------
-// StreamFeeder::Resume (0x137ed0, __thiscall). If not already drained, resume
-// the buffer (m_8->Resume(1)) and, if it reports playing, mark drained (m_1c=1).
+// StreamFeeder::Resume (0x137ed0, __thiscall). If not already playing, resume
+// the buffer and, if it reports playing, mark playback active.
 RVA(0x00137ed0, 0x30)
 i32 StreamFeeder::Resume() {
-    if (m_1c != 0) {
+    if (m_playing != 0) {
         return 1;
     }
-    m_8->Resume(1);
-    i32 r = m_8->IsPlaying();
+    m_buffer->Resume(1);
+    i32 r = m_buffer->IsPlaying();
     if (r != 0) {
-        m_1c = 1;
+        m_playing = 1;
     }
     return r; // fall-through keeps the IsPlaying result in eax (no re-zero)
 }
 
 // ---------------------------------------------------------------------------
-// StreamFeeder::Pause (0x137f00, __thiscall). If drained, stop+rewind the
-// buffer and clear the drained flag; else nothing.
+// StreamFeeder::Pause (0x137f00, __thiscall). If playing, stop+rewind the buffer
+// and clear the playback flag; else nothing.
 RVA(0x00137f00, 0x26)
 i32 StreamFeeder::Pause() {
-    if (m_1c == 0) {
+    if (m_playing == 0) {
         return 1;
     }
-    i32 r = m_8->StopAndRewind();
+    i32 r = m_buffer->StopAndRewind();
     if (r != 0) {
-        m_1c = 0;
+        m_playing = 0;
     }
     return r; // fall-through keeps the StopAndRewind result in eax (no re-zero)
 }
@@ -205,24 +205,24 @@ i32 StreamFeeder::FeederStart(
     void* buf,
     i32 tickArg
 ) {
-    m_10 = len;
-    m_4 = owner;
+    m_bufferLength = len;
+    m_owner = owner;
     m_14 = (u32)fmt;
-    m_1c = 0;
+    m_playing = 0;
     if (*(u16*)((char*)fmt + 0xe) > 8) {
-        m_24 = 0;
+        m_silenceByte = 0;
     } else {
-        m_24 = 0x80;
+        m_silenceByte = 0x80;
     }
     if (buf == 0) {
-        m_8 = (FeederBuf*)owner->CreateStreamBuf(fmt, len, 0x100e0);
+        m_buffer = (FeederBuf*)owner->CreateStreamBuf(fmt, len, 0x100e0);
     } else {
-        m_8 = (FeederBuf*)buf;
+        m_buffer = (FeederBuf*)buf;
     }
-    if (m_8 == 0) {
+    if (m_buffer == 0) {
         return 0;
     }
-    m_18 = 1;
+    m_armed = 1;
     if ((this->*vslot(m_vtbl, 1))() == 0) { // FeedData (slot 1)
         FeederReset(1);
         return 0;
@@ -238,7 +238,7 @@ i32 StreamFeeder::FeederStart(
 // StreamFeeder::FillBuffer (0x137f30, __thiscall, 2 args, ret 0x8). Lock the
 // streaming secondary buffer at the write window, copy the source window into
 // the (possibly wrapped) locked regions, silence-pad the unfilled tail, advance
-// the read cursor (m_c) with wraparound, and Unlock.
+// the buffer cursor with wraparound, and Unlock.
 // @early-stop
 // local-coalescing / frame-size wall: retail reuses dead local slots for the
 // got1/got2 scratch (sub esp,0x10, 4 dwords); MSVC here keeps them distinct
@@ -253,14 +253,14 @@ i32 StreamFeeder::FillBuffer(u32 writePos, u32 bytes) {
     u32 n1;
     void* p2;
     u32 n2;
-    if (m_8->Lock(writePos, bytes, &p1, &n1, &p2, &n2, 0) == 0) {
+    if (m_buffer->Lock(writePos, bytes, &p1, &n1, &p2, &n2, 0) == 0) {
         return 0;
     }
     u32 got1 = 0;
     u32 got2 = 0;
-    if (m_20 == 0) {
+    if (m_pendingBytes == 0) {
         if ((this->*vslot0(m_vtbl))(p1, n1, &got1, p2, n2, &got2) == 0) {
-            m_8->Unlock(p1, n1, p2, n2);
+            m_buffer->Unlock(p1, n1, p2, n2);
             return 0;
         }
     } else {
@@ -268,24 +268,24 @@ i32 StreamFeeder::FillBuffer(u32 writePos, u32 bytes) {
         got2 = 0;
     }
     if (got1 < n1) {
-        m_20 += n1 - got1;
-        memset((char*)p1 + got1, m_24, n1 - got1);
+        m_pendingBytes += n1 - got1;
+        memset((char*)p1 + got1, m_silenceByte, n1 - got1);
     }
     if (got2 < n2) {
-        m_20 += n2 - got2;
-        memset((char*)p2 + got2, m_24, n2 - got2);
+        m_pendingBytes += n2 - got2;
+        memset((char*)p2 + got2, m_silenceByte, n2 - got2);
     }
-    if (m_20 >= m_10) {
+    if (m_pendingBytes >= m_bufferLength) {
         Pause();
     }
     if (got2 != 0) {
-        m_c = got2;
+        m_bufferCursor = got2;
     } else {
-        m_c = writePos + bytes;
+        m_bufferCursor = writePos + bytes;
     }
-    if (m_c >= m_10) {
-        m_c = 0;
+    if (m_bufferCursor >= m_bufferLength) {
+        m_bufferCursor = 0;
     }
-    m_8->Unlock(p1, n1, p2, n2);
+    m_buffer->Unlock(p1, n1, p2, n2);
     return 1;
 }
