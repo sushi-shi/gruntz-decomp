@@ -69,8 +69,8 @@ class CHashInsertNode {
 public:
     virtual u32 Hash() = 0; // slot 0 (the key-typed bucket hash)
     char m_pad04[0x0c - 0x04];
-    void* m_0c;   // +0x0c  owning table back-ptr (Insert stamps this)
-    u32 m_bucket; // +0x10  computed bucket (Insert stamps this)
+    void* m_ownerTable; // +0x0c  owning table back-ptr (Insert stamps this)
+    u32 m_bucket;       // +0x10  computed bucket (Insert stamps this)
 };
 
 // A 16-byte bucket slot; its per-element destructor (0x584a30, a bare `ret`) is

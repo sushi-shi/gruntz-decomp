@@ -30,7 +30,7 @@ void CHashBase::RemoveAll() {
 // a null entry here.
 RVA(0x00184a70, 0x34)
 void CHashBase::Insert(CHashInsertNode* node) {
-    node->m_0c = this;
+    node->m_ownerTable = this;
     u32 idx = node->Hash();
     node->m_bucket = idx;
     void* biased = node ? (void*)((char*)node + 4) : 0;
