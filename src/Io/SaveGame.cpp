@@ -268,7 +268,7 @@ i32 CSaveGame::Load() {
     if (!file.Open((const char*)m_name, 0, 0)) {
         return 0;
     }
-    file.Read(m_08, 0xa1c);
+    file.Read(m_header, 0xa1c);
     file.Read(m_slots, 0xa00);
     file.Close();
     if (!Verify()) {
@@ -292,7 +292,7 @@ i32 CSaveGame::Save(i32 a, i32 b) {
         file.Close();
         if (file.Open((const char*)m_name, 1, 0)) {
             ComputeAll();
-            file.Write(m_08, 0xa1c);
+            file.Write(m_header, 0xa1c);
             file.Write(m_slots, 0xa00);
             file.Close();
             ok = 1;
@@ -316,10 +316,10 @@ void CSaveGame::ComputeAll() {
     for (i32 i = 0; i < 10; i++) {
         sum += Encode((u8*)GetSlot(i));
     }
-    *(i32*)&m_08[0] = 0;
-    *(i32*)&m_08[4] = 1;
-    *(i32*)&m_08[8] = sum;
-    *(i32*)&m_08[0xc] = 0;
+    *(i32*)&m_header[0] = 0;
+    *(i32*)&m_header[4] = 1;
+    *(i32*)&m_header[8] = sum;
+    *(i32*)&m_header[0xc] = 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -331,7 +331,7 @@ i32 CSaveGame::Verify() {
     for (i32 i = 0; i < 10; i++) {
         sum += Decode((u8*)GetSlot(i));
     }
-    return *(i32*)&m_08[8] == sum;
+    return *(i32*)&m_header[8] == sum;
 }
 
 // ---------------------------------------------------------------------------
@@ -561,6 +561,6 @@ void CSaveGame::SetField1c(i32 v) {
 // CSaveGame::CheckField20  (0x000e5690)
 RVA(0x000e5690, 0xf)
 i32 CSaveGame::CheckField20() {
-    i32 v = m_20;
+    i32 v = m_magic;
     return v == 0x42a;
 }

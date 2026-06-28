@@ -82,10 +82,10 @@ public:
     CString m_str0; // +0x00
     CString m_name; // +0x04
     // header blob at +0x08, 0xa1c bytes; named fields overlaid below.
-    char m_08[0x10];      // +0x08
+    char m_header[0x10];  // +0x08
     u32 m_18;             // +0x18  (Init = 0x25; unsigned: SetField18 uses ja/jbe)
     u32 m_1c;             // +0x1c  (unsigned: SetField1c uses jbe)
-    u32 m_20;             // +0x20  (magic == 0x42a check)
+    u32 m_magic;          // +0x20  (magic == 0x42a check)
     char m_24[0x51];      // +0x24  pad to +0x75
     char m_75[0x83];      // +0x75  (a name string read by Register; pad to +0xf8)
     i32 m_f8;             // +0xf8
