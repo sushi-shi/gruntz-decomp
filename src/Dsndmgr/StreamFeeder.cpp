@@ -55,11 +55,11 @@ i32 StreamFeeder::SeedWindow(void* src, u32 off, u32 len) {
     if (src == 0) {
         return 0;
     }
-    m_2c = (u32)src;
-    m_3c = len;
-    m_38 = off;
-    m_34 = off;
-    m_40 = off + len;
+    m_source = (u32)src;
+    m_windowLength = len;
+    m_windowStart = off;
+    m_sourceOffset = off;
+    m_windowEnd = off + len;
     TickPump(-1);
     return 1;
 }
@@ -67,44 +67,44 @@ i32 StreamFeeder::SeedWindow(void* src, u32 off, u32 len) {
 // ---------------------------------------------------------------------------
 // StreamFeeder::CopyWindow (0x137380, __thiscall, 6 args - two
 // (dst, n, *got) triples). Stream-copy up to `n` bytes into each destination
-// region from the running window cursor (m_34), reporting the byte count read in
-// *got, and looping back to the window start (m_38) at the end when the loop
-// flag (m_30) is set. Each chunk is read through StreamSource::Read (0x139af0)
-// at the source back-pointer (m_2c). This is the slot-0 feed virtual's body.
+// region from the running source offset, reporting the byte count read in *got,
+// and looping back to the window start at the end when the loop flag is set. Each
+// chunk is read through StreamSource::Read (0x139af0) at the source back-pointer.
+// This is the slot-0 feed virtual's body.
 RVA(0x00137380, 0x10e)
 i32 StreamFeeder::CopyWindow(void* dst1, u32 n1, u32* got1, void* dst2, u32 n2, u32* got2) {
     if (dst1 != 0 && n1 > 0) {
         u32 want = n1;
-        if (m_34 + n1 > m_40) {
-            want = m_40 - m_34;
+        if (m_sourceOffset + n1 > m_windowEnd) {
+            want = m_windowEnd - m_sourceOffset;
         }
-        *got1 = ((FeederSource*)m_2c)->Read(dst1, want, m_34);
-        m_34 += *got1;
-        while (*got1 < n1 && m_30 != 0) {
-            m_34 = m_38;
+        *got1 = ((FeederSource*)m_source)->Read(dst1, want, m_sourceOffset);
+        m_sourceOffset += *got1;
+        while (*got1 < n1 && m_loop != 0) {
+            m_sourceOffset = m_windowStart;
             want = n1;
-            if (m_38 + n1 > m_40) {
-                want = m_40 - m_38;
+            if (m_windowStart + n1 > m_windowEnd) {
+                want = m_windowEnd - m_windowStart;
             }
-            *got1 = ((FeederSource*)m_2c)->Read(dst1, want, m_34);
-            m_34 += *got1;
+            *got1 = ((FeederSource*)m_source)->Read(dst1, want, m_sourceOffset);
+            m_sourceOffset += *got1;
         }
     }
     if (dst2 != 0 && n2 > 0) {
         u32 want = n2;
-        if (m_34 + n2 > m_40) {
-            want = m_40 - m_34;
+        if (m_sourceOffset + n2 > m_windowEnd) {
+            want = m_windowEnd - m_sourceOffset;
         }
-        *got2 = ((FeederSource*)m_2c)->Read(dst2, want, m_34);
-        m_34 += *got2;
-        while (*got2 < n2 && m_30 != 0) {
-            m_34 = m_38;
+        *got2 = ((FeederSource*)m_source)->Read(dst2, want, m_sourceOffset);
+        m_sourceOffset += *got2;
+        while (*got2 < n2 && m_loop != 0) {
+            m_sourceOffset = m_windowStart;
             want = n2;
-            if (m_38 + n2 > m_40) {
-                want = m_40 - m_38;
+            if (m_windowStart + n2 > m_windowEnd) {
+                want = m_windowEnd - m_windowStart;
             }
-            *got2 = ((FeederSource*)m_2c)->Read(dst2, want, m_34);
-            m_34 += *got2;
+            *got2 = ((FeederSource*)m_source)->Read(dst2, want, m_sourceOffset);
+            m_sourceOffset += *got2;
         }
     }
     return 1;
@@ -207,7 +207,7 @@ i32 StreamFeeder::FeederStart(
 ) {
     m_bufferLength = len;
     m_owner = owner;
-    m_14 = (u32)fmt;
+    m_format = (u32)fmt;
     m_playing = 0;
     if (*(u16*)((char*)fmt + 0xe) > 8) {
         m_silenceByte = 0;

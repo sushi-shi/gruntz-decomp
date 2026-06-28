@@ -58,19 +58,19 @@ struct StreamFeeder {
     FeederBuf* m_buffer;  // +0x08  per-stream DirectSound buffer wrapper
     u32 m_bufferCursor;   // +0x0c  read cursor into the buffer (write phase)
     u32 m_bufferLength;   // +0x10  loop/buffer length
-    u32 m_14;             // +0x14  format / flags
+    u32 m_format;         // +0x14  format / flags
     u32 m_armed;          // +0x18  armed flag
     u32 m_playing;        // +0x1c  playback active flag
     u32 m_pendingBytes;   // +0x20  pending-bytes accumulator
     u8 m_silenceByte;     // +0x24  silence byte (0x80 for 8-bit PCM, else 0)
     char m_pad25[0x28 - 0x25];
     u32 m_lastTickTime; // +0x28  last Tick time
-    u32 m_2c;           // +0x2c  source back-pointer (window)
-    u32 m_30;           // +0x30  loop flag
-    u32 m_34;           // +0x34  running source offset
-    u32 m_38;           // +0x38  window start offset
-    u32 m_3c;           // +0x3c  window length
-    u32 m_40;           // +0x40  window end (start+length)
+    u32 m_source;       // +0x2c  source back-pointer (window)
+    u32 m_loop;         // +0x30  loop flag
+    u32 m_sourceOffset; // +0x34  running source offset
+    u32 m_windowStart;  // +0x38  window start offset
+    u32 m_windowLength; // +0x3c  window length
+    u32 m_windowEnd;    // +0x40  window end (start+length)
 
     i32 SeedWindow(void* src, u32 off, u32 len); // 0x137340
     i32 CopyWindow(
