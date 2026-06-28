@@ -4,7 +4,7 @@
 // SoundStream::CreateStreamBuffer (ctor 0x1375b0): +0x10 holds the owning
 // SoundStream (m_owner), +0x6c is the embedded StreamFeeder sub-object (whose
 // vptr the voice overrides to 0x5ef6e0), and the DirectSoundMgr base fields below
-// +0x6c (m_3c the avg-bytes divisor) come from the shared per-buffer this-shape.
+// +0x6c (m_avgBytesDivisor) come from the shared per-buffer this-shape.
 //
 // Field names are placeholders; only OFFSETS + the emitted code bytes are
 // load-bearing.
@@ -54,7 +54,7 @@ struct StreamVoice {
     char m_pad04[0x10 - 0x04];
     VoiceOwner* m_owner; // +0x10  owning SoundStream (also the base m_owner)
     char m_pad14[0x3c - 0x14];
-    u32 m_3c; // +0x3c  avg-bytes-per-sec divisor (DirectSoundMgr base field)
+    u32 m_avgBytesDivisor; // +0x3c  avg-bytes-per-sec divisor (DirectSoundMgr base field)
     char m_pad40[0x60 - 0x40];
     i32 m_60; // +0x60  cached ctor arg b
     i32 m_64; // +0x64  cached ctor arg a

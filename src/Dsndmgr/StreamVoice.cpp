@@ -4,7 +4,7 @@
 // + constructed by SoundStream::CreateStreamBuffer (ctor 0x1375b0): +0x10 holds
 // the owning SoundStream (m_owner), +0x6c is the embedded streaming feeder
 // sub-object (whose vptr the voice overrides to 0x5ef6e0), and the standard
-// DirectSoundMgr base fields (m_3c the avg-bytes divisor) come from below +0x6c.
+// DirectSoundMgr base fields (m_avgBytesDivisor) come from below +0x6c.
 //
 // The trace conflated this with the StreamFeeder ctor at 0x1375b0 ("MallocCtor_
 // 1375b0") and grouped four sibling methods under it; the distinct vtable
@@ -97,11 +97,11 @@ i32 StreamVoice::Configure(i32 vol, i32 pan, i32 freq, i32 loop) {
 }
 
 // ---------------------------------------------------------------------------
-// StreamVoice::ComputeRatio (0x137590, __thiscall, no args). m_a8 * 1000 / m_3c
-// (a position->time ratio; the *1000 is open-coded as *5*5*5*8).
+// StreamVoice::ComputeRatio (0x137590, __thiscall, no args). Feeder window length
+// * 1000 / avg-bytes divisor (a position->time ratio; *1000 is open-coded as *5*5*5*8).
 RVA(0x00137590, 0x18)
 u32 StreamVoice::ComputeRatio() {
-    return m_feeder.m_3c * 1000 / m_3c;
+    return m_feeder.m_3c * 1000 / m_avgBytesDivisor;
 }
 
 // ---------------------------------------------------------------------------
