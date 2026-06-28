@@ -93,7 +93,7 @@ SoundStream::~SoundStream() {
 // ---------------------------------------------------------------------------
 // SoundStream::CreateStreamBuffer (0x137780, __thiscall, /GX EH frame). Validate
 // the PCM WAVEFORMATEX, build a DSBUFFERDESC and ask the inherited IDirectSound
-// device (+0x14) for a secondary buffer, then RezAlloc + construct a StreamVoice
+// device for a secondary buffer, then RezAlloc + construct a StreamVoice
 // wrapping it, thread it on the +0x94 list, and seed its duration fields.
 // @early-stop
 // RezAlloc+placement-new EH-frame wall (docs/patterns/rezalloc-placement-new-no-eh-frame.md):
@@ -106,7 +106,7 @@ SoundStream::~SoundStream() {
 // the frame.
 RVA(0x00137780, 0x171)
 StreamVoice* SoundStream::CreateStreamBuffer(WaveFormatX* fmt, u32 bytes, i32 a, i32 b, i32 c) {
-    if (m_78 == 0) {
+    if (m_initialized == 0) {
         return 0;
     }
     if (bytes == 0) {
@@ -134,7 +134,7 @@ StreamVoice* SoundStream::CreateStreamBuffer(WaveFormatX* fmt, u32 bytes, i32 a,
     desc.dwReserved = 0;
     desc.lpwfxFormat = &wf;
 
-    i32 hr = m_14->vtbl->CreateSoundBuffer(m_14, &desc, &out, 0) != 0;
+    i32 hr = m_device->vtbl->CreateSoundBuffer(m_device, &desc, &out, 0) != 0;
     if (hr) {
         DirectSoundMgr::GetErrorString(DSNDMGSR_FILE, 0x678, hr);
         return 0;
@@ -199,9 +199,9 @@ StreamVoice* SoundStream::OpenStream(StreamSource* src, i32 p1, i32 p2, i32 p3, 
 // it from the +0x94 list, then run its scalar-deleting destructor.
 RVA(0x001379d0, 0x5f)
 void SoundStream::DestroyVoice(StreamVoice* voice) {
-    if (m_78) {
+    if (m_initialized) {
         voice->m_feeder.FeederReset(0);
-        ((StreamVoiceList*)&m_0c)->Reap(voice, 0xffff);
+        ((StreamVoiceList*)&m_voiceHead)->Reap(voice, 0xffff);
         voice->m_buf0c->vtbl->Release(voice->m_buf0c);
         voice->m_buf0c = 0;
         ((StreamList*)&m_94)->Unlink(voice ? &voice->m_link : 0);

@@ -96,21 +96,21 @@ public:
     static void BuildVolumeTable();            // 0x1351a0  fill g_volumeTable[0..100]
 
     // --- layout ---------------------------------------------------------------
-    void* m_vtbl;        // +0x00
-    SoundBuf* m_04_head; // +0x04  owned-buffer list head (biased +4)
-    void* m_08;          // +0x08  owned-buffer list tail
-    void* m_0c;          // +0x0c  voice/channel sub-list head (per-buffer remove)
-    void* m_10;          // +0x10  voice/channel sub-list tail
-    IDirectSoundZ* m_14; // +0x14  the IDirectSound device
+    void* m_vtbl;            // +0x00
+    SoundBuf* m_bufferHead;  // +0x04  owned-buffer list head (biased +4)
+    void* m_bufferTail;      // +0x08  owned-buffer list tail
+    void* m_voiceHead;       // +0x0c  voice/channel sub-list head (per-buffer remove)
+    void* m_voiceTail;       // +0x10  voice/channel sub-list tail
+    IDirectSoundZ* m_device; // +0x14  the IDirectSound device
     char m_pad18[0x78 - 0x18];
-    i32 m_78; // +0x78  "initialized" flag
+    i32 m_initialized; // +0x78
     char m_pad7c[0x80 - 0x7c];
-    i32 m_80;                  // +0x80
-    IDirectSoundBufferZ* m_84; // +0x84  primary buffer
-    i32 m_88;                  // +0x88
-    i32 m_8c;                  // +0x8c
-    i32 m_90;                  // +0x90
-    void* m_94;                // +0x94  cached-sample list/map head
+    i32 m_80;                             // +0x80
+    IDirectSoundBufferZ* m_primaryBuffer; // +0x84
+    i32 m_88;                             // +0x88
+    i32 m_8c;                             // +0x8c
+    i32 m_force8Bit;                      // +0x90
+    void* m_94;                           // +0x94  cached-sample list/map head
 };
 
 #endif // DSNDMGR_SOUNDDEVICE_H

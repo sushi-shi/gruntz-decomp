@@ -179,18 +179,18 @@ void SoundDevice::BuildVolumeTable() {
 // dtor + the list members) is modelled as destructible subobjects atomically.
 RVA(0x00136440, 0x74)
 SoundDevice::SoundDevice() {
-    m_04_head = 0;
-    m_08 = 0;
-    m_0c = 0;
-    m_10 = 0;
+    m_bufferHead = 0;
+    m_bufferTail = 0;
+    m_voiceHead = 0;
+    m_voiceTail = 0;
     *(void**)this = (void*)g_SoundDeviceVtbl;
-    m_78 = 0;
+    m_initialized = 0;
     BuildVolumeTable();
     m_80 = 0;
-    m_84 = 0;
+    m_primaryBuffer = 0;
     m_88 = 0;
     m_8c = 0;
-    m_90 = 0;
+    m_force8Bit = 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -213,7 +213,7 @@ void* SoundDevice::ScalarDtor(i32 flag) {
 // device vptr, then if initialized run the full teardown.
 // @early-stop
 // eh-dtor-needs-base-subobject wall (docs/patterns/eh-dtor-needs-base-subobject.md):
-// the vptr-stamp + `if(m_78) Shutdown()` body is byte-exact, but the retail /GX EH
+// the vptr-stamp + `if(m_initialized) Shutdown()` body is byte-exact, but the retail /GX EH
 // frame (push -1 / fs:0 setup / trylevel) comes from a non-trivial base subobject
 // the manual-vptr non-polymorphic model can't emit. Same wall as DirectSoundMgr::
 // ~DirectSoundMgr (0x135bb0). Defer to the final sweep when the full base+vtable
@@ -221,7 +221,7 @@ void* SoundDevice::ScalarDtor(i32 flag) {
 RVA(0x00136500, 0x43)
 SoundDevice::~SoundDevice() {
     *(void**)this = (void*)g_SoundDeviceVtbl;
-    if (m_78) {
+    if (m_initialized) {
         Shutdown();
     }
 }
@@ -232,18 +232,18 @@ SoundDevice::~SoundDevice() {
 // destroys it), then the primary buffer and the device, then clear the flag.
 RVA(0x00136690, 0x58)
 void SoundDevice::Shutdown() {
-    if (m_78) {
-        SoundBuf* node = m_04_head ? (SoundBuf*)((char*)m_04_head - 4) : 0;
+    if (m_initialized) {
+        SoundBuf* node = m_bufferHead ? (SoundBuf*)((char*)m_bufferHead - 4) : 0;
         while (node) {
             RemoveBuffer(node);
-            node = m_04_head ? (SoundBuf*)((char*)m_04_head - 4) : 0;
+            node = m_bufferHead ? (SoundBuf*)((char*)m_bufferHead - 4) : 0;
         }
-        if (m_84) {
-            m_84->vtbl->Release(m_84);
+        if (m_primaryBuffer) {
+            m_primaryBuffer->vtbl->Release(m_primaryBuffer);
         }
-        m_14->vtbl->Release(m_14);
+        m_device->vtbl->Release(m_device);
     }
-    m_78 = 0;
+    m_initialized = 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -263,7 +263,7 @@ void SoundDevice::Shutdown() {
 // modelled and a real `new T` allocator path emits the frame.
 RVA(0x001366f0, 0x168)
 DirectSoundMgr* SoundDevice::CreateBuffer(WaveFormatX* fmt, u32 bytes, u32 flags) {
-    if (m_78 == 0) {
+    if (m_initialized == 0) {
         return 0;
     }
     if (bytes == 0) {
@@ -291,7 +291,7 @@ DirectSoundMgr* SoundDevice::CreateBuffer(WaveFormatX* fmt, u32 bytes, u32 flags
     desc.dwReserved = 0;
     desc.lpwfxFormat = &wf;
 
-    i32 hr = m_14->vtbl->CreateSoundBuffer(m_14, &desc, &out, 0) != 0;
+    i32 hr = m_device->vtbl->CreateSoundBuffer(m_device, &desc, &out, 0) != 0;
     if (hr) {
         DirectSoundMgr::GetErrorString(DSNDMGR_FILE, 0x422, hr);
         return 0;
@@ -306,7 +306,7 @@ DirectSoundMgr* SoundDevice::CreateBuffer(WaveFormatX* fmt, u32 bytes, u32 flags
         voice->BaseInit(out, this);
     }
     voice->m_formatWord = *(u32*)&fmt->wFormatTag;
-    ((SoundBufList*)&m_04_head)->Insert(voice ? &voice->m_link : 0);
+    ((SoundBufList*)&m_bufferHead)->Insert(voice ? &voice->m_link : 0);
     voice->m_avgBytesPerSec = fmt->nAvgBytesPerSec;
     voice->m_avgBytesDivisor = fmt->nAvgBytesPerSec;
     voice->m_byteCount = bytes;
@@ -334,7 +334,7 @@ extern const char s_rb[];
 // the file. Returns the acquired buffer wrapper (0 on any I/O failure).
 RVA(0x00136860, 0xa9)
 DirectSoundMgr* SoundDevice::AcquireFile(char* path, u32 a2, u32 a3) {
-    if (m_78 == 0) {
+    if (m_initialized == 0) {
         return 0;
     }
     void* fp = Eng_fopen(path, s_rb);
@@ -357,7 +357,7 @@ DirectSoundMgr* SoundDevice::AcquireFile(char* path, u32 a2, u32 a3) {
 // ---------------------------------------------------------------------------
 // SoundDevice::Acquire (0x136910, __thiscall). Parse a RIFF/WAVE blob for its PCM
 // fmt + data extents, optionally downconvert a 16-bit PCM format to 8-bit (when
-// the device forces it, m_90, or the parse flags request it), create a buffer for
+// the device forces it, m_force8Bit, or the parse flags request it), create a buffer for
 // the format, then load the PCM data into it; on a load failure the buffer is
 // removed. Only the first arg is live - the other two slots are scratch.
 // @early-stop
@@ -370,7 +370,7 @@ DirectSoundMgr* SoundDevice::AcquireFile(char* path, u32 a2, u32 a3) {
 // C source. 99.8% - logic + every instruction complete, deferred to the final sweep.
 RVA(0x00136910, 0x119)
 DirectSoundMgr* SoundDevice::Acquire(void* riff, u32, u32) {
-    if (m_78 == 0) {
+    if (m_initialized == 0) {
         return 0;
     }
     if (riff == 0) {
@@ -388,7 +388,7 @@ DirectSoundMgr* SoundDevice::Acquire(void* riff, u32, u32) {
     }
 
     i32 cvt = 0;
-    if (m_90 != 0 || (po.m_flag & 1) == 1) {
+    if (m_force8Bit != 0 || (po.m_flag & 1) == 1) {
         cvt = 1;
     }
     if (po.m_fmt->wBitsPerSample != 0x10 || po.m_fmt->wFormatTag != 1) {
@@ -418,7 +418,7 @@ DirectSoundMgr* SoundDevice::Acquire(void* riff, u32, u32) {
 // then Restore the buffer and return its normalized 0/1 success.
 RVA(0x00136ab0, 0x41)
 i32 SoundDevice::ValidateRestore(DirectSoundMgr* buf, WaveFormatX* fmt, u32 size) {
-    if (m_78 == 0) {
+    if (m_initialized == 0) {
         return 0;
     }
     if (size == 0) {
@@ -438,7 +438,7 @@ i32 SoundDevice::ValidateRestore(DirectSoundMgr* buf, WaveFormatX* fmt, u32 size
 // blob into an EXISTING buffer wrapper (the Acquire sibling that reuses a buffer
 // instead of creating one): gate on init + a non-null RIFF, only proceed when the
 // buffer is currently looping, parse the chunks, optionally downconvert a 16-bit
-// PCM format to 8-bit (forced by m_90 or the parse flag), validate+Restore the
+// PCM format to 8-bit (forced by m_force8Bit or the parse flag), validate+Restore the
 // buffer, then LockConvert the PCM data into it. Returns the LockConvert success.
 // @early-stop
 // frame-homing-area-reuse wall (docs/patterns/stack-buffer-size-drives-frame.md):
@@ -448,7 +448,7 @@ i32 SoundDevice::ValidateRestore(DirectSoundMgr* buf, WaveFormatX* fmt, u32 size
 // shifting the [esp+N] operands. Not source-steerable; deferred to the final sweep.
 RVA(0x00136bd0, 0x110)
 i32 SoundDevice::ReloadRiff(DirectSoundMgr* buf, void* riff, u32 a3) {
-    if (m_78 == 0) {
+    if (m_initialized == 0) {
         return 0;
     }
     if (riff == 0) {
@@ -469,7 +469,7 @@ i32 SoundDevice::ReloadRiff(DirectSoundMgr* buf, void* riff, u32 a3) {
     }
 
     i32 cvt = 0;
-    if (m_90 != 0 || (po.m_flag & 1) == 1) {
+    if (m_force8Bit != 0 || (po.m_flag & 1) == 1) {
         cvt = 1;
     }
     if (po.m_fmt->wBitsPerSample != 0x10 || po.m_fmt->wFormatTag != 1) {
@@ -494,13 +494,13 @@ i32 SoundDevice::ReloadRiff(DirectSoundMgr* buf, void* riff, u32 a3) {
 // list, then run its scalar-deleting destructor.
 RVA(0x00136d80, 0x56)
 void SoundDevice::RemoveBuffer(SoundBuf* node) {
-    if (m_78) {
-        ((SoundVoiceList*)&m_0c)->Reap(node, 0xffff);
+    if (m_initialized) {
+        ((SoundVoiceList*)&m_voiceHead)->Reap(node, 0xffff);
         if (node->m_buf0c) {
             node->m_buf0c->vtbl->Release(node->m_buf0c);
             node->m_buf0c = 0;
         }
-        ((SoundBufList*)&m_04_head)->Unlink(node ? &node->m_link : 0);
+        ((SoundBufList*)&m_bufferHead)->Unlink(node ? &node->m_link : 0);
         if (node) {
             ((DSoundCloneBase*)node)->ScalarDtor(1);
         }
@@ -512,8 +512,8 @@ void SoundDevice::RemoveBuffer(SoundBuf* node) {
 // StopAndRewind + StopAllClones on each.
 RVA(0x00136de0, 0x3c)
 void SoundDevice::StopAll() {
-    if (m_78) {
-        SoundBuf* node = m_04_head ? (SoundBuf*)((char*)m_04_head - 4) : 0;
+    if (m_initialized) {
+        SoundBuf* node = m_bufferHead ? (SoundBuf*)((char*)m_bufferHead - 4) : 0;
         while (node) {
             node->StopAndRewind();
             node->StopAllClones();
@@ -528,21 +528,21 @@ void SoundDevice::StopAll() {
 // restamp its vptr to the pure base, and RezFree it. Returns 1.
 // @early-stop
 // regalloc/early-out scheduling wall: retail reserves all 4 callee-saved regs
-// (ebx/ebp/esi/edi) in the prologue and runs the `if(!m_78) return 0` early-out
+// (ebx/ebp/esi/edi) in the prologue and runs the `if(!m_initialized) return 0` early-out
 // IN-frame (popping all 4), while MSVC here emits a leaner frameless early-out
 // before the saves. The loop body (slot-1 Free, neg/sbb/and arg, vptr restamp,
 // RezFree) is byte-exact; only the prologue/early-out register scheduling shifts.
 // 77% on a documented regalloc wall - logic complete, deferred to the final sweep.
 RVA(0x00136ed0, 0x72)
 i32 SoundDevice::FreeSamples() {
-    if (m_78 == 0) {
+    if (m_initialized == 0) {
         return 0;
     }
-    SoundSample* node = m_0c ? (SoundSample*)((char*)m_0c - 4) : 0;
+    SoundSample* node = m_voiceHead ? (SoundSample*)((char*)m_voiceHead - 4) : 0;
     while (node) {
         SoundSample* next = node->m_link ? (SoundSample*)((char*)node->m_link - 4) : 0;
         node->Free();
-        ((SoundBufList*)&m_0c)->Unlink(node ? &node->m_link : 0);
+        ((SoundBufList*)&m_voiceHead)->Unlink(node ? &node->m_link : 0);
         if (node) {
             *(void**)node = (void*)g_PureVtbl;
             RezFree(node);
@@ -603,13 +603,13 @@ extern "C" i32 ParseWaveChunks(void* riff, ParseFmt* out, void** dataOut, u32* s
 // buffer exists, then set its WAVEFORMATEX; report a failing HRESULT and bail.
 RVA(0x001371a0, 0x5a)
 i32 SoundDevice::SetPrimaryFormat(void* fmt) {
-    if (m_78 == 0) {
+    if (m_initialized == 0) {
         return 0;
     }
     if (CreatePrimaryBuffer() == 0) {
         return 0;
     }
-    i32 hr = m_84->vtbl->SetFormat(m_84, fmt) != 0;
+    i32 hr = m_primaryBuffer->vtbl->SetFormat(m_primaryBuffer, fmt) != 0;
     if (hr) {
         DirectSoundMgr::GetErrorString(DSNDMGR_FILE, 0x678, hr);
         return 0;
