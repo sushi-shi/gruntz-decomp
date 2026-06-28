@@ -43,7 +43,6 @@
 #include "CNetSession.cpp"
 #include "CPlay.cpp"
 #include "CRegSink.cpp"
-#include "CStatusBarItem2.cpp"
 #include "CStatusBarMgr.cpp"
 #include "EngineExternFns.cpp"
 #include "MinervaInner.cpp"

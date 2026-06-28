@@ -1,9 +1,20 @@
 #include <rva.h>
 // CStatusBarMgr.cpp - engine-label stubs for CStatusBarMgr (reloc-correlation).
 
-// CStatusBarItem2 is defined in CStatusBarItem2.cpp (same aggregate TU); its
-// helpers (Sub3f0/Inner560/740/880) and m_50 are reused by GetItem.
-class CStatusBarItem2;
+// The item type GetItem manages. Its real class is the DSNDMGR buffer wrapper
+// (DirectSoundMgr, src/Dsndmgr/DirectSoundMgr.cpp): Sub3f0/Inner560/740/880 are
+// IsPlaying/SetVolume/SetPan/SetFrequency (0x1353f0/0x135560/0x135740/0x135880)
+// and m_50 is the play key. Declared minimally here (decls only); the helper
+// calls lower to reloc-masked __thiscall calls to those real bodies.
+class CStatusBarItem2 {
+public:
+    char m_pad0[0x50];
+    i32 m_50;          // [+0x50]
+    i32 Sub3f0();      // 0x1353f0 thiscall
+    i32 Inner560(i32); // 0x135560 thiscall
+    i32 Inner740(i32); // 0x135740 thiscall
+    i32 Inner880(i32); // 0x135880 thiscall
+};
 
 // Intrusive list link embedded in each item at +0x44.
 struct SBLink {
