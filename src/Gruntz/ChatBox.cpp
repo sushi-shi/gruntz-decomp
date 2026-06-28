@@ -322,7 +322,8 @@ i32 CChatBox::OnFlag80000000() {
 }
 
 // 0x182d60 - entity-flag 0x00000003 scan -> activate the focused item.
-RVA(0x00182d60, 0x36)
+// real size 0x16 (ret at 0x182d75); the prior 0x36 overran into 0x182d80.
+RVA(0x00182d60, 0x16)
 i32 CChatBox::OnFlag00000003() {
     if (!m_40) {
         return 0;

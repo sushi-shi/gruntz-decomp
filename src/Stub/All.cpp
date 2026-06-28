@@ -32,7 +32,10 @@
 #include "CButeNodeBase.cpp"
 #include "CFileIO.cpp"
 #include "CFileImageDecode.cpp"
-#include "CGMMenuUI.cpp"
+// CGMMenuUI.cpp removed: it was a duplicate candidate body set (carrying NO RVA
+// bindings, so it diffed nothing) of the CChatBox menu-drive methods
+// (0x182c70..0x183150) already bound + 100% byte-exact in src/Gruntz/ChatBox.cpp.
+// CGMMenuUI == CChatBox (same RVAs).
 #include "CGameModeBase.cpp"
 #include "CGruntzCmdList.cpp"
 #include "CImageBlit.cpp"
