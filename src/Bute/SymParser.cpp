@@ -51,7 +51,7 @@ CSymParser::CSymParser(void* buf, i32 a2, i32 a3) {
 }
 
 // ~CSymParser (0x13abc0): the /GX scalar destructor. Re-stamp the primary vtable,
-// run Clear(0) if armed (m_0c), drain the +0x10 object list, free the heap root
+// run Clear(0) if armed (m_parseArmed), drain the +0x10 object list, free the heap root
 // CSymTab + the owned buffers, drain the +0x88 node list, then RemoveAll the +0x80
 // hash member (the trylevel-0 /GX member-teardown) and re-stamp the +0x10 list
 // sub-object vtable. The +0x80 CHashBase auto-destructs after the body.
@@ -64,7 +64,7 @@ CSymParser::CSymParser(void* buf, i32 a2, i32 a3) {
 RVA(0x0013abc0, 0x13f)
 CSymParser::~CSymParser() {
     m_vtbl = &CSymParser_vftable;
-    if (m_0c) {
+    if (m_parseArmed) {
         Clear(0);
     }
     CObjNode* p;
@@ -81,16 +81,16 @@ CSymParser::~CSymParser() {
         RezFree(root);
         m_root = 0;
     }
-    if (m_buf64) {
-        RezFree(m_buf64);
-        m_buf64 = 0;
+    if (m_cachedSourceBuffer) {
+        RezFree(m_cachedSourceBuffer);
+        m_cachedSourceBuffer = 0;
     }
-    if (m_buf04) {
-        RezFree(m_buf04);
-        m_buf04 = 0;
+    if (m_ownedBuffer) {
+        RezFree(m_ownedBuffer);
+        m_ownedBuffer = 0;
     }
     CSlotNode* node = (CSlotNode*)m_nodes.m_head;
-    m_0c = 0;
+    m_parseArmed = 0;
     m_activeNode = 0;
     m_30 = 0;
     m_34 = 0;
@@ -106,10 +106,10 @@ CSymParser::~CSymParser() {
     m_5c = 0;
     m_60 = 0;
     m_08 = 1;
-    m_buf64 = 0;
+    m_cachedSourceBuffer = 0;
     if (node) {
         do {
-            RezFree(node->m_08);
+            RezFree(node->m_buffer);
             m_nodes.Unlink(node);
             RezFree(node);
             node = (CSlotNode*)m_nodes.m_head;
@@ -135,7 +135,7 @@ extern "C" char* strcpy(char* d, const char* s);
 
 // @early-stop
 // 0x3b8 (952 B) /GX text/binary loader. The body reproduces the buffer recache
-// (free+strdup m_buf64), the Classify dispatch, both reader builds (operator-new +
+// (free+strdup m_cachedSourceBuffer), the Classify dispatch, both reader builds (operator-new +
 // ctor-throw cleanup states 0..4), the reader->Read / ReadRaw virtual calls, the root
 // `new CSymTab` (MakeSymSeed leftover-args trick), and the binary-header field copies +
 // magic validation. The plateau is the documented /GX trylevel state-machine + the
@@ -147,11 +147,11 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
     if (a == 0) {
         return 0;
     }
-    if (m_buf64) {
-        ::operator delete(m_buf64);
+    if (m_cachedSourceBuffer) {
+        ::operator delete(m_cachedSourceBuffer);
     }
     char* src = (char*)::operator new(strlen((char*)buf) + 1);
-    m_buf64 = src;
+    m_cachedSourceBuffer = src;
     strcpy(src, (char*)buf);
     i32 tag = Classify((char*)buf);
     if (tag != 0) {
@@ -166,8 +166,8 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
             reader = 0;
         }
         if (reader == 0) {
-            ::operator delete(m_buf64);
-            m_buf64 = 0;
+            ::operator delete(m_cachedSourceBuffer);
+            m_cachedSourceBuffer = 0;
             return 0;
         }
         m_activeNode = reader;
@@ -176,10 +176,19 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
         if (reader->Read(buf, a, b) == 0) {
             return 0;
         }
-        m_0c = (void*)1;
-        CSymTab* node = new CSymTab(this, 0, g_emptyString, 0, 0, (void*)MakeSymSeed(), m_78, m_7c);
+        m_parseArmed = (void*)1;
+        CSymTab* node = new CSymTab(
+            this,
+            0,
+            g_emptyString,
+            0,
+            0,
+            (void*)MakeSymSeed(),
+            m_subTabBucketCount,
+            m_symbolBucketCount
+        );
         m_root = node;
-        ParseRecords(reader, node, (char*)m_buf64, 0);
+        ParseRecords(reader, node, (char*)m_cachedSourceBuffer, 0);
         return 1;
     }
     // binary stream
@@ -190,8 +199,8 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
         reader = 0;
     }
     if (reader == 0) {
-        ::operator delete(m_buf64);
-        m_buf64 = 0;
+        ::operator delete(m_cachedSourceBuffer);
+        m_cachedSourceBuffer = 0;
         return 0;
     }
     m_activeNode = reader;
@@ -200,11 +209,20 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
     if (reader->Read(buf, a, b) == 0) {
         return 0;
     }
-    m_0c = (void*)1;
+    m_parseArmed = (void*)1;
     if (b != 0) {
         m_3c = 0xa8;
         m_4c = 1;
-        CSymTab* node = new CSymTab(this, 0, g_emptyString, 0, 0, (void*)MakeSymSeed(), m_78, m_7c);
+        CSymTab* node = new CSymTab(
+            this,
+            0,
+            g_emptyString,
+            0,
+            0,
+            (void*)MakeSymSeed(),
+            m_subTabBucketCount,
+            m_symbolBucketCount
+        );
         m_root = node;
         return 1;
     }
@@ -225,8 +243,16 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
     if (hdr[0] != 0x0d || hdr[0x3f] != 0x0a || hdr[0x7e] != 0x1a || b != 1) {
         return 0;
     }
-    CSymTab* node =
-        new CSymTab(this, 0, g_emptyString, (void*)m_30, (void*)m_34, (void*)m_38, m_78, m_7c);
+    CSymTab* node = new CSymTab(
+        this,
+        0,
+        g_emptyString,
+        (void*)m_30,
+        (void*)m_34,
+        (void*)m_38,
+        m_subTabBucketCount,
+        m_symbolBucketCount
+    );
     m_root = node;
     node->ApplyRecursive((i32)reader, m_30, m_34, 0);
     return 1;
@@ -308,7 +334,7 @@ i32 CSymParser::ParseRecords(void* reader, CSymTab* node, char* path, i32 flag) 
         while (i < nleft && fname[i] >= '0' && fname[i] <= '9') {
             i++;
         }
-        i32 key = (i >= nleft) ? atoi(fname) : (i32)m_28++;
+        i32 key = (i >= nleft) ? atoi(fname) : (i32)m_nextGeneratedFileKey++;
         void* extKey = 0;
         if (ext[0] != 0) {
             _strlwr(ext);
@@ -332,7 +358,7 @@ i32 CSymParser::ParseRecords(void* reader, CSymTab* node, char* path, i32 flag) 
 }
 
 // Clear (0x13b850): drop the active node (m_activeNode) + the +0x10 object list,
-// free the heap root CSymTab + the +0x64 buffer, then null m_0c. The arg is unused;
+// free the heap root CSymTab + the cached source buffer, then null m_parseArmed. The arg is unused;
 // the return is the active node's slot[5] (Detach) result, left in eax.
 // @early-stop
 // regalloc wall: retail pins `this`->edi + the walked node->esi; recompile swaps
@@ -363,11 +389,11 @@ void* CSymParser::Clear(i32 final) {
         RezFree(m_root);
         m_root = 0;
     }
-    if (m_buf64) {
-        RezFree(m_buf64);
-        m_buf64 = 0;
+    if (m_cachedSourceBuffer) {
+        RezFree(m_cachedSourceBuffer);
+        m_cachedSourceBuffer = 0;
     }
-    m_0c = 0;
+    m_parseArmed = 0;
     return r;
 }
 
@@ -383,17 +409,17 @@ void* CSymParser::ResolvePath(const char* path) {
     return GetRoot()->ResolvePath(path);
 }
 
-// ReParse (0x13c050): if the parser is armed (m_0c non-null), drop the current
+// ReParse (0x13c050): if the parser is armed (m_parseArmed non-null), drop the current
 // parse state (Clear(0)) and re-parse the cached +0x64 source buffer; return that
 // parse's result. Not armed -> return 0. (ParseBuffer @0x13ad00 is the big buffer
 // parser, modeled as a reloc-masked extern.)
 RVA(0x0013c050, 0x28)
 i32 CSymParser::ReParse() {
-    if (m_0c == 0) {
+    if (m_parseArmed == 0) {
         return 0;
     }
     Clear(0);
-    return ParseBuffer(m_buf64, 1, 0);
+    return ParseBuffer(m_cachedSourceBuffer, 1, 0);
 }
 
 // AddNode (0x13c210): splice a record's intrusive node (rec+0x1c) into the +0x80
@@ -412,7 +438,7 @@ struct CParseSlot {
     char m_pad00[0x1c];
     void* m_node1c; // +0x1c  hash-node vtable prefix (the insert handle)
     char m_pad20[0x30 - 0x20];
-    void* m_30; // +0x30  self-ptr
+    void* m_self; // +0x30
     char m_pad34[0x3c - 0x34];
     void Init(); // 0x1396f0
 };
@@ -433,7 +459,7 @@ void* CSymParser::PopParseSlot() {
         if (node == 0) {
             return 0;
         }
-        i32 n = m_90;
+        i32 n = m_parseSlotBlockCount;
         CParseSlot* arr = (CParseSlot*)RezAlloc(n * 0x3c);
         if (arr) {
             CParseSlot* p = arr;
@@ -448,14 +474,14 @@ void* CSymParser::PopParseSlot() {
                 } while (i);
             }
         }
-        node->m_08 = arr;
+        node->m_buffer = arr;
         if (arr == 0) {
             RezFree(node);
             return 0;
         }
-        for (i32 j = 0; (u32)j < (u32)m_90; j++) {
-            CParseSlot* el = (CParseSlot*)((char*)node->m_08 + j * 0x3c);
-            el->m_30 = el;
+        for (i32 j = 0; (u32)j < (u32)m_parseSlotBlockCount; j++) {
+            CParseSlot* el = (CParseSlot*)((char*)node->m_buffer + j * 0x3c);
+            el->m_self = el;
             m_hash.Insert((CHashInsertNode*)((char*)el + 0x1c));
         }
         m_nodes.Link(node);

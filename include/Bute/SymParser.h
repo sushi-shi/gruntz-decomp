@@ -8,14 +8,14 @@
 // doctrine); unproven field roles keep m_<hex>.
 //
 //   +0x00  vtable      : primary vtable (0x5ef750), stamped by ctor/dtor.
-//   +0x04  m_buf04     : char* - an owned buffer (RezFree'd in dtor).
+//   +0x04  m_ownedBuffer : char* - an owned buffer (RezFree'd in dtor).
 //   +0x08  m_08        : i32   (=1 in ctor).
-//   +0x0c  m_0c        : void* - guard: if non-null, dtor runs Clear(0) first.
+//   +0x0c  m_parseArmed : void* - guard: if non-null, dtor runs Clear(0) first.
 //   +0x10  m_list      : CObjList - the intrusive object list sub-object; its own
 //                        abstract vtable (0x5ef760, all __purecall). { vtbl@+0x10,
 //                        head@+0x14, tail@+0x18 }; m_count@+0x1c.
 //   +0x44  m_root      : CSymTab* - the heap root scope (~CSymTab + RezFree in dtor).
-//   +0x64  m_buf64     : void* - another owned buffer (RezFree'd).
+//   +0x64  m_cachedSourceBuffer : void* - cached source buffer (RezFree'd).
 //   +0x80  m_hash      : CHashBase - an engine hash table (RemoveAll in dtor).
 //   +0x88  m_nodes     : CHashSlotList - a second intrusive list { head, tail };
 //                        each node owns a buffer at node+0x8.
@@ -125,7 +125,7 @@ struct CObjList {
 // uses the CHashSlotList::Unlink (0x1391e0) machinery from Hash.h.
 struct CSlotNode {
     char m_pad00[0x8];
-    void* m_08; // +0x08  owned buffer (RezFree'd)
+    void* m_buffer; // +0x08  owned buffer (RezFree'd)
 };
 
 // The +0x80 hash member. CHashBase carries no destructor (a standalone CHashBase
@@ -166,7 +166,7 @@ public:
     ~CSymParser();
 
     // Clear (0x13b850): detach the active node (m_activeNode), drop the +0x10 object
-    // list, free the heap root + the +0x64 buffer, then null m_0c. The (discarded)
+    // list, free the heap root + the cached source buffer, then null m_parseArmed. The (discarded)
     // return is m_activeNode's Detach() result, left in eax. `final` is unused. RVA-keyed pairing
     // absorbs the void(QAEXH)-vs-void*(QAEPAXH) mangling mismatch.
     void* Clear(i32 final);
@@ -177,7 +177,7 @@ public:
     CSymTab* GetRoot(); // 0x13b900
 
     // ParseBuffer (0x13ad00): the big buffer parser/loader (__thiscall, 3 args). It
-    // re-caches the source buffer (m_buf64 = strdup(buf)), classifies the stream, then
+    // re-caches the source buffer (m_cachedSourceBuffer = strdup(buf)), classifies the stream, then
     // builds the right reader + the root scope and folds the records into it.
     i32 ParseBuffer(void* buf, i32 a, i32 b); // 0x13ad00
 
@@ -193,12 +193,12 @@ public:
     // ResolveName (0x13b910): map an upcased name to its int key. Reloc-masked extern.
     void* ResolveName(const char* s); // 0x13b910
 
-    // ReParse (0x13c050): if armed (m_0c), Clear(0) then re-parse the cached
+    // ReParse (0x13c050): if armed (m_parseArmed), Clear(0) then re-parse the cached
     // +0x64 buffer. Returns 0 if not armed, else ParseBuffer's result.
     i32 ReParse(); // 0x13c050
 
     // PopParseSlot (0x13c0c0): pop the first parse-slot record out of m_hash. If the
-    // table is empty, Rez-alloc a fresh block of m_90 parse slots, init each, stamp
+    // table is empty, Rez-alloc a fresh block of m_parseSlotBlockCount parse slots, init each, stamp
     // their self-ptrs + register them into m_hash, link the block into m_nodes, then
     // pop the first. Returns the popped record (or 0 on allocation failure).
     void* PopParseSlot(); // 0x13c0c0
@@ -208,35 +208,35 @@ public:
     void* ResolvePath(const char* path);               // 0x13c030 -> root->ResolvePath
     void AddNode(void* rec);                           // 0x13c210 -> m_hash insert
 
-    void* m_vtbl;           // +0x00
-    char* m_buf04;          // +0x04
-    i32 m_08;               // +0x08  (=1)
-    void* m_0c;             // +0x0c  Clear guard
-    CObjList m_list;        // +0x10  (+0x10..+0x1c)
-    CObjNode* m_activeNode; // +0x20  detached+removed+deleted first in Clear
-    i32 m_24;               // +0x24
-    i32 m_28;               // +0x28
-    i32 m_2c;               // +0x2c
-    i32 m_30;               // +0x30
-    i32 m_34;               // +0x34
-    i32 m_38;               // +0x38
-    i32 m_3c;               // +0x3c
-    i32 m_40;               // +0x40  (=1)
-    CSymTab* m_root;        // +0x44
-    i32 m_48;               // +0x48
-    i32 m_4c;               // +0x4c
-    i32 m_50;               // +0x50  (=1)
-    i32 m_54;               // +0x54
-    i32 m_58;               // +0x58
-    i32 m_5c;               // +0x5c
-    i32 m_60;               // +0x60
-    void* m_buf64;          // +0x64
+    void* m_vtbl;               // +0x00
+    char* m_ownedBuffer;        // +0x04
+    i32 m_08;                   // +0x08  (=1)
+    void* m_parseArmed;         // +0x0c  Clear guard
+    CObjList m_list;            // +0x10  (+0x10..+0x1c)
+    CObjNode* m_activeNode;     // +0x20  detached+removed+deleted first in Clear
+    i32 m_24;                   // +0x24
+    i32 m_nextGeneratedFileKey; // +0x28
+    i32 m_2c;                   // +0x2c
+    i32 m_30;                   // +0x30
+    i32 m_34;                   // +0x34
+    i32 m_38;                   // +0x38
+    i32 m_3c;                   // +0x3c
+    i32 m_40;                   // +0x40  (=1)
+    CSymTab* m_root;            // +0x44
+    i32 m_48;                   // +0x48
+    i32 m_4c;                   // +0x4c
+    i32 m_50;                   // +0x50  (=1)
+    i32 m_54;                   // +0x54
+    i32 m_58;                   // +0x58
+    i32 m_5c;                   // +0x5c
+    i32 m_60;                   // +0x60
+    void* m_cachedSourceBuffer; // +0x64
     char m_pad68[0x78 - 0x68];
-    i32 m_78;              // +0x78  child-scope m_subTabs bucket count (CSymTab ctor subN)
-    i32 m_7c;              // +0x7c  child-scope m_symbols bucket count (CSymTab ctor symN)
-    CParserHash m_hash;    // +0x80
-    CHashSlotList m_nodes; // +0x88  { head, tail }
-    i32 m_90;              // +0x90  number of parse-slot records per allocated block
+    i32 m_subTabBucketCount;   // +0x78  child-scope m_subTabs bucket count (CSymTab ctor subN)
+    i32 m_symbolBucketCount;   // +0x7c  child-scope m_symbols bucket count (CSymTab ctor symN)
+    CParserHash m_hash;        // +0x80
+    CHashSlotList m_nodes;     // +0x88  { head, tail }
+    i32 m_parseSlotBlockCount; // +0x90  number of parse-slot records per allocated block
 };
 
 #endif // SRC_BUTE_SYMPARSER_H
