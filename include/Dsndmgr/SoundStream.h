@@ -87,9 +87,9 @@ struct StreamVoice {
 
 class SoundStream : public SoundDevice {
 public:
-    SoundStream();             // 0x1376d0  base ctor + zero m_94/m_98 + stamp 0x5ef6ec
+    SoundStream();              // 0x1376d0  base ctor + zero m_94/m_98 + stamp 0x5ef6ec
     void* ScalarDtor(i32 flag); // 0x1376f0  ??_G: ~SoundStream then operator delete
-    ~SoundStream(); // 0x137710  restamp vptr (0x5ef6ec) then ~SoundDevice
+    ~SoundStream();             // 0x137710  restamp vptr (0x5ef6ec) then ~SoundDevice
     StreamVoice* CreateStreamBuffer(WaveFormatX* fmt, u32 bytes, i32 a, i32 b, i32 c);
     // 0x137780
     StreamVoice* OpenStream(StreamSource* src, i32 p1, i32 p2, i32 p3, i32 p4, i32 p5);
