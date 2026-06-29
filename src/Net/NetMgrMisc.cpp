@@ -14,9 +14,9 @@ extern i32 g_64bd5c;
 // methods are touched here).
 struct CNetMgrConn {
     char m_pad0[0x528];
-    i32 m_528; // +0x528  channel-latency selector / connect gate
+    i32 m_connectGate; // +0x528  channel-latency selector / connect gate
     char m_pad52c[0x5c0 - 0x52c];
-    i32 m_5c0;            // +0x5c0  local player id
+    i32 m_localPlayerId;  // +0x5c0  local player id
     void Disconnect(i32); // 0xba810
     void Submit(i32);     // 0xbaf00 (via thunk 0x185c)
 };
@@ -29,11 +29,11 @@ struct CNetXform {
 // The connect-state coordinator object ('this').
 struct CNetConnCoord {
     char m_pad0[0x5c];
-    CNetXform* m_5c; // +0x5c
-    void Drive();    // c40b0
-    void Step();     // c2a20
-    void OpA(i32);   // c2ab0  external
-    void OpC(i32);   // c4230  external
+    CNetXform* m_transform; // +0x5c
+    void Drive();           // c40b0
+    void Step();            // c2a20
+    void OpA(i32);          // c2ab0  external
+    void OpC(i32);          // c4230  external
 };
 
 // A slot object whose +0x3c..+0x48 range is cleared.
@@ -94,13 +94,13 @@ void CNetConnCoord::Step() {
 // ---------------------------------------------------------------------------
 RVA(0x000c40b0, 0x42)
 void CNetConnCoord::Drive() {
-    CNetMgrConn* g = (CNetMgrConn*)g_64bd5c;
-    if (g->m_528 != 0) {
-        g->Disconnect(0);
+    CNetMgrConn* netMgr = (CNetMgrConn*)g_64bd5c;
+    if (netMgr->m_connectGate != 0) {
+        netMgr->Disconnect(0);
         OpC(1);
     } else {
-        i32 r = m_5c->Transform(g->m_5c0);
-        ((CNetMgrConn*)g_64bd5c)->Submit(r);
+        i32 transformedPlayerId = m_transform->Transform(netMgr->m_localPlayerId);
+        ((CNetMgrConn*)g_64bd5c)->Submit(transformedPlayerId);
     }
 }
 
