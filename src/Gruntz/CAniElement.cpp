@@ -46,6 +46,13 @@ public:
 // The raw 0x34-byte frame record at allocation time (only the fields the builder
 // touches before handing off to the parser).
 struct CAniRecordInit {
+    CAniRecordInit() {
+        m_2c = 0;
+        m_30 = 0;
+        m_vptr = &g_aniRecordVtbl;
+        m_0c = 0xffff;
+    }
+
     void* m_vptr;       // +0x00
     char m_pad04[0x8];  // +0x04..+0x0b
     i32 m_0c;           // +0x0c = 0xffff
@@ -98,13 +105,7 @@ i32 CAniElement::Build_165460(void* ctx, CAniSource* src, i32 flags) {
     CAniRecordView* rec = 0;
     i32 i;
     for (i = 0; i < src->m_count; i++) {
-        rec = (CAniRecordView*)operator new(0x34);
-        if (rec != 0) {
-            ((CAniRecordInit*)rec)->m_2c = 0;
-            ((CAniRecordInit*)rec)->m_30 = 0;
-            ((CAniRecordInit*)rec)->m_vptr = &g_aniRecordVtbl;
-            ((CAniRecordInit*)rec)->m_0c = 0xffff;
-        }
+        rec = (CAniRecordView*)new CAniRecordInit;
         if (rec->Parse_168c60(ctx, cursor) == 0) {
             goto fail;
         }
