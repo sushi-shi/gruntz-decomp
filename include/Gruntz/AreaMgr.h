@@ -104,10 +104,10 @@ public:
     i32 H39();
     i32 H40();
 
-    i32 m_00;         // +0x00  current area index
-    AreaPtrList m_04; // +0x04  CPtrList (block size 10)
-    i32 m_20;         // +0x20
-    i32 m_24;         // +0x24
+    i32 m_currentAreaIndex;       // +0x00
+    AreaPtrList m_spawnEntryList; // +0x04  CPtrList (block size 10)
+    i32 m_20;                     // +0x20
+    i32 m_24;                     // +0x24
 };
 
 #endif // SRC_GRUNTZ_AREAMGR_H

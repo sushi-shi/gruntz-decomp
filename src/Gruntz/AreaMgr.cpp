@@ -30,7 +30,7 @@ public:
 RVA(0x00099c20, 0x5f)
 CAreaMgr::~CAreaMgr() {
     Reset();
-    // m_04 (the CPtrList) is auto-destroyed here by the compiler-emitted /GX
+    // m_spawnEntryList (the CPtrList) is auto-destroyed here by the compiler-emitted /GX
     // member teardown: RemoveAllNodes then ~CPtrList.
 }
 
@@ -54,7 +54,7 @@ i32 CAreaMgr::Dispatch(i32 index) {
         return 0;
     }
     Reset();
-    m_00 = index;
+    m_currentAreaIndex = index;
     switch (index) {
         case 1:
             return H01();
@@ -147,7 +147,7 @@ i32 CAreaMgr::Dispatch(i32 index) {
 // ---------------------------------------------------------------------------
 RVA(0x0009a0b0, 0x7)
 void CAreaMgr::Reset() {
-    m_00 = 0;
+    m_currentAreaIndex = 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -187,7 +187,7 @@ CString CSpawnEntry::GetTail() {
 // shrink-wrapped callee-save-push wall (~58%): the dual idiv-group math is logically
 // identical, but retail keeps `a` in eax for the `if(a<=0)` guard and DEFERS the
 // `push esi` past it, computing the arg group first; the recompile commits `a` to
-// callee-saved esi at entry (push esi upfront) and computes the m_00 group first.
+// callee-saved esi at entry (push esi upfront) and computes the current index group first.
 // Not source-steerable.  See docs/patterns/shrink-wrapped-callee-save-push.md
 RVA(0x0009b430, 0x49)
 i32 CAreaMgr::SameGroup(i32 a) {
@@ -195,7 +195,7 @@ i32 CAreaMgr::SameGroup(i32 a) {
         return 0;
     }
     i32 ga = (a - 1) % 36 / 4 + 1;
-    i32 gc = (m_00 - 1) % 36 / 4 + 1;
+    i32 gc = (m_currentAreaIndex - 1) % 36 / 4 + 1;
     return gc == ga;
 }
 
@@ -218,7 +218,7 @@ public:
 struct CSpawnNode {
     CSpawnNode* m_next; // +0x00
     void* m_pad04;
-    CSpawnEntryN* m_8; // +0x08 the entry
+    CSpawnEntryN* m_entry; // +0x08
 };
 
 class CSpawnList {
@@ -246,7 +246,7 @@ extern "C" i32 SpawnNameCmp(const char* a, const char* b, i32 n); // 0x120440
 RVA(0x0009a0d0, 0x133)
 CSpawnEntryN* CSpawnList::FindEntry(CString name, i32 useHash) {
     for (CSpawnNode* n = m_head; n != 0; n = n->m_next) {
-        CSpawnEntryN* e = n->m_8;
+        CSpawnEntryN* e = n->m_entry;
         if (e == 0) {
             continue;
         }
@@ -277,7 +277,7 @@ RVA(0x0009a290, 0x138)
 CSpawnEntryN* CSpawnList::Extract(char* name) {
     CString key(name);
     for (CSpawnNode* n = m_head; n != 0; n = n->m_next) {
-        CSpawnEntryN* e = n->m_8;
+        CSpawnEntryN* e = n->m_entry;
         if (e == 0) {
             continue;
         }
