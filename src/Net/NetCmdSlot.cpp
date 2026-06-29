@@ -65,7 +65,7 @@ public:
     virtual i32 Parse(void* data, i32 len); // +0x1c (slot 7)
 
     char m_pad4[0xc - 0x4];
-    i32 m_c; // +0x0c  "submitted" flag
+    i32 m_submitted; // +0x0c  "submitted" flag
 };
 class CGruntzSingleCommand : public CGruntzCommand {
 public:
@@ -83,7 +83,7 @@ struct CGruntzCmdMgr {
 };
 struct CNetMgrSub {
     char m_pad0[0x6c];
-    CGruntzCmdMgr* m_6c; // +0x6c
+    CGruntzCmdMgr* m_cmdMgr; // +0x6c
 };
 
 // The CNetMgr the slot caches at +0x1c, seen here through three members: the +0x4
@@ -91,9 +91,9 @@ struct CNetMgrSub {
 // +0x520, and DispatchRecvMsg (0xb9750) for the high-bit relay command.
 struct CNetMgrView {
     char m_pad0[4];
-    CNetMgrSub* m_4; // +0x04
+    CNetMgrSub* m_sub; // +0x04
     char m_pad8[0x520 - 8];
-    CNetSession* m_520; // +0x520  the session sub-object
+    CNetSession* m_session; // +0x520  the session sub-object
 
     i32 DispatchRecv(i32 sender, void* buf, i32 size); // 0xb9750
 };
@@ -101,21 +101,21 @@ struct CNetMgrView {
 // The command record's fixed header (after the opcode/parity prefix): a sequence
 // number, two control words and a per-entry count byte; the payload follows.
 struct CNetCmdHdr {
-    i32 m_0; // +0x0  sequence
-    i32 m_4; // +0x4  window base
-    i32 m_8; // +0x8  flags word
-    u8 m_c;  // +0xc  entry count
+    i32 m_sequence;   // +0x0  sequence
+    i32 m_windowBase; // +0x4  window base
+    i32 m_flags;      // +0x8  flags word
+    u8 m_entryCount;  // +0xc  entry count
 };
 
 // The recycled command packet AddCmd queues: sequence, owning slot, a flag byte,
 // the payload length and the inline payload copy.
 struct CNetCmdPacket {
-    i32 m_0;   // +0x0  sequence
-    void* m_4; // +0x4  owning slot (this)
-    u8 m_8;    // +0x8  flag byte
+    i32 m_sequence; // +0x0  sequence
+    void* m_owner;  // +0x4  owning slot (this)
+    u8 m_flags;     // +0x8  flag byte
     char m_pad9[0xc - 9];
-    i32 m_c;      // +0xc  payload length
-    char m_10[1]; // +0x10 payload
+    i32 m_payloadLength; // +0xc  payload length
+    char m_payload[1];   // +0x10 payload
 };
 
 // ---------------------------------------------------------------------------
@@ -210,15 +210,15 @@ i32 CNetCmdSlot::ProcessCmd(i32 playerId, void* rec, i32 size) {
         rem--;
     }
     CNetCmdHdr* h = (CNetCmdHdr*)p;
-    i32 seq = h->m_0;
-    i32 base = h->m_4;
-    i32 flags = h->m_8;
-    u8 count = h->m_c;
+    i32 seq = h->m_sequence;
+    i32 base = h->m_windowBase;
+    i32 flags = h->m_flags;
+    u8 count = h->m_entryCount;
     char* cursor = p + 13;
     rem -= 13;
 
     if (m_4 != 0 && odd) {
-        CNetCmdSlot* slot = ((CNetMgrView*)m_1c)->m_520->FindCmdSlot(playerId);
+        CNetCmdSlot* slot = ((CNetMgrView*)m_1c)->m_session->FindCmdSlot(playerId);
         if (slot == 0) {
             return 0;
         }
@@ -248,11 +248,11 @@ i32 CNetCmdSlot::ProcessCmd(i32 playerId, void* rec, i32 size) {
     AdvanceSeq(seq);
 
     CNetCmdPacket* pkt = (CNetCmdPacket*)Unmatched_bf530(0);
-    pkt->m_0 = seq;
-    pkt->m_4 = this;
-    pkt->m_8 = (u8)flags;
-    pkt->m_c = rem;
-    memcpy(pkt->m_10, cursor, rem);
+    pkt->m_sequence = seq;
+    pkt->m_owner = this;
+    pkt->m_flags = (u8)flags;
+    pkt->m_payloadLength = rem;
+    memcpy(pkt->m_payload, cursor, rem);
     AddCmd((CNetCmd*)pkt);
 
     for (i32 i = count & 0xff; i > 0; i--) {
@@ -266,8 +266,8 @@ i32 CNetCmdSlot::ProcessCmd(i32 playerId, void* rec, i32 size) {
             continue;
         }
         i32 consumed = obj->Parse(cursor, rem);
-        obj->m_c = 1;
-        ((CNetMgrView*)m_1c)->m_4->m_6c->EnqueueCommand(0, obj);
+        obj->m_submitted = 1;
+        ((CNetMgrView*)m_1c)->m_sub->m_cmdMgr->EnqueueCommand(0, obj);
         rem -= consumed;
         cursor += consumed;
     }
@@ -475,9 +475,9 @@ void CNetCmdSlot::ClearCmds() {
 // modeled minimally here.
 struct CNetSyncCheck {
     char m_pad0[0x1c]; // +0x00
-    CNetMgr* m_1c;     // +0x1c  the owning net manager
+    CNetMgr* m_netMgr; // +0x1c  the owning net manager
     char m_pad20[0x3c - 0x20];
-    i32 m_3c[4]; // +0x3c  per-slot local-ack flags
+    i32 m_localAckFlags[4]; // +0x3c  per-slot local-ack flags
 
     i32 AllSlotsReady(); // c1320
 };
@@ -497,14 +497,14 @@ struct CNetSyncCheck {
 // (cf. const-materialize-into-reg-vs-immediate.md); not steerable. Final sweep.
 RVA(0x000c1320, 0x4a)
 i32 CNetSyncCheck::AllSlotsReady() {
-    CNetMgr* mgr = m_1c;
+    CNetMgr* mgr = m_netMgr;
     if (mgr == 0) {
         return 0;
     }
     CNetSession* sess = mgr->m_session;
     for (i32 i = 0; i < 4; i++) {
         CNetCmdSlot* slot = &sess->m_slots[i];
-        if (slot != 0 && slot->m_0 == 3 && slot->m_4 == 0 && m_3c[i] == 0) {
+        if (slot != 0 && slot->m_0 == 3 && slot->m_4 == 0 && m_localAckFlags[i] == 0) {
             return 0;
         }
     }
