@@ -9,7 +9,7 @@
 // CDDrawShadeBlit). FindRemove(key) unlinks+destroys a table by its key field.
 //
 // Field names are placeholders (m_<hexoffset>); only offsets + code bytes are
-// load-bearing. The class is a leading gate field m_00 (+0x00) followed by the
+// load-bearing. The class is a leading gate field m_initialized (+0x00) followed by the
 // embedded polymorphic element-array subobject m_arr (+0x04): its vtable at
 // +0x04, m_pData at +0x08, m_nSize at +0x0c, m_nMaxSize at +0x10, m_nGrowBy at
 // +0x14. The cache's destructor inlines the array subobject's teardown (restore
@@ -94,7 +94,7 @@ public:
     // index. The shade-table builders use it to remap a source color into `pal`.
     static i32 __cdecl FindNearestColor(PalEntry* pal, i32 r, i32 g, i32 b);
 
-    i32 m_00;               // +0x00 gate
+    i32 m_initialized;      // +0x00 gate
     CShadeTableArray m_arr; // +0x04 element array subobject
 };
 
