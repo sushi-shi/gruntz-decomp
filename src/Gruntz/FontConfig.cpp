@@ -9,13 +9,13 @@
 //     bold; the TrainingFont; the MessageFont) via CreateFontA, dims/faces read
 //     from the global CButeMgr "Font" config group (butemgr getters).
 //   FreeNodes      - walks the list freeing each FontItem (its CString @+8 +
-//     operator delete), then RemoveAll + Empty(m_1c) + m_30=0.
-//   Reset          - FreeNodes + Empty(m_1c) + DeleteObject the three HFONTs.
+//     operator delete), then RemoveAll + Empty(m_inputText) + m_inputActive=0.
+//   Reset          - FreeNodes + Empty(m_inputText) + DeleteObject the three HFONTs.
 //   AddItem        - new FontItem, fill name/type/data, AddHead or AddTail
 //     (head when type&2); optionally clears the list first (when type&4).
 //   Scroll         - advance the running offset by a delta; when it crosses the
 //     active threshold, RemoveHead the oldest FontItem and reset the offset.
-//   ~CFontConfig   - Reset + ~CString(m_1c) + the CPtrList base dtor.
+//   ~CFontConfig   - Reset + ~CString(m_inputText) + the CPtrList base dtor.
 //
 // Field names are placeholders (m_<hexoffset>); only OFFSETS + code bytes are
 // load-bearing (campaign doctrine). The CPtrList base (sizeof 0x1c) supplies
@@ -30,7 +30,7 @@
 
 #include <Bute/ButeMgr.h>
 
-// The global empty C string the input-reset assigns into m_1c (0x6293f4).
+// The global empty C string the input-reset assigns into m_inputText (0x6293f4).
 extern "C" char g_emptyString[];
 
 // The global CButeMgr instance (the ctor stores the bute config tree here).
@@ -69,7 +69,7 @@ struct FontItem {
 // ---------------------------------------------------------------------------
 class CFontConfig : public CPtrList {
 public:
-    i32 LoadFontConfig(i32 a1, i32 a2);
+    i32 LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold);
     void FreeNodes();
     void Reset();
     i32 AddItem(const char* str, i32 type, i32 data);
@@ -79,27 +79,27 @@ public:
     ~CFontConfig();
     i32 winapi_022360_DrawTextA_SelectObject_SetTextColor(i32, i32, i32, i32);
 
-    CString m_1c;         // +0x1c  scratch string
-    u32 m_20;             // +0x20  running offset (unsigned: thresholds compare jb)
-    u32 m_24;             // +0x24  (= a1) low threshold
-    u32 m_28;             // +0x28  (= a2) high threshold
-    i32 m_2c;             // +0x2c  accumulator
-    i32 m_30;             // +0x30  accumulate flag
-    char m_pad34[4];      // +0x34
-    HFONT m_arialFont;    // +0x38  the ARIAL UI font
-    HFONT m_trainingFont; // +0x3c  the TrainingFont
-    HFONT m_messageFont;  // +0x40  the MessageFont
+    CString m_inputText;       // +0x1c  scratch input string
+    u32 m_scrollOffset;        // +0x20  running offset (unsigned: thresholds compare jb)
+    u32 m_lowScrollThreshold;  // +0x24  threshold used for <=3 items
+    u32 m_highScrollThreshold; // +0x28  threshold used for >3 items
+    i32 m_inputScrollTotal;    // +0x2c  accumulated scroll while input is active
+    i32 m_inputActive;         // +0x30  input accumulation flag
+    char m_pad34[4];           // +0x34
+    HFONT m_arialFont;         // +0x38  the ARIAL UI font
+    HFONT m_trainingFont;      // +0x3c  the TrainingFont
+    HFONT m_messageFont;       // +0x40  the MessageFont
 };
 
 // ---------------------------------------------------------------------------
 // CFontConfig::LoadFontConfig
 RVA(0x000218e0, 0x1ff)
-i32 CFontConfig::LoadFontConfig(i32 a1, i32 a2) {
-    m_24 = a1;
-    m_28 = a2;
-    m_20 = 0;
-    m_2c = 0;
-    m_30 = 0;
+i32 CFontConfig::LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold) {
+    m_lowScrollThreshold = lowScrollThreshold;
+    m_highScrollThreshold = highScrollThreshold;
+    m_scrollOffset = 0;
+    m_inputScrollTotal = 0;
+    m_inputActive = 0;
 
     // --- ARIAL UI font (fixed 12x8 bold ANSI) -------------------------------
     m_arialFont = CreateFontA(0xc, 8, 0, 0, 0x2bc, 0, 0, 0, 1, 0, 0, 0, 0, s_ARIAL);
@@ -196,7 +196,7 @@ i32 CFontConfig::LoadFontConfig(i32 a1, i32 a2) {
 RVA(0x00021b60, 0x4d)
 void CFontConfig::Reset() {
     FreeNodes();
-    m_1c.Empty();
+    m_inputText.Empty();
     if (m_arialFont) {
         DeleteObject(m_arialFont);
         m_arialFont = 0;
@@ -225,8 +225,8 @@ void CFontConfig::FreeNodes() {
         }
     }
     RemoveAll();
-    m_1c.Empty();
-    m_30 = 0;
+    m_inputText.Empty();
+    m_inputActive = 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -265,21 +265,22 @@ i32 CFontConfig::AddItem(const char* str, i32 type, i32 data) {
 
 // ---------------------------------------------------------------------------
 // CFontConfig::Scroll - advance the running offset; drop the head FontItem when
-// the offset crosses the active threshold (m_28 above 3 items, else m_24).
+// the offset crosses the active threshold (m_highScrollThreshold above 3 items,
+// else m_lowScrollThreshold).
 RVA(0x00021d80, 0x79)
 void CFontConfig::Scroll(i32 delta) {
-    if (m_30) {
-        m_2c += delta;
+    if (m_inputActive) {
+        m_inputScrollTotal += delta;
     }
     i32 count = m_nCount;
     if (!count) {
-        m_20 = 0;
+        m_scrollOffset = 0;
     }
-    m_20 += delta;
+    m_scrollOffset += delta;
 
     FontItem* item;
     if (count > 3) {
-        if (m_20 < m_28) {
+        if (m_scrollOffset < m_highScrollThreshold) {
             return;
         }
         item = (FontItem*)RemoveHead();
@@ -287,7 +288,7 @@ void CFontConfig::Scroll(i32 delta) {
             return;
         }
     } else {
-        if (m_20 < m_24) {
+        if (m_scrollOffset < m_lowScrollThreshold) {
             return;
         }
         if (!count) {
@@ -301,13 +302,13 @@ void CFontConfig::Scroll(i32 delta) {
     item->name.Empty();
     item->FontItem::~FontItem();
     ::operator delete(item);
-    m_20 = 0;
+    m_scrollOffset = 0;
 }
 
 // ---------------------------------------------------------------------------
 // CFontConfig::TypeChar - the typed-character accumulator into the scratch
-// string m_1c. Enter (0xd) toggles the accumulating flag m_30: first press
-// arms it (reset offset/accumulator + clear m_1c); a second press while the
+// string m_inputText. Enter (0xd) toggles the accumulating flag m_inputActive: first
+// press arms it (reset offset/accumulator + clear m_inputText); a second press while the
 // buffer is non-empty disarms and returns 1 (commit). While armed, backspace
 // (8) trims one char, and a printable byte (0x20..0xff) appends if under 0x50.
 // @early-stop
@@ -318,47 +319,47 @@ void CFontConfig::Scroll(i32 delta) {
 // source-steerable. Effectively matched.
 RVA(0x00021e20, 0x95)
 i32 CFontConfig::TypeChar(i32 ch, i32 a2) {
-    m_2c = 0;
+    m_inputScrollTotal = 0;
     if (ch == 0xd) {
-        if (m_30 != 0) {
-            if (m_1c.GetLength() == 0) {
+        if (m_inputActive != 0) {
+            if (m_inputText.GetLength() == 0) {
                 return 0;
             }
-            m_30 = 0;
+            m_inputActive = 0;
             return 1;
         }
-        m_30 = 1;
-        m_20 = 0;
-        m_2c = 0;
-        m_1c = (const char*)g_emptyString;
+        m_inputActive = 1;
+        m_scrollOffset = 0;
+        m_inputScrollTotal = 0;
+        m_inputText = (const char*)g_emptyString;
     }
-    if (m_30 == 0) {
+    if (m_inputActive == 0) {
         return 0;
     }
     if (ch == 8) {
-        i32 len = m_1c.GetLength();
+        i32 len = m_inputText.GetLength();
         if (len <= 0) {
             return 0;
         }
-        m_1c.GetBufferSetLength(len - 1);
+        m_inputText.GetBufferSetLength(len - 1);
         return 0;
     }
     if (ch < 0x20 || ch > 0xff) {
         return 0;
     }
-    if (m_1c.GetLength() < 0x50) {
-        m_1c += (char)ch;
+    if (m_inputText.GetLength() < 0x50) {
+        m_inputText += (char)ch;
     }
     return 0;
 }
 
 // ---------------------------------------------------------------------------
-// CFontConfig::EndInput - cancel accumulation: clear the flag and empty m_1c.
+// CFontConfig::EndInput - cancel accumulation: clear the flag and empty m_inputText.
 RVA(0x00021ef0, 0x17)
 void CFontConfig::EndInput() {
-    if (m_30 != 0) {
-        m_30 = 0;
-        m_1c.Empty();
+    if (m_inputActive != 0) {
+        m_inputActive = 0;
+        m_inputText.Empty();
     }
 }
 
