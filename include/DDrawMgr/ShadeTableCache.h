@@ -21,7 +21,7 @@
 
 #include <Ints.h>
 
-// A 0x10-byte memory-buffer wrapper (the array element). 0x150180 ctor zeros
+// A 0x10-byte memory-buffer wrapper (the array element). The ctor zeros
 // m_alloc/m_size/m_data; 0x1501a0 Alloc(size,key) frees+reallocs m_data; 0x1503c0
 // / 0x150190 free it. m_alloc(+0) gates teardown, m_size(+4) the byte size,
 // m_data(+8) the buffer, m_key(+c) the lookup key. (Bodies live in the sibling
@@ -32,7 +32,7 @@ struct CShadeTable {
     u8* m_data;  // +0x08
     i32 m_key;   // +0x0c
 
-    CShadeTable* Ctor();      // 0x150180 (returns this)
+    CShadeTable();
     void Free();              // 0x150190
     i32 Alloc(i32 sz, i32 k); // 0x1501a0 -> bool
     void Destroy();           // 0x1503c0

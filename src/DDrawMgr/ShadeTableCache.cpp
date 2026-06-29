@@ -172,12 +172,7 @@ extern float g_negone; // -1.0
 // expression is the wall's residual (re-derive in the final sweep). Logic complete.
 RVA(0x0014df40, 0x5f4)
 CShadeTable* CShadeTableCache::FlashTable(PalEntry* pal, i32 nA, i32 nB, i32 startPct, i32 endPct) {
-    CShadeTable* t = (CShadeTable*)operator new(0x10);
-    if (t) {
-        t = t->Ctor();
-    } else {
-        t = 0;
-    }
+    CShadeTable* t = new CShadeTable;
     if (!t) {
         return 0;
     }
@@ -283,12 +278,7 @@ CShadeTable* CShadeTableCache::FlashTable(PalEntry* pal, i32 nA, i32 nB, i32 sta
 // three clamped channel scales does not reproduce from C; ~50-60%.
 RVA(0x0014e540, 0x2ea)
 CShadeTable* CShadeTableCache::HsvShiftTable(PalEntry* pal, i32 steps, i32 packedColor) {
-    CShadeTable* t = (CShadeTable*)operator new(0x10);
-    if (t) {
-        t = t->Ctor();
-    } else {
-        t = 0;
-    }
+    CShadeTable* t = new CShadeTable;
     if (!t) {
         return 0;
     }
@@ -333,12 +323,7 @@ CShadeTable* CShadeTableCache::HsvShiftTable(PalEntry* pal, i32 steps, i32 packe
 // ordering of the three interleaved channel lerps diverges from the recompile.
 RVA(0x0014e830, 0x1b9)
 CShadeTable* CShadeTableCache::HueRampTable(PalEntry* pal, i32 steps, i32 packedColor) {
-    CShadeTable* t = (CShadeTable*)operator new(0x10);
-    if (t) {
-        t = t->Ctor();
-    } else {
-        t = 0;
-    }
+    CShadeTable* t = new CShadeTable;
     if (!t) {
         return 0;
     }
@@ -380,12 +365,7 @@ CShadeTable* CShadeTableCache::HueRampTable(PalEntry* pal, i32 steps, i32 packed
 // orders the strength-reduced accumulators differently than retail.
 RVA(0x0014e9f0, 0x208)
 CShadeTable* CShadeTableCache::GammaTable(PalEntry* pal, i32 wRow, i32 wCol) {
-    CShadeTable* t = (CShadeTable*)operator new(0x10);
-    if (t) {
-        t = t->Ctor();
-    } else {
-        t = 0;
-    }
+    CShadeTable* t = new CShadeTable;
     if (!t) {
         return 0;
     }
@@ -422,12 +402,7 @@ CShadeTable* CShadeTableCache::GammaTable(PalEntry* pal, i32 wRow, i32 wCol) {
 // remap loops byte-exact otherwise.
 RVA(0x0014ec00, 0x10f)
 CShadeTable* CShadeTableCache::LumaSortTable(PalEntry* pal) {
-    CShadeTable* t = (CShadeTable*)operator new(0x10);
-    if (t) {
-        t = t->Ctor();
-    } else {
-        t = 0;
-    }
+    CShadeTable* t = new CShadeTable;
     if (!t) {
         return 0;
     }
@@ -462,12 +437,7 @@ CShadeTable* CShadeTableCache::LumaSortTable(PalEntry* pal) {
 // EH-frame wall (rezalloc-placement-new-no-eh-frame.md): see LumaSortTable.
 RVA(0x0014ede0, 0x10f)
 CShadeTable* CShadeTableCache::HueSortTable(PalEntry* pal) {
-    CShadeTable* t = (CShadeTable*)operator new(0x10);
-    if (t) {
-        t = t->Ctor();
-    } else {
-        t = 0;
-    }
+    CShadeTable* t = new CShadeTable;
     if (!t) {
         return 0;
     }
@@ -505,12 +475,7 @@ CShadeTable* CShadeTableCache::HueSortTable(PalEntry* pal) {
 // byte-exact, frame+epilogue cascade absent. See rezalloc-placement-new-no-eh-frame.md
 RVA(0x0014eef0, 0x183)
 CShadeTable* CShadeTableCache::GreyTable() {
-    CShadeTable* t = (CShadeTable*)operator new(0x10);
-    if (t) {
-        t = t->Ctor();
-    } else {
-        t = 0;
-    }
+    CShadeTable* t = new CShadeTable;
     if (!t) {
         return 0;
     }
@@ -549,12 +514,7 @@ CShadeTable* CShadeTableCache::GreyTable() {
 // into the factor build via fxch (uniform fild;fmul here); ~60%.
 RVA(0x0014f080, 0x283)
 CShadeTable* CShadeTableCache::AddTable(float scale) {
-    CShadeTable* t = (CShadeTable*)operator new(0x10);
-    if (t) {
-        t = t->Ctor();
-    } else {
-        t = 0;
-    }
+    CShadeTable* t = new CShadeTable;
     if (!t) {
         return 0;
     }
@@ -606,12 +566,7 @@ CShadeTable* CShadeTableCache::AddTable(float scale) {
 // schedule than retail; ~61%.
 RVA(0x0014f310, 0x297)
 CShadeTable* CShadeTableCache::SubTable(i32 color) {
-    CShadeTable* t = (CShadeTable*)operator new(0x10);
-    if (t) {
-        t = t->Ctor();
-    } else {
-        t = 0;
-    }
+    CShadeTable* t = new CShadeTable;
     if (!t) {
         return 0;
     }
@@ -656,12 +611,7 @@ CShadeTable* CShadeTableCache::SubTable(i32 color) {
 // /GX ctor-in-flight frame is absent on MSVC5; ~66%.
 RVA(0x0014f5b0, 0x10a)
 CShadeTable* CShadeTableCache::AlphaTable(u8* pal) {
-    CShadeTable* t = (CShadeTable*)operator new(0x10);
-    if (t) {
-        t = t->Ctor();
-    } else {
-        t = 0;
-    }
+    CShadeTable* t = new CShadeTable;
     if (!t) {
         return 0;
     }
@@ -698,12 +648,7 @@ CShadeTable* CShadeTableCache::AlphaTable(u8* pal) {
 // (1b9ba3/1b9cde) don't reproduce; logic complete, scheduling parks it.
 RVA(0x0014f6c0, 0x1e1)
 CShadeTable* CShadeTableCache::AddFromArray(const char* name) {
-    CShadeTable* t = (CShadeTable*)operator new(0x10);
-    if (t) {
-        t = t->Ctor();
-    } else {
-        t = 0;
-    }
+    CShadeTable* t = new CShadeTable;
     i32 oldSize = m_arr.m_nSize;
     i32 newSize = oldSize + 1;
     if (newSize == 0) {
@@ -764,12 +709,7 @@ CShadeTable* CShadeTableCache::AddFromArray(const char* name) {
 // instead of CString; logic complete, scheduling parks it.
 RVA(0x0014f8b0, 0x1b0)
 CShadeTable* CShadeTableCache::AddFromFile(const char* name, i32 size) {
-    CShadeTable* t = (CShadeTable*)operator new(0x10);
-    if (t) {
-        t = t->Ctor();
-    } else {
-        t = 0;
-    }
+    CShadeTable* t = new CShadeTable;
     i32 oldSize = m_arr.m_nSize;
     i32 newSize = oldSize + 1;
     if (newSize == 0) {
