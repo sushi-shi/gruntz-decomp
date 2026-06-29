@@ -20,23 +20,23 @@
 // SetType(type, 0) (external no-body @0x14dd90, reloc-masked - the SAME rel32 target
 // SBI_WarlordHead models as WhShowItem, so the callee's true name is unresolved);
 // SetAllFormats writes the resolved format word at +0x1c directly. PLACEHOLDER type:
-// only SetType + m_1c are evidenced; m_1c is the one site touched directly here.
+// only SetType + m_resolvedFormat are evidenced for the resolved format word.
 class CImageFormat {
 public:
     void SetType(i32 type, i32 noResolve); // 0x14dd90 (__thiscall, ret 8)
 
     char m_pad00[0x10];
-    i32 m_10; // +0x10  decoded byte count (read by GetMemoryUsage)
+    i32 m_decodedByteCount; // +0x10  decoded byte count (read by GetMemoryUsage)
     char m_pad14[0x18 - 0x14];
-    i32 m_18; // +0x18  field written directly by SetAllField18 (0x1524d0)
-    i32 m_1c; // +0x1c  resolved format word (written directly by SetAllFormats)
+    i32 m_18;             // +0x18  field written directly by SetAllField18 (0x1524d0)
+    i32 m_resolvedFormat; // +0x1c  resolved format word (written directly by SetAllFormats)
 };
 
-// The frame's held surface (m_2c): a pool surface whose +0xa8 holds the bit depth
+// The frame's held surface (m_surface): a pool surface whose +0xa8 holds the bit depth
 // (0x10 = 16bpp, 0x18 = 24bpp), used by GetMemoryUsage to scale the pixel count.
 struct CImageFrameSurface {
     char m_pad00[0xa8];
-    i32 m_a8; // +0xa8  bit depth
+    i32 m_bitDepth; // +0xa8  bit depth
 };
 
 // The frame as seen by CImageSet: only the +0x30 format sub-object is used. The
@@ -44,15 +44,15 @@ struct CImageFrameSurface {
 // +0x30 owned object - so this is a PLACEHOLDER element type (see header note).
 class CImageFrame {
 public:
-    void* m_vptr; // +0x00  (manual-stamped to g_imageFrameVtbl @0x5eaa2c by the factory)
-    i32 m_4;      // +0x04  frame index
-    i32 m_8;      // +0x08
-    void* m_c;    // +0x0c  owner (the CImageSet's +0xc)
-    i32 m_10;     // +0x10  width  (GetMemoryUsage: pixel-count factor)
-    i32 m_14;     // +0x14  height (GetMemoryUsage: pixel-count factor)
+    void* m_vptr;  // +0x00  (manual-stamped to g_imageFrameVtbl @0x5eaa2c by the factory)
+    i32 m_index;   // +0x04  frame index
+    i32 m_8;       // +0x08
+    void* m_owner; // +0x0c  owner (the CImageSet's +0xc)
+    i32 m_width;   // +0x10  width  (GetMemoryUsage: pixel-count factor)
+    i32 m_height;  // +0x14  height (GetMemoryUsage: pixel-count factor)
     char m_pad18[0x2c - 0x18];
-    CImageFrameSurface* m_2c; // +0x2c  held surface (its +0xa8 = bit depth)
-    CImageFormat* m_format;   // +0x30  format/state helper (factory inits to null)
+    CImageFrameSurface* m_surface; // +0x2c  held surface (its +0xa8 = bit depth)
+    CImageFormat* m_format;        // +0x30  format/state helper (factory inits to null)
 };
 
 class CImageSet {
@@ -96,10 +96,10 @@ public:
     }
 
     char m_pad00[0x0c];
-    void* m_owner;          // +0x0c  shared into each created frame's +0xc
+    void* m_owner;             // +0x0c  shared into each created frame's +0xc
     char m_array[0x14 - 0x10]; // +0x10  embedded frame array (SetAtGrow this)
-    CImageFrame** m_frames; // +0x14  frame pointer array (indexed by signed frame index)
-    i32 m_count;            // +0x18  array element count (for the linear FindFrame scan)
+    CImageFrame** m_frames;    // +0x14  frame pointer array (indexed by signed frame index)
+    i32 m_count;               // +0x18  array element count (for the linear FindFrame scan)
     char m_pad1c[0x24 - 0x1c];
     char m_name[0x40 - 0x24]; // +0x24  inline name buffer (copied out by FindFrame)
     char m_pad40[0x64 - 0x40];
