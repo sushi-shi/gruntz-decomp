@@ -72,7 +72,7 @@ i32 StreamVoice::SetSource(StreamSource* src) {
 // ---------------------------------------------------------------------------
 // StreamVoice::Configure (0x137520, __thiscall, 4 args). Apply the cached
 // volume/pan/frequency indices through the DirectSoundMgr base setters, stash the
-// loop flag in m_9c, then resume the embedded feeder - ANDing every step's
+// loop flag in m_feeder.m_loop, then resume the embedded feeder - ANDing every step's
 // success into the returned flag.
 RVA(0x00137520, 0x6e)
 i32 StreamVoice::Configure(i32 vol, i32 pan, i32 freq, i32 loop) {
@@ -89,7 +89,7 @@ i32 StreamVoice::Configure(i32 vol, i32 pan, i32 freq, i32 loop) {
     if (SetFreqByIndex(freq) == 0) {
         ok = 0;
     }
-    m_feeder.m_30 = loop;
+    m_feeder.m_loop = loop;
     if (m_feeder.Resume() == 0) {
         ok = 0;
     }
@@ -97,11 +97,11 @@ i32 StreamVoice::Configure(i32 vol, i32 pan, i32 freq, i32 loop) {
 }
 
 // ---------------------------------------------------------------------------
-// StreamVoice::ComputeRatio (0x137590, __thiscall, no args). m_a8 * 1000 / m_3c
+// StreamVoice::ComputeRatio (0x137590, __thiscall, no args). m_feeder.m_windowLength * 1000 / m_3c
 // (a position->time ratio; the *1000 is open-coded as *5*5*5*8).
 RVA(0x00137590, 0x18)
 u32 StreamVoice::ComputeRatio() {
-    return m_feeder.m_3c * 1000 / m_3c;
+    return m_feeder.m_windowLength * 1000 / m_3c;
 }
 
 // ---------------------------------------------------------------------------

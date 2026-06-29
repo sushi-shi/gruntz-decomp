@@ -61,7 +61,7 @@ struct StreamVoice {
     i32 m_68; // +0x68  zero-init in ctor
     // +0x6c  embedded streaming feeder sub-object. Held inline as StreamFeeder
     // (m_feeder). The voice's +0x9c / +0xa8 stores land INSIDE this feeder: +0x9c =
-    // feeder+0x30 (loop flag m_30), +0xa8 = feeder+0x3c (window length m_3c).
+    // feeder+0x30 (loop flag m_loop), +0xa8 = feeder+0x3c (window length m_windowLength).
     StreamFeeder m_feeder;
 
     // ctor 0x1375b0(IDirectSoundBuffer* buf, SoundStream* owner, int a, int b). The
