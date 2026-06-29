@@ -82,14 +82,14 @@ class CNetSessionNode : public CNetNodeBase {
 public:
     virtual ~CNetSessionNode();
 
-    i32 m_04;     // +0x04  cleared on teardown
-    CString m_08; // +0x08  name CString
-    CString m_0c; // +0x0c  name CString
-    i32 m_10;     // +0x10
-    char* m_14;   // +0x14  owned buffer (freed second)
-    char* m_18;   // +0x18  owned buffer (freed first)
-    i32 m_1c;     // +0x1c
-    i32 m_20;     // +0x20  cleared on teardown
+    i32 m_sessionId;      // +0x04  cleared on teardown
+    CString m_08;         // +0x08  name CString
+    CString m_0c;         // +0x0c  name CString
+    i32 m_10;             // +0x10
+    char* m_ownedBufferB; // +0x14  owned buffer (freed second)
+    char* m_ownedBufferA; // +0x18  owned buffer (freed first)
+    i32 m_1c;             // +0x1c
+    i32 m_listPosition;   // +0x20  cleared on teardown
 };
 
 // ===========================================================================
@@ -123,16 +123,16 @@ CNetPlayerListNode::~CNetPlayerListNode() {
 // teardown logic is byte-faithful. Final-sweep candidate.
 RVA(0x00179420, 0x8a)
 CNetSessionNode::~CNetSessionNode() {
-    m_04 = 0;
-    m_20 = 0;
-    if (m_18) {
-        RezFree(m_18);
+    m_sessionId = 0;
+    m_listPosition = 0;
+    if (m_ownedBufferA) {
+        RezFree(m_ownedBufferA);
     }
-    m_18 = 0;
-    if (m_14) {
-        RezFree(m_14);
+    m_ownedBufferA = 0;
+    if (m_ownedBufferB) {
+        RezFree(m_ownedBufferB);
     }
-    m_14 = 0;
+    m_ownedBufferB = 0;
     // m_0c, m_08 CString members + base subobject (stamp 0x5e8cb4) fold here.
 }
 
