@@ -24,7 +24,7 @@ extern i32 g_gDown; // 0x683eb0
 DATA(0x00283eb4)
 extern i32 g_bDown; // 0x683eb4
 
-// The shade cache that owns m_04; Free() hands the table back via FindRemove
+// The shade cache that owns m_alphaKey; Free() hands the table back via FindRemove
 // (0x14fb80). Modeled NO-body so the `call` reloc-masks.
 class CShadeTableFreer {
 public:
@@ -43,11 +43,11 @@ public:
 // delinked target's self-relocs. ~93.7% unit, the remainder is that data region.
 RVA(0x000e2df0, 0x39f)
 i32 CSpriteRef::Build(i32 cache, void* shade, i32 kind) {
-    m_00 = cache;
-    m_04 = (i32)shade;
-    u8 r1, g1, b1; // color 1 (192/255 shade) -> m_08
-    u8 r2, g2, b2; // color 2 (full intensity) -> m_0c
-    u8 r3, g3, b3; // color 3 (128/255 shade)  -> m_0a
+    m_cache = cache;
+    m_alphaKey = (i32)shade;
+    u8 r1, g1, b1; // color 1 (192/255 shade) -> m_teamColor1
+    u8 r2, g2, b2; // color 2 (full intensity) -> m_teamColor2
+    u8 r3, g3, b3; // color 3 (128/255 shade)  -> m_teamColor3
     switch (kind) {
         case 0:
             r2 = 0xff;
@@ -239,22 +239,22 @@ i32 CSpriteRef::Build(i32 cache, void* shade, i32 kind) {
         default:
             return 0;
     }
-    m_08 = (u16)(((u8)((u8)r1 >> (u8)g_rDown) << g_rUp) | ((u8)((u8)g1 >> (u8)g_gDown) << g_gUp)
-                 | (u8)((u8)b1 >> (u8)g_bDown));
-    m_0c = (u16)(((u8)((u8)g2 >> (u8)g_gDown) << g_gUp) | ((u8)((u8)r2 >> (u8)g_rDown) << g_rUp)
-                 | (u8)((u8)b2 >> (u8)g_bDown));
-    m_0a = (u16)(((u8)((u8)r3 >> (u8)g_rDown) << g_rUp) | ((u8)((u8)g3 >> (u8)g_gDown) << g_gUp)
-                 | (u8)((u8)b3 >> (u8)g_bDown));
+    m_teamColor1 = (u16)(((u8)((u8)r1 >> (u8)g_rDown) << g_rUp)
+                         | ((u8)((u8)g1 >> (u8)g_gDown) << g_gUp) | (u8)((u8)b1 >> (u8)g_bDown));
+    m_teamColor2 = (u16)(((u8)((u8)g2 >> (u8)g_gDown) << g_gUp)
+                         | ((u8)((u8)r2 >> (u8)g_rDown) << g_rUp) | (u8)((u8)b2 >> (u8)g_bDown));
+    m_teamColor3 = (u16)(((u8)((u8)r3 >> (u8)g_rDown) << g_rUp)
+                         | ((u8)((u8)g3 >> (u8)g_gDown) << g_gUp) | (u8)((u8)b3 >> (u8)g_bDown));
     return 1;
 }
 
 // Hand the alpha table back to its cache and clear the cached pointers.
 RVA(0x000e32e0, 0x25)
 void CSpriteRef::Free() {
-    CShadeTableFreer* cache = (CShadeTableFreer*)m_00;
-    if (cache && m_04) {
-        cache->FindRemove((void*)m_04);
-        m_00 = 0;
-        m_04 = 0;
+    CShadeTableFreer* cache = (CShadeTableFreer*)m_cache;
+    if (cache && m_alphaKey) {
+        cache->FindRemove((void*)m_alphaKey);
+        m_cache = 0;
+        m_alphaKey = 0;
     }
 }

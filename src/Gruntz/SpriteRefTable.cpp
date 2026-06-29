@@ -15,21 +15,21 @@
 extern "C" void* RezAlloc(u32 n); // 0x1b9b46 (operator new / RezAlloc)
 extern "C" void RezFree(void* p); // 0x1b9b82
 
-// m_04->m_18 is the sprite manager; +0x10 of it is the name->sprite hash table.
+// m_spriteMgrHolder->m_spriteMgr is the sprite manager; +0x10 of it is the name->sprite hash table.
 struct CSpriteMgrHolder {
     char m_pad00[0x18];
-    char* m_18; // +0x18  the sprite mgr (its +0x10 is the CSpriteRefHashTable)
+    char* m_spriteMgr; // +0x18  its +0x10 is the CSpriteRefHashTable
 };
 
 // The object Lookup writes into `out`: +0x10 is the sprite, whose +0xc holds the
 // frame data fed to the alpha factory.
 struct CLookupSprite {
     char m_pad00[0xc];
-    void* m_0c; // +0x0c  frame data
+    void* m_frameData; // +0x0c
 };
 struct CLookupResult {
     char m_pad00[0x10];
-    CLookupSprite* m_10; // +0x10
+    CLookupSprite* m_sprite; // +0x10
 };
 
 // ---------------------------------------------------------------------------
@@ -39,18 +39,18 @@ i32 CSpriteRefTable::Init(i32 p0, i32 p1) {
     if (!p0) {
         return p0;
     }
-    m_00 = (CSpriteRefFactory*)p0;
-    m_04 = (void*)p1;
-    m_90 = 0;
+    m_factory = (CSpriteRefFactory*)p0;
+    m_spriteMgrHolder = (void*)p1;
+    m_built = 0;
     return 1;
 }
 
 RVA(0x000e2290, 0x2a)
 void CSpriteRefTable::Reset() {
     Clear();
-    m_00 = 0;
-    m_04 = 0;
-    m_90 = 0;
+    m_factory = 0;
+    m_spriteMgrHolder = 0;
+    m_built = 0;
     for (i32 i = 0; i < 0x11; i++) {
         m_refA[i] = 0;
         m_refB[i] = 0;
@@ -59,7 +59,7 @@ void CSpriteRefTable::Reset() {
 
 RVA(0x000e22d0, 0x6e)
 void CSpriteRefTable::Clear() {
-    if (m_00) {
+    if (m_factory) {
         for (i32 i = 0; i < 0x11; i++) {
             CSpriteRef* a = GetA(i);
             if (a) {
@@ -76,7 +76,7 @@ void CSpriteRefTable::Clear() {
             m_refA[j] = 0;
             m_refB[j] = 0;
         }
-        m_90 = 0;
+        m_built = 0;
     }
 }
 
@@ -105,7 +105,7 @@ i32 CSpriteRefTable::GetSel(i32 i, i32 bAlt) {
     if (!node) {
         return 0;
     }
-    return node->m_04;
+    return node->m_alphaKey;
 }
 
 // @early-stop
@@ -115,29 +115,30 @@ i32 CSpriteRefTable::GetSel(i32 i, i32 bAlt) {
 RVA(0x000e2890, 0xb6)
 CSpriteRef* CSpriteRefTable::Add(char* szName, i32 kind) {
     void* out = 0;
-    CSpriteRefHashTable* tbl = (CSpriteRefHashTable*)(((CSpriteMgrHolder*)m_04)->m_18 + 0x10);
+    CSpriteRefHashTable* tbl =
+        (CSpriteRefHashTable*)(((CSpriteMgrHolder*)m_spriteMgrHolder)->m_spriteMgr + 0x10);
     tbl->Lookup(szName, &out);
     if (!out) {
         return 0;
     }
-    void* sprite = ((CLookupResult*)out)->m_10->m_0c;
+    void* sprite = ((CLookupResult*)out)->m_sprite->m_frameData;
     if (!sprite) {
         return 0;
     }
-    void* alpha = m_00->AlphaTable(sprite);
+    void* alpha = m_factory->AlphaTable(sprite);
     if (!alpha) {
         return 0;
     }
     CSpriteRef* node;
     CSpriteRef* tmp = (CSpriteRef*)RezAlloc(0x10);
     if (tmp) {
-        tmp->m_00 = 0;
-        tmp->m_04 = 0;
+        tmp->m_cache = 0;
+        tmp->m_alphaKey = 0;
         node = tmp;
     } else {
         node = 0;
     }
-    if (node->Build((i32)m_00, alpha, kind) == 0) {
+    if (node->Build((i32)m_factory, alpha, kind) == 0) {
         if (node) {
             node->Free();
             RezFree(node);
@@ -150,11 +151,11 @@ CSpriteRef* CSpriteRefTable::Add(char* szName, i32 kind) {
 // ---------------------------------------------------------------------------
 // CSpriteRefTable::LoadGruntzPalette (0xe2d10) - register a level's
 // "GRUNTZ_PALETTEZ_<name>" palette into the sprite registry reached through
-// this->m_04->m_18. Lookup() (the +0x10 hash sub-table) probes whether it is
+// this->m_spriteMgrHolder->m_spriteMgr. Lookup() (the +0x10 hash sub-table) probes whether it is
 // already present; Install (vtable slot 9) installs the resolved palette. src is
 // the source resolver (FUN_0053bff0 resolves a packed-tag 'PAL'=0x50414c resource
 // by namespaced name); name is the level/name string. Helpers are reloc-masked
-// externals; the typed view-of-`this` (CPaletteOwner) overlays m_04 as the
+// externals; the typed view-of-`this` (CPaletteOwner) overlays m_spriteMgrHolder as the
 // destination-registry root (a struct-view cast at entry).
 //
 // int (BOOL) return: the `!src` and already-present guards return literal 0/1
@@ -162,7 +163,7 @@ CSpriteRef* CSpriteRefTable::Add(char* szName, i32 kind) {
 // Install() return through neg/sbb/neg (`!!x`). A void return would tail-merge
 // the bare epilogues and drop the eax=1 tail.
 
-// The destination registry at m_04->m_18 is polymorphic: a hash sub-table at +0x10
+// The destination registry at m_spriteMgrHolder->m_spriteMgr is polymorphic: a hash sub-table at +0x10
 // backs Lookup() (out-param non-null => already present), and Install (vtable slot
 // 9) takes the resolved palette + two null args.
 struct CPaletteHashTable {                 // embedded at CPaletteDestRegistry+0x10
@@ -180,21 +181,21 @@ struct CPaletteDestRegistry {
     virtual void v8();
     virtual i32 Install(void* res, i32 a, i32 b); // slot 9 (+0x24)
     char m_pad04[0x10 - 0x4];
-    CPaletteHashTable m_10; // +0x10  hash sub-table Lookup runs on
+    CPaletteHashTable m_hash; // +0x10  hash sub-table Lookup runs on
 };
-struct CPaletteDestRoot { // m_04 points here; +0x18 is the dest registry
+struct CPaletteDestRoot { // m_spriteMgrHolder points here; +0x18 is the dest registry
     char m_pad00[0x18];
-    CPaletteDestRegistry* m_18; // +0x18
+    CPaletteDestRegistry* m_spriteMgr; // +0x18
 };
 // src's source registry: FUN_0053bff0 __thiscall resolves a packed-tag resource by
 // namespaced name, returning the resource (0 if absent).
 struct CPaletteSource {
     void* Resolve(char* szName, i32 tag); // 0x13bff0
 };
-// Typed view of `this`: m_4 (== CSpriteRefTable::m_04) is the dest registry root.
+// Typed view of `this`: m_destRoot (== CSpriteRefTable::m_spriteMgrHolder) is the dest registry root.
 struct CPaletteOwner {
     char m_pad00[0x4];
-    CPaletteDestRoot* m_4; // +0x04
+    CPaletteDestRoot* m_destRoot; // +0x04
 };
 
 // @early-stop
@@ -211,7 +212,7 @@ i32 CSpriteRefTable::LoadGruntzPalette(i32 src, i32 name) {
     }
 
     void* found = 0;
-    self->m_4->m_18->m_10.Lookup((char*)name, &found);
+    self->m_destRoot->m_spriteMgr->m_hash.Lookup((char*)name, &found);
     if (found) {
         return 1;
     }
@@ -222,7 +223,7 @@ i32 CSpriteRefTable::LoadGruntzPalette(i32 src, i32 name) {
     if (!pal) {
         return 0;
     }
-    return self->m_4->m_18->Install(pal, 0, 0) != 0;
+    return self->m_destRoot->m_spriteMgr->Install(pal, 0, 0) != 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -260,16 +261,16 @@ i32 CSpriteRefTable::LoadToolToyPalettes(i32 src) {
 
 // ---------------------------------------------------------------------------
 // CSpriteRefTable::BuildToolToyColorTable (0xe2400) - build the per-color tool/toy
-// sprite-ref table. Bails on a null src; if already built (m_90) returns success.
+// sprite-ref table. Bails on a null src; if already built (m_built) returns success.
 // Otherwise registers the color palettes (LoadToolToyPalettes), then Add()s each
 // color's "<COLOR>TOOL"/"<COLOR>TOY" sprite into bucket A/B at the color's fixed
-// kind slot (any Add miss aborts with 0), and latches m_90. __thiscall(src), ret 4.
+// kind slot (any Add miss aborts with 0), and latches m_built. __thiscall(src), ret 4.
 RVA(0x000e2400, 0x39e)
 i32 CSpriteRefTable::BuildToolToyColorTable(i32 src) {
     if (!src) {
         return 0;
     }
-    if (m_90 != 0) {
+    if (m_built != 0) {
         return 1;
     }
     if (!LoadToolToyPalettes(src)) {
@@ -446,6 +447,6 @@ i32 CSpriteRefTable::BuildToolToyColorTable(i32 src) {
         return 0;
     }
     m_refB[6] = r;
-    m_90 = 1;
+    m_built = 1;
     return 1;
 }
