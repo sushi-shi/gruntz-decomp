@@ -15,9 +15,9 @@ struct IPalSink {
 
 struct CSurfacePalette {
     char m_pad0[0x2c];
-    IPalSink* m_2c; // +0x2c  palette sink interface
+    IPalSink* m_paletteSink; // +0x2c
     char m_pad30[0x108 - 0x30];
-    u8 m_108[0x400]; // +0x108  256 * 4-byte color slots
+    u8 m_colorSlots[0x400]; // +0x108  256 * 4-byte color slots
 
     void ResetPalette(); // 0x17ca60
 };
@@ -25,9 +25,9 @@ struct CSurfacePalette {
 RVA(0x0017ca60, 0x35)
 void CSurfacePalette::ResetPalette() {
     for (i32 i = 0; i < 256; i++) {
-        m_108[i * 4 + 0] = 0;
-        m_108[i * 4 + 1] = 0;
-        m_108[i * 4 + 2] = 0;
+        m_colorSlots[i * 4 + 0] = 0;
+        m_colorSlots[i * 4 + 1] = 0;
+        m_colorSlots[i * 4 + 2] = 0;
     }
-    m_2c->m_vptr->SetEntries(m_2c, 0, 0, 0x100, m_108);
+    m_paletteSink->m_vptr->SetEntries(m_paletteSink, 0, 0, 0x100, m_colorSlots);
 }
