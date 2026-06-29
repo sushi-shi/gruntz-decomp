@@ -54,10 +54,10 @@ public:
 
 // One crit-bit trie node (20 bytes).
 struct CButeNode {
-    CButeNode* child[2]; // +0x00 / +0x04
-    i32 bit;             // +0x08  crit-bit index
-    char* key;           // +0x0c  owned key copy
-    void* value;         // +0x10  stored value
+    CButeNode* m_child[2]; // +0x00 / +0x04
+    i32 m_bit;             // +0x08  crit-bit index
+    char* m_key;           // +0x0c  owned key copy
+    void* m_value;         // +0x10  stored value
 };
 
 class CButeTree {
@@ -65,15 +65,15 @@ public:
     void* Find(const char* key);
     void* Insert(const char* key, void* value);
 
-    void* m_vptr;            // +0x00
-    CVariantSlot* m_4;       // +0x04  error sink
-    char m_pad8[0x14 - 0x8]; // +0x08
-    i32 m_14;                // +0x14  node count
-    CButeNode* m_18;         // +0x18  root
-    CButeNode* m_1c;         // +0x1c  descent cursor
-    CButeNode* m_20;         // +0x20  candidate / found leaf
-    i32 m_24;                // +0x24  key bit-length (strlen*8 + 7)
-    i32 m_28;                // +0x28  "lookup pending" flag
+    void* m_vptr;               // +0x00
+    CVariantSlot* m_errorSink;  // +0x04
+    char m_pad8[0x14 - 0x8];    // +0x08
+    i32 m_nodeCount;            // +0x14
+    CButeNode* m_root;          // +0x18
+    CButeNode* m_descentCursor; // +0x1c
+    CButeNode* m_candidateLeaf; // +0x20
+    i32 m_keyBitLength;         // +0x24  strlen*8 + 7
+    i32 m_lookupPending;        // +0x28
 };
 
 // ===========================================================================
@@ -107,40 +107,40 @@ void* CButeTree::Find(const char* key) {
     if (key == 0) {
         void* name = g_projActName;
         g_projActAllocResult = GetCallerRetAddr();
-        m_4->Set(this, (i32)name, 0x16);
+        m_errorSink->Set(this, (i32)name, 0x16);
         return 0;
     }
-    CButeNode* root = m_18;
-    m_1c = root;
-    m_20 = 0;
-    m_28 = 1;
+    CButeNode* root = m_root;
+    m_descentCursor = root;
+    m_candidateLeaf = 0;
+    m_lookupPending = 1;
     i32 bitmax = (i32)strlen(key) * 8 + 7;
-    m_24 = bitmax;
+    m_keyBitLength = bitmax;
     if (root == 0) {
         return 0;
     }
-    i32 b = root->bit;
+    i32 b = root->m_bit;
     while (b <= bitmax) {
-        CButeNode** slot = m_1c->child;
+        CButeNode** slot = m_descentCursor->m_child;
         if (key[b >> 3] & (1 << (b & 7))) {
             ++slot;
         }
         CButeNode* child = *slot;
-        m_20 = child;
+        m_candidateLeaf = child;
         if (child == 0) {
             return 0;
         }
-        if (child->bit <= b) {
-            if (strcmp(key, child->key) == 0) {
-                m_28 = 0;
-                return m_20->value;
+        if (child->m_bit <= b) {
+            if (strcmp(key, child->m_key) == 0) {
+                m_lookupPending = 0;
+                return m_candidateLeaf->m_value;
             }
             return 0;
         }
-        m_1c = child;
-        b = child->bit;
+        m_descentCursor = child;
+        b = child->m_bit;
     }
-    m_20 = m_1c;
+    m_candidateLeaf = m_descentCursor;
     return 0;
 }
 
@@ -160,88 +160,88 @@ void* CButeTree::Find(const char* key) {
 // alloc pair, the inline strlen+rep-movs strcpy and the KeyPrefixBits/RezAlloc/Set
 // calls all match. Residue: retail colors `newbit`/candidate into ecx/eax (cl picks
 // the transpose), emits `add reg,-7` where cl picks `sub reg,7`, keeps `node` in esi
-// across the splice with address-merge stores, and tail-merges the two `m_18=node`
+// across the splice with address-merge stores, and tail-merges the two `m_root=node`
 // (cursor==0 / cur2==0) exits into one cold block - none reliably source-steerable
 // on a body this size. Complete + correct logic; deferred to the final sweep.
 // docs/patterns/zero-register-pinning.md, const-materialize-into-reg-vs-immediate.md.
 RVA(0x0016db90, 0x206)
 void* CButeTree::Insert(const char* key, void* value) {
-    if (m_28 == 0) {
+    if (m_lookupPending == 0) {
         g_projActAllocResult = GetCallerRetAddr();
-        m_4->Set(this, (i32) "No prior lookup", 0x16);
+        m_errorSink->Set(this, (i32) "No prior lookup", 0x16);
         return 0;
     }
-    i32 newbit = m_24 - 7;
-    m_28 = 0;
-    m_24 = newbit;
+    i32 newbit = m_keyBitLength - 7;
+    m_lookupPending = 0;
+    m_keyBitLength = newbit;
     if (key == 0 || value == 0) {
         void* name = g_projActName;
         g_projActAllocResult = GetCallerRetAddr();
-        m_4->Set(this, (i32)name, 0x16);
+        m_errorSink->Set(this, (i32)name, 0x16);
         return 0;
     }
 
     i32 critbit;
-    if (m_20 != 0) {
-        critbit = KeyPrefixBits_16e480(key, m_20->key);
+    if (m_candidateLeaf != 0) {
+        critbit = KeyPrefixBits_16e480(key, m_candidateLeaf->m_key);
     } else {
         critbit = newbit - 1;
     }
 
     CButeNode* node = (CButeNode*)RezAlloc(0x14);
     if (node != 0) {
-        node->value = value;
-        node->bit = critbit;
-        char* keybuf = (char*)RezAlloc((m_24 >> 3) + 1);
-        node->key = keybuf;
+        node->m_value = value;
+        node->m_bit = critbit;
+        char* keybuf = (char*)RezAlloc((m_keyBitLength >> 3) + 1);
+        node->m_key = keybuf;
         if (keybuf != 0) {
             strcpy(keybuf, key);
 
             // The node's crit-bit child points back at itself (the leaf back-edge).
             i32 dir = key[critbit >> 3] & (1 << (critbit & 7));
             if (dir) {
-                node->child[1] = node;
+                node->m_child[1] = node;
             } else {
-                node->child[0] = node;
+                node->m_child[0] = node;
             }
 
             // Find where critbit fits and re-point the parent at the new node.
-            CButeNode* cursor = m_1c;
+            CButeNode* cursor = m_descentCursor;
             i32 d2 = dir;
             if (cursor == 0) {
-                m_18 = node;
-            } else if (critbit < cursor->bit) {
+                m_root = node;
+            } else if (critbit < cursor->m_bit) {
                 // The Find cursor is below the divergence bit: walk from the root.
-                CButeNode* p = m_18;
-                m_1c = 0;
-                m_20 = p;
-                if (p->bit <= critbit) {
+                CButeNode* p = m_root;
+                m_descentCursor = 0;
+                m_candidateLeaf = p;
+                if (p->m_bit <= critbit) {
                     CButeNode* c;
                     do {
-                        p = m_20;
-                        m_1c = p;
-                        d2 = key[p->bit >> 3] & (1 << (p->bit & 7));
-                        CButeNode** s = p->child;
+                        p = m_candidateLeaf;
+                        m_descentCursor = p;
+                        d2 = key[p->m_bit >> 3] & (1 << (p->m_bit & 7));
+                        CButeNode** s = p->m_child;
                         if (d2) {
                             ++s;
                         }
                         c = *s;
-                        m_20 = c;
-                    } while (c->bit <= critbit);
+                        m_candidateLeaf = c;
+                    } while (c->m_bit <= critbit);
                 }
-                CButeNode* cur2 = m_1c;
+                CButeNode* cur2 = m_descentCursor;
                 if (cur2 == 0) {
-                    m_18 = node;
+                    m_root = node;
                 } else {
-                    CButeNode** s2 = cur2->child;
+                    CButeNode** s2 = cur2->m_child;
                     if (d2) {
                         ++s2;
                     }
                     *s2 = node;
                 }
             } else {
-                CButeNode** s1 = cursor->child;
-                if (key[cursor->bit >> 3] & (1 << (cursor->bit & 7))) {
+                CButeNode** s1 = cursor->m_child;
+                if (key[cursor->m_bit >> 3] & (1 << (cursor->m_bit & 7))) {
                     ++s1;
                 }
                 *s1 = node;
@@ -249,17 +249,17 @@ void* CButeTree::Insert(const char* key, void* value) {
 
             // Link the node's other child to the displaced subtree.
             if (dir) {
-                node->child[0] = m_20;
+                node->m_child[0] = m_candidateLeaf;
             } else {
-                node->child[1] = m_20;
+                node->m_child[1] = m_candidateLeaf;
             }
-            m_14++;
+            m_nodeCount++;
             return value;
         }
     }
 
     void* cache = g_projActCache;
     g_projActAllocResult = GetCallerRetAddr();
-    m_4->Set(this, (i32)cache, 0xc);
+    m_errorSink->Set(this, (i32)cache, 0xc);
     return 0;
 }
