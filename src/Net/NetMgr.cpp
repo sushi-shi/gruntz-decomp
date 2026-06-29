@@ -1813,10 +1813,10 @@ i32 CNetMgr::AddSessionNode(void* a, void* b) {
             CString temp1;
             CString temp2;
             *(void**)node = &g_netSessionNodeVtbl;
-            node->m_4 = 0;
-            node->m_20 = 0;
-            node->m_18 = 0;
-            node->m_14 = 0;
+            node->m_sessionId = 0;
+            node->m_listPosition = 0;
+            node->m_ownedBufferA = 0;
+            node->m_ownedBufferB = 0;
         }
     } else {
         node = 0;
@@ -1824,7 +1824,7 @@ i32 CNetMgr::AddSessionNode(void* a, void* b) {
 
     if (node->InitSession((i32)a, (const char*)b, (const char*)b, (i32)b) != 0) {
         IDirectPlay4Z* iface = m_directPlay;
-        i32 hr = iface->vtbl->GetData5(iface, ((CNetSessionNode*)a)->m_4, node, 4, 1);
+        i32 hr = iface->vtbl->GetData5(iface, ((CNetSessionNode*)a)->m_sessionId, node, 4, 1);
         if (hr != 0) {
             ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x36c, hr, 0);
         }
@@ -1837,7 +1837,7 @@ i32 CNetMgr::AddSessionNode(void* a, void* b) {
                 node->SelfDestruct(1);
             }
         } else {
-            node->m_20 = (i32)pos;
+            node->m_listPosition = (i32)pos;
         }
     }
     return (i32)node;
@@ -2137,14 +2137,14 @@ InterfaceObject* CNetMgr::Find(i32 kind) {
 // (+0x8/+0xc), zero the +0x14/+0x18/+0x1c scratch, return TRUE.
 // ---------------------------------------------------------------------------
 RVA(0x001796c0, 0x3f)
-i32 CNetSessionNode::InitSession(i32 id, const char* a, const char* b, i32 d) {
-    m_4 = id;
-    m_8 = a;
-    m_c = b;
+i32 CNetSessionNode::InitSession(i32 id, const char* nameA, const char* nameB, i32 d) {
+    m_sessionId = id;
+    m_8 = nameA;
+    m_c = nameB;
     m_10 = d;
-    m_18 = 0;
+    m_ownedBufferA = 0;
     m_1c = 0;
-    m_14 = 0;
+    m_ownedBufferB = 0;
     return 1;
 }
 
