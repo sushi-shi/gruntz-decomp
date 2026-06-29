@@ -55,7 +55,7 @@ CHolder8c400::~CHolder8c400() {
 // in reverse declaration order. __thiscall.
 // ===========================================================================
 struct Member124_390a0 {
-    char pad0[0x14];   // 0x124..0x137 (size 0x14)
+    char pad0[0x14];    // 0x124..0x137 (size 0x14)
     ~Member124_390a0(); // 0x1bf121
 };
 struct Member138_390a0 {
@@ -63,8 +63,8 @@ struct Member138_390a0 {
     ~Member138_390a0(); // 0x1b4b76
 };
 struct CCredits390a0 {
-    void Cleanup17b570(); // 0x17b570
-    char pad4[0x124];     // +0x00 .. +0x123
+    void Cleanup17b570();  // 0x17b570
+    char pad4[0x124];      // +0x00 .. +0x123
     Member124_390a0 m_124; // +0x124
     Member138_390a0 m_138; // +0x138
     ~CCredits390a0();
@@ -105,9 +105,9 @@ CMenuState8d000::~CMenuState8d000() {
 // __thiscall.
 // ===========================================================================
 struct CButeBase1_21 {
-    virtual ~CButeBase1_21(); // +0x00 vptr (0x5e94ac), dtor 0x16da60
+    virtual ~CButeBase1_21();   // +0x00 vptr (0x5e94ac), dtor 0x16da60
     void Teardown16e070(i32 z); // 0x16e070
-    i32 m_4; // +0x04 (pads first base to 8 so the second base lands at +0x08)
+    i32 m_4;                    // +0x04 (pads first base to 8 so the second base lands at +0x08)
 };
 struct CButeBase2_21 {
     virtual ~CButeBase2_21(); // +0x08 vptr (0x5e949c), dtor 0x16dfc0

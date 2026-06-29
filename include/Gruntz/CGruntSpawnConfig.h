@@ -61,8 +61,8 @@ struct CVoiceSound {
 
 struct CSpawnEntry {
     CSpawnEntry();
-    ~CSpawnEntry();        // 0x99ca0  (empties the list, then ~CObList member)
-    void EmptyVoiceList(); // 0x9a450  delete every held CVoiceSound, RemoveAll
+    ~CSpawnEntry();                          // 0x99ca0  (empties the list, then ~CObList member)
+    void EmptyVoiceList();                   // 0x9a450  delete every held CVoiceSound, RemoveAll
     void AddVoiceSound(CString s, i32 flag); // 0x11c560
 
     void* GetAt(void* out);       // FUN_00429a30 (__thiscall)
@@ -161,7 +161,7 @@ struct CSpawnSpriteSource {
 // its Reset (0x11a870, __thiscall); reloc-masked. m_68 holds the voice id the
 // selective teardown (0x11c730) matches against.
 struct CSpawnVoice {
-    void Reset();                              // 0x11a870
+    void Reset();                               // 0x11a870
     i32 Setup(i32 a, i32 stream, i32 c, i32 d); // 0x11a7b7 (LoadGruntSpawnConfig play start)
     char m_pad00[0x68];
     i32 m_68; // +0x68  voice id

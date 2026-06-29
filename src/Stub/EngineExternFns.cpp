@@ -8,7 +8,13 @@
 // target with its exact retail signature lets the jmp reloc resolve to the
 // retail symbol. (Same sanctioned approach as Wap32/M3CompilerThunks.cpp.)
 // ---------------------------------------------------------------------------
-void Cmd_ApplyScrollParams_0ec1c0(i32, i32, i32, i32, i32); // 0x0ec1c0 (src/Gruntz/CmdScrollApply.cpp)
+void Cmd_ApplyScrollParams_0ec1c0(
+    i32,
+    i32,
+    i32,
+    i32,
+    i32
+); // 0x0ec1c0 (src/Gruntz/CmdScrollApply.cpp)
 struct HWND__;
 i32 StartUpPrompt(HWND__* hWnd); // 0x01f9b0 (src/Gruntz/StartUpPrompt.cpp)
 namespace Utils {

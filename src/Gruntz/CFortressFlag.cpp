@@ -143,21 +143,21 @@ CFortressFlag::CFortressFlag(CGameObject* obj) : CUserLogic(obj) {
     }
     const char* name;
     switch (m_10->m_124) {
-    case 0:
-        name = "GAME_FORTRESSFLAGZ_KING";
-        break;
-    case 1:
-        name = "GAME_FORTRESSFLAGZ_NAPOLEAN";
-        break;
-    case 2:
-        name = "GAME_FORTRESSFLAGZ_PATTON";
-        break;
-    case 3:
-        name = "GAME_FORTRESSFLAGZ_VIKING";
-        break;
-    default:
-        m_38->m_08 |= 0x10000;
-        return;
+        case 0:
+            name = "GAME_FORTRESSFLAGZ_KING";
+            break;
+        case 1:
+            name = "GAME_FORTRESSFLAGZ_NAPOLEAN";
+            break;
+        case 2:
+            name = "GAME_FORTRESSFLAGZ_PATTON";
+            break;
+        case 3:
+            name = "GAME_FORTRESSFLAGZ_VIKING";
+            break;
+        default:
+            m_38->m_08 |= 0x10000;
+            return;
     }
     m_38->ApplyName(name);
     m_30 = m_14->m_1c;
@@ -209,7 +209,8 @@ void CFortressFlag::RegisterActs() {
         ((CActName*)slot)->Assign(s_actKeyA);
         g_nextActId++;
     }
-    ((CFortressFlagActEntry*)g_fortressFlagActReg.ResolveEntry(id))->m_fn = &CFortressFlag::AdvanceAnim;
+    ((CFortressFlagActEntry*)g_fortressFlagActReg.ResolveEntry(id))->m_fn =
+        &CFortressFlag::AdvanceAnim;
 }
 
 // CFortressFlag::AdvanceAnim @0x0463e0 - re-target the bound object's animation

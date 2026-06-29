@@ -84,5 +84,6 @@ void CSingleFrameMessage::RegisterActs() {
         ((CActName*)slot)->Assign(s_actKeyA);
         g_nextActId++;
     }
-    ((CSingleFrameActEntry*)g_singleFrameActReg.ResolveEntry(id))->m_fn = &CSingleFrameMessage::AdvanceAnim;
+    ((CSingleFrameActEntry*)g_singleFrameActReg.ResolveEntry(id))->m_fn =
+        &CSingleFrameMessage::AdvanceAnim;
 }

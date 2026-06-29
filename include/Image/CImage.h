@@ -32,8 +32,8 @@
 #include <rva.h>
 #include <Ints.h>
 
-class CString;  // real MFC CString (4-byte ptr); completed via <Mfc.h> in the .cpp
-                // (forward-decl here so includers needn't choose <Mfc.h> vs <Win32.h>)
+class CString;   // real MFC CString (4-byte ptr); completed via <Mfc.h> in the .cpp
+                 // (forward-decl here so includers needn't choose <Mfc.h> vs <Win32.h>)
 class CBlitInfo; // the sprite blit/draw request (esi); defined in CImageSpriteBlit.cpp
 
 // The two vtables in the dtor chain: this class's own (0x5eaa2c) and the
@@ -113,7 +113,8 @@ public:
 
     i32 Prepare(i32 z);                // 0x13e760  (__thiscall, ret 4)
     i32 Blt(CImageSurfaceItem* other); // 0x13ee60  (__thiscall, ret 4)
-    i32 Reload(void* pool, i32 src, i32 index, void* data, i32 flag); // 0x13e550 (__thiscall, ret 0x14)
+    i32
+    Reload(void* pool, i32 src, i32 index, void* data, i32 flag); // 0x13e550 (__thiscall, ret 0x14)
 };
 
 // The parent CDDrawPtrCollections surface pool, reached through CImage::m_0c->m_1c.
@@ -154,9 +155,15 @@ struct CImageFrameRebuildDesc {
 
 class CImageOwned {
 public:
-    CImageOwned();                                      // 0x148ce0
-    i32 BuildRle(void* pixels, i32 width, i32 height, i32 stride, i32 keyVal,
-                 void* palette);                        // 0x148d40  (/GX, CByteArray RLE encode)
+    CImageOwned(); // 0x148ce0
+    i32 BuildRle(
+        void* pixels,
+        i32 width,
+        i32 height,
+        i32 stride,
+        i32 keyVal,
+        void* palette
+    );                                                  // 0x148d40  (/GX, CByteArray RLE encode)
     i32 LoadFromFile(CString name, i32 fmt);            // 0x148fc0  (/GX, open + slurp + Build)
     i32 Build(CImageBuildDesc* src, i32 size, i32 fmt); // 0x1490d0
     void* Remap(void* pixels);                          // 0x1495d0  (palette-remap, external)
@@ -166,18 +173,18 @@ public:
     i32 DecodeFrame(CString name, CImageFrameRebuildDesc desc); // 0x149250
     i32 Rebuild(CString name, i32 a1, i32 a2);                  // 0x1493b0
 
-    i32 m_00;   // +0x00
-    i32 m_04;   // +0x04  src->m_08
-    i32 m_08;   // +0x08  src->m_0c
-    void* m_0c; // +0x0c  decoded pixel buffer (new / RezFree)
-    i32 m_10;   // +0x10  pixel byte count
-    i32 m_14;   // +0x14  (1)
-    i32 m_18;   // +0x18  (0x80)
-    i32 m_1c;   // +0x1c  (0)
-    void* m_20; // +0x20  256-entry palette buffer (new 0x400 / RezFree)
-    i32 m_24;   // +0x24  (-1 / src->m_18)
-    u8 m_28;    // +0x28  format flag a
-    u8 m_29;    // +0x29  format flag b
+    i32 m_00;              // +0x00
+    i32 m_04;              // +0x04  src->m_08
+    i32 m_08;              // +0x08  src->m_0c
+    void* m_0c;            // +0x0c  decoded pixel buffer (new / RezFree)
+    i32 m_10;              // +0x10  pixel byte count
+    i32 m_14;              // +0x14  (1)
+    i32 m_18;              // +0x18  (0x80)
+    i32 m_1c;              // +0x1c  (0)
+    void* m_20;            // +0x20  256-entry palette buffer (new 0x400 / RezFree)
+    i32 m_24;              // +0x24  (-1 / src->m_18)
+    u8 m_28;               // +0x28  format flag a
+    u8 m_29;               // +0x29  format flag b
     char _2a[0x3c - 0x2a]; // +0x2a  pad to the 0x3c allocation size (operator new(0x3c))
 };
 
@@ -277,7 +284,7 @@ public:
     i32 Create(CImageFrameDesc* desc, i32 keyed);                      // 0x152e90  (vtable slot 12)
     i32 Resolve(CImageSource* src, i32 arg);                           // 0x152f20  (vtable slot 11)
     i32 LoadDispatch(CImageFrameDesc* desc, u32 mode, void* a, i32 b); // 0x152fb0  (vtable slot 10)
-    i32 Create24(CImageFrameDesc* desc, i32 mode, i32 keyed); // 0x1530e0  (vtable slot 9)
+    i32 Create24(CImageFrameDesc* desc, i32 mode, i32 keyed);          // 0x1530e0  (vtable slot 9)
     i32
     BuildSlot13(CImageFrameDesc* desc, void* a); // 0x153180  (non-virtual /GX builder, external)
     void FreeAll();                              // 0x153260  (vtable slot 7)

@@ -75,8 +75,8 @@ static const char s_WG_IDLE4[] = "GRUNTZ_WINGZGRUNT_IDLE4";
 static const char s_WG_IDLE5[] = "GRUNTZ_WINGZGRUNT_IDLE5";
 
 // The entrance-cell record fields (raw offset; +0x470 = field0, +0x474 = field1).
-#define CELL_F0(k) (*(CString*)((char*)this + 0x470 + (k)*0x68))
-#define CELL_F1(k) (*(CString*)((char*)this + 0x474 + (k)*0x68))
+#define CELL_F0(k) (*(CString*)((char*)this + 0x470 + (k) * 0x68))
+#define CELL_F1(k) (*(CString*)((char*)this + 0x474 + (k) * 0x68))
 #define WLOOKUP(key) (m_154->m_c->m_2c->m_10map.Lookup((key), &_out))
 
 // ---------------------------------------------------------------------------
@@ -248,7 +248,7 @@ struct CGruntSndResMgr {
 
 // The launch-sound cue tag (reloc-masked global) + the __stdcall sound player.
 DATA(0x0021ab24)
-extern i32 g_sndCueTag; // ?g_sndCueTag@@3HA
+extern i32 g_sndCueTag;                                       // ?g_sndCueTag@@3HA
 void __stdcall PlayAttackSound(i32 tag, i32 a, i32 b, i32 c); // thunk 0x25fe -> 0x1f940
 
 // The spell-effect key strings (CreateSprite/Activate/ApplyName take const char*).
@@ -307,53 +307,82 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
 
     switch (idx) {
         case 1: { // freeze
-            CHudSprite* spr = g_pGameRegistry->m_30->m_8->CreateSprite(
-                0, m_lastTilePxX, m_lastTilePxY, 0xf4240, s_LightFx, 0x40003);
+            CHudSprite* spr =
+                g_pGameRegistry->m_30->m_8
+                    ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, s_LightFx, 0x40003);
             spr->m_7c->m_init(spr);
             spr->m_7c->m_18->Activate(s_GAME_LIGHTING_FLASH, s_GAME_FLASH, 9, 1);
             return m_tileMgr->CombatCue(
-                m_lastTilePxX, m_lastTilePxY,
-                g_buteMgr.GetIntDef(s_Spellz, s_FreezeRadius, 8), 4, -1);
+                m_lastTilePxX,
+                m_lastTilePxY,
+                g_buteMgr.GetIntDef(s_Spellz, s_FreezeRadius, 8),
+                4,
+                -1
+            );
         }
         case 2: { // health
-            CHudSprite* spr = g_pGameRegistry->m_30->m_8->CreateSprite(
-                0, m_lastTilePxX, m_lastTilePxY, 0xf4240, s_LightFx, 0x40003);
+            CHudSprite* spr =
+                g_pGameRegistry->m_30->m_8
+                    ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, s_LightFx, 0x40003);
             spr->m_7c->m_init(spr);
             spr->m_7c->m_18->Activate(s_GAME_LIGHTING_FLASH, s_GAME_FLASH, 2, 1);
             return m_tileMgr->CombatCue(
-                m_lastTilePxX, m_lastTilePxY,
-                g_buteMgr.GetIntDef(s_Spellz, s_HealthRadius, 8), 3, -1);
+                m_lastTilePxX,
+                m_lastTilePxY,
+                g_buteMgr.GetIntDef(s_Spellz, s_HealthRadius, 8),
+                3,
+                -1
+            );
         }
         case 3: { // resurrection
-            CHudSprite* spr = g_pGameRegistry->m_30->m_8->CreateSprite(
-                0, m_lastTilePxX, m_lastTilePxY, 0xf4240, s_LightFx, 0x40003);
+            CHudSprite* spr =
+                g_pGameRegistry->m_30->m_8
+                    ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, s_LightFx, 0x40003);
             spr->m_7c->m_init(spr);
             spr->m_7c->m_18->Activate(s_GAME_LIGHTING_FLASH, s_GAME_FLASH, 8, 1);
             return m_tileMgr->ResurrectCue(
-                m_lastTilePxX, m_lastTilePxY,
-                g_buteMgr.GetIntDef(s_Spellz, s_RessurectionRadius, 8));
+                m_lastTilePxX,
+                m_lastTilePxY,
+                g_buteMgr.GetIntDef(s_Spellz, s_RessurectionRadius, 8)
+            );
         }
         case 4: { // toyz
-            CHudSprite* spr = g_pGameRegistry->m_30->m_8->CreateSprite(
-                0, m_lastTilePxX, m_lastTilePxY, 0xf4240, s_LightFx, 0x40003);
+            CHudSprite* spr =
+                g_pGameRegistry->m_30->m_8
+                    ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, s_LightFx, 0x40003);
             spr->m_7c->m_init(spr);
             spr->m_7c->m_18->Activate(s_GAME_LIGHTING_FLASH, s_GAME_FLASH, 7, 1);
             return m_tileMgr->CombatCue(
-                m_lastTilePxX, m_lastTilePxY,
-                g_buteMgr.GetIntDef(s_Spellz, s_ToyzRadius, 8), 5, -1);
+                m_lastTilePxX,
+                m_lastTilePxY,
+                g_buteMgr.GetIntDef(s_Spellz, s_ToyzRadius, 8),
+                5,
+                -1
+            );
         }
         case 5: { // teleport
-            CHudSprite* spr = g_pGameRegistry->m_30->m_8->CreateSprite(
-                0, m_lastTilePxX, m_lastTilePxY, 0xf4240, s_LightFx, 0x40003);
+            CHudSprite* spr =
+                g_pGameRegistry->m_30->m_8
+                    ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, s_LightFx, 0x40003);
             spr->m_7c->m_init(spr);
             spr->m_7c->m_18->Activate(s_GAME_LIGHTING_FLASH, s_GAME_FLASH, 3, 1);
             return m_tileMgr->CombatCue(
-                m_lastTilePxX, m_lastTilePxY,
-                g_buteMgr.GetIntDef(s_Spellz, s_TeleportRadius, 8), 2, -1);
+                m_lastTilePxX,
+                m_lastTilePxY,
+                g_buteMgr.GetIntDef(s_Spellz, s_TeleportRadius, 8),
+                2,
+                -1
+            );
         }
         case 6: { // rolling ball (4 directions)
             CHudSprite* n = g_pGameRegistry->m_30->m_8->CreateSprite(
-                0, m_lastTilePxX, m_lastTilePxY - 0x20, 0, s_RollingBall, 0x40003);
+                0,
+                m_lastTilePxX,
+                m_lastTilePxY - 0x20,
+                0,
+                s_RollingBall,
+                0x40003
+            );
             n->ApplyName(s_LEVEL_ROLLINGBALL_NORTH);
             CSpriteInner* ni = n->m_7c;
             ni->m_bc = (i32)g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzSpeed, 0x3e8);
@@ -361,7 +390,13 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             n->m_118 = (i32)g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzTime, 0x3e8);
 
             CHudSprite* e = g_pGameRegistry->m_30->m_8->CreateSprite(
-                0, m_lastTilePxX + 0x20, m_lastTilePxY, 0, s_RollingBall, 0x40003);
+                0,
+                m_lastTilePxX + 0x20,
+                m_lastTilePxY,
+                0,
+                s_RollingBall,
+                0x40003
+            );
             e->ApplyName(s_LEVEL_ROLLINGBALL_EAST);
             CSpriteInner* ei = e->m_7c;
             ei->m_bc = (i32)g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzSpeed, 0x3e8);
@@ -369,7 +404,13 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             e->m_118 = (i32)g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzTime, 0x3e8);
 
             CHudSprite* s = g_pGameRegistry->m_30->m_8->CreateSprite(
-                0, m_lastTilePxX, m_lastTilePxY + 0x20, 0, s_RollingBall, 0x40003);
+                0,
+                m_lastTilePxX,
+                m_lastTilePxY + 0x20,
+                0,
+                s_RollingBall,
+                0x40003
+            );
             s->ApplyName(s_LEVEL_ROLLINGBALL_SOUTH);
             CSpriteInner* si = s->m_7c;
             si->m_bc = (i32)g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzSpeed, 0x3e8);
@@ -377,7 +418,13 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             s->m_118 = (i32)g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzTime, 0x3e8);
 
             CHudSprite* w = g_pGameRegistry->m_30->m_8->CreateSprite(
-                0, m_lastTilePxX - 0x20, m_lastTilePxY, 0, s_RollingBall, 0x40003);
+                0,
+                m_lastTilePxX - 0x20,
+                m_lastTilePxY,
+                0,
+                s_RollingBall,
+                0x40003
+            );
             w->ApplyName(s_LEVEL_ROLLINGBALL_WEST);
             CSpriteInner* wi = w->m_7c;
             wi->m_bc = (i32)g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzSpeed, 0x3e8);
@@ -429,11 +476,11 @@ static const char s_NORMALGRUNT_DEATH[] = "GRUNTZ_NORMALGRUNT_DEATH";
     (m_154->m_1b4->m_10 > 0 ? (*m_154->m_1b4->m_c)[0x14 / 4] : ((i32*)0)[0x14 / 4])
 
 // Fire the on-screen death cue (CueA) when the grunt point is visible.
-#define DEATH_CUE(tag)                                                                              \
+#define DEATH_CUE(tag)                                                                             \
     do {                                                                                           \
         CGameRegistry* _g = g_pGameRegistry;                                                       \
         if (GruntPointVisible(_g->m_30->m_24->m_5c + 0x40, m_10->m_5c, m_10->m_60)) {              \
-            _g->m_60->CueA(this, (tag), -1, 0, -1, -1);                                             \
+            _g->m_60->CueA(this, (tag), -1, 0, -1, -1);                                            \
         }                                                                                          \
     } while (0)
 
@@ -648,7 +695,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
             goto finalize;
         }
 
-        case 5: { // GRUNTZ_DEATHZ_MELT
+        case 5: {              // GRUNTZ_DEATHZ_MELT
             ApplySetState1(1); // 0x4322
             CSprite* out = 0;
             m_154->m_c->m_2c->m_10map.Lookup(s_DEATHZ_MELT, &out);

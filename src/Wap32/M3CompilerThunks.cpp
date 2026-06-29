@@ -6,10 +6,10 @@
 #include <rva.h>
 
 extern "C" {
-void Font_ctor_179700(); // 0x179700 Font::Font (tail-called by the initializer)
-void g_smallFont_64eb00(); // 0x64eb00 the global small Font (address-of)
-void g_obj_652e40();     // 0x652e40 MFC global object
-void Wnd_1baf15();       // 0x1baf15 method invoked on g_652e40
+    void Font_ctor_179700();   // 0x179700 Font::Font (tail-called by the initializer)
+    void g_smallFont_64eb00(); // 0x64eb00 the global small Font (address-of)
+    void g_obj_652e40();       // 0x652e40 MFC global object
+    void Wnd_1baf15();         // 0x1baf15 method invoked on g_652e40
 }
 
 // 0x1156b0 - dynamic initializer for the global small Font: construct it (tail

@@ -9,33 +9,33 @@
 
 // A child control returned by CWnd::GetDlgItem; only EnableWindow is reached here.
 struct CCtrl {
-    void EnableWindow(i32 enable);  // 0x1be6a7
+    void EnableWindow(i32 enable); // 0x1be6a7
 };
 
 // The per-channel slot record (lives at +0x150 inside a 0x238-byte channel entry).
 struct ChannelSlot {
-    i32 m_00;        // +0x00 player id
-    CString m_04;    // +0x04 label
-    i32 m_08;        // +0x08 slot index
+    i32 m_00;     // +0x00 player id
+    CString m_04; // +0x04 label
+    i32 m_08;     // +0x08 slot index
     char pad0c[0x10 - 0x0c];
-    i32 m_10;        // +0x10
-    i32 m_14;        // +0x14
+    i32 m_10; // +0x10
+    i32 m_14; // +0x14
     char pad18[0x1c - 0x18];
-    i32 m_1c;        // +0x1c ready flag
-    i32 m_20;        // +0x20 active flag
+    i32 m_1c; // +0x1c ready flag
+    i32 m_20; // +0x20 active flag
 };
 
 // A full channel entry (stride 0x238); the player slot is embedded at +0x150.
 struct Channel {
     char pad000[0x150];
-    ChannelSlot slot;  // +0x150
+    ChannelSlot slot; // +0x150
     char pad_tail[0x238 - (0x150 + sizeof(ChannelSlot))];
 };
 
 // The dialog object.  m_5c is the per-channel array.
 struct CNetGameDlg {
     char pad000[0x5c];
-    Channel* m_5c;  // +0x5c channel array
+    Channel* m_5c; // +0x5c channel array
 
     // declared-only siblings (reloc-masked)
     CCtrl* GetDlgItem(i32 id);     // 0x1be27d (CWnd::GetDlgItem)
@@ -48,7 +48,7 @@ struct CNetGameDlg {
     CCtrl* M_c2840(i32 ch);        // 0xc2840
 
     // my targets
-    i32 EnableControls();   // 0xc4120
+    i32 EnableControls();     // 0xc4120
     void UpdateSlot(i32 ch);  // 0xc2ab0
     void VerifyCustomLevel(); // 0xc4c00
 };
@@ -56,47 +56,51 @@ struct CNetGameDlg {
 // The HWND owner returned by M_c2640.
 struct CChanWnd {
     char pad00[0x1c];
-    void* m_1c;  // +0x1c HWND
+    void* m_1c; // +0x1c HWND
 };
 
 // The net-session manager singleton (the int handle g_64bd5c holds its pointer).
 struct CNetSession {
     char pad000[0x528];
-    i32 m_528;   // +0x528 active flag
+    i32 m_528; // +0x528 active flag
     char pad52c[0x530 - 0x52c];
-    i32 m_530;   // +0x530 verified flag
+    i32 m_530; // +0x530 verified flag
     char pad534[0x53c - 0x534];
-    i32 m_53c;   // +0x53c mismatch flag
+    i32 m_53c; // +0x53c mismatch flag
     char pad540[0x5b0 - 0x540];
     void* m_5b0; // +0x5b0 custom-level name
 
-    void DropPlayer(i32 id);       // 0xbb510
-    i32 Poll(i32 token);           // 0x1249
-    void SendStatFlag(i32 id, i32 v);  // 0xb9240
+    void DropPlayer(i32 id);          // 0xbb510
+    i32 Poll(i32 token);              // 0x1249
+    void SendStatFlag(i32 id, i32 v); // 0xb9240
 };
 // The singleton's canonical symbol is owned by ReconBatch2.cpp as a typed pointer
 // (?g_optCfg_64bd5c@@3PAUOptCfg_c4b30@@A); re-declare it by that name so the load
 // reloc-masks, then view it through the session layout.
 struct OptCfg_c4b30;
-extern OptCfg_c4b30* g_optCfg_64bd5c;  // 0x64bd5c
+extern OptCfg_c4b30* g_optCfg_64bd5c; // 0x64bd5c
 
 // The game-settings singleton (CGruntzMgr) used to resolve the level + show modals.
 struct CGameSettings {
-    void* BuildRezPath(i32 a, void* name, i32 c, i32 d, CString cap);  // 0x93d40
+    void* BuildRezPath(i32 a, void* name, i32 c, i32 d, CString cap); // 0x93d40
     void ShowModal(const char* msg);                                  // 0x8ef10
 };
-extern "C" CGameSettings* g_mgrSettings;  // _g_mgrSettings (0x64556c)
+extern "C" CGameSettings* g_mgrSettings; // _g_mgrSettings (0x64556c)
 
 // SendMessageA reached through the game's own import pointer.
-extern "C" long(__stdcall* g_pSendMessageA)(void* hwnd, unsigned msg, unsigned wp, long lp);  // 0x6c44a4
-DATA(0x0024bdb0) extern CString g_64bdb0[];  // 0x64bdb0 per-channel label table
+extern "C" long(__stdcall*
+                    g_pSendMessageA)(void* hwnd, unsigned msg, unsigned wp, long lp); // 0x6c44a4
+DATA(0x0024bdb0)
+extern CString g_64bdb0[]; // 0x64bdb0 per-channel label table
 
-void ChannelSlots_Set(i32 slot, i32 v);    // 0xdb2b0
-i32 ChannelSlots_FindFree();               // 0xdb280
-CString GetConfigNameA();                  // 0xb6090
-CString GetConfigNameB();                  // 0xb60d0
+void ChannelSlots_Set(i32 slot, i32 v); // 0xdb2b0
+i32 ChannelSlots_FindFree();            // 0xdb280
+CString GetConfigNameA();               // 0xb6090
+CString GetConfigNameB();               // 0xb60d0
 
-inline CNetSession* Session() { return (CNetSession*)g_optCfg_64bd5c; }
+inline CNetSession* Session() {
+    return (CNetSession*)g_optCfg_64bd5c;
+}
 
 // @early-stop
 // /GX EH-frame representation wall (~84%): the code stream is byte-faithful (all
@@ -136,8 +140,9 @@ void CNetGameDlg::UpdateSlot(i32 ch) {
     long(__stdcall * pSend)(void*, unsigned, unsigned, long) = g_pSendMessageA;
     if (pSend(owner->m_1c, 0x147, 0, 0) == 0) {
         if (s->m_14 != 0) {
-            if (s->m_20 != 0)
+            if (s->m_20 != 0) {
                 Session()->DropPlayer(s->m_00);
+            }
         } else if (s->m_20 != 0) {
             ChannelSlots_Set(s->m_08, 1);
         }
@@ -148,8 +153,9 @@ void CNetGameDlg::UpdateSlot(i32 ch) {
     } else {
         if (pSend(owner->m_1c, 0x147, 0, 0) != 4) {
             if (s->m_14 != 0) {
-                if (s->m_20 != 0)
+                if (s->m_20 != 0) {
                     Session()->DropPlayer(s->m_00);
+                }
                 i32 free = ChannelSlots_FindFree();
                 s->m_08 = free;
                 ChannelSlots_Set(free, 0);
@@ -180,8 +186,9 @@ void CNetGameDlg::UpdateSlot(i32 ch) {
 RVA(0x000c4c00, 0x190)
 void CNetGameDlg::VerifyCustomLevel() {
     CNetSession* mgr = Session();
-    if (mgr->m_528 == 0)
+    if (mgr->m_528 == 0) {
         return;
+    }
     mgr->SendStatFlag(0x3fc, 1);
     void* token;
     if (Session()->m_5b0 != 0) {

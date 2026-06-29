@@ -363,41 +363,41 @@ i32 CDDrawSurfacePair::directx_wrapper_caller_1644a0_DirectDrawCreate_DirectDraw
         i32 err = pool->m_944;
         if (err != 0) {
             switch (err) {
-            case 0x3e9: {
-                CDDrawSurfaceMgr* m = (CDDrawSurfaceMgr*)m_0c;
-                if (m->m_38 == 0) {
-                    m->m_38 = 0x80e9;
+                case 0x3e9: {
+                    CDDrawSurfaceMgr* m = (CDDrawSurfaceMgr*)m_0c;
+                    if (m->m_38 == 0) {
+                        m->m_38 = 0x80e9;
+                    }
+                    return 0;
                 }
-                return 0;
-            }
-            case 0x3ea: {
-                CDDrawSurfaceMgr* m = (CDDrawSurfaceMgr*)m_0c;
-                if (m->m_38 == 0) {
-                    m->m_38 = 0x80ea;
+                case 0x3ea: {
+                    CDDrawSurfaceMgr* m = (CDDrawSurfaceMgr*)m_0c;
+                    if (m->m_38 == 0) {
+                        m->m_38 = 0x80ea;
+                    }
+                    return 0;
                 }
-                return 0;
-            }
-            case 0x3eb: {
-                CDDrawSurfaceMgr* m = (CDDrawSurfaceMgr*)m_0c;
-                if (m->m_38 == 0) {
-                    m->m_38 = 0x80eb;
+                case 0x3eb: {
+                    CDDrawSurfaceMgr* m = (CDDrawSurfaceMgr*)m_0c;
+                    if (m->m_38 == 0) {
+                        m->m_38 = 0x80eb;
+                    }
+                    return 0;
                 }
-                return 0;
-            }
-            case 0x3ec: {
-                CDDrawSurfaceMgr* m = (CDDrawSurfaceMgr*)m_0c;
-                if (m->m_38 == 0) {
-                    m->m_38 = 0x80ec;
+                case 0x3ec: {
+                    CDDrawSurfaceMgr* m = (CDDrawSurfaceMgr*)m_0c;
+                    if (m->m_38 == 0) {
+                        m->m_38 = 0x80ec;
+                    }
+                    return 0;
                 }
-                return 0;
-            }
-            case 0x3ed: {
-                CDDrawSurfaceMgr* m = (CDDrawSurfaceMgr*)m_0c;
-                if (m->m_38 == 0) {
-                    m->m_38 = 0x80ed;
+                case 0x3ed: {
+                    CDDrawSurfaceMgr* m = (CDDrawSurfaceMgr*)m_0c;
+                    if (m->m_38 == 0) {
+                        m->m_38 = 0x80ed;
+                    }
+                    return 0;
                 }
-                return 0;
-            }
             }
             CDDrawSurfaceMgr* md = (CDDrawSurfaceMgr*)m_0c;
             if (md->m_38 == 0) {

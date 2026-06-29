@@ -8,10 +8,10 @@
 // base ~CFader call all resolve to external no-body symbols and are reloc-masked.
 #include <rva.h>
 
-extern "C" void Handler_1e3748();     // 0x5e3748 - __ehhandler$ (push OFFSET needs a fn sym)
-extern void* const Vtbl_5f07f8;       // 0x5f07f8 - this class's vtable
-extern "C" void RezFree(void*);       // 0x1b9b82
-extern "C" void DtorCFader_17e4a0();  // 0x17e4a0 - base ~CFader
+extern "C" void Handler_1e3748();    // 0x5e3748 - __ehhandler$ (push OFFSET needs a fn sym)
+extern void* const Vtbl_5f07f8;      // 0x5f07f8 - this class's vtable
+extern "C" void RezFree(void*);      // 0x1b9b82
+extern "C" void DtorCFader_17e4a0(); // 0x17e4a0 - base ~CFader
 
 RVA(0x0017f570, 0x61)
 __declspec(naked) void Dtor_17f570() {

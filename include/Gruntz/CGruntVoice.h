@@ -106,8 +106,8 @@ public:
     CGruntVoice(CGameObject* obj);   // 0x1198a0 (folds CUserLogic(obj) + the voice tail)
     virtual ~CGruntVoice() OVERRIDE; // 0x119ae0
 
-    static void InitActReg();                        // 0x119dc0 (construct g_vactColl over [2000,2010])
-    void Dispatch(i32 coord);                        // 0x119e40
+    static void InitActReg(); // 0x119dc0 (construct g_vactColl over [2000,2010])
+    void Dispatch(i32 coord); // 0x119e40
     i32 Setup(i32 a0, void* sample, i32 a2, i32 a3); // 0x11a7e0
     void Reset();                                    // 0x11a870
 

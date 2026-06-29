@@ -89,58 +89,138 @@ i32 CGruntCmdObj::LoadVehicleGruntSprites(i32 kind) {
     CString name;
     i32* r0;
     switch (kind) {
-    case 0x17:
-        r0 = m_region0; r0[0] = -1; r0[1] = -1; r0[2] = 1; r0[3] = 1;
-        r0 = m_region1; r0[0] = 0; r0[1] = 0; r0[2] = 0; r0[3] = 0;
-        name = "BABYWALKERGRUNT";
-        break;
-    case 0x18:
-        r0 = m_region0; r0[0] = -1; r0[1] = -1; r0[2] = 1; r0[3] = 1;
-        r0 = m_region1; r0[0] = 0; r0[1] = 0; r0[2] = 0; r0[3] = 0;
-        name = "BEACHBALLGRUNT";
-        break;
-    case 0x19:
-        r0 = m_region0; r0[0] = -1; r0[1] = -1; r0[2] = 1; r0[3] = 1;
-        r0 = m_region1; r0[0] = 0; r0[1] = 0; r0[2] = 0; r0[3] = 0;
-        name = "BIGWHEELGRUNT";
-        break;
-    case 0x1a:
-        r0 = m_region0; r0[0] = -1; r0[1] = -1; r0[2] = 1; r0[3] = 1;
-        r0 = m_region1; r0[0] = 0; r0[1] = 0; r0[2] = 0; r0[3] = 0;
-        name = "GOKARTGRUNT";
-        break;
-    case 0x1b:
-        r0 = m_region0; r0[0] = -1; r0[1] = -1; r0[2] = 1; r0[3] = 1;
-        r0 = m_region1; r0[0] = 0; r0[1] = 0; r0[2] = 0; r0[3] = 0;
-        name = "JACKINTHEBOXGRUNT";
-        break;
-    case 0x1c:
-        r0 = m_region0; r0[0] = -1; r0[1] = -1; r0[2] = 1; r0[3] = 1;
-        r0 = m_region1; r0[0] = 0; r0[1] = 0; r0[2] = 0; r0[3] = 0;
-        name = "JUMPROPEGRUNT";
-        break;
-    case 0x1d:
-        r0 = m_region0; r0[0] = -1; r0[1] = -1; r0[2] = 1; r0[3] = 1;
-        r0 = m_region1; r0[0] = 0; r0[1] = 0; r0[2] = 0; r0[3] = 0;
-        name = "POGOSTICKGRUNT";
-        break;
-    case 0x1e:
-        r0 = m_region0; r0[0] = -1; r0[1] = -1; r0[2] = 1; r0[3] = 1;
-        r0 = m_region1; r0[0] = 0; r0[1] = 0; r0[2] = 0; r0[3] = 0;
-        name = "SCROLLGRUNT";
-        break;
-    case 0x1f:
-        r0 = m_region0; r0[0] = -1; r0[1] = -1; r0[2] = 1; r0[3] = 1;
-        r0 = m_region1; r0[0] = 0; r0[1] = 0; r0[2] = 0; r0[3] = 0;
-        name = "SQUEAKTOYGRUNT";
-        break;
-    case 0x20:
-        r0 = m_region0; r0[0] = -1; r0[1] = -1; r0[2] = 1; r0[3] = 1;
-        r0 = m_region1; r0[0] = 0; r0[1] = 0; r0[2] = 0; r0[3] = 0;
-        name = "YOYOGRUNT";
-        break;
-    default:
-        break;
+        case 0x17:
+            r0 = m_region0;
+            r0[0] = -1;
+            r0[1] = -1;
+            r0[2] = 1;
+            r0[3] = 1;
+            r0 = m_region1;
+            r0[0] = 0;
+            r0[1] = 0;
+            r0[2] = 0;
+            r0[3] = 0;
+            name = "BABYWALKERGRUNT";
+            break;
+        case 0x18:
+            r0 = m_region0;
+            r0[0] = -1;
+            r0[1] = -1;
+            r0[2] = 1;
+            r0[3] = 1;
+            r0 = m_region1;
+            r0[0] = 0;
+            r0[1] = 0;
+            r0[2] = 0;
+            r0[3] = 0;
+            name = "BEACHBALLGRUNT";
+            break;
+        case 0x19:
+            r0 = m_region0;
+            r0[0] = -1;
+            r0[1] = -1;
+            r0[2] = 1;
+            r0[3] = 1;
+            r0 = m_region1;
+            r0[0] = 0;
+            r0[1] = 0;
+            r0[2] = 0;
+            r0[3] = 0;
+            name = "BIGWHEELGRUNT";
+            break;
+        case 0x1a:
+            r0 = m_region0;
+            r0[0] = -1;
+            r0[1] = -1;
+            r0[2] = 1;
+            r0[3] = 1;
+            r0 = m_region1;
+            r0[0] = 0;
+            r0[1] = 0;
+            r0[2] = 0;
+            r0[3] = 0;
+            name = "GOKARTGRUNT";
+            break;
+        case 0x1b:
+            r0 = m_region0;
+            r0[0] = -1;
+            r0[1] = -1;
+            r0[2] = 1;
+            r0[3] = 1;
+            r0 = m_region1;
+            r0[0] = 0;
+            r0[1] = 0;
+            r0[2] = 0;
+            r0[3] = 0;
+            name = "JACKINTHEBOXGRUNT";
+            break;
+        case 0x1c:
+            r0 = m_region0;
+            r0[0] = -1;
+            r0[1] = -1;
+            r0[2] = 1;
+            r0[3] = 1;
+            r0 = m_region1;
+            r0[0] = 0;
+            r0[1] = 0;
+            r0[2] = 0;
+            r0[3] = 0;
+            name = "JUMPROPEGRUNT";
+            break;
+        case 0x1d:
+            r0 = m_region0;
+            r0[0] = -1;
+            r0[1] = -1;
+            r0[2] = 1;
+            r0[3] = 1;
+            r0 = m_region1;
+            r0[0] = 0;
+            r0[1] = 0;
+            r0[2] = 0;
+            r0[3] = 0;
+            name = "POGOSTICKGRUNT";
+            break;
+        case 0x1e:
+            r0 = m_region0;
+            r0[0] = -1;
+            r0[1] = -1;
+            r0[2] = 1;
+            r0[3] = 1;
+            r0 = m_region1;
+            r0[0] = 0;
+            r0[1] = 0;
+            r0[2] = 0;
+            r0[3] = 0;
+            name = "SCROLLGRUNT";
+            break;
+        case 0x1f:
+            r0 = m_region0;
+            r0[0] = -1;
+            r0[1] = -1;
+            r0[2] = 1;
+            r0[3] = 1;
+            r0 = m_region1;
+            r0[0] = 0;
+            r0[1] = 0;
+            r0[2] = 0;
+            r0[3] = 0;
+            name = "SQUEAKTOYGRUNT";
+            break;
+        case 0x20:
+            r0 = m_region0;
+            r0[0] = -1;
+            r0[1] = -1;
+            r0[2] = 1;
+            r0[3] = 1;
+            r0 = m_region1;
+            r0[0] = 0;
+            r0[1] = 0;
+            r0[2] = 0;
+            r0[3] = 0;
+            name = "YOYOGRUNT";
+            break;
+        default:
+            break;
     }
 
     g_mgrSettings->m_2c->Register(&name, 1, 1, 0);

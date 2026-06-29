@@ -24,12 +24,24 @@ struct IDDVtbl {
     u32(__stdcall* Release)(IDDObj*); // +0x08 (IUnknown slot 2)
     void* s0c;
     void* s10;
-    i32(__stdcall* Blt)(IDDObj*, void* dst, IDDObj* src, void* srcRect, u32 flags,
-                        void* fx); // +0x14 (surface slot 5)
+    i32(__stdcall* Blt)(
+        IDDObj*,
+        void* dst,
+        IDDObj* src,
+        void* srcRect,
+        u32 flags,
+        void* fx
+    ); // +0x14 (surface slot 5)
     void* s18;
-    i32(__stdcall* BltFast)(IDDObj*, i32 x, i32 y, IDDObj* src, void* srcRect,
-                            u32 trans); // +0x1c (surface slot 7)
-    void* s20[11];                     // +0x20..+0x4b
+    i32(__stdcall* BltFast)(
+        IDDObj*,
+        i32 x,
+        i32 y,
+        IDDObj* src,
+        void* srcRect,
+        u32 trans
+    );                                           // +0x1c (surface slot 7)
+    void* s20[11];                               // +0x20..+0x4b
     i32(__stdcall* RestoreDisplayMode)(IDDObj*); // +0x4c (IDirectDraw slot 19)
     void* s50[4];                                // +0x50..+0x5f
     i32(__stdcall* IsLost)(IDDObj*);             // +0x60 (surface slot 24)
@@ -47,12 +59,12 @@ struct IDDObj {
 
 // DDBLTFX (0x64 bytes): only dwSize@0x00, dwROP@0x08, dwFillColor@0x50 are set.
 struct DDBLTFX_ {
-    u32 dwSize;        // 0x00
-    u32 pad04;         // 0x04 dwDDFX
-    u32 dwROP;         // 0x08
-    u32 pad0c[17];     // 0x0c..0x4f
-    u32 dwFillColor;   // 0x50
-    u32 pad54[4];      // 0x54..0x63
+    u32 dwSize;      // 0x00
+    u32 pad04;       // 0x04 dwDDFX
+    u32 dwROP;       // 0x08
+    u32 pad0c[17];   // 0x0c..0x4f
+    u32 dwFillColor; // 0x50
+    u32 pad54[4];    // 0x54..0x63
 };
 
 // 0x17ca60 lives in another TU as CSurfacePalette::ResetPalette; reference it by
@@ -98,8 +110,8 @@ struct CTileInfo {
 
 class CDDScreen {
 public:
-    void HandleError();                                       // 0x17cc80
-    i32 BlitRegion(i32 col, i32 row, i32 nCols, i32 nRows);   // 0x17cdf0
+    void HandleError();                                                // 0x17cc80
+    i32 BlitRegion(i32 col, i32 row, i32 nCols, i32 nRows);            // 0x17cdf0
     i32 Configure(i32 mode, i32 flags, DDPoint* origin, DDRect* rect); // 0x17cfc0
     i32 CheckGrid(); // 0x17cbe0 (sibling, external)
 
@@ -116,16 +128,16 @@ public:
     char m_pad30[0x50c - 0x30];
     i32 m_50c; // +0x50c
     char m_pad510[0x514 - 0x510];
-    i32 m_514;  // +0x514
-    u32 m_518;  // +0x518  screen width
-    u32 m_51c;  // +0x51c  screen height
-    i32 m_520;  // +0x520  bpp
-    i32 m_524;  // +0x524  tiles across
-    i32 m_528;  // +0x528  tiles down
-    i32 m_52c;  // +0x52c  origin x
-    i32 m_530;  // +0x530  origin y
+    i32 m_514;     // +0x514
+    u32 m_518;     // +0x518  screen width
+    u32 m_51c;     // +0x51c  screen height
+    i32 m_520;     // +0x520  bpp
+    i32 m_524;     // +0x524  tiles across
+    i32 m_528;     // +0x528  tiles down
+    i32 m_52c;     // +0x52c  origin x
+    i32 m_530;     // +0x530  origin y
     DDRect* m_534; // +0x534  explicit dest rect (or 0)
-    i32 m_538;  // +0x538  force-single-row flag
+    i32 m_538;     // +0x538  force-single-row flag
     char m_pad53c[0x86a0 - 0x53c];
     i32 m_86a0; // +0x86a0
 };
@@ -317,36 +329,7 @@ i32 CDDScreen::Configure(i32 mode, i32 flags, DDPoint* origin, DDRect* rect) {
     }
 
     switch (mode) {
-    case 0:
-        m_524 = m_518 / m_10->m_4;
-        m_528 = m_51c / m_10->m_8;
-        if (flags & 0x10) {
-            if (!origin) {
-                return 0;
-            }
-            m_52c = origin->x;
-            m_530 = origin->y;
-        } else {
-            m_52c = (m_518 - m_524 * m_10->m_4) >> 1;
-            m_530 = (m_51c - m_528 * m_10->m_8) >> 1;
-        }
-        break;
-    case 1:
-        m_524 = 1;
-        m_528 = 1;
-        if (flags & 0x10) {
-            if (!origin) {
-                return 0;
-            }
-            m_52c = origin->x;
-            m_530 = origin->y;
-        } else {
-            m_52c = (m_518 - m_10->m_4) >> 1;
-            m_530 = (m_51c - m_10->m_8) >> 1;
-        }
-        break;
-    case 2:
-        if (m_518 % m_10->m_4 == 0 && m_51c % m_10->m_8 == 0) {
+        case 0:
             m_524 = m_518 / m_10->m_4;
             m_528 = m_51c / m_10->m_8;
             if (flags & 0x10) {
@@ -359,37 +342,66 @@ i32 CDDScreen::Configure(i32 mode, i32 flags, DDPoint* origin, DDRect* rect) {
                 m_52c = (m_518 - m_524 * m_10->m_4) >> 1;
                 m_530 = (m_51c - m_528 * m_10->m_8) >> 1;
             }
-        } else {
+            break;
+        case 1:
+            m_524 = 1;
+            m_528 = 1;
+            if (flags & 0x10) {
+                if (!origin) {
+                    return 0;
+                }
+                m_52c = origin->x;
+                m_530 = origin->y;
+            } else {
+                m_52c = (m_518 - m_10->m_4) >> 1;
+                m_530 = (m_51c - m_10->m_8) >> 1;
+            }
+            break;
+        case 2:
+            if (m_518 % m_10->m_4 == 0 && m_51c % m_10->m_8 == 0) {
+                m_524 = m_518 / m_10->m_4;
+                m_528 = m_51c / m_10->m_8;
+                if (flags & 0x10) {
+                    if (!origin) {
+                        return 0;
+                    }
+                    m_52c = origin->x;
+                    m_530 = origin->y;
+                } else {
+                    m_52c = (m_518 - m_524 * m_10->m_4) >> 1;
+                    m_530 = (m_51c - m_528 * m_10->m_8) >> 1;
+                }
+            } else {
+                m_524 = 1;
+                m_528 = 1;
+                m_52c = 0;
+                m_530 = 0;
+                m_534 = (DDRect*)RezAlloc(0x10);
+                m_534->top = 0;
+                m_534->left = 0;
+                m_534->bottom = m_51c;
+                m_534->right = m_518;
+                m_514 = 1;
+            }
+            break;
+        case 3: {
             m_524 = 1;
             m_528 = 1;
             m_52c = 0;
             m_530 = 0;
-            m_534 = (DDRect*)RezAlloc(0x10);
-            m_534->top = 0;
-            m_534->left = 0;
-            m_534->bottom = m_51c;
-            m_534->right = m_518;
-            m_514 = 1;
+            if (!rect) {
+                return 0;
+            }
+            DDRect* r = (DDRect*)RezAlloc(0x10);
+            m_534 = r;
+            r->left = rect->left;
+            r->top = rect->top;
+            r->right = rect->right;
+            r->bottom = rect->bottom;
+            break;
         }
-        break;
-    case 3: {
-        m_524 = 1;
-        m_528 = 1;
-        m_52c = 0;
-        m_530 = 0;
-        if (!rect) {
+        default:
             return 0;
-        }
-        DDRect* r = (DDRect*)RezAlloc(0x10);
-        m_534 = r;
-        r->left = rect->left;
-        r->top = rect->top;
-        r->right = rect->right;
-        r->bottom = rect->bottom;
-        break;
-    }
-    default:
-        return 0;
     }
 
     if (m_538 != 0) {

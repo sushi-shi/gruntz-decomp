@@ -64,7 +64,7 @@ extern i32 g_nodeDescriptor;
 //                       WORDs); three adjacent columns are read off the same
 //                       base (g_transTable[i], [i+1], [i+2] -> base +0/+2/+4).
 // ---------------------------------------------------------------------------
-extern "C" i16 g_charClass[]; // 0x61cf40
+extern "C" i16 g_charClass[];  // 0x61cf40
 extern "C" i16 g_transTable[]; // 0x61d140  (state x class table, row stride 147)
 // The token-type column is read off the table's second WORD (0x61d142): retail
 // folds the +1 into the data symbol's address, so it is its own DATA extern.

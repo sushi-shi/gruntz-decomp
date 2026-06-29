@@ -16,12 +16,13 @@ extern "C" CMgrSettingsGate* g_mgrSettings; // _g_mgrSettings (VA 0x64556c)
 
 // Win32 ShowCursor reached through an import pointer; the loading screen hides the
 // cursor (calls until the display count goes negative).
-extern "C" int(__stdcall* g_ShowCursor)(int);  // ?g_ShowCursor@@3P6GHH@ZA (0x6c44c4)
-DATA(0x0024e35c) extern i32 g_64e35c;           // 0x64e35c "splash drawn" latch
+extern "C" int(__stdcall* g_ShowCursor)(int); // ?g_ShowCursor@@3P6GHH@ZA (0x6c44c4)
+DATA(0x0024e35c)
+extern i32 g_64e35c; // 0x64e35c "splash drawn" latch
 
 // A sub-object (m_0c->m_04) whose Method158bc0 must be live to proceed.
 struct CMgrReady {
-    i32 Method158bc0();  // 0x158bc0
+    i32 Method158bc0(); // 0x158bc0
 };
 
 // The image-set the object loads into (m_0c->m_10); slot 19 (vtbl+0x4c) loads it.
@@ -45,38 +46,47 @@ struct CImageSet {
     virtual void v16();
     virtual void v17();
     virtual void v18();
-    virtual i32 Load(char* path, const char* a, const char* b);  // slot 19 -> vtbl+0x4c
+    virtual i32 Load(char* path, const char* a, const char* b); // slot 19 -> vtbl+0x4c
 };
 
 // The level-data object (m_0c) and the renderer it owns.
 struct CLevelData {
     char pad00[4];
-    CMgrReady* m_04;   // +0x04
+    CMgrReady* m_04; // +0x04
     char pad08[0x10 - 0x08];
-    CImageSet* m_10;   // +0x10
+    CImageSet* m_10; // +0x10
 };
 
 // The display owner (m_04): its m_8c/m_90 are blitted into the splash params.
 struct CDisplayMgr {
     char pad00[0x8c];
-    i32 m_8c;          // +0x8c
-    i32 m_90;          // +0x90
+    i32 m_8c; // +0x8c
+    i32 m_90; // +0x90
 };
 
 // The resource locator (m_08): maps a logical name to a rez path.
 struct CRezLocator {
-    char* ResolvePath(const char* name);  // 0x13c030
+    char* ResolvePath(const char* name); // 0x13c030
 };
 
 // The on-screen splash params block built on the stack for EngStr_DrawText; its
 // leading slot is the loaded caption CString.
 struct SplashParams {
-    CString text;  // +0x00
-    i32 m_04;      // +0x04
+    CString text; // +0x00
+    i32 m_04;     // +0x04
     i32 m_08, m_0c, m_10, m_14;
 };
-void EngStr_DrawText(CLevelData* lvl, SplashParams* a, i32* b, i32 size, i32 e,
-                     i32 f, i32 g, i32 h, i32 i);  // 0x115440
+void EngStr_DrawText(
+    CLevelData* lvl,
+    SplashParams* a,
+    i32* b,
+    i32 size,
+    i32 e,
+    i32 f,
+    i32 g,
+    i32 h,
+    i32 i
+); // 0x115440
 
 // The archive/writer: Write(buf,len) is virtual slot 11 (vtbl+0x2c). The leading
 // slots are never touched here, modeled only to place Write at the right offset.
@@ -115,7 +125,7 @@ struct CMgrPersistObj {
     i32 m_1a8, m_1ac, m_1b0;
 
     i32 Save(CMgrWriter* w);
-    i32 Init();  // 0xface0
+    i32 Init(); // 0xface0
 };
 
 // 0xfb1c0 - CMgrPersistObj::Save: gate on the writer + the settings singleton, then
@@ -163,13 +173,15 @@ i32 CMgrPersistObj::Save(CMgrWriter* w) {
 // into the image-set, then mark the object started.
 RVA(0x000face0, 0x17c)
 i32 CMgrPersistObj::Init() {
-    if (m_0c == 0)
+    if (m_0c == 0) {
         return 0;
+    }
     int(__stdcall * sc)(int) = g_ShowCursor;
     while (sc(0) >= 0)
         ;
-    if (m_0c->m_04->Method158bc0() == 0)
+    if (m_0c->m_04->Method158bc0() == 0) {
         return 0;
+    }
     if (g_64e35c == 0) {
         SplashParams sp;
         sp.text.LoadString(0x81a9);
@@ -183,10 +195,12 @@ i32 CMgrPersistObj::Init() {
         ;
     g_64e35c = 0;
     char* path = m_08->ResolvePath("GAME_IMAGEZ");
-    if (path == 0)
+    if (path == 0) {
         return 0;
-    if (m_0c->m_10->Load(path, "GAME", "_") == -1)
+    }
+    if (m_0c->m_10->Load(path, "GAME", "_") == -1) {
         return 0;
+    }
     m_1a8 = 0;
     m_1ac = 1;
     m_1b0 = 0;

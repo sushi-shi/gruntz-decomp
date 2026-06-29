@@ -10,7 +10,7 @@
 #include <math.h> // acos -> __CIacos, sin -> fsin (intrinsics at /O2 /Oi)
 #include <rva.h>
 
-extern "C" void* RezAlloc(i32 n); // 0x1b9b46
+extern "C" void* RezAlloc(i32 n);                   // 0x1b9b46
 extern "C" int _access(const char* path, int mode); // 0x193900 CRT
 
 // The embedded shade-table cache subobject (CFader base, at this+0x04).
@@ -101,19 +101,23 @@ RVA(0x001817e0, 0x315)
 i32 CFaderShape::Setup(FInit* pInit) {
     i32 i;
     this->m_20 = 0;
-    if (pInit == 0)
+    if (pInit == 0) {
         return 0;
+    }
 
     this->m_38 = pInit->m_04 ? pInit->m_04 : this->m_24;
     this->m_3c = pInit->m_08 ? pInit->m_08 : this->m_28;
-    if (this->m_38 == 0)
+    if (this->m_38 == 0) {
         return 0;
-    if (this->m_3c == 0)
+    }
+    if (this->m_3c == 0) {
         return 0;
+    }
     this->m_40 = pInit->m_0c ? (FShadeSurf*)pInit->m_0c : this->m_3c;
 
-    if (!this->m_04.Init())
+    if (!this->m_04.Init()) {
         return 0;
+    }
 
     this->m_60 = this->m_38->m_1c;
     this->m_64 = this->m_38->m_18;
@@ -121,41 +125,51 @@ i32 CFaderShape::Setup(FInit* pInit) {
     this->m_6c = this->m_3c->m_18;
     this->m_70 = this->m_40->m_1c;
     this->m_74 = this->m_40->m_18;
-    if (this->m_60 != this->m_68)
+    if (this->m_60 != this->m_68) {
         return 0;
-    if (this->m_64 != this->m_6c)
+    }
+    if (this->m_64 != this->m_6c) {
         return 0;
-    if (this->m_60 != this->m_70)
+    }
+    if (this->m_60 != this->m_70) {
         return 0;
-    if (this->m_64 != this->m_74)
+    }
+    if (this->m_64 != this->m_74) {
         return 0;
-    if (this->m_70 != this->m_68)
+    }
+    if (this->m_70 != this->m_68) {
         return 0;
-    if (this->m_74 != this->m_6c)
+    }
+    if (this->m_74 != this->m_6c) {
         return 0;
+    }
 
-    if (pInit->m_14 == 0)
+    if (pInit->m_14 == 0) {
         return 0;
-    if ((u32)pInit->m_14 >= 4)
+    }
+    if ((u32)pInit->m_14 >= 4) {
         return 0;
+    }
     this->m_50 = pInit->m_14;
     this->m_54 = pInit->m_18;
     this->m_58 = pInit->m_10;
 
     if (this->m_50 == 1 || this->m_50 == 2) {
-        if (this->m_60 < (i32)((double)this->m_58 * 3.141592653589793))
+        if (this->m_60 < (i32)((double)this->m_58 * 3.141592653589793)) {
             return 0;
+        }
     }
 
     this->m_478 = (i32*)RezAlloc(this->m_58 * 8);
     for (i = 0; i < 2 * this->m_58; i++) {
-        this->m_478[i] = (i32)(acos(((float)i - (float)this->m_58) / (float)this->m_58) *
-                               (float)this->m_58);
+        this->m_478[i] =
+            (i32)(acos(((float)i - (float)this->m_58) / (float)this->m_58) * (float)this->m_58);
     }
 
     this->m_5c = pInit->m_1c;
-    if (this->m_38->m_a8 != 8)
+    if (this->m_38->m_a8 != 8) {
         this->m_5c = 0;
+    }
 
     if (this->m_5c != 0) {
         if (pInit->m_20) {
@@ -163,8 +177,9 @@ i32 CFaderShape::Setup(FInit* pInit) {
             this->m_1c = (void*)pInit->m_20;
         } else if (_access(pInit->m_24, 0) == 0) {
             this->m_1c = this->m_04.AddFromArray(pInit->m_24);
-            if (this->m_1c == 0)
+            if (this->m_1c == 0) {
                 this->m_5c = 0;
+            }
         } else {
             this->m_1c = this->m_04.FlashTable(pInit->m_28->m_0c, 0x20, 0x20, 0x32, 0xc8);
         }

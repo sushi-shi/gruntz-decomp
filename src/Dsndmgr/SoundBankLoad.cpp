@@ -33,11 +33,11 @@ struct RezFile {
 // declared (not defined here) so the class never emits a vtable in this TU; the calls
 // lower to `mov eax,[this]; call [eax+N]`. The owned load buffer lives at +0x5c.
 struct CSoundBank {
-    virtual void s00(); // +0x00
-    virtual void s01(); // +0x04
-    virtual void s02(); // +0x08
-    virtual void s03(); // +0x0c
-    virtual void s04(); // +0x10
+    virtual void s00();                               // +0x00
+    virtual void s01();                               // +0x04
+    virtual void s02();                               // +0x08
+    virtual void s03();                               // +0x0c
+    virtual void s04();                               // +0x10
     virtual i32 DecodeBuf(void* buf, i32 len, i32 a); // slot 5  (+0x14)
     virtual void s06();                               // +0x18
     virtual void s07();                               // +0x1c

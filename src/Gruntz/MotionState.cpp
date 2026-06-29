@@ -167,11 +167,13 @@ void CMotionState::Step(double dt) {
 // ds = target - m_40 (same v^2 = v0^2 + 2*a*ds root used inside STEP_AXIS).
 RVA(0x0016f3c0, 0x61)
 double CMotionState::ArrivalVelX(double target) {
-    if (m_10 == 0.0)
+    if (m_10 == 0.0) {
         return m_28;
+    }
     double disc = m_28 * m_28 - (target - m_40) * m_10 * g_motionNegTwo;
-    if (0.0 > disc)
+    if (0.0 > disc) {
         disc = 0.0;
+    }
     double r = sqrt(disc);
     return (m_28 > 0.0) ? r : -r;
 }
@@ -179,11 +181,13 @@ double CMotionState::ArrivalVelX(double target) {
 // ---------------------------------------------------------------------------
 RVA(0x0016f430, 0x61)
 double CMotionState::ArrivalVelY(double target) {
-    if (m_18 == 0.0)
+    if (m_18 == 0.0) {
         return m_30;
+    }
     double disc = m_30 * m_30 - (target - m_48) * m_18 * g_motionNegTwo;
-    if (0.0 > disc)
+    if (0.0 > disc) {
         disc = 0.0;
+    }
     double r = sqrt(disc);
     return (m_30 > 0.0) ? r : -r;
 }

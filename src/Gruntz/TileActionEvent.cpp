@@ -409,21 +409,50 @@ RVA(0x00113420, 0x1f2)
 i32 CTileActionEvent::MorphByTool(i32 toolId, i32 playerSlot) {
     if (toolId == 0x22) {
         switch (m_0) {
-            case 0x12f: m_0 = 0x130; break;
-            case 0x132: m_0 = 0x133; break;
-            case 0x138: m_0 = 0x139; break;
-            case 0x13e: m_0 = 0x13f; break;
-            case 0x144: m_0 = 0x145; break;
-            case 0x130: m_0 = 0x131; break;
-            case 0x133: m_0 = 0x135; break;
-            case 0x134: m_0 = 0x136; break;
-            case 0x139: m_0 = 0x13b; break;
-            case 0x13a: m_0 = 0x13c; break;
-            case 0x13f: m_0 = 0x141; break;
-            case 0x140: m_0 = 0x142; break;
-            case 0x145: m_0 = 0x147; break;
-            case 0x146: m_0 = 0x148; break;
-            default: return 0;
+            case 0x12f:
+                m_0 = 0x130;
+                break;
+            case 0x132:
+                m_0 = 0x133;
+                break;
+            case 0x138:
+                m_0 = 0x139;
+                break;
+            case 0x13e:
+                m_0 = 0x13f;
+                break;
+            case 0x144:
+                m_0 = 0x145;
+                break;
+            case 0x130:
+                m_0 = 0x131;
+                break;
+            case 0x133:
+                m_0 = 0x135;
+                break;
+            case 0x134:
+                m_0 = 0x136;
+                break;
+            case 0x139:
+                m_0 = 0x13b;
+                break;
+            case 0x13a:
+                m_0 = 0x13c;
+                break;
+            case 0x13f:
+                m_0 = 0x141;
+                break;
+            case 0x140:
+                m_0 = 0x142;
+                break;
+            case 0x145:
+                m_0 = 0x147;
+                break;
+            case 0x146:
+                m_0 = 0x148;
+                break;
+            default:
+                return 0;
         }
     } else if (toolId == 0x23) {
         switch (m_0) {
@@ -431,7 +460,9 @@ i32 CTileActionEvent::MorphByTool(i32 toolId, i32 playerSlot) {
             case 0x132:
             case 0x138:
             case 0x13e:
-            case 0x144: m_0 = 0x134; break;
+            case 0x144:
+                m_0 = 0x134;
+                break;
             case 0x130:
             case 0x133:
             case 0x134:
@@ -440,8 +471,11 @@ i32 CTileActionEvent::MorphByTool(i32 toolId, i32 playerSlot) {
             case 0x13f:
             case 0x140:
             case 0x145:
-            case 0x146: m_0 = 0x137; break;
-            default: return 0;
+            case 0x146:
+                m_0 = 0x137;
+                break;
+            default:
+                return 0;
         }
     } else if (toolId == 0x24) {
         switch (m_0) {
@@ -449,7 +483,9 @@ i32 CTileActionEvent::MorphByTool(i32 toolId, i32 playerSlot) {
             case 0x132:
             case 0x138:
             case 0x13e:
-            case 0x144: m_0 = 0x13a; break;
+            case 0x144:
+                m_0 = 0x13a;
+                break;
             case 0x130:
             case 0x133:
             case 0x134:
@@ -458,8 +494,11 @@ i32 CTileActionEvent::MorphByTool(i32 toolId, i32 playerSlot) {
             case 0x13f:
             case 0x140:
             case 0x145:
-            case 0x146: m_0 = 0x13d; break;
-            default: return 0;
+            case 0x146:
+                m_0 = 0x13d;
+                break;
+            default:
+                return 0;
         }
     } else if (toolId == 0x26) {
         switch (m_0) {
@@ -467,7 +506,9 @@ i32 CTileActionEvent::MorphByTool(i32 toolId, i32 playerSlot) {
             case 0x132:
             case 0x138:
             case 0x13e:
-            case 0x144: m_0 = 0x146; break;
+            case 0x144:
+                m_0 = 0x146;
+                break;
             case 0x130:
             case 0x133:
             case 0x134:
@@ -476,8 +517,11 @@ i32 CTileActionEvent::MorphByTool(i32 toolId, i32 playerSlot) {
             case 0x13f:
             case 0x140:
             case 0x145:
-            case 0x146: m_0 = 0x149; break;
-            default: return 0;
+            case 0x146:
+                m_0 = 0x149;
+                break;
+            default:
+                return 0;
         }
     } else if (toolId == 0x25) {
         switch (m_0) {
@@ -485,7 +529,9 @@ i32 CTileActionEvent::MorphByTool(i32 toolId, i32 playerSlot) {
             case 0x132:
             case 0x138:
             case 0x13e:
-            case 0x144: m_0 = 0x140; break;
+            case 0x144:
+                m_0 = 0x140;
+                break;
             case 0x130:
             case 0x133:
             case 0x134:
@@ -494,8 +540,11 @@ i32 CTileActionEvent::MorphByTool(i32 toolId, i32 playerSlot) {
             case 0x13f:
             case 0x140:
             case 0x145:
-            case 0x146: m_0 = 0x143; break;
-            default: return 0;
+            case 0x146:
+                m_0 = 0x143;
+                break;
+            default:
+                return 0;
         }
     }
 

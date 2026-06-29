@@ -515,7 +515,8 @@ i32 CMenuPage::LayoutOne(i32 ctx) {
             y += *(i32*)((char*)this + 0x44) + head->m_1c;
         }
     }
-    i32 col = (((*(i32*)((char*)this + 0x4c)) / 2)) + *(i32*)((char*)this + 0x34) + *(i32*)((char*)this + 0x54);
+    i32 col = (((*(i32*)((char*)this + 0x4c)) / 2)) + *(i32*)((char*)this + 0x34)
+              + *(i32*)((char*)this + 0x54);
     i32 ytop = y;
     i32 row = 0;
     CMenuNode* node = (CMenuNode*)m_14.GetHeadPosition();

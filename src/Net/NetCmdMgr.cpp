@@ -26,7 +26,7 @@ struct CNetCmdBuf {
 // flag and its chat-error method are reached.
 struct CNetLobbyMgr {
     char m_pad0[0x528];
-    i32 m_528; // +0x528  session-active flag
+    i32 m_528;                                 // +0x528  session-active flag
     void ShowError(const char* msg, i32 code); // 0xb7e30 (__thiscall, external)
 };
 
@@ -40,8 +40,8 @@ struct CNetSessHost {
 DATA(0x0024bd5c)
 extern CNetLobbyMgr* g_64bd5c;
 
-extern i32 CheckColorTaken(i32 pid);      // 0xdb2d0 (__cdecl, external)
-extern void SetColorFlag(i32 a, i32 b);   // 0xdb2b0 (__cdecl, external)
+extern i32 CheckColorTaken(i32 pid);    // 0xdb2d0 (__cdecl, external)
+extern void SetColorFlag(i32 a, i32 b); // 0xdb2b0 (__cdecl, external)
 
 RVA(0x000c4b60, 0x77)
 i32 CNetSessHost::SelectColor(i32 idx, i32 pid) {

@@ -84,7 +84,7 @@ public:
     virtual void v08();
     virtual void v0c();
     virtual void v10();
-    virtual i32 Vfunc14();      // slot 5  (@0x14): surface-ready predicate
+    virtual i32 Vfunc14(); // slot 5  (@0x14): surface-ready predicate
     virtual void v18();
     virtual void v1c();
     virtual void v20();
@@ -92,11 +92,11 @@ public:
     virtual i32 Vfunc28(i32 w, i32 h, i32 bpp); // slot 10 (@0x28): geometry setter
     virtual void v2c();
     virtual i32 Vfunc30(i32 w, i32 h, i32 bpp, i32 a4); // slot 12 (@0x30)
-    virtual i32 Vfunc34(i32 a); // slot 13 (@0x34): 1-arg op
+    virtual i32 Vfunc34(i32 a);                         // slot 13 (@0x34): 1-arg op
 
     // Non-virtual surface-state predicates (reloc-masked __thiscall callees).
-    i32 Probe_164660();         // 0x164660
-    i32 Probe_163f00();         // 0x163f00
+    i32 Probe_164660(); // 0x164660
+    i32 Probe_163f00(); // 0x163f00
 
     char m_pad04[0x10 - 0x04];  // +0x04 .. +0x0f
     i32 m_geom10;               // +0x10  width  (compared in 0x158bf0)
@@ -136,11 +136,11 @@ public:
 // and a flag word @0x34 (bit1 tested).
 class CDDrawWorkerNode {
 public:
-    char m_pad00[0x04];      // +0x00 .. +0x03
-    CDDrawWorkerGeom* m_04;  // +0x04
-    CDDrawWorkerDisp* m_08;  // +0x08
+    char m_pad00[0x04];     // +0x00 .. +0x03
+    CDDrawWorkerGeom* m_04; // +0x04
+    CDDrawWorkerDisp* m_08; // +0x08
     char m_pad0c[0x34 - 0x0c];
-    i32 m_34flagAt;          // +0x34 flag word (bit1 tested)
+    i32 m_34flagAt; // +0x34 flag word (bit1 tested)
 };
 
 // The worker manager (this for the 0x158xxx methods).  Polymorphic: its own
@@ -233,8 +233,8 @@ public:
 class CDDrawBlitLabelSource {
 public:
     CString GetLabel_152d30(i32 a);
-    char m_pad00[0x10];  // +0x00..+0x0f
-    CBlitLabelMap m_10;  // +0x10 label -> worker map
+    char m_pad00[0x10]; // +0x00..+0x0f
+    CBlitLabelMap m_10; // +0x10 label -> worker map
 };
 
 class CDDrawBlitParam {
@@ -1223,8 +1223,8 @@ CWwdObject* CWwdObjMgr::FindByField_15a940(i32 type, void* key) {
         CWwdNode* cur = node;
         node = node->m_next;
         CWwdObject* obj = cur->m_obj;
-        if (obj->Slot20() == 5 && *(i32*)((char*)obj + 0x4) == type &&
-            *(void**)((char*)obj + 0xe8) == key) {
+        if (obj->Slot20() == 5 && *(i32*)((char*)obj + 0x4) == type
+            && *(void**)((char*)obj + 0xe8) == key) {
             return obj;
         }
     } while (node != 0);
@@ -1367,7 +1367,8 @@ class CAniDesc {
 public:
     i32 Rand_15cbe0(); // 0x15cbe0  engine random (reloc-masked)
     char m_pad00[0x04];
-    unsigned char m_04;        // +0x04  byte flags (bit1 = no-decrement, bit2 = pos-sub, bit3 = trigger-blit, bit8 = anchor)
+    unsigned char
+        m_04; // +0x04  byte flags (bit1 = no-decrement, bit2 = pos-sub, bit3 = trigger-blit, bit8 = anchor)
     char m_pad05[0x08 - 0x05]; // +0x05..0x07
     i32 m_08;                  // +0x08  step-mode
     i32 m_0c;                  // +0x0c  loop-mode word
@@ -1409,10 +1410,15 @@ public:
 // Overlaid on the cursor: +0x0c context, +0x10 sound player.
 class CAniBlitTrigger {
 public:
-    i32 TriggerBlit_1587f0(i32 pos, i32 center, i32 range1, i32 range2); // 0x1587f0  __thiscall on the cursor
-    char m_pad00[0x0c];   // +0x00..0x0b
-    void* m_0c;           // +0x0c geometry context
-    CAniSoundPlay* m_10;  // +0x10 sound player
+    i32 TriggerBlit_1587f0(
+        i32 pos,
+        i32 center,
+        i32 range1,
+        i32 range2
+    );                   // 0x1587f0  __thiscall on the cursor
+    char m_pad00[0x0c];  // +0x00..0x0b
+    void* m_0c;          // +0x0c geometry context
+    CAniSoundPlay* m_10; // +0x10 sound player
 };
 
 // The random-trigger cue table entry (a LeafCue: the gated sound-play entry).
@@ -1427,18 +1433,18 @@ class CAniAdvanceCursor {
 public:
     i32 Advance_15c360(u32 elapsed); // 0x15c360
 
-    char m_pad00[0x10];        // +0x00..0x0f
-    CAniRenderCtx* m_10;       // +0x10
-    CAniDescArray* m_14;       // +0x14
-    CAniDesc* m_18;            // +0x18
-    i32 m_1c;                  // +0x1c
-    u32 m_20;                  // +0x20
-    i32 m_24;                  // +0x24
-    i32 m_28;                  // +0x28
-    i32 m_2c;                  // +0x2c
-    i32 m_30;                  // +0x30
-    i32 m_34;                  // +0x34
-    i32 m_38;                  // +0x38  float speed, raw bits
+    char m_pad00[0x10];  // +0x00..0x0f
+    CAniRenderCtx* m_10; // +0x10
+    CAniDescArray* m_14; // +0x14
+    CAniDesc* m_18;      // +0x18
+    i32 m_1c;            // +0x1c
+    u32 m_20;            // +0x20
+    i32 m_24;            // +0x24
+    i32 m_28;            // +0x28
+    i32 m_2c;            // +0x2c
+    i32 m_30;            // +0x30
+    i32 m_34;            // +0x34
+    i32 m_38;            // +0x38  float speed, raw bits
 };
 
 // __ftol the (int)double scale-cast lowers to (0x11f570).
@@ -2032,7 +2038,7 @@ public:
 // The +0x80 notifier: a cdecl callback pointer at +0x10 invoked with the owner.
 class CWwdNotifier {
 public:
-    char m_pad00[0x10]; // +0x00..0x0f
+    char m_pad00[0x10];  // +0x00..0x0f
     void (*m_10)(void*); // +0x10
 };
 

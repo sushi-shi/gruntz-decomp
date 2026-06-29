@@ -253,7 +253,8 @@ void CFaderTileRender::RenderWarpTile(i32 arg0, i32 arg1) {
                     }
                     for (; t < stride; t++) {
                         *(u8*)(t + (i32)m_488) =
-                            *(u8*)((u32)m_48c[t] + lut + (u32) * (u8*)((i32)m_478[t] + gsrc) * 0x40);
+                            *(u8*)((u32)m_48c[t] + lut
+                                   + (u32) * (u8*)((i32)m_478[t] + gsrc) * 0x40);
                     }
                 }
                 u8* sp = m_488;
@@ -318,7 +319,8 @@ void CFaderTileRender::RenderWarpTile(i32 arg0, i32 arg1) {
                             i32 o = i * 4;
                             i++;
                             *(u8*)((i32)m_488 - 2 + i * 2) = *(u8*)(gsrc + (i32)m_478[o / 4] * 2);
-                            *(u8*)((i32)m_488 - 1 + i * 2) = *(u8*)(gsrc + 1 + (i32)m_478[i - 1] * 2);
+                            *(u8*)((i32)m_488 - 1 + i * 2) =
+                                *(u8*)(gsrc + 1 + (i32)m_478[i - 1] * 2);
                         } while (i < colBase);
                     }
                     for (; t < stride; t++) {
@@ -361,7 +363,8 @@ void CFaderTileRender::RenderWarpTile(i32 arg0, i32 arg1) {
                     do {
                         e = i + 1;
                         *(u8*)(i + (i32)m_488) =
-                            *(u8*)((u32)m_48c[i] + lut + (u32) * (u8*)((i32)m_478[i] + gsrc) * 0x40);
+                            *(u8*)((u32)m_48c[i] + lut
+                                   + (u32) * (u8*)((i32)m_478[i] + gsrc) * 0x40);
                         i = e;
                     } while (e < colBase);
                 }

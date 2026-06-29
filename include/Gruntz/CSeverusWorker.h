@@ -24,24 +24,28 @@ extern "C" void RezFree(void* p);
 // (eh-dtor-model-members-as-destructible).
 struct SevFile {
     void Dtor_1bf121(); // ~CFile (reloc-masked rel32 callee)
-    ~SevFile() { Dtor_1bf121(); }
+    ~SevFile() {
+        Dtor_1bf121();
+    }
 };
 
 // An MFC CByteArray-shaped member: dtor -> the reloc-masked engine ~CByteArray
 // (0x1b4b76).
 struct SevByteArray {
     void Dtor_1b4b76(); // ~CByteArray (reloc-masked rel32 callee)
-    ~SevByteArray() { Dtor_1b4b76(); }
+    ~SevByteArray() {
+        Dtor_1b4b76();
+    }
 };
 
 // The decode store embedded at worker+0x540. Abort() (0x17b570) tears down the
 // active decode; the CFile/CByteArray members destruct after it.
 struct CSeverusStore {
-    void* m_vptr;        // +0x00  store vptr (Abort gates on it)
+    void* m_vptr; // +0x00  store vptr (Abort gates on it)
     char m_pad4[0x124 - 0x04];
-    SevFile m_124;       // +0x124  decode CFile
+    SevFile m_124; // +0x124  decode CFile
     char m_pad125[0x138 - 0x125];
-    SevByteArray m_138;  // +0x138  decode CByteArray
+    SevByteArray m_138; // +0x138  decode CByteArray
     char m_pad139[0x200 - 0x139];
 
     i32 Begin();      // 0x17b510  prepare/probe (returns nonzero on ready)

@@ -31,10 +31,10 @@ struct BzLevelRecord {
     char m_pad10[0x44 - 0x10];
     i32 m_44; // +0x44  progress flag
 
-    i32 GroupAllScored();      // 0xfce80 (thunk 0x2bda)
-    i32 AllRecordsInBounds();  // 0xfccf0 (thunk 0x2bc6)
-    float GroupRatio();        // 0xfce00 (thunk 0x30d0)
-    i32 GetRecordValue();      // 0xfced0 (thunk 0x2bf3)
+    i32 GroupAllScored();     // 0xfce80 (thunk 0x2bda)
+    i32 AllRecordsInBounds(); // 0xfccf0 (thunk 0x2bc6)
+    float GroupRatio();       // 0xfce00 (thunk 0x30d0)
+    i32 GetRecordValue();     // 0xfced0 (thunk 0x2bf3)
 };
 // The top-level window holder reached via g_mgrSettings->m_4; m_4 is its HWND.
 struct BzWndHolder {
@@ -103,7 +103,9 @@ struct BzSink8Vtbl {
     char m_pad00[0x28];
     BzNotifyFn OnLoaded; // +0x28
 };
-inline void BzSink8::OnLoaded(void* arg) { (this->*(m_vtbl->OnLoaded))(arg); }
+inline void BzSink8::OnLoaded(void* arg) {
+    (this->*(m_vtbl->OnLoaded))(arg);
+}
 struct BzSinkSub {
     void Free(); // 0x137a80
 };
@@ -159,22 +161,32 @@ extern float g_secretRatioScale; // 0x5e93b0
 
 // The shared HUD message-sprite helper (0x1154b0, __cdecl): pushes a transient
 // text sprite carrying `text` into `rect` with the given duration/colour flags.
-void ShowHudMessage(void* sink, CString* text, RECT* rect, i32 dur, i32 a, i32 b,
-                    i32 c, i32 d, i32 e); // 0x1154b0
+void ShowHudMessage(
+    void* sink,
+    CString* text,
+    RECT* rect,
+    i32 dur,
+    i32 a,
+    i32 b,
+    i32 c,
+    i32 d,
+    i32 e
+); // 0x1154b0
 // The status-line builder (0x1b2cf5, __cdecl(&dst, lpsz)).
 void BzMsgFormat(CString* dst, const char* text); // 0x1b2cf5
 
 // The booty/secret game-state object hosting the overlays.
 class BzState {
 public:
-    void ShowLevelCompleteMessage();     // 0x1c9d0
-    i32 ShowSecretBonusMessage();        // 0x18f00
-    i32 BuildBootyGruntIdleAnimation();  // 0x1ce60
+    void ShowLevelCompleteMessage();    // 0x1c9d0
+    i32 ShowSecretBonusMessage();       // 0x18f00
+    i32 BuildBootyGruntIdleAnimation(); // 0x1ce60
     // FormatHudText (0x1af70): fills `out` with the per-slot ready-message text.
-    void FormatHudText(CString& out, i32 slot);                          // 0x1af70 (thunk 0x238d)
-    i32 RegisterMultiNamespaces(const char* mode, i32, i32, i32, i32, i32); // 0xfa1f0 (thunk 0x1e60)
-    void StartTimer(i32, i32, i32, i32);                                    // 0xfa8f0 (thunk 0x1843)
-    void PassClickToPlayState(i32, i32, i32);                               // 0x8d780 (thunk 0x17c1)
+    void FormatHudText(CString& out, i32 slot); // 0x1af70 (thunk 0x238d)
+    i32
+    RegisterMultiNamespaces(const char* mode, i32, i32, i32, i32, i32); // 0xfa1f0 (thunk 0x1e60)
+    void StartTimer(i32, i32, i32, i32);                                // 0xfa8f0 (thunk 0x1843)
+    void PassClickToPlayState(i32, i32, i32);                           // 0x8d780 (thunk 0x17c1)
 
     char m_pad00[0xc];
     BzSink* m_c; // +0x0c  HUD message sink

@@ -3414,7 +3414,8 @@ i32 CGruntzMgr::CheckDisplayBoundsA() {
         return 1;
     }
     CPointXY pt;
-    CPointXY* p = ((CWorldCoordResolver*)m_world->m_1c)->ResolveHi(&pt, m_modeW, m_modeH, m_colorDepth);
+    CPointXY* p =
+        ((CWorldCoordResolver*)m_world->m_1c)->ResolveHi(&pt, m_modeW, m_modeH, m_colorDepth);
     i32 x = p->x;
     i32 y = p->y;
     if (x > 0x514 || x == -1 || y == -1) {
@@ -3440,7 +3441,8 @@ i32 CGruntzMgr::CheckDisplayBoundsB() {
         return 1;
     }
     CPointXY pt;
-    CPointXY* p = ((CWorldCoordResolver*)m_world->m_1c)->ResolveLo(&pt, m_modeW, m_modeH, m_colorDepth);
+    CPointXY* p =
+        ((CWorldCoordResolver*)m_world->m_1c)->ResolveLo(&pt, m_modeW, m_modeH, m_colorDepth);
     i32 x = p->x;
     i32 y = p->y;
     if (x == -1 || y == -1 || x < 0x140 || y < 0xc8) {

@@ -713,8 +713,13 @@ i32 EngineLabelBacklog::LoadCustomWorldInfo(HWND hDlg) {
         g_pathStr.Reset();
         return 0;
     }
-    DialogBoxParamA(g_customWorldInst, "CUSTOM_WORLDINFO", g_customWorldParent,
-                    (DLGPROC)CustomWorldInfoDlgProc, 0);
+    DialogBoxParamA(
+        g_customWorldInst,
+        "CUSTOM_WORLDINFO",
+        g_customWorldParent,
+        (DLGPROC)CustomWorldInfoDlgProc,
+        0
+    );
     return 1;
 }
 
@@ -775,7 +780,7 @@ void __stdcall EngineLabelBacklog::BuildRockBreakParticles(i32, i32, i32, i32) {
 // 0x10000), notifies the owner, and spawns a "LightFx" GAME_LIGHTING_FLASH /
 // GAME_FLASH eye-candy sprite at the grunt's pixel origin. Only offsets / code
 // bytes are load-bearing; helpers are reloc-masked externals.
-struct ResGruntLogic {     // grunt->m_38
+struct ResGruntLogic { // grunt->m_38
     char m_pad00[0x8];
     u32 m_8; // +0x08  flags (|= 0x10000 on resurrect)
 };
@@ -828,7 +833,7 @@ struct ResSettings {
     char m_pad138[0x150 - 0x138];
     ResMgrCfgEntry m_150[1]; // +0x150  per-type config (stride 0x238)
 };
-struct ResLightCfg {                            // spr->m_7c->m_18
+struct ResLightCfg {                                // spr->m_7c->m_18
     void Configure(char* a, char* b, i32 c, i32 d); // FUN @ 0x2117 __thiscall
 };
 struct ResSpriteCtl { // spr->m_7c
@@ -852,8 +857,21 @@ struct CGruntResurrector {
     char m_pad00[0x4];
     ResNode* m_4; // +0x04  grunt list head
     // FUN_000040bb __thiscall: spawn/resurrect one grunt (ret != -1 on success).
-    i32 Resurrect(i32 type, i32 px, i32 py, i32 a3, i32 a4, ResHost* host, i32 a6, i32 a7,
-                  i32 aiType, i32 radius, i32 a10, i32 a11, i32 a12);
+    i32 Resurrect(
+        i32 type,
+        i32 px,
+        i32 py,
+        i32 a3,
+        i32 a4,
+        ResHost* host,
+        i32 a6,
+        i32 a7,
+        i32 aiType,
+        i32 radius,
+        i32 a10,
+        i32 a11,
+        i32 a12
+    );
     void Notify(ResNode* node); // FUN_001b4ac7 __thiscall
     i32 LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r);
 };
@@ -960,17 +978,17 @@ struct HbF14 {
     char m_pad00[0x1c];
     i32 m_1c; // +0x1c  type index fed to g_typeColl.IndexToPtr
 };
-struct HbFoundObj {                            // HitTestCell result
+struct HbFoundObj { // HitTestCell result
     char m_pad00[0x14];
-    HbF14* m_14;                               // +0x14
+    HbF14* m_14;                                    // +0x14
     i32 LoadPickupSprites(i32, i32, i32, i32, i32); // FUN_00403c6a (thunk) __thiscall
 };
-struct HbCellMgr {                             // g_hbMgr->m_68
+struct HbCellMgr { // g_hbMgr->m_68
     // FUN_004035f3 (thunk) __thiscall: hit-test a cell, returning the object +
     // its (areaId, subId) out-params.
     HbFoundObj* HitTestCell(i32 x, i32 y, i32* areaId, i32* subId, i32 flag);
 };
-struct HbSub1a0 {        // m_38 + 0x1a0
+struct HbSub1a0 {         // m_38 + 0x1a0
     void Tick(i32 clock); // FUN_0095c360 __thiscall
 };
 struct HbLogic { // this->m_38
@@ -1088,8 +1106,8 @@ i32 CHelpBookSprite::Update() {
     HbOwner* o = m_10;
     i32 x = o->m_5c;
     i32 y = o->m_60;
-    if (x < g_mgrSettings->m_144 && x >= g_mgrSettings->m_13c && y < g_mgrSettings->m_148 &&
-        y >= g_mgrSettings->m_140) {
+    if (x < g_mgrSettings->m_144 && x >= g_mgrSettings->m_13c && y < g_mgrSettings->m_148
+        && y >= g_mgrSettings->m_140) {
         BootySndSet* set = g_mgrSettings->m_30->m_28;
         if (set->m_30 == 0) {
             BootySndEntry* res = 0;
@@ -1394,7 +1412,7 @@ struct CStatzSprite {
     char m_pad0[0x7c];
     CStatzSpriteInitVtbl* m_7c; // +0x7c
     char m_pad80[0x198 - 0x80];
-    i32 m_198;                       // +0x198
+    i32 m_198;                        // +0x198
     void Configure(void* tag, i32 a); // FUN_001504d0 __thiscall
 };
 DATA(0x0020aa34)
@@ -1403,8 +1421,8 @@ DATA(0x0020f928)
 extern char g_statzTabCfgTag[]; // Configure tag global
 struct CStatzTabSmall {
     virtual i32 BaseBuild(i32, i32, i32, i32, i32, i32, i32, i32); // slot 0 (reloc-masked)
-    i32 BuildSmall(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, CStatzRect60* a6, i32 a7, i32 a8,
-                   i32 a9);
+    i32
+    BuildSmall(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, CStatzRect60* a6, i32 a7, i32 a8, i32 a9);
     char m_pad04[0x20 - 0x4];
     i32 m_20; // +0x20  already-built gate
     char m_pad24[0x2c - 0x24];
@@ -1419,8 +1437,8 @@ struct CStatzTabSmall {
 // register allocation. Logic complete; not source-steerable. See
 // docs/patterns/identical-return-epilogue-tailmerge.md + pin-local-for-callee-saved-reg.md.
 RVA(0x00112a50, 0xdd)
-i32 CStatzTabSmall::BuildSmall(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, CStatzRect60* a6, i32 a7,
-                               i32 a8, i32 a9) {
+i32 CStatzTabSmall::
+    BuildSmall(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, CStatzRect60* a6, i32 a7, i32 a8, i32 a9) {
     if (m_20 != 0) {
         return 0;
     }

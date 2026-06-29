@@ -7,7 +7,7 @@
 // backlog originally; it is game code (it calls the engine's own status reporter,
 // not a CRT routine). The CRT heap primitives + OutputDebugStringA are external /
 // reloc-masked.
-#include <Win32.h> // OutputDebugStringA
+#include <Win32.h>  // OutputDebugStringA
 #include <malloc.h> // _HEAPINFO / _heapchk / _heapwalk / _HEAPOK / _USEDENTRY
 #include <stdio.h>  // sprintf
 #include <string.h> // memset
@@ -19,8 +19,8 @@
 // retail's _heapwalk re-attributed) is declared no-arg but is invoked with &hinfo,
 // so it is reached through a casted pointer to keep its no-arg mangled symbol.
 namespace ApiCallerStubs {
-void winapi_118b50_OutputDebugStringA(i32 status);
-i32 winapi_1206b0_GetLastError_HeapValidate_HeapWalk();
+    void winapi_118b50_OutputDebugStringA(i32 status);
+    i32 winapi_1206b0_GetLastError_HeapValidate_HeapWalk();
 } // namespace ApiCallerStubs
 typedef i32(__cdecl* HeapWalkFn)(_HEAPINFO*);
 
@@ -37,17 +37,24 @@ int HeapCheckDump(int walkOnBad) {
     int status = _heapchk();
     OutputDebugStringA("Checking heap...\n");
     ApiCallerStubs::winapi_118b50_OutputDebugStringA(status);
-    if (walkOnBad == 0 || status == _HEAPOK)
+    if (walkOnBad == 0 || status == _HEAPOK) {
         return status;
+    }
     memset(&hinfo, 0, sizeof(hinfo));
     ((HeapWalkFn)ApiCallerStubs::winapi_1206b0_GetLastError_HeapValidate_HeapWalk)(&hinfo);
     OutputDebugStringA("Walking heap...\n");
     hinfo._pentry = 0;
     int r = ((HeapWalkFn)ApiCallerStubs::winapi_1206b0_GetLastError_HeapValidate_HeapWalk)(&hinfo);
-    while (r == _HEAPOK)
+    while (r == _HEAPOK) {
         r = ((HeapWalkFn)ApiCallerStubs::winapi_1206b0_GetLastError_HeapValidate_HeapWalk)(&hinfo);
-    sprintf(buf, "HEAP: %6s block at %Fp of size %4.4X\n",
-            hinfo._useflag == _USEDENTRY ? "USED" : "FREE", hinfo._pentry, hinfo._size);
+    }
+    sprintf(
+        buf,
+        "HEAP: %6s block at %Fp of size %4.4X\n",
+        hinfo._useflag == _USEDENTRY ? "USED" : "FREE",
+        hinfo._pentry,
+        hinfo._size
+    );
     OutputDebugStringA(buf);
     ApiCallerStubs::winapi_118b50_OutputDebugStringA(r);
     OutputDebugStringA("Finished walking heap.");

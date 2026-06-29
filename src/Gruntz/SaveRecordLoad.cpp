@@ -16,14 +16,14 @@ struct LoadStream {
     virtual void v9();
     virtual void v10();
     virtual void v11();
-    virtual void Read(void* buf, i32 n);  // slot +0x30
+    virtual void Read(void* buf, i32 n); // slot +0x30
 };
 
 struct SaveRecord {
     char pad00[0x0c];
-    void* m_0c;          // +0x0c (must be non-null)
+    void* m_0c; // +0x0c (must be non-null)
     char pad10[0x1c - 0x10];
-    i32 m_1c;            // +0x1c
+    i32 m_1c; // +0x1c
     i32 m_20;
     i32 m_24;
     char pad28[0x38 - 0x28];
@@ -32,7 +32,7 @@ struct SaveRecord {
     i32 m_40;
     i32 m_44;
     i32 m_48;
-    char m_4c[0x100];    // +0x4c
+    char m_4c[0x100]; // +0x4c
     i32 m_14c;
     i32 m_150;
     i32 m_154;
@@ -46,16 +46,18 @@ struct SaveRecord {
     i32 m_1a8;
     i32 m_1ac;
 
-    i32 Load(LoadStream* s);  // 0x0faff0
+    i32 Load(LoadStream* s); // 0x0faff0
 };
 
 // 0x0faff0
 RVA(0x000faff0, 0x163)
 i32 SaveRecord::Load(LoadStream* s) {
-    if (!s)
+    if (!s) {
         return 0;
-    if (!m_0c)
+    }
+    if (!m_0c) {
         return 0;
+    }
     s->Read(&m_1c, 4);
     s->Read(&m_20, 4);
     s->Read(&m_24, 4);

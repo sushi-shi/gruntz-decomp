@@ -86,11 +86,13 @@ i32 CLevelSync::Sync(SyncStream* s, i32 op, i32 p4, i32 p5) {
         return 0;
     }
     if (op == 4) {
-        if (PreWriteValidate(s) == 0)
+        if (PreWriteValidate(s) == 0) {
             return 0;
+        }
     } else if (op == 7) {
-        if (PreReadValidate(s) == 0)
+        if (PreReadValidate(s) == 0) {
             return 0;
+        }
     } else if (op == 8) {
         g_gameReg->m_2c->Reset();
         if (m[0] == 0) {
@@ -119,8 +121,9 @@ i32 CLevelSync::Sync(SyncStream* s, i32 op, i32 p4, i32 p5) {
     }
 
     if (m[0x153] != 0) {
-        if (((CLevelSync*)m[0x153])->ChildSync(s, op, p4, p5) == 0)
+        if (((CLevelSync*)m[0x153])->ChildSync(s, op, p4, p5) == 0) {
             return 0;
+        }
     }
 
     if (op == 4) {
@@ -216,10 +219,10 @@ i32 CLevelSync::Sync(SyncStream* s, i32 op, i32 p4, i32 p5) {
         PostBlockFixup();
     }
 
-#define SER(idx)                                                          \
-    if (SyncSub* _o = (SyncSub*)m[idx]) {                                 \
-        if (_o->Serialize(s, op, p4, p5) == 0)                  \
-            return 0;                                                     \
+#define SER(idx)                                                                                   \
+    if (SyncSub* _o = (SyncSub*)m[idx]) {                                                          \
+        if (_o->Serialize(s, op, p4, p5) == 0)                                                     \
+            return 0;                                                                              \
     }
 
     {
@@ -227,12 +230,14 @@ i32 CLevelSync::Sync(SyncStream* s, i32 op, i32 p4, i32 p5) {
         i32* q = &m[99];
         do {
             if (SyncSub* a = (SyncSub*)q[-0xf]) {
-                if (a->Serialize(s, op, p4, p5) == 0)
+                if (a->Serialize(s, op, p4, p5) == 0) {
                     return 0;
+                }
             }
             if (SyncSub* b = (SyncSub*)*q) {
-                if (b->Serialize(s, op, p4, p5) == 0)
+                if (b->Serialize(s, op, p4, p5) == 0) {
                     return 0;
+                }
             }
             i++;
             q++;
@@ -243,8 +248,9 @@ i32 CLevelSync::Sync(SyncStream* s, i32 op, i32 p4, i32 p5) {
         i32* q = &m[0x81];
         do {
             if (SyncSub* a = (SyncSub*)*q) {
-                if (a->Serialize(s, op, p4, p5) == 0)
+                if (a->Serialize(s, op, p4, p5) == 0) {
                     return 0;
+                }
             }
             i++;
             q++;
@@ -255,8 +261,9 @@ i32 CLevelSync::Sync(SyncStream* s, i32 op, i32 p4, i32 p5) {
         i32* q = &m[0xc2];
         do {
             if (SyncSub* a = (SyncSub*)*q) {
-                if (a->Serialize(s, op, p4, p5) == 0)
+                if (a->Serialize(s, op, p4, p5) == 0) {
                     return 0;
+                }
             }
             i++;
             q++;
@@ -270,8 +277,9 @@ i32 CLevelSync::Sync(SyncStream* s, i32 op, i32 p4, i32 p5) {
             i32* q = base;
             do {
                 if (SyncSub* a = (SyncSub*)*q) {
-                    if (a->Serialize(s, op, p4, p5) == 0)
+                    if (a->Serialize(s, op, p4, p5) == 0) {
                         return 0;
+                    }
                 }
                 i++;
                 q++;
@@ -285,8 +293,9 @@ i32 CLevelSync::Sync(SyncStream* s, i32 op, i32 p4, i32 p5) {
         i32* q = &m[0x187];
         do {
             if (SyncSub* a = (SyncSub*)*q) {
-                if (a->Serialize(s, op, p4, p5) == 0)
+                if (a->Serialize(s, op, p4, p5) == 0) {
                     return 0;
+                }
             }
             i++;
             q++;

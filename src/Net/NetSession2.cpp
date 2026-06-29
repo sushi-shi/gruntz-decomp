@@ -9,9 +9,9 @@
 #include <string.h>
 
 struct CNetCmdSlot2 {
-    i32 m_0;  // +0x00  armed flag (==3 active)
-    i32 m_4;  // +0x04  reset guard
-    i32 m_8;  // +0x08  latched seq
+    i32 m_0; // +0x00  armed flag (==3 active)
+    i32 m_4; // +0x04  reset guard
+    i32 m_8; // +0x08  latched seq
     char m_padc[0x14 - 0xc];
     i32 m_14; // +0x14  base seq
     char m_pad18[0x64 - 0x18];
@@ -21,11 +21,11 @@ struct CNetCmdSlot2 {
 };
 
 struct CNetResyncEntry {
-    i32 m_0;  // +0x00
-    i32 m_4;  // +0x04
-    u8 m_8;   // +0x08
+    i32 m_0; // +0x00
+    i32 m_4; // +0x04
+    u8 m_8;  // +0x08
     char m_pad9[0xc - 9];
-    i32 m_c;  // +0x0c
+    i32 m_c; // +0x0c
     char m_pad10[0x410 - 0x10];
 };
 
@@ -36,17 +36,17 @@ struct CNetSession2 {
     CNetMgr* m_4; // +0x04  owner net manager a2
     void* m_8;    // +0x08  owner a3
     char m_padc[0x10 - 0xc];
-    i32 m_10;     // +0x10
-    i32 m_14;     // +0x14
-    i32 m_18;     // +0x18
-    i32 m_1c;     // +0x1c  cached a2->m_5a4
-    CNetCmdSlot2 m_slots[4];          // +0x20  (0x64 each -> +0x20..+0x1b0)
-    i32 m_1b0[0x80];                  // +0x1b0 (0x200 bytes scratch)
-    CNetResyncEntry m_entries[0x80];  // +0x3b0 (0x410 each)
+    i32 m_10;                        // +0x10
+    i32 m_14;                        // +0x14
+    i32 m_18;                        // +0x18
+    i32 m_1c;                        // +0x1c  cached a2->m_5a4
+    CNetCmdSlot2 m_slots[4];         // +0x20  (0x64 each -> +0x20..+0x1b0)
+    i32 m_1b0[0x80];                 // +0x1b0 (0x200 bytes scratch)
+    CNetResyncEntry m_entries[0x80]; // +0x3b0 (0x410 each)
 
-    void Reset();                                 // 0xbf150
-    i32 Init(void* a1, CNetMgr* a2, void* a3);    // 0xbef80
-    i32 Verify(i32 n);                            // 0xc0290
+    void Reset();                              // 0xbf150
+    i32 Init(void* a1, CNetMgr* a2, void* a3); // 0xbef80
+    i32 Verify(i32 n);                         // 0xc0290
 };
 
 // The owning net manager: only +0x5a4 (cached by Init) is read.

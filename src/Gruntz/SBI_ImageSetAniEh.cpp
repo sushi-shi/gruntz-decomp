@@ -25,27 +25,35 @@ struct CStatusBarItem {
     void DtorStatus(); // reloc-masked member teardown
     char m_pad[0x60 - 0x04];
 };
-inline CStatusBarItem::~CStatusBarItem() { DtorStatus(); }
+inline CStatusBarItem::~CStatusBarItem() {
+    DtorStatus();
+}
 
 struct CSBI_RectOnly : CStatusBarItem {
     virtual ~CSBI_RectOnly();
     void DtorRect(); // reloc-masked member teardown
 };
-inline CSBI_RectOnly::~CSBI_RectOnly() { DtorRect(); }
+inline CSBI_RectOnly::~CSBI_RectOnly() {
+    DtorRect();
+}
 
 struct CSBI_Image : CSBI_RectOnly {
     virtual ~CSBI_Image();
     virtual void Imf1();
     void DtorImage(); // reloc-masked member teardown
 };
-inline CSBI_Image::~CSBI_Image() { DtorImage(); }
+inline CSBI_Image::~CSBI_Image() {
+    DtorImage();
+}
 
 struct CSBI_ImageSet : CSBI_Image {
     virtual ~CSBI_ImageSet();
     virtual void Isf1();
     void DtorImageSet(); // reloc-masked member teardown
 };
-inline CSBI_ImageSet::~CSBI_ImageSet() { DtorImageSet(); }
+inline CSBI_ImageSet::~CSBI_ImageSet() {
+    DtorImageSet();
+}
 
 struct CSBI_ImageSetAni : CSBI_ImageSet {
     virtual ~CSBI_ImageSetAni();

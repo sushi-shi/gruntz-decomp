@@ -31,19 +31,21 @@ DATA(0x001ef760)
 extern void* g_purecallVtbl; // 0x5ef760 (PTR___purecall)
 struct CRezDir13c9b0 : RezDirBase {
     i32 _4[(0x10 - 0x4) / 4];
-    void* m_10;          // +0x10
-    RezListNode* m_14;   // +0x14
-    i32 _18;             // +0x18
-    void* m_1c;          // +0x1c
-    RezListNode* m_20;   // +0x20
+    void* m_10;        // +0x10
+    RezListNode* m_14; // +0x14
+    i32 _18;           // +0x18
+    void* m_1c;        // +0x1c
+    RezListNode* m_20; // +0x20
     ~CRezDir13c9b0();
 };
 RVA(0x0013c9b0, 0x7f)
 CRezDir13c9b0::~CRezDir13c9b0() {
-    while (m_14)
+    while (m_14) {
         m_14->Delete(1);
-    while (m_20)
+    }
+    while (m_20) {
         m_20->Delete(1);
+    }
     m_1c = (void*)&g_purecallVtbl;
     m_10 = (void*)&g_purecallVtbl;
 }
@@ -62,18 +64,20 @@ struct RezOwner18 {
 };
 struct CRezDir13cb80 : RezDirBase {
     i32 _4[(0x10 - 0x4) / 4];
-    void* m_10;        // +0x10
-    i32 m_14;          // +0x14
-    RezOwner18* m_18;  // +0x18
-    void Cleanup14();  // 0x13ce70
+    void* m_10;       // +0x10
+    i32 m_14;         // +0x14
+    RezOwner18* m_18; // +0x18
+    void Cleanup14(); // 0x13ce70
     ~CRezDir13cb80();
 };
 RVA(0x0013cb80, 0x72)
 CRezDir13cb80::~CRezDir13cb80() {
-    if (m_14)
+    if (m_14) {
         Cleanup14();
-    if (m_10)
+    }
+    if (m_10) {
         RezFree(m_10);
+    }
     m_18->m_1c.Detach(this);
 }
 
@@ -85,10 +89,10 @@ CRezDir13cb80::~CRezDir13cb80() {
 // reproducible polymorphically, and the grand-base ~G @0x133370 is already matched
 // standalone in BoundaryUpper2.cpp - making G polymorphic here would dup it).
 // ---------------------------------------------------------------------------
-extern void* g_deviceConfigVtblB;       // 0x5ef680
-extern void* g_deviceConfigVtblC;       // 0x5ef670
-extern void* g_deviceConfigVtblB2;      // 0x5ef640
-extern void* g_deviceConfigScalarDel;   // 0x5ef658
+extern void* g_deviceConfigVtblB;     // 0x5ef680
+extern void* g_deviceConfigVtblC;     // 0x5ef670
+extern void* g_deviceConfigVtblB2;    // 0x5ef640
+extern void* g_deviceConfigScalarDel; // 0x5ef658
 struct DevCfgChain {
     void* m_vptr;
     void ReleaseBase(); // 0x1342b0

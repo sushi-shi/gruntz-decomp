@@ -81,37 +81,37 @@ RVA(0x000fb660, 0xf1)
 i32 LogicDispatchA(LogicDispatchOwner* owner) {
     LogicDispatchRecord* rec = owner->m_7c;
     switch (rec->m_1c) {
-    case 0:
-        rec->m_1c = 0x3e8;
-        {
-            LogicSubRecA* obj = new LogicSubRecA(owner);
-            obj->Init();
-            rec->m_18 = obj;
-        }
-        break;
-    case 0x1d:
-        rec->m_18->Op1d();
-        break;
-    case 0x1e:
-        rec->m_18->Op1e();
-        break;
-    case 0x50:
-        rec->m_18->Op50();
-        break;
-    case 0x51:
-        rec->m_18->Op51();
-        break;
-    case 0x52:
-        rec->m_18->Op52();
-        break;
-    case 0x53:
-        rec->m_18->Op53();
-        break;
-    case 0x3e8:
-        break;
-    default:
-        LogicSubDefault_16e4f0(rec->m_18);
-        break;
+        case 0:
+            rec->m_1c = 0x3e8;
+            {
+                LogicSubRecA* obj = new LogicSubRecA(owner);
+                obj->Init();
+                rec->m_18 = obj;
+            }
+            break;
+        case 0x1d:
+            rec->m_18->Op1d();
+            break;
+        case 0x1e:
+            rec->m_18->Op1e();
+            break;
+        case 0x50:
+            rec->m_18->Op50();
+            break;
+        case 0x51:
+            rec->m_18->Op51();
+            break;
+        case 0x52:
+            rec->m_18->Op52();
+            break;
+        case 0x53:
+            rec->m_18->Op53();
+            break;
+        case 0x3e8:
+            break;
+        default:
+            LogicSubDefault_16e4f0(rec->m_18);
+            break;
     }
     return 1;
 }
@@ -121,37 +121,37 @@ RVA(0x00046850, 0xf1)
 i32 LogicDispatchC(LogicDispatchOwner* owner) {
     LogicDispatchRecord* rec = owner->m_7c;
     switch (rec->m_1c) {
-    case 0:
-        rec->m_1c = 0x3e8;
-        {
-            LogicSubRecC* obj = new LogicSubRecC(owner);
-            obj->Init();
-            rec->m_18 = obj;
-        }
-        break;
-    case 0x1d:
-        rec->m_18->Op1d();
-        break;
-    case 0x1e:
-        rec->m_18->Op1e();
-        break;
-    case 0x50:
-        rec->m_18->Op50();
-        break;
-    case 0x51:
-        rec->m_18->Op51();
-        break;
-    case 0x52:
-        rec->m_18->Op52();
-        break;
-    case 0x53:
-        rec->m_18->Op53();
-        break;
-    case 0x3e8:
-        break;
-    default:
-        LogicSubDefault_16e4f0(rec->m_18);
-        break;
+        case 0:
+            rec->m_1c = 0x3e8;
+            {
+                LogicSubRecC* obj = new LogicSubRecC(owner);
+                obj->Init();
+                rec->m_18 = obj;
+            }
+            break;
+        case 0x1d:
+            rec->m_18->Op1d();
+            break;
+        case 0x1e:
+            rec->m_18->Op1e();
+            break;
+        case 0x50:
+            rec->m_18->Op50();
+            break;
+        case 0x51:
+            rec->m_18->Op51();
+            break;
+        case 0x52:
+            rec->m_18->Op52();
+            break;
+        case 0x53:
+            rec->m_18->Op53();
+            break;
+        case 0x3e8:
+            break;
+        default:
+            LogicSubDefault_16e4f0(rec->m_18);
+            break;
     }
     return 1;
 }
@@ -161,37 +161,37 @@ RVA(0x000deb20, 0xf1)
 i32 LogicDispatchD(LogicDispatchOwner* owner) {
     LogicDispatchRecord* rec = owner->m_7c;
     switch (rec->m_1c) {
-    case 0:
-        rec->m_1c = 0x3e8;
-        {
-            LogicSubRecD* obj = new LogicSubRecD(owner);
-            obj->Init();
-            rec->m_18 = obj;
-        }
-        break;
-    case 0x1d:
-        rec->m_18->Op1d();
-        break;
-    case 0x1e:
-        rec->m_18->Op1e();
-        break;
-    case 0x50:
-        rec->m_18->Op50();
-        break;
-    case 0x51:
-        rec->m_18->Op51();
-        break;
-    case 0x52:
-        rec->m_18->Op52();
-        break;
-    case 0x53:
-        rec->m_18->Op53();
-        break;
-    case 0x3e8:
-        break;
-    default:
-        LogicSubDefault_16e4f0(rec->m_18);
-        break;
+        case 0:
+            rec->m_1c = 0x3e8;
+            {
+                LogicSubRecD* obj = new LogicSubRecD(owner);
+                obj->Init();
+                rec->m_18 = obj;
+            }
+            break;
+        case 0x1d:
+            rec->m_18->Op1d();
+            break;
+        case 0x1e:
+            rec->m_18->Op1e();
+            break;
+        case 0x50:
+            rec->m_18->Op50();
+            break;
+        case 0x51:
+            rec->m_18->Op51();
+            break;
+        case 0x52:
+            rec->m_18->Op52();
+            break;
+        case 0x53:
+            rec->m_18->Op53();
+            break;
+        case 0x3e8:
+            break;
+        default:
+            LogicSubDefault_16e4f0(rec->m_18);
+            break;
     }
     return 1;
 }
@@ -201,37 +201,37 @@ RVA(0x0010d3d0, 0xf1)
 i32 LogicDispatchB(LogicDispatchOwner* owner) {
     LogicDispatchRecord* rec = owner->m_7c;
     switch (rec->m_1c) {
-    case 0:
-        rec->m_1c = 0x3e8;
-        {
-            LogicSubRecB* obj = new LogicSubRecB(owner);
-            obj->Init();
-            rec->m_18 = obj;
-        }
-        break;
-    case 0x1d:
-        rec->m_18->Op1d();
-        break;
-    case 0x1e:
-        rec->m_18->Op1e();
-        break;
-    case 0x50:
-        rec->m_18->Op50();
-        break;
-    case 0x51:
-        rec->m_18->Op51();
-        break;
-    case 0x52:
-        rec->m_18->Op52();
-        break;
-    case 0x53:
-        rec->m_18->Op53();
-        break;
-    case 0x3e8:
-        break;
-    default:
-        LogicSubDefault_16e4f0(rec->m_18);
-        break;
+        case 0:
+            rec->m_1c = 0x3e8;
+            {
+                LogicSubRecB* obj = new LogicSubRecB(owner);
+                obj->Init();
+                rec->m_18 = obj;
+            }
+            break;
+        case 0x1d:
+            rec->m_18->Op1d();
+            break;
+        case 0x1e:
+            rec->m_18->Op1e();
+            break;
+        case 0x50:
+            rec->m_18->Op50();
+            break;
+        case 0x51:
+            rec->m_18->Op51();
+            break;
+        case 0x52:
+            rec->m_18->Op52();
+            break;
+        case 0x53:
+            rec->m_18->Op53();
+            break;
+        case 0x3e8:
+            break;
+        default:
+            LogicSubDefault_16e4f0(rec->m_18);
+            break;
     }
     return 1;
 }

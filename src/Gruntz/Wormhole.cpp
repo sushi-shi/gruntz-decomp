@@ -114,9 +114,9 @@ struct CSpawnReg {
 class CWormhole; // fwd
 struct CSpawnAux {
     char m_pad00[0x10];
-    void* m_10;       // +0x10  type marker (compared to &WormholeTypeMarker)
+    void* m_10; // +0x10  type marker (compared to &WormholeTypeMarker)
     char m_pad14[4];
-    CWormhole* m_18;  // +0x18  the wormhole logic object
+    CWormhole* m_18; // +0x18  the wormhole logic object
 };
 // The candidate game object: tile coords at +0x5c/+0x60 and the aux at +0x7c.
 struct CSpawnObj {
@@ -203,7 +203,7 @@ extern NameVec g_buteNameVec;
 
 // The zvec error globals + the capture helper the inlined accessor touches on a
 // bounds miss (the same set ZVec.cpp models).
-extern u32 g_zvecErrSentinel; // 0x6bf464
+extern u32 g_zvecErrSentinel;    // 0x6bf464
 extern void* g_zvecErrToken;     // 0x6bf428
 extern void* zErr_CaptureRetB(); // 0x16d990
 
@@ -353,8 +353,8 @@ void CWormhole::SpawnPartners() {
         node = node->m_next;
         if (obj != 0) {
             CSpawnAux* aux = obj->m_7c;
-            if (aux->m_10 == (void*)&WormholeTypeMarker && obj->m_5c == tx && obj->m_60 == ty &&
-                aux->m_18 != 0) {
+            if (aux->m_10 == (void*)&WormholeTypeMarker && obj->m_5c == tx && obj->m_60 == ty
+                && aux->m_18 != 0) {
                 aux->m_18->Stub_0412c0();
             }
         }

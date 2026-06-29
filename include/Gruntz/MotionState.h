@@ -52,8 +52,8 @@ public:
         double a9,
         double a10
     );
-    void SetZ(double z);  // 0x58ca0
-    void Step(double dt); // 0x16ecd0
+    void SetZ(double z);               // 0x58ca0
+    void Step(double dt);              // 0x16ecd0
     double ArrivalVelX(double target); // 0x16f3c0
     double ArrivalVelY(double target); // 0x16f430
 

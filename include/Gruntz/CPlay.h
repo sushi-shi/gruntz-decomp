@@ -270,9 +270,9 @@ public:
         i32 a6,
         i32 a7,
         i32 rectSrc
-    ); // (THIS TU)
-    void LoadSBITextEdges(char* name);                       // 0x0d1710 (THIS TU)
-    i32 BuildGruntNamespaceList(i32 arg);                       // 0x0dd050 (THIS TU)
+    );                                                           // (THIS TU)
+    void LoadSBITextEdges(char* name);                           // 0x0d1710 (THIS TU)
+    i32 BuildGruntNamespaceList(i32 arg);                        // 0x0dd050 (THIS TU)
     i32 RegisterNamespace(CString& name, i32 a, i32 b, i32 arg); // call 0x2bc1 (THIS TU sibling)
     void PostHud(i32 wParam);
     void MarkerBegin(i32 now);

@@ -47,11 +47,11 @@ extern "C" i32 g_beepEnabled; // 0x6bf6f0  - gates the startup beep
 DATA(0x002bf6f4)
 extern "C" i32 g_thirdEnabled; // 0x6bf6f4  - third "any output wanted" gate
 
-extern "C" i32 g_hr; // 0x6bf6f8  - the raw HRESULT, saved at entry
+extern "C" i32 g_hr;   // 0x6bf6f8  - the raw HRESULT, saved at entry
 extern "C" i32 g_code; // 0x6bf6fc  - hr & 0xffff (the (%i) arg)
 
 extern "C" char g_szCode[]; // 0x6bf700  - error-code name buffer
-extern "C" char g_szMsg[]; // 0x6bf740  - description buffer
+extern "C" char g_szMsg[];  // 0x6bf740  - description buffer
 
 // Empty mutable string in .data copied into the working line up front.
 DATA(0x002293f4)

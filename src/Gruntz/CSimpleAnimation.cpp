@@ -65,7 +65,7 @@ extern NameVec g_buteNameVec;
 
 // The zvec error globals + the capture helper the inlined accessor touches on a
 // bounds miss (the same set ZVec.cpp models).
-extern u32 g_zvecErrSentinel; // 0x6bf464
+extern u32 g_zvecErrSentinel;    // 0x6bf464
 extern void* g_zvecErrToken;     // 0x6bf428
 extern void* zErr_CaptureRetB(); // 0x16d990
 

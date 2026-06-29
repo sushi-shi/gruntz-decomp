@@ -19,17 +19,29 @@ extern void* g_severusWorkerDtorVtbl;
 // 7-byte `mov [this],&g_severusWorkerDtorVtbl; ret` leaf. Three distinct leaf
 // classes share the identical shape.
 // ---------------------------------------------------------------------------
-struct SW_161460 { void Restamp(); };
+struct SW_161460 {
+    void Restamp();
+};
 RVA(0x00161460, 0x7)
-void SW_161460::Restamp() { *(void**)this = &g_severusWorkerDtorVtbl; }
+void SW_161460::Restamp() {
+    *(void**)this = &g_severusWorkerDtorVtbl;
+}
 
-struct SW_161560 { void Restamp(); };
+struct SW_161560 {
+    void Restamp();
+};
 RVA(0x00161560, 0x7)
-void SW_161560::Restamp() { *(void**)this = &g_severusWorkerDtorVtbl; }
+void SW_161560::Restamp() {
+    *(void**)this = &g_severusWorkerDtorVtbl;
+}
 
-struct SW_163a10 { void Restamp(); };
+struct SW_163a10 {
+    void Restamp();
+};
 RVA(0x00163a10, 0x7)
-void SW_163a10::Restamp() { *(void**)this = &g_severusWorkerDtorVtbl; }
+void SW_163a10::Restamp() {
+    *(void**)this = &g_severusWorkerDtorVtbl;
+}
 
 // ---------------------------------------------------------------------------
 // 0x1413c0 - `return m_20 * n;` (CDirectDrawMgr-area scale helper). __thiscall,
@@ -41,7 +53,9 @@ struct B_1413c0 {
     i32 Scale(i32 n);
 };
 RVA(0x001413c0, 0xb)
-i32 B_1413c0::Scale(i32 n) { return m_20 * n; }
+i32 B_1413c0::Scale(i32 n) {
+    return m_20 * n;
+}
 
 // ---------------------------------------------------------------------------
 // 0x1614b0 - `if(m_14) RezFree(m_14); m_14 = 0;` (CImageSet1-area buffer release).
@@ -53,8 +67,9 @@ struct B_1614b0 {
 };
 RVA(0x001614b0, 0x1c)
 void B_1614b0::Release() {
-    if (m_14)
+    if (m_14) {
         RezFree(m_14);
+    }
     m_14 = 0;
 }
 
@@ -67,16 +82,18 @@ struct Snd_137300 {
     char _0[0x78];
     void* m_78; // 0x78
     char _7c[0x84 - 0x7c];
-    i32 m_84;   // 0x84
+    i32 m_84;    // 0x84
     i32 Probe(); // 0x137260
     i32 Get();
 };
 RVA(0x00137300, 0x23)
 i32 Snd_137300::Get() {
-    if (!m_78)
+    if (!m_78) {
         return 0;
-    if (!Probe())
+    }
+    if (!Probe()) {
         return 0;
+    }
     return m_84;
 }
 
@@ -86,21 +103,25 @@ i32 Snd_137300::Get() {
 // ---------------------------------------------------------------------------
 struct DdOb_1433d0 {
     u32 _0[2];
-    u32 m_8;  // 0x8
-    u32 m_c;  // 0xc
+    u32 m_8; // 0x8
+    u32 m_c; // 0xc
     u32 _10[(0x54 - 0x10) / 4];
     u32 m_54; // 0x54
 };
 RVA(0x001433d0, 0x4f)
 i32 __stdcall Compare_1433d0(DdOb_1433d0* a, DdOb_1433d0* b) {
-    if (a->m_c > b->m_c)
+    if (a->m_c > b->m_c) {
         return 1;
-    if (a->m_c < b->m_c)
+    }
+    if (a->m_c < b->m_c) {
         return 0;
-    if (a->m_8 > b->m_8)
+    }
+    if (a->m_8 > b->m_8) {
         return 1;
-    if (a->m_8 < b->m_8)
+    }
+    if (a->m_8 < b->m_8) {
         return 0;
+    }
     return a->m_54 > b->m_54;
 }
 
@@ -113,7 +134,9 @@ struct B_1847a0 {
     void Set(i32 v);
 };
 RVA(0x001847a0, 0xa)
-void B_1847a0::Set(i32 v) { m_70 = v; }
+void B_1847a0::Set(i32 v) {
+    m_70 = v;
+}
 
 // ---------------------------------------------------------------------------
 // 0x17fc40 - `if(m_50) RezFree(m_50);` (no zero-out). __thiscall, 0 args.
@@ -125,8 +148,9 @@ struct B_17fc40 {
 };
 RVA(0x0017fc40, 0x11)
 void B_17fc40::Free() {
-    if (m_50)
+    if (m_50) {
         RezFree(m_50);
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -134,7 +158,9 @@ void B_17fc40::Free() {
 // ---------------------------------------------------------------------------
 void Sub_184fd0(i32, i32, i32); // 0x184fd0, no body
 RVA(0x00184fb0, 0x15)
-void Fwd_184fb0(i32 a, i32 b) { Sub_184fd0(0, a, b); }
+void Fwd_184fb0(i32 a, i32 b) {
+    Sub_184fd0(0, a, b);
+}
 
 // ---------------------------------------------------------------------------
 // 0x134360 / 0x1346d0 - DirectInput device-config teardown: free the +0x2a0
@@ -142,8 +168,8 @@ void Fwd_184fb0(i32 a, i32 b) { Sub_184fd0(0, a, b); }
 // ---------------------------------------------------------------------------
 struct DevCfg {
     char _0[0x2a0];
-    void* m_2a0; // 0x2a0
-    void* m_2a4; // 0x2a4
+    void* m_2a0;        // 0x2a0
+    void* m_2a4;        // 0x2a4
     void ReleaseBase(); // 0x1342b0
     void Free360();
     void Free6d0();
@@ -175,8 +201,9 @@ i32 PopcountIsOne_145e00(i32 x) {
     i32 c = 0;
     i32 i = 0x20;
     do {
-        if ((x & 1) == 1)
+        if ((x & 1) == 1) {
             c++;
+        }
         x >>= 1;
     } while (--i);
     return c == 1;
@@ -199,7 +226,9 @@ struct Owner1413 {
     void Thunk();
 };
 RVA(0x001413b0, 0xf)
-void Owner1413::Thunk() { m_8->vtbl->Op(m_8, 0); }
+void Owner1413::Thunk() {
+    m_8->vtbl->Op(m_8, 0);
+}
 
 // ---------------------------------------------------------------------------
 // CDdObArray mode-table search (m_4b8 = Entry*[], m_4bc = count).
@@ -207,8 +236,8 @@ void Owner1413::Thunk() { m_8->vtbl->Op(m_8, 0); }
 // ---------------------------------------------------------------------------
 struct DdEntry {
     char _0[8];
-    u32 m_8;  // 0x8
-    u32 m_c;  // 0xc
+    u32 m_8; // 0x8
+    u32 m_c; // 0xc
     char _10[0x54 - 0x10];
     i32 m_54; // 0x54
 };
@@ -225,8 +254,9 @@ RVA(0x001434c0, 0x45)
 i32 ModeArr::FindIndex(i32 k0, i32 k1, i32 k2) {
     for (i32 i = 0; i < m_4bc; i++) {
         DdEntry* e = m_4b8[i];
-        if (e->m_c == (u32)k0 && e->m_8 == (u32)k1 && e->m_54 == k2)
+        if (e->m_c == (u32)k0 && e->m_8 == (u32)k1 && e->m_54 == k2) {
             return i;
+        }
     }
     return -1;
 }
@@ -235,8 +265,9 @@ i32 ModeArr::FindLast(u32 k0, u32 k1, i32 k2) {
     i32 r = -1;
     for (i32 i = m_4bc - 1; i >= 0; i--) {
         DdEntry* e = m_4b8[i];
-        if (e->m_c >= k0 && e->m_8 >= k1 && e->m_54 == k2)
+        if (e->m_c >= k0 && e->m_8 >= k1 && e->m_54 == k2) {
             r = i;
+        }
     }
     return r;
 }
@@ -255,8 +286,9 @@ struct B_13dee0 {
 RVA(0x0013dee0, 0x1b)
 void B_13dee0::Set(i32 v) {
     m_1c = v;
-    if (v > 0)
+    if (v > 0) {
         m_28 = 1000 / v;
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -334,8 +366,8 @@ struct Arr1dc {
 };
 struct B_166810 {
     char _0[0x1dc];
-    Arr1dc m_1dc;       // 0x1dc
-    Node166810* m_1e0;  // 0x1e0
+    Arr1dc m_1dc;      // 0x1dc
+    Node166810* m_1e0; // 0x1e0
     void Clear();
 };
 RVA(0x00166810, 0x32)
@@ -344,8 +376,9 @@ void B_166810::Clear() {
     while (n) {
         Node166810* cur = n;
         n = n->m_0;
-        if (cur->m_8)
+        if (cur->m_8) {
             cur->m_8->Destroy(1);
+        }
     }
     m_1dc.RemoveAll();
 }
@@ -383,8 +416,9 @@ i32 RezItm::Scan() {
                 found = 1;
             } else {
                 found = 0;
-                if (m_c->v2() == 0)
+                if (m_c->v2() == 0) {
                     return 0;
+                }
             }
         } while (!found);
         return found;
@@ -413,10 +447,12 @@ struct RezDir {
 RVA(0x0013c8f0, 0x41)
 i32 RezDir::Check() {
     m_20 = -1;
-    if (!m_10)
+    if (!m_10) {
         return 0;
-    if (RezDirLookup(m_10) != -1)
+    }
+    if (RezDirLookup(m_10) != -1) {
         return 1;
+    }
     return v4(m_14, m_18, 0) != 0;
 }
 
@@ -489,21 +525,23 @@ struct Snd138f20 {
     virtual void v5();
     virtual void v6();
     virtual void v7();
-    virtual i32 v8();             // slot 8 (+0x20)
-    virtual void v9(i32, i32);    // slot 9 (+0x24)
+    virtual i32 v8();          // slot 8 (+0x20)
+    virtual void v9(i32, i32); // slot 9 (+0x24)
     char _4[0x44 - 0x4];
-    i32 m_44; // 0x44
-    i32 m_48; // 0x48
-    i32 m_4c; // 0x4c
+    i32 m_44;     // 0x44
+    i32 m_48;     // 0x48
+    i32 m_4c;     // 0x4c
     i32 Helper(); // 0x138f60
     i32 Gate();
 };
 RVA(0x00138f20, 0x3a)
 i32 Snd138f20::Gate() {
-    if (!v8())
+    if (!v8()) {
         return 0;
-    if (Helper())
+    }
+    if (Helper()) {
         return 0;
+    }
     m_44 = 0;
     v9(m_4c, m_48);
     return 1;
@@ -515,9 +553,9 @@ i32 Snd138f20::Gate() {
 // ---------------------------------------------------------------------------
 extern "C" char g_emptyString[]; // _g_emptyString @0x6293f4
 struct C16be60 {
-    i32 Ready();                       // 0x16bd10
-    void Emit(const void* s, i32 a);   // 0x16c2d0
-    void Flush();                      // 0x16bd90
+    i32 Ready();                     // 0x16bd10
+    void Emit(const void* s, i32 a); // 0x16c2d0
+    void Flush();                    // 0x16bd90
     C16be60* Append(i32 arg);
 };
 RVA(0x0016be60, 0x2a)
@@ -547,13 +585,15 @@ struct B_151d20 {
 RVA(0x00151d20, 0x3a)
 i32 B_151d20::Notify(void* arg) {
     Cb151d20* p = m_7c;
-    if (!p)
+    if (!p) {
         return 0;
+    }
     void* saved = p->m_1c;
     p->m_1c = arg;
     m_7c->fn(this);
-    if (m_7c->m_1c == arg)
+    if (m_7c->m_1c == arg) {
         m_7c->m_1c = saved;
+    }
     return 1;
 }
 
@@ -568,14 +608,18 @@ public:
 };
 extern CImageCache g_imageCache; // 0x653c88
 RVA(0x0013e070, 0xa)
-void ClearImageCache_13e070() { g_imageCache.RemoveAll(); }
+void ClearImageCache_13e070() {
+    g_imageCache.RemoveAll();
+}
 
 struct CDdObArray {
     void RemoveAll(); // 0x1b4f0b
 };
 extern CDdObArray g_modeArray; // 0x683ec8
 RVA(0x00141c80, 0xa)
-void ClearModeArray_141c80() { g_modeArray.RemoveAll(); }
+void ClearModeArray_141c80() {
+    g_modeArray.RemoveAll();
+}
 
 // ---------------------------------------------------------------------------
 // CImageOwned apply/setup cluster (vptr slot 8 = +0x20 transform, slot 10 = +0x28
@@ -594,9 +638,9 @@ struct ImgOwned {
     virtual void v5();
     virtual void v6();
     virtual void v7();
-    virtual i32 v8(i32);  // slot 8 (+0x20)
+    virtual i32 v8(i32); // slot 8 (+0x20)
     virtual void v9();
-    virtual void v10();   // slot 10 (+0x28)
+    virtual void v10(); // slot 10 (+0x28)
     char _4[0x10 - 0x4];
     Blk6c m_10; // 0x10 (0x6c bytes)
     i32 Apply(i32 mode, const void* src);
@@ -605,16 +649,20 @@ struct ImgOwned {
 };
 RVA(0x0013e0a0, 0x27)
 i32 ImgOwned::Apply(i32 mode, const void* src) {
-    if (src)
+    if (src) {
         m_10 = *(const Blk6c*)src;
+    }
     return v8(mode);
 }
 RVA(0x00148cc0, 0x18)
-i32 ImgOwned::Forward(i32 a0, const void* a1) { return Apply(a0, a1) != 0; }
+i32 ImgOwned::Forward(i32 a0, const void* a1) {
+    return Apply(a0, a1) != 0;
+}
 RVA(0x00148b50, 0x2c)
 i32 ImgOwned::Commit(i32 a0, const void* a1) {
-    if (Apply(a0, a1) == 0)
+    if (Apply(a0, a1) == 0) {
         return 0;
+    }
     v10();
     return 1;
 }

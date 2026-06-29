@@ -57,20 +57,20 @@ extern "C" void RezFree(void* p);
 // helper so `mov ecx,[owner+0x1c]; call` falls out with no stack cleanup.
 class CAniRecordPool {
 public:
-    void* Alloc1_142fc0(i32 handle, i32 size);          // 0x142fc0
-    void* Alloc2_142f40(i32 handle, i32 size);          // 0x142f40
-    void* Alloc3_1430c0(i32 a, i32 handle, i32 size);   // 0x1430c0
-    void Free_142f10(void* p);                          // 0x142f10
+    void* Alloc1_142fc0(i32 handle, i32 size);        // 0x142fc0
+    void* Alloc2_142f40(i32 handle, i32 size);        // 0x142f40
+    void* Alloc3_1430c0(i32 a, i32 handle, i32 size); // 0x1430c0
+    void Free_142f10(void* p);                        // 0x142f10
 };
 
 // The owner node (record+0x0c). Its +0x08 is a flags word the buffer virtuals OR
 // a bit into; its +0x1c is the pool above.
 class CAniRecordOwner {
 public:
-    i32 m_00, m_04;        // +0x00..+0x07
-    i32 m_08;              // +0x08  flags
+    i32 m_00, m_04; // +0x00..+0x07
+    i32 m_08;       // +0x08  flags
     char _pad0c[0x1c - 0x0c];
-    CAniRecordPool* m_1c;  // +0x1c  the pool allocator
+    CAniRecordPool* m_1c; // +0x1c  the pool allocator
 };
 
 // The freshly-allocated +0x10 buffer's second-stage init (0x1485b0, __thiscall on
@@ -93,13 +93,13 @@ struct CAniMapOwner {
 // stay exactly where retail puts them.
 class CAniRecord {
 public:
-    i32 Parse_168c60(void* ctx, const i16* src); // 0x168c60
-    i32 GetSize_168e50();                        // 0x168e50
+    i32 Parse_168c60(void* ctx, const i16* src);                      // 0x168c60
+    i32 GetSize_168e50();                                             // 0x168e50
     void ResolveIndices_168d00(CAniMapOwner* owner, const char* str); // 0x168d00
-    void* Alloc168ee0(i32 size, i32 flag);       // 0x168ee0
-    void* Alloc168ea0(i32 size, i32 flag);       // 0x168ea0
-    void* Alloc168f60(i32 a, i32 size, i32 flag);// 0x168f60
-    void FreeBuf_168fb0();                       // 0x168fb0
+    void* Alloc168ee0(i32 size, i32 flag);                            // 0x168ee0
+    void* Alloc168ea0(i32 size, i32 flag);                            // 0x168ea0
+    void* Alloc168f60(i32 a, i32 size, i32 flag);                     // 0x168f60
+    void FreeBuf_168fb0();                                            // 0x168fb0
 
     void* m_vptr;          // +0x00
     u16 m_flags;           // +0x04  status word (bit 1 scaled, bit 2 has-name)
@@ -147,7 +147,9 @@ struct CAniRecordCObjSub {
 struct CAniRecordBase2 {
     CAniRecordCObjSub m_cobj; // +0x00 (the CObject grand-base sub-object)
     ~CAniRecordBase2();
-    void FreeBuf_168fb0() { ((CAniRecord*)this)->FreeBuf_168fb0(); }
+    void FreeBuf_168fb0() {
+        ((CAniRecord*)this)->FreeBuf_168fb0();
+    }
 };
 
 // @early-stop

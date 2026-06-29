@@ -24,19 +24,23 @@
 RVA(0x00134be0, 0x7e)
 i32 CFixedPtrArray32::FillFrom(void** src, i32 n, i32 unused) {
     i32 i = 0;
-    if (!src)
+    if (!src) {
         return 0;
-    if (n >= 32)
+    }
+    if (n >= 32) {
         return 0;
+    }
     m_00 = 0;
     m_count = 0;
-    for (i32 j = 0; j < 32; j++)
+    for (i32 j = 0; j < 32; j++) {
         m_items[j] = 0;
+    }
     void** p = src;
     for (; i < n; i++, p++) {
         if (*p) {
-            if (!Add(*p))
+            if (!Add(*p)) {
                 return 0;
+            }
         }
     }
     return 1;
@@ -49,8 +53,9 @@ i32 CFixedPtrArray32::FillFrom(void** src, i32 n, i32 unused) {
 // ===========================================================================
 RVA(0x00134c60, 0x14)
 void CFixedPtrArray32::Clear() {
-    for (i32 j = 0; j < 32; j++)
+    for (i32 j = 0; j < 32; j++) {
         m_items[j] = 0;
+    }
     m_count = 0;
 }
 
@@ -60,8 +65,9 @@ void CFixedPtrArray32::Clear() {
 // ===========================================================================
 RVA(0x00134c80, 0x24)
 i32 CFixedPtrArray32::Add(void* item) {
-    if (m_count >= 32)
+    if (m_count >= 32) {
         return 0;
+    }
     m_items[m_count] = item;
     m_count++;
     return 1;

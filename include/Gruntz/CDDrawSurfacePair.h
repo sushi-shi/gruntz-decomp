@@ -45,12 +45,12 @@
 // ---------------------------------------------------------------------------
 class CSurfacePairBase {
 public:
-    virtual void v00();      // slot 0
+    virtual void v00();          // slot 0
     virtual ~CSurfacePairBase(); // slot 1 (scalar-deleting dtor)
-    virtual void v08();      // slot 2
-    virtual void v0c();      // slot 3
-    virtual void v10();      // slot 4
-    virtual i32 IsValid();   // slot 5 (@0x14) - the "surface ready?" predicate
+    virtual void v08();          // slot 2
+    virtual void v0c();          // slot 3
+    virtual void v10();          // slot 4
+    virtual i32 IsValid();       // slot 5 (@0x14) - the "surface ready?" predicate
 
     // vptr @+0x00 (implicit, polymorphic)
     i32 m_04;   // +0x04  status word (-1 inactive, 0x63 active)
@@ -68,10 +68,10 @@ inline CSurfacePairBase::~CSurfacePairBase() {}
 // CreateB are the three pool surface-acquire entries Create() fans into.
 class CDDrawSurfacePool {
 public:
-    void RemoveItemA(CDDSurface* item);                        // 0x142160
-    CDDSurface* AcquireA(i32 a, i32 b);                        // 0x143630
-    CDDSurface* MakeAndAddB(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x142e60
-    CDDSurface* CreateB(i32 a, i32 b, i32 c, i32 d, i32 e);     // 0x1423c0
+    void RemoveItemA(CDDSurface* item);                                      // 0x142160
+    CDDSurface* AcquireA(i32 a, i32 b);                                      // 0x143630
+    CDDSurface* MakeAndAddB(i32 a, i32 b, i32 c, i32 d, i32 e);              // 0x142e60
+    CDDSurface* CreateB(i32 a, i32 b, i32 c, i32 d, i32 e);                  // 0x1423c0
     i32 CreateModeSurface(i32 fmt, i32 fs, i32 w, i32 h, i32 bpp, i32 mode); // 0x141dc0
     CDDSurface* AttachMode(i32 mode);                                        // 0x142b70
     char _pad0[0x944];
@@ -102,7 +102,7 @@ struct CDDrawSurfaceMgr {
 
 class CDDrawSurfacePair : public CSurfacePairBase {
 public:
-    void BltSelf(CDDrawSurfacePair* src);     // 0x03a1d0
+    void BltSelf(CDDrawSurfacePair* src);      // 0x03a1d0
     virtual ~CDDrawSurfacePair();              // 0x1590f0
     i32 Create(i32 w, i32 h, i32 bpp, i32 a3); // 0x163c90  (vtable slot 12)
     i32 RestoreIfLost();                       // 0x163f00
@@ -114,7 +114,7 @@ public:
     // from mgr->m_34), then attach + validate it; on any failure stash a 0x80e9..ed
     // / 0xbb9 / 0xbba error in mgr->m_38.
     i32 directx_wrapper_caller_1644a0_DirectDrawCreate_DirectDrawEnumerateA(i32 w, i32 h, i32 bpp);
-    i32 Probe_164660();                        // 0x164660  (surface-lost probe)
+    i32 Probe_164660(); // 0x164660  (surface-lost probe)
 
     // --- layout (continues the base; base ends at +0x10) ----------------------
     i32 m_10;                   // +0x10  width

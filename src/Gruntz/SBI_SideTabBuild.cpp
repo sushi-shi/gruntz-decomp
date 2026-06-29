@@ -88,7 +88,7 @@ public:
     char m_pad1c[0x2c - 0x1c];
     CObList m_2c; // +0x2c  child list (sizeof CObList == 0x1c -> ends +0x48)
     char m_pad48[0x114 - 0x48];
-    i32 m_114[15]; // +0x114  per-slot key inputs
+    i32 m_114[15];      // +0x114  per-slot key inputs
     CSbItem* m_150[15]; // +0x150  built child slots
 };
 

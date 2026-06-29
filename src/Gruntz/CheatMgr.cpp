@@ -176,15 +176,21 @@ void CCheatMgr::LoadCheatConfig() {
             if (expMonth == 0 || expYear == 0 || expYear > now.wYear || expMonth > now.wMonth) {
                 if (g_buteMgr.Exists((char*)(const char*)group, s_Text)) {
                     if (g_buteMgr.GetIntDef((char*)(const char*)group, s_NonCheat, 0) == 1) {
-                        char* code = (char*)(const char*)*g_buteMgr.GetStringDef(
-                            (char*)(const char*)group, s_Text, &defStr
+                        char* code = (char*)(const char*)*g_buteMgr
+                                         .GetStringDef((char*)(const char*)group, s_Text, &defStr);
+                        AddCheat(
+                            code,
+                            g_buteMgr.GetIntDef((char*)(const char*)group, s_Value, 0x807b),
+                            1
                         );
-                        AddCheat(code, g_buteMgr.GetIntDef((char*)(const char*)group, s_Value, 0x807b), 1);
                     } else {
-                        char* code = (char*)(const char*)*g_buteMgr.GetStringDef(
-                            (char*)(const char*)group, s_Text, &defStr
+                        char* code = (char*)(const char*)*g_buteMgr
+                                         .GetStringDef((char*)(const char*)group, s_Text, &defStr);
+                        AddCheat(
+                            code,
+                            g_buteMgr.GetIntDef((char*)(const char*)group, s_Value, 0x807b),
+                            0
                         );
-                        AddCheat(code, g_buteMgr.GetIntDef((char*)(const char*)group, s_Value, 0x807b), 0);
                     }
                 }
             }
@@ -212,7 +218,8 @@ BOOL CCheatMgr::CheckCode(CString code) {
     }
 
     void* value = 0;
-    CheatEntry* found = (CheatEntry*)((m_map.Lookup((const char*)code, value) ? -1 : 0) & (i32)value);
+    CheatEntry* found =
+        (CheatEntry*)((m_map.Lookup((const char*)code, value) ? -1 : 0) & (i32)value);
     if (found != 0) {
         if (found->commandId > 0) {
             PostMessageA((HWND)m_count, 0x111, found->commandId, 0);

@@ -8,9 +8,9 @@
 
 struct GlyphTable {
     char pad0[0x10];
-    int m_10;            // +0x10 setter bias
+    int m_10; // +0x10 setter bias
     char pad14[0x1b0 - 0x14];
-    int m_1b0[128];      // +0x1b0
+    int m_1b0[128]; // +0x1b0
     int Get(int c);
     void Set(int v, int c);
 };

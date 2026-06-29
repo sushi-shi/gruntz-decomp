@@ -21,7 +21,9 @@ struct List {
     Node* First();
     void Remove(Node* n);
     void RemoveAll();
-    ~List() { RemoveAll(); }
+    ~List() {
+        RemoveAll();
+    }
 };
 struct Mgr18 {
     char pad0[0x6c];
@@ -37,9 +39,9 @@ class ClassUnknown_48 {
 public:
     int m_0; // 0x0
     char pad4[0x18 - 0x4];
-    int m_18; // 0x18
-    List m_1c; // 0x1c
-    List m_24; // 0x24
+    int m_18;    // 0x18
+    List m_1c;   // 0x1c
+    List m_24;   // 0x24
     Mgr2c* m_2c; // 0x2c
     ~ClassUnknown_48();
 };

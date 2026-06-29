@@ -98,9 +98,9 @@ i32 CImageState::LoadStateImages() {
 class CBootyState {
 public:
     i32 FadeInTitle(char* name, i32 a, i32 b, i32 c, i32 d, i32 e); // 0x0fa1f0
-    void ShowSecretBonusMessage();                                 // 0x0fa540
-    void ShowLevelCompleteMessage();                               // 0x0fa120
-    void RetireScene(i32 a, i32 b, i32 c, i32 d);                  // 0x0fa8f0
+    void ShowSecretBonusMessage();                                  // 0x0fa540
+    void ShowLevelCompleteMessage();                                // 0x0fa120
+    void RetireScene(i32 a, i32 b, i32 c, i32 d);                   // 0x0fa8f0
     i32 OnActivate2();
 
     char m_pad00[0x0c];

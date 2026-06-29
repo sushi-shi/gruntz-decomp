@@ -59,12 +59,15 @@ void BuildLevelTitleString(HWND hDlg, i32 bShow, CLevelInfo* lev) {
     char title[0x80];
     char readBuf[0x3843a];
 
-    if (!hDlg)
+    if (!hDlg) {
         return;
-    if (!bShow)
+    }
+    if (!bShow) {
         return;
-    if (!lev)
+    }
+    if (!lev) {
         return;
+    }
 
     // m_f8/m_fc are re-read at each use (not cached) to match retail's reloads.
     if (lev->m_f8 == 0 && lev->m_fc == 0) {
@@ -72,10 +75,12 @@ void BuildLevelTitleString(HWND hDlg, i32 bShow, CLevelInfo* lev) {
         // wsprintf full-expression so its construction is branch-conditional and
         // its destruction flag-guarded (the /GX temp).
         i32 n = lev->m_4;
-        wsprintfA(title, "Questz: Stage %d of %s",
-                  (n > 0x24 && n < 0x29) ? n - 0x24 : (n - 1) % 4 + 1,
-                  (n > 0x24 && n < 0x29) ? (const char*)CString("Training")
-                                         : g_areaNames[(n - 1) / 4]);
+        wsprintfA(
+            title,
+            "Questz: Stage %d of %s",
+            (n > 0x24 && n < 0x29) ? n - 0x24 : (n - 1) % 4 + 1,
+            (n > 0x24 && n < 0x29) ? (const char*)CString("Training") : g_areaNames[(n - 1) / 4]
+        );
     } else if (lev->m_f8 == 0) {
         // Battlez level (named).
         wsprintfA(title, "Battlez: %s", lev->m_75);
@@ -85,19 +90,22 @@ void BuildLevelTitleString(HWND hDlg, i32 bShow, CLevelInfo* lev) {
         // call with two literal pushes (boolarg-branch-push-not-sete).
         char* bs = strrchr(lev->m_75, '\\');
         if (bs != 0) {
-            if (lev->m_fc)
+            if (lev->m_fc) {
                 wsprintfA(title, "Custom Battlez Level: ");
-            else
+            } else {
                 wsprintfA(title, "Custom Questz Level: ");
+            }
             strcat(title, bs + 1);
             char* dot = strchr(title, '.');
-            if (dot != 0)
+            if (dot != 0) {
                 *dot = 0;
+            }
         } else {
-            if (lev->m_fc)
+            if (lev->m_fc) {
                 wsprintfA(title, "Custom Battlez Level");
-            else
+            } else {
                 wsprintfA(title, "Custom Questz Level");
+            }
         }
     }
 

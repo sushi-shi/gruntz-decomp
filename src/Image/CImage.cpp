@@ -332,8 +332,8 @@ i32 CImage::CopyFrom(CImage* other) {
 struct CImageReloadVtbl;
 class CImageReloadDispatch {
 public:
-    CImageReloadVtbl* vptr;       // +0x00
-    void FreeAllV();              // vtbl[0x1c] slot 7
+    CImageReloadVtbl* vptr;                   // +0x00
+    void FreeAllV();                          // vtbl[0x1c] slot 7
     i32 ResolveV(CImageSource* src, i32 arg); // vtbl[0x2c] slot 11
 };
 typedef void (CImageReloadDispatch::*FreeAllVFn)();

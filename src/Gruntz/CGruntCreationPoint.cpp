@@ -191,7 +191,8 @@ void CGruntCreationPoint::RegisterActs() {
         ((CActName*)slot)->Assign(s_actKeyA);
         g_nextActId++;
     }
-    ((CCreationPointActEntry*)g_creationPointActReg.ResolveEntry(id))->m_fn = &CGruntCreationPoint::AdvanceAnim;
+    ((CCreationPointActEntry*)g_creationPointActReg.ResolveEntry(id))->m_fn =
+        &CGruntCreationPoint::AdvanceAnim;
 }
 
 // CGruntCreationPoint::AdvanceAnim @0x03ecc0 - re-target the bound object's

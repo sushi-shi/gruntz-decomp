@@ -54,11 +54,11 @@ public:
 // ---------------------------------------------------------------------------
 struct CObject;
 struct CFrameArray {
-    void* m_vptr;     // +0x00  CObject vftable
-    i32** m_pData;    // +0x04  frame-pointer table
-    i32 m_nSize;      // +0x08  element count
-    i32 m_nMaxSize;   // +0x0c
-    i32 m_nGrowBy;    // +0x10
+    void* m_vptr;                                // +0x00  CObject vftable
+    i32** m_pData;                               // +0x04  frame-pointer table
+    i32 m_nSize;                                 // +0x08  element count
+    i32 m_nMaxSize;                              // +0x0c
+    i32 m_nGrowBy;                               // +0x10
     void SetAtGrow(i32 index, CObject* element); // 0x1b5822
 };
 
@@ -105,8 +105,8 @@ inline void CFrameWorker::Destroy(i32 flag) {
 
 struct CSprite {
     char m_pad00[0xc];
-    void* m_c;          // +0x0c  parent context handed to each frame worker
-    CFrameArray m_10;   // +0x10  frame CObArray (m_pData @+0x14, m_nSize @+0x18)
+    void* m_c;        // +0x0c  parent context handed to each frame worker
+    CFrameArray m_10; // +0x10  frame CObArray (m_pData @+0x14, m_nSize @+0x18)
     char m_pad24[0x64 - 0x24];
     i32 m_64; // +0x64  first valid frame number
     i32 m_68; // +0x68  last valid frame number
@@ -283,7 +283,14 @@ CSpriteFactory::CreateSprite(i32 kind, i32 geoB, i32 geoA, i32 hint, const char*
 // flags->ebx while MSVC5 picks this->ebx / flags->edi (6 reg-only instr diffs); the
 // instruction selection (PMF init call, m_7c dispatch) is exact, not source-steerable.
 RVA(0x00159830, 0x92)
-i32 CSpriteFactory::AttachSprite(CSprite2* obj, i32 a1, i32 a2, i32 a3, const char* name, i32 flags) {
+i32 CSpriteFactory::AttachSprite(
+    CSprite2* obj,
+    i32 a1,
+    i32 a2,
+    i32 a3,
+    const char* name,
+    i32 flags
+) {
     if (!obj) {
         return 0;
     }

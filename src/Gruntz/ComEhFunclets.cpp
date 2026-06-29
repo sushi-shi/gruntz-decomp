@@ -27,14 +27,14 @@ __declspec(naked) void Funclet_11ec59() {
 
 // Reloc-masked externs the catch funclets reference (call targets + the EH
 // continuation addresses, named by the delinker as DAT/LAB at parent code RVAs).
-extern "C" void Delete_1bfe15();          // 0x1bfe15
-extern "C" void AfxUnlockGlobals_1d4e45();// 0x1d4e45
-extern "C" void Throw_121ca0();           // 0x121ca0 (__CxxThrowException)
-extern "C" void Fn_1c0040();              // 0x1c0040
-extern "C" char Cont_1bef5f; // 0x5bef5f DAT_001bef5f
-extern "C" char Cont_1bc068; // 0x5bc068 DAT_001bc068
-extern "C" char Cont_1bb09c; // 0x5bb09c DAT_005bb09c
-extern "C" char Cont_1ca28e; // 0x5ca28e LAB_005ca28e
+extern "C" void Delete_1bfe15();           // 0x1bfe15
+extern "C" void AfxUnlockGlobals_1d4e45(); // 0x1d4e45
+extern "C" void Throw_121ca0();            // 0x121ca0 (__CxxThrowException)
+extern "C" void Fn_1c0040();               // 0x1c0040
+extern "C" char Cont_1bef5f;               // 0x5bef5f DAT_001bef5f
+extern "C" char Cont_1bc068;               // 0x5bc068 DAT_001bc068
+extern "C" char Cont_1bb09c;               // 0x5bb09c DAT_005bb09c
+extern "C" char Cont_1ca28e;               // 0x5ca28e LAB_005ca28e
 
 // catch funclet of parent FUN_005bef39's try/catch: destruct the caught local
 // ([ebp-0x18]) and resume at 0x5bef5f.

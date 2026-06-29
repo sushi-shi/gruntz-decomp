@@ -48,7 +48,7 @@ public:
 class CMenuSparkleBase {
 public:
     i32 BaseSerialize(CMsSerialArchive* arc, i32 mode, i32 a3, i32 a4); // 0x16e7f0
-    char m_00[0x34]; // +0x00..+0x33
+    char m_00[0x34];                                                    // +0x00..+0x33
 };
 
 class CMenuSparkle : public CMenuSparkleBase {

@@ -114,7 +114,8 @@ void CBehindCandyAni::RegisterActs() {
         ((CActName*)slot)->Assign(s_actKeyA);
         g_nextActId++;
     }
-    ((CBehindCandyActEntry*)g_behindCandyActReg.ResolveEntry(id))->m_fn = &CBehindCandyAni::AdvanceAnim;
+    ((CBehindCandyActEntry*)g_behindCandyActReg.ResolveEntry(id))->m_fn =
+        &CBehindCandyAni::AdvanceAnim;
 }
 
 // CBehindCandyAni::AdvanceAnim @0x0adbb0 - re-target the bound object's

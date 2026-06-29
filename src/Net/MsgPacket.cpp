@@ -7,11 +7,11 @@
 
 struct CMsgPacket {
     char m_pad0[8];
-    u8* m_8;   // +0x8   byte buffer
+    u8* m_8; // +0x8   byte buffer
     char m_padc[0x10 - 0xc];
-    i32 m_10;  // +0x10  write cursor
+    i32 m_10; // +0x10  write cursor
     char m_pad14[0x1c - 0x14];
-    i32 m_1c;  // +0x1c  populated flag
+    i32 m_1c; // +0x1c  populated flag
     char m_pad20[0x38 - 0x20];
 };
 

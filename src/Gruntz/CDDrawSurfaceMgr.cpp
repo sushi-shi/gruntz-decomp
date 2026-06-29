@@ -40,11 +40,11 @@ struct MinervaMgr; // defined below; m_28 points at one
 // EH frame. Placing it here also fixes the derived vtable layout: the dtor lands
 // at slot 1 and UnknownVirtualMethod14 (byte 0x14) at slot 5, etc.
 struct CDDrawSurfaceMgrBase {
-    virtual void V0();      // slot 0 (sub_1bef01)
+    virtual void V0();               // slot 0 (sub_1bef01)
     virtual ~CDDrawSurfaceMgrBase(); // slot 1 (scalar-deleting dtor)
-    virtual void V2();      // slot 2 (sub_0028ec)
-    virtual void V3();      // slot 3 (sub_00106e)
-    virtual void V4();      // slot 4 (sub_004034)
+    virtual void V2();               // slot 2 (sub_0028ec)
+    virtual void V3();               // slot 3 (sub_00106e)
+    virtual void V4();               // slot 4 (sub_004034)
 };
 inline CDDrawSurfaceMgrBase::~CDDrawSurfaceMgrBase() {}
 

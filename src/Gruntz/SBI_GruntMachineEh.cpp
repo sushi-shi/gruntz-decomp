@@ -25,7 +25,9 @@ struct CStatusBarItem {
     void DtorStatus(); // reloc-masked member teardown
     char m_pad[0x60 - 0x04];
 };
-inline CStatusBarItem::~CStatusBarItem() { DtorStatus(); }
+inline CStatusBarItem::~CStatusBarItem() {
+    DtorStatus();
+}
 
 struct CSBI_GruntMachine : CStatusBarItem {
     virtual ~CSBI_GruntMachine();

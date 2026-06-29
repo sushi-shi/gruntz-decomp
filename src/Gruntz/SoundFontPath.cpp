@@ -52,7 +52,7 @@ int InitKeys_f8ec0();
 namespace EngineLabelBacklog {
     // 0xf90f0 (via ILT thunk 0x3d32): OpenFile(OF_EXIST) probe.
     int Stub_0f90f0(char* szPath);
-}
+} // namespace EngineLabelBacklog
 
 RVA(0x000f8f30, 0x160)
 i32 BuildSoundFontPath(char drive) {

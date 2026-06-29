@@ -124,8 +124,8 @@ public:
     SoundChannelNew* CreateAmbient5_b7b0(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4);
     SoundChannelNew* CreatePos6_b850(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4);
     SoundChannelNew* CreatePos5_b960(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4);
-    SoundChannelNew* CreateRandom_bb60(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5,
-                                       i32 a6, i32 a7, i32 a8);
+    SoundChannelNew*
+    CreateRandom_bb60(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 a8);
 
     CRandomAmbientWorld* m_world; // +0x00
     void* m_04;                   // +0x04

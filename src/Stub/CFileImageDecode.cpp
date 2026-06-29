@@ -34,13 +34,13 @@ public:
     // The .BMP/.PCX/.PID format dispatcher (0x148940) + the per-format decoders
     // it forwards to (reloc-masked externals defined in cfileimage/image units).
     i32 LoadByExt(CFileImageInfo* info, char* path, i32 flags, i32 a4);
-    i32 LoadFile2(CFileImageInfo* info, const char* path, i32 flags);  // 0x143e60 .BMP
-    i32 LoadFile(CFileImageInfo* info, const char* path, i32 flags);   // 0x144d80 .PCX
-    i32 DecodePcxEx(char* a, char* b, void* c, void* d);               // 0x1459d0 .PID
-    void FillPalette(void* pal);                                       // 0x13eb40
+    i32 LoadFile2(CFileImageInfo* info, const char* path, i32 flags); // 0x143e60 .BMP
+    i32 LoadFile(CFileImageInfo* info, const char* path, i32 flags);  // 0x144d80 .PCX
+    i32 DecodePcxEx(char* a, char* b, void* c, void* d);              // 0x1459d0 .PID
+    void FillPalette(void* pal);                                      // 0x13eb40
 };
 // The engine's own strrchr / case-insensitive compare (cdecl C-linkage helpers).
-extern "C" char* RezStrrchr(const char* s, i32 c); // FUN_00120680 (_RezStrrchr)
+extern "C" char* RezStrrchr(const char* s, i32 c);       // FUN_00120680 (_RezStrrchr)
 extern "C" i32 RezStricmp(const char* a, const char* b); // FUN_0011fdf0 (_RezStricmp)
 
 // CFileImage::LoadByExt (0x148940) - load an image by inspecting its file

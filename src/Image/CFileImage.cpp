@@ -145,8 +145,8 @@ void CFileImage::FlipVertical() {
 // (the worker gets `this` both in ecx and pushed) which has no clean /O2 source
 // spelling. Deferred to the final sweep.
 RVA(0x00141280, 0x4a)
-void CFileImage::DecodeThunk(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 r0, i32 r1,
-                            i32 r2, i32 r3) {
+void CFileImage::
+    DecodeThunk(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 r0, i32 r1, i32 r2, i32 r3) {
     ClipRect16 clip;
     clip.a = r0;
     clip.b = r1;
@@ -262,7 +262,7 @@ i32 CFileImage::LoadFile2(CFileImageInfo* info, const char* path, i32 mode) {
 // A BMP RGBQUAD palette entry + the on-stack 14-byte BITMAPFILEHEADER the export
 // builds (the 2-byte "BM" magic is strcpy'd from g_imageTag, then bfSize / bfOffBits).
 struct BmpFileHeader {
-    char magic[2];   // +0x00  "BM"
+    char magic[2]; // +0x00  "BM"
     char _02[0x06 - 0x02];
     u32 bfSize;    // +0x06  (width*0x28 + 0x436)
     u32 _0a;       // +0x0a
@@ -378,10 +378,10 @@ i32 CFileImage::SaveBmp(const char* path, void* pal, i32 mode) {
 struct TgaHeader {
     char magic[2]; // +0x00
     char _02[0x06 - 0x02];
-    u32 size;      // +0x06  (width*height*3 + 0x3a)
+    u32 size; // +0x06  (width*height*3 + 0x3a)
     char _0a[0x10 - 0x0a];
-    i16 planes;    // +0x10
-    i16 bitCount;  // +0x12
+    i16 planes;   // +0x10
+    i16 bitCount; // +0x12
 };
 
 // ---------------------------------------------------------------------------

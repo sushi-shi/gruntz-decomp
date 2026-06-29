@@ -73,7 +73,7 @@ struct CLightVtbl {
 
 // The strike-clock + threshold globals the timer windows poll.
 DATA(0x00245588)
-extern i32 g_strikeClock; // 0x645588 (the draw-clock; also g_pathLegTag)
+extern i32 g_strikeClock;  // 0x645588 (the draw-clock; also g_pathLegTag)
 extern i32 g_strikeThresh; // 0x645598 (compared to 0x64)
 
 // g_gameReg's +0x78 ref-index table (the strike sprite-frame selectors) and the

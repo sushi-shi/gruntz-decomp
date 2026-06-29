@@ -77,7 +77,7 @@ static const char s_extPal[] = ".PAL";
 
 // The process-wide DirectDraw object + the CDirectDrawMgr singleton (.data).
 DATA(0x00283ee8)
-extern "C" IDirectDraw2Z* g_DirectDraw; // 0x683ee8
+extern "C" IDirectDraw2Z* g_DirectDraw;     // 0x683ee8
 extern "C" CDirectDrawMgr* g_DirectDrawMgr; // 0x6bed00
 
 // ===========================================================================

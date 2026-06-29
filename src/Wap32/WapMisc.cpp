@@ -20,7 +20,7 @@ void CStamp11d100::Stamp() {
 
 // --- 0x1c7e6d : CView-derived dtor (vptr reset + tail-jmp base ~CView) --------
 extern void* const Vtbl_5ed854;
-extern "C" void DtorCView_1c8e3a();   // 0x1c8e3a ~CView
+extern "C" void DtorCView_1c8e3a(); // 0x1c8e3a ~CView
 RVA(0x001c7e6d, 0xb)
 __declspec(naked) void Dtor_1c7e6d() {
     __asm {
@@ -31,9 +31,9 @@ __declspec(naked) void Dtor_1c7e6d() {
 
 // --- 0x1155b0 : forward to a g_largeFont method ------------------------------
 struct Font {
-    void Method_179700();             // 0x179700
+    void Method_179700(); // 0x179700
 };
-extern Font g_largeFont;              // ?g_largeFont@@3VFont@@A (0x64eac0)
+extern Font g_largeFont; // ?g_largeFont@@3VFont@@A (0x64eac0)
 RVA(0x001155b0, 0xa)
 void Unmatched_1155b0() {
     g_largeFont.Method_179700();
@@ -41,7 +41,7 @@ void Unmatched_1155b0() {
 
 // --- 0x1bae5d : forward (-1) to a global CWnd-like method --------------------
 struct WndLike {
-    void Method_1baf15(int);          // 0x1baf15
+    void Method_1baf15(int); // 0x1baf15
 };
 extern WndLike g_652e80;
 RVA(0x001bae5d, 0xd)
@@ -51,7 +51,7 @@ void Unmatched_1bae5d() {
 
 // --- 0xc76d0 : forward (0x7d0,0x7da) to a global object's method -------------
 struct Obj64bf00 {
-    void Method_8710(int, int);       // 0x8710
+    void Method_8710(int, int); // 0x8710
 };
 extern Obj64bf00 g_64bf00;
 RVA(0x000c76d0, 0x15)

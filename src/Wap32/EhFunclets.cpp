@@ -9,22 +9,22 @@
 #include <rva.h>
 
 extern "C" {
-// The shared CObject-style delete helper (0x1bfe15, __thiscall, ecx=this).
-void EhObjDelete();
-// Per-funclet engine callees reached by the catch/unwind code (reloc-masked).
-void EhHelper1b9b32();
-void EhHelper121ca0();
-void EhHelper1bb2b7();
-void EhHelper1c013b();
-// The SetEvent IAT slot the connect-wait funclet pokes (reloc-masked DIR32).
-void* g_ehSetEvent;
-// Mid-parent continuation addresses (reloc-masked DATA externs).
-char g_ehCont_11ec54;
-char g_ehCont_1ca0cc;
-char g_ehCont_1baae7;
-char g_ehCont_1c119f;
-char g_ehCont_1bd9ad;
-char g_ehCont_1bffc3;
+    // The shared CObject-style delete helper (0x1bfe15, __thiscall, ecx=this).
+    void EhObjDelete();
+    // Per-funclet engine callees reached by the catch/unwind code (reloc-masked).
+    void EhHelper1b9b32();
+    void EhHelper121ca0();
+    void EhHelper1bb2b7();
+    void EhHelper1c013b();
+    // The SetEvent IAT slot the connect-wait funclet pokes (reloc-masked DIR32).
+    void* g_ehSetEvent;
+    // Mid-parent continuation addresses (reloc-masked DATA externs).
+    char g_ehCont_11ec54;
+    char g_ehCont_1ca0cc;
+    char g_ehCont_1baae7;
+    char g_ehCont_1c119f;
+    char g_ehCont_1bd9ad;
+    char g_ehCont_1bffc3;
 }
 
 // 0x11ec46 - destroy a local (ebp-0x14), resume.

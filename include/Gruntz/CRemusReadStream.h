@@ -18,9 +18,9 @@
 // mapping pointer (0 when not mapped). External shape, accessed by offset.
 struct RemusMappedSource {
     char pad_00[0x0c];
-    i32 m_0c;  // +0x0c base offset
+    i32 m_0c; // +0x0c base offset
     char pad_10[0x48 - 0x10];
-    i32 m_48;  // +0x48 mapping base (0 = inactive)
+    i32 m_48; // +0x48 mapping base (0 = inactive)
 };
 
 // The +0x34 virtual reader: its vtable slot 2 (+0x08) is Read(base, pos, len,
@@ -45,16 +45,16 @@ public:
     i32 ReadAt(void* dst, i32 pos, u32 len);
     i32 Read(void* dst, u32 len, i32 seekPos);
 
-    char* m_00;             // +0x00 source name
-    void* m_04;             // +0x04 keyed-store entry
-    i32 m_08;               // +0x08
-    u32 m_0c;               // +0x0c byte limit
+    char* m_00;              // +0x00 source name
+    void* m_04;              // +0x04 keyed-store entry
+    i32 m_08;                // +0x08
+    u32 m_0c;                // +0x0c byte limit
     RemusMappedSource* m_10; // +0x10 mapped source
-    i32 m_14;               // +0x14 source base ptr
-    i32 m_18;               // +0x18 read cursor
+    i32 m_14;                // +0x14 source base ptr
+    i32 m_18;                // +0x18 read cursor
     char pad_1c[0x34 - 0x1c];
-    RemusVReader* m_34;     // +0x34 virtual reader
-    i32 m_38;               // +0x38 inline byte buffer
+    RemusVReader* m_34; // +0x34 virtual reader
+    i32 m_38;           // +0x38 inline byte buffer
 };
 
 #endif // GRUNTZ_CREMUSREADSTREAM_H

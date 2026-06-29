@@ -30,7 +30,9 @@ struct CHashTail {
 DATA(0x002bf848)
 extern CHashTail g_hash184b70; // 0x6bf848
 RVA(0x00184b70, 0xa)
-void ClearHash_184b70() { g_hash184b70.Clear(); }
+void ClearHash_184b70() {
+    g_hash184b70.Clear();
+}
 
 // ---------------------------------------------------------------------------
 // 0x133370 - DirectInput device-config grand-base dtor: stamp the C-level vftable
@@ -61,7 +63,7 @@ struct C1396f0 {
     void* volatile m_1c; // +0x1c
     i32 _20[(0x30 - 0x20) / 4];
     void* volatile m_30; // +0x30 (0 then self; volatile pins the dead store + order)
-    i32 m_34;   // +0x34
+    i32 m_34;            // +0x34
     C1396f0* Init();
 };
 RVA(0x001396f0, 0x1a)
@@ -81,12 +83,13 @@ C1396f0* C1396f0::Init() {
 // and return 0. __cdecl.
 // ---------------------------------------------------------------------------
 DATA(0x00283edc)
-extern i32 (*g_restoreHandler)(); // 0x683edc
+extern i32 (*g_restoreHandler)();             // 0x683edc
 extern void __cdecl DDrawLogLine(char* line); // 0x141cb0
 RVA(0x001437f0, 0x1b)
 i32 RestoreLostSurfaces_1437f0() {
-    if (g_restoreHandler)
+    if (g_restoreHandler) {
         return g_restoreHandler();
+    }
     DDrawLogLine("WARNING - Surface(s) lost but no restore handler is available\n");
     return 0;
 }
@@ -201,29 +204,30 @@ struct DDPageArr {
     void RemoveAt(i32, i32); // 0x1b4bad
 };
 struct CDDPageMgr {
-    i32 m_0; // +0x00
-    i32 m_4; // +0x04
-    i32 m_8; // +0x08
-    i32 m_c; // +0x0c
-    i32 m_10; // +0x10
-    u32 m_14; // +0x14
-    i32 m_18[0x43]; // +0x18 .. +0x123
+    i32 m_0;         // +0x00
+    i32 m_4;         // +0x04
+    i32 m_8;         // +0x08
+    i32 m_c;         // +0x0c
+    i32 m_10;        // +0x10
+    u32 m_14;        // +0x14
+    i32 m_18[0x43];  // +0x18 .. +0x123
     DDPageSub m_124; // +0x124
-    i32 m_128; // +0x128
+    i32 m_128;       // +0x128
     i32 _12c[(0x134 - 0x12c) / 4];
-    i32 m_134; // +0x134
+    i32 m_134;       // +0x134
     DDPageArr m_138; // +0x138
-    i32* m_13c; // +0x13c
-    i32 Init();        // 0x17b510
-    void Close();      // 0x17b570
-    i32 Free();        // 0x17b5a0
-    i32 Lookup(u32);   // 0x17b840
+    i32* m_13c;      // +0x13c
+    i32 Init();      // 0x17b510
+    void Close();    // 0x17b570
+    i32 Free();      // 0x17b5a0
+    i32 Lookup(u32); // 0x17b840
 };
 
 RVA(0x0017b510, 0x55)
 i32 CDDPageMgr::Init() {
-    if (m_0)
+    if (m_0) {
         return 0;
+    }
     m_4 = 0;
     m_8 = 0;
     m_138.RemoveAt(0, -1);
@@ -236,8 +240,9 @@ i32 CDDPageMgr::Init() {
 
 RVA(0x0017b570, 0x24)
 void CDDPageMgr::Close() {
-    if (!m_0)
+    if (!m_0) {
         return;
+    }
     Free();
     m_138.RemoveAt(0, -1);
     m_0 = 0;
@@ -259,8 +264,9 @@ RVA(0x0017b840, 0x53)
 i32 CDDPageMgr::Lookup(u32 idx) {
     if (m_4 && m_0 && idx <= m_14 && idx != 0) {
         i32* slot = &m_13c[idx - 1];
-        if (m_124.v12(*slot, 0) == *slot)
+        if (m_124.v12(*slot, 0) == *slot) {
             return m_128;
+        }
     }
     return 0;
 }
@@ -272,10 +278,10 @@ i32 CDDPageMgr::Lookup(u32 idx) {
 // ---------------------------------------------------------------------------
 struct CImgArg {
     i32 _0[0x44c / 4];
-    i32 m_44c; // +0x44c
-    i32 _450;  // +0x450
-    i32 m_454; // +0x454
-    i32 m_458; // +0x458
+    i32 m_44c;        // +0x44c
+    i32 _450;         // +0x450
+    i32 m_454;        // +0x454
+    i32 m_458;        // +0x458
     void X(i32, i32); // 0x176ad0
     void D();         // 0x175c90
 };
@@ -283,22 +289,24 @@ struct CImgSub10 {
     void Add(i32); // 0x1b4ac7
 };
 struct CImgOwner {
-    i32 _0[4];      // +0x00 .. +0x0c
-    CImgSub10 m_10; // +0x10
+    i32 _0[4];                  // +0x00 .. +0x0c
+    CImgSub10 m_10;             // +0x10
     void A(i32);                // 0x174f30
     void B(CImgArg*, i32, i32); // 0x175780
     void Free(CImgArg*);        // 0x174ed0
 };
 RVA(0x00174ed0, 0x5d)
 void CImgOwner::Free(CImgArg* o) {
-    if (!o)
+    if (!o) {
         return;
+    }
     if (o->m_458 && o->m_454) {
         A(o->m_458);
         B(0, 0, 0);
     }
-    if (o->m_44c)
+    if (o->m_44c) {
         m_10.Add(o->m_44c);
+    }
     o->D();
     RezFree(o);
 }
@@ -335,10 +343,12 @@ struct SndDevice {
 };
 RVA(0x00137200, 0x53)
 i32 SndDevice::Restore() {
-    if (!m_78)
+    if (!m_78) {
         return 0;
-    if (!Probe())
+    }
+    if (!Probe()) {
         return 0;
+    }
     i32 ok = m_84->vtbl->Restore(m_84, 0, 0, 1) != 0;
     if (ok) {
         SndErr("C:\\Proj\\Dsndmgr\\DSNDMGR.CPP", 0x68b, ok);
@@ -364,19 +374,24 @@ i32 Thunk13ba70() {
 // ---------------------------------------------------------------------------
 RVA(0x0013b910, 0x58)
 u32 __stdcall PackTag_13b910(const char* s) {
-    if (!s)
+    if (!s) {
         return 0;
+    }
     u32 r = 0;
     u8* rb = (u8*)&r;
     i32 len = (i32)strlen(s);
-    if (len > 0)
+    if (len > 0) {
         rb[len - 1] = s[0];
-    if (len > 1)
+    }
+    if (len > 1) {
         rb[len - 2] = s[1];
-    if (len > 2)
+    }
+    if (len > 2) {
         rb[len - 3] = s[2];
-    if (len > 3)
+    }
+    if (len > 3) {
         rb[len - 4] = s[3];
+    }
     return r;
 }
 
@@ -386,26 +401,32 @@ u32 __stdcall PackTag_13b910(const char* s) {
 // ---------------------------------------------------------------------------
 RVA(0x0013b970, 0x72)
 void __stdcall UnpackTag_13b970(u32 tag, char* dst) {
-    if (!dst)
+    if (!dst) {
         return;
+    }
     u8* tb = (u8*)&tag;
     i32 len = 0;
-    if (tb[3])
+    if (tb[3]) {
         len = 4;
-    else if (tb[2])
+    } else if (tb[2]) {
         len = 3;
-    else if (tb[1])
+    } else if (tb[1]) {
         len = 2;
-    else if (tb[0])
+    } else if (tb[0]) {
         len = 1;
-    if (len > 0)
+    }
+    if (len > 0) {
         dst[0] = tb[len - 1];
-    if (len > 1)
+    }
+    if (len > 1) {
         dst[1] = tb[len - 2];
-    if (len > 2)
+    }
+    if (len > 2) {
         dst[2] = tb[len - 3];
-    if (len > 3)
+    }
+    if (len > 3) {
         dst[3] = tb[len - 4];
+    }
     dst[len] = 0;
 }
 
@@ -427,15 +448,17 @@ struct CDDSurf13e7d0 {
 };
 RVA(0x0013e7d0, 0x73)
 i32 CDDSurf13e7d0::Restore(void* arg1, i32 arg2) {
-    if (!arg1)
+    if (!arg1) {
         return 0;
+    }
     RestoreDesc d;
     memset(&d, 0, sizeof(d));
     d.size = 0x64;
     d.m_50 = arg2;
     i32 hr = H(arg1, 0, 0, 0x1000400, &d);
-    if (hr)
+    if (hr) {
         DirSurfLog("C:\\Proj\\DDrawMgr\\DIRSURF.CPP", 0x26d, hr);
+    }
     return hr == 0;
 }
 
@@ -472,7 +495,7 @@ struct Node38 {
     void Cleanup();          // 0x147530
 };
 struct CNodeFactory {
-    i32 m_0; // +0x00
+    i32 m_0;           // +0x00
     void Add(Node38*); // 0x142eb0
     Node38* Create(i32 a, i32 b);
 };
@@ -521,18 +544,18 @@ struct WwdGridHolder {
     WwdGridLim* m_10; // +0x10
 };
 struct WwdCtx {
-    i32 _0[1];      // +0x00
-    WwdGridHolder* m_4;  // +0x04
+    i32 _0[1];          // +0x00
+    WwdGridHolder* m_4; // +0x04
     i32 _8[(0x24 - 0x8) / 4];
-    WwdCamHolder* m_24;  // +0x24
+    WwdCamHolder* m_24; // +0x24
 };
 struct CWwdObj1509 {
-    i32 _0[2];      // +0x00
-    u32 m_8;        // +0x08 flags
-    WwdCtx* m_c;    // +0x0c
+    i32 _0[2];   // +0x00
+    u32 m_8;     // +0x08 flags
+    WwdCtx* m_c; // +0x0c
     i32 _10[(0x5c - 0x10) / 4];
-    i32 m_5c;       // +0x5c
-    i32 m_60;       // +0x60
+    i32 m_5c; // +0x5c
+    i32 m_60; // +0x60
     i32 _64[(0x198 - 0x64) / 4];
     WwdExtent* m_198; // +0x198
     i32 Test();
@@ -546,29 +569,36 @@ struct CWwdObj1509 {
 RVA(0x001509c0, 0xab)
 i32 CWwdObj1509::Test() {
     WwdExtent* e = m_198;
-    if (!e)
+    if (!e) {
         return 0;
+    }
     i32 right = m_5c + e->m_18;
     i32 left = m_5c - e->m_18;
     i32 top = m_60 - e->m_1c;
     i32 bottom = m_60 + e->m_1c;
     if (m_8 & 0x40000) {
         WwdCamRect* r = (WwdCamRect*)(m_c->m_24->m_5c + 0x40);
-        if (right < r->a)
+        if (right < r->a) {
             return 0;
-        if (left > r->c)
+        }
+        if (left > r->c) {
             return 0;
-        if (bottom < r->b)
+        }
+        if (bottom < r->b) {
             return 0;
+        }
         return top <= r->d;
     } else {
         WwdGridLim* g = m_c->m_4->m_10;
-        if (right < 0)
+        if (right < 0) {
             return 0;
-        if (left >= g->m_10)
+        }
+        if (left >= g->m_10) {
             return 0;
-        if (bottom < 0)
+        }
+        if (bottom < 0) {
             return 0;
+        }
         return top < g->m_14;
     }
 }
@@ -587,17 +617,20 @@ extern i32 __stdcall Probe1638c0(void* p); // 0x1638c0
 // them (78%); the 2-case ladder is closest. Logic complete.
 RVA(0x00163710, 0x42)
 i32 __stdcall Dispatch163710(void* p, i32 kind, i32, i32) {
-    if (!p)
+    if (!p) {
         return 0;
+    }
     switch (kind) {
-    case 4:
-        if (!Probe163780(p))
-            return 0;
-        break;
-    case 7:
-        if (!Probe1638c0(p))
-            return 0;
-        break;
+        case 4:
+            if (!Probe163780(p)) {
+                return 0;
+            }
+            break;
+        case 7:
+            if (!Probe1638c0(p)) {
+                return 0;
+            }
+            break;
     }
     return 1;
 }
@@ -613,9 +646,9 @@ struct SymHelper24 {
 };
 struct SymEntry2 {
     i32 _0[0xc / 4];
-    i32 m_c;  // +0x0c span
+    i32 m_c; // +0x0c span
     i32 _10[(0x1c - 0x10) / 4];
-    i32 m_1c; // +0x1c
+    i32 m_1c;        // +0x1c
     void Teardown(); // 0x1397a0
 };
 struct SymEntry1 {
@@ -624,13 +657,13 @@ struct SymEntry1 {
 };
 struct SymList18 {
     i32 _0[2];
-    i32 m_8; // +0x08
+    i32 m_8;            // +0x08
     void Drop(void* p); // 0x13c210
 };
 struct CSymTab13a530 {
     i32 _0[4];
-    i32 m_10; // +0x10
-    i32 _14;  // +0x14
+    i32 m_10;        // +0x10
+    i32 _14;         // +0x14
     SymList18* m_18; // +0x18
     i32 Remove(SymEntry1* a1, SymEntry2* a2);
 };
@@ -653,7 +686,9 @@ struct DBuf17e230 {
     ~DBuf17e230(); // 0x1b9cde
 };
 RVA(0x0017e230, 0xc)
-void __stdcall Destroy17e230(DBuf17e230 b) { (void)b; }
+void __stdcall Destroy17e230(DBuf17e230 b) {
+    (void)b;
+}
 
 // ---------------------------------------------------------------------------
 // 0x143950 - CDDrawPtrCollections palette upload: copy a 256-entry RGB triplet
@@ -674,8 +709,9 @@ struct CPalObj143950 {
 // mirror register assignment. Loop logic complete.
 RVA(0x00143950, 0x56)
 i32 CPalObj143950::SetPalette(const u8* src, i32 tag) {
-    if (!src)
+    if (!src) {
         return 0;
+    }
     u8* dst = m_pal[0];
     for (i32 i = 0; i < 256; i++) {
         dst[0] = src[0];
@@ -711,7 +747,7 @@ struct ImgOwnedX {
     virtual void v9();
     virtual void Commit(); // slot 10 (+0x28)
     i32 _4[(0x10 - 0x4) / 4];
-    Blk6c m_10; // +0x10
+    Blk6c m_10;                           // +0x10
     i32 Apply(i32 mode, const void* src); // 0x13e0a0
     i32 Setup(i32 a1, i32 a2, i32 a3, i32 a4);
 };
@@ -722,8 +758,9 @@ i32 ImgOwnedX::Setup(i32 a1, i32 a2, i32 a3, i32 a4) {
     m_10.d[0x1a] = a2 | 0x200;
     m_10.d[1] = a3;
     m_10.d[5] = a4;
-    if (!Apply(a1, 0))
+    if (!Apply(a1, 0)) {
         return 0;
+    }
     Commit();
     return 1;
 }

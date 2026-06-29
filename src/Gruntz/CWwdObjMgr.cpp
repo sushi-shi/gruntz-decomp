@@ -65,7 +65,7 @@ struct WwdStrResolve {
 // BuildChild spawns a sub-record for the object. External, reloc-masked.
 struct WwdFile {
     char m_pad0[0x14];
-    char* m_14;                                                     // +0x14
+    char* m_14;                                                      // +0x14
     i32 BuildChild(void* reader, i32 tag, i32 selector, void** out); // 0x156a90
 };
 
@@ -137,8 +137,14 @@ i32 CWwdObjMgr::LoadObjects(WwdReader* reader, u32 count, i32 unused) {
                 void* val;
                 ((WwdStrResolve*)(m_0c->m_14 + 0x10))->Resolve(desc.m_14, &val);
                 if (val != 0) {
-                    createdObj =
-                        CreateObject_159600(desc.m_00, desc.m_94, desc.m_98, desc.m_9c, (i32)val, 0);
+                    createdObj = CreateObject_159600(
+                        desc.m_00,
+                        desc.m_94,
+                        desc.m_98,
+                        desc.m_9c,
+                        (i32)val,
+                        0
+                    );
                 }
                 break;
             }
@@ -152,8 +158,14 @@ i32 CWwdObjMgr::LoadObjects(WwdReader* reader, u32 count, i32 unused) {
                 void* val;
                 ((WwdStrResolve*)(m_0c->m_14 + 0x10))->Resolve(desc.m_14, &val);
                 if (val != 0) {
-                    createdObj =
-                        CreateObject_1598d0(desc.m_00, desc.m_94, desc.m_98, desc.m_9c, (i32)val, 0);
+                    createdObj = CreateObject_1598d0(
+                        desc.m_00,
+                        desc.m_94,
+                        desc.m_98,
+                        desc.m_9c,
+                        (i32)val,
+                        0
+                    );
                 }
                 break;
             }

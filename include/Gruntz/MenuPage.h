@@ -140,12 +140,12 @@ public:
     // 0x74-item factories (derived item @0x5f08f8) - mirror AddItem/AddSubItem:
     CMenuItem2* AddItem2(i32, i32, i32, i32, i32);                   // 0x1836f0
     CMenuItem2* AddSubItem2(i32, i32, i32, i32, i32, i32, i32, i32); // 0x183850
-    i32 Switch(i32 refocus);                   // 0x183df0  host SwitchToPage + refocus
-    i32 CanWrap();                             // 0x183e30  focus-wrap gate
-    i32 FocusForwardN();                       // 0x183f70  step focus +m_50 nodes
-    i32 FocusBackwardN();                      // 0x183ff0  step focus -m_50 nodes
-    i32 SelectFwd2();                          // 0x184230  /GX  m_64 GetKey1 -> FindByName
-    i32 SelectBack2();                         // 0x184310  /GX  m_64 GetKey2 -> FindByName
+    i32 Switch(i32 refocus); // 0x183df0  host SwitchToPage + refocus
+    i32 CanWrap();           // 0x183e30  focus-wrap gate
+    i32 FocusForwardN();     // 0x183f70  step focus +m_50 nodes
+    i32 FocusBackwardN();    // 0x183ff0  step focus -m_50 nodes
+    i32 SelectFwd2();        // 0x184230  /GX  m_64 GetKey1 -> FindByName
+    i32 SelectBack2();       // 0x184310  /GX  m_64 GetKey2 -> FindByName
 
     void* m_0;
     void* m_4;

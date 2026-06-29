@@ -13,15 +13,18 @@ extern const double c_acosNorm; // 0x5ef6b0  == 2
 
 RVA(0x00135110, 0x8e)
 i32 ComputeCmdPercent(i32 v) {
-    if (v == 0)
+    if (v == 0) {
         return 100;
+    }
     double d;
-    if (v < 0)
+    if (v < 0) {
         d = (double)(-v / 100);
-    else
+    } else {
         d = (double)(v / 100);
+    }
     double r = c_volScale - (c_volNum - pow(c_acosNorm, -d / c_powExp)) * c_volScale;
-    if (v < 0)
+    if (v < 0) {
         return (i32)r;
+    }
     return (i32)(-r);
 }

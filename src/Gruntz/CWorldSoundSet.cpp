@@ -321,8 +321,8 @@ SoundChannelNew* CWorldSoundSet::CreatePos5_b960(i32 a0, i32 a1, i32 a2, i32 a3,
 
 // CRandomAmbientSound (0x58): 5-arg Init then an ungated 4-arg Init2.
 RVA(0x0000bb60, 0x9b)
-SoundChannelNew* CWorldSoundSet::CreateRandom_bb60(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5,
-                                                   i32 a6, i32 a7, i32 a8) {
+SoundChannelNew* CWorldSoundSet::
+    CreateRandom_bb60(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 a8) {
     char* raw = (char*)RezAlloc(0x58);
     SoundChannelNew* obj;
     if (raw != 0) {

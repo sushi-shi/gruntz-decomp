@@ -102,23 +102,33 @@ void ClassUnknown_45::ClassUnknown_45_08c3b0() {}
 
 // ---- ClassUnknown_50 ----
 RVA(0x0016dfc0, 0x7)
-void ClassUnknown_50::ClassUnknown_50_16dfc0() { *(void**)this = &g_vtbl5f04d8; }
+void ClassUnknown_50::ClassUnknown_50_16dfc0() {
+    *(void**)this = &g_vtbl5f04d8;
+}
 
 // ---- ClassUnknown_51 ----
 RVA(0x0011eaf5, 0x7)
-void ClassUnknown_51::ClassUnknown_51_11eaf5() { *(void**)this = &g_severusWorkerDtorVtbl; }
+void ClassUnknown_51::ClassUnknown_51_11eaf5() {
+    *(void**)this = &g_severusWorkerDtorVtbl;
+}
 
 // ---- ClassUnknown_52 ----
 RVA(0x0011eaa8, 0x7)
-void ClassUnknown_52::ClassUnknown_52_11eaa8() { *(void**)this = &g_severusWorkerDtorVtbl; }
+void ClassUnknown_52::ClassUnknown_52_11eaa8() {
+    *(void**)this = &g_severusWorkerDtorVtbl;
+}
 
 // ---- ClassUnknown_53 ----
 RVA(0x0011cf30, 0x7)
-void ClassUnknown_53::ClassUnknown_53_11cf30() { *(void**)this = &g_severusWorkerDtorVtbl; }
+void ClassUnknown_53::ClassUnknown_53_11cf30() {
+    *(void**)this = &g_severusWorkerDtorVtbl;
+}
 
 // ---- ClassUnknown_54 ----
 RVA(0x0011cee3, 0x7)
-void ClassUnknown_54::ClassUnknown_54_11cee3() { *(void**)this = &g_severusWorkerDtorVtbl; }
+void ClassUnknown_54::ClassUnknown_54_11cee3() {
+    *(void**)this = &g_severusWorkerDtorVtbl;
+}
 
 // ---- ClassUnknown_55 ----
 RVA(0x00016460, 0x46)

@@ -30,15 +30,19 @@ i32 CRemusReadStream::GetEntryTag() {
 // ===========================================================================
 RVA(0x00139960, 0x6b)
 i32 CRemusReadStream::BeginParse() {
-    if (m_10->m_48 != 0)
+    if (m_10->m_48 != 0) {
         return m_14 - m_10->m_0c + m_10->m_48;
-    if (m_38 != 0)
+    }
+    if (m_38 != 0) {
         return m_38;
-    if (m_0c == 0)
+    }
+    if (m_0c == 0) {
         return 0;
+    }
     m_38 = (i32)RezAlloc(m_0c);
-    if (m_38 == 0)
+    if (m_38 == 0) {
         return 0;
+    }
     if (m_34->Read(m_14, 0, m_0c, (void*)m_38) != (i32)m_0c) {
         RezFree((void*)m_38);
         m_38 = 0;
@@ -103,13 +107,15 @@ i32 CRemusReadStream::SetPos(i32 pos) {
 // check. Not source-steerable. ~89%; SetPos is 100%.
 RVA(0x00139af0, 0xcc)
 i32 CRemusReadStream::Read(void* dst, u32 len, i32 seekPos) {
-    if (seekPos != -1)
+    if (seekPos != -1) {
         SetPos(seekPos);
+    }
 
     u32 pos = (u32)m_18;
     u32 want = len;
-    if (pos + want > m_0c)
+    if (pos + want > m_0c) {
         want = m_0c - pos;
+    }
     if (want != 0) {
         RemusMappedSource* sd = m_10;
         if (sd->m_48) {

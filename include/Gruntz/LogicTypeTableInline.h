@@ -30,15 +30,15 @@ extern "C" {
 // at vtable slot +0x24.
 class CLogicTypeReg {
 public:
-    virtual void v00(); // +0x00
-    virtual void v04(); // +0x04
-    virtual void v08(); // +0x08
-    virtual void v0c(); // +0x0c
-    virtual void v10(); // +0x10
-    virtual void v14(); // +0x14
-    virtual void v18(); // +0x18
-    virtual void v1c(); // +0x1c
-    virtual void v20(); // +0x20
+    virtual void v00();                                                     // +0x00
+    virtual void v04();                                                     // +0x04
+    virtual void v08();                                                     // +0x08
+    virtual void v0c();                                                     // +0x0c
+    virtual void v10();                                                     // +0x10
+    virtual void v14();                                                     // +0x14
+    virtual void v18();                                                     // +0x18
+    virtual void v1c();                                                     // +0x1c
+    virtual void v20();                                                     // +0x20
     virtual void RegisterType(void* factoryFn, const char* key, i32 flags); // +0x24
 
     i32 Find(const char* key); // 0x1703 thunk (__thiscall, returns found type or 0)

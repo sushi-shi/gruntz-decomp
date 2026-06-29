@@ -76,8 +76,9 @@ i32 RotateRasterize(
         ClipVtx* cur = verts;
         i32 j = n;
         do {
-            if (prev->x >= bound0)
+            if (prev->x >= bound0) {
                 *out++ = *prev;
+            }
             if ((prev->x >= bound0) != (cur->x >= bound0)) {
                 float t = (bound0 - prev->x) / (cur->x - prev->x);
                 out->x = bound0;
@@ -91,8 +92,9 @@ i32 RotateRasterize(
         } while (--j);
     }
     n = (i32)(out - g_clipA);
-    if (n == 0)
+    if (n == 0) {
         return 0;
+    }
 
     // Pass 2: clip x < clip0   (g_clipA -> g_clipB)
     out = g_clipB;
@@ -101,8 +103,9 @@ i32 RotateRasterize(
         ClipVtx* cur = g_clipA;
         i32 j = n;
         do {
-            if (cur->x < clip0)
+            if (cur->x < clip0) {
                 *out++ = *cur;
+            }
             if ((cur->x < clip0) != (prev->x < clip0)) {
                 float t = (clip0 - cur->x) / (prev->x - cur->x);
                 out->x = clip0;
@@ -116,8 +119,9 @@ i32 RotateRasterize(
         } while (--j);
     }
     n = (i32)(out - g_clipB);
-    if (n == 0)
+    if (n == 0) {
         return 0;
+    }
 
     // Pass 3: clip y >= clip1   (g_clipB -> g_clipA)
     out = g_clipA;
@@ -126,8 +130,9 @@ i32 RotateRasterize(
         ClipVtx* cur = g_clipB;
         i32 j = n;
         do {
-            if (cur->y >= clip1)
+            if (cur->y >= clip1) {
                 *out++ = *cur;
+            }
             if ((cur->y >= clip1) != (prev->y >= clip1)) {
                 float t = (clip1 - cur->y) / (prev->y - cur->y);
                 out->y = clip1;
@@ -141,8 +146,9 @@ i32 RotateRasterize(
         } while (--j);
     }
     n = (i32)(out - g_clipA);
-    if (n == 0)
+    if (n == 0) {
         return 0;
+    }
 
     // Pass 4: clip y < clip2   (g_clipA -> g_clipB)
     out = g_clipB;
@@ -151,8 +157,9 @@ i32 RotateRasterize(
         ClipVtx* cur = g_clipA;
         i32 j = n;
         do {
-            if (cur->y < clip2)
+            if (cur->y < clip2) {
                 *out++ = *cur;
+            }
             if ((cur->y < clip2) != (prev->y < clip2)) {
                 float t = (clip2 - cur->y) / (prev->y - cur->y);
                 out->y = clip2;
@@ -166,8 +173,9 @@ i32 RotateRasterize(
         } while (--j);
     }
     n = (i32)(out - g_clipB);
-    if (n == 0)
+    if (n == 0) {
         return 0;
+    }
 
     RasterSpans(g_clipB, n, a4, a4, a5, a6);
     return 1;

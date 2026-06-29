@@ -20,10 +20,10 @@ extern "C" void RezFree(void* p);
 
 // A cached record: three independently-owned heap buffers.
 struct CPageRec {
-    void* m_00;           // +0x00 owned buffer
+    void* m_00; // +0x00 owned buffer
     char m_pad04[0x10 - 4];
-    void* m_10;           // +0x10 owned buffer
-    void* m_14;           // +0x14 owned buffer
+    void* m_10; // +0x10 owned buffer
+    void* m_14; // +0x14 owned buffer
 };
 
 class CDDPageMgr {
@@ -31,8 +31,8 @@ public:
     i32 RemoveAt(i32 idx); // 0x17d600
     i32 FreeAll();         // 0x17d6b0
 
-    i32 m_00;     // +0x00
-    void* m_04;   // +0x04 "loaded" guard
+    i32 m_00;   // +0x00
+    void* m_04; // +0x04 "loaded" guard
     char m_pad08[0x8690 - 8];
     CPageRec** m_data; // +0x8690
     i32 m_count;       // +0x8694

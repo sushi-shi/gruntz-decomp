@@ -15,7 +15,7 @@ i32 ModuleStateField30() {
 // 0x1d047f - plain +0x98 getter (thiscall).
 struct CDdeView {
     char m_pad0[0x98];
-    i32 m_98; // +0x98
+    i32 m_98;        // +0x98
     i32 GetActive(); // 0x1d047f
 };
 

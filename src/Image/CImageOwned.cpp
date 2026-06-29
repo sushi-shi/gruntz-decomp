@@ -45,14 +45,14 @@ CImageOwned::CImageOwned() {
 // thiscall calls lower with callee-side cleanup and the destructible local forces
 // the /GX frame on BuildRle.
 struct CRleByteArray {
-    void* vptr;  // +0x00
-    u8* m_data;  // +0x04  element buffer
-    i32 m_size;  // +0x08  element count
-    i32 m_alloc; // +0x0c
-    CRleByteArray();                       // 0x1b527e
-    void SetSize(i32 n, i32 growBy);       // 0x1b52e8
-    void SetAtGrow(i32 index, u8 value);   // 0x1b5485
-    ~CRleByteArray();                      // 0x1b52b1
+    void* vptr;                          // +0x00
+    u8* m_data;                          // +0x04  element buffer
+    i32 m_size;                          // +0x08  element count
+    i32 m_alloc;                         // +0x0c
+    CRleByteArray();                     // 0x1b527e
+    void SetSize(i32 n, i32 growBy);     // 0x1b52e8
+    void SetAtGrow(i32 index, u8 value); // 0x1b5485
+    ~CRleByteArray();                    // 0x1b52b1
 };
 
 // ---------------------------------------------------------------------------
@@ -78,8 +78,14 @@ struct CRleByteArray {
 // steerable (docs/patterns/gx-scoped-local-eh-frame-size.md). Logic complete.
 // ---------------------------------------------------------------------------
 RVA(0x00148d40, 0x202)
-i32 CImageOwned::BuildRle(void* pixels, i32 width, i32 height, i32 stride, i32 keyVal,
-                          void* palette) {
+i32 CImageOwned::BuildRle(
+    void* pixels,
+    i32 width,
+    i32 height,
+    i32 stride,
+    i32 keyVal,
+    void* palette
+) {
     u8* src = (u8*)pixels;
     if (src == 0) {
         return 0;

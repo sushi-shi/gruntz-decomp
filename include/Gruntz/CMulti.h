@@ -43,7 +43,7 @@ public:
     i32 m_10; // +0x10  passed to LoadSlotConfig
     i32 m_14; // +0x14
     char m_pad18_20[0x20 - 0x18];
-    i32 m_20;             // +0x20
+    i32 m_20; // +0x20
     char m_pad24_38[0x38 - 0x24];
     char m_inner[0x238 - 0x38]; // +0x38  inner sub-object (FreeSlot / LoadSlotConfig / ArmSlot)
 };
@@ -52,17 +52,17 @@ public:
 class CMultiLogicNode {
 public:
     char m_pad00_06[0x6];
-    u8 m_6;   // +0x06  parity byte
+    u8 m_6; // +0x06  parity byte
     char m_pad07_0c[0xc - 0x7];
-    i32 m_c;  // +0x0c  armed flag
+    i32 m_c; // +0x0c  armed flag
 };
 
 // The +0x6c sub-object: a list-bearing manager (head at +0x1c, count latch at +0x28).
 class CMultiLogicList {
 public:
     char m_pad00_1c[0x1c];
-    char m_head[0x28 - 0x1c]; // +0x1c  CObList head (RemoveHead via 0x5b4a03)
-    i32 m_28;                 // +0x28  emptiness/count gate
+    char m_head[0x28 - 0x1c];      // +0x1c  CObList head (RemoveHead via 0x5b4a03)
+    i32 m_28;                      // +0x28  emptiness/count gate
     CMultiLogicNode* RemoveHead(); // 0x005b4a03 (MFC CObList::RemoveHead)
 };
 
@@ -72,8 +72,8 @@ public:
     void* m_0;
     u8 m_flags; // +0x04  bit 0x2 -> m_528 latch
     char m_pad5_8[0x8 - 0x5];
-    char* m_8;  // +0x08  host-name string
-    char* m_c;  // +0x0c  ... -> +0x8 string copied into a CString
+    char* m_8; // +0x08  host-name string
+    char* m_c; // +0x0c  ... -> +0x8 string copied into a CString
 };
 
 class CMultiLogic {
@@ -88,7 +88,7 @@ public:
     char m_pad70_9c[0x9c - 0x70];
     i32 m_9c; // +0x9c  zeroed at StartTitle entry
     char m_padA0_C0[0xc0 - 0xa0];
-    i32 m_c0;             // +0xc0  must be non-null to proceed
+    i32 m_c0;              // +0xc0  must be non-null to proceed
     CMultiLogicDesc* m_c4; // +0xc4  host descriptor
     char m_padC8_110[0x110 - 0xc8];
     i32 m_110; // +0x110 receives CMulti::m_590 on teardown
@@ -124,13 +124,13 @@ public:
 // entry points (all out-of-line -> reloc-masked); placeholder names.
 class CLobbyObjB { // m_520
 public:
-    void Teardown();          // 0x004b6220 (NOT a CMulti method)
-    void* FindSlot(i32 key);  // 0x004c0460  scan the +0x20 4x0x64 slot table
-    void StartTick();         // 0x000bf150
-    i32 Step(i32 dt);         // 0x000bf5a0
-    i32 Drain();              // 0x000bf9e0
-    i32 IsBusy();             // 0x000c01d0
-    i32 IsStalled();          // 0x000c04f0
+    void Teardown();                      // 0x004b6220 (NOT a CMulti method)
+    void* FindSlot(i32 key);              // 0x004c0460  scan the +0x20 4x0x64 slot table
+    void StartTick();                     // 0x000bf150
+    i32 Step(i32 dt);                     // 0x000bf5a0
+    i32 Drain();                          // 0x000bf9e0
+    i32 IsBusy();                         // 0x000c01d0
+    i32 IsStalled();                      // 0x000c04f0
     void ArmSlot(void* node, i32 parity); // 0x000c03f0
 
     char m_pad00_10[0x10];
@@ -192,21 +192,21 @@ public:
     void DropTimeout();                     // 0x0bc2d0  /GX: drop a timed-out player
 
     // External CMulti methods this TU calls but does not define (reloc-masked).
-    void SendStatFlag(i32 code, i32 flag);    // 0x0b9240 (__thiscall, reads m_5bc)
-    void SendNetStat3(i32 a, i32 b, i32 c);   // 0x0b9290 (__thiscall, 3 args)
-    void CPlayDtorBody();                     // 0x04c8700 (the CPlay sub-object teardown, thiscall)
-    void OnDropPlayer();                      // 0x0bc110
-    i32 RebindHost();                         // 0x0bc750  (also CNetMgr-shared)
-    i32 RebindHostAlt();                      // 0x0bc460
-    i32 ReadGroupSel();                       // 0x0b76a0
-    i32 PumpA();                              // 0x0b6b40  (timeGetTime/wsprintf helper)
-    void PumpB();                             // 0x0b6e90
-    void OnOutOfSync();                       // 0x0bae40
-    void RefreshSlotTable();                  // 0x021bd0  (free fn-ish thiscall on this)
+    void SendStatFlag(i32 code, i32 flag);  // 0x0b9240 (__thiscall, reads m_5bc)
+    void SendNetStat3(i32 a, i32 b, i32 c); // 0x0b9290 (__thiscall, 3 args)
+    void CPlayDtorBody();                   // 0x04c8700 (the CPlay sub-object teardown, thiscall)
+    void OnDropPlayer();                    // 0x0bc110
+    i32 RebindHost();                       // 0x0bc750  (also CNetMgr-shared)
+    i32 RebindHostAlt();                    // 0x0bc460
+    i32 ReadGroupSel();                     // 0x0b76a0
+    i32 PumpA();                            // 0x0b6b40  (timeGetTime/wsprintf helper)
+    void PumpB();                           // 0x0b6e90
+    void OnOutOfSync();                     // 0x0bae40
+    void RefreshSlotTable();                // 0x021bd0  (free fn-ish thiscall on this)
     // m_4-side per-slot helpers used by StartSession (thiscall on the +0x38 inner).
-    void FreeSlotInner();                                  // 0x025ca0 (on m_150[i]+0x38)
+    void FreeSlotInner();                                     // 0x025ca0 (on m_150[i]+0x38)
     i32 LoadSlotConfig(CMultiLogic* logic, i32 idx, i32 m10); // 0x025020 (on m_150[i]+0x38)
-    void ArmSlotInner();                                   // 0x02ade0 (on m_150[i]+0x38)
+    void ArmSlotInner();                                      // 0x02ade0 (on m_150[i]+0x38)
 
     // --- layout (placeholder names; offsets are the load-bearing truth) ---
     CMultiVtbl* m_vtbl; // +0x000  vptr (Tick dispatches through +0x7c / +0x98)
@@ -231,7 +231,7 @@ public:
     CByteArray m_3a4[4]; // +0x3a4  (vector dtor: 4 x 0x14)
     char m_pad3f4_410[0x410 - 0x3f4];
     CString m_410; // +0x410
-    i32 m_414; // +0x414  zeroed each Tick
+    i32 m_414;     // +0x414  zeroed each Tick
     char m_pad418_488[0x488 - 0x418];
     CByteArray m_488; // +0x488
     char m_pad49c_520[0x520 - 0x49c];

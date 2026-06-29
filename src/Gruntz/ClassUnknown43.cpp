@@ -104,24 +104,28 @@ int ClassUnknown_43::Update_0f7d90() {
         return 1;
     }
     ClassUnknown_43* p = m_260->Get253b(this);
-    if (p == 0)
+    if (p == 0) {
         return 1;
-    if (p->m_1fc == 0)
+    }
+    if (p->m_1fc == 0) {
         return 1;
+    }
     Box5c* a = p->m_10;
     if (a->m_5c == p->m_17c && a->m_60 == p->m_180 && Func1e97(a->m_5c, a->m_60)) {
         Box5c* b = p->m_10;
         g_mgrSettings->m_68->Func3030(m_1ec, m_1f0, b->m_5c, b->m_60);
         return 1;
     }
-    if (m_2ec <= 0x3e8)
+    if (m_2ec <= 0x3e8) {
         return 1;
+    }
     if (Func1014(p->m_1ec, p->m_1f0)) {
         Box5c* b = p->m_10;
         Func1640(b->m_5c >> 5, b->m_60 >> 5, 0, m_248, 1, 0);
         m_2ec = 0;
-        if (m_390 == 0)
+        if (m_390 == 0) {
             return 1;
+        }
         Box5c* c = m_10;
         MgrReg* g = g_mgrSettings;
         int y = c->m_60;

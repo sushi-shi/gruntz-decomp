@@ -39,7 +39,7 @@ struct CNetConnCoord {
 // A slot object whose +0x3c..+0x48 range is cleared.
 struct CNetSlotAux {
     char m_pad0[0x3c];
-    i32 m_3c; // +0x3c..+0x48 (4 dwords)
+    i32 m_3c;          // +0x3c..+0x48 (4 dwords)
     void ClearRange(); // bf120
 };
 

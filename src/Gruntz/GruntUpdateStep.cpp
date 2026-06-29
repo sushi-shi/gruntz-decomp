@@ -53,7 +53,7 @@ struct MgrSub30 {
 };
 struct MgrGrid {
     char pad[0x1c];
-    CGruntStep* slot[15]; // +0x1c
+    CGruntStep* slot[15];                    // +0x1c
     i32 Scatter(i32 a, i32 b, i32 c, i32 d); // 0x4014bf (__thiscall on this grid)
 };
 struct MgrDims {
@@ -90,9 +90,9 @@ extern CStepList2 g_dropList;
 // Engine helpers, all reloc-masked. The thiscall ones are modeled as CGruntStep
 // methods (called on `this` or on another grunt); the free ones are __stdcall/__cdecl.
 extern "C" {
-void __stdcall GruntCue(CGruntStep* g, i32 code, i32 a, i32 b, i32 c, i32 d); // 0x4039f4
-i32 BoardTest(i32 a, i32 b, i32 c);                                            // 0x401127 (__cdecl)
-i32 GameRand();                                                                // 0x51fee0 (__cdecl)
+    void __stdcall GruntCue(CGruntStep* g, i32 code, i32 a, i32 b, i32 c, i32 d); // 0x4039f4
+    i32 BoardTest(i32 a, i32 b, i32 c); // 0x401127 (__cdecl)
+    i32 GameRand();                     // 0x51fee0 (__cdecl)
 }
 
 struct CGruntStep {
@@ -100,16 +100,16 @@ struct CGruntStep {
     i32 SeekTarget();    // 0xf71c0
 
     // reloc-masked CGrunt __thiscall helpers (called on this and on other grunts):
-    i32 TileProbe(i32 x, i32 y);                          // 0x403c4c
-    i32 RunGate(i32 a);                                   // 0x403d5a
-    void ResetEntrance(i32 a, i32 b, i32 c);              // 0x40136b
-    i32 OwnsTile(i32 a, i32 b);                            // 0x401014
+    i32 TileProbe(i32 x, i32 y);                              // 0x403c4c
+    i32 RunGate(i32 a);                                       // 0x403d5a
+    void ResetEntrance(i32 a, i32 b, i32 c);                  // 0x40136b
+    i32 OwnsTile(i32 a, i32 b);                               // 0x401014
     void PlaceTile(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // 0x4014e2
-    void CommitMove(i32 a, i32 b, i32 c, i32 d);          // 0x40302b
-    i32 ProbeMove(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // 0x401640
-    void StampMove(i32 a, i32 b);                          // 0x401401
-    void ReadCenter(void* out);                           // 0x4036c0
-    void SelectIcon(i32 a, i32 b, i32 c, i32 d);          // 0x403bd9
+    void CommitMove(i32 a, i32 b, i32 c, i32 d);              // 0x40302b
+    i32 ProbeMove(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f);  // 0x401640
+    void StampMove(i32 a, i32 b);                             // 0x401401
+    void ReadCenter(void* out);                               // 0x4036c0
+    void SelectIcon(i32 a, i32 b, i32 c, i32 d);              // 0x403bd9
 };
 
 // ===========================================================================
@@ -132,8 +132,8 @@ i32 CGruntStep::UpdateArrival() {
     bool atTarget = false;
     if (g != 0) {
         i32 x = F(P(g, 0x10), 0x5c);
-        if (x == F(g, 0x17c) && F(P(g, 0x10), 0x60) == F(g, 0x180) &&
-            g->TileProbe(x, F(P(g, 0x10), 0x60)) != 0) {
+        if (x == F(g, 0x17c) && F(P(g, 0x10), 0x60) == F(g, 0x180)
+            && g->TileProbe(x, F(P(g, 0x10), 0x60)) != 0) {
             atTarget = true;
         }
     }
@@ -185,8 +185,8 @@ i32 CGruntStep::UpdateArrival() {
         if (g != 0) {
             if (F(this, 0x3f0) > 99) {
                 i32 x = F(P(g, 0x10), 0x5c);
-                if (x == F(g, 0x17c) && F(P(g, 0x10), 0x60) == F(g, 0x180) &&
-                    g->TileProbe(x, F(P(g, 0x10), 0x60)) != 0) {
+                if (x == F(g, 0x17c) && F(P(g, 0x10), 0x60) == F(g, 0x180)
+                    && g->TileProbe(x, F(P(g, 0x10), 0x60)) != 0) {
                     CommitMove(F(g, 0x1ec), F(g, 0x1f0), F(g, 0x17c), F(g, 0x180));
                     goto tail;
                 }
@@ -200,8 +200,11 @@ i32 CGruntStep::UpdateArrival() {
                         F(this, 0x2f0) = F(g, 0x1ec);
                         F(this, 0x2f4) = F(g, 0x1f0);
                         F(this, 0x2d4) = 1;
-                        i32 r = BoardTest(F(P(g_mgrSettings->m_30->m_24, 0x5c), 0) + 0x40,
-                                          F(P(this, 0x10), 0x5c), F(P(this, 0x10), 0x60));
+                        i32 r = BoardTest(
+                            F(P(g_mgrSettings->m_30->m_24, 0x5c), 0) + 0x40,
+                            F(P(this, 0x10), 0x5c),
+                            F(P(this, 0x10), 0x60)
+                        );
                         if (r != 0) {
                             GruntCue(this, 0x366, -1, 0, -1, -1);
                         }
@@ -213,8 +216,9 @@ i32 CGruntStep::UpdateArrival() {
         }
         if (F(this, 0x244) == 0 && F(this, 0x318) != 0 && (u32)F(this, 0x2ec) > 3000) {
             i32 cmp = -(i32)((u32)g_clock < (u32)F(this, 0x308)) - F(this, 0x30c);
-            if (F(this, 0x314) < cmp ||
-                (F(this, 0x314) <= cmp && (u32)F(this, 0x310) <= g_clock - (u32)F(this, 0x308))) {
+            if (F(this, 0x314) < cmp
+                || (F(this, 0x314) <= cmp
+                    && (u32)F(this, 0x310) <= g_clock - (u32)F(this, 0x308))) {
                 ResetEntrance(1, 1, 0);
                 F(this, 0x308) = 0;
                 F(this, 0x310) = 0;
@@ -238,7 +242,8 @@ i32 CGruntStep::UpdateArrival() {
                 if (ay != 0) {
                     lo2 = lo2 + GameRand() % ay;
                 }
-                if (lo < (u32)F(g_mgrSettings->m_70, 0xc) && lo2 < (u32)F(g_mgrSettings->m_70, 0x10)) {
+                if (lo < (u32)F(g_mgrSettings->m_70, 0xc)
+                    && lo2 < (u32)F(g_mgrSettings->m_70, 0x10)) {
                     ProbeMove((i32)lo, (i32)lo2, 0, F(this, 0x248), 1, 0);
                 }
                 if (F(this, 0x328) != 0) {
@@ -258,13 +263,15 @@ i32 CGruntStep::UpdateArrival() {
         CGruntStep* found = ((CGruntTileMgr*)P(this, 0x260))->FindGrunt(this);
         (void)cur;
         if (found == 0 || found == slot) {
-            if (slot == 0 || F(slot, 0x1fc) == 0 || slot->OwnsTile(F(slot, 0x1ec), F(slot, 0x1f0)) == 0) {
+            if (slot == 0 || F(slot, 0x1fc) == 0
+                || slot->OwnsTile(F(slot, 0x1ec), F(slot, 0x1f0)) == 0) {
                 F(this, 0x2d4) = 0;
             } else {
                 PlaceTile(F(slot, 0x17c), F(slot, 0x180), 0, F(this, 0x248), 0, 0x20);
-                if (F(this, 0x220) == 0 && F(this, 0x3f0) > 99 &&
-                    slot->TileProbe(F(P(slot, 0x10), 0x5c), F(P(slot, 0x10), 0x60)) != 0 &&
-                    F(P(slot, 0x10), 0x5c) == F(slot, 0x17c) && F(P(slot, 0x10), 0x60) == F(slot, 0x180)) {
+                if (F(this, 0x220) == 0 && F(this, 0x3f0) > 99
+                    && slot->TileProbe(F(P(slot, 0x10), 0x5c), F(P(slot, 0x10), 0x60)) != 0
+                    && F(P(slot, 0x10), 0x5c) == F(slot, 0x17c)
+                    && F(P(slot, 0x10), 0x60) == F(slot, 0x180)) {
                     CommitMove(F(slot, 0x1ec), F(slot, 0x1f0), F(slot, 0x17c), F(slot, 0x180));
                     F(this, 0x2d4) = 2;
                 }
@@ -317,8 +324,7 @@ RVA(0x000f71c0, 0x721)
 i32 CGruntStep::SeekTarget() {
     F(this, 0x300) = F(this, 0x17c);
     F(this, 0x304) = F(this, 0x180);
-    if (F(this, 0x328) != 0 &&
-        F(F(g_mgrSettings->m_68, 0x1c) + F(this, 0x2f0) * 4, 0) == 0) {
+    if (F(this, 0x328) != 0 && F(F(g_mgrSettings->m_68, 0x1c) + F(this, 0x2f0) * 4, 0) == 0) {
         void* p = (void*)P(this, 0x320);
         while (p != 0) {
             void* next = *(void**)p;
@@ -415,8 +421,8 @@ i32 CGruntStep::SeekTarget() {
                     if (k > 0x16) {
                         kk = F(sv, 0x19c);
                     }
-                    if (kk != 0 && kk != 0x14 && kk != 1 &&
-                        !(k > 0x16 ? (F(sv, 0x19c) == 0x14) : false) && F(sv, 0x258) != 0x36) {
+                    if (kk != 0 && kk != 0x14 && kk != 1
+                        && !(k > 0x16 ? (F(sv, 0x19c) == 0x14) : false) && F(sv, 0x258) != 0x36) {
                         i32 ex = F(P(sv, 0x10), 0x5c) >> 5;
                         i32 ddx = ex - (F(P(this, 0x10), 0x5c) >> 5);
                         i32 ey = (F(P(sv, 0x10), 0x60) >> 5) - (F(P(this, 0x10), 0x60) >> 5);
@@ -432,11 +438,13 @@ i32 CGruntStep::SeekTarget() {
             if (bestIdx != -1) {
                 F(this, 0x2f0) = bestIdx;
                 i32 base = F((i32)slots[bestIdx], 0x10);
-                if (ProbeMove(F(base, 0x5c) >> 5, F(base, 0x60) >> 5, 0, F(this, 0x248), 1, 0) != 0) {
+                if (ProbeMove(F(base, 0x5c) >> 5, F(base, 0x60) >> 5, 0, F(this, 0x248), 1, 0)
+                    != 0) {
                     i32 by = F(P(this, 0x10), 0x60);
                     i32 bx = F(P(this, 0x10), 0x5c);
                     i32 board = F(P(g_mgrSettings->m_30->m_24, 0x5c), 0);
-                    if (bx < F(board, 0x48) && F(board, 0x40) <= bx && by < F(board, 0x4c) && F(board, 0x44) <= by) {
+                    if (bx < F(board, 0x48) && F(board, 0x40) <= bx && by < F(board, 0x4c)
+                        && F(board, 0x44) <= by) {
                         GruntCue(this, 0x366, -1, 0, -1, -1);
                     }
                 }
@@ -457,7 +465,8 @@ i32 CGruntStep::SeekTarget() {
         bool atTarget = false;
         if (g != 0) {
             i32 x = F(P(g, 0x10), 0x5c);
-            if (x == F(g, 0x17c) && F(P(g, 0x10), 0x60) == F(g, 0x180) && g->TileProbe(x, F(g, 0x10)) != 0) {
+            if (x == F(g, 0x17c) && F(P(g, 0x10), 0x60) == F(g, 0x180)
+                && g->TileProbe(x, F(g, 0x10)) != 0) {
                 atTarget = true;
             }
         }
@@ -510,19 +519,24 @@ i32 CGruntStep::SeekTarget() {
         }
         if (F(this, 0x220) == 0 && F(this, 0x3f0) > 99) {
             i32 x = F(P(g, 0x10), 0x5c);
-            if (x == F(g, 0x17c) && F(P(g, 0x10), 0x60) == F(g, 0x180) && g->TileProbe(x, F(g, 0x10)) != 0) {
+            if (x == F(g, 0x17c) && F(P(g, 0x10), 0x60) == F(g, 0x180)
+                && g->TileProbe(x, F(g, 0x10)) != 0) {
                 CommitMove(F(g, 0x1ec), F(g, 0x1f0), F(g, 0x17c), F(g, 0x180));
             }
         }
         if ((u32)F(this, 0x2ec) < 0x1f5) {
             return 1;
         }
-        if (ProbeMove(F(P(g, 0x10), 0x5c) >> 5, F(P(g, 0x10), 0x60) >> 5, 0, F(this, 0x248), 1, 0) == 0) {
+        if (ProbeMove(F(P(g, 0x10), 0x5c) >> 5, F(P(g, 0x10), 0x60) >> 5, 0, F(this, 0x248), 1, 0)
+            == 0) {
             return 1;
         }
         if (F(this, 0x390) != 0) {
-            i32 r = BoardTest(F(P(g_mgrSettings->m_30->m_24, 0x5c), 0) + 0x40, F(P(this, 0x10), 0x5c),
-                              F(P(this, 0x10), 0x60));
+            i32 r = BoardTest(
+                F(P(g_mgrSettings->m_30->m_24, 0x5c), 0) + 0x40,
+                F(P(this, 0x10), 0x5c),
+                F(P(this, 0x10), 0x60)
+            );
             if (r != 0) {
                 GruntCue(this, 0x366, -1, 0, -1, -1);
             }

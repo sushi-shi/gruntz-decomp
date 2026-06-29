@@ -60,12 +60,12 @@ struct CImageInfo {
 
 // The 0x6c-byte surface-request descriptor embedded at +0x9c.
 struct CImageDesc {
-    u32 size;             // +0x00 (= 0x6c)
-    u32 flags;            // +0x04 (= 7)
-    i32 f08;              // +0x08 (= info->m_08)
-    i32 f0c;              // +0x0c (= info->m_04)
+    u32 size;  // +0x00 (= 0x6c)
+    u32 flags; // +0x04 (= 7)
+    i32 f08;   // +0x08 (= info->m_08)
+    i32 f0c;   // +0x0c (= info->m_04)
     char m_pad10[0x68 - 0x10];
-    u32 f68;              // +0x68 (= 0x840)
+    u32 f68; // +0x68 (= 0x840)
 };
 
 class CImageProbe {
@@ -76,13 +76,13 @@ public:
     CImageInfo* m_10;     // +0x10
     CImageProvider* m_14; // +0x14
     char m_pad18[0x24 - 0x18];
-    CImagePayload* m_24;  // +0x24
-    CImageSource* m_28;   // +0x28
-    void* m_2c;           // +0x2c
+    CImagePayload* m_24; // +0x24
+    CImageSource* m_28;  // +0x28
+    void* m_2c;          // +0x2c
     char m_pad30[0x9c - 0x30];
-    CImageDesc m_desc;    // +0x9c .. +0x108
+    CImageDesc m_desc; // +0x9c .. +0x108
     char m_pad108[0x520 - 0x108];
-    i32 m_520;            // +0x520
+    i32 m_520; // +0x520
 };
 
 // 0x17cbe0: build the descriptor, resolve + probe the image source, optionally

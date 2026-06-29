@@ -10,17 +10,17 @@
 
 struct RingSrc {
     char pad0[8];
-    char* m_08;          // +0x08 base
-    char* m_0c;          // +0x0c read ptr
-    unsigned m_10;       // +0x10 count
+    char* m_08;    // +0x08 base
+    char* m_0c;    // +0x0c read ptr
+    unsigned m_10; // +0x10 count
 };
 struct RingCtx {
     char pad0[0xc];
-    char* m_0c;          // +0x0c write ptr
-    unsigned m_10;       // +0x10 free count
-    unsigned m_14;       // +0x14 used count
+    char* m_0c;    // +0x0c write ptr
+    unsigned m_10; // +0x10 free count
+    unsigned m_14; // +0x14 used count
     char pad18[0x1c - 0x18];
-    RingSrc* m_1c;       // +0x1c source ring
+    RingSrc* m_1c; // +0x1c source ring
 };
 
 // 0x186910
@@ -44,7 +44,7 @@ void Unmatched_186910(RingCtx* c) {
 }
 
 // 0x186180
-extern "C" int FUN_1861b0(int, int, int, int, int, int, int, int);   // 0x1861b0
+extern "C" int FUN_1861b0(int, int, int, int, int, int, int, int); // 0x1861b0
 RVA(0x00186180, 0x25)
 int Unmatched_186180(int a0, int a1, int a2, int a3) {
     return FUN_1861b0(a0, a1, 8, 0xf, 8, 0, a2, a3);

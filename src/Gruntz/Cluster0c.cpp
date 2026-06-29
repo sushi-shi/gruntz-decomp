@@ -4,38 +4,38 @@
 // teardown (0xc5240) that releases+frees the +0x60 child then runs a final method.
 #include <rva.h>
 
-extern "C" void RezFree(void*);   // 0x1b9b82
+extern "C" void RezFree(void*); // 0x1b9b82
 
 struct Sub60 {
-    void Release();               // 0xc5280
+    void Release(); // 0xc5280
 };
 
 struct CCluster0c {
     char pad00[4];
-    int m_04;            // +0x04
-    int m_08;            // +0x08
+    int m_04; // +0x04
+    int m_08; // +0x08
     char pad0c[0x10 - 0x0c];
-    int m_10;            // +0x10
-    int m_14;            // +0x14
-    int m_18;            // +0x18
+    int m_10; // +0x10
+    int m_14; // +0x14
+    int m_18; // +0x18
     char pad1c[0x3c - 0x1c];
-    int m_3c;            // +0x3c
-    int m_40;            // +0x40
-    int m_44;            // +0x44
-    int m_48;            // +0x48
-    char m_4c[0x58 - 0x4c];  // +0x4c sub-object
-    char m_58[0x60 - 0x58];  // +0x58 sub-object
-    Sub60* m_60;             // +0x60 owned child
+    int m_3c;               // +0x3c
+    int m_40;               // +0x40
+    int m_44;               // +0x44
+    int m_48;               // +0x48
+    char m_4c[0x58 - 0x4c]; // +0x4c sub-object
+    char m_58[0x60 - 0x58]; // +0x58 sub-object
+    Sub60* m_60;            // +0x60 owned child
 
-    void Init12e0();          // 0xc12e0
-    void Init10a0(void* p);   // 0xc10a0
-    void M_c2ab0(int n);      // 0xc2ab0
-    void M_c40b0();           // 0xc40b0
-    void Destroy_1bbb7c();    // 0x1bbb7c
+    void Init12e0();        // 0xc12e0
+    void Init10a0(void* p); // 0xc10a0
+    void M_c2ab0(int n);    // 0xc2ab0
+    void M_c40b0();         // 0xc40b0
+    void Destroy_1bbb7c();  // 0x1bbb7c
 
-    void Init();              // 0xc0c20
-    void Run();               // 0xc2a50
-    void Cleanup();           // 0xc5240
+    void Init();    // 0xc0c20
+    void Run();     // 0xc2a50
+    void Cleanup(); // 0xc5240
 };
 
 // 0xc0c20

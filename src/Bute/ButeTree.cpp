@@ -116,17 +116,20 @@ void* CButeTree::Find(const char* key) {
     m_28 = 1;
     i32 bitmax = (i32)strlen(key) * 8 + 7;
     m_24 = bitmax;
-    if (root == 0)
+    if (root == 0) {
         return 0;
+    }
     i32 b = root->bit;
     while (b <= bitmax) {
         CButeNode** slot = m_1c->child;
-        if (key[b >> 3] & (1 << (b & 7)))
+        if (key[b >> 3] & (1 << (b & 7))) {
             ++slot;
+        }
         CButeNode* child = *slot;
         m_20 = child;
-        if (child == 0)
+        if (child == 0) {
             return 0;
+        }
         if (child->bit <= b) {
             if (strcmp(key, child->key) == 0) {
                 m_28 = 0;
@@ -179,10 +182,11 @@ void* CButeTree::Insert(const char* key, void* value) {
     }
 
     i32 critbit;
-    if (m_20 != 0)
+    if (m_20 != 0) {
         critbit = KeyPrefixBits_16e480(key, m_20->key);
-    else
+    } else {
         critbit = newbit - 1;
+    }
 
     CButeNode* node = (CButeNode*)RezAlloc(0x14);
     if (node != 0) {
@@ -195,10 +199,11 @@ void* CButeTree::Insert(const char* key, void* value) {
 
             // The node's crit-bit child points back at itself (the leaf back-edge).
             i32 dir = key[critbit >> 3] & (1 << (critbit & 7));
-            if (dir)
+            if (dir) {
                 node->child[1] = node;
-            else
+            } else {
                 node->child[0] = node;
+            }
 
             // Find where critbit fits and re-point the parent at the new node.
             CButeNode* cursor = m_1c;
@@ -217,8 +222,9 @@ void* CButeTree::Insert(const char* key, void* value) {
                         m_1c = p;
                         d2 = key[p->bit >> 3] & (1 << (p->bit & 7));
                         CButeNode** s = p->child;
-                        if (d2)
+                        if (d2) {
                             ++s;
+                        }
                         c = *s;
                         m_20 = c;
                     } while (c->bit <= critbit);
@@ -228,22 +234,25 @@ void* CButeTree::Insert(const char* key, void* value) {
                     m_18 = node;
                 } else {
                     CButeNode** s2 = cur2->child;
-                    if (d2)
+                    if (d2) {
                         ++s2;
+                    }
                     *s2 = node;
                 }
             } else {
                 CButeNode** s1 = cursor->child;
-                if (key[cursor->bit >> 3] & (1 << (cursor->bit & 7)))
+                if (key[cursor->bit >> 3] & (1 << (cursor->bit & 7))) {
                     ++s1;
+                }
                 *s1 = node;
             }
 
             // Link the node's other child to the displaced subtree.
-            if (dir)
+            if (dir) {
                 node->child[0] = m_20;
-            else
+            } else {
                 node->child[1] = m_20;
+            }
             m_14++;
             return value;
         }

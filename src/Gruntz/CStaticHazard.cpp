@@ -111,7 +111,7 @@ struct HazGrid {
 };
 struct HazGridMgr {
     i32 ScreenToCell(i32 x, i32 y, i32* outA, i32* outB, i32 z); // 0x35f3 thunk
-    void MarkCell(i32 a, i32 b, i32 id, i32 flag);              // 0x2e96 thunk
+    void MarkCell(i32 a, i32 b, i32 id, i32 flag);               // 0x2e96 thunk
 };
 struct WwdGameReg {
     void EmitEvent(i32 a, i32 b); // 0x346d thunk (ctor lookup-miss branch)
@@ -506,7 +506,11 @@ dispatch:
     if (((WwdAnimSub*)((char*)m_38 + 0x1a0))->SetAnim(g_6bf3bc) == 2) {
         i32 a = 0, b = 0;
         if (g_gameReg->m_68->ScreenToCell(
-                ((WwdGameObject*)m_10)->m_5c, ((WwdGameObject*)m_10)->m_60, &a, &b, 0
+                ((WwdGameObject*)m_10)->m_5c,
+                ((WwdGameObject*)m_10)->m_60,
+                &a,
+                &b,
+                0
             )
             != 0) {
             g_gameReg->m_68->MarkCell(a, b, ((WwdGameObject*)m_10)->m_124, -1);

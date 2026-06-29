@@ -18,4 +18,6 @@ public:
 // 4-byte stack local (push ecx; mov [esp+8],0; pop ecx) that no return-by-value
 // spelling reproduces under MSVC5 /O2 (DCE'd here); unreproduced codegen artifact.
 RVA(0x0009a260, 0x1d)
-CString ClassUnknown_30::GetStr_09a260() { return m_str; }
+CString ClassUnknown_30::GetStr_09a260() {
+    return m_str;
+}

@@ -40,8 +40,14 @@ i32 CConfigStore::WriteString(char* szSection, char* szKey, char* szValue) {
             if (hKey == 0) {
                 return 0;
             }
-            rc = RegSetValueExA(hKey, szKey, 0, 1 /*REG_SZ*/, (LPBYTE)szValue,
-                                lstrlenA(szValue) + 1);
+            rc = RegSetValueExA(
+                hKey,
+                szKey,
+                0,
+                1 /*REG_SZ*/,
+                (LPBYTE)szValue,
+                lstrlenA(szValue) + 1
+            );
         }
         RegCloseKey(hKey);
         return rc == 0;

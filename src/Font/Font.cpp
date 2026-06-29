@@ -426,8 +426,8 @@ void FontRenderer::Stub_17ad10() {}
 // the cheat processor. Homed by RVA as a complete-intent placeholder; the exact
 // greedy-break control flow + EH-state schedule are a leaf-first redo.
 RVA(0x0017b120, 0x3c6)
-TextExtent FontRenderer::LayoutWrapped(CString text, i32 x0, i32 begin, i32 right,
-                                       i32 bottom, i32* outLen) {
+TextExtent
+FontRenderer::LayoutWrapped(CString text, i32 x0, i32 begin, i32 right, i32 bottom, i32* outLen) {
     (void)text;
     (void)begin;
     (void)right;

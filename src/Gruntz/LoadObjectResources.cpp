@@ -1,5 +1,5 @@
 #include <rva.h>
-#include <Mfc.h>   // CString, CObList, CMapStringToOb/Ptr, POSITION (reloc-masked engine MFC)
+#include <Mfc.h>    // CString, CObList, CMapStringToOb/Ptr, POSITION (reloc-masked engine MFC)
 #include <stdio.h>  // sprintf (reloc-masked engine CRT)
 #include <string.h> // strncmp (reloc-masked engine CRT _strncmp)
 
@@ -27,7 +27,7 @@ extern i32 g_severusCounterA; // ?g_severusCounterA@@3HA (Image install bracket)
 // FindAdd).  Carries the +4 "wanted" flag and its asset name (returned by value).
 struct CObjResNode {
     char m_pad00[0x4];
-    i32 m_4; // +0x04  wanted flag (0 => needs (re)loading)
+    i32 m_4;                 // +0x04  wanted flag (0 => needs (re)loading)
     CString GetSpriteName(); // 0x9a830 __thiscall, by-value (sprintf source name)
     CString GetAssetName();  // 0x9a260 __thiscall, by-value (Install source name)
 };
@@ -45,8 +45,8 @@ struct CObjResBuilder {
     char m_pad00[0x4];
     CObjResListNode* m_head; // +0x04  scan-list head
     char m_pad08[0x1c - 0x8];
-    CObjResListNode* m_cursor; // +0x1c  scan cursor (stored in the object)
-    void ClearFlags();                       // 0x9a420 __thiscall
+    CObjResListNode* m_cursor;                // +0x1c  scan cursor (stored in the object)
+    void ClearFlags();                        // 0x9a420 __thiscall
     CObjResNode* FindAdd(const CString& key); // 0x9a290 __thiscall, ret child-or-null
 };
 
@@ -82,14 +82,14 @@ struct ObjImageRegistry {
 // ProcessNew/Install are direct __thiscall methods.
 struct ObjSoundRegistry {
     void ProcessNew(void* val);                       // 0x157b00 __thiscall
-    void Install(void* h, char* name, const char* g);       // 0x157ee0 __thiscall
+    void Install(void* h, char* name, const char* g); // 0x157ee0 __thiscall
     char m_pad04[0x10];
     CMapStringToPtr m_map; // +0x10
 };
 
 // The Anim registry (entry->m_2c): concrete; same shape as Sound, different methods.
 struct ObjAnimRegistry {
-    void ProcessNew(void* val);                 // 0x152660 __thiscall
+    void ProcessNew(void* val);                       // 0x152660 __thiscall
     void Install(void* h, char* name, const char* g); // 0x152ad0 __thiscall
     char m_pad04[0x10];
     CMapStringToPtr m_map; // +0x10

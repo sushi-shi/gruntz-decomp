@@ -37,8 +37,10 @@ struct SeverusObArray {
     i32 m_nSize;             // +0x08
     i32 m_nMaxSize;          // +0x0c
     i32 m_nGrowBy;           // +0x10
-    void Dtor_1b561c(); // ~CObArray (reloc-masked rel32 callee)
-    ~SeverusObArray() { Dtor_1b561c(); }
+    void Dtor_1b561c();      // ~CObArray (reloc-masked rel32 callee)
+    ~SeverusObArray() {
+        Dtor_1b561c();
+    }
     // CObArray::SetSize(newSize, growBy) (reloc-masked rel32 callee 0x1b5653);
     // RemoveAll() is inlined by retail as SetSize(0, -1), so call it directly.
     void SetSize(i32 newSize, i32 growBy);
@@ -64,10 +66,10 @@ public:
     ~CSeverusEntryList();
     void DeleteAll(); // 0x151eb0  delete every owned element, RemoveAll, seed sentinels
 
-    SeverusObArray m_items;   // +0x10  owned-pointer array (m_pData@+0x14, m_nSize@+0x18)
+    SeverusObArray m_items;    // +0x10  owned-pointer array (m_pData@+0x14, m_nSize@+0x18)
     char m_pad24[0x64 - 0x24]; // +0x24..+0x63 (the family's per-node scratch block)
-    i32 m_64;                 // +0x64  cached-index sentinel (DeleteAll seeds 99999)
-    i32 m_68;                 // +0x68
+    i32 m_64;                  // +0x64  cached-index sentinel (DeleteAll seeds 99999)
+    i32 m_68;                  // +0x68
 };
 
 // Call-free field resets; cl stamps ??_7CSeverusBase (masks g_severusBaseDtorVtbl

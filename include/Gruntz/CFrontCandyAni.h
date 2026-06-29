@@ -26,7 +26,7 @@ public:
     // Bind the per-frame handler (AdvanceAnim) to the activation key "A" via the
     // shared name registry; the same archetype as CBehindCandyAni::RegisterActs.
     static void RegisterActs(); // 0x0ad310
-    i32 AdvanceAnim(); // 0x0ad510 (re-target bound anim to the draw-delta; ret 0)
+    i32 AdvanceAnim();          // 0x0ad510 (re-target bound anim to the draw-delta; ret 0)
 };
 
 #endif // GRUNTZ_CFRONTCANDYANI_H

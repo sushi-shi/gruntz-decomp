@@ -69,8 +69,15 @@ extern ScrMgrSettings* g_mgrSettings;
 // coloring/scheduling is the allocator's, not source-steerable. See
 // docs/patterns/zero-register-pinning.md + pin-local-for-callee-saved-reg.md.
 RVA(0x00114ff0, 0x1b3)
-i32 SaveScreenshot(i32 arg1, ScrConfig* bute, ScrOwner* owner, i32 arg4, i32 arg5, char* name,
-                   i32 arg7) {
+i32 SaveScreenshot(
+    i32 arg1,
+    ScrConfig* bute,
+    ScrOwner* owner,
+    i32 arg4,
+    i32 arg5,
+    char* name,
+    i32 arg7
+) {
     char nameBuf[0x80];
     i32 descB[6];
     i32 descA[4];

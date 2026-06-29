@@ -92,8 +92,17 @@ extern CButeMgr g_buteMgr;
 // The shared engine text renderer (src/Wap32/EngStr.cpp, __cdecl). Forward-declared
 // with the exact struct/signature so the call reloc-masks against EngStr.cpp's symbol.
 struct EngStrRenderObj;
-void EngStr_DrawText(EngStrRenderObj* obj, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7,
-                     i32 a8);
+void EngStr_DrawText(
+    EngStrRenderObj* obj,
+    i32 a1,
+    i32 a2,
+    i32 a3,
+    i32 a4,
+    i32 a5,
+    i32 a6,
+    i32 a7,
+    i32 a8
+);
 #define g_buteText (&g_buteMgr)
 
 // ---- StepInputA / PlayCueAt leaf engine callees (free fns / reloc-masked). ----

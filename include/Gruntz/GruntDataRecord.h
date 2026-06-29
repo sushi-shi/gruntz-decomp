@@ -38,7 +38,7 @@ struct DataWriter {
 
 // The 0x68-byte record. SerializeStrings is the only matched method.
 struct GruntDataRecord {
-    char* m_str[5]; // +0x00..+0x10  five owned name strings
+    char* m_str[5];  // +0x00..+0x10  five owned name strings
     char m_14[0x10]; // +0x14
     char m_24[0x10]; // +0x24
     char m_34[0x10]; // +0x34

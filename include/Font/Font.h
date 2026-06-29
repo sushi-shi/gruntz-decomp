@@ -154,8 +154,14 @@ public:
     // down to `bottom`, returns the final cursor {x, y + lineHeight + 1} and writes
     // the total laid-out character count to *outLen. Same CString-temp /GX family
     // as the two wrap stubs above; deferred to the final sweep.
-    TextExtent LayoutWrapped(CString text, i32 x0, i32 begin, i32 right, i32 bottom,
-                             i32* outLen); // 0x17b120
+    TextExtent LayoutWrapped(
+        CString text,
+        i32 x0,
+        i32 begin,
+        i32 right,
+        i32 bottom,
+        i32* outLen
+    ); // 0x17b120
 
     Font* m_font;    // +0x00  (Font* to render with)
     i32 m_color;     // +0x04  (packed colour, default 0x00ffffff)
@@ -171,10 +177,10 @@ public:
 // it reads (+0x00 begin, +0x08 end) are load-bearing.
 // ---------------------------------------------------------------------------
 struct TextRange {
-    char* m_begin;     // +0x00
-    char* m_pad04;     // +0x04
-    char* m_end;       // +0x08
-    i32 Span(); // 0x17b500
+    char* m_begin; // +0x00
+    char* m_pad04; // +0x04
+    char* m_end;   // +0x08
+    i32 Span();    // 0x17b500
 };
 
 // ---------------------------------------------------------------------------

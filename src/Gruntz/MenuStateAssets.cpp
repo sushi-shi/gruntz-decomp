@@ -61,9 +61,9 @@ struct MenuStateCore {      // this->m_c->m_4
     i32 IsReady();          // FUN_00558d20 __thiscall
     i32 Init(i32 a, i32 b); // FUN_00558cb0 __thiscall
 };
-struct MenuAssetMgr {        // this->m_c
+struct MenuAssetMgr { // this->m_c
     char m_pad00[0x4];
-    MenuStateCore* m_4;      // +0x04
+    MenuStateCore* m_4; // +0x04
     char m_pad08[0x10 - 0x8];
     MenuImageRegistry* m_10; // +0x10  image registry (vtable +0x48 install)
     char m_pad14[0x28 - 0x14];
@@ -79,7 +79,7 @@ struct MenuCursorSub { // this->m_4->m_4
     char m_pad00[0x4];
     void* m_4; // +0x04  passed to the layout init
 };
-struct MenuRoot {       // this->m_4
+struct MenuRoot { // this->m_4
     char m_pad00[0x4];
     MenuCursorSub* m_4; // +0x04
     void Hide(i32 z);   // FUN @ 0x4034ef __thiscall
@@ -130,8 +130,8 @@ public:
     i32 LoadGameAssetNamespaces(i32, i32, i32); // base loader; reloc-masked near call
 
     char m_pad00[0x4];
-    MenuRoot* m_4;   // +0x04
-    MenuRegSet* m_8; // +0x08
+    MenuRoot* m_4;     // +0x04
+    MenuRegSet* m_8;   // +0x08
     MenuAssetMgr* m_c; // +0x0c
     char m_pad10[0x2c - 0x10];
     MenuRegObj* m_2c; // +0x2c

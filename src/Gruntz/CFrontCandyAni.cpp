@@ -115,7 +115,8 @@ void CFrontCandyAni::RegisterActs() {
         ((CActName*)slot)->Assign(s_actKeyA);
         g_nextActId++;
     }
-    ((CFrontCandyActEntry*)g_frontCandyActReg.ResolveEntry(id))->m_fn = &CFrontCandyAni::AdvanceAnim;
+    ((CFrontCandyActEntry*)g_frontCandyActReg.ResolveEntry(id))->m_fn =
+        &CFrontCandyAni::AdvanceAnim;
 }
 
 // CFrontCandyAni::AdvanceAnim @0x0ad510 - re-target the bound object's animation

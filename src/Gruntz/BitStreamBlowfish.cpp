@@ -36,12 +36,14 @@ void __stdcall BitStreamBlowfishDecode(BitReader* r, Sink* out) {
     while (!(*((char*)r + r->m_0->m_4 + 8) & 1)) {
         r->Read16a510(&blk[0], 8);
         int sample = r->m_8;
-        if (sample == 1)
+        if (sample == 1) {
             sample = *(signed char*)&blk[0];
-        if (!first)
+        }
+        if (!first) {
             out->Emit16ab20(&blk[3], sample);
-        else
+        } else {
             first = false;
+        }
         Blowfish_decipher(&blk[0], &blk[1]);
         blk[2] = blk[0];
         blk[3] = blk[1];

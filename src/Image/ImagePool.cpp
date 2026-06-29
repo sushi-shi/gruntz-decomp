@@ -40,20 +40,20 @@ namespace ApiCallerStubs {
     // The GDI surface node (list +0x10). Cleanup is the foreign teardown; SetPalette
     // (this TU) latches the associated palette node ptr.
     struct GdiOwner_175c90 {
-        char m_pad0[0x428]; // +0x000..+0x427
-        i32 m_428;          // +0x428
-        i32 m_42c;          // +0x42c
-        i32 m_430;          // +0x430
-        i32 m_434;          // +0x434
-        i32 m_438;          // +0x438
-        i32 m_43c;          // +0x43c
-        i32 m_440;          // +0x440 (not zeroed by the inlined ctor)
-        i32 m_444;          // +0x444
-        i32 m_448;          // +0x448
-        i32 m_44c;          // +0x44c  cached AddTail POSITION
-        i32 m_450;          // +0x450 (not zeroed by the inlined ctor)
-        i32 m_454;          // +0x454  associated scalar
-        void* m_458;        // +0x458  associated palette node
+        char m_pad0[0x428];                // +0x000..+0x427
+        i32 m_428;                         // +0x428
+        i32 m_42c;                         // +0x42c
+        i32 m_430;                         // +0x430
+        i32 m_434;                         // +0x434
+        i32 m_438;                         // +0x438
+        i32 m_43c;                         // +0x43c
+        i32 m_440;                         // +0x440 (not zeroed by the inlined ctor)
+        i32 m_444;                         // +0x444
+        i32 m_448;                         // +0x448
+        i32 m_44c;                         // +0x44c  cached AddTail POSITION
+        i32 m_450;                         // +0x450 (not zeroed by the inlined ctor)
+        i32 m_454;                         // +0x454  associated scalar
+        void* m_458;                       // +0x458  associated palette node
         void Cleanup();                    // 0x175c90 (foreign, reloc-masked)
         void SetPalette(void* pal, i32 a); // 0x176ad0 (this TU)
     };
@@ -95,8 +95,8 @@ using ApiCallerStubs::PalBuilder_176df0;
 class CImage {
 public:
     i32 DecodeBmpHeader(void* a2, i32 width, i32 height, i32 bitcount, void* a3); // 0x1757c0
-    i32 DecodeBlit(void*, void*, i32, i32, i32, void*);                          // 0x175930
-    i32 LoadFromRez(char* name, void* a2, void* a3);                             // 0x175a90
+    i32 DecodeBlit(void*, void*, i32, i32, i32, void*);                           // 0x175930
+    i32 LoadFromRez(char* name, void* a2, void* a3);                              // 0x175a90
 };
 class CScanlineSurface {
 public:
@@ -119,11 +119,11 @@ public:
     PalBuilder_176df0* AddImageFile(char* path, i32 arg);                         // 0x1755f0
     PalBuilder_176df0* AddImageDispatch(void* buf, u32 size, i32 type, i32 ctrl); // 0x175680
 
-    GdiOwner_175c90* AddSurfaceBmp(i32 a1, i32 a2, i32 a3, i32 a4);     // 0x174fe0
+    GdiOwner_175c90* AddSurfaceBmp(i32 a1, i32 a2, i32 a3, i32 a4);          // 0x174fe0
     GdiOwner_175c90* AddSurfaceBlit(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5); // 0x1750e0
-    GdiOwner_175c90* AddSurfaceOp(i32 a1, i32 a2, i32 a3);              // 0x1751f0
-    GdiOwner_175c90* AddSurfaceRez(i32 a1, i32 a2);                     // 0x1752f0
-    GdiOwner_175c90* AddSurfaceConvert(i32 a1, i32 a2);                 // 0x1753f0
+    GdiOwner_175c90* AddSurfaceOp(i32 a1, i32 a2, i32 a3);                   // 0x1751f0
+    GdiOwner_175c90* AddSurfaceRez(i32 a1, i32 a2);                          // 0x1752f0
+    GdiOwner_175c90* AddSurfaceConvert(i32 a1, i32 a2);                      // 0x1753f0
 
     i32 m_00;           // +0x00  resource module handle
     i32 m_04;           // +0x04  source HWND (GetDC/ReleaseDC)
@@ -423,8 +423,8 @@ GdiOwner_175c90* CImagePool::AddSurfaceConvert(i32 a1, i32 a2) {
     } else {
         node = 0;
     }
-    if (((CScanlineSurface*)node)->Convert8To16((void*)hdc, (CScanlineSurface*)a1, (void*)a2) ==
-        0) {
+    if (((CScanlineSurface*)node)->Convert8To16((void*)hdc, (CScanlineSurface*)a1, (void*)a2)
+        == 0) {
         if (m_0c) {
             SelectPalette(hdc, (HPALETTE)m_0c, FALSE);
             m_0c = 0;

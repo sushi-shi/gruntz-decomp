@@ -60,7 +60,7 @@ struct GLSRegistrarVtbl {
 inline i32 GLSRegistrar::CallRegister(i32 handle, char* name, char* sep) {
     return (this->*(m_vtbl->Register))(handle, name, sep);
 }
-struct GLSNamespace { // m_28 / m_30
+struct GLSNamespace {         // m_28 / m_30
     i32 Lookup(char* szName); // FUN_0013bae0 __thiscall
 };
 struct GLSSub2c {
@@ -70,13 +70,13 @@ struct GLSSub14 {
     char m_pad00[0x2c];
     GLSSub2c* m_2c; // +0x2c
 };
-struct GLSSubA { // m_c->m_4
-    void Begin();            // FUN_00558e90 __thiscall
+struct GLSSubA {  // m_c->m_4
+    void Begin(); // FUN_00558e90 __thiscall
     char m_pad00[0x14];
     GLSSub14* m_14; // +0x14
     void* m_18;     // +0x18
 };
-struct GLSObj24 { // m_c->m_24
+struct GLSObj24 {                    // m_c->m_24
     void Wire(GLSSub14* a, void* b); // FUN_0015dc90 __thiscall
 };
 struct GLSPolyCVtbl;
@@ -94,14 +94,14 @@ inline void GLSPolyC::CallSlot34(GLSSub14* a, void* b) {
 }
 struct GLSAssetRoot { // this->m_c
     char m_pad00[0x4];
-    GLSSubA* m_4;     // +0x04
-    void* m_8;        // +0x08
-    GLSPolyC* m_c;    // +0x0c
+    GLSSubA* m_4;       // +0x04
+    void* m_8;          // +0x08
+    GLSPolyC* m_c;      // +0x0c
     GLSRegistrar* m_10; // +0x10
     char m_pad14[0x24 - 0x14];
     GLSObj24* m_24; // +0x24
 };
-struct GLSMapMgr { // this->m_2dc
+struct GLSMapMgr {    // this->m_2dc
     void Finalize();  // FUN_0040125d __thiscall
     void Activate2(); // FUN_004021b7 __thiscall
 };
@@ -120,8 +120,8 @@ void LevelInit2356(WwdGameReg* gameReg, GLSMapMgr* mapMgr, i32 a3); // reloc-mas
 class GameLevelState {
 public:
     i32 OnActivate_vfunc8();
-    i32 BaseOnActivate();   // base vfunc8 (reloc-masked)
-    void Method1ae6();      // FUN_00401ae6 __thiscall (m_474 != 0 arm)
+    i32 BaseOnActivate();                // base vfunc8 (reloc-masked)
+    void Method1ae6();                   // FUN_00401ae6 __thiscall (m_474 != 0 arm)
     void StartTimer(i32, i32, i32, i32); // FUN_00401843 __thiscall
 
     char m_pad00[0xc];

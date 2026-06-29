@@ -46,14 +46,14 @@ public:
     char _00[0x08];
     i32 m_08; // +0x08  flags (bit 0x40000)
     char _0c[0x10 - 0x0c];
-    i32 m_10; // +0x10  anchor adjust x
-    i32 m_14; // +0x14  anchor adjust y
-    i32 m_18;      // +0x18  out: clipped left (top-left point)
-    i32 m_1c;      // +0x1c  out: clipped top
-    BlitRect m_20; // +0x20  out: clipped rect {left, top, right, bottom}
-    i32 m_30;      // +0x30  out: width
-    i32 m_34; // +0x34  out: height
-    i32 m_38; // +0x38  out: result (0 ok / -1 culled)
+    i32 m_10;         // +0x10  anchor adjust x
+    i32 m_14;         // +0x14  anchor adjust y
+    i32 m_18;         // +0x18  out: clipped left (top-left point)
+    i32 m_1c;         // +0x1c  out: clipped top
+    BlitRect m_20;    // +0x20  out: clipped rect {left, top, right, bottom}
+    i32 m_30;         // +0x30  out: width
+    i32 m_34;         // +0x34  out: height
+    i32 m_38;         // +0x38  out: result (0 ok / -1 culled)
     CBlitXform* m_3c; // +0x3c  origin transform
     char _40[0x4c - 0x40];
     i32 m_4c; // +0x4c  pre-notify arg

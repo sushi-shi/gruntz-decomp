@@ -9,8 +9,8 @@
 
 // Pool free list (modeled minimally; only its address is referenced -> reloc-masked).
 struct PacketPool {
-    void AddCount(int n);   // 0x1b4867 - CObList helper taking a count
-    void* RemoveTail();     // 0x1b4a27 - CObList::RemoveTail
+    void AddCount(int n); // 0x1b4867 - CObList helper taking a count
+    void* RemoveTail();   // 0x1b4a27 - CObList::RemoveTail
 };
 extern PacketPool g_pool_64aca8;
 extern int g_count_64acb4;

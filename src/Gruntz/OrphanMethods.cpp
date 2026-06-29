@@ -113,7 +113,7 @@ i32 CState95::Step(i32 arg) {
 // has elapsed (which clears the latch), then seed the bound sprite's anim state
 // (m_4c frame / m_50 = 7 / m_58 = 1). Always runs the trailing helper, returns 0.
 DATA(0x00245588)
-extern "C" u32 g_645588; // tick
+extern "C" u32 g_645588;   // tick
 extern i32 g_strikeThresh; // 0x645598
 struct CMgrSettings95 {
     char _00[0x78];

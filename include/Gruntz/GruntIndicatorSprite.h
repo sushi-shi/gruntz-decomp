@@ -124,15 +124,15 @@ extern void* g_indicatorSync; // DAT_006bf3bc
 // Find (0x16da80) / ActAlloc (0x16d990) / coll2 Insert (0x16d850) yields m_cur.
 // ---------------------------------------------------------------------------
 struct CIndicatorActReg {
-    void* m_vptr;     // +0x00  registry vtable (0x5e70fc)
+    void* m_vptr;       // +0x00  registry vtable (0x5e70fc)
     CActColl2* m_coll2; // +0x04  the coll2 ptr the slow Insert is __thiscall on
-    i32 m_lo;         // +0x08  fast-range lo
-    i32 m_hi;         // +0x0c  fast-range hi
-    char* m_base;     // +0x10  fast-range entry base
-    char* m_cur;      // +0x14  slow-path result entry
-    i32 m_stride;     // +0x18  entry stride
+    i32 m_lo;           // +0x08  fast-range lo
+    i32 m_hi;           // +0x0c  fast-range hi
+    char* m_base;       // +0x10  fast-range entry base
+    char* m_cur;        // +0x14  slow-path result entry
+    i32 m_stride;       // +0x18  entry stride
     char m_pad1c[0x20 - 0x1c];
-    i32 m_scratch;    // +0x20  zeroed before the slow resolve
+    i32 m_scratch; // +0x20  zeroed before the slow resolve
 
     void Construct(i32 lo, i32 hi); // 0x408710 (__thiscall, ret 8)
 

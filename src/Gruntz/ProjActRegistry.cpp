@@ -29,12 +29,12 @@ extern CProjReg g_projReg;
 // DATA-pinned BSS globals reached by direct ds: loads). Same archetype as the
 // kitchen-slime / projectile activation tables.
 extern struct CProjReg2* g_projRegColl2; // 0x62938c  (Insert dispatcher)
-extern i32 g_projRegLo; // 0x629390
-extern i32 g_projRegHi; // 0x629394
-extern char* g_projRegBase; // 0x629398
-extern struct R3Entry* g_projRegCur; // 0x62939c
-extern i32 g_projRegStride; // 0x6293a0
-extern i32 g_projRegScratch; // 0x6293a8
+extern i32 g_projRegLo;                  // 0x629390
+extern i32 g_projRegHi;                  // 0x629394
+extern char* g_projRegBase;              // 0x629398
+extern struct R3Entry* g_projRegCur;     // 0x62939c
+extern i32 g_projRegStride;              // 0x6293a0
+extern i32 g_projRegScratch;             // 0x6293a8
 
 // The shared alloc-cache pair + the alloc helper the rebuild path drives.
 DATA(0x002bf464)

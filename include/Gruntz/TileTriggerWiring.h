@@ -25,13 +25,26 @@ class CTileTriggerWiring {
 public:
     // 0x116610: the full factory (this, five ids, six param blocks, four ids).
     // Reloc-masked (no body).
-    void AddLogic(i32 type, i32 a2, i32 a3, i32 a4, i32 a5, CTrigParam p1, CTrigParam p2,
-                  CTrigParam p3, CTrigParam p4, CTrigParam p5, CTrigParam p6, i32 a6, i32 a7,
-                  i32 a8, i32 a9);
+    void AddLogic(
+        i32 type,
+        i32 a2,
+        i32 a3,
+        i32 a4,
+        i32 a5,
+        CTrigParam p1,
+        CTrigParam p2,
+        CTrigParam p3,
+        CTrigParam p4,
+        CTrigParam p5,
+        CTrigParam p6,
+        i32 a6,
+        i32 a7,
+        i32 a8,
+        i32 a9
+    );
 
     // 0x1163b0: forward with six default (zeroed) parameter blocks.
-    void AddLogicDefaults(i32 type, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 a8,
-                          i32 a9);
+    void AddLogicDefaults(i32 type, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 a8, i32 a9);
 };
 
 #endif // GRUNTZ_TILETRIGGERWIRING_H

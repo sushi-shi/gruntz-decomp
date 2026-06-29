@@ -9,7 +9,7 @@
 
 #define I32AT(p, off) (*(i32*)((char*)(p) + (off)))
 
-extern "C" i32 g_645588; // 0x645588 (the per-frame sync salt)
+extern "C" i32 g_645588;       // 0x645588 (the per-frame sync salt)
 extern "C" i32 ChecksumTail(); // 0x11fee0 (the trailing signature component)
 
 struct CGameSyncSig {
@@ -37,49 +37,95 @@ i32 CGameSyncSig::ComputeSignature() {
             char* obj = *(char**)(base + off);
             if (obj != 0) {
                 char* sub = *(char**)(obj + 0x10);
-                sum += I32AT(obj, 0x444) + I32AT(obj, 0x3f0) + I32AT(obj, 0x3f4) +
-                       I32AT(obj, 0x3ec) + I32AT(sub, 0x60) + I32AT(sub, 0x74) +
-                       I32AT(sub, 0x5c) + I32AT(obj, 0x17c) + I32AT(obj, 0x180);
+                sum += I32AT(obj, 0x444) + I32AT(obj, 0x3f0) + I32AT(obj, 0x3f4) + I32AT(obj, 0x3ec)
+                       + I32AT(sub, 0x60) + I32AT(sub, 0x74) + I32AT(sub, 0x5c) + I32AT(obj, 0x17c)
+                       + I32AT(obj, 0x180);
                 i32 n = I32AT(obj, 0x170);
                 i32 d = n;
                 if (n > 0x16) {
                     d = I32AT(obj, 0x19c);
                 }
-                sum += I32AT(obj, 0x198) + I32AT(obj, 0x1fc) + I32AT(obj, 0x1e4) +
-                       I32AT(obj, 0x224) + d;
+                sum += I32AT(obj, 0x198) + I32AT(obj, 0x1fc) + I32AT(obj, 0x1e4) + I32AT(obj, 0x224)
+                       + d;
                 i32 v = I32AT(obj, 0x170) - 1;
                 i32 r;
                 if ((u32)v > 0x15) {
                     r = 0x17;
                 } else {
                     switch (v) {
-                    case 0: r = 2; break;
-                    case 1: r = 3; break;
-                    case 2: r = 4; break;
-                    case 3: r = 5; break;
-                    case 4: r = 6; break;
-                    case 5: r = 7; break;
-                    case 6: r = 8; break;
-                    case 7: r = 9; break;
-                    case 8: r = 0xa; break;
-                    case 9: r = 0xb; break;
-                    case 0xa: r = 0xc; break;
-                    case 0xb: r = 0xd; break;
-                    case 0xc: r = 0xe; break;
-                    case 0xd: r = 0xf; break;
-                    case 0xe: r = 0x10; break;
-                    case 0xf: r = 0x11; break;
-                    case 0x10: r = 0x12; break;
-                    case 0x11: r = 0x13; break;
-                    case 0x12: r = 0x14; break;
-                    case 0x13: r = 0x15; break;
-                    case 0x14: r = 0x16; break;
-                    case 0x15: r = 0x17; break;
-                    default: r = 0x17; break;
+                        case 0:
+                            r = 2;
+                            break;
+                        case 1:
+                            r = 3;
+                            break;
+                        case 2:
+                            r = 4;
+                            break;
+                        case 3:
+                            r = 5;
+                            break;
+                        case 4:
+                            r = 6;
+                            break;
+                        case 5:
+                            r = 7;
+                            break;
+                        case 6:
+                            r = 8;
+                            break;
+                        case 7:
+                            r = 9;
+                            break;
+                        case 8:
+                            r = 0xa;
+                            break;
+                        case 9:
+                            r = 0xb;
+                            break;
+                        case 0xa:
+                            r = 0xc;
+                            break;
+                        case 0xb:
+                            r = 0xd;
+                            break;
+                        case 0xc:
+                            r = 0xe;
+                            break;
+                        case 0xd:
+                            r = 0xf;
+                            break;
+                        case 0xe:
+                            r = 0x10;
+                            break;
+                        case 0xf:
+                            r = 0x11;
+                            break;
+                        case 0x10:
+                            r = 0x12;
+                            break;
+                        case 0x11:
+                            r = 0x13;
+                            break;
+                        case 0x12:
+                            r = 0x14;
+                            break;
+                        case 0x13:
+                            r = 0x15;
+                            break;
+                        case 0x14:
+                            r = 0x16;
+                            break;
+                        case 0x15:
+                            r = 0x17;
+                            break;
+                        default:
+                            r = 0x17;
+                            break;
                     }
                 }
-                sum += I32AT(obj, 0x450) + I32AT(obj, 0x358) + I32AT(obj, 0x218) +
-                       I32AT(obj, 0x21c) + I32AT(obj, 0x220) + g_645588 + r;
+                sum += I32AT(obj, 0x450) + I32AT(obj, 0x358) + I32AT(obj, 0x218) + I32AT(obj, 0x21c)
+                       + I32AT(obj, 0x220) + g_645588 + r;
                 sum += ChecksumTail();
             }
             off += 4;

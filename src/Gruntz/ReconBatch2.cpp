@@ -81,25 +81,25 @@ public:
 };
 class CDDrawPtrCollections {
 public:
-    void RemoveItemA(CPoolItemA* h);                          // 0x142160
+    void RemoveItemA(CPoolItemA* h);                            // 0x142160
     CPoolItemA* MakeAndAddB(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x142e60
 };
 struct Worker181x_181x {
-    void* m_vptr;                 // +0x00
-    char m_pad04[0x2c - 0x04];    // +0x04..0x2b
-    CDDrawPtrCollections* m_2c;   // +0x2c  owned item collection
-    char m_pad30[0x38 - 0x30];    // +0x30..0x37
-    CDDSurface* m_38;             // +0x38
-    char m_pad3c[0x40 - 0x3c];    // +0x3c..0x3f
-    CPoolItemA* m_40;             // +0x40  held item handle (0 = none)
-    char m_pad44[0x48 - 0x44];    // +0x44..0x47
-    i32 m_48;                     // +0x48
-    char m_pad4c[0x2060 - 0x4c];  // +0x4c..0x205f
-    i32 m_2060;                   // +0x2060 count
-    i32 m_2064;                   // +0x2064
-    i32 m_2068;                   // +0x2068
-    void DropItem();              // 0x1816a0
-    void AddItem();               // 0x181660
+    void* m_vptr;                // +0x00
+    char m_pad04[0x2c - 0x04];   // +0x04..0x2b
+    CDDrawPtrCollections* m_2c;  // +0x2c  owned item collection
+    char m_pad30[0x38 - 0x30];   // +0x30..0x37
+    CDDSurface* m_38;            // +0x38
+    char m_pad3c[0x40 - 0x3c];   // +0x3c..0x3f
+    CPoolItemA* m_40;            // +0x40  held item handle (0 = none)
+    char m_pad44[0x48 - 0x44];   // +0x44..0x47
+    i32 m_48;                    // +0x48
+    char m_pad4c[0x2060 - 0x4c]; // +0x4c..0x205f
+    i32 m_2060;                  // +0x2060 count
+    i32 m_2064;                  // +0x2064
+    i32 m_2068;                  // +0x2068
+    void DropItem();             // 0x1816a0
+    void AddItem();              // 0x181660
 };
 RVA(0x001816a0, 0x1c)
 void Worker181x_181x::DropItem() {
@@ -177,10 +177,10 @@ struct Holder_f9840 {
 class CGameModeBase {
 public:
     char m_pad0[0xc];
-    Holder_f9840* m_c; // +0x0c
-    void BaseCleanup(); // 0x3f53 thunk -> CGameModeBase::BaseCleanup
-    void Reset();       // 0x0f9840
-    void ResetPreview();// 0x0de140
+    Holder_f9840* m_c;   // +0x0c
+    void BaseCleanup();  // 0x3f53 thunk -> CGameModeBase::BaseCleanup
+    void Reset();        // 0x0f9840
+    void ResetPreview(); // 0x0de140
 };
 // @early-stop
 // regalloc wall (topic:wall topic:regalloc): logic byte-faithful (every load/
@@ -215,8 +215,8 @@ void CGameModeBase::ResetPreview() {
 // type==3, field4==0 and field10 > key (unsigned), else 0. __thiscall(1 arg).
 // ===========================================================================
 struct Entry_c0460 {
-    i32 m_0;  // +0x00 type
-    i32 m_4;  // +0x04
+    i32 m_0; // +0x00 type
+    i32 m_4; // +0x04
     char m_pad8[0x10 - 0x8];
     u32 m_10; // +0x10
     char m_pad14[0x64 - 0x14];
@@ -261,16 +261,16 @@ i32 __stdcall Validate_fafa0(i32 a0, i32 kind, i32 a2, i32 a3) {
         return 0;
     }
     switch (kind) {
-    case 4:
-        if (Check4_2ce8(a0) == 0) {
-            return 0;
-        }
-        break;
-    case 7:
-        if (Check7_36bb(a0) == 0) {
-            return 0;
-        }
-        break;
+        case 4:
+            if (Check4_2ce8(a0) == 0) {
+                return 0;
+            }
+            break;
+        case 7:
+            if (Check7_36bb(a0) == 0) {
+                return 0;
+            }
+            break;
     }
     return 1;
 }
@@ -452,9 +452,9 @@ struct Desc_16f6e0 {
     i32 m_4; // +0x04 byte offset of the flag within the object
 };
 struct Src_16f6e0 {
-    Desc_16f6e0* m_0;             // +0x00 descriptor
+    Desc_16f6e0* m_0; // +0x00 descriptor
     char m_pad4[0x8 - 0x4];
-    i32 m_8;                      // +0x08
+    i32 m_8;                           // +0x08
     void ReadRecord(void* buf, i32 n); // 0x16a510
 };
 struct Dst_16f6e0 {

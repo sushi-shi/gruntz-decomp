@@ -22,14 +22,14 @@ struct DSoundVoice {
     i32 Tick_137060(i32 now); // 0x137060  vtbl slot 0
     i32 Stop_1370d0();        // 0x1370d0  vtbl slot 1
 
-    void* m_vtbl;          // +0x00
+    void* m_vtbl;              // +0x00
     char m_pad04[0x10 - 0x04]; // +0x04  intrusive anchor (+0x04) + live flag (+0x0c)
-    DirectSoundMgr* m_10;  // +0x10  the cloned DirectSound buffer
-    i32 m_14;              // +0x14  stop+rewind-when-finished flag
-    i32 m_18;              // +0x18  ramp end volume index
-    i32 m_1c;              // +0x1c  ramp start volume index
-    i32 m_20;              // +0x20  ramp duration (ms)
-    i32 m_24;              // +0x24  ramp start timestamp
+    DirectSoundMgr* m_10;      // +0x10  the cloned DirectSound buffer
+    i32 m_14;                  // +0x14  stop+rewind-when-finished flag
+    i32 m_18;                  // +0x18  ramp end volume index
+    i32 m_1c;                  // +0x1c  ramp start volume index
+    i32 m_20;                  // +0x20  ramp duration (ms)
+    i32 m_24;                  // +0x24  ramp start timestamp
 };
 
 // ---------------------------------------------------------------------------

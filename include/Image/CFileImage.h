@@ -93,7 +93,7 @@ public:
 class CFileImageInfo {
 public:
     char _00[0x538];
-    i32 m_538; // +0x538  current decode format (8 / 0x18)
+    i32 m_538;       // +0x538  current decode format (8 / 0x18)
     u8 m_53c[0x300]; // +0x53c  inline 256*3 palette
     char _83c[0x93c - 0x83c];
     i32 m_93c; // +0x93c  has-palette flag
@@ -118,11 +118,11 @@ public:
     // The four run-length decoders Decode dispatches into (all __thiscall methods on
     // this image; reloc-masked). 8/24-bit straight decode (0x140aa0/0x140c50) and the
     // format-convert variants (0x145270/0x1453f0).
-    i32 DecodeRun8(void* run);          // 0x140aa0
-    i32 DecodeRun24(void* run);         // 0x140c50
-    i32 RunDecode1(void* dst, void* run, i32 w, i32 h); // 0x145270
-    i32 RunDecode3(void* dst, void* run, i32 w, i32 h); // 0x1453f0
-    i32 Blit(void* run, i32 fmt, void* pal, i32 one);   // 0x13faa0
+    i32 DecodeRun8(void* run);                            // 0x140aa0
+    i32 DecodeRun24(void* run);                           // 0x140c50
+    i32 RunDecode1(void* dst, void* run, i32 w, i32 h);   // 0x145270
+    i32 RunDecode3(void* dst, void* run, i32 w, i32 h);   // 0x1453f0
+    i32 Blit(void* run, i32 fmt, void* pal, i32 one);     // 0x13faa0
     i32 BlitSurf(void* info, i32 a, i32 b, i32 c, i32 d); // 0x13e0d0
     i32 BlitDirect(void* run, i32 mode);                  // 0x13ece0
 
@@ -130,15 +130,25 @@ public:
     // image described by `src` (its own descriptor shape - format word @+0x1c, dims
     // @+0x12/+0x16, run-data offset @+0x0a) into `info`; LoadFile2 slurps a file (engine
     // CFileIO) then calls DecodeRun.
-    i32 DecodeRun(CFileImageInfo* info, void* src, i32 a, i32 b);   // 0x143cf0
+    i32 DecodeRun(CFileImageInfo* info, void* src, i32 a, i32 b);    // 0x143cf0
     i32 LoadFile2(CFileImageInfo* info, const char* path, i32 mode); // 0x143e60
 
     // The six methods reconstructed in this TU (retail-RVA order):
     void FlipVertical(); // 0x13ebb0
-    void DecodeThunk(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 r0, i32 r1, i32 r2,
-                     i32 r3); // 0x141280
-    i32 SaveBmp(const char* path, void* pal, i32 mode); // 0x1443b0
-    i32 SaveTga(const char* path, void* pal, i32 mode); // 0x144900
+    void DecodeThunk(
+        i32 a1,
+        i32 a2,
+        i32 a3,
+        i32 a4,
+        i32 a5,
+        i32 a6,
+        i32 r0,
+        i32 r1,
+        i32 r2,
+        i32 r3
+    );                                                                       // 0x141280
+    i32 SaveBmp(const char* path, void* pal, i32 mode);                      // 0x1443b0
+    i32 SaveTga(const char* path, void* pal, i32 mode);                      // 0x144900
     i32 Decode(CFileImageInfo* info, CFileImageSrc* src, i32 len, i32 mode); // 0x144b30
     i32 LoadFile(CFileImageInfo* info, const char* path, i32 mode);          // 0x144d80
 
@@ -152,7 +162,7 @@ public:
     char _24[0xa8 - 0x24];
     i32 m_bpp; // +0xa8
     char _ac[0x538 - 0xac];
-    i32 m_fmt;          // +0x538
+    i32 m_fmt;           // +0x538
     u8 m_palette[0x300]; // +0x53c
     char _83c[0x93c - 0x83c];
     i32 m_hasPalette; // +0x93c

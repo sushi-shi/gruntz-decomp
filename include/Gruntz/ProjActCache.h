@@ -77,10 +77,10 @@ public:
     CContainerErr(const char* name); // 0x16d9c0 (??0CContainerErr@@QAE@PBD@Z)
     ~CContainerErr();                // makes the derived ctor's /GX unwind destruct the base
 
-    void* m_vptr;       // +0x00
-    CVariantSlot* m_4;  // +0x04 (error sink)
-    u32 m_8;            // +0x08 (capacity; unsigned -> jbe)
-    void* m_c;          // +0x0c (inline DWORD when m_8 <= 0x20, else heap DWORD*)
+    void* m_vptr;      // +0x00
+    CVariantSlot* m_4; // +0x04 (error sink)
+    u32 m_8;           // +0x08 (capacity; unsigned -> jbe)
+    void* m_c;         // +0x0c (inline DWORD when m_8 <= 0x20, else heap DWORD*)
 };
 
 class zBitVec : public CContainerErr {

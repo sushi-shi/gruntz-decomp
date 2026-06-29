@@ -55,11 +55,11 @@ struct BucketHead {
 // every leaf dtor, and the destructible base subobject gives ~CWwdGrid its /GX
 // frame. The 4 non-dtor virtuals live in sibling TUs (declared, reloc-masked).
 struct CRemusBase {
-    virtual void RemusV0();  // slot 0 (sub_1bef01)
-    virtual ~CRemusBase();   // slot 1 (scalar-deleting dtor)
-    virtual void RemusV2();  // slot 2 (sub_0028ec)
-    virtual void RemusV3();  // slot 3 (sub_00106e)
-    virtual void RemusV4();  // slot 4 (sub_004034)
+    virtual void RemusV0(); // slot 0 (sub_1bef01)
+    virtual ~CRemusBase();  // slot 1 (scalar-deleting dtor)
+    virtual void RemusV2(); // slot 2 (sub_0028ec)
+    virtual void RemusV3(); // slot 3 (sub_00106e)
+    virtual void RemusV4(); // slot 4 (sub_004034)
     CRemusBase() {}
 };
 

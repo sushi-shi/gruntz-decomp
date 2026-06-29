@@ -62,17 +62,17 @@ struct CButeMgr {
 };
 
 extern "C" {
-// The game frame-clock wrapper (0xcd00, reached via the ILT thunk 0x39ae): returns
-// timeGetTime(). Reloc-masked E8 call.
-u32 GameGetTime(void);              // 0xcd00
-void RecomputePlaneCoords(void);    // 0x161c90
+    // The game frame-clock wrapper (0xcd00, reached via the ILT thunk 0x39ae): returns
+    // timeGetTime(). Reloc-masked E8 call.
+    u32 GameGetTime(void);           // 0xcd00
+    void RecomputePlaneCoords(void); // 0x161c90
 }
 
 // Reloc-masked engine globals (DIR32 data operands).
 DATA(0x0024556c)
 extern CGruntzMgr* g_mgrSettings; // 0x64556c
 DATA(0x000453d8)
-extern CButeMgr g_buteMgr; // 0x6453d8
+extern CButeMgr g_buteMgr;     // 0x6453d8
 extern ScrollView* g_backView; // 0x64c27c
 DATA(0x00245588)
 extern u32 g_frameTime; // 0x645588
@@ -81,10 +81,10 @@ extern u32 g_frameDelta; // 0x645584
 DATA(0x0024cfc0)
 extern u32 g_scrollClock; // 0x64cfc0
 extern u32 g_scrollTimer; // 0x64cfc4
-extern i32 g_panMinX; // 0x645508
-extern i32 g_panMaxX; // 0x64550c
-extern i32 g_jitterX; // 0x6452a4
-extern i32 g_jitterY; // 0x6452cc
+extern i32 g_panMinX;     // 0x645508
+extern i32 g_panMaxX;     // 0x64550c
+extern i32 g_jitterX;     // 0x6452a4
+extern i32 g_jitterY;     // 0x6452cc
 extern i32 g_lastScrollX; // 0x64cfd0
 extern i32 g_lastScrollY; // 0x64cfd4
 DATA(0x0024cfb0)
@@ -94,8 +94,9 @@ extern i64 g_scrollLimit; // 0x64cfb8 (64-bit)
 // timeGetTime-driven random value in [lo, hi]; inlined three times by retail.
 static i32 RandRange(i32 lo, i32 hi) {
     i32 range = hi - lo + 1;
-    if (range == 0)
+    if (range == 0) {
         return (GameGetTime() & 1) ? lo : hi;
+    }
     return (i32)GameGetTime() % range + lo;
 }
 
@@ -113,10 +114,11 @@ void UpdateMgrScroll(CGruntzMgr* pm, i32* pMode, i32 snapFlag, i32 unused) {
     i32 scrollY = v->m_88;
 
     if (g_scrollClock > g_frameTime) {
-        if (g_frameDelta < g_scrollTimer)
+        if (g_frameDelta < g_scrollTimer) {
             g_scrollTimer -= g_frameDelta;
-        else
+        } else {
             g_scrollTimer = 0;
+        }
         if (g_scrollTimer == 0) {
             g_scrollTimer = RandRange(g_panMinX, g_panMaxX);
             scrollX += RandRange(-g_jitterX, g_jitterX);
@@ -126,22 +128,27 @@ void UpdateMgrScroll(CGruntzMgr* pm, i32* pMode, i32 snapFlag, i32 unused) {
 
     i32 cx = g_mgrSettings->m_8c / 2;
     i32 cy = g_mgrSettings->m_90 / 2;
-    if (*pMode != 2)
+    if (*pMode != 2) {
         cx -= 0xa0;
+    }
     if (snapFlag) {
         cx = 0x60;
         cy = 0x60;
     }
 
-    if (scrollX < cx - 1)
+    if (scrollX < cx - 1) {
         scrollX = cx - 1;
+    }
     ScrollView* v2 = pm->m_30->m_24->m_5c;
-    if (scrollX > v2->m_30 - cx)
+    if (scrollX > v2->m_30 - cx) {
         scrollX = v2->m_30 - cx;
-    if (scrollY < cy - 1)
+    }
+    if (scrollY < cy - 1) {
         scrollY = cy - 1;
-    if (scrollY > v2->m_34 - cy)
+    }
+    if (scrollY > v2->m_34 - cy) {
         scrollY = v2->m_34 - cy;
+    }
 
     i32 deltaY = scrollY - g_lastScrollY;
     i32 deltaX = scrollX - g_lastScrollX;

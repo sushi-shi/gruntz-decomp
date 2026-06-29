@@ -86,7 +86,7 @@ struct CAniElementObj : public CAniElementBase {
     }
     ~CAniElementObj(); // declared-only -> the new's failure cleanup edge
 
-    i32 Configure_1655c0(void* sub, void* entry, i32 flag); // 0x1655c0 __thiscall
+    i32 Configure_1655c0(void* sub, void* entry, i32 flag);  // 0x1655c0 __thiscall
     i32 Configure2_165620(void* sub, void* entry, i32 flag); // 0x165620 variant
 
     i32 m_1c; // +0x1c = 0

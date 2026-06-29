@@ -17,43 +17,49 @@ struct Drawable {
     virtual void v7();
     virtual void v8();
     virtual void v9();
-    virtual void Draw(i32 x, i32 y, i32 glyph, i32 z);  // slot +0x28
+    virtual void Draw(i32 x, i32 y, i32 glyph, i32 z); // slot +0x28
 };
 
 struct DrawCtx {
     char pad00[0xc];
-    Drawable* m_0c;  // +0x0c
+    Drawable* m_0c; // +0x0c
 };
 
 struct GlyphFont {
     char pad00[0x14];
-    i32* m_14;        // +0x14 glyph table
+    i32* m_14; // +0x14 glyph table
     char pad18[0x64 - 0x18];
-    i32 m_64;         // +0x64 lo char
-    i32 m_68;         // +0x68 hi char
+    i32 m_64; // +0x64 lo char
+    i32 m_68; // +0x68 hi char
 };
 
 // 0x115220
 RVA(0x00115220, 0xa4)
 i32 DrawGlyphString(DrawCtx* ctx, i32 x, i32 y, const char* str, GlyphFont* font, i32 advance) {
-    if (!ctx)
+    if (!ctx) {
         return 0;
-    if (!str)
+    }
+    if (!str) {
         return 0;
-    if (!font)
+    }
+    if (!font) {
         return 0;
+    }
     i32 len = (i32)strlen(str);
-    if (len <= 0)
+    if (len <= 0) {
         return 0;
+    }
     for (i32 i = 0; i < len; i++) {
         i32 c = (signed char)str[i];
         i32 glyph;
-        if (c >= font->m_64 && c <= font->m_68)
+        if (c >= font->m_64 && c <= font->m_68) {
             glyph = font->m_14[c];
-        else
+        } else {
             glyph = 0;
-        if (glyph)
+        }
+        if (glyph) {
             ctx->m_0c->Draw(x, y, glyph, 0);
+        }
         x += advance;
     }
     return 1;

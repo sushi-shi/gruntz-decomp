@@ -98,9 +98,9 @@ struct CMgrHolderX {
 // The gauge/HUD sub-object (g_gameReg->m_2c->m_2dc) the respawn timers poke.
 struct CGaugeObj {
     char _0[0x550];
-    i32 m_550; // +0x550
-    i32 m_554; // +0x554
-    void AdvanceGauge(i32);              // 0x105750
+    i32 m_550;                            // +0x550
+    i32 m_554;                            // +0x554
+    void AdvanceGauge(i32);               // 0x105750
     void UpdateRezMachineWakeStatusBar(); // 0x107a10
 };
 
@@ -111,7 +111,7 @@ struct CGameObj2c {
     char _2e0[0x4f4 - 0x2e0];
     i32 m_4f4; // +0x4f4
     char _4f8[0x594 - 0x4f8];
-    i32 m_594; // +0x594
+    i32 m_594;                  // +0x594
     void EnterOverlayDrag(i32); // 0xd6440
     i32 ClearPlacedObjects();   // 0xda030 -> winner row, or -1
 };
@@ -312,11 +312,9 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
                         if (g_644c54 == i) {
                             g_gameReg->m_68->Notify(2);
                         }
-                        if (lastSlot && lastSlot->m_28 && !lastSlot->m_2c
-                            && !lastSlot->m_24) {
+                        if (lastSlot && lastSlot->m_28 && !lastSlot->m_2c && !lastSlot->m_24) {
                             CLookObj* out = 0;
-                            if (g_gameReg->m_30->m_8->m_map48.Lookup(lastSlot->m_c, out)
-                                && out) {
+                            if (g_gameReg->m_30->m_8->m_map48.Lookup(lastSlot->m_c, out) && out) {
                                 if (out->m_7c->m_18) {
                                     out->m_7c->m_18->ResolveAnimation();
                                 }

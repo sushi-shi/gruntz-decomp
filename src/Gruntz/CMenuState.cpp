@@ -25,10 +25,10 @@
 // thunks; the m_48 sound object's XMIDI master-volume push at 0x138950). All
 // external/no-body so the call rel32 displacements reloc-mask.
 struct CGameMgrSettings {
-    void ApplyOpt(i32 v);         // 0x492340  (thiscall)
-    void StoreInputFlag(i32 v);   // 0x4919d0  CGruntzMgr::StoreInputFlag
-    void StoreInputState(i32 v);  // 0x491a10  CGruntzMgr::StoreInputState
-    void ApplySpeechOpt(i32 v);   // 0x4923b0  (thiscall, the speech-enable commit)
+    void ApplyOpt(i32 v);        // 0x492340  (thiscall)
+    void StoreInputFlag(i32 v);  // 0x4919d0  CGruntzMgr::StoreInputFlag
+    void StoreInputState(i32 v); // 0x491a10  CGruntzMgr::StoreInputState
+    void ApplySpeechOpt(i32 v);  // 0x4923b0  (thiscall, the speech-enable commit)
 
     struct CSound {
         char p0[0x28];
@@ -142,7 +142,11 @@ void LoadGameOptionsToDialog(HWND hDlg) {
     ApiCallerStubs::winapi_0371e0_GetDlgItem_SetScrollInfo(hDlg, 0x476, g_mgrSettings->m_120, 0x50);
     CheckDlgButton(hDlg, 0x471, g_mgrSettings->m_14);
     ApiCallerStubs::winapi_0371e0_GetDlgItem_SetScrollInfo(
-        hDlg, 0x472, g_mgrSettings->m_48->GetXMidiVolume(), 0x64);
+        hDlg,
+        0x472,
+        g_mgrSettings->m_48->GetXMidiVolume(),
+        0x64
+    );
     ApiCallerStubs::winapi_0371e0_GetDlgItem_SetScrollInfo(hDlg, 0x478, g_mgrSettings->m_124, 0x64);
 }
 

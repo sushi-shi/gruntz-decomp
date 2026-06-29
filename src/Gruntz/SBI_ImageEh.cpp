@@ -30,14 +30,18 @@ struct CStatusBarItem {
     void DtorStatus(); // 0x10bfa0  CStatusBarItem base teardown
     char m_pad[0x60 - 0x04];
 };
-inline CStatusBarItem::~CStatusBarItem() { DtorStatus(); }
+inline CStatusBarItem::~CStatusBarItem() {
+    DtorStatus();
+}
 
 // CSBI_RectOnly base (vtable 0x5eab8c, 11 slots; overrides the vdtor -> own vtable).
 struct CSBI_RectOnly : CStatusBarItem {
     virtual ~CSBI_RectOnly();
     void DtorRect(); // 0xe8760  CSBI_RectOnly base teardown
 };
-inline CSBI_RectOnly::~CSBI_RectOnly() { DtorRect(); }
+inline CSBI_RectOnly::~CSBI_RectOnly() {
+    DtorRect();
+}
 
 // CSBI_Image most-derived (vtable 0x5eac0c, 12 slots = vdtor + 10 + 1 new).
 struct CSBI_Image : CSBI_RectOnly {

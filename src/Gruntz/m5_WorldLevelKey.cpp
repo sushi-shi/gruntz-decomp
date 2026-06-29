@@ -38,7 +38,7 @@ public:
     virtual void v38();
     virtual i32 LoadHook(i32 node); // +0x3c
     virtual void v40();
-    virtual void Reset(); // +0x44
+    virtual void Reset();   // +0x44
     void NotifyAllPlanes(); // 0x160f40
     char m_pad04[0x8 - 0x4];
     i32 m_8; // +0x08 dirty flags

@@ -1124,14 +1124,14 @@ static const char s_GRUNTZ_ENTRANCEZ_RESSURECT[] = "GRUNTZ_ENTRANCEZ_RESSURECT";
 static const char s_GRUNTZ_DEATHZ_MELT[] = "GRUNTZ_DEATHZ_MELT";
 
 // BuildGruntExitAnimation (@0x641b0) keys (reloc-masked .rodata).
-static const char s_exitKeyB[] = "B";                          // 0x60d1bc
-static const char s_GRUNTZ_EXITZ[] = "GRUNTZ_EXITZ";           // 0x60bd28
-static const char s_GRUNTZ_EXITZ_ONE[] = "GRUNTZ_EXITZ_ONE";   // 0x60e250
-static const char s_GRUNTZ_EXITZ_TWO[] = "GRUNTZ_EXITZ_TWO";   // 0x60e23c
+static const char s_exitKeyB[] = "B";                            // 0x60d1bc
+static const char s_GRUNTZ_EXITZ[] = "GRUNTZ_EXITZ";             // 0x60bd28
+static const char s_GRUNTZ_EXITZ_ONE[] = "GRUNTZ_EXITZ_ONE";     // 0x60e250
+static const char s_GRUNTZ_EXITZ_TWO[] = "GRUNTZ_EXITZ_TWO";     // 0x60e23c
 static const char s_GRUNTZ_EXITZ_THREE[] = "GRUNTZ_EXITZ_THREE"; // 0x60e224
 
 // LoadVehicleGruntAnimations (@0x63db0) vehicle-grunt looping-sound keys.
-static const char s_GRUNTZ_GOKARTGRUNT[] = "GRUNTZ_GOKARTGRUNT_GOKARTGRUNTLOOP";   // 0x60e1f8
+static const char s_GRUNTZ_GOKARTGRUNT[] = "GRUNTZ_GOKARTGRUNT_GOKARTGRUNTLOOP";       // 0x60e1f8
 static const char s_GRUNTZ_BIGWHEELGRUNT[] = "GRUNTZ_BIGWHEELGRUNT_BIGWHEELGRUNTLOOP"; // 0x60e1c8
 
 RVA(0x00067bd0, 0x2ef)
@@ -3935,7 +3935,8 @@ void CGrunt::LoadVehicleGruntAnimations() {
 
     i64 elapsed = (i64)(u64)g_645588 - *(i64*)((char*)this + 0x810);
     if (elapsed >= *(i64*)((char*)this + 0x818)) {
-        if (*(i32*)((char*)this + 0x228) == 0 && m_10->m_5c == m_lastTilePxX && m_10->m_60 == m_lastTilePxY) {
+        if (*(i32*)((char*)this + 0x228) == 0 && m_10->m_5c == m_lastTilePxX
+            && m_10->m_60 == m_lastTilePxY) {
             if (m_toyTimeSprite) {
                 m_toyTimeSprite->m_8 |= 0x10000;
                 m_toyTimeSprite = 0;
@@ -4022,8 +4023,14 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
 
     i32 eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeI) == 0);
     if (eq) {
-        m_tileMgr->Load6(m_tileOwnerHi, m_tileOwnerLo, *(i32*)((char*)this + 0x3e4),
-                         *(i32*)((char*)this + 0x3e8), m_entranceReason, -1);
+        m_tileMgr->Load6(
+            m_tileOwnerHi,
+            m_tileOwnerLo,
+            *(i32*)((char*)this + 0x3e4),
+            *(i32*)((char*)this + 0x3e8),
+            m_entranceReason,
+            -1
+        );
     } else {
         CGruntHud* h = m_10;
         CGameRegistry* g = g_pGameRegistry;
@@ -6510,17 +6517,16 @@ i32 CGrunt::StepArrivalDefenseLean() {
                 occ->m_lastTilePxY
             );
             return 1;
-        c2_miss:
-            {
-                CGruntHud* h = m_10;
-                i32 vx = h->m_5c;
-                i32 vy = h->m_60;
-                char* m24 = *(char**)((char*)g_gameReg->m_30 + 0x24);
-                i32* rect = (i32*)(*(char**)(m24 + 0x5c) + 0x40);
-                if (vx < rect[2] && vx >= rect[0] && vy < rect[3] && vy >= rect[1]) {
-                    g_gameReg->m_60->CueA(this, 0x366, -1, 0, -1, -1);
-                }
+        c2_miss: {
+            CGruntHud* h = m_10;
+            i32 vx = h->m_5c;
+            i32 vy = h->m_60;
+            char* m24 = *(char**)((char*)g_gameReg->m_30 + 0x24);
+            i32* rect = (i32*)(*(char**)(m24 + 0x5c) + 0x40);
+            if (vx < rect[2] && vx >= rect[0] && vy < rect[3] && vy >= rect[1]) {
+                g_gameReg->m_60->CueA(this, 0x366, -1, 0, -1, -1);
             }
+        }
             m_2d4 = 1;
             *(i32*)((char*)this + 0x2ec) = 0x1f4;
             return 1;
@@ -6597,12 +6603,8 @@ i32 CGrunt::StepArrivalDefenseLean() {
             occ = m_tileMgr->GetOccupant(this);
             if (GruntRand() % 0x64 == 0 && m_health > 0x1a && occ != 0 && m_stamina >= 0x64
                 && GruntInRadius(occ->m_tileOwnerHi, occ->m_tileOwnerLo) != 0) {
-                m_tileMgr->CommitTileSlot2(
-                    m_tileOwnerHi,
-                    m_tileOwnerLo,
-                    m_lastTilePxX,
-                    m_lastTilePxY
-                );
+                m_tileMgr
+                    ->CommitTileSlot2(m_tileOwnerHi, m_tileOwnerLo, m_lastTilePxX, m_lastTilePxY);
                 return 1;
             }
             if (m_resetApplied != 0) {
@@ -6614,8 +6616,7 @@ i32 CGrunt::StepArrivalDefenseLean() {
             if ((u32) * (u32*)((char*)this + 0x2ec) <= 0xbb8) {
                 return 1;
             }
-            if ((i64)(u32)g_645588 - *(i64*)((char*)this + 0x308)
-                >= *(i64*)((char*)this + 0x310)) {
+            if ((i64)(u32)g_645588 - *(i64*)((char*)this + 0x308) >= *(i64*)((char*)this + 0x310)) {
                 Stub_062e10(1, 1, 0);
                 *(i32*)((char*)this + 0x310) = GruntRand() % 0x7530 + 0x7530;
                 *(i32*)((char*)this + 0x314) = 0;

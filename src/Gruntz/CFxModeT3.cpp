@@ -59,8 +59,8 @@ struct FxPointArray {
 // the two .rdata float constants the projection compares/biases against.
 DATA(0x002c4490)
 extern void(__stdcall* g_OffsetRect)(void* r, i32 dx, i32 dy); // PTR_OffsetRect_006c4490
-extern float g_fxBias; // 0x5f07ec
-extern float g_fxEps; // 0x5f07f4
+extern float g_fxBias;                                         // 0x5f07ec
+extern float g_fxEps;                                          // 0x5f07f4
 
 // Rez heap for the array grow (reloc-masked).
 extern "C" void* RezAlloc(u32 size); // 0x1b9b46

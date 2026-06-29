@@ -12,20 +12,27 @@
 // ===========================================================================
 RVA(0x00037b40, 0xb3)
 i32 CLatencyList::PopulateModemSlow() {
-    if (!AddItem("Automatic", 0, 0))
+    if (!AddItem("Automatic", 0, 0)) {
         return 0;
-    if (!AddItem("Very Low Latency [ping < 50]", 2, 10))
+    }
+    if (!AddItem("Very Low Latency [ping < 50]", 2, 10)) {
         return 0;
-    if (!AddItem("Low Latency [ping < 100]", 4, 10))
+    }
+    if (!AddItem("Low Latency [ping < 100]", 4, 10)) {
         return 0;
-    if (!AddItem("Medium Latency [ping < 200]", 6, 10))
+    }
+    if (!AddItem("Medium Latency [ping < 200]", 6, 10)) {
         return 0;
-    if (!AddItem("Medium-High [ping < 250]", 8, 10))
+    }
+    if (!AddItem("Medium-High [ping < 250]", 8, 10)) {
         return 0;
-    if (!AddItem("High Latency [ping < 400]", 12, 10))
+    }
+    if (!AddItem("High Latency [ping < 400]", 12, 10)) {
         return 0;
-    if (!AddItem("Very High Latency [ping < 550]", 16, 10))
+    }
+    if (!AddItem("Very High Latency [ping < 550]", 16, 10)) {
         return 0;
+    }
     return AddItem("Last Resort", 24, 10) != 0;
 }
 
@@ -34,19 +41,26 @@ i32 CLatencyList::PopulateModemSlow() {
 // ===========================================================================
 RVA(0x00037d20, 0xb3)
 i32 CLatencyList::PopulateModemFast() {
-    if (!AddItem("Automatic", 0, 0))
+    if (!AddItem("Automatic", 0, 0)) {
         return 0;
-    if (!AddItem("Very Low Latency [ping < 50]", 2, 30))
+    }
+    if (!AddItem("Very Low Latency [ping < 50]", 2, 30)) {
         return 0;
-    if (!AddItem("Low Latency [ping < 100]", 4, 30))
+    }
+    if (!AddItem("Low Latency [ping < 100]", 4, 30)) {
         return 0;
-    if (!AddItem("Medium Latency [ping < 200]", 6, 30))
+    }
+    if (!AddItem("Medium Latency [ping < 200]", 6, 30)) {
         return 0;
-    if (!AddItem("Medium-High [ping < 250]", 8, 30))
+    }
+    if (!AddItem("Medium-High [ping < 250]", 8, 30)) {
         return 0;
-    if (!AddItem("High Latency [ping < 400]", 12, 30))
+    }
+    if (!AddItem("High Latency [ping < 400]", 12, 30)) {
         return 0;
-    if (!AddItem("Very High Latency [ping < 550]", 16, 30))
+    }
+    if (!AddItem("Very High Latency [ping < 550]", 16, 30)) {
         return 0;
+    }
     return AddItem("Last Resort", 24, 30) != 0;
 }

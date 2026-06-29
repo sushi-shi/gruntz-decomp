@@ -35,14 +35,18 @@ struct CStatusBarItem {
     void DtorStatus(); // 0x10bfa0  CStatusBarItem base teardown (reloc-masked)
     char m_pad[0x60 - 0x04];
 };
-inline CStatusBarItem::~CStatusBarItem() { DtorStatus(); }
+inline CStatusBarItem::~CStatusBarItem() {
+    DtorStatus();
+}
 
 // CSBI_RectOnly base (vtable 0x5eab8c, 11 slots; overrides the vdtor).
 struct CSBI_RectOnly : CStatusBarItem {
     virtual ~CSBI_RectOnly();
     void DtorRect(); // 0xe8760  CSBI_RectOnly base teardown (reloc-masked)
 };
-inline CSBI_RectOnly::~CSBI_RectOnly() { DtorRect(); }
+inline CSBI_RectOnly::~CSBI_RectOnly() {
+    DtorRect();
+}
 
 // CSBI_Image base (vtable 0x5eac0c, 12 slots = vdtor + 10 + 1 new).
 struct CSBI_Image : CSBI_RectOnly {
@@ -50,7 +54,9 @@ struct CSBI_Image : CSBI_RectOnly {
     virtual void Imf1();
     void DtorImage(); // 0xe6d90  CSBI_Image base teardown (reloc-masked)
 };
-inline CSBI_Image::~CSBI_Image() { DtorImage(); }
+inline CSBI_Image::~CSBI_Image() {
+    DtorImage();
+}
 
 // CSBI_ImageSet most-derived (vtable 0x5eac4c, 13 slots = vdtor + 10 + 1 + 1).
 struct CSBI_ImageSet : CSBI_Image {

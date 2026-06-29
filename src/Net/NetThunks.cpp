@@ -12,11 +12,11 @@
 #include <rva.h>
 
 extern "C" {
-void n_AckDropPlayer_ba590();    // CNetMgr::AckDropPlayer  (0xba590)
-void n_ReportVersionMsg_b7e30(); // CMulti::ReportVersionMsg (0xb7e30)
-void n_SendNetStat_b9290();      // CNetMgr::SendNetStat     (0xb9290)
-void n_SendStatFlag_b9240();     // CNetMgr::SendStatFlag    (0xb9240)
-void n_SendStat3_b9410();        // CNetMgr::SendStat3       (0xb9410)
+    void n_AckDropPlayer_ba590();    // CNetMgr::AckDropPlayer  (0xba590)
+    void n_ReportVersionMsg_b7e30(); // CMulti::ReportVersionMsg (0xb7e30)
+    void n_SendNetStat_b9290();      // CNetMgr::SendNetStat     (0xb9290)
+    void n_SendStatFlag_b9240();     // CNetMgr::SendStatFlag    (0xb9240)
+    void n_SendStat3_b9410();        // CNetMgr::SendStat3       (0xb9410)
 }
 
 RVA(0x000016d1, 0x5)

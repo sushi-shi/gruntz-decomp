@@ -169,12 +169,12 @@ i32 CImage::LoadFromRez(char* name, void* a2, void* a3) {
 class CImageExtLoader {
 public:
     i32 LoadByExtension(char* path, i32 arg);
-    i32 LoadBmpFile(char* path, i32 arg); // 0x177480
-    i32 LoadPcxFile(char* path, i32 arg); // 0x1772e0  (.PCX palette tail)
-    i32 LoadPalFile(char* path, i32 arg); // 0x1771f0  (768-byte .PAL)
-    i32 Apply(char* path, i32 arg);       // 0x1775f0  (default)
-    i32 ProcessPal(void* rgb768, i32 arg);  // 0x176e70 (external)
-    i32 BuildPalette(void* rgbq, i32 arg);  // 0x176df0 (external)
+    i32 LoadBmpFile(char* path, i32 arg);  // 0x177480
+    i32 LoadPcxFile(char* path, i32 arg);  // 0x1772e0  (.PCX palette tail)
+    i32 LoadPalFile(char* path, i32 arg);  // 0x1771f0  (768-byte .PAL)
+    i32 Apply(char* path, i32 arg);        // 0x1775f0  (default)
+    i32 ProcessPal(void* rgb768, i32 arg); // 0x176e70 (external)
+    i32 BuildPalette(void* rgbq, i32 arg); // 0x176df0 (external)
 };
 
 RVA(0x00176f90, 0xa4)
@@ -935,8 +935,8 @@ public:
 };
 class CImageSurfaceItem {
 public:
-    virtual void* Delete(u32 flags);  // slot 0 (@0x00) scalar-deleting dtor
-    virtual i32 Load(void* src);      // slot 1 (@0x04)
+    virtual void* Delete(u32 flags); // slot 0 (@0x00) scalar-deleting dtor
+    virtual i32 Load(void* src);     // slot 1 (@0x04)
 
     char m_pad04[0x94 - 0x04]; // +0x04 (m_04/m_08/m_0c/m_7c zeroed)
     CByteArrayMember m_94;     // +0x94
@@ -950,7 +950,7 @@ public:
 };
 DATA(0x00253c88)
 extern CImageCache g_imageCache; // 0x653c88
-extern i32 g_imageCacheIndex; // 0x653c90
+extern i32 g_imageCacheIndex;    // 0x653c90
 
 // The owner of the factory (this) is not touched by the body; modeled as an
 // opaque shell so the call lowers to the retail __thiscall frame.

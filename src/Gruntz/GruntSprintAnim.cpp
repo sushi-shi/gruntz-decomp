@@ -30,8 +30,14 @@ struct CGsSprite;
 // template up by class-NAME, the 5th arg; __thiscall ret 0x18). Same shape as the
 // IconLoaders factory.
 struct CGsSpriteFactory {
-    CGsSprite* CreateSprite(i32 kind, i32 px, i32 py, i32 hint, const char* name,
-                            i32 flags); // 0x1597b0
+    CGsSprite* CreateSprite(
+        i32 kind,
+        i32 px,
+        i32 py,
+        i32 hint,
+        const char* name,
+        i32 flags
+    ); // 0x1597b0
 };
 struct CGsFactoryHolder {
     char m_pad0[0x8];
@@ -70,8 +76,8 @@ struct CGsSprite {
 // The owning sprite-collection (best-guess name; RTTI owner reloc-masked).
 class CGruntSprintAnim {
 public:
-    i32 BuildGruntSprintAnimation();                       // 0x019920
-    void PerDirGeometry(i32 dir, i32* outX, i32* outY);    // 0x019cd0 (thunk 0x3869)
+    i32 BuildGruntSprintAnimation();                    // 0x019920
+    void PerDirGeometry(i32 dir, i32* outX, i32* outY); // 0x019cd0 (thunk 0x3869)
 
     char m_pad0[0x204];
     CGsSprite* m_204[8]; // +0x204  the 8 directional sprint sprites

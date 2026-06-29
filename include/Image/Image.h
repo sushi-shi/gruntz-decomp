@@ -176,7 +176,7 @@ public:
     // runs the *Data decoders and installs the transparency colour after.
     i32 Resolve(void* surf, void* buf, i32 type, u32 size, void* surf2);
     i32 ResolveEx(void* surf, void* buf, i32 type, u32 size, i32 ctrl, i32 trans);
-    i32 Fill(u32 color);  // colour-fill blt (0x13e760)
+    i32 Fill(u32 color);   // colour-fill blt (0x13e760)
     virtual ~CFileImage(); // 0x141350  (virtual: the implicit vptr stamp lands stamp-first)
 
     // The shared surface-teardown helper the destructor calls before destroying

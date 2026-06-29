@@ -39,8 +39,12 @@ struct WaitApp {
 // A scoped hourglass: ctor begins the wait cursor, dtor ends it - the third
 // destructible local that (with the two CStrings) shapes the /GX unwind states.
 struct WaitScope {
-    WaitScope() { ((WaitApp*)AfxGetModuleState()->m_pCurrentWinApp)->BeginWaitCursor(); }
-    ~WaitScope() { ((WaitApp*)AfxGetModuleState()->m_pCurrentWinApp)->EndWaitCursor(); }
+    WaitScope() {
+        ((WaitApp*)AfxGetModuleState()->m_pCurrentWinApp)->BeginWaitCursor();
+    }
+    ~WaitScope() {
+        ((WaitApp*)AfxGetModuleState()->m_pCurrentWinApp)->EndWaitCursor();
+    }
 };
 
 // @early-stop

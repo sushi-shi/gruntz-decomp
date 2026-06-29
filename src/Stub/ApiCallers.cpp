@@ -248,10 +248,10 @@ namespace ApiCallerStubs {
         char m_pad80[0x120 - 0x80];
         i32 m_120; // +0x120
         char m_pad124[0x134 - 0x124];
-        i32 m_134; // +0x134
-        i32 m_138; // +0x138
-        i32 m_13c; // +0x13c
-        i32 m_140; // +0x140
+        i32 m_134;  // +0x134
+        i32 m_138;  // +0x138
+        i32 m_13c;  // +0x13c
+        i32 m_140;  // +0x140
         RECT m_144; // +0x144
         RECT m_154; // +0x154 (m_158 == m_154.top)
         char m_pad164[0x19c - 0x164];
@@ -260,10 +260,24 @@ namespace ApiCallerStubs {
     // The default action handler, only its address matters (LAB_00402d15).
     extern "C" void DefaultActionHandler_2d15();
     // Emit helpers (__stdcall, ILT jmp-thunks) -> the placed sprite record.
-    PlacedRec_c840* __stdcall EmitSpriteFull_3c97(void* tex, i32 z, RECT* rc, i32 a, i32 b, i32 c,
-                                                  i32 d, i32 e, i32 f); // RVA 0x3c97
-    PlacedRec_c840* __stdcall EmitSpriteSimple_2ad6(void* tex, i32 z, RECT* rc, i32 a,
-                                                    i32 b); // RVA 0x2ad6
+    PlacedRec_c840* __stdcall EmitSpriteFull_3c97(
+        void* tex,
+        i32 z,
+        RECT* rc,
+        i32 a,
+        i32 b,
+        i32 c,
+        i32 d,
+        i32 e,
+        i32 f
+    ); // RVA 0x3c97
+    PlacedRec_c840* __stdcall EmitSpriteSimple_2ad6(
+        void* tex,
+        i32 z,
+        RECT* rc,
+        i32 a,
+        i32 b
+    ); // RVA 0x2ad6
     // __cdecl(obj): commit the object's pending action into the active sprite layer.
     // @early-stop
     // arg-load scheduling wall (~94%): body byte-exact through the flag math and both
@@ -291,8 +305,17 @@ namespace ApiCallerStubs {
                 if (g_gameReg->m_54) {
                     PlacedRec_c840* placed;
                     if (obj->m_138 > 0) {
-                        placed = EmitSpriteFull_3c97(slot->m_10, 0x64, &rc, obj->m_120, obj->m_134,
-                                                     obj->m_138, obj->m_13c, obj->m_140, 0);
+                        placed = EmitSpriteFull_3c97(
+                            slot->m_10,
+                            0x64,
+                            &rc,
+                            obj->m_120,
+                            obj->m_134,
+                            obj->m_138,
+                            obj->m_13c,
+                            obj->m_140,
+                            0
+                        );
                     } else {
                         placed = EmitSpriteSimple_2ad6(slot->m_10, 0x64, &rc, obj->m_120, 0);
                     }
@@ -445,7 +468,6 @@ namespace ApiCallerStubs {
         WndItem* it = ResolveItem_33a0(id);
         return SendMessageA(it->m_hwnd, 0x14e, wParam - 1, 0);
     }
-
 
     // @confidence: low
     // @source: winapi:CreateSolidBrush;FillRect;GetClientRect
@@ -890,7 +912,7 @@ namespace ApiCallerStubs {
     // The shared MFC CString scratch globals used to assemble custom-level paths;
     // m_data (the CString data ptr) is at offset 0.
     struct GameCStr_62c25c {
-        char* m_data; // +0x00
+        char* m_data;               // +0x00
         void Assign(const char* s); // operator=  RVA 0x1b9e74 (thiscall)
         void Append(const char* s); // operator+= RVA 0x1ba0c8 (thiscall)
         void Reset();               // RVA 0x1b9c69 (thiscall)
@@ -899,8 +921,8 @@ namespace ApiCallerStubs {
     extern GameCStr_62c25c g_customPath;
     DATA(0x0062c264)
     extern GameCStr_62c25c g_customName;
-    i32 GetGameRootDir_11fc10(char* buf, i32 size);   // RVA 0x11fc10 (cdecl)
-    i32 FileExists_4282(const char* path);            // RVA 0x4282 (cdecl)
+    i32 GetGameRootDir_11fc10(char* buf, i32 size); // RVA 0x11fc10 (cdecl)
+    i32 FileExists_4282(const char* path);          // RVA 0x4282 (cdecl)
     // __cdecl(hWnd): build "<root>\Custom\<sel>.WWD" for the selected custom level.
     RVA(0x0003b310, 0x10d)
     i32 winapi_03b310_GetDlgItem(HWND hWnd) {
@@ -1513,11 +1535,11 @@ namespace ApiCallerStubs {
     struct PeerSession_0be490;
     extern PeerSession_0be490* g_peerSession;
     // Lobby DlgProc helpers (cdecl, reached through ILT jmp-thunks).
-    i32 PreHandleLobbyMsg_38c3(HWND, u32, u32, i32);      // RVA 0x38c3 -> 0x1192d0
-    void OnLobbyInit_2c66(HWND, PeerSession_0be490*);     // RVA 0x2c66
-    void OnLobbyTimerA_265d(HWND, PeerSession_0be490*);   // RVA 0x265d
-    void OnLobbyTimerB_154b(HWND, PeerSession_0be490*);   // RVA 0x154b
-    void OnLobbyCancel_2ae0(HWND, PeerSession_0be490*);   // RVA 0x2ae0
+    i32 PreHandleLobbyMsg_38c3(HWND, u32, u32, i32);    // RVA 0x38c3 -> 0x1192d0
+    void OnLobbyInit_2c66(HWND, PeerSession_0be490*);   // RVA 0x2c66
+    void OnLobbyTimerA_265d(HWND, PeerSession_0be490*); // RVA 0x265d
+    void OnLobbyTimerB_154b(HWND, PeerSession_0be490*); // RVA 0x154b
+    void OnLobbyCancel_2ae0(HWND, PeerSession_0be490*); // RVA 0x2ae0
     // __stdcall DlgProc(hWnd, msg, wParam, lParam): the network-lobby dialog proc.
     RVA(0x000bdc00, 0x10c)
     i32 __stdcall winapi_0bdc00_EndDialog_KillTimer(HWND hWnd, u32 msg, u32 wParam, i32 lParam) {
@@ -1526,31 +1548,31 @@ namespace ApiCallerStubs {
             return 1;
         }
         switch (msg) {
-        case 0x110:
-            g_curDlg_64557c = hWnd;
-            g_peerSession = (PeerSession_0be490*)g_gameReg->m_2c;
-            OnLobbyInit_2c66(hWnd, g_peerSession);
-            return 1;
-        case 0x111:
-            if (wParam == 0x4f7) {
-                KillTimer(hWnd, 1);
-                EndDialog(hWnd, wParam);
+            case 0x110:
+                g_curDlg_64557c = hWnd;
+                g_peerSession = (PeerSession_0be490*)g_gameReg->m_2c;
+                OnLobbyInit_2c66(hWnd, g_peerSession);
                 return 1;
-            }
-            if (wParam == 0x4ce) {
-                KillTimer(hWnd, 1);
-                EndDialog(hWnd, wParam);
+            case 0x111:
+                if (wParam == 0x4f7) {
+                    KillTimer(hWnd, 1);
+                    EndDialog(hWnd, wParam);
+                    return 1;
+                }
+                if (wParam == 0x4ce) {
+                    KillTimer(hWnd, 1);
+                    EndDialog(hWnd, wParam);
+                    return 1;
+                }
+                if (wParam == 0x4c6) {
+                    OnLobbyCancel_2ae0(hWnd, g_peerSession);
+                    return 1;
+                }
+                break;
+            case 0x113:
+                OnLobbyTimerA_265d(hWnd, g_peerSession);
+                OnLobbyTimerB_154b(hWnd, g_peerSession);
                 return 1;
-            }
-            if (wParam == 0x4c6) {
-                OnLobbyCancel_2ae0(hWnd, g_peerSession);
-                return 1;
-            }
-            break;
-        case 0x113:
-            OnLobbyTimerA_265d(hWnd, g_peerSession);
-            OnLobbyTimerB_154b(hWnd, g_peerSession);
-            return 1;
         }
         return 0;
     }
@@ -1594,9 +1616,9 @@ namespace ApiCallerStubs {
     // @source: winapi:GetDlgItem;SetDlgItemTextA;SetTimer
     // A scratch CString (m_data at +0; CStringData length is 8 bytes before m_data).
     struct GameCStr_be2f0 {
-        char* m_data;        // +0x00
-        GameCStr_be2f0();    // ctor RVA 0x1b9b93 (thiscall)
-        ~GameCStr_be2f0();   // dtor RVA 0x1b9cde (thiscall)
+        char* m_data;      // +0x00
+        GameCStr_be2f0();  // ctor RVA 0x1b9b93 (thiscall)
+        ~GameCStr_be2f0(); // dtor RVA 0x1b9cde (thiscall)
     };
     // The "client status" CString global (?g_6473d8@@3VCString@@A).
     DATA(0x006473d8)
@@ -1609,8 +1631,11 @@ namespace ApiCallerStubs {
         if (hWnd && ctx) {
             GameCStr_be2f0 banner;
             if (*(i32*)(g_clientStatus.m_data - 8) != 0) {
-                FormatCStr_1b2cf5(&banner, "Not Receiving Data From Client: %s",
-                                  g_clientStatus.m_data);
+                FormatCStr_1b2cf5(
+                    &banner,
+                    "Not Receiving Data From Client: %s",
+                    g_clientStatus.m_data
+                );
                 SetDlgItemTextA(hWnd, 0x44b, banner.m_data);
             }
             InitDropPrompt_be3e0(hWnd, ctx);
@@ -1796,15 +1821,15 @@ namespace ApiCallerStubs {
     // @source: winapi:SendMessageA
     // A scratch CString with the MFC ctor/dtor/operator= (m_data at +0).
     struct CStr_c3e30 {
-        char* m_data;       // +0x00
-        CStr_c3e30();       // ctor RVA 0x1b9b93 (thiscall)
-        ~CStr_c3e30();      // dtor RVA 0x1b9cde (thiscall)
+        char* m_data;               // +0x00
+        CStr_c3e30();               // ctor RVA 0x1b9b93 (thiscall)
+        ~CStr_c3e30();              // dtor RVA 0x1b9cde (thiscall)
         void Assign(const char* s); // operator= RVA 0x1b9e74 (thiscall)
     };
     // A dialog-item CWnd (HWND at +0x1c) refreshed from the model.
     struct CWndItem_c3e30 {
         char m_pad0[0x1c];
-        HWND m_1c; // +0x1c
+        HWND m_1c;                                    // +0x1c
         void Refresh1ce7db(i32 sel, CStr_c3e30* out); // thiscall RVA 0x1ce7db
     };
     // The replay/recording model singleton at DAT_0064bd5c.
@@ -1812,9 +1837,9 @@ namespace ApiCallerStubs {
         char m_pad0[0x528];
         i32 m_528; // +0x528 enabled gate
         char m_pad52c[0x5b0 - 0x52c];
-        i32 m_5b0;        // +0x5b0
-        CStr_c3e30 m_5b4; // +0x5b4
-        CStr_c3e30 m_5b8; // +0x5b8
+        i32 m_5b0;            // +0x5b0
+        CStr_c3e30 m_5b4;     // +0x5b4
+        CStr_c3e30 m_5b8;     // +0x5b8
         void Commit3ada(i32); // thiscall thunk RVA 0x3ada
     };
     DATA(0x0064bd5c)
@@ -1823,7 +1848,7 @@ namespace ApiCallerStubs {
     // The host dialog; m_6c is a dirty flag, GetItem27d resolves a child CWnd.
     struct ReplayDlg_c3e30 {
         char m_pad0[0x6c];
-        i32 m_6c; // +0x6c
+        i32 m_6c;                           // +0x6c
         CWndItem_c3e30* GetItem27d(i32 id); // thiscall RVA 0x1be27d
         void OnReset();
     };
@@ -2587,7 +2612,14 @@ namespace ApiCallerStubs {
     };
     // __cdecl(host, src, x, y, useFront, mode): blit src into the active layer node.
     RVA(0x00115300, 0xf5)
-    i32 winapi_115300_SetRect(LayerHost_115300* host, RectSrc_115300* src, i32 x, i32 y, i32 useFront, i32 mode) {
+    i32 winapi_115300_SetRect(
+        LayerHost_115300* host,
+        RectSrc_115300* src,
+        i32 x,
+        i32 y,
+        i32 useFront,
+        i32 mode
+    ) {
         if (!host) {
             return 0;
         }
@@ -2805,7 +2837,6 @@ namespace ApiCallerStubs {
         }
         return Use136bd0(probe, data, arg);
     }
-
 
     // @confidence: low
     // @source: directx-wrapper-caller:calls 0x136550 (DSOUND.#1_DirectSoundCreate)
@@ -3402,7 +3433,6 @@ namespace ApiCallerStubs {
         m_34 = 1;
         Finalize();
     }
-
 
     // @confidence: low
     // @source: winapi:CreateDCA;DeleteDC;GetSystemPaletteEntries
@@ -4141,7 +4171,6 @@ namespace ApiCallerStubs {
         return 0;
     }
 
-
     // @confidence: low
     // @source: winapi:CopyRect
     // The source object whose m_4->m_10->m_10 carries the default tile extent.
@@ -4268,10 +4297,6 @@ namespace ApiCallerStubs {
         }
     }
 
-
-
-
-
     // LoadGruntAbilityTuning (0x57100) re-homed as CGrunt::LoadGruntAbilityTuning
     // in src/Gruntz/GruntAssetLoaders.cpp.
 
@@ -4310,10 +4335,8 @@ namespace ApiCallerStubs {
     // LoadGruntCombatTuning (0x7b930) re-homed as CGruntTileMgr::CombatCue in
     // src/Gruntz/CGruntTileMgr.cpp (owner = CGrunt::m_260's class).
 
-
     // LoadMonologoSprite (0x090d10) re-homed as CGruntzMgr::LoadMonologoSprite in
     // src/Gruntz/GruntzMgr.cpp (the trace owner; this in ecx == CGruntzMgr).
-
 
     // LoadMenuSelectSprite (0x0ba620) re-homed as CNetMgr::LoadMenuSelectSprite in src/Stub/CNetMgr.cpp (proximity HIGH).
 
@@ -4351,7 +4374,6 @@ namespace ApiCallerStubs {
     // BuildSpriteImageKeyTable (0x0dd540) and BuildAnizKeyTable (0x0ddaa0) re-homed
     // (byte-exact) as CPlay methods in src/Gruntz/CPlay.cpp.
 
-
     // BuildToolToyColorTable (0x0e2400) re-homed (byte-exact) as
     // CSpriteRefTable::BuildToolToyColorTable in src/Gruntz/SpriteRefTable.cpp.
 
@@ -4368,7 +4390,5 @@ namespace ApiCallerStubs {
 
     // LoadGruntSpawnConfig (0x11afb0) re-homed as a real CGruntSpawnConfig method
     // in src/Gruntz/CGruntSpawnConfig.cpp.
-
-
 
 } // namespace ApiCallerStubs

@@ -60,12 +60,12 @@ struct CMenuItem2 : CMenuItem {
     i32 m_6c;          // +0x6c
     i32 m_70;          // +0x70
 
-    ~CMenuItem2();                                           // 0x1847e0 (in menuitem TU)
+    ~CMenuItem2();                                            // 0x1847e0 (in menuitem TU)
     i32 Init(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5); // 0x185750
-    i32 Draw(i32 ctx, i32 x, i32 y);                         // 0x1858d0
-    CMenuSprite* GetCurrentSprite();                         // 0x185950
-    CMenuFrame* GetCurrentFrame();                           // 0x185970
-    i32 NextFrame();                                         // 0x1859c0
+    i32 Draw(i32 ctx, i32 x, i32 y);                          // 0x1858d0
+    CMenuSprite* GetCurrentSprite();                          // 0x185950
+    CMenuFrame* GetCurrentFrame();                            // 0x185970
+    i32 NextFrame();                                          // 0x1859c0
 };
 
 #endif // GRUNTZ_MENUITEM2_H

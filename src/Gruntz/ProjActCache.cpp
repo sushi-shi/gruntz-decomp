@@ -7,8 +7,8 @@
 // Heap externs the grow path reaches (reloc-masked rel32 callees). memset stays
 // the rep-stos intrinsic; memcpy is intrinsic (rep movs) for the trie insert below
 // but forced out-of-line (call) for EnsureSize - the #pragma toggles per function.
-extern "C" void* realloc(void* p, u32 n); // 0x125180
-extern "C" void* malloc(u32 n);           // 0x120b60
+extern "C" void* realloc(void* p, u32 n);       // 0x125180
+extern "C" void* malloc(u32 n);                 // 0x120b60
 extern "C" void* memset(void* d, i32 c, u32 n); // (inlined to rep stos)
 #pragma intrinsic(strlen, strcmp, memcpy)
 

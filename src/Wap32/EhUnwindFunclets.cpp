@@ -11,16 +11,16 @@
 #include <rva.h>
 
 // --- external engine callees / continuation labels (reloc-masked) -------------
-extern "C" void FUN_524df0();           // 0x124df0 - CRT terminate/EH helper
-extern "C" void Delete_1bfe15();        // 0x1bfe15 - destructor helper (thiscall via ecx)
+extern "C" void FUN_524df0();              // 0x124df0 - CRT terminate/EH helper
+extern "C" void Delete_1bfe15();           // 0x1bfe15 - destructor helper (thiscall via ecx)
 extern "C" void AfxSetNewHandler_1b9b32(); // 0x1b9b32
-extern "C" int  atexit_11f490();        // 0x11f490 - atexit
-extern int Cont_11ecd6;                 // 0x51ecd6 continuation
-extern int Cont_1ca279;                 // 0x5ca279 continuation
-extern int Cont_1ca0e1;                 // 0x5ca0e1 continuation
-extern "C" void Lbl_1d3190();           // 0x5d3190 static-dtor thunk (push OFFSET needs a fn sym)
-extern "C" void Lbl_1d427d();           // 0x5d427d static-dtor thunk
-extern int Dat_2160cc;                  // 0x6160cc
+extern "C" int atexit_11f490();            // 0x11f490 - atexit
+extern int Cont_11ecd6;                    // 0x51ecd6 continuation
+extern int Cont_1ca279;                    // 0x5ca279 continuation
+extern int Cont_1ca0e1;                    // 0x5ca0e1 continuation
+extern "C" void Lbl_1d3190(); // 0x5d3190 static-dtor thunk (push OFFSET needs a fn sym)
+extern "C" void Lbl_1d427d(); // 0x5d427d static-dtor thunk
+extern int Dat_2160cc;        // 0x6160cc
 
 // 0x124f0e - CRT EH wrapper: tail-call-suppressed call to the terminate helper.
 RVA(0x00124f0e, 0x6)

@@ -9,29 +9,27 @@
 // artifacts, NOT hand-authored logic - the naked asm IS the byte form.
 #include <rva.h>
 
-
-
 extern "C" {
-void Eh_ObjDelete();        // 0x1bfe15  CObject-style delete (thiscall, ecx=this)
-void Eh_AfxGetThread();     // 0x1c0040  AfxGetThread
-void Eh_CxxThrow();         // 0x121ca0  __CxxThrowException@8 (rethrow)
-void Eh_AfxUnlockGlobals(); // 0x1d4e45  AfxUnlockGlobals
-void Dtor_5d3ef0();         // 0x5d3ef0  file-scope destructor (DIR32-masked)
-void Dtor_5d4bf3();         // 0x5d4bf3  file-scope destructor (DIR32-masked)
-void Eh_cont_5c7455();      // 0x5c7455  catch tail continuation (direct rel32 jmp)
-int __cdecl atexit(void(__cdecl*)());
-// Mid-parent continuation / registered addresses (reloc-masked DATA externs).
-char ehc_51ebfb;
-char ehc_5c9918;
-char ehc_5ba814;
-char ehc_5bb418;
-char ehc_5c7436;
-char ehc_5c7449;
-char ehc_5c7455;
-char ehc_5d3ef0;
-char ehc_5d4bf3;
-char ehc_5d4968;
-char ehc_5bd989_cont; // 0x5bd9ad
+    void Eh_ObjDelete();        // 0x1bfe15  CObject-style delete (thiscall, ecx=this)
+    void Eh_AfxGetThread();     // 0x1c0040  AfxGetThread
+    void Eh_CxxThrow();         // 0x121ca0  __CxxThrowException@8 (rethrow)
+    void Eh_AfxUnlockGlobals(); // 0x1d4e45  AfxUnlockGlobals
+    void Dtor_5d3ef0();         // 0x5d3ef0  file-scope destructor (DIR32-masked)
+    void Dtor_5d4bf3();         // 0x5d4bf3  file-scope destructor (DIR32-masked)
+    void Eh_cont_5c7455();      // 0x5c7455  catch tail continuation (direct rel32 jmp)
+    int __cdecl atexit(void(__cdecl*)());
+    // Mid-parent continuation / registered addresses (reloc-masked DATA externs).
+    char ehc_51ebfb;
+    char ehc_5c9918;
+    char ehc_5ba814;
+    char ehc_5bb418;
+    char ehc_5c7436;
+    char ehc_5c7449;
+    char ehc_5c7455;
+    char ehc_5d3ef0;
+    char ehc_5d4bf3;
+    char ehc_5d4968;
+    char ehc_5bd989_cont; // 0x5bd9ad
 }
 
 // 0x11ecdb - SEH-frame restore epilogue fragment (no calls / no continuation).

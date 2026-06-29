@@ -17,16 +17,16 @@ struct HelperHostCtx {
     char pad_00[0x10];
     HelperHostMap* m_10; // +0x10
     char pad_14[0x24 - 0x14];
-    i32 m_24;            // +0x24
+    i32 m_24; // +0x24
 };
 
 // The object Lookup yields, viewed as a bounded element array.
 struct HelperHostObj {
     char pad_00[0x14];
-    void** m_14;             // +0x14  element array
+    void** m_14; // +0x14  element array
     char pad_18[0x64 - 0x18];
-    i32 m_64;                // +0x64  lo index
-    i32 m_68;                // +0x68  hi index
+    i32 m_64; // +0x64  lo index
+    i32 m_68; // +0x68  hi index
 };
 
 class HelperHost {
@@ -39,18 +39,18 @@ public:
     i32 m_10;            // +0x10
     i32 m_14;            // +0x14
     char pad_18[0x3c - 0x18];
-    i32 m_3c;            // +0x3c
-    i32 m_40;            // +0x40
-    i32 m_44;            // +0x44
-    i32 m_48;            // +0x48
-    i32 m_4c;            // +0x4c
-    i32 m_50;            // +0x50
+    i32 m_3c; // +0x3c
+    i32 m_40; // +0x40
+    i32 m_44; // +0x44
+    i32 m_48; // +0x48
+    i32 m_4c; // +0x4c
+    i32 m_50; // +0x50
     char pad_54[0x58 - 0x54];
-    i32 m_58;            // +0x58
-    i32 m_5c;            // +0x5c
-    i32 m_60;            // +0x60
+    i32 m_58; // +0x58
+    i32 m_5c; // +0x5c
+    i32 m_60; // +0x60
     char pad_64[0x78 - 0x64];
-    i32 m_78;            // +0x78
+    i32 m_78; // +0x78
 };
 
 // ===========================================================================
@@ -94,10 +94,11 @@ i32 HelperHost::Helper_166040(i32 key, i32 idx) {
     m_0c->m_10->m_10.Lookup((const char*)key, obj);
     HelperHostObj* p = (HelperHostObj*)obj;
     i32 v;
-    if (p != 0 && idx >= p->m_64 && idx <= p->m_68)
+    if (p != 0 && idx >= p->m_64 && idx <= p->m_68) {
         v = (i32)p->m_14[idx];
-    else
+    } else {
         v = 0;
+    }
     m_78 = v;
     return v != 0;
 }

@@ -35,7 +35,7 @@ public:
     virtual void v3();
     virtual void v4();
     virtual void v5();
-    virtual void v6();  // slot 6  (+0x18) phase-0 init
+    virtual void v6(); // slot 6  (+0x18) phase-0 init
     virtual void v7();
     virtual void v8();
     virtual void v9();
@@ -67,36 +67,36 @@ RVA(0x00114480, 0xf1)
 i32 ToobSpikezLogic(CGameObjLogic* obj) {
     CToobLogicRec* rec = obj->m_7c;
     switch (rec->m_1c) {
-    case 0: {
-        rec->m_1c = 0x3e8;
-        CToobLogicInst* inst = new CToobLogicInst(obj);
-        inst->v6();
-        rec->m_18 = inst;
-        break;
-    }
-    case 0x1d:
-        rec->m_18->v11();
-        break;
-    case 0x1e:
-        rec->m_18->v10();
-        break;
-    case 0x50:
-        rec->m_18->v14();
-        break;
-    case 0x51:
-        rec->m_18->v13();
-        break;
-    case 0x52:
-        rec->m_18->v12();
-        break;
-    case 0x53:
-        rec->m_18->v15();
-        break;
-    case 0x3e8:
-        break;
-    default:
-        ToobLogicError(rec->m_18);
-        break;
+        case 0: {
+            rec->m_1c = 0x3e8;
+            CToobLogicInst* inst = new CToobLogicInst(obj);
+            inst->v6();
+            rec->m_18 = inst;
+            break;
+        }
+        case 0x1d:
+            rec->m_18->v11();
+            break;
+        case 0x1e:
+            rec->m_18->v10();
+            break;
+        case 0x50:
+            rec->m_18->v14();
+            break;
+        case 0x51:
+            rec->m_18->v13();
+            break;
+        case 0x52:
+            rec->m_18->v12();
+            break;
+        case 0x53:
+            rec->m_18->v15();
+            break;
+        case 0x3e8:
+            break;
+        default:
+            ToobLogicError(rec->m_18);
+            break;
     }
     return 1;
 }

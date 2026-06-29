@@ -81,7 +81,7 @@ public:
         const char* key,
         i32 flag,
         i32 e
-    );                       // +0x2c
+    );                            // +0x2c
     virtual void Activate(i32 a); // +0x30
 
     void* m_vptr; // +0x00
@@ -97,8 +97,10 @@ public:
 };
 
 // The two concrete base ctors (reached via ILT thunks; __thiscall on the raw item).
-void __fastcall Sbi_CtorImageSet(CSbMenuItem* p); // ??0CSBI_ImageSet@@QAE@XZ (thunk 0x1e88 -> 0x101fa0)
-void __fastcall Sbi_CtorBase(CSbMenuItem* p);     // ??0CStatusBarItem@@QAE@XZ (thunk 0x22c0 -> 0x1005d0)
+void __fastcall
+Sbi_CtorImageSet(CSbMenuItem* p); // ??0CSBI_ImageSet@@QAE@XZ (thunk 0x1e88 -> 0x101fa0)
+void __fastcall
+Sbi_CtorBase(CSbMenuItem* p); // ??0CStatusBarItem@@QAE@XZ (thunk 0x22c0 -> 0x1005d0)
 
 // The retail vtables (manual-stamp model; stamped directly). Reloc-masked DATA().
 DATA(0x001eab4c)
@@ -131,7 +133,7 @@ public:
     void BuildGameMenu(); // 0x101580
 
     char m_pad00[0xc];
-    i32 m_c; // +0x0c  configure `code` arg
+    i32 m_c;  // +0x0c  configure `code` arg
     i32 m_10; // +0x10  base x
     i32 m_14; // +0x14  base y
     char m_pad18[0xb8 - 0x18];

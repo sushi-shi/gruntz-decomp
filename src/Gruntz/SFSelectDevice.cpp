@@ -12,19 +12,19 @@
 
 #include <rva.h>
 
-#include <Win32.h> // LoadLibraryA / GetProcAddress / FreeLibrary
-#include <stdio.h> // sprintf (0x11f890)
+#include <Win32.h>  // LoadLibraryA / GetProcAddress / FreeLibrary
+#include <stdio.h>  // sprintf (0x11f890)
 #include <string.h> // memset (rep stos intrinsic)
 
 // The SFMAN32 device interface (the *0x64e0b0 receiver). Slots are __cdecl
 // function pointers the factory fills; same global the soundfont loader uses.
 struct KeyRecv_f8ec0 {
-    void(__cdecl* GetCount)(u16* out);                      // +0x00
-    void(__cdecl* QueryCaps)(u16 idx, void* caps);          // +0x04
-    void(__cdecl* GetId)(u16 idx, i32* out);                // +0x08
+    void(__cdecl* GetCount)(u16* out);             // +0x00
+    void(__cdecl* QueryCaps)(u16 idx, void* caps); // +0x04
+    void(__cdecl* GetId)(u16 idx, i32* out);       // +0x08
     char m_pad0c[0x10 - 0xc];
-    i32(__cdecl* Select)(u16 idx);                          // +0x10
-    void(__cdecl* Deselect)(u16 idx);                       // +0x14
+    i32(__cdecl* Select)(u16 idx);    // +0x10
+    void(__cdecl* Deselect)(u16 idx); // +0x14
     char m_pad18[0x1c - 0x18];
     void(__cdecl* GetRating)(u16 idx, void* buf, i32* out); // +0x1c
 };
@@ -118,8 +118,8 @@ i32 SFManager_SelectBestDevice() {
             g_ratings_64e0c0[g_idx_64da80] = 0x80;
         } else {
             g_keyRecv_64e0b0->Select(g_idx_64da80);
-            g_keyRecv_64e0b0->GetRating(g_idx_64da80, &g_ratingBuf_64dbe0,
-                                        (i32*)&g_ratingRaw_64da84);
+            g_keyRecv_64e0b0
+                ->GetRating(g_idx_64da80, &g_ratingBuf_64dbe0, (i32*)&g_ratingRaw_64da84);
             u8 r = (u8)((g_ratingRaw_64da84 >> 0x13) + 0x40);
             g_ratings_64e0c0[g_idx_64da80] = r;
             if (r == 0x40) {
@@ -138,8 +138,12 @@ i32 SFManager_SelectBestDevice() {
             for (g_idx_64da80 = 1; g_idx_64da80 < g_count_64e0a4; g_idx_64da80++) {
                 if (g_ratings_64e0c0[g_idx_64da80] > g_ratings_64e0c0[g_word_64dd28]) {
                     g_word_64dd28 = g_idx_64da80;
-                    sprintf(g_traceBuf_64da90, "Device %d's rating is %d", g_idx_64da80,
-                            g_ratings_64e0c0[g_idx_64da80] & 0xff);
+                    sprintf(
+                        g_traceBuf_64da90,
+                        "Device %d's rating is %d",
+                        g_idx_64da80,
+                        g_ratings_64e0c0[g_idx_64da80] & 0xff
+                    );
                 }
             }
             sprintf(g_traceBuf_64da90, "Best Device number is %d", g_word_64dd28);

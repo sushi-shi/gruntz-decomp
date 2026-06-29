@@ -8,9 +8,9 @@
 #include <rva.h>
 
 extern "C" {
-int __cdecl sprintf(char* buf, const char* fmt, ...); // 0x11f890
-char* __cdecl strstr(const char* hay, const char* needle); // 0x120090
-unsigned int __cdecl strlen(const char* s);
+    int __cdecl sprintf(char* buf, const char* fmt, ...);      // 0x11f890
+    char* __cdecl strstr(const char* hay, const char* needle); // 0x120090
+    unsigned int __cdecl strlen(const char* s);
 }
 #pragma intrinsic(strlen)
 

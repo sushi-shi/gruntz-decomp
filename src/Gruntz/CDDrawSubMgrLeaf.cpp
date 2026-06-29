@@ -60,11 +60,11 @@ public:
 // BEFORE the field stores reproduces retail).
 class CDDrawSubMgrLucius {
 public:
-    virtual void Slot00();             // [0] sub_1bef01
+    virtual void Slot00();              // [0] sub_1bef01
     virtual void* ScalarDtor(i32 flag); // [1] scalar-deleting dtor (regular virtual)
-    virtual void Slot08();             // [2] sub_0028ec
-    virtual void Slot0C();             // [3] sub_00106e
-    virtual void Slot10();             // [4] sub_004034
+    virtual void Slot08();              // [2] sub_0028ec
+    virtual void Slot0C();              // [3] sub_00106e
+    virtual void Slot10();              // [4] sub_004034
     ~CDDrawSubMgrLucius();
 
     i32 m_04; // +0x04  -1 when inactive
@@ -85,11 +85,11 @@ public:
     // slots from CDDrawSubMgrLucius (slot 1 overridden below by ScalarDtor_1577c0),
     // then 4 leaf virtuals at slots 5..8 in declaration order (the unreconstructed
     // slots 6/8 are declared-only -> reloc-masked references).
-    void* ScalarDtor(i32 flag) OVERRIDE;  // [1] ??_G scalar-deleting destructor (0x1577c0)
-    virtual i32 VirtualMethodUnknown14(); // [5] 0x1577a0
-    virtual void Slot18_152640();               // [6] 0x152640 (declared-only)
-    virtual void VirtualMethodUnknown1C();      // [7] 0x152650
-    virtual void Slot20_154a00();               // [8] 0x154a00 (declared-only)
+    void* ScalarDtor(i32 flag) OVERRIDE;   // [1] ??_G scalar-deleting destructor (0x1577c0)
+    virtual i32 VirtualMethodUnknown14();  // [5] 0x1577a0
+    virtual void Slot18_152640();          // [6] 0x152640 (declared-only)
+    virtual void VirtualMethodUnknown1C(); // [7] 0x152650
+    virtual void Slot20_154a00();          // [8] 0x154a00 (declared-only)
 
     // Non-vtable members.
     void VirtualMethodUnknown18(); // 0x157ae0 (not a vtable slot)

@@ -86,11 +86,11 @@ extern void* g_albusWorkerVtbl;
 // holds the field resets; being polymorphic + having the destructible CMapStringToOb
 // members gives ~CDDrawWorkerMapSmall its /GX frame.
 struct AlbusMapBase {
-    virtual void Slot00();            // [0] grand-base sub_1bef01
-    virtual ~AlbusMapBase();          // [1] scalar-deleting dtor
-    virtual void Slot08();            // [2] sub_0028ec
-    virtual void Slot0C();            // [3] sub_00106e
-    virtual void Slot10();            // [4] sub_004034
+    virtual void Slot00();   // [0] grand-base sub_1bef01
+    virtual ~AlbusMapBase(); // [1] scalar-deleting dtor
+    virtual void Slot08();   // [2] sub_0028ec
+    virtual void Slot0C();   // [3] sub_00106e
+    virtual void Slot10();   // [4] sub_004034
 
     i32 m_04; // +0x04
     i32 m_08; // +0x08
@@ -120,15 +120,15 @@ public:
     // CObject slots from AlbusMapBase, then 8 leaf virtuals at slots 5..12. They are
     // declared here in slot order so cl lays the emitted vtable out byte-for-byte
     // (the unreconstructed slots 6/8 are declared-only -> reloc-masked references).
-    virtual i32 VirtualMethodUnknown14();                       // [5]  0x156cd0
-    virtual void Slot18_156db0();                               // [6]  0x156db0 (declared-only)
-    virtual void VirtualMethodUnknown1C();                      // [7]  0x165810
-    virtual void Slot20_156cf0();                               // [8]  0x156cf0 (declared-only)
-    virtual void Stub_1658c0();                                 // [9]  0x1658c0
+    virtual i32 VirtualMethodUnknown14();  // [5]  0x156cd0
+    virtual void Slot18_156db0();          // [6]  0x156db0 (declared-only)
+    virtual void VirtualMethodUnknown1C(); // [7]  0x165810
+    virtual void Slot20_156cf0();          // [8]  0x156cf0 (declared-only)
+    virtual void Stub_1658c0();            // [9]  0x1658c0
     virtual void* VirtualMethodUnknown28(i32 a1, const char* key, i32 a3); // [10] 0x165990
     virtual void* VirtualMethodUnknown2C(i32 a1, const char* key, i32 a3); // [11] 0x165a10
-    virtual void Stub_165a90();                                 // [12] 0x165a90
-    virtual ~CDDrawWorkerMapSmall();                            // overrides slot [1]
+    virtual void Stub_165a90();                                            // [12] 0x165a90
+    virtual ~CDDrawWorkerMapSmall();                                       // overrides slot [1]
 
     // VirtualMethodUnknown20 (0x157600) is NOT a vtable slot - a plain method.
     i32 VirtualMethodUnknown20();

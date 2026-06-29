@@ -5,15 +5,15 @@
 // The engine frame-clock globals (mangled C++ ints, declared in GameApp.cpp's
 // cluster). UpdateClock advances g_wap32Now and derives the per-frame delta /
 // run-state countdown from them; reloc-masked DATA() refs.
-extern i32 g_wap32Now; // ?g_wap32Now@@3HA
+extern i32 g_wap32Now;        // ?g_wap32Now@@3HA
 extern i32 g_wap32FrameDelta; // ?g_wap32FrameDelta@@3HA
 DATA(0x00253c78)
 // Unsigned tick stamp: the `!= 0` gate emits an unsigned `test;jbe` (matches
 // retail); the @@3IA mangling differs from GameApp.cpp's int decl but the DATA
 // reloc operand is masked in objdiff, so the scoring is unaffected.
 extern u32 g_wap32ClockReset; // ?g_wap32ClockReset@@3IA  (last clock-reset tick)
-extern i32 g_wap32Run7c; // ?g_wap32Run7c@@3HA  (run-state countdown)
-extern i32 g_wap32Run80; // ?g_wap32Run80@@3HA  (run-state reload value)
+extern i32 g_wap32Run7c;      // ?g_wap32Run7c@@3HA  (run-state countdown)
+extern i32 g_wap32Run80;      // ?g_wap32Run80@@3HA  (run-state reload value)
 
 // RezMgr carries the WAP32 game-clock fields (same layout as CGameMgr; the retail
 // symbol mangles this method's class as `RezMgr`). Only the offsets + the two

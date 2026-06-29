@@ -11,8 +11,8 @@
 #include <Bute/ButeMgr.h> // CButeTree::Find
 
 extern "C" unsigned g_645584; // 0x645584 frame delta
-extern CButeTree g_buteTree; // 0x6bf620
-extern char s_actKeyA[]; // 0x60a454 "A"
+extern CButeTree g_buteTree;  // 0x6bf620
+extern char s_actKeyA[];      // 0x60a454 "A"
 
 struct SpotM10 {
     char pad[0x114];
@@ -45,17 +45,17 @@ public:
     char pad18[0x30 - 0x18];
     void* m_30; // 0x30
     char pad34[0x58 - 0x34];
-    double m_58; // 0x58
-    double m_60; // 0x60
-    double m_68; // 0x68
-    double m_70; // 0x70
-    double m_78; // 0x78
-    double m_80; // 0x80
-    double m_88; // 0x88
-    double m_90; // 0x90
+    double m_58;   // 0x58
+    double m_60;   // 0x60
+    double m_68;   // 0x68
+    double m_70;   // 0x70
+    double m_78;   // 0x78
+    double m_80;   // 0x80
+    double m_88;   // 0x88
+    double m_90;   // 0x90
     SpotM98* m_98; // 0x98
-    int m_9c; // 0x9c
-    int m_a0; // 0xa0
+    int m_9c;      // 0x9c
+    int m_a0;      // 0xa0
     int Update_0b1ee0();
 };
 

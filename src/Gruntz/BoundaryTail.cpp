@@ -38,12 +38,14 @@ void WaitKeyEdge(int vk, int timeoutMs) {
         u32 deadline = tgt() + timeoutMs;
         i16(__stdcall * gaks)(int) = g_pGetAsyncKeyState;
         while (!((i32)gaks(vk) & 0x80000000)) {
-            if (tgt() > deadline)
+            if (tgt() > deadline) {
                 return;
+            }
         }
         while ((i32)gaks(vk) & 0x80000000) {
-            if (tgt() > deadline)
+            if (tgt() > deadline) {
                 return;
+            }
         }
     }
 }
@@ -79,7 +81,6 @@ void CImg176d20::Fill(FillRect176d20* r, int color) {
         memset(m_42c + off, color, width);
     }
 }
-
 
 // ---------------------------------------------------------------------------
 // 0x788d0 - sound-emitter screen-position update: index the per-channel emitter
@@ -161,7 +162,9 @@ struct Obj38120 {
     CString GetName();
 };
 RVA(0x00038120, 0x1d)
-CString Obj38120::GetName() { return m_0; }
+CString Obj38120::GetName() {
+    return m_0;
+}
 
 struct Obj85500 {
     char _0[0xec];
@@ -169,7 +172,9 @@ struct Obj85500 {
     CString GetName();
 };
 RVA(0x00085500, 0x23)
-CString Obj85500::GetName() { return m_ec; }
+CString Obj85500::GetName() {
+    return m_ec;
+}
 
 // ---------------------------------------------------------------------------
 // 0x148250 - flush a pending blit: if nothing pending (m_34==0) return; clear the
@@ -184,17 +189,18 @@ struct CBlit148250 {
     char _18[0x1c - 0x18];
     i32 m_1c; // 0x1c packed color
     char _20[0x2c - 0x20];
-    i32 m_2c; // 0x2c
-    i32 m_30; // 0x30
-    i32 m_34; // 0x34 pending flag
-    void M147aa0(i32 a, i32 b, i32 c, i32 d);                 // 0x147aa0
-    void M147cd0(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f);   // 0x147cd0
+    i32 m_2c;                                               // 0x2c
+    i32 m_30;                                               // 0x30
+    i32 m_34;                                               // 0x34 pending flag
+    void M147aa0(i32 a, i32 b, i32 c, i32 d);               // 0x147aa0
+    void M147cd0(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // 0x147cd0
     void Flush();
 };
 RVA(0x00148250, 0x61)
 void CBlit148250::Flush() {
-    if (m_34 == 0)
+    if (m_34 == 0) {
         return;
+    }
     i32 v = m_14;
     m_34 = 0;
     if (v != 0) {
@@ -281,8 +287,9 @@ RVA(0x0000bdd0, 0x53)
 void* CObj_bdd0::Dispatch(Arg1_bdd0* a1, const char* key, i32 a3, i32 a4, i32 a5, i32 a6) {
     Entry_bdd0* out = 0;
     a1->m_10.Lookup(key, &out);
-    if (out == 0)
+    if (out == 0) {
         return (void*)out;
+    }
     return Method3026(out->m_10, a3, a4, a5, a6);
 }
 
@@ -314,8 +321,9 @@ struct Out118330 {
 void __stdcall IterInit(Iter118330* it); // 0x1b30b1
 RVA(0x00118330, 0x57)
 i32 BuildRecord118330(Out118330* out) {
-    if (out == 0)
+    if (out == 0) {
         return 0;
+    }
     Iter118330 it;
     IterInit(&it);
     out->m_c = it.GetNext(0)->m_10 + 1;

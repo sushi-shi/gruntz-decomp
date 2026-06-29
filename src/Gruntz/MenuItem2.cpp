@@ -86,12 +86,12 @@ i32 CMenuItem2::Draw(i32 ctx, i32 x, i32 y) {
 RVA(0x00185950, 0x1b)
 CMenuSprite* CMenuItem2::GetCurrentSprite() {
     switch (m_24) {
-    case 1:
-        return m_5c;
-    case 2:
-        return m_60;
-    case 3:
-        return m_64;
+        case 1:
+            return m_5c;
+        case 2:
+            return m_60;
+        case 3:
+            return m_64;
     }
     return 0;
 }

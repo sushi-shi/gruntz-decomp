@@ -25,9 +25,10 @@ struct GzStream {
 };
 
 extern "C" {
-int inflateInit2_(GzStream* strm, int windowBits, const char* version, int stream_size); // 0x186180
-int inflate(GzStream* strm, int flush);                                                  // 0x186620
-int inflateEnd(GzStream* strm);                                                          // 0x186990
+    int
+    inflateInit2_(GzStream* strm, int windowBits, const char* version, int stream_size); // 0x186180
+    int inflate(GzStream* strm, int flush);                                              // 0x186620
+    int inflateEnd(GzStream* strm);                                                      // 0x186990
 }
 
 // ===========================================================================
@@ -47,7 +48,12 @@ int inflateEnd(GzStream* strm);                                                 
 // differently than our inflateInit2_/inflate/inflateEnd - they go exact for free
 // once that copy is named. Logic complete; deferred to the final sweep.
 RVA(0x001853b0, 0xa6)
-int WapUncompress(unsigned char* dest, unsigned long* pDestLen, unsigned char* src, unsigned long srcLen) {
+int WapUncompress(
+    unsigned char* dest,
+    unsigned long* pDestLen,
+    unsigned char* src,
+    unsigned long srcLen
+) {
     GzStream s;
     s.next_in = src;
     s.avail_in = (unsigned int)srcLen;

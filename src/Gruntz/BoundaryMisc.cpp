@@ -36,13 +36,13 @@ struct CFinalizeSub8b90 {
 };
 struct CFinalize8b90 {
     typedef void (CFinalize8b90::*PMF)(); // single-inheritance, non-virtual -> 4 bytes
-    void* m_0;              // +0x00
-    PMF m_4;                // +0x04  callback (called with `this`)
-    PMF m_8;                // +0x08  callback (guarded)
+    void* m_0;                            // +0x00
+    PMF m_4;                              // +0x04  callback (called with `this`)
+    PMF m_8;                              // +0x08  callback (guarded)
     char m_pad0c[0x14 - 0x0c];
     CFinalizeSub8b90* m_14; // +0x14
     char m_pad18[0x28 - 0x18];
-    i32 m_28;               // +0x28
+    i32 m_28; // +0x28
     void Finalize(i32 arg);
 };
 RVA(0x00008b90, 0x40)
@@ -79,7 +79,7 @@ struct CVtblStampB940 {
     void* m_vptr; // +0x00
     i32 m_4;      // +0x04
     char m_pad8[0x3c - 0x08];
-    i32 m_3c;     // +0x3c
+    i32 m_3c; // +0x3c
     void StampVptr();
 };
 RVA(0x0000b940, 0xf)
@@ -183,9 +183,9 @@ void DialogInit37870(void* hwnd) {
 // parse callback (0x156530) over the fixed code-table entry (0x4024e6) and the
 // string, returning success as a bool. __cdecl, two args.
 // ===========================================================================
-extern int g_saveBuf[];          // ?g_saveBuf@@3PAHA       (VA 0x629930)
-extern int g_serialCounter;      // ?g_serialCounter@@3HA   (VA 0x629ad0)
-extern void Lab4024e6();         // VA 0x4024e6 (code-table entry passed as a ptr)
+extern int g_saveBuf[];     // ?g_saveBuf@@3PAHA       (VA 0x629930)
+extern int g_serialCounter; // ?g_serialCounter@@3HA   (VA 0x629ad0)
+extern void Lab4024e6();    // VA 0x4024e6 (code-table entry passed as a ptr)
 int __stdcall Parse156530(void* table, char* s, int z); // 0x156530
 struct CSerialObj {
     char m_pad0[0x30];
@@ -224,7 +224,7 @@ struct CClear212a0 {
     void* m_14; // +0x14
     i32 m_18;   // +0x18
     char m_pad1c[0x28 - 0x1c];
-    i32 m_28; // +0x28
+    i32 m_28;                 // +0x28
     void ClearRecursive(i32); // 0x16e070 (reloc-masked)
     void Reset();
 };
@@ -244,7 +244,7 @@ struct AfxThread18430 {
     void EndWaitCursor(); // 0x1beb10 (reloc-masked)
 };
 struct AfxModuleState18430 {
-    void* m_pad0;            // +0x00
+    void* m_pad0;             // +0x00
     AfxThread18430* m_thread; // +0x04
 };
 extern AfxModuleState18430* AfxGetModuleState18430(); // 0x1d3631 (reloc-masked)
@@ -263,8 +263,7 @@ struct CTileSwitch29af0 {
     void Dispatch(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // 0x4b320 (via 0x1640)
 };
 RVA(0x00029af0, 0x3b)
-void __stdcall TileSwitch29af0(CTileSwitch29af0* a1, i32 a2, i32 a3, i32 a4, i32 a5,
-                               i32 a6) {
+void __stdcall TileSwitch29af0(CTileSwitch29af0* a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6) {
     if (a4) {
         rand();
     }

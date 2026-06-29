@@ -256,10 +256,14 @@ CVoiceTrigger::CVoiceTrigger(CGameObject* obj) : CUserLogic(obj) {
     m_14->m_1c = g_buteTree.Find(s_actKeyA);
     ((VTrigCtorObj*)m_10)->m_5c = (((VTrigCtorObj*)m_10)->m_5c & ~0x1f) + 0x10;
     ((VTrigCtorObj*)m_10)->m_60 = (((VTrigCtorObj*)m_10)->m_60 & ~0x1f) + 0x10;
-    ((VTrigCtorObj*)m_10)->m_144 = ((VTrigCtorObj*)m_10)->m_5c - (((VTrigCtorObj*)m_10)->m_134 << 5) - 7;
-    ((VTrigCtorObj*)m_10)->m_14c = ((VTrigCtorObj*)m_10)->m_5c + (((VTrigCtorObj*)m_10)->m_13c << 5) + 7;
-    ((VTrigCtorObj*)m_10)->m_148 = ((VTrigCtorObj*)m_10)->m_60 - (((VTrigCtorObj*)m_10)->m_138 << 5) - 7;
-    ((VTrigCtorObj*)m_10)->m_150 = ((VTrigCtorObj*)m_10)->m_60 + (((VTrigCtorObj*)m_10)->m_140 << 5) + 7;
+    ((VTrigCtorObj*)m_10)->m_144 =
+        ((VTrigCtorObj*)m_10)->m_5c - (((VTrigCtorObj*)m_10)->m_134 << 5) - 7;
+    ((VTrigCtorObj*)m_10)->m_14c =
+        ((VTrigCtorObj*)m_10)->m_5c + (((VTrigCtorObj*)m_10)->m_13c << 5) + 7;
+    ((VTrigCtorObj*)m_10)->m_148 =
+        ((VTrigCtorObj*)m_10)->m_60 - (((VTrigCtorObj*)m_10)->m_138 << 5) - 7;
+    ((VTrigCtorObj*)m_10)->m_150 =
+        ((VTrigCtorObj*)m_10)->m_60 + (((VTrigCtorObj*)m_10)->m_140 << 5) + 7;
 }
 
 // CVoiceTrigger::InitActReg @0x11a320 - construct the trigger's OWN activation-

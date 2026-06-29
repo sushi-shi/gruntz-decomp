@@ -134,7 +134,7 @@ extern "C" i32 __ftol(); // 0x11f570 (declared so the call reloc-masks if needed
 class CPathHazard : public CUserLogic {
 public:
     CPathHazard(CGameObject* obj); // 0xb35a0 (folds CUserLogic(obj) + the waypoint setup)
-    i32 StartPath(); // 0x29be thunk (find/seed the first leg; reloc-masked no-body)
+    i32 StartPath();               // 0x29be thunk (find/seed the first leg; reloc-masked no-body)
     // GetTypeTag (0x132f0): the 6-byte per-class logic-type id accessor (0x425).
     i32 GetTypeTag();
     // Tick (virtual slot 16, body 0xb4020): the per-frame driver.
@@ -149,22 +149,22 @@ public:
 
     i32 m_40; // +0x40  geometry id (m_38->m_1b4 snapshot)
     char m_pad44[0x58 - 0x44];
-    double m_58; // +0x58  per-frame speed (1 / (m_bc * 1/32))
-    double m_60; // +0x60  accumulated x (double)
-    double m_68; // +0x68  accumulated y (double)
-    double m_70; // +0x70  unit-vector x
-    double m_78; // +0x78  unit-vector y
-    double m_80; // +0x80  sign(ux) * 0.5  (the round-to-tile bias)
-    double m_88; // +0x88  sign(uy) * 0.5
+    double m_58;            // +0x58  per-frame speed (1 / (m_bc * 1/32))
+    double m_60;            // +0x60  accumulated x (double)
+    double m_68;            // +0x68  accumulated y (double)
+    double m_70;            // +0x70  unit-vector x
+    double m_78;            // +0x78  unit-vector y
+    double m_80;            // +0x80  sign(ux) * 0.5  (the round-to-tile bias)
+    double m_88;            // +0x88  sign(uy) * 0.5
     CPathWaypoint m_wp[13]; // +0x90  waypoint path (wp[0]=start, wp[1..12]=scaled)
-    i32 m_f8;  // +0xf8  current waypoint index
-    i32 m_fc;  // +0xfc  current waypoint X (int)
-    i32 m_100; // +0x100 current waypoint Y (int)
-    i32 m_104; // +0x104 waypoint count (path length)
-    i32 m_108; // +0x108 leg bute tag (i64 lo)
-    i32 m_10c; // +0x10c          (i64 hi)
-    i32 m_110; // +0x110 leg segments remaining (i64 lo)
-    i32 m_114; // +0x114          (i64 hi)
+    i32 m_f8;               // +0xf8  current waypoint index
+    i32 m_fc;               // +0xfc  current waypoint X (int)
+    i32 m_100;              // +0x100 current waypoint Y (int)
+    i32 m_104;              // +0x104 waypoint count (path length)
+    i32 m_108;              // +0x108 leg bute tag (i64 lo)
+    i32 m_10c;              // +0x10c          (i64 hi)
+    i32 m_110;              // +0x110 leg segments remaining (i64 lo)
+    i32 m_114;              // +0x114          (i64 hi)
     char m_pad118[0x120 - 0x118];
     i32 m_120; // +0x120 strike deadline (i64 lo)
     i32 m_124; // +0x124          (i64 hi)

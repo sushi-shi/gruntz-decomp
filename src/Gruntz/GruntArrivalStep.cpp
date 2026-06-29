@@ -83,7 +83,12 @@ i32 CGrunt::StepArrivalDefenseAlt() {
                 if (m_stamina >= 0x64 && o->m_10->m_5c == o->m_lastTilePxX
                     && o->m_10->m_60 == o->m_lastTilePxY
                     && RectContains(o->m_10->m_5c, o->m_10->m_60) != 0) {
-                    CommitNeighbor(o->m_tileOwnerHi, o->m_tileOwnerLo, o->m_lastTilePxX, o->m_lastTilePxY);
+                    CommitNeighbor(
+                        o->m_tileOwnerHi,
+                        o->m_tileOwnerLo,
+                        o->m_lastTilePxX,
+                        o->m_lastTilePxY
+                    );
                     return 1;
                 }
             }
@@ -100,22 +105,50 @@ i32 CGrunt::StepArrivalDefenseAlt() {
                 i32 gy = m_defenderY >> 5;
                 if (tx < gx) {
                     if (ty < gy) {
-                        StepArrivalDrop(m_lastTilePxX + 0x40, m_lastTilePxY, 0, m_arrivalFlags, 1, 0);
+                        StepArrivalDrop(
+                            m_lastTilePxX + 0x40,
+                            m_lastTilePxY,
+                            0,
+                            m_arrivalFlags,
+                            1,
+                            0
+                        );
                         return 1;
                     }
                     if (ty > gy) {
-                        StepArrivalDrop(m_lastTilePxX, m_lastTilePxY - 0x40, 0, m_arrivalFlags, 1, 0);
+                        StepArrivalDrop(
+                            m_lastTilePxX,
+                            m_lastTilePxY - 0x40,
+                            0,
+                            m_arrivalFlags,
+                            1,
+                            0
+                        );
                         return 1;
                     }
                     goto resetState;
                 }
                 if (tx > gx) {
                     if (ty < gy) {
-                        StepArrivalDrop(m_lastTilePxX, m_lastTilePxY + 0x40, 0, m_arrivalFlags, 1, 0);
+                        StepArrivalDrop(
+                            m_lastTilePxX,
+                            m_lastTilePxY + 0x40,
+                            0,
+                            m_arrivalFlags,
+                            1,
+                            0
+                        );
                         return 1;
                     }
                     if (ty > gy) {
-                        StepArrivalDrop(m_lastTilePxX - 0x40, m_lastTilePxY, 0, m_arrivalFlags, 1, 0);
+                        StepArrivalDrop(
+                            m_lastTilePxX - 0x40,
+                            m_lastTilePxY,
+                            0,
+                            m_arrivalFlags,
+                            1,
+                            0
+                        );
                         return 1;
                     }
                 }
@@ -182,7 +215,12 @@ i32 CGrunt::StepArrivalDefenseAlt() {
             if (m_poweredUp == 0 && m_stamina >= 0x64 && o->m_10->m_5c == o->m_lastTilePxX
                 && o->m_10->m_60 == o->m_lastTilePxY
                 && RectContains(o->m_10->m_5c, o->m_10->m_60) != 0) {
-                CommitNeighbor(o->m_tileOwnerHi, o->m_tileOwnerLo, o->m_lastTilePxX, o->m_lastTilePxY);
+                CommitNeighbor(
+                    o->m_tileOwnerHi,
+                    o->m_tileOwnerLo,
+                    o->m_lastTilePxX,
+                    o->m_lastTilePxY
+                );
                 m_2d4 = 2;
             }
             if (GruntInRadius(o->m_tileOwnerHi, o->m_tileOwnerLo) == 0) {

@@ -18,9 +18,9 @@ public:
 struct GameKeyStr {
     void Free1b9b93(); // 0x1b9b93 (reloc-masked)
 };
-extern CString g_str62c264; // 0x62c264 (pinned in CustomWorldDialog.cpp)
+extern CString g_str62c264;   // 0x62c264 (pinned in CustomWorldDialog.cpp)
 extern GameKeyStr g_levelStr; // 0x62c260 (pinned in Backlog.cpp)
-extern CString g_6473d8;    // 0x6473d8 (pinned in CMulti.cpp)
+extern CString g_6473d8;      // 0x6473d8 (pinned in CMulti.cpp)
 
 // ===========================================================================
 // Range-register thunks: hand the fixed [0x7d0, 0x7da] id range to a managed
@@ -114,11 +114,11 @@ void Register82aa0() {
 struct CoordPool {
     void Recycle(void* elem); // 0x0311b0
 };
-extern CoordPool g_coordPool;     // 0x645540 (UnknownClassArrays.cpp)
-extern void* g_freeList;          // 0x645544 (Projectile.cpp)
+extern CoordPool g_coordPool; // 0x645540 (UnknownClassArrays.cpp)
+extern void* g_freeList;      // 0x645544 (Projectile.cpp)
 DATA(0x00245548)
-extern i32 g_poolScratch645548;   // 0x645548 (new pin)
-extern i32 g_freeListNodeBias;    // 0x64554c (Projectile.cpp)
+extern i32 g_poolScratch645548; // 0x645548 (new pin)
+extern i32 g_freeListNodeBias;  // 0x64554c (Projectile.cpp)
 RVA(0x00082fa0, 0x17)
 void ResetCoordPool82fa0() {
     *(i32*)&g_coordPool = 0;

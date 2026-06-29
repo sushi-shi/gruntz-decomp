@@ -25,7 +25,7 @@ struct RegM30 {
     RegLevel* m_24; // +0x24
 };
 
-struct RegSubMgr { // g_mgrSettings->m_70
+struct RegSubMgr {                                // g_mgrSettings->m_70
     void Notify(i32 group, i32 index, i32 token); // 0x33f0 (thiscall)
 };
 
@@ -60,11 +60,9 @@ i32 CSlotHolder::DoSwap() {
         return 0;
     }
     i32 newTok = g_mgrSettings->m_30->m_24->m_5c
-                     ->m_20[g_mgrSettings->m_30->m_24->m_5c->m_24[this->m_0c]
-                            + this->m_08];
+                     ->m_20[g_mgrSettings->m_30->m_24->m_5c->m_24[this->m_0c] + this->m_08];
     g_mgrSettings->m_30->m_24->m_5c
-        ->m_20[g_mgrSettings->m_30->m_24->m_5c->m_24[this->m_0c] + this->m_08]
-        = oldTok;
+        ->m_20[g_mgrSettings->m_30->m_24->m_5c->m_24[this->m_0c] + this->m_08] = oldTok;
     g_mgrSettings->m_70->Notify(this->m_08, this->m_0c, oldTok);
     this->m_34 = newTok;
     return 1;

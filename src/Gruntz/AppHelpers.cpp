@@ -8,14 +8,14 @@
 #include <rva.h>
 #include <Win32.h>
 
-extern int(__stdcall* g_ShowCursor)(int);   // ?g_ShowCursor@@3P6GHH@ZA (0x6c44c4)
+extern int(__stdcall* g_ShowCursor)(int); // ?g_ShowCursor@@3P6GHH@ZA (0x6c44c4)
 extern void* g_64e25c;
 
 struct CTitleApp {
     char pad[0x1b8];
-    int m_1b8;                                       // +0x1b8 timer
-    int RunTitleSeq(void* a, int b, int c, int d, int e);  // 0xfa350
-    int OnStart(int unused);                          // 0xf9880
+    int m_1b8;                                            // +0x1b8 timer
+    int RunTitleSeq(void* a, int b, int c, int d, int e); // 0xfa350
+    int OnStart(int unused);                              // 0xf9880
 };
 
 // 0xf9880
@@ -32,26 +32,26 @@ int CTitleApp::OnStart(int) {
 // ---------------------------------------------------------------------------
 struct MgrInner {
     char pad[0x28];
-    void* m_28;          // +0x28
+    void* m_28; // +0x28
 };
 struct MgrSettings {
     char pad[0x78];
-    MgrInner* m_78;      // +0x78
+    MgrInner* m_78; // +0x78
 };
-extern "C" MgrSettings* g_mgrSettings;   // 0x64556c
+extern "C" MgrSettings* g_mgrSettings; // 0x64556c
 
 struct CSub10 {
     char pad[0x4c];
-    void* m_4c;          // +0x4c
-    int m_50;            // +0x50
+    void* m_4c; // +0x4c
+    int m_50;   // +0x50
     char pad2[4];
-    int m_58;            // +0x58
+    int m_58; // +0x58
 };
 struct CHandlerB4 {
     char pad[0x10];
-    CSub10* m_10;        // +0x10
-    int Method_b4d30(int, int, int, int);   // 0xb4d30
-    int Handle(int, int, int, int);          // 0xb4cb0
+    CSub10* m_10;                         // +0x10
+    int Method_b4d30(int, int, int, int); // 0xb4d30
+    int Handle(int, int, int, int);       // 0xb4cb0
 };
 
 // 0xb4cb0
@@ -73,7 +73,7 @@ int CHandlerB4::Handle(int a0, int a1, int a2, int a3) {
 // ---------------------------------------------------------------------------
 struct DlgData {
     char pad[0x528];
-    int m_528;           // +0x528 enable flag
+    int m_528; // +0x528 enable flag
 };
 
 // 0xbe030

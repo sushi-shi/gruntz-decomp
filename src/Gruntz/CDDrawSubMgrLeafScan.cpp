@@ -174,7 +174,7 @@ struct LeafElementObj : public LeafElementBase {
     ~LeafElementObj();
     i32 Configure_158760(RemusParseSource* src); // 0x158760 __thiscall element configure
     i32 Configure2_158720(void* riff);           // 0x158720 raw-RIFF configure variant
-    void Release_1587c0();                        // 0x1587c0 release the acquired buffer
+    void Release_1587c0();                       // 0x1587c0 release the acquired buffer
 
     i32 m_10; // +0x10 = 0  the acquired DirectSound buffer
     i32 m_14; // +0x14 = 0
@@ -216,11 +216,11 @@ void* operator new(u32 n);
 // ---------------------------------------------------------------------------
 class LeafScanBase {
 public:
-    virtual void Slot00();     // [0] sub_1bef01
-    virtual ~LeafScanBase();   // [1] scalar-deleting dtor
-    virtual void Slot08();     // [2] sub_0028ec
-    virtual void Slot0C();     // [3] sub_00106e
-    virtual void Slot10();     // [4] sub_004034
+    virtual void Slot00();   // [0] sub_1bef01
+    virtual ~LeafScanBase(); // [1] scalar-deleting dtor
+    virtual void Slot08();   // [2] sub_0028ec
+    virtual void Slot0C();   // [3] sub_00106e
+    virtual void Slot10();   // [4] sub_004034
 
     i32 m_04;                  // +0x04  -1 when inactive
     char m_pad08[0x0c - 0x08]; // +0x08..0x0b
@@ -247,10 +247,10 @@ public:
     // virtuals at slots 5..8. Slots 5/7 point to functions in the sibling
     // CDDrawSubMgrLeaf TU (0x157530 / 0x157ae0) and 6/8 are unreconstructed, so all
     // four are declared-only here -> reloc-masked vtable references.
-    virtual i32 Vslot14_157530();   // [5] 0x157530 (CDDrawMapHolder::VirtualMethodUnknown14)
-    virtual void Vslot18_001c08();  // [6] 0x001c08 (declared-only)
-    virtual void Vslot1C_157ae0();  // [7] 0x157ae0 (CDDrawSubMgrLeaf::VirtualMethodUnknown18)
-    virtual void Vslot20_154a00();  // [8] 0x154a00 (declared-only)
+    virtual i32 Vslot14_157530();  // [5] 0x157530 (CDDrawMapHolder::VirtualMethodUnknown14)
+    virtual void Vslot18_001c08(); // [6] 0x001c08 (declared-only)
+    virtual void Vslot1C_157ae0(); // [7] 0x157ae0 (CDDrawSubMgrLeaf::VirtualMethodUnknown18)
+    virtual void Vslot20_154a00(); // [8] 0x154a00 (declared-only)
 
     i32 RefreshAsset_114120(const char* key);
     LeafElementObj* CreateEntry_157d70(const char* key, void* arg2);

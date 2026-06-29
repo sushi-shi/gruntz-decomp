@@ -36,8 +36,10 @@ struct RemusObArray {
     i32 m_nSize;           // +0x08
     i32 m_nMaxSize;        // +0x0c
     i32 m_nGrowBy;         // +0x10
-    void Dtor_1b561c(); // ~CObArray (reloc-masked rel32 callee)
-    ~RemusObArray() { Dtor_1b561c(); }
+    void Dtor_1b561c();    // ~CObArray (reloc-masked rel32 callee)
+    ~RemusObArray() {
+        Dtor_1b561c();
+    }
     // CObArray::SetSize(newSize, growBy) (reloc-masked rel32 callee 0x1b5653);
     // RemoveAll() is inlined by retail as SetSize(0, -1), so call it directly.
     void SetSize(i32 newSize, i32 growBy);

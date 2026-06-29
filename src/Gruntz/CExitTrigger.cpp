@@ -145,7 +145,8 @@ CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj) {
     }
     slot->m_220 = m_10->m_5c;
     slot->m_224 = m_10->m_60;
-    CExitEntity* e = g_exitGameReg->m_30->m_8->Probe(0, m_10->m_5c, m_10->m_60, 0, "Warlord", 0x40003);
+    CExitEntity* e =
+        g_exitGameReg->m_30->m_8->Probe(0, m_10->m_5c, m_10->m_60, 0, "Warlord", 0x40003);
     if (e != 0) {
         e->m_124 = m_10->m_124;
         e->m_7c->m_10(e);
@@ -153,7 +154,8 @@ CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj) {
         if (m_10->m_124 == g_644c54) {
             g_exitGameReg->m_68->m_2a0 = m_54;
         }
-        CExitFocusSlot* slot2 = (CExitFocusSlot*)((char*)g_exitGameReg + m_10->m_124 * 0x238 + 0x150);
+        CExitFocusSlot* slot2 =
+            (CExitFocusSlot*)((char*)g_exitGameReg + m_10->m_124 * 0x238 + 0x150);
         if (slot2 != 0) {
             slot2->m_0c = e->m_188;
         }

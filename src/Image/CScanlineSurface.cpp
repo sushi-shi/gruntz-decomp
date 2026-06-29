@@ -50,13 +50,16 @@ i32 __stdcall SoftSurfaceBlit(void* a0, i32 kind, i32 a2, i32 a3) {
 // into different register encodings throughout. Conversion logic is byte-faithful.
 RVA(0x00175b80, 0x105)
 i32 CScanlineSurface::Convert8To16(void* a0, CScanlineSurface* src, void* pal) {
-    if (pal == 0)
+    if (pal == 0) {
         return 0;
+    }
     u32* palette = (u32*)((char*)pal + 8);
-    if (palette == 0)
+    if (palette == 0) {
         return 0;
-    if (!Create(a0, src->m_438, src->m_43c, 0x10, 0))
+    }
+    if (!Create(a0, src->m_438, src->m_43c, 0x10, 0)) {
         return 0;
+    }
     for (i32 y = 0; y < m_43c; y++) {
         u8* sp = src->m_42c + y * src->m_444;
         u16* dp = (u16*)(m_42c + y * m_444 * 2);
@@ -78,8 +81,9 @@ i32 CScanlineSurface::Convert8To16(void* a0, CScanlineSurface* src, void* pal) {
 // size, reuse it (return TRUE); otherwise Free + Create.
 RVA(0x00175ce0, 0x6b)
 i32 CScanlineSurface::EnsureSize(void* a0, i32 w, i32 h, i32 a3, i32 a4) {
-    if (m_428 && m_42c && m_430 && m_438 == w && m_43c == h)
+    if (m_428 && m_42c && m_430 && m_438 == w && m_43c == h) {
         return 1;
+    }
     Free();
     return Create(a0, w, h, a3, a4);
 }

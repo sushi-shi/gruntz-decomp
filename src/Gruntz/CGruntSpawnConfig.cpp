@@ -225,9 +225,9 @@ struct CSpawnGate {
 // One owned voice stream (m_10/m_14): a DirectSoundMgr with a +0x6c releasable
 // sub-sprite, plus the source/configure/volume setters.
 struct CSpawnStream {
-    i32 SetSource(i32 src);                       // 0x1374c0
-    i32 Configure(i32 a, i32 b, i32 c, i32 d);    // 0x137520
-    void SetVolumeByIndex(i32 vol);               // 0x1355c0
+    i32 SetSource(i32 src);                    // 0x1374c0
+    i32 Configure(i32 a, i32 b, i32 c, i32 d); // 0x137520
+    void SetVolumeByIndex(i32 vol);            // 0x1355c0
     char m_pad00[0x6c];
     CSpriteReleasable m_6c; // +0x6c  (Release, 0x137f00)
 };
@@ -323,7 +323,8 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
         }
     }
     if (streams[chosen] == 0) {
-        streams[chosen] = ((CSpawnConfigTree*)m_04)->m_20->OpenStream(src, 0x5000, 0x1400, 0x100e0, 0, 0);
+        streams[chosen] =
+            ((CSpawnConfigTree*)m_04)->m_20->OpenStream(src, 0x5000, 0x1400, 0x100e0, 0, 0);
         if (streams[chosen] == 0) {
             return 0;
         }

@@ -156,8 +156,8 @@ public:
     // The default ctor (0x13aa10) lives in another (unmatched) TU - declared (no body)
     // so the 3-arg ctor's discarded temp `CSymParser tmp;` lowers to a reloc-masked
     // call; and the 3-arg buffer ctor (0x13ab00) defined in SymParser.cpp.
-    CSymParser();                            // 0x13aa10 (external)
-    CSymParser(void* buf, i32 a2, i32 a3);   // 0x13ab00
+    CSymParser();                          // 0x13aa10 (external)
+    CSymParser(void* buf, i32 a2, i32 a3); // 0x13ab00
 
     // ~CSymParser (0x13abc0): the /GX scalar destructor. Clear(0) if armed, tear
     // down the +0x10 object list, the heap root CSymTab, the owned buffers and the

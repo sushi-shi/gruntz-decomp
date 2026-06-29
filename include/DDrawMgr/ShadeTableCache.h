@@ -66,25 +66,25 @@ struct PalEntry {
 
 class CShadeTableCache {
 public:
-    CShadeTableCache();                 // 0x14de30
-    ~CShadeTableCache();                // 0x14de50
-    i32 Init();                         // 0x14dec0
-    void FreeNodes();                   // 0x14ded0
+    CShadeTableCache();  // 0x14de30
+    ~CShadeTableCache(); // 0x14de50
+    i32 Init();          // 0x14dec0
+    void FreeNodes();    // 0x14ded0
     // 0x14df40 - a two-phase per-palette brightness-pulse ramp (fade-in over nA
     // steps, +16 highlight, fade-out over nB steps), mapped to nearest palette.
     CShadeTable* FlashTable(PalEntry* pal, i32 nA, i32 nB, i32 startPct, i32 endPct);
     CShadeTable* HsvShiftTable(PalEntry* pal, i32 steps, i32 packedColor); // 0x14e540
     CShadeTable* HueRampTable(PalEntry* pal, i32 steps, i32 packedColor);  // 0x14e830
-    CShadeTable* GammaTable(PalEntry* pal, i32 wRow, i32 wCol);         // 0x14e9f0
-    CShadeTable* LumaSortTable(PalEntry* pal);                          // 0x14ec00
-    CShadeTable* HueSortTable(PalEntry* pal);                           // 0x14ede0
-    CShadeTable* AddFromArray(const char* name);                       // 0x14f6c0
-    CShadeTable* AddFromFile(const char* name, i32 size);              // 0x14f8b0
-    CShadeTable* GreyTable();           // 0x14eef0
-    CShadeTable* AddTable(float scale); // 0x14f080
-    CShadeTable* SubTable(i32 color);   // 0x14f310
-    CShadeTable* AlphaTable(u8* pal);   // 0x14f5b0
-    void FindRemove(CShadeTable* t);    // 0x14fb80
+    CShadeTable* GammaTable(PalEntry* pal, i32 wRow, i32 wCol);            // 0x14e9f0
+    CShadeTable* LumaSortTable(PalEntry* pal);                             // 0x14ec00
+    CShadeTable* HueSortTable(PalEntry* pal);                              // 0x14ede0
+    CShadeTable* AddFromArray(const char* name);                           // 0x14f6c0
+    CShadeTable* AddFromFile(const char* name, i32 size);                  // 0x14f8b0
+    CShadeTable* GreyTable();                                              // 0x14eef0
+    CShadeTable* AddTable(float scale);                                    // 0x14f080
+    CShadeTable* SubTable(i32 color);                                      // 0x14f310
+    CShadeTable* AlphaTable(u8* pal);                                      // 0x14f5b0
+    void FindRemove(CShadeTable* t);                                       // 0x14fb80
 
     // 0x14fa60 - __cdecl qsort comparator: sort palette indices by hue.
     static i32 __cdecl CompareHue(const void* a, const void* b);

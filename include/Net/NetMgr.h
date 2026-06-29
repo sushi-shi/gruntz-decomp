@@ -245,7 +245,8 @@ struct CNetCmdSlot {
     void ClearCmds();                    // c12e0  drain + recycle the queue
     void Touch();                        // c1390  latch the slot (sets +4, +8)
     void FullReset();                    // c0c20  zero the command fields + both ranges
-    i32 Init(i32 a1, i32* a2, i32 a3);   // c0b10  seed a fresh slot, then ClearCmds + reset both ranges
+    i32
+    Init(i32 a1, i32* a2, i32 a3); // c0b10  seed a fresh slot, then ClearCmds + reset both ranges
     i32 ProcessCmd(i32 playerId, void* rec, i32 size); // c0c70  parse/dispatch a command record
 };
 
@@ -274,37 +275,43 @@ struct CNetResyncEntry {
 };
 
 struct CNetSession {
-    CNetCmdBuf* m_0;        // +0x00  base of the per-slot command-buffer array
-    i32 m_4;               // +0x04
-    i32 m_8;               // +0x08
-    i32 m_c;               // +0x0c
-    i32 m_10;              // +0x10
-    i32 m_14;              // +0x14
-    i32 m_18;              // +0x18  resync tick base (Verify: (m_18-2)%128)
-    i32 m_1c;              // +0x1c
-    CNetCmdSlot m_slots[4]; // +0x20  four inline command slots (0x64 each)
-    i32 m_1b0[0x80];        // +0x1b0  0x200-byte scratch block ResetAll memsets to 0
+    CNetCmdBuf* m_0;                 // +0x00  base of the per-slot command-buffer array
+    i32 m_4;                         // +0x04
+    i32 m_8;                         // +0x08
+    i32 m_c;                         // +0x0c
+    i32 m_10;                        // +0x10
+    i32 m_14;                        // +0x14
+    i32 m_18;                        // +0x18  resync tick base (Verify: (m_18-2)%128)
+    i32 m_1c;                        // +0x1c
+    CNetCmdSlot m_slots[4];          // +0x20  four inline command slots (0x64 each)
+    i32 m_1b0[0x80];                 // +0x1b0  0x200-byte scratch block ResetAll memsets to 0
     CNetResyncEntry m_entries[0x80]; // +0x3b0  resync entries (indexed signed, base here)
 
-    CNetCmdSlot* FindCmdSlot(i32 playerId); // c00a0
-    void ResetCmdBuffers();                 // c0070
-    i32 CheckLatency(i32 cap);              // c04a0  any active slot with m_10 > cap?
+    CNetCmdSlot* FindCmdSlot(i32 playerId);        // c00a0
+    void ResetCmdBuffers();                        // c0070
+    i32 CheckLatency(i32 cap);                     // c04a0  any active slot with m_10 > cap?
     CNetCmdSlot* CreateSlot(i32 index, i32 owner); // bfff0  init slot[index]
-    i32 Verify();                           // c04f0  resync consistency check
-    void ResetAll();                        // bbf80  full reset: header + 4 slots + entries
+    i32 Verify();                                  // c04f0  resync consistency check
+    void ResetAll();                               // bbf80  full reset: header + 4 slots + entries
     // Wiring init (retail symbol ?Init@CNetSession2@@; reloc-masked here): caches
     // the owner pointers then resets the per-slot buffers. Returns TRUE on success.
     i32 Init(void* gameSub, class CNetMgr* owner, class CNetMgr* peer); // bef80
 
     // The engine routes global new/delete through RezAlloc/RezFree; model that as
     // the class allocator so `new CNetSession()` emits a direct RezAlloc call.
-    void* operator new(size_t n) { return RezAlloc((u32)n); }
-    void operator delete(void* p) { RezFree(p); }
+    void* operator new(size_t n) {
+        return RezAlloc((u32)n);
+    }
+    void operator delete(void* p) {
+        RezFree(p);
+    }
 
     // Inline ctor so CNetMgr::CreateSession's `new CNetSession()` lowers to the
     // 4-slot vector-construct + ResetAll (no out-of-line ctor call), matching the
     // retail allocation shape.
-    CNetSession() { ResetAll(); }
+    CNetSession() {
+        ResetAll();
+    }
 };
 
 // The command-dispatch queue hanging off the CNetMgr's m_4 sub-object at +0x6c;
@@ -703,7 +710,7 @@ public:
     // local player, allocate + construct the DirectPlay command-session
     // (new CNetSession -> 4-slot vector-ctor + ResetAll), wire it (Init), derive
     // the resync tick (m_5cc), and seed one command slot per active channel.
-    i32 CreateSession();                // 0xbbc90
+    i32 CreateSession(); // 0xbbc90
 
     // VerifyCustomLevel (0xb8fc0, /GX EH): build the level-name rez path from the
     // config name CStrings, run it past the active session (Poll), and pop the
@@ -716,9 +723,9 @@ public:
     // CreateLocalPlayer (0xbc750, /GX EH): register the local player with the peer
     // under the local name, latch its id (m_5c0), wait for the host to admit it,
     // then announce the join (stat 0x3f9 packet carrying the name). Returns 1.
-    i32 CreateLocalPlayer();        // 0xbc750
-    CString GetString5a0();         // 0xb7ad0  the local player-name CString
-    void ReportConnectFailed(i32);  // 0xb7f60  connect-failed diagnostic (1-arg)
+    i32 CreateLocalPlayer();       // 0xbc750
+    CString GetString5a0();        // 0xb7ad0  the local player-name CString
+    void ReportConnectFailed(i32); // 0xb7f60  connect-failed diagnostic (1-arg)
 
     // SaveConfig (0xbccd0, /GX EH): pack the command-timing config (m_5b0, the two
     // config-name strings, m_cmdDelay/m_resend/m_600/m_2d8) into a 0x11c-byte stat

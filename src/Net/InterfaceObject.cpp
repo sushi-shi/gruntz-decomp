@@ -17,11 +17,11 @@
 // (0x5f0748) via its own manual stamp; here the dtor's own-vptr stamp is the
 // implicit ??_7InterfaceObject (reloc-masks the same target).
 struct InterfaceObjectBase {
-    virtual void V0();      // slot 0 (sub_1bef01)
+    virtual void V0();              // slot 0 (sub_1bef01)
     virtual ~InterfaceObjectBase(); // slot 1 (scalar-deleting dtor)
-    virtual void V2();      // slot 2 (sub_0028ec)
-    virtual void V3();      // slot 3 (sub_00106e)
-    virtual void V4();      // slot 4 (sub_004034)
+    virtual void V2();              // slot 2 (sub_0028ec)
+    virtual void V3();              // slot 3 (sub_00106e)
+    virtual void V4();              // slot 4 (sub_004034)
 };
 inline InterfaceObjectBase::~InterfaceObjectBase() {}
 

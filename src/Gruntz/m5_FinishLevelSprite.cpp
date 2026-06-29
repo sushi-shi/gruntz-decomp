@@ -68,10 +68,10 @@ public:
     char m_pad230[0x288 - 0x230];
     i32 m_288; // +0x288 phase
     char m_pad28c[0x290 - 0x28c];
-    i32 m_290; // +0x290 timer base
-    i32 m_294; // +0x294
-    i32 m_298; // +0x298 timer duration
-    i32 m_29c; // +0x29c
+    i32 m_290;     // +0x290 timer base
+    i32 m_294;     // +0x294
+    i32 m_298;     // +0x298 timer duration
+    i32 m_29c;     // +0x29c
     CGrunt* m_2a0; // +0x2a0
     char m_pad2a4[0x3ec - 0x2a4];
     i32 m_3ec; // +0x3ec last state
@@ -89,58 +89,58 @@ public:
 RVA(0x0007c3d0, 0x1ae)
 void CFinishLevelState::LoadFinishLevelSprite(i32 state) {
     switch (state) {
-    case 1:
-        if (m_288 != 2) {
-            CueObj* p = 0;
-            m_22c->m_28->m_10map.Lookup("GAME\\FINISHLEVEL", &p);
-            m_298 = p->m_10->m_28 + 500;
-            m_29c = 0;
-            m_290 = g_645588;
-            m_294 = 0;
-            if (m_22c->m_28->m_30 == 0) {
-                p = 0;
+        case 1:
+            if (m_288 != 2) {
+                CueObj* p = 0;
                 m_22c->m_28->m_10map.Lookup("GAME\\FINISHLEVEL", &p);
-                if (p != 0 && g_sndEnabled != 0 &&
-                    (u32)(g_killCueClock - p->m_14) >= (u32)p->m_18) {
-                    p->m_14 = g_killCueClock;
-                    p->m_10->ConfigureItem(g_sndCueTag, 0, 0, 0);
+                m_298 = p->m_10->m_28 + 500;
+                m_29c = 0;
+                m_290 = g_645588;
+                m_294 = 0;
+                if (m_22c->m_28->m_30 == 0) {
+                    p = 0;
+                    m_22c->m_28->m_10map.Lookup("GAME\\FINISHLEVEL", &p);
+                    if (p != 0 && g_sndEnabled != 0
+                        && (u32)(g_killCueClock - p->m_14) >= (u32)p->m_18) {
+                        p->m_14 = g_killCueClock;
+                        p->m_10->ConfigureItem(g_sndCueTag, 0, 0, 0);
+                    }
+                }
+                m_288 = 1;
+                m_400 = 0;
+                m_3ec = state;
+                return;
+            }
+            goto Lab_56b;
+        case 2:
+            m_288 = 1;
+            break;
+        case 3:
+            if (m_288 == 0) {
+                m_288 = 2;
+                if (m_2a0 != 0) {
+                    m_2a0->ResolveDeathAnimation();
                 }
             }
-            m_288 = 1;
-            m_400 = 0;
-            m_3ec = state;
-            return;
-        }
-        goto Lab_56b;
-    case 2:
-        m_288 = 1;
-        break;
-    case 3:
-        if (m_288 == 0) {
+            goto Lab_522;
+        case 4:
             m_288 = 2;
-            if (m_2a0 != 0) {
-                m_2a0->ResolveDeathAnimation();
-            }
-        }
-        goto Lab_522;
-    case 4:
-        m_288 = 2;
-        m_298 = 3000;
-        m_29c = 0;
-        m_290 = g_645588;
-        goto Lab_565;
-    case 5:
-        m_288 = 2;
-        break;
-    case 6:
-        m_288 = 2;
-    Lab_522:
-        m_298 = 3000;
-        m_29c = 0;
-        m_290 = g_645588;
-        goto Lab_565;
-    default:
-        return;
+            m_298 = 3000;
+            m_29c = 0;
+            m_290 = g_645588;
+            goto Lab_565;
+        case 5:
+            m_288 = 2;
+            break;
+        case 6:
+            m_288 = 2;
+        Lab_522:
+            m_298 = 3000;
+            m_29c = 0;
+            m_290 = g_645588;
+            goto Lab_565;
+        default:
+            return;
     }
     m_298 = 3000;
     m_29c = 0;

@@ -35,8 +35,10 @@ void Tm_DestroyArray(void* base, i32 stride, i32 count, void* dtor); // 0x11f640
 // The CByteArray member at +0x530: a real destructor (reloc-masked ~CByteArray @0x5b4f3e)
 // so its teardown drives a /GX trylevel level in the member-teardown dtor.
 struct CSbiByteArray {
-    void Dtor();             // 0x5b4f3e  ~CByteArray
-    ~CSbiByteArray() { Dtor(); }
+    void Dtor(); // 0x5b4f3e  ~CByteArray
+    ~CSbiByteArray() {
+        Dtor();
+    }
     char m_pad[0x14];
 };
 

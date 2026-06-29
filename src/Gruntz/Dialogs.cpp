@@ -116,7 +116,7 @@ extern void* g_imgHolderBaseVtbl; // 0x5e8cb4  shared CObject-ish base dtor-vtab
 // the standalone 7-byte vptr-set the binary keeps at 0x16410 (the same store, out of
 // line). The emitted ??_7CImgHolderBase reloc-masks against the shared 0x5e8cb4 stamp.
 struct CImgHolderBase {
-    void RestampBase_16410();      // 0x016410
+    void RestampBase_16410();    // 0x016410
     virtual ~CImgHolderBase() {} // empty; cl emits the implicit grand-base re-stamp
 };
 
@@ -647,7 +647,7 @@ struct CNetCfg { // m_c
     char m_pad0[0x28];
     CNetCfgSub* m_28; // +0x28
 };
-struct CNetDlgHost { // m_4 (runs the dialog, finds the local player record)
+struct CNetDlgHost {                 // m_4 (runs the dialog, finds the local player record)
     i32 RunDlg(void* dlg, i32 flag); // 0x196f
     CNetCueRec* FindRec(i32 id);     // 0x2e00
 };

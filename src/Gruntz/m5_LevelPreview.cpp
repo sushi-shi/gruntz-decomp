@@ -64,7 +64,7 @@ struct CDDSurfaceCom {
 // +0x08; Flip @0x13e850 (__thiscall). Reloc-masked.
 struct CDDSurface {
     char m_pad00[8];
-    CDDSurfaceCom* m_08; // +0x08
+    CDDSurfaceCom* m_08;          // +0x08
     i32 Flip(CDDSurface* target); // 0x13e850
 };
 
@@ -79,7 +79,7 @@ struct CRenderHost {
 // installs the resolved screen image; +0x10 is the render host.
 struct CDDrawWorkerMgr {
     char m_pad00[0x10];
-    CRenderHost* m_10; // +0x10
+    CRenderHost* m_10;                      // +0x10
     i32 Method_158b40(i32 image, i32 mode); // 0x158b40
 };
 
@@ -122,16 +122,16 @@ public:
     virtual i32 Vf7();
     virtual i32 Advance(); // slot 8 (+0x20)
 
-    i32 Tick();                                                    // 0x0de200
+    i32 Tick();                                                     // 0x0de200
     i32 FadeInTitle(char* name, i32 a, i32 b, i32 c, i32 d, i32 e); // 0x0fa1f0
-    void RetireScene(i32 a, i32 b, i32 c, i32 d);                  // 0x0fa8f0
-    void Cancel();                                                 // 0x0de590
+    void RetireScene(i32 a, i32 b, i32 c, i32 d);                   // 0x0fa8f0
+    void Cancel();                                                  // 0x0de590
     void LoadLevelPreviewScreen();
     i32 LoadScreen(char* name, i32 doFlip, i32 a2, i32 a3); // 0x0fab90
 
-    CGameMgr* m_04;            // +0x04
-    i32 m_08;                  // +0x08
-    PreviewMgr* m_0c;          // +0x0c
+    CGameMgr* m_04;   // +0x04
+    i32 m_08;         // +0x08
+    PreviewMgr* m_0c; // +0x0c
     char m_pad10[0x2c - 0x10];
     CSymTab* m_2c; // +0x2c
     char m_pad30[0x1b8 - 0x30];

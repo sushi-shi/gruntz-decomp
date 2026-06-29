@@ -9,7 +9,7 @@
 // external/reloc-masked.
 #include <DDrawMgr/ShadeTableCache.h>
 
-#include <math.h>   // pow (__CIpow) in HsvShiftTable
+#include <math.h> // pow (__CIpow) in HsvShiftTable
 #include <rva.h>
 #include <stdlib.h> // qsort in the palette-sort builders
 #include <string.h> // inlined memcpy (rep movsl) in FindRemove
@@ -49,7 +49,7 @@ struct Hsv {
 // b<<16|g<<8|r color to its Hsv (returning out); 0x14fbf0 finds the nearest
 // palette index for an (r,g,b) triple (sum-of-squares). 0x14ed10 is the sibling
 // luma comparator referenced by address by the luma-sort builder.
-extern "C" Hsv* RgbToHsv(Hsv* out, i32 packedRgb);             // 0x14fcc0
+extern "C" Hsv* RgbToHsv(Hsv* out, i32 packedRgb);                     // 0x14fcc0
 extern "C" u8 NearestPaletteIndex(i32 r, PalEntry* pal, i32 g, i32 b); // 0x14fbf0
 extern "C" i32 __cdecl CompareLuma(const void* a, const void* b);      // 0x14ed10
 
@@ -143,12 +143,12 @@ void CShadeTableCache::FreeNodes() {
 
 // Luma-shift float constants at 0x5efb40..0x5efb5c (the gamma/luminance build).
 // Reloc-masked .rdata literals; named so the operands pair.
-extern float g_one; // 1.0
-extern float g_255; // 255.0
-extern float g_p01; // 0.01
-extern float g_lumaR; // 0.5859375
-extern float g_lumaG; // 0.296875
-extern float g_lumaB; // 0.109375
+extern float g_one;    // 1.0
+extern float g_255;    // 255.0
+extern float g_p01;    // 0.01
+extern float g_lumaR;  // 0.5859375
+extern float g_lumaG;  // 0.296875
+extern float g_lumaB;  // 0.109375
 extern float g_inv255; // 1/255
 DATA(0x001efb5c)
 extern float g_negone; // -1.0
@@ -171,8 +171,7 @@ extern float g_negone; // -1.0
 // remap are recovered byte-for-structure; the phase-2 fade-out's exact channel
 // expression is the wall's residual (re-derive in the final sweep). Logic complete.
 RVA(0x0014df40, 0x5f4)
-CShadeTable* CShadeTableCache::FlashTable(PalEntry* pal, i32 nA, i32 nB, i32 startPct,
-                                          i32 endPct) {
+CShadeTable* CShadeTableCache::FlashTable(PalEntry* pal, i32 nA, i32 nB, i32 startPct, i32 endPct) {
     CShadeTable* t = (CShadeTable*)operator new(0x10);
     if (t) {
         t = t->Ctor();

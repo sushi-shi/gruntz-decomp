@@ -165,7 +165,7 @@ CSpriteRef* CSpriteRefTable::Add(char* szName, i32 kind) {
 // The destination registry at m_04->m_18 is polymorphic: a hash sub-table at +0x10
 // backs Lookup() (out-param non-null => already present), and Install (vtable slot
 // 9) takes the resolved palette + two null args.
-struct CPaletteHashTable {            // embedded at CPaletteDestRegistry+0x10
+struct CPaletteHashTable {                 // embedded at CPaletteDestRegistry+0x10
     void Lookup(char* szName, void** out); // 0x1b8008 __thiscall
 };
 struct CPaletteDestRegistry {
@@ -182,7 +182,7 @@ struct CPaletteDestRegistry {
     char m_pad04[0x10 - 0x4];
     CPaletteHashTable m_10; // +0x10  hash sub-table Lookup runs on
 };
-struct CPaletteDestRoot {        // m_04 points here; +0x18 is the dest registry
+struct CPaletteDestRoot { // m_04 points here; +0x18 is the dest registry
     char m_pad00[0x18];
     CPaletteDestRegistry* m_18; // +0x18
 };
@@ -235,24 +235,24 @@ i32 CSpriteRefTable::LoadToolToyPalettes(i32 src) {
     // One short-circuit && chain so MSVC shares a single return-0 tail (each rung
     // `test;je fail`), matching retail's layout (an if/return-0 per rung inlines 35
     // epilogues and bloats the body).
-    if (src && LoadGruntzPalette(src, (i32) "BLACKTOOL") &&
-        LoadGruntzPalette(src, (i32) "BLACKTOY") && LoadGruntzPalette(src, (i32) "DKBLUETOOL") &&
-        LoadGruntzPalette(src, (i32) "DKBLUETOY") && LoadGruntzPalette(src, (i32) "DKGREENTOOL") &&
-        LoadGruntzPalette(src, (i32) "DKGREENTOY") && LoadGruntzPalette(src, (i32) "TURQTOOL") &&
-        LoadGruntzPalette(src, (i32) "TURQTOY") && LoadGruntzPalette(src, (i32) "DKREDTOOL") &&
-        LoadGruntzPalette(src, (i32) "DKREDTOY") && LoadGruntzPalette(src, (i32) "PURPLETOOL") &&
-        LoadGruntzPalette(src, (i32) "PURPLETOY") && LoadGruntzPalette(src, (i32) "DKYELLOWTOOL") &&
-        LoadGruntzPalette(src, (i32) "DKYELLOWTOY") && LoadGruntzPalette(src, (i32) "GREYTOOL") &&
-        LoadGruntzPalette(src, (i32) "GREYTOY") && LoadGruntzPalette(src, (i32) "BLUETOOL") &&
-        LoadGruntzPalette(src, (i32) "BLUETOY") && LoadGruntzPalette(src, (i32) "GREENTOOL") &&
-        LoadGruntzPalette(src, (i32) "GREENTOY") && LoadGruntzPalette(src, (i32) "CYANTOOL") &&
-        LoadGruntzPalette(src, (i32) "CYANTOY") && LoadGruntzPalette(src, (i32) "REDTOOL") &&
-        LoadGruntzPalette(src, (i32) "REDTOY") && LoadGruntzPalette(src, (i32) "PINKTOOL") &&
-        LoadGruntzPalette(src, (i32) "PINKTOY") && LoadGruntzPalette(src, (i32) "YELLOWTOOL") &&
-        LoadGruntzPalette(src, (i32) "YELLOWTOY") && LoadGruntzPalette(src, (i32) "WHITETOOL") &&
-        LoadGruntzPalette(src, (i32) "WHITETOY") && LoadGruntzPalette(src, (i32) "ORANGETOOL") &&
-        LoadGruntzPalette(src, (i32) "ORANGETOY") && LoadGruntzPalette(src, (i32) "HOTPINKTOOL") &&
-        LoadGruntzPalette(src, (i32) "HOTPINKTOY")) {
+    if (src && LoadGruntzPalette(src, (i32) "BLACKTOOL") && LoadGruntzPalette(src, (i32) "BLACKTOY")
+        && LoadGruntzPalette(src, (i32) "DKBLUETOOL") && LoadGruntzPalette(src, (i32) "DKBLUETOY")
+        && LoadGruntzPalette(src, (i32) "DKGREENTOOL") && LoadGruntzPalette(src, (i32) "DKGREENTOY")
+        && LoadGruntzPalette(src, (i32) "TURQTOOL") && LoadGruntzPalette(src, (i32) "TURQTOY")
+        && LoadGruntzPalette(src, (i32) "DKREDTOOL") && LoadGruntzPalette(src, (i32) "DKREDTOY")
+        && LoadGruntzPalette(src, (i32) "PURPLETOOL") && LoadGruntzPalette(src, (i32) "PURPLETOY")
+        && LoadGruntzPalette(src, (i32) "DKYELLOWTOOL")
+        && LoadGruntzPalette(src, (i32) "DKYELLOWTOY") && LoadGruntzPalette(src, (i32) "GREYTOOL")
+        && LoadGruntzPalette(src, (i32) "GREYTOY") && LoadGruntzPalette(src, (i32) "BLUETOOL")
+        && LoadGruntzPalette(src, (i32) "BLUETOY") && LoadGruntzPalette(src, (i32) "GREENTOOL")
+        && LoadGruntzPalette(src, (i32) "GREENTOY") && LoadGruntzPalette(src, (i32) "CYANTOOL")
+        && LoadGruntzPalette(src, (i32) "CYANTOY") && LoadGruntzPalette(src, (i32) "REDTOOL")
+        && LoadGruntzPalette(src, (i32) "REDTOY") && LoadGruntzPalette(src, (i32) "PINKTOOL")
+        && LoadGruntzPalette(src, (i32) "PINKTOY") && LoadGruntzPalette(src, (i32) "YELLOWTOOL")
+        && LoadGruntzPalette(src, (i32) "YELLOWTOY") && LoadGruntzPalette(src, (i32) "WHITETOOL")
+        && LoadGruntzPalette(src, (i32) "WHITETOY") && LoadGruntzPalette(src, (i32) "ORANGETOOL")
+        && LoadGruntzPalette(src, (i32) "ORANGETOY") && LoadGruntzPalette(src, (i32) "HOTPINKTOOL")
+        && LoadGruntzPalette(src, (i32) "HOTPINKTOY")) {
         return 1;
     }
     return 0;

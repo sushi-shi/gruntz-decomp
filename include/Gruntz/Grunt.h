@@ -758,9 +758,9 @@ struct GruntIdEntry {
     i32 m_64; // +0x64  lo index
     i32 m_68; // +0x68  hi index
 };
-struct GruntNameIdMap {                                   // res->m_10 + 0x10
-    i32 Lookup(const char* key, GruntIdEntry** out);      // 0x1b8008
-    i32 LookupNode(const char* key, void** out);          // 0x1b8008 (2nd block: raw entry)
+struct GruntNameIdMap {                              // res->m_10 + 0x10
+    i32 Lookup(const char* key, GruntIdEntry** out); // 0x1b8008
+    i32 LookupNode(const char* key, void** out);     // 0x1b8008 (2nd block: raw entry)
 };
 // The object-table entry resolved through res->m_8's map (+0x48, Lookup 0x1b8760).
 // Validated by a virtual kind() at vtable slot +0x20 (== 5 -> keep).
@@ -776,8 +776,8 @@ public:
     virtual void s1c();
     virtual i32 Kind(); // vtable slot +0x20
 };
-struct GruntObjMap {                                  // res->m_8 + 0x48
-    i32 Lookup(void* key, GruntObjEntry** out);       // 0x1b8760
+struct GruntObjMap {                            // res->m_8 + 0x48
+    i32 Lookup(void* key, GruntObjEntry** out); // 0x1b8760
 };
 // The resource manager (g_gameReg->m_30): m_8 owns the object map, m_10 the
 // sprite/name manager (with the CMapStringToOb at +0x10).
@@ -1056,9 +1056,9 @@ public:
     i32 m_animResolved; // +0xa8  (resolve gate / dirty flag)
     i32 m_deathCueArg;  // +0xac  (cue arg)
     char m_padb0[0x154 - 0xb0];
-    CEntranceAnimPlayer* m_154;     // +0x154 (entrance animation player)
-    struct CGruntSndResMgr* m_158;  // +0x158 (ability/sound resource mgr)
-    i32 m_prevEntranceDesc; // +0x15c (= m_154->m_1b4 cache)
+    CEntranceAnimPlayer* m_154;    // +0x154 (entrance animation player)
+    struct CGruntSndResMgr* m_158; // +0x158 (ability/sound resource mgr)
+    i32 m_prevEntranceDesc;        // +0x15c (= m_154->m_1b4 cache)
     char m_pad160[0x170 - 0x160];
     i32 m_entranceReason; // +0x170 (entrance-reason / movement state)
     i32 m_entrancePxX;    // +0x174 (SetEntrancePos: committed entrance position X, pixel)

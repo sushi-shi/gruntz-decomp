@@ -44,14 +44,14 @@ public:
 
 class CDDrawSubMgrLeafScan {
 public:
-    i32 HasKeyEqual(char* key);                              // 0x1583c0
-    void ScanTree(void* tree, char* prefix, char* sep);      // 0x157ee0
+    i32 HasKeyEqual(char* key);                         // 0x1583c0
+    void ScanTree(void* tree, char* prefix, char* sep); // 0x157ee0
 };
 
 class CDDrawSubMgrAni {
 public:
-    i32 HasKeyPrefix(char* key);                             // 0x152c50
-    void ScanTree(void* tree, char* prefix, char* sep);      // 0x152ad0
+    i32 HasKeyPrefix(char* key);                        // 0x152c50
+    void ScanTree(void* tree, char* prefix, char* sep); // 0x152ad0
 };
 
 class CSpriteRefTable {
@@ -101,8 +101,8 @@ public:
     char m_pad2c[0x3c - 0x2c];
     i32 m_3c; // +0x3c loaded flag
     char m_pad40[0x44 - 0x40];
-    i32 m_44; // +0x44
-    i32 m_48; // +0x48
+    i32 m_44;                // +0x44
+    i32 m_48;                // +0x48
     char m_4c[0x14c - 0x4c]; // +0x4c version-string buffer
     i32 m_14c;               // +0x14c
     char m_pad150[0x160 - 0x150];

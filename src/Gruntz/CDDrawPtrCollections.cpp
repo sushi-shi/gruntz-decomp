@@ -46,18 +46,18 @@ extern "C" CDirectDrawMgr* g_DirectDrawMgr; // 0x6bed00
 // the back-buffer's pixel format (reloc-masked .data globals; named g_683* across the
 // run - GruntzMgr.cpp's 16-bit pack reads the same six words).
 extern "C" {
-DATA(0x00283ea0)
-extern i32 g_683ea0; // red   low-bit shift
-DATA(0x00283ea4)
-extern i32 g_683ea4; // green low-bit shift
-DATA(0x00283ea8)
-extern i32 g_683ea8; // blue  low-bit shift
-DATA(0x00283eac)
-extern i32 g_683eac; // red   8-minus-count
-DATA(0x00283eb0)
-extern i32 g_683eb0; // green 8-minus-count
-DATA(0x00283eb4)
-extern i32 g_683eb4; // blue  8-minus-count
+    DATA(0x00283ea0)
+    extern i32 g_683ea0; // red   low-bit shift
+    DATA(0x00283ea4)
+    extern i32 g_683ea4; // green low-bit shift
+    DATA(0x00283ea8)
+    extern i32 g_683ea8; // blue  low-bit shift
+    DATA(0x00283eac)
+    extern i32 g_683eac; // red   8-minus-count
+    DATA(0x00283eb0)
+    extern i32 g_683eb0; // green 8-minus-count
+    DATA(0x00283eb4)
+    extern i32 g_683eb4; // blue  8-minus-count
 }
 
 // The post-mask surface-format apply (CFileImage/CDDSurface area, 0x13f740); takes no
@@ -94,7 +94,7 @@ class CDDrawPtrCollections;
 struct CPoolItemAVtbl;
 class CPoolItemA {
 public:
-    ~CPoolItemA();      // non-deleting dtor variant 0x142820 (vtbl 0x5ef7f0)
+    ~CPoolItemA();       // non-deleting dtor variant 0x142820 (vtbl 0x5ef7f0)
     void FreeSurfaces(); // 0x13e4d0 (CFileImage::FreeSurfaces, __thiscall) - external
 
     CPoolItemAVtbl* vptr; // +0x00 - stamped to g_poolItemAVtbl (0x5efa58)
@@ -105,18 +105,18 @@ public:
     i32 m_7c; // +0x7c
     char _80[0x94 - 0x80];
     CByteArray m_94; // +0x94
-    i32 m_a8;              // +0xa8
+    i32 m_a8;        // +0xa8
     char _ac[0xb8 - 0xac];
     i32 m_b8; // +0xb8
     char _bc[0xc0 - 0xbc];
 
-    void Delete(u32 flags);                                          // vtbl[0x00] scalar deleting dtor
-    i32 Init08(CDDrawPtrCollections*, i32);                          // vtbl[0x08]  (1-arg init)
-    i32 Init24(CDDrawPtrCollections*, i32, i32, i32, i32, i32);      // vtbl[0x24]  (5-arg)
-    i32 Init24_3(CDDrawPtrCollections*, i32, i32, i32);              // vtbl[0x24]  (3-arg)
+    void Delete(u32 flags);                                     // vtbl[0x00] scalar deleting dtor
+    i32 Init08(CDDrawPtrCollections*, i32);                     // vtbl[0x08]  (1-arg init)
+    i32 Init24(CDDrawPtrCollections*, i32, i32, i32, i32, i32); // vtbl[0x24]  (5-arg)
+    i32 Init24_3(CDDrawPtrCollections*, i32, i32, i32);         // vtbl[0x24]  (3-arg)
     i32 Init24_6(CDDrawPtrCollections*, i32, i32, i32, i32, i32, i32); // vtbl[0x24]  (6-arg)
-    i32 Init28(CDDrawPtrCollections*, i32, i32, i32);                // vtbl[0x28]  (3-arg init)
-    i32 Init2c(CDDrawPtrCollections*, i32, i32, i32, i32, i32);      // vtbl[0x2c]
+    i32 Init28(CDDrawPtrCollections*, i32, i32, i32);                  // vtbl[0x28]  (3-arg init)
+    i32 Init2c(CDDrawPtrCollections*, i32, i32, i32, i32, i32);        // vtbl[0x2c]
 }; // 0xc0
 
 typedef void (CPoolItemA::*PoolItemDeleteFn)(u32);
@@ -137,7 +137,7 @@ struct CPoolItemAVtbl {
         PoolItemInit6Fn Init24_6; // 6-arg (vtbl ae8 style)
     };
     PoolItemInit3Fn Init28; // [0x28]
-    PoolItemInitFn Init2c; // [0x2c]
+    PoolItemInitFn Init2c;  // [0x2c]
 };
 inline void CPoolItemA::Delete(u32 flags) {
     (this->*(vptr->Delete))(flags);
@@ -178,14 +178,13 @@ extern CPoolItemAVtbl g_poolItemVtblae8; // 0x5efae8
 // (0x142d40 vs CPoolItemA::~CPoolItemA @0x142820) but byte-identical codegen.
 class CPoolItemA7f0 {
 public:
-    ~CPoolItemA7f0();    // 0x142d40
-    void FreeSurfaces(); // 0x13e4d0 (__thiscall) - external
+    ~CPoolItemA7f0();     // 0x142d40
+    void FreeSurfaces();  // 0x13e4d0 (__thiscall) - external
     CPoolItemAVtbl* vptr; // +0x00
     char _04[0x94 - 0x04];
     CByteArray m_94; // +0x94
     char _a8[0xc0 - 0xa8];
 };
-
 
 // The +0x498-pool item: a 0x38-byte struct (RezAlloc'd, vtable-less).  Field 0
 // caches the POSITION; the +0x4..+0x10 + +0x14/+0x18/+0x2c/+0x30/+0x34 dwords are
@@ -195,7 +194,8 @@ struct CPoolItemB {
     void Teardown();                    // 0x147530 (__thiscall) - frees owned bufs
     i32 Init(void* arg, i32 a, i32 b);  // 0x1474d0 (__thiscall) - returns success
     i32 Init2(void* arg, i32 a, i32 b); // 0x147410 (__thiscall) - alt init, returns success
-    i32 Init3(void* arg, i32 a, i32 b, i32 c); // 0x147840 (__thiscall) - 3-param init, returns success
+    i32
+    Init3(void* arg, i32 a, i32 b, i32 c); // 0x147840 (__thiscall) - 3-param init, returns success
 
     void* m_pos; // +0x00 cached POSITION
     i32 m_04;    // +0x04
@@ -240,24 +240,25 @@ public:
     CDDrawPtrCollections();
     ~CDDrawPtrCollections();
 
-    void Clear(i32 mode);                                       // 0x142060
-    void EmptyPoolA();                                          // 0x142120  (drain +0x47c list)
-    void EmptyPoolB();                                          // 0x142ed0  (drain +0x498 list)
-    void AddItemA(CPoolItemA* item);                            // 0x142100
-    void AddItemB(CPoolItemB* item);                            // 0x142eb0
-    void RemoveItemA(CPoolItemA* item);                         // 0x142160
-    void RemoveItemB(CPoolItemB* item);                         // 0x142f10
-    CPoolItemA* Create7f0_1(i32 a);                             // 0x1421a0 (vtbl 7f0, slot08)
-    CPoolItemA* CreateA(i32 a, i32 b, i32 c, i32 d, i32 e);     // 0x142260
-    CPoolItemA* CreateB(i32 a, i32 b, i32 c, i32 d, i32 e);     // 0x1423c0
-    CPoolItemA* Createa58_1(i32 a);                             // 0x1424a0 (vtbl a58, slot08)
-    CPoolItemA* Createa58_3(i32 a, i32 b, i32 c);               // 0x142560 (vtbl a58, slot28)
-    CPoolItemA* Createa88_3(i32 a, i32 b, i32 c);               // 0x142730 (vtbl a88, slot24)
-    CPoolItemA* Createa88_1(i32 a);                             // 0x142880 (vtbl a88, slot08)
-    CPoolItemA* Createab8_3(i32 a, i32 b, i32 c);               // 0x142940 (vtbl ab8, slot24, +538)
-    CPoolItemA* Createab8_1(i32 a);                             // 0x142aa0 (vtbl ab8, slot08, +538)
-    CPoolItemA* Createab8_24_3(i32 a);                          // 0x142b70 (vtbl ab8, slot24 3-arg, +538)
-    CPoolItemA* Createae8_6(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // 0x142c40 (vtbl ae8, slot24 6-arg)
+    void Clear(i32 mode);                                   // 0x142060
+    void EmptyPoolA();                                      // 0x142120  (drain +0x47c list)
+    void EmptyPoolB();                                      // 0x142ed0  (drain +0x498 list)
+    void AddItemA(CPoolItemA* item);                        // 0x142100
+    void AddItemB(CPoolItemB* item);                        // 0x142eb0
+    void RemoveItemA(CPoolItemA* item);                     // 0x142160
+    void RemoveItemB(CPoolItemB* item);                     // 0x142f10
+    CPoolItemA* Create7f0_1(i32 a);                         // 0x1421a0 (vtbl 7f0, slot08)
+    CPoolItemA* CreateA(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x142260
+    CPoolItemA* CreateB(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x1423c0
+    CPoolItemA* Createa58_1(i32 a);                         // 0x1424a0 (vtbl a58, slot08)
+    CPoolItemA* Createa58_3(i32 a, i32 b, i32 c);           // 0x142560 (vtbl a58, slot28)
+    CPoolItemA* Createa88_3(i32 a, i32 b, i32 c);           // 0x142730 (vtbl a88, slot24)
+    CPoolItemA* Createa88_1(i32 a);                         // 0x142880 (vtbl a88, slot08)
+    CPoolItemA* Createab8_3(i32 a, i32 b, i32 c);           // 0x142940 (vtbl ab8, slot24, +538)
+    CPoolItemA* Createab8_1(i32 a);                         // 0x142aa0 (vtbl ab8, slot08, +538)
+    CPoolItemA* Createab8_24_3(i32 a); // 0x142b70 (vtbl ab8, slot24 3-arg, +538)
+    CPoolItemA*
+    Createae8_6(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f);      // 0x142c40 (vtbl ae8, slot24 6-arg)
     CPoolItemA* Createae8_1(i32 a);                             // 0x142da0 (vtbl ae8, slot08)
     CPoolItemA* MakeAndAddB(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x142e60
     CPoolItemB* MakeB(i32 a, i32 b);                            // 0x142fc0
@@ -266,12 +267,12 @@ public:
 
     // Read the trailing 0x300-byte palette from a file and register a pool-B item built
     // from it (0x143150 -> MakeB; 0x143a30 -> Make950, the sibling builder).
-    CPoolItemB* LoadPaletteMakeB(const char* path, i32 z);     // 0x143150
-    CPoolItemB* LoadPaletteMake950(const char* path, i32 z);   // 0x143a30
-    void* Make950(void* buf, i32 z);                           // 0x143950 (external sibling of MakeB)
+    CPoolItemB* LoadPaletteMakeB(const char* path, i32 z);   // 0x143150
+    CPoolItemB* LoadPaletteMake950(const char* path, i32 z); // 0x143a30
+    void* Make950(void* buf, i32 z);                         // 0x143950 (external sibling of MakeB)
     // Derive the R/G/B low-bit shift + 8-minus-count tables from the cached surface's
     // pixel format, then apply (Func13f740). __thiscall, no stack args (0x143b20).
-    i32 ComputeColorMasks();                                   // 0x143b20
+    i32 ComputeColorMasks(); // 0x143b20
     // Reconfigure the cached surface (vtbl +0x54) and, on success, recompute the color
     // masks; report + latch the failure code on either error. 0x143c20.
     i32 ConfigureSurface(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4); // 0x143c20

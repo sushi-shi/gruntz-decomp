@@ -35,7 +35,9 @@ struct CStatusBarItem {
     void DtorStatus(); // 0x10bfa0  CStatusBarItem base teardown (reloc-masked)
     char m_pad[0x60 - 0x04];
 };
-inline CStatusBarItem::~CStatusBarItem() { DtorStatus(); }
+inline CStatusBarItem::~CStatusBarItem() {
+    DtorStatus();
+}
 
 // CSBI_RectOnly most-derived (vtable 0x5eab8c, 11 slots; overrides the vdtor).
 struct CSBI_RectOnly : CStatusBarItem {

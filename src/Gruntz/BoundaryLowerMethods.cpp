@@ -31,15 +31,15 @@ extern void* g_projActCache;       // 0x6bf464 (pinned in CStaticHazard.cpp)
 extern void* g_projActAllocResult; // 0x6bf428 (pinned in CVoiceTrigger.cpp)
 extern "C" i32 ProjActAlloc();     // 0x16d990
 struct CTypeColl464 {
-    void* m_0;            // +0x00
-    CKSlimeColl464* m_4;  // +0x04
-    i32 m_8;              // +0x08  lo
-    i32 m_c;              // +0x0c  hi
-    char* m_10;           // +0x10  base
-    i32 m_14;             // +0x14  miss result
-    i32 m_18;             // +0x18  stride
+    void* m_0;           // +0x00
+    CKSlimeColl464* m_4; // +0x04
+    i32 m_8;             // +0x08  lo
+    i32 m_c;             // +0x0c  hi
+    char* m_10;          // +0x10  base
+    i32 m_14;            // +0x14  miss result
+    i32 m_18;            // +0x18  stride
     char pad1c[0x20 - 0x1c];
-    i32 m_20;             // +0x20
+    i32 m_20;                 // +0x20
     i32 Find(i32 key, i32 z); // 0x16da80
     void* Resolve(i32 key);
 };
@@ -67,8 +67,8 @@ void* CTypeColl464::Resolve(i32 key) {
 // ===========================================================================
 struct C50ca0 {
     char pad0[0x1a0];
-    i32 m_1a0; // +0x1a0
-    i32 m_1a4; // +0x1a4
+    i32 m_1a0;                               // +0x1a0
+    i32 m_1a4;                               // +0x1a4
     void Method(i32 a, i32 b, i32 c, i32 d); // 0x3bd9
     void M(i32 arg);
 };
@@ -107,7 +107,7 @@ struct CState8e {
 extern void Lab401947(); // 0x401947 (code address passed as a ptr; reloc-masked)
 struct C8e880 {
     char pad0[0x2c];
-    CState8e* m_2c; // +0x2c
+    CState8e* m_2c;                                  // +0x2c
     void Cmd2bb7(const char* name, void* fn, i32 n); // 0x2bb7
     i32 M();
 };
@@ -191,8 +191,8 @@ void C915d0::M64(void* arg) {
 // ===========================================================================
 struct CSub99ba0 {
     char pad0[0x1c];
-    i32 m_1c; // +0x1c (== owner +0x20)
-    i32 m_20; // +0x20 (== owner +0x24)
+    i32 m_1c;         // +0x1c (== owner +0x20)
+    i32 m_20;         // +0x20 (== owner +0x24)
     void Init(i32 n); // 0x1b4867
 };
 struct C99ba0 {
@@ -275,7 +275,7 @@ struct CSubB4 {
 };
 struct C0b4c40 {
     char pad0[0x10];
-    CSubB4* m_10; // +0x10
+    CSubB4* m_10;                                 // +0x10
     i32 Dispatch3035(i32 a, i32 b, i32 c, i32 d); // 0x3035
     i32 Handle(i32 a1, i32 a2, i32 a3, i32 a4);
 };
@@ -544,7 +544,7 @@ struct CMgrEb {
 extern "C" CMgrEb* g_mgrSettings;
 struct Ceb970 {
     char pad0[0x3c];
-    i32 m_3c; // +0x3c
+    i32 m_3c;                                             // +0x3c
     i32 Base3ca1(CArchiveEb* ar, i32 a2, i32 a3, i32 a4); // 0x3ca1
     i32 Serialize(CArchiveEb* ar, i32 mode, i32 a3, i32 a4);
 };
@@ -780,16 +780,16 @@ i32 __stdcall Gate113860(void* obj, i32 mode, i32 a3, i32 a4) {
         return 0;
     }
     switch (mode) {
-    case 4:
-        if (!Func4499(obj)) {
-            return 0;
-        }
-        break;
-    case 7:
-        if (!Func1893(obj)) {
-            return 0;
-        }
-        break;
+        case 4:
+            if (!Func4499(obj)) {
+                return 0;
+            }
+            break;
+        case 7:
+            if (!Func1893(obj)) {
+                return 0;
+            }
+            break;
     }
     return 1;
 }

@@ -334,10 +334,10 @@ public:
     i32 InsertPtr(i32 a, i32 b);
     void ReportTab(i32 tab);
     // siblings the second batch dispatches (reloc-masked ILT thunks / bodies elsewhere)
-    i32 StateProbe();   // call 0x2b2b - the subtype-2 activation probe
-    void StateNotify(); // call 0x125d - the non-subtype-2 notify
-    i32 RefreshA();     // jmp 0x2b8a
-    i32 RefreshB();     // jmp 0x2d5b
+    i32 StateProbe();                    // call 0x2b2b - the subtype-2 activation probe
+    void StateNotify();                  // call 0x125d - the non-subtype-2 notify
+    i32 RefreshA();                      // jmp 0x2b8a
+    i32 RefreshB();                      // jmp 0x2d5b
     void ReportLog(i32 a, i32 b, i32 c); // call 0x1276
     i32 ReportApply(i32 a, i32 b);       // call 0x213f
 
@@ -510,7 +510,7 @@ struct CSbiTileEntry {
 struct CSbiActiveObj {
     i32 ProbeXY(i32 col, i32 row, i32 a, i32 b); // __thiscall, 4 args (FUN_0046bfd0)
     i32 ScrollProbe(i32 col, i32 row);           // __thiscall, 2 args (FUN_004784d0)
-    void LoadCameraSprite();                      // __thiscall (FUN_00478960)
+    void LoadCameraSprite();                     // __thiscall (FUN_00478960)
     char m_pad0[0x1c];
     CSbiTileEntry* m_grid[1]; // +0x1c  tile-entry grid (15-wide rows, 4-byte stride)
     char m_pad20[0x230 - 0x20];

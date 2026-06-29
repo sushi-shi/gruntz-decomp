@@ -13,7 +13,7 @@
 struct VoiceResolver {
     void* Resolve(const char* name, i32 tag); // FUN_0013bff0 __thiscall, ret resource (0 absent)
 };
-struct VoiceRoot {       // this->m_0
+struct VoiceRoot { // this->m_0
     char m_pad00[0x34];
     VoiceResolver* m_34; // +0x34
 };
@@ -38,9 +38,9 @@ void EngFmt(CString* out, const char* fmt, ...); // 0x1b2cf5
 // AddName copies one CString into the list (FUN_00402446 via its ILT thunk).
 struct VoiceList {
     VoiceList();
-    CObList m_list; // +0x00 (0x1c)
-    i32 m_1c;       // +0x1c
-    i32 m_20;       // +0x20
+    CObList m_list;                 // +0x00 (0x1c)
+    i32 m_1c;                       // +0x1c
+    i32 m_20;                       // +0x20
     void AddName(const CString& s); // FUN_00402446 __thiscall
 };
 inline VoiceList::VoiceList() {

@@ -40,11 +40,11 @@
 // (reloc-masks 0x5e8cb4) folded LAST into each leaf dtor, and the destructible
 // base subobject supplies the leaf dtor's /GX EH frame.
 struct CNetNodeBase {
-    virtual void V0();      // slot 0 (sub_1bef01)
+    virtual void V0();       // slot 0 (sub_1bef01)
     virtual ~CNetNodeBase(); // slot 1 (scalar-deleting dtor)
-    virtual void V2();      // slot 2 (sub_0028ec)
-    virtual void V3();      // slot 3 (sub_00106e)
-    virtual void V4();      // slot 4 (sub_004034)
+    virtual void V2();       // slot 2 (sub_0028ec)
+    virtual void V3();       // slot 3 (sub_00106e)
+    virtual void V4();       // slot 4 (sub_004034)
 };
 inline CNetNodeBase::~CNetNodeBase() {}
 

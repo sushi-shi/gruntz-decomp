@@ -60,7 +60,7 @@ public:
     void Dtor();              // 0x1b48c6  ~CObList (reloc-masked rel32 callee)
     ~TtcObList() {
         Dtor();
-    }                         // real subobject dtor: drives the container's /GX frame
+    } // real subobject dtor: drives the container's /GX frame
     void* m_vptr;             // +0x00
     TtcNode* m_pNodeHead;     // +0x04
     char _pad08[0x0c - 0x08]; // +0x08..0x0b

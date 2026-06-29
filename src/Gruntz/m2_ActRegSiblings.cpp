@@ -159,5 +159,6 @@ void CCheckpointTrigger::RegisterActs() {
         ((CActName*)slot)->Assign(s_actKeyA);
         g_nextActId++;
     }
-    ((CCheckpointActEntry*)g_checkpointActReg.ResolveEntry(id))->m_fn = &CCheckpointTrigger::Trigger;
+    ((CCheckpointActEntry*)g_checkpointActReg.ResolveEntry(id))->m_fn =
+        &CCheckpointTrigger::Trigger;
 }

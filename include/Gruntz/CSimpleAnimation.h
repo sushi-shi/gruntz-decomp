@@ -24,7 +24,7 @@
 
 class CSimpleAnimation : public CUserLogic {
 public:
-    i32 AdvanceAnim(); // 0x0abf70 (re-target bound anim to the draw-delta; ret 0)
+    i32 AdvanceAnim();   // 0x0abf70 (re-target bound anim to the draw-delta; ret 0)
     ~CSimpleAnimation(); // 0x00f9d0 (folds the CUserLogic teardown)
 };
 
