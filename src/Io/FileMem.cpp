@@ -121,8 +121,8 @@ void CFileMem::ResetBase() {
 // Zero the position pair + the two base scalars, tail-jump CString::Empty.
 RVA(0x00157a50, 0x16)
 void CFileMem::Reset() {
-    m_20 = 0;
-    m_24 = 0;
+    m_length = 0;
+    m_offset = 0;
     m_4 = 0;
     m_8 = 0;
     m_name.Empty();
@@ -155,16 +155,16 @@ i32 CFileMem::Open() {
         if (!((CFileIOView*)&m_file)->Open((const char*)m_name, 0, 0)) {
             return 0;
         }
-        m_20 = ((CFileIOView*)&m_file)->GetLength();
-        m_24 = 0;
+        m_length = ((CFileIOView*)&m_file)->GetLength();
+        m_offset = 0;
         return 1;
     }
 
     if (!((CFileIOView*)&m_file)->Open((const char*)m_name, 0x1001, 0)) {
         return 0;
     }
-    m_20 = 0;
-    m_24 = 0;
+    m_length = 0;
+    m_offset = 0;
     return 1;
 }
 
@@ -180,7 +180,7 @@ i32 CFileMem::Ready() {
 // ---------------------------------------------------------------------------
 // CFileMem::Read  (0x00165f00)
 // Read n bytes through the inner CFileIO (vtable +0x3c), advancing only the
-// consumed-count m_24 by n. buf==0 -> early no-op (eax left = buf = 0); n==0 ->
+// consumed-count m_offset by n. buf==0 -> early no-op (eax left = buf = 0); n==0 ->
 // return 0. Fails (0) if the inner Read returns fewer than n bytes; else 1.
 RVA(0x00165f00, 0x48)
 i32 CFileMem::Read(void* buf, i32 n) {
@@ -193,7 +193,7 @@ i32 CFileMem::Read(void* buf, i32 n) {
     if (((CFileIOView*)&m_file)->Read(buf, n) != n) {
         return 0;
     }
-    m_24 += n;
+    m_offset += n;
     return 1;
 }
 
@@ -210,7 +210,7 @@ i32 CFileMem::Write(const void* buf, i32 n) {
         return 0;
     }
     ((CFileIOView*)&m_file)->Write(buf, n);
-    m_20 += n;
-    m_24 += n;
+    m_length += n;
+    m_offset += n;
     return 1;
 }
