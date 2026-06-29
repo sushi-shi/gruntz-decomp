@@ -51,9 +51,9 @@ struct CSoundBank {
     virtual i32 LoadSpecial(const char* path, i32 a); // slot 15 (+0x3c)
 
     char m_pad04[0x5c - 0x04];
-    void* m_5c; // +0x5c  owned load buffer
+    void* m_loadBuffer; // +0x5c  owned load buffer
 
-    i32 Load(const char* path, i32 a1); // 0x138aa0
+    i32 Load(const char* path, i32 decodeArg); // 0x138aa0
 };
 
 // 0x138aa0 - Load: the special ".." name forwards to the slot-0x3c handler; otherwise
@@ -68,24 +68,24 @@ struct CSoundBank {
 // EH-state numbering (the documented eh-scoped-local wall) and the differently-named
 // SbNameCmp/operator-new reloc operands diverge. Logic complete; final sweep.
 RVA(0x00138aa0, 0x175)
-i32 CSoundBank::Load(const char* path, i32 a1) {
+i32 CSoundBank::Load(const char* path, i32 decodeArg) {
     if (SbNameCmp(path, g_dotDot) != 0) {
         RezFile file;
         if (!file.Open(path, 0, 0)) {
             return 0;
         }
-        i32 len = file.GetLength();
-        if (len < 4) {
+        i32 fileLength = file.GetLength();
+        if (fileLength < 4) {
             return 0;
         }
-        m_5c = operator new(len);
-        if (m_5c == 0) {
+        m_loadBuffer = operator new(fileLength);
+        if (m_loadBuffer == 0) {
             return 0;
         }
-        if (file.Read(m_5c, len) != len) {
+        if (file.Read(m_loadBuffer, fileLength) != fileLength) {
             return 0;
         }
-        return DecodeBuf(m_5c, len, a1);
+        return DecodeBuf(m_loadBuffer, fileLength, decodeArg);
     }
-    return LoadSpecial(path, a1);
+    return LoadSpecial(path, decodeArg);
 }
