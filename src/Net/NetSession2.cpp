@@ -9,11 +9,11 @@
 #include <string.h>
 
 struct CNetCmdSlot2 {
-    i32 m_0; // +0x00  armed flag (==3 active)
-    i32 m_4; // +0x04  reset guard
-    i32 m_8; // +0x08  latched seq
+    i32 m_armed;      // +0x00  armed flag (==3 active)
+    i32 m_resetGuard; // +0x04  reset guard
+    i32 m_latchedSeq; // +0x08  latched seq
     char m_padc[0x14 - 0xc];
-    i32 m_14; // +0x14  base seq
+    i32 m_baseSeq; // +0x14  base seq
     char m_pad18[0x64 - 0x18];
 
     void FullReset(); // 0xc0c20 (external, reloc-masked)
@@ -39,7 +39,7 @@ struct CNetSession2 {
     i32 m_10;                        // +0x10
     i32 m_14;                        // +0x14
     i32 m_18;                        // +0x18
-    i32 m_1c;                        // +0x1c  cached a2->m_5a4
+    i32 m_cachedCmdDelay;            // +0x1c  cached a2->m_cmdDelay
     CNetCmdSlot2 m_slots[4];         // +0x20  (0x64 each -> +0x20..+0x1b0)
     i32 m_1b0[0x80];                 // +0x1b0 (0x200 bytes scratch)
     CNetResyncEntry m_entries[0x80]; // +0x3b0 (0x410 each)
@@ -52,7 +52,7 @@ struct CNetSession2 {
 // The owning net manager: only +0x5a4 (cached by Init) is read.
 struct CNetMgr {
     char m_pad0[0x5a4];
-    i32 m_5a4; // +0x5a4
+    i32 m_cmdDelay; // +0x5a4
 };
 
 // @early-stop
@@ -94,7 +94,7 @@ i32 CNetSession2::Init(void* a1, CNetMgr* a2, void* a3) {
     m_4 = a2;
     m_8 = a3;
     Reset();
-    m_1c = a2->m_5a4;
+    m_cachedCmdDelay = a2->m_cmdDelay;
     return 1;
 }
 
@@ -103,15 +103,15 @@ i32 CNetSession2::Verify(i32 n) {
     for (i32 i = 0; i < 4; i++) {
         CNetCmdSlot2* s = &m_slots[i];
         if (s != 0) {
-            if (s->m_0 == 3 && s->m_4 == 0) {
-                if (s->m_14 < n) {
+            if (s->m_armed == 3 && s->m_resetGuard == 0) {
+                if (s->m_baseSeq < n) {
                     return 0;
                 }
-            } else if (s->m_0 == 3 && s->m_4 != 0) {
+            } else if (s->m_armed == 3 && s->m_resetGuard != 0) {
                 if (s->Ready() == 0) {
                     return 0;
                 }
-                if (s->m_8 != s->m_14) {
+                if (s->m_latchedSeq != s->m_baseSeq) {
                     return 0;
                 }
             }
