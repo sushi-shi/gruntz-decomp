@@ -85,7 +85,7 @@ void CBattlezData::SetCount(i32 count) {
     i32 base = (count - 1) / 4 * 4;
     i32 flag = 1;
     for (i32 i = base; i < base + 4; i++) {
-        if (m_records[i].m_00 == 0) {
+        if (m_records[i].m_populated == 0) {
             flag = 0;
         }
     }
@@ -171,10 +171,10 @@ i32 CBattlezData::AllRecordsInBounds() {
     i32 i = 0;
     BattlezRecord* r = m_records;
     for (; i < 0x20; i++, r++) {
-        if (r->m_00 == 0) {
+        if (r->m_populated == 0) {
             return 0;
         }
-        if (r->m_28 == 0) {
+        if (r->m_scoreValue == 0) {
             return 0;
         }
         if (r->m_10 < r->m_30) {
@@ -243,7 +243,7 @@ RVA(0x000fce80, 0x32)
 i32 CBattlezData::GroupAllScored() {
     i32 g = (m_count - 1) / 4 * 4;
     for (i32 i = 0; i < 4; i++) {
-        if (m_records[g + i].m_28 == 0) {
+        if (m_records[g + i].m_scoreValue == 0) {
             return 0;
         }
     }
@@ -406,7 +406,7 @@ i32 CBattlezData::GetRecordValue(i32 b) {
     if (idx == last) {
         return m_44;
     }
-    return m_records[idx].m_28;
+    return m_records[idx].m_scoreValue;
 }
 
 // 0xfd330 - fill the record at `index` (0x40-byte stride, biased -0x40) from the

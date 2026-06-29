@@ -34,10 +34,10 @@
 // proximity accessors below sum/test these per-record fields over the records
 // in the "current group of 4" (index (m_count-1)/4*4) or over all 0x20.
 struct BattlezRecord {
-    i32 m_00; // populated flag (0fcad0 tests, 0fd330 sets to 1)
-    i32 m_04; // from gameReg.m_118 (0fd330)
+    i32 m_populated; // +0x00  populated flag (0fcad0 tests, 0fd330 sets to 1)
+    i32 m_04;        // +0x04  from gameReg.m_118 (0fd330)
     i32 m_08, m_0c, m_10, m_14, m_18, m_1c, m_20, m_24;
-    i32 m_28; // win/score value (0fced0 returns; 0fd330 fills)
+    i32 m_scoreValue; // +0x28  win/score value (0fced0 returns; 0fd330 fills)
     i32 m_2c, m_30, m_34, m_38, m_3c;
 };
 
