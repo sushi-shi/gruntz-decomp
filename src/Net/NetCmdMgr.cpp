@@ -11,8 +11,8 @@
 // The per-color selection sub-object living at CNetCmdBuf+0x150 (only its +0x8
 // "current owner" field is touched here).
 struct CColorSlot {
-    char m_0[8]; // +0x150 region
-    i32 m_8;     // +0x158  current owner player id
+    char m_0[8];                // +0x150 region
+    i32 m_currentOwnerPlayerId; // +0x158  current owner player id
 };
 
 // One session command buffer (0x238). idx*0x238 == idx*71*8 -> the lea/shl/sub.
@@ -26,15 +26,15 @@ struct CNetCmdBuf {
 // flag and its chat-error method are reached.
 struct CNetLobbyMgr {
     char m_pad0[0x528];
-    i32 m_528;                                 // +0x528  session-active flag
+    i32 m_sessionActive;                       // +0x528  session-active flag
     void ShowError(const char* msg, i32 code); // 0xb7e30 (__thiscall, external)
 };
 
 struct CNetSessHost {
     char m_pad0[0x5c];
-    CNetCmdBuf* m_5c; // +0x5c  base of the per-player command-buffer array
+    CNetCmdBuf* m_cmdBuffers; // +0x5c  base of the per-player command-buffer array
 
-    i32 SelectColor(i32 idx, i32 pid); // 0xc4b60
+    i32 SelectColor(i32 colorIndex, i32 playerId); // 0xc4b60
 };
 
 DATA(0x0024bd5c)
@@ -44,17 +44,17 @@ extern i32 CheckColorTaken(i32 pid);    // 0xdb2d0 (__cdecl, external)
 extern void SetColorFlag(i32 a, i32 b); // 0xdb2b0 (__cdecl, external)
 
 RVA(0x000c4b60, 0x77)
-i32 CNetSessHost::SelectColor(i32 idx, i32 pid) {
-    CColorSlot* s = &m_5c[idx].m_sel;
-    if (g_64bd5c->m_528 != 0) {
-        i32 r = CheckColorTaken(pid);
+i32 CNetSessHost::SelectColor(i32 colorIndex, i32 playerId) {
+    CColorSlot* colorSlot = &m_cmdBuffers[colorIndex].m_sel;
+    if (g_64bd5c->m_sessionActive != 0) {
+        i32 r = CheckColorTaken(playerId);
         if (r == 0) {
             g_64bd5c->ShowError("Someone has already selected that color.", r);
             return 0;
         }
-        SetColorFlag(s->m_8, 1);
-        SetColorFlag(pid, 0);
+        SetColorFlag(colorSlot->m_currentOwnerPlayerId, 1);
+        SetColorFlag(playerId, 0);
     }
-    s->m_8 = pid;
+    colorSlot->m_currentOwnerPlayerId = playerId;
     return 1;
 }
