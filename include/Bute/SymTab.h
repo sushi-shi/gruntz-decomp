@@ -143,15 +143,15 @@ struct CSymParser {
     char m_pad00[0x4];
     const char* m_delims; // +0x04  delimiter set the tokenizer splits on
     char m_pad08[0x58 - 0x8];
-    i32 m_58; // +0x58  longest scope-name length seen (tracked when adding scopes)
-    i32 m_5c; // +0x5c  longest leaf-name length seen (tracked by Method4b0)
+    i32 m_longestScopeNameLen; // +0x58  longest scope-name length seen (tracked when adding scopes)
+    i32 m_longestLeafNameLen;  // +0x5c  longest leaf-name length seen (tracked by Method4b0)
     char m_pad60[0x68 - 0x60];
-    i32 m_68; // +0x68  flag forwarded to the +0x38 walk (passed as m_68 == 0)
-    i32 m_6c; // +0x6c  selects the leaf-record ctor variant (Init4 vs Init3)
-    i32 m_70; // +0x70  leaf-record ctor arg
-    i32 m_74; // +0x74  leaf-record ctor arg (Init4 only)
-    i32 m_78; // +0x78  child-scope m_subTabs bucket count
-    i32 m_7c; // +0x7c  child-scope m_symbols bucket count
+    i32 m_68;                // +0x68  flag forwarded to the +0x38 walk (passed as m_68 == 0)
+    i32 m_6c;                // +0x6c  selects the leaf-record ctor variant (Init4 vs Init3)
+    i32 m_70;                // +0x70  leaf-record ctor arg
+    i32 m_74;                // +0x74  leaf-record ctor arg (Init4 only)
+    i32 m_subTabBucketCount; // +0x78  child-scope m_subTabs bucket count
+    i32 m_symbolBucketCount; // +0x7c  child-scope m_symbols bucket count
 };
 
 // ---------------------------------------------------------------------------
@@ -231,7 +231,8 @@ public:
 
     // Method4b0 (0x13a4b0): pop a fresh parse-slot, build a leaf record into it from
     // (name=a1, rec=a2, f4=a0, stream=a3), splice it into rec's +0x24 sub-table, and
-    // bump the parser's longest-leaf-name counter (m_owner->m_5c). Returns the slot.
+    // bump the parser's longest-leaf-name counter (m_owner->m_longestLeafNameLen).
+    // Returns the slot.
     i32 Method4b0(void* a0, void* a1, void* a2, void* a3); // 0x13a4b0
 
     // The leaf-merge helper ApplyRange calls when a leaf record's +0x24 sub-table walk

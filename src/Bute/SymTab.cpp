@@ -51,19 +51,30 @@ static i32 IsTokenChar(const char* delims, char ch) {
 // at +0x30, and two zeroed counters (+0x18/+0x38). ApplyRange reads +0x0c (added into
 // m_10) and +0x14 (the min/max accumulator key) back out. Field names are placeholders.
 struct CSymLeafBuilder {
-    void Build(void* owner, const char* name, void* f4, void* rec, void* str2, void* f3,
-               void* f1, void* f2, void* f6, void* arr, void* stream); // 0x139710
-    char* m_00;            // +0x00  strdup(name) (or null)
-    void* m_04;            // +0x04  rec
-    void* m_08;            // +0x08  f2
-    i32 m_0c;              // +0x0c  f3   (read by ApplyRange)
-    void* m_10;            // +0x10  owning scope
-    i32 m_14;              // +0x14  f1   (read by ApplyRange)
-    i32 m_18;              // +0x18  = 0
+    void Build(
+        void* owner,
+        const char* name,
+        void* f4,
+        void* rec,
+        void* str2,
+        void* f3,
+        void* f1,
+        void* f2,
+        void* f6,
+        void* arr,
+        void* stream
+    );                  // 0x139710
+    char* m_name;       // +0x00  strdup(name) (or null)
+    void* m_record;     // +0x04  rec
+    void* m_08;         // +0x08  f2
+    i32 m_0c;           // +0x0c  f3   (read by ApplyRange)
+    void* m_ownerScope; // +0x10  owning scope
+    i32 m_14;           // +0x14  f1   (read by ApplyRange)
+    i32 m_18;           // +0x18  = 0
     char m_pad1c[0x30 - 0x1c];
-    void* m_30;            // +0x30  self
-    void* m_34;            // +0x34  source stream
-    i32 m_38;              // +0x38  = 0
+    void* m_self;         // +0x30  self
+    void* m_sourceStream; // +0x34  source stream
+    i32 m_38;             // +0x38  = 0
 };
 
 // CSymLeafBuilder::Build (0x139710): populate a freshly-popped leaf-record slot from a
@@ -77,26 +88,36 @@ struct CSymLeafBuilder {
 // `call rel32` pairing base's ??2@YAPAXI@Z against the delinker's name for 0x1b9b46
 // (RezAlloc) - the same documented scoring artifact the CSymTab ctor below carries.
 RVA(0x00139710, 0x8d)
-void CSymLeafBuilder::Build(void* owner, const char* name, void* f4, void* rec,
-                            void* str2, void* f3, void* f1, void* f2, void* f6,
-                            void* arr, void* stream) {
-    m_34 = stream;
-    m_10 = owner;
+void CSymLeafBuilder::Build(
+    void* owner,
+    const char* name,
+    void* f4,
+    void* rec,
+    void* str2,
+    void* f3,
+    void* f1,
+    void* f2,
+    void* f6,
+    void* arr,
+    void* stream
+) {
+    m_sourceStream = stream;
+    m_ownerScope = owner;
     if (name == 0) {
-        m_00 = (char*)name;
+        m_name = (char*)name;
     } else {
-        m_00 = (char*)::operator new(strlen(name) + 1);
-        if (m_00) {
-            strcpy(m_00, name);
+        m_name = (char*)::operator new(strlen(name) + 1);
+        if (m_name) {
+            strcpy(m_name, name);
         }
     }
-    m_04 = rec;
+    m_record = rec;
     m_0c = (i32)f3;
     m_14 = (i32)f1;
     m_08 = f2;
     m_38 = 0;
     m_18 = 0;
-    m_30 = this;
+    m_self = this;
 }
 
 // ctor (0x139de0): stamp the +0x20 hash-node vtable + a zeroed +0x34 (both in the
@@ -112,8 +133,16 @@ void CSymLeafBuilder::Build(void* owner, const char* name, void* f4, void* rec,
 // by the delinker after its containing PTR_LAB) - the documented scoring artifact,
 // not a logic gap. Confirm with llvm-objdump -dr base vs target.
 RVA(0x00139de0, 0xd4)
-CSymTab::CSymTab(CSymParser* owner, void* p1, const char* name, void* p3, void* p4,
-                void* p5, i32 subN, i32 symN)
+CSymTab::CSymTab(
+    CSymParser* owner,
+    void* p1,
+    const char* name,
+    void* p3,
+    void* p4,
+    void* p5,
+    i32 subN,
+    i32 symN
+)
     : m_node20((void*)&CSymTab_node_vftable), m_34(0), m_subTabs(subN), m_symbols(symN) {
     m_name = (char*)::operator new(strlen(name) + 1);
     if (m_name) {
@@ -338,14 +367,22 @@ CSymTab* CSymTab::CreateSub(const char* name) {
     if (m_subTabs.Walk(name, owner->m_68 == 0) != 0) {
         return 0;
     }
-    CSymTab* child = new CSymTab(owner, this, name, 0, 0, (void*)MakeSymSeed(),
-                                 owner->m_78, owner->m_7c);
+    CSymTab* child = new CSymTab(
+        owner,
+        this,
+        name,
+        0,
+        0,
+        (void*)MakeSymSeed(),
+        owner->m_subTabBucketCount,
+        owner->m_symbolBucketCount
+    );
     if (!child) {
         return 0;
     }
     m_subTabs.Insert((char*)child + 0x20);
-    if (m_owner->m_58 <= (i32)strlen(name)) {
-        m_owner->m_58 = strlen(name) + 1;
+    if (m_owner->m_longestScopeNameLen <= (i32)strlen(name)) {
+        m_owner->m_longestScopeNameLen = strlen(name) + 1;
     }
     return child;
 }
@@ -354,7 +391,7 @@ CSymTab* CSymTab::CreateSub(const char* name) {
 // from this leaf record (the 11-arg CSymLeafBuilder::Build with the MakeSymSeed leftover-
 // args trick: f2 = the seed, str2/f3/f1 = 0, f6/arr/stream the carried leftover slots),
 // splice the built slot's +0x1c hash node into rec's (+0x24) sub-table, then bump the
-// parser's longest-leaf-name counter (m_owner->m_5c). Returns the popped slot. Non-EH
+// parser's longest-leaf-name counter (m_owner->m_longestLeafNameLen). Returns the popped slot. Non-EH
 // (no destructible local) so no /GX frame despite the eh-profile unit. __thiscall, ret 0x10.
 // 0x13ba70 is reached here as a __thiscall on the owning parser (Method4b0 reloads
 // ecx=m_owner before the call), unlike the free-call ctor sites; same physical seed
@@ -369,12 +406,23 @@ i32 CSymTab::Method4b0(void* a0, void* a1, void* a2, void* a3) {
     if (slot == 0) {
         return (i32)slot;
     }
-    slot->Build(this, (const char*)a1, a0, a2, 0, 0, 0,
-                (void*)((CSymSeedOwner*)m_owner)->MakeSeed(), 0, 0, a3);
+    slot->Build(
+        this,
+        (const char*)a1,
+        a0,
+        a2,
+        0,
+        0,
+        0,
+        (void*)((CSymSeedOwner*)m_owner)->MakeSeed(),
+        0,
+        0,
+        a3
+    );
     ((CHashTable*)((char*)a2 + 0x24))->Insert((char*)slot + 0x1c);
     u32 len = strlen((char*)a1);
-    if ((u32)m_owner->m_5c <= len) {
-        m_owner->m_5c = len + 1;
+    if ((u32)m_owner->m_longestLeafNameLen <= len) {
+        m_owner->m_longestLeafNameLen = len + 1;
     }
     return (i32)slot;
 }
@@ -467,7 +515,16 @@ i32 CSymTab::ApplyRange(i32 a0, i32 a1, i32 a2, i32 a3) {
             void* existing = m_subTabs.Walk(name, m_owner->m_68 == 0);
             if (existing == 0) {
                 CSymParser* o = m_owner;
-                CSymTab* node = new CSymTab(o, this, name, fA, fB, fC, o->m_78, o->m_7c);
+                CSymTab* node = new CSymTab(
+                    o,
+                    this,
+                    name,
+                    fA,
+                    fB,
+                    fC,
+                    o->m_subTabBucketCount,
+                    o->m_symbolBucketCount
+                );
                 m_subTabs.Insert((char*)node + 0x20);
             } else {
                 ((CSymTab*)existing)->m_04 = fA;
@@ -516,8 +573,7 @@ i32 CSymTab::ApplyRange(i32 a0, i32 a1, i32 a2, i32 a3) {
                 arr = 0;
             }
             if (!skip) {
-                CSymLeafBuilder* slot =
-                    (CSymLeafBuilder*)((CSymSlotPool*)m_owner)->PopParseSlot();
+                CSymLeafBuilder* slot = (CSymLeafBuilder*)((CSymSlotPool*)m_owner)->PopParseSlot();
                 slot->Build(this, name1, f4, rec, str2, f3, f1, f2, f6, arr, (void*)a0);
                 ((CHashTable*)((char*)rec + 0x24))->Insert((char*)slot + 0x1c);
                 m_10 = (void*)((i32)m_10 + slot->m_0c);
