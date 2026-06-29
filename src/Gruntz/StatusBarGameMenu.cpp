@@ -97,10 +97,14 @@ public:
 };
 
 // The two concrete base ctors (reached via ILT thunks; __thiscall on the raw item).
-void __fastcall
-Sbi_CtorImageSet(CSbMenuItem* p); // ??0CSBI_ImageSet@@QAE@XZ (thunk 0x1e88 -> 0x101fa0)
-void __fastcall
-Sbi_CtorBase(CSbMenuItem* p); // ??0CStatusBarItem@@QAE@XZ (thunk 0x22c0 -> 0x1005d0)
+class CSBI_ImageSet : public CSbMenuItem {
+public:
+    CSBI_ImageSet(); // ??0CSBI_ImageSet@@QAE@XZ (thunk 0x1e88 -> 0x101fa0)
+};
+class CStatusBarItem : public CSbMenuItem {
+public:
+    CStatusBarItem(); // ??0CStatusBarItem@@QAE@XZ (thunk 0x22c0 -> 0x1005d0)
+};
 
 // The retail vtables (manual-stamp model; stamped directly). Reloc-masked DATA().
 DATA(0x001eab4c)
@@ -159,31 +163,21 @@ public:
 // new + concrete ctor + manual vtable/tag stamp + the three field clears. The ctor
 // and vtable address vary by tag; the null-guard idiom is identical at every call.
 static CSbMenuItem* mkImageSet(void* vtbl, i32 tag) {
-    CSbMenuItem* p = (CSbMenuItem*)operator new(0x3c);
-    if (p) {
-        Sbi_CtorImageSet(p);
-        *(void**)p = vtbl;
-        p->m_8 = tag;
-        p->m_34 = 0;
-        p->m_30 = 0;
-        p->m_38 = 0;
-    } else {
-        p = 0;
-    }
+    CSbMenuItem* p = new CSBI_ImageSet;
+    *(void**)p = vtbl;
+    p->m_8 = tag;
+    p->m_34 = 0;
+    p->m_30 = 0;
+    p->m_38 = 0;
     return p;
 }
 static CSbMenuItem* mkBase(void* vtbl, i32 tag) {
-    CSbMenuItem* p = (CSbMenuItem*)operator new(0x3c);
-    if (p) {
-        Sbi_CtorBase(p);
-        *(void**)p = vtbl;
-        p->m_8 = tag;
-        p->m_34 = 0;
-        p->m_30 = 0;
-        p->m_38 = 0;
-    } else {
-        p = 0;
-    }
+    CSbMenuItem* p = new CStatusBarItem;
+    *(void**)p = vtbl;
+    p->m_8 = tag;
+    p->m_34 = 0;
+    p->m_30 = 0;
+    p->m_38 = 0;
     return p;
 }
 
