@@ -19,7 +19,7 @@
 // intrusive doubly-linked list head at slot+8/+0xc. A live entry is reached
 // through the "biased +4" convention: the chain threads node=entry+4, so the
 // chain pointer is entry+4 and the engine subtracts 4 to recover the entry. An
-// entry is { ? ; node(next@+4, prev@+8) ; u32 m_bucket@+0x10 ; void* m_rec@+0x14 }.
+// entry is { ? ; node(next@+4, prev@+8) ; u32 m_bucket@+0x10 ; void* m_record@+0x14 }.
 // The record at +0x14 carries the key first ([rec+0] = char* key for the string
 // table, or the raw int key for the int table).
 #ifndef SRC_BUTE_HASH_H
@@ -69,8 +69,8 @@ class CHashInsertNode {
 public:
     virtual u32 Hash() = 0; // slot 0 (the key-typed bucket hash)
     char m_pad04[0x0c - 0x04];
-    void* m_0c;   // +0x0c  owning table back-ptr (Insert stamps this)
-    u32 m_bucket; // +0x10  computed bucket (Insert stamps this)
+    void* m_owner; // +0x0c  owning table back-ptr (Insert stamps this)
+    u32 m_bucket;  // +0x10  computed bucket (Insert stamps this)
 };
 
 // A 16-byte bucket slot; its per-element destructor (0x584a30, a bare `ret`) is
@@ -84,14 +84,14 @@ struct CHashSlot {
 
 // A live hash entry. The chain threads node=entry+4 (next@+4, prev@+8 of the
 // entry); the helpers bias by +/-4. m_bucket@+0x10 records the owning slot;
-// m_rec@+0x14 is the (key,value) record, key first.
+// m_record@+0x14 is the (key,value) record, key first.
 struct CHashEntry {
     void* m_00;   // +0x00
     void* m_next; // +0x04  node.next (biased; chain stores entry+4)
     void* m_prev; // +0x08  node.prev
     char m_pad0c[0x10 - 0x0c];
-    u32 m_bucket; // +0x10
-    void* m_rec;  // +0x14
+    u32 m_bucket;   // +0x10
+    void* m_record; // +0x14
 };
 
 // ---------------------------------------------------------------------------

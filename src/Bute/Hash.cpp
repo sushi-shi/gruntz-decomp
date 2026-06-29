@@ -30,7 +30,7 @@ void CHashBase::RemoveAll() {
 // a null entry here.
 RVA(0x00184a70, 0x34)
 void CHashBase::Insert(CHashInsertNode* node) {
-    node->m_0c = this;
+    node->m_owner = this;
     u32 idx = node->Hash();
     node->m_bucket = idx;
     void* biased = node ? (void*)((char*)node + 4) : 0;
@@ -77,7 +77,7 @@ u32 CHash::HashStr(const char* s) {
 }
 
 // Walk (0x13c270): hash the key, look up the bucket chain, scan for a matching
-// record. `ci` selects _strcmpi over the record key ([rec+0]) vs the inline
+// record. `ci` selects _strcmpi over the record key ([record+0]) vs the inline
 // byte-loop strcmp; on a match returns the record ([entry+0x14]).
 RVA(0x0013c270, 0xca)
 void* CHash::Walk(const char* name, i32 ci) {
@@ -87,9 +87,9 @@ void* CHash::Walk(const char* name, i32 ci) {
     CHashEntry* e = Lookup(HashStr(name));
     if (ci) {
         while (e) {
-            const char* key = *(const char**)e->m_rec;
+            const char* key = *(const char**)e->m_record;
             if (_strcmpi(key, name) == 0) {
-                return e->m_rec;
+                return e->m_record;
             }
             CHashEntry* n = (CHashEntry*)e->m_next;
             e = n ? (CHashEntry*)((char*)n - 4) : n;
@@ -97,9 +97,9 @@ void* CHash::Walk(const char* name, i32 ci) {
         return 0;
     }
     while (e) {
-        const char* key = *(const char**)e->m_rec;
+        const char* key = *(const char**)e->m_record;
         if (strcmp(key, name) == 0) {
-            return e->m_rec;
+            return e->m_record;
         }
         CHashEntry* n = (CHashEntry*)e->m_next;
         e = n ? (CHashEntry*)((char*)n - 4) : n;
@@ -114,13 +114,13 @@ u32 CHash::HashInt(u32 key) {
 }
 
 // FindInt (0x13c360): hash the int key, look up the chain, return the first
-// record whose key int ([rec+0]) equals `key`.
+// record whose key int ([record+0]) equals `key`.
 RVA(0x0013c360, 0x47)
 void* CHash::FindInt(u32 key) {
     CHashEntry* e = Lookup(HashInt(key));
     while (e) {
-        if (*(u32*)e->m_rec == key) {
-            return e->m_rec;
+        if (*(u32*)e->m_record == key) {
+            return e->m_record;
         }
         CHashEntry* n = (CHashEntry*)e->m_next;
         e = n ? (CHashEntry*)((char*)n - 4) : n;
@@ -156,9 +156,9 @@ void* CHashB::Walk(const char* name, i32 ci) {
     CHashEntry* e = Lookup(HashStr(name));
     if (ci) {
         while (e) {
-            const char* key = *(const char**)e->m_rec;
+            const char* key = *(const char**)e->m_record;
             if (_strcmpi(key, name) == 0) {
-                return e->m_rec;
+                return e->m_record;
             }
             CHashEntry* n = (CHashEntry*)e->m_next;
             e = n ? (CHashEntry*)((char*)n - 4) : n;
@@ -166,9 +166,9 @@ void* CHashB::Walk(const char* name, i32 ci) {
         return 0;
     }
     while (e) {
-        const char* key = *(const char**)e->m_rec;
+        const char* key = *(const char**)e->m_record;
         if (strcmp(key, name) == 0) {
-            return e->m_rec;
+            return e->m_record;
         }
         CHashEntry* n = (CHashEntry*)e->m_next;
         e = n ? (CHashEntry*)((char*)n - 4) : n;

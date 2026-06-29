@@ -427,7 +427,7 @@ struct CParseSlot {
 RVA(0x0013c0c0, 0x14b)
 void* CSymParser::PopParseSlot() {
     CHashEntry* e = m_hash.First();
-    void* rec = e ? e->m_rec : 0;
+    void* rec = e ? e->m_record : 0;
     if (rec == 0) {
         CSlotNode* node = (CSlotNode*)RezAlloc(0xc);
         if (node == 0) {
@@ -460,7 +460,7 @@ void* CSymParser::PopParseSlot() {
         }
         m_nodes.Link(node);
         e = m_hash.First();
-        rec = e->m_rec;
+        rec = e->m_record;
     }
     if (rec) {
         m_hash.Remove((CHashEntry*)((char*)rec + 0x1c));
