@@ -14,15 +14,15 @@ extern "C" void RezFree(void* p);    // 0x1b9b82
 // 0x150180 - ctor: zero the valid flag, size and blob (id is left alone).
 RVA(0x00150180, 0xd)
 CDataBuffer::CDataBuffer() {
-    m_00 = 0;
-    m_04 = 0;
-    m_08 = 0;
+    m_loaded = 0;
+    m_size = 0;
+    m_data = 0;
 }
 
 // 0x150190 - Reset: free the blob only if currently valid (tail-jmp to Free).
 RVA(0x00150190, 0xb)
 void CDataBuffer::Reset() {
-    if (m_00 != 0) {
+    if (m_loaded != 0) {
         Free();
     }
 }
@@ -30,16 +30,16 @@ void CDataBuffer::Reset() {
 // 0x1501a0 - Set: (re)allocate a `size`-byte blob; record id on success.
 RVA(0x001501a0, 0x44)
 i32 CDataBuffer::Set(u32 size, i32 id) {
-    if (m_08) {
-        RezFree(m_08);
+    if (m_data) {
+        RezFree(m_data);
     }
-    m_04 = size;
-    m_08 = RezAlloc(size);
-    if (!m_08) {
+    m_size = size;
+    m_data = RezAlloc(size);
+    if (!m_data) {
         return 0;
     }
-    m_00 = 1;
-    m_0c = id;
+    m_loaded = 1;
+    m_id = id;
     return 1;
 }
 
@@ -49,13 +49,13 @@ i32 CDataBuffer::Set(u32 size, i32 id) {
 // valid flag + id and returns 1. __thiscall, ret 8.
 RVA(0x001501f0, 0x54)
 i32 CDataBuffer::ReadFrom(CFile* file, i32 id) {
-    file->Read(&m_04, 4);
-    if (Set(m_04, id) == 0) {
+    file->Read(&m_size, 4);
+    if (Set(m_size, id) == 0) {
         return 0;
     }
-    file->Read(m_08, m_04);
-    m_00 = 1;
-    m_0c = id;
+    file->Read(m_data, m_size);
+    m_loaded = 1;
+    m_id = id;
     return 1;
 }
 
@@ -96,14 +96,14 @@ i32 CDataBuffer::LoadFromMem(void* buf, u32 len, i32 id) {
 // 0x1503c0 - Free: if valid, free + clear the blob and size, then clear valid.
 RVA(0x001503c0, 0x2e)
 void CDataBuffer::Free() {
-    if (m_00 != 0) {
-        if (m_08) {
-            RezFree(m_08);
-            m_08 = 0;
+    if (m_loaded != 0) {
+        if (m_data) {
+            RezFree(m_data);
+            m_data = 0;
         }
-        m_04 = 0;
+        m_size = 0;
     }
-    m_00 = 0;
+    m_loaded = 0;
 }
 
 // 0x1503f0 - SaveToFile: create `path` (modeCreate|modeWrite), write the 4-byte
@@ -116,8 +116,8 @@ i32 CDataBuffer::SaveToFile(CString path) {
     if (!file.Open(path, CFile::modeCreate | CFile::modeWrite, 0)) {
         return 0;
     }
-    file.Write(&m_04, 4);
-    file.Write(m_08, m_04);
+    file.Write(&m_size, 4);
+    file.Write(m_data, m_size);
     file.Close();
     return 1;
 }
