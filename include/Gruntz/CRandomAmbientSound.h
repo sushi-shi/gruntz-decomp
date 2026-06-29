@@ -25,18 +25,18 @@
 #include <Dsndmgr/DirectSoundMgr.h>
 
 // The big game registry singleton (?g_gameReg@@3PAUWwdGameReg@@A @ 0x64556c).
-// Update gates the play on m_10 (active-level handle) and m_54->m_24 (the active
+// Update gates the play on m_activeLevel and m_world->m_objectCount (the active
 // world's object count). The interval roller in Step also loads g_gameReg as a dead
 // receiver before the rand call (the binary proves the load even though rand ignores it).
 struct WwdActiveLevel {
     char m_pad0[0x24];
-    i32 m_24; // +0x24  object count (non-zero == playable)
+    i32 m_objectCount; // +0x24  object count (non-zero == playable)
 };
 struct WwdGameReg {
     char m_pad0[0x10];
-    void* m_10; // +0x10  active-level handle (Update gates on it)
+    void* m_activeLevel; // +0x10  active-level handle (Update gates on it)
     char m_pad14[0x54 - 0x14];
-    WwdActiveLevel* m_54; // +0x54  the active world view
+    WwdActiveLevel* m_world; // +0x54  the active world view
 };
 DATA(0x0064556c)
 extern WwdGameReg* g_gameReg;
@@ -51,14 +51,14 @@ extern i32 g_tickDelta;
 extern "C" i32 winapi_00cd00_timeGetTime();
 
 // The mgr's frame-reseed helper at 0x136300 (FUN_00536300, __thiscall, 4 args).
-// Modeled as a one-method shell so `mov ecx,m_4; call` falls out reloc-masked.
+// Modeled as a one-method shell so `mov ecx,m_mgr; call` falls out reloc-masked.
 struct DsndReseed {
     void Reseed(i32 a1, i32 a2, i32 a3, i32 a4); // 0x136300
 };
 
-// The positional driver's voice setters on m_4 (a DirectSoundMgr): SetVolByIdx
+// The positional driver's voice setters on m_mgr (a DirectSoundMgr): SetVolByIdx
 // (0x1355c0, the SetVolumeByIndex mirror) and SetPanByIdx (0x1357a0, the SetPan
-// table sibling). Modeled as one-method shells so the `mov ecx,m_4; call` thiscall
+// table sibling). Modeled as one-method shells so the `mov ecx,m_mgr; call` thiscall
 // dispatch reloc-masks.
 struct DsndPosVoice {
     i32 SetVolByIdx(i32 idx); // 0x1355c0
@@ -92,12 +92,12 @@ struct AmbSoundMap {
 };
 struct AmbSoundMapHolder {
     char m_pad00[0x10];
-    AmbSoundMap m_10; // +0x10  the lookup table
+    AmbSoundMap m_map; // +0x10  the lookup table
 };
 // The mgr record the map resolves to; its +0x10 is the DirectSoundMgr handle.
 struct AmbSoundRecord {
     char m_pad00[0x10];
-    DirectSoundMgr* m_10; // +0x10
+    DirectSoundMgr* m_mgr; // +0x10
 };
 
 class CRandomAmbientSound {
@@ -110,14 +110,8 @@ public:
     void Update(i32 playFlag, i32 pos, i32 kind); // 0x00c2a0
     // The positional variant's entry points (same CAmbientSound base layout, but
     // m_40/m_44 hold an anchor position instead of the interval roller):
-    void SetupFromMap(
-        AmbSoundMapHolder* holder,
-        void* key,
-        i32 a3,
-        i32 a4,
-        AmbientPoint* pos,
-        i32 a5
-    );
+    void
+    SetupFromMap(AmbSoundMapHolder* holder, void* key, i32 a3, i32 a4, AmbientPoint* pos, i32 a5);
     i32 SetupPos(DirectSoundMgr* mgr, i32 a2, i32 a3, AmbientPoint* pos, i32 a5);
     void UpdateAt(i32 x, i32 y, i32 force); // 0x00c5b0  position-driven volume/pan
     void StopPos(i32 obj);                  // 0x00c9d0  request stop via slot 2
@@ -128,22 +122,22 @@ public:
     ~CRandomAmbientSound();             // 0x00bb60  scalar-deleting / full dtor (defined elsewhere)
 
     // --- layout (sizeof 0x58) -------------------------------------------------
-    void* m_vptr;        // +0x00  CUserBase vptr (0x5e70b4) then 0x5e713c
-    DirectSoundMgr* m_4; // +0x04  the sound-mgr handle (mgr->...)
-    i32 m_8;             // +0x08  last play position / pan base
-    i32 m_c;             // +0x0c  scale A (compared to 5; -0xf above)
-    i32 m_10;            // +0x10  scale B (>0 gate)
-    i32 m_14;            // +0x14  "is playing" flag
-    AmbientBox m_box1;   // +0x18  primary visibility box
-    AmbientBox m_box2;   // +0x28  secondary visibility box
-    i32 m_38;            // +0x38  Update param (passed to mgr helper)
-    i32 m_3c;            // +0x3c  zero-init in ctor
-    i32 m_40;            // +0x40  interval roller lo
-    i32 m_44;            // +0x44  interval roller hi
-    i32 m_48;            // +0x48  interval roller lo2 (phase B)
-    i32 m_4c;            // +0x4c  interval roller hi2 (phase B)
-    i32 m_50;            // +0x50  rolled countdown (ms, drained by g_645584)
-    i32 m_54;            // +0x54  roller phase flag (toggled each reroll)
+    void* m_vptr;          // +0x00  CUserBase vptr (0x5e70b4) then 0x5e713c
+    DirectSoundMgr* m_mgr; // +0x04  the sound-mgr handle (mgr->...)
+    i32 m_lastPosition;    // +0x08  last play position / pan base
+    i32 m_scaleA;          // +0x0c  scale A (compared to 5; -0xf above)
+    i32 m_scaleB;          // +0x10  scale B (>0 gate)
+    i32 m_isPlaying;       // +0x14  "is playing" flag
+    AmbientBox m_box1;     // +0x18  primary visibility box
+    AmbientBox m_box2;     // +0x28  secondary visibility box
+    i32 m_panIndex;        // +0x38  pan/reseed parameter
+    i32 m_3c;              // +0x3c  zero-init in ctor
+    i32 m_40;              // +0x40  interval roller lo
+    i32 m_44;              // +0x44  interval roller hi
+    i32 m_48;              // +0x48  interval roller lo2 (phase B)
+    i32 m_4c;              // +0x4c  interval roller hi2 (phase B)
+    i32 m_countdownMs;     // +0x50  rolled countdown (ms, drained by g_645584)
+    i32 m_phase;           // +0x54  roller phase flag (toggled each reroll)
 };
 SIZE(CRandomAmbientSound, 0x58);
 

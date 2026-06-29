@@ -25,8 +25,8 @@ extern "C" double sqrt(double);
 
 // ---------------------------------------------------------------------------
 // The free `Spawn`/`Stop` ambient-sound pair (0x00c9d0 / 0x00ca00, __cdecl). They
-// drive the ambient voice that hangs off a CGameObject's +0x7c aux: aux->m_1c is
-// the request state (0 = "spawn", 0x1e = "stop"), aux->m_168 the live voice.
+// drive the ambient voice that hangs off a CGameObject's +0x7c aux: aux->m_requestState is
+// the request state (0 = "spawn", 0x1e = "stop"), aux->m_voice the live voice.
 // ---------------------------------------------------------------------------
 // The sound voice object the aux points at (+0x168): its CObject vptr (slot 0 =
 // scalar-deleting dtor), the DirectSoundMgr handle (+0x04), the playing flag
@@ -34,36 +34,36 @@ extern "C" double sqrt(double);
 class PosSoundVoice {
 public:
     virtual void* ScalarDtor(i32 flag); // +0x00  slot 0 (scalar-deleting dtor)
-    DirectSoundMgr* m_4;                // +0x04
+    DirectSoundMgr* m_mgr;              // +0x04
     char m_pad8[0x14 - 0x8];
-    i32 m_14; // +0x14  playing flag
+    i32 m_isPlaying; // +0x14  playing flag
     char m_pad18[0x3c - 0x18];
-    void* m_3c; // +0x3c  spatial-mgr list node
+    void* m_spatialNode; // +0x3c  spatial-mgr list node
 };
 // The aux sub-object (CGameObject+0x7c): the request state + the live voice slot.
 struct PosSoundAux {
     char m_pad00[0x1c];
-    i32 m_1c; // +0x1c  request state (0 spawn / 0x1e stop / 5 spawned)
+    i32 m_requestState; // +0x1c  request state (0 spawn / 0x1e stop / 5 spawned)
     char m_pad20[0x168 - 0x20];
-    PosSoundVoice* m_168; // +0x168  the live voice
+    PosSoundVoice* m_voice; // +0x168  the live voice
 };
 // The CGameObject the request rides on (only the touched offsets).
 struct PosSoundObj {
     char m_pad00[0x08];
-    i32 m_8; // +0x08  flags
+    i32 m_flags08; // +0x08  flags
     char m_pad0c[0x40 - 0xc];
-    i32 m_40; // +0x40  flags
+    i32 m_flags40; // +0x40  flags
     char m_pad44[0x5c - 0x44];
-    i32 m_5c; // +0x5c  x
-    i32 m_60; // +0x60  y
+    i32 m_x; // +0x5c  x
+    i32 m_y; // +0x60  y
     char m_pad64[0x7c - 0x64];
-    PosSoundAux* m_7c; // +0x7c  the aux
+    PosSoundAux* m_aux; // +0x7c  the aux
     char m_pad80[0x120 - 0x80];
     i32 m_120; // +0x120
     char m_pad124[0x19c - 0x124];
-    void* m_19c; // +0x19c  layer/desc (its +0x10 feeds the factory)
+    void* m_layer; // +0x19c  layer/desc (its +0x10 feeds the factory)
 };
-// The spatial-mgr CObArray (at g_gameReg->m_54 + 0x08) RemoveAt unlinks the
+// The spatial-mgr CObArray (at g_gameReg->m_world + 0x08) RemoveAt unlinks the
 // voice's node from.
 struct PosSoundSpatial {
     i32 RemoveAt(void* node); // 0x1b4ac7  (__thiscall)
@@ -89,56 +89,56 @@ void StopPosSound(PosSoundObj* obj) {
 
 // ---------------------------------------------------------------------------
 // SpawnPosSound (0x00ca00): per-object placement tick. On a "spawn" request
-// (aux->m_1c == 0) stamp the object flags and, if its layer + the active world
+// (aux->m_requestState == 0) stamp the object flags and, if its layer + the active world
 // are live, new a voice through the factory; on a "stop" request (0x1e) tear the
 // live voice down (StopAndRewind, unlink from the spatial mgr, scalar-dtor it).
 // ---------------------------------------------------------------------------
 // @early-stop
 // out-param stack struct + virtual scalar-dtor dispatch + factory calling-conv:
-// logic complete, but the spawn path passes obj->m_5c/m_60 through a 2-int stack
+// logic complete, but the spawn path passes obj->m_x/m_y through a 2-int stack
 // out-param (the `sub esp,8` slots, address-escaped to the factory) whose exact
 // [esp+N] schedule and the factory's callee-clean shape are not source-steerable.
 // The teardown arm (StopAndRewind / RemoveAt / `call [vptr]`) is byte-exact.
 RVA(0x0000ca00, 0xf0)
 void SpawnPosSound(PosSoundObj* obj) {
-    PosSoundAux* aux = obj->m_7c;
-    i32 state = aux->m_1c;
+    PosSoundAux* aux = obj->m_aux;
+    i32 state = aux->m_requestState;
     if (state != 0) {
         if (state != 0x1e) {
             return;
         }
-        PosSoundVoice* sound = aux->m_168;
+        PosSoundVoice* sound = aux->m_voice;
         if (sound == 0) {
             return;
         }
-        PosSoundSpatial* arr = (PosSoundSpatial*)((char*)g_gameReg->m_54 + 8);
-        if (sound->m_4 != 0) {
-            sound->m_4->StopAndRewind();
-            sound->m_14 = 0;
+        PosSoundSpatial* arr = (PosSoundSpatial*)((char*)g_gameReg->m_world + 8);
+        if (sound->m_mgr != 0) {
+            sound->m_mgr->StopAndRewind();
+            sound->m_isPlaying = 0;
         }
-        if (sound->m_3c != 0) {
-            arr->RemoveAt(sound->m_3c);
+        if (sound->m_spatialNode != 0) {
+            arr->RemoveAt(sound->m_spatialNode);
             sound->ScalarDtor(1);
         }
-        aux->m_168 = 0;
-        aux->m_1c = 0;
+        aux->m_voice = 0;
+        aux->m_requestState = 0;
         return;
     }
 
-    obj->m_8 = (obj->m_8 & ~2) | 0x100001;
-    obj->m_40 |= 1;
-    aux->m_168 = 0;
-    void* layer = obj->m_19c;
-    if (layer != 0 && g_gameReg != 0 && g_gameReg->m_54 != 0) {
+    obj->m_flags08 = (obj->m_flags08 & ~2) | 0x100001;
+    obj->m_flags40 |= 1;
+    aux->m_voice = 0;
+    void* layer = obj->m_layer;
+    if (layer != 0 && g_gameReg != 0 && g_gameReg->m_world != 0) {
         i32 pt[2];
-        pt[0] = obj->m_5c;
-        pt[1] = obj->m_60;
+        pt[0] = obj->m_x;
+        pt[1] = obj->m_y;
         void* v = PosSoundSpawn(*(void**)((char*)layer + 0x10), 0x64, &pt, obj->m_120, 0);
         if (v != 0) {
-            aux->m_168 = (PosSoundVoice*)v;
+            aux->m_voice = (PosSoundVoice*)v;
         }
     }
-    aux->m_1c = 5;
+    aux->m_requestState = 5;
 }
 
 // ---------------------------------------------------------------------------
@@ -150,7 +150,7 @@ void SpawnPosSound(PosSoundObj* obj) {
 RVA(0x0000bb40, 0xf)
 void CRandomAmbientSound::BaseInit() {
     m_vptr = g_vtbl_CUserBase;
-    m_4 = 0;
+    m_mgr = 0;
     m_3c = 0;
 }
 
@@ -165,12 +165,12 @@ i32 CRandomAmbientSound::Setup(DirectSoundMgr* mgr, i32 a2, i32 a3, AmbientBox* 
     if (mgr == 0) {
         return 0;
     }
-    m_4 = mgr;
-    m_8 = a2;
-    m_c = a3;
-    m_10 = a5;
-    m_38 = 0;
-    m_14 = 0;
+    m_mgr = mgr;
+    m_lastPosition = a2;
+    m_scaleA = a3;
+    m_scaleB = a5;
+    m_panIndex = 0;
+    m_isPlaying = 0;
     AmbientBox* p = &m_box1;
     if (box != 0) {
         *p = *box;
@@ -186,9 +186,10 @@ i32 CRandomAmbientSound::Setup(DirectSoundMgr* mgr, i32 a2, i32 a3, AmbientBox* 
 
 // ---------------------------------------------------------------------------
 // Update (0x00c2a0, __thiscall, 3 args playFlag/pos/kind): the play/stop driver.
-// Gated on the mgr handle, the playing flag, and the active level (g_gameReg->m_10
-// and g_gameReg->m_54->m_24). On play it reseeds the voice (mgr->Reseed(1,m_38,0,1)),
-// scales pos by (m_c clamped)/100 then m_10/100 (both signed magic-/100), clamps the
+// Gated on the mgr handle, the playing flag, and the active level
+// (g_gameReg->m_activeLevel and g_gameReg->m_world->m_objectCount). On play it reseeds
+// the voice (mgr->Reseed(1,m_panIndex,0,1)), scales pos by (m_scaleA clamped)/100 then
+// m_scaleB/100 (both signed magic-/100), clamps the
 // result to [0,100], and dispatches SetVolumeByIndex (kind==0) or CloneAndPlay
 // (kind!=0); on stop it StopAndRewind's (kind==0) or CloneAndPlay-stops (kind!=0).
 // ---------------------------------------------------------------------------
@@ -200,84 +201,84 @@ i32 CRandomAmbientSound::Setup(DirectSoundMgr* mgr, i32 a2, i32 a3, AmbientBox* 
 // See zero-register-pinning.md and CGruntSpawnConfig::PickWeighted (the /100 family).
 RVA(0x0000c2a0, 0x19e)
 void CRandomAmbientSound::Update(i32 playFlag, i32 pos, i32 kind) {
-    if (m_4 == 0) {
+    if (m_mgr == 0) {
         return;
     }
     if (playFlag == 0) {
         // Stop path.
-        if (m_14 == 0) {
+        if (m_isPlaying == 0) {
             return;
         }
         if (kind != 0) {
-            m_8 = 0;
-            m_4->CloneAndPlay(0, kind, 1);
-            m_14 = 0;
+            m_lastPosition = 0;
+            m_mgr->CloneAndPlay(0, kind, 1);
+            m_isPlaying = 0;
             return;
         }
-        m_4->StopAndRewind();
-        m_14 = 0;
+        m_mgr->StopAndRewind();
+        m_isPlaying = 0;
         return;
     }
-    if (m_14 != 0) {
+    if (m_isPlaying != 0) {
         return;
     }
-    if (g_gameReg->m_10 == 0) {
+    if (g_gameReg->m_activeLevel == 0) {
         return;
     }
-    if (g_gameReg->m_54->m_24 == 0) {
+    if (g_gameReg->m_world->m_objectCount == 0) {
         return;
     }
 
     if (kind != 0) {
-        ((DsndReseed*)m_4)->Reseed(1, m_38, 0, 1);
-        i32 t = m_c;
-        m_8 = pos;
+        ((DsndReseed*)m_mgr)->Reseed(1, m_panIndex, 0, 1);
+        i32 t = m_scaleA;
+        m_lastPosition = pos;
         if (t > 5) {
             t -= 0xf;
         }
         i32 v = (t * pos) / 100;
-        if (m_10 > 0) {
-            v = (v * m_10) / 100;
+        if (m_scaleB > 0) {
+            v = (v * m_scaleB) / 100;
         }
         if (v < 0) {
             v = 0;
         } else if (v > 0x64) {
             v = 0x64;
         }
-        m_4->CloneAndPlay(v, kind, 0);
-        m_8 = pos;
-        m_14 = 1;
+        m_mgr->CloneAndPlay(v, kind, 0);
+        m_lastPosition = pos;
+        m_isPlaying = 1;
         return;
     }
 
-    ((DsndReseed*)m_4)->Reseed(1, m_38, 0, 1);
-    i32 t = m_c;
-    m_8 = pos;
+    ((DsndReseed*)m_mgr)->Reseed(1, m_panIndex, 0, 1);
+    i32 t = m_scaleA;
+    m_lastPosition = pos;
     if (t > 5) {
         t -= 0xf;
     }
     i32 v = (t * pos) / 100;
-    if (m_10 > 0) {
-        v = (v * m_10) / 100;
+    if (m_scaleB > 0) {
+        v = (v * m_scaleB) / 100;
     }
     if (v < 0) {
-        m_4->SetVolumeByIndex(0);
-        m_8 = pos;
-        m_14 = 1;
+        m_mgr->SetVolumeByIndex(0);
+        m_lastPosition = pos;
+        m_isPlaying = 1;
         return;
     }
     if (v > 0x64) {
         v = 0x64;
     }
-    m_4->SetVolumeByIndex(v);
-    m_8 = pos;
-    m_14 = 1;
+    m_mgr->SetVolumeByIndex(v);
+    m_lastPosition = pos;
+    m_isPlaying = 1;
 }
 
 // ---------------------------------------------------------------------------
 // SetupFromMap (0x00c4b0, __thiscall, 5 args): resolve the mgr record for `key`
-// out of holder->m_10 (a CMapPtrToPtr); when found, seed this object via
-// SetupPos(record->m_10, a3, a4, pos, a5). No-op when the key is absent.
+// out of holder->m_map (a CMapPtrToPtr); when found, seed this object via
+// SetupPos(record->m_mgr, a3, a4, pos, a5). No-op when the key is absent.
 // ---------------------------------------------------------------------------
 // @early-stop
 // CODE BYTE-EXACT - residual is the reloc-naming scoring artifact: retail's two
@@ -295,16 +296,16 @@ void CRandomAmbientSound::SetupFromMap(
     i32 a5
 ) {
     void* found = 0;
-    holder->m_10.Lookup(key, &found);
+    holder->m_map.Lookup(key, &found);
     if (found != 0) {
-        SetupPos(((AmbSoundRecord*)found)->m_10, a3, a4, pos, a5);
+        SetupPos(((AmbSoundRecord*)found)->m_mgr, a3, a4, pos, a5);
     }
 }
 
 // ---------------------------------------------------------------------------
 // SetupPos (0x00c530, __thiscall, 5 args): the positional Setup. Refuse a null
 // mgr or null position; otherwise stash the mgr + the two play params + a5,
-// clear the playing flag (+0x14) and m_38, and copy the (x,y) anchor into
+// clear the playing flag (+0x14) and m_panIndex, and copy the (x,y) anchor into
 // m_40/m_44. Returns 1, or 0 on either null guard.
 // ---------------------------------------------------------------------------
 RVA(0x0000c530, 0x51)
@@ -315,12 +316,12 @@ i32 CRandomAmbientSound::SetupPos(DirectSoundMgr* mgr, i32 a2, i32 a3, AmbientPo
     if (pos == 0) {
         return 0;
     }
-    m_4 = mgr;
-    m_8 = a2;
-    m_c = a3;
-    m_38 = 0;
-    m_10 = a5;
-    m_14 = 0;
+    m_mgr = mgr;
+    m_lastPosition = a2;
+    m_scaleA = a3;
+    m_panIndex = 0;
+    m_scaleB = a5;
+    m_isPlaying = 0;
     m_40 = pos->x;
     m_44 = pos->y;
     return 1;
@@ -331,7 +332,7 @@ i32 CRandomAmbientSound::SetupPos(DirectSoundMgr* mgr, i32 a2, i32 a3, AmbientPo
 // Compute the listener->anchor distance (|m_40-x|, |m_44-y|); if either axis is
 // past 0x280 stop the voice. Otherwise derive a falloff volume (100 - dist/3,
 // clamped) and a pan (dx/4, clamped, signed by which side of m_40 the listener
-// is), scale the volume by m_c/100 then m_10/100, set volume + pan; and when not
+// is), scale the volume by m_scaleA/100 then m_scaleB/100, set volume + pan; and when not
 // already playing (and the active level is live) reseed and re-set the volume,
 // marking the voice playing.
 // ---------------------------------------------------------------------------
@@ -349,9 +350,9 @@ void CRandomAmbientSound::UpdateAt(i32 x, i32 y, i32 force) {
     i32 dy = ay < 0 ? -ay : ay;
     i32 dist2 = dx * dx + dy * dy;
     if (dx > 0x280 || dy > 0x280) {
-        if (m_4 != 0 && m_14 != 0) {
-            m_4->StopAndRewind();
-            m_14 = 0;
+        if (m_mgr != 0 && m_isPlaying != 0) {
+            m_mgr->StopAndRewind();
+            m_isPlaying = 0;
         }
         return;
     }
@@ -374,57 +375,57 @@ void CRandomAmbientSound::UpdateAt(i32 x, i32 y, i32 force) {
     }
 
     {
-        i32 t = m_c;
-        m_8 = vol;
+        i32 t = m_scaleA;
+        m_lastPosition = vol;
         if (t > 5) {
             t -= 0xf;
         }
         i32 v = (t * vol) / 100;
-        if (m_10 > 0) {
-            v = (v * m_10) / 100;
+        if (m_scaleB > 0) {
+            v = (v * m_scaleB) / 100;
         }
         if (v < 0) {
             v = 0;
         } else if (v > 0x64) {
             v = 0x64;
         }
-        ((DsndPosVoice*)m_4)->SetVolByIdx(v);
+        ((DsndPosVoice*)m_mgr)->SetVolByIdx(v);
     }
-    m_38 = pan;
-    ((DsndPosVoice*)m_4)->SetPanByIdx(pan);
+    m_panIndex = pan;
+    ((DsndPosVoice*)m_mgr)->SetPanByIdx(pan);
 
-    if (m_14 != 0) {
+    if (m_isPlaying != 0) {
         return;
     }
-    if (m_4 == 0) {
+    if (m_mgr == 0) {
         return;
     }
-    if (g_gameReg->m_10 == 0) {
+    if (g_gameReg->m_activeLevel == 0) {
         return;
     }
-    if (g_gameReg->m_54->m_24 == 0) {
+    if (g_gameReg->m_world->m_objectCount == 0) {
         return;
     }
-    ((DsndReseed*)m_4)->Reseed(1, m_38, 0, 1);
+    ((DsndReseed*)m_mgr)->Reseed(1, m_panIndex, 0, 1);
     {
-        i32 t = m_c;
-        m_8 = vol;
+        i32 t = m_scaleA;
+        m_lastPosition = vol;
         if (t > 5) {
             t -= 0xf;
         }
         i32 v = (t * vol) / 100;
-        if (m_10 > 0) {
-            v = (v * m_10) / 100;
+        if (m_scaleB > 0) {
+            v = (v * m_scaleB) / 100;
         }
         if (v < 0) {
             v = 0;
         } else if (v > 0x64) {
             v = 0x64;
         }
-        ((DsndPosVoice*)m_4)->SetVolByIdx(v);
+        ((DsndPosVoice*)m_mgr)->SetVolByIdx(v);
     }
-    m_8 = vol;
-    m_14 = 1;
+    m_lastPosition = vol;
+    m_isPlaying = 1;
 }
 
 // ---------------------------------------------------------------------------
@@ -457,29 +458,29 @@ void CRandomAmbientSound::Step(i32 x, i32 y, i32 force) {
     }
 
     if (inBox == 0) {
-        if (m_14 != 0 && m_4 != 0) {
+        if (m_isPlaying != 0 && m_mgr != 0) {
             Update(0, 0x3e8, 1);
-            m_14 = 0;
+            m_isPlaying = 0;
         }
-        m_54 = 0;
+        m_phase = 0;
         return;
     }
 
-    if (force != 0 && m_54 != 0 && m_14 != 0) {
+    if (force != 0 && m_phase != 0 && m_isPlaying != 0) {
         return;
     }
 
-    if ((u32)m_50 <= (u32)g_tickDelta) {
-        m_50 = 0;
+    if ((u32)m_countdownMs <= (u32)g_tickDelta) {
+        m_countdownMs = 0;
     } else {
-        m_50 = m_50 - g_tickDelta;
+        m_countdownMs = m_countdownMs - g_tickDelta;
     }
-    if (m_50 != 0) {
+    if (m_countdownMs != 0) {
         return;
     }
 
-    m_54 ^= 1;
-    if (m_54 != 0) {
+    m_phase ^= 1;
+    if (m_phase != 0) {
         i32 lo = m_40;
         i32 hi = m_44;
         i32 span = hi - lo + 1;
@@ -489,7 +490,7 @@ void CRandomAmbientSound::Step(i32 x, i32 y, i32 force) {
         } else {
             r = winapi_00cd00_timeGetTime() % span + lo;
         }
-        m_50 = r;
+        m_countdownMs = r;
         i32 half = r >> 1;
         if (half > 0x3e8) {
             half = 0x3e8;
@@ -505,7 +506,7 @@ void CRandomAmbientSound::Step(i32 x, i32 y, i32 force) {
         } else {
             r = winapi_00cd00_timeGetTime() % span + lo;
         }
-        m_50 = r;
+        m_countdownMs = r;
         i32 half = r >> 1;
         if (half > 0x3e8) {
             half = 0x3e8;
