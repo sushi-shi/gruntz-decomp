@@ -942,6 +942,22 @@ public:
     CByteArrayMember m_94;     // +0x94
     char m_pada8[0xc0 - 0x98]; // +0xa8/+0xb8 zeroed
 };
+class CImageSurfaceItemInit {
+public:
+    CImageSurfaceItemInit() {
+        *(void**)this = &g_fileImageVtbl;
+        *(i32*)((char*)this + 0x08) = 0;
+        *(i32*)((char*)this + 0x0c) = 0;
+        *(i32*)((char*)this + 0x04) = 0;
+        *(i32*)((char*)this + 0x7c) = 0;
+        *(i32*)((char*)this + 0xa8) = 0;
+        *(i32*)((char*)this + 0xb8) = 0;
+    }
+
+    char m_pad00[0x94];
+    CByteArrayMember m_94;
+    char m_pada8[0xc0 - 0x95];
+};
 
 // The global image cache the new item is filed into.
 class CImageCache {
@@ -974,19 +990,7 @@ RVA(0x0013e9a0, 0xcc)
 i32 CImageFactory::Build_13e9a0(CImageSource* src, i32 a2) {
     void* payload = 0;
     if (src->Probe(&g_imageProbeTag, &payload) != 0) {
-        CImageSurfaceItem* item = (CImageSurfaceItem*)operator new(0xc0);
-        if (item) {
-            new (&item->m_94) CByteArrayMember;
-            *(void**)item = &g_fileImageVtbl;
-            *(i32*)((char*)item + 0x08) = 0;
-            *(i32*)((char*)item + 0x0c) = 0;
-            *(i32*)((char*)item + 0x04) = 0;
-            *(i32*)((char*)item + 0x7c) = 0;
-            *(i32*)((char*)item + 0xa8) = 0;
-            *(i32*)((char*)item + 0xb8) = 0;
-        } else {
-            item = 0;
-        }
+        CImageSurfaceItem* item = (CImageSurfaceItem*)new CImageSurfaceItemInit;
         if (item->Load(payload)) {
             g_imageCache.SetAtGrow(g_imageCacheIndex, item);
         } else if (item) {
