@@ -27,9 +27,9 @@ inline InterfaceObjectBase::~InterfaceObjectBase() {}
 
 class InterfaceObject : public InterfaceObjectBase {
 public:
-    i32 m_4;     // +0x04
-    CString m_8; // +0x08  name
-    i32 m_c;     // +0x0c
+    i32 m_4;        // +0x04
+    CString m_name; // +0x08
+    i32 m_c;        // +0x0c
     virtual ~InterfaceObject();
     CString GetName();
 };
@@ -38,7 +38,7 @@ public:
 // the caller's return slot and hand it back.
 RVA(0x00179300, 0x20)
 CString InterfaceObject::GetName() {
-    return m_8;
+    return m_name;
 }
 
 // InterfaceObject::~InterfaceObject (0x179340) - real polymorphic now: cl emits
