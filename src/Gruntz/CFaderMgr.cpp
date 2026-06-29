@@ -37,12 +37,12 @@ struct CFaderImpl {
 
 // ===========================================================================
 // 0x17d8f0 - CFaderMgr(): construct the embedded element-array subobject (stamp
-// its vftable + zero its bookkeeping, inlined) then zero m_08/m_0c. The shared
-// timer fields m_00/m_04/m_24 are left for SetConfig. Returns this.
+// its vftable + zero its bookkeeping, inlined) then zero m_active/m_0c. The shared
+// timer fields m_timerArgA/m_timerArgB/m_sharedSet2cArg are left for SetConfig. Returns this.
 // ===========================================================================
 RVA(0x0017d8f0, 0x1e)
 CFaderMgr::CFaderMgr() {
-    m_08 = 0;
+    m_active = 0;
     m_0c = 0;
 }
 
@@ -62,28 +62,28 @@ CFaderMgr::~CFaderMgr() {
 }
 
 // ===========================================================================
-// 0x17d980 - SetConfig(a, b, c): latch the shared timer fields (m_00 = a,
-// m_04 = b, m_24 = c) and mark the manager active (m_08 = 1). Returns 1.
-// __thiscall, three args. Assignment order is load-bearing: m_00/m_04/m_24
-// makes cl hold `b` in edx across the m_24 store (retail's schedule); swapping
-// m_24 ahead of m_04 holds `c` instead and reorders the two stores.
+// 0x17d980 - SetConfig(a, b, c): latch the shared timer fields (m_timerArgA = a,
+// m_timerArgB = b, m_sharedSet2cArg = c) and mark the manager active (m_active = 1). Returns 1.
+// __thiscall, three args. Assignment order is load-bearing: timerArgA/timerArgB/sharedSet2cArg
+// makes cl hold `b` in edx across the sharedSet2cArg store (retail's schedule); swapping
+// sharedSet2cArg ahead of timerArgB holds `c` instead and reorders the two stores.
 // ===========================================================================
 RVA(0x0017d980, 0x1f)
 i32 CFaderMgr::SetConfig(i32 a, i32 b, i32 c) {
-    m_00 = a;
-    m_04 = b;
-    m_24 = c;
-    m_08 = 1;
+    m_timerArgA = a;
+    m_timerArgB = b;
+    m_sharedSet2cArg = c;
+    m_active = 1;
     return 1;
 }
 
 // ===========================================================================
-// 0x17d9a0 - FreeAll: DeleteAll, then clear m_08.
+// 0x17d9a0 - FreeAll: DeleteAll, then clear m_active.
 // ===========================================================================
 RVA(0x0017d9a0, 0x11)
 void CFaderMgr::FreeAll() {
     DeleteAll();
-    m_08 = 0;
+    m_active = 0;
 }
 
 // The per-fader init payload (built on the stack by each subtype's default-init
@@ -148,7 +148,7 @@ struct CFader5 {
 // ===========================================================================
 // 0x17d9c0 - Add(nFaderType, pInit): 7-way fader factory. Validate pInit's class
 // against nFaderType, allocate the concrete subtype, prime it (SetTimers from
-// m_00/m_04, Set2c from m_24), default- or copy-init it, validate, and append it
+// m_timerArgA/m_timerArgB, Set2c from m_sharedSet2cArg), default- or copy-init it, validate, and append it
 // to the array - tracing + deleting the fader on any failure. /GX EH frame; the
 // SetAtGrow(GetSize(), pNew) append is inlined.
 // @early-stop
@@ -168,8 +168,8 @@ CFader* CFaderMgr::Add(i32 nFaderType, CFader* pInit) {
             CFader0* p = (CFader0*)operator new(0x494);
             CFader0* f = p ? p->Ctor() : 0;
             fader = (CFader*)f;
-            ((CFaderImpl*)f)->SetTimers(m_00, m_04);
-            ((CFaderImpl*)f)->Set2c(m_24);
+            ((CFaderImpl*)f)->SetTimers(m_timerArgA, m_timerArgB);
+            ((CFaderImpl*)f)->Set2c(m_sharedSet2cArg);
             if (!pInit) {
                 CFaderInit init;
                 f->Build(&init);
@@ -190,8 +190,8 @@ CFader* CFaderMgr::Add(i32 nFaderType, CFader* pInit) {
             CFader1* p = (CFader1*)operator new(0x206c);
             CFader1* f = p ? p->Ctor() : 0;
             fader = (CFader*)f;
-            ((CFaderImpl*)f)->SetTimers(m_00, m_04);
-            ((CFaderImpl*)f)->Set2c(m_24);
+            ((CFaderImpl*)f)->SetTimers(m_timerArgA, m_timerArgB);
+            ((CFaderImpl*)f)->Set2c(m_sharedSet2cArg);
             if (!pInit) {
                 CFaderInit init;
                 f->Build(&init);
@@ -212,8 +212,8 @@ CFader* CFaderMgr::Add(i32 nFaderType, CFader* pInit) {
             CFader2* p = (CFader2*)operator new(0x7d5c);
             CFader2* f = p ? p->Ctor() : 0;
             fader = (CFader*)f;
-            ((CFaderImpl*)f)->SetTimers(m_00, m_04);
-            ((CFaderImpl*)f)->Set2c(m_24);
+            ((CFaderImpl*)f)->SetTimers(m_timerArgA, m_timerArgB);
+            ((CFaderImpl*)f)->Set2c(m_sharedSet2cArg);
             if (!pInit) {
                 CFaderInit init;
                 f->Build(&init);
@@ -234,8 +234,8 @@ CFader* CFaderMgr::Add(i32 nFaderType, CFader* pInit) {
             CFader3* p = (CFader3*)operator new(0x5c);
             CFader3* f = p ? p->Ctor() : 0;
             fader = (CFader*)f;
-            ((CFaderImpl*)f)->SetTimers(m_00, m_04);
-            ((CFaderImpl*)f)->Set2c(m_24);
+            ((CFaderImpl*)f)->SetTimers(m_timerArgA, m_timerArgB);
+            ((CFaderImpl*)f)->Set2c(m_sharedSet2cArg);
             if (!pInit) {
                 CFaderInit init;
                 f->Build(&init);
@@ -256,8 +256,8 @@ CFader* CFaderMgr::Add(i32 nFaderType, CFader* pInit) {
             CFader4* p = (CFader4*)operator new(0x50);
             CFader4* f = p ? p->Ctor() : 0;
             fader = (CFader*)f;
-            ((CFaderImpl*)f)->SetTimers(m_00, m_04);
-            ((CFaderImpl*)f)->Set2c(m_24);
+            ((CFaderImpl*)f)->SetTimers(m_timerArgA, m_timerArgB);
+            ((CFaderImpl*)f)->Set2c(m_sharedSet2cArg);
             if (!pInit) {
                 CFaderInit init;
                 f->Build(&init);
@@ -278,8 +278,8 @@ CFader* CFaderMgr::Add(i32 nFaderType, CFader* pInit) {
             CFader5* p = (CFader5*)operator new(0x6c);
             CFader5* f = p ? p->Ctor() : 0;
             fader = (CFader*)f;
-            ((CFaderImpl*)f)->SetTimers(m_00, m_04);
-            ((CFaderImpl*)f)->Set2c(m_24);
+            ((CFaderImpl*)f)->SetTimers(m_timerArgA, m_timerArgB);
+            ((CFaderImpl*)f)->Set2c(m_sharedSet2cArg);
             if (!pInit) {
                 CFaderInit init;
                 f->Build(&init);
@@ -366,7 +366,7 @@ struct CFaderTail {
 };
 RVA(0x0017e160, 0x8)
 i32 CFaderMgr::Flush() {
-    return ((CFaderTail*)&m_24)->Flush();
+    return ((CFaderTail*)&m_sharedSet2cArg)->Flush();
 }
 
 // ===========================================================================

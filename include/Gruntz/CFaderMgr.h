@@ -2,15 +2,15 @@
 // ClassUnknown_48). A polymorphic owner of a growable CPtrArray of CFader*
 // objects. CFaderMgr::Add(nFaderType, pInit) is a 7-way factory: it allocates
 // one of six CFader subclasses by type code, primes it from the manager's
-// shared timing fields (m_00/m_04 -> SetTimers, m_24 -> Set2c), default-inits or
+// shared timing fields (m_timerArgA/m_timerArgB -> SetTimers, m_sharedSet2cArg -> Set2c), default-inits or
 // copy-inits it from pInit, validates it, and appends it to the array - tracing
 // "CFaderMgr::Add (...) - ..." and deleting the fader on any failure.
 //
 // Field names are placeholders (m_<hexoffset>); only offsets + code bytes are
-// load-bearing. The class carries two shared timer fields m_00/m_04 (+0x00/+0x04)
-// and m_08 (+0x08), then the embedded polymorphic element-array subobject m_arr
+// load-bearing. The class carries two shared timer fields m_timerArgA/m_timerArgB
+// (+0x00/+0x04) and m_active (+0x08), then the embedded polymorphic element-array subobject m_arr
 // (+0x10): vtable at +0x10, m_pData at +0x14, m_nSize at +0x18, m_nMaxSize at
-// +0x1c, m_nGrowBy at +0x20; followed by m_24 (+0x24). The destructor inlines the
+// +0x1c, m_nGrowBy at +0x20; followed by m_sharedSet2cArg (+0x24). The destructor inlines the
 // array subobject teardown (restore array vtable, free m_pData, restore grand-base
 // vtable) under the /GX EH frame. The CFader subclass ctors/init/validate helpers,
 // operator new/delete, and CString helpers are external/reloc-masked.
@@ -82,12 +82,12 @@ public:
     void Remove(CFader* pFader);                // 0x17e170
     void DeleteAll();                           // 0x17e1d0
 
-    i32 m_00;          // +0x00 shared timer arg A
-    i32 m_04;          // +0x04 shared timer arg B
-    i32 m_08;          // +0x08
-    i32 m_0c;          // +0x0c
-    CFaderArray m_arr; // +0x10 element array subobject
-    i32 m_24;          // +0x24 shared Set2c arg
+    i32 m_timerArgA;      // +0x00
+    i32 m_timerArgB;      // +0x04
+    i32 m_active;         // +0x08
+    i32 m_0c;             // +0x0c
+    CFaderArray m_arr;    // +0x10 element array subobject
+    i32 m_sharedSet2cArg; // +0x24
 };
 
 #endif // GRUNTZ_GRUNTZ_CFADERMGR_H
