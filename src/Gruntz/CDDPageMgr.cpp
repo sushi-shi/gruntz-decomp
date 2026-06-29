@@ -31,8 +31,8 @@ public:
     i32 RemoveAt(i32 idx); // 0x17d600
     i32 FreeAll();         // 0x17d6b0
 
-    i32 m_00;   // +0x00
-    void* m_04; // +0x04 "loaded" guard
+    i32 m_00;            // +0x00
+    void* m_loadedGuard; // +0x04 "loaded" guard
     char m_pad08[0x8690 - 8];
     CPageRec** m_data; // +0x8690
     i32 m_count;       // +0x8694
@@ -52,7 +52,7 @@ public:
 // source-steerable (an explicit `void* z=0` folds back). ~86%.
 RVA(0x0017d600, 0xad)
 i32 CDDPageMgr::RemoveAt(i32 idx) {
-    if (!m_04) {
+    if (!m_loadedGuard) {
         return 0;
     }
     if (m_count < idx) {
@@ -87,7 +87,7 @@ i32 CDDPageMgr::RemoveAt(i32 idx) {
 // ===========================================================================
 RVA(0x0017d6b0, 0x70)
 i32 CDDPageMgr::FreeAll() {
-    if (!m_04) {
+    if (!m_loadedGuard) {
         return 0;
     }
     i32 count = m_count;
