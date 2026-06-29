@@ -120,13 +120,15 @@ CSymParser::~CSymParser() {
 }
 
 // The two reader constructors ParseBuffer builds (text @0x13c940 ctor(this, m_2c),
-// binary @0x13c540 ctor(this)). Both __thiscall on a freshly Rez-alloc'd reader block,
-// returning the constructed reader (a CObjNode). Reloc-masked externs.
+// binary @0x13c540 ctor(this)). Both __thiscall on a freshly allocated reader block.
+// Reloc-masked externs.
 struct CTextReaderInit {
-    CObjNode* Init(CSymParser* p, i32 a); // 0x13c940
+    char m_storage[0x38];
+    CTextReaderInit(CSymParser* p, i32 a); // 0x13c940
 };
 struct CBinReaderInit {
-    CObjNode* Init(CSymParser* p); // 0x13c540
+    char m_storage[0x24];
+    CBinReaderInit(CSymParser* p); // 0x13c540
 };
 
 // CRT strdup-style helpers + the inline strlen/strcpy the buffer-recache emits.
@@ -159,12 +161,7 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
         if (m_40 == 0) {
             return 0;
         }
-        CObjNode* reader = (CObjNode*)::operator new(0x38);
-        if (reader) {
-            reader = ((CTextReaderInit*)reader)->Init(this, m_2c);
-        } else {
-            reader = 0;
-        }
+        CObjNode* reader = (CObjNode*)new CTextReaderInit(this, m_2c);
         if (reader == 0) {
             ::operator delete(m_cachedSourceBuffer);
             m_cachedSourceBuffer = 0;
@@ -192,12 +189,7 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
         return 1;
     }
     // binary stream
-    CObjNode* reader = (CObjNode*)::operator new(0x24);
-    if (reader) {
-        reader = ((CBinReaderInit*)reader)->Init(this);
-    } else {
-        reader = 0;
-    }
+    CObjNode* reader = (CObjNode*)new CBinReaderInit(this);
     if (reader == 0) {
         ::operator delete(m_cachedSourceBuffer);
         m_cachedSourceBuffer = 0;
