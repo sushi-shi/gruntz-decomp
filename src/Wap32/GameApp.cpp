@@ -82,8 +82,8 @@ void CGameApp::ReportError(WPARAM wParam, LPARAM lParam) {
         return;
     }
     m_248 = 1;
-    if (m_4 && m_4->m_c == 0) {
-        PostMessageA((HWND)m_4->m_4, 0x10 /*WM_CLOSE*/, 0, 0);
+    if (m_4 && ((CGameWnd*)m_4)->m_closeGuard == 0) {
+        PostMessageA((HWND)((CGameWnd*)m_4)->m_hwnd, 0x10 /*WM_CLOSE*/, 0, 0);
     }
     m_244 = 0;
     m_24c = (i32)wParam;
@@ -92,7 +92,7 @@ void CGameApp::ReportError(WPARAM wParam, LPARAM lParam) {
 
 // -------------------------------------------------------------------------
 // CGameApp::RunMessageLoop - the main Win32 pump (vtbl slot +0x18; WinMain
-// dispatches here). Reads the OS HWND off m_4->m_4; if there is no window,
+// dispatches here). Reads the OS HWND off m_4->m_hwnd; if there is no window,
 // return 0. Otherwise the classic peek/process/idle pump: PeekMessageA
 // (PM_REMOVE) drains all pending messages (WM_QUIT exits with 1); when m_10
 // (HACCEL) is set AND the message targets our window, run TranslateAcceleratorA
@@ -102,7 +102,7 @@ RVA(0x0013d910, 0x9f)
 i32 CGameApp::RunMessageLoop() {
     MSG msg;
 
-    HWND hwnd = (HWND)m_4->m_4;
+    HWND hwnd = (HWND)((CGameWnd*)m_4)->m_hwnd;
     if (!hwnd) {
         return 0;
     }
@@ -445,12 +445,12 @@ i32 WAP32::CGameMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     if (!pGameWnd) {
         return 0;
     }
-    if (!pGameWnd->m_4) {
+    if (!pGameWnd->m_hwnd) {
         return 0;
     }
 
     m_4 = (i32)pGameWnd;
-    m_8 = (i32)pGameWnd->m_8;
+    m_8 = (i32)pGameWnd->m_owner;
     m_1c = 0;
     InitTimeFields(1);
     UnknownMethodInitializeTimeGlobal();

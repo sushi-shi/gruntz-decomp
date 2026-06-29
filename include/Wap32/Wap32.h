@@ -34,7 +34,7 @@ struct CGameWndCreateParams {
 
 // ---------------------------------------------------------------------------
 // CGameWnd - WAP32 window wrapper.
-//   The ctor zeroes m_4 (+0x04) and m_c (+0x0c); vptr stored first (natural
+//   The ctor zeroes m_hwnd (+0x04) and m_closeGuard (+0x0c); vptr stored first (natural
 //   single-class form).
 //
 //   The class's window procedure (CGameApp::GameWindowProc, the static stored in
@@ -105,9 +105,9 @@ public:
     // @0x13d4e0 (13 callers across the engine).
     void PumpMessages(u32 filterMsg, i32 count);
 
-    HWND m_4;  // +0x04  HWND (set by CreateAndShow / zeroed by ctor)
-    void* m_8; // +0x08  owner pointer (set by CreateAndShow; not touched by ctor)
-    i32 m_c;   // +0x0c  guard flag (zeroed by ctor and by CreateAndShow)
+    HWND m_hwnd;      // +0x04  HWND (set by CreateAndShow / zeroed by ctor)
+    void* m_owner;    // +0x08  owner pointer (set by CreateAndShow; not touched by ctor)
+    i32 m_closeGuard; // +0x0c  guard flag (zeroed by ctor and by CreateAndShow)
 };
 
 // Minimal polymorphic resource objects whose pointers live in CGameApp::m_4 /

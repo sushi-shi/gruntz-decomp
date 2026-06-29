@@ -7,12 +7,12 @@
 
 // -------------------------------------------------------------------------
 // CGameWnd::CGameWnd()
-// Zeroes the OS window handle (m_4) and owner-state field (m_c) after the
+// Zeroes the OS window handle (m_hwnd) and owner-state field (m_closeGuard) after the
 // base/vftable construction.
 RVA(0x0013cf00, 0x11)
 CGameWnd::CGameWnd() {
-    m_4 = 0;
-    m_c = 0;
+    m_hwnd = 0;
+    m_closeGuard = 0;
 }
 
 // Active-window singleton (declared in Wap32.h so the inline ~CGameWnd resolves
@@ -40,11 +40,11 @@ i32 CGameWnd::CreateAndShow(CGameWndCreateParams* pParams, void* pOwner) {
         return 0;
     }
 
-    m_8 = pOwner;
+    m_owner = pOwner;
     g_activeGameWnd = this;
-    m_c = 0;
+    m_closeGuard = 0;
 
-    m_4 = CreateWindowExA(
+    m_hwnd = CreateWindowExA(
         pParams->dwExStyle,
         pParams->lpClassName,
         pParams->lpWindowName,
@@ -58,11 +58,11 @@ i32 CGameWnd::CreateAndShow(CGameWndCreateParams* pParams, void* pOwner) {
         pParams->hInstance,
         pParams->lpParam
     );
-    if (!m_4) {
+    if (!m_hwnd) {
         return 0;
     }
 
-    ShowWindow(m_4, 1 /*SW_SHOWNORMAL*/);
+    ShowWindow(m_hwnd, 1 /*SW_SHOWNORMAL*/);
     return 1;
 }
 
@@ -72,24 +72,24 @@ i32 CGameWnd::CreateAndShow(CGameWndCreateParams* pParams, void* pOwner) {
 // clears the active-window singleton.
 RVA(0x0013cfb0, 0x39)
 void CGameWnd::Destroy() {
-    if (m_4) {
-        if (IsWindow(m_4)) {
-            DestroyWindow(m_4);
+    if (m_hwnd) {
+        if (IsWindow(m_hwnd)) {
+            DestroyWindow(m_hwnd);
         }
-        m_4 = 0;
+        m_hwnd = 0;
     }
-    m_8 = 0;
+    m_owner = 0;
     g_activeGameWnd = 0;
 }
 
 // -------------------------------------------------------------------------
 // CGameWnd::OnClose (WM_CLOSE handler, vtable slot 4). Destroys the OS window
-// exactly once (m_c guards re-entry) and reports "handled" (1).
+// exactly once (m_closeGuard guards re-entry) and reports "handled" (1).
 RVA(0x0013d4c0, 0x1e)
 i32 CGameWnd::OnClose() {
-    if (!m_c) {
-        m_c = 1;
-        DestroyWindow(m_4);
+    if (!m_closeGuard) {
+        m_closeGuard = 1;
+        DestroyWindow(m_hwnd);
     }
     return 1;
 }
@@ -100,7 +100,7 @@ i32 CGameWnd::OnClose() {
 // handled" (0) so GameWindowProc falls through to DefWindowProcA.
 RVA(0x0013d470, 0xd)
 i32 CGameWnd::OnActivateApp(WPARAM wParam, LPARAM /*lParam*/) {
-    ((CGameApp*)m_8)->m_240 = wParam;
+    ((CGameApp*)m_owner)->m_240 = wParam;
     return 0;
 }
 
@@ -110,9 +110,9 @@ i32 CGameWnd::OnActivateApp(WPARAM wParam, LPARAM /*lParam*/) {
 // error, then posts WM_QUIT.
 RVA(0x0013d490, 0x29)
 i32 CGameWnd::QuitMessageLoop() {
-    ((CGameApp*)m_8)->FreeGameManager();
-    if (((CGameApp*)m_8)->m_248) {
-        ((CGameApp*)m_8)->ShowError();
+    ((CGameApp*)m_owner)->FreeGameManager();
+    if (((CGameApp*)m_owner)->m_248) {
+        ((CGameApp*)m_owner)->ShowError();
     }
     PostQuitMessage(0);
     return 0;
@@ -128,7 +128,7 @@ RVA(0x0013d4e0, 0x43)
 void CGameWnd::PumpMessages(u32 filterMsg, i32 count) {
     MSG msg;
     for (i32 i = 0; i < count; ++i) {
-        if (!PeekMessageA(&msg, m_4, filterMsg, filterMsg, PM_REMOVE)) {
+        if (!PeekMessageA(&msg, m_hwnd, filterMsg, filterMsg, PM_REMOVE)) {
             break;
         }
     }

@@ -4,7 +4,7 @@
 //
 // CGruntzWnd overrides several CGameWnd message handlers (vtable 0x5ea2d4); each
 // override forwards the message to the running CGruntzMgr (reached through the
-// owning CGameApp: this->m_8 == CGameApp owner, owner->m_8 == the CGruntzMgr) and
+// owning CGameApp: this->m_owner == CGameApp owner, owner->m_8 == the CGruntzMgr) and
 // chains the CGameWnd base handler. The forwarders are declared as plain methods
 // (not OVERRIDE) so the partial vftable below - whose remaining derived slots are
 // still out-of-line stubs - is left undisturbed; the vtable thunk is each
@@ -37,7 +37,7 @@ public:
 
     // Reaches the running game manager through the owning CGameApp.
     CGruntzMgr* GameMgr() {
-        return (CGruntzMgr*)((CGameApp*)m_8)->m_8;
+        return (CGruntzMgr*)((CGameApp*)m_owner)->m_8;
     }
 };
 
