@@ -154,14 +154,14 @@ struct CPlaneTile {
 // ---------------------------------------------------------------------------
 struct CPlaneScroll {
     u8 pad_0[0x10];
-    i32 m_10, m_14, m_18, m_1c; // +0x10  rect A  (l,t,r,b = 0,0,w-1,h-1)
-    i32 m_20, m_24, m_28, m_2c; // +0x20  rect C
-    i32 m_30, m_34, m_38, m_3c; // +0x30  rect B
-    i32 m_40, m_44;             // +0x40  center A (w/2, h/2)
-    i32 m_48, m_4c;             // +0x48  center B
-    i32 m_50, m_54;             // +0x50  center C
+    i32 m_rectALeft, m_rectATop, m_rectARight, m_rectABottom; // +0x10
+    i32 m_rectCLeft, m_rectCTop, m_rectCRight, m_rectCBottom; // +0x20
+    i32 m_rectBLeft, m_rectBTop, m_rectBRight, m_rectBBottom; // +0x30
+    i32 m_centerAX, m_centerAY;                               // +0x40
+    i32 m_centerBX, m_centerBY;                               // +0x48
+    i32 m_centerCX, m_centerCY;                               // +0x50
     u8 pad_58[0x68 - 0x58];
-    i32 m_68, m_6c; // +0x68
+    i32 m_targetX, m_targetY; // +0x68
 
     // 0x168340 / 0x168500: SetTarget(x, y) - stores at +0x68/+0x6c when changed,
     // returns nonzero when it moved (0 when unchanged).
@@ -169,7 +169,7 @@ struct CPlaneScroll {
     i32 SetTargetB(i32 a, i32 b);
 };
 
-// The level map/surface source CPlaneRender renders from (this->m_0c). Three
+// The level map/surface source CPlaneRender renders from (this->m_mapData). Three
 // chains the boundary methods walk: a pixel-format descriptor (+0x4 -> +0x10 ->
 // +0x18 = bitdepth 8/16), a palette host (+0x18 -> +0x64 -> +0x10 -> +0xc =
 // RGB888 array), and a plane geometry block (+0x24, with the six dim fields the
@@ -180,7 +180,7 @@ struct CPlaneSurfDesc {
 };
 struct CPlaneSurf {
     u8 pad_0[0x10];
-    CPlaneSurfDesc* m_10; // +0x10
+    CPlaneSurfDesc* m_desc; // +0x10
 };
 struct CPlanePalArr {
     u8 pad_0[0xc];
@@ -188,23 +188,24 @@ struct CPlanePalArr {
 };
 struct CPlanePalOwner {
     u8 pad_0[0x10];
-    CPlanePalArr* m_10; // +0x10
+    CPlanePalArr* m_palette; // +0x10
 };
 struct CPlanePalHost {
     u8 pad_0[0x64];
-    CPlanePalOwner* m_64; // +0x64
+    CPlanePalOwner* m_owner; // +0x64
 };
 struct CPlaneGeom {
     u8 pad_0[0xc8];
-    i32 m_c8, m_cc, m_d0, m_d4, m_d8, m_dc; // +0xc8..+0xdc
+    i32 m_rectAWidth, m_rectAHeight, m_rectBWidth, m_rectBHeight, m_rectCWidth,
+        m_rectCHeight; // +0xc8..+0xdc
 };
 struct CPlaneMapData {
     void* m_0;
-    CPlaneSurf* m_4; // +0x4  pixel-format chain
+    CPlaneSurf* m_surface; // +0x4  pixel-format chain
     u8 pad_8[0x18 - 0x8];
-    CPlanePalHost* m_18; // +0x18  palette host
+    CPlanePalHost* m_paletteHost; // +0x18  palette host
     u8 pad_1c[0x24 - 0x1c];
-    CPlaneGeom* m_24; // +0x24  plane geometry
+    CPlaneGeom* m_geometry; // +0x24  plane geometry
 };
 
 // The serialize stream CPlaneRender::Save/Load drive (a CArchive-like binary I/O
@@ -259,7 +260,7 @@ public:
 
     u8 pad_0[0x08];
     u32 m_flags; // +0x08
-    CPlaneMapData* m_0c;
+    CPlaneMapData* m_mapData;
     float m_scaledX; // +0x10
     float m_scaledY; // +0x14
     i32 m_18, m_1c;
@@ -293,7 +294,7 @@ public:
     char m_name[0xf4 - 0xb4]; // +0xb4  plane name (serialized as a fixed 0x80 field)
     CDDSurface m_surface;     // +0xf4  (empty model, sizeof 1)
     u8 pad_f5[0x144 - 0xf5];
-    i32 m_144; // +0x144  the color-key palette index, packed in place to RGB565
+    i32 m_colorKey; // +0x144  the color-key palette index, packed in place to RGB565
 };
 
 // ---------------------------------------------------------------------------

@@ -41,16 +41,16 @@ extern char g_mapNameBuf[0x200];
 
 // ---------------------------------------------------------------------------
 // The game registry global (?g_gameReg@@3PAUCGameReg@@A @ VA 0x64556c). Only the
-// chain ValidateMainBlock walks is modeled here (m_30 -> m_24, a filename);
+// chain ValidateMainBlock walks is modeled here (m_slot -> m_wwdPath, a filename);
 // the full CGameReg layout lives in src/Gruntz/CStatusBarMgr.cpp. Offsets are the
 // only load-bearing thing (campaign doctrine), so a TU-local view is matching-neutral.
 struct WwdGameRegSlot {
     char pad_0[0x24];
-    char* m_24; // +0x24  a WWD path / numeric-tail string CheckHeader validates
+    char* m_wwdPath; // +0x24  a WWD path / numeric-tail string CheckHeader validates
 };
 struct WwdGameReg {
     char pad_0[0x30];
-    WwdGameRegSlot* m_30; // +0x30
+    WwdGameRegSlot* m_slot; // +0x30
 };
 DATA(0x0024556c)
 extern WwdGameReg* g_gameReg;
@@ -107,7 +107,7 @@ void CPlaneRender::WrapCoord(i32* px, i32* py) {
 // for the three reject paths, else the integer parsed from the first digit run
 // of the validated header:
 //   1. the CString must be non-empty (its length, at pszData-8, != 0);
-//   2. g_gameReg->m_30->m_24 (a filename) must be non-null;
+//   2. g_gameReg->m_slot->m_wwdPath (a filename) must be non-null;
 //   3. CheckHeader(that filename) into a 0x100 stack buffer must succeed.
 // Then skip leading non-digits and atoi() the first digit run. The CString is
 // unused beyond its non-empty check; `this` is never touched -> static.
@@ -118,11 +118,11 @@ i32 WwdFile::ValidateMainBlock(CString name) {
     if (name.GetLength() == 0) {
         return -1;
     }
-    if (g_gameReg->m_30->m_24 == 0) {
+    if (g_gameReg->m_slot->m_wwdPath == 0) {
         return -1;
     }
 
-    if (WwdFile_CheckHeader(g_gameReg->m_30->m_24, header) == 0) {
+    if (WwdFile_CheckHeader(g_gameReg->m_slot->m_wwdPath, header) == 0) {
         return -1;
     }
 
@@ -391,7 +391,7 @@ void CPlaneRender::Draw(void* /*ctx*/) {}
 //      image-set name up in the level CMapStringToOb, then runs the object's
 //      vtable +0x28 "load" virtual;
 //   5. on success, applies the name/logic/imageSet strings (sprite frame cache /
-//      anim geometry / m_dc assign) and scatters ~60 trailing record fields into
+//      anim geometry / m_imageSetName assign) and scatters ~60 trailing record fields into
 //      the object and its +0x7C sub-object via an advancing cursor;
 //   6. registers the object with the level and returns bytes-consumed.
 // Every failure path destroys the object (vtable +0x04 scalar-deleting dtor) and
@@ -403,15 +403,15 @@ void CPlaneRender::Draw(void* /*ctx*/) {}
 // ===========================================================================
 
 // The level/plane loader `this`. Only the members ReadPlaneObjects touches are
-// pinned (offsets are the load-bearing thing): m_c (the map/asset owner), and
-// m_30/m_34 (the grid extents the object x/y are range-checked against). m_c is
+// pinned (offsets are the load-bearing thing): m_assetOwner (the map/asset owner), and
+// m_gridWidth/m_gridHeight (the grid extents the object x/y are range-checked against). m_assetOwner is
 // read both as the ctor's owner arg and for the image-set CMapStringToOb lookup.
 struct WwdLevelLoader {
     char pad_0[0xc];
-    void* m_c; // +0x0C  asset/map owner (ctor arg; holds the imageset map)
+    void* m_assetOwner; // +0x0C  asset/map owner (ctor arg; holds the imageset map)
     char pad_10[0x30 - 0x10];
-    i32 m_30; // +0x30  grid width  (object x must be in [0, m_30))
-    i32 m_34; // +0x34  grid height (object y must be in [0, m_34))
+    i32 m_gridWidth;  // +0x30  grid width  (object x must be in [0, m_gridWidth))
+    i32 m_gridHeight; // +0x34  grid height (object y must be in [0, m_gridHeight))
 };
 
 // The +0x7C sub-object (an animation/geometry block) the load virtual creates;
@@ -440,21 +440,23 @@ struct WwdGameObj {
     char pad_4[0x8 - 0x4];
     u32 m_flags; // +0x008
     char pad_c[0x40 - 0xc];
-    i32 m_40; // +0x040
+    i32 m_drawFlags; // +0x040
     char pad_44[0x64 - 0x44];
-    i32 m_64, m_68, m_6c, m_70; // +0x064..+0x070
+    i32 m_clipLeft, m_clipTop, m_clipRight, m_clipBottom; // +0x064..+0x070
     char pad_74[0x7c - 0x74];
-    WwdObjAnim* m_7c; // +0x07C  the sub-object the load virtual builds
+    WwdObjAnim* m_anim; // +0x07C  the sub-object the load virtual builds
     char pad_80[0xdc - 0x80];
-    CString m_dc; // +0x0DC  imageSet name (assigned)
+    CString m_imageSetName; // +0x0DC  imageSet name (assigned)
     char pad_e0[0xe8 - 0xe0];
     i32 m_e8, m_ec; // +0x0E8, +0x0EC
     char pad_f0[0xf8 - 0xf0];
-    i32 m_f8, m_fc; // +0x0F8, +0x0FC
+    i32 m_width, m_height; // +0x0F8, +0x0FC
     char pad_100[0x114 - 0x100];
-    i32 m_114, m_118, m_11c, m_120, m_124, m_128; // +0x114..
+    i32 m_score, m_points, m_powerup, m_damage, m_smarts, m_health; // +0x114..
     i32 m_12c, m_130;
-    i32 m_134, m_138, m_13c, m_140, m_144, m_148, m_14c, m_150, m_154, m_158, m_15c, m_160; // rects
+    i32 m_moveLeft, m_moveTop, m_moveRight, m_moveBottom;
+    i32 m_hitLeft, m_hitTop, m_hitRight, m_hitBottom;
+    i32 m_attackLeft, m_attackTop, m_attackRight, m_attackBottom;
     i32 m_164, m_168;
     char pad_16c[0x18c - 0x16c];
     i32 m_18c, m_190, m_194, m_198, m_19c; // +0x18C.. (zeroed in the ctor-stamp)
@@ -509,7 +511,7 @@ extern void* g_wwdSubVtbl[]; // 0x5f0128
 // ---------------------------------------------------------------------------
 extern void* g_severusWorkerDtorVtbl; // 0x5e8cb4
 
-// The level header reached via this->m_c->m_24 (six geometry pairs at +0xb0).
+// The level header reached via this->m_assetOwner->m_24 (six geometry pairs at +0xb0).
 struct WwdPlaneHdr {
     char pad[0xb0];
     i32 geo[12]; // +0xb0..+0xdc
@@ -625,13 +627,13 @@ i32 WwdFile::ReadPlaneObjects(const i32* src) {
         return 0;
     }
 
-    ((WwdGameObjMethods*)obj)->Construct(loader->m_c, id, 0);
+    ((WwdGameObjMethods*)obj)->Construct(loader->m_assetOwner, id, 0);
 
     // Construct the embedded sub-object at +0x1A0, then re-stamp both vtables (the
     // base ctors leave a base vtable; ReadPlaneObjects promotes both to their
     // derived types) and zero the trailing fields the derived layout adds.
     WwdObjAnimInit* subInit = (WwdObjAnimInit*)((char*)obj + 0x1a0);
-    ((WwdSubMgrCtor*)subInit)->Construct(loader->m_c, id, 0);
+    ((WwdSubMgrCtor*)subInit)->Construct(loader->m_assetOwner, id, 0);
     *(void**)subInit = &g_wwdSubVtbl;
     subInit->z10 = 0;
     subInit->z14 = 0;
@@ -684,7 +686,7 @@ i32 WwdFile::ReadPlaneObjects(const i32* src) {
 
     // Grid bounds check on x/y; failure deletes the object and returns the bytes
     // consumed so far (so the caller still advances over the bad record).
-    if (x < 0 || x >= loader->m_30 || y < 0 || y >= loader->m_34) {
+    if (x < 0 || x >= loader->m_gridWidth || y < 0 || y >= loader->m_gridHeight) {
         obj->Delete(1);
         return (i32)(strCursor - (const char*)src);
     }
@@ -693,7 +695,7 @@ i32 WwdFile::ReadPlaneObjects(const i32* src) {
     i32 loaded = 1;
     if (imageSet.GetLength() != 0) {
         void* found = 0;
-        WwdStringToObMap* map = (WwdStringToObMap*)((char*)loader->m_c + 0x14 + 0x10);
+        WwdStringToObMap* map = (WwdStringToObMap*)((char*)loader->m_assetOwner + 0x14 + 0x10);
         loaded = map->Lookup((const char*)imageSet, found);
     }
 
@@ -710,7 +712,7 @@ i32 WwdFile::ReadPlaneObjects(const i32* src) {
 
     obj->m_flags |= 0x40000;
 
-    WwdObjAnim* anim = obj->m_7c;
+    WwdObjAnim* anim = obj->m_anim;
     if (anim == 0) {
         obj->Delete(1);
         return 0;
@@ -733,52 +735,52 @@ i32 WwdFile::ReadPlaneObjects(const i32* src) {
         ((WwdGameObjMethods*)obj)->SetLogic((const char*)sound);
     }
 
-    // Apply imageSet -> object's m_dc.
+    // Apply imageSet -> object's m_imageSetName.
     if (imageSet.GetLength() != 0) {
-        obj->m_dc = (const char*)imageSet;
+        obj->m_imageSetName = (const char*)imageSet;
     }
 
     // Scatter the trailing record fields. `p` advances through the record from
     // its dynamic-flags field onward.
     const i32* p = &src[10]; // record +0x28 (skip addFlags @+0x24)
 
-    obj->m_flags |= (u32)*p++; // dynamicFlags
-    obj->m_40 = *p++;          // drawFlags
-    sub[0x28 / 4] = *p++;      // userFlags
-    obj->m_114 = *p++;         // score
-    obj->m_118 = *p++;         // points
-    obj->m_11c = *p++;         // powerup
-    obj->m_120 = *p++;         // damage
-    obj->m_124 = *p++;         // smarts
-    obj->m_128 = *p++;         // health
-    obj->m_134 = *p++;         // moveRect.l
-    obj->m_138 = *p++;         // moveRect.t
-    obj->m_13c = *p++;         // moveRect.r
-    obj->m_140 = *p++;         // moveRect.b
-    obj->m_144 = *p++;         // hitRect.l
-    obj->m_148 = *p++;         // hitRect.t
-    obj->m_14c = *p++;         // hitRect.r
-    obj->m_150 = *p++;         // hitRect.b
-    obj->m_154 = *p++;         // attackRect.l
-    obj->m_158 = *p++;         // attackRect.t
-    obj->m_15c = *p++;         // attackRect.r
-    obj->m_160 = *p++;         // attackRect.b
-    obj->m_64 = *p++;          // clipRect.l
-    obj->m_68 = *p++;          // clipRect.t
-    obj->m_6c = *p++;          // clipRect.r
-    obj->m_70 = *p++;          // clipRect.b
+    obj->m_flags |= (u32)*p++;  // dynamicFlags
+    obj->m_drawFlags = *p++;    // drawFlags
+    sub[0x28 / 4] = *p++;       // userFlags
+    obj->m_score = *p++;        // score
+    obj->m_points = *p++;       // points
+    obj->m_powerup = *p++;      // powerup
+    obj->m_damage = *p++;       // damage
+    obj->m_smarts = *p++;       // smarts
+    obj->m_health = *p++;       // health
+    obj->m_moveLeft = *p++;     // moveRect.l
+    obj->m_moveTop = *p++;      // moveRect.t
+    obj->m_moveRight = *p++;    // moveRect.r
+    obj->m_moveBottom = *p++;   // moveRect.b
+    obj->m_hitLeft = *p++;      // hitRect.l
+    obj->m_hitTop = *p++;       // hitRect.t
+    obj->m_hitRight = *p++;     // hitRect.r
+    obj->m_hitBottom = *p++;    // hitRect.b
+    obj->m_attackLeft = *p++;   // attackRect.l
+    obj->m_attackTop = *p++;    // attackRect.t
+    obj->m_attackRight = *p++;  // attackRect.r
+    obj->m_attackBottom = *p++; // attackRect.b
+    obj->m_clipLeft = *p++;     // clipRect.l
+    obj->m_clipTop = *p++;      // clipRect.t
+    obj->m_clipRight = *p++;    // clipRect.r
+    obj->m_clipBottom = *p++;   // clipRect.b
 
-    if (obj->m_144 == 0 && obj->m_14c == 0) {
-        obj->m_144 = (i32)0x80000000;
+    if (obj->m_hitLeft == 0 && obj->m_hitRight == 0) {
+        obj->m_hitLeft = (i32)0x80000000;
     }
-    if (obj->m_134 == 0 && obj->m_13c == 0) {
-        obj->m_134 = (i32)0x80000000;
+    if (obj->m_moveLeft == 0 && obj->m_moveRight == 0) {
+        obj->m_moveLeft = (i32)0x80000000;
     }
-    if (obj->m_64 == 0 && obj->m_6c == 0) {
-        obj->m_64 = (i32)0x80000000;
+    if (obj->m_clipLeft == 0 && obj->m_clipRight == 0) {
+        obj->m_clipLeft = (i32)0x80000000;
     }
-    if (obj->m_154 == 0 && obj->m_15c == 0) {
-        obj->m_154 = (i32)0x80000000;
+    if (obj->m_attackLeft == 0 && obj->m_attackRight == 0) {
+        obj->m_attackLeft = (i32)0x80000000;
     }
 
     sub[0xf0 / 4] = *p++;
@@ -818,11 +820,11 @@ i32 WwdFile::ReadPlaneObjects(const i32* src) {
 
     u32 w = (u32)*p++;
     if (w > 0) {
-        obj->m_f8 = (i32)w;
+        obj->m_width = (i32)w;
     }
     u32 h = (u32)*p++;
     if (h > 0) {
-        obj->m_fc = (i32)h;
+        obj->m_height = (i32)h;
     }
 
     ((WwdObjList*)((char*)loader + 0xb0))->Add(obj);
@@ -875,52 +877,52 @@ i32 CPlaneRender::CenterScrollA() {
 // ---------------------------------------------------------------------------
 // CPlaneRender::InitScrollRects (__thiscall, no args). Seed three (0,0,w-1,h-1)
 // rects + their centers (w/2, h/2) into the scroll sub-object from the plane
-// geometry's three dimension pairs (m_0c->m_24: c8/cc, d0/d4, d8/dc), then park
+// geometry's three dimension pairs (m_mapData->m_geometry), then park
 // the scroll target at (-22222, -22222) so the first SetTarget always moves.
 RVA(0x00163420, 0xf0)
 void CPlaneRender::InitScrollRects() {
     if (m_scroll == 0) {
         return;
     }
-    CPlaneGeom* g = m_0c->m_24;
+    CPlaneGeom* g = m_mapData->m_geometry;
     if (g == 0) {
         return;
     }
 
-    i32 c8 = g->m_c8;
-    i32 cc = g->m_cc;
-    i32 d0 = g->m_d0;
-    i32 d4 = g->m_d4;
-    i32 d8 = g->m_d8;
-    i32 dc = g->m_dc;
+    i32 c8 = g->m_rectAWidth;
+    i32 cc = g->m_rectAHeight;
+    i32 d0 = g->m_rectBWidth;
+    i32 d4 = g->m_rectBHeight;
+    i32 d8 = g->m_rectCWidth;
+    i32 dc = g->m_rectCHeight;
 
     CPlaneScroll* s = m_scroll;
-    s->m_10 = 0;
-    s->m_14 = 0;
-    s->m_18 = c8 - 1;
-    s->m_1c = cc - 1;
-    s->m_40 = c8 / 2;
-    s->m_44 = cc / 2;
+    s->m_rectALeft = 0;
+    s->m_rectATop = 0;
+    s->m_rectARight = c8 - 1;
+    s->m_rectABottom = cc - 1;
+    s->m_centerAX = c8 / 2;
+    s->m_centerAY = cc / 2;
 
     s = m_scroll;
-    s->m_30 = 0;
-    s->m_34 = 0;
-    s->m_38 = d0 - 1;
-    s->m_3c = d4 - 1;
-    s->m_48 = d0 / 2;
-    s->m_4c = d4 / 2;
+    s->m_rectBLeft = 0;
+    s->m_rectBTop = 0;
+    s->m_rectBRight = d0 - 1;
+    s->m_rectBBottom = d4 - 1;
+    s->m_centerBX = d0 / 2;
+    s->m_centerBY = d4 / 2;
 
     s = m_scroll;
-    s->m_20 = 0;
-    s->m_24 = 0;
-    s->m_28 = d8 - 1;
-    s->m_2c = dc - 1;
-    s->m_50 = d8 / 2;
-    s->m_54 = dc / 2;
+    s->m_rectCLeft = 0;
+    s->m_rectCTop = 0;
+    s->m_rectCRight = d8 - 1;
+    s->m_rectCBottom = dc - 1;
+    s->m_centerCX = d8 / 2;
+    s->m_centerCY = dc / 2;
 
     s = m_scroll;
-    s->m_68 = -22222;
-    s->m_6c = -22222;
+    s->m_targetX = -22222;
+    s->m_targetY = -22222;
 }
 
 // ---------------------------------------------------------------------------
@@ -1008,8 +1010,9 @@ i32 CPlaneRender::ValidateTiles(char* errOut) {
 
 // ---------------------------------------------------------------------------
 // CPlaneRender::ResolveColorKey (__thiscall, no args). For a 16bpp plane only
-// (skip 8bpp), pack the RGB888 palette entry at index m_144 (m_0c's palette chain)
-// into a screen-native RGB565 word and store it back in place at m_144.
+// (skip 8bpp), pack the RGB888 palette entry at index m_colorKey (m_mapData's
+// palette chain) into a screen-native RGB565 word and store it back in place at
+// m_colorKey.
 //
 // @early-stop
 // 66.6%, logic byte-exact (the format gate, the index bounds, the palette chain,
@@ -1021,7 +1024,7 @@ i32 CPlaneRender::ValidateTiles(char* errOut) {
 // zero-register-pinning.md family.
 RVA(0x00163670, 0x95)
 void CPlaneRender::ResolveColorKey() {
-    i32 format = m_0c->m_4->m_10->m_format;
+    i32 format = m_mapData->m_surface->m_desc->m_format;
     if (format == 8) {
         return;
     }
@@ -1029,7 +1032,7 @@ void CPlaneRender::ResolveColorKey() {
         return;
     }
 
-    i32 idx = m_144;
+    i32 idx = m_colorKey;
     if (idx < 0) {
         return;
     }
@@ -1037,18 +1040,18 @@ void CPlaneRender::ResolveColorKey() {
         return;
     }
 
-    CPlanePalOwner* owner = m_0c->m_18->m_64;
+    CPlanePalOwner* owner = m_mapData->m_paletteHost->m_owner;
     if (owner == 0) {
         return;
     }
-    u8* rgb = owner->m_10->m_rgb;
+    u8* rgb = owner->m_palette->m_rgb;
     if (rgb == 0) {
         return;
     }
 
-    m_144 = (u16)(((u8)((u8)rgb[idx * 4 + 0] >> (u8)g_rDown) << g_rUp)
-                  | ((u8)((u8)rgb[idx * 4 + 1] >> (u8)g_gDown) << g_gUp)
-                  | (u8)((u8)rgb[idx * 4 + 2] >> (u8)g_bDown));
+    m_colorKey = (u16)(((u8)((u8)rgb[idx * 4 + 0] >> (u8)g_rDown) << g_rUp)
+                       | ((u8)((u8)rgb[idx * 4 + 1] >> (u8)g_gDown) << g_gUp)
+                       | (u8)((u8)rgb[idx * 4 + 2] >> (u8)g_bDown));
 }
 
 // ---------------------------------------------------------------------------
