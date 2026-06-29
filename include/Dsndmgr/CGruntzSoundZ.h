@@ -42,9 +42,10 @@ public:
 
     i32 IsBusy(); // RVA 0x138f60 - Slot20() gate + AIL_sequence_status(m_58)
 
-    char m_pad0[0x54]; // +0x04 .. +0x58 seeded by the create helpers
-    i32 m_58;          // +0x58  AIL sequence handle (queried by IsBusy)
-    i32 m_5c;          // +0x5c
+    char m_name[0x40];  // +0x04  inline map key/name buffer
+    char m_pad44[0x14]; // +0x44 .. +0x58 seeded by the create helpers
+    i32 m_58;           // +0x58  AIL sequence handle (queried by IsBusy)
+    i32 m_5c;           // +0x5c
 };
 
 class CGruntzSoundZ : public CMapStringToOb {

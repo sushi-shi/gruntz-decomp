@@ -158,7 +158,7 @@ void CGruntzSoundZ::Insert_138700(CGruntzSoundInnerZ* inner) {
     if (m_enabled == 0) {
         return;
     }
-    (*this)[(const char*)((char*)inner + 4)] = (CObject*)inner;
+    (*this)[inner->m_name] = (CObject*)inner;
     if (m_pCurrent == 0) {
         m_pCurrent = inner;
     }
