@@ -68,12 +68,12 @@ struct PlayerConfigBundle {
 // ===========================================================================
 // GruntzPlayer::GetName  @0x01f450
 // Return the name CString by value (NRV-construct the return slot as a copy of
-// m_004). The dead `[esp+4]=0` store is the MSVC5 NRV bookkeeping artifact that
-// `return m_004;` reproduces.
+// m_name). The dead `[esp+4]=0` store is the MSVC5 NRV bookkeeping artifact that
+// `return m_name;` reproduces.
 // ===========================================================================
 RVA(0x0001f450, 0x20)
 CString GruntzPlayer::GetName() {
-    return m_004;
+    return m_name;
 }
 
 // ===========================================================================
@@ -86,19 +86,19 @@ CString GruntzPlayer::GetName() {
 // MFC-version wall (cstring-empty-init-version-divergence.md): the field stores +
 // GetDefaultName call + op= are byte-correct, but the packaged MFC's
 // CString::CString() is out-of-line, so our base emits an extra ??0CString@@QAE@XZ
-// default-ctor call before the m_004 = g_emptyString op= where retail elides it
+// default-ctor call before the m_name = g_emptyString op= where retail elides it
 // (its inline CString() folds + dead-store-eliminates). Retail also reads fs:0
 // before push -1 in the /GX prologue where ours pushes first. Both are static-MFC
 // build artifacts, not source-steerable. Deferred to the final sweep.
 RVA(0x000da870, 0xb8)
 GruntzPlayer::GruntzPlayer(i32 index) {
-    m_004 = g_emptyString;
-    m_000 = index;
+    m_name = g_emptyString;
+    m_playerIndex = index;
     m_018 = -2;
     m_020 = 0;
     m_028 = 0;
     m_014 = 1;
-    m_004 = GetDefaultName();
+    m_name = GetDefaultName();
     m_008 = index;
     m_010 = 0;
     m_220 = 0;
@@ -117,7 +117,7 @@ GruntzPlayer::GruntzPlayer(i32 index) {
 // ===========================================================================
 // @early-stop
 // MFC-version wall (cstring-empty-init-version-divergence.md): all field stores +
-// the m_004 = g_emptyString op= are byte-correct, but the packaged MFC's
+// the m_name = g_emptyString op= are byte-correct, but the packaged MFC's
 // out-of-line CString::CString() default-ctor call ALSO drags in a /GX EH frame
 // (the member becomes throwing-destructible during construction) that retail lacks
 // entirely - retail's inline CString() folds to nothing and the ctor is frameless,
@@ -125,8 +125,8 @@ GruntzPlayer::GruntzPlayer(i32 index) {
 // build artifact, not source-steerable. Deferred to the final sweep.
 RVA(0x000da960, 0x5b)
 GruntzPlayer::GruntzPlayer() {
-    m_000 = -1;
-    m_004 = g_emptyString;
+    m_playerIndex = -1;
+    m_name = g_emptyString;
     m_018 = -2;
     m_020 = 0;
     m_014 = 1;
@@ -155,11 +155,11 @@ GruntzPlayer::GruntzPlayer() {
 // does not flip it (the scheduler re-floats the imm). ~94.9%.
 RVA(0x000da9e0, 0x60)
 i32 GruntzPlayer::Reset() {
-    m_000 = -1;
+    m_playerIndex = -1;
     m_018 = -2;
     m_020 = 0;
     m_014 = 1;
-    m_004 = g_emptyString;
+    m_name = g_emptyString;
     m_008 = 0;
     m_010 = 0;
     m_220 = 0;
@@ -175,7 +175,7 @@ i32 GruntzPlayer::Reset() {
 // ===========================================================================
 // GruntzPlayer::Serialize  @0x0dace0
 // Stream every field through the archive order object. kind 7 = Load (read each
-// scalar via [+0x2c], then load the 0x80 name buffer and assign it into m_004),
+// scalar via [+0x2c], then load the 0x80 name buffer and assign it into m_name),
 // kind 4 = Save (write each scalar via [+0x30], then the inlined memset+strcpy of
 // the name into a 0x80 buffer and write it). Either way, forward the 4-arg command
 // to the +0x38 config bundle and negate (!!) its result.
@@ -189,7 +189,7 @@ i32 GruntzPlayer::Serialize(void* arArg, i32 kind, i32 a3, i32 a4) {
     if (kind != 4) {
         if (kind == 7) {
             // Load.
-            ar->Load(&m_000, 4);
+            ar->Load(&m_playerIndex, 4);
             ar->Load(&m_008, 4);
             ar->Load(&m_00c, 4);
             ar->Load(&m_010, 4);
@@ -201,14 +201,14 @@ i32 GruntzPlayer::Serialize(void* arArg, i32 kind, i32 a3, i32 a4) {
             ar->Load(&m_024, 4);
             g_serialCount++;
             ar->Load(tmp, 0x80);
-            m_004 = tmp;
+            m_name = tmp;
             ar->Load(&m_220, 4);
             ar->Load(&m_224, 4);
             ar->Load(&m_228, 4);
         }
     } else {
         // Save.
-        ar->Save(&m_000, 4);
+        ar->Save(&m_playerIndex, 4);
         ar->Save(&m_008, 4);
         ar->Save(&m_00c, 4);
         ar->Save(&m_010, 4);
@@ -220,7 +220,7 @@ i32 GruntzPlayer::Serialize(void* arArg, i32 kind, i32 a3, i32 a4) {
         ar->Save(&m_024, 4);
         g_serialCount++;
         memset(tmp, 0, sizeof(tmp));
-        strcpy(tmp, (const char*)m_004);
+        strcpy(tmp, (const char*)m_name);
         ar->Save(tmp, 0x80);
         ar->Save(&m_220, 4);
         ar->Save(&m_224, 4);
