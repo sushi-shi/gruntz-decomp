@@ -38,13 +38,13 @@ struct SampleVoice {
     void* m_vtbl;        // +0x00  (retail vtable 0x5ef6bc; virtuals external)
     SampleVoice* m_link; // +0x04  owned-buffer-list link, biased +4 (POSITION)
     char m_pad08[0x18 - 0x08];
-    u32 m_18; // +0x18  format word (wFormatTag|nChannels of the WAVEFORMATEX)
+    u32 m_formatWord; // +0x18  wFormatTag|nChannels of the WAVEFORMATEX
     char m_pad1c[0x28 - 0x1c];
-    u32 m_28; // +0x28  duration-ms (= m_2c*1000/m_3c)
-    u32 m_2c; // +0x2c  byte count
+    u32 m_durationMs; // +0x28  duration-ms (= m_byteCount*1000/m_avgBytesPerSecDivisor)
+    u32 m_byteCount;  // +0x2c
     char m_pad30[0x38 - 0x30];
-    u32 m_38; // +0x38  avg-bytes-per-sec
-    u32 m_3c; // +0x3c  avg-bytes-per-sec (divisor)
+    u32 m_avgBytesPerSec;        // +0x38
+    u32 m_avgBytesPerSecDivisor; // +0x3c
     char m_pad40[0x60 - 0x40];
 
     void BaseInit(IDirectSoundBufferZ* buf, SoundDevice* owner); // 0x135b10
@@ -305,11 +305,11 @@ DirectSoundMgr* SoundDevice::CreateBuffer(WaveFormatX* fmt, u32 bytes, u32 flags
         voice = new (voice) SampleVoice;
         voice->BaseInit(out, this);
     }
-    voice->m_18 = *(u32*)&fmt->wFormatTag;
+    voice->m_formatWord = *(u32*)&fmt->wFormatTag;
     ((SoundBufList*)&m_bufferHead)->Insert(voice ? &voice->m_link : 0);
-    voice->m_38 = fmt->nAvgBytesPerSec;
-    voice->m_3c = fmt->nAvgBytesPerSec;
-    voice->m_2c = bytes;
+    voice->m_avgBytesPerSec = fmt->nAvgBytesPerSec;
+    voice->m_avgBytesPerSecDivisor = fmt->nAvgBytesPerSec;
+    voice->m_byteCount = bytes;
     voice->ComputeDuration();
     return (DirectSoundMgr*)voice;
 }
