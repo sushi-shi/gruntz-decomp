@@ -26,12 +26,6 @@ i32 CExitTrigger::GetTypeTag() {
 RVA(0x000108c0, 0x44)
 CExitTrigger::~CExitTrigger() {}
 
-// The most-derived CExitTrigger vftable (0x5e822c); the ctor stamps it by address
-// (reloc-masked DATA store) - a transitional manual stamp while the class's
-// virtuals live in other TUs.
-DATA(0x001e822c)
-extern void* g_exitTriggerVtbl;
-
 // The global bute store the leaf interns "A" into (g_buteTree @0x6bf620; Find
 // 0x16d190 __thiscall ret 4). The "A" key (0x60a454).
 #include <Bute/ButeMgr.h>
@@ -103,17 +97,18 @@ DATA(0x0024556c)
 extern CExitGameReg* g_exitGameReg;
 
 // CExitTrigger::CExitTrigger(CGameObject*) @0x03ecf0 - the 1-arg leaf ctor: the
-// standard CUserLogic(obj) init (folded inline) plus the exit tail - stamp the
-// leaf vftable, raise the bound object's logic bit, cache the "A" bute node, snap
-// its screen position, set its z-gate (0x124f8) + the four unit bounds, apply the
-// GAME_CYCLE100 geometry, then resolve the warlord into the per-area focus slot:
-// when the slot is live, store the trigger position, probe the "Warlord" entity,
-// run its finalize fn-ptr, snapshot its id, and bind it to the active area + cue.
-// Constructs a throwing CUserBaseLink, so MSVC emits the /GX EH frame.
+// standard CUserLogic(obj) init (folded inline) plus the exit tail - cl emits the
+// implicit leaf vftable (??_7CExitTrigger @0x5e822c) stamp, then raise the bound
+// object's logic bit, cache the "A" bute node, snap its screen position, set its
+// z-gate (0x124f8) + the four unit bounds, apply the GAME_CYCLE100 geometry, then
+// resolve the warlord into the per-area focus slot: when the slot is live, store the
+// trigger position, probe the "Warlord" entity, run its finalize fn-ptr, snapshot
+// its id, and bind it to the active area + cue. Constructs a throwing CUserBaseLink,
+// so MSVC emits the /GX EH frame.
 //
 // @early-stop
 // EH-state-numbering wall (docs/patterns/eh-state-numbering-base.md): the body is
-// byte-faithful (the CUserLogic init, the leaf vptr stamp, the "A" cache, the tile
+// byte-faithful (the CUserLogic init, the implicit leaf vptr stamp, the "A" cache, the tile
 // snaps, the z-gate, the four `=1` bounds, the geometry apply, the focus-slot
 // resolve + warlord probe + finalize); the residue is this ctor's own __ehfuncinfo
 // state numbering + the zero-register-pinning callee-saved choice (the shared
@@ -121,7 +116,6 @@ extern CExitGameReg* g_exitGameReg;
 // as CTimeBomb / the other bute ctors; not source-steerable. Parked for the final sweep.
 RVA(0x0003ecf0, 0x292)
 CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj) {
-    *(void**)this = &g_exitTriggerVtbl;
     m_38->m_08 |= 2;
     m_30 = m_14->m_1c;
     m_14->m_1c = g_buteTree.Find(s_actKeyA);
