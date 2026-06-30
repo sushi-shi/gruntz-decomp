@@ -35,12 +35,6 @@ extern CButeTree g_buteTree; // ?g_buteTree@@3VCButeTree@@A @0x6bf620
 DATA(0x0020a454)
 extern char s_actKeyA[]; // "A"
 
-// The most-derived CCheckpointTrigger vftable (0x5e7ebc); the ctor stamps it by
-// address (reloc-masked DATA store) - a transitional manual stamp while the
-// class's virtuals live in other TUs.
-DATA(0x001e7ebc)
-extern void* g_checkpointVtbl;
-
 // The bound CGameObject (m_10) viewed by the ctor: +0x08 flag word, +0x198 layer
 // (its +0x1c base offset), +0x60 screen Y / +0x74 z-key, and the 15-dword captured
 // checkpoint state spread over the bute-config blocks at +0x134..+0x160 (12) plus
@@ -79,24 +73,24 @@ struct ChkObj {
 
 // CCheckpointTrigger::CCheckpointTrigger(CGameObject*) @0x10ee20 - the 1-arg leaf
 // ctor: the standard CUserLogic(obj) init (folded inline) plus the checkpoint tail
-// - stamp the leaf vftable, cache the "A" bute node, raise the bound object's two
-// logic bits, recompute its z-key from the layer base + screen Y, then capture the
-// checkpoint state: zero the 15-dword block, clamp the four 0x80000000 sentinels to
-// 0, copy the 12 config dwords (+0x134..+0x160) and 3 more (+0x64..+0x6c) into the
-// leaf, and find the first empty slot. Constructs a throwing CUserBaseLink, so MSVC
-// emits the /GX EH frame.
+// - cl emits the implicit leaf vftable (??_7CCheckpointTrigger @0x5e7ebc) stamp,
+// then cache the "A" bute node, raise the bound object's two logic bits, recompute
+// its z-key from the layer base + screen Y, then capture the checkpoint state: zero
+// the 15-dword block, clamp the four 0x80000000 sentinels to 0, copy the 12 config
+// dwords (+0x134..+0x160) and 3 more (+0x64..+0x6c) into the leaf, and find the
+// first empty slot. Constructs a throwing CUserBaseLink, so MSVC emits the /GX EH
+// frame.
 //
 // @early-stop
 // EH-state-numbering wall (docs/patterns/eh-state-numbering-base.md): the body is
-// byte-faithful (the CUserLogic init, the leaf vptr stamp, the "A" cache, the two
-// flag RMWs, the z-key recompute, the memset, the four sentinel clamps, the 15-dword
-// capture, the first-empty find loop); the residue is this ctor's own __ehfuncinfo
-// state numbering + the zero-register-pinning callee-saved choice (the shared
-// CUserLogic-init wall). The SAME plateau as CTimeBomb / the other bute ctors; not
-// source-steerable. Parked for the final sweep.
+// byte-faithful (the CUserLogic init, the implicit leaf vptr stamp, the "A" cache,
+// the two flag RMWs, the z-key recompute, the memset, the four sentinel clamps, the
+// 15-dword capture, the first-empty find loop); the residue is this ctor's own
+// __ehfuncinfo state numbering + the zero-register-pinning callee-saved choice (the
+// shared CUserLogic-init wall). The SAME plateau as CTimeBomb / the other bute
+// ctors; not source-steerable. Parked for the final sweep.
 RVA(0x0010ee20, 0x27d)
 CCheckpointTrigger::CCheckpointTrigger(CGameObject* obj) : CUserLogic(obj) {
-    *(void**)this = &g_checkpointVtbl;
     m_30 = m_14->m_1c;
     m_14->m_1c = g_buteTree.Find(s_actKeyA);
     m_38->m_08 |= 2;

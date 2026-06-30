@@ -9,9 +9,9 @@
 
 class CCheckpointTrigger : public CUserLogic {
 public:
-    CCheckpointTrigger(CGameObject* obj); // 0x10ee20 (1-arg leaf ctor)
-    ~CCheckpointTrigger();                // 0x011480 (folds the CUserLogic teardown)
-    static void InitActReg();             // 0x10ea00 (constructs g_checkpointActReg @0x64e7c0)
+    CCheckpointTrigger(CGameObject* obj);   // 0x10ee20 (1-arg leaf ctor)
+    virtual ~CCheckpointTrigger() OVERRIDE; // 0x011480 (folds the CUserLogic teardown)
+    static void InitActReg();               // 0x10ea00 (constructs g_checkpointActReg @0x64e7c0)
 
     char m_pad40[0x54 - 0x40]; // +0x40
     i32 m_54[15];              // +0x54  the captured checkpoint state (15 dwords)
