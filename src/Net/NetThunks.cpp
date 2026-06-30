@@ -17,6 +17,7 @@ extern "C" {
     void n_SendNetStat_b9290();      // CNetMgr::SendNetStat     (0xb9290)
     void n_SendStatFlag_b9240();     // CNetMgr::SendStatFlag    (0xb9240)
     void n_SendStat3_b9410();        // CNetMgr::SendStat3       (0xb9410)
+    void n_ResetCmdBuffers_c0070();  // CNetSession::ResetCmdBuffers (0xc0070)
 }
 
 RVA(0x000016d1, 0x5)
@@ -42,4 +43,9 @@ __declspec(naked) void Ilt_SendStatFlag_2e82() {
 RVA(0x00003d0a, 0x5)
 __declspec(naked) void Ilt_SendStat3_3d0a() {
     __asm { jmp n_SendStat3_b9410 }
+}
+
+RVA(0x00004020, 0x5)
+__declspec(naked) void Ilt_ResetCmdBuffers_4020() {
+    __asm { jmp n_ResetCmdBuffers_c0070 }
 }

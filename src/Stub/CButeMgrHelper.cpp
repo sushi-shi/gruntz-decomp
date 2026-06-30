@@ -14,18 +14,25 @@ extern CRITICAL_SECTION g_func_b_cs;
 DATA(0x005f03bc)
 extern CButeMgrHelper_ScalarDeletingDestructor g_func_b_destructor;
 
+// The child object at +0x4 destroyed in FuncB through its slot-0 scalar-deleting
+// dtor (`mov edx,[m_4]; push 1; call [edx]`). Modeled polymorphic so the virtual
+// dispatch falls out at slot 0.
+struct CButeMgrChild {
+    virtual void ScalarDtor(i32 flag); // slot 0
+};
+
 class CButeMgrHelper {
 public:
     void FuncB();
 
     CButeMgrHelper_ScalarDeletingDestructor* m_0;
-    i32 m_4;
+    CButeMgrChild* m_4;
     i32 m_8;
     char m_pad0c[0x10];
     i32 m_1c;
     char m_pad20[0x14];
     i32 m_34;
-    i32 m_38;
+    i32 m_38; // embedded CRITICAL_SECTION head (DeleteCriticalSection(&m_38))
 };
 // FuncA (0x169be0): the virtual-base-class displacement adjustor `vtordisp` thunk
 // MSVC auto-generates for a vbase ctor: load the vbtable handle at [this-0x14], read
@@ -50,18 +57,17 @@ __declspec(naked) void CButeMgrHelper_FuncA() {
 }
 // @confidence: med
 // @source: reloc-correlation (1 caller)
-// @stub
 RVA(0x00169d70, 0x5a)
 void CButeMgrHelper::FuncB() {
     m_0 = &g_func_b_destructor;
     m_34 = 0xffffffff;
-    if (--g_func_b_ref) {
+    if (--g_func_b_ref == 0) {
         winapi_16c9d0_DeleteCriticalSection(&g_func_b_cs);
     }
-    winapi_16c9d0_DeleteCriticalSection((LPCRITICAL_SECTION)m_38);
+    winapi_16c9d0_DeleteCriticalSection((LPCRITICAL_SECTION)&m_38);
 
-    if (!m_1c && !m_4) {
-        (*m_0)(0x1);
+    if (m_1c && m_4) {
+        m_4->ScalarDtor(0x1);
     }
 
     m_4 = 0x0;

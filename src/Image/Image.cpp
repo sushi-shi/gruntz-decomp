@@ -135,6 +135,34 @@ i32 CImage::DecodeBmpHeader(void* a2, i32 width, i32 height, i32 bitcount, void*
 }
 
 // ---------------------------------------------------------------------------
+// CImage::DecodeBlit (0x175930) - the shared plane blitter the format decoders
+// call. (Re)allocate/decode the plane via DecodeBmpHeader (fail -> return 0),
+// then copy `src` into it: contiguous rep-movs of (m_stride*m_height*bitcount)/8
+// bytes when m_rowPad==0, else row-by-row through the m_rowOffsets table (each
+// row m_width bytes from the running source). Re-homed from src/Stub/CImageBlit.cpp.
+// @early-stop
+// shrink-wrapped callee-save push wall (~83%): body byte-identical otherwise. Retail
+// saves only ebx/esi at entry and defers `push edi`/`push ebp` past the DecodeBmpHeader
+// early-out (which restores just esi/ebx); cl pushes all four upfront. Not source-
+// steerable; docs/patterns/shrink-wrapped-callee-save-push.md. Final sweep.
+RVA(0x00175930, 0xc6)
+i32 CImage::DecodeBlit(void* src, void* a2, i32 width, i32 height, i32 bitcount, void* a3) {
+    if (!DecodeBmpHeader(a2, width, height, bitcount, a3)) {
+        return 0;
+    }
+    if (m_rowPad == 0) {
+        memcpy(m_pixels, src, (u32)(m_stride * m_height * bitcount) >> 3);
+        return 1;
+    }
+    char* s = (char*)src;
+    for (i32 row = 0; row < m_height; row++) {
+        memcpy((char*)m_pixels + m_rowOffsets[row], s, m_width);
+        s += m_width;
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
 // CImage::LoadFromRez
 // ext = strrchr(name,'.'); dispatch on .BMP/.PCX/.RID/.PID, else default. Each
 // branch re-tests `ext != 0` (the target's `test esi; je default` per case) and

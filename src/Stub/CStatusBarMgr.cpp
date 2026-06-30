@@ -61,7 +61,11 @@ private:
 
 // @confidence: med
 // @source: reloc-correlation (1 caller)
-// @stub
+// @early-stop
+// shrink-wrapped callee-save push wall (~90%): logic + offsets + externs byte-exact.
+// Retail saves only edi at entry and defers `push esi`/`push ebx` past the m_78 null
+// guard (the early-out restores just edi); cl pushes all three upfront. Not source-
+// steerable; docs/patterns/shrink-wrapped-callee-save-push.md. Final sweep.
 RVA(0x00135d70, 0x92)
 class CStatusBarItem2* CStatusBarMgr::GetItem() {
     if (!m_10->m_78) {

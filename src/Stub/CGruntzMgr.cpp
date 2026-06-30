@@ -18,21 +18,47 @@
 
 class CGruntzMgr {
 public:
-    void InitCFileIOMember();
     i32 winapi_092f00_PostMessageA();
+};
+
+// 0x8fea0 is a fresh-object CONSTRUCTOR (mis-attributed CGruntzMgr::InitCFileIOMember
+// by the call-xref heuristic): it constructs a destructible CFileIO at +0x124 and a
+// CByteArray at +0x138, zeros four scalars, and seeds the CRT rng. The destructible
+// CFileIO forces the /GX EH frame (one EH state). Modeled as the ctor it is on a
+// placeholder owner class; the member ctors/dtor + CRT calls reloc-mask.
+struct UfoFileIO {
+    UfoFileIO();  // 0x1befd7
+    ~UfoFileIO(); // destructible -> /GX frame
+    char m_pad[0x10];
+};
+struct UfoByteArray {
+    UfoByteArray(); // 0x1b4b43 (CByteArray; trivial dtor in this frame)
+    char m_pad[0x10];
+};
+extern "C" void srand(unsigned seed); // 0x11fed0
+extern "C" long time(long* t);        // 0x120210
+
+struct UnknownFileIOOwner {
+    UnknownFileIOOwner();
+    i32 m_0;
+    i32 m_4;
+    i32 m_8;
+    char m_padc[0x124 - 0xc];
+    UfoFileIO m_124;    // +0x124 (destructible)
+    i32 m_134;          // +0x134
+    UfoByteArray m_138; // +0x138
 };
 
 // @confidence: med
 // @source: call-xref
-// @stub
-// NOTE: this 0x8fea0 method writes a *fresh* object (stores 0 to this+0/4/8 and
-// to +0x134, constructs a CFileIO at +0x124 and CByteArray at +0x138, then
-// srand(time(0)), returning `this`) - i.e. it is a constructor whose CByteArray
-// member at +0x138 contradicts the CGruntzMgr ctor's int store at +0x138, so it is
-// NOT a method on the 0xa30 CGruntzMgr layout. Kept stubbed pending the true
-// (mis-attributed) owner class.
 RVA(0x0008fea0, 0x6d)
-void CGruntzMgr::InitCFileIOMember() {}
+UnknownFileIOOwner::UnknownFileIOOwner() {
+    m_0 = 0;
+    m_4 = 0;
+    m_8 = 0;
+    m_134 = 0;
+    srand(time(0));
+}
 
 // @confidence: low
 // @source: winapi:PostMessageA

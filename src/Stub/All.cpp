@@ -38,9 +38,7 @@
 // CGMMenuUI == CChatBox (same RVAs).
 #include "CGameModeBase.cpp"
 #include "CGruntzCmdList.cpp"
-#include "CImageBlit.cpp"
 #include "CNetMgr.cpp"
-#include "CNetSession.cpp"
 #include "CPlay.cpp"
 #include "CRegSink.cpp"
 #include "CStatusBarMgr.cpp"
