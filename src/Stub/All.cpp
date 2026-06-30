@@ -60,7 +60,6 @@
 #include "CGruntStartingPoint.cpp"
 #include "CGruntVoice.cpp"
 #include "CGruntzCommand.cpp"
-#include "CGruntzMapMgr.cpp"
 #include "CGruntzMgr.cpp"
 #include "CGuardPoint.cpp"
 #include "CInGameIcon.cpp"

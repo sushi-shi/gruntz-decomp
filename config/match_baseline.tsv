@@ -110,6 +110,7 @@ cgrunttilemgr	1	0
 cgrunttoysprite	5	4
 cgrunttoytimesprite	1	1
 cgruntwingztimesprite	3	3
+cgruntzmapmgr	1	1
 cguardpoint	2	1
 chainforward	1	0
 channelslots	4	4
@@ -195,12 +196,14 @@ demosetup	1	1
 dialogs	36	15
 directinputmgr2	36	32
 directsoundmgr	39	29
+discoveredarray	1	0
+discoveredeh	2	2
 discoveredsmall	9	9
 dsoundvoice	2	1
 ehfunclets	6	6
 engine_attributed	7	0
-engine_discovered	22	8
-engine_label_stubs	293	121
+engine_discovered	19	8
+engine_label_stubs	292	121
 engine_unmatched_lib	11	0
 engstr	3	1
 eyecandytypetags	4	4
@@ -1216,6 +1219,7 @@ cgrunttoytimesprite	??1CGruntToyTimeSprite@@UAE@XZ	100.0000	100.0000	1	dd4570bd3
 cgruntwingztimesprite	??1CGruntWingzTimeSprite@@UAE@XZ	100.0000	100.0000	1	45cfd716baa5	0x121f0
 cgruntwingztimesprite	?GetTypeTag@CGruntWingzTimeSprite@@QAEHXZ	100.0000	100.0000	1	05a69356373a	0x121a0
 cgruntwingztimesprite	?GetWingzTime@CGruntWingzTimeSprite@@SGHPAUCWingzTimeHost@@@Z	100.0000	100.0000	1	fd29641ade51	0x7fd90
+cgruntzmapmgr	??1CGruntzMapMgr@@UAE@XZ	100.0000	100.0000	1	b09c83d42c3c	0x85d10
 cguardpoint	??0CGuardPoint@@QAE@PAUCGameObject@@@Z	95.9909	95.9909	1	c7e0d3067144	0xae5f0
 cguardpoint	??1CGuardPoint@@UAE@XZ	100.0000	100.0000	1	c53d638223a9	0x10410
 chainforward	?ChainForward@@YAXHPAUChainRoot@@HHHH@Z	87.6923	87.6923	1	98b57d07e0ef	0x114fa0
@@ -1699,6 +1703,9 @@ directsoundmgr	?StopAndRewind@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	4	6573311
 directsoundmgr	?Unlock@DirectSoundMgr@@QAEHPAXI0I@Z	100.0000	100.0000	2	1173b7b823c7	0x1359c0
 directsoundmgr	?winapi_136e20_timeGetTime@DirectSoundMgr@@QAEHH@Z	2.6667	2.6667	2	593c6f38b8c5	0x136e20
 directsoundmgr	?winapi_137ac0_timeGetTime@DirectSoundMgr@@QAEHH@Z	2.9231	2.9231	2	63f8b426702d	0x137ac0
+discoveredarray	?SetSize@CDwArray@@QAEXHH@Z	86.4113	86.4113	1	be6e873f54f3	0x150040
+discoveredeh	??1CButeStore@@UAE@XZ	100.0000	100.0000	1	68fa8bb3d039	0x174d70
+discoveredeh	??1CU55@@UAE@XZ	100.0000	100.0000	1	2340983fe4d8	0x16460
 discoveredsmall	??0ClassUnknown_14@@QAE@HHHH@Z	100.0000	100.0000	1	920d82497fd2	0x29ac0
 discoveredsmall	??0ClassUnknown_21@@QAE@XZ	100.0000	100.0000	1	02d1e26fc661	0x15b2b0
 discoveredsmall	??0ClassUnknown_22@@QAE@XZ	100.0000	100.0000	1	813a50afe631	0x15b270
@@ -1725,7 +1732,6 @@ engine_attributed	?strstreambuf_1693f0@strstreambuf@@QAEXXZ	6.6667	6.6667	2	b5ba
 engine_attributed	?strstreambuf_169400@strstreambuf@@QAEXXZ	0.7407	0.7407	2	da6c1a23235f	0x169400
 engine_discovered	??0ClassUnknown_15@@QAE@XZ	100.0000	100.0000	1	f5402effacd2	0x1d38a1
 engine_discovered	??0ClassUnknown_45@@QAE@XZ	100.0000	100.0000	1	50998ec8bdf3	0x8c3b0
-engine_discovered	?CButeStore_174d70@CButeStore@@QAEXXZ	3.2258	3.2258	1	cc31d37bf9e8	0x174d70
 engine_discovered	?CGrunt_0ef6b0@CGrunt@@QAEXXZ	0.2151	0.2151	1	5d439146fea0	0xef6b0
 engine_discovered	?CGruntzMgr_08b960@CGruntzMgr@@QAEXXZ	0.0907	0.0907	3	4a22ea071af3	0x8b960
 engine_discovered	?CGruntzSingleCommand_11f618@CGruntzSingleCommand@@QAEXXZ	10.0000	10.0000	1	4a4d0e24746c	0x11f618
@@ -1733,18 +1739,16 @@ engine_discovered	?CGruntzSingleCommand_18c022@CGruntzSingleCommand@@QAEXXZ	0.78
 engine_discovered	?CPlay_0d53d0@CPlay@@QAEXXZ	0.3049	0.3049	1	da0931b106f5	0xd53d0
 engine_discovered	?CPlay_0d9290@CPlay@@QAEXXZ	0.5076	0.5076	1	40021240a52e	0xd9290
 engine_discovered	?CUserLogic_16ea90@CUserLogic@@QAEXXZ	0.6061	0.6061	3	68eaea7fe177	0x16ea90
-engine_discovered	?ClassUnknown_13_1154b0@ClassUnknown_13@@QAEXXZ	3.5714	3.5714	1	99d2c63fa454	0x1154b0
-engine_discovered	?ClassUnknown_13_115520@ClassUnknown_13@@QAEXXZ	3.5714	3.5714	1	38f7529b511c	0x115520
 engine_discovered	?ClassUnknown_16_1d496b@ClassUnknown_16@@QAEXXZ	3.6364	3.6364	1	2d71a7c5a87b	0x1d496b
-engine_discovered	?ClassUnknown_1_150040@ClassUnknown_1@@QAEXXZ	0.3226	0.3226	1	94d4856b31c0	0x150040
 engine_discovered	?ClassUnknown_33_11f6b9@ClassUnknown_33@@QAEXXZ	9.0909	9.0909	1	835f56f8e975	0x11f6b9
 engine_discovered	?ClassUnknown_50_16dfc0@ClassUnknown_50@@QAEXXZ	100.0000	100.0000	3	accb4d51f7ed	0x16dfc0
 engine_discovered	?ClassUnknown_51_11eaf5@ClassUnknown_51@@QAEXXZ	100.0000	100.0000	3	c8bcaf7b0435	0x11eaf5
 engine_discovered	?ClassUnknown_52_11eaa8@ClassUnknown_52@@QAEXXZ	100.0000	100.0000	3	dc25e16e2488	0x11eaa8
 engine_discovered	?ClassUnknown_53_11cf30@ClassUnknown_53@@QAEXXZ	100.0000	100.0000	3	48e7ac7139e8	0x11cf30
 engine_discovered	?ClassUnknown_54_11cee3@ClassUnknown_54@@QAEXXZ	100.0000	100.0000	3	b7348565ac07	0x11cee3
-engine_discovered	?ClassUnknown_55_016460@ClassUnknown_55@@QAEXXZ	5.5556	5.5556	1	12ce854e384b	0x16460
 engine_discovered	?DestroyStr@CU35Host@@QAEXXZ	100.0000	100.0000	1	089c5e769c2e	0x21c40
+engine_discovered	?U13Forward1154b0@@YAXPAUU13Obj@@HHHHHHHH@Z	94.2857	94.2857	1	7f5f055dbad7	0x1154b0
+engine_discovered	?U13Forward115520@@YAXPAUU13Obj@@HHHHHHHH@Z	94.2857	94.2857	1	aa702f81012b	0x115520
 engine_label_stubs	??0CBoomerang@@QAE@H@Z	97.3077	97.3077	1	cpp:6bf52155264d	0xe0650
 engine_label_stubs	??0CButeNodeBase@@QAE@PAXH@Z	59.5806	59.5806	1	cpp:2262ffc5f902	0x16dff0
 engine_label_stubs	??0CButeNodeEntry@@QAE@HPAX@Z	100.0000	100.0000	1	cpp:590eddff1627	0x16df70
@@ -1781,7 +1785,6 @@ engine_label_stubs	??0MallocCtor_1816c0@@QAE@XZ	9.3333	9.3333	1	cpp:e8a4cb0d5b2a
 engine_label_stubs	??0MallocCtor_184960@@QAE@XZ	2.0513	2.0513	1	cpp:e8a4cb0d5b2a	0x184960
 engine_label_stubs	??0MallocCtor_192390@@QAE@XZ	1.0526	1.0526	1	cpp:e8a4cb0d5b2a	0x192390
 engine_label_stubs	??0UnknownFileIOOwner@@QAE@XZ	100.0000	100.0000	1	cpp:66ed52501602	0x8fea0
-engine_label_stubs	??1CGruntzMapMgr@@QAE@XZ	2.0833	2.0833	1	cpp:45e65336d4b5	0x85d10
 engine_label_stubs	?Advance@Movie_17c8e0@ApiCallerStubs@@QAEHHH@Z	100.0000	100.0000	1	cpp:e832e75e29a5	0x17c8e0
 engine_label_stubs	?Append@EditAppendHost_0c2ce0@ApiCallerStubs@@QAEXPAD@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xc2ce0
 engine_label_stubs	?Apply@PalHost_1775f0@ApiCallerStubs@@QAEHPBDH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x1775f0

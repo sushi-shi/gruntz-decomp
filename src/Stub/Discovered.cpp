@@ -12,8 +12,8 @@ extern void* g_severusWorkerDtorVtbl;
 extern void* g_vtbl5f04d8;
 
 // ---- CButeStore ----
-RVA(0x00174d70, 0x70)
-void CButeStore::CButeStore_174d70() {}
+// 0x174d70 re-homed (reconstructed, /GX multiple-inheritance dtor) to
+// src/Gruntz/DiscoveredEh.cpp (needs the eh profile).
 
 // ---- CGrunt ----
 RVA(0x000ef6b0, 0x61d)
@@ -45,17 +45,67 @@ RVA(0x0016ea90, 0x234)
 void CUserLogic::CUserLogic_16ea90() {}
 
 // ---- ClassUnknown_1 ----
-RVA(0x00150040, 0x136)
-void ClassUnknown_1::ClassUnknown_1_150040() {}
+// 0x150040 re-homed (reconstructed, MFC CArray<DWORD>::SetSize) to
+// src/Gruntz/DiscoveredArray.cpp.
 
 // ---- ClassUnknown_11 ----
 // 0x14dd90 re-homed (reconstructed) as ShadeSelector::Select in src/Gruntz/ShadeDescrTable.cpp.
 
 // ---- ClassUnknown_13 ----
+// Two __cdecl forwarder twins (trace mis-attributed as __thiscall methods): read a
+// handler off p->m_4 (at +0x18 / +0x14), and if non-null forward all 9 stack args
+// to a 10-arg __cdecl callee (0x115930 via the 0x1262 ILT), inserting the handler's
+// m_2c as the 4th argument. The argument is `p` (a stack arg, NOT this).
+struct U13Handler {
+    char m_pad00[0x2c];
+    i32 m_2c; // +0x2c
+};
+struct U13Inner {
+    char m_pad00[0x14];
+    U13Handler* m_14; // +0x14
+    U13Handler* m_18; // +0x18
+};
+struct U13Obj {
+    char m_pad00[4];
+    U13Inner* m_4; // +0x04
+};
+extern "C" void U13Callee(
+    U13Obj* p,
+    i32 a2,
+    i32 a3,
+    i32 m,
+    i32 a4,
+    i32 a5,
+    i32 a6,
+    i32 a7,
+    i32 a8,
+    i32 a9
+); // 0x115930
+// @early-stop
+// tail-merge / block-layout wall (~94.3%, topic:wall topic:scheduling): the handler
+// load + the 10-arg `[esp+0x24]`-reload forwarding push chain + the call/`add esp`
+// are byte-IDENTICAL; the sole residual is the null guard, where retail emits
+// `jne body; ret` (a separate early ret, no tail-merge) but cl tail-merges the two
+// rets to `je <shared end ret>`. An MSVC5 block-ordering coin-flip; not
+// source-steerable (early-return / explicit-return-in-body both still tail-merge).
 RVA(0x001154b0, 0x45)
-void ClassUnknown_13::ClassUnknown_13_1154b0() {}
+void U13Forward1154b0(U13Obj* p, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 a8, i32 a9) {
+    U13Handler* h = p->m_4->m_18;
+    if (h == 0) {
+        return;
+    }
+    U13Callee(p, a2, a3, h->m_2c, a4, a5, a6, a7, a8, a9);
+}
+// @early-stop
+// same tail-merge wall as U13Forward1154b0 (twin; inner offset +0x14 vs +0x18).
 RVA(0x00115520, 0x45)
-void ClassUnknown_13::ClassUnknown_13_115520() {}
+void U13Forward115520(U13Obj* p, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 a8, i32 a9) {
+    U13Handler* h = p->m_4->m_14;
+    if (h == 0) {
+        return;
+    }
+    U13Callee(p, a2, a3, h->m_2c, a4, a5, a6, a7, a8, a9);
+}
 
 // ---- ClassUnknown_15 ----
 // A bare ctor: stamp the class vtable (0x5ed36c) and return this. Reconstructed.
@@ -154,8 +204,9 @@ void ClassUnknown_54::ClassUnknown_54_11cee3() {
 }
 
 // ---- ClassUnknown_55 ----
-RVA(0x00016460, 0x46)
-void ClassUnknown_55::ClassUnknown_55_016460() {}
+// 0x016460 re-homed (reconstructed, /GX dtor) to src/Gruntz/DiscoveredEh.cpp - a
+// byte-identical twin of ~CImgHolder (0x16500); needs the eh profile, so it lives
+// in a sibling /GX unit, not this base-profile TU.
 
 // ---- ClassUnknown_9 ----
 // 0x11c630 re-homed (reconstructed) as the ctor in src/Gruntz/ClassUnknown9.cpp.
