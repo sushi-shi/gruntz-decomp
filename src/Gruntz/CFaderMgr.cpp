@@ -109,41 +109,101 @@ struct CFaderType {
 // Six concrete subtypes - distinct external ctor/build/apply addresses per case
 // (reloc-masked). Only the call targets must differ; the shapes are identical.
 struct CFader0 {
+    inline CFader0();
+    inline void* operator new(u32);
+
     CFader0* Ctor();
     void Build(CFaderInit*);
     i32 Apply(CFaderInit*);
     i32 From(CFader*);
 };
 struct CFader1 {
+    inline CFader1();
+    inline void* operator new(u32);
+
     CFader1* Ctor();
     void Build(CFaderInit*);
     i32 Apply(CFaderInit*);
     i32 From(CFader*);
 };
 struct CFader2 {
+    inline CFader2();
+    inline void* operator new(u32);
+
     CFader2* Ctor();
     void Build(CFaderInit*);
     i32 Apply(CFaderInit*);
     i32 From(CFader*);
 };
 struct CFader3 {
+    inline CFader3();
+    inline void* operator new(u32);
+
     CFader3* Ctor();
     void Build(CFaderInit*);
     i32 Apply(CFaderInit*);
     i32 From(CFader*);
 };
 struct CFader4 {
+    inline CFader4();
+    inline void* operator new(u32);
+
     CFader4* Ctor();
     void Build(CFaderInit*);
     i32 Apply(CFaderInit*);
     i32 From(CFader*);
 };
 struct CFader5 {
+    inline CFader5();
+    inline void* operator new(u32);
+
     CFader5* Ctor();
     void Build(CFaderInit*);
     i32 Apply(CFaderInit*);
     i32 From(CFader*);
 };
+
+inline CFader0::CFader0() {
+    Ctor();
+}
+inline void* CFader0::operator new(u32) {
+    return ::operator new(0x494);
+}
+
+inline CFader1::CFader1() {
+    Ctor();
+}
+inline void* CFader1::operator new(u32) {
+    return ::operator new(0x206c);
+}
+
+inline CFader2::CFader2() {
+    Ctor();
+}
+inline void* CFader2::operator new(u32) {
+    return ::operator new(0x7d5c);
+}
+
+inline CFader3::CFader3() {
+    Ctor();
+}
+inline void* CFader3::operator new(u32) {
+    return ::operator new(0x5c);
+}
+
+inline CFader4::CFader4() {
+    Ctor();
+}
+inline void* CFader4::operator new(u32) {
+    return ::operator new(0x50);
+}
+
+inline CFader5::CFader5() {
+    Ctor();
+}
+inline void* CFader5::operator new(u32) {
+    return ::operator new(0x6c);
+}
 
 // ===========================================================================
 // 0x17d9c0 - Add(nFaderType, pInit): 7-way fader factory. Validate pInit's class
@@ -165,8 +225,7 @@ CFader* CFaderMgr::Add(i32 nFaderType, CFader* pInit) {
             if (pInit && *(i32*)pInit != 0) {
                 goto wrongclass;
             }
-            CFader0* p = (CFader0*)operator new(0x494);
-            CFader0* f = p ? p->Ctor() : 0;
+            CFader0* f = new CFader0;
             fader = (CFader*)f;
             ((CFaderImpl*)f)->SetTimers(m_timerArgA, m_timerArgB);
             ((CFaderImpl*)f)->Set2c(m_sharedSet2cArg);
@@ -187,8 +246,7 @@ CFader* CFaderMgr::Add(i32 nFaderType, CFader* pInit) {
             if (pInit && *(i32*)pInit != 1) {
                 goto wrongclass;
             }
-            CFader1* p = (CFader1*)operator new(0x206c);
-            CFader1* f = p ? p->Ctor() : 0;
+            CFader1* f = new CFader1;
             fader = (CFader*)f;
             ((CFaderImpl*)f)->SetTimers(m_timerArgA, m_timerArgB);
             ((CFaderImpl*)f)->Set2c(m_sharedSet2cArg);
@@ -209,8 +267,7 @@ CFader* CFaderMgr::Add(i32 nFaderType, CFader* pInit) {
             if (pInit && *(i32*)pInit != 2) {
                 goto wrongclass;
             }
-            CFader2* p = (CFader2*)operator new(0x7d5c);
-            CFader2* f = p ? p->Ctor() : 0;
+            CFader2* f = new CFader2;
             fader = (CFader*)f;
             ((CFaderImpl*)f)->SetTimers(m_timerArgA, m_timerArgB);
             ((CFaderImpl*)f)->Set2c(m_sharedSet2cArg);
@@ -231,8 +288,7 @@ CFader* CFaderMgr::Add(i32 nFaderType, CFader* pInit) {
             if (pInit && *(i32*)pInit != 3) {
                 goto wrongclass;
             }
-            CFader3* p = (CFader3*)operator new(0x5c);
-            CFader3* f = p ? p->Ctor() : 0;
+            CFader3* f = new CFader3;
             fader = (CFader*)f;
             ((CFaderImpl*)f)->SetTimers(m_timerArgA, m_timerArgB);
             ((CFaderImpl*)f)->Set2c(m_sharedSet2cArg);
@@ -253,8 +309,7 @@ CFader* CFaderMgr::Add(i32 nFaderType, CFader* pInit) {
             if (pInit && *(i32*)pInit != 4) {
                 goto wrongclass;
             }
-            CFader4* p = (CFader4*)operator new(0x50);
-            CFader4* f = p ? p->Ctor() : 0;
+            CFader4* f = new CFader4;
             fader = (CFader*)f;
             ((CFaderImpl*)f)->SetTimers(m_timerArgA, m_timerArgB);
             ((CFaderImpl*)f)->Set2c(m_sharedSet2cArg);
@@ -275,8 +330,7 @@ CFader* CFaderMgr::Add(i32 nFaderType, CFader* pInit) {
             if (pInit && *(i32*)pInit != 5) {
                 goto wrongclass;
             }
-            CFader5* p = (CFader5*)operator new(0x6c);
-            CFader5* f = p ? p->Ctor() : 0;
+            CFader5* f = new CFader5;
             fader = (CFader*)f;
             ((CFaderImpl*)f)->SetTimers(m_timerArgA, m_timerArgB);
             ((CFaderImpl*)f)->Set2c(m_sharedSet2cArg);
