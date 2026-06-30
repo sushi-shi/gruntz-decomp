@@ -23,13 +23,17 @@
 
 // ===========================================================================
 // Vtables (UNMATCHED engine tables - stamped by address, reloc-masked DIR32).
+//
+// The CZArrayRoot/CZArray2D/CTypeKeyColl vtables (0x5f04cc/0x5f04d4/0x5f04d0) are
+// NO LONGER externs: that 1-slot-each construction hierarchy is now modeled as
+// REAL polymorphic C++ (virtual dtor per level, below), so cl emits the implicit
+// ??_7 vptr stamp in each ctor (reloc-masked) instead of a manual stamp.
 // ===========================================================================
-DATA(0x001f04d0)
-extern void* g_typeKeyCollVtbl; // CTypeKeyColl vtable (derived ctor stamp)
-DATA(0x001f04d4)
-extern void* g_zArray2DVtbl; // CZArray2D base vtable (base ctor stamp)
+// g_keyFinderVtbl is NOT a vtable: 0x16e220 is a FUNCTION in .text (the default
+// callback the CKeyFinder/CVariantSlot +0x00 slot is seeded with) - stored as a
+// plain fn-ptr field init, not a polymorphic vptr, so it stays a manual store.
 DATA(0x0016e220)
-extern void* g_keyFinderVtbl; // CKeyFinder vtable (in .text image region)
+extern void* g_keyFinderVtbl; // CKeyFinder +0x00 default callback fn (in .text)
 DATA(0x001f04e0)
 extern void* g_buteTreeVtbl; // g_buteTree runtime vtable (dyn-init stamp)
 DATA(0x001f04dc)
@@ -70,10 +74,6 @@ extern u8 g_zArrayTag;
 // ===========================================================================
 // External engine leaves (no body - call rel32 reloc-masks).
 // ===========================================================================
-// The deepest base ctor (0x16d9c0, __thiscall, one tag arg).
-struct CZArrayRoot {
-    void Construct(void* tag); // 0x16d9c0
-};
 // The error sink the array ctor reports a fatal alloc/bounds failure to (the
 // owner stored at +0x04, set by the root ctor). __thiscall(this; arr, msg, code).
 struct CZErrSink {
@@ -86,21 +86,47 @@ struct CKSlimeColl2 {
 DATA(0x002bf654)
 extern CKSlimeColl2* g_typeColl2;
 
-// The growable key collection itself (CTypeKeyColl, @0x6bf650). Find probes the
-// sorted node array; the ctors build the backing zDArray.
-struct CTypeKeyColl {
-    void* m_vtbl;             // +0x00
-    void* m_owner;            // +0x04  error-sink / owner (set by the root ctor)
-    i32 m_lo;                 // +0x08  index low bound
-    i32 m_hi;                 // +0x0c  index high bound
-    void* m_buf;              // +0x10  primary element buffer
-    void* m_buf2;             // +0x14  scratch element
-    i32 m_stride;             // +0x18  element size
-    void* m_cursor;           // +0x1c  (== m_buf)
-    i32 m_count;              // +0x20  (== m_hi - m_lo + 1)
-    i32 Find(i32 key, i32 z); // 0x16da80
-    void CtorBase(i32 stride, i32 lo, i32 hi, void* scratch);           // 0x16de30
-    CTypeKeyColl* Construct(i32 stride, i32 lo, i32 hi, void* scratch); // 0x16dda0
+// The zDArray construction hierarchy CZArrayRoot <- CZArray2D <- CTypeKeyColl.
+// Each level is a REAL polymorphic class: its retail vtable (0x5f04cc/0x5f04d4/
+// 0x5f04d0) holds exactly one slot - its virtual scalar-deleting destructor
+// (??_G 0x16da40/0x16df20/0x16dde0, calling ??1 0x16da60/0x16df40/0x16de00; all
+// in unmatched TUs, so the dtors are declared-only). cl emits the implicit ??_7
+// vptr stamp in each ctor (the retail manual `*(void**)this = &g_*Vtbl`). Giving
+// CZArrayRoot a virtual dtor is also what gives CZArray2D's allocating ctor its
+// /GX unwind frame (the documented EH wall).
+
+// The deepest base (0x16d9c0 ctor, external): stows the error-sink owner (+0x04)
+// from the data tag and one-time-inits the global tables.
+class CZArrayRoot {
+public:
+    CZArrayRoot(void* tag); // 0x16d9c0 (external no-body)
+    virtual ~CZArrayRoot(); // [0] ??_G 0x16da40 (external no-body)
+    void* m_owner;          // +0x04  error-sink / owner
+};
+
+// The allocating zDArray base (0x16de30 ctor): records [lo,hi] + element stride,
+// allocates the element buffer (+ a scratch element) and reports a fatal failure
+// through the owner sink. /GX EH frame (unwinds the CZArrayRoot base on throw).
+class CZArray2D : public CZArrayRoot {
+public:
+    CZArray2D(i32 stride, i32 lo, i32 hi, void* scratch); // 0x16de30
+    virtual ~CZArray2D();                                 // [0] ??_G 0x16df20 (external)
+    i32 m_lo;                                             // +0x08  index low bound
+    i32 m_hi;                                             // +0x0c  index high bound
+    void* m_buf;                                          // +0x10  primary element buffer
+    void* m_buf2;                                         // +0x14  scratch element
+    i32 m_stride;                                         // +0x18  element size
+};
+
+// The growable key collection itself (@0x6bf650, 0x16dda0 ctor). Find probes the
+// sorted node array; the ctor forwards to the base and derives cursor + count.
+class CTypeKeyColl : public CZArray2D {
+public:
+    CTypeKeyColl(i32 stride, i32 lo, i32 hi, void* scratch); // 0x16dda0
+    virtual ~CTypeKeyColl();                                 // [0] ??_G 0x16dde0 (external)
+    i32 Find(i32 key, i32 z);                                // 0x16da80 (external)
+    void* m_cursor;                                          // +0x1c  (== m_buf)
+    i32 m_count;                                             // +0x20  (== m_hi - m_lo + 1)
 };
 DATA(0x002bf650)
 extern CTypeKeyColl g_typeColl; // 0x6bf650
@@ -119,43 +145,43 @@ struct CStringNode {
 // ===========================================================================
 // CTypeKeyColl::CTypeKeyColl (0x16dda0) - the derived ctor. Forwards the four
 // arguments to the 2D-array base ctor (0x16de30), then derives the cursor (==
-// the primary buffer) and the element count (hi - lo + 1) and stamps the derived
-// vtable. No EH frame of its own (the base ctor owns the unwind state).
+// the primary buffer) and the element count (hi - lo + 1). cl emits the implicit
+// ??_7CTypeKeyColl vptr stamp (was `*(void**)this = &g_typeKeyCollVtbl`). No EH
+// frame of its own (the base ctor owns the unwind state).
 // ===========================================================================
 RVA(0x0016dda0, 0x3c)
-CTypeKeyColl* CTypeKeyColl::Construct(i32 stride, i32 lo, i32 hi, void* scratch) {
-    CtorBase(stride, lo, hi, scratch); // 0x16de30
+CTypeKeyColl::CTypeKeyColl(i32 stride, i32 lo, i32 hi, void* scratch)
+    : CZArray2D(stride, lo, hi, scratch) {
     m_cursor = m_buf;
     m_count = m_hi - m_lo + 1;
-    *(void**)this = &g_typeKeyCollVtbl;
-    return this;
 }
 
 // ===========================================================================
 // CZArray2D::CZArray2D (0x16de30) - the allocating zDArray base ctor. Builds the
-// deeper root, records the [lo, hi] bounds + element stride, allocates the
-// (hi-lo+1)*stride element buffer (+ a scratch element when none was supplied),
-// and reports a fatal "Inconsistent bounds" / "out of memory" through the owner
-// sink on failure. Carries the /GX EH frame (the partially-built root subobject
-// must unwind if a later allocation throws).
+// deeper root (the CZArrayRoot base subobject), records the [lo, hi] bounds +
+// element stride, allocates the (hi-lo+1)*stride element buffer (+ a scratch
+// element when none was supplied), and reports a fatal "Inconsistent bounds" /
+// "out of memory" through the owner sink on failure. cl emits the implicit
+// ??_7CZArray2D vptr stamp (was `*(void**)this = &g_zArray2DVtbl`) and the /GX
+// unwind frame (the partially-built CZArrayRoot subobject must be destroyed if a
+// later allocation throws).
 //
 // @early-stop
-// EH-frame / EH-state wall: the operation order, the bounds test, every member
-// store, both allocations, the inline-memset rep-stos and both fatal-report calls
-// are byte-faithful, but MSVC emits the /GX state-tracking frame (push -1 / push
-// handler / fs:0 chain + the [esp] state writes) only for a genuine ctor whose
-// base subobject has a destructor - not reproducible from a plain method without
-// regressing the manual vtable stamps. Documented EH plateau; deferred to the
-// final sweep. (docs/seh-eh.md)
+// vptr-position wall (~96%, up from 67% as a plain method). Modeling this as a
+// real ctor over a destructible CZArrayRoot base recovered the whole /GX state
+// frame (push -1 / push handler / fs:0 chain / trylevel write) that the plain
+// method could not emit - the bulk of the old gap. Residue: cl schedules the
+// implicit ??_7CZArray2D stamp BEFORE the m_lo/m_hi/m_buf/m_stride stores, but
+// retail sinks it AFTER them, plus a minor regalloc swap in the lo/hi/stride/
+// scratch load sequence. Not source-steerable; deferred to the final sweep.
 RVA(0x0016de30, 0xe7)
-void CTypeKeyColl::CtorBase(i32 stride, i32 lo, i32 hi, void* scratch) {
-    ((CZArrayRoot*)this)->Construct(&g_zArrayTag); // 0x16d9c0
+CZArray2D::CZArray2D(i32 stride, i32 lo, i32 hi, void* scratch)
+    : CZArrayRoot(&g_zArrayTag) { // 0x16d9c0
     m_buf2 = scratch;
     m_lo = lo;
     m_hi = hi;
     m_buf = 0;
     m_stride = stride;
-    *(void**)this = &g_zArray2DVtbl;
     if (lo > hi) {
         g_projActAllocResult = AllocFail();
         ((CZErrSink*)m_owner)->Report(this, "Inconsistent bounds", 0x16);
@@ -329,22 +355,33 @@ void DynInitButeTree() {
     g_buteTree.m_08 = &g_buteTreeSubVtbl;
 }
 
+// Placement new (construct g_typeColl in place; no allocation, so it just runs the
+// CTypeKeyColl ctor on the existing global, exactly as the retail in-place build).
+inline void* operator new(u32, void* p) {
+    return p;
+}
+
 // ===========================================================================
 // `dynamic initializer for g_typeColl' (0x16e730) - construct the shared key
 // collection with the [0x7d0, 0x7da] id range, stamp its runtime vtable, then
-// free the (initially stale) node array.
+// free the (initially stale) node array. The construct is a placement-new of the
+// real CTypeKeyColl ctor (0x16dda0) over the global; the runtime re-stamp swaps in
+// the live g_typeCollRunVtbl over the just-built construction vtable.
 // ===========================================================================
 // @early-stop
-// count-down induction + deferred-save regalloc wall (~81%): every op/offset/the
-// in-place Construct call/the vtable stamp are byte-faithful. Residue is the
-// node-free loop: retail materializes the counter via the `ecx=cnt; eax=cnt-1;
-// lea edi,[eax+1]` strength-reduced idiom and shrink-wraps the `push edi` save to
-// just before the loop; cl loads the count plainly and saves edi in the prologue.
+// placement-new null-guard + count-down-induction wall (~70%). Two residues:
+// (1) constructing g_typeColl now goes through the REAL CTypeKeyColl ctor via a
+// placement-new (the only way to invoke a ctor on the pre-pinned extern global);
+// MSVC5 emits the placement null-guard `mov eax,&g_typeColl; test eax,eax; je`
+// that retail's direct in-place build lacks - intrinsic to placement-new of a
+// non-trivial ctor, not source-steerable. (2) the node-free loop: retail
+// materializes the counter via the `ecx=cnt; eax=cnt-1; lea edi,[eax+1]`
+// strength-reduced idiom and shrink-wraps `push edi`; cl loads the count plainly.
 // Same not-source-steerable idiom as CKitchenSlime/CProjectile::RegisterType.
 // Deferred to the final sweep.
 RVA(0x0016e730, 0x51)
 void DynInitTypeColl() {
-    g_typeColl.Construct(4, 0x7d0, 0x7da, (void*)1);
+    new (&g_typeColl) CTypeKeyColl(4, 0x7d0, 0x7da, (void*)1);
     CStringNode* nodes = (CStringNode*)g_typeNodes;
     *(void**)&g_typeColl = &g_typeCollRunVtbl;
     if (nodes != 0) {

@@ -3618,10 +3618,10 @@ triggersound	?IsCueActive@CTriggerSound@@QAEHXZ	100.0000	100.0000	1	cf7853510fa9
 trirecordserialize	?Serialize@CPairRecord@@QAEHPAVCSerialArchive@@HHH@Z	100.0000	100.0000	1	18db2355dfd2	0x58ee0
 trirecordserialize	?Serialize@CTriRecord@@QAEHPAVCSerialArchive@@HHH@Z	100.0000	100.0000	1	f6e438bdb2fc	0x3c8f0
 typekeycoll	??0CKeyFinder@@QAE@PAX@Z	100.0000	100.0000	1	682e3c55da59	0x16e1a0
-typekeycoll	?Construct@CTypeKeyColl@@QAEPAU1@HHHPAX@Z	100.0000	100.0000	1	de3d0f66c119	0x16dda0
-typekeycoll	?CtorBase@CTypeKeyColl@@QAEXHHHPAX@Z	67.1600	67.1600	1	fd1d00b911d0	0x16de30
+typekeycoll	??0CTypeKeyColl@@QAE@HHHPAX@Z	100.0000	100.0000	1	855ca83e1459	0x16dda0
+typekeycoll	??0CZArray2D@@QAE@HHHPAX@Z	96.2400	96.2400	1	7eb2892f3b95	0x16de30
 typekeycoll	?DynInitButeTree@@YAXXZ	100.0000	100.0000	1	4a89185c7fcd	0x16e6a0
-typekeycoll	?DynInitTypeColl@@YAXXZ	81.1071	81.1071	1	5e890edf6737	0x16e730
+typekeycoll	?DynInitTypeColl@@YAXXZ	70.1786	70.1786	2	f11491541771	0x16e730
 typekeycoll	?Find@CKeyFinder@@QAEHH@Z	99.6875	99.6875	1	f1af2af50f40	0x16e1d0
 typekeycoll	?LoadConfigFields@@YAPAVCConfigReader@@PAV1@PAD@Z	100.0000	100.0000	1	03025979058d	0x16d000
 typekeycoll	?ProjTypeXfer@@YAHPAUCXferArchive@@@Z	87.0472	87.0472	1	bd3523e30b37	0x16e4f0
