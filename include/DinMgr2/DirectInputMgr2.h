@@ -230,6 +230,8 @@ public:
 // ---------------------------------------------------------------------------
 class CInputDevice {
 public:
+    inline CInputDevice();
+
     // The /GX deleting-destructor chain (0x133300): stamps the most-derived vftable,
     // Teardown()s, then walks the two base-subobject vftables releasing as it unwinds.
     ~CInputDevice(); // 0x133300

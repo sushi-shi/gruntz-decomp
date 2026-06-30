@@ -149,6 +149,8 @@ DATA(0x001ef538)
 extern const u8 g_deviceConfigB[]; // 0x5ef538 - device-B CreateDev config blob
 
 struct CDeviceConfigB {
+    inline CDeviceConfigB();
+
     i32 CreateDev(IDirectInputZ* di, const void* cfg, void* owner, u32 flags); // 0x1342c0
     // The joystick-device sibling bring-up (0x134630) + its DI axis configurator
     // (0x134710); IsReady (0x1343a0) is the device-B CreateDev success check.
@@ -172,6 +174,31 @@ struct CDeviceConfigB {
     i32 m_2b4;             // +0x2b4  (= 0)
     char m_pad2b8[0x2c8 - 0x2b8];
 }; // 0x2c8
+
+inline CInputDevice::CInputDevice() {
+    m_device = 0;
+    m_device2 = 0;
+    m_hwnd = 0;
+    m_stateBuffer = 0;
+    m_latchedKeys = -1;
+    m_currentKeys = 0;
+    m_edgeKeys = 0;
+    m_vptr = &g_deviceConfigVtblA;
+    memset(m_keyTable, 0, sizeof(m_keyTable));
+    m_modeFlags = 0;
+}
+
+inline CDeviceConfigB::CDeviceConfigB() {
+    m_device = 0;
+    m_device2 = 0;
+    m_hwnd = 0;
+    m_stateBuffer = 0;
+    m_latchedKeys = -1;
+    m_currentKeys = 0;
+    m_edgeKeys = 0;
+    m_vptr = &g_deviceConfigVtblB2;
+    m_2b4 = 0;
+}
 
 // ===========================================================================
 // DirectInputMgr2 (DinMgr2.cpp) - the device manager.
@@ -271,23 +298,7 @@ i32 DirectInputMgr2::InitA(u32 flags) {
     if (di == 0) {
         return 0;
     }
-    CDeviceConfigA* raw = (CDeviceConfigA*)operator new(sizeof(CDeviceConfigA));
-    CDeviceConfigA* dev;
-    if (raw != 0) {
-        raw->m_device = 0;
-        raw->m_device2 = 0;
-        raw->m_hwnd = 0;
-        raw->m_stateBuffer = 0;
-        raw->m_latchedKeys = -1;
-        raw->m_currentKeys = 0;
-        raw->m_edgeKeys = 0;
-        raw->m_vptr = &g_deviceConfigVtblA;
-        memset(raw->m_keyTable, 0, 0x80);
-        raw->m_modeFlags = 0;
-        dev = raw;
-    } else {
-        dev = 0;
-    }
+    CDeviceConfigA* dev = new CDeviceConfigA;
     m_deviceA = (CInputDeviceBase*)dev;
     if (dev->CreateDev(m_directInput, g_deviceConfigA, m_owner, flags) == 0) {
         if (m_deviceA != 0) {
@@ -310,22 +321,7 @@ i32 DirectInputMgr2::InitB(u32 flags) {
     if (di == 0) {
         return 0;
     }
-    CDeviceConfigB* raw = (CDeviceConfigB*)operator new(sizeof(CDeviceConfigB));
-    CDeviceConfigB* dev;
-    if (raw != 0) {
-        raw->m_device = 0;
-        raw->m_device2 = 0;
-        raw->m_hwnd = 0;
-        raw->m_stateBuffer = 0;
-        raw->m_latchedKeys = -1;
-        raw->m_currentKeys = 0;
-        raw->m_edgeKeys = 0;
-        raw->m_vptr = &g_deviceConfigVtblB2;
-        raw->m_2b4 = 0;
-        dev = raw;
-    } else {
-        dev = 0;
-    }
+    CDeviceConfigB* dev = new CDeviceConfigB;
     m_deviceB = (CInputDeviceBase*)dev;
     if (dev->CreateDev(m_directInput, g_deviceConfigB, m_owner, flags) == 0) {
         if (m_deviceB != 0) {
