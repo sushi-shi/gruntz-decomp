@@ -58,8 +58,13 @@ RVA(0x00115520, 0x45)
 void ClassUnknown_13::ClassUnknown_13_115520() {}
 
 // ---- ClassUnknown_15 ----
+// A bare ctor: stamp the class vtable (0x5ed36c) and return this. Reconstructed.
+DATA(0x005ed36c)
+extern void* g_vtbl5ed36c;
 RVA(0x001d38a1, 0x9)
-void ClassUnknown_15::ClassUnknown_15_1d38a1() {}
+ClassUnknown_15::ClassUnknown_15() {
+    *(void**)this = &g_vtbl5ed36c;
+}
 
 // ---- ClassUnknown_16 ----
 RVA(0x001d496b, 0x1e)
@@ -79,8 +84,20 @@ RVA(0x0011f6b9, 0x17)
 void ClassUnknown_33::ClassUnknown_33_11f6b9() {}
 
 // ---- ClassUnknown_35 ----
+// Tail-call the CString dtor (0x1b9cde) on the embedded string member at +8.
+// Reconstructed; the dtor is external (no body) so its `jmp rel32` reloc-masks.
+struct CU35Str {
+    ~CU35Str(); // 0x1b9cde  (~CString)
+};
+struct CU35Host {
+    char m_pad0[8];
+    CU35Str m_8; // +0x08
+    void DestroyStr();
+};
 RVA(0x00021c40, 0x8)
-void ClassUnknown_35::ClassUnknown_35_021c40() {}
+void CU35Host::DestroyStr() {
+    m_8.~CU35Str();
+}
 
 // ---- ClassUnknown_4 ----
 // 0x16f760 re-homed (reconstructed) as BitStreamBlowfishDecode (__stdcall free fn,
@@ -94,8 +111,14 @@ void ClassUnknown_35::ClassUnknown_35_021c40() {}
 // 0x0f7d90 re-homed (reconstructed) as Update_0f7d90 in src/Gruntz/ClassUnknown43.cpp.
 
 // ---- ClassUnknown_45 ----
+// A ctor: zero m_4, stamp the class vtable (0x5ea2a4), return this. Reconstructed.
+DATA(0x005ea2a4)
+extern void* g_vtbl5ea2a4;
 RVA(0x0008c3b0, 0x10)
-void ClassUnknown_45::ClassUnknown_45_08c3b0() {}
+ClassUnknown_45::ClassUnknown_45() {
+    m_4 = 0;
+    *(void**)this = &g_vtbl5ea2a4;
+}
 
 // ---- ClassUnknown_48 ----
 // 0x139cf0 re-homed (reconstructed) as Clear_139cf0 in src/Gruntz/ClassUnknown48.cpp.

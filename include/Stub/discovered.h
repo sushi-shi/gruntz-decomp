@@ -74,7 +74,8 @@ public:
 };
 class ClassUnknown_15 {
 public:
-    void ClassUnknown_15_1d38a1();
+    ClassUnknown_15();
+    void* m_0; // +0x00  vtable (manual stamp)
 };
 class ClassUnknown_16 {
 public:
@@ -146,7 +147,9 @@ public:
 };
 class ClassUnknown_45 {
 public:
-    void ClassUnknown_45_08c3b0();
+    ClassUnknown_45();
+    void* m_0; // +0x00  vtable (manual stamp)
+    i32 m_4;   // +0x04
 };
 class ClassUnknown_46 {
 public:

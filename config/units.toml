@@ -1781,6 +1781,26 @@ source = "src/Rez/RezUtil.cpp"
 flags = "o1"
 
 [[unit]]
+unit = "rezcoll"
+source = "src/Rez/RezColl.cpp"
+flags = "base"
+
+[[unit]]
+unit = "voldemortobj"
+source = "src/Gruntz/VoldemortObj.cpp"
+flags = "base"
+
+[[unit]]
+unit = "minervainner"
+source = "src/Gruntz/MinervaInner.cpp"
+flags = "base"
+
+[[unit]]
+unit = "ddrawblterrthunk"
+source = "src/Gruntz/DDrawBltErrThunk.cpp"
+flags = "base"
+
+[[unit]]
 unit = "typekeycoll"
 source = "src/Gruntz/TypeKeyColl.cpp"
 flags = "eh"
