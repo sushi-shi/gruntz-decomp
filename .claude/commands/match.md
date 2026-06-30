@@ -39,8 +39,11 @@ In short (full rules in the two agent docs):
    cross-check: `grep -rlE 'RVA\(0x' src --include=*.cpp | grep -v /Stub/ | xargs grep -ohE '0x[0-9a-f]{8}' | sort -u`),
    and skip anything already `@early-stop`. Order leaf/middle-small first.
 3. **Fan out:** keep N background matchers (`subagent_type="matcher"`, `run_in_background: true`,
-   **NOT** `isolation: worktree` — you own the pool). Each prompt: absolute worktree path +
-   `cd` there first, absolute paths everywhere, the target RVA/name/size/file, the 8-digit
+   **NOT** `isolation: worktree` — you own the pool). **Batch ≥20 related functions per
+   matcher** (matcher cost is ~flat regardless of batch size — bigger batches = more yield
+   per dispatch; if one TU/cluster can't supply 20, extend to a sibling TU to reach it).
+   Each prompt: absolute worktree path +
+   `cd` there first, absolute paths everywhere, the target RVAs/names/sizes/file, the 8-digit
    address convention, STOP-EARLY + `@early-stop`, **forbid `gruntz format` in the worktree**,
    allow stub→real-TU migrations, and report the final % + a one-line summary + the full
    `git diff`. **Lane discipline:** route all targets of one multi-stub file through ONE slot
