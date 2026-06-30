@@ -16,13 +16,14 @@
 //                    that go through the owner's pool allocator (owner+0x1c).
 //
 // The class is multiply-derived: a primary base whose vftable is g_aniRecordVtbl
-// @0x5f02c0 (slot1 dtor 0x165780/0x1657a0) and a secondary CObject base whose
-// vftable is g_albusWorkerVtbl @0x5f02d8 (= 0x5f02c0+0x18; slot1 dtor 0x165db0/
-// 0x165dd0). No RTTI complete-object-locator survives for the most-derived class,
-// so both vftables are reloc-masked DIR32 data stamped by address (an incomplete
-// polymorphic model would emit a divergent ??_7). Only the OFFSETS + emitted code
-// bytes are load-bearing (campaign doctrine); field names are placeholders. See
-// include comment block above the layout for the recovered offsets.
+// @0x5f02c0 (5 slots, slot1 dtor 0x165780/0x1657a0) and a secondary CObject base
+// whose vftable is g_albusWorkerVtbl @0x5f02d8 (14 slots, = 0x5f02c0+0x18; slot1 dtor
+// 0x165db0/0x165dd0). Both share the CObject-like grand-base vftable @0x5e8cb4. vtable-4
+// is NULL for both (verified) -> no RTTI COL, so the two base dtors are modeled as REAL
+// polymorphic types deriving from a shared empty-dtor grand-base (CAniRecordRemusBase);
+// cl emits the implicit ??_7 stamps (reloc-masked, /GR stays off). The leaf record
+// (CAniRecord) stays a non-polymorphic data-layout class (explicit m_vptr @+0x00) so its
+// matched leaves keep their offsets. eh-dtor-implicit-vptr-stamp-first.md (sub-case 2).
 //
 // This TU carries a /GX EH frame (flags="eh"): the ResolveIndices parser and the
 // base-2 destructor have SEH frames for their destructible locals; the leaves
@@ -31,15 +32,11 @@
 #include <Mfc.h>    // real MFC CStringArray / CMapStringToPtr / CString / CObject
 #include <string.h> // strlen (inline repnz scas)
 
-// The two construction vtables (reloc-masked DIR32 data, RVA = VA-0x400000):
-// the secondary base (g_albusWorkerVtbl @0x5f02d8) and the CObject grand-base dtor
-// vtable (g_remusBaseDtorVtbl @0x5e8cb4) restamped at base-2 dtor exit.
-DATA(0x001f02d8)
-extern void* g_albusWorkerVtbl; // 0x5f02d8 - the secondary base vftable
-DATA(0x001e8cb4)
-extern void* g_remusBaseDtorVtbl; // 0x5e8cb4 - the CObject base dtor vtable
-DATA(0x001f02c0)
-extern void* g_aniRecordVtbl; // 0x5f02c0 - the primary base vftable (slot-1 dtor 0x1657a0)
+// The three vftables (g_aniRecordVtbl @0x5f02c0, g_albusWorkerVtbl @0x5f02d8, the shared
+// grand-base @0x5e8cb4) are no longer manual DATA() externs: the base classes below are
+// real polymorphic types, so cl emits the implicit ??_7 + grand-base re-stamps (reloc-
+// masked against the target's differently-named symbols). All three are still DATA()-bound
+// in other TUs (CAniElement / CDDrawWorkerMapSmall / the Remus family) so the target stays named.
 
 // g_aniParsedNameLen (0x6bf3c4): the parsed name length the catalog builder uses
 // to advance the record stream cursor; Parse sets it (strlen of the name).
@@ -47,8 +44,12 @@ extern i32 g_aniParsedNameLen;
 
 // Global operator new (engine NAFXCW _RezAlloc @0x1b9b46); external/no-body.
 void* operator new(u32 n);
-// The buffer is freed via _RezFree (@0x1b9b82, __cdecl).
-extern "C" void RezFree(void* p);
+// operator delete: called by the auto-generated ??_G scalar-deleting dtors (slot 1).
+void operator delete(void* p);
+// The Rez heap free (0x1b9b82, __cdecl). C++ linkage (NOT extern "C") so MSVC5
+// treats it as potentially-throwing and keeps the /GX base-subobject unwind frame
+// in the primary dtor (same convention as SeverusWorkerDtor.cpp / BoundaryUpper*Eh.cpp).
+void RezFree(void* p);
 
 // ---------------------------------------------------------------------------
 // The pool allocator the buffer virtuals route through: the owner (record+0x0c)
@@ -119,77 +120,68 @@ public:
 };
 
 // ---------------------------------------------------------------------------
-// 0x165dd0: the base-2 (g_albusWorkerVtbl) destructor. /GX. Stamps the secondary
-// base vftable, frees the +0x10 work buffer (FreeBuf_168fb0), then the embedded
-// CObject grand-base sub-object's MEMBER destructor resets it (m_04=-1, m_08=0,
-// m_0c=0, vptr=g_remusBaseDtorVtbl). Per docs/patterns/eh-dtor-subobject-vptr-
-// restore-member.md the trailing CObject reset is the sub-object's member dtor run
-// under the /GX frame, NOT body code - so the body is only the albus stamp + the
-// FreeBuf call, and m_cobj auto-destructs.
-//
-// The secondary-base `this` (the record) is modeled here as a tiny class whose
-// FIRST value member is the destructible CObject sub-object (its vptr + 3 base
-// fields), so the compiler emits the /GX frame + the trylevel-0 write + the
-// member-teardown reset in the retail schedule.
-struct CAniRecordCObjSub {
-    void* m_vptr; // +0x00 (shared with the secondary-base vptr stamp)
-    i32 m_04;     // +0x04
-    i32 m_08;     // +0x08
-    i32 m_0c;     // +0x0c
-    ~CAniRecordCObjSub() {
-        m_04 = -1;
-        m_08 = 0;
-        m_0c = 0;
-        m_vptr = &g_remusBaseDtorVtbl;
-    }
-};
+// The shared CObject-like grand-base (vftable @0x5e8cb4, 5 slots: 0x1bef01 /
+// scalar-dtor / 0x0028ec / 0x00106e / 0x004034). Modeled as a REAL polymorphic base
+// with an EMPTY virtual dtor, so cl emits ONLY the implicit grand-base vptr re-stamp
+// (the LAST store at each derived dtor's tail) - no manual `m_vptr = &g_*Vtbl`. The
+// CObject header is the implicit vptr @+0x00 then the +0x04/+0x08/+0x0c fields the
+// base-2 dtor resets. eh-dtor-implicit-vptr-stamp-first.md sub-case 2 (the "Remus" family).
+struct CAniRecordRemusBase {
+    virtual void Slot00_1bef01();   // [0] 0x1bef01 (shared GetRuntimeClass thunk)
+    virtual ~CAniRecordRemusBase(); // [1] scalar-deleting dtor
+    virtual void Slot08_0028ec();   // [2] 0x0028ec
+    virtual void Slot0C_00106e();   // [3] 0x00106e
+    virtual void Slot10_004034();   // [4] 0x004034
 
-struct CAniRecordBase2 {
-    CAniRecordCObjSub m_cobj; // +0x00 (the CObject grand-base sub-object)
-    ~CAniRecordBase2();
+    i32 m_04, m_08, m_0c; // +0x04..+0x0f (CObject header)
+};
+// Empty body => folds as JUST the grand-base re-stamp at each derived dtor's tail.
+inline CAniRecordRemusBase::~CAniRecordRemusBase() {}
+
+// ---------------------------------------------------------------------------
+// 0x165dd0: the SECONDARY base (g_albusWorkerVtbl @0x5f02d8, 14 slots) destructor.
+// /GX. Real virtual: cl stamps ??_7 (masks 0x5f02d8) at ENTRY (stamp-first), frees the
+// +0x10 work buffer (FreeBuf), resets the CObject header (m_04=-1, m_08=0, m_0c=0), then
+// the implicit grand-base re-stamp (masks 0x5e8cb4) folds LAST. The 9 extra slots (5..13)
+// are declared-only (reloc-masked); the buffer (de)allocation virtuals live as the regular
+// CAniRecord methods below (slots 7/10/11/12 = FreeBuf/Alloc168ee0/Alloc168ea0/Alloc168f60).
+struct CAniRecordBase2 : CAniRecordRemusBase {
+    virtual ~CAniRecordBase2();   // [1] overrides; UAE
+    virtual void Slot05_165d90(); // [5] 0x165d90
+    virtual void Slot06_001c08(); // [6] 0x001c08
+    virtual void Slot07_168fb0(); // [7] 0x168fb0 (FreeBuf)
+    virtual void Slot08_165da0(); // [8] 0x165da0
+    virtual void Slot09_168f20(); // [9] 0x168f20
+    virtual void Slot10_168ee0(); // [10] 0x168ee0 (Alloc168ee0)
+    virtual void Slot11_168ea0(); // [11] 0x168ea0 (Alloc168ea0)
+    virtual void Slot12_168f60(); // [12] 0x168f60 (Alloc168f60)
+    virtual void Slot13_168fd0(); // [13] 0x168fd0
+
     void FreeBuf_168fb0() {
         ((CAniRecord*)this)->FreeBuf_168fb0();
     }
 };
 
-// @early-stop
-// MI base-2 destructor: complete reconstruction modeling the CObject grand-base as
-// a destructible value member (eh-dtor-subobject-vptr-restore-member.md). The /GX
-// frame + body shape are correct; the residual EH-state-index / vptr-restamp
-// schedule is the documented EH-state wall - parked for the final sweep.
 RVA(0x00165dd0, 0x5b)
 CAniRecordBase2::~CAniRecordBase2() {
-    m_cobj.m_vptr = &g_albusWorkerVtbl;
     FreeBuf_168fb0();
-    // m_cobj auto-destructs here (the CObject base reset) under the /GX frame.
+    m_04 = -1;
+    m_08 = 0;
+    m_0c = 0;
+    // implicit grand-base re-stamp (masks 0x5e8cb4) folds in here as the last store.
 }
 
 // ---------------------------------------------------------------------------
-// 0x1657a0: the PRIMARY base (g_aniRecordVtbl) slot-1 destructor. /GX. Stamps the
-// primary base vftable, frees the +0x30 resolved-index array (RezFree), clears the
-// owner sentinel (0xffff) / count / array, then the CObject grand-base member
-// restamps to g_remusBaseDtorVtbl. Same MI-dtor device as the base-2 dtor: the
-// CObject grand-base is a destructible value member whose only teardown is the vptr
-// restamp (no field reset here), so the compiler emits the /GX frame + trylevel-0.
-struct CAniRecordCObjBase {
-    void* m_vptr; // +0x00 (shared with the primary-base vptr stamp)
-    ~CAniRecordCObjBase() {
-        m_vptr = &g_remusBaseDtorVtbl;
-    }
-};
-struct CAniRecordPrimary {
-    CAniRecordCObjBase m_cobj; // +0x00 (the CObject grand-base sub-object)
-    ~CAniRecordPrimary();
+// 0x1657a0: the PRIMARY base (g_aniRecordVtbl @0x5f02c0, 5 slots == the grand-base
+// layout, no extra slots) destructor. /GX. Real virtual: cl stamps ??_7 (masks 0x5f02c0)
+// at ENTRY (stamp-first), frees the +0x30 resolved-index array (RezFree), clears the owner
+// sentinel (0xffff) / count / array, then the implicit grand-base re-stamp folds LAST.
+struct CAniRecordPrimary : CAniRecordRemusBase {
+    virtual ~CAniRecordPrimary(); // [1] overrides; UAE
 };
 
-// @early-stop
-// MI primary-base destructor: complete reconstruction modeling the CObject grand-
-// base as a destructible value member. The /GX frame + body shape are correct; the
-// residual is the documented EH-state-index / vptr-restamp schedule wall (same family
-// as the base-2 dtor 0x165dd0). Deferred to the final sweep (whole-hierarchy model).
 RVA(0x001657a0, 0x66)
 CAniRecordPrimary::~CAniRecordPrimary() {
-    m_cobj.m_vptr = &g_aniRecordVtbl;
     CAniRecord* r = (CAniRecord*)this;
     if (r->m_indices != 0) {
         RezFree(r->m_indices);
@@ -197,7 +189,7 @@ CAniRecordPrimary::~CAniRecordPrimary() {
     r->m_0c = (CAniRecordOwner*)0xffff;
     r->m_count = 0;
     r->m_indices = 0;
-    // m_cobj auto-destructs here (vptr -> g_remusBaseDtorVtbl) under the /GX frame.
+    // implicit grand-base re-stamp (masks 0x5e8cb4) folds in here as the last store.
 }
 
 // ---------------------------------------------------------------------------

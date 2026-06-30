@@ -56,7 +56,7 @@ cambientsound	4	3
 canicycle	2	1
 canielement	3	2
 canielementeh	1	0
-canirecord	9	5
+canirecord	9	7
 cattract	15	8
 cbehindcandy	2	2
 cbehindcandyani	4	3
@@ -815,8 +815,8 @@ canielement	?AtChecked_06b270@CAniElement@@QBEPAVCObject@@H@Z	100.0000	100.0000	
 canielement	?Build_165460@CAniElement@@QAEHPAXPAUCAniSource@@H@Z	89.3359	89.3359	1	c5f9e189a6e5	0x165460
 canielement	?Configure_1655c0@CAniElement@@QAEHPAX0H@Z	100.0000	100.0000	1	45956e3ecb61	0x1655c0
 canielementeh	?LoadFile_165620@CAniElement@@QAEHPAX0H@Z	97.2875	97.2875	1	3562d633122d	0x165620
-canirecord	??1CAniRecordBase2@@QAE@XZ	94.2857	94.2857	1	00be0d8eca56	0x165dd0
-canirecord	??1CAniRecordPrimary@@QAE@XZ	48.3077	48.3077	1	344d35b0a94c	0x1657a0
+canirecord	??1CAniRecordBase2@@UAE@XZ	100.0000	100.0000	1	00be0d8eca56	0x165dd0
+canirecord	??1CAniRecordPrimary@@UAE@XZ	100.0000	100.0000	1	344d35b0a94c	0x1657a0
 canirecord	?Alloc168ea0@CAniRecord@@QAEPAXHH@Z	100.0000	100.0000	1	ccc818e42e08	0x168ea0
 canirecord	?Alloc168ee0@CAniRecord@@QAEPAXHH@Z	100.0000	100.0000	1	3acb1defbfce	0x168ee0
 canirecord	?Alloc168f60@CAniRecord@@QAEPAXHHH@Z	100.0000	100.0000	1	702a9473c8be	0x168f60
