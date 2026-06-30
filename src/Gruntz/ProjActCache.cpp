@@ -1,7 +1,8 @@
 // ProjActCache.cpp - zBitVec::zBitVec (0x16d790): construct the CContainerErr
-// error-tracking base, stamp the derived vtable, size the bit-vector to cover
+// error-tracking base (cl re-stamps the implicit most-derived ??_7zBitVec vptr after
+// it returns - real polymorphic shape, no manual stamp), size the bit-vector to cover
 // `idx`, then set bit `idx`; on a sizing failure record the caller return address
-// and fire the error sink. The destructible base forces the /GX frame.
+// and fire the error sink. The destructible polymorphic base forces the /GX frame.
 #include <Gruntz/ProjActCache.h>
 
 // Heap externs the grow path reaches (reloc-masked rel32 callees). memset stays
@@ -29,10 +30,12 @@ extern "C" void* memset(void* d, i32 c, u32 n); // (inlined to rep stos)
 //   (b) the bit set is `or [eax],edx` (RMW) in retail; cl emits load/or/store
 //       (`base[i] |= mask`, `*slot |= mask` and a precomputed mask all do the
 //       same), +3 bytes that shift the success tail.
-// ~77.8%, logic complete; deferred to the final sweep.
+// The vptr is now the compiler-implicit most-derived ??_7zBitVec re-stamp (real
+// polymorphic base, no manual `*(void**)this = &g_*Vtbl`); it lands at the same
+// position the manual store did (eh-ctor-vptr-restamp-position.md), so the
+// conversion is match-neutral. ~77.8%, logic complete; deferred to the final sweep.
 RVA(0x0016d790, 0xb1)
 zBitVec::zBitVec(i32 idx, i32 sizehint) : CContainerErr(g_containerName) {
-    *(void**)this = &g_projActVtbl;
     u32 n = (u32)sizehint;
     if (n == 0) {
         n = (u32)g_defaultProjActSize;

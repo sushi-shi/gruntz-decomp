@@ -18,12 +18,6 @@
 #include <Ints.h>
 #include <rva.h>
 
-// The derived class's vtable (0x5f04c8) - stamped by hand (its 6 slots point into
-// other TUs, so the compiler cannot emit a matching one). Reloc-masked DATA.
-struct CProjActVtbl;
-DATA(0x001f04c8)
-extern CProjActVtbl g_projActVtbl; // 0x5f04c8
-
 // Globals the OOM path touches (.data). g_containerName is the const-char* anchor
 // the base ctor records; g_defaultSize is the fallback capacity; g_projActCache /
 // g_projActAllocResult are the diagnostic record cells. Reloc-masked.
@@ -71,22 +65,38 @@ public:
     void Set(void* obj, i32 a, i32 b); // 0x16d850
 };
 
-// The CContainerErr error-tracking container base.
+// The CContainerErr error-tracking container base. REAL polymorphic base: its 7-slot
+// vtable (??_7CContainerErr @0x5f04cc) is built by the external ctor (0x16d9c0) and
+// re-stamped by the external dtor (0x16da60), so this TU references but does not emit
+// it. The implicit vptr lands at +0x00; slot 0 is the (scalar-deleting) destructor,
+// slots 1..6 are declared-only engine virtuals living in other TUs (reloc-masked
+// references). The destructible base is what forces zBitVec's /GX ctor-unwind frame.
 class CContainerErr {
 public:
     CContainerErr(const char* name); // 0x16d9c0 (??0CContainerErr@@QAE@PBD@Z)
-    ~CContainerErr();                // makes the derived ctor's /GX unwind destruct the base
+    virtual ~CContainerErr();        // [0] 0x16da40 (??_G slot); real ~ at 0x16da60
 
-    void* m_vptr;      // +0x00
+    virtual void Slot04_16dde0(); // [1] 0x16dde0 (declared-only)
+    virtual void Slot08_16df20(); // [2] 0x16df20 (declared-only)
+    virtual void Slot0C_16dfa0(); // [3] 0x16dfa0 (declared-only)
+    virtual void Slot10_16ea80(); // [4] 0x16ea80 (declared-only)
+    virtual void Slot14_16e9c0(); // [5] 0x16e9c0 (declared-only)
+    virtual void Slot18_16ea20(); // [6] 0x16ea20 (declared-only)
+
     CVariantSlot* m_4; // +0x04 (error sink)
     u32 m_8;           // +0x08 (capacity; unsigned -> jbe)
     void* m_c;         // +0x0c (inline DWORD when m_8 <= 0x20, else heap DWORD*)
 };
 
+// zBitVec - the derived bit-vector. Its own vtable (??_7zBitVec @0x5f04c8) is stamped
+// by the ctor (0x16d790) right after the base ctor returns; the virtual dtor override
+// is what makes cl emit that distinct most-derived vtable + the implicit re-stamp (no
+// more manual `*(void**)this = &g_projActVtbl`). vptr inherited at +0x00.
 class zBitVec : public CContainerErr {
 public:
     zBitVec(i32 idx, i32 sizehint); // 0x16d790
-    i32 SetSize(i32 n);             // 0x16e100 (?SetSize@zBitVec@@QAEHH@Z)
+    virtual ~zBitVec();             // [0] override; ??_G/dtor @0x16d2d0
+    i32 SetSize(i32 n);             // 0x16e100 (?SetSize@zBitVec@@QAEHH@Z, external)
     i32 EnsureSize(i32 nbits);      // 0x1936e0 (grow + preserve, reports OOM)
 };
 
