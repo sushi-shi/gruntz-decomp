@@ -212,6 +212,9 @@ public:
 // zeroed at create.  Torn down by the engine helper (Teardown, __thiscall 0x147530)
 // then RezFree'd.
 struct CPoolItemB {
+    inline CPoolItemB();
+    inline void* operator new(u32);
+
     void Teardown();                    // 0x147530 (__thiscall) - frees owned bufs
     i32 Init(void* arg, i32 a, i32 b);  // 0x1474d0 (__thiscall) - returns success
     i32 Init2(void* arg, i32 a, i32 b); // 0x147410 (__thiscall) - alt init, returns success
@@ -230,6 +233,23 @@ struct CPoolItemB {
     i32 m_30; // +0x30
     i32 m_34; // +0x34
 };
+
+inline CPoolItemB::CPoolItemB() {
+    m_04 = 0;
+    m_pos = 0;
+    m_08 = 0;
+    m_0c = 0;
+    m_10 = 0;
+    m_34 = 0;
+    m_18 = 0;
+    m_14 = 0;
+    m_2c = 0;
+    m_30 = 0;
+}
+
+inline void* CPoolItemB::operator new(u32) {
+    return ::operator new(0x38);
+}
 
 // A cached surface object (the +0x00 / +0x04 slots): polymorphic, with a
 // Release-like vtbl[8] and a RestoreAll-like vtbl[0x4c].  External, no body.
@@ -732,23 +752,7 @@ void CDDrawPtrCollections::RemoveItemB(CPoolItemB* item) {
 // ---------------------------------------------------------------------------
 RVA(0x00142f40, 0x7c)
 CPoolItemB* CDDrawPtrCollections::MakeB2(i32 a, i32 b) {
-    void* mem = operator new(0x38);
-    CPoolItemB* item;
-    if (mem) {
-        ((CPoolItemB*)mem)->m_04 = 0;
-        ((CPoolItemB*)mem)->m_pos = 0;
-        ((CPoolItemB*)mem)->m_08 = 0;
-        ((CPoolItemB*)mem)->m_0c = 0;
-        ((CPoolItemB*)mem)->m_10 = 0;
-        ((CPoolItemB*)mem)->m_34 = 0;
-        ((CPoolItemB*)mem)->m_18 = 0;
-        ((CPoolItemB*)mem)->m_14 = 0;
-        ((CPoolItemB*)mem)->m_2c = 0;
-        ((CPoolItemB*)mem)->m_30 = 0;
-        item = (CPoolItemB*)mem;
-    } else {
-        item = 0;
-    }
+    CPoolItemB* item = new CPoolItemB;
     if (!item->Init2(m_surf0, a, b)) {
         if (item) {
             item->Teardown();
@@ -767,23 +771,7 @@ CPoolItemB* CDDrawPtrCollections::MakeB2(i32 a, i32 b) {
 // ---------------------------------------------------------------------------
 RVA(0x00142fc0, 0x7c)
 CPoolItemB* CDDrawPtrCollections::MakeB(i32 a, i32 b) {
-    void* mem = operator new(0x38);
-    CPoolItemB* item;
-    if (mem) {
-        ((CPoolItemB*)mem)->m_04 = 0;
-        ((CPoolItemB*)mem)->m_pos = 0;
-        ((CPoolItemB*)mem)->m_08 = 0;
-        ((CPoolItemB*)mem)->m_0c = 0;
-        ((CPoolItemB*)mem)->m_10 = 0;
-        ((CPoolItemB*)mem)->m_34 = 0;
-        ((CPoolItemB*)mem)->m_18 = 0;
-        ((CPoolItemB*)mem)->m_14 = 0;
-        ((CPoolItemB*)mem)->m_2c = 0;
-        ((CPoolItemB*)mem)->m_30 = 0;
-        item = (CPoolItemB*)mem;
-    } else {
-        item = 0;
-    }
+    CPoolItemB* item = new CPoolItemB;
     if (!item->Init(m_surf0, a, b)) {
         if (item) {
             item->Teardown();
@@ -803,23 +791,7 @@ CPoolItemB* CDDrawPtrCollections::MakeB(i32 a, i32 b) {
 // ---------------------------------------------------------------------------
 RVA(0x001430c0, 0x81)
 CPoolItemB* CDDrawPtrCollections::MakeB3(i32 a, i32 b, i32 c) {
-    void* mem = operator new(0x38);
-    CPoolItemB* item;
-    if (mem) {
-        ((CPoolItemB*)mem)->m_04 = 0;
-        ((CPoolItemB*)mem)->m_pos = 0;
-        ((CPoolItemB*)mem)->m_08 = 0;
-        ((CPoolItemB*)mem)->m_0c = 0;
-        ((CPoolItemB*)mem)->m_10 = 0;
-        ((CPoolItemB*)mem)->m_34 = 0;
-        ((CPoolItemB*)mem)->m_18 = 0;
-        ((CPoolItemB*)mem)->m_14 = 0;
-        ((CPoolItemB*)mem)->m_2c = 0;
-        ((CPoolItemB*)mem)->m_30 = 0;
-        item = (CPoolItemB*)mem;
-    } else {
-        item = 0;
-    }
+    CPoolItemB* item = new CPoolItemB;
     if (!item->Init3(m_surf0, a, b, c)) {
         if (item) {
             item->Teardown();
