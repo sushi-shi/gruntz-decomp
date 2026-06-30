@@ -37,7 +37,15 @@ In short (full rules in the two agent docs):
    `nix develop .#build --command python3 -m gruntz.analysis.gen_match_queue` — then read
    `config/match-queue.md`. **Filter out already-reconstructed RVAs** (orchestrator.md §2
    cross-check: `grep -rlE 'RVA\(0x' src --include=*.cpp | grep -v /Stub/ | xargs grep -ohE '0x[0-9a-f]{8}' | sort -u`),
-   and skip anything already `@early-stop`. Order leaf/middle-small first.
+   and skip anything already `@early-stop`. **Target priority — drain these BEFORE any
+   %-recovery of already-matched functions:** (1) the `@stub` backlog (`src/Stub/` —
+   biggest files first: ApiCallers, Backlog, Discovered, then the per-class tail), and
+   (2) the `(unmatched)` bodies (the `engine_unmatched` FUN_ unit). Only once BOTH are dry
+   do you climb the `@early-stop` near-misses. Within a tier, leaf/middle-small first. For a
+   `@stub`, the matcher reconstructs the body to exact AND re-homes it into its real class
+   TU (deleting the emptied stub file) so `src/Stub/` shrinks toward empty — but ALWAYS
+   reproduce the body before moving an RVA (a bare move can silently destroy a match; in
+   ApiCallers/Backlog touch `@stub` only, never the real bodies).
 3. **Fan out:** keep N background matchers (`subagent_type="matcher"`, `run_in_background: true`,
    **NOT** `isolation: worktree` — you own the pool). **Batch ≥20 related functions per
    matcher** (matcher cost is ~flat regardless of batch size — bigger batches = more yield
@@ -48,18 +56,30 @@ In short (full rules in the two agent docs):
    allow stub→real-TU migrations, and report the final % + a one-line summary + the full
    `git diff`. **Lane discipline:** route all targets of one multi-stub file through ONE slot
    (avoids same-file integration collisions); other slots take distinct-file targets.
+   **Matchers never give up / never abandon a target:** if a function hits an unclimbable
+   codegen wall, the matcher STILL commits/leaves its highest-achievable-% reconstruction
+   marked `// @early-stop` (with the wall reason) — zero output is never acceptable. Every
+   dispatched function comes back at 100% or a maximized `@early-stop`; "I couldn't finish"
+   means "I banked my best %", not "I produced nothing".
 4. **Integrate SERIALLY (the heart):** process completed matchers one at a time —
    guard main clean → apply only that matcher's file(s) → `gruntz build` → confirm % →
    `gruntz status update` (`--accept-regressions` only for a migration's LOST stub or
    trivial cross-fn fuzzy drift) → commit ONLY those files + `config/match_baseline.tsv`
-   as `match: <fn> -> <result>` with the Co-Authored-By trailer. One matcher = one commit.
+   as `match: <fn> -> <result>` with the Co-Authored-By trailer — **always include the
+   build-refreshed `README.md` stats block in that commit** (`gruntz build` regenerates it;
+   never skip or batch-away the refresh, so README always matches HEAD). One matcher = one commit.
    Never integrate two at once (one `build/`, one HEAD). **Refill immediately:**
    `git -C .claude/worktrees/matcher-N reset --hard main` (its `build/` survives), pick
    the next target, dispatch.
-5. **Stop** when the queue is dry/parked or the user winds down: let in-flight matchers
-   finish, integrate them, then print the ledger (`fn -> result -> commit`) + a regressions
-   summary. **Leave the `matcher-N` worktrees in place** so the next run reuses their build
-   state; `git worktree remove` only if the user asks.
+5. **Run to exhaustion.** The campaign is NOT done until BOTH backlogs are drained:
+   `rg -c '@stub' src/Stub` → **0** (every stub reconstructed AND re-homed/deleted so
+   `src/Stub/` is empty) AND the `(unmatched)` row → **0**. Keep N matchers in flight,
+   integrating + refilling each slot the moment its matcher lands, until then. Post a
+   progress line per wave (stub count + unmatched count shrinking). **Stop** only when both
+   are dry/parked or the user winds down: let in-flight matchers finish, integrate them, then
+   print the ledger (`fn -> result -> commit`) + a regressions summary. **Leave the
+   `matcher-N` worktrees in place** so the next run reuses their build state; `git worktree
+   remove` only if the user asks.
 
 Keep your context SMALL: hold only the ledger — never pull a matcher's disassembly,
 diffs, or source into this session beyond the file(s) you integrate.

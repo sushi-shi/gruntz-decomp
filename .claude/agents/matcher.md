@@ -28,6 +28,12 @@ A prior analysis confirmed **every** worklist entry is structurally reconstructa
 4. **Size is not a reason to defer.** Reconstruct large bodies leaf-first, in full.
 5. **You are ONE worker. NEVER spawn subagents.** Do fewer functions if budget is
    tight and report the rest as not-done — do not delegate.
+6. **NEVER give up / never produce zero output.** If a function genuinely cannot reach
+   100% or a byte-proven `@early-stop` after honest iteration — a real unclimbable wall —
+   you STILL keep your highest-achievable-% reconstruction in place, mark it `// @early-stop`
+   with the wall reason, and bank it. Do NOT revert it to a bare stub, delete it, or leave
+   it untouched. A maximized partial ALWAYS beats nothing; reverting/abandoning is the one
+   forbidden outcome. Always commit/leave your best %.
 
 **Your usage limits will NOT be exhausted — the orchestrator pre-calculated this
 batch's size to fit your budget. So budget is never a reason to stop short of the
