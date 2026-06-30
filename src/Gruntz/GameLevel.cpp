@@ -406,6 +406,11 @@ fail:
 // slip or regressed the eax(0x3e8)/edx(0xfa) allocation (b8,bc,b0,b4 order ->
 // ~75%); calling the param block before the +0x10 writes moves the whole block
 // ahead (wrong). Logic + offsets + CFG are exact, so this is left as the plateau.
+// @early-stop
+// store-scheduling entropy (~84%): the body is byte-exact EXCEPT the independent
+// m_b0=500 direct-immediate store, which cl hoists into the w-read/dec window while
+// retail emits it after the m_b8/m_bc=1000 stores. Inlining the block in retail's
+// store order regressed it further (74.8%); not source-steerable. Deferred.
 RVA(0x0015d030, 0x8f)
 i32 CGameLevel::SetCoordExtents(i32 w, i32 h) {
     m_planeCtx.minX = 0;
@@ -616,16 +621,29 @@ i32 CGameLevel::SetCoords(LevelCoordRect* coords) {
 // references the retail tables by address (reloc-masked DIR32). NOTE: retail
 // invokes Parse unconditionally - even when the allocation failed and the
 // pointer is null - so the deref is written without a guard, matching the bytes.
+// The engine routes object allocation through the Rez heap (RezAlloc @0x1b9b46 =
+// nothrow operator new / RezFree @0x1b9b82). ReadImageSet `new`s its variants
+// through RezAlloc, so each class models it as the class allocator: `new CImageSetN`
+// emits a direct `push size; call RezAlloc` instead of the global `??2`.
+extern "C" void* RezAlloc(u32 size); // 0x1b9b46
+extern "C" void RezFree(void* p);    // 0x1b9b82
+
 // The three CImageSet variants the factory allocates. Each is a non-polymorphic
 // shell whose INLINE ctor manually stamps the matching external vftable (and
 // zeroes its count/cursor fields), so `new CImageSetN` lowers to exactly the
-// retail `operator new(size); if (p) { stamp }` shape - the allocation result
+// retail `RezAlloc(size); if (p) { stamp }` shape - the allocation result
 // stays in eax across the field stores, then folds into the shared merge. The
 // padding pins each size: kind 1 = 0x10, kind 2 = 0x24, kind 3 = 0x18.
 struct CImageSet1 {
     CImageSet1() {
         *(void**)this = &g_imageSet1Vtbl;
         m_04 = 0;
+    }
+    void* operator new(size_t n) {
+        return RezAlloc((u32)n);
+    }
+    void operator delete(void* p) {
+        RezFree(p);
     }
     void DtorBase();         // 0x161370  base-subobject dtor (vtable restamp)
     i32 Parse(void* record); // 0x166d40  vtbl slot +0x14
@@ -638,6 +656,12 @@ struct CImageSet2 {
     CImageSet2() {
         *(void**)this = &g_imageSet2Vtbl;
         m_04 = 0;
+    }
+    void* operator new(size_t n) {
+        return RezAlloc((u32)n);
+    }
+    void operator delete(void* p) {
+        RezFree(p);
     }
     i32 Parse(void* record); // 0x166990  vtbl slot +0x14
     void* m_vtbl;            // +0x00
@@ -655,6 +679,12 @@ struct CImageSet3 {
         *(void**)this = &g_imageSet3Vtbl;
         m_04 = 0;
         m_14 = 0;
+    }
+    void* operator new(size_t n) {
+        return RezAlloc((u32)n);
+    }
+    void operator delete(void* p) {
+        RezFree(p);
     }
     i32 Parse(void* record); // 0x166d70  vtbl slot +0x14
     void* m_vtbl;            // +0x00
@@ -685,13 +715,13 @@ CImageSet* CGameLevel::ReadImageSet(void* record) {
             return 0;
     }
 
-    if (set->Parse(record) != 0) {
-        return set;
+    if (set->Parse(record) == 0) {
+        if (set != 0) {
+            set->Release(1);
+        }
+        return 0;
     }
-    if (set != 0) {
-        set->Release(1);
-    }
-    return 0;
+    return set;
 }
 
 // CImageSet1::DtorBase (0x161370) - the base-subobject destructor invoked by the
@@ -703,13 +733,20 @@ void CImageSet1::DtorBase() {
     *(void**)this = &g_severusWorkerDtorVtbl;
 }
 
-// CImageSet1::Parse (0x166d40, g_imageSet1Vtbl slot +0x14). Reads three dwords
-// from the WWD record at +0x08/+0x0c/+0x10 into m_04/m_08/m_0c and returns TRUE.
+// CImageSet1::Parse (0x166d40, g_imageSet1Vtbl slot +0x14). Copies three dwords
+// from the WWD record at +0x08.. into m_04/m_08/m_0c via an advancing source
+// pointer (retail's `add eax,8; mov (eax); add eax,4` cursor walk) and returns TRUE.
+// @early-stop
+// tail-peephole wall (same as CImageSet2/3): retail keeps the 2nd store's `add eax,4`
+// then reads the 3rd via [eax]; cl folds that advance into the 3rd's +4 displacement.
+// The advancing-cursor prologue + first read are byte-exact; the final fold is the
+// documented entropy-tail wall (docs/patterns/header-fields-through-cursor-not-index.md).
 RVA(0x00166d40, 0x24)
 i32 CImageSet1::Parse(void* record) {
-    m_04 = *(i32*)((char*)record + 0x08);
-    m_08 = *(i32*)((char*)record + 0x0c);
-    m_0c = *(i32*)((char*)record + 0x10);
+    i32* p = (i32*)((char*)record + 8);
+    m_04 = *p++;
+    m_08 = *p++;
+    m_0c = *p++;
     return 1;
 }
 
@@ -1451,9 +1488,11 @@ struct VisitCtx {
 // every Sync/Draw/Hook receives; `ctx` (2nd param) owns the chain.
 //
 // @early-stop
-// register-scheduling wall (~86%): the interleaved object-chain walk + per-plane Sync
-// loop pins ebp/esi/ebx across calls in an order MSVC reproduces only for one spilling
-// of the chain cursor; logic + offsets + CFG are exact. Deferred to the final sweep.
+// register-scheduling wall (~92%): the inner draw-gate branch polarity now matches
+// retail (`if (depth < cap) Draw; else block` -> jge block, Draw fall-through). Residue
+// is the chain cursor's saved-reg shuffle - retail keeps a 2nd copy of `cur` in edx and
+// reloads `cap` from spill each iteration; cl keeps cap live in edx and restores via the
+// surviving eax. Logic + offsets + CFG exact; allocator coin-flip. Deferred to the final sweep.
 RVA(0x0015dc90, 0x141)
 void CGameLevel::VisitVisible(void* visitor, i32 ctx) {
     VisitCtx* c = (VisitCtx*)ctx;
@@ -1474,11 +1513,11 @@ void CGameLevel::VisitVisible(void* visitor, i32 ctx) {
                     ObjNode* cur = node;
                     node = node->next;
                     ObjPayload* pl = cur->obj;
-                    if (pl->depth >= cap) {
+                    if (pl->depth < cap) {
+                        pl->Draw((i32)visitor);
+                    } else {
                         node = cur;
                         blocked = 1;
-                    } else {
-                        pl->Draw((i32)visitor);
                     }
                 }
                 ((LevelPlane*)m_planes.GetData()[i])->Sync((i32)visitor);

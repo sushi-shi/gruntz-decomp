@@ -215,7 +215,7 @@ fonts	2	1
 fxmodet3	1	0
 gameapp	20	16
 gamekeyhandler	1	0
-gamelevel	60	24
+gamelevel	60	25
 gamemode	44	21
 gamemodeobjlifecycle	4	3
 gameobjectctors	8	4
@@ -2152,7 +2152,7 @@ gamelevel	?AdvanceB@CGameLevel@@AAEHPAXHHH@Z	92.2241	92.2241	1	ac1c98577426	0x15
 gamelevel	?AltStepValidate@CGameLevel@@AAEHPAX0HHPAHH@Z	71.9054	71.9054	1	7c1fc1ee8711	0x15fe40
 gamelevel	?ApplyScroll@CGameLevel@@SGHPAV1@HHH@Z	94.7826	94.7826	3	ad3d2c3f3167	0x167130
 gamelevel	?AxisProbe@CGameLevel@@AAEHHH@Z	99.8667	99.8667	1	eed79d5e847e	0x161270
-gamelevel	?BroadPhase@CGameLevel@@QAEHPAUScrollTarget@@HH@Z	72.0896	72.0896	1	23fce0a2a0c4	0x167ea0
+gamelevel	?BroadPhase@CGameLevel@@QAEHPAUScrollTarget@@HH@Z	71.9552	71.9552	1	23fce0a2a0c4	0x167ea0
 gamelevel	?BuildAllPlanes@CGameLevel@@QAEXPAULevelCoordRect@@@Z	100.0000	100.0000	1	f9a8f0e1ee87	0x15da80
 gamelevel	?ClampScroll@CGameLevel@@QAEHPAXHHH@Z	70.7413	70.7413	3	3f62b93aa933	0x15de40
 gamelevel	?ClampSpan@CGameLevel@@AAEHHHPAH0@Z	99.8305	99.8305	1	2ca0e3403535	0x15ffe0
@@ -2166,7 +2166,7 @@ gamelevel	?EditSwitch@CGameLevel@@QAEHPAXHHH@Z	88.8440	88.8440	2	0ff29dc02c1a	0x
 gamelevel	?FindPlaneByName@CGameLevel@@QAEPAVCPlane@@PBD@Z	100.0000	100.0000	2	7baff22dc335	0x15dde0
 gamelevel	?FreeMove@CGameLevel@@AAEHPAXHHH@Z	80.8200	80.8200	1	3fb3107bd23b	0x15eb00
 gamelevel	?GetClassId@CGameLevel@@QAEHXZ	100.0000	100.0000	1	777905dbee18	0x1611b0
-gamelevel	?HoldMove@CGameLevel@@AAEHPAXHHHH@Z	90.3953	90.3953	1	5c4b4f1637f9	0x15ff20
+gamelevel	?HoldMove@CGameLevel@@AAEHPAXHHHH@Z	90.3837	90.3837	1	5c4b4f1637f9	0x15ff20
 gamelevel	?IsLoaded@CGameLevel@@QAEHXZ	100.0000	100.0000	1	1cf4b7c05d14	0x161190
 gamelevel	?LoadFromFile@CGameLevel@@QAEHPBD@Z	100.0000	100.0000	1	69e64dfc7d35	0x15d500
 gamelevel	?LoadFromSource@CGameLevel@@QAEHPAURemusParseSource@@@Z	100.0000	100.0000	1	70a85ae50bfb	0x15d630
@@ -2176,12 +2176,12 @@ gamelevel	?MainPlaneNotify@CGameLevel@@QAEXXZ	100.0000	100.0000	1	1ec3fdb6a110	0
 gamelevel	?MainPlaneQueryA@CGameLevel@@QAEHXZ	100.0000	100.0000	2	1edf44538004	0xcedf0
 gamelevel	?MainPlaneQueryB@CGameLevel@@QAEHXZ	100.0000	100.0000	2	306d171e8aab	0xcee10
 gamelevel	?NotifyAllPlanes@CGameLevel@@QAEXXZ	100.0000	100.0000	2	98dad37498b1	0x160f40
-gamelevel	?Parse@CImageSet1@@QAEHPAX@Z	60.0000	60.0000	1	68fe32ecebfa	0x166d40
+gamelevel	?Parse@CImageSet1@@QAEHPAX@Z	86.6667	86.6667	2	c5d7b0d2c283	0x166d40
 gamelevel	?Parse@CImageSet2@@QAEHPAX@Z	94.0741	94.0741	1	4652c32a2aa9	0x166990
 gamelevel	?Parse@CImageSet3@@QAEHPAX@Z	88.6441	88.6441	1	38c52f2968a8	0x166d70
 gamelevel	?PointInBounds@CGameLevel@@SAHPBULevelCoordRect@@HH@Z	100.0000	100.0000	1	39a2c37836c8	0x6b330
 gamelevel	?ProbeColumn@CGameLevel@@QAEHPAXH@Z	92.5641	92.5641	1	21fc5b1c7238	0x160980
-gamelevel	?ReadImageSet@CGameLevel@@AAEPAVCImageSet@@PAX@Z	68.0137	68.0137	4	2da1b330c9e0	0x15d820
+gamelevel	?ReadImageSet@CGameLevel@@AAEPAVCImageSet@@PAX@Z	100.0000	100.0000	5	d4a58a9b55e6	0x15d820
 gamelevel	?RecomputePlaneCoords@PlaneGeom@@QAEXXZ	97.0640	97.0640	3	febf93030b44	0x161c90
 gamelevel	?ReleaseChildren@CGameLevel@@QAEXXZ	100.0000	100.0000	2	9272a3b33822	0x15d680
 gamelevel	?ScalarDtor@CGameLevel@@QAEPAXI@Z	100.0000	100.0000	3	6b39bf2d7776	0x1611c0
@@ -2203,7 +2203,7 @@ gamelevel	?StepAxisLo@CGameLevel@@AAEHPAXHHPAHH@Z	82.6949	82.6949	1	6d948b316f4c
 gamelevel	?SyncAfterMainIndex@CGameLevel@@QAEXH@Z	100.0000	100.0000	1	9a13d0c85396	0x15db00
 gamelevel	?SyncToMainIndex@CGameLevel@@QAEXH@Z	100.0000	100.0000	1	cf4c78a48dfb	0x15dad0
 gamelevel	?Unload@CGameLevel@@QAEHXZ	100.0000	100.0000	2	a70b4b542fca	0x15d1f0
-gamelevel	?VisitVisible@CGameLevel@@QAEXPAXH@Z	87.3206	87.3206	3	3b56c9d6b2ae	0x15dc90
+gamelevel	?VisitVisible@CGameLevel@@QAEXPAXH@Z	92.3282	92.3282	4	acf0ef92366c	0x15dc90
 gamelevel	?WalkColumnDown@CGameLevel@@QAEHPAXH@Z	92.7579	92.7579	1	fbf2cbdeb4cd	0x160a40
 gamemode	??0CState@@QAE@XZ	100.0000	100.0000	4	a1d9fd8bca62	0x8c750
 gamemode	??1CBootyState@@UAE@XZ	100.0000	100.0000	1	899f9930b960	0x8d440
