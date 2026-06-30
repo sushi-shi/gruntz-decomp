@@ -102,6 +102,12 @@ its body stays — a **complete, correct reconstruction** (this is NOT a half-wr
 is the *byte-match* that is parked, not the logic. Record that so the method is not mistaken for a
 finished 100% match: an `// @early-stop` marker line directly above its `RVA()`, with the reason
 (the wall / blocker / what is left) on the next comment line. No `%` — the baseline tracks that.
+Follow **`docs/wall-instructions.md`** (the matcher doctrine in reverse): name the wall MECHANISM
+at the assembly level (regalloc/spill recolor, frame-size shift, vptr-stamp position, shrink-wrap
+pushes, tail-merge, demangled-vs-mangled reloc-name mismatch, …) verified with `llvm-objdump -dr`,
+and when a % moved because of an UNRELATED change (a neighbor in the same aggregate TU, a
+shared-base edit), record that trigger too — so the next worker `@early-stop`s on recognition
+instead of re-grinding.
 
     // @early-stop
     // regalloc wall — MSVC pins the loop counter in edi; see docs/patterns/regalloc-zero-pin.md

@@ -89,6 +89,17 @@ In short (full rules in the two agent docs):
    print the ledger (`fn -> result -> commit`) + a regressions summary. **Leave the
    `matcher-N` worktrees in place** so the next run reuses their build state; `git worktree
    remove` only if the user asks.
+6. **Phase 2 — improve general % toward 100% (only AFTER step 5 is fully dry).** Once
+   `@stub`→0 and `(unmatched)`→0, re-attack the deferred walls to drive the whole engine to
+   byte-exact. Worklist: `rg '@early-stop' src` — each carries its asm-level wall reason per
+   **`docs/wall-instructions.md`**, so concentrate on the RECOVERABLE walls (e.g. re-home an
+   aggregate body that knocked a neighbor off 100% into its own unit; fix a pipeline reloc-name
+   artifact) and skip the genuinely-unsteerable. Keep going until the match reaches 100%. Do
+   NOT start this phase while any stub/unmatched remains — stubs/unmatched come first.
+
+Wall doctrine: when a matcher (or you, integrating) sees a % move — up OR down — from an
+UNRELATED change, document the trigger + the assembly-level mechanism per `docs/wall-instructions.md`.
+That corpus is what makes Phase 2 (and every `@early-stop`) fast and evidence-based.
 
 Keep your context SMALL: hold only the ledger — never pull a matcher's disassembly,
 diffs, or source into this session beyond the file(s) you integrate.
