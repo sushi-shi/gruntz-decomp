@@ -101,29 +101,28 @@ CBattlezDlg::~CBattlezDlg() {}
 // ---------------------------------------------------------------------------
 // Small CImageList-holder helper hierarchy compiled into the dialogs TU (its code
 // lands between the CBattlezDlg ctor and CBattlezDlgCustom). A trivial CObject-ish
-// base whose dtor only restamps the shared base dtor-vtable @0x5e8cb4, and a derived
-// holder (vtable @0x5e8cd4) that owns a CImageList the dtor frees. The class names
-// are placeholders (only offsets + code bytes are load-bearing). Both vtables are
-// referenced by ADDRESS (reloc-masked DATA externs), so the manual vptr stores pair.
+// grand-base (vtable @0x5e8cb4) whose out-of-line destructor is the standalone
+// base-vptr stamp the binary keeps at 0x16410, and a derived holder (vtable
+// @0x5e8cd4) that owns a CImageList its dtor frees. The class names are placeholders
+// (only offsets + code bytes are load-bearing). Real-virtual model (twin of
+// CHolder8c400 in BoundaryLowerDtors.cpp): NO manual `*(void**)this = &g_*Vtbl`
+// store, NO g_*Vtbl extern - cl emits the implicit ??_7 stamps, which reloc-mask.
 // ---------------------------------------------------------------------------
-DATA(0x001e8cb4)
-extern void* g_imgHolderBaseVtbl; // 0x5e8cb4  shared CObject-ish base dtor-vtable
 
-// CImgHolderBase - the polymorphic CObject-ish base with an EMPTY non-trivial
-// virtual dtor: MSVC emits ONLY the implicit base-vptr re-stamp for it, which folds
-// in as the LAST store of ~CImgHolder (the retail stamp-after-teardown order), and
-// the empty body still earns the leaf's /GX EH frame. The RestampBase_16410 entry is
-// the standalone 7-byte vptr-set the binary keeps at 0x16410 (the same store, out of
-// line). The emitted ??_7CImgHolderBase reloc-masks against the shared 0x5e8cb4 stamp.
+// CImgHolderBase - the polymorphic CObject-ish grand-base. Its EMPTY virtual dtor
+// folds in as the LAST store of ~CImgHolder (retail's stamp-after-teardown order)
+// and, being virtual, is ALSO emitted standalone: the 7-byte `mov [ecx],&??_7; ret`
+// the binary keeps at 0x16410 (the ??_7CImgHolderBase reloc-masking the shared
+// 0x5e8cb4 vtable). The non-trivial base subobject earns the leaf's /GX EH frame.
+// Real-virtual model: cl emits the implicit grand-base re-stamp - no manual
+// `*(void**)this = &g_*Vtbl`; RVA() pins the cl-emitted ??1 standalone to 0x16410.
+// (Keeping the dtor INLINE is what makes ~CImgHolder fold its teardown; an
+// out-of-line base dtor would instead emit a `call ??1CImgHolderBase` and break the
+// fold.)
 struct CImgHolderBase {
-    void RestampBase_16410();    // 0x016410
-    virtual ~CImgHolderBase() {} // empty; cl emits the implicit grand-base re-stamp
+    RVA(0x00016410, 0x7)
+    virtual ~CImgHolderBase() {}
 };
-
-RVA(0x00016410, 0x7)
-void CImgHolderBase::RestampBase_16410() {
-    *(void**)this = &g_imgHolderBaseVtbl;
-}
 
 // CImgHolder - the derived holder. Its virtual dtor's implicit vptr stamp lands
 // stamp-first, frees the embedded image list (CImageList::DeleteImageList @0x1c6a5c,

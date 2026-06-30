@@ -1591,6 +1591,7 @@ dialogs	??0CMultiStartDlg@@QAE@HPAVCWnd@@@Z	100.0000	100.0000	5	a71396cbe887	0xc
 dialogs	??1CBattlezDlg@@UAE@XZ	94.4444	94.4444	1	7ed27cb65fc2	0x14c90
 dialogs	??1CBattlezDlgCustom@@UAE@XZ	94.4444	94.4444	1	8ef41d520506	0x17140
 dialogs	??1CImgHolder@@UAE@XZ	100.0000	100.0000	1	b1f5658a71a2	0x16500
+dialogs	??1CImgHolderBase@@UAE@XZ	100.0000	100.0000	1	6702ee052eb6	0x16410
 dialogs	??1CMultiStartDlg@@UAE@XZ	95.6522	95.6522	1	d0a639c25288	0xb8960
 dialogs	?ApplyOption0@CBattlezDlg@@QAEXXZ	100.0000	100.0000	1	a2649603d299	0x15de0
 dialogs	?ApplyOption1@CBattlezDlg@@QAEXXZ	100.0000	100.0000	1	4ca2816e5f53	0x15e60
@@ -1609,7 +1610,6 @@ dialogs	?GetMessageMap@CBattlezDlgColors@@QAEPBXXZ	100.0000	100.0000	1	8bb5f517f
 dialogs	?GetMessageMap@CCheckpointDlg@@QAEPBXXZ	100.0000	100.0000	1	a1a3e649e0c1	0x23570
 dialogs	?InitPlayerSlots@CMultiStartDlg@@QAEXXZ	0.1294	0.1294	2	460bc8e04d05	0xc20a0
 dialogs	?ReadCtrlBText@CBattlezDlg@@QAEXH@Z	69.1389	69.1389	1	6df8807040af	0x17340
-dialogs	?RestampBase_16410@CImgHolderBase@@QAEXXZ	100.0000	100.0000	1	77e1b4009894	0x16410
 dialogs	?SetCtrlBText@CBattlezDlg@@QAEXHPBD@Z	100.0000	100.0000	2	3b905b2c10b8	0x15db0
 dialogs	?SetSlotValue@CBattlezDlg@@QAEHHH@Z	100.0000	100.0000	2	b1675baacc7b	0x17460
 dialogs	?ShowMultiStartDlg@CNetMgrLite@@QAEHXZ	81.3566	81.3566	1	06e6521fdf90	0xb86c0
