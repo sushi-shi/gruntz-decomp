@@ -149,12 +149,31 @@ void operator delete(void*);
 // External, reloc-masked (its /GX EH frame lives there); modeled as a tiny helper
 // so the placement-new `mov ecx,alloc; push ...; call` falls out.
 struct DSoundCloneCtor {
+    inline DSoundCloneCtor(
+        IDirectSoundBufferZ* buf,
+        DirectSoundMgr* owner,
+        DirectSoundMgr* original
+    );
+    inline void* operator new(u32);
+
     DSoundCloneCtor* Construct(
         IDirectSoundBufferZ* buf,
         DirectSoundMgr* owner,
         DirectSoundMgr* original
     ); // 0x136180
 };
+
+inline DSoundCloneCtor::DSoundCloneCtor(
+    IDirectSoundBufferZ* buf,
+    DirectSoundMgr* owner,
+    DirectSoundMgr* original
+) {
+    Construct(buf, owner, original);
+}
+
+inline void* DSoundCloneCtor::operator new(u32) {
+    return ::operator new(0x58);
+}
 
 // ---------------------------------------------------------------------------
 // DirectSoundMgr::RestampBufferVtbl (__thiscall). Single store of the buffer
@@ -606,32 +625,19 @@ DirectSoundMgr::~DirectSoundMgr() {
 }
 
 // ---------------------------------------------------------------------------
-// DirectSoundMgr::Clone (__thiscall, ret 0x4 => 1 arg). Gated on owner init. new's
-// a 0x58-byte clone instance, constructs it (clone ctor 0x136180 chaining the base
+// DirectSoundMgr::Clone (__thiscall, ret 0x4 => 1 arg). Gated on owner init.
+// Constructs a 0x58-byte clone instance (clone ctor 0x136180 chaining the base
 // ctor with this->m_buffer / this->m_owner and recording the original=this), then
 // asks the owner's IDirectSound device to DuplicateSoundBuffer this->m_buffer into
 // the clone's m_buffer; on failure reports via GetErrorString(0x217) and returns 0.
 // On success links the clone's anchor (m_node44) into this->m_cloneHead list,
-// stamps the play key (clone->m_50) and returns the clone. A /GX EH frame wraps the
-// new+ctor (the [esp+0x14] 0/-1 stores are the construction-in-flight trylevel).
-// @early-stop
-// RezAlloc/new-with-ctor-in-flight EH-frame wall (docs/patterns/rezalloc-placement-
-// new-no-eh-frame.md): the body (new, clone ctor, DuplicateSoundBuffer, the
-// neg/sbb/neg HRESULT bool, GetErrorString report, list-insert + m_50 store) is
-// byte-exact, but MSVC5's placement-new path cannot reproduce retail's
-// construction-in-flight /GX trylevel frame the real `new DSoundClone(...)` emits.
-// Same wall as SoundDevice::CreateBuffer (0x1366f0). Defer to the final sweep once
-// the clone ctor is modeled and a real `new T` allocator path emits the frame.
+// stamps the play key (clone->m_50) and returns the clone.
 RVA(0x00135c20, 0xf6)
 DirectSoundMgr* DirectSoundMgr::Clone(i32 a) {
     if (m_owner->m_initialized == 0) {
         return 0;
     }
-    void* raw = operator new(0x58);
-    DSoundCloneCtor* clone = 0;
-    if (raw != 0) {
-        clone = ((DSoundCloneCtor*)raw)->Construct(m_buffer, m_owner, (DirectSoundMgr*)this);
-    }
+    DSoundCloneCtor* clone = new DSoundCloneCtor(m_buffer, m_owner, (DirectSoundMgr*)this);
     if (clone == 0) {
         return 0;
     }
