@@ -944,7 +944,7 @@ public:
 };
 class CImageSurfaceItemInit {
 public:
-    CImageSurfaceItemInit() {
+    inline CImageSurfaceItemInit() {
         *(void**)this = &g_fileImageVtbl;
         *(i32*)((char*)this + 0x08) = 0;
         *(i32*)((char*)this + 0x0c) = 0;
