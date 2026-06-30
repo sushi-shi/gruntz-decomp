@@ -68,6 +68,15 @@ In short (full rules in the two agent docs):
    as `match: <fn> -> <result>` with the Co-Authored-By trailer — **always include the
    build-refreshed `README.md` stats block in that commit** (`gruntz build` regenerates it;
    never skip or batch-away the refresh, so README always matches HEAD). One matcher = one commit.
+   **ALWAYS integrate the matcher's banked work — never hold or revert for a small net-exact
+   regression.** When a body added to a shared aggregate TU (e.g. `engine_label_stubs`/`All.cpp`)
+   reshuffles neighbors and knocks one off 100% (aggregate codegen-leak), still integrate it and
+   `gruntz status update --accept-regressions`. The **best-%/Fuzzy Max** baseline column retains
+   each function's prior high, so nothing is truly lost — that metric exists precisely to capture
+   these cases. **Net % movement (recovering such neighbor regressions, usually by re-homing the
+   new body out of the shared aggregate into its own unit) is deferred to the end-of-campaign
+   final sweep, once ALL functions are reconstructed.** Note the regression in the commit message;
+   reconstructing/banking a stub body takes priority over protecting a neighbor's current exactness.
    Never integrate two at once (one `build/`, one HEAD). **Refill immediately:**
    `git -C .claude/worktrees/matcher-N reset --hard main` (its `build/` survives), pick
    the next target, dispatch.
