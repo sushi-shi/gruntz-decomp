@@ -2294,7 +2294,7 @@ grunt	?ClaimSwitchTile@CGrunt@@QAEHXZ	61.6336	61.6336	1	564a86c19254	0x52c70
 grunt	?ClearAllSprites@CGrunt@@QAEXXZ	100.0000	100.0000	2	ab523f1f3a12	0x4b240
 grunt	?ClearSubA@CGrunt@@QAEXXZ	100.0000	100.0000	1	85ac452dc9a6	0x57c10
 grunt	?ClearSubB@CGrunt@@QAEXXZ	100.0000	100.0000	1	02f416174db0	0x57ce0
-grunt	?CommitArrival@CGrunt@@QAEHXZ	56.7885	56.7885	3	a969605d2819	0x4b130
+grunt	?CommitArrival@CGrunt@@QAEHXZ	56.7885	56.7885	4	5ade8549691c	0x4b130
 grunt	?CommitNeighbor@CGrunt@@QAEHHHHH@Z	91.2633	91.2633	1	128046fac238	0x5b050
 grunt	?ComputeFacing@CGrunt@@QAEXN@Z	88.2727	88.2727	3	9769abac8cd6	0x57060
 grunt	?ConsiderArrival@CGrunt@@QAEXH@Z	83.7667	83.7667	1	a0b86c2279d8	0x52f40
@@ -2314,7 +2314,7 @@ grunt	?FindGridNeighbor@CGrunt@@QAEPAV1@H@Z	100.0000	100.0000	3	61dd38cb1b46	0x5
 grunt	?FinishEntranceMove@CGrunt@@QAEHXZ	100.0000	100.0000	1	a2a92c839b90	0x69fd0
 grunt	?FreeNameList@CGrunt@@QAEXXZ	76.9512	76.9512	2	2e3438eb07ba	0x48360
 grunt	?GetTilePos@CGrunt@@QAEPAUGruntTilePos@@PAU2@@Z	85.3000	85.3000	1	995269eb1311	0x31c70
-grunt	?GruntInRadius@CGrunt@@QAEHHH@Z	35.7143	35.7143	2	b9c8261e66de	0x67b00
+grunt	?GruntInRadius@CGrunt@@QAEHHH@Z	83.4694	83.4694	3	792deeebe86b	0x67b00
 grunt	?InitDirVectors@CGrunt@@QAEXXZ	37.3394	37.3394	2	4fcfcf14ed6b	0x5caa0
 grunt	?Load@CGrunt@@QAEHPAVCGruntArchive@@@Z	87.2286	87.2286	1	f698d71b679c	0xd8060
 grunt	?LoadAnimNameTable@CGrunt@@QAEXHH@Z	75.9312	75.9312	3	f341d57d748b	0x49c60
@@ -2327,8 +2327,8 @@ grunt	?PlayMoveSound@CGrunt@@QAEXHH@Z	100.0000	100.0000	1	aa803a2a8575	0x511b0
 grunt	?PlayMoveSoundAtTile@CGrunt@@QAEXHH@Z	100.0000	100.0000	1	a7adfdf5dae3	0x514e0
 grunt	?PlaySound@CGrunt@@QAEXHUCGruntVoiceRec@@@Z	62.4901	62.4901	1	a2a2cfd991e5	0x4ac10
 grunt	?ReadConfigFromButeMgr@CGrunt@@QAEXXZ	96.8421	96.8421	5	39bb0fe6f60a	0x48400
-grunt	?RearmAttackAnim2@CGrunt@@QAEHXZ	79.2745	79.2745	1	b332a973991f	0x61bc0
-grunt	?RearmAttackAnim@CGrunt@@QAEHHH@Z	55.5420	55.5420	1	7230a3c88ee7	0x61940
+grunt	?RearmAttackAnim2@CGrunt@@QAEHXZ	79.2941	79.2941	2	373788b79a8a	0x61bc0
+grunt	?RearmAttackAnim@CGrunt@@QAEHHH@Z	55.5420	55.5420	2	dbbb6d7852b6	0x61940
 grunt	?RearmEntranceDrop@CGrunt@@QAEXXZ	88.8646	88.8646	2	d64979f40a7e	0x68370
 grunt	?RectContains@CGrunt@@QAEHHH@Z	63.0081	63.0081	1	490b1e26e8f0	0x51850
 grunt	?RectContainsGated@CGrunt@@QAEHHH@Z	63.5433	63.5433	1	e41d77906d32	0x51a20

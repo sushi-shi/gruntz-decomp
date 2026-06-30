@@ -2777,17 +2777,17 @@ void CGrunt::ComputeFacing(double dt) {
 }
 
 // @early-stop
-// reloc-masked-extern plateau: logic + CFG + every member store byte-exact, but
-// the 8 engine this-calls (NotifyArrival, ArrivalClaim, 6 ArrivalHooks) are
-// unnamed externals, so their `call rel32` displacements pair to differently
-// named retail thunks and score fuzzy. Resolving each thunk to its real fn is a
-// final-sweep task (the whole referent set must be named for exact).
+// identical-return-epilogue-tailmerge wall (docs/patterns/): the m_arrived early
+// `return 1;` and the trailing `return 1;` are identical epilogues - retail inlines
+// both (je body; mov eax,1;ret), our cl tail-merges to one shared tail. Logic + CFG
+// + member stores byte-exact; the six per-arrival calls are the real HUD creators and
+// SetEntrancePos. Residual = the tail-merge + the one unnamed tile-mgr notify call.
 // CGrunt::CommitArrival() @0x4b130 - finalizes the grunt's arrival on its tile.
 // If already arrived (m_arrived) returns 1 immediately. Otherwise, if not yet
 // claimed (m_tileClaimed==0): in alt-mode (registry m_134==2) it just notifies the tile
 // owner; else it seeds the arrival defender block (m_308/m_310/.., m_tileClaimed, m_arrivalState,
-// m_arrivalFlags &= mask) and claims the tile. Then runs the six per-arrival hooks and
-// latches m_arrived=1.
+// m_arrivalFlags &= mask) and records the entrance pos. Then runs the six HUD sprite
+// creators and latches m_arrived=1.
 RVA(0x0004b130, 0xc8)
 i32 CGrunt::CommitArrival() {
     if (m_arrived != 0) {
@@ -2805,15 +2805,15 @@ i32 CGrunt::CommitArrival() {
             m_tileClaimed = 0;
             m_arrivalState = 0;
             m_arrivalFlags = flags;
-            ArrivalClaim(1, 1);
+            SetEntrancePos(1, 1);
         }
     }
-    ArrivalHook0();
-    ArrivalHook1();
-    ArrivalHook2();
-    ArrivalHook3();
-    ArrivalHook4();
-    ArrivalHook5();
+    CreateSelectedSprite();
+    CreateHealthSprite();
+    CreateToySprite();
+    CreateStaminaSprite();
+    CreateToyTimeSprite();
+    CreateWingzTimeSprite();
     m_arrived = 1;
     return 1;
 }
@@ -5621,7 +5621,7 @@ i32 CGrunt::RearmAttackAnim(i32 col, i32 row) {
     i32 idx2 = base + base * 12;
     char* buf = GruntStrGetBuffer((char*)this + idx2 * 8 + 0x468, 0);
     m_154->SetAnimFrame(buf, frame);
-    m_neighborValid = 1;
+    *(i32*)((char*)this + 0x214) = 1;
     return 0;
 }
 
@@ -5657,7 +5657,7 @@ i32 CGrunt::RearmAttackAnim2() {
     i32 idx2 = base + base * 12;
     char* buf = GruntStrGetBuffer((char*)this + idx2 * 8 + 0x468, 0);
     m_154->SetAnimFrame(buf, frame);
-    m_neighborValid = 1;
+    *(i32*)((char*)this + 0x214) = 1;
     return 0;
 }
 
@@ -5733,35 +5733,30 @@ i32 __stdcall CGrunt_SegBoxOverlap(GruntBox* p, GruntSegEnd* e1, GruntSegEnd* e2
 // state 0x36), then test whether the squared tile-distance from this grunt's HUD
 // tile to it is within the (this->m_298 + that->m_2dc)^2 radius-sum threshold.
 //
+// Shared return-0 tail: the 3 gates collapse into one `&&` chain so each lowers to
+// `test;je <tail>` against the single trailing `return 0;` (docs/patterns/
+// homogeneous-predicate-chain-and-shared-tail.md) instead of inlining 3 epilogues -
+// CFG + tail now byte-exact (35%->83%).
 // @early-stop
-// load-result register coin-flip (docs/patterns/select-zero-mask-dest-register family):
-// the base disasm is byte-identical to retail (CFG, all 3 gates, the 15*col+row index,
-// the >>5 tile math, the dx*dx+dy*dy, the abs() cdq/xor/sub idiom, the radius-sum
-// compare/setl) EXCEPT the resolved `other` pointer lands in edx where retail reuses
-// the index register eax, cascading the edx/eax pairing through every following
-// operand. Source-invariant (reorder / typed-grid / inline all keep edx). Deferred.
+// load-result register coin-flip: the resolved `other` lands in edx where retail
+// reuses the dead index reg eax (`mov eax,[edx+eax*4+0x1c]`), cascading the edx/eax
+// pairing through the m_17c/m_180 loads. Source-invariant on a leaf (reorder /
+// grid-base-first / typed-grid all keep edx). Deferred to the final sweep.
 RVA(0x00067b00, 0x92)
 i32 CGrunt::GruntInRadius(i32 col, i32 row) {
     CGrunt* other = *(CGrunt**)(*(char**)((char*)this + 0x260) + (15 * col + row) * 4 + 0x1c);
-    if (other == 0) {
-        return 0;
+    if (other != 0 && *(i32*)((char*)other + 0x1fc) != 0 && *(i32*)((char*)other + 0x258) != 0x36) {
+        i32 ox = *(i32*)((char*)other + 0x17c) >> 5;
+        i32 oy = *(i32*)((char*)other + 0x180) >> 5;
+        i32 tx = *(i32*)((char*)this + 0x300) >> 5;
+        i32 ty = *(i32*)((char*)this + 0x304) >> 5;
+        i32 dx = oy - ty;
+        i32 dy = ox - tx;
+        i32 sum = *(i32*)((char*)this + 0x2dc) + *(i32*)((char*)this + 0x298);
+        i32 dist2 = abs(dx * dx + dy * dy);
+        return dist2 < sum * sum ? 1 : 0;
     }
-    if (*(i32*)((char*)other + 0x1fc) == 0) {
-        return 0;
-    }
-    if (*(i32*)((char*)other + 0x258) == 0x36) {
-        return 0;
-    }
-
-    i32 ox = *(i32*)((char*)other + 0x17c) >> 5;
-    i32 oy = *(i32*)((char*)other + 0x180) >> 5;
-    i32 tx = *(i32*)((char*)this + 0x300) >> 5;
-    i32 ty = *(i32*)((char*)this + 0x304) >> 5;
-    i32 dx = oy - ty;
-    i32 dy = ox - tx;
-    i32 sum = *(i32*)((char*)this + 0x2dc) + *(i32*)((char*)this + 0x298);
-    i32 dist2 = abs(dx * dx + dy * dy);
-    return dist2 < sum * sum ? 1 : 0;
+    return 0;
 }
 
 // ---------------------------------------------------------------------------

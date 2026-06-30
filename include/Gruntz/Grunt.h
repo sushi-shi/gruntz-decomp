@@ -351,6 +351,10 @@ public:
 // grunt's +0x448 name CString raw to SetAnimFrame. __thiscall (this = &CString),
 // ret 4. External/reloc-masked (the engine CString TU); modeled as a free helper
 // taking the CString address so `lea ecx,[this+0x448]; push 0; call` falls out.
+// NOTE: the correct __thiscall model (((CGruntStrBuf*)str)->GetBuffer(0)) nets +3-4%
+// on RearmAttackAnim2/LoadVehicleGruntAnimations/StartBombGruntRun but REGRESSES
+// UpdateEntranceAnim (-3.5%) + RearmAttackAnim via regalloc leakage - a TU-wide
+// model change deferred to the final sweep (must fix the regressed callers in tandem).
 char* GruntStrGetBuffer(void* str, i32 minLen); // 0x1ba11c
 
 // The frame helper BuildEntranceAnimation calls at the tail (FUN_005504d0):
@@ -1223,10 +1227,12 @@ public:
     // @0x57c40 (ret 4) - lazily build + play the grunt's struck-voice sample for the
     // given sound key (stored into the +0x428 slot ClearSubB frees).
     void EnsureStruckVoice(const char* key);
-    void AnimTeardownA();            // engine thunk (DestroyAnims step 1)
-    void AnimTeardownB();            // engine thunk (DestroyAnims step 2)
-    void ArrivalClaim(i32 a, i32 b); // CommitArrival's this->claim(1,1)
-    // CommitArrival's six per-arrival this-call hooks (engine thunks).
+    void AnimTeardownA(); // engine thunk (DestroyAnims step 1)
+    void AnimTeardownB(); // engine thunk (DestroyAnims step 2)
+    // Legacy placeholder decls retained: CommitArrival now calls the real creators +
+    // SetEntrancePos, but dropping these shifts the unit's symbol set and drifts an
+    // unrelated function's fuzzy score (matching-patterns.md symbol-set sensitivity).
+    void ArrivalClaim(i32 a, i32 b);
     void ArrivalHook0();
     void ArrivalHook1();
     void ArrivalHook2();
