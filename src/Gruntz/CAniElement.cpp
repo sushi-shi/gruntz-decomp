@@ -46,7 +46,7 @@ public:
 // The raw 0x34-byte frame record at allocation time (only the fields the builder
 // touches before handing off to the parser).
 struct CAniRecordInit {
-    CAniRecordInit() {
+    inline CAniRecordInit() {
         m_2c = 0;
         m_30 = 0;
         m_vptr = &g_aniRecordVtbl;
