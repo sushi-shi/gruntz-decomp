@@ -27,6 +27,12 @@ Everything runs inside `nix develop .#build` (exports `MSVC_DIR`, `DXSDK_DIR`,
 `WINEPREFIX`, and now `ninja` on PATH). Initialise the Wine prefix once with
 `scripts/gruntz/init/toolchain.py` if it has not been set up.
 
+On **native Windows** the same pipeline runs without Wine — `cl.exe`/`link.exe`
+are launched directly (the wine steps in `cc_wrap.py`/`link.py`/`init/` are
+guarded by `os.name == "nt"`). `py bootstrap_windows.py` provisions the toolchain
+and writes activate scripts in place of `nix develop`; see
+[`windows-setup.md`](windows-setup.md).
+
 ## Quick start
 
 ```sh

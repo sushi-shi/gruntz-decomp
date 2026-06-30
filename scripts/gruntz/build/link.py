@@ -41,6 +41,10 @@ REPO = next((p for p in SCRIPT_DIR.parents if (p / "flake.nix").exists()), SCRIP
 sys.path.insert(0, str(SCRIPT_DIR))
 from msdis_stub import ensure_msdis  # noqa: E402
 
+# Native Windows runs link.exe directly: no wine, no winepath, no wine-prefix
+# MSDIS100.DLL install (Windows resolves it from link.exe's dir / PATH).
+IS_WINDOWS = os.name == "nt"
+
 
 def die(msg: str) -> None:
     print(f"[link] ERROR: {msg}", file=sys.stderr)
@@ -57,11 +61,15 @@ def find_ci(d: Path, name: str):
 
 
 def winepath_w(p) -> str:
+    if IS_WINDOWS:
+        return str(Path(p).resolve())
     return subprocess.check_output(["winepath", "-w", str(Path(p).resolve())],
                                    text=True, stderr=subprocess.DEVNULL).strip()
 
 
 def ensure_wineserver() -> None:
+    if IS_WINDOWS:
+        return
     ws = shutil.which("wineserver")
     if ws:
         subprocess.run([ws, "-p"], check=False, stdin=subprocess.DEVNULL,
@@ -73,17 +81,21 @@ def run_wine(cmd, cwd, produced: Path):
     wine can leave a finished-but-unreaped grandchild holding stdio open, so log to
     a temp FILE (no pipe to block on), own process group, bounded wait."""
     timeout = float(os.environ.get("GRUNTZ_LINK_TIMEOUT", "300"))
+    popen_kw = ({"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP}
+                if IS_WINDOWS else {"start_new_session": True})
     with tempfile.TemporaryFile() as logf:
         proc = subprocess.Popen(cmd, cwd=str(cwd), stdin=subprocess.DEVNULL,
-                                stdout=logf, stderr=subprocess.STDOUT,
-                                start_new_session=True)
+                                stdout=logf, stderr=subprocess.STDOUT, **popen_kw)
         try:
             proc.wait(timeout=timeout)
             rc = proc.returncode
         except subprocess.TimeoutExpired:
             try:
-                os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
-            except (ProcessLookupError, PermissionError):
+                if IS_WINDOWS:
+                    proc.kill()
+                else:
+                    os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+            except (ProcessLookupError, PermissionError, OSError):
                 pass
             proc.wait()
             rc = 0 if produced.exists() else 1
@@ -140,14 +152,14 @@ def main() -> None:
                     help="extra link flags after `--`.")
     args = ap.parse_args()
 
-    if shutil.which("wine") is None:
+    if not IS_WINDOWS and shutil.which("wine") is None:
         die("wine not found - run inside `nix develop .#build`.")
     msvc = Path(os.environ.get("MSVC_DIR", "/tmp/gtc/msvc"))
     link = find_ci(msvc / "bin", "link.exe")
     if not link:
         die(f"link.exe not found under {msvc}/bin - run inside `nix develop .#build`.")
     prefix = os.environ.get("WINEPREFIX")
-    if not prefix:
+    if not IS_WINDOWS and not prefix:
         die("WINEPREFIX not set - run inside `nix develop .#build`.")
 
     out = Path(args.out).resolve()
@@ -161,8 +173,10 @@ def main() -> None:
     if not objs:
         die("no objects to link.")
 
-    # MSDIS100.DLL must resolve or link.exe won't even load under wine.
-    ensure_msdis(prefix, msvc, verbose=True)
+    # MSDIS100.DLL must resolve or link.exe won't even load under wine; native
+    # Windows finds it next to link.exe / on PATH, so this prefix install is wine-only.
+    if not IS_WINDOWS:
+        ensure_msdis(prefix, msvc, verbose=True)
     os.environ.setdefault("WINEDEBUG", "fixme-all,err-all")
     ensure_wineserver()
 
@@ -182,7 +196,8 @@ def main() -> None:
     rsp = out.parent / (out.stem + ".objs.rsp")
     rsp.write_text("\n".join(rsp_lines) + "\n")
 
-    output, rc = run_wine(["wine", str(link), f"@{winepath_w(rsp)}"], out.parent, out)
+    launcher = [] if IS_WINDOWS else ["wine"]
+    output, rc = run_wine([*launcher, str(link), f"@{winepath_w(rsp)}"], out.parent, out)
 
     if not out.exists():
         sys.stderr.write(f"[link] FAILED to produce {out}\n")
