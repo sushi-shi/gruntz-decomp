@@ -78,6 +78,18 @@ extern CTrigMgr* g_mgrSettings; // ?g_mgrSettings (0x64556c)
 // returning the object) and the 3 register thunks (4-arg __thiscall, returning success)
 // are reloc-masked externals reached through the incremental-link thunk table.
 struct CTrigLogic {
+    struct Ctor3206Tag {};
+    struct Ctor3eb3Tag {};
+    struct Ctor4192Tag {};
+    struct Ctor2db5Tag {};
+    struct Ctor332dTag {};
+    struct Ctor2f72Tag {};
+    struct Ctor43b3Tag {};
+    struct Ctor2c3eTag {};
+    struct Ctor18deTag {};
+    struct Ctor310cTag {};
+    struct Ctor2a4fTag {};
+
     i32 m_00;   // +0x00
     void* m_04; // +0x04  type id
     i32 m_08;   // +0x08  (id 21: board x)
@@ -102,6 +114,54 @@ struct CTrigLogic {
     i32 Reg277f(void* r, i32 k, i32 a2, i32 a3); // 0x277f (ids 1..8)
     i32 Reg1abe(void* r, i32 k, i32 a2, i32 a3); // 0x1abe (ids 21,23..26)
     i32 Reg1d39(void* r, i32 k, i32 a2, i32 a3); // 0x1d39 (id 22)
+};
+
+struct CTrigLogic8c : public CTrigLogic {
+    inline CTrigLogic8c(CTrigLogic::Ctor3206Tag) {
+        Ctor3206();
+    }
+    inline CTrigLogic8c(CTrigLogic::Ctor3eb3Tag) {
+        Ctor3eb3();
+    }
+    inline CTrigLogic8c(CTrigLogic::Ctor4192Tag) {
+        Ctor4192();
+    }
+    inline CTrigLogic8c(CTrigLogic::Ctor2db5Tag) {
+        Ctor2db5();
+    }
+    inline CTrigLogic8c(CTrigLogic::Ctor332dTag) {
+        Ctor332d();
+    }
+    inline CTrigLogic8c(CTrigLogic::Ctor2f72Tag) {
+        Ctor2f72();
+    }
+
+    char m_sizePad[0x8c - 0x74];
+};
+
+struct CTrigLogic9c : public CTrigLogic {
+    inline CTrigLogic9c(CTrigLogic::Ctor43b3Tag) {
+        Ctor43b3();
+    }
+    inline CTrigLogic9c(CTrigLogic::Ctor18deTag) {
+        Ctor18de();
+    }
+    inline CTrigLogic9c(CTrigLogic::Ctor310cTag) {
+        Ctor310c();
+    }
+    inline CTrigLogic9c(CTrigLogic::Ctor2a4fTag) {
+        Ctor2a4f();
+    }
+
+    char m_sizePad[0x9c - 0x74];
+};
+
+struct CTrigLogicC8 : public CTrigLogic {
+    inline CTrigLogicC8(CTrigLogic::Ctor2c3eTag) {
+        Ctor2c3e();
+    }
+
+    char m_sizePad[0xc8 - 0x74];
 };
 
 // The factory container (this): the built object's owner; id 21 latches the object
@@ -169,52 +229,31 @@ void* CTileTriggerFactory::Build(CTrigReader* reader, i32 kind, i32 a2, i32 a3) 
         case 1:
         case 2:
         case 5: {
-            CTrigLogic* obj = (CTrigLogic*)::operator new(0x8c);
-            if (obj) {
-                obj = obj->Ctor3206();
-            }
+            CTrigLogic* obj = new CTrigLogic8c(CTrigLogic::Ctor3206Tag());
             return Reg277fTail(this, obj, reader, a2, a3, id);
         }
         case 3: {
-            CTrigLogic* obj = (CTrigLogic*)::operator new(0x8c);
-            if (obj) {
-                obj = obj->Ctor3eb3();
-            }
+            CTrigLogic* obj = new CTrigLogic8c(CTrigLogic::Ctor3eb3Tag());
             return Reg277fTail(this, obj, reader, a2, a3, id);
         }
         case 4: {
-            CTrigLogic* obj = (CTrigLogic*)::operator new(0x8c);
-            if (obj) {
-                obj = obj->Ctor4192();
-            }
+            CTrigLogic* obj = new CTrigLogic8c(CTrigLogic::Ctor4192Tag());
             return Reg277fTail(this, obj, reader, a2, a3, id);
         }
         case 6: {
-            CTrigLogic* obj = (CTrigLogic*)::operator new(0x8c);
-            if (obj) {
-                obj = obj->Ctor2db5();
-            }
+            CTrigLogic* obj = new CTrigLogic8c(CTrigLogic::Ctor2db5Tag());
             return Reg277fTail(this, obj, reader, a2, a3, id);
         }
         case 7: {
-            CTrigLogic* obj = (CTrigLogic*)::operator new(0x8c);
-            if (obj) {
-                obj = obj->Ctor332d();
-            }
+            CTrigLogic* obj = new CTrigLogic8c(CTrigLogic::Ctor332dTag());
             return Reg277fTail(this, obj, reader, a2, a3, id);
         }
         case 8: {
-            CTrigLogic* obj = (CTrigLogic*)::operator new(0x8c);
-            if (obj) {
-                obj = obj->Ctor2f72();
-            }
+            CTrigLogic* obj = new CTrigLogic8c(CTrigLogic::Ctor2f72Tag());
             return Reg277fTail(this, obj, reader, a2, a3, id);
         }
         case 21: {
-            CTrigLogic* obj = (CTrigLogic*)::operator new(0x9c);
-            if (obj) {
-                obj = obj->Ctor43b3();
-            }
+            CTrigLogic* obj = new CTrigLogic9c(CTrigLogic::Ctor43b3Tag());
             if (obj->Reg1abe(reader, 7, a2, a3) == 0) {
                 return 0;
             }
@@ -250,10 +289,7 @@ void* CTileTriggerFactory::Build(CTrigReader* reader, i32 kind, i32 a2, i32 a3) 
             return obj;
         }
         case 22: {
-            CTrigLogic* obj = (CTrigLogic*)::operator new(0xc8);
-            if (obj) {
-                obj = obj->Ctor2c3e();
-            }
+            CTrigLogic* obj = new CTrigLogicC8(CTrigLogic::Ctor2c3eTag());
             if (obj->Reg1d39(reader, 7, a2, a3) == 0) {
                 return 0;
             }
@@ -262,31 +298,19 @@ void* CTileTriggerFactory::Build(CTrigReader* reader, i32 kind, i32 a2, i32 a3) 
             return obj;
         }
         case 23: {
-            CTrigLogic* obj = (CTrigLogic*)::operator new(0x9c);
-            if (obj) {
-                obj = obj->Ctor18de();
-            }
+            CTrigLogic* obj = new CTrigLogic9c(CTrigLogic::Ctor18deTag());
             return Reg1abeTail(this, obj, reader, a2, a3, id);
         }
         case 24: {
-            CTrigLogic* obj = (CTrigLogic*)::operator new(0x9c);
-            if (obj) {
-                obj = obj->Ctor43b3();
-            }
+            CTrigLogic* obj = new CTrigLogic9c(CTrigLogic::Ctor43b3Tag());
             return Reg1abeTail(this, obj, reader, a2, a3, id);
         }
         case 25: {
-            CTrigLogic* obj = (CTrigLogic*)::operator new(0x9c);
-            if (obj) {
-                obj = obj->Ctor310c();
-            }
+            CTrigLogic* obj = new CTrigLogic9c(CTrigLogic::Ctor310cTag());
             return Reg1abeTail(this, obj, reader, a2, a3, id);
         }
         case 26: {
-            CTrigLogic* obj = (CTrigLogic*)::operator new(0x9c);
-            if (obj) {
-                obj = obj->Ctor2a4f();
-            }
+            CTrigLogic* obj = new CTrigLogic9c(CTrigLogic::Ctor2a4fTag());
             return Reg1abeTail(this, obj, reader, a2, a3, id);
         }
         default:
