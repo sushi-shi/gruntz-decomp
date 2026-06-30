@@ -15,11 +15,11 @@
 
 class CVoiceTrigger : public CUserLogic {
 public:
-    CVoiceTrigger(CGameObject* obj); // 0x119b50 (1-arg leaf ctor)
-    static void InitActReg();        // 0x11a320 (constructs g_vtrigColl @0x651500)
-    void RegisterActs();             // 0x11a500 (binds Tick to the activation key "A")
-    i32 Tick();                      // 0x11a700
-    ~CVoiceTrigger();                // 0x0135a0 (folds the CUserLogic teardown)
+    CVoiceTrigger(CGameObject* obj);   // 0x119b50 (1-arg leaf ctor)
+    static void InitActReg();          // 0x11a320 (constructs g_vtrigColl @0x651500)
+    void RegisterActs();               // 0x11a500 (binds Tick to the activation key "A")
+    i32 Tick();                        // 0x11a700
+    virtual ~CVoiceTrigger() OVERRIDE; // 0x0135a0 (folds the CUserLogic teardown)
 };
 
 // The bound CGameObject (m_10/m_38) viewed by the ctor: the tile-config bound
@@ -44,12 +44,6 @@ struct VTrigCtorObj {
     i32 m_14c; // +0x14c  derived right bound
     i32 m_150; // +0x150  derived bottom bound
 };
-
-// The most-derived CVoiceTrigger vftable (0x5e885c); the ctor stamps it by address
-// (reloc-masked DATA store) - a transitional manual stamp while the class's
-// virtuals live in other TUs.
-DATA(0x001e885c)
-extern void* g_voiceTriggerVtbl;
 
 // ---------------------------------------------------------------------------
 // The activation registry CVoiceTrigger::RegisterActs (0x11a500) binds into - the
@@ -228,28 +222,30 @@ extern "C" i32 g_644c54;
 // CUserLogic vptr (0x5e705c), inline-destruct the +0x18 link (the embedded
 // ~EngStr call 0x16d2a0), store the CUserBase vptr (0x5e70b4). The destructible
 // link forces the /GX EH frame. Byte-identical in shape to
-// ~CSecretTeleporterTrigger @0x010ab0; the empty body is enough for cl.
+// ~CSecretTeleporterTrigger @0x010ab0; the empty body is enough for cl. It is also
+// the out-of-line virtual key function, so cl emits ??_7CVoiceTrigger@@6B@
+// (0x5e885c) directly - no manual g_voiceTriggerVtbl extern.
 RVA(0x000135a0, 0x44)
 CVoiceTrigger::~CVoiceTrigger() {}
 
 // CVoiceTrigger::CVoiceTrigger(CGameObject*) @0x119b50 - the 1-arg leaf ctor: the
-// standard CUserLogic(obj) init (folded inline) plus the voice-trigger tail -
-// stamp the leaf vftable, raise the bound object's logic + pending bits, cache the
-// "A" bute node, snap the bound object's screen position to the 0x20 tile grid,
-// then derive the on-screen probe rect from the per-side tile spans (m_134..m_140).
-// Constructs a throwing CUserBaseLink, so MSVC emits the /GX EH frame.
+// standard CUserLogic(obj) init (folded inline) plus the voice-trigger tail - cl
+// emits the implicit leaf vftable (??_7CVoiceTrigger @0x5e885c) stamp, then raise
+// the bound object's logic + pending bits, cache the "A" bute node, snap the bound
+// object's screen position to the 0x20 tile grid, then derive the on-screen probe
+// rect from the per-side tile spans (m_134..m_140). Constructs a throwing
+// CUserBaseLink, so MSVC emits the /GX EH frame.
 //
 // @early-stop
 // EH-state-numbering wall (docs/patterns/eh-state-numbering-base.md): the body is
-// byte-faithful (the CUserLogic init, the leaf vptr stamp, the two flag RMWs, the
-// "A" cache, the two tile snaps, the four rect derivations); the residue is this
-// ctor's own __ehfuncinfo state numbering + the leaf vptr-restamp scheduling
+// byte-faithful (the CUserLogic init, the implicit leaf vptr stamp, the two flag
+// RMWs, the "A" cache, the two tile snaps, the four rect derivations); the residue
+// is this ctor's own __ehfuncinfo state numbering + the leaf vptr-restamp scheduling
 // position (docs/patterns/eh-ctor-vptr-restamp-position.md) + the `and al,0xe0`
 // byte-AND codegen pick. The SAME plateau as CTimeBomb / the other bute ctors; not
 // source-steerable. Parked for the final sweep.
 RVA(0x00119b50, 0x1ce)
 CVoiceTrigger::CVoiceTrigger(CGameObject* obj) : CUserLogic(obj) {
-    *(void**)this = &g_voiceTriggerVtbl;
     ((VTrigCtorObj*)m_38)->m_08 |= 2;
     ((VTrigCtorObj*)m_38)->m_40 |= 1;
     m_30 = m_14->m_1c;
