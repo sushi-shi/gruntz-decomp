@@ -208,13 +208,46 @@ void CSbItem::SetDirection(i32 a, i32 b) {
 // new + concrete ctor + manual vtable/tag stamp (clearing m_30). The ctor and
 // vtable address vary by tag; the null-guard + ctor + stamp idiom is identical
 // at every one of the ~37 call sites.
-static CSbItem* mk(u32 sz, void* vtbl, i32 tag) {
-    CSbItem* p = (CSbItem*)operator new(sz);
+struct CSbItemT3 {
+    inline CSbItemT3();
+
+    char m_storage[0x34];
+};
+
+struct CSbItemT4 {
+    inline CSbItemT4();
+
+    char m_storage[0x3c];
+};
+
+struct CSbItemT7 {
+    inline CSbItemT7();
+
+    char m_storage[0x6c];
+};
+
+inline CSbItemT3::CSbItemT3() {
+    CSbItem* p = (CSbItem*)this;
     Sbi_CtorBase(p);
-    *(void**)p = vtbl;
-    p->m_8 = tag;
+    *(void**)p = g_vtbl_t3;
+    p->m_8 = 3;
     p->m_30 = 0;
-    return p;
+}
+
+inline CSbItemT4::CSbItemT4() {
+    CSbItem* p = (CSbItem*)this;
+    Sbi_CtorBase(p);
+    *(void**)p = g_vtbl_t4;
+    p->m_8 = 4;
+    p->m_30 = 0;
+}
+
+inline CSbItemT7::CSbItemT7() {
+    CSbItem* p = (CSbItem*)this;
+    Sbi_CtorBase(p);
+    *(void**)p = g_vtbl_t7;
+    p->m_8 = 7;
+    p->m_30 = 0;
 }
 
 // Per-tab builder. The Configure args (recovered from every call site) are:
@@ -246,7 +279,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
 
     switch (m_10c) {
         case 2: // ---- Gruntz tab ----
-            it = mk(0x34, g_vtbl_t3, 3);
+            it = (CSbItem*)new CSbItemT3;
             r.left = bx + 0x18;
             r.top = by + 0xaf;
             r.right = bx + 0x70;
@@ -268,7 +301,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             }
             m_64.AddTail(it);
             for (i = 0; i < 5; i++) {
-                it = mk(0x3c, g_vtbl_t4, 4);
+                it = (CSbItem*)new CSbItemT4;
                 r.left = bx + 0xe + i * 0x36;
                 r.top = by + 0xfe;
                 r.right = bx + 0x39 + i * 0x36;
@@ -290,7 +323,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 }
                 m_64.AddTail(it);
             }
-            it = mk(0x34, g_vtbl_t3, 3);
+            it = (CSbItem*)new CSbItemT3;
             r.left = bx + 0x4c;
             r.top = by + 0xc8;
             r.right = bx + 0x97;
@@ -302,7 +335,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_64.AddTail(it);
-            it = mk(0x34, g_vtbl_t3, 3);
+            it = (CSbItem*)new CSbItemT3;
             r.left = bx + 0x1e;
             r.top = by + 0xc4;
             r.right = bx + 0x3d;
@@ -323,7 +356,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_64.AddTail(it);
-            it = mk(0x34, g_vtbl_t3, 3);
+            it = (CSbItem*)new CSbItemT3;
             r.left = bx + 0x68;
             r.top = by + 0x1cf;
             r.right = bx + 0x87;
@@ -344,7 +377,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_64.AddTail(it);
-            it = mk(0x6c, g_vtbl_t7, 7);
+            it = (CSbItem*)new CSbItemT7;
             r.left = bx + 0x6e;
             r.top = by + 0xf8;
             r.right = bx + 0x81 + 0x6e;
@@ -368,7 +401,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             return 1;
 
         case 3: // ---- Resource tab ----
-            it = mk(0x34, g_vtbl_t3, 3);
+            it = (CSbItem*)new CSbItemT3;
             r.left = bx + 0x18;
             r.top = by + 0xaf;
             r.right = bx + 0x70;
@@ -389,7 +422,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_80.AddTail(it);
-            it = mk(0x34, g_vtbl_t3, 3);
+            it = (CSbItem*)new CSbItemT3;
             r.left = bx;
             r.top = by + 0x135;
             r.right = bx + 0x9f;
@@ -410,7 +443,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_80.AddTail(it);
-            it = mk(0x34, g_vtbl_t3, 3);
+            it = (CSbItem*)new CSbItemT3;
             r.left = bx;
             r.top = by + 0xfb;
             r.right = bx + 0x9f;
@@ -431,7 +464,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_80.AddTail(it);
-            it = mk(0x34, g_vtbl_t3, 3);
+            it = (CSbItem*)new CSbItemT3;
             r.left = bx + 0x48;
             r.top = by + 0xd3;
             r.right = bx + 0x67;
@@ -455,7 +488,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             return 1;
 
         case 1: // ---- Statz tab ----
-            it = mk(0x34, g_vtbl_t3, 3);
+            it = (CSbItem*)new CSbItemT3;
             r.left = bx + 0x18;
             r.top = by + 0xaf;
             r.right = bx + 0x70;
@@ -479,7 +512,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             return 1;
 
         case 4: // ---- Multiplayer tab ----
-            it = mk(0x34, g_vtbl_t3, 3);
+            it = (CSbItem*)new CSbItemT3;
             r.left = bx + 0x18;
             r.top = by + 0xaf;
             r.right = bx + 0x70;
@@ -503,7 +536,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             return 1;
 
         case 5: // ---- Game tab ----
-            it = mk(0x34, g_vtbl_t3, 3);
+            it = (CSbItem*)new CSbItemT3;
             r.left = bx + 0x18;
             r.top = by + 0xaf;
             r.right = bx + 0x70;
