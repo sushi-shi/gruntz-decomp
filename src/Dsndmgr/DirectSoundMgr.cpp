@@ -161,7 +161,10 @@ struct DSoundCloneCtor {
         DirectSoundMgr* owner,
         DirectSoundMgr* original
     ); // 0x136180
+
+    char _pad[0x58]; // shell; real object is 0x58 B (the new(0x58) operand)
 };
+SIZE(DSoundCloneCtor, 0x58); // measured: new(0x58) -> ctor 0x136180
 
 inline DSoundCloneCtor::DSoundCloneCtor(
     IDirectSoundBufferZ* buf,

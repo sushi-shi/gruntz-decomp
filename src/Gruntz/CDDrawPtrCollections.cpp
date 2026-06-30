@@ -233,6 +233,7 @@ struct CPoolItemB {
     i32 m_30; // +0x30
     i32 m_34; // +0x34
 };
+SIZE(CPoolItemB, 0x38); // measured: new(0x38) -> RezAlloc'd 0x38-byte item
 
 inline CPoolItemB::CPoolItemB() {
     m_04 = 0;

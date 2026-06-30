@@ -39,7 +39,8 @@ struct CTmObj {
     inline CTmObj();
     inline void* operator new(u32);
 
-    void* m_vt;
+    void* m_vt;                      // +0x00
+    char _padToEnd[0x40 - 0x4];      // shell; real object is 0x40 B (the new(0x40) operand)
     i32 Apply();                     // vtbl +0x20
     void Run();                      // vtbl +0xc
     i32 Probe();                     // 0x6da... thiscall, no arg
@@ -49,6 +50,7 @@ struct CTmObj {
     void Dtor();                     // 0x5b48c6 list dtor
     void Snap(i32* outR, i32* outC); // thiscall snap-to-cell
 };
+SIZE(CTmObj, 0x40); // measured: new(0x40) -> ctor 0x49ce8
 void* operator new(u32);
 void operator delete(void*);
 

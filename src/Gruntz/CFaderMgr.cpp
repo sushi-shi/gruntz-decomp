@@ -116,7 +116,10 @@ struct CFader0 {
     void Build(CFaderInit*);
     i32 Apply(CFaderInit*);
     i32 From(CFader*);
+
+    char _pad[0x494]; // shell; real object is 0x494 B (the new(0x494) operand)
 };
+SIZE(CFader0, 0x494);
 struct CFader1 {
     inline CFader1();
     inline void* operator new(u32);
@@ -125,7 +128,10 @@ struct CFader1 {
     void Build(CFaderInit*);
     i32 Apply(CFaderInit*);
     i32 From(CFader*);
+
+    char _pad[0x206c]; // shell; real object is 0x206c B (the new(0x206c) operand)
 };
+SIZE(CFader1, 0x206c);
 struct CFader2 {
     inline CFader2();
     inline void* operator new(u32);
@@ -134,7 +140,10 @@ struct CFader2 {
     void Build(CFaderInit*);
     i32 Apply(CFaderInit*);
     i32 From(CFader*);
+
+    char _pad[0x7d5c]; // shell; real object is 0x7d5c B (the new(0x7d5c) operand)
 };
+SIZE(CFader2, 0x7d5c);
 struct CFader3 {
     inline CFader3();
     inline void* operator new(u32);
@@ -143,7 +152,10 @@ struct CFader3 {
     void Build(CFaderInit*);
     i32 Apply(CFaderInit*);
     i32 From(CFader*);
+
+    char _pad[0x5c]; // shell; real object is 0x5c B (the new(0x5c) operand)
 };
+SIZE(CFader3, 0x5c);
 struct CFader4 {
     inline CFader4();
     inline void* operator new(u32);
@@ -152,7 +164,10 @@ struct CFader4 {
     void Build(CFaderInit*);
     i32 Apply(CFaderInit*);
     i32 From(CFader*);
+
+    char _pad[0x50]; // shell; real object is 0x50 B (the new(0x50) operand)
 };
+SIZE(CFader4, 0x50);
 struct CFader5 {
     inline CFader5();
     inline void* operator new(u32);
@@ -161,7 +176,10 @@ struct CFader5 {
     void Build(CFaderInit*);
     i32 Apply(CFaderInit*);
     i32 From(CFader*);
+
+    char _pad[0x6c]; // shell; real object is 0x6c B (the new(0x6c) operand)
 };
+SIZE(CFader5, 0x6c);
 
 inline CFader0::CFader0() {
     Ctor();
