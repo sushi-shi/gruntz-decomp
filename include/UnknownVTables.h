@@ -14,32 +14,32 @@ typedef void (*UnkVfn)(void);
 
 // ClassWithUnknownVTable1  @ 0x005ef628  (6 slots)  refs x2  src:g_deviceConfigVtblA
 struct DeviceConfigVtblA {
-    UnkVfn _scalar_deleting_destructor_; // [0] -> 0x1332e0 `scalar_deleting_destructor'
-    UnkVfn CreateDeviceWrap;             // [1] -> 0x134260 CreateDeviceWrap
-    UnkVfn Teardown;                     // [2] -> 0x133bf0 Teardown
-    UnkVfn slot3_1332b0;                 // [3] -> 0x1332b0 sub_1332b0
-    UnkVfn Poll;                         // [4] -> 0x133d00 Poll
-    UnkVfn slot5_1332c0;                 // [5] -> 0x1332c0 sub_1332c0
+    UnkVfn scalar_deleting_destructor; // [0] -> 0x1332e0 `scalar_deleting_destructor'
+    UnkVfn CreateDeviceWrap;           // [1] -> 0x134260 CreateDeviceWrap
+    UnkVfn Teardown;                   // [2] -> 0x133bf0 Teardown
+    UnkVfn slot3_1332b0;               // [3] -> 0x1332b0 sub_1332b0
+    UnkVfn Poll;                       // [4] -> 0x133d00 Poll
+    UnkVfn slot5_1332c0;               // [5] -> 0x1332c0 sub_1332c0
 };
 
-// ClassWithUnknownVTable2  @ 0x005ef640  (6 slots)  refs x2
-struct Vtbl_1ef640 {
-    UnkVfn _scalar_deleting_destructor_; // [0] -> 0x1334d0 `scalar_deleting_destructor'
-    UnkVfn CreateDeviceWrap;             // [1] -> 0x134260 CreateDeviceWrap
-    UnkVfn FUN_00534360;                 // [2] -> 0x134360 FUN_00534360
-    UnkVfn slot3_1332b0;                 // [3] -> 0x1332b0 sub_1332b0
-    UnkVfn FUN_005343b0;                 // [4] -> 0x1343b0 FUN_005343b0
-    UnkVfn slot5_1332c0;                 // [5] -> 0x1332c0 sub_1332c0
+// ClassWithUnknownVTable2  @ 0x005ef640  (6 slots)  refs x2  src:g_deviceConfigVtblB2
+struct DeviceConfigVtblB2 {
+    UnkVfn scalar_deleting_destructor; // [0] -> 0x1334d0 `scalar_deleting_destructor'
+    UnkVfn CreateDeviceWrap;           // [1] -> 0x134260 CreateDeviceWrap
+    UnkVfn Boundary_134360;            // [2] -> 0x134360 Boundary_134360
+    UnkVfn slot3_1332b0;               // [3] -> 0x1332b0 sub_1332b0
+    UnkVfn Boundary_1343b0;            // [4] -> 0x1343b0 Boundary_1343b0
+    UnkVfn slot5_1332c0;               // [5] -> 0x1332c0 sub_1332c0
 };
 
 // ClassWithUnknownVTable3  @ 0x005ef658  (6 slots)  refs x2
 struct Vtbl_1ef658 {
-    UnkVfn _scalar_deleting_destructor_; // [0] -> 0x133440 `scalar_deleting_destructor'
-    UnkVfn CreateDeviceWrap;             // [1] -> 0x134260 CreateDeviceWrap
-    UnkVfn FUN_005346d0;                 // [2] -> 0x1346d0 FUN_005346d0
-    UnkVfn slot3_1332b0;                 // [3] -> 0x1332b0 sub_1332b0
-    UnkVfn FUN_005347d0;                 // [4] -> 0x1347d0 FUN_005347d0
-    UnkVfn slot5_1332c0;                 // [5] -> 0x1332c0 sub_1332c0
+    UnkVfn scalar_deleting_destructor; // [0] -> 0x133440 `scalar_deleting_destructor'
+    UnkVfn CreateDeviceWrap;           // [1] -> 0x134260 CreateDeviceWrap
+    UnkVfn Boundary_1346d0;            // [2] -> 0x1346d0 Boundary_1346d0
+    UnkVfn slot3_1332b0;               // [3] -> 0x1332b0 sub_1332b0
+    UnkVfn Boundary_1347d0;            // [4] -> 0x1347d0 Boundary_1347d0
+    UnkVfn slot5_1332c0;               // [5] -> 0x1332c0 sub_1332c0
 };
 
 // ClassWithUnknownVTable4  @ 0x005ef670  (4 slots)  refs x6  src:g_deviceConfigVtblC
@@ -52,257 +52,317 @@ struct DeviceConfigVtblC {
 
 // ClassWithUnknownVTable5  @ 0x005ef680  (6 slots)  refs x4  src:g_deviceConfigVtblB
 struct DeviceConfigVtblB {
-    UnkVfn _scalar_deleting_destructor_; // [0] -> 0x133420 `scalar_deleting_destructor'
-    UnkVfn CreateDeviceWrap;             // [1] -> 0x134260 CreateDeviceWrap
-    UnkVfn ReleaseDevices;               // [2] -> 0x1342b0 ReleaseDevices
-    UnkVfn slot3_1332b0;                 // [3] -> 0x1332b0 sub_1332b0
-    UnkVfn slot4_133410;                 // [4] -> 0x133410 sub_133410
-    UnkVfn slot5_1332c0;                 // [5] -> 0x1332c0 sub_1332c0
+    UnkVfn scalar_deleting_destructor; // [0] -> 0x133420 `scalar_deleting_destructor'
+    UnkVfn CreateDeviceWrap;           // [1] -> 0x134260 CreateDeviceWrap
+    UnkVfn ReleaseDevices;             // [2] -> 0x1342b0 ReleaseDevices
+    UnkVfn slot3_1332b0;               // [3] -> 0x1332b0 sub_1332b0
+    UnkVfn slot4_133410;               // [4] -> 0x133410 sub_133410
+    UnkVfn slot5_1332c0;               // [5] -> 0x1332c0 sub_1332c0
 };
 
-// ClassWithUnknownVTable6  @ 0x005ef6c8  (2 slots)  refs x4  src:g_PureVtbl
+// ClassWithUnknownVTable6  @ 0x005ef6b8  (1 slots)  refs x2  src:g_DirectSoundMgrVtbl
+struct DirectSoundMgrVtbl {
+    UnkVfn scalar_deleting_destructor; // [0] -> 0x1352e0 `scalar_deleting_destructor'
+};
+
+// ClassWithUnknownVTable7  @ 0x005ef6bc  (1 slots)  refs x2  src:g_DirectSoundCloneVtbl
+struct DirectSoundCloneVtbl {
+    UnkVfn scalar_deleting_destructor; // [0] -> 0x135b80 `scalar_deleting_destructor'
+};
+
+// ClassWithUnknownVTable8  @ 0x005ef6c0  (1 slots)  refs x3  src:g_DirectSoundBaseVtbl
+struct DirectSoundBaseVtbl {
+    UnkVfn scalar_deleting_destructor; // [0] -> 0x136210 `scalar_deleting_destructor'
+};
+
+// ClassWithUnknownVTable9  @ 0x005ef6c4  (1 slots)  refs x2  src:g_SoundDeviceVtbl
+struct SoundDeviceVtbl {
+    UnkVfn scalar_deleting_destructor; // [0] -> 0x1364c0 `scalar_deleting_destructor'
+};
+
+// ClassWithUnknownVTable10  @ 0x005ef6c8  (2 slots)  refs x4  src:g_PureVtbl
 struct PureVtbl {
     UnkVfn __purecall;   // [0] -> 0x11fec0 __purecall
     UnkVfn __purecall_1; // [1] -> 0x11fec0 __purecall
 };
 
-// ClassWithUnknownVTable7  @ 0x005ef6d0  (2 slots)  refs x1
+// ClassWithUnknownVTable11  @ 0x005ef6d0  (2 slots)  refs x1
 struct Vtbl_1ef6d0 {
-    UnkVfn ClassUnknown_55_137060; // [0] -> 0x137060 ClassUnknown_55_137060
-    UnkVfn ClassUnknown_55_1370d0; // [1] -> 0x1370d0 ClassUnknown_55_1370d0
+    UnkVfn Tick_137060; // [0] -> 0x137060 Tick_137060
+    UnkVfn Stop_1370d0; // [1] -> 0x1370d0 Stop_1370d0
 };
 
-// ClassWithUnknownVTable8  @ 0x005ef6e0  (3 slots)  refs x1  src:g_StreamVoiceFeederVtbl
+// ClassWithUnknownVTable12  @ 0x005ef6d8  (1 slots)  refs x2  src:g_StreamVoiceVtbl
+struct StreamVoiceVtbl {
+    UnkVfn scalar_deleting_destructor; // [0] -> 0x137630 `scalar_deleting_destructor'
+};
+
+// ClassWithUnknownVTable13  @ 0x005ef6e0  (3 slots)  refs x1  src:g_StreamVoiceFeederVtbl
 struct StreamVoiceFeederVtbl {
     UnkVfn CopyWindow;   // [0] -> 0x137380 CopyWindow
     UnkVfn slot1_137490; // [1] -> 0x137490 sub_137490
     UnkVfn slot2_1374b0; // [2] -> 0x1374b0 sub_1374b0
 };
 
-// ClassWithUnknownVTable9  @ 0x005ef6f0  (3 slots)  refs x2  src:g_StreamFeederVtbl
+// ClassWithUnknownVTable14  @ 0x005ef6ec  (1 slots)  refs x2  src:g_SoundStreamVtbl
+struct SoundStreamVtbl {
+    UnkVfn ScalarDtor; // [0] -> 0x1376f0 ScalarDtor
+};
+
+// ClassWithUnknownVTable15  @ 0x005ef6f0  (3 slots)  refs x2  src:g_StreamFeederVtbl
 struct StreamFeederVtbl {
     UnkVfn __purecall;   // [0] -> 0x11fec0 __purecall
     UnkVfn slot1_137e10; // [1] -> 0x137e10 sub_137e10
     UnkVfn slot2_137e20; // [2] -> 0x137e20 sub_137e20
 };
 
-// ClassWithUnknownVTable10  @ 0x005ef700  (16 slots)  refs x3  src:g_innerSoundVtbl
+// ClassWithUnknownVTable16  @ 0x005ef700  (16 slots)  refs x3  src:g_innerSoundVtbl
 struct InnerSoundVtbl {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x138a30 `scalar_deleting_destructor'
-    UnkVfn slot2_0028ec;                 // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
+    UnkVfn slot0_1bef01;               // [0] -> 0x1bef01 sub_1bef01
+    UnkVfn scalar_deleting_destructor; // [1] -> 0x138a30 `scalar_deleting_destructor'
+    UnkVfn slot2_0028ec;               // [2] -> 0x0028ec sub_0028ec
+    UnkVfn slot3_00106e;               // [3] -> 0x00106e sub_00106e
+    UnkVfn slot4_004034;               // [4] -> 0x004034 sub_004034
     UnkVfn
-        thirdparty_138c20_AIL_allocate_sequence_handle_4_AIL_init_sequence_12_AIL_; // [5] -> 0x138c20 thirdparty_138c20_AIL_allocate_sequence_handle_4_AIL_init_sequence_12_AIL_
-    UnkVfn FUN_00538aa0;  // [6] -> 0x138aa0 FUN_00538aa0
-    UnkVfn ReleaseHandle; // [7] -> 0x138dd0 ReleaseHandle
-    UnkVfn slot8_138a10;  // [8] -> 0x138a10 sub_138a10
-    UnkVfn Play;          // [9] -> 0x138e10 Play
-    UnkVfn Pause;         // [10] -> 0x138e90 Pause
-    UnkVfn Resume;        // [11] -> 0x138ed0 Resume
-    UnkVfn Stop;          // [12] -> 0x138e60 Stop
-    UnkVfn FUN_00538f20;  // [13] -> 0x138f20 FUN_00538f20
-    UnkVfn slot14_138a20; // [14] -> 0x138a20 sub_138a20
-    UnkVfn slot15_138d50; // [15] -> 0x138d50 sub_138d50
+        thirdparty_138c20_AIL_allocate_sequence_handle_4_AIL_init_sequence_12_AIL; // [5] -> 0x138c20 thirdparty_138c20_AIL_allocate_sequence_handle_4_AIL_init_sequence_12_AIL_
+    UnkVfn Boundary_138aa0; // [6] -> 0x138aa0 Boundary_138aa0
+    UnkVfn ReleaseHandle;   // [7] -> 0x138dd0 ReleaseHandle
+    UnkVfn slot8_138a10;    // [8] -> 0x138a10 sub_138a10
+    UnkVfn Play;            // [9] -> 0x138e10 Play
+    UnkVfn Pause;           // [10] -> 0x138e90 Pause
+    UnkVfn Resume;          // [11] -> 0x138ed0 Resume
+    UnkVfn Stop;            // [12] -> 0x138e60 Stop
+    UnkVfn Boundary_138f20; // [13] -> 0x138f20 Boundary_138f20
+    UnkVfn slot14_138a20;   // [14] -> 0x138a20 sub_138a20
+    UnkVfn slot15_138d50;   // [15] -> 0x138d50 sub_138d50
 };
 
-// ClassWithUnknownVTable11  @ 0x005ef750  (3 slots)  refs x3
-struct Vtbl_1ef750 {
+// ClassWithUnknownVTable17  @ 0x005ef740  (1 slots)  refs x1  src:g_vtbl_1396f0
+struct Vtbl_1396f0Vtbl {
+    UnkVfn slot0_13c230; // [0] -> 0x13c230 sub_13c230
+};
+
+// ClassWithUnknownVTable18  @ 0x005ef744  (1 slots)  refs x2
+struct Vtbl_1ef744 {
+    UnkVfn slot0_13c340; // [0] -> 0x13c340 sub_13c340
+};
+
+// ClassWithUnknownVTable19  @ 0x005ef748  (1 slots)  refs x1  src:CSymTab_node_vftable
+struct CSymTab_nodeVtbl {
+    UnkVfn slot0_13c3b0; // [0] -> 0x13c3b0 sub_13c3b0
+};
+
+// ClassWithUnknownVTable20  @ 0x005ef750  (3 slots)  refs x3  src:CSymParser_vftable
+struct CSymParserVtbl {
     UnkVfn slot0_13b9f0; // [0] -> 0x13b9f0 sub_13b9f0
     UnkVfn slot1_13ba00; // [1] -> 0x13ba00 sub_13ba00
     UnkVfn slot2_13ba10; // [2] -> 0x13ba10 sub_13ba10
 };
 
-// ClassWithUnknownVTable12  @ 0x005ef768  (8 slots)  refs x2
+// ClassWithUnknownVTable21  @ 0x005ef75c  (1 slots)  refs x2  src:CObjList_ctor_vftbl
+struct CObjList_ctorVtbl {
+    UnkVfn slot0_13c4c0; // [0] -> 0x13c4c0 sub_13c4c0
+};
+
+// ClassWithUnknownVTable22  @ 0x005ef760  (1 slots)  refs x4  src:CObjList_purecall_vftbl
+struct CObjList_purecallVtbl {
+    UnkVfn __purecall; // [0] -> 0x11fec0 __purecall
+};
+
+// ClassWithUnknownVTable23  @ 0x005ef768  (8 slots)  refs x2
 struct Vtbl_1ef768 {
-    UnkVfn slot0_13c530;                 // [0] -> 0x13c530 sub_13c530
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x13c500 `scalar_deleting_destructor'
-    UnkVfn __purecall;                   // [2] -> 0x11fec0 __purecall
-    UnkVfn __purecall_3;                 // [3] -> 0x11fec0 __purecall
-    UnkVfn __purecall_4;                 // [4] -> 0x11fec0 __purecall
-    UnkVfn __purecall_5;                 // [5] -> 0x11fec0 __purecall
-    UnkVfn __purecall_6;                 // [6] -> 0x11fec0 __purecall
-    UnkVfn __purecall_7;                 // [7] -> 0x11fec0 __purecall
+    UnkVfn slot0_13c530;               // [0] -> 0x13c530 sub_13c530
+    UnkVfn scalar_deleting_destructor; // [1] -> 0x13c500 `scalar_deleting_destructor'
+    UnkVfn __purecall;                 // [2] -> 0x11fec0 __purecall
+    UnkVfn __purecall_3;               // [3] -> 0x11fec0 __purecall
+    UnkVfn __purecall_4;               // [4] -> 0x11fec0 __purecall
+    UnkVfn __purecall_5;               // [5] -> 0x11fec0 __purecall
+    UnkVfn __purecall_6;               // [6] -> 0x11fec0 __purecall
+    UnkVfn __purecall_7;               // [7] -> 0x11fec0 __purecall
 };
 
-// ClassWithUnknownVTable13  @ 0x005ef788  (8 slots)  refs x2
+// ClassWithUnknownVTable24  @ 0x005ef788  (8 slots)  refs x2
 struct Vtbl_1ef788 {
-    UnkVfn slot0_13c530;                 // [0] -> 0x13c530 sub_13c530
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x13c570 `scalar_deleting_destructor'
-    UnkVfn Read;                         // [2] -> 0x13c600 Read
-    UnkVfn FUN_0053c6c0;                 // [3] -> 0x13c6c0 FUN_0053c6c0
-    UnkVfn slot4_13c760;                 // [4] -> 0x13c760 sub_13c760
-    UnkVfn Close;                        // [5] -> 0x13c830 Close
-    UnkVfn FUN_0053c8a0;                 // [6] -> 0x13c8a0 FUN_0053c8a0
-    UnkVfn FUN_0053c8f0;                 // [7] -> 0x13c8f0 FUN_0053c8f0
+    UnkVfn slot0_13c530;               // [0] -> 0x13c530 sub_13c530
+    UnkVfn scalar_deleting_destructor; // [1] -> 0x13c570 `scalar_deleting_destructor'
+    UnkVfn Read;                       // [2] -> 0x13c600 Read
+    UnkVfn Write;                      // [3] -> 0x13c6c0 Write
+    UnkVfn slot4_13c760;               // [4] -> 0x13c760 sub_13c760
+    UnkVfn Close;                      // [5] -> 0x13c830 Close
+    UnkVfn Boundary_13c8a0;            // [6] -> 0x13c8a0 Boundary_13c8a0
+    UnkVfn Boundary_13c8f0;            // [7] -> 0x13c8f0 Boundary_13c8f0
 };
 
-// ClassWithUnknownVTable14  @ 0x005ef7a8  (8 slots)  refs x2
+// ClassWithUnknownVTable25  @ 0x005ef7a8  (8 slots)  refs x2
 struct Vtbl_1ef7a8 {
-    UnkVfn slot0_13c530;                 // [0] -> 0x13c530 sub_13c530
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x13c990 `scalar_deleting_destructor'
-    UnkVfn slot2_13ca40;                 // [2] -> 0x13ca40 sub_13ca40
-    UnkVfn slot3_13ca50;                 // [3] -> 0x13ca50 sub_13ca50
-    UnkVfn slot4_13ca60;                 // [4] -> 0x13ca60 sub_13ca60
-    UnkVfn FUN_0053ca80;                 // [5] -> 0x13ca80 FUN_0053ca80
-    UnkVfn slot6_13caa0;                 // [6] -> 0x13caa0 sub_13caa0
-    UnkVfn slot7_13cab0;                 // [7] -> 0x13cab0 sub_13cab0
+    UnkVfn slot0_13c530;               // [0] -> 0x13c530 sub_13c530
+    UnkVfn scalar_deleting_destructor; // [1] -> 0x13c990 `scalar_deleting_destructor'
+    UnkVfn slot2_13ca40;               // [2] -> 0x13ca40 sub_13ca40
+    UnkVfn slot3_13ca50;               // [3] -> 0x13ca50 sub_13ca50
+    UnkVfn slot4_13ca60;               // [4] -> 0x13ca60 sub_13ca60
+    UnkVfn CloseAllOpen;               // [5] -> 0x13ca80 CloseAllOpen
+    UnkVfn slot6_13caa0;               // [6] -> 0x13caa0 sub_13caa0
+    UnkVfn slot7_13cab0;               // [7] -> 0x13cab0 sub_13cab0
 };
 
-// ClassWithUnknownVTable15  @ 0x005ef7d0  (8 slots)  refs x2
+// ClassWithUnknownVTable26  @ 0x005ef7c8  (1 slots)  refs x1  src:g_rezDirChildVtbl
+struct RezDirChildVtbl {
+    UnkVfn slot0_13c4d0; // [0] -> 0x13c4d0 sub_13c4d0
+};
+
+// ClassWithUnknownVTable27  @ 0x005ef7d0  (8 slots)  refs x2
 struct Vtbl_1ef7d0 {
-    UnkVfn slot0_13cef0;                 // [0] -> 0x13cef0 sub_13cef0
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x13cb60 `scalar_deleting_destructor'
-    UnkVfn FUN_0053cc00;                 // [2] -> 0x13cc00 FUN_0053cc00
-    UnkVfn FUN_0053cca0;                 // [3] -> 0x13cca0 FUN_0053cca0
-    UnkVfn slot4_13cd40;                 // [4] -> 0x13cd40 sub_13cd40
-    UnkVfn slot5_13cd50;                 // [5] -> 0x13cd50 sub_13cd50
-    UnkVfn FUN_0053cd60;                 // [6] -> 0x13cd60 FUN_0053cd60
-    UnkVfn slot7_13cdb0;                 // [7] -> 0x13cdb0 sub_13cdb0
+    UnkVfn slot0_13cef0;               // [0] -> 0x13cef0 sub_13cef0
+    UnkVfn scalar_deleting_destructor; // [1] -> 0x13cb60 `scalar_deleting_destructor'
+    UnkVfn Read;                       // [2] -> 0x13cc00 Read
+    UnkVfn Write;                      // [3] -> 0x13cca0 Write
+    UnkVfn slot4_13cd40;               // [4] -> 0x13cd40 sub_13cd40
+    UnkVfn slot5_13cd50;               // [5] -> 0x13cd50 sub_13cd50
+    UnkVfn Flush;                      // [6] -> 0x13cd60 Flush
+    UnkVfn slot7_13cdb0;               // [7] -> 0x13cdb0 sub_13cdb0
 };
 
-// ClassWithUnknownVTable16  @ 0x005ef7f0  (9 slots)  refs x8  src:g_fileImageVtbl
+// ClassWithUnknownVTable28  @ 0x005ef7f0  (9 slots)  refs x8  src:g_fileImageVtbl
 struct FileImageVtbl {
-    UnkVfn _scalar_deleting_destructor_; // [0] -> 0x141330 `scalar_deleting_destructor'
-    UnkVfn Refresh;                      // [1] -> 0x13e140 Refresh
-    UnkVfn FUN_0053e0a0;                 // [2] -> 0x13e0a0 FUN_0053e0a0
-    UnkVfn BlitSurf;                     // [3] -> 0x13e0d0 BlitSurf
-    UnkVfn FreeSurfaces;                 // [4] -> 0x13e4d0 FreeSurfaces
-    UnkVfn slot5_1412d0;                 // [5] -> 0x1412d0 sub_1412d0
-    UnkVfn slot6_141300;                 // [6] -> 0x141300 sub_141300
-    UnkVfn slot7_13f960;                 // [7] -> 0x13f960 sub_13f960
-    UnkVfn slot8_13e2e0;                 // [8] -> 0x13e2e0 sub_13e2e0
+    UnkVfn scalar_deleting_destructor; // [0] -> 0x141330 `scalar_deleting_destructor'
+    UnkVfn Refresh;                    // [1] -> 0x13e140 Refresh
+    UnkVfn Boundary_13e0a0;            // [2] -> 0x13e0a0 Boundary_13e0a0
+    UnkVfn BlitSurf;                   // [3] -> 0x13e0d0 BlitSurf
+    UnkVfn FreeSurfaces;               // [4] -> 0x13e4d0 FreeSurfaces
+    UnkVfn slot5_1412d0;               // [5] -> 0x1412d0 sub_1412d0
+    UnkVfn slot6_141300;               // [6] -> 0x141300 sub_141300
+    UnkVfn slot7_13f960;               // [7] -> 0x13f960 sub_13f960
+    UnkVfn slot8_13e2e0;               // [8] -> 0x13e2e0 sub_13e2e0
 };
 
-// ClassWithUnknownVTable17  @ 0x005efa58  (12 slots)  refs x4  src:g_poolItemAVtbl
+// ClassWithUnknownVTable29  @ 0x005efa58  (12 slots)  refs x4  src:g_poolItemAVtbl
 struct PoolItemAVtbl {
-    UnkVfn ScalarDelete; // [0] -> 0x142340 ScalarDelete
-    UnkVfn Refresh;      // [1] -> 0x13e140 Refresh
-    UnkVfn FUN_0053e0a0; // [2] -> 0x13e0a0 FUN_0053e0a0
-    UnkVfn BlitSurf;     // [3] -> 0x13e0d0 BlitSurf
-    UnkVfn FreeSurfaces; // [4] -> 0x13e4d0 FreeSurfaces
-    UnkVfn slot5_1412d0; // [5] -> 0x1412d0 sub_1412d0
-    UnkVfn slot6_143cc0; // [6] -> 0x143cc0 sub_143cc0
-    UnkVfn slot7_13f960; // [7] -> 0x13f960 sub_13f960
-    UnkVfn slot8_13e2e0; // [8] -> 0x13e2e0 sub_13e2e0
-    UnkVfn ResolveEx;    // [9] -> 0x148890 ResolveEx
-    UnkVfn Stub_148940;  // [10] -> 0x148940 Stub_148940
-    UnkVfn LoadKeyed;    // [11] -> 0x148840 LoadKeyed
+    UnkVfn ScalarDelete;    // [0] -> 0x142340 ScalarDelete
+    UnkVfn Refresh;         // [1] -> 0x13e140 Refresh
+    UnkVfn Boundary_13e0a0; // [2] -> 0x13e0a0 Boundary_13e0a0
+    UnkVfn BlitSurf;        // [3] -> 0x13e0d0 BlitSurf
+    UnkVfn FreeSurfaces;    // [4] -> 0x13e4d0 FreeSurfaces
+    UnkVfn slot5_1412d0;    // [5] -> 0x1412d0 sub_1412d0
+    UnkVfn slot6_143cc0;    // [6] -> 0x143cc0 sub_143cc0
+    UnkVfn slot7_13f960;    // [7] -> 0x13f960 sub_13f960
+    UnkVfn slot8_13e2e0;    // [8] -> 0x13e2e0 sub_13e2e0
+    UnkVfn ResolveEx;       // [9] -> 0x148890 ResolveEx
+    UnkVfn Stub_148940;     // [10] -> 0x148940 Stub_148940
+    UnkVfn LoadKeyed;       // [11] -> 0x148840 LoadKeyed
 };
 
-// ClassWithUnknownVTable18  @ 0x005efa88  (11 slots)  refs x2
-struct Vtbl_1efa88 {
-    UnkVfn _scalar_deleting_destructor_; // [0] -> 0x142800 `scalar_deleting_destructor'
-    UnkVfn Refresh;                      // [1] -> 0x13e140 Refresh
-    UnkVfn FUN_0053e0a0;                 // [2] -> 0x13e0a0 FUN_0053e0a0
-    UnkVfn BlitSurf;                     // [3] -> 0x13e0d0 BlitSurf
-    UnkVfn FreeSurfaces;                 // [4] -> 0x13e4d0 FreeSurfaces
-    UnkVfn slot5_1412d0;                 // [5] -> 0x1412d0 sub_1412d0
-    UnkVfn slot6_143cb0;                 // [6] -> 0x143cb0 sub_143cb0
-    UnkVfn slot7_13f960;                 // [7] -> 0x13f960 sub_13f960
-    UnkVfn slot8_13e2e0;                 // [8] -> 0x13e2e0 sub_13e2e0
-    UnkVfn FUN_00548a50;                 // [9] -> 0x148a50 FUN_00548a50
-    UnkVfn slot10_148ac0;                // [10] -> 0x148ac0 sub_148ac0
+// ClassWithUnknownVTable30  @ 0x005efa88  (11 slots)  refs x2  src:g_poolItemVtbla88
+struct PoolItemVtbla88 {
+    UnkVfn scalar_deleting_destructor; // [0] -> 0x142800 `scalar_deleting_destructor'
+    UnkVfn Refresh;                    // [1] -> 0x13e140 Refresh
+    UnkVfn Boundary_13e0a0;            // [2] -> 0x13e0a0 Boundary_13e0a0
+    UnkVfn BlitSurf;                   // [3] -> 0x13e0d0 BlitSurf
+    UnkVfn FreeSurfaces;               // [4] -> 0x13e4d0 FreeSurfaces
+    UnkVfn slot5_1412d0;               // [5] -> 0x1412d0 sub_1412d0
+    UnkVfn slot6_143cb0;               // [6] -> 0x143cb0 sub_143cb0
+    UnkVfn slot7_13f960;               // [7] -> 0x13f960 sub_13f960
+    UnkVfn slot8_13e2e0;               // [8] -> 0x13e2e0 sub_13e2e0
+    UnkVfn Boundary_148a50;            // [9] -> 0x148a50 Boundary_148a50
+    UnkVfn slot10_148ac0;              // [10] -> 0x148ac0 sub_148ac0
 };
 
-// ClassWithUnknownVTable19  @ 0x005efab8  (11 slots)  refs x3
-struct Vtbl_1efab8 {
-    UnkVfn _scalar_deleting_destructor_; // [0] -> 0x142a20 `scalar_deleting_destructor'
-    UnkVfn Refresh;                      // [1] -> 0x13e140 Refresh
-    UnkVfn FUN_00548b50;                 // [2] -> 0x148b50 FUN_00548b50
-    UnkVfn BlitSurf;                     // [3] -> 0x13e0d0 BlitSurf
-    UnkVfn FreeSurfaces;                 // [4] -> 0x13e4d0 FreeSurfaces
-    UnkVfn slot5_1412d0;                 // [5] -> 0x1412d0 sub_1412d0
-    UnkVfn slot6_143cd0;                 // [6] -> 0x143cd0 sub_143cd0
-    UnkVfn slot7_13f960;                 // [7] -> 0x13f960 sub_13f960
-    UnkVfn slot8_13e2e0;                 // [8] -> 0x13e2e0 sub_13e2e0
-    UnkVfn FUN_00548af0;                 // [9] -> 0x148af0 FUN_00548af0
-    UnkVfn slot10_148b80;                // [10] -> 0x148b80 sub_148b80
+// ClassWithUnknownVTable31  @ 0x005efab8  (11 slots)  refs x3  src:g_poolItemVtblab8
+struct PoolItemVtblab8 {
+    UnkVfn scalar_deleting_destructor; // [0] -> 0x142a20 `scalar_deleting_destructor'
+    UnkVfn Refresh;                    // [1] -> 0x13e140 Refresh
+    UnkVfn Boundary_148b50;            // [2] -> 0x148b50 Boundary_148b50
+    UnkVfn BlitSurf;                   // [3] -> 0x13e0d0 BlitSurf
+    UnkVfn FreeSurfaces;               // [4] -> 0x13e4d0 FreeSurfaces
+    UnkVfn slot5_1412d0;               // [5] -> 0x1412d0 sub_1412d0
+    UnkVfn slot6_143cd0;               // [6] -> 0x143cd0 sub_143cd0
+    UnkVfn slot7_13f960;               // [7] -> 0x13f960 sub_13f960
+    UnkVfn slot8_13e2e0;               // [8] -> 0x13e2e0 sub_13e2e0
+    UnkVfn Boundary_148af0;            // [9] -> 0x148af0 Boundary_148af0
+    UnkVfn slot10_148b80;              // [10] -> 0x148b80 sub_148b80
 };
 
-// ClassWithUnknownVTable20  @ 0x005efae8  (10 slots)  refs x2
-struct Vtbl_1efae8 {
-    UnkVfn _scalar_deleting_destructor_; // [0] -> 0x142d20 `scalar_deleting_destructor'
-    UnkVfn Refresh;                      // [1] -> 0x13e140 Refresh
-    UnkVfn FUN_00548cc0;                 // [2] -> 0x148cc0 FUN_00548cc0
-    UnkVfn BlitSurf;                     // [3] -> 0x13e0d0 BlitSurf
-    UnkVfn FreeSurfaces;                 // [4] -> 0x13e4d0 FreeSurfaces
-    UnkVfn slot5_1412d0;                 // [5] -> 0x1412d0 sub_1412d0
-    UnkVfn slot6_143ce0;                 // [6] -> 0x143ce0 sub_143ce0
-    UnkVfn slot7_13f960;                 // [7] -> 0x13f960 sub_13f960
-    UnkVfn slot8_13e2e0;                 // [8] -> 0x13e2e0 sub_13e2e0
-    UnkVfn FUN_00548c40;                 // [9] -> 0x148c40 FUN_00548c40
+// ClassWithUnknownVTable32  @ 0x005efae8  (10 slots)  refs x2  src:g_poolItemVtblae8
+struct PoolItemVtblae8 {
+    UnkVfn scalar_deleting_destructor; // [0] -> 0x142d20 `scalar_deleting_destructor'
+    UnkVfn Refresh;                    // [1] -> 0x13e140 Refresh
+    UnkVfn Boundary_148cc0;            // [2] -> 0x148cc0 Boundary_148cc0
+    UnkVfn BlitSurf;                   // [3] -> 0x13e0d0 BlitSurf
+    UnkVfn FreeSurfaces;               // [4] -> 0x13e4d0 FreeSurfaces
+    UnkVfn slot5_1412d0;               // [5] -> 0x1412d0 sub_1412d0
+    UnkVfn slot6_143ce0;               // [6] -> 0x143ce0 sub_143ce0
+    UnkVfn slot7_13f960;               // [7] -> 0x13f960 sub_13f960
+    UnkVfn slot8_13e2e0;               // [8] -> 0x13e2e0 sub_13e2e0
+    UnkVfn Boundary_148c40;            // [9] -> 0x148c40 Boundary_148c40
 };
 
-// ClassWithUnknownVTable21  @ 0x005efb28  (5 slots)  refs x3  src:g_shadeArrayVtbl
+// ClassWithUnknownVTable33  @ 0x005efb28  (5 slots)  refs x3  src:g_shadeArrayVtbl
 struct ShadeArrayVtbl {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x150020 `scalar_deleting_destructor'
-    UnkVfn slot2_14fe90;                 // [2] -> 0x14fe90 sub_14fe90
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
+    UnkVfn slot0_1bef01;               // [0] -> 0x1bef01 sub_1bef01
+    UnkVfn scalar_deleting_destructor; // [1] -> 0x150020 `scalar_deleting_destructor'
+    UnkVfn slot2_14fe90;               // [2] -> 0x14fe90 sub_14fe90
+    UnkVfn slot3_00106e;               // [3] -> 0x00106e sub_00106e
+    UnkVfn slot4_004034;               // [4] -> 0x004034 sub_004034
 };
 
-// ClassWithUnknownVTable22  @ 0x005efb80  (10 slots)  refs x7  src:g_siriusWorkerVtbl
+// ClassWithUnknownVTable34  @ 0x005efb80  (10 slots)  refs x7  src:g_siriusWorkerVtbl
 struct SiriusWorkerVtbl {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x151d80 `scalar_deleting_destructor'
-    UnkVfn slot2_0028ec;                 // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
-    UnkVfn slot5_151d60;                 // [5] -> 0x151d60 sub_151d60
-    UnkVfn slot6_001c08;                 // [6] -> 0x001c08 sub_001c08
-    UnkVfn FUN_00551e70;                 // [7] -> 0x151e70 FUN_00551e70
-    UnkVfn slot8_151d70;                 // [8] -> 0x151d70 sub_151d70
-    UnkVfn Init;                         // [9] -> 0x151e20 Init
+    UnkVfn slot0_1bef01;               // [0] -> 0x1bef01 sub_1bef01
+    UnkVfn scalar_deleting_destructor; // [1] -> 0x151d80 `scalar_deleting_destructor'
+    UnkVfn slot2_0028ec;               // [2] -> 0x0028ec sub_0028ec
+    UnkVfn slot3_00106e;               // [3] -> 0x00106e sub_00106e
+    UnkVfn slot4_004034;               // [4] -> 0x004034 sub_004034
+    UnkVfn slot5_151d60;               // [5] -> 0x151d60 sub_151d60
+    UnkVfn slot6_001c08;               // [6] -> 0x001c08 sub_001c08
+    UnkVfn Boundary_151e70;            // [7] -> 0x151e70 Boundary_151e70
+    UnkVfn slot8_151d70;               // [8] -> 0x151d70 sub_151d70
+    UnkVfn Init;                       // [9] -> 0x151e20 Init
 };
 
-// ClassWithUnknownVTable23  @ 0x005efba8  (5 slots)  refs x3  src:g_aniElemVtbl
+// ClassWithUnknownVTable35  @ 0x005efba8  (5 slots)  refs x3  src:g_aniElemVtbl
 struct AniElemVtbl {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x152e10 `scalar_deleting_destructor'
-    UnkVfn slot2_0028ec;                 // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
+    UnkVfn slot0_1bef01;               // [0] -> 0x1bef01 sub_1bef01
+    UnkVfn scalar_deleting_destructor; // [1] -> 0x152e10 `scalar_deleting_destructor'
+    UnkVfn slot2_0028ec;               // [2] -> 0x0028ec sub_0028ec
+    UnkVfn slot3_00106e;               // [3] -> 0x00106e sub_00106e
+    UnkVfn slot4_004034;               // [4] -> 0x004034 sub_004034
 };
 
-// ClassWithUnknownVTable24  @ 0x005efbc0  (10 slots)  refs x4  src:g_remusNodeVtbl
+// ClassWithUnknownVTable36  @ 0x005efbc0  (10 slots)  refs x4  src:g_remusNodeVtbl
 struct RemusNodeVtbl {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x154a30 `scalar_deleting_destructor'
-    UnkVfn slot2_0028ec;                 // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
-    UnkVfn slot5_154a10;                 // [5] -> 0x154a10 sub_154a10
-    UnkVfn slot6_001c08;                 // [6] -> 0x001c08 sub_001c08
-    UnkVfn slot7_154a80;                 // [7] -> 0x154a80 sub_154a80
-    UnkVfn slot8_154a00;                 // [8] -> 0x154a00 sub_154a00
-    UnkVfn Helper_164790;                // [9] -> 0x164790 Helper_164790
+    UnkVfn slot0_1bef01;               // [0] -> 0x1bef01 sub_1bef01
+    UnkVfn scalar_deleting_destructor; // [1] -> 0x154a30 `scalar_deleting_destructor'
+    UnkVfn slot2_0028ec;               // [2] -> 0x0028ec sub_0028ec
+    UnkVfn slot3_00106e;               // [3] -> 0x00106e sub_00106e
+    UnkVfn slot4_004034;               // [4] -> 0x004034 sub_004034
+    UnkVfn slot5_154a10;               // [5] -> 0x154a10 sub_154a10
+    UnkVfn slot6_001c08;               // [6] -> 0x001c08 sub_001c08
+    UnkVfn slot7_154a80;               // [7] -> 0x154a80 sub_154a80
+    UnkVfn slot8_154a00;               // [8] -> 0x154a00 sub_154a00
+    UnkVfn Helper_164790;              // [9] -> 0x164790 Helper_164790
 };
 
-// ClassWithUnknownVTable25  @ 0x005efbe8  (17 slots)  refs x6  src:g_severusWorkerVtbl
+// ClassWithUnknownVTable37  @ 0x005efbe8  (17 slots)  refs x6  src:g_severusWorkerVtbl
 struct SeverusWorkerVtbl {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x155780 `scalar_deleting_destructor'
-    UnkVfn slot2_0028ec;                 // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
-    UnkVfn slot5_155750;                 // [5] -> 0x155750 sub_155750
-    UnkVfn slot6_001c08;                 // [6] -> 0x001c08 sub_001c08
-    UnkVfn ClassUnknown_35_151eb0;       // [7] -> 0x151eb0 ClassUnknown_35_151eb0
-    UnkVfn slot8_155770;                 // [8] -> 0x155770 sub_155770
-    UnkVfn StringCopy_155810;            // [9] -> 0x155810 StringCopy_155810
-    UnkVfn slot10_1521f0;                // [10] -> 0x1521f0 sub_1521f0
-    UnkVfn FUN_00552110;                 // [11] -> 0x152110 FUN_00552110
-    UnkVfn FUN_00552060;                 // [12] -> 0x152060 FUN_00552060
-    UnkVfn FUN_00551fb0;                 // [13] -> 0x151fb0 FUN_00551fb0
-    UnkVfn CSeverusWorker_151f00;        // [14] -> 0x151f00 CSeverusWorker_151f00
-    UnkVfn slot15_1522b0;                // [15] -> 0x1522b0 sub_1522b0
-    UnkVfn slot16_1523b0;                // [16] -> 0x1523b0 sub_1523b0
+    UnkVfn slot0_1bef01;               // [0] -> 0x1bef01 sub_1bef01
+    UnkVfn scalar_deleting_destructor; // [1] -> 0x155780 `scalar_deleting_destructor'
+    UnkVfn slot2_0028ec;               // [2] -> 0x0028ec sub_0028ec
+    UnkVfn slot3_00106e;               // [3] -> 0x00106e sub_00106e
+    UnkVfn slot4_004034;               // [4] -> 0x004034 sub_004034
+    UnkVfn slot5_155750;               // [5] -> 0x155750 sub_155750
+    UnkVfn slot6_001c08;               // [6] -> 0x001c08 sub_001c08
+    UnkVfn DeleteAll;                  // [7] -> 0x151eb0 DeleteAll
+    UnkVfn slot8_155770;               // [8] -> 0x155770 sub_155770
+    UnkVfn StringCopy_155810;          // [9] -> 0x155810 StringCopy_155810
+    UnkVfn slot10_1521f0;              // [10] -> 0x1521f0 sub_1521f0
+    UnkVfn CreateFrame24;              // [11] -> 0x152110 CreateFrame24
+    UnkVfn CreateFrame28;              // [12] -> 0x152060 CreateFrame28
+    UnkVfn CreateFrame30;              // [13] -> 0x151fb0 CreateFrame30
+    UnkVfn InsertFrame;                // [14] -> 0x151f00 InsertFrame
+    UnkVfn slot15_1522b0;              // [15] -> 0x1522b0 sub_1522b0
+    UnkVfn slot16_1523b0;              // [16] -> 0x1523b0 sub_1523b0
 };
 
-// ClassWithUnknownVTable26  @ 0x005efc30  (9 slots)  refs x12  src:g_severusWorkerBaseVtbl
+// ClassWithUnknownVTable38  @ 0x005efc30  (9 slots)  refs x12  src:g_severusWorkerBaseVtbl
 struct SeverusWorkerBaseVtbl {
     UnkVfn slot0_1bef01; // [0] -> 0x1bef01 sub_1bef01
     UnkVfn Stub_155720;  // [1] -> 0x155720 Stub_155720
@@ -315,20 +375,20 @@ struct SeverusWorkerBaseVtbl {
     UnkVfn slot8_154a00; // [8] -> 0x154a00 sub_154a00
 };
 
-// ClassWithUnknownVTable27  @ 0x005efc58  (8 slots)  refs x2
+// ClassWithUnknownVTable39  @ 0x005efc58  (8 slots)  refs x2
 struct Vtbl_1efc58 {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x155890 `scalar_deleting_destructor'
-    UnkVfn slot2_0028ec;                 // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
-    UnkVfn UnknownVirtualMethod14;       // [5] -> 0x155f00 UnknownVirtualMethod14
-    UnkVfn UnknownVirtualMethod18;       // [6] -> 0x155900 UnknownVirtualMethod18
-    UnkVfn Cleanup_155e20;               // [7] -> 0x155e20 Cleanup_155e20
+    UnkVfn slot0_1bef01;               // [0] -> 0x1bef01 sub_1bef01
+    UnkVfn scalar_deleting_destructor; // [1] -> 0x155890 `scalar_deleting_destructor'
+    UnkVfn slot2_0028ec;               // [2] -> 0x0028ec sub_0028ec
+    UnkVfn slot3_00106e;               // [3] -> 0x00106e sub_00106e
+    UnkVfn slot4_004034;               // [4] -> 0x004034 sub_004034
+    UnkVfn UnknownVirtualMethod14;     // [5] -> 0x155f00 UnknownVirtualMethod14
+    UnkVfn UnknownVirtualMethod18;     // [6] -> 0x155900 UnknownVirtualMethod18
+    UnkVfn Cleanup_155e20;             // [7] -> 0x155e20 Cleanup_155e20
 };
 
-// ClassWithUnknownVTable28  @ 0x005efc78  (9 slots)  refs x2  src:g_catalogVtbl
-struct CatalogVtbl {
+// ClassWithUnknownVTable40  @ 0x005efc78  (9 slots)  refs x2
+struct Vtbl_1efc78 {
     UnkVfn slot0_1bef01;           // [0] -> 0x1bef01 sub_1bef01
     UnkVfn ScalarDtor_1577c0;      // [1] -> 0x1577c0 ScalarDtor_1577c0
     UnkVfn slot2_0028ec;           // [2] -> 0x0028ec sub_0028ec
@@ -340,51 +400,51 @@ struct CatalogVtbl {
     UnkVfn slot8_154a00;           // [8] -> 0x154a00 sub_154a00
 };
 
-// ClassWithUnknownVTable29  @ 0x005efca0  (9 slots)  refs x2  src:g_leafScanVtbl
-struct LeafScanVtbl {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x157550 `scalar_deleting_destructor'
-    UnkVfn slot2_0028ec;                 // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
-    UnkVfn VirtualMethodUnknown14;       // [5] -> 0x157530 VirtualMethodUnknown14
-    UnkVfn slot6_001c08;                 // [6] -> 0x001c08 sub_001c08
-    UnkVfn VirtualMethodUnknown18;       // [7] -> 0x157ae0 VirtualMethodUnknown18
-    UnkVfn slot8_154a00;                 // [8] -> 0x154a00 sub_154a00
+// ClassWithUnknownVTable41  @ 0x005efca0  (9 slots)  refs x2
+struct Vtbl_1efca0 {
+    UnkVfn slot0_1bef01;               // [0] -> 0x1bef01 sub_1bef01
+    UnkVfn scalar_deleting_destructor; // [1] -> 0x157550 `scalar_deleting_destructor'
+    UnkVfn slot2_0028ec;               // [2] -> 0x0028ec sub_0028ec
+    UnkVfn slot3_00106e;               // [3] -> 0x00106e sub_00106e
+    UnkVfn slot4_004034;               // [4] -> 0x004034 sub_004034
+    UnkVfn VirtualMethodUnknown14;     // [5] -> 0x157530 VirtualMethodUnknown14
+    UnkVfn slot6_001c08;               // [6] -> 0x001c08 sub_001c08
+    UnkVfn VirtualMethodUnknown18;     // [7] -> 0x157ae0 VirtualMethodUnknown18
+    UnkVfn slot8_154a00;               // [8] -> 0x154a00 sub_154a00
 };
 
-// ClassWithUnknownVTable30  @ 0x005efcc8  (13 slots)  refs x2
+// ClassWithUnknownVTable42  @ 0x005efcc8  (13 slots)  refs x2
 struct Vtbl_1efcc8 {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x156d00 `scalar_deleting_destructor'
-    UnkVfn slot2_0028ec;                 // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
-    UnkVfn VirtualMethodUnknown14;       // [5] -> 0x156cd0 VirtualMethodUnknown14
-    UnkVfn FUN_00556db0;                 // [6] -> 0x156db0 FUN_00556db0
-    UnkVfn CDDrawWorkerMapSmall_165810;  // [7] -> 0x165810 CDDrawWorkerMapSmall_165810
-    UnkVfn slot8_156cf0;                 // [8] -> 0x156cf0 sub_156cf0
-    UnkVfn Stub_1658c0;                  // [9] -> 0x1658c0 Stub_1658c0
-    UnkVfn VirtualMethodUnknown28;       // [10] -> 0x165990 VirtualMethodUnknown28
-    UnkVfn VirtualMethodUnknown2C;       // [11] -> 0x165a10 VirtualMethodUnknown2C
-    UnkVfn Stub_165a90;                  // [12] -> 0x165a90 Stub_165a90
+    UnkVfn slot0_1bef01;               // [0] -> 0x1bef01 sub_1bef01
+    UnkVfn scalar_deleting_destructor; // [1] -> 0x156d00 `scalar_deleting_destructor'
+    UnkVfn slot2_0028ec;               // [2] -> 0x0028ec sub_0028ec
+    UnkVfn slot3_00106e;               // [3] -> 0x00106e sub_00106e
+    UnkVfn slot4_004034;               // [4] -> 0x004034 sub_004034
+    UnkVfn VirtualMethodUnknown14;     // [5] -> 0x156cd0 VirtualMethodUnknown14
+    UnkVfn FUN_00556db0;               // [6] -> 0x156db0 FUN_00556db0
+    UnkVfn VirtualMethodUnknown1C;     // [7] -> 0x165810 VirtualMethodUnknown1C
+    UnkVfn slot8_156cf0;               // [8] -> 0x156cf0 sub_156cf0
+    UnkVfn Stub_1658c0;                // [9] -> 0x1658c0 Stub_1658c0
+    UnkVfn VirtualMethodUnknown28;     // [10] -> 0x165990 VirtualMethodUnknown28
+    UnkVfn VirtualMethodUnknown2C;     // [11] -> 0x165a10 VirtualMethodUnknown2C
+    UnkVfn Stub_165a90;                // [12] -> 0x165a90 Stub_165a90
 };
 
-// ClassWithUnknownVTable31  @ 0x005efd00  (10 slots)  refs x2
+// ClassWithUnknownVTable43  @ 0x005efd00  (10 slots)  refs x2
 struct Vtbl_1efd00 {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x157700 `scalar_deleting_destructor'
-    UnkVfn slot2_0028ec;                 // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
-    UnkVfn VirtualMethodUnknown14;       // [5] -> 0x1576d0 VirtualMethodUnknown14
-    UnkVfn VirtualMethodUnknown20;       // [6] -> 0x157790 VirtualMethodUnknown20
-    UnkVfn VirtualMethodUnknown58;       // [7] -> 0x165210 VirtualMethodUnknown58
-    UnkVfn VirtualMethodUnknown20_8;     // [8] -> 0x1576f0 VirtualMethodUnknown20
-    UnkVfn VirtualMethodUnknown24;       // [9] -> 0x1652c0 VirtualMethodUnknown24
+    UnkVfn slot0_1bef01;               // [0] -> 0x1bef01 sub_1bef01
+    UnkVfn scalar_deleting_destructor; // [1] -> 0x157700 `scalar_deleting_destructor'
+    UnkVfn slot2_0028ec;               // [2] -> 0x0028ec sub_0028ec
+    UnkVfn slot3_00106e;               // [3] -> 0x00106e sub_00106e
+    UnkVfn slot4_004034;               // [4] -> 0x004034 sub_004034
+    UnkVfn VirtualMethodUnknown14;     // [5] -> 0x1576d0 VirtualMethodUnknown14
+    UnkVfn VirtualMethodUnknown20;     // [6] -> 0x157790 VirtualMethodUnknown20
+    UnkVfn VirtualMethodUnknown58;     // [7] -> 0x165210 VirtualMethodUnknown58
+    UnkVfn VirtualMethodUnknown20_8;   // [8] -> 0x1576f0 VirtualMethodUnknown20
+    UnkVfn VirtualMethodUnknown24;     // [9] -> 0x1652c0 VirtualMethodUnknown24
 };
 
-// ClassWithUnknownVTable32  @ 0x005efd28  (23 slots)  refs x2
+// ClassWithUnknownVTable44  @ 0x005efd28  (23 slots)  refs x2
 struct Vtbl_1efd28 {
     UnkVfn slot0_1bef01;           // [0] -> 0x1bef01 sub_1bef01
     UnkVfn Stub_156df0;            // [1] -> 0x156df0 Stub_156df0
@@ -411,25 +471,25 @@ struct Vtbl_1efd28 {
     UnkVfn MapTeardown_1552b0;     // [22] -> 0x1552b0 MapTeardown_1552b0
 };
 
-// ClassWithUnknownVTable33  @ 0x005efd88  (14 slots)  refs x2
+// ClassWithUnknownVTable45  @ 0x005efd88  (14 slots)  refs x2
 struct Vtbl_1efd88 {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x156f30 `scalar_deleting_destructor'
-    UnkVfn slot2_0028ec;                 // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
-    UnkVfn VirtualMethodUnknown14;       // [5] -> 0x156f00 VirtualMethodUnknown14
-    UnkVfn Stub_156fc0;                  // [6] -> 0x156fc0 Stub_156fc0
-    UnkVfn CDDrawWorkerList_163bc0;      // [7] -> 0x163bc0 CDDrawWorkerList_163bc0
-    UnkVfn VirtualMethodUnknown20;       // [8] -> 0x156f20 VirtualMethodUnknown20
-    UnkVfn VirtualMethodUnknown24;       // [9] -> 0x156fd0 VirtualMethodUnknown24
-    UnkVfn VirtualMethodUnknown28;       // [10] -> 0x1573e0 VirtualMethodUnknown28
-    UnkVfn VirtualMethodUnknown2C;       // [11] -> 0x157330 VirtualMethodUnknown2C
-    UnkVfn VirtualMethodUnknown30;       // [12] -> 0x157150 VirtualMethodUnknown30
-    UnkVfn VirtualMethodUnknown34;       // [13] -> 0x163bf0 VirtualMethodUnknown34
+    UnkVfn slot0_1bef01;               // [0] -> 0x1bef01 sub_1bef01
+    UnkVfn scalar_deleting_destructor; // [1] -> 0x156f30 `scalar_deleting_destructor'
+    UnkVfn slot2_0028ec;               // [2] -> 0x0028ec sub_0028ec
+    UnkVfn slot3_00106e;               // [3] -> 0x00106e sub_00106e
+    UnkVfn slot4_004034;               // [4] -> 0x004034 sub_004034
+    UnkVfn VirtualMethodUnknown14;     // [5] -> 0x156f00 VirtualMethodUnknown14
+    UnkVfn Stub_156fc0;                // [6] -> 0x156fc0 Stub_156fc0
+    UnkVfn CDDrawWorkerList_163bc0;    // [7] -> 0x163bc0 CDDrawWorkerList_163bc0
+    UnkVfn VirtualMethodUnknown20;     // [8] -> 0x156f20 VirtualMethodUnknown20
+    UnkVfn VirtualMethodUnknown24;     // [9] -> 0x156fd0 VirtualMethodUnknown24
+    UnkVfn VirtualMethodUnknown28;     // [10] -> 0x1573e0 VirtualMethodUnknown28
+    UnkVfn VirtualMethodUnknown2C;     // [11] -> 0x157330 VirtualMethodUnknown2C
+    UnkVfn VirtualMethodUnknown30;     // [12] -> 0x157150 VirtualMethodUnknown30
+    UnkVfn VirtualMethodUnknown34;     // [13] -> 0x163bf0 VirtualMethodUnknown34
 };
 
-// ClassWithUnknownVTable34  @ 0x005efdc0  (17 slots)  refs x2
+// ClassWithUnknownVTable46  @ 0x005efdc0  (17 slots)  refs x2
 struct Vtbl_1efdc0 {
     UnkVfn slot0_1bef01;             // [0] -> 0x1bef01 sub_1bef01
     UnkVfn Stub_157610;              // [1] -> 0x157610 Stub_157610
@@ -450,7 +510,7 @@ struct Vtbl_1efdc0 {
     UnkVfn slot16_159f00;            // [16] -> 0x159f00 sub_159f00
 };
 
-// ClassWithUnknownVTable35  @ 0x005efe08  (10 slots)  refs x2
+// ClassWithUnknownVTable47  @ 0x005efe08  (10 slots)  refs x2
 struct Vtbl_1efe08 {
     UnkVfn slot0_1bef01;           // [0] -> 0x1bef01 sub_1bef01
     UnkVfn Stub_1574b0;            // [1] -> 0x1574b0 Stub_1574b0
@@ -464,14 +524,14 @@ struct Vtbl_1efe08 {
     UnkVfn Stub_1588f0;            // [9] -> 0x1588f0 Stub_1588f0
 };
 
-// ClassWithUnknownVTable36  @ 0x005efe30  (3 slots)  refs x15  src:g_fileMemVtbl
+// ClassWithUnknownVTable48  @ 0x005efe30  (3 slots)  refs x15  src:g_fileMemVtbl
 struct FileMemVtbl {
-    UnkVfn _scalar_deleting_destructor_; // [0] -> 0x157a20 `scalar_deleting_destructor'
-    UnkVfn SetName;                      // [1] -> 0x165e30 SetName
-    UnkVfn slot2_157a70;                 // [2] -> 0x157a70 sub_157a70
+    UnkVfn scalar_deleting_destructor; // [0] -> 0x157a20 `scalar_deleting_destructor'
+    UnkVfn SetName;                    // [1] -> 0x165e30 SetName
+    UnkVfn slot2_157a70;               // [2] -> 0x157a70 sub_157a70
 };
 
-// ClassWithUnknownVTable37  @ 0x005efe3c  (10 slots)  refs x28
+// ClassWithUnknownVTable49  @ 0x005efe3c  (10 slots)  refs x28
 struct Vtbl_1efe3c {
     UnkVfn Reset;        // [0] -> 0x157a50 Reset
     UnkVfn slot1_157920; // [1] -> 0x157920 sub_157920
@@ -481,18 +541,18 @@ struct Vtbl_1efe3c {
     UnkVfn slot5_157950; // [5] -> 0x157950 sub_157950
     UnkVfn Open;         // [6] -> 0x165e60 Open
     UnkVfn Ready;        // [7] -> 0x165ef0 Ready
-    UnkVfn FUN_00565f00; // [8] -> 0x165f00 FUN_00565f00
+    UnkVfn Read;         // [8] -> 0x165f00 Read
     UnkVfn Write;        // [9] -> 0x165f50 Write
 };
 
-// ClassWithUnknownVTable38  @ 0x005efe68  (3 slots)  refs x4  src:g_fileMemBaseVtbl
+// ClassWithUnknownVTable50  @ 0x005efe68  (3 slots)  refs x4  src:g_fileMemBaseVtbl
 struct FileMemBaseVtbl {
-    UnkVfn _scalar_deleting_destructor_; // [0] -> 0x157960 `scalar_deleting_destructor'
-    UnkVfn SetName;                      // [1] -> 0x165e30 SetName
-    UnkVfn slot2_157910;                 // [2] -> 0x157910 sub_157910
+    UnkVfn scalar_deleting_destructor; // [0] -> 0x157960 `scalar_deleting_destructor'
+    UnkVfn SetName;                    // [1] -> 0x165e30 SetName
+    UnkVfn slot2_157910;               // [2] -> 0x157910 sub_157910
 };
 
-// ClassWithUnknownVTable39  @ 0x005efe74  (10 slots)  refs x4
+// ClassWithUnknownVTable51  @ 0x005efe74  (10 slots)  refs x4
 struct Vtbl_1efe74 {
     UnkVfn ResetBase;    // [0] -> 0x157a40 ResetBase
     UnkVfn slot1_157920; // [1] -> 0x157920 sub_157920
@@ -506,221 +566,221 @@ struct Vtbl_1efe74 {
     UnkVfn __purecall_9; // [9] -> 0x11fec0 __purecall
 };
 
-// ClassWithUnknownVTable40  @ 0x005efea0  (12 slots)  refs x1  src:g_hagridWorkerVtblA
+// ClassWithUnknownVTable52  @ 0x005efea0  (12 slots)  refs x1  src:g_hagridWorkerVtblA
 struct HagridWorkerVtblA {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x1570b0 `scalar_deleting_destructor'
-    UnkVfn slot2_0028ec;                 // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
-    UnkVfn slot5_157060;                 // [5] -> 0x157060 sub_157060
-    UnkVfn slot6_001c08;                 // [6] -> 0x001c08 sub_001c08
-    UnkVfn slot7_157130;                 // [7] -> 0x157130 sub_157130
-    UnkVfn slot8_1570a0;                 // [8] -> 0x1570a0 sub_1570a0
-    UnkVfn slot9_157080;                 // [9] -> 0x157080 sub_157080
-    UnkVfn slot10_165fa0;                // [10] -> 0x165fa0 sub_165fa0
-    UnkVfn Vfunc2C;                      // [11] -> 0x157110 Vfunc2C
+    UnkVfn slot0_1bef01;               // [0] -> 0x1bef01 sub_1bef01
+    UnkVfn scalar_deleting_destructor; // [1] -> 0x1570b0 `scalar_deleting_destructor'
+    UnkVfn slot2_0028ec;               // [2] -> 0x0028ec sub_0028ec
+    UnkVfn slot3_00106e;               // [3] -> 0x00106e sub_00106e
+    UnkVfn slot4_004034;               // [4] -> 0x004034 sub_004034
+    UnkVfn slot5_157060;               // [5] -> 0x157060 sub_157060
+    UnkVfn slot6_001c08;               // [6] -> 0x001c08 sub_001c08
+    UnkVfn slot7_157130;               // [7] -> 0x157130 sub_157130
+    UnkVfn slot8_1570a0;               // [8] -> 0x1570a0 sub_1570a0
+    UnkVfn slot9_157080;               // [9] -> 0x157080 sub_157080
+    UnkVfn slot10_165fa0;              // [10] -> 0x165fa0 sub_165fa0
+    UnkVfn Vfunc2C;                    // [11] -> 0x157110 Vfunc2C
 };
 
-// ClassWithUnknownVTable41  @ 0x005efed0  (14 slots)  refs x3  src:g_hagridWorkerVtblB
+// ClassWithUnknownVTable53  @ 0x005efed0  (14 slots)  refs x3  src:g_hagridWorkerVtblB
 struct HagridWorkerVtblB {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x157220 `scalar_deleting_destructor'
-    UnkVfn slot2_0028ec;                 // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
-    UnkVfn slot5_157200;                 // [5] -> 0x157200 sub_157200
-    UnkVfn slot6_001c08;                 // [6] -> 0x001c08 sub_001c08
-    UnkVfn slot7_157310;                 // [7] -> 0x157310 sub_157310
-    UnkVfn slot8_157210;                 // [8] -> 0x157210 sub_157210
-    UnkVfn slot9_157080;                 // [9] -> 0x157080 sub_157080
-    UnkVfn slot10_1660b0;                // [10] -> 0x1660b0 sub_1660b0
-    UnkVfn Vfunc2C;                      // [11] -> 0x1572f0 Vfunc2C
-    UnkVfn FUN_005572b0;                 // [12] -> 0x1572b0 FUN_005572b0
-    UnkVfn Vfunc34;                      // [13] -> 0x157280 Vfunc34
+    UnkVfn slot0_1bef01;               // [0] -> 0x1bef01 sub_1bef01
+    UnkVfn scalar_deleting_destructor; // [1] -> 0x157220 `scalar_deleting_destructor'
+    UnkVfn slot2_0028ec;               // [2] -> 0x0028ec sub_0028ec
+    UnkVfn slot3_00106e;               // [3] -> 0x00106e sub_00106e
+    UnkVfn slot4_004034;               // [4] -> 0x004034 sub_004034
+    UnkVfn slot5_157200;               // [5] -> 0x157200 sub_157200
+    UnkVfn slot6_001c08;               // [6] -> 0x001c08 sub_001c08
+    UnkVfn slot7_157310;               // [7] -> 0x157310 sub_157310
+    UnkVfn slot8_157210;               // [8] -> 0x157210 sub_157210
+    UnkVfn slot9_157080;               // [9] -> 0x157080 sub_157080
+    UnkVfn slot10_1660b0;              // [10] -> 0x1660b0 sub_1660b0
+    UnkVfn Vfunc2C;                    // [11] -> 0x1572f0 Vfunc2C
+    UnkVfn Vfunc30;                    // [12] -> 0x1572b0 Vfunc30
+    UnkVfn Vfunc34;                    // [13] -> 0x157280 Vfunc34
 };
 
-// ClassWithUnknownVTable42  @ 0x005eff08  (9 slots)  refs x3  src:g_leafElemVtbl
+// ClassWithUnknownVTable54  @ 0x005eff08  (9 slots)  refs x3  src:g_leafElemVtbl
 struct LeafElemVtbl {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x158660 `scalar_deleting_destructor'
-    UnkVfn slot2_0028ec;                 // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
-    UnkVfn slot5_158650;                 // [5] -> 0x158650 sub_158650
-    UnkVfn slot6_001c08;                 // [6] -> 0x001c08 sub_001c08
-    UnkVfn ClassUnknown_44_1587c0;       // [7] -> 0x1587c0 ClassUnknown_44_1587c0
-    UnkVfn slot8_154a00;                 // [8] -> 0x154a00 sub_154a00
+    UnkVfn slot0_1bef01;               // [0] -> 0x1bef01 sub_1bef01
+    UnkVfn scalar_deleting_destructor; // [1] -> 0x158660 `scalar_deleting_destructor'
+    UnkVfn slot2_0028ec;               // [2] -> 0x0028ec sub_0028ec
+    UnkVfn slot3_00106e;               // [3] -> 0x00106e sub_00106e
+    UnkVfn slot4_004034;               // [4] -> 0x004034 sub_004034
+    UnkVfn slot5_158650;               // [5] -> 0x158650 sub_158650
+    UnkVfn slot6_001c08;               // [6] -> 0x001c08 sub_001c08
+    UnkVfn Release_1587c0;             // [7] -> 0x1587c0 Release_1587c0
+    UnkVfn slot8_154a00;               // [8] -> 0x154a00 sub_154a00
 };
 
-// ClassWithUnknownVTable43  @ 0x005eff30  (15 slots)  refs x3
+// ClassWithUnknownVTable55  @ 0x005eff30  (15 slots)  refs x3
 struct Vtbl_1eff30 {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x1590d0 `scalar_deleting_destructor'
-    UnkVfn slot2_0028ec;                 // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
-    UnkVfn slot5_159090;                 // [5] -> 0x159090 sub_159090
-    UnkVfn slot6_001c08;                 // [6] -> 0x001c08 sub_001c08
-    UnkVfn TeardownSurface;              // [7] -> 0x163e20 TeardownSurface
-    UnkVfn slot8_1590c0;                 // [8] -> 0x1590c0 sub_1590c0
-    UnkVfn slot9_158fd0;                 // [9] -> 0x158fd0 sub_158fd0
-    UnkVfn slot10_164250;                // [10] -> 0x164250 sub_164250
-    UnkVfn slot11_163db0;                // [11] -> 0x163db0 sub_163db0
-    UnkVfn FUN_00563c90;                 // [12] -> 0x163c90 FUN_00563c90
-    UnkVfn slot13_163e50;                // [13] -> 0x163e50 sub_163e50
-    UnkVfn slot14_163ee0;                // [14] -> 0x163ee0 sub_163ee0
+    UnkVfn slot0_1bef01;               // [0] -> 0x1bef01 sub_1bef01
+    UnkVfn scalar_deleting_destructor; // [1] -> 0x1590d0 `scalar_deleting_destructor'
+    UnkVfn slot2_0028ec;               // [2] -> 0x0028ec sub_0028ec
+    UnkVfn slot3_00106e;               // [3] -> 0x00106e sub_00106e
+    UnkVfn slot4_004034;               // [4] -> 0x004034 sub_004034
+    UnkVfn slot5_159090;               // [5] -> 0x159090 sub_159090
+    UnkVfn slot6_001c08;               // [6] -> 0x001c08 sub_001c08
+    UnkVfn TeardownSurface;            // [7] -> 0x163e20 TeardownSurface
+    UnkVfn slot8_1590c0;               // [8] -> 0x1590c0 sub_1590c0
+    UnkVfn slot9_158fd0;               // [9] -> 0x158fd0 sub_158fd0
+    UnkVfn slot10_164250;              // [10] -> 0x164250 sub_164250
+    UnkVfn slot11_163db0;              // [11] -> 0x163db0 sub_163db0
+    UnkVfn Create;                     // [12] -> 0x163c90 Create
+    UnkVfn slot13_163e50;              // [13] -> 0x163e50 sub_163e50
+    UnkVfn slot14_163ee0;              // [14] -> 0x163ee0 sub_163ee0
 };
 
-// ClassWithUnknownVTable44  @ 0x005eff70  (11 slots)  refs x1
+// ClassWithUnknownVTable56  @ 0x005eff70  (11 slots)  refs x1
 struct Vtbl_1eff70 {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x159190 `scalar_deleting_destructor'
-    UnkVfn slot2_0028ec;                 // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
-    UnkVfn slot5_159150;                 // [5] -> 0x159150 sub_159150
-    UnkVfn slot6_001c08;                 // [6] -> 0x001c08 sub_001c08
-    UnkVfn slot7_1591d0;                 // [7] -> 0x1591d0 sub_1591d0
-    UnkVfn slot8_159180;                 // [8] -> 0x159180 sub_159180
+    UnkVfn slot0_1bef01;               // [0] -> 0x1bef01 sub_1bef01
+    UnkVfn scalar_deleting_destructor; // [1] -> 0x159190 `scalar_deleting_destructor'
+    UnkVfn slot2_0028ec;               // [2] -> 0x0028ec sub_0028ec
+    UnkVfn slot3_00106e;               // [3] -> 0x00106e sub_00106e
+    UnkVfn slot4_004034;               // [4] -> 0x004034 sub_004034
+    UnkVfn slot5_159150;               // [5] -> 0x159150 sub_159150
+    UnkVfn slot6_001c08;               // [6] -> 0x001c08 sub_001c08
+    UnkVfn slot7_1591d0;               // [7] -> 0x1591d0 sub_1591d0
+    UnkVfn slot8_159180;               // [8] -> 0x159180 sub_159180
     UnkVfn
         directx_wrapper_caller_1644a0_DirectDrawCreate_DirectDrawEnumerateA; // [9] -> 0x1644a0 directx_wrapper_caller_1644a0_DirectDrawCreate_DirectDrawEnumerateA
     UnkVfn slot10_1646b0; // [10] -> 0x1646b0 sub_1646b0
 };
 
-// ClassWithUnknownVTable45  @ 0x005effa0  (11 slots)  refs x1
-struct Vtbl_1effa0 {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x158f90 `scalar_deleting_destructor'
-    UnkVfn slot2_0028ec;                 // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
-    UnkVfn slot5_158f60;                 // [5] -> 0x158f60 sub_158f60
-    UnkVfn slot6_001c08;                 // [6] -> 0x001c08 sub_001c08
-    UnkVfn slot7_159080;                 // [7] -> 0x159080 sub_159080
-    UnkVfn slot8_158f80;                 // [8] -> 0x158f80 sub_158f80
-    UnkVfn slot9_158fd0;                 // [9] -> 0x158fd0 sub_158fd0
-    UnkVfn slot10_159020;                // [10] -> 0x159020 sub_159020
+// ClassWithUnknownVTable57  @ 0x005effa0  (11 slots)  refs x1  src:g_severusWorker3Vtbl
+struct SeverusWorker3Vtbl {
+    UnkVfn slot0_1bef01;               // [0] -> 0x1bef01 sub_1bef01
+    UnkVfn scalar_deleting_destructor; // [1] -> 0x158f90 `scalar_deleting_destructor'
+    UnkVfn slot2_0028ec;               // [2] -> 0x0028ec sub_0028ec
+    UnkVfn slot3_00106e;               // [3] -> 0x00106e sub_00106e
+    UnkVfn slot4_004034;               // [4] -> 0x004034 sub_004034
+    UnkVfn slot5_158f60;               // [5] -> 0x158f60 sub_158f60
+    UnkVfn slot6_001c08;               // [6] -> 0x001c08 sub_001c08
+    UnkVfn slot7_159080;               // [7] -> 0x159080 sub_159080
+    UnkVfn slot8_158f80;               // [8] -> 0x158f80 sub_158f80
+    UnkVfn slot9_158fd0;               // [9] -> 0x158fd0 sub_158fd0
+    UnkVfn slot10_159020;              // [10] -> 0x159020 sub_159020
 };
 
-// ClassWithUnknownVTable46  @ 0x005effd0  (19 slots)  refs x2
-struct Vtbl_1effd0 {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x15c050 `scalar_deleting_destructor'
-    UnkVfn slot2_0028ec;                 // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
-    UnkVfn slot5_15c000;                 // [5] -> 0x15c000 sub_15c000
-    UnkVfn slot6_001c08;                 // [6] -> 0x001c08 sub_001c08
-    UnkVfn FUN_0055c200;                 // [7] -> 0x15c200 FUN_0055c200
-    UnkVfn slot8_15c020;                 // [8] -> 0x15c020 sub_15c020
-    UnkVfn Helper_164790;                // [9] -> 0x164790 Helper_164790
-    UnkVfn Setup;                        // [10] -> 0x150d60 Setup
-    UnkVfn FUN_005660f0;                 // [11] -> 0x1660f0 FUN_005660f0
-    UnkVfn slot12_1661d0;                // [12] -> 0x1661d0 sub_1661d0
-    UnkVfn slot13_1662a0;                // [13] -> 0x1662a0 sub_1662a0
-    UnkVfn slot14_1664a0;                // [14] -> 0x1664a0 sub_1664a0
-    UnkVfn Play;                         // [15] -> 0x151150 Play
-    UnkVfn FUN_0055c1d0;                 // [16] -> 0x15c1d0 FUN_0055c1d0
-    UnkVfn slot17_15c030;                // [17] -> 0x15c030 sub_15c030
-    UnkVfn slot18_15c040;                // [18] -> 0x15c040 sub_15c040
+// ClassWithUnknownVTable58  @ 0x005effd0  (19 slots)  refs x2  src:g_wwd159250FinalVtbl
+struct Wwd159250FinalVtbl {
+    UnkVfn slot0_1bef01;               // [0] -> 0x1bef01 sub_1bef01
+    UnkVfn scalar_deleting_destructor; // [1] -> 0x15c050 `scalar_deleting_destructor'
+    UnkVfn slot2_0028ec;               // [2] -> 0x0028ec sub_0028ec
+    UnkVfn slot3_00106e;               // [3] -> 0x00106e sub_00106e
+    UnkVfn slot4_004034;               // [4] -> 0x004034 sub_004034
+    UnkVfn slot5_15c000;               // [5] -> 0x15c000 sub_15c000
+    UnkVfn slot6_001c08;               // [6] -> 0x001c08 sub_001c08
+    UnkVfn Boundary_15c200;            // [7] -> 0x15c200 Boundary_15c200
+    UnkVfn slot8_15c020;               // [8] -> 0x15c020 sub_15c020
+    UnkVfn Helper_164790;              // [9] -> 0x164790 Helper_164790
+    UnkVfn Setup;                      // [10] -> 0x150d60 Setup
+    UnkVfn Boundary_1660f0;            // [11] -> 0x1660f0 Boundary_1660f0
+    UnkVfn slot12_1661d0;              // [12] -> 0x1661d0 sub_1661d0
+    UnkVfn slot13_1662a0;              // [13] -> 0x1662a0 sub_1662a0
+    UnkVfn slot14_1664a0;              // [14] -> 0x1664a0 sub_1664a0
+    UnkVfn Play;                       // [15] -> 0x151150 Play
+    UnkVfn Boundary_15c1d0;            // [16] -> 0x15c1d0 Boundary_15c1d0
+    UnkVfn slot17_15c030;              // [17] -> 0x15c030 sub_15c030
+    UnkVfn slot18_15c040;              // [18] -> 0x15c040 sub_15c040
 };
 
-// ClassWithUnknownVTable47  @ 0x005f0020  (16 slots)  refs x9  src:g_wwdGameObjectVtbl
+// ClassWithUnknownVTable59  @ 0x005f0020  (16 slots)  refs x9  src:g_wwdGameObjectVtbl
 struct WwdGameObjectVtbl {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x15b4c0 `scalar_deleting_destructor'
-    UnkVfn slot2_0028ec;                 // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
-    UnkVfn slot5_15b370;                 // [5] -> 0x15b370 sub_15b370
-    UnkVfn slot6_001c08;                 // [6] -> 0x001c08 sub_001c08
-    UnkVfn FUN_0055b5d0;                 // [7] -> 0x15b5d0 FUN_0055b5d0
-    UnkVfn slot8_154a00;                 // [8] -> 0x154a00 sub_154a00
-    UnkVfn Helper_164790;                // [9] -> 0x164790 Helper_164790
-    UnkVfn Setup;                        // [10] -> 0x150d60 Setup
-    UnkVfn __purecall;                   // [11] -> 0x11fec0 __purecall
-    UnkVfn __purecall_12;                // [12] -> 0x11fec0 __purecall
-    UnkVfn __purecall_13;                // [13] -> 0x11fec0 __purecall
-    UnkVfn __purecall_14;                // [14] -> 0x11fec0 __purecall
-    UnkVfn Play;                         // [15] -> 0x151150 Play
+    UnkVfn slot0_1bef01;               // [0] -> 0x1bef01 sub_1bef01
+    UnkVfn scalar_deleting_destructor; // [1] -> 0x15b4c0 `scalar_deleting_destructor'
+    UnkVfn slot2_0028ec;               // [2] -> 0x0028ec sub_0028ec
+    UnkVfn slot3_00106e;               // [3] -> 0x00106e sub_00106e
+    UnkVfn slot4_004034;               // [4] -> 0x004034 sub_004034
+    UnkVfn slot5_15b370;               // [5] -> 0x15b370 sub_15b370
+    UnkVfn slot6_001c08;               // [6] -> 0x001c08 sub_001c08
+    UnkVfn Boundary_15b5d0;            // [7] -> 0x15b5d0 Boundary_15b5d0
+    UnkVfn slot8_154a00;               // [8] -> 0x154a00 sub_154a00
+    UnkVfn Helper_164790;              // [9] -> 0x164790 Helper_164790
+    UnkVfn Setup;                      // [10] -> 0x150d60 Setup
+    UnkVfn __purecall;                 // [11] -> 0x11fec0 __purecall
+    UnkVfn __purecall_12;              // [12] -> 0x11fec0 __purecall
+    UnkVfn __purecall_13;              // [13] -> 0x11fec0 __purecall
+    UnkVfn __purecall_14;              // [14] -> 0x11fec0 __purecall
+    UnkVfn Play;                       // [15] -> 0x151150 Play
 };
 
-// ClassWithUnknownVTable48  @ 0x005f0060  (17 slots)  refs x2
-struct Vtbl_1f0060 {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x15bab0 `scalar_deleting_destructor'
-    UnkVfn slot2_0028ec;                 // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
-    UnkVfn slot5_15ba40;                 // [5] -> 0x15ba40 sub_15ba40
-    UnkVfn slot6_001c08;                 // [6] -> 0x001c08 sub_001c08
-    UnkVfn FUN_0055bc50;                 // [7] -> 0x15bc50 FUN_0055bc50
-    UnkVfn slot8_15ba60;                 // [8] -> 0x15ba60 sub_15ba60
-    UnkVfn Helper_164790;                // [9] -> 0x164790 Helper_164790
-    UnkVfn Setup;                        // [10] -> 0x150d60 Setup
-    UnkVfn slot11_15ba70;                // [11] -> 0x15ba70 sub_15ba70
-    UnkVfn slot12_15ba80;                // [12] -> 0x15ba80 sub_15ba80
-    UnkVfn slot13_15ba90;                // [13] -> 0x15ba90 sub_15ba90
-    UnkVfn slot14_15baa0;                // [14] -> 0x15baa0 sub_15baa0
-    UnkVfn Play;                         // [15] -> 0x151150 Play
-    UnkVfn FUN_0055bc30;                 // [16] -> 0x15bc30 FUN_0055bc30
+// ClassWithUnknownVTable60  @ 0x005f0060  (17 slots)  refs x2  src:g_wwd159440FinalVtbl
+struct Wwd159440FinalVtbl {
+    UnkVfn slot0_1bef01;               // [0] -> 0x1bef01 sub_1bef01
+    UnkVfn scalar_deleting_destructor; // [1] -> 0x15bab0 `scalar_deleting_destructor'
+    UnkVfn slot2_0028ec;               // [2] -> 0x0028ec sub_0028ec
+    UnkVfn slot3_00106e;               // [3] -> 0x00106e sub_00106e
+    UnkVfn slot4_004034;               // [4] -> 0x004034 sub_004034
+    UnkVfn slot5_15ba40;               // [5] -> 0x15ba40 sub_15ba40
+    UnkVfn slot6_001c08;               // [6] -> 0x001c08 sub_001c08
+    UnkVfn Boundary_15bc50;            // [7] -> 0x15bc50 Boundary_15bc50
+    UnkVfn slot8_15ba60;               // [8] -> 0x15ba60 sub_15ba60
+    UnkVfn Helper_164790;              // [9] -> 0x164790 Helper_164790
+    UnkVfn Setup;                      // [10] -> 0x150d60 Setup
+    UnkVfn slot11_15ba70;              // [11] -> 0x15ba70 sub_15ba70
+    UnkVfn slot12_15ba80;              // [12] -> 0x15ba80 sub_15ba80
+    UnkVfn slot13_15ba90;              // [13] -> 0x15ba90 sub_15ba90
+    UnkVfn slot14_15baa0;              // [14] -> 0x15baa0 sub_15baa0
+    UnkVfn Play;                       // [15] -> 0x151150 Play
+    UnkVfn Boundary_15bc30;            // [16] -> 0x15bc30 Boundary_15bc30
 };
 
-// ClassWithUnknownVTable49  @ 0x005f00a8  (16 slots)  refs x6  src:g_wwdObjVtbl
-struct WwdObjVtbl {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x15b770 `scalar_deleting_destructor'
-    UnkVfn slot2_0028ec;                 // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
-    UnkVfn slot5_15b370;                 // [5] -> 0x15b370 sub_15b370
-    UnkVfn slot6_001c08;                 // [6] -> 0x001c08 sub_001c08
-    UnkVfn FUN_0055b980;                 // [7] -> 0x15b980 FUN_0055b980
-    UnkVfn slot8_15b760;                 // [8] -> 0x15b760 sub_15b760
-    UnkVfn Helper_164790;                // [9] -> 0x164790 Helper_164790
-    UnkVfn Init;                         // [10] -> 0x15b940 Init
-    UnkVfn slot11_15ba20;                // [11] -> 0x15ba20 sub_15ba20
-    UnkVfn slot12_150660;                // [12] -> 0x150660 sub_150660
-    UnkVfn slot13_1506b0;                // [13] -> 0x1506b0 sub_1506b0
-    UnkVfn slot14_1508a0;                // [14] -> 0x1508a0 sub_1508a0
-    UnkVfn Dispatch;                     // [15] -> 0x150a70 Dispatch
+// ClassWithUnknownVTable61  @ 0x005f00a8  (16 slots)  refs x6  src:g_wwdObjFinalVtbl
+struct WwdObjFinalVtbl {
+    UnkVfn slot0_1bef01;               // [0] -> 0x1bef01 sub_1bef01
+    UnkVfn scalar_deleting_destructor; // [1] -> 0x15b770 `scalar_deleting_destructor'
+    UnkVfn slot2_0028ec;               // [2] -> 0x0028ec sub_0028ec
+    UnkVfn slot3_00106e;               // [3] -> 0x00106e sub_00106e
+    UnkVfn slot4_004034;               // [4] -> 0x004034 sub_004034
+    UnkVfn slot5_15b370;               // [5] -> 0x15b370 sub_15b370
+    UnkVfn slot6_001c08;               // [6] -> 0x001c08 sub_001c08
+    UnkVfn Reset_15b980;               // [7] -> 0x15b980 Reset_15b980
+    UnkVfn slot8_15b760;               // [8] -> 0x15b760 sub_15b760
+    UnkVfn Helper_164790;              // [9] -> 0x164790 Helper_164790
+    UnkVfn Init;                       // [10] -> 0x15b940 Init
+    UnkVfn slot11_15ba20;              // [11] -> 0x15ba20 sub_15ba20
+    UnkVfn slot12_150660;              // [12] -> 0x150660 sub_150660
+    UnkVfn slot13_1506b0;              // [13] -> 0x1506b0 sub_1506b0
+    UnkVfn slot14_1508a0;              // [14] -> 0x1508a0 sub_1508a0
+    UnkVfn Dispatch;                   // [15] -> 0x150a70 Dispatch
 };
 
-// ClassWithUnknownVTable50  @ 0x005f00e8  (16 slots)  refs x2
-struct Vtbl_1f00e8 {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x15bcf0 `scalar_deleting_destructor'
-    UnkVfn slot2_0028ec;                 // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
-    UnkVfn slot5_15bcd0;                 // [5] -> 0x15bcd0 sub_15bcd0
-    UnkVfn slot6_001c08;                 // [6] -> 0x001c08 sub_001c08
-    UnkVfn FUN_0055bf00;                 // [7] -> 0x15bf00 FUN_0055bf00
-    UnkVfn slot8_15bce0;                 // [8] -> 0x15bce0 sub_15bce0
-    UnkVfn Helper_164790;                // [9] -> 0x164790 Helper_164790
-    UnkVfn FUN_005665e0;                 // [10] -> 0x1665e0 FUN_005665e0
-    UnkVfn slot11_1668b0;                // [11] -> 0x1668b0 sub_1668b0
-    UnkVfn slot12_1668e0;                // [12] -> 0x1668e0 sub_1668e0
-    UnkVfn slot13_166910;                // [13] -> 0x166910 sub_166910
-    UnkVfn slot14_166950;                // [14] -> 0x166950 sub_166950
-    UnkVfn Dispatch;                     // [15] -> 0x150a70 Dispatch
+// ClassWithUnknownVTable62  @ 0x005f00e8  (16 slots)  refs x2  src:g_wwd1598d0FinalVtbl
+struct Wwd1598d0FinalVtbl {
+    UnkVfn slot0_1bef01;               // [0] -> 0x1bef01 sub_1bef01
+    UnkVfn scalar_deleting_destructor; // [1] -> 0x15bcf0 `scalar_deleting_destructor'
+    UnkVfn slot2_0028ec;               // [2] -> 0x0028ec sub_0028ec
+    UnkVfn slot3_00106e;               // [3] -> 0x00106e sub_00106e
+    UnkVfn slot4_004034;               // [4] -> 0x004034 sub_004034
+    UnkVfn slot5_15bcd0;               // [5] -> 0x15bcd0 sub_15bcd0
+    UnkVfn slot6_001c08;               // [6] -> 0x001c08 sub_001c08
+    UnkVfn Reset_15bf00;               // [7] -> 0x15bf00 Reset_15bf00
+    UnkVfn slot8_15bce0;               // [8] -> 0x15bce0 sub_15bce0
+    UnkVfn Helper_164790;              // [9] -> 0x164790 Helper_164790
+    UnkVfn Boundary_1665e0;            // [10] -> 0x1665e0 Boundary_1665e0
+    UnkVfn slot11_1668b0;              // [11] -> 0x1668b0 sub_1668b0
+    UnkVfn slot12_1668e0;              // [12] -> 0x1668e0 sub_1668e0
+    UnkVfn slot13_166910;              // [13] -> 0x166910 sub_166910
+    UnkVfn slot14_166950;              // [14] -> 0x166950 sub_166950
+    UnkVfn Dispatch;                   // [15] -> 0x150a70 Dispatch
 };
 
-// ClassWithUnknownVTable51  @ 0x005f0128  (9 slots)  refs x7  src:g_wwdSubVtbl
+// ClassWithUnknownVTable63  @ 0x005f0128  (9 slots)  refs x7  src:g_wwdSubVtbl
 struct WwdSubVtbl {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x15b6b0 `scalar_deleting_destructor'
-    UnkVfn slot2_0028ec;                 // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
-    UnkVfn slot5_15b6a0;                 // [5] -> 0x15b6a0 sub_15b6a0
-    UnkVfn slot6_001c08;                 // [6] -> 0x001c08 sub_001c08
-    UnkVfn Reset_15c2c0;                 // [7] -> 0x15c2c0 Reset_15c2c0
-    UnkVfn slot8_154a00;                 // [8] -> 0x154a00 sub_154a00
+    UnkVfn slot0_1bef01;               // [0] -> 0x1bef01 sub_1bef01
+    UnkVfn scalar_deleting_destructor; // [1] -> 0x15b6b0 `scalar_deleting_destructor'
+    UnkVfn slot2_0028ec;               // [2] -> 0x0028ec sub_0028ec
+    UnkVfn slot3_00106e;               // [3] -> 0x00106e sub_00106e
+    UnkVfn slot4_004034;               // [4] -> 0x004034 sub_004034
+    UnkVfn slot5_15b6a0;               // [5] -> 0x15b6a0 sub_15b6a0
+    UnkVfn slot6_001c08;               // [6] -> 0x001c08 sub_001c08
+    UnkVfn Reset_15c2c0;               // [7] -> 0x15c2c0 Reset_15c2c0
+    UnkVfn slot8_154a00;               // [8] -> 0x154a00 sub_154a00
 };
 
-// ClassWithUnknownVTable52  @ 0x005f0150  (18 slots)  refs x2  src:g_gameLevelVtbl
+// ClassWithUnknownVTable64  @ 0x005f0150  (18 slots)  refs x2  src:g_gameLevelVtbl
 struct GameLevelVtbl {
     UnkVfn slot0_1bef01;       // [0] -> 0x1bef01 sub_1bef01
     UnkVfn ScalarDtor;         // [1] -> 0x1611c0 ScalarDtor
@@ -742,287 +802,347 @@ struct GameLevelVtbl {
     UnkVfn ReleaseChildren;    // [17] -> 0x15d680 ReleaseChildren
 };
 
-// ClassWithUnknownVTable53  @ 0x005f0198  (18 slots)  refs x1  src:g_imageSet1Vtbl
+// ClassWithUnknownVTable65  @ 0x005f0198  (18 slots)  refs x1  src:g_imageSet1Vtbl
 struct ImageSet1Vtbl {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x161350 `scalar_deleting_destructor'
-    UnkVfn slot2_0028ec;                 // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
-    UnkVfn ClassUnknown_66_166d40;       // [5] -> 0x166d40 ClassUnknown_66_166d40
-    UnkVfn slot6_161330;                 // [6] -> 0x161330 sub_161330
-    UnkVfn slot7_161340;                 // [7] -> 0x161340 sub_161340
-    UnkVfn slot8_161380;                 // [8] -> 0x161380 sub_161380
-    UnkVfn slot9_161410;                 // [9] -> 0x161410 sub_161410
-    UnkVfn slot10_161390;                // [10] -> 0x161390 sub_161390
-    UnkVfn slot11_1613a0;                // [11] -> 0x1613a0 sub_1613a0
-    UnkVfn slot12_1613b0;                // [12] -> 0x1613b0 sub_1613b0
-    UnkVfn slot13_1613c0;                // [13] -> 0x1613c0 sub_1613c0
-    UnkVfn slot14_1613d0;                // [14] -> 0x1613d0 sub_1613d0
-    UnkVfn slot15_1613e0;                // [15] -> 0x1613e0 sub_1613e0
-    UnkVfn slot16_1613f0;                // [16] -> 0x1613f0 sub_1613f0
-    UnkVfn slot17_161400;                // [17] -> 0x161400 sub_161400
+    UnkVfn slot0_1bef01;               // [0] -> 0x1bef01 sub_1bef01
+    UnkVfn scalar_deleting_destructor; // [1] -> 0x161350 `scalar_deleting_destructor'
+    UnkVfn slot2_0028ec;               // [2] -> 0x0028ec sub_0028ec
+    UnkVfn slot3_00106e;               // [3] -> 0x00106e sub_00106e
+    UnkVfn slot4_004034;               // [4] -> 0x004034 sub_004034
+    UnkVfn Parse;                      // [5] -> 0x166d40 Parse
+    UnkVfn slot6_161330;               // [6] -> 0x161330 sub_161330
+    UnkVfn slot7_161340;               // [7] -> 0x161340 sub_161340
+    UnkVfn slot8_161380;               // [8] -> 0x161380 sub_161380
+    UnkVfn slot9_161410;               // [9] -> 0x161410 sub_161410
+    UnkVfn slot10_161390;              // [10] -> 0x161390 sub_161390
+    UnkVfn slot11_1613a0;              // [11] -> 0x1613a0 sub_1613a0
+    UnkVfn slot12_1613b0;              // [12] -> 0x1613b0 sub_1613b0
+    UnkVfn slot13_1613c0;              // [13] -> 0x1613c0 sub_1613c0
+    UnkVfn slot14_1613d0;              // [14] -> 0x1613d0 sub_1613d0
+    UnkVfn slot15_1613e0;              // [15] -> 0x1613e0 sub_1613e0
+    UnkVfn slot16_1613f0;              // [16] -> 0x1613f0 sub_1613f0
+    UnkVfn slot17_161400;              // [17] -> 0x161400 sub_161400
 };
 
-// ClassWithUnknownVTable54  @ 0x005f01e0  (18 slots)  refs x1  src:g_imageSet2Vtbl
+// ClassWithUnknownVTable66  @ 0x005f01e0  (18 slots)  refs x1  src:g_imageSet2Vtbl
 struct ImageSet2Vtbl {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x161440 `scalar_deleting_destructor'
-    UnkVfn slot2_0028ec;                 // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
-    UnkVfn FUN_00566990;                 // [5] -> 0x166990 FUN_00566990
-    UnkVfn slot6_161420;                 // [6] -> 0x161420 sub_161420
-    UnkVfn slot7_161430;                 // [7] -> 0x161430 sub_161430
-    UnkVfn slot8_161470;                 // [8] -> 0x161470 sub_161470
-    UnkVfn slot9_1614a0;                 // [9] -> 0x1614a0 sub_1614a0
-    UnkVfn slot10_1669e0;                // [10] -> 0x1669e0 sub_1669e0
-    UnkVfn slot11_166a40;                // [11] -> 0x166a40 sub_166a40
-    UnkVfn slot12_166b90;                // [12] -> 0x166b90 sub_166b90
-    UnkVfn slot13_166bf0;                // [13] -> 0x166bf0 sub_166bf0
-    UnkVfn slot14_166ab0;                // [14] -> 0x166ab0 sub_166ab0
-    UnkVfn slot15_166b20;                // [15] -> 0x166b20 sub_166b20
-    UnkVfn slot16_166c60;                // [16] -> 0x166c60 sub_166c60
-    UnkVfn slot17_166cd0;                // [17] -> 0x166cd0 sub_166cd0
+    UnkVfn slot0_1bef01;               // [0] -> 0x1bef01 sub_1bef01
+    UnkVfn scalar_deleting_destructor; // [1] -> 0x161440 `scalar_deleting_destructor'
+    UnkVfn slot2_0028ec;               // [2] -> 0x0028ec sub_0028ec
+    UnkVfn slot3_00106e;               // [3] -> 0x00106e sub_00106e
+    UnkVfn slot4_004034;               // [4] -> 0x004034 sub_004034
+    UnkVfn Boundary_166990;            // [5] -> 0x166990 Boundary_166990
+    UnkVfn slot6_161420;               // [6] -> 0x161420 sub_161420
+    UnkVfn slot7_161430;               // [7] -> 0x161430 sub_161430
+    UnkVfn slot8_161470;               // [8] -> 0x161470 sub_161470
+    UnkVfn slot9_1614a0;               // [9] -> 0x1614a0 sub_1614a0
+    UnkVfn slot10_1669e0;              // [10] -> 0x1669e0 sub_1669e0
+    UnkVfn slot11_166a40;              // [11] -> 0x166a40 sub_166a40
+    UnkVfn slot12_166b90;              // [12] -> 0x166b90 sub_166b90
+    UnkVfn slot13_166bf0;              // [13] -> 0x166bf0 sub_166bf0
+    UnkVfn slot14_166ab0;              // [14] -> 0x166ab0 sub_166ab0
+    UnkVfn slot15_166b20;              // [15] -> 0x166b20 sub_166b20
+    UnkVfn slot16_166c60;              // [16] -> 0x166c60 sub_166c60
+    UnkVfn slot17_166cd0;              // [17] -> 0x166cd0 sub_166cd0
 };
 
-// ClassWithUnknownVTable55  @ 0x005f0228  (18 slots)  refs x2  src:g_imageSet3Vtbl
+// ClassWithUnknownVTable67  @ 0x005f0228  (18 slots)  refs x2  src:g_imageSet3Vtbl
 struct ImageSet3Vtbl {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x1614e0 `scalar_deleting_destructor'
-    UnkVfn slot2_0028ec;                 // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
-    UnkVfn FUN_00566d70;                 // [5] -> 0x166d70 FUN_00566d70
-    UnkVfn FUN_005614b0;                 // [6] -> 0x1614b0 FUN_005614b0
-    UnkVfn slot7_1614d0;                 // [7] -> 0x1614d0 sub_1614d0
-    UnkVfn slot8_161570;                 // [8] -> 0x161570 sub_161570
-    UnkVfn slot9_161590;                 // [9] -> 0x161590 sub_161590
-    UnkVfn slot10_166e00;                // [10] -> 0x166e00 sub_166e00
-    UnkVfn slot11_166e60;                // [11] -> 0x166e60 sub_166e60
-    UnkVfn slot12_166eb0;                // [12] -> 0x166eb0 sub_166eb0
-    UnkVfn slot13_166f20;                // [13] -> 0x166f20 sub_166f20
-    UnkVfn slot14_166f80;                // [14] -> 0x166f80 sub_166f80
-    UnkVfn slot15_166ff0;                // [15] -> 0x166ff0 sub_166ff0
-    UnkVfn slot16_167050;                // [16] -> 0x167050 sub_167050
-    UnkVfn slot17_1670d0;                // [17] -> 0x1670d0 sub_1670d0
+    UnkVfn slot0_1bef01;               // [0] -> 0x1bef01 sub_1bef01
+    UnkVfn scalar_deleting_destructor; // [1] -> 0x1614e0 `scalar_deleting_destructor'
+    UnkVfn slot2_0028ec;               // [2] -> 0x0028ec sub_0028ec
+    UnkVfn slot3_00106e;               // [3] -> 0x00106e sub_00106e
+    UnkVfn slot4_004034;               // [4] -> 0x004034 sub_004034
+    UnkVfn Boundary_166d70;            // [5] -> 0x166d70 Boundary_166d70
+    UnkVfn Boundary_1614b0;            // [6] -> 0x1614b0 Boundary_1614b0
+    UnkVfn slot7_1614d0;               // [7] -> 0x1614d0 sub_1614d0
+    UnkVfn slot8_161570;               // [8] -> 0x161570 sub_161570
+    UnkVfn slot9_161590;               // [9] -> 0x161590 sub_161590
+    UnkVfn slot10_166e00;              // [10] -> 0x166e00 sub_166e00
+    UnkVfn slot11_166e60;              // [11] -> 0x166e60 sub_166e60
+    UnkVfn slot12_166eb0;              // [12] -> 0x166eb0 sub_166eb0
+    UnkVfn slot13_166f20;              // [13] -> 0x166f20 sub_166f20
+    UnkVfn slot14_166f80;              // [14] -> 0x166f80 sub_166f80
+    UnkVfn slot15_166ff0;              // [15] -> 0x166ff0 sub_166ff0
+    UnkVfn slot16_167050;              // [16] -> 0x167050 sub_167050
+    UnkVfn slot17_1670d0;              // [17] -> 0x1670d0 sub_1670d0
 };
 
-// ClassWithUnknownVTable56  @ 0x005f0270  (12 slots)  refs x2
-struct Vtbl_1f0270 {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x163ad0 `scalar_deleting_destructor'
-    UnkVfn slot2_0028ec;                 // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
-    UnkVfn slot5_163a90;                 // [5] -> 0x163a90 sub_163a90
-    UnkVfn slot6_001c08;                 // [6] -> 0x001c08 sub_001c08
-    UnkVfn FUN_00561bf0;                 // [7] -> 0x161bf0 FUN_00561bf0
-    UnkVfn slot8_163ab0;                 // [8] -> 0x163ab0 sub_163ab0
-    UnkVfn slot9_1619f0;                 // [9] -> 0x1619f0 sub_1619f0
-    UnkVfn slot10_161640;                // [10] -> 0x161640 sub_161640
-    UnkVfn slot11_163ac0;                // [11] -> 0x163ac0 sub_163ac0
+// ClassWithUnknownVTable68  @ 0x005f0270  (12 slots)  refs x2  src:g_severusWorkerHostVtbl
+struct SeverusWorkerHostVtbl {
+    UnkVfn slot0_1bef01;               // [0] -> 0x1bef01 sub_1bef01
+    UnkVfn scalar_deleting_destructor; // [1] -> 0x163ad0 `scalar_deleting_destructor'
+    UnkVfn slot2_0028ec;               // [2] -> 0x0028ec sub_0028ec
+    UnkVfn slot3_00106e;               // [3] -> 0x00106e sub_00106e
+    UnkVfn slot4_004034;               // [4] -> 0x004034 sub_004034
+    UnkVfn slot5_163a90;               // [5] -> 0x163a90 sub_163a90
+    UnkVfn slot6_001c08;               // [6] -> 0x001c08 sub_001c08
+    UnkVfn Boundary_161bf0;            // [7] -> 0x161bf0 Boundary_161bf0
+    UnkVfn slot8_163ab0;               // [8] -> 0x163ab0 sub_163ab0
+    UnkVfn slot9_1619f0;               // [9] -> 0x1619f0 sub_1619f0
+    UnkVfn slot10_161640;              // [10] -> 0x161640 sub_161640
+    UnkVfn slot11_163ac0;              // [11] -> 0x163ac0 sub_163ac0
 };
 
-// ClassWithUnknownVTable57  @ 0x005f02a8  (5 slots)  refs x4  src:g_wwdGridIterVtbl
+// ClassWithUnknownVTable69  @ 0x005f02a8  (5 slots)  refs x4  src:g_wwdGridIterVtbl
 struct WwdGridIterVtbl {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x163a20 `scalar_deleting_destructor'
-    UnkVfn slot2_0028ec;                 // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
+    UnkVfn slot0_1bef01;               // [0] -> 0x1bef01 sub_1bef01
+    UnkVfn scalar_deleting_destructor; // [1] -> 0x163a20 `scalar_deleting_destructor'
+    UnkVfn slot2_0028ec;               // [2] -> 0x0028ec sub_0028ec
+    UnkVfn slot3_00106e;               // [3] -> 0x00106e sub_00106e
+    UnkVfn slot4_004034;               // [4] -> 0x004034 sub_004034
 };
 
-// ClassWithUnknownVTable58  @ 0x005f02c0  (5 slots)  refs x2  src:g_aniRecordVtbl
+// ClassWithUnknownVTable70  @ 0x005f02c0  (5 slots)  refs x2  src:g_aniRecordVtbl
 struct AniRecordVtbl {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x165780 `scalar_deleting_destructor'
-    UnkVfn slot2_0028ec;                 // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
+    UnkVfn slot0_1bef01;               // [0] -> 0x1bef01 sub_1bef01
+    UnkVfn scalar_deleting_destructor; // [1] -> 0x165780 `scalar_deleting_destructor'
+    UnkVfn slot2_0028ec;               // [2] -> 0x0028ec sub_0028ec
+    UnkVfn slot3_00106e;               // [3] -> 0x00106e sub_00106e
+    UnkVfn slot4_004034;               // [4] -> 0x004034 sub_004034
 };
 
-// ClassWithUnknownVTable59  @ 0x005f02d8  (14 slots)  refs x5  src:g_albusWorkerVtbl
+// ClassWithUnknownVTable71  @ 0x005f02d8  (14 slots)  refs x5  src:g_albusWorkerVtbl
 struct AlbusWorkerVtbl {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x165db0 `scalar_deleting_destructor'
-    UnkVfn slot2_0028ec;                 // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
-    UnkVfn slot5_165d90;                 // [5] -> 0x165d90 sub_165d90
-    UnkVfn slot6_001c08;                 // [6] -> 0x001c08 sub_001c08
-    UnkVfn ClassUnknown_41_168fb0;       // [7] -> 0x168fb0 ClassUnknown_41_168fb0
-    UnkVfn slot8_165da0;                 // [8] -> 0x165da0 sub_165da0
-    UnkVfn slot9_168f20;                 // [9] -> 0x168f20 sub_168f20
-    UnkVfn ClassUnknown_41_168ee0;       // [10] -> 0x168ee0 ClassUnknown_41_168ee0
-    UnkVfn FUN_00568ea0;                 // [11] -> 0x168ea0 FUN_00568ea0
-    UnkVfn FUN_00568f60;                 // [12] -> 0x168f60 FUN_00568f60
-    UnkVfn slot13_168fd0;                // [13] -> 0x168fd0 sub_168fd0
+    UnkVfn slot0_1bef01;               // [0] -> 0x1bef01 sub_1bef01
+    UnkVfn scalar_deleting_destructor; // [1] -> 0x165db0 `scalar_deleting_destructor'
+    UnkVfn slot2_0028ec;               // [2] -> 0x0028ec sub_0028ec
+    UnkVfn slot3_00106e;               // [3] -> 0x00106e sub_00106e
+    UnkVfn slot4_004034;               // [4] -> 0x004034 sub_004034
+    UnkVfn slot5_165d90;               // [5] -> 0x165d90 sub_165d90
+    UnkVfn slot6_001c08;               // [6] -> 0x001c08 sub_001c08
+    UnkVfn FreeBuf_168fb0;             // [7] -> 0x168fb0 FreeBuf_168fb0
+    UnkVfn slot8_165da0;               // [8] -> 0x165da0 sub_165da0
+    UnkVfn slot9_168f20;               // [9] -> 0x168f20 sub_168f20
+    UnkVfn Alloc168ee0;                // [10] -> 0x168ee0 Alloc168ee0
+    UnkVfn Alloc168ea0;                // [11] -> 0x168ea0 Alloc168ea0
+    UnkVfn Alloc168f60;                // [12] -> 0x168f60 Alloc168f60
+    UnkVfn slot13_168fd0;              // [13] -> 0x168fd0 sub_168fd0
 };
 
-// ClassWithUnknownVTable60  @ 0x005f0310  (6 slots)  refs x3
+// ClassWithUnknownVTable72  @ 0x005f0310  (6 slots)  refs x3
 struct Vtbl_1f0310 {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x168280 `scalar_deleting_destructor'
-    UnkVfn slot2_0028ec;                 // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
-    UnkVfn slot5_168060;                 // [5] -> 0x168060 sub_168060
+    UnkVfn slot0_1bef01;               // [0] -> 0x1bef01 sub_1bef01
+    UnkVfn scalar_deleting_destructor; // [1] -> 0x168280 `scalar_deleting_destructor'
+    UnkVfn slot2_0028ec;               // [2] -> 0x0028ec sub_0028ec
+    UnkVfn slot3_00106e;               // [3] -> 0x00106e sub_00106e
+    UnkVfn slot4_004034;               // [4] -> 0x004034 sub_004034
+    UnkVfn slot5_168060;               // [5] -> 0x168060 sub_168060
 };
 
-// ClassWithUnknownVTable61  @ 0x005f0328  (6 slots)  refs x2  src:g_wwdGridVtbl
-struct WwdGridVtbl {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x168bf0 `scalar_deleting_destructor'
-    UnkVfn slot2_0028ec;                 // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
-    UnkVfn __purecall;                   // [5] -> 0x11fec0 __purecall
+// ClassWithUnknownVTable73  @ 0x005f0328  (6 slots)  refs x2
+struct Vtbl_1f0328 {
+    UnkVfn slot0_1bef01;               // [0] -> 0x1bef01 sub_1bef01
+    UnkVfn scalar_deleting_destructor; // [1] -> 0x168bf0 `scalar_deleting_destructor'
+    UnkVfn slot2_0028ec;               // [2] -> 0x0028ec sub_0028ec
+    UnkVfn slot3_00106e;               // [3] -> 0x00106e sub_00106e
+    UnkVfn slot4_004034;               // [4] -> 0x004034 sub_004034
+    UnkVfn __purecall;                 // [5] -> 0x11fec0 __purecall
 };
 
-// ClassWithUnknownVTable62  @ 0x005f0748  (5 slots)  refs x2
+// ClassWithUnknownVTable74  @ 0x005f04c8  (1 slots)  refs x4  src:g_projActVtbl
+struct ProjActVtbl {
+    UnkVfn scalar_deleting_destructor; // [0] -> 0x16d2d0 `scalar_deleting_destructor'
+};
+
+// ClassWithUnknownVTable75  @ 0x005f04cc  (1 slots)  refs x2  src:g_CContainerErrVtbl
+struct CContainerErrVtbl {
+    UnkVfn scalar_deleting_destructor; // [0] -> 0x16da40 `scalar_deleting_destructor'
+};
+
+// ClassWithUnknownVTable76  @ 0x005f04d0  (1 slots)  refs x1  src:g_typeKeyCollVtbl
+struct TypeKeyCollVtbl {
+    UnkVfn scalar_deleting_destructor; // [0] -> 0x16dde0 `scalar_deleting_destructor'
+};
+
+// ClassWithUnknownVTable77  @ 0x005f04d4  (1 slots)  refs x2  src:g_zArray2DVtbl
+struct ZArray2DVtbl {
+    UnkVfn scalar_deleting_destructor; // [0] -> 0x16df20 `scalar_deleting_destructor'
+};
+
+// ClassWithUnknownVTable78  @ 0x005f04d8  (1 slots)  refs x2  src:g_buteNodeEntryVtbl
+struct ButeNodeEntryVtbl {
+    UnkVfn scalar_deleting_destructor; // [0] -> 0x16dfa0 `scalar_deleting_destructor'
+};
+
+// ClassWithUnknownVTable79  @ 0x005f04dc  (1 slots)  refs x1  src:g_buteTreeSubVtbl
+struct ButeTreeSubVtbl {
+    UnkVfn slot0_16ea80; // [0] -> 0x16ea80 sub_16ea80
+};
+
+// ClassWithUnknownVTable80  @ 0x005f04e0  (1 slots)  refs x1  src:g_buteTreeVtbl
+struct ButeTreeVtbl {
+    UnkVfn Boundary_16e9c0; // [0] -> 0x16e9c0 Boundary_16e9c0
+};
+
+// ClassWithUnknownVTable81  @ 0x005f04e4  (1 slots)  refs x3  src:g_typeCollRunVtbl
+struct TypeCollRunVtbl {
+    UnkVfn slot0_16ea20; // [0] -> 0x16ea20 sub_16ea20
+};
+
+// ClassWithUnknownVTable82  @ 0x005f0510  (1 slots)  refs x3  src:g_streamVtbl
+struct StreamVtbl {
+    UnkVfn scalar_deleting_destructor; // [0] -> 0x174d30 `scalar_deleting_destructor'
+};
+
+// ClassWithUnknownVTable83  @ 0x005f0514  (1 slots)  refs x1  src:g_streamData
+struct StreamDataVtbl {
+    UnkVfn slot0_174e80; // [0] -> 0x174e80 sub_174e80
+};
+
+// ClassWithUnknownVTable84  @ 0x005f0518  (1 slots)  refs x2
+struct Vtbl_1f0518 {
+    UnkVfn slot0_174e70; // [0] -> 0x174e70 sub_174e70
+};
+
+// ClassWithUnknownVTable85  @ 0x005f051c  (1 slots)  refs x2
+struct Vtbl_1f051c {
+    UnkVfn scalar_deleting_destructor; // [0] -> 0x174d50 `scalar_deleting_destructor'
+};
+
+// ClassWithUnknownVTable86  @ 0x005f0748  (5 slots)  refs x2
 struct Vtbl_1f0748 {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x179320 `scalar_deleting_destructor'
-    UnkVfn slot2_0028ec;                 // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
+    UnkVfn slot0_1bef01;               // [0] -> 0x1bef01 sub_1bef01
+    UnkVfn scalar_deleting_destructor; // [1] -> 0x179320 `scalar_deleting_destructor'
+    UnkVfn slot2_0028ec;               // [2] -> 0x0028ec sub_0028ec
+    UnkVfn slot3_00106e;               // [3] -> 0x00106e sub_00106e
+    UnkVfn slot4_004034;               // [4] -> 0x004034 sub_004034
 };
 
-// ClassWithUnknownVTable63  @ 0x005f0760  (5 slots)  refs x2
+// ClassWithUnknownVTable87  @ 0x005f0760  (5 slots)  refs x2
 struct Vtbl_1f0760 {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x179390 `scalar_deleting_destructor'
-    UnkVfn slot2_0028ec;                 // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
+    UnkVfn slot0_1bef01;               // [0] -> 0x1bef01 sub_1bef01
+    UnkVfn scalar_deleting_destructor; // [1] -> 0x179390 `scalar_deleting_destructor'
+    UnkVfn slot2_0028ec;               // [2] -> 0x0028ec sub_0028ec
+    UnkVfn slot3_00106e;               // [3] -> 0x00106e sub_00106e
+    UnkVfn slot4_004034;               // [4] -> 0x004034 sub_004034
 };
 
-// ClassWithUnknownVTable64  @ 0x005f0778  (5 slots)  refs x2
+// ClassWithUnknownVTable88  @ 0x005f0778  (5 slots)  refs x2
 struct Vtbl_1f0778 {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x179400 `scalar_deleting_destructor'
-    UnkVfn slot2_0028ec;                 // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
+    UnkVfn slot0_1bef01;               // [0] -> 0x1bef01 sub_1bef01
+    UnkVfn scalar_deleting_destructor; // [1] -> 0x179400 `scalar_deleting_destructor'
+    UnkVfn slot2_0028ec;               // [2] -> 0x0028ec sub_0028ec
+    UnkVfn slot3_00106e;               // [3] -> 0x00106e sub_00106e
+    UnkVfn slot4_004034;               // [4] -> 0x004034 sub_004034
 };
 
-// ClassWithUnknownVTable65  @ 0x005f0790  (5 slots)  refs x3
-struct Vtbl_1f0790 {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x17e430 `scalar_deleting_destructor'
-    UnkVfn slot2_17e2a0;                 // [2] -> 0x17e2a0 sub_17e2a0
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
+// ClassWithUnknownVTable89  @ 0x005f0790  (5 slots)  refs x3  src:g_faderArrayVtbl
+struct FaderArrayVtbl {
+    UnkVfn slot0_1bef01;               // [0] -> 0x1bef01 sub_1bef01
+    UnkVfn scalar_deleting_destructor; // [1] -> 0x17e430 `scalar_deleting_destructor'
+    UnkVfn slot2_17e2a0;               // [2] -> 0x17e2a0 sub_17e2a0
+    UnkVfn slot3_00106e;               // [3] -> 0x00106e sub_00106e
+    UnkVfn slot4_004034;               // [4] -> 0x004034 sub_004034
 };
 
-// ClassWithUnknownVTable66  @ 0x005f07a8  (5 slots)  refs x2
+// ClassWithUnknownVTable90  @ 0x005f07a8  (5 slots)  refs x2
 struct Vtbl_1f07a8 {
-    UnkVfn _scalar_deleting_destructor_; // [0] -> 0x17e480 `scalar_deleting_destructor'
-    UnkVfn __purecall;                   // [1] -> 0x11fec0 __purecall
-    UnkVfn __purecall_2;                 // [2] -> 0x11fec0 __purecall
-    UnkVfn slot3_17e790;                 // [3] -> 0x17e790 sub_17e790
-    UnkVfn slot4_17e7a0;                 // [4] -> 0x17e7a0 sub_17e7a0
+    UnkVfn scalar_deleting_destructor; // [0] -> 0x17e480 `scalar_deleting_destructor'
+    UnkVfn __purecall;                 // [1] -> 0x11fec0 __purecall
+    UnkVfn __purecall_2;               // [2] -> 0x11fec0 __purecall
+    UnkVfn slot3_17e790;               // [3] -> 0x17e790 sub_17e790
+    UnkVfn slot4_17e7a0;               // [4] -> 0x17e7a0 sub_17e7a0
 };
 
-// ClassWithUnknownVTable67  @ 0x005f07c0  (5 slots)  refs x2
+// ClassWithUnknownVTable91  @ 0x005f07c0  (5 slots)  refs x2
 struct Vtbl_1f07c0 {
-    UnkVfn _scalar_deleting_destructor_; // [0] -> 0x17e970 `scalar_deleting_destructor'
-    UnkVfn slot1_17ef00;                 // [1] -> 0x17ef00 sub_17ef00
-    UnkVfn slot2_17f120;                 // [2] -> 0x17f120 sub_17f120
-    UnkVfn slot3_17e790;                 // [3] -> 0x17e790 sub_17e790
-    UnkVfn slot4_17e7a0;                 // [4] -> 0x17e7a0 sub_17e7a0
+    UnkVfn scalar_deleting_destructor; // [0] -> 0x17e970 `scalar_deleting_destructor'
+    UnkVfn slot1_17ef00;               // [1] -> 0x17ef00 sub_17ef00
+    UnkVfn slot2_17f120;               // [2] -> 0x17f120 sub_17f120
+    UnkVfn slot3_17e790;               // [3] -> 0x17e790 sub_17e790
+    UnkVfn slot4_17e7a0;               // [4] -> 0x17e7a0 sub_17e7a0
 };
 
-// ClassWithUnknownVTable68  @ 0x005f07d8  (5 slots)  refs x3
-struct Vtbl_1f07d8 {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x17f310 `scalar_deleting_destructor'
-    UnkVfn slot2_17f130;                 // [2] -> 0x17f130 sub_17f130
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
+// ClassWithUnknownVTable92  @ 0x005f07d8  (5 slots)  refs x3  src:g_severusWorkerVtbl
+struct SeverusWorkerVtbl_1f07d8 {
+    UnkVfn slot0_1bef01;               // [0] -> 0x1bef01 sub_1bef01
+    UnkVfn scalar_deleting_destructor; // [1] -> 0x17f310 `scalar_deleting_destructor'
+    UnkVfn slot2_17f130;               // [2] -> 0x17f130 sub_17f130
+    UnkVfn slot3_00106e;               // [3] -> 0x00106e sub_00106e
+    UnkVfn slot4_004034;               // [4] -> 0x004034 sub_004034
 };
 
-// ClassWithUnknownVTable69  @ 0x005f07f8  (5 slots)  refs x2
+// ClassWithUnknownVTable93  @ 0x005f07f8  (5 slots)  refs x2
 struct Vtbl_1f07f8 {
-    UnkVfn _scalar_deleting_destructor_; // [0] -> 0x17f550 `scalar_deleting_destructor'
-    UnkVfn slot1_17f660;                 // [1] -> 0x17f660 sub_17f660
-    UnkVfn slot2_17f950;                 // [2] -> 0x17f950 sub_17f950
-    UnkVfn slot3_17e790;                 // [3] -> 0x17e790 sub_17e790
-    UnkVfn slot4_17e7a0;                 // [4] -> 0x17e7a0 sub_17e7a0
+    UnkVfn scalar_deleting_destructor; // [0] -> 0x17f550 `scalar_deleting_destructor'
+    UnkVfn slot1_17f660;               // [1] -> 0x17f660 sub_17f660
+    UnkVfn slot2_17f950;               // [2] -> 0x17f950 sub_17f950
+    UnkVfn slot3_17e790;               // [3] -> 0x17e790 sub_17e790
+    UnkVfn slot4_17e7a0;               // [4] -> 0x17e7a0 sub_17e7a0
 };
 
-// ClassWithUnknownVTable70  @ 0x005f0810  (5 slots)  refs x2
+// ClassWithUnknownVTable94  @ 0x005f0810  (5 slots)  refs x2
 struct Vtbl_1f0810 {
-    UnkVfn _scalar_deleting_destructor_; // [0] -> 0x17f9d0 `scalar_deleting_destructor'
-    UnkVfn slot1_17fc60;                 // [1] -> 0x17fc60 sub_17fc60
-    UnkVfn slot2_17fda0;                 // [2] -> 0x17fda0 sub_17fda0
-    UnkVfn slot3_17e790;                 // [3] -> 0x17e790 sub_17e790
-    UnkVfn slot4_17e7a0;                 // [4] -> 0x17e7a0 sub_17e7a0
+    UnkVfn scalar_deleting_destructor; // [0] -> 0x17f9d0 `scalar_deleting_destructor'
+    UnkVfn slot1_17fc60;               // [1] -> 0x17fc60 sub_17fc60
+    UnkVfn slot2_17fda0;               // [2] -> 0x17fda0 sub_17fda0
+    UnkVfn slot3_17e790;               // [3] -> 0x17e790 sub_17e790
+    UnkVfn slot4_17e7a0;               // [4] -> 0x17e7a0 sub_17e7a0
 };
 
-// ClassWithUnknownVTable71  @ 0x005f0848  (5 slots)  refs x2  src:g_faderSineVtbl
-struct FaderSineVtbl {
-    UnkVfn _scalar_deleting_destructor_; // [0] -> 0x17fdd0 `scalar_deleting_destructor'
-    UnkVfn slot1_17ff30;                 // [1] -> 0x17ff30 sub_17ff30
-    UnkVfn slot2_180400;                 // [2] -> 0x180400 sub_180400
-    UnkVfn slot3_17e790;                 // [3] -> 0x17e790 sub_17e790
-    UnkVfn slot4_17e7a0;                 // [4] -> 0x17e7a0 sub_17e7a0
+// ClassWithUnknownVTable95  @ 0x005f0848  (5 slots)  refs x2
+struct Vtbl_1f0848 {
+    UnkVfn scalar_deleting_destructor; // [0] -> 0x17fdd0 `scalar_deleting_destructor'
+    UnkVfn slot1_17ff30;               // [1] -> 0x17ff30 sub_17ff30
+    UnkVfn slot2_180400;               // [2] -> 0x180400 sub_180400
+    UnkVfn slot3_17e790;               // [3] -> 0x17e790 sub_17e790
+    UnkVfn slot4_17e7a0;               // [4] -> 0x17e7a0 sub_17e7a0
 };
 
-// ClassWithUnknownVTable72  @ 0x005f0870  (5 slots)  refs x2
+// ClassWithUnknownVTable96  @ 0x005f0870  (5 slots)  refs x2
 struct Vtbl_1f0870 {
-    UnkVfn _scalar_deleting_destructor_; // [0] -> 0x180430 `scalar_deleting_destructor'
-    UnkVfn slot1_180640;                 // [1] -> 0x180640 sub_180640
-    UnkVfn slot2_1814f0;                 // [2] -> 0x1814f0 sub_1814f0
-    UnkVfn FUN_00581660;                 // [3] -> 0x181660 FUN_00581660
-    UnkVfn FUN_005816a0;                 // [4] -> 0x1816a0 FUN_005816a0
+    UnkVfn scalar_deleting_destructor; // [0] -> 0x180430 `scalar_deleting_destructor'
+    UnkVfn slot1_180640;               // [1] -> 0x180640 sub_180640
+    UnkVfn slot2_1814f0;               // [2] -> 0x1814f0 sub_1814f0
+    UnkVfn Unmatched_181660;           // [3] -> 0x181660 Unmatched_181660
+    UnkVfn Unmatched_1816a0;           // [4] -> 0x1816a0 Unmatched_1816a0
 };
 
-// ClassWithUnknownVTable73  @ 0x005f0890  (5 slots)  refs x2
+// ClassWithUnknownVTable97  @ 0x005f0890  (5 slots)  refs x2
 struct Vtbl_1f0890 {
-    UnkVfn _scalar_deleting_destructor_; // [0] -> 0x181700 `scalar_deleting_destructor'
-    UnkVfn slot1_181b00;                 // [1] -> 0x181b00 sub_181b00
-    UnkVfn slot2_182900;                 // [2] -> 0x182900 sub_182900
-    UnkVfn slot3_17e790;                 // [3] -> 0x17e790 sub_17e790
-    UnkVfn slot4_17e7a0;                 // [4] -> 0x17e7a0 sub_17e7a0
+    UnkVfn scalar_deleting_destructor; // [0] -> 0x181700 `scalar_deleting_destructor'
+    UnkVfn slot1_181b00;               // [1] -> 0x181b00 sub_181b00
+    UnkVfn slot2_182900;               // [2] -> 0x182900 sub_182900
+    UnkVfn slot3_17e790;               // [3] -> 0x17e790 sub_17e790
+    UnkVfn slot4_17e7a0;               // [4] -> 0x17e7a0 sub_17e7a0
 };
 
-// ClassWithUnknownVTable74  @ 0x005f08c0  (14 slots)  refs x6  src:g_menuItemVtbl
+// ClassWithUnknownVTable98  @ 0x005f08c0  (14 slots)  refs x6  src:g_menuItemVtbl
 struct MenuItemVtbl {
-    UnkVfn _scalar_deleting_destructor_; // [0] -> 0x184670 `scalar_deleting_destructor'
-    UnkVfn Init;                         // [1] -> 0x185460 Init
-    UnkVfn Dispatch0c;                   // [2] -> 0x185510 Dispatch0c
-    UnkVfn Reset;                        // [3] -> 0x184730 Reset
-    UnkVfn slot4_185550;                 // [4] -> 0x185550 sub_185550
-    UnkVfn slot5_185520;                 // [5] -> 0x185520 sub_185520
-    UnkVfn slot6_184650;                 // [6] -> 0x184650 sub_184650
-    UnkVfn slot7_1855d0;                 // [7] -> 0x1855d0 sub_1855d0
-    UnkVfn slot8_1855e0;                 // [8] -> 0x1855e0 sub_1855e0
-    UnkVfn Place;                        // [9] -> 0x1855f0 Place
-    UnkVfn slot10_185690;                // [10] -> 0x185690 sub_185690
-    UnkVfn slot11_1856c0;                // [11] -> 0x1856c0 sub_1856c0
-    UnkVfn Trigger;                      // [12] -> 0x1856d0 Trigger
-    UnkVfn slot13_184660;                // [13] -> 0x184660 sub_184660
+    UnkVfn scalar_deleting_destructor; // [0] -> 0x184670 `scalar_deleting_destructor'
+    UnkVfn Init;                       // [1] -> 0x185460 Init
+    UnkVfn Dispatch0c;                 // [2] -> 0x185510 Dispatch0c
+    UnkVfn Reset;                      // [3] -> 0x184730 Reset
+    UnkVfn slot4_185550;               // [4] -> 0x185550 sub_185550
+    UnkVfn slot5_185520;               // [5] -> 0x185520 sub_185520
+    UnkVfn slot6_184650;               // [6] -> 0x184650 sub_184650
+    UnkVfn slot7_1855d0;               // [7] -> 0x1855d0 sub_1855d0
+    UnkVfn slot8_1855e0;               // [8] -> 0x1855e0 sub_1855e0
+    UnkVfn Place;                      // [9] -> 0x1855f0 Place
+    UnkVfn slot10_185690;              // [10] -> 0x185690 sub_185690
+    UnkVfn slot11_1856c0;              // [11] -> 0x1856c0 sub_1856c0
+    UnkVfn Trigger;                    // [12] -> 0x1856d0 Trigger
+    UnkVfn slot13_184660;              // [13] -> 0x184660 sub_184660
 };
 
-// ClassWithUnknownVTable75  @ 0x005f08f8  (15 slots)  refs x3
-struct Vtbl_1f08f8 {
-    UnkVfn _scalar_deleting_destructor_; // [0] -> 0x1847c0 `scalar_deleting_destructor'
-    UnkVfn FUN_00585750;                 // [1] -> 0x185750 FUN_00585750
-    UnkVfn Dispatch0c;                   // [2] -> 0x185510 Dispatch0c
-    UnkVfn slot3_184890;                 // [3] -> 0x184890 sub_184890
-    UnkVfn slot4_185890;                 // [4] -> 0x185890 sub_185890
-    UnkVfn slot5_185880;                 // [5] -> 0x185880 sub_185880
-    UnkVfn slot6_184780;                 // [6] -> 0x184780 sub_184780
-    UnkVfn slot7_1855d0;                 // [7] -> 0x1855d0 sub_1855d0
-    UnkVfn slot8_1858a0;                 // [8] -> 0x1858a0 sub_1858a0
-    UnkVfn FUN_005858d0;                 // [9] -> 0x1858d0 FUN_005858d0
-    UnkVfn slot10_185690;                // [10] -> 0x185690 sub_185690
-    UnkVfn slot11_1856c0;                // [11] -> 0x1856c0 sub_1856c0
-    UnkVfn Trigger;                      // [12] -> 0x1856d0 Trigger
-    UnkVfn slot13_1847b0;                // [13] -> 0x1847b0 sub_1847b0
-    UnkVfn FUN_005847a0;                 // [14] -> 0x1847a0 FUN_005847a0
+// ClassWithUnknownVTable99  @ 0x005f08f8  (15 slots)  refs x3  src:g_menuItem2Vtbl
+struct MenuItem2Vtbl {
+    UnkVfn scalar_deleting_destructor; // [0] -> 0x1847c0 `scalar_deleting_destructor'
+    UnkVfn Boundary_185750;            // [1] -> 0x185750 Boundary_185750
+    UnkVfn Dispatch0c;                 // [2] -> 0x185510 Dispatch0c
+    UnkVfn slot3_184890;               // [3] -> 0x184890 sub_184890
+    UnkVfn slot4_185890;               // [4] -> 0x185890 sub_185890
+    UnkVfn slot5_185880;               // [5] -> 0x185880 sub_185880
+    UnkVfn slot6_184780;               // [6] -> 0x184780 sub_184780
+    UnkVfn slot7_1855d0;               // [7] -> 0x1855d0 sub_1855d0
+    UnkVfn slot8_1858a0;               // [8] -> 0x1858a0 sub_1858a0
+    UnkVfn Boundary_1858d0;            // [9] -> 0x1858d0 Boundary_1858d0
+    UnkVfn slot10_185690;              // [10] -> 0x185690 sub_185690
+    UnkVfn slot11_1856c0;              // [11] -> 0x1856c0 sub_1856c0
+    UnkVfn Trigger;                    // [12] -> 0x1856d0 Trigger
+    UnkVfn slot13_1847b0;              // [13] -> 0x1847b0 sub_1847b0
+    UnkVfn Boundary_1847a0;            // [14] -> 0x1847a0 Boundary_1847a0
 };
 
 #endif // GRUNTZ_UNKNOWN_VTABLES_H
