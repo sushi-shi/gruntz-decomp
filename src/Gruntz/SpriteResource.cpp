@@ -78,6 +78,17 @@ extern void* g_imageVtbl; // 0x5eaa2c - CImage primary vftable
 
 struct CFrameWorkerVtbl;
 struct CFrameWorker {
+    inline CFrameWorker(i32 frameNumber, void* parent) {
+        m_04 = frameNumber;
+        m_08 = 0;
+        m_0c = parent;
+        vptr = (CFrameWorkerVtbl*)&g_imageVtbl;
+        *(i32*)(_10 + 0x00) = 0; // +0x10
+        *(i32*)(_10 + 0x04) = 0; // +0x14
+        m_2c = 0;
+        m_30 = 0;
+    }
+
     CFrameWorkerVtbl* vptr; // +0x00
     i32 m_04;               // +0x04  frame number
     i32 m_08;               // +0x08
@@ -488,19 +499,7 @@ CFrameWorker* CSprite::InsertFrame(void* src, i32 n, i32 mode) {
     if (n < m_10.m_nSize && m_10.m_pData[n] != 0) {
         return 0;
     }
-    CFrameWorker* worker = (CFrameWorker*)operator new(0x34);
-    if (worker) {
-        worker->m_04 = n;
-        worker->m_08 = 0;
-        worker->m_0c = m_c;
-        worker->vptr = (CFrameWorkerVtbl*)&g_imageVtbl;
-        *(i32*)(worker->_10 + 0x00) = 0; // +0x10
-        *(i32*)(worker->_10 + 0x04) = 0; // +0x14
-        worker->m_2c = 0;
-        worker->m_30 = 0;
-    } else {
-        worker = 0;
-    }
+    CFrameWorker* worker = new CFrameWorker(n, m_c);
     if (!worker->Resolve(src, mode)) {
         if (worker) {
             worker->Destroy(1);
