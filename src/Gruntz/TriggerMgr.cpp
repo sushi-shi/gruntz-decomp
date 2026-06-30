@@ -287,11 +287,17 @@ i32 CTriggerMgr::CellDispatch(i32 row, i32 col, i32 kind, i32 arg) {
 }
 
 // 0x6be30: ScreenToCell - bias the input (sx,sy) by the level view's scroll origin
-// (view@m_24: scroll struct @[m_5c]+0x40, origin @m_10/m_14) and forward to CellHitTest.
+// (view@m_24: scroll struct embedded at [m_5c]+0x40, origin @m_10/m_14) and forward to
+// CellHitTest.
+// @early-stop
+// reassociation/scheduling residual (~85%): the scroll/view loads + the CellHitTest arg
+// pushes are byte-exact; retail loads scroll[0]/[4] together up front and accumulates px
+// from scroll[0] (`(scroll0-view10)+sx`), our cl reloads sx and accumulates from it
+// (`(sx-view10)+scroll0`) - same value, swapped operand order. topic:wall topic:scheduling.
 RVA(0x0006be30, 0x47)
 void* CTriggerMgr::ScreenToCell(i32 sx, i32 sy, i32* outRow, i32* outCol, i32 startRow) {
     char* view = *(char**)(*(char**)((char*)this + 0x22c) + 0x24);
-    char* scroll = *(char**)(*(char**)(view + 0x5c) + 0x40);
+    char* scroll = *(char**)(view + 0x5c) + 0x40;
     i32 px = *(i32*)(scroll + 0) - *(i32*)(view + 0x10) + sx;
     i32 py = *(i32*)(scroll + 4) - *(i32*)(view + 0x14) + sy;
     return CellHitTest(px, py, outRow, outCol, startRow);
@@ -1131,7 +1137,7 @@ i32 CTriggerMgr::TriggerCell(i32 x, i32 y) {
     }
     CTmCell* cell = 0;
     if (*(i32*)((char*)this + 0x24c) == 1) {
-        i32* rec = (i32*)(*(char**)((char*)this + 0x244) + 0x8);
+        i32* rec = *(i32**)(*(char**)((char*)this + 0x244) + 0x8);
         cell = *(CTmCell**)((char*)this + (rec[1] + rec[0] * 15) * 4 + 0x1c);
     }
     CTmWorld2* world = (CTmWorld2*)((char*)g_gameReg->m_2c);
@@ -1563,7 +1569,7 @@ i32 CTriggerMgr::ResetGroup(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28
     CTmCell* hit = (CTmCell*)self->Hit5(a14, a18, 0, 0, 5);
     CTmCell* cell = 0;
     if (*(i32*)((char*)this + 0x24c) == 1) {
-        i32* rec = (i32*)(*(char**)((char*)this + 0x244) + 0x8);
+        i32* rec = *(i32**)(*(char**)((char*)this + 0x244) + 0x8);
         cell = *(CTmCell**)((char*)this + (rec[1] + rec[0] * 15) * 4 + 0x1c);
     }
     i32 sel;
@@ -1820,7 +1826,7 @@ RVA(0x00078a50, 0x845)
 i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
     CTmCell* cell = 0;
     if (*(i32*)((char*)this + 0x24c) == 1) {
-        i32* rec = (i32*)(*(char**)((char*)this + 0x244) + 0x8);
+        i32* rec = *(i32**)(*(char**)((char*)this + 0x244) + 0x8);
         cell = *(CTmCell**)((char*)this + (rec[1] + rec[0] * 15) * 4 + 0x1c);
     }
     if (cell == 0 || *(i32*)((char*)cell + 0x1ec) != g_644c54) {
@@ -1979,14 +1985,15 @@ struct CTmFxWorld {
 };
 
 // 0x6da60: GridAction6(a, b) - dispatch the spawn sub-mgr's action with kind 6.
+// __stdcall free function (cleans its own 2 args; retail ends in `ret 8`).
 RVA(0x0006da60, 0x27)
-i32 GridAction6(i32 a, i32 b) {
+i32 __stdcall GridAction6(i32 a, i32 b) {
     return ((CTmSpawnSub*)(*(void**)((char*)g_gameReg + 0x6c)))->Action(1, a, b, 6, 0, 0, 0, 0);
 }
 
 // 0x6daa0: GridAction7(a, b) - dispatch the spawn sub-mgr's action with kind 7.
 RVA(0x0006daa0, 0x27)
-i32 GridAction7(i32 a, i32 b) {
+i32 __stdcall GridAction7(i32 a, i32 b) {
     return ((CTmSpawnSub*)(*(void**)((char*)g_gameReg + 0x6c)))->Action(1, a, b, 7, 0, 0, 0, 0);
 }
 
@@ -1994,8 +2001,13 @@ i32 GridAction7(i32 a, i32 b) {
 // (gameReg->m_134==1): read the tile at (x>>5, y>>5); if it carries neither the
 // 0x40939 mask nor bit 0x2, spawn a type-0x14 fx centered on the tile. Otherwise
 // (the bit path) map (a3-1) into the world's 4 fx anchors and spawn there. ret 1.
+// __stdcall free function (cleans its own 3 args; retail ends in `ret 0xc`).
+// @early-stop
+// regalloc wall (~81%): body + offsets + the tile double-index byte-exact; retail homes
+// gameReg in edi, the grid in esi and the width in ebx (3 callee-saved regs), our cl uses
+// gameReg=esi/width=edi (2 regs). Not source-steerable. topic:wall topic:regalloc.
 RVA(0x00079ea0, 0xc2)
-i32 SpawnTileFx(i32 x, i32 y, i32 a3) {
+i32 __stdcall SpawnTileFx(i32 x, i32 y, i32 a3) {
     if (*(i32*)((char*)g_gameReg + 0x134) != 1) {
         return 0;
     }
@@ -2254,7 +2266,7 @@ i32 CTriggerMgr::ToggleRegionA() {
     *(i32*)((char*)this + 0x2a8) = 0;
     CTmGrunt* cell = 0;
     if (*(i32*)((char*)this + 0x24c) == 1) {
-        i32* rec = (i32*)(*(char**)((char*)this + 0x244) + 0x8);
+        i32* rec = *(i32**)(*(char**)((char*)this + 0x244) + 0x8);
         cell = *(CTmGrunt**)((char*)this + (rec[0] * 15 + rec[1]) * 4 + 0x1c);
     }
     if (cell == 0) {
@@ -2299,7 +2311,7 @@ i32 CTriggerMgr::ToggleRegionB() {
     *(i32*)((char*)this + 0x2a8) = 0;
     CTmGrunt* cell = 0;
     if (*(i32*)((char*)this + 0x24c) == 1) {
-        i32* rec = (i32*)(*(char**)((char*)this + 0x244) + 0x8);
+        i32* rec = *(i32**)(*(char**)((char*)this + 0x244) + 0x8);
         cell = *(CTmGrunt**)((char*)this + (rec[0] * 15 + rec[1]) * 4 + 0x1c);
     }
     if (cell == 0) {
@@ -2333,16 +2345,17 @@ i32 CTriggerMgr::ToggleRegionB() {
 // record cell with a clear +0x1e4 flag, then post the group to the command mgr (+0x6c):
 // EnqueueSingle when exactly one, else EnqueueMulti with the y-byte buffer. ret 1.
 // @early-stop
-// stack-buffer + byte-counter wall (~85%): the record scan + the two CGruntzCmdMgr enqueue
-// calls are byte-exact; retail keeps the match counter in cl with byte stores and reloads
-// the count slot as a dword. topic:wall.
+// stack-frame-size wall (~90%): the record scan (now with the matched byte counter, so the
+// cl/byte-store/dword-reload sequence matches) + the two CGruntzCmdMgr enqueue calls are
+// byte-exact; retail's frame is 0x88 vs our 0x6c (extra scratch slots) so every esp-relative
+// displacement shifts by a constant. topic:wall.
 RVA(0x0007d6e0, 0xea)
 i32 CTriggerMgr::EnqueueGroupCells() {
     if (*(i32*)((char*)this + 0x400) == 0) {
         return 0;
     }
     u8 buf[0x68];
-    i32 count = 0;
+    u8 count = 0;
     char x = 0;
     CTmNode* n = *(CTmNode**)((char*)this + 0x244);
     if (n != 0) {

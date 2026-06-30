@@ -155,7 +155,7 @@ i32 CTriggerMgr::DestroyGroup(i32 col, i32 row, i32 force) {
     if (*(i32*)((char*)ov + 0x2c) != 0 || *(i32*)((char*)this + 0x24c) != 1) {
         return 0;
     }
-    i32* rec = (i32*)(*(char**)((char*)this + 0x244) + 0x8);
+    i32* rec = *(i32**)(*(char**)((char*)this + 0x244) + 0x8);
     char* cellp = *(char**)((char*)this + (rec[1] + rec[0] * 15) * 4 + 0x1c);
     if (cellp == 0 || *(i32*)(cellp + 0x1ec) != g_644c54) {
         return 0;
