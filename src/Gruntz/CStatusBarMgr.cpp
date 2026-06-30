@@ -210,14 +210,10 @@ void CSbItem::SetDirection(i32 a, i32 b) {
 // at every one of the ~37 call sites.
 static CSbItem* mk(u32 sz, void* vtbl, i32 tag) {
     CSbItem* p = (CSbItem*)operator new(sz);
-    if (p) {
-        Sbi_CtorBase(p);
-        *(void**)p = vtbl;
-        p->m_8 = tag;
-        p->m_30 = 0;
-    } else {
-        p = 0;
-    }
+    Sbi_CtorBase(p);
+    *(void**)p = vtbl;
+    p->m_8 = tag;
+    p->m_30 = 0;
     return p;
 }
 
