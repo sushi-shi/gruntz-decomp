@@ -52,6 +52,17 @@ struct CImageFrameArray {
     void SetAtGrow(i32 index, CImageFrame* f); // 0x1b5822  __thiscall, ret 8
 };
 
+inline CImageFrame::CImageFrame(void* owner, i32 index) {
+    m_index = index;
+    m_8 = 0;
+    m_owner = owner;
+    m_vptr = &g_imageFrameVtbl;
+    m_width = 0;
+    m_height = 0;
+    m_surface = 0;
+    m_format = 0;
+}
+
 // CreateFrame30 - 0x151fb0 (__thiscall, ret 0xc). Refuse if a frame already
 // occupies `index`; else allocate a CImageFrame (manual vtable stamp), run its
 // loader virtual at slot +0x30, insert it (SetAtGrow at `index`) and widen the
@@ -62,22 +73,7 @@ CImageFrame* CImageSet::CreateFrame30(i32 a0, i32 index, i32 a2) {
         return 0;
     }
 
-    void* mem = operator new(0x34);
-    CImageFrame* nf;
-    if (mem != 0) {
-        CImageFrame* f = (CImageFrame*)mem;
-        f->m_index = index;
-        f->m_8 = 0;
-        f->m_owner = m_owner;
-        f->m_vptr = &g_imageFrameVtbl;
-        f->m_width = 0;
-        f->m_height = 0;
-        f->m_surface = 0;
-        f->m_format = 0;
-        nf = f;
-    } else {
-        nf = 0;
-    }
+    CImageFrame* nf = new CImageFrame(m_owner, index);
 
     if (((CImageFrameLoader*)nf)->Load30(a0, a2) == 0) {
         if (nf != 0) {
@@ -104,22 +100,7 @@ CImageFrame* CImageSet::CreateFrame28(i32 a0, i32 a1, i32 index, i32 a3) {
         return 0;
     }
 
-    void* mem = operator new(0x34);
-    CImageFrame* nf;
-    if (mem != 0) {
-        CImageFrame* f = (CImageFrame*)mem;
-        f->m_index = index;
-        f->m_8 = 0;
-        f->m_owner = m_owner;
-        f->m_vptr = &g_imageFrameVtbl;
-        f->m_width = 0;
-        f->m_height = 0;
-        f->m_surface = 0;
-        f->m_format = 0;
-        nf = f;
-    } else {
-        nf = 0;
-    }
+    CImageFrame* nf = new CImageFrame(m_owner, index);
 
     if (((CImageFrameLoader*)nf)->Load28(a0, a1, a3, 1) == 0) {
         if (nf != 0) {
@@ -146,22 +127,7 @@ CImageFrame* CImageSet::CreateFrame24(i32 a0, i32 a1, i32 index, i32 a3) {
         return 0;
     }
 
-    void* mem = operator new(0x34);
-    CImageFrame* nf;
-    if (mem != 0) {
-        CImageFrame* f = (CImageFrame*)mem;
-        f->m_index = index;
-        f->m_8 = 0;
-        f->m_owner = m_owner;
-        f->m_vptr = &g_imageFrameVtbl;
-        f->m_width = 0;
-        f->m_height = 0;
-        f->m_surface = 0;
-        f->m_format = 0;
-        nf = f;
-    } else {
-        nf = 0;
-    }
+    CImageFrame* nf = new CImageFrame(m_owner, index);
 
     if (((CImageFrameLoader*)nf)->Load24(a0, a1, a3) == 0) {
         if (nf != 0) {

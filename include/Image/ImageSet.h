@@ -44,6 +44,8 @@ struct CImageFrameSurface {
 // +0x30 owned object - so this is a PLACEHOLDER element type (see header note).
 class CImageFrame {
 public:
+    inline CImageFrame(void* owner, i32 index);
+
     void* m_vptr;  // +0x00  (manual-stamped to g_imageFrameVtbl @0x5eaa2c by the factory)
     i32 m_index;   // +0x04  frame index
     i32 m_8;       // +0x08
