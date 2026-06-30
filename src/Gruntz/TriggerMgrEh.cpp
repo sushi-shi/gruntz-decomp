@@ -36,6 +36,9 @@ struct CTmStr {
 
 // A logic/cell/list opaque shell whose reloc-masked __thiscall hooks the drivers dispatch.
 struct CTmObj {
+    inline CTmObj();
+    inline void* operator new(u32);
+
     void* m_vt;
     i32 Apply();                     // vtbl +0x20
     void Run();                      // vtbl +0xc
@@ -48,6 +51,15 @@ struct CTmObj {
 };
 void* operator new(u32);
 void operator delete(void*);
+
+inline CTmObj::CTmObj() {
+    Ctor();
+}
+
+inline void* CTmObj::operator new(u32) {
+    return ::operator new(0x40);
+}
+
 // The destroy-array CRT helper (reloc-masked @0x51f640) used by the destructor.
 void Tm_DestroyArray(void* base, i32 stride, i32 count, void* dtor); // 0x11f640
 
@@ -125,14 +137,7 @@ i32 CTriggerMgr::DestroyGroup(i32 col, i32 row, i32 force) {
     (void)force;
     CTmObj* ov = *(CTmObj**)((char*)this + 0x25c);
     if (ov == 0) {
-        void* mem = operator new(0x40);
-        CTmObj* fresh;
-        if (mem != 0) {
-            ((CTmObj*)mem)->Ctor();
-            fresh = (CTmObj*)mem;
-        } else {
-            fresh = 0;
-        }
+        CTmObj* fresh = new CTmObj;
         *(CTmObj**)((char*)this + 0x25c) = fresh;
         if (((CTmObj*)this)->Probe() == 0) {
             CTmObj* o2 = *(CTmObj**)((char*)this + 0x25c);
