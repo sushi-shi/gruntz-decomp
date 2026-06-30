@@ -64,11 +64,17 @@ extern "C" {
     __declspec(dllimport) void __stdcall AIL_stop_sequence(i32 seq);
     __declspec(dllimport) void __stdcall AIL_set_sequence_volume(i32 seq, i32 volume, i32 ms);
     __declspec(dllimport) void __stdcall AIL_release_sequence_handle(i32 seq);
+    __declspec(dllimport) i32 __stdcall AIL_allocate_sequence_handle(i32 driver);
+    __declspec(dllimport) i32 __stdcall AIL_init_sequence(i32 seq, void* xmidi, i32 seqNum);
 }
 
 // The AIL MIDI driver handle (DAT_00653c5c), 0 when no driver is open.
 DATA(0x00653c5c)
 extern i32 g_ailMidiDriver;
+
+// Monotonic counter naming auto-generated MIDI sequences ("MIDI%i", DAT_00653c60).
+DATA(0x00653c60)
+extern i32 g_midiSeqCounter;
 
 // Cached AIL driver handle passed to AIL_set_* (DAT_00653c64).
 DATA(0x00653c64)
@@ -974,12 +980,91 @@ namespace ApiCallerStubs {
         return 0;
     }
 
-    // @confidence: low
     // @source: winapi:PtInRect
-    // @stub
+    // A spatial object: its tile coords are m_5c/m_60 in 1/32-pixel units (>>5).
+    struct Spatial_77df0 {
+        char m_pad0[0x5c];
+        i32 m_5c; // +0x5c x
+        i32 m_60; // +0x60 y
+    };
+    struct Cell_77df0 {
+        char m_pad0[0x10];
+        Spatial_77df0* m_10; // +0x10
+        char m_pad14[0x1fc - 0x14];
+        i32 m_1fc; // +0x1fc live flag
+        char m_pad200[0x258 - 0x200];
+        i32 m_258; // +0x258 kind
+    };
+    struct World_77df0 {
+        char m_pad0[0x10];
+        Spatial_77df0* m_10; // +0x10 reference object
+        char m_pad14[0x17c - 0x14];
+        i32 m_17c; // +0x17c reference x
+        i32 m_180; // +0x180 reference y
+        char m_pad184[0x1ec - 0x184];
+        i32 m_1ec; // +0x1ec row to skip
+        char m_pad1f0[0x298 - 0x1f0];
+        i32 m_298; // +0x298 radius part
+        char m_pad29c[0x2dc - 0x29c];
+        i32 m_2dc; // +0x2dc radius part
+    };
+    // A 4x15 grid of cell slots starting at +0x1c.
+    struct Grid_77df0 {
+        char m_pad0[0x1c];
+        Cell_77df0* m_cells[4][15]; // +0x1c (row stride 0x3c)
+        Cell_77df0* FindNearest(World_77df0* w);
+    };
+    // __thiscall(w): of the live, non-kind-0x36 cells in the grid (skipping row
+    // w->m_1ec), pick the one nearest the reference tile; null it unless it lands
+    // inside the reference object's +/-(m_298+m_2dc+1) tile box.
+    // @early-stop
+    // regalloc wall: logic + the distance/rect math are byte-exact, but MSVC spills
+    // colPtr/rowPtr to the stack where retail keeps them in edi/ecx (it instead
+    // reloads `w` per outer iter). A spill-weight choice; the loop body matches.
     RVA(0x00077df0, 0x13d)
-    i32 __stdcall winapi_077df0_PtInRect(i32) {
-        return 0;
+    Cell_77df0* Grid_77df0::FindNearest(World_77df0* w) {
+        Cell_77df0* best = 0;
+        i32 bestDist = 0x7fffffff;
+        i32 tileX = w->m_17c >> 5;
+        i32 tileY = w->m_180 >> 5;
+        Cell_77df0** rowPtr = &m_cells[0][0];
+        for (i32 i = 0; i < 4; i++) {
+            if (i != w->m_1ec) {
+                Cell_77df0** colPtr = rowPtr;
+                i32 j = 15;
+                do {
+                    Cell_77df0* cell = *colPtr;
+                    if (cell && cell->m_1fc != 0 && cell->m_258 != 0x36) {
+                        i32 dx = (cell->m_10->m_5c >> 5) - tileX;
+                        i32 dy = (cell->m_10->m_60 >> 5) - tileY;
+                        i32 dist = dx * dx + dy * dy;
+                        if (dist < bestDist) {
+                            best = cell;
+                            bestDist = dist;
+                        }
+                    }
+                    colPtr++;
+                } while (--j != 0);
+            }
+            rowPtr += 15;
+        }
+        i32 k = w->m_298 + w->m_2dc + 1;
+        i32 px = w->m_10->m_5c >> 5;
+        i32 py = w->m_10->m_60 >> 5;
+        RECT rc;
+        rc.left = px - k;
+        rc.top = py - k;
+        rc.right = px + k + 1;
+        rc.bottom = py + k + 1;
+        if (best) {
+            POINT pt;
+            pt.x = best->m_10->m_5c >> 5;
+            pt.y = best->m_10->m_60 >> 5;
+            if (!PtInRect(&rc, pt)) {
+                best = 0;
+            }
+        }
+        return best;
     }
 
     // @confidence: low
@@ -1235,11 +1320,74 @@ namespace ApiCallerStubs {
         return Fallback();
     }
 
-    // @confidence: low
     // @source: winapi:EndDialog
-    // @stub
+    // The settings dialog's 12 numeric edit fields, cached as globals between the
+    // WM_INITDIALOG load and the IDOK store.
+    DATA(0x0064526c)
+    extern i32 g_dlgVal_64526c;
+    DATA(0x006452d0)
+    extern i32 g_dlgVal_6452d0;
+    DATA(0x00645268)
+    extern i32 g_dlgVal_645268;
+    DATA(0x00645568)
+    extern i32 g_dlgVal_645568;
+    DATA(0x00645538)
+    extern i32 g_dlgVal_645538;
+    DATA(0x006451a4)
+    extern i32 g_dlgVal_6451a4;
+    DATA(0x006452d4)
+    extern i32 g_dlgVal_6452d4;
+    DATA(0x006452a8)
+    extern i32 g_dlgVal_6452a8;
+    DATA(0x00645558)
+    extern i32 g_dlgVal_645558;
+    DATA(0x00645560)
+    extern i32 g_dlgVal_645560;
+    DATA(0x0064555c)
+    extern i32 g_dlgVal_64555c;
+    DATA(0x00645564)
+    extern i32 g_dlgVal_645564;
+    // __stdcall DlgProc(hDlg, msg, wParam, lParam): a numeric settings dialog.
     RVA(0x00092ab0, 0x20d)
-    i32 __stdcall winapi_092ab0_EndDialog(i32, i32, i32, i32) {
+    i32 __stdcall winapi_092ab0_EndDialog(HWND hDlg, u32 msg, i32 wParam, i32 lParam) {
+        switch (msg) {
+            case 0x110:
+                SetDlgItemInt(hDlg, 0x4db, g_dlgVal_64526c, 0);
+                SetDlgItemInt(hDlg, 0x4da, g_dlgVal_6452d0, 0);
+                SetDlgItemInt(hDlg, 0x4dc, g_dlgVal_645268, 0);
+                SetDlgItemInt(hDlg, 0x4dd, g_dlgVal_645568, 0);
+                SetDlgItemInt(hDlg, 0x4de, g_dlgVal_645538, 0);
+                SetDlgItemInt(hDlg, 0x4df, g_dlgVal_6451a4, 0);
+                SetDlgItemInt(hDlg, 0x4e0, g_dlgVal_6452d4, 0);
+                SetDlgItemInt(hDlg, 0x4e9, g_dlgVal_6452a8, 0);
+                SetDlgItemInt(hDlg, 0x4e3, g_dlgVal_645558, 0);
+                SetDlgItemInt(hDlg, 0x4e4, g_dlgVal_645560, 0);
+                SetDlgItemInt(hDlg, 0x4e5, g_dlgVal_64555c, 0);
+                SetDlgItemInt(hDlg, 0x4e6, g_dlgVal_645564, 0);
+                return 1;
+            case 0x111:
+                if (wParam == 2) {
+                    EndDialog(hDlg, 0);
+                    return 1;
+                }
+                if (wParam == 1) {
+                    g_dlgVal_64526c = GetDlgItemInt(hDlg, 0x4db, 0, 0);
+                    g_dlgVal_6452d0 = GetDlgItemInt(hDlg, 0x4da, 0, 0);
+                    g_dlgVal_645268 = GetDlgItemInt(hDlg, 0x4dc, 0, 0);
+                    g_dlgVal_645568 = GetDlgItemInt(hDlg, 0x4dd, 0, 0);
+                    g_dlgVal_645538 = GetDlgItemInt(hDlg, 0x4de, 0, 0);
+                    g_dlgVal_6451a4 = GetDlgItemInt(hDlg, 0x4df, 0, 0);
+                    g_dlgVal_6452d4 = GetDlgItemInt(hDlg, 0x4e0, 0, 0);
+                    g_dlgVal_6452a8 = GetDlgItemInt(hDlg, 0x4e9, 0, 0);
+                    g_dlgVal_645558 = GetDlgItemInt(hDlg, 0x4e3, 0, 0);
+                    g_dlgVal_645560 = GetDlgItemInt(hDlg, 0x4e4, 0, 0);
+                    g_dlgVal_64555c = GetDlgItemInt(hDlg, 0x4e5, 0, 0);
+                    g_dlgVal_645564 = GetDlgItemInt(hDlg, 0x4e6, 0, 0);
+                    EndDialog(hDlg, 1);
+                    return 1;
+                }
+                break;
+        }
         return 0;
     }
 
@@ -3039,14 +3187,59 @@ namespace ApiCallerStubs {
         return v * 100 / 127;
     }
 
-    // @confidence: low
     // @source: thirdparty:_AIL_allocate_sequence_handle@4;_AIL_init_sequence@12;_AIL_release_sequence_handle@4
-    // @stub
-    // proximity: CGruntzSoundZ@-0x300 | DSoundList@+0x4c0
+    // An owned XMIDI sequence: copies the song bytes into a Rez buffer, names it,
+    // and allocates + initialises an AIL sequence handle against the MIDI driver.
+    struct AilSeq_138c20 {
+        char m_pad0[4];
+        char m_name[0x48 - 4]; // +0x04 sequence name buffer
+        i32 m_48;              // +0x48
+        char m_pad4c[0x50 - 0x4c];
+        i32 m_50;   // +0x50
+        i32 m_54;   // +0x54
+        i32 m_58;   // +0x58 AIL sequence handle
+        void* m_5c; // +0x5c owned song bytes
+        i32 Init(void* data, u32 size, char* name);
+    };
+    // __thiscall(data, size, name): seed a sequence record from `size` bytes of
+    // XMIDI at `data`; auto-name "MIDI%i" when `name` is null.
     RVA(0x00138c20, 0x122)
-    i32 ThisStubOwnerUnknown::
-        thirdparty_138c20_AIL_allocate_sequence_handle_4_AIL_init_sequence_12_AIL_(i32, i32, i32) {
-        return 0;
+    i32 AilSeq_138c20::Init(void* data, u32 size, char* name) {
+        if (!data) {
+            return 0;
+        }
+        if (size < 4) {
+            return 0;
+        }
+        if (!g_ailMidiDriver) {
+            return 0;
+        }
+        ++g_midiSeqCounter;
+        m_48 = 0;
+        m_54 = 100;
+        m_50 = 100;
+        if (name) {
+            strcpy(m_name, name);
+        } else {
+            Format_11f890(m_name, "MIDI%i", g_midiSeqCounter);
+        }
+        if (!m_5c) {
+            m_5c = RezAlloc(size);
+            if (!m_5c) {
+                return 0;
+            }
+            memcpy(m_5c, data, size);
+        }
+        m_58 = AIL_allocate_sequence_handle(g_ailMidiDriver);
+        if (!m_58) {
+            return 0;
+        }
+        if (AIL_init_sequence(m_58, m_5c, 0) == 0) {
+            AIL_release_sequence_handle(m_58);
+            m_58 = 0;
+            return 0;
+        }
+        return 1;
     }
 
     // AIL sequence player. The virtual at slot 8 (vtable +0x20) gates playback;
@@ -4074,13 +4267,52 @@ namespace ApiCallerStubs {
         return 0;
     }
 
-    // @confidence: low
     // @source: thirdparty:_SmackGoto@8;_SmackWait@4
-    // @stub
-    // proximity: CSeverusWorker@-0x1f0 | CDDPageMgr@+0x9d0
+    // Smacker playback advance: the per-frame "step / loop" driver.
+    extern "C" __declspec(dllimport) i32 __stdcall SmackWait(i32 smk);
+    extern "C" __declspec(dllimport) void __stdcall SmackSoundOnOff(i32 smk, i32 on);
+    extern "C" __declspec(dllimport) void __stdcall SmackGoto(i32 smk, u32 frame);
+    struct Movie_17c8e0 {
+        char m_pad0[4];
+        i32 m_4; // +0x04 active flag
+        char m_pad8[0x10 - 8];
+        i32 m_10; // +0x10 Smacker handle
+        char m_pad14[0x1c - 0x14];
+        i32 m_1c; // +0x1c pending command
+        char m_pad20[0x86a0 - 0x20];
+        i32 m_86a0;  // +0x86a0 loop counter
+        i32 Frame(); // RVA 0x17caa0 (renders the next frame)
+        i32 Advance(i32 cmd, i32 loops);
+    };
+    // __thiscall(cmd, loops): wait for the stream, render a frame, and on EOF loop
+    // back to the start until `loops` is exhausted (loops==-1 loops forever).
     RVA(0x0017c8e0, 0xca)
-    i32 ThisStubOwnerUnknown::thirdparty_17c8e0_SmackGoto_8_SmackWait_4(i32, i32) {
-        return 0;
+    i32 Movie_17c8e0::Advance(i32 cmd, i32 loops) {
+        if (!cmd || !m_4 || loops < -1 || loops == 0) {
+            return 0;
+        }
+        i32 result = 1;
+        if (m_86a0 == 0) {
+            m_86a0 = result;
+        }
+        if (SmackWait(m_10) == 0) {
+            i32 saved = m_1c;
+            m_1c = cmd;
+            result = Frame();
+            if (result == 0) {
+                if (loops == -1 || ++m_86a0 <= loops) {
+                    SmackSoundOnOff(m_10, 0);
+                    SmackGoto(m_10, 1);
+                    SmackSoundOnOff(m_10, 1);
+                    result = 1;
+                }
+            }
+            m_1c = saved;
+        }
+        if (result == 0) {
+            m_86a0 = 0;
+        }
+        return result;
     }
 
     // @confidence: low
@@ -4123,13 +4355,95 @@ namespace ApiCallerStubs {
         return 1;
     }
 
-    // @confidence: low
     // @source: thirdparty:_SmackDoFrame@4;_SmackNextFrame@4;_SmackToBuffer@28
-    // @stub
-    // proximity: CSeverusWorker@-0x3b0 | CDDPageMgr@+0x810
+    extern "C" __declspec(dllimport) void __stdcall
+    SmackToBuffer(void* smk, i32 left, i32 top, i32 pitch, i32 height, void* buf, i32 flags);
+    extern "C" __declspec(dllimport) void __stdcall SmackDoFrame(void* smk);
+    extern "C" __declspec(dllimport) i32 __stdcall SmackToBufferRect(void* smk, i32 flags);
+    extern "C" __declspec(dllimport) void __stdcall SmackNextFrame(void* smk);
+    // The DirectDraw surface the frame is locked/blitted into (manual vtable).
+    struct DDSurf_17caa0;
+    struct DDSurfVtbl_17caa0 {
+        void* s0[25];                                                   // +0x00..+0x60
+        i32(__stdcall* Lock)(DDSurf_17caa0*, void*, void*, u32, void*); // +0x64
+        void* s26;                                                      // +0x68
+        i32(__stdcall* Restore)(DDSurf_17caa0*);                        // +0x6c
+        void* s28[4];                                                   // +0x70..+0x7c
+        i32(__stdcall* Unlock)(DDSurf_17caa0*, void*);                  // +0x80
+    };
+    struct DDSurf_17caa0 {
+        DDSurfVtbl_17caa0* vptr;
+    };
+    // The decoded Smacker stream header.
+    struct Smack_17caa0 {
+        char m_pad0[4];
+        i32 m_4; // +0x04 width
+        i32 m_8; // +0x08 height
+        i32 m_c; // +0x0c frame count
+        char m_pad10[0x68 - 0x10];
+        i32 m_68; // +0x68
+        char m_pad6c[0x374 - 0x6c];
+        i32 m_374; // +0x374 current frame
+        char m_pad378[0x380 - 0x378];
+        i32 m_380; // +0x380 dirty-rect left
+        i32 m_384; // +0x384 dirty-rect top
+        i32 m_388; // +0x388 dirty-rect right
+        i32 m_38c; // +0x38c dirty-rect bottom
+    };
+    struct MoviePlayer_17caa0 {
+        char m_pad0[0x10];
+        Smack_17caa0* m_10; // +0x10
+        char m_pad14[0x24 - 0x14];
+        DDSurf_17caa0* m_24; // +0x24
+        char m_pad28[0x9c - 0x28];
+        char m_desc[0xac - 0x9c]; // +0x9c DDSURFACEDESC head
+        i32 m_ac;                 // +0xac desc.lPitch
+        char m_padb0[0xc0 - 0xb0];
+        void* m_c0; // +0xc0 desc.lpSurface
+        char m_padc4[0x50c - 0xc4];
+        i32 m_50c; // +0x50c
+        i32 m_510; // +0x510 flags
+        i32 m_514; // +0x514 full-frame flag
+        char m_pad518[0x520 - 0x518];
+        i32 m_520;                          // +0x520
+        void Sub17ca10();                   // RVA 0x17ca10
+        void Sub17cdf0(i32, i32, i32, i32); // RVA 0x17cdf0 (blit dirty rect)
+        i32 RenderFrame();
+    };
+    // __thiscall(): lock the surface, decode the current frame into it, blit the
+    // changed region, then advance to the next frame (0 once the last frame plays).
     RVA(0x0017caa0, 0x13b)
-    i32 ThisStubOwnerUnknown::thirdparty_17caa0_SmackDoFrame_4_SmackNextFrame_4_SmackToBuffer_28() {
-        return 0;
+    i32 MoviePlayer_17caa0::RenderFrame() {
+        if (m_10->m_68 && m_520 == 8) {
+            Sub17ca10();
+        }
+        i32 hr = m_24->vptr->Lock(m_24, 0, m_desc, 1, 0);
+        while (hr == (i32)0x887601c2) {
+            if (m_24->vptr->Restore(m_24) != 0) {
+                goto afterLock;
+            }
+            hr = m_24->vptr->Lock(m_24, 0, m_desc, 1, 0);
+        }
+        if (hr == 0) {
+            SmackToBuffer(m_10, 0, 0, m_ac, m_10->m_8, m_c0, m_510);
+            SmackDoFrame(m_10);
+            m_50c = 1;
+            m_24->vptr->Unlock(m_24, m_c0);
+        }
+    afterLock:
+        if (m_514 != 1) {
+            while (SmackToBufferRect(m_10, 0) != 0) {
+                Sub17cdf0(m_10->m_380, m_10->m_384, m_10->m_388, m_10->m_38c);
+            }
+        } else {
+            Sub17cdf0(0, 0, m_10->m_4, m_10->m_8);
+        }
+        Smack_17caa0* s = m_10;
+        if (s->m_374 == s->m_c - 1) {
+            return 0;
+        }
+        SmackNextFrame(s);
+        return 1;
     }
 
     // @confidence: low
