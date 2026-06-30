@@ -1,9 +1,11 @@
 // CButeSectionCtor.cpp - the constructor of a Bute "section" object (0x170210).
 //
 // An 8-state /GX EH constructor: it default-constructs a leading CString (+0x10),
-// three embedded Bute streams (+0x18/+0x48/+0x74, each base-constructed by
-// 0x16dff0 then stamped with its derived vtable @0x5f0510 + the +0x08 data pointer
-// @0x5f0514), three trailing CStrings (+0x100/+0x104/+0x108) and a small +0x10f
+// three embedded CButeNode-family config-tree nodes (+0x18/+0x48/+0x74; the zPTree
+// node class modeled in src/Stub/CButeNodeBase.cpp), each base-constructed by
+// 0x16dff0 (the CButeNodeBase ctor) then re-stamped with its two most-derived
+// vftables (@0x5f0510 at +0x00, the +0x08 sub-object vftable @0x5f0514),
+// three trailing CStrings (+0x100/+0x104/+0x108) and a small +0x10f
 // sub-object (0x16f680), zeroes the scalar fields, then runs a finaliser on the
 // last string + the +0x10f object.  Returns this.
 //
@@ -21,10 +23,20 @@
 // The stream base ctor argument tag (a .text descriptor @0x574de0).
 extern u8 g_streamTag; // 0x574de0
 
-// The embedded streams' derived vtable + its +0x08 data pointer (reloc-masked).
+// The node's two most-derived vftables, re-stamped over the tables the base ctor
+// laid down (reloc-masked DIR32 data). g_streamData @0x5f0514 is NOT data: it is
+// &g_streamVtbl+4 -- the vptr carried by the node's +0x08 sub-object (the family's
+// "sub vftable", cf. g_buteNodeSubVtbl / g_buteTreeSubVtbl).
+//
+// These (x2) stamps target the embedded NODES' own vftables, not CButeSection's
+// vptr (CButeSection is non-polymorphic: +0x00 is the zeroed scalar below). They
+// stay manual stamps rather than C++ virtuals: the node lives in unmatched TUs and
+// the whole zPTree family (CButeNodeBase/CButeTree/CButeNode) is deliberately
+// manual-vtbl-modeled -- a real +0x00 vptr breaks its matched ctor layout
+// (src/Stub/CButeNodeBase.cpp). Foreign sub-object re-stamps stay manual.
 DATA(0x001f0510)
-extern void* g_streamVtbl; // 0x5f0510  (scalar-deleting dtor table)
-extern void* g_streamData; // 0x5f0514
+extern void* g_streamVtbl; // 0x5f0510  node's primary vftable (4 slots)
+extern void* g_streamData; // 0x5f0514  node's +0x08 sub-object vftable (= &g_streamVtbl+4)
 
 // Sub-object ctors / leaves (all __thiscall, no body -> rel32 reloc-masks).
 struct CBSecString {
