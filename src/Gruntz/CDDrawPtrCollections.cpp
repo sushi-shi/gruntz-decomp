@@ -94,6 +94,27 @@ class CDDrawPtrCollections;
 struct CPoolItemAVtbl;
 class CPoolItemA {
 public:
+    struct VptrFirst {};
+
+    inline CPoolItemA(CPoolItemAVtbl* table) {
+        m_08 = 0;
+        m_0c = 0;
+        m_pos = 0;
+        m_7c = 0;
+        m_a8 = 0;
+        m_b8 = 0;
+        vptr = table;
+    }
+    inline CPoolItemA(CPoolItemAVtbl* table, VptrFirst) {
+        vptr = table;
+        m_08 = 0;
+        m_0c = 0;
+        m_pos = 0;
+        m_7c = 0;
+        m_a8 = 0;
+        m_b8 = 0;
+    }
+
     ~CPoolItemA();       // non-deleting dtor variant 0x142820 (vtbl 0x5ef7f0)
     void FreeSurfaces(); // 0x13e4d0 (CFileImage::FreeSurfaces, __thiscall) - external
 
@@ -391,19 +412,7 @@ void CDDrawPtrCollections::RemoveItemA(CPoolItemA* item) {
 // is byte-exact but the frame is absent. Deferred to the final sweep.
 RVA(0x001421a0, 0xbe)
 CPoolItemA* CDDrawPtrCollections::Create7f0_1(i32 a) {
-    CPoolItemA* item = (CPoolItemA*)operator new(0xc0);
-    if (item) {
-        new (&item->m_94) CByteArray;
-        item->vptr = &g_poolItemVtbl7f0;
-        item->m_08 = 0;
-        item->m_0c = 0;
-        item->m_pos = 0;
-        item->m_7c = 0;
-        item->m_a8 = 0;
-        item->m_b8 = 0;
-    } else {
-        item = 0;
-    }
+    CPoolItemA* item = new CPoolItemA(&g_poolItemVtbl7f0, CPoolItemA::VptrFirst());
     if (item->Init08(this, a)) {
         AddItemA(item);
         return item;
@@ -426,19 +435,7 @@ CPoolItemA* CDDrawPtrCollections::Create7f0_1(i32 a) {
 // 60.5% (above the documented ~47% plateau); deferred to the final sweep.
 RVA(0x00142260, 0xd2)
 CPoolItemA* CDDrawPtrCollections::CreateA(i32 a, i32 b, i32 c, i32 d, i32 e) {
-    CPoolItemA* item = (CPoolItemA*)operator new(0xc0);
-    if (item) {
-        new (&item->m_94) CByteArray;
-        item->m_08 = 0;
-        item->m_0c = 0;
-        item->m_pos = 0;
-        item->m_7c = 0;
-        item->m_a8 = 0;
-        item->m_b8 = 0;
-        item->vptr = &g_poolItemAVtbl;
-    } else {
-        item = 0;
-    }
+    CPoolItemA* item = new CPoolItemA(&g_poolItemAVtbl);
     if (item->Init24(this, a, b, c, d, e)) {
         AddItemA(item);
         return item;
@@ -457,19 +454,7 @@ CPoolItemA* CDDrawPtrCollections::CreateA(i32 a, i32 b, i32 c, i32 d, i32 e) {
 // /GX frame absent, body byte-exact. Deferred to the final sweep.
 RVA(0x001423c0, 0xd2)
 CPoolItemA* CDDrawPtrCollections::CreateB(i32 a, i32 b, i32 c, i32 d, i32 e) {
-    CPoolItemA* item = (CPoolItemA*)operator new(0xc0);
-    if (item) {
-        new (&item->m_94) CByteArray;
-        item->m_08 = 0;
-        item->m_0c = 0;
-        item->m_pos = 0;
-        item->m_7c = 0;
-        item->m_a8 = 0;
-        item->m_b8 = 0;
-        item->vptr = &g_poolItemAVtbl;
-    } else {
-        item = 0;
-    }
+    CPoolItemA* item = new CPoolItemA(&g_poolItemAVtbl);
     if (item->Init2c(this, a, b, c, d, e)) {
         AddItemA(item);
         return item;
@@ -489,19 +474,7 @@ CPoolItemA* CDDrawPtrCollections::CreateB(i32 a, i32 b, i32 c, i32 d, i32 e) {
 // /GX ctor-in-flight frame absent. Deferred to the final sweep.
 RVA(0x001424a0, 0xbe)
 CPoolItemA* CDDrawPtrCollections::Createa58_1(i32 a) {
-    CPoolItemA* item = (CPoolItemA*)operator new(0xc0);
-    if (item) {
-        new (&item->m_94) CByteArray;
-        item->m_08 = 0;
-        item->m_0c = 0;
-        item->m_pos = 0;
-        item->m_7c = 0;
-        item->m_a8 = 0;
-        item->m_b8 = 0;
-        item->vptr = &g_poolItemAVtbl;
-    } else {
-        item = 0;
-    }
+    CPoolItemA* item = new CPoolItemA(&g_poolItemAVtbl);
     if (item->Init08(this, a)) {
         AddItemA(item);
         return item;
@@ -520,19 +493,7 @@ CPoolItemA* CDDrawPtrCollections::Createa58_1(i32 a) {
 // rezalloc-placement-new-no-eh-frame wall: body byte-exact, /GX frame absent.
 RVA(0x00142560, 0xc8)
 CPoolItemA* CDDrawPtrCollections::Createa58_3(i32 a, i32 b, i32 c) {
-    CPoolItemA* item = (CPoolItemA*)operator new(0xc0);
-    if (item) {
-        new (&item->m_94) CByteArray;
-        item->m_08 = 0;
-        item->m_0c = 0;
-        item->m_pos = 0;
-        item->m_7c = 0;
-        item->m_a8 = 0;
-        item->m_b8 = 0;
-        item->vptr = &g_poolItemAVtbl;
-    } else {
-        item = 0;
-    }
+    CPoolItemA* item = new CPoolItemA(&g_poolItemAVtbl);
     if (item->Init28(this, a, b, c)) {
         AddItemA(item);
         return item;
@@ -551,19 +512,7 @@ CPoolItemA* CDDrawPtrCollections::Createa58_3(i32 a, i32 b, i32 c) {
 // rezalloc-placement-new-no-eh-frame wall: body byte-exact, /GX frame absent.
 RVA(0x00142730, 0xc8)
 CPoolItemA* CDDrawPtrCollections::Createa88_3(i32 a, i32 b, i32 c) {
-    CPoolItemA* item = (CPoolItemA*)operator new(0xc0);
-    if (item) {
-        new (&item->m_94) CByteArray;
-        item->m_08 = 0;
-        item->m_0c = 0;
-        item->m_pos = 0;
-        item->m_7c = 0;
-        item->m_a8 = 0;
-        item->m_b8 = 0;
-        item->vptr = &g_poolItemVtbla88;
-    } else {
-        item = 0;
-    }
+    CPoolItemA* item = new CPoolItemA(&g_poolItemVtbla88);
     if (item->Init24(this, a, b, c, 0, 0)) {
         AddItemA(item);
         return item;
@@ -600,19 +549,7 @@ CPoolItemA::~CPoolItemA() {
 // rezalloc-placement-new-no-eh-frame wall: body byte-exact, /GX frame absent.
 RVA(0x00142880, 0xbe)
 CPoolItemA* CDDrawPtrCollections::Createa88_1(i32 a) {
-    CPoolItemA* item = (CPoolItemA*)operator new(0xc0);
-    if (item) {
-        new (&item->m_94) CByteArray;
-        item->m_08 = 0;
-        item->m_0c = 0;
-        item->m_pos = 0;
-        item->m_7c = 0;
-        item->m_a8 = 0;
-        item->m_b8 = 0;
-        item->vptr = &g_poolItemVtbla88;
-    } else {
-        item = 0;
-    }
+    CPoolItemA* item = new CPoolItemA(&g_poolItemVtbla88);
     if (item->Init08(this, a)) {
         AddItemA(item);
         return item;
@@ -632,19 +569,7 @@ CPoolItemA* CDDrawPtrCollections::Createa88_1(i32 a) {
 // rezalloc-placement-new-no-eh-frame wall: body byte-exact, /GX frame absent.
 RVA(0x00142940, 0xd4)
 CPoolItemA* CDDrawPtrCollections::Createab8_3(i32 a, i32 b, i32 c) {
-    CPoolItemA* item = (CPoolItemA*)operator new(0xc0);
-    if (item) {
-        new (&item->m_94) CByteArray;
-        item->m_08 = 0;
-        item->m_0c = 0;
-        item->m_pos = 0;
-        item->m_7c = 0;
-        item->m_a8 = 0;
-        item->m_b8 = 0;
-        item->vptr = &g_poolItemVtblab8;
-    } else {
-        item = 0;
-    }
+    CPoolItemA* item = new CPoolItemA(&g_poolItemVtblab8);
     if (item->Init24(this, a, b, c, 0, 0)) {
         AddItemA(item);
         fieldUnknown538 = item->m_a8;
@@ -665,19 +590,7 @@ CPoolItemA* CDDrawPtrCollections::Createab8_3(i32 a, i32 b, i32 c) {
 // rezalloc-placement-new-no-eh-frame wall: body byte-exact, /GX frame absent.
 RVA(0x00142aa0, 0xca)
 CPoolItemA* CDDrawPtrCollections::Createab8_1(i32 a) {
-    CPoolItemA* item = (CPoolItemA*)operator new(0xc0);
-    if (item) {
-        new (&item->m_94) CByteArray;
-        item->m_08 = 0;
-        item->m_0c = 0;
-        item->m_pos = 0;
-        item->m_7c = 0;
-        item->m_a8 = 0;
-        item->m_b8 = 0;
-        item->vptr = &g_poolItemVtblab8;
-    } else {
-        item = 0;
-    }
+    CPoolItemA* item = new CPoolItemA(&g_poolItemVtblab8);
     if (item->Init08(this, a)) {
         AddItemA(item);
         fieldUnknown538 = item->m_a8;
@@ -698,19 +611,7 @@ CPoolItemA* CDDrawPtrCollections::Createab8_1(i32 a) {
 // rezalloc-placement-new-no-eh-frame wall: body byte-exact, /GX frame absent.
 RVA(0x00142b70, 0xce)
 CPoolItemA* CDDrawPtrCollections::Createab8_24_3(i32 a) {
-    CPoolItemA* item = (CPoolItemA*)operator new(0xc0);
-    if (item) {
-        new (&item->m_94) CByteArray;
-        item->m_08 = 0;
-        item->m_0c = 0;
-        item->m_pos = 0;
-        item->m_7c = 0;
-        item->m_a8 = 0;
-        item->m_b8 = 0;
-        item->vptr = &g_poolItemVtblab8;
-    } else {
-        item = 0;
-    }
+    CPoolItemA* item = new CPoolItemA(&g_poolItemVtblab8);
     if (item->Init24_3(this, 0x18, 0x21, a)) {
         AddItemA(item);
         fieldUnknown538 = item->m_a8;
@@ -730,19 +631,7 @@ CPoolItemA* CDDrawPtrCollections::Createab8_24_3(i32 a) {
 // rezalloc-placement-new-no-eh-frame wall: body byte-exact, /GX frame absent.
 RVA(0x00142c40, 0xd7)
 CPoolItemA* CDDrawPtrCollections::Createae8_6(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f) {
-    CPoolItemA* item = (CPoolItemA*)operator new(0xc0);
-    if (item) {
-        new (&item->m_94) CByteArray;
-        item->m_08 = 0;
-        item->m_0c = 0;
-        item->m_pos = 0;
-        item->m_7c = 0;
-        item->m_a8 = 0;
-        item->m_b8 = 0;
-        item->vptr = &g_poolItemVtblae8;
-    } else {
-        item = 0;
-    }
+    CPoolItemA* item = new CPoolItemA(&g_poolItemVtblae8);
     if (item->Init24_6(this, a, b, c, d, e, f)) {
         AddItemA(item);
         return item;
@@ -777,19 +666,7 @@ CPoolItemA7f0::~CPoolItemA7f0() {
 // rezalloc-placement-new-no-eh-frame wall: body byte-exact, /GX frame absent.
 RVA(0x00142da0, 0xbe)
 CPoolItemA* CDDrawPtrCollections::Createae8_1(i32 a) {
-    CPoolItemA* item = (CPoolItemA*)operator new(0xc0);
-    if (item) {
-        new (&item->m_94) CByteArray;
-        item->m_08 = 0;
-        item->m_0c = 0;
-        item->m_pos = 0;
-        item->m_7c = 0;
-        item->m_a8 = 0;
-        item->m_b8 = 0;
-        item->vptr = &g_poolItemVtblae8;
-    } else {
-        item = 0;
-    }
+    CPoolItemA* item = new CPoolItemA(&g_poolItemVtblae8);
     if (item->Init08(this, a)) {
         AddItemA(item);
         return item;
