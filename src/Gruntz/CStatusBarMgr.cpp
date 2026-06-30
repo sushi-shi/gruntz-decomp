@@ -89,6 +89,7 @@ public:
     // SetDirection (0xea0f0): pick one of four direction tuples from the two
     // boolean selectors and forward to the +0x38 virtual.
     void SetDirection(i32 a, i32 b); // 0x0ea0f0
+    inline void Construct(void* vtbl, i32 tag);
 
     i32 m_4; // +0x04
     i32 m_8; // +0x08 type tag (3/4/5/6/7/8/9/0xb)
@@ -226,28 +227,23 @@ struct CSbItemT7 {
     char m_storage[0x6c];
 };
 
+inline void CSbItem::Construct(void* vtbl, i32 tag) {
+    Sbi_CtorBase(this);
+    *(void**)this = vtbl;
+    m_8 = tag;
+    m_30 = 0;
+}
+
 inline CSbItemT3::CSbItemT3() {
-    CSbItem* p = (CSbItem*)this;
-    Sbi_CtorBase(p);
-    *(void**)p = g_vtbl_t3;
-    p->m_8 = 3;
-    p->m_30 = 0;
+    ((CSbItem*)this)->Construct(g_vtbl_t3, 3);
 }
 
 inline CSbItemT4::CSbItemT4() {
-    CSbItem* p = (CSbItem*)this;
-    Sbi_CtorBase(p);
-    *(void**)p = g_vtbl_t4;
-    p->m_8 = 4;
-    p->m_30 = 0;
+    ((CSbItem*)this)->Construct(g_vtbl_t4, 4);
 }
 
 inline CSbItemT7::CSbItemT7() {
-    CSbItem* p = (CSbItem*)this;
-    Sbi_CtorBase(p);
-    *(void**)p = g_vtbl_t7;
-    p->m_8 = 7;
-    p->m_30 = 0;
+    ((CSbItem*)this)->Construct(g_vtbl_t7, 7);
 }
 
 // Per-tab builder. The Configure args (recovered from every call site) are:
