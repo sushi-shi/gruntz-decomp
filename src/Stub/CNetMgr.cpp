@@ -69,7 +69,6 @@ extern "C" u32 g_killCueClock; // 0x6bf3c0
 class CNetMgr {
 public:
     i32 winapi_0bb700_GetAsyncKeyState_Sleep_timeGetTime_wsprintfA();
-    i32 winapi_0bba10_Sleep(i32);
     i32 LoadMenuSelectSprite(MenuSelectEvent* ev);
 
     // The two stat senders reached __thiscall on `this` (via the ILT thunks
@@ -95,15 +94,21 @@ public:
 // @confidence: low
 // @source: winapi:GetAsyncKeyState;Sleep;timeGetTime;wsprintfA
 // @stub
+// WaitForOtherPlayers (0xbb700, /GX). DEFERRED - this is a CMulti-family method
+// (in the 0xb6110-0xbc420 CMulti cluster; it calls CMulti::AckJoinFailure via ILT
+// thunk 0x35e4 -> 0xbc420) MIS-attributed to CNetMgr by proximity, and it hits the
+// /GX CString-by-value EH-frame wall (same family as VerifyCustomLevel ~7%). Shape
+// mapped for the redo (as a CMulti method, using <Gruntz/CMulti.h>):
+//   - m_604.SetSize(0,-1) then 3x SetAtGrow([m_604+8],0) on the CByteArray m_604;
+//   - if peer(m_524)->m_60 == 1, set m_534=1, return 1; else count session slots
+//     (m_520+0x20, 4 x stride 0x64) in state 3 - return 1 if none;
+//   - SendNetStat(0x3ed, 1) [thunk], build a "Waiting for other playerz..." CString
+//     (0x1b9d4c), pull g_mgrSettings +0x8c/+0x90/+0x30 status host, run the
+//     timeGetTime/Sleep(0x32)/GetAsyncKeyState(0x1b) wait loop (5s resend @0x1388,
+//     120s abort @0x1d4c0) with an "AMBIENT%d" wsprintfA cue, until every state-3
+//     slot clears; the /GX frame tracks the "Waiting" CString (~CString 0x1b9cde).
 RVA(0x000bb700, 0x265)
 i32 CNetMgr::winapi_0bb700_GetAsyncKeyState_Sleep_timeGetTime_wsprintfA() {
-    return 0;
-}
-// @confidence: low
-// @source: winapi:Sleep
-// @stub
-RVA(0x000bba10, 0x1fb)
-i32 CNetMgr::winapi_0bba10_Sleep(i32) {
     return 0;
 }
 

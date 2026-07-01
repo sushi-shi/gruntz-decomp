@@ -720,6 +720,17 @@ public:
     // Poll the active session for the verify response (0xbba10, reloc-masked).
     i32 Poll(i32 token); // 0xbba10
 
+    // The join-failure re-arm helper Poll fires on the resend deadline (0-arg
+    // __thiscall; external incremental-link thunk -> no body here so the call
+    // reloc-masks). Retail thunk 0x35e4 -> 0xbc420.
+    void AckJoinFailure(); // 0xbc420
+
+    // WaitForOtherPlayers (0xbb700, /GX): count session slots in state 3; if any,
+    // announce the wait (stat 0x3ed), put up the "Waiting for other playerz" status
+    // string, and spin (Sleep + PollSession) with a 5s resend / 120s abort timer,
+    // playing an "AMBIENT%d" cue each pass, until every slot leaves state 3.
+    i32 WaitForOtherPlayers(); // 0xbb700
+
     // CreateLocalPlayer (0xbc750, /GX EH): register the local player with the peer
     // under the local name, latch its id (m_5c0), wait for the host to admit it,
     // then announce the join (stat 0x3f9 packet carrying the name). Returns 1.
@@ -878,7 +889,9 @@ public:
     i32 m_534;             // +0x534  host-mode flag (no use-site in matched code; left placeholder)
     i32 m_removedFromGame; // +0x538  "you have been removed from the game by the host"
     i32 m_53c;             // +0x53c  level-verify response latch (VerifyCustomLevel)
-    char m_pad540[0x564 - 0x540];
+    i32 m_540;             // +0x540  Poll's exit gate (set once the verify vote resolves)
+    i32 m_544[4];          // +0x544  Poll's per-record ack latch (one per session slot)
+    i32 m_554[4];          // +0x554  Poll's per-record vote/token latch
     i32 m_pollAbort; // +0x564  set => PollSession stops pumping the receive queue
     char m_pad568[0x56c - 0x568];
     i32 m_gameFull; // +0x56c  "this game is already full"

@@ -205,7 +205,7 @@ dsoundvoice	2	1
 ehfunclets	6	6
 engine_attributed	7	0
 engine_discovered	19	8
-engine_label_stubs	283	124
+engine_label_stubs	281	124
 engine_unmatched_lib	11	0
 engstr	3	1
 eyecandytypetags	4	4
@@ -352,6 +352,7 @@ netcmdslot	16	11
 netmgr	89	46
 netmgrerror	1	1
 netmgrmisc	5	4
+netmgrwait	1	0
 netsession	2	1
 netsession2	3	2
 netsessionnode	3	2
@@ -366,7 +367,7 @@ polyclipraster	1	0
 portalpath	1	1
 projactcache	3	1
 projactregistry	4	3
-projectile	10	4
+projectile	11	4
 pulsehighlight	2	2
 pyramidbridgesprites	1	0
 randomambientsound	9	4
@@ -1855,7 +1856,6 @@ engine_label_stubs	?LoadGruntResurrectTuning@CGruntResurrector@@QAEHHHH@Z	65.480
 engine_label_stubs	?LoadMenuSelectSprite@CNetMgr@@QAEHPAUMenuSelectEvent@@@Z	100.0000	100.0000	1	cpp:66ed52501602	0xba620
 engine_label_stubs	?LoadPickupSprites@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXHHHHH@Z	0.0833	0.0833	1	cpp:e8a4cb0d5b2a	0x65e80
 engine_label_stubs	?LoadProjectileEffects@CProjectile@@QAEXXZ	0.2165	0.2165	1	cpp:e8a4cb0d5b2a	0xdfd00
-engine_label_stubs	?LoadProjectileSprites@CProjectile@@QAEXHHHHHHH@Z	0.2183	0.2183	1	cpp:6bf52155264d	0xdf050
 engine_label_stubs	?LoadSounds@CSplashState@@QAEHHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xf9780
 engine_label_stubs	?LoadWarlordSprites@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXHH@Z	0.1675	0.1675	1	cpp:e8a4cb0d5b2a	0xd65d0
 engine_label_stubs	?LoadWave@WaveHost2_136ce0@ApiCallerStubs@@QAEHPAUWaveProbe_136ce0@2@PBDH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x136ce0
@@ -1968,7 +1968,6 @@ engine_label_stubs	?winapi_0b6b40_timeGetTime_wsprintfA@CMulti@ApiCallerStubs@@Q
 engine_label_stubs	?winapi_0b6e90_SetRect@CMulti@ApiCallerStubs@@QAEHXZ	0.7812	0.7812	1	cpp:590eddff1627	0xb6e90
 engine_label_stubs	?winapi_0bb3e0_GetWindowTextLengthA@ApiCallerStubs@@YGXPAXPAD@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xbb3e0
 engine_label_stubs	?winapi_0bb700_GetAsyncKeyState_Sleep_timeGetTime_wsprintfA@CNetMgr@@QAEHXZ	1.0326	1.0326	1	cpp:590eddff1627	0xbb700
-engine_label_stubs	?winapi_0bba10_Sleep@CNetMgr@@QAEHH@Z	1.2346	1.2346	1	cpp:590eddff1627	0xbba10
 engine_label_stubs	?winapi_0bda00_GetDlgItem_SetTimer@ApiCallerStubs@@YAXPAX0@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xbda00
 engine_label_stubs	?winapi_0bdb90_GetDlgItem_SetTimer@ApiCallerStubs@@YAXPAX0@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xbdb90
 engine_label_stubs	?winapi_0bdc00_EndDialog_KillTimer@ApiCallerStubs@@YGHPAXIIH@Z	100.0000	100.0000	1	cpp:e832e75e29a5	0xbdc00
@@ -3052,6 +3051,7 @@ netmgrmisc	?Drive@CNetConnCoord@@QAEXXZ	100.0000	100.0000	2	5c39d274c0d3	0xc40b0
 netmgrmisc	?NetConfigureBe90@@YAXXZ	100.0000	100.0000	1	39468a8eca59	0xc5f00
 netmgrmisc	?NetPollE25c@@YAHXZ	100.0000	100.0000	1	2f309aba1fc2	0xf9710
 netmgrmisc	?Step@CNetConnCoord@@QAEXXZ	100.0000	100.0000	1	de12e712a594	0xc2a20
+netmgrwait	?Poll@CNetMgr@@QAEHH@Z	95.4815	95.4815	1	5a9ed3387afc	0xbba10
 netsession	?AppendInt@@YAXPADPBDH@Z	100.0000	100.0000	1	b2f3e4307dc7	0xf93b0
 netsession	?FillPlayerList@@YAXPAUHWND__@@PAUSession@@@Z	91.5352	91.5352	1	94ce9d538305	0xb89e0
 netsession2	?Init@CNetSession2@@QAEHPAXPAUCNetMgr@@0@Z	100.0000	100.0000	2	4dd224a742e5	0xbef80
@@ -3095,6 +3095,7 @@ projectile	??1CProjectile@@UAE@XZ	89.8367	89.8367	1	8e9ce0f777d4	0xdef60
 projectile	?DetachRenderObj@CProjectile@@QAEHXZ	100.0000	100.0000	2	5f5b4f60ca08	0xe05e0
 projectile	?Dispatch@CProjActDispatcher@@QAEXH@Z	100.0000	100.0000	1	dbdd016866f6	0xade60
 projectile	?LaunchSound@CProjectile@@QAEHPBD@Z	44.4444	44.4444	2	af629d1a9d6a	0xe2190
+projectile	?LoadProjectileSprites@CProjectile@@QAEHHHHHHHH@Z	57.7642	57.7642	1	04487385bb5c	0xdf050
 projectile	?RegisterRange@CProjectile@@SAXXZ	100.0000	100.0000	1	661e81357f7b	0xdf920
 projectile	?RegisterType@CProjectile@@SAXXZ	91.1739	91.1739	1	459c0342af3a	0xdfb00
 projectile	?ReleaseDeferred@CProjectile@@QAEXH@Z	100.0000	100.0000	2	ac50b8317e25	0x13c70

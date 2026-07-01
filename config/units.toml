@@ -386,6 +386,11 @@ source = "src/Gruntz/SlotComboFill.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "netmgrwait"
+source = "src/Net/NetMgrWait.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "menustateassets"
 source = "src/Gruntz/MenuStateAssets.cpp"
 flags = "eh"

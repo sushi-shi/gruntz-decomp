@@ -68,29 +68,66 @@ public:
 };
 
 // The animation sub-object embedded in a render object at +0x1a0; its setter
-// FUN_0055c360 (0x15c360, __thiscall, 1 arg) re-targets the active animation.
+// FUN_0055c360 (0x15c360, __thiscall, 1 arg) re-targets the active animation, and
+// Setup (0x15c2d0, __thiscall, 1 arg) installs the resolved frame-0 sprite.
 struct CProjAnim {
     i32 SetAnim(u32 mode); // 0x15c360
+    i32 Setup(void* frame0); // 0x15c2d0
+};
+
+// The name->sprite geometry map the sprite object owns (the CMapStringToOb the
+// loaders Lookup by frame name). Reached via m_154->m_c->m_2c, map embedded @+0x10.
+struct CProjSpriteMap {
+    i32 Lookup(const char* key, void** out); // 0x1b8438 (__thiscall, ret 8)
+};
+struct CProjSpriteMgr {
+    char m_pad00[0x10];
+    CProjSpriteMap m_10; // +0x10  the lookup map
+};
+struct CProjResMgr {
+    char m_pad00[0x2c];
+    CProjSpriteMgr* m_2c; // +0x2c
 };
 
 // A render object the projectile owns/points at (the +0x154 sprite/animation and
 // the +0x1fc shadow companion). Only the offsets the reconstructed methods touch
-// are modeled: +0x08 flag word, +0x40 flag word, +0x5c/+0x60 screen position,
-// +0x1a0 animation sub-object, +0x1c0/+0x1c8 state gates.
+// are modeled: +0x08 flag word, +0x0c resource host (frame lookup), +0x40 flag
+// word, +0x5c/+0x60 screen position, +0x1a0 animation sub-object, +0x1b4 geometry
+// word, +0x1c0/+0x1c8 state gates.
 struct CProjRenderObj {
     char m_pad00[0x08];
     u32 m_08; // +0x08  flag word (|= 0x10000)
-    char m_pad0c[0x40 - 0x0c];
+    CProjResMgr* m_c; // +0x0c  resource host (name->sprite map via m_2c)
+    char m_pad10[0x40 - 0x10];
     u32 m_40; // +0x40  flag word (&= ~1)
     char m_pad44[0x5c - 0x44];
     i32 m_5c; // +0x5c  screen X
     i32 m_60; // +0x60  screen Y
-    char m_pad64[0x1a0 - 0x64];
+    char m_pad64[0x7c - 0x64];
+    struct CProjShadowVtbl* m_7c; // +0x7c  shadow sub-table (Init @+0x10, host @+0x18)
+    char m_pad80[0x1a0 - 0x80];
     CProjAnim m_1a0; // +0x1a0  animation sub-object (SetAnim(g_6bf3bc))
-    char m_pad1a4[0x1c0 - 0x1a4];
+    char m_pad1a4[0x1b4 - 0x1a4];
+    i32 m_1b4; // +0x1b4  geometry word (copied into CProjectile::m_15c)
+    char m_pad1b8[0x1c0 - 0x1b8];
     i32 m_1c0; // +0x1c0
     char m_pad1c4[0x1c8 - 0x1c4];
     i32 m_1c8; // +0x1c8
+
+    void CacheFirstFrame(const char* name); // 0x150540 (__thiscall, ret 4)
+};
+
+// The shadow companion's post-create sub-table (m_1fc->m_7c): an Init fn-ptr at
+// +0x10 (fired with the shadow) and an "activation host" at +0x18 whose Activate
+// (0x9d520) installs the shadow's two frame names.
+struct CProjShadowActivate {
+    void Activate(const char* shadowName, const char* baseName, i32 a, i32 b); // 0x9d520
+};
+struct CProjShadowVtbl {
+    char m_pad00[0x10];
+    void (*Init)(CProjRenderObj* self); // +0x10
+    char m_pad14[0x18 - 0x14];
+    CProjShadowActivate* m_18; // +0x18
 };
 
 // The CSample-like sound sample object the projectile launches (+0x200). Its
@@ -119,21 +156,40 @@ public:
     void StepMotion();             // 0xe08b0  (advance the parabolic motion + render pos)
     void ScanTargets(i32 impact);  // 0xe0b10  (15x15 grid hit-scan against nearby grunts)
     i32 LaunchSound(const char* key); // 0xe2190 (create + play the launch CSample)
+    // Level-load: resolve the projectile's per-type sprite frames + trajectory
+    // (0xdf050, /GX) and the impact/particle effects (0xdfd00). Args are the two
+    // grid endpoints + z + the target/owner ids.
+    i32 LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i32 t0, i32 t1); // 0xdf050
+    i32 LoadProjectileEffects();                                                       // 0xdfd00
 
     char m_pad140[0x150 - 0x140];
     i32 m_150;                    // +0x150
-    CProjRenderObj* m_154;        // +0x154  primary render object
+    CProjRenderObj* m_154;        // +0x154  primary sprite/render object
     i32 m_158;                    // +0x158
-    char m_pad15c[0x170 - 0x15c]; //
+    i32 m_15c;                    // +0x15c  copied from m_154->m_1b4 in LoadProjectileSprites
+    char m_pad160[0x170 - 0x160]; //
     i32 m_170, m_174, m_178;      // +0x170..+0x17b  (grid cell + target id)
     i32 m_17c, m_180;             // +0x17c/+0x180   (last screen position)
-    char m_pad184[0x198 - 0x184]; //
+    i32 m_184;                    // +0x184
+    double m_188;                 // +0x188  velocity magnitude (fabs)
+    i32 m_190;                    // +0x190  ProjectileTimePerTile (GetDwordDef)
+    i32 m_194;                    // +0x194
     double m_198;                 // +0x198  per-frame scale
     double m_1a0;                 // +0x1a0  render X (double)
     double m_1a8;                 // +0x1a8  render Y (double)
-    char m_pad1b0[0x1ec - 0x1b0]; //
-    i32 m_1ec, m_1f0;             // +0x1ec/+0x1f0  spawn cell key
-    char m_pad1f4[0x1fc - 0x1f4]; //
+    double m_1b0;                 // +0x1b0  velocity X basis
+    double m_1b8;                 // +0x1b8  velocity Y basis
+    i32 m_1c0, m_1c4;             // +0x1c0/+0x1c4  X-sign double {lo,hi} (0.0/+-0.5)
+    i32 m_1c8, m_1cc;             // +0x1c8/+0x1cc  Y-sign double {lo,hi}
+    i32 m_1d0, m_1d4;             // +0x1d0/+0x1d4  muzzle screen X/Y (owner)
+    i32 m_1d8;                    // +0x1d8  arc/loop flag (per-type)
+    i32 m_1dc;                    // +0x1dc  "effects loaded" latch
+    void* m_1e0;                  // +0x1e0  sprite frame 1 ("<base>1")
+    void* m_1e4;                  // +0x1e4  sprite frame 2
+    void* m_1e8;                  // +0x1e8  sprite frame 3
+    i32 m_1ec, m_1f0;             // +0x1ec/+0x1f0  frames 4/5 (spawn cell key elsewhere)
+    void* m_1f4;                  // +0x1f4  IMPACT sprite
+    void* m_1f8;                  // +0x1f8  FALL sprite
     CProjRenderObj* m_1fc;        // +0x1fc  shadow render companion
     CProjSample* m_200;           // +0x200  launch sound sample
     CObList m_204;                // +0x204  tracked-hit list (block size 10)

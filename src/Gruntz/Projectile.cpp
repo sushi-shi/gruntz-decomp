@@ -37,8 +37,15 @@ extern "C" u32 g_6bf3bc;
 // the `mov ecx,ds:g_gameReg` load against the already-named symbol.
 struct CProjSoundEntry; // map value: the per-effect sound table entry
 struct CProjSoundInner; // reg->m_30->m_28: holds the CMapStringToOb at +0x10
+struct CProjSpriteFactory {
+    // The HUD sprite factory (reg->m_30->m_8); CreateSprite @0x1597b0, __thiscall.
+    CProjRenderObj*
+    CreateSprite(i32 kind, i32 geoB, i32 geoA, i32 hint, const char* name, i32 flags);
+};
 struct CProjSoundCat {  // reg->m_30: the sound-category object
-    char m_pad00[0x28];
+    char m_pad00[0x8];
+    CProjSpriteFactory* m_8; // +0x8  the HUD sprite factory (LightFx shadow)
+    char m_pad0c[0x28 - 0xc];
     CProjSoundInner* m_28; // +0x28  -> the lookup map lives at (*m_28)+0x10
 };
 struct CGameReg {
@@ -202,6 +209,181 @@ CProjectile::~CProjectile() {
         }
     }
     m_204.RemoveAll();
+}
+
+// ===========================================================================
+// CProjectile::LoadProjectileSprites (0xdf050, /GX) - resolve the projectile's
+// per-type sprite frames + launch trajectory at spawn. Snap the two grid
+// endpoints to tile centres (m_17c/m_180), record the target/owner ids, then
+// switch on the projectile kind to pick the sprite-set base name + the
+// "<Kind>ProjectileTimePerTile" bute value (m_190) and the arc flag (m_1d8; Wingz
+// also loops a launch sound + measures the tile distance). Look up the six frame
+// sprites ("<base>1".."<base>5", "<base>IMPACT") + "<base>FALL", install the
+// resolved frame-0 geometry, cache the object frame, compute the normalised
+// launch velocity, spawn the LightFx shadow companion, and latch the "A" act key.
+// (g_buteMgr is declared extern in <Gruntz/UserLogic.h>; BattlezMapConfig owns
+// its DATA label, so the GetDwordDef call here reloc-masks against it. The global
+// bute-tree g_buteTree @0x6bf620 is defined in the registration section below.)
+// ===========================================================================
+extern CButeTree g_buteTree;
+
+// @early-stop
+// x87-scheduling + EH-frame-size wall (~58%, docs/patterns, same family as
+// StepMotion ~70% and gx-scoped-local-eh-frame-size): the prologue, the tile-snap
+// + id stores, the dense jump-table switch (kind 2/9/10/11/21/22 -> the six sprite
+// bases, tail-merged arc-flag commons), the seven CString `base + "N"` concat +
+// geometry-map Lookups, the frame-0 Setup and CacheFirstFrame are reproduced. Two
+// residues: (1) the fxch-laden trajectory-normalisation block (0xdf4db..0xdf6ae:
+// the sqrt / fdiv / fdivr chain, the two sign-of-component fcomp ladders and their
+// interleaved qword stores) whose x87 stack ordering is not steerable from C; its
+// double temps also miss the retail /GX frame by a dword (cl `sub esp,0x18` vs
+// retail `sub esp,0x1c` - tried 0x18/0x1c/0x20 local combos, none lands 0x1c),
+// which shifts EVERY front-half [esp+N] displacement by 4 (opcodes match, disp
+// bytes differ). (2) engine-call/string relocs (operator+/Lookup/CreateSprite/
+// GetDwordDef/CacheFirstFrame reached direct where retail uses ILT thunks). Logic
+// complete; parked for the final sweep.
+RVA(0x000df050, 0x6ba)
+i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i32 t0, i32 t1) {
+    CString key;
+    m_174 = a;
+    m_17c = (sx & ~0x1f) + 0x10;
+    m_178 = b;
+    m_170 = kind;
+    m_180 = (sy & ~0x1f) + 0x10;
+    m_220 = t0;
+    m_224 = t1;
+
+    CGameObject* owner = m_10;
+    double dx = (double)(m_17c - owner->m_5c);
+    double dy = (double)(m_180 - owner->m_60);
+    i32 count = 1;
+
+    switch (kind) {
+        case 11: // ROCK
+            key = "GRUNTZ_ROCKGRUNT_PROJECTILE";
+            m_190 = g_buteMgr.GetDwordDef((char*)"Projectile", (char*)"RockProjectileTimePerTile", 0xbb8);
+            m_1d8 = 1;
+            break;
+        case 9: // GUNHAT
+            key = "GRUNTZ_GUNHATGRUNT_PROJECTILE";
+            m_190 = g_buteMgr.GetDwordDef((char*)"Projectile", (char*)"GunhatProjectileTimePerTile", 0xbb8);
+            m_1d8 = 1;
+            break;
+        case 2: // BOOMERANG
+            key = "GRUNTZ_BOOMERANGGRUNT_PROJECTILE";
+            m_190 = g_buteMgr.GetDwordDef((char*)"Projectile", (char*)"BoomerangProjectileTimePerTile", 0xbb8);
+            m_1d8 = 0;
+            break;
+        case 10: // NERFGUN
+            key = "GRUNTZ_NERFGUNGRUNT_PROJECTILE";
+            m_190 = g_buteMgr.GetDwordDef((char*)"Projectile", (char*)"NerfGunProjectileTimePerTile", 0xbb8);
+            m_1d8 = 1;
+            break;
+        case 21: // WELDER
+            key = "GRUNTZ_WELDERGRUNT_PROJECTILE";
+            m_190 = g_buteMgr.GetDwordDef((char*)"Projectile", (char*)"WelderProjectileTimePerTile", 0xbb8);
+            m_1d8 = 1;
+            break;
+        case 22: { // WINGZ
+            key = "GRUNTZ_WINGZGRUNT_PROJECTILE";
+            m_190 = g_buteMgr.GetDwordDef((char*)"Projectile", (char*)"WingzProjectileTimePerTile", 0xbb8);
+            LaunchSound("GRUNTZ_WINGZGRUNT_WINGZGRUNTLOOP");
+            m_1d8 = 0;
+            i32 ddx = (m_17c >> 5) - (owner->m_5c >> 5);
+            if (ddx < 0) {
+                ddx = -ddx;
+            }
+            i32 ddy = (m_180 >> 5) - (owner->m_60 >> 5);
+            if (ddy < 0) {
+                ddy = -ddy;
+            }
+            count = ddx;
+            if (ddx <= ddy) {
+                count = ddy;
+            }
+            break;
+        }
+        default:
+            return 0;
+    }
+
+    // Resolve the six numbered frame sprites; frame "1" is required.
+    CProjSpriteMap& map = m_154->m_c->m_2c->m_10;
+    void* out;
+    out = 0;
+    map.Lookup(key + "1", &out);
+    m_1e0 = out;
+    if (m_1e0 == 0) {
+        return 0;
+    }
+    out = 0;
+    map.Lookup(key + "2", &out);
+    m_1e4 = out;
+    out = 0;
+    map.Lookup(key + "3", &out);
+    m_1e8 = out;
+    out = 0;
+    map.Lookup(key + "4", &out);
+    m_1ec = (i32)out;
+    out = 0;
+    map.Lookup(key + "5", &out);
+    m_1f0 = (i32)out;
+    out = 0;
+    map.Lookup(key + "IMPACT", &out);
+    m_1f4 = out;
+    out = 0;
+    map.Lookup(key + "FALL", &out);
+    m_1f8 = out;
+
+    m_15c = m_154->m_1b4;
+    m_154->m_1a0.Setup(m_1e0);
+    m_154->CacheFirstFrame(key + "_OBJECT");
+
+    // Normalise the launch trajectory into the per-frame velocity + sign vectors.
+    u32 totalTime = (u32)(count * m_190);
+    double len = sqrt(dx * dx + dy * dy);
+    double t = (double)totalTime;
+    double vx = dx / len;
+    m_188 = len;
+    m_198 = len / t;
+    m_1a0 = vx;
+    m_1a8 = dy / len;
+    m_1b0 = vx;
+    m_1b8 = dy / len;
+    // sign(dx): +0.5 / 0.0 / -0.5 stored as a double {lo=0, hi=+-0x3fe00000}
+    m_1c0 = 0;
+    if (vx > 0.0) {
+        m_1c4 = 0x3fe00000;
+    } else if (vx < 0.0) {
+        m_1c4 = (i32)0xbfe00000;
+    } else {
+        m_1c4 = 0;
+    }
+    m_1c8 = 0;
+    if (dy > 0.0) {
+        m_1cc = 0x3fe00000;
+    } else if (dy < 0.0) {
+        m_1cc = (i32)0xbfe00000;
+    } else {
+        m_1cc = 0;
+    }
+    m_188 = len < 0.0 ? -len : len;
+    m_1d0 = owner->m_5c;
+    m_1d4 = owner->m_60;
+    m_1dc = 0;
+
+    // Spawn the LightFx shadow companion + activate its two frames.
+    CProjSpriteFactory* factory = g_gameReg->m_30->m_8;
+    m_1fc = factory->CreateSprite(0, owner->m_5c, owner->m_60, 0xcf84f, "LightFx", 0x2040003);
+    if (m_1fc != 0) {
+        m_1fc->m_7c->Init(m_1fc);
+        m_1fc->m_7c->m_18->Activate(key + "_SHADOW", key + "1", 5, 1);
+    }
+
+    // Latch the class act key ("A"): save the old registry node, then re-point it.
+    m_30 = m_14->m_1c;
+    m_14->m_1c = g_buteTree.Find("A");
+    return 1;
 }
 
 // ===========================================================================

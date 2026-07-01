@@ -7,7 +7,6 @@
 class CProjectile {
 public:
     void CProjectile_0dec60(i32);
-    void LoadProjectileSprites(i32, i32, i32, i32, i32, i32, i32);
     void LoadProjectileEffects();
 };
 
@@ -38,19 +37,23 @@ void CProjectile::CProjectile_0dec60(i32) {}
 // @confidence: med
 // @source: string-xref
 // @stub
-// LoadProjectileSprites (1722 B). DEFERRED to the final sweep (too big to converge
-// without diverging regalloc). Shape: a leading jump-table switch on the projectile
-// type that selects per-type config keys (GRUNTZ_{ROCK,GUNHAT,BOOMERANG,NERFGUN,
-// WELDER,WINGZ}GRUNT_PROJECTILE + the matching {..}ProjectileTimePerTile ints, all
-// under the "Projectile" bute group), then a shared "IMPACT"/"LightFx" sprite-setup
-// tail. Two switchdata tables (the jumptable-data-overlap scoring artifact).
-RVA(0x000df050, 0x6ba)
-void CProjectile::LoadProjectileSprites(i32, i32, i32, i32, i32, i32, i32) {}
-
-// @confidence: med
-// @source: string-xref
-// @stub
-// LoadProjectileEffects (1781 B). DEFERRED to the final sweep (same class as the
-// sprites parser: a multi-case bute config reader, too big to converge in one pass).
+// LoadProjectileEffects (1781 B). DEFERRED to the final sweep - a dense x87 wall
+// (worse than the sprites loader): per-frame trajectory advance + effect-tier
+// select. Non-/GX (`sub esp,0x10; push ebx/ebp/esi; mov esi,ecx; push edi`).
+// Shape mapped for the redo:
+//   - early-out unless m_1dc==0 (the "effects loaded" latch LoadProjectileSprites
+//     leaves 0); on kind==0x16 (WINGZ, m_170) + the owner inside the level bounds
+//     (g_mgrSettings +0x13c/+0x140/+0x144/+0x148) it loops the launch sound
+//     (LaunchSound thunk 0x2b5d -> 0xe2190) else stops it (m_200->StopAndRewind
+//     0x135380); sets m_1dc=1;
+//   - integrates the parabola: fild g_645584 (draw-clock delta) * m_1b0 + m_198*
+//     m_1c0 + m_1a0 -> m_1a0 (and the m_1b8/m_1c8/m_1a8 twin), __ftol via 0x11f570;
+//   - clamps m_1d0/m_1d4 against m_17c/m_180 via the 0x5eaa90 sign fcomp ladders;
+//   - THE WALL: when m_1d8 set, an fsqrt-normalised distance is compared against
+//     m_188 scaled by SIX .rdata doubles (0x5eaa98..0x5eaad0) in a long
+//     fld/fmul/fcompp ladder (0xe0000..0xe01f0) selecting the impact-effect tier -
+//     a fxch/fcompp schedule not steerable from C source;
+//   - the tail (0xe0242+) spawns the Particlez / LEVEL_DEATHSPLASH / GAME_WATER
+//     effects via a jump-table switch (switchdataD_004e03f8) + registry lookups.
 RVA(0x000dfd00, 0x6f5)
 void CProjectile::LoadProjectileEffects() {}
