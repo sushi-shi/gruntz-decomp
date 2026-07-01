@@ -212,7 +212,6 @@ CSymTab::~CSymTab() {
 // this scope's leaf table (m_symbols, +0x40); if present, walk its embedded
 // sub-table (record+0x24) for `key`, forwarding m_owner->m_68 == 0 as the flag.
 // The `m_68 == 0` is the int->bool sete. __thiscall, callee-clean of both args.
-// (Trace-discovered; was the ClassUnknown_3 stub.)
 RVA(0x0013a000, 0x37)
 i32 CSymTab::Insert(const char* key, void* arg) {
     void* rec = m_symbols.Find((const char*)arg);

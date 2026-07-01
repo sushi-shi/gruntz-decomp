@@ -16,13 +16,13 @@ SIZE_UNKNOWN(PacketPool); // method-only CObList view; retail size TBD
 extern PacketPool g_pool_64aca8;
 extern int g_count_64acb4;
 
-// 0xbef10 - preallocate 10 records into the free list.
+// Preallocate 10 records into the free list.
 RVA(0x000bef10, 0xd)
 void Unmatched_bef10() {
     g_pool_64aca8.AddCount(10);
 }
 
-// 0xbf530 - custom allocator: reuse a freed record (optionally cleared) or
+// Custom allocator: reuse a freed record (optionally cleared) or
 // allocate a fresh 0x410-byte block.
 RVA(0x000bf530, 0x3b)
 void* Unmatched_bf530(int bClear) {

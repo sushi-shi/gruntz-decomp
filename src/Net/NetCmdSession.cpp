@@ -9,14 +9,6 @@
 #include <rva.h>
 #include <string.h> // memset (inlined rep stos over the resync scratch block)
 
-// A queued command, as the slot list holds it: +0x0 sequence, +0x4 a payload
-// word Verify compares against the resync entry.
-struct CNetCmd {
-    i32 m_seq; // +0x0
-    i32 m_4;   // +0x4
-};
-SIZE_UNKNOWN(CNetCmd); // queued-command view (2 fields pinned); retail size TBD
-
 // CNetCmdSlot helper reached only here (0xc0bb0, __thiscall, external).
 struct CNetCmdSlotReset {
     void Reset0bb0();

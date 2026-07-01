@@ -19,8 +19,7 @@
 //   CButeMgr::ParseTagLine - one tag=value line
 //   CButeMgr::Parse        - the .att parser
 //
-// Lexer cluster (migrated from src/Stub/Discovered.cpp, the trace-discovered
-// CButeMgr set 0x170330-0x171a60):
+// Lexer cluster (the CButeMgr set 0x170330-0x171a60):
 //   CButeMgr::Init           - reset counters + the +0x100/+0x104 scratch strings
 //   CButeMgr::SetErrCallback - store the +0x14 error callback
 //   CButeMgr::NextChar       - advance the input one char (the lexer's getch)
@@ -1390,12 +1389,6 @@ bool CButeMgr::Exists(char* tag, char* key) {
     return false;
 }
 
-// NOTE: the CButeMgr scalar destructor at 0x0213c0 is now reconstructed above (the
-// `CButeMgr::~CButeMgr()` near the top, in retail-RVA order); the @early-stop wall is
-// documented there. The three sub-trees were retyped to the CButeStore value member
-// (matching-neutral: same +0x18/+0x48/+0x74 offsets + 0x2c size), which left all 14
-// already-matched getters/parser at 100%.
-
 // ===========================================================================
 // CButeMgrHelper cluster (0x1697c0-0x16c0c0). The helper sub-object embedded at
 // CButeMgr+0x14 (a .bute registry/compiler object). All __thiscall.
@@ -1437,7 +1430,7 @@ extern "C" void* g_helperVbaseVtblD; // 0x5f047c
 // The most-derived vtable FuncA (the vbase-ctor displacement adjustor thunk)
 // stamps at the displaced slot, and the real ctor body it tail-jmps into.
 DATA(0x005f0394)
-extern void* g_butemgrhelper_vtbl_5f0394; // 0x5f0394
+extern void* g_butemgrhelper_vtbl_5f0394;       // 0x5f0394
 extern "C" void CButeMgrHelper_VbaseCtorBody(); // 0x16c950 (FuncA jmp target)
 
 // The sub-object at +0x4. Its slot-0 virtual is a __thiscall scalar-deleting

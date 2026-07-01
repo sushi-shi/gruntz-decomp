@@ -4,11 +4,8 @@
 // real body that lives (byte-exact) in NetMgr.cpp / CMulti.cpp. There is no
 // plain-C++ source form for a bare unframed `jmp`, so each is transcribed as a
 // __declspec(naked) body whose single jmp's rel32 reloc-masks against the named
-// target (same sanctioned approach as Wap32/M3CompilerThunks.cpp).
-//
-// NB: previously these lived in src/Stub/CNetMgr.cpp under the SAME mangled names
-// as the real bodies (?AckDropPlayer@CNetMgr@@QAEXH@Z etc.), a symbol-name
-// collision across two units. Giving the thunk its own name removes that.
+// target (same sanctioned approach as Wap32/M3CompilerThunks.cpp). Each thunk has
+// its own name so it does not collide with the real body's mangled symbol.
 #include <rva.h>
 
 extern "C" {

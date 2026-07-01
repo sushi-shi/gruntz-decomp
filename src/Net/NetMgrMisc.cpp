@@ -62,7 +62,7 @@ DATA(0x0024e25c)
 extern CNetSingletonE25c g_netE25c; // VA 0x64e25c
 
 // ---------------------------------------------------------------------------
-// 0xbf120 - clear the slot's +0x3c..+0x48 dword range.
+// Clear the slot's +0x3c..+0x48 dword range.
 // ---------------------------------------------------------------------------
 // @early-stop
 // regalloc coin-flip (84%): the inline 16-byte memset (base pointer + 4 dword
@@ -77,7 +77,7 @@ void CNetSlotAux::ClearRange() {
 }
 
 // ---------------------------------------------------------------------------
-// 0xf9710 - poll the file-scope net singleton.
+// Poll the file-scope net singleton.
 // ---------------------------------------------------------------------------
 RVA(0x000f9710, 0xa)
 i32 NetPollE25c() {
@@ -85,7 +85,7 @@ i32 NetPollE25c() {
 }
 
 // ---------------------------------------------------------------------------
-// 0xc2a20 - one connect step: option A then the connect drive.
+// One connect step: option A then the connect drive.
 // ---------------------------------------------------------------------------
 RVA(0x000c2a20, 0x13)
 void CNetConnCoord::Step() {
@@ -94,7 +94,7 @@ void CNetConnCoord::Step() {
 }
 
 // ---------------------------------------------------------------------------
-// 0xc40b0 - drive the connect state off the file-scope CNetMgr: if the gate is
+// Drive the connect state off the file-scope CNetMgr: if the gate is
 // set, drop + advance; else transform the local id and submit it.
 // ---------------------------------------------------------------------------
 RVA(0x000c40b0, 0x42)
@@ -110,7 +110,7 @@ void CNetConnCoord::Drive() {
 }
 
 // ---------------------------------------------------------------------------
-// 0xc5f00 - configure the singleton with two fixed ids.
+// Configure the singleton with two fixed ids.
 // ---------------------------------------------------------------------------
 RVA(0x000c5f00, 0x15)
 void NetConfigureBe90() {

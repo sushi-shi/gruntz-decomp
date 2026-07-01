@@ -221,9 +221,13 @@ SIZE_UNKNOWN(CNetPlayerNode); // player-list node walk-view; retail size TBD
 // reset reads are pinned. The three engine helpers it fires (slot methods,
 // external incremental-link thunks) clear the slot's command range.
 // ---------------------------------------------------------------------------
-// A queued player command the slot's CObList holds; only its +0x0 sequence
-// number is read by the slot methods. Defined in src/Net/NetCmdSlot.cpp.
-struct CNetCmd;
+// A queued player command the slot's CObList holds: +0x0 sequence number,
+// +0x4 a payload word (Verify compares it against the resync entry).
+struct CNetCmd {
+    i32 m_seq; // +0x0  command sequence number
+    i32 m_4;   // +0x4  payload word (resync compare)
+};
+SIZE_UNKNOWN(CNetCmd); // queued-command view (2 fields pinned); retail size TBD
 
 struct CNetCmdSlot {
     i32 m_0;        // +0x0   "armed" flag (AckDropPlayer sets it to 1; ==3 => active)
@@ -635,7 +639,7 @@ struct CNetCreateCtx {
     char m_pad0[0x74];
     void* m_74; // +0x74  the group-enumeration record
 };
-SIZE_UNKNOWN(CNetCreateCtx); // create-context view (only +0x74 pinned); retail size TBD
+SIZE_UNKNOWN(CNetCreateCtx);        // create-context view (only +0x74 pinned); retail size TBD
 extern "C" CNetCreateCtx* g_648cf4; // 0x648cf4
 
 class CNetMgr {
@@ -976,7 +980,7 @@ public:
     void Stub_179090();
     void Stub_179130();
 };
-SIZE_UNKNOWN(CNetMgr); // network manager; retail byte size not yet pinned
+SIZE_UNKNOWN(CNetMgr);     // network manager; retail byte size not yet pinned
 VTBL(CNetMgr, 0x001ea42c); // RTTI vtable (config/vtable_names.csv), currently un-catalogued
 
 // The HWND chain the message handlers walk: m_4 -> +0x4 -> +0x4 (the HWND).

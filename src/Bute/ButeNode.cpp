@@ -1,11 +1,10 @@
 #include <rva.h>
 // ButeNode.cpp - CButeNodeBase, a ButeMgr config-tree node base (dedicated unit).
 //
-// Re-homed from src/Stub/CButeNodeBase.cpp: its own self-contained class model
-// (CContainerErr base, CButeNodeEntry subobject) cannot fold into ButeMgr.cpp,
-// which carries a different minimal `class CButeNodeBase` decl (ButeMgr.h) for the
-// ParseTagLine `new CButeNode` path -> ODR conflict. So it lives in its own unit,
-// flags="eh" (== the engine_label_stubs base+/GX it came from; matching-neutral).
+// This is its own self-contained class model (CContainerErr base, CButeNodeEntry
+// subobject); it cannot fold into ButeMgr.cpp, which carries a different minimal
+// `class CButeNodeBase` decl (ButeMgr.h) for the ParseTagLine `new CButeNode` path
+// -> ODR conflict. So it lives in its own unit, flags="eh".
 //
 // CButeNodeBase derives from CContainerErr (the container-library exception
 // base, ctor @0x16d9c0, modeled in GameText) and embeds a small node subobject
@@ -96,7 +95,7 @@ void* g_buteNodeEntryVtbl;
 // (WORD)n@+8, 0@+0xc, then its own base vtable@+0 (stamped LAST -- written in
 // source order; a hand-rolled vtbl, not a C++ virtual -- see the note above). Clean
 // leaf ctor, no EH frame. Called out-of-line by the CButeNodeBase ctor's m_entry
-// member-init. (Trace-discovered; was the ClassUnknown_7 stub.)
+// member-init.
 RVA(0x0016df70, 0x22)
 CButeNodeEntry::CButeNodeEntry(i32 n, void* desc) {
     m_4 = desc;

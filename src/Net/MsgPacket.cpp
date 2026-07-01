@@ -16,7 +16,7 @@ struct CMsgPacket {
 };
 SIZE(CMsgPacket, 0x38); // full object: the byte-matched CopyPacketHeader struct-copy is 0x38
 
-// 0x1868e0 - append a 16-bit value big-endian, advancing the cursor by 2.
+// Append a 16-bit value big-endian, advancing the cursor by 2.
 RVA(0x001868e0, 0x2f)
 void WritePacketU16(CMsgPacket* p, u32 val) {
     p->m_buffer[p->m_writeCursor] = (u8)(val >> 8);
@@ -25,7 +25,7 @@ void WritePacketU16(CMsgPacket* p, u32 val) {
     p->m_writeCursor++;
 }
 
-// 0x186a20 - copy a populated source header over a destination header; returns -2.
+// Copy a populated source header over a destination header; returns -2.
 RVA(0x00186a20, 0x28)
 i32 CopyPacketHeader(CMsgPacket* dst, CMsgPacket* src) {
     if (src != 0 && dst != 0 && src->m_populated != 0) {

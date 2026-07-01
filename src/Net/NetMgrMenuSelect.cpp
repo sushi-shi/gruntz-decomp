@@ -1,5 +1,5 @@
 // NetMgrMenuSelect.cpp - CNetMgr::LoadMenuSelectSprite (0xba620), the menu-select
-// event handler (C:\Proj\NetMgr). Re-homed from src/Stub/CNetMgr.cpp.
+// event handler (C:\Proj\NetMgr).
 //
 // Kept in its own TU (NOT folded into NetMgr.cpp): this handler's collaborator
 // shape treats GetPlayerData/AddSessionNode (0x178eb0/0x178b30) as methods on the
@@ -7,7 +7,7 @@
 // byte-exact CNetMgr models 0x178eb0 as a direct CNetMgr method (ecx = this) - a
 // genuine RE ambiguity at the same RVA. Folding it in would force one calling shape
 // on both and regress the other, so the self-contained model is preserved here (a
-// separate CNetMgr view TU; byte-identical to the former stub).
+// separate CNetMgr view TU).
 #include <rva.h>
 
 // The menu-select event the handler is handed (edi): +0x4 the "armed" gate (==1),

@@ -489,7 +489,7 @@ void* CSymParser::PopParseSlot() {
 // CObjList::Remove (0x1852e0): unlink `node` from the intrusive {head@+4,tail@+8}
 // chain (m_list at CSymParser+0x10). The node's links are m_next@+4 / m_prev@+8; a
 // null prev/next means `node` was the head/tail. __thiscall on the list head,
-// callee-cleanup of the single arg. (Trace-discovered; was the ClassUnknown_47 stub.)
+// callee-cleanup of the single arg.
 RVA(0x001852e0, 0x35)
 void CObjList::Remove(CObjNode* node) {
     if (node->m_prev) {

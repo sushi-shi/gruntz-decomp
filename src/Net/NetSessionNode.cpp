@@ -70,7 +70,7 @@ public:
     char m_pad04[0x54 - 0x04]; // +0x04..+0x53  the 0x50-byte DPSESSIONDESC2 copy
                                //               (lpszSessionName@+0x34, lpszPassword@+0x38)
 };
-SIZE_UNKNOWN(CNetPlayerListNode); // node view (desc copy pinned); full retail size TBD
+SIZE_UNKNOWN(CNetPlayerListNode);     // node view (desc copy pinned); full retail size TBD
 VTBL(CNetPlayerListNode, 0x005f0760); // own (most-derived) vtable
 
 // The source DPSESSIONDESC2 Init deep-copies: only the two name pointers it
@@ -98,7 +98,7 @@ public:
     i32 m_1c;             // +0x1c
     i32 m_listPosition;   // +0x20  cleared on teardown
 };
-SIZE_UNKNOWN(CNetSessionNode); // node view (fields to +0x20 pinned); full retail size TBD
+SIZE_UNKNOWN(CNetSessionNode);     // node view (fields to +0x20 pinned); full retail size TBD
 VTBL(CNetSessionNode, 0x005f0778); // own (final) vtable
 
 // ===========================================================================

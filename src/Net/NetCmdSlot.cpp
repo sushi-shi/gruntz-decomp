@@ -17,11 +17,6 @@
 #include <Net/NetMgr.h> // <Mfc.h> -> CObList / POSITION / CObject (reloc-masked)
 #include <rva.h>
 
-// One queued command: only the +0x0 sequence number is inspected here.
-struct CNetCmd {
-    i32 m_seq; // +0x0  command sequence number
-};
-
 // The CObList node shape (CObject list): +0x0 next, +0x4 prev, +0x8 payload.
 // Used to walk the queue and to name the position the removal targets.
 struct CObListNode {
