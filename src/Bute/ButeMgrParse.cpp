@@ -91,3 +91,7 @@ bool CButeMgr::Parse(CString filename, int streamBase) {
     delete (ButeFileStream*)m_stream;
     return result;
 }
+
+// --- class-metadata sweep (Bute module): SIZE at this .cpp EOF (all SIZE_UNKNOWN).
+SIZE_UNKNOWN(ButeIos); // CRT ios view; virtual dtor owned by the CRT (no VTBL)
+SIZE_UNKNOWN(ButeFileStream);

@@ -61,3 +61,6 @@ void CButeStore::ClearRecursive(i32 node) {
     }
     RezFree(n);
 }
+
+// --- class-metadata sweep (Bute module): SIZE at this .cpp EOF (SIZE_UNKNOWN).
+SIZE_UNKNOWN(CButeStoreNode);

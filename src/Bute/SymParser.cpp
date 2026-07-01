@@ -503,3 +503,15 @@ void CObjList::Remove(CObjNode* node) {
         m_tail = node->m_prev;
     }
 }
+
+// --- class-metadata sweep (Bute module): SymParser.h + .cpp-local SIZE at this .cpp
+// EOF (all SIZE_UNKNOWN). CSymTab (also in SymParser.h) is annotated in SymTab.cpp.
+SIZE_UNKNOWN(CObjNode); // declared-but-undefined virtual slots; no vtable emitted here (no VTBL)
+SIZE_UNKNOWN(CObjList);
+SIZE_UNKNOWN(CSlotNode);
+SIZE_UNKNOWN(CParserHash);
+SIZE_UNKNOWN(CSymParser);
+SIZE_UNKNOWN(CTextReaderInit);
+SIZE_UNKNOWN(CBinReaderInit);
+SIZE_UNKNOWN(SymFindData);
+SIZE_UNKNOWN(CParseSlot);

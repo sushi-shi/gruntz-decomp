@@ -175,3 +175,12 @@ void* CHashB::Walk(const char* name, i32 ci) {
     }
     return 0;
 }
+
+// --- class-metadata sweep (Bute module): Hash.h SIZE at this .cpp EOF (all SIZE_UNKNOWN).
+SIZE_UNKNOWN(CHashSlotList);
+SIZE_UNKNOWN(CHashInsertNode); // slot-0 hash vtable owned elsewhere (no VTBL)
+SIZE_UNKNOWN(CHashSlot);
+SIZE_UNKNOWN(CHashEntry);
+SIZE_UNKNOWN(CHashBase);
+SIZE_UNKNOWN(CHash);
+SIZE_UNKNOWN(CHashB);

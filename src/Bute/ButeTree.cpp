@@ -263,3 +263,8 @@ void* CButeTree::Insert(const char* key, void* value) {
     m_errorSink->Set(this, (i32)cache, 0xc);
     return 0;
 }
+
+// --- class-metadata sweep (Bute module): SIZE at this .cpp EOF (SIZE_UNKNOWN).
+// CButeTree's owning TU (the crit-bit trie node with fields lives here; the header
+// and src/Stub/CButeTree.cpp carry data-less method-only views of the same name).
+SIZE_UNKNOWN(CButeTree);

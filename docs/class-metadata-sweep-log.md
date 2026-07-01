@@ -383,3 +383,82 @@ arises. (Not tested whether an in-header typedef would regress; the EOF rule sid
   the CUserLogic name string, defined only in UserLogic (do-not-touch) / Gruntz files,
   never in a Wap32 file. Belongs to the UserLogic/Gruntz module sweep (same cross-file
   dedup rule as the SBI section's non-SBI reps). Left un-annotated here.
+
+## Bute module (2026-07-01)
+
+Scope: classes defined in `src/Bute/*` + `include/Bute/*` (the CButeMgr `.att`
+attribute-parser, the CSymTab/CSymParser Remus symbol table, the CHash* hash
+family, and the parser/reader view structs) plus the Bute stub types still in the
+tree (CButeTree in `src/Stub/CButeTree.cpp`; CButeNode/CButeNodeEntry in
+`src/Bute/ButeNode.cpp`).
+
+Coverage delta (whole-tree counters, Bute worklist drained):
+- SIZE: 908/3316 -> 955/3316 annotated names (**47 Bute classes annotated**; Bute
+  SIZE violators 47 -> 0). All `SIZE_UNKNOWN`: every Bute class modeled is a partial
+  pad-to-last-touched-field / interface / view (no array-element stride, RE'd fixed
+  packet, or byte-matched struct-copy proves a complete retail object), so per
+  doctrine none took an exact `SIZE`.
+- VTBL: Bute vtable violators 5 -> 5 (all skipped, below); no new catalog rows (tree
+  total unchanged at 311 not-catalogued).
+
+Annotated: **47 SIZE_UNKNOWN + 0 SIZE(exact) + 0 VTBL**, all hosted at the owning
+`.cpp` EOF (ButeMgr.h is the proven-hot header the task flags):
+- ButeMgr.cpp EOF (17): the ButeMgr.h header classes CButeValue / ButeRef24 /
+  CButeMgrHelper / CButeStoreBase2 / CButeStore / CButeTail / CButeNode / CButeRef5-8 /
+  CButeMgr, plus the `.cpp`-local CButeStream / ButeMgr / CButeValueNode / CButeTextBuf /
+  CButeSub.
+- ButeMgrParse.cpp EOF (2): ButeIos / ButeFileStream.
+- ButeNode.cpp EOF (1): CButeNodeEntry.
+- ButeStoreClear.cpp EOF (1): CButeStoreNode.
+- ButeTree.cpp EOF (1): CButeTree (the crit-bit trie node WITH fields is the owning
+  TU; the ButeMgr.h + `src/Stub/CButeTree.cpp` defs are data-less method-only views of
+  the same name — dedup-by-name means one annotation covers all three).
+- Hash.cpp EOF (7): the Hash.h classes CHashSlotList / CHashInsertNode / CHashSlot /
+  CHashEntry / CHashBase / CHash / CHashB.
+- SymParser.cpp EOF (9): the SymParser.h classes CObjNode / CObjList / CSlotNode /
+  CParserHash / CSymParser, plus the `.cpp`-local CTextReaderInit / CBinReaderInit /
+  SymFindData / CParseSlot.
+- SymTab.cpp EOF (9): the SymTab.h classes RezColl / RezNode / CHashTable / CSymRec /
+  CSymTab, plus the `.cpp`-local CSymLeafBuilder / CSymSeedOwner / CSymRangeStream /
+  CSymSlotPool.
+
+Cross-file dedup notes: three names are defined in more than one Bute header (the
+"conflicting hash shape" the SymParser/SymTab comments describe) — CSymTab (SymTab.h +
+SymParser.h), CSymParser (SymTab.h struct + SymParser.h class), CHashEntry (Hash.h +
+SymTab.h). The tests dedupe by name, so each is annotated exactly ONCE at its fullest
+def: CSymTab in SymTab.cpp, CSymParser in SymParser.cpp, CHashEntry in Hash.cpp.
+CButeStore / CButeNode likewise have `.cpp`-local partial views; annotated once at the
+header def via ButeMgr.cpp.
+
+### Hot-header casualties: NONE.
+All 47 SIZE_UNKNOWN were applied together at the `.cpp` EOFs (the four headers were
+NEVER edited), then one `gruntz build` + a report.json snapshot-diff over all 3394
+functions -> **0 REGRESS / 0 IMPROVE**; build "no regressions vs baseline"; overall
+stayed 1873/3394 exact / 63.71% fuzzy (63.70736 -> 63.70736). Confirms the task's
+premise that ButeMgr.h is hot only to *in-header* (mid-parse) typedefs; the `.cpp`-EOF
+rule sidesteps it.
+
+### VTBL skipped (5 — un-catalogable, NOT casualties; SIZE-only per task):
+Every Bute vtable violator is a **declared-but-undefined virtual "view" struct** (same
+case as the Net pilot's CNetPlayerObj / the SBI+CDDraw view structs): it declares
+`virtual` slots ONLY to lower a `mov eax,[this]; call [eax+slot]` dispatch with no cast,
+is never constructed in-TU, so cl emits no `??_7` here and the concrete vtable lives in a
+foreign / CRT class. No own RVA to bind.
+- `ButeIos` (ButeMgrParse.cpp): the CRT `ios` base view; its virtual dtor's vtable is
+  owned by the statically-linked CRT.
+- `CButeSub` (ButeMgr.cpp): the CButeMgrHelper +0x4 sub-object; slot-0 is a __thiscall
+  scalar-deleting dtor into another TU.
+- `CHashInsertNode` (Hash.h): the insert-node prefix; slot-0 is the key-typed bucket
+  hash, defined in the concrete record's TU (pure virtual here).
+- `CObjNode` (SymParser.h): the CObjList node; its scalar-deleting-dtor / detach
+  virtuals point into other unmatched TUs.
+- `CSymRangeStream` (SymTab.cpp): the ApplyRange parse-stream; slot 2 (+0x8) Read is a
+  reloc-masked virtual on a foreign engine stream class.
+The task's Bute z*-family KEEP-HAND-ROLLED vtables (g_buteNodeVtbl / g_storeVtblA /
+g_storeVtblB / g_helperVbaseVtbl* etc.) are `DATA()`-bound reloc-masked externs stamped
+vptr-LAST, not classes with `virtual`, so they never surface in the vtable worklist; no
+VTBL touched (already documented in docs/vtable-conversion-log.md).
+
+Hotness verdict: **Bute is SAFE via the `.cpp`-EOF rule** — headers untouched, one TU's
+EOF shifts per group, no mid-parse-typedef reschedule. Applied all at once with a single
+all-function snapshot-diff (per prior-pilot practice); 0 casualties.

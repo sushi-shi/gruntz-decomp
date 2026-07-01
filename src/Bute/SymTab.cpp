@@ -736,3 +736,16 @@ i32 CSymTab::ResolveQualified(const char* name, void* arg) {
     }
     return scope->Insert(qual, arg);
 }
+
+// --- class-metadata sweep (Bute module): SymTab.h + .cpp-local SIZE at this .cpp EOF
+// (all SIZE_UNKNOWN). CHashEntry (also in SymTab.h) is annotated in Hash.cpp;
+// CSymParser (also in SymTab.h) is annotated in SymParser.cpp.
+SIZE_UNKNOWN(RezColl);
+SIZE_UNKNOWN(RezNode);
+SIZE_UNKNOWN(CHashTable);
+SIZE_UNKNOWN(CSymRec);
+SIZE_UNKNOWN(CSymTab);
+SIZE_UNKNOWN(CSymLeafBuilder);
+SIZE_UNKNOWN(CSymSeedOwner);
+SIZE_UNKNOWN(CSymRangeStream); // declared-but-undefined virtual slots; no vtable here (no VTBL)
+SIZE_UNKNOWN(CSymSlotPool);

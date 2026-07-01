@@ -1570,3 +1570,26 @@ void CButeMgrHelper::InitVbaseD() {
     i32* vbptr = *(i32**)((char*)this - 0x8);
     *(void**)((char*)this - 0x8 + vbptr[1]) = &g_helperVbaseVtblD;
 }
+
+// --- class-metadata sweep (Bute module): SIZE annotations hosted at this .cpp EOF.
+// ButeMgr.h is a hot header (an in-header SIZE reschedules neighbours), so the
+// header-class annotations live here. All SIZE_UNKNOWN: every Bute class modeled
+// is a partial pad-to-last-touched-field / view, not provably == the full retail
+// object. See docs/class-metadata-sweep-log.md.
+SIZE_UNKNOWN(CButeValue);
+SIZE_UNKNOWN(ButeRef24);
+SIZE_UNKNOWN(CButeMgrHelper);
+SIZE_UNKNOWN(CButeStoreBase2);
+SIZE_UNKNOWN(CButeStore);
+SIZE_UNKNOWN(CButeTail);
+SIZE_UNKNOWN(CButeNode);
+SIZE_UNKNOWN(CButeRef5);
+SIZE_UNKNOWN(CButeRef6);
+SIZE_UNKNOWN(CButeRef7);
+SIZE_UNKNOWN(CButeRef8);
+SIZE_UNKNOWN(CButeMgr);
+SIZE_UNKNOWN(CButeStream);
+SIZE_UNKNOWN(ButeMgr);
+SIZE_UNKNOWN(CButeValueNode);
+SIZE_UNKNOWN(CButeTextBuf);
+SIZE_UNKNOWN(CButeSub); // vtable is a declared-but-undefined slot-dispatch view (no VTBL)
