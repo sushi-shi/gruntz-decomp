@@ -11,18 +11,6 @@ extern void* g_severusWorkerDtorVtbl;
 // scalar-deleting-destructor vtable at 0x5f04d8 stamped by ClassUnknown_50.
 extern void* g_vtbl5f04d8;
 
-// ---- CButeStore ----
-// 0x174d70 re-homed (reconstructed, /GX multiple-inheritance dtor) to
-// src/Gruntz/DiscoveredEh.cpp (needs the eh profile).
-
-// ---- CGrunt ----
-// 0x0ef6b0 re-homed (reconstructed) as CGrunt::ChargeStep in
-// src/Gruntz/GruntChargeStep.cpp.
-
-// ---- CGruntzMgr ----
-// 0x08b960 reconstructed as CGruntzMgr::TransitionState (the /GX game-state
-// factory) in src/Gruntz/GruntzMgrTransition.cpp.
-
 // ---- CGruntzSingleCommand ----
 // 0x11f618 is NOT a game method: it is the compiler-generated EH unwind funclet
 // for the CRT `__ehvec_ctor` vector-constructor iterator at 0x11f5a0 (which is
@@ -37,7 +25,6 @@ extern void* g_vtbl5f04d8;
 // @stub
 RVA(0x0011f618, 0x14)
 void CGruntzSingleCommand::CGruntzSingleCommand_11f618() {}
-// 0x135110 re-homed (reconstructed) as ComputeCmdPercent in src/Gruntz/GruntCmdPercent.cpp.
 // 0x18c022 is NOT a CGruntzSingleCommand method: it is the CRT `pow`/`_CIpow`
 // floating-point power routine (fstcw + the 0x27f control-word guard; 2^(y*log2 x)
 // via fyl2x; NaN/Inf exponent classification against 0x7ff00000; fsave/frstor around
@@ -51,28 +38,6 @@ void CGruntzSingleCommand::CGruntzSingleCommand_11f618() {}
 RVA(0x0018c022, 0x1d3)
 void CGruntzSingleCommand::CGruntzSingleCommand_18c022() {}
 
-// ---- CPlay ----
-// 0x0cb480 re-homed (analyzed) as CPlay::FreeListTeardown in src/Gruntz/CPlay.cpp.
-// 0x0d53d0 re-homed (reconstructed) as CPlay::ScanBuildTiles in src/Gruntz/CPlayPlaneScan.cpp.
-// 0x0d9290 re-homed (reconstructed) as CPlay::ScanShuffleQuads in src/Gruntz/CPlayPlaneScan.cpp.
-
-// ---- CSpotLight ----
-// 0x0b1ee0 re-homed (reconstructed) as Update_0b1ee0 in src/Gruntz/CSpotLight.cpp.
-
-// ---- CUserLogic / CMovingLogic ----
-// 0x16ea90 re-homed (reconstructed) as CMovingLogic::Update in
-// src/Gruntz/MovingLogicUpdate.cpp - it is NOT a tile-logic CUserLogic method: its
-// this uses fields up to +0x14c and a CMotionState subobject at +0x38 (methods
-// 0x16ecd0/0x16f3c0/0x16f430), i.e. the moving-object per-frame scroll pump. The
-// trace mis-attributed it to CUserLogic (a base of the moving family).
-
-// ---- ClassUnknown_1 ----
-// 0x150040 re-homed (reconstructed, MFC CArray<DWORD>::SetSize) to
-// src/Gruntz/DiscoveredArray.cpp.
-
-// ---- ClassUnknown_11 ----
-// 0x14dd90 re-homed (reconstructed) as ShadeSelector::Select in src/Gruntz/ShadeDescrTable.cpp.
-
 // ---- ClassUnknown_13 ----
 // Two __cdecl forwarder twins (trace mis-attributed as __thiscall methods): read a
 // handler off p->m_4 (at +0x18 / +0x14), and if non-null forward all 9 stack args
@@ -82,15 +47,18 @@ void CGruntzSingleCommand::CGruntzSingleCommand_18c022() {}
 // 0x115930 is winapi_115930_CopyRect_OffsetRect, a Win32-rect helper); ClassUnknown_13
 // is a stale-ecx trace artifact. No real class TU exists -> left here per the re-home
 // rule (re-home only when the owning class is resolvable).
+SIZE_UNKNOWN(U13Handler);
 struct U13Handler {
     char m_pad00[0x2c];
     i32 m_2c; // +0x2c
 };
+SIZE_UNKNOWN(U13Inner);
 struct U13Inner {
     char m_pad00[0x14];
     U13Handler* m_14; // +0x14
     U13Handler* m_18; // +0x18
 };
+SIZE_UNKNOWN(U13Obj);
 struct U13Obj {
     char m_pad00[4];
     U13Inner* m_4; // +0x04
@@ -146,33 +114,9 @@ ClassUnknown_15::ClassUnknown_15() {
 RVA(0x001d496b, 0x1e)
 void ClassUnknown_16::ClassUnknown_16_1d496b() {}
 
-// ---- ClassUnknown_2 ----
-// 0x14dcf0 re-homed (reconstructed) as SetShadeDescr in src/Gruntz/ShadeDescrTable.cpp.
-
-// ---- ClassUnknown_23 ----
-// 0x16e360 re-homed (reconstructed) as Reg23::Add in src/Gruntz/Registry23.cpp.
-
-// ---- ClassUnknown_30 ----
-// 0x09a260 re-homed (reconstructed) as GetStr_09a260 in src/Gruntz/ClassUnknown30.cpp.
-
 // ---- ClassUnknown_33 ----
 RVA(0x0011f6b9, 0x17)
 void ClassUnknown_33::ClassUnknown_33_11f6b9() {}
-
-// ---- ClassUnknown_35 ----
-// 0x021c40 re-homed (reconstructed) as CU35Host::DestroyStr in
-// src/Gruntz/DiscoveredSmall.cpp.
-
-// ---- ClassUnknown_4 ----
-// 0x16f760 re-homed (reconstructed) as BitStreamBlowfishDecode (__stdcall free fn,
-// trace mis-attribution) in src/Gruntz/BitStreamBlowfish.cpp.
-
-// ---- ClassUnknown_42 ----
-// 0xf1c70 re-homed (reconstructed) as CGrunt::StepArrivalDefenseAlt in
-// src/Gruntz/GruntArrivalStep.cpp (trace mis-attribution; really CGrunt).
-
-// ---- ClassUnknown_43 ----
-// 0x0f7d90 re-homed (reconstructed) as Update_0f7d90 in src/Gruntz/ClassUnknown43.cpp.
 
 // ---- ClassUnknown_45 ----
 // A ctor: zero m_4, stamp the class vtable (0x5ea2a4), return this. Reconstructed.
@@ -183,9 +127,6 @@ ClassUnknown_45::ClassUnknown_45() {
     m_4 = 0;
     *(void**)this = &g_vtbl5ea2a4;
 }
-
-// ---- ClassUnknown_48 ----
-// 0x139cf0 re-homed (reconstructed) as Clear_139cf0 in src/Gruntz/ClassUnknown48.cpp.
 
 // ---- ClassUnknown_50 ----
 RVA(0x0016dfc0, 0x7)
@@ -216,52 +157,3 @@ RVA(0x0011cee3, 0x7)
 void ClassUnknown_54::ClassUnknown_54_11cee3() {
     *(void**)this = &g_severusWorkerDtorVtbl;
 }
-
-// ---- ClassUnknown_55 ----
-// 0x016460 re-homed (reconstructed, /GX dtor) to src/Gruntz/DiscoveredEh.cpp - a
-// byte-identical twin of ~CImgHolder (0x16500); needs the eh profile, so it lives
-// in a sibling /GX unit, not this base-profile TU.
-
-// ---- ClassUnknown_9 ----
-// 0x11c630 re-homed (reconstructed) as the ctor in src/Gruntz/ClassUnknown9.cpp.
-
-// ---------------------------------------------------------------------------
-// Class metadata (SIZE sweep) - hosted at Discovered TU EOF; labels.py scans tree-wide.
-// ---------------------------------------------------------------------------
-SIZE_UNKNOWN(ClassUnknown_1);
-SIZE_UNKNOWN(ClassUnknown_11);
-SIZE_UNKNOWN(ClassUnknown_13);
-SIZE_UNKNOWN(ClassUnknown_14);
-SIZE_UNKNOWN(ClassUnknown_15);
-SIZE_UNKNOWN(ClassUnknown_16);
-SIZE_UNKNOWN(ClassUnknown_17);
-SIZE_UNKNOWN(ClassUnknown_2);
-SIZE_UNKNOWN(ClassUnknown_21);
-SIZE_UNKNOWN(ClassUnknown_22);
-SIZE_UNKNOWN(ClassUnknown_23);
-SIZE_UNKNOWN(ClassUnknown_28);
-SIZE_UNKNOWN(ClassUnknown_29);
-SIZE_UNKNOWN(ClassUnknown_30);
-SIZE_UNKNOWN(ClassUnknown_33);
-SIZE_UNKNOWN(ClassUnknown_34);
-SIZE_UNKNOWN(ClassUnknown_35);
-SIZE_UNKNOWN(ClassUnknown_37);
-SIZE_UNKNOWN(ClassUnknown_39);
-SIZE_UNKNOWN(ClassUnknown_4);
-SIZE_UNKNOWN(ClassUnknown_42);
-SIZE_UNKNOWN(ClassUnknown_43);
-SIZE_UNKNOWN(ClassUnknown_45);
-SIZE_UNKNOWN(ClassUnknown_46);
-SIZE_UNKNOWN(ClassUnknown_48);
-SIZE_UNKNOWN(ClassUnknown_49);
-SIZE_UNKNOWN(ClassUnknown_50);
-SIZE_UNKNOWN(ClassUnknown_51);
-SIZE_UNKNOWN(ClassUnknown_52);
-SIZE_UNKNOWN(ClassUnknown_53);
-SIZE_UNKNOWN(ClassUnknown_54);
-SIZE_UNKNOWN(ClassUnknown_55);
-SIZE_UNKNOWN(ClassUnknown_8);
-SIZE_UNKNOWN(ClassUnknown_9);
-SIZE_UNKNOWN(U13Handler);
-SIZE_UNKNOWN(U13Inner);
-SIZE_UNKNOWN(U13Obj);

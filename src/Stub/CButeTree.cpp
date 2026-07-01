@@ -6,10 +6,6 @@
 // a reloc-masked external no-body call in ButeMgr.cpp; this stub gives its entry
 // an address so the getters' `call Find` relocs name the real symbol instead of
 // the delinker's FUN_<rva> placeholder.
-//
-// Address recovered by reloc-correlation (gruntz.analysis.extern_harvest): 10
-// matched callers (GetInt/GetIntDef/GetDword/... the getter funnel) all resolve
-// their Find call to 0x16d190 - unanimous consensus.
 
 class CButeTree {
 public:
@@ -22,7 +18,3 @@ public:
 // every game-object ctor's `g_buteTree.Find("A")` binds the one symbol.
 DATA(0x002bf620)
 extern CButeTree g_buteTree;
-
-// Find (0x16d190) + Insert (0x16db90) are reconstructed in src/Bute/ButeTree.cpp
-// (the `butetree` unit). This file keeps only the shared CButeTree / g_buteTree
-// declarations the remaining Stub game-object ctors reference.

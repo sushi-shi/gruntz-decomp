@@ -23,6 +23,7 @@ public:
 SIZE(MallocCtor_192390, 0x64);
 
 // non-RTTI ctor @ 0x00169ad0 (size TBD)
+SIZE_UNKNOWN(MallocCtor_169ad0);
 class MallocCtor_169ad0 {
 public:
     MallocCtor_169ad0();
@@ -61,19 +62,18 @@ public:
 SIZE(MallocCtor_169700, 0x5c);
 
 // non-RTTI ctor @ 0x0016c570 (size TBD)
+SIZE_UNKNOWN(MallocCtor_16c570);
 class MallocCtor_16c570 {
 public:
     MallocCtor_16c570();
 };
 
 // non-RTTI ctor @ 0x0013cac0 (size TBD)
+SIZE_UNKNOWN(MallocCtor_13cac0);
 class MallocCtor_13cac0 {
 public:
     MallocCtor_13cac0();
 };
-
-// 0x001615a0 (sizeof 0x158) reconstructed as CSeverusWorkerHost::CSeverusWorkerHost
-// in src/Gruntz/CSeverusWorkerHost.cpp.
 
 // istream::istream(streambuf*) @ 0x0016b510 - MSVC5 LIBCMT iostreams. sizeof 0x60
 // (vbptr/_fGline/x_gcount = 0x0c + ios vbase 0x54). Carries the /GX EH frame and
@@ -81,6 +81,7 @@ public:
 // vftable 0x5f045c, calls ios::init); LEFT STUBBED like the sibling ostream ctor
 // (0x16bfa0) - the non-polymorphic model can't make cl emit the vbase-ctor vftable
 // store identically. The istream member methods are matched in src/Crt/IStream.cpp.
+SIZE_UNKNOWN(MallocCtor_16b510);
 class MallocCtor_16b510 {
 public:
     MallocCtor_16b510();
@@ -95,13 +96,11 @@ public:
 SIZE(MallocCtor_136180, 0x58);
 
 // non-RTTI ctor @ 0x0016bfa0 (size TBD)
+SIZE_UNKNOWN(MallocCtor_16bfa0);
 class MallocCtor_16bfa0 {
 public:
     MallocCtor_16bfa0();
 };
-
-// 0x001375b0 (sizeof 0xb0) reconstructed as StreamVoice::StreamVoice in
-// src/Dsndmgr/StreamVoice.cpp (the per-stream DirectSoundMgr-derived voice).
 
 // non-RTTI ctor @ 0x00139bf0, sizeof 0x30
 class MallocCtor_139bf0 {
@@ -112,41 +111,24 @@ public:
 SIZE(MallocCtor_139bf0, 0x30);
 
 // non-RTTI ctor @ 0x00184960 (size TBD)
+SIZE_UNKNOWN(MallocCtor_184960);
 class MallocCtor_184960 {
 public:
     MallocCtor_184960();
 };
 
 // non-RTTI ctor @ 0x00139c80 (size TBD)
+SIZE_UNKNOWN(MallocCtor_139c80);
 class MallocCtor_139c80 {
 public:
     MallocCtor_139c80();
 };
 
-// 0x00135b10 reconstructed as DSoundCloneInst ctor in src/Dsndmgr/DirectSoundMgr.cpp.
-// 0x00136230 reconstructed as DSoundBaseSub ctor in src/Dsndmgr/DirectSoundMgr.cpp.
-
-// 0x001736a0 / 0x00174cb0 / 0x00173c60 / 0x00174730 (each sizeof 0x8) are the
-// op-new + payload-copy "boxed value" ctor family; reconstructed byte-exact in
-// place in src/Stub/MallocConstructors.cpp (owning class not yet attributed).
-
-// 0x001816c0 reconstructed as CFader1816c0 ctor in src/Gruntz/CFader.cpp.
-
 // non-RTTI ctor @ 0x00168e70 (size TBD)
+SIZE_UNKNOWN(MallocCtor_168e70);
 class MallocCtor_168e70 {
 public:
     MallocCtor_168e70();
 };
-
-// 0x0017e940 (sizeof 0x6c) reconstructed as CFader17e940::CFader17e940 in
-// src/Gruntz/CFader.cpp (nested-subobject CFader subtype).
-
-// 0x00174d00 (sizeof 0x2c) is a CButeNode-family node ctor (base ctor 0x16dff0 +
-// two re-stamped vftables); reconstructed byte-exact in place in
-// src/Stub/MallocConstructors.cpp.
-
-// The CFader subtype ctors are reconstructed in src/Gruntz/CFader.cpp:
-//   0x0017f9a0 -> CFader17f9a0    0x0017fdb0 -> CFaderSine
-//   0x0017f530 -> CFaderFlat      0x00180410 -> CFader180410
 
 #endif

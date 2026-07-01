@@ -8,6 +8,7 @@
 // Folded engine-label stubs with a known owning class.
 // A named asset-namespace registry slot (BootyState's m_28/m_2c/m_30). Lookup()
 // finds a child set by name and returns a handle (reloc-masked __thiscall).
+SIZE_UNKNOWN(BootyNamespace);
 struct BootyNamespace {
     i32 Lookup(char* szName); // FUN_0013bae0 __thiscall
 };
@@ -18,11 +19,13 @@ struct BootyNamespace {
 // COMPLETE before the T::* typedef so the PMF stays 4 bytes (no this-adjustor) -
 // see docs/patterns/pmf-complete-class-4byte.md.
 struct BootyRegistrarVtbl; // opaque; the PMF lives at offset 0x4c inside it
+SIZE_UNKNOWN(BootyRegistrar);
 struct BootyRegistrar {
     BootyRegistrarVtbl* m_vtbl; // +0x00
     i32 CallRegister(i32 handle, char* prefix, char* sep);
 };
 typedef i32 (BootyRegistrar::*BootyRegFn)(i32 handle, char* prefix, char* sep);
+SIZE_UNKNOWN(BootyRegistrarVtbl);
 struct BootyRegistrarVtbl {
     char m_pad00[0x4c];
     BootyRegFn Register; // +0x4c
@@ -30,15 +33,18 @@ struct BootyRegistrarVtbl {
 inline i32 BootyRegistrar::CallRegister(i32 handle, char* prefix, char* sep) {
     return (this->*(m_vtbl->Register))(handle, prefix, sep);
 }
+SIZE_UNKNOWN(CGruntDataLoader);
 struct CGruntDataLoader { // BootyState::m_c->m_4 sub-object
     void Load();          // FUN @ 0x158ee0 __thiscall (reloc-masked)
 };
+SIZE_UNKNOWN(BootyAssetRoot);
 struct BootyAssetRoot { // BootyState::m_c
     char m_pad00[0x4];
     CGruntDataLoader* m_4; // +0x04
     char m_pad08[0x10 - 0x8];
     BootyRegistrar* m_10; // +0x10  vtable-bearing registrar (slot +0x4c)
 };
+SIZE_UNKNOWN(BootyState);
 class BootyState {
 public:
     i32 vfunc_9(i32);
@@ -61,24 +67,29 @@ public:
 // g_61ab20) re-triggers it on a rate-limited timer keyed off the g_6bf3c0 frame
 // counter vs the entry's last-played stamp + interval. The shared game registry
 // (g_gameReg) sound chain is modeled minimally for this method's needs.
+SIZE_UNKNOWN(BootySndPlayer);
 struct BootySndPlayer {
     void Play(i32 token, i32, i32, i32); // FUN_001360d0 __thiscall
 };
+SIZE_UNKNOWN(BootySndEntry);
 struct BootySndEntry {
     char m_pad00[0x10];
     BootySndPlayer* m_10; // +0x10
     u32 m_14;             // +0x14  last-played stamp
     u32 m_18;             // +0x18  interval
 };
+SIZE_UNKNOWN(BootySndTable);
 struct BootySndTable {
     void Find(char* szName, BootySndEntry** out); // FUN_001b8438 __thiscall, out-param
 };
+SIZE_UNKNOWN(BootySndSet);
 struct BootySndSet {
     char m_pad00[0x10];
     BootySndTable m_10; // +0x10  (&m_10 == set+0x10)
     char m_pad11[0x30 - 0x11];
     i32 m_30; // +0x30  active guard
 };
+SIZE_UNKNOWN(BootySndMgr);
 struct BootySndMgr {
     char m_pad00[0x28];
     BootySndSet* m_28; // +0x28
@@ -98,8 +109,6 @@ DATA(0x0021ab20)
 extern i32 g_61ab20; // BOOTY_LOOP enable gate
 DATA(0x002bf3c0)
 extern "C" u32 g_6bf3c0; // wrap-safe draw clock
-// (class ButeMgr removed - its only method ParseAttributeFile @0x170750 graduated
-// to src/Bute/ButeMgr.cpp; see the migration note further down.)
 // The help-screen game state. LoadAssets() first chains the base-class asset
 // loader (LoadGameAssetNamespaces, reloc-masked external call) which populates
 // m_4/m_8, forces the cursor hidden, registers the "STATEZ_HELP" namespace
@@ -134,23 +143,17 @@ class StatusBarItem;
 // The icon-key registry object BuildPowerupIconKeys writes into (arg1=esi).
 // SetGroup() seeds the "GAME_INGAMEICONZ" group key, Add() appends one entry.
 // Both __thiscall, reloc-masked externals.
+SIZE_UNKNOWN(PowerupKeyRegistry);
 class PowerupKeyRegistry {
 public:
     void SetGroup(char* key); // FUN_001b9e74 __thiscall
     void Add(char* key);      // FUN_001ba0c8 __thiscall
 };
 
-// CConfigStore (the 0x1bf*-0x1d5* registry/INI config wrapper) graduated to
-// src/Gruntz/ConfigStore.{h,cpp} + ConfigStoreRead.cpp (GetString/GetBinary) +
-// m5_ConfigStoreWrite.cpp, all on the `framed` profile; the COM/mouse-wheel
-// helpers (0x1bf702/0x1c7cb3) moved to src/Gruntz/RegHelpers.cpp.
-
 namespace EngineLabelBacklog {
 
     void BuildBootyPerfectAnimation();
     void __stdcall BuildPowerupIconKeys(PowerupKeyRegistry* reg, i32 key);
-    // DrawDebugStats graduated to src/Gruntz/DrawDebugStats.cpp.
-    // DrawBattleStats graduated to src/Gruntz/DrawBattleStats.cpp.
     i32 Stub_01fd70(char* szPath);
     i32 LoadCustomWorldInfo(HWND hDlg);
     // LoadHelpBookSprite reconstructed as CHelpBookSprite::Update below.
@@ -160,13 +163,11 @@ namespace EngineLabelBacklog {
     void LoadCameraSprite();
     void LoadExplosionSprites();
     void LoadPowerupIconSprites();
-    // BuildLevelRezPath graduated to src/Gruntz/LevelRezPath.cpp.
     void __stdcall LoadMenuStateAssets(i32, i32, i32);
     void LoadAreaLevelTable();
     void LoadRollingBallHazardSprites();
     void __stdcall LoadLevelByMode(i32, i32);
     void ValidateLevelTiles();
-    // BuildAssetNamespacePrefixes graduated to src/Gruntz/AssetNamespacePrefixes.cpp.
     i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGameMenu* obj);
     void BuildLevelTitleString();
     i32 Stub_0f90f0(char* szPath);
@@ -184,15 +185,6 @@ namespace EngineLabelBacklog {
     void __stdcall BuildVoiceSoundList(i32);
 } // namespace EngineLabelBacklog
 
-// CreateGameObjectByName (0xa3b0) graduated to src/Gruntz/GameObjectFactory.cpp as
-// RegisterGameObjectTypes (the uniform 73-entry object-type factory registrar).
-
-// LoadBootyCheatState (0x18830) graduated to src/Gruntz/BootyCheatState.cpp (eh
-// unit) as CBootyCheatState::LoadAssets - the STATEZ_BOOTY cheat-screen asset
-// loader; the five destructible CString locals of the first-run cheat-table build
-// give it the /GX exception frame.
-
-// @source: decomp-xref
 // @early-stop
 // regalloc wall (~95%): retail holds `set` (reg->m_30->m_28) in eax and the play
 // entry `res` live in eax with no reload; the /O2 recompile pins `set` in ecx and
@@ -224,30 +216,6 @@ i32 BootyState::vfunc_9(i32) {
     return 1;
 }
 
-// ShowSecretBonusMessage (0x18f00) graduated to src/Gruntz/BootyMessages.cpp as
-// BzState::ShowSecretBonusMessage (the "Secret of Secretz" / "Secret Bonus
-// Acquired" cipher-decoded HUD overlays; CString temps give it the /GX frame).
-
-// BuildGruntSprintAnimation @0x019920 graduated to src/Gruntz/GruntSprintAnim.cpp
-// (eh unit) as CGruntSprintAnim::BuildGruntSprintAnimation - the /GX directional
-// grunt-sprint animation builder (the "GRUNTZ_NORMALGRUNT_<DIR>_WALK" CString set).
-
-// UpdateBootyWalkingGruntz (0x1b690) graduated to src/Gruntz/BootyWalkAnim.cpp as
-// BzState::UpdateBootyWalkingGruntz - the per-frame booty ("WARP" spell) walking-
-// grunt animation state machine (sibling of BzState::BuildBootyGruntIdleAnimation;
-// the WARP-letter jump-table CString build gives it the /GX frame).
-
-// BuildBootyPerfectAnimation @0x01c070 graduated to src/Gruntz/IconLoaders.cpp.
-
-// ShowLevelCompleteMessage (0x1c9d0) graduated to src/Gruntz/BootyMessages.cpp as
-// BzState::ShowLevelCompleteMessage (the level/world-complete + WARP-letterz HUD
-// banners; a destructible CString temp gives it the /GX frame).
-
-// BuildBootyGruntIdleAnimation (0x1ce60) graduated to src/Gruntz/BootyMessages.cpp
-// as BzState::BuildBootyGruntIdleAnimation (the per-frame booty idle-grunt state
-// machine + WARP "GRUNTZ_PICKUPS_<L>" CString builder; CString temps give /GX).
-
-// @source: string-xref
 // BuildPowerupIconKeys - seeds the "GAME_INGAMEICONZ" icon-key group then
 // appends one tool/toy/powerup key string selected by `key` (a sparse switch;
 // out-of-range / gap keys fall through to POWERUPZ_COIN).
@@ -397,9 +365,6 @@ void __stdcall EngineLabelBacklog::BuildPowerupIconKeys(PowerupKeyRegistry* reg,
     }
 }
 
-// DrawBattleStats (0x1ed30) graduated to src/Gruntz/DrawBattleStats.cpp.
-
-// @source: decomp-xref
 // BootyState::OnActivate_vfunc8 - on state activation: hide the cursor, register
 // the BOOTY/GRUNTZ/LEVEL image namespaces under the asset host, install the
 // "multi" namespaces, then kick the grunt-data load + the state timer.
@@ -448,10 +413,6 @@ i32 BootyState::OnActivate_vfunc8() {
     StartTimer(0x50, 0x3e8, 0, 1);
     return 1;
 }
-
-// StartUpPrompt (0x1f9b0) graduated to src/Gruntz/StartUpPrompt.cpp as the free
-// __cdecl StartUpPrompt - the launch CD-ROM/Spawn-Mode prompt (CString temps +
-// the BeginWaitCursor/EndWaitCursor scope give it the /GX exception frame).
 
 // ---------------------------------------------------------------------------
 // LoadChatBoxSprite - looks up the "GAME_CHATBOX" sprite set in
@@ -638,7 +599,6 @@ extern i32 PathFileExists(char* path);
 // The CUSTOM_WORLDINFO dialog proc (RVA 0x305d), reloc-masked code pointer.
 extern "C" INT_PTR __stdcall CustomWorldInfoDlgProc(HWND, UINT, WPARAM, LPARAM);
 
-// @source: decomp-xref
 RVA(0x0003b7c0, 0x12c)
 i32 EngineLabelBacklog::LoadCustomWorldInfo(HWND hDlg) {
     char szLevel[0x100];
@@ -707,10 +667,6 @@ i32 EngineLabelBacklog::LoadCustomWorldInfo(HWND hDlg) {
 RVA(0x0003f5f0, 0x526)
 void EngineLabelBacklog::HandleFortConquered() {}
 
-// LoadVehicleGruntSprites (0x50ce0) graduated to src/Gruntz/VehicleGruntSprites.cpp
-// as CGruntCmdObj::LoadVehicleGruntSprites (__thiscall, not __stdcall): the 10-way
-// vehicle-grunt sprite-set registrar; its CString name temp gives it the /GX frame.
-
 // Projectile::vfunc_9 (0x61cb0) graduated to src/Gruntz/ProjectileUpdate.cpp as
 // CProjectile::Update - the per-frame projectile impact tick (the 5-slot
 // "Projectile"/"Boomerang"/"TimeBomb" eye-candy spawn switch + the AttackDowntime
@@ -729,12 +685,6 @@ void EngineLabelBacklog::HandleFortConquered() {}
 // @early-stop on the /GX nested-jump-table megafunction wall) as
 // CTerrainTileLoader::Load in src/Gruntz/TerrainTileLoader.cpp (eh unit). Its
 // CString diagnostic temp gives it the exception frame.
-
-// LoadCameraSprite @0x078960 graduated to src/Gruntz/IconLoaders.cpp.
-
-// LoadToyBoxIcon @0x07a3f0 graduated to src/Gruntz/IconLoaders.cpp.
-
-// LoadExplosionSprites @0x07b330 graduated to src/Gruntz/IconLoaders.cpp.
 
 // BuildRockBreakParticles (0x7b440, 1008 B) graduated to
 // src/Gruntz/RockBreakParticles.cpp (eh unit) as
@@ -756,11 +706,13 @@ void EngineLabelBacklog::HandleFortConquered() {}
 // 0x10000), notifies the owner, and spawns a "LightFx" GAME_LIGHTING_FLASH /
 // GAME_FLASH eye-candy sprite at the grunt's pixel origin. Only offsets / code
 // bytes are load-bearing; helpers are reloc-masked externals.
+SIZE_UNKNOWN(ResGruntLogic);
 struct ResGruntLogic { // grunt->m_38
     char m_pad00[0x8];
     u32 m_8; // +0x08  flags (|= 0x10000 on resurrect)
 };
 struct ResHost; // grunt->m_6c (opaque; passed through to Resurrect)
+SIZE_UNKNOWN(ResGrunt);
 struct ResGrunt {
     char m_pad00[0x38];
     ResGruntLogic* m_38; // +0x38
@@ -772,14 +724,17 @@ struct ResGrunt {
     i32 m_68;      // +0x68  grunt type index
     ResHost* m_6c; // +0x6c
 };
+SIZE_UNKNOWN(ResNode);
 struct ResNode {
     ResNode* m_next; // +0x00
     char m_pad04[0x4];
     ResGrunt* m_grunt; // +0x08
 };
+SIZE_UNKNOWN(ResCfgSub38);
 struct ResCfgSub38 {         // config entry + 0x38
     i32 Probe(i32 x, i32 y); // FUN @ 0x3fee __thiscall
 };
+SIZE_UNKNOWN(ResMgrCfgEntry);
 struct ResMgrCfgEntry { // g_mgrSettings + 0x150 + type*0x238
     char m_pad00[0x14];
     i32 m_14; // +0x14
@@ -793,14 +748,17 @@ struct ResMgrCfgEntry { // g_mgrSettings + 0x150 + type*0x238
     char m_pad3c[0x238 - 0x3c];
 };
 struct ResSprite;
+SIZE_UNKNOWN(ResSpriteFactory);
 struct ResSpriteFactory { // g_mgrSettings->m_30->m_8
     // FUN_001597b0 __thiscall, ret 0x18: build the named eye-candy sprite.
     ResSprite* CreateSprite(i32 kind, i32 px, i32 py, i32 hint, char* name, i32 flags);
 };
+SIZE_UNKNOWN(ResFactoryHost);
 struct ResFactoryHost {
     char m_pad00[0x8];
     ResSpriteFactory* m_8; // +0x08
 };
+SIZE_UNKNOWN(ResSettings);
 struct ResSettings {
     char m_pad00[0x30];
     ResFactoryHost* m_30; // +0x30
@@ -809,19 +767,23 @@ struct ResSettings {
     char m_pad138[0x150 - 0x138];
     ResMgrCfgEntry m_150[1]; // +0x150  per-type config (stride 0x238)
 };
+SIZE_UNKNOWN(ResLightCfg);
 struct ResLightCfg {                                // spr->m_7c->m_18
     void Configure(char* a, char* b, i32 c, i32 d); // FUN @ 0x2117 __thiscall
 };
+SIZE_UNKNOWN(ResSpriteCtl);
 struct ResSpriteCtl { // spr->m_7c
     char m_pad00[0x10];
     void(__cdecl* Init)(ResSprite*); // +0x10
     char m_pad14[0x18 - 0x14];
     ResLightCfg* m_18; // +0x18
 };
+SIZE_UNKNOWN(ResSprite);
 struct ResSprite {
     char m_pad00[0x7c];
     ResSpriteCtl* m_7c; // +0x7c
 };
+SIZE_UNKNOWN(ResButeMgr);
 struct ResButeMgr {
     i32 GetInt(char* sec, char* key); // CButeMgr::GetInt FUN_00171af0
 };
@@ -829,6 +791,7 @@ DATA(0x002453d8)
 extern ResButeMgr g_resButeMgr;
 DATA(0x0024556c)
 extern ResSettings* g_resSettings;
+SIZE_UNKNOWN(CGruntResurrector);
 struct CGruntResurrector {
     char m_pad00[0x4];
     ResNode* m_4; // +0x04  grunt list head
@@ -852,7 +815,6 @@ struct CGruntResurrector {
     i32 LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r);
 };
 
-// @source: string-xref
 // @early-stop
 // regalloc/frame-layout wall (~65%): instruction selection, calls, constants,
 // strings + the rect/loop/spawn structure are byte-faithful, but retail
@@ -922,14 +884,6 @@ i32 CGruntResurrector::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
     return 1;
 }
 
-// LoadPowerupIconSprites @0x07c620 graduated to src/Gruntz/IconLoaders.cpp.
-
-// LaunchPortalExe (0x90550) graduated to src/Gruntz/PortalPath.cpp.
-
-// BuildLevelRezPath (0x93d40) graduated to src/Gruntz/LevelRezPath.cpp.
-
-// CHelpState::LoadAssets (0x095090) graduated to src/Gruntz/BacklogStateLoaders.cpp.
-
 // ---------------------------------------------------------------------------
 // LoadHelpBookSprite (0x997c0) - the help-book interactive sprite's per-frame
 // tick (frameless __thiscall, returns 0). Pings a sub-logic clock
@@ -945,29 +899,35 @@ i32 CGruntResurrector::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
 // (the BootyState::vfunc_9 sound-chain idiom, reusing the Booty* sound types).
 // Finally it caches (areaId, subId) and sets the m_38->m_40 active bit. Only
 // offsets / code bytes are load-bearing; helpers are reloc-masked externals.
+SIZE_UNKNOWN(HbF14);
 struct HbF14 {
     char m_pad00[0x1c];
     i32 m_1c; // +0x1c  type index fed to g_typeColl.IndexToPtr
 };
+SIZE_UNKNOWN(HbFoundObj);
 struct HbFoundObj { // HitTestCell result
     char m_pad00[0x14];
     HbF14* m_14;                                    // +0x14
     i32 LoadPickupSprites(i32, i32, i32, i32, i32); // FUN_00403c6a (thunk) __thiscall
 };
+SIZE_UNKNOWN(HbCellMgr);
 struct HbCellMgr { // g_hbMgr->m_68
     // FUN_004035f3 (thunk) __thiscall: hit-test a cell, returning the object +
     // its (areaId, subId) out-params.
     HbFoundObj* HitTestCell(i32 x, i32 y, i32* areaId, i32* subId, i32 flag);
 };
+SIZE_UNKNOWN(HbSub1a0);
 struct HbSub1a0 {         // m_38 + 0x1a0
     void Tick(i32 clock); // FUN_0095c360 __thiscall
 };
+SIZE_UNKNOWN(HbLogic);
 struct HbLogic { // this->m_38
     char m_pad00[0x40];
     i32 m_40; // +0x40  active bit (|=1 on cue, &=~1 on miss)
     char m_pad44[0x1a0 - 0x44];
     HbSub1a0 m_1a0; // +0x1a0
 };
+SIZE_UNKNOWN(HbOwner);
 struct HbOwner { // this->m_10
     char m_pad00[0x5c];
     i32 m_5c; // +0x5c  tile x
@@ -975,6 +935,7 @@ struct HbOwner { // this->m_10
     char m_pad64[0x124 - 0x64];
     i32 m_124; // +0x124  pickup-sprite arg
 };
+SIZE_UNKNOWN(HbMgr);
 struct HbMgr { // the *0x64556c singleton, this method's view
     char m_pad00[0x30];
     BootySndMgr* m_30; // +0x30  sound mgr (-> m_28 set -> m_10 table / m_30 gate)
@@ -990,6 +951,7 @@ DATA(0x0024556c)
 extern "C" HbMgr* g_mgrSettings; // _g_mgrSettings (the *0x64556c singleton)
 // The 4-byte default-constructed CString cache nodes (FUN_001b9b93 == CString
 // default ctor; matched array-touch loop). g_typeNodes is the base pointer.
+SIZE_UNKNOWN(EngStr4);
 struct EngStr4 {
     char* m_pszData; // +0x00 (4 bytes so the loop's `p++` advances by 4)
     void Ctor();     // FUN_001b9b93 __thiscall (CString default ctor)
@@ -1011,6 +973,7 @@ DATA(0x0021ab24)
 extern i32 g_sndCueTag; // ?g_sndCueTag@@3HA (HELPBOOK sound token)
 DATA(0x0020d7f8)
 extern "C" char g_str_K[]; // DAT_0060d7f8 == "K" (placeholder/null type marker)
+SIZE_UNKNOWN(CHelpBookSprite);
 class CHelpBookSprite {
 public:
     i32 Update(); // 0x997c0
@@ -1023,7 +986,6 @@ public:
     i32 m_58; // +0x58  cached subId
 };
 
-// @source: decomp-xref
 // @early-stop
 // regalloc/scheduling wall (~76%): complete + correct, verified instruction-by-
 // instruction vs retail (the whole front half - prologue, HitTestCell, the area/
@@ -1103,14 +1065,6 @@ i32 CHelpBookSprite::Update() {
     return 0;
 }
 
-// LoadObject{Image,Sound,Anim}Resources (0x9a510/0x9a910/0x9ac20) graduated to
-// src/Gruntz/LoadObjectResources.cpp (eh unit) as the CObjResTree OBJECTZ_ asset
-// reconcilers; their destructible local CObList gives them the /GX frame.
-
-// LoadMenuStateAssets (0x09fe50) graduated to src/Gruntz/MenuStateAssets.cpp as
-// CMenuState::LoadAssets (the MENU game-state asset loader; /GX EH frame from the
-// heap menu HUD object's CObList + 2 CString members).
-
 // 0x000a11d0 (6157 B) is NOT a level-table loader - the $SG string set
 // ("MENU.MAINMENU.TITLE", "SINGLEPLAYER", ...) identifies it as the main-menu
 // tree builder. Reconstructed (complete body, @early-stop on the /GX EH-state
@@ -1125,21 +1079,11 @@ i32 CHelpBookSprite::Update() {
 // frame. Reconstructed (complete body - prologue, action/direction/sink switches,
 // float-interp tail; @early-stop on the branchy nested-jump-table /GX wall).
 
-// CloudHazard::vfunc_20 (0x0b4640) graduated to src/Gruntz/CPathHazard.cpp as
-// CLightningHazard::ArmStrike (the strike-window arm + LEVEL_CLOUDHAZARDKILL cue).
-
-// BuildGruntzCrcInfo (0xbf1d0) graduated to src/Gruntz/BuildGruntzCrcInfo.cpp.
-
-// BuildNamedGruntTable (0x0c16b0) graduated to src/Gruntz/BacklogStateLoaders.cpp.
-
 // LoadLevelByMode (0x000ca200, 3636 B) is the PLAY game-state per-mode level
 // loader (BATTLEZ/MULTI/CUSTOMLEVEL/TRAINING/Level%i); reconstructed (complete
 // body + the linear init chain, @early-stop on the /GX megafunction wall) as
 // CPlayLevelLoad::LoadByMode in src/Gruntz/LoadLevelByMode.cpp (eh unit). Its
 // area-name / WarpStone CString temps give it the exception frame.
-
-// GameLevelState::OnActivate_vfunc8 (0x0cb800) graduated to
-// src/Gruntz/BacklogStateLoaders.cpp.
 
 // vfunc_12 (0x000cbcc0, 5850 B) is the PLAY-state keyboard/cheat input
 // dispatcher, not a status-bar method; reconstructed (complete top structure,
@@ -1158,26 +1102,32 @@ i32 CHelpBookSprite::Update() {
 // origin and spawns through m_4->m_6c. The *0x64556c game-registry singleton is
 // modeled with this method's own correctly-RVA'd typed alias (g_sbiMgr). Only
 // offsets / code bytes are load-bearing; helpers are reloc-masked externals.
+SIZE_UNKNOWN(SbiSndEntry);
 struct SbiSndEntry { // a found sound entry; PlayCue is __thiscall on the entry
     void PlayCue(i32 token, i32, i32, i32); // FUN @ 0x25fe (thunk) __thiscall
 };
+SIZE_UNKNOWN(SbiSndTable);
 struct SbiSndTable {
     void Find(char* szName, SbiSndEntry** out); // FUN_001b8438 __thiscall, out-param
 };
+SIZE_UNKNOWN(SbiSndSet);
 struct SbiSndSet { // m_4->m_30->m_28
     char m_pad00[0x10];
     SbiSndTable m_10; // +0x10
     char m_pad11[0x30 - 0x11];
     i32 m_30; // +0x30  active guard
 };
+SIZE_UNKNOWN(SbiPoint);
 struct SbiPoint {
     i32 x; // +0x00
     i32 y; // +0x04
 };
+SIZE_UNKNOWN(SbiCoordSrc);
 struct SbiCoordSrc { // m_4->m_30->m_24->m_5c
     char m_pad00[0x40];
     SbiPoint m_40; // +0x40
 };
+SIZE_UNKNOWN(SbiHost24);
 struct SbiHost24 { // m_4->m_30->m_24
     char m_pad00[0x10];
     i32 m_10; // +0x10  origin x offset
@@ -1185,19 +1135,23 @@ struct SbiHost24 { // m_4->m_30->m_24
     char m_pad18[0x5c - 0x18];
     SbiCoordSrc* m_5c; // +0x5c
 };
+SIZE_UNKNOWN(SbiHostInner);
 struct SbiHostInner { // m_4->m_30
     char m_pad00[0x24];
     SbiHost24* m_24; // +0x24
     SbiSndSet* m_28; // +0x28
 };
+SIZE_UNKNOWN(SbiProbe);
 struct SbiProbe { // m_4->m_68
     // FUN @ 0x3cb0 __thiscall: probe the area map under (x,y).
     i32 Probe(i32 x, i32 y, i32* outArea, i32* outVal, i32 flag);
 };
+SIZE_UNKNOWN(SbiSpawner);
 struct SbiSpawner { // m_4->m_6c
     // FUN @ 0x2095 __thiscall: spawn the tab eye-candy at a tile origin.
     void Spawn(i32 a1, char area, i32 a3, i32 a4, i32 px, i32 py, i32 a7, i32 a8);
 };
+SIZE_UNKNOWN(SbiHost);
 struct SbiHost { // this->m_4
     char m_pad00[0x30];
     SbiHostInner* m_30; // +0x30
@@ -1205,14 +1159,17 @@ struct SbiHost { // this->m_4
     SbiProbe* m_68;   // +0x68
     SbiSpawner* m_6c; // +0x6c
 };
+SIZE_UNKNOWN(SbiRectSrc);
 struct SbiRectSrc { // this->m_c->m_24
     char m_pad00[0x10];
     RECT m_10; // +0x10
 };
+SIZE_UNKNOWN(SbiRectHost);
 struct SbiRectHost { // this->m_c
     char m_pad00[0x24];
     SbiRectSrc* m_24; // +0x24
 };
+SIZE_UNKNOWN(SbiChild);
 struct SbiChild {                        // this->m_2dc
     i32 m_0;                             // +0x00  mode tag
     i32 HitTest(i32 x, i32 y);           // FUN @ 0x3ad5 __thiscall, ret index/-1
@@ -1222,24 +1179,29 @@ struct SbiChild {                        // this->m_2dc
     i32 Check();                         // FUN @ 0x3549 __thiscall, ret bool
     i32 Dispatch(i32 msg, i32 x, i32 y); // FUN @ 0x1b81 __thiscall, ret result
 };
+SIZE_UNKNOWN(SbiToggle);
 struct SbiToggle {   // this->m_2e0
     void Set(i32 n); // FUN @ 0x171c __thiscall
 };
+SIZE_UNKNOWN(SbiEntry);
 struct SbiEntry { // this->m_374[i]
     i32 m_0;      // +0x00  center x
     i32 m_4;      // +0x04  center y
 };
+SIZE_UNKNOWN(SbiMgr68);
 struct SbiMgr68 { // g_sbiMgr->m_68
     char m_pad00[0x10c];
     i32 m_10c[1]; // +0x10c  per-area counter array
     char m_pad110[0x400 - 0x110];
     i32 m_400; // +0x400  active gate
 };
+SIZE_UNKNOWN(SbiCfgEntry);
 struct SbiCfgEntry { // g_sbiMgr->m_150[area]  (stride 0x238)
     char m_pad00[0x228];
     i32 m_228; // +0x228  max count
     char m_pad22c[0x238 - 0x22c];
 };
+SIZE_UNKNOWN(SbiMgr);
 struct SbiMgr { // g_sbiMgr (*0x64556c)
     char m_pad00[0x68];
     SbiMgr68* m_68; // +0x68
@@ -1251,6 +1213,7 @@ extern SbiMgr* g_sbiMgr; // *0x64556c, this method's typed alias
 // sub_1c44 (0x1c44 thunk) __stdcall: is the hot point inside the mode-2 child?
 i32 __stdcall SbiPointInChild(i32 x, i32 y);
 struct SbiVtbl; // completed below (carries the base-handler PMF at slot +0x38)
+SIZE_UNKNOWN(StatusBarItem);
 class StatusBarItem {
 public:
     i32 vfunc_16(i32 msg, i32 x, i32 y); // 0xce660
@@ -1277,12 +1240,12 @@ public:
 // vtable so MSVC emits `mov edx,[this]; mov ecx,this; call [edx+0x38]`. The class
 // must be COMPLETE before this typedef - see docs/patterns/pmf-complete-class-4byte.md.
 typedef i32 (StatusBarItem::*SbiSlot38Fn)(i32, i32, i32);
+SIZE_UNKNOWN(SbiVtbl);
 struct SbiVtbl {
     char m_pad00[0x38];
     SbiSlot38Fn slot38; // +0x38
 };
 
-// @source: decomp-xref
 // @early-stop
 // regalloc/frame-slot wall (~52%): logic complete + verified instruction-by-
 // instruction vs retail (every guard, the Dispatch/vtable delegates, the mode-2
@@ -1389,10 +1352,6 @@ i32 StatusBarItem::vfunc_16(i32 msg, i32 x, i32 y) {
     return 1;
 }
 
-// DrawDebugStats (0xcf770) graduated to src/Gruntz/DrawDebugStats.cpp (eh unit)
-// as CDbgView::DrawDebugStats - the debug-overlay text renderer (Fps/Objs/Pos/
-// Timing/elapsed/net-stats); its FormatElapsed CString temp gives it the /GX frame.
-
 // ValidateLevelTiles (0x000d2dd0, 7652 B) is reconstructed (complete body,
 // @early-stop on the megafunction regalloc wall) in the eh unit
 // src/Gruntz/LevelTileValidation.cpp - moved out of the frameless backlog
@@ -1410,6 +1369,7 @@ i32 StatusBarItem::vfunc_16(i32 msg, i32 x, i32 y) {
 // The registry object embedded at this->m_c->m_10: Has() probes a named set
 // (FUN_00555550, returns found-flag), Register() adds a namespace
 // (FUN_00555360), and a virtual slot (index 18) installs the loaded TILEZ set.
+SIZE_UNKNOWN(CActionResRegistry);
 struct CActionResRegistry {
     i32 Has(char* szName);                    // FUN_00555550 __thiscall, ret found
     void Register(char* szName, char* szKey); // FUN_00555360 __thiscall
@@ -1433,10 +1393,12 @@ struct CActionResRegistry {
     virtual void v17();
     virtual void InstallTileSet(void* set, char* empty, char* key); // slot 18 (+0x48)
 };
+SIZE_UNKNOWN(CActionResMgr);
 struct CActionResMgr { // this->m_c points here; +0x10 is the registry
     char m_pad00[0x10];
     CActionResRegistry* m_10; // +0x10
 };
+SIZE_UNKNOWN(CTileSetSource);
 struct CTileSetSource {                // this->m_28 points here
     void* LookupTileSet(char* szName); // FUN_0053bae0 __thiscall, ret set ptr
 };
@@ -1446,6 +1408,7 @@ extern "C" char g_emptyString[]; // 0x6293f4
 
 // Typed view of `this` for this loader: m_c is the resource manager, m_28 the
 // level's tile-set source.
+SIZE_UNKNOWN(CActionTileOwner);
 struct CActionTileOwner {
     char m_pad00[0xc];
     CActionResMgr* m_c; // +0x0c
@@ -1462,29 +1425,31 @@ struct CActionTileOwner {
 // bail; otherwise register the "LEVEL" namespace (key "_"), look up the level's
 // "SOUNDZ" set off this->m_28, and install it (key "_"). No severus reset here.
 // Only offsets / code bytes are load-bearing; helpers are reloc-masked externals.
+SIZE_UNKNOWN(CSoundResRegistry);
 struct CSoundResRegistry {                              // this->m_c->+0x28 points here
     i32 Has(char* szName);                              // FUN_004583c0 __thiscall, ret found
     void Register(char* szName, char* szKey);           // FUN_00557c70 __thiscall
     void Install(void* set, char* szName, char* szKey); // FUN_00557ee0 __thiscall
 };
+SIZE_UNKNOWN(CSoundResMgr);
 struct CSoundResMgr { // this->m_c points here; +0x28 is the sound registry
     char m_pad00[0x28];
     CSoundResRegistry* m_28; // +0x28
 };
+SIZE_UNKNOWN(CSoundSetSource);
 struct CSoundSetSource {                // this->m_28 points here
     void* LookupSoundSet(char* szName); // FUN_0053bae0 __thiscall, ret set ptr
 };
 
 // Typed view of `this` for this loader: m_c is the sound resource manager, m_28
 // the level's sound-set source.
+SIZE_UNKNOWN(CSoundOwner);
 struct CSoundOwner {
     char m_pad00[0xc];
     CSoundResMgr* m_c; // +0x0c
     char m_pad10[0x28 - 0x10];
     CSoundSetSource* m_28; // +0x28
 };
-
-// BuildAssetNamespacePrefixes (0xdca70) graduated to src/Gruntz/AssetNamespacePrefixes.cpp.
 
 // ---------------------------------------------------------------------------
 // LoadGruntzPalette - registers a level's "GRUNTZ_PALETTEZ_<name>"
@@ -1543,11 +1508,13 @@ struct CPaletteOwner {
 // "GAME_OVERWRITE" when the slot is used, then commit + EndDialog (logging
 // "ERROR - Cannot Save Game." on failure). Frameless; every callee is a reloc-
 // masked external, the ids/strings are the load-bearing bytes.
+SIZE_UNKNOWN(CSaveGameMenu);
 struct CSaveGameMenu {                             // arg3: the save-game record
     i32 GetSlotState(i32 slot);                    // FUN @ 0x3bcf __thiscall
     void WriteName(i32 slot, char* nm, void* mgr); // FUN @ 0x219e __thiscall
     i32 CommitSlot(i32 a, i32 b);                  // FUN @ 0x2d97 __thiscall
 };
+SIZE_UNKNOWN(SaveMenuMgr);
 struct SaveMenuMgr { // the *0x64556c singleton, this method's alias
     i32 Prompt(const char* name, void* proc, i32 flag); // FUN @ 0x2bb7 __thiscall
     void Notify(i32 state, char* nm);                   // FUN @ 0x24c3 __thiscall
@@ -1567,7 +1534,6 @@ extern "C" void SaveInfoProc();
 extern "C" void SaveDeleteProc();
 extern "C" void SaveOverwriteProc();
 
-// @source: string-xref
 // @early-stop
 // jump-table scoring wall: the code bytes match the retail dispatch (the four
 // dense-case jump tables, the deferred-command latch, the GAME_INFO/DELETE/
@@ -1788,16 +1754,6 @@ i32 EngineLabelBacklog::DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGameMenu* obj)
     return 1;
 }
 
-// BuildLevelTitleString (0xe44e0) graduated to src/Gruntz/LevelInfoDlg.cpp (the
-// level-select dialog title/preview helper).
-
-// SelectBestDevice (0xf8970) graduated to src/Gruntz/SFSelectDevice.cpp as
-// SFManager_SelectBestDevice (the SFMAN32.DLL music-device picker on the same
-// *0x64e0b0 receiver as BuildSoundFontPath).
-
-// BuildSoundFontPath (0xf8f30) graduated to src/Gruntz/SoundFontPath.cpp.
-
-// @source: import:OpenFile
 // FileExists - tests a path via OpenFile(OF_EXIST). Re-emitted copy of
 // Utils::WinAPI::FileExists (same bytes).
 RVA(0x000f90f0, 0x45)
@@ -1812,10 +1768,6 @@ i32 EngineLabelBacklog::Stub_0f90f0(char* szPath) {
     }
     return OpenFile(szPath, &of, 0x4000 /*OF_EXIST*/) != -1;
 }
-
-// LoadBridgeMoveSprites (0x110860) graduated to src/Gruntz/BridgeMoveSprites.cpp
-// as CPlayLevelLoad::LoadBridgeMove (the frameless 0x66-case bridge-transition
-// sound dispatcher; sibling of CPlayLevelLoad::LoadPyramidBridge at 0x110c10).
 
 // LoadPyramidBridgeSprites (0x00110c10, 3647 B) is the pyramid/bridge tile-
 // transition dispatcher (a 0x66-case jump table over the sprite-type id);
@@ -1834,14 +1786,17 @@ i32 EngineLabelBacklog::Stub_0f90f0(char* szPath) {
 // at the tile's pixel origin (tile<<5 + 0x10), runs its init slot, configures it,
 // and reports readiness via the sprite's +0x198. Only offsets / code bytes are
 // load-bearing; helpers are reloc-masked externals.
+SIZE_UNKNOWN(CStatzRect60);
 struct CStatzRect60 {
     i32 d[0x18]; // 0x60 bytes
 };
 struct CStatzSprite;
+SIZE_UNKNOWN(CStatzSpriteFactory);
 struct CStatzSpriteFactory {
     // FUN_001597b0 __thiscall, ret 0x18: build the named tab sprite.
     CStatzSprite* CreateSprite(i32 kind, i32 px, i32 py, i32 hint, void* name, i32 flags);
 };
+SIZE_UNKNOWN(CStatzFactoryHolder);
 struct CStatzFactoryHolder {
     char m_pad0[0x8];
     CStatzSpriteFactory* m_8; // +0x08
@@ -1852,10 +1807,12 @@ struct CStatzGameReg {
 };
 DATA(0x0024556c)
 extern CStatzGameReg* g_statzGameReg; // *0x64556c
+SIZE_UNKNOWN(CStatzSpriteInitVtbl);
 struct CStatzSpriteInitVtbl {
     void* m_slot0[4];                   // slots 0..3
     void(__cdecl* Init)(CStatzSprite*); // slot 4 (+0x10)
 };
+SIZE_UNKNOWN(CStatzSprite);
 struct CStatzSprite {
     char m_pad0[0x7c];
     CStatzSpriteInitVtbl* m_7c; // +0x7c
@@ -1867,6 +1824,7 @@ DATA(0x0020aa34)
 extern char g_statzTabSpriteName[]; // CreateSprite name buffer
 DATA(0x0020f928)
 extern char g_statzTabCfgTag[]; // Configure tag global
+SIZE_UNKNOWN(CStatzTabSmall);
 struct CStatzTabSmall {
     virtual i32 BaseBuild(i32, i32, i32, i32, i32, i32, i32, i32); // slot 0 (reloc-masked)
     i32
@@ -1915,8 +1873,6 @@ i32 CStatzTabSmall::
     return 1;
 }
 
-// SaveScreenshot (0x114ff0) graduated to src/Gruntz/SaveScreenshot.cpp.
-
 // FormatGameInfoString (0x1183b0) - builds a URL/POST query string describing a
 // saved game into the global accumulator g_infoMaster, by sprintf'ing each piece
 // into the scratch buffer g_infoScratch and strcat-appending it. Pieces:
@@ -1929,6 +1885,7 @@ i32 CStatzTabSmall::
 // are load-bearing; the sprintf/strcat/strlen/memset are reloc-masked CRT
 // (inlined intrinsics), and Check1/ValidateGameTime/DecodeGameTime are reloc-
 // masked engine helpers.
+SIZE_UNKNOWN(CGameInfoTime);
 struct CGameInfoTime { // this+0xb8 (0x1c bytes; zeroed on a failed validate)
     i32 m_0;           // +0x00 (this+0xb8)
     u32 m_4;           // +0x04 (this+0xbc)  S (seconds, %lu)
@@ -1942,6 +1899,7 @@ struct CGameInfoTime { // this+0xb8 (0x1c bytes; zeroed on a failed validate)
 // &c) -> decompose the timestamp into three out-values.
 i32 ValidateGameTime(CGameInfoTime* t);                       // 0x118310
 void DecodeGameTime(i32 ts, i32* outA, i32* outB, i32* outC); // 0x119210
+SIZE_UNKNOWN(CGameInfo);
 class CGameInfo {
 public:
     i32 Check1();               // FUN_001182f0 __thiscall (ready/dirty gate)
@@ -1960,7 +1918,6 @@ extern char g_infoMaster[0x800]; // 0x64ecf8  query accumulator
 DATA(0x0024ebf8)
 extern char g_infoScratch[0x100]; // 0x64ebf8  per-piece scratch
 
-// @source: decomp-xref
 RVA(0x001183b0, 0x211)
 i32 CGameInfo::FormatGameInfoString() {
     char* name = m_14;
@@ -2008,21 +1965,11 @@ i32 CGameInfo::FormatGameInfoString() {
     return 0;
 }
 
-// BuildVoiceSoundList (0x11c210) graduated to src/Gruntz/VoiceSoundList.cpp as
-// CVoiceBuilder::BuildVoiceSoundList (the [SG<n>] VOICES_<dir>[_<sub>] CStringList
-// builder; /GX EH frame from the four CString temps + the heap CStringList node).
-
 // CRT lowio/startup internals (FID-anchored in config/library_labels.csv as
 // __findfirst / __write_lk / __sopen / __lseek_lk / __read_lk / __NMSG_WRITE);
 // the library label is canonical, so the redundant backlog stubs were removed:
 //   0x0011f900 __findfirst   0x0012abf0 __NMSG_WRITE  0x0012d230 __write_lk
 //   0x0012d460 __sopen       0x0012d880 __lseek_lk    0x001315d0 __read_lk
-
-// Stub_148940 @0x148940 graduated to src/Stub/CFileImageDecode.cpp as
-// CFileImage::LoadByExt (the .BMP/.PCX/.PID image-format dispatcher).
-
-// ParseAttributeFile @0x170750 graduated to src/Bute/ButeMgr.cpp (the value-line
-// driver; reconstructed on the ButeMgr class alongside the matched getters).
 
 // 0x18c780 _stat/_wstat core (statically-linked CRT); reclassified as library
 // (config/library_labels.csv __stat) - was an empty RVA stub, now carved out of the
@@ -2032,9 +1979,6 @@ i32 CGameInfo::FormatGameInfoString() {
 // vendor `trees` unit; the dead EngineLabelBacklog decls above bound no RVA (they
 // were vestigial), so they are removed here.
 
-// Stub_1bf702 (the HKCR\CLSID InProcServer32 COM-path reader) graduated to
-// src/Gruntz/RegHelpers.cpp (framed) as ClsidToInProcServer.
-
 // Stub_1bf8f8 / Stub_1c1609 / Stub_1c176a (the Win32 file-path/time-info utility
 // family, all in the 0x1bf*-0x1d5* `framed` ebp-frame module) graduated to
 // src/Gruntz/FilePathInfo.cpp (framed + /GX) as CanonicalizePath / GetFileTimeInfo
@@ -2043,10 +1987,6 @@ i32 CGameInfo::FormatGameInfoString() {
 // temp gives CanonicalizePath its /GX exception frame (@early-stop: the toolchain
 // never emits the retail `call __EH_prolog`, a wall shared with ConfigStoreRead).
 
-// Stub_1c7cb3 (GetWheelScrollLines) graduated to src/Gruntz/RegHelpers.cpp;
-// Stub_1ccb5c, OpenRoot, OpenSubKey, GetInt graduated to the CConfigStore TUs.
-
-// @source: import:OpenFile
 // FileExists - tests a path via OpenFile(OF_EXIST). Re-emitted copy of
 // Utils::WinAPI::FileExists (same bytes).
 RVA(0x0001fd70, 0x45)
@@ -2061,6 +2001,3 @@ i32 EngineLabelBacklog::Stub_01fd70(char* szPath) {
     }
     return OpenFile(szPath, &of, 0x4000 /*OF_EXIST*/) != -1;
 }
-
-// Stub_1d5029 (CConfigStore::GetString) and Stub_1d513b (CConfigStore::GetBinary)
-// graduated to src/Gruntz/ConfigStoreRead.cpp (framed + /GX).

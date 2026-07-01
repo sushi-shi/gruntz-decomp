@@ -9,7 +9,6 @@
 //     payload into a fresh operator-new'd block at +0x04, return this).
 //   0x00174d00 - a CButeNode-family node ctor (base ctor 0x16dff0 + two re-stamped
 //     vftables).
-// (0x001615a0 -> CSeverusWorkerHost.cpp, 0x0017e940 -> CFader.cpp.)
 
 // ===========================================================================
 // op-new + copy-construct "boxed value" ctor family.
@@ -20,18 +19,22 @@
 void* operator new(u32);
 void operator delete(void*);
 
+SIZE_UNKNOWN(MallocPayload16);
 struct MallocPayload16 {
     i32 a, b, c, d;
 }; // 16-byte POD (memberwise 4-dword copy)
+SIZE_UNKNOWN(MallocPayload24);
 struct MallocPayload24 {
     i32 a, b, c, d, e, f;
 }; // 24-byte POD (rep-movs 6-dword copy)
-struct MallocStr {         // 4-byte value with a throwing copy-ctor (MFC CString)
-    char* m_pchData;       // +0x00
+SIZE_UNKNOWN(MallocStr);
+struct MallocStr {                   // 4-byte value with a throwing copy-ctor (MFC CString)
+    char* m_pchData;                 // +0x00
     MallocStr(const MallocStr& src); // 0x1b9ba3 (external, reloc-masked)
 };
 
 // 0x1736a0: store a handle at +0x00, box a CString copy at +0x04.
+SIZE_UNKNOWN(BoxedStr);
 class BoxedStr {
 public:
     BoxedStr(i32 handle, const MallocStr& src);
@@ -39,12 +42,14 @@ public:
     MallocStr* m_04;
 };
 // 0x174cb0 / 0x173c60: box a 16-byte payload copy.
+SIZE_UNKNOWN(Boxed16a);
 class Boxed16a {
 public:
     Boxed16a(i32 handle, const MallocPayload16* src);
     i32 m_00;
     MallocPayload16* m_04;
 };
+SIZE_UNKNOWN(Boxed16b);
 class Boxed16b {
 public:
     Boxed16b(i32 handle, const MallocPayload16* src);
@@ -52,6 +57,7 @@ public:
     MallocPayload16* m_04;
 };
 // 0x174730: box a 24-byte payload copy.
+SIZE_UNKNOWN(Boxed24);
 class Boxed24 {
 public:
     Boxed24(i32 handle, const MallocPayload24* src);
@@ -72,6 +78,7 @@ extern void* g_node174dSubVtbl; // 0x5f0518  +0x08 sub-object vftable
 DATA(0x001f051c)
 extern void* g_node174dVtbl; // 0x5f051c  node primary vftable
 
+SIZE_UNKNOWN(Node174d00);
 struct Node174d00 {
     void CtorBase(void* desc, i32 kind); // 0x16dff0 CButeNodeBase ctor (external)
     Node174d00* Construct(i32 kind);     // 0x174d00

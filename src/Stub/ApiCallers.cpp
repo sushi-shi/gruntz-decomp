@@ -180,15 +180,7 @@ namespace ApiCallerStubs {
         void LoadFinishLevelSprite(i32);
         void LoadMonologoSprite();
         void LoadStateImages_vfunc8();
-        // LoadImageBanks (0x0cffe0), LoadActionTileSprites (0x0db600),
-        // LoadLevelSounds (0x0db6c0), LoadLevelImages (0x0db7e0) re-homed as CPlay
-        // methods in src/Gruntz/CPlay.cpp.
-        // LoadWarlordSprites (0x0d65d0) reconstructed below as CPlayWL_d65d0.
         void LoadLevelPreviewScreen();
-        // LoadGruntzPalette (0x0e2d10) re-homed to src/Gruntz/SpriteRefTable.cpp.
-        // BuildResourceTabStatusBar (0xe8a70), BuildStatzTabStatusBar (0xe9600) and
-        // BuildMultiplayerTabStatusBar (0xea1f0) re-homed as CSbTab methods in
-        // src/Gruntz/StatusBarTabBuilders.cpp.
         void LoadGameAssetNamespaces(i32, i32, i32);
         void UpdateDestructButtonStatusBar2(i32);
         void DebugPrintf();
@@ -206,8 +198,6 @@ namespace ApiCallerStubs {
         void LoadGruntCombatAnimations(i32, i32, i32, i32, i32, i32, i32, i32);
     };
     struct CGruntSpawnConfig {
-        // LoadGruntSpawnConfig (0x11afb0) re-homed as a real CGruntSpawnConfig method
-        // in src/Gruntz/CGruntSpawnConfig.cpp.
         i32 winapi_11b3b0_timeGetTime(i32, i32, i32, i32, i32, i32);
     };
     struct CMulti {
@@ -215,8 +205,6 @@ namespace ApiCallerStubs {
         i32 winapi_0b6e90_SetRect();
     };
 
-    // @confidence: low
-    // @source: winapi:CopyRect;SetRect
     // The action/logic record hung off the object's m_7c; m_10 is its handler fn ptr
     // (compared against the default handler at LAB_00402d15 to set a flag bit).
     struct ActionRec_c840 {
@@ -331,8 +319,6 @@ namespace ApiCallerStubs {
         return 1;
     }
 
-    // @confidence: low
-    // @source: winapi:timeGetTime
     // __cdecl rand(): lazily seed from timeGetTime, then advance the MS-CRT LCG.
     RVA(0x0000cd00, 0x46)
     i32 winapi_00cd00_timeGetTime() {
@@ -347,8 +333,6 @@ namespace ApiCallerStubs {
         return (g_rngState >> 0x10) & 0x7fff;
     }
 
-    // @confidence: low
-    // @source: winapi:timeGetTime
     // __thiscall(lo, hi, a3, a4): roll a random value in [lo,hi] (lazily-seeded
     // LCG; coin-flip endpoints when the span is empty) and cache it + the params.
     struct RngBox_00cd70 {
@@ -397,8 +381,6 @@ namespace ApiCallerStubs {
         m_50 = lo + ((g_rngState >> 0x10) & 0x7fff) % span;
     }
 
-    // @confidence: low
-    // @source: winapi:PostMessageA
     // __thiscall(code, _): on ESC/SPACE/ENTER post a 0x8023 command. Returns 1.
     struct CmdChain_014720 {
         i32 m_0;
@@ -425,7 +407,6 @@ namespace ApiCallerStubs {
         return 0;
     }
 
-    // @confidence: low
     // A CWnd-ish object whose HWND lives at +0x1c (returned by the dialog-item
     // resolver thunks that several wrappers below call).
     struct WndItem {
@@ -435,7 +416,6 @@ namespace ApiCallerStubs {
     // Dialog-item resolver at RVA 0x15ac0 (reached through the 0x1e7e jmp-thunk).
     WndItem* __stdcall ResolveItem_15ac0(i32 id);
 
-    // @source: winapi:SendMessageA
     // __stdcall(id, wParam): set the resolved item's listbox selection (0x14e).
     RVA(0x00015cc0, 0x23)
     i32 __stdcall winapi_015cc0_SendMessageA(i32 id, i32 wParam) {
@@ -443,7 +423,6 @@ namespace ApiCallerStubs {
         return SendMessageA(it->m_hwnd, 0x14e, wParam, 0);
     }
 
-    // @source: winapi:SendMessageA
     // __stdcall(id): send 0x147 (clear listbox selection) to the resolved item.
     RVA(0x00015d00, 0x20)
     void __stdcall winapi_015d00_SendMessageA(i32 id) {
@@ -451,8 +430,6 @@ namespace ApiCallerStubs {
         SendMessageA(it->m_hwnd, 0x147, 0, 0);
     }
 
-    // @confidence: low
-    // @source: winapi:SendMessageA
     // Dialog-item resolver at RVA 0x33a0 (stdcall, returns a CWnd-ish whose HWND is +0x1c).
     WndItem* __stdcall ResolveItem_33a0(i32 id);
     // __stdcall(id): clear listbox selection (0x147) of the resolved item; return +1.
@@ -462,7 +439,6 @@ namespace ApiCallerStubs {
         return SendMessageA(it->m_hwnd, 0x147, 0, 0) + 1;
     }
 
-    // @source: winapi:SendMessageA
     // __stdcall(id, wParam): set the resolved item's listbox selection to wParam-1.
     RVA(0x00015d70, 0x24)
     i32 __stdcall winapi_015d70_SendMessageA(i32 id, i32 wParam) {
@@ -470,12 +446,6 @@ namespace ApiCallerStubs {
         return SendMessageA(it->m_hwnd, 0x14e, wParam - 1, 0);
     }
 
-    // 0x000160f0 reconstructed as m4::FlashHost::FlashRect160f0 in src/Gruntz/m4_FlashRect.cpp
-
-    // 0x000180e0 reconstructed as m4dlg::CustomLevelDlg::Populate180e0 in src/Gruntz/m4_CustomLevelDlg.cpp
-
-    // @confidence: low
-    // @source: winapi:SendMessageA
     // A dialog-host class whose GetItem(id) (RVA 0x1be27d) returns a CWnd-ish
     // whose HWND lives at +0x1c.
     struct DlgHost {
@@ -492,8 +462,6 @@ namespace ApiCallerStubs {
         }
     }
 
-    // @confidence: low
-    // @source: winapi:timeGetTime
     // __stdcall(hi, lo): lazily-seeded LCG random in [lo,hi]. When the span is
     // empty (hi==lo-1) it coin-flips between the endpoints on bit 0x10000.
     RVA(0x00019f50, 0xb2)
@@ -531,8 +499,6 @@ namespace ApiCallerStubs {
         return 0;
     }
 
-    // @confidence: low
-    // @source: winapi:PostMessageA
     // __thiscall(): if the cached key (m_1b8) is 0xc7, post a 0x8023 command. Returns 1.
     struct KeyHost_01f8a0 {
         char m_pad0[0x1b8];
@@ -547,14 +513,6 @@ namespace ApiCallerStubs {
         return 1;
     }
 
-    // 0x00021f20 reconstructed as m4::DrawHost::MeasureLabel21f20 in src/Gruntz/m4_DrawText.cpp
-
-    // 0x00022160 reconstructed as m4::PwdHost::Render22160 in src/Gruntz/m4_DrawText.cpp
-
-    // 0x00022810 reconstructed as m4::TextHost::Draw3DText22810 in src/Gruntz/m4_DrawText.cpp
-
-    // @confidence: low
-    // @source: winapi:IntersectRect
     // __thiscall(src): clip the (0,0,m_c,m_10) box against the optional src rect
     // (right/bottom inclusive→+1), store the clipped rect at +0x60 and its w/h.
     struct ClipHost_02b340 {
@@ -592,12 +550,6 @@ namespace ApiCallerStubs {
         m_h74 = m_rc60.bottom - m_rc60.top;
     }
 
-    // 0x2c690 (CArriveMgr::Resolve2c690) reconstructed in src/Gruntz/GruntArriveResolve.cpp.
-
-    // 0x33520 (CStepMgr::Step33520) reconstructed in src/Gruntz/GruntStateStep.cpp.
-
-    // @confidence: low
-    // @source: winapi:EnableWindow;GetDlgItem;IsDlgButtonChecked
     // __cdecl(hWnd): mirror checkbox 0x46d into the game state + enable ctrl 0x470.
     RVA(0x00036d00, 0x40)
     void winapi_036d00_EnableWindow_GetDlgItem_IsDlgButtonChecked(HWND hWnd) {
@@ -608,8 +560,6 @@ namespace ApiCallerStubs {
         }
     }
 
-    // @confidence: low
-    // @source: winapi:EnableWindow;GetDlgItem;IsDlgButtonChecked
     // __cdecl(hWnd): mirror checkbox 0x475 into m_100 + enable ctrl 0x476 by it.
     RVA(0x00036d50, 0x3c)
     void winapi_036d50_EnableWindow_GetDlgItem_IsDlgButtonChecked(HWND hWnd) {
@@ -620,8 +570,6 @@ namespace ApiCallerStubs {
         }
     }
 
-    // @confidence: low
-    // @source: winapi:EnableWindow;GetDlgItem;IsDlgButtonChecked
     // __cdecl(hWnd): mirror checkbox 0x471 into the game state + enable ctrl 0x472.
     RVA(0x00036da0, 0x40)
     void winapi_036da0_EnableWindow_GetDlgItem_IsDlgButtonChecked(HWND hWnd) {
@@ -632,8 +580,6 @@ namespace ApiCallerStubs {
         }
     }
 
-    // @confidence: low
-    // @source: winapi:IsDlgButtonChecked
     // __cdecl: cache the checkbox state into g_gameReg->m_118.
     RVA(0x00036e10, 0x26)
     void winapi_036e10_IsDlgButtonChecked(HWND hWnd) {
@@ -642,8 +588,6 @@ namespace ApiCallerStubs {
         }
     }
 
-    // @confidence: low
-    // @source: winapi:GetDlgItem;GetScrollInfo
     // __cdecl(hDlg, id): read the scroll position of dialog item `id`.
     RVA(0x00036ec0, 0x41)
     i32 winapi_036ec0_GetDlgItem_GetScrollInfo(HWND hDlg, i32 id) {
@@ -658,8 +602,6 @@ namespace ApiCallerStubs {
         return si.nPos;
     }
 
-    // @confidence: low
-    // @source: winapi:GetDlgItem;SetScrollInfo
     // __cdecl(hDlg, id, pos, max): set dialog item `id`'s scroll range/page/pos.
     RVA(0x000371e0, 0x5b)
     void winapi_0371e0_GetDlgItem_SetScrollInfo(HWND hDlg, i32 id, i32 pos, i32 max) {
@@ -676,10 +618,6 @@ namespace ApiCallerStubs {
         }
     }
 
-    // 0x00037260 reconstructed as m4::ScrollDialog in src/Gruntz/m4_ApiWrappers.cpp
-
-    // @confidence: low
-    // @source: winapi:GetDlgItem
     // __stdcall(hDlg, id, lo, hi): find the list item whose data == MAKELONG(lo,hi)
     // and select it. Returns 1 if found.
     RVA(0x00038150, 0x91)
@@ -709,8 +647,6 @@ namespace ApiCallerStubs {
         return 0;
     }
 
-    // @confidence: low
-    // @source: winapi:GetDlgItem
     // __stdcall(hDlg, id, *lo, *hi): split the selected listbox item's data into
     // two words. Returns 1 if a valid item is selected.
     RVA(0x00038220, 0x73)
@@ -732,8 +668,6 @@ namespace ApiCallerStubs {
         return 1;
     }
 
-    // @confidence: low
-    // @source: winapi:PostMessageA
     // __thiscall(code, _): on ESC/SPACE/ENTER post a 0x8023/0x8027 command (by m_24
     // mode). Always returns 1.
     struct CmdWnd_039440 {
@@ -759,7 +693,6 @@ namespace ApiCallerStubs {
         return 1;
     }
 
-    // @confidence: low
     // __thiscall(x, _, y): if (x,y) is in the 0..0x64 box, run the click handler;
     // otherwise post a 0x111 command (0x8023/0x8027 by mode). Always returns 1.
     struct ClickWnd_0394b0 {
@@ -774,7 +707,6 @@ namespace ApiCallerStubs {
         i32 OnClick(i32 x, i32 unused, i32 y);
         void Activate(); // RVA 0x3d41
     };
-    // @source: winapi:PostMessageA;PtInRect
     RVA(0x000394b0, 0x86)
     i32 ClickHost_0394b0::OnClick(i32 x, i32 unused, i32 y) {
         RECT rc;
@@ -799,16 +731,6 @@ namespace ApiCallerStubs {
         return 1;
     }
 
-    // CreateRectRgn (0x039a60) re-homed as CreditzScreen::BuildText in
-    // src/Gruntz/m4_ApiWrappers.cpp.
-
-    // 0x0003af90 reconstructed as m4::FillCustomLevelList in src/Gruntz/m4_CustomLevelList.cpp
-
-    // GetDlgItem (0x03b1a0) re-homed as m4::FillLevelInfoDialog in
-    // src/Gruntz/m4_ApiWrappers.cpp.
-
-    // @confidence: low
-    // @source: winapi:GetDlgItem
     // The shared MFC CString scratch globals used to assemble custom-level paths;
     // m_data (the CString data ptr) is at offset 0.
     struct GameCStr_62c25c {
@@ -854,15 +776,6 @@ namespace ApiCallerStubs {
         return 1;
     }
 
-    // 0x4a9f0 (CGrunt::winapi_04a9f0_CopyRect_OffsetRect) reconstructed in
-    // src/Gruntz/Grunt.cpp.
-
-    // 0x57db0 (CGrunt::PathScan57db0) reconstructed in src/Gruntz/GruntPathScan.cpp.
-
-    // CopyRect (0x075c60) re-homed as GruntHitMgr::FindGruntAt in
-    // src/Gruntz/m4_ApiWrappers.cpp.
-
-    // @source: winapi:PtInRect
     // A spatial object: its tile coords are m_5c/m_60 in 1/32-pixel units (>>5).
     struct Spatial_77df0 {
         char m_pad0[0x5c];
@@ -949,12 +862,6 @@ namespace ApiCallerStubs {
         return best;
     }
 
-    // SetRect (0x078060) re-homed as GruntCombatMgr::CheckCombatRegion in
-    // src/Gruntz/m4_ApiWrappers.cpp.
-
-
-    // @confidence: low
-    // @source: winapi:SetRect
     // __thiscall(l, t, r, b): the object IS the RECT being initialised.
     struct RectHost_08c380 {
         RECT m_rc;
@@ -965,8 +872,6 @@ namespace ApiCallerStubs {
         SetRect(&m_rc, l, t, r, b);
     }
 
-    // @confidence: low
-    // @source: winapi:SetRect
     // __thiscall(out): default to the full 0x280x0x1e0 screen rect, or the active
     // viewport's rect (m_30->m_24 + 0x10) when one is set; write it to *out.
     struct ViewObj_08e3a0 {
@@ -990,8 +895,6 @@ namespace ApiCallerStubs {
         *out = local;
     }
 
-    // @confidence: low
-    // @source: winapi:MessageBoxA
     // The shared caption buffer (DAT_0060aac8) passed as the MessageBoxA title.
     DATA(0x0060aac8)
     extern char g_msgCaption[];
@@ -1052,11 +955,6 @@ namespace ApiCallerStubs {
         return result;
     }
 
-    // CreateProcessA (0x08f120) re-homed as m4::LaunchWebBrowser in
-    // src/Gruntz/m4_ApiWrappers.cpp.
-
-    // @confidence: low
-    // @source: winapi:PostMessageA
     // A polymorphic mode object whose slot 4 (+0x10) returns the current mode.
     struct ModeObj_08f480 {
         virtual void v0();
@@ -1093,8 +991,6 @@ namespace ApiCallerStubs {
         return 0;
     }
 
-    // @confidence: low
-    // @source: winapi:PostMessageA
     // __thiscall(int code): clamp code into (0,0x29] and post a 0x111 command.
     struct WndOwner_090220 {
         i32 m_0;
@@ -1113,8 +1009,6 @@ namespace ApiCallerStubs {
         }
     }
 
-    // @confidence: low
-    // @source: winapi:CreateProcessA;wsprintfA
     // __stdcall(exe, dir): build "<dir>\<exe>" and launch it with dir as the cwd.
     RVA(0x00090860, 0xd3)
     i32 __stdcall winapi_090860_CreateProcessA_wsprintfA(char* exe, char* dir) {
@@ -1139,8 +1033,6 @@ namespace ApiCallerStubs {
         return CreateProcessA(0, cmdline, 0, 0, 0, 0, 0, dir, &si, &pi);
     }
 
-    // @confidence: low
-    // @source: winapi:PostMessageA
     struct QlWnd_092710 {
         char m_pad0[4];
         HWND m_4; // +0x04
@@ -1185,7 +1077,6 @@ namespace ApiCallerStubs {
         return Fallback();
     }
 
-    // @source: winapi:EndDialog
     // The settings dialog's 12 numeric edit fields, cached as globals between the
     // WM_INITDIALOG load and the IDOK store.
     DATA(0x0064526c)
@@ -1256,8 +1147,6 @@ namespace ApiCallerStubs {
         return 0;
     }
 
-    // @confidence: low
-    // @source: winapi:ValidateRect
     // __thiscall(): if the sub-chain is live + ready, validate the whole window.
     struct VrSub2_094bc0 {
         i32 Ready(); // thiscall, RVA 0x2441
@@ -1284,8 +1173,6 @@ namespace ApiCallerStubs {
         return 0;
     }
 
-    // @confidence: low
-    // @source: winapi:PostMessageA
     // __thiscall(int code, int): on ESC/SPACE/ENTER post a 0x111 command. Returns 1.
     struct WndChain_0953f0 {
         i32 m_0;
@@ -1304,8 +1191,6 @@ namespace ApiCallerStubs {
         return 1;
     }
 
-    // @confidence: low
-    // @source: winapi:EndDialog
     DATA(0x00645ca4)
     extern i32 g_dlg645ca4; // DAT_00645ca4 (the active dialog HWND)
     i32 __cdecl DlgFallback_215d(HWND hDlg, i32 wParam, i32 cur); // RVA 0x215d
@@ -1338,8 +1223,6 @@ namespace ApiCallerStubs {
         }
     }
 
-    // @confidence: low
-    // @source: winapi:SetDlgItemTextA
     // An item whose validity is probed by Check2694; its display name is at +0x14.
     struct NameItem_09e2d0 {
         char m_pad0[0x14];
@@ -1371,14 +1254,6 @@ namespace ApiCallerStubs {
         EnableWindow(GetDlgItem(hWnd, id6), flag);
     }
 
-    // 0x0009e390 reconstructed as m4::SetupDlgCommand in src/Gruntz/m4_ApiWrappers.cpp
-
-    // 0x000b6b40 reconstructed as CMulti::PumpA in src/Gruntz/CMulti.cpp
-
-    // 0x000b6e90 reconstructed as CMulti::PumpB in src/Gruntz/CMulti.cpp
-
-    // @confidence: low
-    // @source: directx-wrapper-caller:calls 0x1780b0 (DPLAYX.#1)
     // The DirectPlay application GUID (DAT_0060fab8), passed by value to Connect.
     DATA(0x0060fab8)
     extern GUID g_dplayAppGuid;
@@ -1436,7 +1311,6 @@ namespace ApiCallerStubs {
         return 1;
     }
 
-    // @confidence: low
     // App-instance chain: this->m_4->m_8->m_c is the HINSTANCE for LoadString.
     struct AppRes_0b7ec0 {
         char m_pad0[0xc];
@@ -1452,7 +1326,6 @@ namespace ApiCallerStubs {
         void SetText(char* text, i32 arg); // RVA 0xb7e30 (thunk 0x1af0)
         void Load(i32 id, i32 dest);
     };
-    // @source: winapi:LoadStringA
     // __thiscall(id, dest): load string `id`, defaulting to "Error", then push it.
     RVA(0x000b7ec0, 0x7d)
     void StrHost_0b7ec0::Load(i32 id, i32 dest) {
@@ -1465,8 +1338,6 @@ namespace ApiCallerStubs {
         }
     }
 
-    // @confidence: low
-    // @source: winapi:GetWindowTextLengthA
     // __stdcall(edit, str): append `str` to an edit control, prefixing a CRLF when
     // the control is non-empty, then scroll to keep the caret in view.
     RVA(0x000bb3e0, 0xe5)
@@ -1490,12 +1361,6 @@ namespace ApiCallerStubs {
         SendMessageA(edit, 0xb6, 0, 0x270f);
     }
 
-    // winapi_0bb700_GetAsyncKeyState_Sleep_timeGetTime_wsprintfA (0x0bb700) re-homed as CNetMgr::winapi_0bb700_GetAsyncKeyState_Sleep_timeGetTime_wsprintfA in src/Stub/CNetMgr.cpp (proximity HIGH).
-
-    // winapi_0bba10_Sleep (0x0bba10) re-homed as CNetMgr::winapi_0bba10_Sleep in src/Stub/CNetMgr.cpp (proximity HIGH).
-
-    // @confidence: low
-    // @source: winapi:GetDlgItem;SetTimer
     void Init_42b4(HWND hWnd, void* ctx); // RVA 0x42b4 (__cdecl)
     // __cdecl(hWnd, ctx): init, arm a 500 ms timer, cache a child control handle.
     RVA(0x000bda00, 0x3e)
@@ -1507,8 +1372,6 @@ namespace ApiCallerStubs {
         }
     }
 
-    // @confidence: low
-    // @source: winapi:GetDlgItem;SetTimer
     void Init_1924(HWND hWnd, void* ctx); // RVA 0x1924 (__cdecl)
     // __cdecl(hWnd, ctx): init, arm a 500 ms timer, cache a child control handle.
     RVA(0x000bdb90, 0x3e)
@@ -1520,8 +1383,6 @@ namespace ApiCallerStubs {
         }
     }
 
-    // @confidence: low
-    // @source: winapi:EndDialog;KillTimer
     // DAT_0064557c: the active modeless dialog HWND, cached on entry/init.
     DATA(0x0064557c)
     extern HWND g_curDlg_64557c;
@@ -1587,10 +1448,8 @@ namespace ApiCallerStubs {
         return 0;
     }
 
-    // @confidence: low
     // Init helper at RVA 0xbddb0 (__cdecl(hWnd, ctx)).
     void Init_bddb0(HWND hWnd, void* ctx);
-    // @source: winapi:GetDlgItem;SetTimer
     // __cdecl(hWnd, ctx): init, arm a 500 ms timer, cache a child control handle.
     RVA(0x000bdd60, 0x3e)
     void winapi_0bdd60_GetDlgItem_SetTimer(HWND hWnd, void* ctx) {
@@ -1601,8 +1460,6 @@ namespace ApiCallerStubs {
         }
     }
 
-    // @confidence: low
-    // @source: winapi:GetDlgItem;SetTimer
     void Init_2522(HWND hWnd, void* ctx); // RVA 0x2522 (__cdecl)
     // __cdecl(hWnd, ctx): init, arm a 750 ms timer, cache a child control handle.
     RVA(0x000bdfe0, 0x3e)
@@ -1614,7 +1471,6 @@ namespace ApiCallerStubs {
         }
     }
 
-    // @source: winapi:EndDialog;KillTimer;PostMessageA
     // __stdcall DlgProc(hWnd, msg, wParam, lParam): the in-game network dialog proc
     // (sibling of the lobby proc at 0xbdc00). WM_COMMAND ends the dialog on a set of
     // button IDs; WM_TIMER (0x113) polls the abort deadline and re-posts the cancel.
@@ -1671,8 +1527,6 @@ namespace ApiCallerStubs {
         return 0;
     }
 
-    // @confidence: low
-    // @source: winapi:GetDlgItem;SetDlgItemTextA;SetTimer
     // A scratch CString (m_data at +0; CStringData length is 8 bytes before m_data).
     struct GameCStr_be2f0 {
         char* m_data;      // +0x00
@@ -1703,8 +1557,6 @@ namespace ApiCallerStubs {
         }
     }
 
-    // @confidence: low
-    // @source: winapi:GetWindowTextA;SetWindowTextA
     DATA(0x006496ac)
     extern PeerSession_0be490* g_peerSession; // DAT_006496ac (struct defined above)
     extern "C" char g_emptyString[];          // 0x6293f4
@@ -1723,7 +1575,6 @@ namespace ApiCallerStubs {
         }
     }
 
-    // @confidence: low
     // Session host (arg2). Stop() at RVA 0xb95f0; SetStatus(text, flag) at 0xb7e30
     // (reached via thunk 0x1af0). m_584 marks a normal exit; m_5c4 carries its code.
     struct SessionHost_0be490 {
@@ -1736,7 +1587,6 @@ namespace ApiCallerStubs {
     };
     DATA(0x006487e0)
     extern char g_sessionFlag; // DAT_006487e0
-    // @source: winapi:EndDialog;KillTimer
     // __cdecl(hWnd, session): stop the session and end the dialog appropriately.
     RVA(0x000be490, 0x84)
     void winapi_0be490_EndDialog_KillTimer(HWND hWnd, SessionHost_0be490* session) {
@@ -1756,8 +1606,6 @@ namespace ApiCallerStubs {
         }
     }
 
-    // @confidence: low
-    // @source: winapi:GetDlgItem;SetDlgItemTextA;SetTimer
     // CString-data ptr (DAT_00649618): the pending drop-in player's name; its
     // CString length lives 8 bytes before the data.
     DATA(0x00649618)
@@ -1779,10 +1627,6 @@ namespace ApiCallerStubs {
         }
     }
 
-    // 0x000c1aa0 reconstructed as m4::MultiColorDlg::UpdateColorItems in src/Gruntz/m4_MultiColorDlg.cpp
-
-    // @confidence: low
-    // @source: winapi:SendMessageA
     // Item resolver at RVA 0x1753 (push slot; stdcall; returns the CWnd-ish item).
     WndItem* __stdcall ResolveItem_1753(i32 slot);
     // __stdcall(id, wParam): if item `id` resolves, set its selection to wParam-1.
@@ -1794,7 +1638,6 @@ namespace ApiCallerStubs {
         }
     }
 
-    // @confidence: low
     // __thiscall OnInitDialog: chain to CDialog::OnInitDialog (RVA 0x1bac5e),
     // then arm a 50 ms timer on this dialog's HWND (m_1c). Returns TRUE.
     struct TimerDlg_0c2cb0 {
@@ -1803,7 +1646,6 @@ namespace ApiCallerStubs {
         i32 OnInitDialog();
         i32 BaseOnInitDialog(); // RVA 0x1bac5e (CDialog::OnInitDialog)
     };
-    // @source: winapi:SetTimer
     RVA(0x000c2cb0, 0x1f)
     i32 TimerDlg_0c2cb0::OnInitDialog() {
         BaseOnInitDialog();
@@ -1811,8 +1653,6 @@ namespace ApiCallerStubs {
         return 1;
     }
 
-    // @confidence: low
-    // @source: winapi:GetWindowTextLengthA
     // __thiscall(str): resolve dialog item 0x511, then append `str` to it the same
     // way as winapi_0bb3e0 (CRLF prefix when non-empty, scroll the caret).
     struct EditAppendHost_0c2ce0 {
@@ -1847,10 +1687,6 @@ namespace ApiCallerStubs {
         SendMessageA(edit, 0xb6, 0, 0x270f);
     }
 
-    // 0x000c2e20 reconstructed as m4::FlashHost::FlashRectC2e20 in src/Gruntz/m4_FlashRect.cpp
-
-    // @confidence: low
-    // @source: winapi:SendMessageA
     // A scratch CString with the MFC ctor/dtor/operator= (m_data at +0).
     struct CStr_c3e30 {
         char* m_data;               // +0x00
@@ -1933,21 +1769,21 @@ namespace ApiCallerStubs {
         i32 m_1c; // +0x1c ready flag
         i32 m_20; // +0x20 in-use flag
         char m_pad24[0x228 - 0x24];
-        i32 m_228; // +0x228 combo value
+        i32 m_228;                      // +0x228 combo value
         DlgStr_c4230 FormatName_3e54(); // __thiscall RVA 0x3e54
     };
     // A resolved dialog child (CWnd) whose HWND lives at +0x1c.
     struct DlgWnd_c4230 {
         char m_pad0[0x1c];
-        HWND m_1c; // +0x1c m_hWnd
-        void EnableWindow_1be6a7(i32 bEnable); // RVA 0x1be6a7 (CWnd::EnableWindow)
+        HWND m_1c;                                // +0x1c m_hWnd
+        void EnableWindow_1be6a7(i32 bEnable);    // RVA 0x1be6a7 (CWnd::EnableWindow)
         void SetWindowText_1be520(const char* s); // RVA 0x1be520 (CWnd::SetWindowText)
     };
     void __stdcall FocusHelper_1bb23a(HWND); // RVA 0x1bb23a
     struct BattlezDlg_c4230 {
         char m_pad0[0x5c];
-        char* m_5c; // +0x5c base of the per-player colour table (records at +0x16c)
-        i32 LocalSlot2d4c();                      // RVA 0x2d4c
+        char* m_5c;          // +0x5c base of the per-player colour table (records at +0x16c)
+        i32 LocalSlot2d4c(); // RVA 0x2d4c
         DlgWnd_c4230* NameEdit298c(i32 idx);      // RVA 0x298c
         DlgWnd_c4230* KindCombo1929(i32 idx);     // RVA 0x1929
         DlgWnd_c4230* ReadyCheck1159(i32 idx);    // RVA 0x1159
@@ -1969,9 +1805,7 @@ namespace ApiCallerStubs {
         i32 f18 = 0;
         i32 idx = 0;
         i32 t = this->LocalSlot2d4c();
-        i32 localColour = g_64bd5c->m_528
-            ? *(i32*)(this->m_5c + t * 0x238 + 0x16c)
-            : 1;
+        i32 localColour = g_64bd5c->m_528 ? *(i32*)(this->m_5c + t * 0x238 + 0x16c) : 1;
         i32 off = 0;
         do {
             PlayerSlot_0c50f0* slot = (PlayerSlot_0c50f0*)((char*)g_gameReg + off + 0x150);
@@ -1987,7 +1821,8 @@ namespace ApiCallerStubs {
                 }
                 this->NameEdit298c(idx)->EnableWindow_1be6a7(enName);
                 this->KindCombo1929(idx)->EnableWindow_1be6a7(
-                    g_64bd5c->m_528 && localColour == 0 && slot->m_18 != g_64bd5c->m_5c0 ? 1 : 0);
+                    g_64bd5c->m_528 && localColour == 0 && slot->m_18 != g_64bd5c->m_5c0 ? 1 : 0
+                );
                 DlgWnd_c4230* ready = this->ReadyCheck1159(idx);
                 ready->EnableWindow_1be6a7(slot->m_18 == g_64bd5c->m_5c0 ? 1 : 0);
                 if (slot->m_1c) {
@@ -2003,7 +1838,8 @@ namespace ApiCallerStubs {
                     g_pSendMessageA(ready->m_1c, 0xf1, 0, 0);
                 }
                 this->ColourBtn1753(idx)->EnableWindow_1be6a7(
-                    g_64bd5c->m_528 && slot->m_20 && localColour == 0 ? 1 : 0);
+                    g_64bd5c->m_528 && slot->m_20 && localColour == 0 ? 1 : 0
+                );
                 this->SyncColour3a5d(idx, slot->m_20 ? slot->m_228 : 0);
                 if (force == 0) {
                     if (this->LocalSlot2d4c() == idx) {
@@ -2049,10 +1885,6 @@ namespace ApiCallerStubs {
         return 1;
     }
 
-    // 0x0c46b0 re-homed as CNetDlgWatch::Watchdog in src/Gruntz/NetGameDlgWatch.cpp.
-
-    // @confidence: low
-    // @source: winapi:SendMessageA
     // Item resolver at RVA 0x1753 (push slot; stdcall; returns the CWnd-ish item).
     WndItem* __stdcall ResolveItem_1753(i32 slot);
     // __thiscall host for the two near-identical wrappers below: resolve a list
@@ -2070,8 +1902,6 @@ namespace ApiCallerStubs {
         Refresh();
     }
 
-    // @confidence: low
-    // @source: winapi:SendMessageA
     RVA(0x000c4f30, 0x33)
     void SelHost_0c4ee0::Update1() {
         HWND h = ResolveItem_1753(1)->m_hwnd;
@@ -2079,7 +1909,6 @@ namespace ApiCallerStubs {
         Refresh();
     }
 
-    // @confidence: low
     // Item resolver at RVA 0xc27c0 (push id; stdcall; returns the CWnd-ish item).
     WndItem* __stdcall ResolveItem_c27c0(i32 id);
     // __thiscall host for winapi_0c4f80: resolves dialog item 2, clears its
@@ -2088,7 +1917,6 @@ namespace ApiCallerStubs {
         void Update();
         void Refresh(); // RVA 0xc40b0
     };
-    // @source: winapi:SendMessageA
     RVA(0x000c4f80, 0x33)
     void SelHost_0c4f80::Update() {
         HWND h = ResolveItem_c27c0(2)->m_hwnd;
@@ -2096,8 +1924,6 @@ namespace ApiCallerStubs {
         Refresh();
     }
 
-    // @confidence: low
-    // @source: winapi:SendMessageA
     RVA(0x000c4fd0, 0x33)
     void SelHost_0c4ee0::Update3() {
         HWND h = ResolveItem_1753(3)->m_hwnd;
@@ -2105,8 +1931,6 @@ namespace ApiCallerStubs {
         Refresh();
     }
 
-    // @confidence: low
-    // @source: winapi:SendMessageA
     // PlayerSlot_0c50f0 / SelOwner_0c50f0 / g_64bd5c are modelled above (shared with
     // BattlezDlg_c4230::UpdatePlayers).
     WndItem* __stdcall ResolveItem_1159(i32 idx); // RVA 0x1159
@@ -2148,15 +1972,6 @@ namespace ApiCallerStubs {
         }
     }
 
-    // 0x000c7ec0 reconstructed as modeinit::ModeObj::Init0c7ec0 in src/Gruntz/ModeObjInit.cpp
-
-    // ResetForMode (0x0c8a10) re-homed (analyzed) as CPlay::ResetForMode in
-    // src/Gruntz/CPlay.cpp.
-
-    // OnKeyCommand (0x0cbaf0) re-homed (byte-exact) as CPlay::OnKeyCommand in
-    // src/Gruntz/CPlay.cpp.
-
-    // @confidence: low
     // Sub-objects reached through the dispatcher's members; each has a __thiscall
     // reset/notify with no args (RVAs 0x137a80/0x138530/0x40b660/0x51af90).
     struct DispWnd_0cfbd0 {
@@ -2208,7 +2023,6 @@ namespace ApiCallerStubs {
         i32 m_1c0; // +0x1c0
         i32 Dispatch();
     };
-    // @source: winapi:PostMessageA
     RVA(0x000cfbd0, 0x8f)
     i32 Dispatcher_0cfbd0::Dispatch() {
         if (m_1c == 0x20) {
@@ -2232,8 +2046,6 @@ namespace ApiCallerStubs {
         return 1;
     }
 
-    // @confidence: low
-    // @source: winapi:CopyRect
     struct DrawSink_0d00a0 {
         void Blit(i32 a, i32 b, RECT* rc, i32 d); // thiscall, RVA 0x3751
     };
@@ -2260,11 +2072,6 @@ namespace ApiCallerStubs {
         m_4->m_5c->Blit(8, arg, &dst, 0x10);
     }
 
-    // FindStartPointAt (0x0d5f90) re-homed (analyzed) as CPlay::FindStartPointAt and
-    // ResetPlayState (0x0d60b0) as CPlay::ResetPlayState in src/Gruntz/CPlay.cpp.
-
-    // @confidence: low
-    // @source: winapi:PostMessageA
     // __thiscall(arg): begin an action once (m_500 guards), arm it, notify the host.
     struct ActionSub_0d7220 {
         i32 Accept(i32 arg); // thiscall, RVA 0x1bedde (on this+0x410)
@@ -2303,16 +2110,6 @@ namespace ApiCallerStubs {
         return 1;
     }
 
-    // 0x0d7520 re-homed as CPlay::SyncState in src/Gruntz/CPlaySync.cpp.
-
-    // ResetViewport (0x0d8c60) re-homed (byte-exact) as CPlay::ResetViewport in
-    // src/Gruntz/CPlay.cpp.
-
-    // 0x0d95f0 (winapi_0d95f0_wsprintfA - the level/grunt info-text panel painter)
-    // graduated to src/Gruntz/GruntInfoText.cpp (needs the /GX EH frame).
-
-    // @confidence: low
-    // @source: winapi:timeGetTime
     // __thiscall coin-flip: deterministic ((m_1c+1)%2) in replay mode, otherwise a
     // once-per-frame random bit lazily seeded from timeGetTime.
     struct CoinHost_0da200 {
@@ -2341,8 +2138,6 @@ namespace ApiCallerStubs {
         return g_coinValue;
     }
 
-    // @confidence: low
-    // @source: winapi:PostMessageA
     DATA(0x0064c69c)
     extern i32 g_flag64c69c; // DAT_0064c69c
     struct CmdWnd_0de590 {
@@ -2364,8 +2159,6 @@ namespace ApiCallerStubs {
         PostMessageA(m_4->m_4->m_4, 0x111, 0x8027, 0);
     }
 
-    // @confidence: low
-    // @source: winapi:EndDialog
     DATA(0x0064c86c)
     extern i32 g_dlg64c86c; // DAT_0064c86c (the active dialog HWND)
     DATA(0x00613a9c)
@@ -2403,8 +2196,6 @@ namespace ApiCallerStubs {
     DATA(0x0064c864)
     extern char* g_dlgInfoText;
 
-    // @confidence: low
-    // @source: winapi:EndDialog
     // The gameReg->m_58 dialog helper sub-object; its M1834/M2d97 thunks live in
     // this TU. (m_58 is reused elsewhere as an int/void* gate, so cast locally.)
     struct DlgSub58_0e3a40 {
@@ -2439,8 +2230,6 @@ namespace ApiCallerStubs {
         return 0;
     }
 
-    // @confidence: low
-    // @source: winapi:EndDialog
     // __stdcall DialogProc: OK/Cancel close the dialog; WM_INITDIALOG fills a line.
     RVA(0x000e3b20, 0x86)
     i32 __stdcall winapi_0e3b20_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
@@ -2466,8 +2255,6 @@ namespace ApiCallerStubs {
         return 0;
     }
 
-    // @confidence: low
-    // @source: winapi:EndDialog
     // __stdcall DlgProc(hDlg, msg, wParam, lParam): OK/Cancel end the dialog.
     RVA(0x000e3be0, 0x52)
     i32 __stdcall winapi_0e3be0_EndDialog(HWND hDlg, i32 msg, i32 wParam, i32 lParam) {
@@ -2488,8 +2275,6 @@ namespace ApiCallerStubs {
         return 0;
     }
 
-    // @confidence: low
-    // @source: winapi:SetDlgItemTextA
     // __cdecl(hWnd, item, id3, id4, id5, id6): label item into id3, then enable the
     // first two controls unconditionally and the last two only if the item is valid.
     RVA(0x000e3e80, 0x86)
@@ -2515,8 +2300,6 @@ namespace ApiCallerStubs {
         EnableWindow(GetDlgItem(hWnd, id6), flag);
     }
 
-    // @confidence: low
-    // @source: winapi:SetDlgItemTextA
     // __cdecl: SetDlgItemTextA(hWnd, 0x40d, &item->text) when all ptrs non-null.
     RVA(0x000e4850, 0x29)
     void winapi_0e4850_SetDlgItemTextA(HWND hWnd, void* gate, char* item) {
@@ -2545,16 +2328,6 @@ namespace ApiCallerStubs {
         return 0;
     }
 
-    // winapi_0ed9f0_PtInRect (0xed9f0) re-homed as CGruntWander::WanderStep in
-    // src/Gruntz/WanderIdleStep.cpp (idle/wander AI step, GruntUpdateStep.cpp family).
-
-    // winapi_0f42f0_PtInRect (0xf42f0) re-homed as CGruntScan::ScanNearestTarget in
-    // src/Gruntz/GruntTargetScan.cpp (sibling of the GruntArrivalScan steps).
-
-    // 0x000f60f0 reconstructed as gruntphase::CGrunt::PhaseStep in src/Gruntz/GruntPhaseStep.cpp
-
-    // @confidence: low
-    // @source: winapi:FreeLibrary
     struct MidiDrv_0f8e20 {
         char m_pad0[0x14];
         void(__cdecl* m_14)(i16); // +0x14 function pointer member
@@ -2582,8 +2355,6 @@ namespace ApiCallerStubs {
         }
     }
 
-    // @confidence: low
-    // @source: winapi:BeginPaint;EndPaint
     // __thiscall(): begin/end a paint cycle on the top-level window (m_4->m_4->m_4).
     struct PaintWnd_0fac70 {
         char m_pad0[4];
@@ -2608,7 +2379,6 @@ namespace ApiCallerStubs {
         return 1;
     }
 
-    // @confidence: low
     // Free init helper at RVA 0x500930 (__stdcall(int)).
     void __stdcall Prep_500930(i32 flag);
     // A sub-object reached via g_gameReg->m_2c whose Refresh() is at RVA 0x4d8c60.
@@ -2629,7 +2399,6 @@ namespace ApiCallerStubs {
         i32 Validate();              // RVA 0x4ffde0 (thunk via 0x3a08)
         void Activate(i32 a, i32 n); // RVA 0x500d70
     };
-    // @source: winapi:SetRect
     // __thiscall: lay out the 0xa0x0x1e0 screen, validate it, else report error.
     RVA(0x000fe460, 0x83)
     i32 Screen_0fe460::Open() {
@@ -2647,11 +2416,6 @@ namespace ApiCallerStubs {
         return 1;
     }
 
-    // 0xfe520 (CSBI_RectOnly::winapi_0fe520_SetRect) reconstructed in
-    // src/Gruntz/SBI_RectOnly.cpp.
-
-    // @confidence: low
-    // @source: winapi:SetRect
     void __stdcall Prep_12fd(i32 mode); // RVA 0x12fd
     struct CGameWnd_fe600 {
         i32 Sub3d55(); // thiscall, RVA 0x3d55 (on g_gameReg->m_2c)
@@ -2676,8 +2440,6 @@ namespace ApiCallerStubs {
         return 1;
     }
 
-    // @confidence: low
-    // @source: winapi:SetRect
     // The blit target reached through the layer node (node->m_2c); Blit13ef90 paints
     // a rect-source into a destination rect with the given mode flags.
     struct BlitTarget_115300 {
@@ -2754,11 +2516,6 @@ namespace ApiCallerStubs {
         return 1;
     }
 
-    // 0x115930 (EngStr_RenderText, the text-render worker the EngStr_DrawText
-    // forwarder tail-calls) reconstructed in its true home src/Wap32/EngStr.cpp.
-
-    // @confidence: low
-    // @source: winapi:CopyRect
     // __thiscall(src): copy src into this RECT; return this.
     struct RectHost_115b30 {
         RECT m_rc;
@@ -2770,8 +2527,6 @@ namespace ApiCallerStubs {
         return this;
     }
 
-    // @confidence: low
-    // @source: winapi:SetActiveWindow;SetFocus
     // __cdecl: activate + focus the same window.
     RVA(0x00118930, 0x15)
     void winapi_118930_SetActiveWindow_SetFocus(HWND hWnd) {
@@ -2779,8 +2534,6 @@ namespace ApiCallerStubs {
         SetFocus(hWnd);
     }
 
-    // @confidence: low
-    // @source: winapi:OutputDebugStringA
     // __cdecl(status): trace a _heapchk() status code.
     RVA(0x00118b50, 0x5b)
     void winapi_118b50_OutputDebugStringA(i32 status) {
@@ -2806,8 +2559,6 @@ namespace ApiCallerStubs {
         }
     }
 
-    // @confidence: low
-    // @source: winapi:IsIconic
     // __cdecl(hWnd, msg, wParam): block screen-saver / monitor-power while not iconic.
     RVA(0x001192d0, 0x39)
     i32 winapi_1192d0_IsIconic(HWND hWnd, i32 msg, i32 wParam) {
@@ -2868,8 +2619,6 @@ namespace ApiCallerStubs {
         return 0;
     }
 
-    // @confidence: low
-    // @source: winapi:FindResourceA;LoadResource;LockResource
     struct AppModule_136a30 {
         char m_pad0[8];
         HINSTANCE m_8; // +0x08 = the resource module handle
@@ -2904,8 +2653,6 @@ namespace ApiCallerStubs {
         return Use136910(data, a, b);
     }
 
-    // @confidence: low
-    // @source: winapi:FindResourceA;LoadResource;LockResource
     // The probe object (arg1) whose Ready (RVA 0x135440) gates loading.
     struct WaveProbe_136ce0 {
         i32 Ready(); // thiscall, RVA 0x135440
@@ -2942,8 +2689,6 @@ namespace ApiCallerStubs {
         return Use136bd0(probe, data, arg);
     }
 
-    // @confidence: low
-    // @source: directx-wrapper-caller:calls 0x136550 (DSOUND.#1_DirectSoundCreate)
     i32 __stdcall PlaySound3_136550(i32 a, i32 b, i32 flag); // RVA 0x136550
     // __stdcall(a, b): default the 3rd arg to 0.
     // @early-stop
@@ -2956,8 +2701,6 @@ namespace ApiCallerStubs {
         return PlaySound3_136550(a, b, 0);
     }
 
-    // @confidence: low
-    // @source: winapi:timeGetTime
     // __thiscall(timestamp): throttle to >0x64 ms since the last tick, query the
     // source (m_8), wrap localC against m_c into the window, then run the work pass.
     struct TickSource_137e30 {
@@ -3006,7 +2749,6 @@ namespace ApiCallerStubs {
         return Work(m_c, v) != 0;
     }
 
-    // @confidence: low
     // A device object whose Prepare(flag) lives at RVA 0x135a70.
     struct Device_1380d0 {
         i32 Prepare(i32 flag); // RVA 0x135a70
@@ -3025,7 +2767,6 @@ namespace ApiCallerStubs {
         i32 Tick(i32 timestamp);
         i32 Work(i32 a, i32 b); // RVA 0x137f30
     };
-    // @source: winapi:timeGetTime
     RVA(0x001380d0, 0x4e)
     i32 Timer_1380d0::Tick(i32 timestamp) {
         i32 t = (timestamp == -1) ? (i32)timeGetTime() : timestamp;
@@ -3038,8 +2779,6 @@ namespace ApiCallerStubs {
         return Work(m_c, m_10) != 0;
     }
 
-    // @confidence: low
-    // @source: thirdparty:_AIL_midiOutOpen@12;_AIL_startup@0
     // __thiscall(driver, seq, skipInit): record the AIL handles, optionally start
     // the AIL MIDI driver. m_28 = whether the driver is usable.
     struct AilHost_138490 {
@@ -3066,8 +2805,6 @@ namespace ApiCallerStubs {
         return 1;
     }
 
-    // @confidence: low
-    // @source: thirdparty:_AIL_shutdown@0
     // A polymorphic sub whose slot 12 (vtable +0x30) tears down its sequence.
     struct AilSlot_1384f0 {
         virtual void v0();
@@ -3105,8 +2842,6 @@ namespace ApiCallerStubs {
         AIL_shutdown();
     }
 
-    // @confidence: low
-    // @source: thirdparty:_AIL_set_XMIDI_master_volume@8
     // __stdcall(volume 0..100): scale to 0..127 and push to the XMIDI driver.
     RVA(0x00138950, 0x70)
     i32 __stdcall thirdparty_138950_AIL_set_XMIDI_master_volume_8(i32 volume) {
@@ -3125,8 +2860,6 @@ namespace ApiCallerStubs {
         return 1;
     }
 
-    // @confidence: low
-    // @source: thirdparty:_AIL_XMIDI_master_volume@4
     // __cdecl(): read the XMIDI master volume and rescale 0..127 -> 0..100.
     RVA(0x001389c0, 0x47)
     i32 thirdparty_1389c0_AIL_XMIDI_master_volume_4() {
@@ -3143,7 +2876,6 @@ namespace ApiCallerStubs {
         return v * 100 / 127;
     }
 
-    // @source: thirdparty:_AIL_allocate_sequence_handle@4;_AIL_init_sequence@12;_AIL_release_sequence_handle@4
     // An owned XMIDI sequence: copies the song bytes into a Rez buffer, names it,
     // and allocates + initialises an AIL sequence handle against the MIDI driver.
     struct AilSeq_138c20 {
@@ -3236,8 +2968,6 @@ namespace ApiCallerStubs {
     };
     extern "C" void RezFree_call(void* p); // RVA 0x1b9b82 (cdecl)
 
-    // @confidence: low
-    // @source: thirdparty:_AIL_release_sequence_handle@4
     // __thiscall(): tear down, release the AIL sequence handle + Rez buffer.
     RVA(0x00138dd0, 0x36)
     void AilSeq::ReleaseHandle() {
@@ -3252,7 +2982,6 @@ namespace ApiCallerStubs {
         }
     }
 
-    // @source: thirdparty:_AIL_set_sequence_loop_count@8;_AIL_start_sequence@4
     // __thiscall(cursor, loop): start the sequence; if looping, clear loop count.
     RVA(0x00138e10, 0x4a)
     i32 AilSeq::Play(i32 cursor, i32 loop) {
@@ -3269,8 +2998,6 @@ namespace ApiCallerStubs {
         return 1;
     }
 
-    // @confidence: low
-    // @source: thirdparty:_AIL_end_sequence@4
     // __thiscall(): if playable, end the sequence and clear the paused flag.
     RVA(0x00138e60, 0x26)
     i32 AilSeq::Stop() {
@@ -3282,8 +3009,6 @@ namespace ApiCallerStubs {
         return 1;
     }
 
-    // @confidence: low
-    // @source: thirdparty:_AIL_stop_sequence@4
     // __thiscall(): pause the sequence the first time, counting nested pauses.
     RVA(0x00138e90, 0x3a)
     i32 AilSeq::Pause() {
@@ -3300,8 +3025,6 @@ namespace ApiCallerStubs {
         return 1;
     }
 
-    // @confidence: low
-    // @source: thirdparty:_AIL_resume_sequence@4
     // __thiscall(restart): count down the resume delay and re-issue the resume.
     RVA(0x00138ed0, 0x4f)
     i32 AilSeq::Resume(i32 restart) {
@@ -3323,8 +3046,6 @@ namespace ApiCallerStubs {
         return 1;
     }
 
-    // @confidence: low
-    // @source: thirdparty:_AIL_set_sequence_tempo@12
     // __thiscall(tempo, ms): if playable, set the sequence tempo and cache it.
     RVA(0x00138f90, 0x32)
     i32 AilSeq::SetTempo(i32 tempo, i32 ms) {
@@ -3336,8 +3057,6 @@ namespace ApiCallerStubs {
         return 1;
     }
 
-    // @confidence: low
-    // @source: thirdparty:_AIL_set_sequence_volume@12
     // __thiscall(volume 0..100, ms): scale to 0..127 and set the sequence volume.
     RVA(0x00138fd0, 0x5e)
     i32 AilSeq::SetVolume(i32 volume, i32 ms) {
@@ -3357,8 +3076,6 @@ namespace ApiCallerStubs {
         return 1;
     }
 
-    // @confidence: low
-    // @source: thirdparty:_AIL_set_sequence_loop_count@8
     // __thiscall(loop): update the cached loop flag, re-arming the driver count.
     RVA(0x00139030, 0x4c)
     i32 AilSeq::SetLoop(i32 loop) {
@@ -3381,15 +3098,10 @@ namespace ApiCallerStubs {
     // The "WndHolder_13d4c0" placeholder class is CGameWnd: m_4 (HWND) / m_c
     // (destroyed flag) are the CGameWnd ctor-zeroed fields.)
 
-    // 0x13f460 (LutBlit::ShadeRect - 16bpp LUT shade/fade) reconstructed in
-    // src/Gruntz/LutShadeRect.cpp.
-
     // The app HINSTANCE used as the resource module (DAT_00683ee0).
     DATA(0x00683ee0)
     extern HINSTANCE g_resModule;
 
-    // @confidence: low
-    // @source: winapi:FindResourceA;LoadResource;LockResource
     // The header of the locked RT_BITMAP resource (its +0xe must be 8).
     struct ResHdr_144270 {
         i32 m_0; // +0x00 (payload size; data follows at +m_0+0x400)
@@ -3444,8 +3156,6 @@ namespace ApiCallerStubs {
         return 1;
     }
 
-    // @confidence: low
-    // @source: winapi:FindResourceA;LoadResource;LockResource
     struct PalLoad_1479e0 {
         i32 Apply(i32 a, PALETTEENTRY* pal, i32 c); // thiscall, RVA 0x147390
         i32 Load(i32 a, char* name, i32 c);
@@ -3477,8 +3187,6 @@ namespace ApiCallerStubs {
         return Apply(a, pal, c);
     }
 
-    // @confidence: low
-    // @source: winapi:timeGetTime
     // The surface this palette describes: vtable slot 4 (+0x10) fills a 256-entry
     // system-palette snapshot. The DIRPAL.CPP source-path string for the logger.
     struct PalSurface_147f30;
@@ -3548,8 +3256,6 @@ namespace ApiCallerStubs {
         Finalize();
     }
 
-    // @confidence: low
-    // @source: winapi:timeGetTime
     // __thiscall(a,b,a3,a4): same as Setup6 but stores a3 at +0x14 and uses the
     // 0x34b log line; returns void.
     RVA(0x00147ff0, 0xa9)
@@ -3577,15 +3283,6 @@ namespace ApiCallerStubs {
         Finalize();
     }
 
-    // 0x1485b0 (DirPal::CaptureSystemPalette, C:\Proj\DDrawMgr\DIRPAL.CPP)
-    // reconstructed in src/Gruntz/DirPal.cpp.
-
-    // 0x153ff0 (CImage::BlitShadeFlipHV) + 0x154750 (CImage::BlitShadeFlipH)
-    // reconstructed in src/Image/CImageSpriteBlit.cpp (the shaded flip variants of
-    // the sprite blit/clip family).
-
-    // @confidence: low
-    // @source: winapi:timeGetTime
     // A second MS-CRT-style LCG, seeded lazily from timeGetTime.
     DATA(0x006c278c)
     extern char g_rng2Seeded; // bit0 set once seeded
@@ -3605,7 +3302,6 @@ namespace ApiCallerStubs {
         return (g_rng2State >> 0x10) & 0x7fff;
     }
 
-    // @confidence: low
     // __thiscall(RECT*): cache the bounds rect + derived size/center, then recompute.
     struct GeoHost_161e80 {
         char m_pad0[0x50];
@@ -3618,7 +3314,6 @@ namespace ApiCallerStubs {
         void Build(RECT* pRect);
         void Recompute(); // RVA 0x161c90
     };
-    // @source: winapi:CopyRect
     RVA(0x00161e80, 0x79)
     void GeoHost_161e80::Build(RECT* pRect) {
         if (pRect->left != (LONG)0x80000000) {
@@ -3635,8 +3330,6 @@ namespace ApiCallerStubs {
         }
     }
 
-    // @confidence: low
-    // @source: winapi:DrawTextA;SetBkMode;SetTextColor
     // A polymorphic DC source: GetDC is vtable slot 0x44 (#17), Done is slot 0x68 (#26).
     struct DcSink_164380 {
         virtual void v0();
@@ -3696,8 +3389,6 @@ namespace ApiCallerStubs {
         w->m_8->Done(hdc);
     }
 
-    // @confidence: low
-    // @source: winapi:DrawTextA;SetBkMode;SetTextColor
     struct DrawHost2_164420 {
         char m_pad0[0x2c];
         CounterWnd_164380* m_2c; // +0x2c
@@ -3721,51 +3412,30 @@ namespace ApiCallerStubs {
         w->m_8->Done(hdc);
     }
 
-    // 0x1644a0 (CDDrawSurfacePair::directx_wrapper_caller_1644a0_...) reconstructed
-    // in src/Gruntz/CDDrawSurfacePair.cpp.
-
-    // 0x168080 (compound-widget builder) reconstructed in
-    // src/Gruntz/ApiHiCallers.cpp (Builder_168080::Init).
-
-    // @confidence: low
-    // @source: winapi:InitializeCriticalSection
     // __cdecl thunk over InitializeCriticalSection.
     RVA(0x0016c9c0, 0xc)
     void winapi_16c9c0_InitializeCriticalSection(CRITICAL_SECTION* cs) {
         InitializeCriticalSection(cs);
     }
 
-    // @confidence: low
-    // @source: winapi:DeleteCriticalSection
     // __cdecl(cs): thin wrapper over DeleteCriticalSection.
     RVA(0x0016c9d0, 0xc)
     void winapi_16c9d0_DeleteCriticalSection(LPCRITICAL_SECTION cs) {
         DeleteCriticalSection(cs);
     }
 
-    // @confidence: low
-    // @source: winapi:EnterCriticalSection
     // __cdecl thunk over EnterCriticalSection.
     RVA(0x0016c9e0, 0xc)
     void winapi_16c9e0_EnterCriticalSection(CRITICAL_SECTION* cs) {
         EnterCriticalSection(cs);
     }
 
-    // @confidence: low
-    // @source: winapi:LeaveCriticalSection
     // __cdecl thunk over LeaveCriticalSection.
     RVA(0x0016c9f0, 0xc)
     void winapi_16c9f0_LeaveCriticalSection(CRITICAL_SECTION* cs) {
         LeaveCriticalSection(cs);
     }
 
-    // The five CImagePool surface-node factories (0x174fe0/0x1750e0/0x1751f0/
-    // 0x1752f0/0x1753f0) are reconstructed in src/Image/ImagePool.cpp.
-
-    // 0x1757c0 (CreateDIBSection) removed: already matched as CImage::DecodeBmpHeader in src/Image/Image.cpp.
-
-    // @confidence: low
-    // @source: winapi:DeleteObject
     extern "C" void RezFree_call(void* p); // RVA 0x1b9b82 (cdecl)
     struct GdiOwner_175c90 {
         char m_pad0[0x428];
@@ -3791,8 +3461,6 @@ namespace ApiCallerStubs {
         m_458 = 0;
     }
 
-    // @confidence: low
-    // @source: winapi:CreatePalette
     i32 winapi_1770a0_CreateICA_DeleteDC_GetDeviceCaps(); // RVA 0x1770a0
     // __thiscall(flags, src): build a 256-entry LOGPALETTE from src and realize it.
     struct PalBuilder_176df0 {
@@ -3825,8 +3493,6 @@ namespace ApiCallerStubs {
         return m_0 != 0;
     }
 
-    // @confidence: low
-    // @source: winapi:DeleteObject
     // __thiscall: delete the owned GDI object, then clear a far flag.
     struct DeleteObjHost_177070 {
         HGDIOBJ m_obj; // +0x00
@@ -3843,8 +3509,6 @@ namespace ApiCallerStubs {
         m_408 = 0;
     }
 
-    // @confidence: low
-    // @source: winapi:CreateICA;DeleteDC;GetDeviceCaps
     // __cdecl(): does the display device support a palette? (RC_PALETTE bit)
     RVA(0x001770a0, 0x3a)
     i32 winapi_1770a0_CreateICA_DeleteDC_GetDeviceCaps() {
@@ -3857,8 +3521,6 @@ namespace ApiCallerStubs {
         return 0;
     }
 
-    // @confidence: low
-    // @source: winapi:CreateDCA;DeleteDC;GetSystemPaletteEntries
     void winapi_177160_CreatePalette_DeleteObject_GetDC_RealizePalette_ReleaseD(); // RVA 0x177160
     // __thiscall(): snapshot the reserved system-palette entries, marking the
     // interior animatable range PC_RESERVED (peFlags=1).
@@ -3882,8 +3544,6 @@ namespace ApiCallerStubs {
         DeleteDC(dc);
     }
 
-    // @confidence: low
-    // @source: winapi:CreatePalette;DeleteObject;GetDC;RealizePalette;ReleaseDC
     // __cdecl: realize an all-black 256-entry palette on the screen DC to reset it.
     RVA(0x00177160, 0x81)
     void winapi_177160_CreatePalette_DeleteObject_GetDC_RealizePalette_ReleaseD() {
@@ -3907,8 +3567,6 @@ namespace ApiCallerStubs {
         ReleaseDC(0, hdc);
     }
 
-    // @confidence: low
-    // @source: winapi:FindResourceA;LoadResource;LockResource
     // The resource-module handle for palette lookups (DAT_006bf6e0).
     DATA(0x006bf6e0)
     extern HINSTANCE g_palModule_6bf6e0;
@@ -3946,14 +3604,6 @@ namespace ApiCallerStubs {
         return 0;
     }
 
-    // 0x17c2a0 (Smacker fullscreen video-window creator) reconstructed in
-    // src/Gruntz/SmackerVideoWindow.cpp (CSmackWin::CreateVideoWindow).
-
-    // 0x17c3f0 (page/cursor command handler) reconstructed in
-    // src/Gruntz/ApiHiCallers.cpp (Handler_17c3f0::Init).
-
-    // @confidence: low
-    // @source: winapi:ShowCursor
     // A polymorphic sub: slot 24 (+0x60) finalizes, slot 1 (+0x04) deletes it.
     struct CursSink_17c510 {
         virtual void v0();
@@ -4014,8 +3664,6 @@ namespace ApiCallerStubs {
         ShowCursor(1);
     }
 
-    // @confidence: low
-    // @source: thirdparty:_SmackOpen@12;_SmackSoundUseDirectSound@4
     // Smacker imports (IAT): route audio through DirectSound, then open the stream.
     extern "C" __declspec(dllimport) void __stdcall SmackSoundUseDirectSound(void* ds);
     extern "C" __declspec(dllimport) i32 __stdcall SmackOpen(i32 src, u32 flags, i32 buf);
@@ -4087,8 +3735,6 @@ namespace ApiCallerStubs {
         return r;
     }
 
-    // @confidence: low
-    // @source: thirdparty:_SmackOpen@12;_SmackSoundUseDirectSound@4
     // __thiscall(src,a2,useDS,a4,a5): same as OpenLo but with the 0xff000 flag set.
     RVA(0x0017c630, 0xc0)
     i32 SmkPlayer_17c570::OpenHi(i32 src, i32 a2, i32 useDS, i32 a4, i32 a5) {
@@ -4127,7 +3773,6 @@ namespace ApiCallerStubs {
         return r;
     }
 
-    // @source: thirdparty:_SmackGoto@8;_SmackWait@4
     // Smacker playback advance: the per-frame "step / loop" driver.
     extern "C" __declspec(dllimport) i32 __stdcall SmackWait(i32 smk);
     extern "C" __declspec(dllimport) void __stdcall SmackSoundOnOff(i32 smk, i32 on);
@@ -4146,7 +3791,6 @@ namespace ApiCallerStubs {
         i32 Advance(i32 cmd, i32 loops);
     };
 
-    // @source: thirdparty,winapi:_SmackWait@4 | DispatchMessageA;PeekMessageA;TranslateMessage
     // __thiscall(flags, count): pump the Win32 queue while a Smacker movie plays; abort
     // with 1/0x100 on a key/mouse event the abort flags select, else render the next
     // frame and re-loop until `count` plays elapse (count==-1 loops forever).
@@ -4227,7 +3871,6 @@ namespace ApiCallerStubs {
         return result;
     }
 
-    // @confidence: low
     // Smacker import (IAT) + the Rez allocator's free (RVA 0x1b9b82).
     extern "C" __declspec(dllimport) u32 __stdcall SmackClose(i32 smk);
     extern "C" void RezFree_call(void* p); // RVA 0x1b9b82 (cdecl)
@@ -4246,7 +3889,6 @@ namespace ApiCallerStubs {
         SmackSub_17c9b0 m_540; // +0x540 sub-player
         i32 Close();
     };
-    // @source: thirdparty:_SmackClose@4
     // __thiscall: shut the sub-player, close the Smacker stream, free buffers.
     RVA(0x0017c9b0, 0x5b)
     i32 SmackHost_17c9b0::Close() {
@@ -4267,7 +3909,6 @@ namespace ApiCallerStubs {
         return 1;
     }
 
-    // @source: thirdparty:_SmackDoFrame@4;_SmackNextFrame@4;_SmackToBuffer@28
     extern "C" __declspec(dllimport) void __stdcall
     SmackToBuffer(void* smk, i32 left, i32 top, i32 pitch, i32 height, void* buf, i32 flags);
     extern "C" __declspec(dllimport) void __stdcall SmackDoFrame(void* smk);
@@ -4358,8 +3999,6 @@ namespace ApiCallerStubs {
         return 1;
     }
 
-    // @confidence: low
-    // @source: winapi:GetDC;GetSystemPaletteEntries;ReleaseDC
     struct PalCache_17cd90 {
         char m_pad0[0x108];
         PALETTEENTRY m_108[0x100]; // +0x108
@@ -4380,14 +4019,6 @@ namespace ApiCallerStubs {
         ReleaseDC(hWnd, hdc);
     }
 
-    // 0x17e620 (CFader-subtype timed-fade driver) reconstructed in
-    // src/Gruntz/CFaderRun.cpp (FaderRun::RunFade).
-
-    // 0x17fe00 (fader/noise-effect init) reconstructed in
-    // src/Gruntz/ApiHiCallers.cpp (Fx_17fe00::Init).
-
-    // @confidence: low
-    // @source: winapi:CopyRect
     // The source object whose m_4->m_10->m_10 carries the default tile extent.
     struct TileExtent_182ab0 {
         char m_pad0[0x10];
@@ -4495,8 +4126,6 @@ namespace ApiCallerStubs {
         return 0;
     }
 
-    // @confidence: low
-    // @source: winapi:FreeLibrary
     // __thiscall: free the owned module handle if present.
     struct LibHost_1bf577 {
         HMODULE m_0; // +0x00
@@ -4509,8 +4138,6 @@ namespace ApiCallerStubs {
         }
     }
 
-    // @confidence: low
-    // @source: winapi:GlobalFree
     // __thiscall(): free the owned global handle at +0x00 if present.
     struct GlobalOwner_1c09de {
         HGLOBAL m_0; // +0x00
@@ -4523,47 +4150,6 @@ namespace ApiCallerStubs {
         }
     }
 
-    // LoadGruntAbilityTuning (0x57100) re-homed as CGrunt::LoadGruntAbilityTuning
-    // in src/Gruntz/GruntAssetLoaders.cpp.
-
-    // LoadGruntCombatAnimations (0x597a0) re-homed as
-    // CGruntCombat::LoadGruntCombatAnimations in src/Gruntz/GruntCombatAnim.cpp.
-
-    // LoadGruntDeathAnimations (0x60150) re-homed as CGrunt::LoadGruntDeathAnimations
-    // in src/Gruntz/GruntAssetLoaders.cpp.
-
-    // LoadVehicleGruntAnimations (0x63db0) re-homed as
-    // CGrunt::LoadVehicleGruntAnimations in src/Gruntz/Grunt.cpp (trace owner CGrunt).
-
-    // BuildGruntExitAnimation (0x641b0) re-homed as CGrunt::BuildGruntExitAnimation
-    // in src/Gruntz/Grunt.cpp (the trace owner; sibling of BuildEntranceAnimation).
-
-    // LoadBombGruntRunConfig (0x65630) re-homed as CGrunt::RunMoveConfig in
-    // src/Gruntz/Grunt.cpp (trace owner CGrunt; the move-config / entrance dispatch).
-
-    // LoadPickupSprites (0x65e80) re-homed as CGrunt::LoadPickupSprites in
-    // src/Gruntz/GruntPickupLoad.cpp.
-
-    // LoadWingzGruntSprites (0x68880) re-homed as CGrunt::LoadWingzGruntSprites
-    // in src/Gruntz/GruntAssetLoaders.cpp.
-
-    // LoadTeleporterGooConfig (0x6eb80) re-homed as CGooWellMgr::LoadTeleporterGooConfig
-    // in src/Gruntz/GooWellMgr.cpp (owner = g_gameReg->m_68's class, the goo-well /
-    // respawn / win-condition manager).
-
-    // LoadGruntCombatTuning (0x7b930) re-homed as CGruntTileMgr::CombatCue in
-    // src/Gruntz/CGruntTileMgr.cpp (owner = CGrunt::m_260's class).
-
-    // LoadMonologoSprite (0x090d10) re-homed as CGruntzMgr::LoadMonologoSprite in
-    // src/Gruntz/GruntzMgr.cpp (the trace owner; this in ecx == CGruntzMgr).
-
-    // LoadMenuSelectSprite (0x0ba620) re-homed as CNetMgr::LoadMenuSelectSprite in src/Stub/CNetMgr.cpp (proximity HIGH).
-
-    // LoadImageBanks (0x0cffe0) re-homed as CPlay::LoadImageBanks in
-    // src/Gruntz/CPlay.cpp.
-
-    // LoadSBITextEdges (0x0d1710) re-homed as CPlay::LoadSBITextEdges in src/Stub/CPlay.cpp (proximity HIGH).
-
     // The three named warlord sprite-bank tags (DIR32 string constants).
     DATA(0x0060d2c0)
     extern char s_WARLORDZ_NAPOLEAN[];
@@ -4572,8 +4158,6 @@ namespace ApiCallerStubs {
     DATA(0x0060d2ac)
     extern char s_WARLORDZ_PATTON[];
 
-    // @confidence: med
-    // @source: string-xref
     // CPlay::LoadWarlordSprites: ensure every sprite set a placed warlord needs is
     // loaded. Two modes: the full campaign preload (registry m_134 != 1) loads sets
     // 2..0x20 + 0x39/0x3a + the three named warlord banks; the in-level mode walks the
@@ -4582,9 +4166,9 @@ namespace ApiCallerStubs {
     // so its progress tick (Begin1019) fires once.
     struct WLStr_d65d0 {
         char* m_data;
-        WLStr_d65d0(const char*);        // RVA 0x1b9d4c (CString::CString(LPCSTR))
+        WLStr_d65d0(const char*);            // RVA 0x1b9d4c (CString::CString(LPCSTR))
         WLStr_d65d0& operator=(const char*); // RVA 0x1b9e74 (CString::operator=)
-        ~WLStr_d65d0();                  // RVA 0x1b9cde (CString::~CString)
+        ~WLStr_d65d0();                      // RVA 0x1b9cde (CString::~CString)
     };
     struct WLVtbl_d65d0 {
         char m_pad0[0x10];
@@ -4628,11 +4212,11 @@ namespace ApiCallerStubs {
         char m_pad0[4];
         WLObj4_d65d0* m_4; // +0x04
         char m_pad8[0xc - 8];
-        WLContainer_d65d0* m_c; // +0x0c
-        void Begin1019(i32);                                // RVA 0x1019 (progress tick)
-        i32 LoadSet12da(i32 id, i32 a, i32 b, i32 ctx);     // RVA 0x12da (load numbered set)
+        WLContainer_d65d0* m_c;                         // +0x0c
+        void Begin1019(i32);                            // RVA 0x1019 (progress tick)
+        i32 LoadSet12da(i32 id, i32 a, i32 b, i32 ctx); // RVA 0x12da (load numbered set)
         i32 LoadNamed2bc1(WLStr_d65d0* name, i32 a, i32 b, i32 ctx); // RVA 0x2bc1 (load named)
-        i32 LoadWarlordSprites(i32 ctx, i32* loaded);       // RVA 0x0d65d0
+        i32 LoadWarlordSprites(i32 ctx, i32* loaded);                // RVA 0x0d65d0
     };
     // @early-stop  (0.x% -> 91.06%)
     // Residual is codegen-shape, not logic (verified llvm-objdump -dr base vs target):
@@ -4725,78 +4309,78 @@ namespace ApiCallerStubs {
                         }
                     }
                     switch (obj->m_118) {
-                    case 0x7:
-                        if (!this->LoadSet12da(1, 1, 0, ctx)) {
-                            return 0;
-                        }
-                        if (loaded[1] == 0) {
-                            this->Begin1019(0);
-                            loaded[1] = 1;
-                        }
-                        break;
-                    case 0x8:
-                        if (!this->LoadSet12da(3, 1, 0, ctx)) {
-                            return 0;
-                        }
-                        if (loaded[3] == 0) {
-                            this->Begin1019(0);
-                            loaded[3] = 1;
-                        }
-                        break;
-                    case 0x9:
-                        if (!this->LoadSet12da(5, 1, 0, ctx)) {
-                            return 0;
-                        }
-                        if (loaded[5] == 0) {
-                            this->Begin1019(0);
-                            loaded[5] = 1;
-                        }
-                        break;
-                    case 0xa:
-                        if (!this->LoadSet12da(7, 1, 0, ctx)) {
-                            return 0;
-                        }
-                        if (loaded[7] == 0) {
-                            this->Begin1019(0);
-                            loaded[7] = 1;
-                        }
-                        break;
-                    case 0xb:
-                        if (!this->LoadSet12da(0xd, 1, 0, ctx)) {
-                            return 0;
-                        }
-                        if (loaded[0xd] == 0) {
-                            this->Begin1019(0);
-                            loaded[0xd] = 1;
-                        }
-                        break;
-                    case 0xc:
-                        if (!this->LoadSet12da(0x11, 1, 0, ctx)) {
-                            return 0;
-                        }
-                        if (loaded[0x11] == 0) {
-                            this->Begin1019(0);
-                            loaded[0x11] = 1;
-                        }
-                        break;
-                    case 0xf:
-                        if (!this->LoadSet12da(0x13, 1, 0, ctx)) {
-                            return 0;
-                        }
-                        if (loaded[0x13] == 0) {
-                            this->Begin1019(0);
-                            loaded[0x13] = 1;
-                        }
-                        break;
-                    case 0x10:
-                        if (!this->LoadSet12da(0x1e, 1, 0, ctx)) {
-                            return 0;
-                        }
-                        if (loaded[0x1e] == 0) {
-                            this->Begin1019(0);
-                            loaded[0x1e] = 1;
-                        }
-                        break;
+                        case 0x7:
+                            if (!this->LoadSet12da(1, 1, 0, ctx)) {
+                                return 0;
+                            }
+                            if (loaded[1] == 0) {
+                                this->Begin1019(0);
+                                loaded[1] = 1;
+                            }
+                            break;
+                        case 0x8:
+                            if (!this->LoadSet12da(3, 1, 0, ctx)) {
+                                return 0;
+                            }
+                            if (loaded[3] == 0) {
+                                this->Begin1019(0);
+                                loaded[3] = 1;
+                            }
+                            break;
+                        case 0x9:
+                            if (!this->LoadSet12da(5, 1, 0, ctx)) {
+                                return 0;
+                            }
+                            if (loaded[5] == 0) {
+                                this->Begin1019(0);
+                                loaded[5] = 1;
+                            }
+                            break;
+                        case 0xa:
+                            if (!this->LoadSet12da(7, 1, 0, ctx)) {
+                                return 0;
+                            }
+                            if (loaded[7] == 0) {
+                                this->Begin1019(0);
+                                loaded[7] = 1;
+                            }
+                            break;
+                        case 0xb:
+                            if (!this->LoadSet12da(0xd, 1, 0, ctx)) {
+                                return 0;
+                            }
+                            if (loaded[0xd] == 0) {
+                                this->Begin1019(0);
+                                loaded[0xd] = 1;
+                            }
+                            break;
+                        case 0xc:
+                            if (!this->LoadSet12da(0x11, 1, 0, ctx)) {
+                                return 0;
+                            }
+                            if (loaded[0x11] == 0) {
+                                this->Begin1019(0);
+                                loaded[0x11] = 1;
+                            }
+                            break;
+                        case 0xf:
+                            if (!this->LoadSet12da(0x13, 1, 0, ctx)) {
+                                return 0;
+                            }
+                            if (loaded[0x13] == 0) {
+                                this->Begin1019(0);
+                                loaded[0x13] = 1;
+                            }
+                            break;
+                        case 0x10:
+                            if (!this->LoadSet12da(0x1e, 1, 0, ctx)) {
+                                return 0;
+                            }
+                            if (loaded[0x1e] == 0) {
+                                this->Begin1019(0);
+                                loaded[0x1e] = 1;
+                            }
+                            break;
                     }
                 } else if (marker == (void*)0x40288d) {
                     i32 cv = obj->m_124 == 0x32 ? obj->m_118 : obj->m_124;
@@ -4895,43 +4479,6 @@ namespace ApiCallerStubs {
         return 1;
     }
 
-    // LoadActionTileSprites (0x0db600), LoadLevelSounds (0x0db6c0) and
-    // LoadLevelImages (0x0db7e0) re-homed (byte-exact) as CPlay methods in
-    // src/Gruntz/CPlay.cpp, alongside their GAME-namespace siblings 0x0db8a0/
-    // 0x0db930/0x0db9b0. Their loader-view structs (CActionTileOwner / CSoundOwner
-    // / CActionResRegistry / CSoundResRegistry) remain defined in Backlog.cpp.
-
-    // BuildMusicCategoryTable (0x0dba30) re-homed (byte-exact) as
-    // CPlay::BuildMusicCategoryTable in src/Gruntz/CPlay.cpp.
-
-    // BuildWorldLevelPath (0x0dbc80) re-homed as CPlay::BuildWorldLevelPath in src/Stub/CPlay.cpp (proximity HIGH).
-
-    // SetEffectSpriteDurations (0x0dc060) re-homed (analyzed) as
-    // CPlay::SetEffectSpriteDurations in src/Gruntz/CPlay.cpp.
-
-    // BuildGruntNamespaceList (0x0dd050) re-homed as CPlay::BuildGruntNamespaceList in src/Stub/CPlay.cpp (proximity HIGH).
-
-    // BuildWarlordNameTable (0x0dd340) re-homed (analyzed) as
-    // CPlay::BuildWarlordNameTable in src/Gruntz/CPlay.cpp.
-
-    // BuildSpriteImageKeyTable (0x0dd540) and BuildAnizKeyTable (0x0ddaa0) re-homed
-    // (byte-exact) as CPlay methods in src/Gruntz/CPlay.cpp.
-
-    // BuildToolToyColorTable (0x0e2400) re-homed (byte-exact) as
-    // CSpriteRefTable::BuildToolToyColorTable in src/Gruntz/SpriteRefTable.cpp.
-
-    // LoadToolToyPalettes (0x0e2980) re-homed (byte-exact) as
-    // CSpriteRefTable::LoadToolToyPalettes in src/Gruntz/SpriteRefTable.cpp.
-
-    // LoadGruntzPalette (0x0e2d10) re-homed as CSpriteRefTable::LoadGruntzPalette in
-    // src/Gruntz/SpriteRefTable.cpp (the trace owner; m_4 == CSpriteRefTable::m_04).
     // Its CPalette* loader-view structs remain defined in Backlog.cpp.
-
-    // BuildResourceTabStatusBar (0xe8a70), BuildStatzTabStatusBar (0xe9600) and
-    // BuildMultiplayerTabStatusBar (0xea1f0) re-homed as CSbTab methods in
-    // src/Gruntz/StatusBarTabBuilders.cpp.
-
-    // LoadGruntSpawnConfig (0x11afb0) re-homed as a real CGruntSpawnConfig method
-    // in src/Gruntz/CGruntSpawnConfig.cpp.
 
 } // namespace ApiCallerStubs

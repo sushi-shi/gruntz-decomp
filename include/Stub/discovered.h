@@ -47,142 +47,176 @@ class CSpotLight {
 public:
     void CSpotLight_0b1ee0();
 };
+SIZE_UNKNOWN(ClassUnknown_1);
 class ClassUnknown_1 {
 public:
     void ClassUnknown_1_150040();
 };
+SIZE_UNKNOWN(ClassUnknown_11);
 class ClassUnknown_11 {
 public:
     void ClassUnknown_11_14dd90();
 };
+SIZE_UNKNOWN(ClassUnknown_13);
 class ClassUnknown_13 {
 public:
     void ClassUnknown_13_1154b0();
     void ClassUnknown_13_115520();
 };
+SIZE_UNKNOWN(ClassUnknown_14);
 class ClassUnknown_14 {
 public:
     void ClassUnknown_14_029ac0();
 };
+SIZE_UNKNOWN(ClassUnknown_15);
 class ClassUnknown_15 {
 public:
     ClassUnknown_15();
     void* m_0; // +0x00  vtable (manual stamp)
 };
+SIZE_UNKNOWN(ClassUnknown_16);
 class ClassUnknown_16 {
 public:
     void ClassUnknown_16_1d496b();
 };
+SIZE_UNKNOWN(ClassUnknown_17);
 class ClassUnknown_17 {
 public:
     void ClassUnknown_17_0ebd30();
 };
+SIZE_UNKNOWN(ClassUnknown_2);
 class ClassUnknown_2 {
 public:
     void ClassUnknown_2_14dcf0();
 };
+SIZE_UNKNOWN(ClassUnknown_21);
 class ClassUnknown_21 {
 public:
     void ClassUnknown_21_15b2b0();
 };
+SIZE_UNKNOWN(ClassUnknown_22);
 class ClassUnknown_22 {
 public:
     void ClassUnknown_22_15b270();
 };
+SIZE_UNKNOWN(ClassUnknown_23);
 class ClassUnknown_23 {
 public:
     void ClassUnknown_23_16e360();
 };
+SIZE_UNKNOWN(ClassUnknown_28);
 class ClassUnknown_28 {
 public:
     void ClassUnknown_28_0311b0();
 };
+SIZE_UNKNOWN(ClassUnknown_29);
 class ClassUnknown_29 {
 public:
     void ClassUnknown_29_029a30();
 };
+SIZE_UNKNOWN(ClassUnknown_30);
 class ClassUnknown_30 {
 public:
     void ClassUnknown_30_09a260();
 };
+SIZE_UNKNOWN(ClassUnknown_33);
 class ClassUnknown_33 {
 public:
     void ClassUnknown_33_11f6b9();
 };
+SIZE_UNKNOWN(ClassUnknown_34);
 class ClassUnknown_34 {
 public:
     void ClassUnknown_34_046850();
 };
+SIZE_UNKNOWN(ClassUnknown_35);
 class ClassUnknown_35 {
 public:
     void ClassUnknown_35_021c40();
 };
+SIZE_UNKNOWN(ClassUnknown_37);
 class ClassUnknown_37 {
 public:
     void ClassUnknown_37_0deb20();
 };
+SIZE_UNKNOWN(ClassUnknown_39);
 class ClassUnknown_39 {
 public:
     void ClassUnknown_39_148d10();
 };
+SIZE_UNKNOWN(ClassUnknown_4);
 class ClassUnknown_4 {
 public:
     void ClassUnknown_4_16f760();
 };
+SIZE_UNKNOWN(ClassUnknown_42);
 class ClassUnknown_42 {
 public:
     void ClassUnknown_42_0f1c70();
 };
+SIZE_UNKNOWN(ClassUnknown_43);
 class ClassUnknown_43 {
 public:
     void ClassUnknown_43_0f7d90();
 };
+SIZE_UNKNOWN(ClassUnknown_45);
 class ClassUnknown_45 {
 public:
     ClassUnknown_45();
     void* m_0; // +0x00  vtable (manual stamp)
     i32 m_4;   // +0x04
 };
+SIZE_UNKNOWN(ClassUnknown_46);
 class ClassUnknown_46 {
 public:
     void ClassUnknown_46_1591b0();
 };
+SIZE_UNKNOWN(ClassUnknown_48);
 class ClassUnknown_48 {
 public:
     void ClassUnknown_48_139cf0();
 };
+SIZE_UNKNOWN(ClassUnknown_49);
 class ClassUnknown_49 {
 public:
     void ClassUnknown_49_1397a0();
 };
+SIZE_UNKNOWN(ClassUnknown_50);
 class ClassUnknown_50 {
 public:
     void ClassUnknown_50_16dfc0();
 };
+SIZE_UNKNOWN(ClassUnknown_51);
 class ClassUnknown_51 {
 public:
     void ClassUnknown_51_11eaf5();
 };
+SIZE_UNKNOWN(ClassUnknown_52);
 class ClassUnknown_52 {
 public:
     void ClassUnknown_52_11eaa8();
 };
+SIZE_UNKNOWN(ClassUnknown_53);
 class ClassUnknown_53 {
 public:
     void ClassUnknown_53_11cf30();
 };
+SIZE_UNKNOWN(ClassUnknown_54);
 class ClassUnknown_54 {
 public:
     void ClassUnknown_54_11cee3();
 };
+SIZE_UNKNOWN(ClassUnknown_55);
 class ClassUnknown_55 {
 public:
     void ClassUnknown_55_016460();
 };
+SIZE_UNKNOWN(ClassUnknown_8);
 class ClassUnknown_8 {
 public:
     void ClassUnknown_8_16e480();
 };
+SIZE_UNKNOWN(ClassUnknown_9);
 class ClassUnknown_9 {
 public:
     void ClassUnknown_9_11c630();

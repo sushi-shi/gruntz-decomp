@@ -47,8 +47,6 @@ extern "C" {
     void RunErrorDialog_0bc250();
 
     // 0x2e6e - incremental-link island for CheckExePath -> Stub_118ce0 (0x118ce0).
-    // @confidence: med
-    // @source: reloc-correlation (1 caller)
     RVA(0x00002e6e, 0x5)
     SYMBOL(_CheckExePath)
     __declspec(naked) i32 CheckExePath() {
@@ -57,8 +55,6 @@ extern "C" {
         }
     }
     // 0x3936 - incremental-link island for Eng_RegionCueA -> Cmd_ApplyScrollParams (0x0ec1c0).
-    // @confidence: med
-    // @source: reloc-correlation (1 caller)
     RVA(0x00003936, 0x5)
     SYMBOL(_Eng_RegionCueA)
     __declspec(naked) i32 Eng_RegionCueA() {
@@ -67,8 +63,6 @@ extern "C" {
         }
     }
     // 0x3cab - incremental-link island for MultiDispatch -> CMulti::RunErrorDialog (0x0bc250).
-    // @confidence: high
-    // @source: reloc-correlation (4 callers)
     RVA(0x00003cab, 0x5)
     SYMBOL(_MultiDispatch @12)
     __declspec(naked) i32 __stdcall MultiDispatch(i32, i32, i32) {
@@ -76,21 +70,12 @@ extern "C" {
             jmp RunErrorDialog_0bc250
         }
     }
-    // 0x1b9b46 RezAlloc = MSVC5 CRT global `operator new`; reclassified as library
-    // (config/library_labels.csv ??2@YAPAXI@Z). Callers reach it as a reloc-masked
-    // extern; removed from the match universe (library, not a reconstruction target).
-
-    // 0x1b9b82 - RezFree (resource free wrapper) graduated to src/Rez/RezUtil.cpp:
-    // its retail TU is /O1 (push [mem] arg-forward + pop-ecx cleanup), so it cannot
-    // match inside this /O2 aggregate.
 
     // 0x184e00 - debug-gated assert/printf: when the debug mode (g_6bf8dc) is armed
     // and channel 0 is enabled in the debug-channel set (g_6bf850, viewed as a
     // CRangeSet), vsprintf the varargs into a 256-byte stack buffer and hand it to
     // the sink (0x184df0). Body byte-identical (the vsprintf / sink call relocs are
     // reloc-masked). va_list is spelled `(char*)(&fmt + 1)` to avoid <stdarg.h>.
-    // @confidence: med
-    // @source: reloc-correlation (1 caller)
     RVA(0x00184e00, 0x55)
     SYMBOL(_RezAssertFail)
     void RezAssertFail(char* fmt, ...) {
@@ -100,14 +85,8 @@ extern "C" {
             DebugSink_184df0(buf);
         }
     }
-    // 0x11fdf0 RezStricmp = MSVC5 CRT `_stricmp`/`_strcmpi`; reclassified as library
-    // (config/library_labels.csv __strcmpi). Callers reach it as a reloc-masked extern.
-    // 0x120680 RezStrrchr = MSVC5 CRT `strrchr`; reclassified as library
-    // (config/library_labels.csv _strrchr). Callers reach it as a reloc-masked extern.
 
     // 0x2f59 - incremental-link island for StartupGate -> StartUpPrompt (0x01f9b0).
-    // @confidence: med
-    // @source: reloc-correlation (1 caller)
     RVA(0x00002f59, 0x5)
     SYMBOL(_StartupGate)
     __declspec(naked) i32 StartupGate() {
@@ -115,14 +94,7 @@ extern "C" {
             jmp StartUpPrompt
         }
     }
-    // 0x120090 SubstringMatch = MSVC5 CRT `strstr`; reclassified as library
-    // (config/library_labels.csv _strstr). Callers reach it as a reloc-masked extern.
-    // 0x120900 VersionScan = MSVC5 CRT `sscanf`; reclassified as library
-    // (config/library_labels.csv _sscanf). Callers reach it as a reloc-masked extern.
 }
-
-// CButeMgr_ReportError (0x1706c0) graduated to src/Bute/ButeMgr.cpp as the real
-// variadic member CButeMgr::ReportError.
 
 // 0x1437e0 - install the DDraw "restore lost surfaces" handler: store the supplied
 // function pointer to g_restoreHandler (0x683edc; read back by
