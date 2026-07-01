@@ -53,11 +53,11 @@ public:
 };
 
 // One crit-bit trie node (20 bytes).
-struct CButeNode {
-    CButeNode* m_child[2]; // +0x00 / +0x04
-    i32 m_bit;             // +0x08  crit-bit index
-    char* m_key;           // +0x0c  owned key copy
-    void* m_value;         // +0x10  stored value
+struct CButeTreeNode {
+    CButeTreeNode* m_child[2]; // +0x00 / +0x04
+    i32 m_bit;                 // +0x08  crit-bit index
+    char* m_key;               // +0x0c  owned key copy
+    void* m_value;             // +0x10  stored value
 };
 
 class CButeTree {
@@ -65,15 +65,15 @@ public:
     void* Find(const char* key);
     void* Insert(const char* key, void* value);
 
-    void* m_vptr;               // +0x00
-    CVariantSlot* m_errorSink;  // +0x04
-    char m_pad8[0x14 - 0x8];    // +0x08
-    i32 m_nodeCount;            // +0x14
-    CButeNode* m_root;          // +0x18
-    CButeNode* m_descentCursor; // +0x1c
-    CButeNode* m_candidateLeaf; // +0x20
-    i32 m_keyBitLength;         // +0x24  strlen*8 + 7
-    i32 m_lookupPending;        // +0x28
+    void* m_vptr;                   // +0x00
+    CVariantSlot* m_errorSink;      // +0x04
+    char m_pad8[0x14 - 0x8];        // +0x08
+    i32 m_nodeCount;                // +0x14
+    CButeTreeNode* m_root;          // +0x18
+    CButeTreeNode* m_descentCursor; // +0x1c
+    CButeTreeNode* m_candidateLeaf; // +0x20
+    i32 m_keyBitLength;             // +0x24  strlen*8 + 7
+    i32 m_lookupPending;            // +0x28
 };
 
 // ===========================================================================
@@ -110,7 +110,7 @@ void* CButeTree::Find(const char* key) {
         m_errorSink->Set(this, (i32)name, 0x16);
         return 0;
     }
-    CButeNode* root = m_root;
+    CButeTreeNode* root = m_root;
     m_descentCursor = root;
     m_candidateLeaf = 0;
     m_lookupPending = 1;
@@ -121,11 +121,11 @@ void* CButeTree::Find(const char* key) {
     }
     i32 b = root->m_bit;
     while (b <= bitmax) {
-        CButeNode** slot = m_descentCursor->m_child;
+        CButeTreeNode** slot = m_descentCursor->m_child;
         if (key[b >> 3] & (1 << (b & 7))) {
             ++slot;
         }
-        CButeNode* child = *slot;
+        CButeTreeNode* child = *slot;
         m_candidateLeaf = child;
         if (child == 0) {
             return 0;
@@ -188,7 +188,7 @@ void* CButeTree::Insert(const char* key, void* value) {
         critbit = newbit - 1;
     }
 
-    CButeNode* node = (CButeNode*)RezAlloc(0x14);
+    CButeTreeNode* node = (CButeTreeNode*)RezAlloc(0x14);
     if (node != 0) {
         node->m_value = value;
         node->m_bit = critbit;
@@ -206,22 +206,22 @@ void* CButeTree::Insert(const char* key, void* value) {
             }
 
             // Find where critbit fits and re-point the parent at the new node.
-            CButeNode* cursor = m_descentCursor;
+            CButeTreeNode* cursor = m_descentCursor;
             i32 d2 = dir;
             if (cursor == 0) {
                 m_root = node;
             } else if (critbit < cursor->m_bit) {
                 // The Find cursor is below the divergence bit: walk from the root.
-                CButeNode* p = m_root;
+                CButeTreeNode* p = m_root;
                 m_descentCursor = 0;
                 m_candidateLeaf = p;
                 if (p->m_bit <= critbit) {
-                    CButeNode* c;
+                    CButeTreeNode* c;
                     do {
                         p = m_candidateLeaf;
                         m_descentCursor = p;
                         d2 = key[p->m_bit >> 3] & (1 << (p->m_bit & 7));
-                        CButeNode** s = p->m_child;
+                        CButeTreeNode** s = p->m_child;
                         if (d2) {
                             ++s;
                         }
@@ -229,18 +229,18 @@ void* CButeTree::Insert(const char* key, void* value) {
                         m_candidateLeaf = c;
                     } while (c->m_bit <= critbit);
                 }
-                CButeNode* cur2 = m_descentCursor;
+                CButeTreeNode* cur2 = m_descentCursor;
                 if (cur2 == 0) {
                     m_root = node;
                 } else {
-                    CButeNode** s2 = cur2->m_child;
+                    CButeTreeNode** s2 = cur2->m_child;
                     if (d2) {
                         ++s2;
                     }
                     *s2 = node;
                 }
             } else {
-                CButeNode** s1 = cursor->m_child;
+                CButeTreeNode** s1 = cursor->m_child;
                 if (key[cursor->m_bit >> 3] & (1 << (cursor->m_bit & 7))) {
                     ++s1;
                 }
@@ -264,7 +264,5 @@ void* CButeTree::Insert(const char* key, void* value) {
     return 0;
 }
 
-// --- class-metadata sweep (Bute module): SIZE at this .cpp EOF (SIZE_UNKNOWN).
-// CButeTree's owning TU (the crit-bit trie node with fields lives here; the header
-// and src/Stub/CButeTree.cpp carry data-less method-only views of the same name).
 SIZE_UNKNOWN(CButeTree);
+SIZE_UNKNOWN(CButeTreeNode);

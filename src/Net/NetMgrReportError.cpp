@@ -22,16 +22,16 @@
 // The function self-identifies its module via the strings it references (every
 // DPERR_* name + "Net Manager"); names of locals/globals are placeholders, the
 // switch case VALUES and string contents are load-bearing.
-#include <Net/CNetMgrError.h>
+#include <Net/NetMgr.h> // the single shared CNetMgr (ReportError is a static member)
 #include <rva.h>
 #include <stdio.h>  // engine sprintf (reloc-masked)
 #include <string.h> // inline strcpy (rep movs / repne scasb)
 
-// MessageBeep / MessageBoxA + BOOL/HWND/LPCSTR/UINT come from the real
-// <windows.h> (via Win32.h; pure-Win32 TU, no MFC). The reporter's uType is
+// MessageBeep / MessageBoxA + BOOL/HWND/LPCSTR/UINT come from the real <windows.h>
+// (pulled in by <Net/NetMgr.h> -> <Mfc.h> -> <afx.h>; Win32.h would double-pull
+// windows.h and hard-conflict with the MFC header). The reporter's uType is
 // MB_ICONEXCLAMATION (0x30); the old hand-rolled macro mislabeled that value as
 // the "hand" icon, whose real windows.h value is 0x10.
-#include <Win32.h>
 
 // ---------------------------------------------------------------------------
 // Module-global state (all in .data). Unlike the DDraw/DInput/DSound siblings

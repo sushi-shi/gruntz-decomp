@@ -128,5 +128,4 @@ CButeNodeBase::CButeNodeBase(void* desc, i32 n)
     m_vtbl = &g_buteNodeVtbl;
 }
 
-// --- class-metadata sweep (Bute module): SIZE at this .cpp EOF (SIZE_UNKNOWN).
 SIZE_UNKNOWN(CButeNodeEntry);

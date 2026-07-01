@@ -68,7 +68,7 @@ i32 MakeSymSeed(); // 0x13ba70 (Boundary stub; cdecl, no args of its own)
 // Entry is a 16-byte slot; a live slot's payload pointer is [slot+0]-4 (the
 // engine offsets entries by 4), and the resolved record sits at [entry+0x14].
 // ---------------------------------------------------------------------------
-struct CHashEntry {
+struct CHashTableEntry {
     char* m_key;            // +0x00  (the engine stores key+4; First/Next adjust by -4)
     char m_pad04[0x14 - 4]; // +0x04
     void* m_payload;        // +0x14  the resolved (key,node) record
@@ -93,11 +93,11 @@ public:
     void Init(i32 n); // 0x184960
 
     // First live entry (0x184ae0), or null.
-    CHashEntry* First();
+    CHashTableEntry* First();
     // Entry after `e` in iteration order (0x1848b0).
-    CHashEntry* Next(CHashEntry* e);
+    CHashTableEntry* Next(CHashTableEntry* e);
     // Remove `e` and return the next entry (0x184ab0).
-    CHashEntry* Remove(CHashEntry* e);
+    CHashTableEntry* Remove(CHashTableEntry* e);
     // Drop every entry (0x184a40) - the table's destructor.
     void RemoveAll();
     // Find the (key,node) record for `name`, or null (0x13c360).
@@ -119,30 +119,12 @@ public:
     void* m_buckets; // +0x04
 };
 
-// ---------------------------------------------------------------------------
-// CSymParser - the owning Remus parser (this+0x18). Only the two fields the
-// resolvers read are modeled; the rest is unmapped here.
-// ---------------------------------------------------------------------------
-struct CSymParser {
-    // Map an upcased extension/name to its int key (0x13b910); reloc-masked __thiscall.
-    void* ResolveName(const char* s); // 0x13b910
-    // Pop the first parse-slot record out of the parser's hash pool (0x13c0c0);
-    // reloc-masked __thiscall. Method4b0 builds a leaf record into a fresh slot.
-    void* PopParseSlot(); // 0x13c0c0
-
-    char m_pad00[0x4];
-    const char* m_delims; // +0x04  delimiter set the tokenizer splits on
-    char m_pad08[0x58 - 0x8];
-    i32 m_longestScopeNameLen; // +0x58  longest scope-name length seen (tracked when adding scopes)
-    i32 m_longestLeafNameLen;  // +0x5c  longest leaf-name length seen (tracked by Method4b0)
-    char m_pad60[0x68 - 0x60];
-    i32 m_68;                // +0x68  flag forwarded to the +0x38 walk (passed as m_68 == 0)
-    i32 m_6c;                // +0x6c  selects the leaf-record ctor variant (Init4 vs Init3)
-    i32 m_70;                // +0x70  leaf-record ctor arg
-    i32 m_74;                // +0x74  leaf-record ctor arg (Init4 only)
-    i32 m_subTabBucketCount; // +0x78  child-scope m_subTabs bucket count
-    i32 m_symbolBucketCount; // +0x7c  child-scope m_symbols bucket count
-};
+// CSymParser - the owning Remus parser (CSymTab::m_owner @+0x18 points back to it).
+// The single full definition lives in <Bute/SymParser.h>; here it is only a
+// forward-declaration (m_owner is a pointer, so the layout is not needed in this
+// header). The methods that deref m_owner live in SymTab.cpp, which includes
+// SymParser.h for the full layout.
+class CSymParser;
 
 // ---------------------------------------------------------------------------
 // CSymRec - the leaf symbol record stored in m_symbols (0x139cf0/0x1397a0). Its

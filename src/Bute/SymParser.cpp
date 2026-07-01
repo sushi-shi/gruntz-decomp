@@ -85,9 +85,9 @@ CSymParser::~CSymParser() {
         RezFree(m_cachedSourceBuffer);
         m_cachedSourceBuffer = 0;
     }
-    if (m_ownedBuffer) {
-        RezFree(m_ownedBuffer);
-        m_ownedBuffer = 0;
+    if (m_delims) {
+        RezFree(m_delims);
+        m_delims = 0;
     }
     CSlotNode* node = (CSlotNode*)m_nodes.m_head;
     m_parseArmed = 0;
@@ -102,8 +102,8 @@ CSymParser::~CSymParser() {
     m_4c = 0;
     m_50 = 1;
     m_54 = 0;
-    m_58 = 0;
-    m_5c = 0;
+    m_longestScopeNameLen = 0;
+    m_longestLeafNameLen = 0;
     m_60 = 0;
     m_08 = 1;
     m_cachedSourceBuffer = 0;
@@ -228,8 +228,8 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
     m_3c = *(i32*)(hdr + 0x8f);
     m_48 = *(i32*)(hdr + 0x93);
     m_54 = *(i32*)(hdr + 0x97);
-    m_58 = *(i32*)(hdr + 0x9b);
-    m_5c = *(i32*)(hdr + 0x9f);
+    m_longestScopeNameLen = *(i32*)(hdr + 0x9b);
+    m_longestLeafNameLen = *(i32*)(hdr + 0x9f);
     m_60 = *(i32*)(hdr + 0xa3);
     m_08 = *(i32*)(hdr + 0xa7) & 0xff;
     if (hdr[0] != 0x0d || hdr[0x3f] != 0x0a || hdr[0x7e] != 0x1a || b != 1) {

@@ -89,7 +89,7 @@ CNetCmdSlot* CNetSession::CreateSlot(i32 index, i32 owner) {
         return 0;
     }
     ((CNetCmdSlotReset*)slot)->Reset0bb0();
-    return slot->Init(m_4, &m_0[index].m_150, owner) ? slot : 0;
+    return slot->Init(m_4, &m_0[index].m_sel.m_slotHead, owner) ? slot : 0;
 }
 
 // ---------------------------------------------------------------------------

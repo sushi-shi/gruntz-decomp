@@ -5,7 +5,7 @@
 // owning parser at +0x18. See include/Bute/SymTab.h for the full layout.
 #include <rva.h>
 
-#include <Bute/SymTab.h>
+#include <Bute/SymParser.h> // full CSymParser (m_owner layout) + CSymTab via SymParser.h
 
 // The child-scope hash-node vtable (the key-hash interface a scope exposes to its
 // parent's m_subTabs). Manual-stamp model -> reloc-masked DATA() extern.
@@ -168,9 +168,9 @@ CSymTab::CSymTab(
 // destructible.md).
 RVA(0x00139ee0, 0x11e)
 CSymTab::~CSymTab() {
-    CHashEntry* cur;
+    CHashTableEntry* cur;
     for (cur = m_symbols.First(); cur != 0;) {
-        CHashEntry* next = m_symbols.Next(cur);
+        CHashTableEntry* next = m_symbols.Next(cur);
         m_symbols.Remove(cur);
         CSymRec* rec = (CSymRec*)cur->m_payload;
         if (rec) {
@@ -180,7 +180,7 @@ CSymTab::~CSymTab() {
         cur = next;
     }
     for (cur = m_subTabs.First(); cur != 0;) {
-        CHashEntry* next = m_subTabs.Next(cur);
+        CHashTableEntry* next = m_subTabs.Next(cur);
         m_subTabs.Remove(cur);
         CSymTab* sub = (CSymTab*)cur->m_payload;
         if (sub) {
@@ -736,12 +736,11 @@ i32 CSymTab::ResolveQualified(const char* name, void* arg) {
     return scope->Insert(qual, arg);
 }
 
-// --- class-metadata sweep (Bute module): SymTab.h + .cpp-local SIZE at this .cpp EOF
-// (all SIZE_UNKNOWN). CHashEntry (also in SymTab.h) is annotated in Hash.cpp;
 // CSymParser (also in SymTab.h) is annotated in SymParser.cpp.
 SIZE_UNKNOWN(RezColl);
 SIZE_UNKNOWN(RezNode);
 SIZE_UNKNOWN(CHashTable);
+SIZE_UNKNOWN(CHashTableEntry);
 SIZE_UNKNOWN(CSymRec);
 SIZE_UNKNOWN(CSymTab);
 SIZE_UNKNOWN(CSymLeafBuilder);

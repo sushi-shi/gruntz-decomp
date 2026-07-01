@@ -5,6 +5,7 @@
 // validates the slots against a windowed sequence. All cross-class callees are
 // external (reloc-masked). Field names are placeholders; offsets are load-bearing.
 #include <Ints.h>
+#include <Net/NetMgr.h> // shared CNetMgr (m_cmdDelay @+0x5a4) + CNetResyncEntry
 #include <rva.h>
 #include <string.h>
 
@@ -20,18 +21,6 @@ struct CNetCmdSlot2 {
     i32 Ready();      // 0xc1320 (external, reloc-masked)
 };
 SIZE(CNetCmdSlot2, 0x64); // fully-known inline command slot (array stride 0x64)
-
-struct CNetResyncEntry {
-    i32 m_0; // +0x00
-    i32 m_4; // +0x04
-    u8 m_8;  // +0x08
-    char m_pad9[0xc - 9];
-    i32 m_c; // +0x0c
-    char m_pad10[0x410 - 0x10];
-};
-SIZE(CNetResyncEntry, 0x410); // fully-known resync entry (array stride 0x410)
-
-struct CNetMgr;
 
 struct CNetSession2 {
     void* m_0;    // +0x00  owner a1
@@ -51,14 +40,6 @@ struct CNetSession2 {
     i32 Verify(i32 n);                         // 0xc0290
 };
 SIZE(CNetSession2, 0x20bb0); // fully-laid-out: +0x3b0 + 0x80*0x410 resync entries
-
-// The owning net manager: only +0x5a4 (cached by Init) is read. Its name is
-// already size-annotated on the full CNetMgr view in NetMgr.h (this is a partial
-// same-named view local to this TU).
-struct CNetMgr {
-    char m_pad0[0x5a4];
-    i32 m_cmdDelay; // +0x5a4
-};
 
 // @early-stop
 // rep-stos setup scheduling wall (94.1%): logic + every other byte exact. The ONLY

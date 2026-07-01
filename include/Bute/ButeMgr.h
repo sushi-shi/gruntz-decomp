@@ -188,15 +188,28 @@ struct CButeStoreBase2 {
     void RestoreVptr(); // 0x16dfc0
 };
 
+// A keyed-store tree node the recursive clear (CButeStore::ClearRecursive,
+// ButeStoreClear.cpp) walks: left/right children, the heap-order key, the owned
+// name string, and the value the store's per-value callback consumes+frees.
+struct CButeStoreNode {
+    CButeStoreNode* m_left;  // +0x00
+    CButeStoreNode* m_right; // +0x04
+    i32 m_key;               // +0x08  order key
+    void* m_str;             // +0x0c  owned name string (freed)
+    void* m_val;             // +0x10  value (callback target, freed)
+};
+
 struct CButeStore {
-    void* m_vptrA;             // +0x00  most-derived vptr
-    char m_pad04[4];           // +0x04
-    void* m_vptrB;             // +0x08  second-base vptr
-    char m_pad0c[0x14 - 0xc];  // +0x0c  opaque keyed-store interior
-    i32 m_14;                  // +0x14  reset-to-empty field (Parse zeros it)
-    void* m_root18;            // +0x18  tree root (Parse zeros it)
-    char m_pad1c[0x28 - 0x1c]; // +0x1c  opaque
-    i32 m_28;                  // +0x28  reset-to-empty field (Parse zeros it)
+    void* m_vptrA;              // +0x00  most-derived vptr
+    char m_pad04[4];            // +0x04
+    void* m_vptrB;              // +0x08  second-base vptr
+    void(__cdecl* m_cb)(void*); // +0x0c  per-value callback (ClearRecursive fires it)
+    char m_flags;               // +0x10  flag byte (bit 2 gates the callback)
+    char m_pad11[0x14 - 0x11];  // +0x11  opaque keyed-store interior
+    i32 m_14;                   // +0x14  reset-to-empty field (Parse zeros it)
+    CButeStoreNode* m_root18;   // +0x18  tree root (Parse zeros it)
+    char m_pad1c[0x28 - 0x1c];  // +0x1c  opaque
+    i32 m_28;                   // +0x28  reset-to-empty field (Parse zeros it)
     // The derived clear body (0x16e070): recursively frees the keyed nodes.
     // __thiscall(this, recurse); callee-cleans 4.
     void ClearRecursive(i32 recurse);

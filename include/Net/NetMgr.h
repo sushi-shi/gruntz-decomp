@@ -268,12 +268,22 @@ SIZE(CNetCmdSlot, 0x64); // fully-laid-out inline command slot (array stride 0x6
 // here (external __thiscall thunks): FindCmdSlot linear-scans the four inline
 // command slots for the one whose player id matches; ResetCmdBuffers zeroes the
 // head of each of those four slots.
+// The per-color selection sub-object living at CNetCmdBuf+0x150. CreateSlot hands
+// slot[i] a pointer to its +0x00 (the per-slot command-head target, buffer+0x150);
+// NetCmdMgr.cpp's SelectColor claims/releases a color through its +0x08 owner id.
+struct CColorSlot {
+    i32 m_slotHead;             // +0x00 (buf+0x150)  CreateSlot's per-slot command-head target
+    char m_pad04[4];            // +0x04
+    i32 m_currentOwnerPlayerId; // +0x08 (buf+0x158)  current color owner player id
+};
+SIZE_UNKNOWN(CColorSlot); // +0x150 sub-region view; retail size TBD
+
 // One 0x238-byte command buffer the session keeps an array of at +0x0; CreateSlot
 // hands slot[i] a pointer to the +0x150 field of buffer[i].
 struct CNetCmdBuf {
     char m_pad0[0x150]; // +0x000
-    i32 m_150;          // +0x150
-    char m_pad154[0x238 - 0x154];
+    CColorSlot m_sel;   // +0x150
+    char m_pad15c[0x238 - 0x15c];
 };
 SIZE(CNetCmdBuf, 0x238); // fully-known command buffer (array stride 0x238)
 
@@ -288,6 +298,7 @@ struct CNetResyncEntry {
     i32 m_c; // +0xc
     char m_padc[0x410 - 0x10];
 };
+SIZE(CNetResyncEntry, 0x410); // fully-known resync entry (array stride 0x410)
 
 struct CNetSession {
     CNetCmdBuf* m_0;                 // +0x00  base of the per-slot command-buffer array
@@ -652,6 +663,13 @@ public:
     void ReportAckLatency();
     CNetPlayerEntry* FindPlayerById(i32 id);
 
+    // The menu-select event handler (0xba620, defined in NetMgrMenuSelect.cpp). Its
+    // event arg is that TU's local MenuSelectEvent view -> typed void* here so the
+    // shared class needs no menu-only type. It reaches the +0x524 player sub-object
+    // (its own GetPlayerData/AddSessionNode shapes, a genuine RE ambiguity vs the
+    // CNetMgr methods at the same RVAs) through a cast of m_peer to that TU's PlayerMgr.
+    i32 LoadMenuSelectSprite(void* ev); // 0xba620
+
     // Find (0x179270): walk the +0x1c group CObList (m_pHead @+0x20, running
     // POSITION cached @+0x7c) and return the first InterfaceObject payload whose
     // GUID matches the service-provider class selected by `kind` (1/2/5).
@@ -883,7 +901,10 @@ public:
     void* m_4; // +0x004
     // A CString member at +0x8 (GetName returns a copy of it by value).
     CString m_8; // +0x008
-    char m_padc[0x14 - 0xc];
+    // Another sub-object pointer (like m_4, reached through per-TU views): the sound
+    // sub-mgr the menu-select handler reads (CSndSubMgr in NetMgrMenuSelect.cpp).
+    void* m_c; // +0x00c
+    char m_pad10[0x14 - 0x10];
     INetReleasable* m_releaseIface; // +0x014  the secondary COM interface Destroy releases (slot 2)
     IDirectPlay4Z* m_directPlay; // +0x018  the DirectPlay session interface (IDirectPlay4-shaped)
     i32 m_resyncLParam;          // +0x01c  WM_COMMAND lParam value the resync handlers post

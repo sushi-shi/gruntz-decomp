@@ -6,22 +6,8 @@
 // field is at +0x158. All callees/globals are external (reloc-masked). Field names
 // are placeholders; only offsets + code bytes are load-bearing.
 #include <Ints.h>
+#include <Net/NetMgr.h> // shared CNetCmdBuf / CColorSlot (0x238-byte command buffer)
 #include <rva.h>
-
-// The per-color selection sub-object living at CNetCmdBuf+0x150 (only its +0x8
-// "current owner" field is touched here).
-struct CColorSlot {
-    char m_0[8];                // +0x150 region
-    i32 m_currentOwnerPlayerId; // +0x158  current owner player id
-};
-SIZE_UNKNOWN(CColorSlot); // +0x150 sub-region view; retail size TBD
-
-// One session command buffer (0x238). idx*0x238 == idx*71*8 -> the lea/shl/sub.
-struct CNetCmdBuf {
-    char m_pad0[0x150];
-    CColorSlot m_sel; // +0x150
-    char m_pad158[0x238 - 0x150 - 12];
-};
 
 // The session/lobby manager singleton (g_64bd5c); only its +0x528 "in session"
 // flag and its chat-error method are reached.

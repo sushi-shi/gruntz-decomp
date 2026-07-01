@@ -25,47 +25,7 @@
 #include <Ints.h>
 
 #include <Bute/Hash.h>
-
-// CSymTab (SymTab.h) and Hash.h both model the engine hash table with conflicting
-// CHashEntry/CHashTable shapes, so SymParser pulls in Hash.h (for the +0x80
-// CHashBase / +0x88 CHashSlotList members) and declares only the three CSymTab
-// methods it calls on the heap root scope (~CSymTab + the two path-resolvers),
-// reloc-masked externals. The full CSymTab layout lives in SymTab.h.
-class CSymParser; // the owner the CSymTab ctor links back to (defined below)
-
-class CSymTab {
-public:
-    // The 8-arg ctor (0x139de0) ParseBuffer builds the root scope with; uses the Rez
-    // heap so `new CSymTab(...)` drives the operator-new + ctor-throw /GX cleanup.
-    CSymTab(
-        CSymParser* owner,
-        void* p1,
-        const char* name,
-        void* p3,
-        void* p4,
-        void* p5,
-        i32 subN,
-        i32 symN
-    );
-    ~CSymTab(); // 0x139ee0
-    void* operator new(u32 n) {
-        return RezAlloc(n);
-    }
-    void operator delete(void* p) {
-        RezFree(p);
-    }
-    void* ResolvePath(const char* path);                // 0x13bae0
-    i32 ResolveQualified(const char* name, void* arg);  // 0x13be40
-    i32 ApplyRecursive(i32 a0, i32 a1, i32 a2, i32 a3); // 0x13a580
-    // The directory-load helpers ParseRecords drives on the current scope node (all
-    // reloc-masked externals on the node CSymTab):
-    void* FindSub(const char* name);                   // 0x13a230
-    CSymTab* CreateSub(const char* name);              // 0x13a330
-    void* FindOrAddSym(i32 key);                       // 0x13a940
-    i32 Insert(const char* key, void* arg);            // 0x13a000
-    i32 Method4b0(void* a, void* b, void* c, void* d); // 0x13a4b0
-    i32 Method530(void* rec, void* found);             // 0x13a530
-};
+#include <Bute/SymTab.h> // the single full CSymTab layout (+ the CSymParser fwd-decl)
 
 // The name->key map / seed builder ParseBuffer reaches: MakeSymSeed (0x13ba70, cdecl,
 // the leftover-stack-args ctor trick) returns a seed left on the stack. Reloc-masked.
@@ -208,8 +168,10 @@ public:
     void* ResolvePath(const char* path);               // 0x13c030 -> root->ResolvePath
     void AddNode(void* rec);                           // 0x13c210 -> m_hash insert
 
-    void* m_vtbl;               // +0x00
-    char* m_ownedBuffer;        // +0x04
+    void* m_vtbl; // +0x00
+    // +0x04  owned delimiter-set buffer: the tokenizer split set the CSymTab path
+    //         resolvers read (SymTab.cpp m_owner->m_delims), RezFree'd in the dtor.
+    char* m_delims;
     i32 m_08;                   // +0x08  (=1)
     void* m_parseArmed;         // +0x0c  Clear guard
     CObjList m_list;            // +0x10  (+0x10..+0x1c)
@@ -227,16 +189,19 @@ public:
     i32 m_4c;                   // +0x4c
     i32 m_50;                   // +0x50  (=1)
     i32 m_54;                   // +0x54
-    i32 m_58;                   // +0x58
-    i32 m_5c;                   // +0x5c
+    i32 m_longestScopeNameLen;  // +0x58  longest scope-name length seen (SymTab.cpp)
+    i32 m_longestLeafNameLen;   // +0x5c  longest leaf-name length seen (SymTab.cpp Method4b0)
     i32 m_60;                   // +0x60
     void* m_cachedSourceBuffer; // +0x64
-    char m_pad68[0x78 - 0x68];
-    i32 m_subTabBucketCount;   // +0x78  child-scope m_subTabs bucket count (CSymTab ctor subN)
-    i32 m_symbolBucketCount;   // +0x7c  child-scope m_symbols bucket count (CSymTab ctor symN)
-    CParserHash m_hash;        // +0x80
-    CHashSlotList m_nodes;     // +0x88  { head, tail }
-    i32 m_parseSlotBlockCount; // +0x90  number of parse-slot records per allocated block
+    i32 m_68;                   // +0x68  flag forwarded to the +0x38 walk (m_68 == 0)
+    i32 m_6c;                   // +0x6c  selects the leaf-record ctor variant (Init4 vs Init3)
+    i32 m_70;                   // +0x70  leaf-record ctor arg
+    i32 m_74;                   // +0x74  leaf-record ctor arg (Init4 only)
+    i32 m_subTabBucketCount;    // +0x78  child-scope m_subTabs bucket count (CSymTab ctor subN)
+    i32 m_symbolBucketCount;    // +0x7c  child-scope m_symbols bucket count (CSymTab ctor symN)
+    CParserHash m_hash;         // +0x80
+    CHashSlotList m_nodes;      // +0x88  { head, tail }
+    i32 m_parseSlotBlockCount;  // +0x90  number of parse-slot records per allocated block
 };
 
 #endif // SRC_BUTE_SYMPARSER_H
