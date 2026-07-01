@@ -6,20 +6,14 @@
 // DelayedQuit (0x8f530), RunModalDialog (0x90260) and LoadSaveMessageSprite (0x92420)
 // now live there.
 //
-// 0x092f00 is the save-as name dialog (495 B, /GX, TWO destructible stack locals - a
-// modal dialog AND a result CString built with a "custom_" prefix). The compound /GX
-// frame (per-local EH-state numbering + the inline CString construction) is deferred to
-// the final sweep; still stubbed here.
+// 0x092f00 (CGruntzMgr::SaveGameAs, the save-as name dialog) is reconstructed in
+// src/Gruntz/GruntzMgr.cpp (the dialog + its CString member are the /GX frame's two
+// destructibles).
 //
 // 0x08fea0 is NOT a CGruntzMgr method at all: it constructs a fresh object (CFileIO
 // at +0x124, CByteArray at +0x138, srand(time(0))), which contradicts the CGruntzMgr
 // ctor's int store at +0x138 and overwrites +0x00 (a vptr) - a mis-attributed label
 // kept here pending its true owner class.
-
-class CGruntzMgr {
-public:
-    i32 winapi_092f00_PostMessageA();
-};
 
 // 0x8fea0 is a fresh-object CONSTRUCTOR (mis-attributed CGruntzMgr::InitCFileIOMember
 // by the call-xref heuristic): it constructs a destructible CFileIO at +0x124 and a
@@ -58,12 +52,4 @@ UnknownFileIOOwner::UnknownFileIOOwner() {
     m_8 = 0;
     m_134 = 0;
     srand(time(0));
-}
-
-// @confidence: low
-// @source: winapi:PostMessageA
-// @stub
-RVA(0x00092f00, 0x1ef)
-i32 CGruntzMgr::winapi_092f00_PostMessageA() {
-    return 0;
 }

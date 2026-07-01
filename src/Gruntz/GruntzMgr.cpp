@@ -177,6 +177,27 @@ struct CCheckpointDlg {
     char m_pad[0x5c];
 };
 
+// The save-as name dialog SaveGameAs pops (0x14b30 ctor(owner, 0), run through
+// ExitModalUI). Its entered name is a CString member behind the CDialog base; the
+// use-"custom\" flag sits at +0x68. The class's implicit destructor destructs the
+// CString member then the CDialog base (reloc-masked ~CString + CDialog::~CDialog
+// 0x1ba51d) - the two /GX destructibles this method's EH frame tracks.
+class CSaveDlgBase {
+public:
+    virtual ~CSaveDlgBase(); // 0x1ba51d  CDialog::~CDialog (virtual, reloc-masked)
+};
+class CSaveNameDlg : public CSaveDlgBase {
+public:
+    CSaveNameDlg(class CGruntzMgr* owner, i32 flag); // 0x14b30
+    char m_pad04[0x68 - 0x4];
+    i32 m_68;     // +0x68  use-custom-prefix flag
+    CString m_6c; // +0x6c  entered name
+};
+
+// Resets the 17 sound-channel slots (g_64c3f0[17] = 1); SaveGameAs calls it before
+// popping the modal. Reloc-masked __cdecl free fn (0xdb1d0).
+void ChannelSlots_InitAll(); // 0xdb1d0
+
 // The Win32 dialog procedures handed to RunModalDialog. Their pushed code
 // addresses reloc-mask (DIR32 against the named LAB_ symbols); only the push
 // shape is load-bearing.
@@ -3316,6 +3337,38 @@ i32 CGruntzMgr::LoadSaveMessageSprite() {
     } else if (RunModalDialog("GAME_SAVE", (void*)GruntzSaveGameDlgProc, 0) == 1) {
         RunModalDialog("GAME_SAVEMSG", (void*)GruntzSaveMsgDlgProc, 0);
     }
+    return 1;
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::SaveGameAs (0x092f00; /GX EH; ret 1/0). The save-as name dialog: when
+// the live state is playable (Update() in {5,2,3,7}), reset the sound channels, pop the
+// name dialog, and - if accepted - capture the entered name into m_strWorldFile (prefixed
+// "custom\" and flag m_128=0 when the dialog's custom flag is set, else the raw name with
+// m_128=1). If the resulting name is non-empty, PostMessageA WM_COMMAND 0x80e3. The dialog
+// (with its CString member) is the compound /GX frame's two destructibles.
+RVA(0x00092f00, 0x1ef)
+i32 CGruntzMgr::SaveGameAs() {
+    CSaveNameDlg dlg(this, 0);
+    i32 st = m_curState->Update();
+    if (st != 5 && st != 2 && st != 3 && st != 7) {
+        return 0;
+    }
+    ChannelSlots_InitAll();
+    if (ExitModalUI((CModalDialog*)&dlg, 1) != 1) {
+        return 0;
+    }
+    if (dlg.m_68 != 0) {
+        m_128 = 0;
+        m_strWorldFile = "custom\\" + dlg.m_6c;
+    } else {
+        m_128 = 1;
+        m_strWorldFile = dlg.m_6c;
+    }
+    if (m_strWorldFile.GetLength() == 0) {
+        return 0;
+    }
+    g_pPostMessageA((i32)((CGameWnd*)m_4)->m_hwnd, 0x111, 0x80e3, 0);
     return 1;
 }
 

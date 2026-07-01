@@ -210,7 +210,7 @@ dsoundvoice	2	1
 ehfunclets	6	6
 engine_attributed	6	0
 engine_discovered	15	8
-engine_label_stubs	270	124
+engine_label_stubs	267	124
 engine_unmatched_lib	11	0
 engstr	3	1
 eyecandytypetags	4	4
@@ -255,7 +255,7 @@ gruntvoice	6	4
 gruntzapp	10	9
 gruntzcmdmgr	12	10
 gruntzcommand	15	15
-gruntzmgr	92	63
+gruntzmgr	93	64
 gruntzmgrtransition	1	0
 gruntzplayer	8	3
 gruntzsoundz	15	14
@@ -340,6 +340,7 @@ m5_palettelerp	1	1
 m5_soundtickctor	1	1
 m5_stateimages	2	2
 m5_worldlevelkey	1	1
+m5_worldlevelpath	1	1
 mainmenubuilder	1	0
 maplogic	5	4
 mapmgr	9	7
@@ -362,7 +363,7 @@ netcmdslot	16	11
 netmgr	89	46
 netmgrerror	1	1
 netmgrmisc	5	4
-netmgrwait	1	0
+netmgrwait	2	0
 netsession	2	1
 netsession2	3	2
 netsessionnode	3	2
@@ -1815,7 +1816,6 @@ engine_label_stubs	?Build@GeoHost_161e80@ApiCallerStubs@@QAEXPAUtagRECT@@@Z	90.4
 engine_label_stubs	?Build@PalBuilder_176df0@ApiCallerStubs@@QAEHPAUtagPALETTEENTRY@@H@Z	62.0750	62.0750	1	cpp:6bf52155264d	0x176df0
 engine_label_stubs	?BuildPowerupIconKeys@EngineLabelBacklog@@YGXPAVPowerupKeyRegistry@@H@Z	53.5443	53.5443	1	cpp:e8a4cb0d5b2a	0x1e720
 engine_label_stubs	?BuildSmall@CStatzTabSmall@@QAEHHHHHHPAUCStatzRect60@@HHH@Z	62.3936	62.3936	1	cpp:aab6e5a6e511	0x112a50
-engine_label_stubs	?BuildWorldLevelPath@CPlay@@QAEXH@Z	0.4484	0.4484	1	cpp:590eddff1627	0xdbc80
 engine_label_stubs	?CButeMgrHelper_FuncA@@YAXXZ	100.0000	100.0000	1	cpp:7e7ce1192d49	0x169be0
 engine_label_stubs	?CGruntzCommand_0242f0@CGruntzCommand@@QAEXXZ	100.0000	100.0000	1	cpp:45e65336d4b5	0x242f0
 engine_label_stubs	?CGruntzCommand_024430@CGruntzCommand@@QAEXXZ	100.0000	100.0000	1	cpp:45e65336d4b5	0x24430
@@ -1962,14 +1962,12 @@ engine_label_stubs	?winapi_0862f0_PostMessageA_wsprintfA@ApiCallerStubs@@YGHHHH@
 engine_label_stubs	?winapi_08f120_CreateProcessA_RegQueryValueA@ApiCallerStubs@@YGHH@Z	1.7241	1.7241	1	cpp:6bf52155264d	0x8f120
 engine_label_stubs	?winapi_090860_CreateProcessA_wsprintfA@ApiCallerStubs@@YGHPAD0@Z	100.0000	100.0000	1	cpp:e832e75e29a5	0x90860
 engine_label_stubs	?winapi_092ab0_EndDialog@ApiCallerStubs@@YGHPAXIHH@Z	100.0000	100.0000	1	cpp:e832e75e29a5	0x92ab0
-engine_label_stubs	?winapi_092f00_PostMessageA@CGruntzMgr@@QAEHXZ	1.6529	1.6529	1	cpp:e8a4cb0d5b2a	0x92f00
 engine_label_stubs	?winapi_09dff0_EndDialog@ApiCallerStubs@@YGHPAXHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x9dff0
 engine_label_stubs	?winapi_09e2d0_SetDlgItemTextA@ApiCallerStubs@@YAXPAXPAUNameItem_09e2d0@1@HHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x9e2d0
 engine_label_stubs	?winapi_09e390_EndDialog_PostMessageA@ApiCallerStubs@@YAHXZ	1.0417	1.0417	1	cpp:e1535087fe94	0x9e390
 engine_label_stubs	?winapi_0b6b40_timeGetTime_wsprintfA@CMulti@ApiCallerStubs@@QAEHXZ	0.9512	0.9512	1	cpp:590eddff1627	0xb6b40
 engine_label_stubs	?winapi_0b6e90_SetRect@CMulti@ApiCallerStubs@@QAEHXZ	0.7812	0.7812	1	cpp:590eddff1627	0xb6e90
 engine_label_stubs	?winapi_0bb3e0_GetWindowTextLengthA@ApiCallerStubs@@YGXPAXPAD@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xbb3e0
-engine_label_stubs	?winapi_0bb700_GetAsyncKeyState_Sleep_timeGetTime_wsprintfA@CNetMgr@@QAEHXZ	1.0326	1.0326	1	cpp:590eddff1627	0xbb700
 engine_label_stubs	?winapi_0bda00_GetDlgItem_SetTimer@ApiCallerStubs@@YAXPAX0@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xbda00
 engine_label_stubs	?winapi_0bdb90_GetDlgItem_SetTimer@ApiCallerStubs@@YAXPAX0@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xbdb90
 engine_label_stubs	?winapi_0bdc00_EndDialog_KillTimer@ApiCallerStubs@@YGHPAXIIH@Z	100.0000	100.0000	1	cpp:e832e75e29a5	0xbdc00
@@ -2518,6 +2516,7 @@ gruntzmgr	?RunDebugGruntTypeDialog@CGruntzMgr@@QAEHXZ	100.0000	100.0000	1	bf3fcf
 gruntzmgr	?RunFromState@CGruntzMgr@@QAEHXZ	100.0000	100.0000	2	f710a1f0a1d9	0x90200
 gruntzmgr	?RunLoadGameDialog@CGruntzMgr@@QAEHXZ	100.0000	100.0000	1	192d7e4c4917	0x92500
 gruntzmgr	?RunModalDialog@CGruntzMgr@@QAEHPBDPAXH@Z	99.4118	99.4118	3	27a53f39fa1f	0x90260
+gruntzmgr	?SaveGameAs@CGruntzMgr@@QAEHXZ	100.0000	100.0000	1	80084d1e2368	0x92f00
 gruntzmgr	?SaveState@CGruntzMgr@@QAEHPAVCSerializerZ@@@Z	100.0000	100.0000	4	55afa57855b3	0x93620
 gruntzmgr	?ScalarDeletingDtor@CGruntzMgr@@QAEPAXI@Z	100.0000	100.0000	1	2b7667fab811	0x83330
 gruntzmgr	?SetCellHeight@CGruntzMgr@@QAEXHHH@Z	100.0000	100.0000	3	469dd234782d	0x111ec0
@@ -2859,6 +2858,7 @@ m5_soundtickctor	?SoundTick_Ctor@@YAHXZ	100.0000	100.0000	1	eb13fef5cc82	0x136fe
 m5_stateimages	?LoadStateImages@CImageState@@QAEHXZ	100.0000	100.0000	1	4d5c29c4f8ad	0xa09a0
 m5_stateimages	?OnActivate2@CBootyState@@QAEHXZ	100.0000	100.0000	1	9339daaf41bd	0x1c8a0
 m5_worldlevelkey	?BuildWorldLevelKey@CWorldState@@QAEHH@Z	100.0000	100.0000	2	f6e34c309ea3	0x3c0e0
+m5_worldlevelpath	?BuildWorldLevelPath@CWorldState@@QAEHH@Z	100.0000	100.0000	1	5615aebc2914	0xdbc80
 mainmenubuilder	?BuildMainMenuTree@@YAXPAX@Z	77.6725	77.6725	2	77164b63ab1c	0xa11d0
 maplogic	??1CMapLogic@@UAE@XZ	100.0000	100.0000	1	baec3be51eff	0x113c0
 maplogic	?FreeNodes@CMapLogic@@QAEXXZ	100.0000	100.0000	2	8cb172a03e69	0x85480
@@ -3059,6 +3059,7 @@ netmgrmisc	?NetConfigureBe90@@YAXXZ	100.0000	100.0000	1	39468a8eca59	0xc5f00
 netmgrmisc	?NetPollE25c@@YAHXZ	100.0000	100.0000	1	2f309aba1fc2	0xf9710
 netmgrmisc	?Step@CNetConnCoord@@QAEXXZ	100.0000	100.0000	1	de12e712a594	0xc2a20
 netmgrwait	?Poll@CNetMgr@@QAEHH@Z	95.4815	95.4815	1	5a9ed3387afc	0xbba10
+netmgrwait	?WaitForOtherPlayers@CNetMgr@@QAEHXZ	75.1467	75.1467	1	2d0bb1786fdb	0xbb700
 netsession	?AppendInt@@YAXPADPBDH@Z	100.0000	100.0000	1	b2f3e4307dc7	0xf93b0
 netsession	?FillPlayerList@@YAXPAUHWND__@@PAUSession@@@Z	91.5352	91.5352	1	94ce9d538305	0xb89e0
 netsession2	?Init@CNetSession2@@QAEHPAXPAUCNetMgr@@0@Z	100.0000	100.0000	2	4dd224a742e5	0xbef80

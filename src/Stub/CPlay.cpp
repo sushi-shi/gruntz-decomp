@@ -1,11 +1,6 @@
 #include <rva.h>
 // CPlay.cpp - engine-label stubs for CPlay (reloc-correlation).
 
-class CPlay {
-public:
-    void BuildWorldLevelPath(i32);
-};
-
 // The two low-RVA 5-byte ILT `jmp rel32` thunks for CPlay::RegionEnter (0xd88f0)
 // and CPlay::RegionLeave (0xd8960), both reconstructed byte-exact in
 // src/Gruntz/CPlay.cpp. There is no plain-C++ source form for a bare unframed
@@ -27,14 +22,7 @@ __declspec(naked) void Ilt_RegionEnter_1b9a() {
     __asm { jmp n_RegionEnter_d88f0 }
 }
 
-// Proximity-attributed (HIGH, both-sides RVA bracket) - re-homed from
-// src/Stub/ApiCallers.cpp (was ThisStubOwnerUnknown).
-// @confidence: med
-// @source: decomp-xref
 // 0xd1710 (CPlay::LoadSBITextEdges) reconstructed in src/Gruntz/CPlay.cpp.
-// @confidence: med
-// @source: string-xref
-// @stub
-RVA(0x000dbc80, 0x309)
-void CPlay::BuildWorldLevelPath(i32) {}
+// 0xdbc80 (CWorldState::BuildWorldLevelPath) reconstructed in
+// src/Gruntz/m5_WorldLevelPath.cpp (sibling of m5_WorldLevelKey).
 // 0xdd050 (CPlay::BuildGruntNamespaceList) reconstructed in src/Gruntz/CPlay.cpp.

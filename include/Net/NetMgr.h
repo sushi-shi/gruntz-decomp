@@ -724,6 +724,8 @@ public:
     // __thiscall; external incremental-link thunk -> no body here so the call
     // reloc-masks). Retail thunk 0x35e4 -> 0xbc420.
     void AckJoinFailure(); // 0xbc420
+    void DropTimeout();    // 0xbc2d0 (drop a timed-out player)
+    i32 GetAmbientId();    // 0xda200 (current ambient-track index for the "AMBIENT%d" cue)
 
     // WaitForOtherPlayers (0xbb700, /GX): count session slots in state 3; if any,
     // announce the wait (stat 0x3ed), put up the "Waiting for other playerz" status
@@ -892,7 +894,7 @@ public:
     i32 m_540;             // +0x540  Poll's exit gate (set once the verify vote resolves)
     i32 m_544[4];          // +0x544  Poll's per-record ack latch (one per session slot)
     i32 m_554[4];          // +0x554  Poll's per-record vote/token latch
-    i32 m_pollAbort; // +0x564  set => PollSession stops pumping the receive queue
+    i32 m_pollAbort;       // +0x564  set => PollSession stops pumping the receive queue
     char m_pad568[0x56c - 0x568];
     i32 m_gameFull; // +0x56c  "this game is already full"
     i32 m_versionMismatch; // +0x570  version-mismatch latch (HandleVersionCheck sets; WaitForConnect reports)

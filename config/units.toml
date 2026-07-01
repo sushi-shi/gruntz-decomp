@@ -436,6 +436,11 @@ source = "src/Gruntz/GruntTileScan.cpp"
 flags = "base"
 
 [[unit]]
+unit = "m5_worldlevelpath"
+source = "src/Gruntz/m5_WorldLevelPath.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "cplayplanescan"
 source = "src/Gruntz/CPlayPlaneScan.cpp"
 flags = "eh"
