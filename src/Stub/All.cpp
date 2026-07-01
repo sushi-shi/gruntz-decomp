@@ -44,6 +44,5 @@
 #include "CGruntzMgr.cpp"
 #include "CSBI_Image.cpp"
 #include "CSplashState.cpp"
-#include "CUserLogic.cpp"
 #include "RezSync.cpp"
 #include "MallocConstructors.cpp"

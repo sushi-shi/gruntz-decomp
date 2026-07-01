@@ -24,6 +24,15 @@
 DATA(0x002bf620)
 extern CButeTree g_buteTree;
 
+// The two out-of-line base-ctor COMDATs (CUserLogic() @0x138d0 / CUserLogic(obj)
+// @0x58cd0) are emitted + @rva-symbol pinned in a SEPARATE unit,
+// src/Gruntz/UserLogicCtorEmit.cpp. They must NOT be forced here: the 1-arg copy
+// needs an inline (Lookup-based) BuildLogicTypeTable body to match retail's
+// inlined registration, and that body, if visible in THIS TU, folds into every
+// leaf 1-arg ctor at depth 2 and regresses them all (retail leaves CALL 0x8a40 at
+// depth 2). Isolating the forcer + inline body in its own TU keeps the leaves here
+// calling the out-of-line helper.
+
 // ---------------------------------------------------------------------------
 // Out-of-line vtable anchors. These give each base class a real vftable in this
 // TU so the inline ctors emit the right vptr stores. Bodies are not matched.

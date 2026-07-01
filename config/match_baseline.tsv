@@ -211,7 +211,7 @@ dsoundvoice	2	1
 ehfunclets	6	6
 engine_attributed	6	0
 engine_discovered	15	8
-engine_label_stubs	250	129
+engine_label_stubs	248	129
 engine_unmatched_lib	11	0
 engstr	3	1
 eyecandytypetags	4	4
@@ -478,6 +478,7 @@ unknownclassarrays	41	10
 unknownclassincgruntzmgr	2	0
 userbaselink	10	0
 userlogic	65	28
+userlogicctoremit	2	1
 vehiclegruntsprites	1	0
 videoconfig	4	1
 voicesoundlist	1	0
@@ -1825,8 +1826,6 @@ engine_label_stubs	?BuildSmall@CStatzTabSmall@@QAEHHHHHHPAUCStatzRect60@@HHH@Z	6
 engine_label_stubs	?CButeMgrHelper_FuncA@@YAXXZ	100.0000	100.0000	1	cpp:7e7ce1192d49	0x169be0
 engine_label_stubs	?CGruntzCommand_0242f0@CGruntzCommand@@QAEXXZ	100.0000	100.0000	1	cpp:45e65336d4b5	0x242f0
 engine_label_stubs	?CGruntzCommand_024430@CGruntzCommand@@QAEXXZ	100.0000	100.0000	1	cpp:45e65336d4b5	0x24430
-engine_label_stubs	?CUserLogic_0138d0@CUserLogic@@QAEXXZ	5.0000	5.0000	1	cpp:45e65336d4b5	0x138d0
-engine_label_stubs	?CUserLogic_058cd0@CUserLogic@@QAEXH@Z	0.8929	0.8929	1	cpp:6bf52155264d	0x58cd0
 engine_label_stubs	?Cancel@CmdHost_0de590@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:6bf52155264d	0xde590
 engine_label_stubs	?Check@KeyHost_01f8a0@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x1f8a0
 engine_label_stubs	?Cleanup@GdiOwner_175c90@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x175c90
@@ -3775,6 +3774,8 @@ userlogic	?SpawnTeleporter@CSecretTeleporterTrigger@@QAEHXZ	100.0000	100.0000	3	
 userlogic	?winapi_04d800_CopyRect@CUserLogic@@QAEHHHHHHHHHHHHH@Z	0.6786	0.6786	3	afc4a7cad8e5	0x4d800
 userlogic	?winapi_064540_PostMessageA@CUserLogic@@QAEHXZ	2.5974	2.5974	2	160449116f17	0x64540
 userlogic	?winapi_0ee800_IntersectRect_PtInRect@CUserLogic@@QAEHXZ	0.2653	0.2653	2	f2ccbcb9c820	0xee800
+userlogicctoremit	??0CUserLogic@@QAE@PAUCGameObject@@@Z	89.0000	89.0000	1	cpp:aca2e8db625f	0x58cd0
+userlogicctoremit	??0CUserLogic@@QAE@XZ	100.0000	100.0000	1	cpp:aca2e8db625f	0x138d0
 vehiclegruntsprites	?LoadVehicleGruntSprites@CGruntCmdObj@@QAEHH@Z	37.2626	37.2626	2	13203c9815d0	0x50ce0
 videoconfig	?GetResolutionCode@@YAHXZ	100.0000	100.0000	2	d5dadac49ea7	0x363a0
 videoconfig	?LoadVideoResolutionConfig@@YAXPAXHH@Z	97.2737	97.2737	8	e6f5fec6b5c4	0x36f30

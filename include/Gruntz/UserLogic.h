@@ -318,9 +318,18 @@ inline CUserLogic::CUserLogic(CGameObject* obj) {
     m_08 = 0;
     m_28 = 0x3e9;
     m_2c = 2;
+#ifndef USERLOGIC_STANDALONE_CTOR
+    // The REAL out-of-line base ctor (retail 0x58cd0) does NOT set these three -
+    // each game-object LEAF sets m_34/m_38/m_3c itself, right after the folded
+    // base init (e.g. CTeleporter @0x410f9). They live in the base inline here so
+    // the folded-into-a-leaf copies reproduce the leaf's bytes without every leaf
+    // ctor having to spell them out. src/Gruntz/UserLogicCtorEmit.cpp defines
+    // USERLOGIC_STANDALONE_CTOR to drop them for the byte-exact standalone COMDAT;
+    // every other TU (all leaves) compiles this branch unchanged -> matching-neutral.
     m_34 = obj;
     m_38 = obj;
     m_3c = obj->m_7c;
+#endif
 }
 
 inline void CUserLogic::RegisterLogicTypesOnce() {
