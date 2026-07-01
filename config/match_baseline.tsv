@@ -209,6 +209,7 @@ demosetup	1	1
 dialogs	37	15
 directinputmgr2	36	32
 directsoundmgr	41	30
+dirpal	1	0
 discoveredarray	1	0
 discoveredeh	2	2
 discoveredsmall	9	9
@@ -218,7 +219,7 @@ dsoundvoice	2	1
 ehfunclets	6	6
 engine_attributed	5	0
 engine_discovered	15	8
-engine_label_stubs	219	119
+engine_label_stubs	217	119
 engine_unmatched_lib	11	0
 engstr	3	1
 eyecandytypetags	4	4
@@ -314,6 +315,7 @@ logicrecord	6	4
 logicrecorddispatch	4	4
 logictypetable	1	0
 logicworkerhandlers	4	4
+lutshaderect	1	0
 m1_apphelpers	3	3
 m1_cluster0c	3	2
 m1_ehfunclets	11	11
@@ -1774,6 +1776,7 @@ directsoundmgr	?StopAndRewind@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	4	6573311
 directsoundmgr	?Unlock@DirectSoundMgr@@QAEHPAXI0I@Z	100.0000	100.0000	2	1173b7b823c7	0x1359c0
 directsoundmgr	?winapi_136e20_timeGetTime@DirectSoundMgr@@QAEHH@Z	2.6667	2.6667	2	593c6f38b8c5	0x136e20
 directsoundmgr	?winapi_137ac0_timeGetTime@DirectSoundMgr@@QAEHH@Z	2.9231	2.9231	2	63f8b426702d	0x137ac0
+dirpal	?CaptureSystemPalette@DirPal@@QAEHXZ	68.3871	68.3871	1	a72a72235898	0x1485b0
 discoveredarray	?SetSize@CDwArray@@QAEXHH@Z	86.4113	86.4113	1	be6e873f54f3	0x150040
 discoveredeh	??1CButeStore@@UAE@XZ	100.0000	100.0000	1	68fa8bb3d039	0x174d70
 discoveredeh	??1CU55@@UAE@XZ	100.0000	100.0000	1	2340983fe4d8	0x16460
@@ -2006,8 +2009,6 @@ engine_label_stubs	?winapi_11b3b0_timeGetTime@CGruntSpawnConfig@ApiCallerStubs@@
 engine_label_stubs	?winapi_11b7c0_timeGetTime@ApiCallerStubs@@YGHHHHHH@Z	0.8299	0.8299	1	cpp:6bf52155264d	0x11b7c0
 engine_label_stubs	?winapi_1206b0_GetLastError_HeapValidate_HeapWalk@ApiCallerStubs@@YAHXZ	1.3669	1.3669	1	cpp:e1535087fe94	0x1206b0
 engine_label_stubs	?winapi_123d10_GetCurrentThreadId_TlsSetValue@ApiCallerStubs@@YAHXZ	2.8571	2.8571	1	cpp:e1535087fe94	0x123d10
-engine_label_stubs	?winapi_13f460_CopyRect@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHHH@Z	0.9091	0.9091	1	cpp:e8a4cb0d5b2a	0x13f460
-engine_label_stubs	?winapi_1485b0_CreateDCA_DeleteDC_GetSystemPaletteEntries@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHXZ	1.6129	1.6129	1	cpp:e8a4cb0d5b2a	0x1485b0
 engine_label_stubs	?winapi_153ff0_CopyRect@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHHH@Z	0.8920	0.8920	1	cpp:e8a4cb0d5b2a	0x153ff0
 engine_label_stubs	?winapi_154750_CopyRect@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHHH@Z	0.9091	0.9091	1	cpp:e8a4cb0d5b2a	0x154750
 engine_label_stubs	?winapi_15cbe0_timeGetTime@ApiCallerStubs@@YAHXZ	100.0000	100.0000	1	cpp:e1535087fe94	0x15cbe0
@@ -2769,6 +2770,7 @@ logicworkerhandlers	?HandlerA9CC0@@YAHPAUOwner@@@Z	100.0000	100.0000	1	cc9db04aa
 logicworkerhandlers	?HandlerAA5A0@@YAHPAUOwner@@@Z	100.0000	100.0000	1	d909b08dc631	0xaa5a0
 logicworkerhandlers	?HandlerAA960@@YAHPAUOwner@@@Z	100.0000	100.0000	1	8791e12082ce	0xaa960
 logicworkerhandlers	?HandlerAF0A0@@YAHPAUOwner@@@Z	100.0000	100.0000	1	fc95604f0cd1	0xaf0a0
+lutshaderect	?ShadeRect@LutBlit@@QAEHHPAUtagRECT@@@Z	66.6136	66.6136	1	f67a8ec565fc	0x13f460
 m1_apphelpers	?Handle@CHandlerB4@@QAEHHHHH@Z	100.0000	100.0000	1	1855ff8ffdca	0xb4cb0
 m1_apphelpers	?OnStart@CTitleApp@@QAEHH@Z	100.0000	100.0000	1	ee2f559be8ba	0xf9880
 m1_apphelpers	?Unmatched_be030@@YAXPAXPAUDlgData@@@Z	100.0000	100.0000	1	37cff8f1518d	0xbe030

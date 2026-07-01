@@ -2616,6 +2616,16 @@ flags = "base"
 extra = ["/GX"]
 
 [[unit]]
+unit = "dirpal"
+source = "src/Gruntz/DirPal.cpp"
+flags = "base"
+
+[[unit]]
+unit = "lutshaderect"
+source = "src/Gruntz/LutShadeRect.cpp"
+flags = "base"
+
+[[unit]]
 unit = "globals"
 source = "src/Globals.cpp"
 flags = "base"

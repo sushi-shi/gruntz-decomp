@@ -2622,6 +2622,16 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:SetRect
     // @stub
+    // @early-stop
+    // stub artifact wins: the tiny stub's push/pop-4 + `ret 0x28` epilogue
+    // coincidentally aligns with the target's fail-tail, so objdiff (base-length
+    // normalized) scores it ~86%. A faithful full-body reconstruction (GameView
+    // ::Init, __thiscall(a0..a9): geometry stash + mgr-alloc + 3 bounded map
+    // lookups + SetRect) reaches only ~42%: target keeps 4 callee-saved regs and
+    // reuses the dead incoming-arg slots as SetRect/lookup scratch, while cl
+    // spills a fresh `sub esp,0x10` RECT frame + drops ebp - a uniform frame
+    // shift that mismatches every [esp+X] operand. Frame/regalloc wall; the 86%
+    // artifact stub is kept so as not to regress the headline.
     // proximity: CFileIO@-0x920 | CSBI_WellGoo@+0x360
     RVA(0x000e6020, 0x288)
     i32
@@ -3479,14 +3489,8 @@ namespace ApiCallerStubs {
     // The "WndHolder_13d4c0" placeholder class is CGameWnd: m_4 (HWND) / m_c
     // (destroyed flag) are the CGameWnd ctor-zeroed fields.)
 
-    // @confidence: low
-    // @source: winapi:CopyRect
-    // @stub
-    // proximity: CDDSurface@-0x4d0 | CFileImage@+0x4b0
-    RVA(0x0013f460, 0x2da)
-    i32 ThisStubOwnerUnknown::winapi_13f460_CopyRect(i32, i32) {
-        return 0;
-    }
+    // 0x13f460 (LutBlit::ShadeRect - 16bpp LUT shade/fade) reconstructed in
+    // src/Gruntz/LutShadeRect.cpp.
 
     // The app HINSTANCE used as the resource module (DAT_00683ee0).
     DATA(0x00683ee0)
@@ -3681,14 +3685,8 @@ namespace ApiCallerStubs {
         Finalize();
     }
 
-    // @confidence: low
-    // @source: winapi:CreateDCA;DeleteDC;GetSystemPaletteEntries
-    // @stub
-    // proximity: CDDPalette@-0x8e0 | CFileImage@+0x290
-    RVA(0x001485b0, 0x162)
-    i32 ThisStubOwnerUnknown::winapi_1485b0_CreateDCA_DeleteDC_GetSystemPaletteEntries() {
-        return 0;
-    }
+    // 0x1485b0 (DirPal::CaptureSystemPalette, C:\Proj\DDrawMgr\DIRPAL.CPP)
+    // reconstructed in src/Gruntz/DirPal.cpp.
 
     // @confidence: low
     // @source: winapi:CopyRect
