@@ -94,9 +94,9 @@ struct CMenuBarFrame {
     void Draw(i32 ctx, i32 x, i32 y, i32* rect, i32 flag);
 };
 
-// Per-serialize round counter the CString archive helpers bump (g_serialCount).
+// Per-serialize round counter the CString archive helpers bump (g_serialCounter).
 DATA(0x00229ad0)
-extern i32 g_serialCount;
+extern i32 g_serialCounter;
 
 // The CString-read helper (0x155630): receiver = g_gameReg->m_resMgr->m_spriteMgr.
 // NO-body -> reloc-masks (CDDrawWorkerRegistry::CDDrawWorkerRegistry_155630).
@@ -498,28 +498,28 @@ i32 CActionOptionsMenuBar::Serialize(CMenuArchive* ar) {
 
     char tmp[0x80];
 
-    g_serialCount++;
+    g_serialCounter++;
     memset(tmp, 0, sizeof(tmp));
     if (m_normChipSprite) {
         strcpy(tmp, (char*)m_normChipSprite + 0x24);
     }
     ar->Transfer(tmp, 0x80);
 
-    g_serialCount++;
+    g_serialCounter++;
     memset(tmp, 0, sizeof(tmp));
     if (m_highChipSprite) {
         strcpy(tmp, (char*)m_highChipSprite + 0x24);
     }
     ar->Transfer(tmp, 0x80);
 
-    g_serialCount++;
+    g_serialCounter++;
     memset(tmp, 0, sizeof(tmp));
     if (m_greyChipSprite) {
         strcpy(tmp, (char*)m_greyChipSprite + 0x24);
     }
     ar->Transfer(tmp, 0x80);
 
-    g_serialCount++;
+    g_serialCounter++;
     memset(tmp, 0, sizeof(tmp));
     {
         i32 zero = 0;
@@ -530,7 +530,7 @@ i32 CActionOptionsMenuBar::Serialize(CMenuArchive* ar) {
         ar->Transfer(&zero, 4);
     }
 
-    g_serialCount++;
+    g_serialCounter++;
     memset(tmp, 0, sizeof(tmp));
     {
         i32 zero = 0;
@@ -541,7 +541,7 @@ i32 CActionOptionsMenuBar::Serialize(CMenuArchive* ar) {
         ar->Transfer(&zero, 4);
     }
 
-    g_serialCount++;
+    g_serialCounter++;
     {
         i32 zero = 0;
         i32 v20 = m_button1Frame;

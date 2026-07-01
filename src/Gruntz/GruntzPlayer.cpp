@@ -26,10 +26,10 @@
 // CString members default-init to it. Reloc-masked DATA.
 extern "C" char g_emptyString[]; // 0x6293f4
 
-// Per-serialize round counter the CString archive helpers bump (g_serialCount,
-// = ?g_serialCount@@3HA @0x629ad0). Reloc-masked DATA.
+// Per-serialize round counter the CString archive helpers bump (g_serialCounter,
+// = ?g_serialCounter@@3HA @0x629ad0). Reloc-masked DATA.
 DATA(0x00629ad0)
-extern i32 g_serialCount;
+extern i32 g_serialCounter;
 
 // The per-player config name tables the two free getters below index by enum.
 // Each is an array of char* into the rodata string pool. Reloc-masked DATA.
@@ -199,7 +199,7 @@ i32 GruntzPlayer::Serialize(void* arArg, i32 kind, i32 a3, i32 a4) {
             ar->Load(&m_020, 4);
             ar->Load(&m_028, 4);
             ar->Load(&m_024, 4);
-            g_serialCount++;
+            g_serialCounter++;
             ar->Load(tmp, 0x80);
             m_name = tmp;
             ar->Load(&m_220, 4);
@@ -218,7 +218,7 @@ i32 GruntzPlayer::Serialize(void* arArg, i32 kind, i32 a3, i32 a4) {
         ar->Save(&m_020, 4);
         ar->Save(&m_028, 4);
         ar->Save(&m_024, 4);
-        g_serialCount++;
+        g_serialCounter++;
         memset(tmp, 0, sizeof(tmp));
         strcpy(tmp, (const char*)m_name);
         ar->Save(tmp, 0x80);

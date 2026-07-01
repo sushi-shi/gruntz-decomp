@@ -133,7 +133,7 @@ struct CMiCfgHost {
 
 // Per-serialize round counter the CString archive helpers bump (DAT_00629ad0).
 DATA(0x00229ad0)
-extern i32 g_serialCount;
+extern i32 g_serialCounter;
 
 // The frame-name reverse-lookup helper (0x155630) on the config registry.
 struct CMiNameReg {
@@ -201,7 +201,7 @@ i32 CSBI_MenuItem::SerializeChain(void* arP, i32 kind, i32 a, i32 b) {
         case 7:
             // Read leg: pull the cue name + frame index from the archive, look up the
             // cue by name, and latch frame[index] (else clear).
-            g_serialCount++;
+            g_serialCounter++;
             ar->Read(name, 0x80);
             ar->Read(&idx, 4);
             if (strlen(name) != 0) {
@@ -220,7 +220,7 @@ i32 CSBI_MenuItem::SerializeChain(void* arP, i32 kind, i32 a, i32 b) {
         case 4:
             // Write leg: reverse-look-up the resolved frame's registry name + index.
             idx = 0;
-            g_serialCount++;
+            g_serialCounter++;
             memset(name, 0, sizeof(name));
             if (m_30) {
                 ((CMiNameReg*)mgr->m_10)->ReadField(m_30, name, &idx);
@@ -425,7 +425,7 @@ i32 CSBI_MenuItem::Blit() {
 // state tag + the cue name (read via strlen+Lookup / write via inline strcpy of
 // the host name), then tail-chain into the CSBI_Image leg (SerializeChain).
 // ~99.7%: byte-exact; residual is the reloc-symbol-naming tail (g_gameReg type
-// name / g_serialCount / the cue Lookup symbol vs retail's REL32 names).
+// name / g_serialCounter / the cue Lookup symbol vs retail's REL32 names).
 RVA(0x000e8520, 0x152)
 i32 CSBI_MenuItem::Serialize(void* arP, i32 kind, i32 a, i32 b) {
     CMiArchive* ar = (CMiArchive*)arP;
@@ -441,7 +441,7 @@ i32 CSBI_MenuItem::Serialize(void* arP, i32 kind, i32 a, i32 b) {
     switch (kind) {
         case 7:
             ar->Read(&m_34, 4);
-            g_serialCount++;
+            g_serialCounter++;
             ar->Read(tmp, 0x80);
             if (strlen(tmp) != 0) {
                 void* found = 0;
@@ -453,7 +453,7 @@ i32 CSBI_MenuItem::Serialize(void* arP, i32 kind, i32 a, i32 b) {
             break;
         case 4:
             ar->Write(&m_34, 4);
-            g_serialCount++;
+            g_serialCounter++;
             memset(tmp, 0, sizeof(tmp));
             if (m_38) {
                 strcpy(tmp, (char*)m_38 + 0x24);

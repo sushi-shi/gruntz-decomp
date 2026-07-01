@@ -543,11 +543,11 @@ i32 CTimer::HandleEvent(CTimerArchive* ar, i32 kind, i32 a3, i32 a4) {
     return 1;
 }
 
-// Per-serialize round counter the CString archive helpers bump (g_serialCount,
+// Per-serialize round counter the CString archive helpers bump (g_serialCounter,
 // = DAT_00629ad0). The frame-name reverse-lookup helper (0x155630) lives on the
 // sprite registry (g_gameReg->m_30->m_10); modeled with NO body -> reloc-masks.
 DATA(0x00629ad0)
-extern i32 g_serialCount;
+extern i32 g_serialCounter;
 struct CStrReader {
     void ReadField(i32 dst, char* tmp, i32* outZero);
 };
@@ -579,7 +579,7 @@ i32 CTimer::Serialize(CTimerArchive* ar) {
 
     char tmp[0x80];
 
-    g_serialCount++;
+    g_serialCounter++;
     memset(tmp, 0, sizeof(tmp));
     if (m_8) {
         strcpy(tmp, (char*)m_8 + 0x24);
@@ -588,7 +588,7 @@ i32 CTimer::Serialize(CTimerArchive* ar) {
 
     ar->Write(&m_c, 4);
 
-    g_serialCount++;
+    g_serialCounter++;
     memset(tmp, 0, sizeof(tmp));
     {
         i32 zero = 0;
@@ -599,7 +599,7 @@ i32 CTimer::Serialize(CTimerArchive* ar) {
         ar->Write(&zero, 4);
     }
 
-    g_serialCount++;
+    g_serialCounter++;
     memset(tmp, 0, sizeof(tmp));
     {
         i32 zero = 0;
@@ -610,7 +610,7 @@ i32 CTimer::Serialize(CTimerArchive* ar) {
         ar->Write(&zero, 4);
     }
 
-    g_serialCount++;
+    g_serialCounter++;
     memset(tmp, 0, sizeof(tmp));
     {
         i32 zero = 0;
@@ -621,7 +621,7 @@ i32 CTimer::Serialize(CTimerArchive* ar) {
         ar->Write(&zero, 4);
     }
 
-    g_serialCount++;
+    g_serialCounter++;
     memset(tmp, 0, sizeof(tmp));
     {
         i32 zero = 0;
@@ -632,7 +632,7 @@ i32 CTimer::Serialize(CTimerArchive* ar) {
         ar->Write(&zero, 4);
     }
 
-    g_serialCount++;
+    g_serialCounter++;
     memset(tmp, 0, sizeof(tmp));
     {
         i32 zero = 0;

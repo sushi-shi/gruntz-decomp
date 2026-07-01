@@ -3,7 +3,33 @@ tags: cpp:ctor cpp:member | asm:mov asm:call | topic:scoring-artifact topic:tool
 symptoms: ~99.5% fuzzy with 0 structural diffs, diffs only in 4-byte operand slots, ??_7…/__imp__/DAT_ names
 confidence: 9/10
 
-**UPDATE (2026-07, measured — this is largely OBSOLETE):** The vtable/global **DIR32** half is
+**CORRECTION (2026-07-01, directly MEASURED — SUPERSEDES the "name a DIR32 data referent to score
+exact" claim in the 2026-07 note below):** DIR32 data-reloc **NAMES do NOT gate exactness** under
+the current objdiff config — naming a global (`DATA()`), a pooled `??_C@` string (`coff_oracle`),
+OR a `??_7` vtable (`vtable_names.csv`) flips **NOTHING**. Two independent proofs:
+1. **1684** DIR32 name-mismatches sit inside functions already scored **100.0% exact** — including
+   **7 pooled `??_C@` string literals** (`RegistryHelper::Open` is 100% with base `??_C@_08LOIE@Software`
+   vs target `s_ware_0061a068`; `CWorldState::BuildWorldLevelPath` 100% with `??_C@…BATTLEZ` vs
+   `s_BATTLEZ__006130b0`) and **205 in-TU-emitted `??_7` vtables** (`CGameWnd::CGameWnd` is 100% with
+   base `??_7CGameWnd@@6B@` vs target `?g_vtbl_5ea344@@3PAXA`). If any of these names gated exactness,
+   those functions could not be 100%.
+2. **Controlled test:** renaming a near-miss's SOLE unnamed DIR32 referent so base==target left the
+   fuzzy% **byte-identical** — `GruntzPlayer::Serialize` 98.13333%→**98.13333%** after
+   `g_serialCount`→`g_serialCounter`; `CDDrawSubMgrLeafScan::CreateEntry`/`CreateEntry2`
+   **99.809525% unchanged** after DATA-binding their sole `g_leafElemVtbl` referent (relocdiff
+   confirmed the DIR32 mismatch vanished; the score did not move).
+
+objdiff pairs DIR32 relocs by reloc TYPE + addend (and, for defined data, by pointed-to CONTENT),
+NOT by symbol name. Consequence for the near-100% pool: a code-byte-exact near-miss is capped by a
+**REAL codegen diff** (regalloc/scheduling/EH-state/instruction-selection) or by a string/vtable
+**SHAPE** diff (a named-static `char*` vs a pooled literal emits different LOAD-vs-PUSH *code* — a
+body-shape reconstruction, not a name), NEVER by an unnamed data referent's name. **Do NOT run
+name-only "flip" passes on the near-100% pool** — they yield 0 flips (measured: 7 TUs of global
+unification → 0 exact delta; this pass → 0 exact delta). The `REL32`/import half of the older note
+stands (those are masked too). See `docs/matching-patterns.md` §215 and `docs/wall-instructions.md`.
+
+**UPDATE (2026-07, measured — largely OBSOLETE; its DIR32 half is now REFUTED, see CORRECTION above):**
+The vtable/global **DIR32** half is
 FIXED — a NAMED DIR32 data referent (vtable via `config/vtable_names.csv`, global via `DATA()`,
 pooled string via the `coff_oracle`) now scores exact; an unnamed one is fixed by naming it. The
 **`__imp__`/import + `REL32`-call half is a NON-issue**: objdiff MASKS `REL32` call/branch reloc
