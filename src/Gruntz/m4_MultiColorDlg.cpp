@@ -23,10 +23,10 @@ namespace m4 {
     // out-of-line (MFC / other TUs) -> reloc-masked.
     struct DlgItem {
         char m_pad00[0x1c];
-        HWND m_1c;                       // +0x1c
-        void EnableWindow(i32 en);       // 0x001be6a7
-        void SetText(const char* s);     // 0x001be520 (SetWindowText)
-        void GetText(CString& out);      // 0x001bbd01 (GetWindowText)
+        HWND m_1c;                   // +0x1c
+        void EnableWindow(i32 en);   // 0x001be6a7
+        void SetText(const char* s); // 0x001be520 (SetWindowText)
+        void GetText(CString& out);  // 0x001bbd01 (GetWindowText)
     };
     DlgItem* __stdcall FromHandle1bb23a(HWND h); // 0x001bb23a (CWnd::FromHandle)
 
@@ -36,7 +36,7 @@ namespace m4 {
         char m_pad00[0x528];
         i32 m_528; // +0x528 session-active flag
         char m_pad52c[0x5b0 - 0x52c];
-        i32 m_5b0; // +0x5b0 current selection
+        i32 m_5b0;          // +0x5b0 current selection
         CString Name42ff(); // 0x000042ff (thiscall, returns CString by value)
         CString Name31d4(); // 0x000031d4
     };
@@ -46,7 +46,7 @@ namespace m4 {
         char m_pad00[0x5c];
         char* m_5c; // +0x5c color-slot table base
         char m_pad60[0x6c - 0x60];
-        i32 m_6c; // +0x6c cached selection
+        i32 m_6c;                 // +0x6c cached selection
         DlgItem* GetItem(i32 id); // 0x001be27d
         i32 SlotIndex2d4c();      // 0x00002d4c
         i32 UpdateColorItems();

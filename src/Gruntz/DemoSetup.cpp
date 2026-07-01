@@ -36,4 +36,3 @@ i32 CDemoSetup::SetupDemoActors() {
 
 SIZE_UNKNOWN(CDemoWorld);
 SIZE_UNKNOWN(CDemoSetup);
-

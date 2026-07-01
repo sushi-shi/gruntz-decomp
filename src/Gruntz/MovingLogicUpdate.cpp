@@ -52,15 +52,15 @@ struct MlHolder {
 // The bound CGameObject at CMovingLogic+0x10 (only the fields this update reads).
 struct MlBoundObject {
     char _00[0x08];
-    i32 m_8;         // +0x08  flags (bit 0x10 = worker-scroll active)
-    MlHolder* m_c;   // +0x0c  level holder
+    i32 m_8;       // +0x08  flags (bit 0x10 = worker-scroll active)
+    MlHolder* m_c; // +0x0c  level holder
     char _10[0x5c - 0x10];
-    i32 m_5c;        // +0x5c  screen X
-    i32 m_60;        // +0x60  screen Y
+    i32 m_5c; // +0x5c  screen X
+    i32 m_60; // +0x60  screen Y
     char _64[0x98 - 0x64];
     MlScrollWorker* m_98; // +0x98  lazily-built scroll worker
     char _9c[0xe4 - 0x9c];
-    i32 m_e4;        // +0xe4  scroll mode (1 = follow, 7 = free)
+    i32 m_e4; // +0xe4  scroll mode (1 = follow, 7 = free)
 };
 
 // CMovingLogic: vptr + the CMotionState kinematic block at +0x38 + four trailing
@@ -69,14 +69,14 @@ class CMovingLogic {
 public:
     void Update(); // 0x16ea90
 
-    char _00[0x10];       // +0x00  vptr + spare
-    MlBoundObject* m_10;  // +0x10
+    char _00[0x10];      // +0x00  vptr + spare
+    MlBoundObject* m_10; // +0x10
     char _14[0x38 - 0x14];
-    CMotionState m_38;    // +0x38  (0x108 bytes -> ends at +0x140)
-    i32 m_140; // +0x140  latched (int)m_38.m_40
-    i32 m_144; // +0x144  latched (int)m_38.m_48
-    i32 m_148; // +0x148  ClampScroll result flags
-    i32 m_14c; // +0x14c  ClampScroll mode arg
+    CMotionState m_38; // +0x38  (0x108 bytes -> ends at +0x140)
+    i32 m_140;         // +0x140  latched (int)m_38.m_40
+    i32 m_144;         // +0x144  latched (int)m_38.m_48
+    i32 m_148;         // +0x148  ClampScroll result flags
+    i32 m_14c;         // +0x14c  ClampScroll mode arg
 };
 
 // ---------------------------------------------------------------------------

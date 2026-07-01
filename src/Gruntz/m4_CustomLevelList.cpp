@@ -21,12 +21,12 @@ namespace m4 {
 
     // CRT-style directory walk (engine copies at these RVAs; name at +0x14).
     struct FindData {
-        u32 attrib;         // +0x00
-        i32 time_create;    // +0x04
-        i32 time_access;    // +0x08
-        i32 time_write;     // +0x0c
-        i32 size;           // +0x10
-        char name[260];     // +0x14
+        u32 attrib;      // +0x00
+        i32 time_create; // +0x04
+        i32 time_access; // +0x08
+        i32 time_write;  // +0x0c
+        i32 size;        // +0x10
+        char name[260];  // +0x14
     };
     extern "C" i32 CrtFindFirst(const char* spec, FindData* fd); // 0x0011f900 (_findfirst)
     extern "C" i32 CrtFindNext(i32 h, FindData* fd);             // 0x0011fa30 (_findnext)
@@ -51,9 +51,9 @@ namespace m4 {
     extern "C" LevelSettings* g_mgrSettings; // 0x0064556c
 
     // The custom-level glob + display-name format + "already loaded" strings.
-    extern char g_customGlob[];   // 0x0060cf94
-    extern char g_customDone[];   // 0x0060cf90
-    extern char g_nameFmt[];      // 0x0060c5b8
+    extern char g_customGlob[]; // 0x0060cf94
+    extern char g_customDone[]; // 0x0060cf90
+    extern char g_nameFmt[];    // 0x0060c5b8
 
     // @early-stop
     // regalloc + frame-layout wall. Complete correct reconstruction: the listbox

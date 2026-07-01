@@ -30,7 +30,7 @@ namespace m4dlg {
 
     // The dialog host (this).
     struct CustomLevelDlg {
-        i32 Populate180e0(i32* pFlag); // 0x000180e0
+        i32 Populate180e0(i32* pFlag);  // 0x000180e0
         WndItem* GetItem1be27d(i32 id); // 0x001be27d (thiscall)
         char m_pad0[0x5c];
         SelName m_5c; // +0x5c (selected-map name)
@@ -95,8 +95,12 @@ namespace m4dlg {
                 if (h != -1) {
                     do {
                         if (g_mgrSettings->IsHidden13a2(s_custom + fd.name)) {
-                            g_pSendMessageA(item->m_hwnd, 0x180, 0,
-                                            (LPARAM)(const char*)(s_custom + fd.name));
+                            g_pSendMessageA(
+                                item->m_hwnd,
+                                0x180,
+                                0,
+                                (LPARAM)(const char*)(s_custom + fd.name)
+                            );
                         }
                     } while (CrtFindNext(h, &fd) != -1);
                 }

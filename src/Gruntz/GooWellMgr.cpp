@@ -393,4 +393,3 @@ SIZE_UNKNOWN(CActivatable);
 SIZE_UNKNOWN(CBzData);
 SIZE_UNKNOWN(PlayerSlot);
 SIZE_UNKNOWN(CGooWellMgr);
-

@@ -32,7 +32,7 @@
 
 #include <rva.h>
 
-extern "C" int rand();      // 0x11fee0 the engine LCG rand()
+extern "C" int rand(); // 0x11fee0 the engine LCG rand()
 extern "C" double sqrt(double);
 
 #pragma intrinsic(strcmp, sqrt)
@@ -201,8 +201,16 @@ struct CGruntCombat {
 };
 
 RVA(0x000597a0, 0x1345)
-i32 CGruntCombat::LoadGruntCombatAnimations(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6,
-                                            i32 a7) {
+i32 CGruntCombat::LoadGruntCombatAnimations(
+    i32 a0,
+    i32 a1,
+    i32 a2,
+    i32 a3,
+    i32 a4,
+    i32 a5,
+    i32 a6,
+    i32 a7
+) {
     if (F(this, 0x258) == 0x38 && F(this, 0x170) != 1) {
         return 1;
     }
@@ -211,8 +219,8 @@ i32 CGruntCombat::LoadGruntCombatAnimations(i32 a0, i32 a1, i32 a2, i32 a3, i32 
     if (a7 == 0x39) {
         CGruntCombat* enemy = ((CombatTileMgr*)P(this, 0x260))->m_grid[a2][a3];
         if (enemy != 0
-            && ((CombatTileMgr*)P(this, 0x260))->CheckSpawn(F(this, 0x1ec), F(this, 0x1f0), a2,
-                                                            F(enemy, 0x1f4))
+            && ((CombatTileMgr*)P(this, 0x260))
+                       ->CheckSpawn(F(this, 0x1ec), F(this, 0x1f0), a2, F(enemy, 0x1f4))
                    != 0) {
             i32 h = F(enemy, 0x3ec) + 0x19;
             if (h >= 0x64) {
@@ -314,115 +322,115 @@ i32 CGruntCombat::LoadGruntCombatAnimations(i32 a0, i32 a1, i32 a2, i32 a3, i32 
             goto L_cue;
         }
         switch (a0) {
-        case 0:
-            if (a1 == 0) {
-                LK(s_BLOCKBODY2);
-            } else {
+            case 0:
+                if (a1 == 0) {
+                    LK(s_BLOCKBODY2);
+                } else {
+                    LK(s_IMPACTMM1);
+                }
+                break;
+            case 2:
                 LK(s_IMPACTMM1);
-            }
-            break;
-        case 2:
-            LK(s_IMPACTMM1);
-            break;
-        case 3:
-            if (a1 == 0) {
-                LK(s_BLOCKBODY2);
-            } else {
-                LK(s_IMPACTMM4);
-            }
-            break;
-        case 4:
-            if (a1 == 0) {
-                LK(s_BLOCKBODY2);
-            } else {
-                LK(s_IMPACTMM4);
-            }
-            break;
-        case 5:
-            if (a1 == 0) {
-                LK(s_BLOCKBODY2);
-            } else {
+                break;
+            case 3:
+                if (a1 == 0) {
+                    LK(s_BLOCKBODY2);
+                } else {
+                    LK(s_IMPACTMM4);
+                }
+                break;
+            case 4:
+                if (a1 == 0) {
+                    LK(s_BLOCKBODY2);
+                } else {
+                    LK(s_IMPACTMM4);
+                }
+                break;
+            case 5:
+                if (a1 == 0) {
+                    LK(s_BLOCKBODY2);
+                } else {
+                    LK(s_IMPACTMM3);
+                }
+                break;
+            case 7:
+                if (a1 == 0) {
+                    LK(s_BLOCKBODY2);
+                } else {
+                    LK(s_IMPACTWM1);
+                }
+                break;
+            case 8:
+                if (a1 == 0) {
+                    LK(s_BLOCKBODY1);
+                } else {
+                    LK(s_IMPACTMM1);
+                }
+                break;
+            case 9:
+                LK(s_IMPACTWM2);
+                break;
+            case 0xb:
+                LK(s_IMPACTMM2);
+                break;
+            case 0xc:
+                if (a1 == 0) {
+                    LK(s_BLOCKBODY1);
+                } else {
+                    LK(s_IMPACTMM4);
+                }
+                break;
+            case 0xd:
+                if (a1 == 0) {
+                    LK(s_BLOCKMETAL1);
+                } else {
+                    LK(s_IMPACTMM4);
+                }
+                break;
+            case 0xe:
+                if (a1 == 0) {
+                    LK(s_BLOCKBODY2);
+                } else {
+                    LK(s_IMPACTWM3);
+                }
+                break;
+            case 0xf:
+                if (a1 == 0) {
+                    LK(s_BLOCKBODY2);
+                } else {
+                    LK(s_IMPACTMM1);
+                }
+                break;
+            case 0x10:
+                if (a1 == 0) {
+                    LK(s_BLOCKBODY2);
+                } else {
+                    LK(s_IMPACTMM3);
+                }
+                break;
+            case 0x12:
+                if (a1 == 0) {
+                    LK(s_BLOCKBODY2);
+                } else {
+                    LK(s_IMPACTMM1);
+                }
+                break;
+            case 0x13:
+                if (a1 == 0) {
+                    LK(s_BLOCKBODY2);
+                } else {
+                    LK(s_IMPACTMM1);
+                }
+                break;
+            case 0x14:
+                LK(s_IMPACTWM2);
+                break;
+            case 0x15:
+                LK(s_IMPACTWM2);
+                break;
+            default:
                 LK(s_IMPACTMM3);
-            }
-            break;
-        case 7:
-            if (a1 == 0) {
-                LK(s_BLOCKBODY2);
-            } else {
-                LK(s_IMPACTWM1);
-            }
-            break;
-        case 8:
-            if (a1 == 0) {
-                LK(s_BLOCKBODY1);
-            } else {
-                LK(s_IMPACTMM1);
-            }
-            break;
-        case 9:
-            LK(s_IMPACTWM2);
-            break;
-        case 0xb:
-            LK(s_IMPACTMM2);
-            break;
-        case 0xc:
-            if (a1 == 0) {
-                LK(s_BLOCKBODY1);
-            } else {
-                LK(s_IMPACTMM4);
-            }
-            break;
-        case 0xd:
-            if (a1 == 0) {
-                LK(s_BLOCKMETAL1);
-            } else {
-                LK(s_IMPACTMM4);
-            }
-            break;
-        case 0xe:
-            if (a1 == 0) {
-                LK(s_BLOCKBODY2);
-            } else {
-                LK(s_IMPACTWM3);
-            }
-            break;
-        case 0xf:
-            if (a1 == 0) {
-                LK(s_BLOCKBODY2);
-            } else {
-                LK(s_IMPACTMM1);
-            }
-            break;
-        case 0x10:
-            if (a1 == 0) {
-                LK(s_BLOCKBODY2);
-            } else {
-                LK(s_IMPACTMM3);
-            }
-            break;
-        case 0x12:
-            if (a1 == 0) {
-                LK(s_BLOCKBODY2);
-            } else {
-                LK(s_IMPACTMM1);
-            }
-            break;
-        case 0x13:
-            if (a1 == 0) {
-                LK(s_BLOCKBODY2);
-            } else {
-                LK(s_IMPACTMM1);
-            }
-            break;
-        case 0x14:
-            LK(s_IMPACTWM2);
-            break;
-        case 0x15:
-            LK(s_IMPACTWM2);
-            break;
-        default:
-            LK(s_IMPACTMM3);
-            break;
+                break;
         }
 
     L_cue:
@@ -476,30 +484,30 @@ i32 CGruntCombat::LoadGruntCombatAnimations(i32 a0, i32 a1, i32 a2, i32 a3, i32 
     i32 newY;
     if (a0 == 0x16) {
         switch (rand() % 8 - 1) {
-        case 0:
-            SETDIR(8, F(this, 0x17c) + 0x20, F(this, 0x180) - 0x20);
-            break;
-        case 1:
-            SETDIR(3, F(this, 0x17c) + 0x20, F(this, 0x180));
-            break;
-        case 2:
-            SETDIR(5, F(this, 0x17c) + 0x20, F(this, 0x180) + 0x20);
-            break;
-        case 3:
-            SETDIR(1, F(this, 0x17c), F(this, 0x180) + 0x20);
-            break;
-        case 4:
-            SETDIR(4, F(this, 0x17c) - 0x20, F(this, 0x180) + 0x20);
-            break;
-        case 5:
-            SETDIR(0, F(this, 0x17c) - 0x20, F(this, 0x180));
-            break;
-        case 6:
-            SETDIR(6, F(this, 0x17c) - 0x20, F(this, 0x180) - 0x20);
-            break;
-        default:
-            SETDIR(2, F(this, 0x17c), F(this, 0x180) - 0x20);
-            break;
+            case 0:
+                SETDIR(8, F(this, 0x17c) + 0x20, F(this, 0x180) - 0x20);
+                break;
+            case 1:
+                SETDIR(3, F(this, 0x17c) + 0x20, F(this, 0x180));
+                break;
+            case 2:
+                SETDIR(5, F(this, 0x17c) + 0x20, F(this, 0x180) + 0x20);
+                break;
+            case 3:
+                SETDIR(1, F(this, 0x17c), F(this, 0x180) + 0x20);
+                break;
+            case 4:
+                SETDIR(4, F(this, 0x17c) - 0x20, F(this, 0x180) + 0x20);
+                break;
+            case 5:
+                SETDIR(0, F(this, 0x17c) - 0x20, F(this, 0x180));
+                break;
+            case 6:
+                SETDIR(6, F(this, 0x17c) - 0x20, F(this, 0x180) - 0x20);
+                break;
+            default:
+                SETDIR(2, F(this, 0x17c), F(this, 0x180) - 0x20);
+                break;
         }
     } else if (dx == 0) {
         if (a5 > F(P(this, 0x10), 0x60)) {

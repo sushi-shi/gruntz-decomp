@@ -31,12 +31,12 @@ struct IFadeSink {
 
 class FaderRun {
 public:
-    virtual ~FaderRun();      // slot 0
-    virtual void v1(i32 f);   // slot 1  render frame f
-    virtual i32 v2();         // slot 2  frame count
-    virtual void v3();        // slot 3  begin
-    virtual void v4();        // slot 4  end
-    void Wait(i32 delay);     // 0x17e510
+    virtual ~FaderRun();    // slot 0
+    virtual void v1(i32 f); // slot 1  render frame f
+    virtual i32 v2();       // slot 2  frame count
+    virtual void v3();      // slot 3  begin
+    virtual void v4();      // slot 4  end
+    void Wait(i32 delay);   // 0x17e510
 
     void RunFade(u32 dur, i32 lead, i32 notify); // 0x17e620
 

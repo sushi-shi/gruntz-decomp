@@ -96,8 +96,7 @@ struct DropperFound {
 // the wander box and returns the object it lands on. FindDest @0x475c60,
 // __thiscall (via the 0x32ce ILT thunk).
 struct DropperMap {
-    DropperFound*
-    FindDest(i32 x, i32 y, i32* rect, i32* outTx, i32* outTy, DropperBox* box);
+    DropperFound* FindDest(i32 x, i32 y, i32* rect, i32* outTx, i32* outTy, DropperBox* box);
 };
 // The terrain plane (reg->m_70): a width x height grid of 28-byte cells reached
 // row-major through the +0x8 row-pointer array; cell dword 0 holds the flags.
@@ -274,8 +273,8 @@ i32 CObjectDropper::Update() {
                             flags = plane->m_8[cy][cx].m_0;
                         }
                         if ((flags & 2) == 0) {
-                            g_gameReg->m_30->m_8->CreateSprite(
-                                0, fx, fy, 0, "DroppedObjectShadow", 0x40003);
+                            g_gameReg->m_30->m_8
+                                ->CreateSprite(0, fx, fy, 0, "DroppedObjectShadow", 0x40003);
                             m_78 = tx;
                             m_7c = ty;
                             m_90 = g_buteMgr.GetDwordDef("Hazardz", "ObjectDropperDelay", 1000);

@@ -253,4 +253,3 @@ void CBattleStatsView::DrawBattleStats() {
 SIZE_UNKNOWN(StatArray);
 SIZE_UNKNOWN(StatMgr);
 SIZE_UNKNOWN(CBattleStatsView);
-

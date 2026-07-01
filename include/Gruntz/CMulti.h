@@ -23,11 +23,11 @@
 
 // Per-frame sub-objects driven by PumpA (0x0b6b40); reconstructed TU-local in
 // CMulti.cpp (thiscall receivers, all out-of-line -> reloc-masked).
-class CMultiSubDC;   // CMulti::m_2dc
-class CMultiSubE4;   // CMulti::m_2e4
-class CMultiSlot48;  // CMultiLogic::m_48
-class CMultiSub68;   // CMultiLogic::m_68
-class CMultiSub70;   // CMultiLogic::m_70
+class CMultiSubDC;  // CMulti::m_2dc
+class CMultiSubE4;  // CMulti::m_2e4
+class CMultiSlot48; // CMultiLogic::m_48
+class CMultiSub68;  // CMultiLogic::m_68
+class CMultiSub70;  // CMultiLogic::m_70
 
 // The CState owner/logic object at CMulti+0x04 (CState::m_4). CMulti's lobby /
 // error-report methods drive it through three thiscall entry points (all
@@ -101,8 +101,8 @@ public:
     CMultiLogicList* m_6c; // +0x6c  the RemoveHead list manager
     CMultiSub70* m_70;     // +0x70  per-frame sub (PumpA, Step3562)
     char m_pad74_9c[0x9c - 0x74];
-    i32 m_9c; // +0x9c  zeroed at StartTitle entry
-    void Step2d33();       // 0x??  per-frame finish (PumpA tail)
+    i32 m_9c;        // +0x9c  zeroed at StartTitle entry
+    void Step2d33(); // 0x??  per-frame finish (PumpA tail)
     char m_padA0_C0[0xc0 - 0xa0];
     i32 m_c0;              // +0xc0  must be non-null to proceed
     CMultiLogicDesc* m_c4; // +0xc4  host descriptor
@@ -240,9 +240,9 @@ public:
     char m_pad1b8_1cc[0x1cc - 0x1b8];
     i32 m_1cc; // +0x1cc  reseeded to 0
     char m_pad1d0_2d0[0x2d0 - 0x1d0];
-    i32 m_2d0; // +0x2d0  Step() result
-    i32 m_2d4; // +0x2d4  Drain() result
-    i32 m_2d8; // +0x2d8  rng seed
+    i32 m_2d0;          // +0x2d0  Step() result
+    i32 m_2d4;          // +0x2d4  Drain() result
+    i32 m_2d8;          // +0x2d8  rng seed
     CMultiSubDC* m_2dc; // +0x2dc  per-frame sub (Step34bd)
     char m_pad2e0_2e4[0x2e4 - 0x2e0];
     CMultiSubE4* m_2e4; // +0x2e4  per-frame sub (Step2cc0)
@@ -279,8 +279,8 @@ public:
     char m_pad584_588[0x588 - 0x584];
     i32 m_588; // +0x588  armed flag
     char m_pad58c_590[0x590 - 0x58c];
-    i32 m_590; // +0x590  copied to m_4->m_110 on teardown
-    i32 m_594; // +0x594  ambient-enable gate
+    i32 m_590;     // +0x590  copied to m_4->m_110 on teardown
+    i32 m_594;     // +0x594  ambient-enable gate
     CString m_598; // +0x598
     CString m_59c; // +0x59c
     CString m_5a0; // +0x5a0

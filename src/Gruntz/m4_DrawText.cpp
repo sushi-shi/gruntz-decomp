@@ -28,7 +28,9 @@ namespace m4 {
     };
     struct ImgHolder2 : SevWorker2 {
         void Release1c6a5c();
-        virtual ~ImgHolder2() { Release1c6a5c(); }
+        virtual ~ImgHolder2() {
+            Release1c6a5c();
+        }
     };
     struct DrawScratch : ImgHolder2 {
         DrawScratch(i32 a, i32 b, i32 c); // 0x001c6a72
@@ -37,16 +39,16 @@ namespace m4 {
     // The item's rect source: built from the host's +0x1c sub-object; its first
     // field points at the item RECT. Destructible (EH-tracked).
     struct RectSrc {
-        RECT* m_rect; // +0x00
+        RECT* m_rect;             // +0x00
         RectSrc(void* rectField); // 0x001b9ba3
         ~RectSrc();               // 0x001b9cde
     };
 
     // The engine text renderer bound to the DC (returned by Bind1c56ef).
     struct TextRenderer {
-        i32 Push1c58ea(void* obj);          // 0x001c58ea (save/select, returns prior)
+        i32 Push1c58ea(void* obj);                  // 0x001c58ea (save/select, returns prior)
         void MoveTo1c6059(void* out, i32 x, i32 y); // 0x001c6059
-        void Draw1c60a5(i32 x, i32 y);      // 0x001c60a5
+        void Draw1c60a5(i32 x, i32 y);              // 0x001c60a5
     };
     TextRenderer* Bind1c56ef(HDC hdc); // 0x001c56ef
 
@@ -109,8 +111,8 @@ namespace m4 {
     // thiscall member, /GX (destructible CString). Placeholder names.
 
     // The game's Win32 pointer table entries (0x6c44xx/0x6c3exx) -> reloc-masked.
-    extern SHORT(__stdcall* g_pGetAsyncKeyState)(int);          // 0x006c4500
-    extern HGDIOBJ(__stdcall* g_pSelectObject)(HDC, HGDIOBJ);   // 0x006c3ec4
+    extern SHORT(__stdcall* g_pGetAsyncKeyState)(int);        // 0x006c4500
+    extern HGDIOBJ(__stdcall* g_pSelectObject)(HDC, HGDIOBJ); // 0x006c3ec4
 
     // Password blink timer + last-format cache (reached by address).
     extern i32 g_645584; // 0x00645584 elapsed-time delta
@@ -125,14 +127,16 @@ namespace m4 {
         PwdStr(void* srcCString);   // 0x001b9ba3 (CString copy ctor)
         ~PwdStr();                  // 0x001b9cde
         void SetAt(i32 i, char ch); // 0x001ba282
-        i32 Len() { return *((i32*)m_data - 2); }
+        i32 Len() {
+            return *((i32*)m_data - 2);
+        }
     };
 
     struct PwdHost {
         char m_pad00[0x1c];
         char* m_1c; // +0x1c CString data ptr (edit text)
         char m_pad20[0x38 - 0x20];
-        HGDIOBJ m_38; // +0x38 control font
+        HGDIOBJ m_38;                       // +0x38 control font
         void Draw258b(HDC hdc, RECT* rect); // 0x0000258b (caret/underline draw)
         i32 Render22160(HDC hdc, i32 maxWidth, RECT* rect);
     };
@@ -210,8 +214,18 @@ namespace m4 {
         char m_pad00[0x3c];
         HGDIOBJ m_3c; // +0x3c font A
         HGDIOBJ m_40; // +0x40 font B
-        i32 Draw3DText22810(void* strSrc, HDC hdc, RECT* dst, i32 fontFlag, i32 r, i32 g,
-                            i32 b, i32 shadow, i32 dx, i32 dy);
+        i32 Draw3DText22810(
+            void* strSrc,
+            HDC hdc,
+            RECT* dst,
+            i32 fontFlag,
+            i32 r,
+            i32 g,
+            i32 b,
+            i32 shadow,
+            i32 dx,
+            i32 dy
+        );
     };
 
     // @early-stop
@@ -223,8 +237,18 @@ namespace m4 {
     // temporaries across ebx/ebp/esi/edi vs retail and reusing dead arg slots for the
     // rc + selPrev locals differently, shifting the [esp+N] operands - not steerable.
     RVA(0x00022810, 0x22a)
-    i32 TextHost::Draw3DText22810(void* strSrc, HDC hdc, RECT* dst, i32 fontFlag, i32 r, i32 g,
-                                  i32 b, i32 shadow, i32 dx, i32 dy) {
+    i32 TextHost::Draw3DText22810(
+        void* strSrc,
+        HDC hdc,
+        RECT* dst,
+        i32 fontFlag,
+        i32 r,
+        i32 g,
+        i32 b,
+        i32 shadow,
+        i32 dx,
+        i32 dy
+    ) {
         if (hdc == 0) {
             return 0;
         }

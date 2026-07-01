@@ -54,4 +54,3 @@ i32 DDrawBltHost::BltChecked() {
 
 SIZE_UNKNOWN(DDrawBltSurface);
 SIZE_UNKNOWN(DDrawBltHost);
-

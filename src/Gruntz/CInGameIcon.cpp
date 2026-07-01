@@ -446,8 +446,8 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj) {
     // glitter overlay sprite for the powerup / curse groups
     if (glitter != 0) {
         IconSpriteFactory* fac = *(IconSpriteFactory**)((char*)g_gameReg->m_30 + 8);
-        CGameObject* fx = fac->CreateSprite(0, m_10->m_5c, m_10->m_60, 0x17319, "SimpleAnimation",
-                                            0x40003);
+        CGameObject* fx =
+            fac->CreateSprite(0, m_10->m_5c, m_10->m_60, 0x17319, "SimpleAnimation", 0x40003);
         *(CGameObject**)((char*)this + 0x78) = fx;
         if (glitter == 2) {
             fx->ApplyName("GAME_GLITTERRED");

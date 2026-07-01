@@ -35,12 +35,12 @@ struct CScanNode324 { // m_324
     char _00[8];
     CScanKeyNode* m_8; // +0x08
 };
-struct CScanList { // scratch CObList (block size 10) - forces /GX
-    CScanList(i32 blockSize); // 0x1b4867
-    ~CScanList();             // 0x1b48c6
-    void* Head1b4a03();       // 0x1b4a03
-    void Add1b4991(void* p);  // 0x1b4991
-    void RemoveAll1b48a6();   // 0x1b48a6
+struct CScanList {             // scratch CObList (block size 10) - forces /GX
+    CScanList(i32 blockSize);  // 0x1b4867
+    ~CScanList();              // 0x1b48c6
+    void* Head1b4a03();        // 0x1b4a03
+    void Add1b4991(void* p);   // 0x1b4991
+    void RemoveAll1b48a6();    // 0x1b48a6
     void* Find1de8(void** it); // 0x1de8
     char _00[0x18];
     i32 m_18; // +0x18 trigger out-slot
@@ -54,7 +54,7 @@ struct CScanCell { // 0x1c bytes/cell
     u8 m_3; // +0x03 flag byte
     char _04[0x1c - 4];
 };
-struct CScanPlane {                                                            // grid (settings->m_70)
+struct CScanPlane { // grid (settings->m_70)
     char _00[8];
     CScanCell** m_8; // +0x08 row table
     i32 m_c, m_10;   // +0x0c width, +0x10 height
@@ -67,7 +67,7 @@ struct CScanPlane {                                                            /
 struct CScanRectInit { // 0x34a4
     RECT* Set34a4(i32 l, i32 t, i32 r, i32 b);
 };
-struct CGrunt {         // this (ebx)
+struct CGrunt { // this (ebx)
     char _00[0x10];
     CScanSub10* m_10; // +0x10
     char _14[0x248 - 0x14];
@@ -91,7 +91,7 @@ struct CGrunt {         // this (ebx)
         ra.top = pb->top;                                                                          \
         ra.right = pb->right;                                                                      \
         ra.bottom = pb->bottom;                                                                    \
-        if (!IntersectRect((RECT*)&(grid)->m_60, &ra, &rb)) {                                       \
+        if (!IntersectRect((RECT*)&(grid)->m_60, &ra, &rb)) {                                      \
             *(RECT*)&(grid)->m_60 = ra;                                                            \
         }                                                                                          \
         (grid)->m_70 = (grid)->m_68 - (grid)->m_60;                                                \
@@ -100,7 +100,7 @@ struct CGrunt {         // this (ebx)
 
 #define FREELIST_PUSH(elem)                                                                        \
     {                                                                                              \
-        void** node = (void**)((char*)(elem)-g_freeListNodeBias);                                  \
+        void** node = (void**)((char*)(elem) - g_freeListNodeBias);                                \
         *node = g_freeList;                                                                        \
         g_freeList = node;                                                                         \
     }
@@ -232,8 +232,8 @@ i32 CGrunt::PathScan57db0() {
                     continue;
                 }
                 CScanList s(0xa);
-                i32 res = grid->Probe20f4(col5, row5, col5, row5, &s.m_18, 1,
-                                          m_248 | 0x20040002, m_24c);
+                i32 res =
+                    grid->Probe20f4(col5, row5, col5, row5, &s.m_18, 1, m_248 | 0x20040002, m_24c);
                 if (res != 0 && s.m_18 != 0) {
                     void* elem = s.Head1b4a03();
                     if (elem != 0) {

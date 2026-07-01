@@ -26,15 +26,15 @@ struct CPlaySoundMgr {
 // Round-trip a 16-byte (two 8-byte halves) timer block through the archive. The
 // mode-4 (write) body is emitted out-of-line (retail checks mode==4 first via je,
 // keeps the mode-7 read body inline).
-#define SYNC_PAIR(ar, mode, p)      \
-    if ((mode) != 4) {              \
-        if ((mode) == 7) {          \
-            (ar)->Read((p), 8);     \
-            (ar)->Read((p) + 8, 8); \
-        }                           \
-    } else {                        \
-        (ar)->Write((p), 8);        \
-        (ar)->Write((p) + 8, 8);    \
+#define SYNC_PAIR(ar, mode, p)                                                                     \
+    if ((mode) != 4) {                                                                             \
+        if ((mode) == 7) {                                                                         \
+            (ar)->Read((p), 8);                                                                    \
+            (ar)->Read((p) + 8, 8);                                                                \
+        }                                                                                          \
+    } else {                                                                                       \
+        (ar)->Write((p), 8);                                                                       \
+        (ar)->Write((p) + 8, 8);                                                                   \
     }
 
 // ===========================================================================

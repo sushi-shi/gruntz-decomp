@@ -245,4 +245,3 @@ SIZE_UNKNOWN(CBcastMember);
 SIZE_UNKNOWN(CBcastListNode);
 SIZE_UNKNOWN(CBcastMap);
 SIZE_UNKNOWN(CGroupBroadcast);
-

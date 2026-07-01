@@ -78,32 +78,32 @@ i32 GruntInfoTextHost::winapi_0d95f0_wsprintfA() {
     CString s3; // footer          (line 4)
 
     switch (m_20) {
-    case 1:
-        s0.LoadString(0x81ae);
-        break;
-    case 2:
-        s0.LoadString(0x81af);
-        break;
-    case 3:
-        s0.LoadString(0x81b0);
-        break;
-    case 4:
-        s0.LoadString(0x81b1);
-        break;
-    case 5:
-        s0.LoadString(0x81b2);
-        break;
-    case 6:
-        s0.LoadString(0x81b3);
-        break;
-    case 7:
-        s0.LoadString(0x81b4);
-        break;
-    case 8:
-        s0.LoadString(0x81b5);
-        break;
-    default:
-        s0 = g_emptyString;
+        case 1:
+            s0.LoadString(0x81ae);
+            break;
+        case 2:
+            s0.LoadString(0x81af);
+            break;
+        case 3:
+            s0.LoadString(0x81b0);
+            break;
+        case 4:
+            s0.LoadString(0x81b1);
+            break;
+        case 5:
+            s0.LoadString(0x81b2);
+            break;
+        case 6:
+            s0.LoadString(0x81b3);
+            break;
+        case 7:
+            s0.LoadString(0x81b4);
+            break;
+        case 8:
+            s0.LoadString(0x81b5);
+            break;
+        default:
+            s0 = g_emptyString;
     }
 
     i32 mode = g_64556c->m_134;
@@ -114,135 +114,135 @@ i32 GruntInfoTextHost::winapi_0d95f0_wsprintfA() {
             i32 stage = m_1c;
             if (stage > 0x24) {
                 switch (stage) {
-                case 0x25:
-                    s1.LoadString(0x81a2);
-                    break;
-                case 0x26:
-                    s1.LoadString(0x81a3);
-                    break;
-                case 0x27:
-                    s1.LoadString(0x81a4);
-                    break;
-                case 0x28:
-                    s1.LoadString(0x81a5);
-                    break;
-                default:
-                    s1 = g_emptyString;
+                    case 0x25:
+                        s1.LoadString(0x81a2);
+                        break;
+                    case 0x26:
+                        s1.LoadString(0x81a3);
+                        break;
+                    case 0x27:
+                        s1.LoadString(0x81a4);
+                        break;
+                    case 0x28:
+                        s1.LoadString(0x81a5);
+                        break;
+                    default:
+                        s1 = g_emptyString;
                 }
             } else {
                 s1.Format("Stage %d", ((stage - 1) % 4) + 1);
             }
             switch (m_1c) {
-            case 1:
-                s2.LoadString(0x8177);
-                break;
-            case 2:
-                s2.LoadString(0x8178);
-                break;
-            case 3:
-                s2.LoadString(0x8179);
-                break;
-            case 4:
-                s2.LoadString(0x817a);
-                break;
-            case 5:
-                s2.LoadString(0x817b);
-                break;
-            case 6:
-                s2.LoadString(0x817c);
-                break;
-            case 7:
-                s2.LoadString(0x817d);
-                break;
-            case 8:
-                s2.LoadString(0x817e);
-                break;
-            case 9:
-                s2.LoadString(0x817f);
-                break;
-            case 10:
-                s2.LoadString(0x8180);
-                break;
-            case 0xb:
-                s2.LoadString(0x8181);
-                break;
-            case 0xc:
-                s2.LoadString(0x8182);
-                break;
-            case 0xd:
-                s2.LoadString(0x8183);
-                break;
-            case 0xe:
-                s2.LoadString(0x8184);
-                break;
-            case 0xf:
-                s2.LoadString(0x8185);
-                break;
-            case 0x10:
-                s2.LoadString(0x8186);
-                break;
-            case 0x11:
-                s2.LoadString(0x8187);
-                break;
-            case 0x12:
-                s2.LoadString(0x8188);
-                break;
-            case 0x13:
-                s2.LoadString(0x8189);
-                break;
-            case 0x14:
-                s2.LoadString(0x818a);
-                break;
-            case 0x15:
-                s2.LoadString(0x818b);
-                break;
-            case 0x16:
-                s2.LoadString(0x818c);
-                break;
-            case 0x17:
-                s2.LoadString(0x818d);
-                break;
-            case 0x18:
-                s2.LoadString(0x818e);
-                break;
-            case 0x19:
-                s2.LoadString(0x818f);
-                break;
-            case 0x1a:
-                s2.LoadString(0x8190);
-                break;
-            case 0x1b:
-                s2.LoadString(0x8191);
-                break;
-            case 0x1c:
-                s2.LoadString(0x8192);
-                break;
-            case 0x1d:
-                s2.LoadString(0x8193);
-                break;
-            case 0x1e:
-                s2.LoadString(0x8194);
-                break;
-            case 0x1f:
-                s2.LoadString(0x8195);
-                break;
-            case 0x20:
-                s2.LoadString(0x8196);
-                break;
-            default:
-                s2.Format(g_emptyString);
-                break;
-            case 0x25:
-                s2.LoadString(0x8197);
-                break;
-            case 0x26:
-                s2.LoadString(0x8198);
-                break;
-            case 0x27:
-                s2.LoadString(0x8199);
-                break;
-            case 0x28:
-                s2.LoadString(0x819a);
+                case 1:
+                    s2.LoadString(0x8177);
+                    break;
+                case 2:
+                    s2.LoadString(0x8178);
+                    break;
+                case 3:
+                    s2.LoadString(0x8179);
+                    break;
+                case 4:
+                    s2.LoadString(0x817a);
+                    break;
+                case 5:
+                    s2.LoadString(0x817b);
+                    break;
+                case 6:
+                    s2.LoadString(0x817c);
+                    break;
+                case 7:
+                    s2.LoadString(0x817d);
+                    break;
+                case 8:
+                    s2.LoadString(0x817e);
+                    break;
+                case 9:
+                    s2.LoadString(0x817f);
+                    break;
+                case 10:
+                    s2.LoadString(0x8180);
+                    break;
+                case 0xb:
+                    s2.LoadString(0x8181);
+                    break;
+                case 0xc:
+                    s2.LoadString(0x8182);
+                    break;
+                case 0xd:
+                    s2.LoadString(0x8183);
+                    break;
+                case 0xe:
+                    s2.LoadString(0x8184);
+                    break;
+                case 0xf:
+                    s2.LoadString(0x8185);
+                    break;
+                case 0x10:
+                    s2.LoadString(0x8186);
+                    break;
+                case 0x11:
+                    s2.LoadString(0x8187);
+                    break;
+                case 0x12:
+                    s2.LoadString(0x8188);
+                    break;
+                case 0x13:
+                    s2.LoadString(0x8189);
+                    break;
+                case 0x14:
+                    s2.LoadString(0x818a);
+                    break;
+                case 0x15:
+                    s2.LoadString(0x818b);
+                    break;
+                case 0x16:
+                    s2.LoadString(0x818c);
+                    break;
+                case 0x17:
+                    s2.LoadString(0x818d);
+                    break;
+                case 0x18:
+                    s2.LoadString(0x818e);
+                    break;
+                case 0x19:
+                    s2.LoadString(0x818f);
+                    break;
+                case 0x1a:
+                    s2.LoadString(0x8190);
+                    break;
+                case 0x1b:
+                    s2.LoadString(0x8191);
+                    break;
+                case 0x1c:
+                    s2.LoadString(0x8192);
+                    break;
+                case 0x1d:
+                    s2.LoadString(0x8193);
+                    break;
+                case 0x1e:
+                    s2.LoadString(0x8194);
+                    break;
+                case 0x1f:
+                    s2.LoadString(0x8195);
+                    break;
+                case 0x20:
+                    s2.LoadString(0x8196);
+                    break;
+                default:
+                    s2.Format(g_emptyString);
+                    break;
+                case 0x25:
+                    s2.LoadString(0x8197);
+                    break;
+                case 0x26:
+                    s2.LoadString(0x8198);
+                    break;
+                case 0x27:
+                    s2.LoadString(0x8199);
+                    break;
+                case 0x28:
+                    s2.LoadString(0x819a);
             }
             if (g_6455f0 != 0) {
                 s1.LoadString(0x81ac);

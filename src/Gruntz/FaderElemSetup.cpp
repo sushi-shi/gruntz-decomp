@@ -65,4 +65,3 @@ i32 CFaderElem::Apply(FaderArg* s) {
 SIZE_UNKNOWN(FaderSrc);
 SIZE_UNKNOWN(FaderArg);
 SIZE_UNKNOWN(CFaderElem);
-

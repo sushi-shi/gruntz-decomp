@@ -203,4 +203,3 @@ void __stdcall RestoreFileTimeInfo(char* path, FileInfoRec* in) {
 
 SIZE_UNKNOWN(FileInfoRec);
 SIZE_UNKNOWN(EngCTimeTmp);
-

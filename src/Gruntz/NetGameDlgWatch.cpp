@@ -48,12 +48,12 @@ struct WatchSess {
     i32 m_600; // +0x600 abort gate
 
     // reloc-masked __thiscall leaves (thunks / engine methods):
-    void M2338();                  // 0x2338
-    void M2955(i32 a, i32 b, i32 c); // 0x2955
-    void M360c();                  // 0x360c
-    i32 M1cee(void* h, i32 token); // 0x1cee -> worker handle
-    void M2c39();                  // 0x2c39
-    void M2365();                  // 0x2365
+    void M2338();                     // 0x2338
+    void M2955(i32 a, i32 b, i32 c);  // 0x2955
+    void M360c();                     // 0x360c
+    i32 M1cee(void* h, i32 token);    // 0x1cee -> worker handle
+    void M2c39();                     // 0x2c39
+    void M2365();                     // 0x2365
     void M1af0(const char* msg, i32); // 0x1af0 show status message
 };
 

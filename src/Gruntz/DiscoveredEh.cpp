@@ -52,4 +52,3 @@ CButeStore::~CButeStore() {
 SIZE_UNKNOWN(CU55Base);
 SIZE_UNKNOWN(CU55);
 SIZE_UNKNOWN(CObj50);
-

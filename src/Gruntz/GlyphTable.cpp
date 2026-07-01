@@ -29,4 +29,3 @@ void GlyphTable::Set(int v, int c) {
 }
 
 SIZE_UNKNOWN(GlyphTable);
-

@@ -19,16 +19,16 @@ namespace m4 {
 
     // MS-CRT-style LCG RNG state (shared with the ApiCaller stubs); reached by
     // address -> reloc-masked. timeGetTime seeds it lazily.
-    extern char g_rngSeeded;   // 0x006c127d  bit0 = seeded
-    extern i32 g_rngState;     // 0x006c1288  32-bit LCG state
+    extern char g_rngSeeded;                     // 0x006c127d  bit0 = seeded
+    extern i32 g_rngState;                       // 0x006c1288  32-bit LCG state
     extern u32(__stdcall* g_pTimeGetTime)(void); // 0x006c4650
 
     // The game's Win32 pointer table (0x6c44xx / 0x6c3eac) - typed so the
     // indirect calls reloc-mask.
-    extern BOOL(__stdcall* g_pGetClientRect)(HWND, LPRECT);    // 0x006c44e4
-    extern BOOL(__stdcall* g_pClientToScreen)(HWND, LPPOINT);  // 0x006c44ec
-    extern BOOL(__stdcall* g_pScreenToClient)(HWND, LPPOINT);  // 0x006c44e8
-    extern HBRUSH(__stdcall* g_pCreateSolidBrush)(COLORREF);   // 0x006c3eac
+    extern BOOL(__stdcall* g_pGetClientRect)(HWND, LPRECT);       // 0x006c44e4
+    extern BOOL(__stdcall* g_pClientToScreen)(HWND, LPPOINT);     // 0x006c44ec
+    extern BOOL(__stdcall* g_pScreenToClient)(HWND, LPPOINT);     // 0x006c44e8
+    extern HBRUSH(__stdcall* g_pCreateSolidBrush)(COLORREF);      // 0x006c3eac
     extern int(__stdcall* g_pFillRect)(HDC, const RECT*, HBRUSH); // 0x006c44e0
 
     // The three-level draw-scratch hierarchy (severus worker <- image holder <-
@@ -38,14 +38,20 @@ namespace m4 {
     };
     struct ImgHolder : SevWorker {
         HBRUSH m_brush;
-        void Release1c6a5c();               // 0x001c6a5c (brush release)
-        virtual ~ImgHolder() { Release1c6a5c(); }
+        void Release1c6a5c(); // 0x001c6a5c (brush release)
+        virtual ~ImgHolder() {
+            Release1c6a5c();
+        }
         // MFC-style safe handle: NULL-guards the receiver (retail keeps the
         // neg/sbb/and select even for a stack object).
-        HBRUSH SafeBrush() { return this ? m_brush : (HBRUSH)0; }
+        HBRUSH SafeBrush() {
+            return this ? m_brush : (HBRUSH)0;
+        }
     };
     struct FlashScratch : ImgHolder {
-        FlashScratch() { m_brush = 0; }
+        FlashScratch() {
+            m_brush = 0;
+        }
         void Init1c6a05(HBRUSH br); // 0x001c6a05
     };
 
@@ -60,17 +66,17 @@ namespace m4 {
     // A dialog child-item record: its window handle lives at +0x1c.
     struct FlashItem {
         char m_pad00_1c[0x1c];
-        HWND m_1c;         // +0x1c
+        HWND m_1c;          // +0x1c
         BOOL Check1be68c(); // 0x001be68c
     };
     // The dialog host: window at +0x1c, plus the two item accessors.
     struct FlashHost {
         char m_pad00_1c[0x1c];
-        HWND m_1c;                   // +0x1c
+        HWND m_1c;                        // +0x1c
         FlashItem* GetItem2c52(i32 slot); // 0x00002c52
         FlashItem* GetItem30da(i32 slot); // 0x000030da
-        void FlashRect160f0();  // 0x000160f0
-        i32 FlashRectC2e20();   // 0x000c2e20
+        void FlashRect160f0();            // 0x000160f0
+        i32 FlashRectC2e20();             // 0x000c2e20
     };
 
     // Advance the shared LCG one step (lazily seeded); returns 15-bit value.

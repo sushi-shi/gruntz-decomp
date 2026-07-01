@@ -77,12 +77,12 @@ void CFader::Set2c(i32 v) {
 // m_cache before its own stamp). cl inlines the member ctor, so the member vptr +
 // field zeros fall between the CFader base ctor call and the sunk own-vptr stamp.
 // ===========================================================================
-struct CFader17e940Sub {   // nested sub-object at +0x58 (own vftable 0x5f07d8)
-    virtual void v0();     // one virtual -> its own vtable (reloc-masks 0x5f07d8)
-    i32 m_04;              // +0x5c
-    i32 m_08;              // +0x60
-    i32 m_0c;              // +0x64
-    i32 m_10;              // +0x68
+struct CFader17e940Sub { // nested sub-object at +0x58 (own vftable 0x5f07d8)
+    virtual void v0();   // one virtual -> its own vtable (reloc-masks 0x5f07d8)
+    i32 m_04;            // +0x5c
+    i32 m_08;            // +0x60
+    i32 m_0c;            // +0x64
+    i32 m_10;            // +0x68
     CFader17e940Sub() {
         m_04 = 0;
         m_10 = 0;

@@ -152,220 +152,221 @@ i32 CGruntWander::WanderStep() {
     }
 
     switch (F(this, 0x2d4)) {
-    case 0:
-        if (g != 0) {
-            if (F(this, 0x220) == 0 && F(this, 0x3f0) >= 0x64 && F(P(g, 0x10), 0x5c) == F(g, 0x17c)
-                && F(P(g, 0x10), 0x60) == F(g, 0x180)
-                && TileProbe(F(P(g, 0x10), 0x5c), F(P(g, 0x10), 0x60)) != 0) {
-                CommitMove(F(g, 0x1ec), F(g, 0x1f0), F(g, 0x17c), F(g, 0x180));
-                F(this, 0x358) = 0;
-                if (F(this, 0x328) != 0) {
-                    void* node = P(this, 0x320);
-                    if (node != 0) {
-                        do {
-                            void* cur = node;
-                            node = *(void**)node;
-                            i32 data = *(i32*)((char*)cur + 8);
-                            if (data != 0) {
-                                g_dropList.Drop(data);
-                            }
-                        } while (node != 0);
+        case 0:
+            if (g != 0) {
+                if (F(this, 0x220) == 0 && F(this, 0x3f0) >= 0x64
+                    && F(P(g, 0x10), 0x5c) == F(g, 0x17c) && F(P(g, 0x10), 0x60) == F(g, 0x180)
+                    && TileProbe(F(P(g, 0x10), 0x5c), F(P(g, 0x10), 0x60)) != 0) {
+                    CommitMove(F(g, 0x1ec), F(g, 0x1f0), F(g, 0x17c), F(g, 0x180));
+                    F(this, 0x358) = 0;
+                    if (F(this, 0x328) != 0) {
+                        void* node = P(this, 0x320);
+                        if (node != 0) {
+                            do {
+                                void* cur = node;
+                                node = *(void**)node;
+                                i32 data = *(i32*)((char*)cur + 8);
+                                if (data != 0) {
+                                    g_dropList.Drop(data);
+                                }
+                            } while (node != 0);
+                        }
+                        ((CStepList*)((char*)this + 0x31c))->RemoveAll();
                     }
-                    ((CStepList*)((char*)this + 0x31c))->RemoveAll();
+                    F(this, 0x2d4) = 5;
+                    return 1;
                 }
-                F(this, 0x2d4) = 5;
-                return 1;
-            }
-            if ((u32)F(this, 0x2ec) > 0x3e8) {
-                if (OwnsTile(F(g, 0x1ec), F(g, 0x1f0)) != 0) {
-                    i32 c[4];
-                    g->ReadCenter(c);
-                    if (ProbeMove(c[0] >> 5, c[1] >> 5, 0, F(this, 0x248), 1, 0) != 0) {
-                        StampMove(1, 1);
-                        F(this, 0x2f0) = F(g, 0x1ec);
-                        F(this, 0x2f4) = F(g, 0x1f0);
-                        F(this, 0x2d4) = 1;
-                        if (BoardTest(F(g_mgrSettings->m_30->m_24, 0x5c) + 0x40,
-                                      F(P(this, 0x10), 0x5c), F(P(this, 0x10), 0x60))
-                            != 0) {
-                            g_mgrSettings->m_60->GruntCue(this, 0x366, -1, 0, -1, -1);
+                if ((u32)F(this, 0x2ec) > 0x3e8) {
+                    if (OwnsTile(F(g, 0x1ec), F(g, 0x1f0)) != 0) {
+                        i32 c[4];
+                        g->ReadCenter(c);
+                        if (ProbeMove(c[0] >> 5, c[1] >> 5, 0, F(this, 0x248), 1, 0) != 0) {
+                            StampMove(1, 1);
+                            F(this, 0x2f0) = F(g, 0x1ec);
+                            F(this, 0x2f4) = F(g, 0x1f0);
+                            F(this, 0x2d4) = 1;
+                            if (BoardTest(
+                                    F(g_mgrSettings->m_30->m_24, 0x5c) + 0x40,
+                                    F(P(this, 0x10), 0x5c),
+                                    F(P(this, 0x10), 0x60)
+                                )
+                                != 0) {
+                                g_mgrSettings->m_60->GruntCue(this, 0x366, -1, 0, -1, -1);
+                            }
                         }
                     }
+                    F(this, 0x2ec) = 0;
+                    return 1;
                 }
-                F(this, 0x2ec) = 0;
+            }
+            goto timeout;
+
+        case 1: {
+            CGruntWander* slot =
+                ((MgrGrid*)P(this, 0x260))->slot[F(this, 0x2f4) + F(this, 0x2f0) * 0xf];
+            CGruntWander* active = ((CGruntTileMgr*)P(this, 0x260))->FindGrunt(this);
+            if (active != 0 && active != slot) {
+                F(this, 0x2f0) = -1;
+                F(this, 0x2d4) = 0;
+                F(this, 0x2f4) = -1;
                 return 1;
             }
-        }
-        goto timeout;
-
-    case 1: {
-        CGruntWander* slot
-            = ((MgrGrid*)P(this, 0x260))->slot[F(this, 0x2f4) + F(this, 0x2f0) * 0xf];
-        CGruntWander* active = ((CGruntTileMgr*)P(this, 0x260))->FindGrunt(this);
-        if (active != 0 && active != slot) {
-            F(this, 0x2f0) = -1;
-            F(this, 0x2d4) = 0;
-            F(this, 0x2f4) = -1;
-            return 1;
-        }
-        if (slot == 0 || F(slot, 0x1fc) == 0
-            || OwnsTile(F(slot, 0x1ec), F(slot, 0x1f0)) == 0) {
-            F(this, 0x2d4) = 0;
-            return 1;
-        }
-        if ((u32)F(this, 0x2ec) > 0x1f4) {
-            PlaceTile(F(slot, 0x17c), F(slot, 0x180), 0, F(this, 0x248), 1, 0);
-            F(this, 0x2ec) = 0;
-        }
-        if (F(this, 0x220) != 0) {
-            return 1;
-        }
-        if (F(this, 0x3f0) < 0x64) {
-            return 1;
-        }
-        if (TileProbe(F(P(slot, 0x10), 0x5c), F(P(slot, 0x10), 0x60)) == 0) {
-            return 1;
-        }
-        if (F(P(slot, 0x10), 0x5c) != F(slot, 0x17c)) {
-            return 1;
-        }
-        if (F(P(slot, 0x10), 0x60) != F(slot, 0x180)) {
-            return 1;
-        }
-        CommitMove(F(slot, 0x1ec), F(slot, 0x1f0), F(slot, 0x17c), F(slot, 0x180));
-        F(this, 0x358) = 0;
-        if (F(this, 0x328) != 0) {
-            void* node = P(this, 0x320);
-            if (node != 0) {
-                do {
-                    void* cur = node;
-                    node = *(void**)node;
-                    i32 data = *(i32*)((char*)cur + 8);
-                    if (data != 0) {
-                        g_dropList.Drop(data);
-                    }
-                } while (node != 0);
+            if (slot == 0 || F(slot, 0x1fc) == 0 || OwnsTile(F(slot, 0x1ec), F(slot, 0x1f0)) == 0) {
+                F(this, 0x2d4) = 0;
+                return 1;
             }
-            ((CStepList*)((char*)this + 0x31c))->RemoveAll();
-        }
-        F(this, 0x2d4) = 5;
-        return 1;
-    }
-
-    case 2: {
-        if (F(this, 0x220) == 0) {
-            F(this, 0x2d4) = 0;
-            return 1;
-        }
-        CGruntWander* slot
-            = ((MgrGrid*)P(this, 0x260))->slot[F(this, 0x2f4) + F(this, 0x2f0) * 0xf];
-        if (slot == 0 || OwnsTile(F(slot, 0x1ec), F(slot, 0x1f0)) == 0 || F(slot, 0x1fc) == 0) {
-            goto ph1;
-        }
-        if (F(this, 0x21c) != 0) {
-            return 1;
-        }
-        if (F(this, 0x218) != 0) {
-            return 1;
-        }
-        if (F(this, 0x3f0) < 0x64) {
-            return 1;
-        }
-        if (TileProbe(F(P(slot, 0x10), 0x5c), F(P(slot, 0x10), 0x60)) == 0) {
-            goto ph1;
-        }
-        if (F(P(slot, 0x10), 0x5c) != F(slot, 0x17c)) {
-            goto ph1;
-        }
-        if (F(P(slot, 0x10), 0x60) != F(slot, 0x180)) {
-            goto ph1;
-        }
-        CommitMove(F(slot, 0x1ec), F(slot, 0x1f0), F(slot, 0x17c), F(slot, 0x180));
-        F(this, 0x358) = 0;
-        if (F(this, 0x328) != 0) {
-            void* node = P(this, 0x320);
-            if (node != 0) {
-                i32 prev = (i32)g_freeList;
-                do {
-                    void* cur = node;
-                    node = *(void**)node;
-                    i32 data = *(i32*)((char*)cur + 8);
-                    if (data != 0) {
-                        i32* fslot = (i32*)(data - g_freeListBias);
-                        *fslot = prev;
-                        prev = (i32)fslot;
-                        g_freeList = fslot;
-                    }
-                } while (node != 0);
+            if ((u32)F(this, 0x2ec) > 0x1f4) {
+                PlaceTile(F(slot, 0x17c), F(slot, 0x180), 0, F(this, 0x248), 1, 0);
+                F(this, 0x2ec) = 0;
             }
-            ((CStepList*)((char*)this + 0x31c))->RemoveAll();
+            if (F(this, 0x220) != 0) {
+                return 1;
+            }
+            if (F(this, 0x3f0) < 0x64) {
+                return 1;
+            }
+            if (TileProbe(F(P(slot, 0x10), 0x5c), F(P(slot, 0x10), 0x60)) == 0) {
+                return 1;
+            }
+            if (F(P(slot, 0x10), 0x5c) != F(slot, 0x17c)) {
+                return 1;
+            }
+            if (F(P(slot, 0x10), 0x60) != F(slot, 0x180)) {
+                return 1;
+            }
+            CommitMove(F(slot, 0x1ec), F(slot, 0x1f0), F(slot, 0x17c), F(slot, 0x180));
+            F(this, 0x358) = 0;
+            if (F(this, 0x328) != 0) {
+                void* node = P(this, 0x320);
+                if (node != 0) {
+                    do {
+                        void* cur = node;
+                        node = *(void**)node;
+                        i32 data = *(i32*)((char*)cur + 8);
+                        if (data != 0) {
+                            g_dropList.Drop(data);
+                        }
+                    } while (node != 0);
+                }
+                ((CStepList*)((char*)this + 0x31c))->RemoveAll();
+            }
+            F(this, 0x2d4) = 5;
+            return 1;
         }
-        F(this, 0x2d4) = 5;
-        F(this, 0x2ec) = 0x1f4;
-        return 1;
-    ph1:
-        F(this, 0x2d4) = 1;
-        F(this, 0x2ec) = 0x1f4;
-        return 1;
-    }
 
-    case 5: {
-        if (F(this, 0x218) != 0) {
+        case 2: {
+            if (F(this, 0x220) == 0) {
+                F(this, 0x2d4) = 0;
+                return 1;
+            }
+            CGruntWander* slot =
+                ((MgrGrid*)P(this, 0x260))->slot[F(this, 0x2f4) + F(this, 0x2f0) * 0xf];
+            if (slot == 0 || OwnsTile(F(slot, 0x1ec), F(slot, 0x1f0)) == 0 || F(slot, 0x1fc) == 0) {
+                goto ph1;
+            }
+            if (F(this, 0x21c) != 0) {
+                return 1;
+            }
+            if (F(this, 0x218) != 0) {
+                return 1;
+            }
+            if (F(this, 0x3f0) < 0x64) {
+                return 1;
+            }
+            if (TileProbe(F(P(slot, 0x10), 0x5c), F(P(slot, 0x10), 0x60)) == 0) {
+                goto ph1;
+            }
+            if (F(P(slot, 0x10), 0x5c) != F(slot, 0x17c)) {
+                goto ph1;
+            }
+            if (F(P(slot, 0x10), 0x60) != F(slot, 0x180)) {
+                goto ph1;
+            }
+            CommitMove(F(slot, 0x1ec), F(slot, 0x1f0), F(slot, 0x17c), F(slot, 0x180));
+            F(this, 0x358) = 0;
+            if (F(this, 0x328) != 0) {
+                void* node = P(this, 0x320);
+                if (node != 0) {
+                    i32 prev = (i32)g_freeList;
+                    do {
+                        void* cur = node;
+                        node = *(void**)node;
+                        i32 data = *(i32*)((char*)cur + 8);
+                        if (data != 0) {
+                            i32* fslot = (i32*)(data - g_freeListBias);
+                            *fslot = prev;
+                            prev = (i32)fslot;
+                            g_freeList = fslot;
+                        }
+                    } while (node != 0);
+                }
+                ((CStepList*)((char*)this + 0x31c))->RemoveAll();
+            }
+            F(this, 0x2d4) = 5;
+            F(this, 0x2ec) = 0x1f4;
+            return 1;
+        ph1:
+            F(this, 0x2d4) = 1;
+            F(this, 0x2ec) = 0x1f4;
             return 1;
         }
-        if (F(this, 0x3f0) >= 0x64) {
-            F(this, 0x2d4) = 0;
-            return 1;
-        }
-        if (F(this, 0x328) != 0) {
-            return 1;
-        }
-        i32 base = F(this, 0x10);
-        i32 clip = 1;
-        i32 py = GameRand() % 4 + (F(base, 0x60) >> 5) - 2;
-        i32 px = GameRand() % 4 + (F(base, 0x5c) >> 5) - 2;
-        if ((u32)F(this, 0x2f0) < 4 && (u32)F(this, 0x2f4) < 0xf) {
-            CGruntWander* entry
-                = g_mgrSettings->m_68->slot[F(this, 0x2f0) * 0xf + F(this, 0x2f4)];
-            if (entry != 0) {
-                i32 e10 = F(entry, 0x10);
-                RECT rc;
-                rc.left = (F(e10, 0x5c) >> 5) - 2;
-                rc.top = (F(e10, 0x60) >> 5) - 2;
-                rc.right = (F(e10, 0x5c) >> 5) + 3;
-                rc.bottom = (F(e10, 0x60) >> 5) + 3;
-                POINT pt;
-                pt.x = px;
-                pt.y = py;
-                if (PtInRect(&rc, pt)) {
-                    clip = 0;
+
+        case 5: {
+            if (F(this, 0x218) != 0) {
+                return 1;
+            }
+            if (F(this, 0x3f0) >= 0x64) {
+                F(this, 0x2d4) = 0;
+                return 1;
+            }
+            if (F(this, 0x328) != 0) {
+                return 1;
+            }
+            i32 base = F(this, 0x10);
+            i32 clip = 1;
+            i32 py = GameRand() % 4 + (F(base, 0x60) >> 5) - 2;
+            i32 px = GameRand() % 4 + (F(base, 0x5c) >> 5) - 2;
+            if ((u32)F(this, 0x2f0) < 4 && (u32)F(this, 0x2f4) < 0xf) {
+                CGruntWander* entry =
+                    g_mgrSettings->m_68->slot[F(this, 0x2f0) * 0xf + F(this, 0x2f4)];
+                if (entry != 0) {
+                    i32 e10 = F(entry, 0x10);
+                    RECT rc;
+                    rc.left = (F(e10, 0x5c) >> 5) - 2;
+                    rc.top = (F(e10, 0x60) >> 5) - 2;
+                    rc.right = (F(e10, 0x5c) >> 5) + 3;
+                    rc.bottom = (F(e10, 0x60) >> 5) + 3;
+                    POINT pt;
+                    pt.x = px;
+                    pt.y = py;
+                    if (PtInRect(&rc, pt)) {
+                        clip = 0;
+                    }
                 }
             }
-        }
-        if (clip == 0) {
+            if (clip == 0) {
+                return 1;
+            }
+            MgrDims* grid = g_mgrSettings->m_70;
+            if ((u32)px >= (u32)grid->m_c) {
+                return 1;
+            }
+            if ((u32)py >= (u32)grid->m_10) {
+                return 1;
+            }
+            ProbeMove(px, py, 0, F(this, 0x248), 1, 0);
             return 1;
         }
-        MgrDims* grid = g_mgrSettings->m_70;
-        if ((u32)px >= (u32)grid->m_c) {
-            return 1;
-        }
-        if ((u32)py >= (u32)grid->m_10) {
-            return 1;
-        }
-        ProbeMove(px, py, 0, F(this, 0x248), 1, 0);
-        return 1;
-    }
 
-    default:
-        return 1;
+        default:
+            return 1;
     }
 
 timeout:
     if (F(this, 0x244) == 0 && F(this, 0x318) != 0 && (u32)F(this, 0x2ec) > 0xbb8) {
         i32 hi = -(i32)((u32)g_clock < (u32)F(this, 0x308)) - F(this, 0x30c);
         i32 lo = (i32)(g_clock - (u32)F(this, 0x308));
-        if (F(this, 0x314) < hi
-            || (F(this, 0x314) == hi && (u32)lo >= (u32)F(this, 0x310))) {
+        if (F(this, 0x314) < hi || (F(this, 0x314) == hi && (u32)lo >= (u32)F(this, 0x310))) {
             ResetEntrance(1, 1, 0);
             F(this, 0x308) = 0;
             F(this, 0x310) = 0;

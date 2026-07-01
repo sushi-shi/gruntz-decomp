@@ -24,15 +24,15 @@ namespace gruntphase {
     struct TypeColl {
         char** Lookup437c(i32 key); // 0x0000437c (thiscall)
     };
-    extern TypeColl g_typeColl;         // 0x006bf650
-    extern const char g_phaseType[];    // 0x0060d2e8 (the gate type name)
+    extern TypeColl g_typeColl;      // 0x006bf650
+    extern const char g_phaseType[]; // 0x0060d2e8 (the gate type name)
 
     // The point accumulator built for the 16 border cells (a small CObList/array
     // temporary): m_4 = the packed-point array, m_8 = live count.
     struct PtAcc {
         i32 m_0;
-        i32* m_4; // +0x04 packed-point array
-        i32 m_8;  // +0x08 live count
+        i32* m_4;                        // +0x04 packed-point array
+        i32 m_8;                         // +0x08 live count
         void Ctor1b4b43();               // 0x001b4b43
         void Add1b4d7c(i32 a, i32 pt);   // 0x001b4d7c
         void Remove1b4e38(i32 i, i32 f); // 0x001b4e38
@@ -72,8 +72,8 @@ namespace gruntphase {
     extern MgrSettings* g_mgrSettings; // 0x0064556c
 
     // The shared free-list of recycled CObList nodes.
-    extern void* g_freeList;        // 0x00645544
-    extern i32 g_freeListNodeBias;  // 0x0064554c
+    extern void* g_freeList;       // 0x00645544
+    extern i32 g_freeListNodeBias; // 0x0064554c
 
     // A visited-cell node (CObList element): m_0 = next, m_8 = payload.
     struct ObNode {
@@ -84,7 +84,7 @@ namespace gruntphase {
     struct ObList {
         ObNode* m_0; // +0x00 head
         char m_pad4[8 - 4];
-        ObNode* m_8; // +0x08 tail
+        ObNode* m_8;            // +0x08 tail
         void RemoveAll1b48a6(); // 0x001b48a6
     };
 
@@ -156,12 +156,12 @@ namespace gruntphase {
         char m_pad394[0x3f0 - 0x394];
         i32 m_3f0; // +0x3f0
 
-        void GetTilePos36c0(GruntTilePos* out); // 0x000036c0
+        void GetTilePos36c0(GruntTilePos* out);                     // 0x000036c0
         i32 MarkTile1640(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // 0x00001640
-        i32 Check3c4c(i32 a, i32 b);         // 0x00003c4c
-        void Emit302b(i32 a, i32 b, i32 c, i32 d); // 0x0000302b
-        i32 Probe1014(i32 a, i32 b);         // 0x00001014
-        void Notify39f4(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x000039f4
+        i32 Check3c4c(i32 a, i32 b);                                // 0x00003c4c
+        void Emit302b(i32 a, i32 b, i32 c, i32 d);                  // 0x0000302b
+        i32 Probe1014(i32 a, i32 b);                                // 0x00001014
+        void Notify39f4(i32 a, i32 b, i32 c, i32 d, i32 e);         // 0x000039f4
         i32 PhaseStep();
     };
 
@@ -171,9 +171,9 @@ namespace gruntphase {
     };
     extern "C" RectT* RectSet34a4(RectT* r, i32 l, i32 t, i32 rr, i32 bb); // 0x000034a4
     // The dirty/valid-cell region builder over the accumulator.
-    extern "C" void AccInit1b4b43(void* rgn);                 // 0x001b4b43 (also PtAcc::Ctor)
-    extern "C" i32 GridTest1127(i32 a, i32 b, i32 c);         // 0x00001127 (cdecl)
-    extern "C" i32 Rand11fee0();                              // 0x0011fee0
+    extern "C" void AccInit1b4b43(void* rgn);         // 0x001b4b43 (also PtAcc::Ctor)
+    extern "C" i32 GridTest1127(i32 a, i32 b, i32 c); // 0x00001127 (cdecl)
+    extern "C" i32 Rand11fee0();                      // 0x0011fee0
     extern "C" void PlaceTile14bf(void* plane, i32 a, i32 b, i32 c, i32 d); // 0x000014bf
 
     // @early-stop
@@ -274,7 +274,8 @@ namespace gruntphase {
             i32 py = pt & 0xffff;
             TilePlane* pl = g_mgrSettings->m_70;
             i32 flag;
-            if ((u32)px < (u32)pl->m_c && (u32)py < (u32)pl->m_10 && px < pl->m_c && py < pl->m_10) {
+            if ((u32)px < (u32)pl->m_c && (u32)py < (u32)pl->m_10 && px < pl->m_c
+                && py < pl->m_10) {
                 flag = pl->m_8[py][px * 8 - px];
             } else {
                 flag = 1;
@@ -306,8 +307,8 @@ namespace gruntphase {
         if (nb->m_1fc == 0) {
             goto common;
         }
-        if (m_220 == 0 && m_3f0 >= 0x64 && nb->m_10->m_5c == nb->m_17c && nb->m_10->m_60 == nb->m_180 &&
-            Check3c4c(nb->m_10->m_5c, nb->m_10->m_60) != 0) {
+        if (m_220 == 0 && m_3f0 >= 0x64 && nb->m_10->m_5c == nb->m_17c
+            && nb->m_10->m_60 == nb->m_180 && Check3c4c(nb->m_10->m_5c, nb->m_10->m_60) != 0) {
             Emit302b(nb->m_1ec, nb->m_1f0, nb->m_17c, nb->m_180);
             m_2f0 = nb->m_10->m_5c >> 5;
             m_2f4 = nb->m_10->m_60 >> 5;

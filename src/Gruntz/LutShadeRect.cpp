@@ -41,10 +41,10 @@ struct LutBlit {
     char m_pad0[8];
     LutSurf* m_8; // +0x08
     char m_padc[0x18 - 0xc];
-    i32 m_18; // +0x18 clip bottom bound
-    i32 m_1c; // +0x1c clip right bound
-    i32 m_20; // +0x20 surface pitch (bytes; /2 = pixels per row)
-    u16* GetSrc(i32); // 0x13e6d0 __thiscall -> source pixel buffer
+    i32 m_18;                           // +0x18 clip bottom bound
+    i32 m_1c;                           // +0x1c clip right bound
+    i32 m_20;                           // +0x20 surface pitch (bytes; /2 = pixels per row)
+    u16* GetSrc(i32);                   // 0x13e6d0 __thiscall -> source pixel buffer
     i32 ShadeRect(i32 pct, RECT* clip); // 0x13f460
 };
 
@@ -95,8 +95,7 @@ i32 LutBlit::ShadeRect(i32 pct, RECT* clip) {
     i32 off = scale << 11;
 
     if (g_pfRedSize == 3) {
-        if (g_pfGreenShift == 3 && g_pfBlueSize == 3 && g_pfRedShift == 0xa &&
-            g_pfGreenSize == 5) {
+        if (g_pfGreenShift == 3 && g_pfBlueSize == 3 && g_pfRedShift == 0xa && g_pfGreenSize == 5) {
             for (; height > 0; height--) {
                 memcpy(scratch, srcPix, width * 2);
                 u16* rd = scratch;
@@ -106,14 +105,14 @@ i32 LutBlit::ShadeRect(i32 pct, RECT* clip) {
                     u32 hi = p >> 5;
                     u32 green = hi & 0x1f;
                     u32 red = hi & 0xffffffe0;
-                    *srcPix++ = (u16)(*(u16*)((char*)g_lutBank2_663ca0 + off + (blue << 6)) |
-                                      *(u16*)((char*)g_lutBank1_653ca0 + off + (green << 6)) |
-                                      *(u16*)((char*)g_lutBank0_673ca0 + off + red * 2));
+                    *srcPix++ = (u16)(*(u16*)((char*)g_lutBank2_663ca0 + off + (blue << 6))
+                                      | *(u16*)((char*)g_lutBank1_653ca0 + off + (green << 6))
+                                      | *(u16*)((char*)g_lutBank0_673ca0 + off + red * 2));
                 }
                 srcPix += stride;
             }
-        } else if (g_pfGreenShift == 2 && g_pfBlueSize == 3 && g_pfRedShift == 0xb &&
-                   g_pfGreenSize == 5) {
+        } else if (g_pfGreenShift == 2 && g_pfBlueSize == 3 && g_pfRedShift == 0xb
+                   && g_pfGreenSize == 5) {
             for (; height > 0; height--) {
                 memcpy(scratch, srcPix, width * 2);
                 u16* rd = scratch;
@@ -123,9 +122,9 @@ i32 LutBlit::ShadeRect(i32 pct, RECT* clip) {
                     u32 hi = p >> 6;
                     u32 green = hi & 0x1f;
                     u32 red = hi & 0xffffffe0;
-                    *srcPix++ = (u16)(*(u16*)((char*)g_lutBank2_663ca0 + off + (blue << 6)) |
-                                      *(u16*)((char*)g_lutBank1_653ca0 + off + (green << 6)) |
-                                      *(u16*)((char*)g_lutBank0_673ca0 + off + red * 2));
+                    *srcPix++ = (u16)(*(u16*)((char*)g_lutBank2_663ca0 + off + (blue << 6))
+                                      | *(u16*)((char*)g_lutBank1_653ca0 + off + (green << 6))
+                                      | *(u16*)((char*)g_lutBank0_673ca0 + off + red * 2));
                 }
                 srcPix += stride;
             }

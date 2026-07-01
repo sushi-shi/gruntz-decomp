@@ -136,4 +136,3 @@ SIZE_UNKNOWN(FrConfig);
 SIZE_UNKNOWN(FrSurface);
 SIZE_UNKNOWN(FrCell);
 SIZE_UNKNOWN(CFaderRadial);
-

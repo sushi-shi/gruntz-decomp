@@ -42,28 +42,28 @@ struct CArriveSub10 { // g->m_10
     char _00[0x5c];
     i32 m_5c, m_60; // +0x5c, +0x60
 };
-struct CArriveList {          // g->m_31c
+struct CArriveList {           // g->m_31c
     void RemoveAll1b48a6();    // 0x1b48a6
     void* Find1de8(void** it); // 0x1de8
     char _00[4];
 };
-struct CArriveStr { // scratch CString (block 10) - forces /GX
-    CArriveStr(i32 n);      // 0x1b4867
-    ~CArriveStr();          // 0x1b48c6
-    void* Head1b4a03();     // 0x1b4a03
+struct CArriveStr {     // scratch CString (block 10) - forces /GX
+    CArriveStr(i32 n);  // 0x1b4867
+    ~CArriveStr();      // 0x1b48c6
+    void* Head1b4a03(); // 0x1b4a03
     char _00[0x18];
 };
-struct CArriveGrunt {                                                            // g (ebp)
-    void GetTilePos36c0(CArriveCoord* out);                                      // 0x36c0
-    i32 Move14bf(i32 col, i32 row, i32 a, i32 b);                                // 0x14bf
-    i32 Trigger1640(i32 a, i32 b, i32 c, i32 msg, i32 e, i32 f);                 // 0x1640
-    i32 Probe1a4b(i32 a, i32 b, i32 c);                                          // 0x1a4b
-    void Effect374c(i32 kind, i32 x);                                            // 0x374c
-    i32 State1c21(i32 a, i32 b);                                                 // 0x1c21 (via [g+0x14])
-    i32 Check3c4c(i32 a, i32 b);                                                 // 0x3c4c
-    void Impact25e5(i32 a, i32 b, i32 c, i32 d);                                 // 0x25e5
-    void SelfImpact2b58(i32 a, i32 b, i32 c, i32 d);                             // 0x2b58
-    i32 Ready27ed(CArriveGrunt* g);                                             // 0x27ed
+struct CArriveGrunt {                                            // g (ebp)
+    void GetTilePos36c0(CArriveCoord* out);                      // 0x36c0
+    i32 Move14bf(i32 col, i32 row, i32 a, i32 b);                // 0x14bf
+    i32 Trigger1640(i32 a, i32 b, i32 c, i32 msg, i32 e, i32 f); // 0x1640
+    i32 Probe1a4b(i32 a, i32 b, i32 c);                          // 0x1a4b
+    void Effect374c(i32 kind, i32 x);                            // 0x374c
+    i32 State1c21(i32 a, i32 b);                                 // 0x1c21 (via [g+0x14])
+    i32 Check3c4c(i32 a, i32 b);                                 // 0x3c4c
+    void Impact25e5(i32 a, i32 b, i32 c, i32 d);                 // 0x25e5
+    void SelfImpact2b58(i32 a, i32 b, i32 c, i32 d);             // 0x2b58
+    i32 Ready27ed(CArriveGrunt* g);                              // 0x27ed
     char _00[0x10];
     CArriveSub10* m_10; // +0x10
     char _14[0x170 - 0x14];
@@ -85,13 +85,13 @@ struct CArriveGrunt {                                                           
     i32 m_328; // +0x328 pending latch
 };
 
-struct CArriveGrid {   // this->m_c
+struct CArriveGrid { // this->m_c
     char _00[8];
     CArriveCell** m_8; // +0x08 rows
     i32 m_c, m_10;     // +0x0c width, +0x10 height
 };
-struct CArriveMgr {                          // this (edi)
-    i32 Gate1a14();                          // 0x1a14
+struct CArriveMgr { // this (edi)
+    i32 Gate1a14(); // 0x1a14
     char _00[0xc];
     CArriveGrid* m_c; // +0x0c grid
     i32 Resolve2c690(CArriveGrunt* g);

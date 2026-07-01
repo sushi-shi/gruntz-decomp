@@ -150,8 +150,16 @@ public:
     virtual void v20();
     virtual void v24();
     virtual void v28();
-    virtual i32
-    Setup(void* mgr, void* sub, i32 type, i32 idx, SbRect rc, const char* key, i32 flag, i32 e); // +0x2c
+    virtual i32 Setup(
+        void* mgr,
+        void* sub,
+        i32 type,
+        i32 idx,
+        SbRect rc,
+        const char* key,
+        i32 flag,
+        i32 e
+    ); // +0x2c
 };
 
 // ---------------------------------------------------------------------------
@@ -512,7 +520,8 @@ i32 CTabzBuilder::BuildTabzDialog() {
     // count active players (m_178!=0 && m_17c==0 && m_174==0) over the 4 slots.
     i32 count = 0;
     for (i32 i = 0; i < 4; i++) {
-        if (g_mgrSettings->m_players[i].m_178 != 0 && g_mgrSettings->m_players[i].m_17c == 0 && g_mgrSettings->m_players[i].m_174 == 0) {
+        if (g_mgrSettings->m_players[i].m_178 != 0 && g_mgrSettings->m_players[i].m_17c == 0
+            && g_mgrSettings->m_players[i].m_174 == 0) {
             count++;
         }
     }

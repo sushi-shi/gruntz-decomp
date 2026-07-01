@@ -427,8 +427,8 @@ extern "C" u32 g_6bf3bc; // 0x6bf3bc  (= delta cap mirror)
 DATA(0x0024558c)
 extern "C" i32 g_64558c; // 0x64558c  ambient frame counter
 DATA(0x00245590)
-extern "C" u32 g_645590; // 0x645590  stat timer 1
-extern "C" i32 g_645594; // 0x645594  (?g_645594@@3HA)
+extern "C" u32 g_645590;       // 0x645590  stat timer 1
+extern "C" i32 g_645594;       // 0x645594  (?g_645594@@3HA)
 extern "C" i32 g_strikeThresh; // 0x645598 (?g_strikeThresh@@3HA)
 DATA(0x0024559c)
 extern "C" u32 g_64559c; // 0x64559c  stat timer 4
@@ -468,7 +468,7 @@ public:
 };
 class CMultiSlot48 { // CMultiLogic::m_48
 public:
-    void Add138840(char* name, i32 flag); // 0x138840
+    void Add138840(char* name, i32 flag);  // 0x138840
     CMultiSlotObj* Find138730(char* name); // 0x138730
     char m_pad0[0x1c];
     CMultiSlotObj* m_1c; // +0x1c
@@ -598,8 +598,8 @@ public:
 class PBPane {
 public:
     char m_pad00_2c[0x2c];
-    PBRenderTarget* m_2c;               // +0x2c
-    void Blit163f40(void* pal, i32 n);  // 0x00163f40 (thiscall on m_14)
+    PBRenderTarget* m_2c;              // +0x2c
+    void Blit163f40(void* pal, i32 n); // 0x00163f40 (thiscall on m_14)
 };
 // The +0xc vfn host: dispatched through vtable slot +0x34 (index 13).
 class PBVfnHost {
@@ -623,14 +623,14 @@ public:
 class PBCompTarget { // m_c->m_24->m_5c
 public:
     char m_pad00_84[0x84];
-    i32 m_84;         // +0x84
-    i32 m_88;         // +0x88
+    i32 m_84;           // +0x84
+    i32 m_88;           // +0x88
     void Flush163370(); // 0x00163370 (thiscall on m_5c)
 };
 class PBComp { // m_c->m_24
 public:
     char m_pad00_5c[0x5c];
-    PBCompTarget* m_5c;             // +0x5c
+    PBCompTarget* m_5c;                  // +0x5c
     void M15dc90(void* pane, void* ctx); // 0x0015dc90
 };
 // The m_c manager sub-object tree.
@@ -648,7 +648,7 @@ public:
     void* m_8;      // +0x08
     PBVfnHost* m_c; // +0x0c
     char m_pad10_24[0x24 - 0x10];
-    PBComp* m_24;   // +0x24
+    PBComp* m_24; // +0x24
 };
 // The output sink hung off CMultiLogic::m_54 (thiscall 2-arg blit).
 class PBOutput {
@@ -663,16 +663,16 @@ public:
 class PBSub68 {
 public:
     char m_pad00_230[0x230];
-    i32 m_230;      // +0x230  armed gate
-    void Fire1398(); // 0x00001398
-    void Reset2b85();// 0x00002b85
+    i32 m_230;        // +0x230  armed gate
+    void Fire1398();  // 0x00001398
+    void Reset2b85(); // 0x00002b85
 };
 // m_2dc: the primary FX overlay (state at +0, mode at +0x10c) reached in PumpB.
 class PBSubDC {
 public:
-    i32 m_0;                       // +0x00  state
+    i32 m_0; // +0x00  state
     char m_pad04_10c[0x10c - 0x04];
-    i32 m_10c;                     // +0x10c mode
+    i32 m_10c;          // +0x10c mode
     void Present21b7(); // 0x000021b7
     void Advance125d(); // 0x0000125d
 };

@@ -16,8 +16,8 @@
 #include <rva.h>
 
 #include <Ints.h>
-#include <Win32.h> // RECT + IntersectRect
-#include <math.h>  // fild/fsqrt/__ftol board distance
+#include <Win32.h>  // RECT + IntersectRect
+#include <math.h>   // fild/fsqrt/__ftol board distance
 #include <string.h> // inline strcmp type-name gate
 
 // --- offset-faithful views (offsets + called methods load-bearing; reloc-masked) ---
@@ -29,9 +29,9 @@ struct CStepNode { // g->m_320 pending-coord node
     i32 _04;
     void* m_8; // +0x08
 };
-struct CStepList {              // g->m_31c (CObList view)
-    void* Find1de8(void** it);  // 0x1de8
-    void RemoveAll1b48a6();     // 0x1b48a6
+struct CStepList {             // g->m_31c (CObList view)
+    void* Find1de8(void** it); // 0x1de8
+    void RemoveAll1b48a6();    // 0x1b48a6
     char _00[4];
 };
 struct CStepSub10 { // g->m_10
@@ -59,13 +59,13 @@ extern char k_60cc94[]; // "J"
 extern char k_60cc90[]; // "C"
 extern char k_60bebc[]; // "R"
 
-struct CStepGrunt {                                                // g (esi)
-    void GetTilePos36c0(CStepCoord* out);                          // 0x36c0
-    i32 Check3c4c(i32 a, i32 b);                                   // 0x3c4c
-    void Probe3143(CStepCoord* out);                              // 0x3143
-    i32 Trigger1640(i32 x, i32 y, i32 a, i32 msg, i32 c, i32 d);   // 0x1640
-    i32 Method421e();                                             // 0x421e
-    void Method223e();                                            // 0x223e
+struct CStepGrunt {                                              // g (esi)
+    void GetTilePos36c0(CStepCoord* out);                        // 0x36c0
+    i32 Check3c4c(i32 a, i32 b);                                 // 0x3c4c
+    void Probe3143(CStepCoord* out);                             // 0x3143
+    i32 Trigger1640(i32 x, i32 y, i32 a, i32 msg, i32 c, i32 d); // 0x1640
+    i32 Method421e();                                            // 0x421e
+    void Method223e();                                           // 0x223e
     char _00[0x10];
     CStepSub10* m_10; // +0x10
     CStepOwner* m_14; // +0x14
@@ -101,10 +101,10 @@ struct CStepGrid { // this->m_c
 struct CStepGoal { // this->m_f4[] element
     i32 m_0, m_4;
 };
-struct CStepMgr {                                            // this (ebp)
-    CStepGrunt* QueryTile4098(i32 x, i32 y, i32 a, i32 b);   // 0x4098
-    void Finish3e4f(CStepGrunt* g, CStepGrunt* cur);         // 0x3e4f
-    i32 Method2626(CStepGrunt* g);                           // 0x2626
+struct CStepMgr {                                          // this (ebp)
+    CStepGrunt* QueryTile4098(i32 x, i32 y, i32 a, i32 b); // 0x4098
+    void Finish3e4f(CStepGrunt* g, CStepGrunt* cur);       // 0x3e4f
+    i32 Method2626(CStepGrunt* g);                         // 0x2626
     char _00[0x8];
     void* m_8;      // +0x08 board (CStepGrunt*[])
     CStepGrid* m_c; // +0x0c grid
@@ -157,7 +157,7 @@ extern "C" i32 __cdecl GameRand11fee0(); // 0x11fee0 engine LCG rand
         ra.top = pb->top;                                                                          \
         ra.right = pb->right;                                                                      \
         ra.bottom = pb->bottom;                                                                    \
-        if (!IntersectRect((RECT*)&(grid)->m_60, &ra, &rb)) {                                       \
+        if (!IntersectRect((RECT*)&(grid)->m_60, &ra, &rb)) {                                      \
             *(RECT*)&(grid)->m_60 = ra;                                                            \
         }                                                                                          \
         (grid)->m_70 = (grid)->m_68 - (grid)->m_60;                                                \
@@ -258,13 +258,13 @@ i32 CStepMgr::Step33520(CStepGrunt* g) {
             }
             g->m_2f0 = -1;
             g->m_2f4 = -1;
-            if (g != 0 && g->Method421e() && g->m_1fc != 0 && g->m_368 == 0 && g->m_1e4 == 0 &&
-                g->m_220 == 0) {
+            if (g != 0 && g->Method421e() && g->m_1fc != 0 && g->m_368 == 0 && g->m_1e4 == 0
+                && g->m_220 == 0) {
                 const char* nm = g_typeColl.Lookup437c(g->m_14->m_1c)->m_0;
-                if (strcmp(nm, k_60cca0) != 0 && strcmp(nm, k_60cc9c) != 0 &&
-                    strcmp(nm, k_60cc98) != 0 && strcmp(nm, k_60beb8) != 0 &&
-                    strcmp(nm, k_60cc94) != 0 && strcmp(nm, k_60cc90) != 0 &&
-                    strcmp(nm, k_60bebc) != 0) {
+                if (strcmp(nm, k_60cca0) != 0 && strcmp(nm, k_60cc9c) != 0
+                    && strcmp(nm, k_60cc98) != 0 && strcmp(nm, k_60beb8) != 0
+                    && strcmp(nm, k_60cc94) != 0 && strcmp(nm, k_60cc90) != 0
+                    && strcmp(nm, k_60bebc) != 0) {
                     Finish3e4f(g, cur);
                 }
             }

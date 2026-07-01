@@ -118,9 +118,7 @@ RVA(0x000aa1e0, 0xf1)
 i32 Dispatch_aa1e0(CMsg* arg){DISPATCH_BODY}
 
 RVA(0x000aa460, 0xf1)
-i32 Dispatch_aa460(CMsg* arg) {
-    DISPATCH_BODY
-}
+i32 Dispatch_aa460(CMsg* arg){DISPATCH_BODY}
 
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.

@@ -139,4 +139,3 @@ i32 FillPolygon(FillVert* verts, i32 count, CDDSurface* surf, i16 color) {
 
 SIZE_UNKNOWN(FillVert);
 SIZE_UNKNOWN(FillEdgeRow);
-

@@ -82,4 +82,3 @@ void CDwArray::SetSize(i32 nNewSize, i32 nGrowBy) {
 }
 
 SIZE_UNKNOWN(CDwArray);
-

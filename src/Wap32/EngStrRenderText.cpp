@@ -40,8 +40,8 @@ struct CRect {
 // The global text renderer (DAT_0064ead8): current-font/current-color + the 2028-B
 // EH draw worker. SetFont/SetColor store m_00/m_04. All reloc-masked externs.
 struct TextRenderer {
-    Font* m_00; // +0x00  current font
-    i32 m_04;   // +0x04  current color
+    Font* m_00;                                                             // +0x00  current font
+    i32 m_04;                                                               // +0x04  current color
     void SetFont(Font* f);                                                  // 0x179c10
     void SetColor(i32 c);                                                   // 0x179c20
     void RenderText(CString s, void* drawFn, CRect r, i32 a, i32 b, i32 c); // 0x17a460
@@ -62,8 +62,18 @@ extern TextRenderer g_textObj;
 // CopyRect/OffsetRect all match; only the two by-value render-arg builds diverge.
 RVA(0x00115930, 0x15b)
 SYMBOL(_EngStr_RenderText)
-extern "C" i32 EngStr_RenderText(void* self, i32 a1, i32 a2, void* drawFn, i32 fontSel, i32 shadow,
-                                 i32 r, i32 g, i32 b, i32 flag) {
+extern "C" i32 EngStr_RenderText(
+    void* self,
+    i32 a1,
+    i32 a2,
+    void* drawFn,
+    i32 fontSel,
+    i32 shadow,
+    i32 r,
+    i32 g,
+    i32 b,
+    i32 flag
+) {
     if (self == 0) {
         return 0;
     }

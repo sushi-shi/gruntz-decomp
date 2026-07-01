@@ -16,20 +16,20 @@
 namespace modeinit {
 
     // Compiler array-ctor helpers (reloc-masked) + their element ctor/dtor thunks.
-    extern "C" void ElemCtor403774();                                              // 0x00403774
-    extern "C" void ElemDtor5b48c6();                                              // 0x005b48c6
-    extern "C" void ElemCtor403a3a();                                              // 0x00403a3a
+    extern "C" void ElemCtor403774();                                                 // 0x00403774
+    extern "C" void ElemDtor5b48c6();                                                 // 0x005b48c6
+    extern "C" void ElemCtor403a3a();                                                 // 0x00403a3a
     extern "C" void EhVecCtor(void* base, i32 sz, i32 count, void* ctor, void* dtor); // 0x0011f5a0
-    extern "C" void VecCtor(void* base, i32 sz, i32 count, void* ctor);            // 0x00001aa5
-    extern "C" void* OpNew(u32 sz);                                                // 0x001b9b46
-    extern "C" void OpDelete(void* p);                                             // 0x001b9b82
+    extern "C" void VecCtor(void* base, i32 sz, i32 count, void* ctor);               // 0x00001aa5
+    extern "C" void* OpNew(u32 sz);                                                   // 0x001b9b46
+    extern "C" void OpDelete(void* p);                                                // 0x001b9b82
 
     // The 0x1c control block owned at this->m_2e0.
     struct Ctl1c {
         i32 m_0, m_4, m_8, m_c, m_10, m_14, m_18; // +0x00..+0x18
-        i32 Init3e77(i32 a, i32 b); // 0x00003e77
-        void Dtor285b();            // 0x0000285b
-        void Method171c(i32 a);     // 0x0000171c
+        i32 Init3e77(i32 a, i32 b);               // 0x00003e77
+        void Dtor285b();                          // 0x0000285b
+        void Method171c(i32 a);                   // 0x0000171c
     };
 
     // A CString-like record element (out-of-line ctor/dtor -> reloc-masked).
@@ -40,9 +40,9 @@ namespace modeinit {
 
     // The 0x630 worker owned at this->m_2dc.
     struct Worker630 {
-        i32 Init10b4(i32 a);   // 0x000010b4
-        void PreDtor248c();    // 0x0000248c
-        void Method1d98();     // 0x00001d98
+        i32 Init10b4(i32 a); // 0x000010b4
+        void PreDtor248c();  // 0x0000248c
+        void Method1d98();   // 0x00001d98
         // one owned sub-object at +0x530 (ctor 0x1b4f0b, dtor 0x1b4f3e)
         struct Sub530 {
             void Ctor1b4f0b(); // 0x001b4f0b
@@ -52,8 +52,8 @@ namespace modeinit {
 
     // The 0x78 four-CString record owned at this->m_2e4.
     struct Rec78 {
-        i32 Init403e(); // 0x0000403e
-        void Dtor1cad();  // 0x00001cad
+        i32 Init403e();  // 0x0000403e
+        void Dtor1cad(); // 0x00001cad
     };
 
     // The 0x50 record owned at this->m_3f4.
@@ -64,9 +64,9 @@ namespace modeinit {
     // The owner's parent object (this->m_4).
     struct Parent {
         char m_pad0[0x5c];
-        i32 m_5c;  // +0x5c
+        i32 m_5c; // +0x5c
         char m_pad60[0xbc - 0x60];
-        i32 m_bc;  // +0xbc
+        i32 m_bc; // +0xbc
         char m_padc0[0x114 - 0xc0];
         i32 m_114; // +0x114
     };
@@ -105,13 +105,13 @@ namespace modeinit {
         i32 m_1c0; // +0x1c0
         i32 m_1c4; // +0x1c4
         char m_pad1c8[0x1cc - 0x1c8];
-        i32 m_1cc;      // +0x1cc
+        i32 m_1cc;       // +0x1cc
         i32 m_1d0[0x40]; // +0x1d0
         char m_pad2d0[0x2d8 - (0x1d0 + 0x40 * 4)];
-        i32 m_2d8;       // +0x2d8
+        i32 m_2d8;        // +0x2d8
         Worker630* m_2dc; // +0x2dc
-        Ctl1c* m_2e0;    // +0x2e0
-        Rec78* m_2e4;    // +0x2e4
+        Ctl1c* m_2e0;     // +0x2e0
+        Rec78* m_2e4;     // +0x2e4
         char m_pad2e8[0x320 - 0x2e8];
         i32 m_320; // +0x320
         char m_pad324[0x3f4 - 0x324];

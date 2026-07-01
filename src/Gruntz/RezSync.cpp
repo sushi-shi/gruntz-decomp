@@ -51,8 +51,8 @@ extern u32(__stdcall* g_pTimeGetTime)();  // 0x6c4650
 extern u32(__stdcall* g_pGetTickCount)(); // 0x6c3fc8
 extern i32(__stdcall* g_ShowCursor)(i32); // 0x6c44c4
 
-extern "C" void RezSrand(u32);                     // 0x11fed0
-extern "C" char* StrUpr(char*);                    // 0x18d330
+extern "C" void RezSrand(u32);                       // 0x11fed0
+extern "C" char* StrUpr(char*);                      // 0x18d330
 extern "C" char* SubstringMatch(char*, const char*); // 0x120090 (strstr semantics)
 extern "C" i32 RezSprintf(char*, const char*, ...);  // 0x1b2cf5
 
@@ -63,12 +63,12 @@ extern char g_lab504358[]; // 0x504358
 extern char g_lab545854[]; // 0x545854
 extern void* g_vtbl5e9bb4; // 0x5e9bb4
 
-extern "C" i32 Fn2423cdecl(void*);  // 0x2423
-extern "C" void Fn3526cdecl(void*); // 0x3526
-void __stdcall Fn1d3eff(i32, i32, void*, i32);          // 0x1d3eff
-void __stdcall Blowfish_InitKey(unsigned char*);        // 0x16f6c0
-void __stdcall BitStreamBlowfishDecode(void*, void*);   // 0x16f760
-extern "C" i32 Fn2063(i32);                             // 0x2063
+extern "C" i32 Fn2423cdecl(void*);                    // 0x2423
+extern "C" void Fn3526cdecl(void*);                   // 0x3526
+void __stdcall Fn1d3eff(i32, i32, void*, i32);        // 0x1d3eff
+void __stdcall Blowfish_InitKey(unsigned char*);      // 0x16f6c0
+void __stdcall BitStreamBlowfishDecode(void*, void*); // 0x16f760
+extern "C" i32 Fn2063(i32);                           // 0x2063
 
 // generic thiscall MFC ctor/dtor helper (reloc-masked; only call shape matters)
 struct Mfc {
@@ -88,7 +88,7 @@ struct Mfc {
 struct RegHelper { // m_38 (0x21c)
     i32 m_0;
     i32 Open(const char*, const char*, const char*, void*, u32, void*); // 0x139210
-    u32 GetValueDword(const char*, u32);                                 // 0x1395d0
+    u32 GetValueDword(const char*, u32);                                // 0x1395d0
 };
 struct GameLevelZ {
     char pad[0x64];
@@ -120,11 +120,11 @@ struct CSymParser { // m_34 (0x94)
     CSymParser();
     ~CSymParser();
     char raw[0x94];
-    i32 ParseBuffer(void*, i32, i32);            // 0x13ad00
-    i32 Stub13b0c0(i32, const char*);            // 0x13b0c0
-    void* ResolveQualified(const char*, void*);  // 0x13bff0
-    void* ResolvePath(const char*);              // 0x13c030
-    i32 ResolveTab(const char*, void*);          // 0x13be40
+    i32 ParseBuffer(void*, i32, i32);           // 0x13ad00
+    i32 Stub13b0c0(i32, const char*);           // 0x13b0c0
+    void* ResolveQualified(const char*, void*); // 0x13bff0
+    void* ResolvePath(const char*);             // 0x13c030
+    i32 ResolveTab(const char*, void*);         // 0x13be40
 };
 struct CFaderMgr { // m_40 (0x28)
     CFaderMgr();
@@ -214,25 +214,25 @@ struct H7c {
 
 // GAME_ATTRIBUTEZ bute/remus load helpers (reloc-masked)
 struct CRemus {
-    i32 BeginParse();               // 0x139960
-    i32 EndParse();                 // 0x1399d0
-    void* Fn169700(void*, i32);     // 0x169700
-    void* Fn1698c0(void*, i32, i32);// 0x1698c0
-    void Fn16f760(void*, void*);    // 0x16f760
+    i32 BeginParse();                // 0x139960
+    i32 EndParse();                  // 0x1399d0
+    void* Fn169700(void*, i32);      // 0x169700
+    void* Fn1698c0(void*, i32, i32); // 0x1698c0
+    void Fn16f760(void*, void*);     // 0x16f760
 };
 struct CButeMgr {
-    void SetErrCb(void*);                              // 0x170380
-    void InitB();                                      // 0x170330
-    u32 GetDwordDef(const char*, const char*, u32);    // 0x1721e0
-    i32 ParseGroup();                                  // 0x171580
-    void ClearMap(i32);                                // 0x16e070
+    void SetErrCb(void*);                           // 0x170380
+    void InitB();                                   // 0x170330
+    u32 GetDwordDef(const char*, const char*, u32); // 0x1721e0
+    i32 ParseGroup();                               // 0x171580
+    void ClearMap(i32);                             // 0x16e070
 };
 struct CButeStore {
     void ClearRecursive(i32); // 0x16e070
 };
-extern CButeMgr g_buteMgr;    // 0x6453d8
+extern CButeMgr g_buteMgr; // 0x6453d8
 extern CButeStore g_store6453f0, g_store64544c;
-extern i32 g_gameReg;      // 0x645460
+extern i32 g_gameReg; // 0x645460
 extern u8 g_6454e6, g_6454e7, g_6453e5;
 extern i32 g_645478, g_645420, g_645408, g_645418, g_645404;
 extern i32 g_645438, g_645448, g_645434, g_645464, g_645474;
@@ -240,14 +240,14 @@ extern i32 g_644c54;
 
 struct DecodeObj {
     char raw[0x60];
-    void* M169700(void*, i32, i32);  // 0x169700
-    void* M169700b(void*, i32);      // 0x169700 (2-arg overload site)
+    void* M169700(void*, i32, i32);      // 0x169700
+    void* M169700b(void*, i32);          // 0x169700 (2-arg overload site)
     void* M1698c0(void*, i32, i32, i32); // 0x1698c0
 };
 struct LeafScanZ {
-    i32 HasKeyEqual(const char*);                    // 0x1583c0
-    void ScanTree(void*, const char*, const char*);  // 0x157ee0
-    void MatchSub(void*, i32);                        // 0x1584f0
+    i32 HasKeyEqual(const char*);                   // 0x1583c0
+    void ScanTree(void*, const char*, const char*); // 0x157ee0
+    void MatchSub(void*, i32);                      // 0x1584f0
 };
 struct MovieLookup {
     void M1b8438(const char*, void*); // 0x1b8438 (m_28 + 0x10)
@@ -390,8 +390,9 @@ i32 RezSync::Init(void* a1, void* a2) {
 
     // --- Phase 3: "Monolith Productions" registry --------------------
     RegHelper* reg = (RegHelper*)RezAlloc(0x21c);
-    if (reg)
+    if (reg) {
         reg->m_0 = 0;
+    }
     m_38 = reg;
     if (!m_38->Open("Monolith Productions", "Gruntz", "1.0", 0, 0x80000002, 0)) {
         Error2(0x800a, 0x406);
@@ -476,16 +477,21 @@ i32 RezSync::Init(void* a1, void* a2) {
         char buf[0x130];
         strcpy(buf, (char*)a2);
         StrUpr(buf);
-        if (SubstringMatch(buf, "PLAY"))
+        if (SubstringMatch(buf, "PLAY")) {
             mode = 3;
-        if (SubstringMatch(buf, "MULTI"))
+        }
+        if (SubstringMatch(buf, "MULTI")) {
             mode = 0x11;
-        if (SubstringMatch(buf, "DEMO"))
+        }
+        if (SubstringMatch(buf, "DEMO")) {
             mode = 7;
-        if (SubstringMatch(buf, "SELECT"))
+        }
+        if (SubstringMatch(buf, "SELECT")) {
             mode = 0x10;
-        if (SubstringMatch(buf, "NOLOGO"))
+        }
+        if (SubstringMatch(buf, "NOLOGO")) {
             noLogo = 1;
+        }
         SubstringMatch(buf, "NOMOVIES");
         if (SubstringMatch(buf, "LOAD:")) {
             char cpy[0x11c];
@@ -502,10 +508,12 @@ i32 RezSync::Init(void* a1, void* a2) {
                 tok[j] = 0;
                 if (tok[0] != 0) {
                     for (char* q = tok; *q; ++q) {
-                        if (*q == '_')
+                        if (*q == '_') {
                             *q = ' ';
-                        if (*q == '+')
+                        }
+                        if (*q == '+') {
                             *q = ' ';
+                        }
                     }
                 }
                 strcpy(levelName, tok);
@@ -525,8 +533,9 @@ i32 RezSync::Init(void* a1, void* a2) {
     ((Mfc*)&m_c8)->C_1b9c69();
     m_30 = new CDDrawSurfaceMgr;
     i32 flags = (g_2455b4 || g_2455bc) ? 0xe5 : 0xe1;
-    if (g_2455e4)
+    if (g_2455e4) {
         flags |= 0x10;
+    }
     m_88 = 0x10;
     if (!m_30->VInit(*(void**)((char*)m_04 + 4), 0x280, 0x1e0, 0x10, flags)) {
         Error1(0x407);
@@ -548,8 +557,9 @@ i32 RezSync::Init(void* a1, void* a2) {
     m_30->m_04->Cfg(0, 0x30000);
     Fn1db6();
     Fn3526cdecl(m_30);
-    if (!Fn1c12())
+    if (!Fn1c12()) {
         return 0;
+    }
 
     // --- Phase 7: CSymParser bute load (GRUNTZ.VRZ/.ZZZ/.XXX) --------
     if (m_34) {
@@ -588,8 +598,9 @@ i32 RezSync::Init(void* a1, void* a2) {
     }
     if (g_2455b4 == 0 && g_2455cc == 0) {
         if (Fn262b()) {
-            if (!Fn2423cdecl(Fn4214()))
+            if (!Fn2423cdecl(Fn4214())) {
                 Fn129e();
+            }
         }
     }
 
@@ -600,10 +611,11 @@ i32 RezSync::Init(void* a1, void* a2) {
         Error2(0x800a, 0x40c);
         return 0;
     }
-    if (g_2455b4 == 0 && g_2455c0 == 0)
+    if (g_2455b4 == 0 && g_2455c0 == 0) {
         m_48->Fn138950(vMusic);
-    else
+    } else {
         *(i32*)((char*)m_48 + 0x28) = 0;
+    }
 
     // --- Phase 10: sound-fx list (m_54) -----------------------------
     if (m_54) {
@@ -638,8 +650,9 @@ i32 RezSync::Init(void* a1, void* a2) {
     if (m_78) {
         i32* z = (i32*)m_78;
         z[1] = z[2] = z[3] = z[4] = 0;
-        for (i32 k = 0; k < 10; ++k)
+        for (i32 k = 0; k < 10; ++k) {
             *(i32*)((char*)m_78 + 0x14 + k * 4) = 0;
+        }
     }
     if (!m_78->Fn3085(0, this)) {
         if (m_78) {
@@ -784,8 +797,9 @@ i32 RezSync::Init(void* a1, void* a2) {
     m_110 = vEasy;
     if (!((LeafScanZ*)m_30->m_28)->HasKeyEqual("GAME")) {
         void* sz = m_34->ResolvePath("GAME_SOUNDZ");
-        if (!sz)
+        if (!sz) {
             return 0;
+        }
         ((LeafScanZ*)m_30->m_28)->ScanTree(sz, "GAME", "_");
     }
     {
@@ -796,12 +810,14 @@ i32 RezSync::Init(void* a1, void* a2) {
     Fn1ed8();
     if (!Fn2112()) {
         if (m_84 > 0 && m_80 > 1) {
-            if (m_38->GetValueDword("Skip Logo Movies", 0) == 0 && noLogo == 0)
+            if (m_38->GetValueDword("Skip Logo Movies", 0) == 0 && noLogo == 0) {
                 Fn2cc5();
+            }
         } else {
             Fn2cc5();
-            if (Fn201d(2))
+            if (Fn201d(2)) {
                 ++m_84;
+            }
         }
     }
     // attract title screens

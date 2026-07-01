@@ -51,4 +51,3 @@ SIZE_UNKNOWN(CTileLogicTag3ef);
 SIZE_UNKNOWN(CTileLogicTag429);
 SIZE_UNKNOWN(CTileLogicTag428);
 SIZE_UNKNOWN(CTileLogicTag41d);
-

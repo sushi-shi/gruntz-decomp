@@ -35,28 +35,72 @@
 // and every out-of-range reason fall to the default 0x17.
 #define PRIO(dst, r)                                                                               \
     switch (r) {                                                                                   \
-    case 1: dst = 2; break;                                                                        \
-    case 21: dst = 3; break;                                                                       \
-    case 16: dst = 4; break;                                                                       \
-    case 9: dst = 5; break;                                                                        \
-    case 4: dst = 6; break;                                                                        \
-    case 11: dst = 7; break;                                                                       \
-    case 13: dst = 8; break;                                                                       \
-    case 2: dst = 9; break;                                                                        \
-    case 14: dst = 10; break;                                                                      \
-    case 5: dst = 11; break;                                                                       \
-    case 22: dst = 12; break;                                                                      \
-    case 15: dst = 13; break;                                                                      \
-    case 3: dst = 14; break;                                                                       \
-    case 8: dst = 15; break;                                                                       \
-    case 12: dst = 16; break;                                                                      \
-    case 7: dst = 17; break;                                                                       \
-    case 18: dst = 18; break;                                                                      \
-    case 6: dst = 19; break;                                                                       \
-    case 17: dst = 20; break;                                                                      \
-    case 10: dst = 21; break;                                                                      \
-    case 19: dst = 22; break;                                                                      \
-    default: dst = 23; break;                                                                      \
+        case 1:                                                                                    \
+            dst = 2;                                                                               \
+            break;                                                                                 \
+        case 21:                                                                                   \
+            dst = 3;                                                                               \
+            break;                                                                                 \
+        case 16:                                                                                   \
+            dst = 4;                                                                               \
+            break;                                                                                 \
+        case 9:                                                                                    \
+            dst = 5;                                                                               \
+            break;                                                                                 \
+        case 4:                                                                                    \
+            dst = 6;                                                                               \
+            break;                                                                                 \
+        case 11:                                                                                   \
+            dst = 7;                                                                               \
+            break;                                                                                 \
+        case 13:                                                                                   \
+            dst = 8;                                                                               \
+            break;                                                                                 \
+        case 2:                                                                                    \
+            dst = 9;                                                                               \
+            break;                                                                                 \
+        case 14:                                                                                   \
+            dst = 10;                                                                              \
+            break;                                                                                 \
+        case 5:                                                                                    \
+            dst = 11;                                                                              \
+            break;                                                                                 \
+        case 22:                                                                                   \
+            dst = 12;                                                                              \
+            break;                                                                                 \
+        case 15:                                                                                   \
+            dst = 13;                                                                              \
+            break;                                                                                 \
+        case 3:                                                                                    \
+            dst = 14;                                                                              \
+            break;                                                                                 \
+        case 8:                                                                                    \
+            dst = 15;                                                                              \
+            break;                                                                                 \
+        case 12:                                                                                   \
+            dst = 16;                                                                              \
+            break;                                                                                 \
+        case 7:                                                                                    \
+            dst = 17;                                                                              \
+            break;                                                                                 \
+        case 18:                                                                                   \
+            dst = 18;                                                                              \
+            break;                                                                                 \
+        case 6:                                                                                    \
+            dst = 19;                                                                              \
+            break;                                                                                 \
+        case 17:                                                                                   \
+            dst = 20;                                                                              \
+            break;                                                                                 \
+        case 10:                                                                                   \
+            dst = 21;                                                                              \
+            break;                                                                                 \
+        case 19:                                                                                   \
+            dst = 22;                                                                              \
+            break;                                                                                 \
+        default:                                                                                   \
+            dst = 23;                                                                              \
+            break;                                                                                 \
     }
 
 struct CGruntScan;
@@ -234,7 +278,8 @@ i32 CGruntScan::ScanNearestTarget() {
     // m_2d4 mode dispatch.
     if (F(this, 0x2d4) == 2) {
         if (F(this, 0x220) != 0) {
-            CGruntScan* sg = ((CScanTileMgr*)P(this, 0x260))->m_grid[F(this, 0x2f0)][F(this, 0x2f4)];
+            CGruntScan* sg =
+                ((CScanTileMgr*)P(this, 0x260))->m_grid[F(this, 0x2f0)][F(this, 0x2f4)];
             if (sg == 0) {
                 goto L_setLock;
             }

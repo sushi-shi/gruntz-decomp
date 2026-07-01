@@ -14,8 +14,8 @@ extern "C" void ErrLog_141400(const char* file, i32 line, i32 code);
 
 // A stack LOGPALETTE with a full 256-entry table (the 0x410-byte frame).
 struct LogPal256 {
-    u16 palVersion;               // +0x00
-    u16 palNumEntries;            // +0x02
+    u16 palVersion;                // +0x00
+    u16 palNumEntries;             // +0x02
     PALETTEENTRY palPalEntry[256]; // +0x04
 };
 
@@ -23,7 +23,7 @@ struct DirPal {
     char m_pad0[0xc];
     PALETTEENTRY* m_c; // +0x0c working palette (256 entries)
     i32 Install(i32 start, i32 count, PALETTEENTRY* pal, i32 flag); // 0x147aa0 __thiscall
-    i32 CaptureSystemPalette(); // 0x1485b0
+    i32 CaptureSystemPalette();                                     // 0x1485b0
 };
 
 // @early-stop
@@ -51,8 +51,12 @@ i32 DirPal::CaptureSystemPalette() {
     if (!GetSystemPaletteEntries(hdc, 0, half, lp.palPalEntry)) {
         return 0;
     }
-    if (!GetSystemPaletteEntries(hdc, sizePal - half, half,
-                                 &lp.palPalEntry[lp.palNumEntries - half])) {
+    if (!GetSystemPaletteEntries(
+            hdc,
+            sizePal - half,
+            half,
+            &lp.palPalEntry[lp.palNumEntries - half]
+        )) {
         return 0;
     }
     DeleteDC(hdc);
@@ -81,4 +85,3 @@ i32 DirPal::CaptureSystemPalette() {
 
 SIZE_UNKNOWN(LogPal256);
 SIZE_UNKNOWN(DirPal);
-
