@@ -338,7 +338,6 @@ public:
     // vtable slot 2 (0xe86e0): the 10-arg setup; inherited by CSBI_Image/_ImageSet.
     i32 Setup(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 a8, i32 a9, i32 a10);
 
-    // ----- reconstructed CSBI_RectOnly methods (RVA-ascending) -----
     void ResetCounters();
     void ResetSlots();
     void ArmSlot(i32 idx);
@@ -372,11 +371,11 @@ public:
     struct CSbiHiWidget* HiResolve(i32 a, i32 b); // 0x2dc4 (resolve the hit widget)
     void HiRefreshResource();                     // 0x3d91 (call 0x3d91)
     void HiSelectStat(i32 idx);                   // 0x264e (call 0x264e, 1 arg)
-    void HiTabA(i32 idx);                          // 0x4179 (1 arg)
-    void HiTabB(i32 idx, i32 flag);                // 0x20b8 (2 args)
-    void HiGrunt0(i32 idx);                        // 0x42a5 (1 arg)
-    void HiGrunt1(i32 idx);                        // 0x4151 (1 arg)
-    void HiGrunt2(i32 idx);                        // 0x37ce (1 arg)
+    void HiTabA(i32 idx);                         // 0x4179 (1 arg)
+    void HiTabB(i32 idx, i32 flag);               // 0x20b8 (2 args)
+    void HiGrunt0(i32 idx);                       // 0x42a5 (1 arg)
+    void HiGrunt1(i32 idx);                       // 0x4151 (1 arg)
+    void HiGrunt2(i32 idx);                       // 0x37ce (1 arg)
     i32 LoadGooCookingSprite(i32);
     void UpdateRezConveyorStatusBar();
     void LoadRezMachineConfig();
@@ -421,7 +420,6 @@ public:
     i32 Deserialize(CSbiStream* s);
     void NotifyAllSlots();
 
-    // ----- newly reconstructed CSBI_RectOnly methods (RVA-ascending) -----
     i32 ConfigureRect(
         i32 sub,
         CSbiCfgHost* host,
@@ -449,14 +447,13 @@ public:
     i32 ActivateSlot(i32 idx);
     i32 PlaceCursorTarget(i32 row, i32 commit);
 
-    // ----- second batch of reconstructed CSBI_RectOnly methods (RVA-ascending) -----
     i32 SetState(i32 state);
     i32 RefreshState();
     i32 SetSpritePos(i32 x, i32 y);
     i32 HitTestLayer(i32 x, i32 y);
     i32 InsertPtr(i32 a, i32 b);
     void ReportTab(i32 tab);
-    // siblings the second batch dispatches (reloc-masked ILT thunks / bodies elsewhere)
+    // siblings dispatched (reloc-masked ILT thunks / bodies elsewhere)
     i32 StateProbe();                    // call 0x2b2b - the subtype-2 activation probe
     void StateNotify();                  // call 0x125d - the non-subtype-2 notify
     i32 RefreshA();                      // jmp 0x2b8a
@@ -499,8 +496,8 @@ public:
     char m_padc0[0xd4 - 0xc0];
     CSbiPtrList m_listD4; // +0xd4  trailing hit-test list (head at +0xd8)
     char m_paddc[0x10c - 0xdc];
-    i32 m_activeTab; // +0x10c  active tab index
-    i32 m_110;       // +0x110  item-kind tag (LoadBattlezItemConfig sets 5)
+    i32 m_activeTab;              // +0x10c  active tab index
+    i32 m_110;                    // +0x110  item-kind tag (LoadBattlezItemConfig sets 5)
     i32 m_statFlags[15];          // +0x114  per-stat toggle flag array
     CSbiRect* m_hitRects[15];     // +0x150  hit-test rect widgets
     CSbiStatObj* m_statObj[15];   // +0x18c  per-stat object array (notified on clear)
@@ -528,10 +525,10 @@ public:
     i32 m_gauge;       // +0x298  gauge current
     i32 m_gaugeTarget; // +0x29c  gauge target
     char m_pad2a0[0x2b0 - 0x2a0];
-    i32 m_2b0;                    // +0x2b0  (multiplayer/battlez reset block)
-    i32 m_2b4;                    // +0x2b4
-    i32 m_2b8;                    // +0x2b8
-    i32 m_2bc;                    // +0x2bc
+    i32 m_2b0;                     // +0x2b0  (multiplayer/battlez reset block)
+    i32 m_2b4;                     // +0x2b4
+    i32 m_2b8;                     // +0x2b8
+    i32 m_2bc;                     // +0x2bc
     CSbiSlot m_groupSlots[3];      // +0x2c0  group-A 24-byte slot records
     CSbiSlotPtr* m_groupNotify[3]; // +0x308  group-A notify pointers
     char m_pad314[0x318 - 0x314];
@@ -552,12 +549,12 @@ public:
     i32 m_350;                 // +0x350
     i32 m_hitTestDisabled;     // +0x354  hit-test disable flag
     i32 m_358;                 // +0x358  tab-widgets-built flag
-    i32 m_activeSlot;       // +0x35c  active-slot index (-1 = none)
-    i32 m_360;              // +0x360  pending highlight row index (-1 none)
-    CSbiSlotPtr* m_notify0; // +0x364  notify targets (slot 0x28)
-    CSbiSlotPtr* m_notify1; // +0x368
-    CSbiSlotPtr* m_notify2; // +0x36c
-    CSbiSlotPtr* m_notify3; // +0x370
+    i32 m_activeSlot;          // +0x35c  active-slot index (-1 = none)
+    i32 m_360;                 // +0x360  pending highlight row index (-1 none)
+    CSbiSlotPtr* m_notify0;    // +0x364  notify targets (slot 0x28)
+    CSbiSlotPtr* m_notify1;    // +0x368
+    CSbiSlotPtr* m_notify2;    // +0x36c
+    CSbiSlotPtr* m_notify3;    // +0x370
     char m_pad374[0x378 - 0x374];
     CSbiHlRow m_hlGrid[12];      // +0x378  3 groups x 4 highlight rows (24B each)
     CSbiSlotPtr* m_hlNotify[12]; // +0x498  3 groups x 4 notify pointers
@@ -567,46 +564,46 @@ public:
     i64 m_beltInterval;          // +0x4d8  belt-drop timer interval (64-bit)
     CSbiSlotPtr* m_extraNotify0; // +0x4e0
     char m_pad4e4[0x4e8 - 0x4e4];
-    i32 m_4e8;                    // +0x4e8  falling-item active flag
-    i32 m_extraNotifyArg1;        // +0x4ec  arg for (*m_extraNotify1)->Notify
-    i32 m_4f0;                    // +0x4f0  falling-item rect base = g_dat645588
-    i32 m_4f4;                    // +0x4f4
-    i32 m_4f8;                    // +0x4f8  falling-item config delay
-    i32 m_4fc;                    // +0x4fc
-    CSbiSlotPtr* m_extraNotify1;  // +0x500
-    i32 m_504;                    // +0x504  falling-item rect A (relative)
-    i32 m_508;                    // +0x508
-    i32 m_50c;                    // +0x50c
-    i32 m_510;                    // +0x510
-    i32 m_514;                    // +0x514  streamed rect block (report origin)
-    i32 m_518;                    // +0x518
-    i32 m_51c;                    // +0x51c
-    i32 m_520;                    // +0x520
-    i32 m_524;                    // +0x524
-    i32 m_528;                    // +0x528  rez-machine snooze/wake active flag
-    i32 m_52c;                    // +0x52c  rez-machine wake tick counter
-    CSbiPtrCollection m_530;      // +0x530  pooled-ptr collection (RemoveAll on teardown)
-    void** m_ptrTable;            // +0x534  pointer to the pooled-ptr table (elements streamed 8B)
-    i32 m_ptrCount;               // +0x538  count for m_ptrTable
+    i32 m_4e8;                   // +0x4e8  falling-item active flag
+    i32 m_extraNotifyArg1;       // +0x4ec  arg for (*m_extraNotify1)->Notify
+    i32 m_4f0;                   // +0x4f0  falling-item rect base = g_dat645588
+    i32 m_4f4;                   // +0x4f4
+    i32 m_4f8;                   // +0x4f8  falling-item config delay
+    i32 m_4fc;                   // +0x4fc
+    CSbiSlotPtr* m_extraNotify1; // +0x500
+    i32 m_504;                   // +0x504  falling-item rect A (relative)
+    i32 m_508;                   // +0x508
+    i32 m_50c;                   // +0x50c
+    i32 m_510;                   // +0x510
+    i32 m_514;                   // +0x514  streamed rect block (report origin)
+    i32 m_518;                   // +0x518
+    i32 m_51c;                   // +0x51c
+    i32 m_520;                   // +0x520
+    i32 m_524;                   // +0x524
+    i32 m_528;                   // +0x528  rez-machine snooze/wake active flag
+    i32 m_52c;                   // +0x52c  rez-machine wake tick counter
+    CSbiPtrCollection m_530;     // +0x530  pooled-ptr collection (RemoveAll on teardown)
+    void** m_ptrTable;           // +0x534  pointer to the pooled-ptr table (elements streamed 8B)
+    i32 m_ptrCount;              // +0x538  count for m_ptrTable
     char m_pad53c[0x548 - 0x53c];
-    i32 m_548;   // +0x548
-    void* m_54c; // +0x54c  a notifier object (freed on retab; Refresh()/Notify0())
-    i32 m_550;       // +0x550  toggle-mode active flag
-    i32 m_554;       // +0x554  toggle-mode tab handle
-    i32 m_558;       // +0x558
-    i32 m_modeState; // +0x55c
-    i32 m_560;       // +0x560  destruct-warning last draw-clock
-    i32 m_564;       // +0x564
-    i32 m_568;       // +0x568  destruct-warning delay (config)
-    i32 m_56c;       // +0x56c
+    i32 m_548;                 // +0x548
+    void* m_54c;               // +0x54c  a notifier object (freed on retab; Refresh()/Notify0())
+    i32 m_550;                 // +0x550  toggle-mode active flag
+    i32 m_554;                 // +0x554  toggle-mode tab handle
+    i32 m_558;                 // +0x558
+    i32 m_modeState;           // +0x55c
+    i32 m_560;                 // +0x560  destruct-warning last draw-clock
+    i32 m_564;                 // +0x564
+    i32 m_568;                 // +0x568  destruct-warning delay (config)
+    i32 m_56c;                 // +0x56c
     CSbiSlotPtr* m_modeNotify; // +0x570  notify target
     i32 m_modeArmed;           // +0x574
-    i32 m_578;               // +0x578  (cleared on multiplayer/battlez reset)
-    i32 m_battlezPct[38];    // +0x57c  running-sum item-percent table (battlez cfg)
-    i32 m_614;      // +0x614  main-status-bar frame gate
-    void* m_618;    // +0x618  destruct-button display object
-    i32 m_61c[4];   // +0x61c  trailing dword block (cleared on reset)
-    i32 m_tabCycle; // +0x62c  4-state highlight cursor (AdvanceTab cycles 0..3)
+    i32 m_578;                 // +0x578  (cleared on multiplayer/battlez reset)
+    i32 m_battlezPct[38];      // +0x57c  running-sum item-percent table (battlez cfg)
+    i32 m_614;                 // +0x614  main-status-bar frame gate
+    void* m_618;               // +0x618  destruct-button display object
+    i32 m_61c[4];              // +0x61c  trailing dword block (cleared on reset)
+    i32 m_tabCycle;            // +0x62c  4-state highlight cursor (AdvanceTab cycles 0..3)
 };
 
 // An unnamed engine DWORD global read by the HUD-rect group setters.
@@ -721,9 +718,9 @@ struct CSbiWndHost {
 };
 SIZE_UNKNOWN(CSbiWndHost);
 struct CGameReg {
-    void Fn29aa();               // 0x29aa (briefing-variant hook, no args)
+    void Fn29aa();                // 0x29aa (briefing-variant hook, no args)
     void SetToggle(i32 v, i32 a); // 0x409d (2 args)
-    void HiPump();               // 0x1fc8 (no args)
+    void HiPump();                // 0x1fc8 (no args)
     char m_pad0[0x4];
     CSbiWndHost* m_4; // +0x4  window host (PostMessage target)
     char m_pad8[0xc - 0x8];
@@ -827,10 +824,6 @@ i32 CSBI_RectOnly::
     m_4 = 1;
     return 1;
 }
-
-// ---------------------------------------------------------------------------
-// Reconstructed CSBI_RectOnly methods (RVA-ascending).
-// ---------------------------------------------------------------------------
 
 // m_34 = m_30 = 0.
 RVA(0x000e7400, 0x9)
@@ -2541,10 +2534,6 @@ i32 CSBI_RectOnly::ActivateSlot(i32 idx) {
     return 1;
 }
 
-// ===========================================================================
-// Second batch of reconstructed CSBI_RectOnly methods (RVA-ascending).
-// ===========================================================================
-
 // The m_8 render object the item drives: a screen-position pair at +0x5c/+0x60
 // and a layer descriptor at +0x198 whose +0x10/+0x14 origin and +0x18/+0x1c
 // inset frame the hit-test rect. (m_8 is the base CStatusBarItem int overlaid as
@@ -2757,7 +2746,8 @@ class CSbiTab {
 public:
     virtual ~CSbiTab(); // slot 0
     virtual void s04();
-    virtual i32 Setup(void* owner, i32 objid, i32 code, i32 z, SbiTabRect rc, i32 a9, i32 a10); // slot 2
+    virtual i32
+    Setup(void* owner, i32 objid, i32 code, i32 z, SbiTabRect rc, i32 a9, i32 a10); // slot 2
     virtual void s0c();
     virtual void s10();
     virtual void s14();
@@ -2766,8 +2756,16 @@ public:
     virtual void s20();
     virtual void s24();
     virtual void v28(); // slot 10
-    virtual i32
-    Configure(void* owner, i32 code, i32 type, i32 idx, SbiTabRect rc, char* key, i32 flag, i32 e); // slot 11
+    virtual i32 Configure(
+        void* owner,
+        i32 code,
+        i32 type,
+        i32 idx,
+        SbiTabRect rc,
+        char* key,
+        i32 flag,
+        i32 e
+    );                            // slot 11
     virtual void Activate(i32 a); // slot 12
     void* m_vptr;
     i32 m_4;
@@ -3049,8 +3047,8 @@ i32 CSBI_RectOnly::BuildStatusBarTabs() {
 // The inlined game RNG (shared with BootyWalkAnim / CGruntSpawnConfig): the LCG
 // seed + the seed-init flag (bit 0) + the timeGetTime entry pointer. Bound (DATA)
 // by BootyWalkAnim / m5_SoundTickCtor; referenced here as reloc-masked externs.
-extern u8 g_randSeeded;  // 0x6c127d  seed-init flag (bit 0)
-extern i32 g_randSeed;   // 0x6c1288  LCG seed
+extern u8 g_randSeeded;                      // 0x6c127d  seed-init flag (bit 0)
+extern i32 g_randSeed;                       // 0x6c1288  LCG seed
 extern "C" u32(__stdcall* g_pTimeGetTime)(); // 0x6c4650
 
 // MSVC-style LCG rand() (x = x*214013 + 2531011), lazily seeded from timeGetTime.
@@ -3508,227 +3506,228 @@ i32 CSBI_RectOnly::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
     w->Update(a1, a2, a3);
     i32 cmd = w->m_c;
     switch (w->m_10) {
-    case 0:
-        if (m_hitTestDisabled != 0) {
-            return 1;
-        }
-        if (g_gameReg->m_68->m_400 == 0) {
-            return 1;
-        }
-        if (cmd > 0x259) {
-            if (cmd == 0x25a) {
-                HiCueFind();
-                RefreshB();
-                return 1;
-            }
-            if (cmd == 0x25b) {
-                HiCueFind();
-                HiRefreshResource();
-                return 1;
-            }
-            return 0;
-        }
-        if (cmd == 0x259) {
-            HiCueFind();
-            RefreshA();
-            return 1;
-        }
-        if (cmd <= 0 || cmd > 5) {
-            return 0;
-        }
-        HiCueFind();
-        RectApply(cmd, 3);
-        return 1;
-
-    case 1:
-        if (m_hitTestDisabled != 0) {
-            return 1;
-        }
-        if (g_gameReg->m_68->m_400 == 0) {
-            return 1;
-        }
-        if (cmd < 0x12c || cmd > 0x149) {
-            return 0;
-        }
-        if (cmd <= 0x13a) {
-            HiCueLookup();
-            HiTabA(cmd - 0x12c);
-        } else {
-            HiCueLookup();
-            HiTabB(cmd - 0x13b, 0);
-        }
-        return 1;
-
-    case 2:
-        if (m_hitTestDisabled != 0) {
-            return 1;
-        }
-        if (g_gameReg->m_68->m_400 == 0) {
-            return 1;
-        }
-        if (cmd < 0x64 || cmd > 0x68) {
-            return 0;
-        }
-        HiSelectStat(cmd - 0x64);
-        return 1;
-
-    case 3:
-        if (m_hitTestDisabled != 0) {
-            return 1;
-        }
-        if (g_gameReg->m_68->m_400 == 0) {
-            return 1;
-        }
-        if (cmd < 0xd3 || cmd > 0xde) {
-            return 1;
-        }
-        if (cmd <= 0xd6) {
-            HiGrunt0(cmd - 0xd3);
-        } else if (cmd <= 0xda) {
-            HiGrunt1(cmd - 0xd7);
-        } else {
-            HiGrunt2(cmd - 0xdb);
-        }
-        return 1;
-
-    case 4:
-        if (m_hitTestDisabled != 0) {
-            return 1;
-        }
-        if (g_gameReg->m_68->m_400 == 0) {
-            return 1;
-        }
-        if (cmd < 0x190 || cmd > 0x193) {
-            return 0;
-        }
-        HiCueLookup();
-        m_tabCycle = cmd - 0x190;
-        TeardownNotify(0);
-        FinishReset16ea();
-        TabCommit();
-        return 1;
-
-    case 5:
-        if (m_550 != 0) {
-            return 1;
-        }
-        switch (cmd) {
-        case 0x1f4:
-            HiCueFind();
-            HiPost(0x8007);
-            return 1;
-        case 0x1f5:
-            HiCueFind();
-            HiPost(0x80ce);
-            return 1;
-        case 0x1f6:
-            HiCueFind();
-            HiPost(0x80cf);
-            return 1;
-        case 0x1f8:
-            HiCueFind();
-            HiPost(0x8035);
-            return 1;
-        case 0x1f7:
-            HiCueLookup();
-            HiPost(0x80e2);
-            return 1;
-        case 0x1f9:
-            HiCueLookup();
-            if (g_gameReg->m_c != 0) {
-                g_gameReg->m_c ^= 1;
-                g_gameReg->SetToggle(g_gameReg->m_c, 1);
-            }
-            g_gameReg->m_2c->HiToggle(1);
-            return 1;
-        case 0x1fa:
-            HiCueLookup();
-            ArmTab(5, 0);
-            return 1;
-        case 0x1fc:
-            if (g_gameReg->m_134 != 1) {
-                return 1;
-            }
-            if (m_modeArmed != 0) {
-                return 1;
-            }
+        case 0:
             if (m_hitTestDisabled != 0) {
                 return 1;
             }
+            if (g_gameReg->m_68->m_400 == 0) {
+                return 1;
+            }
+            if (cmd > 0x259) {
+                if (cmd == 0x25a) {
+                    HiCueFind();
+                    RefreshB();
+                    return 1;
+                }
+                if (cmd == 0x25b) {
+                    HiCueFind();
+                    HiRefreshResource();
+                    return 1;
+                }
+                return 0;
+            }
+            if (cmd == 0x259) {
+                HiCueFind();
+                RefreshA();
+                return 1;
+            }
+            if (cmd <= 0 || cmd > 5) {
+                return 0;
+            }
+            HiCueFind();
+            RectApply(cmd, 3);
+            return 1;
+
+        case 1:
+            if (m_hitTestDisabled != 0) {
+                return 1;
+            }
+            if (g_gameReg->m_68->m_400 == 0) {
+                return 1;
+            }
+            if (cmd < 0x12c || cmd > 0x149) {
+                return 0;
+            }
+            if (cmd <= 0x13a) {
+                HiCueLookup();
+                HiTabA(cmd - 0x12c);
+            } else {
+                HiCueLookup();
+                HiTabB(cmd - 0x13b, 0);
+            }
+            return 1;
+
+        case 2:
+            if (m_hitTestDisabled != 0) {
+                return 1;
+            }
+            if (g_gameReg->m_68->m_400 == 0) {
+                return 1;
+            }
+            if (cmd < 0x64 || cmd > 0x68) {
+                return 0;
+            }
+            HiSelectStat(cmd - 0x64);
+            return 1;
+
+        case 3:
+            if (m_hitTestDisabled != 0) {
+                return 1;
+            }
+            if (g_gameReg->m_68->m_400 == 0) {
+                return 1;
+            }
+            if (cmd < 0xd3 || cmd > 0xde) {
+                return 1;
+            }
+            if (cmd <= 0xd6) {
+                HiGrunt0(cmd - 0xd3);
+            } else if (cmd <= 0xda) {
+                HiGrunt1(cmd - 0xd7);
+            } else {
+                HiGrunt2(cmd - 0xdb);
+            }
+            return 1;
+
+        case 4:
+            if (m_hitTestDisabled != 0) {
+                return 1;
+            }
+            if (g_gameReg->m_68->m_400 == 0) {
+                return 1;
+            }
+            if (cmd < 0x190 || cmd > 0x193) {
+                return 0;
+            }
             HiCueLookup();
-            {
-                CSbiSubMgr* sm = g_gameReg->m_2c;
-                if (m_558 == 0) {
-                    m_558 = 1;
-                    m_modeState = 2;
-                    m_568 = g_buteMgr.GetIntDef("StatusBar", "DestructButtonWarningDelay", 0x32);
-                    m_56c = 0;
-                    m_560 = g_dat645588;
-                    m_564 = 0;
-                    sm->PostWarn(1, 0xbb7);
-                } else {
-                    CSbiSlotPtr* n = m_modeNotify;
-                    m_558 = 0;
-                    m_modeState = 1;
-                    if (n) {
-                        n->Notify(1);
+            m_tabCycle = cmd - 0x190;
+            TeardownNotify(0);
+            FinishReset16ea();
+            TabCommit();
+            return 1;
+
+        case 5:
+            if (m_550 != 0) {
+                return 1;
+            }
+            switch (cmd) {
+                case 0x1f4:
+                    HiCueFind();
+                    HiPost(0x8007);
+                    return 1;
+                case 0x1f5:
+                    HiCueFind();
+                    HiPost(0x80ce);
+                    return 1;
+                case 0x1f6:
+                    HiCueFind();
+                    HiPost(0x80cf);
+                    return 1;
+                case 0x1f8:
+                    HiCueFind();
+                    HiPost(0x8035);
+                    return 1;
+                case 0x1f7:
+                    HiCueLookup();
+                    HiPost(0x80e2);
+                    return 1;
+                case 0x1f9:
+                    HiCueLookup();
+                    if (g_gameReg->m_c != 0) {
+                        g_gameReg->m_c ^= 1;
+                        g_gameReg->SetToggle(g_gameReg->m_c, 1);
                     }
-                    sm->PostWarn(0, 0xbb7);
-                }
+                    g_gameReg->m_2c->HiToggle(1);
+                    return 1;
+                case 0x1fa:
+                    HiCueLookup();
+                    ArmTab(5, 0);
+                    return 1;
+                case 0x1fc:
+                    if (g_gameReg->m_134 != 1) {
+                        return 1;
+                    }
+                    if (m_modeArmed != 0) {
+                        return 1;
+                    }
+                    if (m_hitTestDisabled != 0) {
+                        return 1;
+                    }
+                    HiCueLookup();
+                    {
+                        CSbiSubMgr* sm = g_gameReg->m_2c;
+                        if (m_558 == 0) {
+                            m_558 = 1;
+                            m_modeState = 2;
+                            m_568 = g_buteMgr
+                                        .GetIntDef("StatusBar", "DestructButtonWarningDelay", 0x32);
+                            m_56c = 0;
+                            m_560 = g_dat645588;
+                            m_564 = 0;
+                            sm->PostWarn(1, 0xbb7);
+                        } else {
+                            CSbiSlotPtr* n = m_modeNotify;
+                            m_558 = 0;
+                            m_modeState = 1;
+                            if (n) {
+                                n->Notify(1);
+                            }
+                            sm->PostWarn(0, 0xbb7);
+                        }
+                    }
+                    return 1;
+                default:
+                    return 0;
             }
-            return 1;
+
+        case 6:
+            switch (cmd) {
+                case 0x324:
+                    if (g_gameReg->m_68->m_288 == 1) {
+                        HiCueLookup();
+                        g_gameReg->HiPump();
+                    } else if (g_gameReg->m_134 == 1) {
+                        HiCueLookup();
+                        HiPost(0x806b);
+                    } else {
+                        HiCueLookup();
+                        g_gameReg->m_2c->HiRefresh(0);
+                    }
+                    return 1;
+                case 0x325:
+                    if (g_gameReg->m_134 == 1) {
+                        if (g_gameReg->m_68->m_288 == 1) {
+                            g_gameReg->Fn29aa();
+                        }
+                        HiCueLookup();
+                        HiPost(0x8023);
+                    } else {
+                        HiCueTimed();
+                        g_gameReg->HiPump();
+                    }
+                    return 1;
+                case 0x327:
+                    if (g_gameReg->m_134 == 1) {
+                        if (g_gameReg->m_68->m_288 == 1) {
+                            g_gameReg->Fn29aa();
+                        }
+                        HiCueTimed();
+                        HiPost(0x8023);
+                    } else {
+                        HiCueTimed();
+                        g_gameReg->HiPump();
+                    }
+                    return 1;
+                case 0x328:
+                    HiCueTimed();
+                    g_gameReg->m_2c->HiRefresh(0);
+                    return 1;
+                default:
+                    return 0;
+            }
+
         default:
             return 0;
-        }
-
-    case 6:
-        switch (cmd) {
-        case 0x324:
-            if (g_gameReg->m_68->m_288 == 1) {
-                HiCueLookup();
-                g_gameReg->HiPump();
-            } else if (g_gameReg->m_134 == 1) {
-                HiCueLookup();
-                HiPost(0x806b);
-            } else {
-                HiCueLookup();
-                g_gameReg->m_2c->HiRefresh(0);
-            }
-            return 1;
-        case 0x325:
-            if (g_gameReg->m_134 == 1) {
-                if (g_gameReg->m_68->m_288 == 1) {
-                    g_gameReg->Fn29aa();
-                }
-                HiCueLookup();
-                HiPost(0x8023);
-            } else {
-                HiCueTimed();
-                g_gameReg->HiPump();
-            }
-            return 1;
-        case 0x327:
-            if (g_gameReg->m_134 == 1) {
-                if (g_gameReg->m_68->m_288 == 1) {
-                    g_gameReg->Fn29aa();
-                }
-                HiCueTimed();
-                HiPost(0x8023);
-            } else {
-                HiCueTimed();
-                g_gameReg->HiPump();
-            }
-            return 1;
-        case 0x328:
-            HiCueTimed();
-            g_gameReg->m_2c->HiRefresh(0);
-            return 1;
-        default:
-            return 0;
-        }
-
-    default:
-        return 0;
     }
 }
 
@@ -3908,92 +3907,96 @@ void CSBI_RectOnly::UpdateRezConveyorStatusBar() {
     SbiPhaseSlot* ph = (SbiPhaseSlot*)m_groupSlots;
     do {
         switch (ph->m_state) {
-        case 1:
-            if (++ph->m_counter > 9) {
-                ph->m_counter = 1;
-            }
-            break;
-        case 2:
-            if ((i64)(u32)g_dat645588 - ph->m_last >= ph->m_interval) {
-                if (++ph->m_counter >= 0x12) {
-                    ph->m_counter = 0x12;
-                    ph->m_state = 7;
-                    ph->m_interval = g_buteMgr.GetIntDef("StatusBar", "ConveyorBeltHoldDelay", 0x1f4);
-                    ph->m_last = (u32)g_dat645588;
-                    ReportLog(m_extraNotifyArg0, m_514 + 0xc, m_518 + 0xc);
-                    ConveyorReturn();
-                }
-            }
-            break;
-        case 3:
-            if ((i64)(u32)g_dat645588 - ph->m_last >= ph->m_interval) {
-                if (--ph->m_counter < 0xa) {
-                    ph->m_state = 0;
+            case 1:
+                if (++ph->m_counter > 9) {
                     ph->m_counter = 1;
                 }
-            }
-            break;
-        case 4:
-            if ((i64)(u32)g_dat645588 - ph->m_last >= ph->m_interval) {
-                if (++ph->m_counter >= 0x18) {
-                    ph->m_counter = 0x18;
-                    ph->m_state = 6;
-                    ph->m_interval = g_buteMgr.GetIntDef("StatusBar", "ConveyorBeltHoldInDelay", 0x1f4);
-                    ph->m_last = (u32)g_dat645588;
-                    m_4c8 = 8;
-                    m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "FallingItemDelay", 0x32);
-                    m_beltLast = (u32)g_dat645588;
+                break;
+            case 2:
+                if ((i64)(u32)g_dat645588 - ph->m_last >= ph->m_interval) {
+                    if (++ph->m_counter >= 0x12) {
+                        ph->m_counter = 0x12;
+                        ph->m_state = 7;
+                        ph->m_interval =
+                            g_buteMgr.GetIntDef("StatusBar", "ConveyorBeltHoldDelay", 0x1f4);
+                        ph->m_last = (u32)g_dat645588;
+                        ReportLog(m_extraNotifyArg0, m_514 + 0xc, m_518 + 0xc);
+                        ConveyorReturn();
+                    }
                 }
-            }
-            break;
-        case 5:
-            if ((i64)(u32)g_dat645588 - ph->m_last >= ph->m_interval) {
-                if (--ph->m_counter < 0x13) {
-                    ph->m_state = 0;
-                    ph->m_counter = 1;
+                break;
+            case 3:
+                if ((i64)(u32)g_dat645588 - ph->m_last >= ph->m_interval) {
+                    if (--ph->m_counter < 0xa) {
+                        ph->m_state = 0;
+                        ph->m_counter = 1;
+                    }
                 }
-            }
-            break;
-        case 6:
-            if ((i64)(u32)g_dat645588 - ph->m_last >= ph->m_interval) {
-                if (m_activeTab == 3 && *(i32*)this != 2) {
-                    CSbiMusicHost* host = g_gameReg->m_30->m_28;
-                    if (host->m_30 == 0) {
-                        void* found = 0;
-                        ((CSbiLookupMap*)((char*)host + 0x10))->Lookup("GAME_REZBELTRETURN", &found);
-                        if (found && g_61ab20 != 0) {
-                            i32 item = g_61ab24;
-                            CSbiCueRecord* p = (CSbiCueRecord*)found;
-                            if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
-                                p->m_14 = g_6bf3c0;
-                                ((CSbiCuePlayer*)p->m_10)->ConfigureItem(item, 0, 0, 0);
+                break;
+            case 4:
+                if ((i64)(u32)g_dat645588 - ph->m_last >= ph->m_interval) {
+                    if (++ph->m_counter >= 0x18) {
+                        ph->m_counter = 0x18;
+                        ph->m_state = 6;
+                        ph->m_interval =
+                            g_buteMgr.GetIntDef("StatusBar", "ConveyorBeltHoldInDelay", 0x1f4);
+                        ph->m_last = (u32)g_dat645588;
+                        m_4c8 = 8;
+                        m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "FallingItemDelay", 0x32);
+                        m_beltLast = (u32)g_dat645588;
+                    }
+                }
+                break;
+            case 5:
+                if ((i64)(u32)g_dat645588 - ph->m_last >= ph->m_interval) {
+                    if (--ph->m_counter < 0x13) {
+                        ph->m_state = 0;
+                        ph->m_counter = 1;
+                    }
+                }
+                break;
+            case 6:
+                if ((i64)(u32)g_dat645588 - ph->m_last >= ph->m_interval) {
+                    if (m_activeTab == 3 && *(i32*)this != 2) {
+                        CSbiMusicHost* host = g_gameReg->m_30->m_28;
+                        if (host->m_30 == 0) {
+                            void* found = 0;
+                            ((CSbiLookupMap*)((char*)host + 0x10))
+                                ->Lookup("GAME_REZBELTRETURN", &found);
+                            if (found && g_61ab20 != 0) {
+                                i32 item = g_61ab24;
+                                CSbiCueRecord* p = (CSbiCueRecord*)found;
+                                if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
+                                    p->m_14 = g_6bf3c0;
+                                    ((CSbiCuePlayer*)p->m_10)->ConfigureItem(item, 0, 0, 0);
+                                }
                             }
                         }
                     }
+                    ph->m_state = 5;
                 }
-                ph->m_state = 5;
-            }
-            break;
-        case 7:
-            if ((i64)(u32)g_dat645588 - ph->m_last >= ph->m_interval) {
-                if (m_activeTab == 3 && *(i32*)this != 2) {
-                    CSbiMusicHost* host = g_gameReg->m_30->m_28;
-                    if (host->m_30 == 0) {
-                        void* found = 0;
-                        ((CSbiLookupMap*)((char*)host + 0x10))->Lookup("GAME_REZBELTBACKUP", &found);
-                        if (found && g_61ab20 != 0) {
-                            i32 item = g_61ab24;
-                            CSbiCueRecord* p = (CSbiCueRecord*)found;
-                            if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
-                                p->m_14 = g_6bf3c0;
-                                ((CSbiCuePlayer*)p->m_10)->ConfigureItem(item, 0, 0, 0);
+                break;
+            case 7:
+                if ((i64)(u32)g_dat645588 - ph->m_last >= ph->m_interval) {
+                    if (m_activeTab == 3 && *(i32*)this != 2) {
+                        CSbiMusicHost* host = g_gameReg->m_30->m_28;
+                        if (host->m_30 == 0) {
+                            void* found = 0;
+                            ((CSbiLookupMap*)((char*)host + 0x10))
+                                ->Lookup("GAME_REZBELTBACKUP", &found);
+                            if (found && g_61ab20 != 0) {
+                                i32 item = g_61ab24;
+                                CSbiCueRecord* p = (CSbiCueRecord*)found;
+                                if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
+                                    p->m_14 = g_6bf3c0;
+                                    ((CSbiCuePlayer*)p->m_10)->ConfigureItem(item, 0, 0, 0);
+                                }
                             }
                         }
                     }
+                    ph->m_state = 3;
                 }
-                ph->m_state = 3;
-            }
-            break;
+                break;
         }
         if (*notify) {
             (*notify)->Notify(ph->m_counter);
@@ -4022,7 +4025,11 @@ void CSBI_RectOnly::LoadRezMachineConfig() {
     if (pA->m_state == 5) {
         if ((i64)(u32)g_dat645588 - pA->m_last >= pA->m_interval) {
             if (++pA->m_counter > 0x34) {
-                SetGaugeSpan(0x2b, 5, g_buteMgr.GetIntDef("StatusBar", "RightMachineRunningDelay", 0x7d));
+                SetGaugeSpan(
+                    0x2b,
+                    5,
+                    g_buteMgr.GetIntDef("StatusBar", "RightMachineRunningDelay", 0x7d)
+                );
             } else {
                 pA->m_interval = g_buteMgr.GetIntDef("StatusBar", "RightMachineRunningDelay", 0x7d);
                 pA->m_last = (u32)g_dat645588;
@@ -4040,126 +4047,153 @@ void CSBI_RectOnly::LoadRezMachineConfig() {
     }
 
     switch (pB->m_state) {
-    case 1:
-        if ((i64)(u32)g_dat645588 - pB->m_last >= pB->m_interval) {
-            if (++pB->m_counter > 8) {
-                SetStatBar(1, 1, g_buteMgr.GetIntDef("StatusBar", "LeftMachineSnoozingDelay", 0x64));
-            } else {
-                pB->m_interval = g_buteMgr.GetIntDef("StatusBar", "LeftMachineSnoozingDelay", 0x64);
-                pB->m_last = (u32)g_dat645588;
-            }
-        }
-        break;
-    case 2:
-        if ((i64)(u32)g_dat645588 - pB->m_last >= pB->m_interval) {
-            if (++pB->m_counter > 0x13) {
-                SetStatBar(0x14, 3, g_buteMgr.GetIntDef("StatusBar", "LeftMachineTurningWheelDelay", 0x64));
-                SetGaugeSpan(0x2b, 5, g_buteMgr.GetIntDef("StatusBar", "RightMachineRunningDelay", 0x7d));
-                CSbiSlot* s = m_groupSlots;
-                for (i32 i = 0; i < 3; i++) {
-                    s->m_state = 1;
-                    s->m_value = 1;
-                    s++;
-                }
-                m_4c8 = 2;
-                m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "NextItemDelay", 0x64);
-                m_beltLast = (u32)g_dat645588;
-                if (m_activeTab == 3 && *(i32*)this != 2) {
-                    CSbiMusicHost* host = g_gameReg->m_30->m_28;
-                    if (host->m_30 == 0) {
-                        void* found = 0;
-                        ((CSbiLookupMap*)((char*)host + 0x10))->Lookup("GAME_REZMACHINE", &found);
-                        if (found && g_61ab20 != 0) {
-                            i32 item = g_61ab24;
-                            CSbiCueRecord* p = (CSbiCueRecord*)found;
-                            if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
-                                p->m_14 = g_6bf3c0;
-                                ((CSbiCuePlayer*)p->m_10)->ConfigureItem(item, 0, 0, 0);
-                            }
-                        }
-                    }
-                }
-            } else {
-                pB->m_interval = g_buteMgr.GetIntDef("StatusBar", "LeftMachineWakingDelay", 0x64);
-                pB->m_last = (u32)g_dat645588;
-            }
-        }
-        break;
-    case 3:
-        if ((i64)(u32)g_dat645588 - pB->m_last >= pB->m_interval) {
-            if (++pB->m_counter > 0x1d) {
-                SetStatBar(0x14, 3, g_buteMgr.GetIntDef("StatusBar", "LeftMachineTurningWheelDelay", 0x64));
-            } else {
-                pB->m_interval = g_buteMgr.GetIntDef("StatusBar", "LeftMachineTurningWheelDelay", 0x64);
-                pB->m_last = (u32)g_dat645588;
-            }
-        }
-        break;
-    case 4:
-        if ((i64)(u32)g_dat645588 - pB->m_last >= pB->m_interval) {
-            if (++pB->m_counter == 0x26) {
-                i32 col;
-                i32 which = m_extraNotifyArg0;
-                if (which >= 0x22) {
-                    col = 2;
+        case 1:
+            if ((i64)(u32)g_dat645588 - pB->m_last >= pB->m_interval) {
+                if (++pB->m_counter > 8) {
+                    SetStatBar(
+                        1,
+                        1,
+                        g_buteMgr.GetIntDef("StatusBar", "LeftMachineSnoozingDelay", 0x64)
+                    );
                 } else {
-                    col = (which >= 0x17) ? 1 : 0;
-                }
-                i32 found = 0;
-                for (i32 r = 3; r >= 0; r--) {
-                    if (m_hlGrid[col * 4 + r].m_state == 0) {
-                        found = 1;
-                        break;
-                    }
-                }
-                if (found) {
-                    g[col].m_state = 4;
-                    g[col].m_counter = 0x13;
-                    if (m_activeTab == 3 && *(i32*)this != 2) {
-                        CSbiMusicHost* host = g_gameReg->m_30->m_28;
-                        if (host->m_30 == 0) {
-                            void* fnd = 0;
-                            ((CSbiLookupMap*)((char*)host + 0x10))->Lookup("GAME_REZBELTRETRACT", &fnd);
-                            if (fnd && g_61ab20 != 0) {
-                                i32 item = g_61ab24;
-                                CSbiCueRecord* p = (CSbiCueRecord*)fnd;
-                                if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
-                                    p->m_14 = g_6bf3c0;
-                                    ((CSbiCuePlayer*)p->m_10)->ConfigureItem(item, 0, 0, 0);
-                                }
-                            }
-                        }
-                    }
-                } else {
-                    g[col].m_state = 2;
-                    g[col].m_counter = 0xa;
-                    if (m_activeTab == 3 && *(i32*)this != 2) {
-                        CSbiMusicHost* host = g_gameReg->m_30->m_28;
-                        if (host->m_30 == 0) {
-                            void* fnd = 0;
-                            ((CSbiLookupMap*)((char*)host + 0x10))->Lookup("GAME_REZBELTDROP", &fnd);
-                            if (fnd && g_61ab20 != 0) {
-                                i32 item = g_61ab24;
-                                CSbiCueRecord* p = (CSbiCueRecord*)fnd;
-                                if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
-                                    p->m_14 = g_6bf3c0;
-                                    ((CSbiCuePlayer*)p->m_10)->ConfigureItem(item, 0, 0, 0);
-                                }
-                            }
-                        }
-                    }
-                }
-                g[0].m_interval = g_buteMgr.GetIntDef("StatusBar", "ConveyorBeltDelay", 0x64);
-                g[0].m_last = (u32)g_dat645588;
-                if (pB->m_counter > 0x2a) {
-                    SetStatBar(1, 1, g_buteMgr.GetIntDef("StatusBar", "LeftMachineSnoozingDelay", 0x64));
-                } else {
-                    pB->m_interval = g_buteMgr.GetIntDef("StatusBar", "LeftMachineLeverDelay", 0x64);
+                    pB->m_interval =
+                        g_buteMgr.GetIntDef("StatusBar", "LeftMachineSnoozingDelay", 0x64);
                     pB->m_last = (u32)g_dat645588;
                 }
             }
-        }
-        break;
+            break;
+        case 2:
+            if ((i64)(u32)g_dat645588 - pB->m_last >= pB->m_interval) {
+                if (++pB->m_counter > 0x13) {
+                    SetStatBar(
+                        0x14,
+                        3,
+                        g_buteMgr.GetIntDef("StatusBar", "LeftMachineTurningWheelDelay", 0x64)
+                    );
+                    SetGaugeSpan(
+                        0x2b,
+                        5,
+                        g_buteMgr.GetIntDef("StatusBar", "RightMachineRunningDelay", 0x7d)
+                    );
+                    CSbiSlot* s = m_groupSlots;
+                    for (i32 i = 0; i < 3; i++) {
+                        s->m_state = 1;
+                        s->m_value = 1;
+                        s++;
+                    }
+                    m_4c8 = 2;
+                    m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "NextItemDelay", 0x64);
+                    m_beltLast = (u32)g_dat645588;
+                    if (m_activeTab == 3 && *(i32*)this != 2) {
+                        CSbiMusicHost* host = g_gameReg->m_30->m_28;
+                        if (host->m_30 == 0) {
+                            void* found = 0;
+                            ((CSbiLookupMap*)((char*)host + 0x10))
+                                ->Lookup("GAME_REZMACHINE", &found);
+                            if (found && g_61ab20 != 0) {
+                                i32 item = g_61ab24;
+                                CSbiCueRecord* p = (CSbiCueRecord*)found;
+                                if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
+                                    p->m_14 = g_6bf3c0;
+                                    ((CSbiCuePlayer*)p->m_10)->ConfigureItem(item, 0, 0, 0);
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    pB->m_interval =
+                        g_buteMgr.GetIntDef("StatusBar", "LeftMachineWakingDelay", 0x64);
+                    pB->m_last = (u32)g_dat645588;
+                }
+            }
+            break;
+        case 3:
+            if ((i64)(u32)g_dat645588 - pB->m_last >= pB->m_interval) {
+                if (++pB->m_counter > 0x1d) {
+                    SetStatBar(
+                        0x14,
+                        3,
+                        g_buteMgr.GetIntDef("StatusBar", "LeftMachineTurningWheelDelay", 0x64)
+                    );
+                } else {
+                    pB->m_interval =
+                        g_buteMgr.GetIntDef("StatusBar", "LeftMachineTurningWheelDelay", 0x64);
+                    pB->m_last = (u32)g_dat645588;
+                }
+            }
+            break;
+        case 4:
+            if ((i64)(u32)g_dat645588 - pB->m_last >= pB->m_interval) {
+                if (++pB->m_counter == 0x26) {
+                    i32 col;
+                    i32 which = m_extraNotifyArg0;
+                    if (which >= 0x22) {
+                        col = 2;
+                    } else {
+                        col = (which >= 0x17) ? 1 : 0;
+                    }
+                    i32 found = 0;
+                    for (i32 r = 3; r >= 0; r--) {
+                        if (m_hlGrid[col * 4 + r].m_state == 0) {
+                            found = 1;
+                            break;
+                        }
+                    }
+                    if (found) {
+                        g[col].m_state = 4;
+                        g[col].m_counter = 0x13;
+                        if (m_activeTab == 3 && *(i32*)this != 2) {
+                            CSbiMusicHost* host = g_gameReg->m_30->m_28;
+                            if (host->m_30 == 0) {
+                                void* fnd = 0;
+                                ((CSbiLookupMap*)((char*)host + 0x10))
+                                    ->Lookup("GAME_REZBELTRETRACT", &fnd);
+                                if (fnd && g_61ab20 != 0) {
+                                    i32 item = g_61ab24;
+                                    CSbiCueRecord* p = (CSbiCueRecord*)fnd;
+                                    if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
+                                        p->m_14 = g_6bf3c0;
+                                        ((CSbiCuePlayer*)p->m_10)->ConfigureItem(item, 0, 0, 0);
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        g[col].m_state = 2;
+                        g[col].m_counter = 0xa;
+                        if (m_activeTab == 3 && *(i32*)this != 2) {
+                            CSbiMusicHost* host = g_gameReg->m_30->m_28;
+                            if (host->m_30 == 0) {
+                                void* fnd = 0;
+                                ((CSbiLookupMap*)((char*)host + 0x10))
+                                    ->Lookup("GAME_REZBELTDROP", &fnd);
+                                if (fnd && g_61ab20 != 0) {
+                                    i32 item = g_61ab24;
+                                    CSbiCueRecord* p = (CSbiCueRecord*)fnd;
+                                    if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
+                                        p->m_14 = g_6bf3c0;
+                                        ((CSbiCuePlayer*)p->m_10)->ConfigureItem(item, 0, 0, 0);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    g[0].m_interval = g_buteMgr.GetIntDef("StatusBar", "ConveyorBeltDelay", 0x64);
+                    g[0].m_last = (u32)g_dat645588;
+                    if (pB->m_counter > 0x2a) {
+                        SetStatBar(
+                            1,
+                            1,
+                            g_buteMgr.GetIntDef("StatusBar", "LeftMachineSnoozingDelay", 0x64)
+                        );
+                    } else {
+                        pB->m_interval =
+                            g_buteMgr.GetIntDef("StatusBar", "LeftMachineLeverDelay", 0x64);
+                        pB->m_last = (u32)g_dat645588;
+                    }
+                }
+            }
+            break;
     }
 
     if (m_348) {
@@ -4198,150 +4232,158 @@ void CSBI_RectOnly::LoadChipMachineConfig() {
     i32 refreshFlag = 0;
     i32 rectFlag = 0;
     switch (m_4c8) {
-    case 2:
-        if ((i64)(u32)g_dat645588 - m_beltLast >= m_beltInterval) {
-            m_514 += g_buteMgr.GetSpeed("StatusBar", "NextItemSpeed", 2);
-            m_51c += g_buteMgr.GetSpeed("StatusBar", "NextItemSpeed", 2);
-            m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "NextItemDelay", 0x64);
-            m_beltLast = (u32)g_dat645588;
-        }
-        if (m_514 >= 0x6d) {
-            m_514 = 0x6d;
-            m_51c = 0x84;
-            m_4c8 = 3;
-            m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "NextItemInMachineTime", 0x7d0);
-            m_beltLast = (u32)g_dat645588;
-        }
-        refreshFlag = 1;
-        break;
-    case 3:
-        if ((i64)(u32)g_dat645588 - m_beltLast >= m_beltInterval) {
-            SetGaugeSpan(0x35, 6, g_buteMgr.GetIntDef("StatusBar", "RightMachineSpewingDelay", 0x7d));
-            m_4c8 = 4;
-            m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "NextItemWaitTime", 0x1f4);
-            m_beltLast = (u32)g_dat645588;
-        }
-        break;
-    case 4:
-        if ((i64)(u32)g_dat645588 - m_beltLast >= m_beltInterval) {
-            m_4c8 = 5;
-            if (m_activeTab == 3 && *(i32*)this != 2) {
-                CSbiMusicHost* host = g_gameReg->m_30->m_28;
-                if (host->m_30 == 0) {
-                    void* found = 0;
-                    ((CSbiLookupMap*)((char*)host + 0x10))->Lookup("GAME_CHIPFALLOUT", &found);
-                    if (found && g_61ab20 != 0) {
-                        i32 item = g_61ab24;
-                        CSbiCueRecord* p = (CSbiCueRecord*)found;
-                        if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
-                            p->m_14 = g_6bf3c0;
-                            ((CSbiCuePlayer*)p->m_10)->ConfigureItem(item, 0, 0, 0);
+        case 2:
+            if ((i64)(u32)g_dat645588 - m_beltLast >= m_beltInterval) {
+                m_514 += g_buteMgr.GetSpeed("StatusBar", "NextItemSpeed", 2);
+                m_51c += g_buteMgr.GetSpeed("StatusBar", "NextItemSpeed", 2);
+                m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "NextItemDelay", 0x64);
+                m_beltLast = (u32)g_dat645588;
+            }
+            if (m_514 >= 0x6d) {
+                m_514 = 0x6d;
+                m_51c = 0x84;
+                m_4c8 = 3;
+                m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "NextItemInMachineTime", 0x7d0);
+                m_beltLast = (u32)g_dat645588;
+            }
+            refreshFlag = 1;
+            break;
+        case 3:
+            if ((i64)(u32)g_dat645588 - m_beltLast >= m_beltInterval) {
+                SetGaugeSpan(
+                    0x35,
+                    6,
+                    g_buteMgr.GetIntDef("StatusBar", "RightMachineSpewingDelay", 0x7d)
+                );
+                m_4c8 = 4;
+                m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "NextItemWaitTime", 0x1f4);
+                m_beltLast = (u32)g_dat645588;
+            }
+            break;
+        case 4:
+            if ((i64)(u32)g_dat645588 - m_beltLast >= m_beltInterval) {
+                m_4c8 = 5;
+                if (m_activeTab == 3 && *(i32*)this != 2) {
+                    CSbiMusicHost* host = g_gameReg->m_30->m_28;
+                    if (host->m_30 == 0) {
+                        void* found = 0;
+                        ((CSbiLookupMap*)((char*)host + 0x10))->Lookup("GAME_CHIPFALLOUT", &found);
+                        if (found && g_61ab20 != 0) {
+                            i32 item = g_61ab24;
+                            CSbiCueRecord* p = (CSbiCueRecord*)found;
+                            if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
+                                p->m_14 = g_6bf3c0;
+                                ((CSbiCuePlayer*)p->m_10)->ConfigureItem(item, 0, 0, 0);
+                            }
                         }
                     }
                 }
+                m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "FallingItemDelay", 0x32);
+                m_beltLast = (u32)g_dat645588;
             }
-            m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "FallingItemDelay", 0x32);
-            m_beltLast = (u32)g_dat645588;
-        }
-        break;
-    case 5:
-        if ((i64)(u32)g_dat645588 - m_beltLast >= m_beltInterval) {
-            m_518 += g_buteMgr.GetSpeed("StatusBar", "FallingItemSpeed", 2);
-            m_520 += g_buteMgr.GetSpeed("StatusBar", "FallingItemSpeed", 2);
-            m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "FallingItemDelay", 0x32);
-            m_beltLast = (u32)g_dat645588;
-        }
-        if (m_520 >= 0x11c) {
-            m_520 = 0x11c;
-            m_518 = 0x104;
-            rectFlag = 1;
-            if (m_activeTab == 3 && *(i32*)this != 2) {
-                CSbiMusicHost* host = g_gameReg->m_30->m_28;
-                if (host->m_30 == 0) {
-                    void* found = 0;
-                    ((CSbiLookupMap*)((char*)host + 0x10))->Lookup("GAME_CHIPLAND", &found);
-                    if (found && g_61ab20 != 0) {
-                        i32 item = g_61ab24;
-                        CSbiCueRecord* p = (CSbiCueRecord*)found;
-                        if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
-                            p->m_14 = g_6bf3c0;
-                            ((CSbiCuePlayer*)p->m_10)->ConfigureItem(item, 0, 0, 0);
+            break;
+        case 5:
+            if ((i64)(u32)g_dat645588 - m_beltLast >= m_beltInterval) {
+                m_518 += g_buteMgr.GetSpeed("StatusBar", "FallingItemSpeed", 2);
+                m_520 += g_buteMgr.GetSpeed("StatusBar", "FallingItemSpeed", 2);
+                m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "FallingItemDelay", 0x32);
+                m_beltLast = (u32)g_dat645588;
+            }
+            if (m_520 >= 0x11c) {
+                m_520 = 0x11c;
+                m_518 = 0x104;
+                rectFlag = 1;
+                if (m_activeTab == 3 && *(i32*)this != 2) {
+                    CSbiMusicHost* host = g_gameReg->m_30->m_28;
+                    if (host->m_30 == 0) {
+                        void* found = 0;
+                        ((CSbiLookupMap*)((char*)host + 0x10))->Lookup("GAME_CHIPLAND", &found);
+                        if (found && g_61ab20 != 0) {
+                            i32 item = g_61ab24;
+                            CSbiCueRecord* p = (CSbiCueRecord*)found;
+                            if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
+                                p->m_14 = g_6bf3c0;
+                                ((CSbiCuePlayer*)p->m_10)->ConfigureItem(item, 0, 0, 0);
+                            }
                         }
                     }
                 }
+                m_4c8 = 7;
+                m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "NextItemDelay", 0x64);
+                m_beltLast = (u32)g_dat645588;
+                if (m_extraNotifyArg0 >= 0x22) {
+                    m_524 = 0x6d;
+                } else if (m_extraNotifyArg0 >= 0x17) {
+                    m_524 = 0x45;
+                } else {
+                    m_524 = 0x1d;
+                }
             }
-            m_4c8 = 7;
-            m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "NextItemDelay", 0x64);
-            m_beltLast = (u32)g_dat645588;
+            refreshFlag = 1;
+            break;
+        case 7:
+            if ((i64)(u32)g_dat645588 - m_beltLast >= m_beltInterval) {
+                m_514 -= g_buteMgr.GetSpeed("StatusBar", "NextItemSpeed", 2);
+                m_51c -= g_buteMgr.GetSpeed("StatusBar", "NextItemSpeed", 2);
+                m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "NextItemDelay", 0x64);
+                m_beltLast = (u32)g_dat645588;
+            }
+            if (m_514 <= m_524) {
+                m_514 = m_524;
+                m_51c = m_524 + 0x17;
+                rectFlag = 1;
+                ChipNotify27f7();
+                SetStatBar(
+                    0x1e,
+                    4,
+                    g_buteMgr.GetIntDef("StatusBar", "LeftMachineLeverDelay", 0x64)
+                );
+                m_4c8 = 1;
+            }
+            refreshFlag = 1;
+            break;
+        case 8: {
+            if ((i64)(u32)g_dat645588 - m_beltLast >= m_beltInterval) {
+                m_518 += g_buteMgr.GetSpeed("StatusBar", "FallingItemSpeed", 2);
+                m_520 += g_buteMgr.GetSpeed("StatusBar", "(FallingItemSpeed", 2);
+                m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "FallingItemDelay", 0x32);
+                m_beltLast = (u32)g_dat645588;
+            }
+            i32 col;
             if (m_extraNotifyArg0 >= 0x22) {
-                m_524 = 0x6d;
-            } else if (m_extraNotifyArg0 >= 0x17) {
-                m_524 = 0x45;
+                col = 2;
             } else {
-                m_524 = 0x1d;
+                col = (m_extraNotifyArg0 >= 0x17) ? 1 : 0;
             }
-        }
-        refreshFlag = 1;
-        break;
-    case 7:
-        if ((i64)(u32)g_dat645588 - m_beltLast >= m_beltInterval) {
-            m_514 -= g_buteMgr.GetSpeed("StatusBar", "NextItemSpeed", 2);
-            m_51c -= g_buteMgr.GetSpeed("StatusBar", "NextItemSpeed", 2);
-            m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "NextItemDelay", 0x64);
-            m_beltLast = (u32)g_dat645588;
-        }
-        if (m_514 <= m_524) {
-            m_514 = m_524;
-            m_51c = m_524 + 0x17;
-            rectFlag = 1;
-            ChipNotify27f7();
-            SetStatBar(0x1e, 4, g_buteMgr.GetIntDef("StatusBar", "LeftMachineLeverDelay", 0x64));
-            m_4c8 = 1;
-        }
-        refreshFlag = 1;
-        break;
-    case 8: {
-        if ((i64)(u32)g_dat645588 - m_beltLast >= m_beltInterval) {
-            m_518 += g_buteMgr.GetSpeed("StatusBar", "FallingItemSpeed", 2);
-            m_520 += g_buteMgr.GetSpeed("StatusBar", "(FallingItemSpeed", 2);
-            m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "FallingItemDelay", 0x32);
-            m_beltLast = (u32)g_dat645588;
-        }
-        i32 col;
-        if (m_extraNotifyArg0 >= 0x22) {
-            col = 2;
-        } else {
-            col = (m_extraNotifyArg0 >= 0x17) ? 1 : 0;
-        }
-        i32 row = 3;
-        while (m_hlGrid[col * 4 + row].m_state == 1) {
-            row--;
-            if (row < 0) {
-                break;
+            i32 row = 3;
+            while (m_hlGrid[col * 4 + row].m_state == 1) {
+                row--;
+                if (row < 0) {
+                    break;
+                }
             }
-        }
-        if (m_518 >= row * 0x20 + 0x13e) {
-            if (m_activeTab == 3 && *(i32*)this != 2) {
-                CSbiMusicHost* host = g_gameReg->m_30->m_28;
-                if (host->m_30 == 0) {
-                    void* found = 0;
-                    ((CSbiLookupMap*)((char*)host + 0x10))->Lookup("GAME_CHIPLAND", &found);
-                    if (found && g_61ab20 != 0) {
-                        i32 item = g_61ab24;
-                        CSbiCueRecord* p = (CSbiCueRecord*)found;
-                        if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
-                            p->m_14 = g_6bf3c0;
-                            ((CSbiCuePlayer*)p->m_10)->ConfigureItem(item, 0, 0, 0);
+            if (m_518 >= row * 0x20 + 0x13e) {
+                if (m_activeTab == 3 && *(i32*)this != 2) {
+                    CSbiMusicHost* host = g_gameReg->m_30->m_28;
+                    if (host->m_30 == 0) {
+                        void* found = 0;
+                        ((CSbiLookupMap*)((char*)host + 0x10))->Lookup("GAME_CHIPLAND", &found);
+                        if (found && g_61ab20 != 0) {
+                            i32 item = g_61ab24;
+                            CSbiCueRecord* p = (CSbiCueRecord*)found;
+                            if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
+                                p->m_14 = g_6bf3c0;
+                                ((CSbiCuePlayer*)p->m_10)->ConfigureItem(item, 0, 0, 0);
+                            }
                         }
                     }
                 }
+                ChipFinish(col, m_extraNotifyArg0, row);
+                ConveyorReturn();
             }
-            ChipFinish(col, m_extraNotifyArg0, row);
-            ConveyorReturn();
+            refreshFlag = 1;
+            break;
         }
-        refreshFlag = 1;
-        break;
-    }
     }
 
     if (m_extraNotify0) {

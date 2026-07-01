@@ -18,12 +18,14 @@
 #define GRUNTZ_STATEMGRBZ_H
 
 #include <Ints.h>
+#include <rva.h>
 
 // SbzInputDevice - the DinMgr2 input device (real type CInputDevice, 0x338 bytes).
 // Only the two packed key-bitflag words (+0x2ac current, +0x2b0 edge) and the head
 // of the scan-code table (+0x2b4.., dwords) StateMgrBZ touches are pinned. Reset()
 // dispatches its +0x14 (slot 5) virtual, so it is modeled polymorphically for that
 // one call.
+SIZE_UNKNOWN(SbzInputDevice);
 class SbzInputDevice {
 public:
     virtual void Slot00(); // +0x00
@@ -43,6 +45,7 @@ public:
 // pointer array (m_devices @ manager+0x18). data@+4, count@+8 of the embedded
 // CPtrArray. (Unused view kept for documentation; Build reads these via the
 // manager fields below.)
+SIZE_UNKNOWN(SbzControllerArray);
 struct SbzControllerArray {
     void* m_vptr;            // +0x00  CPtrArray vftable
     SbzInputDevice** m_data; // +0x04  controller storage
@@ -52,6 +55,7 @@ struct SbzControllerArray {
 // SbzDeviceList - the composite device-list node StateMgrBZ::Reset walks
 // (m_deviceList points at it; real type CDeviceListNode): count@+4, first
 // element@+8.
+SIZE_UNKNOWN(SbzDeviceList);
 struct SbzDeviceList {
     void* m_00;                 // +0x00
     i32 m_count;                // +0x04
@@ -62,6 +66,7 @@ struct SbzDeviceList {
 // DirectInputMgr2). m_keyboard/m_deviceB are device pointers, m_data/m_count the
 // embedded controller array, and AddControllerArr (0x133260) the node-registering
 // trampoline whose return node is cached in StateMgrBZ::m_deviceList.
+SIZE_UNKNOWN(SbzInputManager);
 struct SbzInputManager {
     char m_pad00[0x10];         // +0x00  (DInput obj / owner / hinst / flags)
     SbzInputDevice* m_deviceB;  // +0x10  manager m_deviceB (joystick2 source)

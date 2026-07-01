@@ -258,8 +258,4 @@ void CSpriteRef::Free() {
         m_alphaKey = 0;
     }
 }
-
-// ---------------------------------------------------------------------------
-// Class metadata (SIZE sweep) - hosted at TU EOF; labels.py scans tree-wide.
-// ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CShadeTableFreer);

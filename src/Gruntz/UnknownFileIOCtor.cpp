@@ -44,10 +44,6 @@ UnknownFileIOOwner::UnknownFileIOOwner() {
     m_134 = 0;
     srand(time(0));
 }
-
-// ---------------------------------------------------------------------------
-// Class metadata (SIZE sweep) - hosted at TU EOF; labels.py scans tree-wide.
-// ---------------------------------------------------------------------------
 SIZE_UNKNOWN(UfoByteArray);
 SIZE_UNKNOWN(UfoFileIO);
 SIZE_UNKNOWN(UnknownFileIOOwner);

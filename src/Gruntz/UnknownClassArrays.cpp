@@ -3416,14 +3416,9 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_0358a0(i32 unitArg) {
     ((CObList*)&unit->m_31c)->RemoveAll();
     return 1;
 }
-
-// ---------------------------------------------------------------------------
-// Class metadata (SIZE sweep) - hosted at TU EOF; labels.py scans tree-wide.
-// ---------------------------------------------------------------------------
 SIZE_UNKNOWN(AnimNameResolver);
 SIZE_UNKNOWN(BandRec);
 SIZE_UNKNOWN(Board);
-SIZE_UNKNOWN(CBattlezSpawnMgr_or_CGruntSpawnMgr);
 SIZE_UNKNOWN(Candidate);
 SIZE_UNKNOWN(CellProbe);
 SIZE_UNKNOWN(CellResolver);

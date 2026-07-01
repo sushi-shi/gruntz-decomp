@@ -26,8 +26,4 @@ CZDArrayDerived* CZDArrayDerived::Construct(i32 lo, i32 hi) {
     m_vtbl = &g_zDArrayVtbl;
     return this;
 }
-
-// ---------------------------------------------------------------------------
-// Class metadata (SIZE sweep) - hosted at TU EOF; labels.py scans tree-wide.
-// ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CZDArrayDerived);

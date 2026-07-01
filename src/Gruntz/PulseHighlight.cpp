@@ -90,10 +90,6 @@ i32 CPulseHighlight::Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d) {
     }
     return 1;
 }
-
-// ---------------------------------------------------------------------------
-// Class metadata (SIZE sweep) - hosted at TU EOF; labels.py scans tree-wide.
-// ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CPulseAnim);
 SIZE_UNKNOWN(CPulseHighlight);
 SIZE_UNKNOWN(CPulseSink);

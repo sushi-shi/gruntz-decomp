@@ -647,10 +647,6 @@ i32 CTimer::Serialize(CTimerArchive* ar) {
     ar->Write(&m_4c, 4);
     return 1;
 }
-
-// ---------------------------------------------------------------------------
-// Class metadata (SIZE sweep) - hosted at TU EOF; labels.py scans tree-wide.
-// ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CGruntRef);
 SIZE_UNKNOWN(CKeyTable);
 SIZE_UNKNOWN(CLevelNotify);

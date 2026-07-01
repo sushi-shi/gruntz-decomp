@@ -99,10 +99,6 @@ i32 RunHelper2914() {
     Helper2914();
     return 0;
 }
-
-// ---------------------------------------------------------------------------
-// Class metadata (SIZE sweep) - hosted at TU EOF; labels.py scans tree-wide.
-// ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CActReg6446d8);
 SIZE_UNKNOWN(CGlobalStr);
 SIZE_UNKNOWN(COwnerWithSubs);

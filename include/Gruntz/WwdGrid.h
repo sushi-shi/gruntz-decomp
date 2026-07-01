@@ -15,12 +15,14 @@
 #define GRUNTZ_WWDGRID_H
 
 #include <Ints.h>
+#include <rva.h>
 
 struct BucketHead;
 
 // A grid region node: link pair @ +0x00, owning-bucket back-pointer @ +0x0c,
 // pixel position @ +0x10/+0x14 (the engine's CWwdObject region sub-object @
 // object+0x9c).
+SIZE_UNKNOWN(WwdRegion);
 struct WwdRegion {
     WwdRegion* m_next; // +0x00
     WwdRegion* m_prev; // +0x04
@@ -35,6 +37,7 @@ struct WwdRegion {
 // non-trivial ctor (zero the pair) + user dtor make `new BucketHead[n]` lower to
 // the MSVC array-cookie alloc + __ehvec_ctor/__ehvec_dtor pair (and a /GX frame),
 // matching the retail grid's bucket-array build/teardown.
+SIZE_UNKNOWN(BucketHead);
 struct BucketHead {
     WwdRegion* m_head; // +0x00
     WwdRegion* m_tail; // +0x04
@@ -68,6 +71,7 @@ struct CRemusBase {
 // and the per-object query callback is the pure virtual OnFound at slot 5 (vtbl
 // +0x14, == retail's __purecall slot). cl emits ??_7CWwdGrid (slot relocs mask
 // the 0x5f0328 target).
+SIZE_UNKNOWN(CWwdGrid);
 class CWwdGrid : public CRemusBase {
 public:
     // ctor: build the grid over rect (x0,y0,x1,y1) with cell sizes cellW/cellH.

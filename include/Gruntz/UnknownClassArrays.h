@@ -20,6 +20,7 @@
 
 #include <Mfc.h> // CPtrArray, CDWordArray (real afxcoll, 0x14 layout)
 
+SIZE_UNKNOWN(CBattlezSpawnMgr_or_CGruntSpawnMgr);
 class CBattlezSpawnMgr_or_CGruntSpawnMgr {
 public:
     CBattlezSpawnMgr_or_CGruntSpawnMgr();

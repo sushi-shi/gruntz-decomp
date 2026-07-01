@@ -257,10 +257,6 @@ WorkerFull::WorkerFull(i32 a, i32 b, i32 c) {
     m_174 = 0;
     m_178 = 0;
 }
-
-// ---------------------------------------------------------------------------
-// Class metadata (SIZE sweep) - hosted at TU EOF; labels.py scans tree-wide.
-// ---------------------------------------------------------------------------
 SIZE_UNKNOWN(SubRecord54);
 SIZE_UNKNOWN(SubRecord5C);
 SIZE_UNKNOWN(SubRecord60);

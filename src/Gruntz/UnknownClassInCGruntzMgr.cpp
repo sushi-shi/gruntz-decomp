@@ -95,9 +95,5 @@ CGruntSpawnLevel::CGruntSpawnLevel() {
 // once the GruntzPlayer/CGruntSpawnLevel identity is unified.
 RVA(0x00083260, 0x57)
 CGruntSpawnLevel::~CGruntSpawnLevel() {}
-
-// ---------------------------------------------------------------------------
-// Class metadata (SIZE sweep) - hosted at TU EOF; labels.py scans tree-wide.
-// ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CGruntSpawnLevel);
 SIZE_UNKNOWN(Mgr38);

@@ -28,6 +28,7 @@
 // drops the table back to the cache via FindRemove and zeros both. __thiscall.
 // Bodies live in the sibling SpriteRef.cpp; modeled NO-body here so this table's
 // `call`s through them reloc-mask. Fields kept i32 so Add()/GetSel() stay byte-exact.
+SIZE_UNKNOWN(CSpriteRef);
 class CSpriteRef {
 public:
     i32 Build(i32 cache, void* shade, i32 kind); // 0xe2df0, ret 0xc
@@ -42,6 +43,7 @@ public:
 
 // The sprite name->object hash table (CSpriteHashTable at +0x10 of the sprite mgr).
 // Lookup is the engine's 0x1b8008; modeled NO-body so its `call` reloc-masks.
+SIZE_UNKNOWN(CSpriteRefHashTable);
 class CSpriteRefHashTable {
 public:
     i32 Lookup(char* szName, void** ppOut); // 0x1b8008
@@ -50,11 +52,13 @@ public:
 // The animation/alpha factory cached as Init's arg0 (m_factory). Its AlphaTable method
 // (0x14f5b0) turns a looked-up sprite's frame data into an alpha object; modeled
 // NO-body so its `call` reloc-masks. Build (the node ctor) also receives it.
+SIZE_UNKNOWN(CSpriteRefFactory);
 class CSpriteRefFactory {
 public:
     void* AlphaTable(void* spriteData); // 0x14f5b0, __thiscall ret 0x4
 };
 
+SIZE_UNKNOWN(CSpriteRefTable);
 class CSpriteRefTable {
 public:
     // Cache the two engine sub-objects (m_factory, m_spriteMgrHolder) and clear both buckets; returns

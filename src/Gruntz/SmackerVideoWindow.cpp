@@ -15,14 +15,17 @@
 #include <rva.h>
 
 // LPCTSTR AFXAPI AfxRegisterWndClass(UINT, HCURSOR=0, HBRUSH=0, HICON=0). __stdcall.
-extern "C" const char* __stdcall AfxRegisterWndClass(u32 style, void* cur, void* brush, void* icon); // 0x1bc09d
+extern "C" const char* __stdcall
+AfxRegisterWndClass(u32 style, void* cur, void* brush, void* icon); // 0x1bc09d
 
 // CString == its 4-byte m_pchData; passing it where LPCTSTR is wanted yields that ptr.
 struct CString {
     char* m_pchData;
-    CString(const char* s);                          // 0x1b9d4c
-    ~CString();                                       // 0x1b9cde
-    operator const char*() const { return m_pchData; }
+    CString(const char* s); // 0x1b9d4c
+    ~CString();             // 0x1b9cde
+    operator const char*() const {
+        return m_pchData;
+    }
 };
 
 // The created window (MFC CWnd shape: 0x3c bytes, m_hWnd at +0x1c). Ctor/CreateEx/
@@ -31,15 +34,26 @@ struct CWnd {
     char _00[0x1c];
     HWND m_hWnd; // +0x1c
     char _20[0x3c - 0x20];
-    CWnd();                                                                                          // 0x1baecf
-    int CreateEx(u32 exStyle, const char* cls, const char* wnd, u32 style, int x, int y, int w,
-                 int h, HWND parent, HMENU id, void* param); // 0x1bb875
-    void SetFocus();                                         // 0x1be6ce
+    CWnd(); // 0x1baecf
+    int CreateEx(
+        u32 exStyle,
+        const char* cls,
+        const char* wnd,
+        u32 style,
+        int x,
+        int y,
+        int w,
+        int h,
+        HWND parent,
+        HMENU id,
+        void* param
+    );               // 0x1bb875
+    void SetFocus(); // 0x1be6ce
 };
 
 struct CSmackWin {
     char _00[0x53c];
-    CWnd* m_53c; // +0x53c  the video window
+    CWnd* m_53c;                           // +0x53c  the video window
     int Init(HWND h, i32 a0, i32 a1);      // 0x17c040
     int CreateVideoWindow(i32 a0, i32 a1); // 0x17c2a0
 };
@@ -59,16 +73,23 @@ int CSmackWin::CreateVideoWindow(i32 a0, i32 a1) {
         return 0;
     }
     m_53c = new CWnd;
-    if (!m_53c->CreateEx(8, cls, "Smacker Video Window", 0x90000000, 0, 0, GetSystemMetrics(0),
-                         GetSystemMetrics(1), 0, 0, 0)) {
+    if (!m_53c->CreateEx(
+            8,
+            cls,
+            "Smacker Video Window",
+            0x90000000,
+            0,
+            0,
+            GetSystemMetrics(0),
+            GetSystemMetrics(1),
+            0,
+            0,
+            0
+        )) {
         return 0;
     }
     m_53c->SetFocus();
     HWND h = m_53c ? m_53c->m_hWnd : 0;
     return Init(h, a0, a1);
 }
-
-// ---------------------------------------------------------------------------
-// Class metadata (SIZE sweep) - hosted at TU EOF; labels.py scans tree-wide.
-// ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CSmackWin);

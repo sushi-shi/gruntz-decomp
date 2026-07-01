@@ -234,10 +234,6 @@ i32 CGruntCmdObj::LoadVehicleGruntSprites(i32 kind) {
     }
     return 1;
 }
-
-// ---------------------------------------------------------------------------
-// Class metadata (SIZE sweep) - hosted at TU EOF; labels.py scans tree-wide.
-// ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CGruntAnchor);
 SIZE_UNKNOWN(CGruntCmdObj);
 SIZE_UNKNOWN(CGruntRegistrar);

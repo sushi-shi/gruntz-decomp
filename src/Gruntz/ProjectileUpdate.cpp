@@ -58,7 +58,7 @@ inline i32 CProjSetup::Configure(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f, i32 g
 // +0x10 (__cdecl), the config setup at +0x18.
 struct CProjSprite;
 struct CProjSpriteCtl {
-    void* m_s0[4];                    // slots 0..3
+    void* m_s0[4];                     // slots 0..3
     void(__cdecl* Init)(CProjSprite*); // +0x10
     char m_pad14[0x18 - 0x14];
     CProjSetup* m_18; // +0x18
@@ -72,7 +72,8 @@ struct CProjSprite {
 };
 // The HUD sprite factory (g_gameReg->m_30->m_8), CreateSprite by class NAME.
 struct CProjFactory {
-    CProjSprite* CreateSprite(i32 kind, i32 px, i32 py, i32 hint, const char* name, i32 flags); // 0x1597b0
+    CProjSprite*
+    CreateSprite(i32 kind, i32 px, i32 py, i32 hint, const char* name, i32 flags); // 0x1597b0
 };
 struct CProjFactoryHolder {
     char m_pad00[0x8];
@@ -121,7 +122,7 @@ struct CProjTarget {
 // array at +0x1c, and Cleanup (0x2e96) releases a slot (4 args).
 struct CProjTargetTable {
     char m_pad00[0x1c];
-    CProjTarget* m_1c[1]; // +0x1c  indexed by (m_204 + m_200*15)
+    CProjTarget* m_1c[1];                         // +0x1c  indexed by (m_204 + m_200*15)
     void Cleanup(i32 a1, i32 a2, i32 a3, i32 a4); // 0x2e96 thunk
 };
 // The [Grunt]/attribute-tuning registry singleton.
@@ -136,11 +137,11 @@ public:
     i32 Update(); // 0x61cb0
 
     // helpers on `this`
-    void GetSpawnPos(i32* out);                // 0x1a73 thunk __thiscall
+    void GetSpawnPos(i32* out);                   // 0x1a73 thunk __thiscall
     void ArmMode(i32 a1, i32 a2, i32 a3, i32 a4); // 0x3bd9 thunk
-    void Teardown3dd7();                       // 0x3dd7 thunk
-    void ArmFinish(i32 a1, i32 a2, i32 a3);    // 0x136b thunk
-    void Teardown22de();                       // 0x22de thunk
+    void Teardown3dd7();                          // 0x3dd7 thunk
+    void ArmFinish(i32 a1, i32 a2, i32 a3);       // 0x136b thunk
+    void Teardown22de();                          // 0x22de thunk
 
     char m_pad00[0x10];
     CProjHost* m_10; // +0x10
@@ -205,22 +206,22 @@ i32 CProjectile::Update() {
             case 10:
             case 11: {
                 CProjSprite* spr =
-                    g_gameReg->m_30->m_8->CreateSprite(0, m_10->m_5c, m_10->m_60, 0, "Projectile", 0x40003);
+                    g_gameReg->m_30->m_8
+                        ->CreateSprite(0, m_10->m_5c, m_10->m_60, 0, "Projectile", 0x40003);
                 spr->m_7c->Init(spr);
                 CProjSetup* s = spr->m_7c->m_18;
-                if (s->Configure(m_170, m_1ec, m_1f0, m_208, m_20c, m_10->m_5c, m_10->m_60)
-                    == 0) {
+                if (s->Configure(m_170, m_1ec, m_1f0, m_208, m_20c, m_10->m_5c, m_10->m_60) == 0) {
                     s->m_154->m_8 |= 0x10000;
                 }
                 break;
             }
             case 2: {
                 CProjSprite* spr =
-                    g_gameReg->m_30->m_8->CreateSprite(0, m_10->m_5c, m_10->m_60, 0, "Boomerang", 0x40003);
+                    g_gameReg->m_30->m_8
+                        ->CreateSprite(0, m_10->m_5c, m_10->m_60, 0, "Boomerang", 0x40003);
                 spr->m_7c->Init(spr);
                 CProjSetup* s = spr->m_7c->m_18;
-                if (s->Configure(m_170, m_1ec, m_1f0, m_208, m_20c, m_10->m_5c, m_10->m_60)
-                    == 0) {
+                if (s->Configure(m_170, m_1ec, m_1f0, m_208, m_20c, m_10->m_5c, m_10->m_60) == 0) {
                     s->m_154->m_8 |= 0x10000;
                 }
                 break;
@@ -238,11 +239,11 @@ i32 CProjectile::Update() {
             case 21:
             case 22: {
                 CProjSprite* spr =
-                    g_gameReg->m_30->m_8->CreateSprite(0, m_10->m_5c, m_10->m_60, 0, "Projectile", 0x40003);
+                    g_gameReg->m_30->m_8
+                        ->CreateSprite(0, m_10->m_5c, m_10->m_60, 0, "Projectile", 0x40003);
                 spr->m_7c->Init(spr);
                 CProjSetup* s = spr->m_7c->m_18;
-                if (s->Configure(m_170, m_1ec, m_1f0, m_208, m_20c, m_10->m_5c, m_10->m_60)
-                    == 0) {
+                if (s->Configure(m_170, m_1ec, m_1f0, m_208, m_20c, m_10->m_5c, m_10->m_60) == 0) {
                     s->m_154->m_8 |= 0x10000;
                 }
                 break;
@@ -307,10 +308,6 @@ i32 CProjectile::Update() {
     ArmFinish(1, 0, 0);
     return 0;
 }
-
-// ---------------------------------------------------------------------------
-// Class metadata (SIZE sweep) - hosted at TU EOF; labels.py scans tree-wide.
-// ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CProjButeMgr);
 SIZE_UNKNOWN(CProjFactory);
 SIZE_UNKNOWN(CProjFactoryHolder);

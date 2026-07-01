@@ -498,10 +498,6 @@ RVA(0x0011e8dc, 0x7)
 void Obj_11e8dc::StampVtbl() {
     m_vptr = &g_severusWorkerDtorVtbl;
 }
-
-// ---------------------------------------------------------------------------
-// Class metadata (SIZE sweep) - hosted at TU EOF; labels.py scans tree-wide.
-// ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CView_faec0);
 SIZE_UNKNOWN(Desc_16f6e0);
 SIZE_UNKNOWN(DlgData_be820);

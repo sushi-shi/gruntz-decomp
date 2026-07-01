@@ -201,10 +201,6 @@ void CProjActObj::RegisterType() {
     }
     *(void**)R3Lookup(id) = (void*)&ProjActHandlerThunk;
 }
-
-// ---------------------------------------------------------------------------
-// Class metadata (SIZE sweep) - hosted at TU EOF; labels.py scans tree-wide.
-// ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CProjActObj);
 SIZE_UNKNOWN(CProjActOwner);
 SIZE_UNKNOWN(CProjReg);

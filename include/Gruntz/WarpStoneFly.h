@@ -16,10 +16,12 @@
 #define GRUNTZ_GRUNTZ_WARPSTONEFLY_H
 
 #include <Ints.h>
+#include <rva.h>
 
 // The CSBI_RectOnly owner reached through m_owner. Only the members the three
 // frameless methods touch are modeled; every call through it goes via the ILT and
 // is reloc-masked regardless of name.
+SIZE_UNKNOWN(CWsfOwner);
 struct CWsfOwner {
     // mode-3 tab-switch helpers, both __thiscall (ILT-reloc-masked):
     void TabReset(i32 on); // 0x100930  owner->Method(0)
@@ -34,10 +36,12 @@ struct CWsfOwner {
 
 // The sprite (m_sprite) drawn by the overlay: a __thiscall Draw(ctx, x, y, flag) with
 // callee cleanup (ret 0x10). External/no-body (reloc-masked).
+SIZE_UNKNOWN(CWsfSprite);
 struct CWsfSprite {
     void Draw(i32 ctx, i32 x, i32 y, i32 flag); // 0x153790
 };
 
+SIZE_UNKNOWN(CWarpStoneFly);
 class CWarpStoneFly {
 public:
     CWarpStoneFly();  // 0x109bb0  clears m_sprite/m_owner, returns this

@@ -29,6 +29,7 @@
 // call reloc-masks; the body is pinned in src/Stub/Discovered.cpp. Mirror of
 // CSecretTeleporterTrigger's CSerialSub34 (UserLogic.cpp).
 // ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CRbSerialSub34);
 struct CRbSerialSub34 {
     i32 Chain(i32 a, i32 b, i32 c, i32 d); // 0x8c00
 };
@@ -40,6 +41,7 @@ struct CRbSerialSub34 {
 // mov ecx,ar; call [eax+0x2c|0x30]`. Mirror of TileActionEvent.h's
 // CTileActionArchive: +0x2c = Read (mode 7 = load), +0x30 = Write (mode 4 = store).
 // ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CRbArchive);
 struct CRbArchive {
     virtual void Slot00();
     virtual void Slot04();

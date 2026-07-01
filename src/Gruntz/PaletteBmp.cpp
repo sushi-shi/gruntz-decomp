@@ -54,9 +54,5 @@ i32 CPalLoader::LoadBmpPalette(const char* name, i32 unused) {
     }
     return ApplyPalette(out, 0);
 }
-
-// ---------------------------------------------------------------------------
-// Class metadata (SIZE sweep) - hosted at TU EOF; labels.py scans tree-wide.
-// ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CPalLoader);
 SIZE_UNKNOWN(PalFile);

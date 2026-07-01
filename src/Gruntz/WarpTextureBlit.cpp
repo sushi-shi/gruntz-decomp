@@ -277,9 +277,5 @@ i32 WarpTextureBlit(WarpVtx* va, i32 n, WarpSurf* dst, WarpSurf* src, i32 mode, 
     (*(void (**)(void*, i32))(*(void***)dst->m_8 + 0x80 / 4))(dst->m_8, 0);
     return 1;
 }
-
-// ---------------------------------------------------------------------------
-// Class metadata (SIZE sweep) - hosted at TU EOF; labels.py scans tree-wide.
-// ---------------------------------------------------------------------------
 SIZE_UNKNOWN(WarpSurf);
 SIZE_UNKNOWN(WarpVtx);

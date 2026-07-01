@@ -101,10 +101,6 @@ i32 __stdcall StateDispatch(CStateCtx* ctx, i32 a1, i32 a2) {
     }
     return 1;
 }
-
-// ---------------------------------------------------------------------------
-// Class metadata (SIZE sweep) - hosted at TU EOF; labels.py scans tree-wide.
-// ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CStateCtx);
 SIZE_UNKNOWN(CStateHandler);
 SIZE_UNKNOWN(CStateObj);

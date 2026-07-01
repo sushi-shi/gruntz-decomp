@@ -26,6 +26,7 @@ struct WwdMgr;
 // vtable is the engine datum the ctor stamps. Declared as a polymorphic class
 // so the virtual dispatch lowers to the exact `mov ecx,worker; call [vtbl+off]`
 // __thiscall sequence (virtuals are __thiscall by default in MSVC 5.0).
+SIZE_UNKNOWN(AnimWorker);
 class AnimWorker {
 public:
     virtual void Slot00();             // +0x00

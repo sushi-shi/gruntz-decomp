@@ -1084,10 +1084,6 @@ i32 CProjLoadRec::Load(CSerialArchive* s, i32 mode, i32 a2, CSerialObj* a3) {
     m_15c = out;
     return 1;
 }
-
-// ---------------------------------------------------------------------------
-// Class metadata (SIZE sweep) - hosted at TU EOF; labels.py scans tree-wide.
-// ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CArchiveDefInt);
 SIZE_UNKNOWN(CArchiveDefaultSub);
 SIZE_UNKNOWN(CArchiveLoadRec);

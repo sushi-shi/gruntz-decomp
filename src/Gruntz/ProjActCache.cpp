@@ -220,11 +220,4 @@ fail:
     m_4->Set(this, (i32)cache, 0xc);
     return 0;
 }
-
-// ---------------------------------------------------------------------------
-// Class metadata (SIZE sweep) - hosted at TU EOF; labels.py scans tree-wide.
-// ---------------------------------------------------------------------------
-SIZE_UNKNOWN(CProjActMap);
-SIZE_UNKNOWN(CTrieNode);
-SIZE_UNKNOWN(CVariantSlot);
 SIZE_UNKNOWN(zBitVec);

@@ -49,7 +49,6 @@ struct SaveRecord {
     i32 Load(LoadStream* s); // 0x0faff0
 };
 
-// 0x0faff0
 RVA(0x000faff0, 0x163)
 i32 SaveRecord::Load(LoadStream* s) {
     if (!s) {
@@ -80,9 +79,5 @@ i32 SaveRecord::Load(LoadStream* s) {
     s->Read(&m_1ac, 4);
     return 1;
 }
-
-// ---------------------------------------------------------------------------
-// Class metadata (SIZE sweep) - hosted at TU EOF; labels.py scans tree-wide.
-// ---------------------------------------------------------------------------
 SIZE_UNKNOWN(LoadStream);
 SIZE_UNKNOWN(SaveRecord);

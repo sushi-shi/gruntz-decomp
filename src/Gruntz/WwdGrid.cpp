@@ -214,10 +214,3 @@ CWwdGrid::CWwdGrid(i32 x0, i32 y0, i32 x1, i32 y1, i32 cellW, i32 cellH) {
         m_allocated = 1;
     }
 }
-
-// ---------------------------------------------------------------------------
-// Class metadata (SIZE sweep) - hosted at TU EOF; labels.py scans tree-wide.
-// ---------------------------------------------------------------------------
-SIZE_UNKNOWN(BucketHead);
-SIZE_UNKNOWN(CWwdGrid);
-SIZE_UNKNOWN(WwdRegion);

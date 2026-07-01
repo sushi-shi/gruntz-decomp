@@ -49,9 +49,5 @@ void CPaletteHost::UploadPalette() {
     } while (--n);
     m_2c->m_vtbl->SetEntries(m_2c, 0, 0, 0x100, m_108);
 }
-
-// ---------------------------------------------------------------------------
-// Class metadata (SIZE sweep) - hosted at TU EOF; labels.py scans tree-wide.
-// ---------------------------------------------------------------------------
 SIZE_UNKNOWN(PalDevice);
 SIZE_UNKNOWN(PalDeviceVtbl);

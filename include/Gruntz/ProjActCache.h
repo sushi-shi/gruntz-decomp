@@ -51,6 +51,7 @@ extern "C" void* memcpy(void* d, const void* s, u32 n);
 
 // One crit-bit trie node (20 bytes): two child links, the crit-bit index, the
 // owned key copy, and the stored value.
+SIZE_UNKNOWN(CTrieNode);
 struct CTrieNode {
     CTrieNode* m_0; // +0x0  child[0]
     CTrieNode* m_4; // +0x4  child[1]
@@ -60,6 +61,7 @@ struct CTrieNode {
 };
 
 // The +0x04 error sink: on a sizing failure the container reports through it.
+SIZE_UNKNOWN(CVariantSlot);
 class CVariantSlot {
 public:
     void Set(void* obj, i32 a, i32 b); // 0x16d850
@@ -103,6 +105,7 @@ public:
 // The string-keyed crit-bit trie (the projectile-action name -> value map). Shares
 // the CContainerErr error-record idiom (the +0x04 CVariantSlot error sink). The
 // working state spans +0x14..+0x28. Field names are placeholders.
+SIZE_UNKNOWN(CProjActMap);
 class CProjActMap {
 public:
     void* Insert(const char* key, void* value); // 0x1933b0

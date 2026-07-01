@@ -30,8 +30,4 @@ i32 CVtblRecv::Accept(i32 p1, i32 p2, i32 p3, i32 p4, i32 p5, i32* p6, i32 p7, i
     memcpy(m_2c, p6, 0x60);
     return Dispatch(p1, p2, p3, p4, p5, p7, p8, p9);
 }
-
-// ---------------------------------------------------------------------------
-// Class metadata (SIZE sweep) - hosted at TU EOF; labels.py scans tree-wide.
-// ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CVtblRecv);

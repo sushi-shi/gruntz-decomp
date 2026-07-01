@@ -19,6 +19,7 @@
 // The polymorphic map value: a resource whose virtual destructor is the SECOND
 // virtual (vtbl slot 1), so `delete p` dispatches `call [vptr+4]` with the scalar-
 // deleting flag. Modeled with no bodies (reloc-masked indirect call).
+SIZE_UNKNOWN(CSoundRes);
 class CSoundRes {
 public:
     virtual void vf0(); // slot 0 (unused here, fixes the dtor at slot 1)
@@ -26,6 +27,7 @@ public:
 };
 
 // The registry. m_map @+0x10 (CMapStringToPtr, 0x1c bytes -> +0x10..+0x2b).
+SIZE_UNKNOWN(CSoundResMap);
 class CSoundResMap {
 public:
     void RemoveByValue(CSoundRes* p); // 0x157b00

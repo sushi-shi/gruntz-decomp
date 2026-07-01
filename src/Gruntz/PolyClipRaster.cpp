@@ -180,9 +180,5 @@ i32 RotateRasterize(
     RasterSpans(g_clipB, n, a4, a4, a5, a6);
     return 1;
 }
-
-// ---------------------------------------------------------------------------
-// Class metadata (SIZE sweep) - hosted at TU EOF; labels.py scans tree-wide.
-// ---------------------------------------------------------------------------
 SIZE_UNKNOWN(ClipImg);
 SIZE_UNKNOWN(ClipVtx);

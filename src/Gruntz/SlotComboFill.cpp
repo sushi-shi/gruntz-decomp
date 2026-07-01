@@ -74,9 +74,5 @@ i32 CMultiSlotList::Method2a45(i32 hDlg, i32 ctrlId) {
     }
     return m_c;
 }
-
-// ---------------------------------------------------------------------------
-// Class metadata (SIZE sweep) - hosted at TU EOF; labels.py scans tree-wide.
-// ---------------------------------------------------------------------------
 SIZE_UNKNOWN(SlotNode);
 SIZE_UNKNOWN(SlotRec);

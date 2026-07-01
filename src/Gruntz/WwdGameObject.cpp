@@ -862,11 +862,6 @@ reject:
 }
 
 // class-metadata sweep: grunt/game-object family size annotations (SIZE_UNKNOWN = retail size TBD, at .cpp EOF).
-SIZE_UNKNOWN(AnimWorker);
-
-// ---------------------------------------------------------------------------
-// Class metadata (SIZE sweep) - hosted at TU EOF; labels.py scans tree-wide.
-// ---------------------------------------------------------------------------
 SIZE_UNKNOWN(AnimWorkerEx);
 SIZE_UNKNOWN(Archive);
 SIZE_UNKNOWN(CMapStringToObLite);

@@ -50,9 +50,5 @@ i32 CPairRecord::Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d) {
     }
     return 1;
 }
-
-// ---------------------------------------------------------------------------
-// Class metadata (SIZE sweep) - hosted at TU EOF; labels.py scans tree-wide.
-// ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CPairRecord);
 SIZE_UNKNOWN(CTriRecord);

@@ -102,8 +102,4 @@ void ShadeSelector::Select(int mode, ShadeDescr* descr) {
         m_1c = descr;
     }
 }
-
-// ---------------------------------------------------------------------------
-// Class metadata (SIZE sweep) - hosted at TU EOF; labels.py scans tree-wide.
-// ---------------------------------------------------------------------------
 SIZE_UNKNOWN(ShadeSelector);

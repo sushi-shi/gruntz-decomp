@@ -188,8 +188,4 @@ void SaveVideoCheckboxes(HWND hDlg) {
     g_mgrSettings->m_10c = IsDlgButtonChecked(hDlg, 0x46f);
     g_mgrSettings->m_110 = IsDlgButtonChecked(hDlg, 0x4d5);
 }
-
-// ---------------------------------------------------------------------------
-// Class metadata (SIZE sweep) - hosted at TU EOF; labels.py scans tree-wide.
-// ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CSliderCtrl);

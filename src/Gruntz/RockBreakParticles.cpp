@@ -264,10 +264,6 @@ i32 CRockBreakMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
     }
     return 1;
 }
-
-// ---------------------------------------------------------------------------
-// Class metadata (SIZE sweep) - hosted at TU EOF; labels.py scans tree-wide.
-// ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CRockBreakMgr);
 SIZE_UNKNOWN(RockBoard);
 SIZE_UNKNOWN(RockCellObj);

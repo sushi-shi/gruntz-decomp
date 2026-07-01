@@ -5,6 +5,7 @@
 #define TILETRIGGERLOGIC_H
 
 #include <Ints.h>
+#include <rva.h>
 
 // ---------------------------------------------------------------------------
 // CTileTriggerLogic
@@ -13,6 +14,7 @@
 //     +0x3c (m_block); then m_1c (+0x1c) = 0 (reusing the zero in eax, emitted
 //     AFTER the rep stosl -> the m_block array is initialised before m_1c).
 // ---------------------------------------------------------------------------
+SIZE(CTileTriggerLogic, 0x9c);
 class CTileTriggerLogic {
 public:
     CTileTriggerLogic();

@@ -28,4 +28,3 @@ i32 CTileTriggerLogic::TileLogicVfunc0() {
 }
 
 // size 0x9c recovered from operator-new sites (gruntz.analysis.news)
-SIZE(CTileTriggerLogic, 0x9c);

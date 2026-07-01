@@ -627,15 +627,9 @@ i32 CRollingBall::Serialize(CRbArchive* ar, i32 tag, i32 c, i32 d) {
     }
     return 1;
 }
-
-// ---------------------------------------------------------------------------
-// Class metadata (SIZE sweep) - hosted at TU EOF; labels.py scans tree-wide.
-// ---------------------------------------------------------------------------
-SIZE_UNKNOWN(CRbArchive);
 SIZE_UNKNOWN(CRbCtorObj);
 SIZE_UNKNOWN(CRbCtorSub);
 SIZE_UNKNOWN(CRbMiniStr);
 SIZE_UNKNOWN(CRbReg);
-SIZE_UNKNOWN(CRbSerialSub34);
 SIZE_UNKNOWN(CRollingBallActEntry);
 SIZE_UNKNOWN(CRollingBallActReg);
