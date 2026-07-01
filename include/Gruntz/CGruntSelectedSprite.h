@@ -23,8 +23,8 @@ public:
 
     i32 m_40; // +0x40  (CUserLogic ends at 0x40; leaf fields follow)
     char m_pad44[0x54 - 0x44];
-    i32 m_54; // +0x54  grunt cell x
-    i32 m_58; // +0x58  grunt cell y
+    i32 m_cellX; // +0x54  grunt cell x
+    i32 m_cellY; // +0x58  grunt cell y
 };
 
 // The class registry entry: its first dword receives the Update handler PMF (a

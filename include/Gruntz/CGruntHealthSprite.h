@@ -9,11 +9,11 @@
 // leaf-dtor archetype).
 //
 // SetHealthGlyph (0x07f0d0) is the per-bump health-glyph resolver: stash the two
-// passed coordinates (m_54/m_58), round the passed health to a glyph slot
+// passed coordinates (m_cellX/m_cellY), round the passed health to a glyph slot
 // (slot = 0x15 - (int)(health*0.2 + 0.5)), resolve that slot through the bound
 // object's [m_64..m_68]-gated glyph table at +0x194 (the SAME gated-glyph-table
 // archetype as CStatzGlyphMap in SBI_StatzTabGruntBar.h), publish the glyph and
-// slot back into the object (+0x198 / +0x190), stash the health (m_5c), return 1.
+// slot back into the object (+0x198 / +0x190), stash the health (m_health), return 1.
 //
 // Field names are placeholders; only OFFSETS + the inheritance chain are
 // load-bearing.
@@ -57,9 +57,9 @@ public:
     // CUserLogic is 0x40; the leaf adds its own fields. SetHealthGlyph stashes the
     // two coordinates at +0x54/+0x58 and the health at +0x5c.
     char m_pad40[0x54 - 0x40];
-    i32 m_54; // +0x54  stashed x
-    i32 m_58; // +0x58  stashed y
-    i32 m_5c; // +0x5c  stashed health
+    i32 m_cellX;  // +0x54  stashed grunt cell x
+    i32 m_cellY;  // +0x58  stashed grunt cell y
+    i32 m_health; // +0x5c  stashed health value
 };
 
 // The class registry entry: its first dword receives the handler PMF (a 4-byte

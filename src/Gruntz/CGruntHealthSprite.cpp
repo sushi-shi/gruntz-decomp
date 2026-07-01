@@ -72,15 +72,15 @@ void CGruntHealthSprite::RegisterActs() {
 }
 
 // CGruntHealthSprite::SetHealthGlyph @0x07f0d0 - stash the two passed coordinates
-// (m_54/m_58), round the passed health to a glyph slot (slot = 0x15 -
+// (m_cellX/m_cellY), round the passed health to a glyph slot (slot = 0x15 -
 // (int)(health*0.2 + 0.5); the *0.2+0.5 round emits fild/fmul[0.2]/fadd[0.5]/
 // __ftol), resolve that slot through the bound object's [m_64..m_68]-gated glyph
 // table at +0x194, publish the glyph (+0x198) and slot (+0x190) back into the
-// object, stash the health (m_5c), return 1.
+// object, stash the health (m_health), return 1.
 RVA(0x0007f0d0, 0x6e)
 i32 CGruntHealthSprite::SetHealthGlyph(i32 x, i32 y, i32 health) {
-    m_54 = x;
-    m_58 = y;
+    m_cellX = x;
+    m_cellY = y;
     i32 slot = 0x15 - (i32)((double)health * 0.2 + 0.5);
     CHealthSpriteObj* obj = (CHealthSpriteObj*)m_10;
     CHealthGlyphMap* map = obj->m_194;
@@ -94,6 +94,6 @@ i32 CGruntHealthSprite::SetHealthGlyph(i32 x, i32 y, i32 health) {
         obj->m_198 = glyph;
         obj->m_190 = slot;
     }
-    m_5c = health;
+    m_health = health;
     return 1;
 }

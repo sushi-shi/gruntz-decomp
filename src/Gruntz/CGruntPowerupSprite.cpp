@@ -90,9 +90,9 @@ void CGruntPowerupSprite::RegisterActs() {
 // (saving the old node into m_30). Returns 1.
 RVA(0x00080380, 0x6c)
 i32 CGruntPowerupSprite::SetCell(i32 x, i32 y, i32 powerup) {
-    m_54 = x;
-    m_58 = y;
-    m_5c = powerup;
+    m_cellX = x;
+    m_cellY = y;
+    m_powerupId = powerup;
     i32 rec = *(i32*)(g_gameReg->m_78 + powerup * 4 + 0x14);
     CGruntRenderable* r = (CGruntRenderable*)m_10;
     r->m_58 = 1;
@@ -105,7 +105,7 @@ i32 CGruntPowerupSprite::SetCell(i32 x, i32 y, i32 powerup) {
 }
 
 // Update @0x080410 - sync the +0x38 object's helper, then if the grunt for cell
-// (m_54,m_58) is present copy its screen position into the bound renderable so
+// (m_cellX,m_cellY) is present copy its screen position into the bound renderable so
 // the powerup icon tracks the grunt. Returns 0.
 //
 // @early-stop
@@ -117,7 +117,7 @@ i32 CGruntPowerupSprite::SetCell(i32 x, i32 y, i32 powerup) {
 RVA(0x00080410, 0x51)
 i32 CGruntPowerupSprite::Update() {
     ((CIndicatorSyncHelper*)((char*)m_38 + 0x1a0))->Sync(g_indicatorSync);
-    CGruntEntry* e = ((CGruntEntry**)(g_gameReg->m_68 + 0x1c))[m_54 * 15 + m_58];
+    CGruntEntry* e = ((CGruntEntry**)(g_gameReg->m_68 + 0x1c))[m_cellX * 15 + m_cellY];
     if (e != 0) {
         m_10->m_5c = e->m_10->m_5c;
         m_10->m_60 = e->m_10->m_60;
@@ -127,8 +127,8 @@ i32 CGruntPowerupSprite::Update() {
 
 // CGruntPowerupSprite::Serialize @0x080490 - the serialize override. Chain the base
 // CUserLogic::SerializeChain and the +0x34 sub-object, then round-trip the own state:
-// m_54/m_58 (8 B) + m_5c (4 B). mode 4 = write, mode 7 = read. On read, re-resolve the
-// powerup's bute-set record (g_gameReg->m_78[m_5c*4 + 0x14]) into the bound renderable.
+// m_cellX/m_cellY (8 B) + m_powerupId (4 B). mode 4 = write, mode 7 = read. On read, re-resolve
+// the powerup's bute-set record (g_gameReg->m_78[m_powerupId*4 + 0x14]) into the bound renderable.
 RVA(0x00080490, 0xbe)
 i32 CGruntPowerupSprite::Serialize(PupArchive* ar, i32 mode, i32 a3, i32 a4) {
     if (SerializeChain((i32)ar, mode, a3, a4) == 0) {
@@ -139,13 +139,13 @@ i32 CGruntPowerupSprite::Serialize(PupArchive* ar, i32 mode, i32 a3, i32 a4) {
     }
     switch (mode) {
         case 4:
-            ar->Write(&m_54, 8);
-            ar->Write(&m_5c, 4);
+            ar->Write(&m_cellX, 8);
+            ar->Write(&m_powerupId, 4);
             break;
         case 7: {
-            ar->Read(&m_54, 8);
-            ar->Read(&m_5c, 4);
-            i32 id = m_5c;
+            ar->Read(&m_cellX, 8);
+            ar->Read(&m_powerupId, 4);
+            i32 id = m_powerupId;
             CGruntRenderable* r = (CGruntRenderable*)m_10;
             i32 v = *(i32*)(g_gameReg->m_78 + id * 4 + 0x14);
             r->m_58 = 1;

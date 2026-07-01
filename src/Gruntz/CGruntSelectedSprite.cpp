@@ -57,15 +57,15 @@ void CGruntSelectedSprite::RegisterActs() {
     ((CSelectedActEntry*)g_selectedActReg.ResolveEntry(id))->m_fn = &CGruntSelectedSprite::Update;
 }
 
-// SetCell @0x07e9c0 - stash the (x,y) grunt cell into m_54/m_58, return 1.
+// SetCell @0x07e9c0 - stash the (x,y) grunt cell into m_cellX/m_cellY, return 1.
 RVA(0x0007e9c0, 0x16)
 i32 CGruntSelectedSprite::SetCell(i32 x, i32 y) {
-    m_54 = x;
-    m_58 = y;
+    m_cellX = x;
+    m_cellY = y;
     return 1;
 }
 
-// Update @0x07e9f0 - resolve the grunt for cell (m_54,m_58) from the registry's
+// Update @0x07e9f0 - resolve the grunt for cell (m_cellX,m_cellY) from the registry's
 // grunt table; if that grunt is drawn (entry->m_1d8), sync the +0x38 object's
 // helper and copy the grunt's screen position into the bound renderable so the
 // "selected" ring tracks the grunt. Returns 0.
@@ -80,7 +80,7 @@ i32 CGruntSelectedSprite::SetCell(i32 x, i32 y) {
 RVA(0x0007e9f0, 0x5f)
 i32 CGruntSelectedSprite::Update() {
     CIndicatorReg* reg = g_gameReg;
-    CGruntEntry* e = ((CGruntEntry**)(reg->m_68 + 0x1c))[m_54 * 15 + m_58];
+    CGruntEntry* e = ((CGruntEntry**)(reg->m_68 + 0x1c))[m_cellX * 15 + m_cellY];
     if (e != 0 && e->m_1d8 != 0) {
         ((CIndicatorSyncHelper*)((char*)m_38 + 0x1a0))->Sync(g_indicatorSync);
         m_10->m_5c = e->m_10->m_5c;

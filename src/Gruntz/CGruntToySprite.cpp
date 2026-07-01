@@ -56,26 +56,26 @@ void CGruntToySprite::RegisterActs() {
 // object's +0x40 flags, return 1.
 RVA(0x0007f920, 0x21)
 i32 CGruntToySprite::SetCell(i32 x, i32 y) {
-    m_54 = x;
-    m_58 = y;
+    m_cellX = x;
+    m_cellY = y;
     m_38->m_40 &= ~1;
     return 1;
 }
 
-// Update @0x07f960 - resolve the grunt for cell (m_54,m_58); when present, if its
+// Update @0x07f960 - resolve the grunt for cell (m_cellX,m_cellY); when present, if its
 // layer index changed re-clamp it through the level layer table into the bound
 // renderable's layer fields, then copy the grunt's screen position (y biased by
 // -0x20) into the bound renderable. Returns 0.
 RVA(0x0007f960, 0x85)
 i32 CGruntToySprite::Update() {
-    CGruntEntry* e = ((CGruntEntry**)(g_gameReg->m_68 + 0x1c))[m_54 * 15 + m_58];
+    CGruntEntry* e = ((CGruntEntry**)(g_gameReg->m_68 + 0x1c))[m_cellX * 15 + m_cellY];
     if (e == 0) {
         return 0;
     }
     i32 layer = e->m_198;
-    if (m_5c != layer) {
+    if (m_lastLayer != layer) {
         CGruntRenderable* r = (CGruntRenderable*)m_10;
-        m_5c = layer;
+        m_lastLayer = layer;
         CGruntLayerHolder* h = r->m_194;
         if (h != 0) {
             i32 mapped;

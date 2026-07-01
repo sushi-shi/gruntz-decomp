@@ -184,7 +184,7 @@ INT_PTR __stdcall CGruntzApp::ErrorDialogProc(
             return 1;
 
         case WM_COMMAND:
-            if (wParam == 1 || wParam == 2) { // IDOK / IDCANCEL
+            if (wParam == IDOK || wParam == IDCANCEL) {
                 EndDialog(hWnd, 0);
                 return 1;
             }

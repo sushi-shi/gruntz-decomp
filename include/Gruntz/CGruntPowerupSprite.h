@@ -21,16 +21,16 @@ public:
     i32 SetCell(i32 x, i32 y, i32 powerup); // 0x080380
     i32 Update();                           // 0x080410
     // 0x080490: the serialize override - chain CUserLogic::SerializeChain + the +0x34
-    // sub-object, then round-trip m_54/m_58 (8 B) and m_5c (4 B). On read (mode 7) it
+    // sub-object, then round-trip m_cellX/m_cellY (8 B) and m_powerupId (4 B). On read (mode 7) it
     // re-resolves the powerup's bute-set record from g_gameReg->m_78 into the bound
     // renderable (m_10). (__thiscall: ret 0x10.)
     i32 Serialize(class PupArchive* ar, i32 mode, i32 a3, i32 a4);
 
     i32 m_40; // +0x40
     char m_pad44[0x54 - 0x44];
-    i32 m_54; // +0x54  grunt cell x
-    i32 m_58; // +0x58  grunt cell y
-    i32 m_5c; // +0x5c  powerup id
+    i32 m_cellX;     // +0x54  grunt cell x
+    i32 m_cellY;     // +0x58  grunt cell y
+    i32 m_powerupId; // +0x5c  powerup id
 };
 
 // The class registry entry: its first dword receives the Update handler PMF (a
