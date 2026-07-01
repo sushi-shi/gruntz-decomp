@@ -219,7 +219,7 @@ dsoundvoice	2	1
 ehfunclets	6	6
 engine_attributed	5	0
 engine_discovered	14	7
-engine_label_stubs	217	119
+engine_label_stubs	215	119
 engine_unmatched_lib	11	0
 engstr	3	1
 eyecandytypetags	4	4
@@ -254,6 +254,7 @@ gruntarriveresolve	1	0
 gruntassetloaders	3	0
 gruntchargestep	1	0
 gruntcmdpercent	1	1
+gruntcombatanim	1	0
 gruntdatarecord	2	2
 gruntinfotext	1	0
 gruntmovestep	1	0
@@ -263,6 +264,7 @@ gruntpuddle	5	2
 gruntspawnconfig	16	8
 gruntsprintanim	1	0
 gruntstatestep	1	0
+grunttargetscan	1	0
 grunttilescan	1	0
 grunttubeanim	1	0
 gruntupdatestep	2	0
@@ -1877,10 +1879,9 @@ engine_label_stubs	?Key@CmdHost_014720@ApiCallerStubs@@QAEHHH@Z	100.0000	100.000
 engine_label_stubs	?Key@CmdHost_039440@ApiCallerStubs@@QAEHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x39440
 engine_label_stubs	?Key@CmdHost_0953f0@ApiCallerStubs@@QAEHHH@Z	100.0000	100.0000	1	cpp:e1535087fe94	0x953f0
 engine_label_stubs	?Load@PalLoad_1479e0@ApiCallerStubs@@QAEHHPADH@Z	89.7286	89.7286	1	cpp:6bf52155264d	0x1479e0
-engine_label_stubs	?Load@ResLoad_144270@ApiCallerStubs@@QAEHHPADH@Z	86.9885	86.9885	1	cpp:6bf52155264d	0x144270
+engine_label_stubs	?Load@ResLoad_144270@ApiCallerStubs@@QAEHHPADH@Z	86.9310	86.9310	1	cpp:6bf52155264d	0x144270
 engine_label_stubs	?Load@StrHost_0b7ec0@ApiCallerStubs@@QAEXHH@Z	100.0000	100.0000	1	cpp:e1535087fe94	0xb7ec0
 engine_label_stubs	?LoadCustomWorldInfo@EngineLabelBacklog@@YAHPAX@Z	100.0000	100.0000	1	cpp:aab6e5a6e511	0x3b7c0
-engine_label_stubs	?LoadGruntCombatAnimations@CGrunt@ApiCallerStubs@@QAEXHHHHHHHH@Z	0.0777	0.0777	1	cpp:590eddff1627	0x597a0
 engine_label_stubs	?LoadGruntResurrectTuning@CGruntResurrector@@QAEHHHH@Z	65.4807	65.4807	1	cpp:590eddff1627	0x7be60
 engine_label_stubs	?LoadWarlordSprites@CPlayWL_d65d0@ApiCallerStubs@@QAEHHPAH@Z	91.0553	91.0553	1	cpp:7e3328e11dac	0xd65d0
 engine_label_stubs	?LoadWave@WaveHost2_136ce0@ApiCallerStubs@@QAEHPAUWaveProbe_136ce0@2@PBDH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x136ce0
@@ -1997,7 +1998,6 @@ engine_label_stubs	?winapi_0e3e80_SetDlgItemTextA@ApiCallerStubs@@YAXPAXPAUNameI
 engine_label_stubs	?winapi_0e4850_SetDlgItemTextA@ApiCallerStubs@@YAXPAX0PAD@Z	100.0000	100.0000	1	cpp:e1535087fe94	0xe4850
 engine_label_stubs	?winapi_0e6020_SetRect@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHHHHHHHHHHH@Z	0.8621	0.8621	1	cpp:e8a4cb0d5b2a	0xe6020
 engine_label_stubs	?winapi_0ed9f0_PtInRect@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHXZ	0.2857	0.2857	1	cpp:e8a4cb0d5b2a	0xed9f0
-engine_label_stubs	?winapi_0f42f0_PtInRect@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHXZ	0.1617	0.1617	1	cpp:e8a4cb0d5b2a	0xf42f0
 engine_label_stubs	?winapi_0f60f0_IntersectRect@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHXZ	0.2225	0.2225	1	cpp:e8a4cb0d5b2a	0xf60f0
 engine_label_stubs	?winapi_0f8e20_FreeLibrary@ApiCallerStubs@@YAXXZ	100.0000	100.0000	1	cpp:6bf52155264d	0xf8e20
 engine_label_stubs	?winapi_115300_SetRect@ApiCallerStubs@@YAHPAULayerHost_115300@1@PAURectSrc_115300@1@HHHH@Z	100.0000	100.0000	1	cpp:e832e75e29a5	0x115300
@@ -2378,6 +2378,7 @@ gruntassetloaders	?LoadGruntDeathAnimations@CGrunt@@QAEHHH@Z	87.0599	87.0599	2	d
 gruntassetloaders	?LoadWingzGruntSprites@CGrunt@@QAEHH@Z	75.0193	75.0193	1	69b35c90dfb1	0x68880
 gruntchargestep	?ChargeStep@Grunt@@QAEHXZ	21.4710	21.4710	1	24756a275ed2	0xef6b0
 gruntcmdpercent	?ComputeCmdPercent@@YAHH@Z	100.0000	100.0000	2	32370a43dd27	0x135110
+gruntcombatanim	?LoadGruntCombatAnimations@CGruntCombat@@QAEHHHHHHHHH@Z	41.2463	41.2463	1	fcf75b9cde9a	0x597a0
 gruntdatarecord	?DeserializeStrings@GruntDataRecord@@QAEHPAUDataWriter@@@Z	100.0000	100.0000	1	d96d2c87cdd6	0x56eb0
 gruntdatarecord	?SerializeStrings@GruntDataRecord@@QAEHPAUDataWriter@@@Z	100.0000	100.0000	1	71ad52c7e3da	0x56da0
 gruntinfotext	?winapi_0d95f0_wsprintfA@GruntInfoTextHost@@QAEHXZ	88.4979	88.4979	1	23c0b1e68ecf	0xd95f0
@@ -2407,6 +2408,7 @@ gruntspawnconfig	?ResetPicks@CGruntSpawnConfig@@QAEXXZ	100.0000	100.0000	1	6d4d2
 gruntspawnconfig	?StopVoice@CGruntSpawnConfig@@QAEXH@Z	100.0000	100.0000	1	3b4c120126c9	0x11c730
 gruntsprintanim	?BuildGruntSprintAnimation@CGruntSprintAnim@@QAEHXZ	79.5942	79.5942	1	5f1ffbaa3fb2	0x19920
 gruntstatestep	?Step33520@CStepMgr@@QAEHPAUCStepGrunt@@@Z	56.2356	56.2356	1	70e72208dab9	0x33520
+grunttargetscan	?ScanNearestTarget@CGruntScan@@QAEHXZ	27.4446	27.4446	1	d5866deb8458	0xf42f0
 grunttilescan	?ScanRegion32ce0@CScanMgr@@QAEHPAUCScanGrunt@@@Z	72.3417	72.3417	1	5610745c7421	0x32ce0
 grunttubeanim	?SetupTubeAnim@CGruntTube@@QAEHH@Z	72.3636	72.3636	1	bc25d7867fff	0x50a50
 gruntupdatestep	?SeekTarget@CGruntStep@@QAEHXZ	13.3685	13.3685	2	5a037b7668fa	0xf71c0

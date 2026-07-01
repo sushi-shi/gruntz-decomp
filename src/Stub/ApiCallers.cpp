@@ -2648,14 +2648,8 @@ namespace ApiCallerStubs {
         return 0;
     }
 
-    // @confidence: low
-    // @source: winapi:PtInRect
-    // @stub
-    // proximity: CGrunt@-0x17d0 | CAttract@+0x5f00
-    RVA(0x000f42f0, 0x1193)
-    i32 ThisStubOwnerUnknown::winapi_0f42f0_PtInRect() {
-        return 0;
-    }
+    // winapi_0f42f0_PtInRect (0xf42f0) re-homed as CGruntScan::ScanNearestTarget in
+    // src/Gruntz/GruntTargetScan.cpp (sibling of the GruntArrivalScan steps).
 
     // @confidence: low
     // @source: winapi:IntersectRect
@@ -4658,11 +4652,8 @@ namespace ApiCallerStubs {
     // LoadGruntAbilityTuning (0x57100) re-homed as CGrunt::LoadGruntAbilityTuning
     // in src/Gruntz/GruntAssetLoaders.cpp.
 
-    // @confidence: med
-    // @source: string-xref
-    // @stub
-    RVA(0x000597a0, 0x1345)
-    void CGrunt::LoadGruntCombatAnimations(i32, i32, i32, i32, i32, i32, i32, i32) {}
+    // LoadGruntCombatAnimations (0x597a0) re-homed as
+    // CGruntCombat::LoadGruntCombatAnimations in src/Gruntz/GruntCombatAnim.cpp.
 
     // LoadGruntDeathAnimations (0x60150) re-homed as CGrunt::LoadGruntDeathAnimations
     // in src/Gruntz/GruntAssetLoaders.cpp.

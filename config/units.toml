@@ -799,6 +799,20 @@ source = "src/Gruntz/CGruntzMgrCmd.cpp"
 flags = "eh"
 
 [[unit]]
+# CGrunt::LoadGruntCombatAnimations (0x597a0) - the 8-arg combat-hit reaction
+# dispatch (re-homed from ApiCallers). No destructible locals -> /base.
+unit = "gruntcombatanim"
+source = "src/Gruntz/GruntCombatAnim.cpp"
+flags = "base"
+
+[[unit]]
+# CGrunt nearest-enemy / arrival-target scan (0xf42f0) - sibling of the three
+# GruntArrivalScan steps (re-homed from ApiCallers). No destructible locals -> /base.
+unit = "grunttargetscan"
+source = "src/Gruntz/GruntTargetScan.cpp"
+flags = "base"
+
+[[unit]]
 # GruntDataRecord::SerializeStrings (0x56da0) - the per-record string/field writer
 # the big grunt-data Serialize (0x53f90) calls; non-EH (plain stack buffer).
 unit = "gruntdatarecord"
