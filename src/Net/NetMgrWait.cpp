@@ -30,16 +30,15 @@ extern "C" char* g_mgrSettings; // 0x64556c
 //     disagree), record it (m_53c) and latch m_540. Exits 1 on resolve, 0 on timeout.
 //
 // @early-stop
-// Incremental-link-thunk reloc-naming artifact (~95.5%, code bytes byte-exact):
-// verified instruction-for-instruction against retail 0xbba10 - both timer paths,
-// the array-zero loop, the 4-record scan (0x238 stride, [eax-8]/[eax]/[eax-0xc]
-// gates, the m_544/m_554 latch + token vote) and all three ret-4 epilogues match.
-// The residual is purely the four __thiscall callees (SendNetStat/PollSession/
-// AckJoinFailure/SendStatFlag) reached through the retail ILT jmp thunks 0x2955/
-// 0x2c39/0x35e4/0x2e82: our base obj references ?...@CNetMgr@@ direct while the
-// delinked target names the thunk stubs - a REL32-symbol-name mismatch (the
-// incremental-link-thunk wall, docs/patterns objdiff-reloc-scoring). Beats every
-// sibling wait-loop (WaitForConnect 74%, FrameSyncWait 71%, PollSession 60%).
+// Real codegen diff (~95.5%, NOT a reloc artifact): the body is byte-exact - both
+// timer paths, the array-zero loop, the 4-record scan (0x238 stride, [eax-8]/[eax]/
+// [eax-0xc] gates, the m_544/m_554 latch + token vote). objdiff MASKS REL32 call/branch
+// reloc target-names (measured: renaming the ILT-thunk callees SendNetStat/PollSession/
+// AckJoinFailure/SendStatFlag to the real ?...@CNetMgr@@ symbols moved the score 0.0%),
+// so the thunk-routed callees are NOT the cap. The residual is an epilogue
+// tail-duplication difference: our base shares one return epilogue (jne/jmp) where
+// retail tail-duplicates it (je; mov eax,1; ...; ret 4) - a regalloc/block-layout
+// wall, not steerable here. See docs/wall-instructions.md.
 RVA(0x000bba10, 0x1fb)
 i32 CNetMgr::Poll(i32 token) {
     if (m_useChannelLatency == 0) {
