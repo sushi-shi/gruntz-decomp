@@ -1,18 +1,19 @@
-#include <rva.h>
-// CBoomerang.cpp - CBoomerang ctor (matched modulo the vptr-store schedule wall).
+// CBoomerang.cpp - the CBoomerang projectile ctor (its own TU; no other CBoomerang
+// method is reconstructed yet, so this is the class's first/real TU). Re-homed from
+// src/Stub/CBoomerang.cpp.
 //
 // Object-ctor archetype (no EH): forward the single by-value ctor arg to the
-// CProjectile base ctor (engine fn, not matched -> external no-body,
-// reloc-masked rel32 call via thunk 0x37d8), re-stamp the derived vftable into
-// [this], then OR a flag bit into the m_154 sub-object's [+8] dword.
+// CProjectile base ctor (engine fn, not matched -> external no-body, reloc-masked
+// rel32 call via thunk 0x37d8), the compiler stamps the derived vftable into
+// [this] (implicit, real polymorphic class), then OR a flag bit into the m_154
+// sub-object's [+8] dword.
 //
-// Real polymorphic base now (18 declared-only virtuals): cl emits ??_7CBoomerang
-// + the IMPLICIT post-base-ctor vptr stamp, and the leaf vtable name
+// Real polymorphic base (18 declared-only virtuals): cl emits ??_7CBoomerang +
+// the implicit post-base-ctor vptr stamp, and the leaf vtable name
 // ??_7CBoomerang@@6B@ auto-derives (RTTI; config/vtable_names.csv). The base ctor
-// stays DECLARED only (out-of-line; its `call` reloc-masks via thunk 0x37d8). The
-// conversion is matching-neutral: cl still /O2-sinks the vptr store after the
-// independent m_154 load (the documented schedule wall below), so the recovery
-// restores the true polymorphic shape without changing the residual.
+// stays DECLARED only (out-of-line; its `call` reloc-masks via thunk 0x37d8).
+#include <rva.h>
+
 struct CProjectileBase {
     CProjectileBase(i32 a);
     virtual void Vf0();
@@ -48,9 +49,6 @@ public:
     char m_pad4[0x154 - 0x04]; // base vptr ends +0x04
     CBoomerangAux* m_154;      // +0x154
 };
-
-// Leaf vftable ??_7CBoomerang@@6B@ now emitted by cl + named on the target
-// automatically (RTTI auto-namer); the manual struct stamp is gone.
 
 // @confidence: high
 // @source: rtti-vptr

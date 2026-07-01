@@ -1,13 +1,18 @@
-#include <rva.h>
-// CSplashState.cpp - the splash-screen game state. LoadSounds() pulls the splash
-// state's "SOUNDZ" asset namespace out of the engine's named-namespace registry
-// and feeds it to the sound loader (C:\Proj\Gruntz). The idiom mirrors the other
-// asset loaders: look a node up by name through a manager, then recurse to load.
+// CSplashState.cpp - the splash-screen game state (its own TU; LoadSounds is the
+// only reconstructed method so far, so this is the class's first/real TU). Re-homed
+// from src/Stub/CSplashState.cpp (C:\Proj\Gruntz).
 //
-// (Lives in the engine_label_stubs aggregate, where ApiCallers.cpp already pulls
-// <windows.h> in first, so MFC's <afx.h> can't follow - the gating global CString
-// is modeled as its single LPTSTR m_pszData member, whose CStringData header (at
-// m_pszData-8 == nDataLength) GetLength() reads. Matching-neutral.)
+// LoadSounds() pulls the splash state's "SOUNDZ" asset namespace out of the engine's
+// named-namespace registry and feeds it to the sound loader. The idiom mirrors the
+// other asset loaders: look a node up by name through a manager, then recurse to load.
+//
+// Pure-Win32 TU (SetCursor); the gating global CString is modeled as its single
+// LPTSTR m_pszData member, whose CStringData header (at m_pszData-8 == nDataLength)
+// GetLength() reads - kept minimal to preserve the exact GetLength codegen (NOT the
+// MFC CString, which would inline differently).
+#include <Win32.h> // SetCursor
+
+#include <rva.h>
 
 // The engine's named-namespace registry node. Its child-lookup helpers are
 // matched-elsewhere engine functions, modeled body-less so their `call rel32`

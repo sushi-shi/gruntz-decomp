@@ -1,13 +1,14 @@
-#include <rva.h>
-// CNetMgr.cpp - engine-label stubs for CNetMgr (reloc-correlation).
+// NetMgrMenuSelect.cpp - CNetMgr::LoadMenuSelectSprite (0xba620), the menu-select
+// event handler (C:\Proj\NetMgr). Re-homed from src/Stub/CNetMgr.cpp.
 //
-// The five 5-byte ILT `jmp` thunks (AckDropPlayer/ReportVersionMsg/SendNetStat/
-// SendStat3/SendStatFlag) that used to live here are reconstructed as naked-asm
-// thunks in src/Net/NetThunks.cpp (their stub names collided with the real,
-// already-matched bodies in NetMgr.cpp / CMulti.cpp).
-
-// --- LoadMenuSelectSprite (0xba620) collaborators (modeled NO-body / by offset;
-// the calls + field loads reloc-mask against the real engine symbols) ----------
+// Kept in its own TU (NOT folded into NetMgr.cpp): this handler's collaborator
+// shape treats GetPlayerData/AddSessionNode (0x178eb0/0x178b30) as methods on the
+// +0x524 session/player sub-object (ecx = [this+0x524]), whereas NetMgr.cpp's
+// byte-exact CNetMgr models 0x178eb0 as a direct CNetMgr method (ecx = this) - a
+// genuine RE ambiguity at the same RVA. Folding it in would force one calling shape
+// on both and regress the other, so the self-contained model is preserved here (a
+// separate CNetMgr view TU; byte-identical to the former stub).
+#include <rva.h>
 
 // The menu-select event the handler is handed (edi): +0x4 the "armed" gate (==1),
 // +0x8 the player/slot id, +0x20/+0x24 the session-add params.
@@ -87,9 +88,6 @@ public:
     char m_pad534[0x580 - 0x534];
     i32 m_580; // +0x580
 };
-
-// WaitForOtherPlayers (0xbb700, /GX) reconstructed as CNetMgr::WaitForOtherPlayers
-// in src/Net/NetMgrWait.cpp (alongside its sibling wait-loop Poll).
 
 // --- CNetMgr::LoadMenuSelectSprite (0xba620, __thiscall) -----------------------
 // On an armed (ev->m_4==1) menu-select event: resolve/create the player session

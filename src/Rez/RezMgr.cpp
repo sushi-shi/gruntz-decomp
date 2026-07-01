@@ -437,6 +437,13 @@ static i32 g_timer200;   // (seed 0xc8 ms)
 static i32 g_timer400;   // (seed 0x190 ms)
 static i32 g_timer500;   // (seed 0x1f4 ms)
 
+// The run-state / pacing globals UpdateClock (0x13ddc0) maintains alongside the
+// frame clock above (reloc-masked; modeled as file-scope like g_now). g_clockReset
+// is unsigned so its `!=0` gate + the elapsed<budget test emit the unsigned compare.
+static i32 g_run7c;      // (run-state countdown; reseeded from g_run80)
+static i32 g_run80;      // (run-state reload value)
+static u32 g_clockReset; // (last clock-reset tick; == ?g_wap32ClockReset@@3HA @0x253c78)
+
 // ---------------------------------------------------------------------------
 // RezMgr::PerFrameTick()  (virtual, vtable slot +0x10).
 // THE per-frame game tick: the engine's idle (CGameApp slot +0x20) tail-calls
@@ -556,6 +563,53 @@ i32 RezMgr::HandleDebugPosition() {
         }
     }
     return r != 0;
+}
+
+// WINMM timeGetTime (frame clock). This is an MFC TU (RezMgr.h -> <Mfc.h>), so
+// <Win32.h> is forbidden here (afx hard-errors if windows.h came first) and it is
+// declared directly, matching <Win32.h>'s decl.
+extern "C" __declspec(dllimport) unsigned long __stdcall timeGetTime(void);
+
+// -------------------------------------------------------------------------
+// RezMgr::UpdateClock() (0x13ddc0) - the frame-clock advance helper PerFrameTick
+// calls (re-homed from src/Stub/RezMgr.cpp). Sample timeGetTime, derive the
+// per-frame delta into g_now/g_frameDelta, run down the run-state countdown, then
+// (when the pacing gate m_1c is armed) busy-wait to the ms budget and, every ~2s
+// window, fold the frame count into the smoothed m_18 and rearm the window.
+// @confidence: med
+// @source: reloc-correlation (1 caller)
+RVA(0x0013ddc0, 0xaa)
+i32 RezMgr::UpdateClock() {
+    u32 now = timeGetTime();
+    u32 delta = now - (u32)g_now;
+    g_now = now;
+    g_frameDelta = delta;
+    u32 run7c = g_run7c;
+    if (run7c == 0) {
+        g_run7c = g_run80;
+    } else if (delta >= run7c) {
+        g_run7c = 0;
+    } else {
+        g_run7c = run7c - delta;
+    }
+
+    if (m_1c > 0) {
+        if (g_clockReset > 0) {
+            u32 elapsed = timeGetTime() - g_clockReset;
+            if (elapsed < (u32)m_28) {
+                SpinWaitUntil(m_28 - elapsed);
+            }
+        }
+        g_clockReset = timeGetTime();
+    }
+
+    u32 count = m_20 + 1;
+    m_20 = count;
+    if ((u32)g_now - (u32)m_24 >= 0x7d0) {
+        m_18 = count >> 1;
+        InitTimeFields(0);
+    }
+    return 1;
 }
 
 // -------------------------------------------------------------------------

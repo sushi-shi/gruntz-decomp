@@ -840,6 +840,42 @@ source = "src/Stub/All.cpp"
 flags = "base"
 extra = ["/GX"]
 
+# --- re-homed out of the src/Stub/ CClass files into their module TUs (flags "eh"
+# == the engine_label_stubs base+/GX the sources came from; matching-neutral). ---
+[[unit]]
+# CBoomerang projectile ctor (0xe0650); no other CBoomerang method reconstructed
+# yet, so this is the class's first/real TU.
+unit = "cboomerang"
+source = "src/Gruntz/CBoomerang.cpp"
+flags = "eh"
+
+[[unit]]
+# CSplashState::LoadSounds (0xf9780); first/real CSplashState TU.
+unit = "csplashstate"
+source = "src/Gruntz/CSplashState.cpp"
+flags = "eh"
+
+[[unit]]
+# Fresh-object ctor at 0x8fea0 (CFileIO+CByteArray owner) mis-attributed to
+# CGruntzMgr; true owner not identified, so its own TU.
+unit = "unknownfileioctor"
+source = "src/Gruntz/UnknownFileIOCtor.cpp"
+flags = "eh"
+
+[[unit]]
+# CNetMgr::LoadMenuSelectSprite (0xba620); own TU (its sub-object calling shape
+# conflicts with NetMgr.cpp's byte-exact CNetMgr view).
+unit = "netmgrmenuselect"
+source = "src/Net/NetMgrMenuSelect.cpp"
+flags = "eh"
+
+[[unit]]
+# CFileImage::LoadByExt (0x148940); own TU (its 0x144270 this-cast dispatch keeps a
+# self-contained model rather than the full CFileImage.cpp class).
+unit = "cfileimageloadbyext"
+source = "src/Image/CFileImageLoadByExt.cpp"
+flags = "eh"
+
 [[unit]]
 # trace-discovered class memberships (gruntz.analysis.gen_class_stubs); own TU so
 # the minimal class decls never clash with the real models in other units.
@@ -2359,7 +2395,7 @@ source = "src/Net/NetCmdMgr.cpp"
 flags = "base"
 [[unit]]
 unit = "m3mfcleaves"
-source = "src/Stub/M3MfcLeaves.cpp"
+source = "src/Wap32/M3MfcLeaves.cpp"
 flags = "base"
 [[unit]]
 unit = "netsession2"

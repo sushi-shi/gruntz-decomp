@@ -2379,3 +2379,14 @@ i32 CTriggerMgr::EnqueueGroupCells() {
     }
     return 1;
 }
+
+// --- ILT jmp thunk (rtti-labeled CRegSink::Post, re-homed from src/Stub/CRegSink.cpp).
+// A low-RVA 5-byte ILT `jmp rel32` thunk landing on CycleMoveIcons (0x7c2e0, above).
+// No plain-C++ form for a bare unframed `jmp`, so it is a __declspec(naked) body whose
+// jmp's rel32 reloc-masks against the named target (same approach as NetThunks.cpp).
+extern "C" void n_CycleMoveIcons_7c2e0(); // 0x7c2e0 (jmp target)
+
+RVA(0x00003616, 0x5)
+__declspec(naked) void Ilt_RegSinkPost_3616() {
+    __asm { jmp n_CycleMoveIcons_7c2e0 }
+}

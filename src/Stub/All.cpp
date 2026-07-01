@@ -23,26 +23,17 @@
 // CButeTree defines CButeTree + g_buteTree, shared by the game-object ctors that
 // remain here (and by GameObjectCtors.cpp / UserLogic.cpp) -> include early.
 #include "CButeTree.cpp"
-#include "CBoomerang.cpp"
 // reloc-correlation extern stubs (split from GenExterns):
 #include "CButeMgrHelper.cpp"
 #include "CButeNodeBase.cpp"
-#include "CFileImageDecode.cpp"
 // CGMMenuUI.cpp removed: it was a duplicate candidate body set (carrying NO RVA
 // bindings, so it diffed nothing) of the CChatBox menu-drive methods
 // (0x182c70..0x183150) already bound + 100% byte-exact in src/Gruntz/ChatBox.cpp.
 // CGMMenuUI == CChatBox (same RVAs).
 #include "CGameModeBase.cpp"
 #include "CGruntzCmdList.cpp"
-#include "CNetMgr.cpp"
-#include "CPlay.cpp"
-#include "CRegSink.cpp"
 #include "CStatusBarMgr.cpp"
 #include "EngineExternFns.cpp"
-#include "RezMgr.cpp"
-#include "CGruntzCommand.cpp"
-#include "CGruntzMgr.cpp"
 #include "CSBI_Image.cpp"
-#include "CSplashState.cpp"
 #include "RezSync.cpp"
 #include "MallocConstructors.cpp"

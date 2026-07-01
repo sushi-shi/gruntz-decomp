@@ -1,5 +1,13 @@
 #include <rva.h>
 // CStatusBarMgr.cpp - engine-label stubs for CStatusBarMgr (reloc-correlation).
+//
+// NOT re-homed into src/Gruntz/CStatusBarMgr.cpp: this GetItem's CStatusBarMgr view
+// conflicts with that TU's byte-exact LoadTabSprites view - offset 0x10 is a pointer
+// here (m_10->m_78) but a base-x coordinate int there, and the +0x58 list head
+// overlaps the +0x48 CPtrList. The two are effectively different classes sharing a
+// mangled name (GetItem is a med-confidence reloc-correlation match, @early-stop at
+// ~90%), so folding it in would force one layout on both and regress LoadTabSprites.
+// Kept here with its self-contained model pending a class-identity resolution.
 
 // The item type GetItem manages. Its real class is the DSNDMGR buffer wrapper
 // (DirectSoundMgr, src/Dsndmgr/DirectSoundMgr.cpp): Sub3f0/Inner560/740/880 are

@@ -370,9 +370,13 @@ public:
     i32 MakeRezPath();
 
     // The frame-clock advance helper (a non-virtual member; also
-    // installed at vtable slot +0x38). External/no-body so its direct call is
-    // reloc-masked.
-    void UpdateClock();
+    // installed at vtable slot +0x38). Reconstructed in RezMgr.cpp (0x13ddc0);
+    // returns int (the retail symbol is ?UpdateClock@RezMgr@@QAEHXZ).
+    i32 UpdateClock();
+    // Its two external/no-body __thiscall callees (reloc-masked): the busy-wait
+    // pacing limiter (0x13dec0) and the window-start time sampler (0x13de70).
+    void SpinWaitUntil(i32 target); // 0x13dec0
+    void InitTimeFields(i32 reset); // 0x13de70
 
     // The extension-dispatch image loaders (external, reloc-masked).
     i32 LoadBmp(void* a, void* b);
@@ -392,7 +396,12 @@ public:
 
     // --- layout (vptr occupies +0x00) ---------------------------------------
     RezMgrOwner* m_4;          // +0x04  owning window holder (m_4->m_hWnd = HWND)
-    char m_pad8[0x2c - 0x08];  // +0x08..+0x2b
+    char m_pad8[0x18 - 0x08];  // +0x08..+0x17
+    i32 m_18;                  // +0x18  smoothed frame count (UpdateClock: m_20>>1 window)
+    i32 m_1c;                  // +0x1c  active gate (>0 enables per-frame pacing)
+    i32 m_20;                  // +0x20  frame counter (incremented each tick)
+    i32 m_24;                  // +0x24  window-start tick
+    i32 m_28;                  // +0x28  target ms-per-frame (pacing budget)
     CGameMode* m_mode;         // +0x2c  (active game-mode driven per frame)
     char m_pad30[0xb0 - 0x30]; // +0x30..+0xaf
     i32 m_renderGate;          // +0xb0  (nonzero => skip the post-step)
