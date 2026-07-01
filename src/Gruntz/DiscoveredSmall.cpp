@@ -218,3 +218,21 @@ i32 KeyPrefixBits_16e480(const char* a, const char* b) {
     }
     return c + n;
 }
+
+// ---------------------------------------------------------------------------
+// ClassUnknown_35 @0x021c40 - tail-call the CString dtor (0x1b9cde) on the
+// embedded string member at +8 (`add ecx,8; jmp ~CString`). The dtor is external
+// (no body) so its `jmp rel32` reloc-masks. Re-homed from Discovered.cpp.
+// ---------------------------------------------------------------------------
+struct CU35Str {
+    ~CU35Str(); // 0x1b9cde  (~CString)
+};
+struct CU35Host {
+    char m_pad0[8];
+    CU35Str m_8; // +0x08
+    void DestroyStr();
+};
+RVA(0x00021c40, 0x8)
+void CU35Host::DestroyStr() {
+    m_8.~CU35Str();
+}

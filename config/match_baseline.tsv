@@ -212,13 +212,13 @@ directsoundmgr	41	30
 dirpal	1	0
 discoveredarray	1	0
 discoveredeh	2	2
-discoveredsmall	9	9
+discoveredsmall	10	10
 drawbattlestats	1	0
 drawdebugstats	1	0
 dsoundvoice	2	1
 ehfunclets	6	6
 engine_attributed	5	0
-engine_discovered	15	8
+engine_discovered	14	7
 engine_label_stubs	217	119
 engine_unmatched_lib	11	0
 engstr	3	1
@@ -1785,6 +1785,7 @@ discoveredsmall	??0ClassUnknown_21@@QAE@XZ	100.0000	100.0000	1	02d1e26fc661	0x15
 discoveredsmall	??0ClassUnknown_22@@QAE@XZ	100.0000	100.0000	1	813a50afe631	0x15b270
 discoveredsmall	?BaseInit@ClassUnknown_46@@QAEXXZ	100.0000	100.0000	1	ecf899ae1670	0x1591b0
 discoveredsmall	?ClassUnknown_29_advance@@YGPAXPAPAX@Z	100.0000	100.0000	1	fa79ff4f36bf	0x29a30
+discoveredsmall	?DestroyStr@CU35Host@@QAEXXZ	100.0000	100.0000	1	089c5e769c2e	0x21c40
 discoveredsmall	?FreeBuffers@ClassUnknown_39@@QAEXXZ	100.0000	100.0000	1	a83982aeb681	0x148d10
 discoveredsmall	?KeyPrefixBits_16e480@@YAHPBD0@Z	100.0000	100.0000	1	0549328c6170	0x16e480
 discoveredsmall	?Push@ClassUnknown_28@@QAEXPAD@Z	100.0000	100.0000	1	c3ca0ad59886	0x311b0
@@ -1816,7 +1817,6 @@ engine_discovered	?ClassUnknown_51_11eaf5@ClassUnknown_51@@QAEXXZ	100.0000	100.0
 engine_discovered	?ClassUnknown_52_11eaa8@ClassUnknown_52@@QAEXXZ	100.0000	100.0000	3	dc25e16e2488	0x11eaa8
 engine_discovered	?ClassUnknown_53_11cf30@ClassUnknown_53@@QAEXXZ	100.0000	100.0000	3	48e7ac7139e8	0x11cf30
 engine_discovered	?ClassUnknown_54_11cee3@ClassUnknown_54@@QAEXXZ	100.0000	100.0000	3	b7348565ac07	0x11cee3
-engine_discovered	?DestroyStr@CU35Host@@QAEXXZ	100.0000	100.0000	1	089c5e769c2e	0x21c40
 engine_discovered	?U13Forward1154b0@@YAXPAUU13Obj@@HHHHHHHH@Z	94.2857	94.2857	1	7f5f055dbad7	0x1154b0
 engine_discovered	?U13Forward115520@@YAXPAUU13Obj@@HHHHHHHH@Z	94.2857	94.2857	1	aa702f81012b	0x115520
 engine_label_stubs	??0Boxed16a@@QAE@HPBUMallocPayload16@@@Z	100.0000	100.0000	1	cpp:49bc0e718a5c	0x174cb0

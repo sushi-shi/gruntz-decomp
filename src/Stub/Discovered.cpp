@@ -38,6 +38,16 @@ extern void* g_vtbl5f04d8;
 RVA(0x0011f618, 0x14)
 void CGruntzSingleCommand::CGruntzSingleCommand_11f618() {}
 // 0x135110 re-homed (reconstructed) as ComputeCmdPercent in src/Gruntz/GruntCmdPercent.cpp.
+// 0x18c022 is NOT a CGruntzSingleCommand method: it is the CRT `pow`/`_CIpow`
+// floating-point power routine (fstcw + the 0x27f control-word guard; 2^(y*log2 x)
+// via fyl2x; NaN/Inf exponent classification against 0x7ff00000; fsave/frstor around
+// the slow-path 0x18db50 call). The this/ecx trace mis-attributed it here off a stale
+// ecx - entry `mov ecx,eax` makes ecx the hi-dword of the first double arg, not a
+// `this`. CRT library math, not a game method -> SKIP per game-not-CRT policy; NOT
+// re-homable to a game class.
+// @confidence: high
+// @source: disasm (fstcw + 0x27f cw-guard, fyl2x, 0x7ff00000 NaN/Inf tests = CRT pow/_CIpow)
+// @stub
 RVA(0x0018c022, 0x1d3)
 void CGruntzSingleCommand::CGruntzSingleCommand_18c022() {}
 
@@ -50,6 +60,16 @@ void CGruntzSingleCommand::CGruntzSingleCommand_18c022() {}
 // 0x0b1ee0 re-homed (reconstructed) as Update_0b1ee0 in src/Gruntz/CSpotLight.cpp.
 
 // ---- CUserLogic ----
+// 0x16ea90 IS a genuine CUserLogic __thiscall method (this=esi): a 564-byte x87-heavy
+// per-tick screen/scroll position update - reads the m_78/m_80 doubles -> int via
+// __ftol (0x11f570), fmul by ds:0x5f04f0/0x5f04f8, fild/fsub/fsubr into m_28..m_a8,
+// and calls 0x16ecd0 / 0x15de40 / 0x16f3c0 / 0x16f430. This is a real reconstruction
+// target, NOT a byte-neutral re-home: kept here (empty stub) for the reconstruction /
+// final sweep - it needs the full CUserLogic field model + a leaf-first x87 pass
+// (>512B x87 scheduling), which is out of scope for a re-home pass.
+// @confidence: high
+// @source: disasm (__thiscall this=esi; x87 screen/scroll position update, 564B)
+// @stub
 RVA(0x0016ea90, 0x234)
 void CUserLogic::CUserLogic_16ea90() {}
 
@@ -65,6 +85,10 @@ void CUserLogic::CUserLogic_16ea90() {}
 // handler off p->m_4 (at +0x18 / +0x14), and if non-null forward all 9 stack args
 // to a 10-arg __cdecl callee (0x115930 via the 0x1262 ILT), inserting the handler's
 // m_2c as the 4th argument. The argument is `p` (a stack arg, NOT this).
+// Owning class is NOT resolvable: these are free __cdecl forwarders (the callee
+// 0x115930 is winapi_115930_CopyRect_OffsetRect, a Win32-rect helper); ClassUnknown_13
+// is a stale-ecx trace artifact. No real class TU exists -> left here per the re-home
+// rule (re-home only when the owning class is resolvable).
 struct U13Handler {
     char m_pad00[0x2c];
     i32 m_2c; // +0x2c
@@ -143,20 +167,8 @@ RVA(0x0011f6b9, 0x17)
 void ClassUnknown_33::ClassUnknown_33_11f6b9() {}
 
 // ---- ClassUnknown_35 ----
-// Tail-call the CString dtor (0x1b9cde) on the embedded string member at +8.
-// Reconstructed; the dtor is external (no body) so its `jmp rel32` reloc-masks.
-struct CU35Str {
-    ~CU35Str(); // 0x1b9cde  (~CString)
-};
-struct CU35Host {
-    char m_pad0[8];
-    CU35Str m_8; // +0x08
-    void DestroyStr();
-};
-RVA(0x00021c40, 0x8)
-void CU35Host::DestroyStr() {
-    m_8.~CU35Str();
-}
+// 0x021c40 re-homed (reconstructed) as CU35Host::DestroyStr in
+// src/Gruntz/DiscoveredSmall.cpp.
 
 // ---- ClassUnknown_4 ----
 // 0x16f760 re-homed (reconstructed) as BitStreamBlowfishDecode (__stdcall free fn,
