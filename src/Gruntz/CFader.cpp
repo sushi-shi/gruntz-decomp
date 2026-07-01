@@ -77,13 +77,125 @@ void CFader::Set2c(i32 v) {
 // ===========================================================================
 class CFaderSine : public CFader {
 public:
+    CFaderSine();          // 0x17fdb0
     virtual ~CFaderSine(); // 0x17fdf0
     virtual void v1();     // slot 1 -> 0x17ff30 (overrides CFader pure)
     virtual void v2();     // slot 2 -> 0x180400 (overrides CFader pure)
+
+    char _pad34[0x4c - 0x34]; // +0x34..+0x4b
+    i32 m_4c;                 // +0x4c
+    i32 m_50;                 // +0x50
 };
+
+// ===========================================================================
+// 0x17fdb0 - CFaderSine(): chain CFader::CFader, stamp ??_7CFaderSine, zero the
+// two subtype fields. cl auto-emits the base ctor call + the implicit vptr stamp
+// (reloc-masked vs 0x5f0848); the subtype virtuals are declared (not defined
+// here) only to make the class concrete + size its vtable.
+// ===========================================================================
+RVA(0x0017fdb0, 0x1a)
+CFaderSine::CFaderSine() {
+    m_50 = 0;
+    m_4c = 0;
+}
 
 // ===========================================================================
 // 0x17fdf0 - ~CFaderSine(): stamp the subtype vftable, then tail-call ~CFader().
 // ===========================================================================
 RVA(0x0017fdf0, 0xb)
 CFaderSine::~CFaderSine() {}
+
+// ===========================================================================
+// CFaderFlat - the fader subtype whose ctor (0x17f530) only clears m_4c. Its
+// vftable is 0x5f07f8. Same modeling as CFaderSine.
+// ===========================================================================
+class CFaderFlat : public CFader {
+public:
+    CFaderFlat();      // 0x17f530
+    virtual void v1(); // override the two CFader pure virtuals -> concrete
+    virtual void v2();
+
+    char _pad34[0x4c - 0x34]; // +0x34..+0x4b
+    i32 m_4c;                 // +0x4c
+};
+
+RVA(0x0017f530, 0x19)
+CFaderFlat::CFaderFlat() {
+    m_4c = 0;
+}
+
+// ===========================================================================
+// CFader180410 - subtype ctor 0x180410: clears m_40. vftable 0x5f0870.
+// ===========================================================================
+class CFader180410 : public CFader {
+public:
+    CFader180410();    // 0x180410
+    virtual void v1(); // -> concrete
+    virtual void v2();
+
+    char _pad34[0x40 - 0x34]; // +0x34..+0x3f
+    i32 m_40;                 // +0x40
+};
+
+RVA(0x00180410, 0x19)
+CFader180410::CFader180410() {
+    m_40 = 0;
+}
+
+// ===========================================================================
+// CFader17f9a0 - subtype ctor 0x17f9a0: m_44/m_40/m_50 = 0, m_48 = 1. vftable
+// 0x5f0810.
+// ===========================================================================
+class CFader17f9a0 : public CFader {
+public:
+    CFader17f9a0();    // 0x17f9a0
+    virtual void v1(); // -> concrete
+    virtual void v2();
+
+    char _pad34[0x40 - 0x34]; // +0x34..+0x3f
+    i32 m_40;                 // +0x40
+    i32 m_44;                 // +0x44
+    i32 m_48;                 // +0x48
+    char _pad4c[0x50 - 0x4c]; // +0x4c
+    i32 m_50;                 // +0x50
+};
+
+RVA(0x0017f9a0, 0x24)
+CFader17f9a0::CFader17f9a0() {
+    m_44 = 0;
+    m_40 = 0;
+    m_50 = 0;
+    m_48 = 1;
+}
+
+// ===========================================================================
+// CFader1816c0 - subtype ctor 0x1816c0 (size 0x494): zeroes m_478/m_44/m_48/m_4c/
+// m_488/m_48c and the CFader base field m_20. vftable 0x5f0890.
+// ===========================================================================
+class CFader1816c0 : public CFader {
+public:
+    CFader1816c0();    // 0x1816c0
+    virtual void v1(); // -> concrete
+    virtual void v2();
+
+    char _pad34[0x44 - 0x34];    // +0x34..+0x43
+    i32 m_44;                    // +0x44
+    i32 m_48;                    // +0x48
+    i32 m_4c;                    // +0x4c
+    char _pad50[0x478 - 0x50];   // +0x50..+0x477
+    i32 m_478;                   // +0x478
+    char _pad47c[0x488 - 0x47c]; // +0x47c..+0x487
+    i32 m_488;                   // +0x488
+    i32 m_48c;                   // +0x48c
+};
+
+RVA(0x001816c0, 0x32)
+CFader1816c0::CFader1816c0() {
+    m_478 = 0;
+    m_44 = 0;
+    m_48 = 0;
+    m_4c = 0;
+    m_488 = 0;
+    m_48c = 0;
+    m_20 = 0;
+}

@@ -758,6 +758,55 @@ void DirectSoundMgr::StopAllClones() {
 }
 
 // ---------------------------------------------------------------------------
+// DSoundBaseSub (0x136230 ctor) / DSoundCloneInst (0x135b10 ctor): a two-level
+// DirectSoundMgr-derived clone hierarchy. DSoundBaseSub chains the base
+// DirectSoundMgr ctor, stamps the base-subobject vftable (0x5ef6c0) and self-links;
+// DSoundCloneInst chains DSoundBaseSub, stamps the clone vftable (0x5ef6bc), and
+// links its own node into its (empty) clone list. Both stamps are manual reloc-
+// masked DIR32 stores (the classes stay non-polymorphic). The DSoundBaseSub ctor
+// body is DEFINED AFTER DSoundCloneInst so cl only sees its declaration at the
+// DSoundCloneInst call site => an out-of-line `call 0x136230` (not an inline of the
+// small base ctor). DSoundCloneInst's potentially-throwing InsertHead after base
+// construction forces the /GX EH frame + unwind state.
+class DSoundBaseSub : public DirectSoundMgr {
+public:
+    DSoundBaseSub(IDirectSoundBufferZ* buf, DirectSoundMgr* owner);
+};
+
+class DSoundCloneInst : public DSoundBaseSub {
+public:
+    DSoundCloneInst(IDirectSoundBufferZ* buf, DirectSoundMgr* owner);
+};
+
+// @early-stop
+// EH-state-count wall: code bytes are byte-identical (verified base-vs-target
+// llvm-objdump -dr) except the /GX unwind state machine. Retail advances TWO
+// states (mov [esp+0x10] dword 0 after the base ctor, then mov byte 1 before the
+// throwing InsertHead) and its scope-table push is 0xb; cl collapses to ONE state
+// (single dword 0, no byte-1 bump) since the DSoundCloneInst level shares
+// ~DSoundBaseSub's dtor, so its scope-table push is 0 and the lea edx schedules
+// earlier. Logic complete; residual is the EH state assignment only.
+RVA(0x00135b10, 0x6b)
+DSoundCloneInst::DSoundCloneInst(IDirectSoundBufferZ* buf, DirectSoundMgr* owner)
+    : DSoundBaseSub(buf, owner) {
+    DSoundList* list = (DSoundList*)&m_cloneHead;
+    list->m_head = 0;
+    list->m_tail = 0;
+    *(void**)this = (void*)g_DirectSoundCloneVtbl;
+    list->InsertHead(&m_node44);
+    *(i32*)((char*)this + 0x50) = 1;
+}
+
+RVA(0x00136230, 0x2d)
+DSoundBaseSub::DSoundBaseSub(IDirectSoundBufferZ* buf, DirectSoundMgr* owner)
+    : DirectSoundMgr(buf, owner) {
+    *(void**)this = (void*)g_DirectSoundBaseVtbl;
+    m_node44.m_inst = (DirectSoundMgr*)this;
+    m_reacquireOwner = (DirectSoundMgr*)this;
+    *(i32*)((char*)this + 0x50) = 1;
+}
+
+// ---------------------------------------------------------------------------
 // DirectSoundMgr::BaseDtor (__thiscall). The base-subobject teardown: stamp the
 // base vftable (0x5ef6c0), then tail into RestampBufferVtbl (0x135300) to stamp the
 // buffer vftable (0x5ef6b8) - the two-stage restamp chain ~DirectSoundMgr runs last.

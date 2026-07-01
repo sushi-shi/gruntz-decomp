@@ -128,13 +128,8 @@ public:
     MallocCtor_139c80();
 };
 
-// non-RTTI ctor @ 0x00135b10, sizeof 0x60
-class MallocCtor_135b10 {
-public:
-    MallocCtor_135b10();
-    char m_data[0x60]; // operator-new size; real fields TBD
-};
-SIZE(MallocCtor_135b10, 0x60);
+// 0x00135b10 reconstructed as DSoundCloneInst ctor in src/Dsndmgr/DirectSoundMgr.cpp.
+// 0x00136230 reconstructed as DSoundBaseSub ctor in src/Dsndmgr/DirectSoundMgr.cpp.
 
 // non-RTTI ctor @ 0x001736a0, sizeof 0x8
 class MallocCtor_1736a0 {
@@ -168,19 +163,7 @@ public:
 };
 SIZE(MallocCtor_174730, 0x8);
 
-// non-RTTI ctor @ 0x001816c0, sizeof 0x494
-class MallocCtor_1816c0 {
-public:
-    MallocCtor_1816c0();
-    char m_data[0x494]; // operator-new size; real fields TBD
-};
-SIZE(MallocCtor_1816c0, 0x494);
-
-// non-RTTI ctor @ 0x00136230 (size TBD)
-class MallocCtor_136230 {
-public:
-    MallocCtor_136230();
-};
+// 0x001816c0 reconstructed as CFader1816c0 ctor in src/Gruntz/CFader.cpp.
 
 // non-RTTI ctor @ 0x00168e70 (size TBD)
 class MallocCtor_168e70 {
@@ -204,36 +187,8 @@ public:
 };
 SIZE(MallocCtor_174d00, 0x2c);
 
-// non-RTTI ctor @ 0x0017f9a0, sizeof 0x5c
-class MallocCtor_17f9a0 {
-public:
-    MallocCtor_17f9a0();
-    char m_data[0x5c]; // operator-new size; real fields TBD
-};
-SIZE(MallocCtor_17f9a0, 0x5c);
-
-// non-RTTI ctor @ 0x0017fdb0, sizeof 0x7d5c
-class MallocCtor_17fdb0 {
-public:
-    MallocCtor_17fdb0();
-    char m_data[0x7d5c]; // operator-new size; real fields TBD
-};
-SIZE(MallocCtor_17fdb0, 0x7d5c);
-
-// non-RTTI ctor @ 0x0017f530, sizeof 0x50
-class MallocCtor_17f530 {
-public:
-    MallocCtor_17f530();
-    char m_data[0x50]; // operator-new size; real fields TBD
-};
-SIZE(MallocCtor_17f530, 0x50);
-
-// non-RTTI ctor @ 0x00180410, sizeof 0x206c
-class MallocCtor_180410 {
-public:
-    MallocCtor_180410();
-    char m_data[0x206c]; // operator-new size; real fields TBD
-};
-SIZE(MallocCtor_180410, 0x206c);
+// The CFader subtype ctors are reconstructed in src/Gruntz/CFader.cpp:
+//   0x0017f9a0 -> CFader17f9a0    0x0017fdb0 -> CFaderSine
+//   0x0017f530 -> CFaderFlat      0x00180410 -> CFader180410
 
 #endif
