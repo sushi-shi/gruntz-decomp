@@ -230,24 +230,24 @@ struct CNetCmd {
 SIZE_UNKNOWN(CNetCmd); // queued-command view (2 fields pinned); retail size TBD
 
 struct CNetCmdSlot {
-    i32 m_0;        // +0x0   "armed" flag (AckDropPlayer sets it to 1; ==3 => active)
-    i32 m_4;        // +0x4   "slot already reset" guard
-    i32 m_8;        // +0x8   latched sequence (Touch copies m_14 here)
-    i32* m_c;       // +0xc   -> command-list head value (m_c[0xb] == +0x2c is its own flag)
-    i32 m_10;       // +0x10
-    i32 m_14;       // +0x14  base command sequence number
-    i32 m_18;       // +0x18  high-water sequence (RaiseMax keeps the max)
-    i32 m_1c;       // +0x1c
-    CObList m_cmds; // +0x20  queued-command list (CObList, 0x1c bytes)
-    i32 m_3c;       // +0x3c
-    i32 m_40;       // +0x40
-    i32 m_44;       // +0x44
-    i32 m_48;       // +0x48
-    i32 m_4c[3];    // +0x4c  command-range A (reset to -1)
-    i32 m_58[3];    // +0x58  command-range B (reset to -1)
+    i32 m_state;      // +0x0   "armed" flag (AckDropPlayer sets it to 1; ==3 => active)
+    i32 m_resetGuard; // +0x4   "slot already reset" guard
+    i32 m_latchedSeq; // +0x8   latched sequence (Touch copies m_baseSeq here)
+    i32* m_cmdHead;   // +0xc   -> command-list head value (m_cmdHead[0xb] == +0x2c is its own flag)
+    i32 m_latency;    // +0x10  the slot's latency value (CheckLatency compares vs the cap)
+    i32 m_baseSeq;    // +0x14  base command sequence number
+    i32 m_maxSeq;     // +0x18  high-water sequence (RaiseMax keeps the max)
+    i32 m_owner;      // +0x1c  owning CNetMgr back-pointer (Init <- session; cast for dispatch)
+    CObList m_cmds;   // +0x20  queued-command list (CObList, 0x1c bytes)
+    i32 m_3c;         // +0x3c  ack-flag array base ((&m_3c)[playerIdx])
+    i32 m_40;         // +0x40
+    i32 m_44;         // +0x44
+    i32 m_48;         // +0x48
+    i32 m_rangeA[3];  // +0x4c  command-range A (reset to -1)
+    i32 m_rangeB[3];  // +0x58  command-range B (reset to -1)
 
     CNetCmdSlot();                       // bbec0  construct m_cmds (/GX EH) + reset fields
-    void ResetAll();                     // c0bb0  zero all fields (incl. m_0/m_c/m_1c) + ranges
+    void ResetAll();                     // c0bb0  zero all fields + ranges
     void AdvanceSeq(i32 id);             // c0f10  fold an ack id into the high-water window
     void RaiseMax(i32 v);                // c0fa0  keep the high-water sequence
     void ResetTriple(i32* p);            // c10a0  splat -1 over three dwords

@@ -59,6 +59,18 @@ struct CWapNodeB {
     void FreeStrings();
 };
 
+// The DPSESSIONDESC2 Init deep-copies (and the shape the node embeds at +0x04):
+// the full 0x50-byte struct, with dwSize@+0 and the two name pointers Init
+// duplicates (lpszSessionName@+0x30, lpszPassword@+0x34).
+struct CNetSessionDesc {
+    i32 m_dwSize; // +0x00  dwSize (forced to 0x50 by Init)
+    char m_pad04[0x30 - 0x04];
+    char* m_lpszName;     // +0x30  lpszSessionName
+    char* m_lpszPassword; // +0x34  lpszPassword
+    char m_pad38[0x50 - 0x38];
+};
+SIZE(CNetSessionDesc, 0x50); // the 0x50-byte DPSESSIONDESC2
+
 // ---------------------------------------------------------------------------
 // CNetPlayerListNode - a deep copy of a DPSESSIONDESC2 + its duplicated names.
 // ---------------------------------------------------------------------------
@@ -67,20 +79,11 @@ public:
     virtual ~CNetPlayerListNode();
     i32 Init(void* desc);
 
-    char m_pad04[0x54 - 0x04]; // +0x04..+0x53  the 0x50-byte DPSESSIONDESC2 copy
-                               //               (lpszSessionName@+0x34, lpszPassword@+0x38)
+    CNetSessionDesc m_desc; // +0x04  the deep-copied 0x50-byte DPSESSIONDESC2
+                            //        (name/password strdup'd in place)
 };
 SIZE_UNKNOWN(CNetPlayerListNode);     // node view (desc copy pinned); full retail size TBD
 VTBL(CNetPlayerListNode, 0x005f0760); // own (most-derived) vtable
-
-// The source DPSESSIONDESC2 Init deep-copies: only the two name pointers it
-// duplicates are pinned (offsets within the 0x50-byte struct).
-struct CNetSessionDesc {
-    char m_pad00[0x30];
-    char* m_lpszName;     // +0x30  lpszSessionName
-    char* m_lpszPassword; // +0x34  lpszPassword
-};
-SIZE_UNKNOWN(CNetSessionDesc); // DPSESSIONDESC2 view (only name ptrs pinned); size TBD
 
 // ---------------------------------------------------------------------------
 // CNetSessionNode - two CString members + two raw heap buffers.
@@ -157,20 +160,17 @@ i32 CNetPlayerListNode::Init(void* desc) {
     if (!src) {
         return 0;
     }
-    i32* dst = (i32*)m_pad04; // this+0x04
-    memcpy(dst, src, 0x50);
-    *dst = 0x50; // dwSize
-    char** name = (char**)(m_pad04 + (0x34 - 0x04));
-    char** pass = (char**)(m_pad04 + (0x38 - 0x04));
-    *name = 0;
-    *pass = 0;
+    memcpy(&m_desc, src, 0x50);
+    m_desc.m_dwSize = 0x50;
+    m_desc.m_lpszName = 0;
+    m_desc.m_lpszPassword = 0;
     if (src->m_lpszName && strlen(src->m_lpszName)) {
-        *name = (char*)RezAlloc(strlen(src->m_lpszName) + 8);
-        strcpy(*name, src->m_lpszName);
+        m_desc.m_lpszName = (char*)RezAlloc(strlen(src->m_lpszName) + 8);
+        strcpy(m_desc.m_lpszName, src->m_lpszName);
     }
     if (src->m_lpszPassword && strlen(src->m_lpszPassword)) {
-        *pass = (char*)RezAlloc(strlen(src->m_lpszPassword) + 8);
-        strcpy(*pass, src->m_lpszPassword);
+        m_desc.m_lpszPassword = (char*)RezAlloc(strlen(src->m_lpszPassword) + 8);
+        strcpy(m_desc.m_lpszPassword, src->m_lpszPassword);
     }
     return 1;
 }

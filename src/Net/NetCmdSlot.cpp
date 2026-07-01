@@ -125,13 +125,13 @@ SIZE_UNKNOWN(CNetCmdPacket); // trailing-payload packet (flexible array); fixed 
 RVA(0x000c0070, 0x15)
 void CNetSession::ResetCmdBuffers() {
     for (i32 i = 0; i < 4; i++) {
-        m_slots[i].m_10 = 0;
+        m_slots[i].m_latency = 0;
     }
 }
 
 // ---------------------------------------------------------------------------
 // CNetCmdSlot::ResetAll (0x0c0bb0, __thiscall) - full wipe: zero every scalar
-// field (incl. m_0/m_c/m_1c), drain the queue, then splat both command ranges.
+// field (incl. m_state/m_cmdHead/m_owner), drain the queue, then splat both ranges.
 // ---------------------------------------------------------------------------
 // @early-stop
 // zero-register-pinning wall (73.7%): logic byte-exact. Retail re-materializes
@@ -141,21 +141,21 @@ void CNetSession::ResetCmdBuffers() {
 // this TU (docs/patterns/zero-register-pinning.md); not source-steerable. Final sweep.
 RVA(0x000c0bb0, 0x47)
 void CNetCmdSlot::ResetAll() {
-    m_0 = 0;
-    m_4 = 0;
-    m_8 = 0;
-    m_c = 0;
-    m_10 = 0;
-    m_14 = 0;
-    m_18 = 0;
-    m_1c = 0;
+    m_state = 0;
+    m_resetGuard = 0;
+    m_latchedSeq = 0;
+    m_cmdHead = 0;
+    m_latency = 0;
+    m_baseSeq = 0;
+    m_maxSeq = 0;
+    m_owner = 0;
     ClearCmds();
     m_3c = 0;
     m_40 = 0;
     m_44 = 0;
     m_48 = 0;
-    ResetTriple(m_4c);
-    ResetTriple(m_58);
+    ResetTriple(m_rangeA);
+    ResetTriple(m_rangeB);
 }
 
 // ---------------------------------------------------------------------------
@@ -187,19 +187,19 @@ i32 CNetCmdSlot::ProcessCmd(i32 playerId, void* rec, i32 size) {
     u8 opcode = *(u8*)rec;
     i32 odd = opcode & 1;
     char* p = (char*)rec + 1;
-    if (m_0 != 3) {
+    if (m_state != 3) {
         return 1;
     }
     if (opcode & 0x80) {
-        return ((CNetMgrView*)m_1c)->DispatchRecv(m_c[6], rec, size);
+        return ((CNetMgrView*)m_owner)->DispatchRecv(m_cmdHead[6], rec, size);
     }
     if (odd == 0) {
-        if (m_4 != 0) {
+        if (m_resetGuard != 0) {
             return 1;
         }
     }
     if (odd) {
-        if (m_4 == 0) {
+        if (m_resetGuard == 0) {
             return 1;
         }
     }
@@ -217,32 +217,32 @@ i32 CNetCmdSlot::ProcessCmd(i32 playerId, void* rec, i32 size) {
     char* cursor = p + 13;
     rem -= 13;
 
-    if (m_4 != 0 && odd) {
-        CNetCmdSlot* slot = ((CNetMgrView*)m_1c)->m_session->FindCmdSlot(playerId);
+    if (m_resetGuard != 0 && odd) {
+        CNetCmdSlot* slot = ((CNetMgrView*)m_owner)->m_session->FindCmdSlot(playerId);
         if (slot == 0) {
             return 0;
         }
         if (opcode & 2) {
-            i32 pid = slot->m_c[0] & 0xff;
+            i32 pid = slot->m_cmdHead[0] & 0xff;
             (&m_3c)[pid] = 1;
-            if (seq > m_8) {
-                m_8 = seq;
+            if (seq > m_latchedSeq) {
+                m_latchedSeq = seq;
             }
         }
     }
 
     RaiseMax(base);
     if (opcode & 0x10) {
-        NetCmdIdAdd(m_58, base + 2);
+        NetCmdIdAdd(m_rangeB, base + 2);
     } else if (opcode & 0x20) {
-        NetCmdIdAdd(m_58, base + 3);
+        NetCmdIdAdd(m_rangeB, base + 3);
     }
-    NetCmdIdClear(m_58, base + 1);
+    NetCmdIdClear(m_rangeB, base + 1);
 
-    if (m_14 >= seq) {
+    if (m_baseSeq >= seq) {
         return 1;
     }
-    if (NetCmdIdFind(m_4c, seq)) {
+    if (NetCmdIdFind(m_rangeA, seq)) {
         return 1;
     }
     AdvanceSeq(seq);
@@ -267,7 +267,7 @@ i32 CNetCmdSlot::ProcessCmd(i32 playerId, void* rec, i32 size) {
         }
         i32 consumed = obj->Parse(cursor, rem);
         obj->m_submitted = 1;
-        ((CNetMgrView*)m_1c)->m_sub->m_cmdMgr->EnqueueCommand(0, obj);
+        ((CNetMgrView*)m_owner)->m_sub->m_cmdMgr->EnqueueCommand(0, obj);
         rem -= consumed;
         cursor += consumed;
     }
@@ -287,15 +287,15 @@ i32 CNetCmdSlot::ProcessCmd(i32 playerId, void* rec, i32 size) {
 // this-residency idiom; not source-steerable here. Final sweep.
 RVA(0x000c0f10, 0x6e)
 void CNetCmdSlot::AdvanceSeq(i32 id) {
-    if (m_14 + 1 == id) {
-        NetCmdIdClear(m_4c, m_14);
-        m_14++;
-        while (NetCmdIdFind(m_4c, m_14 + 1)) {
-            m_14++;
-            NetCmdIdClear(m_4c, m_14);
+    if (m_baseSeq + 1 == id) {
+        NetCmdIdClear(m_rangeA, m_baseSeq);
+        m_baseSeq++;
+        while (NetCmdIdFind(m_rangeA, m_baseSeq + 1)) {
+            m_baseSeq++;
+            NetCmdIdClear(m_rangeA, m_baseSeq);
         }
     } else {
-        NetCmdIdAdd(m_4c, id);
+        NetCmdIdAdd(m_rangeA, id);
     }
 }
 
@@ -304,8 +304,8 @@ void CNetCmdSlot::AdvanceSeq(i32 id) {
 // ---------------------------------------------------------------------------
 RVA(0x000c0fa0, 0x11)
 void CNetCmdSlot::RaiseMax(i32 v) {
-    if (v > m_18) {
-        m_18 = v;
+    if (v > m_maxSeq) {
+        m_maxSeq = v;
     }
 }
 
@@ -485,7 +485,7 @@ SIZE_UNKNOWN(CNetSyncCheck); // minimal view (only +0x1c/+0x3c pinned); retail s
 
 // ---------------------------------------------------------------------------
 // CNetSyncCheck::AllSlotsReady (0x0c1320, __thiscall) - false (0) if any active
-// (m_0==3), unreset (m_4==0) command slot has not yet been acked locally
+// (m_state==3), unreset (m_resetGuard==0) command slot has not yet been acked locally
 // (m_3c[i]==0); true (1) otherwise.
 // ---------------------------------------------------------------------------
 // @early-stop
@@ -505,7 +505,7 @@ i32 CNetSyncCheck::AllSlotsReady() {
     CNetSession* sess = mgr->m_session;
     for (i32 i = 0; i < 4; i++) {
         CNetCmdSlot* slot = &sess->m_slots[i];
-        if (slot != 0 && slot->m_0 == 3 && slot->m_4 == 0 && m_localAckFlags[i] == 0) {
+        if (slot != 0 && slot->m_state == 3 && slot->m_resetGuard == 0 && m_localAckFlags[i] == 0) {
             return 0;
         }
     }
@@ -518,8 +518,8 @@ i32 CNetSyncCheck::AllSlotsReady() {
 // ---------------------------------------------------------------------------
 RVA(0x000c1390, 0x15)
 void CNetCmdSlot::Touch() {
-    if (m_4 == 0) {
-        m_4 = 1;
-        m_8 = m_14;
+    if (m_resetGuard == 0) {
+        m_resetGuard = 1;
+        m_latchedSeq = m_baseSeq;
     }
 }

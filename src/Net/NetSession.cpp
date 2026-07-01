@@ -31,12 +31,20 @@ void AppendInt(char* dst, const char* sep, i32 n) {
     NetStrBuild(dst, sep, buf);
 }
 
+// The player record held in each list node: it carries its profile/name source
+// at +0x34 (NetFormatKeyed reads NAME out of it, else it is used raw as the text).
+struct PlayerRecord {
+    char m_pad[0x34];
+    void* m_profile; // +0x34  the profile/name source
+};
+SIZE_UNKNOWN(PlayerRecord); // player-record view (only +0x34 pinned); retail size TBD
+
 // A node of the session's player list (CObList-shaped): next ptr + the held
-// player record. The player record carries its profile at +0x34 (the name src).
+// player record.
 struct PlayerNode {
-    PlayerNode* m_next; // +0x00
-    void* m_4;          // +0x04
-    void* m_item;       // +0x08 (the player record)
+    PlayerNode* m_next;   // +0x00
+    void* m_4;            // +0x04
+    PlayerRecord* m_item; // +0x08 (the player record)
 };
 SIZE_UNKNOWN(PlayerNode); // CObList-shaped list-node view; retail size TBD
 // The session container: a player CObList (head at +0x3c) + a scratch POSITION
@@ -75,7 +83,7 @@ void FillPlayerList(HWND hList, Session* sess) {
     SendMessageA(hList, LB_RESETCONTENT, 0, 0);
     PlayerNode* node = sess->m_head;
     sess->m_pos = node;
-    void* player;
+    PlayerRecord* player;
     if (node) {
         sess->m_pos = node->m_next;
         player = node->m_item;
@@ -84,10 +92,10 @@ void FillPlayerList(HWND hList, Session* sess) {
     }
     while (player) {
         const char* str;
-        if (NetFormatKeyed(buf + 4, *(void**)((char*)player + 0x34), "NAME")) {
+        if (NetFormatKeyed(buf + 4, player->m_profile, "NAME")) {
             str = buf;
         } else {
-            str = (const char*)*(void**)((char*)player + 0x34);
+            str = (const char*)player->m_profile;
         }
         i32 idx = (i32)SendMessageA(hList, LB_ADDSTRING, 0, (LPARAM)str);
         if (idx != -1) {

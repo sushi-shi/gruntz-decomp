@@ -478,8 +478,8 @@ i32 CNetMgr::OnPlayerLeft(i32 playerId) {
 // Finalizes a dropped player. When the host-mode flag (m_534) is clear it records
 // the drop (RecordDropPlayer), then looks the player's command slot up
 // (m_session->FindCmdSlot) and, if found, latches+resets it (Touch + FullReset)
-// and arms both the slot and its command-list head (slot->m_0 = 1,
-// slot->m_c[+0x2c] = 1). In host mode it instead tears the player down directly
+// and arms both the slot and its command-list head (slot->m_state = 1,
+// slot->m_cmdHead[+0x2c] = 1). In host mode it instead tears the player down directly
 // (OnPlayerLeft) and flushes their resend buffers (ResetPlayerCommands).
 RVA(0x000ba590, 0x63)
 void CNetMgr::AckDropPlayer(i32 id) {
@@ -489,8 +489,8 @@ void CNetMgr::AckDropPlayer(i32 id) {
         if (slot != 0) {
             slot->Touch();
             slot->FullReset();
-            slot->m_0 = 1;
-            slot->m_c[0xb] = 1;
+            slot->m_state = 1;
+            slot->m_cmdHead[0xb] = 1;
         }
         return;
     }
@@ -1256,7 +1256,7 @@ i32 CNetMgr::LoadConfig(void* cfg) {
 // CNetMgr::ResetPlayerCommands  (__thiscall).
 // Flushes the resend buffers for one player's command slot. No-op unless
 // connected (m_connected). Looks the player's slot up in the session (m_session); if found
-// and not already reset (slot->m_4 == 0), latches it, then for each command
+// and not already reset (slot->m_resetGuard == 0), latches it, then for each command
 // sequence number in the slot's window ([(seq0+1)..(seq0+1)+3] scaled by the
 // per-command delay m_cmdDelay) re-dispatches the command through m_4's queue and
 // drops it from the slot. Finally clears the slot's two command ranges.
@@ -1270,19 +1270,19 @@ i32 CNetMgr::ResetPlayerCommands(i32 id) {
     if (slot == 0) {
         return 0;
     }
-    if (slot->m_4 != 0) {
+    if (slot->m_resetGuard != 0) {
         return 0;
     }
 
     slot->Touch();
-    i32 seq = (slot->m_14 + 1) * (i32)m_cmdDelay;
+    i32 seq = (slot->m_baseSeq + 1) * (i32)m_cmdDelay;
     i32 end = seq + (i32)m_cmdDelay * 3;
     for (; seq < end; seq++) {
-        ((CNetSubObject*)m_4)->m_6c->Dispatch(*slot->m_c, seq);
+        ((CNetSubObject*)m_4)->m_6c->Dispatch(*slot->m_cmdHead, seq);
         slot->RemoveCmd(seq / (i32)m_cmdDelay);
     }
-    slot->ResetTriple(slot->m_4c);
-    slot->ResetTriple(slot->m_58);
+    slot->ResetTriple(slot->m_rangeA);
+    slot->ResetTriple(slot->m_rangeB);
     return 1;
 }
 
@@ -2432,19 +2432,19 @@ i32 CNetMgr::CreateSession() {
 // docs/patterns/zero-register-pinning.md. Final sweep.
 RVA(0x000bbec0, 0x81)
 CNetCmdSlot::CNetCmdSlot() {
-    m_0 = 0;
-    m_4 = 0;
-    m_8 = 0;
-    m_c = 0;
-    m_10 = 0;
-    m_14 = 0;
-    m_18 = 0;
-    m_1c = 0;
+    m_state = 0;
+    m_resetGuard = 0;
+    m_latchedSeq = 0;
+    m_cmdHead = 0;
+    m_latency = 0;
+    m_baseSeq = 0;
+    m_maxSeq = 0;
+    m_owner = 0;
     ClearCmds();
     m_3c = 0;
     m_40 = 0;
     m_44 = 0;
     m_48 = 0;
-    ResetTriple(m_4c);
-    ResetTriple(m_58);
+    ResetTriple(m_rangeA);
+    ResetTriple(m_rangeB);
 }
