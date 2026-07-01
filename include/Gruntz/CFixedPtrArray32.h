@@ -10,6 +10,7 @@
 #include <Ints.h>
 #include <rva.h>
 
+SIZE_UNKNOWN(CFixedPtrArray32);
 class CFixedPtrArray32 {
 public:
     void Clear();

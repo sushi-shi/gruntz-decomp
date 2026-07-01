@@ -26,6 +26,7 @@
 
 // The [m_64..m_68]-gated glyph table the bound object holds at +0x194 (the SAME
 // shape as CStatzGlyphMap: glyph table at +0x14, lo/hi index gate at +0x64/+0x68).
+SIZE_UNKNOWN(CHealthGlyphMap);
 struct CHealthGlyphMap {
     char m_pad0[0x14];
     i32* m_14; // +0x14  glyph table
@@ -38,6 +39,7 @@ struct CHealthGlyphMap {
 // mirror (+0x190), the gated glyph map (+0x194) and the resolved glyph (+0x198).
 // A local view (distinct fields from the shared CGameObject) so the deep offset
 // reads stay self-contained.
+SIZE_UNKNOWN(CHealthSpriteObj);
 struct CHealthSpriteObj {
     char m_pad0[0x190];
     i32 m_190;              // +0x190  resolved slot mirror
@@ -45,6 +47,7 @@ struct CHealthSpriteObj {
     i32 m_198;              // +0x198  resolved glyph mirror
 };
 
+SIZE_UNKNOWN(CGruntHealthSprite);
 class CGruntHealthSprite : public CUserLogic {
 public:
     static void InitActReg();   // 0x07ecf0 (construct g_healthActReg over [2000,2010])
@@ -66,6 +69,7 @@ public:
 // code pointer on this complete single-inheritance class). CGruntHealthSprite is
 // complete above so the PMF stays 4 bytes (matching `mov [entry], offset thunk`).
 typedef void (CGruntHealthSprite::*HealthActHandler)();
+SIZE_UNKNOWN(CHealthActEntry);
 struct CHealthActEntry {
     HealthActHandler m_fn;
 };

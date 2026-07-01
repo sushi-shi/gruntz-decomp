@@ -1,6 +1,5 @@
-// BitStreamBlowfish.cpp - re-homed from src/Stub/Discovered.cpp (0x16f760). The
-// dynamic trace mis-attributed this to ClassUnknown_4 via stale ecx: the function
-// never reads `this` (ecx) and cleans 2 stack args (ret 8) -> it is a __stdcall
+// BitStreamBlowfish.cpp (0x16f760): the function never reads `this` (ecx) and
+// cleans 2 stack args (ret 8) -> despite the RTTI attribution it is a __stdcall
 // free function. It is a Blowfish-ECB/CBC bit decode loop: pull 8 "bits" from the
 // reader (m_16a510), emit the PREVIOUS decrypted right-half through the sink
 // (m_16ab20) skipping the priming block, Blowfish_decipher the (xl,xr) pair, then
@@ -50,8 +49,6 @@ void __stdcall BitStreamBlowfishDecode(BitReader* r, Sink* out) {
     }
 }
 
-// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
-// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 SIZE_UNKNOWN(BitReader);
 SIZE_UNKNOWN(Desc);
 SIZE_UNKNOWN(Sink);

@@ -411,7 +411,6 @@ SIZE_UNKNOWN(AlbusMapValue);
 SIZE_UNKNOWN(UnknownAlbusTeardown);
 #endif
 
-// class-metadata sweep: size annotations (SIZE_UNKNOWN = retail size TBD).
 SIZE_UNKNOWN(AlbusMapBase);
 SIZE_UNKNOWN(AlbusWorker);
 SIZE_UNKNOWN(AlbusWorkerObj);

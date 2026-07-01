@@ -1,7 +1,7 @@
 #include <rva.h>
-// ApiHiCallers.cpp - reconstructed game API-caller methods migrated out of the
-// src/Stub/ApiCallers.cpp backlog (the HIGH-RVA half, RVA >= 0x0e0000). Each was
-// classified as GAME (not CRT/MFC-library) and reconstructed against a best-guess
+// ApiHiCallers.cpp - reconstructed game API-caller methods, the HIGH-RVA half
+// (RVA >= 0x0e0000). Each was classified as GAME (not CRT/MFC-library) and
+// reconstructed against a best-guess
 // class shape: placeholder m_<hexoffset> field names, only the OFFSETS + emitted
 // code bytes are load-bearing (campaign doctrine). Plain /O2 /MT frameless leaves
 // (no SEH/EH). External engine callees are modeled with NO body so their rel32/
@@ -12,8 +12,8 @@
 // LCG instance (its own seed-flag + state globals, distinct from the 0x6c127d/
 // 0x6c1288 and 0x6c2798 pairs), seeded lazily from timeGetTime.
 extern "C" u32(__stdcall* g_pTimeGetTime)(); // 0x6c4650
-extern u8 g_fxRandSeeded;                     // 0x6c279c  seed-init flag (bit 0)
-extern i32 g_fxRandSeed;                      // 0x6c27a8  LCG seed
+extern u8 g_fxRandSeeded;                    // 0x6c279c  seed-init flag (bit 0)
+extern i32 g_fxRandSeed;                     // 0x6c27a8  LCG seed
 
 static __inline i32 FxRand(i32 range) {
     u32 x;
@@ -60,13 +60,13 @@ struct FxSrc_17fe00 {
 };
 struct Fx_17fe00 {
     char m_pad0[0x20];
-    i32 m_20; // +0x20
+    i32 m_20;           // +0x20
     FxSrc_17fe00* m_24; // +0x24 fallback source
     FxSrc_17fe00* m_28; // +0x28 fallback source
     char m_pad2c[0x38 - 0x2c];
     FxSrc_17fe00* m_38; // +0x38
     FxSrc_17fe00* m_3c; // +0x3c
-    i32 m_40; // +0x40
+    i32 m_40;           // +0x40
     char m_pad44[0x4c - 0x44];
     i32 m_4c;         // +0x4c
     i32 m_50;         // +0x50 element count
@@ -176,13 +176,29 @@ struct Builder_168080 {
     RECT m_58;             // +0x58
     i32 m_68;              // +0x68
     i32 m_6c;              // +0x6c
-    i32 Init(void* a1, RECT* rc, Pt_168080* p3, Pt_168080* p4, Pt_168080* p5, Pt_168080* p6,
-             Pt_168080* p7, Pt_168080* p8);
+    i32 Init(
+        void* a1,
+        RECT* rc,
+        Pt_168080* p3,
+        Pt_168080* p4,
+        Pt_168080* p5,
+        Pt_168080* p6,
+        Pt_168080* p7,
+        Pt_168080* p8
+    );
 };
 
 RVA(0x00168080, 0x1f6)
-i32 Builder_168080::Init(void* a1, RECT* rc, Pt_168080* p3, Pt_168080* p4, Pt_168080* p5,
-                         Pt_168080* p6, Pt_168080* p7, Pt_168080* p8) {
+i32 Builder_168080::Init(
+    void* a1,
+    RECT* rc,
+    Pt_168080* p3,
+    Pt_168080* p4,
+    Pt_168080* p5,
+    Pt_168080* p6,
+    Pt_168080* p7,
+    Pt_168080* p8
+) {
     if (a1) {
         m_4 = new SubWidget_168080;
         m_8 = new SubWidget_168080;
@@ -244,10 +260,10 @@ struct ObjA3_17c3f0 {
 extern "C" int(__stdcall* g_pShowCursor_6c44c4)(int); // 0x6c44c4
 
 struct Handler_17c3f0 {
-    void* m_0;          // +0x00
-    i32 m_4;            // +0x04
-    void* m_8;          // +0x08
-    i32 m_c;            // +0x0c
+    void* m_0; // +0x00
+    i32 m_4;   // +0x04
+    void* m_8; // +0x08
+    i32 m_c;   // +0x0c
     char m_pad10[0x14 - 0x10];
     ObjA2_17c3f0* m_14; // +0x14
     char m_pad18[0x1c - 0x18];
@@ -270,18 +286,75 @@ struct Handler_17c3f0 {
     void M_17cc80();
     i32 M_17d2b0();
     void M_17d6b0();
-    i32 Init(void* a1, ObjA2_17c3f0* a2, ObjA3_17c3f0* a3, i32 p4, i32 p5, i32 a6, i32 a7,
-             i32 p8, i32 p9, i32 p10, i32 p11, i32 p12, i32 p13, i32 p14, i32 p15, i32 p16,
-             i32 p17, i32 p18, i32 p19, i32 p20, i32 p21, i32 p22, i32 p23, i32 p24, i32 kind,
-             i32 p26, i32 p27, i32 p28, i32 p29, i32 p30, i32 a31);
+    i32 Init(
+        void* a1,
+        ObjA2_17c3f0* a2,
+        ObjA3_17c3f0* a3,
+        i32 p4,
+        i32 p5,
+        i32 a6,
+        i32 a7,
+        i32 p8,
+        i32 p9,
+        i32 p10,
+        i32 p11,
+        i32 p12,
+        i32 p13,
+        i32 p14,
+        i32 p15,
+        i32 p16,
+        i32 p17,
+        i32 p18,
+        i32 p19,
+        i32 p20,
+        i32 p21,
+        i32 p22,
+        i32 p23,
+        i32 p24,
+        i32 kind,
+        i32 p26,
+        i32 p27,
+        i32 p28,
+        i32 p29,
+        i32 p30,
+        i32 a31
+    );
 };
 
 RVA(0x0017c3f0, 0x14e)
-i32 Handler_17c3f0::Init(void* a1, ObjA2_17c3f0* a2, ObjA3_17c3f0* a3, i32 p4, i32 p5, i32 a6,
-                         i32 a7, i32 p8, i32 p9, i32 p10, i32 p11, i32 p12, i32 p13, i32 p14,
-                         i32 p15, i32 p16, i32 p17, i32 p18, i32 p19, i32 p20, i32 p21, i32 p22,
-                         i32 p23, i32 p24, i32 kind, i32 p26, i32 p27, i32 p28, i32 p29, i32 p30,
-                         i32 a31) {
+i32 Handler_17c3f0::Init(
+    void* a1,
+    ObjA2_17c3f0* a2,
+    ObjA3_17c3f0* a3,
+    i32 p4,
+    i32 p5,
+    i32 a6,
+    i32 a7,
+    i32 p8,
+    i32 p9,
+    i32 p10,
+    i32 p11,
+    i32 p12,
+    i32 p13,
+    i32 p14,
+    i32 p15,
+    i32 p16,
+    i32 p17,
+    i32 p18,
+    i32 p19,
+    i32 p20,
+    i32 p21,
+    i32 p22,
+    i32 p23,
+    i32 p24,
+    i32 kind,
+    i32 p26,
+    i32 p27,
+    i32 p28,
+    i32 p29,
+    i32 p30,
+    i32 a31
+) {
     if (!a1 || !a2 || !a3) {
         return 0;
     }
@@ -321,8 +394,6 @@ i32 Handler_17c3f0::Init(void* a1, ObjA2_17c3f0* a2, ObjA3_17c3f0* a3, i32 p4, i
     return 1;
 }
 
-// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
-// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 SIZE_UNKNOWN(Builder_168080);
 SIZE_UNKNOWN(FxDesc_17fe00);
 SIZE_UNKNOWN(FxSrc_17fe00);

@@ -28,6 +28,7 @@
 // An axis-aligned region the listener (x,y) must be inside for the sound to play.
 // left == AMBIENT_BOX_UNBOUNDED is the "no box / always pass" sentinel. Same shape
 // as CRandomAmbientSound::AmbientBox.
+SIZE_UNKNOWN(AmbientBox);
 struct AmbientBox {
     i32 left;   // +0x00
     i32 top;    // +0x04
@@ -40,6 +41,7 @@ struct AmbientBox {
 // a DirectSoundMgr method in its header, so reached through this one-method shell
 // (same device as CRandomAmbientSound::DsndReseed); `mov ecx,m_04; call` falls out
 // reloc-masked.
+SIZE_UNKNOWN(DsndReseed);
 struct DsndReseed {
     void Reseed(i32 a1, i32 a2, i32 a3, i32 a4); // 0x136300
 };
@@ -50,6 +52,7 @@ struct DsndReseed {
 // world view's object count (+0x54->m_24). Only the two touched offsets are
 // modeled; same singleton CRandomAmbientSound taps.
 // ---------------------------------------------------------------------------
+SIZE_UNKNOWN(WwdActiveLevel);
 struct WwdActiveLevel {
     char m_pad0[0x24];
     i32 m_24; // +0x24  object count (non-zero == playable)

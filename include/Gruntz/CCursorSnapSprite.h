@@ -23,6 +23,7 @@
 // CUserLogic::SerializeChain (the SAME archetype as CFortressFlag::Serialize). Its
 // Chain (0x8c00, via the 0x1aff thunk) is __thiscall ret 0x10; modeled NO-body so
 // the call reloc-masks.
+SIZE_UNKNOWN(CSerialSub34);
 struct CSerialSub34 {
     i32 Chain(i32 a, i32 b, i32 c, i32 d); // 0x8c00 (via 0x1aff thunk)
 };
@@ -33,6 +34,7 @@ struct CSerialSub34 {
 // the CUserLogic layout. The CUserLogic base gives the +0x18 destructible link,
 // so the dtor folds the shared teardown.
 // ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CCursorSnapSprite);
 class CCursorSnapSprite : public CUserLogic {
 public:
     // Serialize (0x11880): chain the shared CUserLogic serialize helper on `this`,

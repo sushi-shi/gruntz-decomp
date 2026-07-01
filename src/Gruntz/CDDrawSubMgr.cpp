@@ -2436,7 +2436,6 @@ CWwdGameObject* CWwdObjMgr::CreateObject_159600(i32 a1, i32 a2, i32 a3, i32 a4, 
     return result;
 }
 
-// class-metadata sweep: size annotations (SIZE_UNKNOWN = retail size TBD).
 SIZE_UNKNOWN(CAniAdvanceCursor);
 SIZE_UNKNOWN(CAniBlitTrigger);
 SIZE_UNKNOWN(CAniCue);

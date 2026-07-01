@@ -441,22 +441,11 @@ i32 CDDrawSurfacePair::directx_wrapper_caller_1644a0_DirectDrawCreate_DirectDraw
 // 98.67%).  docs/patterns/reread-member-view-pointer.md / zero-register-pinning.md.
 RVA(0x00164660, 0x46)
 i32 CDDrawSurfacePair::Probe_164660() {
-    return m_surface == 0 || (m_surface->m_8 != 0 && m_surface->m_8->vtbl->IsLost(m_surface->m_8) == 0)
-           || m_surface->m_8->vtbl->Restore(m_surface->m_8) == 0 || m_surface->m_8->vtbl->Restore(m_surface->m_8) == 0;
+    return m_surface == 0
+           || (m_surface->m_8 != 0 && m_surface->m_8->vtbl->IsLost(m_surface->m_8) == 0)
+           || m_surface->m_8->vtbl->Restore(m_surface->m_8) == 0
+           || m_surface->m_8->vtbl->Restore(m_surface->m_8) == 0;
 }
 
-// class-metadata sweep: size annotations (SIZE_UNKNOWN = retail size TBD).
 SIZE_UNKNOWN(CDDAttachedSurface);
 SIZE_UNKNOWN(DrawSurfaceView);
-// CDDrawSurfacePair.h classes annotated HERE (not in the hot header): a no-code
-// typedef mid-header reschedules MSVC5 codegen in includers (measured -0.03% on
-// DrawBox); hosting the completeness annotation at this includer's EOF is neutral.
-SIZE_UNKNOWN(CSurfacePairBase);
-SIZE_UNKNOWN(CDDrawSurfacePool);
-SIZE_UNKNOWN(CDDrawSurfChainB);
-SIZE_UNKNOWN(CDDrawSurfChainA);
-SIZE_UNKNOWN(CDDrawSurfaceMgr);
-SIZE_UNKNOWN(CDDrawSurfacePair);
-// CDDrawSurfacePair's own (most-derived) vtable: real C++ virtuals, in-TU dtor
-// (0x1590f0), so cl emits ??_7CDDrawSurfacePair@@6B@; RVA 0x5eff30 was unnamed.
-VTBL(CDDrawSurfacePair, 0x005eff30);

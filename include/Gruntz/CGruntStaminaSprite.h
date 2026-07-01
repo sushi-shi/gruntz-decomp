@@ -20,6 +20,7 @@
 
 // The bound grunt/game-object the accessor reads the +0x3f0 stamina-timer out of.
 // Only that touched offset is load-bearing; modeled minimally (cf. CWingzTimeHost).
+SIZE_UNKNOWN(CStaminaTimeHost);
 struct CStaminaTimeHost {
     char m_pad0[0x3f0];
     i32 m_3f0; // +0x3f0  stamina timer value

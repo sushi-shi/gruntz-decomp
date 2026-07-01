@@ -346,7 +346,6 @@ CDDrawMapHolder::~CDDrawMapHolder() {}
 RVA(0x00157bc0, 0xa2)
 void CDDrawMapHolder::ClearUnknownMap() {}
 
-// class-metadata sweep: size annotations (SIZE_UNKNOWN = retail size TBD).
 SIZE_UNKNOWN(CCatalogNode);
 SIZE_UNKNOWN(CDDrawMapHolder);
 SIZE_UNKNOWN(CDDrawSubMgrLucius);

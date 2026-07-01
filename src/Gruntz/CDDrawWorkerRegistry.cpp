@@ -608,7 +608,6 @@ void CDDrawWorkerRegistry::Stub_156df0() {}
 RVA(0x00156e80, 0x38)
 void CDDrawWorkerRegistry::Stub_156e80() {}
 
-// class-metadata sweep: size annotations (SIZE_UNKNOWN = retail size TBD).
 SIZE_UNKNOWN(SeverusMapValue);
 SIZE_UNKNOWN(SeverusValue);
 SIZE_UNKNOWN(SeverusWorker);

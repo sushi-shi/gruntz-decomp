@@ -19,6 +19,7 @@
 #include <rva.h>
 #include <Gruntz/UserLogic.h> // CUserLogic base (CDoNothing : CUserLogic)
 
+SIZE_UNKNOWN(CDoNothing);
 class CDoNothing : public CUserLogic {
 public:
     CDoNothing(CGameObject* obj); // 0xac1d0

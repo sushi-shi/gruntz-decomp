@@ -1,5 +1,5 @@
-// BootyMessages.cpp - the booty/secret-state HUD message overlays (graduated from
-// src/Stub/Backlog.cpp). These are __thiscall methods on the booty game-state
+// BootyMessages.cpp - the booty/secret-state HUD message overlays. These are
+// __thiscall methods on the booty game-state
 // object (`this` carries the HUD message sink at +0xc, the secret gate at +0x1d4,
 // the per-slot flag arrays at +0x284/+0x2a4, the level/secret gates at
 // +0x200/+0x2f4). Each overlay builds one or more MFC CString temps (their dtors
@@ -494,8 +494,6 @@ i32 BzState::BuildBootyGruntIdleAnimation() {
     return 1;
 }
 
-// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
-// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 SIZE_UNKNOWN(BzFindTable);
 SIZE_UNKNOWN(BzGameReg);
 SIZE_UNKNOWN(BzGeomPair);

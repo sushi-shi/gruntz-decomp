@@ -85,8 +85,6 @@ void Unmatched_be030(HWND hDlg, DlgData* p) {
     }
 }
 
-// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
-// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 SIZE_UNKNOWN(CHandlerB4);
 SIZE_UNKNOWN(CSub10);
 SIZE_UNKNOWN(CTitleApp);

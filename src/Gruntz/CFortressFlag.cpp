@@ -248,8 +248,6 @@ i32 CFortressFlag::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
     return 1;
 }
 
-// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
-// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 #include <rva.h>
 SIZE_UNKNOWN(CFlagSprite);
 SIZE_UNKNOWN(CFortressFlag);

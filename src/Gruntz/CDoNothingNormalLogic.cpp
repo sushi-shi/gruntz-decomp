@@ -156,8 +156,6 @@ i32 HandlerA9E00(Owner* owner) {
     return 1;
 }
 
-// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
-// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 SIZE_UNKNOWN(CUserLogicOOL);
 SIZE_UNKNOWN(DnnRec);
 SIZE_UNKNOWN(EngRec);

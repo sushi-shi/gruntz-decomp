@@ -66,8 +66,8 @@ public:
 // The 0x7c-byte worker layouts. Only the seeded offsets are load-bearing; m_78 is
 // the one field whose store width differs between the two workers (BYTE vs int).
 struct HagridWorkerB : public HagridWorker {
-    i32 m_04; // +0x04
-    i32 m_08; // +0x08
+    i32 m_04;     // +0x04
+    i32 m_08;     // +0x08
     i32 m_parent; // +0x0c  = parent CDDrawWorkerList::m_pHarryPotter (+0xc)
     char _pad10[0x20 - 0x10];
     i32 m_20; // +0x20  = 0x80000000
@@ -84,8 +84,8 @@ struct HagridWorkerB : public HagridWorker {
 }; // 0x7c
 
 struct HagridWorkerA : public HagridWorker {
-    i32 m_04; // +0x04
-    i32 m_08; // +0x08
+    i32 m_04;     // +0x04
+    i32 m_08;     // +0x08
     i32 m_parent; // +0x0c
     char _pad10[0x20 - 0x10];
     i32 m_20; // +0x20  = 0x80000000
@@ -125,7 +125,7 @@ public:
     virtual void Slot24();
     virtual i32 Vfunc28(i32 a1, i32 a2); // +0x28
     char _pad04[0x74 - 0x04];            // +0x04..+0x73
-    i32 m_refCount;                            // +0x74  reference count
+    i32 m_refCount;                      // +0x74  reference count
 };
 
 // Work nodes (CObList CNode-shaped: +0x00 = next, +0x08 = child pointer).
@@ -156,7 +156,7 @@ public:
     i32 m_status;              // +0x04  initialized to -1 when inactive
     char m_pad08[0x0c - 0x08]; // +0x08..0x0b
     i32 m_pHarryPotter;        // +0x0c  (CDDrawSubMgr+0xc)
-    CObList m_workers;              // +0x10  worker list (CObList)
+    CObList m_workers;         // +0x10  worker list (CObList)
 
     ~CDDrawWorkerList(); // 0x163bc0 (walk+destroy children, then ~CObList(m_workers))
 
@@ -413,7 +413,6 @@ void CDDrawWorkerList::Stub_156f50() {}
 RVA(0x00156fc0, 0x6)
 void CDDrawWorkerList::Stub_156fc0() {}
 
-// class-metadata sweep: size annotations (SIZE_UNKNOWN = retail size TBD).
 SIZE_UNKNOWN(CDDrawWorkerList);
 SIZE_UNKNOWN(HagridChild);
 SIZE_UNKNOWN(HagridWorker);

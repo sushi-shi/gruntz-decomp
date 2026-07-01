@@ -19,6 +19,7 @@
 #include <rva.h>
 #include <Gruntz/UserLogic.h> // CUserLogic base (CEyeCandy : CUserLogic)
 
+SIZE_UNKNOWN(CEyeCandy);
 class CEyeCandy : public CUserLogic {
 public:
     i32 GetTypeTag(); // 0x00fca0 (returns the class logic-type id 0x3f1)

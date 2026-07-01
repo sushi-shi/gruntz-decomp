@@ -40,6 +40,7 @@ extern char g_voiceKeyA[]; // s_A_0060a454
 // (0x137590, __thiscall) computes (m_a8 * 5^3 * 8) / m_3c - the play duration
 // stamped into m_60. External/no-body so the call reloc-masks.
 // ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CVoiceSample);
 struct CVoiceSample {
     i32 ComputeDuration(); // 0x137590 (__thiscall: (m_a8*1000)/m_3c)
 };
@@ -58,10 +59,12 @@ struct CVoiceSample {
 // entry's handler is called __thiscall on `this`. All registry globals are
 // unnamed BSS (DATA-pinned so the loads reloc-mask).
 // ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CVActColl);
 struct CVActColl {
     void Construct(i32 lo, i32 hi); // 0x408710 (__thiscall ret 8: build the registry)
     i32 Find(i32 coord, i32 z);     // 0x16da80 (__thiscall ret 8)
 };
+SIZE_UNKNOWN(CVActColl2);
 struct CVActColl2 {
     void Insert(void* coll, void* item, i32 n); // 0x16d850 (__thiscall ret 0xc)
 };
@@ -101,6 +104,7 @@ extern void* g_actAllocResult;
 // call [entry]`. An incomplete type forces the 8-byte general PMF representation
 // (an extra adjust-load + `add this`), which diverges the first dispatch call.
 // ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CGruntVoice);
 class CGruntVoice : public CUserLogic {
 public:
     CGruntVoice(CGameObject* obj);   // 0x1198a0 (folds CUserLogic(obj) + the voice tail)
@@ -127,6 +131,7 @@ public:
 // CGruntVoice (single inheritance -> a 4-byte code pointer); Dispatch invokes it
 // on `this`, emitting `mov ecx,this; call [entry]`.
 typedef void (CGruntVoice::*VActHandler)();
+SIZE_UNKNOWN(CVActEntry);
 struct CVActEntry {
     VActHandler m_fn; // [entry]
 };

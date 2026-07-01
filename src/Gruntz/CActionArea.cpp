@@ -32,7 +32,4 @@ CActionArea::CActionArea(CGameObject* obj) : CUserLogic(obj) {
     m_38->m_40 |= 1;
 }
 
-// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
-// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 #include <rva.h>
-SIZE_UNKNOWN(CActionArea);

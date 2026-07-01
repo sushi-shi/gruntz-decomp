@@ -61,7 +61,5 @@ CDroppedObjectShadow::CDroppedObjectShadow(CGameObject* obj) : CUserLogic(obj) {
 RVA(0x00012670, 0x44)
 CDroppedObjectShadow::~CDroppedObjectShadow() {}
 
-// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
-// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 #include <rva.h>
 SIZE_UNKNOWN(WwdGameRegSub);

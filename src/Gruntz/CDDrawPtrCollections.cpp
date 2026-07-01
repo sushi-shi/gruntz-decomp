@@ -957,7 +957,6 @@ i32 CDDrawPtrCollections::ConfigureSurface(i32 a0, i32 a1, i32 a2, i32 a3, i32 a
     return hr;
 }
 
-// class-metadata sweep: size annotations (SIZE_UNKNOWN = retail size TBD).
 SIZE_UNKNOWN(CCachedSurface);
 SIZE_UNKNOWN(CCachedSurfaceVtbl);
 SIZE_UNKNOWN(CDDrawPtrCollections);

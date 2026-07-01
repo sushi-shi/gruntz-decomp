@@ -11,6 +11,7 @@
 
 #include <Gruntz/GruntIndicatorSprite.h> // shared registry/entry/renderable types
 
+SIZE_UNKNOWN(CGruntToySprite);
 class CGruntToySprite : public CUserLogic {
 public:
     ~CGruntToySprite(); // 0x0122b0 (folds the CUserLogic teardown)
@@ -31,6 +32,7 @@ public:
 // The class registry entry: its first dword receives the Update handler PMF (a
 // 4-byte code pointer on this complete single-inheritance class).
 typedef i32 (CGruntToySprite::*ToyActHandler)();
+SIZE_UNKNOWN(CToyActEntry);
 struct CToyActEntry {
     ToyActHandler m_fn;
 };

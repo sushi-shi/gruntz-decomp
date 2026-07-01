@@ -1352,7 +1352,6 @@ void* CDirectDrawMgr::CreatePoolItem(void* arg0v, void* arg1) {
     return item;
 }
 
-// class-metadata sweep: size annotations (SIZE_UNKNOWN = retail size TBD).
 SIZE_UNKNOWN(CDdCreateArg);
 SIZE_UNKNOWN(CDdDescSrc);
 SIZE_UNKNOWN(CDdEnumVtbl);
@@ -1361,13 +1360,3 @@ SIZE_UNKNOWN(CDdPoolSub);
 SIZE_UNKNOWN(CDdPoolThis);
 SIZE_UNKNOWN(CDdPoolVtbl);
 SIZE_UNKNOWN(DDModeDesc);
-// CDirectDrawMgr.h classes annotated HERE (not in the hot header): a no-code
-// typedef mid-header reschedules MSVC5 codegen in includers (measured -0.09% on
-// ddrawpolyfill FillPolygon); hosting them at this includer's EOF is neutral.
-SIZE_UNKNOWN(IDirectDrawSurfaceZ);
-SIZE_UNKNOWN(IDirectDraw2Z);
-SIZE_UNKNOWN(IDirectDrawPaletteZ);
-SIZE_UNKNOWN(CDirectDrawMgr);
-SIZE_UNKNOWN(CDDPalette);
-SIZE_UNKNOWN(DDModeInfo);
-SIZE_UNKNOWN(CDDPageMgr);

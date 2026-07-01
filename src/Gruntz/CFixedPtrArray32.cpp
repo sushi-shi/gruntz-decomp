@@ -72,7 +72,3 @@ i32 CFixedPtrArray32::Add(void* item) {
     m_count++;
     return 1;
 }
-
-// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
-// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
-SIZE_UNKNOWN(CFixedPtrArray32);

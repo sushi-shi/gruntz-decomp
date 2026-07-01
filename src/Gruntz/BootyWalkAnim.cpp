@@ -1,5 +1,5 @@
 // BootyWalkAnim.cpp - the per-frame update of the booty ("WARP" spell) walking-
-// grunt animation state machine (graduated from src/Stub/Backlog.cpp). A sibling
+// grunt animation state machine. A sibling
 // of BzState::BuildBootyGruntIdleAnimation (src/Gruntz/BootyMessages.cpp) on the
 // same booty game-state object: `this` carries the per-player grunt arrays at
 // +0x2c8 / +0x2d8, the active-player step index m_2e8, and the sub-state flags
@@ -349,8 +349,6 @@ i32 BzState::UpdateBootyWalkingGruntz() {
     return 0;
 }
 
-// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
-// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 SIZE_UNKNOWN(BzCuePlayer);
 SIZE_UNKNOWN(BzSelSource);
 SIZE_UNKNOWN(BzSoundPlayer);

@@ -34,7 +34,8 @@ extern u8 g_lutBank0_673ca0[];
 
 RVA(0x001497f0, 0x154)
 i32 CDDrawShadeBlit::Blit(ShadeRect* p0, ShadeSrc* src, ShadeRect* clip, i32 sel, i32 p4) {
-    if (clip->left < 0 || clip->right > m_width - 1 || clip->top < 0 || clip->bottom > m_height - 1) {
+    if (clip->left < 0 || clip->right > m_width - 1 || clip->top < 0
+        || clip->bottom > m_height - 1) {
         return 0;
     }
 
@@ -171,7 +172,11 @@ void CDDrawShadeBlit::BlitMode_149950(ShadeRect* dst, ShadeSrc* surf, ShadeRect*
                     x += b - 0x80;
                     pos++;
                 } else {
-                    memcpy(base + (x - clip->left) * m_dstBpp, &m_rleData[pos + 1], (i32)b * m_srcBpp);
+                    memcpy(
+                        base + (x - clip->left) * m_dstBpp,
+                        &m_rleData[pos + 1],
+                        (i32)b * m_srcBpp
+                    );
                     x += b;
                     pos += (i32)b * m_srcBpp + 1;
                 }
@@ -935,13 +940,3 @@ void CDDrawShadeBlit::ConvertRowDouble(u8* dst, u8* src, i32 count, i32 rowDelta
         }
     }
 }
-
-// class-metadata sweep: size annotations (SIZE_UNKNOWN = retail size TBD).
-// CDDrawShadeBlit.h classes annotated HERE (not in the hot header): a no-code
-// typedef mid-header reschedules MSVC5 codegen in includers (measured -1.30% on
-// ConvertRowDouble); hosting them at this includer's EOF is matching-neutral.
-SIZE_UNKNOWN(ShadeRect);
-SIZE_UNKNOWN(ShadeUnlockIface);
-SIZE_UNKNOWN(ShadeSrc);
-SIZE_UNKNOWN(ShadeDescr);
-SIZE_UNKNOWN(CDDrawShadeBlit);

@@ -29,6 +29,3 @@ RVA(0x0007fbb0, 0xd)
 i32 __stdcall CGruntStaminaSprite::GetStaminaTime(CStaminaTimeHost* o) {
     return o->m_3f0;
 }
-
-// class-metadata sweep: grunt/game-object family size annotations (SIZE_UNKNOWN = retail size TBD, at .cpp EOF).
-SIZE_UNKNOWN(CStaminaTimeHost);

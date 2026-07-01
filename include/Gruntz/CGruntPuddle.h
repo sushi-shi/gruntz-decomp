@@ -31,11 +31,13 @@ extern CButeTree g_buteTree;
 // The intrusive object list reached as g_gameReg->m_68 (cast from the void* the
 // shared CGameReg models). Remove040d20 walks it for the node whose +0x8 data
 // pointer is this, then unlinks it via RemoveAt. Node = {next@0, prev@4, data@8}.
+SIZE_UNKNOWN(CObjListNode);
 struct CObjListNode {
     CObjListNode* m_next; // +0x00
     CObjListNode* m_prev; // +0x04
     void* m_data;         // +0x08
 };
+SIZE_UNKNOWN(CObjList);
 struct CObjList {
     char m_pad00[0x4];
     CObjListNode* m_head;             // +0x04  list head
@@ -44,6 +46,7 @@ struct CObjList {
 
 // The sub-object embedded at CGameObject+0x1a0 the remove path notifies. Its one
 // method (0x15c360, __thiscall, 1 arg) is external/no-body so the call reloc-masks.
+SIZE_UNKNOWN(CGruntPuddleSink);
 struct CGruntPuddleSink {
     i32 Notify(u32 ctx); // 0x15c360
 };
@@ -67,6 +70,7 @@ extern char g_puddleSpriteKey[]; // s_..._0060c1c0
 // +0x40). The dtor (0x10d10) adds no destructible members, so it folds the bare
 // CUserLogic teardown.
 // ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CGruntPuddle);
 class CGruntPuddle : public CUserLogic {
 public:
     CGruntPuddle(CGameObject* obj);   // 0x040490

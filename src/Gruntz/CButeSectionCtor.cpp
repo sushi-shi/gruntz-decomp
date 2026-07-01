@@ -92,8 +92,6 @@ CButeSection* CButeSection::Construct() {
     return this;
 }
 
-// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
-// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 SIZE_UNKNOWN(CBSecObj10f);
 SIZE_UNKNOWN(CBSecStream);
 SIZE_UNKNOWN(CBSecString);

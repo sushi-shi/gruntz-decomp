@@ -167,9 +167,3 @@ void CGruntPuddle::SetBute(char* key) {
     m_30 = m_14->m_1c;
     m_14->m_1c = g_buteTree.Find(key);
 }
-
-// class-metadata sweep: grunt/game-object family size annotations (SIZE_UNKNOWN = retail size TBD, at .cpp EOF).
-SIZE_UNKNOWN(CGruntPuddle);
-SIZE_UNKNOWN(CGruntPuddleSink);
-SIZE_UNKNOWN(CObjList);
-SIZE_UNKNOWN(CObjListNode);

@@ -12,7 +12,4 @@
 RVA(0x0000f8a0, 0x44)
 CDoNothingNormal::~CDoNothingNormal() {}
 
-// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
-// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 #include <rva.h>
-SIZE_UNKNOWN(CDoNothingNormal);

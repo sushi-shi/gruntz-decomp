@@ -361,45 +361,45 @@ i32 CDroppedObject::ActA() {
             }
         }
         if ((cell & 0x900) == 0) {
-        if (cell & 2) {
-            if (cell == 0x40) {
-                m_38->m_08 |= 0x10000;
-            } else {
-                switch (g_gameReg->m_2c->m_20) {
-                    case 4:
-                    case 5:
-                    case 8:
-                        m_38->m_08 |= 0x10000;
-                        // fall through
-                    case 7:
-                    default:
-                        if (x < g_gameReg->m_144 && x >= g_gameReg->m_13c
-                            && m_68 < g_gameReg->m_148 && m_68 >= g_gameReg->m_140) {
-                            CGameObject* s = g_gameReg->m_30->m_08->CreateSprite(
-                                0, x, m_68, 0xcf84f, "Particlez", 0x40003
-                            );
-                            if (s != 0) {
-                                s->ApplyName("LEVEL_DEATHSPLASH");
-                                s->ApplyLookupGeometry("LEVEL_DEATHSPLASH", 0);
+            if (cell & 2) {
+                if (cell == 0x40) {
+                    m_38->m_08 |= 0x10000;
+                } else {
+                    switch (g_gameReg->m_2c->m_20) {
+                        case 4:
+                        case 5:
+                        case 8:
+                            m_38->m_08 |= 0x10000;
+                            // fall through
+                        case 7:
+                        default:
+                            if (x < g_gameReg->m_144 && x >= g_gameReg->m_13c
+                                && m_68 < g_gameReg->m_148 && m_68 >= g_gameReg->m_140) {
+                                CGameObject* s =
+                                    g_gameReg->m_30->m_08
+                                        ->CreateSprite(0, x, m_68, 0xcf84f, "Particlez", 0x40003);
+                                if (s != 0) {
+                                    s->ApplyName("LEVEL_DEATHSPLASH");
+                                    s->ApplyLookupGeometry("LEVEL_DEATHSPLASH", 0);
+                                }
                             }
-                        }
-                        break;
-                    case 6:
-                        break;
+                            break;
+                        case 6:
+                            break;
+                    }
+                }
+            }
+        } else {
+            if (x < g_gameReg->m_144 && x >= g_gameReg->m_13c && m_68 < g_gameReg->m_148
+                && m_68 >= g_gameReg->m_140) {
+                CGameObject* s =
+                    g_gameReg->m_30->m_08->CreateSprite(0, x, m_68, 0xcf84f, "Particlez", 0x40003);
+                if (s != 0) {
+                    s->ApplyName("GAME_WATER");
+                    s->ApplyLookupGeometry("GAME_WATER", 0);
                 }
             }
         }
-    } else {
-        if (x < g_gameReg->m_144 && x >= g_gameReg->m_13c && m_68 < g_gameReg->m_148
-            && m_68 >= g_gameReg->m_140) {
-            CGameObject* s =
-                g_gameReg->m_30->m_08->CreateSprite(0, x, m_68, 0xcf84f, "Particlez", 0x40003);
-            if (s != 0) {
-                s->ApplyName("GAME_WATER");
-                s->ApplyLookupGeometry("GAME_WATER", 0);
-            }
-        }
-    }
         m_40 = m_38->m_1b4;
         m_38->ApplyLookupGeometry("LEVEL_DROPPEDOBJECTHIT", 0);
         m_30 = m_14->m_1c;
@@ -411,8 +411,6 @@ i32 CDroppedObject::ActA() {
     return 0;
 }
 
-// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
-// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 #include <rva.h>
 SIZE_UNKNOWN(CDropColl);
 SIZE_UNKNOWN(CDropColl2);

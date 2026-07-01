@@ -37,6 +37,7 @@
 // COM => __stdcall with the interface pointer as the hidden first ("this") arg;
 // the wrappers always call iface->vtbl->Method(iface, ...).
 // ---------------------------------------------------------------------------
+SIZE_UNKNOWN(IDirectDrawSurfaceZ);
 struct IDirectDrawSurfaceZ {
     struct Vtbl {
         i32(__stdcall* QueryInterface)(IDirectDrawSurfaceZ*, const void* riid, void** out); // +0x00
@@ -100,6 +101,7 @@ struct IDirectDrawSurfaceZ {
 // ---------------------------------------------------------------------------
 struct IDirectDrawPaletteZ; // forward (CreatePalette out param)
 
+SIZE_UNKNOWN(IDirectDraw2Z);
 struct IDirectDraw2Z {
     struct Vtbl {
         i32(__stdcall* QueryInterface)(IDirectDraw2Z*, const void* riid, void** out); // +0x00
@@ -141,6 +143,7 @@ struct IDirectDraw2Z {
 //   +0x14 (slot 5)  Initialize  (LPDIRECTDRAW, DWORD, LPPALETTEENTRY)
 //   +0x18 (slot 6)  SetEntries  (DWORD, DWORD, DWORD, LPPALETTEENTRY)
 // ---------------------------------------------------------------------------
+SIZE_UNKNOWN(IDirectDrawPaletteZ);
 struct IDirectDrawPaletteZ {
     struct Vtbl {
         char m_pad0[0x10];
@@ -171,6 +174,7 @@ struct IDirectDrawPaletteZ {
 // CDirectDrawMgr (DDRAWMGR.CPP) - the top-level device manager. NON-polymorphic;
 // `this` offset 0 holds the IDirectDraw2 device interface.
 // ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CDirectDrawMgr);
 class CDirectDrawMgr {
 public:
     // Device bring-up (__thiscall, 6 args; arg1 unused). If the global DirectDraw
@@ -276,6 +280,7 @@ public:
 // CDDPalette (DIRPAL.CPP) - a palette wrapper. Held IDirectDrawPalette @0x4,
 // two 0x400-byte PALETTEENTRY caches @0xc/@0x10.
 // ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CDDPalette);
 class CDDPalette {
 public:
     i32 LoadFromFile(IDirectDraw2Z* dd, char* filename, u32 flags); // 0x147410
@@ -314,12 +319,14 @@ public:
 // failed COM call it routes through its own error handler (HandleError),
 // not CDirectDrawMgr::GetErrorString.
 // ---------------------------------------------------------------------------
+SIZE_UNKNOWN(DDModeInfo);
 struct DDModeInfo {
     i32 width;  // +0x00
     i32 height; // +0x04
     i32 bpp;    // +0x08
 };
 
+SIZE_UNKNOWN(CDDPageMgr);
 class CDDPageMgr {
 public:
     i32 Init(void* window, DDModeInfo* mode, u32 coopFlags); // 0x17c040

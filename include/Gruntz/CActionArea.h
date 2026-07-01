@@ -8,6 +8,7 @@
 #include <rva.h>
 #include <Gruntz/UserLogic.h>
 
+SIZE_UNKNOWN(CActionArea);
 class CActionArea : public CUserLogic {
 public:
     CActionArea(CGameObject* obj); // 0x7da0

@@ -22,6 +22,7 @@
 
 // The bound grunt/game-object the accessor reads the +0x3f8 wingz-timer out of.
 // Only that touched offset is load-bearing; modeled minimally here.
+SIZE_UNKNOWN(CWingzTimeHost);
 struct CWingzTimeHost {
     char m_pad0[0x3f8];
     i32 m_3f8; // +0x3f8  wingz timer value

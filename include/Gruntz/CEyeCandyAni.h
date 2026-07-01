@@ -9,6 +9,7 @@
 #include <rva.h>
 #include <Gruntz/UserLogic.h> // CUserLogic, CGameObject, g_buteMgr
 
+SIZE_UNKNOWN(CEyeCandyAni);
 class CEyeCandyAni : public CUserLogic {
 public:
     CEyeCandyAni(CGameObject* obj); // 0xac870

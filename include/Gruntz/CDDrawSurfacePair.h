@@ -45,6 +45,7 @@
 // ---------------------------------------------------------------------------
 struct CDDrawSurfaceMgr; // forward (CSurfacePairBase::m_mgr; full defn below)
 
+SIZE_UNKNOWN(CSurfacePairBase);
 class CSurfacePairBase {
 public:
     virtual void v00();          // slot 0
@@ -68,6 +69,7 @@ inline CSurfacePairBase::~CSurfacePairBase() {}
 // __thiscall engine callee modeled as a method on a tiny view so the call falls
 // out as mov ecx,pool; call with no caller-side stack cleanup. AcquireA/MakeAndAddB/
 // CreateB are the three pool surface-acquire entries Create() fans into.
+SIZE_UNKNOWN(CDDrawSurfacePool);
 class CDDrawSurfacePool {
 public:
     void RemoveItemA(CDDSurface* item);                                      // 0x142160
@@ -83,14 +85,17 @@ public:
 // CDDrawSurfaceMgr - the parent manager view m_mgr points at: a pixel-format chain
 // at +0x4 -> +0x10 -> +0x2c, the surface pool at +0x1c, and a last-error word at
 // +0x38. Only the offsets Create() reads are pinned.
+SIZE_UNKNOWN(CDDrawSurfChainB);
 struct CDDrawSurfChainB {
     char _pad0[0x2c];
     i32 m_pixelFormat; // +0x2c  pixel-format token
 };
+SIZE_UNKNOWN(CDDrawSurfChainA);
 struct CDDrawSurfChainA {
     char _pad0[0x10];
     CDDrawSurfChainB* m_next; // +0x10
 };
+SIZE_UNKNOWN(CDDrawSurfaceMgr);
 struct CDDrawSurfaceMgr {
     char _pad0[0x04];
     CDDrawSurfChainA* m_fmtChain; // +0x04  pixel-format chain
@@ -102,6 +107,8 @@ struct CDDrawSurfaceMgr {
     i32 m_lastError; // +0x38  last-error word
 };
 
+SIZE_UNKNOWN(CDDrawSurfacePair);
+VTBL(CDDrawSurfacePair, 0x005eff30);
 class CDDrawSurfacePair : public CSurfacePairBase {
 public:
     void BltSelf(CDDrawSurfacePair* src);      // 0x03a1d0

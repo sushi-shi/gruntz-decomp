@@ -11,6 +11,7 @@
 #include <Ints.h>
 #include <rva.h>
 
+SIZE_UNKNOWN(CFxModeDesc);
 class CFxModeDesc {
 public:
     CFxModeDesc(); // 0x17e7b0 base init (type = 0)
@@ -27,6 +28,7 @@ public:
 // tag (2..6) and that type's defaults. The upper fields a variant writes are
 // declared here (offsets continue at +0x14); offsets + store order are
 // load-bearing, and the per-variant size determines the caller's stack frame.
+SIZE_UNKNOWN(CFxModeT2);
 class CFxModeT2 : public CFxModeDesc {
 public:
     CFxModeT2(); // 0x17e840
@@ -37,23 +39,27 @@ public:
 }; // 0x24
 
 // The type-3 mode: base + (type=3, m_0c=1, m_10=0xf). No upper fields => 0x14.
+SIZE_UNKNOWN(CFxModeT3);
 class CFxModeT3 : public CFxModeDesc {
 public:
     CFxModeT3(); // 0x17e880
 }; // 0x14
 
+SIZE_UNKNOWN(CFxModeT4);
 class CFxModeT4 : public CFxModeDesc {
 public:
     CFxModeT4(); // 0x17e8b0
     i32 m_14;
 }; // 0x18
 
+SIZE_UNKNOWN(CFxModeT5);
 class CFxModeT5 : public CFxModeDesc {
 public:
     CFxModeT5(); // 0x17e8e0
     i32 m_14;
 }; // 0x18
 
+SIZE_UNKNOWN(CFxModeT6);
 class CFxModeT6 : public CFxModeDesc {
 public:
     CFxModeT6(); // 0x17e910

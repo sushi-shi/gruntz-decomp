@@ -94,9 +94,9 @@ public:
 
     i32 m_status;              // +0x04  initialized to -1 when inactive
     char m_pad08[0x0c - 0x08]; // +0x08..0x0b
-    i32 m_parent;                  // +0x0c  parent/root handle
+    i32 m_parent;              // +0x0c  parent/root handle
     char m_pad10[0x14 - 0x10]; // +0x10..0x13
-    HermionaNode* m_head;        // +0x14  intrusive-list head
+    HermionaNode* m_head;      // +0x14  intrusive-list head
 
     // Engine-label backlog stubs.
     void Stub_1591f0();
@@ -234,7 +234,6 @@ void CDDrawChildGroup::Stub_1591f0() {}
 RVA(0x00159a70, 0x200)
 void CDDrawChildGroup::Stub_159a70() {}
 
-// class-metadata sweep: size annotations (SIZE_UNKNOWN = retail size TBD).
 SIZE_UNKNOWN(CDDrawChildGroup);
 SIZE_UNKNOWN(HermionaChild);
 SIZE_UNKNOWN(HermionaNode);

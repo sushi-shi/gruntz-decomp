@@ -97,9 +97,3 @@ i32 CGruntHealthSprite::SetHealthGlyph(i32 x, i32 y, i32 health) {
     m_health = health;
     return 1;
 }
-
-// class-metadata sweep: grunt/game-object family size annotations (SIZE_UNKNOWN = retail size TBD, at .cpp EOF).
-SIZE_UNKNOWN(CGruntHealthSprite);
-SIZE_UNKNOWN(CHealthActEntry);
-SIZE_UNKNOWN(CHealthGlyphMap);
-SIZE_UNKNOWN(CHealthSpriteObj);

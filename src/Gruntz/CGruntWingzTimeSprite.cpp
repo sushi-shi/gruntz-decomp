@@ -34,6 +34,3 @@ RVA(0x0007fd90, 0xd)
 i32 __stdcall CGruntWingzTimeSprite::GetWingzTime(CWingzTimeHost* o) {
     return o->m_3f8;
 }
-
-// class-metadata sweep: grunt/game-object family size annotations (SIZE_UNKNOWN = retail size TBD, at .cpp EOF).
-SIZE_UNKNOWN(CWingzTimeHost);

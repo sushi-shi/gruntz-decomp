@@ -204,7 +204,6 @@ i32 CGruntCreationPoint::AdvanceAnim() {
     return 0;
 }
 
-// class-metadata sweep: grunt/game-object family size annotations (SIZE_UNKNOWN = retail size TBD, at .cpp EOF).
 SIZE_UNKNOWN(CAnimSink);
 SIZE_UNKNOWN(CCreationPointActEntry);
 SIZE_UNKNOWN(CCreationPointActReg);

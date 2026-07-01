@@ -566,7 +566,6 @@ BOOL CGruntSpawnConfig::IsReady() {
     return m_00->m_100 != 0;
 }
 
-// class-metadata sweep: grunt/game-object family size annotations (SIZE_UNKNOWN = retail size TBD, at .cpp EOF).
 SIZE_UNKNOWN(CGruntSpawnConfig);
 SIZE_UNKNOWN(CSpawnButeConfig);
 SIZE_UNKNOWN(CSpawnButeTarget);

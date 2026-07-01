@@ -1,6 +1,5 @@
 // BootyCheatState.cpp - the STATEZ_BOOTY cheat-screen game-state asset loader
-// (0x18830), graduated out of the src/Stub/Backlog.cpp frameless aggregate into
-// its own /GX (eh) unit: the five destructible CString locals of the first-run
+// (0x18830), a /GX (eh) unit: the five destructible CString locals of the first-run
 // cheat-table build give it the MSVC exception frame.
 //
 // The method chains the base-class asset loader, then on the FIRST activation
@@ -51,11 +50,11 @@ struct BcRegObj {
     void* FindSub(char* name);     // FUN_0053a230
     void* ResolvePath(char* name); // FUN_0053bae0
 };
-struct BcRegSet {                    // this->m_8
-    BcRegObj* Register(char* name);  // FUN_0053c030
+struct BcRegSet {                   // this->m_8
+    BcRegObj* Register(char* name); // FUN_0053c030
 };
-struct BcSoundRegistry {                                // this->m_c->m_28
-    void Install(void* set, char* name, char* sep);     // FUN_00557ee0
+struct BcSoundRegistry {                            // this->m_c->m_28
+    void Install(void* set, char* name, char* sep); // FUN_00557ee0
 };
 // The image registrar reached via m_c->m_10: vtable slot +0x48 installs a
 // resolved set. Modeled as a PMF so MSVC emits `mov edx,[ecx]; call [edx+0x48]`;
@@ -87,8 +86,8 @@ struct BcAssetRoot { // this->m_c
 struct BcPumpHost {            // this->m_4->m_4
     void Pump(i32 msg, i32 n); // FUN_0053d4e0
 };
-struct BcStateRoot {  // this->m_4
-    void Reset(i32);  // FUN_...34ef __thiscall on m_4
+struct BcStateRoot { // this->m_4
+    void Reset(i32); // FUN_...34ef __thiscall on m_4
     char m_pad00[0x4];
     BcPumpHost* m_4; // +0x04
 };
@@ -236,8 +235,6 @@ fail:
     return 0;
 }
 
-// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
-// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 SIZE_UNKNOWN(BcAssetCore);
 SIZE_UNKNOWN(BcAssetRoot);
 SIZE_UNKNOWN(BcImageRegistry);

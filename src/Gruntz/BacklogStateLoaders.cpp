@@ -2,8 +2,7 @@
 
 #include <rva.h>
 // BacklogStateLoaders.cpp - game-state asset/activate loaders + small free
-// helpers graduated out of the src/Stub/Backlog.cpp aggregate into their own
-// frameless /O2 (base) unit.  Each carries its real owning class; only offsets /
+// helpers in a frameless /O2 (base) unit.  Each carries its real owning class; only offsets /
 // code bytes are load-bearing (helpers are reloc-masked externals).
 
 // ---------------------------------------------------------------------------
@@ -229,8 +228,6 @@ void BuildNamedGruntTable() {
     g_gruntNames[3] = "Jebediah";
 }
 
-// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
-// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 SIZE_UNKNOWN(CHelpAssetRoot);
 SIZE_UNKNOWN(CHelpAssetSet);
 SIZE_UNKNOWN(CHelpMsgPump);

@@ -4,7 +4,7 @@
 // BrickzLoad.cpp - CBrickz::LoadAttributes (0x0810f0), the level-load terrain
 // parser for the self-contained pathfinding grid container (the placeholder
 // "CBrickz" in <Gruntz/Brickz.h>; the SAME container AllocGrid/ComputeCellFlags
-// run on, NOT the CUserLogic-derived game object). Re-homed from src/Stub/.
+// run on, NOT the CUserLogic-derived game object).
 //
 // The function allocates the grid (AllocGrid), reads the five brick-colour counts
 // (Brown/Red/Blue/Gold/Black) from the "Brickz" bute section into cumulative
@@ -97,8 +97,8 @@ struct BzMovingObj {
     char m_pad4[0x8 - 0x4];
     BzMovingObj* m_8; // +0x08  object payload
     char m_pad0c[0x5c - 0xc];
-    i32 m_5c;              // +0x5c  world x
-    i32 m_60;              // +0x60  world y
+    i32 m_5c; // +0x5c  world x
+    i32 m_60; // +0x60  world y
     char m_pad64[0x7c - 0x64];
     BzMovingObjType* m_7c; // +0x7c  type record
 };
@@ -134,23 +134,23 @@ extern CButeMgr g_buteMgr;
 // load-bearing fact); the full container lives in <Gruntz/Brickz.h>.
 class CBrickz {
 public:
-    i32 LoadAttributes(i32 width, i32 height); // 0x0810f0
+    i32 LoadAttributes(i32 width, i32 height);    // 0x0810f0
     i32 AllocGrid(i32 width, i32 height, i32 cb); // 0x09ea60 (via ILT 0x412e)
 
     char m_pad0[0x4];
-    BzCell* m_4;   // +0x04  flat cell pool
-    BzCell** m_8;  // +0x08  column table
-    i32 m_c;       // +0x0c  height
-    i32 m_10;      // +0x10  width
+    BzCell* m_4;  // +0x04  flat cell pool
+    BzCell** m_8; // +0x08  column table
+    i32 m_c;      // +0x0c  height
+    i32 m_10;     // +0x10  width
     char m_pad14[0x5c - 0x14];
-    i32 m_5c;      // +0x5c  dirty flag (stamped 1 at the end)
+    i32 m_5c; // +0x5c  dirty flag (stamped 1 at the end)
     char m_pad60[0x78 - 0x60];
-    BzLevelMgr* m_78; // +0x78  level manager (= g_mgrSettings->m_30)
+    BzLevelMgr* m_78;       // +0x78  level manager (= g_mgrSettings->m_30)
     BzPtrArray m_footprint; // +0x7c  footprint CPtrArray (m_80 data, m_84 count)
-    void** m_80;   // +0x80  footprint array data
-    i32 m_84;      // +0x84  footprint array count
+    void** m_80;            // +0x80  footprint array data
+    i32 m_84;               // +0x84  footprint array count
     char m_pad88[0x90 - 0x88];
-    i32 m_90;      // +0x90  cleared at start
+    i32 m_90; // +0x90  cleared at start
 };
 
 // A weighted colour selector: rolls rand()%total (+1) or rand()&1 when total==0,
@@ -493,8 +493,7 @@ i32 CBrickz::LoadAttributes(i32 width, i32 height) {
             }
             for (i32 k = 0; k < m_84; k++) {
                 BzFreeNode* node = (BzFreeNode*)m_80[k];
-                if (node != 0 && (u32)node->m_4 < (u32)m_c
-                    && (u32)node->m_8 < (u32)m_10) {
+                if (node != 0 && (u32)node->m_4 < (u32)m_c && (u32)node->m_8 < (u32)m_10) {
                     m_4[node->m_8 * m_c + node->m_4].m_0 = 0x10;
                     m_4[node->m_8 * m_c + node->m_4].m_c = 0;
                     BzFreeNode* rec = (BzFreeNode*)((char*)node - g_freeListNodeBias);
@@ -517,8 +516,6 @@ i32 CBrickz::LoadAttributes(i32 width, i32 height) {
     return 1;
 }
 
-// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
-// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 SIZE_UNKNOWN(BzAttr);
 SIZE_UNKNOWN(BzCell);
 SIZE_UNKNOWN(BzFreeNode);

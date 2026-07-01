@@ -19,6 +19,7 @@
 // m_pData@+4, m_nSize@+8, m_nMaxSize@+0xc, m_nGrowBy@+0x10). SetSize @0x1b4f75 and
 // the member dtor @0x1b4f3e (~CByteArray) are external/no-body so the calls
 // reloc-mask. The destructible member forces the /GX EH frame.
+SIZE_UNKNOWN(CGmmPtrArray);
 struct CGmmPtrArray {
     void SetSize(i32 n, i32 growBy); // 0x1b4f75 (__thiscall, ret 8)
     ~CGmmPtrArray();                 // 0x1b4f3e (~CByteArray)
@@ -31,11 +32,13 @@ struct CGmmPtrArray {
 
 // The polymorphic base container (~CMapMgr @0x135c). Out-of-line virtual dtor so cl
 // emits a CALL (reloc-masks against retail's base dtor) rather than inlining it.
+SIZE_UNKNOWN(CGmmBase);
 struct CGmmBase {
     virtual ~CGmmBase(); // 0x135c (~CMapMgr; external)
     char m_pad[0x78];    // +0x04..+0x7b (vptr at +0x00)
 };
 
+SIZE_UNKNOWN(CGruntzMapMgr);
 class CGruntzMapMgr : public CGmmBase {
 public:
     virtual ~CGruntzMapMgr(); // 0x85d10

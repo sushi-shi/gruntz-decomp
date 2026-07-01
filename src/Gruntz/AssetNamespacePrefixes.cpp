@@ -196,8 +196,6 @@ done:
     return result;
 }
 
-// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
-// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 SIZE_UNKNOWN(AssetRoot);
 SIZE_UNKNOWN(CDDrawSubMgrAni);
 SIZE_UNKNOWN(CDDrawSubMgrLeafScan);

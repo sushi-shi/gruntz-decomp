@@ -11,6 +11,7 @@
 
 #include <Gruntz/GruntIndicatorSprite.h> // shared registry/entry/renderable types
 
+SIZE_UNKNOWN(CGruntSelectedSprite);
 class CGruntSelectedSprite : public CUserLogic {
 public:
     ~CGruntSelectedSprite(); // 0x011e80 (folds the CUserLogic teardown)
@@ -30,6 +31,7 @@ public:
 // The class registry entry: its first dword receives the Update handler PMF (a
 // 4-byte code pointer on this complete single-inheritance class).
 typedef i32 (CGruntSelectedSprite::*SelectedActHandler)();
+SIZE_UNKNOWN(CSelectedActEntry);
 struct CSelectedActEntry {
     SelectedActHandler m_fn;
 };

@@ -230,8 +230,6 @@ i32 CFxModeT3::Build(FxConfig* cfg) {
     return 1;
 }
 
-// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
-// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 SIZE_UNKNOWN(FxBox);
 SIZE_UNKNOWN(FxConfig);
 SIZE_UNKNOWN(FxPoint);
