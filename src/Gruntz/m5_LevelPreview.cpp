@@ -33,11 +33,15 @@ class CCueHashTable {
 public:
     i32 Lookup(const char* szName, CueObj** ppOut); // 0x1b8438
 };
-// The per-frame error sink (CGruntzMgr::ReportError @0x8dc60, __thiscall) the tick
-// pokes when the screen fails to advance; reloc-masked.
-class CGameMgr {
+// The per-frame error sink: CGruntzMgr::ReportError (@0x8dc60, __thiscall, reloc-
+// masked). This is the CGruntzMgr game-manager singleton (the one true shape lives
+// in <Gruntz/GruntzMgr.h>); modeled here as a minimal reloc-masked-callee view -
+// this TU cannot pull the full canonical header (its transitive CDDSurface clashes
+// with this TU's local DirectDraw surface view). Named distinctly so it is not
+// mistaken for the WAP32::CGameMgr engine base class.
+class CGruntzMgrErrSink {
 public:
-    void ReportError(i32 code, i32 flags); // 0x8dc60
+    void ReportError(i32 code, i32 flags); // 0x8dc60  CGruntzMgr::ReportError
 };
 
 // The countdown's audio kill hook (the sound mgr at the status-bar holder's +0x2c;
@@ -112,9 +116,9 @@ public:
     void LoadLevelPreviewScreen();
     i32 LoadScreen(char* name, i32 doFlip, i32 a2, i32 a3); // 0x0fab90
 
-    CGameMgr* m_04;   // +0x04
-    i32 m_08;         // +0x08
-    PreviewMgr* m_0c; // +0x0c
+    CGruntzMgrErrSink* m_04; // +0x04
+    i32 m_08;                // +0x08
+    PreviewMgr* m_0c;        // +0x0c
     char m_pad10[0x2c - 0x10];
     CSymTab* m_2c; // +0x2c
     char m_pad30[0x1b8 - 0x30];

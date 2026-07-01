@@ -17,7 +17,8 @@
 // `[eax+0x20]` virtual dispatches fall out with no cast. Non-EH (base) profile -
 // no destructible locals (the CString targets are members, the text buffer is a
 // trivial char[]).
-#include <Bute/ButeMgr.h> // CButeMgr (GetIntDef) + CString
+#include <Bute/ButeMgr.h>     // CButeMgr (GetIntDef) + CString
+#include <Gruntz/GruntzMgr.h> // CGruntzMgr (the game-manager singleton; one true shape)
 #include <rva.h>
 #include <string.h> // inline strlen / memset (rep scas / rep stos)
 
@@ -82,18 +83,15 @@ struct CObjDir {
     char* m_nameHost; // +0x2c  (name map @ +0x10)
 };
 
-// The game-manager settings singleton: the directory at +0x30, an engine helper
-// at +0x74 the tail invokes (0x4165).
+// The game-manager singleton (the one true CGruntzMgr shape lives in
+// <Gruntz/GruntzMgr.h>): the object directory at +0x30 (canonical m_world, viewed
+// here as the serial/name-map host), an engine helper at +0x74 the tail invokes
+// (0x4165). Both sub-objects are engine carcasses reached by a struct-view cast.
 struct CMgr74 {
     i32 Compute(i32 a, i32 flag); // 0x4165 __thiscall(a, flag)
 };
-struct CGameMgrSettings {
-    char _00[0x30];
-    CObjDir* m_dir; // +0x30
-    char _34[0x74 - 0x34];
-    CMgr74* m_74; // +0x74
-};
-extern "C" CGameMgrSettings* g_mgrSettings; // 0x64556c
+DATA(0x0024556c)
+extern "C" CGruntzMgr* g_mgrSettings; // 0x64556c
 
 // The event/command buffer at this+0x10 the tail writes (type/value/flag slots).
 struct CCmdBuf {
@@ -193,7 +191,7 @@ i32 CGameStateRecord::Load(CRecReader* ar) {
     if (ar == 0) {
         return 0;
     }
-    CObjDir* dir = g_mgrSettings->m_dir;
+    CObjDir* dir = (CObjDir*)g_mgrSettings->m_world;
     if (dir == 0) {
         return 0;
     }
@@ -417,7 +415,7 @@ i32 CGameStateRecord::Load(CRecReader* ar) {
     i32 m170 = *(i32*)(p + 0x170);
     i32 m1f4 = *(i32*)(p + 0x1f4);
     i32 flag = (m170 >= 0x17);
-    i32 r = g_mgrSettings->m_74->Compute(m1f4, flag);
+    i32 r = ((CMgr74*)g_mgrSettings->m_74)->Compute(m1f4, flag);
     CCmdBuf* cb = *(CCmdBuf**)(p + 0x10);
     cb->m_58 = 1;
     cb->m_50 = 0xa;

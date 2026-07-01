@@ -64,8 +64,12 @@ struct CGruntzSoundZ {
     void StopBank2();           // FUN_00538920 (this)     -> ret 4 (busy-driven stop)
     i32 Restart_1388c0(i32 a1); // FUN_005388c0 (this, 1) re-launch current bank
     i32 GetMusicVolume();       // FUN_005389c0 (this) -> current music volume (UnknownClose save)
+    void SetXMidiVolume(i32 v); // 0x138950 (this, v) push the XMIDI master volume
+    i32 GetXMidiVolume();       // 0x1389c0 (this) read the XMIDI master volume
     char m_pad0[0x1c];          // +0x00..+0x1c
     CGruntzSoundInnerZ* m_1c;   // +0x1c  inner object IsBusy/StopAll deref / m_pCurrent
+    char m_pad20[0x28 - 0x20];  // +0x20..+0x28
+    i32 m_28;                   // +0x28  speech-channel present gate (skip XMIDI push when 0)
 };
 
 // The level/world object held at CGruntzMgr +0x30 (the loaded map + its active

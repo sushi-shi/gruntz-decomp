@@ -181,11 +181,13 @@ enum {
 // free fn or a CPlay method (the trace's this/ecx is dead here). Modeled as a
 // CPlay method per the runtime attribution.
 //
-// A minimal VIEW of the manager-settings target the function touches. The three
-// thiscall sinks are the matched CGruntzMgr methods (StoreInputFlag 0x4919d0,
-// StoreInputState 0x491a10, and the option-apply at 0x492340); m_48 is the
-// sound object whose XMIDI master-volume thiscall lives at 0x138950. All are
-// external/no-body so the call rel32 displacements reloc-mask.
+// A minimal VIEW of the CGruntzMgr game-manager singleton (0x64556c) this function
+// touches (the one true shape lives in <Gruntz/GruntzMgr.h>: ApplyOpt==SetRunState
+// @0x092340, StoreInputFlag @0x0919d0, StoreInputState @0x091a10, m_48==m_sound).
+// NOT merged to the canonical header here: this TU includes the real
+// <Dsndmgr/CGruntzSoundZ.h>, whose CGruntzSoundZ would be redefined by GruntzMgr.h's
+// inline CGruntzSoundZ (a separate triplication to resolve first). All the sinks are
+// external/no-body so the call rel32 displacements reloc-mask; local view retained.
 struct CGameMgrSettings {
     void ApplyOpt(i32 v);        // 0x492340  (thiscall)
     void StoreInputFlag(i32 v);  // 0x4919d0  CGruntzMgr::StoreInputFlag

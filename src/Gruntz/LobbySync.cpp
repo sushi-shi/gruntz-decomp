@@ -100,8 +100,13 @@ struct CCluster0c {
     void InitNeg(void* p); // 0xc10a0 (3 dwords of *p = -1)
 };
 
-// --- The game/session manager pointed to by CLobbySync::m_04 -------------------
-struct CGameMgr {
+// --- The game/session manager pointed to by CLobbySync::m_04. This is NOT the
+// WAP32::CGameMgr base class (0x2c) nor a full CGruntzMgr view - it is a partial
+// net/session sink whose reloc-masked callees live in the 0xba000+ net-game code
+// (LoadMenuSelectSprite etc.). Named distinctly so it does not masquerade as the
+// engine base CGameMgr; only the +0x564 offset + the reloc-masked call shapes are
+// load-bearing. -----------------------------------------------------------------
+struct CSessionMgr {
     char pad000[0x564];
     i32 m_564;                            // +0x564 net busy flag
     void LoadMenuSelectSprite(void* m);   // 0xba620
@@ -120,7 +125,7 @@ struct LobbyMsg {
 
 struct CLobbySync {
     i32 m_00;
-    CGameMgr* m_04;       // +0x04
+    CSessionMgr* m_04;    // +0x04
     CNetMgr* m_08;        // +0x08 CNetMgr*
     SlotInfo* m_0c;       // +0x0c
     i32 m_10;             // +0x10

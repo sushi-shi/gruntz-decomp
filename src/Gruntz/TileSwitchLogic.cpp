@@ -46,10 +46,14 @@
 // ---------------------------------------------------------------------------
 // Shared singletons (named so their DIR32 datum reloc-masks).
 // ---------------------------------------------------------------------------
-extern void* g_64556c;      // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
-extern "C" void* g_buteMgr; // ?g_buteMgr@@3VCButeMgr@@A @0x6453d8
-extern "C" i32 g_644c54;    // DAT_00644c54 @0x644c54 (current area index)
-extern "C" void* g_61ab24;  // DAT_0061ab24 @0x61ab24 (secret-switch sink)
+// The CGruntzMgr game-manager singleton (_g_mgrSettings @0x64556c). This routine's
+// `this` (ecx) is a DIFFERENT object (a tile/switch logic owner, level @+0x22c); it
+// loads the manager separately to report/ack switch fires. (Earlier reconstructions
+// mislabelled this datum as a WwdGameReg; the delinker names it _g_mgrSettings.)
+extern "C" void* g_mgrSettings; // _g_mgrSettings @0x64556c (the CGruntzMgr singleton)
+extern "C" void* g_buteMgr;     // ?g_buteMgr@@3VCButeMgr@@A @0x6453d8
+extern "C" i32 g_644c54;        // DAT_00644c54 @0x644c54 (current area index)
+extern "C" void* g_61ab24;      // DAT_0061ab24 @0x61ab24 (secret-switch sink)
 
 // ---------------------------------------------------------------------------
 // Engine helpers reached through reloc-masked thunks (no body).
@@ -81,9 +85,11 @@ static i32 VtblResolve(void* node) {
     return (*(i32(**)(void*))((char*)vtbl + 0x20))(node);
 }
 
-// CGruntzMgr (the play/grunt manager). Only touched offsets matter; carcass
-// access by raw this+offset.
-class CGruntzMgr {
+// The tile/switch-logic owner that hosts WireTileSwitchLogic (`this`, ecx). NOT the
+// CGruntzMgr game manager (which is loaded separately as g_mgrSettings): its level
+// lives at +0x22c and its trigger container at +0x2e4. Only touched offsets matter;
+// carcass access by raw this+offset.
+class CTileWireLogic {
 public:
     i32 WireTileSwitchLogic(void* trigger, i32 x, i32 y); // __thiscall (callee cleans 0xc)
     char m_pad[0x2f0];
@@ -97,9 +103,9 @@ public:
 // near-identical list-walk/CString-format arms and the /GX EH-state thread
 // across 3426 B are the documented wall. See file header; final-sweep.
 RVA(0x0006c130, 0xd62)
-i32 CGruntzMgr::WireTileSwitchLogic(void* trigger, i32 x, i32 y) {
+i32 CTileWireLogic::WireTileSwitchLogic(void* trigger, i32 x, i32 y) {
     void* self = this;
-    void* gr = g_64556c;
+    void* gr = g_mgrSettings;
     i32 areaGm = I32(gr, 0x2c);
 
     if (trigger != 0) {

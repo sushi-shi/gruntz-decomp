@@ -17,6 +17,15 @@ namespace GruntzMgrCmd {
     // cheat bodies (item/level-warp/toggle/announce) are near-identical templates,
     // reproduced here with macros exactly as the devs' source did (inline).
     // Reloc-masked engine callees are modeled as bodyless methods/functions.
+    //
+    // NOTE: this GruntzMgrCmd::CGruntzMgr is a genuine (but namespaced) view of the
+    // one true CGruntzMgr (see <Gruntz/GruntzMgr.h>): m_2c==m_curState, m_30==m_world,
+    // m_c8==m_strWorldFile, etc. It is NOT merged to the canonical header - the
+    // WM_COMMAND/cheat dispatcher is a documented ~29.7% jump-table+regalloc
+    // megafunction wall reached through a dozen local sub-object helper types
+    // (GZLogic/GZGateA/GZBoard/GZGrunt/...) canonical does not model; a merge would
+    // need a full body rewrite at high regression risk for no % gain. The namespace
+    // keeps it from ODR-clashing with the canonical class.
     struct GZGateB {
         char _p[0x30];
         i32 m_30;
@@ -27,7 +36,7 @@ namespace GruntzMgrCmd {
     };
     struct GZSound {
         void Play(i32 a, i32 b, i32 c, i32 d);
-    };                       // 0x1f940 __thiscall
+    }; // 0x1f940 __thiscall
     struct GZGrunt {         // from 0x355d
         void SetItem(i32 n); // 0x17a8
         void G3904(i32 n);   // 0x3904

@@ -1416,8 +1416,8 @@ clobbyobjb	??1CLobbySlot@@QAE@XZ	100.0000	100.0000	1	312133bbe621	0xb62a0
 clobbyobjb	?BuildHostName@CLobbySlot@@QAEPAVCString@@PAV2@@Z	67.2727	67.2727	1	059a51e82835	0xbc3f0
 cmdscrollapply	?Cmd_ApplyScrollParams_0ec1c0@@YAXHHHHH@Z	100.0000	100.0000	1	aa0b048a1519	0xec1c0
 cmdscrollapply	?Cmd_ResetScroll_0ebd30@@YAXXZ	100.0000	100.0000	1	79743c661a69	0xebd30
-cmenustate	?LoadGameOptionsToDialog@@YAXPAUHWND__@@@Z	100.0000	100.0000	2	d56b2be0ae2d	0x36860
-cmenustate	?ReadMenuOptionsDialog@@YAXPAUHWND__@@@Z	99.9020	99.9020	1	720ff87696f7	0x36a30
+cmenustate	?LoadGameOptionsToDialog@@YAXPAUHWND__@@@Z	100.0000	100.0000	3	4d283ddbba0b	0x36860
+cmenustate	?ReadMenuOptionsDialog@@YAXPAUHWND__@@@Z	99.9020	99.9020	2	1ac526fdd4ea	0x36a30
 cmenustate	?ReadyGate@CMenuState@@QAEHXZ	100.0000	100.0000	1	6ea0d4b831d8	0xa0d40
 cmgrsettings	?Serialize@CMgrSettings@@QAEHPAVCMgrArchive@@HHH@Z	89.0526	89.0526	2	4e1834b23b7e	0x109e00
 cmovinglogicctor	??0CMovingLogic@@QAE@XZ	98.4158	98.4158	1	22f28f23f317	0x13940
@@ -2224,7 +2224,7 @@ gameobjectctors	?GetTypeTag@CGruntToyTimeSprite@@QAEHXZ	100.0000	100.0000	1	3f4a
 gameobjectctors	?Serialize@CUFO@@QAEHPAXHHH@Z	100.0000	100.0000	1	e328f3778feb	0xb4d30
 gameobjectfactory	?RegisterGameObjectTypes@@YAXPAUGameObjFactoryCtx@@@Z	100.0000	100.0000	1	8d61c8fad5bf	0xa3b0
 gamesave	?SaveGame@@YAHPAUCGameSaveHost@@PAD@Z	100.0000	100.0000	1	11a1d810f9a0	0xd170
-gamestaterecordload	?Load@CGameStateRecord@@QAEHPAUCRecReader@@@Z	91.7597	91.7597	1	1f5405b3b95c	0x555e0
+gamestaterecordload	?Load@CGameStateRecord@@QAEHPAUCRecReader@@@Z	91.7597	91.7597	2	b041df73a316	0x555e0
 gametext	??0CContainerErr@@QAE@PBD@Z	100.0000	100.0000	4	754ef1da6bee	0x16d9c0
 gametext	?GetWarlordName@@YG?AVCString@@H@Z	89.2553	89.2553	4	290253c681a0	0x1ec20
 gametext	_$E1	100.0000	100.0000	1	cpp:a7f73c40eefc	0x82990
@@ -3559,7 +3559,7 @@ tiletriggertransition	?RegisterActs@CTileTriggerTransition@@QAEXXZ	92.9130	92.91
 tiletriggertransition	?Register_10fc90@CTileTriggerTransition@@QAEXXZ	100.0000	100.0000	1	02a02599fd29	0x10fc90
 tiletriggertransition	?StepController@@YAHPAUCGameObject@@@Z	100.0000	100.0000	2	7ba829d0b632	0x10d150
 tiletriggerwiring	?AddLogicDefaults@CTileTriggerWiring@@QAEXHHHHHHHHH@Z	75.8788	75.8788	2	dcb5b95975f8	0x1163b0
-tilewireswitchlogic	?WireTileSwitchLogic@CGruntzMgr@@QAEHPAXHH@Z	10.4111	10.4111	1	4f27554a2907	0x6c130
+tilewireswitchlogic	?WireTileSwitchLogic@CTileWireLogic@@QAEHPAXHH@Z	10.4111	10.4111	1	9ae2975a0b4e	0x6c130
 timestring	?FormatElapsedTime@@YA?AVCString@@I@Z	100.0000	100.0000	1	53b405a2e5d6	0x1190f0
 trees	__tr_flush_block	100.0000	100.0000	1	54a1b09eba2f	0x188ad0
 trees	__tr_init	100.0000	100.0000	1	cpp:0c188df83c46	0x188440
