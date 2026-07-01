@@ -99,6 +99,15 @@ extern HWND g_dlgItem_648ce0;
 // The Rez heap allocator (_RezAlloc, defined in EngineExternFns.cpp).
 extern "C" void* RezAlloc(u32 size);
 
+// USER32 entry points reached through game-owned IAT-style function pointers
+// (ff 15 [ptr]); g_pSendMessageA is the same global m5_BattlezDlgRow.cpp binds.
+DATA(0x006c4520)
+extern HWND(__stdcall* g_pGetFocus)();
+DATA(0x006c44a4)
+extern LRESULT(__stdcall* g_pSendMessageA)(HWND, UINT, WPARAM, LPARAM);
+DATA(0x006c44f0)
+extern BOOL(__stdcall* g_pInvalidateRect)(HWND, const RECT*, BOOL);
+
 namespace ApiCallerStubs {
     // Fake placeholder host: these ApiCaller stubs are __thiscall (disasm shows
     // they take `this` in ecx) but their real owning class isn't recovered yet.
@@ -176,7 +185,7 @@ namespace ApiCallerStubs {
         // LoadImageBanks (0x0cffe0), LoadActionTileSprites (0x0db600),
         // LoadLevelSounds (0x0db6c0), LoadLevelImages (0x0db7e0) re-homed as CPlay
         // methods in src/Gruntz/CPlay.cpp.
-        void LoadWarlordSprites(i32, i32);
+        // LoadWarlordSprites (0x0d65d0) reconstructed below as CPlayWL_d65d0.
         void LoadLevelPreviewScreen();
         // LoadGruntzPalette (0x0e2d10) re-homed to src/Gruntz/SpriteRefTable.cpp.
         // BuildResourceTabStatusBar (0xe8a70), BuildStatzTabStatusBar (0xe9600) and
@@ -2019,12 +2028,147 @@ namespace ApiCallerStubs {
         }
     }
 
-    // @confidence: low
-    // @source: winapi:GetFocus;SendMessageA
-    // @stub
+    // The Battlez multiplayer setup dialog (CBattlezDlg). Refreshes all four player
+    // slots' controls (name edit / kind combo / ready checkbox / colour) from the
+    // registry roster + the selection owner (g_64bd5c), then invalidates the four
+    // colour swatches. The selection owner (DAT_0064bd5c) carries the network flag
+    // (m_528) and the local player's colour id (m_5c0).
+    struct SelOwner_0c50f0 {
+        char m_pad0[0x528];
+        i32 m_528; // +0x528 network game flag
+        char m_pad52c[0x5c0 - 0x52c];
+        i32 m_5c0; // +0x5c0 local player colour id
+    };
+    DATA(0x0064bd5c)
+    extern SelOwner_0c50f0* g_64bd5c;
+    // MFC CString return value the per-slot name formatter fills; its ~ is 0x1b9cde.
+    struct DlgStr_c4230 {
+        char* m_data;
+        ~DlgStr_c4230(); // RVA 0x1b9cde (CString::~CString), reloc-masked
+    };
+    // Per-slot roster record hung off the registry at +0x150 (stride 0x238).
+    struct PlayerSlot_0c50f0 {
+        char m_pad0[0x10];
+        i32 m_10; // +0x10 combo index base
+        i32 m_14; // +0x14 human/computer flag
+        i32 m_18; // +0x18 colour id
+        i32 m_1c; // +0x1c ready flag
+        i32 m_20; // +0x20 in-use flag
+        char m_pad24[0x228 - 0x24];
+        i32 m_228; // +0x228 combo value
+        DlgStr_c4230 FormatName_3e54(); // __thiscall RVA 0x3e54
+    };
+    // A resolved dialog child (CWnd) whose HWND lives at +0x1c.
+    struct DlgWnd_c4230 {
+        char m_pad0[0x1c];
+        HWND m_1c; // +0x1c m_hWnd
+        void EnableWindow_1be6a7(i32 bEnable); // RVA 0x1be6a7 (CWnd::EnableWindow)
+        void SetWindowText_1be520(const char* s); // RVA 0x1be520 (CWnd::SetWindowText)
+    };
+    void __stdcall FocusHelper_1bb23a(HWND); // RVA 0x1bb23a
+    struct BattlezDlg_c4230 {
+        char m_pad0[0x5c];
+        char* m_5c; // +0x5c base of the per-player colour table (records at +0x16c)
+        i32 LocalSlot2d4c();                      // RVA 0x2d4c
+        DlgWnd_c4230* NameEdit298c(i32 idx);      // RVA 0x298c
+        DlgWnd_c4230* KindCombo1929(i32 idx);     // RVA 0x1929
+        DlgWnd_c4230* ReadyCheck1159(i32 idx);    // RVA 0x1159
+        DlgWnd_c4230* ColourBtn1753(i32 idx);     // RVA 0x1753
+        void SyncColour3a5d(i32 idx, i32 val);    // RVA 0x3a5d
+        void SyncKind3ffd(i32 idx);               // RVA 0x3ffd
+        DlgWnd_c4230* GetDlgItem_1be27d(i32 nID); // RVA 0x1be27d (CWnd::GetDlgItem)
+        i32 UpdatePlayers(i32 force);             // RVA 0x0c4230
+    };
+    // __thiscall(force): refresh every player row from the roster + selection owner.
+    // @early-stop
+    // EH-representation wall: /GX frame (CString `name` temp) — the per-branch EH
+    // state-index stamps ([esp+EHstate] = N) and the aggregate-TU regalloc/spill
+    // recolor diverge from retail; code shape + all DIR32 data refs match. 0.68%->62%.
     RVA(0x000c4230, 0x38e)
-    i32 __stdcall winapi_0c4230_GetFocus_SendMessageA(i32) {
-        return 0;
+    i32 BattlezDlg_c4230::UpdatePlayers(i32 force) {
+        FocusHelper_1bb23a(g_pGetFocus());
+        i32 f1c = 1;
+        i32 f18 = 0;
+        i32 idx = 0;
+        i32 t = this->LocalSlot2d4c();
+        i32 localColour = g_64bd5c->m_528
+            ? *(i32*)(this->m_5c + t * 0x238 + 0x16c)
+            : 1;
+        i32 off = 0;
+        do {
+            PlayerSlot_0c50f0* slot = (PlayerSlot_0c50f0*)((char*)g_gameReg + off + 0x150);
+            if (slot) {
+                if (slot->m_18 != g_64bd5c->m_5c0 && slot->m_14 && slot->m_20) {
+                    f18 = 1;
+                }
+                i32 enName;
+                if (g_64bd5c->m_528 && slot->m_14 == 0) {
+                    enName = 1;
+                } else {
+                    enName = slot->m_18 == g_64bd5c->m_5c0 ? 1 : 0;
+                }
+                this->NameEdit298c(idx)->EnableWindow_1be6a7(enName);
+                this->KindCombo1929(idx)->EnableWindow_1be6a7(
+                    g_64bd5c->m_528 && localColour == 0 && slot->m_18 != g_64bd5c->m_5c0 ? 1 : 0);
+                DlgWnd_c4230* ready = this->ReadyCheck1159(idx);
+                ready->EnableWindow_1be6a7(slot->m_18 == g_64bd5c->m_5c0 ? 1 : 0);
+                if (slot->m_1c) {
+                    if (slot->m_20) {
+                        g_pSendMessageA(ready->m_1c, 0xf1, 1, 0);
+                    } else {
+                        g_pSendMessageA(ready->m_1c, 0xf1, 0, 0);
+                    }
+                } else if (slot->m_20) {
+                    g_pSendMessageA(ready->m_1c, 0xf1, 0, 0);
+                    f1c = 0;
+                } else {
+                    g_pSendMessageA(ready->m_1c, 0xf1, 0, 0);
+                }
+                this->ColourBtn1753(idx)->EnableWindow_1be6a7(
+                    g_64bd5c->m_528 && slot->m_20 && localColour == 0 ? 1 : 0);
+                this->SyncColour3a5d(idx, slot->m_20 ? slot->m_228 : 0);
+                if (force == 0) {
+                    if (this->LocalSlot2d4c() == idx) {
+                        goto next;
+                    }
+                    if (g_64bd5c->m_528 && slot->m_14 == 0) {
+                        goto next;
+                    }
+                }
+                if (slot->m_20) {
+                    {
+                        DlgStr_c4230 name = slot->FormatName_3e54();
+                        char* pch = name.m_data;
+                        force = 0;
+                        this->NameEdit298c(idx)->SetWindowText_1be520(pch);
+                    }
+                    if (slot->m_14) {
+                        g_pSendMessageA(this->KindCombo1929(idx)->m_1c, 0x14e, 4, 0);
+                    } else {
+                        g_pSendMessageA(this->KindCombo1929(idx)->m_1c, 0x14e, slot->m_10 + 1, 0);
+                    }
+                } else {
+                    this->NameEdit298c(idx)->SetWindowText_1be520(g_emptyString);
+                    g_pSendMessageA(this->KindCombo1929(idx)->m_1c, 0x14e, 0, 0);
+                }
+                this->SyncKind3ffd(idx);
+            }
+        next:
+            off += 0x238;
+            idx++;
+        } while (off < 0x8e0);
+        if (g_64bd5c->m_528) {
+            DlgWnd_c4230* ok = this->GetDlgItem_1be27d(1);
+            if (ok == 0) {
+                return 0;
+            }
+            ok->EnableWindow_1be6a7(f18 & f1c);
+        }
+        g_pInvalidateRect(this->GetDlgItem_1be27d(0x501)->m_1c, 0, 1);
+        g_pInvalidateRect(this->GetDlgItem_1be27d(0x503)->m_1c, 0, 1);
+        g_pInvalidateRect(this->GetDlgItem_1be27d(0x505)->m_1c, 0, 1);
+        g_pInvalidateRect(this->GetDlgItem_1be27d(0x507)->m_1c, 0, 1);
+        return 1;
     }
 
     // 0x0c46b0 re-homed as CNetDlgWatch::Watchdog in src/Gruntz/NetGameDlgWatch.cpp.
@@ -2085,18 +2229,8 @@ namespace ApiCallerStubs {
 
     // @confidence: low
     // @source: winapi:SendMessageA
-    // Per-slot state array hung off the registry at +0x150 (stride 0x238).
-    struct PlayerSlot_0c50f0 {
-        char m_pad0[0x1c];
-        i32 m_1c; // +0x1c
-    };
-    // The selection owner at DAT_0064bd5c; its m_528 gates the broadcast refresh.
-    struct SelOwner_0c50f0 {
-        char m_pad0[0x528];
-        i32 m_528; // +0x528
-    };
-    DATA(0x0064bd5c)
-    extern SelOwner_0c50f0* g_64bd5c;
+    // PlayerSlot_0c50f0 / SelOwner_0c50f0 / g_64bd5c are modelled above (shared with
+    // BattlezDlg_c4230::UpdatePlayers).
     WndItem* __stdcall ResolveItem_1159(i32 idx); // RVA 0x1159
     void __stdcall Func1d70(i32 flag);            // RVA 0x1d70
     // __thiscall(idx): toggle slot idx's ready flag from its list item, then either
@@ -4641,12 +4775,336 @@ namespace ApiCallerStubs {
 
     // LoadSBITextEdges (0x0d1710) re-homed as CPlay::LoadSBITextEdges in src/Stub/CPlay.cpp (proximity HIGH).
 
+    // The three named warlord sprite-bank tags (DIR32 string constants).
+    DATA(0x0060d2c0)
+    extern char s_WARLORDZ_NAPOLEAN[];
+    DATA(0x0060d298)
+    extern char s_WARLORDZ_VIKING[];
+    DATA(0x0060d2ac)
+    extern char s_WARLORDZ_PATTON[];
+
     // @confidence: med
     // @source: string-xref
-    // @stub
-    // proximity: CGameModeObj@-0x70 | CPlay@+0x9d0
+    // CPlay::LoadWarlordSprites: ensure every sprite set a placed warlord needs is
+    // loaded. Two modes: the full campaign preload (registry m_134 != 1) loads sets
+    // 2..0x20 + 0x39/0x3a + the three named warlord banks; the in-level mode walks the
+    // placed-object list and, per object type (its vtable marker), loads the specific
+    // sets that object uses + bumps the per-kind counters. `loaded[]` guards each set
+    // so its progress tick (Begin1019) fires once.
+    struct WLStr_d65d0 {
+        char* m_data;
+        WLStr_d65d0(const char*);        // RVA 0x1b9d4c (CString::CString(LPCSTR))
+        WLStr_d65d0& operator=(const char*); // RVA 0x1b9e74 (CString::operator=)
+        ~WLStr_d65d0();                  // RVA 0x1b9cde (CString::~CString)
+    };
+    struct WLVtbl_d65d0 {
+        char m_pad0[0x10];
+        void* m_10; // +0x10 dynamic-type marker (a vtable slot)
+    };
+    struct WLObj_d65d0 {
+        char m_pad0[0x7c];
+        WLVtbl_d65d0* m_7c; // +0x7c
+        char m_pad80[0x118 - 0x80];
+        i32 m_118; // +0x118 primary sprite/type id
+        i32 m_11c; // +0x11c
+        i32 m_120; // +0x120
+        i32 m_124; // +0x124
+    };
+    struct WLNode_d65d0 {
+        WLNode_d65d0* m_0; // +0x00 next
+        char m_pad4[4];
+        WLObj_d65d0* m_8; // +0x08 object
+    };
+    struct WLListHead_d65d0 {
+        char m_pad0[4];
+        WLNode_d65d0* m_4; // +0x04 first node
+    };
+    struct WLContainer_d65d0 {
+        char m_pad0[8];
+        char* m_8; // +0x08
+    };
+    struct WLCounters_d65d0 {
+        char m_pad0[0x30];
+        i32 m_30; // +0x30
+        i32 m_34; // +0x34
+        i32 m_38; // +0x38
+        char m_pad3c[4];
+        i32 m_40; // +0x40
+    };
+    struct WLObj4_d65d0 {
+        char m_pad0[0x7c];
+        WLCounters_d65d0* m_7c; // +0x7c
+    };
+    struct CPlayWL_d65d0 {
+        char m_pad0[4];
+        WLObj4_d65d0* m_4; // +0x04
+        char m_pad8[0xc - 8];
+        WLContainer_d65d0* m_c; // +0x0c
+        void Begin1019(i32);                                // RVA 0x1019 (progress tick)
+        i32 LoadSet12da(i32 id, i32 a, i32 b, i32 ctx);     // RVA 0x12da (load numbered set)
+        i32 LoadNamed2bc1(WLStr_d65d0* name, i32 a, i32 b, i32 ctx); // RVA 0x2bc1 (load named)
+        i32 LoadWarlordSprites(i32 ctx, i32* loaded);       // RVA 0x0d65d0
+    };
+    // @early-stop  (0.x% -> 91.06%)
+    // Residual is codegen-shape, not logic (verified llvm-objdump -dr base vs target):
+    //  (1) EH/frame wall — retail reuses the dead incoming-arg slots for the CString
+    //      `s` (no `sub esp` for locals) while the recompile allocates a fresh frame,
+    //      so the whole cleanup/dtor tail shifts ~0x4b bytes + a few esi/edx/ecx spill
+    //      recolors; (2) the four object-type markers are `cmp eax,<func-addr>` DIR32
+    //      relocs in retail but bare immediates here (no clean symbol for the thunks).
     RVA(0x000d65d0, 0x7a4)
-    void ThisStubOwnerUnknown::LoadWarlordSprites(i32, i32) {}
+    i32 CPlayWL_d65d0::LoadWarlordSprites(i32 ctx, i32* loaded) {
+        if (g_gameReg->m_134 != 1) {
+            for (i32 id = 2; id <= 0x20; id++) {
+                if (loaded[id] == 0) {
+                    this->Begin1019(0);
+                    loaded[id] = 1;
+                }
+                if (!this->LoadSet12da(id, 1, 0, ctx)) {
+                    return 0;
+                }
+            }
+            if (!this->LoadSet12da(0x39, 1, 0, ctx)) {
+                return 0;
+            }
+            if (loaded[0x21] == 0) {
+                this->Begin1019(0);
+                loaded[0x21] = 1;
+            }
+            if (!this->LoadSet12da(0x3a, 1, 0, ctx)) {
+                return 0;
+            }
+            if (loaded[0x22] == 0) {
+                this->Begin1019(0);
+                loaded[0x22] = 1;
+            }
+            WLStr_d65d0 s(s_WARLORDZ_NAPOLEAN);
+            if (!this->LoadNamed2bc1(&s, 1, 0, ctx)) {
+                return 0;
+            }
+            if (loaded[0x23] == 0) {
+                this->Begin1019(0);
+                loaded[0x23] = 1;
+            }
+            s = s_WARLORDZ_VIKING;
+            if (!this->LoadNamed2bc1(&s, 1, 0, ctx)) {
+                return 0;
+            }
+            if (loaded[0x24] == 0) {
+                this->Begin1019(0);
+                loaded[0x24] = 1;
+            }
+            s = s_WARLORDZ_PATTON;
+            if (!this->LoadNamed2bc1(&s, 1, 0, ctx)) {
+                return 0;
+            }
+            if (loaded[0x25] == 0) {
+                this->Begin1019(0);
+                loaded[0x25] = 1;
+            }
+            return 1;
+        }
+        WLListHead_d65d0* head = (WLListHead_d65d0*)((char*)this->m_c->m_8 + 0x10);
+        if (!head) {
+            return 0;
+        }
+        WLNode_d65d0* node = head->m_4;
+        while (node) {
+            WLObj_d65d0* obj = node->m_8;
+            WLNode_d65d0* nxt = node->m_0;
+            if (obj) {
+                void* marker = obj->m_7c->m_10;
+                if (marker == (void*)0x4024a5) {
+                    i32 v = obj->m_11c;
+                    if (v) {
+                        if (!this->LoadSet12da(v, 1, 0, ctx)) {
+                            return 0;
+                        }
+                        if (loaded[v] == 0) {
+                            this->Begin1019(0);
+                            loaded[v] = 1;
+                        }
+                    }
+                    v = obj->m_120;
+                    if (v) {
+                        if (!this->LoadSet12da(v, 1, 0, ctx)) {
+                            return 0;
+                        }
+                        if (loaded[v] == 0) {
+                            this->Begin1019(0);
+                            loaded[v] = 1;
+                        }
+                    }
+                    switch (obj->m_118) {
+                    case 0x7:
+                        if (!this->LoadSet12da(1, 1, 0, ctx)) {
+                            return 0;
+                        }
+                        if (loaded[1] == 0) {
+                            this->Begin1019(0);
+                            loaded[1] = 1;
+                        }
+                        break;
+                    case 0x8:
+                        if (!this->LoadSet12da(3, 1, 0, ctx)) {
+                            return 0;
+                        }
+                        if (loaded[3] == 0) {
+                            this->Begin1019(0);
+                            loaded[3] = 1;
+                        }
+                        break;
+                    case 0x9:
+                        if (!this->LoadSet12da(5, 1, 0, ctx)) {
+                            return 0;
+                        }
+                        if (loaded[5] == 0) {
+                            this->Begin1019(0);
+                            loaded[5] = 1;
+                        }
+                        break;
+                    case 0xa:
+                        if (!this->LoadSet12da(7, 1, 0, ctx)) {
+                            return 0;
+                        }
+                        if (loaded[7] == 0) {
+                            this->Begin1019(0);
+                            loaded[7] = 1;
+                        }
+                        break;
+                    case 0xb:
+                        if (!this->LoadSet12da(0xd, 1, 0, ctx)) {
+                            return 0;
+                        }
+                        if (loaded[0xd] == 0) {
+                            this->Begin1019(0);
+                            loaded[0xd] = 1;
+                        }
+                        break;
+                    case 0xc:
+                        if (!this->LoadSet12da(0x11, 1, 0, ctx)) {
+                            return 0;
+                        }
+                        if (loaded[0x11] == 0) {
+                            this->Begin1019(0);
+                            loaded[0x11] = 1;
+                        }
+                        break;
+                    case 0xf:
+                        if (!this->LoadSet12da(0x13, 1, 0, ctx)) {
+                            return 0;
+                        }
+                        if (loaded[0x13] == 0) {
+                            this->Begin1019(0);
+                            loaded[0x13] = 1;
+                        }
+                        break;
+                    case 0x10:
+                        if (!this->LoadSet12da(0x1e, 1, 0, ctx)) {
+                            return 0;
+                        }
+                        if (loaded[0x1e] == 0) {
+                            this->Begin1019(0);
+                            loaded[0x1e] = 1;
+                        }
+                        break;
+                    }
+                } else if (marker == (void*)0x40288d) {
+                    i32 cv = obj->m_124 == 0x32 ? obj->m_118 : obj->m_124;
+                    if (cv >= 1 && cv <= 0x16 && cv != 0x14) {
+                        this->m_4->m_7c->m_34++;
+                    } else if (cv >= 0x17 && cv <= 0x20) {
+                        this->m_4->m_7c->m_30++;
+                    } else if (cv >= 0x36 && cv <= 0x3c) {
+                        this->m_4->m_7c->m_38++;
+                    } else if (cv == 0x50) {
+                        this->m_4->m_7c->m_40++;
+                    }
+                    i32 d = obj->m_124;
+                    if (d <= 0x20) {
+                        if (!this->LoadSet12da(d, 1, 0, ctx)) {
+                            return 0;
+                        }
+                        if (loaded[obj->m_124] == 0) {
+                            this->Begin1019(0);
+                            loaded[obj->m_124] = 1;
+                        }
+                    } else if (d == 0x39) {
+                        if (!this->LoadSet12da(0x39, 1, 0, ctx)) {
+                            return 0;
+                        }
+                        if (loaded[0x21] == 0) {
+                            this->Begin1019(0);
+                            loaded[0x21] = 1;
+                        }
+                    } else if (d == 0x3a) {
+                        if (!this->LoadSet12da(0x3a, 1, 0, ctx)) {
+                            return 0;
+                        }
+                        if (loaded[0x22] == 0) {
+                            this->Begin1019(0);
+                            loaded[0x22] = 1;
+                        }
+                    } else if (d == 0x55 || d == 0x32) {
+                        if (!this->LoadSet12da(obj->m_118, 1, 0, ctx)) {
+                            return 0;
+                        }
+                        if (loaded[obj->m_118] == 0) {
+                            this->Begin1019(0);
+                            loaded[obj->m_118] = 1;
+                        }
+                    }
+                } else if (marker == (void*)0x403d0f || marker == (void*)0x40137a) {
+                    i32 cv = obj->m_11c == 0x32 ? obj->m_118 : obj->m_11c;
+                    if (cv >= 1 && cv <= 0x16 && cv != 0x14) {
+                        this->m_4->m_7c->m_34++;
+                    } else if (cv >= 0x17 && cv <= 0x20) {
+                        this->m_4->m_7c->m_30++;
+                    } else if (cv >= 0x36 && cv <= 0x3c) {
+                        this->m_4->m_7c->m_38++;
+                    } else if (cv == 0x50) {
+                        this->m_4->m_7c->m_40++;
+                    }
+                    i32 e = obj->m_11c;
+                    if (e <= 0x20) {
+                        if (!this->LoadSet12da(e, 1, 0, ctx)) {
+                            return 0;
+                        }
+                        if (loaded[obj->m_11c] == 0) {
+                            this->Begin1019(0);
+                            loaded[obj->m_11c] = 1;
+                        }
+                    } else if (obj->m_124 == 0x39) {
+                        if (!this->LoadSet12da(0x39, 1, 0, ctx)) {
+                            return 0;
+                        }
+                        if (loaded[0x21] == 0) {
+                            this->Begin1019(0);
+                            loaded[0x21] = 1;
+                        }
+                    } else if (obj->m_124 == 0x3a) {
+                        if (!this->LoadSet12da(0x3a, 1, 0, ctx)) {
+                            return 0;
+                        }
+                        if (loaded[0x22] == 0) {
+                            this->Begin1019(0);
+                            loaded[0x22] = 1;
+                        }
+                    } else if (e == 0x55 || e == 0x32) {
+                        if (!this->LoadSet12da(obj->m_118, 1, 0, ctx)) {
+                            return 0;
+                        }
+                        if (loaded[obj->m_118] == 0) {
+                            this->Begin1019(0);
+                            loaded[obj->m_118] = 1;
+                        }
+                    }
+                }
+            }
+            node = nxt;
+        }
+        return 1;
+    }
 
     // LoadActionTileSprites (0x0db600), LoadLevelSounds (0x0db6c0) and
     // LoadLevelImages (0x0db7e0) re-homed (byte-exact) as CPlay methods in

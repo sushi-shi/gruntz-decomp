@@ -213,7 +213,7 @@ dsoundvoice	2	1
 ehfunclets	6	6
 engine_attributed	5	0
 engine_discovered	15	8
-engine_label_stubs	242	128
+engine_label_stubs	242	129
 engine_unmatched_lib	11	0
 engstr	3	1
 eyecandytypetags	4	4
@@ -1862,16 +1862,16 @@ engine_label_stubs	?Key@CmdHost_014720@ApiCallerStubs@@QAEHHH@Z	100.0000	100.000
 engine_label_stubs	?Key@CmdHost_039440@ApiCallerStubs@@QAEHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x39440
 engine_label_stubs	?Key@CmdHost_0953f0@ApiCallerStubs@@QAEHHH@Z	100.0000	100.0000	1	cpp:e1535087fe94	0x953f0
 engine_label_stubs	?Load@PalLoad_1479e0@ApiCallerStubs@@QAEHHPADH@Z	89.7286	89.7286	1	cpp:6bf52155264d	0x1479e0
-engine_label_stubs	?Load@ResLoad_144270@ApiCallerStubs@@QAEHHPADH@Z	86.9310	86.9310	1	cpp:6bf52155264d	0x144270
+engine_label_stubs	?Load@ResLoad_144270@ApiCallerStubs@@QAEHHPADH@Z	86.9885	86.9885	1	cpp:6bf52155264d	0x144270
 engine_label_stubs	?Load@StrHost_0b7ec0@ApiCallerStubs@@QAEXHH@Z	100.0000	100.0000	1	cpp:e1535087fe94	0xb7ec0
-engine_label_stubs	?LoadByExt@CFileImage@@QAEHPAVCFileImageInfo@@PADHH@Z	99.8899	99.8899	1	cpp:590eddff1627	0x148940
+engine_label_stubs	?LoadByExt@CFileImage@@QAEHPAVCFileImageInfo@@PADHH@Z	100.0000	100.0000	1	cpp:590eddff1627	0x148940
 engine_label_stubs	?LoadCustomWorldInfo@EngineLabelBacklog@@YAHPAX@Z	100.0000	100.0000	1	cpp:aab6e5a6e511	0x3b7c0
 engine_label_stubs	?LoadGruntCombatAnimations@CGrunt@ApiCallerStubs@@QAEXHHHHHHHH@Z	0.0777	0.0777	1	cpp:590eddff1627	0x597a0
 engine_label_stubs	?LoadGruntResurrectTuning@CGruntResurrector@@QAEHHHH@Z	65.4807	65.4807	1	cpp:590eddff1627	0x7be60
 engine_label_stubs	?LoadMenuSelectSprite@CNetMgr@@QAEHPAUMenuSelectEvent@@@Z	100.0000	100.0000	1	cpp:66ed52501602	0xba620
 engine_label_stubs	?LoadPickupSprites@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXHHHHH@Z	0.0833	0.0833	1	cpp:e8a4cb0d5b2a	0x65e80
 engine_label_stubs	?LoadSounds@CSplashState@@QAEHHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xf9780
-engine_label_stubs	?LoadWarlordSprites@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXHH@Z	0.1675	0.1675	1	cpp:e8a4cb0d5b2a	0xd65d0
+engine_label_stubs	?LoadWarlordSprites@CPlayWL_d65d0@ApiCallerStubs@@QAEHHPAH@Z	91.0553	91.0553	1	cpp:7e3328e11dac	0xd65d0
 engine_label_stubs	?LoadWave@WaveHost2_136ce0@ApiCallerStubs@@QAEHPAUWaveProbe_136ce0@2@PBDH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x136ce0
 engine_label_stubs	?LoadWave@WaveHost_136a30@ApiCallerStubs@@QAEHPBDHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x136a30
 engine_label_stubs	?Method_10a340@CSBI_Image@@QAEXXZ	0.1126	0.1126	1	cpp:e8a4cb0d5b2a	0x10a340
@@ -1925,6 +1925,7 @@ engine_label_stubs	?Update3@SelHost_0c4ee0@ApiCallerStubs@@QAEXXZ	100.0000	100.0
 engine_label_stubs	?Update@CHelpBookSprite@@QAEHXZ	75.7485	75.7485	1	cpp:590eddff1627	0x997c0
 engine_label_stubs	?Update@SelHost_0c4f80@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:e1535087fe94	0xc4f80
 engine_label_stubs	?UpdateClock@RezMgr@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x13ddc0
+engine_label_stubs	?UpdatePlayers@BattlezDlg_c4230@ApiCallerStubs@@QAEHH@Z	62.1892	62.1892	1	cpp:7e3328e11dac	0xc4230
 engine_label_stubs	?Validate@VrHost_094bc0@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x94bc0
 engine_label_stubs	?directx_wrapper_caller_137720_DSOUND_1_DirectSoundCreate@ApiCallerStubs@@YGHHH@Z	98.5714	98.5714	1	cpp:6bf52155264d	0x137720
 engine_label_stubs	?directx_wrapper_caller_17c2a0_DirectDrawCreate@ApiCallerStubs@@YGHHH@Z	1.9417	1.9417	1	cpp:6bf52155264d	0x17c2a0
@@ -1984,7 +1985,6 @@ engine_label_stubs	?winapi_0be760_GetDlgItem_SetDlgItemTextA_SetTimer@ApiCallerS
 engine_label_stubs	?winapi_0c1aa0_GetWindow_SendMessageA@ApiCallerStubs@@YAHXZ	0.7480	0.7480	1	cpp:e1535087fe94	0xc1aa0
 engine_label_stubs	?winapi_0c2980_SendMessageA@ApiCallerStubs@@YGXHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xc2980
 engine_label_stubs	?winapi_0c2e20_CreateSolidBrush_FillRect_GetClientRect@ApiCallerStubs@@YAHXZ	1.2658	1.2658	1	cpp:e1535087fe94	0xc2e20
-engine_label_stubs	?winapi_0c4230_GetFocus_SendMessageA@ApiCallerStubs@@YGHH@Z	0.6757	0.6757	1	cpp:6bf52155264d	0xc4230
 engine_label_stubs	?winapi_0c7ec0_timeGetTime@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHHHH@Z	0.5181	0.5181	1	cpp:e8a4cb0d5b2a	0xc7ec0
 engine_label_stubs	?winapi_0e35f0_EndDialog@ApiCallerStubs@@YGHPAXHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xe35f0
 engine_label_stubs	?winapi_0e3a40_EndDialog@ApiCallerStubs@@YGHPAXIIJ@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xe3a40
