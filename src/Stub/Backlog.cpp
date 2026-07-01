@@ -154,7 +154,7 @@ namespace EngineLabelBacklog {
     void BuildBootyPerfectAnimation();
     void __stdcall BuildPowerupIconKeys(PowerupKeyRegistry* reg, i32 key);
     // DrawDebugStats graduated to src/Gruntz/DrawDebugStats.cpp.
-    void DrawBattleStats();
+    // DrawBattleStats graduated to src/Gruntz/DrawBattleStats.cpp.
     i32 Stub_01fd70(char* szPath);
     i32 LoadCustomWorldInfo(HWND hDlg);
     // LoadHelpBookSprite reconstructed as CHelpBookSprite::Update below.
@@ -165,13 +165,13 @@ namespace EngineLabelBacklog {
     void LoadExplosionSprites();
     void __stdcall BuildRockBreakParticles(i32, i32, i32, i32);
     void LoadPowerupIconSprites();
-    void __stdcall BuildLevelRezPath(i32, i32, i32, i32, i32);
+    // BuildLevelRezPath graduated to src/Gruntz/LevelRezPath.cpp.
     void __stdcall LoadMenuStateAssets(i32, i32, i32);
     void LoadAreaLevelTable();
     void LoadRollingBallHazardSprites();
     void __stdcall LoadLevelByMode(i32, i32);
     void ValidateLevelTiles();
-    void __stdcall BuildAssetNamespacePrefixes(i32, i32, i32, i32);
+    // BuildAssetNamespacePrefixes graduated to src/Gruntz/AssetNamespacePrefixes.cpp.
     void DrawSaveGameMenu();
     void BuildLevelTitleString();
     i32 Stub_0f90f0(char* szPath);
@@ -462,12 +462,7 @@ void __stdcall EngineLabelBacklog::BuildPowerupIconKeys(PowerupKeyRegistry* reg,
     }
 }
 
-// @confidence: med
-// @source: string-xref
-// @proximity: CMultiBootyState@-0x40 | GruntzPlayer@+0x720 (boundary - pick one)
-// @stub
-RVA(0x0001ed30, 0x549)
-void EngineLabelBacklog::DrawBattleStats() {}
+// DrawBattleStats (0x1ed30) graduated to src/Gruntz/DrawBattleStats.cpp.
 
 // @source: decomp-xref
 // BootyState::OnActivate_vfunc8 - on state activation: hide the cursor, register
@@ -974,12 +969,7 @@ i32 CGruntResurrector::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
 
 // LaunchPortalExe (0x90550) graduated to src/Gruntz/PortalPath.cpp.
 
-// @confidence: med
-// @source: string-xref
-// @proximity: CGruntzMgr@-0x720 | CGruntzWnd@+0x900 (boundary - pick one)
-// @stub
-RVA(0x00093d40, 0x473)
-void __stdcall EngineLabelBacklog::BuildLevelRezPath(i32, i32, i32, i32, i32) {}
+// BuildLevelRezPath (0x93d40) graduated to src/Gruntz/LevelRezPath.cpp.
 
 // CHelpState::LoadAssets (0x095090) graduated to src/Gruntz/BacklogStateLoaders.cpp.
 
@@ -1537,12 +1527,7 @@ struct CSoundOwner {
     CSoundSetSource* m_28; // +0x28
 };
 
-// @confidence: med
-// @source: string-xref
-// @proximity: CPlay@-0x3a0 | CProjectile@+0x24f0 (boundary - pick one)
-// @stub
-RVA(0x000dca70, 0x4a4)
-void __stdcall EngineLabelBacklog::BuildAssetNamespacePrefixes(i32, i32, i32, i32) {}
+// BuildAssetNamespacePrefixes (0xdca70) graduated to src/Gruntz/AssetNamespacePrefixes.cpp.
 
 // ---------------------------------------------------------------------------
 // LoadGruntzPalette - registers a level's "GRUNTZ_PALETTEZ_<name>"

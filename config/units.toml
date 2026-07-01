@@ -391,6 +391,31 @@ source = "src/Net/NetMgrWait.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "levelrezpath"
+source = "src/Gruntz/LevelRezPath.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "drawbattlestats"
+source = "src/Gruntz/DrawBattleStats.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "assetnamespaceprefixes"
+source = "src/Gruntz/AssetNamespacePrefixes.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "cplayplanescan"
+source = "src/Gruntz/CPlayPlaneScan.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "gruntchargestep"
+source = "src/Gruntz/GruntChargeStep.cpp"
+flags = "base"
+
+[[unit]]
 unit = "menustateassets"
 source = "src/Gruntz/MenuStateAssets.cpp"
 flags = "eh"

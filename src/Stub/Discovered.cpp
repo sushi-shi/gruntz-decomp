@@ -16,10 +16,21 @@ extern void* g_vtbl5f04d8;
 // src/Gruntz/DiscoveredEh.cpp (needs the eh profile).
 
 // ---- CGrunt ----
-RVA(0x000ef6b0, 0x61d)
-void CGrunt::CGrunt_0ef6b0() {}
+// 0x0ef6b0 re-homed (reconstructed) as CGrunt::ChargeStep in
+// src/Gruntz/GruntChargeStep.cpp.
 
 // ---- CGruntzMgr ----
+// 0x08b960 ANALYZED, deferred to final sweep (leaf-first redo): a 1988-byte /GX
+// object FACTORY - after tearing down the current m_2c worker (vtbl slot +0x10 =
+// GetType, +0x28 = detach, then either the ~worker at slot 0 or a 0x403639 free),
+// it switches on the requested type id (param_2: cases 2/3/5/7/8/9/10/...) and for
+// each `operator new`s the sized object (0x5b9b46), runs its ctor + inline member
+// zeroing, and stamps its retail vtable (&??_7...@@6B@ at 0x5ea194 / 0x5ea0bc /
+// 0x5e9e84 / ...), tracking the EH unwind state in the /GX frame slot. Not done
+// here: the giant per-case construction + the EH-state numbering across N nested
+// try-regions is a heavy multi-iteration match (EH-state-numbering wall, same
+// family as the CBrickz/CDroppedObjectShadow ctor plateaus); left @stub for a
+// dedicated leaf-first pass rather than a divergent partial.
 RVA(0x0008b960, 0x7c4)
 void CGruntzMgr::CGruntzMgr_08b960() {}
 
@@ -32,10 +43,8 @@ void CGruntzSingleCommand::CGruntzSingleCommand_18c022() {}
 
 // ---- CPlay ----
 // 0x0cb480 re-homed (analyzed) as CPlay::FreeListTeardown in src/Gruntz/CPlay.cpp.
-RVA(0x000d53d0, 0x466)
-void CPlay::CPlay_0d53d0() {}
-RVA(0x000d9290, 0x2a7)
-void CPlay::CPlay_0d9290() {}
+// 0x0d53d0 re-homed (reconstructed) as CPlay::ScanBuildTiles in src/Gruntz/CPlayPlaneScan.cpp.
+// 0x0d9290 re-homed (reconstructed) as CPlay::ScanShuffleQuads in src/Gruntz/CPlayPlaneScan.cpp.
 
 // ---- CSpotLight ----
 // 0x0b1ee0 re-homed (reconstructed) as Update_0b1ee0 in src/Gruntz/CSpotLight.cpp.
