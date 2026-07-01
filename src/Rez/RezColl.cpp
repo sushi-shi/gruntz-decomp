@@ -11,34 +11,11 @@
 #include <rva.h>
 
 #include <Ints.h>
+#include <Rez/RezColl.h>
 
-struct RezNode;
-
-// One hash bucket: 16 bytes, chain-head link at +8.
-struct RezBucket {
-    char m_pad0[8];
-    void* m_chainHead; // +0x08  points at first node's +4 link, or 0
-    char m_padc[4];
-};
+// RezBucket's exact retail size is unproven (First/Next only touch +0/+4/+8);
+// tracked here (its owning TU) so the class carries a SIZE macro.
 SIZE_UNKNOWN(RezBucket);
-
-// The bucket collection: count at +0, bucket array at +4 (0x10 bytes total).
-struct RezColl {
-    u32 m_count;          // +0x00  bucket count
-    RezBucket* m_buckets; // +0x04  bucket array
-    char m_pad8[8];       // +0x08..+0x0f
-    RezNode* First();
-};
-
-// A node: next link at +4, owning collection at +0xc, bucket index at +0x10.
-struct RezNode {
-    void* m_0;
-    void* m_nextLink; // +0x04  points at the successor's +4, or 0
-    void* m_8;
-    RezColl* m_coll; // +0x0c  owning collection
-    u32 m_bucketIdx; // +0x10  bucket index
-    RezNode* Next();
-};
 
 // The next node: follow this node's chain link, else scan the collection's later
 // buckets for the next occupied chain head.

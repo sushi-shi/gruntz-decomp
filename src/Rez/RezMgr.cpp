@@ -259,7 +259,7 @@ i32 CRezDirNode::Load(i32 childFlag) {
 
     if (childFlag != 0) {
         for (RezNode* n = m_kids.First(); n != 0; n = n->Next()) {
-            n->m_14->Load(1);
+            ((CRezDirNode*)n->m_14)->Load(1);
         }
     }
     return 1;

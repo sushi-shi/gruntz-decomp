@@ -74,23 +74,13 @@ struct CHashEntry {
     void* m_payload;        // +0x14  the resolved (key,node) record
 };
 
-// The embedded table iterates RezColl (collection) / RezNode (entry): one
-// physical First (0x184ae0) / Next (0x1848b0), the canonical owners of those
-// RVAs. First() is __thiscall on the collection; Next() is __thiscall on the
-// entry. The returned node's payload (the resolved record) sits at node+0x14.
-// (The iteration accessors below add the collection/entry offset into ecx, so
-// the call shapes fall out; both are reloc-masked externals.)
-struct RezNode;
-
-struct RezColl {
-    RezNode* First(); // 0x184ae0
-};
-
-struct RezNode {
-    RezNode* Next();   // 0x1848b0
-    char m_pad0[0x14]; // +0x00
-    void* m_14;        // +0x14  the resolved record
-};
+// The embedded table iterates the shared RezColl (collection) / RezNode (entry):
+// one physical First (0x184ae0) / Next (0x1848b0), the canonical owners of those
+// RVAs (bodies in src/Rez/RezColl.cpp; shared def in <Rez/RezColl.h>). The
+// CSymTab iterators reinterpret-cast a CHashTable* / a record-relative offset to
+// RezColl* / RezNode* and call First/Next; the returned node's payload (the
+// resolved record) sits at RezNode::m_14 (+0x14). Both are reloc-masked externals.
+#include <Rez/RezColl.h>
 
 class CHashTable {
 public:

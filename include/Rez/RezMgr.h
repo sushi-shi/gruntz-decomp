@@ -53,6 +53,10 @@
 // plus CString / CObject; the engine helpers below stay minimal externs.
 #include <Mfc.h>
 
+// The shared RezColl (hash-bucket child collection) + RezNode (chain node)
+// definition. CRezDirNode embeds a RezColl (m_kids) and walks it with First/Next.
+#include <Rez/RezColl.h>
+
 // ---------------------------------------------------------------------------
 // External engine helpers, modeled with NO body so their `call rel32`
 // displacements are reloc-masked in objdiff (the "external no-body callee"
@@ -79,9 +83,8 @@ class CRezDir;
 // external no-body, __thiscall - the collection/node arrives in ecx, no stack
 // args). Modeled as member functions (First on the collection, Next on a node)
 // so the `lea ecx,[..]; call` / `mov ecx,..; call` shapes fall out, reloc-masked.
-//   RezColl::First()  -> first child node
+//   RezColl::First()  -> first child node   (shared def in <Rez/RezColl.h>)
 //   RezNode::Next()   -> next sibling node
-struct RezNode;
 
 // The engine assert/trace sink: prints/logs the message string.
 extern "C" void RezAssertFail(const char* msg);
@@ -234,13 +237,9 @@ struct RezSrc {
     RezStream* m_stream; // +0x20  (the polymorphic read stream)
 };
 
-// The child collection embedded at CRezDirNode+0x38 (First/Next iterated).
-// First() is __thiscall: returns the first child node or 0.
-struct RezColl {
-    RezNode* First();
-    char m_pad[0x10];
-};
-
+// The child collection embedded at CRezDirNode+0x38 is the shared RezColl
+// (First/Next iterated) - defined in <Rez/RezColl.h>. Its 8-byte engine size
+// {count, buckets} is fixed by CSymTab's dual embedding (Bute/SymTab.h).
 class CRezDirNode {
 public:
     i32 Load(i32 childFlag);
@@ -253,18 +252,14 @@ public:
     void* m_subdir; // +0x14  (unused by Load on `this`)
     RezSrc* m_src;  // +0x18  (archive source object)
     char m_pad1c[0x38 - 0x1c];
-    RezColl m_kids; // +0x38..+0x47  (child collection, 0x10 bytes)
-    void* m_buf;    // +0x48  (payload buffer / loaded gate)
+    RezColl m_kids;  // +0x38..+0x3f  (8-byte engine child collection)
+    char m_pad40[8]; // +0x40..+0x47
+    void* m_buf;     // +0x48  (payload buffer / loaded gate)
 };
 
-// A child entry node in a CRezDirNode's collection: holds the sub-dir node ptr
-// at +0x14 that Load recurses into. Next() is __thiscall: returns the
-// next sibling node or 0.
-struct RezNode {
-    RezNode* Next();
-    char m_pad0[0x14];
-    CRezDirNode* m_14; // +0x14  (sub-dir node; Load recurses on it)
-};
+// The child chain node walked by Load carries the recursion target (the sub-dir
+// CRezDirNode*) in the shared RezNode's payload slot RezNode::m_14 (void*; cast
+// to CRezDirNode* at the Load call site).
 
 // ---------------------------------------------------------------------------
 // CString - the minimal MFC CString model (a single char* m_pchData @+0; an
