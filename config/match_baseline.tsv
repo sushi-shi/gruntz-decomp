@@ -710,7 +710,7 @@ boundarytail	?Fill@CImg176d20@@QAEXPAUFillRect176d20@@H@Z	100.0000	100.0000	1	33
 boundarytail	?Flush@CBlit148250@@QAEXXZ	100.0000	100.0000	2	6d5abe4f4804	0x148250
 boundarytail	?GetName@Obj38120@@QAE?AVCString@@XZ	66.7273	66.7273	2	c9b14676e3a0	0x38120
 boundarytail	?GetName@Obj85500@@QAE?AVCString@@XZ	74.5000	74.5000	2	7dd559bb87bd	0x85500
-boundarytail	?PositionUpdate@CSnd788d0@@QAEHXZ	64.8276	64.8276	1	a7c1ff565747	0x788d0
+boundarytail	?PositionUpdate@CSnd788d0@@QAEHXZ	65.3448	65.3448	1	a7c1ff565747	0x788d0
 boundarytail	?WaitKeyEdge@@YAXHH@Z	97.0422	97.0422	2	03307408d7be	0x13df30
 boundarytaileh	??1CFmb1578b0@@QAE@XZ	91.0000	91.0000	1	733b6b91b074	0x1578b0
 boundarythunks	?ButeMgrFlush82b20@@YAXXZ	100.0000	100.0000	1	d388b45bede6	0x82b20
@@ -3666,7 +3666,7 @@ triggermgr	?ToggleRegionB@CTriggerMgr@@QAEHXZ	85.5946	85.5946	2	e7fb5a4f15f3	0x7
 triggermgr	?TriggerCell@CTriggerMgr@@QAEHHH@Z	77.3824	77.3824	2	8a7d53d3ff7f	0x7b1b0
 triggermgr_eh	??1CTriggerMgr@@QAE@XZ	46.0625	46.0625	1	acd16ffe98a8	0x85c50
 triggermgr_eh	?ApplySwitch@CTriggerMgr@@QAEHHH@Z	19.4654	19.4654	1	cd338b97d735	0x6d300
-triggermgr_eh	?DestroyGroup@CTriggerMgr@@QAEHHHH@Z	64.7985	64.7985	2	c1b23b33bf9d	0x798d0
+triggermgr_eh	?DestroyGroup@CTriggerMgr@@QAEHHHH@Z	66.7463	66.7463	2	c1b23b33bf9d	0x798d0
 triggermgr_eh	?Load@CTriggerMgr@@QAEHPAUCTmSerReader@@@Z	65.3555	65.3555	1	13aaf38ee4ee	0x7abc0
 triggermgr_eh	?ReinitGroup@CTriggerMgr@@QAEHHH@Z	59.1261	59.1261	2	3ea1f63101eb	0x79b80
 triggersound	?IsCueActive@CTriggerSound@@QAEHXZ	100.0000	100.0000	1	cf7853510fa9	0x112860

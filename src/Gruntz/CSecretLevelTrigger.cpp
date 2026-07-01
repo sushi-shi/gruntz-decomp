@@ -21,6 +21,7 @@ public:
     i32 Tick();                 // 0x042ac0
     ~CSecretLevelTrigger();     // 0x010c50 (folds the CUserLogic teardown)
 };
+SIZE_UNKNOWN(CSecretLevelTrigger);
 
 // The class registry entry: its first dword receives the Tick handler PMF (a
 // 4-byte code pointer on this complete single-inheritance class).
@@ -28,6 +29,7 @@ typedef i32 (CSecretLevelTrigger::*SecretActHandler)();
 struct CSecretActEntry {
     SecretActHandler m_fn;
 };
+SIZE_UNKNOWN(CSecretActEntry);
 
 // The class's activation-coordinate registry singleton (@0x644598). Same shape as
 // CIndicatorActReg: a fixed [2000,2010] range built by the shared registry ctor
@@ -60,6 +62,7 @@ struct CSecretActReg {
         return m_cur;
     }
 };
+SIZE_UNKNOWN(CSecretActReg);
 DATA(0x00244598)
 extern CSecretActReg g_secretActReg; // 0x644598
 
@@ -73,6 +76,7 @@ struct CTriggerSink {
     CTrigger* Probe(i32 x, i32 y, i32* outA, i32* outB, i32 flag); // 0x75af0
     void ScrollTo(i32 a, i32 b, i32 mode, i32 flags);              // 0x6bcb0
 };
+SIZE_UNKNOWN(CTriggerSink);
 
 // The probed trigger object: its +0x170/+0x198 are the level/layer ids the bound
 // sprite's +0x11c/+0x120 must match for the trigger to fire.
@@ -82,6 +86,7 @@ struct CTrigger {
     char m_pad174[0x198 - 0x174];
     i32 m_198; // +0x198 layer id
 };
+SIZE_UNKNOWN(CTrigger);
 
 // The bound sprite (this->m_10): +0x5c/+0x60 = screen x/y, +0x11c/+0x120 =
 // required level/layer ids. Typed view of the CUserLogic m_10 object.
@@ -93,6 +98,7 @@ struct CTrigSprite {
     i32 m_11c; // +0x11c required level id
     i32 m_120; // +0x120 required layer id
 };
+SIZE_UNKNOWN(CTrigSprite);
 
 // The on-screen window object (this->m_38): +0x08 holds the per-frame status bits
 // (bit 0x10000 == "stalled / handled this frame").
@@ -100,6 +106,7 @@ struct CTrigWindow {
     char m_pad0[0x8];
     i32 m_8; // +0x08 status bits
 };
+SIZE_UNKNOWN(CTrigWindow);
 
 // The global game registry (WwdGameReg, RVA 0x24556c; wwdfile owns the DATA
 // label); only the on-screen-cue receiver at +0x68 is touched.

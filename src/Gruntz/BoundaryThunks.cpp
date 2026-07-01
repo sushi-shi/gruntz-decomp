@@ -27,6 +27,7 @@ void ButeMgrFlush82b20() {
 struct CProfSink {
     void Tick1b9b93(); // 0x1b9b93 (reloc-masked)
 };
+SIZE_UNKNOWN(CProfSink);
 extern "C" CProfSink g_profSink;
 RVA(0x00082ba0, 0xa)
 void ProfSinkTick82ba0() {
@@ -90,6 +91,7 @@ void ProfSinkTick82f20() {
 struct CTokenMgr {
     void Reset3bac(); // 0x3bac (thunk; reloc-masked)
 };
+SIZE_UNKNOWN(CTokenMgr);
 extern CTokenMgr g_tokenMgr;
 RVA(0x00099b80, 0xa)
 void TokenMgrReset99b80() {
@@ -105,6 +107,7 @@ struct CState8c470 {
     void BaseInit3f53(); // 0x3f53 (reloc-masked)
     void Ctor();
 };
+SIZE_UNKNOWN(CState8c470);
 RVA(0x0008c470, 0xb)
 void CState8c470::Ctor() {
     *(void**)this = (void*)&g_vtbl_CState;
@@ -124,6 +127,7 @@ extern void** g_vtbl_pure760; // VA 0x5ef760 (pure-call vtable)
 struct CAbstract137330 {
     void Ctor();
 };
+SIZE_UNKNOWN(CAbstract137330);
 RVA(0x00137330, 0x7)
 void CAbstract137330::Ctor() {
     *(void**)this = (void*)&g_vtbl_pure6c8;
@@ -132,6 +136,7 @@ void CAbstract137330::Ctor() {
 struct CAbstract13aaf0 {
     void Ctor();
 };
+SIZE_UNKNOWN(CAbstract13aaf0);
 RVA(0x0013aaf0, 0x7)
 void CAbstract13aaf0::Ctor() {
     *(void**)this = (void*)&g_vtbl_pure760;
@@ -140,6 +145,7 @@ void CAbstract13aaf0::Ctor() {
 struct CAbstract13ca30 {
     void Ctor();
 };
+SIZE_UNKNOWN(CAbstract13ca30);
 RVA(0x0013ca30, 0x7)
 void CAbstract13ca30::Ctor() {
     *(void**)this = (void*)&g_vtbl_pure760;

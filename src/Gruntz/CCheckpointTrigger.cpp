@@ -18,6 +18,7 @@ struct CCheckpointActReg {
     char m_pad[0x24];
     void Construct(i32 lo, i32 hi); // 0x408710
 };
+SIZE_UNKNOWN(CCheckpointActReg);
 DATA(0x0024e7c0)
 extern CCheckpointActReg g_checkpointActReg; // 0x64e7c0
 
@@ -44,6 +45,7 @@ struct ChkLayer {
     char m_pad00[0x1c];
     i32 m_1c; // +0x1c
 };
+SIZE_UNKNOWN(ChkLayer);
 struct ChkObj {
     char m_pad00[0x08];
     i32 m_08; // +0x08  flag word
@@ -70,6 +72,7 @@ struct ChkObj {
     char m_pad164[0x198 - 0x164];
     ChkLayer* m_198; // +0x198  layer
 };
+SIZE_UNKNOWN(ChkObj);
 
 // CCheckpointTrigger::CCheckpointTrigger(CGameObject*) @0x10ee20 - the 1-arg leaf
 // ctor: the standard CUserLogic(obj) init (folded inline) plus the checkpoint tail

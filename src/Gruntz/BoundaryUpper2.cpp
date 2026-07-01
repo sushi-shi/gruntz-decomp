@@ -27,6 +27,7 @@ extern void* g_severusWorkerDtorVtbl;
 struct CHashTail {
     void Clear(); // 0x185000
 };
+SIZE_UNKNOWN(CHashTail);
 DATA(0x002bf848)
 extern CHashTail g_hash184b70; // 0x6bf848
 RVA(0x00184b70, 0xa)
@@ -43,6 +44,7 @@ struct DICfgC {
     void BaseTeardown(); // 0x134d50
     void DtorC();
 };
+SIZE_UNKNOWN(DICfgC);
 RVA(0x00133370, 0xb)
 void DICfgC::DtorC() {
     *(void**)this = &g_deviceConfigVtblC;
@@ -66,6 +68,7 @@ struct C1396f0 {
     i32 m_34;            // +0x34
     C1396f0* Init();
 };
+SIZE_UNKNOWN(C1396f0);
 RVA(0x001396f0, 0x1a)
 C1396f0* C1396f0::Init() {
     m_1c = &g_vtbl_1396f0;
@@ -115,6 +118,7 @@ struct CDDrawWorkerA {
     i8 m_78; // +0x78 (byte)
     void Reset();
 };
+SIZE_UNKNOWN(CDDrawWorkerA);
 // @early-stop
 // redundant-store + scheduling wall (~90%): retail resets the +0x20/+0x38 timer
 // pair THREE times (identical stores MSVC normally DCEs); `volatile` on m_20/m_38
@@ -152,6 +156,7 @@ struct CDDrawWorkerB {
     i32 m_78; // +0x78 (dword)
     void Reset();
 };
+SIZE_UNKNOWN(CDDrawWorkerB);
 // @early-stop
 // redundant-store + scheduling wall (~90%): mirror of CDDrawWorkerA::Reset (m_78 here
 // is a dword). Same volatile-pinned redundant pairs; m_78/m_5c schedule one slot off.
@@ -200,9 +205,11 @@ struct DDPageSub {
     virtual void v20();
     virtual void v21(); // slot 0x54
 };
+SIZE_UNKNOWN(DDPageSub);
 struct DDPageArr {
     void RemoveAt(i32, i32); // 0x1b4bad
 };
+SIZE_UNKNOWN(DDPageArr);
 struct CDDPageMgr {
     i32 m_0;         // +0x00
     i32 m_4;         // +0x04
@@ -285,9 +292,11 @@ struct CImgArg {
     void X(i32, i32); // 0x176ad0
     void D();         // 0x175c90
 };
+SIZE_UNKNOWN(CImgArg);
 struct CImgSub10 {
     void Add(i32); // 0x1b4ac7
 };
+SIZE_UNKNOWN(CImgSub10);
 struct CImgOwner {
     i32 _0[4];                  // +0x00 .. +0x0c
     CImgSub10 m_10;             // +0x10
@@ -295,6 +304,7 @@ struct CImgOwner {
     void B(CImgArg*, i32, i32); // 0x175780
     void Free(CImgArg*);        // 0x174ed0
 };
+SIZE_UNKNOWN(CImgOwner);
 RVA(0x00174ed0, 0x5d)
 void CImgOwner::Free(CImgArg* o) {
     if (!o) {
@@ -329,9 +339,11 @@ struct ISndBufVtbl {
     i32 _0[0x30 / 4];
     i32(__stdcall* Restore)(ISndBuf*, i32, i32, i32); // +0x30
 };
+SIZE_UNKNOWN(ISndBufVtbl);
 struct ISndBuf {
     ISndBufVtbl* vtbl;
 };
+SIZE_UNKNOWN(ISndBuf);
 extern void __cdecl SndErr(const char* file, i32 line, i32 flag); // 0x138150
 struct SndDevice {
     i32 _0[0x78 / 4];
@@ -341,6 +353,7 @@ struct SndDevice {
     i32 Probe();   // 0x137260
     i32 Restore();
 };
+SIZE_UNKNOWN(SndDevice);
 RVA(0x00137200, 0x53)
 i32 SndDevice::Restore() {
     if (!m_78) {
@@ -441,11 +454,13 @@ struct RestoreDesc {
     i32 m_50; // +0x50
     i32 _54[(0x64 - 0x54) / 4];
 };
+SIZE_UNKNOWN(RestoreDesc);
 extern void __cdecl DirSurfLog(const char* file, i32 line, i32 hr); // 0x141400
 struct CDDSurf13e7d0 {
     i32 Restore(void* arg1, i32 arg2);
     i32 H(void* a, i32 b, i32 c, i32 flags, RestoreDesc* d); // 0x13eef0
 };
+SIZE_UNKNOWN(CDDSurf13e7d0);
 RVA(0x0013e7d0, 0x73)
 i32 CDDSurf13e7d0::Restore(void* arg1, i32 arg2) {
     if (!arg1) {
@@ -494,11 +509,13 @@ struct Node38 {
     i32 Init(i32, i32, i32); // 0x147390
     void Cleanup();          // 0x147530
 };
+SIZE_UNKNOWN(Node38);
 struct CNodeFactory {
     i32 m_0;           // +0x00
     void Add(Node38*); // 0x142eb0
     Node38* Create(i32 a, i32 b);
 };
+SIZE_UNKNOWN(CNodeFactory);
 RVA(0x00143040, 0x7c)
 Node38* CNodeFactory::Create(i32 a, i32 b) {
     Node38* o = new Node38();
@@ -524,31 +541,37 @@ struct WwdExtent {
     i32 m_18; // +0x18
     i32 m_1c; // +0x1c
 };
+SIZE_UNKNOWN(WwdExtent);
 struct WwdCamRect {
     i32 a; // +0x40 (left)
     i32 b; // +0x44 (top)
     i32 c; // +0x48 (right)
     i32 d; // +0x4c (bottom)
 };
+SIZE_UNKNOWN(WwdCamRect);
 struct WwdCamHolder {
     i32 _0[0x5c / 4];
     char* m_5c; // +0x5c -> &m_40 rect via +0x40
 };
+SIZE_UNKNOWN(WwdCamHolder);
 struct WwdGridLim {
     i32 _0[0x10 / 4];
     i32 m_10; // +0x10
     i32 m_14; // +0x14
 };
+SIZE_UNKNOWN(WwdGridLim);
 struct WwdGridHolder {
     i32 _0[0x10 / 4];
     WwdGridLim* m_10; // +0x10
 };
+SIZE_UNKNOWN(WwdGridHolder);
 struct WwdCtx {
     i32 _0[1];          // +0x00
     WwdGridHolder* m_4; // +0x04
     i32 _8[(0x24 - 0x8) / 4];
     WwdCamHolder* m_24; // +0x24
 };
+SIZE_UNKNOWN(WwdCtx);
 struct CWwdObj1509 {
     i32 _0[2];   // +0x00
     u32 m_8;     // +0x08 flags
@@ -560,6 +583,7 @@ struct CWwdObj1509 {
     WwdExtent* m_198; // +0x198
     i32 Test();
 };
+SIZE_UNKNOWN(CWwdObj1509);
 // @early-stop
 // regalloc wall (~73%): the four derived edges (right/left/top/bottom) +
 // m_198/m_c/m_8 need 4 callee-saved regs in this reconstruction where retail packs
@@ -644,6 +668,7 @@ i32 __stdcall Dispatch163710(void* p, i32 kind, i32, i32) {
 struct SymHelper24 {
     void Unlink(void* p); // 0x184ab0
 };
+SIZE_UNKNOWN(SymHelper24);
 struct SymEntry2 {
     i32 _0[0xc / 4];
     i32 m_c; // +0x0c span
@@ -651,15 +676,18 @@ struct SymEntry2 {
     i32 m_1c;        // +0x1c
     void Teardown(); // 0x1397a0
 };
+SIZE_UNKNOWN(SymEntry2);
 struct SymEntry1 {
     i32 _0[0x24 / 4];
     SymHelper24 m_24; // +0x24
 };
+SIZE_UNKNOWN(SymEntry1);
 struct SymList18 {
     i32 _0[2];
     i32 m_8;            // +0x08
     void Drop(void* p); // 0x13c210
 };
+SIZE_UNKNOWN(SymList18);
 struct CSymTab13a530 {
     i32 _0[4];
     i32 m_10;        // +0x10
@@ -667,6 +695,7 @@ struct CSymTab13a530 {
     SymList18* m_18; // +0x18
     i32 Remove(SymEntry1* a1, SymEntry2* a2);
 };
+SIZE_UNKNOWN(CSymTab13a530);
 RVA(0x0013a530, 0x47)
 i32 CSymTab13a530::Remove(SymEntry1* a1, SymEntry2* a2) {
     m_10 -= a2->m_c;
@@ -685,6 +714,7 @@ struct DBuf17e230 {
     void* p;
     ~DBuf17e230(); // 0x1b9cde
 };
+SIZE_UNKNOWN(DBuf17e230);
 RVA(0x0017e230, 0xc)
 void __stdcall Destroy17e230(DBuf17e230 b) {
     (void)b;
@@ -702,6 +732,7 @@ struct CPalObj143950 {
     i32 m_940;        // +0x940
     i32 SetPalette(const u8* src, i32 tag);
 };
+SIZE_UNKNOWN(CPalObj143950);
 // @early-stop
 // strength-reduction/regalloc wall (~78%): retail walks the dst palette via a
 // pre-incremented edx (dst+1, -1/-4/-3/-2 displacements) with src in eax and inc;
@@ -751,6 +782,7 @@ struct ImgOwnedX {
     i32 Apply(i32 mode, const void* src); // 0x13e0a0
     i32 Setup(i32 a1, i32 a2, i32 a3, i32 a4);
 };
+SIZE_UNKNOWN(ImgOwnedX);
 RVA(0x00148af0, 0x58)
 i32 ImgOwnedX::Setup(i32 a1, i32 a2, i32 a3, i32 a4) {
     memset(&m_10, 0, 0x6c);
@@ -775,6 +807,7 @@ struct ImgOwnedY {
     i32 Blit7(i32 a1, i32 a2, i32 a3, i32 a4);
     i32 Blit47(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7);
 };
+SIZE_UNKNOWN(ImgOwnedY);
 // @early-stop
 // descriptor-fill scheduling wall (~82%): same Apply path as the 100% ImgOwnedX::Setup
 // but into a stack-local descriptor; retail hoists the a4 load (eax, or al,0x80) ahead

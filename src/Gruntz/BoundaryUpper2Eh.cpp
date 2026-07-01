@@ -17,6 +17,7 @@ void RezFree(void* p);
 struct RezDirBase {
     virtual ~RezDirBase(); // 0x13c520
 };
+SIZE_UNKNOWN(RezDirBase);
 
 // ---------------------------------------------------------------------------
 // 0x13c9b0 - CRezDir /GX dtor: drain the two child lists (m_14, m_20) by repeatedly
@@ -27,6 +28,7 @@ struct RezListNode {
     virtual void v0();
     virtual void Delete(i32); // slot 1 (+0x4)
 };
+SIZE_UNKNOWN(RezListNode);
 DATA(0x001ef760)
 extern void* g_purecallVtbl; // 0x5ef760 (PTR___purecall)
 struct CRezDir13c9b0 : RezDirBase {
@@ -38,6 +40,7 @@ struct CRezDir13c9b0 : RezDirBase {
     RezListNode* m_20; // +0x20
     ~CRezDir13c9b0();
 };
+SIZE_UNKNOWN(CRezDir13c9b0);
 RVA(0x0013c9b0, 0x7f)
 CRezDir13c9b0::~CRezDir13c9b0() {
     while (m_14) {
@@ -58,10 +61,12 @@ CRezDir13c9b0::~CRezDir13c9b0() {
 struct RezSub1c {
     void Detach(void* owner); // 0x1852e0
 };
+SIZE_UNKNOWN(RezSub1c);
 struct RezOwner18 {
     i32 _0[0x1c / 4];
     RezSub1c m_1c; // +0x1c
 };
+SIZE_UNKNOWN(RezOwner18);
 struct CRezDir13cb80 : RezDirBase {
     i32 _4[(0x10 - 0x4) / 4];
     void* m_10;       // +0x10
@@ -70,6 +75,7 @@ struct CRezDir13cb80 : RezDirBase {
     void Cleanup14(); // 0x13ce70
     ~CRezDir13cb80();
 };
+SIZE_UNKNOWN(CRezDir13cb80);
 RVA(0x0013cb80, 0x72)
 CRezDir13cb80::~CRezDir13cb80() {
     if (m_14) {
@@ -103,6 +109,7 @@ struct DevCfgChain {
     void DtorD2();
     void DtorD3();
 };
+SIZE_UNKNOWN(DevCfgChain);
 // @early-stop
 // eh-dtor-needs-base-subobject wall (docs/patterns/eh-dtor-needs-base-subobject.md):
 // body is byte-correct (stamp B / ReleaseBase / stamp C / BaseDtorC) but retail wraps
@@ -155,9 +162,11 @@ struct CStr17e7c0 {
     void operator=(const char*); // 0x1b9e74
     ~CStr17e7c0();
 };
+SIZE_UNKNOWN(CStr17e7c0);
 struct CFxBase17e7c0 {
     CFxBase17e7c0(); // 0x17e7b0
 };
+SIZE_UNKNOWN(CFxBase17e7c0);
 struct CFxModeT3 : CFxBase17e7c0 {
     i32 m_0;
     i32 m_4;

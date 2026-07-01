@@ -40,6 +40,7 @@ struct TtcKeyedElem {
     char _pad04[0x18 - 0x04];
     i32 m_flags[4]; // +0x18..+0x24  state flags [0..3]
 };
+SIZE_UNKNOWN(TtcKeyedElem);
 
 // A singly-walked CObList node: next@+0x00, data@+0x08 (MFC CList layout, the
 // +0x04 prev slot unused by these walkers).
@@ -48,6 +49,7 @@ struct TtcNode {
     char _pad04[4];  // +0x04 (prev)
     void* m_data;    // +0x08
 };
+SIZE_UNKNOWN(TtcNode);
 
 // One MFC CObList sub-object (0x1c bytes): only m_pNodeHead (+0x04) is read by
 // the walkers; RemoveAt / AddTail are the reloc-masked rel32 callees.
@@ -66,6 +68,7 @@ public:
     i32 m_0c;                 // +0x0c  element count (serialized by 117280)
     char _pad10[0x1c - 0x10]; // +0x10..0x1b
 };
+SIZE_UNKNOWN(TtcObList);
 
 struct TtcStream;
 
@@ -88,6 +91,7 @@ struct TtcMark {
     i32 m_20;
     i32 m_24;
 };
+SIZE_UNKNOWN(TtcMark);
 // The mark allocator/ctor: RezAlloc(0x28) then the __thiscall ctor (0x1e1a).
 extern "C" TtcMark* TtcMarkCtor(TtcMark* p); // 0x1e1a (reloc-masked)
 
@@ -115,6 +119,7 @@ struct TtcBaseElem {
     i32 m_c0;    // +0xc0
     i32 m_c4;    // +0xc4
 };
+SIZE_UNKNOWN(TtcBaseElem);
 extern "C" TtcBaseElem* TtcBaseElemCtor(TtcBaseElem* p); // 0x2c3e (reloc-masked)
 
 // A serialization stream (its slot-12 / +0x30 Transfer copies n bytes); only the
@@ -134,6 +139,7 @@ struct TtcStream {
     virtual void ReadCount(void* buf, i32 n); // +0x2c  read path (slot 11)
     virtual void Transfer(void* buf, i32 n);  // +0x30  write path (slot 12)
 };
+SIZE_UNKNOWN(TtcStream);
 
 // A switch-logic object operated on by the tag-dispatched serialize helpers; m_04
 // is its serialized type tag.  ApplyA/ApplyB are the per-helper appliers
@@ -145,6 +151,7 @@ struct TtcSwitchObj {
     void* m_vptr;
     i32 m_04; // +0x04  type tag
 };
+SIZE_UNKNOWN(TtcSwitchObj);
 
 // The two tag-dispatched serialize-and-apply helpers of 117280.  __stdcall free
 // functions: stream the object's tag, then dispatch on it.
@@ -217,5 +224,6 @@ public:
     i32 m_70;          // +0x70
     void* m_74;        // +0x74  gates DtorBase's RemoveAll call, then cleared
 };
+SIZE_UNKNOWN(CTileTriggerContainer);
 
 #endif // SRC_GRUNTZ_TILETRIGGERCONTAINER_H

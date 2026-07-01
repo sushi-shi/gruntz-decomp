@@ -37,6 +37,7 @@ struct CTrigReader {
     virtual void v0a();
     virtual void Read(void* buf, i32 n); // slot 11 (+0x2c)
 };
+SIZE_UNKNOWN(CTrigReader);
 
 // A board tile-object reached via g_mgrSettings->m_30->m_24->m_4c[tile]; slot 8 (+0x20)
 // returns the tile's gameplay type id. Reloc-masked virtual.
@@ -51,6 +52,7 @@ struct CTileObj {
     virtual void s7();
     virtual i32 TypeId(); // slot 8 (+0x20)
 };
+SIZE_UNKNOWN(CTileObj);
 
 // The board geometry (g_mgrSettings->m_30->m_24): m_5c->m_28 / m_5c->m_2c are the x/y
 // bounds, m_5c->m_24 the row base, m_5c->m_20 the cell->tile map, m_4c the tile-object
@@ -60,18 +62,22 @@ struct CTrigBoardGeo {
     i32* m_24row;                     // +0x24  row base (cell index = m_24row[y] + x)
     char m_pad28[0x20 - 0x28 + 0x20]; // pad to +0x20-relative kept raw below
 };
+SIZE_UNKNOWN(CTrigBoardGeo);
 struct CTrigBoard {
     char m_pad00[0x4c];
     CTileObj** m_4c; // +0x4c  tile-object table (indexed by the resolved tile id & 0xffff)
 };
+SIZE_UNKNOWN(CTrigBoard);
 struct CTrigMgrInner {
     char m_pad00[0x24];
     CTrigBoard* m_24; // +0x24
 };
+SIZE_UNKNOWN(CTrigMgrInner);
 struct CTrigMgr {
     char m_pad00[0x30];
     CTrigMgrInner* m_30; // +0x30
 };
+SIZE_UNKNOWN(CTrigMgr);
 extern CTrigMgr* g_mgrSettings; // ?g_mgrSettings (0x64556c)
 
 // The built trigger-logic object. The 14 distinct ctor thunks (0-arg __thiscall,
@@ -115,6 +121,7 @@ struct CTrigLogic {
     i32 Reg1abe(void* r, i32 k, i32 a2, i32 a3); // 0x1abe (ids 21,23..26)
     i32 Reg1d39(void* r, i32 k, i32 a2, i32 a3); // 0x1d39 (id 22)
 };
+SIZE_UNKNOWN(CTrigLogic);
 
 struct CTrigLogic8c : public CTrigLogic {
     inline CTrigLogic8c(CTrigLogic::Ctor3206Tag) {
@@ -138,6 +145,7 @@ struct CTrigLogic8c : public CTrigLogic {
 
     char m_sizePad[0x8c - 0x74];
 };
+SIZE_UNKNOWN(CTrigLogic8c);
 
 struct CTrigLogic9c : public CTrigLogic {
     inline CTrigLogic9c(CTrigLogic::Ctor43b3Tag) {
@@ -155,6 +163,7 @@ struct CTrigLogic9c : public CTrigLogic {
 
     char m_sizePad[0x9c - 0x74];
 };
+SIZE_UNKNOWN(CTrigLogic9c);
 
 struct CTrigLogicC8 : public CTrigLogic {
     inline CTrigLogicC8(CTrigLogic::Ctor2c3eTag) {
@@ -163,6 +172,7 @@ struct CTrigLogicC8 : public CTrigLogic {
 
     char m_sizePad[0xc8 - 0x74];
 };
+SIZE_UNKNOWN(CTrigLogicC8);
 
 // The factory container (this): the built object's owner; id 21 latches the object
 // into this->m_70.
@@ -172,6 +182,7 @@ struct CTileTriggerFactory {
 
     void* Build(CTrigReader* reader, i32 kind, i32 a2, i32 a3); // 0x117800
 };
+SIZE_UNKNOWN(CTileTriggerFactory);
 
 // Build the 277f-group object: alloc 0x8c, run `ctor`, register, stamp owner+id.
 static void* Reg277fTail(

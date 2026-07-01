@@ -52,6 +52,7 @@ public:
     i32 m_28;     // +0x28
     i32 m_2c[24]; // +0x2c..+0x88
 };
+SIZE_UNKNOWN(CTileTriggerData);
 
 // ===========================================================================
 // 0x1138b0 - read the trigger-data block from the archive. Bails if the archive

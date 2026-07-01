@@ -58,6 +58,7 @@ struct TileActReg {
         return m_cur;
     }
 };
+SIZE_UNKNOWN(TileActReg);
 DATA(0x0024e720)
 extern TileActReg g_tileActReg;
 
@@ -82,6 +83,7 @@ public:
     i32 m_activeAnimDesc;      // +0x40
     char m_pad44[0x54 - 0x44]; // +0x44..+0x53
 };
+SIZE_UNKNOWN(CTileTriggerTransition);
 
 // The per-class registry entry: its first dword receives the per-frame handler PMF
 // (a 4-byte code pointer on this complete single-inheritance class). RegisterActs
@@ -90,6 +92,7 @@ typedef i32 (CTileTriggerTransition::*TileActHandler)();
 struct TileActEntry {
     TileActHandler m_fn;
 };
+SIZE_UNKNOWN(TileActEntry);
 
 // ---------------------------------------------------------------------------
 // CTileTriggerTransition::~CTileTriggerTransition - empty leaf dtor; folds the

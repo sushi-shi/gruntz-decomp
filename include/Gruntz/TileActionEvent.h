@@ -39,6 +39,7 @@ struct CTileActionArchive {
     virtual i32 Read(void* buf, i32 n);  // +0x2c
     virtual i32 Write(void* buf, i32 n); // +0x30
 };
+SIZE_UNKNOWN(CTileActionArchive);
 
 class CTileActionEvent {
 public:
@@ -83,5 +84,6 @@ public:
     i32 m_14;             // +0x14  (NOT serialized)
     i32 m_playerFlags[4]; // +0x18..+0x24  per-player seen/active flags [0..3]
 };
+SIZE_UNKNOWN(CTileActionEvent);
 
 #endif // GRUNTZ_TILEACTIONEVENT_H

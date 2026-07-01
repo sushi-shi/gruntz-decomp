@@ -26,21 +26,25 @@ struct CActionGrid {
     i32* m_20; // +0x20  flat cell array (action codes per tile)
     i32* m_24; // +0x24  per-row start-index table (m_24[y])
 };
+SIZE_UNKNOWN(CActionGrid);
 
 struct WwdGrViewport {
     char m_pad0[0x5c];
     CActionGrid* m_5c; // +0x5c
 };
+SIZE_UNKNOWN(WwdGrViewport);
 
 // The sprite factory the brick-break path spawns through (g->m_30->m_8). Process
 // also reads g->m_30->m_28->m_30 (a one-shot impact-sound gate). External slots.
 struct CSpriteMaker {
     void* CreateSprite(i32 a0, i32 x, i32 y, i32 z, void* name, i32 flags); // 0x1597b0
 };
+SIZE_UNKNOWN(CSpriteMaker);
 struct CSpriteMakerSub {
     char m_pad0[0x30];
     i32 m_30; // +0x30  impact-sound already-played gate
 };
+SIZE_UNKNOWN(CSpriteMakerSub);
 struct WwdGrSprHolder {
     char m_pad0[0x8];
     CSpriteMaker* m_8; // +0x08  sprite factory (CreateSprite)
@@ -48,6 +52,7 @@ struct WwdGrSprHolder {
     WwdGrViewport* m_24;   // +0x24  the SetActionCode grid viewport
     CSpriteMakerSub* m_28; // +0x28  impact-gate holder
 };
+SIZE_UNKNOWN(WwdGrSprHolder);
 
 // The message/effect sink (g->m_68): PostTileEvent posts coordinate-tagged events
 // to the game; external/no-body so the dispatch reloc-masks.
@@ -55,6 +60,7 @@ struct CTileEventSink {
     void PostA(i32 x, i32 y, i32 a2, i32 a3, i32 a4); // 0x40400c  (edi==0x138 path)
     void PostB(i32 x, i32 y, i32 a2, i32 a3);         // 0x402fb3  (edi==0x144 path)
 };
+SIZE_UNKNOWN(CTileEventSink);
 
 struct WwdGameRegZ {
     char m_pad0[0x30];
@@ -89,6 +95,7 @@ extern i32 g_scrollDelta;
 struct CActionGridMgr {
     void RefreshTile();
 };
+SIZE_UNKNOWN(CActionGridMgr);
 
 // The brick / tile-object passed as Process's arg (ebx). External methods modeled
 // no-body so their __thiscall dispatch reloc-masks.
@@ -99,6 +106,7 @@ struct CBrickTile {
     i32 m_1e4; // +0x1e4 cleared on edi==0x132
     i32 m_1ec; // +0x1ec brick-color / slot discriminator (==5 -> all-slots)
 };
+SIZE_UNKNOWN(CBrickTile);
 
 // The spawned brick-break sprite (CreateSprite result): ApplyAnim selects the
 // break animation by name, CacheFrame caches its first frame. External no-body.
@@ -108,11 +116,13 @@ struct CBreakSprite {
     i32 m_8;                            // +0x08  flag word
     i32 m_198;                          // +0x198 cache-state gate
 };
+SIZE_UNKNOWN(CBreakSprite);
 
 // The impact one-shot emitter vtable slot used on g->m_30->m_28->m_30==0.
 struct CImpactSound {
     void Play(void* sink, i32 a1, i32 a2, i32 a3); // 0x4025fe
 };
+SIZE_UNKNOWN(CImpactSound);
 
 // The sound-bank lookup by name (thunk_FUN_0045b7e0, __cdecl). External no-body.
 extern CImpactSound* Eng_FindSound(const char* name);

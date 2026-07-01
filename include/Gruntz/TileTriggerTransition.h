@@ -71,12 +71,14 @@ public:
     virtual void Vfunc38(); // index 14 (+0x38)  state 0x50
     virtual void Vfunc3C(); // index 15 (+0x3c)  state 0x53
 };
+SIZE_UNKNOWN(CTileTransitionState);
 
 struct CTileTransitionController {
     char m_pad00[0x18];
     CTileTransitionState* m_state; // +0x18  current state object
     u32 m_stateId;                 // +0x1c  state id (unsigned: the pump uses ja/jbe)
 };
+SIZE_UNKNOWN(CTileTransitionController);
 
 // The default-state engine helper (FUN_0056e4f0, __cdecl, takes the state object).
 extern "C" void TileTransitionDefaultStep(CTileTransitionState* obj);

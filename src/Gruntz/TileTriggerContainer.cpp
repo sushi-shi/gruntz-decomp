@@ -29,6 +29,7 @@ public:
     i32 m_18;
     i32 m_1c; // +0x1c  cleared before delete
 };
+SIZE_UNKNOWN(TtcElem);
 
 // ---------------------------------------------------------------------------
 // CTileTriggerContainer::DtorBase

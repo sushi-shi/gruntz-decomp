@@ -42,6 +42,7 @@ public:
     virtual void TransferIn(void* buf, i32 n); // +0x2c  read counterpart of Transfer
     virtual void Transfer(void* buf, i32 n);   // +0x30
 };
+SIZE_UNKNOWN(CSerialStream);
 
 // vftable.  Reconstructed from the methods below; fields only
 // cover the touched offsets.  Size ~0x8c (0x2c base + 0x60 m_block).
@@ -112,5 +113,6 @@ public:
         CTileTriggerSwitchLogic* m_data; // +0x08
     };
 };
+SIZE_UNKNOWN(CTileTriggerSwitchLogic);
 
 #endif // SRC_GRUNTZ_TILETRIGGERSWITCHLOGIC_H

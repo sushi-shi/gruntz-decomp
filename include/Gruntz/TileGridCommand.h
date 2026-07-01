@@ -30,24 +30,28 @@ struct TgcLayer {
     i32* m_20; // +0x20  flat cell array
     i32* m_24; // +0x24  per-row base offsets
 };
+SIZE_UNKNOWN(TgcLayer);
 
 // The tile map: m_5c is the active layer.
 struct TgcMap {
     char _pad00[0x5c];
     TgcLayer* m_5c; // +0x5c  active layer
 };
+SIZE_UNKNOWN(TgcMap);
 
 // A report record posted by the in-game text manager; +0x124 latches a serial.
 struct TgcReport {
     char _pad00[0x124];
     i32 m_124; // +0x124
 };
+SIZE_UNKNOWN(TgcReport);
 
 // The in-game floating-text manager (gamemgr->m_08): Report posts a formatted
 // status line and returns the new record.  __thiscall engine callee, reloc-masked.
 struct TgcTextMgr {
     TgcReport* Report(i32 a1, i32 x, i32 y, i32 strId, const char* fmt, i32 flags); // 0x1597b0
 };
+SIZE_UNKNOWN(TgcTextMgr);
 
 // The active game manager: m_08 is the in-game text manager; m_24 the tile map.
 struct TgcGameMgr {
@@ -56,18 +60,21 @@ struct TgcGameMgr {
     char _pad0c[0x24 - 0x0c];
     TgcMap* m_24; // +0x24  the tile map
 };
+SIZE_UNKNOWN(TgcGameMgr);
 
 // A redraw-region helper (g_gameReg->m_70): MarkCell pushes a dirty cell so the
 // renderer repaints it.  __thiscall engine callee, reloc-masked.
 struct TgcRedraw {
     void MarkCell(i32 x, i32 y, i32 val); // 0x33f0
 };
+SIZE_UNKNOWN(TgcRedraw);
 
 // A pixel-region dirty helper (g_gameReg->m_68): MarkRect flags a screen rect for
 // repaint.  __thiscall engine callee, reloc-masked.
 struct TgcRegion {
     void MarkRect(i32 a1, i32 x, i32 y, i32 span, i32 a5, i32 a6); // 0x152d
 };
+SIZE_UNKNOWN(TgcRegion);
 
 // The WwdGameReg singleton (g_gameReg, RVA 0x64556c); +0x30 is the active game
 // manager, +0x68 the rect-dirty helper, +0x70 the redraw helper.
@@ -79,6 +86,7 @@ struct TgcGameReg {
     char _pad6c[0x70 - 0x6c];
     TgcRedraw* m_70; // +0x70  redraw helper
 };
+SIZE_UNKNOWN(TgcGameReg);
 extern TgcGameReg* g_gameReg;
 
 // A serialization stream: Transfer (vtable slot 12, +0x30) copies n bytes
@@ -99,6 +107,7 @@ public:
     virtual i32 Read(void* buf, i32 n);      // +0x2c (deserialize transfer)
     virtual void Transfer(void* buf, i32 n); // +0x30
 };
+SIZE_UNKNOWN(TgcStream);
 
 // A polymorphic VIEW of the command used only to fire its slot-0 virtual (the
 // duty-edge tick): cast the (manually-vptr'd, non-polymorphic) command to this
@@ -106,6 +115,7 @@ public:
 struct TgcTickView {
     virtual void Tick(); // slot 0
 };
+SIZE_UNKNOWN(TgcTickView);
 
 class CTileGridCommand {
 public:
@@ -142,5 +152,6 @@ public:
     i32 m_dutyOn;                // +0x38  duty-cycle on/off latch (1 = currently on)
     i32 m_grid[24];              // +0x3c..+0x9b  (24-dword block, serialized in a loop)
 };
+SIZE_UNKNOWN(CTileGridCommand);
 
 #endif // SRC_GRUNTZ_TILEGRIDCOMMAND_H

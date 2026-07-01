@@ -21,6 +21,7 @@ public:
     i32 Tick();                        // 0x11a700
     virtual ~CVoiceTrigger() OVERRIDE; // 0x0135a0 (folds the CUserLogic teardown)
 };
+SIZE_UNKNOWN(CVoiceTrigger);
 
 // The bound CGameObject (m_10/m_38) viewed by the ctor: the tile-config bound
 // counts at +0x134..+0x140 and the derived screen-rect bounds at +0x144..+0x150
@@ -44,6 +45,7 @@ struct VTrigCtorObj {
     i32 m_14c; // +0x14c  derived right bound
     i32 m_150; // +0x150  derived bottom bound
 };
+SIZE_UNKNOWN(VTrigCtorObj);
 
 // ---------------------------------------------------------------------------
 // The activation registry CVoiceTrigger::RegisterActs (0x11a500) binds into - the
@@ -58,9 +60,11 @@ struct CVTrigColl {
     i32 Find(i32 coord, i32 z);     // 0x16da80 (__thiscall ret 8)
     void Construct(i32 lo, i32 hi); // 0x408710 (shared registry ctor, __thiscall ret 8)
 };
+SIZE_UNKNOWN(CVTrigColl);
 struct CVTrigColl2 {
     void Insert(void* coll, void* item, i32 n); // 0x16d850 (__thiscall ret 0xc)
 };
+SIZE_UNKNOWN(CVTrigColl2);
 extern "C" i32 ActAlloc(); // 0x16d990
 
 extern i32 g_vtrigLo;
@@ -80,6 +84,7 @@ extern void* g_actAllocResult;
 struct CVTrigEntry {
     void (CVoiceTrigger::*m_fn)(); // [entry]
 };
+SIZE_UNKNOWN(CVTrigEntry);
 
 // The inlined coordinate->Entry* lookup the registration resolves the slot with.
 static inline CVTrigEntry* VTrigLookup(i32 coord) {
@@ -159,6 +164,7 @@ struct CVoiceSink {
     // CueA(hit, m_10->m_124, m_10->m_128, 0, -1, -1) -> nonzero on fire.
     i32 CueA(CVoiceHit* hit, i32 b, i32 c, i32 d, i32 e, i32 f); // 0x11b3b0
 };
+SIZE_UNKNOWN(CVoiceSink);
 
 // The entity QueryAt returns: its bound sprite (+0x10) carries the screen x/y
 // (+0x5c/+0x60) the on-screen window test reads.
@@ -167,10 +173,12 @@ struct CVoiceHitSprite {
     i32 m_5c; // +0x5c screen x
     i32 m_60; // +0x60 screen y
 };
+SIZE_UNKNOWN(CVoiceHitSprite);
 struct CVoiceHit {
     char m_pad0[0x10];
     CVoiceHitSprite* m_10; // +0x10 bound sprite
 };
+SIZE_UNKNOWN(CVoiceHit);
 
 // The bound sprite (this->m_10): +0x5c/+0x60 = screen x/y, +0x124/+0x128 = the
 // voice-cue ids passed to CueA, +0x134/+0x144 = the probe rect bounds.
@@ -186,6 +194,7 @@ struct CVoiceSprite {
     char m_pad138[0x144 - 0x138];
     i32 m_144; // +0x144 probe rect hi
 };
+SIZE_UNKNOWN(CVoiceSprite);
 
 // The on-screen window object (this->m_38): +0x08 holds the per-frame status
 // bits (bit 0x10000 == "fired / handled this frame").
@@ -193,6 +202,7 @@ struct CVoiceWindow {
     char m_pad0[0x8];
     i32 m_8; // +0x08 status bits
 };
+SIZE_UNKNOWN(CVoiceWindow);
 
 // The global game registry (WwdGameReg, RVA 0x24556c; wwdfile owns the DATA
 // label). The on-screen window bounds are at +0x13c/+0x140/+0x144/+0x148; the

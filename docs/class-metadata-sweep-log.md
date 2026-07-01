@@ -265,3 +265,69 @@ and by Gruntz's CAmbientSound.h / CRandomAmbientSound.h / CDDrawSubMgrLeafScan.c
 took all six annotations with zero neighbor movement. Contrast Grunt.h, where a
 lone `SIZE_UNKNOWN(CGrunt)` reschedules a neighbor. Dsndmgr is safe to annotate in
 one shot; per-class build verification was still done here and confirmed neutral.
+
+## Boundary + Tile-trigger family (2026-07-01)
+
+Scope: `include/Gruntz/Tile*.h` + `CExitTrigger.h`/`CTimeBomb.h`/`TriggerMgr.h`
+(+ `CCheckpointTrigger.h`) and the `src/Gruntz/Boundary*.cpp` / `Tile*.cpp` /
+`CExitTrigger.cpp` / `CVoiceTrigger.cpp` / `CCheckpointTrigger.cpp` /
+`CSecretLevelTrigger.cpp` / `CTimeBomb.cpp` / `TriggerMgr*.cpp` local classes.
+(No `Boundary*.h` / `CVoiceTrigger.h` / `CSecretLevelTrigger.h` headers exist —
+those classes are `.cpp`-local.)
+
+Coverage delta:
+- SIZE completeness: family violators **413 -> 0**; tree-wide annotated names
+  **154/3296 -> 567/3296** (+413 = the whole family).
+- VTBL completeness: family violators **49 -> 49** (all skipped, see below); none
+  catalogued (every add would collide on a shared RVA or target an absent/foreign
+  vtable).
+
+Annotated: **413 SIZE_UNKNOWN + 0 SIZE(exact) + 0 VTBL.** All 413 family classes
+are partial pad-to-last-touched-field modeling views (the RTTI-unattributable
+engine_boundary backlog + the placeholder-named tile-trigger view structs), so the
+scalable `SIZE_UNKNOWN` default is the only honest annotation — no object here is
+provably == its full retail alloc size, so no exact `SIZE` was guessed. (The owning
+matcher can upgrade e.g. `CTrigParam` (by-value 16-byte block) to exact later.)
+
+### Hot-header casualties + placement fix
+- NONE among the 7 headers (all 1-2 includers; the `char[1]` typedef the macros
+  lower to under MSVC5 perturbed nothing). Added `#include <rva.h>` to the 3
+  headers lacking it (TileGridCommand.h / TileTriggerContainer.h /
+  TileTriggerSwitchLogic.h); matching-neutral.
+- **`TriggerMgr.cpp` IS codegen-sensitive (a `.cpp`, not a header).** The default
+  interspersed placement (a `SIZE_UNKNOWN(...)` right after each class) rescheduled
+  two same-TU methods: `CTriggerMgr::ResetGroup` -0.18% and `HitTestCell` -0.02%
+  (an interspersed no-code typedef nudges MSVC5's per-function COMDAT ordering in
+  this dense TU). **Fix: place all of TriggerMgr.cpp's 46 `SIZE_UNKNOWN` at
+  end-of-TU (after every function body) — verified matching-NEUTRAL** (0 regress).
+  Lesson for the full sweep: for a large/dense reconstructed `.cpp`, prefer
+  end-of-TU placement; interspersed is fine for headers and small TUs.
+- Two incidental IMPROVEMENTS (interspersed placement in their own TUs, no
+  regression, kept): `triggermgr_eh CTriggerMgr::DestroyGroup` 64.80->66.75 and
+  `boundarytail CSnd788d0::PositionUpdate` 64.83->65.34.
+
+### VTBL skipped (all 49; un-catalogable, NOT casualties):
+Two exhaustive buckets, identical to the Net/Dsndmgr pilots' skip cases:
+1. **Interface / archive / slot-dispatch VIEW structs** — declare `virtual` slots
+   ONLY to lower a slot-indexed virtual call (`p->Read()` -> `call [vptr+0x2c]`)
+   with no cast; NEVER constructed here, so cl emits no `??_7` in this TU and the
+   real vtable lives in a foreign engine class. No own RVA to bind. E.g. the
+   serializer views TgcStream/TtcStream/CSerialStream/CTileActionArchive/
+   CTileTransitionState/CTrigReader/CTileObj/CTmSerReader/CTmSerMapObj/TgcTickView,
+   and the dispatch views Cea170/CArchiveEb/CArchive113/CState8e/Cd5e20/
+   CGuardedDispatch1f870/DDPageSub/ImgOwned/ImgOwnedX/Snd138f20/Killable0/Killable1/
+   RezOwner/RezDir/RezDirBase/RezListNode.
+2. **Severus/state/bute/logic BASE modeling shells** (WorkerBase39f20/
+   WorkerBase8c400/CStateBase8d000/CButeBase1_21/CButeBase2_21/Sev17e240/Sev14fe30/
+   Sev161500/Sev138a50/Sev168c10/Sev15b6d0/FaderBase/EmbedBase17e990/Base163a40 and
+   the 9 CTile*TriggerLogicBase/CTile*TriggerSwitchLogicBase shells in
+   TileTriggerDerivedCtors.cpp): the base subobject folds the SHARED CObject/CState/
+   CButeBase base-dtor vtable (0x5e8cb4 / 0x5ea21c / 0x5e94ac / 0x5e949c) already
+   bound as `?g_severusBaseDtorVtbl@@3PAXA` &c.; the concrete leaf vtable is the
+   DERIVED class's auto-`??_7` (reloc-masked / auto-named). A `VTBL(<base-shell>, ...)`
+   would either dup the shared RVA (dup-DATA guard) or mis-attribute one shared/leaf
+   vtable to a modeling-base name. KEEP-HAND-ROLLED / shared-base-vtable exception.
+
+Hotness verdict: **the 7 headers are CLEAN**; the ONE codegen-sensitive unit is the
+big reconstructed `TriggerMgr.cpp` (fixed via end-of-TU placement). No regression
+committed; overall stayed 1870/3394 exact / 63.33% fuzzy throughout.

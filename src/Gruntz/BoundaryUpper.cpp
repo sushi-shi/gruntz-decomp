@@ -22,6 +22,7 @@ extern void* g_severusWorkerDtorVtbl;
 struct SW_161460 {
     void Restamp();
 };
+SIZE_UNKNOWN(SW_161460);
 RVA(0x00161460, 0x7)
 void SW_161460::Restamp() {
     *(void**)this = &g_severusWorkerDtorVtbl;
@@ -30,6 +31,7 @@ void SW_161460::Restamp() {
 struct SW_161560 {
     void Restamp();
 };
+SIZE_UNKNOWN(SW_161560);
 RVA(0x00161560, 0x7)
 void SW_161560::Restamp() {
     *(void**)this = &g_severusWorkerDtorVtbl;
@@ -38,6 +40,7 @@ void SW_161560::Restamp() {
 struct SW_163a10 {
     void Restamp();
 };
+SIZE_UNKNOWN(SW_163a10);
 RVA(0x00163a10, 0x7)
 void SW_163a10::Restamp() {
     *(void**)this = &g_severusWorkerDtorVtbl;
@@ -52,6 +55,7 @@ struct B_1413c0 {
     i32 m_20; // 0x20
     i32 Scale(i32 n);
 };
+SIZE_UNKNOWN(B_1413c0);
 RVA(0x001413c0, 0xb)
 i32 B_1413c0::Scale(i32 n) {
     return m_20 * n;
@@ -65,6 +69,7 @@ struct B_1614b0 {
     void* m_14; // 0x14
     void Release();
 };
+SIZE_UNKNOWN(B_1614b0);
 RVA(0x001614b0, 0x1c)
 void B_1614b0::Release() {
     if (m_14) {
@@ -86,6 +91,7 @@ struct Snd_137300 {
     i32 Probe(); // 0x137260
     i32 Get();
 };
+SIZE_UNKNOWN(Snd_137300);
 RVA(0x00137300, 0x23)
 i32 Snd_137300::Get() {
     if (!m_78) {
@@ -108,6 +114,7 @@ struct DdOb_1433d0 {
     u32 _10[(0x54 - 0x10) / 4];
     u32 m_54; // 0x54
 };
+SIZE_UNKNOWN(DdOb_1433d0);
 RVA(0x001433d0, 0x4f)
 i32 __stdcall Compare_1433d0(DdOb_1433d0* a, DdOb_1433d0* b) {
     if (a->m_c > b->m_c) {
@@ -133,6 +140,7 @@ struct B_1847a0 {
     i32 m_70; // 0x70
     void Set(i32 v);
 };
+SIZE_UNKNOWN(B_1847a0);
 RVA(0x001847a0, 0xa)
 void B_1847a0::Set(i32 v) {
     m_70 = v;
@@ -146,6 +154,7 @@ struct B_17fc40 {
     void* m_50; // 0x50
     void Free();
 };
+SIZE_UNKNOWN(B_17fc40);
 RVA(0x0017fc40, 0x11)
 void B_17fc40::Free() {
     if (m_50) {
@@ -174,6 +183,7 @@ struct DevCfg {
     void Free360();
     void Free6d0();
 };
+SIZE_UNKNOWN(DevCfg);
 RVA(0x00134360, 0x33)
 void DevCfg::Free360() {
     if (m_2a0) {
@@ -217,14 +227,17 @@ struct Vtbl1413 {
     char _0[0x80];
     void(__stdcall* Op)(Obj1413*, i32); // +0x80
 };
+SIZE_UNKNOWN(Vtbl1413);
 struct Obj1413 {
     Vtbl1413* vtbl;
 };
+SIZE_UNKNOWN(Obj1413);
 struct Owner1413 {
     char _0[8];
     Obj1413* m_8; // 0x8
     void Thunk();
 };
+SIZE_UNKNOWN(Owner1413);
 RVA(0x001413b0, 0xf)
 void Owner1413::Thunk() {
     m_8->vtbl->Op(m_8, 0);
@@ -241,6 +254,7 @@ struct DdEntry {
     char _10[0x54 - 0x10];
     i32 m_54; // 0x54
 };
+SIZE_UNKNOWN(DdEntry);
 struct ModeArr {
     char _0[0x4b8];
     DdEntry** m_4b8; // 0x4b8
@@ -250,6 +264,7 @@ struct ModeArr {
     void FindFwd(struct Pair2* out, i32 k0, i32 k1, i32 k2);
     void FindBack(struct Pair2* out, i32 k0, i32 k1, i32 k2);
 };
+SIZE_UNKNOWN(ModeArr);
 RVA(0x001434c0, 0x45)
 i32 ModeArr::FindIndex(i32 k0, i32 k1, i32 k2) {
     for (i32 i = 0; i < m_4bc; i++) {
@@ -283,6 +298,7 @@ struct B_13dee0 {
     i32 m_28; // 0x28
     void Set(i32 v);
 };
+SIZE_UNKNOWN(B_13dee0);
 RVA(0x0013dee0, 0x1b)
 void B_13dee0::Set(i32 v) {
     m_1c = v;
@@ -300,14 +316,17 @@ struct IDDSVtbl_ee30 {
     char _0[0x48];
     u32(__stdcall* Flip)(IDDS_ee30*, i32); // +0x48
 };
+SIZE_UNKNOWN(IDDSVtbl_ee30);
 struct IDDS_ee30 {
     IDDSVtbl_ee30* vtbl;
 };
+SIZE_UNKNOWN(IDDS_ee30);
 struct B_13ee30 {
     char _0[8];
     IDDS_ee30* m_8; // 0x8
     void WaitFlip();
 };
+SIZE_UNKNOWN(B_13ee30);
 RVA(0x0013ee30, 0x29)
 void B_13ee30::WaitFlip() {
     while (m_8->vtbl->Flip(m_8, 2) == 0x8876021c) {
@@ -321,6 +340,7 @@ void B_13ee30::WaitFlip() {
 struct Killable0 {
     virtual void Destroy(i32); // slot 0
 };
+SIZE_UNKNOWN(Killable0);
 struct B_151e70 {
     char _0[0x10];
     i32 m_10;        // 0x10
@@ -332,6 +352,7 @@ struct B_151e70 {
     i32 m_178; // 0x178
     void Clear();
 };
+SIZE_UNKNOWN(B_151e70);
 RVA(0x00151e70, 0x3b)
 void B_151e70::Clear() {
     m_10 = 0;
@@ -356,20 +377,24 @@ struct Killable1 {
     virtual void V0();
     virtual void Destroy(i32); // slot 1
 };
+SIZE_UNKNOWN(Killable1);
 struct Node166810 {
     Node166810* m_0; // 0x0 link
     char _4[4];
     Killable1* m_8; // 0x8 payload
 };
+SIZE_UNKNOWN(Node166810);
 struct Arr1dc {
     void RemoveAll(); // 0x1b5a0b
 };
+SIZE_UNKNOWN(Arr1dc);
 struct B_166810 {
     char _0[0x1dc];
     Arr1dc m_1dc;      // 0x1dc
     Node166810* m_1e0; // 0x1e0
     void Clear();
 };
+SIZE_UNKNOWN(B_166810);
 RVA(0x00166810, 0x32)
 void B_166810::Clear() {
     Node166810* n = m_1e0;
@@ -398,6 +423,7 @@ struct RezOwner {
     virtual void v1();
     virtual i32 v2(); // slot 2 (+8)
 };
+SIZE_UNKNOWN(RezOwner);
 struct RezItm {
     char _0[0xc];
     RezOwner* m_c; // 0xc
@@ -406,6 +432,7 @@ struct RezItm {
     i32 m_20; // 0x20
     i32 Scan();
 };
+SIZE_UNKNOWN(RezItm);
 RVA(0x0013c8a0, 0x45)
 i32 RezItm::Scan() {
     m_20 = -1;
@@ -444,6 +471,7 @@ struct RezDir {
     i32 m_20; // 0x20
     i32 Check();
 };
+SIZE_UNKNOWN(RezDir);
 RVA(0x0013c8f0, 0x41)
 i32 RezDir::Check() {
     m_20 = -1;
@@ -464,6 +492,7 @@ i32 RezDir::Check() {
 struct Pair2 {
     i32 a, b;
 };
+SIZE_UNKNOWN(Pair2);
 // @early-stop
 // ~82.5% regalloc wall: body + guards + FindIndex call byte-exact; in the scan
 // loop retail pins the strength-reduced iterator pointer in edx and the loaded
@@ -534,6 +563,7 @@ struct Snd138f20 {
     i32 Helper(); // 0x138f60
     i32 Gate();
 };
+SIZE_UNKNOWN(Snd138f20);
 RVA(0x00138f20, 0x3a)
 i32 Snd138f20::Gate() {
     if (!v8()) {
@@ -558,6 +588,7 @@ struct C16be60 {
     void Flush();                    // 0x16bd90
     C16be60* Append(i32 arg);
 };
+SIZE_UNKNOWN(C16be60);
 RVA(0x0016be60, 0x2a)
 C16be60* C16be60::Append(i32 arg) {
     if (Ready()) {
@@ -577,11 +608,13 @@ struct Cb151d20 {
     char _14[0x1c - 0x14];
     void* m_1c; // 0x1c
 };
+SIZE_UNKNOWN(Cb151d20);
 struct B_151d20 {
     char _0[0x7c];
     Cb151d20* m_7c; // 0x7c
     i32 Notify(void* arg);
 };
+SIZE_UNKNOWN(B_151d20);
 RVA(0x00151d20, 0x3a)
 i32 B_151d20::Notify(void* arg) {
     Cb151d20* p = m_7c;
@@ -606,6 +639,7 @@ class CImageCache {
 public:
     void RemoveAll(); // 0x1b4f0b
 };
+SIZE_UNKNOWN(CImageCache);
 extern CImageCache g_imageCache; // 0x653c88
 RVA(0x0013e070, 0xa)
 void ClearImageCache_13e070() {
@@ -615,6 +649,7 @@ void ClearImageCache_13e070() {
 struct CDdObArray {
     void RemoveAll(); // 0x1b4f0b
 };
+SIZE_UNKNOWN(CDdObArray);
 extern CDdObArray g_modeArray; // 0x683ec8
 RVA(0x00141c80, 0xa)
 void ClearModeArray_141c80() {
@@ -629,6 +664,7 @@ void ClearModeArray_141c80() {
 struct Blk6c {
     i32 d[0x1b];
 };
+SIZE_UNKNOWN(Blk6c);
 struct ImgOwned {
     virtual void v0();
     virtual void v1();
@@ -647,6 +683,7 @@ struct ImgOwned {
     i32 Forward(i32 a0, const void* a1);
     i32 Commit(i32 a0, const void* a1);
 };
+SIZE_UNKNOWN(ImgOwned);
 RVA(0x0013e0a0, 0x27)
 i32 ImgOwned::Apply(i32 mode, const void* src) {
     if (src) {

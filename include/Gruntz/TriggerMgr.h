@@ -32,6 +32,7 @@ struct CTrigPoint {
     i32 x; // +0x00
     i32 y; // +0x04
 };
+SIZE_UNKNOWN(CTrigPoint);
 
 // The archive reader the Load serializer pulls fields through (vtable slot 0x2c =
 // Read(dst, size)); defined fully in the eh sibling TU.
@@ -292,5 +293,6 @@ public:
     // list arrays). Reconstructed to plateau (eh sibling TU).
     ~CTriggerMgr();
 };
+SIZE_UNKNOWN(CTriggerMgr);
 
 #endif

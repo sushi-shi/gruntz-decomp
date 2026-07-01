@@ -30,6 +30,7 @@ struct CTBombColl {
 struct CTBombColl2 {
     void Insert(void* coll, void* item, i32 n); // 0x16d850 (__thiscall ret 0xc)
 };
+SIZE_UNKNOWN(CTBombColl2);
 extern "C" i32 ActAlloc(); // 0x16d990
 
 extern i32 g_tbombLo;
@@ -54,6 +55,7 @@ typedef void (CTimeBomb::*TBombHandler)();
 struct CTBombEntry {
     TBombHandler m_fn; // [entry]
 };
+SIZE_UNKNOWN(CTBombEntry);
 
 // The inlined coordinate->Entry* lookup FireActivation folds in twice.
 static inline CTBombEntry* TBombLookup(i32 coord) {
@@ -172,6 +174,7 @@ struct TBombObj {
     char m_pad128[0x1b4 - 0x128];
     i32 m_1b4; // +0x1b4  active-anim descriptor pointer
 };
+SIZE_UNKNOWN(TBombObj);
 
 // The game registry singleton's collision grid (g_gameReg->m_70): an 0x1c-byte
 // cell grid (m_8[row] -> cell-row base; cols 0x1c B apart) bounded by m_c x m_10.
@@ -181,18 +184,21 @@ struct TBombGrid {
     i32 m_c;    // +0x0c  width  (col bound)
     i32 m_10;   // +0x10  height (row bound)
 };
+SIZE_UNKNOWN(TBombGrid);
 // The registry's tile-manager (g_gameReg->m_68): the per-frame detonate path
 // posts the bomb's tile event to it via NotifyMoveAt (thunk 0x2fb3 -> 0x7b330,
 // 4 args). Modeled NO-body so the call reloc-masks.
 struct TBombTileMgr {
     void NotifyMoveAt(i32 px, i32 py, i32 a, i32 b); // 0x7b330
 };
+SIZE_UNKNOWN(TBombTileMgr);
 struct TBombGameReg {
     char m_pad00[0x68];
     TBombTileMgr* m_68;        // +0x68  tile-manager (detonate NotifyMoveAt)
     char m_pad6c[0x70 - 0x6c]; // +0x6c
     TBombGrid* m_70;           // +0x70
 };
+SIZE_UNKNOWN(TBombGameReg);
 DATA(0x0024556c)
 extern TBombGameReg* g_gameReg;
 
@@ -301,6 +307,7 @@ void CTimeBomb::RegisterActs() {
 struct TBombAnimSink {
     void Advance(u32 ctx); // 0x15c360
 };
+SIZE_UNKNOWN(TBombAnimSink);
 DATA(0x002bf3bc)
 extern "C" u32 g_6bf3bc;
 

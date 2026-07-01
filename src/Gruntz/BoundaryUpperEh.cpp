@@ -20,11 +20,13 @@ void RezFree(void* p);
 struct Sev17e240 {
     virtual ~Sev17e240();
 };
+SIZE_UNKNOWN(Sev17e240);
 inline Sev17e240::~Sev17e240() {}
 struct C17e240 : Sev17e240 {
     char* m_4; // +0x4
     ~C17e240();
 };
+SIZE_UNKNOWN(C17e240);
 RVA(0x0017e240, 0x51)
 C17e240::~C17e240() {
     if (m_4) {
@@ -39,11 +41,13 @@ C17e240::~C17e240() {
 struct Sev14fe30 {
     virtual ~Sev14fe30();
 };
+SIZE_UNKNOWN(Sev14fe30);
 inline Sev14fe30::~Sev14fe30() {}
 struct C14fe30 : Sev14fe30 {
     char* m_4; // +0x4
     ~C14fe30();
 };
+SIZE_UNKNOWN(C14fe30);
 RVA(0x0014fe30, 0x51)
 C14fe30::~C14fe30() {
     if (m_4) {
@@ -58,12 +62,14 @@ C14fe30::~C14fe30() {
 struct Sev161500 {
     virtual ~Sev161500();
 };
+SIZE_UNKNOWN(Sev161500);
 inline Sev161500::~Sev161500() {}
 struct C161500 : Sev161500 {
     char _4[0x14 - 0x4];
     char* m_14; // +0x14
     ~C161500();
 };
+SIZE_UNKNOWN(C161500);
 RVA(0x00161500, 0x58)
 C161500::~C161500() {
     if (m_14) {
@@ -79,11 +85,13 @@ C161500::~C161500() {
 struct Sev138a50 {
     virtual ~Sev138a50();
 };
+SIZE_UNKNOWN(Sev138a50);
 inline Sev138a50::~Sev138a50() {}
 struct C138a50 : Sev138a50 {
     ~C138a50();
     void SubTeardown(); // 0x138dd0
 };
+SIZE_UNKNOWN(C138a50);
 RVA(0x00138a50, 0x46)
 C138a50::~C138a50() {
     SubTeardown();
@@ -96,11 +104,13 @@ C138a50::~C138a50() {
 struct Sev168c10 {
     virtual ~Sev168c10();
 };
+SIZE_UNKNOWN(Sev168c10);
 inline Sev168c10::~Sev168c10() {}
 struct C168c10 : Sev168c10 {
     ~C168c10();
     void SubTeardown(); // 0x191800
 };
+SIZE_UNKNOWN(C168c10);
 RVA(0x00168c10, 0x46)
 C168c10::~C168c10() {
     SubTeardown();
@@ -113,6 +123,7 @@ C168c10::~C168c10() {
 struct Sev15b6d0 {
     virtual ~Sev15b6d0();
 };
+SIZE_UNKNOWN(Sev15b6d0);
 inline Sev15b6d0::~Sev15b6d0() {}
 struct C15b6d0 : Sev15b6d0 {
     i32 m_4; // +0x4
@@ -121,6 +132,7 @@ struct C15b6d0 : Sev15b6d0 {
     ~C15b6d0();
     void SubTeardown(); // 0x15c2c0
 };
+SIZE_UNKNOWN(C15b6d0);
 RVA(0x0015b6d0, 0x5b)
 C15b6d0::~C15b6d0() {
     SubTeardown();
@@ -137,10 +149,12 @@ C15b6d0::~C15b6d0() {
 struct FaderBase {
     virtual ~FaderBase(); // out-of-line @0x17e4a0
 };
+SIZE_UNKNOWN(FaderBase);
 struct C17f9f0 : FaderBase {
     ~C17f9f0();
     void SubFree(); // 0x17fc40
 };
+SIZE_UNKNOWN(C17f9f0);
 RVA(0x0017f9f0, 0x4f)
 C17f9f0::~C17f9f0() {
     SubFree();
@@ -149,6 +163,7 @@ struct C180450 : FaderBase {
     ~C180450();
     void SubFree(); // 0x180630
 };
+SIZE_UNKNOWN(C180450);
 RVA(0x00180450, 0x4f)
 C180450::~C180450() {
     SubFree();
@@ -163,11 +178,13 @@ C180450::~C180450() {
 struct EmbedBase17e990 {
     virtual ~EmbedBase17e990();
 };
+SIZE_UNKNOWN(EmbedBase17e990);
 inline EmbedBase17e990::~EmbedBase17e990() {}
 struct EmbedSub17e990 : EmbedBase17e990 {
     char* m_4; // +0x4 (outer +0x5c)
     ~EmbedSub17e990();
 };
+SIZE_UNKNOWN(EmbedSub17e990);
 inline EmbedSub17e990::~EmbedSub17e990() {
     if (m_4) {
         RezFree(m_4);
@@ -178,6 +195,7 @@ struct C17e990 : FaderBase {
     EmbedSub17e990 m_58; // +0x58
     ~C17e990();
 };
+SIZE_UNKNOWN(C17e990);
 RVA(0x0017e990, 0x6b)
 C17e990::~C17e990() {}
 
@@ -189,6 +207,7 @@ C17e990::~C17e990() {}
 struct Base163a40 {
     virtual ~Base163a40();
 };
+SIZE_UNKNOWN(Base163a40);
 inline Base163a40::~Base163a40() {}
 struct C163a40 {
     char _0[0x70];
@@ -196,6 +215,7 @@ struct C163a40 {
     void SubTeardown(); // 0x1682f0
     ~C163a40();
 };
+SIZE_UNKNOWN(C163a40);
 RVA(0x00163a40, 0x41)
 C163a40::~C163a40() {
     SubTeardown();

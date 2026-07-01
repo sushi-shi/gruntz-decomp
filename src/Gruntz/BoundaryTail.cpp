@@ -67,12 +67,14 @@ struct FillRect176d20 {
     i32 right;  // +0x8
     i32 bottom; // +0xc
 };
+SIZE_UNKNOWN(FillRect176d20);
 struct CImg176d20 {
     char _0[0x42c];
     u8* m_42c;  // pixel base
     i32* m_430; // row-offset table
     void Fill(FillRect176d20* r, int color);
 };
+SIZE_UNKNOWN(CImg176d20);
 RVA(0x00176d20, 0x71)
 void CImg176d20::Fill(FillRect176d20* r, int color) {
     i32 width = r->right - r->left;
@@ -102,22 +104,27 @@ struct Emitter788d0 {
     float m_10, m_14, m_18, m_1c; // 0x10,0x14,0x18,0x1c
     void Update();                // 0x161c90
 };
+SIZE_UNKNOWN(Emitter788d0);
 struct ElemSrc788d0 {
     char _0[0x5c];
     i32 m_5c, m_60; // 0x5c,0x60
 };
+SIZE_UNKNOWN(ElemSrc788d0);
 struct Elem788d0 {
     char _0[0x10];
     ElemSrc788d0* m_10; // 0x10
 };
+SIZE_UNKNOWN(Elem788d0);
 struct Holder788d0_24 {
     char _0[0x5c];
     Emitter788d0* m_5c; // 0x5c
 };
+SIZE_UNKNOWN(Holder788d0_24);
 struct Holder788d0 {
     char _0[0x24];
     Holder788d0_24* m_24; // 0x24
 };
+SIZE_UNKNOWN(Holder788d0);
 struct CSnd788d0 {
     char _0[0x1c];
     Elem788d0* m_1c[1]; // 0x1c array
@@ -128,6 +135,7 @@ struct CSnd788d0 {
     i32 m_238;          // 0x238
     i32 PositionUpdate();
 };
+SIZE_UNKNOWN(CSnd788d0);
 RVA(0x000788d0, 0x64)
 i32 CSnd788d0::PositionUpdate() {
     ElemSrc788d0* src = m_1c[m_234 * 15 + m_238]->m_10;
@@ -161,6 +169,7 @@ struct Obj38120 {
     CString m_0; // 0x0
     CString GetName();
 };
+SIZE_UNKNOWN(Obj38120);
 RVA(0x00038120, 0x1d)
 CString Obj38120::GetName() {
     return m_0;
@@ -171,6 +180,7 @@ struct Obj85500 {
     CString m_ec; // 0xec
     CString GetName();
 };
+SIZE_UNKNOWN(Obj85500);
 RVA(0x00085500, 0x23)
 CString Obj85500::GetName() {
     return m_ec;
@@ -196,6 +206,7 @@ struct CBlit148250 {
     void M147cd0(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // 0x147cd0
     void Flush();
 };
+SIZE_UNKNOWN(CBlit148250);
 RVA(0x00148250, 0x61)
 void CBlit148250::Flush() {
     if (m_34 == 0) {
@@ -232,25 +243,30 @@ struct R23d90 {
     char _0[0x40];
     i32 m_40, m_44; // 0x40,0x44
 };
+SIZE_UNKNOWN(R23d90);
 struct P23d90 {
     char _0[0x10];
     i32 m_10, m_14; // 0x10,0x14 origin
     char _18[0x5c - 0x18];
     R23d90* m_5c; // 0x5c bounds
 };
+SIZE_UNKNOWN(P23d90);
 struct Mid23d90 {
     char _0[0x24];
     P23d90* m_24; // 0x24
 };
+SIZE_UNKNOWN(Mid23d90);
 struct Outer23d90 {
     char _0[0x30];
     Mid23d90* m_30; // 0x30
 };
+SIZE_UNKNOWN(Outer23d90);
 struct CObj23d90 {
     char _0[0x38];
     Outer23d90* m_38; // 0x38
     void Blit(i32 a1, i32 a2, i32 x, i32 y, i32 a5);
 };
+SIZE_UNKNOWN(CObj23d90);
 // The blit primitive reached through ILT thunk 0x2095 (__stdcall, callee-clean).
 void __stdcall Func2095(i32, i32, i32, i32, i32, i32, i32, i32);
 RVA(0x00023d90, 0x64)
@@ -272,17 +288,21 @@ struct Entry_bdd0 {
     char _0[0x10];
     void* m_10; // 0x10
 };
+SIZE_UNKNOWN(Entry_bdd0);
 struct Map_bdd0 {
     i32 Lookup(const char* key, Entry_bdd0** out); // 0x1b8438 (ret 8)
 };
+SIZE_UNKNOWN(Map_bdd0);
 struct Arg1_bdd0 {
     char _0[0x10];
     Map_bdd0 m_10; // 0x10 (CMapStringToOb)
 };
+SIZE_UNKNOWN(Arg1_bdd0);
 struct CObj_bdd0 {
     void* Method3026(void* a, i32 b, i32 c, i32 d, i32 e); // 0x3026
     void* Dispatch(Arg1_bdd0* a1, const char* key, i32 a3, i32 a4, i32 a5, i32 a6);
 };
+SIZE_UNKNOWN(CObj_bdd0);
 RVA(0x0000bdd0, 0x53)
 void* CObj_bdd0::Dispatch(Arg1_bdd0* a1, const char* key, i32 a3, i32 a4, i32 a5, i32 a6) {
     Entry_bdd0* out = 0;
@@ -310,14 +330,17 @@ struct Node118330 {
     char _0[0xc];
     i32 m_c, m_10, m_14; // 0xc,0x10,0x14
 };
+SIZE_UNKNOWN(Node118330);
 struct Iter118330 {
     void* pos;
     Node118330* GetNext(int x); // 0x1b30f0 (__thiscall)
 };
+SIZE_UNKNOWN(Iter118330);
 struct Out118330 {
     char _0[0xc];
     i32 m_c, m_10, m_14; // 0xc,0x10,0x14
 };
+SIZE_UNKNOWN(Out118330);
 void __stdcall IterInit(Iter118330* it); // 0x1b30b1
 RVA(0x00118330, 0x57)
 i32 BuildRecord118330(Out118330* out) {

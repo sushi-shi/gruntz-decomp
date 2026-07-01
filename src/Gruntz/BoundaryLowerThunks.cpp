@@ -15,9 +15,11 @@ class CString {
 public:
     void Free1b9b93(); // 0x1b9b93 (reloc-masked)
 };
+SIZE_UNKNOWN(CString);
 struct GameKeyStr {
     void Free1b9b93(); // 0x1b9b93 (reloc-masked)
 };
+SIZE_UNKNOWN(GameKeyStr);
 extern CString g_str62c264;   // 0x62c264 (pinned in CustomWorldDialog.cpp)
 extern GameKeyStr g_levelStr; // 0x62c260 (pinned in Backlog.cpp)
 extern CString g_6473d8;      // 0x6473d8 (pinned in CMulti.cpp)
@@ -30,18 +32,23 @@ extern CString g_6473d8;      // 0x6473d8 (pinned in CMulti.cpp)
 struct CLogicActTable {
     void RegisterRange(i32 lo, i32 hi); // 0x3742 (reloc-masked)
 };
+SIZE_UNKNOWN(CLogicActTable);
 struct CLookupColl {
     void RegisterRange(i32 lo, i32 hi); // 0x3742
 };
+SIZE_UNKNOWN(CLookupColl);
 struct CActReg {
     void RegisterRange(i32 lo, i32 hi); // 0x3742
 };
+SIZE_UNKNOWN(CActReg);
 struct CTBombColl {
     void RegisterRange(i32 lo, i32 hi); // 0x3742
 };
+SIZE_UNKNOWN(CTBombColl);
 struct CHaznColl {
     void RegisterRange(i32 lo, i32 hi); // 0x3742
 };
+SIZE_UNKNOWN(CHaznColl);
 extern CLogicActTable g_logicActReg_62bfa0; // 0x62bfa0 (LogicActReg.cpp)
 extern CLookupColl g_reg_644af0;            // 0x644af0 (LogicActRegistrars.cpp)
 extern CLogicActTable g_logicActReg_646010; // 0x646010 (LogicActReg.cpp)
@@ -83,6 +90,7 @@ struct CTeardown80cf0 {
     void Base13d8c0(); // 0x13d8c0 (reloc-masked)
     void Teardown();
 };
+SIZE_UNKNOWN(CTeardown80cf0);
 RVA(0x00080cf0, 0x12)
 void CTeardown80cf0::Teardown() {
     vptr = (void*)&g_vtbl_5e9b0c;
@@ -99,6 +107,7 @@ extern i32 g_desc60aac8;
 struct CMgr6451a8 {
     void Register(void* desc); // 0x1d38c5 (reloc-masked)
 };
+SIZE_UNKNOWN(CMgr6451a8);
 DATA(0x002451a8)
 extern CMgr6451a8 g_mgr6451a8;
 RVA(0x00082aa0, 0x10)
@@ -114,6 +123,7 @@ void Register82aa0() {
 struct CoordPool {
     void Recycle(void* elem); // 0x0311b0
 };
+SIZE_UNKNOWN(CoordPool);
 extern CoordPool g_coordPool; // 0x645540 (UnknownClassArrays.cpp)
 extern void* g_freeList;      // 0x645544 (Projectile.cpp)
 DATA(0x00245548)
@@ -138,6 +148,7 @@ struct CTeardown85540 {
     void Base13ddb0(); // 0x13ddb0 (reloc-masked)
     void Teardown();
 };
+SIZE_UNKNOWN(CTeardown85540);
 RVA(0x00085540, 0xb)
 void CTeardown85540::Teardown() {
     vptr = (void*)&g_vtbl_5e9b8c;
@@ -158,6 +169,7 @@ struct CScalarDtor855a0 {
     void Base13ddb0(); // 0x13ddb0 (reloc-masked)
     void* ScalarDtor(u32 flags);
 };
+SIZE_UNKNOWN(CScalarDtor855a0);
 RVA(0x000855a0, 0x24)
 void* CScalarDtor855a0::ScalarDtor(u32 flags) {
     vptr = (void*)&g_vtbl_5e9b8c;
@@ -181,6 +193,7 @@ struct CTeardown94c10 {
     void Base13cfb0(); // 0x13cfb0 (reloc-masked)
     void Teardown();
 };
+SIZE_UNKNOWN(CTeardown94c10);
 RVA(0x00094c10, 0x16)
 void CTeardown94c10::Teardown() {
     vptr = (void*)&g_vtbl_5ea344;
@@ -216,6 +229,7 @@ struct C646778 {
     void M1befd7(); // 0x1befd7 (reloc-masked)
     void M1bf426(); // 0x1bf426 (reloc-masked)
 };
+SIZE_UNKNOWN(C646778);
 DATA(0x00246778)
 extern C646778 g_obj646778;
 RVA(0x000b5400, 0xa)
@@ -250,6 +264,7 @@ struct CInitd5d70 {
     i32 m_c;    // +0x0c
     void Init();
 };
+SIZE_UNKNOWN(CInitd5d70);
 RVA(0x000d5d70, 0x16)
 void CInitd5d70::Init() {
     m_4 = -1;
@@ -271,6 +286,7 @@ struct CSettere56b0 {
     i32 m_20; // +0x20
     void Set();
 };
+SIZE_UNKNOWN(CSettere56b0);
 RVA(0x000e56b0, 0x8)
 void CSettere56b0::Set() {
     m_20 = 0x42a;
@@ -292,6 +308,7 @@ struct CStatusBase100780 {
     void Base1d6b(); // 0x1d6b (reloc-masked)
     void Init();
 };
+SIZE_UNKNOWN(CStatusBase100780);
 RVA(0x00100780, 0xb)
 void CStatusBase100780::Init() {
     vptr = (void*)&g_vtbl_statusBase;
@@ -327,6 +344,7 @@ struct CPred1182f0 {
     i32 m_8; // +0x08
     i32 IsOne();
 };
+SIZE_UNKNOWN(CPred1182f0);
 RVA(0x001182f0, 0xc)
 i32 CPred1182f0::IsOne() {
     return m_8 == 1;

@@ -15,6 +15,7 @@ struct CTmGameRegE {
     char p0[0x2c];
     char* m_2c; // +0x2c  the active world/play object
 };
+SIZE_UNKNOWN(CTmGameRegE);
 extern CTmGameRegE* g_gameReg;
 extern i32 g_644c54;
 extern void* g_renderCtx; // ?g_renderCtx@@3PAXA @0x644ca4 (Load reads into it)
@@ -23,6 +24,7 @@ extern void* g_renderCtx; // ?g_renderCtx@@3PAXA @0x644ca4 (Load reads into it)
 struct CTmButeMgrE {
     i32 GetColor(const char* section, const char* key, i32 def); // 0x171aa0
 };
+SIZE_UNKNOWN(CTmButeMgrE);
 extern CTmButeMgrE g_buteMgr;
 
 // A CString temporary as the error-Format path uses it (ctor/dtor + Format are the static MFC
@@ -34,6 +36,7 @@ struct CTmStr {
     const char* c_str() const;                  // identity getter (inlined)
     char* m_buf;
 };
+SIZE_UNKNOWN(CTmStr);
 
 // A logic/cell/list opaque shell whose reloc-masked __thiscall hooks the drivers dispatch.
 struct CTmObj {
@@ -86,10 +89,12 @@ struct CTmSerReader {
     virtual void v10();
     virtual void Read(void* dst, i32 size); // slot 11 = vtbl+0x2c
 };
+SIZE_UNKNOWN(CTmSerReader);
 struct CTmSerAux {
     char pad00[0x18];
     void* m_18; // +0x18  the placed game-object
 };
+SIZE_UNKNOWN(CTmSerAux);
 struct CTmSerMapObj {
     virtual void v00();
     virtual void v01();
@@ -103,20 +108,24 @@ struct CTmSerMapObj {
     char pad04[0x7c - 0x4];
     CTmSerAux* m_7c; // +0x7c
 };
+SIZE_UNKNOWN(CTmSerMapObj);
 // The level object (this->m_22c); its +0x8 host owns the name->object map at +0x48.
 struct CTmSerMap {
     i32 Lookup(i32 key, void** out); // 0x1b8760 (__thiscall, ret 8)
 };
+SIZE_UNKNOWN(CTmSerMap);
 // The manager's embedded list nodes (base list @this+0, record @+0x240, the ten
 // selection lists @+0x2d0) and the +0x260 byte array; reloc-masked MFC bodies.
 struct CTmSerList {
     void RemoveAll();      // 0x1b48a6
     void AddTail(void* p); // 0x1b4991
 };
+SIZE_UNKNOWN(CTmSerList);
 struct CTmSerByteArray {
     void SetSize(i32 n, i32 grow); // 0x1b52e8
     void SetAtGrow(i32 i, i32 v);  // 0x1b5485
 };
+SIZE_UNKNOWN(CTmSerByteArray);
 // The overlay sub-object (this->m_25c): new(0x40) + ctor, its own Load, and a
 // Clear + custom free on teardown.
 struct CTmSerOverlay {
@@ -126,6 +135,7 @@ struct CTmSerOverlay {
     inline void* operator new(u32);
     char m_body[0x40];
 };
+SIZE_UNKNOWN(CTmSerOverlay);
 inline void* CTmSerOverlay::operator new(u32) {
     return ::operator new(0x40);
 }

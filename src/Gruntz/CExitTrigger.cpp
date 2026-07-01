@@ -47,6 +47,7 @@ struct CExitSubObj {
     char m_pad14[0x18 - 0x14];
     i32 m_18; // +0x18  resolved id
 };
+SIZE_UNKNOWN(CExitSubObj);
 struct CExitEntity {
     char m_pad00[0x7c];
     CExitSubObj* m_7c; // +0x7c
@@ -55,16 +56,19 @@ struct CExitEntity {
     char m_pad128[0x188 - 0x128];
     i32 m_188; // +0x188
 };
+SIZE_UNKNOWN(CExitEntity);
 
 // The registry probe sink (g_gameReg->m_30->m_8): Probe (0x1597b0, the 0x60a668
 // "Warlord" lookup at the bound screen pos) resolves the exit entity or 0.
 struct CExitProbeSink {
     CExitEntity* Probe(i32 a, i32 x, i32 y, i32 b, const char* key, i32 flag); // 0x1597b0
 };
+SIZE_UNKNOWN(CExitProbeSink);
 struct CExitMgr30 {
     char m_pad00[0x08];
     CExitProbeSink* m_8; // +0x08
 };
+SIZE_UNKNOWN(CExitMgr30);
 
 // The focused-warlord cue slot (g_gameReg+0x150, stride 0x238, indexed by the
 // bound object's area index m_124): +0x20 the live gate, +0xc the stored id,
@@ -78,12 +82,14 @@ struct CExitFocusSlot {
     i32 m_220; // +0x220
     i32 m_224; // +0x224
 };
+SIZE_UNKNOWN(CExitFocusSlot);
 
 // The cue receiver (g_gameReg->m_68): +0x2a0 holds the active warlord id.
 struct CExitCueSink {
     char m_pad00[0x2a0];
     i32 m_2a0; // +0x2a0
 };
+SIZE_UNKNOWN(CExitCueSink);
 
 // The game registry singleton (g_mgrSettings @0x64556c): +0x30 the probe-sink
 // holder, +0x68 the cue receiver, the per-area focus slots at +0x150.
@@ -93,6 +99,7 @@ struct CExitGameReg {
     char m_pad34[0x68 - 0x34];
     CExitCueSink* m_68; // +0x68
 };
+SIZE_UNKNOWN(CExitGameReg);
 DATA(0x0024556c)
 extern CExitGameReg* g_exitGameReg;
 

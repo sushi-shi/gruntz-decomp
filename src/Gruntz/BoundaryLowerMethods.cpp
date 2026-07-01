@@ -13,6 +13,7 @@
 struct C213a0 {
     i32 Get();
 };
+SIZE_UNKNOWN(C213a0);
 RVA(0x000213a0, 0xa)
 i32 C213a0::Get() {
     i32* vb = *(i32**)this;
@@ -27,6 +28,7 @@ i32 C213a0::Get() {
 struct CKSlimeColl464 {
     void Insert(void* coll, void* item, i32 n); // 0x16d850 (ret 0xc)
 };
+SIZE_UNKNOWN(CKSlimeColl464);
 extern void* g_projActCache;       // 0x6bf464 (pinned in CStaticHazard.cpp)
 extern void* g_projActAllocResult; // 0x6bf428 (pinned in CVoiceTrigger.cpp)
 extern "C" i32 ProjActAlloc();     // 0x16d990
@@ -43,6 +45,7 @@ struct CTypeColl464 {
     i32 Find(i32 key, i32 z); // 0x16da80
     void* Resolve(i32 key);
 };
+SIZE_UNKNOWN(CTypeColl464);
 // @early-stop
 // esi/edi regalloc wall: cl assigns this->esi, key->edi; retail swaps (key->esi,
 // this->edi). Full fast-range/Find/grow logic + offsets byte-faithful (same shape as
@@ -72,6 +75,7 @@ struct C50ca0 {
     void Method(i32 a, i32 b, i32 c, i32 d); // 0x3bd9
     void M(i32 arg);
 };
+SIZE_UNKNOWN(C50ca0);
 RVA(0x00050ca0, 0x2b)
 void C50ca0::M(i32 arg) {
     Method(arg, 0, 0, 0);
@@ -88,6 +92,7 @@ struct C77dc0 {
     i32* m_24; // +0x24
     void Set(i32 base, i32 idx, i32 value);
 };
+SIZE_UNKNOWN(C77dc0);
 RVA(0x00077dc0, 0x1d)
 void C77dc0::Set(i32 base, i32 idx, i32 value) {
     m_20[m_24[idx] + base] = value;
@@ -104,6 +109,7 @@ struct CState8e {
     virtual i32 v3();
     virtual i32 GetState(); // slot +0x10
 };
+SIZE_UNKNOWN(CState8e);
 extern void Lab401947(); // 0x401947 (code address passed as a ptr; reloc-masked)
 struct C8e880 {
     char pad0[0x2c];
@@ -111,6 +117,7 @@ struct C8e880 {
     void Cmd2bb7(const char* name, void* fn, i32 n); // 0x2bb7
     i32 M();
 };
+SIZE_UNKNOWN(C8e880);
 RVA(0x0008e880, 0x27)
 i32 C8e880::M() {
     if (m_2c->GetState() == 3) {
@@ -128,10 +135,12 @@ struct CInner915 {
     i32 Probe138f60();           // 0x138f60
     void Do138fd0(i32 a, i32 b); // 0x138fd0
 };
+SIZE_UNKNOWN(CInner915);
 struct CMid915 {
     char pad0[0x1c];
     CInner915* m_1c; // +0x1c
 };
+SIZE_UNKNOWN(CMid915);
 struct C915d0 {
     char pad0[0x14];
     void* m_14; // +0x14
@@ -140,6 +149,7 @@ struct C915d0 {
     void M0(void* arg);
     void M64(void* arg);
 };
+SIZE_UNKNOWN(C915d0);
 RVA(0x000915d0, 0x3f)
 void C915d0::M0(void* arg) {
     if (m_48 == 0) {
@@ -195,11 +205,13 @@ struct CSub99ba0 {
     i32 m_20;         // +0x20 (== owner +0x24)
     void Init(i32 n); // 0x1b4867
 };
+SIZE_UNKNOWN(CSub99ba0);
 struct C99ba0 {
     void* m_0;       // +0x00
     CSub99ba0 m_sub; // +0x04
     C99ba0* Ctor();
 };
+SIZE_UNKNOWN(C99ba0);
 RVA(0x00099ba0, 0x29)
 C99ba0* C99ba0::Ctor() {
     CSub99ba0* sub = &m_sub;
@@ -218,16 +230,19 @@ struct CBack9a420 {
     char pad0[4];
     i32 m_4; // +0x04
 };
+SIZE_UNKNOWN(CBack9a420);
 struct CNode9a420 {
     CNode9a420* m_next; // +0x00
     char pad4[8 - 4];
     CBack9a420* m_8; // +0x08
 };
+SIZE_UNKNOWN(CNode9a420);
 struct C9a420 {
     char pad0[4];
     CNode9a420* m_head; // +0x04
     void Clear();
 };
+SIZE_UNKNOWN(C9a420);
 RVA(0x0009a420, 0x1c)
 void C9a420::Clear() {
     CNode9a420* p = m_head;
@@ -251,11 +266,13 @@ void C9a420::Clear() {
 struct CSub9cab0 {
     void Get(i32 a, i32* out); // 0x1b8008
 };
+SIZE_UNKNOWN(CSub9cab0);
 struct C9cab0 {
     char pad0[0x10];
     CSub9cab0 m_10; // +0x10
     i32 M(i32 arg);
 };
+SIZE_UNKNOWN(C9cab0);
 RVA(0x0009cab0, 0x23)
 i32 C9cab0::M(i32 arg) {
     i32 local = 0;
@@ -273,12 +290,14 @@ struct CSubB4 {
     i32 m_54; // +0x54
     i32 m_58; // +0x58
 };
+SIZE_UNKNOWN(CSubB4);
 struct C0b4c40 {
     char pad0[0x10];
     CSubB4* m_10;                                 // +0x10
     i32 Dispatch3035(i32 a, i32 b, i32 c, i32 d); // 0x3035
     i32 Handle(i32 a1, i32 a2, i32 a3, i32 a4);
 };
+SIZE_UNKNOWN(C0b4c40);
 RVA(0x000b4c40, 0x4b)
 i32 C0b4c40::Handle(i32 a1, i32 a2, i32 a3, i32 a4) {
     if (!Dispatch3035(a1, a2, a3, a4)) {
@@ -302,6 +321,7 @@ struct Cbd450 {
     void OpenLog1983(const char* s); // 0x1983
     void Init();
 };
+SIZE_UNKNOWN(Cbd450);
 RVA(0x000bd450, 0x16)
 void Cbd450::Init() {
     Base3625();
@@ -316,17 +336,21 @@ void Cbd450::Init() {
 struct CSubC8 {
     void M1b9c69(); // 0x1b9c69
 };
+SIZE_UNKNOWN(CSubC8);
 struct CObjC {
     void M201d(i32 a); // 0x201d
 };
+SIZE_UNKNOWN(CObjC);
 struct CInnerC {
     i32 M158d20();  // 0x158d20
     void M158e40(); // 0x158e40
 };
+SIZE_UNKNOWN(CInnerC);
 struct CMidC {
     char pad0[4];
     CInnerC* m_4; // +0x04
 };
+SIZE_UNKNOWN(CMidC);
 struct Ccef50 {
     char pad0[4];
     char* m_4; // +0x04
@@ -336,6 +360,7 @@ struct Ccef50 {
     i32 m_1c0; // +0x1c0
     i32 M();
 };
+SIZE_UNKNOWN(Ccef50);
 RVA(0x000cef50, 0x46)
 i32 Ccef50::M() {
     ((CSubC8*)(m_4 + 0xc8))->M1b9c69();
@@ -372,6 +397,7 @@ struct Cd5e20 {
     virtual void v16(void* a); // slot +0x40
     void M(void* arg);
 };
+SIZE_UNKNOWN(Cd5e20);
 RVA(0x000d5e20, 0x1b)
 void Cd5e20::M(void* arg) {
     v15(arg);
@@ -389,6 +415,7 @@ struct Cdb200 {
     void* m_8; // +0x08
     i32 M(void* arg);
 };
+SIZE_UNKNOWN(Cdb200);
 RVA(0x000db200, 0x51)
 i32 Cdb200::M(void* arg) {
     if (m_8 == arg) {
@@ -410,6 +437,7 @@ i32 Cdb200::M(void* arg) {
 struct CSubdb2f0 {
     void Teardown40c5(); // 0x40c5
 };
+SIZE_UNKNOWN(CSubdb2f0);
 struct Cdb2f0 {
     char pad0[0x14];
     i32 m_14; // +0x14
@@ -419,6 +447,7 @@ struct Cdb2f0 {
     CSubdb2f0 m_38; // +0x38
     i32 M();
 };
+SIZE_UNKNOWN(Cdb2f0);
 RVA(0x000db2f0, 0x2b)
 i32 Cdb2f0::M() {
     if (m_20 == 0) {
@@ -441,13 +470,16 @@ struct CCfgdb {
     void Set1527d0(const char* key, void* v);             // 0x1527d0
     void Bind152ad0(void* val, const char* key, void* v); // 0x152ad0
 };
+SIZE_UNKNOWN(CCfgdb);
 struct CHolderdb {
     char pad0[0x2c];
     CCfgdb* m_2c; // +0x2c
 };
+SIZE_UNKNOWN(CHolderdb);
 struct CParserdb {
     i32 Resolve13bae0(void* arg); // 0x13bae0
 };
+SIZE_UNKNOWN(CParserdb);
 DATA(0x0020b588)
 extern u8 g_dat60b588; // 0x60b588 (new pin)
 DATA(0x00213054)
@@ -459,6 +491,7 @@ struct Cdb750 {
     CParserdb* m_28; // +0x28
     i32 M(void* arg);
 };
+SIZE_UNKNOWN(Cdb750);
 RVA(0x000db750, 0x70)
 i32 Cdb750::M(void* arg) {
     if (m_c == 0) {
@@ -500,6 +533,7 @@ struct Cea170 {
     virtual void Dispatch(i32 a, i32 b, i32 c, i32 d, i32 e); // slot +0x38
     void M(i32 a1, i32 a2);
 };
+SIZE_UNKNOWN(Cea170);
 RVA(0x000ea170, 0x5c)
 void Cea170::M(i32 a1, i32 a2) {
     if (a1 == 0) {
@@ -537,10 +571,12 @@ struct CArchiveEb {
     virtual void Xfer2c(void* p, i32 n); // slot +0x2c
     virtual void Xfer30(void* p, i32 n); // slot +0x30
 };
+SIZE_UNKNOWN(CArchiveEb);
 struct CMgrEb {
     char pad0[0x30];
     void* m_30; // +0x30
 };
+SIZE_UNKNOWN(CMgrEb);
 extern "C" CMgrEb* g_mgrSettings;
 struct Ceb970 {
     char pad0[0x3c];
@@ -548,6 +584,7 @@ struct Ceb970 {
     i32 Base3ca1(CArchiveEb* ar, i32 a2, i32 a3, i32 a4); // 0x3ca1
     i32 Serialize(CArchiveEb* ar, i32 mode, i32 a3, i32 a4);
 };
+SIZE_UNKNOWN(Ceb970);
 // @early-stop
 // block-layout wall: the mode==4 Xfer30 branch lands inline (jne-skip) but retail
 // floats it to the tail (forward je). All transfers, the base-chain call and the
@@ -575,10 +612,12 @@ i32 Ceb970::Serialize(CArchiveEb* ar, i32 mode, i32 a3, i32 a4) {
 struct CFreer142160 {
     void Free(void* p); // 0x142160
 };
+SIZE_UNKNOWN(CFreer142160);
 struct CMidFa {
     char pad0[0x1c];
     CFreer142160* m_1c; // +0x1c
 };
+SIZE_UNKNOWN(CMidFa);
 struct Cfa150 {
     char pad0[0xc];
     CMidFa* m_c; // +0x0c
@@ -592,6 +631,7 @@ struct Cfa150 {
     void* m_164; // +0x164
     void Cleanup();
 };
+SIZE_UNKNOWN(Cfa150);
 // @early-stop
 // cmp-operand-order wall: retail emits cmp val,edi (val vs the zeroed edi); cl emits
 // cmp edi,val. Same semantics, 1 byte per guard. All four frees + offsets byte-faithful.
@@ -626,6 +666,7 @@ struct CMid104 {
     char pad0[0x1c];
     CFreer142160* m_1c; // +0x1c
 };
+SIZE_UNKNOWN(CMid104);
 struct C104c80 {
     char pad0[0x24];
     CMid104* m_24; // +0x24
@@ -633,6 +674,7 @@ struct C104c80 {
     void* m_34; // +0x34
     void Free();
 };
+SIZE_UNKNOWN(C104c80);
 RVA(0x00104c80, 0x1f)
 void C104c80::Free() {
     if (m_34 != 0) {
@@ -650,13 +692,16 @@ struct CMgr104 {
     i32 m_8c; // +0x8c
     i32 m_90; // +0x90
 };
+SIZE_UNKNOWN(CMgr104);
 struct CFactory104 {
     void* Create(i32 a, i32 b, i32 c, i32 d, const char* name, i32 f); // 0x1597b0
 };
+SIZE_UNKNOWN(CFactory104);
 struct CHolder104 {
     char pad0[8];
     CFactory104* m_8; // +0x08
 };
+SIZE_UNKNOWN(CHolder104);
 struct C104dd0 {
     char pad0[8];
     void* m_8;       // +0x08
@@ -666,6 +711,7 @@ struct C104dd0 {
     i32 m_28; // +0x28
     i32 Create();
 };
+SIZE_UNKNOWN(C104dd0);
 // @early-stop
 // scheduling wall: retail computes m_8c-0x22 via lea eax,[ecx-0x22] and loads m_24
 // late; cl uses sub + an earlier m_24 load. Clamp logic, the factory call and the
@@ -703,6 +749,7 @@ struct C10bbe0 {
     i32 m_538;   // +0x538
     i32 M();
 };
+SIZE_UNKNOWN(C10bbe0);
 RVA(0x0010bbe0, 0x34)
 i32 C10bbe0::M() {
     if (m_528 == 0) {
@@ -723,23 +770,28 @@ struct CGridData {
     i32* cells; // +0x20
     i32* rows;  // +0x24
 };
+SIZE_UNKNOWN(CGridData);
 struct CGridHolder {
     char pad0[0x5c];
     CGridData* m_5c; // +0x5c
 };
+SIZE_UNKNOWN(CGridHolder);
 struct CGridOuter {
     char pad0[0x24];
     CGridHolder* m_24; // +0x24
 };
+SIZE_UNKNOWN(CGridOuter);
 struct CHandler112 {
     void Notify(i32 a, i32 b, i32 c); // 0x33f0
 };
+SIZE_UNKNOWN(CHandler112);
 struct CMgr112 {
     char pad0[0x30];
     CGridOuter* m_30; // +0x30
     char pad34[0x70 - 0x34];
     CHandler112* m_70; // +0x70
 };
+SIZE_UNKNOWN(CMgr112);
 struct C112bf0 {
     char pad0[8];
     i32 m_8; // +0x08
@@ -748,6 +800,7 @@ struct C112bf0 {
     i32 m_14; // +0x14
     i32 M();
 };
+SIZE_UNKNOWN(C112bf0);
 // @early-stop
 // strength-reduction wall: cl materializes m_c<<2 (shl ecx,2) and reuses scale-1
 // addressing; retail keeps m_c in ecx and uses *4 scaled addressing in both cell
@@ -812,10 +865,12 @@ struct CArchive113 {
     virtual void v10();
     virtual void Xfer(void* p, i32 n); // slot +0x2c
 };
+SIZE_UNKNOWN(CArchive113);
 struct CMgr113 {
     char pad0[0x30];
     void* m_30; // +0x30
 };
+SIZE_UNKNOWN(CMgr113);
 struct C113e70 {
     char pad0[0x9c];
     i32 m_9c[9]; // +0x9c .. +0xbc
@@ -823,6 +878,7 @@ struct C113e70 {
     i32 m_c4;    // +0xc4
     i32 Serialize(CArchive113* ar);
 };
+SIZE_UNKNOWN(C113e70);
 // @early-stop
 // esi/edi regalloc wall: cl assigns ar->esi, this->edi; retail swaps (this->esi,
 // ar->edi). The two header transfers + the 3x3 nested-loop transfer are byte-faithful.
@@ -865,18 +921,22 @@ struct CObj114f {
     char pad0[0x2c];
     void* m_2c; // +0x2c
 };
+SIZE_UNKNOWN(CObj114f);
 struct CMid114f {
     char pad0[0x10];
     CObj114f* m_10; // +0x10
 };
+SIZE_UNKNOWN(CMid114f);
 struct CHolder114f {
     char pad0[4];
     CMid114f* m_4; // +0x04
 };
+SIZE_UNKNOWN(CHolder114f);
 struct CArg114f {
     char pad0[0x30];
     CHolder114f* m_30; // +0x30
 };
+SIZE_UNKNOWN(CArg114f);
 extern "C" void Func267b(void* v, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6); // 0x267b
 // @early-stop
 // identical-return-epilogue tail-merge wall (docs/patterns): cl shares one pop;ret
@@ -903,6 +963,7 @@ struct CBox118 {
     u32 m_4;
     u32 m_8;
 };
+SIZE_UNKNOWN(CBox118);
 extern "C" void Func3661(CBox118* p); // 0x3661
 struct C1181d0 {
     char pad0[0xb8];
@@ -911,6 +972,7 @@ struct C1181d0 {
     i32 m_d4; // +0xd4
     i32 Update(i32 a1, i32 a2, i32 a3);
 };
+SIZE_UNKNOWN(C1181d0);
 RVA(0x001181d0, 0x70)
 i32 C1181d0::Update(i32 a1, i32 a2, i32 a3) {
     if (a1 == 0) {
@@ -946,12 +1008,14 @@ struct CRect118 {
     u32 m_8;
     char pad[0x1c - 0xc]; // 7 dwords total
 };
+SIZE_UNKNOWN(CRect118);
 struct C118260 {
     char pad0[0xb8];
     CRect118 m_b8; // +0xb8 (7 dwords, ends at 0xd4)
     i32 m_d4;      // +0xd4
     i32 Update(CRect118* src, i32 arg2);
 };
+SIZE_UNKNOWN(C118260);
 RVA(0x00118260, 0x63)
 i32 C118260::Update(CRect118* src, i32 arg2) {
     if (src == 0) {

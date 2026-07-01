@@ -19,6 +19,7 @@ extern void** g_vtbl_CUserBase;
 struct CVtblStamp87b0 {
     void StampVptr();
 };
+SIZE_UNKNOWN(CVtblStamp87b0);
 RVA(0x000087b0, 0x7)
 void CVtblStamp87b0::StampVptr() {
     *(void**)this = (void*)&g_vtbl_CUserBase;
@@ -34,6 +35,7 @@ struct CFinalizeSub8b90 {
     char m_pad0[0x1c];
     i32 m_1c; // +0x1c
 };
+SIZE_UNKNOWN(CFinalizeSub8b90);
 struct CFinalize8b90 {
     typedef void (CFinalize8b90::*PMF)(); // single-inheritance, non-virtual -> 4 bytes
     void* m_0;                            // +0x00
@@ -45,6 +47,7 @@ struct CFinalize8b90 {
     i32 m_28; // +0x28
     void Finalize(i32 arg);
 };
+SIZE_UNKNOWN(CFinalize8b90);
 RVA(0x00008b90, 0x40)
 void CFinalize8b90::Finalize(i32 arg) {
     if (m_4 == 0) {
@@ -82,6 +85,7 @@ struct CVtblStampB940 {
     i32 m_3c; // +0x3c
     void StampVptr();
 };
+SIZE_UNKNOWN(CVtblStampB940);
 RVA(0x0000b940, 0xf)
 void CVtblStampB940::StampVptr() {
     m_vptr = (void*)&g_vtbl_CUserBase;
@@ -102,6 +106,7 @@ struct CGuardedDispatch1f870 {
     i32 Handle();           // 0xfac70 (non-virtual; reloc-masked)
     i32 Run();
 };
+SIZE_UNKNOWN(CGuardedDispatch1f870);
 RVA(0x0001f870, 0x1d)
 i32 CGuardedDispatch1f870::Run() {
     if (!IsActive()) {
@@ -117,6 +122,7 @@ i32 CGuardedDispatch1f870::Run() {
 struct CGlobalContainer {
     void Register(i32 n); // 0x1b4867 (reloc-masked)
 };
+SIZE_UNKNOWN(CGlobalContainer);
 DATA(0x0022b5d0)
 extern CGlobalContainer g_container62b5d0;
 DATA(0x0022b640)
@@ -144,6 +150,7 @@ struct CMgrSettingsView {
     i32 m_10c; // +0x10c
     i32 m_110; // +0x110
 };
+SIZE_UNKNOWN(CMgrSettingsView);
 extern "C" CMgrSettingsView* g_mgrSettings;
 RVA(0x00024ac0, 0x20)
 i32 __stdcall HasMgrSlot30(void* a) {
@@ -228,6 +235,7 @@ struct CClear212a0 {
     void ClearRecursive(i32); // 0x16e070 (reloc-masked)
     void Reset();
 };
+SIZE_UNKNOWN(CClear212a0);
 RVA(0x000212a0, 0x21)
 void CClear212a0::Reset() {
     ClearRecursive(0);
@@ -243,10 +251,12 @@ void CClear212a0::Reset() {
 struct AfxThread18430 {
     void EndWaitCursor(); // 0x1beb10 (reloc-masked)
 };
+SIZE_UNKNOWN(AfxThread18430);
 struct AfxModuleState18430 {
     void* m_pad0;             // +0x00
     AfxThread18430* m_thread; // +0x04
 };
+SIZE_UNKNOWN(AfxModuleState18430);
 extern AfxModuleState18430* AfxGetModuleState18430(); // 0x1d3631 (reloc-masked)
 RVA(0x00018430, 0xd)
 void EndWaitCursor18430() {
@@ -262,6 +272,7 @@ extern "C" int rand(void);
 struct CTileSwitch29af0 {
     void Dispatch(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // 0x4b320 (via 0x1640)
 };
+SIZE_UNKNOWN(CTileSwitch29af0);
 RVA(0x00029af0, 0x3b)
 void __stdcall TileSwitch29af0(CTileSwitch29af0* a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6) {
     if (a4) {
