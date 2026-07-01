@@ -167,10 +167,6 @@ namespace ApiCallerStubs {
             i32,
             i32
         );
-        i32 thirdparty_winapi_17c790_SmackWait_4_DispatchMessageA_PeekMessageA_TranslateMessa(
-            i32,
-            i32
-        );
         i32 thirdparty_17c8e0_SmackGoto_8_SmackWait_4(i32, i32);
         i32 thirdparty_17caa0_SmackDoFrame_4_SmackNextFrame_4_SmackToBuffer_28();
         void BootyState_OnActivate2_vfunc8();
@@ -1678,15 +1674,30 @@ namespace ApiCallerStubs {
     // DAT_0064557c: the active modeless dialog HWND, cached on entry/init.
     DATA(0x0064557c)
     extern HWND g_curDlg_64557c;
-    // The chat/lobby PeerSession singleton at DAT_006496ac (defined fully below;
-    // forward-declared here so the lobby DlgProc, earlier in RVA order, can name it).
-    struct PeerSession_0be490;
+    // The chat/lobby PeerSession singleton at DAT_006496ac. Defined here (rather than
+    // at its natural RVA-order point below) so the lobby DlgProcs earlier in RVA order
+    // can dereference it. Field names are placeholders; offsets are load-bearing.
+    struct TimerHost_148d {
+        i32 Poll_148d(i32 elapsed); // __thiscall, RVA 0x148d (nonzero once the deadline passed)
+    };
+    struct PeerSession_0be490 {
+        char m_pad0[0x520];
+        TimerHost_148d* m_520; // +0x520
+        char m_pad524[0x52c - 0x524];
+        i32 m_52c; // +0x52c
+        char m_pad530[0x564 - 0x530];
+        i32 m_564;                                        // +0x564  abnormal-termination gate
+        void Submit(char* text, i32 a, i32 b, HWND ctrl); // thiscall, RVA 0x2243
+        void Notify_2955(i32 a, i32 wParam, i32 b);       // thiscall, RVA 0x2955
+    };
     extern PeerSession_0be490* g_peerSession;
     // Lobby DlgProc helpers (cdecl, reached through ILT jmp-thunks).
     i32 PreHandleLobbyMsg_38c3(HWND, u32, u32, i32);    // RVA 0x38c3 -> 0x1192d0
     void OnLobbyInit_2c66(HWND, PeerSession_0be490*);   // RVA 0x2c66
+    void OnLobbyInit_371f(HWND, PeerSession_0be490*);   // RVA 0x371f
     void OnLobbyTimerA_265d(HWND, PeerSession_0be490*); // RVA 0x265d
     void OnLobbyTimerB_154b(HWND, PeerSession_0be490*); // RVA 0x154b
+    void OnLobbyTimerC_2185(HWND, PeerSession_0be490*); // RVA 0x2185 -> 0xbe3e0
     void OnLobbyCancel_2ae0(HWND, PeerSession_0be490*); // RVA 0x2ae0
     // __stdcall DlgProc(hWnd, msg, wParam, lParam): the network-lobby dialog proc.
     RVA(0x000bdc00, 0x10c)
@@ -1752,11 +1763,60 @@ namespace ApiCallerStubs {
         }
     }
 
-    // @confidence: low
     // @source: winapi:EndDialog;KillTimer;PostMessageA
-    // @stub
+    // __stdcall DlgProc(hWnd, msg, wParam, lParam): the in-game network dialog proc
+    // (sibling of the lobby proc at 0xbdc00). WM_COMMAND ends the dialog on a set of
+    // button IDs; WM_TIMER (0x113) polls the abort deadline and re-posts the cancel.
     RVA(0x000be0a0, 0x1c7)
-    i32 __stdcall winapi_0be0a0_EndDialog_KillTimer_PostMessageA(i32, i32, i32, i32) {
+    i32 __stdcall
+    winapi_0be0a0_EndDialog_KillTimer_PostMessageA(HWND hWnd, u32 msg, u32 wParam, i32 lParam) {
+        g_curDlg_64557c = hWnd;
+        if (PreHandleLobbyMsg_38c3(hWnd, msg, wParam, lParam)) {
+            return 1;
+        }
+        switch (msg) {
+            case 0x110:
+                g_curDlg_64557c = hWnd;
+                g_peerSession = (PeerSession_0be490*)g_gameReg->m_2c;
+                OnLobbyInit_371f(hWnd, g_peerSession);
+                return 1;
+            case 0x111:
+                if (wParam == 0x4ea) {
+                    KillTimer(hWnd, 1);
+                    g_peerSession->Notify_2955(0x402, wParam, 1);
+                    EndDialog(hWnd, wParam);
+                    return 1;
+                }
+                if (wParam == 0x4cd) {
+                    KillTimer(hWnd, 1);
+                    g_peerSession->Notify_2955(0x402, wParam, 1);
+                    EndDialog(hWnd, wParam);
+                    return 1;
+                }
+                if (wParam == 0x4ce) {
+                    KillTimer(hWnd, 1);
+                    g_peerSession->Notify_2955(0x402, wParam, 1);
+                    EndDialog(hWnd, wParam);
+                    return 1;
+                }
+                if (wParam == 0x4c6) {
+                    OnLobbyCancel_2ae0(hWnd, g_peerSession);
+                    return 1;
+                }
+                break;
+            case 0x113:
+                if (g_peerSession->m_564) {
+                    KillTimer(hWnd, 1);
+                    EndDialog(hWnd, 0x4cd);
+                    return 1;
+                }
+                OnLobbyTimerA_265d(hWnd, g_peerSession);
+                OnLobbyTimerC_2185(hWnd, g_peerSession);
+                if (g_peerSession->m_520->Poll_148d(0x2710)) {
+                    PostMessageA(hWnd, 0x111, 0x4cd, 0);
+                }
+                return 1;
+        }
         return 0;
     }
 
@@ -1794,15 +1854,8 @@ namespace ApiCallerStubs {
 
     // @confidence: low
     // @source: winapi:GetWindowTextA;SetWindowTextA
-    // A peer dialog/session whose m_52c gates the abnormal-termination path and whose
-    // Submit (RVA 0x2243) posts a chat line. Singleton at DAT_006496ac.
-    struct PeerSession_0be490 {
-        char m_pad0[0x52c];
-        i32 m_52c;                                        // +0x52c
-        void Submit(char* text, i32 a, i32 b, HWND ctrl); // thiscall, RVA 0x2243
-    };
     DATA(0x006496ac)
-    extern PeerSession_0be490* g_peerSession; // DAT_006496ac
+    extern PeerSession_0be490* g_peerSession; // DAT_006496ac (struct defined above)
     extern "C" char g_emptyString[];          // 0x6293f4
     // __cdecl(hWnd, gate): read the chat-edit text and, if non-empty, submit it.
     RVA(0x000be400, 0x6c)
@@ -4254,19 +4307,6 @@ namespace ApiCallerStubs {
         return r;
     }
 
-    // @confidence: low
-    // @source: thirdparty,winapi:_SmackWait@4 | DispatchMessageA;PeekMessageA;TranslateMessage
-    // @stub
-    // proximity: CSeverusWorker@-0xa0 | CDDPageMgr@+0xb20
-    RVA(0x0017c790, 0x14a)
-    i32 ThisStubOwnerUnknown::
-        thirdparty_winapi_17c790_SmackWait_4_DispatchMessageA_PeekMessageA_TranslateMessa(
-            i32,
-            i32
-        ) {
-        return 0;
-    }
-
     // @source: thirdparty:_SmackGoto@8;_SmackWait@4
     // Smacker playback advance: the per-frame "step / loop" driver.
     extern "C" __declspec(dllimport) i32 __stdcall SmackWait(i32 smk);
@@ -4280,10 +4320,62 @@ namespace ApiCallerStubs {
         char m_pad14[0x1c - 0x14];
         i32 m_1c; // +0x1c pending command
         char m_pad20[0x86a0 - 0x20];
-        i32 m_86a0;  // +0x86a0 loop counter
-        i32 Frame(); // RVA 0x17caa0 (renders the next frame)
+        i32 m_86a0;                     // +0x86a0 loop counter
+        i32 Frame();                    // RVA 0x17caa0 (renders the next frame)
+        i32 Pump(i32 flags, i32 count); // RVA 0x17c790
         i32 Advance(i32 cmd, i32 loops);
     };
+
+    // @source: thirdparty,winapi:_SmackWait@4 | DispatchMessageA;PeekMessageA;TranslateMessage
+    // __thiscall(flags, count): pump the Win32 queue while a Smacker movie plays; abort
+    // with 1/0x100 on a key/mouse event the abort flags select, else render the next
+    // frame and re-loop until `count` plays elapse (count==-1 loops forever).
+    RVA(0x0017c790, 0x14a)
+    i32 Movie_17c8e0::Pump(i32 flags, i32 count) {
+        if (!m_4 || count < -1 || count == 0) {
+            return 0;
+        }
+        m_86a0 = 1;
+        MSG msg;
+        for (;;) {
+            if (PeekMessageA(&msg, 0, 0, 0, PM_REMOVE)) {
+                if (msg.message == 0x104) {
+                    continue;
+                }
+                if (msg.message == 0x105) {
+                    continue;
+                }
+                if (msg.message == 0x100) {
+                    if (flags & 1) {
+                        return 1;
+                    }
+                    continue;
+                }
+                if (msg.message == 0x201 || msg.message == 0x204 || msg.message == 0x203
+                    || msg.message == 0x206) {
+                    if (flags & 0x100) {
+                        return 0x100;
+                    }
+                    continue;
+                }
+                TranslateMessage(&msg);
+                DispatchMessageA(&msg);
+            } else {
+                if (SmackWait(m_10)) {
+                    continue;
+                }
+                if (Frame()) {
+                    continue;
+                }
+                if (count != -1 && ++m_86a0 > count) {
+                    return 0x11111111;
+                }
+                SmackSoundOnOff(m_10, 0);
+                SmackGoto(m_10, 1);
+                SmackSoundOnOff(m_10, 1);
+            }
+        }
+    }
     // __thiscall(cmd, loops): wait for the stream, render a frame, and on EOF loop
     // back to the start until `loops` is exhausted (loops==-1 loops forever).
     RVA(0x0017c8e0, 0xca)
