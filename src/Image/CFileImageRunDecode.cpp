@@ -40,7 +40,7 @@ struct Owner1413 {
 };
 
 // ---------------------------------------------------------------------------
-// CFileImage::DecodeRun8 (0x140aa0, ret 4) - RLE-decode an 8bpp run-stream (arg0)
+// CFileImage::DecodeRun8 (ret 4) - RLE-decode an 8bpp run-stream (arg0)
 // into the locked surface, row by row. Each token: the high two bits set (& 0xc0
 // == 0xc0) means a run of (token & 0x3f) copies of the following byte; otherwise
 // the token itself is one literal pixel. A run that overflows the current scanline
@@ -113,7 +113,7 @@ i32 CFileImage::DecodeRun8(void* src) {
 }
 
 // ---------------------------------------------------------------------------
-// CFileImage::RunDecode1 (0x145270, ret 0x10) - the plain-buffer 8bpp variant of
+// CFileImage::RunDecode1 (ret 0x10) - the plain-buffer 8bpp variant of
 // DecodeRun8: RLE-decode `src` into `dst` (no surface Lock; dimensions explicit).
 // Each row starts at dst + width*row; same token grammar as DecodeRun8.
 // @early-stop
@@ -176,7 +176,7 @@ i32 CFileImage::RunDecode1(void* dstBuf, void* src, i32 width, i32 height) {
 }
 
 // ---------------------------------------------------------------------------
-// CFileImage::DecodeRun24 (0x140c50, ret 4) - the 24bpp surface RLE decoder. Like
+// CFileImage::DecodeRun24 (ret 4) - the 24bpp surface RLE decoder. Like
 // DecodeRun8 but planar: each row is decoded as three independent stride-3 channel
 // scanlines (R at the +2 byte, G at +1, B at +0 of each BGR triple), with the run
 // carry and source cursor continuous across channel and row boundaries. The row
@@ -309,7 +309,7 @@ i32 CFileImage::DecodeRun24(void* src) {
 }
 
 // ---------------------------------------------------------------------------
-// CFileImage::RunDecode3 (0x1453f0, ret 0x10) - the plain-buffer 24bpp variant of
+// CFileImage::RunDecode3 (ret 0x10) - the plain-buffer 24bpp variant of
 // DecodeRun24: three stride-3 channel passes per row into `dst` (channels at +0,
 // +1, +2), row base = dst + row*width*3 (cached once per row). No surface Lock.
 // @early-stop

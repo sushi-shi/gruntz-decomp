@@ -14,6 +14,7 @@
 #include <rva.h>
 
 #include <Dsndmgr/StreamFeeder.h>
+#include <Dsndmgr/WaveFormatX.h>
 
 struct IDirectSoundBufferZ;
 class DirectSoundMgr;
@@ -22,17 +23,6 @@ class DirectSoundMgr;
 // polymorphic reader SoundStream.h models as StreamSource). Opaque here - the
 // owning SoundStream's ParseWave does the reads.
 struct StreamSource;
-
-// WAVEFORMATEX scratch the owner's ParseWave fills (the 18-byte PCM header).
-struct WaveFormatX {
-    u16 wFormatTag;
-    u16 nChannels;
-    u32 nSamplesPerSec;
-    u32 nAvgBytesPerSec;
-    u16 nBlockAlign;
-    u16 wBitsPerSample;
-    u16 cbSize;
-};
 
 // The owning SoundStream as the voice sees it (m_owner @ +0x10): its +0x78 word
 // is the "device up" flag the voice's Configure gates on, and ParseWave (0x137b70)

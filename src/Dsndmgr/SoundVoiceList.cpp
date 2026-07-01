@@ -16,7 +16,7 @@ DATA(0x001ef6c8)
 extern void* const g_PureVtbl[];
 
 // ---------------------------------------------------------------------------
-// RemoveMatching (0x136f60, __thiscall, 2 stack args). Walk the chain; unlink +
+// RemoveMatching (__thiscall, 2 stack args). Walk the chain; unlink +
 // free every element whose key (@+0x10) equals `key` and whose tag (@+0xc) equals
 // `tag` (0xffff is a wildcard). The free restamps the element vptr to the pure
 // base then RezFree's it. The tag-mismatch arm does not advance (it re-tests the
@@ -80,7 +80,7 @@ void DSoundList::InsertTail(DSoundLink* node) {
 }
 
 // ---------------------------------------------------------------------------
-// Unlink (0x1391e0, __thiscall, 1 stack arg). Splice `node` out: patch its prev's
+// Unlink (__thiscall, 1 stack arg). Splice `node` out: patch its prev's
 // next (or the head) and its next's prev (or the tail).
 RVA(0x001391e0, 0x30)
 void DSoundList::Unlink(DSoundLink* node) {

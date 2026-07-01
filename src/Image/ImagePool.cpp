@@ -14,7 +14,7 @@
 //                       768-byte source then forward to Build.
 //   DeleteObjHost_177070 (palette node, free view) - Run() @0x177070 deletes the
 //                       realized HPALETTE before the node is freed.
-//   CImageExtLoader    - LoadByExtension() @0x176f90 (Image.cpp) loads a palette
+//   CImgPoolExtLoader    - LoadByExtension() @0x176f90 (Image.cpp) loads a palette
 //                       node from a file by extension.
 //
 // Those four callees are external (reloc-masked): named here exactly as their
@@ -78,7 +78,7 @@ namespace ApiCallerStubs {
 } // namespace ApiCallerStubs
 
 // The file-backed palette loader (Image.cpp). LoadByExtension is foreign here.
-class CImageExtLoader {
+class CImgPoolExtLoader {
 public:
     i32 LoadByExtension(char* path, i32 arg); // 0x176f90 (foreign, reloc-masked)
 };
@@ -89,19 +89,19 @@ using ApiCallerStubs::PalBuilder_176df0;
 
 // The surface-node build views. The five surface factories below RezAlloc a fresh
 // GdiOwner_175c90 node (0x45c bytes) then forward to one of these foreign decoders
-// (each annotated/owned by Image.cpp / CImageBlit.cpp / CScanlineSurface.cpp) - the
+// (each annotated/owned by Image.cpp / CImageBlit.cpp / CImgPoolScan.cpp) - the
 // `call rel32` reloc-masks against the owning TU's symbol. Minimal inline decls; the
 // mangling depends only on class + method name + param types + convention.
-class CImage {
+class CImgPoolBlit {
 public:
     i32 DecodeBmpHeader(void* a2, i32 width, i32 height, i32 bitcount, void* a3); // 0x1757c0
     i32 DecodeBlit(void*, void*, i32, i32, i32, void*);                           // 0x175930
     i32 LoadFromRez(char* name, void* a2, void* a3);                              // 0x175a90
 };
-class CScanlineSurface {
+class CImgPoolScan {
 public:
-    i32 Convert8To16(void* a0, CScanlineSurface* src, void* pal); // 0x175b80
-    i32 Dispatch175a00(i32 a0, i32 kind, i32 a2, i32 a3);         // 0x175a00 (thiscall site)
+    i32 Convert8To16(void* a0, CImgPoolScan* src, void* pal); // 0x175b80
+    i32 Dispatch175a00(i32 a0, i32 kind, i32 a2, i32 a3);     // 0x175a00 (thiscall site)
 };
 
 // ---------------------------------------------------------------------------
@@ -135,7 +135,7 @@ public:
 };
 
 // ===========================================================================
-// CImagePool::SetHandles  @0x174e90 (ret 0xc) - seed the three head scalars.
+// CImagePool::SetHandles (ret 0xc) - seed the three head scalars.
 // ===========================================================================
 RVA(0x00174e90, 0x1c)
 i32 CImagePool::SetHandles(i32 a, i32 b, i32 c) {
@@ -146,7 +146,7 @@ i32 CImagePool::SetHandles(i32 a, i32 b, i32 c) {
 }
 
 // ===========================================================================
-// CImagePool::Clear  @0x174eb0 - tear down both lists, zero the head scalars.
+// CImagePool::Clear - tear down both lists, zero the head scalars.
 // ===========================================================================
 RVA(0x00174eb0, 0x1b)
 void CImagePool::Clear() {
@@ -158,7 +158,7 @@ void CImagePool::Clear() {
 }
 
 // ===========================================================================
-// CImagePool::RemovePalette  @0x174f30 (ret 4) - unlink one palette node from
+// CImagePool::RemovePalette (ret 4) - unlink one palette node from
 // the +0x2c list (by its cached POSITION), delete its HPALETTE, free it.
 // ===========================================================================
 RVA(0x00174f30, 0x30)
@@ -174,7 +174,7 @@ void CImagePool::RemovePalette(PalBuilder_176df0* node) {
 }
 
 // ===========================================================================
-// CImagePool::ClearSurfaces  @0x174f60 - delete every surface node, RemoveAll.
+// CImagePool::ClearSurfaces - delete every surface node, RemoveAll.
 // ===========================================================================
 RVA(0x00174f60, 0x37)
 void CImagePool::ClearSurfaces() {
@@ -190,7 +190,7 @@ void CImagePool::ClearSurfaces() {
 }
 
 // ===========================================================================
-// CImagePool::ClearPalettes  @0x174fa0 - delete every palette node, RemoveAll,
+// CImagePool::ClearPalettes - delete every palette node, RemoveAll,
 // then clear +0x48.
 // ===========================================================================
 RVA(0x00174fa0, 0x3e)
@@ -246,7 +246,7 @@ GdiOwner_175c90* CImagePool::AddSurfaceBmp(i32 a1, i32 a2, i32 a3, i32 a4) {
     } else {
         node = 0;
     }
-    if (((CImage*)node)->DecodeBmpHeader((void*)hdc, a1, a2, a3, (void*)a4) == 0) {
+    if (((CImgPoolBlit*)node)->DecodeBmpHeader((void*)hdc, a1, a2, a3, (void*)a4) == 0) {
         if (m_selectedPalette) {
             SelectPalette(hdc, (HPALETTE)m_selectedPalette, FALSE);
             m_selectedPalette = 0;
@@ -290,7 +290,7 @@ GdiOwner_175c90* CImagePool::AddSurfaceBlit(i32 a1, i32 a2, i32 a3, i32 a4, i32 
     } else {
         node = 0;
     }
-    if (((CImage*)node)->DecodeBlit((void*)a1, (void*)hdc, a2, a3, a4, (void*)a5) == 0) {
+    if (((CImgPoolBlit*)node)->DecodeBlit((void*)a1, (void*)hdc, a2, a3, a4, (void*)a5) == 0) {
         if (m_selectedPalette) {
             SelectPalette(hdc, (HPALETTE)m_selectedPalette, FALSE);
             m_selectedPalette = 0;
@@ -334,7 +334,7 @@ GdiOwner_175c90* CImagePool::AddSurfaceOp(i32 a1, i32 a2, i32 a3) {
     } else {
         node = 0;
     }
-    if (((CScanlineSurface*)node)->Dispatch175a00(a1, a2, (i32)hdc, a3) == 0) {
+    if (((CImgPoolScan*)node)->Dispatch175a00(a1, a2, (i32)hdc, a3) == 0) {
         if (m_selectedPalette) {
             SelectPalette(hdc, (HPALETTE)m_selectedPalette, FALSE);
             m_selectedPalette = 0;
@@ -379,7 +379,7 @@ GdiOwner_175c90* CImagePool::AddSurfaceRez(i32 a1, i32 a2) {
     } else {
         node = 0;
     }
-    if (((CImage*)node)->LoadFromRez((char*)a1, (void*)hdc, (void*)a2) == 0) {
+    if (((CImgPoolBlit*)node)->LoadFromRez((char*)a1, (void*)hdc, (void*)a2) == 0) {
         if (m_selectedPalette) {
             SelectPalette(hdc, (HPALETTE)m_selectedPalette, FALSE);
             m_selectedPalette = 0;
@@ -423,8 +423,7 @@ GdiOwner_175c90* CImagePool::AddSurfaceConvert(i32 a1, i32 a2) {
     } else {
         node = 0;
     }
-    if (((CScanlineSurface*)node)->Convert8To16((void*)hdc, (CScanlineSurface*)a1, (void*)a2)
-        == 0) {
+    if (((CImgPoolScan*)node)->Convert8To16((void*)hdc, (CImgPoolScan*)a1, (void*)a2) == 0) {
         if (m_selectedPalette) {
             SelectPalette(hdc, (HPALETTE)m_selectedPalette, FALSE);
             m_selectedPalette = 0;
@@ -520,7 +519,7 @@ PalBuilder_176df0* CImagePool::AddImageFile(char* path, i32 arg) {
     } else {
         node = 0;
     }
-    if (((CImageExtLoader*)node)->LoadByExtension(path, arg) == 0) {
+    if (((CImgPoolExtLoader*)node)->LoadByExtension(path, arg) == 0) {
         if (node) {
             ((DeleteObjHost_177070*)node)->Run();
             RezFree(node);
@@ -558,7 +557,7 @@ PalBuilder_176df0* CImagePool::AddImageDispatch(void* buf, u32 size, i32 type, i
 }
 
 // ===========================================================================
-// GdiOwner_175c90::SetPalette  @0x176ad0 (ret 8) - latch the palette node ptr
+// GdiOwner_175c90::SetPalette (ret 8) - latch the palette node ptr
 // (+0x458) and the associated scalar (+0x454).
 // ===========================================================================
 RVA(0x00176ad0, 0x17)
@@ -568,7 +567,7 @@ void ApiCallerStubs::GdiOwner_175c90::SetPalette(void* pal, i32 a) {
 }
 
 // ===========================================================================
-// PalBuilder_176df0::ProcessPal  @0x176e70 (ret 8) - expand a packed RGB-triple
+// PalBuilder_176df0::ProcessPal (ret 8) - expand a packed RGB-triple
 // source into a PALETTEENTRY[256] (peFlags untouched) then realize it.
 // ===========================================================================
 RVA(0x00176e70, 0x4e)
@@ -598,7 +597,7 @@ i32 ApiCallerStubs::PalBuilder_176df0::ParseDispatch(void* buf, u32 size, i32 ty
 }
 
 // ===========================================================================
-// PalBuilder_176df0::ParsePaletteTail  @0x177400 (ret 0xc) - extract the
+// PalBuilder_176df0::ParsePaletteTail (ret 0xc) - extract the
 // trailing 768-byte VGA palette from the end of `buf` into a PALETTEENTRY[256]
 // (peFlags = 0) and realize it; needs at least 0x300 bytes.
 // ===========================================================================

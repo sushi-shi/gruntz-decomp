@@ -296,7 +296,7 @@ i32 CGruntzSoundZ::StopBank_138900(i32 a1) {
 }
 
 // ---------------------------------------------------------------------------
-// CGruntzSoundInnerZ::IsBusy (0x138f60): if the bank's "is started" gate (vtable
+// CGruntzSoundInnerZ::IsBusy: if the bank's "is started" gate (vtable
 // +0x20) is clear, not busy; otherwise query the AIL sequence status of the
 // bank's MIDI handle (m_58) and report busy for PLAYING (4) / PLAYINGBUTRELEASED
 // (0x10).

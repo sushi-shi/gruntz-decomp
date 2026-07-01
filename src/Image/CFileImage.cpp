@@ -59,7 +59,7 @@ extern u8 g_grayRamp[];
 extern char g_imageTag[];
 
 // ---------------------------------------------------------------------------
-// 0x13ebb0: FlipVertical - swap the locked surface's rows top-to-bottom through a
+// FlipVertical - swap the locked surface's rows top-to-bottom through a
 // one-row temp buffer. No-op for a <= 1-row image. Locks the surface (Lock), and on
 // success allocates the temp row; a failed temp alloc unlocks and returns. __thiscall.
 //
@@ -133,7 +133,7 @@ void CFileImage::FlipVertical() {
 }
 
 // ---------------------------------------------------------------------------
-// 0x141280: DecodeThunk - a glue forwarder that rebuilds a 16-byte rect/clip record
+// DecodeThunk - a glue forwarder that rebuilds a 16-byte rect/clip record
 // from its trailing args on the stack and tail-calls the image worker (0x1471d0) with
 // the six leading scalar args + that record passed by value, then cleans 0x2c of stack
 // (ret 0x28). The worker `this` arrives in ecx (re-pushed, not reloaded).
@@ -156,7 +156,7 @@ void CFileImage::
 }
 
 // ---------------------------------------------------------------------------
-// 0x143cf0: DecodeRun - decode a run-length image (`src`, the DecodeSrc shape) into
+// DecodeRun - decode a run-length image (`src`, the DecodeSrc shape) into
 // `info`. The source format is its +0x1c word (8/0x18); a convert pass runs when it
 // differs from info's current format (+0x538): an 8-bit source builds an RGB-reversed
 // ramp from its +0x36 palette into g_683ef0; a 24-bit-into-8-bit uses info's palette
@@ -228,7 +228,7 @@ i32 CFileImage::DecodeRun(CFileImageInfo* info, void* srcv, i32, i32 b) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x143e60: LoadFile2 - open `path` via the engine CFileIO, slurp it whole into a heap
+// LoadFile2 - open `path` via the engine CFileIO, slurp it whole into a heap
 // buffer and hand it to DecodeRun. Each failure unwinds the CFileIO + returns 0; the
 // buffer is RezFree'd after DecodeRun (and on a short read). /GX EH frame. ret 0xc.
 //
@@ -270,7 +270,7 @@ struct BmpFileHeader {
 };
 
 // ---------------------------------------------------------------------------
-// 0x1443b0: SaveBmp - write this 8-bit image to a BMP file. Validates the surface
+// SaveBmp - write this 8-bit image to a BMP file. Validates the surface
 // (IsValid), the filename (non-null, non-empty), the 8-bit depth, and the palette
 // source (arg2->m_0c). Builds a BITMAPINFOHEADER + a 256-entry RGBQUAD palette (the
 // source palette's bytes 0/1/2 swizzled across the quad lanes), a 14-byte file header
@@ -385,7 +385,7 @@ struct TgaHeader {
 };
 
 // ---------------------------------------------------------------------------
-// 0x144900: SaveTga - write this 24-bit image to a TGA file. Mirrors SaveBmp but for
+// SaveTga - write this 24-bit image to a TGA file. Mirrors SaveBmp but for
 // the 0x18-bpp case: validates the surface / filename / 24-bit depth, builds an
 // 0x2c-byte header (the "BM" magic + width/height + the width*height*3+0x3a size and
 // the plane/bitcount words), locks, opens (mode 0x2001 / 0x1001), seeks past the
@@ -460,7 +460,7 @@ i32 CFileImage::SaveTga(const char* path, void* pal, i32 mode) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x144b30: Decode - decode a run-length image (src) into this image. Validates the
+// Decode - decode a run-length image (src) into this image. Validates the
 // src, derives width/height from its int16 box (+0x4..+0xa) and the source format
 // from +0x41 (1=8-bit, 3=24-bit). When the source format differs from the info's
 // current format (+0x538) a convert pass runs: an 8-bit source builds a grayscale
@@ -581,7 +581,7 @@ i32 CFileImage::Decode(CFileImageInfo* info, CFileImageSrc* src, i32 len, i32 mo
 }
 
 // ---------------------------------------------------------------------------
-// 0x144d80: LoadFile - open `path`, slurp it whole into a heap buffer, and hand the
+// LoadFile - open `path`, slurp it whole into a heap buffer, and hand the
 // buffer (plus the caller's `src` descriptor + `mode`) to Decode. The local CFile
 // destructs on every exit -> /GX EH frame. Each failure (open / empty / alloc /
 // short read) returns 0; otherwise returns Decode's result. The read buffer is
@@ -611,18 +611,18 @@ i32 CFileImage::LoadFile(CFileImageInfo* info, const char* path, i32 mode) {
 }
 
 // ===========================================================================
-// Class-metadata annotations (EOF-hosted). CFileImageSurface (the CFileImage.h
+// Class-metadata annotations (EOF-hosted). CFileImageHeldSurface (the CFileImage.h
 // slot-dispatch view) emits no vtable -> VTBL skip.
 // ===========================================================================
 // --- CFileImage.h header classes ---
-SIZE_UNKNOWN(CFileImageSurface);
+SIZE_UNKNOWN(CFileImageHeldSurface);
 SIZE_UNKNOWN(CFileImageSrc);
 SIZE_UNKNOWN(CFileImagePal);
 SIZE_UNKNOWN(CFileImageInfo);
 SIZE_UNKNOWN(CFileImage);
 // --- CFileImage.cpp local views ---
 SIZE_UNKNOWN(DecodeSrc);
-SIZE(ClipRect16, 0x10);   // 16-byte by-value rect/clip record
+SIZE(ClipRect16, 0x10); // 16-byte by-value rect/clip record
 SIZE_UNKNOWN(ImageWorkerThis);
 SIZE_UNKNOWN(BmpFileHeader);
 SIZE_UNKNOWN(TgaHeader);

@@ -3,7 +3,7 @@
 // from SoundDevice (DSNDMGR.CPP, 0x5ef6c4): the dtor restamps its own vptr then
 // tail-calls ~SoundDevice. The streaming half parses a RIFF/WAVE source, asks
 // the inherited IDirectSound device for a secondary buffer, wraps it in a
-// per-stream StreamVoice (the 0xb0-byte DirectSoundMgr-derived voice, ctor
+// per-stream StreamVoiceNode (the 0xb0-byte DirectSoundMgr-derived voice, ctor
 // 0x1375b0) and threads that voice on the inherited +0x94 instance list.
 //
 // Trace called all three Dsndmgr classes "MinervaInner"; the distinct vtables
@@ -19,7 +19,7 @@
 #define DSNDMGSR_FILE "C:\\Proj\\Dsndmgr\\DSndMgSR.cpp"
 
 // Placement new (construct in place into the RezAlloc'd block); no allocation, so
-// it is matching-neutral - it just runs the StreamVoice ctor (0x1375b0) on the
+// it is matching-neutral - it just runs the StreamVoiceNode ctor (0x1375b0) on the
 // raw RezAlloc result, exactly as the retail RezAlloc-then-construct does.
 inline void* operator new(u32, void* p) {
     return p;
@@ -53,10 +53,10 @@ struct StreamVoiceList {
 SIZE_UNKNOWN(StreamVoiceList); // {head,tail} list-head view
 
 // ---------------------------------------------------------------------------
-// SoundStream::SoundStream (0x1376d0, __thiscall). Run the base ctor, zero the
+// SoundStream::SoundStream (__thiscall). Run the base ctor, zero the
 // two instance words (m_94 list head / m_98), then stamp the stream vptr.
-// Ghidra placeholder-named this "UnknownVoldemort"; the 0x5ef6ec stamp + the
-// 0x137710 shared dtor (via the scalar dtor below) prove it is SoundStream's.
+// The 0x5ef6ec stamp + the 0x137710 shared dtor (via the scalar dtor below)
+// prove it is SoundStream's.
 // @early-stop
 // residual (~97%): a vptr-store scheduling coin-flip - retail stamps the 0x5ef6ec
 // vptr AFTER the two zero stores, cl schedules it first (no source-order lever flips
@@ -71,7 +71,7 @@ SoundStream::SoundStream() {
 }
 
 // ---------------------------------------------------------------------------
-// SoundStream::ScalarDtor (0x1376f0, __thiscall) - the scalar-deleting dtor
+// SoundStream::ScalarDtor (__thiscall) - the scalar-deleting dtor
 // (??_G): run ~SoundStream, then operator delete (the engine RezFree) when the
 // low flag bit is set; returns this. Modeled as a plain method (name-independent
 // at delink) since SoundStream is kept non-polymorphic (manual vptr stamp).
@@ -85,7 +85,7 @@ void* SoundStream::ScalarDtor(i32 flag) {
 }
 
 // ---------------------------------------------------------------------------
-// SoundStream::~SoundStream (0x137710, __thiscall). Restamp the stream vptr,
+// SoundStream::~SoundStream (__thiscall). Restamp the stream vptr,
 // then tail-jump into the base SoundDevice destructor (which runs the teardown).
 RVA(0x00137710, 0xb)
 SoundStream::~SoundStream() {
@@ -93,9 +93,9 @@ SoundStream::~SoundStream() {
 }
 
 // ---------------------------------------------------------------------------
-// SoundStream::CreateStreamBuffer (0x137780, __thiscall, /GX EH frame). Validate
+// SoundStream::CreateStreamBuffer (__thiscall, /GX EH frame). Validate
 // the PCM WAVEFORMATEX, build a DSBUFFERDESC and ask the inherited IDirectSound
-// device (+0x14) for a secondary buffer, then RezAlloc + construct a StreamVoice
+// device (+0x14) for a secondary buffer, then RezAlloc + construct a StreamVoiceNode
 // wrapping it, thread it on the +0x94 list, and seed its duration fields.
 // @early-stop
 // RezAlloc+placement-new EH-frame wall (docs/patterns/rezalloc-placement-new-no-eh-frame.md):
@@ -104,10 +104,10 @@ SoundStream::~SoundStream() {
 // ctor-in-flight EH frame (push -1/fs:0 + trylevel) and a single shared `jmp`
 // epilogue that MSVC5's placement-new (no placement operator delete) cannot
 // reproduce - 47% on a documented EH wall. Defer to the final sweep once the
-// StreamVoice ctor (0x1375b0) is modelled and a real `new T` allocator path emits
+// StreamVoiceNode ctor (0x1375b0) is modelled and a real `new T` allocator path emits
 // the frame.
 RVA(0x00137780, 0x171)
-StreamVoice* SoundStream::CreateStreamBuffer(WaveFormatX* fmt, u32 bytes, i32 a, i32 b, i32 c) {
+StreamVoiceNode* SoundStream::CreateStreamBuffer(WaveFormatX* fmt, u32 bytes, i32 a, i32 b, i32 c) {
     if (m_initialized == 0) {
         return 0;
     }
@@ -145,9 +145,9 @@ StreamVoice* SoundStream::CreateStreamBuffer(WaveFormatX* fmt, u32 bytes, i32 a,
         return 0;
     }
 
-    StreamVoice* voice = (StreamVoice*)RezAlloc(0xb0);
+    StreamVoiceNode* voice = (StreamVoiceNode*)RezAlloc(0xb0);
     if (voice) {
-        voice = new (voice) StreamVoice(out, this, b, c);
+        voice = new (voice) StreamVoiceNode(out, this, b, c);
     }
     ((StreamList*)&m_94)->Insert(voice ? &voice->m_link : 0);
     voice->m_38 = fmt->nAvgBytesPerSec;
@@ -158,7 +158,7 @@ StreamVoice* SoundStream::CreateStreamBuffer(WaveFormatX* fmt, u32 bytes, i32 a,
 }
 
 // ---------------------------------------------------------------------------
-// SoundStream::OpenStream (0x137900, __thiscall). Parse the RIFF/WAVE source,
+// SoundStream::OpenStream (__thiscall). Parse the RIFF/WAVE source,
 // create a streaming buffer for it, seed the voice's feeder window, then arm the
 // feeder; on a feeder failure, destroy the voice.
 // @early-stop
@@ -168,7 +168,8 @@ StreamVoice* SoundStream::CreateStreamBuffer(WaveFormatX* fmt, u32 bytes, i32 a,
 // docs/patterns/zero-register-pinning.md / pin-local-for-callee-saved-reg.md.
 // 90.6% on a documented regalloc wall - logic complete, deferred to the final sweep.
 RVA(0x00137900, 0xc6)
-StreamVoice* SoundStream::OpenStream(StreamSource* src, i32 p1, i32 p2, i32 p3, i32 p4, i32 p5) {
+StreamVoiceNode*
+SoundStream::OpenStream(StreamSource* src, i32 p1, i32 p2, i32 p3, i32 p4, i32 p5) {
     if (src == 0) {
         return 0;
     }
@@ -178,11 +179,11 @@ StreamVoice* SoundStream::OpenStream(StreamSource* src, i32 p1, i32 p2, i32 p3, 
     if (ParseWave(src, &wf, &dataOff, &dataLen) == 0) {
         return 0;
     }
-    StreamVoice* voice = CreateStreamBuffer(&wf, p1, p3, p4, p5);
+    StreamVoiceNode* voice = CreateStreamBuffer(&wf, p1, p3, p4, p5);
     if (voice == 0) {
         return 0;
     }
-    StreamFeeder* feeder = &voice->m_feeder;
+    StreamFeederView* feeder = &voice->m_feeder;
     feeder->m_38 = dataOff;
     feeder->m_3c = (u32)src;
     feeder->m_2c = (u32)src;
@@ -196,11 +197,11 @@ StreamVoice* SoundStream::OpenStream(StreamSource* src, i32 p1, i32 p2, i32 p3, 
 }
 
 // ---------------------------------------------------------------------------
-// SoundStream::DestroyVoice (0x1379d0, __thiscall, 1 arg). Reset the voice's
+// SoundStream::DestroyVoice (__thiscall, 1 arg). Reset the voice's
 // feeder, reap its queued channel voices, release its IDirectSoundBuffer, unlink
 // it from the +0x94 list, then run its scalar-deleting destructor.
 RVA(0x001379d0, 0x5f)
-void SoundStream::DestroyVoice(StreamVoice* voice) {
+void SoundStream::DestroyVoice(StreamVoiceNode* voice) {
     if (m_initialized) {
         voice->m_feeder.FeederReset(0);
         ((StreamVoiceList*)&m_voiceHead)->Reap(voice, 0xffff);
@@ -214,7 +215,7 @@ void SoundStream::DestroyVoice(StreamVoice* voice) {
 }
 
 // ---------------------------------------------------------------------------
-// SoundStream::ParseWave (0x137b70, __thiscall - the implicit `this` is unused).
+// SoundStream::ParseWave (__thiscall - the implicit `this` is unused).
 // Walk the RIFF/WAVE chunks of `src`: verify the RIFF+WAVE magic, then loop the
 // fmt/data chunks, copying the 18-byte PCM header into fmtBuf and reporting the
 // data chunk's offset+length. Returns 1 only when both fmt and data were seen.

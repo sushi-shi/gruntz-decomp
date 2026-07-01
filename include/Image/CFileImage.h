@@ -28,7 +28,7 @@
 // surface's own vtable contents are external engine code; only the slot offset
 // matters here. Modeled as a tiny polymorphic view (vptr @+0) so the dispatch
 // lowers to `mov eax,[surface]; call [eax+0x80]`.
-class CFileImageSurface {
+class CFileImageHeldSurface {
 public:
     virtual void s00();
     virtual void s04();
@@ -154,7 +154,7 @@ public:
 
     // vptr @+0x00
     char _04[0x08 - 0x04];
-    CFileImageSurface* m_surface; // +0x08
+    CFileImageHeldSurface* m_surface; // +0x08
     char _0c[0x18 - 0x0c];
     i32 m_height; // +0x18
     i32 m_width;  // +0x1c

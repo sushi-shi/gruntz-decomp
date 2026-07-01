@@ -7,7 +7,7 @@
 //   * optionally remaps the origin through info->m_3c (bit 0x40000);
 //   * clips the rect against either the parent clip RECT (bit 0x40000) or the
 //     worker clip box (info->m_64.. or the 0x80000000 "use dest extents" sentinel);
-//   * builds the matching source sub-rect and blits via CDDSurface::BltEx (the
+//   * builds the matching source sub-rect and blits via CSpriteDDSurface::BltEx (the
 //     three "surface" variants, mode word in g_severusScratch[1]) or
 //     CDDrawShadeBlit::Blit (the two "shaded" variants, with an optional
 //     pre-notify when info->m_58 is set);
@@ -26,15 +26,15 @@
 extern i32 g_severusScratch[25];
 
 // The origin-remap target reached through info->m_3c->m_5c (bit 0x40000): the
-// world-coordinate wrap/transform CPlaneRender::WrapCoord (0xa000, reached via the
+// world-coordinate wrap/transform CSpritePlaneRender::WrapCoord (0xa000, reached via the
 // 0x295a ILT thunk; reloc-masked). Modeled with its real mangling.
-class CPlaneRender {
+class CSpritePlaneRender {
 public:
     void WrapCoord(i32* px, i32* py); // 0xa000
 };
 struct CBlitXform {
     char _00[0x5c];
-    CPlaneRender* m_5c; // +0x5c
+    CSpritePlaneRender* m_5c; // +0x5c
 };
 
 // The blit request the worker hands in (esi). Inputs: m_08 (flags), m_10/m_14
@@ -71,9 +71,9 @@ public:
 // The two reloc-masked blit backends, modeled with the same mangling as their real
 // definitions (src/Gruntz/CDirectDrawMgr.cpp / CDDrawShadeBlit.cpp) so the rel32
 // call symbols correlate.
-class CDDSurface {
+class CSpriteDDSurface {
 public:
-    i32 BltEx(void* dstRect, CDDSurface* src, void* srcRect, u32 flags, void* fx); // 0x13eef0
+    i32 BltEx(void* dstRect, CSpriteDDSurface* src, void* srcRect, u32 flags, void* fx); // 0x13eef0
 };
 struct ShadeRect;
 struct ShadeSrc;
@@ -84,7 +84,7 @@ public:
 };
 
 // ---------------------------------------------------------------------------
-// 0x1538c0 - no flip, surface blit (BltEx, blend mode 6).
+// No flip, surface blit (BltEx, blend mode 6).
 // ---------------------------------------------------------------------------
 // @early-stop
 // Complete + correct. Residual = 4 origin-load insns whose this-member->register
@@ -163,7 +163,8 @@ void CImage::BlitNorm(CBlitInfo* info, CImage* dst) {
     d.right += 1;
     d.bottom += 1;
     g_severusScratch[1] = 6;
-    ((CDDSurface*)dst->m_2c)->BltEx(&d, (CDDSurface*)m_2c, &s, 0x8800, g_severusScratch);
+    ((CSpriteDDSurface*)dst->m_2c)
+        ->BltEx(&d, (CSpriteDDSurface*)m_2c, &s, 0x8800, g_severusScratch);
     d.right -= 1;
     d.bottom -= 1;
     info->m_18 = d.left;
@@ -175,7 +176,7 @@ void CImage::BlitNorm(CBlitInfo* info, CImage* dst) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x153b20 - vertical flip, surface blit (BltEx, blend mode 2).
+// Vertical flip, surface blit (BltEx, blend mode 2).
 // ---------------------------------------------------------------------------
 // @early-stop
 // Complete + correct (formulas verified against retail). The vertical flip makes
@@ -256,7 +257,8 @@ void CImage::BlitFlipV(CBlitInfo* info, CImage* dst) {
     d.right += 1;
     d.bottom += 1;
     g_severusScratch[1] = 2;
-    ((CDDSurface*)dst->m_2c)->BltEx(&d, (CDDSurface*)m_2c, &s, 0x8800, g_severusScratch);
+    ((CSpriteDDSurface*)dst->m_2c)
+        ->BltEx(&d, (CSpriteDDSurface*)m_2c, &s, 0x8800, g_severusScratch);
     d.right -= 1;
     d.bottom -= 1;
     info->m_18 = d.left;
@@ -268,7 +270,7 @@ void CImage::BlitFlipV(CBlitInfo* info, CImage* dst) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x153d90 - horizontal flip, surface blit (BltEx, blend mode 4).
+// Horizontal flip, surface blit (BltEx, blend mode 4).
 // ---------------------------------------------------------------------------
 // @early-stop
 // Complete + correct. Same wall as BlitFlipV: the horizontal flip makes X a
@@ -346,7 +348,8 @@ void CImage::BlitFlipH(CBlitInfo* info, CImage* dst) {
     d.right += 1;
     d.bottom += 1;
     g_severusScratch[1] = 4;
-    ((CDDSurface*)dst->m_2c)->BltEx(&d, (CDDSurface*)m_2c, &s, 0x8800, g_severusScratch);
+    ((CSpriteDDSurface*)dst->m_2c)
+        ->BltEx(&d, (CSpriteDDSurface*)m_2c, &s, 0x8800, g_severusScratch);
     d.right -= 1;
     d.bottom -= 1;
     info->m_18 = d.left;
@@ -358,7 +361,7 @@ void CImage::BlitFlipH(CBlitInfo* info, CImage* dst) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x153ff0 - X+Y flip, shaded blit (CDDrawShadeBlit::Blit, sel/p4 = 0/0).
+// X+Y flip, shaded blit (CDDrawShadeBlit::Blit, sel/p4 = 0/0).
 // ---------------------------------------------------------------------------
 // @early-stop
 // Complete + correct - the fourth member of the shaded family, structurally
@@ -450,7 +453,7 @@ void CImage::BlitShadeFlipHV(CBlitInfo* info, CImage* dst) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x154270 - no flip, shaded blit (CDDrawShadeBlit::Blit, sel/p4 = 1/1).
+// No flip, shaded blit (CDDrawShadeBlit::Blit, sel/p4 = 1/1).
 // ---------------------------------------------------------------------------
 // @early-stop
 // Complete + correct, ~99.85%. Residual = the same 4 origin-load regalloc-tiebreak
@@ -539,7 +542,7 @@ void CImage::BlitShadeNorm(CBlitInfo* info, CImage* dst) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x1544d0 - vertical flip, shaded blit (CDDrawShadeBlit::Blit, sel/p4 = 1/0).
+// Vertical flip, shaded blit (CDDrawShadeBlit::Blit, sel/p4 = 1/0).
 // ---------------------------------------------------------------------------
 // @early-stop
 // Complete + correct - the X/Y formulas already match retail's operation order.
@@ -629,7 +632,7 @@ void CImage::BlitShadeFlipV(CBlitInfo* info, CImage* dst) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x154750 - X flip, shaded blit (CDDrawShadeBlit::Blit, sel/p4 = 0/1).
+// X flip, shaded blit (CDDrawShadeBlit::Blit, sel/p4 = 0/1).
 // ---------------------------------------------------------------------------
 // @early-stop
 // Complete + correct - the shaded twin of BlitFlipH. The horizontal flip makes

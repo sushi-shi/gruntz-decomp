@@ -37,7 +37,7 @@ struct BmpFile {
     char pad[0x440 - 0x10];
 };
 
-// CScanlineSurface::SaveBmp(filename, paletteObj) - 0x176b30, __thiscall (ret 8).
+// CScanlineSurface::SaveBmp(filename, paletteObj), __thiscall (ret 8).
 // @early-stop
 // /GX-EH + stack-layout wall: the logic (header build, the RGBQUAD de-interleave, the
 // bottom-up scanline Write loop) and the reloc-masked CFile calls are faithful, but the

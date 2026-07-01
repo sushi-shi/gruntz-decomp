@@ -8,7 +8,7 @@
 // SoundStream adds streaming-buffer creation from a parsed RIFF/WAVE source: it
 // validates a WAVEFORMATEX, asks the device's IDirectSound for a secondary
 // buffer, wraps it in a per-stream voice object (the 0xb0-byte
-// DirectSoundMgr-derived StreamVoice, ctor 0x1375b0), and threads that voice on
+// DirectSoundMgr-derived StreamVoiceNode, ctor 0x1375b0), and threads that voice on
 // the inherited +0x94 list. Field names are placeholders; only OFFSETS + the
 // emitted code bytes are load-bearing.
 #ifndef DSNDMGR_SOUNDSTREAM_H
@@ -18,7 +18,7 @@
 
 #include <Dsndmgr/SoundDevice.h>
 
-struct StreamVoice;
+struct StreamVoiceNode;
 class SoundStream;
 
 // One streaming source as the parser/creator sees it: a polymorphic reader
@@ -38,11 +38,11 @@ struct StreamSource {
 };
 SIZE_UNKNOWN(StreamSource); // partial reader view (only +0x0c/+0x18 pinned)
 
-// The streaming feeder sub-object embedded at StreamVoice+0x6c (a Timer-ish
+// The streaming feeder sub-object embedded at StreamVoiceNode+0x6c (a Timer-ish
 // pump the trace tagged Timer_1380d0). Its +0x18 word is a cursor that
 // FeederReset(0x137dc0) zeroes; FeederStart(0x137d10) arms the pump. The creator
 // pre-seeds its data window (+0x2c..+0x3c) before arming.
-struct StreamFeeder {
+struct StreamFeederView {
     char m_pad00[0x18];
     u32 m_18; // +0x18  cursor
     char m_pad1c[0x2c - 0x1c];
@@ -53,20 +53,20 @@ struct StreamFeeder {
     u32 m_3c; // +0x3c  data back-pointer
     char m_pad40[0x44 - 0x40];
 
-    i32 FeederStart(SoundStream* owner, void* fmt, i32 b, i32 c, StreamVoice* voice, i32 d);
+    i32 FeederStart(SoundStream* owner, void* fmt, i32 b, i32 c, StreamVoiceNode* voice, i32 d);
     // 0x137d10
     void FeederReset(i32 flag); // 0x137dc0
 };
 
 // The per-stream voice object the creator allocates (0xb0 bytes via RezAlloc,
 // ctor 0x1375b0). It is a DirectSoundMgr-derived buffer wrapper: +0x0c holds the
-// IDirectSoundBuffer to release, +0x6c is the embedded StreamFeeder, and the
+// IDirectSoundBuffer to release, +0x6c is the embedded StreamFeederView, and the
 // standard +0x04 intrusive link biases +4 (MFC POSITION). On teardown its queued
 // voices are reaped, the COM buffer released, the node unlinked, then its
 // scalar-deleting destructor runs.
-struct StreamVoice {
+struct StreamVoiceNode {
     void* m_vtbl;                 // +0x00
-    StreamVoice* m_link;          // +0x04  next, biased +4 (POSITION)
+    StreamVoiceNode* m_link;      // +0x04  next, biased +4 (POSITION)
     void* m_pad08;                // +0x08
     IDirectSoundBufferZ* m_buf0c; // +0x0c  the IDirectSoundBuffer to release
     char m_pad10[0x28 - 0x10];
@@ -76,26 +76,23 @@ struct StreamVoice {
     u32 m_38; // +0x38  avg-bytes-per-sec
     u32 m_3c; // +0x3c  avg-bytes-per-sec (divisor)
     char m_pad40[0x6c - 0x40];
-    StreamFeeder m_feeder; // +0x6c  embedded streaming feeder sub-object
+    StreamFeederView m_feeder; // +0x6c  embedded streaming feeder sub-object
 
     // ctor 0x1375b0(IDirectSoundBuffer* buf, SoundStream* owner, int a, int b).
-    StreamVoice(IDirectSoundBufferZ* buf, SoundStream* owner, i32 a, i32 b);
+    StreamVoiceNode(IDirectSoundBufferZ* buf, SoundStream* owner, i32 a, i32 b);
     void ComputeDuration(); // 0x1359a0  m_28 = m_2c*1000/m_3c
 };
-
-// WaveFormatX now lives in <Dsndmgr/SoundDevice.h> (shared by the device's
-// CreateBuffer/Acquire and the stream's CreateStreamBuffer/ParseWave).
 
 class SoundStream : public SoundDevice {
 public:
     SoundStream();              // 0x1376d0  base ctor + zero m_94/m_98 + stamp 0x5ef6ec
     void* ScalarDtor(i32 flag); // 0x1376f0  ??_G: ~SoundStream then operator delete
     ~SoundStream();             // 0x137710  restamp vptr (0x5ef6ec) then ~SoundDevice
-    StreamVoice* CreateStreamBuffer(WaveFormatX* fmt, u32 bytes, i32 a, i32 b, i32 c);
+    StreamVoiceNode* CreateStreamBuffer(WaveFormatX* fmt, u32 bytes, i32 a, i32 b, i32 c);
     // 0x137780
-    StreamVoice* OpenStream(StreamSource* src, i32 p1, i32 p2, i32 p3, i32 p4, i32 p5);
+    StreamVoiceNode* OpenStream(StreamSource* src, i32 p1, i32 p2, i32 p3, i32 p4, i32 p5);
     // 0x137900
-    void DestroyVoice(StreamVoice* voice); // 0x1379d0
+    void DestroyVoice(StreamVoiceNode* voice); // 0x1379d0
     i32 ParseWave(
         StreamSource* src,
         WaveFormatX* fmtBuf,

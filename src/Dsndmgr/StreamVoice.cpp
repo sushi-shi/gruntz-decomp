@@ -30,7 +30,7 @@ namespace {
 } // namespace
 
 // ---------------------------------------------------------------------------
-// StreamVoice::StreamVoice (0x1375b0, __thiscall, /GX EH frame). Construct the
+// StreamVoice::StreamVoice (__thiscall, /GX EH frame). Construct the
 // DirectSoundMgr base + the embedded feeder, restamp both vptrs to the voice's
 // own tables, cache the two ctor args (m_64/m_60) and clear m_68.
 // @early-stop
@@ -51,7 +51,7 @@ StreamVoice::StreamVoice(IDirectSoundBufferZ* buf, DirectSoundMgr* owner, i32 a,
 }
 
 // ---------------------------------------------------------------------------
-// StreamVoice::SetSource (0x1374c0, __thiscall, 1 arg). Ask the owning
+// StreamVoice::SetSource (__thiscall, 1 arg). Ask the owning
 // SoundStream (m_owner) to parse the RIFF/WAVE source into a scratch
 // WAVEFORMATEX + data (off, len), then arm the embedded feeder's window over it.
 RVA(0x001374c0, 0x5d)
@@ -70,7 +70,7 @@ i32 StreamVoice::SetSource(StreamSource* src) {
 }
 
 // ---------------------------------------------------------------------------
-// StreamVoice::Configure (0x137520, __thiscall, 4 args). Apply the cached
+// StreamVoice::Configure (__thiscall, 4 args). Apply the cached
 // volume/pan/frequency indices through the DirectSoundMgr base setters, stash the
 // loop flag in m_feeder.m_loop, then resume the embedded feeder - ANDing every step's
 // success into the returned flag.
@@ -97,7 +97,7 @@ i32 StreamVoice::Configure(i32 vol, i32 pan, i32 freq, i32 loop) {
 }
 
 // ---------------------------------------------------------------------------
-// StreamVoice::ComputeRatio (0x137590, __thiscall, no args). m_feeder.m_windowLength * 1000 / m_3c
+// StreamVoice::ComputeRatio (__thiscall, no args). m_feeder.m_windowLength * 1000 / m_3c
 // (a position->time ratio; the *1000 is open-coded as *5*5*5*8).
 RVA(0x00137590, 0x18)
 u32 StreamVoice::ComputeRatio() {
@@ -105,7 +105,7 @@ u32 StreamVoice::ComputeRatio() {
 }
 
 // ---------------------------------------------------------------------------
-// StreamVoice::~StreamVoice (0x137650, __thiscall, /GX EH frame). Restamp the
+// StreamVoice::~StreamVoice (__thiscall, /GX EH frame). Restamp the
 // voice vptr, reset + tear down the embedded feeder, then run the DirectSoundMgr
 // base destructor.
 // @early-stop

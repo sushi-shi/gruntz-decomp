@@ -34,7 +34,7 @@ struct DSoundVoice {
 SIZE(DSoundVoice, 0x28); // measured: new(0x28) voice node (ctor 0x136fe0)
 
 // ---------------------------------------------------------------------------
-// 0x137060: DSoundVoice::Tick (vtbl slot 0, __thiscall, 1 arg = the current
+// DSoundVoice::Tick (vtbl slot 0, __thiscall, 1 arg = the current
 // clock). Clamp the elapsed time to the ramp duration (flagging completion when
 // it overruns); if the buffer stopped playing on its own, also flag done.
 // Otherwise interpolate the ramp volume index across the elapsed fraction and
@@ -69,7 +69,7 @@ i32 DSoundVoice::Tick_137060(i32 now) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x1370d0: DSoundVoice::Stop (vtbl slot 1, __thiscall, no args). If the buffer
+// DSoundVoice::Stop (vtbl slot 1, __thiscall, no args). If the buffer
 // is still playing: when the stop flag is set, stop+rewind it; otherwise snap its
 // volume to the ramp end. Always returns 1.
 RVA(0x001370d0, 0x38)

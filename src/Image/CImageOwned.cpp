@@ -22,7 +22,7 @@ void* operator new(u32 n);
 extern "C" void RezFree(void* p);
 
 // ---------------------------------------------------------------------------
-// 0x148ce0: the constructor. Zero the buffers/counters; prime m_14=1, m_18=0x80,
+// The constructor. Zero the buffers/counters; prime m_14=1, m_18=0x80,
 // m_24=-1, and both format-flag bytes m_28/m_29=1. __thiscall.
 // ---------------------------------------------------------------------------
 RVA(0x00148ce0, 0x2f)
@@ -56,7 +56,7 @@ struct CRleByteArray {
 };
 
 // ---------------------------------------------------------------------------
-// 0x148d40: BuildRle - run-length encode the source plane into the owned pixel
+// BuildRle - run-length encode the source plane into the owned pixel
 // buffer (+0x0c). Each row of `width` pixels is scanned: a run of NON-key bytes
 // emits the run length then the literal bytes; a run of key (== keyVal) bytes
 // emits (length | 0x80). Runs cap at 0x7e. The encoding accumulates in a transient
@@ -153,7 +153,7 @@ i32 CImageOwned::BuildRle(
 }
 
 // ---------------------------------------------------------------------------
-// 0x148fc0: LoadFromFile - open the named file, slurp it whole into a fresh
+// LoadFromFile - open the named file, slurp it whole into a fresh
 // operator-new buffer, hand it to Build, then free the buffer + close the stream.
 // The stack CFileIO + the by-value CString name -> a /GX EH frame. __thiscall,
 // ret 8 (name + fmt). Returns Build's result, or 0 if the open failed.
@@ -173,7 +173,7 @@ i32 CImageOwned::LoadFromFile(CString name, i32 fmt) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x1490d0: decode a frame from the descriptor. The desc flag word (+0x04) and the
+// Decode a frame from the descriptor. The desc flag word (+0x04) and the
 // format code steer two flag bytes (m_28/m_29) and the palette/pixel layout; on a
 // 16-bit palette frame the 768-byte RGB palette is unpacked into a padded 0x400
 // hardware buffer, then the pixels are copied into a fresh m_0c. When m_28 came out
@@ -262,7 +262,7 @@ i32 CImageOwned::Build(CImageBuildDesc* src, i32 size, i32 fmt) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x1493b0: Rebuild - when the owned object is in format-state 1, build an 8-dword
+// Rebuild - when the owned object is in format-state 1, build an 8-dword
 // frame descriptor out of the current dimensions/key + the two caller ints and the
 // by-value name, then hand it to DecodeFrame (0x149250). The `name` CString arrives
 // by value -> the callee destroys it (the early-return path also runs ~CString),

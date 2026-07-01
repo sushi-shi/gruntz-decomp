@@ -102,20 +102,26 @@ extern i32 g_panTable[];
 // links the node's anchor (m_link@+0x04) into the owner's voice list (owner+0xc).
 // The ctor is external (modeled here, defined in 0x136fe0); a placement-new call
 // lowers to `mov ecx,voice; call 0x136fe0` reloc-masked.
-struct DSoundVoice {
+struct DSoundMgrVoice {
     void* m_vtbl; // +0x00
     struct Link { // +0x04  the intrusive list-anchor
         Link* m_next;
         Link* m_prev;
     } m_link;
     char m_pad0c[0x28 - 0x0c]; // full node is 0x28 bytes (the `new` size operand)
-    DSoundVoice(i32 key, i32 pct, i32 mode, DirectSoundMgr* owner, i32 slot,
-                i32 stamp); // 0x136fe0
+    DSoundMgrVoice(
+        i32 key,
+        i32 pct,
+        i32 mode,
+        DirectSoundMgr* owner,
+        i32 slot,
+        i32 stamp
+    ); // 0x136fe0
 };
 
 // Owner voice-list helpers (intrusive doubly-linked list, __thiscall on the list
 // head). Insert-at-head (0x1390e0) takes the anchor.
-struct DSoundList {
+struct DSoundMgrList {
     void* m_head;                  // +0x00
     void* m_tail;                  // +0x04
     void InsertHead(void* anchor); // 0x1390e0
@@ -414,7 +420,7 @@ i32 DirectSoundMgr::GetVolumePercent() {
 // DirectSoundMgr::CloneAndPlay (__thiscall, ret 0xc => 3 args = key, mode, slot).
 // Gated on init. First reaps any matching finished voices from the owner's voice
 // list (owner+0xc). When mode==0 it just re-applies the volume via SetVolumeByIndex;
-// otherwise new's a 0x28-byte DSoundVoice for the requested play and links its
+// otherwise new's a 0x28-byte DSoundMgrVoice for the requested play and links its
 // anchor into the owner's voice list (new/ctor in a /GX EH frame, the voice ctor
 // being the destructible local). Returns 1 on a successful dispatch, 0 if the
 // device is down or the voice allocation/ctor failed.
@@ -431,11 +437,11 @@ i32 DirectSoundMgr::CloneAndPlay(i32 key, i32 mode, i32 slot) {
         return 1;
     }
 
-    DSoundVoice* voice = new DSoundVoice(key, GetVolumePercent(), mode, this, slot, -1);
+    DSoundMgrVoice* voice = new DSoundMgrVoice(key, GetVolumePercent(), mode, this, slot, -1);
     if (voice == 0) {
         return 0;
     }
-    ((DSoundList*)&m_owner->m_buffer)->InsertHead(&voice->m_link);
+    ((DSoundMgrList*)&m_owner->m_buffer)->InsertHead(&voice->m_link);
     return 1;
 }
 
@@ -653,7 +659,7 @@ DirectSoundMgr* DirectSoundMgr::Clone(i32 a) {
         GetErrorString(DSNDMGR_FILE, 0x217, hr);
         return 0;
     }
-    ((DSoundList*)&m_cloneHead)->InsertHead(&c->m_node44);
+    ((DSoundMgrList*)&m_cloneHead)->InsertHead(&c->m_node44);
     *(i32*)((char*)c + 0x50) = a; // +0x50  the play key
     return c;
 }
@@ -793,7 +799,7 @@ SIZE_UNKNOWN(DSoundCloneInst); // DirectSoundMgr-derived; retail clone alloc 0x5
 RVA(0x00135b10, 0x6b)
 DSoundCloneInst::DSoundCloneInst(IDirectSoundBufferZ* buf, DirectSoundMgr* owner)
     : DSoundBaseSub(buf, owner) {
-    DSoundList* list = (DSoundList*)&m_cloneHead;
+    DSoundMgrList* list = (DSoundMgrList*)&m_cloneHead;
     list->m_head = 0;
     list->m_tail = 0;
     *(void**)this = (void*)g_DirectSoundCloneVtbl;

@@ -5,16 +5,16 @@
 // matched methods; the OFFSETS + code bytes stay load-bearing. A few write-only
 // fields with no proven role keep their m_<hexoffset> placeholder.
 //
-//   class CImage  - the extension DISPATCHER class plus its five per-extension
+//   class CRezImage  - the extension DISPATCHER class plus its five per-extension
 //     loaders. LoadFromRez(name,a2,a3) does `ext = strrchr(name,'.')` then a
 //     stricmp ladder on ".BMP"/".PCX"/".RID"/".PID" and hands off (all args
 //     forwarded) to one of five sibling __thiscall loaders (LoadBmp/LoadPcx/
 //     LoadRid/LoadPid/LoadDefault), each `ret 0xc`. The loaders are the real
 //     file/resource consumers: LoadBmp opens a CFileIO, parses the BMP file +
-//     info headers, builds the CImage via a decode helper and reads the pixel
+//     info headers, builds the CRezImage via a decode helper and reads the pixel
 //     bytes; LoadPcx/Rid/Pid slurp the whole file into an `operator new` buffer
 //     and run a per-format decode helper; LoadDefault loads a Win32 RT_BITMAP
-//     resource and decodes it. The per-format decode helpers are also CImage
+//     resource and decodes it. The per-format decode helpers are also CRezImage
 //     __thiscall methods, reconstructed in Image.cpp; they share the plane
 //     allocator DecodeBmpHeader and the blitter DecodeBlit (external/no-body).
 //
@@ -30,13 +30,13 @@
 #include <Io/FileStream.h>
 
 // ---------------------------------------------------------------------------
-// CImage - the image-resolution dispatcher.
+// CRezImage - the image-resolution dispatcher.
 // LoadFromRez is __thiscall, ret 0xc (this + name + two opaque pass-through
 // args). It forwards (name, a2, a3) verbatim to the matching format loader.
 // The five sibling loaders and the per-format decoders are reconstructed in
 // Image.cpp; only the shared blitter DecodeBlit stays external/no-body.
 // ---------------------------------------------------------------------------
-class CImage {
+class CRezImage {
 public:
     i32 LoadFromRez(char* name, void* a2, void* a3);
 
@@ -48,7 +48,7 @@ public:
     i32 LoadPid(char* name, void* a2, void* a3);
     i32 LoadDefault(char* name, void* a2, void* a3);
 
-    // Per-format decode helpers (bodies in Image.cpp). All __thiscall on CImage,
+    // Per-format decode helpers (bodies in Image.cpp). All __thiscall on CRezImage,
     // invoked by the loaders above with the decoded header fields / raw file
     // buffer / resource pointer. Names are placeholders (the FUN_* labels carry
     // no real name). DecodeBmpHeader is the allocator/setup: it fills the
@@ -61,7 +61,7 @@ public:
     i32 DecodePidData(void* buf, void* a2, void* a3);
     i32 DecodeResData(void* buf, void* a2, void* a3);
 
-    // The shared plane blitter (FUN_00575930): a __thiscall CImage method that
+    // The shared plane blitter (FUN_00575930): a __thiscall CRezImage method that
     // (re)allocates/decodes via DecodeBmpHeader then copies `src` into the plane
     // (flat rep-movs when m_rowPad==0, else row-by-row through m_rowOffsets).
     // External/no-body so its call reloc-masks. ret 0x18 = 6 stack args.

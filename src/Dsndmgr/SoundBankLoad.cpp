@@ -58,7 +58,7 @@ struct CSoundBank {
 };
 SIZE_UNKNOWN(CSoundBank); // polymorphic; only +0x5c pinned, tail opaque
 
-// 0x138aa0 - Load: the special ".." name forwards to the slot-0x3c handler; otherwise
+// Load: the special ".." name forwards to the slot-0x3c handler; otherwise
 // open `path`, require >= 4 bytes, slurp it whole into the owned +0x5c buffer, and run
 // the slot-0x14 decode. Each failure tears down the local CFile and returns 0; the
 // CFile's throwing ctor forces the /GX frame. __thiscall, ret 8.

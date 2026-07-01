@@ -32,7 +32,7 @@ public:
 extern "C" char* RezStrrchr(const char* s, i32 c);       // FUN_00120680 (_RezStrrchr)
 extern "C" i32 RezStricmp(const char* a, const char* b); // FUN_0011fdf0 (_RezStricmp)
 
-// CFileImage::LoadByExt (0x148940) - load an image by inspecting its file
+// CFileImage::LoadByExt - load an image by inspecting its file
 // extension. Forces the IMAGEZ flag (|0x40), finds the extension, and dispatches
 // to LoadFile2 (.BMP) / LoadFile (.PCX) / DecodePcxEx (.PID) or the default loader
 // (ResLoad_144270::Load, the same __thiscall `this`). On a successful load (except

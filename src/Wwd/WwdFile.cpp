@@ -235,7 +235,7 @@ CPlane* CGameLevelPlanes::ReadPlane(void* planeData, void* blockBase, void* /*un
 }
 
 // ---------------------------------------------------------------------------
-// CGameLevelPlanes::ReadObjectPlane (0x15d9a0) - the object-plane sibling of
+// CGameLevelPlanes::ReadObjectPlane - the object-plane sibling of
 // ReadPlane: `new CPlane(m_field0c, m_planeCount, 0)`, then drive the plane's
 // +0x24 object-block reader with the six forwarded args, &m_planeCtx (7th), and
 // the trailing arg (8th). Append/record/delete identically to ReadPlane.
@@ -307,7 +307,7 @@ i32 __stdcall WwdFile_InflateMainBlock(WwdHeader* src, Bytef* dest, u32 destLen)
 }
 
 // ===========================================================================
-// CPlaneRender::SetTileSize (0x161f00, __thiscall, ret 8) - given the tile pixel
+// CPlaneRender::SetTileSize (__thiscall, ret 8) - given the tile pixel
 // size (tileW, tileH), derive the plane's pixel-wrap dims (grid count * tile px),
 // the tile px size, the (0,0,tileW,tileH) default fill rect, and the two log2
 // shift amounts. The retail code derives BOTH shifts from tileW (the shiftY loop
@@ -1174,7 +1174,7 @@ void CPlaneRender::SnapToTileCenter(i32* out, i32 x, i32 y) {
 }
 
 // ---------------------------------------------------------------------------
-// WwdFile::GetMapBaseName (0x3bb50, static __cdecl, returns CString by value)
+// WwdFile::GetMapBaseName (static __cdecl, returns CString by value)
 // Copy the path into the shared 0x62c010 scratch buffer, drop the 4-char
 // extension (write a NUL at len-4 via the preceding 0x62c00c slot), then return
 // the filename portion after the last backslash. Empty/short (<= 4 char) paths

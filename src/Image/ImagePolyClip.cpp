@@ -31,7 +31,7 @@ DATA(0x002becf8)
 extern i32 g_polyClipCount; // 0x6becf8
 
 // ===========================================================================
-// 0x1461b0 - clip `poly` (n verts) to the rect [a2 (left) .. a4 (right)] x
+// Clip `poly` (n verts) to the rect [a2 (left) .. a4 (right)] x
 // [a3 (top) .. a5 (bottom)] in four inlined Sutherland-Hodgman passes.
 // ===========================================================================
 // @early-stop

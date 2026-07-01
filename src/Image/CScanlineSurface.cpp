@@ -19,7 +19,7 @@ i32 __stdcall SoftSurfOp1762c0(void* a0, i32 a2, i32 a3); // 0x1762c0
 i32 __stdcall SoftSurfOp176440(void* a0, i32 a2, i32 a3); // 0x176440
 
 // ---------------------------------------------------------------------------
-// 0x175a00: dispatch one of four CImage format decoders on `a0` keyed by `kind`
+// Dispatch one of four CImage format decoders on `a0` keyed by `kind`
 // (2..5; the callees alias CImage::Decode{Pcx,Res,Rid,Pid}Data), forwarding
 // (a0, a2, a3); unknown kind -> 0. __stdcall (callee cleanup).
 // @early-stop
@@ -42,7 +42,7 @@ i32 __stdcall SoftSurfaceBlit(void* a0, i32 kind, i32 a2, i32 a3) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x175b80: build a fresh 16bpp RGB555 copy of the 8bpp `src` surface through the
+// Build a fresh 16bpp RGB555 copy of the 8bpp `src` surface through the
 // `pal` 256-entry RGB table (8 bytes in). Returns TRUE on success.
 // @early-stop
 // regalloc wall: retail pins `palette` in ebp across the whole function while our
@@ -77,7 +77,7 @@ i32 CScanlineSurface::Convert8To16(void* a0, CScanlineSurface* src, void* pal) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x175ce0: keep the surface at `w`x`h`. If the buffer is live and already that
+// Keep the surface at `w`x`h`. If the buffer is live and already that
 // size, reuse it (return TRUE); otherwise Free + Create.
 RVA(0x00175ce0, 0x6b)
 i32 CScanlineSurface::EnsureSize(void* a0, i32 w, i32 h, i32 a3, i32 a4) {
@@ -89,7 +89,7 @@ i32 CScanlineSurface::EnsureSize(void* a0, i32 w, i32 h, i32 a3, i32 a4) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x175d50: fill every pixel with the low byte of `value`. Contiguous buffers
+// Fill every pixel with the low byte of `value`. Contiguous buffers
 // (m_scanlineMode == 0) get one flat fill; scanline-table buffers fill row by row.
 // @early-stop
 // memset-inline LICM wall: the contiguous fast path is byte-exact, but retail hoists

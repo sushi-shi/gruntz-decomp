@@ -129,7 +129,7 @@ extern const double c_acosNorm; // 0x5ef6b0  acos() normalizer arg
 void operator delete(void*);
 
 // ---------------------------------------------------------------------------
-// SoundDevice::VolumeToAttenuation (0x1350b0, static __cdecl, x87). Map a 0..100
+// SoundDevice::VolumeToAttenuation (static __cdecl, x87). Map a 0..100
 // volume to a DSound hundredths-of-dB attenuation: 100 -> 0 (full), 0 -> -10000
 // (silence), else an acos(pow(...))/acos(...) transfer scaled by c_volScale (==100),
 // floored via __ftol. Constants (measured): c_volScale=100, c_volNum=1, c_powExp=10,
@@ -157,7 +157,7 @@ i32 SoundDevice::VolumeToAttenuation(i32 value) {
 }
 
 // ---------------------------------------------------------------------------
-// SoundDevice::BuildVolumeTable (0x1351a0, static __cdecl). Fill g_volumeTable with
+// SoundDevice::BuildVolumeTable (static __cdecl). Fill g_volumeTable with
 // VolumeToAttenuation(i), the pointer walking until it reaches g_panTable (0x653c48)
 // inclusive (101 stores).
 RVA(0x001351a0, 0x23)
@@ -168,7 +168,7 @@ void SoundDevice::BuildVolumeTable() {
 }
 
 // ---------------------------------------------------------------------------
-// SoundDevice::SoundDevice (0x136440, __thiscall, /GX EH frame). Zero the two
+// SoundDevice::SoundDevice (__thiscall, /GX EH frame). Zero the two
 // intrusive list members (owned-buffer +0x04/+0x08, voice +0x0c/+0x10), stamp the
 // device vptr, clear the init flag, BuildVolumeTable, then zero the device/primary
 // state. SoundStream derives from this, so its ctor emits the base call here.
@@ -198,7 +198,7 @@ SoundDevice::SoundDevice() {
 }
 
 // ---------------------------------------------------------------------------
-// SoundDevice::ScalarDtor (0x1364c0, __thiscall) - the ??_G vtable slot-0
+// SoundDevice::ScalarDtor (__thiscall) - the ??_G vtable slot-0
 // scalar-deleting destructor MSVC auto-emits for the virtual dtor: run ~SoundDevice,
 // then operator delete (the engine RezFree) when the low flag bit is set; returns
 // this. Modeled as a plain method (name-independent at delink) since SoundDevice is
@@ -213,7 +213,7 @@ void* SoundDevice::ScalarDtor(i32 flag) {
 }
 
 // ---------------------------------------------------------------------------
-// SoundDevice::~SoundDevice (0x136500, __thiscall, /GX EH frame). Stamp the
+// SoundDevice::~SoundDevice (__thiscall, /GX EH frame). Stamp the
 // device vptr, then if initialized run the full teardown.
 // @early-stop
 // eh-dtor-needs-base-subobject wall (docs/patterns/eh-dtor-needs-base-subobject.md):
@@ -231,7 +231,7 @@ SoundDevice::~SoundDevice() {
 }
 
 // ---------------------------------------------------------------------------
-// SoundDevice::Shutdown (0x136690, __thiscall). Release every owned buffer
+// SoundDevice::Shutdown (__thiscall). Release every owned buffer
 // wrapper (RemoveBuffer drains its voices, releases its COM buffer + unlinks +
 // destroys it), then the primary buffer and the device, then clear the flag.
 RVA(0x00136690, 0x58)
@@ -251,7 +251,7 @@ void SoundDevice::Shutdown() {
 }
 
 // ---------------------------------------------------------------------------
-// SoundDevice::CreateBuffer (0x1366f0, __thiscall, /GX EH frame). Validate the
+// SoundDevice::CreateBuffer (__thiscall, /GX EH frame). Validate the
 // PCM WAVEFORMATEX, build a DSBUFFERDESC and ask the IDirectSound device (+0x14)
 // for a sound buffer, then RezAlloc + BaseInit a SampleVoice wrapping it, thread
 // it on the +0x04 owned-buffer list, and seed its format/avg-bytes/byte-count +
@@ -332,7 +332,7 @@ DATA(0x0020b668)
 extern const char s_rb[];
 
 // ---------------------------------------------------------------------------
-// SoundDevice::AcquireFile (0x136860, __thiscall, ret 0xc => 3 args). Gated on
+// SoundDevice::AcquireFile (__thiscall, ret 0xc => 3 args). Gated on
 // init. fopen the path "rb", read the whole file into a freshly-new'd buffer (its
 // length from the FILE* fd), Acquire that RIFF blob, then free the buffer and close
 // the file. Returns the acquired buffer wrapper (0 on any I/O failure).
@@ -359,7 +359,7 @@ DirectSoundMgr* SoundDevice::AcquireFile(char* path, u32 a2, u32 a3) {
 }
 
 // ---------------------------------------------------------------------------
-// SoundDevice::Acquire (0x136910, __thiscall). Parse a RIFF/WAVE blob for its PCM
+// SoundDevice::Acquire (__thiscall). Parse a RIFF/WAVE blob for its PCM
 // fmt + data extents, optionally downconvert a 16-bit PCM format to 8-bit (when
 // the device forces it, m_force8Bit, or the parse flags request it), create a buffer for
 // the format, then load the PCM data into it; on a load failure the buffer is
@@ -417,7 +417,7 @@ DirectSoundMgr* SoundDevice::Acquire(void* riff, u32, u32) {
 }
 
 // ---------------------------------------------------------------------------
-// SoundDevice::ValidateRestore (0x136ab0, __thiscall, ret 0xc => 3 args). Gated on
+// SoundDevice::ValidateRestore (__thiscall, ret 0xc => 3 args). Gated on
 // init. Validate the size + fmt (non-null) and the PCM format tag (wFormatTag==1),
 // then Restore the buffer and return its normalized 0/1 success.
 RVA(0x00136ab0, 0x41)
@@ -438,7 +438,7 @@ i32 SoundDevice::ValidateRestore(DirectSoundMgr* buf, WaveFormatX* fmt, u32 size
 }
 
 // ---------------------------------------------------------------------------
-// SoundDevice::ReloadRiff (0x136bd0, __thiscall, ret 0xc => 3 args). Re-load a RIFF
+// SoundDevice::ReloadRiff (__thiscall, ret 0xc => 3 args). Re-load a RIFF
 // blob into an EXISTING buffer wrapper (the Acquire sibling that reuses a buffer
 // instead of creating one): gate on init + a non-null RIFF, only proceed when the
 // buffer is currently looping, parse the chunks, optionally downconvert a 16-bit
@@ -493,7 +493,7 @@ i32 SoundDevice::ReloadRiff(DirectSoundMgr* buf, void* riff, u32 a3) {
 }
 
 // ---------------------------------------------------------------------------
-// SoundDevice::RemoveBuffer (0x136d80, __thiscall, 1 arg). Reap the buffer's
+// SoundDevice::RemoveBuffer (__thiscall, 1 arg). Reap the buffer's
 // queued voices, release its IDirectSoundBuffer, unlink it from the owned-buffer
 // list, then run its scalar-deleting destructor.
 RVA(0x00136d80, 0x56)
@@ -512,7 +512,7 @@ void SoundDevice::RemoveBuffer(SoundBuf* node) {
 }
 
 // ---------------------------------------------------------------------------
-// SoundDevice::StopAll (0x136de0, __thiscall). Walk the owned-buffer list,
+// SoundDevice::StopAll (__thiscall). Walk the owned-buffer list,
 // StopAndRewind + StopAllClones on each.
 RVA(0x00136de0, 0x3c)
 void SoundDevice::StopAll() {
@@ -527,7 +527,7 @@ void SoundDevice::StopAll() {
 }
 
 // ---------------------------------------------------------------------------
-// SoundDevice::FreeSamples (0x136ed0, __thiscall). Walk the cached-sample list
+// SoundDevice::FreeSamples (__thiscall). Walk the cached-sample list
 // (+0x0c, biased +4 links): for each, run its slot-1 "free" virtual, unlink it,
 // restamp its vptr to the pure base, and RezFree it. Returns 1.
 // @early-stop
@@ -557,7 +557,7 @@ i32 SoundDevice::FreeSamples() {
 }
 
 // ---------------------------------------------------------------------------
-// ParseWaveChunks (0x137110, __cdecl). Scan a RIFF/WAVE blob in memory: verify
+// ParseWaveChunks (__cdecl). Scan a RIFF/WAVE blob in memory: verify
 // the 'RIFF'/'WAVE' magic, then walk the chunk list (each {u32 id; u32 size;
 // payload} even-aligned), recording the 'fmt ' chunk payload into out->m_fmt and,
 // on the 'data' chunk, the payload pointer/length into *dataOut/*sizeOut. Returns
@@ -603,7 +603,7 @@ extern "C" i32 ParseWaveChunks(void* riff, ParseFmt* out, void** dataOut, u32* s
 }
 
 // ---------------------------------------------------------------------------
-// SoundDevice::SetPrimaryFormat (0x1371a0, __thiscall, 1 arg). Ensure the primary
+// SoundDevice::SetPrimaryFormat (__thiscall, 1 arg). Ensure the primary
 // buffer exists, then set its WAVEFORMATEX; report a failing HRESULT and bail.
 RVA(0x001371a0, 0x5a)
 i32 SoundDevice::SetPrimaryFormat(void* fmt) {

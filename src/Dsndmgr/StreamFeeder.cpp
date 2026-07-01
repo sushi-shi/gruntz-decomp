@@ -48,7 +48,7 @@ DATA(0x001ef6f0)
 extern void* const g_StreamFeederVtbl[];
 
 // ---------------------------------------------------------------------------
-// StreamFeeder::SeedWindow (0x137340, __thiscall, 3 args). Arm the data window
+// StreamFeeder::SeedWindow (__thiscall, 3 args). Arm the data window
 // (source + offset + length) over the stream, then prime via Tick(-1).
 RVA(0x00137340, 0x33)
 i32 StreamFeeder::SeedWindow(void* src, u32 off, u32 len) {
@@ -65,7 +65,7 @@ i32 StreamFeeder::SeedWindow(void* src, u32 off, u32 len) {
 }
 
 // ---------------------------------------------------------------------------
-// StreamFeeder::CopyWindow (0x137380, __thiscall, 6 args - two
+// StreamFeeder::CopyWindow (__thiscall, 6 args - two
 // (dst, n, *got) triples). Stream-copy up to `n` bytes into each destination
 // region from the running window cursor (m_sourceOffset), reporting the byte count read in
 // *got, and looping back to the window start (m_windowStart) at the end when the loop
@@ -111,7 +111,7 @@ i32 StreamFeeder::CopyWindow(void* dst1, u32 n1, u32* got1, void* dst2, u32 n2, 
 }
 
 // ---------------------------------------------------------------------------
-// StreamFeeder::StreamFeeder (0x137cd0, __thiscall). Stamp the vptr, zero the
+// StreamFeeder::StreamFeeder (__thiscall). Stamp the vptr, zero the
 // buffer/cursor/flag fields.
 RVA(0x00137cd0, 0x1a)
 StreamFeeder::StreamFeeder() {
@@ -124,7 +124,7 @@ StreamFeeder::StreamFeeder() {
 }
 
 // ---------------------------------------------------------------------------
-// StreamFeeder::Cleanup (0x137cf0, __thiscall - the dtor body). Restamp the
+// StreamFeeder::Cleanup (__thiscall - the dtor body). Restamp the
 // vptr, tear down the armed buffer, clear m_buffer.
 RVA(0x00137cf0, 0x20)
 void StreamFeeder::Cleanup() {
@@ -136,7 +136,7 @@ void StreamFeeder::Cleanup() {
 }
 
 // ---------------------------------------------------------------------------
-// StreamFeeder::FeederReset (0x137dc0, __thiscall, 1 arg). If armed, drain
+// StreamFeeder::FeederReset (__thiscall, 1 arg). If armed, drain
 // (Pause if drained, then the OnDrain virtual), optionally reap the buffer from
 // the owner, and disarm.
 RVA(0x00137dc0, 0x43)
@@ -155,7 +155,7 @@ void StreamFeeder::FeederReset(i32 doStop) {
 }
 
 // ---------------------------------------------------------------------------
-// StreamFeeder::Resume (0x137ed0, __thiscall). If not already drained, resume
+// StreamFeeder::Resume (__thiscall). If not already drained, resume
 // the buffer (m_buffer->Resume(1)) and, if it reports playing, mark drained (m_drained=1).
 RVA(0x00137ed0, 0x30)
 i32 StreamFeeder::Resume() {
@@ -171,7 +171,7 @@ i32 StreamFeeder::Resume() {
 }
 
 // ---------------------------------------------------------------------------
-// StreamFeeder::Pause (0x137f00, __thiscall). If drained, stop+rewind the
+// StreamFeeder::Pause (__thiscall). If drained, stop+rewind the
 // buffer and clear the drained flag; else nothing.
 RVA(0x00137f00, 0x26)
 i32 StreamFeeder::Pause() {
@@ -186,7 +186,7 @@ i32 StreamFeeder::Pause() {
 }
 
 // ---------------------------------------------------------------------------
-// StreamFeeder::FeederStart (0x137d10, __thiscall, 6 args, ret 0x18). Arm the
+// StreamFeeder::FeederStart (__thiscall, 6 args, ret 0x18). Arm the
 // feeder: record owner/length/format, derive the silence byte from the PCM bit
 // depth, create (or adopt) the streaming buffer, arm, FeedData (slot 1) and
 // prime via Tick.
@@ -235,7 +235,7 @@ i32 StreamFeeder::FeederStart(
 }
 
 // ---------------------------------------------------------------------------
-// StreamFeeder::FillBuffer (0x137f30, __thiscall, 2 args, ret 0x8). Lock the
+// StreamFeeder::FillBuffer (__thiscall, 2 args, ret 0x8). Lock the
 // streaming secondary buffer at the write window, copy the source window into
 // the (possibly wrapped) locked regions, silence-pad the unfilled tail, advance
 // the read cursor (m_bufferCursor) with wraparound, and Unlock.

@@ -37,7 +37,7 @@ inline i32 CImageLoadDispatch::LoadVirtual(CImageFrameDesc* desc, u32 mode, void
 }
 
 // ---------------------------------------------------------------------------
-// 0x152e90 (vtable slot 12): Create. The Create24 sibling without the mode args:
+// (vtable slot 12): Create. The Create24 sibling without the mode args:
 // allocate a surface from the parent pool's 3-arg create (CreateC @0x142560) for
 // (desc, capArg, flagsArg) - where flagsArg = keyed ? g_severusCounterB : -1 and
 // capArg = g_severusCounterA ? 0x800 : 0 - then cache the surface geometry (w/h,
@@ -78,7 +78,7 @@ i32 CImage::Create(CImageFrameDesc* desc, i32 keyed) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x152f20 (vtable slot 11): Resolve. Read the source's 3-char format tag, map it
+// (vtable slot 11): Resolve. Read the source's 3-char format tag, map it
 // to a format index (BMP=1, "CPX"=2, "RID"=3, "PID"=4), prime the source, then
 // dispatch the +0x28 load virtual (LoadDispatch) with (resolved, index, src->m_0c,
 // arg); finally release the source and return the load result. __thiscall, ret 8.
@@ -117,7 +117,7 @@ i32 CImage::Resolve(CImageSource* src, i32 arg) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x152fb0 (vtable slot 10): LoadDispatch. The format-index switch (1..4); index 4
+// (vtable slot 10): LoadDispatch. The format-index switch (1..4); index 4
 // with the desc's 0x20 flag takes the slot-13 build path (an EH /GX builder),
 // otherwise the default path allocates a surface from the parent pool (CreateA),
 // caching its geometry into m_10..m_28. __thiscall, ret 0x10 (4 stack args).
@@ -179,7 +179,7 @@ i32 CImage::LoadDispatch(CImageFrameDesc* desc, u32 mode, void* a, i32 b) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x1530e0 (vtable slot 9): Create24. Allocate a surface from the parent pool's
+// (vtable slot 9): Create24. Allocate a surface from the parent pool's
 // Create24 variant (CreateB @0x1423c0) for (desc, mode, NULL, capArg, flagsArg) -
 // where flagsArg = keyed ? g_severusCounterB : -1 and capArg = g_severusCounterA ?
 // 0x800 : 0 - then cache the surface geometry (w/h, halved) and clear the m_20/m_24
@@ -214,7 +214,7 @@ i32 CImage::Create24(CImageFrameDesc* desc, i32 mode, i32 keyed) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x153180: the slot-13 build path (non-virtual /GX builder). Allocate the owned
+// The slot-13 build path (non-virtual /GX builder). Allocate the owned
 // +0x30 object (a CImageOwned), decode one frame into it (Build) with the parent's
 // active surface format, then cache the decoded geometry (w/h, halved) and the
 // descriptor's m_10/m_14 origin into the image. m_28 = 0x11 on success.
@@ -256,7 +256,7 @@ i32 CImage::BuildSlot13(CImageFrameDesc* desc, void* a) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x153260: the cleanup virtual (vtable slot 7). Remove the held surface (m_2c)
+// The cleanup virtual (vtable slot 7). Remove the held surface (m_2c)
 // from the parent collection's surface pool (m_0c->m_1c), then destroy + free the
 // owned +0x30 object; both handles cleared. m_10/m_14 zeroed up front.
 // ---------------------------------------------------------------------------
@@ -277,7 +277,7 @@ void CImage::FreeAll() {
 }
 
 // ---------------------------------------------------------------------------
-// 0x1532b0: CopyFrom - clone another image's surface into this one. Fails unless
+// CopyFrom - clone another image's surface into this one. Fails unless
 // both images own a held surface (m_2c) and neither carries an owned object (m_30),
 // and the two geometries match (m_10/m_14). On a match it Prepares the held surface
 // (Prepare(0)) then Blts the other image's surface into it, returning whether the
@@ -395,7 +395,7 @@ i32 CImage::Reload(CImageSource* src, i32 arg) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x0d5e80: the virtual destructor. MSVC stamps this class's own vtable
+// The virtual destructor. MSVC stamps this class's own vtable
 // (??_7CImage, catalog auto-named) at entry, runs the cleanup virtual (FreeAll),
 // then the base subobject dtor folds in (sets m_04=-1, zeroes m_08/m_0c, stamps
 // the grand-base dtor vtable). Both vptr stamps are compiler-implicit now, so they
@@ -490,21 +490,21 @@ void CImage::RenderFrameClipped(void* a, void* b, void* c, void* rect, void* d) 
 // this view. CImage itself is RTTI-catalogued (??_7CImage@@ @0x5eaa2c).
 // ===========================================================================
 // --- CImage.h header classes ---
-SIZE(CImageBase, 0x10);            // polymorphic base (CImage fields start at +0x10)
+SIZE(CImageBase, 0x10); // polymorphic base (CImage fields start at +0x10)
 SIZE_UNKNOWN(CImageSurfaceSrc);
 SIZE_UNKNOWN(CImageSurfaceSrcVtbl);
-SIZE(CImageSurfaceItem, 0xc0);     // RE'd CPoolItemA item size (0xc0)
+SIZE(CImageSurfaceItem, 0xc0); // RE'd CPoolItemA item size (0xc0)
 SIZE_UNKNOWN(CImageSurfacePool);
 SIZE(CImageFrameRebuildDesc, 0x20); // 8-dword by-value frame descriptor
 SIZE(CImageOwned, 0x3c);            // operator new(0x3c) owned object
 SIZE_UNKNOWN(CImageBuildDesc);
 SIZE_UNKNOWN(CDDrawSurfaceDesc);
-SIZE(BlitRect, 0x10);               // {left,top,right,bottom} RECT
+SIZE(BlitRect, 0x10); // {left,top,right,bottom} RECT
 SIZE_UNKNOWN(CBlitClipOwner);
 SIZE_UNKNOWN(CImageParent);
 SIZE_UNKNOWN(CImageFrameDesc);
 SIZE_UNKNOWN(CImageSource);
-SIZE_UNKNOWN(CImage);               // RTTI CImage (partial model; RTTI-vtable catalogued)
+SIZE_UNKNOWN(CImage); // RTTI CImage (partial model; RTTI-vtable catalogued)
 // --- CImage.cpp local dispatch/vtbl views ---
 SIZE_UNKNOWN(CImageLoadDispatch);
 SIZE_UNKNOWN(CImageLoadVtbl);
