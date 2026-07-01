@@ -146,3 +146,9 @@ void CoderReset(Coder* c) {
     c->m_6c = 2;
     c->m_54 = 2;
 }
+
+// H-N misc-Gruntz class-metadata sweep (SIZE).
+SIZE_UNKNOWN(BitBuf);
+SIZE_UNKNOWN(Coder);
+SIZE_UNKNOWN(FreeNode);
+SIZE_UNKNOWN(FreeOwner);

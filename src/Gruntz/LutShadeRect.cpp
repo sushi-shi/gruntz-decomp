@@ -144,3 +144,7 @@ i32 LutBlit::ShadeRect(i32 pct, RECT* clip) {
     operator delete(scratch);
     return 1;
 }
+
+// H-N misc-Gruntz class-metadata sweep (SIZE).
+SIZE_UNKNOWN(LutBlit);
+SIZE_UNKNOWN(LutSurf);

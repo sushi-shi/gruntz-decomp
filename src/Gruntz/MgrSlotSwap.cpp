@@ -67,3 +67,10 @@ i32 CSlotHolder::DoSwap() {
     this->m_34 = newTok;
     return 1;
 }
+
+// H-N misc-Gruntz class-metadata sweep (SIZE).
+SIZE_UNKNOWN(CSlotHolder);
+SIZE_UNKNOWN(RegLevel);
+SIZE_UNKNOWN(RegM30);
+SIZE_UNKNOWN(RegPlane);
+SIZE_UNKNOWN(RegSubMgr);

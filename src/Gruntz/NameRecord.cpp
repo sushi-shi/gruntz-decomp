@@ -52,3 +52,6 @@ i32 CNameRecord::SetNames(char* name, char* name2, i32 unused) {
     m_08 = 1;
     return 1;
 }
+
+// H-N misc-Gruntz class-metadata sweep (SIZE).
+SIZE_UNKNOWN(CNameRecord);

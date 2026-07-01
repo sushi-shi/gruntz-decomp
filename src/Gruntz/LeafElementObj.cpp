@@ -61,3 +61,7 @@ i32 LeafElementObj::LoadSoundB(void* src) {
     m_10 = dev->Decode(src, 0x100ea, 0);
     return m_10 != 0;
 }
+
+// H-N misc-Gruntz class-metadata sweep (SIZE).
+SIZE_UNKNOWN(LeafSoundDevice);
+SIZE_UNKNOWN(LeafSoundOwner);

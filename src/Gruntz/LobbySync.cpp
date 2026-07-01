@@ -569,3 +569,12 @@ i32 CLobbySync::Tick() {
     }
     return SendBatch() + SendAll();
 }
+
+// H-N misc-Gruntz class-metadata sweep (SIZE).
+SIZE_UNKNOWN(CLobbySync);
+SIZE_UNKNOWN(CNetEndpoint);
+SIZE_UNKNOWN(CNetEndpointVtbl);
+SIZE_UNKNOWN(CSyncObj);
+SIZE_UNKNOWN(GruntRec);
+SIZE_UNKNOWN(LobbyMsg);
+SIZE_UNKNOWN(SlotInfo);

@@ -235,3 +235,10 @@ void CMapMgr::Vfunc2() {}
 void CMapMgr::Vfunc3() {}
 void CMapMgr::Vfunc4() {}
 void CMapMgr::Vfunc5() {}
+
+// H-N misc-Gruntz class-metadata sweep (SIZE).
+SIZE_UNKNOWN(CMapArrayA);
+SIZE_UNKNOWN(CMapArrayB);
+SIZE_UNKNOWN(CMapMgr);
+SIZE_UNKNOWN(MapElemA);
+SIZE_UNKNOWN(MapElemB);

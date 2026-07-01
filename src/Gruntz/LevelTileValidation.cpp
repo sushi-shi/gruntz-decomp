@@ -679,3 +679,29 @@ done:
     }
     return 1;
 }
+
+// H-N misc-Gruntz class-metadata sweep (SIZE).
+SIZE_UNKNOWN(CLevelValidator);
+SIZE_UNKNOWN(GameObjAux7c);
+SIZE_UNKNOWN(GameObjAux7cVtbl);
+SIZE_UNKNOWN(LvBridgePoint);
+SIZE_UNKNOWN(LvBridgeUi);
+SIZE_UNKNOWN(LvWorld);
+SIZE_UNKNOWN(PlaceGridMgr);
+SIZE_UNKNOWN(PlayMgr);
+SIZE_UNKNOWN(PlayMgrRenderer);
+SIZE_UNKNOWN(PlayfieldMgr);
+SIZE_UNKNOWN(StartCmdMgr);
+SIZE_UNKNOWN(StartList);
+SIZE_UNKNOWN(StartNode);
+SIZE_UNKNOWN(TileClass);
+SIZE_UNKNOWN(TileClassVtbl);
+SIZE_UNKNOWN(TileGrid);
+SIZE_UNKNOWN(TileGridGeom);
+SIZE_UNKNOWN(TileLogicObj);
+SIZE_UNKNOWN(TileObjList);
+SIZE_UNKNOWN(TileObjNode);
+SIZE_UNKNOWN(TriggerRegistrar);
+SIZE_UNKNOWN(WwdGameGrid);
+SIZE_UNKNOWN(WwdGameRegInner);
+SIZE_UNKNOWN(WwdStartPlayer);

@@ -102,3 +102,8 @@ i32 HelperHost::Helper_166040(i32 key, i32 idx) {
     m_78 = v;
     return v != 0;
 }
+
+// H-N misc-Gruntz class-metadata sweep (SIZE).
+SIZE_UNKNOWN(HelperHostCtx);
+SIZE_UNKNOWN(HelperHostMap);
+SIZE_UNKNOWN(HelperHostObj);

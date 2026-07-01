@@ -344,3 +344,14 @@ i32 CObjResTree::LoadObjectAnimResources(ObjSpawnEntry* entry, ObjResLookup* src
     }
     return 1;
 }
+
+// H-N misc-Gruntz class-metadata sweep (SIZE).
+SIZE_UNKNOWN(CObjResBuilder);
+SIZE_UNKNOWN(CObjResListNode);
+SIZE_UNKNOWN(CObjResNode);
+SIZE_UNKNOWN(CObjResTree);
+SIZE_UNKNOWN(ObjAnimRegistry);
+SIZE_UNKNOWN(ObjImageRegistry);
+SIZE_UNKNOWN(ObjResLookup);
+SIZE_UNKNOWN(ObjSoundRegistry);
+SIZE_UNKNOWN(ObjSpawnEntry);

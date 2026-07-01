@@ -600,3 +600,45 @@ WwdFile.cpp, all `CImage.h`/`Image.h`/`CFileImage.h`/`ImageSet.h`/`CScanlineSurf
   pinned): `CWapNodeBase` / `CWapNodeB` (Font).
 - Deferred class (ctor built elsewhere, vtable rva not in-TU): `RezMgr`.
 - MFC-library modeling view: `CMemFile` [rtti] (DDrawMgr ShadeTableCache.cpp).
+
+## misc-Gruntz [H-N] (2026-07-01)
+
+Scope: `src/Gruntz/*.cpp` whose basename starts H–N (incl. lowercase `m2_*`),
+EXCLUDING the SBI-done `MenuItem*.cpp`/`MenuPage.cpp` and the active `m4_*`/`m5_*`
+files. SIZE-only (no VTBL). Header classes hosted at the owning H–N `.cpp` EOF;
+names whose rep is a header owned by an out-of-range `.cpp` were SKIPPED for that
+owner's sweep.
+
+Coverage delta (whole-tree SIZE counter): 1474/3316 → 1646/3316 (**172 names
+annotated**; H-N scope drained to 0).
+
+Annotated: **172 SIZE_UNKNOWN + 0 SIZE(exact) + 0 VTBL**, across 38 `.cpp` files.
+All are partial pad-to-last-touched-field / registry / slot-dispatch-view / `Vtbl`
+modeling shells — none provably == its full retail alloc, so per doctrine all took
+the scalable `SIZE_UNKNOWN` default (no exact size guessed). The 4 header-paired
+classes were hosted at their `.cpp` EOF: `LogicRecord.h`→LogicRecord.cpp (6),
+`MapLogic.h`→MapLogic.cpp (4), `MapMgr.h`→MapMgr.cpp (3), `MotionState.h`→
+MotionState.cpp (1); everything else is `.cpp`-local at its own EOF (biggest:
+LevelTileValidation.cpp 24, MenuStateAssets.cpp 14, LoadObjectResources.cpp 9,
+LobbySync.cpp 7, m2_MgrObjSerialize.cpp 8, m2_ActRegSiblings.cpp 8).
+
+### Hot-header casualties: NONE.
+All 172 applied together at `.cpp` EOF (no header touched), one `gruntz build` +
+a report.json snapshot-diff over all functions → **0 REGRESS / 0 IMPROVE**; build
+"no regressions vs baseline"; overall unchanged at 1873/3394 exact / 63.8835%
+fuzzy. Confirms the `.cpp`-EOF rule: even the dense reconstructed TUs
+(LevelTileValidation, LobbySync, NetGameDlg, m2_*) took EOF appends neutrally.
+m2_ActRegSiblings.cpp reaches rva.h transitively (ActNameRegistry.h /
+CCheckpointTrigger.h), so no include was added.
+
+### SIZE skipped (rep owned by an out-of-range `.cpp` — for that owner's sweep):
+Names with a def in an H-N `.cpp` but whose first-seen rep is a non-H-N owner:
+`CBehindCandyAni`/`CDoNothing`/`CEyeCandy`/`CInGameIcon`/`CInGameText` (their C-owned
+headers), `CImageSet` (GameLevel.h), `CMenuState` (GameMode.h), `CMovingLogic`
+(CMovingLogicDtor.h), `MinervaInner` (CWorldSoundSet.h), `CLogicTypeBuilder`
+(LogicTypeTableInline.h, broadly-shared), `CSpriteFactoryHolder` (CGameRegistry.h),
+`MenuItemVtbl` (UnknownVTables.h catalog), plus `.cpp`-rep out-of-range
+`CCluster0c`/`CLevelInfo`/`CPlayLevelLoad`/`CTeleporterActReg`/`GameReg`/`LogicFnTable`/
+`Owner`/`Worker`, and the broadly-shared `ActNameRegistry.h` views
+`CActColl`/`CActColl2`/`CActName` (12+ non-H-N includers). No VTBL touched (SIZE-only
+per task).

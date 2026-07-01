@@ -106,3 +106,8 @@ void __stdcall BuildLogicTypeTable(CLogicTypeBuilder* obj) {
         }
     }
 }
+
+// H-N misc-Gruntz class-metadata sweep (SIZE).
+SIZE_UNKNOWN(CLogicCtx);
+SIZE_UNKNOWN(CLogicMap);
+SIZE_UNKNOWN(CLogicRegistry);

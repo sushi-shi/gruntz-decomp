@@ -89,3 +89,7 @@ void ImageRotateBlit(
 
     RotateRasterize(mtx, 4, a6, a2, a9, a10, a1, srcQuad[0] | a4);
 }
+
+// H-N misc-Gruntz class-metadata sweep (SIZE).
+SIZE_UNKNOWN(ImgRect);
+SIZE_UNKNOWN(RotCorner);

@@ -79,3 +79,7 @@ void CArrayE40::SetSize(i32 nNewSize, i32 nGrowBy) {
         m_nMaxSize = nNewMax;
     }
 }
+
+// H-N misc-Gruntz class-metadata sweep (SIZE).
+SIZE_UNKNOWN(CArrayE40);
+SIZE_UNKNOWN(E40);

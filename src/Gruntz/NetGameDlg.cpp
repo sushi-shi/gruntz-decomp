@@ -214,3 +214,11 @@ void CNetGameDlg::VerifyCustomLevel() {
         EnableWindow(1);
     }
 }
+
+// H-N misc-Gruntz class-metadata sweep (SIZE).
+SIZE_UNKNOWN(CChanWnd);
+SIZE_UNKNOWN(CCtrl);
+SIZE_UNKNOWN(CGameSettings);
+SIZE_UNKNOWN(CNetGameDlg);
+SIZE_UNKNOWN(Channel);
+SIZE_UNKNOWN(ChannelSlot);

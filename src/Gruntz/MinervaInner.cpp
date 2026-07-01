@@ -46,3 +46,7 @@ void MinervaInner::Free() {
     }
     Cleanup();
 }
+
+// H-N misc-Gruntz class-metadata sweep (SIZE).
+SIZE_UNKNOWN(MinervaNode);
+SIZE_UNKNOWN(MinervaSub);

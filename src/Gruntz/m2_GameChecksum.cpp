@@ -133,3 +133,6 @@ i32 CGameSyncSig::ComputeSignature() {
     } while (off < 0x10c);
     return sum;
 }
+
+// H-N misc-Gruntz class-metadata sweep (SIZE).
+SIZE_UNKNOWN(CGameSyncSig);

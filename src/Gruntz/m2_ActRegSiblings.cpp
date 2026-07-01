@@ -162,3 +162,13 @@ void CCheckpointTrigger::RegisterActs() {
     ((CCheckpointActEntry*)g_checkpointActReg.ResolveEntry(id))->m_fn =
         &CCheckpointTrigger::Trigger;
 }
+
+// H-N misc-Gruntz class-metadata sweep (SIZE).
+SIZE_UNKNOWN(CCheckpointActEntry);
+SIZE_UNKNOWN(CNetSingletonBe90);
+SIZE_UNKNOWN(CSiblingActReg);
+SIZE_UNKNOWN(CSiblingActorA);
+SIZE_UNKNOWN(CSiblingActorAEntry);
+SIZE_UNKNOWN(CSiblingActorB);
+SIZE_UNKNOWN(CSiblingActorBEntry);
+SIZE_UNKNOWN(Obj64bf00);

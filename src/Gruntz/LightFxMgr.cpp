@@ -130,3 +130,6 @@ i32 CLightFxMgr::Push(CImageSet* imgSet, i32 anchor, i32 slot) {
     imgSet->SetAllFormats((i32)table);
     return 1;
 }
+
+// H-N misc-Gruntz class-metadata sweep (SIZE).
+SIZE_UNKNOWN(LfxReg);

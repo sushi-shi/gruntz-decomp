@@ -206,3 +206,13 @@ i32 CMgrPersistObj::Init() {
     m_1b0 = 0;
     return 1;
 }
+
+// H-N misc-Gruntz class-metadata sweep (SIZE).
+SIZE_UNKNOWN(CDisplayMgr);
+SIZE_UNKNOWN(CLevelData);
+SIZE_UNKNOWN(CMgrPersistObj);
+SIZE_UNKNOWN(CMgrReady);
+SIZE_UNKNOWN(CMgrSettingsGate);
+SIZE_UNKNOWN(CMgrWriter);
+SIZE_UNKNOWN(CRezLocator);
+SIZE_UNKNOWN(SplashParams);

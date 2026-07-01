@@ -330,3 +330,11 @@ i32 CLogicRecord::Save(LogicArchive* ar) {
     }
     return 1;
 }
+
+// H-N misc-Gruntz class-metadata sweep (SIZE).
+SIZE_UNKNOWN(CLogicRecord);
+SIZE_UNKNOWN(LogicArchive);
+SIZE_UNKNOWN(LogicContext);
+SIZE_UNKNOWN(LogicResolver);
+SIZE_UNKNOWN(LogicSub);
+SIZE_UNKNOWN(LogicTarget);

@@ -209,3 +209,6 @@ i32 Handler0aa6e0(Owner* owner) {
     }
     return 1;
 }
+
+// H-N misc-Gruntz class-metadata sweep (SIZE).
+SIZE_UNKNOWN(SubRecord);

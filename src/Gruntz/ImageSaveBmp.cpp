@@ -77,3 +77,7 @@ i32 CImageSaver::SaveBmp(
     }
     return 0;
 }
+
+// H-N misc-Gruntz class-metadata sweep (SIZE).
+SIZE_UNKNOWN(CImageSaver);
+SIZE_UNKNOWN(SaveFile);
