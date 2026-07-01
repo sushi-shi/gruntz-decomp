@@ -13,6 +13,7 @@
 // Only offsets / code bytes are load-bearing; names are placeholders.
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
 #include <Gruntz/CGameRegistry.h>
+#include <Gruntz/CTrigger.h>  // shared point-probe result object
 #include <Gruntz/UserLogic.h> // CUserLogic base (CSecretLevelTrigger : CUserLogic)
 
 class CSecretLevelTrigger : public CUserLogic {
@@ -72,21 +73,15 @@ extern CSecretActReg g_secretActReg; // 0x644598
 // object under it (or 0); ScrollTo (0x6bcb0, via the 0x2e96 thunk) posts a scroll
 // to bring it on screen. Both __thiscall, modeled NO-body so the calls
 // reloc-mask (their bodies live in src/Gruntz/TriggerMgr.cpp).
-struct CTrigger; // the trigger object Probe returns
 struct CTriggerSink {
     CTrigger* Probe(i32 x, i32 y, i32* outA, i32* outB, i32 flag); // 0x75af0
     void ScrollTo(i32 a, i32 b, i32 mode, i32 flags);              // 0x6bcb0
 };
 SIZE_UNKNOWN(CTriggerSink);
 
-// The probed trigger object: its +0x170/+0x198 are the level/layer ids the bound
-// sprite's +0x11c/+0x120 must match for the trigger to fire.
-struct CTrigger {
-    char m_pad0[0x170];
-    i32 m_170; // +0x170 level id
-    char m_pad174[0x198 - 0x174];
-    i32 m_198; // +0x198 layer id
-};
+// The probed trigger object is the shared <Gruntz/CTrigger.h> class: its
+// +0x170/+0x198 are the level/layer ids the bound sprite's +0x11c/+0x120 must
+// match for the trigger to fire.
 SIZE_UNKNOWN(CTrigger);
 
 // The bound sprite (this->m_10): +0x5c/+0x60 = screen x/y, +0x11c/+0x120 =

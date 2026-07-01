@@ -2,6 +2,8 @@
 // (C:\Proj\Gruntz), a CUserLogic leaf. Only the /GX leaf dtor is reconstructed.
 #include <Gruntz/CCheckpointTrigger.h>
 
+#include <Gruntz/ActReg.h> // shared activation-registrar archetype (CCheckpointActReg)
+
 // ~CCheckpointTrigger @0x011480 - the leaf adds no destructible members beyond
 // CUserLogic, so its dtor folds the bare CUserLogic teardown: store the
 // CUserLogic vptr (0x5e705c), inline-destruct the +0x18 link (the embedded
@@ -11,13 +13,9 @@ RVA(0x00011480, 0x44)
 CCheckpointTrigger::~CCheckpointTrigger() {}
 
 // The class's activation-coordinate registry singleton (@0x64e7c0), built by the
-// shared registry ctor (0x408710, __thiscall ret 8) over the fixed [2000,2010]
-// range. Only Construct is needed for the init thunk; the registry's full layout
-// (CLeafActReg) is modeled in m2_ActRegSiblings.cpp for RegisterActs.
-struct CCheckpointActReg {
-    char m_pad[0x24];
-    void Construct(i32 lo, i32 hi); // 0x408710
-};
+// shared registry ctor (0x408710) over the fixed [2000,2010] range. CCheckpointActReg
+// is the shared <Gruntz/ActReg.h> CActReg-derived alias; only Construct is used here
+// (RegisterActs, which needs its full ResolveEntry, lives in m2_ActRegSiblings.cpp).
 SIZE_UNKNOWN(CCheckpointActReg);
 DATA(0x0024e7c0)
 extern CCheckpointActReg g_checkpointActReg; // 0x64e7c0

@@ -11,6 +11,9 @@
 // (0x16d710, the +0x18 member); it + the EngStr/registrar externs are in
 // src/Gruntz/UserBaseLink.cpp. Functions are defined in ascending-RVA order.
 #include <Mfc.h> // RECT / CopyRect (CSingleFrameMessage centers in a bounds rect)
+#include <Gruntz/CTeleSpriteFactory.h> // shared teleporter HUD-sprite factory
+#include <Gruntz/CTrigger.h>           // shared point-probe result object
+#include <Gruntz/CViewport.h>          // shared world->screen transform
 #include <Gruntz/UserLogic.h>
 #include <rva.h>
 
@@ -365,10 +368,8 @@ struct CViewRect {
     i32 m_8; // right
     i32 m_c; // bottom
 };
-struct CViewport {
-    char m_pad0[0x5c];
-    char* m_5c; // +0x5c  rect-base pointer (test reads (CViewRect*)(m_5c + 0x40))
-};
+// CViewport (world->screen transform) is the shared <Gruntz/CViewport.h> class;
+// here only the +0x5c visible-rect base pointer is read.
 
 // The HUD sprite object the teleporter spawn produces / reads its template from
 // (the trigger's m_10). The spawn copies its tile/teleport-link fields. Only the
@@ -395,24 +396,11 @@ struct CTeleHudSprite {
     i32 m_168; // +0x168
 };
 
-// The HUD sprite factory the spawn calls (g_gameReg->m_30->m_8->CreateSprite).
-struct CTeleSpriteFactory {
-    CTeleHudSprite* CreateSprite(
-        i32 kind,
-        i32 gx,
-        i32 gy,
-        i32 hint,
-        const char* name,
-        i32 flags
-    ); // 0x1597b0
-};
+// The HUD sprite factory the spawn calls (g_gameReg->m_30->m_8->CreateSprite) is the
+// shared <Gruntz/CTeleSpriteFactory.h> class; its result is cast to CTeleHudSprite*.
 
-// The trigger object the probe returns (its m_10 is the HUD sprite read for the
-// on-screen cue's coordinates).
-struct CTrigger {
-    char m_pad0[0x10];
-    CTeleHudSprite* m_10; // +0x10
-};
+// CTrigger (the object the probe returns; its m_10 is the HUD sprite read for the
+// on-screen cue's coordinates) is the shared <Gruntz/CTrigger.h> class.
 struct CTeleResHolder { // the +0x30 resource/sprite-factory holder
     char m_pad0[0x8];
     CTeleSpriteFactory* m_8; // +0x08
@@ -857,7 +845,7 @@ i32 CSecretTeleporterTrigger::SpawnTeleporter() {
     if (hit) {
         o = (CTeleHudSprite*)m_10;
         CTeleSpriteFactory* fac = g_gameReg->m_30->m_8;
-        CTeleHudSprite* spr = fac->CreateSprite(
+        CTeleHudSprite* spr = (CTeleHudSprite*)fac->CreateSprite(
             0,
             (o->m_114 << 5) + 0x10,
             (o->m_118 << 5) + 0x10,

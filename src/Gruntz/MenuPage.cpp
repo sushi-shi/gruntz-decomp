@@ -29,9 +29,10 @@ inline void* operator new(size_t, void* p) {
 // ---------------------------------------------------------------------------
 
 // A view of the CPtrList node layout (CPtrList::CNode is protected): next/prev/data.
-struct CMenuNode {
-    CMenuNode* pNext;
-    CMenuNode* pPrev;
+// (Distinct from GruntzMgr.cpp's CMenuNode menu-tree node; this is the list node.)
+struct CMenuListNode {
+    CMenuListNode* pNext;
+    CMenuListNode* pPrev;
     CMenuItem* data;
 };
 
@@ -154,9 +155,9 @@ void CMenuPage::InitDefaults() {
 // free every child item (its deleting dtor), then RemoveAll the list.
 RVA(0x001833c0, 0x2b)
 void CMenuPage::Clear() {
-    CMenuNode* node = (CMenuNode*)m_14.GetHeadPosition();
+    CMenuListNode* node = (CMenuListNode*)m_14.GetHeadPosition();
     while (node) {
-        CMenuNode* cur = node;
+        CMenuListNode* cur = node;
         node = node->pNext;
         CMenuItem* item = cur->data;
         if (item) {
@@ -183,9 +184,9 @@ i32 CMenuPage::ReleaseAll() {
         m_64->Release();
         m_64 = 0;
     }
-    CMenuNode* node = (CMenuNode*)m_14.GetHeadPosition();
+    CMenuListNode* node = (CMenuListNode*)m_14.GetHeadPosition();
     while (node) {
-        CMenuNode* cur = node;
+        CMenuListNode* cur = node;
         node = node->pNext;
         CMenuItem* item = cur->data;
         if (item) {
@@ -206,9 +207,9 @@ i32 CMenuPage::ReleaseAll() {
 RVA(0x001839d0, 0xff)
 i32 CMenuPage::RestoreFocus() {
     if (!m_10.IsEmpty()) {
-        CMenuNode* node = (CMenuNode*)m_14.GetHeadPosition();
+        CMenuListNode* node = (CMenuListNode*)m_14.GetHeadPosition();
         while (node) {
-            CMenuNode* cur = node;
+            CMenuListNode* cur = node;
             node = node->pNext;
             CMenuItem* item = cur->data;
             if (item) {
@@ -225,9 +226,9 @@ i32 CMenuPage::RestoreFocus() {
             }
         }
     }
-    CMenuNode* node = (CMenuNode*)m_14.GetHeadPosition();
+    CMenuListNode* node = (CMenuListNode*)m_14.GetHeadPosition();
     while (node) {
-        CMenuNode* cur = node;
+        CMenuListNode* cur = node;
         node = node->pNext;
         CMenuItem* item = cur->data;
         if (item) {
@@ -265,9 +266,9 @@ i32 CMenuPage::SetFocus(CMenuItem* item, i32 notify) {
 // notify every child item.
 RVA(0x00183b30, 0x2c)
 i32 CMenuPage::NotifyAll(void* arg) {
-    CMenuNode* node = (CMenuNode*)m_14.GetHeadPosition();
+    CMenuListNode* node = (CMenuListNode*)m_14.GetHeadPosition();
     while (node) {
-        CMenuNode* cur = node;
+        CMenuListNode* cur = node;
         node = node->pNext;
         CMenuItem* item = cur->data;
         if (item) {
@@ -289,14 +290,14 @@ i32 CMenuPage::FocusNext() {
     if (!m_64) {
         return 0;
     }
-    CMenuNode* pos = (CMenuNode*)m_64->m_2c;
+    CMenuListNode* pos = (CMenuListNode*)m_64->m_2c;
     if (!pos) {
         return 0;
     }
     CMenuItem* found = 0;
-    CMenuNode* node = pos->pPrev;
+    CMenuListNode* node = pos->pPrev;
     while (node) {
-        CMenuNode* cur = node;
+        CMenuListNode* cur = node;
         node = node->pPrev;
         found = cur->data;
         if (found) {
@@ -311,13 +312,13 @@ i32 CMenuPage::FocusNext() {
         if (!CanWrap()) {
             return 0;
         }
-        CMenuNode* p2 = (CMenuNode*)m_64->m_2c;
+        CMenuListNode* p2 = (CMenuListNode*)m_64->m_2c;
         if (!p2) {
             return 0;
         }
-        CMenuNode* n2 = p2->pNext;
+        CMenuListNode* n2 = p2->pNext;
         while (n2) {
-            CMenuNode* cur = n2;
+            CMenuListNode* cur = n2;
             n2 = n2->pNext;
             CMenuItem* it = cur->data;
             if (it) {
@@ -350,14 +351,14 @@ i32 CMenuPage::FocusPrev() {
     if (!m_64) {
         return 0;
     }
-    CMenuNode* pos = (CMenuNode*)m_64->m_2c;
+    CMenuListNode* pos = (CMenuListNode*)m_64->m_2c;
     if (!pos) {
         return 0;
     }
     CMenuItem* found = 0;
-    CMenuNode* node = pos->pNext;
+    CMenuListNode* node = pos->pNext;
     while (node) {
-        CMenuNode* cur = node;
+        CMenuListNode* cur = node;
         node = node->pNext;
         found = cur->data;
         if (found) {
@@ -372,13 +373,13 @@ i32 CMenuPage::FocusPrev() {
         if (!CanWrap()) {
             return 0;
         }
-        CMenuNode* p2 = (CMenuNode*)m_64->m_2c;
+        CMenuListNode* p2 = (CMenuListNode*)m_64->m_2c;
         if (!p2) {
             return 0;
         }
-        CMenuNode* n2 = p2->pPrev;
+        CMenuListNode* n2 = p2->pPrev;
         while (n2) {
-            CMenuNode* cur = n2;
+            CMenuListNode* cur = n2;
             n2 = n2->pPrev;
             CMenuItem* it = cur->data;
             if (it) {
@@ -430,9 +431,9 @@ i32 CMenuPage::Layout(i32 ctx) {
             y += *(i32*)((char*)this + 0x44) + head->m_1c;
         }
     }
-    CMenuNode* node = (CMenuNode*)m_14.GetHeadPosition();
+    CMenuListNode* node = (CMenuListNode*)m_14.GetHeadPosition();
     while (node) {
-        CMenuNode* cur = node;
+        CMenuListNode* cur = node;
         node = node->pNext;
         CMenuItem* item = cur->data;
         if (item) {
@@ -523,9 +524,9 @@ i32 CMenuPage::LayoutOne(i32 ctx) {
               + *(i32*)((char*)this + 0x54);
     i32 ytop = y;
     i32 row = 0;
-    CMenuNode* node = (CMenuNode*)m_14.GetHeadPosition();
+    CMenuListNode* node = (CMenuListNode*)m_14.GetHeadPosition();
     while (node) {
-        CMenuNode* cur = node;
+        CMenuListNode* cur = node;
         node = node->pNext;
         CMenuItem* item = cur->data;
         if (item) {
@@ -559,7 +560,7 @@ i32 CMenuPage::FocusForwardN() {
     if (!(m_30 & 4)) {
         return 0;
     }
-    CMenuNode* pos = (CMenuNode*)cur->m_2c;
+    CMenuListNode* pos = (CMenuListNode*)cur->m_2c;
     if (!pos) {
         return 0;
     }
@@ -569,7 +570,7 @@ i32 CMenuPage::FocusForwardN() {
         n++;
         do {
             if (pos) {
-                CMenuNode* node = pos;
+                CMenuListNode* node = pos;
                 pos = node->pNext;
                 found = node->data;
             } else {
@@ -600,7 +601,7 @@ i32 CMenuPage::FocusBackwardN() {
     if (!(m_30 & 4)) {
         return 0;
     }
-    CMenuNode* pos = (CMenuNode*)cur->m_2c;
+    CMenuListNode* pos = (CMenuListNode*)cur->m_2c;
     if (!pos) {
         return 0;
     }
@@ -610,7 +611,7 @@ i32 CMenuPage::FocusBackwardN() {
         n++;
         do {
             if (pos) {
-                CMenuNode* node = pos;
+                CMenuListNode* node = pos;
                 pos = node->pPrev;
                 found = node->data;
             } else {
@@ -661,9 +662,9 @@ i32 CMenuPage::Click(i32 a0, i32 a1) {
 // hit-test: first child item whose own Hit(x,y) returns true.
 RVA(0x00184100, 0x4a)
 CMenuItem* CMenuPage::HitTest(i32 x, i32 y) {
-    CMenuNode* node = (CMenuNode*)m_14.GetHeadPosition();
+    CMenuListNode* node = (CMenuListNode*)m_14.GetHeadPosition();
     while (node) {
-        CMenuNode* cur = node;
+        CMenuListNode* cur = node;
         node = node->pNext;
         CMenuItem* item = cur->data;
         if (item) {
@@ -688,9 +689,9 @@ CMenuItem* CMenuPage::FindByName(const char* s) {
         return 0;
     }
     CString key(s);
-    CMenuNode* node = (CMenuNode*)m_14.GetHeadPosition();
+    CMenuListNode* node = (CMenuListNode*)m_14.GetHeadPosition();
     while (node) {
-        CMenuNode* cur = node;
+        CMenuListNode* cur = node;
         node = node->pNext;
         CMenuItem* item = cur->data;
         if (item) {

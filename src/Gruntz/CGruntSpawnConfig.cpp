@@ -46,24 +46,24 @@ CSpawnEntry::~CSpawnEntry() {
 // ===========================================================================
 // CSpawnEntry::EmptyVoiceList  (0x9a450)
 // ===========================================================================
-// Walk the CObList node chain (head @ m_list+0x4, each CNode = {next,prev,data});
+// Walk the CObList node chain (head @ m_list+0x4, each CObNode = {next,prev,data});
 // `delete (CVoiceSound*)node->data` on each held element (~CString + the engine
 // operator delete = RezFree), then m_list.RemoveAll(). No destructible local, so
 // no /GX frame even under eh flags.
 RVA(0x0009a450, 0x36)
 void CSpawnEntry::EmptyVoiceList() {
-    struct CNode {
-        CNode* m_next; // +0x00
-        void* m_prev;  // +0x04
-        void* m_data;  // +0x08
+    struct CObNode {
+        CObNode* m_next; // +0x00
+        void* m_prev;    // +0x04
+        void* m_data;    // +0x08
     };
     struct Layout {
-        void* m_vptr;  // +0x00
-        CNode* m_head; // +0x04  CObList::m_pNodeHead
+        void* m_vptr;    // +0x00
+        CObNode* m_head; // +0x04  CObList::m_pNodeHead
     };
-    CNode* node = ((Layout*)&m_list)->m_head;
+    CObNode* node = ((Layout*)&m_list)->m_head;
     while (node != 0) {
-        CNode* cur = node;
+        CObNode* cur = node;
         node = node->m_next;
         CVoiceSound* v = (CVoiceSound*)cur->m_data;
         if (v != 0) {

@@ -2,6 +2,7 @@
 // <Mfc.h> brings the real CObject/CRect types. This cluster's three spatial
 // grids (ClassUnknown_64), the master CWwdObjMgr, and the grid iterator are all
 // reloc-masked engine externs (no bodies here).
+#include <Gruntz/CWwdObjMgr.h> // the shared object-collection manager class
 #include <Mfc.h>
 
 // ===========================================================================
@@ -53,15 +54,8 @@ public:
     WwdGridNode m_region; // +0x9c  embedded grid region sub-object
 };
 
-// CWwdObjMgr - master object manager (m_mgr). Only the cluster-called methods.
-class CWwdObjMgr {
-public:
-    void InsertSorted_159e40(CWwdObject* obj, i32 addToMaps);
-    i32 RemoveAll_15ab30(i32 pos, CWwdObject* obj);
-    void RemoveByPosition_15ab70(i32 pos, CWwdObject* obj);
-    void AddToMap48_15aba0(CWwdObject* obj);
-    i32 PruneOrphans_15b1d0();
-};
+// CWwdObjMgr - master object manager (m_mgr) is the shared <Gruntz/CWwdObjMgr.h>
+// class; the cluster calls InsertSorted_159e40 / AddToMap48_15aba0 / PruneOrphans_15b1d0.
 
 // A 16-byte rectangle passed by value into the grid scroll method.
 struct WwdRect {

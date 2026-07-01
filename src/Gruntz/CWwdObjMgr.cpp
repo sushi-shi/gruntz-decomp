@@ -15,6 +15,7 @@
 // Field names are placeholders; only OFFSETS + emitted bytes are load-bearing.
 #include <rva.h>
 
+#include <Gruntz/CWwdObjMgr.h> // the shared object-collection manager class
 #include <Mfc.h> // CPtrList, CMapPtrToPtr (real afxcoll, for the m_10/m_2c/m_48 layout)
 
 // The running WWD object-id counter (?g_wwdObjIdCounter@@3HA @ 0x61ab14; the DATA
@@ -81,26 +82,8 @@ public:
     WwdGameObjAux* m_7c; // +0x7c
 };
 
-// CWwdObjMgr - the minimal view LoadObjects needs: the parent file handle (+0x0c)
-// and the active-set dedup map (+0x48). The intervening CPtrList (+0x10) / primary
-// CMapPtrToPtr (+0x2c) carry the offsets (matching CDDrawSubMgr.cpp's view).
-class CWwdObjMgr {
-public:
-    i32 LoadObjects(WwdReader* reader, u32 count, i32 unused); // 0x15ad30
-
-    // The per-kind factories + the ARM-0x1c init. External (CDDrawSubMgr.cpp owns
-    // CreateObject_159600); the calls reloc-mask.
-    CWwdGameObject* CreateObject_159440(i32 a0, i32 a9c, i32 val, i32 z);
-    CWwdGameObject* CreateObject_159600(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 flags);
-    CWwdGameObject* CreateObject_1598d0(i32 a0, i32 a94, i32 a98, i32 a9c, i32 val, i32 z);
-    i32 Init_159830(void* obj, i32 a94, i32 a98, i32 a9c, const void* nameBuf, i32 z);
-
-    char m_pad00[0x0c]; // +0x00..0x0b
-    WwdFile* m_0c;      // +0x0c  parent file handle
-    CPtrList m_10;      // +0x10  sorted object list
-    CMapPtrToPtr m_2c;  // +0x2c  primary key->object
-    CMapPtrToPtr m_48;  // +0x48  active set key->object (dedup)
-};
+// CWwdObjMgr is the shared <Gruntz/CWwdObjMgr.h> class (the parent file handle at
+// +0x0c and the active-set dedup map at +0x48 are what LoadObjects reads here).
 
 // ===========================================================================
 // CWwdObjMgr::LoadObjects @0x15ad30

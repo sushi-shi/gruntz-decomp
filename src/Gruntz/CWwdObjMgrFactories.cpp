@@ -19,6 +19,9 @@
 // is to model each wide object as a real `new T`-with-throwing-ctor class.
 #include <rva.h>
 
+#include <Gruntz/CWwdObjMgr.h> // the shared object-collection manager class
+#include <Gruntz/CWwdWorker.h> // the shared per-object worker class
+
 // Engine heap allocator (operator new / RezAlloc). Reloc-masked __cdecl extern.
 extern "C" void* RezAlloc(unsigned int size); // 0x1b9b46
 
@@ -72,15 +75,7 @@ public:
     void Ctor(); // 0x1b9b93
 };
 // The +0x7c sprite-animation worker (0x17c bytes): ctor 0x15b300, kick at +0x10.
-class CWwdWorker {
-public:
-    void Ctor(int root, int a, int flags); // 0x15b300
-    virtual void V00();
-    virtual void V04();
-    virtual void V08();
-    virtual void V0C();
-    virtual int Kick(void* owner); // +0x10
-};
+// CWwdWorker is the shared <Gruntz/CWwdWorker.h> class (the per-object worker at +0x7c).
 // The +0x1a0 command sub-object ctor (1598d0). 0x156cb0.
 class CWwdCmd1a0 {
 public:
@@ -137,18 +132,10 @@ public:
     virtual int Build2(int a, int b); // +0x40
 };
 
-// CWwdObjMgr view: only the +0x0c parent handle is read; the factories are
-// __thiscall on it. InsertSorted_159e40 publishes the constructed object.
-class CWwdObjMgr {
-public:
-    CWwdGameObject* CreateObject_159250(int a1, int a2, int a3, int a4, int a5, int a6, int a7);
-    CWwdGameObject* CreateObject_159440(int a1, int a2, int a3, int a4);
-    CWwdGameObject* CreateObject_1598d0(int a1, int a2, int a3, int a4, int a5, int a6);
-    void InsertSorted_159e40(void* obj, int addToMaps); // 0x159e40
-
-    char m_pad00[0x0c];
-    int m_0c; // +0x0c parent handle
-};
+// CWwdObjMgr is the shared <Gruntz/CWwdObjMgr.h> class; here only the +0x0c parent
+// handle is read (as a raw int) and InsertSorted_159e40 publishes each object.
+// The CWwdGameObject the factories return is cast to the shared CWwdObject* param.
+class CWwdGameObject;
 
 // ===========================================================================
 // 0x159250 - factory for the 0x190-byte kind. __thiscall, 7 stack args (ret 0x1c).
@@ -162,7 +149,7 @@ CWwdObjMgr::CreateObject_159250(int a1, int a2, int a3, int a4, int a5, int a6, 
     char* obj = (char*)RezAlloc(0x190);
     CWwdGameObject* result;
     if (obj != 0) {
-        int root = m_0c;
+        int root = (int)m_0c;
         ((CWwdRemusBaseA*)obj)->Ctor(root, a1, a7);
         CWwdSub9c* s9c = (CWwdSub9c*)(obj + 0x9c);
         s9c->Ctor();
@@ -197,7 +184,7 @@ CWwdObjMgr::CreateObject_159250(int a1, int a2, int a3, int a4, int a5, int a6, 
         }
         return 0;
     }
-    InsertSorted_159e40(result, 1);
+    InsertSorted_159e40((CWwdObject*)result, 1);
     if (a7 & 0x200000) {
         ((CWwdWorker*)*(void**)((char*)result + 0x7c))->Kick(result);
     }
@@ -214,7 +201,7 @@ CWwdGameObject* CWwdObjMgr::CreateObject_159440(int a1, int a2, int a3, int a4) 
     char* obj = (char*)RezAlloc(0x18c);
     CWwdGameObject* result;
     if (obj != 0) {
-        int root = m_0c;
+        int root = (int)m_0c;
         ((CWwdRemusBaseA*)obj)->Ctor(root, a1, a4);
         CWwdSub9c* s9c = (CWwdSub9c*)(obj + 0x9c);
         s9c->Ctor();
@@ -248,7 +235,7 @@ CWwdGameObject* CWwdObjMgr::CreateObject_159440(int a1, int a2, int a3, int a4) 
         }
         return 0;
     }
-    InsertSorted_159e40(result, 1);
+    InsertSorted_159e40((CWwdObject*)result, 1);
     if (a4 & 0x200000) {
         ((CWwdWorker*)*(void**)((char*)result + 0x7c))->Kick(result);
     }
@@ -265,7 +252,7 @@ CWwdGameObject* CWwdObjMgr::CreateObject_1598d0(int a1, int a2, int a3, int a4, 
     char* obj = (char*)RezAlloc(0x1fc);
     CWwdGameObject* result;
     if (obj != 0) {
-        int root = m_0c;
+        int root = (int)m_0c;
         ((CWwdRemusBaseB*)obj)->Ctor(root, a1, a6);
         ((CWwdCmd1a0*)(obj + 0x1a0))->Ctor(root, a1, a6);
         *(void**)(obj + 0x1a0) = &g_wwdSubVtbl;
@@ -291,7 +278,7 @@ CWwdGameObject* CWwdObjMgr::CreateObject_1598d0(int a1, int a2, int a3, int a4, 
         }
         return 0;
     }
-    InsertSorted_159e40(result, 1);
+    InsertSorted_159e40((CWwdObject*)result, 1);
     if (a6 & 0x200000) {
         ((CWwdWorker*)*(void**)((char*)result + 0x7c))->Kick(result);
     }

@@ -24,7 +24,8 @@
 
 #include <rva.h>
 
-#include <Bute/ButeMgr.h> // CButeTree::Find / Insert
+#include <Bute/ButeMgr.h>   // CButeTree::Find / Insert
+#include <Gruntz/ActColl.h> // CActColl/CActColl2/ActAlloc + g_actCache/g_actAllocResult
 
 // g_buteTree (0x6bf620) doubles as the name->id map here: Find (0x16d190) returns
 // the id (0 == absent); Insert (0x16db90) maps a new key->id. Owned by the bute
@@ -41,21 +42,9 @@ extern i32 g_nextActId;
 DATA(0x0020a454)
 extern char s_actKeyA[];
 
-// The shared coordinate-registry collection methods + alloc scratch (the SAME
-// engine functions/globals every registry reuses - g_actCache 0x6bf464 /
-// g_actAllocResult 0x6bf428 are named by UserLogic.cpp; redeclared address-pinned).
-struct CActColl {
-    i32 Find(i32 coord, i32 z); // 0x16da80 (__thiscall ret 8)
-};
-struct CActColl2 {
-    void Insert(void* coll, void* item, i32 n); // 0x16d850 (__thiscall ret 0xc)
-};
-extern "C" i32 ActAlloc(); // 0x16d990
-
-DATA(0x002bf464)
-extern void* g_actCache;
-DATA(0x002bf428)
-extern void* g_actAllocResult;
+// The shared coordinate-registry collection methods + alloc scratch (CActColl /
+// CActColl2 / ActAlloc + g_actCache 0x6bf464 / g_actAllocResult 0x6bf428) come from
+// <Gruntz/ActColl.h> - the SAME engine functions/globals every registry reuses.
 
 // ---------------------------------------------------------------------------
 // The shared name registry @0x6bf650 (the id->name-slot map RegisterActs writes

@@ -8,37 +8,13 @@
 // built by Unmatched_c76d0) reuse the existing tags so their loads reloc-mask.
 // Only offsets + code bytes are load-bearing; class identities are best-guess.
 #include <Gruntz/ActNameRegistry.h>
+#include <Gruntz/ActReg.h> // the shared activation-registrar archetype (CSiblingActReg)
 #include <Stub/CCheckpointTrigger.h>
 
-// The per-class activation-coordinate registry: same range/cache shape as the
-// shared name registry (CActColl coll @+0 / coll2 @+4 / [lo,hi] fast range /
-// base+stride slot / cur slow-path result / scratch zeroed first). ResolveEntry
-// folds the VActLookup archetype the slow Insert dispatches __thiscall on coll2.
-struct CSiblingActReg {
-    void* m_coll;       // +0x00 (CActColl: Find 0x16da80)
-    CActColl2* m_coll2; // +0x04
-    i32 m_lo;           // +0x08
-    i32 m_hi;           // +0x0c
-    char* m_base;       // +0x10
-    char* m_cur;        // +0x14
-    i32 m_stride;       // +0x18
-    char m_pad1c[0x20 - 0x1c];
-    i32 m_scratch; // +0x20
-
-    char* ResolveEntry(i32 id) {
-        m_scratch = 0;
-        if (id >= m_lo && id <= m_hi) {
-            return m_base + (id - m_lo) * m_stride;
-        }
-        if (((CActColl*)this)->Find(id, 0)) {
-            return m_base + (id - m_lo) * m_stride;
-        }
-        void* item = g_actCache;
-        g_actAllocResult = (void*)ActAlloc();
-        m_coll2->Insert(this, item, 0xc);
-        return m_cur;
-    }
-};
+// The per-class activation-coordinate registry (CSiblingActReg) is the shared
+// <Gruntz/ActReg.h> CActReg-derived alias: same range/cache shape as the shared name
+// registry; ResolveEntry folds the VActLookup archetype the slow Insert dispatches
+// __thiscall on coll2.
 
 // Class A: registry @0x64be90 (reuse the g_netBe90 tag so the DATA-pinned loads
 // reloc-mask), handler @0xc62e0 (the "LoadAttributes" per-frame entry).
@@ -125,10 +101,8 @@ void CSiblingActorB_RegisterActs() {
 }
 
 // Class C: CCheckpointTrigger, registry @0x64e7c0 (g_checkpointActReg, DATA-pinned
-// in CCheckpointTrigger.cpp), handler @0x10ede0 (Trigger). Homed here (not the
-// All.cpp-aggregated CCheckpointTrigger.cpp) because the shared registry archetype
-// pulls <Mfc.h>, which the engine_label_stubs aggregate cannot also include.
-struct CCheckpointActReg : CSiblingActReg {};
+// in CCheckpointTrigger.cpp), handler @0x10ede0 (Trigger). CCheckpointActReg is the
+// shared <Gruntz/ActReg.h> CActReg-derived alias.
 extern CCheckpointActReg g_checkpointActReg; // 0x64e7c0 (DATA-pinned in CCheckpointTrigger.cpp)
 struct CCheckpointActEntry {
     i32 (CCheckpointTrigger::*m_fn)();

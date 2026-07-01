@@ -7,6 +7,8 @@
 // CTeleporter : CUserLogic (RTTI .?AVCTeleporter@@). Only offsets / code bytes
 // are load-bearing; names are placeholders for the recovered engine identities.
 #include <Gruntz/CTeleporter.h>
+#include <Gruntz/ActReg.h>             // shared activation-registrar archetype (CTeleporterActReg)
+#include <Gruntz/CTeleSpriteFactory.h> // shared teleporter HUD-sprite factory
 #include <Gruntz/CGameRegistry.h>
 
 // The bound CGameObject viewed through m_10 by the bring-up: its +0x7c sub-object
@@ -70,10 +72,8 @@ struct CTeleRecord {
 struct CTeleScroller {
     void ResetGoals(i32 x, i32 y); // 0xd5f00
 };
-// The sprite factory reached as mgr->m_30->m_8 (CreateSprite 0x1597b0).
-struct CTeleSpriteFactory {
-    CTeleVisual* CreateSprite(i32 a, i32 x, i32 y, i32 b, const char* key, i32 flags); // 0x1597b0
-};
+// The sprite factory reached as mgr->m_30->m_8 (CreateSprite 0x1597b0) is the shared
+// <Gruntz/CTeleSpriteFactory.h> class; its result is cast to CTeleVisual*.
 struct CTeleFactoryHolder {
     char m_pad00[0x8];
     CTeleSpriteFactory* m_8; // +0x08
@@ -127,13 +127,9 @@ extern char g_teleporterCloseKey[]; // "GAME_TELEPORTERCLOSE" @ 0x60d1fc
 RVA(0x00010dd0, 0x44)
 CTeleporter::~CTeleporter() {}
 
-// The class's activation-coordinate registry singleton (@0x6446b0), built over
-// the fixed [2000, 2010] range by the shared registry ctor (0x408710, __thiscall
-// ret 8). Only the Construct entry is needed here (InitActReg's lone call).
-struct CTeleporterActReg {
-    char m_pad[0x24];
-    void Construct(i32 lo, i32 hi); // 0x408710
-};
+// The class's activation-coordinate registry singleton (@0x6446b0), built over the
+// fixed [2000, 2010] range by the shared registry ctor (0x408710). CTeleporterActReg
+// is the shared <Gruntz/ActReg.h> CActReg-derived alias; only Construct is used here.
 DATA(0x002446b0)
 extern CTeleporterActReg g_teleporterActReg; // 0x6446b0
 
@@ -254,7 +250,7 @@ i32 CTeleporter::Update() {
         m_40 = m_38->m_1b4;
         m_38->ApplyLookupGeometry(g_teleporterCloseKey, 0);
         CTeleVisual* s = (CTeleVisual*)m_10;
-        CTeleVisual* spawned = ((CTeleFactoryHolder*)g_gameReg->m_30)
+        CTeleVisual* spawned = (CTeleVisual*)((CTeleFactoryHolder*)g_gameReg->m_30)
                                    ->m_8->CreateSprite(
                                        0,
                                        s->m_11c * 32 + 16,
@@ -272,7 +268,7 @@ i32 CTeleporter::Update() {
         }
     } else {
         CTeleVisual* s = (CTeleVisual*)m_10;
-        CTeleVisual* spawned = ((CTeleFactoryHolder*)g_gameReg->m_30)
+        CTeleVisual* spawned = (CTeleVisual*)((CTeleFactoryHolder*)g_gameReg->m_30)
                                    ->m_8->CreateSprite(
                                        0,
                                        s->m_164 * 32 + 16,

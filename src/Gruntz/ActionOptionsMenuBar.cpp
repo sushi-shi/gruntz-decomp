@@ -15,17 +15,14 @@
 // CSprite (frame-data) + CSpriteHashTable come from <Gruntz/Sprite.h>; the
 // resource manager + its image registry (m_10) from <Gruntz/ResMgr.h>.
 // ---------------------------------------------------------------------------
+#include <Gruntz/CViewport.h> // shared world->screen transform
 #include <Gruntz/ResMgr.h>
 #include <Gruntz/Sprite.h>
 
-// The world->screen transform object (g_gameReg->m_resMgr->m_view->m_viewport). m_worldWidth is the
-// world width used to clamp the bar position. WrapCoord is NO-body so its
-// __thiscall `call 0xa000` reloc-masks (WwdFile::WwdFile_00a000).
-struct CViewport {
-    void WrapCoord(i32* px, i32* py);
-    char m_pad00[0x30];
-    i32 m_worldWidth; // +0x30  world width
-};
+// CViewport (world->screen transform, g_gameReg->m_resMgr->m_view->m_viewport) is
+// the shared <Gruntz/CViewport.h> class: m_worldWidth (+0x30) clamps the bar
+// position; WrapCoord is NO-body so its __thiscall `call 0xa000` reloc-masks
+// (WwdFile::WwdFile_00a000).
 
 // The level/view object (g_gameReg->m_resMgr->m_view): +0x10 is the on-screen bar RECT,
 // +0x5c the viewport transform.

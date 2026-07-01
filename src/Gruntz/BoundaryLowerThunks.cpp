@@ -7,6 +7,7 @@
 #include <Ints.h>
 #include <rva.h>
 
+#include <Gruntz/ActReg.h>     // shared activation-registrar archetype (CActReg + aliases)
 #include <Gruntz/CHaznColl.h>  // shared coordinate/activation-registry collection
 #include <Gruntz/CTBombColl.h> // shared coordinate/activation-registry collection
 
@@ -32,17 +33,11 @@ extern CString g_6473d8;      // 0x6473d8 (pinned in CMulti.cpp)
 // collection's register method (0x3742, __thiscall(int,int)). Each global keeps
 // its owning TU's type/name; the method reloc-masks by address.
 // ===========================================================================
-struct CLogicActTable {
-    void RegisterRange(i32 lo, i32 hi); // 0x3742 (reloc-masked)
-};
+// CLogicActTable / CLookupColl / CActReg are the shared <Gruntz/ActReg.h> archetype
+// + aliases (RegisterRange 0x3742 seeds the [lo,hi] range); their SIZE annotations
+// stay here (the single tree-wide tag for each).
 SIZE_UNKNOWN(CLogicActTable);
-struct CLookupColl {
-    void RegisterRange(i32 lo, i32 hi); // 0x3742
-};
 SIZE_UNKNOWN(CLookupColl);
-struct CActReg {
-    void RegisterRange(i32 lo, i32 hi); // 0x3742
-};
 SIZE_UNKNOWN(CActReg);
 SIZE_UNKNOWN(CTBombColl);                   // CTBombColl defined in <Gruntz/CTBombColl.h> (shared)
 SIZE_UNKNOWN(CHaznColl);                    // CHaznColl defined in <Gruntz/CHaznColl.h> (shared)

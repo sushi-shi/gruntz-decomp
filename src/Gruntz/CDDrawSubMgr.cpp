@@ -2,7 +2,9 @@
 // <Mfc.h> brings the real MFC CPtrList / CMapPtrToPtr (afxcoll) used by the
 // CWwdObjMgr collection class below.  Must precede any windows/DirectX header.
 #include <Mfc.h>
-#include <string.h> // strcpy (the inline CRT copy in Serialize_15c970)
+#include <Gruntz/CWwdObjMgr.h> // the shared object-collection manager class
+#include <Gruntz/CWwdWorker.h> // the shared per-object worker class
+#include <string.h>            // strcpy (the inline CRT copy in Serialize_15c970)
 // The discovered cluster's surface helpers (Blt/Flip/BltFast on CDDSurface) come
 // from the DDrawMgr group; reuse its real types instead of placeholder casts.
 #include <Gruntz/CDirectDrawMgr.h>
@@ -878,29 +880,8 @@ public:
 
 class CWwdGameObject;
 
-class CWwdObjMgr {
-public:
-    CWwdGameObject* CreateObject_159600(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 flags);
-    void RemoveAll_15ab30(i32 pos, CWwdObject* obj);
-    void RemoveByPosition_15ab70(i32 pos, CWwdObject* obj);
-    void AddToMap48_15aba0(CWwdObject* obj);
-    void PruneList_15aa90();
-    i32 CountActive_15abc0();
-    i32 ForEachDispatch_15ac20(i32 a1, i32 a2, i32 a3);
-    i32 ForEachProbe_15acb0(i32 a1, i32 a2);
-    i32 ForEachSerialize_15b020(CWwdArchive* ar, i32 a2);
-    i32 Deserialize_15b0e0(CWwdArchive* ar, u32 count, i32 flag);
-    i32 PruneOrphans_15b1d0();
-    void InsertSorted_159e40(CWwdObject* obj, i32 addToMaps);
-    CWwdObject* FindByWorker_15a860(i32 type, void* key);
-    CWwdObject* FindByField_15a940(i32 type, void* key);
-
-    char m_pad00[0x0c]; // +0x00..0x0b
-    i32 m_0c;           // +0x0c parent handle
-    CPtrList m_10;      // +0x10 sorted object list
-    CMapPtrToPtr m_2c;  // +0x2c key -> object (primary)
-    CMapPtrToPtr m_48;  // +0x48 key -> object (active set)
-};
+// CWwdObjMgr is the shared <Gruntz/CWwdObjMgr.h> class; this TU owns the bodies for
+// the list/map ops (RemoveAll/InsertSorted/ForEach*/Prune*/FindBy*) and CreateObject_159600.
 
 // CPtrList CNode shape (pNext@0, pPrev@4, data@8); the list head node is at
 // CWwdObjMgr+0x14 (= m_10.m_pNodeHead).
@@ -1979,15 +1960,7 @@ public:
     void Ctor(i32 root, i32 a2, i32 a3); // 0x15b2c0
 };
 // The 0x17c-byte sprite-animation worker built at +0x7c (SiriusWorker, 0x15b300).
-class CWwdWorker {
-public:
-    void Ctor(i32 a, i32 b, i32 c); // 0x15b300
-    virtual void V00();
-    virtual void V04();
-    virtual void V08();
-    virtual void V0C();
-    virtual i32 Kick(void* owner); // +0x10
-};
+// CWwdWorker is the shared <Gruntz/CWwdWorker.h> class (the per-object worker at +0x7c).
 // The CString ctor (0x1b9b93) for the +0xdc label.
 class CWwdLabel {
 public:
@@ -2391,7 +2364,7 @@ CWwdGameObject* CWwdObjMgr::CreateObject_159600(i32 a1, i32 a2, i32 a3, i32 a4, 
     char* obj = (char*)RezAlloc(0x1dc);
     CWwdGameObject* result;
     if (obj != 0) {
-        i32 root = m_0c;
+        i32 root = (i32)m_0c;
         ((CWwdRemusBase*)obj)->Ctor(root, a1, flags);
         ((CWwdSubCtorA*)(obj + 0x9c))->Ctor();
         ((CWwdSubCtorB*)(obj + 0xb8))->Ctor();

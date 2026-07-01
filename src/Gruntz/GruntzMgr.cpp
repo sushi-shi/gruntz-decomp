@@ -125,7 +125,9 @@ struct CmdGridFlagView {
 // DelayedQuit's menu lookup. The world's +0x28 sub-object holds a keyed map at
 // +0x10; Lookup(key, &out) resolves a named menu node, whose +0x10 sub-object's
 // +0x28 holds a base timestamp (offset by 0x1f4). Each engine call is reloc-masked.
-struct CMenuMap {
+// Distinct from MenuPage.cpp's CMenuMap (CMapStringToPtr, Lookup 0x1b8008): this
+// world-menu keyed map's Lookup targets FUN_005b8438.
+struct CWorldMenuMap {
     void Lookup(const char* key, void** out); // FUN_005b8438 (this, key, &out)
 };
 struct CMenuNodeSub {
@@ -138,7 +140,7 @@ struct CMenuNode {
 };
 struct CWorldMenuHolder {
     char m_pad0[0x10];
-    CMenuMap m_10; // +0x10  embedded keyed map (sub-object)
+    CWorldMenuMap m_10; // +0x10  embedded keyed map (sub-object)
 };
 
 // UnknownClose's teardown vocabulary. Most owned sub-objects share a parameterless
@@ -3691,7 +3693,7 @@ SIZE_UNKNOWN(CColorRow);
 SIZE_UNKNOWN(CHeightGrid);
 SIZE_UNKNOWN(CInput54);
 SIZE_UNKNOWN(CLevelState);
-SIZE_UNKNOWN(CMenuMap);
+SIZE_UNKNOWN(CWorldMenuMap);
 SIZE_UNKNOWN(CMenuNode);
 SIZE_UNKNOWN(CMenuNodeSub);
 SIZE_UNKNOWN(CModalDialog);
