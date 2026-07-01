@@ -32,6 +32,7 @@ bitstreampack	1	0
 blowfish	4	3
 bootycheatstate	1	0
 bootymessages	3	0
+bootywalkanim	1	0
 boundaryleaflogic	15	15
 boundarylowerdtors	6	5
 boundarylowermethods	30	19
@@ -210,7 +211,7 @@ dsoundvoice	2	1
 ehfunclets	6	6
 engine_attributed	6	0
 engine_discovered	15	8
-engine_label_stubs	267	124
+engine_label_stubs	266	124
 engine_unmatched_lib	11	0
 engstr	3	1
 eyecandytypetags	4	4
@@ -575,6 +576,7 @@ bootycheatstate	?LoadAssets@CBootyCheatState@@QAEHHHH@Z	86.2008	86.2008	1	f6f4c6
 bootymessages	?BuildBootyGruntIdleAnimation@BzState@@QAEHXZ	54.7278	54.7278	1	9c1167874ee4	0x1ce60
 bootymessages	?ShowLevelCompleteMessage@BzState@@QAEXXZ	98.0342	98.0342	1	d13953f626eb	0x1c9d0
 bootymessages	?ShowSecretBonusMessage@BzState@@QAEHXZ	93.1850	93.1850	1	9cff5d891555	0x18f00
+bootywalkanim	?UpdateBootyWalkingGruntz@BzState@@QAEHXZ	90.5370	90.5370	1	1881dfd0ce7c	0x1b690
 boundaryleaflogic	??1L_101b0@@UAE@XZ	100.0000	100.0000	1	8ca1089d5905	0x101b0
 boundaryleaflogic	??1L_10fc0@@UAE@XZ	100.0000	100.0000	1	a623401a6b3b	0x10fc0
 boundaryleaflogic	??1L_11b80@@UAE@XZ	100.0000	100.0000	1	0ab24e93ac4d	0x11b80
@@ -1916,7 +1918,6 @@ engine_label_stubs	?Update1@SelHost_0c4ee0@ApiCallerStubs@@QAEXXZ	100.0000	100.0
 engine_label_stubs	?Update3@SelHost_0c4ee0@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:6bf52155264d	0xc4fd0
 engine_label_stubs	?Update@CHelpBookSprite@@QAEHXZ	75.7485	75.7485	1	cpp:590eddff1627	0x997c0
 engine_label_stubs	?Update@SelHost_0c4f80@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:e1535087fe94	0xc4f80
-engine_label_stubs	?UpdateBootyWalkingGruntz@EngineLabelBacklog@@YAXXZ	0.1898	0.1898	1	cpp:45e65336d4b5	0x1b690
 engine_label_stubs	?UpdateClock@RezMgr@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x13ddc0
 engine_label_stubs	?Validate@VrHost_094bc0@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x94bc0
 engine_label_stubs	?directx_wrapper_caller_137720_DSOUND_1_DirectSoundCreate@ApiCallerStubs@@YGHHH@Z	98.5714	98.5714	1	cpp:6bf52155264d	0x137720

@@ -441,6 +441,11 @@ source = "src/Gruntz/m5_WorldLevelPath.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "bootywalkanim"
+source = "src/Gruntz/BootyWalkAnim.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "cplayplanescan"
 source = "src/Gruntz/CPlayPlaneScan.cpp"
 flags = "eh"

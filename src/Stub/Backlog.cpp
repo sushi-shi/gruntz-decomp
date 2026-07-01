@@ -151,7 +151,6 @@ public:
 
 namespace EngineLabelBacklog {
 
-    void UpdateBootyWalkingGruntz();
     void BuildBootyPerfectAnimation();
     void __stdcall BuildPowerupIconKeys(PowerupKeyRegistry* reg, i32 key);
     // DrawDebugStats graduated to src/Gruntz/DrawDebugStats.cpp.
@@ -243,36 +242,10 @@ i32 BootyState::vfunc_9(i32) {
 // (eh unit) as CGruntSprintAnim::BuildGruntSprintAnimation - the /GX directional
 // grunt-sprint animation builder (the "GRUNTZ_NORMALGRUNT_<DIR>_WALK" CString set).
 
-// UpdateBootyWalkingGruntz (0x1b690, 1983 B) - the per-frame update of the booty
-// (treasure / "WARP" spell) walking-grunt animation state machine, a __thiscall
-// method on the CGruntzMgr-like game-state object (`this` carries the per-player
-// grunt arrays at +0x2c8 / +0x2d8, the active-player step index m_2e8, and the
-// sub-state flags m_2ec/m_2f0; m_1b4 gates the init vs step path). IDENTITY +
-// STRUCTURE recovered (dump_target + string_xref):
-//   - Entry guards: returns true early if g_gameReg->m_7c->m_8 != 0, or
-//     g_gameReg->m_7c->m_4 > 0x24, or this->m_2e8 >= 4.
-//   - Init path (m_1b4 == 0): a 4-player loop (i=0..3) that sets each grunt's
-//     idle animation ("GRUNTZ_NORMALGRUNT_SOUTH_IDLE" / "..._IDLE4") and builds
-//     the per-player pickup-spell name "GRUNTZ_PICKUPS_<L>" where the letter L is
-//     a 4-entry jump-table on the player index spelling W/A/R/P ("WARP"); fires
-//     the "GRUNTZ_WANDGRUNT_WANDZGRUNTUI1D" wand cue + a "GAME_FLAGRISE" flag,
-//     plays sounds via g_gameReg->m_60/m_74, and seeds a PRNG step (the
-//     `shl/sub/idiv 0x11` LCG at 0x6c1288).
-//   - Step path: advances m_2e8 per frame through the 4 players, toggling the
-//     +0x40 visibility bit, the +0x5c sprite (g_5e9068 table) + the +0x60 timer
-//     (0x1f4 / 0xdc), with a second 4-entry "WARP" jump-table at 0x41be60.
-// DEFERRED to the final sweep: a >512 B deeply-branchy state machine with ~15
-// unnamed engine callees (the CGruntzGrunt animation setters 0x150540/0x1505b0,
-// the CString builders 0x1b8438/0x1b9ff5, the g_gameReg dispatch helpers) + the
-// CGruntzMgr +0x1a0../+0x2c8.. layout; per the matcher >512B-branchy rule it is
-// left stubbed (a partial would under-count AND diverge its regalloc) for a
-// leaf-first redo once the callee set + the owning class are modeled.
-// @confidence: med
-// @source: decomp-xref
-// @proximity: CState@-0x240 | EngineLabelBacklog@+0x9e0 (boundary - pick one)
-// @stub
-RVA(0x0001b690, 0x7bf)
-void EngineLabelBacklog::UpdateBootyWalkingGruntz() {}
+// UpdateBootyWalkingGruntz (0x1b690) graduated to src/Gruntz/BootyWalkAnim.cpp as
+// BzState::UpdateBootyWalkingGruntz - the per-frame booty ("WARP" spell) walking-
+// grunt animation state machine (sibling of BzState::BuildBootyGruntIdleAnimation;
+// the WARP-letter jump-table CString build gives it the /GX frame).
 
 // BuildBootyPerfectAnimation @0x01c070 graduated to src/Gruntz/IconLoaders.cpp.
 
