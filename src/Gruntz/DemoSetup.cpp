@@ -5,12 +5,7 @@
 // placeholders; only OFFSETS + code bytes are load-bearing.
 #include <rva.h>
 
-// The global HUD sprite factory (CSpriteFactory::CreateSprite @0x1597b0, 6-arg
-// __thiscall, modeled NO-body so the call reloc-masks; see SpriteResource.cpp).
-struct CSprite;
-struct CSpriteFactory {
-    CSprite* CreateSprite(i32 kind, i32 geoB, i32 geoA, i32 hint, const char* name, i32 flags);
-};
+#include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory shape (CreateSprite @0x1597b0)
 
 // this->m_c is the bound world object; its +0x8 is the sprite factory.
 struct CDemoWorld {

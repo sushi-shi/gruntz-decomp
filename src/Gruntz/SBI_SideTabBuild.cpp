@@ -17,20 +17,26 @@
 // The engine block allocator (0x1b9b46 = operator new); __cdecl, caller-cleans.
 void* RezAlloc(i32 size); // 0x1b9b46
 
+// FACET 2 of the status-bar item family (CSbBuildItem here / CSbConfigItem in
+// CStatusBarMgr.cpp / CSbDialogItem in SBI_TabzDialogEh.cpp) - the SAME retail class,
+// three incompatible C++ dispatch models (see CStatusBarMgr.cpp for the rationale).
+// FACET 2 = a member-fn-ptr vtable: `vptr->Delete(flags)` lowers to the retail
+// `mov eax,[this]; call [eax]` scalar-deleting-dtor dispatch used by the fail cleanup.
+//
 // The built status-bar item (a CSBI_SideTab child, 0x5c bytes). BuildStatzTab-
 // StatusBar (0xe9600, reached via ILT 0x33c3) populates it; on failure slot-0 (the
 // scalar-deleting dtor) frees it. Only the touched offsets are modeled.
-class CSbItem;
-typedef void (CSbItem::*SbDeleteFn)(u32);
+class CSbBuildItem;
+typedef void (CSbBuildItem::*SbDeleteFn)(u32);
 struct CSbItemVtbl {
     SbDeleteFn Delete; // [0x00] scalar-deleting dtor
 };
 SIZE_UNKNOWN(CSbItemVtbl);
-class CSbItem {
+class CSbBuildItem {
 public:
     // 0xe9600 (CSBI_SideTab::BuildStatzTabStatusBar), __thiscall ret 13 args.
     i32 BuildStatzTabStatusBar(
-        CSbItem* parent,
+        CSbBuildItem* parent,
         void* statusbar,
         i32 p3,
         i32 p4,
@@ -90,8 +96,8 @@ public:
     char m_pad1c[0x2c - 0x1c];
     CObList m_2c; // +0x2c  child list (sizeof CObList == 0x1c -> ends +0x48)
     char m_pad48[0x114 - 0x48];
-    i32 m_114[15];      // +0x114  per-slot key inputs
-    CSbItem* m_150[15]; // +0x150  built child slots
+    i32 m_114[15];           // +0x114  per-slot key inputs
+    CSbBuildItem* m_150[15]; // +0x150  built child slots
 };
 
 // @early-stop
@@ -110,7 +116,7 @@ RVA(0x00105070, 0x10e)
 i32 CSBI_SideTab::Build() {
     i32 i = 0;
     for (i32 strid = 0xd9; strid < 0x1e7; strid += 0x12) {
-        CSbItem* newobj = 0;
+        CSbBuildItem* newobj = 0;
         i32 geomBase;
         i32 geomVal;
         if (m_0 == 0) {
@@ -120,7 +126,7 @@ i32 CSBI_SideTab::Build() {
             geomBase = m_18;
             geomVal = m_18 + 0x1c;
         }
-        CSbItem* obj = (CSbItem*)RezAlloc(0x5c);
+        CSbBuildItem* obj = (CSbBuildItem*)RezAlloc(0x5c);
         if (obj) {
             obj->m_4 = 0;
             obj->m_8 = 0;
@@ -134,7 +140,7 @@ i32 CSBI_SideTab::Build() {
             newobj = obj;
         }
         i32 ok = newobj->BuildStatzTabStatusBar(
-            (CSbItem*)this,
+            (CSbBuildItem*)this,
             g_mgrSettings->m_30,
             i + 0xb,
             0,

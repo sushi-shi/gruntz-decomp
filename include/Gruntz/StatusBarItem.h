@@ -7,6 +7,20 @@
 #include <Ints.h>
 #include <rva.h>
 
+// TWO-VIEW SPLIT (genuinely cannot merge to one C++ spelling): this header is the
+// FRAMELESS view - the small 2-virtual inline-ctor base that the ctor-side/builder
+// TUs (SBI_RectOnly.cpp, SBI_Image.cpp, CStatusBarMgr.h) use so MSVC5 FOLDS the tiny
+// ctor at each instantiation with no /GX frame. <Gruntz/SbiDtorChain.h> is the CHAIN
+// view - the full 11-virtual 0x60-byte grand-base with an INLINE DtorStatus dtor that
+// the *Eh.cpp dtor TUs use so the multilevel destructor chain + /GX EH frame emits.
+// The two are NEVER co-included (verified) precisely because one class cannot be both:
+// a class carrying the inline DtorStatus dtor + 11 virtuals would force the ctor-side
+// TUs to inline that dtor (a destructible-base /GX frame retail does not have there),
+// and a 2-virtual declared-dtor class cannot emit the dtor chain. Same retail class,
+// two deliberate reconstruction views. (StatusBarItem.cpp + StatusBarGameMenu.cpp add
+// two further LABELING-DEVICE redefs whose class NAME must stay "CStatusBarItem" so
+// their ctor-call symbols pair with the 0x1005d0 ctor.)
+//
 // ---------------------------------------------------------------------------
 // CStatusBarItem - base of the SBI_* family. One class, one definition.
 //

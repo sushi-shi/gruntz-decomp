@@ -1,5 +1,6 @@
 #include <rva.h>
 #include <Gruntz/CString.h>
+#include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory + CSpriteIconNode shape
 #include <Bute/ButeMgr.h>
 // IconLoaders.cpp - the in-game-icon / powerup / explosion / camera / booty-perfect
 // sprite loaders (C:\Proj\Gruntz). Each builds a named sprite-set key, asks the
@@ -12,23 +13,8 @@
 // ---------------------------------------------------------------------------
 // Shared engine objects, modeled minimally (mirroring SpriteLoaders.cpp's idiom).
 // ---------------------------------------------------------------------------
-struct CIconSprite; // the created HUD/anim sprite
-
-// An entry in the factory's live-icon list (m_liveIcons): the next-link at +0 and the
-// owned CIconSprite at +8.  LoadToyBoxIcon walks it to de-dup by class + tile.
-struct CSpriteIconNode {
-    CSpriteIconNode* next; // +0x00
-    char m_pad4[0x8 - 0x4];
-    CIconSprite* m_sprite; // +0x08
-};
-
-// The HUD sprite factory reached via g_gameReg->m_factoryHolder->m_factory. CreateSprite looks the
-// template up by class-NAME (the 5th arg) and builds it; __thiscall ret 0x18.
-struct CSpriteFactory {
-    CIconSprite* CreateSprite(i32 kind, i32 geoB, i32 geoA, i32 hint, const char* name, i32 flags);
-    char m_pad0[0x14];
-    CSpriteIconNode* m_liveIcons; // +0x14  live-icon list head
-};
+// CSpriteFactory + CSpriteIconNode + the CIconSprite forward-decl now live in the
+// shared <Gruntz/SpriteFactory.h> (included above); CIconSprite is defined below.
 
 // Two icon-class vtable-slot fns the toybox de-dup test compares an existing
 // icon's CIconSprite::m_initVtbl->Init against (the in-game-icon / in-game-text classes).
@@ -474,6 +460,5 @@ i32 EngineLabelBacklog::LoadPowerupIconSprites(
 }
 
 SIZE_UNKNOWN(CResourceTracker);
-SIZE_UNKNOWN(CSpriteIconNode);
 SIZE_UNKNOWN(CSpriteVtbl);
 SIZE_UNKNOWN(EngineLabelBacklog);

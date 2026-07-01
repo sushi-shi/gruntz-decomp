@@ -11,6 +11,7 @@
 #include <stdio.h>
 
 #include <Bute/SymTab.h>
+#include <Gruntz/SoundCueMgr.h> // the ONE CSoundCueMgr shape (ConfigureItem @0x1360d0)
 
 extern "C" {
     DATA(0x0061ab20)
@@ -21,15 +22,12 @@ extern "C" {
     extern u32 g_killCueClock;
 }
 
-class CStatusBarMgr {
-public:
-    i32 ConfigureItem(i32 a0, i32 a1, i32 a2, i32 a3); // 0x1360d0
-};
+// CSoundCueMgr::ConfigureItem (@0x1360d0) is modeled in <Gruntz/SoundCueMgr.h>.
 struct CueObj {
     char m_pad00[0x10];
-    CStatusBarMgr* m_10; // +0x10
-    i32 m_14;            // +0x14
-    i32 m_18;            // +0x18
+    CSoundCueMgr* m_10; // +0x10
+    i32 m_14;           // +0x14
+    i32 m_18;           // +0x18
 };
 class CCueHashTable {
 public:

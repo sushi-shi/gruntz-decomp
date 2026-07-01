@@ -27,6 +27,12 @@
 // Field names/types are placeholders; only the offsets + total 0x60 size are
 // load-bearing (the dtor proper never reads a size, but the size is kept identical
 // to retail's allocation). See docs/patterns/eh-dtor-multilevel-polymorphic-chain.md.
+//
+// This is the CHAIN view of CStatusBarItem (11 virtuals, inline DtorStatus dtor, size
+// 0x60). Its counterpart is the FRAMELESS view in <Gruntz/StatusBarItem.h> (the small
+// 2-virtual inline-ctor base the ctor-side/builder TUs fold). They model the SAME
+// retail class two deliberately-incompatible ways and are NEVER co-included - see the
+// two-view-split note atop StatusBarItem.h for why one C++ spelling cannot serve both.
 #ifndef GRUNTZ_SBIDTORCHAIN_H
 #define GRUNTZ_SBIDTORCHAIN_H
 

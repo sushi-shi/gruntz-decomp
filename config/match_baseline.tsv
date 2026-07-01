@@ -1615,9 +1615,9 @@ cstatichazard	?FireActivation@CStaticHazard@@QAEXH@Z	100.0000	100.0000	1	69cb766
 cstatichazard	?LoadAttributes2@CStaticHazard@@QAEHXZ	97.8214	97.8214	2	4ae07b624bc9	0xfc0b0
 cstatichazard	?LoadAttributes@CStaticHazard@@QAEHXZ	49.4340	49.4340	3	e795f0b175ca	0xfc1a0
 cstatichazard	?RegisterActs@CStaticHazard@@SAXXZ	78.5473	78.5473	1	0845d748d7be	0xfbd50
-cstatusbarmgr	?LoadTabSprites@CStatusBarMgr@@QAEHXZ	20.5372	20.5372	5	836162fd532d	0x102250
-cstatusbarmgr	?SetDirection@CSbItem@@QAEXHH@Z	100.0000	100.0000	2	46fcb29ef102	0xea0f0
-cstatusbarmgrgetitem	?GetItem@CStatusBarMgr@@QAEPAVCStatusBarItem2@@XZ	90.3125	90.3125	1	a5282974c019	0x135d70
+cstatusbarmgr	?LoadTabSprites@CStatusBarMgr@@QAEHXZ	20.5372	20.5372	6	5281bfaece1d	0x102250
+cstatusbarmgr	?SetDirection@CSbConfigItem@@QAEXHH@Z	100.0000	100.0000	1	52f7459994f0	0xea0f0
+cstatusbarmgrgetitem	?GetItem@CSoundCueMgr@@QAEPAVCStatusBarItem2@@XZ	90.3125	90.3125	1	5eaa39b54602	0x135d70
 cstatusbarspriteacts	??0CStatusBarSprite@@QAE@PAUCGameObject@@@Z	93.2083	93.2083	1	56c3a50988d9	0x10c230
 cstatusbarspriteacts	?InitActReg@CStatusBarSprite@@SAXXZ	100.0000	100.0000	1	162867839555	0x10c430
 cstatusbarspriteacts	?RegisterActs@CStatusBarSprite@@SAXXZ	92.9130	92.9130	2	dec761b26a46	0x10c610
@@ -2240,7 +2240,7 @@ gamewnd	?PumpMessages@CGameWnd@@QAEXIH@Z	100.0000	100.0000	2	6e0ae715605b	0x13d4
 gamewnd	?QuitMessageLoop@CGameWnd@@UAEHXZ	100.0000	100.0000	5	14ded0f4c156	0x13d490
 goowellmgr	?LoadTeleporterGooConfig@CGooWellMgr@@QAEHH@Z	96.3620	96.3620	2	36c8f7fb27fd	0x6eb80
 groupops	?Broadcast@CGroupBroadcast@@QAEHXZ	84.2364	84.2364	1	4587301968b6	0x112080
-groupops	?CenterOnGroup@CGroupSel@@QAEHH@Z	82.6018	82.6018	2	56f41491b1dd	0x7cf40
+groupops	?CenterOnGroup@CGroupSel@@QAEHH@Z	82.6018	82.6018	3	f0d521d21d40	0x7cf40
 grunt	??1CGrunt@@QAE@XZ	55.5455	55.5455	1	7103cc50662d	0xf2f0
 grunt	?ArrivalRecycle@CGrunt@@QAEHHHHHH@Z	51.1858	51.1858	2	b667b6be49b1	0x59230
 grunt	?BeginAttack@CGrunt@@QAEHHH@Z	53.7917	53.7917	1	3d02da5c24cc	0x5b570
@@ -2828,7 +2828,7 @@ m4_drawtext	?Render22160@PwdHost@m4@@QAEHPAXHPAUtagRECT@@@Z	75.6343	75.6343	1	e8
 m4_flashrect	?FlashRect160f0@FlashHost@m4@@QAEXXZ	83.5235	83.5235	1	bbc018c5a18c	0x160f0
 m4_flashrect	?FlashRectC2e20@FlashHost@m4@@QAEHXZ	94.6266	94.6266	1	07cebfcd994e	0xc2e20
 m4_multicolordlg	?UpdateColorItems@MultiColorDlg@m4@@QAEHXZ	89.7165	89.7165	1	c3ab88e97c67	0xc1aa0
-m5_battlezdlgrow	?ToggleRow@CBattlezDlg@@QAEHH@Z	82.0714	82.0714	1	771e46ac628e	0x15fe0
+m5_battlezdlgrow	?ToggleRow@CBattlezDlg@@QAEHH@Z	82.0714	82.0714	2	f948520df9aa	0x15fe0
 m5_configstorewrite	?WriteProfileBinary@CConfigStore@@QAEHPAD0PAEI@Z	29.3913	29.3913	1	ebafc7deec10	0x1ccbfc
 m5_configstorewrite	?WriteProfileInt@CConfigStore@@QAEHPAD0H@Z	47.0455	47.0455	1	52d1ac54cb5a	0x1ccae7
 m5_creditzassets	?LoadCreditzAssets@CCreditsState@@QAEXXZ	100.0000	100.0000	1	301211db2fb6	0x39dc0
@@ -3311,7 +3311,7 @@ sbi_sidetab	?BuildHandle@CSBI_SideTab@@QAEHXZ	86.0101	86.0101	2	3d98e9161a94	0xe
 sbi_sidetab	?Refresh@CSBI_SideTab@@QAEHH@Z	100.0000	100.0000	1	333133b9c736	0xe9820
 sbi_sidetab	?Render@CSBI_SideTab@@QAEHH@Z	87.8438	87.8438	2	9b67853de1de	0xe99c0
 sbi_sidetab	?Reset@CSBI_SideTab@@QAEXXZ	100.0000	100.0000	1	fc1e8fed52ab	0xe9800
-sbi_sidetab_build	?Build@CSBI_SideTab@@QAEHXZ	72.5980	72.5980	1	e604a81d12ef	0x105070
+sbi_sidetab_build	?Build@CSBI_SideTab@@QAEHXZ	72.5980	72.5980	2	e9f0e3e71a6f	0x105070
 sbi_sidetab_eh	??1CSBI_SideTab@@UAE@XZ	100.0000	100.0000	1	65f4d63ef8b0	0x105200
 sbi_statztabarrow_eh	??1CSBI_StatzTabArrow@@UAE@XZ	100.0000	100.0000	1	15ca01b68391	0x1048f0
 sbi_statztabgruntbar	?Poll@CSBI_StatzTabGruntBar@@QAEHH@Z	100.0000	100.0000	1	6f194a6de0a2	0xea4b0
@@ -3415,8 +3415,8 @@ spriteresource	?ApplyLookupGeometry@CGruntAnimPlayer@@QAEHPBDH@Z	93.9394	93.9394
 spriteresource	?AttachSprite@CSpriteFactory@@QAEHPAUCSprite2@@HHHPBDH@Z	99.5082	99.5082	2	22f75b16d63e	0x159830
 spriteresource	?CacheFirstFrame@CGruntSprite@@QAEXPBD@Z	89.2647	89.2647	5	0cdb67ea8d67	0x150540
 spriteresource	?CacheFrame@CGruntSprite@@QAEXPBDH@Z	84.2571	84.2571	2	37e6bc878135	0x1504d0
-spriteresource	?ConfigureItem@CStatusBarMgr@@QAEHHHHH@Z	100.0000	100.0000	4	be2023a676b3	0x1360d0
-spriteresource	?CreateSprite@CSpriteFactory@@QAEPAUCSprite@@HHHHPBDH@Z	94.1176	94.1176	4	6102cd6262c1	0x1597b0
+spriteresource	?ConfigureItem@CSoundCueMgr@@QAEHHHHH@Z	100.0000	100.0000	1	59c3bd874a81	0x1360d0
+spriteresource	?CreateSprite@CSpriteFactory@@QAEPAUCIconSprite@@HHHHPBDH@Z	94.1176	94.1176	1	5df5abf17846	0x1597b0
 spriteresource	?GetFrame@CSprite@@QAEHH@Z	100.0000	100.0000	1	48906c68982d	0x15cc30
 spriteresource	?InsertFrame@CSprite@@QAEPAUCFrameWorker@@PAXHH@Z	98.3425	98.3425	2	32386fc09a11	0x151f00
 spriteresource	?LookupAnimSprite@CGruntAnimPlayer@@QAEHPBD@Z	73.0435	73.0435	1	07b112262249	0x150610

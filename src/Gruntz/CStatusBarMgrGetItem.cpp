@@ -1,76 +1,18 @@
 #include <rva.h>
-// CStatusBarMgrGetItem.cpp - CStatusBarMgr::GetItem in its OWN dedicated unit.
+
+#include <Gruntz/SoundCueMgr.h>
+// CStatusBarMgrGetItem.cpp - CSoundCueMgr::GetItem in its OWN dedicated unit.
 //
-// Re-homed from src/Stub/CStatusBarMgr.cpp. NOT folded into src/Gruntz/CStatusBarMgr.cpp
-// (the byte-exact LoadTabSprites TU): GetItem's CStatusBarMgr view conflicts with that
-// TU's - offset 0x10 is a pointer here (m_10->m_78) but a base-x coordinate int there,
-// and the +0x58 list head overlaps the +0x48 CPtrList. The two are effectively different
-// classes sharing a mangled name, so a single folded layout would regress LoadTabSprites.
-// A dedicated unit keeps GetItem's self-contained view isolated -> the conflict never
-// arises. flags="eh" (== the engine_label_stubs base+/GX it came from; matching-neutral).
-
-// The item type GetItem manages. Its real class is the DSNDMGR buffer wrapper
-// (DirectSoundMgr, src/Dsndmgr/DirectSoundMgr.cpp): Sub3f0/Inner560/740/880 are
-// IsPlaying/SetVolume/SetPan/SetFrequency (0x1353f0/0x135560/0x135740/0x135880)
-// and m_50 is the play key. Declared minimally here (decls only); the helper
-// calls lower to reloc-masked __thiscall calls to those real bodies.
-class CStatusBarItem2 {
-public:
-    char m_pad0[0x50];
-    i32 m_50;          // [+0x50]
-    i32 Sub3f0();      // 0x1353f0 thiscall
-    i32 Inner560(i32); // 0x135560 thiscall
-    i32 Inner740(i32); // 0x135740 thiscall
-    i32 Inner880(i32); // 0x135880 thiscall
-};
-SIZE_UNKNOWN(CStatusBarItem2);
-
-// Intrusive list link embedded in each item at +0x44.
-struct SBLink {
-    void* m_0;
-    void* m_4;
-};
-SIZE_UNKNOWN(SBLink);
-
-// Traversal node: next at +0, item at +8.
-struct SBNode {
-    SBNode* m_0; // next
-    char m_pad4[4];
-    CStatusBarItem2* m_8; // item
-};
-SIZE_UNKNOWN(SBNode);
-
-// Embedded 2-pointer list head (head at +0, tail at +4).
-struct SBList {
-    SBNode* m_head;
-    SBNode* m_tail;
-    void Unlink(SBLink*); // 0x1391e0 thiscall
-    void Append(SBLink*); // 0x139110 thiscall
-};
-SIZE_UNKNOWN(SBList);
-
-struct SBMgrOwner {
-    char m_pad[0x78];
-    i32 m_78; // gate
-};
-SIZE_UNKNOWN(SBMgrOwner);
-
-class CStatusBarMgr {
-public:
-    class CStatusBarItem2* GetItem();
-
-private:
-    char m_pad0[0x10];
-    SBMgrOwner* m_10; // [+0x10]
-    char m_pad14[0x04];
-    i32 m_18; // [+0x18]
-    i32 m_1c; // [+0x1c]
-    i32 m_20; // [+0x20]
-    char m_pad24[0x58 - 0x24];
-    SBList m_58; // [+0x58] embedded list head
-
-    CStatusBarItem2* Create(i32); // 0x135c20 thiscall
-};
+// GetItem (0x135d70) is the Dsndmgr sound-cue manager's pooled-buffer resolver: it
+// walks the +0x58 item list for a live/finished DirectSound buffer, reconfigures it
+// (pan/pitch/volume from m_18/m_1c/m_20) and, when none is free, Create()s a fresh
+// one, then unlinks + re-appends it to the +0x58 list.
+//
+// Its owner CSoundCueMgr was rtti-mislabeled "CStatusBarMgr"; it is a GENUINELY
+// DIFFERENT class from the Gruntz HUD status-bar builder (CStatusBarMgr,
+// src/Gruntz/CStatusBarMgr.cpp) - the +0x10 pointer + the +0x58 list head that
+// overlaps the HUD builder's +0x48 CPtrList make one folded layout impossible. See
+// <Gruntz/SoundCueMgr.h>. Kept in its own unit; flags="eh" (matching-neutral).
 
 // @confidence: med
 // @source: reloc-correlation (1 caller)
@@ -80,7 +22,7 @@ private:
 // guard (the early-out restores just edi); cl pushes all three upfront. Not source-
 // steerable; docs/patterns/shrink-wrapped-callee-save-push.md. Final sweep.
 RVA(0x00135d70, 0x92)
-class CStatusBarItem2* CStatusBarMgr::GetItem() {
+CStatusBarItem2* CSoundCueMgr::GetItem() {
     if (!m_10->m_78) {
         return 0;
     }

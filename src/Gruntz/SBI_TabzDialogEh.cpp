@@ -74,11 +74,16 @@ extern void(__stdcall* g_pCopyRect)(RECT* dst, const RECT* src);
 // out-of-line ctor `call` and, being a throw point, the ctor-in-flight /GX frame.
 // The derived ctors are inline (they land at each new-site: stamp + field clears).
 // Non-polymorphic (manual stamp), so dispatch goes through the SbView cast below.
+// FACET 3 of the status-bar item family (CSbDialogItem here / CSbConfigItem in
+// CStatusBarMgr.cpp / CSbBuildItem in SBI_SideTabBuild.cpp) - the SAME retail class,
+// three incompatible C++ dispatch models (see CStatusBarMgr.cpp for the rationale).
+// FACET 3 = a manual-stamp base with an OUT-OF-LINE ctor so `new Item` emits the
+// retail throwing base-ctor `call` + the /GX ctor-in-flight EH frame.
 // ---------------------------------------------------------------------------
-class CSbItem {
+class CSbDialogItem {
 public:
-    CSbItem();  // out-of-line -> the 0x22c0/0x1e88 base-ctor call (throwing -> /GX)
-    ~CSbItem(); // declared-only -> keeps the new-expression's delete-on-throw edge
+    CSbDialogItem();  // out-of-line -> the 0x22c0/0x1e88 base-ctor call (throwing -> /GX)
+    ~CSbDialogItem(); // declared-only -> keeps the new-expression's delete-on-throw edge
 
     void* m_vptr; // +0x00  manual-stamp vtable pointer
     i32 m_4;      // +0x04
@@ -88,7 +93,7 @@ public:
 }; // size 0x34
 
 // tag 3 image item (0x34 bytes): stamp t3, m_8=3, clear m_30.
-class CItemT3 : public CSbItem {
+class CItemT3 : public CSbDialogItem {
 public:
     CItemT3() {
         *(void**)this = &g_vtbl_t3;
@@ -99,7 +104,7 @@ public:
 SIZE_UNKNOWN(CItemT3);
 
 // tag 2 menu item (0x3c bytes): stamp menuItem, m_8=2, clear m_34/m_30/m_38.
-class CItemMenu : public CSbItem {
+class CItemMenu : public CSbDialogItem {
 public:
     CItemMenu() {
         *(void**)this = &g_vtbl_menuItem;
@@ -114,7 +119,7 @@ public:
 SIZE_UNKNOWN(CItemMenu);
 
 // tag 4 image-set item (0x3c bytes): clear m_30, stamp t4, m_8=4, clear m_34.
-class CItemT4 : public CSbItem {
+class CItemT4 : public CSbDialogItem {
 public:
     CItemT4() {
         m_30 = 0;
@@ -214,10 +219,10 @@ public:
     char _10[0xd4 - 0x10];
     CObList m_d4; // +0xd4  item list (AddTail)
     char _padd4[0x1f4 - (0xd4 + sizeof(CObList))];
-    CSbItem* m_1f4; // +0x1f4
-    CSbItem* m_1f8; // +0x1f8
-    CSbItem* m_1fc; // +0x1fc
-    CSbItem* m_200; // +0x200
+    CSbDialogItem* m_1f4; // +0x1f4
+    CSbDialogItem* m_1f8; // +0x1f8
+    CSbDialogItem* m_1fc; // +0x1fc
+    CSbDialogItem* m_200; // +0x200
     char _204[0x550 - 0x204];
     i32 m_550; // +0x550  active gate
     i32 m_554; // +0x554  confirm-dialog selector

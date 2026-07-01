@@ -1,6 +1,8 @@
 #include <rva.h>
-#include <Gruntz/ResMgr.h> // CResMgr + the three registries (m_10/m_14/m_28/m_2c)
-#include <Gruntz/Sprite.h> // CSprite (frame-data), CSpriteHashTable, CFrameArray
+#include <Gruntz/ResMgr.h>        // CResMgr + the three registries (m_10/m_14/m_28/m_2c)
+#include <Gruntz/Sprite.h>        // CSprite (frame-data), CSpriteHashTable, CFrameArray
+#include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory shape (this TU owns CreateSprite@0x1597b0)
+#include <Gruntz/SoundCueMgr.h> // the ONE CSoundCueMgr shape (this TU owns ConfigureItem@0x1360d0)
 // SpriteResource.cpp - the shared engine sprite-resource helpers that the HUD /
 // powerup / explosion / camera / status-bar loaders all funnel through
 // (C:\Proj\Gruntz). Each pulls a named sprite-set out of the engine's
@@ -174,7 +176,7 @@ void CGruntSprite::CacheFrame(const char* name, i32 frame) {
 // its +0x7c sub-table holds a plain fn-ptr entry at +0x10 driven post-attach.
 // __single_inheritance keeps the init PMF a 4-byte code pointer (the class is only
 // forward-declared here, else MSVC's general PMF emits a this-adjust thunk).
-struct __single_inheritance CSprite2;
+// CSprite2 is forward-declared (with __single_inheritance) in <Gruntz/SpriteFactory.h>.
 typedef i32 (CSprite2::*CSprite2InitFn)(i32, i32, i32, CSprite*);
 struct CSprite2Vtbl {
     char _00[0x28];
@@ -192,24 +194,11 @@ struct CSprite2 {
     }
 };
 
-class CSpriteFactory {
-public:
-    CSprite* CreateSprite(i32 kind, i32 geoB, i32 geoA, i32 hint, const char* name, i32 flags);
-    // The real allocator/ctor (external/no-body so the call reloc-masks).
-    CSprite* CreateSpriteImpl(i32 kind, i32 geoB, i32 geoA, i32 hint, CSprite* tmpl, i32 flags);
-
-    // Look the named template up, run the sprite's init virtual, splice it into the
-    // factory's child list (AddChild @0x159e40, external) and, when flagged, drive
-    // its +0x7c sub-table. __thiscall, ret 0x18.
-    i32 AttachSprite(CSprite2* obj, i32 a1, i32 a2, i32 a3, const char* name, i32 flags);
-    void AddChild(CSprite2* obj, i32 flag); // 0x159e40 (external/no-body)
-
-    char m_pad00[0xc];
-    CResMgr* m_c; // +0x0c
-};
-
+// CSpriteFactory now lives in the shared <Gruntz/SpriteFactory.h> (included above);
+// this TU owns CreateSprite (0x1597b0) + AttachSprite (0x159830). The lookup RESULT is
+// a CSprite frame-data template; the created INSTANCE is a CIconSprite.
 RVA(0x001597b0, 0x57)
-CSprite*
+CIconSprite*
 CSpriteFactory::CreateSprite(i32 kind, i32 geoB, i32 geoA, i32 hint, const char* name, i32 flags) {
     CSprite* tmpl = 0;
     m_c->m_14->m_10map.Lookup(name, &tmpl);
@@ -278,31 +267,10 @@ i32 CSpriteFactory::AttachSprite(
 // result is ignored). __thiscall, ret 0x10 = 4 stack args. Returns the
 // success flag (1 only if every checked step succeeded).
 
-struct CStatusBarSurface {
-    char m_pad00[0x78];
-    i32 m_78; // +0x78  the live-surface gate
-};
-
-class CStatusBarItem2 {
-public:
-    i32 SetField0(i32 v); // 0x1355c0  (ret 4)
-    i32 SetField1(i32 v); // 0x1357a0  (ret 4)
-    i32 SetField2(i32 v); // 0x135920  (ret 4)
-    i32 SetField3(i32 v); // 0x135510  (ret 4, result ignored)
-    i32 Finalize();       // 0x136270  (ret 0)
-};
-
-class CStatusBarMgr {
-public:
-    i32 ConfigureItem(i32 a0, i32 a1, i32 a2, i32 a3);
-    CStatusBarItem2* GetItem(); // 0x135d70  (ret 0)
-
-    char m_pad00[0x10];
-    CStatusBarSurface* m_10; // +0x10
-};
-
+// CStatusBarSurface / CStatusBarItem2 / CSoundCueMgr now live in the shared
+// <Gruntz/SoundCueMgr.h> (included above); this TU owns ConfigureItem (0x1360d0).
 RVA(0x001360d0, 0x7c)
-i32 CStatusBarMgr::ConfigureItem(i32 a0, i32 a1, i32 a2, i32 a3) {
+i32 CSoundCueMgr::ConfigureItem(i32 a0, i32 a1, i32 a2, i32 a3) {
     if (!m_10->m_78) {
         return 0;
     }
@@ -478,4 +446,3 @@ SIZE_UNKNOWN(CGruntAnimSub2);
 SIZE_UNKNOWN(CGruntSprite);
 SIZE_UNKNOWN(CSprite2);
 SIZE_UNKNOWN(CSprite2Vtbl);
-SIZE_UNKNOWN(CStatusBarSurface);

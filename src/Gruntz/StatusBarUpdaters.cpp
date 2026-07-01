@@ -1,6 +1,7 @@
 #include <rva.h>
 #include <Bute/ButeMgr.h>
-#include <Gruntz/Sprite.h> // CSprite (frame-data value) + CSpriteHashTable
+#include <Gruntz/SoundCueMgr.h> // the ONE CSoundCueMgr shape (ConfigureItem @0x1360d0)
+#include <Gruntz/Sprite.h>      // CSprite (frame-data value) + CSpriteHashTable
 // StatusBarUpdaters.cpp - the per-widget HUD status-bar updaters and switch-tile
 // sprite loaders (C:\Proj\Gruntz). They live on the big in-game game-mode object
 // (the EngineLabelBacklog placeholder the rest of the backlog hangs off) and
@@ -37,21 +38,17 @@ extern "C" double sqrt(double);
 
 // CSprite (frame-data value) + CSpriteHashTable now come from <Gruntz/Sprite.h>.
 
-// CStatusBarMgr::ConfigureItem (the shared status-bar push helper @0x1360d0;
-// external/no-body so the `call rel32` reloc-masks). __thiscall, ret 0x10.
-class CStatusBarMgr {
-public:
-    i32 ConfigureItem(i32 a0, i32 a1, i32 a2, i32 a3);
-};
+// CSoundCueMgr::ConfigureItem (the shared push helper @0x1360d0, external/no-body so
+// the `call rel32` reloc-masks) is modeled in <Gruntz/SoundCueMgr.h>.
 
-// The status-bar item the named Lookup resolves: it holds the CStatusBarMgr to
-// push the configuration into at +0x10, a draw-clock latch (+0x14) and a window
-// width (+0x18).
+// The status-bar item the named Lookup resolves: it holds the CSoundCueMgr to push
+// the configuration into at +0x10, a draw-clock latch (+0x14) and a window width
+// (+0x18).
 struct CStatusBarTab {
     char m_pad00[0x10];
-    CStatusBarMgr* m_10; // +0x10  the mgr ConfigureItem pushes into
-    u32 m_14;            // +0x14  draw-clock latch
-    u32 m_18;            // +0x18  window width
+    CSoundCueMgr* m_10; // +0x10  the mgr ConfigureItem pushes into
+    u32 m_14;           // +0x14  draw-clock latch
+    u32 m_18;           // +0x18  window width
 };
 SIZE_UNKNOWN(CStatusBarTab);
 

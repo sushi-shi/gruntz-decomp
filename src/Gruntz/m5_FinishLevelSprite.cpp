@@ -7,6 +7,7 @@
 // bytes are load-bearing.
 #include <rva.h>
 
+#include <Gruntz/SoundCueMgr.h> // the ONE CSoundCueMgr shape (ConfigureItem @0x1360d0)
 #include <Ints.h>
 
 DATA(0x00645588)
@@ -25,20 +26,15 @@ public:
     i32 ResolveDeathAnimation(); // 0x0455f0
 };
 
-// CStatusBarMgr - ConfigureItem pushes a cue; +0x28 carries the cue duration.
-class CStatusBarMgr {
-public:
-    i32 ConfigureItem(i32 a0, i32 a1, i32 a2, i32 a3); // 0x1360d0
-    char m_pad00[0x28];
-    i32 m_28; // +0x28 cue duration
-};
+// CSoundCueMgr - ConfigureItem pushes a cue; +0x28 carries the cue duration (both
+// modeled in <Gruntz/SoundCueMgr.h>).
 
 // The named sprite/cue the GAME\FINISHLEVEL lookup resolves.
 struct CueObj {
     char m_pad00[0x10];
-    CStatusBarMgr* m_10; // +0x10
-    i32 m_14;            // +0x14 last-played clock
-    i32 m_18;            // +0x18 cue interval
+    CSoundCueMgr* m_10; // +0x10
+    i32 m_14;           // +0x14 last-played clock
+    i32 m_18;           // +0x18 cue interval
 };
 
 class CCueHashTable {
