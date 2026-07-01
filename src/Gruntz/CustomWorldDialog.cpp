@@ -52,7 +52,7 @@ DATA(0x0024556c)
 extern "C" CGruntzMgr* g_mgrSettings;
 
 // ===========================================================================
-// 0x3ad90 - run the custom-world dialog. Seed +0x62c26c with the supplied id (or
+// run the custom-world dialog. Seed +0x62c26c with the supplied id (or
 // the manager's resolved default when 0), +0x62c268 with m_30, +0x62c270 with
 // m_8->m_c; run the dialog; on cancel (result 0) clear the returned name; clear the
 // three seed dwords; copy g_str62c264 into the out-param when present; return the
@@ -93,7 +93,5 @@ CString RunCustomWorldDialog(i32 id, CString* outSource) {
     return g_str62c25c;
 }
 
-// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
-// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 SIZE_UNKNOWN(GmInner4);
 SIZE_UNKNOWN(GmInner8);

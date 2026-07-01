@@ -176,7 +176,7 @@ struct CMenuOwner {
 // CChatBox
 // ===========================================================================
 
-// 0xa0280 - re-zero both rows (no list teardown; Reset minus the Clear()).
+// re-zero both rows (no list teardown; Reset minus the Clear()).
 RVA(0x000a0280, 0x2b)
 void CChatBox::Init() {
     m_0 = 0;
@@ -190,10 +190,10 @@ void CChatBox::Init() {
     m_48.Empty();
 }
 
-// 0xa0360 - destructor lives in ChatBoxDtor.cpp (the /GX EH-frame TU; it is the
+// destructor lives in ChatBoxDtor.cpp (the /GX EH-frame TU; it is the
 // only method here that needs the frame, so the rest stay frameless under base).
 
-// 0x182b30 - free the node list, re-zero both rows.
+// free the node list, re-zero both rows.
 RVA(0x00182b30, 0x30)
 void CChatBox::Reset() {
     Clear();
@@ -208,7 +208,7 @@ void CChatBox::Reset() {
     m_48.Empty();
 }
 
-// 0x182b60 - free every node's owned payload, empty the list, clear the queue slot.
+// free every node's owned payload, empty the list, clear the queue slot.
 RVA(0x00182b60, 0x3e)
 void CChatBox::Clear() {
     CChatListNode* node = (CChatListNode*)m_24.GetHeadPosition();
@@ -225,7 +225,7 @@ void CChatBox::Clear() {
     m_40 = 0;
 }
 
-// 0x182ba0 - append a node to the list; first node also becomes the active one.
+// append a node to the list; first node also becomes the active one.
 RVA(0x00182ba0, 0x35)
 i32 CChatBox::AddNode(void* node) {
     if (!node) {
@@ -243,7 +243,7 @@ i32 CChatBox::AddNode(void* node) {
 // strcmp + GetKey-by-value), but MSVC reserves an extra `push ecx` slot and pins
 // the node walk in a different callee-saved reg (ebp vs edi) than retail; logic
 // is complete. ~74%.
-// 0x182be0 - find the message node whose key matches s (linear scan + strcmp).
+// find the message node whose key matches s (linear scan + strcmp).
 RVA(0x00182be0, 0x8d)
 i32 CChatBox::Find(const char* s) {
     CChatListNode* node = (CChatListNode*)m_24.GetHeadPosition();
@@ -267,7 +267,7 @@ i32 CChatBox::Find(const char* s) {
 // navigation; the page methods are reloc-masked rel32 callees (MenuPage.cpp).
 // ---------------------------------------------------------------------------
 
-// 0x182c70 - notify the page of the per-frame delta, then run the inner scroll
+// notify the page of the per-frame delta, then run the inner scroll
 // Step (0x182ed0). The dt arg is u32 (Render passes g_645584); the inner Step
 // takes i32, so this is the Step(u32) overload that calls Step(i32).
 RVA(0x00182c70, 0x38)
@@ -281,7 +281,7 @@ i32 CChatBox::Step(u32 dt) {
     return Step((i32)dt) != 0;
 }
 
-// 0x182cb0 - lay out the page using the owner's first surface holder as the ctx.
+// lay out the page using the owner's first surface holder as the ctx.
 RVA(0x00182cb0, 0x26)
 i32 CChatBox::Pre() {
     if (!m_40) {
@@ -294,7 +294,7 @@ i32 CChatBox::Pre() {
     return ((CMenuPage*)m_40)->Layout(ctx) != 0;
 }
 
-// 0x182ce0 - flip the menu back buffer, then blit the source onto the target.
+// flip the menu back buffer, then blit the source onto the target.
 RVA(0x00182ce0, 0x36)
 i32 CChatBox::Post() {
     CMenuRenderSet* s = ((CMenuOwner*)m_0)->m_4;
@@ -303,7 +303,7 @@ i32 CChatBox::Post() {
     return 1;
 }
 
-// 0x182d20 - entity-flag 0x40000000 scan -> advance the page focus.
+// entity-flag 0x40000000 scan -> advance the page focus.
 RVA(0x00182d20, 0x16)
 i32 CChatBox::OnFlag40000000() {
     if (!m_40) {
@@ -312,7 +312,7 @@ i32 CChatBox::OnFlag40000000() {
     return ((CMenuPage*)m_40)->FocusNext() != 0;
 }
 
-// 0x182d40 - entity-flag 0x80000000 scan -> retreat the page focus.
+// entity-flag 0x80000000 scan -> retreat the page focus.
 RVA(0x00182d40, 0x16)
 i32 CChatBox::OnFlag80000000() {
     if (!m_40) {
@@ -321,8 +321,7 @@ i32 CChatBox::OnFlag80000000() {
     return ((CMenuPage*)m_40)->FocusPrev() != 0;
 }
 
-// 0x182d60 - entity-flag 0x00000003 scan -> activate the focused item.
-// real size 0x16 (ret at 0x182d75); the prior 0x36 overran into 0x182d80.
+// entity-flag 0x00000003 scan -> activate the focused item.
 RVA(0x00182d60, 0x16)
 i32 CChatBox::OnFlag00000003() {
     if (!m_40) {
@@ -331,7 +330,7 @@ i32 CChatBox::OnFlag00000003() {
     return ((CMenuPage*)m_40)->Activate() != 0;
 }
 
-// 0x182d80 - entity-flag 0x00000100 scan -> switch the page (refocus).
+// entity-flag 0x00000100 scan -> switch the page (refocus).
 RVA(0x00182d80, 0x18)
 i32 CChatBox::OnFlag00000100() {
     if (!m_40) {
@@ -340,7 +339,7 @@ i32 CChatBox::OnFlag00000100() {
     return ((CMenuPage*)m_40)->Switch(1) != 0;
 }
 
-// 0x183130 - entity-flag 0x10000000 scan -> step the focus back N nodes.
+// entity-flag 0x10000000 scan -> step the focus back N nodes.
 RVA(0x00183130, 0x16)
 i32 CChatBox::OnFlag10000000() {
     if (!m_40) {
@@ -349,7 +348,7 @@ i32 CChatBox::OnFlag10000000() {
     return ((CMenuPage*)m_40)->FocusBackwardN() != 0;
 }
 
-// 0x183150 - entity-flag 0x20000000 scan -> step the focus forward N nodes.
+// entity-flag 0x20000000 scan -> step the focus forward N nodes.
 RVA(0x00183150, 0x16)
 i32 CChatBox::OnFlag20000000() {
     if (!m_40) {
@@ -358,7 +357,7 @@ i32 CChatBox::OnFlag20000000() {
     return ((CMenuPage*)m_40)->FocusForwardN() != 0;
 }
 
-// 0x182da0 - make `n` the active node (detach + rebuild it).
+// make `n` the active node (detach + rebuild it).
 RVA(0x00182da0, 0x2a)
 i32 CChatBox::AttachNode(void* n) {
     if (!n) {
@@ -370,7 +369,7 @@ i32 CChatBox::AttachNode(void* n) {
     return 1;
 }
 
-// 0x182dd0 - find a node by key and make it active.
+// find a node by key and make it active.
 RVA(0x00182dd0, 0x19)
 i32 CChatBox::ReplaceNode(void* n) {
     return AttachNode((void*)Find((const char*)n));
@@ -379,7 +378,7 @@ i32 CChatBox::ReplaceNode(void* n) {
 // @early-stop
 // reloc-masked plateau: instruction stream byte-identical to retail; the residual
 // is only the differently-named Lookup extern (0x1b8008, another TU's CMap). ~95%.
-// 0x182df0 - advance row0 to the message keyed by `key`; cache its frame state.
+// advance row0 to the message keyed by `key`; cache its frame state.
 RVA(0x00182df0, 0x69)
 i32 CChatBox::AdvanceRow0(void* key, i32 x, i32 y) {
     if (!m_0) {
@@ -402,7 +401,7 @@ i32 CChatBox::AdvanceRow0(void* key, i32 x, i32 y) {
 // @early-stop
 // reloc-masked plateau: instruction stream byte-identical to retail; residual is
 // only the differently-named Lookup extern (0x1b8008, another TU's CMap). ~95%.
-// 0x182e60 - advance row1 to the message keyed by `key`; cache its frame state.
+// advance row1 to the message keyed by `key`; cache its frame state.
 RVA(0x00182e60, 0x69)
 i32 CChatBox::AdvanceRow1(void* key, i32 x, i32 y) {
     if (!m_0) {
@@ -426,7 +425,7 @@ i32 CChatBox::AdvanceRow1(void* key, i32 x, i32 y) {
 // regalloc wall: body byte-exact (unsigned counter compare, clamp+wrap of both
 // rows' frame indices), but retail holds the row node in eax with the counter in
 // edx, whereas MSVC swaps them here; 1-register phase shift only. ~89%.
-// 0x182ed0 - per-frame advance of both rows' scroll counters & frame indices.
+// per-frame advance of both rows' scroll counters & frame indices.
 RVA(0x00182ed0, 0xbc)
 i32 CChatBox::Step(i32 delta) {
     CChatAnim* a = (CChatAnim*)m_4c;
@@ -478,7 +477,7 @@ i32 CChatBox::Step(i32 delta) {
 // reloc-masked plateau: instruction stream byte-identical to retail; residual is
 // only the differently-named Blit extern (0x153790) + the virtual Measure slot.
 // ~95%.
-// 0x182f90 - blit both rows' current frames, centered under the sprite anchor.
+// blit both rows' current frames, centered under the sprite anchor.
 RVA(0x00182f90, 0x92)
 i32 CChatBox::Draw(i32 a0, i32 sprite_, i32 arg2, i32 arg3) {
     CChatSprite* sprite = (CChatSprite*)sprite_;
@@ -509,7 +508,7 @@ i32 CChatBox::Draw(i32 a0, i32 sprite_, i32 arg2, i32 arg3) {
 // `push edi/esi` past the empty-key guard (and uses 2 callee-saved regs for the
 // elapsed-time compare); MSVC saves them in the prologue, shifting the whole BB
 // layout. Logic complete. ~63%.
-// 0x183030 - scroll row0's sprite one tick if its scroll interval has elapsed.
+// scroll row0's sprite one tick if its scroll interval has elapsed.
 RVA(0x00183030, 0x7b)
 i32 CChatBox::ScrollRow0() {
     if (m_44.GetLength() == 0) {
@@ -541,7 +540,7 @@ i32 CChatBox::ScrollRow0() {
 // @early-stop
 // shrink-wrap + scheduling wall (same as ScrollRow0): body byte-exact, retail
 // defers the `push edi/esi` past the empty-key guard. Logic complete. ~63%.
-// 0x1830b0 - scroll row1's sprite one tick if its scroll interval has elapsed.
+// scroll row1's sprite one tick if its scroll interval has elapsed.
 RVA(0x001830b0, 0x7b)
 i32 CChatBox::ScrollRow1() {
     if (m_48.GetLength() == 0) {
@@ -570,7 +569,7 @@ i32 CChatBox::ScrollRow1() {
     return 0;
 }
 
-// 0x1831a0 - forward a hit-test to the active node (slot 0x1840a0).
+// forward a hit-test to the active node (slot 0x1840a0).
 RVA(0x001831a0, 0x24)
 i32 CChatBox::HitTest0(i32 x, i32 y) {
     CChatNode* n = (CChatNode*)m_40;
@@ -580,7 +579,7 @@ i32 CChatBox::HitTest0(i32 x, i32 y) {
     return n->HitTest1(x, y) != 0;
 }
 
-// 0x183210 - forward a hit-test to the active node (slot 0x1843f0).
+// forward a hit-test to the active node (slot 0x1843f0).
 RVA(0x00183210, 0x16)
 i32 CChatBox::HitTest1() {
     CChatNode* n = (CChatNode*)m_40;
@@ -590,7 +589,7 @@ i32 CChatBox::HitTest1() {
     return n->HitTest2() != 0;
 }
 
-// 0x183230 - forward a hit-test to the active node (slot 0x1844d0).
+// forward a hit-test to the active node (slot 0x1844d0).
 RVA(0x00183230, 0x16)
 i32 CChatBox::HitTest2() {
     CChatNode* n = (CChatNode*)m_40;
@@ -600,7 +599,7 @@ i32 CChatBox::HitTest2() {
     return n->HitTest3() != 0;
 }
 
-// 0x1831d0 - forward a query to the active node (callee 0x184230); bool-normalize.
+// forward a query to the active node (callee 0x184230); bool-normalize.
 RVA(0x001831d0, 0x16)
 i32 CChatBox::HitTest3() {
     CChatNode* n = (CChatNode*)m_40;
@@ -610,7 +609,7 @@ i32 CChatBox::HitTest3() {
     return n->HitTest4() != 0;
 }
 
-// 0x1831f0 - forward a query to the active node (callee 0x184310); bool-normalize.
+// forward a query to the active node (callee 0x184310); bool-normalize.
 RVA(0x001831f0, 0x16)
 i32 CChatBox::HitTest4() {
     CChatNode* n = (CChatNode*)m_40;
@@ -620,10 +619,8 @@ i32 CChatBox::HitTest4() {
     return n->HitTest5() != 0;
 }
 
-// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
-// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+// SIZE metadata for the .cpp-local engine views (CChatBox lives in ChatBox.h).
 SIZE_UNKNOWN(CChatAnim);
-SIZE_UNKNOWN(CChatBox);
 SIZE_UNKNOWN(CChatCatalog);
 SIZE_UNKNOWN(CChatFrame);
 SIZE_UNKNOWN(CChatListNode);

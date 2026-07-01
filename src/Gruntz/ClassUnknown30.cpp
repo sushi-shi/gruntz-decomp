@@ -1,8 +1,7 @@
-// ClassUnknown30.cpp - re-homed from src/Stub/Discovered.cpp (trace-discovered
-// __thiscall method on ClassUnknown_30). 0x09a260 returns the object's leading
-// CString member by value (NRVO into the hidden return slot): the body is a
-// single CString copy-ctor (0x1b9ba3) from m_str into *retptr. Field names are
-// placeholders; the CString copy-ctor is an external MFC fn (reloc-masked call).
+// ClassUnknown30.cpp - ClassUnknown_30::GetStr (0x09a260, __thiscall) returns the
+// leading CString member by value (NRVO into the hidden return slot): a single
+// CString copy-ctor (0x1b9ba3) from m_str into *retptr. The MFC copy-ctor is
+// external (reloc-masked).
 #include <rva.h>
 #include <Mfc.h>
 

@@ -1,5 +1,5 @@
-// ClassUnknown43.cpp - re-homed from src/Stub/Discovered.cpp. 0x0f7d90 is a
-// per-tick Update on the ClassUnknown_43 manager: it mirrors a coord pair
+// ClassUnknown43.cpp - 0x0f7d90 is a per-tick Update on the ClassUnknown_43
+// manager: it mirrors a coord pair
 // (m_17c/m_180 -> m_300/m_304), early-outs when m_198 is clear, otherwise pulls a
 // peer object from m_260 and either re-syncs its position via g_mgrSettings->m_68
 // or (after a >1000 throttle) re-snaps + screen-bounds-checks before firing
@@ -139,8 +139,6 @@ int ClassUnknown_43::Update_0f7d90() {
     return 1;
 }
 
-// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
-// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 SIZE_UNKNOWN(Box5c);
 SIZE_UNKNOWN(MgrObj);
 SIZE_UNKNOWN(MgrReg);

@@ -135,6 +135,6 @@ i32 CConfigStore::GetInt(char* szSection, char* szKey, i32 nDefault) {
     return GetPrivateProfileIntA(szSection, szKey, nDefault, m_90);
 }
 
-// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
-// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+// CConfigStore is defined in the shared ConfigStore.h (also included by
+// m5_ConfigStoreWrite.cpp); its SIZE stays here to avoid touching that header.
 SIZE_UNKNOWN(CConfigStore);

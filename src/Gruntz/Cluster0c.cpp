@@ -82,7 +82,5 @@ void CCluster0c::Cleanup() {
     Destroy_1bbb7c();
 }
 
-// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
-// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 SIZE_UNKNOWN(CCluster0c);
 SIZE_UNKNOWN(Sub60);

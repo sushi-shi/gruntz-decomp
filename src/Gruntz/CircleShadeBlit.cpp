@@ -198,7 +198,5 @@ void CircleShadeBlit::Render(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
     }
 }
 
-// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
-// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 SIZE_UNKNOWN(CircleShadeBlit);
 SIZE_UNKNOWN(CsbSurf);

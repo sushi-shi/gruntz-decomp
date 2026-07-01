@@ -58,7 +58,7 @@ struct CChatBoxCtx { // arg1 points here
 // 0x153790 (__stdcall): renders the chatbox frame into the looked-up set.
 void __stdcall RenderChatBoxFrame(i32 ctx, void* a, void* b, i32 z);
 
-// Attach @0x204e0 - latch the source registry root + text host, raise active.
+// Attach - latch the source registry root + text host, raise active.
 // @early-stop
 // constant-materialization wall: retail emits `mov eax,1; ...; mov [m_c],eax`
 // (1 register-materialized, stored last) where our cl folds the direct immediate
@@ -70,13 +70,13 @@ void CChatBoxOwner::Attach(void* reg, CChatBoxTextHost* host) {
     m_c = 1;
 }
 
-// Deactivate @0x20510 - lower the active flag.
+// Deactivate - lower the active flag.
 RVA(0x00020510, 0x8)
 void CChatBoxOwner::Deactivate() {
     m_c = 0;
 }
 
-// GetField1c @0x20ef0 - return the box's caption/key CString (m_1c) by value
+// GetField1c - return the box's caption/key CString (m_1c) by value
 // (copy-construct it into the caller's sret slot; the return slot pointer flows
 // back in eax). The CString copy ctor is NAFXCW (reloc-masked).
 RVA(0x00020ef0, 0x20)
@@ -84,7 +84,7 @@ CString CChatBoxOwner::GetField1c() {
     return m_1c;
 }
 
-// Configure @0x20530 - origin from the viewport for the given mode; mark dirty.
+// Configure - origin from the viewport for the given mode; mark dirty.
 // @early-stop
 // dead-global-read-spill wall (docs/patterns/dead-global-read-spill-dce.md): retail
 // spills the unused viewport width to a dead `[esp]` slot per arm; our cl DCEs it.
@@ -104,7 +104,7 @@ void CChatBoxOwner::Configure(i32 mode) {
     m_14->m_34 = 1;
 }
 
-// HitTest @0x21140 - is screen point (x,y) over the box for the current mode.
+// HitTest - is screen point (x,y) over the box for the current mode.
 // @early-stop
 // dead-global-read-spill wall (docs/patterns/dead-global-read-spill-dce.md): retail
 // keeps 4 dead viewport-width loads+spills (`mov [esp+8],reg`); our cl DCEs them all,
@@ -149,7 +149,7 @@ i32 CChatBoxOwner::HitTest(i32 x, i32 y) {
 }
 
 // ===========================================================================
-// CChatBoxOwner::ProcessCheatInput  (0x205c0, 0x741 = 1857 B) - cheat processor
+// CChatBoxOwner::ProcessCheatInput - cheat processor
 // ===========================================================================
 // Fired when the player submits a line in the chat box. DECODED BEHAVIOR (for the
 // final sweep; see the disasm at RVA 0x205c0):
@@ -204,7 +204,7 @@ void CChatBoxOwner::ProcessCheatInput(i32 a, i32 b) {
 }
 
 // ===========================================================================
-// CChatBoxOwner::LoadChatBoxSprite (0x20f40) - look up the "GAME_CHATBOX" sprite
+// CChatBoxOwner::LoadChatBoxSprite - look up the "GAME_CHATBOX" sprite
 // set, blit the frame for the current mode, then stamp the caption text via the
 // DC source. int(BOOL) return; the m_10==0 / hdc==0 guards return 1, the
 // m_2c==0 / spr==0 / frame==0 guards return 0.
@@ -215,8 +215,7 @@ void CChatBoxOwner::ProcessCheatInput(i32 a, i32 b) {
 // the arg pushes (cl hoists) and SINKS the rect[1] struct store past `push &rect`
 // at a shifted esp offset (same instruction multiset, /O2-invariant), plus the
 // frame guard `mov ecx,[..]; test` vs cl's `cmp [..],0` materialization. No local
-// source diff closes these (hoisting rect[0] regressed 83->82%). ~83%; moved from
-// src/Stub/ApiCallers.cpp (was ThisStubOwnerUnknown::LoadChatBoxSprite).
+// source diff closes these (hoisting rect[0] regressed 83->82%). ~83%.
 RVA(0x00020f40, 0x188)
 i32 CChatBoxOwner::LoadChatBoxSprite(i32 arg1) {
     CChatBoxOwner* self = this;
@@ -277,15 +276,13 @@ i32 CChatBoxOwner::LoadChatBoxSprite(i32 arg1) {
     return 1;
 }
 
-// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
-// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+// SIZE metadata for the .cpp-local engine views (CChatBoxOwner + CChatBoxTextHost
+// live in ChatBoxOwner.h).
 SIZE_UNKNOWN(CChatBoxCtx);
 SIZE_UNKNOWN(CChatBoxDcHost);
 SIZE_UNKNOWN(CChatBoxDcSrc);
 SIZE_UNKNOWN(CChatBoxDcVtbl);
 SIZE_UNKNOWN(CChatBoxFrame);
 SIZE_UNKNOWN(CChatBoxHash);
-SIZE_UNKNOWN(CChatBoxOwner);
 SIZE_UNKNOWN(CChatBoxRegRoot);
 SIZE_UNKNOWN(CChatBoxRegistry);
-SIZE_UNKNOWN(CChatBoxTextHost);

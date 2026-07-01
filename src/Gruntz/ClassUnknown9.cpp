@@ -1,5 +1,5 @@
-// ClassUnknown9.cpp - re-homed from src/Stub/Discovered.cpp. 0x11c630 is the
-// ClassUnknown_9 constructor taking a CString by value (+ a pointer): the CString
+// ClassUnknown9.cpp - 0x11c630 is the ClassUnknown_9 constructor taking a CString
+// by value (+ a pointer): the CString
 // member m_str is default-constructed (member-init, 0x1b9b93), assigned from the
 // by-value arg (operator=, 0x1b9e25), then m_4/m_8 are set; the by-value CString
 // parameter is destroyed by the callee at return (0x1b9cde) -> /GX EH frame.

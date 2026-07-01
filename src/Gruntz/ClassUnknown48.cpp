@@ -1,5 +1,5 @@
-// ClassUnknown48.cpp - re-homed from src/Stub/Discovered.cpp (0x139cf0). This is
-// the ClassUnknown_48 destructor: it drains two intrusive `List` members (m_1c is
+// ClassUnknown48.cpp - the ClassUnknown_48 destructor (0x139cf0): it drains two
+// intrusive `List` members (m_1c is
 // purged only when the owner flag m_2c->m_18->m_6c is set; m_24 re-files each
 // node's m_14 payload as it is removed), zeroes m_0/m_18, then the two List
 // members are destroyed in reverse order (m_24 then m_1c) - each ~List() inlines
@@ -68,8 +68,6 @@ ClassUnknown_48::~ClassUnknown_48() {
     m_18 = 0;
 }
 
-// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
-// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 SIZE_UNKNOWN(Inner);
 SIZE_UNKNOWN(List);
 SIZE_UNKNOWN(Mgr18);

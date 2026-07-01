@@ -14,6 +14,7 @@
 #define GRUNTZ_CHATBOX_H
 
 #include <Ints.h>
+#include <rva.h>
 
 #include <Mfc.h>
 
@@ -90,5 +91,6 @@ public:
     i32 m_74;      // +0x74
     i32 m_78;      // +0x78
 };
+SIZE_UNKNOWN(CChatBox);
 
 #endif // GRUNTZ_CHATBOX_H
