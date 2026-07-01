@@ -58,6 +58,7 @@
 
 // A per-frame entity (g_entityList element). Render iterates it (slot +0x10 =
 // Update) and the message scans test its flag word m_2ac.
+SIZE_UNKNOWN(CGMEntity);
 struct CGMEntity {
     virtual void Gv0();
     virtual void Gv1();
@@ -71,6 +72,7 @@ struct CGMEntity {
 // The per-frame entity set: count @+0x4, element-ptr array @+0x8. The global
 // The global is a POINTER to this structure (the Render loops load it first:
 // `mov reg,[0x645574]; mov cnt,[reg+4]; elems = reg+8`).
+SIZE_UNKNOWN(CGMEntityList);
 struct CGMEntityList {
     void* m_0;             // +0x00
     i32 m_count;           // +0x04
@@ -83,9 +85,11 @@ extern "C" CGMEntityList* g_645574; // (a pointer to the list)
 // (NOT in ecx) and the CALLEE cleans the stack (no `add esp,4` at the call site)
 // -> __stdcall: `mov ecx,[obj]; push obj; call [ecx+0x60]`.
 struct CGMInputVtbl;
+SIZE_UNKNOWN(CGMInputObj);
 struct CGMInputObj {
     CGMInputVtbl* vtbl;
 }; // +0x00 vtable ptr
+SIZE_UNKNOWN(CGMInputVtbl);
 struct CGMInputVtbl {
     char m_pad0[0x60];
     i32(__stdcall* Poll)(CGMInputObj* self); // +0x60
@@ -94,13 +98,16 @@ struct CGMInputVtbl {
 // The owner back-ptr (CState+0x4) the Render path dereferences. +0x4->+0x4 = the
 // OS HWND (PostMessageA target); +0x8 a sub-object (m_244 cleared); +0x14 a view
 // gate; +0x48 the sound manager; the credits "post & bail" is m_4->Post(...).
+SIZE_UNKNOWN(CGMSound);
 struct CGMSound {
     void Play(const char* name, i32 z); // (thiscall, 2 args)
     i32 Find(const char* name);         // (thiscall, 1 arg -> ptr)
 };
+SIZE_UNKNOWN(CGMSoundEntry);
 struct CGMSoundEntry {
     i32 Query();
 }; // (thiscall, no arg -> int)
+SIZE_UNKNOWN(CGMOwner);
 struct CGMOwner {
     void Post(u32 a, u32 b); // (thiscall, 2 args)
     char p0[0x4];            // +0x00
@@ -125,9 +132,11 @@ extern "C" void __stdcall GM_SimpleAnim(i32 z); // (stdcall, 1 arg)
 // The view/draw holder (CState+0xc). The credits input poll reaches
 // m_c->m_4->m_10->m_2c->m_8 (the input obj); the draw block walks
 // m_c->m_4->{m_10->m_2c (Draw this), m_14 (blit this), m_18 (blit arg)}.
+SIZE_UNKNOWN(CGMBlitTarget);
 struct CGMBlitTarget {
     void Blit(i32 arg);
 }; // (thiscall)
+SIZE_UNKNOWN(CGMView);
 struct CGMView {
     char p0[0x4]; // +0x00
     struct M4 {
@@ -152,6 +161,7 @@ struct CGMView {
 
 // The CMenuState UI object (m_1b4): each entity-flag scan fires a distinct no-arg
 // method on it; the tail steps it (one arg = g_645584) + draws the version RECT.
+SIZE_UNKNOWN(CGMMenuUI);
 struct CGMMenuUI {
     void OnFlag80000000();
     void OnFlag40000000();
@@ -164,6 +174,7 @@ struct CGMMenuUI {
     void Post();          // (no arg)
 };
 // The version-string RECT source globals (4 ints copied to a stack RECT by value).
+SIZE_UNKNOWN(CGMVerRect);
 struct CGMVerRect {
     i32 a, b, c, d;
 };
@@ -192,6 +203,7 @@ extern "C" char g_60ce74[]; // "MONOLITH" (FindSound name)
 // (464 B) drives the per-frame menu: a per-entity Update pass, then six
 // entity-flag scans each firing a distinct method on the menu UI object m_1b4,
 // then the UI step + the on-screen version-string RECT draw.
+SIZE_UNKNOWN(CMenuState);
 class CMenuState : public CState {
 public:
     // The ~CMenuState() destructor (EH-framed `??1` under /GX): it re-stamps the
@@ -236,6 +248,7 @@ public:
 // is the canonical Render spine: input poll -> input-virtual bail -> cursor anim
 // -> per-entity Update loop -> message scan -> two sub-steps -> draw -> two
 // latched one-shot FX.
+SIZE_UNKNOWN(CCreditsState);
 class CCreditsState : public CState {
 public:
     virtual i32 Update() OVERRIDE;       // return 8;  (slot 4)
@@ -282,6 +295,7 @@ public:
     i32 ShowAttractTitle(); // 0x393b0 (gate on the state core, hide cursor, init title)
 };
 
+SIZE_UNKNOWN(CBootyState);
 class CBootyState : public CState {
 public:
     // ~CBootyState() (EH-framed `??1`): re-stamp the CBootyState vtable, run the
@@ -304,6 +318,7 @@ public:
 // (ReleaseResources slot 2, the dtor slot 0); on top of the CState layout it owns a
 // glitter/spawn animation block at +0x1b4..+0x208 (a count, a phase, two scratch
 // coords, two ptr arrays @+0x1ec/+0x204, a target @+0x1fc) and a state object @+0x2f8.
+SIZE_UNKNOWN(CMultiBootyState);
 class CMultiBootyState : public CState {
 public:
     // ~CMultiBootyState() (EH-framed `??1` @0x8d510): re-stamp the CMultiBootyState

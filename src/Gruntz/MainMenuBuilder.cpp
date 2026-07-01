@@ -597,7 +597,6 @@ void BuildMainMenuTree(void* arg) {
     }
 }
 
-// H-N misc-Gruntz class-metadata sweep (SIZE).
 SIZE_UNKNOWN(MenuGameReg);
 SIZE_UNKNOWN(MenuHost);
 SIZE_UNKNOWN(MenuItem);

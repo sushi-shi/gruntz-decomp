@@ -239,7 +239,6 @@ void CNetDlgWatch::Watchdog() {
     g_watchBusy = 0;
 }
 
-// H-N misc-Gruntz class-metadata sweep (SIZE).
 SIZE_UNKNOWN(CNetDlgWatch);
 SIZE_UNKNOWN(WatchCtrl);
 SIZE_UNKNOWN(WatchReg);

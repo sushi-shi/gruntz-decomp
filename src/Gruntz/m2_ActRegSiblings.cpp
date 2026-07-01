@@ -63,7 +63,7 @@ struct CSiblingActorBEntry {
     i32 (CSiblingActorB::*m_fn)();
 };
 
-// 0xc60e0 - CSiblingActorA::RegisterActs: register "A" in the shared name registry
+// CSiblingActorA::RegisterActs: register "A" in the shared name registry
 // (first caller only), then bind LoadAttributes into the class registry slot.
 //
 // @early-stop
@@ -96,7 +96,7 @@ void CSiblingActorA_RegisterActs() {
     ((CSiblingActorAEntry*)g_netBe90.ResolveEntry(id))->m_fn = &CSiblingActorA::LoadAttributes;
 }
 
-// 0xc78b0 - CSiblingActorB::RegisterActs: same archetype, registry @0x64bf00.
+// CSiblingActorB::RegisterActs: same archetype, registry @0x64bf00.
 //
 // @early-stop
 // same register-pinning wall as CSiblingActorA_RegisterActs above (logic + every
@@ -134,7 +134,7 @@ struct CCheckpointActEntry {
     i32 (CCheckpointTrigger::*m_fn)();
 };
 
-// 0x10ebe0 - CCheckpointTrigger::RegisterActs: same archetype, registry @0x64e7c0.
+// CCheckpointTrigger::RegisterActs: same archetype, registry @0x64e7c0.
 //
 // @early-stop
 // same register-pinning wall as the two siblings above (logic + every byte faithful;
@@ -163,7 +163,6 @@ void CCheckpointTrigger::RegisterActs() {
         &CCheckpointTrigger::Trigger;
 }
 
-// H-N misc-Gruntz class-metadata sweep (SIZE).
 SIZE_UNKNOWN(CCheckpointActEntry);
 SIZE_UNKNOWN(CNetSingletonBe90);
 SIZE_UNKNOWN(CSiblingActReg);

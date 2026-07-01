@@ -39,7 +39,6 @@ struct CFaderElem {
 // @early-stop
 // regalloc/scheduling tie (~90%): logic byte-exact; retail's ecx/edx assignment
 // for the m_3c reload + s->m_10 store schedule differs from this cl's.
-// 0x17f5e0
 RVA(0x0017f5e0, 0x7d)
 i32 CFaderElem::Apply(FaderArg* s) {
     i32 a = s->m_04;
@@ -63,7 +62,6 @@ i32 CFaderElem::Apply(FaderArg* s) {
     return 1;
 }
 
-// class metadata (SIZE sweep, D-G)
 SIZE_UNKNOWN(FaderSrc);
 SIZE_UNKNOWN(FaderArg);
 SIZE_UNKNOWN(CFaderElem);

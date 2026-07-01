@@ -16,7 +16,7 @@ struct CGameSyncSig {
     i32 ComputeSignature();
 };
 
-// 0xc0590 - fold every team object's fields into a 32-bit game-state signature.
+// fold every team object's fields into a 32-bit game-state signature.
 //
 // @early-stop
 // integer-sum reassociation/scheduling wall (topic:wall topic:regalloc, ~58%):
@@ -134,5 +134,4 @@ i32 CGameSyncSig::ComputeSignature() {
     return sum;
 }
 
-// H-N misc-Gruntz class-metadata sweep (SIZE).
 SIZE_UNKNOWN(CGameSyncSig);

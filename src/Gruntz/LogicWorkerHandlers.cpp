@@ -25,31 +25,7 @@
 // bytes are load-bearing (campaign doctrine).
 #include <rva.h>
 
-// ---------------------------------------------------------------------------
-// The polymorphic sub-record the worker `new`s and dispatches. Slots are laid
-// out so the message pump's vtable calls land at the right byte offsets
-// (0x18 = slot 6 activate, 0x28..0x3c = slots 10..15). Declarations only - never
-// defined here, so no ??_7 is emitted; the constructed object's real vtable is
-// the engine logic class's, stamped by its own (extern) constructor.
-class SubRecord {
-public:
-    virtual void Slot00();   // +0x00
-    virtual void Slot04();   // +0x04
-    virtual void Slot08();   // +0x08
-    virtual void Slot0C();   // +0x0c
-    virtual void Slot10();   // +0x10
-    virtual void Slot14();   // +0x14
-    virtual void Activate(); // +0x18  (slot 6)
-    virtual void Slot1C();   // +0x1c
-    virtual void Slot20();   // +0x20
-    virtual void Slot24();   // +0x24
-    virtual void Vfunc28();  // +0x28  (state 0x1e)
-    virtual void Vfunc2C();  // +0x2c  (state 0x1d)
-    virtual void Vfunc30();  // +0x30  (state 0x52)
-    virtual void Vfunc34();  // +0x34  (state 0x51)
-    virtual void Vfunc38();  // +0x38  (state 0x50)
-    virtual void Vfunc3C();  // +0x3c  (state 0x53)
-};
+#include <Gruntz/WorkerHandler.h> // shared SubRecord / Worker / Owner archetype
 
 // The four engine logic sub-records the handlers `new`. Each is an opaque engine
 // object of its exact retail size with a 1-arg __thiscall constructor matched in
@@ -57,8 +33,6 @@ public:
 // push sizeof(T); call operator new; mov ecx,raw; push owner; call <ctor>, all
 // reloc-masked. The leading SubRecord base lets the post-construction Activate()
 // dispatch lower to `mov eax,[obj]; call [eax+0x18]`.
-struct Owner;
-
 struct CDoNothing : public SubRecord {
     CDoNothing(Owner* owner); // 0x0ac1d0
     char m_body[0x54 - 0x04];
@@ -78,24 +52,6 @@ struct CRollingBall : public SubRecord {
     CRollingBall(Owner* owner); // 0x0af820
     char m_body[0xa0 - 0x04];
 }; // sizeof = 0xa0
-
-// The worker held at owner->m_7c. Only the message-pump fields are modeled here.
-struct Worker {
-    void* m_vptr;              // +0x00
-    char m_pad04[0x18 - 0x04]; // +0x04..0x17
-    SubRecord* m_18;           // +0x18  the live sub-record
-    u32 m_1c;                  // +0x1c  state tag (UNSIGNED switch key)
-};
-
-// The owner game object handed to each handler; its worker hangs at +0x7c.
-struct Owner {
-    char m_pad00[0x7c];
-    Worker* m_7c; // +0x7c
-};
-
-// The engine default message pump run for any unhandled state (0x16e4f0,
-// __cdecl, takes the sub-record). Reloc-masked rel32 - no body.
-extern "C" void Worker_DefaultPump(SubRecord* sub);
 
 // ---------------------------------------------------------------------------
 // The switch key worker->m_1c is UNSIGNED (u32); MSVC5 then emits the range

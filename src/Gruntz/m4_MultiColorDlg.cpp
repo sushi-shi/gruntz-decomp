@@ -1,7 +1,7 @@
 // m4_MultiColorDlg.cpp - the multiplayer color-selection dialog item updater
 // re-homed out of src/Stub/ApiCallers.cpp (matcher-4, low-RVA half).
 //
-// 0x000c1aa0: refresh three dialog items (0x4ff combo, 0x42b, 0x4e9) plus the
+// refresh three dialog items (0x4ff combo, 0x42b, 0x4e9) plus the
 // combo's child window. In an active session the items are enabled per an empty-
 // slot table probe; out of session the combo's cursel is cleared and the child's
 // text is (re)synced to the lobby's current name, then all three are disabled.

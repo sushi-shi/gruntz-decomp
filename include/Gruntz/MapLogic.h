@@ -28,6 +28,7 @@
 // `ar->Read(buf,n)` lowers to the exact `mov eax,[ar]; push n; push buf;
 // mov ecx,ar; call [eax+0x2c]` __thiscall dispatch. The two general slots used
 // here are at +0x2c (read, mode 7) and +0x30 (write, mode 4).
+SIZE_UNKNOWN(CMapArchive);
 struct CMapArchive {
     virtual void Slot00();
     virtual void Slot04();
@@ -61,6 +62,7 @@ extern i32 g_freeListNodeBias; // ?g_freeListNodeBias@@3HA      (VA 0x64554c)
 // MFC array layout: {vtable@+0, m_pData@+4, m_nSize@+8, m_nMaxSize@+0xc,
 // m_nGrowBy@+0x10} = 0x14 bytes. SetSize @0x1b4f75 (__thiscall, ret 8) is called
 // on it with ecx = &m_arr. Modeled with a no-body SetSize so the call reloc-masks.
+SIZE_UNKNOWN(CMapPtrArray);
 struct CMapPtrArray {
     void SetSize(i32 n, i32 growBy); // 0x1b4f75 (__thiscall)
     void* m_vtbl;                    // +0x00
@@ -76,6 +78,7 @@ struct CMapPtrArray {
 // The CUserLogic base occupies +0x00..+0x3f; this leaf's grid/array members start
 // past it.
 // ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CMapLogic);
 class CMapLogic : public CUserLogic {
 public:
     CMapLogic();           // no-arg shape (only the teardown is here)
@@ -109,6 +112,7 @@ i32 MapSerializeCurve(CMapArchive* ar, i32 mode); // 0x0ec230
 // returned non-zero. __thiscall (ecx=this) with 4 stack args (ret 0x10), only the
 // first two used. The visited object's slots +0x08 / +0x0c are modeled polymorphic
 // (decls only) so `mov edx,[ecx]; push buf; call [edx+8]` falls out.
+SIZE_UNKNOWN(CMapVisitTarget);
 struct CMapVisitTarget {
     virtual i32 Slot00();
     virtual i32 Slot04();

@@ -33,7 +33,6 @@ struct GlyphFont {
     i32 m_68; // +0x68 hi char
 };
 
-// 0x115220
 RVA(0x00115220, 0xa4)
 i32 DrawGlyphString(DrawCtx* ctx, i32 x, i32 y, const char* str, GlyphFont* font, i32 advance) {
     if (!ctx) {
@@ -65,7 +64,6 @@ i32 DrawGlyphString(DrawCtx* ctx, i32 x, i32 y, const char* str, GlyphFont* font
     return 1;
 }
 
-// class metadata (SIZE sweep, D-G)
 SIZE_UNKNOWN(Drawable);
 SIZE_UNKNOWN(DrawCtx);
 SIZE_UNKNOWN(GlyphFont);

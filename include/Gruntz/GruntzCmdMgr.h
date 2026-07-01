@@ -23,6 +23,7 @@
 #ifndef GRUNTZ_GRUNTZCMDMGR_H
 #define GRUNTZ_GRUNTZCMDMGR_H
 
+#include <rva.h>
 #include <Ints.h>
 
 // One CObList sub-object (0x1c bytes). Only the engine methods the cluster
@@ -31,6 +32,7 @@
 //   m_4  head node (CObList m_pNodeHead)
 //   m_8  tail node (CObList m_pNodeTail)
 //   m_c  m_nCount (the queue length the loops test)
+SIZE_UNKNOWN(GzObList);
 struct GzObList {
     char m_pad0[4]; // +0x00
     void* m_4;      // +0x04  head node
@@ -53,6 +55,7 @@ class GzStateProvider; // defined below; Select() takes the +0x38 state sub-obje
 // flags word at +0x0c, and dispatch the object's own vtable slots +0x24/+0x28.
 // Modeled polymorphically so `obj->Select()` emits the thiscall virtual dispatch
 // at the right slots (the 9 leading virtuals are placeholders fixing the offsets).
+SIZE_UNKNOWN(GzTargetObj);
 class GzTargetObj {
 public:
     virtual void Slot0();                      // +0x00
@@ -77,6 +80,7 @@ public:
 // The +0x38 manager pointer's state sub-object: ->GetStateId() (vtable slot +0x10)
 // reports the current game-state id (compared against 0x11 / 0x3 / 0x4). Modeled
 // polymorphically; the 4 leading virtuals fix GetStateId at slot 4 (+0x10).
+SIZE_UNKNOWN(GzStateProvider);
 class GzStateProvider {
 public:
     virtual void Slot0();     // +0x00
@@ -85,6 +89,7 @@ public:
     virtual void Slot3();     // +0x0c
     virtual i32 GetStateId(); // +0x10 (slot 4)
 };
+SIZE_UNKNOWN(GzMgr);
 struct GzMgr {
     char m_pad0[0x2c];
     GzStateProvider* m_2c; // +0x2c  state provider
@@ -93,6 +98,7 @@ struct GzMgr {
 // The serialization stream the dispatcher reads/writes the command queue through.
 // vtable slot +0x2c (index 11) = Read(buf, len); +0x30 (index 12) = Write(buf,
 // len). Modeled polymorphically so the thiscall dispatch hits the right slots.
+SIZE_UNKNOWN(GzStream);
 class GzStream {
 public:
     virtual void Slot0();
@@ -114,6 +120,7 @@ public:
 // Serialize(stream, mode, a, b) -> i32; slot +0x18 (index 6) = GetTag() -> i32.
 // Modeled independently of CGruntzCommand so this TU's serialize dispatch does not
 // disturb the matched CGruntzCommand vtable.
+SIZE_UNKNOWN(GzSerCmd);
 class GzSerCmd {
 public:
     virtual void Slot0();
@@ -126,12 +133,14 @@ public:
 };
 
 // One node of the base CObList the write pass walks: next@+0x00, payload@+0x08.
+SIZE_UNKNOWN(GzCmdNode);
 struct GzCmdNode {
     GzCmdNode* m_0; // +0x00  next node
     char m_pad4[4];
     GzSerCmd* m_8; // +0x08  payload command
 };
 
+SIZE_UNKNOWN(CGruntzCmdMgr);
 class CGruntzCmdMgr {
 public:
     // 0x023b40 - find the first base-queue target matching (indexByte, typeByte)

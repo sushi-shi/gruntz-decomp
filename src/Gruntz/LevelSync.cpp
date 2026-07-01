@@ -334,7 +334,6 @@ i32 CLevelSync::Sync(SyncStream* s, i32 op, i32 p4, i32 p5) {
     return 1;
 }
 
-// H-N misc-Gruntz class-metadata sweep (SIZE).
 SIZE_UNKNOWN(CLevelSync);
 SIZE_UNKNOWN(CLevelSyncChild);
 SIZE_UNKNOWN(MgrReset);

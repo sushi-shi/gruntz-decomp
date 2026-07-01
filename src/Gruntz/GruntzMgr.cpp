@@ -3689,16 +3689,12 @@ i32 CGruntzMgr::IsBattlezMapFile(CString path) {
 }
 
 // size 0xa30 recovered from operator-new sites (gruntz.analysis.news)
-SIZE(CGruntzMgr, 0xa30);
 
-// class-metadata sweep: grunt/game-object family size annotations (SIZE_UNKNOWN = retail size TBD, at .cpp EOF).
 SIZE_UNKNOWN(CActiveObj);
 SIZE_UNKNOWN(CActiveSub2dc);
 SIZE_UNKNOWN(CChatLog);
-SIZE_UNKNOWN(CCheckpointDlg);
 SIZE_UNKNOWN(CColorLookup);
 SIZE_UNKNOWN(CColorRow);
-SIZE_UNKNOWN(CGruntzMgrOptions);
 SIZE_UNKNOWN(CHeightGrid);
 SIZE_UNKNOWN(CInput54);
 SIZE_UNKNOWN(CLevelState);
@@ -3724,10 +3720,8 @@ SIZE_UNKNOWN(CSaveNameDlg);
 SIZE_UNKNOWN(CScrollView);
 SIZE_UNKNOWN(CSerializerZ);
 SIZE_UNKNOWN(CSettingsWriter);
-SIZE_UNKNOWN(CStateStackZ);
 SIZE_UNKNOWN(CWorldCoordResolver);
 SIZE_UNKNOWN(CWorldDelete);
-SIZE_UNKNOWN(CWorldDispatch);
 SIZE_UNKNOWN(CWorldEdges);
 SIZE_UNKNOWN(CWorldLookupHolder);
 SIZE_UNKNOWN(CWorldLookupView);
@@ -3736,11 +3730,7 @@ SIZE_UNKNOWN(CWorldModeIface);
 SIZE_UNKNOWN(CWorldModeView);
 SIZE_UNKNOWN(CWorldRegistrar);
 SIZE_UNKNOWN(CWorldStatusView);
-SIZE_UNKNOWN(CWorldSub28);
-SIZE_UNKNOWN(CWorldSub2c);
-SIZE_UNKNOWN(CWorldSub4);
 SIZE_UNKNOWN(CWorldViewZ);
-SIZE_UNKNOWN(CWorldZ);
 SIZE_UNKNOWN(CmdGridFlagView);
 SIZE_UNKNOWN(CmdSink);
 SIZE_UNKNOWN(CmdSinkV);
@@ -3750,7 +3740,6 @@ SIZE_UNKNOWN(DirectInputMgr2);
 SIZE_UNKNOWN(EngObj);
 SIZE_UNKNOWN(GameRegHudView);
 SIZE_UNKNOWN(HudGuard44);
-SIZE_UNKNOWN(IDirectPlayLobbyZ);
 SIZE_UNKNOWN(InputState54);
 SIZE_UNKNOWN(InputStateObj);
 SIZE_UNKNOWN(LevelClock);

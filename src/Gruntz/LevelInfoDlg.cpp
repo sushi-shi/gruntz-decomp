@@ -128,5 +128,4 @@ void BuildLevelTitleString(HWND hDlg, i32 bShow, CLevelInfo* lev) {
     }
 }
 
-// H-N misc-Gruntz class-metadata sweep (SIZE).
 SIZE_UNKNOWN(CPreviewMgr);

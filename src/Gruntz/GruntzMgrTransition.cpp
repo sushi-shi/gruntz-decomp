@@ -426,7 +426,6 @@ install:
     }
 }
 
-// class-metadata sweep: grunt/game-object family size annotations (SIZE_UNKNOWN = retail size TBD, at .cpp EOF).
 SIZE_UNKNOWN(CDInputMgrZ);
 SIZE_UNKNOWN(CTsBaseA);
 SIZE_UNKNOWN(CTsBaseB);

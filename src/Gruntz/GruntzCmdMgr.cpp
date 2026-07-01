@@ -21,12 +21,12 @@ struct GzGameReg {
 DATA(0x0024556c)
 extern GzGameReg* g_gameReg;
 
-// 0x024ac0 - the registry-active predicate the read pass gates on (an out-of-line
+// the registry-active predicate the read pass gates on (an out-of-line
 // twin of IsActive at 0x024a90; same body). External to this TU, reloc-masked.
 i32 IsActive2(i32 enable);
 
 // ---------------------------------------------------------------------------
-// 0x0239d0 - SetMgr: install the state-providing manager pointer; return 1.
+// SetMgr: install the state-providing manager pointer; return 1.
 // ---------------------------------------------------------------------------
 RVA(0x000239d0, 0xf)
 i32 CGruntzCmdMgr::SetMgr(GzMgr* mgr) {
@@ -35,7 +35,7 @@ i32 CGruntzCmdMgr::SetMgr(GzMgr* mgr) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x0239f0 - ClearAndReset: null the manager pointer, then drain everything
+// ClearAndReset: null the manager pointer, then drain everything
 // (tail-call Clear). MSVC emits the tail-call as a jmp to Clear's body.
 // ---------------------------------------------------------------------------
 RVA(0x000239f0, 0xc)
@@ -45,7 +45,7 @@ void CGruntzCmdMgr::ClearAndReset() {
 }
 
 // ---------------------------------------------------------------------------
-// 0x023a10 - ScanTargets: walk the base queue (by index, removing each as it is
+// ScanTargets: walk the base queue (by index, removing each as it is
 // processed) filtering for objects that are either selected (flag 0x2) or
 // active+keyed (flag 0x1 and the type byte matches `param`). When the game is in
 // the play state (id 0x11), latch each match into a 4-slot per-team table (keyed
@@ -101,7 +101,7 @@ i32 CGruntzCmdMgr::ScanTargets(i32 param) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x023b40 - RemoveMatchingTarget: walk the base queue by index and remove the
+// RemoveMatchingTarget: walk the base queue by index and remove the
 // FIRST object that matches both the type byte (m_6 == typeByte) and the index
 // byte (m_4 == indexByte): RemoveAt(pos) + deselect (vtable slot +0x28). Stops at
 // the first hit. typeByte is hoisted out of the loop; indexByte is re-read per
@@ -121,7 +121,7 @@ void CGruntzCmdMgr::RemoveMatchingTarget(char indexByte, char typeByte) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x023bc0 - DrainBase: while the base queue is non-empty, RemoveTail() a node
+// DrainBase: while the base queue is non-empty, RemoveTail() a node
 // and (if non-null) deselect it via its vtable slot +0x28.
 // ---------------------------------------------------------------------------
 RVA(0x00023bc0, 0x25)
@@ -135,7 +135,7 @@ void CGruntzCmdMgr::DrainBase() {
 }
 
 // ---------------------------------------------------------------------------
-// 0x023c00 - Clear: full reset. Drain the base queue (deselecting each), then
+// Clear: full reset. Drain the base queue (deselecting each), then
 // RemoveAll the nested +0x1c list, then free both command recycle lists.
 // ---------------------------------------------------------------------------
 RVA(0x00023c00, 0x1c)
@@ -147,7 +147,7 @@ void CGruntzCmdMgr::Clear() {
 }
 
 // ---------------------------------------------------------------------------
-// 0x023c30 - EnqueueSingle: allocate a single-target command, set its params,
+// EnqueueSingle: allocate a single-target command, set its params,
 // and enqueue it. The argument permutation in the SetParamsEx call is the
 // compiler forwarding the caller's argument block.
 // ---------------------------------------------------------------------------
@@ -168,7 +168,7 @@ void CGruntzCmdMgr::EnqueueSingle(
 }
 
 // ---------------------------------------------------------------------------
-// 0x023ca0 - EnqueueMulti: allocate a multi-target (mask) command, build its
+// EnqueueMulti: allocate a multi-target (mask) command, build its
 // flag mask from the index list, and enqueue it.
 // ---------------------------------------------------------------------------
 RVA(0x00023ca0, 0x47)
@@ -188,7 +188,7 @@ void CGruntzCmdMgr::EnqueueMulti(
 }
 
 // ---------------------------------------------------------------------------
-// 0x023d10 - EnqueueCommand: tag the command's phase field from the current
+// EnqueueCommand: tag the command's phase field from the current
 // game state (state 3 -> phase 2, state 0x11 -> phase 4) and AddTail it onto
 // the nested +0x1c list, then always AddTail onto the base queue.
 // ---------------------------------------------------------------------------
@@ -209,7 +209,7 @@ void CGruntzCmdMgr::EnqueueCommand(i32 flag, void* cmd) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x024890 - Serialize: (de)serialize the command queue through a stream.
+// Serialize: (de)serialize the command queue through a stream.
 //   mode 4 (write): gate on IsActive(stream); write the node count, then walk the
 //       base queue writing each command's tag byte followed by its Serialize(4)
 //       payload. Returns 1 (0 on a failed element / inactive).
@@ -284,7 +284,7 @@ i32 CGruntzCmdMgr::Serialize(GzStream* stream, i32 mode, i32 a3, i32 a4) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x024a90 - IsActive: predicate. If the enable flag is clear, return 0;
+// IsActive: predicate. If the enable flag is clear, return 0;
 // otherwise return whether the registry's multiplayer slot (+0x30) is set.
 // ---------------------------------------------------------------------------
 RVA(0x00024a90, 0x20)
@@ -296,7 +296,7 @@ i32 CGruntzCmdMgr::IsActive(i32 enable) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x085bd0 - the destructor (/GX EH frame). Body: ClearAndReset() (null the
+// the destructor (/GX EH frame). Body: ClearAndReset() (null the
 // manager + drain everything); the compiler then runs the implicit member
 // teardown (~m_1c then ~m_base, reverse declaration order), each an inline
 // ~CObList. The EH frame tracks which sub-object is live across the teardown.
@@ -305,13 +305,4 @@ CGruntzCmdMgr::~CGruntzCmdMgr() {
     ClearAndReset();
 }
 
-// class-metadata sweep: grunt/game-object family size annotations (SIZE_UNKNOWN = retail size TBD, at .cpp EOF).
-SIZE_UNKNOWN(CGruntzCmdMgr);
-SIZE_UNKNOWN(GzCmdNode);
 SIZE_UNKNOWN(GzGameReg);
-SIZE_UNKNOWN(GzMgr);
-SIZE_UNKNOWN(GzObList);
-SIZE_UNKNOWN(GzSerCmd);
-SIZE_UNKNOWN(GzStateProvider);
-SIZE_UNKNOWN(GzStream);
-SIZE_UNKNOWN(GzTargetObj);

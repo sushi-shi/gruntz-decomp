@@ -11,7 +11,7 @@
 extern "C" void* RezAlloc(u32 size); // 0x1b9b46
 extern "C" void RezFree(void* p);    // 0x1b9b82
 
-// 0x150180 - ctor: zero the valid flag, size and blob (id is left alone).
+// ctor: zero the valid flag, size and blob (id is left alone).
 RVA(0x00150180, 0xd)
 CDataBuffer::CDataBuffer() {
     m_loaded = 0;
@@ -19,7 +19,7 @@ CDataBuffer::CDataBuffer() {
     m_data = 0;
 }
 
-// 0x150190 - Reset: free the blob only if currently valid (tail-jmp to Free).
+// Reset: free the blob only if currently valid (tail-jmp to Free).
 RVA(0x00150190, 0xb)
 void CDataBuffer::Reset() {
     if (m_loaded != 0) {
@@ -27,7 +27,7 @@ void CDataBuffer::Reset() {
     }
 }
 
-// 0x1501a0 - Set: (re)allocate a `size`-byte blob; record id on success.
+// Set: (re)allocate a `size`-byte blob; record id on success.
 RVA(0x001501a0, 0x44)
 i32 CDataBuffer::Set(u32 size, i32 id) {
     if (m_data) {
@@ -43,7 +43,7 @@ i32 CDataBuffer::Set(u32 size, i32 id) {
     return 1;
 }
 
-// 0x1501f0 - ReadFrom: pull a 4-byte element count out of `file` (CFile::Read,
+// ReadFrom: pull a 4-byte element count out of `file` (CFile::Read,
 // vtable slot +0x3c), (re)allocate the blob via Set(count, id), then read the blob
 // bytes through the same CFile::Read. Returns Set's result; on success re-stamps the
 // valid flag + id and returns 1. __thiscall, ret 8.
@@ -59,7 +59,7 @@ i32 CDataBuffer::ReadFrom(CFile* file, i32 id) {
     return 1;
 }
 
-// 0x150250 - LoadFromFile: open `path` read-only-shared through a local CFile, slurp
+// LoadFromFile: open `path` read-only-shared through a local CFile, slurp
 // it into the buffer via ReadFrom, and close. The CString temp (from the implicit
 // LPCTSTR open) and the local CFile both destruct on every path -> /GX EH frame.
 // ret 8.
@@ -78,7 +78,7 @@ i32 CDataBuffer::LoadFromFile(const char* path, i32 id) {
     return ReadFrom(&file, id);
 }
 
-// 0x150330 - LoadFromMem: wrap `buf`/`len` in a local CMemFile (0x400-byte grow
+// LoadFromMem: wrap `buf`/`len` in a local CMemFile (0x400-byte grow
 // chunk), Attach the caller's buffer, slurp it via ReadFrom, then ~CMemFile detaches
 // it. /GX EH frame, ret 0xc.
 //
@@ -93,7 +93,7 @@ i32 CDataBuffer::LoadFromMem(void* buf, u32 len, i32 id) {
     return ReadFrom(&file, id);
 }
 
-// 0x1503c0 - Free: if valid, free + clear the blob and size, then clear valid.
+// Free: if valid, free + clear the blob and size, then clear valid.
 RVA(0x001503c0, 0x2e)
 void CDataBuffer::Free() {
     if (m_loaded != 0) {
@@ -106,7 +106,7 @@ void CDataBuffer::Free() {
     m_loaded = 0;
 }
 
-// 0x1503f0 - SaveToFile: create `path` (modeCreate|modeWrite), write the 4-byte
+// SaveToFile: create `path` (modeCreate|modeWrite), write the 4-byte
 // element count then the blob, close. The by-value CString arg (destructed at exit,
 // outermost cleanup) + the local CFile -> /GX EH frame; on an Open failure the CFile
 // is destructed and 0 returned. ret 4 (the CString is one dword).
@@ -122,6 +122,4 @@ i32 CDataBuffer::SaveToFile(CString path) {
     return 1;
 }
 
-// class metadata (SIZE sweep, D-G)
-SIZE_UNKNOWN(CDataBuffer);
 

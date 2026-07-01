@@ -1,7 +1,7 @@
 // m4_CustomLevelList.cpp - the "fill the custom-level listbox" dialog helper
 // re-homed out of src/Stub/ApiCallers.cpp (matcher-4, low-RVA half).
 //
-// 0x0003af90: clear listbox 0x3fc, bail if the "Custom" gate is set, then walk the
+// clear listbox 0x3fc, bail if the "Custom" gate is set, then walk the
 // custom-level directory glob (_findfirst/_findnext under a shared singleton lock),
 // format each entry's display name, ask the settings manager whether to hide it,
 // and LB_ADDSTRING it with its 4-char extension stripped. __cdecl(HWND). /GX only

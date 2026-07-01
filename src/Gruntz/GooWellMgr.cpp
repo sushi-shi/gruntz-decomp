@@ -377,7 +377,6 @@ done:
     return 0;
 }
 
-// class metadata (SIZE sweep, D-G)
 SIZE_UNKNOWN(CAnimObj);
 SIZE_UNKNOWN(CObj7c);
 SIZE_UNKNOWN(CSoundHandle);

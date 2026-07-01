@@ -22,7 +22,7 @@ struct CDwArray {
     void SetSize(i32 nNewSize, i32 nGrowBy);
 };
 
-// 0x150040 - CDwArray::SetSize: the canonical MFC CArray::SetSize over a 4-byte POD
+// CDwArray::SetSize: the canonical MFC CArray::SetSize over a 4-byte POD
 // element (twin of CArrayE40::SetSize @0x17f390 / m2_ArrayE40.cpp).
 //
 // @early-stop
@@ -81,6 +81,5 @@ void CDwArray::SetSize(i32 nNewSize, i32 nGrowBy) {
     }
 }
 
-// class metadata (SIZE sweep, D-G)
 SIZE_UNKNOWN(CDwArray);
 

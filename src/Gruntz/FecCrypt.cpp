@@ -149,7 +149,7 @@ fail:
 }
 
 // ===========================================================================
-// 0x17bf70 - Encode(src, dst): dst[i] = src[i] + (i odd ? 0x53 : 0x4f), for the
+// Encode(src, dst): dst[i] = src[i] + (i odd ? 0x53 : 0x4f), for the
 // whole NUL-terminated src (strlen recomputed each iteration). __stdcall.
 // ===========================================================================
 RVA(0x0017bf70, 0x65)
@@ -164,7 +164,7 @@ void __stdcall FecEncode(const char* src, char* dst) {
 }
 
 // ===========================================================================
-// 0x17bfe0 - Decode(src, dst, len): dst[i] = src[i] - (i odd ? 0x53 : 0x4f) for
+// Decode(src, dst, len): dst[i] = src[i] - (i odd ? 0x53 : 0x4f) for
 // `len` bytes, then NUL-terminate dst[len]. `len` is a WORD. __stdcall.
 // ===========================================================================
 // @early-stop
@@ -185,7 +185,6 @@ void __stdcall FecDecode(const char* src, char* dst, unsigned short len) {
     dst[len] = 0;
 }
 
-// class metadata (SIZE sweep, D-G)
 SIZE_UNKNOWN(FecStream);
 SIZE_UNKNOWN(FecIndex);
 SIZE_UNKNOWN(CFecFile);

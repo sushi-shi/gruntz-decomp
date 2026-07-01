@@ -18,6 +18,7 @@
 #ifndef SRC_GRUNTZ_GRUNTZCOMMAND_H
 #define SRC_GRUNTZ_GRUNTZCOMMAND_H
 
+#include <rva.h>
 #include <Ints.h>
 
 typedef u32 gz_size_t;
@@ -27,6 +28,7 @@ void* operator new(gz_size_t);
 // list). Only RemoveTail() is reached (a __thiscall returning the recycled
 // node). The leaf allocator: if the list is non-empty, tail-call RemoveTail();
 // else operator new(0x14) the object + stamp its vftable.
+SIZE_UNKNOWN(CGruntzCmdList);
 struct CGruntzCmdList {
     void* RemoveTail();
 };
@@ -35,6 +37,7 @@ struct CGruntzCmdList {
 // big CPlay command-executor at 0x0d1b60, ret 0x1c => 7 __thiscall args). It is
 // external to this TU (reloc-masked); modeled here as a method on a tiny opaque
 // helper so `mov ecx,p; push args...; call` falls out with no stack cleanup.
+SIZE_UNKNOWN(CGruntzCmdTarget);
 struct CGruntzCmdTarget {
     i32 Exec(char kind, char index, char a2, i16 a3, i16 a4, char a5, char a6);
 };
@@ -64,6 +67,7 @@ class CmdStream;
 //   +0x11 m_11  char  } setters/getters) AND as a 16-bit flag mask (the bit
 //                       loop), so it is read/written via *(short*)&m_10.
 // ---------------------------------------------------------------------------
+SIZE(CGruntzCommand, 0x14);
 class CGruntzCommand {
 public:
     char m_4;  // +0x04
@@ -115,6 +119,7 @@ extern const u16 g_cmdBitTable[16]; // 0x1e9608
 // per-class free list if non-empty, else operator new(0x14) + inline ctor
 // (the ctor just stamps the leaf vftable - empty body, so it folds inline).
 // ---------------------------------------------------------------------------
+SIZE(CGruntzSingleCommand, 0x14);
 class CGruntzSingleCommand : public CGruntzCommand {
 public:
     CGruntzSingleCommand() {} // inline empty ctor (vftable store only)
@@ -130,6 +135,7 @@ public:
 // CGruntzMultiCommand - multi-target command (0x14 bytes; vtable 0x5e96b4).
 // Same new-or-recycle allocator shape as the single-target command.
 // ---------------------------------------------------------------------------
+SIZE(CGruntzMultiCommand, 0x14);
 class CGruntzMultiCommand : public CGruntzCommand {
 public:
     CGruntzMultiCommand() {}

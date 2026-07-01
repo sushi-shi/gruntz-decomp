@@ -28,7 +28,6 @@ struct FreeOwner {
 // regalloc + bool-tail idiom (~76%): logic correct; retail materializes the
 // (tag==0x71)?-3:0 via setne/dec/and and reloads self->m_1c per field; the cl
 // reload/return scheduling differs.
-// 0x186990
 RVA(0x00186990, 0x90)
 i32 RecFree(FreeOwner* self) {
     if (!self) {
@@ -72,7 +71,6 @@ struct BitBuf {
 // @early-stop
 // regalloc tie (~84%): logic byte-exact; retail caches m_08 in esi across the two
 // byte stores where this cl reloads it.
-// 0x18a190
 RVA(0x0018a190, 0x8c)
 void BitFlush(BitBuf* b) {
     i32 n = b->m_16b4;
@@ -126,7 +124,6 @@ struct Coder {
     i32 m_84; // +0x84
 };
 
-// 0x186a50
 RVA(0x00186a50, 0x93)
 void CoderReset(Coder* c) {
     c->m_30 = c->m_20 << 1;
@@ -147,7 +144,6 @@ void CoderReset(Coder* c) {
     c->m_54 = 2;
 }
 
-// H-N misc-Gruntz class-metadata sweep (SIZE).
 SIZE_UNKNOWN(BitBuf);
 SIZE_UNKNOWN(Coder);
 SIZE_UNKNOWN(FreeNode);

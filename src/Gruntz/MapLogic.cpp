@@ -191,8 +191,3 @@ i32 CMapVisitTarget::Visit(void* buf, i32 mode, i32 a2, i32 a3) {
     return 1;
 }
 
-// H-N misc-Gruntz class-metadata sweep (SIZE).
-SIZE_UNKNOWN(CMapArchive);
-SIZE_UNKNOWN(CMapLogic);
-SIZE_UNKNOWN(CMapPtrArray);
-SIZE_UNKNOWN(CMapVisitTarget);

@@ -100,19 +100,19 @@ void CMenuItem::Construct() {
 
 // ===========================================================================
 
-// 0x183250 - destructor: Clear() then tear down the CPtrList + three CStrings.
+// destructor: Clear() then tear down the CPtrList + three CStrings.
 RVA(0x00183250, 0x71)
 CMenuPage::~CMenuPage() {
     Clear();
 }
 
-// 0x1832d0 - return the page/item key (m_c) by value.
+// return the page/item key (m_c) by value.
 RVA(0x001832d0, 0x20)
 CString CMenuPage::GetKey() {
     return m_c;
 }
 
-// 0x1832f0 - configure this page from a template item, then resolve its catalog
+// configure this page from a template item, then resolve its catalog
 // slot via m_0->m_10's CMapStringToPtr::Lookup.
 RVA(0x001832f0, 0xa5)
 i32 CMenuPage::Configure(CMenuItem* tmpl, i32 a1, i32 a2, i32 a3, i32 a4) {
@@ -140,7 +140,7 @@ i32 CMenuPage::Configure(CMenuItem* tmpl, i32 a1, i32 a2, i32 a3, i32 a4) {
     return slot != 0;
 }
 
-// 0x1833a0 - reset to defaults: Clear() then zero link/back/focus/cache/flags.
+// reset to defaults: Clear() then zero link/back/focus/cache/flags.
 RVA(0x001833a0, 0x1a)
 void CMenuPage::InitDefaults() {
     Clear();
@@ -151,7 +151,7 @@ void CMenuPage::InitDefaults() {
     m_30 = 0;
 }
 
-// 0x1833c0 - free every child item (its deleting dtor), then RemoveAll the list.
+// free every child item (its deleting dtor), then RemoveAll the list.
 RVA(0x001833c0, 0x2b)
 void CMenuPage::Clear() {
     CMenuNode* node = (CMenuNode*)m_14.GetHeadPosition();
@@ -166,7 +166,7 @@ void CMenuPage::Clear() {
     m_14.RemoveAll();
 }
 
-// 0x183430 - append an item to the list; cache its POSITION at item+0x2c.
+// append an item to the list; cache its POSITION at item+0x2c.
 RVA(0x00183430, 0x24)
 void* CMenuPage::Append(CMenuItem* item) {
     if (!item) {
@@ -176,7 +176,7 @@ void* CMenuPage::Append(CMenuItem* item) {
     return (void*)1;
 }
 
-// 0x183990 - release the current focus item, then detach every child item.
+// release the current focus item, then detach every child item.
 RVA(0x00183990, 0x38)
 i32 CMenuPage::ReleaseAll() {
     if (m_64) {
@@ -195,7 +195,7 @@ i32 CMenuPage::ReleaseAll() {
     return 1;
 }
 
-// 0x1839d0 - restore focus: if a name (m_10) was saved, focus the item matching
+// restore focus: if a name (m_10) was saved, focus the item matching
 // it; otherwise (or if not found) focus the first focusable item.
 // @early-stop
 // regalloc + frameless-CString-temp wall (~61%): the saved-name scan (GetName +
@@ -242,7 +242,7 @@ i32 CMenuPage::RestoreFocus() {
     return 0;
 }
 
-// 0x183ad0 - make `item` the focused item (release the prior, Configure/notify the new).
+// make `item` the focused item (release the prior, Configure/notify the new).
 RVA(0x00183ad0, 0x57)
 i32 CMenuPage::SetFocus(CMenuItem* item, i32 notify) {
     if (!item) {
@@ -262,7 +262,7 @@ i32 CMenuPage::SetFocus(CMenuItem* item, i32 notify) {
     return item->Configure((void*)notify) != 0;
 }
 
-// 0x183b30 - notify every child item.
+// notify every child item.
 RVA(0x00183b30, 0x2c)
 i32 CMenuPage::NotifyAll(void* arg) {
     CMenuNode* node = (CMenuNode*)m_14.GetHeadPosition();
@@ -277,7 +277,7 @@ i32 CMenuPage::NotifyAll(void* arg) {
     return 1;
 }
 
-// 0x183c50 - move focus to the next focusable item, wrapping if allowed.
+// move focus to the next focusable item, wrapping if allowed.
 // @early-stop
 // regalloc wall (~75%): the two focusable-scan loops + the wrap + SetFocus are
 // byte-aligned, but `this` stays live to the tail (SetFocus/CanWrap) so the
@@ -341,7 +341,7 @@ i32 CMenuPage::FocusNext() {
     return SetFocus(found, 1) != 0;
 }
 
-// 0x183d10 - move focus to the previous focusable item, wrapping if allowed.
+// move focus to the previous focusable item, wrapping if allowed.
 // @early-stop
 // same regalloc wall as FocusNext (~75%): mirror walk (pNext then pPrev), logic
 // complete, deferred.
@@ -402,7 +402,7 @@ i32 CMenuPage::FocusPrev() {
     return SetFocus(found, 1) != 0;
 }
 
-// 0x183b60 - lay out / draw the page: center the child items in the page rect,
+// lay out / draw the page: center the child items in the page rect,
 // place each via its vtable Place, render selected ones through the host, and
 // accumulate the running y.
 // @early-stop
@@ -448,7 +448,7 @@ i32 CMenuPage::Layout(i32 ctx) {
     return 1;
 }
 
-// 0x183dd0 - activate (trigger) the focused item.
+// activate (trigger) the focused item.
 RVA(0x00183dd0, 0x16)
 i32 CMenuPage::Activate() {
     if (!m_64) {
@@ -457,7 +457,7 @@ i32 CMenuPage::Activate() {
     return m_64->Trigger() != 0;
 }
 
-// 0x183df0 - if the page key (m_8) is non-empty, ask the host to switch to it;
+// if the page key (m_8) is non-empty, ask the host to switch to it;
 // on success (and if refocus requested) notify the host.
 RVA(0x00183df0, 0x3d)
 i32 CMenuPage::Switch(i32 refocus) {
@@ -473,7 +473,7 @@ i32 CMenuPage::Switch(i32 refocus) {
     return 1;
 }
 
-// 0x183e30 - whether focus may wrap at the page ends: never if hidden (0x2),
+// whether focus may wrap at the page ends: never if hidden (0x2),
 // always if enabled (0x1), else defer to the host's wrap flag.
 // @early-stop
 // movb-vs-movsx peephole wall (~95%, 1 instruction): retail loads the host flag
@@ -494,7 +494,7 @@ i32 CMenuPage::CanWrap() {
     return ((CMenuRenderHost*)m_4)->m_20 & 1;
 }
 
-// 0x183e50 - single-list grid layout: center each child in the page rect, place
+// single-list grid layout: center each child in the page rect, place
 // it (vtable +0x24), render the selected one (host Draw) and advance x/y, wrapping
 // to a new column every m_50 rows.
 // @early-stop
@@ -548,7 +548,7 @@ i32 CMenuPage::LayoutOne(i32 ctx) {
     return 1;
 }
 
-// 0x183f70 - step focus forward by m_50 list nodes from the focused item, then
+// step focus forward by m_50 list nodes from the focused item, then
 // focus the landed (focusable) item.
 RVA(0x00183f70, 0x74)
 i32 CMenuPage::FocusForwardN() {
@@ -590,7 +590,7 @@ i32 CMenuPage::FocusForwardN() {
     return SetFocus(found, 1) != 0;
 }
 
-// 0x183ff0 - mirror of FocusForwardN walking node->prev (m_50 nodes backward).
+// mirror of FocusForwardN walking node->prev (m_50 nodes backward).
 RVA(0x00183ff0, 0x75)
 i32 CMenuPage::FocusBackwardN() {
     CMenuItem* cur = m_64;
@@ -631,7 +631,7 @@ i32 CMenuPage::FocusBackwardN() {
     return SetFocus(found, 1) != 0;
 }
 
-// 0x184070 - hit-test at (a0,a1) and focus the item there.
+// hit-test at (a0,a1) and focus the item there.
 RVA(0x00184070, 0x30)
 i32 CMenuPage::FocusAndSelect(i32 a0, i32 a1) {
     CMenuItem* hit = HitTest(a0, a1);
@@ -641,7 +641,7 @@ i32 CMenuPage::FocusAndSelect(i32 a0, i32 a1) {
     return SetFocus(hit, 1) != 0;
 }
 
-// 0x1840a0 - click at (a0,a1): hit-test, focus, activate, then re-focus.
+// click at (a0,a1): hit-test, focus, activate, then re-focus.
 RVA(0x001840a0, 0x57)
 i32 CMenuPage::Click(i32 a0, i32 a1) {
     CMenuItem* hit = HitTest(a0, a1);
@@ -658,7 +658,7 @@ i32 CMenuPage::Click(i32 a0, i32 a1) {
     return 1;
 }
 
-// 0x184100 - hit-test: first child item whose own Hit(x,y) returns true.
+// hit-test: first child item whose own Hit(x,y) returns true.
 RVA(0x00184100, 0x4a)
 CMenuItem* CMenuPage::HitTest(i32 x, i32 y) {
     CMenuNode* node = (CMenuNode*)m_14.GetHeadPosition();
@@ -675,7 +675,7 @@ CMenuItem* CMenuPage::HitTest(i32 x, i32 y) {
     return 0;
 }
 
-// 0x184150 - find the child item whose name matches `s` (linear scan + strcmp).
+// find the child item whose name matches `s` (linear scan + strcmp).
 // @early-stop
 // /GX EH-state wall (~77%): the cur-first walk, the GetName()-by-value temp, the
 // inline strcmp via a `bool match` local (setcc form) and the per-iteration
@@ -704,7 +704,7 @@ CMenuItem* CMenuPage::FindByName(const char* s) {
     return 0;
 }
 
-// 0x184230 - focus the item named by the focused item's forward key (GetKey1),
+// focus the item named by the focused item's forward key (GetKey1),
 // else step focus backward by m_50 nodes.
 // @early-stop
 // /GX EH-state wall (~61%, same family as SelectForward): m_64->GetKey1() ->
@@ -731,7 +731,7 @@ i32 CMenuPage::SelectFwd2() {
     return FocusBackwardN();
 }
 
-// 0x184310 - mirror: focused item's backward key (GetKey2), else FocusForwardN.
+// mirror: focused item's backward key (GetKey2), else FocusForwardN.
 // @early-stop
 // same /GX EH-state wall as SelectFwd2 (~61%). Logic complete; deferred.
 RVA(0x00184310, 0xd2)
@@ -754,7 +754,7 @@ i32 CMenuPage::SelectBack2() {
     return FocusForwardN();
 }
 
-// 0x1843f0 - focus the item named by the forward key, else step focus forward.
+// focus the item named by the forward key, else step focus forward.
 // @early-stop
 // /GX EH-state wall (~61%): KeyFwd -> FindByName -> SetFocus/FocusNext sequence
 // is byte-aligned, residual is the __try state index (push $8 vs $0) + the
@@ -779,7 +779,7 @@ i32 CMenuPage::SelectForward() {
     return FocusNext();
 }
 
-// 0x1844d0 - focus the item named by the backward key, else step focus backward.
+// focus the item named by the backward key, else step focus backward.
 // @early-stop
 // same /GX EH-state wall as SelectForward (~61%): KeyBack -> FindByName ->
 // SetFocus/FocusPrev. Logic complete; deferred.
@@ -803,7 +803,7 @@ i32 CMenuPage::SelectBackward() {
     return FocusPrev();
 }
 
-// 0x183460 - allocate (RezAlloc 0x5c) + placement-construct a child item, Init it,
+// allocate (RezAlloc 0x5c) + placement-construct a child item, Init it,
 // and append on success (else delete).
 // @early-stop
 // /GX placement-new wall (~34%): the allocator (RezAlloc), the Init dispatch
@@ -830,7 +830,7 @@ CMenuItem* CMenuPage::AddItem(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
     return Append(item) ? item : 0;
 }
 
-// 0x1835a0 - like AddItem, but also links the new item to its parent context.
+// like AddItem, but also links the new item to its parent context.
 // @early-stop
 // same /GX placement-new wall as AddItem (the inlined child ctor + EH trylevel).
 RVA(0x001835a0, 0x14b)
@@ -855,7 +855,7 @@ CMenuItem* CMenuPage::AddSubItem(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5)
 DATA(0x005f08f8)
 extern void* g_menuItem2Vtbl;
 
-// 0x1836f0 - allocate (RezAlloc 0x74) + construct the derived item: run the base
+// allocate (RezAlloc 0x74) + construct the derived item: run the base
 // ctor, re-stamp the derived vtable, seed the extra fields, Init it (vtable +0x4),
 // then on success run its derived hook (vtable +0x38) and append (else delete).
 // @early-stop
@@ -886,7 +886,7 @@ CMenuItem2* CMenuPage::AddItem2(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
     return Append(item) ? item : 0;
 }
 
-// 0x183850 - like AddItem2, but the base field-reset is out-of-line (ResetFields,
+// like AddItem2, but the base field-reset is out-of-line (ResetFields,
 // 0x184730) and the new item links its parent context (m_30/m_1c) on success.
 // @early-stop
 // same /GX placement-new wall as AddItem2 (the inlined 6-CString base ctor + the

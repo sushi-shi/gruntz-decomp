@@ -40,7 +40,7 @@ public:
 
 // ===========================================================================
 
-// 0x1586e0 - acquire the element's sound through SoundDevice::Acquire; cache it.
+// acquire the element's sound through SoundDevice::Acquire; cache it.
 RVA(0x001586e0, 0x34)
 i32 LeafElementObj::LoadSoundA(void* src) {
     LeafSoundDevice* dev = (LeafSoundDevice*)m_c->m_sound;
@@ -51,7 +51,7 @@ i32 LeafElementObj::LoadSoundA(void* src) {
     return m_10 != 0;
 }
 
-// 0x158720 - acquire the element's sound through SoundDevice::Decode; cache it.
+// acquire the element's sound through SoundDevice::Decode; cache it.
 RVA(0x00158720, 0x34)
 i32 LeafElementObj::LoadSoundB(void* src) {
     LeafSoundDevice* dev = (LeafSoundDevice*)m_c->m_sound;
@@ -62,6 +62,5 @@ i32 LeafElementObj::LoadSoundB(void* src) {
     return m_10 != 0;
 }
 
-// H-N misc-Gruntz class-metadata sweep (SIZE).
 SIZE_UNKNOWN(LeafSoundDevice);
 SIZE_UNKNOWN(LeafSoundOwner);

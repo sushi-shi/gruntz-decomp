@@ -164,7 +164,6 @@ void CMovingLogic::Update() {
     }
 }
 
-// H-N misc-Gruntz class-metadata sweep (SIZE).
 SIZE_UNKNOWN(MlBoundObject);
 SIZE_UNKNOWN(MlHolder);
 SIZE_UNKNOWN(MlLevel);

@@ -16,10 +16,12 @@
 #ifndef GRUNTZ_DATABUFFER_H
 #define GRUNTZ_DATABUFFER_H
 
+#include <rva.h>
 #include <Mfc.h> // CFile / CMemFile (the readers slurp through MFC files)
 
 #include <Ints.h>
 
+SIZE_UNKNOWN(CDataBuffer);
 class CDataBuffer {
 public:
     CDataBuffer();             // 0x150180

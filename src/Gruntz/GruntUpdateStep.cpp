@@ -549,5 +549,4 @@ i32 CGruntStep::SeekTarget() {
     return 1;
 }
 
-// class-metadata sweep: grunt/game-object family size annotations (SIZE_UNKNOWN = retail size TBD, at .cpp EOF).
 SIZE_UNKNOWN(MgrDims);

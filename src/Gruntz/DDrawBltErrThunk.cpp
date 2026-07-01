@@ -42,7 +42,7 @@ struct DDrawBltHost {
 // (file, line, hr); call displacement reloc-masked.
 extern void __cdecl DirSurfLog(const char* file, i32 line, i32 hr);
 
-// 0x8dd80 - Blt the two RECTs through the held surface; log a nonzero HRESULT.
+// Blt the two RECTs through the held surface; log a nonzero HRESULT.
 RVA(0x0008dd80, 0x31)
 i32 DDrawBltHost::BltChecked() {
     i32 hr = m_0->Blt(&m_8, &m_184);
@@ -52,7 +52,6 @@ i32 DDrawBltHost::BltChecked() {
     return hr;
 }
 
-// class metadata (SIZE sweep, D-G)
 SIZE_UNKNOWN(DDrawBltSurface);
 SIZE_UNKNOWN(DDrawBltHost);
 

@@ -672,7 +672,6 @@ L_moveDone:
     return 1;
 }
 
-// class-metadata sweep: grunt/game-object family size annotations (SIZE_UNKNOWN = retail size TBD, at .cpp EOF).
 SIZE_UNKNOWN(CGruntCombat);
 SIZE_UNKNOWN(CombatButeMgr);
 SIZE_UNKNOWN(CombatButeTree);

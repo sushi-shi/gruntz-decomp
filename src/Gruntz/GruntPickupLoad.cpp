@@ -483,7 +483,6 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
     return 1;
 }
 
-// class-metadata sweep: grunt/game-object family size annotations (SIZE_UNKNOWN = retail size TBD, at .cpp EOF).
 SIZE_UNKNOWN(CTypeKeyColl);
 SIZE_UNKNOWN(GruntPickupStats);
 SIZE_UNKNOWN(MegaCounter);

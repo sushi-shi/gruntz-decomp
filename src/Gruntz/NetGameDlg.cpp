@@ -107,7 +107,7 @@ inline CNetSession* Session() {
 // GetDlgItem/EnableWindow calls + the g_optCfg load pair), but the delinker emits
 // the scope-table push addend (0x8 vs 0x0) and the fs:0 handler-registration relocs
 // differently than the MSVC base obj, so the EH prologue/epilogue can't pair.
-// 0xc4120 - re-enable the four player-config controls, then (when no custom level
+// re-enable the four player-config controls, then (when no custom level
 // name is set) build and discard an empty caption string.
 RVA(0x000c4120, 0xc2)
 i32 CNetGameDlg::EnableControls() {
@@ -127,7 +127,7 @@ i32 CNetGameDlg::EnableControls() {
 // retail pins `this` in esi and `ch` in edi (this cl swaps them), and materializes
 // 0 into the dead `ch` register to drive the `cmp` against the slot flags where
 // this cl re-tests; the swap + 0-in-reg-vs-`test` cascade the register renames.
-// 0xc2ab0 - reconcile one channel's player slot after a join/leave: poll the owner
+// reconcile one channel's player slot after a join/leave: poll the owner
 // window, drop or assign the channel's logical slot, and toggle the two controls.
 RVA(0x000c2ab0, 0x161)
 void CNetGameDlg::UpdateSlot(i32 ch) {
@@ -181,7 +181,7 @@ void CNetGameDlg::UpdateSlot(i32 ch) {
 // guards test the relocatable addresses of CTileExclusiveTriggerSwitchLogic /
 // ReleaseResources (a pointer-to-member null check this cl can't re-spell), which
 // shifts the layout, and the a/b CString destruct-state numbering is EH residue.
-// 0xc4c00 - before the match starts, confirm every player has the same custom
+// before the match starts, confirm every player has the same custom
 // level; otherwise re-enable the dialog and pop the appropriate error modal.
 RVA(0x000c4c00, 0x190)
 void CNetGameDlg::VerifyCustomLevel() {
@@ -215,7 +215,6 @@ void CNetGameDlg::VerifyCustomLevel() {
     }
 }
 
-// H-N misc-Gruntz class-metadata sweep (SIZE).
 SIZE_UNKNOWN(CChanWnd);
 SIZE_UNKNOWN(CCtrl);
 SIZE_UNKNOWN(CGameSettings);

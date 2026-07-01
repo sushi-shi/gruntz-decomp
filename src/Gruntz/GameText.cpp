@@ -120,6 +120,4 @@ CContainerErr::CContainerErr(const char* msg) {
     }
 }
 
-// class metadata (SIZE sweep, D-G)
-SIZE_UNKNOWN(CContainerErr);
 

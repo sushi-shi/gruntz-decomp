@@ -64,7 +64,6 @@ i32 MgrListFind(i32 a1, i32 a2) {
     return 0;
 }
 
-// H-N misc-Gruntz class-metadata sweep (SIZE).
 SIZE_UNKNOWN(MgrFindList);
 SIZE_UNKNOWN(MgrFindNode);
 SIZE_UNKNOWN(MgrFindPayload);

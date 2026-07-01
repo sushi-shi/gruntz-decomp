@@ -13,7 +13,7 @@
 
 // ===========================================================================
 
-// 0x185750 - configure from a template + strings (chaining CMenuItem::Init), then
+// configure from a template + strings (chaining CMenuItem::Init), then
 // resolve the three per-state sprites by "<key>_NORMAL/_SELECTED/_DISABLED".
 // @early-stop
 // scheduling artifact (~91.6%): every instruction is byte-identical (incl. the base
@@ -54,7 +54,7 @@ i32 CMenuItem2::Init(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
     return 1;
 }
 
-// 0x1858d0 - draw the current animation frame at the placed (or argument)
+// draw the current animation frame at the placed (or argument)
 // coordinates, then cache the resulting hit rect.
 // @early-stop
 // regalloc tie (~98.8%): body byte-aligned; the residual is which callee-saved reg
@@ -82,7 +82,7 @@ i32 CMenuItem2::Draw(i32 ctx, i32 x, i32 y) {
     return 1;
 }
 
-// 0x185950 - pick the sprite for the current visual state (m_24: 1/2/3).
+// pick the sprite for the current visual state (m_24: 1/2/3).
 RVA(0x00185950, 0x1b)
 CMenuSprite* CMenuItem2::GetCurrentSprite() {
     switch (m_24) {
@@ -96,7 +96,7 @@ CMenuSprite* CMenuItem2::GetCurrentSprite() {
     return 0;
 }
 
-// 0x185970 - resolve the frame at the current cursor; if absent, rewind the cursor
+// resolve the frame at the current cursor; if absent, rewind the cursor
 // to the sprite's first index and try once more.
 // @early-stop
 // shrink-wrapped callee-save wall (~60.7%): body byte-identical to retail (both GetAt
@@ -117,7 +117,7 @@ CMenuFrame* CMenuItem2::GetCurrentFrame() {
     return s->GetAt(m_68);
 }
 
-// 0x1859c0 - advance the cursor one frame; when the looping flag (0x10000) is clear
+// advance the cursor one frame; when the looping flag (0x10000) is clear
 // or the sprite still has a frame, report whether a frame remains.
 RVA(0x001859c0, 0x4e)
 i32 CMenuItem2::NextFrame() {

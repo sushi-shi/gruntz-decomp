@@ -201,7 +201,6 @@ void UpdateMgrScroll(CGruntzMgr* pm, i32* pMode, i32 snapFlag, i32 unused) {
     pm->m_148 = o->m_24->m_5c->m_4c + 0x60;
 }
 
-// H-N misc-Gruntz class-metadata sweep (SIZE).
 SIZE_UNKNOWN(MgrSub);
 SIZE_UNKNOWN(MgrSub2);
 SIZE_UNKNOWN(ScrollView);

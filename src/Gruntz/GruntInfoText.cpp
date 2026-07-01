@@ -299,6 +299,5 @@ i32 GruntInfoTextHost::winapi_0d95f0_wsprintfA() {
     return 1;
 }
 
-// class-metadata sweep: grunt/game-object family size annotations (SIZE_UNKNOWN = retail size TBD, at .cpp EOF).
 SIZE_UNKNOWN(GruntInfoTextHost);
 SIZE_UNKNOWN(WwdGameRegInfo);

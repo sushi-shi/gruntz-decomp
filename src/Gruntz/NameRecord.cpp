@@ -22,7 +22,7 @@ public:
 };
 
 // ===========================================================================
-// 0x118040 - validate + store the record's names. Returns 0 on any rejection,
+// validate + store the record's names. Returns 0 on any rejection,
 // 1 on success. memset(&m_04,0,212) clears +0x04..+0xd7 before the copies.
 // ===========================================================================
 // @early-stop
@@ -53,5 +53,4 @@ i32 CNameRecord::SetNames(char* name, char* name2, i32 unused) {
     return 1;
 }
 
-// H-N misc-Gruntz class-metadata sweep (SIZE).
 SIZE_UNKNOWN(CNameRecord);

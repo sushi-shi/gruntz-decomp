@@ -146,7 +146,6 @@ i32 LevelRezLoader::BuildLevelRezPath(i32 a1, i32 a2, i32 a3, i32 a4, CString na
     return buf.m_2ec;
 }
 
-// H-N misc-Gruntz class-metadata sweep (SIZE).
 SIZE_UNKNOWN(CSymNode);
 SIZE_UNKNOWN(LevelRezData);
 SIZE_UNKNOWN(LevelRezLoader);

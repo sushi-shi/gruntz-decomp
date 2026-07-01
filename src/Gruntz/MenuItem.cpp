@@ -25,37 +25,37 @@ extern void* g_menuItem2Vtbl;
 
 // ===========================================================================
 
-// 0x1845b0 - return the item name (m_10) by value.
+// return the item name (m_10) by value.
 RVA(0x001845b0, 0x20)
 CString CMenuItem::GetName() {
     return m_10;
 }
 
-// 0x1845d0 - return m_4c by value.
+// return m_4c by value.
 RVA(0x001845d0, 0x20)
 CString CMenuItem::GetField4c() {
     return m_4c;
 }
 
-// 0x1845f0 - return m_50 by value.
+// return m_50 by value.
 RVA(0x001845f0, 0x20)
 CString CMenuItem::GetField50() {
     return m_50;
 }
 
-// 0x184610 - return m_54 by value.
+// return m_54 by value.
 RVA(0x00184610, 0x20)
 CString CMenuItem::GetField54() {
     return m_54;
 }
 
-// 0x184630 - return m_58 by value.
+// return m_58 by value.
 RVA(0x00184630, 0x20)
 CString CMenuItem::GetField58() {
     return m_58;
 }
 
-// 0x184690 - destructor: re-stamp the vtable, run the slot-0xc teardown hook,
+// destructor: re-stamp the vtable, run the slot-0xc teardown hook,
 // then destroy the six CString members (auto, reverse declaration order).
 // Marked `inline` so the derived ~CMenuItem2 (0x1847e0) inlines this base teardown
 // like retail did (/Ob1 only inlines inline-marked fns); MSVC still emits this
@@ -72,7 +72,7 @@ inline CMenuItem::~CMenuItem() {
     Dispatch0c();
 }
 
-// 0x184730 - reset the scalar fields and clear the four trailing CStrings.
+// reset the scalar fields and clear the four trailing CStrings.
 RVA(0x00184730, 0x41)
 void CMenuItem::Reset() {
     m_8 = 0;
@@ -88,7 +88,7 @@ void CMenuItem::Reset() {
     m_58.Empty();
 }
 
-// 0x1847e0 - CMenuItem2 destructor: stamp the derived vtable, run its slot-0xc
+// CMenuItem2 destructor: stamp the derived vtable, run its slot-0xc
 // teardown hook, then the inlined base ~CMenuItem (re-stamp the base vtable, its
 // own slot-0xc hook, and the six CString member dtors). Defined in this TU (not
 // menuitem2) because retail emitted it adjacent to ~CMenuItem (0x184690) so MSVC
@@ -111,7 +111,7 @@ CMenuItem2::~CMenuItem2() {
     // and destroys m_58/m_54/m_50/m_4c/m_14/m_10 (reverse declaration order).
 }
 
-// 0x185460 - configure the item from a template (a0) + strings; resolve the
+// configure the item from a template (a0) + strings; resolve the
 // sub-page via the catalog Lookup; the post-config hook (slot 0x34) can short it.
 RVA(0x00185460, 0xa9)
 i32 CMenuItem::Init(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
@@ -144,13 +144,13 @@ i32 CMenuItem::Init(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
     return 1;
 }
 
-// 0x185510 - tail-dispatch through vtable slot +0x0c (mov eax,[ecx]; jmp [eax+0xc]).
+// tail-dispatch through vtable slot +0x0c (mov eax,[ecx]; jmp [eax+0xc]).
 RVA(0x00185510, 0x5)
 void CMenuItem::Dispatch0c() {
     ((CMenuItemView*)this)->Reset();
 }
 
-// 0x185580 - notify: PostMessage WM_COMMAND to the host window(s) keyed off m_8->m_4.
+// notify: PostMessage WM_COMMAND to the host window(s) keyed off m_8->m_4.
 RVA(0x00185580, 0x4a)
 i32 CMenuItem::Notify() {
     i32 id = m_18;
@@ -167,7 +167,7 @@ i32 CMenuItem::Notify() {
     return 1;
 }
 
-// 0x1855f0 - place the item: pick the row out of the sub-page (m_28), have it lay
+// place the item: pick the row out of the sub-page (m_28), have it lay
 // itself out at the cached or argument coordinates, then cache the placed rect.
 // @early-stop
 // regalloc tie (~99.1%): the whole body is byte-aligned; the residual is which of
@@ -207,7 +207,7 @@ i32 CMenuItem::Place(i32 ctx, i32 x, i32 y) {
     return 1;
 }
 
-// 0x1856d0 - trigger: scroll the host row, notify, then re-activate the host node.
+// trigger: scroll the host row, notify, then re-activate the host node.
 RVA(0x001856d0, 0x25)
 i32 CMenuItem::Trigger() {
     m_8->Scroll();
@@ -216,7 +216,7 @@ i32 CMenuItem::Trigger() {
     return 1;
 }
 
-// 0x185700 - hit-test: is (x,y) inside the cached placed rect?
+// hit-test: is (x,y) inside the cached placed rect?
 RVA(0x00185700, 0x4b)
 i32 CMenuItem::Hit(i32 x, i32 y) {
     if (m_34 == (i32)0xeeeeeeee) {

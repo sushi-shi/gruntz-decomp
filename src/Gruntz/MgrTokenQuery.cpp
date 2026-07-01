@@ -21,7 +21,7 @@ struct CTokenMgr {
 DATA(0x002459b0)
 extern CTokenMgr g_tokenMgr;
 
-// 0x099d10 - __cdecl free helper: reset, dispatch(arg), return result != 0.
+// __cdecl free helper: reset, dispatch(arg), return result != 0.
 RVA(0x00099d10, 0x20)
 i32 QueryToken(i32 arg) {
     g_tokenMgr.Reset();

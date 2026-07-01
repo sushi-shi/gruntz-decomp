@@ -251,7 +251,6 @@ i32 CGruntMover::Step(CGruntM* g) {
     }
 }
 
-// class-metadata sweep: grunt/game-object family size annotations (SIZE_UNKNOWN = retail size TBD, at .cpp EOF).
 SIZE_UNKNOWN(CCoordXY);
 SIZE_UNKNOWN(CGruntM);
 SIZE_UNKNOWN(CGruntMover);

@@ -192,5 +192,3 @@ double CMotionState::ArrivalVelY(double target) {
     return (m_30 > 0.0) ? r : -r;
 }
 
-// H-N misc-Gruntz class-metadata sweep (SIZE).
-SIZE_UNKNOWN(CMotionState);

@@ -159,7 +159,6 @@ i32 CGruntSprintAnim::BuildGruntSprintAnimation() {
     return 1;
 }
 
-// class-metadata sweep: grunt/game-object family size annotations (SIZE_UNKNOWN = retail size TBD, at .cpp EOF).
 SIZE_UNKNOWN(CGruntSprintAnim);
 SIZE_UNKNOWN(CGsFactoryHolder);
 SIZE_UNKNOWN(CGsGameReg);

@@ -10,6 +10,7 @@
 #ifndef GRUNTZ_LOGICRECORD_H
 #define GRUNTZ_LOGICRECORD_H
 
+#include <rva.h>
 #include <Ints.h>
 
 // The serializer the record reads/writes itself through. Its vtable exposes the
@@ -17,6 +18,7 @@
 // 12); modeled as a polymorphic class with the leading slots as dummy virtuals
 // so `ar->Read(...)` lowers to `mov edx,[ar]; call [edx+0x30]` (__thiscall, no
 // cleanup). External (engine) - no bodies emitted here.
+SIZE_UNKNOWN(LogicArchive);
 class LogicArchive {
 public:
     virtual void Slot00();
@@ -36,12 +38,14 @@ public:
 
 // The polymorphic sub-record held at m_18: virtual slot 0 is the (scalar-
 // deleting) destructor, slot 1 a per-frame step. External.
+SIZE_UNKNOWN(LogicSub);
 class LogicSub {
 public:
     virtual void Destroy(u32 flags);                     // slot 0x00
     virtual i32 Step(i32 a, i32 mode, void* c, void* d); // slot 0x04
 };
 
+SIZE_UNKNOWN(CLogicRecord);
 class CLogicRecord {
 public:
     // Non-polymorphic model: the retail vtable (0x5efb80) lives in other TUs, so
@@ -73,6 +77,7 @@ public:
 };
 
 // m_170 points at an object exposing the cached value at +0x188.
+SIZE_UNKNOWN(LogicTarget);
 struct LogicTarget {
     char m_pad[0x188];
     i32 m_188;
@@ -81,9 +86,11 @@ struct LogicTarget {
 // The resolver sub-object embedded at m_0c->m_08 + 0x48; its method
 // (engine helper 0x1b8760, __thiscall) resolves a slot into an out-pointer and
 // returns whether it succeeded.
+SIZE_UNKNOWN(LogicResolver);
 struct LogicResolver {
     i32 Resolve(void* slot, void** out); // 0x1b8760
 };
+SIZE_UNKNOWN(LogicContext);
 struct LogicContext {
     void* m_00;
     void* m_04;

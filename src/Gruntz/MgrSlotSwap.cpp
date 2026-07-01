@@ -68,7 +68,6 @@ i32 CSlotHolder::DoSwap() {
     return 1;
 }
 
-// H-N misc-Gruntz class-metadata sweep (SIZE).
 SIZE_UNKNOWN(CSlotHolder);
 SIZE_UNKNOWN(RegLevel);
 SIZE_UNKNOWN(RegM30);

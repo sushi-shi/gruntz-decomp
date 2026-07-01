@@ -24,6 +24,7 @@
 // and its dtor (FUN_0051f640) takes (this, 0x238, 4, &LoadOptions); both are
 // out-of-line so the calls reloc-mask. Only the size (0x238) + that it is a
 // destructible member (EH state 4) are load-bearing.
+SIZE_UNKNOWN(CGruntzMgrOptions);
 struct CGruntzMgrOptions {
     CGruntzMgrOptions();
     ~CGruntzMgrOptions();
@@ -46,6 +47,7 @@ struct CGruntzSoundInnerZ {
 // stored elements are CState* (the pushed game states) whose Update() (slot 4,
 // +0x10) reports the state id; SetSize/SetAtGrow/RemoveAt are the out-of-line
 // NAFXCW helpers (reloc-masked).
+SIZE_UNKNOWN(CStateStackZ);
 struct CStateStackZ {
     void* m_vptr;                        // +0x00 CObject vptr
     CState** m_pData;                    // +0x04 element store
@@ -71,9 +73,11 @@ struct CGruntzSoundZ {
 // the active world view (the scroll/camera holder the FP scaler reads); +0x28 a
 // sub-controller whose +0x2c object carries a teardown thiscall; +0x520 a 4-slot
 // status array the paused-state poll walks (status id at each slot's +0x20).
+SIZE_UNKNOWN(CWorldSub2c);
 struct CWorldSub2c {
     void Teardown(); // FUN_00537a80 (this)
 };
+SIZE_UNKNOWN(CWorldSub28);
 struct CWorldSub28 {
     char m_pad[0x2c];
     CWorldSub2c* m_2c; // +0x2c
@@ -81,6 +85,7 @@ struct CWorldSub28 {
 struct CWorldView;
 // A polymorphic sub-object held in the world at +0x1c, dispatched through a
 // pointer-to-pointer (`*m_1c`) then vtbl slot 10 (+0x28).
+SIZE_UNKNOWN(CWorldDispatch);
 struct CWorldDispatch {
     struct Vtbl {
         void* s0[10];
@@ -88,10 +93,12 @@ struct CWorldDispatch {
     }* vtbl;
 };
 // The world's +0x4 sub-object exposes a map-index field at +0x14.
+SIZE_UNKNOWN(CWorldSub4);
 struct CWorldSub4 {
     char m_pad0[0x14];
     i32 m_14; // +0x14
 };
+SIZE_UNKNOWN(CWorldZ);
 struct CWorldZ {
     char m_pad0[0x4];
     CWorldSub4* m_4; // +0x04
@@ -107,6 +114,7 @@ struct CWorldZ {
 // needed - Release (slot 2, +0x8) and GetConnectionSettings (slot 8, +0x20,
 // called twice in the size-probe / fill-buffer idiom). The call rel32/IAT
 // displacements reloc-mask; only the slot offsets + arg shapes are load-bearing.
+SIZE_UNKNOWN(IDirectPlayLobbyZ);
 struct IDirectPlayLobbyZ {
     struct Vtbl {
         void *slot0, *slot1;
@@ -121,6 +129,7 @@ struct IDirectPlayLobbyZ {
     }* vtbl;
 };
 
+SIZE(CGruntzMgr, 0xa30);
 class CGruntzMgr : public WAP32::CGameMgr {
 public:
     CGruntzMgr();

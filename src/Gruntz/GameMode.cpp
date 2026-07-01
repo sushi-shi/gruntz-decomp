@@ -1397,7 +1397,6 @@ i32 CMenuState::FrameSlot28(i32) {
     return 1;
 }
 
-// class metadata (SIZE sweep, D-G)
 SIZE_UNKNOWN(CResRegistry);
 SIZE_UNKNOWN(CPooledRes);
 SIZE_UNKNOWN(CResLeafRegistry);
@@ -1436,20 +1435,4 @@ SIZE_UNKNOWN(CBootyM4Sub);
 SIZE_UNKNOWN(CBootyOwnerView);
 SIZE_UNKNOWN(CMenuMusicPlayer);
 SIZE_UNKNOWN(CMenuMusic);
-SIZE_UNKNOWN(CGameModeBase);
-SIZE_UNKNOWN(CGMEntity);
-SIZE_UNKNOWN(CGMEntityList);
-SIZE_UNKNOWN(CGMInputObj);
-SIZE_UNKNOWN(CGMInputVtbl);
-SIZE_UNKNOWN(CGMSound);
-SIZE_UNKNOWN(CGMSoundEntry);
-SIZE_UNKNOWN(CGMOwner);
-SIZE_UNKNOWN(CGMBlitTarget);
-SIZE_UNKNOWN(CGMView);
-SIZE_UNKNOWN(CGMMenuUI);
-SIZE_UNKNOWN(CGMVerRect);
-SIZE_UNKNOWN(CMenuState);
-SIZE_UNKNOWN(CCreditsState);
-SIZE_UNKNOWN(CBootyState);
-SIZE_UNKNOWN(CMultiBootyState);
 

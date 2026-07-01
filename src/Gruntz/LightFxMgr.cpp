@@ -33,7 +33,7 @@ struct LfxReg {
 extern "C" void LfxRegisterTable(void* table, i32 key); // 0x14dcf0
 
 // ===========================================================================
-// 0x9dad0 - Init: bind to the registry, fetch the shade cache, build the grey +
+// Init: bind to the registry, fetch the shade cache, build the grey +
 // additive + eight subtractive color tables, and register the grey table (key 9).
 // ===========================================================================
 RVA(0x0009dad0, 0x14a)
@@ -101,7 +101,7 @@ i32 CLightFxMgr::Init(CGameRegistry* reg, void* owner) {
 }
 
 // ===========================================================================
-// 0x9dc80 - Reset: zero the bound pointers and all 10 table slots.
+// Reset: zero the bound pointers and all 10 table slots.
 // ===========================================================================
 RVA(0x0009dc80, 0x1d)
 void CLightFxMgr::Reset() {
@@ -113,7 +113,7 @@ void CLightFxMgr::Reset() {
 }
 
 // ===========================================================================
-// 0x9dcb0 - Push: apply the shade table chosen by `anchor` (clamped to [0,10)) to
+// Push: apply the shade table chosen by `anchor` (clamped to [0,10)) to
 // every frame of `imgSet`: re-type the frames (slot), then write the table's
 // resolved format word.
 // ===========================================================================
@@ -131,5 +131,4 @@ i32 CLightFxMgr::Push(CImageSet* imgSet, i32 anchor, i32 slot) {
     return 1;
 }
 
-// H-N misc-Gruntz class-metadata sweep (SIZE).
 SIZE_UNKNOWN(LfxReg);

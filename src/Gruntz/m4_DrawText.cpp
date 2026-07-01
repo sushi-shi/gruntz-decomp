@@ -1,7 +1,7 @@
 // m4_DrawText.cpp - a dialog label text-measure/render helper re-homed out of
 // src/Stub/ApiCallers.cpp (matcher-4, low-RVA half).
 //
-// 0x00021f20: measure a CString label into the item's rect (DrawTextA with
+// measure a CString label into the item's rect (DrawTextA with
 // DT_CALCRECT-ish flags 0x420), clamp the used width into g_62b434, then run the
 // engine text renderer at that origin. The scratch draw object is the same
 // three-level severus/imgHolder hierarchy as m4_FlashRect (vtables in other TUs
@@ -101,7 +101,7 @@ namespace m4 {
     }
 
     // -------------------------------------------------------------------------
-    // 0x00022160: the password edit-control render path. Copies the control's
+    // the password edit-control render path. Copies the control's
     // CString (this->m_1c), and when Ctrl is held, masks every char with '*';
     // runs a blink countdown (g_62b438) toggling g_62b43c; then (unless blinked-
     // off + empty) selects the control font, DrawTextA-measures the masked text,
@@ -196,7 +196,7 @@ namespace m4 {
     }
 
     // -------------------------------------------------------------------------
-    // 0x00022810: a centered "3D" text renderer. Selects one of two control
+    // a centered "3D" text renderer. Selects one of two control
     // fonts, sets transparent bk, copies a source CString, DT_CALCRECT-measures
     // it centered in the dst rect, and draws it centered - first a black shadow
     // pass offset by (dx,dy) when the shadow flag is set, then the RGB(r,g,b)

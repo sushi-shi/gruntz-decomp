@@ -24,7 +24,7 @@ struct CArrayE40 {
     void SetSize(i32 nNewSize, i32 nGrowBy);
 };
 
-// 0x17f390 - CArrayE40::SetSize: the canonical MFC CArray::SetSize over a 40-byte
+// CArrayE40::SetSize: the canonical MFC CArray::SetSize over a 40-byte
 // POD element.
 //
 // @early-stop
@@ -80,6 +80,5 @@ void CArrayE40::SetSize(i32 nNewSize, i32 nGrowBy) {
     }
 }
 
-// H-N misc-Gruntz class-metadata sweep (SIZE).
 SIZE_UNKNOWN(CArrayE40);
 SIZE_UNKNOWN(E40);

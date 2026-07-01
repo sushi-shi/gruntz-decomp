@@ -81,7 +81,6 @@ void CLobbyGroupMgr::PopulateGroupList(HWND hList, i32 flags) {
     }
 }
 
-// H-N misc-Gruntz class-metadata sweep (SIZE).
 SIZE_UNKNOWN(CLobbyGroupMgr);
 SIZE_UNKNOWN(LobbyIface);
 SIZE_UNKNOWN(LobbyNode);

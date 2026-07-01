@@ -36,6 +36,7 @@ extern const double g_motionNegHalf; // 0x5f04f8 (-0.5)
 extern const double g_motionZero;    // 0x5f0500 (0.0)
 extern const double g_motionNegTwo;  // 0x5f0508 (-2.0)
 
+SIZE_UNKNOWN(CMotionState);
 class CMotionState {
 public:
     CMotionState(); // 0x136d0

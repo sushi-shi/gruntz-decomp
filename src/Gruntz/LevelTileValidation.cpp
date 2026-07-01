@@ -680,7 +680,6 @@ done:
     return 1;
 }
 
-// H-N misc-Gruntz class-metadata sweep (SIZE).
 SIZE_UNKNOWN(CLevelValidator);
 SIZE_UNKNOWN(GameObjAux7c);
 SIZE_UNKNOWN(GameObjAux7cVtbl);

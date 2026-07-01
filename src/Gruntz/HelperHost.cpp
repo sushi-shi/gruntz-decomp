@@ -54,7 +54,7 @@ public:
 };
 
 // ===========================================================================
-// 0x164790 - reset/arm the helper from (a, b); seeds m_3c off the owner context.
+// reset/arm the helper from (a, b); seeds m_3c off the owner context.
 // ===========================================================================
 // @early-stop
 // regalloc/scheduling wall (topic:regalloc): logic + every member store are
@@ -80,7 +80,7 @@ i32 HelperHost::Helper_164790(i32 a, i32 b) {
 }
 
 // ===========================================================================
-// 0x166040 - look up a named object in the owner's map, then fetch element[idx]
+// look up a named object in the owner's map, then fetch element[idx]
 // when in range; cache it at +0x78 and return whether it is non-null.
 // ===========================================================================
 // @early-stop
@@ -103,7 +103,6 @@ i32 HelperHost::Helper_166040(i32 key, i32 idx) {
     return v != 0;
 }
 
-// H-N misc-Gruntz class-metadata sweep (SIZE).
 SIZE_UNKNOWN(HelperHostCtx);
 SIZE_UNKNOWN(HelperHostMap);
 SIZE_UNKNOWN(HelperHostObj);

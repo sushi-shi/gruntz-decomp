@@ -151,7 +151,6 @@ struct CLobbySync {
 
 void ReportError(const char* file, i32 line, i32 code, i32 extra); // 0x1776a0
 
-// 0xc01d0
 RVA(0x000c01d0, 0x8c)
 i32 CLobbySync::Advance() {
     i32 next10 = m_10 + 1;
@@ -178,7 +177,6 @@ i32 CLobbySync::Advance() {
     return 1;
 }
 
-// 0xc00f0
 RVA(0x000c00f0, 0xaf)
 void CLobbySync::Reconcile() {
     i32 withFlag = 0;
@@ -227,7 +225,6 @@ void CLobbySync::Reconcile() {
     }
 }
 
-// 0xbfd40
 RVA(0x000bfd40, 0x116)
 i32 CLobbySync::SendBatch() {
     i32 count = 0;
@@ -274,7 +271,6 @@ i32 CLobbySync::SendBatch() {
 // @early-stop
 // regalloc tie (~93%): logic byte-exact, retail keeps obj in eax / reads the flag
 // byte into cl; cl's MSVC spills obj to ecx then reads flag into al.
-// 0xbf700
 RVA(0x000bf700, 0x82)
 i32 CLobbySync::Dispatch(i32 a, LobbyMsg* b, i32 c) {
     if (!b) {
@@ -304,7 +300,6 @@ i32 CLobbySync::Dispatch(i32 a, LobbyMsg* b, i32 c) {
 // code bytes byte-identical (proven llvm-objdump -dr base vs target); MSVC emits
 // the 0xff-byte index table + jump table as separate $L symbols while the delinker
 // folds them into the fn symbol, so the table region can't pair.
-// 0xbf7c0
 RVA(0x000bf7c0, 0x95)
 i32 CLobbySync::DispatchMsg(LobbyMsg* m, i32 arg2) {
     if (!m) {
@@ -334,7 +329,6 @@ i32 CLobbySync::DispatchMsg(LobbyMsg* m, i32 arg2) {
 // @early-stop
 // regalloc/spill wall (~67%): logic correct, retail spills `this` (dead slot) +
 // caches &m_20[0]; this cl allocates the slot pointers differently.
-// 0xbfb40
 RVA(0x000bfb40, 0xe2)
 i32 CLobbySync::SendAll() {
     i32 count = 0;
@@ -385,7 +379,6 @@ extern unsigned char gA_data; // 0x64a8b7
 // @early-stop
 // regalloc cascade (~84%): logic byte-exact; ecx/edx + esi/eax allocation for the
 // modulo index and arg differ, plus the M_c0fd0 sibling (Boundary_0c0fd0) reloc.
-// 0xbfeb0
 RVA(0x000bfeb0, 0xfa)
 i32 CLobbySync::SendOne(CCluster0c* slot, i32 val) {
     if (!slot) {
@@ -570,7 +563,6 @@ i32 CLobbySync::Tick() {
     return SendBatch() + SendAll();
 }
 
-// H-N misc-Gruntz class-metadata sweep (SIZE).
 SIZE_UNKNOWN(CLobbySync);
 SIZE_UNKNOWN(CNetEndpoint);
 SIZE_UNKNOWN(CNetEndpointVtbl);

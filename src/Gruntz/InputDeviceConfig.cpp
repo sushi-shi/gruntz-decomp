@@ -65,5 +65,4 @@ CString CInputConfig::LoadInputDeviceConfig(i32 unused) {
     return name;
 }
 
-// H-N misc-Gruntz class-metadata sweep (SIZE).
 SIZE_UNKNOWN(CInputConfig);

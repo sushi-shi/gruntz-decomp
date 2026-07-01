@@ -18,6 +18,7 @@
 // these leaves; declared with NO body so the `call rel32` displacement is
 // reloc-masked in objdiff.
 // ---------------------------------------------------------------------------
+#include <rva.h>
 #include <Gruntz/CString.h>
 
 // ---------------------------------------------------------------------------
@@ -36,6 +37,7 @@
 // ---------------------------------------------------------------------------
 extern void* g_containerErrVtbl;
 
+SIZE_UNKNOWN(CContainerErr);
 class CContainerErr {
 public:
     CContainerErr(const char* msg);

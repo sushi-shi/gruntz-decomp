@@ -230,7 +230,6 @@ i32 CGroupBroadcast::Broadcast() {
     return 1;
 }
 
-// class metadata (SIZE sweep, D-G)
 SIZE_UNKNOWN(CCenterTarget);
 SIZE_UNKNOWN(CMapHolderB);
 SIZE_UNKNOWN(CMapHolderA);

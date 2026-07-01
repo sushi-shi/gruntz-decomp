@@ -206,7 +206,6 @@ i32 CFaderShape::Setup(FInit* pInit) {
     return 1;
 }
 
-// class metadata (SIZE sweep, D-G)
 SIZE_UNKNOWN(ShadeCache);
 SIZE_UNKNOWN(FShadeSurf);
 SIZE_UNKNOWN(FInitPal);

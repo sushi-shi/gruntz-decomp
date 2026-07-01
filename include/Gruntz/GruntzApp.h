@@ -12,6 +12,7 @@
 #include <Mfc.h>
 #include <Wap32/Wap32.h>
 
+SIZE(CGruntzApp, 0x254);
 class CGruntzApp : public CGameApp {
 public:
     CGruntzApp();                   // ctor

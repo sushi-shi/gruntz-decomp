@@ -34,7 +34,7 @@ public:
     void* m_94; // +0x94  list head (stores node + 4)
 };
 
-// 0x137a80 - destroy every node's +0x6c sub-object down the +0x94 list, then run
+// destroy every node's +0x6c sub-object down the +0x94 list, then run
 // the final cleanup.
 RVA(0x00137a80, 0x3d)
 void MinervaInner::Free() {
@@ -47,6 +47,5 @@ void MinervaInner::Free() {
     Cleanup();
 }
 
-// H-N misc-Gruntz class-metadata sweep (SIZE).
 SIZE_UNKNOWN(MinervaNode);
 SIZE_UNKNOWN(MinervaSub);

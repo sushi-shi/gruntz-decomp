@@ -240,7 +240,5 @@ RVA(0x00112820, 0xc)
 void CGruntzApp::Stub_112820() {}
 
 // size 0x254 recovered from operator-new sites (gruntz.analysis.news)
-SIZE(CGruntzApp, 0x254);
 
-// class-metadata sweep: grunt/game-object family size annotations (SIZE_UNKNOWN = retail size TBD, at .cpp EOF).
 SIZE_UNKNOWN(U10O);

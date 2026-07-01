@@ -128,7 +128,7 @@ struct CMgrPersistObj {
     i32 Init(); // 0xface0
 };
 
-// 0xfb1c0 - CMgrPersistObj::Save: gate on the writer + the settings singleton, then
+// CMgrPersistObj::Save: gate on the writer + the settings singleton, then
 // stream every persisted field through the writer's Write(buf,len) virtual.
 RVA(0x000fb1c0, 0x168)
 i32 CMgrPersistObj::Save(CMgrWriter* w) {
@@ -168,7 +168,7 @@ i32 CMgrPersistObj::Save(CMgrWriter* w) {
 // the transient arg-push area, where this cl reserves the whole block (`sub esp,
 // 0x1c`), shifting every esp-relative displacement by 8; plus the EH scope-table
 // symbol is named/represented differently by the delinker.  Logic is complete.
-// 0xface0 - CMgrPersistObj::Init: hide the cursor, gate on the level being ready,
+// CMgrPersistObj::Init: hide the cursor, gate on the level being ready,
 // draw the "loading imagez" splash (once), resolve the GAME_IMAGEZ rez and load it
 // into the image-set, then mark the object started.
 RVA(0x000face0, 0x17c)
@@ -207,7 +207,6 @@ i32 CMgrPersistObj::Init() {
     return 1;
 }
 
-// H-N misc-Gruntz class-metadata sweep (SIZE).
 SIZE_UNKNOWN(CDisplayMgr);
 SIZE_UNKNOWN(CLevelData);
 SIZE_UNKNOWN(CMgrPersistObj);

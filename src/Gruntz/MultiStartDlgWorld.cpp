@@ -69,7 +69,6 @@ i32 CMultiStartDlg::SetupWorldCombo() {
     return 1;
 }
 
-// H-N misc-Gruntz class-metadata sweep (SIZE).
 SIZE_UNKNOWN(MpDlgHost);
 SIZE_UNKNOWN(MpSymItem);
 SIZE_UNKNOWN(MpSymTable);

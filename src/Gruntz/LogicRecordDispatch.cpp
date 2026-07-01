@@ -236,7 +236,6 @@ i32 LogicDispatchB(LogicDispatchOwner* owner) {
     return 1;
 }
 
-// H-N misc-Gruntz class-metadata sweep (SIZE).
 SIZE_UNKNOWN(LogicDispatchOwner);
 SIZE_UNKNOWN(LogicDispatchRecord);
 SIZE_UNKNOWN(LogicSubRec);

@@ -4,6 +4,9 @@
 #ifndef GRUNTZ_GRUNTZ_GAMEMODEBASE_H
 #define GRUNTZ_GRUNTZ_GAMEMODEBASE_H
 
+#include <rva.h>
+
+SIZE_UNKNOWN(CGameModeBase);
 struct CGameModeBase {
     void BaseCleanup(); // thiscall, no-body -> reloc-masked external call
 };

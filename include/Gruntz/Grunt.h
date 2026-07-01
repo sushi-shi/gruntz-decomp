@@ -30,11 +30,13 @@
 //   AddC(a, b, c)  (Powerup; 3 args)
 //   AddD(a, b)    (Selected; 2 args)
 // ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CSpriteRegRecord);
 struct CSpriteRegRecord {
     char m_pad0[0x8];
     u32 m_8; // +0x08  failure flag word (|= 0x10000)
 };
 
+SIZE_UNKNOWN(CSpriteRegistrar);
 class CSpriteRegistrar {
 public:
     i32 AddA(i32 a, i32 b, i32 c);
@@ -53,6 +55,7 @@ public:
 // object), call sprite->m_7c->[0x10](sprite) (init), and reach the registrar at
 // sprite->m_7c->m_18. Layout-free apart from m_7c.
 // ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CSpriteInner);
 struct CSpriteInner {
     char m_pad0[0x10];
     void (*m_init)(void* self); // +0x10  init virtual (called with sprite)
@@ -62,6 +65,7 @@ struct CSpriteInner {
     i32 m_bc; // +0xbc  (rolling-ball speed; LoadGruntAbilityTuning)
 };
 
+SIZE_UNKNOWN(CHudSprite);
 struct CHudSprite {
     // The CGameObject-base name/geometry setters the one-shot "SingleAnimation"
     // sprite (BuildGruntLoseItemAnimation) drives: ApplyName(key) (0x150540, ret 4)
@@ -82,6 +86,7 @@ struct CHudSprite {
 // The on-screen cue gate's visibility rect, reached as
 // (g->m_30->m_24->m_5c + 0x40): {left, top, right, bottom}. The viewport's m_5c is
 // a base address (modeled i32 in CGameRegistry.h), so the +0x40 view is a cast.
+SIZE_UNKNOWN(CCueRect);
 struct CCueRect {
     i32 left;   // +0x00
     i32 top;    // +0x04
@@ -93,6 +98,7 @@ struct CCueRect {
 // this->m_10 (a HUD/level geometry source). The factory's two geometry args are
 // m_10->m_5c and m_10->m_60 (the latter optionally minus a per-sprite constant).
 // ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CGruntHud);
 struct CGruntHud {
     char m_pad0[0x8];
     i32 m_8; // +0x08   (dirty-flag word; BuildEntrance |= 0x20000)
@@ -123,6 +129,7 @@ struct CGruntHud {
 // (factory-this = g->m_30->m_8) + the 6-arg push fall out; external/no-body so
 // the `call rel32` reloc-masks.
 // ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CSpriteFactory);
 struct CSpriteFactory {
     CHudSprite* CreateSprite(i32 kind, i32 geoB, i32 geoA, i32 hint, const char* name, i32 flags);
 };
@@ -172,22 +179,26 @@ CString __stdcall operator+(const CString& lhs, const char* rhs);
 // geometry setter runs on; m_1b4 is the active-anim descriptor pointer.
 // ---------------------------------------------------------------------------
 // An animation-frame element the Idle resolver reads a sub-arg from.
+SIZE_UNKNOWN(CAnimElem);
 struct CAnimElem {
     char m_pad0[0x14];
     i32 m_14; // +0x14
 };
 
+SIZE_UNKNOWN(CAnimDescColl);
 struct CAnimDescColl {
     char m_pad0[0xc];
     CAnimElem** m_c; // +0x0c  element vector (Idle reads *m_c = first elem)
     i32 m_10;        // +0x10  element count (Idle: >0 gate)
 };
 
+SIZE_UNKNOWN(CGruntAnimSub);
 class CGruntAnimSub {
 public:
     void SetGeometry(i32 srcSprite); // (this = animState+0x1a0)
 };
 
+SIZE_UNKNOWN(CGruntAnimState);
 class CGruntAnimState {
 public:
     void SetAnim(const char* key);              // (ret 4)
@@ -201,12 +212,14 @@ public:
 
 // The animation-set record the lookup tree (a CButeTree) returns;
 // stored into CGrunt::m_14->m_1c. m_1c holds the resolved anim-set node.
+SIZE_UNKNOWN(CAnimLookupNode);
 struct CAnimLookupNode {
     char m_pad0[0x1c];
     void* m_1c; // +0x1c
 };
 
 // CButeTree::Find (__thiscall ret 4) - the shared keyed lookup.
+SIZE_UNKNOWN(CAnimLookupTree);
 class CAnimLookupTree {
 public:
     void* Find(const char* key); // stub
@@ -233,6 +246,7 @@ extern "C" i32 GruntRand(); // stub
 // ---------------------------------------------------------------------------
 class CGrunt; // fwd-declared for CueA's first arg
 
+SIZE_UNKNOWN(CGruntCueSink);
 class CGruntCueSink {
 public:
     void Cue(i32 a, i32 b, i32 c, i32 d, i32 e);             // via thunk 0x33b4
@@ -255,11 +269,13 @@ i32 CueVisible(i32 viewport, i32 x, i32 y);
 // ---------------------------------------------------------------------------
 struct CSprite; // opaque looked-up sprite
 
+SIZE_UNKNOWN(CEntranceHashTable);
 class CEntranceHashTable {
 public:
     i32 Lookup(const char* szName, CSprite** ppOut); // (ret 8)
 };
 
+SIZE_UNKNOWN(CEntranceSpriteMgr);
 struct CEntranceSpriteMgr {
     // 1-arg lookup returning the resolved sprite directly (the EXIT/RUN loaders
     // use this form; the 2-arg m_10map.Lookup writes through an out-param instead).
@@ -272,10 +288,12 @@ struct CEntranceSpriteMgr {
 // The grunt's exit-animation holder at CGrunt+0x150 (a 4-byte member just before
 // the entrance player pointer). BuildGruntExitAnimation drives its Apply (0x6b2e0,
 // 2-arg __thiscall) with the resolved sprite. External/no-body (reloc-masked).
+SIZE_UNKNOWN(CGruntExitHolder);
 struct CGruntExitHolder {
     void Apply(CSprite* spr, i32 flag); // 0x6b2e0
 };
 
+SIZE_UNKNOWN(CEntranceResMgr);
 struct CEntranceResMgr {
     char m_pad0[0x2c];
     CEntranceSpriteMgr* m_2c; // +0x2c
@@ -283,6 +301,7 @@ struct CEntranceResMgr {
 
 // The active-anim descriptor the entrance player exposes (its first element's
 // +0x14 frame number is the 2nd arg the frame helper consumes).
+SIZE_UNKNOWN(CEntranceAnimDescColl);
 struct CEntranceAnimDescColl {
     // Bounds-checked indexer (FUN_0046b270): returns the idx'th element ptr (or 0
     // when out of range). The EXIT/RUN loaders read elem[+0x14] (frame number).
@@ -293,6 +312,7 @@ struct CEntranceAnimDescColl {
     i32 m_10;  // +0x10  element count (>0 gate)
 };
 
+SIZE_UNKNOWN(CEntranceAnimSub);
 class CEntranceAnimSub {
 public:
     void SetGeometry(i32 srcSprite); // FUN_0055c2d0 (this = player+0x1a0, ret 4)
@@ -309,11 +329,13 @@ public:
 
 // A per-cell entrance record (0x68-byte stride at CGrunt+0x474). GetName(flag)
 // resolves the cell's frame name (__thiscall, 1 arg). External (reloc-masked).
+SIZE_UNKNOWN(CGruntCell);
 class CGruntCell {
 public:
     const char* GetName(i32 flag);
 };
 
+SIZE_UNKNOWN(CEntranceAnimPlayer);
 class CEntranceAnimPlayer {
 public:
     void SetAnimFrame(const char* name, i32 frame); // FUN_005504d0-class (ret 8)
@@ -367,6 +389,7 @@ void __stdcall EntranceApplyFrame(const char* keyStr, i32 frameNum);
 // and returns the new active-anim-set node that gets latched into m_14->m_1c.
 // External/no-body (reloc-masked); the `push key; mov ecx, &g_entranceAnimSrc;
 // call` is the load-bearing shape.
+SIZE_UNKNOWN(CEntranceAnimSrc);
 class CEntranceAnimSrc {
 public:
     i32 LookupAnimSet(const char* key); // FUN_0056d190 (ret 4)
@@ -384,10 +407,12 @@ extern CEntranceAnimSrc g_entranceAnimSrc; // DAT_006bf620
 // reject by single-letter type code use the scratch form for the later codes (so
 // each reject is followed by the scratch CString teardown loop, the shared
 // loop-strength-reduction wall from docs/patterns).
+SIZE_UNKNOWN(CAnimNameRecord);
 class CAnimNameRecord {
 public:
     char* m_name; // +0x00
 };
+SIZE_UNKNOWN(CAnimNameResolver);
 class CAnimNameResolver {
 public:
     char** GetNameRecord(void* node);            // thunk_FUN_004310f0 (ret 4)
@@ -442,6 +467,7 @@ extern double g_dirConstN1; // DAT_005e9a38 = -1.0
 // The second-resolver scratch CString[] (data @0x6bf66c, count @0x6bf670). Each
 // reject path that resolves via GetNameRecords tears these down (Release each
 // non-null slot, count times). Reloc-masked DATA.
+SIZE_UNKNOWN(CAnimScratchString);
 struct CAnimScratchString {
     char* m_str;    // +0x00  (4-byte stride for the teardown walk)
     void Release(); // FUN_001b9b93 (engine CString release)
@@ -482,6 +508,7 @@ extern const char g_codeH[]; // 0x60d7fc "H"  (arrival-recycle reject code)
 // first dword carries the occupancy/flag bits) and m_c/m_10 the x/y in-bounds
 // limits. Reloc-masked DATA; a struct (mangles `U`) gives the retail name.
 // ---------------------------------------------------------------------------
+SIZE_UNKNOWN(GruntBoard);
 struct GruntBoard {
     char m_pad0[0x8];
     char** m_8; // +0x08  row table: m_8[y][x] -> tile record
@@ -494,10 +521,12 @@ struct GruntBoard {
 // reaches. All external (reloc-masked).
 struct GruntSoundEntry; // map value: per-effect sound entry (factory at +0x10)
 struct GruntSoundInner; // m_30->m_28: holds the lookup map at +0x10
+SIZE_UNKNOWN(GruntSoundCat);
 struct GruntSoundCat {  // m_30: the sound-category object
     char m_pad0[0x28];
     GruntSoundInner* m_28; // +0x28  -> the lookup map lives at (*m_28)+0x10
 };
+SIZE_UNKNOWN(WwdGameReg);
 struct WwdGameReg {
     char m_pad0[0x30];
     GruntSoundCat* m_30; // +0x30  the sound category (struck-voice lookup root)
@@ -519,19 +548,24 @@ extern WwdGameReg* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
 // GruntSoundEntry whose +0x10 sub-object owns a sample factory (GetItem @0x135d70,
 // __thiscall ret 0 -> new sample); the sample is Play'd (0x136300) and lives in the
 // grunt's +0x428 slot (freed by ClearSubB). All engine callees external/reloc-masked.
+SIZE_UNKNOWN(GruntSoundSample);
 struct GruntSoundSample {
     i32 Play(i32 channel, i32 a, i32 b, i32 c); // 0x136300 (__thiscall, 4 args)
 };
+SIZE_UNKNOWN(GruntSampleFactory);
 struct GruntSampleFactory {
     GruntSoundSample* GetItem(); // 0x135d70 (__thiscall, 0 args; returns a new sample)
 };
+SIZE_UNKNOWN(GruntSoundEntry);
 struct GruntSoundEntry {
     char m_pad0[0x10];
     GruntSampleFactory* m_10; // +0x10  the sample factory
 };
+SIZE_UNKNOWN(GruntSoundMap);
 struct GruntSoundMap {
     i32 Lookup(const char* key, GruntSoundEntry** out); // 0x1b8438 (ret 8)
 };
+SIZE_UNKNOWN(GruntSoundInner);
 struct GruntSoundInner {
     char m_pad0[0x10];
     GruntSoundMap m_10; // +0x10  the lookup map (call this->m_10.Lookup)
@@ -546,16 +580,19 @@ extern i32 g_gruntFreeListBias; // DAT_0064554c
 // The coord-node free pool (DAT_00645540): Recycle(elem) (FUN_004311b0, thunk
 // 0x163b) pushes (elem - bias) onto the freelist headed at this->m_04. Reloc-masked
 // DATA; modeled as a tiny object so `mov ecx,0x645540; push elem; call` falls out.
+SIZE_UNKNOWN(GruntCoordPool);
 struct GruntCoordPool {
     void Recycle(void* elem); // FUN_004311b0
 };
 extern GruntCoordPool g_coordPool; // DAT_00645540
 
 // A grunt occupied-coord list node: ->next at +0, ->coord at +8 (an {x,y} pair).
+SIZE_UNKNOWN(GruntCoord);
 struct GruntCoord {
     i32 m_x; // +0x00
     i32 m_y; // +0x04
 };
+SIZE_UNKNOWN(GruntCoordNode);
 struct GruntCoordNode {
     GruntCoordNode* m_next; // +0x00
     char m_pad4[0x4];
@@ -568,15 +605,18 @@ extern i32 g_focusedGruntSentinel; // DAT_00644c54
 
 // The level board-dimension path the area cues read off the tile-mgr's +0x22c
 // registry: m_22c -> m_24 -> m_5c -> {m_28 = width, m_2c = height}.
+SIZE_UNKNOWN(CTileBoardDims);
 struct CTileBoardDims {
     char m_pad0[0x28];
     i32 m_28; // +0x28  board width
     i32 m_2c; // +0x2c  board height
 };
+SIZE_UNKNOWN(CTileRegMid);
 struct CTileRegMid {
     char m_pad0[0x5c];
     CTileBoardDims* m_5c; // +0x5c
 };
+SIZE_UNKNOWN(CTileReg);
 struct CTileReg {
     char m_pad0[0x24];
     CTileRegMid* m_24; // +0x24
@@ -590,6 +630,7 @@ struct CTileReg {
 //   ReleaseTile(a,b)     thunk_FUN_004784d0  (release on lookup miss; ret int)
 //   PostWire()           the 0-arg wire call after the grid stamp (WireTileSwitchLogic)
 // ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CGruntTileMgr);
 class CGruntTileMgr {
 public:
     void SetTile(i32 a, i32 b, i32 c, i32 d);   // thunk_FUN_0046bcb0
@@ -659,6 +700,7 @@ i32 GruntPointVisible(i32 px, i32 py, i32 cmp);
 // The registry focused-grunt slot the arrival gate reads: an array at
 // g_pGameRegistry+0x150, stride 0x238 (= 71*8) indexed by the grunt's m_tileOwnerHi.
 // Each slot's +0x14 is a non-null gate the arrival path checks. External view.
+SIZE_UNKNOWN(CFocusSlot);
 struct CFocusSlot {
     char m_pad0[0x14];
     i32 m_14; // +0x14
@@ -672,6 +714,7 @@ struct CFocusSlot {
 // falls out. The archive is external (never instantiated here, so no vtable is
 // emitted); Write's body is reloc-masked.
 // ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CGruntArchive);
 class CGruntArchive {
 public:
     virtual void slot00();
@@ -693,6 +736,7 @@ public:
 // at +0x150/+0x278/+0x308/+0x43c/+0x890..+0x8c0). Each is a __thiscall(ar, mode,
 // a3, a4) ret 0x10 reached through an incremental-link thunk; external/no-body so
 // the `lea ecx,[this+N]; call rel32` reloc-masks.
+SIZE_UNKNOWN(CGruntSubSer);
 class CGruntSubSer {
 public:
     i32 Serialize(CGruntArchive* ar, i32 mode, i32 a3, i32 a4);
@@ -700,6 +744,7 @@ public:
 
 // The grunt's name-id resolver the Save reaches via m_158->m_c->m_2c: maps an
 // integer id to its name CString (returned by value). __thiscall, ret 4.
+SIZE_UNKNOWN(CGruntNameMap);
 class CGruntNameMap {
 public:
     CString LookupName(i32 id);
@@ -707,6 +752,7 @@ public:
 
 // The +0x158 "type catalog" object: Save reads its m_c (a non-null owner that
 // also holds the name-id map at m_2c). External; modeled minimally.
+SIZE_UNKNOWN(CGruntTypeCatalog);
 struct CGruntTypeCatalog {
     char m_pad0[0xc];
     CGruntNameMap* m_c; // +0x0c  owner -> name-id map
@@ -717,6 +763,7 @@ struct CGruntTypeCatalog {
 extern i32 g_serialCounter;
 
 // The linked-list node Save's tail walks (m_33c head): {next @+0, data @+0x8}.
+SIZE_UNKNOWN(CGruntListNode);
 struct CGruntListNode {
     CGruntListNode* m_next; // +0x00
     char m_pad4[0x8 - 0x4];
@@ -738,6 +785,7 @@ class CArchive; // (unused MFC fwd; Save uses CGruntArchive)
 // m_count, m_max, m_grow} (0x14 bytes); SetSize/SetAtGrow are external (reloc-
 // masked). The recycled nodes ride the same g_gruntFreeList pool as the movement
 // machines (node usable area = head+4; head[0] = next).
+SIZE_UNKNOWN(GruntLoadColl);
 struct GruntLoadColl {
     void SetSize(i32 n, i32 grow);    // 0x1b4f75
     void SetAtGrow(i32 idx, void* p); // 0x1b5144
@@ -750,12 +798,14 @@ struct GruntLoadColl {
 
 // The CString member the load streams a 0x200-byte buffer into (this+0x410);
 // operator=(const char*) is external (0x1b9e74, reloc-masked).
+SIZE_UNKNOWN(GruntLoadStr);
 struct GruntLoadStr {
     void Assign(const char* s); // operator= 0x1b9e74
 };
 
 // The anim-name id table entry resolved through res->m_10's CMapStringToOb (+0x10,
 // Lookup 0x1b8008): a range [m_64..m_68] and the id array at +0x14.
+SIZE_UNKNOWN(GruntIdEntry);
 struct GruntIdEntry {
     char m_pad0[0x14];
     i32* m_14; // +0x14  id array
@@ -763,12 +813,14 @@ struct GruntIdEntry {
     i32 m_64; // +0x64  lo index
     i32 m_68; // +0x68  hi index
 };
+SIZE_UNKNOWN(GruntNameIdMap);
 struct GruntNameIdMap {                              // res->m_10 + 0x10
     i32 Lookup(const char* key, GruntIdEntry** out); // 0x1b8008
     i32 LookupNode(const char* key, void** out);     // 0x1b8008 (2nd block: raw entry)
 };
 // The object-table entry resolved through res->m_8's map (+0x48, Lookup 0x1b8760).
 // Validated by a virtual kind() at vtable slot +0x20 (== 5 -> keep).
+SIZE_UNKNOWN(GruntObjEntry);
 class GruntObjEntry {
 public:
     virtual void s00();
@@ -781,11 +833,13 @@ public:
     virtual void s1c();
     virtual i32 Kind(); // vtable slot +0x20
 };
+SIZE_UNKNOWN(GruntObjMap);
 struct GruntObjMap {                            // res->m_8 + 0x48
     i32 Lookup(void* key, GruntObjEntry** out); // 0x1b8760
 };
 // The resource manager (g_gameReg->m_30): m_8 owns the object map, m_10 the
 // sprite/name manager (with the CMapStringToOb at +0x10).
+SIZE_UNKNOWN(GruntResMgr);
 struct GruntResMgr {
     char m_pad0[0x8];
     char* m_8; // +0x08
@@ -797,6 +851,7 @@ extern i32 g_load612618;
 
 // A small owned sub-object the grunt destroys on teardown (slots +0x424/+0x428).
 // Free() is __thiscall, no args, reloc-masked.
+SIZE_UNKNOWN(CGruntSub);
 class CGruntSub {
 public:
     void Free();
@@ -827,18 +882,21 @@ void GruntVecDtor(void* base, i32 stride, i32 count, void (*dtor)()); // 0x51f64
 // ecx, no stack arg/cleanup). Modeled as a 1-method receiver so `lea ecx,[this+off];
 // call` falls out, and as a real value member with `~T(){Dtor();}` so the /GX frame's
 // per-member descending trylevel chain is what the compiler emits.
+SIZE_UNKNOWN(GruntStrSub);
 struct GruntStrSub { // +0x44c / +0x448 / +0x1c0  (~CString 0x1b9cde)
     void Dtor();
     ~GruntStrSub() {
         Dtor();
     }
 };
+SIZE_UNKNOWN(GruntListSub);
 struct GruntListSub { // +0x338 / +0x31c  (~CObList 0x1b48c6)
     void Dtor();
     ~GruntListSub() {
         Dtor();
     }
 };
+SIZE_UNKNOWN(GruntLinkSub);
 struct GruntLinkSub { // +0x18  the CUserLogic base link (~EngStr 0x16d2a0)
     void Dtor();
     ~GruntLinkSub() {
@@ -848,6 +906,7 @@ struct GruntLinkSub { // +0x18  the CUserLogic base link (~EngStr 0x16d2a0)
 
 // A 10-virtual interface view for CGrunt::DispatchVtbl24's tail call (vtable
 // slot 0x24 = index 9). Calling Slot9() emits `mov eax,[ecx]; jmp [eax+0x24]`.
+SIZE_UNKNOWN(CVtblSlot9);
 class CVtblSlot9 {
 public:
     virtual void s0();
@@ -865,10 +924,12 @@ public:
 // The name/animation cache collections FreeNameList drains (sub-objects of CGrunt
 // at +0x31c and +0x338). External engine collections; only the called methods
 // are modeled (reloc-masked).
+SIZE_UNKNOWN(CGruntColl);
 class CGruntColl {
 public:
     void Reset(); // empty the collection in place
 };
+SIZE_UNKNOWN(CGruntList);
 class CGruntList {
 public:
     void* RemoveHead(); // pop the head node, return it
@@ -904,6 +965,7 @@ extern i32 g_voiceSW[3]; // 0x644948  (mid -, dx<0)
 // The grunt-voice record passed by value to PlaySound (3 DWORDs). Building it
 // from a named [3] record makes cl emit the 3 `mov ds:addr; mov [stk],reg` copies
 // the target uses; passing it by value forces the `sub esp,0xc; ...; ret 0x10`.
+SIZE_UNKNOWN(CGruntVoiceRec);
 struct CGruntVoiceRec {
     i32 m_0;
     i32 m_4;
@@ -912,6 +974,7 @@ struct CGruntVoiceRec {
 
 // The {x, y} tile-coordinate pair GetTilePos (@0x31c70) writes its result into
 // (the grunt's HUD pixel pos >> 5). Returned by pointer (the out arg).
+SIZE_UNKNOWN(GruntTilePos);
 struct GruntTilePos {
     i32 m_x; // +0x00
     i32 m_y; // +0x04
@@ -923,6 +986,7 @@ struct GruntTilePos {
 // as a tiny CByteArray-style object {?, data@+4, count@+8} so the /GX-framed local
 // + the SetAtGrow/RemoveAt/dtor calls fall out (all engine, external/reloc-masked).
 // ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CToyTileBag);
 class CToyTileBag {
 public:
     CToyTileBag();                    // 0x1b527e (ctor)
@@ -1430,12 +1494,14 @@ public:
 // four edges (top y=m_4, bottom y=m_c, left x=m_0, right x=m_8), interpolating the
 // crossing point in float and checking it falls within the opposite span. Returns 1
 // on the first crossing, else 0. Pure stack args (no this); FP-heavy.
+SIZE_UNKNOWN(GruntBox);
 struct GruntBox {
     i32 m_0; // +0x00 x0
     i32 m_4; // +0x04 y0
     i32 m_8; // +0x08 x1
     i32 m_c; // +0x0c y1
 };
+SIZE_UNKNOWN(GruntSegEnd);
 struct GruntSegEnd {
     i32 m_0; // +0x00 x
     i32 m_4; // +0x04 y

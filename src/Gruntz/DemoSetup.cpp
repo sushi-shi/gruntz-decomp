@@ -25,7 +25,7 @@ public:
     CDemoWorld* m_c; // +0xc  bound world
 };
 
-// 0x3c070: seed the two attract-mode demo sprites via the world's sprite factory,
+// seed the two attract-mode demo sprites via the world's sprite factory,
 // then report success.
 RVA(0x0003c070, 0x47)
 i32 CDemoSetup::SetupDemoActors() {
@@ -34,7 +34,6 @@ i32 CDemoSetup::SetupDemoActors() {
     return 1;
 }
 
-// class metadata (SIZE sweep, D-G)
 SIZE_UNKNOWN(CDemoWorld);
 SIZE_UNKNOWN(CDemoSetup);
 

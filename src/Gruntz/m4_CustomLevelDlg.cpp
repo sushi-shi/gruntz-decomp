@@ -18,7 +18,7 @@ namespace m4dlg {
     struct WndItem {
         char m_pad0[0x1c];
         HWND m_hwnd; // +0x1c
-        // 0x001ce692: copy the item text at index `sel` into the host's CString.
+        // copy the item text at index `sel` into the host's CString.
         void GetText1ce692(i32 sel, void* out);
     };
 

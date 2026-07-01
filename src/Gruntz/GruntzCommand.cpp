@@ -362,10 +362,7 @@ i32 CGruntzMultiCommand::NetLoad(CmdStream* s) {
 }
 
 // size 0x14 from operator-new vtable attribution (gruntz.analysis.news)
-SIZE(CGruntzMultiCommand, 0x14);
 // size 0x14 from operator-new vtable attribution (gruntz.analysis.news)
-SIZE(CGruntzSingleCommand, 0x14);
-SIZE(CGruntzCommand, 0x14);
 
 // The 1<<i bit table (0x5e9608) the mask builder/scanner indexes. DATA-pinned so
 // the *(short*)... mask loop's address operands reloc-mask against it.
@@ -389,8 +386,4 @@ const u16 g_cmdBitTable[16] = {
     0x8000
 };
 
-// class-metadata sweep: grunt/game-object family size annotations (SIZE_UNKNOWN = retail size TBD, at .cpp EOF).
-SIZE_UNKNOWN(CGruntzCmdList);
-SIZE_UNKNOWN(CGruntzCmdTarget);
 SIZE_UNKNOWN(CmdStream);
-SIZE_UNKNOWN(WwdGameReg);

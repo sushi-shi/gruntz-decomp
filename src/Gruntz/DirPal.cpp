@@ -79,7 +79,6 @@ i32 DirPal::CaptureSystemPalette() {
     return 1;
 }
 
-// class metadata (SIZE sweep, D-G)
 SIZE_UNKNOWN(LogPal256);
 SIZE_UNKNOWN(DirPal);
 

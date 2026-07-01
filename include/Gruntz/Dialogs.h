@@ -19,6 +19,7 @@
 #ifndef SRC_GRUNTZ_DIALOGS_H
 #define SRC_GRUNTZ_DIALOGS_H
 
+#include <rva.h>
 #include <Ints.h>
 
 class CString; // full def via <Gruntz/CString.h> below; needed by CWnd::GetWindowText
@@ -35,6 +36,7 @@ struct HWND__; // the opaque Win32 HWND (windows.h arrives with <Gruntz/CString.
 // is a NAFXCW __thiscall method reached by call-rel32 (external/no-body so the
 // displacement reloc-masks in objdiff); only the __thiscall arg shape is load-
 // bearing here.
+SIZE_UNKNOWN(CWnd);
 class CWnd {
 public:
     void SetWindowTextA(const char* lpszString);
@@ -63,6 +65,7 @@ public:
 // virtual decl gives it a vptr at +0x00 and makes the derived vptr-store fall
 // out of the ctor). It is padded to 0x5c bytes so the subclass members land at
 // the offsets the disasm pins (+0x5c upward).
+SIZE_UNKNOWN(CDialog);
 class CDialog {
 public:
     CDialog(u32 nIDTemplate, CWnd* pParent);
@@ -85,10 +88,12 @@ public:
 // A player-slot record in the battle dialog's slot array (CBattlezDlg::m_5c).
 // 0x238 bytes/slot (the disasm scales index by 0x238 = lea x71, *8); only the
 // +0x158 int field (set by SetSlotValue) and the size are load-bearing.
+SIZE_UNKNOWN(CBattlezSlot);
 struct CBattlezSlot {
     char pad[0x238];
 };
 
+SIZE_UNKNOWN(CBattlezDlg);
 class CBattlezDlg : public CDialog {
 public:
     CBattlezDlg(i32 a0, CWnd* pParent);
@@ -145,6 +150,7 @@ public:
 // CBattlezDlgCustom
 //   base CDialog(0xc3, pParent); CString @+0x5c.
 // ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CBattlezDlgCustom);
 class CBattlezDlgCustom : public CDialog {
 public:
     CBattlezDlgCustom(CWnd* pParent);
@@ -157,6 +163,7 @@ public:
 // CBattlezDlgColors (NO EH frame - no embedded C++ object).
 //   base CDialog(0xc2, pParent); m_5c = a0; m_60 = a1; m_64 = 0; m_68 = a2.
 // ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CBattlezDlgColors);
 class CBattlezDlgColors : public CDialog {
 public:
     CBattlezDlgColors(i32 a0, i32 a1, i32 a2, CWnd* pParent);
@@ -176,6 +183,7 @@ public:
 //   base CDialog(0xc5, pParent); m_5c = a0; m_60 = 0; m_6c = 0;
 //   CString @+0x70; CObList(0xa) @+0x74; then g_64bd5c = g_gameReg->m_2c.
 // ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CMultiStartDlg);
 class CMultiStartDlg : public CDialog {
 public:
     CMultiStartDlg(i32 a0, CWnd* pParent);
@@ -223,6 +231,7 @@ public:
 };
 
 // CCheckpointDlg - trivial CDialog (resource 0xcd); ctor only.
+SIZE_UNKNOWN(CCheckpointDlg);
 class CCheckpointDlg : public CDialog {
 public:
     CCheckpointDlg(CWnd* pParent);

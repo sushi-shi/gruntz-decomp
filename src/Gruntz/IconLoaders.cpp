@@ -473,7 +473,6 @@ i32 EngineLabelBacklog::LoadPowerupIconSprites(
     return 1;
 }
 
-// H-N misc-Gruntz class-metadata sweep (SIZE).
 SIZE_UNKNOWN(CResourceTracker);
 SIZE_UNKNOWN(CSpriteIconNode);
 SIZE_UNKNOWN(CSpriteVtbl);

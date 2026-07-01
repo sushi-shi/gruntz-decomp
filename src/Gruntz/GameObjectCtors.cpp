@@ -541,7 +541,6 @@ SIZE(CGruntToyTimeSprite, 0x64);
 // size 0x64 recovered from operator-new sites (gruntz.analysis.news)
 SIZE(CGruntWingzTimeSprite, 0x64);
 
-// class-metadata sweep: grunt/game-object family size annotations (SIZE_UNKNOWN = retail size TBD, at .cpp EOF).
 SIZE_UNKNOWN(CButeTree);
 SIZE_UNKNOWN(CGruntSpriteBase);
 SIZE_UNKNOWN(CHazardObj);

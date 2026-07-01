@@ -225,7 +225,6 @@ i32 CMenuState::LoadAssets(i32 a1, i32 a2, i32 a3) {
     return 1;
 }
 
-// H-N misc-Gruntz class-metadata sweep (SIZE).
 SIZE_UNKNOWN(MenuAssetMgr);
 SIZE_UNKNOWN(MenuCursorSub);
 SIZE_UNKNOWN(MenuHudObj);

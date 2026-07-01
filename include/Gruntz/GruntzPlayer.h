@@ -18,6 +18,7 @@
 
 #include <Mfc.h> // CString (real MFC, 4-byte m_pchData)
 
+SIZE_UNKNOWN(GruntzPlayer);
 class GruntzPlayer {
 public:
     GruntzPlayer();          // 0x0da960 (default)

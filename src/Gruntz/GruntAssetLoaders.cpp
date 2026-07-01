@@ -797,7 +797,6 @@ tail:
 #undef DEATH_FRAME
 #undef DEATH_CUE
 
-// class-metadata sweep: grunt/game-object family size annotations (SIZE_UNKNOWN = retail size TBD, at .cpp EOF).
 SIZE_UNKNOWN(CDeathReg7c);
 SIZE_UNKNOWN(CGruntSndRes);
 SIZE_UNKNOWN(CGruntSndResMgr);

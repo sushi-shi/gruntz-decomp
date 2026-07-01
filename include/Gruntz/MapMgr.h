@@ -30,6 +30,7 @@
 #ifndef SRC_GRUNTZ_MAPMGR_H
 #define SRC_GRUNTZ_MAPMGR_H
 
+#include <rva.h>
 #include <Ints.h>
 
 // Raw heap alloc/free the arrays link in (engine NAFXCW: alloc(size) returns a
@@ -47,6 +48,7 @@ extern "C" void MapFree(void* p);
 // doubly-linked free list (each element's +0x14/+0x10 links). Ctor zeroes the
 // three slots; dtor frees +0x04 then zeroes.
 // ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CMapArrayA);
 class CMapArrayA {
 public:
     CMapArrayA();
@@ -67,6 +69,7 @@ public:
 // 0x0c stride and the heap pointer at +0x00 (vs +0x04). Ctor zeroes the three
 // slots; dtor frees +0x00 then zeroes.
 // ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CMapArrayB);
 class CMapArrayB {
 public:
     CMapArrayB();
@@ -82,6 +85,7 @@ public:
 // CMapMgr - the level/map manager (vftable, 6 slots). Polymorphic so
 // the vptr lands at +0x00 and the two-phase vtable store falls out.
 // ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CMapMgr);
 class CMapMgr {
 public:
     CMapMgr();
