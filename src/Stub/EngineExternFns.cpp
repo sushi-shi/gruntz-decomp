@@ -76,16 +76,10 @@ extern "C" {
             jmp RunErrorDialog_0bc250
         }
     }
-    // 0x1b9b46 - MSVC5 CRT global `operator new` (new-handler retry loop around
-    // malloc / _callnewh); Ghidra FID = operator_new. SKIP per game-not-CRT policy.
-    // @confidence: med
-    // @source: reloc-correlation (1 caller)
-    // @stub
-    RVA(0x001b9b46, 0x3c)
-    SYMBOL(_RezAlloc)
-    void* RezAlloc(u32 size) {
-        return 0;
-    }
+    // 0x1b9b46 RezAlloc = MSVC5 CRT global `operator new`; reclassified as library
+    // (config/library_labels.csv ??2@YAPAXI@Z). Callers reach it as a reloc-masked
+    // extern; removed from the match universe (library, not a reconstruction target).
+
     // 0x1b9b82 - RezFree (resource free wrapper) graduated to src/Rez/RezUtil.cpp:
     // its retail TU is /O1 (push [mem] arg-forward + pop-ecx cleanup), so it cannot
     // match inside this /O2 aggregate.
@@ -106,26 +100,11 @@ extern "C" {
             DebugSink_184df0(buf);
         }
     }
-    // 0x11fdf0 - MSVC5 CRT `_strcmpi`/`_stricmp` (locale-locked case-insensitive
-    // compare); Ghidra FID = __strcmpi. SKIP per game-not-CRT policy.
-    // @confidence: med
-    // @source: reloc-correlation (1 caller)
-    // @stub
-    RVA(0x0011fdf0, 0xd0)
-    SYMBOL(_RezStricmp)
-    i32 RezStricmp(const char*, const char*) {
-        return 0;
-    }
-    // 0x120680 - MSVC5 CRT `strrchr` (repne-scasb intrinsic form); Ghidra FID =
-    // _strrchr. SKIP per game-not-CRT policy.
-    // @confidence: med
-    // @source: reloc-correlation (1 caller)
-    // @stub
-    RVA(0x00120680, 0x27)
-    SYMBOL(_RezStrrchr)
-    char* RezStrrchr(const char*, i32) {
-        return 0;
-    }
+    // 0x11fdf0 RezStricmp = MSVC5 CRT `_stricmp`/`_strcmpi`; reclassified as library
+    // (config/library_labels.csv __strcmpi). Callers reach it as a reloc-masked extern.
+    // 0x120680 RezStrrchr = MSVC5 CRT `strrchr`; reclassified as library
+    // (config/library_labels.csv _strrchr). Callers reach it as a reloc-masked extern.
+
     // 0x2f59 - incremental-link island for StartupGate -> StartUpPrompt (0x01f9b0).
     // @confidence: med
     // @source: reloc-correlation (1 caller)
@@ -136,26 +115,10 @@ extern "C" {
             jmp StartUpPrompt
         }
     }
-    // 0x120090 - MSVC5 CRT `strstr`; Ghidra FID = strstr. SKIP per game-not-CRT
-    // policy (the "SubstringMatch" name is the campaign placeholder).
-    // @confidence: med
-    // @source: reloc-correlation (1 caller)
-    // @stub
-    RVA(0x00120090, 0x85)
-    SYMBOL(_SubstringMatch)
-    i32 SubstringMatch() {
-        return 0;
-    }
-    // 0x120900 - MSVC5 CRT `sscanf` (wraps _input); Ghidra FID = sscanf. SKIP per
-    // game-not-CRT policy (the "VersionScan" name is the campaign placeholder).
-    // @confidence: med
-    // @source: reloc-correlation (1 caller)
-    // @stub
-    RVA(0x00120900, 0x42)
-    SYMBOL(_VersionScan)
-    i32 VersionScan() {
-        return 0;
-    }
+    // 0x120090 SubstringMatch = MSVC5 CRT `strstr`; reclassified as library
+    // (config/library_labels.csv _strstr). Callers reach it as a reloc-masked extern.
+    // 0x120900 VersionScan = MSVC5 CRT `sscanf`; reclassified as library
+    // (config/library_labels.csv _sscanf). Callers reach it as a reloc-masked extern.
 }
 
 // CButeMgr_ReportError (0x1706c0) graduated to src/Bute/ButeMgr.cpp as the real

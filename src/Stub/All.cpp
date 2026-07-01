@@ -39,8 +39,6 @@
 // CStatusBarMgrGetItem.cpp unit (self-contained view; own unit avoids the
 // LoadTabSprites field-view conflict).
 #include "EngineExternFns.cpp"
-#include "CSBI_Image.cpp"
-#include "RezSync.cpp"
 #include "MallocConstructors.cpp"
 
 // ---------------------------------------------------------------------------

@@ -963,46 +963,6 @@ source = "src/Gruntz/CSpotLightCtor.cpp"
 flags = "eh"
 
 [[unit]]
-# proximity-attributed class memberships (gruntz.analysis.gen_attributed_stubs); own
-# TU, same minimal-decl pattern as engine_discovered (conflict-free across units).
-unit = "engine_attributed"
-source = "src/Stub/Attributed.cpp"
-flags = "base"
-
-[[unit]]
-# class-boundary FUN_ bodies (gruntz.analysis.gen_boundary_stubs): free-function stubs
-# whose comment records the two adjacent classes (single-class proximity abstains here).
-unit = "engine_boundary"
-source = "src/Stub/Boundary.cpp"
-flags = "base"
-
-[[unit]]
-# catch-all worklist (gruntz.analysis.gen_unmatched_stubs): every real reconstruction
-# target with no stub yet - free-function stubs whose comment is the Ghidra name hint.
-unit = "engine_unmatched"
-source = "src/Stub/Unmatched.cpp"
-flags = "base"
-
-# engine_unmatched_lib: the CRT/MFC/zlib library implementations split out of the
-# worklist (UnmatchedLibrary.cpp) - NOT reconstruction targets.
-[[unit]]
-unit = "engine_unmatched_lib"
-source = "src/Stub/UnmatchedLibrary.cpp"
-flags = "base"
-
-[[unit]]
-# MSVC5 LIBCMT iostreams `streambuf` base (non-EH leaves).
-unit = "crt_streambuf"
-source = "src/Crt/StreamBuf.cpp"
-flags = "base"
-
-[[unit]]
-# MSVC5 LIBCMT iostreams `istream` input leaves (virtual-base ios access).
-unit = "crt_istream"
-source = "src/Crt/IStream.cpp"
-flags = "base"
-
-[[unit]]
 unit = "netmgr"
 source = "src/Net/NetMgr.cpp"
 flags = "eh"

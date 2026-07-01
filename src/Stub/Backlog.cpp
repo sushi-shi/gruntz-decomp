@@ -182,9 +182,6 @@ namespace EngineLabelBacklog {
     void __stdcall BuildStatzTabSmall_vfunc1(i32, i32, i32, i32, i32, i32, i32, i32, i32);
     void FreeAllFonts();
     void __stdcall BuildVoiceSoundList(i32);
-    void _tr_init();
-    void _ct_init();
-    void Stub_18c780();
 } // namespace EngineLabelBacklog
 
 // CreateGameObjectByName (0xa3b0) graduated to src/Gruntz/GameObjectFactory.cpp as
@@ -2027,30 +2024,13 @@ i32 CGameInfo::FormatGameInfoString() {
 // ParseAttributeFile @0x170750 graduated to src/Bute/ButeMgr.cpp (the value-line
 // driver; reconstructed on the ButeMgr class alongside the matched getters).
 
-// @confidence: high
-// @source: call-xref
-// @stub
-void EngineLabelBacklog::_tr_init() {}
-
-// @confidence: high
-// @source: tomalla
-// @stub
-void EngineLabelBacklog::_ct_init() {}
-
-// Stub_18c780 (831 B) is the statically-linked CRT `_stat`/`_wstat` core (decoded
-// via dump_target): it strcmp-rejects the "\\.\..." device names (DAT_005f0a24/
-// DAT_005f0a20), splits the drive letter, GetDriveType-gates, FindFirstFile's the
-// path, converts the three FILETIMEs (FileTimeToLocalFileTime +
-// FileTimeToSystemTime + the CRT __loctotime_t at 0x126bb0) into the st_atime/
-// st_mtime/st_ctime fields (esi+0x1c/+0x18/+0x20) of the stat buffer, stamps
-// st_mode/st_size/st_dev, and on failure sets _errno/_doserrno to ENOENT (2) via
-// 0x124150/0x124160 + _dosmaperr (0x1240d0). Per the game-not-CRT matcher policy
-// this is library code (use the lib, do NOT hand-reconstruct) - left as backlog.
-// @confidence: low
-// @source: import:FindFirstFileA
-// @stub
-RVA(0x0018c780, 0x33f)
-void EngineLabelBacklog::Stub_18c780() {}
+// 0x18c780 _stat/_wstat core (statically-linked CRT); reclassified as library
+// (config/library_labels.csv __stat) - was an empty RVA stub, now carved out of the
+// match universe (not a reconstruction target).
+//
+// _tr_init (0x188440) / _ct_init (0x1884c0) are zlib trees.c, already matched by the
+// vendor `trees` unit; the dead EngineLabelBacklog decls above bound no RVA (they
+// were vestigial), so they are removed here.
 
 // Stub_1bf702 (the HKCR\CLSID InProcServer32 COM-path reader) graduated to
 // src/Gruntz/RegHelpers.cpp (framed) as ClsidToInProcServer.
