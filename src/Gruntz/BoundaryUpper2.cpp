@@ -5,6 +5,8 @@
 // class names here are placeholders. Only OFFSETS + the code shape are
 // load-bearing (campaign doctrine). Non-EH (base /O2) bodies only; the /GX
 // EH-frame siblings live in BoundaryUpper2Eh.cpp.
+#include <Gruntz/Blk6c.h> // the 0x6c-byte CImageOwned transform descriptor
+
 #include <Ints.h>
 #include <string.h> // memset -> rep stos at /O2
 #include <rva.h>
@@ -762,9 +764,6 @@ i32 CPalObj143950::SetPalette(const u8* src, i32 tag) {
 // fill {size, flags|0x200, fields}, run Apply (0x13e0a0); on success run the commit
 // virtual (slot 10). __thiscall, 4 args.
 // ---------------------------------------------------------------------------
-struct Blk6c {
-    i32 d[0x1b];
-};
 struct ImgOwnedX {
     virtual void v0();
     virtual void v1();

@@ -4,6 +4,8 @@
 // leaf methods so the owning class names here are placeholders. Only OFFSETS + the
 // code shape are load-bearing (campaign doctrine). Non-EH (base /O2) bodies only;
 // the /GX EH-frame siblings live in BoundaryUpperEh.cpp.
+#include <Gruntz/Blk6c.h> // the 0x6c-byte CImageOwned transform descriptor
+
 #include <rva.h>
 
 // The engine __cdecl allocator/deallocator (operator new/delete; reloc-masked
@@ -661,10 +663,6 @@ void ClearModeArray_141c80() {
 // commit). 0x13e0a0 Apply copies the 0x6c-byte source block into m_10 then runs
 // the transform; 0x148cc0 / 0x148b50 forward into it.
 // ---------------------------------------------------------------------------
-struct Blk6c {
-    i32 d[0x1b];
-};
-SIZE_UNKNOWN(Blk6c);
 struct ImgOwned {
     virtual void v0();
     virtual void v1();
