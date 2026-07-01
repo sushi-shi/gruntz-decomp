@@ -95,6 +95,33 @@ build\win-toolchain\
   activate.ps1 / activate.bat
 ```
 
+## Nothing is installed system-wide
+
+The provisioner is **self-contained under `build\win-toolchain\`** — it does not
+run an installer, write to the registry, or put anything on the global `PATH`:
+
+- All downloads, archives, and unpacked tools live under `build\win-toolchain\`
+  (git-ignored). Deleting that directory fully un-provisions; nothing else
+  remains.
+- The activate scripts set **session-scoped** env vars only (`$env:` / `set`,
+  never `setx`) and prepend to `PATH` for that shell only — close the shell and
+  your environment is back to normal. No machine/user env is modified.
+- Even the **Rust** build is local: `RUSTUP_HOME`/`CARGO_HOME` are pointed at
+  `build\win-toolchain\rust\`, so installing the nightly toolchain and caching
+  crates never touch your global `~\.rustup` / `~\.cargo`.
+- The only repo-level change is `git config --local core.hooksPath .githooks`
+  (the pre-commit formatter) — repo-local, exactly as the flake's shells do it.
+
+Honest exceptions (not under `build\`):
+
+- The **prerequisite launchers you install yourself** — Python, git, and (for the
+  delinker) `rustup`/`cargo`. Those are your choice, not something this script
+  drops on your system.
+- **Ghidra's own per-user settings dir** (`%APPDATA%\ghidra`). Ghidra writes this
+  on first run on *every* OS (the Linux flake hits `~/.config/ghidra` the same
+  way); the Gruntz Ghidra *project* itself lives under `build\ghidra-named\`.
+- Transient OS temp files (auto-deleted) for the compiler-wrapper's process log.
+
 ## The environment (`activate.ps1` / `activate.bat`)
 
 The Windows equivalent of the flake's `shellHook`. It exports the same variables

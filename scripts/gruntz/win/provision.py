@@ -8,6 +8,7 @@ artifacts whose install marker is present (use force=True to redo one/all).
 
 from __future__ import annotations
 
+import os
 import shutil
 import subprocess
 import sys
@@ -87,16 +88,24 @@ def _build_vostok(repo: Path, root: Path, *, force: bool) -> None:
               "         re-run:  py bootstrap_windows.py --only vostok_src\n"
               "         Everything else is provisioned; only delink/objdiff need this.")
         return
+    # Keep ALL Rust state under build/ - RUSTUP_HOME/CARGO_HOME point into the
+    # toolchain dir so installing nightly + caching crates never touch the user's
+    # global ~/.rustup or ~/.cargo. Only the rustup/cargo launchers (which the user
+    # installed) live outside build/; everything they download lands locally.
+    renv = dict(os.environ)
+    renv["RUSTUP_HOME"] = str(root / "rust" / "rustup")
+    renv["CARGO_HOME"] = str(root / "rust" / "cargo")
     # Prefer an explicit nightly; fall back to the default toolchain if cargo is
     # already nightly. `rustup` is optional - if absent we just try `cargo build`.
     toolchain_arg = []
     if shutil.which("rustup"):
         subprocess.run(["rustup", "toolchain", "install", "nightly", "--profile", "minimal"],
-                       check=False)
+                       check=False, env=renv)
         toolchain_arg = ["+nightly"]
-    print("[vostok] cargo build --release (this compiles the delinker) ...")
+    print("[vostok] cargo build --release (this compiles the delinker; Rust state "
+          "stays under build/) ...")
     r = subprocess.run([cargo, *toolchain_arg, "build", "--release"],
-                       cwd=str(src), check=False)
+                       cwd=str(src), check=False, env=renv)
     if r.returncode != 0:
         raise SystemExit("[vostok] cargo build failed - see output above. "
                          "Ensure a Rust nightly is installed (rustup toolchain install nightly).")
