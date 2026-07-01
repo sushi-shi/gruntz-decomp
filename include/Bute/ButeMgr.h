@@ -431,7 +431,11 @@ public:
     CString m_str104;             // +0x104  second scratch string
     CString m_str108;             // +0x108  third scratch string
     char m_captureText;           // +0x10c  capture value text into m_pText accumulator
-    char m_10d;                   // +0x10d  build-suppress / group-walk mode (role unproven)
+    char m_writeMode;             // +0x10d  0 = STORE (parse text -> build tree); non-zero =
+                                  //         WRITE-BACK (read tree via getters -> reconstruct
+                                  //         text into m_pText). Gates dup-check + node-alloc off
+                                  //         and the getter/accumulator readback on (ParseTagLine,
+                                  //         ParseAttributeFile, ParseGroup).
     char m_10e;                   // +0x10e
     CButeTail m_10f;              // +0x10f  1-byte embedded object (non-trivial dtor)
 

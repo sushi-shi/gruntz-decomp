@@ -544,7 +544,7 @@ char* CButeMgr::GetString(char* tag, char* key) {
 // ---------------------------------------------------------------------------
 // CButeMgr::ParseTagLine
 // Reads one "tag = value" line: ScanToken(4) for the tag name, copies it into the
-// active-tag CString (m_tagName), and -- unless m_10d suppresses it -- checks for a
+// active-tag CString (m_tagName), and -- unless m_writeMode suppresses it -- checks for a
 // duplicate tag in the store (reporting + bailing if found), else allocates a new
 // store node, constructs it, wires its two vtables, records it (m_pNode) and
 // inserts it under the tag name; finally ScanToken(3) consumes the value. The new
@@ -564,7 +564,7 @@ bool CButeMgr::ParseTagLine() {
     char* tok = m_token;
     m_tagName = tok;
 
-    if (!m_10d) {
+    if (!m_writeMode) {
         CButeTree* t = Tree();
         if (t->Find(tok)) {
             ReportError(s_fmtDupTag, tok);
@@ -659,9 +659,9 @@ bool CButeMgr::Parse() {
 // m_str104, optionally probes the active store node (m_pNode) for a duplicate
 // key (reporting + flagging it), lexes the value-type token, then dispatches an
 // 11-way switch over the value-type token (m_tokType in 5..15) to either:
-//   - STORE mode (m_10d == 0, no duplicate): allocate a CButeValueNode, tag it,
+//   - STORE mode (m_writeMode == 0, no duplicate): allocate a CButeValueNode, tag it,
 //     `new` a heap copy of the parsed value, and Insert it under the key; or
-//   - WRITE-BACK mode (m_10d != 0): read the existing typed value back through
+//   - WRITE-BACK mode (m_writeMode != 0): read the existing typed value back through
 //     the matching getter and append a formatted representation of it to the
 //     value-text accumulator (m_pText->accum), using the per-type literal
 //     decorations ("(DWORD)", "(FLOAT)", "(a, b)", "<x, y, z>", "[x, y]", ...).
@@ -696,7 +696,7 @@ bool ButeMgr::ParseAttributeFile() {
     self->m_str104 = self->m_token;
 
     bool bDup = false;
-    if (!self->m_10d) {
+    if (!self->m_writeMode) {
         if (((CButeTree*)self->m_pNode)->Find((const char*)self->m_str104)) {
             self->ReportError(s_fmtDupTag, self->m_str104.GetBuffer(0));
             bDup = true;
@@ -706,7 +706,7 @@ bool ButeMgr::ParseAttributeFile() {
     if (!self->ScanToken(5)) {
         return false;
     }
-    if (self->m_10d) {
+    if (self->m_writeMode) {
         accum->Trim(0x20);
         self->m_captureText = 0;
     }
@@ -718,7 +718,7 @@ bool ButeMgr::ParseAttributeFile() {
         case 5:
         case 6: { // signed int -> type 0
             v = ButeRead_Int(self->m_token);
-            if (self->m_10d) {
+            if (self->m_writeMode) {
                 accum->AppendInt(self->GetInt(
                     (char*)(const char*)self->m_tagName,
                     (char*)(const char*)self->m_str104
@@ -744,7 +744,7 @@ bool ButeMgr::ParseAttributeFile() {
                 return false;
             }
             *(DWORD*)&v = ButeRead_Dword(self->m_token, 0, 10);
-            if (self->m_10d) {
+            if (self->m_writeMode) {
                 *accum += s_strDword;
                 accum->AppendDword(self->GetDword(
                     (char*)(const char*)self->m_tagName,
@@ -771,7 +771,7 @@ bool ButeMgr::ParseAttributeFile() {
                 return false;
             }
             *(float*)&v = (float)ButeRead_Float(self->m_token);
-            if (self->m_10d) {
+            if (self->m_writeMode) {
                 (*accum += s_strFloat)
                     .AppendDouble(self->GetFloat(
                         (char*)(const char*)self->m_tagName,
@@ -795,7 +795,7 @@ bool ButeMgr::ParseAttributeFile() {
         }
         case 15: { // float ('f'-tagged) -> type 3
             *(float*)&v = (float)ButeRead_Float(self->m_token);
-            if (self->m_10d) {
+            if (self->m_writeMode) {
                 (*accum).AppendDouble(self->GetFloat(
                     (char*)(const char*)self->m_tagName,
                     (char*)(const char*)self->m_str104
@@ -819,7 +819,7 @@ bool ButeMgr::ParseAttributeFile() {
         }
         case 7: { // double -> type 2
             double dv = ButeRead_Float(self->m_token);
-            if (self->m_10d) {
+            if (self->m_writeMode) {
                 accum->AppendDouble(self->GetDouble(
                     (char*)(const char*)self->m_tagName,
                     (char*)(const char*)self->m_str104
@@ -843,7 +843,7 @@ bool ButeMgr::ParseAttributeFile() {
         case 9: { // (a, b, c, d) point4 -> type 5
             i32 a, b, c, d;
             sscanf(self->m_token, s_fmtPoint4, &a, &b, &c, &d);
-            if (self->m_10d) {
+            if (self->m_writeMode) {
                 CButeRef5* r = self->GetRef5(
                     (char*)(const char*)self->m_tagName,
                     (char*)(const char*)self->m_str104
@@ -875,7 +875,7 @@ bool ButeMgr::ParseAttributeFile() {
         case 10: { // (a, b) point -> type 6
             i32 a, b;
             sscanf(self->m_token, s_fmtPoint2, &a, &b);
-            if (self->m_10d) {
+            if (self->m_writeMode) {
                 CButeRef6* r = self->GetRef6(
                     (char*)(const char*)self->m_tagName,
                     (char*)(const char*)self->m_str104
@@ -903,7 +903,7 @@ bool ButeMgr::ParseAttributeFile() {
         case 11: { // <x, y, z> rect3 -> type 7
             double x, y, z;
             sscanf(self->m_token, s_fmtRect3, &x, &y, &z);
-            if (self->m_10d) {
+            if (self->m_writeMode) {
                 CButeRef7* r = self->GetRef7(
                     (char*)(const char*)self->m_tagName,
                     (char*)(const char*)self->m_str104
@@ -936,7 +936,7 @@ bool ButeMgr::ParseAttributeFile() {
         case 12: { // [x, y] rect2 -> type 8
             double x, y;
             sscanf(self->m_token, s_fmtRect2, &x, &y);
-            if (self->m_10d) {
+            if (self->m_writeMode) {
                 CButeRef8* r = self->GetRef8(
                     (char*)(const char*)self->m_tagName,
                     (char*)(const char*)self->m_str104
@@ -964,7 +964,7 @@ bool ButeMgr::ParseAttributeFile() {
             break;
         }
         case 8: { // quoted string -> type 4
-            if (self->m_10d) {
+            if (self->m_writeMode) {
                 CString tmp(*(CString*)self->GetString(
                     (char*)(const char*)self->m_tagName,
                     (char*)(const char*)self->m_str104
@@ -988,7 +988,7 @@ bool ButeMgr::ParseAttributeFile() {
             return false;
     }
 
-    if (self->m_10d) {
+    if (self->m_writeMode) {
         self->m_captureText = 1;
     }
     return true;
@@ -1345,7 +1345,7 @@ bool CButeMgr::ParseGroup() {
         if (!ParseTagLine()) {
             return false;
         }
-        if (m_10d) {
+        if (m_writeMode) {
             CButeTree* grp = (CButeTree*)Tree48()->Find((char*)(const char*)m_tagName);
             if (grp) {
                 grp->Walk(&ButeGroup_Apply, m_pText, 0);
