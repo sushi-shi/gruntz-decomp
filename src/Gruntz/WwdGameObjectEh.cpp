@@ -342,3 +342,19 @@ CWwdGameObjectC::~CWwdGameObjectC() {
     m_20.b = -1;              // 0x38
     // Mid (CWwdGameObjectE) folds the CString member + EdgeA/EdgeB + severus stamp.
 }
+
+// ---------------------------------------------------------------------------
+// Class metadata (SIZE sweep) - hosted at TU EOF; labels.py scans tree-wide.
+// ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CWwdGameObjectA);
+SIZE_UNKNOWN(CWwdGameObjectB);
+SIZE_UNKNOWN(CWwdGameObjectC);
+SIZE_UNKNOWN(CWwdGameObjectE);
+SIZE_UNKNOWN(CWwdGameObjectF);
+SIZE_UNKNOWN(WwdEdgeA);
+SIZE_UNKNOWN(WwdEdgeB);
+SIZE_UNKNOWN(WwdName);
+SIZE_UNKNOWN(WwdSeverusBase);
+SIZE_UNKNOWN(WwdSub);
+SIZE_UNKNOWN(WwdSubA);
+SIZE_UNKNOWN(WwdWorker);

@@ -299,4 +299,30 @@ public:
     static i32 staticUnknown2;
 }; // 0x40
 
+// Class metadata (SIZE sweep) - comprehension-only header (not in the
+// matching build); annotation is text-scanned tree-wide, emits no code.
+SIZE_UNKNOWN(CMapPtrToPtr);
+SIZE_UNKNOWN(CMapStringToOb);
+SIZE_UNKNOWN(CMapStringToPtr);
+SIZE_UNKNOWN(CObArray);
+SIZE_UNKNOWN(CObList);
+SIZE_UNKNOWN(CObject);
+SIZE_UNKNOWN(CPtrList);
+SIZE_UNKNOWN(UnknownAlbus);
+SIZE_UNKNOWN(UnknownCGruntzMgrHogwarts);
+SIZE_UNKNOWN(UnknownCGruntzMgrLucius);
+SIZE_UNKNOWN(UnknownClassCGruntzMgrHarryPotter);
+SIZE_UNKNOWN(UnknownDirectDrawStructure);
+SIZE_UNKNOWN(UnknownDraco);
+SIZE_UNKNOWN(UnknownFilch);
+SIZE_UNKNOWN(UnknownHagrid);
+SIZE_UNKNOWN(UnknownHermiona);
+SIZE_UNKNOWN(UnknownMinerva);
+SIZE_UNKNOWN(UnknownPettigrew);
+SIZE_UNKNOWN(UnknownRemus);
+SIZE_UNKNOWN(UnknownSalazar);
+SIZE_UNKNOWN(UnknownSeverus);
+SIZE_UNKNOWN(UnknownSirius);
+SIZE_UNKNOWN(UnknownVoldemort);
+
 #endif /* MANAGERS_DDRAWMGR_SURFACE_FAMILY_H */

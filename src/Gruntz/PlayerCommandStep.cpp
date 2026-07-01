@@ -475,3 +475,11 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
     }
     return 0;
 }
+
+// ---------------------------------------------------------------------------
+// Class metadata (SIZE sweep) - hosted at TU EOF; labels.py scans tree-wide.
+// ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CCmdHandler);
+SIZE_UNKNOWN(CCueTag);
+SIZE_UNKNOWN(CGrid);
+SIZE_UNKNOWN(CGruntObj);

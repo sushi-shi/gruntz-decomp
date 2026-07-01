@@ -418,3 +418,15 @@ void CWormhole::Stub_03fed0() {}
 // @stub
 RVA(0x000412c0, 0x63)
 void CWormhole::Stub_0412c0() {}
+
+// ---------------------------------------------------------------------------
+// Class metadata (SIZE sweep) - hosted at TU EOF; labels.py scans tree-wide.
+// ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CSpawnAux);
+SIZE_UNKNOWN(CSpawnHolder);
+SIZE_UNKNOWN(CSpawnObj);
+SIZE_UNKNOWN(CWormBoundObj);
+SIZE_UNKNOWN(CWormGeoSub);
+SIZE_UNKNOWN(CWormholeState);
+SIZE_UNKNOWN(WorldList);
+SIZE_UNKNOWN(WorldNode);

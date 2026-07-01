@@ -42,3 +42,9 @@ CSeverusWorkerX::~CSeverusWorkerX() {
         RezFree(m_4);
     }
 }
+
+// ---------------------------------------------------------------------------
+// Class metadata (SIZE sweep) - hosted at TU EOF; labels.py scans tree-wide.
+// ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CSeverusWorkerX);
+SIZE_UNKNOWN(SeverusWorkerBase);

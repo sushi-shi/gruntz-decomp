@@ -151,3 +151,8 @@ void __stdcall CTerrainTileLoader::Load(i32 actionIndex, i32 a2, i32 ty, i32 a4,
 
 #undef I32
 #undef PTR
+
+// ---------------------------------------------------------------------------
+// Class metadata (SIZE sweep) - hosted at TU EOF; labels.py scans tree-wide.
+// ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CTerrainTileLoader);

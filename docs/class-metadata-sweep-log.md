@@ -642,3 +642,46 @@ headers), `CImageSet` (GameLevel.h), `CMenuState` (GameMode.h), `CMovingLogic`
 `Owner`/`Worker`, and the broadly-shared `ActNameRegistry.h` views
 `CActColl`/`CActColl2`/`CActName` (12+ non-H-N includers). No VTBL touched (SIZE-only
 per task).
+## misc-Gruntz [O-Z] TAIL + orphans + Stub types/views (2026-07-01)
+
+Scope: `src/Gruntz/*.cpp` basename O-Z (excl. SBI_*/StatusBar*/Tile*/Trigger*/
+TypeKeyColl/UserLogic*/m4_*/m5_*/RezSync/ApiCallers/Projectile.cpp, all done/other);
+PLUS include/Gruntz orphan headers (no paired .cpp OR paired only to an out-of-scope
+.cpp); PLUS `src/Stub/types/*.h`; PLUS non-ApiCallers `src/Stub/*.cpp` (Backlog /
+Discovered / MallocConstructors views). GameLevel/ApiCallers/CDDraw*/Grunt*/SBI left
+to their owners.
+
+Coverage delta (whole-tree SIZE counter): **1474 -> 1946 annotated names (+472)**;
+every in-scope violator drained to 0. All **472 are `SIZE_UNKNOWN`** (every in-scope
+class is a partial pad-to-last-touched-field / interface / slot-dispatch view; none
+provably == a complete retail object, so no exact `SIZE` guessed - the scalable
+default). No `VTBL` touched (SIZE-only task).
+
+Placement (all `.cpp`-EOF per the proven hot-header rule; **0 casualties**):
+- 60 in-scope `src/Gruntz` O-Z `.cpp` local classes (295, incl. the 8 paired headers
+  ProjActCache/RollingBall/SoundResMap/SpriteRefTable/StateMgrBZ/UnknownClassArrays/
+  WarpStoneFly/WwdGrid drained at their paired `.cpp` EOF). `zBitVec` annotated at
+  ProjActCache.cpp (its Gruntz-local def is the tree rep, distinct from the Wap32
+  EngStr.h def; one annotation covers both by name).
+- **New metadata TU `src/Gruntz/OrphanClassMeta.cpp`** (+units.toml `orphanclassmeta`,
+  base profile, 0 functions) hosts the 7 orphan headers no in-scope `.cpp` includes:
+  ActNameRegistry / CGameRegistry / CState / Enums / GameModeBase / GruntIndicatorSprite
+  / LogicTypeTableInline (19 classes). A functionless TU = zero perturbation to any
+  matched unit.
+- `src/Stub/types/*.h` (33): hosted **in-header** (before `#endif`) - these headers are
+  comprehension-only (ghidra_metadata_generate wraps each standalone with `-I include`;
+  NOT in the matching build), so an in-header `SIZE_UNKNOWN` is neutral by construction.
+  Added `#include <rva.h>` to the 5 lacking it (memory_pool/registry/rez/wwd/wwd_object).
+- `src/Stub/Backlog.cpp` (72) + `MallocConstructors.cpp`/`.h` (16) hosted at
+  **`src/Stub/All.cpp` EOF** (the aggregate TU that `#include`s both, after every
+  included `.cpp` -> true end-of-aggregate, does not touch ApiCallers.cpp). Discovered.cpp
+  (own unit) + its discovered.h (37) hosted at Discovered.cpp EOF.
+
+### Hot-header casualties: NONE.
+report.json snapshot-diff over all 3394 functions after applying ALL groups ->
+**0 REGRESS / 0 IMPROVE**; matched_functions/matched_code/fuzzy% byte-identical to
+baseline (1873/3394, 63.8835%); build "no regressions vs baseline".
+- README's auto-refresh moved 19 fns between two EXCLUDED buckets ("jump thunks" ->
+  "(unmatched)") and bumped the full-engine denominator 3397->3416: a `status.py`
+  categorization DISPLAY artifact of adding one build unit (orphanclassmeta), NOT a
+  match change (every objdiff measure unchanged). Not a casualty.

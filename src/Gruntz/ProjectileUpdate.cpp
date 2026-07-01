@@ -307,3 +307,20 @@ i32 CProjectile::Update() {
     ArmFinish(1, 0, 0);
     return 0;
 }
+
+// ---------------------------------------------------------------------------
+// Class metadata (SIZE sweep) - hosted at TU EOF; labels.py scans tree-wide.
+// ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CProjButeMgr);
+SIZE_UNKNOWN(CProjFactory);
+SIZE_UNKNOWN(CProjFactoryHolder);
+SIZE_UNKNOWN(CProjHost);
+SIZE_UNKNOWN(CProjLogic);
+SIZE_UNKNOWN(CProjSetup);
+SIZE_UNKNOWN(CProjSetupLogic);
+SIZE_UNKNOWN(CProjSetupVtbl);
+SIZE_UNKNOWN(CProjSprite);
+SIZE_UNKNOWN(CProjSpriteCtl);
+SIZE_UNKNOWN(CProjTarget);
+SIZE_UNKNOWN(CProjTargetTable);
+SIZE_UNKNOWN(CProjTickSub);

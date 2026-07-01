@@ -133,3 +133,13 @@ i32 SaveScreenshot(
     surf->DeleteImage(img);
     return r;
 }
+
+// ---------------------------------------------------------------------------
+// Class metadata (SIZE sweep) - hosted at TU EOF; labels.py scans tree-wide.
+// ---------------------------------------------------------------------------
+SIZE_UNKNOWN(ScrConfig);
+SIZE_UNKNOWN(ScrImage);
+SIZE_UNKNOWN(ScrMgrSettings);
+SIZE_UNKNOWN(ScrOwner);
+SIZE_UNKNOWN(ScrSurfHost);
+SIZE_UNKNOWN(ScrSurface);

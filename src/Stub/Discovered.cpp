@@ -224,3 +224,44 @@ void ClassUnknown_54::ClassUnknown_54_11cee3() {
 
 // ---- ClassUnknown_9 ----
 // 0x11c630 re-homed (reconstructed) as the ctor in src/Gruntz/ClassUnknown9.cpp.
+
+// ---------------------------------------------------------------------------
+// Class metadata (SIZE sweep) - hosted at Discovered TU EOF; labels.py scans tree-wide.
+// ---------------------------------------------------------------------------
+SIZE_UNKNOWN(ClassUnknown_1);
+SIZE_UNKNOWN(ClassUnknown_11);
+SIZE_UNKNOWN(ClassUnknown_13);
+SIZE_UNKNOWN(ClassUnknown_14);
+SIZE_UNKNOWN(ClassUnknown_15);
+SIZE_UNKNOWN(ClassUnknown_16);
+SIZE_UNKNOWN(ClassUnknown_17);
+SIZE_UNKNOWN(ClassUnknown_2);
+SIZE_UNKNOWN(ClassUnknown_21);
+SIZE_UNKNOWN(ClassUnknown_22);
+SIZE_UNKNOWN(ClassUnknown_23);
+SIZE_UNKNOWN(ClassUnknown_28);
+SIZE_UNKNOWN(ClassUnknown_29);
+SIZE_UNKNOWN(ClassUnknown_30);
+SIZE_UNKNOWN(ClassUnknown_33);
+SIZE_UNKNOWN(ClassUnknown_34);
+SIZE_UNKNOWN(ClassUnknown_35);
+SIZE_UNKNOWN(ClassUnknown_37);
+SIZE_UNKNOWN(ClassUnknown_39);
+SIZE_UNKNOWN(ClassUnknown_4);
+SIZE_UNKNOWN(ClassUnknown_42);
+SIZE_UNKNOWN(ClassUnknown_43);
+SIZE_UNKNOWN(ClassUnknown_45);
+SIZE_UNKNOWN(ClassUnknown_46);
+SIZE_UNKNOWN(ClassUnknown_48);
+SIZE_UNKNOWN(ClassUnknown_49);
+SIZE_UNKNOWN(ClassUnknown_50);
+SIZE_UNKNOWN(ClassUnknown_51);
+SIZE_UNKNOWN(ClassUnknown_52);
+SIZE_UNKNOWN(ClassUnknown_53);
+SIZE_UNKNOWN(ClassUnknown_54);
+SIZE_UNKNOWN(ClassUnknown_55);
+SIZE_UNKNOWN(ClassUnknown_8);
+SIZE_UNKNOWN(ClassUnknown_9);
+SIZE_UNKNOWN(U13Handler);
+SIZE_UNKNOWN(U13Inner);
+SIZE_UNKNOWN(U13Obj);

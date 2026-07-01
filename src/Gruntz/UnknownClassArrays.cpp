@@ -3416,3 +3416,38 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_0358a0(i32 unitArg) {
     ((CObList*)&unit->m_31c)->RemoveAll();
     return 1;
 }
+
+// ---------------------------------------------------------------------------
+// Class metadata (SIZE sweep) - hosted at TU EOF; labels.py scans tree-wide.
+// ---------------------------------------------------------------------------
+SIZE_UNKNOWN(AnimNameResolver);
+SIZE_UNKNOWN(BandRec);
+SIZE_UNKNOWN(Board);
+SIZE_UNKNOWN(CBattlezSpawnMgr_or_CGruntSpawnMgr);
+SIZE_UNKNOWN(Candidate);
+SIZE_UNKNOWN(CellProbe);
+SIZE_UNKNOWN(CellResolver);
+SIZE_UNKNOWN(Coord);
+SIZE_UNKNOWN(CoordCheck);
+SIZE_UNKNOWN(ElementRefresher);
+SIZE_UNKNOWN(EmitArg);
+SIZE_UNKNOWN(GridCand);
+SIZE_UNKNOWN(GridCandNode);
+SIZE_UNKNOWN(GridSpawnProbe);
+SIZE_UNKNOWN(GridUnit);
+SIZE_UNKNOWN(GridUnitSpawn);
+SIZE_UNKNOWN(Kind4Validator);
+SIZE_UNKNOWN(LevelQuery);
+SIZE_UNKNOWN(MapQuery);
+SIZE_UNKNOWN(NameRecord);
+SIZE_UNKNOWN(ProbePair);
+SIZE_UNKNOWN(ScratchString);
+SIZE_UNKNOWN(SelfCommit);
+SIZE_UNKNOWN(Tile);
+SIZE_UNKNOWN(UnitGeom);
+SIZE_UNKNOWN(UnitLevel);
+SIZE_UNKNOWN(UnitMutator);
+SIZE_UNKNOWN(UnitMutator2);
+SIZE_UNKNOWN(UnitPlace);
+SIZE_UNKNOWN(ViewMapper);
+SIZE_UNKNOWN(ZErrTarget);

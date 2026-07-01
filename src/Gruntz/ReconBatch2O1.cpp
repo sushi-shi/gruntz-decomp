@@ -69,3 +69,9 @@ RVA(0x001d4bc1, 0xc)
 void AtexitReg_1d4bc1() {
     atexit(Cleanup_1d4bcd);
 }
+
+// ---------------------------------------------------------------------------
+// Class metadata (SIZE sweep) - hosted at TU EOF; labels.py scans tree-wide.
+// ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CWndHost_1bae9b);
+SIZE_UNKNOWN(Obj_11e4d0);

@@ -90,3 +90,8 @@ i32 BuildSoundFontPath(char drive) {
     }
     return res == 0;
 }
+
+// ---------------------------------------------------------------------------
+// Class metadata (SIZE sweep) - hosted at TU EOF; labels.py scans tree-wide.
+// ---------------------------------------------------------------------------
+SIZE_UNKNOWN(SfMusicMgr);

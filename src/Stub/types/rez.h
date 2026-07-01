@@ -94,4 +94,9 @@ struct RezDirEntry {
  * alongside .REZ: .PID, .RID, .WWD, .PCX, "FIXUP.WTF".
  */
 
+#include <rva.h>
+// Class metadata (SIZE sweep) - comprehension-only header (not in the
+// matching build); annotation is text-scanned tree-wide, emits no code.
+SIZE_UNKNOWN(RezDirEntry);
+
 #endif /* FORMATS_REZ_H */

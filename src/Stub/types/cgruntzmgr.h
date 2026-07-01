@@ -237,4 +237,10 @@ private:
     bool InitializeLobbyConnectionSettings();
 }; // 0xa30
 
+// Class metadata (SIZE sweep) - comprehension-only header (not in the
+// matching build); annotation is text-scanned tree-wide, emits no code.
+SIZE_UNKNOWN(CDWordArray);
+SIZE_UNKNOWN(CPtrArray);
+SIZE_UNKNOWN(Pair);
+
 #endif /* GAME_CGRUNTZMGR_H */

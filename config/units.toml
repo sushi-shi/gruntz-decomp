@@ -1780,6 +1780,11 @@ source = "src/Gruntz/OrphanMethods.cpp"
 flags = "base"
 
 [[unit]]
+unit = "orphanclassmeta"
+source = "src/Gruntz/OrphanClassMeta.cpp"
+flags = "base"
+
+[[unit]]
 unit = "cstateleaf8cf30"
 source = "src/Gruntz/CStateLeaf8cf30.cpp"
 flags = "eh"

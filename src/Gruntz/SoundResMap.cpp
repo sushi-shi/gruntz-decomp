@@ -47,3 +47,9 @@ void CSoundResMap::RemoveByValue(CSoundRes* p) {
         } while (pos != (POSITION)0);
     }
 }
+
+// ---------------------------------------------------------------------------
+// Class metadata (SIZE sweep) - hosted at TU EOF; labels.py scans tree-wide.
+// ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CSoundRes);
+SIZE_UNKNOWN(CSoundResMap);

@@ -112,3 +112,14 @@ i32 CWarpStoneFly::Draw() {
         ->Draw(g_gameReg->m_gameMgr->m_drawable->m_context, (i32)m_currentX, (i32)m_currentY, 0);
     return 1;
 }
+
+// ---------------------------------------------------------------------------
+// Class metadata (SIZE sweep) - hosted at TU EOF; labels.py scans tree-wide.
+// ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CWarpStoneFly);
+SIZE_UNKNOWN(CWsfDrawable);
+SIZE_UNKNOWN(CWsfGameMgr);
+SIZE_UNKNOWN(CWsfGameReg);
+SIZE_UNKNOWN(CWsfOwner);
+SIZE_UNKNOWN(CWsfSprite);
+SIZE_UNKNOWN(CWsfTabArray);

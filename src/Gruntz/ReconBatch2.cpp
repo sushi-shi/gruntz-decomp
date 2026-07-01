@@ -498,3 +498,30 @@ RVA(0x0011e8dc, 0x7)
 void Obj_11e8dc::StampVtbl() {
     m_vptr = &g_severusWorkerDtorVtbl;
 }
+
+// ---------------------------------------------------------------------------
+// Class metadata (SIZE sweep) - hosted at TU EOF; labels.py scans tree-wide.
+// ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CView_faec0);
+SIZE_UNKNOWN(Desc_16f6e0);
+SIZE_UNKNOWN(DlgData_be820);
+SIZE_UNKNOWN(Dst_16f6e0);
+SIZE_UNKNOWN(EntryOwner_c0460);
+SIZE_UNKNOWN(Entry_c0460);
+SIZE_UNKNOWN(Holder_f9840);
+SIZE_UNKNOWN(Host_c2a80);
+SIZE_UNKNOWN(Init8_1104f0);
+SIZE_UNKNOWN(KeyRecv_f8ec0);
+SIZE_UNKNOWN(Mid_faec0);
+SIZE_UNKNOWN(Obj_11e8dc);
+SIZE_UNKNOWN(OptCfg_c4b30);
+SIZE_UNKNOWN(OptOwner_c4b30);
+SIZE_UNKNOWN(OptionsSlotHost_c4b30);
+SIZE_UNKNOWN(PresentHost_faec0);
+SIZE_UNKNOWN(PtrList_bf580);
+SIZE_UNKNOWN(Src_16f6e0);
+SIZE_UNKNOWN(SubView_faec0);
+SIZE_UNKNOWN(SurfCtl_faec0);
+SIZE_UNKNOWN(TNode_193340);
+SIZE_UNKNOWN(Tree_193340);
+SIZE_UNKNOWN(Worker181x_181x);

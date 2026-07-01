@@ -109,3 +109,9 @@ int StartUpPrompt(HWND hWnd) {
     }
     return 0;
 }
+
+// ---------------------------------------------------------------------------
+// Class metadata (SIZE sweep) - hosted at TU EOF; labels.py scans tree-wide.
+// ---------------------------------------------------------------------------
+SIZE_UNKNOWN(WaitApp);
+SIZE_UNKNOWN(WaitScope);

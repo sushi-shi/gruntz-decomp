@@ -168,3 +168,18 @@ i32 CStrikeEffect::Tick() {
     Helper2914();
     return 0;
 }
+
+// ---------------------------------------------------------------------------
+// Class metadata (SIZE sweep) - hosted at TU EOF; labels.py scans tree-wide.
+// ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CAnimOwner6b);
+SIZE_UNKNOWN(CAnimSink2);
+SIZE_UNKNOWN(CEffect6b);
+SIZE_UNKNOWN(CGridLookup);
+SIZE_UNKNOWN(CMenuHolder95);
+SIZE_UNKNOWN(CMgrSettings95);
+SIZE_UNKNOWN(CState95);
+SIZE_UNKNOWN(CStrikeEffect);
+SIZE_UNKNOWN(CStrikeSprite);
+SIZE_UNKNOWN(CSub4_95);
+SIZE_UNKNOWN(CWorkerObj95);

@@ -530,3 +530,16 @@ i32 CSprite::GetFrame(i32 n) {
     }
     return 0;
 }
+
+// ---------------------------------------------------------------------------
+// Class metadata (SIZE sweep) - hosted at TU EOF; labels.py scans tree-wide.
+// ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CFrameArray);
+SIZE_UNKNOWN(CFrameWorker);
+SIZE_UNKNOWN(CFrameWorkerVtbl);
+SIZE_UNKNOWN(CGruntAnimPlayer);
+SIZE_UNKNOWN(CGruntAnimSub2);
+SIZE_UNKNOWN(CGruntSprite);
+SIZE_UNKNOWN(CSprite2);
+SIZE_UNKNOWN(CSprite2Vtbl);
+SIZE_UNKNOWN(CStatusBarSurface);

@@ -53,3 +53,9 @@ CObj5f0890::~CObj5f0890() {
         operator delete(m_48c);
     }
 }
+
+// ---------------------------------------------------------------------------
+// Class metadata (SIZE sweep) - hosted at TU EOF; labels.py scans tree-wide.
+// ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CObj5f0890);
+SIZE_UNKNOWN(CObj5f0890Base);

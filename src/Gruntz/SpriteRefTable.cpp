@@ -450,3 +450,19 @@ i32 CSpriteRefTable::BuildToolToyColorTable(i32 src) {
     m_built = 1;
     return 1;
 }
+
+// ---------------------------------------------------------------------------
+// Class metadata (SIZE sweep) - hosted at TU EOF; labels.py scans tree-wide.
+// ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CLookupResult);
+SIZE_UNKNOWN(CLookupSprite);
+SIZE_UNKNOWN(CPaletteDestRegistry);
+SIZE_UNKNOWN(CPaletteDestRoot);
+SIZE_UNKNOWN(CPaletteHashTable);
+SIZE_UNKNOWN(CPaletteOwner);
+SIZE_UNKNOWN(CPaletteSource);
+SIZE_UNKNOWN(CSpriteMgrHolder);
+SIZE_UNKNOWN(CSpriteRef);
+SIZE_UNKNOWN(CSpriteRefFactory);
+SIZE_UNKNOWN(CSpriteRefHashTable);
+SIZE_UNKNOWN(CSpriteRefTable);

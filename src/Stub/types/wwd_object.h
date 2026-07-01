@@ -266,4 +266,10 @@ enum WwdHitTypeFlags {
  * 12 generic flags apply to, and their bit meanings, are unverified.)
  */
 
+#include <rva.h>
+// Class metadata (SIZE sweep) - comprehension-only header (not in the
+// matching build); annotation is text-scanned tree-wide, emits no code.
+SIZE_UNKNOWN(WwdObject);
+SIZE_UNKNOWN(WwdObjectRecord);
+
 #endif /* FORMATS_WWD_OBJECT_H */

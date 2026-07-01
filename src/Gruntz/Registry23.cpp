@@ -63,3 +63,9 @@ void* Reg23::Add(void* key, void* val) {
     g_recs23[m_4].m_8 = 0;
     return 0;
 }
+
+// ---------------------------------------------------------------------------
+// Class metadata (SIZE sweep) - hosted at TU EOF; labels.py scans tree-wide.
+// ---------------------------------------------------------------------------
+SIZE_UNKNOWN(Rec23);
+SIZE_UNKNOWN(Reg23);

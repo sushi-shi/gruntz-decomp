@@ -63,4 +63,9 @@ struct MemoryPool_Pair {
     u32 m_dataOffset;      // +0x0c  offset from Node* to its `data`
 }; // 0x10
 
+#include <rva.h>
+// Class metadata (SIZE sweep) - comprehension-only header (not in the
+// matching build); annotation is text-scanned tree-wide, emits no code.
+SIZE_UNKNOWN(MemoryPool_Pair);
+
 #endif /* UTILS_MEMORY_POOL_H */

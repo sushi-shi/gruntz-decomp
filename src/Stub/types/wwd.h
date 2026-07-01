@@ -138,4 +138,10 @@ struct PidHeader {
     /* if EMBEDDED_PALETTE: 768 bytes (256 * {r,g,b}) at (fileSize-768).       */
 }; /* sizeof == 0x20 (32) — PINNED */
 
+#include <rva.h>
+// Class metadata (SIZE sweep) - comprehension-only header (not in the
+// matching build); annotation is text-scanned tree-wide, emits no code.
+SIZE_UNKNOWN(PidHeader);
+SIZE_UNKNOWN(WwdPlaneHeader);
+
 #endif /* FORMATS_WWD_H */

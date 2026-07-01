@@ -199,3 +199,11 @@ i32 StateMgrBZ::Reset() {
     m_latchedKeys = 0;
     return 1;
 }
+
+// ---------------------------------------------------------------------------
+// Class metadata (SIZE sweep) - hosted at TU EOF; labels.py scans tree-wide.
+// ---------------------------------------------------------------------------
+SIZE_UNKNOWN(SbzControllerArray);
+SIZE_UNKNOWN(SbzDeviceList);
+SIZE_UNKNOWN(SbzInputDevice);
+SIZE_UNKNOWN(SbzInputManager);

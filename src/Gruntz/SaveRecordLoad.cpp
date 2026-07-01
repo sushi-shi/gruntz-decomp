@@ -80,3 +80,9 @@ i32 SaveRecord::Load(LoadStream* s) {
     s->Read(&m_1ac, 4);
     return 1;
 }
+
+// ---------------------------------------------------------------------------
+// Class metadata (SIZE sweep) - hosted at TU EOF; labels.py scans tree-wide.
+// ---------------------------------------------------------------------------
+SIZE_UNKNOWN(LoadStream);
+SIZE_UNKNOWN(SaveRecord);

@@ -67,3 +67,8 @@ int CSmackWin::CreateVideoWindow(i32 a0, i32 a1) {
     HWND h = m_53c ? m_53c->m_hWnd : 0;
     return Init(h, a0, a1);
 }
+
+// ---------------------------------------------------------------------------
+// Class metadata (SIZE sweep) - hosted at TU EOF; labels.py scans tree-wide.
+// ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CSmackWin);

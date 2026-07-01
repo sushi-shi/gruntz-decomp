@@ -98,4 +98,9 @@ struct GruntzRegistryConfig {
     // "Cheatz"  "NonCheat"  "NumCheatz"  "Cheat%i"  "BootyCheatz"
 };
 
+#include <rva.h>
+// Class metadata (SIZE sweep) - comprehension-only header (not in the
+// matching build); annotation is text-scanned tree-wide, emits no code.
+SIZE_UNKNOWN(GruntzRegistryConfig);
+
 #endif /* GRUNTZ_REGISTRY_H */
