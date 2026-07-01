@@ -31,6 +31,8 @@
 // Modeled as a NON-virtual class with an explicit vtable-pointer member so the
 // ctor stores m_msg THEN m_vtbl (the target order); a `virtual` decl would make
 // MSVC emit the implicit vptr store at ctor entry (before m_msg) instead.
+// EMPIRICALLY CONFIRMED (2026-07-01, vtable-conversion-log.md): converting to a
+// real `virtual` regresses this ctor 100%->non-exact (gametext 3/4->2/4).
 // ---------------------------------------------------------------------------
 extern void* g_containerErrVtbl;
 
