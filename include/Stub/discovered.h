@@ -26,10 +26,6 @@ class CGruntToyTimeSprite {
 public:
     void CGruntToyTimeSprite_012130();
 };
-class CGruntzMgr {
-public:
-    void CGruntzMgr_08b960();
-};
 class CGruntzSingleCommand {
 public:
     void CGruntzSingleCommand_0ec1c0();

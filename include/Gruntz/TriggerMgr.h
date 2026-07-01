@@ -33,8 +33,18 @@ struct CTrigPoint {
     i32 y; // +0x04
 };
 
+// The archive reader the Load serializer pulls fields through (vtable slot 0x2c =
+// Read(dst, size)); defined fully in the eh sibling TU.
+struct CTmSerReader;
+
 class CTriggerMgr {
 public:
+    // 0x7abc0: Load(ar) - deserialize the whole trigger-mgr state from the reader
+    // (the 4x15 placed-object grid, per-row state bands, byte table, record list,
+    // ten selection lists, base object list, overlay sub-object + tail scalars).
+    // /GX; lives in the eh sibling TU. ret 1, or 0 on any missing referent.
+    i32 Load(CTmSerReader* ar);
+
     // --- the small reconstructed leaf interface (retail-RVA order) -------------
     // 0x759e0: copy the cached origin pair (+0x174,+0x178) into the caller's
     // out-slot and return it (ret 4 -> callee cleans the out-ptr arg).

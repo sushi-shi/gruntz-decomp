@@ -42,21 +42,45 @@ struct CProjSpriteFactory {
     CProjRenderObj*
     CreateSprite(i32 kind, i32 geoB, i32 geoA, i32 hint, const char* name, i32 flags);
 };
-struct CProjSoundCat {  // reg->m_30: the sound-category object
+struct CProjSoundCat { // reg->m_30: the sound-category object
     char m_pad00[0x8];
     CProjSpriteFactory* m_8; // +0x8  the HUD sprite factory (LightFx shadow)
     char m_pad0c[0x28 - 0xc];
     CProjSoundInner* m_28; // +0x28  -> the lookup map lives at (*m_28)+0x10
 };
+// The level "type" descriptor (reg->m_2c); LoadProjectileEffects switches on its
+// +0x20 terrain-class id to pick the level death effect.
+struct CProjLevelInfo {
+    char m_pad00[0x20];
+    i32 m_20; // +0x20  terrain-class id (switch key)
+};
+// The level terrain plane (reg->m_70): a width x height grid of 28-byte tiles
+// reached row-major through the +0x8 row-pointer array; tile dword 0 is the
+// terrain flags LoadProjectileEffects tests (water 0x900 / death 0x2 / gate 0x40).
+struct CTerrainTile {
+    u32 m_0; // +0x0  terrain flags
+    char m_pad04[0x1c - 0x4];
+};
+struct CTerrainPlane {
+    char m_pad00[0x8];
+    CTerrainTile** m_8; // +0x8  row pointers
+    i32 m_c;            // +0xc  width (tiles)
+    i32 m_10;           // +0x10 height (tiles)
+};
 struct CGameReg {
     char m_pad00[0x10];
     i32 m_10; // +0x10  gate (must be non-null)
-    char m_pad14[0x30 - 0x14];
-    CProjSoundCat* m_30; // +0x30
+    char m_pad14[0x2c - 0x14];
+    CProjLevelInfo* m_2c; // +0x2c  level/terrain descriptor
+    CProjSoundCat* m_30;  // +0x30
     char m_pad34[0x68 - 0x34];
     void* m_68; // +0x68  the 15x15 grunt-grid base
-    char m_pad6c[0x11c - 0x6c];
+    char m_pad6c[0x70 - 0x6c];
+    CTerrainPlane* m_70; // +0x70  terrain plane
+    char m_pad74[0x11c - 0x74];
     i32 m_11c; // +0x11c  the sound-channel param
+    char m_pad120[0x13c - 0x120];
+    i32 m_13c, m_140, m_144, m_148; // +0x13c..+0x148  level pixel bounds {xlo,ylo,xhi,yhi}
 };
 DATA(0x0024556c)
 extern CGameReg* g_gameReg;
@@ -261,32 +285,56 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
     switch (kind) {
         case 11: // ROCK
             key = "GRUNTZ_ROCKGRUNT_PROJECTILE";
-            m_190 = g_buteMgr.GetDwordDef((char*)"Projectile", (char*)"RockProjectileTimePerTile", 0xbb8);
+            m_190 = g_buteMgr.GetDwordDef(
+                (char*)"Projectile",
+                (char*)"RockProjectileTimePerTile",
+                0xbb8
+            );
             m_1d8 = 1;
             break;
         case 9: // GUNHAT
             key = "GRUNTZ_GUNHATGRUNT_PROJECTILE";
-            m_190 = g_buteMgr.GetDwordDef((char*)"Projectile", (char*)"GunhatProjectileTimePerTile", 0xbb8);
+            m_190 = g_buteMgr.GetDwordDef(
+                (char*)"Projectile",
+                (char*)"GunhatProjectileTimePerTile",
+                0xbb8
+            );
             m_1d8 = 1;
             break;
         case 2: // BOOMERANG
             key = "GRUNTZ_BOOMERANGGRUNT_PROJECTILE";
-            m_190 = g_buteMgr.GetDwordDef((char*)"Projectile", (char*)"BoomerangProjectileTimePerTile", 0xbb8);
+            m_190 = g_buteMgr.GetDwordDef(
+                (char*)"Projectile",
+                (char*)"BoomerangProjectileTimePerTile",
+                0xbb8
+            );
             m_1d8 = 0;
             break;
         case 10: // NERFGUN
             key = "GRUNTZ_NERFGUNGRUNT_PROJECTILE";
-            m_190 = g_buteMgr.GetDwordDef((char*)"Projectile", (char*)"NerfGunProjectileTimePerTile", 0xbb8);
+            m_190 = g_buteMgr.GetDwordDef(
+                (char*)"Projectile",
+                (char*)"NerfGunProjectileTimePerTile",
+                0xbb8
+            );
             m_1d8 = 1;
             break;
         case 21: // WELDER
             key = "GRUNTZ_WELDERGRUNT_PROJECTILE";
-            m_190 = g_buteMgr.GetDwordDef((char*)"Projectile", (char*)"WelderProjectileTimePerTile", 0xbb8);
+            m_190 = g_buteMgr.GetDwordDef(
+                (char*)"Projectile",
+                (char*)"WelderProjectileTimePerTile",
+                0xbb8
+            );
             m_1d8 = 1;
             break;
         case 22: { // WINGZ
             key = "GRUNTZ_WINGZGRUNT_PROJECTILE";
-            m_190 = g_buteMgr.GetDwordDef((char*)"Projectile", (char*)"WingzProjectileTimePerTile", 0xbb8);
+            m_190 = g_buteMgr.GetDwordDef(
+                (char*)"Projectile",
+                (char*)"WingzProjectileTimePerTile",
+                0xbb8
+            );
             LaunchSound("GRUNTZ_WINGZGRUNT_WINGZGRUNTLOOP");
             m_1d8 = 0;
             i32 ddx = (m_17c >> 5) - (owner->m_5c >> 5);
@@ -529,6 +577,224 @@ void CProjectile::RegisterType() {
         g_projTypeCounter++;
     }
     *(void**)ProjActLookup(id) = (void*)&ProjActivationHandler;
+}
+
+// ===========================================================================
+// CProjectile::LoadProjectileEffects (0xdfd00) - per-frame trajectory advance +
+// impact-effect select. Runs each frame until the projectile reaches its target
+// tile (m_1d0/m_1d4 catch up to m_17c/m_180): integrate the parabola into the
+// render position (m_1a0/m_1a8), clamp the muzzle-tracked position against the
+// target, and for the arc kinds (m_1d8) select one of five impact-effect sprite
+// tiers by the fractional distance-to-target. On arrival it stops the loop
+// sound, runs a final hit-scan, then - by the destination terrain flags - spills
+// the water / level death splash effect or installs the IMPACT/FALL sprite. The
+// one-shot m_1dc latch (0 while in flight; set on arrival) gates re-entry.
+// (WINGZ, kind 0x16, additionally loops its flight sound while over the level.)
+//
+// @early-stop
+// x87-scheduling + EH-frame family wall (same as LoadProjectileSprites ~58% /
+// StepMotion ~70%; docs/patterns): the control flow, the WINGZ sound gate, the
+// reached-destination hit-scan + terrain-flag switch (water/death/tier), the
+// LEVEL_DEATHSPLASH/GAME_WATER spawns and the five distance-tier sprite installs
+// are reconstructed. The residue is the dense fxch/fcompp FP schedule of the
+// parabola integration (0xdfeb6..0xdff37) and the distance/sqrt tier ladder
+// (0xdffd7..0xe00e9) - MSVC5 keeps `dist` live on the x87 stack across the eight
+// tier comparisons and pre-computes m_188*0.9 interleaved with the fsqrt, which
+// is not steerable from C source - plus the effect-spawn regalloc (ecx vs edx for
+// reg->m_30) and the unnamed engine-call relocs. Logic complete; parked.
+// ===========================================================================
+RVA(0x000dfd00, 0x6f5)
+void CProjectile::LoadProjectileEffects() {
+    if (m_1dc != 0) {
+        return;
+    }
+
+    if (m_170 == 0x16) { // WINGZ: loop the flight sound while over the level
+        CGameObject* owner = m_10;
+        CGameReg* reg = g_gameReg;
+        if (owner->m_5c < reg->m_144 && owner->m_5c >= reg->m_13c && owner->m_60 < reg->m_148
+            && owner->m_60 >= reg->m_140) {
+            LaunchSound("GRUNTZ_WINGZGRUNT_PROJECTILELOOP");
+        } else if (m_200 != 0) {
+            m_200->StopAndRewind();
+            m_200 = 0;
+        }
+    }
+
+    if (m_1d0 != m_17c || m_1d4 != m_180) {
+        // -- in flight: integrate one frame + select the impact tier ----------
+        if (m_170 == 0x16) {
+            ScanTargets(0);
+        }
+        m_1a0 = m_1a0 + (double)(u32)g_645584 * m_1b0 * m_198;
+        m_1a8 = m_1a8 + (double)(u32)g_645584 * m_1b8 * m_198;
+        i32 xRes = (i32)(*(double*)&m_1c0 + m_1a0);
+        i32 yRes = (i32)(*(double*)&m_1c8 + m_1a8);
+        i32 localX = xRes;
+        if (m_1b0 > 0.0) {
+            if (xRes > m_17c) {
+                localX = m_17c;
+                xRes = m_17c;
+            }
+        } else if (m_1b0 < 0.0) {
+            if (xRes < m_17c) {
+                localX = m_17c;
+                xRes = m_17c;
+            }
+        }
+        if (m_1b8 > 0.0) {
+            if (yRes > m_180) {
+                yRes = m_180;
+            }
+        } else if (m_1b8 < 0.0) {
+            if (yRes < m_180) {
+                yRes = m_180;
+            }
+        }
+        m_1d0 = xRes;
+        m_1d4 = yRes;
+        i32 offX = 0;
+        i32 offY = 0;
+        if (m_1d8 != 0) {
+            double dx = fabs((double)m_17c - m_1a0);
+            double dy = fabs((double)m_180 - m_1a8);
+            double dist = sqrt(dx * dx + dy * dy);
+            double mag = m_188;
+            if (dist >= mag * 0.9 || dist < mag * 0.1) {
+                offX = 0x4;
+                offY = -0x4;
+                if (m_154->m_1b4 != (i32)m_1e0) {
+                    m_15c = m_154->m_1b4;
+                    m_154->m_1a0.Setup(m_1e0);
+                    if (m_1fc != 0) {
+                        m_1fc->m_1a0.Setup(m_1e0);
+                    }
+                }
+            } else if (dist >= mag * 0.8 || dist < mag * 0.2) {
+                offX = 0x8;
+                offY = -0x8;
+                if (m_154->m_1b4 != (i32)m_1e4) {
+                    m_15c = m_154->m_1b4;
+                    m_154->m_1a0.Setup(m_1e4);
+                    if (m_1fc != 0) {
+                        m_1fc->m_1a0.Setup(m_1e4);
+                    }
+                }
+            } else if (dist >= mag * 0.7 || dist < mag * 0.3) {
+                offX = 0xc;
+                offY = -0xc;
+                if (m_154->m_1b4 != (i32)m_1e8) {
+                    m_15c = m_154->m_1b4;
+                    m_154->m_1a0.Setup(m_1e8);
+                    if (m_1fc != 0) {
+                        m_1fc->m_1a0.Setup(m_1e8);
+                    }
+                }
+            } else if (dist >= mag * 0.6 || dist < mag * 0.4) {
+                offX = 0x10;
+                offY = -0x10;
+                if (m_154->m_1b4 != m_1ec) {
+                    m_15c = m_154->m_1b4;
+                    m_154->m_1a0.Setup((void*)m_1ec);
+                    if (m_1fc != 0) {
+                        m_1fc->m_1a0.Setup((void*)m_1ec);
+                    }
+                }
+            } else {
+                offX = 0x14;
+                offY = -0x14;
+                if (m_154->m_1b4 != m_1f0) {
+                    m_15c = m_154->m_1b4;
+                    m_154->m_1a0.Setup((void*)m_1f0);
+                    if (m_1fc != 0) {
+                        m_1fc->m_1a0.Setup((void*)m_1f0);
+                    }
+                }
+            }
+        }
+        m_10->m_5c = offX + m_1d0;
+        m_10->m_60 = offY + m_1d4;
+        if (m_1fc != 0) {
+            m_1fc->m_5c = localX;
+            m_1fc->m_60 = yRes;
+        }
+        return;
+    }
+
+    // -- arrived at the target tile ------------------------------------------
+    if (m_200 != 0) {
+        m_200->StopAndRewind();
+        m_200 = 0;
+    }
+    ScanTargets(0);
+    if (m_1fc != 0) {
+        m_1fc->m_08 |= 0x10000;
+        m_1fc = 0;
+    }
+    m_1dc = 1;
+    i32 tier = 0;
+    if (m_170 != 0x16) {
+        CGameReg* reg = g_gameReg;
+        CTerrainPlane* plane = reg->m_70;
+        i32 tileX = m_17c >> 5;
+        i32 tileY = m_180 >> 5;
+        u32 flags;
+        if ((u32)tileX >= (u32)plane->m_c || (u32)tileY >= (u32)plane->m_10) {
+            flags = 1;
+        } else {
+            flags = plane->m_8[tileY][tileX].m_0;
+        }
+        if (flags & 0x900) {
+            // water tile: spill a splash then hide the projectile
+            if (m_17c < reg->m_144 && m_17c >= reg->m_13c && m_180 < reg->m_148
+                && m_180 >= reg->m_140) {
+                CProjRenderObj* fx =
+                    reg->m_30->m_8->CreateSprite(0, m_17c, m_180, 0xcf84f, "Particlez", 0x40003);
+                if (fx != 0) {
+                    fx->CacheFirstFrame("GAME_WATER");
+                    fx->ApplyLookupGeometry("GAME_WATER", 0);
+                }
+            }
+            m_154->m_08 |= 0x10000;
+            return;
+        }
+        if (flags & 0x2) {
+            if (flags & 0x40) {
+                tier = 1;
+            } else {
+                switch (reg->m_2c->m_20) {
+                    case 4:
+                    case 5:
+                    case 8:
+                        tier = 1;
+                        break;
+                    case 6:
+                        break;
+                    default:
+                        // level death tile: spill the death-splash then hide
+                        if (m_17c < reg->m_144 && m_17c >= reg->m_13c && m_180 < reg->m_148
+                            && m_180 >= reg->m_140) {
+                            CProjRenderObj* fx =
+                                reg->m_30->m_8
+                                    ->CreateSprite(0, m_17c, m_180, 0xcf84f, "Particlez", 0x40003);
+                            if (fx != 0) {
+                                fx->CacheFirstFrame("LEVEL_DEATHSPLASH");
+                                fx->ApplyLookupGeometry("LEVEL_DEATHSPLASH", 0);
+                            }
+                        }
+                        m_154->m_08 |= 0x10000;
+                        return;
+                }
+            }
+        }
+    }
+    void* sprite = (tier != 0) ? m_1f8 : m_1f4;
+    if (sprite == 0) {
+        m_154->m_08 |= 0x10000;
+        return;
+    }
+    m_15c = m_154->m_1b4;
+    m_154->m_1a0.Setup(sprite);
 }
 
 // ---------------------------------------------------------------------------

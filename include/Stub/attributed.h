@@ -16,10 +16,6 @@ public:
     void CNetMgr_0bc750();
     void CNetMgr_0bccd0();
 };
-class CTriggerMgr {
-public:
-    void CTriggerMgr_07abc0();
-};
 class istream {
 public:
     void istream_16a490();

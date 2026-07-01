@@ -30,13 +30,8 @@
 // bccd0: CNetMgr::SaveConfig reconstructed in src/Net/NetMgr.cpp
 
 // ---- CTriggerMgr ----
-// DEFERRED (matcher-4): 1206-byte /GX EH serializer (home -> src/Gruntz/TriggerMgr*.cpp).
-// A CButeMgr/archive (de)serialize: repeated `call [edx+0x2c]` (vtable slot 0x2c =
-// the read/write-field primitive) over the trigger-mgr's fields, plus g_645544
-// swaps and external helpers (0x1b8760/0x1b52e8/0x1b4991/...). Needs the serializer
-// vtable + the full field list enumerated in order; leaf-first redo for the final sweep.
-RVA(0x0007abc0, 0x4b6)
-void CTriggerMgr::CTriggerMgr_07abc0() {} // high
+// 0x7abc0: CTriggerMgr::Load - the /GX archive-deserialize reconstructed in
+// src/Gruntz/TriggerMgrEh.cpp.
 
 // ---- istream ----
 RVA(0x0016a490, 0x7a)

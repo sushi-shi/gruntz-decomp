@@ -212,12 +212,18 @@ public:
     CString GetWorldFileName(); // @0x0928c0 (return a copy of m_strWorldFile)
     i32 AdvanceOptionsCycle();  // @0x0933e0 (round-robin tick of the options slots)
     i32 SyncOptionsState();     // @0x093170 (reload each options slot's config; dual-slot)
-    void SetCellHeight(i32 r, i32 c, i32 v);              // @0x111ec0 (write the world height grid)
-    i32 PassClickToPlayState(i32 a0, i32 a1, i32 a2);     // @0x08d780
-    i32 SwitchToNextState();                              // @0x08d6a0
-    void EnterModalUI(i32 arg);                           // @0x08ef10
-    i32 ExitModalUI(class CModalDialog* dlg, i32 notify); // @0x0903f0
-    i32 FinishLevel(i32 full, i32 stopBank);              // @0x08e980
+    void SetCellHeight(i32 r, i32 c, i32 v);          // @0x111ec0 (write the world height grid)
+    i32 PassClickToPlayState(i32 a0, i32 a1, i32 a2); // @0x08d780
+    i32 SwitchToNextState();                          // @0x08d6a0
+    // @0x08b960: the /GX state-machine factory - tear down the current state
+    // (push it or scalar-delete + drain the stack), then build the new game-state
+    // object for `stateId` (switch/new + ctor + vtable), install it, run its
+    // slot-1 activate; ret 1 (0 on new/activate failure). Lives in an eh sibling TU.
+    i32 TransitionState(i32 stateId, i32 a2, i32 keepCurrent, i32 a4);
+    void FlushStateStack();     // @0x090a50 (scalar-delete + drain the pushed state stack)
+    void EnterModalUI(i32 arg); // @0x08ef10
+    i32 ExitModalUI(class CModalDialog* dlg, i32 notify);   // @0x0903f0
+    i32 FinishLevel(i32 full, i32 stopBank);                // @0x08e980
     i32 FillSaveInfo(struct SaveInfo* dst, void* snapshot); // @0x0927b0
     i32 SaveState(class CSerializerZ* ar);                  // @0x093620
     i32 LoadState(class CSerializerZ* ar);                  // @0x093920 (deserialize counterpart)

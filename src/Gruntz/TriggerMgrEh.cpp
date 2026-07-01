@@ -17,6 +17,7 @@ struct CTmGameRegE {
 };
 extern CTmGameRegE* g_gameReg;
 extern i32 g_644c54;
+extern void* g_renderCtx; // ?g_renderCtx@@3PAXA @0x644ca4 (Load reads into it)
 
 // CButeMgr (?g_buteMgr@@3VCButeMgr@@A @0x6453d8) - GetColor reloc-masked.
 struct CTmButeMgrE {
@@ -64,6 +65,257 @@ inline void* CTmObj::operator new(u32) {
 
 // The destroy-array CRT helper (reloc-masked @0x51f640) used by the destructor.
 void Tm_DestroyArray(void* base, i32 stride, i32 count, void* dtor); // 0x11f640
+
+// ---------------------------------------------------------------------------
+// Load (0x7abc0) collaborators. The manager reads its state through the archive
+// reader `ar` (vtable slot 0x2c = Read(dst, size)); the map values it resolves
+// carry a type-id virtual (slot 8 = vtbl+0x20) and a +0x7c sub-object whose +0x18
+// is the real placed game-object.
+// ---------------------------------------------------------------------------
+struct CTmSerReader {
+    virtual void v00();
+    virtual void v01();
+    virtual void v02();
+    virtual void v03();
+    virtual void v04();
+    virtual void v05();
+    virtual void v06();
+    virtual void v07();
+    virtual void v08();
+    virtual void v09();
+    virtual void v10();
+    virtual void Read(void* dst, i32 size); // slot 11 = vtbl+0x2c
+};
+struct CTmSerAux {
+    char pad00[0x18];
+    void* m_18; // +0x18  the placed game-object
+};
+struct CTmSerMapObj {
+    virtual void v00();
+    virtual void v01();
+    virtual void v02();
+    virtual void v03();
+    virtual void v04();
+    virtual void v05();
+    virtual void v06();
+    virtual void v07();
+    virtual i32 GetTypeId(); // slot 8 = vtbl+0x20
+    char pad04[0x7c - 0x4];
+    CTmSerAux* m_7c; // +0x7c
+};
+// The level object (this->m_22c); its +0x8 host owns the name->object map at +0x48.
+struct CTmSerMap {
+    i32 Lookup(i32 key, void** out); // 0x1b8760 (__thiscall, ret 8)
+};
+// The manager's embedded list nodes (base list @this+0, record @+0x240, the ten
+// selection lists @+0x2d0) and the +0x260 byte array; reloc-masked MFC bodies.
+struct CTmSerList {
+    void RemoveAll();      // 0x1b48a6
+    void AddTail(void* p); // 0x1b4991
+};
+struct CTmSerByteArray {
+    void SetSize(i32 n, i32 grow); // 0x1b52e8
+    void SetAtGrow(i32 i, i32 v);  // 0x1b5485
+};
+// The overlay sub-object (this->m_25c): new(0x40) + ctor, its own Load, and a
+// Clear + custom free on teardown.
+struct CTmSerOverlay {
+    CTmSerOverlay();            // 0x9090 (ctor via new)
+    void Clear();               // 0x92e0
+    i32 Load(CTmSerReader* ar); // 0x9bb0
+    inline void* operator new(u32);
+    char m_body[0x40];
+};
+inline void* CTmSerOverlay::operator new(u32) {
+    return ::operator new(0x40);
+}
+void Tm_RezFree(void* p); // 0x1b9b82 (__cdecl free used by the overlay teardown)
+
+// 0x7abc0: Load(ar) - deserialize the whole trigger-mgr state (see the header). The
+// grid + list loads resolve each stored key through the level's map, validating the
+// found descriptor's type/sub-object; the overlay sub-object is rebuilt via new+Load.
+// @early-stop
+// /GX EH-state wall (same family as DestroyGroup / ApplySwitch in this TU): the
+// full read/lookup/list-load body and the field offsets are faithful, but the
+// overlay new-expression's partial-object cleanup states and the heavy stack-slot
+// reuse (retail folds `this` and the lookup-out param into one slot) number/allocate
+// differently than retail's __ehfuncinfo. topic:wall topic:eh.
+RVA(0x0007abc0, 0x4b6)
+i32 CTriggerMgr::Load(CTmSerReader* ar) {
+    if (ar == 0) {
+        return 0;
+    }
+    char* lvl = *(char**)((char*)this + 0x22c);
+    if (lvl == 0) {
+        return 0;
+    }
+    *(i32*)((char*)this + 0x3f0) = 0;
+    *(i32*)((char*)this + 0x3f4) = 0;
+    *(i32*)((char*)this + 0x3f8) = 0;
+    *(i32*)((char*)this + 0x3fc) = 0;
+
+    CTmSerMap* map = (CTmSerMap*)(*(char**)(lvl + 0x8) + 0x48);
+
+    // the 4x15 placed-object grid (this[7..66], byte offsets +0x1c..+0x108)
+    for (i32 base = 7; base < 0x43; base += 0xf) {
+        for (i32 i = 0; i < 0xf; i++) {
+            i32 key;
+            ar->Read(&key, 4);
+            void* cell = 0;
+            if (key != 0) {
+                void* found = 0;
+                void* looked = map->Lookup(key, &found) ? found : 0;
+                if (looked == 0) {
+                    return 0;
+                }
+                cell = ((CTmSerMapObj*)looked)->m_7c->m_18;
+                if (cell == 0) {
+                    return 0;
+                }
+            }
+            ((void**)this)[base + i] = cell;
+        }
+    }
+
+    // per-row state bands
+    ar->Read((char*)this + 0x10c, 0x10);
+    ar->Read((char*)this + 0x11c, 0xf0);
+    ar->Read((char*)this + 0x20c, 0x10);
+    ar->Read((char*)this + 0x21c, 0x10);
+
+    // the +0x260 byte table
+    i32 count;
+    u32 ci;
+    ar->Read(&count, 4);
+    CTmSerByteArray* arr = (CTmSerByteArray*)((char*)this + 0x260);
+    arr->SetSize(0, -1);
+    for (ci = 0; ci < (u32)count; ci++) {
+        i32 b;
+        ar->Read(&b, 1);
+        arr->SetAtGrow(ci, b);
+    }
+    ClearRecords();
+
+    // the +0x240 record list (nodes pulled off the shared free-list)
+    ar->Read(&count, 4);
+    CTmSerList* rec = (CTmSerList*)((char*)this + 0x240);
+    for (ci = 0; ci < (u32)count; ci++) {
+        char* fl = (char*)g_freeList;
+        void* node = 0;
+        if (*(void**)fl != 0) {
+            node = fl + 4;
+            g_freeList = *(void**)fl;
+        }
+        ar->Read(node, 8);
+        rec->AddTail(node);
+    }
+
+    // the ten selection lists (+0x2d0, stride 0x1c)
+    char* sel = (char*)this + 0x2d0;
+    i32 slot = 0xa;
+    do {
+        ar->Read(&count, 4);
+        for (ci = 0; ci < (u32)count; ci++) {
+            char* fl = (char*)g_freeList;
+            void* node = 0;
+            if (*(void**)fl != 0) {
+                node = fl + 4;
+                g_freeList = *(void**)fl;
+            }
+            ar->Read(node, 8);
+            ((CTmSerList*)sel)->AddTail(node);
+        }
+        sel += 0x1c;
+    } while (--slot != 0);
+
+    // the type-5 singleton (+0x23c)
+    {
+        i32 key;
+        ar->Read(&key, 4);
+        if (key != 0) {
+            void* found = 0;
+            void* looked = map->Lookup(key, &found) ? found : 0;
+            void* obj = (looked != 0 && ((CTmSerMapObj*)looked)->GetTypeId() == 5) ? looked : 0;
+            *(void**)((char*)this + 0x23c) = obj;
+            if (obj == 0) {
+                return 0;
+            }
+        }
+    }
+
+    // the pending-fx singleton (+0x2a0)
+    {
+        i32 key;
+        ar->Read(&key, 4);
+        if (key != 0) {
+            void* found = 0;
+            void* looked = map->Lookup(key, &found) ? found : 0;
+            if (looked == 0) {
+                return 0;
+            }
+            void* obj = ((CTmSerMapObj*)looked)->m_7c->m_18;
+            *(void**)((char*)this + 0x2a0) = obj;
+            if (obj == 0) {
+                return 0;
+            }
+        } else {
+            *(void**)((char*)this + 0x2a0) = 0;
+        }
+    }
+
+    // the base object list (this+0): reload from count keys
+    ar->Read((char*)this + 0x274, 0x10);
+    ((CTmSerList*)this)->RemoveAll();
+    ar->Read(&count, 4);
+    for (ci = 0; ci < (u32)count; ci++) {
+        i32 key;
+        ar->Read(&key, 4);
+        if (key == 0) {
+            return 0;
+        }
+        void* found = 0;
+        void* looked = map->Lookup(key, &found) ? found : 0;
+        if (looked == 0) {
+            return 0;
+        }
+        void* obj = ((CTmSerMapObj*)looked)->m_7c->m_18;
+        if (obj == 0) {
+            return 0;
+        }
+        ((CTmSerList*)this)->AddTail(obj);
+    }
+
+    // the overlay sub-object (+0x25c): tear down the old, rebuild + Load the new
+    CTmSerOverlay* old = *(CTmSerOverlay**)((char*)this + 0x25c);
+    if (old != 0) {
+        old->Clear();
+        Tm_RezFree(old);
+        *(CTmSerOverlay**)((char*)this + 0x25c) = 0;
+    }
+    i32 hasOverlay;
+    ar->Read(&hasOverlay, 4);
+    if (hasOverlay != 0) {
+        CTmSerOverlay* ov = new CTmSerOverlay;
+        *(CTmSerOverlay**)((char*)this + 0x25c) = ov;
+        if (ov->Load(ar) == 0) {
+            return 0;
+        }
+    }
+
+    // tail scalars + two globals
+    ar->Read((char*)this + 0x230, 4);
+    ar->Read((char*)this + 0x284, 4);
+    ar->Read((char*)this + 0x288, 4);
+    ar->Read((char*)this + 0x234, 8);
+    ar->Read((char*)this + 0x2a4, 4);
+    ar->Read((char*)this + 0x3ec, 4);
+    ar->Read((char*)this + 0x400, 4);
+    ar->Read(&g_644c54, 4);
+    ar->Read(&g_renderCtx, 4);
+    ar->Read((char*)this + 0x2a8, 4);
+    ar->Read((char*)this + 0x3e8, 4);
+    return 1;
+}
 
 // 0x6d300: ApplySwitch(sx, sy) - the /GX switch-logic driver. Clamp (sx,sy) to the plane,
 // sample the tile attribute, decode the logic class, switch over the kind dispatching the

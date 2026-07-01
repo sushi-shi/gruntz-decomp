@@ -71,7 +71,7 @@ public:
 // FUN_0055c360 (0x15c360, __thiscall, 1 arg) re-targets the active animation, and
 // Setup (0x15c2d0, __thiscall, 1 arg) installs the resolved frame-0 sprite.
 struct CProjAnim {
-    i32 SetAnim(u32 mode); // 0x15c360
+    i32 SetAnim(u32 mode);   // 0x15c360
     i32 Setup(void* frame0); // 0x15c2d0
 };
 
@@ -96,7 +96,7 @@ struct CProjResMgr {
 // word, +0x1c0/+0x1c8 state gates.
 struct CProjRenderObj {
     char m_pad00[0x08];
-    u32 m_08; // +0x08  flag word (|= 0x10000)
+    u32 m_08;         // +0x08  flag word (|= 0x10000)
     CProjResMgr* m_c; // +0x0c  resource host (name->sprite map via m_2c)
     char m_pad10[0x40 - 0x10];
     u32 m_40; // +0x40  flag word (&= ~1)
@@ -114,7 +114,8 @@ struct CProjRenderObj {
     char m_pad1c4[0x1c8 - 0x1c4];
     i32 m_1c8; // +0x1c8
 
-    void CacheFirstFrame(const char* name); // 0x150540 (__thiscall, ret 4)
+    void CacheFirstFrame(const char* name);             // 0x150540 (__thiscall, ret 4)
+    i32 ApplyLookupGeometry(const char* key, i32 flag); // 0x1505b0 (__thiscall, ret 8)
 };
 
 // The shadow companion's post-create sub-table (m_1fc->m_7c): an Init fn-ptr at
@@ -160,7 +161,7 @@ public:
     // (0xdf050, /GX) and the impact/particle effects (0xdfd00). Args are the two
     // grid endpoints + z + the target/owner ids.
     i32 LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i32 t0, i32 t1); // 0xdf050
-    i32 LoadProjectileEffects();                                                       // 0xdfd00
+    void LoadProjectileEffects();                                                      // 0xdfd00
 
     char m_pad140[0x150 - 0x140];
     i32 m_150;                    // +0x150

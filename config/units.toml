@@ -421,6 +421,11 @@ source = "src/Gruntz/GruntInfoText.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "gruntzmgrtransition"
+source = "src/Gruntz/GruntzMgrTransition.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "cplayplanescan"
 source = "src/Gruntz/CPlayPlaneScan.cpp"
 flags = "eh"
