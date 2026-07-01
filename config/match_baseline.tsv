@@ -211,7 +211,7 @@ dsoundvoice	2	1
 ehfunclets	6	6
 engine_attributed	6	0
 engine_discovered	15	8
-engine_label_stubs	266	124
+engine_label_stubs	263	124
 engine_unmatched_lib	11	0
 engstr	3	1
 eyecandytypetags	4	4
@@ -239,6 +239,7 @@ gamewnd	9	8
 goowellmgr	1	0
 groupops	2	0
 grunt	89	16
+gruntarrivalscan	3	0
 gruntarrivalstep	1	0
 gruntassetloaders	3	0
 gruntchargestep	1	0
@@ -1852,7 +1853,7 @@ engine_label_stubs	?Key@CmdHost_014720@ApiCallerStubs@@QAEHHH@Z	100.0000	100.000
 engine_label_stubs	?Key@CmdHost_039440@ApiCallerStubs@@QAEHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x39440
 engine_label_stubs	?Key@CmdHost_0953f0@ApiCallerStubs@@QAEHHH@Z	100.0000	100.0000	1	cpp:e1535087fe94	0x953f0
 engine_label_stubs	?Load@PalLoad_1479e0@ApiCallerStubs@@QAEHHPADH@Z	89.7286	89.7286	1	cpp:6bf52155264d	0x1479e0
-engine_label_stubs	?Load@ResLoad_144270@ApiCallerStubs@@QAEHHPADH@Z	86.9885	86.9885	1	cpp:6bf52155264d	0x144270
+engine_label_stubs	?Load@ResLoad_144270@ApiCallerStubs@@QAEHHPADH@Z	86.9310	86.9310	1	cpp:6bf52155264d	0x144270
 engine_label_stubs	?Load@StrHost_0b7ec0@ApiCallerStubs@@QAEXHH@Z	100.0000	100.0000	1	cpp:e1535087fe94	0xb7ec0
 engine_label_stubs	?LoadAttributes@CDroppedObjectShadow@@QAEXXZ	0.4444	0.4444	1	cpp:45e65336d4b5	0xc62e0
 engine_label_stubs	?LoadByExt@CFileImage@@QAEHPAVCFileImageInfo@@PADHH@Z	100.0000	100.0000	1	cpp:590eddff1627	0x148940
@@ -1993,10 +1994,7 @@ engine_label_stubs	?winapi_0e3be0_EndDialog@ApiCallerStubs@@YGHPAXHHH@Z	100.0000
 engine_label_stubs	?winapi_0e3e80_SetDlgItemTextA@ApiCallerStubs@@YAXPAXPAUNameItem_09e2d0@1@HHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xe3e80
 engine_label_stubs	?winapi_0e4850_SetDlgItemTextA@ApiCallerStubs@@YAXPAX0PAD@Z	100.0000	100.0000	1	cpp:e1535087fe94	0xe4850
 engine_label_stubs	?winapi_0e6020_SetRect@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHHHHHHHHHHH@Z	0.8621	0.8621	1	cpp:e8a4cb0d5b2a	0xe6020
-engine_label_stubs	?winapi_0ecc90_IntersectRect@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHXZ	0.2879	0.2879	1	cpp:e8a4cb0d5b2a	0xecc90
 engine_label_stubs	?winapi_0ed9f0_PtInRect@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHXZ	0.2857	0.2857	1	cpp:e8a4cb0d5b2a	0xed9f0
-engine_label_stubs	?winapi_0f0e20_IntersectRect_PtInRect@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHXZ	0.2759	0.2759	1	cpp:e8a4cb0d5b2a	0xf0e20
-engine_label_stubs	?winapi_0f36a0_IntersectRect@ApiCallerStubs@@YAHXZ	0.3161	0.3161	1	cpp:e1535087fe94	0xf36a0
 engine_label_stubs	?winapi_0f42f0_PtInRect@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHXZ	0.1617	0.1617	1	cpp:e8a4cb0d5b2a	0xf42f0
 engine_label_stubs	?winapi_0f60f0_IntersectRect@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHXZ	0.2225	0.2225	1	cpp:e8a4cb0d5b2a	0xf60f0
 engine_label_stubs	?winapi_0f8e20_FreeLibrary@ApiCallerStubs@@YAXXZ	100.0000	100.0000	1	cpp:6bf52155264d	0xf8e20
@@ -2370,6 +2368,9 @@ grunt	?UpdateArrival@CGrunt@@QAEHHH@Z	70.0360	70.0360	2	e681bf3b93db	0x62110
 grunt	?UpdateEntranceAnim@CGrunt@@QAEHXZ	88.3088	88.3088	1	277e290dabfb	0x690a0
 grunt	?UpdateGruntStatus@CGrunt@@QAEHXZ	94.5000	94.5000	3	2b7c880860ba	0x617c0
 grunt	?winapi_04a9f0_CopyRect_OffsetRect@CGrunt@@QAEHXZ	100.0000	100.0000	1	dbbfdbcac471	0x4a9f0
+gruntarrivalscan	?ArrivalScanA@CGruntStep@@QAEHXZ	51.2879	51.2879	1	774d15a11344	0xecc90
+gruntarrivalscan	?ArrivalScanB@CGruntStep@@QAEHXZ	45.3241	45.3241	1	efeccc7d41dd	0xf0e20
+gruntarrivalscan	?ArrivalScanC@CGruntStep@@QAEHXZ	45.3710	45.3710	1	33af96ca185c	0xf36a0
 gruntarrivalstep	?StepArrivalDefenseAlt@CGrunt@@QAEHXZ	69.8771	69.8771	2	8b46871a0a25	0xf1c70
 gruntassetloaders	?LoadGruntAbilityTuning@CGrunt@@QAEHH@Z	90.5457	90.5457	2	7b2421d2cfbd	0x57100
 gruntassetloaders	?LoadGruntDeathAnimations@CGrunt@@QAEHHH@Z	87.0599	87.0599	2	d6d80c6ea759	0x60150

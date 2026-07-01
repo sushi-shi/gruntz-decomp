@@ -446,6 +446,11 @@ source = "src/Gruntz/BootyWalkAnim.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "gruntarrivalscan"
+source = "src/Gruntz/GruntArrivalScan.cpp"
+flags = "base"
+
+[[unit]]
 unit = "cplayplanescan"
 source = "src/Gruntz/CPlayPlaneScan.cpp"
 flags = "eh"

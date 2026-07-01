@@ -2565,37 +2565,11 @@ namespace ApiCallerStubs {
     }
 
     // @confidence: low
-    // @source: winapi:IntersectRect
-    // @stub
-    // proximity: CGrunt@-0x620 | CUserLogic@+0x1b70
-    RVA(0x000ecc90, 0x86a)
-    i32 ThisStubOwnerUnknown::winapi_0ecc90_IntersectRect() {
-        return 0;
-    }
-
-    // @confidence: low
     // @source: winapi:PtInRect
     // @stub
     // proximity: CGrunt@-0x1380 | CUserLogic@+0xe10
     RVA(0x000ed9f0, 0x8dd)
     i32 ThisStubOwnerUnknown::winapi_0ed9f0_PtInRect() {
-        return 0;
-    }
-
-    // @confidence: low
-    // @source: winapi:IntersectRect;PtInRect
-    // @stub
-    // proximity: CUserLogic@-0x2620 | CGrunt@+0x18d0
-    RVA(0x000f0e20, 0x928)
-    i32 ThisStubOwnerUnknown::winapi_0f0e20_IntersectRect_PtInRect() {
-        return 0;
-    }
-
-    // @confidence: low
-    // @source: winapi:IntersectRect
-    // @stub
-    RVA(0x000f36a0, 0x78e)
-    i32 winapi_0f36a0_IntersectRect() {
         return 0;
     }
 
