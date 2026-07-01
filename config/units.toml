@@ -556,6 +556,11 @@ source = "src/Gruntz/MotionState.cpp"
 flags = "base"
 
 [[unit]]
+unit = "movinglogicupdate"
+source = "src/Gruntz/MovingLogicUpdate.cpp"
+flags = "base"
+
+[[unit]]
 unit = "zvec"
 source = "src/Wap32/ZVec.cpp"
 flags = "base"

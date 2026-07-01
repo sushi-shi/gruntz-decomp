@@ -59,19 +59,12 @@ void CGruntzSingleCommand::CGruntzSingleCommand_18c022() {}
 // ---- CSpotLight ----
 // 0x0b1ee0 re-homed (reconstructed) as Update_0b1ee0 in src/Gruntz/CSpotLight.cpp.
 
-// ---- CUserLogic ----
-// 0x16ea90 IS a genuine CUserLogic __thiscall method (this=esi): a 564-byte x87-heavy
-// per-tick screen/scroll position update - reads the m_78/m_80 doubles -> int via
-// __ftol (0x11f570), fmul by ds:0x5f04f0/0x5f04f8, fild/fsub/fsubr into m_28..m_a8,
-// and calls 0x16ecd0 / 0x15de40 / 0x16f3c0 / 0x16f430. This is a real reconstruction
-// target, NOT a byte-neutral re-home: kept here (empty stub) for the reconstruction /
-// final sweep - it needs the full CUserLogic field model + a leaf-first x87 pass
-// (>512B x87 scheduling), which is out of scope for a re-home pass.
-// @confidence: high
-// @source: disasm (__thiscall this=esi; x87 screen/scroll position update, 564B)
-// @stub
-RVA(0x0016ea90, 0x234)
-void CUserLogic::CUserLogic_16ea90() {}
+// ---- CUserLogic / CMovingLogic ----
+// 0x16ea90 re-homed (reconstructed) as CMovingLogic::Update in
+// src/Gruntz/MovingLogicUpdate.cpp - it is NOT a tile-logic CUserLogic method: its
+// this uses fields up to +0x14c and a CMotionState subobject at +0x38 (methods
+// 0x16ecd0/0x16f3c0/0x16f430), i.e. the moving-object per-frame scroll pump. The
+// trace mis-attributed it to CUserLogic (a base of the moving family).
 
 // ---- ClassUnknown_1 ----
 // 0x150040 re-homed (reconstructed, MFC CArray<DWORD>::SetSize) to

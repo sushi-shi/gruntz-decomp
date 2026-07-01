@@ -220,7 +220,7 @@ drawdebugstats	1	0
 dsoundvoice	2	1
 ehfunclets	6	6
 engine_attributed	5	0
-engine_discovered	14	7
+engine_discovered	13	7
 engine_label_stubs	207	116
 engine_unmatched_lib	11	0
 engstr	3	1
@@ -375,6 +375,7 @@ mgrlistfind	1	0
 mgrtokenquery	1	1
 minervainner	1	1
 motionstate	6	5
+movinglogicupdate	1	0
 msgpacket	2	2
 multistartdlgworld	1	1
 namerecord	1	0
@@ -1819,7 +1820,6 @@ engine_discovered	??0ClassUnknown_15@@QAE@XZ	100.0000	100.0000	1	f5402effacd2	0x
 engine_discovered	??0ClassUnknown_45@@QAE@XZ	100.0000	100.0000	1	50998ec8bdf3	0x8c3b0
 engine_discovered	?CGruntzSingleCommand_11f618@CGruntzSingleCommand@@QAEXXZ	10.0000	10.0000	1	4a4d0e24746c	0x11f618
 engine_discovered	?CGruntzSingleCommand_18c022@CGruntzSingleCommand@@QAEXXZ	0.7874	0.7874	1	ad61ecca3c94	0x18c022
-engine_discovered	?CUserLogic_16ea90@CUserLogic@@QAEXXZ	0.6061	0.6061	3	68eaea7fe177	0x16ea90
 engine_discovered	?ClassUnknown_16_1d496b@ClassUnknown_16@@QAEXXZ	3.6364	3.6364	1	2d71a7c5a87b	0x1d496b
 engine_discovered	?ClassUnknown_33_11f6b9@ClassUnknown_33@@QAEXXZ	9.0909	9.0909	1	835f56f8e975	0x11f6b9
 engine_discovered	?ClassUnknown_50_16dfc0@ClassUnknown_50@@QAEXXZ	100.0000	100.0000	3	accb4d51f7ed	0x16dfc0
@@ -2954,6 +2954,7 @@ motionstate	?ArrivalVelY@CMotionState@@QAENN@Z	100.0000	100.0000	2	ef5e4a08d508	
 motionstate	?SetParams@CMotionState@@QAEHNNNNNNNNNNN@Z	100.0000	100.0000	2	57c861974e56	0x58bc0
 motionstate	?SetZ@CMotionState@@QAEXN@Z	100.0000	100.0000	1	9d25f9ec952e	0x58ca0
 motionstate	?Step@CMotionState@@QAEXN@Z	64.9479	64.9479	2	877abdf7095d	0x16ecd0
+movinglogicupdate	?Update@CMovingLogic@@QAEXXZ	91.8606	91.8606	1	123331fdb14a	0x16ea90
 msgpacket	?CopyPacketHeader@@YAHPAUCMsgPacket@@0@Z	100.0000	100.0000	2	499b606c8e9c	0x186a20
 msgpacket	?WritePacketU16@@YAXPAUCMsgPacket@@I@Z	100.0000	100.0000	2	2a7f6a756128	0x1868e0
 multistartdlgworld	?SetupWorldCombo@CMultiStartDlg@@QAEHXZ	100.0000	100.0000	1	a2ec1557034f	0xc1840

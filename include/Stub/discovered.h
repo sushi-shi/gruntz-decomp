@@ -47,10 +47,6 @@ class CSpotLight {
 public:
     void CSpotLight_0b1ee0();
 };
-class CUserLogic {
-public:
-    void CUserLogic_16ea90();
-};
 class ClassUnknown_1 {
 public:
     void ClassUnknown_1_150040();
