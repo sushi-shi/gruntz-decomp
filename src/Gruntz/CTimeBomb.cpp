@@ -149,7 +149,7 @@ CTimeBomb::~CTimeBomb() {}
 #include <Bute/ButeMgr.h> // CButeMgr (g_buteMgr GetIntDef)
 extern CButeMgr g_buteMgr;
 
-// The running game clock (DAT_00645588) the ctor seeds m_58 from.
+// The running game clock (DAT_00645588) the ctor seeds m_startTimeLo from.
 extern "C" u32 g_645588;
 
 // The bound game object (CUserLogic m_10/m_38 both point at it): the timebomb
@@ -227,18 +227,18 @@ CTimeBomb::CTimeBomb(CGameObject* obj) : CUserLogic(obj) {
     m_40 = ((TBombObj*)m_38)->m_1b4;
     if (((TBombObj*)m_10)->m_120 > 0) {
         ((TBombObj*)m_38)->ApplyLookupGeometry("GAME_TIMEBOMBFAST", 0);
-        m_60 = ((TBombObj*)m_10)->m_120;
-        m_64 = 0;
-        m_58 = g_645588;
-        m_5c = 0;
-        m_54 = 1;
+        m_durationLo = ((TBombObj*)m_10)->m_120;
+        m_durationHi = 0;
+        m_startTimeLo = g_645588;
+        m_startTimeHi = 0;
+        m_fastPhase = 1;
     } else {
         ((TBombObj*)m_38)->ApplyLookupGeometry("GAME_TIMEBOMBSLOW", 0);
-        m_60 = (i32)g_buteMgr.GetDwordDef("Projectile", "TimeBombSlowTime", 0xfa0);
-        m_64 = 0;
-        m_58 = g_645588;
-        m_5c = 0;
-        m_54 = 0;
+        m_durationLo = (i32)g_buteMgr.GetDwordDef("Projectile", "TimeBombSlowTime", 0xfa0);
+        m_durationHi = 0;
+        m_startTimeLo = g_645588;
+        m_startTimeHi = 0;
+        m_fastPhase = 0;
     }
     i32 cx = ((TBombObj*)m_10)->m_5c >> 5;
     i32 cy = ((TBombObj*)m_10)->m_60 >> 5;
@@ -330,10 +330,10 @@ static inline void TBombGridClear(CGameObject* obj) {
 // CTimeBomb::LoadAttributes @0x0e1e60 - the bomb's per-frame logic step. Read the
 // bomb's tile state; if it sits under a blocking/hazard cell, raise m_38's pending
 // flag, clear the cell's owner bit, and bail. Otherwise advance the anim sink and
-// gate on the 64-bit running-clock timer (m_58/m_5c base vs m_60/m_64 duration);
-// once it expires, either re-arm the FAST phase (m_54==0 -> apply GAME_TIMEBOMBFAST,
+// gate on the 64-bit running-clock timer (m_startTimeLo/m_startTimeHi base vs m_durationLo/m_durationHi duration);
+// once it expires, either re-arm the FAST phase (m_fastPhase==0 -> apply GAME_TIMEBOMBFAST,
 // reload the Projectile/TimeBombFastTime duration) or, on the second expiry
-// (m_54!=0), detonate: raise m_38's flag, clear the cell, and post the tile event
+// (m_fastPhase!=0), detonate: raise m_38's flag, clear the cell, and post the tile event
 // to the registry's tile-manager (NotifyMoveAt). Returns 0 on every path.
 //
 // @early-stop
@@ -354,17 +354,17 @@ i32 CTimeBomb::LoadAttributes() {
         return 0;
     }
     ((TBombAnimSink*)((char*)m_38 + 0x1a0))->Advance(g_6bf3bc);
-    if ((i64)g_645588 - *(i64*)&m_58 < *(i64*)&m_60) {
+    if ((i64)g_645588 - *(i64*)&m_startTimeLo < *(i64*)&m_durationLo) {
         return 0;
     }
-    if (m_54 == 0) {
+    if (m_fastPhase == 0) {
         m_40 = m_38->m_1b4;
         m_38->ApplyLookupGeometry("GAME_TIMEBOMBFAST", 0);
-        m_60 = (i32)g_buteMgr.GetDwordDef("Projectile", "TimeBombFastTime", 0x3e8);
-        m_64 = 0;
-        m_58 = (i32)g_645588;
-        m_5c = 0;
-        m_54 = 1;
+        m_durationLo = (i32)g_buteMgr.GetDwordDef("Projectile", "TimeBombFastTime", 0x3e8);
+        m_durationHi = 0;
+        m_startTimeLo = (i32)g_645588;
+        m_startTimeHi = 0;
+        m_fastPhase = 1;
         return 0;
     }
     m_38->m_08 |= 0x10000;

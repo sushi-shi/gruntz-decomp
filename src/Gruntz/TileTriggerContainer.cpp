@@ -286,12 +286,12 @@ i32 CTileTriggerContainer::SetCell(i32 a, i32 b, i32 verb) {
     TtcKeyedElem* elem = FindByKey(key);
     if (elem != 0) {
         if (verb == 5) {
-            elem->m_18 = 1;
-            elem->m_1c = 1;
-            elem->m_20 = 1;
-            elem->m_24 = 1;
+            elem->m_flags[0] = 1;
+            elem->m_flags[1] = 1;
+            elem->m_flags[2] = 1;
+            elem->m_flags[3] = 1;
         } else {
-            (&elem->m_18)[verb] = 1;
+            elem->m_flags[verb] = 1;
         }
         elem->Notify(elem->m_vptr);
         return 1;

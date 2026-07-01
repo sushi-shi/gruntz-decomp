@@ -125,7 +125,7 @@ public:
     i32 ApplyMove(i32 verb); // 0x112590
 
     void* m_vptr;                // +0x00
-    i32 m_04;                    // +0x04  type tag
+    i32 m_typeTag;               // +0x04  type tag (0x17/0x18 duty-cycle discriminant)
     i32 m_08;                    // +0x08  coord x
     i32 m_0c;                    // +0x0c  coord y
     i32 m_10;                    // +0x10
@@ -138,7 +138,7 @@ public:
     i32 m_2c;                    // +0x2c
     i32 m_30;                    // +0x30
     i32 m_34;                    // +0x34
-    i32 m_38;                    // +0x38
+    i32 m_dutyOn;                // +0x38  duty-cycle on/off latch (1 = currently on)
     i32 m_grid[24];              // +0x3c..+0x9b  (24-dword block, serialized in a loop)
 };
 

@@ -51,7 +51,7 @@ i32 CTileGridCommand::Serialize(TgcStream* s) {
     s->Transfer(&m_2c, 4);
     s->Transfer(&m_30, 4);
     s->Transfer(&m_34, 4);
-    s->Transfer(&m_38, 4);
+    s->Transfer(&m_dutyOn, 4);
     s->Transfer(&m_24, 4);
     i32* p = m_grid;
     for (i32 i = 0; i < 24; i++) {
@@ -85,7 +85,7 @@ i32 CTileGridCommand::Deserialize(TgcStream* s) {
     s->Read(&m_2c, 4);
     s->Read(&m_30, 4);
     s->Read(&m_34, 4);
-    s->Read(&m_38, 4);
+    s->Read(&m_dutyOn, 4);
     s->Read(&m_24, 4);
     i32* p = m_grid;
     for (i32 i = 0; i < 24; i++) {
@@ -100,7 +100,7 @@ i32 CTileGridCommand::Deserialize(TgcStream* s) {
 // Drives the command's on/off duty cycle off the running game clock: while the
 // elapsed time is within the lead-in (m_2c) it stays active (+1); past it, the
 // remainder modulo the on+off period (m_28+m_30) selects the on or off phase,
-// firing the slot-0 tick and latching m_38 on each edge.  Returns +1 (active),
+// firing the slot-0 tick and latching m_dutyOn on each edge.  Returns +1 (active),
 // 0 (just turned on, one-shot of type 0x18) or -1 (just turned off, not 0x17).
 // ---------------------------------------------------------------------------
 // @early-stop
@@ -116,12 +116,12 @@ i32 CTileGridCommand::Classify(i32 arg) {
     {
         u32 period = (u32)m_30 + (u32)m_28;
         if (elapsed > period) {
-            if (m_04 == 0x18) {
+            if (m_typeTag == 0x18) {
                 ((TgcTickView*)this)->Tick();
                 return 0;
             }
-            if (m_04 != 0x17) {
-                if (m_38 == 1) {
+            if (m_typeTag != 0x17) {
+                if (m_dutyOn == 1) {
                     ((TgcTickView*)this)->Tick();
                 }
                 return -1;
@@ -129,22 +129,22 @@ i32 CTileGridCommand::Classify(i32 arg) {
         }
         u32 rem = elapsed % period;
         if (rem < (u32)m_28) {
-            if (m_38 != 0) {
+            if (m_dutyOn != 0) {
                 goto ret1;
             }
             ((TgcTickView*)this)->Tick();
-            m_38 = 1;
-            if (m_04 == 0x18) {
+            m_dutyOn = 1;
+            if (m_typeTag == 0x18) {
                 return 0;
             }
             goto ret1;
         }
-        if (m_38 != 1) {
+        if (m_dutyOn != 1) {
             goto ret1;
         }
         ((TgcTickView*)this)->Tick();
-        m_38 = 0;
-        if (m_04 == 0x17) {
+        m_dutyOn = 0;
+        if (m_typeTag == 0x17) {
             goto ret1;
         }
         return -1;

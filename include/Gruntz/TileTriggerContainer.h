@@ -30,16 +30,14 @@ extern void* g_tileGridCmdVtbl; // 0x5eaea4
 // before free).  Reloc-masked DIR32 datum.
 extern void* g_tileTriggerSwitchVtbl; // 0x5eae8c
 
-// A keyed element found by SetCell's lookup: four state flags at +0x18..+0x24 and
-// a slot-0 Notify (called with its own vtable pointer).  __thiscall callee.
+// A keyed element found by SetCell's lookup: a 4-slot state-flag array at
+// +0x18..+0x24 and a slot-0 Notify (called with its own vtable pointer).
+// __thiscall callee.
 struct TtcKeyedElem {
     void Notify(void* a); // 0x149c
     void* m_vptr;         // +0x00
     char _pad04[0x18 - 0x04];
-    i32 m_18; // +0x18
-    i32 m_1c; // +0x1c
-    i32 m_20; // +0x20
-    i32 m_24; // +0x24
+    i32 m_flags[4]; // +0x18..+0x24  state flags [0..3]
 };
 
 // A singly-walked CObList node: next@+0x00, data@+0x08 (MFC CList layout, the
