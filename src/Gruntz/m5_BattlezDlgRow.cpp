@@ -8,16 +8,11 @@
 
 #include <Win32.h>
 
+#include <Gruntz/CWnd.h>
+
 // SendMessageA is reached through a game-owned function pointer (ff 15).
 DATA(0x006c44a4)
 extern LRESULT(__stdcall* g_pSendMessageA)(HWND, UINT, WPARAM, LPARAM);
-
-class CWnd {
-public:
-    i32 EnableWindow(i32 bEnable); // 0x1be6a7
-    char m_pad00[0x1c];
-    HWND m_1c; // +0x1c m_hWnd
-};
 
 class CBattlezDlg {
 public:
@@ -44,7 +39,7 @@ i32 CBattlezDlg::ToggleRow(i32 row) {
     CWnd* c = GetCtrlC(row);
     if (row != 0) {
         char* rec = m_5c + row * 0x238 + 0x150;
-        if (g_pSendMessageA(a->m_1c, 0x147, 0, 0) != 0) {
+        if (g_pSendMessageA(a->m_hWnd, 0x147, 0, 0) != 0) {
             b->EnableWindow(1);
             d->EnableWindow(1);
             *(i32*)(rec + 0x20) = 1;

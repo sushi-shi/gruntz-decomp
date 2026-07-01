@@ -1,3 +1,4 @@
+#include <Gruntz/CWormhole.h> // the shared CWormhole class (object logic + acts)
 #include <Gruntz/UserLogic.h>
 #include <Wap32/ZVec.h> // zDArray<member-fn-ptr> dispatch table + the shared registration infra
 #include <rva.h>
@@ -148,20 +149,9 @@ struct CWormBoundObj {
     i32 m_1c8; // +0x1c8 open gate
 };
 
-// CWormhole - the world teleport node (CUserLogic leaf). Adds no data members
-// that the dtor sees, so its dtor folds the bare CUserLogic teardown.
-class CWormhole : public CUserLogic {
-public:
-    virtual ~CWormhole() OVERRIDE; // 0x010980 (folded leaf teardown, /GX frame)
-    void SpawnPartners();          // 0x0403b0
-    void LoadColors();             // 0x0411f0
-
-    // Engine-label backlog stubs. Stub_0412c0 (0x0412c0) is the per-wormhole
-    // config re-run SpawnPartners invokes on each matched partner.
-    void Stub_03fc70();
-    void Stub_03fed0();
-    void Stub_0412c0();
-};
+// CWormhole - the world teleport node (CUserLogic leaf); the full class (both the
+// object-logic and the activation-registration method sets) lives in the shared
+// <Gruntz/CWormhole.h>.
 
 // ---------------------------------------------------------------------------
 // CWormhole::~CWormhole  (0x010980)

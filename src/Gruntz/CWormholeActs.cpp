@@ -16,16 +16,10 @@
 // code ptr regardless of the class's other virtuals, so the `mov [entry],offset
 // AdvanceAnim` store reloc-masks identically.
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
+#include <Gruntz/CWormhole.h>       // the shared CWormhole class (object logic + acts)
 #include <Gruntz/UserLogic.h>
 
 #include <rva.h>
-
-class CWormhole : public CUserLogic {
-public:
-    static void InitActReg();   // 0x03f210
-    static void RegisterActs(); // 0x03f3f0
-    i32 AdvanceAnim();          // 0x03f5f0 (the per-frame handler PMF)
-};
 
 // The handler entry the per-class registry yields: its first dword receives the
 // per-frame handler PMF (AdvanceAnim, a 4-byte code ptr on this single-inheritance
@@ -110,6 +104,6 @@ void CWormhole::RegisterActs() {
 
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
-SIZE_UNKNOWN(CWormhole);
+// (CWormhole's SIZE_UNKNOWN now rides <Gruntz/CWormhole.h>.)
 SIZE_UNKNOWN(CWormholeActEntry);
 SIZE_UNKNOWN(CWormholeActReg);

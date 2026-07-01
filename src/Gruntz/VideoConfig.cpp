@@ -25,6 +25,7 @@
 // /O2 /Oi MSVC5 expands it inline to repnz scasb + rep movs (the suffix-append
 // idiom in the disassembly).
 #include <Win32.h>
+#include <Gruntz/CWnd.h>
 #include <Gruntz/Enums.h>
 #include <string.h>
 
@@ -48,13 +49,8 @@ extern i32 g_videoResolutionMode;
 // (min,max,redraw) range, and the engine 0x405/0x400 messages are exchanged with
 // the wrapped HWND held at CWnd+0x1c (m_hWnd).
 // ---------------------------------------------------------------------------
-struct HWND__; // the strong HWND tag MFC's signature mangles in
-class CWnd {
-public:
-    static CWnd* __stdcall FromHandle(HWND__* hWnd);
-    char m_pad00[0x1c];
-    HWND m_hWnd; // +0x1c  the wrapped window handle
-};
+// CWnd is the shared minimal MFC view (see <Gruntz/CWnd.h>): FromHandle wraps the
+// HWND, m_hWnd at +0x1c.
 class CSliderCtrl : public CWnd {
 public:
     void SetRange(i32 nMin, i32 nMax, i32 bRedraw);

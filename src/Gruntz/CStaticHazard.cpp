@@ -11,6 +11,7 @@
 //
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
+#include <Gruntz/CHaznColl.h> // shared coordinate/activation-registry collection
 #include <Gruntz/CStaticHazard.h>
 #include <Gruntz/CGameRegistry.h>
 #include <Bute/ButeMgr.h> // CButeMgr (g_buteMgr GetIntDef), CButeTree (g_buteTree)
@@ -125,9 +126,6 @@ extern CGameRegistry* g_gameReg;
 // reloc-mask); the collection methods are external/no-body.
 // ===========================================================================
 struct CHaznEntry; // an entry: first dword is the registered handler
-struct CHaznColl {
-    i32 Find(i32 coord, i32 z); // 0x16da80 (__thiscall ret 8)
-};
 struct CHaznColl2 {
     void Insert(void* coll, void* item, i32 n); // 0x16d850 (__thiscall ret 0xc)
 };
@@ -194,10 +192,7 @@ extern i32 g_nameRegScratch;
 
 // The CString in the resolved name slot: ~CString (0x1b9b93) frees the old list,
 // operator= (0x1b9e74) assigns the new key. Modeled so the calls reloc-mask.
-struct CActName {
-    void Free();                  // 0x1b9b93 (~CString)
-    void Assign(const char* key); // 0x1b9e74 (CString::operator=(char const*))
-};
+#include <Gruntz/CActName.h> // CActName (shared)
 
 // The id->name-slot resolve (fast range path + slow Find/ActAlloc/Insert rebuild).
 static inline char* ActNameLookup(i32 id) {

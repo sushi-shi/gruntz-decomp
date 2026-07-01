@@ -98,10 +98,7 @@ extern i32 g_nameRegScratch; // zeroed first; doubles as the list count
 
 // The CString in the resolved name slot: ~CString (0x1b9b93) frees the old list,
 // operator= (0x1b9e74) assigns the new key. Modeled so the calls reloc-mask.
-struct CActName {
-    void Free();                  // 0x1b9b93 (~CString)
-    void Assign(const char* key); // 0x1b9e74 (CString::operator=(char const*))
-};
+#include <Gruntz/CActName.h> // CActName (shared)
 
 // The id->name-slot resolve (the fast range path + the slow Find/ActAlloc/Insert
 // rebuild). Folded inline by RegisterActs once, in the new-id branch.

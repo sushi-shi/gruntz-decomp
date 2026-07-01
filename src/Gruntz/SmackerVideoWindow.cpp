@@ -14,6 +14,8 @@
 #include <Ints.h>
 #include <rva.h>
 
+#include <Gruntz/CWnd.h>
+
 // LPCTSTR AFXAPI AfxRegisterWndClass(UINT, HCURSOR=0, HBRUSH=0, HICON=0). __stdcall.
 extern "C" const char* __stdcall
 AfxRegisterWndClass(u32 style, void* cur, void* brush, void* icon); // 0x1bc09d
@@ -28,28 +30,9 @@ struct CString {
     }
 };
 
-// The created window (MFC CWnd shape: 0x3c bytes, m_hWnd at +0x1c). Ctor/CreateEx/
-// SetFocus are external (the CObject vtable is stamped by the real ctor).
-struct CWnd {
-    char _00[0x1c];
-    HWND m_hWnd; // +0x1c
-    char _20[0x3c - 0x20];
-    CWnd(); // 0x1baecf
-    int CreateEx(
-        u32 exStyle,
-        const char* cls,
-        const char* wnd,
-        u32 style,
-        int x,
-        int y,
-        int w,
-        int h,
-        HWND parent,
-        HMENU id,
-        void* param
-    );               // 0x1bb875
-    void SetFocus(); // 0x1be6ce
-};
+// The created window is the shared MFC CWnd (0x3c bytes, m_hWnd at +0x1c; see
+// <Gruntz/CWnd.h>). Ctor/CreateEx/SetFocus are external (the CObject vtable is
+// stamped by the real ctor).
 
 struct CSmackWin {
     char _00[0x53c];

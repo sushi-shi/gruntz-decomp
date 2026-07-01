@@ -7,6 +7,7 @@
 // CTimeBomb : CUserLogic (the base hierarchy comes from <Gruntz/UserLogic.h>).
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
+#include <Gruntz/CTBombColl.h> // shared coordinate/activation-registry collection
 #include <Gruntz/CTimeBomb.h>
 
 // ---------------------------------------------------------------------------
@@ -24,9 +25,6 @@
 // 0x6bf464 / g_actAllocResult 0x6bf428) is the SAME shared global both registries
 // write (already named by KitchenSlime.cpp - re-declared here, address-pinned).
 struct CTBombEntry; // an entry: first dword is the registered handler
-struct CTBombColl {
-    i32 Find(i32 coord, i32 z); // 0x16da80 (__thiscall ret 8)
-};
 struct CTBombColl2 {
     void Insert(void* coll, void* item, i32 n); // 0x16d850 (__thiscall ret 0xc)
 };
@@ -114,10 +112,7 @@ extern CButeTree g_buteTree;
 
 // The CString in the resolved name slot: ~CString (0x1b9b93) frees the old list,
 // operator= (0x1b9e74) assigns the new key. Modeled so the calls reloc-mask.
-struct CActName {
-    void Free();                  // 0x1b9b93 (~CString)
-    void Assign(const char* key); // 0x1b9e74 (CString::operator=(char const*))
-};
+#include <Gruntz/CActName.h> // CActName (shared)
 
 // The id->name-slot resolve (fast range path + slow Find/ActAlloc/Insert rebuild).
 static inline char* ActNameLookup(i32 id) {

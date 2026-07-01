@@ -89,10 +89,7 @@ extern CButeTree g_buteTree;
 
 // The CString in the resolved name slot: ~CString (0x1b9b93) frees the old list,
 // operator= (0x1b9e74) assigns the new key. Modeled so the calls reloc-mask.
-struct CActName {
-    void Free();                  // 0x1b9b93 (~CString)
-    void Assign(const char* key); // 0x1b9e74 (CString::operator=(char const*))
-};
+#include <Gruntz/CActName.h> // CActName (shared)
 
 // The id->name-slot resolve (fast range path + slow Find/ActAlloc/Insert rebuild).
 static inline char* ActNameLookup(i32 id) {

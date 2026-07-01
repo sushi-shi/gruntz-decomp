@@ -7,6 +7,9 @@
 #include <Ints.h>
 #include <rva.h>
 
+#include <Gruntz/CHaznColl.h>  // shared coordinate/activation-registry collection
+#include <Gruntz/CTBombColl.h> // shared coordinate/activation-registry collection
+
 // ===========================================================================
 // Tiny string/object globals (already pinned in their owning TUs - reuse the
 // mangled name, NO new DATA pin). CString teardown via 0x1b9b93.
@@ -41,14 +44,8 @@ struct CActReg {
     void RegisterRange(i32 lo, i32 hi); // 0x3742
 };
 SIZE_UNKNOWN(CActReg);
-struct CTBombColl {
-    void RegisterRange(i32 lo, i32 hi); // 0x3742
-};
-SIZE_UNKNOWN(CTBombColl);
-struct CHaznColl {
-    void RegisterRange(i32 lo, i32 hi); // 0x3742
-};
-SIZE_UNKNOWN(CHaznColl);
+SIZE_UNKNOWN(CTBombColl);                   // CTBombColl defined in <Gruntz/CTBombColl.h> (shared)
+SIZE_UNKNOWN(CHaznColl);                    // CHaznColl defined in <Gruntz/CHaznColl.h> (shared)
 extern CLogicActTable g_logicActReg_62bfa0; // 0x62bfa0 (LogicActReg.cpp)
 extern CLookupColl g_reg_644af0;            // 0x644af0 (LogicActRegistrars.cpp)
 extern CLogicActTable g_logicActReg_646010; // 0x646010 (LogicActReg.cpp)

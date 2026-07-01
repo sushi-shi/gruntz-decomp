@@ -46,7 +46,7 @@ struct CSelGrunt {
     i32 m_60; // +0x60 y
 };
 // A grid cell: +0x10 the grunt, +0x1ec/+0x1f0 the latch values.
-struct CGridCell {
+struct CSelGridCell {
     char m_pad00[0x10];
     CSelGrunt* m_10; // +0x10
     char m_pad14[0x1ec - 0x14];
@@ -66,7 +66,7 @@ struct CSelNode {
 
 struct CGroupSel {
     char m_pad00[0x1c];
-    CGridCell* m_grid[1]; // +0x1c  grid cell pointer table (indexed by x*15 + y)
+    CSelGridCell* m_grid[1]; // +0x1c  grid cell pointer table (indexed by x*15 + y)
     // ... the latch / state fields below live well past the grid; reached by
     // offset so the modeled array stays size-1.
     i32 CenterOnGroup(i32 doSelect); // 0x7cf40
@@ -93,7 +93,7 @@ i32 CGroupSel::CenterOnGroup(i32 doSelect) {
     do {
         CSelKey* k = n->m_8;
         n = n->m_next;
-        CGridCell* cell = m_grid[k->m_0 * 15 + k->m_4];
+        CSelGridCell* cell = m_grid[k->m_0 * 15 + k->m_4];
         if (cell != 0) {
             count++;
             CSelGrunt* g = cell->m_10;
@@ -118,7 +118,7 @@ i32 CGroupSel::CenterOnGroup(i32 doSelect) {
     i32 r = ((CCenterTarget*)g_gameRegSel->m_2c)->Center(cx, cy);
     if (r != 0 && count == 1 && *(i32*)((char*)this + 0x24c) == 1) {
         CSelKey* head = (*(CSelNode**)((char*)this + 0x244))->m_8;
-        CGridCell* cell2 = m_grid[head->m_0 * 15 + head->m_4];
+        CSelGridCell* cell2 = m_grid[head->m_0 * 15 + head->m_4];
         if (cell2 != 0) {
             i32 v1f0 = cell2->m_1f0;
             i32 v1ec = cell2->m_1ec;
@@ -228,7 +228,7 @@ SIZE_UNKNOWN(CMapHolderB);
 SIZE_UNKNOWN(CMapHolderA);
 SIZE_UNKNOWN(CGameRegistry);
 SIZE_UNKNOWN(CSelGrunt);
-SIZE_UNKNOWN(CGridCell);
+SIZE_UNKNOWN(CSelGridCell);
 SIZE_UNKNOWN(CSelKey);
 SIZE_UNKNOWN(CSelNode);
 SIZE_UNKNOWN(CGroupSel);

@@ -131,10 +131,7 @@ extern i32 g_nameRegScratch;
 
 extern CButeTree g_buteTree; // ?g_buteTree@@3VCButeTree@@A @0x6bf620
 
-struct CActName {
-    void Free();                  // 0x1b9b93 (~CString)
-    void Assign(const char* key); // 0x1b9e74 (CString::operator=(char const*))
-};
+#include <Gruntz/CActName.h> // CActName (shared)
 
 static inline char* ActNameLookup(i32 id) {
     g_nameRegScratch = 0;
