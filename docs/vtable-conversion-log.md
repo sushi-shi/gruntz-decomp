@@ -107,3 +107,58 @@ stamp lands vptr-MIDDLE and cl's implicit vptr-first ctor cannot reproduce it.
 - **A vptr-first embedded-subobject member store (shade) is structurally realizable
   like aniElem**, but a CObArray-like base folded into a barely-reconstructed cache is
   deferred to the final sweep.
+
+## Batch 3 (image / wwd / fileMem families) — 2026-07-01
+
+Net effect: **0 neutral conversions** — every eligible-looking stamp in these
+SETTLED modules fails the Batch-2 decisive rule (realize NEUTRALLY only when the
+object is built via a real `new Class` with a compiler vptr-FIRST ctor **and** the
+whole retail vtable can be reproduced). All are KEPT (documented wall), SKIPPED
+(owner in an off-limits file), or ALREADY-REALIZED. exact/fuzzy delta: **0** (no
+source change; `gruntz build` 1873/3394 = 55.2% exact / 64.05% fuzzy, "no
+regressions vs baseline"). No UnknownVTables struct deleted (catalog stays 74).
+
+Key finding: two candidates *pass the `new Class`/vptr-first shape* yet still cannot
+realize because the vtable is a **SHARED base vtable** — a per-class `??_7` would
+diverge from the one shared retail vtable (0x5ef7f0 is CPoolItemA's base, stamped by
+CFileImage/CImageSurfaceItem/CPoolItemA/CDDSurface alike). The `new Class` test is
+necessary but **not sufficient**: the vtable must also be *class-private*, and its
+slots reproducible.
+
+| Class / stamp | vtable RVA (VA) | Outcome | Reason |
+| :-- | :-- | :-- | :-- |
+| `CImageSurfaceItemInit` / `g_fileImageVtbl` (Image.cpp) | 0x1ef7f0 (0x5ef7f0) | KEPT-foreign (shared base) | Built via `new CImageSurfaceItemInit` — a **real `new` with a vptr-FIRST ctor** (passes the rule's shape) — BUT 0x5ef7f0 is a **shared CPoolItemA base vtable** (also stamped by `CFileImage::~CFileImage`, `CPoolItemA` in CDDrawPtrCollections.cpp, and CDDSurfaceDtor.cpp; not in `vtable_names.csv`). A per-class `??_7CImageSurfaceItem` would diverge from the shared 9-slot retail vtable (8/9 slots are unmatched `sub_`/no-body). `CFileImage` itself is ALREADY real-polymorphic (`virtual ~CFileImage`, cl-implicit stamp reloc-masks). The `Build_13e9a0` factory is also `@early-stop` on the rezalloc/throwing-new EH-frame wall. Realization owner = `CPoolItemA` (off-limits CDDraw* file). |
+| `CFileMemBase` / `g_fileMemBaseVtbl` (FileMem.cpp) | 0x1efe68 (0x5efe68) | KEPT-hand-rolled (unmatched-vtable-contents) | `m_vtbl` @+0x00 is stored vptr-FIRST in `CFileMemBase::CFileMemBase` (structurally realizable), but the base vtable's slots (`scalar_deleting_destructor` 0x157960, `slot2` 0x157910) are **UNMATCHED** in-TU → cl would emit a divergent `??_7CFileMemBase`. |
+| `CFileMem` / `g_fileMemVtbl` (FileMem.cpp) | 0x1efe30 (0x5efe30) | KEPT-hand-rolled (unmatched-vtable-contents) | Same class family. Derived vtable (0x5efe30, 3 slots) + the CFile-interface vtable (0x5efe3c, 10 slots) reference mostly-UNMATCHED methods (scalar-dtors 0x157a20, `slot2` 0x157a70, the CFile slots). `~CFileMem` is already `@early-stop` on the manual-vtable EH-dtor wall. Revisit when the vtable-slot methods (the `sub_`/scalar-dtor thunks) are matched. |
+| `WwdGameObj`(+sub) / `g_wwdObjVtbl` (WwdFile.cpp ReadPlaneObjects) | 0x1f00a8 (0x5f00a8) | KEPT-foreign (inline re-stamp) | `operator new(0x1dc)` + base `Construct` + **re-stamp** the derived vtable (base ctor leaves the base vtable, ReadPlaneObjects promotes) → vptr not at ctor entry, not cl-implicit-first. Foreign `WwdGameObj` (class in another TU). Unit `@early-stop` on the throwing-new EH-frame wall. |
+| `WwdObjAnimInit` / `g_wwdSubVtbl` (WwdFile.cpp +0x1A0 sub-object) | 0x1f0128 (0x5f0128) | KEPT-foreign (shared, inline re-stamp) | Inline sub-object `Construct` + re-stamp (vptr-middle); **SHARED** with CAniAdvanceCursor (a per-class `??_7` would diverge). |
+| `CAniAdvanceCursor` / `g_wwdSubVtbl` (CAniAdvanceCursor.cpp ctor) | 0x1f0128 (0x5f0128) | KEPT-hand-rolled (vptr-middle, shared) | Ctor stores m_4/m_8/m_c **then** `*(void**)this=&g_wwdSubVtbl` (vptr-MIDDLE, arg-store-order steered) → cl's implicit vptr-first would reorder + regress; also the SHARED sub-object vtable. Confirmed in Batch 1. |
+| — / `g_wwdGameObjectVtbl` | 0x1f0020 (0x5f0020) | SKIP (owner off-limits) | All stamp sites are in off-limits Gruntz files (CDDrawSubMgr.cpp, CWwdObjMgrFactories.cpp, WwdGameObjectEh.cpp) — no stamp in any Image/Wwd/Io file. |
+| — / `g_imageSet1Vtbl` `g_imageSet2Vtbl` `g_imageSet3Vtbl` | 0x1f0198 / 0x1f01e0 / 0x1f0228 | SKIP (owner off-limits) | Stamped in GameLevel.cpp + CImageSet3.cpp (off-limits). |
+| — / `g_wwdGridIterVtbl` | 0x1f02a8 (0x5f02a8) | SKIP (owner off-limits) | Stamped in WwdSpatialMgr.cpp (off-limits); `m_vptr = g_wwdGridIterVtbl` member store. |
+| — / `g_wwdGridVtbl` | 0x1f0328 (0x5f0328) | SKIP (abstract base, no stamp) | Only referenced by `include/Gruntz/WwdGrid.h` (abstract base with a pure virtual @slot 5); no object is constructed in an allowed file. |
+| `CDDrawSubMgrLeaf` / `g_catalogVtbl` | 0x1efc78 (0x5efc78) | ALREADY-REALIZED | cl already stamps `??_7CDDrawSubMgrLeaf` (masks 0x5efc78) in CDDrawSubMgrLeaf.cpp — no `g_catalogVtbl` extern/stamp remains. No action. |
+| `CPoolItemA` / `g_poolItemAVtbl` | 0x1efa58 (0x5efa58) | SKIP (owner off-limits) | `new CPoolItemA(&g_poolItemAVtbl)` in CDDrawPtrCollections.cpp (CDDraw*, off-limits) — the vtbl is passed as a **ctor argument** → the ctor does a manual `m_vptr = arg` member store, not a compiler-implicit stamp. |
+| — / `g_deviceConfigVtbl*` | 0x5ef628 … | SKIP (out of module) | Owner in DinMgr2/Boundary — not an image/wwd/fileMem module. |
+
+### Rules learned / reinforced (Batch 3)
+
+- **The `new Class` / vptr-first test is necessary but NOT sufficient.** Two stamps
+  here (`CImageSurfaceItemInit` via `new`, `CFileMemBase` vptr-first member) pass the
+  shape yet still can't realize: a **shared base vtable** (0x5ef7f0) would emit a
+  divergent per-class `??_7`, and **unmatched vtable-slot contents** (fileMem) would
+  emit a vtable of the wrong function pointers. Add two more gates to the rule: the
+  vtable must be **class-private** AND its **slots reproducible** (every slot a matched
+  fn at its exact RVA).
+- **0x5ef7f0 is CPoolItemA's shared base vtable** (the recurring DirectDraw
+  surface-pool-item base) — stamped by CFileImage / CImageSurfaceItem / CPoolItemA /
+  CDDSurface alike; always foreign in any single TU. Its realization owner is
+  `CPoolItemA` (CDDrawPtrCollections.cpp), and CDDSurfaceDtor.cpp already documents that
+  cl's implicit stamp is unavailable there because the vtable is shared/unmatched.
+- **Inline `operator new(size)` + `Construct` + vtable re-stamp is a wall** (the whole
+  wwd game-object/sub-object family) — the re-stamp lands after the base ctor, so it is
+  never at ctor entry and cl's implicit vptr-first store cannot reproduce it.
+- **These modules are settled: the walls were already found in Batch 1.** Batch 3
+  re-confirms them with the Batch-2 decisive rule and adds the fileMem determination.
+  Nothing here yields today; revisit fileMem in the final sweep once its vtable-slot
+  scalar-dtor/`sub_` thunks are reconstructed.
