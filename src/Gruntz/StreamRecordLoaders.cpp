@@ -836,9 +836,11 @@ struct CProjObjReg {
     CMapPtrToPtr m_48; // +0x48
 };
 
-// settings->m_30 viewed by this loader: the object map at +0x8 and the name leaf at
-// +0x2c (the same CDDrawSubMgrLeaf type CSerialSub34 resolves through).
-struct CProjReg {
+// g_mgrSettings->m_30 (the game registry's +0x30 sub-registry) viewed by this
+// loader: the projectile-object map at +0x8 and the name leaf at +0x2c (the same
+// CDDrawSubMgrLeaf type CSerialSub34 resolves through). +0x8 is a CProjObjReg*
+// (the retail-correct type). Distinct object from CProjReg in ProjActRegistry.cpp.
+struct CProjRegSub30 {
     char _00[0x8];
     CProjObjReg* m_8; // +0x08
     char _0c[0x2c - 0xc];
@@ -924,7 +926,7 @@ struct CProjLoadRec {
 // source-steerable.
 RVA(0x000e0d40, 0x6c2)
 i32 CProjLoadRec::Load(CSerialArchive* s, i32 mode, i32 a2, CSerialObj* a3) {
-    CProjReg* reg = (CProjReg*)(void*)g_mgrSettings->m_30;
+    CProjRegSub30* reg = (CProjRegSub30*)(void*)g_mgrSettings->m_30;
     if (reg == 0) {
         return 0;
     }

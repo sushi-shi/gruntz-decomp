@@ -1,6 +1,7 @@
 #include <rva.h>
 #include <string.h> // inline strcmp for the ctor's direction-name match
 #include <Bute/ButeMgr.h>
+#include <Gruntz/CStringNode.h> // the type-name teardown slot
 #include <Gruntz/UserLogic.h> // CUserLogic base (CKitchenSlime : CUserLogic) for the leaf-dtor fold
 // KitchenSlime.cpp - CKitchenSlime::LoadSprites @0x0b3160 (C:\Proj\Gruntz). The
 // kitchen-slime hazard's per-step "advance to the next walkable tile" driver: it
@@ -402,10 +403,6 @@ extern CButeTree g_buteTree;
 
 // The CString helpers the entry teardown/assign reach (free 0x1b9b93 __thiscall,
 // operator= 0x1b9e74 __thiscall) - external/reloc-masked.
-struct CStringNode {
-    void* m_0;   // +0x00 (4-byte stride; the slot the walking pointer steps over)
-    void Free(); // 0x1b9b93 (CString teardown, __thiscall on the slot address)
-};
 struct CTypeNameEntryView {
     void Assign(const char* name); // 0x1b9e74 (CString::operator=)
 };

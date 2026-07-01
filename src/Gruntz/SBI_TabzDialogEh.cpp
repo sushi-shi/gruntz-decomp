@@ -48,16 +48,11 @@
 #include <Ints.h>
 #include <Mfc.h>
 
+#include <Gruntz/SbRect.h> // the by-value geometry rect the slot-0x2c setup takes (arg5..8);
+                           // built as a temp per call (sub esp,0x10 + four stores) via its ctor
+
 // Throwing global operator new (engine _RezAlloc @0x1b9b46); no body -> reloc-masked.
 void* operator new(u32 n);
-
-// The by-value geometry rect the slot-0x2c setup takes (arg5..8). Built as a temp
-// per call (sub esp,0x10 + four stores). A trivial 4-arg ctor keeps it constructed
-// in place in the argument slot.
-struct SbRect {
-    i32 x0, y0, x1, y1;
-    SbRect(i32 a, i32 b, i32 c, i32 d) : x0(a), y0(b), x1(c), y1(d) {}
-};
 
 // The retail item vtables (manual-stamp model; the vtable CONTENTS live in other
 // unmatched TUs so we stamp the retail addresses directly). Reloc-masked DATA().

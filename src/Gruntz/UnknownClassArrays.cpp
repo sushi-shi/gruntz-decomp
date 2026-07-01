@@ -18,6 +18,7 @@
 // ---------------------------------------------------------------------------
 #include <rva.h>
 
+#include <Gruntz/CoordNode.h> // the shared coord-list node
 #include <Gruntz/UnknownClassArrays.h>
 
 // CRT rand() (RVA 0x11fee0); used by the grid-scan helpers to pick a random
@@ -162,12 +163,8 @@ struct Coord {
     i32 m_y; // +0x04
 };
 
-// One occupied-coord list node: ->next at +0, ->coord at +8.
-struct CoordNode {
-    CoordNode* m_next; // +0x00
-    char m_pad04[0x08 - 0x04];
-    Coord* m_coord; // +0x08
-};
+// One occupied-coord list node (CoordNode) is defined in <Gruntz/CoordNode.h>:
+// ->m_next at +0, ->m_coord at +8.
 
 // A candidate spawn-point node: {x, y} at +0 / +4. Lives in the per-level
 // record's candidate array (rec->m_04[r]).

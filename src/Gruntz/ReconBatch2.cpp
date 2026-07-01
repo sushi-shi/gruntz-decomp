@@ -7,6 +7,8 @@
 // modeled with NO body so their rel32 calls reloc-mask.
 #include <Win32.h>
 
+#include <Gruntz/KeyRecv_f8ec0.h> // the *0x64e0b0 receiver (shared w/ SFSelectDevice)
+
 // ===========================================================================
 // 0x001b9b8d (6B) - getter that returns the address of a global descriptor
 // (PTR_DAT_006156f4). `mov eax, OFFSET g; ret`.
@@ -296,11 +298,6 @@ void EnableButtons_be820(HWND hDlg, DlgData_be820* obj) {
 // vtable slot +0x34 on a global receiver; set the scratch word each iteration.
 // __cdecl(); returns 0 if the flag is clear else 1.
 // ===========================================================================
-typedef void(__cdecl* Slot34Fn_f8ec0)(WORD code, WORD* scratch);
-struct KeyRecv_f8ec0 {
-    char m_pad0[0x34];
-    Slot34Fn_f8ec0 m_34; // +0x34 cdecl callback slot
-};
 extern void* g_initFlag_64e0b8;
 extern KeyRecv_f8ec0* g_keyRecv_64e0b0;
 DATA(0x0024dace)

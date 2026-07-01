@@ -15,26 +15,19 @@
 
 #include <rva.h>
 
+#include <Gruntz/CTileGrid.h> // the registry +0x70 tile occupancy grid
+
 // g_mgrSettings (0x64556c) - the game registry. m_2c registers a named sprite set;
 // m_70 is the tile grid (m_8 = row-pointer array; each cell is 0x1c bytes with the
 // tile code at +0x10, indexed by the >>5 tile coords).
 struct CSpriteSetReg {
     void Register(CString* name, i32 a, i32 b, i32 c); // 0x2bc1 __thiscall
 };
-struct CTileCell {
-    char m_pad0[0x10];
-    i32 m_code; // +0x10  tile code ('A'/'B' = action tile)
-    char m_pad14[0x1c - 0x14];
-};
-struct CTileGrid {
-    char m_pad0[0x8];
-    CTileCell** m_8; // +0x08  row-pointer array
-};
 struct CGameReg {
     char m_pad0[0x2c];
     CSpriteSetReg* m_2c; // +0x2c
     char m_pad30[0x70 - 0x30];
-    CTileGrid* m_70; // +0x70
+    CTileGrid* m_70; // +0x70  tile occupancy grid (shared CTileGrid)
 };
 DATA(0x0024556c)
 extern "C" CGameReg* g_mgrSettings; // 0x64556c
@@ -225,7 +218,7 @@ i32 CGruntCmdObj::LoadVehicleGruntSprites(i32 kind) {
 
     g_mgrSettings->m_2c->Register(&name, 1, 1, 0);
 
-    i32 code = g_mgrSettings->m_70->m_8[m_180 >> 5][m_17c >> 5].m_code;
+    i32 code = ((i32*)g_mgrSettings->m_70->m_8[m_180 >> 5])[(m_17c >> 5) * 7 + 4];
     if (code == 0x41 || code == 0x42) {
         if (m_10->m_5c == m_17c && m_10->m_60 == m_180) {
             m_260->RegisterA(this, m_17c, m_180);

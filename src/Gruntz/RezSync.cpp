@@ -16,6 +16,8 @@
 #include <Mfc.h> // CString + the MFC collection ctors/dtors (reloc-masked)
 #include <string.h>
 
+#include <Gruntz/CoordNode.h> // the shared coord-pool node
+
 // retail's global allocator is the nothrow pool alloc; MSVC5 `new T` emits the
 // post-alloc null-check + ctor-in-flight EH-state store the retail body has.
 void* operator new(unsigned int);
@@ -24,10 +26,6 @@ extern "C" void* RezAlloc(unsigned int); // 0x1b9b46 (raw non-EH pool allocs)
 extern "C" void RezFree(void*);          // 0x1b9b82
 
 // ---------- reloc-masked engine globals ----------
-struct CoordNode {
-    CoordNode* next;
-    char pad[8];
-};
 extern CoordNode* g_coordPool; // 0x645540
 extern CoordNode* g_freeList;  // 0x645544
 extern i32 g_coordCount;       // 0x645548
@@ -366,11 +364,11 @@ i32 RezSync::Init(void* a1, void* a2) {
     CoordNode* p = pool;
     u32 i = 0;
     do {
-        p->next = p + 1;
-        p = p->next;
+        p->m_next = p + 1;
+        p = p->m_next;
         ++i;
     } while (i < (u32)g_coordCount - 1);
-    p->next = 0;
+    p->m_next = 0;
     g_freeList = pool;
     g_freeBias = 4;
 

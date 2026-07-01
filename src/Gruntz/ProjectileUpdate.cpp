@@ -79,12 +79,16 @@ struct CProjFactoryHolder {
     char m_pad00[0x8];
     CProjFactory* m_8; // +0x08
 };
-struct CProjReg {
+// The game-registry singleton (*0x64556c) as this projectile-update TU views it:
+// only the +0x30 sprite-factory holder is reached. (Distinct object from the
+// projectile-action registry g_projReg in ProjActRegistry.cpp and from the +0x30
+// sub-registry in StreamRecordLoaders.cpp - each carried its own placeholder view.)
+struct CProjGameReg {
     char m_pad00[0x30];
     CProjFactoryHolder* m_30; // +0x30
 };
 DATA(0x0024556c)
-extern CProjReg* g_gameReg; // *0x64556c
+extern CProjGameReg* g_gameReg; // *0x64556c
 
 // The projectile's host/world object (this->m_10).
 struct CProjHost {

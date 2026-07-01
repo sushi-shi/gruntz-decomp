@@ -39,18 +39,11 @@
 
 #include <Mfc.h>
 
+#include <Gruntz/SbRect.h> // the by-value geometry rect each Configure takes (slot 0x2c)
+
 // ---------------------------------------------------------------------------
 // External engine callees / globals (modeled with no body -> reloc-masked).
 // ---------------------------------------------------------------------------
-
-// The by-value geometry rect each Configure takes (slot 0x2c, arg5-8). The four
-// coords are the tab base m_10/m_14 plus per-item offsets (struct-copy-block store).
-struct SbRect {
-    i32 left;
-    i32 top;
-    i32 right;
-    i32 bottom;
-};
 
 class CGameMenuMgr;
 

@@ -4,6 +4,7 @@
 // cache slots (g_projActCache / g_projActAllocResult) via a grid + bute-tree lookup.
 // This TU sits between Utils/ApplyRange and Wap32/ZVec in retail-RVA order. Field
 // names are placeholders; only OFFSETS + code bytes are load-bearing.
+#include <Gruntz/CStringNode.h> // the type-name teardown slot
 #include <Gruntz/UserLogic.h>
 
 // The leaf game-object whose dtor opens this TU. A CUserLogic leaf: its only
@@ -141,10 +142,6 @@ DATA(0x002bf620)
 extern CButeTree g_buteTree;
 
 // The CString helpers the entry teardown/assign reach.
-struct CStringNode {
-    void* m_0;
-    void Free(); // 0x1b9b93
-};
 struct CTypeNameEntryView {
     void Assign(const char* name); // 0x1b9e74
 };

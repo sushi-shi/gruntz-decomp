@@ -8,6 +8,8 @@
 #include <Bute/ButeMgr.h> // CButeTree
 #include <rva.h>
 
+#include <Gruntz/CStringNode.h> // the type-name teardown slot
+
 // The shared type-name registry (R1 @0x6bf650) - identical to the other registrars.
 struct CTypeColl {
     i32 Find(i32 key, i32 z); // 0x16da80
@@ -44,10 +46,6 @@ extern "C" i32 ProjActAlloc(); // 0x16d990
 DATA(0x002bf620)
 extern CButeTree g_buteTree;
 
-struct CStringNode {
-    void* m_0;
-    void Free(); // 0x1b9b93
-};
 struct CTypeNameEntryView {
     void Assign(const char* name); // 0x1b9e74
 };

@@ -16,19 +16,8 @@
 #include <Ints.h>
 #include <rva.h>
 
+#include <Gruntz/SbRect.h> // the geometry rect passed by value into the configure virtuals
 #include <Gruntz/StatusBarItem.h>
-
-// ---------------------------------------------------------------------------
-// The geometry rectangle passed by value into the item "configure" virtuals.
-// Built as base + per-item offsets: left/top/right/bottom = m_10 + dx / m_14 + dy.
-// ---------------------------------------------------------------------------
-struct SbRect {
-    i32 left;
-    i32 top;
-    i32 right;
-    i32 bottom;
-};
-SIZE_UNKNOWN(SbRect);
 
 // ---------------------------------------------------------------------------
 // The created status-bar widgets. Each is a CStatusBarItem subtype; the builder

@@ -25,21 +25,16 @@
 
 #include <Mfc.h>
 
+#include <Gruntz/SbRect.h> // the by-value geometry rect the Configure virtuals take
+
 // ---------------------------------------------------------------------------
 // External engine callees / globals (modeled with no body -> reloc-masked).
-// ---------------------------------------------------------------------------
-
 // The created widgets are CStatusBarItem subtypes. The builder calls each one's
 // concrete ctor right after operator new, then stamps the retail vtable + type
 // tag. The configure work goes through two virtual slots:
 //   Configure   = vtable slot +0x2c (key + rect + a handful of ints)
 //   ConfigureEx = vtable slot +0x34 (the HEAD/ARROW variant: more ints)
-struct SbRect {
-    i32 left;
-    i32 top;
-    i32 right;
-    i32 bottom;
-};
+// ---------------------------------------------------------------------------
 
 class CStatusBarMgr;
 

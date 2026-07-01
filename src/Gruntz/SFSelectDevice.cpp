@@ -16,18 +16,8 @@
 #include <stdio.h>  // sprintf (0x11f890)
 #include <string.h> // memset (rep stos intrinsic)
 
-// The SFMAN32 device interface (the *0x64e0b0 receiver). Slots are __cdecl
-// function pointers the factory fills; same global the soundfont loader uses.
-struct KeyRecv_f8ec0 {
-    void(__cdecl* GetCount)(u16* out);             // +0x00
-    void(__cdecl* QueryCaps)(u16 idx, void* caps); // +0x04
-    void(__cdecl* GetId)(u16 idx, i32* out);       // +0x08
-    char m_pad0c[0x10 - 0xc];
-    i32(__cdecl* Select)(u16 idx);    // +0x10
-    void(__cdecl* Deselect)(u16 idx); // +0x14
-    char m_pad18[0x1c - 0x18];
-    void(__cdecl* GetRating)(u16 idx, void* buf, i32* out); // +0x1c
-};
+#include <Gruntz/KeyRecv_f8ec0.h> // the SFMAN32 device interface (*0x64e0b0)
+
 typedef i32(__cdecl* SFFactory)(i32 flags, KeyRecv_f8ec0** out);
 
 extern KeyRecv_f8ec0* g_keyRecv_64e0b0; // *0x64e0b0

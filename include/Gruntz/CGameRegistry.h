@@ -26,19 +26,11 @@ struct CSpriteFactoryHolder { // the +0x30 resource/sprite-factory holder
     CGameViewport* m_24; // +0x24  viewport (cue-gate visibility source)
 };
 
-// The tile occupancy grid (*g_pGameRegistry+0x70). A flat row-table of
-// pointers (m_8); each row is an array of 0x1c-byte (7-dword) tile cells
-// indexed by tile-x. CGrunt::LoadEntranceConfig stamps the grunt's footprint
+// The tile occupancy grid (*g_pGameRegistry+0x70) is CTileGrid, in
+// <Gruntz/CTileGrid.h>. CGrunt::LoadEntranceConfig stamps the grunt's footprint
 // into the cell occupied by (m_10->m_5c>>5, m_10->m_60>>5): sets/clears bit
-// 0x20 in cell byte+3 and writes a packed (m_1ec<<8)|m_1f0 owner word into
-// cell[1]. m_c/m_10 are the grid dimensions (tile width/height bounds).
-struct CTileGrid {
-    char m_pad0[0x8];
-    i32**
-        m_8;  // +0x08  row-pointer table (m_8[tileY] = row base; cell = (int*)m_8[tileY] + tileX*7)
-    i32 m_c;  // +0x0c  width in tiles
-    i32 m_10; // +0x10  height in tiles
-};
+// 0x20 in cell byte+3 and writes a packed (m_1ec<<8)|m_1f0 owner word into cell[1].
+#include <Gruntz/CTileGrid.h>
 
 struct CGameRegistry {
     // The entrance-reset cue-prep call (thunk_FUN_0040cd00, __thiscall ret 0): run

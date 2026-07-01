@@ -81,9 +81,10 @@ struct CStatusBarHolder {
 };
 SIZE_UNKNOWN(CStatusBarHolder);
 
-// The map tile grid reached via m_30->m_24->m_5c (two parallel tables: a cell
-// state table at +0x20 and a row-offset table at +0x24).
-struct CTileGrid {
+// The map render grid reached via m_30->m_24->m_5c (two parallel tables: a cell
+// state table at +0x20 and a row-offset table at +0x24). Distinct object from the
+// registry +0x70 tile occupancy grid (CTileGrid, <Gruntz/CTileGrid.h>).
+struct CMapTileGrid {
     char m_pad00[0x20];
     i32* m_20; // +0x20  cell-state table
     i32* m_24; // +0x24  row-offset table
@@ -99,7 +100,7 @@ struct CRegHolder {
     char m_pad00[0x24];
     struct M24 {
         char m_pad00[0x5c];
-        CTileGrid* m_5c;
+        CMapTileGrid* m_5c;
     }* m_24;                // +0x24 -> +0x5c grid
     CStatusBarHolder* m_28; // +0x28
 };
@@ -461,9 +462,9 @@ i32 EngineLabelBacklog::LoadStatzTabToggleSprite(i32 value, i32 idx) {
 // status-bar advance. Latches m_14 = 1 (down). __thiscall.
 RVA(0x00110570, 0xfb)
 void EngineLabelBacklog::LoadSwitchDownSprite() {
-    CTileGrid* g = g_gameReg->m_30->m_24->m_5c;
+    CMapTileGrid* g = g_gameReg->m_30->m_24->m_5c;
     i32 v = g->m_20[g->m_24[m_c] + m_8] + 1;
-    CTileGrid* g2 = g_gameReg->m_30->m_24->m_5c;
+    CMapTileGrid* g2 = g_gameReg->m_30->m_24->m_5c;
     g2->m_20[g2->m_24[m_c] + m_8] = v;
     g_gameReg->m_70->Notify(m_8, m_c, v);
 
@@ -495,9 +496,9 @@ void EngineLabelBacklog::LoadSwitchDownSprite() {
 // the GAME_SWITCHUP advance, and latches m_14 = 0 (up). __thiscall.
 RVA(0x001106b0, 0xf4)
 void EngineLabelBacklog::LoadSwitchUpSprite() {
-    CTileGrid* g = g_gameReg->m_30->m_24->m_5c;
+    CMapTileGrid* g = g_gameReg->m_30->m_24->m_5c;
     i32 v = g->m_20[g->m_24[m_c] + m_8] - 1;
-    CTileGrid* g2 = g_gameReg->m_30->m_24->m_5c;
+    CMapTileGrid* g2 = g_gameReg->m_30->m_24->m_5c;
     g2->m_20[g2->m_24[m_c] + m_8] = v;
     g_gameReg->m_70->Notify(m_8, m_c, v);
 

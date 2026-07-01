@@ -21,6 +21,8 @@
 #include <rva.h>
 #include <string.h> // memset
 
+#include <Gruntz/CStringNode.h> // the type-name teardown slot
+
 // ===========================================================================
 // Vtables (UNMATCHED engine tables - stamped by address, reloc-masked DIR32).
 //
@@ -137,11 +139,6 @@ extern "C" void ZFree(void* p); // 0x1b9b82 (CRT free / operator delete)
 extern "C" i32 ProjActAlloc();  // 0x16d990
 
 // The CString slot teardown the node-array free loop walks (one per 4-byte slot).
-struct CStringNode {
-    void* m_0;
-    void Free(); // 0x1b9b93
-};
-
 // ===========================================================================
 // CTypeKeyColl::CTypeKeyColl (0x16dda0) - the derived ctor. Forwards the four
 // arguments to the 2D-array base ctor (0x16de30), then derives the cursor (==
