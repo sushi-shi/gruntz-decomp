@@ -34,13 +34,7 @@
 // of branch B's geometry needs a dedicated pass. Deferred (too big to converge in
 // one pass without diverging).
 
-class CSBI_Image {
-public:
-    void Method_10a340();
-};
-
-// @confidence: low
-// @source: rtti-vptr
-// @stub
-RVA(0x0010a340, 0xbcb)
-void CSBI_Image::Method_10a340() {}
+// 0x10a340 has been RECONSTRUCTED and re-homed to the dedicated /GX unit
+// src/Gruntz/SBI_TabzDialogEh.cpp (CTabzBuilder::BuildTabzDialog) - it needs the
+// flags="eh" profile for the ctor-in-flight EH frame, which src/Stub/ (base flags)
+// cannot supply. No RVA is defined here anymore.

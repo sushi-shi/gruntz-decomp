@@ -213,7 +213,7 @@ dsoundvoice	2	1
 ehfunclets	6	6
 engine_attributed	5	0
 engine_discovered	15	8
-engine_label_stubs	242	129
+engine_label_stubs	241	129
 engine_unmatched_lib	11	0
 engstr	3	1
 eyecandytypetags	4	4
@@ -425,6 +425,7 @@ sbi_sidetab_eh	1	1
 sbi_statztabarrow_eh	1	1
 sbi_statztabgruntbar	3	2
 sbi_statztabgruntbar_eh	1	1
+sbi_tabzdialog_eh	1	0
 sbi_warlordhead	5	2
 sbi_warlordhead_eh	1	1
 sbi_wellgoo	1	0
@@ -519,7 +520,7 @@ actionoptionsmenubar	?Init@CActionOptionsMenuBar@@QAEXHHHHHH@Z	76.6415	76.6415	3
 actionoptionsmenubar	?LoadAssets@CActionOptionsMenuBar@@QAEHXZ	84.8191	84.8191	5	f3727c25de30	0x90e0
 actionoptionsmenubar	?Refresh@CActionOptionsMenuBar@@QAEHXZ	0.0000	0.0000	3	2ef563c49cea	0x9330
 actionoptionsmenubar	?Render@CActionOptionsMenuBar@@QAEHXZ	76.8762	76.8762	3	b27925d968b0	0x94c0
-actionoptionsmenubar	?Serialize@CActionOptionsMenuBar@@QAEHPAUCMenuArchive@@@Z	95.8667	95.8667	3	583f56963644	0x9810
+actionoptionsmenubar	?Serialize@CActionOptionsMenuBar@@QAEHPAUCMenuArchive@@@Z	95.8667	95.8667	4	f9cfa85afdd4	0x9810
 actreg4	?ActReg4RegisterType@@YAXXZ	91.1739	91.1739	1	5c4e6657ca7d	0x3e300
 adler32	_adler32	100.0000	100.0000	1	7d212c481a3f	0x1882d0
 advancedoptions	?AdvancedOptionsDialogProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	3	92601d43c5f5	0xafb0
@@ -1874,7 +1875,6 @@ engine_label_stubs	?LoadSounds@CSplashState@@QAEHHHH@Z	100.0000	100.0000	1	cpp:6
 engine_label_stubs	?LoadWarlordSprites@CPlayWL_d65d0@ApiCallerStubs@@QAEHHPAH@Z	91.0553	91.0553	1	cpp:7e3328e11dac	0xd65d0
 engine_label_stubs	?LoadWave@WaveHost2_136ce0@ApiCallerStubs@@QAEHPAUWaveProbe_136ce0@2@PBDH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x136ce0
 engine_label_stubs	?LoadWave@WaveHost_136a30@ApiCallerStubs@@QAEHPBDHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x136a30
-engine_label_stubs	?Method_10a340@CSBI_Image@@QAEXXZ	0.1126	0.1126	1	cpp:e8a4cb0d5b2a	0x10a340
 engine_label_stubs	?Notify@ModeHost_08f480@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x8f480
 engine_label_stubs	?OnActivate_vfunc8@BootyState@@QAEHXZ	100.0000	100.0000	1	cpp:e8a4cb0d5b2a	0x1f6f0
 engine_label_stubs	?OnClick@ClickHost_0394b0@ApiCallerStubs@@QAEHHHH@Z	50.5500	50.5500	1	cpp:e1535087fe94	0x394b0
@@ -2556,7 +2556,7 @@ gruntzplayer	?GetDefaultName@GruntzPlayer@@SA?AVCString@@XZ	97.7778	97.7778	1	c9
 gruntzplayer	?GetDifficultyName@@YA?AVCString@@HH@Z	100.0000	100.0000	2	fd3691b39302	0xdb110
 gruntzplayer	?GetName@GruntzPlayer@@QAE?AVCString@@XZ	100.0000	100.0000	2	5bbb2546dd9f	0x1f450
 gruntzplayer	?Reset@GruntzPlayer@@QAEHXZ	94.8750	94.8750	2	70e9ae95b614	0xda9e0
-gruntzplayer	?Serialize@GruntzPlayer@@QAEHPAXHHH@Z	98.1333	98.1333	2	efe603a9f778	0xdace0
+gruntzplayer	?Serialize@GruntzPlayer@@QAEHPAXHHH@Z	98.1333	98.1333	3	3479c08af349	0xdace0
 gruntzsoundz	??1CGruntzSoundZ@@UAE@XZ	91.5790	91.5790	1	eadd9784e22d	0x86040
 gruntzsoundz	?CreateBank2_1385e0@CGruntzSoundZ@@QAEPAVCGruntzSoundInnerZ@@HH@Z	100.0000	100.0000	1	70c23a95a540	0x1385e0
 gruntzsoundz	?CreateBank_138670@CGruntzSoundZ@@QAEPAVCGruntzSoundInnerZ@@HHH@Z	100.0000	100.0000	2	b662c03967cb	0x138670
@@ -3241,8 +3241,8 @@ sbi_menuitem	?DecCounter@CSBI_MenuItem@@QAEHXZ	92.0357	92.0357	1	76ba7ba94f3b	0x
 sbi_menuitem	?InitItem@CSBI_MenuItem@@QAEHHHHHHHHHPAXHH@Z	67.8261	67.8261	1	711c194f8a6c	0xe80e0
 sbi_menuitem	?ProbeState@CSBI_MenuItem@@QAEHH@Z	100.0000	100.0000	1	624cf65074d2	0xe8480
 sbi_menuitem	?ResolveFrame@CSBI_MenuItem@@QAEHHH@Z	45.7547	45.7547	1	6e969ccb8dbb	0xe81e0
-sbi_menuitem	?Serialize@CSBI_MenuItem@@QAEHPAXHHH@Z	100.0000	100.0000	2	40b921248610	0xe8520
-sbi_menuitem	?SerializeChain@CSBI_MenuItem@@QAEHPAXHHH@Z	84.9697	84.9697	2	0a90ba3cd659	0xe6e40
+sbi_menuitem	?Serialize@CSBI_MenuItem@@QAEHPAXHHH@Z	100.0000	100.0000	3	1ed6c89430b4	0xe8520
+sbi_menuitem	?SerializeChain@CSBI_MenuItem@@QAEHPAXHHH@Z	84.9697	84.9697	3	312643a7d4e0	0xe6e40
 sbi_menuitem	?SerializeFields@CSBI_MenuItem@@QAEHPAXHHH@Z	100.0000	100.0000	2	dad5e24b70f6	0x10bfc0
 sbi_menuitem	?SetState@CSBI_MenuItem@@QAEHHH@Z	93.1020	93.1020	1	77d598c9a000	0xe8310
 sbi_menuitem	?SetSubtype@CSBI_MenuItem@@QAEXXZ	100.0000	100.0000	1	ef8f234ee98d	0x1005b0
@@ -3331,6 +3331,7 @@ sbi_statztabgruntbar	?Poll@CSBI_StatzTabGruntBar@@QAEHH@Z	100.0000	100.0000	1	6f
 sbi_statztabgruntbar	?Reset@CSBI_StatzTabGruntBar@@QAEXXZ	100.0000	100.0000	1	776b5b18c203	0xea470
 sbi_statztabgruntbar	?Update@CSBI_StatzTabGruntBar@@QAEHXZ	91.6923	91.6923	1	065f88460c02	0xea6c0
 sbi_statztabgruntbar_eh	??1CSBI_StatzTabGruntBar@@UAE@XZ	100.0000	100.0000	1	602538baa837	0x104b00
+sbi_tabzdialog_eh	?BuildTabzDialog@CTabzBuilder@@QAEHXZ	83.8581	83.8581	1	42977ee2ce70	0x10a340
 sbi_warlordhead	?Render@CSBI_WarlordHead@@QAEHH@Z	86.9054	86.9054	1	9b308dc210c6	0xeb880
 sbi_warlordhead	?Serialize@CSBI_WarlordHead@@QAEHPAUCImageSetStream@@HHH@Z	100.0000	100.0000	1	b6cb91fa6424	0xe7cd0
 sbi_warlordhead	?SetState@CSBI_WarlordHead@@QAEHH@Z	100.0000	100.0000	1	034d997853c4	0xeb830
@@ -3406,7 +3407,7 @@ spriteloaders	?Init@CTimer@@QAEPAV1@XZ	100.0000	100.0000	1	ea7798c3ab3c	0x9bab0
 spriteloaders	?LoadLoadingBarSprite@CLoadingBar@@QAEHXZ	95.8064	95.8064	7	112926da9544	0xd7440
 spriteloaders	?LoadTimerSprite@CTimer@@QAEHHH@Z	96.5217	96.5217	7	5c2e2a6c645b	0x9bb00
 spriteloaders	?Reset@CTimer@@QAEXXZ	100.0000	100.0000	1	f198e826ac7a	0x9bc70
-spriteloaders	?Serialize@CTimer@@QAEHPAUCTimerArchive@@@Z	100.0000	100.0000	2	3e5484c77360	0x9c2e0
+spriteloaders	?Serialize@CTimer@@QAEHPAUCTimerArchive@@@Z	100.0000	100.0000	3	0727b15f806c	0x9c2e0
 spriteloaders	?SetTime@CTimer@@QAEXHH@Z	100.0000	100.0000	1	aeefa6a02973	0x9c090
 spriteloaders	?Tick@CTimer@@QAEHH@Z	85.7981	85.7981	3	671c39b9c760	0x9bca0
 spriteref	?Build@CSpriteRef@@QAEHHPAXH@Z	93.4364	93.4364	2	51d350cac4d3	0xe2df0

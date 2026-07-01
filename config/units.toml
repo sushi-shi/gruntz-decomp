@@ -2541,6 +2541,11 @@ source = "src/Gruntz/CmdScrollApply.cpp"
 flags = "base"
 
 [[unit]]
+unit = "sbi_tabzdialog_eh"
+source = "src/Gruntz/SBI_TabzDialogEh.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "globals"
 source = "src/Globals.cpp"
 flags = "base"
