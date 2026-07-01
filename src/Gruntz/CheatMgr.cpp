@@ -243,3 +243,8 @@ RVA(0x00085e60, 0x4a)
 CCheatMgr::~CCheatMgr() {
     Empty();
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+SIZE_UNKNOWN(CCheatMgr);
+SIZE_UNKNOWN(CheatEntry);

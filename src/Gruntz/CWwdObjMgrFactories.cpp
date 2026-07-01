@@ -366,3 +366,16 @@ CWwdGameObject* CWwdObjMgrL::CreateObject_166640(int a1, int a2, int a3, int a4,
     }
     return result;
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+SIZE_UNKNOWN(CWwdCmd1a0);
+SIZE_UNKNOWN(CWwdFactoryA);
+SIZE_UNKNOWN(CWwdFactoryB);
+SIZE_UNKNOWN(CWwdList1dc);
+SIZE_UNKNOWN(CWwdObjList);
+SIZE_UNKNOWN(CWwdObjMgrL);
+SIZE_UNKNOWN(CWwdRemusBaseA);
+SIZE_UNKNOWN(CWwdRemusBaseB);
+SIZE_UNKNOWN(CWwdSub9c);
+SIZE_UNKNOWN(CWwdSubB8);

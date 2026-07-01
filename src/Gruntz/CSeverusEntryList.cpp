@@ -60,3 +60,10 @@ CSeverusEntryList::~CSeverusEntryList() {
     // m_items.~SeverusObArray() (trylevel 0) + ~CSeverusBase() (field resets +
     // grand-base vtable stamp) fold here.
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+SIZE_UNKNOWN(CSeverusBase);
+SIZE_UNKNOWN(CSeverusEntryList);
+SIZE_UNKNOWN(SeverusObArray);
+SIZE_UNKNOWN(SeverusObject);

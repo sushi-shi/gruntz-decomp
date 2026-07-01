@@ -41,3 +41,10 @@ CString* CLobbySlot::BuildHostName(CString* out) {
     m_c->GetHostName(out);
     return out;
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+SIZE_UNKNOWN(CLobbyObjB);
+SIZE_UNKNOWN(CLobbySlot);
+SIZE_UNKNOWN(CLobbySlotInner);
+SIZE_UNKNOWN(CLobbySlotMgr);

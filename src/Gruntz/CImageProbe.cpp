@@ -106,3 +106,14 @@ i32 CImageProbe::Init() {
     }
     return 1;
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+SIZE_UNKNOWN(CImageDesc);
+SIZE_UNKNOWN(CImageInfo);
+SIZE_UNKNOWN(CImagePayload);
+SIZE_UNKNOWN(CImagePayloadVtbl);
+SIZE_UNKNOWN(CImageProbe);
+SIZE_UNKNOWN(CImageProvider);
+SIZE_UNKNOWN(CImageProviderVtbl);
+SIZE_UNKNOWN(CImageSourceVtbl);

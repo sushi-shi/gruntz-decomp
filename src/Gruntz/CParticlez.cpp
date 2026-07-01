@@ -228,3 +228,13 @@ i32 CParticlez::Update() {
     }
     return 0;
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+#include <rva.h>
+SIZE_UNKNOWN(CPartAnimObj);
+SIZE_UNKNOWN(CPartColl);
+SIZE_UNKNOWN(CPartColl2);
+SIZE_UNKNOWN(CPartEntry);
+SIZE_UNKNOWN(CPartEntryI32);
+SIZE_UNKNOWN(CParticlez);

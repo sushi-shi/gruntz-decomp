@@ -66,3 +66,12 @@ i32 CSerialSub34::Chain(CSerialArchive* arc, i32 mode, i32 unused, CSerialObj* o
     }
     return 1;
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+SIZE_UNKNOWN(CDDrawSubMgrLeaf);
+SIZE_UNKNOWN(CSerialArchive);
+SIZE_UNKNOWN(CSerialArchiveVtbl);
+SIZE_UNKNOWN(CSerialNameHolder);
+SIZE_UNKNOWN(CSerialObj);
+SIZE_UNKNOWN(CSerialRegHolder);

@@ -57,3 +57,7 @@ void RgbToHsv(ColorHSV* out, u32 color) {
     out->s = s;
     out->v = v;
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+SIZE_UNKNOWN(ColorHSV);

@@ -950,3 +950,17 @@ void CBrickz::Drain() {
     }
     m_18 = 0;
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+SIZE_UNKNOWN(BrickzAttrMgr);
+SIZE_UNKNOWN(BrickzButeObj);
+SIZE_UNKNOWN(BrickzCell);
+SIZE_UNKNOWN(BrickzFreeRec);
+SIZE_UNKNOWN(BrickzGridDesc);
+SIZE_UNKNOWN(BrickzNode);
+SIZE_UNKNOWN(BrickzNodePoolA);
+SIZE_UNKNOWN(BrickzNodePoolB);
+SIZE_UNKNOWN(BrickzResultList);
+SIZE_UNKNOWN(BrickzSerObj);
+SIZE_UNKNOWN(CBrickz);

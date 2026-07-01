@@ -107,3 +107,9 @@ void CWormhole::RegisterActs() {
     }
     ((CWormholeActEntry*)g_wormholeActReg.ResolveEntry(id))->m_fn = &CWormhole::AdvanceAnim;
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+SIZE_UNKNOWN(CWormhole);
+SIZE_UNKNOWN(CWormholeActEntry);
+SIZE_UNKNOWN(CWormholeActReg);

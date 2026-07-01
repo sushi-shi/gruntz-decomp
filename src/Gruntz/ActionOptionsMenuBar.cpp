@@ -554,3 +554,17 @@ i32 CActionOptionsMenuBar::Serialize(CMenuArchive* ar) {
     }
     return 1;
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+SIZE_UNKNOWN(CActionOptionsMenuBar);
+SIZE_UNKNOWN(CDrawTarget);
+SIZE_UNKNOWN(CGruntRec);
+SIZE_UNKNOWN(CMenuArchive);
+SIZE_UNKNOWN(CMenuBarFrame);
+SIZE_UNKNOWN(CMenuViewObj);
+SIZE_UNKNOWN(CResMgr);
+SIZE_UNKNOWN(CSpriteHashTable);
+SIZE_UNKNOWN(CSpriteMgr);
+SIZE_UNKNOWN(CStrReader);
+SIZE_UNKNOWN(CViewport);

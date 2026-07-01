@@ -235,3 +235,16 @@ i32 CBootyCheatState::LoadAssets(i32 a1, i32 a2, i32 a3) {
 fail:
     return 0;
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+SIZE_UNKNOWN(BcAssetCore);
+SIZE_UNKNOWN(BcAssetRoot);
+SIZE_UNKNOWN(BcImageRegistry);
+SIZE_UNKNOWN(BcImageRegistryVtbl);
+SIZE_UNKNOWN(BcPumpHost);
+SIZE_UNKNOWN(BcRegObj);
+SIZE_UNKNOWN(BcRegSet);
+SIZE_UNKNOWN(BcSoundRegistry);
+SIZE_UNKNOWN(BcStateRoot);
+SIZE_UNKNOWN(CBootyCheatState);

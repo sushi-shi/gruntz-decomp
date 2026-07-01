@@ -73,3 +73,7 @@ CSeverusWorkerHost::~CSeverusWorkerHost() {
     // m_9c.~SeverusObArray() (0x1b561c) + ~CSeverusBase() (field resets + grand-base
     // vtable restore) fold here under the /GX frame.
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+SIZE_UNKNOWN(CSeverusWorkerHost);

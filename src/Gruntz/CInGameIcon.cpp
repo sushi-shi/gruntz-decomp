@@ -845,3 +845,16 @@ void CInGameIcon::SetField54(i32 v) {
     }
     m_54 = (i32)found;
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+SIZE_UNKNOWN(CGameRegMapHolder);
+SIZE_UNKNOWN(CIconFactory);
+SIZE_UNKNOWN(CIconMap);
+SIZE_UNKNOWN(CIconMapHolder);
+SIZE_UNKNOWN(CIconRecord);
+SIZE_UNKNOWN(CIconTileGrid);
+SIZE_UNKNOWN(CInGameIcon);
+SIZE_UNKNOWN(IconSpriteFactory);
+SIZE_UNKNOWN(LogicFnTable);
+SIZE_UNKNOWN(NameVec);

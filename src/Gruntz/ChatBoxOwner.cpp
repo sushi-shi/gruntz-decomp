@@ -276,3 +276,16 @@ i32 CChatBoxOwner::LoadChatBoxSprite(i32 arg1) {
     host->m_8->m_vptr->Done(host->m_8, hdc);
     return 1;
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+SIZE_UNKNOWN(CChatBoxCtx);
+SIZE_UNKNOWN(CChatBoxDcHost);
+SIZE_UNKNOWN(CChatBoxDcSrc);
+SIZE_UNKNOWN(CChatBoxDcVtbl);
+SIZE_UNKNOWN(CChatBoxFrame);
+SIZE_UNKNOWN(CChatBoxHash);
+SIZE_UNKNOWN(CChatBoxOwner);
+SIZE_UNKNOWN(CChatBoxRegRoot);
+SIZE_UNKNOWN(CChatBoxRegistry);
+SIZE_UNKNOWN(CChatBoxTextHost);

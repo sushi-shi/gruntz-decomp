@@ -38,3 +38,8 @@ CToyPeek::CToyPeek(CGameObject* obj) : CUserLogic(obj) {
     m_30 = m_14->m_1c;
     m_14->m_1c = g_buteTree.Find("A");
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+#include <rva.h>
+SIZE_UNKNOWN(CToyPeek);

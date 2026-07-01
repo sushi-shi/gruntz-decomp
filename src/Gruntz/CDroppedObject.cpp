@@ -410,3 +410,18 @@ i32 CDroppedObject::ActA() {
     m_10->m_60 = landed;
     return 0;
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+#include <rva.h>
+SIZE_UNKNOWN(CDropColl);
+SIZE_UNKNOWN(CDropColl2);
+SIZE_UNKNOWN(CDropEntry);
+SIZE_UNKNOWN(CDroppedObject);
+SIZE_UNKNOWN(DropAnimSink);
+SIZE_UNKNOWN(DropGameReg);
+SIZE_UNKNOWN(DropGrid);
+SIZE_UNKNOWN(DropReg2c);
+SIZE_UNKNOWN(DropReg30);
+SIZE_UNKNOWN(DropSpriteFactory);
+SIZE_UNKNOWN(DropTileMgr);

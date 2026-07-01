@@ -252,3 +252,11 @@ i32 CInGameText::Serialize(CTextArchive* ar, i32 tag, i32 a, i32 b) {
     }
     return 1;
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+SIZE_UNKNOWN(CInGameText);
+SIZE_UNKNOWN(CTextActReg);
+SIZE_UNKNOWN(CTextArchive);
+SIZE_UNKNOWN(CTextGameReg);
+SIZE_UNKNOWN(CTextSubObj);

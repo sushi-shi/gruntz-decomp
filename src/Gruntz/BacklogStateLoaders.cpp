@@ -228,3 +228,24 @@ void BuildNamedGruntTable() {
     g_gruntNames[2] = "Serra";
     g_gruntNames[3] = "Jebediah";
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+SIZE_UNKNOWN(CHelpAssetRoot);
+SIZE_UNKNOWN(CHelpAssetSet);
+SIZE_UNKNOWN(CHelpMsgPump);
+SIZE_UNKNOWN(CHelpState);
+SIZE_UNKNOWN(EngStrAssign);
+SIZE_UNKNOWN(GLSAssetRoot);
+SIZE_UNKNOWN(GLSMapMgr);
+SIZE_UNKNOWN(GLSNamespace);
+SIZE_UNKNOWN(GLSObj24);
+SIZE_UNKNOWN(GLSPolyC);
+SIZE_UNKNOWN(GLSPolyCVtbl);
+SIZE_UNKNOWN(GLSRegistrar);
+SIZE_UNKNOWN(GLSRegistrarVtbl);
+SIZE_UNKNOWN(GLSResetMgr);
+SIZE_UNKNOWN(GLSSub14);
+SIZE_UNKNOWN(GLSSub2c);
+SIZE_UNKNOWN(GLSSubA);
+SIZE_UNKNOWN(GameLevelState);

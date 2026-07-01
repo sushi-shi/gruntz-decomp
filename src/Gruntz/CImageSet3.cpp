@@ -89,3 +89,7 @@ void CImageSet3::Cleanup_161bf0() {
         m_24 = 0;
     }
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+SIZE_UNKNOWN(CImageSet3);

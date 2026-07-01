@@ -317,3 +317,20 @@ i32 CTeleporter::Update() {
     }
     return 0;
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+#include <rva.h>
+SIZE_UNKNOWN(CTeleAnimSink);
+SIZE_UNKNOWN(CTeleBoundOwner);
+SIZE_UNKNOWN(CTeleFactoryHolder);
+SIZE_UNKNOWN(CTeleIconTable);
+SIZE_UNKNOWN(CTeleMgrSub);
+SIZE_UNKNOWN(CTeleRecord);
+SIZE_UNKNOWN(CTeleScroller);
+SIZE_UNKNOWN(CTeleSelHolder);
+SIZE_UNKNOWN(CTeleSpriteFactory);
+SIZE_UNKNOWN(CTeleVisual);
+SIZE_UNKNOWN(CTeleVisualAux);
+SIZE_UNKNOWN(CTeleporter);
+SIZE_UNKNOWN(CTeleporterActReg);

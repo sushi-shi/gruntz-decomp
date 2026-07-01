@@ -601,3 +601,31 @@ i32 CAttract::Activate() {
     }
     return 1;
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+SIZE_UNKNOWN(AttractActor);
+SIZE_UNKNOWN(AttractActorList);
+SIZE_UNKNOWN(AttractBusyObj);
+SIZE_UNKNOWN(AttractBusyVtbl);
+SIZE_UNKNOWN(AttractSurfaceExt);
+SIZE_UNKNOWN(AttractWndHolder);
+SIZE_UNKNOWN(CAttract);
+SIZE_UNKNOWN(CAttractButeMgr);
+SIZE_UNKNOWN(CAttractHost);
+SIZE_UNKNOWN(CAttractIdlePoll);
+SIZE_UNKNOWN(CAttractOwner);
+SIZE_UNKNOWN(CAttractPooledRes);
+SIZE_UNKNOWN(CAttractRegistrar);
+SIZE_UNKNOWN(CAttractSceneSlot);
+SIZE_UNKNOWN(CAttractScreenObj);
+SIZE_UNKNOWN(CAttractState);
+SIZE_UNKNOWN(CAttractStateMgr);
+SIZE_UNKNOWN(CAttractVideo);
+SIZE_UNKNOWN(CAttractVoice);
+SIZE_UNKNOWN(CDDSurface);
+SIZE_UNKNOWN(CMenuBrightnessHolder);
+SIZE_UNKNOWN(CMenuBrightnessReset);
+SIZE_UNKNOWN(CMenuBrightnessTarget);
+SIZE_UNKNOWN(CMenuRenderM10);
+SIZE_UNKNOWN(CMenuRoot);

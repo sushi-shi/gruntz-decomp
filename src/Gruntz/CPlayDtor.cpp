@@ -75,3 +75,9 @@ RVA(0x0008d0d0, 0xc4)
 CDerivedStateD::~CDerivedStateD() {
     DerivedCleanup();
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+SIZE_UNKNOWN(CDerivedStateD);
+SIZE_UNKNOWN(CPlayD);
+SIZE_UNKNOWN(CStateBaseD);

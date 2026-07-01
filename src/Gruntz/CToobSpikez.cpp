@@ -289,3 +289,14 @@ void CToobSpikez::RegisterActs() {
     }
     *(void**)ToobLookup(id) = (void*)&ToobLogic_114bc0;
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+#include <rva.h>
+SIZE_UNKNOWN(CGameObjLogic);
+SIZE_UNKNOWN(CToobColl);
+SIZE_UNKNOWN(CToobColl2);
+SIZE_UNKNOWN(CToobEntry);
+SIZE_UNKNOWN(CToobLogicInst);
+SIZE_UNKNOWN(CToobLogicRec);
+SIZE_UNKNOWN(CToobSpikez);

@@ -92,3 +92,8 @@ CString RunCustomWorldDialog(i32 id, CString* outSource) {
     }
     return g_str62c25c;
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+SIZE_UNKNOWN(GmInner4);
+SIZE_UNKNOWN(GmInner8);

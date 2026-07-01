@@ -240,3 +240,16 @@ i32 CLightFx::RebindNode() {
     m_14->m_1c = g_buteTree.Find("A");
     return 0;
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+SIZE_UNKNOWN(CLightFxActEntry);
+SIZE_UNKNOWN(CLightFxActReg);
+SIZE_UNKNOWN(LfxEffectNode);
+SIZE_UNKNOWN(LfxLayerSink);
+SIZE_UNKNOWN(LfxLogicPump);
+SIZE_UNKNOWN(LfxMapCore);
+SIZE_UNKNOWN(LfxMapHolder);
+SIZE_UNKNOWN(LfxMapSource);
+SIZE_UNKNOWN(LfxNodeMap);
+SIZE_UNKNOWN(LfxObj);

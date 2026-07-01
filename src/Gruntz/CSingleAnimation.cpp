@@ -17,3 +17,8 @@
 // established leaf dtors; the empty body is enough for cl.
 RVA(0x00010540, 0x44)
 CSingleAnimation::~CSingleAnimation() {}
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+#include <rva.h>
+SIZE_UNKNOWN(CSingleAnimation);

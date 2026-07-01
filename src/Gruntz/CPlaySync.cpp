@@ -108,3 +108,9 @@ i32 CPlay::SyncState(CMsSerialArchive* ar, i32 mode, i32 a2, i32 a3) {
     SYNC_PAIR(ar, mode, p);
     return 1;
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+#include <rva.h>
+SIZE_UNKNOWN(CPlaySoundMgr);
+SIZE_UNKNOWN(CPlaySyncChild);

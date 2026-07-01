@@ -619,3 +619,22 @@ i32 CChatBox::HitTest4() {
     }
     return n->HitTest5() != 0;
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+SIZE_UNKNOWN(CChatAnim);
+SIZE_UNKNOWN(CChatBox);
+SIZE_UNKNOWN(CChatCatalog);
+SIZE_UNKNOWN(CChatFrame);
+SIZE_UNKNOWN(CChatListNode);
+SIZE_UNKNOWN(CChatMap);
+SIZE_UNKNOWN(CChatNode);
+SIZE_UNKNOWN(CChatPage);
+SIZE_UNKNOWN(CChatPoker);
+SIZE_UNKNOWN(CChatRoster);
+SIZE_UNKNOWN(CChatSprite);
+SIZE_UNKNOWN(CChatTimer);
+SIZE_UNKNOWN(CMenuOwner);
+SIZE_UNKNOWN(CMenuRenderSet);
+SIZE_UNKNOWN(CMenuSurf);
+SIZE_UNKNOWN(CMenuSurfSrc);

@@ -562,3 +562,26 @@ void CPathHazard::ForwardTick() {
     CPathHazardVtbl* vt = *(CPathHazardVtbl**)this;
     (this->*(vt->Tick))();
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+#include <rva.h>
+SIZE_UNKNOWN(CLightGameReg);
+SIZE_UNKNOWN(CLightObj);
+SIZE_UNKNOWN(CLightVtbl);
+SIZE_UNKNOWN(CLightningHazard);
+SIZE_UNKNOWN(CPathCtorObj);
+SIZE_UNKNOWN(CPathCtorSub);
+SIZE_UNKNOWN(CPathCueGate);
+SIZE_UNKNOWN(CPathEntity);
+SIZE_UNKNOWN(CPathGameReg);
+SIZE_UNKNOWN(CPathHazardVtbl);
+SIZE_UNKNOWN(CPathLayer);
+SIZE_UNKNOWN(CPathObj);
+SIZE_UNKNOWN(CPathSubMgr);
+SIZE_UNKNOWN(CPathWaypoint);
+SIZE_UNKNOWN(CSndEmitter);
+SIZE_UNKNOWN(CSndFinder);
+SIZE_UNKNOWN(CSndHost);
+SIZE_UNKNOWN(CSndPlayHost);
+SIZE_UNKNOWN(CSndSubMgr);

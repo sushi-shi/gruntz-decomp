@@ -411,3 +411,15 @@ i32 CDDScreen::Configure(i32 mode, i32 flags, DDPoint* origin, DDRect* rect) {
     m_86a0 = 0;
     return 1;
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+SIZE_UNKNOWN(CDDScreen);
+SIZE_UNKNOWN(CPaletteHost);
+SIZE_UNKNOWN(CSurfacePalette);
+SIZE_UNKNOWN(CTileInfo);
+SIZE_UNKNOWN(DDBLTFX_);
+SIZE_UNKNOWN(DDPoint);
+SIZE_UNKNOWN(DDRect);
+SIZE_UNKNOWN(IDDObj);
+SIZE_UNKNOWN(IDDVtbl);

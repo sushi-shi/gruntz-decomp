@@ -105,3 +105,10 @@ INT_PTR __stdcall WarpDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
     }
     return 0;
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+SIZE_UNKNOWN(CGameRegLevel);
+SIZE_UNKNOWN(CGameRegSub24);
+SIZE_UNKNOWN(CGameRegSub30);
+SIZE_UNKNOWN(CGameRegWarp);

@@ -195,3 +195,15 @@ i32 CNamespaceLoader::BuildAssetNamespacePrefixes(
 done:
     return result;
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+SIZE_UNKNOWN(AssetRoot);
+SIZE_UNKNOWN(CDDrawSubMgrAni);
+SIZE_UNKNOWN(CDDrawSubMgrLeafScan);
+SIZE_UNKNOWN(CNamespaceLoader);
+SIZE_UNKNOWN(CSymTree);
+SIZE_UNKNOWN(GRAssetMgr);
+SIZE_UNKNOWN(GRFxObj);
+SIZE_UNKNOWN(GRLightObj);
+SIZE_UNKNOWN(GameReg);

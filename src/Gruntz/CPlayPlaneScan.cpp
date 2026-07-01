@@ -422,3 +422,20 @@ i32 CPlay::ScanShuffleQuads() {
     }
     return 1;
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+SIZE_UNKNOWN(CByteArrayV);
+SIZE_UNKNOWN(CGruntzMgrView);
+SIZE_UNKNOWN(DrawSurf);
+SIZE_UNKNOWN(GridGeom);
+SIZE_UNKNOWN(ObjSink2dc);
+SIZE_UNKNOWN(ObjSink2e4);
+SIZE_UNKNOWN(Plane);
+SIZE_UNKNOWN(PlaneDesc);
+SIZE_UNKNOWN(PlaneList);
+SIZE_UNKNOWN(PlaneNode);
+SIZE_UNKNOWN(Renderer);
+SIZE_UNKNOWN(TileObj);
+SIZE_UNKNOWN(Vec3);
+SIZE_UNKNOWN(Vec4);

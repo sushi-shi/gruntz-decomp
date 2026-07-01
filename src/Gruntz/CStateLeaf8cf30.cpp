@@ -16,3 +16,7 @@ RVA(0x0008cf30, 0x55)
 CStateLeaf8cf30::~CStateLeaf8cf30() {
     Teardown();
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+SIZE_UNKNOWN(CStateLeaf8cf30);

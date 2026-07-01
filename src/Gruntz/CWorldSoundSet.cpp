@@ -346,3 +346,13 @@ SoundChannelNew* CWorldSoundSet::
     obj->m_3c = (i32)m_list.AddTail(obj);
     return obj;
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+SIZE_UNKNOWN(CRandomAmbientWorld);
+SIZE_UNKNOWN(CSoundChannel);
+SIZE_UNKNOWN(CSoundChannelList);
+SIZE_UNKNOWN(CSoundNode);
+SIZE_UNKNOWN(CWorldSoundSet);
+SIZE_UNKNOWN(MinervaInner);
+SIZE_UNKNOWN(SoundChannelNew);

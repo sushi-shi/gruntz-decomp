@@ -127,3 +127,10 @@ i32 CFrontCandyAni::AdvanceAnim() {
     ((CAnimSink*)((char*)m_38 + 0x1a0))->SetAnim(g_6bf3bc);
     return 0;
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+#include <rva.h>
+SIZE_UNKNOWN(CFrontCandyActEntry);
+SIZE_UNKNOWN(CFrontCandyActReg);
+SIZE_UNKNOWN(CFrontCandyAni);

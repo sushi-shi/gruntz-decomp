@@ -1731,3 +1731,25 @@ i32 CLightFxRender::ClampRect(i32 x, i32 y, i32* out, i32 margin) {
     out[1] = (y - m_38) / m_44;
     return 1;
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+SIZE_UNKNOWN(CLightFxRender);
+SIZE_UNKNOWN(LfxBlitTarget);
+SIZE_UNKNOWN(LfxBorderCtx);
+SIZE_UNKNOWN(LfxCell);
+SIZE_UNKNOWN(LfxColorNode);
+SIZE_UNKNOWN(LfxDrawCtx);
+SIZE_UNKNOWN(LfxGrid);
+SIZE_UNKNOWN(LfxMgr);
+SIZE_UNKNOWN(LfxRect);
+SIZE_UNKNOWN(LfxRefTable);
+SIZE_UNKNOWN(LfxSurfInfo);
+SIZE_UNKNOWN(LfxSurfMgr);
+SIZE_UNKNOWN(LfxSurfPool);
+SIZE_UNKNOWN(LfxSurface);
+SIZE_UNKNOWN(LfxTileBank);
+SIZE_UNKNOWN(LfxTileDesc);
+SIZE_UNKNOWN(LfxUnlockIface);
+SIZE_UNKNOWN(LfxView);
+SIZE_UNKNOWN(LfxWorldRect);

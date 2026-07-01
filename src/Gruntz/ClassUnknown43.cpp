@@ -138,3 +138,14 @@ int ClassUnknown_43::Update_0f7d90() {
     m_390 = 0;
     return 1;
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+SIZE_UNKNOWN(Box5c);
+SIZE_UNKNOWN(MgrObj);
+SIZE_UNKNOWN(MgrReg);
+SIZE_UNKNOWN(Obj260);
+SIZE_UNKNOWN(Rect4);
+SIZE_UNKNOWN(Reg24);
+SIZE_UNKNOWN(Reg30);
+SIZE_UNKNOWN(Reg5c);

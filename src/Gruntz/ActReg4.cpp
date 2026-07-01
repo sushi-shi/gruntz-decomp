@@ -132,3 +132,10 @@ void ActReg4RegisterType() {
     }
     *(void**)R4Lookup(id) = (void*)&ActReg4Handler;
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+SIZE_UNKNOWN(CActReg4);
+SIZE_UNKNOWN(CActReg4Coll2);
+SIZE_UNKNOWN(CTypeColl2);
+SIZE_UNKNOWN(R4Entry);

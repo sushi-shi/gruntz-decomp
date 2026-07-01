@@ -67,3 +67,11 @@ ClassUnknown_48::~ClassUnknown_48() {
     m_0 = 0;
     m_18 = 0;
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+SIZE_UNKNOWN(Inner);
+SIZE_UNKNOWN(List);
+SIZE_UNKNOWN(Mgr18);
+SIZE_UNKNOWN(Mgr2c);
+SIZE_UNKNOWN(Node);

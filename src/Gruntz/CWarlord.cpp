@@ -297,3 +297,16 @@ void CWarlord::BuildFortSplashParticles() {}
 // the RVA + its LoadAttributes caller pair; full body left for a leaf-first redo.
 RVA(0x00045270, 0x2a8)
 void CWarlord::NotifyFortUnderAttack() {}
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+SIZE_UNKNOWN(CActionTable);
+SIZE_UNKNOWN(CRegBattleEvent);
+SIZE_UNKNOWN(CRegThreatHelper);
+SIZE_UNKNOWN(CTypeNameTree);
+SIZE_UNKNOWN(CWarlord);
+SIZE_UNKNOWN(CWarlordAnimPlayer);
+SIZE_UNKNOWN(CWarlordAnimSub);
+SIZE_UNKNOWN(CWarlordMission);
+SIZE_UNKNOWN(CWarlordObjective);
+SIZE_UNKNOWN(CWarlordOwner);

@@ -551,3 +551,22 @@ dispatch:
     }
     return 0;
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+#include <rva.h>
+SIZE_UNKNOWN(CHaznColl2);
+SIZE_UNKNOWN(CHaznEntry);
+SIZE_UNKNOWN(CHaznEntry2);
+SIZE_UNKNOWN(CStaticHazard);
+SIZE_UNKNOWN(HazAnimDesc);
+SIZE_UNKNOWN(HazAnimElem);
+SIZE_UNKNOWN(HazGrid);
+SIZE_UNKNOWN(HazGridMgr);
+SIZE_UNKNOWN(HazLookupEntry);
+SIZE_UNKNOWN(HazSndCat);
+SIZE_UNKNOWN(HazSndRoot);
+SIZE_UNKNOWN(HazStrMap);
+SIZE_UNKNOWN(HazSwitchSrc);
+SIZE_UNKNOWN(WwdAnimSub);
+SIZE_UNKNOWN(WwdGameObject);

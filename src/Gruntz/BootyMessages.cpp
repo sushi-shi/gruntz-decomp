@@ -493,3 +493,23 @@ i32 BzState::BuildBootyGruntIdleAnimation() {
     }
     return 1;
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+SIZE_UNKNOWN(BzFindTable);
+SIZE_UNKNOWN(BzGameReg);
+SIZE_UNKNOWN(BzGeomPair);
+SIZE_UNKNOWN(BzLevelRecord);
+SIZE_UNKNOWN(BzLoader);
+SIZE_UNKNOWN(BzSink);
+SIZE_UNKNOWN(BzSink8);
+SIZE_UNKNOWN(BzSink8Vtbl);
+SIZE_UNKNOWN(BzSinkSub);
+SIZE_UNKNOWN(BzSinkSub28);
+SIZE_UNKNOWN(BzSoundEntry);
+SIZE_UNKNOWN(BzSoundHolder);
+SIZE_UNKNOWN(BzSoundSet);
+SIZE_UNKNOWN(BzSprite);
+SIZE_UNKNOWN(BzState);
+SIZE_UNKNOWN(BzWndHolder);
+SIZE_UNKNOWN(SecretMsgRow);

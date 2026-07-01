@@ -573,3 +573,9 @@ i32 CBattlezData::Serialize(BattlezStream* s, i32 op, i32 a2, i32 a3) {
     }
     return 1;
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+SIZE_UNKNOWN(BattlezRecord);
+SIZE_UNKNOWN(BattlezStream);
+SIZE_UNKNOWN(CBattlezData);

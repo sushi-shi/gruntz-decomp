@@ -514,3 +514,15 @@ void CRandomAmbientSound::Step(i32 x, i32 y, i32 force) {
         Update(0, 0x64, half);
     }
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+SIZE_UNKNOWN(AmbSoundMap);
+SIZE_UNKNOWN(AmbSoundMapHolder);
+SIZE_UNKNOWN(AmbSoundRecord);
+SIZE_UNKNOWN(AmbientPoint);
+SIZE_UNKNOWN(DsndPosVoice);
+SIZE_UNKNOWN(PosSoundAux);
+SIZE_UNKNOWN(PosSoundObj);
+SIZE_UNKNOWN(PosSoundSpatial);
+SIZE_UNKNOWN(PosSoundVoice);

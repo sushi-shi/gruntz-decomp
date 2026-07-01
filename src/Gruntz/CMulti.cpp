@@ -1031,3 +1031,47 @@ void CMulti::AckJoinFailure() {
         SendStatFlag(0x3f6, 1);
     }
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+SIZE_UNKNOWN(CLobbyObjA);
+SIZE_UNKNOWN(CMulti);
+SIZE_UNKNOWN(CMultiDialogHook);
+SIZE_UNKNOWN(CMultiLevelLoader);
+SIZE_UNKNOWN(CMultiLogic);
+SIZE_UNKNOWN(CMultiLogicDesc);
+SIZE_UNKNOWN(CMultiLogicEntry);
+SIZE_UNKNOWN(CMultiLogicList);
+SIZE_UNKNOWN(CMultiLogicNode);
+SIZE_UNKNOWN(CMultiNetGate);
+SIZE_UNKNOWN(CMultiPlayer);
+SIZE_UNKNOWN(CMultiReportGate);
+SIZE_UNKNOWN(CMultiSlot48);
+SIZE_UNKNOWN(CMultiSlotObj);
+SIZE_UNKNOWN(CMultiStateBase);
+SIZE_UNKNOWN(CMultiSub68);
+SIZE_UNKNOWN(CMultiSub70);
+SIZE_UNKNOWN(CMultiSubDC);
+SIZE_UNKNOWN(CMultiSubE4);
+SIZE_UNKNOWN(CMultiSubTick);
+SIZE_UNKNOWN(CMultiTickWin);
+SIZE_UNKNOWN(CMultiTitleLoader);
+SIZE_UNKNOWN(CMultiViewReset);
+SIZE_UNKNOWN(CMultiVtbl);
+SIZE_UNKNOWN(CRefresh21bd0);
+SIZE_UNKNOWN(McHost);
+SIZE_UNKNOWN(McObj);
+SIZE_UNKNOWN(PBComp);
+SIZE_UNKNOWN(PBCompTarget);
+SIZE_UNKNOWN(PBListSink);
+SIZE_UNKNOWN(PBMgr);
+SIZE_UNKNOWN(PBOutput);
+SIZE_UNKNOWN(PBPane);
+SIZE_UNKNOWN(PBRenderTarget);
+SIZE_UNKNOWN(PBSelf);
+SIZE_UNKNOWN(PBSub2e0);
+SIZE_UNKNOWN(PBSub320);
+SIZE_UNKNOWN(PBSub4);
+SIZE_UNKNOWN(PBSub68);
+SIZE_UNKNOWN(PBSubDC);
+SIZE_UNKNOWN(PBVfnHost);

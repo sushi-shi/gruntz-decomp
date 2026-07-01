@@ -320,3 +320,17 @@ i32 Handler_17c3f0::Init(void* a1, ObjA2_17c3f0* a2, ObjA3_17c3f0* a3, i32 p4, i
     M_17d6b0();
     return 1;
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+SIZE_UNKNOWN(Builder_168080);
+SIZE_UNKNOWN(FxDesc_17fe00);
+SIZE_UNKNOWN(FxSrc_17fe00);
+SIZE_UNKNOWN(Fx_17fe00);
+SIZE_UNKNOWN(Handler_17c3f0);
+SIZE_UNKNOWN(ObjA2_17c3f0);
+SIZE_UNKNOWN(ObjA3_17c3f0);
+SIZE_UNKNOWN(Pt_168080);
+SIZE_UNKNOWN(SubWidget_168080);
+SIZE_UNKNOWN(VtblA2_17c3f0);
+SIZE_UNKNOWN(VtblA3_17c3f0);

@@ -150,3 +150,12 @@ i32 CAniElement::Configure_1655c0(void* ctx, void* entry, i32 flags) {
     ((CAniEntry*)entry)->EndParse_1399d0();
     return r;
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+SIZE_UNKNOWN(CAniElement);
+SIZE_UNKNOWN(CAniEntry);
+SIZE_UNKNOWN(CAniRecordArray);
+SIZE_UNKNOWN(CAniRecordInit);
+SIZE_UNKNOWN(CAniRecordView);
+SIZE_UNKNOWN(CAniSource);

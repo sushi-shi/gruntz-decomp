@@ -516,3 +516,16 @@ i32 CBrickz::LoadAttributes(i32 width, i32 height) {
     m_5c = 1;
     return 1;
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+SIZE_UNKNOWN(BzAttr);
+SIZE_UNKNOWN(BzCell);
+SIZE_UNKNOWN(BzFreeNode);
+SIZE_UNKNOWN(BzGrid);
+SIZE_UNKNOWN(BzLevelMgr);
+SIZE_UNKNOWN(BzMovingObj);
+SIZE_UNKNOWN(BzMovingObjType);
+SIZE_UNKNOWN(BzObjMgr);
+SIZE_UNKNOWN(BzPtrArray);
+SIZE_UNKNOWN(BzSettings);

@@ -163,3 +163,16 @@ i32 CMovingLogicBase::Serialize(CMlSerialArchive* arc, i32 mode, i32 a3, i32 a4)
     }
     return 1;
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+#include <rva.h>
+SIZE_UNKNOWN(CButeReadTemp);
+SIZE_UNKNOWN(CButeText);
+SIZE_UNKNOWN(CButeVbaseTeardown);
+SIZE_UNKNOWN(CButeWriteTemp);
+SIZE_UNKNOWN(CMlSerialArchive);
+SIZE_UNKNOWN(CMlSerialArchiveVtbl);
+SIZE_UNKNOWN(CMlSerialCtx);
+SIZE_UNKNOWN(CMovingLogicBase);
+SIZE_UNKNOWN(CMovingLogicCurve);

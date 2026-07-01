@@ -85,3 +85,11 @@ int CSpotLight::Update_0b1ee0() {
     }
     return 0;
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+SIZE_UNKNOWN(MgrObj68);
+SIZE_UNKNOWN(MgrReg2);
+SIZE_UNKNOWN(SpotM10);
+SIZE_UNKNOWN(SpotM14);
+SIZE_UNKNOWN(SpotM98);

@@ -35,3 +35,12 @@ i32 CMenuSparkle::Serialize(CMsSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
     arc->Write(&g_5ea3d8, 4);
     return 1;
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+#include <rva.h>
+SIZE_UNKNOWN(CMenuSparkle);
+SIZE_UNKNOWN(CMenuSparkleBase);
+SIZE_UNKNOWN(CMenuSparkleSub);
+SIZE_UNKNOWN(CMsSerialArchive);
+SIZE_UNKNOWN(CMsSerialArchiveVtbl);

@@ -348,3 +348,10 @@ i32 BzState::UpdateBootyWalkingGruntz() {
     }
     return 0;
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+SIZE_UNKNOWN(BzCuePlayer);
+SIZE_UNKNOWN(BzSelSource);
+SIZE_UNKNOWN(BzSoundPlayer);
+SIZE_UNKNOWN(BzSpriteSub);

@@ -52,3 +52,10 @@ CRemusEntryList::~CRemusEntryList() {
     DeleteAll();
     // m_items.~RemusObArray() (trylevel 0) + ~CRemusBase() (grand-base restore) fold here.
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+SIZE_UNKNOWN(CRemusBase);
+SIZE_UNKNOWN(CRemusEntryList);
+SIZE_UNKNOWN(RemusObArray);
+SIZE_UNKNOWN(RemusObject);

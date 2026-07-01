@@ -130,3 +130,8 @@ void CRangeSet::AddFromString(char* str) {
         AddRange(lo, hi);
     } while (*str != 0);
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+SIZE_UNKNOWN(CRange);
+SIZE_UNKNOWN(CRangeSet);

@@ -118,3 +118,12 @@ CFxModeT6::CFxModeT6() {
     m_1c = 0;
     m_20 = 0;
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+SIZE_UNKNOWN(CFxModeDesc);
+SIZE_UNKNOWN(CFxModeT2);
+SIZE_UNKNOWN(CFxModeT3);
+SIZE_UNKNOWN(CFxModeT4);
+SIZE_UNKNOWN(CFxModeT5);
+SIZE_UNKNOWN(CFxModeT6);

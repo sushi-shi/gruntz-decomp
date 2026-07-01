@@ -436,3 +436,15 @@ i32 CBattlezMapConfig::LoadConfig(CLevelInfo* lvl, i32 id, i32 diff) {
     m_84 = 0;
     return 1;
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+SIZE_UNKNOWN(CBattlezMapConfig);
+SIZE_UNKNOWN(CCoordPair);
+SIZE_UNKNOWN(CLevelInfo);
+SIZE_UNKNOWN(CLevelList);
+SIZE_UNKNOWN(CLevelNode);
+SIZE_UNKNOWN(CLevelObj);
+SIZE_UNKNOWN(CMapDims);
+SIZE_UNKNOWN(CRttiRec);
+SIZE_UNKNOWN(CStartArray);

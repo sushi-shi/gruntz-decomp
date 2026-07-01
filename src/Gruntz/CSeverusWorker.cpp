@@ -38,3 +38,11 @@ i32 CSeverusWorker::Open(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6) {
     }
     return 1;
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+SIZE_UNKNOWN(CSeverusEmbed);
+SIZE_UNKNOWN(CSeverusStore);
+SIZE_UNKNOWN(CSeverusWorker);
+SIZE_UNKNOWN(SevByteArray);
+SIZE_UNKNOWN(SevFile);

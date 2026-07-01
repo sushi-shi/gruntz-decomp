@@ -84,3 +84,10 @@ CNode* CKeyedList::AddNode(const char* key, i32 a2, i32 a3) {
     Insert(node);
     return node;
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+SIZE_UNKNOWN(CKeyedList);
+SIZE_UNKNOWN(CListNode);
+SIZE_UNKNOWN(CNode);
+SIZE_UNKNOWN(CNodeSub);

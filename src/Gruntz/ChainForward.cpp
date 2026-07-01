@@ -39,3 +39,10 @@ void ChainForward(i32 p1, ChainRoot* p2, i32 p3, i32 p4, i32 p5, i32 p6) {
         }
     }
 }
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+SIZE_UNKNOWN(Chain18);
+SIZE_UNKNOWN(Chain2c);
+SIZE_UNKNOWN(Chain4);
+SIZE_UNKNOWN(ChainRoot);
