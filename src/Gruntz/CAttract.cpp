@@ -621,7 +621,6 @@ SIZE_UNKNOWN(CAttractState);
 SIZE_UNKNOWN(CAttractStateMgr);
 SIZE_UNKNOWN(CAttractVideo);
 SIZE_UNKNOWN(CAttractVoice);
-SIZE_UNKNOWN(CDDSurface);
 SIZE_UNKNOWN(CMenuBrightnessHolder);
 SIZE_UNKNOWN(CMenuBrightnessReset);
 SIZE_UNKNOWN(CMenuBrightnessTarget);

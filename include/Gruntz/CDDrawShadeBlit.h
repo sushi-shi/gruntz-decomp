@@ -65,6 +65,7 @@ SIZE_UNKNOWN(CDDrawShadeBlit);
 class CDDrawShadeBlit {
 public:
     i32 Blit(ShadeRect* dst, ShadeSrc* src, ShadeRect* clip, i32 sel, i32 p4); // 0x1497f0
+    void Notify(i32 a, i32 b);                                                 // 0x14dd90
     // The unselected (h-aligned) RLE blit; sel picks the h-flipped sibling. The
     // big inner loops decode the high-bit RLE sprite stream (m_0c/m_10) into the
     // Lock'd destination surface, clipping x to [clip->m_00, clip->m_08].

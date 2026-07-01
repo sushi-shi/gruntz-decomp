@@ -26,14 +26,11 @@ extern i32 g_fxDirectGate;
 
 // Reloc-masked engine externs (real mangled names so the relocs pair by symbol;
 // no body - defined in their own TUs):
-class CFileImage {
-public:
-    i32 Fill(u32 color); // 0x13e760 - colour-fill blt
-};
-class CDDSurface {
-public:
-    i32 Blt(CDDSurface* src); // 0x13ee60 - rect blt
-};
+
+// The DirectDraw channel surface ops (Fill @0x13e760 / Blt @0x13ee60) come from the
+// canonical single-source CDDSurface header; reloc-masked engine callees.
+#include <DDrawMgr/CDDSurface.h>
+
 class CDDrawWorkerMgr {
 public:
     i32 Method_158d20(); // 0x158d20 - "is worker ready" predicate

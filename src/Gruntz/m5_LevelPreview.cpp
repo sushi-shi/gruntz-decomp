@@ -7,6 +7,7 @@
 #include <Mfc.h> // real MFC CString (operator=(LPCSTR) 0x1b9e74, reloc-masked)
 #include <rva.h>
 
+#include <DDrawMgr/CDDSurface.h> // canonical CDDSurface + IDirectDrawSurfaceZ (IsLost/Flip)
 #include <stdio.h>
 
 #include <Bute/SymTab.h>
@@ -48,25 +49,9 @@ public:
     i32 KillCue(i32 which); // 0x136e20
 };
 
-// The live DirectDraw COM surface (vtbl@0, __stdcall methods taking it as the
-// explicit first arg - the engine's IDirectDrawSurfaceZ shape from
-// CDirectDrawMgr.cpp). Only slot 24 (IsLost, +0x60) is touched.
-struct CDDSurfaceCom;
-struct CDDSurfaceComVtbl {
-    char s0[0x60];
-    i32(__stdcall* IsLost)(CDDSurfaceCom*); // +0x60 (slot 24)
-};
-struct CDDSurfaceCom {
-    CDDSurfaceComVtbl* vtbl;
-};
-
-// The engine surface wrapper (CDDSurface, DIRSURF.CPP) holding the COM surface at
-// +0x08; Flip @0x13e850 (__thiscall). Reloc-masked.
-struct CDDSurface {
-    char m_pad00[8];
-    CDDSurfaceCom* m_08;          // +0x08
-    i32 Flip(CDDSurface* target); // 0x13e850
-};
+// The live DirectDraw COM surface is IDirectDrawSurfaceZ (slot 24 IsLost, +0x60);
+// the engine wrapper is the canonical CDDSurface (held COM surface @+0x08 == m_8,
+// Flip @0x13e850). Both from <DDrawMgr/CDDSurface.h>.
 
 // The render host reached via the worker mgr's +0x10; carries the back surface at
 // +0x2c.
@@ -152,7 +137,7 @@ public:
 // Logic + control flow + all externs byte-exact. Final sweep.
 RVA(0x000de200, 0x85)
 i32 CPreviewState::Tick() {
-    CDDSurfaceCom* surf = m_0c->m_04->m_10->m_2c->m_08;
+    IDirectDrawSurfaceZ* surf = m_0c->m_04->m_10->m_2c->m_8;
     if (surf == 0 || surf->vtbl->IsLost(surf) != 0) {
         if (Advance() == 0) {
             m_04->ReportError(0x8006, 0xfa0);

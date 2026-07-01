@@ -133,7 +133,7 @@ cimage	11	7
 cimageowned	5	2
 cimageprobe	1	1
 cimageset3	3	3
-cimagespriteblit	7	0
+cimagespriteblit	7	1
 circleshadeblit	1	0
 ckeyedlist	3	2
 classunknown30	1	0
@@ -525,7 +525,7 @@ winapimodule	1	0
 winmain	1	1
 worldsoundset	13	10
 wormhole	8	3
-wwdfile	21	4
+wwdfile	21	2
 wwdgameobject	13	6
 wwdgameobjecteh	5	0
 wwdgrid	7	5
@@ -972,8 +972,8 @@ cddrawshadeblit	?BlitLoop@CDDrawShadeBlit@@QAEXPAUShadeRect@@PAUShadeSrc@@0H@Z	0
 cddrawshadeblit	?BlitMode_149950@CDDrawShadeBlit@@QAEXPAUShadeRect@@PAUShadeSrc@@0H@Z	31.4438	31.4438	3	8464ea509099	0x149950
 cddrawshadeblit	?BlitMode_149d00@CDDrawShadeBlit@@QAEXPAUShadeRect@@PAUShadeSrc@@0H@Z	29.3712	29.3712	2	bcde680594e5	0x149d00
 cddrawshadeblit	?BlitMode_14b770@CDDrawShadeBlit@@QAEXPAUShadeRect@@PAUShadeSrc@@0H@Z	0.0637	0.0637	1	17d63d847449	0x14b770
-cddrawshadeblit	?ConvertRow@CDDrawShadeBlit@@QAEXPAE0H@Z	55.7154	55.7154	2	8c6edc27431e	0x14c9f0
-cddrawshadeblit	?ConvertRowDouble@CDDrawShadeBlit@@QAEXPAE0HH@Z	51.2031	51.2031	2	392a7216fd6f	0x14d950
+cddrawshadeblit	?ConvertRow@CDDrawShadeBlit@@QAEXPAE0H@Z	56.2500	56.2500	2	8c6edc27431e	0x14c9f0
+cddrawshadeblit	?ConvertRowDouble@CDDrawShadeBlit@@QAEXPAE0HH@Z	49.9125	49.9125	2	392a7216fd6f	0x14d950
 cddrawshadeblit	?ConvertRowDoubleFwd@CDDrawShadeBlit@@QAEXPAE0HH@Z	57.5395	57.5395	2	5ec2c863d65d	0x14d5e0
 cddrawshadeblit	?ConvertRowFlip@CDDrawShadeBlit@@QAEXPAE0H@Z	53.7083	53.7083	2	1e8774686369	0x14cfc0
 cddrawsubmgr	??0CDDrawSubMgr@@QAE@PAVCDDrawSurfaceMgr@@HH@Z	100.0000	100.0000	6	af4f6a250fe2	0x156cb0
@@ -1231,7 +1231,7 @@ cfileimage	?LoadFile@CFileImage@@QAEHPAVCFileImageInfo@@PBDH@Z	100.0000	100.0000
 cfileimage	?SaveBmp@CFileImage@@QAEHPBDPAXH@Z	60.8842	60.8842	1	d7bdcf4dd7ed	0x1443b0
 cfileimage	?SaveTga@CFileImage@@QAEHPBDPAXH@Z	60.8182	60.8182	1	c29726d33513	0x144900
 cfileimageblit	?Blit1624@CFileImage@@QAEHPAXH@Z	71.1484	71.1484	1	dbcfd49b6d90	0x13fce0
-cfileimageblit	?Blit168@CFileImage@@QAEHPAX0H@Z	66.0088	66.0088	1	c4a546c7b7fc	0x13fbb0
+cfileimageblit	?Blit168@CFileImage@@QAEHPAX0H@Z	67.5044	67.5044	1	c4a546c7b7fc	0x13fbb0
 cfileimageblit	?Blit2416@CFileImage@@QAEHPAXH@Z	82.0000	82.0000	1	845cad102f7b	0x13ff80
 cfileimageblit	?Blit816@CFileImage@@QAEHPAX0H@Z	66.2889	66.2889	1	d9382ebaeea4	0x140420
 cfileimageblit	?Blit824@CFileImage@@QAEHPAX0H@Z	58.8610	58.8610	1	22f2a3c5f113	0x140110
@@ -1366,13 +1366,13 @@ cimageprobe	?Init@CImageProbe@@QAEHXZ	100.0000	100.0000	1	2b46baccc913	0x17cbe0
 cimageset3	?Cleanup_161bf0@CImageSet3@@QAEXXZ	100.0000	100.0000	1	e6669699495e	0x161bf0
 cimageset3	?GetSize_1633e0@CImageSet3@@QAEHXZ	100.0000	100.0000	1	33643861e3a8	0x1633e0
 cimageset3	?Prune_1628d0@CImageSet3@@QAEHXZ	100.0000	100.0000	1	b81263dd19cb	0x1628d0
-cimagespriteblit	?BlitFlipH@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	82.8358	82.8358	2	a0dee33c959f	0x153d90
-cimagespriteblit	?BlitFlipV@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	80.6812	80.6812	2	029c4c0dc8ea	0x153b20
-cimagespriteblit	?BlitNorm@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	98.4573	98.4573	2	823661cf313f	0x1538c0
-cimagespriteblit	?BlitShadeFlipH@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	83.9091	83.9091	1	25d30d9b37b9	0x154750
-cimagespriteblit	?BlitShadeFlipHV@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	71.4789	71.4789	1	b15e9a59240e	0x153ff0
-cimagespriteblit	?BlitShadeFlipV@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	73.2679	73.2679	1	61eea29b3a06	0x1544d0
-cimagespriteblit	?BlitShadeNorm@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	99.8522	99.8522	1	0b8df3bbe25e	0x154270
+cimagespriteblit	?BlitFlipH@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	82.7910	82.7910	3	cf66c6ff4fdd	0x153d90
+cimagespriteblit	?BlitFlipV@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	81.8309	81.8309	3	b3aa1a55c9d2	0x153b20
+cimagespriteblit	?BlitNorm@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	98.4774	98.4774	3	6821789c58ef	0x1538c0
+cimagespriteblit	?BlitShadeFlipH@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	85.1627	85.1627	1	25d30d9b37b9	0x154750
+cimagespriteblit	?BlitShadeFlipHV@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	71.5164	71.5164	1	b15e9a59240e	0x153ff0
+cimagespriteblit	?BlitShadeFlipV@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	73.2297	73.2297	1	61eea29b3a06	0x1544d0
+cimagespriteblit	?BlitShadeNorm@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	100.0000	100.0000	1	0b8df3bbe25e	0x154270
 circleshadeblit	?Render@CircleShadeBlit@@QAEXHHHHHH@Z	54.5197	54.5197	1	cb51e9919710	0x180fb0
 ckeyedlist	??1CNode@@QAE@XZ	100.0000	100.0000	1	7894cc5a002b	0x379f0
 ckeyedlist	?AddNode@CKeyedList@@QAEPAUCNode@@PBDHH@Z	83.7778	83.7778	1	58602dffad36	0x37a70
@@ -1600,11 +1600,11 @@ csimpleanimation	?RegisterSimpleAnimLogic@@YAXXZ	96.4783	96.4783	1	5c2fab4a8cdd	
 csingleanimation	??1CSingleAnimation@@UAE@XZ	100.0000	100.0000	1	96128fb6792b	0x10540
 csingleframemessage	?InitActReg@CSingleFrameMessage@@SAXXZ	100.0000	100.0000	1	5fd5a8e1e830	0xab530
 csingleframemessage	?RegisterActs@CSingleFrameMessage@@SAXXZ	92.9130	92.9130	2	ba308c236c9a	0xab710
-csoundfxemitter	?Method_fa410@CSoundFxEmitter@@QAEHHHHH@Z	100.0000	100.0000	1	bd11b0f8e2a1	0xfa410
+csoundfxemitter	?Method_fa410@CSoundFxEmitter@@QAEHHHHH@Z	100.0000	100.0000	2	a33898bb1c28	0xfa410
 csoundfxemitter	?Method_fa550@CSoundFxEmitter@@QAEHHHHH@Z	98.6759	98.6759	1	b09a4099525d	0xfa550
 csoundfxemitter	?Method_fa790@CSoundFxEmitter@@QAEHHHH@Z	99.0566	99.0566	1	5f485411371f	0xfa790
 csoundfxemitter	?Method_fa8f0@CSoundFxEmitter@@QAEHHHHH@Z	98.3913	98.3913	1	1bdce35cd6f7	0xfa8f0
-csoundfxemitter	?Method_faa60@CSoundFxEmitter@@QAEHHHH@Z	100.0000	100.0000	1	a3c39096f465	0xfaa60
+csoundfxemitter	?Method_faa60@CSoundFxEmitter@@QAEHHHH@Z	100.0000	100.0000	2	bb213f9e7ebc	0xfaa60
 csplashstate	?LoadSounds@CSplashState@@QAEHHHH@Z	100.0000	100.0000	1	76fd1b44cd6c	0xf9780
 cspotlight	?Update_0b1ee0@CSpotLight@@QAEHXZ	55.5056	55.5056	1	b26a2794af0b	0xb1ee0
 cspotlightctor	??0CSpotLight@@QAE@PAUCGameObject@@@Z	84.4734	84.4734	1	2e3c37ee322e	0xb1200
@@ -2840,7 +2840,7 @@ m5_freelibhostdtor	?FreeLibHost_Dtor@@YAHXZ	100.0000	100.0000	1	784aecf4b678	0x1
 m5_gameassetnamespaces	?LoadGameAssetNamespaces@CAssetLoader@@QAEXPAUAssetMgr@@HH@Z	72.7569	72.7569	1	693b148c3200	0xf9ea0
 m5_levelpreview	?LoadLevelPreviewScreen@CPreviewState@@QAEXXZ	94.7368	94.7368	3	f6d3100a3ff2	0xde420
 m5_levelpreview	?LoadScreen@CPreviewState@@QAEHPADHHH@Z	96.3906	96.3906	1	7c55f1425856	0xfab90
-m5_levelpreview	?Tick@CPreviewState@@QAEHXZ	99.7826	99.7826	1	f4822c18b722	0xde200
+m5_levelpreview	?Tick@CPreviewState@@QAEHXZ	99.7826	99.7826	2	58b95d93a6f5	0xde200
 m5_lighteffectsetup	?Setup@CLightEffect@@QAEHPAULightDesc@@@Z	92.2465	92.2465	3	123bd23a2e66	0x1804a0
 m5_palettelerp	?Tick@PaletteLerp@@QAEHXZ	100.0000	100.0000	2	ea0e8cf89357	0x1480a0
 m5_soundtickctor	?SoundTick_Ctor@@YAHXZ	100.0000	100.0000	1	eb13fef5cc82	0x136fe0
@@ -3832,13 +3832,13 @@ wwdfile	?Draw@CPlaneRender@@QAEXPAX@Z	0.1391	0.1391	1	f705be10435a	0x162010
 wwdfile	?GetMapBaseName@WwdFile@@SA?AVCString@@V2@@Z	83.2887	83.2887	1	83d1487fabc1	0x3bb50
 wwdfile	?GetTileHandle@CPlaneRender@@QAEHHH@Z	100.0000	100.0000	1	4af6f718138d	0xd53a0
 wwdfile	?InitScrollRects@CPlaneRender@@QAEXXZ	99.9157	99.9157	2	1579a21bda11	0x163420
-wwdfile	?Load@CPlaneRender@@QAEHPAUCWwdStream@@@Z	100.0000	100.0000	1	465739db8fa7	0x1638c0
+wwdfile	?Load@CPlaneRender@@QAEHPAUCWwdStream@@@Z	99.9841	99.9841	1	465739db8fa7	0x1638c0
 wwdfile	?ReadObjectPlane@CGameLevelPlanes@@QAEPAVCPlane@@HHHHHHH@Z	99.5949	99.5949	1	c608fad16767	0x15d9a0
 wwdfile	?ReadPlane@CGameLevelPlanes@@QAEPAVCPlane@@PAX00@Z	99.5362	99.5362	4	1345c133fc23	0x15d8d0
 wwdfile	?ReadPlaneObjects@WwdFile@@QAEHPBH@Z	77.1667	77.1667	5	27f3528ed152	0x162af0
 wwdfile	?RebuildPlanes@WwdFile@@QAEHHH@Z	50.6600	50.6600	2	42f6a2d260e7	0x1628f0
 wwdfile	?ResolveColorKey@CPlaneRender@@QAEXXZ	66.6078	66.6078	3	aead1d8e7cec	0x163670
-wwdfile	?Save@CPlaneRender@@QAEHPAUCWwdStream@@@Z	100.0000	100.0000	1	0557ec6d7f43	0x163780
+wwdfile	?Save@CPlaneRender@@QAEHPAUCWwdStream@@@Z	99.9833	99.9833	1	0557ec6d7f43	0x163780
 wwdfile	?SetTileSize@CPlaneRender@@QAEXHH@Z	88.3846	88.3846	1	44db117efe97	0x161f00
 wwdfile	?SnapToTileCenter@CPlaneRender@@QAEXPAHHH@Z	50.8182	50.8182	1	f623f2843615	0x311e0
 wwdfile	?ValidateMainBlock@WwdFile@@SAHVCString@@@Z	99.6667	99.6667	5	602251fed3eb	0x3b470

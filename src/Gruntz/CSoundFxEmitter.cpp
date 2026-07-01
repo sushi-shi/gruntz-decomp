@@ -36,7 +36,7 @@ i32 CSoundFxEmitter::Method_fa410(i32 a1, i32 a2, i32 a3, i32 a4) {
     m_04->StopBankIfActive();
     if (g_fxDirectGate != 0) {
         Utils::WinAPI::ActiveWait(a3);
-        ((CFileImage*)m_0c->m_04->m_10->m_2c)->Fill(0);
+        ((CDDSurface*)m_0c->m_04->m_10->m_2c)->Fill(0);
     } else {
         ((ApiCallerStubs::ThisStubOwnerUnknown*)f)->winapi_17e620_GetTickCount(a3, a4, 0);
     }
@@ -222,7 +222,7 @@ i32 CSoundFxEmitter::Method_faa60(i32 a1, i32 a2, i32 a3) {
     m_04->StopBankIfActive();
     if (g_fxDirectGate != 0) {
         Utils::WinAPI::ActiveWait(a2);
-        ((CFileImage*)m_0c->m_04->m_10->m_2c)->Fill(0);
+        ((CDDSurface*)m_0c->m_04->m_10->m_2c)->Fill(0);
     } else {
         ((ApiCallerStubs::ThisStubOwnerUnknown*)f)->winapi_17e620_GetTickCount(a2, a3, 0);
     }

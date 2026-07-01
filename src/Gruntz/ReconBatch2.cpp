@@ -7,6 +7,7 @@
 // modeled with NO body so their rel32 calls reloc-mask.
 #include <Win32.h>
 
+#include <DDrawMgr/CDDSurface.h>  // canonical CDDSurface (Blt @0x13ee60)
 #include <Gruntz/KeyRecv_f8ec0.h> // the *0x64e0b0 receiver (shared w/ SFSelectDevice)
 
 // ===========================================================================
@@ -77,10 +78,6 @@ void Host_c2a80::Run() {
 // list and clear it. Sibling of 0x00181660 (same class: m_2c list, m_40 handle).
 // ===========================================================================
 class CPoolItemA;
-class CDDSurface {
-public:
-    i32 Blt(CDDSurface* dst); // 0x13ee60
-};
 class CDDrawPtrCollections {
 public:
     void RemoveItemA(CPoolItemA* h);                            // 0x142160

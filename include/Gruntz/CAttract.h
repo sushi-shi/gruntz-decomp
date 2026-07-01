@@ -15,6 +15,8 @@
 #include <rva.h> // OVERRIDE
 #include <Gruntz/CState.h>
 
+#include <DDrawMgr/CDDSurface.h> // canonical CDDSurface (the flip/render target)
+
 // ---------------------------------------------------------------------------
 // The video-mode sub-object at CAttract+0x4 (== CState::m_4 re-typed). Its first
 // method (engine FUN_0048ddd0, __thiscall ret 4 - the RestoreVideoMode shape,
@@ -67,13 +69,8 @@ struct CMenuBrightnessHolder {
     CMenuBrightnessTarget* m_2c; // +0x2c  brightness target
 };
 
-// The flip/render target (the engine CDDSurface) the host poll drives:
-// m_04->m_10->m_2c->Flip(0). Named to match retail's reloc symbol
-// (?Flip@CDDSurface@@QAEHPAV1@@Z); FUN_0013e850, __thiscall ret 4.
-class CDDSurface {
-public:
-    i32 Flip(CDDSurface* target);
-};
+// The flip/render target is the canonical CDDSurface (m_04->m_10->m_2c->Flip(0);
+// ?Flip@CDDSurface@@QAEHPAV1@@Z, FUN_0013e850, __thiscall ret 4).
 struct CMenuRenderM10 {
     char m_pad00[0x2c];
     CDDSurface* m_2c; // +0x2c

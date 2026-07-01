@@ -102,19 +102,14 @@ public:
 };
 
 // ---------------------------------------------------------------------------
-// CDDSurface - the engine DirectDraw surface. UNMATCHED; modeled as an external
-// shell so the plane draw methods' Blt calls reloc-mask. The plane embeds its
-// scratch DDBLTFX-ish blit param at +0xF4 (passed by address into BltEx). Only
-// the two blit virtuals the renderer uses are declared.
-class CDDSurface {
-public:
-    // BltEx(srcRect, a, b, flags, blitParam) - the "fill / colorkey-clear" blit;
-    // __thiscall, 5 stack args. Reloc-masked engine code.
-    i32 BltEx(void* srcRect, i32 a, i32 b, i32 flags, void* blitParam);
-    // BltFast(x, y, src, srcRect, blitParam) - the per-tile fast blit; __thiscall,
-    // 5 stack args. Reloc-masked engine code.
-    i32 BltFast(i32 x, i32 y, void* src, void* srcRect, void* blitParam);
-};
+// PlaneBlitScratch - the DDBLTFX-ish blit-param scratch the plane embeds at +0xF4
+// (its ADDRESS is passed into CDDSurface::BltEx by CPlaneRender::Draw). It is NOT
+// the engine CDDSurface wrapper (the canonical class - the real BltEx/BltFast
+// `this` reached via ctx->m_2c - lives in <DDrawMgr/CDDSurface.h>); this is only a
+// zero-size marker so the +0xF4 field lands in CPlane without pulling the real
+// 0xc0-byte surface into the plane layout. Draw is still a deferred stub, so no
+// surface methods are referenced from this TU yet.
+struct PlaneBlitScratch {};
 
 // A drawable plane source-frame (one entry of the tile/image lookup the renderer
 // dereferences through m_planeArray[handle>>16]). Only the fields the draw loop
@@ -294,9 +289,9 @@ public:
     i32 m_94, m_98, m_9c;       // +0x94..+0x9c
     CPlaneFrame** m_planeArray; // +0xa0
     u8 pad_a4[0xb0 - 0xa4];
-    CPlaneScroll* m_scroll;   // +0xb0
-    char m_name[0xf4 - 0xb4]; // +0xb4  plane name (serialized as a fixed 0x80 field)
-    CDDSurface m_surface;     // +0xf4  (empty model, sizeof 1)
+    CPlaneScroll* m_scroll;     // +0xb0
+    char m_name[0xf4 - 0xb4];   // +0xb4  plane name (serialized as a fixed 0x80 field)
+    PlaneBlitScratch m_surface; // +0xf4  blit-param scratch (empty marker, sizeof 1)
     u8 pad_f5[0x144 - 0xf5];
     i32 m_colorKey; // +0x144  the color-key palette index, packed in place to RGB565
 };

@@ -21,6 +21,9 @@
 #include <Image/CImage.h>
 #include <Win32.h> // RECT, CopyRect
 
+#include <DDrawMgr/CDDSurface.h>    // canonical CDDSurface (BltEx blit backend)
+#include <Gruntz/CDDrawShadeBlit.h> // canonical CDDrawShadeBlit (+ ShadeRect/ShadeSrc)
+
 // The 25-int severus scratch block (shared with CDDrawWorkerRegistry); [1] carries
 // the BltEx blend-mode word, the base is the DDBLTFX-style fx pointer.
 extern i32 g_severusScratch[25];
@@ -68,20 +71,8 @@ public:
     i32 m_70; // +0x70  clip bottom
 };
 
-// The two reloc-masked blit backends, modeled with the same mangling as their real
-// definitions (src/Gruntz/CDirectDrawMgr.cpp / CDDrawShadeBlit.cpp) so the rel32
-// call symbols correlate.
-class CSpriteDDSurface {
-public:
-    i32 BltEx(void* dstRect, CSpriteDDSurface* src, void* srcRect, u32 flags, void* fx); // 0x13eef0
-};
-struct ShadeRect;
-struct ShadeSrc;
-class CDDrawShadeBlit {
-public:
-    i32 Blit(ShadeRect* dst, ShadeSrc* src, ShadeRect* clip, i32 sel, i32 p4); // 0x1497f0
-    void Notify(i32 a, i32 b);                                                 // 0x14dd90
-};
+// The blit backends (CDDSurface::BltEx @0x13eef0, CDDrawShadeBlit::Blit @0x1497f0)
+// come from the canonical shared headers above; reloc-masked rel32 call symbols.
 
 // ---------------------------------------------------------------------------
 // No flip, surface blit (BltEx, blend mode 6).
@@ -163,8 +154,7 @@ void CImage::BlitNorm(CBlitInfo* info, CImage* dst) {
     d.right += 1;
     d.bottom += 1;
     g_severusScratch[1] = 6;
-    ((CSpriteDDSurface*)dst->m_2c)
-        ->BltEx(&d, (CSpriteDDSurface*)m_2c, &s, 0x8800, g_severusScratch);
+    ((CDDSurface*)dst->m_2c)->BltEx(&d, (CDDSurface*)m_2c, &s, 0x8800, g_severusScratch);
     d.right -= 1;
     d.bottom -= 1;
     info->m_18 = d.left;
@@ -257,8 +247,7 @@ void CImage::BlitFlipV(CBlitInfo* info, CImage* dst) {
     d.right += 1;
     d.bottom += 1;
     g_severusScratch[1] = 2;
-    ((CSpriteDDSurface*)dst->m_2c)
-        ->BltEx(&d, (CSpriteDDSurface*)m_2c, &s, 0x8800, g_severusScratch);
+    ((CDDSurface*)dst->m_2c)->BltEx(&d, (CDDSurface*)m_2c, &s, 0x8800, g_severusScratch);
     d.right -= 1;
     d.bottom -= 1;
     info->m_18 = d.left;
@@ -348,8 +337,7 @@ void CImage::BlitFlipH(CBlitInfo* info, CImage* dst) {
     d.right += 1;
     d.bottom += 1;
     g_severusScratch[1] = 4;
-    ((CSpriteDDSurface*)dst->m_2c)
-        ->BltEx(&d, (CSpriteDDSurface*)m_2c, &s, 0x8800, g_severusScratch);
+    ((CDDSurface*)dst->m_2c)->BltEx(&d, (CDDSurface*)m_2c, &s, 0x8800, g_severusScratch);
     d.right -= 1;
     d.bottom -= 1;
     info->m_18 = d.left;
