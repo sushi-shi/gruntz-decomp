@@ -32,7 +32,9 @@
 struct CSbiSlot {
     i32 m_state; // +0x00 (rel +0x208)
     i32 m_value; // +0x04 (rel +0x20c)
-    char m_pad8[0x18 - 0x8];
+    i32 m_8;     // +0x08 (gauge-span hi / used by the SetGaugeSpan inline)
+    i32 m_c;     // +0x0c
+    char m_pad10[0x18 - 0x10];
 };
 
 // A 24-byte highlight-row record (the +0x378 array element).
@@ -180,6 +182,45 @@ struct CSbiNotifyNode {
     CSbiNotifyTarget* m_payload; // +8
 };
 
+// A wider view of the notify payload: +0x10 takes the notify value (the destruct-
+// button walks call it as void(int)); +0x14 / +0x28 are argless refreshers (the
+// main-status-bar walks). The vtable slots are the load-bearing fact; the non-
+// virtual arg shapes are reloc-masked.
+class CSbiNotifyPayload {
+public:
+    virtual void v0();
+    virtual void v4();
+    virtual void v8();
+    virtual void vc();
+    virtual void Slot10(i32 arg); // +0x10
+    virtual void Slot14();        // +0x14
+    virtual void v18();
+    virtual void v1c();
+    virtual void v20();
+    virtual void v24();
+    virtual void Slot28(); // +0x28
+};
+
+// A GAME_DESTRUCT-style sprite-config record: +0x10 is a factory whose no-arg
+// __thiscall builds the display object (returned, then Configure'd / Release'd).
+struct CSbiSpriteFactory {
+    void* Build(); // 0x135d70 (__thiscall, no args, returns the object)
+};
+struct CSbiDisplayObj {
+    void Configure(i32 a, i32 b, i32 c, i32 d); // 0x136300 (__thiscall, 4 args)
+    void Release();                             // 0x135380 (__thiscall, no args)
+};
+struct CSbiSpriteCfg {
+    char m_pad0[0x10];
+    CSbiSpriteFactory* m_10; // +0x10
+};
+
+// The +0x54c tear-down object (a notifier freed on retab).
+struct CSbiMode54c {
+    void Notify0(i32 arg); // 0x1258 (__thiscall, 1 arg)
+    void Refresh();        // 0x280b (__thiscall, no args)
+};
+
 // A minimal MFC-style CPtrList view (head node at +4); only RemoveAll is called.
 struct CSbiPtrList {
     char m_pad0[0x4];
@@ -282,12 +323,12 @@ public:
     void Stub_0ffde0();
     i32 winapi_107d00_SetRect();
     void LoadBattlezItemConfig(i32);
-    void LoadMainStatusBarSprite();
+    i32 LoadMainStatusBarSprite();
     void UpdateStatusBarTabHighlight(i32, i32, i32);
-    void LoadDestructButtonSprite(i32);
+    i32 LoadDestructButtonSprite(i32);
     void BuildGameTabResumeButton(i32);
     void BuildGameTabPauseButton();
-    void LoadGooCookingSprite(i32);
+    i32 LoadGooCookingSprite(i32);
     void UpdateRezConveyorStatusBar();
     void LoadRezMachineConfig();
     void UpdateRezMachineSnoozeStatusBar();
@@ -387,6 +428,15 @@ public:
     void SetGaugeSpan(i32 a, i32 b, i32 c); // call 0x4359 (__thiscall, 3 args)
     void RefreshFallRect();                 // call 0x1cbc (__thiscall, no args)
 
+    // ----- fifth batch: item-config-loader siblings (reloc-masked ILT thunks) -----
+    void RefreshHost();         // call 0x2577 (__thiscall, no args)
+    void PrepMultiReset();      // call 0x367a (__thiscall, no args)
+    void NotifyTabExit();       // call 0x2329 (__thiscall, no args)
+    void ArmTab(i32 a, i32 b);  // call 0x427d (__thiscall, 2 args)
+    void ResetTabWidgets2b44(); // call 0x2b44 (__thiscall, no args)
+    void FinishReset1f6e();     // call 0x1f6e (__thiscall, no args)
+    void FinishReset16ea();     // call 0x16ea (__thiscall, no args)
+
     // ----- layout (placeholders; offsets are the load-bearing fact) -----
     i32 m_2c; // +0x2c  Setup arg1 (vtable-slot-2 setup target)
     i32 m_30; // +0x30
@@ -424,7 +474,11 @@ public:
     char m_pad238[0x298 - (0x220 + 0x18)];
     i32 m_gauge;       // +0x298  gauge current
     i32 m_gaugeTarget; // +0x29c  gauge target
-    char m_pad2a0[0x2c0 - 0x2a0];
+    char m_pad2a0[0x2b0 - 0x2a0];
+    i32 m_2b0;                    // +0x2b0  (multiplayer/battlez reset block)
+    i32 m_2b4;                    // +0x2b4
+    i32 m_2b8;                    // +0x2b8
+    i32 m_2bc;                    // +0x2bc
     CSbiSlot m_groupSlots[3];      // +0x2c0  group-A 24-byte slot records
     CSbiSlotPtr* m_groupNotify[3]; // +0x308  group-A notify pointers
     char m_pad314[0x318 - 0x314];
@@ -475,11 +529,11 @@ public:
     i32 m_528;                    // +0x528  rez-machine snooze/wake active flag
     i32 m_52c;                    // +0x52c  rez-machine wake tick counter
     CSbiPtrCollection m_530;      // +0x530  pooled-ptr collection (RemoveAll on teardown)
-    void* m_ptrTable[1];          // +0x534  pointer table (elements streamed 8B)
+    void** m_ptrTable;            // +0x534  pointer to the pooled-ptr table (elements streamed 8B)
     i32 m_ptrCount;               // +0x538  count for m_ptrTable
     char m_pad53c[0x548 - 0x53c];
-    i32 m_548; // +0x548
-    char m_pad54c[0x550 - 0x54c];
+    i32 m_548;   // +0x548
+    void* m_54c; // +0x54c  a notifier object (freed on retab; Refresh()/Notify0())
     i32 m_550;       // +0x550  toggle-mode active flag
     i32 m_554;       // +0x554  toggle-mode tab handle
     i32 m_558;       // +0x558
@@ -487,7 +541,10 @@ public:
     char m_pad560[0x570 - 0x560];
     CSbiSlotPtr* m_modeNotify; // +0x570  notify target
     i32 m_modeArmed;           // +0x574
-    char m_pad578[0x61c - 0x578];
+    i32 m_578;                 // +0x578  (cleared on multiplayer/battlez reset)
+    char m_pad57c[0x614 - 0x57c];
+    i32 m_614;      // +0x614  main-status-bar frame gate
+    void* m_618;    // +0x618  destruct-button display object
     i32 m_61c[4];   // +0x61c  trailing dword block (cleared on reset)
     i32 m_tabCycle; // +0x62c  4-state highlight cursor (AdvanceTab cycles 0..3)
 };
@@ -579,7 +636,9 @@ struct CSbiLogger {
 // The CGameReg singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c). Modeled
 // minimally - only the members/methods the reconstructed bodies touch.
 struct CGameReg {
-    char m_pad0[0x2c];
+    char m_pad0[0x10];
+    void* m_10; // +0x10  presence gate (destruct-button build guard)
+    char m_pad14[0x2c - 0x14];
     CSbiSubMgr* m_2c;  // +0x2c  highlight sub-manager
     CSbiGameMgr* m_30; // +0x30  active game-manager (null-guard in Serialize)
     char m_pad34[0x38 - 0x34];
@@ -589,7 +648,9 @@ struct CGameReg {
     char m_pad6c[0x8c - 0x6c];
     i32 m_8c; // +0x8c  cursor/view x (offset by -0x45 into the rect-only item)
     i32 m_90; // +0x90  cursor/view y (offset by -0x30)
-    char m_pad94[0x134 - 0x94];
+    char m_pad94[0x11c - 0x94];
+    i32 m_11c; // +0x11c  destruct-button configure tag
+    char m_pad120[0x134 - 0x120];
     i32 m_134;                      // +0x134  game-over/exit gate
     void ReportError(i32 a, i32 b); // __thiscall
     // The cursor/view extent accessor: returns {m_8c, m_90} by value. Inlined at the
@@ -2552,7 +2613,7 @@ i32 CSBI_RectOnly::InsertPtr(i32 a, i32 b) {
     i32 n = m_ptrCount;
     i32 i = 0;
     if (n > 0) {
-        CSbiFreeNode** t = (CSbiFreeNode**)m_ptrTable[0];
+        CSbiFreeNode** t = (CSbiFreeNode**)m_ptrTable;
         do {
             CSbiFreeNode* e = *t;
             if (e != 0 && b < e->m_4) {
@@ -2598,11 +2659,113 @@ i32 CSBI_RectOnly::winapi_107d00_SetRect() {
 RVA(0x000fdc00, 0x5c2)
 void CSBI_RectOnly::LoadBattlezItemConfig(i32) {}
 
-// @confidence: med
-// @source: decomp-xref
-// @stub
+// The main-bar setup chain hung off the game-manager: m_30->m_4->m_14->m_2c drives a
+// 2-arg rect setter; m_30->m_4->m_14 is also handed to the frame-draw helper.
+struct CSbiMainSetup {
+    void SetRectXY(void* rect, i32 flag); // 0x13e7d0 (__thiscall, 2 args)
+};
+struct CSbiMainL2 {
+    char m_pad0[0x2c];
+    CSbiMainSetup* m_2c; // +0x2c
+};
+struct CSbiMainL1 {
+    char m_pad0[0x14];
+    CSbiMainL2* m_14; // +0x14
+};
+// The resolved GAME_STATUSBAR_MAINBAR cfg record: a frame-entry table at +0x14 indexed
+// by +0x64; each entry carries an origin pair at +0x18/+0x1c.
+struct CSbiFrameEntry {
+    char m_pad0[0x18];
+    i32 m_18; // +0x18
+    i32 m_1c; // +0x1c
+};
+struct CSbiMainBarCfg {
+    char m_pad0[0x14];
+    CSbiFrameEntry** m_14; // +0x14  frame-entry table
+    char m_pad18[0x64 - 0x18];
+    i32 m_64; // +0x64  frame index
+};
+// The frame-draw helper (__stdcall, callee-cleans 0x10): the chain object plus the two
+// composed origins.
+void __stdcall MainBarDrawFrame(CSbiMainL2* obj, i32 x, i32 y, i32 flag); // 0x153790
+
+// 0xfe6b0 - drive the main status-bar sprite. For the non-cursor subtype, when the
+// countdown (+0x20) is live, tick it; if the frame gate (m_614) exceeds the screen
+// height push the current rect to the game-manager's setup chain; look up
+// GAME_STATUSBAR_MAINBAR and, on the resolved frame, draw it at the item's origin. Then
+// fire the +0x30 and active-tab notify lists (slot 0x14) and refresh the +0x54c object.
+// The trailing +0xd8 list (slot 0x28 then 0x14) runs for every subtype. Returns 1.
+// @early-stop
+// the two stack-struct arg builds (the +0x14 rect handed to SetRectXY and the frame-draw
+// args) are byte-correct in content but MSVC schedules the interleaved local stores /
+// packs the 0x14 frame differently than retail (the statement-schedule wall shared with
+// Setup); the three notify walks + the config lookup are byte-faithful. Residual is that
+// scheduling plus the g_gameReg / GAME_STATUSBAR_MAINBAR DIR32 naming. Deferred.
 RVA(0x000fe6b0, 0x145)
-void CSBI_RectOnly::LoadMainStatusBarSprite() {}
+i32 CSBI_RectOnly::LoadMainStatusBarSprite() {
+    if (*(i32*)this != kSubtypeTag) {
+        if (m_rect14.m_c > 0) {
+            m_rect14.m_c--;
+            i32 v = m_614;
+            if (v > 0x1e0) {
+                CSbiMainSetup* tgt = (*(CSbiMainL1**)((char*)g_gameReg->m_30 + 4))->m_14->m_2c;
+                struct {
+                    i32 a, b, c, d;
+                } rc;
+                rc.a = m_10;
+                rc.d = v;
+                rc.b = m_rect14.m_8;
+                rc.c = m_rect14.m_4;
+                tgt->SetRectXY(&rc, 0);
+            }
+            char* mc = *(char**)((char*)this + 0xc);
+            void* found = 0;
+            CSbiLookupMap* map = (CSbiLookupMap*)(*(char**)(mc + 0x10) + 0x10);
+            map->Lookup("GAME_STATUSBAR_MAINBAR", &found);
+            if (found) {
+                CSbiMainBarCfg* cfg = (CSbiMainBarCfg*)found;
+                CSbiFrameEntry* entry = cfg->m_14[cfg->m_64];
+                if (entry) {
+                    CSbiMainL1* l1 = *(CSbiMainL1**)((char*)g_gameReg->m_30 + 4);
+                    MainBarDrawFrame(l1->m_14, entry->m_18 + m_10, entry->m_1c + m_rect14.m_0, 0);
+                }
+            }
+        }
+
+        char* B = (char*)this;
+        CSbiNotifyNode* n = *(CSbiNotifyNode**)(B + 0x30);
+        while (n) {
+            CSbiNotifyNode* cur = n;
+            n = n->m_next;
+            if (cur->m_payload) {
+                ((CSbiNotifyPayload*)cur->m_payload)->Slot14();
+            }
+        }
+        CSbiNotifyNode* m = *(CSbiNotifyNode**)(B + m_activeTab * 0x1c + 0x30);
+        while (m) {
+            CSbiNotifyNode* cur = m;
+            m = m->m_next;
+            if (cur->m_payload) {
+                ((CSbiNotifyPayload*)cur->m_payload)->Slot14();
+            }
+        }
+        if (m_54c) {
+            ((CSbiMode54c*)m_54c)->Refresh();
+        }
+    }
+
+    CSbiNotifyNode* k = m_listD4.m_head;
+    while (k) {
+        CSbiNotifyNode* cur = k;
+        k = k->m_next;
+        CSbiNotifyPayload* p = (CSbiNotifyPayload*)cur->m_payload;
+        if (p) {
+            p->Slot28();
+            p->Slot14();
+        }
+    }
+    return 1;
+}
 
 // @confidence: med
 // @source: decomp-xref
@@ -2610,11 +2773,76 @@ void CSBI_RectOnly::LoadMainStatusBarSprite() {}
 RVA(0x000fe910, 0xb8e)
 void CSBI_RectOnly::UpdateStatusBarTabHighlight(i32, i32, i32) {}
 
-// @confidence: med
-// @source: decomp-xref
-// @stub
+// 0xffb20 - build (or release) the DESTRUCT button display object. Only touches it
+// while the presence gate (g_gameReg->m_10) is up: when the mode is armed (m_558!=0)
+// and not held (m_574==0), and the object is not yet built, look up GAME_DESTRUCT and
+// build+configure it; otherwise release any existing object. Then refresh the host and
+// fire the notify value `arg` down the three per-tab notify lists (+0x30, active tab,
+// +0xd8) plus the +0x54c notifier. Returns 1.
+// @early-stop
+// ~97.2%: the code bytes are byte-exact vs retail (verified llvm-objdump -dr). The only
+// scored diffs are the two DIR32 g_gameReg operands (retail _g_mgrSettings) and the
+// GAME_DESTRUCT $SG string; every other reloc (Lookup/Build/Configure/Release/RefreshHost/
+// Notify0/TabCommit) is a reloc-masked REL32. TU-wide rename, matcher.md reloc artifact.
 RVA(0x000ffb20, 0x13a)
-void CSBI_RectOnly::LoadDestructButtonSprite(i32) {}
+i32 CSBI_RectOnly::LoadDestructButtonSprite(i32 arg) {
+    if (g_gameReg->m_10 != 0) {
+        if (m_558 != 0 && m_modeArmed == 0) {
+            if (m_618 == 0) {
+                CSbiMusicHost* host = g_gameReg->m_30->m_28;
+                void* found = 0;
+                ((CSbiLookupMap*)((char*)host + 0x10))->Lookup("GAME_DESTRUCT", &found);
+                if (found) {
+                    CSbiSpriteFactory* f = ((CSbiSpriteCfg*)found)->m_10;
+                    if (f) {
+                        void* obj = f->Build();
+                        m_618 = obj;
+                        if (obj) {
+                            ((CSbiDisplayObj*)obj)->Configure(g_gameReg->m_11c, 0, 0, 1);
+                        }
+                    }
+                }
+            }
+        } else {
+            if (m_618) {
+                ((CSbiDisplayObj*)m_618)->Release();
+                m_618 = 0;
+            }
+        }
+    }
+    RefreshHost();
+
+    char* B = (char*)this;
+    CSbiNotifyNode* n = *(CSbiNotifyNode**)(B + 0x30);
+    while (n) {
+        CSbiNotifyNode* cur = n;
+        n = n->m_next;
+        if (cur->m_payload) {
+            ((CSbiNotifyPayload*)cur->m_payload)->Slot10(arg);
+        }
+    }
+    CSbiNotifyNode* m = *(CSbiNotifyNode**)(B + m_activeTab * 0x1c + 0x30);
+    while (m) {
+        CSbiNotifyNode* cur = m;
+        m = m->m_next;
+        if (cur->m_payload) {
+            ((CSbiNotifyPayload*)cur->m_payload)->Slot10(arg);
+        }
+    }
+    CSbiNotifyNode* k = m_listD4.m_head;
+    while (k) {
+        CSbiNotifyNode* cur = k;
+        k = k->m_next;
+        if (cur->m_payload) {
+            ((CSbiNotifyPayload*)cur->m_payload)->Slot10(arg);
+        }
+    }
+    if (m_54c) {
+        ((CSbiMode54c*)m_54c)->Notify0(arg);
+        TabCommit();
+    }
+    return 1;
+}
 
 // 0x102180 - build the RESUME game-tab button. If this is the subtype-2 cursor item,
 // refresh it; when shown and not already on the gauge tab (5), apply the (5,3) rect;
@@ -2648,11 +2876,61 @@ void CSBI_RectOnly::BuildGameTabPauseButton() {
     m_hitTestDisabled = 0;
 }
 
-// @confidence: med
-// @source: decomp-xref
-// @stub
+// 0x1055b0 - build the GOOCOOKING1 status-bar sprite for stat slot `idx`. Bails (0)
+// if the slot is already active; when the game is running (m_134==1) and the mode
+// gate is down (m_548==0), refresh the subtype-2 cursor, apply the (2,3) rect off the
+// gauge tab, and commit. Latch the gauge span for slot idx+0x17 (base g_dat645588, hi
+// 0x7fffffff); then, on the gauge tab and not the cursor subtype, play the
+// GAME_GOOCOOKING1 cue on the draw-clock window if the music gate is free. Returns 1.
+// @early-stop
+// ~96.7%: the code bytes are byte-exact vs retail (verified llvm-objdump -dr base vs
+// target). The residual is purely the reloc-symbol-naming scoring tail - this TU models
+// the shared singletons as ?g_gameReg@@... / ?g_dat645588@@... / ?g_61ab20@@... etc.
+// while retail names them _g_mgrSettings / _g_645588 / ?g_sndEnabled@@... / ?g_sndCueTag@@
+// ... / _g_killCueClock (+ the GAME_GOOCOOKING1 $SG string), so those DIR32 operands
+// don't pair. A TU-wide rename, not a per-function fix; matcher.md reloc artifact.
 RVA(0x001055b0, 0x109)
-void CSBI_RectOnly::LoadGooCookingSprite(i32) {}
+i32 CSBI_RectOnly::LoadGooCookingSprite(i32 idx) {
+    CSbiSlot* sp = &m_slots[idx];
+    if (sp->m_state != 0) {
+        return 0;
+    }
+    if (g_gameReg->m_134 == 1 && m_548 == 0) {
+        if (*(i32*)this == kSubtypeTag) {
+            TabSubtypeRefresh();
+        }
+        if (m_activeTab != 2) {
+            RectApply(2, 3);
+        }
+        TabCommit();
+    }
+    sp->m_state = 1;
+    CSbiSlot* g = (CSbiSlot*)this + (idx + 0x17);
+    g->m_8 = 0x7fffffff;
+    g->m_c = 0;
+    g->m_state = g_dat645588;
+    g->m_value = 0;
+    if (m_activeTab == 2 && *(i32*)this != 2) {
+        CSbiMusicHost* host = g_gameReg->m_30->m_28;
+        if (host->m_30 == 0) {
+            void* found = 0;
+            CSbiLookupMap* map = (CSbiLookupMap*)((char*)host + 0x10);
+            map->Lookup("GAME_GOOCOOKING1", &found);
+            if (found) {
+                i32 gate = g_61ab20;
+                i32 item = g_61ab24;
+                if (gate != 0) {
+                    CSbiCueRecord* p = (CSbiCueRecord*)found;
+                    if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
+                        p->m_14 = g_6bf3c0;
+                        ((CSbiCuePlayer*)p->m_10)->ConfigureItem(item, 0, 0, 0);
+                    }
+                }
+            }
+        }
+    }
+    return 1;
+}
 
 // @confidence: med
 // @source: decomp-xref
@@ -2751,8 +3029,70 @@ i32 CSBI_RectOnly::UpdateRezMachineWakeStatusBar() {
     return 1;
 }
 
-// @confidence: med
-// @source: decomp-xref
-// @stub
+// 0x107ae0 - reset the item to the multiplayer/battlez starting layout: prep, refresh
+// the subtype-2 cursor, force the tab to 5, arm it, clear the per-stat flags, reset the
+// widgets; then (by game mode m_134) pre-fill the first N slots (N = StartingGruntz from
+// the Multiplayer / Battlez config section) to (state=ready, value=0x1a); return each
+// pooled ptr to the free-list, clear the +0x530 collection and the reset block, free the
+// +0x54c notifier, and finish. The trailing i32 arg is ABI-accepted but unused.
+// @early-stop
+// ~90.5%: the prologue, tab-force, memset, both config loops, and the free-list return
+// loop are byte-exact (the free-loop matched once m_ptrTable was typed void**). Residual:
+// (1) the teardown tail reorders the m_2b0/2b8/2b4/2bc zero-block vs the m_54c load / m_548
+// store (a store-vs-load MSVC scheduling coin-flip; an explicit-temp rewrite was neutral)
+// and (2) the g_gameReg + StartingGruntz/Multiplayer/Battlez string DIR32 naming. Not
+// source-steerable; deferred to the final sweep.
 RVA(0x00107ae0, 0x1aa)
-void CSBI_RectOnly::LoadMultiplayerBattlezConfig(i32) {}
+void CSBI_RectOnly::LoadMultiplayerBattlezConfig(i32) {
+    PrepMultiReset();
+    if (*(i32*)this == kSubtypeTag) {
+        TabSubtypeRefresh();
+    }
+    if (m_activeTab != 5) {
+        NotifyTabExit();
+        m_activeTab = 5;
+    }
+    ArmTab(5, 1);
+    memset(m_statFlags, 0, sizeof(m_statFlags));
+    ResetTabWidgets2b44();
+
+    i32 mode = g_gameReg->m_134;
+    if (mode == 2) {
+        CSbiSlot* s = m_slots;
+        for (i32 i = 0; i < g_buteMgr.GetIntDef("Multiplayer", "StartingGruntz", 0); i++) {
+            s->m_value = kSlotCommitLevel;
+            s->m_state = kSlotReady;
+            s++;
+        }
+    } else if (mode == 3) {
+        CSbiSlot* s = m_slots;
+        for (i32 i = 0; i < g_buteMgr.GetIntDef("Battlez", "StartingGruntz", 0); i++) {
+            s->m_value = kSlotCommitLevel;
+            s->m_state = kSlotReady;
+            s++;
+        }
+    }
+
+    for (i32 j = 0; j < m_ptrCount; j++) {
+        void* p = m_ptrTable[j];
+        if (p) {
+            void** node = (void**)((char*)p - g_freeListNodeBias);
+            *node = g_freeList;
+            g_freeList = node;
+        }
+    }
+    m_530.RemoveAll(0, -1);
+    m_2b0 = 0;
+    m_2b8 = 0;
+    m_2b4 = 0;
+    m_2bc = 0;
+    m_548 = 0;
+    if (m_54c) {
+        free(m_54c);
+        m_54c = 0;
+    }
+    FinishReset1f6e();
+    m_578 = 0;
+    m_modeArmed = 0;
+    FinishReset16ea();
+}
