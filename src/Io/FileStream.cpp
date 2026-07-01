@@ -294,8 +294,6 @@ void CFileIO::Stub_0e5700() {}
 // consumers incl. Image, and this /O1 TU is byte-exact-sensitive, so keep every
 // completeness typedef after the last function body).
 // ===========================================================================
-SIZE_UNKNOWN(CFileIO);     // CObject-derived file wrapper (partial model)
-VTBL(CFileIO, 0x001ed15c); // derived vtable stamp from ctor 0x1befd7
 SIZE_UNKNOWN(CFileExceptionLite);
 SIZE(SecurityAttributes, 0xc); // complete Win32 SECURITY_ATTRIBUTES (nLength=0xc)
 SIZE_UNKNOWN(CFileIODispatch); // CFile Seek slot-dispatch view (no emitted vtable)

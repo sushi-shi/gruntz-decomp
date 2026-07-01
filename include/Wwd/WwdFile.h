@@ -68,6 +68,7 @@ private:
 // slot 0x1 (offset 0x4) = the scalar-deleting destructor. m_flags@+0x8 carries
 // the plane flags (bit0 = MAIN). None of these have bodies here.
 // ---------------------------------------------------------------------------
+SIZE(CPlane, 0x158); // RE'd CPlane object size (0x158)
 class CPlane {
 public:
     // Construct from (a, planeIndex, c); reloc-masked engine ctor.
@@ -119,6 +120,7 @@ public:
 // dereferences through m_planeArray[handle>>16]). Only the fields the draw loop
 // reads are pinned: the cell-bounds (+0x64/+0x68), the frame table (+0x14), and
 // the per-frame blit src (+0x28 surface, +0x2c srcRect).
+SIZE_UNKNOWN(CPlaneFrame);
 struct CPlaneFrame {
     u8 pad_0[0x14];
     void** m_frames; // +0x14  frame table (indexed by the low 16 bits of handle)
@@ -128,6 +130,7 @@ struct CPlaneFrame {
 };
 
 // One resolved tile/sprite frame: +0x28 = the source surface, +0x2c = its srcRect.
+SIZE_UNKNOWN(CPlaneTile);
 struct CPlaneTile {
     u8 pad_0[0x28];
     void* m_surface; // +0x28

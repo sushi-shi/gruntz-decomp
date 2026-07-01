@@ -86,14 +86,17 @@ MS_FLAGS = [f"--target={TARGET}", f"-fms-compatibility-version={MSC_COMPAT}",
 # annotations). The address is bound to the AST VarDecl below it.
 DATA_MACRO_RE = re.compile(r"\bDATA\s*\(\s*(0x[0-9a-fA-F]+)\s*\)")
 # VTBL(Class, 0x...) macro (src/rva.h) - the single-source-of-truth vtable-catalog
-# annotation placed after a class. Unlike RVA/DATA it lives in HEADERS (after the
-# class def) and carries no symbol to hang an IR annotation on, so it is scanned
-# from source text TREE-WIDE (src/ + include/) in the merge step and lowered to a
-# `??_7<Class>@@6B@` DATA row. The name is TARGET-side (the EXE has no debug
-# symbols) and reloc-masked, so it is matching-neutral tracking, not a match lever
-# (hence NO authority check - it names the datum in the catalog regardless of
-# whether any base obj references it yet). Only simple global-namespace class
-# names lower cleanly here; templated/namespaced vtables stay in vtable_names.csv.
+# annotation placed atop a class. It expands (under clang) to a `gruntz_clsmeta_*`
+# annotate carrier that DOES reach the IR, but it is read from source text
+# TREE-WIDE (src/ + include/) in the merge step rather than per-TU IR: the scan is
+# include-independent, so a VTBL in a header not pulled into any built TU is still
+# catalogued (and its invocation syntax is placement-independent, so atop-the-class
+# and legacy .cpp-EOF sites parse identically). It is lowered to a `??_7<Class>@@6B@`
+# DATA row. The name is TARGET-side (the EXE has no debug symbols) and reloc-masked,
+# so it is matching-neutral tracking, not a match lever (hence NO authority check -
+# it names the datum in the catalog regardless of whether any base obj references
+# it yet). Only simple global-namespace class names lower cleanly here;
+# templated/namespaced vtables stay in vtable_names.csv.
 VTBL_MACRO_RE = re.compile(r"\bVTBL\s*\(\s*([A-Za-z_]\w*)\s*,\s*(0x[0-9a-fA-F]+)\s*\)")
 # `// @rva-symbol: <mangled> <rva> [<size>]` - a self-contained function label for
 # a compiler-generated thunk that has NO source definition to hang an RVA()
@@ -302,8 +305,14 @@ def collect_vars(ast, main_file):
     def visit(node):
         if isinstance(node, dict):
             update_file(node)
+            # `gruntz_clsmeta_*` are the SIZE/SIZE_UNKNOWN/VTBL class-metadata
+            # carriers (src/rva.h): file-scope `used` statics that DO carry a
+            # mangledName. Skip them so a carrier written between a DATA(...) and
+            # its extern can never steal the DATA binding (data_labels picks the
+            # first VarDecl below the macro).
             if (state["in_main"] and node.get("kind") == "VarDecl"
-                    and "mangledName" in node and not node.get("isImplicit")):
+                    and "mangledName" in node and not node.get("isImplicit")
+                    and not (node.get("name") or "").startswith("gruntz_clsmeta_")):
                 loc = node.get("loc") or {}
                 off = loc.get("offset")
                 if off is not None:

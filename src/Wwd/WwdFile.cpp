@@ -1229,11 +1229,8 @@ CString WwdFile::GetMapBaseName(CString path) {
 //     ?g_wwdObjVtbl (a VTBL would dup that rva).
 // ===========================================================================
 // --- WwdFile.h header classes ---
-SIZE(WwdHeader, 0x5f4);        // on-disk WWD header (RE'd 0x5F4 bytes)
-SIZE(WwdInputStream, 0x10);    // 16-byte file-stream object (full layout to +0xc)
-SIZE(CPlane, 0x158);           // RE'd CPlane object size (0x158)
-SIZE_UNKNOWN(CPlaneFrame);
-SIZE_UNKNOWN(CPlaneTile);
+SIZE(WwdHeader, 0x5f4);     // on-disk WWD header (RE'd 0x5F4 bytes)
+SIZE(WwdInputStream, 0x10); // 16-byte file-stream object (full layout to +0xc)
 SIZE_UNKNOWN(CPlaneScroll);
 SIZE_UNKNOWN(CPlaneSurfDesc);
 SIZE_UNKNOWN(CPlaneSurf);
@@ -1245,12 +1242,12 @@ SIZE_UNKNOWN(CWwdStream);       // abstract serialize-stream slot view
 SIZE_UNKNOWN(CPlaneRenderPoly); // slot-dispatch view
 SIZE_UNKNOWN(CPlaneRender);
 SIZE_UNKNOWN(CGameLevelPlanes);
-SIZE_UNKNOWN(CPlanePtrArray);   // CArray<CPlane*> method-only view
-SIZE_UNKNOWN(WwdFile);          // namespace-class (method-only)
+SIZE_UNKNOWN(CPlanePtrArray); // CArray<CPlane*> method-only view
+SIZE_UNKNOWN(WwdFile);        // namespace-class (method-only)
 // --- WwdFile.cpp local views ---
 SIZE_UNKNOWN(WwdGameRegSlot);
 SIZE_UNKNOWN(WwdLevelLoader);
-SIZE(WwdGameObj, 0x1dc);        // RE'd operator-new'd game object (0x1DC)
+SIZE(WwdGameObj, 0x1dc); // RE'd operator-new'd game object (0x1DC)
 SIZE_UNKNOWN(WwdGameObjMethods);
 SIZE_UNKNOWN(WwdSubMgrCtor);
 SIZE_UNKNOWN(WwdObjAnimInit);

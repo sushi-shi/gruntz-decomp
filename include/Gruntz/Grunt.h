@@ -17,7 +17,7 @@
 #define SRC_GRUNTZ_GRUNT_H
 
 #include <Ints.h>
-#include <rva.h> // SIZE_UNKNOWN/VTBL class-metadata macros used below
+#include <rva.h>                   // SIZE_UNKNOWN/VTBL class-metadata macros used below
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (g_gameReg->m_74; GetSel)
 
 // ---------------------------------------------------------------------------
@@ -952,6 +952,7 @@ public:
 //   +0x3f4  m_toyTime     (ToyTime gate / Add arg)
 //   +0x3f8  m_wingzTime     (WingzTime gate / Add arg)
 // ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CGrunt);
 class CGrunt {
 public:
     i32 CreateHealthSprite();
@@ -1010,7 +1011,7 @@ public:
     // sprite (megaphone runs a 2nd unit-type switch) + fires the on-screen entrance cue.
     i32 LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5);
     // Pickup-loader helper this-methods (reloc-masked engine thunks).
-    void PickupResetA();                 // thunk 0x214e (__thiscall ret 0)
+    void PickupResetA();                    // thunk 0x214e (__thiscall ret 0)
     void PickupResetB(i32 a, i32 b, i32 c); // thunk 0x136b (__thiscall ret 0xc)
 
     // @0x57890 (__thiscall ret 0, /GX) - when the entrance reason is a lose-item
@@ -1420,12 +1421,8 @@ public:
     i32 TeleportMove(i32 dx, i32 dy, i32 a, i32 b); // 0x2f3b
     void FreezeApply();                             // 0x28d8
 };
-// NB: NO SIZE_UNKNOWN/VTBL for CGrunt here. Grunt.h is a hot, widely-included header,
-// and even the (code-free) SIZE_UNKNOWN(CGrunt) typedef deterministically reschedules a
-// neighbor (measured: CGrunt::StepCompassMove -0.52% fuzzy). VTBL(CGrunt) is worse — its
-// RTTI vtable 0x1e8754 is a pre-existing delinker symbol referenced by scored CGrunt/
-// CSpotLight code, so renaming it shifts their fuzzy %. The class-metadata sweep must
-// SKIP classes in hot headers where annotation regresses a neighbor (per-class verify).
+// No VTBL(CGrunt): its RTTI vtable 0x1e8754 is referenced by scored CGrunt/CSpotLight
+// code, so cataloguing it (renaming the delinked datum) shifts their fuzzy %.
 
 // CGrunt segment-vs-box overlap test @0x62b70 - a free (__stdcall, ret 0xc) helper:
 // does the directed segment e1->e2 cross into the axis-aligned box `p`

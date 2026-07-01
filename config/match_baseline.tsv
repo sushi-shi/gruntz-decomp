@@ -371,7 +371,7 @@ maplogic	5	4
 mapmgr	9	7
 menuitem	14	11
 menuitem2	5	2
-menupage	31	18
+menupage	31	16
 menusparkleserial	1	1
 menustateassets	1	0
 mgrautoscroll	1	0
@@ -435,7 +435,7 @@ sbi_image_eh	1	1
 sbi_imageset	1	0
 sbi_imageset_eh	1	1
 sbi_imagesetani_eh	1	1
-sbi_menuitem	12	8
+sbi_menuitem	12	7
 sbi_menuitem_eh	1	1
 sbi_rectonly	70	33
 sbi_rectonly_eh	2	1
@@ -712,7 +712,7 @@ boundarytail	?Fill@CImg176d20@@QAEXPAUFillRect176d20@@H@Z	100.0000	100.0000	1	33
 boundarytail	?Flush@CBlit148250@@QAEXXZ	100.0000	100.0000	2	6d5abe4f4804	0x148250
 boundarytail	?GetName@Obj38120@@QAE?AVCString@@XZ	66.7273	66.7273	2	c9b14676e3a0	0x38120
 boundarytail	?GetName@Obj85500@@QAE?AVCString@@XZ	74.5000	74.5000	2	7dd559bb87bd	0x85500
-boundarytail	?PositionUpdate@CSnd788d0@@QAEHXZ	65.3448	65.3448	1	a7c1ff565747	0x788d0
+boundarytail	?PositionUpdate@CSnd788d0@@QAEHXZ	64.8276	64.8276	1	a7c1ff565747	0x788d0
 boundarytail	?WaitKeyEdge@@YAXHH@Z	97.0422	97.0422	2	03307408d7be	0x13df30
 boundarytaileh	??1CFmb1578b0@@QAE@XZ	91.0000	91.0000	1	733b6b91b074	0x1578b0
 boundarythunks	?ButeMgrFlush82b20@@YAXXZ	100.0000	100.0000	1	d388b45bede6	0x82b20
@@ -2902,8 +2902,8 @@ menupage	?FocusPrev@CMenuPage@@QAEHXZ	77.1277	77.1277	2	ca527a9ab88b	0x183d10
 menupage	?GetKey@CMenuPage@@QAE?AVCString@@XZ	100.0000	100.0000	1	3f39754fd89e	0x1832d0
 menupage	?HitTest@CMenuPage@@QAEPAVCMenuItem@@HH@Z	100.0000	100.0000	1	44e65b182a2e	0x184100
 menupage	?InitDefaults@CMenuPage@@QAEXXZ	100.0000	100.0000	1	54f1bb15a397	0x1833a0
-menupage	?Layout@CMenuPage@@QAEHH@Z	100.0000	100.0000	1	714f659fde20	0x183b60
-menupage	?LayoutOne@CMenuPage@@QAEHH@Z	100.0000	100.0000	2	ac2d04a8eae6	0x183e50
+menupage	?Layout@CMenuPage@@QAEHH@Z	99.9806	99.9806	1	714f659fde20	0x183b60
+menupage	?LayoutOne@CMenuPage@@QAEHH@Z	99.9825	99.9825	2	ac2d04a8eae6	0x183e50
 menupage	?NotifyAll@CMenuPage@@QAEHPAX@Z	100.0000	100.0000	1	d2de7abc5151	0x183b30
 menupage	?ReleaseAll@CMenuPage@@QAEHXZ	100.0000	100.0000	1	97626de9506c	0x183990
 menupage	?RestoreFocus@CMenuPage@@QAEHXZ	60.6759	60.6759	1	843b969751a7	0x1839d0
@@ -3224,7 +3224,7 @@ sbi_imagesetani_eh	??1CSBI_ImageSetAni@@UAE@XZ	100.0000	100.0000	1	7354647071fa	
 sbi_menuitem	?Blit@CSBI_MenuItem@@QAEHXZ	100.0000	100.0000	1	89b04f10c391	0xe84f0
 sbi_menuitem	?ClearFrame2@CSBI_MenuItem@@QAEXXZ	100.0000	100.0000	1	54de26b0f1b5	0xe81a0
 sbi_menuitem	?ClearFrame@CSBI_MenuItem@@QAEXXZ	100.0000	100.0000	1	b89098c623b9	0xe6d90
-sbi_menuitem	?DecCounter@CSBI_MenuItem@@QAEHXZ	100.0000	100.0000	1	76ba7ba94f3b	0xe82a0
+sbi_menuitem	?DecCounter@CSBI_MenuItem@@QAEHXZ	92.0357	92.0357	1	76ba7ba94f3b	0xe82a0
 sbi_menuitem	?InitItem@CSBI_MenuItem@@QAEHHHHHHHHHPAXHH@Z	67.8261	67.8261	1	711c194f8a6c	0xe80e0
 sbi_menuitem	?ProbeState@CSBI_MenuItem@@QAEHH@Z	100.0000	100.0000	1	624cf65074d2	0xe8480
 sbi_menuitem	?ResolveFrame@CSBI_MenuItem@@QAEHHH@Z	45.7547	45.7547	1	6e969ccb8dbb	0xe81e0
@@ -3268,7 +3268,7 @@ sbi_rectonly	?LoadBattlezItemConfig@CSBI_RectOnly@@QAEHH@Z	93.6625	93.6625	1	5d9
 sbi_rectonly	?LoadChipMachineConfig@CSBI_RectOnly@@QAEXXZ	80.0041	80.0041	2	0b2d71356fd0	0x106bb0
 sbi_rectonly	?LoadDestructButtonSprite@CSBI_RectOnly@@QAEHH@Z	97.2477	97.2477	1	980c2e7d7d1c	0xffb20
 sbi_rectonly	?LoadGooCookingSprite@CSBI_RectOnly@@QAEHH@Z	96.6667	96.6667	1	79f39e0d173d	0x1055b0
-sbi_rectonly	?LoadMainStatusBarSprite@CSBI_RectOnly@@QAEHXZ	95.6403	95.6403	1	f5a83b48dcab	0xfe6b0
+sbi_rectonly	?LoadMainStatusBarSprite@CSBI_RectOnly@@QAEHXZ	88.5526	88.5526	1	f5a83b48dcab	0xfe6b0
 sbi_rectonly	?LoadMultiplayerBattlezConfig@CSBI_RectOnly@@QAEXH@Z	90.4545	90.4545	3	eda67ede5d6d	0x107ae0
 sbi_rectonly	?LoadRezMachineConfig@CSBI_RectOnly@@QAEXXZ	72.0346	72.0346	2	5a2f8c36c190	0x105e40
 sbi_rectonly	?NotifyAllSlots@CSBI_RectOnly@@QAEXXZ	100.0000	100.0000	3	a152a54a21af	0x106a00
@@ -3634,7 +3634,7 @@ triggermgr	?ToggleRegionB@CTriggerMgr@@QAEHXZ	85.5946	85.5946	2	e7fb5a4f15f3	0x7
 triggermgr	?TriggerCell@CTriggerMgr@@QAEHHH@Z	77.3824	77.3824	2	8a7d53d3ff7f	0x7b1b0
 triggermgr_eh	??1CTriggerMgr@@QAE@XZ	46.0625	46.0625	1	acd16ffe98a8	0x85c50
 triggermgr_eh	?ApplySwitch@CTriggerMgr@@QAEHHH@Z	19.4654	19.4654	1	cd338b97d735	0x6d300
-triggermgr_eh	?DestroyGroup@CTriggerMgr@@QAEHHHH@Z	66.7463	66.7463	2	c1b23b33bf9d	0x798d0
+triggermgr_eh	?DestroyGroup@CTriggerMgr@@QAEHHHH@Z	64.7985	64.7985	2	c1b23b33bf9d	0x798d0
 triggermgr_eh	?Load@CTriggerMgr@@QAEHPAUCTmSerReader@@@Z	65.3555	65.3555	1	13aaf38ee4ee	0x7abc0
 triggermgr_eh	?ReinitGroup@CTriggerMgr@@QAEHHH@Z	59.1261	59.1261	2	3ea1f63101eb	0x79b80
 triggersound	?IsCueActive@CTriggerSound@@QAEHXZ	100.0000	100.0000	1	cf7853510fa9	0x112860

@@ -27,6 +27,8 @@ extern "C" void __stdcall AfxFullPath(char* lpszPathOut, const char* lpszFileNam
 // construction, both stores reloc-masked). The implicit vptr at +0x00 keeps
 // m_handle at +0x04.
 // ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CFileIO);
+VTBL(CFileIO, 0x001ed15c); // derived vtable stamp from ctor 0x1befd7
 class CFileIO : public CObject {
 public:
     CFileIO();
