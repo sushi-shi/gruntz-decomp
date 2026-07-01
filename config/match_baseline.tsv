@@ -50,8 +50,9 @@ brickz	15	3
 brickzload	1	0
 bridgemovesprites	1	0
 buildgruntzcrcinfo	1	0
-butemgr	42	27
+butemgr	44	29
 butemgrparse	1	0
+butenode	2	2
 butesectionctor	1	0
 butestoreclear	1	1
 butetree	3	1
@@ -150,7 +151,7 @@ cmovinglogicctor	1	0
 cmovinglogicdtor	1	1
 cmovinglogicserial	3	1
 cmsgdispatch	3	3
-cmulti	16	7
+cmulti	17	7
 cobjectdropper	3	2
 colorhsv	1	0
 comehfunclets	5	5
@@ -188,6 +189,7 @@ cspotlightctor	1	0
 cstateleaf8cf30	1	1
 cstatichazard	6	2
 cstatusbarmgr	2	1
+cstatusbarmgrgetitem	1	0
 cstatusbarspriteacts	3	1
 cteleporter	4	2
 ctilescan	1	0
@@ -219,7 +221,7 @@ dsoundvoice	2	1
 ehfunclets	6	6
 engine_attributed	5	0
 engine_discovered	14	7
-engine_label_stubs	215	119
+engine_label_stubs	207	116
 engine_unmatched_lib	11	0
 engstr	3	1
 eyecandytypetags	4	4
@@ -343,7 +345,7 @@ m2_obj5f0890dtor	1	1
 m3compilerthunks	3	3
 m3ehfunclets	12	9
 m3mfcleaves	2	2
-m4_apiwrappers	5	2
+m4_apiwrappers	7	2
 m5_battlezdlgrow	1	0
 m5_configstorewrite	2	0
 m5_creditzassets	1	1
@@ -815,11 +817,13 @@ bridgemovesprites	?LoadBridgeMove@CPlayLevelLoad@@QAEXH@Z	77.0457	77.0457	1	8e1c
 buildgruntzcrcinfo	?BuildGruntzCrcInfo@CrcOwner@@QAEXXZ	70.9695	70.9695	3	8f39c886254c	0xbf1d0
 butemgr	??1CButeMgr@@QAE@XZ	68.6322	68.6322	1	febe7cdf6ea9	0x213c0
 butemgr	??1CButeValue@@QAE@XZ	68.6364	68.6364	1	44a2235fbbca	0x172160
+butemgr	?CButeMgrHelper_FuncA@@YAXXZ	100.0000	100.0000	1	8bb66cfa41ac	0x169be0
 butemgr	?CharClass@CButeMgr@@QAEFD@Z	100.0000	100.0000	2	6b8d1de98cce	0x1703e0
 butemgr	?ClearHelper@CButeMgr@@QAEXXZ	100.0000	100.0000	3	78033bc3e61d	0x171a40
 butemgr	?Construct@CButeMgrHelper@@QAEPAV1@XZ	100.0000	100.0000	2	b7face8539a4	0x169c00
 butemgr	?CopyValue@CButeValue@@QAEPAU1@PAU1@@Z	65.0865	65.0865	1	d4689edf2d09	0x172040
 butemgr	?Exists@CButeMgr@@QAE_NPAD0@Z	100.0000	100.0000	1	7e7b4a41611f	0x171a60
+butemgr	?FuncB@CButeMgrHelper@@QAEXXZ	100.0000	100.0000	1	66305431a91a	0x169d70
 butemgr	?GetDouble@CButeMgr@@QAENPAD0@Z	100.0000	100.0000	7	7943315a1c10	0x172c40
 butemgr	?GetDword@CButeMgr@@QAEKPAD0@Z	100.0000	100.0000	6	f4693ea38107	0x172240
 butemgr	?GetDwordDef@CButeMgr@@QAEKPAD0K@Z	100.0000	100.0000	6	abeaae38036e	0x1721e0
@@ -856,6 +860,8 @@ butemgr	?SetInt@CButeValue@@QAEPAU1@HH@Z	92.0000	92.0000	4	7a25b2b77a80	0x172b90
 butemgr	?SetSub@CButeMgrHelper@@QAEXPAX@Z	100.0000	100.0000	2	7ceaffd01bf0	0x169dd0
 butemgr	?SkipToTag@CButeMgr@@QAE_NXZ	78.1429	78.1429	2	672209f4feee	0x171160
 butemgrparse	?Parse@CButeMgr@@QAE_NVCString@@H@Z	98.8365	98.8365	1	9ce940813d71	0x3cc20
+butenode	??0CButeNodeBase@@QAE@PAXH@Z	100.0000	100.0000	1	8448f78e3886	0x16dff0
+butenode	??0CButeNodeEntry@@QAE@HPAX@Z	100.0000	100.0000	1	54c130c6f580	0x16df70
 butesectionctor	?Construct@CButeSection@@QAEPAV1@XZ	4.9342	4.9342	1	53fa6314a541	0x170210
 butestoreclear	?ClearRecursive@CButeStore@@QAEXH@Z	100.0000	100.0000	1	2c7ef99ca5ed	0x16e070
 butetree	?Find@CButeTree@@QAEPAXPBD@Z	90.6038	90.6038	2	f6f6ad016915	0x16d190
@@ -1420,6 +1426,7 @@ cmulti	?DropTimeout@CMulti@@QAEXXZ	78.9107	78.9107	1	9c15dde73037	0xbc2d0
 cmulti	?GetString59c@CMulti@@QAE?AVCString@@XZ	100.0000	100.0000	1	cc47d2a6b3da	0xb7a90
 cmulti	?GetString5a0@CMulti@@QAE?AVCString@@XZ	100.0000	100.0000	1	dfdf4df5c88a	0xb7ad0
 cmulti	?JoinSession@CMulti@@QAEHXZ	100.0000	100.0000	1	9a2e0c390aa8	0xb7fe0
+cmulti	?PumpA@CMulti@@QAEHXZ	88.3707	88.3707	1	fecd5702b6cd	0xb6b40
 cmulti	?ReportNetError@CMulti@@QAEXXZ	95.2000	95.2000	1	59b1f15e8f6f	0xb7f60
 cmulti	?ReportVersionMsg@CMulti@@QAEXPADH@Z	100.0000	100.0000	1	a2306abc654e	0xb7e30
 cmulti	?RunErrorDialog@CMulti@@QAEHPADPAXH@Z	100.0000	100.0000	1	f5d13574d2fd	0xbc250
@@ -1609,6 +1616,7 @@ cstatichazard	?LoadAttributes@CStaticHazard@@QAEHXZ	49.4340	49.4340	2	00fb4b9c2c
 cstatichazard	?RegisterActs@CStaticHazard@@SAXXZ	78.5473	78.5473	1	0845d748d7be	0xfbd50
 cstatusbarmgr	?LoadTabSprites@CStatusBarMgr@@QAEHXZ	20.5372	20.5372	5	836162fd532d	0x102250
 cstatusbarmgr	?SetDirection@CSbItem@@QAEXHH@Z	100.0000	100.0000	2	46fcb29ef102	0xea0f0
+cstatusbarmgrgetitem	?GetItem@CStatusBarMgr@@QAEPAVCStatusBarItem2@@XZ	90.3125	90.3125	1	a5282974c019	0x135d70
 cstatusbarspriteacts	??0CStatusBarSprite@@QAE@PAUCGameObject@@@Z	93.2083	93.2083	1	56c3a50988d9	0x10c230
 cstatusbarspriteacts	?InitActReg@CStatusBarSprite@@SAXXZ	100.0000	100.0000	1	162867839555	0x10c430
 cstatusbarspriteacts	?RegisterActs@CStatusBarSprite@@SAXXZ	92.9130	92.9130	2	dec761b26a46	0x10c610
@@ -1825,8 +1833,6 @@ engine_label_stubs	??0Boxed16a@@QAE@HPBUMallocPayload16@@@Z	100.0000	100.0000	1	
 engine_label_stubs	??0Boxed16b@@QAE@HPBUMallocPayload16@@@Z	100.0000	100.0000	1	cpp:49bc0e718a5c	0x173c60
 engine_label_stubs	??0Boxed24@@QAE@HPBUMallocPayload24@@@Z	100.0000	100.0000	1	cpp:49bc0e718a5c	0x174730
 engine_label_stubs	??0BoxedStr@@QAE@HABUMallocStr@@@Z	100.0000	100.0000	1	cpp:49bc0e718a5c	0x1736a0
-engine_label_stubs	??0CButeNodeBase@@QAE@PAXH@Z	59.5806	59.5806	1	cpp:2262ffc5f902	0x16dff0
-engine_label_stubs	??0CButeNodeEntry@@QAE@HPAX@Z	100.0000	100.0000	1	cpp:590eddff1627	0x16df70
 engine_label_stubs	??0MallocCtor_136180@@QAE@XZ	2.0513	2.0513	1	cpp:e8a4cb0d5b2a	0x136180
 engine_label_stubs	??0MallocCtor_139bf0@@QAE@XZ	2.5806	2.5806	1	cpp:e8a4cb0d5b2a	0x139bf0
 engine_label_stubs	??0MallocCtor_139c80@@QAE@XZ	4.6552	4.6552	1	cpp:e8a4cb0d5b2a	0x139c80
@@ -1852,7 +1858,6 @@ engine_label_stubs	?Build@GeoHost_161e80@ApiCallerStubs@@QAEXPAUtagRECT@@@Z	90.4
 engine_label_stubs	?Build@PalBuilder_176df0@ApiCallerStubs@@QAEHPAUtagPALETTEENTRY@@H@Z	62.0750	62.0750	1	cpp:6bf52155264d	0x176df0
 engine_label_stubs	?BuildPowerupIconKeys@EngineLabelBacklog@@YGXPAVPowerupKeyRegistry@@H@Z	53.5443	53.5443	1	cpp:e8a4cb0d5b2a	0x1e720
 engine_label_stubs	?BuildSmall@CStatzTabSmall@@QAEHHHHHHPAUCStatzRect60@@HHH@Z	62.3936	62.3936	1	cpp:aab6e5a6e511	0x112a50
-engine_label_stubs	?CButeMgrHelper_FuncA@@YAXXZ	100.0000	100.0000	1	cpp:7e7ce1192d49	0x169be0
 engine_label_stubs	?Cancel@CmdHost_0de590@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:6bf52155264d	0xde590
 engine_label_stubs	?Check@KeyHost_01f8a0@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x1f8a0
 engine_label_stubs	?Cleanup@GdiOwner_175c90@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x175c90
@@ -1868,8 +1873,6 @@ engine_label_stubs	?FindNearest@Grid_77df0@ApiCallerStubs@@QAEPAUCell_77df0@2@PA
 engine_label_stubs	?Flip@CoinHost_0da200@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:e1535087fe94	0xda200
 engine_label_stubs	?FormatGameInfoString@CGameInfo@@QAEHXZ	100.0000	100.0000	1	cpp:7e7ce1192d49	0x1183b0
 engine_label_stubs	?Free@GlobalOwner_1c09de@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x1c09de
-engine_label_stubs	?FuncB@CButeMgrHelper@@QAEXXZ	100.0000	100.0000	1	cpp:2262ffc5f902	0x169d70
-engine_label_stubs	?GetItem@CStatusBarMgr@@QAEPAVCStatusBarItem2@@XZ	90.3125	90.3125	1	cpp:2262ffc5f902	0x135d70
 engine_label_stubs	?GetRect@RectQuery_08e3a0@ApiCallerStubs@@QAEXPAUtagRECT@@@Z	85.1200	85.1200	1	cpp:6bf52155264d	0x8e3a0
 engine_label_stubs	?HandleFortConquered@EngineLabelBacklog@@YAXXZ	0.2710	0.2710	1	cpp:45e65336d4b5	0x3f5f0
 engine_label_stubs	?Init@AilHost_138490@ApiCallerStubs@@QAEHHHH@Z	99.8077	99.8077	1	cpp:6bf52155264d	0x138490
@@ -1963,7 +1966,6 @@ engine_label_stubs	?winapi_036da0_EnableWindow_GetDlgItem_IsDlgButtonChecked@Api
 engine_label_stubs	?winapi_036e10_IsDlgButtonChecked@ApiCallerStubs@@YAXPAX@Z	100.0000	100.0000	1	cpp:e1535087fe94	0x36e10
 engine_label_stubs	?winapi_036ec0_GetDlgItem_GetScrollInfo@ApiCallerStubs@@YAHPAXH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x36ec0
 engine_label_stubs	?winapi_0371e0_GetDlgItem_SetScrollInfo@ApiCallerStubs@@YAXPAXHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x371e0
-engine_label_stubs	?winapi_037260_GetScrollInfo_SetScrollInfo@ApiCallerStubs@@YAHXZ	0.8333	0.8333	1	cpp:e1535087fe94	0x37260
 engine_label_stubs	?winapi_038150_GetDlgItem@ApiCallerStubs@@YGHPAXHHH@Z	100.0000	100.0000	1	cpp:e1535087fe94	0x38150
 engine_label_stubs	?winapi_038220_GetDlgItem@ApiCallerStubs@@YGHPAXHPAH1@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x38220
 engine_label_stubs	?winapi_03af90_GetDlgItem_SendMessageA@ApiCallerStubs@@YAHXZ	1.5574	1.5574	1	cpp:e1535087fe94	0x3af90
@@ -1972,8 +1974,6 @@ engine_label_stubs	?winapi_090860_CreateProcessA_wsprintfA@ApiCallerStubs@@YGHPA
 engine_label_stubs	?winapi_092ab0_EndDialog@ApiCallerStubs@@YGHPAXIHH@Z	100.0000	100.0000	1	cpp:e832e75e29a5	0x92ab0
 engine_label_stubs	?winapi_09dff0_EndDialog@ApiCallerStubs@@YGHPAXHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x9dff0
 engine_label_stubs	?winapi_09e2d0_SetDlgItemTextA@ApiCallerStubs@@YAXPAXPAUNameItem_09e2d0@1@HHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x9e2d0
-engine_label_stubs	?winapi_09e390_EndDialog_PostMessageA@ApiCallerStubs@@YAHXZ	1.0417	1.0417	1	cpp:e1535087fe94	0x9e390
-engine_label_stubs	?winapi_0b6b40_timeGetTime_wsprintfA@CMulti@ApiCallerStubs@@QAEHXZ	0.9512	0.9512	1	cpp:590eddff1627	0xb6b40
 engine_label_stubs	?winapi_0b6e90_SetRect@CMulti@ApiCallerStubs@@QAEHXZ	0.7812	0.7812	1	cpp:590eddff1627	0xb6e90
 engine_label_stubs	?winapi_0bb3e0_GetWindowTextLengthA@ApiCallerStubs@@YGXPAXPAD@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xbb3e0
 engine_label_stubs	?winapi_0bda00_GetDlgItem_SetTimer@ApiCallerStubs@@YAXPAX0@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xbda00
@@ -2855,6 +2855,8 @@ m4_apiwrappers	?CheckCombatRegion@GruntCombatMgr@m4@@QAEXHHHHH@Z	80.1707	80.1707
 m4_apiwrappers	?FillLevelInfoDialog@m4@@YAHPAX@Z	100.0000	100.0000	1	3f37dcc7f372	0x3b1a0
 m4_apiwrappers	?FindGruntAt@GruntHitMgr@m4@@QAEPAUHitGrunt@2@HHPAUHitTileRect@2@PAH1PAUtagRECT@@@Z	74.7516	74.7516	1	5dbd51222209	0x75c60
 m4_apiwrappers	?LaunchWebBrowser@m4@@YGHPAD@Z	100.0000	100.0000	1	ed3eacdf3b3a	0x8f120
+m4_apiwrappers	?ScrollDialog@m4@@YAXPAXHHH@Z	84.5833	84.5833	1	671c48d4eb5a	0x37260
+m4_apiwrappers	?SetupDlgCommand@m4@@YAHPAXHPAUSetupDlg@1@@Z	79.2708	79.2708	1	11b98a80379d	0x9e390
 m5_battlezdlgrow	?ToggleRow@CBattlezDlg@@QAEHH@Z	82.0714	82.0714	1	771e46ac628e	0x15fe0
 m5_configstorewrite	?WriteProfileBinary@CConfigStore@@QAEHPAD0PAEI@Z	29.3913	29.3913	1	ebafc7deec10	0x1ccbfc
 m5_configstorewrite	?WriteProfileInt@CConfigStore@@QAEHPAD0H@Z	47.0455	47.0455	1	52d1ac54cb5a	0x1ccae7

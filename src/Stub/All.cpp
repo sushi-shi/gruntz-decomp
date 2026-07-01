@@ -24,15 +24,20 @@
 // remain here (and by GameObjectCtors.cpp / UserLogic.cpp) -> include early.
 #include "CButeTree.cpp"
 // reloc-correlation extern stubs (split from GenExterns):
-#include "CButeMgrHelper.cpp"
-#include "CButeNodeBase.cpp"
+// CButeMgrHelper.cpp re-homed: FuncA/FuncB moved into src/Bute/ButeMgr.cpp (the
+// CButeMgrHelper class TU; ClearHelper already calls them there).
+// CButeNodeBase.cpp re-homed: CButeNodeEntry/CButeNodeBase ctors moved into the
+// dedicated src/Bute/ButeNode.cpp unit (self-contained model; own unit avoids the
+// ButeMgr.h minimal-CButeNodeBase ODR conflict).
 // CGMMenuUI.cpp removed: it was a duplicate candidate body set (carrying NO RVA
 // bindings, so it diffed nothing) of the CChatBox menu-drive methods
 // (0x182c70..0x183150) already bound + 100% byte-exact in src/Gruntz/ChatBox.cpp.
 // CGMMenuUI == CChatBox (same RVAs).
 #include "CGameModeBase.cpp"
 #include "CGruntzCmdList.cpp"
-#include "CStatusBarMgr.cpp"
+// CStatusBarMgr.cpp re-homed: GetItem moved into the dedicated src/Gruntz/
+// CStatusBarMgrGetItem.cpp unit (self-contained view; own unit avoids the
+// LoadTabSprites field-view conflict).
 #include "EngineExternFns.cpp"
 #include "CSBI_Image.cpp"
 #include "RezSync.cpp"

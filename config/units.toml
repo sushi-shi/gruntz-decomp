@@ -759,6 +759,15 @@ source = "src/Bute/ButeTree.cpp"
 flags = "base"
 
 [[unit]]
+# CButeNodeBase / CButeNodeEntry ctors (0x16df70 / 0x16dff0) - the .bute config-tree
+# node base + its embedded keyed-store entry. Re-homed from src/Stub/CButeNodeBase.cpp
+# into its own unit (its self-contained class model conflicts with ButeMgr.h's minimal
+# CButeNodeBase decl). flags="eh" == the engine_label_stubs base+/GX it came from.
+unit = "butenode"
+source = "src/Bute/ButeNode.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "winapi"
 source = "src/Utils/WinAPI.cpp"
 flags = "eh"
@@ -1112,6 +1121,15 @@ flags = "base"
 [[unit]]
 unit = "cstatusbarmgr"
 source = "src/Gruntz/CStatusBarMgr.cpp"
+flags = "eh"
+
+[[unit]]
+# CStatusBarMgr::GetItem (0x135d70) - re-homed from src/Stub/CStatusBarMgr.cpp into its
+# own unit: its CStatusBarMgr field-view (m_10 pointer, +0x58 list) conflicts with the
+# cstatusbarmgr unit's byte-exact LoadTabSprites view, so it keeps a self-contained view
+# in isolation. flags="eh" == the engine_label_stubs base+/GX it came from.
+unit = "cstatusbarmgrgetitem"
+source = "src/Gruntz/CStatusBarMgrGetItem.cpp"
 flags = "eh"
 
 [[unit]]

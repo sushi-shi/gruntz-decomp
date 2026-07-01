@@ -1412,6 +1412,7 @@ bool CButeMgr::Exists(char* tag, char* key) {
 // thunks (0x16c9c0 / 0x16c9d0) over the Win32 imports; modeled as __cdecl
 // externals (no body) so the `push p; call; add esp,4` shape reloc-masks.
 extern "C" void Helper_InitCriticalSection(void* cs);
+extern "C" void Helper_DeleteCriticalSection(void* cs); // 0x16c9d0 (FuncB cleanup)
 
 // The shared one-time-init guard + the shared critical section (reloc-masked
 // file-scope DATA externs at 0x6bf400 / 0x6bf3c8).
@@ -1432,6 +1433,12 @@ DATA(0x005f045c)
 extern "C" void* g_helperVbaseVtblC; // 0x5f045c
 DATA(0x005f047c)
 extern "C" void* g_helperVbaseVtblD; // 0x5f047c
+
+// The most-derived vtable FuncA (the vbase-ctor displacement adjustor thunk)
+// stamps at the displaced slot, and the real ctor body it tail-jmps into.
+DATA(0x005f0394)
+extern void* g_butemgrhelper_vtbl_5f0394; // 0x5f0394
+extern "C" void CButeMgrHelper_VbaseCtorBody(); // 0x16c950 (FuncA jmp target)
 
 // The sub-object at +0x4. Its slot-0 virtual is a __thiscall scalar-deleting
 // dtor (`mov eax,[ecx]; push 1; call [eax]`): modeled polymorphically so the
@@ -1465,6 +1472,24 @@ void CButeMgrHelper::InitVbaseB() {
 }
 
 // ---------------------------------------------------------------------------
+// CButeMgrHelper::FuncA (0x169be0) - the virtual-base-class displacement adjustor
+// (vtordisp) thunk MSVC auto-generates for a vbase ctor: load the vbtable handle at
+// [this-0x14], read the +4 displacement, stamp the most-derived vtable (0x5f0394)
+// at the displaced slot, then tail-jmp the real ctor body (0x16c950). C++ can't
+// express the vbase adjustor directly, so it is emitted as a naked thunk; `this`
+// arrives in ecx as for the original __thiscall thunk. RVA-keyed pairing absorbs
+// the FuncA-vs-?vtordisp name mismatch and the two reloc operands mask.
+RVA(0x00169be0, 0x13)
+__declspec(naked) void CButeMgrHelper_FuncA() {
+    __asm {
+        mov eax, [ecx - 0x14]
+        mov edx, [eax + 4]
+        mov dword ptr [edx + ecx - 0x14], offset g_butemgrhelper_vtbl_5f0394
+        jmp CButeMgrHelper_VbaseCtorBody
+    }
+}
+
+// ---------------------------------------------------------------------------
 // CButeMgrHelper::Construct (0x169c00)
 // Constructor: zero-init the data fields, stamp the vptr + the type constants,
 // init the per-instance critical section, and one-time-init the shared critical
@@ -1488,6 +1513,26 @@ CButeMgrHelper* CButeMgrHelper::Construct() {
         Helper_InitCriticalSection(&g_helperSharedCS);
     }
     return this;
+}
+
+// ---------------------------------------------------------------------------
+// CButeMgrHelper::FuncB (0x169d70) - the helper cleanup: restore the vptr, reset
+// m_34, drop the shared critical section under the ref-count guard, delete the
+// per-instance one, tear down the owned +0x4 sub-object through its slot-0 scalar
+// dtor, then reset the sub pointer + the flag word. ClearHelper's FuncA/FuncB pair.
+RVA(0x00169d70, 0x5a)
+void CButeMgrHelper::FuncB() {
+    m_vptr = &g_helperVtbl;
+    m_34 = -1;
+    if (--g_helperRefCount == 0) {
+        Helper_DeleteCriticalSection(&g_helperSharedCS);
+    }
+    Helper_DeleteCriticalSection(&m_cs);
+    if (m_ownsSub && m_pSub) {
+        ((CButeSub*)m_pSub)->ScalarDtor(1);
+    }
+    m_pSub = 0;
+    m_flags = 4;
 }
 
 // ---------------------------------------------------------------------------

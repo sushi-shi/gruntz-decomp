@@ -1,5 +1,11 @@
 #include <rva.h>
-// CButeNodeBase.cpp - CButeNodeBase, a ButeMgr config-tree node base.
+// ButeNode.cpp - CButeNodeBase, a ButeMgr config-tree node base (dedicated unit).
+//
+// Re-homed from src/Stub/CButeNodeBase.cpp: its own self-contained class model
+// (CContainerErr base, CButeNodeEntry subobject) cannot fold into ButeMgr.cpp,
+// which carries a different minimal `class CButeNodeBase` decl (ButeMgr.h) for the
+// ParseTagLine `new CButeNode` path -> ODR conflict. So it lives in its own unit,
+// flags="eh" (== the engine_label_stubs base+/GX it came from; matching-neutral).
 //
 // CButeNodeBase derives from CContainerErr (the container-library exception
 // base, ctor @0x16d9c0, modeled in GameText) and embeds a small node subobject
@@ -10,10 +16,7 @@
 // two child-link fields at +0x18 / +0x28.
 //
 // This ctor carries a C++ /GX EH frame (push -1 / push handler / fs:0 save) for
-// the subobject construction. The engine_label_stubs unit is flags="base" (no
-// /GX), so the EH frame is elided here -> the body+offsets match but the frame
-// is missing; documented base-flags EH wall (docs/patterns/gx-frame-destructible
-// -local.md). The logic below is the complete, correct reconstruction.
+// the subobject construction; this unit is flags="eh" so the frame is present.
 //
 // Field names are placeholders; only OFFSETS + code bytes are load-bearing.
 
@@ -25,6 +28,12 @@ extern void* g_buteNodeErrMsg; // DAT_006bf480 - the node's error-message global
 class CContainerErr {
 public:
     CContainerErr(void* msg);
+    // Non-virtual external (no-body) dtor: the base IS destructible in retail. This
+    // is what forces the /GX unwind frame in the derived ctor - if the m_entry
+    // member ctor throws (constructed after the base), the base must be unwound, so
+    // cl sets trylevel 0 right before the m_entry call (verified: llvm-objdump
+    // base-vs-target). Non-virtual, so the ctor-call bytes are unchanged.
+    ~CContainerErr();
 
     void* m_vtbl; // +0x00
     void* m_msg;  // +0x04
@@ -48,6 +57,12 @@ extern void* g_buteNodeVtbl;    // 0x5e94ac -> stamped at this+0x0
 class CButeNodeEntry {
 public:
     CButeNodeEntry(i32 n, void* desc);
+    // Non-virtual external (no-body) dtor: the node IS destructible in retail (its
+    // hand-rolled scalar-deleting dtor). Declaring it makes the owning CButeNodeBase
+    // ctor emit the /GX unwind frame around the m_entry member-init (the member has a
+    // non-trivial dtor to run on a throw); non-virtual, so the entry ctor's vptr
+    // position (stamped LAST) is unchanged.
+    ~CButeNodeEntry();
 
     void* m_vtbl; // +0x00
     void* m_4;    // +0x04  desc
@@ -99,13 +114,12 @@ CButeNodeEntry::CButeNodeEntry(i32 n, void* desc) {
 // collides with the manually-modeled vtbl and breaks the matched ctor layout. So the
 // dtor is documented here, not symbol-pinned; defer to a real vtable reconstruction.
 // Retail RTTI names the class zPTree; CButeNodeBase is this codebase's placeholder.
-
-// @early-stop
-// base-flags EH wall: this ctor needs a /GX EH frame (subobject construction
-// under unwind) but engine_label_stubs is flags="base" -> the frame is elided.
-// Body+offsets are byte-identical; only the EH frame is missing. See
-// docs/patterns/gx-frame-destructible-local.md. Defer to the final sweep / an
-// eh unit.
+//
+// 100% byte-exact: the /GX unwind frame retail emits here is triggered by the two
+// destructible sub-objects (CContainerErr base + CButeNodeEntry member, both given
+// non-virtual external dtors above) - cl sets trylevel 0 before the m_entry ctor so
+// a throw unwinds the base. Was @early-stop at 59.58% while the frame was elided
+// (no destructible sub-object was modeled). docs/patterns/gx-frame-destructible-local.md.
 RVA(0x0016dff0, 0x73)
 CButeNodeBase::CButeNodeBase(void* desc, i32 n)
     : CContainerErr(&g_buteNodeErrMsg), m_entry(n, desc) {
