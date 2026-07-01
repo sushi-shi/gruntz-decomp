@@ -209,7 +209,7 @@ dsoundvoice	2	1
 ehfunclets	6	6
 engine_attributed	7	0
 engine_discovered	16	8
-engine_label_stubs	276	123
+engine_label_stubs	275	123
 engine_unmatched_lib	11	0
 engstr	3	1
 eyecandytypetags	4	4
@@ -242,6 +242,7 @@ gruntassetloaders	3	0
 gruntchargestep	1	0
 gruntcmdpercent	1	1
 gruntdatarecord	2	2
+gruntinfotext	1	0
 gruntmovestep	1	0
 gruntpuddle	5	2
 gruntspawnconfig	16	8
@@ -1989,7 +1990,6 @@ engine_label_stubs	?winapi_0c4230_GetFocus_SendMessageA@ApiCallerStubs@@YGHH@Z	0
 engine_label_stubs	?winapi_0c46b0_KillTimer_timeGetTime_wsprintfA@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHXZ	0.7336	0.7336	1	cpp:e8a4cb0d5b2a	0xc46b0
 engine_label_stubs	?winapi_0c7ec0_timeGetTime@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHHHH@Z	0.5181	0.5181	1	cpp:e8a4cb0d5b2a	0xc7ec0
 engine_label_stubs	?winapi_0d7520_wsprintfA@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHHHHH@Z	0.5089	0.5089	1	cpp:e8a4cb0d5b2a	0xd7520
-engine_label_stubs	?winapi_0d95f0_wsprintfA@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHXZ	0.3909	0.3909	1	cpp:e8a4cb0d5b2a	0xd95f0
 engine_label_stubs	?winapi_0e35f0_EndDialog@ApiCallerStubs@@YGHPAXHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xe35f0
 engine_label_stubs	?winapi_0e3a40_EndDialog@ApiCallerStubs@@YGHPAXIIJ@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xe3a40
 engine_label_stubs	?winapi_0e3b20_EndDialog@ApiCallerStubs@@YGHPAXIIJ@Z	100.0000	100.0000	1	cpp:e1535087fe94	0xe3b20
@@ -2382,6 +2382,7 @@ gruntchargestep	?ChargeStep@Grunt@@QAEHXZ	21.4710	21.4710	1	24756a275ed2	0xef6b0
 gruntcmdpercent	?ComputeCmdPercent@@YAHH@Z	100.0000	100.0000	2	32370a43dd27	0x135110
 gruntdatarecord	?DeserializeStrings@GruntDataRecord@@QAEHPAUDataWriter@@@Z	100.0000	100.0000	1	d96d2c87cdd6	0x56eb0
 gruntdatarecord	?SerializeStrings@GruntDataRecord@@QAEHPAUDataWriter@@@Z	100.0000	100.0000	1	71ad52c7e3da	0x56da0
+gruntinfotext	?winapi_0d95f0_wsprintfA@GruntInfoTextHost@@QAEHXZ	88.4979	88.4979	1	23c0b1e68ecf	0xd95f0
 gruntmovestep	?Step@CGruntMover@@QAEHPAUCGruntM@@@Z	18.1429	18.1429	1	27431664e366	0x31610
 gruntpuddle	??0CGruntPuddle@@QAE@PAUCGameObject@@@Z	91.9504	91.9504	1	f672560977a9	0x40490
 gruntpuddle	??1CGruntPuddle@@UAE@XZ	100.0000	100.0000	1	d8797374243c	0x10d10

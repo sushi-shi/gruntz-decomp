@@ -416,6 +416,11 @@ source = "src/Gruntz/BrickzLoad.cpp"
 flags = "base"
 
 [[unit]]
+unit = "gruntinfotext"
+source = "src/Gruntz/GruntInfoText.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "cplayplanescan"
 source = "src/Gruntz/CPlayPlaneScan.cpp"
 flags = "eh"

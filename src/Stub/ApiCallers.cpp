@@ -111,7 +111,6 @@ namespace ApiCallerStubs {
         i32 winapi_0c46b0_KillTimer_timeGetTime_wsprintfA();
         i32 winapi_0c7ec0_timeGetTime(i32, i32, i32);
         i32 winapi_0d7520_wsprintfA(i32, i32, i32, i32);
-        i32 winapi_0d95f0_wsprintfA();
         i32 winapi_0e6020_SetRect(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32);
         i32 winapi_0ecc90_IntersectRect();
         i32 winapi_0ed9f0_PtInRect();
@@ -2348,14 +2347,8 @@ namespace ApiCallerStubs {
     // ResetViewport (0x0d8c60) re-homed (byte-exact) as CPlay::ResetViewport in
     // src/Gruntz/CPlay.cpp.
 
-    // @confidence: low
-    // @source: winapi:wsprintfA
-    // @stub
-    // proximity: CPlay@-0x3b0 | CGameModeObj@+0xa40
-    RVA(0x000d95f0, 0x756)
-    i32 ThisStubOwnerUnknown::winapi_0d95f0_wsprintfA() {
-        return 0;
-    }
+    // 0x0d95f0 (winapi_0d95f0_wsprintfA - the level/grunt info-text panel painter)
+    // graduated to src/Gruntz/GruntInfoText.cpp (needs the /GX EH frame).
 
     // @confidence: low
     // @source: winapi:timeGetTime
