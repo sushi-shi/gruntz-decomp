@@ -578,6 +578,225 @@ i32 CMulti::PumpA() {
     return 1;
 }
 
+// ===========================================================================
+// CMulti::PumpB  @ 0x0b6e90  - the lobby/attract render pump. A light path when
+// the game is idle (m_594==0 && m_4->m_c!=0) drives just the compositor + the
+// primary pane; otherwise the full frame runs: two deadline-gated FX, the
+// m_c manager sub-tree (panes m_10/m_14, the +0xc vfn host, the +0x24 chain),
+// the ambient overlays (m_2dc/m_2e0/m_320) and two int64 clock gates against
+// g_645588. All callees are out-of-line (reloc-masked); PumpB's members not in
+// CMulti.h are reached through dedicated view structs / documented offsets.
+// ---------------------------------------------------------------------------
+
+// The per-pane render target hung off m_c->m_4->{m_10,m_14}->m_2c (thiscall).
+class PBRenderTarget {
+public:
+    void Present850(i32 flag); // 0x0013e850
+    void Present760(i32 flag); // 0x0013e760
+};
+// A render pane (m_c->m_4->m_10 / ->m_14). m_14 also owns the palette blit.
+class PBPane {
+public:
+    char m_pad00_2c[0x2c];
+    PBRenderTarget* m_2c;               // +0x2c
+    void Blit163f40(void* pal, i32 n);  // 0x00163f40 (thiscall on m_14)
+};
+// The +0xc vfn host: dispatched through vtable slot +0x34 (index 13).
+class PBVfnHost {
+public:
+    virtual void s00();
+    virtual void s01();
+    virtual void s02();
+    virtual void s03();
+    virtual void s04();
+    virtual void s05();
+    virtual void s06();
+    virtual void s07();
+    virtual void s08();
+    virtual void s09();
+    virtual void s10();
+    virtual void s11();
+    virtual void s12();
+    virtual void Blit34(void* a, i32 b); // +0x34
+};
+// The m_c->m_24 chain and its +0x5c compositor target.
+class PBCompTarget { // m_c->m_24->m_5c
+public:
+    char m_pad00_84[0x84];
+    i32 m_84;         // +0x84
+    i32 m_88;         // +0x88
+    void Flush163370(); // 0x00163370 (thiscall on m_5c)
+};
+class PBComp { // m_c->m_24
+public:
+    char m_pad00_5c[0x5c];
+    PBCompTarget* m_5c;             // +0x5c
+    void M15dc90(void* pane, void* ctx); // 0x0015dc90
+};
+// The m_c manager sub-object tree.
+class PBSub4 { // m_c->m_4
+public:
+    char m_pad00_10[0x10];
+    PBPane* m_10; // +0x10
+    PBPane* m_14; // +0x14
+    void* m_18;   // +0x18
+};
+class PBMgr { // CMulti::m_c
+public:
+    void* m_0;
+    PBSub4* m_4;    // +0x04
+    void* m_8;      // +0x08
+    PBVfnHost* m_c; // +0x0c
+    char m_pad10_24[0x24 - 0x10];
+    PBComp* m_24;   // +0x24
+};
+// The output sink hung off CMultiLogic::m_54 (thiscall 2-arg blit).
+class PBOutput {
+public:
+    void Blit1a7d(i32 w, i32 h); // 0x00001a7d
+};
+// CMultiLogic::m_5c poll target (per-frame tick) and m_68 FX driver.
+class PBListSink {
+public:
+    void Tick441c(u32 clock); // 0x0000441c
+};
+class PBSub68 {
+public:
+    char m_pad00_230[0x230];
+    i32 m_230;      // +0x230  armed gate
+    void Fire1398(); // 0x00001398
+    void Reset2b85();// 0x00002b85
+};
+// m_2dc: the primary FX overlay (state at +0, mode at +0x10c) reached in PumpB.
+class PBSubDC {
+public:
+    i32 m_0;                       // +0x00  state
+    char m_pad04_10c[0x10c - 0x04];
+    i32 m_10c;                     // +0x10c mode
+    void Present21b7(); // 0x000021b7
+    void Advance125d(); // 0x0000125d
+};
+class PBSub2e0 { // CMulti::m_2e0
+public:
+    void Step2bfd(void* pane); // 0x00002bfd
+};
+class PBSub320 { // CMulti::m_320 (attract-mode overlay)
+public:
+    void Tick1fa0(u32 clock, i32 flag);    // 0x00001fa0
+    void Render14dd(void* pane, RECT* rc); // 0x000014dd
+};
+// PumpB's own thiscall helpers on CMulti (out-of-line; ecx=this).
+class PBSelf {
+public:
+    void H259a();          // 0x0000259a  reset pass
+    void H1da7();          // 0x00001da7
+    void H434a();          // 0x0000434a
+    void H3850();          // 0x00003850
+    void H1ae6();          // 0x00001ae6
+    void H2e2d(u32 clock); // 0x00002e2d
+    void H1519(void* h);   // 0x00001519
+    void H3797();          // 0x00003797
+    void H3a85(i32 v);     // 0x00003a85
+    void H3792(i32 v);     // 0x00003792
+};
+// The compositor refresh helper (__cdecl free fn). 0x00002356
+extern "C" void PumpBRefresh2356(void* reg, void* fx, i32 flag);
+
+// @early-stop
+// large-body regalloc/scheduling wall (~83%). All branch structure is byte-exact
+// (the two int64 deadline gates' jl/jg/jb triples, the small/big split, the
+// m_320 render sub-block all align in llvm-objdump -dr base vs target); the
+// residual is MSVC5 reordering the push/mov/call scheduling across this 845-byte
+// body (prologue reg-save order, arg-eval interleave) plus the else-branch's
+// redundant m_90 rc.top store the retail optimizer keeps (rc escaped to SetRect)
+// - not steerable from source. Sibling of the PumpA (~88%) wall.
+RVA(0x000b6e90, 0x34d)
+void CMulti::PumpB() {
+    PBMgr* mgr = (PBMgr*)m_c;
+    PBSelf* self = (PBSelf*)this;
+    if (m_594 == 0 && m_4->m_c != 0) {
+        self->H259a();
+        mgr->m_24->M15dc90(mgr->m_4->m_14, mgr->m_8);
+        mgr->m_c->Blit34(mgr->m_4->m_14, (i32)mgr->m_4->m_18);
+        ((PBSubDC*)m_2dc)->Present21b7();
+        PBPane* h = mgr->m_4->m_14;
+        if (h == 0) {
+            return;
+        }
+        self->H2e2d(g_645584);
+        self->H1519(h);
+        mgr->m_4->m_10->m_2c->Present850(0);
+        return;
+    }
+    self->H259a();
+    self->H1da7();
+    if (*(i32*)((char*)this + 0x470) != 0) {
+        mgr->m_4->m_14->m_2c->Present760(0);
+        ((PBSubDC*)m_2dc)->Advance125d();
+    }
+    if (*(i32*)((char*)this + 0x30c) == 0) {
+        if (((PBSub68*)m_4->m_68)->m_230 != 0) {
+            ((PBSub68*)m_4->m_68)->Fire1398();
+        } else {
+            self->H434a();
+        }
+    }
+    self->H3850();
+    (*(PBOutput**)((char*)m_4 + 0x54))->Blit1a7d(mgr->m_24->m_5c->m_84, mgr->m_24->m_5c->m_88);
+    if (*(i32*)((char*)this + 0x474) != 0) {
+        self->H1ae6();
+    } else {
+        mgr->m_24->M15dc90(mgr->m_4->m_14, mgr->m_8);
+        mgr->m_c->Blit34(mgr->m_4->m_14, (i32)mgr->m_4->m_18);
+    }
+    ((PBSubDC*)m_2dc)->Present21b7();
+    if (*(void**)((char*)this + 0x320) != 0) {
+        PBSubDC* fx = (PBSubDC*)m_2dc;
+        if (fx->m_0 != 2 && fx->m_10c != 5) {
+            RECT rc;
+            if (fx->m_0 == 1) {
+                SetRect(&rc, 20, 5, 140, 125);
+            } else {
+                i32 cx = *(i32*)((char*)g_64556c + 0x90);
+                i32 cy = *(i32*)((char*)g_64556c + 0x8c);
+                rc.top = cx;
+                SetRect(&rc, cy - 140, 5, cy - 20, 125);
+            }
+            PBSub320* ov = (PBSub320*)*(void**)((char*)this + 0x320);
+            ov->Tick1fa0(g_645584, 0);
+            ov->Render14dd(mgr->m_4->m_14, &rc);
+        }
+    }
+    ((PBListSink*)m_4->m_5c)->Tick441c(g_645584);
+    PBPane* h = mgr->m_4->m_14;
+    if (h == 0) {
+        return;
+    }
+    ((PBSub2e0*)*(void**)((char*)this + 0x2e0))->Step2bfd(h);
+    self->H3797();
+    ((PBSub68*)m_4->m_68)->Reset2b85();
+    self->H2e2d(g_645584);
+    self->H1519(h);
+    if (*(i32*)((char*)this + 0x30c) != 0) {
+        h->Blit163f40((char*)this + 0x310, 0xff);
+    }
+    mgr->m_4->m_10->m_2c->Present850(0);
+    PumpBRefresh2356(g_64556c, m_2dc, *(i32*)((char*)this + 0x470));
+    if (mgr->m_24->m_5c != 0) {
+        mgr->m_24->m_5c->Flush163370();
+    }
+    if (*(i32*)((char*)this + 0x470) != 0) {
+        if ((i64)g_645588 - *(i64*)((char*)this + 0x430) >= *(i64*)((char*)this + 0x438)) {
+            self->H3a85(0);
+        }
+    }
+    if (*(i32*)((char*)this + 0x474) != 0) {
+        if ((i64)g_645588 - *(i64*)((char*)this + 0x440) >= *(i64*)((char*)this + 0x448)) {
+            self->H3792(0);
+        }
+    }
+}
+
 // External CMulti method: load the named title screen (5-arg thiscall). 0x004fa350
 class CMultiTitleLoader {
 public:

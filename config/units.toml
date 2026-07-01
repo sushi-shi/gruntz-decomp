@@ -2668,6 +2668,20 @@ flags = "base"
 extra = ["/GX"]
 
 [[unit]]
+# matcher-4: the two dialog flash-rect helpers (EH + severus/imgHolder scratch).
+unit = "m4_flashrect"
+source = "src/Gruntz/m4_FlashRect.cpp"
+flags = "base"
+extra = ["/GX"]
+
+[[unit]]
+# matcher-4: dialog label text measure/render helper (EH + CString + scratch).
+unit = "m4_drawtext"
+source = "src/Gruntz/m4_DrawText.cpp"
+flags = "base"
+extra = ["/GX"]
+
+[[unit]]
 unit = "dirpal"
 source = "src/Gruntz/DirPal.cpp"
 flags = "base"

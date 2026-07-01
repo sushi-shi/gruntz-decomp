@@ -470,13 +470,7 @@ namespace ApiCallerStubs {
         return SendMessageA(it->m_hwnd, 0x14e, wParam - 1, 0);
     }
 
-    // @confidence: low
-    // @source: winapi:CreateSolidBrush;FillRect;GetClientRect
-    // @stub
-    RVA(0x000160f0, 0x245)
-    i32 winapi_0160f0_CreateSolidBrush_FillRect_GetClientRect() {
-        return 0;
-    }
+    // 0x000160f0 reconstructed as m4::FlashHost::FlashRect160f0 in src/Gruntz/m4_FlashRect.cpp
 
     // @confidence: low
     // @confidence: low
@@ -560,13 +554,7 @@ namespace ApiCallerStubs {
         return 1;
     }
 
-    // @confidence: low
-    // @source: winapi:DrawTextA
-    // @stub
-    RVA(0x00021f20, 0x162)
-    i32 __stdcall winapi_021f20_DrawTextA(i32, i32) {
-        return 0;
-    }
+    // 0x00021f20 reconstructed as m4::DrawHost::MeasureLabel21f20 in src/Gruntz/m4_DrawText.cpp
 
     // @confidence: low
     // @source: winapi:GetAsyncKeyState;SelectObject
@@ -1423,13 +1411,7 @@ namespace ApiCallerStubs {
 
     // 0x000b6b40 reconstructed as CMulti::PumpA in src/Gruntz/CMulti.cpp
 
-    // @confidence: low
-    // @source: winapi:SetRect
-    // @stub
-    RVA(0x000b6e90, 0x34d)
-    i32 CMulti::winapi_0b6e90_SetRect() {
-        return 0;
-    }
+    // 0x000b6e90 reconstructed as CMulti::PumpB in src/Gruntz/CMulti.cpp
 
     // @confidence: low
     // @source: directx-wrapper-caller:calls 0x1780b0 (DPLAYX.#1)
@@ -1907,13 +1889,7 @@ namespace ApiCallerStubs {
         SendMessageA(edit, 0xb6, 0, 0x270f);
     }
 
-    // @confidence: low
-    // @source: winapi:CreateSolidBrush;FillRect;GetClientRect
-    // @stub
-    RVA(0x000c2e20, 0x21d)
-    i32 winapi_0c2e20_CreateSolidBrush_FillRect_GetClientRect() {
-        return 0;
-    }
+    // 0x000c2e20 reconstructed as m4::FlashHost::FlashRectC2e20 in src/Gruntz/m4_FlashRect.cpp
 
     // @confidence: low
     // @source: winapi:SendMessageA
