@@ -431,6 +431,11 @@ source = "src/Gruntz/BootyCheatState.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "grunttilescan"
+source = "src/Gruntz/GruntTileScan.cpp"
+flags = "base"
+
+[[unit]]
 unit = "cplayplanescan"
 source = "src/Gruntz/CPlayPlaneScan.cpp"
 flags = "eh"

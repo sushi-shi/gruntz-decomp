@@ -106,7 +106,6 @@ namespace ApiCallerStubs {
     // the N/4 from the callee's `ret N`.
     struct ThisStubOwnerUnknown {
         i32 winapi_015fe0_SendMessageA(i32);
-        i32 winapi_032ce0_IntersectRect(i32);
         i32 winapi_075c60_CopyRect_SetRect(i32, i32, i32, i32, i32, i32);
         i32 winapi_0c46b0_KillTimer_timeGetTime_wsprintfA();
         i32 winapi_0c7ec0_timeGetTime(i32, i32, i32);
@@ -638,15 +637,6 @@ namespace ApiCallerStubs {
     // @stub
     RVA(0x0002c690, 0xdb4)
     i32 __stdcall winapi_02c690_IntersectRect(i32) {
-        return 0;
-    }
-
-    // @confidence: low
-    // @source: winapi:IntersectRect
-    // @stub
-    // proximity: CBattlezSpawnMgr_or_CGruntSpawnMgr@-0xc80 | GridUnit@+0x1710
-    RVA(0x00032ce0, 0x448)
-    i32 ThisStubOwnerUnknown::winapi_032ce0_IntersectRect(i32) {
         return 0;
     }
 
