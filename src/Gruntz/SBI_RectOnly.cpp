@@ -69,14 +69,29 @@ struct CSbiSeqHolder {
     i32 m_188; // +0x188
 };
 
-// A per-tab sprite widget: ClearTabSprites calls Release(); SetTabState shows the
-// selected tab's sprite (Show, +flag) and hides the rest (Hide). All sibling
-// thunks - the call rel32 is reloc-masked, only the arg shape is load-bearing.
+// A per-tab sprite/menu widget: ClearTabSprites calls Release(); SetTabState shows
+// the selected tab's sprite (Show, +flag) and hides the rest (Hide); the game-tab
+// button builders drive Configure(key, on) + the slot-0x28 refresh virtual. It is a
+// polymorphic engine object (vptr at +0, refresh at vtable slot 10); Release/Show/
+// Hide/Configure are non-virtual (call rel32, reloc-masked - only the arg shape is
+// load-bearing). Making it polymorphic is codegen-neutral for the non-virtual calls.
 class CSbiSprite {
 public:
-    void Release();             // __thiscall, no args (sibling thunk_FUN_004e84f0)
-    void Show(i32 idx, i32 on); // 2 args (call 0x2059)
-    void Hide(i32 idx);         // 1 arg  (call 0x3279)
+    virtual void v0();
+    virtual void v4();
+    virtual void v8();
+    virtual void vc();
+    virtual void v10();
+    virtual void v14();
+    virtual void v18();
+    virtual void v1c();
+    virtual void v20();
+    virtual void v24();
+    virtual void Refresh();                  // +0x28 (slot 10)
+    void Release();                          // __thiscall, no args (sibling thunk_FUN_004e84f0)
+    void Show(i32 idx, i32 on);              // 2 args (call 0x2059)
+    void Hide(i32 idx);                      // 1 arg  (call 0x3279)
+    void Configure(const char* key, i32 on); // 2 args (call 0x2aea)
 };
 
 // A hit-test rect widget held in m_hitRects[] / the hit-test lists: a polymorphic
@@ -149,6 +164,8 @@ public:
     virtual void v28();
     virtual void v2c();
     virtual void Notify(i32 on); // +0x30 (slot 12)
+    char m_pad4[0x14 - 0x4];
+    i32 m_rect14[4]; // +0x14  falling-item rect (UpdateFallingItemStatusBar)
 };
 
 // A singly-linked notify node (the +0xbc list element): next ptr at +0, the
@@ -193,6 +210,22 @@ public:
     virtual void v28(); // +0x28 (slot 10) refresh
     char m_pad4[0x44 - 0x4];
     i32 m_44; // +0x44  latched gauge reading
+};
+
+// The global attribute-config manager (?g_buteMgr, VA 0x6453d8). Only the 3-arg
+// section/key/default int getter is touched (the StatusBar delay lookups); the
+// call is a reloc-masked __thiscall, the object's DIR32 name is load-bearing so it
+// is a `class` (mangles ...@@3VCButeMgr@@A). Extern only (bound by another TU).
+class CButeMgr {
+public:
+    i32 GetIntDef(char* tag, char* key, i32 def); // 0x1721e0 (__thiscall, ret 0xc)
+};
+extern CButeMgr g_buteMgr;
+
+// The rez-machine snooze display object at +0x348 (Update sets it from the HUD-rect
+// A/B y-coords). Reloc-masked __thiscall.
+struct CSbiMachineDisplay {
+    void Update(i32 a, i32 b); // 0x366b (2 args)
 };
 
 // Slot state values (CSbiSlot::m_state) named from how every site reads/writes
@@ -259,8 +292,8 @@ public:
     void LoadRezMachineConfig();
     void UpdateRezMachineSnoozeStatusBar();
     void LoadChipMachineConfig();
-    void UpdateFallingItemStatusBar(i32, i32, i32);
-    void UpdateRezMachineWakeStatusBar();
+    i32 UpdateFallingItemStatusBar(i32, i32, i32);
+    i32 UpdateRezMachineWakeStatusBar();
     void LoadMultiplayerBattlezConfig(i32);
 
     // ----- sibling methods called by the reconstructed bodies (declared so the
@@ -346,9 +379,13 @@ public:
 
     // ----- fourth batch: the rect-only HUD placement (0xfe520) + its siblings ---
     i32 winapi_0fe520_SetRect();
-    void RectNotify(i32);     // call 0x194c (__thiscall, 1 arg)
-    i32 RectProbe();          // call 0x3a08 (__thiscall, returns int)
-    void RectApply(i32, i32); // call 0x1d61 (__thiscall, 2 args)
+    void RectNotify(i32);                   // call 0x194c (__thiscall, 1 arg)
+    i32 RectProbe();                        // call 0x3a08 (__thiscall, returns int)
+    void RectApply(i32, i32);               // call 0x1d61 (__thiscall, 2 args)
+    void TabSubtypeRefresh();               // call 0x123f (__thiscall, no args) - subtype-2 refresh
+    void SetStatBar(i32 a, i32 b, i32 val); // call 0x1523 (__thiscall, 3 args)
+    void SetGaugeSpan(i32 a, i32 b, i32 c); // call 0x4359 (__thiscall, 3 args)
+    void RefreshFallRect();                 // call 0x1cbc (__thiscall, no args)
 
     // ----- layout (placeholders; offsets are the load-bearing fact) -----
     i32 m_2c; // +0x2c  Setup arg1 (vtable-slot-2 setup target)
@@ -391,20 +428,22 @@ public:
     CSbiSlot m_groupSlots[3];      // +0x2c0  group-A 24-byte slot records
     CSbiSlotPtr* m_groupNotify[3]; // +0x308  group-A notify pointers
     char m_pad314[0x318 - 0x314];
-    i32 m_hudRectB_x; // +0x318  HUD-rect group B (x0)
-    i32 m_hudRectB_y; // +0x31c  (y0)
-    i32 m_320;        // +0x320  (latched dword from g_dat645588)
-    i32 m_324;        // +0x324
-    i32 m_hudRectB_z; // +0x328
-    i32 m_32c;        // +0x32c
-    i32 m_hudRectA_x; // +0x330  HUD-rect group A (x0)
-    i32 m_hudRectA_y; // +0x334  (y0)
-    i32 m_338;        // +0x338
-    i32 m_33c;        // +0x33c
-    i32 m_hudRectA_z; // +0x340
-    i32 m_344;        // +0x344
-    char m_pad348[0x354 - 0x348];
-    i32 m_hitTestDisabled; // +0x354  hit-test disable flag
+    i32 m_hudRectB_x;          // +0x318  HUD-rect group B (x0)
+    i32 m_hudRectB_y;          // +0x31c  (y0)
+    i32 m_320;                 // +0x320  (latched dword from g_dat645588)
+    i32 m_324;                 // +0x324
+    i32 m_hudRectB_z;          // +0x328
+    i32 m_32c;                 // +0x32c
+    i32 m_hudRectA_x;          // +0x330  HUD-rect group A (x0)
+    i32 m_hudRectA_y;          // +0x334  (y0)
+    i32 m_338;                 // +0x338
+    i32 m_33c;                 // +0x33c
+    i32 m_hudRectA_z;          // +0x340
+    i32 m_344;                 // +0x344
+    CSbiMachineDisplay* m_348; // +0x348  rez-machine snooze display object
+    i32 m_34c;                 // +0x34c
+    i32 m_350;                 // +0x350
+    i32 m_hitTestDisabled;     // +0x354  hit-test disable flag
     char m_pad358[0x35c - 0x358];
     i32 m_activeSlot;       // +0x35c  active-slot index (-1 = none)
     i32 m_360;              // +0x360  pending highlight row index (-1 none)
@@ -419,14 +458,25 @@ public:
     i32 m_extraNotifyArg0;       // +0x4cc  arg for (*m_extraNotify0)->Notify
     char m_pad4d0[0x4e0 - 0x4d0];
     CSbiSlotPtr* m_extraNotify0; // +0x4e0
-    char m_pad4e4[0x4ec - 0x4e4];
-    i32 m_extraNotifyArg1; // +0x4ec  arg for (*m_extraNotify1)->Notify
-    char m_pad4f0[0x500 - 0x4f0];
-    CSbiSlotPtr* m_extraNotify1; // +0x500
-    char m_pad504[0x530 - 0x504];
-    CSbiPtrCollection m_530; // +0x530  pooled-ptr collection (RemoveAll on teardown)
-    void* m_ptrTable[1];     // +0x534  pointer table (elements streamed 8B)
-    i32 m_ptrCount;          // +0x538  count for m_ptrTable
+    char m_pad4e4[0x4e8 - 0x4e4];
+    i32 m_4e8;                    // +0x4e8  falling-item active flag
+    i32 m_extraNotifyArg1;        // +0x4ec  arg for (*m_extraNotify1)->Notify
+    i32 m_4f0;                    // +0x4f0  falling-item rect base = g_dat645588
+    i32 m_4f4;                    // +0x4f4
+    i32 m_4f8;                    // +0x4f8  falling-item config delay
+    i32 m_4fc;                    // +0x4fc
+    CSbiSlotPtr* m_extraNotify1;  // +0x500
+    i32 m_504;                    // +0x504  falling-item rect A (relative)
+    i32 m_508;                    // +0x508
+    i32 m_50c;                    // +0x50c
+    i32 m_510;                    // +0x510
+    char m_pad514[0x524 - 0x514]; // +0x514  streamed rect block
+    i32 m_524;                    // +0x524
+    i32 m_528;                    // +0x528  rez-machine snooze/wake active flag
+    i32 m_52c;                    // +0x52c  rez-machine wake tick counter
+    CSbiPtrCollection m_530;      // +0x530  pooled-ptr collection (RemoveAll on teardown)
+    void* m_ptrTable[1];          // +0x534  pointer table (elements streamed 8B)
+    i32 m_ptrCount;               // +0x538  count for m_ptrTable
     char m_pad53c[0x548 - 0x53c];
     i32 m_548; // +0x548
     char m_pad54c[0x550 - 0x54c];
@@ -2566,17 +2616,37 @@ void CSBI_RectOnly::UpdateStatusBarTabHighlight(i32, i32, i32) {}
 RVA(0x000ffb20, 0x13a)
 void CSBI_RectOnly::LoadDestructButtonSprite(i32) {}
 
-// @confidence: med
-// @source: decomp-xref
-// @stub
+// 0x102180 - build the RESUME game-tab button. If this is the subtype-2 cursor item,
+// refresh it; when shown and not already on the gauge tab (5), apply the (5,3) rect;
+// then (if the RESUME slot exists) configure it with the RESUME asset key, commit, and
+// refresh it. Latch the show-RESUME gate (m_354 = 1).
 RVA(0x00102180, 0x5f)
-void CSBI_RectOnly::BuildGameTabResumeButton(i32) {}
+void CSBI_RectOnly::BuildGameTabResumeButton(i32 show) {
+    if (*(i32*)this == kSubtypeTag) {
+        TabSubtypeRefresh();
+    }
+    if (show && m_activeTab != 5) {
+        RectApply(5, 3);
+    }
+    if (m_1dc) {
+        m_1dc->Configure("GAME_STATUSBAR_TABZ_GAMETAB_RESUME", 1);
+        TabCommit();
+        m_1dc->Refresh();
+    }
+    m_hitTestDisabled = 1;
+}
 
-// @confidence: med
-// @source: decomp-xref
-// @stub
+// 0x102200 - build the PAUSE game-tab button. If the RESUME/PAUSE slot exists, configure
+// it with the PAUSE asset key, commit, and refresh it. Clear the show-RESUME gate.
 RVA(0x00102200, 0x37)
-void CSBI_RectOnly::BuildGameTabPauseButton() {}
+void CSBI_RectOnly::BuildGameTabPauseButton() {
+    if (m_1dc) {
+        m_1dc->Configure("GAME_STATUSBAR_TABZ_GAMETAB_PAUSE", 1);
+        TabCommit();
+        m_1dc->Refresh();
+    }
+    m_hitTestDisabled = 0;
+}
 
 // @confidence: med
 // @source: decomp-xref
@@ -2596,11 +2666,20 @@ void CSBI_RectOnly::UpdateRezConveyorStatusBar() {}
 RVA(0x00105e40, 0x62c)
 void CSBI_RectOnly::LoadRezMachineConfig() {}
 
-// @confidence: med
-// @source: decomp-xref
-// @stub
+// 0x106660 - snooze phase of the rez-machine status bar: pull the LeftMachineSnoozing
+// delay from the StatusBar config, feed it to the stat bar (slot 1,1) and reset the
+// gauge span, refresh the snooze display object (if present) from the HUD-rect A/B
+// y-coords, then clear the snooze/wake state pair.
 RVA(0x00106660, 0x68)
-void CSBI_RectOnly::UpdateRezMachineSnoozeStatusBar() {}
+void CSBI_RectOnly::UpdateRezMachineSnoozeStatusBar() {
+    SetStatBar(1, 1, g_buteMgr.GetIntDef("StatusBar", "LeftMachineSnoozingDelay", 100));
+    SetGaugeSpan(0x2b, 0, 0x7fffffff);
+    if (m_348) {
+        m_348->Update(m_hudRectA_y, m_hudRectB_y);
+    }
+    m_528 = 0;
+    m_52c = 0;
+}
 
 // @confidence: med
 // @source: string-xref
@@ -2608,17 +2687,69 @@ void CSBI_RectOnly::UpdateRezMachineSnoozeStatusBar() {}
 RVA(0x00106bb0, 0x7bc)
 void CSBI_RectOnly::LoadChipMachineConfig() {}
 
-// @confidence: med
-// @source: decomp-xref
-// @stub
+// 0x107590 - configure the falling-item HUD gauge from a center point (a2,a3). Latch
+// the notify arg + active flag, pull the FallingItemDelay config, seed the rect base
+// from g_dat645588, build the relative +/-0xc rect (m_504 block), and - if the notify
+// object exists - write the absolute rect (offset by the item base coords m_10/m_14)
+// into its +0x14 slot. Finish with the fall-rect refresh helper.
+// @early-stop
+// ~77%: logic + every field store/arithmetic is byte-correct. Residual is a regalloc/
+// store-schedule wall in the notify-object rect block: retail pins the notify ptr in
+// ebp (callee-saved) + spills rect0 to reserve eax for m_10, then stores the 4 rect
+// ints in index order 0/1/2/3; MSVC5 here keeps the ptr in eax with ebp free (no
+// spill) and stores 0/2/1/3. A register-assignment coin-flip (compute-all-then-store
+// spelling regressed it to 69%); not steerable from C. Deferred to the final sweep.
 RVA(0x00107590, 0xc4)
-void CSBI_RectOnly::UpdateFallingItemStatusBar(i32, i32, i32) {}
+i32 CSBI_RectOnly::UpdateFallingItemStatusBar(i32 a1, i32 a2, i32 a3) {
+    m_extraNotifyArg1 = a1;
+    m_4e8 = 1;
+    m_4f8 = g_buteMgr.GetIntDef("StatusBar", "FallingItemDelay", 0x32);
+    m_4fc = 0;
+    m_4f0 = g_dat645588;
+    m_4f4 = 0;
+    CSbiSlotPtr* n = m_extraNotify1;
+    i32 l = a2 - 0xc;
+    i32 t = a3 - 0xc;
+    i32 rr = a2 + 0xc;
+    i32 b = a3 + 0xc;
+    m_504 = l;
+    m_508 = t;
+    m_50c = rr;
+    m_510 = b;
+    if (n) {
+        i32 x = m_10;
+        n->m_rect14[0] = l + x;
+        n->m_rect14[2] = x + rr;
+        i32 y = m_rect14.m_0;
+        n->m_rect14[1] = t + y;
+        n->m_rect14[3] = y + b;
+    }
+    RefreshFallRect();
+    return 1;
+}
 
-// @confidence: med
-// @source: decomp-xref
-// @stub
+// 0x107a10 - wake phase of the rez-machine status bar. On the first pass (state not
+// yet set) bail unless the extra-notify arg is armed, else pull the LeftMachineWaking
+// delay, feed the stat bar (slot 9,2), latch the state and return 1. On later passes
+// just bump the wake tick counter and return 1.
+// @early-stop
+// ~96%: byte-exact except the `m_528 = 1; return 1;` tail - retail stores the
+// immediate directly (mov [esi+0x528],1) then loads eax=1 separately, while MSVC5
+// here reuses eax (mov eax,1; mov [esi+0x528],eax). A store-imm-vs-register-reuse
+// regalloc coin-flip on the shared return constant; no C-level lever. Deferred.
 RVA(0x00107a10, 0x62)
-void CSBI_RectOnly::UpdateRezMachineWakeStatusBar() {}
+i32 CSBI_RectOnly::UpdateRezMachineWakeStatusBar() {
+    if (m_528 == 0) {
+        if (m_extraNotifyArg0 == 0) {
+            return 0;
+        }
+        SetStatBar(9, 2, g_buteMgr.GetIntDef("StatusBar", "LeftMachineWakingDelay", 100));
+        m_528 = 1;
+        return 1;
+    }
+    m_52c++;
+    return 1;
+}
 
 // @confidence: med
 // @source: decomp-xref

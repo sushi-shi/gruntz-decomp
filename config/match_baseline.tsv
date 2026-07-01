@@ -408,7 +408,7 @@ sbi_imageset_eh	1	1
 sbi_imagesetani_eh	1	1
 sbi_menuitem	12	7
 sbi_menuitem_eh	1	1
-sbi_rectonly	70	29
+sbi_rectonly	70	32
 sbi_rectonly_eh	2	1
 sbi_rectonlydtor_eh	1	1
 sbi_sidetab	4	2
@@ -3246,8 +3246,8 @@ sbi_rectonly	?AdvanceGauge@CSBI_RectOnly@@QAEXH@Z	100.0000	100.0000	2	ea00c64bd5
 sbi_rectonly	?AdvanceTab@CSBI_RectOnly@@QAEXH@Z	100.0000	100.0000	1	543cc9e84f9b	0x10b4f0
 sbi_rectonly	?AnySlotActive@CSBI_RectOnly@@QAEHXZ	100.0000	100.0000	2	cc30bba269ac	0x105710
 sbi_rectonly	?ArmSlot@CSBI_RectOnly@@QAEXH@Z	100.0000	100.0000	2	c31c87dc7f16	0x105560
-sbi_rectonly	?BuildGameTabPauseButton@CSBI_RectOnly@@QAEXXZ	6.2500	6.2500	1	edd76020e3a4	0x102200
-sbi_rectonly	?BuildGameTabResumeButton@CSBI_RectOnly@@QAEXH@Z	3.5714	3.5714	2	8ebe9f8288c1	0x102180
+sbi_rectonly	?BuildGameTabPauseButton@CSBI_RectOnly@@QAEXXZ	100.0000	100.0000	2	c747fb6dc08d	0x102200
+sbi_rectonly	?BuildGameTabResumeButton@CSBI_RectOnly@@QAEXH@Z	100.0000	100.0000	3	11aafd278199	0x102180
 sbi_rectonly	?ClearHlCell@CSBI_RectOnly@@QAEXHH@Z	100.0000	100.0000	2	19db944634aa	0x1069c0
 sbi_rectonly	?ClearStat@CSBI_RectOnly@@QAEHH@Z	100.0000	100.0000	1	1ab0c467e5e8	0x104f90
 sbi_rectonly	?ClearTabGroup@CSBI_RectOnly@@QAEXXZ	67.4706	67.4706	1	57d2592ce398	0x100b00
@@ -3303,10 +3303,10 @@ sbi_rectonly	?Teardown@CSBI_RectOnly@@QAEXXZ	84.7059	84.7059	2	d3950462b68c	0xfe
 sbi_rectonly	?TickGauge@CSBI_RectOnly@@QAEXXZ	95.6905	95.6905	2	cfd3e12e9ddb	0x105480
 sbi_rectonly	?ToggleStat@CSBI_RectOnly@@QAEXH@Z	100.0000	100.0000	2	412939e58d09	0x107aa0
 sbi_rectonly	?TryActivate@CSBI_RectOnly@@QAEHXZ	100.0000	100.0000	2	4c5c4880efca	0x104d60
-sbi_rectonly	?UpdateFallingItemStatusBar@CSBI_RectOnly@@QAEXHHH@Z	1.8182	1.8182	2	b9313b797eb8	0x107590
+sbi_rectonly	?UpdateFallingItemStatusBar@CSBI_RectOnly@@QAEHHHH@Z	77.2727	77.2727	1	84838da21dde	0x107590
 sbi_rectonly	?UpdateRezConveyorStatusBar@CSBI_RectOnly@@QAEXXZ	0.3717	0.3717	1	1dfce58384f5	0x105990
-sbi_rectonly	?UpdateRezMachineSnoozeStatusBar@CSBI_RectOnly@@QAEXXZ	3.4483	3.4483	1	a69b8cdcc06f	0x106660
-sbi_rectonly	?UpdateRezMachineWakeStatusBar@CSBI_RectOnly@@QAEXXZ	3.2258	3.2258	1	74fc495868ec	0x107a10
+sbi_rectonly	?UpdateRezMachineSnoozeStatusBar@CSBI_RectOnly@@QAEXXZ	100.0000	100.0000	2	42d61a205aef	0x106660
+sbi_rectonly	?UpdateRezMachineWakeStatusBar@CSBI_RectOnly@@QAEHXZ	96.1290	96.1290	1	f5d7f69fc70b	0x107a10
 sbi_rectonly	?UpdateStatusBarTabHighlight@CSBI_RectOnly@@QAEXHHH@Z	0.1099	0.1099	2	5350e63b18c5	0xfe910
 sbi_rectonly	?winapi_0fe520_SetRect@CSBI_RectOnly@@QAEHXZ	100.0000	100.0000	1	fcd1ab1376bb	0xfe520
 sbi_rectonly	?winapi_107d00_SetRect@CSBI_RectOnly@@QAEHXZ	0.5155	0.5155	2	010307708fab	0x107d00
