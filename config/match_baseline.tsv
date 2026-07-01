@@ -219,7 +219,7 @@ drawdebugstats	1	0
 dsoundvoice	2	1
 ehfunclets	6	6
 engine_discovered	13	7
-engine_label_stubs	187	116
+engine_label_stubs	184	116
 engstr	3	1
 engstrrendertext	1	0
 eyecandytypetags	4	4
@@ -259,6 +259,7 @@ gruntdatarecord	2	2
 gruntinfotext	1	0
 gruntmovestep	1	0
 gruntpathscan	1	0
+gruntphasestep	1	0
 gruntpickupload	1	0
 gruntpuddle	5	2
 gruntspawnconfig	16	8
@@ -344,6 +345,7 @@ m3compilerthunks	3	3
 m3ehfunclets	12	9
 m3mfcleaves	2	2
 m4_apiwrappers	7	2
+m4_customleveldlg	1	0
 m4_customlevellist	1	0
 m4_drawtext	3	0
 m4_flashrect	2	0
@@ -376,6 +378,7 @@ mgrautoscroll	1	0
 mgrlistfind	1	0
 mgrtokenquery	1	1
 minervainner	1	1
+modeobjinit	1	0
 motionstate	6	5
 movinglogicupdate	1	0
 msgpacket	2	2
@@ -600,7 +603,7 @@ battlezdata	?SumGroupField38@CBattlezData@@QAEHXZ	100.0000	100.0000	1	4967cada7e
 battlezdata	?SumGroupField3c@CBattlezData@@QAEHXZ	100.0000	100.0000	1	e396d834d6e2	0xfd1f0
 battlezdata	?SumWinRow@CBattlezData@@QAEHH@Z	100.0000	100.0000	2	f7cb273e44cf	0xfccb0
 battlezmapconfig	?LoadConfig@CBattlezMapConfig@@QAEHPAUCLevelInfo@@HH@Z	85.9933	85.9933	4	f06ecd871376	0x25020
-bitarray	?SetBit@CBitArray@@QAEPAU1@I@Z	100.0000	100.0000	1	da78fe96314c	0x193640
+bitarray	?SetBit@CBitArray@@QAEPAU1@I@Z	100.0000	100.0000	2	02204f979262	0x193640
 bitstreamblowfish	?BitStreamBlowfishDecode@@YGXPAUBitReader@@PAUSink@@@Z	99.9792	99.9792	2	d285eb0a8441	0x16f760
 bitstreampack	?BitEmitMarker@@YAXPAUBitState@@@Z	59.1309	59.1309	1	741128f022a8	0x188860
 blowfish	?Blowfish_InitKey@@YGXPAE@Z	100.0000	100.0000	1	181b6b1750bf	0x16f6c0
@@ -1943,7 +1946,6 @@ engine_label_stubs	?winapi_015cc0_SendMessageA@ApiCallerStubs@@YGHHH@Z	79.8182	7
 engine_label_stubs	?winapi_015d00_SendMessageA@ApiCallerStubs@@YGXH@Z	100.0000	100.0000	1	cpp:e1535087fe94	0x15d00
 engine_label_stubs	?winapi_015d30_SendMessageA@ApiCallerStubs@@YGHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x15d30
 engine_label_stubs	?winapi_015d70_SendMessageA@ApiCallerStubs@@YGHHH@Z	80.9167	80.9167	1	cpp:6bf52155264d	0x15d70
-engine_label_stubs	?winapi_0180e0_SendMessageA@ApiCallerStubs@@YGHH@Z	0.8696	0.8696	1	cpp:6bf52155264d	0x180e0
 engine_label_stubs	?winapi_019f50_timeGetTime@ApiCallerStubs@@YGHHH@Z	14.4444	14.4444	1	cpp:6bf52155264d	0x19f50
 engine_label_stubs	?winapi_01a700_CopyRect@ApiCallerStubs@@YAHXZ	0.3934	0.3934	1	cpp:e1535087fe94	0x1a700
 engine_label_stubs	?winapi_036d00_EnableWindow_GetDlgItem_IsDlgButtonChecked@ApiCallerStubs@@YAXPAX@Z	100.0000	100.0000	1	cpp:e1535087fe94	0x36d00
@@ -1971,7 +1973,6 @@ engine_label_stubs	?winapi_0be400_GetWindowTextA_SetWindowTextA@ApiCallerStubs@@
 engine_label_stubs	?winapi_0be490_EndDialog_KillTimer@ApiCallerStubs@@YAXPAXPAUSessionHost_0be490@1@@Z	100.0000	100.0000	1	cpp:e1535087fe94	0xbe490
 engine_label_stubs	?winapi_0be760_GetDlgItem_SetDlgItemTextA_SetTimer@ApiCallerStubs@@YAXPAX0@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xbe760
 engine_label_stubs	?winapi_0c2980_SendMessageA@ApiCallerStubs@@YGXHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xc2980
-engine_label_stubs	?winapi_0c7ec0_timeGetTime@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHHHH@Z	0.5181	0.5181	1	cpp:e8a4cb0d5b2a	0xc7ec0
 engine_label_stubs	?winapi_0e35f0_EndDialog@ApiCallerStubs@@YGHPAXHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xe35f0
 engine_label_stubs	?winapi_0e3a40_EndDialog@ApiCallerStubs@@YGHPAXIIJ@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xe3a40
 engine_label_stubs	?winapi_0e3b20_EndDialog@ApiCallerStubs@@YGHPAXIIJ@Z	100.0000	100.0000	1	cpp:e1535087fe94	0xe3b20
@@ -1979,7 +1980,6 @@ engine_label_stubs	?winapi_0e3be0_EndDialog@ApiCallerStubs@@YGHPAXHHH@Z	100.0000
 engine_label_stubs	?winapi_0e3e80_SetDlgItemTextA@ApiCallerStubs@@YAXPAXPAUNameItem_09e2d0@1@HHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xe3e80
 engine_label_stubs	?winapi_0e4850_SetDlgItemTextA@ApiCallerStubs@@YAXPAX0PAD@Z	100.0000	100.0000	1	cpp:e1535087fe94	0xe4850
 engine_label_stubs	?winapi_0e6020_SetRect@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHHHHHHHHHHH@Z	0.8621	0.8621	1	cpp:e8a4cb0d5b2a	0xe6020
-engine_label_stubs	?winapi_0f60f0_IntersectRect@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHXZ	0.2225	0.2225	1	cpp:e8a4cb0d5b2a	0xf60f0
 engine_label_stubs	?winapi_0f8e20_FreeLibrary@ApiCallerStubs@@YAXXZ	100.0000	100.0000	1	cpp:6bf52155264d	0xf8e20
 engine_label_stubs	?winapi_115300_SetRect@ApiCallerStubs@@YAHPAULayerHost_115300@1@PAURectSrc_115300@1@HHHH@Z	100.0000	100.0000	1	cpp:e832e75e29a5	0x115300
 engine_label_stubs	?winapi_118930_SetActiveWindow_SetFocus@ApiCallerStubs@@YAXPAX@Z	100.0000	100.0000	1	cpp:e1535087fe94	0x118930
@@ -2346,6 +2346,7 @@ gruntdatarecord	?SerializeStrings@GruntDataRecord@@QAEHPAUDataWriter@@@Z	100.000
 gruntinfotext	?winapi_0d95f0_wsprintfA@GruntInfoTextHost@@QAEHXZ	88.4979	88.4979	1	23c0b1e68ecf	0xd95f0
 gruntmovestep	?Step@CGruntMover@@QAEHPAUCGruntM@@@Z	18.1429	18.1429	1	27431664e366	0x31610
 gruntpathscan	?PathScan57db0@CGrunt@@QAEHXZ	39.3829	39.3829	1	bd38224aafd9	0x57db0
+gruntphasestep	?PhaseStep@CGrunt@gruntphase@@QAEHXZ	31.4567	31.4567	1	9d574ba22c2f	0xf60f0
 gruntpickupload	?LoadPickupSprites@CGrunt@@QAEHHHHHH@Z	47.1890	47.1890	1	6bd0b63ecda5	0x65e80
 gruntpuddle	??0CGruntPuddle@@QAE@PAUCGameObject@@@Z	91.9504	91.9504	1	f672560977a9	0x40490
 gruntpuddle	??1CGruntPuddle@@UAE@XZ	100.0000	100.0000	1	d8797374243c	0x10d10
@@ -2779,7 +2780,7 @@ m1_packetpool	?Unmatched_bf530@@YAPAXH@Z	100.0000	100.0000	1	096be294be27	0xbf53
 m1_ringbuffer	?Unmatched_186180@@YAHHHHH@Z	100.0000	100.0000	1	5bf16c15818b	0x186180
 m1_ringbuffer	?Unmatched_186910@@YAXPAURingCtx@@@Z	100.0000	100.0000	1	c2752fb3ddb6	0x186910
 m1_saverecload	?Load@SaveRecord@@QAEHPAULoadStream@@@Z	95.9116	95.9116	2	8394a0c8957d	0xfaff0
-m1_timesplit	?Unmatched_119210@@YAXIPAI00@Z	100.0000	100.0000	1	253cc00a135c	0x119210
+m1_timesplit	?SplitMillisToHMS@@YAXIPAI00@Z	100.0000	100.0000	1	3eadc01ae691	0x119210
 m1_wapmisc	?Dtor_1c7e6d@@YAXXZ	100.0000	100.0000	1	9dc3f0fdbb25	0x1c7e6d
 m1_wapmisc	?Stamp@CStamp11d100@@QAEXXZ	100.0000	100.0000	1	7b042a7173a0	0x11d100
 m1_wapmisc	?Unmatched_1155b0@@YAXXZ	100.0000	100.0000	1	12adb9fe0c43	0x1155b0
@@ -2819,6 +2820,7 @@ m4_apiwrappers	?FindGruntAt@GruntHitMgr@m4@@QAEPAUHitGrunt@2@HHPAUHitTileRect@2@
 m4_apiwrappers	?LaunchWebBrowser@m4@@YGHPAD@Z	100.0000	100.0000	1	ed3eacdf3b3a	0x8f120
 m4_apiwrappers	?ScrollDialog@m4@@YAXPAXHHH@Z	84.5833	84.5833	1	671c48d4eb5a	0x37260
 m4_apiwrappers	?SetupDlgCommand@m4@@YAHPAXHPAUSetupDlg@1@@Z	79.2708	79.2708	1	11b98a80379d	0x9e390
+m4_customleveldlg	?Populate180e0@CustomLevelDlg@m4dlg@@QAEHPAH@Z	71.0248	71.0248	1	6ec1e31caae8	0x180e0
 m4_customlevellist	?FillCustomLevelList@m4@@YAHPAUHWND__@@@Z	73.9508	73.9508	1	2bdfbb3a9268	0x3af90
 m4_drawtext	?Draw3DText22810@TextHost@m4@@QAEHPAX0PAUtagRECT@@HHHHHHH@Z	82.4896	82.4896	1	2fc2a7fbeece	0x22810
 m4_drawtext	?MeasureLabel21f20@DrawHost@m4@@QAEHPAXPBD@Z	72.0179	72.0179	1	03c0979cae0b	0x21f20
@@ -2917,6 +2919,7 @@ mgrautoscroll	?UpdateMgrScroll@@YAXPAUCGruntzMgr@@PAHHH@Z	59.8226	59.8226	2	501a
 mgrlistfind	?MgrListFind@@YAHHH@Z	73.2188	73.2188	1	3f1ad7a54cca	0xf0db0
 mgrtokenquery	?QueryToken@@YAHH@Z	100.0000	100.0000	1	33f0fb7f4951	0x99d10
 minervainner	?Free@MinervaInner@@QAEXXZ	100.0000	100.0000	1	3b1430773a0c	0x137a80
+modeobjinit	?Init0c7ec0@ModeObj@modeinit@@QAEHPAUArg1@2@HH@Z	53.8808	53.8808	1	1a707841b201	0xc7ec0
 motionstate	??0CMotionState@@QAE@XZ	100.0000	100.0000	1	24ca6b679299	0x136d0
 motionstate	?ArrivalVelX@CMotionState@@QAENN@Z	100.0000	100.0000	2	8ad390ea1d22	0x16f3c0
 motionstate	?ArrivalVelY@CMotionState@@QAENN@Z	100.0000	100.0000	2	ef5e4a08d508	0x16f430
@@ -3151,16 +3154,16 @@ registryhelper	?InitializeLastKey@RegistryHelper@Utils@@QAEHPAD@Z	100.0000	100.0
 registryhelper	?Open@RegistryHelper@Utils@@QAEHPAD000PAUHKEY__@@0@Z	100.0000	100.0000	3	051c9b1b8294	0x139210
 registryhelper	?SetValueDword@RegistryHelper@Utils@@QAEHPADK@Z	100.0000	100.0000	5	06fbc6982fb9	0x139460
 registryhelper	?SetValueString@RegistryHelper@Utils@@QAEHPAD0@Z	100.0000	100.0000	5	48906d809fd9	0x1393b0
-rezcoll	?First@RezColl@@QAEPAURezNode@@XZ	100.0000	100.0000	1	a451595c7d90	0x184ae0
-rezcoll	?Next@RezNode@@QAEPAU1@XZ	100.0000	100.0000	1	3deebe65b5c6	0x1848b0
+rezcoll	?First@RezColl@@QAEPAURezNode@@XZ	100.0000	100.0000	2	ad2cadee4eff	0x184ae0
+rezcoll	?Next@RezNode@@QAEPAU1@XZ	100.0000	100.0000	2	33537c9e143d	0x1848b0
 rezfile	?Close@CRezFile@@QAEHXZ	100.0000	100.0000	1	2047e03b5407	0x13ce70
 rezfile	?CloseAllOpen@CRezFileMgr@@QAEHXZ	100.0000	100.0000	1	36ef9ed952ae	0x13ca80
 rezfile	?Flush@CRezFile@@QAEHXZ	100.0000	100.0000	1	13a111d74bba	0x13cd60
 rezfile	?Open@CRezFile@@QAEHXZ	100.0000	100.0000	1	1a42a810a19e	0x13cdc0
 rezfile	?Read@CRezFile@@QAEHHHIPAX@Z	100.0000	100.0000	2	17011088c6b1	0x13cc00
 rezfile	?Write@CRezFile@@QAEHHHIPAX@Z	100.0000	100.0000	2	efc087248e0f	0x13cca0
-rezlist	?AddHead@CRezList@@QAEXPAUCRezListNode@@@Z	100.0000	100.0000	1	446e7c7af5ab	0x1851e0
-rezlist	?AddTail@CRezList@@QAEXPAUCRezListNode@@@Z	100.0000	100.0000	1	99b9e92b8621	0x185210
+rezlist	?AddHead@CRezList@@QAEXPAUCRezListNode@@@Z	100.0000	100.0000	2	fa1d7d47d50b	0x1851e0
+rezlist	?AddTail@CRezList@@QAEXPAUCRezListNode@@@Z	100.0000	100.0000	2	1b4afd8013b4	0x185210
 rezmgr	??0CRezDir@@QAE@PAX0@Z	78.9091	78.9091	5	6e79226f1d72	0x13c940
 rezmgr	??0CRezItm@@QAE@PAX@Z	100.0000	100.0000	4	f168abdbb8b4	0x13c540
 rezmgr	??0CRezItmBase@@QAE@PAX@Z	100.0000	100.0000	4	cb122a3428e6	0x13c4e0

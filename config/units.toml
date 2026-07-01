@@ -2666,6 +2666,27 @@ flags = "base"
 extra = ["/GX"]
 
 [[unit]]
+# matcher-3: custom-level dialog populate/select (thiscall, magic-static CString + walk).
+unit = "m4_customleveldlg"
+source = "src/Gruntz/m4_CustomLevelDlg.cpp"
+flags = "base"
+extra = ["/GX"]
+
+[[unit]]
+# matcher-3: game-mode/object initializer (four owned sub-objects + /GX teardown).
+unit = "modeobjinit"
+source = "src/Gruntz/ModeObjInit.cpp"
+flags = "base"
+extra = ["/GX"]
+
+[[unit]]
+# matcher-3: CGrunt arrival/relocation phase state machine (5x5 border scan + tail).
+unit = "gruntphasestep"
+source = "src/Gruntz/GruntPhaseStep.cpp"
+flags = "base"
+extra = ["/GX"]
+
+[[unit]]
 unit = "dirpal"
 source = "src/Gruntz/DirPal.cpp"
 flags = "base"

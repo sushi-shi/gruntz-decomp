@@ -472,14 +472,7 @@ namespace ApiCallerStubs {
 
     // 0x000160f0 reconstructed as m4::FlashHost::FlashRect160f0 in src/Gruntz/m4_FlashRect.cpp
 
-    // @confidence: low
-    // @confidence: low
-    // @source: winapi:SendMessageA
-    // @stub
-    RVA(0x000180e0, 0x23f)
-    i32 __stdcall winapi_0180e0_SendMessageA(i32) {
-        return 0;
-    }
+    // 0x000180e0 reconstructed as m4dlg::CustomLevelDlg::Populate180e0 in src/Gruntz/m4_CustomLevelDlg.cpp
 
     // @confidence: low
     // @source: winapi:SendMessageA
@@ -2155,14 +2148,7 @@ namespace ApiCallerStubs {
         }
     }
 
-    // @confidence: low
-    // @source: winapi:timeGetTime
-    // @stub
-    // proximity: CDroppedObject@-0x1190 | CTileTriggerContainer@+0x780
-    RVA(0x000c7ec0, 0x5f5)
-    i32 ThisStubOwnerUnknown::winapi_0c7ec0_timeGetTime(i32, i32, i32) {
-        return 0;
-    }
+    // 0x000c7ec0 reconstructed as modeinit::ModeObj::Init0c7ec0 in src/Gruntz/ModeObjInit.cpp
 
     // ResetForMode (0x0c8a10) re-homed (analyzed) as CPlay::ResetForMode in
     // src/Gruntz/CPlay.cpp.
@@ -2565,14 +2551,7 @@ namespace ApiCallerStubs {
     // winapi_0f42f0_PtInRect (0xf42f0) re-homed as CGruntScan::ScanNearestTarget in
     // src/Gruntz/GruntTargetScan.cpp (sibling of the GruntArrivalScan steps).
 
-    // @confidence: low
-    // @source: winapi:IntersectRect
-    // @stub
-    // proximity: isolated (no near matched neighbour)
-    RVA(0x000f60f0, 0xb30)
-    i32 ThisStubOwnerUnknown::winapi_0f60f0_IntersectRect() {
-        return 0;
-    }
+    // 0x000f60f0 reconstructed as gruntphase::CGrunt::PhaseStep in src/Gruntz/GruntPhaseStep.cpp
 
     // @confidence: low
     // @source: winapi:FreeLibrary
