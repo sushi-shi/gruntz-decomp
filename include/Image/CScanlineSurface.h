@@ -9,10 +9,10 @@
 // +0x430 offset table). Mis-attributed to CImage by the static RVA bracketer.
 //
 // Reconstructed from the four touched methods (8bpp->RGB555 conversion, the
-// resize/realloc gate, and the fill). Field names are placeholders; only the
-// OFFSETS + emitted bytes are load-bearing (campaign carcass doctrine). The
-// allocator/free and the four "op" callees are external no-body fns so their
-// `call rel32`/jump-table relocs reloc-mask.
+// resize/realloc gate, and the fill). Geometry fields are named from usage; the
+// OFFSETS + emitted bytes stay the load-bearing truth (m_428/m_434/m_440 keep
+// their placeholder names - role unproven). The allocator/free and the four "op"
+// callees are external no-body fns so their `call rel32`/jump-table relocs reloc-mask.
 
 #include <rva.h>
 
@@ -36,17 +36,19 @@ public:
     i32 Create(void* a0, i32 w, i32 h, i32 bpp, i32 flag); // 0x1757c0
     void Free();                                           // 0x175c90
 
-    // --- layout (placeholder names; offsets are the load-bearing truth) ---
+    // --- layout (geometry named from usage; m_428/m_434/m_440 stay placeholders) ---
     char m_pad000_428[0x428];
-    void* m_428; // +0x428  owner / valid latch
-    u8* m_42c;   // +0x42c  pixel buffer
-    u32* m_430;  // +0x430  per-scanline byte-offset table
-    i32 m_434;   // +0x434
-    i32 m_438;   // +0x438  width
-    i32 m_43c;   // +0x43c  height
-    i32 m_440;   // +0x440
-    i32 m_444;   // +0x444  stride (bytes per scanline)
-    i32 m_448;   // +0x448  scanline-mode latch (0 = contiguous, !=0 = offset table)
+    void* m_428;            // +0x428  owner / valid latch
+    u8* m_pixels;           // +0x42c  pixel buffer
+    u32* m_scanlineOffsets; // +0x430  per-scanline byte-offset table
+    i32 m_434;              // +0x434
+    i32 m_width;            // +0x438  width
+    i32 m_height;           // +0x43c  height
+    i32 m_440;              // +0x440
+    i32 m_stride;           // +0x444  stride (bytes per scanline)
+    i32 m_scanlineMode;     // +0x448  scanline mode (0 = contiguous, !=0 = offset table)
+    char m_pad44c[0x458 - 0x44c];
+    void* m_paletteObj; // +0x458  default palette object (SaveBmp palette fallback)
 };
 
 #endif // SRC_IMAGE_CSCANLINESURFACE_H

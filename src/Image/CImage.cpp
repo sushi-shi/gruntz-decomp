@@ -265,8 +265,7 @@ void CImage::FreeAll() {
     m_10 = 0;
     m_14 = 0;
     if (m_2c != 0) {
-        CImageSurfacePool* pool = *(CImageSurfacePool**)((char*)m_0c + 0x1c);
-        pool->RemoveItemA(m_2c);
+        m_0c->m_1c->RemoveItemA(m_2c);
         m_2c = 0;
     }
     CImageOwned* owned = m_30;

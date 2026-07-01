@@ -6,10 +6,10 @@
 // Pass: build a BITMAPFILEHEADER (copied from the 14-byte template @0x61aabc, then the
 // bfSize/bfOffBits slots patched) + a zeroed BITMAPINFOHEADER and 256-entry colour table
 // (de-interleaved from the source palette object's RGBQUADs), open the file and Write the
-// two headers then the scanlines bottom-up (m_42c + m_430[row], width bytes each).
+// two headers then the scanlines bottom-up (m_pixels + m_scanlineOffsets[row], width bytes each).
 //
-// The CFile ctor/Open/Write/dtor are reloc-masked __thiscall engine bodies; field names
-// are placeholders (carcass doctrine), only offsets + emitted bytes are load-bearing.
+// The CFile ctor/Open/Write/dtor are reloc-masked __thiscall engine bodies; the surface
+// geometry fields are named (see the header), only offsets + emitted bytes are load-bearing.
 #include <Mfc.h>
 
 #include <Image/CScanlineSurface.h>
@@ -48,7 +48,7 @@ RVA(0x00176b30, 0x1e5)
 i32 CScanlineSurface::SaveBmp(const char* filename, void* paletteObj) {
     void* obj = paletteObj;
     if (obj == 0) {
-        obj = *(void**)((char*)this + 0x458);
+        obj = m_paletteObj; // +0x458 default palette object
         if (obj == 0) {
             return 0;
         }
@@ -59,13 +59,13 @@ i32 CScanlineSurface::SaveBmp(const char* filename, void* paletteObj) {
     for (i32 z = 0; z < 0x428 / 4; z++) {
         *(i32*)(info + z * 4) = 0;
     }
-    *(i32*)(info + 0x00) = 0x28;  // biSize
-    *(i32*)(info + 0x04) = m_438; // biWidth
-    *(i32*)(info + 0x08) = m_43c; // biHeight
-    *(i16*)(info + 0x0c) = 1;     // biPlanes
-    *(i16*)(info + 0x0e) = 8;     // biBitCount
-    *(i32*)(info + 0x10) = 0;     // biCompression
-    *(i32*)(info + 0x14) = 0;     // biSizeImage
+    *(i32*)(info + 0x00) = 0x28;     // biSize
+    *(i32*)(info + 0x04) = m_width;  // biWidth
+    *(i32*)(info + 0x08) = m_height; // biHeight
+    *(i16*)(info + 0x0c) = 1;        // biPlanes
+    *(i16*)(info + 0x0e) = 8;        // biBitCount
+    *(i32*)(info + 0x10) = 0;        // biCompression
+    *(i32*)(info + 0x14) = 0;        // biSizeImage
 
     u8* pal = (u8*)obj + 8;
     if (pal == 0) {
@@ -85,8 +85,8 @@ i32 CScanlineSurface::SaveBmp(const char* filename, void* paletteObj) {
     for (i32 b = 0; b < 0xe; b++) {
         fileHdr[b] = g_bmpHeaderTemplate[b];
     }
-    *(i32*)(fileHdr + 2) = m_438 * m_43c + 0x436; // bfSize
-    *(i32*)(fileHdr + 0xa) = 0x436;               // bfOffBits
+    *(i32*)(fileHdr + 2) = m_width * m_height + 0x436; // bfSize
+    *(i32*)(fileHdr + 0xa) = 0x436;                    // bfOffBits
 
     BmpFile file;
     if (file.m_c.Open(filename, 0x1001, 0) == 0) {
@@ -94,8 +94,8 @@ i32 CScanlineSurface::SaveBmp(const char* filename, void* paletteObj) {
     }
     file.m_8.Write(fileHdr, 0xe);
     file.m_8.Write(info, 0x428);
-    for (i32 row = m_43c - 1; row >= 0; row--) {
-        file.m_8.Write((char*)m_42c + m_430[row], m_438);
+    for (i32 row = m_height - 1; row >= 0; row--) {
+        file.m_8.Write((char*)m_pixels + m_scanlineOffsets[row], m_width);
     }
     return 1;
 }

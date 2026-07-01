@@ -57,13 +57,13 @@ i32 CScanlineSurface::Convert8To16(void* a0, CScanlineSurface* src, void* pal) {
     if (palette == 0) {
         return 0;
     }
-    if (!Create(a0, src->m_438, src->m_43c, 0x10, 0)) {
+    if (!Create(a0, src->m_width, src->m_height, 0x10, 0)) {
         return 0;
     }
-    for (i32 y = 0; y < m_43c; y++) {
-        u8* sp = src->m_42c + y * src->m_444;
-        u16* dp = (u16*)(m_42c + y * m_444 * 2);
-        for (i32 x = 0; x < m_438; x++) {
+    for (i32 y = 0; y < m_height; y++) {
+        u8* sp = src->m_pixels + y * src->m_stride;
+        u16* dp = (u16*)(m_pixels + y * m_stride * 2);
+        for (i32 x = 0; x < m_width; x++) {
             u32 c = palette[*sp];
             u32 r = c & 0xff;
             u32 g = (c >> 8) & 0xff;
@@ -81,7 +81,7 @@ i32 CScanlineSurface::Convert8To16(void* a0, CScanlineSurface* src, void* pal) {
 // size, reuse it (return TRUE); otherwise Free + Create.
 RVA(0x00175ce0, 0x6b)
 i32 CScanlineSurface::EnsureSize(void* a0, i32 w, i32 h, i32 a3, i32 a4) {
-    if (m_428 && m_42c && m_430 && m_438 == w && m_43c == h) {
+    if (m_428 && m_pixels && m_scanlineOffsets && m_width == w && m_height == h) {
         return 1;
     }
     Free();
@@ -90,7 +90,7 @@ i32 CScanlineSurface::EnsureSize(void* a0, i32 w, i32 h, i32 a3, i32 a4) {
 
 // ---------------------------------------------------------------------------
 // 0x175d50: fill every pixel with the low byte of `value`. Contiguous buffers
-// (m_448 == 0) get one flat fill; scanline-table buffers fill row by row.
+// (m_scanlineMode == 0) get one flat fill; scanline-table buffers fill row by row.
 // @early-stop
 // memset-inline LICM wall: the contiguous fast path is byte-exact, but retail hoists
 // the per-scanline fill's value-mask out of the loop (`value &= 0xff` once + reload)
@@ -98,11 +98,11 @@ i32 CScanlineSurface::EnsureSize(void* a0, i32 w, i32 h, i32 a3, i32 a4) {
 // is folded away as redundant before memset. ~91.4%.
 RVA(0x00175d50, 0xad)
 void CScanlineSurface::Fill(i32 value) {
-    if (m_448 == 0) {
-        memset(m_42c, value, m_444 * m_43c);
+    if (m_scanlineMode == 0) {
+        memset(m_pixels, value, m_stride * m_height);
     } else {
-        for (i32 y = 0; y < m_43c; y++) {
-            memset(m_42c + m_430[y], value, m_438);
+        for (i32 y = 0; y < m_height; y++) {
+            memset(m_pixels + m_scanlineOffsets[y], value, m_width);
         }
     }
 }
