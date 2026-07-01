@@ -205,3 +205,11 @@ i32 CFaderShape::Setup(FInit* pInit) {
     this->m_488 = RezAlloc(this->m_38->m_b0 * mx);
     return 1;
 }
+
+// class metadata (SIZE sweep, D-G)
+SIZE_UNKNOWN(ShadeCache);
+SIZE_UNKNOWN(FShadeSurf);
+SIZE_UNKNOWN(FInitPal);
+SIZE_UNKNOWN(FInit);
+SIZE_UNKNOWN(CFaderShape);
+

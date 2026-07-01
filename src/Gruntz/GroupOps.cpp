@@ -229,3 +229,21 @@ i32 CGroupBroadcast::Broadcast() {
     } while (!done);
     return 1;
 }
+
+// class metadata (SIZE sweep, D-G)
+SIZE_UNKNOWN(CCenterTarget);
+SIZE_UNKNOWN(CMapHolderB);
+SIZE_UNKNOWN(CMapHolderA);
+SIZE_UNKNOWN(CGameRegSel);
+SIZE_UNKNOWN(CSelGrunt);
+SIZE_UNKNOWN(CGridCell);
+SIZE_UNKNOWN(CSelKey);
+SIZE_UNKNOWN(CSelNode);
+SIZE_UNKNOWN(CGroupSel);
+SIZE_UNKNOWN(CGameRegDiag);
+SIZE_UNKNOWN(CFindNode);
+SIZE_UNKNOWN(CBcastMember);
+SIZE_UNKNOWN(CBcastListNode);
+SIZE_UNKNOWN(CBcastMap);
+SIZE_UNKNOWN(CGroupBroadcast);
+

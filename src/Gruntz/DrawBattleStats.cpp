@@ -249,3 +249,9 @@ void CBattleStatsView::DrawBattleStats() {
     rc.bottom = 0x73;
     DrawStatText(m_c, &s, &rc, 0x82, 1, 0xff, 0xff, 0, 1);
 }
+
+// class metadata (SIZE sweep, D-G)
+SIZE_UNKNOWN(StatArray);
+SIZE_UNKNOWN(StatMgr);
+SIZE_UNKNOWN(CBattleStatsView);
+

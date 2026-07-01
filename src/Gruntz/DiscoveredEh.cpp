@@ -48,3 +48,9 @@ RVA(0x00174d70, 0x70)
 CButeStore::~CButeStore() {
     ClearRecursive(0);
 }
+
+// class metadata (SIZE sweep, D-G)
+SIZE_UNKNOWN(CU55Base);
+SIZE_UNKNOWN(CU55);
+SIZE_UNKNOWN(CObj50);
+

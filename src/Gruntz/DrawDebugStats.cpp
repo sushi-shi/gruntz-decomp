@@ -202,3 +202,19 @@ void CDbgView::DrawDebugStats() {
     }
     host->m_8->m_vtbl->Done(host->m_8, hdc);
 }
+
+// class metadata (SIZE sweep, D-G)
+SIZE_UNKNOWN(DbgFpsSrc);
+SIZE_UNKNOWN(DbgObjsSrc);
+SIZE_UNKNOWN(DbgPos);
+SIZE_UNKNOWN(DbgPosRoot);
+SIZE_UNKNOWN(DbgDcVtbl);
+SIZE_UNKNOWN(DbgDcSrc);
+SIZE_UNKNOWN(DbgDcHost);
+SIZE_UNKNOWN(DbgL14);
+SIZE_UNKNOWN(DbgDcRoot);
+SIZE_UNKNOWN(DbgMc);
+SIZE_UNKNOWN(DbgMgr);
+SIZE_UNKNOWN(CDbgView);
+SIZE_UNKNOWN(DbgVtbl);
+

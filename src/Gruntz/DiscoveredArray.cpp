@@ -80,3 +80,7 @@ void CDwArray::SetSize(i32 nNewSize, i32 nGrowBy) {
         m_nMaxSize = nNewMax;
     }
 }
+
+// class metadata (SIZE sweep, D-G)
+SIZE_UNKNOWN(CDwArray);
+

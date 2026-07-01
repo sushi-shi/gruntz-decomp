@@ -385,3 +385,8 @@ RVA(0x00022360, 0x2f4)
 i32 CFontConfig::winapi_022360_DrawTextA_SelectObject_SetTextColor(i32, i32, i32, i32) {
     return 0;
 }
+
+// class metadata (SIZE sweep, D-G)
+SIZE_UNKNOWN(FontItem);
+SIZE_UNKNOWN(CFontConfig);
+

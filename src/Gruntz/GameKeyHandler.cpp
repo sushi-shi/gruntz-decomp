@@ -161,3 +161,7 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
 
 #undef I32
 #undef PTR
+
+// class metadata (SIZE sweep, D-G)
+SIZE_UNKNOWN(CGamePlayInput);
+

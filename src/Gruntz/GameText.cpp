@@ -119,3 +119,7 @@ CContainerErr::CContainerErr(const char* msg) {
         g_errMsg_BadArg = "Bad argument value";
     }
 }
+
+// class metadata (SIZE sweep, D-G)
+SIZE_UNKNOWN(CContainerErr);
+

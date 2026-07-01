@@ -376,3 +376,22 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
 done:
     return 0;
 }
+
+// class metadata (SIZE sweep, D-G)
+SIZE_UNKNOWN(CAnimObj);
+SIZE_UNKNOWN(CObj7c);
+SIZE_UNKNOWN(CSoundHandle);
+SIZE_UNKNOWN(CSoundFactory);
+SIZE_UNKNOWN(CLookObj);
+SIZE_UNKNOWN(CResMapStr);
+SIZE_UNKNOWN(CResMapInt);
+SIZE_UNKNOWN(CResHolder);
+SIZE_UNKNOWN(CResHolder2);
+SIZE_UNKNOWN(CMgrHolderX);
+SIZE_UNKNOWN(CGaugeObj);
+SIZE_UNKNOWN(CGameObj2c);
+SIZE_UNKNOWN(CActivatable);
+SIZE_UNKNOWN(CBzData);
+SIZE_UNKNOWN(PlayerSlot);
+SIZE_UNKNOWN(CGooWellMgr);
+

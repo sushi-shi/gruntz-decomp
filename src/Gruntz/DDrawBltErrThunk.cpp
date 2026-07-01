@@ -51,3 +51,8 @@ i32 DDrawBltHost::BltChecked() {
     }
     return hr;
 }
+
+// class metadata (SIZE sweep, D-G)
+SIZE_UNKNOWN(DDrawBltSurface);
+SIZE_UNKNOWN(DDrawBltHost);
+

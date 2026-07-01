@@ -121,3 +121,7 @@ i32 CDataBuffer::SaveToFile(CString path) {
     file.Close();
     return 1;
 }
+
+// class metadata (SIZE sweep, D-G)
+SIZE_UNKNOWN(CDataBuffer);
+

@@ -261,3 +261,13 @@ i32 CGameModeObj::FlushPendingOps() {
     Sub35da(0, 0);
     return changed;
 }
+
+// class metadata (SIZE sweep, D-G)
+SIZE_UNKNOWN(CLevelWorker);
+SIZE_UNKNOWN(CPlacedArray);
+SIZE_UNKNOWN(CCellMap);
+SIZE_UNKNOWN(CPlacedObj);
+SIZE_UNKNOWN(CMapGrid);
+SIZE_UNKNOWN(GmReg);
+SIZE_UNKNOWN(CGameModeObj);
+

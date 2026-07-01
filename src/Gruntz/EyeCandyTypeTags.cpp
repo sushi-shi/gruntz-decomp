@@ -46,3 +46,10 @@ RVA(0x00012ff0, 0x6)
 i32 CTileLogicTag41d::GetTypeTag() {
     return 0x41d;
 }
+
+// class metadata (SIZE sweep, D-G)
+SIZE_UNKNOWN(CTileLogicTag3ef);
+SIZE_UNKNOWN(CTileLogicTag429);
+SIZE_UNKNOWN(CTileLogicTag428);
+SIZE_UNKNOWN(CTileLogicTag41d);
+

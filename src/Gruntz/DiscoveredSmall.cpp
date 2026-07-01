@@ -236,3 +236,9 @@ RVA(0x00021c40, 0x8)
 void CU35Host::DestroyStr() {
     m_8.~CU35Str();
 }
+
+// class metadata (SIZE sweep, D-G)
+SIZE_UNKNOWN(Obj49Target);
+SIZE_UNKNOWN(CU35Str);
+SIZE_UNKNOWN(CU35Host);
+

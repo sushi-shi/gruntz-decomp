@@ -432,3 +432,16 @@ i32 CGameStateRecord::Load(CRecReader* ar) {
     }
     return 1;
 }
+
+// class metadata (SIZE sweep, D-G)
+SIZE_UNKNOWN(CRecReader);
+SIZE_UNKNOWN(CDirObj);
+SIZE_UNKNOWN(CSerialMap);
+SIZE_UNKNOWN(CNameMap);
+SIZE_UNKNOWN(CObjDir);
+SIZE_UNKNOWN(CMgr74);
+SIZE_UNKNOWN(CCmdBuf);
+SIZE_UNKNOWN(CRecPtrList);
+SIZE_UNKNOWN(CSubRecord);
+SIZE_UNKNOWN(CGameStateRecord);
+

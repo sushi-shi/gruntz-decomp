@@ -33,3 +33,8 @@ i32 CDemoSetup::SetupDemoActors() {
     m_c->m_8->CreateSprite(1, 0, 0, 0x270f, "DemoSign", 0x40003);
     return 1;
 }
+
+// class metadata (SIZE sweep, D-G)
+SIZE_UNKNOWN(CDemoWorld);
+SIZE_UNKNOWN(CDemoSetup);
+

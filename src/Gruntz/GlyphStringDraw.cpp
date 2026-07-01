@@ -64,3 +64,9 @@ i32 DrawGlyphString(DrawCtx* ctx, i32 x, i32 y, const char* str, GlyphFont* font
     }
     return 1;
 }
+
+// class metadata (SIZE sweep, D-G)
+SIZE_UNKNOWN(Drawable);
+SIZE_UNKNOWN(DrawCtx);
+SIZE_UNKNOWN(GlyphFont);
+

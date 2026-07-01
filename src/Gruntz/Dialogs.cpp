@@ -759,3 +759,27 @@ i32 CNetMgrLite::ShowMultiStartDlg() {
 // at entry that retail elided; the member/base teardown chain is otherwise byte-exact.
 RVA(0x000b8960, 0x59)
 CMultiStartDlg::~CMultiStartDlg() {}
+
+// class metadata (SIZE sweep, D-G)
+SIZE_UNKNOWN(CMultiPlayerInfo);
+SIZE_UNKNOWN(CMultiRegSub);
+SIZE_UNKNOWN(CMultiReg);
+SIZE_UNKNOWN(CMultiSlot);
+SIZE_UNKNOWN(CMultiSlotList);
+SIZE_UNKNOWN(CImgHolderBase);
+SIZE_UNKNOWN(CImgHolder);
+SIZE_UNKNOWN(CCueEmitter);
+SIZE_UNKNOWN(CNetCueRec);
+SIZE_UNKNOWN(CRegBute);
+SIZE_UNKNOWN(CNetCfgSub);
+SIZE_UNKNOWN(CNetCfg);
+SIZE_UNKNOWN(CNetDlgHost);
+SIZE_UNKNOWN(CNetMgrLite);
+SIZE_UNKNOWN(CWnd);
+SIZE_UNKNOWN(CDialog);
+SIZE_UNKNOWN(CBattlezSlot);
+SIZE_UNKNOWN(CBattlezDlg);
+SIZE_UNKNOWN(CBattlezDlgCustom);
+SIZE_UNKNOWN(CBattlezDlgColors);
+SIZE_UNKNOWN(CMultiStartDlg);
+

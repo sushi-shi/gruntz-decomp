@@ -200,3 +200,8 @@ void __stdcall RestoreFileTimeInfo(char* path, FileInfoRec* in) {
         }
     }
 }
+
+// class metadata (SIZE sweep, D-G)
+SIZE_UNKNOWN(FileInfoRec);
+SIZE_UNKNOWN(EngCTimeTmp);
+

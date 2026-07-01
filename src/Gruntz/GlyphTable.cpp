@@ -27,3 +27,7 @@ RVA(0x000c03f0, 0x29)
 void GlyphTable::Set(int v, int c) {
     m_1b0[(m_10 + (c & 0xff)) % 128] = v;
 }
+
+// class metadata (SIZE sweep, D-G)
+SIZE_UNKNOWN(GlyphTable);
+

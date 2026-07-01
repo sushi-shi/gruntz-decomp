@@ -184,3 +184,9 @@ void __stdcall FecDecode(const char* src, char* dst, unsigned short len) {
     }
     dst[len] = 0;
 }
+
+// class metadata (SIZE sweep, D-G)
+SIZE_UNKNOWN(FecStream);
+SIZE_UNKNOWN(FecIndex);
+SIZE_UNKNOWN(CFecFile);
+

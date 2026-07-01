@@ -131,3 +131,10 @@ i32 CFaderRadial::Build(FrConfig* cfg) {
     }
     return 1;
 }
+
+// class metadata (SIZE sweep, D-G)
+SIZE_UNKNOWN(FrConfig);
+SIZE_UNKNOWN(FrSurface);
+SIZE_UNKNOWN(FrCell);
+SIZE_UNKNOWN(CFaderRadial);
+

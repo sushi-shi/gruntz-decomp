@@ -62,3 +62,9 @@ i32 CFaderElem::Apply(FaderArg* s) {
     }
     return 1;
 }
+
+// class metadata (SIZE sweep, D-G)
+SIZE_UNKNOWN(FaderSrc);
+SIZE_UNKNOWN(FaderArg);
+SIZE_UNKNOWN(CFaderElem);
+
