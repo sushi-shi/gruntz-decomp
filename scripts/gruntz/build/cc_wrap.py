@@ -35,6 +35,11 @@ from pathlib import Path
 SCRIPT_DIR = Path(__file__).resolve().parent
 GRUNTZ_DIR = next((p for p in SCRIPT_DIR.parents if (p / "flake.nix").exists()), SCRIPT_DIR)
 
+# On native Windows MSVC 5.0 runs without wine: no winepath translation, no
+# wineserver, and cl.exe is launched directly. Every wine-specific step below is
+# guarded by this so the Linux path is unchanged. See docs/windows-setup.md.
+IS_WINDOWS = os.name == "nt"
+
 
 def die(msg: str) -> None:
     print(f"[cc_wrap] ERROR: {msg}", file=sys.stderr)
@@ -58,6 +63,8 @@ def msvc_dir() -> Path:
 
 
 def winepath_w(p: Path) -> str:
+    if IS_WINDOWS:
+        return str(p)                          # native cl wants the path verbatim
     # stderr=DEVNULL is load-bearing: cc_wrap's own stderr IS ninja's capture pipe,
     # and winepath can be the call that boots the persistent (-p) Wine session. If
     # it inherits our stderr, the daemonised session holds ninja's pipe write-end
@@ -72,6 +79,8 @@ def ensure_wineserver() -> None:
     `wineserver -p` makes the server persist after the last client exits, which
     avoids a cold start per TU under `ninja -j`. Harmless if one is already up.
     """
+    if IS_WINDOWS:
+        return
     ws = shutil.which("wineserver")
     if ws is None:
         return
@@ -96,7 +105,7 @@ def main() -> None:
     if not cl:
         die(f"CL.EXE not found under {msvc}/bin - run inside `nix develop .#build` "
             "(or build .#gruntz-toolchain).")
-    if shutil.which("wine") is None:
+    if not IS_WINDOWS and shutil.which("wine") is None:
         die("wine not found - run inside `nix develop .#build`.")
 
     src = Path(args.src).resolve()
@@ -118,7 +127,8 @@ def main() -> None:
     # path so `#include <Module/Foo.h>` resolves (winepath so cl sees it).
     repo = next((p for p in src.parents if (p / "flake.nix").exists()), None)
     inc_flags = [f"/I{winepath_w(repo / 'include')}"] if repo and (repo / "include").is_dir() else []
-    cmd = ["wine", str(cl), *inc_flags, *flags, f"/Fo{out_w}", src_w]
+    launcher = [] if IS_WINDOWS else ["wine"]
+    cmd = [*launcher, str(cl), *inc_flags, *flags, f"/Fo{out_w}", src_w]
 
     output, rc = _run_cl(cmd, out)
 
@@ -144,17 +154,23 @@ def _run_cl(cmd: list, out: Path) -> tuple[str, int]:
     launcher group and trust the produced .obj as the real success signal.
     """
     timeout = float(os.environ.get("GRUNTZ_CL_TIMEOUT", "300"))
+    # On Windows there is no wineserver grandchild to wedge stdio; the temp-file
+    # logging is harmless, only the process-group plumbing differs by platform.
+    popen_kw = ({"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP}
+                if IS_WINDOWS else {"start_new_session": True})
     with tempfile.TemporaryFile() as logf:
         proc = subprocess.Popen(cmd, cwd=str(out.parent), stdin=subprocess.DEVNULL,
-                                stdout=logf, stderr=subprocess.STDOUT,
-                                start_new_session=True)
+                                stdout=logf, stderr=subprocess.STDOUT, **popen_kw)
         try:
             proc.wait(timeout=timeout)
             rc = proc.returncode
         except subprocess.TimeoutExpired:
             try:
-                os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
-            except (ProcessLookupError, PermissionError):
+                if IS_WINDOWS:
+                    proc.kill()
+                else:
+                    os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+            except (ProcessLookupError, PermissionError, OSError):
                 pass
             proc.wait()
             rc = 0 if out.exists() else 1
