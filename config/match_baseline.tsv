@@ -116,6 +116,7 @@ cgrunttoysprite	5	4
 cgrunttoytimesprite	1	1
 cgruntwingztimesprite	3	3
 cgruntzmapmgr	1	1
+cgruntzmgrcmd	1	0
 cguardpoint	2	1
 chainforward	1	0
 channelslots	4	4
@@ -213,7 +214,7 @@ dsoundvoice	2	1
 ehfunclets	6	6
 engine_attributed	5	0
 engine_discovered	15	8
-engine_label_stubs	240	129
+engine_label_stubs	239	129
 engine_unmatched_lib	11	0
 engstr	3	1
 eyecandytypetags	4	4
@@ -1263,6 +1264,7 @@ cgruntwingztimesprite	??1CGruntWingzTimeSprite@@UAE@XZ	100.0000	100.0000	1	45cfd
 cgruntwingztimesprite	?GetTypeTag@CGruntWingzTimeSprite@@QAEHXZ	100.0000	100.0000	1	05a69356373a	0x121a0
 cgruntwingztimesprite	?GetWingzTime@CGruntWingzTimeSprite@@SGHPAUCWingzTimeHost@@@Z	100.0000	100.0000	1	fd29641ade51	0x7fd90
 cgruntzmapmgr	??1CGruntzMapMgr@@UAE@XZ	100.0000	100.0000	1	b09c83d42c3c	0x85d10
+cgruntzmgrcmd	?HandleCommand@CGruntzMgr@GruntzMgrCmd@@QAEHHHH@Z	29.7155	29.7155	1	56e6f54d826e	0x862f0
 cguardpoint	??0CGuardPoint@@QAE@PAUCGameObject@@@Z	95.9909	95.9909	1	c7e0d3067144	0xae5f0
 cguardpoint	??1CGuardPoint@@UAE@XZ	100.0000	100.0000	1	c53d638223a9	0x10410
 chainforward	?ChainForward@@YAXHPAUChainRoot@@HHHH@Z	87.6923	87.6923	1	98b57d07e0ef	0x114fa0
@@ -1962,7 +1964,6 @@ engine_label_stubs	?winapi_03b1a0_GetDlgItem@ApiCallerStubs@@YAHXZ	1.4894	1.4894
 engine_label_stubs	?winapi_03b310_GetDlgItem@ApiCallerStubs@@YAHPAX@Z	100.0000	100.0000	1	cpp:e832e75e29a5	0x3b310
 engine_label_stubs	?winapi_075c60_CopyRect_SetRect@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHHHHHHH@Z	1.2418	1.2418	1	cpp:e8a4cb0d5b2a	0x75c60
 engine_label_stubs	?winapi_078060_SetRect@ApiCallerStubs@@YGHHHHHH@Z	1.5447	1.5447	1	cpp:6bf52155264d	0x78060
-engine_label_stubs	?winapi_0862f0_PostMessageA_wsprintfA@ApiCallerStubs@@YGHHHH@Z	0.0448	0.0448	1	cpp:6bf52155264d	0x862f0
 engine_label_stubs	?winapi_08f120_CreateProcessA_RegQueryValueA@ApiCallerStubs@@YGHH@Z	1.7241	1.7241	1	cpp:6bf52155264d	0x8f120
 engine_label_stubs	?winapi_090860_CreateProcessA_wsprintfA@ApiCallerStubs@@YGHPAD0@Z	100.0000	100.0000	1	cpp:e832e75e29a5	0x90860
 engine_label_stubs	?winapi_092ab0_EndDialog@ApiCallerStubs@@YGHPAXIHH@Z	100.0000	100.0000	1	cpp:e832e75e29a5	0x92ab0

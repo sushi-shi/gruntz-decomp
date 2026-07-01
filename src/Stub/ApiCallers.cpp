@@ -1032,13 +1032,6 @@ namespace ApiCallerStubs {
         return 0;
     }
 
-    // @confidence: low
-    // @source: winapi:PostMessageA;wsprintfA
-    // @stub
-    RVA(0x000862f0, 0x3d5a)
-    i32 __stdcall winapi_0862f0_PostMessageA_wsprintfA(i32, i32, i32) {
-        return 0;
-    }
 
     // @confidence: low
     // @source: winapi:SetRect

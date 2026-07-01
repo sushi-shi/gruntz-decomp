@@ -783,6 +783,15 @@ source = "src/Gruntz/CGruntTileMgr.cpp"
 flags = "base"
 
 [[unit]]
+# CGruntzMgr::HandleCommand (0x862f0) - the WM_COMMAND / accelerator + cheat-code
+# dispatcher (the binary's single largest function). Re-homed from the
+# src/Stub/ApiCallers.cpp winapi grab-bag; a destructible /GX config-command
+# local forces the EH frame -> "eh" (== engine_label_stubs' base+/GX).
+unit = "cgruntzmgrcmd"
+source = "src/Gruntz/CGruntzMgrCmd.cpp"
+flags = "eh"
+
+[[unit]]
 # GruntDataRecord::SerializeStrings (0x56da0) - the per-record string/field writer
 # the big grunt-data Serialize (0x53f90) calls; non-EH (plain stack buffer).
 unit = "gruntdatarecord"
