@@ -115,7 +115,6 @@ namespace ApiCallerStubs {
     // the N/4 from the callee's `ret N`.
     struct ThisStubOwnerUnknown {
         i32 winapi_015fe0_SendMessageA(i32);
-        i32 winapi_075c60_CopyRect_SetRect(i32, i32, i32, i32, i32, i32);
         i32 winapi_0c7ec0_timeGetTime(i32, i32, i32);
         i32 winapi_0e6020_SetRect(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32);
         i32 winapi_0ecc90_IntersectRect();
@@ -851,13 +850,8 @@ namespace ApiCallerStubs {
         return 1;
     }
 
-    // @confidence: low
-    // @source: winapi:CreateRectRgn;DrawTextA;SetRect
-    // @stub
-    RVA(0x00039a60, 0x179)
-    i32 winapi_039a60_CreateRectRgn_DrawTextA_SetRect() {
-        return 0;
-    }
+    // CreateRectRgn (0x039a60) re-homed as CreditzScreen::BuildText in
+    // src/Gruntz/m4_ApiWrappers.cpp.
 
     // @confidence: low
     // @source: winapi:GetDlgItem;SendMessageA
@@ -867,13 +861,8 @@ namespace ApiCallerStubs {
         return 0;
     }
 
-    // @confidence: low
-    // @source: winapi:GetDlgItem
-    // @stub
-    RVA(0x0003b1a0, 0x118)
-    i32 winapi_03b1a0_GetDlgItem() {
-        return 0;
-    }
+    // GetDlgItem (0x03b1a0) re-homed as m4::FillLevelInfoDialog in
+    // src/Gruntz/m4_ApiWrappers.cpp.
 
     // @confidence: low
     // @source: winapi:GetDlgItem
@@ -927,14 +916,8 @@ namespace ApiCallerStubs {
 
     // 0x57db0 (CGrunt::PathScan57db0) reconstructed in src/Gruntz/GruntPathScan.cpp.
 
-    // @confidence: low
-    // @source: winapi:CopyRect;SetRect
-    // @stub
-    // proximity: CTriggerMgr@-0x170 | CTerrainTileLoader@+0x230
-    RVA(0x00075c60, 0x1ba)
-    i32 ThisStubOwnerUnknown::winapi_075c60_CopyRect_SetRect(i32, i32, i32, i32, i32, i32) {
-        return 0;
-    }
+    // CopyRect (0x075c60) re-homed as GruntHitMgr::FindGruntAt in
+    // src/Gruntz/m4_ApiWrappers.cpp.
 
     // @source: winapi:PtInRect
     // A spatial object: its tile coords are m_5c/m_60 in 1/32-pixel units (>>5).
@@ -1023,13 +1006,8 @@ namespace ApiCallerStubs {
         return best;
     }
 
-    // @confidence: low
-    // @source: winapi:SetRect
-    // @stub
-    RVA(0x00078060, 0x18d)
-    i32 __stdcall winapi_078060_SetRect(i32, i32, i32, i32, i32) {
-        return 0;
-    }
+    // SetRect (0x078060) re-homed as GruntCombatMgr::CheckCombatRegion in
+    // src/Gruntz/m4_ApiWrappers.cpp.
 
 
     // @confidence: low
@@ -1131,13 +1109,8 @@ namespace ApiCallerStubs {
         return result;
     }
 
-    // @confidence: low
-    // @source: winapi:CreateProcessA;RegQueryValueA
-    // @stub
-    RVA(0x0008f120, 0x168)
-    i32 __stdcall winapi_08f120_CreateProcessA_RegQueryValueA(i32) {
-        return 0;
-    }
+    // CreateProcessA (0x08f120) re-homed as m4::LaunchWebBrowser in
+    // src/Gruntz/m4_ApiWrappers.cpp.
 
     // @confidence: low
     // @source: winapi:PostMessageA

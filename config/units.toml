@@ -2572,6 +2572,14 @@ source = "src/Gruntz/ApiHiCallers.cpp"
 flags = "base"
 
 [[unit]]
+# matcher-4: game API-wrapper helpers re-homed from src/Stub/ApiCallers.cpp
+# (low-RVA half). base+/GX mirrors the original stub-unit environment.
+unit = "m4_apiwrappers"
+source = "src/Gruntz/m4_ApiWrappers.cpp"
+flags = "base"
+extra = ["/GX"]
+
+[[unit]]
 unit = "globals"
 source = "src/Globals.cpp"
 flags = "base"
