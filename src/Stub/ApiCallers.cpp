@@ -2559,14 +2559,8 @@ namespace ApiCallerStubs {
         return 0;
     }
 
-    // @confidence: low
-    // @source: winapi:PtInRect
-    // @stub
-    // proximity: CGrunt@-0x1380 | CUserLogic@+0xe10
-    RVA(0x000ed9f0, 0x8dd)
-    i32 ThisStubOwnerUnknown::winapi_0ed9f0_PtInRect() {
-        return 0;
-    }
+    // winapi_0ed9f0_PtInRect (0xed9f0) re-homed as CGruntWander::WanderStep in
+    // src/Gruntz/WanderIdleStep.cpp (idle/wander AI step, GruntUpdateStep.cpp family).
 
     // winapi_0f42f0_PtInRect (0xf42f0) re-homed as CGruntScan::ScanNearestTarget in
     // src/Gruntz/GruntTargetScan.cpp (sibling of the GruntArrivalScan steps).
@@ -2849,6 +2843,16 @@ namespace ApiCallerStubs {
         return 0;
     }
 
+    // 0x11b3b0 + 0x11b7c0 (CGruntSpawnConfig weighted grunt-voice spawn drivers, /GX EH):
+    // BOTH reconstruct in full (percent LCG gate @0x6c1288, priority reject, weighted
+    // pick, lazy sprite create, CSpawnVoice::Setup tail) but stay stubs. The /GX EH-state
+    // wall caps a complete body at ~47% fuzzy: retail funnels every return-0 path to one
+    // shared frame-teardown epilogue (`jmp`), while cl duplicates it inline per-site
+    // across the trylevel -1/0 regions (a tail-merge cl won't fold). The return-0 stubs
+    // score 73-83% purely from the smaller-fn normalization artifact (a tiny `xor eax,eax;
+    // ret` aligns against the target tail), which a full body cannot beat. Below-stub, so
+    // kept as stubs per the REVERT rule. Final-sweep candidates (needs the /GX
+    // single-epilogue idiom).
     // @confidence: low
     // @source: winapi:timeGetTime
     // @stub

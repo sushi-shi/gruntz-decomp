@@ -222,7 +222,7 @@ dsoundvoice	2	1
 ehfunclets	6	6
 engine_attributed	5	0
 engine_discovered	13	7
-engine_label_stubs	194	116
+engine_label_stubs	193	116
 engine_unmatched_lib	11	0
 engstr	3	1
 engstrrendertext	1	0
@@ -515,6 +515,7 @@ voicesoundlist	1	0
 voldemortobj	1	1
 vtblforward	1	1
 wallproject	1	0
+wanderidlestep	1	0
 wapuncompress	1	0
 warlord	10	3
 warpstonefly	3	2
@@ -1999,7 +2000,6 @@ engine_label_stubs	?winapi_0e3be0_EndDialog@ApiCallerStubs@@YGHPAXHHH@Z	100.0000
 engine_label_stubs	?winapi_0e3e80_SetDlgItemTextA@ApiCallerStubs@@YAXPAXPAUNameItem_09e2d0@1@HHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xe3e80
 engine_label_stubs	?winapi_0e4850_SetDlgItemTextA@ApiCallerStubs@@YAXPAX0PAD@Z	100.0000	100.0000	1	cpp:e1535087fe94	0xe4850
 engine_label_stubs	?winapi_0e6020_SetRect@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHHHHHHHHHHH@Z	0.8621	0.8621	1	cpp:e8a4cb0d5b2a	0xe6020
-engine_label_stubs	?winapi_0ed9f0_PtInRect@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHXZ	0.2857	0.2857	1	cpp:e8a4cb0d5b2a	0xed9f0
 engine_label_stubs	?winapi_0f60f0_IntersectRect@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHXZ	0.2225	0.2225	1	cpp:e8a4cb0d5b2a	0xf60f0
 engine_label_stubs	?winapi_0f8e20_FreeLibrary@ApiCallerStubs@@YAXXZ	100.0000	100.0000	1	cpp:6bf52155264d	0xf8e20
 engine_label_stubs	?winapi_115300_SetRect@ApiCallerStubs@@YAHPAULayerHost_115300@1@PAURectSrc_115300@1@HHHH@Z	100.0000	100.0000	1	cpp:e832e75e29a5	0x115300
@@ -3815,6 +3815,7 @@ voicesoundlist	?BuildVoiceSoundList@CVoiceBuilder@@QAEPAUVoiceList@@H@Z	79.3141	
 voldemortobj	?Free@VoldemortObj@@QAEXXZ	100.0000	100.0000	1	6f6323401633	0x137740
 vtblforward	?Accept@CVtblRecv@@QAEHHHHHHPAHHHH@Z	100.0000	100.0000	1	0ce4b442400b	0x110460
 wallproject	?ProjectWallQuad@@YAHHHHHHHHHHHH@Z	39.5180	39.5180	2	ec1b9f828e2a	0x1471d0
+wanderidlestep	?WanderStep@CGruntWander@@QAEHXZ	73.8481	73.8481	1	19f9cff18027	0xed9f0
 wapuncompress	?WapUncompress@@YAHPAEPAK0K@Z	85.9259	85.9259	2	9dfcfba82359	0x1853b0
 warlord	??0CWarlord@@QAE@H@Z	3.5796	3.5796	1	b29f645c5e90	0x42d40
 warlord	??1CWarlord@@UAE@XZ	73.9524	73.9524	1	0524876559f2	0x107f0
