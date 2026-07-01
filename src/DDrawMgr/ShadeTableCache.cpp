@@ -857,3 +857,9 @@ i32 __cdecl CShadeTableCache::FindNearestColor(PalEntry* pal, i32 r, i32 g, i32 
     }
     return best;
 }
+
+// SIZE tracking for this TU's modeling-view locals (placed at EOF: any
+// mid-file typedef reschedules the /O2 codegen of CompareHue/GammaTable).
+SIZE_UNKNOWN(Hsv);
+SIZE_UNKNOWN(CStr);
+SIZE_UNKNOWN(CMemFile); // MFC-library modeling view (opaque holder)

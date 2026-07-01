@@ -10,6 +10,15 @@
 
 #include <DDrawMgr/ShadeTableCache.h>
 
+// SIZE annotations for the ShadeTableCache.h classes are hosted here rather than
+// in the header: shadetablecache.cpp is a /O2-sensitive TU whose CompareHue/
+// GammaTable reschedule under any header-injected typedef (verified), so the
+// completeness annotations live in this (neutral) sibling includer instead.
+SIZE(CShadeTable, 0x10);      // array-element stride (0x10-byte buffer wrapper)
+SIZE(CShadeTableArray, 0x14); // MFC CObArray-shaped subobject (cache 0x18 - 0x04)
+SIZE(PalEntry, 0x4);          // 4-byte palette record (256-entry array stride)
+SIZE(CShadeTableCache, 0x18); // RE'd heap-alloc size (CGruntzMgr +0x50)
+
 // PtInRect reached through a game-owned function pointer (ff 15).
 DATA(0x006c456c)
 extern BOOL(__stdcall* g_pPtInRect)(const RECT*, POINT);
@@ -19,10 +28,12 @@ struct Surf {
     i32 m_height; // +0x18 height
     i32 m_width;  // +0x1c width
 };
+SIZE_UNKNOWN(Surf);
 struct PalHolder {
     char m_pad00[0xc];
     PalEntry* m_palette; // +0x0c palette
 };
+SIZE_UNKNOWN(PalHolder);
 struct LightDesc {
     char m_pad00[0x4];
     Surf* m_surface;            // +0x04
@@ -34,6 +45,7 @@ struct LightDesc {
     i32 m_centerY;              // +0x1c centre y
     i32 m_overrideTable;        // +0x20 override table
 };
+SIZE_UNKNOWN(LightDesc);
 
 class CLightEffect {
 public:
@@ -61,6 +73,7 @@ public:
     i32 m_surfaceWidth;     // +0x2064 surface width
     i32 m_surfaceHeight;    // +0x2068 surface height
 };
+SIZE_UNKNOWN(CLightEffect);
 
 // @early-stop
 // 92% - /O2 regalloc entropy tail: the descriptor field loads and the m_3c/m_activeSurface

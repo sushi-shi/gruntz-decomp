@@ -1215,3 +1215,47 @@ CString WwdFile::GetMapBaseName(CString path) {
     }
     return result;
 }
+
+// ===========================================================================
+// Class-metadata annotations for the Wwd classes (EOF-hosted: WwdFile.h is pulled
+// into GameLevel.h and this is a large /O2 TU with several @early-stop bodies, so
+// keep every completeness typedef after the last function to avoid a reschedule).
+//
+// VTBL skips (logged, none catalogable here):
+//   CPlane / CWwdStream / CPlaneRenderPoly - external/abstract engine shells;
+//     their virtuals are declared-not-defined so cl emits no ??_7 vtable and the
+//     retail RVA is not modeled in-TU.
+//   WwdGameObj - manual re-stamp; its retail vtable 0x5f00a8 is already bound as
+//     ?g_wwdObjVtbl (a VTBL would dup that rva).
+// ===========================================================================
+// --- WwdFile.h header classes ---
+SIZE(WwdHeader, 0x5f4);        // on-disk WWD header (RE'd 0x5F4 bytes)
+SIZE(WwdInputStream, 0x10);    // 16-byte file-stream object (full layout to +0xc)
+SIZE(CPlane, 0x158);           // RE'd CPlane object size (0x158)
+SIZE_UNKNOWN(CPlaneFrame);
+SIZE_UNKNOWN(CPlaneTile);
+SIZE_UNKNOWN(CPlaneScroll);
+SIZE_UNKNOWN(CPlaneSurfDesc);
+SIZE_UNKNOWN(CPlaneSurf);
+SIZE_UNKNOWN(CPlanePalArr);
+SIZE_UNKNOWN(CPlanePalOwner);
+SIZE_UNKNOWN(CPlanePalHost);
+SIZE_UNKNOWN(CPlaneMapData);
+SIZE_UNKNOWN(CWwdStream);       // abstract serialize-stream slot view
+SIZE_UNKNOWN(CPlaneRenderPoly); // slot-dispatch view
+SIZE_UNKNOWN(CPlaneRender);
+SIZE_UNKNOWN(CGameLevelPlanes);
+SIZE_UNKNOWN(CPlanePtrArray);   // CArray<CPlane*> method-only view
+SIZE_UNKNOWN(WwdFile);          // namespace-class (method-only)
+// --- WwdFile.cpp local views ---
+SIZE_UNKNOWN(WwdGameRegSlot);
+SIZE_UNKNOWN(WwdLevelLoader);
+SIZE(WwdGameObj, 0x1dc);        // RE'd operator-new'd game object (0x1DC)
+SIZE_UNKNOWN(WwdGameObjMethods);
+SIZE_UNKNOWN(WwdSubMgrCtor);
+SIZE_UNKNOWN(WwdObjAnimInit);
+SIZE_UNKNOWN(WwdStringToObMap);
+SIZE_UNKNOWN(WwdObjList);
+SIZE_UNKNOWN(WwdPlaneHdr);
+SIZE_UNKNOWN(WwdRegOwner);
+SIZE_UNKNOWN(WwdPlaneRender);

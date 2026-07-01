@@ -7,6 +7,7 @@
 
 #include <Mfc.h> // real MFC CString (the WwdFile members take it by value)
 #include <Ints.h>
+#include <rva.h>
 
 typedef u8 Bytef;
 typedef u32 uLong;

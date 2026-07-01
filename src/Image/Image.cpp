@@ -1758,3 +1758,16 @@ i32 CFileImage::ResolveEx(void* surf, void* buf, i32 type, u32 size, i32 ctrl, i
     }
     return 1;
 }
+
+// ===========================================================================
+// Class-metadata annotations (EOF-hosted). CImage/CFileImage/CFileImageSurface/
+// CImageSurfaceItem here are the loader-family same-named siblings of the CImage.h/
+// CFileImage.h types (dedup-by-name; annotated at their canonical TUs). Only the
+// names first-represented in this TU are annotated below. CFileImageElement is a
+// slot-0 dtor view (no emitted vtable -> VTBL skip).
+// ===========================================================================
+SIZE_UNKNOWN(CFileImageElement);
+SIZE_UNKNOWN(CImageExtLoader);
+SIZE_UNKNOWN(CByteArrayMember);
+SIZE_UNKNOWN(CImageSurfaceItemInit);
+SIZE_UNKNOWN(CImageFactory);

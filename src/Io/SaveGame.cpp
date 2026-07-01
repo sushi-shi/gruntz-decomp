@@ -597,3 +597,7 @@ i32 CSaveGame::CheckField20() {
     i32 v = m_20;
     return v == 0x42a;
 }
+
+// Class-metadata annotations (EOF-hosted).
+SIZE(SaveSlot, 0x100);   // 0x100-byte slot record (m_slots[] array stride)
+SIZE_UNKNOWN(CSaveGame); // fully modeled but tail not proven; owner may upgrade

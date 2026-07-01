@@ -61,6 +61,7 @@ struct Glyph {
     i32 width;  // +0x00
     i32 height; // +0x04
 };
+SIZE(Glyph, 0x8); // m_glyphs[] element stride (8-byte metric record)
 
 // ---------------------------------------------------------------------------
 // Font - the bitmap font.
@@ -84,6 +85,7 @@ public:
     Glyph* m_glyphs;   // +0x0c
     i32 m_maxHeight;   // +0x10
 };
+SIZE_UNKNOWN(Font);
 
 // ---------------------------------------------------------------------------
 // The pixel extent of a measured run of text: {total advance width, line
@@ -94,6 +96,7 @@ struct TextExtent {
     i32 width;  // +0x00 (sum of per-glyph advance widths)
     i32 height; // +0x04 (the font line-height, Font::GetMaxHeight)
 };
+SIZE(TextExtent, 0x8); // sret 8-byte {w,h} pair
 
 // ---------------------------------------------------------------------------
 // FontRenderer - a stateful rendering shim wrapping a Font*. The leaf methods
@@ -111,6 +114,7 @@ struct Rect {
     i32 c;                            // +0x08
     i32 d;                            // +0x0c
 };
+SIZE(Rect, 0x10); // 16-byte by-value rectangle bundle
 
 // The layout/draw rectangle the public draw entry points receive a pointer to:
 // a destination box plus alignment/limit fields. Only the offsets the matched
@@ -124,6 +128,7 @@ struct DrawRect {
     i32 m_14;     // +0x14
     i32 m_bottom; // +0x18  (vertical limit, clip test in DrawLine)
 };
+SIZE_UNKNOWN(DrawRect);
 
 class FontRenderer {
 public:
@@ -168,6 +173,7 @@ public:
     void* m_surface; // +0x08  (optional dest surface pointer)
     void* m_clip;    // +0x0c  (optional clip rect pointer)
 };
+SIZE_UNKNOWN(FontRenderer);
 
 // ---------------------------------------------------------------------------
 // TextRange - a {begin..end} view over a measured run of text, built on the
@@ -182,6 +188,7 @@ struct TextRange {
     char* m_end;   // +0x08
     i32 Span();    // 0x17b500
 };
+SIZE_UNKNOWN(TextRange);
 
 // ---------------------------------------------------------------------------
 // CWapNodeB - a WAP node carrying packed data + two owned string buffers.
@@ -190,6 +197,7 @@ struct TextRange {
 struct CWapNodeBase {
     virtual ~CWapNodeBase(); // only the vtable matters
 };
+SIZE_UNKNOWN(CWapNodeBase);
 
 struct CWapNodeB : CWapNodeBase {
     virtual ~CWapNodeB() OVERRIDE;
@@ -202,6 +210,7 @@ struct CWapNodeB : CWapNodeBase {
     char* m_buf38;      // +0x38  owned buffer (FreeStrings deletes)
     char m_rest[0x18];  // +0x3c..+0x53
 };
+SIZE_UNKNOWN(CWapNodeB);
 
 // InterfaceObject - a minimal COM-style object that carries a GUID pointer at
 // +0x04. The IsInterfaceX methods check whether that GUID matches a known iid.
@@ -213,5 +222,7 @@ struct InterfaceObject {
     i32 IsInterface4();
     i32 IsInterface5();
 };
+SIZE_UNKNOWN(InterfaceObject); // name shared with Net's polymorphic view; this is
+                               // Font's COM iid-checker (completeness-only)
 
 #endif // SRC_FONT_FONT_H

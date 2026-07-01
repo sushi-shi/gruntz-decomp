@@ -609,3 +609,20 @@ i32 CFileImage::LoadFile(CFileImageInfo* info, const char* path, i32 mode) {
     RezFree(buf);
     return result;
 }
+
+// ===========================================================================
+// Class-metadata annotations (EOF-hosted). CFileImageSurface (the CFileImage.h
+// slot-dispatch view) emits no vtable -> VTBL skip.
+// ===========================================================================
+// --- CFileImage.h header classes ---
+SIZE_UNKNOWN(CFileImageSurface);
+SIZE_UNKNOWN(CFileImageSrc);
+SIZE_UNKNOWN(CFileImagePal);
+SIZE_UNKNOWN(CFileImageInfo);
+SIZE_UNKNOWN(CFileImage);
+// --- CFileImage.cpp local views ---
+SIZE_UNKNOWN(DecodeSrc);
+SIZE(ClipRect16, 0x10);   // 16-byte by-value rect/clip record
+SIZE_UNKNOWN(ImageWorkerThis);
+SIZE_UNKNOWN(BmpFileHeader);
+SIZE_UNKNOWN(TgaHeader);

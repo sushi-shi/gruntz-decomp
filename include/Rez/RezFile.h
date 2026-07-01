@@ -90,6 +90,7 @@ struct CRezFileMgr {
     // @+0x14), Close()-ing each until the list drains. Returns 1.
     i32 CloseAllOpen();
 };
+SIZE_UNKNOWN(CRezFileMgr);
 
 // ---------------------------------------------------------------------------
 // CRezFile - one managed archive FILE*.
@@ -124,5 +125,6 @@ public:
     void* m_handle;     // +0x14  FILE*
     CRezFileMgr* m_mgr; // +0x18
 };
+SIZE_UNKNOWN(CRezFile);
 
 #endif // SRC_REZ_REZFILE_H

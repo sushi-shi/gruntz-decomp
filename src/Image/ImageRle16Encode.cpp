@@ -121,3 +121,5 @@ void* CImageRle16::EncodeRle16(const u8* src) {
     }
     return out;
 }
+
+SIZE_UNKNOWN(CImageRle16);

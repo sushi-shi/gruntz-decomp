@@ -716,3 +716,6 @@ void CImage::BlitShadeFlipH(CBlitInfo* info, CImage* dst) {
     info->m_34 = h;
     info->m_38 = 0;
 }
+// Class-metadata annotations (EOF-hosted, /O2 sprite-blit TU).
+SIZE_UNKNOWN(CBlitXform);
+SIZE_UNKNOWN(CBlitInfo);

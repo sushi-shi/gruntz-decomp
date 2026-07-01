@@ -626,3 +626,5 @@ i32 ApiCallerStubs::PalBuilder_176df0::ParsePaletteTail(void* buf, u32 size, i32
     }
     return Build(pal, ctrl);
 }
+
+SIZE_UNKNOWN(CImagePool);

@@ -52,3 +52,5 @@ i32 SaveGame(CGameSaveHost* host, char* name) {
     }
     return mgr->SnapshotChildren(SaveRunCallback, (i32)name, "Gruntz Save Game", 0) != 0;
 }
+
+SIZE_UNKNOWN(CGameSaveHost);

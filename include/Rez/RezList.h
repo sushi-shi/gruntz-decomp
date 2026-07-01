@@ -10,6 +10,7 @@
 #define REZ_REZLIST_H
 
 #include <Ints.h>
+#include <rva.h>
 
 // An element's intrusive links: next at +4, prev at +8.
 struct CRezListNode {
@@ -17,6 +18,7 @@ struct CRezListNode {
     CRezListNode* m_4; // +0x04  next
     CRezListNode* m_8; // +0x08  prev
 };
+SIZE_UNKNOWN(CRezListNode);
 
 // The list header: head at +4, tail at +8.
 struct CRezList {
@@ -27,5 +29,6 @@ struct CRezList {
     void AddHead(CRezListNode* node); // 0x1851e0
     void AddTail(CRezListNode* node); // 0x185210
 };
+SIZE_UNKNOWN(CRezList);
 
 #endif // REZ_REZLIST_H

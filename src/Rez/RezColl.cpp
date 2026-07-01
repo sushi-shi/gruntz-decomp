@@ -20,6 +20,7 @@ struct RezBucket {
     void* m_8; // +0x08  chain head (points at first node's +4 link, or 0)
     char m_padc[4];
 };
+SIZE_UNKNOWN(RezBucket);
 
 // The bucket collection: count at +0, bucket array at +4 (0x10 bytes total).
 struct RezColl {

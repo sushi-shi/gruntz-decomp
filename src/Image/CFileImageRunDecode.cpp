@@ -436,3 +436,5 @@ i32 CFileImage::RunDecode3(void* dstBuf, void* src, i32 width, i32 height) {
     }
     return 1;
 }
+
+SIZE_UNKNOWN(RunSurf);

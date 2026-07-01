@@ -31,3 +31,5 @@ void CSurfacePalette::ResetPalette() {
     }
     m_paletteSink->m_vptr->SetEntries(m_paletteSink, 0, 0, 0x100, m_colorSlots);
 }
+
+SIZE_UNKNOWN(IPalSink);

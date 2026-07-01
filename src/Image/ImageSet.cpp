@@ -248,3 +248,11 @@ i32 CImageSet::FindFrame(CImageFrame* frame, char* outName, i32* outIndex) {
     }
     return 0;
 }
+
+// Class-metadata annotations (EOF-hosted; ImageSet.h is pulled into Gruntz/
+// LightFxMgr.cpp). CImageFrameLoader is a slot-dispatch view (no emitted vtable).
+SIZE_UNKNOWN(CImageFormat);
+SIZE_UNKNOWN(CImageFrameSurface);
+SIZE_UNKNOWN(CImageFrame);
+SIZE_UNKNOWN(CImageFrameLoader);
+SIZE_UNKNOWN(CImageFrameArray);

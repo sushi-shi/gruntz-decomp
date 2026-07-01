@@ -620,3 +620,23 @@ i32 RezMgr::UpdateClock() {
 // @stub
 RVA(0x0013b0c0, 0x238)
 void CRezDir::Stub_13b0c0() {}
+
+// ===========================================================================
+// Class-metadata annotations for the RezMgr.h classes. Hosted at EOF of this TU
+// (not in the header): RezMgr.h is pulled into the /O2-sensitive Image.cpp for
+// RezAlloc/RezFree, where any header-injected typedef reschedules DecodePcxData
+// (verified). Placed after all function bodies so this TU is unperturbed too.
+// ===========================================================================
+SIZE(RezFindRec, 0x24);         // RE'd WIN32-find-style fixed record
+SIZE_UNKNOWN(CRezItmOwner);     // slot-dispatch gate view (no emitted vtable)
+SIZE(CRezItmBase, 0x10);        // "16 bytes" base (derived fields start at +0x10)
+VTBL(CRezItmBase, 0x001ef768);  // base vtable stamp from ctor 0x13c4e0
+SIZE(CRezItm, 0x24);            // operator new leaf size 0x24
+VTBL(CRezItm, 0x001ef788);      // derived vtable stamp from ctor 0x13c540
+SIZE_UNKNOWN(CRezDir);          // model pads to +0x68 runtime fields; ctor alloc 0x38
+SIZE_UNKNOWN(RezStream);        // abstract slot-view (pure virtuals, no vtable)
+SIZE_UNKNOWN(RezSrc);
+SIZE_UNKNOWN(CRezDirNode);
+SIZE_UNKNOWN(CGameMode);        // slot-dispatch view (no emitted vtable)
+SIZE_UNKNOWN(RezMgrOwner);
+SIZE_UNKNOWN(RezMgr);           // model pads to +0xfc; retail alloc is 0xa30

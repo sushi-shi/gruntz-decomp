@@ -106,3 +106,5 @@ void CScanlineSurface::Fill(i32 value) {
         }
     }
 }
+
+SIZE_UNKNOWN(CScanlineSurface);

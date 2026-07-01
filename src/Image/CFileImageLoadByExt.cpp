@@ -64,3 +64,5 @@ i32 CFileImage::LoadByExt(CFileImageInfo* info, char* path, i32 flags, i32 a4) {
     }
     return 1;
 }
+
+SIZE_UNKNOWN(ResLoad_144270);

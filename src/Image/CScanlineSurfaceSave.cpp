@@ -99,3 +99,5 @@ i32 CScanlineSurface::SaveBmp(const char* filename, void* paletteObj) {
     }
     return 1;
 }
+
+SIZE_UNKNOWN(BmpFile);

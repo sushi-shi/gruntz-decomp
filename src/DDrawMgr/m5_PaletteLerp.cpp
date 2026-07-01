@@ -21,6 +21,7 @@ struct PalObj {
     };
     Vtbl* vptr;
 };
+SIZE_UNKNOWN(PalObj);
 
 struct PaletteLerp {
     char m_pad00[4];
@@ -43,6 +44,7 @@ struct PaletteLerp {
     void Finish();         // 0x148250 completion handler (snap to final + retire)
     i32 Tick();
 };
+SIZE_UNKNOWN(PaletteLerp);
 
 RVA(0x001480a0, 0x1a7)
 i32 PaletteLerp::Tick() {

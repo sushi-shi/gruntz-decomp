@@ -532,3 +532,71 @@ violator is one of:
 Hotness verdict: **all family headers are safe at `.cpp`-EOF placement**; Grunt.h is
 hot only for *in-header* typedefs (the measured -0.52% case), which the EOF rule avoids.
 No regression committed.
+## Engine-support modules: Image / Rez / Io / Wwd / Font / DDrawMgr (2026-07-01)
+
+Scope: classes whose first-seen representative def is under `src/{Image,Rez,Io,
+Wwd,Font,DDrawMgr}/` or `include/{Image,Rez,Io,Wwd,DDrawMgr}/` + `include/Font/`.
+Names whose rep is in another module (Bute/Gruntz) were left to that module's
+sweep per the SBI precedent: `RezColl` / `RezNode` / `CObjList` (rep Bute — a
+skipped module), `CDDSurface` / `CImageCache` / `CImageSet` / `CPlaneGeom` /
+`WwdGameReg` / `CSurfacePalette` (rep Gruntz).
+
+Coverage delta (whole-tree SIZE counter): 337/3296 -> 469/3296 (**132 scope
+names annotated**; all six modules' SIZE violators drained to 0).
+
+Annotated: **~109 SIZE_UNKNOWN + 23 SIZE(exact) + 3 VTBL**.
+- Exact `SIZE`: CShadeTable 0x10 / CShadeTableArray 0x14 / PalEntry 0x4 /
+  CShadeTableCache 0x18 (DDrawMgr); Glyph 0x8 / TextExtent 0x8 / Rect 0x10 (Font);
+  RezFindRec 0x24 / CRezItmBase 0x10 / CRezItm 0x24 (Rez); SecurityAttributes 0xc /
+  SaveSlot 0x100 (Io); WwdHeader 0x5f4 / WwdInputStream 0x10 / CPlane 0x158 /
+  WwdGameObj 0x1dc (Wwd); CImageBase 0x10 / CImageSurfaceItem 0xc0 /
+  CImageFrameRebuildDesc 0x20 / CImageOwned 0x3c / BlitRect 0x10 / ClipRect16 0x10 /
+  PolyVtx 0x1c (Image). Each is a provable size: an array-element stride, an RE'd
+  fixed on-disk/packet record, an `operator new` size, a base subobject whose
+  derived-field offset pins it, or a complete by-value struct. All 23 asserts
+  compiled under MSVC 5.0 (the models equal those sizes).
+- `VTBL` (all confirmed FREE rvas, then verified neutral): `CRezItmBase`(0x1ef768)
+  + `CRezItm`(0x1ef788) — pinned from the ctor vtable-store DIR32 at 0x13c4e0 /
+  0x13c540; `CFileIO`(0x1ed15c) — from the CObject two-phase ctor at 0x1befd7.
+  These are real cl-emitted `??_7` vtables (out-of-line dtors defined in-TU) whose
+  retail rva was not yet named.
+
+### Hot-header casualties: NONE (all salvaged by EOF-hosting).
+KEY MECHANISM (verify-and-relocate, new for this sweep): a header-injected SIZE
+typedef reschedules an /O2 neighbour in ANY consumer TU, and a mid-`.cpp` typedef
+reschedules a later function in its OWN TU — even though the macro emits no code.
+Measured casualties before relocation:
+- `ShadeTableCache.h` SIZE inline -> `shadetablecache.cpp` CompareHue -0.20;
+  its `.cpp`-local SIZE_UNKNOWN inline -> GammaTable -0.46.
+- `RezMgr.h` SIZE inline -> `Image.cpp` `CImage::DecodePcxData` -0.04 (RezMgr.h is
+  pulled into Image.cpp for RezAlloc/RezFree).
+FIX (0 casualties, fully neutral): host a header class's annotations at the OWNING
+`.cpp`'s **EOF** (after every function body) — the class-metadata scanner keys by
+NAME tree-wide, so position is free. `.cpp`-local views also go to EOF. EOF
+placement was neutral in every case (DecodePcxData/CompareHue/GammaTable all
+returned to baseline). Applied to the multi-consumer / sensitive headers:
+`ShadeTableCache.h`->m5_LightEffectSetup.cpp+ShadeTableCache.cpp, `RezMgr.h`->
+RezMgr.cpp, `FileStream.h`/`FileMem.h`/`SaveGame.h`->their .cpp, `WwdFile.h`->
+WwdFile.cpp, all `CImage.h`/`Image.h`/`CFileImage.h`/`ImageSet.h`/`CScanlineSurface.h`
+->their .cpp. Single-consumer headers kept INLINE SIZE and were verified neutral:
+`Font.h`, `Rez/RezFile.h`, `Rez/RezList.h`. Final: 0 regress / 0 improve across all
+3394 fns (matched_code + fuzzy% + matched_functions byte-identical to baseline).
+
+### VTBL skipped (un-catalogable, NOT casualties — logged for the final sweep):
+- Dummy-virtual reinterpret / slot-dispatch VIEWS whose virtuals are
+  declared-not-defined, so cl emits NO `??_7` and the aliased retail vtable belongs
+  to an engine/MFC class: `CFileIODispatch` / `CFileIOView` / `CFileMemView` (Io),
+  `CFileImageElement` / `CFileImageSurface`(CFileImage.h slot view) / `CImageFrameLoader`
+  (Image), `CGameMode` / `RezStream` / `CRezItmOwner` (Rez), `CWwdStream` /
+  `CPlaneRenderPoly` / `CPlane` (Wwd).
+- Shared-base / already-named-rva (a VTBL would dup the DATA binding): `CImageBase`
+  (its vtable is the grand-base 0x5e8cb4 = `?g_severusWorkerDtorVtbl`), `WwdGameObj`
+  (0x5f00a8 = `?g_wwdObjVtbl`), `CFileMemBase` / `CFileMem` (manual `g_fileMem*Vtbl`).
+- Cross-module name collision — the `[virtual]` signal is another module's def:
+  `CImageSurfaceItem` / `CImageSource` (polymorphic in Gruntz CDDrawPtrCollections),
+  `InterfaceObject` (Font's is a non-vtabled COM iid-checker; the vtable is Net's
+  `InterfaceObject.cpp` def).
+- Real virtuals, out-of-line dtor UNDEFINED here (no emitted vtable, retail rva not
+  pinned): `CWapNodeBase` / `CWapNodeB` (Font).
+- Deferred class (ctor built elsewhere, vtable rva not in-TU): `RezMgr`.
+- MFC-library modeling view: `CMemFile` [rtti] (DDrawMgr ShadeTableCache.cpp).

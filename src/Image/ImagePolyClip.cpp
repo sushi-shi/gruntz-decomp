@@ -168,3 +168,5 @@ i32 ImagePolyClipRect(PolyVtx* poly, i32 n, i32 a2, i32 a3, i32 a4, i32 a5) {
     g_polyClipCount = n4;
     return 1;
 }
+
+SIZE(PolyVtx, 0x1c); // clip-buffer vertex {x,y,attr[5]} (g_polyBuf* array element)

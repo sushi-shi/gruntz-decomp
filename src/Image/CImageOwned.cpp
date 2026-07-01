@@ -310,3 +310,5 @@ i32 CImageOwned::Rebuild(CString name, i32 a1, i32 a2) {
     desc.f1 = flags;
     return DecodeFrame(name, desc);
 }
+
+SIZE_UNKNOWN(CRleByteArray);

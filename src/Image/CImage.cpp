@@ -480,3 +480,36 @@ void CImage::RenderFrameClipped(void* a, void* b, void* c, void* rect, void* d) 
         ((CImageDispatch*)this)->RenderImage(&clip, a);
     }
 }
+
+// ===========================================================================
+// Class-metadata annotations (EOF-hosted: CImage.h is included by several /O2
+// Image TUs whose leaf decoders are byte-exact-sensitive, so keep the completeness
+// typedefs after the last function). VTBL skips (logged): CImageBase's vtable is
+// the shared grand-base 0x5e8cb4 (already ?g_severusWorkerDtorVtbl); CImageSurfaceItem
+// / CImageSource are flagged [virtual] only via their polymorphic Gruntz defs, not
+// this view. CImage itself is RTTI-catalogued (??_7CImage@@ @0x5eaa2c).
+// ===========================================================================
+// --- CImage.h header classes ---
+SIZE(CImageBase, 0x10);            // polymorphic base (CImage fields start at +0x10)
+SIZE_UNKNOWN(CImageSurfaceSrc);
+SIZE_UNKNOWN(CImageSurfaceSrcVtbl);
+SIZE(CImageSurfaceItem, 0xc0);     // RE'd CPoolItemA item size (0xc0)
+SIZE_UNKNOWN(CImageSurfacePool);
+SIZE(CImageFrameRebuildDesc, 0x20); // 8-dword by-value frame descriptor
+SIZE(CImageOwned, 0x3c);            // operator new(0x3c) owned object
+SIZE_UNKNOWN(CImageBuildDesc);
+SIZE_UNKNOWN(CDDrawSurfaceDesc);
+SIZE(BlitRect, 0x10);               // {left,top,right,bottom} RECT
+SIZE_UNKNOWN(CBlitClipOwner);
+SIZE_UNKNOWN(CImageParent);
+SIZE_UNKNOWN(CImageFrameDesc);
+SIZE_UNKNOWN(CImageSource);
+SIZE_UNKNOWN(CImage);               // RTTI CImage (partial model; RTTI-vtable catalogued)
+// --- CImage.cpp local dispatch/vtbl views ---
+SIZE_UNKNOWN(CImageLoadDispatch);
+SIZE_UNKNOWN(CImageLoadVtbl);
+SIZE_UNKNOWN(CImageReloadDispatch);
+SIZE_UNKNOWN(CImageReloadVtbl);
+SIZE_UNKNOWN(CRemusClip);
+SIZE_UNKNOWN(CImageDispatch);
+SIZE_UNKNOWN(CImageVtbl);

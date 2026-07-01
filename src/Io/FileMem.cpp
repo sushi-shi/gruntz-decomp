@@ -214,3 +214,14 @@ i32 CFileMem::Write(const void* buf, i32 n) {
     m_offset += n;
     return 1;
 }
+
+// ===========================================================================
+// Class-metadata annotations (EOF-hosted; /O1+/GX MFC TU). CFileMemBase/CFileMem
+// carry manual g_fileMem*Vtbl stamps (already-named vtable RVAs) so no VTBL is
+// added; CFileIOView/CFileMemView are dummy-virtual reinterpret views (never
+// constructed -> no emitted vtable).
+// ===========================================================================
+SIZE_UNKNOWN(CFileMemBase);
+SIZE_UNKNOWN(CFileMem);
+SIZE_UNKNOWN(CFileIOView);
+SIZE_UNKNOWN(CFileMemView);
