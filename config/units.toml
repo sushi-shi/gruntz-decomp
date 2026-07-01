@@ -681,6 +681,11 @@ source = "src/Gruntz/GruntzMgr.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "rezsync"
+source = "src/Gruntz/RezSync.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "statemgrbz"
 source = "src/Gruntz/StateMgrBZ.cpp"
 flags = "base"

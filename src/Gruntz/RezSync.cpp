@@ -1,0 +1,827 @@
+// RezSync.cpp - CGameMgr-derived game bootstrap Init(CGameWnd*, char* cmdLine)
+// @ RVA 0x00083450 (6445 B). `this` (ebp) is the CGruntzMgr-shaped 0xa30 game
+// manager; Init returns 1 on success / 0 on every early error path (ret 0x8).
+//
+// Large /GX C++-EH carcass: the retail body carries a full exception frame
+// (push -1 / push handler / mov fs:0,esp / sub esp,0x428) driven by ~0x29 EH
+// states over the `new T` resource allocations + destructible CString temps;
+// every early error path is `return 0` funnelling through one shared fs:0-
+// restoring epilogue. See docs/patterns/big-seh-fuzzy-desync.md +
+// docs/patterns/throwing-operator-new-eh-state-transition.md. Objdiff rolls up
+// LOW on such functions even for a faithful carcass (alignment desync at the
+// multi-way error ladder) - the deliverable is the control-flow + offset +
+// ordered-call carcass, not a byte-perfect frame.
+#include <rva.h>
+#include <Ints.h>
+#include <Mfc.h> // CString + the MFC collection ctors/dtors (reloc-masked)
+#include <string.h>
+
+// retail's global allocator is the nothrow pool alloc; MSVC5 `new T` emits the
+// post-alloc null-check + ctor-in-flight EH-state store the retail body has.
+void* operator new(unsigned int);
+void operator delete(void*);
+extern "C" void* RezAlloc(unsigned int); // 0x1b9b46 (raw non-EH pool allocs)
+extern "C" void RezFree(void*);          // 0x1b9b82
+
+// ---------- reloc-masked engine globals ----------
+struct CoordNode {
+    CoordNode* next;
+    char pad[8];
+};
+extern CoordNode* g_coordPool; // 0x645540
+extern CoordNode* g_freeList;  // 0x645544
+extern i32 g_coordCount;       // 0x645548
+extern i32 g_freeBias;         // 0x64554c
+extern void* g_mgrPtr;         // 0x64556c
+extern u32 g_startTick;        // 0x645580
+extern i32 g_645584;           // 0x645584
+extern i32 g_wap32Run80;       // 0x653c80
+extern i32 g_653c5c;           // 0x653c5c
+extern i32 g_sndEnabled;       // 0x61ab20
+extern i32 g_2455b4, g_2455bc, g_2455c0, g_2455c4, g_2455c8, g_2455cc;
+extern i32 g_2455d0, g_2455d4, g_2455d8, g_2455dc, g_2455e0, g_2455e4;
+extern i32 g_64526c, g_6452d0, g_645268, g_645568, g_645538, g_6451a4;
+extern i32 g_6452d4, g_6452a8, g_645558, g_645560, g_64555c, g_645564;
+extern i32 g_645210, g_645534;
+extern void* g_645570; // attract host
+extern void* g_645574; // actor list
+extern void* g_645578;
+extern void* g_60fa70;
+extern u32(__stdcall* g_pTimeGetTime)();  // 0x6c4650
+extern u32(__stdcall* g_pGetTickCount)(); // 0x6c3fc8
+extern i32(__stdcall* g_ShowCursor)(i32); // 0x6c44c4
+
+extern "C" void RezSrand(u32);                     // 0x11fed0
+extern "C" char* StrUpr(char*);                    // 0x18d330
+extern "C" char* SubstringMatch(char*, const char*); // 0x120090 (strstr semantics)
+extern "C" i32 RezSprintf(char*, const char*, ...);  // 0x1b2cf5
+
+extern "C" void cb_403193();
+extern "C" void cb_401bc2();
+extern "C" void cb_403774();
+extern char g_lab504358[]; // 0x504358
+extern char g_lab545854[]; // 0x545854
+extern void* g_vtbl5e9bb4; // 0x5e9bb4
+
+extern "C" i32 Fn2423cdecl(void*);  // 0x2423
+extern "C" void Fn3526cdecl(void*); // 0x3526
+void __stdcall Fn1d3eff(i32, i32, void*, i32);          // 0x1d3eff
+void __stdcall Blowfish_InitKey(unsigned char*);        // 0x16f6c0
+void __stdcall BitStreamBlowfishDecode(void*, void*);   // 0x16f760
+extern "C" i32 Fn2063(i32);                             // 0x2063
+
+// generic thiscall MFC ctor/dtor helper (reloc-masked; only call shape matters)
+struct Mfc {
+    void C_1b4867(i32);
+    void C_1b48a6();
+    void D_1b48c6();
+    void C_1b4f0b();
+    void C_1b527e();
+    void C_1b7e17(i32);
+    void C_1b8247(i32);
+    void C_1b9b93();
+    void C_1b9c69();
+    void D_1b9cde();
+    void C_11f5a0(i32, i32, void*, void*);
+};
+
+struct RegHelper { // m_38 (0x21c)
+    i32 m_0;
+    i32 Open(const char*, const char*, const char*, void*, u32, void*); // 0x139210
+    u32 GetValueDword(const char*, u32);                                 // 0x1395d0
+};
+struct GameLevelZ {
+    char pad[0x64];
+    i32 m_64, m_68;
+    void BuildAllPlanes(void*); // 0x15da80
+};
+struct SurfWorkerZ {
+    i32 Cfg(i32, i32); // 0x158cb0
+};
+struct CDDrawSurfaceMgr { // m_30 (0x40); polymorphic - VInit at vtable slot 6
+    // vptr @ +0 (extern ctor 0x155840 stamps the real vtable)
+    SurfWorkerZ* m_04; // +4
+    char _p08[0x24 - 0x08];
+    GameLevelZ* m_24; // +0x24
+    void* m_28;       // +0x28
+    char _p2c[0x40 - 0x2c];
+    CDDrawSurfaceMgr();
+    ~CDDrawSurfaceMgr();
+    virtual void v0();
+    virtual void v1();
+    virtual void v2();
+    virtual void v3();
+    virtual void v4();
+    virtual void v5();
+    virtual i32 VInit(void*, i32, i32, i32, i32); // slot 6 (+0x18)
+    void VMethod155f50(void*);                    // 0x155f50
+};
+struct CSymParser { // m_34 (0x94)
+    CSymParser();
+    ~CSymParser();
+    char raw[0x94];
+    i32 ParseBuffer(void*, i32, i32);            // 0x13ad00
+    i32 Stub13b0c0(i32, const char*);            // 0x13b0c0
+    void* ResolveQualified(const char*, void*);  // 0x13bff0
+    void* ResolvePath(const char*);              // 0x13c030
+    i32 ResolveTab(const char*, void*);          // 0x13be40
+};
+struct CFaderMgr { // m_40 (0x28)
+    CFaderMgr();
+    ~CFaderMgr();
+    char raw[0x28];
+    i32 SetConfig(i32, i32, i32); // 0x17d980
+};
+struct H44 {
+    char raw[0x128];
+    H44();
+    ~H44();
+    i32 Fn1825(i32); // 0x1825
+    void Fn15b9();   // 0x15b9
+};
+struct H48 {
+    char raw[0x2c];
+    H48();
+    ~H48();
+    i32 Init138490(i32, i32, i32); // 0x138490
+    void Fn138950(i32);            // 0x138950
+};
+struct H50 {
+    H50();
+    ~H50();
+    char raw[0x18];
+    i32 Init14dec0(); // 0x14dec0
+};
+struct H54 {
+    char raw[0x30];
+    H54();
+    ~H54();
+    i32 Fn10b9(i32, i32); // 0x10b9
+    void Fn1082();        // 0x1082
+    void Fn18e8();        // 0x18e8
+    void Fn29b9();        // 0x29b9
+};
+struct H58 {
+    char raw[0x1424];
+    H58();
+    ~H58();
+    i32 Fn402f(const char*); // 0x402f
+    void Fn3503();           // 0x3503
+    void Fn10d7host(void*);
+};
+struct H5c {
+    char raw[0x44];
+    H5c();
+    ~H5c();
+    i32 Fn43db(i32, i32); // 0x43db
+};
+struct H60 {
+    char raw[0x30];
+    H60();
+    ~H60();
+    i32 Fn1bfe(void*); // 0x1bfe
+};
+struct H68 {
+    char raw[0x408];
+    H68();
+    ~H68();
+    i32 Fn4205(void*); // 0x4205
+    void Fn2239();     // 0x2239
+};
+struct H6c {
+    char raw[0x3c];
+    H6c();
+    ~H6c();
+    i32 Fn37a1(void*); // 0x37a1
+    void Fn434f();     // 0x434f
+};
+struct H70 {
+    char raw[0x94];
+    H70();
+    ~H70();
+};
+struct H78 {
+    char raw[0x3c];
+    void Fn3ba2();          // 0x3ba2 (dtor)
+    i32 Fn3085(i32, void*); // 0x3085
+};
+struct H7c {
+    H7c();
+    ~H7c();
+    char raw[0x388];
+    i32 Fn10d7(void*); // 0x10d7
+};
+
+// GAME_ATTRIBUTEZ bute/remus load helpers (reloc-masked)
+struct CRemus {
+    i32 BeginParse();               // 0x139960
+    i32 EndParse();                 // 0x1399d0
+    void* Fn169700(void*, i32);     // 0x169700
+    void* Fn1698c0(void*, i32, i32);// 0x1698c0
+    void Fn16f760(void*, void*);    // 0x16f760
+};
+struct CButeMgr {
+    void SetErrCb(void*);                              // 0x170380
+    void InitB();                                      // 0x170330
+    u32 GetDwordDef(const char*, const char*, u32);    // 0x1721e0
+    i32 ParseGroup();                                  // 0x171580
+    void ClearMap(i32);                                // 0x16e070
+};
+struct CButeStore {
+    void ClearRecursive(i32); // 0x16e070
+};
+extern CButeMgr g_buteMgr;    // 0x6453d8
+extern CButeStore g_store6453f0, g_store64544c;
+extern i32 g_gameReg;      // 0x645460
+extern u8 g_6454e6, g_6454e7, g_6453e5;
+extern i32 g_645478, g_645420, g_645408, g_645418, g_645404;
+extern i32 g_645438, g_645448, g_645434, g_645464, g_645474;
+extern i32 g_644c54;
+
+struct DecodeObj {
+    char raw[0x60];
+    void* M169700(void*, i32, i32);  // 0x169700
+    void* M169700b(void*, i32);      // 0x169700 (2-arg overload site)
+    void* M1698c0(void*, i32, i32, i32); // 0x1698c0
+};
+struct LeafScanZ {
+    i32 HasKeyEqual(const char*);                    // 0x1583c0
+    void ScanTree(void*, const char*, const char*);  // 0x157ee0
+    void MatchSub(void*, i32);                        // 0x1584f0
+};
+struct MovieLookup {
+    void M1b8438(const char*, void*); // 0x1b8438 (m_28 + 0x10)
+};
+extern "C" void FormatStr(void*, const char*, ...); // 0x1b2cf5
+
+struct RezSync {
+    u32 m_00;
+    void* m_04;
+    void* m_08;
+    u32 m_0c;
+    i32 m_10; // Sound
+    i32 m_14; // Music
+    char _p18[0x30 - 0x18];
+    CDDrawSurfaceMgr* m_30;
+    CSymParser* m_34;
+    RegHelper* m_38;
+    char _p3c[0x40 - 0x3c];
+    CFaderMgr* m_40;
+    H44* m_44;
+    H48* m_48;
+    char _p4c[0x50 - 0x4c];
+    H50* m_50;
+    H54* m_54;
+    H58* m_58;
+    H5c* m_5c;
+    H60* m_60;
+    char _p64[0x68 - 0x64];
+    H68* m_68;
+    H6c* m_6c;
+    H70* m_70;
+    void* m_74;
+    H78* m_78;
+    H7c* m_7c;
+    i32 m_80; // Num Runs
+    i32 m_84; // Num Movies
+    i32 m_88;
+    i32 m_8c;
+    i32 m_90;
+    i32 m_94; // width
+    i32 m_98; // height
+    char _p9c[0xac - 0x9c];
+    i32 m_ac;
+    i32 m_b0;
+    i32 m_b4;
+    i32 m_b8; // Checkpoint Prompts
+    char _pbc[0xc8 - 0xbc];
+    void* m_c8; // CString
+    char _pcc[0xd0 - 0xcc];
+    u8 m_d0;
+    char _pd1[0xd4 - 0xd1];
+    i32 m_d4;
+    char _pd8[0x100 - 0xd8];
+    i32 m_100; // Voice
+    i32 m_104; // Ambient
+    i32 m_108; // Interlaced
+    i32 m_10c; // High Detail
+    i32 m_110; // High Detail 2
+    char _p114[0x118 - 0x114];
+    i32 m_118; // Easy Mode / resolution
+    i32 m_11c; // Sound Volume
+    i32 m_120; // Voice Volume
+    i32 m_124; // Music Volume
+    char _p128[0x150 - 0x128];
+    char m_150[4 * 0x238];
+    char _tail[0xa30 - (0x150 + 4 * 0x238)];
+
+    i32 Init(void* a1, void* a2);
+    i32 Run(void*, void*); // 0x13dd50
+    void Error2(u32, u32); // 0x346d
+    void Error1(u32);      // 0x3f80
+    i32 Fn2db0();
+    void* Fn4214();
+    i32 Fn2112();
+    void Fn1db6();
+    i32 Fn1c12();
+    void Fn1df7(i32);
+    i32 Fn262b();
+    void Fn129e();
+    void Fn2cc5();
+    i32 Fn201d(i32);
+    void Fn1ed8();
+    i32 Fn12d0(i32, i32, i32, i32);
+    void* Fn320b(void**);
+    void Fn40c0(i32);
+    void Fn4174(i32);
+    i32 ProbeSettings150(void*); // 0x40a7
+};
+
+// =====================================================================
+// @early-stop
+// 6445-B /GX C++-EH function; complete carcass, ~5.6%->63.3% fuzzy. The /GX
+// prologue is byte-EXACT (mov fs:0/push -1/push handler/mov fs:0,esp/sub
+// esp,0x428) and the phase-1..4 blocks (coord free-list, Run/Fn2db0 gates, srand,
+// ShowCursor while-loop, "Monolith Productions" registry reads, settings) verify
+// byte-identical vs the target under llvm-objdump -dr (only the reloc-masked
+// call/DIR32 operands differ). Three documented walls cap it: (1) the ~0x29-state
+// `new T`-in-flight EH-state numbering + zero-register/pointer-register regalloc
+// (retail pins the alloc ptr in edi/esi, docs/patterns/zero-register-pinning.md);
+// (2) the heap objects' INLINE constructors (member sub-ctors + field-zeroing
+// blocks, e.g. the ~250-B m_68 ctor @0x84948) are modeled as extern ctors, so
+// those store runs are absent; (3) objdiff's global alignment DESYNCS at the
+// long multi-way error ladder (docs/patterns/big-seh-fuzzy-desync.md), so the
+// rollup understates the faithful carcass. Deferred to the final sweep: model
+// each heap ctor inline once the child classes are reconstructed.
+RVA(0x00083450, 0x192d)
+i32 RezSync::Init(void* a1, void* a2) {
+    // --- Phase 1: coord-pool free list -------------------------------
+    CoordNode* pool = (CoordNode*)RezAlloc(0x3a980);
+    g_coordPool = pool;
+    if (!pool) {
+        Error2(0x800a, 0x404);
+        return 0;
+    }
+    g_coordCount = 0x4e20;
+    CoordNode* p = pool;
+    u32 i = 0;
+    do {
+        p->next = p + 1;
+        p = p->next;
+        ++i;
+    } while (i < (u32)g_coordCount - 1);
+    p->next = 0;
+    g_freeList = pool;
+    g_freeBias = 4;
+
+    // --- Phase 2: base game init + timers + cursor -------------------
+    if (!Run(a1, a2)) {
+        Error2(0x800a, 0x462);
+        return 0;
+    }
+    if (!Fn2db0()) {
+        Error2(0x800a, 0x463);
+        return 0;
+    }
+    RezSrand((g_pTimeGetTime() + g_pGetTickCount()) >> 1);
+    g_wap32Run80 = 0x21;
+    while (g_ShowCursor(0) >= 0) {
+    }
+
+    // --- Phase 3: "Monolith Productions" registry --------------------
+    RegHelper* reg = (RegHelper*)RezAlloc(0x21c);
+    if (reg)
+        reg->m_0 = 0;
+    m_38 = reg;
+    if (!m_38->Open("Monolith Productions", "Gruntz", "1.0", 0, 0x80000002, 0)) {
+        Error2(0x800a, 0x406);
+        return 0;
+    }
+    m_94 = 0x280;
+    m_98 = 0x1e0;
+    m_80 = (i32)m_38->GetValueDword("Num Runs", 0);
+    m_84 = (i32)m_38->GetValueDword("Num Movies", 0);
+    g_2455d4 = m_38->GetValueDword("Disable High Quality Movie", 0) ? 1 : 0;
+    g_2455b4 = (i32)m_38->GetValueDword("Disable Audio", 0);
+    g_2455bc = (i32)m_38->GetValueDword("Disable Sound", 0);
+    g_2455c0 = (i32)m_38->GetValueDword("Disable Music", 0);
+    g_2455c4 = (i32)m_38->GetValueDword("Disable Fades", 0);
+    g_2455d0 = (i32)m_38->GetValueDword("Disable Direct Video Access", 0);
+    g_2455c8 = (i32)m_38->GetValueDword("Disable Joystick", 0);
+    g_2455cc = (i32)m_38->GetValueDword("Disable SoundFonts", 0);
+    g_2455d8 = (i32)m_38->GetValueDword("Enable Triple", 0);
+    g_2455dc = (i32)m_38->GetValueDword("Enable HiColor", 0);
+    g_2455e0 = (i32)m_38->GetValueDword("Enable TrueColor", 0);
+    g_2455e4 = (i32)m_38->GetValueDword("Enable Emulation", 0);
+    m_b8 = (i32)m_38->GetValueDword("Checkpoint Prompts", 1);
+    g_2455dc = 1;
+    g_64526c = 0;
+    g_6452d0 = 0;
+    g_645268 = 0;
+    g_645568 = 0;
+    g_645538 = 0;
+    g_6451a4 = 0;
+    g_6452d4 = 1;
+    g_6452a8 = 0;
+    g_645558 = 0;
+    g_645560 = 0;
+    g_64555c = 0;
+    g_645564 = 0;
+
+    // --- Phase 4: audio/video settings -------------------------------
+    i32 vMusic = (i32)m_38->GetValueDword("Music", m_14);
+    i32 vSound = (i32)m_38->GetValueDword("Sound", m_10);
+    i32 vVoice = (i32)m_38->GetValueDword("Voice", m_100);
+    i32 vAmbient = (i32)m_38->GetValueDword("Ambient", m_104);
+    i32 vInterlaced = (i32)m_38->GetValueDword("Interlaced", m_108);
+    i32 vHigh1 = (i32)m_38->GetValueDword("High Detail", m_10c);
+    m_10c = (i32)m_38->GetValueDword("High Detail", m_110);
+    i32 vEasy = (i32)m_38->GetValueDword("Easy Mode", m_118);
+    i32 res = (i32)m_38->GetValueDword("Resolution", 1);
+    m_118 = res;
+    if (res == 3) {
+        m_94 = 0x400;
+        m_98 = 0x300;
+    } else if (res == 2) {
+        m_94 = 0x320;
+        m_98 = 0x258;
+    } else {
+        m_94 = 0x280;
+        m_98 = 0x1e0;
+    }
+    i32 vMusVol = (i32)m_38->GetValueDword("Music Volume", 0x64);
+    i32 vSndVol = (i32)m_38->GetValueDword("Sound Volume", 0x3c);
+    i32 vVoiVol = (i32)m_38->GetValueDword("Voice Volume", 0x50);
+    i32 vScroll = (i32)m_38->GetValueDword("Scroll Speed", 0x14);
+    m_11c = vSndVol;
+    m_120 = vVoiVol;
+    m_124 = vMusVol + 1;
+    m_80 = m_80 + 1;
+    if (g_2455d0 != 0) {
+        g_2455c4 = 1;
+        g_2455e4 = 1;
+    }
+    m_ac = 0;
+    m_b0 = 0;
+    m_d4 = 0;
+    m_d0 = 0;
+    Fn4214();
+
+    // --- Phase 5: command-line flags ---------------------------------
+    i32 mode = 2;
+    i32 noLogo = 0;
+    char levelName[0x80];
+    levelName[0] = 0;
+    if (a2) {
+        char buf[0x130];
+        strcpy(buf, (char*)a2);
+        StrUpr(buf);
+        if (SubstringMatch(buf, "PLAY"))
+            mode = 3;
+        if (SubstringMatch(buf, "MULTI"))
+            mode = 0x11;
+        if (SubstringMatch(buf, "DEMO"))
+            mode = 7;
+        if (SubstringMatch(buf, "SELECT"))
+            mode = 0x10;
+        if (SubstringMatch(buf, "NOLOGO"))
+            noLogo = 1;
+        SubstringMatch(buf, "NOMOVIES");
+        if (SubstringMatch(buf, "LOAD:")) {
+            char cpy[0x11c];
+            strcpy(cpy, buf);
+            char* tok = SubstringMatch(cpy, "LOAD:");
+            if (tok && strlen(tok) > 5) {
+                tok += 5;
+                i32 j = 0;
+                char c = tok[0];
+                while (c != ' ' && c != 0) {
+                    c = tok[j + 1];
+                    ++j;
+                }
+                tok[j] = 0;
+                if (tok[0] != 0) {
+                    for (char* q = tok; *q; ++q) {
+                        if (*q == '_')
+                            *q = ' ';
+                        if (*q == '+')
+                            *q = ' ';
+                    }
+                }
+                strcpy(levelName, tok);
+            }
+        }
+    }
+    if (Fn2112()) {
+        mode = 0x11;
+        m_b4 = 0;
+    }
+
+    // --- Phase 6: surface manager + game level -----------------------
+    g_645210 = *(i32*)((char*)m_08 + 0xc);
+    char dpBuf[0x114];
+    strcpy(dpBuf, (char*)a2);
+    Fn1d3eff(*(i32*)((char*)m_08 + 0xc), 0, dpBuf, 1);
+    ((Mfc*)&m_c8)->C_1b9c69();
+    m_30 = new CDDrawSurfaceMgr;
+    i32 flags = (g_2455b4 || g_2455bc) ? 0xe5 : 0xe1;
+    if (g_2455e4)
+        flags |= 0x10;
+    m_88 = 0x10;
+    if (!m_30->VInit(*(void**)((char*)m_04 + 4), 0x280, 0x1e0, 0x10, flags)) {
+        Error1(0x407);
+        return 0;
+    }
+    {
+        i32 rect[4];
+        rect[0] = 0;
+        rect[1] = 0;
+        rect[2] = 0x1df;
+        rect[3] = 0x1df;
+        m_8c = 0x280;
+        m_90 = 0x1e0;
+        m_30->m_24->BuildAllPlanes(rect);
+    }
+    m_30->VMethod155f50((void*)&cb_403193);
+    m_30->m_24->m_64 = 0xe;
+    m_30->m_24->m_68 = 0xe;
+    m_30->m_04->Cfg(0, 0x30000);
+    Fn1db6();
+    Fn3526cdecl(m_30);
+    if (!Fn1c12())
+        return 0;
+
+    // --- Phase 7: CSymParser bute load (GRUNTZ.VRZ/.ZZZ/.XXX) --------
+    if (m_34) {
+        m_34->~CSymParser();
+        RezFree(m_34);
+        m_34 = 0;
+    }
+    m_34 = new CSymParser;
+    {
+        CString fn;
+        Fn320b((void**)&fn);
+        i32 ok = m_34->ParseBuffer(*(void**)&fn, 1, 0) != 0;
+        if (!ok) {
+            Error2(0x800b, 0x409);
+            return 0;
+        }
+    }
+    if (!m_34->Stub13b0c0(0, "GRUNTZ.VRZ")) {
+        Error2(0x8149, 0x460);
+        return 0;
+    }
+    m_34->Stub13b0c0(1, "GRUNTZ.ZZZ");
+    m_34->Stub13b0c0(1, "GRUNTZ.XXX");
+    Fn1df7(m_88);
+
+    // --- Phase 8: input device manager (m_40 slot) ------------------
+    m_40 = new CFaderMgr;
+    if (!m_40->SetConfig(0, 0, 0)) {
+        Error2(0x800a, 0x40a);
+        return 0;
+    }
+    m_44 = new H44;
+    if (!m_44->Fn1825(*(i32*)((char*)m_04 + 4))) {
+        Error2(0x800a, 0x40b);
+        return 0;
+    }
+    if (g_2455b4 == 0 && g_2455cc == 0) {
+        if (Fn262b()) {
+            if (!Fn2423cdecl(Fn4214()))
+                Fn129e();
+        }
+    }
+
+    // --- Phase 9: audio host (m_48) ---------------------------------
+    m_48 = new H48;
+    g_653c5c = 0;
+    if (!m_48->Init138490(*(i32*)((char*)m_08 + 0xc), *(i32*)((char*)m_04 + 4), 0)) {
+        Error2(0x800a, 0x40c);
+        return 0;
+    }
+    if (g_2455b4 == 0 && g_2455c0 == 0)
+        m_48->Fn138950(vMusic);
+    else
+        *(i32*)((char*)m_48 + 0x28) = 0;
+
+    // --- Phase 10: sound-fx list (m_54) -----------------------------
+    if (m_54) {
+        m_54->Fn1082();
+        ((Mfc*)((char*)m_54 + 8))->D_1b48c6();
+        RezFree(m_54);
+        m_54 = 0;
+    }
+    m_54 = new H54;
+    if (!m_54->Fn10b9((i32)m_30->m_28, vSndVol)) {
+        Error2(0x800a, 0x40d);
+        return 0;
+    }
+    {
+        i32 f = *(i32*)((char*)m_54 + 0x24);
+        if (vMusVol != 0) {
+            if (f == 0) {
+                *(i32*)((char*)m_54 + 0x24) = 1;
+                m_54->Fn18e8();
+            }
+        } else if (f != 0) {
+            *(i32*)((char*)m_54 + 0x24) = 0;
+            m_54->Fn29b9();
+        }
+    }
+    Fn40c0(vSndVol);
+    Fn4174(vScroll);
+    m_124 = vMusVol;
+
+    // --- Phase 11: settings host (m_78, m_58) -----------------------
+    m_78 = (H78*)RezAlloc(0x3c);
+    if (m_78) {
+        i32* z = (i32*)m_78;
+        z[1] = z[2] = z[3] = z[4] = 0;
+        for (i32 k = 0; k < 10; ++k)
+            *(i32*)((char*)m_78 + 0x14 + k * 4) = 0;
+    }
+    if (!m_78->Fn3085(0, this)) {
+        if (m_78) {
+            m_78->Fn3ba2();
+            RezFree(m_78);
+            m_78 = 0;
+        }
+        Error2(0x800a, 0x411);
+        return 0;
+    }
+    m_58 = new H58;
+    if (!m_58->Fn402f((const char*)&g_lab545854)) {
+        // (uses g_emptyString 0x6293f4 in retail)
+        Error2(0x800a, 0x412);
+        return 0;
+    }
+    m_7c = new H7c;
+    m_7c->Fn10d7((char*)m_58 + 0x24);
+
+    // --- Phase 12: attract host list (g_645578) ---------------------
+    g_645578 = RezAlloc(0x28);
+    if (g_645578) {
+        i32* z = (i32*)g_645578;
+        z[0] = z[1] = z[2] = z[4] = z[5] = 0;
+    }
+    if (!((H60*)g_645578)->Fn1bfe(g_645570)) {
+        if (g_645578) {
+            i32* z = (i32*)g_645578;
+            z[0] = z[1] = z[2] = z[4] = z[5] = 0;
+            RezFree(g_645578);
+            g_645578 = 0;
+        }
+        Error2(0x800a, 0x413);
+        return 0;
+    }
+
+    // --- Phase 13: fader list (m_6c) --------------------------------
+    m_6c = new H6c;
+    if (!m_6c->Fn37a1(this)) {
+        Error2(0x800a, 0x414);
+        return 0;
+    }
+    m_70 = new H70;
+    if (!m_70) {
+        Error2(0x800a, 0x415);
+        return 0;
+    }
+    m_74 = RezAlloc(0x94);
+    if (m_74) {
+        i32* z = (i32*)m_74;
+        z[0] = z[1] = 0;
+        *(i32*)((char*)m_74 + 0x90) = 0;
+        for (i32 k = 0; k < 0x11; ++k) {
+            *(i32*)((char*)m_74 + 8 + k * 4) = 0;
+            *(i32*)((char*)m_74 + 0x4c + k * 4) = 0;
+        }
+    }
+    if (!((H68*)m_74)->Fn4205(m_50)) {
+        Error2(0x800a, 0x416);
+        return 0;
+    }
+
+    // --- Phase 14: register mgr + probe 4 settings subobjects -------
+    g_mgrPtr = this;
+    g_startTick = g_pTimeGetTime();
+    g_645584 = 0;
+    for (i32 s = 0; s < 4; ++s) {
+        if (!ProbeSettings150(&m_150[s * 0x238])) {
+            Error2(0x800a, 0x417);
+            return 0;
+        }
+    }
+
+    // --- Phase 15: GAME_ATTRIBUTEZ blowfish-decoded bute parse -------
+    {
+        CSymParser* mgr = m_34;
+        void* node = mgr->ResolveQualified("GAME_ATTRIBUTEZ", &g_lab545854);
+        g_buteMgr.SetErrCb((void*)&cb_401bc2);
+        i32 ok = 0;
+        if (node) {
+            CRemus* stream = (CRemus*)node;
+            g_6454e6 = 1;
+            i32 esz = stream->BeginParse();
+            void* src = *(void**)((char*)stream + 0xc);
+            DecodeObj* d0 = new DecodeObj;
+            void* rdr = d0 ? d0->M169700(src, esz, 1) : 0;
+            Blowfish_InitKey((unsigned char*)"1212C");
+            DecodeObj* d1 = new DecodeObj;
+            void* snk = d1 ? d1->M1698c0(src, esz, 2, 1) : 0;
+            BitStreamBlowfishDecode(snk, rdr);
+            DecodeObj* d2 = new DecodeObj;
+            g_645478 = (i32)d2;
+            stream->EndParse();
+            g_buteMgr.InitB();
+            g_store6453f0.ClearRecursive(0);
+            g_645408 = 0;
+            g_645418 = 0;
+            g_645404 = 0;
+            g_store64544c.ClearRecursive(0);
+            g_645438 = 0;
+            g_645448 = 0;
+            g_645434 = 0;
+            g_645464 = 0;
+            g_645474 = 0;
+            g_gameReg = 0;
+            ok = 1;
+            if (!g_buteMgr.ParseGroup()) {
+                g_6453e5 = 1;
+                ok = 0;
+            }
+            RezFree(rdr);
+        }
+        if (!ok) {
+            Error2(0x800a, 0x418);
+            return 0;
+        }
+    }
+
+    // --- Phase 16: sound / movie config + attract title screens -----
+    m_44->Fn15b9();
+    m_5c = new H5c;
+    m_5c->Fn43db(0x1388, 0xbb8);
+    m_68 = new H68;
+    if (!m_68->Fn4205(m_30)) {
+        Error2(0x800a, 0x41b);
+        return 0;
+    }
+    g_60fa70 = (void*)g_buteMgr.GetDwordDef("General", "RezSync", (u32)g_60fa70);
+    m_60 = new H60;
+    if (!m_60->Fn1bfe(this)) {
+        Error2(0x800a, 0x45f);
+        return 0;
+    }
+    *(i32*)((char*)m_60 + 0x2c) = vScroll;
+    m_14 = vMusic;
+    m_10 = vSound;
+    g_sndEnabled = vSound;
+    m_100 = vVoice;
+    m_104 = vAmbient;
+    m_108 = vInterlaced;
+    m_10c = vHigh1;
+    m_110 = vEasy;
+    if (!((LeafScanZ*)m_30->m_28)->HasKeyEqual("GAME")) {
+        void* sz = m_34->ResolvePath("GAME_SOUNDZ");
+        if (!sz)
+            return 0;
+        ((LeafScanZ*)m_30->m_28)->ScanTree(sz, "GAME", "_");
+    }
+    {
+        void* mv = 0;
+        ((MovieLookup*)((char*)m_30->m_28 + 0x10))->M1b8438("GAME_MOVIE", &mv);
+        ((LeafScanZ*)m_30->m_28)->MatchSub(mv, 0);
+    }
+    Fn1ed8();
+    if (!Fn2112()) {
+        if (m_84 > 0 && m_80 > 1) {
+            if (m_38->GetValueDword("Skip Logo Movies", 0) == 0 && noLogo == 0)
+                Fn2cc5();
+        } else {
+            Fn2cc5();
+            if (Fn201d(2))
+                ++m_84;
+        }
+    }
+    // attract title screens
+    {
+        CSymParser* attract = (CSymParser*)m_34->ResolvePath("STATEZ_ATTRACT");
+        CString title;
+        g_645534 = 0;
+        FormatStr(&title, "\\SCREENZ\\TITLE%d", g_645534 + 1);
+        while (attract->ResolveTab((const char*)*(void**)&title, &g_lab504358)) {
+            g_645534++;
+            FormatStr(&title, "\\SCREENZ\\TITLE%d", g_645534 + 1);
+        }
+        if (Fn12d0(mode, 1, 0, 0)) {
+            g_645584 = 0;
+        } else if (mode == 0x11 && Fn12d0(2, 1, 0, 0)) {
+            g_645584 = 0;
+        } else {
+            Error2(0x8005, mode == 0x11 ? 0x41c : 0x41d);
+            return 0;
+        }
+    }
+    return 1;
+}

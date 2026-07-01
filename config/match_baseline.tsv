@@ -213,7 +213,7 @@ dsoundvoice	2	1
 ehfunclets	6	6
 engine_attributed	5	0
 engine_discovered	15	8
-engine_label_stubs	241	129
+engine_label_stubs	240	129
 engine_unmatched_lib	11	0
 engstr	3	1
 eyecandytypetags	4	4
@@ -402,6 +402,7 @@ rezcoll	2	2
 rezfile	6	6
 rezlist	2	2
 rezmgr	15	10
+rezsync	1	0
 rezutil	1	1
 rockbreakparticles	1	0
 rollingball	6	3
@@ -1858,7 +1859,6 @@ engine_label_stubs	?Ilt_RegionLeave_19f1@@YAXXZ	100.0000	100.0000	1	cpp:66ed5250
 engine_label_stubs	?Init@AilHost_138490@ApiCallerStubs@@QAEHHHH@Z	99.8077	99.8077	1	cpp:6bf52155264d	0x138490
 engine_label_stubs	?Init@AilSeq_138c20@ApiCallerStubs@@QAEHPAXIPAD@Z	100.0000	100.0000	1	cpp:e832e75e29a5	0x138c20
 engine_label_stubs	?Init@Region_182ab0@ApiCallerStubs@@QAEHPAUTileSrcHost_182ab0@2@HPAUtagRECT@@HHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x182ab0
-engine_label_stubs	?Init@RezSync@@QAEXHH@Z	0.0562	0.0562	1	cpp:6bf52155264d	0x83450
 engine_label_stubs	?Key@CmdHost_014720@ApiCallerStubs@@QAEHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x14720
 engine_label_stubs	?Key@CmdHost_039440@ApiCallerStubs@@QAEHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x39440
 engine_label_stubs	?Key@CmdHost_0953f0@ApiCallerStubs@@QAEHHH@Z	100.0000	100.0000	1	cpp:e1535087fe94	0x953f0
@@ -3194,6 +3194,7 @@ rezmgr	?PerFrameTick@RezMgr@@UAEHXZ	100.0000	100.0000	5	f48f8cfdbf55	0x8b740
 rezmgr	?Read@CRezItm@@QAEHHHIPAX@Z	100.0000	100.0000	2	317d2c857ebf	0x13c600
 rezmgr	?Stub_13b0c0@CRezDir@@QAEXXZ	0.2139	0.2139	2	0caf2154eccf	0x13b0c0
 rezmgr	?Write@CRezItm@@QAEHHHIPAX@Z	100.0000	100.0000	2	e4e65b9964df	0x13c6c0
+rezsync	?Init@RezSync@@QAEHPAX0@Z	63.3214	63.3214	1	676a13885300	0x83450
 rezutil	_RezFree	100.0000	100.0000	1	fe93430adc1a	0x1b9b82
 rockbreakparticles	?BuildRockBreakParticles@CRockBreakMgr@@QAEHHHHH@Z	81.0936	81.0936	1	227c993e5587	0x7b440
 rollingball	??0CRollingBall@@QAE@PAUCGameObject@@@Z	78.6804	78.6804	1	38dbcbe0cf1f	0xaf820
