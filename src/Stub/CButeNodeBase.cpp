@@ -38,8 +38,13 @@ extern void* g_buteNodeVtbl;    // 0x5e94ac -> stamped at this+0x0
 
 // The embedded node subobject at CButeNodeBase+0x8: a small keyed-store entry.
 // Its ctor (RVA 0x16df70) is __thiscall(this, int n, void* desc): stores desc at
-// +0x4, (WORD)n at +0x8, 0 at +0xc, and its own base vtbl at +0x0. Declared
-// no-body so the `mov ecx; call` __thiscall shape is reloc-masked.
+// +0x4, (WORD)n at +0x8, 0 at +0xc, and its own vtbl at +0x0. This is a WAP-engine
+// `z*`-container node with a HAND-ROLLED vtable, NOT a C++ polymorphic class: the
+// vtbl pointer is stored LAST (after the member stores). Modeling it with a real
+// `virtual` dtor makes cl emit the auto-vptr stamp FIRST (before the members),
+// which REGRESSES this ctor 100%->82.9% (proven: llvm-objdump base-vs-target -- the
+// implicit ??_7 stamp cannot be sunk; the MSVC5 vptr-position wall, same mechanism
+// as CZArray2D). So the manual vtbl-field store stays -- it is the devs' real shape.
 class CButeNodeEntry {
 public:
     CButeNodeEntry(i32 n, void* desc);
@@ -74,7 +79,7 @@ void* g_buteNodeEntryVtbl;
 
 // CButeNodeEntry ctor (0x16df70): __thiscall(this, n, desc). Stores desc@+4,
 // (WORD)n@+8, 0@+0xc, then its own base vtable@+0 (stamped LAST -- written in
-// source order; no auto-vptr since the class is modeled with a manual vtbl). Clean
+// source order; a hand-rolled vtbl, not a C++ virtual -- see the note above). Clean
 // leaf ctor, no EH frame. Called out-of-line by the CButeNodeBase ctor's m_entry
 // member-init. (Trace-discovered; was the ClassUnknown_7 stub.)
 RVA(0x0016df70, 0x22)
