@@ -9,6 +9,7 @@
 #include <Gruntz/Projectile.h>
 #include <Bute/ButeMgr.h> // CButeTree (the type-registry funnel)
 #include <math.h>         // sin / cos (StepMotion's parabola)
+#include <string.h>       // memset (1-arg spawn ctor's +0x1e0 zero-fill)
 #include <rva.h>
 
 // StepMotion's two motion-phase thresholds (.rdata doubles) + the int amplitude
@@ -175,6 +176,60 @@ i32 CProjectile::ProjectileVfunc() {
 // calls CMovingLogic out-of-line). See the CAVEAT in the pattern doc. ~99% wall.
 RVA(0x000126e0, 0x1fc)
 CProjectile::CProjectile() {}
+
+// The 1-arg ctor's spawn constants (reloc-masked DIR32 loads).
+extern "C" {
+    DATA(0x00245588)
+    u32 g_645588 = 0;
+}
+DATA(0x001eaa88)
+const double g_5eaa88 = 0.0;
+DATA(0x001f04e8)
+u32 g_5f04e8 = 0;
+
+// A post-init hook the spawn ctor fires (0x16ea90, no args; ecx unused).
+extern void Fn16ea90();
+
+// @confidence: med
+// @source: rtti-vptr / disasm
+// @early-stop
+// The 1-arg spawn ctor CProjectile(owner), 0.63% stub -> ~55%. Reconstructed
+// ADDITIVELY (new overloaded ctors CProjectile(owner)/CMovingLogic(owner); the
+// byte-exact no-arg ctor 0x126e0 + its inline CMovingLogic are UNTOUCHED - verified
+// still 99.05%). The bounds/SetCoords/CProjectile-body region is byte-shaped.
+// DOMINANT wall (asm-level, llvm-objdump -dr base vs target): retail CALLS the
+// CUserLogic(owner) base init OUT-OF-LINE (`call 0x58cd0`, ~5 B), but MSVC here
+// INLINES the whole CUserLogic init (~160 B: CUserBase vptr, CUserBaseLink ctor,
+// EngStr temp, RegisterLogicTypesOnce, AddLogicHit/Attack/Bump). Cause: the
+// CUserLogic(owner) modeled in UserLogic.h is a SUBSET of retail's real init, so
+// it fits MSVC's inline budget when folded into this large ctor, whereas retail's
+// fuller init exceeds it and is emitted out-of-line. #pragma inline_depth(1) has
+// no effect on MSVC5's mem-init base-ctor inlining. Forcing it out-of-line needs
+// either the full CUserLogic(owner) body (a separate CUserLogic reconstruction,
+// risks the matched tile-trigger leaves that inline it) or making +0x38 a member-
+// with-ctor (would regress the banked 99% no-arg ctor - task-forbidden).
+// Secondary residues: +0x38 Init (0x136d0) emits after the CMovingLogic vptr
+// stamp vs retail's member-init position (EH state 0); the EH-state numbering
+// (retail 0/1/2/3 over +0x38 + CObList) and the m_204-vs-body order differ.
+RVA(0x000dec60, 0x255)
+CProjectile::CProjectile(CGameObject* owner) : CMovingLogic(owner) {
+    m_148 = 0;
+    m_14c = 0;
+    *(i32*)((char*)m_10 + 0xe4) = 7;
+    Fn16ea90();
+    m_150 = (i32)owner;
+    m_154 = (CProjRenderObj*)owner;
+    m_158 = (i32)owner->m_7c;
+    m_154->m_08 |= 0x2000002;
+    m_154->m_40 |= 1;
+    if (*(i32*)((char*)m_10 + 0x74) != 0xcf850) {
+        *(i32*)((char*)m_10 + 0x74) = 0xcf850;
+        m_10->m_08 |= 0x20000;
+    }
+    memset((char*)this + 0x1e0, 0, 0x1c);
+    m_200 = 0;
+    m_1fc = 0;
+}
 
 // ---------------------------------------------------------------------------
 // CProjectile::ReleaseDeferred (0x13c70) - fire the two queued one-shot callbacks

@@ -32,6 +32,13 @@
 extern const double g_movingLogicMin; // 0x5f04b0 (-2147483647.0)
 extern const double g_movingLogicMax; // 0x5f04b8 (2147483646.0)
 
+// The 1-arg ctor's velocity/scale constants: g_645588 (spawn seed int, scaled by
+// the .rdata double g_5eaa88) and g_5f04e8 (the default-Z .rdata int). All read
+// unsigned -> double (the fild {lo,0} idiom).
+extern "C" u32 g_645588;      // 0x645588
+extern const double g_5eaa88; // 0x5eaa88
+extern u32 g_5f04e8;          // 0x5f04e8
+
 // ---------------------------------------------------------------------------
 // CMovingLogic : CUserLogic - moving-object motion state. 17 virtuals
 // (vftable 0x5e87ac); only the offsets the ctor initializes are modeled.
@@ -39,9 +46,42 @@ extern const double g_movingLogicMax; // 0x5f04b8 (2147483646.0)
 // The +0x38..+0x10c band is a set of int pairs zeroed at construction; the
 // +0xa8..+0x13f band is twelve doubles seeded to the default min/max bounds.
 // ---------------------------------------------------------------------------
+// The +0x38 motion band the CMovingLogic ctor initializes. The no-arg ctor
+// inlines its zero-init; the 1-arg ctor calls the out-of-line copy (0x136d0)
+// and its 11-double coordinate setter (0x58bc0, returns 1). __thiscall on
+// this+0x38. Reached via a cast so the shared flat-int layout (proven by the
+// byte-exact no-arg ctor) is untouched.
+struct CProjMotionBand {
+    void Init(); // 0x136d0
+    i32 SetCoords(
+        double,
+        double,
+        double,
+        double,
+        double,
+        double,
+        double,
+        double,
+        double,
+        double,
+        double
+    ); // 0x58bc0
+};
+
+// The per-type config the 1-arg ctor reads its coordinate bounds from
+// (CUserLogic::m_14, the bound object's +0x7c aux). Only the four bound ints.
+struct CProjBoundCfg {
+    char _00[0x2c];
+    i32 m_2c; // +0x2c  -> lo bound A (0 => default MIN)
+    i32 m_30; // +0x30  -> hi bound A (0 => default MAX)
+    i32 m_34; // +0x34  -> lo bound B (0 => default MIN)
+    i32 m_38; // +0x38  -> hi bound B (0 => default MAX)
+};
+
 class CMovingLogic : public CUserLogic {
 public:
     CMovingLogic();
+    CMovingLogic(CGameObject* owner); // 1-arg (folds into CProjectile(owner))
     virtual ~CMovingLogic() OVERRIDE; // most-derived dtor (slot 0)
     // CMovingLogic adds three virtuals over the CUserBase/CUserLogic chain; the
     // last lands at vtable offset 0x40 (the slot ReleaseDeferred dispatches).
@@ -147,6 +187,7 @@ struct CProjSample {
 class CProjectile : public CMovingLogic {
 public:
     CProjectile();                   // 0x126e0 (no-arg)
+    CProjectile(CGameObject* owner); // 0xdec60 (1-arg spawn ctor)
     virtual ~CProjectile() OVERRIDE; // most-derived dtor (0xdef60)
     virtual i32 ProjectileVfunc();   // one added slot anchors the new vftable
 
@@ -163,7 +204,9 @@ public:
     i32 LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i32 t0, i32 t1); // 0xdf050
     void LoadProjectileEffects();                                                      // 0xdfd00
 
-    char m_pad140[0x150 - 0x140];
+    char m_pad140[0x148 - 0x140];
+    i32 m_148;                    // +0x148  (1-arg ctor zeroes)
+    i32 m_14c;                    // +0x14c  (1-arg ctor zeroes)
     i32 m_150;                    // +0x150
     CProjRenderObj* m_154;        // +0x154  primary sprite/render object
     i32 m_158;                    // +0x158
@@ -249,6 +292,57 @@ inline CMovingLogic::CMovingLogic() {
     m_128 = g_movingLogicMax;
     m_130 = g_movingLogicMax;
     m_138 = g_movingLogicMax;
+}
+
+// The 1-arg CMovingLogic init (folded into CProjectile(owner)): chains the base
+// CUserLogic(owner) (out-of-line 0x58cd0 when this ctor is too big to inline),
+// runs the +0x38 motion-band init out-of-line (0x136d0), seeds the four
+// coordinate bounds from the per-type config (m_14, default MIN/MAX when 0),
+// then the 11-double coordinate setter (0x58bc0) and the default-Z band.
+inline CMovingLogic::CMovingLogic(CGameObject* owner) : CUserLogic(owner) {
+    ((CProjMotionBand*)((char*)this + 0x38))->Init();
+    // Each bound: 0 => the shared MIN/MAX double copied dword-wise; else the int
+    // widened via fild. Written as if/else (not ?:) so the constant branch stays
+    // a mov/mov dword copy instead of being unified into an x87 fld/fstp.
+    i32 lo0 = ((CProjBoundCfg*)m_14)->m_2c;
+    if (lo0 == 0) {
+        m_a8 = g_movingLogicMin;
+    } else {
+        m_a8 = (double)lo0;
+    }
+    i32 lo1 = ((CProjBoundCfg*)m_14)->m_34;
+    if (lo1 == 0) {
+        m_b0 = g_movingLogicMin;
+    } else {
+        m_b0 = (double)lo1;
+    }
+    i32 hi0 = ((CProjBoundCfg*)m_14)->m_30;
+    if (hi0 == 0) {
+        m_c0 = g_movingLogicMax;
+    } else {
+        m_c0 = (double)hi0;
+    }
+    i32 hi1 = ((CProjBoundCfg*)m_14)->m_38;
+    if (hi1 == 0) {
+        m_c8 = g_movingLogicMax;
+    } else {
+        m_c8 = (double)hi1;
+    }
+    ((CProjMotionBand*)((char*)this + 0x38))
+        ->SetCoords(
+            (double)m_10->m_5c,
+            (double)m_10->m_60,
+            0.0,
+            (double)m_10->m_164,
+            (double)m_10->m_168,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            (double)g_645588 * g_5eaa88,
+            0.0
+        );
+    m_110 = m_118 = m_120 = (double)g_5f04e8;
 }
 
 #endif // GRUNTZ_PROJECTILE_H

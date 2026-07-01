@@ -210,7 +210,7 @@ dsoundvoice	2	1
 ehfunclets	6	6
 engine_attributed	6	0
 engine_discovered	15	8
-engine_label_stubs	271	124
+engine_label_stubs	270	124
 engine_unmatched_lib	11	0
 engstr	3	1
 eyecandytypetags	4	4
@@ -377,7 +377,7 @@ polyclipraster	1	0
 portalpath	1	1
 projactcache	3	1
 projactregistry	4	3
-projectile	12	4
+projectile	13	4
 pulsehighlight	2	2
 pyramidbridgesprites	1	0
 randomambientsound	9	4
@@ -1819,7 +1819,6 @@ engine_label_stubs	?BuildWorldLevelPath@CPlay@@QAEXH@Z	0.4484	0.4484	1	cpp:590ed
 engine_label_stubs	?CButeMgrHelper_FuncA@@YAXXZ	100.0000	100.0000	1	cpp:7e7ce1192d49	0x169be0
 engine_label_stubs	?CGruntzCommand_0242f0@CGruntzCommand@@QAEXXZ	100.0000	100.0000	1	cpp:45e65336d4b5	0x242f0
 engine_label_stubs	?CGruntzCommand_024430@CGruntzCommand@@QAEXXZ	100.0000	100.0000	1	cpp:45e65336d4b5	0x24430
-engine_label_stubs	?CProjectile_0dec60@CProjectile@@QAEXH@Z	0.6329	0.6329	1	cpp:6bf52155264d	0xdec60
 engine_label_stubs	?CUserLogic_0138d0@CUserLogic@@QAEXXZ	5.0000	5.0000	1	cpp:45e65336d4b5	0x138d0
 engine_label_stubs	?CUserLogic_058cd0@CUserLogic@@QAEXH@Z	0.8929	0.8929	1	cpp:6bf52155264d	0x58cd0
 engine_label_stubs	?Cancel@CmdHost_0de590@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:6bf52155264d	0xde590
@@ -3098,12 +3097,13 @@ projactregistry	??1CProjActOwner@@UAE@XZ	100.0000	100.0000	1	3a018279bc02	0x7fd0
 projactregistry	?FireActivation@CProjActObj@@QAEXH@Z	100.0000	100.0000	1	11e9b3a5f0e8	0x80e0
 projactregistry	?ProjActRegisterDefaults@@YAXXZ	100.0000	100.0000	1	a25c8147a240	0x8060
 projactregistry	?RegisterType@CProjActObj@@QAEXXZ	91.1739	91.1739	1	8fb0cc7540b3	0x8240
-projectile	??0CProjectile@@QAE@XZ	99.0472	99.0472	1	4eead4695d92	0x126e0
+projectile	??0CProjectile@@QAE@PAUCGameObject@@@Z	55.2278	55.2278	1	b4b416599ef4	0xdec60
+projectile	??0CProjectile@@QAE@XZ	99.0472	99.0472	2	b4b416599ef4	0x126e0
 projectile	??1CProjectile@@UAE@XZ	89.8367	89.8367	1	8e9ce0f777d4	0xdef60
 projectile	?DetachRenderObj@CProjectile@@QAEHXZ	100.0000	100.0000	2	5f5b4f60ca08	0xe05e0
 projectile	?Dispatch@CProjActDispatcher@@QAEXH@Z	100.0000	100.0000	1	dbdd016866f6	0xade60
 projectile	?LaunchSound@CProjectile@@QAEHPBD@Z	44.4444	44.4444	2	af629d1a9d6a	0xe2190
-projectile	?LoadProjectileEffects@CProjectile@@QAEXXZ	69.7489	69.7489	1	362cbd2d55e9	0xdfd00
+projectile	?LoadProjectileEffects@CProjectile@@QAEXXZ	69.7489	69.7446	1	362cbd2d55e9	0xdfd00
 projectile	?LoadProjectileSprites@CProjectile@@QAEHHHHHHHH@Z	57.7642	57.7642	2	5275adc45e73	0xdf050
 projectile	?RegisterRange@CProjectile@@SAXXZ	100.0000	100.0000	1	661e81357f7b	0xdf920
 projectile	?RegisterType@CProjectile@@SAXXZ	91.1739	91.1739	1	459c0342af3a	0xdfb00
