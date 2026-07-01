@@ -388,3 +388,9 @@ const u16 g_cmdBitTable[16] = {
     0x4000,
     0x8000
 };
+
+// class-metadata sweep: grunt/game-object family size annotations (SIZE_UNKNOWN = retail size TBD, at .cpp EOF).
+SIZE_UNKNOWN(CGruntzCmdList);
+SIZE_UNKNOWN(CGruntzCmdTarget);
+SIZE_UNKNOWN(CmdStream);
+SIZE_UNKNOWN(WwdGameReg);

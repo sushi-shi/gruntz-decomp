@@ -275,3 +275,8 @@ CString GetDifficultyName(i32 diffIdx, i32 upper) {
     }
     return s;
 }
+
+// class-metadata sweep: grunt/game-object family size annotations (SIZE_UNKNOWN = retail size TBD, at .cpp EOF).
+SIZE_UNKNOWN(GruntzPlayer);
+SIZE_UNKNOWN(PlayerArchive);
+SIZE_UNKNOWN(PlayerConfigBundle);

@@ -462,3 +462,73 @@ VTBL touched (already documented in docs/vtable-conversion-log.md).
 Hotness verdict: **Bute is SAFE via the `.cpp`-EOF rule** — headers untouched, one TU's
 EOF shifts per group, no mid-parse-typedef reschedule. Applied all at once with a single
 all-function snapshot-diff (per prior-pilot practice); 0 casualties.
+
+## Grunt / game-object family (2026-07-01)
+
+Scope: classes in `include/Gruntz/Grunt.h`, `CGrunt*.h`, `GruntzApp/CmdMgr/Command/
+Mgr/Player.h`, `CGruntzMapMgr.h`, `WwdGameObject.h`, and classes defined in
+`src/Gruntz/Grunt*.cpp` / `CGrunt*.cpp` / `GameObject*.cpp` / `Gruntz*.cpp` /
+`Kitchen*.cpp` (37 `.cpp` TUs). Excluded per matcher instructions: GameLevel.*,
+ApiCallers.cpp, CDDraw*/Bute*/Discovered/UserLogic (other matchers), the Wap32
+engine-support modules, `WwdGrid.h` (not `WwdGameObject`).
+
+Coverage delta:
+- SIZE completeness: family violators **389 -> 0**; tree-wide annotated names
+  **885/3316 -> 1274/3316** (+389 = the whole family).
+- VTBL completeness: family violators **28 -> 28** (all skipped, see below); no
+  catalog rows added (every add would collide on a shared/RTTI RVA, target a
+  foreign vtable, or guess an unpinned RVA of a declared-only view).
+
+Annotated: **389 SIZE_UNKNOWN + 0 SIZE(exact) + 0 VTBL.** Every family class is a
+partial pad-to-last-touched-field modeling view / interface / slot-dispatch shell;
+none is provably == its full retail alloc (no array-element stride / RE'd fixed
+packet / byte-matched struct-copy in the models), so the scalable `SIZE_UNKNOWN`
+default is the only honest annotation — no exact `SIZE` guessed (owning matcher can
+upgrade e.g. CGrunt later).
+
+### Placement + hot-header handling: `.cpp`-EOF for EVERYTHING (0 casualties).
+Grunt.h is the family's HOT header (the infra proof measured in-header `SIZE(CGrunt)`
+costing `StepCompassMove` -0.52%). Per the proven fix, **every** annotation was hosted
+at the **owning `.cpp`'s EOF** (never in a header, never interspersed): header classes
+at their header's paired `.cpp` EOF (Grunt.h -> Grunt.cpp; GruntzMgr.h -> GruntzMgr.cpp;
+CGruntzMapMgr.h -> CGruntzMapMgr.cpp; the per-sprite CGrunt*.h -> their CGrunt*.cpp; the
+GruntzCmdMgr/Command/Player headers -> their `.cpp`), and `.cpp`-local classes (incl. the
+per-TU shim views in the dense grunt-AI/step TUs and the big GruntzMgr.cpp = 83) at their
+own `.cpp` EOF. `CGrunt` itself was hosted at `GruntPathScan.cpp` EOF (its `.cpp`-local
+view def). Result: report.json snapshot-diff over all 3394 functions = **0 REGRESS /
+0 IMPROVE**, overall unchanged at 1873/3394 exact / 63.71% fuzzy; `gruntz build`
+"no regressions vs baseline". EOF placement is neutral even in the codegen-sensitive
+grunt-AI `@early-stop` TUs (GruntUpdateStep/ArrivalScan/StateStep/PathScan/etc.) —
+their bodies were NOT touched, only appended-at-EOF.
+
+### VTBL skipped (all 28; un-catalogable, NOT casualties — for the final sweep):
+Identical buckets to the Net/SBI/CDDraw/Boundary pilots; every family vtable-bearing
+violator is one of:
+1. **Declared-but-undefined slot-dispatch VIEW structs** (declare `virtual` slots ONLY
+   to lower a `mov edx,[o]; call [edx+slot]` thiscall dispatch; NEVER defined/instantiated
+   here, so cl emits no `??_7` and the real vtable is a foreign engine/MFC class — no own
+   RVA to bind): `AnimWorker`, `CGruntArchive`, `CVtblSlot9`, `GruntObjEntry`, `GzTargetObj`,
+   `GzStateProvider`, `GzStream`, `GzSerCmd`, `CHazardStream`, `CWorldDelete`, `CSerializerZ`,
+   `CModalDialog`, `CWorldModeIface`, `CmdSinkV`, `CSlimeStream`, `CTsState`, `CmdStream`,
+   `GameObjTypeRegistry`, `PlayerArchive`, `PupArchive`, `CTypeKeyColl` (the last: the family
+   view is a non-virtual `Resolve` registry; the `virtual` signal is a same-named non-family
+   def; its RVA is not pinned here).
+2. **Base modeling shells** whose base ctor is out-of-line/external so cl emits no own
+   `??_7`; the concrete LEAF vtable auto-derives via RTTI (config/vtable_names.csv):
+   `CGruntSpriteBase`, `CPathHazardBase` (leaf `??_7CPathHazard@@6B@`@0x1e7394 IS in
+   symbol_names.csv), `CGmmBase` (its `~CGmmBase` is the external `~CMapMgr` @0x135c).
+3. **Foreign/library base, declared-only virtual dtor:** `CSaveDlgBase`
+   (`~CSaveDlgBase` == MFC `CDialog::~CDialog` @0x1ba51d).
+4. **Already-named via the RTTI catalog** (config/vtable_names.csv) — a `VTBL` would be a
+   redundant second source / dup on that RVA: `CGrunt` (`??_7CGrunt@@6B@`@0x1e8754; flagged
+   only because cl doesn't yet emit CGrunt's `??_7`, so the AUTO path is dormant — the RTTI
+   row is the authoritative catalog entry, owning matcher names it when CGrunt goes
+   real-polymorphic), `CScrollView` (`??_7CScrollView@@6B@`@0x1ed854, also an MFC library
+   class — game-not-library skip).
+5. **Already bound via a foreign `g_*Vtbl` DATA extern in an out-of-family TU:**
+   `CGruntzSoundInnerZ` (vtable 0x1ef700 == `g_innerSoundVtbl`, `DATA(0x001ef700)` in
+   Dsndmgr's CGruntzSoundZ.cpp; VTBL would dup the RVA).
+
+Hotness verdict: **all family headers are safe at `.cpp`-EOF placement**; Grunt.h is
+hot only for *in-header* typedefs (the measured -0.52% case), which the EOF rule avoids.
+No regression committed.

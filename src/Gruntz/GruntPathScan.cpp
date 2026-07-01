@@ -246,3 +246,12 @@ i32 CGrunt::PathScan57db0() {
     grid->Method43ea(0);
     return 0;
 }
+
+// class-metadata sweep: grunt/game-object family size annotations (SIZE_UNKNOWN = retail size TBD, at .cpp EOF).
+SIZE_UNKNOWN(CGrunt);
+SIZE_UNKNOWN(CScanCoordPool);
+SIZE_UNKNOWN(CScanKeyNode);
+SIZE_UNKNOWN(CScanList);
+SIZE_UNKNOWN(CScanNode);
+SIZE_UNKNOWN(CScanPlane);
+SIZE_UNKNOWN(CScanSub10);

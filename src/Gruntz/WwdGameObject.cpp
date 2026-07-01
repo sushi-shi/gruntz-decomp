@@ -860,3 +860,6 @@ void CWwdGameObject::RenderDot(WwdRenderCtx* a) {
 reject:
     F(this, 0x38, i32) = -1;
 }
+
+// class-metadata sweep: grunt/game-object family size annotations (SIZE_UNKNOWN = retail size TBD, at .cpp EOF).
+SIZE_UNKNOWN(AnimWorker);

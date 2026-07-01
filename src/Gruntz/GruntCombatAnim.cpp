@@ -671,3 +671,20 @@ i32 CGruntCombat::LoadGruntCombatAnimations(i32 a0, i32 a1, i32 a2, i32 a3, i32 
 L_moveDone:
     return 1;
 }
+
+// class-metadata sweep: grunt/game-object family size annotations (SIZE_UNKNOWN = retail size TBD, at .cpp EOF).
+SIZE_UNKNOWN(CGruntCombat);
+SIZE_UNKNOWN(CombatButeMgr);
+SIZE_UNKNOWN(CombatButeTree);
+SIZE_UNKNOWN(CombatConvCue);
+SIZE_UNKNOWN(CombatCoordList);
+SIZE_UNKNOWN(CombatCue);
+SIZE_UNKNOWN(CombatCueMap);
+SIZE_UNKNOWN(CombatGrid);
+SIZE_UNKNOWN(CombatItemOwner);
+SIZE_UNKNOWN(CombatReg);
+SIZE_UNKNOWN(CombatSprCat);
+SIZE_UNKNOWN(CombatSprInner);
+SIZE_UNKNOWN(CombatTileMgr);
+SIZE_UNKNOWN(CombatTypeColl);
+SIZE_UNKNOWN(CombatTypeNode);

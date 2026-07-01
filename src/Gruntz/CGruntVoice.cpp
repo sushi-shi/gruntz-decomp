@@ -147,3 +147,10 @@ void CGruntVoice::Reset() {
     m_6c = 0;
     m_68 = 0;
 }
+
+// class-metadata sweep: grunt/game-object family size annotations (SIZE_UNKNOWN = retail size TBD, at .cpp EOF).
+SIZE_UNKNOWN(CGruntVoice);
+SIZE_UNKNOWN(CVActColl);
+SIZE_UNKNOWN(CVActColl2);
+SIZE_UNKNOWN(CVActEntry);
+SIZE_UNKNOWN(CVoiceSample);

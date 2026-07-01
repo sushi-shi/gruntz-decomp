@@ -795,3 +795,23 @@ i32 CKitchenSlime::LoadSprites() {
 }
 // size 0x90 from operator-new vtable attribution (gruntz.analysis.news)
 SIZE(CKitchenSlime, 0x90);
+
+// class-metadata sweep: grunt/game-object family size annotations (SIZE_UNKNOWN = retail size TBD, at .cpp EOF).
+SIZE_UNKNOWN(CGameReg);
+SIZE_UNKNOWN(CKSlimeColl);
+SIZE_UNKNOWN(CKSlimeColl2);
+SIZE_UNKNOWN(CKSlimeEntry);
+SIZE_UNKNOWN(CSlimeAnimPlayer);
+SIZE_UNKNOWN(CSlimeCtorObj);
+SIZE_UNKNOWN(CSlimeCueGate);
+SIZE_UNKNOWN(CSlimeEntity);
+SIZE_UNKNOWN(CSlimeLevel);
+SIZE_UNKNOWN(CSlimeMiniStr);
+SIZE_UNKNOWN(CSlimeSerialSub);
+SIZE_UNKNOWN(CSlimeStream);
+SIZE_UNKNOWN(CSlimeSubMgr);
+SIZE_UNKNOWN(CSlimeTiming);
+SIZE_UNKNOWN(CSprite);
+SIZE_UNKNOWN(CStringNode);
+SIZE_UNKNOWN(CTileMap);
+SIZE_UNKNOWN(CTypeNameEntryView);

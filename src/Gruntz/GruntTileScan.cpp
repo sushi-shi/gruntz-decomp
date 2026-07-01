@@ -212,3 +212,9 @@ i32 CScanMgr::ScanRegion32ce0(CScanGrunt* g) {
     }
     return 1;
 }
+
+// class-metadata sweep: grunt/game-object family size annotations (SIZE_UNKNOWN = retail size TBD, at .cpp EOF).
+SIZE_UNKNOWN(CScanGoal);
+SIZE_UNKNOWN(CScanGrunt);
+SIZE_UNKNOWN(CScanMgr);
+SIZE_UNKNOWN(CScanObList);

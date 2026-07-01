@@ -425,3 +425,22 @@ install:
         return 1;
     }
 }
+
+// class-metadata sweep: grunt/game-object family size annotations (SIZE_UNKNOWN = retail size TBD, at .cpp EOF).
+SIZE_UNKNOWN(CDInputMgrZ);
+SIZE_UNKNOWN(CTsBaseA);
+SIZE_UNKNOWN(CTsBaseB);
+SIZE_UNKNOWN(CTsState);
+SIZE_UNKNOWN(CTsSub45);
+SIZE_UNKNOWN(MfcBytes);
+SIZE_UNKNOWN(MfcStr);
+SIZE_UNKNOWN(StBooty);
+SIZE_UNKNOWN(StMulti);
+SIZE_UNKNOWN(StMultiBooty);
+SIZE_UNKNOWN(StParam8);
+SIZE_UNKNOWN(StPlain14);
+SIZE_UNKNOWN(StPlain2);
+SIZE_UNKNOWN(StPlain5);
+SIZE_UNKNOWN(StPlain7);
+SIZE_UNKNOWN(StPlain9);
+SIZE_UNKNOWN(StPlay);

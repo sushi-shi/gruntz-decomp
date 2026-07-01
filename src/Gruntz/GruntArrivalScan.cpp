@@ -845,3 +845,22 @@ L_tailc:
     }
     return 1;
 }
+
+// class-metadata sweep: grunt/game-object family size annotations (SIZE_UNKNOWN = retail size TBD, at .cpp EOF).
+SIZE_UNKNOWN(CCueMgr);
+SIZE_UNKNOWN(CGruntStep);
+SIZE_UNKNOWN(CGruntTileMgr);
+SIZE_UNKNOWN(CScanCell);
+SIZE_UNKNOWN(CScanCoord);
+SIZE_UNKNOWN(CScanGrid);
+SIZE_UNKNOWN(CScanGruntNode);
+SIZE_UNKNOWN(CScanListNode);
+SIZE_UNKNOWN(CScanNode324);
+SIZE_UNKNOWN(CScanRectInit);
+SIZE_UNKNOWN(CStepList);
+SIZE_UNKNOWN(CStepList2);
+SIZE_UNKNOWN(CTypeColl);
+SIZE_UNKNOWN(CTypeNode);
+SIZE_UNKNOWN(MgrSettings);
+SIZE_UNKNOWN(MgrSub24);
+SIZE_UNKNOWN(MgrSub30);

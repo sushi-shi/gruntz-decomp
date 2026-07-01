@@ -304,3 +304,14 @@ RVA(0x00085bd0, 0x56)
 CGruntzCmdMgr::~CGruntzCmdMgr() {
     ClearAndReset();
 }
+
+// class-metadata sweep: grunt/game-object family size annotations (SIZE_UNKNOWN = retail size TBD, at .cpp EOF).
+SIZE_UNKNOWN(CGruntzCmdMgr);
+SIZE_UNKNOWN(GzCmdNode);
+SIZE_UNKNOWN(GzGameReg);
+SIZE_UNKNOWN(GzMgr);
+SIZE_UNKNOWN(GzObList);
+SIZE_UNKNOWN(GzSerCmd);
+SIZE_UNKNOWN(GzStateProvider);
+SIZE_UNKNOWN(GzStream);
+SIZE_UNKNOWN(GzTargetObj);

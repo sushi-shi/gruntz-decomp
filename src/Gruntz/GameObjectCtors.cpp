@@ -540,3 +540,23 @@ SIZE(CGruntToyTimeSprite, 0x64);
 
 // size 0x64 recovered from operator-new sites (gruntz.analysis.news)
 SIZE(CGruntWingzTimeSprite, 0x64);
+
+// class-metadata sweep: grunt/game-object family size annotations (SIZE_UNKNOWN = retail size TBD, at .cpp EOF).
+SIZE_UNKNOWN(CButeTree);
+SIZE_UNKNOWN(CGruntSpriteBase);
+SIZE_UNKNOWN(CHazardObj);
+SIZE_UNKNOWN(CHazardReg);
+SIZE_UNKNOWN(CHazardRegInner);
+SIZE_UNKNOWN(CHazardRegSub);
+SIZE_UNKNOWN(CHazardSerialSub);
+SIZE_UNKNOWN(CHazardStream);
+SIZE_UNKNOWN(CPathHazardBase);
+SIZE_UNKNOWN(CRainCloud);
+SIZE_UNKNOWN(CSpotLight);
+SIZE_UNKNOWN(CSpotLightFactory);
+SIZE_UNKNOWN(CSpotLightSub);
+SIZE_UNKNOWN(CSpotLightSubInner);
+SIZE_UNKNOWN(CSpriteObj);
+SIZE_UNKNOWN(CSpriteObjAux);
+SIZE_UNKNOWN(CToyTimeHost);
+SIZE_UNKNOWN(CUFO);

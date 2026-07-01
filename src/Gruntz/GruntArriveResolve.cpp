@@ -262,3 +262,15 @@ i32 CArriveMgr::Resolve2c690(CArriveGrunt* g) {
     }
     return 1;
 }
+
+// class-metadata sweep: grunt/game-object family size annotations (SIZE_UNKNOWN = retail size TBD, at .cpp EOF).
+SIZE_UNKNOWN(CArriveCell);
+SIZE_UNKNOWN(CArriveCoord);
+SIZE_UNKNOWN(CArriveCoordPool);
+SIZE_UNKNOWN(CArriveGrid);
+SIZE_UNKNOWN(CArriveGrunt);
+SIZE_UNKNOWN(CArriveList);
+SIZE_UNKNOWN(CArriveMgr);
+SIZE_UNKNOWN(CArriveNode);
+SIZE_UNKNOWN(CArriveStr);
+SIZE_UNKNOWN(CArriveSub10);

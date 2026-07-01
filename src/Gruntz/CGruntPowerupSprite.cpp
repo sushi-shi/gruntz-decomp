@@ -156,3 +156,9 @@ i32 CGruntPowerupSprite::Serialize(PupArchive* ar, i32 mode, i32 a3, i32 a4) {
     }
     return 1;
 }
+
+// class-metadata sweep: grunt/game-object family size annotations (SIZE_UNKNOWN = retail size TBD, at .cpp EOF).
+SIZE_UNKNOWN(CGruntPowerupSprite);
+SIZE_UNKNOWN(CPowerupActEntry);
+SIZE_UNKNOWN(PupArchive);
+SIZE_UNKNOWN(PupSubObj);

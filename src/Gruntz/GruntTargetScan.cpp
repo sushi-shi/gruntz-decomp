@@ -438,3 +438,11 @@ L_wander:
     F(this, 0x2ec) = 0;
     return 1;
 }
+
+// class-metadata sweep: grunt/game-object family size annotations (SIZE_UNKNOWN = retail size TBD, at .cpp EOF).
+SIZE_UNKNOWN(CGruntScan);
+SIZE_UNKNOWN(CScanCueMgr);
+SIZE_UNKNOWN(CScanReg);
+SIZE_UNKNOWN(CScanSub24);
+SIZE_UNKNOWN(CScanSub30);
+SIZE_UNKNOWN(CScanTileMgr);

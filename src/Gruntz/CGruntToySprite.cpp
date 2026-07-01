@@ -92,3 +92,7 @@ i32 CGruntToySprite::Update() {
     m_10->m_60 = e->m_10->m_60 - 0x20;
     return 0;
 }
+
+// class-metadata sweep: grunt/game-object family size annotations (SIZE_UNKNOWN = retail size TBD, at .cpp EOF).
+SIZE_UNKNOWN(CGruntToySprite);
+SIZE_UNKNOWN(CToyActEntry);

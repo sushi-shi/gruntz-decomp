@@ -347,3 +347,17 @@ tail:
     }
     return 1;
 }
+
+// class-metadata sweep: grunt/game-object family size annotations (SIZE_UNKNOWN = retail size TBD, at .cpp EOF).
+SIZE_UNKNOWN(CStepCoord);
+SIZE_UNKNOWN(CStepCoordPool);
+SIZE_UNKNOWN(CStepGoal);
+SIZE_UNKNOWN(CStepGrid);
+SIZE_UNKNOWN(CStepGrunt);
+SIZE_UNKNOWN(CStepMgr);
+SIZE_UNKNOWN(CStepNode);
+SIZE_UNKNOWN(CStepOwner);
+SIZE_UNKNOWN(CStepRectInit);
+SIZE_UNKNOWN(CStepSub10);
+SIZE_UNKNOWN(CStepTypeColl);
+SIZE_UNKNOWN(CStepTypeNode);

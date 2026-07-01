@@ -565,3 +565,25 @@ RVA(0x0011c830, 0x12)
 BOOL CGruntSpawnConfig::IsReady() {
     return m_00->m_100 != 0;
 }
+
+// class-metadata sweep: grunt/game-object family size annotations (SIZE_UNKNOWN = retail size TBD, at .cpp EOF).
+SIZE_UNKNOWN(CGruntSpawnConfig);
+SIZE_UNKNOWN(CSpawnButeConfig);
+SIZE_UNKNOWN(CSpawnButeTarget);
+SIZE_UNKNOWN(CSpawnConfigTree);
+SIZE_UNKNOWN(CSpawnEntry);
+SIZE_UNKNOWN(CSpawnGate);
+SIZE_UNKNOWN(CSpawnGateInner);
+SIZE_UNKNOWN(CSpawnOwner);
+SIZE_UNKNOWN(CSpawnReg);
+SIZE_UNKNOWN(CSpawnRemoveColl);
+SIZE_UNKNOWN(CSpawnSpriteSource);
+SIZE_UNKNOWN(CSpawnStream);
+SIZE_UNKNOWN(CSpawnStreamFactory);
+SIZE_UNKNOWN(CSpawnTree);
+SIZE_UNKNOWN(CSpawnVoice);
+SIZE_UNKNOWN(CSpriteFactory08);
+SIZE_UNKNOWN(CSpriteHandle);
+SIZE_UNKNOWN(CSpriteHandleSub);
+SIZE_UNKNOWN(CSpriteReleasable);
+SIZE_UNKNOWN(CVoiceSound);

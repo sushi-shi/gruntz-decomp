@@ -293,3 +293,7 @@ void RegisterGameObjectTypes(GameObjFactoryCtx* ctx) {
     ctx->m_14->RegisterType(CreateDemoMover, "DemoMover", 0);
     ctx->m_14->RegisterType(CreateDemoSign, "DemoSign", 0);
 }
+
+// class-metadata sweep: grunt/game-object family size annotations (SIZE_UNKNOWN = retail size TBD, at .cpp EOF).
+SIZE_UNKNOWN(GameObjFactoryCtx);
+SIZE_UNKNOWN(GameObjTypeRegistry);

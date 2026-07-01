@@ -155,3 +155,15 @@ i32 CGruntTube::SetupTubeAnim(i32 isWater) {
     ResetGate136b(0, 0, 1);
     return 1;
 }
+
+// class-metadata sweep: grunt/game-object family size annotations (SIZE_UNKNOWN = retail size TBD, at .cpp EOF).
+SIZE_UNKNOWN(CGruntTube);
+SIZE_UNKNOWN(CTubeAnimLookup);
+SIZE_UNKNOWN(CTubeAnimPlayer);
+SIZE_UNKNOWN(CTubeBlitParam);
+SIZE_UNKNOWN(CTubeMgr2c);
+SIZE_UNKNOWN(CTubeRecord);
+SIZE_UNKNOWN(CTubeSettings);
+SIZE_UNKNOWN(CTubeStrSlot);
+SIZE_UNKNOWN(CTubeTypeColl);
+SIZE_UNKNOWN(CTubeTypeNode);

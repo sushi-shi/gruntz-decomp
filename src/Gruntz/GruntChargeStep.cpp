@@ -298,3 +298,14 @@ i32 Grunt::ChargeStep() {
     }
     return 1;
 }
+
+// class-metadata sweep: grunt/game-object family size annotations (SIZE_UNKNOWN = retail size TBD, at .cpp EOF).
+SIZE_UNKNOWN(GameMgr);
+SIZE_UNKNOWN(Grunt);
+SIZE_UNKNOWN(GruntTable);
+SIZE_UNKNOWN(MgrBounds);
+SIZE_UNKNOWN(MgrGrid);
+SIZE_UNKNOWN(MgrNotifySink);
+SIZE_UNKNOWN(MgrSubA);
+SIZE_UNKNOWN(MgrSubB);
+SIZE_UNKNOWN(PosObj);
