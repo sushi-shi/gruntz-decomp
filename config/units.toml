@@ -1072,6 +1072,25 @@ source = "src/Gruntz/StartUpPrompt.cpp"
 flags = "eh"
 
 [[unit]]
+# Win32 file-path/time-info utility family (CanonicalizePath / GetFileTimeInfo /
+# RestoreFileTimeInfo) at 0x1bf8f8/0x1c1609/0x1c176a - the SAME 0x1bf*-0x1d5*
+# registry/COM helper module the `framed` profile (ebp frames retained, /Oy-)
+# was made for; the volume-root MFC CString temp in CanonicalizePath adds /GX
+# (an `__EH_prolog` ebp EH frame).
+unit = "filepathinfo"
+source = "src/Gruntz/FilePathInfo.cpp"
+flags = "framed"
+extra = ["/GX"]
+
+[[unit]]
+# CProjectile::Update (Projectile::vfunc_9 @0x61cb0) - the per-frame projectile
+# impact tick; a 5-slot dense switch spawning eye-candy sprites. FPO (ebp is a
+# GPR) -> base profile.
+unit = "projectileupdate"
+source = "src/Gruntz/ProjectileUpdate.cpp"
+flags = "base"
+
+[[unit]]
 # LoadVehicleGruntSprites: 10-way vehicle-grunt sprite-set registrar with a
 # destructible CString name temp -> /GX exception frame.
 unit = "vehiclegruntsprites"

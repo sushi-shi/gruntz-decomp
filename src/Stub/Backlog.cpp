@@ -126,10 +126,6 @@ public:
     char m_pad0c[0x2c - 0xc];
     void* m_2c; // +0x2c  the registered "STATEZ_HELP" object (0 on failure)
 };
-class Projectile {
-public:
-    void vfunc_9();
-};
 // DrawSaveGameMenu's save-game record arg (modeled just above its definition).
 struct CSaveGameMenu;
 // StatusBarItem (the in-game status-bar tab item) is modeled in full just above
@@ -189,9 +185,6 @@ namespace EngineLabelBacklog {
     void _tr_init();
     void _ct_init();
     void Stub_18c780();
-    void __stdcall Stub_1bf8f8(i32, i32);
-    void __stdcall Stub_1c1609(i32, i32);
-    void __stdcall Stub_1c176a(i32, i32);
 } // namespace EngineLabelBacklog
 
 // CreateGameObjectByName (0xa3b0) graduated to src/Gruntz/GameObjectFactory.cpp as
@@ -721,12 +714,10 @@ void EngineLabelBacklog::HandleFortConquered() {}
 // as CGruntCmdObj::LoadVehicleGruntSprites (__thiscall, not __stdcall): the 10-way
 // vehicle-grunt sprite-set registrar; its CString name temp gives it the /GX frame.
 
-// @confidence: med
-// @source: decomp-xref
-// @proximity: CGrunt (HIGH bracket, tu_layout) - CONFLICTS with this Projectile::vfunc_9 guess; verify the real vtable owner before graduating.
-// @stub
-RVA(0x00061cb0, 0x34a)
-void Projectile::vfunc_9() {}
+// Projectile::vfunc_9 (0x61cb0) graduated to src/Gruntz/ProjectileUpdate.cpp as
+// CProjectile::Update - the per-frame projectile impact tick (the 5-slot
+// "Projectile"/"Boomerang"/"TimeBomb" eye-candy spawn switch + the AttackDowntime
+// bute-tuning tail); @early-stop on the jump-table-data-overlap wall.
 
 // WireTileSwitchLogic (0x0006c130, 3426 B) graduated to
 // src/Gruntz/TileSwitchLogic.cpp (eh unit) as CGruntzMgr::WireTileSwitchLogic:
@@ -2046,6 +2037,15 @@ void EngineLabelBacklog::_tr_init() {}
 // @stub
 void EngineLabelBacklog::_ct_init() {}
 
+// Stub_18c780 (831 B) is the statically-linked CRT `_stat`/`_wstat` core (decoded
+// via dump_target): it strcmp-rejects the "\\.\..." device names (DAT_005f0a24/
+// DAT_005f0a20), splits the drive letter, GetDriveType-gates, FindFirstFile's the
+// path, converts the three FILETIMEs (FileTimeToLocalFileTime +
+// FileTimeToSystemTime + the CRT __loctotime_t at 0x126bb0) into the st_atime/
+// st_mtime/st_ctime fields (esi+0x1c/+0x18/+0x20) of the stat buffer, stamps
+// st_mode/st_size/st_dev, and on failure sets _errno/_doserrno to ENOENT (2) via
+// 0x124150/0x124160 + _dosmaperr (0x1240d0). Per the game-not-CRT matcher policy
+// this is library code (use the lib, do NOT hand-reconstruct) - left as backlog.
 // @confidence: low
 // @source: import:FindFirstFileA
 // @stub
@@ -2055,23 +2055,13 @@ void EngineLabelBacklog::Stub_18c780() {}
 // Stub_1bf702 (the HKCR\CLSID InProcServer32 COM-path reader) graduated to
 // src/Gruntz/RegHelpers.cpp (framed) as ClsidToInProcServer.
 
-// @confidence: low
-// @source: import:FindFirstFileA
-// @stub
-RVA(0x001bf8f8, 0xd9)
-void __stdcall EngineLabelBacklog::Stub_1bf8f8(i32, i32) {}
-
-// @confidence: low
-// @source: import:FindFirstFileA
-// @stub
-RVA(0x001c1609, 0xb2)
-void __stdcall EngineLabelBacklog::Stub_1c1609(i32, i32) {}
-
-// @confidence: low
-// @source: import:CreateFileA
-// @stub
-RVA(0x001c176a, 0x12d)
-void __stdcall EngineLabelBacklog::Stub_1c176a(i32, i32) {}
+// Stub_1bf8f8 / Stub_1c1609 / Stub_1c176a (the Win32 file-path/time-info utility
+// family, all in the 0x1bf*-0x1d5* `framed` ebp-frame module) graduated to
+// src/Gruntz/FilePathInfo.cpp (framed + /GX) as CanonicalizePath / GetFileTimeInfo
+// / RestoreFileTimeInfo - GetFullPathName canonicalization plus a FindFirstFile/
+// SetFileTime timestamp+attribute snapshot/restore pair. The volume-root CString
+// temp gives CanonicalizePath its /GX exception frame (@early-stop: the toolchain
+// never emits the retail `call __EH_prolog`, a wall shared with ConfigStoreRead).
 
 // Stub_1c7cb3 (GetWheelScrollLines) graduated to src/Gruntz/RegHelpers.cpp;
 // Stub_1ccb5c, OpenRoot, OpenSubKey, GetInt graduated to the CConfigStore TUs.

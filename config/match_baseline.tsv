@@ -212,7 +212,7 @@ dsoundvoice	2	1
 ehfunclets	6	6
 engine_attributed	6	0
 engine_discovered	15	8
-engine_label_stubs	246	129
+engine_label_stubs	242	128
 engine_unmatched_lib	11	0
 engstr	3	1
 eyecandytypetags	4	4
@@ -221,6 +221,7 @@ fadershapesetup	1	0
 fadertilerender	2	0
 feccrypt	3	2
 filemem	9	8
+filepathinfo	3	0
 filestream	14	10
 font	24	12
 fontconfig	9	5
@@ -386,6 +387,7 @@ portalpath	1	1
 projactcache	3	1
 projactregistry	4	3
 projectile	13	4
+projectileupdate	1	0
 pulsehighlight	2	2
 pyramidbridgesprites	1	0
 randomambientsound	9	4
@@ -1840,7 +1842,7 @@ engine_label_stubs	?Dispatch@Dispatcher_0cfbd0@ApiCallerStubs@@QAEHXZ	100.0000	1
 engine_label_stubs	?DrawCount@DrawHost_164380@ApiCallerStubs@@QAEXPAUtagRECT@@H@Z	80.6964	80.6964	1	cpp:6bf52155264d	0x164380
 engine_label_stubs	?DrawLabel@DrawHost2_164420@ApiCallerStubs@@QAEXPAUtagRECT@@PAD@Z	95.0000	95.0000	1	cpp:6bf52155264d	0x164420
 engine_label_stubs	?DrawSaveGameMenu@EngineLabelBacklog@@YAHPAXHPAUCSaveGameMenu@@@Z	62.5704	62.5704	1	cpp:ee0ad170d8b2	0xe3f40
-engine_label_stubs	?FindNearest@Grid_77df0@ApiCallerStubs@@QAEPAUCell_77df0@2@PAUWorld_77df0@2@@Z	75.2621	75.2621	1	cpp:e832e75e29a5	0x77df0
+engine_label_stubs	?FindNearest@Grid_77df0@ApiCallerStubs@@QAEPAUCell_77df0@2@PAUWorld_77df0@2@@Z	75.2816	75.2816	1	cpp:e832e75e29a5	0x77df0
 engine_label_stubs	?Flip@CoinHost_0da200@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:e1535087fe94	0xda200
 engine_label_stubs	?FormatGameInfoString@CGameInfo@@QAEHXZ	100.0000	100.0000	1	cpp:7e7ce1192d49	0x1183b0
 engine_label_stubs	?Free@GlobalOwner_1c09de@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x1c09de
@@ -1861,7 +1863,7 @@ engine_label_stubs	?Key@CmdHost_0953f0@ApiCallerStubs@@QAEHHH@Z	100.0000	100.000
 engine_label_stubs	?Load@PalLoad_1479e0@ApiCallerStubs@@QAEHHPADH@Z	89.7286	89.7286	1	cpp:6bf52155264d	0x1479e0
 engine_label_stubs	?Load@ResLoad_144270@ApiCallerStubs@@QAEHHPADH@Z	86.9310	86.9310	1	cpp:6bf52155264d	0x144270
 engine_label_stubs	?Load@StrHost_0b7ec0@ApiCallerStubs@@QAEXHH@Z	100.0000	100.0000	1	cpp:e1535087fe94	0xb7ec0
-engine_label_stubs	?LoadByExt@CFileImage@@QAEHPAVCFileImageInfo@@PADHH@Z	100.0000	100.0000	1	cpp:590eddff1627	0x148940
+engine_label_stubs	?LoadByExt@CFileImage@@QAEHPAVCFileImageInfo@@PADHH@Z	99.8899	99.8899	1	cpp:590eddff1627	0x148940
 engine_label_stubs	?LoadCustomWorldInfo@EngineLabelBacklog@@YAHPAX@Z	100.0000	100.0000	1	cpp:aab6e5a6e511	0x3b7c0
 engine_label_stubs	?LoadGruntCombatAnimations@CGrunt@ApiCallerStubs@@QAEXHHHHHHHH@Z	0.0777	0.0777	1	cpp:590eddff1627	0x597a0
 engine_label_stubs	?LoadGruntResurrectTuning@CGruntResurrector@@QAEHHHH@Z	65.4807	65.4807	1	cpp:590eddff1627	0x7be60
@@ -1911,9 +1913,6 @@ engine_label_stubs	?Stop@AilSeq@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:6
 engine_label_stubs	?Stub_01fd70@EngineLabelBacklog@@YAHPAD@Z	100.0000	100.0000	1	cpp:e8a4cb0d5b2a	0x1fd70
 engine_label_stubs	?Stub_0f90f0@EngineLabelBacklog@@YAHPAD@Z	100.0000	100.0000	1	cpp:e8a4cb0d5b2a	0xf90f0
 engine_label_stubs	?Stub_18c780@EngineLabelBacklog@@YAXXZ	0.3891	0.3891	1	cpp:45e65336d4b5	0x18c780
-engine_label_stubs	?Stub_1bf8f8@EngineLabelBacklog@@YGXHH@Z	1.3333	1.3333	1	cpp:6bf52155264d	0x1bf8f8
-engine_label_stubs	?Stub_1c1609@EngineLabelBacklog@@YGXHH@Z	1.5625	1.5625	1	cpp:6bf52155264d	0x1c1609
-engine_label_stubs	?Stub_1c176a@EngineLabelBacklog@@YGXHH@Z	0.8403	0.8403	1	cpp:6bf52155264d	0x1c176a
 engine_label_stubs	?Teardown@CursHost_17c510@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x17c510
 engine_label_stubs	?Tick@Throttle_137e30@ApiCallerStubs@@QAEHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x137e30
 engine_label_stubs	?Tick@Timer_1380d0@ApiCallerStubs@@QAEHH@Z	100.0000	100.0000	1	cpp:e1535087fe94	0x1380d0
@@ -1932,7 +1931,6 @@ engine_label_stubs	?thirdparty_138950_AIL_set_XMIDI_master_volume_8@ApiCallerStu
 engine_label_stubs	?thirdparty_1389c0_AIL_XMIDI_master_volume_4@ApiCallerStubs@@YAHXZ	91.2963	91.2963	1	cpp:e1535087fe94	0x1389c0
 engine_label_stubs	?vfunc_16@StatusBarItem@@QAEHHHH@Z	51.7213	51.7213	1	cpp:66ed52501602	0xce660
 engine_label_stubs	?vfunc_9@BootyState@@QAEHH@Z	94.7973	94.7973	1	cpp:aab6e5a6e511	0x18d30
-engine_label_stubs	?vfunc_9@Projectile@@QAEXXZ	0.3891	0.3891	1	cpp:45e65336d4b5	0x61cb0
 engine_label_stubs	?winapi_00c840_CopyRect_SetRect@ApiCallerStubs@@YAHPAUObj_c840@1@@Z	93.8598	93.8598	1	cpp:e832e75e29a5	0xc840
 engine_label_stubs	?winapi_00cd00_timeGetTime@ApiCallerStubs@@YAHXZ	100.0000	100.0000	1	cpp:e1535087fe94	0xcd00
 engine_label_stubs	?winapi_014d00_GetWindow_GetWindowLongA_SetWindowLongA@ApiCallerStubs@@YGHH@Z	0.2387	0.2387	1	cpp:6bf52155264d	0x14d00
@@ -2073,6 +2071,9 @@ filemem	?Reset@CFileMem@@QAEXXZ	100.0000	100.0000	2	d9e38b96f792	0x157a50
 filemem	?ResetBase@CFileMem@@QAEXXZ	100.0000	100.0000	1	fd57c8dec978	0x157a40
 filemem	?SetName@CFileMem@@QAEHPBDHH@Z	100.0000	100.0000	1	58ad2fe5876a	0x165e30
 filemem	?Write@CFileMem@@QAEHPBXH@Z	100.0000	100.0000	2	2ff1146501f6	0x165f50
+filepathinfo	?CanonicalizePath@@YGHPAD0@Z	46.3067	46.3067	1	8d75f350f231	0x1bf8f8
+filepathinfo	?GetFileTimeInfo@@YGHPADPAUFileInfoRec@@@Z	38.5000	38.5000	1	04835d233a14	0x1c1609
+filepathinfo	?RestoreFileTimeInfo@@YGXPADPAUFileInfoRec@@@Z	77.3782	77.3782	1	5e0d0b7a8eca	0x1c176a
 filestream	??0CFileIO@@QAE@PAX@Z	100.0000	100.0000	4	71072e81b26d	0x1bf033
 filestream	??0CFileIO@@QAE@XZ	100.0000	100.0000	4	71072e81b26d	0x1befd7
 filestream	??1CFileIO@@UAE@XZ	100.0000	100.0000	4	53a856f67760	0x1bf121
@@ -3117,6 +3118,7 @@ projectile	?RegisterType@CProjectile@@SAXXZ	91.1739	91.1739	1	459c0342af3a	0xdfb
 projectile	?ReleaseDeferred@CProjectile@@QAEXH@Z	100.0000	100.0000	2	ac50b8317e25	0x13c70
 projectile	?ScanTargets@CProjectile@@QAEXH@Z	93.9254	93.9254	3	beefe98399cb	0xe0b10
 projectile	?StepMotion@CProjectile@@QAEXXZ	70.6977	70.6977	2	be95913fb568	0xe08b0
+projectileupdate	?Update@CProjectile@@QAEHXZ	15.9027	15.9027	1	64dca16d2412	0x61cb0
 pulsehighlight	?Serialize@CPulseHighlight@@QAEHPAVCSerialArchive@@HHH@Z	100.0000	100.0000	1	6c48e6d77651	0x8600
 pulsehighlight	?Tick@CPulseHighlight@@QAEHXZ	100.0000	100.0000	1	1da816c051e1	0x8440
 pyramidbridgesprites	?LoadPyramidBridge@CPlayLevelLoad@@QAEXH@Z	7.3030	7.3030	2	fc1e88cb93b0	0x110c10
