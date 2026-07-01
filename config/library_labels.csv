@@ -3317,3 +3317,7 @@ rva,name,lib,confidence,source
 0x192ed0,?getdouble@istream@@AAEHPADH@Z,LIBCIMT,HIGH,anchored
 0x193950,??6ostream@@QAEAAV0@I@Z,LIBCIMT,HIGH,anchored
 0x193a20,??5istream@@QAEAAV0@AAD@Z,LIBCIMT,HIGH,anchored
+0x17bf60,rand,LIBCMT,MED,carve-tiny-crt
+0x124e67,_abort,LIBCMT,MED,carve-tiny-crt
+0x1d3493,CThreadLocalObject_dtor,NAFXCW,MED,carve-tiny-crt
+0x1d3734,AFX_MODULE_STATE_dtor,NAFXCW,MED,carve-tiny-crt
