@@ -333,14 +333,26 @@ public:
     void SetMode(i32 mode);
 
     // Engine-label backlog stubs.
-    void Stub_0ffde0();
+    i32 BuildStatusBarTabs();
+    i32 Probe2e69(); // 0x2e69 (post-build validity probe)
+    i32 Probe41a1(); // 0x41a1 (post-build validity probe)
     i32 winapi_107d00_SetRect();
     i32 LoadBattlezItemConfig(i32);
     i32 LoadMainStatusBarSprite();
-    void UpdateStatusBarTabHighlight(i32, i32, i32);
+    i32 UpdateStatusBarTabHighlight(i32, i32, i32);
     i32 LoadDestructButtonSprite(i32);
     void BuildGameTabResumeButton(i32);
     void BuildGameTabPauseButton();
+
+    // ----- siblings the tab-highlight dispatcher (0xfe910) drives (reloc-masked ILT) -----
+    struct CSbiHiWidget* HiResolve(i32 a, i32 b); // 0x2dc4 (resolve the hit widget)
+    void HiRefreshResource();                     // 0x3d91 (call 0x3d91)
+    void HiSelectStat(i32 idx);                   // 0x264e (call 0x264e, 1 arg)
+    void HiTabA(i32 idx);                          // 0x4179 (1 arg)
+    void HiTabB(i32 idx, i32 flag);                // 0x20b8 (2 args)
+    void HiGrunt0(i32 idx);                        // 0x42a5 (1 arg)
+    void HiGrunt1(i32 idx);                        // 0x4151 (1 arg)
+    void HiGrunt2(i32 idx);                        // 0x37ce (1 arg)
     i32 LoadGooCookingSprite(i32);
     void UpdateRezConveyorStatusBar();
     void LoadRezMachineConfig();
@@ -515,7 +527,7 @@ public:
     i32 m_34c;                 // +0x34c
     i32 m_350;                 // +0x350
     i32 m_hitTestDisabled;     // +0x354  hit-test disable flag
-    char m_pad358[0x35c - 0x358];
+    i32 m_358;                 // +0x358  tab-widgets-built flag
     i32 m_activeSlot;       // +0x35c  active-slot index (-1 = none)
     i32 m_360;              // +0x360  pending highlight row index (-1 none)
     CSbiSlotPtr* m_notify0; // +0x364  notify targets (slot 0x28)
@@ -559,7 +571,10 @@ public:
     i32 m_554;       // +0x554  toggle-mode tab handle
     i32 m_558;       // +0x558
     i32 m_modeState; // +0x55c
-    char m_pad560[0x570 - 0x560];
+    i32 m_560;       // +0x560  destruct-warning last draw-clock
+    i32 m_564;       // +0x564
+    i32 m_568;       // +0x568  destruct-warning delay (config)
+    i32 m_56c;       // +0x56c
     CSbiSlotPtr* m_modeNotify; // +0x570  notify target
     i32 m_modeArmed;           // +0x574
     i32 m_578;               // +0x578  (cleared on multiplayer/battlez reset)
@@ -586,6 +601,7 @@ struct CSbiLookupMap {
 // A resolved cue record: a player at +0x10 plus a draw-clock gate (+0x14 last,
 // +0x18 interval). Same shape as GameMode's CBootyFound.
 struct CSbiCueRecord {
+    void PlayNow(i32 tag, i32 a, i32 b, i32 c); // 0x25fe (immediate play, no gate)
     char m_pad0[0x10];
     void* m_10; // +0x10  player (ConfigureItem this)
     i32 m_14;   // +0x14  last draw-clock
@@ -599,6 +615,7 @@ struct CSbiCuePlayer {
 
 // The music host chain: g_gameReg->m_gmgr->m_28->{m_30 gate, Lookup map @+0x10}.
 struct CSbiMusicHost {
+    void* FindCue(char* key); // 0x2cca (ecx=host, returns the record directly)
     char m_pad0[0x30];
     void* m_30; // +0x30  gate (non-null => skip the cue play)
 };
@@ -615,6 +632,9 @@ struct CSbiSubMgr {
     i32 ScrollTo(i32 x, i32 y);       // __thiscall, 2 args (FUN_004d5f00)
     void SetState(i32 cur, i32 prev); // __thiscall, 2 args (call 0xfe3e0 site -> 0x3f8a)
     void Refresh();                   // __thiscall, no args (call 0xfe520 site -> 0x3d55)
+    void PostWarn(i32 on, i32 id);    // 0x20bd (destruct-warning pump, 2 args)
+    void HiRefresh(i32 a);            // 0x385a (highlight refresh, 1 arg)
+    void HiToggle(i32 a);             // 0x3c15 (highlight toggle, 1 arg)
     char m_pad0[0x4f0];
     i32 m_4f0; // +0x4f0  highlight-busy flag (non-zero => bail)
 };
@@ -645,7 +665,9 @@ struct CSbiActiveObj {
     i32 m_230; // +0x230  cursor-placed flag
     i32 m_234; // +0x234  placed column
     i32 m_238; // +0x238  placed row
-    char m_pad23c[0x400 - 0x23c];
+    char m_pad23c[0x288 - 0x23c];
+    i32 m_288; // +0x288  MISSIONSTATUS/briefing variant selector
+    char m_pad28c[0x400 - 0x28c];
     i32 m_400; // +0x400  tab-highlight-enabled gate
 };
 
@@ -657,8 +679,20 @@ struct CSbiLogger {
 
 // The CGameReg singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c). Modeled
 // minimally - only the members/methods the reconstructed bodies touch.
+// The window host at g_gameReg+0x4: carries the game HWND at +0x4 (the
+// PostMessage target).
+struct CSbiWndHost {
+    char m_pad0[0x4];
+    void* m_4; // +0x4  game window handle
+};
 struct CGameReg {
-    char m_pad0[0x10];
+    void Fn29aa();               // 0x29aa (briefing-variant hook, no args)
+    void SetToggle(i32 v, i32 a); // 0x409d (2 args)
+    void HiPump();               // 0x1fc8 (no args)
+    char m_pad0[0x4];
+    CSbiWndHost* m_4; // +0x4  window host (PostMessage target)
+    char m_pad8[0xc - 0x8];
+    i32 m_c;    // +0xc  RESUME/toggle gate
     void* m_10; // +0x10  presence gate (destruct-button build guard)
     char m_pad14[0x2c - 0x14];
     CSbiSubMgr* m_2c;  // +0x2c  highlight sub-manager
@@ -2493,6 +2527,7 @@ struct CSbiRenderObj {
 struct CSbiPtrColl2 {
     void Append(i32 idx, void* node);            // 0x1b5144 (InsertAt tail)
     void InsertAt(i32 idx, void* node, i32 cnt); // 0x1b516b (InsertAt with count)
+    void RemoveAt(i32 idx, i32 cnt);             // 0x1b5200 (RemoveAt with count)
 };
 
 // A free-list node {m_0, m_4}; m_0 doubles as the link, m_4 is the sort key.
@@ -2661,18 +2696,473 @@ void CSBI_RectOnly::ReportTab(i32 tab) {
 // -------------------------------------------------------------------------
 // Engine-label backlog stubs.
 // -------------------------------------------------------------------------
-// @confidence: med
-// @source: rtti-vptr
-// @stub
-RVA(0x000ffde0, 0x5b1)
-void CSBI_RectOnly::Stub_0ffde0() {}
+// The by-value geometry rect each tab widget's setup/configure takes (slot-2/11
+// arg5-8): the tab base coords (m_10/m_14) plus per-widget offsets.
+struct SbiTabRect {
+    i32 l;
+    i32 t;
+    i32 r;
+    i32 b;
+};
 
-// @confidence: low
-// @source: winapi:SetRect
-// @stub
+// A top-level status-bar tab widget. Polymorphic so cl emits __thiscall vtable
+// dispatch (Setup at slot 2 / Configure at slot 11 / Activate at slot 12); the
+// vtable VALUES are stamped directly to the retail tables after construction
+// (transitional manual-stamp - the subclass vtables live in other TUs). Slot 0 is
+// the scalar-deleting dtor used by the throw/fail cleanup's `delete it`.
+class CSbiTab {
+public:
+    virtual ~CSbiTab(); // slot 0
+    virtual void s04();
+    virtual i32 Setup(void* owner, i32 objid, i32 code, i32 z, SbiTabRect rc, i32 a9, i32 a10); // slot 2
+    virtual void s0c();
+    virtual void s10();
+    virtual void s14();
+    virtual void s18();
+    virtual void s1c();
+    virtual void s20();
+    virtual void s24();
+    virtual void v28(); // slot 10
+    virtual i32
+    Configure(void* owner, i32 code, i32 type, i32 idx, SbiTabRect rc, char* key, i32 flag, i32 e); // slot 11
+    virtual void Activate(i32 a); // slot 12
+    void* m_vptr;
+    i32 m_4;
+    i32 m_8; // type tag (1 rect / 2 menu)
+    char m_padc[0x24 - 0xc];
+    i32 m_24;
+    i32 m_28;
+    char m_pad2c[0x30 - 0x2c];
+    i32 m_30;
+    i32 m_34;
+    i32 m_38;
+};
+
+// The concrete 0x3c base ctor reached via an ILT thunk (__thiscall on the raw item).
+class CSbiTabBase {
+public:
+    CSbiTabBase(); // ??0CStatusBarItem thunk 0x22c0
+    char m_raw[0x3c];
+};
+
+// The MULTIPLAYERTAB frame descriptor (widget->m_38): a frame-index gate
+// (+0x64/+0x68) plus a value table (+0x14 -> +0x10).
+struct SbiTabFrameSub {
+    char m_pad0[0x10];
+    i32 m_10;
+};
+struct SbiTabFrame {
+    char m_pad0[0x14];
+    SbiTabFrameSub* m_14;
+    char m_pad18[0x64 - 0x18];
+    i32 m_64;
+    i32 m_68;
+};
+
+// The per-tab widget list at this+0x2c (AddTail on each created widget).
+struct CTabList {
+    void AddTail(void* p); // 0x1b4991
+};
+
+// The retail tab vtables (manual-stamp model; g_vtbl_menuItem is DATA-bound by
+// StatusBarGameMenu). Reloc-masked.
+DATA(0x001eab8c)
+extern void* g_vtbl_rectBase; // 0x5eab8c (rect-only sub-widget, tag 1)
+extern void* g_vtbl_menuItem; // 0x5eab4c (tab item, tag 2)
+
+// 0xffde0 - build the five top-level status-bar tabs (STATZ/GRUNTZ/RESOURCE/
+// MULTIPLAYER/GAMETAB) plus three rect-only sub-widgets, once (m_358 gate). Each
+// widget is heap-allocated, its retail vtable + type tag stamped, then Setup/
+// Configure'd from the tab base coords (m_10/m_14) + a per-widget geometry rect
+// (and, for the tabs, an asset key + type code); on success it is appended to the
+// +0x2c list and stashed in its per-tab slot (m_1c8..m_1d8). Built under a /GX EH
+// frame (a just-created item is deleted if its setup throws / returns 0). The
+// MULTIPLAYER tab gets a mode-specific configure in a battlez game (m_134==1).
+// Finishes with three validity probes; returns 0 on any failure, else latches
+// m_358 = 1 and returns 1.
+// @early-stop
+// /GX EH-frame + manual-vtable wall - identical archetype to StatusBarGameMenu::
+// BuildGameMenu (also @early-stop ~37%). The dominant residual is structural: retail
+// carries a /GX frame + a per-item incrementing EH state machine because each item's
+// operator-new + ctor is inlined and its setup call is a delete-on-throw region;
+// modeled here with visible operator-new/thunk-ctor + manual vtable stamps, cl's EH
+// bookkeeping + the by-value rect arg scheduling diverge, shifting the frame. Plus
+// the manual vtable-stamp DIR32 naming (g_vtbl_rectBase/g_vtbl_menuItem) and the
+// GAMETAB $SG strings. Logic complete; deferred to the final sweep (re-attack once
+// the CSBI_* item ctors land and the frame can be reproduced).
+RVA(0x000ffde0, 0x5b1)
+i32 CSBI_RectOnly::BuildStatusBarTabs() {
+    if (m_358 != 0) {
+        return 1;
+    }
+    if (m_c == 0) {
+        return 0;
+    }
+    i32 bx = m_10;
+    i32 by = m_rect14.m_0;
+    i32 code = m_c;
+    CSbiTab* it;
+    SbiTabRect r;
+
+    // ---- rect-only sub-widget A (id 0x259) ----
+    it = (CSbiTab*)::operator new(0x30);
+    if (it) {
+        it->m_4 = 0;
+        it->m_24 = 0;
+        it->m_28 = 0;
+        *(void**)it = &g_vtbl_rectBase;
+        it->m_8 = 1;
+    }
+    r.l = bx + 0x7c;
+    r.t = by + 0xad;
+    r.r = bx + 0x88;
+    r.b = by + 0xb9;
+    if (!it->Setup(this, code, 0x259, 0, r, 0, -1)) {
+        if (it) {
+            delete it;
+        }
+        return 0;
+    }
+    ((CTabList*)((char*)this + 0x2c))->AddTail(it);
+
+    // ---- rect-only sub-widget B (id 0x25a) ----
+    it = (CSbiTab*)::operator new(0x30);
+    if (it) {
+        it->m_4 = 0;
+        it->m_24 = 0;
+        it->m_28 = 0;
+        *(void**)it = &g_vtbl_rectBase;
+        it->m_8 = 1;
+    }
+    r.l = bx + 0x8a;
+    r.t = by + 0xb9;
+    r.r = bx + 0x96;
+    r.b = by + 0xc7;
+    if (!it->Setup(this, code, 0x25a, 0, r, 0, -1)) {
+        if (it) {
+            delete it;
+        }
+        return 0;
+    }
+    ((CTabList*)((char*)this + 0x2c))->AddTail(it);
+
+    // ---- rect-only sub-widget C (id 0x25b) ----
+    it = (CSbiTab*)::operator new(0x30);
+    if (it) {
+        it->m_4 = 0;
+        it->m_24 = 0;
+        it->m_28 = 0;
+        *(void**)it = &g_vtbl_rectBase;
+        it->m_8 = 1;
+    }
+    r.l = bx + 0x83;
+    r.t = by + 0xbb;
+    r.r = bx + 0x8f;
+    r.b = by + 0xc7;
+    if (!it->Setup(this, code, 0x25b, 0, r, 0, -1)) {
+        if (it) {
+            delete it;
+        }
+        return 0;
+    }
+    ((CTabList*)((char*)this + 0x2c))->AddTail(it);
+
+    // ---- STATZTAB (menu item, type 1) ----
+    it = (CSbiTab*)new CSbiTabBase;
+    *(void**)it = &g_vtbl_menuItem;
+    it->m_8 = 2;
+    it->m_34 = 0;
+    it->m_30 = 0;
+    it->m_38 = 0;
+    r.l = bx + 0x42;
+    r.t = by + 0x82;
+    r.r = bx + 0x62;
+    r.b = by + 0x99;
+    if (!it->Configure(this, code, 1, 0, r, "GAME_STATUSBAR_TABZ_STATZTAB", -1, 0)) {
+        if (it) {
+            delete it;
+        }
+        return 0;
+    }
+    ((CTabList*)((char*)this + 0x2c))->AddTail(it);
+    m_1c8 = (CSbiSprite*)it;
+
+    // ---- GRUNTZTAB (menu item, type 2) ----
+    it = (CSbiTab*)new CSbiTabBase;
+    *(void**)it = &g_vtbl_menuItem;
+    it->m_8 = 2;
+    it->m_34 = 0;
+    it->m_30 = 0;
+    it->m_38 = 0;
+    r.l = bx + 0x04;
+    r.t = by + 0x82;
+    r.r = bx + 0x24;
+    r.b = by + 0x99;
+    if (!it->Configure(this, code, 2, 0, r, "GAME_STATUSBAR_TABZ_GRUNTZTAB", -1, 0)) {
+        if (it) {
+            delete it;
+        }
+        return 0;
+    }
+    ((CTabList*)((char*)this + 0x2c))->AddTail(it);
+    m_1d0 = (CSbiSprite*)it;
+
+    // ---- RESOURCETAB (menu item, type 3) ----
+    it = (CSbiTab*)new CSbiTabBase;
+    *(void**)it = &g_vtbl_menuItem;
+    it->m_8 = 2;
+    it->m_34 = 0;
+    it->m_30 = 0;
+    it->m_38 = 0;
+    r.l = bx + 0x24;
+    r.t = by + 0x82;
+    r.r = bx + 0x44;
+    r.b = by + 0x99;
+    if (!it->Configure(this, code, 3, 0, r, "GAME_STATUSBAR_TABZ_RESOURCETAB", -1, 0)) {
+        if (it) {
+            delete it;
+        }
+        return 0;
+    }
+    ((CTabList*)((char*)this + 0x2c))->AddTail(it);
+    m_1cc = (CSbiSprite*)it;
+
+    // ---- MULTIPLAYERTAB (menu item, type 4) ----
+    it = (CSbiTab*)new CSbiTabBase;
+    *(void**)it = &g_vtbl_menuItem;
+    it->m_8 = 2;
+    it->m_34 = 0;
+    it->m_30 = 0;
+    it->m_38 = 0;
+    r.l = bx + 0x60;
+    r.t = by + 0x82;
+    r.r = bx + 0x80;
+    r.b = by + 0x99;
+    if (!it->Configure(this, code, 4, 0, r, "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB", -1, 0)) {
+        if (it) {
+            delete it;
+        }
+        return 0;
+    }
+    ((CTabList*)((char*)this + 0x2c))->AddTail(it);
+    m_1d4 = (CSbiSprite*)it;
+    if (g_gameReg->m_134 == 1) {
+        it->m_34 = 4;
+        SbiTabFrame* f = (SbiTabFrame*)it->m_38;
+        i32 v;
+        if (f != 0 && f->m_64 <= 4 && f->m_68 >= 4) {
+            v = f->m_14->m_10;
+        } else {
+            v = 0;
+        }
+        it->m_30 = v;
+        it->m_4 = 0;
+        it->v28();
+    }
+
+    // ---- GAMETAB (menu item, type 5; inline ctor) ----
+    it = (CSbiTab*)::operator new(0x3c);
+    if (it) {
+        it->m_4 = 0;
+        it->m_24 = 0;
+        it->m_28 = 0;
+        *(void**)it = &g_vtbl_menuItem;
+        it->m_8 = 2;
+        it->m_34 = 0;
+        it->m_30 = 0;
+        it->m_38 = 0;
+    }
+    r.l = bx + 0x7e;
+    r.t = by + 0x82;
+    r.r = bx + 0x9e;
+    r.b = by + 0x99;
+    if (!it->Configure(this, code, 5, 0, r, "GAME_STATUSBAR_TABZ_GAMETAB", -1, 0)) {
+        if (it) {
+            delete it;
+        }
+        return 0;
+    }
+    ((CTabList*)((char*)this + 0x2c))->AddTail(it);
+    m_1d8 = (CSbiSprite*)it;
+
+    if (Probe2e69() == 0) {
+        return 0;
+    }
+    if (TabRefresh() == 0) {
+        return 0;
+    }
+    if (Probe41a1() == 0) {
+        return 0;
+    }
+    m_358 = 1;
+    return 1;
+}
+
+// The inlined game RNG (shared with BootyWalkAnim / CGruntSpawnConfig): the LCG
+// seed + the seed-init flag (bit 0) + the timeGetTime entry pointer. Bound (DATA)
+// by BootyWalkAnim / m5_SoundTickCtor; referenced here as reloc-masked externs.
+extern u8 g_randSeeded;  // 0x6c127d  seed-init flag (bit 0)
+extern i32 g_randSeed;   // 0x6c1288  LCG seed
+extern "C" u32(__stdcall* g_pTimeGetTime)(); // 0x6c4650
+
+// MSVC-style LCG rand() (x = x*214013 + 2531011), lazily seeded from timeGetTime.
+// The range test is first so the divisor is proven non-zero (no idiv guard) and
+// the rand-gen is duplicated across both arms exactly as retail inlines it: range
+// 0 -> a 0/1 coin, else 1..range. Inlined at each of the roulette's four nodes.
+static __inline i32 WapRand(i32 range) {
+    u32 x;
+    if (range == 0) {
+        if (!(g_randSeeded & 1)) {
+            g_randSeeded |= 1;
+            x = g_pTimeGetTime();
+        } else {
+            x = g_randSeed;
+        }
+        g_randSeed = x * 214013 + 2531011;
+        return ((u32)g_randSeed >> 16) & 1;
+    }
+    if (!(g_randSeeded & 1)) {
+        g_randSeeded |= 1;
+        x = g_pTimeGetTime();
+    } else {
+        x = g_randSeed;
+    }
+    g_randSeed = x * 214013 + 2531011;
+    return (((i32)g_randSeed >> 16) & 0x7fff) % range + 1;
+}
+
+// 0x107d00 - the falling-item weighted-random roulette. When the game is over
+// (m_134==1), return the first pooled item's id to the free-list (or notify the
+// falling-item sink with 0). Otherwise pick an item type from the running-sum
+// battlez percent table via a three-tier weighted random (a top-level toolz/toyz/
+// brickz split, then a per-category item roll), map the roll to the item-type id,
+// place the falling-item HUD rect (SetRect + the notify-object rect block), and
+// tick the pending fall count. Returns 1.
+// @early-stop
+// 88.4%: inlined-LCG-rand + weighted-tree archetype (the twin left as a pure 0%
+// stub at CGruntSpawnConfig::PickWeighted 0x11bee0). Logic + the whole three-tier
+// tree + the LCG lea-chain are byte-faithful (verified llvm-objdump -dr). Residual
+// is a callee-saved-reg CSE pick: retail caches g_randSeeded in bl (a 4th push ebx)
+// and the g_pTimeGetTime ptr in edi (mov edi,[ptr]; call edi), while cl emits a
+// 3-register solution (flag in cl, call [ptr] indirect) and a `mov ecx,[m_134];cmp`
+// vs retail's `cmp [m_134],1` direct memory compare. Plus the ?g_gameReg vs
+// _g_mgrSettings shared-global DIR32 naming tail. Not source-steerable under /O2.
 RVA(0x00107d00, 0x591)
 i32 CSBI_RectOnly::winapi_107d00_SetRect() {
-    return 0;
+    i32 result;
+    if (g_gameReg->m_134 == 1) {
+        if (m_ptrCount > 0) {
+            void* p = m_ptrTable[0];
+            result = *(i32*)p;
+            void** node = (void**)((char*)p - g_freeListNodeBias);
+            *node = g_freeList;
+            g_freeList = node;
+            ((CSbiPtrColl2*)&m_530)->RemoveAt(0, 1);
+        } else {
+            result = 0;
+            if (m_extraNotify0) {
+                m_extraNotify0->Notify(0);
+            }
+        }
+    } else {
+        i32 r1 = WapRand(m_battlezPct[2]);
+        if (r1 <= m_battlezPct[0]) {
+            i32 r = WapRand(m_battlezPct[37]);
+            if (r <= m_battlezPct[17]) {
+                result = 1;
+            } else if (r <= m_battlezPct[18]) {
+                result = 2;
+            } else if (r <= m_battlezPct[19]) {
+                result = 3;
+            } else if (r <= m_battlezPct[20]) {
+                result = 4;
+            } else if (r <= m_battlezPct[21]) {
+                result = 5;
+            } else if (r <= m_battlezPct[22]) {
+                result = 6;
+            } else if (r <= m_battlezPct[23]) {
+                result = 7;
+            } else if (r <= m_battlezPct[24]) {
+                result = 8;
+            } else if (r <= m_battlezPct[25]) {
+                result = 9;
+            } else if (r <= m_battlezPct[26]) {
+                result = 10;
+            } else if (r <= m_battlezPct[27]) {
+                result = 11;
+            } else if (r <= m_battlezPct[28]) {
+                result = 12;
+            } else if (r <= m_battlezPct[29]) {
+                result = 13;
+            } else if (r <= m_battlezPct[30]) {
+                result = 14;
+            } else if (r <= m_battlezPct[31]) {
+                result = 15;
+            } else if (r <= m_battlezPct[32]) {
+                result = 16;
+            } else if (r <= m_battlezPct[33]) {
+                result = 17;
+            } else if (r <= m_battlezPct[34]) {
+                result = 18;
+            } else if (r <= m_battlezPct[35]) {
+                result = 19;
+            } else {
+                result = 0x15 + (r > m_battlezPct[36]);
+            }
+        } else if (r1 <= m_battlezPct[1]) {
+            i32 r = WapRand(m_battlezPct[16]);
+            if (r <= m_battlezPct[7]) {
+                result = 0x17;
+            } else if (r <= m_battlezPct[8]) {
+                result = 0x18;
+            } else if (r <= m_battlezPct[9]) {
+                result = 0x19;
+            } else if (r <= m_battlezPct[10]) {
+                result = 0x1a;
+            } else if (r <= m_battlezPct[11]) {
+                result = 0x1b;
+            } else if (r <= m_battlezPct[12]) {
+                result = 0x1c;
+            } else if (r <= m_battlezPct[13]) {
+                result = 0x1d;
+            } else if (r <= m_battlezPct[14]) {
+                result = 0x1e;
+            } else {
+                result = 0x1f + (r > m_battlezPct[15]);
+            }
+        } else {
+            i32 r = WapRand(m_battlezPct[6]);
+            if (r <= m_battlezPct[3]) {
+                result = 0x23;
+            } else if (r <= m_battlezPct[4]) {
+                result = 0x24;
+            } else {
+                result = 0x25 + (r > m_battlezPct[5]);
+            }
+        }
+        if (result == 0x14) {
+            result = 5;
+        }
+    }
+    m_extraNotifyArg1 = result;
+    m_4c8 = 1;
+    SetRect((LPRECT)&m_514, 0x49, 0xd7, 0x61, 0xef);
+    if (m_extraNotify0) {
+        i32 x = m_10;
+        i32 y = m_rect14.m_0;
+        m_extraNotify0->m_rect14[0] = m_514 + x;
+        m_extraNotify0->m_rect14[1] = m_518 + y;
+        m_extraNotify0->m_rect14[2] = m_51c + x;
+        m_extraNotify0->m_rect14[3] = m_520 + y;
+    }
+    RefreshFallRect();
+    i32 c = m_52c;
+    m_528 = 0;
+    if (c > 0) {
+        m_52c = c - 1;
+        FallItemTick();
+    }
+    return 1;
 }
 
 // 0xfdc00 - reset the item to the multiplayer-item-percent (battlez) layout: place
@@ -2869,11 +3359,324 @@ i32 CSBI_RectOnly::LoadMainStatusBarSprite() {
     return 1;
 }
 
-// @confidence: med
-// @source: decomp-xref
-// @stub
+// The hit-tested tab-highlight widget resolved by HiResolve: polymorphic (Update
+// at vtable slot 6 = +0x18); the command id at +0xc and the widget kind at +0x10
+// (the outer switch key). Reloc-masked non-virtual siblings otherwise.
+class CSbiHiWidget {
+public:
+    virtual void v0();
+    virtual void v4();
+    virtual void v8();
+    virtual void vc();
+    virtual void v10();
+    virtual void v14();
+    virtual void Update(i32 a, i32 b, i32 c); // +0x18 (slot 6)
+    char m_pad4[0xc - 0x4];
+    i32 m_c;  // +0xc  command id
+    i32 m_10; // +0x10  widget kind (outer switch key, 0..6)
+};
+
+// The cached PostMessageA entry point (game-owned fn pointer; the highlight
+// dispatcher posts WM_COMMAND via it, not the direct import).
+extern "C" {
+    DATA(0x002c44c8)
+    extern i32(__stdcall* g_pPostMessageA)(void*, u32, i32, i32); // 0x6c44c8
+}
+
+// Play GAME_TABHIGHLIGHT1 immediately (no clock gate) - variant 1: the record is
+// resolved by a direct FindCue on the host (returns the record) and played.
+static __inline void HiCueFind() {
+    CSbiMusicHost* host = g_gameReg->m_30->m_28;
+    if (host->m_30 == 0) {
+        void* obj = host->FindCue("GAME_TABHIGHLIGHT1");
+        if (obj) {
+            ((CSbiCueRecord*)obj)->PlayNow(g_61ab24, 0, 0, 0);
+        }
+    }
+}
+
+// Variant 2: resolve via the +0x10 string map (Lookup out-param) then play now.
+static __inline void HiCueLookup() {
+    CSbiMusicHost* host = g_gameReg->m_30->m_28;
+    if (host->m_30 == 0) {
+        void* out = 0;
+        ((CSbiLookupMap*)((char*)host + 0x10))->Lookup("GAME_TABHIGHLIGHT1", &out);
+        if (out) {
+            ((CSbiCueRecord*)out)->PlayNow(g_61ab24, 0, 0, 0);
+        }
+    }
+}
+
+// Variant 3: the standard draw-clock-gated cue play (like LoadGooCookingSprite).
+static __inline void HiCueTimed() {
+    CSbiMusicHost* host = g_gameReg->m_30->m_28;
+    if (host->m_30 == 0) {
+        void* found = 0;
+        ((CSbiLookupMap*)((char*)host + 0x10))->Lookup("GAME_TABHIGHLIGHT1", &found);
+        if (found && g_61ab20 != 0) {
+            i32 item = g_61ab24;
+            CSbiCueRecord* p = (CSbiCueRecord*)found;
+            if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
+                p->m_14 = g_6bf3c0;
+                ((CSbiCuePlayer*)p->m_10)->ConfigureItem(item, 0, 0, 0);
+            }
+        }
+    }
+}
+
+// Post WM_COMMAND(cmdId) to the game window via the cached PostMessageA pointer.
+static __inline void HiPost(i32 cmdId) {
+    g_pPostMessageA(g_gameReg->m_4->m_4, 0x111, cmdId, 0);
+}
+
+// 0xfe910 - UpdateStatusBarTabHighlight(a1, a2, a3). Resolve the hit tab-highlight
+// widget, run its Update, then dispatch on the widget kind (m_10, 0..6) and command
+// (m_c): play the GAME_TABHIGHLIGHT1 cue and either refresh a sub-panel, arm a tab,
+// post a WM_COMMAND to the game window, or toggle the destruct-button warning. The
+// resource/gruntz/game tabs gate on m_354 + the active object's tab-highlight-enable
+// flag (m_68->m_400). Returns 1 (0 on an out-of-range command).
+// @early-stop
+// COMPLETE reconstruction of a 2958-byte 7-way widget-kind switch (jump table
+// 0x4ff4a0) with three nested command sub-switches lowered by MSVC to byte-indexed
+// jump tables (0x4ff4bc / 0x4ff4ec+0x4ff4e0 / 0x4ff51c+0x4ff50c / 0x4ff528). Walls:
+// (1) each dense sub-switch is a separate-COMDAT jump table (docs/patterns/
+// switch-jumptable-separate-comdat.md, ~75-80%) and the byte-index tables aren't
+// source-steerable; (2) the ~15 inlined cue-play blocks + PostMessage tails
+// tail-merge/schedule differently; (3) the shared-global DIR32 naming
+// (?g_gameReg vs _g_mgrSettings, ?g_61ab24 vs ?g_sndCueTag, g_pPostMessageA,
+// GAME_TABHIGHLIGHT1 $SG). Logic is byte-faithful; deferred to the final sweep.
 RVA(0x000fe910, 0xb8e)
-void CSBI_RectOnly::UpdateStatusBarTabHighlight(i32, i32, i32) {}
+i32 CSBI_RectOnly::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
+    CSbiHiWidget* w = HiResolve(a2, a3);
+    if (w == 0) {
+        return 1;
+    }
+    w->Update(a1, a2, a3);
+    i32 cmd = w->m_c;
+    switch (w->m_10) {
+    case 0:
+        if (m_hitTestDisabled != 0) {
+            return 1;
+        }
+        if (g_gameReg->m_68->m_400 == 0) {
+            return 1;
+        }
+        if (cmd > 0x259) {
+            if (cmd == 0x25a) {
+                HiCueFind();
+                RefreshB();
+                return 1;
+            }
+            if (cmd == 0x25b) {
+                HiCueFind();
+                HiRefreshResource();
+                return 1;
+            }
+            return 0;
+        }
+        if (cmd == 0x259) {
+            HiCueFind();
+            RefreshA();
+            return 1;
+        }
+        if (cmd <= 0 || cmd > 5) {
+            return 0;
+        }
+        HiCueFind();
+        RectApply(cmd, 3);
+        return 1;
+
+    case 1:
+        if (m_hitTestDisabled != 0) {
+            return 1;
+        }
+        if (g_gameReg->m_68->m_400 == 0) {
+            return 1;
+        }
+        if (cmd < 0x12c || cmd > 0x149) {
+            return 0;
+        }
+        if (cmd <= 0x13a) {
+            HiCueLookup();
+            HiTabA(cmd - 0x12c);
+        } else {
+            HiCueLookup();
+            HiTabB(cmd - 0x13b, 0);
+        }
+        return 1;
+
+    case 2:
+        if (m_hitTestDisabled != 0) {
+            return 1;
+        }
+        if (g_gameReg->m_68->m_400 == 0) {
+            return 1;
+        }
+        if (cmd < 0x64 || cmd > 0x68) {
+            return 0;
+        }
+        HiSelectStat(cmd - 0x64);
+        return 1;
+
+    case 3:
+        if (m_hitTestDisabled != 0) {
+            return 1;
+        }
+        if (g_gameReg->m_68->m_400 == 0) {
+            return 1;
+        }
+        if (cmd < 0xd3 || cmd > 0xde) {
+            return 1;
+        }
+        if (cmd <= 0xd6) {
+            HiGrunt0(cmd - 0xd3);
+        } else if (cmd <= 0xda) {
+            HiGrunt1(cmd - 0xd7);
+        } else {
+            HiGrunt2(cmd - 0xdb);
+        }
+        return 1;
+
+    case 4:
+        if (m_hitTestDisabled != 0) {
+            return 1;
+        }
+        if (g_gameReg->m_68->m_400 == 0) {
+            return 1;
+        }
+        if (cmd < 0x190 || cmd > 0x193) {
+            return 0;
+        }
+        HiCueLookup();
+        m_tabCycle = cmd - 0x190;
+        TeardownNotify(0);
+        FinishReset16ea();
+        TabCommit();
+        return 1;
+
+    case 5:
+        if (m_550 != 0) {
+            return 1;
+        }
+        switch (cmd) {
+        case 0x1f4:
+            HiCueFind();
+            HiPost(0x8007);
+            return 1;
+        case 0x1f5:
+            HiCueFind();
+            HiPost(0x80ce);
+            return 1;
+        case 0x1f6:
+            HiCueFind();
+            HiPost(0x80cf);
+            return 1;
+        case 0x1f8:
+            HiCueFind();
+            HiPost(0x8035);
+            return 1;
+        case 0x1f7:
+            HiCueLookup();
+            HiPost(0x80e2);
+            return 1;
+        case 0x1f9:
+            HiCueLookup();
+            if (g_gameReg->m_c != 0) {
+                g_gameReg->m_c ^= 1;
+                g_gameReg->SetToggle(g_gameReg->m_c, 1);
+            }
+            g_gameReg->m_2c->HiToggle(1);
+            return 1;
+        case 0x1fa:
+            HiCueLookup();
+            ArmTab(5, 0);
+            return 1;
+        case 0x1fc:
+            if (g_gameReg->m_134 != 1) {
+                return 1;
+            }
+            if (m_modeArmed != 0) {
+                return 1;
+            }
+            if (m_hitTestDisabled != 0) {
+                return 1;
+            }
+            HiCueLookup();
+            {
+                CSbiSubMgr* sm = g_gameReg->m_2c;
+                if (m_558 == 0) {
+                    m_558 = 1;
+                    m_modeState = 2;
+                    m_568 = g_buteMgr.GetIntDef("StatusBar", "DestructButtonWarningDelay", 0x32);
+                    m_56c = 0;
+                    m_560 = g_dat645588;
+                    m_564 = 0;
+                    sm->PostWarn(1, 0xbb7);
+                } else {
+                    CSbiSlotPtr* n = m_modeNotify;
+                    m_558 = 0;
+                    m_modeState = 1;
+                    if (n) {
+                        n->Notify(1);
+                    }
+                    sm->PostWarn(0, 0xbb7);
+                }
+            }
+            return 1;
+        default:
+            return 0;
+        }
+
+    case 6:
+        switch (cmd) {
+        case 0x324:
+            if (g_gameReg->m_68->m_288 == 1) {
+                HiCueLookup();
+                g_gameReg->HiPump();
+            } else if (g_gameReg->m_134 == 1) {
+                HiCueLookup();
+                HiPost(0x806b);
+            } else {
+                HiCueLookup();
+                g_gameReg->m_2c->HiRefresh(0);
+            }
+            return 1;
+        case 0x325:
+            if (g_gameReg->m_134 == 1) {
+                if (g_gameReg->m_68->m_288 == 1) {
+                    g_gameReg->Fn29aa();
+                }
+                HiCueLookup();
+                HiPost(0x8023);
+            } else {
+                HiCueTimed();
+                g_gameReg->HiPump();
+            }
+            return 1;
+        case 0x327:
+            if (g_gameReg->m_134 == 1) {
+                if (g_gameReg->m_68->m_288 == 1) {
+                    g_gameReg->Fn29aa();
+                }
+                HiCueTimed();
+                HiPost(0x8023);
+            } else {
+                HiCueTimed();
+                g_gameReg->HiPump();
+            }
+            return 1;
+        case 0x328:
+            HiCueTimed();
+            g_gameReg->m_2c->HiRefresh(0);
+            return 1;
+        default:
+            return 0;
+        }
+
+    default:
+        return 0;
+    }
+}
 
 // 0xffb20 - build (or release) the DESTRUCT button display object. Only touches it
 // while the presence gate (g_gameReg->m_10) is up: when the mode is armed (m_558!=0)

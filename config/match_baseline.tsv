@@ -3254,6 +3254,7 @@ sbi_rectonly	?AnySlotActive@CSBI_RectOnly@@QAEHXZ	100.0000	100.0000	2	cc30bba269
 sbi_rectonly	?ArmSlot@CSBI_RectOnly@@QAEXH@Z	100.0000	100.0000	2	c31c87dc7f16	0x105560
 sbi_rectonly	?BuildGameTabPauseButton@CSBI_RectOnly@@QAEXXZ	100.0000	100.0000	2	c747fb6dc08d	0x102200
 sbi_rectonly	?BuildGameTabResumeButton@CSBI_RectOnly@@QAEXH@Z	100.0000	100.0000	3	11aafd278199	0x102180
+sbi_rectonly	?BuildStatusBarTabs@CSBI_RectOnly@@QAEHXZ	62.5869	62.5869	1	3cfd95bdf4c0	0xffde0
 sbi_rectonly	?ClearHlCell@CSBI_RectOnly@@QAEXHH@Z	100.0000	100.0000	2	19db944634aa	0x1069c0
 sbi_rectonly	?ClearStat@CSBI_RectOnly@@QAEHH@Z	100.0000	100.0000	1	1ab0c467e5e8	0x104f90
 sbi_rectonly	?ClearTabGroup@CSBI_RectOnly@@QAEXXZ	67.4706	67.4706	1	57d2592ce398	0x100b00
@@ -3304,7 +3305,6 @@ sbi_rectonly	?SetState@CSBI_RectOnly@@QAEHH@Z	100.0000	100.0000	1	52b8eb2716b0	0
 sbi_rectonly	?SetTab@CSBI_RectOnly@@QAEHHH@Z	99.9636	99.9636	2	75acee6fd3d7	0x1020a0
 sbi_rectonly	?SetTabState@CSBI_RectOnly@@QAEHHH@Z	85.5328	85.5328	1	4a14706630f5	0x100d70
 sbi_rectonly	?Setup@CSBI_RectOnly@@QAEHHHHHHHHHHH@Z	90.3846	90.3846	2	9a8ca2bb645a	0xe86e0
-sbi_rectonly	?Stub_0ffde0@CSBI_RectOnly@@QAEXXZ	0.2119	0.2119	4	3326c6c6d306	0xffde0
 sbi_rectonly	?Teardown@CSBI_RectOnly@@QAEXXZ	100.0000	100.0000	2	d3950462b68c	0xfe350
 sbi_rectonly	?TickGauge@CSBI_RectOnly@@QAEXXZ	95.6905	95.6905	2	cfd3e12e9ddb	0x105480
 sbi_rectonly	?ToggleStat@CSBI_RectOnly@@QAEXH@Z	100.0000	100.0000	2	412939e58d09	0x107aa0
@@ -3313,9 +3313,9 @@ sbi_rectonly	?UpdateFallingItemStatusBar@CSBI_RectOnly@@QAEHHHH@Z	77.2727	77.272
 sbi_rectonly	?UpdateRezConveyorStatusBar@CSBI_RectOnly@@QAEXXZ	84.7770	84.7770	2	c056f35f3ca7	0x105990
 sbi_rectonly	?UpdateRezMachineSnoozeStatusBar@CSBI_RectOnly@@QAEXXZ	100.0000	100.0000	2	42d61a205aef	0x106660
 sbi_rectonly	?UpdateRezMachineWakeStatusBar@CSBI_RectOnly@@QAEHXZ	96.1290	96.1290	1	f5d7f69fc70b	0x107a10
-sbi_rectonly	?UpdateStatusBarTabHighlight@CSBI_RectOnly@@QAEXHHH@Z	0.1099	0.1099	2	5350e63b18c5	0xfe910
+sbi_rectonly	?UpdateStatusBarTabHighlight@CSBI_RectOnly@@QAEHHHH@Z	47.9319	47.9319	1	662c9c967203	0xfe910
 sbi_rectonly	?winapi_0fe520_SetRect@CSBI_RectOnly@@QAEHXZ	100.0000	100.0000	1	fcd1ab1376bb	0xfe520
-sbi_rectonly	?winapi_107d00_SetRect@CSBI_RectOnly@@QAEHXZ	0.5155	0.5155	2	010307708fab	0x107d00
+sbi_rectonly	?winapi_107d00_SetRect@CSBI_RectOnly@@QAEHXZ	88.4253	88.4253	3	b37b6aa435dd	0x107d00
 sbi_rectonly_eh	?DtorMembers@CSBI_RectOnly@@QAEXXZ	49.1923	49.1923	1	4c6d76b17d3f	0xc8980
 sbi_rectonly_eh	?EnsureSub@CSBI_RectOnly@@QAEHHHH@Z	100.0000	100.0000	2	de84c5225915	0x109ad0
 sbi_rectonlydtor_eh	??1CSBI_RectOnly@@UAE@XZ	100.0000	100.0000	1	857773112dad	0x100700
