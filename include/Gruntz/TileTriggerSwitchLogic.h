@@ -10,6 +10,7 @@
 #define SRC_GRUNTZ_TILETRIGGERSWITCHLOGIC_H
 
 #include <Ints.h>
+#include <rva.h> // SIZE_UNKNOWN class-metadata macros used below
 
 // The WwdGameReg singleton (g_gameReg, RVA 0x64556c).  Only +0x30 (the active
 // game-manager pointer) is touched by the methods here; reloc-masked DIR32.

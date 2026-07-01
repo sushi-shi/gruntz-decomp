@@ -233,3 +233,8 @@ void CDDrawChildGroup::Stub_1591f0() {}
 // @stub
 RVA(0x00159a70, 0x200)
 void CDDrawChildGroup::Stub_159a70() {}
+
+// class-metadata sweep: size annotations (SIZE_UNKNOWN = retail size TBD).
+SIZE_UNKNOWN(CDDrawChildGroup);
+SIZE_UNKNOWN(HermionaChild);
+SIZE_UNKNOWN(HermionaNode);

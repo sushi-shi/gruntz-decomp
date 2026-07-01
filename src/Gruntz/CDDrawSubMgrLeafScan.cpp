@@ -768,3 +768,19 @@ CString CDDrawSubMgrLeafScan::FindKeyOfValue_158570(LeafScanValue* target) {
     }
     return key;
 }
+
+// class-metadata sweep: size annotations (SIZE_UNKNOWN = retail size TBD).
+SIZE_UNKNOWN(DirNode);
+SIZE_UNKNOWN(LeafCue);
+SIZE_UNKNOWN(LeafCuePlayer);
+SIZE_UNKNOWN(LeafElement);
+SIZE_UNKNOWN(LeafElementBase);
+SIZE_UNKNOWN(LeafElementObj);
+SIZE_UNKNOWN(LeafRootHandle);
+SIZE_UNKNOWN(LeafScanBase);
+SIZE_UNKNOWN(LeafScanSoundArg);
+SIZE_UNKNOWN(LeafScanVM18Sink);
+SIZE_UNKNOWN(LeafScanValue);
+SIZE_UNKNOWN(LeafSumSource);
+SIZE_UNKNOWN(RemusParseSource);
+SIZE_UNKNOWN(SoundDeviceStartView);

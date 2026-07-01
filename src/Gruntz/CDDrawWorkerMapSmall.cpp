@@ -404,4 +404,15 @@ void UnknownAlbusTeardown::VirtualMethodUnknown1C()
     m_map1.RemoveAll();
     *(i32 *)((char *)this + 0x64) = 0;
 }
+// Size annotations for the two #if-0'd WIP classes: kept INSIDE the disabled
+// block so the (preprocessor-unaware) class_sizes text-scan counts them while
+// the compiler skips them (they are not defined in the compiled TU).
+SIZE_UNKNOWN(AlbusMapValue);
+SIZE_UNKNOWN(UnknownAlbusTeardown);
 #endif
+
+// class-metadata sweep: size annotations (SIZE_UNKNOWN = retail size TBD).
+SIZE_UNKNOWN(AlbusMapBase);
+SIZE_UNKNOWN(AlbusWorker);
+SIZE_UNKNOWN(AlbusWorkerObj);
+SIZE_UNKNOWN(CDDrawWorkerMapSmall);

@@ -124,3 +124,7 @@ i32 CDDrawWorkerB::Vfunc30(i32 a1, i32 a2, i32 a3, i32 a4) {
     m_st = 2;
     return ((HelperHost*)this)->Helper_164790(a1, a2);
 }
+
+// class-metadata sweep: size annotations (SIZE_UNKNOWN = retail size TBD).
+SIZE_UNKNOWN(CDDrawFrameSource);
+SIZE_UNKNOWN(HelperHost);

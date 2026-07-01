@@ -164,3 +164,8 @@ CDDrawWorkerCache::~CDDrawWorkerCache() {}
 // @stub
 RVA(0x00157720, 0x68)
 void CDDrawWorkerCache::VirtualMethod_157720() {}
+
+// class-metadata sweep: size annotations (SIZE_UNKNOWN = retail size TBD).
+SIZE_UNKNOWN(CDDrawWorkerCache);
+SIZE_UNKNOWN(SiriusWorker);
+SIZE_UNKNOWN(SiriusWorkerObj);

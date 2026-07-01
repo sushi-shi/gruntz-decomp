@@ -13,6 +13,7 @@
 #define SRC_GRUNTZ_TILETRIGGERCONTAINER_H
 
 #include <Ints.h>
+#include <rva.h> // SIZE_UNKNOWN class-metadata macros used below
 
 // The Rez heap alloc/free (RVA 0x1b9b46 _RezAlloc / 0x1b9b82 _RezFree);
 // reloc-masked rel32 callees.

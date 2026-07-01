@@ -104,3 +104,7 @@ void CDDrawSubMgrDraco::Stub_1574b0() {}
 // @stub
 RVA(0x001588f0, 0x1c5)
 void CDDrawSubMgrDraco::Stub_1588f0() {}
+
+// class-metadata sweep: size annotations (SIZE_UNKNOWN = retail size TBD).
+SIZE_UNKNOWN(CDDrawSubMgrDraco);
+SIZE_UNKNOWN(DracoChild);

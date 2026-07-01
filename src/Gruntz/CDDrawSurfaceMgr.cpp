@@ -347,3 +347,13 @@ i32 CDDrawSurfaceMgr::UnknownVirtualMethod34(i32, i32, i32, i32, void*) {
 // @stub
 RVA(0x00155900, 0x519)
 void CDDrawSurfaceMgr::UnknownVirtualMethod18() {}
+
+// class-metadata sweep: size annotations (SIZE_UNKNOWN = retail size TBD).
+SIZE_UNKNOWN(CDDrawSubMgrItem);
+SIZE_UNKNOWN(CDDrawSurfaceMgrBase);
+SIZE_UNKNOWN(DDChildSlot0);
+SIZE_UNKNOWN(DDChildSlot1);
+SIZE_UNKNOWN(FilchObj);
+SIZE_UNKNOWN(MinervaMgr);
+SIZE_UNKNOWN(RemusCoordsHelper);
+SIZE_UNKNOWN(VoldemortObj);

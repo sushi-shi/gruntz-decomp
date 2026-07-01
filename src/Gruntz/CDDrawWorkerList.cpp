@@ -412,3 +412,11 @@ void CDDrawWorkerList::Stub_156f50() {}
 // @stub
 RVA(0x00156fc0, 0x6)
 void CDDrawWorkerList::Stub_156fc0() {}
+
+// class-metadata sweep: size annotations (SIZE_UNKNOWN = retail size TBD).
+SIZE_UNKNOWN(CDDrawWorkerList);
+SIZE_UNKNOWN(HagridChild);
+SIZE_UNKNOWN(HagridWorker);
+SIZE_UNKNOWN(HagridWorkerA);
+SIZE_UNKNOWN(HagridWorkerB);
+SIZE_UNKNOWN(WorkNode);

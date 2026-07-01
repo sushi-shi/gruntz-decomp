@@ -935,3 +935,13 @@ void CDDrawShadeBlit::ConvertRowDouble(u8* dst, u8* src, i32 count, i32 rowDelta
         }
     }
 }
+
+// class-metadata sweep: size annotations (SIZE_UNKNOWN = retail size TBD).
+// CDDrawShadeBlit.h classes annotated HERE (not in the hot header): a no-code
+// typedef mid-header reschedules MSVC5 codegen in includers (measured -1.30% on
+// ConvertRowDouble); hosting them at this includer's EOF is matching-neutral.
+SIZE_UNKNOWN(ShadeRect);
+SIZE_UNKNOWN(ShadeUnlockIface);
+SIZE_UNKNOWN(ShadeSrc);
+SIZE_UNKNOWN(ShadeDescr);
+SIZE_UNKNOWN(CDDrawShadeBlit);

@@ -233,3 +233,9 @@ i32 CDDrawSubMgrAni::ScanTree_152ad0(CSymTab* tree, const char* prefix, const ch
     RezFree(buf);
     return count;
 }
+
+// class-metadata sweep: size annotations (SIZE_UNKNOWN = retail size TBD).
+SIZE_UNKNOWN(CAniElemView);
+SIZE_UNKNOWN(CAniElementBase);
+SIZE_UNKNOWN(CAniElementObj);
+SIZE_UNKNOWN(CSymTabTag);

@@ -607,3 +607,10 @@ void CDDrawWorkerRegistry::Stub_156df0() {}
 // @stub
 RVA(0x00156e80, 0x38)
 void CDDrawWorkerRegistry::Stub_156e80() {}
+
+// class-metadata sweep: size annotations (SIZE_UNKNOWN = retail size TBD).
+SIZE_UNKNOWN(SeverusMapValue);
+SIZE_UNKNOWN(SeverusValue);
+SIZE_UNKNOWN(SeverusWorker);
+SIZE_UNKNOWN(SeverusWorkerObj);
+SIZE_UNKNOWN(UnknownSeverusVtableView);

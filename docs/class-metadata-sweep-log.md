@@ -123,6 +123,66 @@ CSBI_WarlordHead / CSBI_WellGoo / CSBI_GruntMachine / CSBI_StatzTabArrow /
 CSBI_ImageSetAni / CSBI_SideTab / CSBI_StatzTabGruntBar) are already catalogued —
 their RTTI vtables are in config/vtable_names.csv AND they carry the manual
 vptr-stamp device — so no VTBL was added (would collide on the named rva).
+## CDDraw family (2026-07-01)
+
+Scope: classes defined in `include/Gruntz/CDDraw{ShadeBlit,SurfacePair}.h` +
+`CDirectDrawMgr.h`, and in `src/Gruntz/CDDraw*.cpp` / `CDirectDrawMgr.cpp` /
+`CDDSurfaceDtor.cpp` (18 src + 3 headers). All src files already `#include <rva.h>`.
+
+Coverage delta (whole-tree counters, CDDraw worklist drained):
+- SIZE: 118/3296 → 253/3296 annotated names (**135 CDDraw classes annotated**;
+  CDDraw SIZE violators 135 → 0). All `SIZE_UNKNOWN` (every class is a partial
+  pad-to-last-touched-field / interface / view; none provably == the full retail
+  object, so no exact `SIZE` upgrades).
+- VTBL: CDDraw vtable violators 35 → 34 (1 catalogued, 34 skipped below).
+  - `VTBL(CDDrawSurfacePair, 0x005eff30)` — the one clean own most-derived
+    real-polymorphic vtable: pure C++ virtuals (no manual `g_*Vtbl` stamp),
+    in-TU dtor (0x1590f0) so cl emits `??_7CDDrawSurfacePair@@6B@`; RVA 0x5eff30
+    was unnamed (no collision). Directly analogous to the Net pilot's SessionNode.
+
+### Hot-header casualty: CDDraw headers are HOT (NEW finding — method fix).
+Unlike the Net pilot (0 casualties), placing a `SIZE_UNKNOWN`/`VTBL` macro (a
+no-code `char[1]` typedef) **inside** a CDDraw header REGRESSED a neighbour in
+every includer TU tested — MSVC5 reschedules codegen when a file-scope typedef
+appears mid-parse (before the function bodies). Measured, per header:
+- `CDDrawShadeBlit.h` → `ConvertRowDouble` **-1.30%** (hot RLE blit inner loop).
+- `CDirectDrawMgr.h` → `ddrawpolyfill FillPolygon` **-0.09%**.
+- `CDDrawSurfacePair.h` → `DrawBox` **-0.03%** (also reproduced by a mid-`.cpp`
+  insert, i.e. any pre-function-body typedef, not just headers).
+
+**Fix (generalizable):** the completeness checks text-scan `SIZE`/`VTBL` macros
+tree-wide, so the annotation need not live next to the class. Host every
+header-class annotation at the **EOF of the owning `.cpp`** (the one that
+`#include`s the header — types are complete there, and appending at EOF shifts no
+existing line, so it is `__LINE__`-neutral and mid-parse-neutral). Verified: all
+135 SIZE + 1 VTBL are matching-NEUTRAL (report.json snapshot-diff over all 3394
+functions → 0 REGRESS / 0 IMPROVE; build "regressions vs baseline" clean). The
+`.cpp`-local classes were likewise appended at their own EOF (a mid-`.cpp`
+after-each-class insert cost DrawBox -0.03%, so EOF is the rule for `.cpp` too).
+`#if 0`-guarded WIP classes (`AlbusMapValue`, `UnknownAlbusTeardown` in
+`CDDrawWorkerMapSmall.cpp`) get their `SIZE_UNKNOWN` INSIDE the disabled block:
+the preprocessor-unaware text-scan counts them while the compiler skips them.
+
+### VTBL skipped (34 — KEEP-HAND-ROLLED / uncertain, logged for the final sweep):
+The CDDraw family is dominated by hand-rolled vtables; none of the 34 is a clean
+own-`??_7` at an unnamed RVA without a foreign stamp. Categories:
+- **Foreign `g_*Vtbl` worker/element stamps** (ctor stamps a reloc-masked extern,
+  not the class body): `SiriusWorker` (g_siriusWorkerVtbl), `HagridWorker`
+  (g_hagridWorkerVtblA/B), `AlbusWorker`/`CDDrawWorkerMapSmall`/`AlbusMapBase`
+  (g_albus*), `SeverusWorker`/`SeverusValue`/`UnknownSeverusVtableView`
+  (g_severus*), `CWwdWorker`/`CWwdFactoryObject`/`CWwdObject` (g_wwd*),
+  `CAniElemView` (g_aniElemVtbl), `LeafElement`/`LeafScanValue` (g_leafElemVtbl).
+  The task's KEEP-HAND-ROLLED rule names these explicitly — the g_* name reflects
+  hand-rolled uncertainty; do not migrate to VTBL here.
+- **Shared grand-base dtor vtable 0x5e8cb4** (g_remusBaseDtorVtbl): the CObject-
+  like base subobjects `CSurfacePairBase`, `CDDrawSubMgrBase`, `LeafScanBase`,
+  `CCatalogNode`, `HagridChild`, `AlbusMapValue`(#if0). A VTBL here would collide
+  on / mis-attribute the one shared vtable (same exception as Net's CNetNodeBase).
+- **Declared-but-undefined virtual "views"** (no vtable emitted in-TU, concrete
+  RVA not confidently pinned): `CDDrawSurfaceMgr`, `CDDrawSurfaceMgrBase`,
+  `HermionaChild`/`CDDrawChildGroup`, `DracoChild`, `DDChildSlot0`/`DDChildSlot1`,
+  `CQueueProbeData`, `CWwdArchive`, `Serializer`, `CDDAttachedSurface`,
+  `CDDrawWorkerDisp`, `CDDrawSubMgr`, `CDDrawSubMgrLucius`. No RVA guessed.
 
 ---
 

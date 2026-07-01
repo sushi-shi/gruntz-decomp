@@ -264,3 +264,8 @@ i32 CDDrawSurfaceMgr::RestoreChildren(SnapRunCallback cb, char* name, i32 arg3) 
     S.Close();
     return 1;
 }
+
+// class-metadata sweep: size annotations (SIZE_UNKNOWN = retail size TBD).
+SIZE_UNKNOWN(RemusChild);
+SIZE_UNKNOWN(Serializer);
+SIZE_UNKNOWN(SnapStream);

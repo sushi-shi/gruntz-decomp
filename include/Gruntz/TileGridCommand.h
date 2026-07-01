@@ -16,6 +16,7 @@
 #define SRC_GRUNTZ_TILEGRIDCOMMAND_H
 
 #include <Ints.h>
+#include <rva.h> // SIZE_UNKNOWN class-metadata macros used below
 
 #include <Gruntz/TileTriggerContainer.h>
 

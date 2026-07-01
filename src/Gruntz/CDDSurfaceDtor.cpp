@@ -44,3 +44,6 @@ CDDSurface::~CDDSurface() {
     m_vptr = (void*)&g_poolItemVtbl7f0;
     BaseTeardown();
 }
+
+// class-metadata sweep: size annotations (SIZE_UNKNOWN = retail size TBD).
+SIZE_UNKNOWN(CDDSurfaceSub94);
