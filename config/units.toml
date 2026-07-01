@@ -2567,6 +2567,11 @@ source = "src/Gruntz/SBI_TabzDialogEh.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "apihicallers"
+source = "src/Gruntz/ApiHiCallers.cpp"
+flags = "base"
+
+[[unit]]
 unit = "globals"
 source = "src/Globals.cpp"
 flags = "base"

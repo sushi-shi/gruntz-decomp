@@ -2976,6 +2976,8 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:GetLastError;HeapValidate;HeapWalk
     // @stub
+    // @classify: pure-CRT (_heapchk/_heapwalk: __except_handler3 SEH frame +
+    // HeapValidate/HeapWalk/GetLastError loop) - SKIP per matcher policy.
     RVA(0x001206b0, 0x1ad)
     i32 winapi_1206b0_GetLastError_HeapValidate_HeapWalk() {
         return 0;
@@ -2984,6 +2986,8 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:GetCurrentThreadId;TlsSetValue
     // @stub
+    // @classify: pure-CRT (_threadstartex thread bootstrap: __except_handler3 SEH +
+    // GetCurrentThreadId/TlsSetValue) - SKIP per matcher policy.
     RVA(0x00123d10, 0x8c)
     i32 winapi_123d10_GetCurrentThreadId_TlsSetValue() {
         return 0;
@@ -3871,14 +3875,8 @@ namespace ApiCallerStubs {
     // 0x1644a0 (CDDrawSurfacePair::directx_wrapper_caller_1644a0_...) reconstructed
     // in src/Gruntz/CDDrawSurfacePair.cpp.
 
-    // @confidence: low
-    // @source: winapi:SetRect
-    // @stub
-    // proximity: CGameLevel@-0x1e0 | CWwdGrid@+0x220
-    RVA(0x00168080, 0x1f6)
-    i32 ThisStubOwnerUnknown::winapi_168080_SetRect(i32, i32, i32, i32, i32, i32, i32, i32) {
-        return 0;
-    }
+    // 0x168080 (compound-widget builder) reconstructed in
+    // src/Gruntz/ApiHiCallers.cpp (Builder_168080::Init).
 
     // @confidence: low
     // @source: winapi:InitializeCriticalSection
@@ -4107,46 +4105,8 @@ namespace ApiCallerStubs {
         return 0;
     }
 
-    // @confidence: low
-    // @source: winapi:ShowCursor
-    // @stub
-    // proximity: CDDPageMgr@-0x3b0 | CSeverusWorker@+0x300
-    RVA(0x0017c3f0, 0x11f)
-    i32 ThisStubOwnerUnknown::winapi_17c3f0_ShowCursor(
-        i32,
-        i32,
-        i32,
-        i32,
-        i32,
-        i32,
-        i32,
-        i32,
-        i32,
-        i32,
-        i32,
-        i32,
-        i32,
-        i32,
-        i32,
-        i32,
-        i32,
-        i32,
-        i32,
-        i32,
-        i32,
-        i32,
-        i32,
-        i32,
-        i32,
-        i32,
-        i32,
-        i32,
-        i32,
-        i32,
-        i32
-    ) {
-        return 0;
-    }
+    // 0x17c3f0 (page/cursor command handler) reconstructed in
+    // src/Gruntz/ApiHiCallers.cpp (Handler_17c3f0::Init).
 
     // @confidence: low
     // @source: winapi:ShowCursor
@@ -4584,14 +4544,8 @@ namespace ApiCallerStubs {
         return 0;
     }
 
-    // @confidence: low
-    // @source: winapi:timeGetTime
-    // @stub
-    // proximity: CFaderSine@-0x10 | CFaderTileRender@+0x2810
-    RVA(0x0017fe00, 0x12d)
-    i32 ThisStubOwnerUnknown::winapi_17fe00_timeGetTime(i32) {
-        return 0;
-    }
+    // 0x17fe00 (fader/noise-effect init) reconstructed in
+    // src/Gruntz/ApiHiCallers.cpp (Fx_17fe00::Init).
 
     // @confidence: low
     // @source: winapi:CopyRect
@@ -4642,9 +4596,15 @@ namespace ApiCallerStubs {
         return 1;
     }
 
+    // The 0x1ba677..0x1bbff4 cluster is statically-linked MFC (CDialog / CWnd
+    // dialog-template + WndProc-subclass internals): they reference AfxDlgProc,
+    // s_AfxOldWndProc, AfxRegisterClass and carry the /GX EH state var. NOT game
+    // code - SKIP per matcher policy (use the library, don't hand-reconstruct).
+
     // @confidence: low
     // @source: winapi:CreateDialogIndirectParamA;GetSystemMetrics;GlobalLock
     // @stub
+    // @classify: MFC library (CDialog::CreateIndirect - calls AfxDlgProc) - SKIP.
     RVA(0x001ba677, 0x188)
     i32 winapi_1ba677_CreateDialogIndirectParamA_GetSystemMetrics_GlobalLock() {
         return 0;
@@ -4653,6 +4613,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:DestroyWindow;GlobalFree;GlobalUnlock
     // @stub
+    // @classify: MFC library (dialog teardown) - SKIP.
     RVA(0x001ba819, 0x7c)
     i32 __stdcall winapi_1ba819_DestroyWindow_GlobalFree_GlobalUnlock(i32, i32, i32) {
         return 0;
@@ -4661,6 +4622,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:EnableWindow;FindResourceA;IsWindowEnabled;LoadResource;LockResource
     // @stub
+    // @classify: MFC library (dialog resource load) - SKIP.
     RVA(0x001ba9d2, 0x100)
     i32 winapi_1ba9d2_EnableWindow_FindResourceA_IsWindowEnabled_LoadResource_() {
         return 0;
@@ -4669,6 +4631,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:EnableWindow;GetActiveWindow;SetActiveWindow
     // @stub
+    // @classify: MFC library (modal enable/activate) - SKIP.
     RVA(0x001baaef, 0x48)
     i32 winapi_1baaef_EnableWindow_GetActiveWindow_SetActiveWindow() {
         return 0;
@@ -4677,6 +4640,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:CallWindowProcA;GetPropA;RemovePropA;SetWindowLongA
     // @stub
+    // @classify: MFC library (AfxWndProc subclass chain - GetProp AfxOldWndProc) - SKIP.
     RVA(0x001bb31b, 0x111)
     i32 __stdcall
     winapi_1bb31b_CallWindowProcA_GetPropA_RemovePropA_SetWindowLongA(i32, i32, i32, i32) {
@@ -4686,6 +4650,7 @@ namespace ApiCallerStubs {
     // @confidence: low
     // @source: winapi:GetClassInfoA;RegisterClassA
     // @stub
+    // @classify: MFC library (AfxRegisterClass) - SKIP.
     RVA(0x001bbff4, 0x93)
     i32 __stdcall winapi_1bbff4_GetClassInfoA_RegisterClassA(i32) {
         return 0;
