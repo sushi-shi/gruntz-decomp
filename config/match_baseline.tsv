@@ -159,6 +159,7 @@ cpathhazard	9	4
 cplay	70	30
 cplaydtor	2	2
 cplayplanescan	2	0
+cplaysync	1	1
 crangeset	3	2
 cremusentrylist	2	2
 cremusnode	4	2
@@ -211,7 +212,7 @@ dsoundvoice	2	1
 ehfunclets	6	6
 engine_attributed	6	0
 engine_discovered	15	8
-engine_label_stubs	248	129
+engine_label_stubs	246	129
 engine_unmatched_lib	11	0
 engstr	3	1
 eyecandytypetags	4	4
@@ -365,6 +366,7 @@ namerecord	1	0
 netcmdmgr	1	1
 netcmdsession	6	4
 netcmdslot	16	11
+netgamedlgwatch	1	0
 netmgr	89	46
 netmgrerror	1	1
 netmgrmisc	5	4
@@ -1514,6 +1516,7 @@ cplaydtor	??1CDerivedStateD@@UAE@XZ	100.0000	100.0000	1	a9473cc7adbe	0x8d0d0
 cplaydtor	??1CPlayD@@UAE@XZ	100.0000	100.0000	1	8b0e1a2bb1ff	0x8c830
 cplayplanescan	?ScanBuildTiles@CPlay@@QAEHXZ	99.5915	99.5915	1	7ba7a807fccb	0xd53d0
 cplayplanescan	?ScanShuffleQuads@CPlay@@QAEHXZ	77.6802	77.6802	1	a9d9580e7561	0xd9290
+cplaysync	?SyncState@CPlay@@QAEHPAVCMsSerialArchive@@HHH@Z	100.0000	100.0000	1	3b7e540be0b5	0xd7520
 crangeset	?AddFromString@CRangeSet@@QAEXPAD@Z	92.1466	92.1466	1	11e3952a28d0	0x184c10
 crangeset	?AddRange@CRangeSet@@QAEXII@Z	100.0000	100.0000	1	ed00b3a920e2	0x184be0
 crangeset	?Contains@CRangeSet@@QAE_NI@Z	100.0000	100.0000	1	958ae75d3e77	0x184ba0
@@ -1983,9 +1986,7 @@ engine_label_stubs	?winapi_0c1aa0_GetWindow_SendMessageA@ApiCallerStubs@@YAHXZ	0
 engine_label_stubs	?winapi_0c2980_SendMessageA@ApiCallerStubs@@YGXHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xc2980
 engine_label_stubs	?winapi_0c2e20_CreateSolidBrush_FillRect_GetClientRect@ApiCallerStubs@@YAHXZ	1.2658	1.2658	1	cpp:e1535087fe94	0xc2e20
 engine_label_stubs	?winapi_0c4230_GetFocus_SendMessageA@ApiCallerStubs@@YGHH@Z	0.6757	0.6757	1	cpp:6bf52155264d	0xc4230
-engine_label_stubs	?winapi_0c46b0_KillTimer_timeGetTime_wsprintfA@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHXZ	0.7336	0.7336	1	cpp:e8a4cb0d5b2a	0xc46b0
 engine_label_stubs	?winapi_0c7ec0_timeGetTime@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHHHH@Z	0.5181	0.5181	1	cpp:e8a4cb0d5b2a	0xc7ec0
-engine_label_stubs	?winapi_0d7520_wsprintfA@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHHHHH@Z	0.5089	0.5089	1	cpp:e8a4cb0d5b2a	0xd7520
 engine_label_stubs	?winapi_0e35f0_EndDialog@ApiCallerStubs@@YGHPAXHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xe35f0
 engine_label_stubs	?winapi_0e3a40_EndDialog@ApiCallerStubs@@YGHPAXIIJ@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xe3a40
 engine_label_stubs	?winapi_0e3b20_EndDialog@ApiCallerStubs@@YGHPAXIIJ@Z	100.0000	100.0000	1	cpp:e1535087fe94	0xe3b20
@@ -2967,6 +2968,7 @@ netcmdslot	?ResetAll@CNetCmdSlot@@QAEXXZ	73.6667	73.6667	1	e225fb4f97a4	0xc0bb0
 netcmdslot	?ResetCmdBuffers@CNetSession@@QAEXXZ	100.0000	100.0000	1	5a2ae3884a59	0xc0070
 netcmdslot	?ResetTriple@CNetCmdSlot@@QAEXPAH@Z	93.3333	93.3333	1	a247b7dd0f0c	0xc10a0
 netcmdslot	?Touch@CNetCmdSlot@@QAEXXZ	100.0000	100.0000	1	fdc8cfd7e8c1	0xc1390
+netgamedlgwatch	?Watchdog@CNetDlgWatch@@QAEXXZ	93.9344	93.9344	1	49e7c22d7396	0xc46b0
 netmgr	??0CNetCmdSlot@@QAE@XZ	78.8372	78.8372	1	2257abc0da6c	0xbbec0
 netmgr	?AckDropPlayer@CNetMgr@@QAEXH@Z	100.0000	100.0000	1	ede05f6eaecc	0xba590
 netmgr	?AddPlayerNode@CNetMgr@@QAEHPAX@Z	92.2727	92.2727	1	f4b1a6c46c27	0x1786d0

@@ -958,6 +958,16 @@ source = "src/Gruntz/CPlayDtor.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "cplaysync"
+source = "src/Gruntz/CPlaySync.cpp"
+flags = "base"
+
+[[unit]]
+unit = "netgamedlgwatch"
+source = "src/Gruntz/NetGameDlgWatch.cpp"
+flags = "base"
+
+[[unit]]
 unit = "font"
 source = "src/Font/Font.cpp"
 flags = "eh"

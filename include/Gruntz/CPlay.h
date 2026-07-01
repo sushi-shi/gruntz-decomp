@@ -421,6 +421,16 @@ public:
     i32 ProbeWarlord(i32 id, i32 a, i32 b, i32 c);                 // 0x12da thunk  -> found
     i32 BindWarlordName(const CString& name, i32 a, i32 b, i32 c); // 0x2bc1 thunk
 
+    // SyncState (0x0d7520): the mode-dispatched serialize/round-trip of the play
+    // state's 64-bit timer blocks + three child sync sub-objects (guts / frame
+    // marker / begin marker); mode 8 (re)inits the ambient-sound cue. mode 4 =
+    // write (archive vtbl[0x30]), mode 7 = read (archive vtbl[0x2c]).
+    i32 SyncState(class CMsSerialArchive* ar, i32 mode, i32 a2, i32 a3); // 0x0d7520
+    // SyncState's own reloc-masked CPlay-thiscall leaves (external, no body):
+    i32 HeaderSerialize(class CMsSerialArchive* ar, i32 mode, i32 a2, i32 a3); // 0x4016 thunk
+    i32 SyncWrite19fb(class CMsSerialArchive* ar);                            // 0x19fb thunk (mode-4)
+    i32 SyncRead2f7c(class CMsSerialArchive* ar);                             // 0x2f7c thunk (mode-7)
+
     // ---- CPlay-specific members (offsets pinned by the Render disasm) ----
     i32 m_inputWarmup1; // +0x1a8  StepInputA first-frame one-shot latch
     i32 m_inputWarmup2; // +0x1ac  StepInputA second-frame one-shot latch

@@ -107,9 +107,7 @@ namespace ApiCallerStubs {
     struct ThisStubOwnerUnknown {
         i32 winapi_015fe0_SendMessageA(i32);
         i32 winapi_075c60_CopyRect_SetRect(i32, i32, i32, i32, i32, i32);
-        i32 winapi_0c46b0_KillTimer_timeGetTime_wsprintfA();
         i32 winapi_0c7ec0_timeGetTime(i32, i32, i32);
-        i32 winapi_0d7520_wsprintfA(i32, i32, i32, i32);
         i32 winapi_0e6020_SetRect(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32);
         i32 winapi_0ecc90_IntersectRect();
         i32 winapi_0ed9f0_PtInRect();
@@ -2029,14 +2027,7 @@ namespace ApiCallerStubs {
         return 0;
     }
 
-    // @confidence: low
-    // @source: winapi:KillTimer;timeGetTime;wsprintfA
-    // @stub
-    // proximity: CMultiStartDlg@-0x1e70 | CDroppedObject@+0x24a0
-    RVA(0x000c46b0, 0x371)
-    i32 ThisStubOwnerUnknown::winapi_0c46b0_KillTimer_timeGetTime_wsprintfA() {
-        return 0;
-    }
+    // 0x0c46b0 re-homed as CNetDlgWatch::Watchdog in src/Gruntz/NetGameDlgWatch.cpp.
 
     // @confidence: low
     // @source: winapi:SendMessageA
@@ -2307,14 +2298,7 @@ namespace ApiCallerStubs {
         return 1;
     }
 
-    // @confidence: low
-    // @source: winapi:wsprintfA
-    // @stub
-    // proximity: CLoadingBar@-0xe0 | CArchiveLoadRec@+0x4b0
-    RVA(0x000d7520, 0x3b9)
-    i32 ThisStubOwnerUnknown::winapi_0d7520_wsprintfA(i32, i32, i32, i32) {
-        return 0;
-    }
+    // 0x0d7520 re-homed as CPlay::SyncState in src/Gruntz/CPlaySync.cpp.
 
     // ResetViewport (0x0d8c60) re-homed (byte-exact) as CPlay::ResetViewport in
     // src/Gruntz/CPlay.cpp.
