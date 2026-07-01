@@ -1,5 +1,7 @@
 #include <rva.h>
-#include <string.h> // inlined memset / strcpy in CTimer::Serialize (rep stos / rep movs)
+#include <string.h>        // inlined memset / strcpy in CTimer::Serialize (rep stos / rep movs)
+#include <Gruntz/ResMgr.h> // CResMgr (m_8 key table, m_10 image registry) + CKeyTable
+#include <Gruntz/Sprite.h> // CSprite (frame-data value) + CSpriteHashTable
 // SpriteLoaders.cpp - two sibling HUD/UI sprite loaders that pull a named sprite
 // out of the engine's string-keyed sprite-set hash table and cache individual
 // animation frames off it (C:\Proj\Gruntz). Both share the same idiom:
@@ -30,44 +32,9 @@
 // (returning a found-flag). Modeled minimally so the `ecx=<map>; call <helper>`
 // shape reloc-masks against the matched lookup helper.
 // ---------------------------------------------------------------------------
-struct CSprite;
-class CSpriteHashTable {
-public:
-    i32 Lookup(char* szName, CSprite** ppOut);
-};
-
-// The engine sprite (animation) object. Only the load-bearing members are
-// reconstructed: a frame-pointer table at +0x14 and the inclusive valid frame
-// range [m_64 .. m_68].
-struct CSprite {
-    char m_pad00[0x14];
-    i32** m_14; // +0x14  frame-pointer table
-    char m_pad18[0x64 - 0x18];
-    i32 m_64; // +0x64  first valid frame number
-    i32 m_68; // +0x68  last valid frame number
-};
-
-// The sprite manager: its name->sprite hash table is embedded at +0x10 (the
-// `add ecx,0x10` before the lookup call addresses it).
-struct CSpriteMgr {
-    char m_pad00[0x10];
-    CSpriteHashTable m_10map; // +0x10  the name->sprite hash table
-};
-
-// The world/key lookup table the Tick expiry path probes (FindByKey, RVA
-// 0x1b8760 / "Lookup", external). Reached at resmgr->m_8 + 0x48.
-struct CKeyTable {
-    i32 FindByKey(i32 key, i32* outFound);
-};
-
-// The intermediate resource object both loaders reach the sprite manager through:
-// its +0x10 slot points at the CSpriteMgr; +0x8 holds the world key table.
-struct CResMgr {
-    char m_pad00[0x8];
-    CKeyTable* m_8; // +0x8
-    char m_padc[0x10 - 0xc];
-    CSpriteMgr* m_10; // +0x10
-};
+// CSprite (frame-data value) + CSpriteHashTable come from <Gruntz/Sprite.h>;
+// CResMgr (image registry at m_10, key table at m_8) + CKeyTable from ResMgr.h.
+// The registry's embedded name->sprite hash table is <registry>->m_10map.
 
 // The per-level state object hung off g_gameReg->m_2c: the expiry path stamps a
 // "time up" command (m_4f4/m_400/m_404) and the clock snapshot (m_3f8/m_3fc).
@@ -134,9 +101,9 @@ i32 CLoadingBar::LoadLoadingBarSprite() {
         return 0;
     }
 
-    m_4c8 = (spr->m_64 <= 1 && spr->m_68 >= 1) ? spr->m_14[1] : 0;
-    m_4c0 = (spr->m_64 <= 2 && spr->m_68 >= 2) ? spr->m_14[2] : 0;
-    m_4c4 = (spr->m_64 <= 3 && spr->m_68 >= 3) ? spr->m_14[3] : 0;
+    m_4c8 = (spr->m_64 <= 1 && spr->m_68 >= 1) ? spr->m_10.m_pData[1] : 0;
+    m_4c0 = (spr->m_64 <= 2 && spr->m_68 >= 2) ? spr->m_10.m_pData[2] : 0;
+    m_4c4 = (spr->m_64 <= 3 && spr->m_68 >= 3) ? spr->m_10.m_pData[3] : 0;
     m_4bc = 1;
     return 1;
 }
@@ -247,23 +214,23 @@ i32 CTimer::LoadTimerSprite(i32 a, i32 b) {
         return 0;
     }
 
-    m_10 = (spr->m_64 <= 10 && spr->m_68 >= 10) ? spr->m_14[10] : 0;
+    m_10 = (spr->m_64 <= 10 && spr->m_68 >= 10) ? spr->m_10.m_pData[10] : 0;
     if (!m_10) {
         return 0;
     }
-    m_14 = (spr->m_64 <= 10 && spr->m_68 >= 10) ? spr->m_14[10] : 0;
+    m_14 = (spr->m_64 <= 10 && spr->m_68 >= 10) ? spr->m_10.m_pData[10] : 0;
     if (!m_14) {
         return 0;
     }
-    m_20 = (spr->m_64 <= 11 && spr->m_68 >= 11) ? spr->m_14[11] : 0;
+    m_20 = (spr->m_64 <= 11 && spr->m_68 >= 11) ? spr->m_10.m_pData[11] : 0;
     if (!m_20) {
         return 0;
     }
-    m_18 = (spr->m_64 <= 10 && spr->m_68 >= 10) ? spr->m_14[10] : 0;
+    m_18 = (spr->m_64 <= 10 && spr->m_68 >= 10) ? spr->m_10.m_pData[10] : 0;
     if (!m_18) {
         return 0;
     }
-    m_1c = (spr->m_64 <= 10 && spr->m_68 >= 10) ? spr->m_14[10] : 0;
+    m_1c = (spr->m_64 <= 10 && spr->m_68 >= 10) ? spr->m_10.m_pData[10] : 0;
     if (!m_1c) {
         return 0;
     }
@@ -402,10 +369,10 @@ i32 CTimer::Tick(i32 dt) {
     }
 
     CSprite* spr = (CSprite*)m_8;
-    m_10 = (spr->m_64 <= d10min && d10min <= spr->m_68) ? spr->m_14[d10min] : 0;
-    m_14 = (spr->m_64 <= d1min && d1min <= spr->m_68) ? spr->m_14[d1min] : 0;
-    m_18 = (spr->m_64 <= d10sec && d10sec <= spr->m_68) ? spr->m_14[d10sec] : 0;
-    m_1c = (spr->m_64 <= d1sec && d1sec <= spr->m_68) ? spr->m_14[d1sec] : 0;
+    m_10 = (spr->m_64 <= d10min && d10min <= spr->m_68) ? spr->m_10.m_pData[d10min] : 0;
+    m_14 = (spr->m_64 <= d1min && d1min <= spr->m_68) ? spr->m_10.m_pData[d1min] : 0;
+    m_18 = (spr->m_64 <= d10sec && d10sec <= spr->m_68) ? spr->m_10.m_pData[d10sec] : 0;
+    m_1c = (spr->m_64 <= d1sec && d1sec <= spr->m_68) ? spr->m_10.m_pData[d1sec] : 0;
     return 1;
 }
 

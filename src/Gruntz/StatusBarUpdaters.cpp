@@ -1,5 +1,6 @@
 #include <rva.h>
 #include <Bute/ButeMgr.h>
+#include <Gruntz/Sprite.h> // CSprite (frame-data value) + CSpriteHashTable
 // StatusBarUpdaters.cpp - the per-widget HUD status-bar updaters and switch-tile
 // sprite loaders (C:\Proj\Gruntz). They live on the big in-game game-mode object
 // (the EngineLabelBacklog placeholder the rest of the backlog hangs off) and
@@ -34,23 +35,7 @@ extern i32 g_644c54;
 // CRT sqrt - intrinsified to an inline fsqrt under VC5 /O2.
 extern "C" double sqrt(double);
 
-// ---------------------------------------------------------------------------
-// The engine string-keyed sprite-set hash table (same shape as SpriteLoaders).
-// Lookup() hashes the class-name key and writes the found sprite through *ppOut.
-// ---------------------------------------------------------------------------
-// The engine sprite (animation) object: a frame-pointer table at +0x14 and the
-// inclusive valid frame range [m_64..m_68] (same as SpriteLoaders).
-struct CSprite {
-    char m_pad00[0x14];
-    i32** m_14; // +0x14  frame-pointer table
-    char m_pad18[0x64 - 0x18];
-    i32 m_64; // +0x64  first valid frame
-    i32 m_68; // +0x68  last valid frame
-};
-class CSpriteHashTable {
-public:
-    i32 Lookup(const char* szName, CSprite** ppOut);
-};
+// CSprite (frame-data value) + CSpriteHashTable now come from <Gruntz/Sprite.h>.
 
 // CStatusBarMgr::ConfigureItem (the shared status-bar push helper @0x1360d0;
 // external/no-body so the `call rel32` reloc-masks). __thiscall, ret 0x10.
@@ -540,7 +525,7 @@ i32 EngineLabelBacklog::UpdateWarpStoneStatusBar(i32 a0, i32 phase, i32 srcX, i3
     CSprite* spr = 0;
     i32 n = phase + 1;
     g_gameReg->m_30->m_28->m_10map.Lookup("GAME_STATUSBAR_TABZ_GAMETAB_WARP", &spr);
-    i32* frame = (spr && n >= spr->m_64 && n <= spr->m_68) ? spr->m_14[n] : 0;
+    i32* frame = (spr && n >= spr->m_64 && n <= spr->m_68) ? spr->m_10.m_pData[n] : 0;
     m[0x38 / 4] = (i32)frame;
     if (frame == 0) {
         return 1;

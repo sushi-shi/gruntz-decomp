@@ -41,7 +41,7 @@ struct CueObj {
     i32 m_18;            // +0x18 cue interval
 };
 
-class CSpriteHashTable {
+class CCueHashTable {
 public:
     i32 Lookup(const char* szName, CueObj** ppOut);
 };
@@ -50,7 +50,7 @@ public:
 // at +0x30.
 struct CStatusBarHolder {
     char m_pad00[0x10];
-    CSpriteHashTable m_10map; // +0x10
+    CCueHashTable m_10map; // +0x10
     char m_pad14[0x30 - 0x14];
     i32 m_30; // +0x30
 };

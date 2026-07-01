@@ -12,26 +12,26 @@
 // ---------------------------------------------------------------------------
 // Shared engine objects, modeled minimally (mirroring SpriteLoaders.cpp's idiom).
 // ---------------------------------------------------------------------------
-struct CSprite; // the created HUD/anim sprite
+struct CIconSprite; // the created HUD/anim sprite
 
 // An entry in the factory's live-icon list (m_liveIcons): the next-link at +0 and the
-// owned CSprite at +8.  LoadToyBoxIcon walks it to de-dup by class + tile.
+// owned CIconSprite at +8.  LoadToyBoxIcon walks it to de-dup by class + tile.
 struct CSpriteIconNode {
     CSpriteIconNode* next; // +0x00
     char m_pad4[0x8 - 0x4];
-    CSprite* m_sprite; // +0x08
+    CIconSprite* m_sprite; // +0x08
 };
 
 // The HUD sprite factory reached via g_gameReg->m_factoryHolder->m_factory. CreateSprite looks the
 // template up by class-NAME (the 5th arg) and builds it; __thiscall ret 0x18.
 struct CSpriteFactory {
-    CSprite* CreateSprite(i32 kind, i32 geoB, i32 geoA, i32 hint, const char* name, i32 flags);
+    CIconSprite* CreateSprite(i32 kind, i32 geoB, i32 geoA, i32 hint, const char* name, i32 flags);
     char m_pad0[0x14];
     CSpriteIconNode* m_liveIcons; // +0x14  live-icon list head
 };
 
 // Two icon-class vtable-slot fns the toybox de-dup test compares an existing
-// icon's CSprite::m_initVtbl->Init against (the in-game-icon / in-game-text classes).
+// icon's CIconSprite::m_initVtbl->Init against (the in-game-icon / in-game-text classes).
 // Declared extern so each `cmp esi, OFFSET fn` immediate carries a DIR32 reloc
 // that pairs with retail's reloc at 0x40288d / 0x402bad (names are reloc-masked).
 extern "C" void IconClassInitA(); // 0x40288d
@@ -73,14 +73,14 @@ extern "C" i32 rand(void);
 // The created sprite. CacheFirstFrame caches its first valid frame; the icon
 // loader pushes a pile of configuration ints into the +0x114..+0x130 block. The
 // per-sprite animation player @+0x38 carries ApplyLookupGeometry.
-// The CSprite "init interface" vtable embedded at CSprite+0x7c; slot +0x10 is the
+// The CIconSprite "init interface" vtable embedded at CIconSprite+0x7c; slot +0x10 is the
 // init function the camera loader runs after CreateSprite.
 struct CSpriteVtbl {
-    void* m_slot0[4];       // +0x00  slots 0..3
-    void (*Init)(CSprite*); // +0x10  the init "virtual" (takes the sprite)
+    void* m_slot0[4];           // +0x00  slots 0..3
+    void (*Init)(CIconSprite*); // +0x10  the init "virtual" (takes the sprite)
 };
 
-struct CSprite {
+struct CIconSprite {
     void CacheFirstFrame(const char* name); // CGruntSprite::CacheFirstFrame @0x150540
     i32 ApplyLookupGeometry(const char* name, i32 applyDefault); // CGruntAnimPlayer @0x1505b0
 
@@ -104,7 +104,7 @@ struct CSprite {
 
 // the matched leaves live in the spriteresource unit; declared here so the
 // `call rel32` reloc-masks (the mangled name + arg shape are load-bearing).
-// CGruntSprite::CacheFirstFrame == CSprite::CacheFirstFrame here.
+// CGruntSprite::CacheFirstFrame == CIconSprite::CacheFirstFrame here.
 // (mangled ?CacheFirstFrame@CGruntSprite@@QAEXPBD@Z / etc. fall out of the names.)
 
 // The format wrapper (NAFXCW CString::Format, called cdecl-style with the dst
@@ -124,9 +124,9 @@ public:
     char m_pad00[0x22c];                   // +0x000
     CSpriteFactoryHolder* m_factoryHolder; // +0x22c  sprite-factory holder
     char m_pad230[0x23c - 0x230];          // +0x230
-    CSprite* m_cameraSprite;               // +0x23c  cached camera sprite
+    CIconSprite* m_cameraSprite;           // +0x23c  cached camera sprite
     char m_pad240[0x2f8 - 0x240];          // +0x240
-    CSprite* m_bootyPerfectSprite;         // +0x2f8  booty-perfect anim sprite
+    CIconSprite* m_bootyPerfectSprite;     // +0x2f8  booty-perfect anim sprite
 };
 
 // ===========================================================================
@@ -139,8 +139,8 @@ public:
 
 RVA(0x0001c070, 0x59)
 i32 EngineLabelBacklog::BuildBootyPerfectAnimation() {
-    CSprite* spr = g_gameReg->m_factoryHolder->m_factory
-                       ->CreateSprite(0, (i32)0xffffff7e, 0xf0, 0x64, "SimpleAnimation", 3);
+    CIconSprite* spr = g_gameReg->m_factoryHolder->m_factory
+                           ->CreateSprite(0, (i32)0xffffff7e, 0xf0, 0x64, "SimpleAnimation", 3);
     m_bootyPerfectSprite = spr;
     if (!spr) {
         return 0;
@@ -180,7 +180,7 @@ i32 EngineLabelBacklog::LoadCameraSprite() {
     }
 
     CSpriteFactory* fac = m_factoryHolder->m_factory;
-    CSprite* spr = fac->CreateSprite(0, ax, cx, 0xf4240, "DoNothing", 1);
+    CIconSprite* spr = fac->CreateSprite(0, ax, cx, 0xf4240, "DoNothing", 1);
     m_cameraSprite = spr;
     spr->m_initVtbl->Init(spr);
     m_cameraSprite->CacheFirstFrame("GAME_CAMERASPRITE");
@@ -211,7 +211,7 @@ i32 EngineLabelBacklog::LoadToyBoxIcon(i32 x, i32 y, i32 a3, i32 a4, i32 a5) {
     while (node != 0) {
         CSpriteIconNode* cur = node;
         node = node->next;
-        CSprite* obj = cur->m_sprite;
+        CIconSprite* obj = cur->m_sprite;
         void* init = (void*)obj->m_initVtbl->Init;
         if (init == (void*)&IconClassInitA || init == (void*)&IconClassInitB) {
             i32 ox = obj->m_subTileX >> 5;
@@ -222,7 +222,7 @@ i32 EngineLabelBacklog::LoadToyBoxIcon(i32 x, i32 y, i32 a3, i32 a4, i32 a5) {
         }
     }
 
-    CSprite* spr = fac->CreateSprite(0, x, y, 0x17318, "InGameIcon", 0x40003);
+    CIconSprite* spr = fac->CreateSprite(0, x, y, 0x17318, "InGameIcon", 0x40003);
     if (!spr) {
         g_gameReg->Report(0x8009, 0x402);
         return 0;
@@ -246,7 +246,7 @@ i32 EngineLabelBacklog::LoadToyBoxIcon(i32 x, i32 y, i32 a3, i32 a4, i32 a5) {
 RVA(0x0007b330, 0xc6)
 i32 EngineLabelBacklog::LoadExplosionSprites(i32 geoB, i32 geoA, i32 variant, i32 dummy) {
     CSpriteFactory* fac = m_factoryHolder->m_factory;
-    CSprite* spr = fac->CreateSprite(0, geoB, geoA, 0, "Explosion", 0x40003);
+    CIconSprite* spr = fac->CreateSprite(0, geoB, geoA, 0, "Explosion", 0x40003);
     if (spr) {
         i32 v = variant;
         if (v == 0) {
@@ -445,8 +445,8 @@ i32 EngineLabelBacklog::LoadPowerupIconSprites(
             name = "GAME_INGAMEICONZ_POWERUPZ_COIN";
             break;
         case 99: {
-            CSprite* tb = g_gameReg->m_factoryHolder->m_factory
-                              ->CreateSprite(0, geoB, geoA, 0xf, "TimeBomb", 0x40003);
+            CIconSprite* tb = g_gameReg->m_factoryHolder->m_factory
+                                  ->CreateSprite(0, geoB, geoA, 0xf, "TimeBomb", 0x40003);
             if (tb) {
                 tb->m_120 = g_buteMgr.GetDwordDef("Powerupz", "CoveredTimeBombTime", 0x7d0);
             }
@@ -456,8 +456,8 @@ i32 EngineLabelBacklog::LoadPowerupIconSprites(
             return 0;
     }
 
-    CSprite* spr = g_gameReg->m_factoryHolder->m_factory
-                       ->CreateSprite(0, geoB, geoA, 0x17318, "InGameIcon", 0x40003);
+    CIconSprite* spr = g_gameReg->m_factoryHolder->m_factory
+                           ->CreateSprite(0, geoB, geoA, 0x17318, "InGameIcon", 0x40003);
     if (!spr) {
         return 0;
     }

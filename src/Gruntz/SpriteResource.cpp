@@ -1,4 +1,6 @@
 #include <rva.h>
+#include <Gruntz/ResMgr.h> // CResMgr + the three registries (m_10/m_14/m_28/m_2c)
+#include <Gruntz/Sprite.h> // CSprite (frame-data), CSpriteHashTable, CFrameArray
 // SpriteResource.cpp - the shared engine sprite-resource helpers that the HUD /
 // powerup / explosion / camera / status-bar loaders all funnel through
 // (C:\Proj\Gruntz). Each pulls a named sprite-set out of the engine's
@@ -29,38 +31,8 @@
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // engine identities recovered from the call sites.
 
-// ---------------------------------------------------------------------------
-// The engine string-keyed sprite-set hash table + the sprite object, modeled
-// minimally (the same shape SpriteLoaders.cpp uses): Lookup() hashes the
-// class-name key and writes the found sprite pointer through *ppOut. The
-// `add ecx,0x10; call <lookup>` reloc-masks against the matched lookup helper.
-// ---------------------------------------------------------------------------
-struct CSprite;
-class CSpriteHashTable {
-public:
-    i32 Lookup(const char* szName, CSprite** ppOut);
-};
-
-// ---------------------------------------------------------------------------
-// The CSprite frame table is a CObArray of CImage frame-workers living AT
-// this+0x10 (so its m_pData is this+0x14 = m_14, its m_nSize this+0x18). The
-// frame-worker INSERT (0x151f00) grows this array via SetAtGrow and the frame
-// READ (0x15cc30) indexes m_pData directly. Modeling the array at +0x10 is
-// matching-neutral (it does not move m_14/m_64/m_68).
-//
-// SetAtGrow(index, element): grows the backing store to fit `index`, then stores
-// element at [index]. __thiscall ret 8, no body so the call reloc-masks against
-// the engine CObArray helper @0x1b5822.
-// ---------------------------------------------------------------------------
-struct CObject;
-struct CFrameArray {
-    void* m_vptr;                                // +0x00  CObject vftable
-    i32** m_pData;                               // +0x04  frame-pointer table
-    i32 m_nSize;                                 // +0x08  element count
-    i32 m_nMaxSize;                              // +0x0c
-    i32 m_nGrowBy;                               // +0x10
-    void SetAtGrow(i32 index, CObject* element); // 0x1b5822
-};
+// CSpriteHashTable / CSprite (frame-data value) / CFrameArray now live in the
+// shared <Gruntz/Sprite.h>; CResMgr + its registries in <Gruntz/ResMgr.h>.
 
 // The global NAFXCW allocator the inlined frame-worker construction uses.
 extern void* operator new(u32 size);
@@ -113,37 +85,6 @@ inline i32 CFrameWorker::Resolve(void* src, i32 arg) {
 inline void CFrameWorker::Destroy(i32 flag) {
     (this->*(vptr->Destroy))(flag);
 }
-
-struct CSprite {
-    char m_pad00[0xc];
-    void* m_c;        // +0x0c  parent context handed to each frame worker
-    CFrameArray m_10; // +0x10  frame CObArray (m_pData @+0x14, m_nSize @+0x18)
-    char m_pad24[0x64 - 0x24];
-    i32 m_64; // +0x64  first valid frame number
-    i32 m_68; // +0x68  last valid frame number
-
-    // Insert a frame worker at frame number `n` (0x151f00); read a frame (0x15cc30).
-    CFrameWorker* InsertFrame(void* src, i32 n, i32 mode);
-    i32 GetFrame(i32 n);
-};
-
-// The sprite-set manager: the name->sprite hash table is embedded at +0x10.
-struct CSpriteMgr {
-    char m_pad00[0x10];
-    CSpriteHashTable m_10map; // +0x10
-};
-
-// The resource object the sprite reaches the sprite manager through. Different
-// loaders pull the manager out of a different slot (+0x10 / +0x14 / +0x2c),
-// so each helper names the slot it uses.
-struct CResMgr {
-    char m_pad00[0x10];
-    CSpriteMgr* m_10; // +0x10  (CacheFirstFrame)
-    CSpriteMgr* m_14; // +0x14  (CreateSprite)
-    char m_pad18[0x28 - 0x18];
-    CSpriteMgr* m_28; // +0x28  (LookupAnimSprite)
-    CSpriteMgr* m_2c; // +0x2c  (ApplyGeometry)
-};
 
 // ===========================================================================
 // CGruntSprite::CacheFirstFrame  @0x150540
@@ -530,7 +471,6 @@ i32 CSprite::GetFrame(i32 n) {
     }
     return 0;
 }
-SIZE_UNKNOWN(CFrameArray);
 SIZE_UNKNOWN(CFrameWorker);
 SIZE_UNKNOWN(CFrameWorkerVtbl);
 SIZE_UNKNOWN(CGruntAnimPlayer);

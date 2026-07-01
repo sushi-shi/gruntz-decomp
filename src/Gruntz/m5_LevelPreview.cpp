@@ -30,7 +30,7 @@ struct CueObj {
     i32 m_14;            // +0x14
     i32 m_18;            // +0x18
 };
-class CSpriteHashTable {
+class CCueHashTable {
 public:
     i32 Lookup(const char* szName, CueObj** ppOut); // 0x1b8438
 };
@@ -85,7 +85,7 @@ struct CDDrawWorkerMgr {
 
 struct CStatusBarHolder {
     char m_pad00[0x10];
-    CSpriteHashTable m_10map; // +0x10
+    CCueHashTable m_10map; // +0x10
     char m_pad14[0x2c - 0x14];
     CSoundMgr* m_2c; // +0x2c
     i32 m_30;        // +0x30

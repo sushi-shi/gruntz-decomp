@@ -67,6 +67,7 @@
 
 #include <Gruntz/CPlay.h>
 #include <rva.h>
+#include <Gruntz/ResMgr.h> // CResMgr + its image/sound/anim registries (m_10/m_28/m_2c)
 
 // The zoned sound-bank manager (CWorld::m_48); RegionEnter/RegionLeave pause +
 // resume the currently-playing zoned sound via its real (named) methods.
@@ -2261,50 +2262,8 @@ struct CResSource {
 struct CBankMgr {
     CResSource* Lookup(char* szName); // 0x13c030 __thiscall
 };
-// The image/tile registry at this->m_c->m_10: non-virtual Has/Register helpers +
-// a virtual Install at vtable slot 18 (+0x48).
-struct CImageRegistry {
-    i32 Has(char* szName);                    // 0x155550 __thiscall, ret found
-    void Register(char* szName, char* szKey); // 0x155360 __thiscall
-    virtual void v00();
-    virtual void v01();
-    virtual void v02();
-    virtual void v03();
-    virtual void v04();
-    virtual void v05();
-    virtual void v06();
-    virtual void v07();
-    virtual void v08();
-    virtual void v09();
-    virtual void v10();
-    virtual void v11();
-    virtual void v12();
-    virtual void v13();
-    virtual void v14();
-    virtual void v15();
-    virtual void v16();
-    virtual void v17();
-    virtual void Install(void* set, char* szName, char* szKey); // slot 18 (+0x48)
-};
-// The sound registry at this->m_c->m_28 (plain non-virtual helpers).
-struct CSoundRegistry {
-    i32 Has(char* szName);                              // 0x1583c0 __thiscall, ret found
-    void Register(char* szName, char* szKey);           // 0x157c70 __thiscall
-    void Install(void* set, char* szName, char* szKey); // 0x157ee0 __thiscall
-};
-// The animation registry at this->m_c->m_2c (plain non-virtual helpers).
-struct CAnimRegistry {
-    i32 Has(char* szName);                              // 0x152c50 __thiscall, ret found
-    void Install(void* set, char* szName, char* szKey); // 0x152ad0 __thiscall
-};
-// this->m_c: the resource manager holding the three sub-registries.
-struct CResMgr {
-    char m_pad00[0x10];
-    CImageRegistry* m_10; // +0x10  image/tile registry (virtual install +0x48)
-    char m_pad14[0x28 - 0x14];
-    CSoundRegistry* m_28; // +0x28  sound registry
-    CAnimRegistry* m_2c;  // +0x2c  animation registry
-};
+// CResMgr and its three sub-registries (image @m_10, sound @m_28, anim @m_2c)
+// now live in the shared <Gruntz/ResMgr.h> (included at the top of this TU).
 // Typed view-of-`this` for the loader family.
 struct CPlayRes {
     char m_pad00[0x8];

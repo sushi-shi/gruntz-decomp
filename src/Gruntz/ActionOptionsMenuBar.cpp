@@ -12,25 +12,11 @@
 
 // ---------------------------------------------------------------------------
 // Engine objects reached through the game-manager singleton (g_gameReg).
+// CSprite (frame-data) + CSpriteHashTable come from <Gruntz/Sprite.h>; the
+// resource manager + its image registry (m_10) from <Gruntz/ResMgr.h>.
 // ---------------------------------------------------------------------------
-struct CSprite;
-class CSpriteHashTable {
-public:
-    i32 Lookup(char* szName, CSprite** ppOut);
-};
-
-struct CSprite {
-    char m_pad00[0x14];
-    i32** m_frameTable; // +0x14  frame-pointer table
-    char m_pad18[0x64 - 0x18];
-    i32 m_firstFrame; // +0x64  first valid frame number
-    i32 m_lastFrame;  // +0x68  last valid frame number
-};
-
-struct CSpriteMgr {
-    char m_pad00[0x10];
-    CSpriteHashTable m_spriteMap; // +0x10  the name->sprite hash table
-};
+#include <Gruntz/ResMgr.h>
+#include <Gruntz/Sprite.h>
 
 // The world->screen transform object (g_gameReg->m_resMgr->m_view->m_viewport). m_worldWidth is the
 // world width used to clamp the bar position. WrapCoord is NO-body so its
@@ -50,21 +36,7 @@ struct CMenuViewObj {
     CViewport* m_viewport; // +0x5c
 };
 
-// The active draw surface (g_gameReg->m_resMgr->m_drawTarget): +0x14 is the draw context.
-struct CDrawTarget {
-    char m_pad00[0x14];
-    i32 m_drawContext; // +0x14  draw context
-};
-
-// The game's resource/level manager (g_gameReg->m_resMgr).
-struct CResMgr {
-    char m_pad00[0x4];
-    CDrawTarget* m_drawTarget; // +0x04  active draw surface
-    char m_pad08[0x10 - 0x8];
-    CSpriteMgr* m_spriteMgr; // +0x10  sprite manager (LoadAssets lookups)
-    char m_pad14[0x24 - 0x14];
-    CMenuViewObj* m_view; // +0x24  level/view object
-};
+// CDrawTarget + CResMgr (with the image registry at m_10) come from <Gruntz/ResMgr.h>.
 
 // The grunt/logic record stored in the level grid object table (g_gameReg->m_gridObjects);
 // the bar polls a handful of its fields to pick which mode-chip to light.
@@ -98,7 +70,7 @@ struct CMenuBarFrame {
 DATA(0x00229ad0)
 extern i32 g_serialCounter;
 
-// The CString-read helper (0x155630): receiver = g_gameReg->m_resMgr->m_spriteMgr.
+// The CString-read helper (0x155630): receiver = g_gameReg->m_resMgr->m_10.
 // NO-body -> reloc-masks (CDDrawWorkerRegistry::CDDrawWorkerRegistry_155630).
 struct CStrReader {
     void ReadField(i32 dst, char* tmp, i32* outZero);
@@ -195,28 +167,28 @@ i32 CActionOptionsMenuBar::LoadAssets() {
     CSprite* spr = 0;
 
     m_active = 0;
-    g_gameReg->m_resMgr->m_spriteMgr->m_spriteMap.Lookup("GAME_ACTIONOPTIONZMENUBAR", &spr);
-    m_frame = (spr && spr->m_firstFrame <= 1 && spr->m_lastFrame >= 1) ? spr->m_frameTable[1] : 0;
+    g_gameReg->m_resMgr->m_10->m_10map.Lookup("GAME_ACTIONOPTIONZMENUBAR", &spr);
+    m_frame = (spr && spr->m_64 <= 1 && spr->m_68 >= 1) ? spr->m_10.m_pData[1] : 0;
     if (!m_frame) {
         return 0;
     }
 
     spr = 0;
-    g_gameReg->m_resMgr->m_spriteMgr->m_spriteMap.Lookup("GAME_INGAMEICONZ_NORMCHIPZ", &spr);
+    g_gameReg->m_resMgr->m_10->m_10map.Lookup("GAME_INGAMEICONZ_NORMCHIPZ", &spr);
     m_normChipSprite = spr;
     if (!spr) {
         return 0;
     }
 
     spr = 0;
-    g_gameReg->m_resMgr->m_spriteMgr->m_spriteMap.Lookup("GAME_INGAMEICONZ_HIGHCHIPZ", &spr);
+    g_gameReg->m_resMgr->m_10->m_10map.Lookup("GAME_INGAMEICONZ_HIGHCHIPZ", &spr);
     m_highChipSprite = spr;
     if (!spr) {
         return 0;
     }
 
     spr = 0;
-    g_gameReg->m_resMgr->m_spriteMgr->m_spriteMap.Lookup("GAME_INGAMEICONZ_GREYCHIPZ", &spr);
+    g_gameReg->m_resMgr->m_10->m_10map.Lookup("GAME_INGAMEICONZ_GREYCHIPZ", &spr);
     m_greyChipSprite = spr;
     if (!spr) {
         return 0;
@@ -319,20 +291,17 @@ i32 CActionOptionsMenuBar::Refresh() {
         switch (p[-4]) {
             case 1: {
                 CSprite* s = m_normChipSprite;
-                frame =
-                    (*p < s->m_firstFrame || *p > s->m_lastFrame) ? 0 : (i32)s->m_frameTable[*p];
+                frame = (*p < s->m_64 || *p > s->m_68) ? 0 : (i32)s->m_10.m_pData[*p];
                 break;
             }
             case 2: {
                 CSprite* s = m_highChipSprite;
-                frame =
-                    (*p < s->m_firstFrame || *p > s->m_lastFrame) ? 0 : (i32)s->m_frameTable[*p];
+                frame = (*p < s->m_64 || *p > s->m_68) ? 0 : (i32)s->m_10.m_pData[*p];
                 break;
             }
             case 3: {
                 CSprite* s = m_greyChipSprite;
-                frame =
-                    (*p < s->m_firstFrame || *p > s->m_lastFrame) ? 0 : (i32)s->m_frameTable[*p];
+                frame = (*p < s->m_64 || *p > s->m_68) ? 0 : (i32)s->m_10.m_pData[*p];
                 break;
             }
             default:
@@ -524,7 +493,7 @@ i32 CActionOptionsMenuBar::Serialize(CMenuArchive* ar) {
     {
         i32 zero = 0;
         if (m_frame) {
-            ((CStrReader*)mgr->m_spriteMgr)->ReadField((i32)m_frame, tmp, &zero);
+            ((CStrReader*)mgr->m_10)->ReadField((i32)m_frame, tmp, &zero);
         }
         ar->Transfer(tmp, 0x80);
         ar->Transfer(&zero, 4);
@@ -535,7 +504,7 @@ i32 CActionOptionsMenuBar::Serialize(CMenuArchive* ar) {
     {
         i32 zero = 0;
         if (m_button0Frame) {
-            ((CStrReader*)mgr->m_spriteMgr)->ReadField((i32)m_button0Frame, tmp, &zero);
+            ((CStrReader*)mgr->m_10)->ReadField((i32)m_button0Frame, tmp, &zero);
         }
         ar->Transfer(tmp, 0x80);
         ar->Transfer(&zero, 4);
@@ -547,7 +516,7 @@ i32 CActionOptionsMenuBar::Serialize(CMenuArchive* ar) {
         i32 v20 = m_button1Frame;
         memset(tmp, 0, sizeof(tmp));
         if (v20) {
-            ((CStrReader*)mgr->m_spriteMgr)->ReadField(v20, tmp, &zero);
+            ((CStrReader*)mgr->m_10)->ReadField(v20, tmp, &zero);
         }
         ar->Transfer(tmp, 0x80);
         ar->Transfer(&zero, 4);

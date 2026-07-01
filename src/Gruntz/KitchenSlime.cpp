@@ -3,6 +3,7 @@
 #include <Bute/ButeMgr.h>
 #include <Gruntz/CStringNode.h> // the type-name teardown slot
 #include <Gruntz/UserLogic.h> // CUserLogic base (CKitchenSlime : CUserLogic) for the leaf-dtor fold
+#include <Gruntz/Sprite.h>    // CSprite (frame-data value; the looked-up direction sprite)
 // KitchenSlime.cpp - CKitchenSlime::LoadSprites @0x0b3160 (C:\Proj\Gruntz). The
 // kitchen-slime hazard's per-step "advance to the next walkable tile" driver: it
 // probes up to four tiles in the slime's current travel direction (m_10->m_124),
@@ -13,7 +14,7 @@
 // load-bearing; names are placeholders for the recovered engine identities.
 // CButeMgr g_buteMgr / the CUserLogic base hierarchy come from <Gruntz/UserLogic.h>.
 
-struct CSprite;
+// CSprite (frame-data value) comes from <Gruntz/Sprite.h>.
 
 // The sub-object embedded in the anim player at +0x1a0 (a CSubMgr-style member);
 // Tick advances it once per frame via its 0x55c360 method (one int arg).
@@ -34,17 +35,6 @@ struct CSlimeAnimPlayer {
     i32* m_198;         // +0x198  first frame pointer
     char m_pad19c[4];   // +0x19c
     CSlimeSubMgr m_1a0; // +0x1a0  per-frame sub-mgr (Advance)
-};
-
-// The looked-up direction sprite (frame table @+0x14, valid range [m_64..m_68]).
-struct CSprite {
-    void CacheFirstFrame(const char* name); // CGruntSprite::CacheFirstFrame
-
-    char m_pad0[0x14];
-    i32** m_14; // +0x14  frame-pointer table
-    char m_pad18[0x64 - 0x18];
-    i32 m_64; // +0x64
-    i32 m_68; // +0x68
 };
 
 // The slime's resource/level holder (this->m_10). m_124 = travel direction
@@ -775,7 +765,7 @@ i32 CKitchenSlime::LoadSprites() {
     if (changed != 0 && spr != 0) {
         if (spr->m_64 <= 1 && spr->m_68 >= 1) {
             player->m_190 = 1;
-            player->m_198 = spr->m_14[1];
+            player->m_198 = spr->m_10.m_pData[1];
             m_88 = 0;
             m_8c = 0;
             return 1;
