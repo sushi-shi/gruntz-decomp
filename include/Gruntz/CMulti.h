@@ -21,6 +21,14 @@
 // Win32 sprintf / DialogBoxParamA / SetActiveWindow surface CMulti dispatches to.
 #include <Mfc.h>
 
+// Per-frame sub-objects driven by PumpA (0x0b6b40); reconstructed TU-local in
+// CMulti.cpp (thiscall receivers, all out-of-line -> reloc-masked).
+class CMultiSubDC;   // CMulti::m_2dc
+class CMultiSubE4;   // CMulti::m_2e4
+class CMultiSlot48;  // CMultiLogic::m_48
+class CMultiSub68;   // CMultiLogic::m_68
+class CMultiSub70;   // CMultiLogic::m_70
+
 // The CState owner/logic object at CMulti+0x04 (CState::m_4). CMulti's lobby /
 // error-report methods drive it through three thiscall entry points (all
 // out-of-line -> reloc-masked): a 1-arg log sink (the "%s (%i)" line), a 3-arg
@@ -64,6 +72,7 @@ public:
     char m_head[0x28 - 0x1c];      // +0x1c  CObList head (RemoveHead via 0x5b4a03)
     i32 m_28;                      // +0x28  emptiness/count gate
     CMultiLogicNode* RemoveHead(); // 0x005b4a03 (MFC CObList::RemoveHead)
+    void Step20b3(i32 v);          // per-frame poke (PumpA, thiscall)
 };
 
 // A small descriptor referenced through CMultiLogic+0xc4 (flags at +0x4, name at +0x8).
@@ -80,13 +89,20 @@ class CMultiLogic {
 public:
     void* m_0;        // +0x00
     CMultiLogic* m_4; // +0x04  the inner object (the focus-restore chain)
-    char m_pad8_5c[0x5c - 0x8];
+    char m_pad8_c[0xc - 0x8];
+    i32 m_c; // +0x0c  active gate (PumpA)
+    char m_pad10_48[0x48 - 0x10];
+    CMultiSlot48* m_48; // +0x48  ambient slot manager (PumpA)
+    char m_pad4c_5c[0x5c - 0x4c];
     CMultiLogicList* m_5c;  // +0x5c  list manager (StartSession poke target)
     CMultiDialogHook* m_60; // +0x60  the pre-dialog thiscall receiver
-    char m_pad64_6c[0x6c - 0x64];
+    char m_pad64_68[0x68 - 0x64];
+    CMultiSub68* m_68;     // +0x68  per-frame sub (PumpA, Step3017)
     CMultiLogicList* m_6c; // +0x6c  the RemoveHead list manager
-    char m_pad70_9c[0x9c - 0x70];
+    CMultiSub70* m_70;     // +0x70  per-frame sub (PumpA, Step3562)
+    char m_pad74_9c[0x9c - 0x74];
     i32 m_9c; // +0x9c  zeroed at StartTitle entry
+    void Step2d33();       // 0x??  per-frame finish (PumpA tail)
     char m_padA0_C0[0xc0 - 0xa0];
     i32 m_c0;              // +0xc0  must be non-null to proceed
     CMultiLogicDesc* m_c4; // +0xc4  host descriptor
@@ -132,6 +148,7 @@ public:
     i32 IsBusy();                         // 0x000c01d0
     i32 IsStalled();                      // 0x000c04f0
     void ArmSlot(void* node, i32 parity); // 0x000c03f0
+    void Step2437();                      // per-frame poke (PumpA, thiscall)
 
     char m_pad00_10[0x10];
     i32 m_10; // +0x10  slot-count / id base
@@ -200,6 +217,9 @@ public:
     i32 RebindHostAlt();                    // 0x0bc460
     i32 ReadGroupSel();                     // 0x0b76a0
     i32 PumpA();                            // 0x0b6b40  (timeGetTime/wsprintf helper)
+    i32 PumpAReady();                       // PumpA head probe (thiscall) 0x??
+    void PumpAReset();                      // PumpA idle reset (thiscall) 0x??
+    i32 PumpAIndex();                       // PumpA ambient index (thiscall) 0x??
     void PumpB();                           // 0x0b6e90
     void OnOutOfSync();                     // 0x0bae40
     void RefreshSlotTable();                // 0x021bd0  (free fn-ish thiscall on this)
@@ -223,9 +243,18 @@ public:
     i32 m_2d0; // +0x2d0  Step() result
     i32 m_2d4; // +0x2d4  Drain() result
     i32 m_2d8; // +0x2d8  rng seed
-    char m_pad2dc_320[0x320 - 0x2dc];
+    CMultiSubDC* m_2dc; // +0x2dc  per-frame sub (Step34bd)
+    char m_pad2e0_2e4[0x2e4 - 0x2e0];
+    CMultiSubE4* m_2e4; // +0x2e4  per-frame sub (Step2cc0)
+    char m_pad2e8_320[0x320 - 0x2e8];
     CLobbyObjA* m_320; // +0x320  heap obj (thiscall teardown + _RezFree)
-    char m_pad324_370[0x370 - 0x324];
+    char m_pad324_338[0x338 - 0x324];
+    i32 m_338; // +0x338  ambient-window clock (int64 low, high at m_33c)
+    i32 m_33c; // +0x33c
+    i32 m_340; // +0x340  ambient interval (int64 low, high at m_344)
+    i32 m_344; // +0x344
+    i32 m_348; // +0x348  ambient-armed latch
+    char m_pad34c_370[0x370 - 0x34c];
     CByteArray m_370; // +0x370
     char m_pad384_3a4[0x3a4 - 0x384];
     CByteArray m_3a4[4]; // +0x3a4  (vector dtor: 4 x 0x14)
@@ -251,7 +280,7 @@ public:
     i32 m_588; // +0x588  armed flag
     char m_pad58c_590[0x590 - 0x58c];
     i32 m_590; // +0x590  copied to m_4->m_110 on teardown
-    char m_pad594_598[0x598 - 0x594];
+    i32 m_594; // +0x594  ambient-enable gate
     CString m_598; // +0x598
     CString m_59c; // +0x59c
     CString m_5a0; // +0x5a0

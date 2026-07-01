@@ -409,6 +409,175 @@ i32 CMulti::Tick() {
     return 1;
 }
 
+// ===========================================================================
+// CMulti::PumpA  @ 0x0b6b40  - the ambient-timer service: advance the shared
+// kill-cue clock, and once the ambient window elapses, format an "AMBIENT%d"
+// cue name and register/trigger it; then decay the five ambient stat timers,
+// pump the redraw sub-objects, and finish the frame. Reads timeGetTime /
+// wsprintfA through the game import slots (reloc-masked). Placeholder helper
+// types; only member offsets + the call/branch structure are load-bearing.
+// ---------------------------------------------------------------------------
+
+// The global ambient/kill-cue clock state (retail .data addresses -> DIR32
+// operands reloc-mask).
+DATA(0x002bf3c0)
+extern "C" u32 g_killCueClock; // 0x6bf3c0
+DATA(0x002bf3bc)
+extern "C" u32 g_6bf3bc; // 0x6bf3bc  (= delta cap mirror)
+DATA(0x0024558c)
+extern "C" i32 g_64558c; // 0x64558c  ambient frame counter
+DATA(0x00245590)
+extern "C" u32 g_645590; // 0x645590  stat timer 1
+extern "C" i32 g_645594; // 0x645594  (?g_645594@@3HA)
+extern "C" i32 g_strikeThresh; // 0x645598 (?g_strikeThresh@@3HA)
+DATA(0x0024559c)
+extern "C" u32 g_64559c; // 0x64559c  stat timer 4
+DATA(0x002455a0)
+extern "C" u32 g_6455a0; // 0x6455a0  stat timer 5
+
+// The redraw vfn host at (CMulti::m_c)->m_8: two thiscall slots pumped each
+// frame (real virtuals so the dispatch is ecx=this, no push).
+struct McObj {
+    virtual void v0() = 0;
+    virtual void v1() = 0;
+    virtual void v2() = 0;
+    virtual void v3() = 0;
+    virtual void v4() = 0;
+    virtual void v5() = 0;
+    virtual void v6() = 0;
+    virtual void v7() = 0;
+    virtual void v8() = 0;
+    virtual void Slot24() = 0; // +0x24
+    virtual void v10() = 0;
+    virtual void v11() = 0;
+    virtual void v12() = 0;
+    virtual void v13() = 0;
+    virtual void v14() = 0;
+    virtual void v15() = 0;
+    virtual void Slot40() = 0; // +0x40
+};
+struct McHost { // CMulti::m_c
+    char m_pad0[8];
+    McObj* m_8; // +0x08
+};
+
+// Per-frame receivers (thiscall, out-of-line -> reloc-masked).
+class CMultiSlotObj { // CObjF139030 target of CMultiSlot48::m_1c
+public:
+    void Do139030(i32 flag); // 0x139030
+};
+class CMultiSlot48 { // CMultiLogic::m_48
+public:
+    void Add138840(char* name, i32 flag); // 0x138840
+    CMultiSlotObj* Find138730(char* name); // 0x138730
+    char m_pad0[0x1c];
+    CMultiSlotObj* m_1c; // +0x1c
+};
+class CMultiSub68 { // CMultiLogic::m_68
+public:
+    void Step3017(i32 dt); // 0x3017
+};
+class CMultiSub70 { // CMultiLogic::m_70
+public:
+    void Step3562(CMultiLogic* logic); // 0x3562
+};
+class CMultiSubDC { // CMulti::m_2dc
+public:
+    void Step34bd(i32 dt); // 0x34bd
+};
+class CMultiSubE4 { // CMulti::m_2e4
+public:
+    void Step2cc0(i32 dt); // 0x2cc0
+};
+
+// @early-stop
+// large-body regalloc/scheduling wall (~88%). Prologue, the m_594/m_4->m_c/ready
+// early-out, the shared-clock advance and frame size (sub esp,0x44) are byte-exact
+// (llvm-objdump -dr); the residual is MSVC5's register/branch choices across the
+// five stat-timer decay blocks + the m_c->m_8 vfn-host dispatch on this 670-byte
+// body (0-in-ebp reuse, g_645584 single-load hoisting), not steerable from source.
+RVA(0x000b6b40, 0x29e)
+i32 CMulti::PumpA() {
+    i32 ready = PumpAReady();
+    if (m_594 == 0 && m_4->m_c != 0 && ready == 0) {
+        PumpAReset();
+        return 1;
+    }
+    g_645580 += 0x21;
+    g_645588 += 0x21;
+    g_645584 = 0x21;
+    g_killCueClock = g_645580;
+    g_6bf3bc = 0x21;
+    if (m_348 == 0) {
+        if ((i64)(u32)g_645588 - *(i64*)&m_338 >= *(i64*)&m_340) {
+            char name[0x40];
+            wsprintfA(name, "AMBIENT%d", PumpAIndex());
+            if (*(i32*)((char*)g_64556c + 0x14) != 0) {
+                m_4->m_48->Add138840(name, 1);
+            } else {
+                CMultiSlotObj* p = m_4->m_48->Find138730(name);
+                if (p) {
+                    m_4->m_48->m_1c = p;
+                }
+                if (m_4->m_48->m_1c) {
+                    m_4->m_48->m_1c->Do139030(1);
+                }
+            }
+            m_348 = 1;
+        }
+    }
+    m_4->m_6c->Step20b3(m_5cc % 128);
+    m_520->Step2437();
+    g_64558c++;
+    u32 t1 = g_645590 ? g_645590 : 0x32;
+    if (g_645584 < t1) {
+        g_645590 = t1 - g_645584;
+    } else {
+        g_645590 = 0;
+    }
+    u32 t2 = g_645594 ? g_645594 : 0x64;
+    if (g_645584 < t2) {
+        g_645594 = t2 - g_645584;
+    } else {
+        g_645594 = 0;
+    }
+    u32 t3 = g_strikeThresh ? g_strikeThresh : 0xc8;
+    if (g_645584 < t3) {
+        g_strikeThresh = t3 - g_645584;
+    } else {
+        g_strikeThresh = 0;
+    }
+    u32 t4 = g_64559c ? g_64559c : 0x190;
+    if (g_645584 < t4) {
+        g_64559c = t4 - g_645584;
+    } else {
+        g_64559c = 0;
+    }
+    u32 t5 = g_6455a0 ? g_6455a0 : 0x1f4;
+    if (g_645584 < t5) {
+        g_6455a0 = t5 - g_645584;
+    } else {
+        g_6455a0 = 0;
+    }
+    ((McHost*)m_c)->m_8->Slot24();
+    ((McHost*)m_c)->m_8->Slot40();
+    m_4->m_68->Step3017(g_645584);
+    m_2dc->Step34bd(g_645584);
+    CMultiTickWin* win = (CMultiTickWin*)*(void**)((char*)m_c + 0x20);
+    if (win) {
+        i32 now = timeGetTime();
+        win->TickWinA(now);
+        win->TickWinB(now);
+    }
+    m_2e4->Step2cc0(g_645584);
+    m_4->m_70->Step3562(m_4);
+    if (ready == 0) {
+        PumpAReset();
+    }
+    m_4->Step2d33();
+    return 1;
+}
+
 // External CMulti method: load the named title screen (5-arg thiscall). 0x004fa350
 class CMultiTitleLoader {
 public:

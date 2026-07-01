@@ -721,13 +721,7 @@ namespace ApiCallerStubs {
         }
     }
 
-    // @confidence: low
-    // @source: winapi:GetScrollInfo;SetScrollInfo
-    // @stub
-    RVA(0x00037260, 0x1fd)
-    i32 winapi_037260_GetScrollInfo_SetScrollInfo() {
-        return 0;
-    }
+    // 0x00037260 reconstructed as m4::ScrollDialog in src/Gruntz/m4_ApiWrappers.cpp
 
     // @confidence: low
     // @source: winapi:GetDlgItem
@@ -1428,21 +1422,9 @@ namespace ApiCallerStubs {
         EnableWindow(GetDlgItem(hWnd, id6), flag);
     }
 
-    // @confidence: low
-    // @source: winapi:EndDialog;PostMessageA
-    // @stub
-    RVA(0x0009e390, 0x243)
-    i32 winapi_09e390_EndDialog_PostMessageA() {
-        return 0;
-    }
+    // 0x0009e390 reconstructed as m4::SetupDlgCommand in src/Gruntz/m4_ApiWrappers.cpp
 
-    // @confidence: low
-    // @source: winapi:timeGetTime;wsprintfA
-    // @stub
-    RVA(0x000b6b40, 0x29e)
-    i32 CMulti::winapi_0b6b40_timeGetTime_wsprintfA() {
-        return 0;
-    }
+    // 0x000b6b40 reconstructed as CMulti::PumpA in src/Gruntz/CMulti.cpp
 
     // @confidence: low
     // @source: winapi:SetRect

@@ -302,15 +302,53 @@ namespace m4 {
     struct LevelInfoSrc {  // g_mgrSettings->m_30->m_24
         i32 GetInfo(void* key, LevelInfo* out);  // RVA 0x160530
     };
+    struct SoundPlayer {
+        void Play1360d0(i32 a, i32 b, i32 c, i32 d);  // thiscall thunk 0x1360d0
+    };
+    struct SoundCue {  // config-section result handed back by GetSection
+        char m_pad0[0x10];
+        SoundPlayer* m_10;  // +0x10
+        i32 m_14;           // +0x14
+        i32 m_18;           // +0x18
+    };
+    struct CfgAccessor {  // embedded at MgrM28+0x10
+        i32 GetSection(const char* name, SoundCue** out);  // thiscall thunk 0x1b8438
+    };
+    struct MgrM28 {  // g_mgrSettings->m_30->m_28 (config accessor host)
+        char m_pad0[0x10];
+        CfgAccessor m_10;  // +0x10 (GetSection receiver)
+        char m_pad11[0x30 - 0x11];
+        MgrM28* m_30;  // +0x30
+    };
     struct MgrM30 {
         char m_pad0[0x24];
         LevelInfoSrc* m_24;  // +0x24
+        MgrM28* m_28;         // +0x28
     };
+    struct MgrM48 {  // g_mgrSettings->m_48 (scroll target)
+        void Set138950(i32 pos);  // thiscall thunk 0x138950
+    };
+    struct MgrWnd {  // g_mgrSettings->m_4 (window holder)
+        char m_pad0[4];
+        HWND m_4;  // +0x4
+    };
+    struct MgrM48;  // g_mgrSettings->m_48 (scroll target)
     struct MgrSettings {  // g_mgrSettings (0x64556c)
-        char m_pad0[0x30];
+        char m_pad0[4];
+        MgrWnd* m_4;  // +0x4
+        char m_pad8[0x30 - 8];
         MgrM30* m_30;  // +0x30
-        char m_pad34[0x70 - 0x34];
+        char m_pad34[0x48 - 0x34];
+        MgrM48* m_48;  // +0x48
+        char m_pad4c[0x70 - 0x4c];
         HitGrid* m_70;  // +0x70
+        char m_pad74[0xbc - 0x74];
+        i32 m_bc;  // +0xbc
+        char m_padc0[0x124 - 0xc0];
+        i32 m_124;  // +0x124
+        i32 Send2bb7(const char* section, void* proc, i32 flag);  // thiscall thunk 0x2bb7
+        void Voice4174(i32 pos);       // thiscall thunk 0x4174
+        void Chip40c0(i32 pos);        // thiscall thunk 0x40c0
     };
     extern "C" MgrSettings* g_mgrSettings;  // 0x64556c
 
@@ -414,6 +452,219 @@ namespace m4 {
             SetDlgItemTextA(hDlg, 0x429, "Bad Level File");
         }
         return 1;
+    }
+
+    // -------------------------------------------------------------------------
+    // SetupDlgCommand (0x0009e390) - the Battlez setup dialog's WM_COMMAND
+    // handler. Three contiguous control-ID ranges (map/delete/select buttons)
+    // each map to a 0..9 index; the matching action toggles the dialog enabled
+    // state around a config-store call, and the "select" range starts the game.
+    // A free __cdecl(HWND, cmdId, dlg) helper.
+
+    extern "C" i32 g_64c864;  // 0x64c864 (last selected slot handle)
+
+    struct SetupDlg {  // arg3 - the settings dialog object
+        i32 GetHandle(i32 idx);  // thiscall thunk 0x3bcf
+        i32 Apply(i32 h);        // thiscall thunk 0x12f3
+    };
+
+    extern "C" void proc_401e3d();  // dialog proc thunk (RVA 0x1e3d)
+    extern "C" void proc_40121c();  // dialog proc thunk (RVA 0x121c)
+    void func_2ee6(HWND hwnd, SetupDlg* dlg);  // cdecl thunk 0x2ee6
+
+    // @early-stop
+    // jump-table-data scoring artifact (docs/patterns/jumptable-data-overlap.md):
+    // the switch dispatch, all three 10-way index tables, case bodies and the two
+    // return epilogues are byte-exact (llvm-objdump -dr), but objdiff scores the 3
+    // inline jump-table regions (~120 B) as mismatched — cl's base obj references
+    // local `$L####` case labels (addend 0) while the delinked target carries
+    // `?SetupDlgCommand+offset` self-relocs, which objdiff cannot pair. ~79%.
+    RVA(0x0009e390, 0x243)
+    i32 SetupDlgCommand(HWND hwnd, i32 cmdId, SetupDlg* dlg) {
+        i32 idx = -1;
+        switch (cmdId) {
+        case 0x49a: idx = 0; break;
+        case 0x49b: idx = 1; break;
+        case 0x49c: idx = 2; break;
+        case 0x49d: idx = 3; break;
+        case 0x49e: idx = 4; break;
+        case 0x49f: idx = 5; break;
+        case 0x4a0: idx = 6; break;
+        case 0x4a1: idx = 7; break;
+        case 0x4a2: idx = 8; break;
+        case 0x4a3: idx = 9; break;
+        }
+        if (idx != -1) {
+            i32 h = dlg->GetHandle(idx);
+            g_64c864 = h;
+            if (h) {
+                EnableWindow(hwnd, FALSE);
+                g_mgrSettings->Send2bb7("GAME_INFO", (void*)proc_401e3d, 0);
+                EnableWindow(hwnd, TRUE);
+            }
+            return 0;
+        }
+        idx = -1;
+        switch (cmdId) {
+        case 0x4a4: idx = 0; break;
+        case 0x4a5: idx = 1; break;
+        case 0x4a6: idx = 2; break;
+        case 0x4a7: idx = 3; break;
+        case 0x4a8: idx = 4; break;
+        case 0x4a9: idx = 5; break;
+        case 0x4aa: idx = 6; break;
+        case 0x4ab: idx = 7; break;
+        case 0x4ac: idx = 8; break;
+        case 0x4ad: idx = 9; break;
+        }
+        if (idx != -1) {
+            i32 h = dlg->GetHandle(idx);
+            g_64c864 = h;
+            if (h) {
+                EnableWindow(hwnd, FALSE);
+                i32 r = g_mgrSettings->Send2bb7("GAME_DELETE", (void*)proc_40121c, 0);
+                EnableWindow(hwnd, TRUE);
+                if (r) {
+                    func_2ee6(hwnd, dlg);
+                }
+            }
+            return 0;
+        }
+        idx = -1;
+        switch (cmdId) {
+        case 0x490: idx = 0; break;
+        case 0x491: idx = 1; break;
+        case 0x492: idx = 2; break;
+        case 0x493: idx = 3; break;
+        case 0x494: idx = 4; break;
+        case 0x495: idx = 5; break;
+        case 0x496: idx = 6; break;
+        case 0x497: idx = 7; break;
+        case 0x498: idx = 8; break;
+        case 0x499: idx = 9; break;
+        }
+        if (idx != -1) {
+            i32 h = dlg->GetHandle(idx);
+            if (h) {
+                EnableWindow(hwnd, FALSE);
+                i32 r = dlg->Apply(h);
+                EnableWindow(hwnd, TRUE);
+                if (r) {
+                    g_mgrSettings->m_bc = h;
+                    PostMessageA(g_mgrSettings->m_4->m_4, 0x111, 0x807e, 0);
+                    EndDialog(hwnd, 1);
+                }
+                return 1;
+            }
+        }
+        return 0;
+    }
+
+    // -------------------------------------------------------------------------
+    // ScrollDialog (0x00037260) - the options-dialog scrollbar handler. Reads the
+    // control's SCROLLINFO, adjusts nPos by the SB_* code, writes it back, then
+    // routes the new value to the matching setting (music/sfx volume sliders):
+    // control 0x472/0x478 store directly; 0x476/0x470 also (re)trigger a GAME_VOICE
+    // / GAME_CHIPFALLOUT sample if the kill-cue clock has elapsed. A free
+    // __cdecl(HWND, wParam, code, pos) helper.
+
+    extern i32 g_sndEnabled;        // 0x61ab20 (?g_sndEnabled@@3HA)
+    extern i32 g_sndCueTag;         // 0x61ab24 (?g_sndCueTag@@3HA)
+    extern "C" i32 g_killCueClock;  // 0x6bf3c0
+
+    // @early-stop
+    // regalloc wall + jump-table-data artifact (docs/patterns/jumptable-data-overlap.md).
+    // Logic + instruction selection identical, but MSVC5 caches `code` in ebp and
+    // `newpos` in edi across the whole body, whereas retail keeps `newpos` in ebp,
+    // holds `code` in eax only for the switch, and RE-READS code from [esp+0x38] in
+    // the voice/chip blocks; that register permutation shifts most operand bytes
+    // (consistent ebp<->edi/eax swap, llvm-objdump -dr). ~85%.
+    RVA(0x00037260, 0x1fd)
+    void ScrollDialog(HWND hwnd, i32 a2, i32 code, i32 pos) {
+        if (!hwnd) {
+            return;
+        }
+        SCROLLINFO si;
+        si.cbSize = sizeof(si);
+        si.fMask = SIF_POS;
+        GetScrollInfo(hwnd, SB_CTL, &si);
+        i32 newpos;
+        if (code == 5) {
+            newpos = pos;
+        } else {
+            newpos = si.nPos;
+            if (code == 4) {
+                newpos = pos;
+            }
+        }
+        switch (code) {
+        case 0: newpos--; break;
+        case 1: newpos++; break;
+        case 2: newpos -= 10; break;
+        case 3: newpos += 10; break;
+        case 4: break;
+        case 5: break;
+        default: return;
+        }
+        si.fMask = SIF_POS;
+        si.nPos = newpos;
+        SetScrollInfo(hwnd, SB_CTL, &si, TRUE);
+        if (hwnd == GetDlgItem(hwnd, 0x472)) {
+            g_mgrSettings->m_48->Set138950(newpos);
+            return;
+        }
+        if (hwnd == GetDlgItem(hwnd, 0x478)) {
+            g_mgrSettings->m_124 = newpos;
+            return;
+        }
+        if (hwnd == GetDlgItem(hwnd, 0x476)) {
+            g_mgrSettings->Voice4174(newpos);
+            if (code == 5) {
+                return;
+            }
+            MgrM28* m28 = g_mgrSettings->m_30->m_28;
+            if (m28->m_30) {
+                return;
+            }
+            SoundCue* cue = 0;
+            m28->m_10.GetSection("GAME_VOICE", &cue);
+            if (!cue) {
+                return;
+            }
+            if (!g_sndEnabled) {
+                return;
+            }
+            if (g_killCueClock - cue->m_14 < cue->m_18) {
+                return;
+            }
+            cue->m_14 = g_killCueClock;
+            cue->m_10->Play1360d0(newpos, 0, 0, 0);
+            return;
+        }
+        if (hwnd == GetDlgItem(hwnd, 0x470)) {
+            g_mgrSettings->Chip40c0(newpos);
+            if (code == 5) {
+                return;
+            }
+            MgrM28* m28 = g_mgrSettings->m_30->m_28;
+            if (m28->m_30) {
+                return;
+            }
+            SoundCue* cue = 0;
+            m28->m_10.GetSection("GAME_CHIPFALLOUT", &cue);
+            if (!cue) {
+                return;
+            }
+            if (!g_sndEnabled) {
+                return;
+            }
+            if (g_killCueClock - cue->m_14 < cue->m_18) {
+                return;
+            }
+            cue->m_14 = g_killCueClock;
+            cue->m_10->Play1360d0(g_sndCueTag, 0, 0, 0);
+            return;
+        }
     }
 
 }  // namespace m4
