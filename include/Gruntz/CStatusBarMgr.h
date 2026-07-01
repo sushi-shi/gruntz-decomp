@@ -14,6 +14,7 @@
 #define GRUNTZ_CSTATUSBARMGR_H
 
 #include <Ints.h>
+#include <rva.h>
 
 #include <Gruntz/StatusBarItem.h>
 
@@ -27,6 +28,7 @@ struct SbRect {
     i32 right;
     i32 bottom;
 };
+SIZE_UNKNOWN(SbRect);
 
 // ---------------------------------------------------------------------------
 // The created status-bar widgets. Each is a CStatusBarItem subtype; the builder
@@ -56,5 +58,6 @@ public:
         i32 f
     );
 };
+SIZE_UNKNOWN(CSBI);
 
 #endif // GRUNTZ_CSTATUSBARMGR_H

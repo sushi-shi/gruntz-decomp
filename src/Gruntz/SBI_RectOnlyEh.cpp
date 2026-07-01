@@ -19,6 +19,7 @@ public:
     i32 Init(void* owner, i32 a, i32 b, i32 c); // __thiscall, ret 0x10
     char m_pad[0x40];
 };
+SIZE_UNKNOWN(CSbiLazySub);
 
 // The two scalar destructors (~CSBI_RectOnly @0x100700, ~CSBI_ImageSet @0x102000)
 // that used to live here moved to SBI_RectOnlyDtorEh.cpp / SBI_ImageSetEh.cpp,
@@ -41,6 +42,7 @@ struct CSbiByteArray {
     }
     char m_pad[0x14];
 };
+SIZE_UNKNOWN(CSbiByteArray);
 
 // The per-element list dtor (~CPtrList, aliased ~CInternetSession @0x5b48c6) passed to
 // the vector-destroy iterator for the eight +0x2c notify lists.

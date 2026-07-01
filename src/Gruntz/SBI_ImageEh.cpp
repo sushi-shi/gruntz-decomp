@@ -39,6 +39,7 @@ struct CSBI_RectOnly : CStatusBarItem {
     virtual ~CSBI_RectOnly();
     void DtorRect(); // 0xe8760  CSBI_RectOnly base teardown
 };
+SIZE_UNKNOWN(CSBI_RectOnly);
 inline CSBI_RectOnly::~CSBI_RectOnly() {
     DtorRect();
 }
@@ -49,6 +50,7 @@ struct CSBI_Image : CSBI_RectOnly {
     virtual void Vf11();
     void DtorImage(); // 0xe6d90  most-derived (Image) member teardown
 };
+SIZE_UNKNOWN(CSBI_Image);
 
 // The most-derived destructor: stamp ??_7CSBI_Image, run DtorImage, then MSVC
 // folds the base dtors (stamp ??_7CSBI_RectOnly + DtorRect, stamp

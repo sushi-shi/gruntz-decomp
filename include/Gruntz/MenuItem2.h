@@ -19,6 +19,7 @@
 #define GRUNTZ_MENUITEM2_H
 
 #include <Ints.h>
+#include <rva.h>
 
 #include <Mfc.h>
 
@@ -33,6 +34,7 @@ struct CMenuFrame {
     i32 m_1c;                                              // +0x1c  y draw offset
     void RenderFrame(i32 surfaceCtx, i32 x, i32 y, i32 z); // 0x153790
 };
+SIZE_UNKNOWN(CMenuFrame);
 
 // The per-state sprite (a CImageSet): a frame table at m_14 indexed by a signed
 // frame index gated to [m_64, m_68]. GetAt is the bounds-checked accessor the cursor
@@ -51,6 +53,7 @@ struct CMenuSprite {
         return m_14[idx];
     }
 };
+SIZE_UNKNOWN(CMenuSprite);
 
 struct CMenuItem2 : CMenuItem {
     CMenuSprite* m_5c; // +0x5c  NORMAL sprite
@@ -67,5 +70,6 @@ struct CMenuItem2 : CMenuItem {
     CMenuFrame* GetCurrentFrame();                            // 0x185970
     i32 NextFrame();                                          // 0x1859c0
 };
+SIZE_UNKNOWN(CMenuItem2);
 
 #endif // GRUNTZ_MENUITEM2_H

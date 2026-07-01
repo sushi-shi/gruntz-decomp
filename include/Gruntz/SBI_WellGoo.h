@@ -18,6 +18,7 @@
 #define SBI_WELLGOO_H
 
 #include <Ints.h>
+#include <rva.h>
 
 // ---------------------------------------------------------------------------
 // Shared engine views (modeled minimally; only the touched members/methods are
@@ -29,6 +30,7 @@
 struct CGooFrame {
     void RenderFrame(i32 surfaceCtx, i32 x, i32 y, i32 z); // 0x153790
 };
+SIZE_UNKNOWN(CGooFrame);
 
 // The active drawable reached via g_gameReg->m_30->m_4: its +0x14 dword is the
 // surface context (RenderFrame arg); its +0x2c is the back-buffer surface the
@@ -39,26 +41,31 @@ struct CGooDrawable {
     char m_pad18[0x2c - 0x18];
     void* m_2c; // +0x2c  back-buffer surface (BltEx `this`)
 };
+SIZE_UNKNOWN(CGooDrawable);
 struct CGooGameMgr {
     char m_pad0[0x4];
     CGooDrawable* m_4; // +0x04  active drawable
 };
+SIZE_UNKNOWN(CGooGameMgr);
 struct CGooGameReg {
     char m_pad0[0x30];
     CGooGameMgr* m_30; // +0x30  active game manager
 };
+SIZE_UNKNOWN(CGooGameReg);
 
 // The CDDraw shaded-sprite blitter (CSBI_WellGoo::m_38): Blit (0x1497f0,
 // __thiscall) validates the dest rect and dispatches a per-mode RLE blit.
 struct CGooShadeBlit {
     i32 Blit(i32 p0, void* src, void* clip, i32 sel, i32 p4); // 0x1497f0
 };
+SIZE_UNKNOWN(CGooShadeBlit);
 
 // The DirectDraw back-buffer surface reached via the drawable's m_2c: BltEx
 // (0x13eef0, __thiscall) blits the goo source through a dest/src rect pair.
 struct CGooSurface {
     i32 BltEx(void* dstRect, void* src, void* srcRect, u32 flags, void* fx); // 0x13eef0
 };
+SIZE_UNKNOWN(CGooSurface);
 
 // ---------------------------------------------------------------------------
 // CSBI_WellGoo - the well-goo status-bar item.
@@ -88,5 +95,6 @@ public:
     i32 m_5c; // +0x5c  dest-rect base (lea &m_5c: BltEx dstRect)
     i32 m_60; // +0x60  ftol(m_20 - clampedFill); foreground y top (m_60 - 2)
 };
+SIZE_UNKNOWN(CSBI_WellGoo);
 
 #endif // SBI_WELLGOO_H

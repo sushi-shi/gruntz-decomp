@@ -43,10 +43,12 @@ struct CMenuCatalog {
     char pad0[0x10];
     CMenuMap m_10; // +0x10 the string->item map base
 };
+SIZE_UNKNOWN(CMenuCatalog);
 struct CMenuHost {
     char pad0[0x10];
     CMenuCatalog* m_10; // +0x10 -> the catalog
 };
+SIZE_UNKNOWN(CMenuHost);
 
 // Sibling-page helpers (other TUs), reached by name:
 extern CString* MenuPage_KeyFwd(CMenuPage* p, CString* out);  // 0x184610
@@ -61,10 +63,12 @@ struct CMenuRenderHost {
     i32 SwitchToPage(const char* key);                // 0x182dd0
     void NotifySwitch();                              // 0x1830b0
 };
+SIZE_UNKNOWN(CMenuRenderHost);
 // The sub-page's current item placer (0x153790, __thiscall on the head item).
 struct CMenuPlacer {
     i32 Place(i32 ctx, i32 x, i32 y, i32 z); // 0x153790
 };
+SIZE_UNKNOWN(CMenuPlacer);
 
 // The child item's vtable (its contents live in the 0x184670+ TU). Referenced by
 // address so the inlined ctor's `mov [item],&vtbl` reloc-masks against retail's.

@@ -68,6 +68,7 @@ struct CStatusBarTab {
     u32 m_14;            // +0x14  draw-clock latch
     u32 m_18;            // +0x18  window width
 };
+SIZE_UNKNOWN(CStatusBarTab);
 
 // The status-bar holder reached through the registry: its embedded hash table is
 // at +0x10 (the `add ecx,0x10` before Lookup addresses it) and +0x30 gates the
@@ -78,6 +79,7 @@ struct CStatusBarHolder {
     char m_pad14[0x30 - 0x14];
     i32 m_30; // +0x30  live-surface gate
 };
+SIZE_UNKNOWN(CStatusBarHolder);
 
 // The map tile grid reached via m_30->m_24->m_5c (two parallel tables: a cell
 // state table at +0x20 and a row-offset table at +0x24).
@@ -90,6 +92,7 @@ struct CTileGrid {
 struct CTileNotifier {
     void Notify(i32 x, i32 y, i32 state);
 };
+SIZE_UNKNOWN(CTileNotifier);
 // The registry's +0x30 holder: it carries the tile-grid holder (+0x24 -> +0x5c
 // grid) and the status-bar holder (+0x28).
 struct CRegHolder {
@@ -100,6 +103,7 @@ struct CRegHolder {
     }* m_24;                // +0x24 -> +0x5c grid
     CStatusBarHolder* m_28; // +0x28
 };
+SIZE_UNKNOWN(CRegHolder);
 // The single typed view of the game-manager singleton (*0x24556c) this TU uses:
 // the resource holder (+0x30), the group table (+0x68), the tile notifier (+0x70)
 // and the view-bounds rectangle (+0x13c..+0x148).
@@ -132,6 +136,7 @@ struct CTabRec {
     u32 m_c; // +0x0c  start-clock hi
     char m_pad10[0x18 - 0x10];
 };
+SIZE_UNKNOWN(CTabRec);
 
 // The parallel widget objects with a thiscall virtual at vtbl+0x30 (set-frame,
 // slot 12). Modeled with a padded virtual interface so `call [vtbl+0x30]` falls
@@ -151,6 +156,7 @@ struct CTabWidget {
     virtual void s0b();
     virtual void SetFrame(i32 frame); // slot 12 (+0x30)
 };
+SIZE_UNKNOWN(CTabWidget);
 
 // The destruct-button countdown block on the game-mode object (overlaid at
 // +0x558): a 3-state machine (0 idle / 1 warning-down / 2 warning-up) with a
@@ -164,6 +170,7 @@ struct CDestructBlock {
     u32 m_56c;         // +0x56c  warning delay hi (always 0)
     CTabWidget* m_570; // +0x570  the warning widget
 };
+SIZE_UNKNOWN(CDestructBlock);
 
 // The chip-grinder rect-target widget at m_500: its +0x14..+0x20 screen rect is
 // stamped each step from the scroll origin (m_10/m_14) and the grinder extents.
@@ -174,6 +181,7 @@ struct CGrinderRect {
     i32 m_1c; // +0x1c  right
     i32 m_20; // +0x20  bottom
 };
+SIZE_UNKNOWN(CGrinderRect);
 
 // The per-tab toggle item reached through this[idx*4 + 0x150]: SetField0 stamps
 // the toggle value (+0x44), m_4 is its active flag.
@@ -183,6 +191,7 @@ struct CStatzTabItem {
     char m_pad08[0x44 - 0x08];
     i32 m_44; // +0x44  toggle value
 };
+SIZE_UNKNOWN(CStatzTabItem);
 
 class EngineLabelBacklog {
 public:
@@ -215,6 +224,7 @@ public:
 struct CStatzTabSub {
     void Toggle(i32 stateId, i32 on);
 };
+SIZE_UNKNOWN(CStatzTabSub);
 
 // ===========================================================================
 // EngineLabelBacklog::UpdateGruntOvenStatusBar @0x105310

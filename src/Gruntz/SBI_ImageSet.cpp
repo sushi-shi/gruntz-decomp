@@ -37,26 +37,31 @@ struct CImageSetCfgRec {
     char m_pad0[0x24];
     char m_name[1]; // +0x24  config name (null-terminated)
 };
+SIZE_UNKNOWN(CImageSetCfgRec);
 
 // CMapStringToPtr::Lookup-style map (0x1b8008, __thiscall, ret 8) embedded at the
 // config-host object's +0x10 (the same map shape SetupImage uses).
 struct CImageSetCfgMap {
     i32 Lookup(char* key, CImageSetCfgRec** out); // 0x1b8008
 };
+SIZE_UNKNOWN(CImageSetCfgMap);
 struct CImageSetCfgHost {
     char m_pad0[0x10];
     CImageSetCfgMap m_10; // +0x10  embedded map at +0x10
 };
+SIZE_UNKNOWN(CImageSetCfgHost);
 struct CImageSetRegSub {
     char m_pad0[0x10];
     CImageSetCfgHost* m_10; // +0x10  config host (map embedded at its +0x10)
 };
+SIZE_UNKNOWN(CImageSetRegSub);
 
 // g_gameReg->m_30 = the active registry/game-manager carrying the config map sub.
 struct CImageSetGameReg {
     char m_pad0[0x30];
     CImageSetRegSub* m_30; // +0x30  registry sub-object
 };
+SIZE_UNKNOWN(CImageSetGameReg);
 DATA(0x0024556c)
 extern CImageSetGameReg* g_gameReg;
 

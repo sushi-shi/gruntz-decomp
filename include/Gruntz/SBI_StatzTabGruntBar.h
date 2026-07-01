@@ -18,6 +18,7 @@
 #define SBI_STATZTABGRUNTBAR_H
 
 #include <Ints.h>
+#include <rva.h>
 
 // ---------------------------------------------------------------------------
 // Shared engine views (modeled minimally; only the touched members/methods are
@@ -39,6 +40,7 @@ struct CStatzGruntRec {
     char m_pad1dc[0x3ec - 0x1dc];
     i32 m_3ec; // +0x3ec  health
 };
+SIZE_UNKNOWN(CStatzGruntRec);
 
 // The CTriggerMgr-style selection host: the unit-table base (WwdGameReg+0x68)
 // doubles as the selection-list owner. SelectionListFind(key, y) resolves the
@@ -46,6 +48,7 @@ struct CStatzGruntRec {
 struct CStatzSelHost {
     i32 SelectionListFind(i32 key, i32 y); // 0x7d2a0
 };
+SIZE_UNKNOWN(CStatzSelHost);
 
 // The game-registry singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c). Only
 // the +0x68 unit-table base the Statz tab samples is modeled (rows of 15 dwords).
@@ -53,6 +56,7 @@ struct CStatzGameReg {
     char m_pad0[0x68];
     CStatzSelHost* m_68; // +0x68  unit/record table base + selection host
 };
+SIZE_UNKNOWN(CStatzGameReg);
 
 // A polymorphic view of `this` used only for the self-virtual slot-0x28 redraw
 // dispatch (CStatusBarItem vtable slot 10): 10 leading slots + Refresh at index 10
@@ -73,6 +77,7 @@ public:
     virtual void v24();
     virtual void Refresh(); // +0x28 (slot 10)
 };
+SIZE_UNKNOWN(CStatzSelf);
 
 // The glyph map a changed value is resolved through (this+0x74 for the first four
 // values, this+0x68 for the timer value): a [m_64..m_68]-gated table at m_14.
@@ -83,6 +88,7 @@ struct CStatzGlyphMap {
     i32 m_64; // +0x64  glyph-index range lo gate
     i32 m_68; // +0x68  glyph-index range hi gate
 };
+SIZE_UNKNOWN(CStatzGlyphMap);
 
 // ---------------------------------------------------------------------------
 // CSBI_StatzTabGruntBar - the per-grunt stat tab. Derives directly from
@@ -118,5 +124,6 @@ public:
     i32 m_80; // +0x80  timer window lo
     i32 m_84; // +0x84  timer window hi
 };
+SIZE_UNKNOWN(CSBI_StatzTabGruntBar);
 
 #endif // SBI_STATZTABGRUNTBAR_H

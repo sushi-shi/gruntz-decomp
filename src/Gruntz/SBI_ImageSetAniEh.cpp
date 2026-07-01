@@ -61,6 +61,7 @@ struct CSBI_ImageSetAni : CSBI_ImageSet {
     virtual void Ianf2();
     void DtorImageSetAni(); // most-derived member teardown (reloc-masked)
 };
+SIZE_UNKNOWN(CSBI_ImageSetAni);
 
 RVA(0x001047f0, 0x94)
 CSBI_ImageSetAni::~CSBI_ImageSetAni() {

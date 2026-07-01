@@ -23,12 +23,14 @@ public:
     i32 Inner740(i32); // 0x135740 thiscall
     i32 Inner880(i32); // 0x135880 thiscall
 };
+SIZE_UNKNOWN(CStatusBarItem2);
 
 // Intrusive list link embedded in each item at +0x44.
 struct SBLink {
     void* m_0;
     void* m_4;
 };
+SIZE_UNKNOWN(SBLink);
 
 // Traversal node: next at +0, item at +8.
 struct SBNode {
@@ -36,6 +38,7 @@ struct SBNode {
     char m_pad4[4];
     CStatusBarItem2* m_8; // item
 };
+SIZE_UNKNOWN(SBNode);
 
 // Embedded 2-pointer list head (head at +0, tail at +4).
 struct SBList {
@@ -44,11 +47,13 @@ struct SBList {
     void Unlink(SBLink*); // 0x1391e0 thiscall
     void Append(SBLink*); // 0x139110 thiscall
 };
+SIZE_UNKNOWN(SBList);
 
 struct SBMgrOwner {
     char m_pad[0x78];
     i32 m_78; // gate
 };
+SIZE_UNKNOWN(SBMgrOwner);
 
 class CStatusBarMgr {
 public:

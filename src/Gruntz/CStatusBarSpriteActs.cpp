@@ -23,6 +23,7 @@ public:
 
     i32 m_40; // +0x40  geometry id (m_38->m_1b4 snapshot)
 };
+SIZE_UNKNOWN(CStatusBarSprite);
 
 // The handler entry the per-class registry yields: its first dword receives the
 // per-frame handler PMF (AdvanceAnim, a 4-byte code ptr on this single-inheritance
@@ -31,6 +32,7 @@ typedef i32 (CStatusBarSprite::*StatusBarSpriteHandler)();
 struct CStatusBarSpriteActEntry {
     StatusBarSpriteHandler m_fn;
 };
+SIZE_UNKNOWN(CStatusBarSpriteActEntry);
 
 // The class's activation-coordinate registry singleton (@0x64e670). Same
 // [2000,2010] fixed-range CLeafActReg shape as the sibling tile triggers, built by
@@ -63,6 +65,7 @@ struct CStatusBarSpriteActReg {
         return m_cur;
     }
 };
+SIZE_UNKNOWN(CStatusBarSpriteActReg);
 DATA(0x0024e670)
 extern CStatusBarSpriteActReg g_statusBarSpriteActReg; // 0x64e670
 

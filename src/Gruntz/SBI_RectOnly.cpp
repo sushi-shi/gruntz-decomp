@@ -36,6 +36,7 @@ struct CSbiSlot {
     i32 m_c;     // +0x0c
     char m_pad10[0x18 - 0x10];
 };
+SIZE_UNKNOWN(CSbiSlot);
 
 // A 24-byte highlight-row record (the +0x378 array element).
 struct CSbiHlRow {
@@ -43,6 +44,7 @@ struct CSbiHlRow {
     i32 m_handle; // +0x04 handle value passed to the notify pointer
     char m_pad8[0x18 - 0x8];
 };
+SIZE_UNKNOWN(CSbiHlRow);
 
 // The CSBI serialization stream (archive). Slot 0x30 (index 12) transfers n
 // bytes to/from buf; slot 0x2c (index 11) reads n bytes and returns a status.
@@ -64,12 +66,14 @@ public:
     virtual i32 Read(void* buf, i32 n);      // +0x2c (slot 11)
     virtual void Transfer(void* buf, i32 n); // +0x30 (slot 12)
 };
+SIZE_UNKNOWN(CSbiStream);
 
 // The +0x8 object carries a sequence id at +0x188 (read during serialize).
 struct CSbiSeqHolder {
     char m_pad0[0x188];
     i32 m_188; // +0x188
 };
+SIZE_UNKNOWN(CSbiSeqHolder);
 
 // A per-tab sprite/menu widget: ClearTabSprites calls Release(); SetTabState shows
 // the selected tab's sprite (Show, +flag) and hides the rest (Hide); the game-tab
@@ -95,6 +99,7 @@ public:
     void Hide(i32 idx);                      // 1 arg  (call 0x3279)
     void Configure(const char* key, i32 on); // 2 args (call 0x2aea)
 };
+SIZE_UNKNOWN(CSbiSprite);
 
 // A hit-test rect widget held in m_hitRects[] / the hit-test lists: a polymorphic
 // object (vptr at +0) with the m_enabled gate at +4, m_xLo/m_xHi the x span, and
@@ -120,6 +125,7 @@ public:
     i32 m_xHi;                                 // +0x1c x hi
     i32 m_yHi;                                 // +0x20 y hi
 };
+SIZE_UNKNOWN(CSbiRect);
 
 // The ConfigureRect host (its arg1): carries a config object at +0x10 that holds a
 // CMapStringToOb at +0x10; the looked-up cue record exposes a frame range at
@@ -127,14 +133,17 @@ public:
 struct CSbiCfgMap {
     i32 Lookup(i32 key, void** out); // CMapWordToOb::Lookup (ret 8)
 };
+SIZE_UNKNOWN(CSbiCfgMap);
 struct CSbiCfgObj {
     char m_pad0[0x10];
     void* m_10; // +0x10  the config object holding the map at +0x10
 };
+SIZE_UNKNOWN(CSbiCfgObj);
 struct CSbiCfgHost {
     char m_pad0[0x10];
     CSbiCfgObj* m_10; // +0x10
 };
+SIZE_UNKNOWN(CSbiCfgHost);
 struct CSbiCfgRecord {
     char m_pad0[0x14];
     i32* m_14; // +0x14  frame table
@@ -142,12 +151,14 @@ struct CSbiCfgRecord {
     i32 m_64; // +0x64  frame range lo / default frame
     i32 m_68; // +0x68  frame range hi
 };
+SIZE_UNKNOWN(CSbiCfgRecord);
 
 // A per-stat widget object (m_statObj[]): a sibling thunk drives its (tag,on)
 // notifier; the call is reloc-masked, so only the arg shape is load-bearing.
 struct CSbiStatObj {
     void Notify2(i32 tag, i32 on); // __thiscall, 2 args (sibling thunk)
 };
+SIZE_UNKNOWN(CSbiStatObj);
 
 // The element type of the +0x204 pointer array: an engine object whose vtable
 // slot 0x30 (index 12) is a __thiscall void(int) notifier.
@@ -169,6 +180,7 @@ public:
     char m_pad4[0x14 - 0x4];
     i32 m_rect14[4]; // +0x14  falling-item rect (UpdateFallingItemStatusBar)
 };
+SIZE_UNKNOWN(CSbiSlotPtr);
 
 // A singly-linked notify node (the +0xbc list element): next ptr at +0, the
 // payload object at +8. The payload's vtable slot 0 is a __thiscall void(int).
@@ -176,11 +188,13 @@ class CSbiNotifyTarget {
 public:
     virtual void Notify(i32 on); // slot 0 (__thiscall void(int))
 };
+SIZE_UNKNOWN(CSbiNotifyTarget);
 struct CSbiNotifyNode {
     CSbiNotifyNode* m_next; // +0
     char m_pad4[0x8 - 0x4];
     CSbiNotifyTarget* m_payload; // +8
 };
+SIZE_UNKNOWN(CSbiNotifyNode);
 
 // A wider view of the notify payload: +0x10 takes the notify value (the destruct-
 // button walks call it as void(int)); +0x14 / +0x28 are argless refreshers (the
@@ -200,26 +214,31 @@ public:
     virtual void v24();
     virtual void Slot28(); // +0x28
 };
+SIZE_UNKNOWN(CSbiNotifyPayload);
 
 // A GAME_DESTRUCT-style sprite-config record: +0x10 is a factory whose no-arg
 // __thiscall builds the display object (returned, then Configure'd / Release'd).
 struct CSbiSpriteFactory {
     void* Build(); // 0x135d70 (__thiscall, no args, returns the object)
 };
+SIZE_UNKNOWN(CSbiSpriteFactory);
 struct CSbiDisplayObj {
     void Configure(i32 a, i32 b, i32 c, i32 d); // 0x136300 (__thiscall, 4 args)
     void Release();                             // 0x135380 (__thiscall, no args)
 };
+SIZE_UNKNOWN(CSbiDisplayObj);
 struct CSbiSpriteCfg {
     char m_pad0[0x10];
     CSbiSpriteFactory* m_10; // +0x10
 };
+SIZE_UNKNOWN(CSbiSpriteCfg);
 
 // The +0x54c tear-down object (a notifier freed on retab).
 struct CSbiMode54c {
     void Notify0(i32 arg); // 0x1258 (__thiscall, 1 arg)
     void Refresh();        // 0x280b (__thiscall, no args)
 };
+SIZE_UNKNOWN(CSbiMode54c);
 
 // A minimal MFC-style CPtrList view (head node at +4); only RemoveAll is called.
 struct CSbiPtrList {
@@ -227,12 +246,14 @@ struct CSbiPtrList {
     CSbiNotifyNode* m_head; // +0x04 head node pointer
     void RemoveAll();       // __thiscall (sibling thunk)
 };
+SIZE_UNKNOWN(CSbiPtrList);
 
 // The pooled-ptr collection embedded at +0x530; teardown calls RemoveAll(-1, 0).
 struct CSbiPtrCollection {
     char m_pad0[0x4];
     void RemoveAll(i32 a, i32 b); // __thiscall, 2 args
 };
+SIZE_UNKNOWN(CSbiPtrCollection);
 
 // The gauge notifier (m_218/m_21c): the value sink carries m_44 (set to the gauge
 // reading) and a refresh slot at vtable index 0x28 (slot 10).
@@ -252,6 +273,7 @@ public:
     char m_pad4[0x44 - 0x4];
     i32 m_44; // +0x44  latched gauge reading
 };
+SIZE_UNKNOWN(CSbiGaugeNotify);
 
 // The global attribute-config manager (?g_buteMgr, VA 0x6453d8). Only the 3-arg
 // section/key/default int getter is touched (the StatusBar delay lookups); the
@@ -270,6 +292,7 @@ extern CButeMgr g_buteMgr;
 struct CSbiMachineDisplay {
     void Update(i32 a, i32 b); // 0x366b (2 args)
 };
+SIZE_UNKNOWN(CSbiMachineDisplay);
 
 // A phase-timer record overlaid on a 24-byte slot (m_groupSlots element / the HUD-
 // rect blocks reused as timers by the rez-machine/conveyor state machines): a phase
@@ -281,6 +304,7 @@ struct SbiPhaseSlot {
     i64 m_last;     // +0x08  last draw-clock (64-bit)
     i64 m_interval; // +0x10  wait interval (64-bit)
 };
+SIZE_UNKNOWN(SbiPhaseSlot);
 
 // Slot state values (CSbiSlot::m_state) named from how every site reads/writes
 // them: ArmSlot/ResetGroupA store kSlotArmed; FindReadySlot looks for kSlotReady.
@@ -597,6 +621,7 @@ extern i32 g_644c54;
 struct CSbiLookupMap {
     i32 Lookup(char* key, void** out); // CMapStringToOb::Lookup (ret 8)
 };
+SIZE_UNKNOWN(CSbiLookupMap);
 
 // A resolved cue record: a player at +0x10 plus a draw-clock gate (+0x14 last,
 // +0x18 interval). Same shape as GameMode's CBootyFound.
@@ -607,11 +632,13 @@ struct CSbiCueRecord {
     i32 m_14;   // +0x14  last draw-clock
     i32 m_18;   // +0x18  interval
 };
+SIZE_UNKNOWN(CSbiCueRecord);
 
 // The cue player (ConfigureItem == FUN_005360d0, __thiscall, ret 0x10).
 struct CSbiCuePlayer {
     void ConfigureItem(i32 item, i32 a, i32 b, i32 c);
 };
+SIZE_UNKNOWN(CSbiCuePlayer);
 
 // The music host chain: g_gameReg->m_gmgr->m_28->{m_30 gate, Lookup map @+0x10}.
 struct CSbiMusicHost {
@@ -619,12 +646,14 @@ struct CSbiMusicHost {
     char m_pad0[0x30];
     void* m_30; // +0x30  gate (non-null => skip the cue play)
 };
+SIZE_UNKNOWN(CSbiMusicHost);
 
 // The active game manager (g_gameReg->m_gmgr): carries the music host at +0x28.
 struct CSbiGameMgr {
     char m_pad0[0x28];
     CSbiMusicHost* m_28; // +0x28  music host
 };
+SIZE_UNKNOWN(CSbiGameMgr);
 
 // The sub-manager at g_gameReg+0x2c that carries the highlight-busy gate at +0x4f0.
 // PlaceCursorTarget forwards a resolved tile's (x,y) origin pair to ScrollTo.
@@ -638,6 +667,7 @@ struct CSbiSubMgr {
     char m_pad0[0x4f0];
     i32 m_4f0; // +0x4f0  highlight-busy flag (non-zero => bail)
 };
+SIZE_UNKNOWN(CSbiSubMgr);
 
 // A resolved tile-grid entry (m_grid[]): carries a sub-object at +0x10 whose
 // +0x5c/+0x60 are the tile origin pair forwarded to ScrollTo.
@@ -646,10 +676,12 @@ struct CSbiTileSub {
     i32 m_5c; // +0x5c
     i32 m_60; // +0x60
 };
+SIZE_UNKNOWN(CSbiTileSub);
 struct CSbiTileEntry {
     char m_pad0[0x10];
     CSbiTileSub* m_10; // +0x10
 };
+SIZE_UNKNOWN(CSbiTileEntry);
 
 // The active grunt/level object at g_gameReg+0x68: a probe pair (ProbeXY at the
 // front, ScrollProbe), a tile-entry grid at +0x1c (15-wide rows), the placed-cursor
@@ -670,12 +702,14 @@ struct CSbiActiveObj {
     char m_pad28c[0x400 - 0x28c];
     i32 m_400; // +0x400  tab-highlight-enabled gate
 };
+SIZE_UNKNOWN(CSbiActiveObj);
 
 // The diagnostics logger at g_gameReg+0x38 (a position-string sink).
 struct CSbiLogger {
     void LogPos(char* tag, i32 subtype); // __thiscall, 2 args
     i32 QueryPos(char* tag, i32 flag);   // 0x1395d0 (__thiscall, 2 args, returns int)
 };
+SIZE_UNKNOWN(CSbiLogger);
 
 // The CGameReg singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c). Modeled
 // minimally - only the members/methods the reconstructed bodies touch.
@@ -685,6 +719,7 @@ struct CSbiWndHost {
     char m_pad0[0x4];
     void* m_4; // +0x4  game window handle
 };
+SIZE_UNKNOWN(CSbiWndHost);
 struct CGameReg {
     void Fn29aa();               // 0x29aa (briefing-variant hook, no args)
     void SetToggle(i32 v, i32 a); // 0x409d (2 args)
@@ -1175,6 +1210,7 @@ i32 CSBI_RectOnly::Serialize(CSbiStream* s) {
 struct CSbiSeqMap {
     i32 Lookup(i32 key, void** out); // 0x1b8760
 };
+SIZE_UNKNOWN(CSbiSeqMap);
 
 // The looked-up object whose vtable slot 8 (+0x20) returns a type tag (== 5
 // validates it as the restored sequence holder stored back into m_8).
@@ -1190,6 +1226,7 @@ public:
     virtual void v1c();
     virtual i32 TypeTag(); // +0x20 (slot 8)
 };
+SIZE_UNKNOWN(CSbiSeqObj);
 
 // CSBI_RectOnly::Deserialize - the load/restore counterpart of Serialize. Pulls
 // the full rect-only item state from the archive via stream slot 0x2c (Read);
@@ -1835,6 +1872,7 @@ struct CSbiResetHost {
     char m_padc[0x40 - 0xc];
     i32 m_40; // +0x40  control flags (|= 1)
 };
+SIZE_UNKNOWN(CSbiResetHost);
 
 // Reset every per-tab widget list (8 notify lists at +0x2c, stride 0x1c) - notify
 // each payload, then RemoveAll - then (when keepHost is set) flag the +0x8 host as
@@ -2516,12 +2554,14 @@ struct CSbiLayer {
     i32 m_10, m_14; // +0x10/+0x14  rect origin (lo X / lo Y)
     i32 m_18, m_1c; // +0x18/+0x1c  inset (added to the shifted position)
 };
+SIZE_UNKNOWN(CSbiLayer);
 struct CSbiRenderObj {
     char m_pad0[0x5c];
     i32 m_5c, m_60; // +0x5c/+0x60  screen position
     char m_pad64[0x198 - 0x64];
     CSbiLayer* m_198; // +0x198  layer descriptor
 };
+SIZE_UNKNOWN(CSbiRenderObj);
 
 // The +0x530 pooled-ptr collection InsertPtr appends/inserts into (CObArray-style).
 struct CSbiPtrColl2 {
@@ -2529,11 +2569,13 @@ struct CSbiPtrColl2 {
     void InsertAt(i32 idx, void* node, i32 cnt); // 0x1b516b (InsertAt with count)
     void RemoveAt(i32 idx, i32 cnt);             // 0x1b5200 (RemoveAt with count)
 };
+SIZE_UNKNOWN(CSbiPtrColl2);
 
 // A free-list node {m_0, m_4}; m_0 doubles as the link, m_4 is the sort key.
 struct CSbiFreeNode {
     i32 m_0, m_4;
 };
+SIZE_UNKNOWN(CSbiFreeNode);
 
 // 0xfe3e0 - SetState(state): if the mode gate (m_548) is up, no-op (return 1);
 // if already in `state`, return 1. For the subtype-2 cursor state, run the
@@ -2704,6 +2746,7 @@ struct SbiTabRect {
     i32 r;
     i32 b;
 };
+SIZE_UNKNOWN(SbiTabRect);
 
 // A top-level status-bar tab widget. Polymorphic so cl emits __thiscall vtable
 // dispatch (Setup at slot 2 / Configure at slot 11 / Activate at slot 12); the
@@ -2737,6 +2780,7 @@ public:
     i32 m_34;
     i32 m_38;
 };
+SIZE_UNKNOWN(CSbiTab);
 
 // The concrete 0x3c base ctor reached via an ILT thunk (__thiscall on the raw item).
 class CSbiTabBase {
@@ -2744,6 +2788,7 @@ public:
     CSbiTabBase(); // ??0CStatusBarItem thunk 0x22c0
     char m_raw[0x3c];
 };
+SIZE_UNKNOWN(CSbiTabBase);
 
 // The MULTIPLAYERTAB frame descriptor (widget->m_38): a frame-index gate
 // (+0x64/+0x68) plus a value table (+0x14 -> +0x10).
@@ -2751,6 +2796,7 @@ struct SbiTabFrameSub {
     char m_pad0[0x10];
     i32 m_10;
 };
+SIZE_UNKNOWN(SbiTabFrameSub);
 struct SbiTabFrame {
     char m_pad0[0x14];
     SbiTabFrameSub* m_14;
@@ -2758,11 +2804,13 @@ struct SbiTabFrame {
     i32 m_64;
     i32 m_68;
 };
+SIZE_UNKNOWN(SbiTabFrame);
 
 // The per-tab widget list at this+0x2c (AddTail on each created widget).
 struct CTabList {
     void AddTail(void* p); // 0x1b4991
 };
+SIZE_UNKNOWN(CTabList);
 
 // The retail tab vtables (manual-stamp model; g_vtbl_menuItem is DATA-bound by
 // StatusBarGameMenu). Reloc-masked.
@@ -3252,14 +3300,17 @@ i32 CSBI_RectOnly::LoadBattlezItemConfig(i32 arg) {
 struct CSbiMainSetup {
     void SetRectXY(void* rect, i32 flag); // 0x13e7d0 (__thiscall, 2 args)
 };
+SIZE_UNKNOWN(CSbiMainSetup);
 struct CSbiMainL2 {
     char m_pad0[0x2c];
     CSbiMainSetup* m_2c; // +0x2c
 };
+SIZE_UNKNOWN(CSbiMainL2);
 struct CSbiMainL1 {
     char m_pad0[0x14];
     CSbiMainL2* m_14; // +0x14
 };
+SIZE_UNKNOWN(CSbiMainL1);
 // The resolved GAME_STATUSBAR_MAINBAR cfg record: a frame-entry table at +0x14 indexed
 // by +0x64; each entry carries an origin pair at +0x18/+0x1c.
 struct CSbiFrameEntry {
@@ -3267,12 +3318,14 @@ struct CSbiFrameEntry {
     i32 m_18; // +0x18
     i32 m_1c; // +0x1c
 };
+SIZE_UNKNOWN(CSbiFrameEntry);
 struct CSbiMainBarCfg {
     char m_pad0[0x14];
     CSbiFrameEntry** m_14; // +0x14  frame-entry table
     char m_pad18[0x64 - 0x18];
     i32 m_64; // +0x64  frame index
 };
+SIZE_UNKNOWN(CSbiMainBarCfg);
 // The frame-draw helper (__stdcall, callee-cleans 0x10): the chain object plus the two
 // composed origins.
 void __stdcall MainBarDrawFrame(CSbiMainL2* obj, i32 x, i32 y, i32 flag); // 0x153790
@@ -3375,6 +3428,7 @@ public:
     i32 m_c;  // +0xc  command id
     i32 m_10; // +0x10  widget kind (outer switch key, 0..6)
 };
+SIZE_UNKNOWN(CSbiHiWidget);
 
 // The cached PostMessageA entry point (game-owned fn pointer; the highlight
 // dispatcher posts WM_COMMAND via it, not the direct import).

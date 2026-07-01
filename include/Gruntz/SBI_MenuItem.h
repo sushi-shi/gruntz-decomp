@@ -16,6 +16,7 @@
 #define SBI_MENUITEM_H
 
 #include <Ints.h>
+#include <rva.h>
 
 // ---------------------------------------------------------------------------
 // CSBI_MenuItem - a single status-bar menu entry. The small layout (fields up to
@@ -68,5 +69,6 @@ public:
     i32 m_34;     // +0x34  menu state tag
     void* m_38;   // +0x38  resolved cue/config record
 };
+SIZE_UNKNOWN(CSBI_MenuItem);
 
 #endif // SBI_MENUITEM_H

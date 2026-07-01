@@ -18,6 +18,7 @@
 #define SBI_WARLORDHEAD_H
 
 #include <Ints.h>
+#include <rva.h>
 
 // ---------------------------------------------------------------------------
 // Shared engine views (modeled minimally; only the touched members/methods are
@@ -33,6 +34,7 @@ struct CWhFrame {
     char m_pad20[0x30 - 0x20];
     i32 m_30; // +0x30  sprite/anim handle (ShowFrames latches its m_1c)
 };
+SIZE_UNKNOWN(CWhFrame);
 
 // The resolved config record (CSBI_Image::m_34 / the ImageSet lookup result): a
 // frame-index range gate at m_64/m_68 and a frame table at m_14 (an array of
@@ -44,12 +46,14 @@ struct CWhConfig {
     i32 m_64; // +0x64  frame-index range hi gate (idx > m_64 => reject)
     i32 m_68; // +0x68  frame-index range lo gate (idx < m_68 => reject)
 };
+SIZE_UNKNOWN(CWhConfig);
 
 // The per-frame draw handle (m_30 latched record): RenderFrame (0x153790,
 // __thiscall) blits the frame at a screen position through the surface context.
 struct CWhRenderTarget {
     void RenderFrame(i32 surfaceCtx, i32 x, i32 y, i32 z); // 0x153790
 };
+SIZE_UNKNOWN(CWhRenderTarget);
 
 // The active drawable reached via g_gameReg->m_30->m_4: its +0x14 dword is the
 // surface context passed into RenderFrame.
@@ -57,14 +61,17 @@ struct CWhDrawable {
     char m_pad0[0x14];
     i32 m_14; // +0x14  surface context
 };
+SIZE_UNKNOWN(CWhDrawable);
 struct CWhGameMgr {
     char m_pad0[0x4];
     CWhDrawable* m_4; // +0x04  active drawable
 };
+SIZE_UNKNOWN(CWhGameMgr);
 struct CWhGameReg {
     char m_pad0[0x30];
     CWhGameMgr* m_30; // +0x30  active game manager
 };
+SIZE_UNKNOWN(CWhGameReg);
 
 // The base ImageSet SetupImage (CSBI_ImageSet vtable slot 11, 0xe72f0): same
 // 11-arg shape (id, host, a3, a4, then the four rect ints, key, a10, a11). The
@@ -76,6 +83,7 @@ struct CWhRect {
     i32 m_8;
     i32 m_c;
 };
+SIZE_UNKNOWN(CWhRect);
 
 // The serialization stream (Serialize arg1): a real polymorphic object with
 // ReadBytes at vtable slot 0x2c and WriteBytes at slot 0x30, both __thiscall
@@ -96,6 +104,7 @@ struct CImageSetStream {
     virtual void ReadBytes(void* buf, i32 len);  // slot 0x2c
     virtual void WriteBytes(void* buf, i32 len); // slot 0x30
 };
+SIZE_UNKNOWN(CImageSetStream);
 
 // The immediate base (CSBI_ImageSet, 0xe74f0 vtable slot 1). Declared only so the
 // base-serialize call emits the real ?Serialize@CSBI_ImageSet@@... external; the
@@ -104,6 +113,7 @@ class CSBI_ImageSet {
 public:
     i32 Serialize(CImageSetStream* s, i32 mode, i32 a3, i32 a4); // 0xe74f0
 };
+SIZE_UNKNOWN(CSBI_ImageSet);
 
 // ---------------------------------------------------------------------------
 // CSBI_WarlordHead - the warlord-head status-bar item.
@@ -159,6 +169,7 @@ public:
     i32 m_4c;        // +0x4c
     i32 m_50;        // +0x50
 };
+SIZE_UNKNOWN(CSBI_WarlordHead);
 
 // The frame sprite show/hide notifier (0x14dd90, __stdcall, ret 8).
 void WhShowItem(i32 handle, i32 flag);

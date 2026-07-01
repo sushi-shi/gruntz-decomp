@@ -60,6 +60,72 @@ typedef the macros lower to under MSVC5 perturbed nothing here.
 
 ---
 
+## SBI / status-bar family (2026-07-01)
+
+Scope: classes in `include/Gruntz/SBI_*.h`, `CStatusBarMgr.h`, `StatusBarItem.h`,
+`MenuItem.h`, `MenuItem2.h`, `MenuPage.h`, and in `src/Gruntz/SBI_*.cpp` /
+`StatusBar*.cpp` / `CStatusBarMgr*.cpp` / `MenuPage.cpp`. Excluded (per matcher
+instructions): `SBI_Image.cpp` (the CSBI_Image stub — do-not-touch),
+`ApiCallers.cpp`, `RezSync.cpp`. `SBI_RectOnly.cpp` was annotate-only (its 54
+`.cpp`-local classes got SIZE, no function bodies touched).
+
+Coverage delta (whole-tree SIZE counter):
+- SIZE: 118/3292 → 301/3292 annotated names (**183 SBI-family names annotated**;
+  SBI SIZE violators drained to 0 except the do-not-touch stub file, below).
+- VTBL: no new catalog rows (all SBI vtable violators are the un-catalogable
+  modeling-view case, below). VTBL total unchanged (310 not-catalogued).
+
+Annotated: **183 SIZE_UNKNOWN + 0 SIZE(exact) + 0 VTBL**.
+- ALL 183 are `SIZE_UNKNOWN`: no SBI class was a provably-complete retail object
+  (no array-element stride / RE'd fixed packet / byte-matched struct-copy in the
+  models — they are pad-to-last-touched-field views), so per doctrine none took an
+  exact `SIZE`. Exact-size upgrades left to the owning matcher.
+- Two build groups: **G1** = all SBI `.cpp`-local classes (independent TUs;
+  CStatusBarMgr/CStatusBarMgrGetItem/CStatusBarSpriteActs/SBI_ImageSet/SBI_MenuItem/
+  SBI_RectOnly(+Eh)/SBI_SideTab(+Build)/SBI_StatzTabArrowEh/SBI_ImageSetAniEh/
+  SBI_WellGooEh/SBI_TabzDialogEh/StatusBarGameMenu/StatusBarUpdaters/MenuPage/
+  SBI_ImageEh). **G2** = all 10 SBI headers (each also gained `#include <rva.h>`).
+- Cross-file dedup notes: `CSBI_Image` (rep is the excluded SBI_Image.cpp) was
+  annotated instead at its per-TU view in `SBI_ImageEh.cpp`; `CMenuPage` (rep is
+  the out-of-scope CAttract.h) was annotated at its `MenuPage.h` def. Names whose
+  first-seen rep is a non-SBI file (CSprite/CTileGrid/CGameReg/CMenuMap/CMenuNode/
+  SbView/CStatusBarSurface/EngineLabelBacklog/CButeMgr) were NOT annotated here —
+  they belong to their owning module's sweep.
+
+### Hot-header casualties: NONE.
+Both groups snapshot-diffed across all 3394 functions → **0 REGRESS**. Net effect
+was matching-NEUTRAL-or-POSITIVE: **+3 exact fns / 4 improved**
+(`CSBI_RectOnly::LoadMainStatusBarSprite` 88.6→95.6, `CSBI_MenuItem::DecCounter`
+92.0→100, `CMenuPage::Layout` 99.98→100, `CMenuPage::LayoutOne` 99.98→100) — a
+scoring/reloc-naming side effect of completing the annotated types; all kept.
+Adding `#include <rva.h>` to the 10 SBI headers (none had it) perturbed nothing.
+
+### SIZE deferred (do-not-touch stub, NOT casualties):
+- `CImageCfgValue` / `CImageCfgRecord` / `CImageCfgMap` / `CImageCfgHost` — defined
+  ONLY in `src/Gruntz/SBI_Image.cpp`, the CSBI_Image stub file this matcher was
+  instructed not to touch. Left for that file's owner. (`CStatusBarSurface` in
+  SpriteResource.cpp and `StatusBarItem` in Stub/Backlog.cpp are non-SBI files.)
+
+### VTBL skipped (un-catalogable modeling views, NOT casualties — for final sweep):
+Every SBI vtable violator is a **declared-but-undefined polymorphic view struct**
+used only for a `mov eax,[this]; call [eax+slot]` slot dispatch (the WAP `((View*)
+this)->Slot()` idiom). cl emits NO `??_7<View>@@6B@` for a class with no defined
+virtuals, and the concrete retail vtable they alias belongs to an engine/MFC class
+whose real name is unknown — so a `VTBL(...)` would bind our name to a datum that
+is not that class's vtable. This is the same case as the Net pilot's `CNetPlayerObj`.
+Skipped: `CSBI` (CStatusBarMgr.h), `CMenuItemView` (MenuItem.h), `CImageSetStream`
++ `CStatzSelf` (SBI_WarlordHead.h / SBI_StatzTabGruntBar.h), `CMiArchive` / `CMiSelf`
+(SBI_MenuItem.cpp), `CTabWidget` (StatusBarUpdaters.cpp), and the SBI_RectOnly.cpp
+views `CSbiStream` / `CSbiSprite` / `CSbiRect` / `CSbiSlotPtr` / `CSbiNotifyTarget` /
+`CSbiNotifyPayload` / `CSbiGaugeNotify` / `CSbiSeqObj` / `CSbiHiWidget`.
+The SBI *leaf* classes (CSBI_RectOnly / CSBI_Image / CSBI_ImageSet / CSBI_MenuItem /
+CSBI_WarlordHead / CSBI_WellGoo / CSBI_GruntMachine / CSBI_StatzTabArrow /
+CSBI_ImageSetAni / CSBI_SideTab / CSBI_StatzTabGruntBar) are already catalogued —
+their RTTI vtables are in config/vtable_names.csv AND they carry the manual
+vptr-stamp device — so no VTBL was added (would collide on the named rva).
+
+---
+
 ## Scale recommendation (pilot → full 3160 SIZE / 313 VTBL worklist)
 
 The per-class-verify sweep is **efficient enough to scale**, with this shape:

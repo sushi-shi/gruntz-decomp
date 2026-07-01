@@ -18,6 +18,7 @@
 #define SBI_GRUNTMACHINE_H
 
 #include <Ints.h>
+#include <rva.h>
 
 // ---------------------------------------------------------------------------
 // Shared engine views (modeled minimally; only the touched members/methods are
@@ -33,6 +34,7 @@ struct CGmFrame {
     i32 m_1c;                                              // +0x1c  y draw offset
     void RenderFrame(i32 surfaceCtx, i32 x, i32 y, i32 z); // 0x153790
 };
+SIZE_UNKNOWN(CGmFrame);
 
 // The resolved config record (CSBI_GruntMachine::m_30): a frame-index range gate at
 // m_64/m_68 and a frame table at m_14 (an array of CGmFrame*). Same CImageCfgRecord
@@ -44,6 +46,7 @@ struct CGmConfig {
     i32 m_64; // +0x64  frame-index range lo gate (idx < m_64 => reject)
     i32 m_68; // +0x68  frame-index range hi gate (idx > m_68 => reject)
 };
+SIZE_UNKNOWN(CGmConfig);
 
 // The active drawable reached via g_gameReg->m_30->m_4: its +0x14 dword is the
 // surface context passed into RenderFrame.
@@ -51,14 +54,17 @@ struct CGmDrawable {
     char m_pad0[0x14];
     i32 m_14; // +0x14  surface context
 };
+SIZE_UNKNOWN(CGmDrawable);
 struct CGmGameMgr {
     char m_pad0[0x4];
     CGmDrawable* m_4; // +0x04  active drawable
 };
+SIZE_UNKNOWN(CGmGameMgr);
 struct CGmGameReg {
     char m_pad0[0x30];
     CGmGameMgr* m_30; // +0x30  active game manager
 };
+SIZE_UNKNOWN(CGmGameReg);
 
 // ---------------------------------------------------------------------------
 // CSBI_GruntMachine - the grunt-machine status-bar item. Derives directly from
@@ -88,5 +94,6 @@ public:
     i32 m_40;        // +0x40  frame index B (resolved into m_3c)
     CGmFrame* m_44;  // +0x44  standalone frame handle (blitted directly)
 };
+SIZE_UNKNOWN(CSBI_GruntMachine);
 
 #endif // SBI_GRUNTMACHINE_H

@@ -28,6 +28,7 @@
 #define GRUNTZ_MENUITEM_H
 
 #include <Ints.h>
+#include <rva.h>
 
 #include <Mfc.h>
 
@@ -54,37 +55,44 @@ struct CMenuItemView {
     virtual void Vf30();  // +0x30
     virtual i32 OnInit(); // +0x34 (Init's post-config hook)
 };
+SIZE_UNKNOWN(CMenuItemView);
 
 // The sub-page row placer reached through m_28 (CMenuItem::Place at 0x153790).
 struct CMenuItemPlacer {
     i32 Place(i32 ctx, i32 a, i32 b, i32 z); // 0x153790 __thiscall
 };
+SIZE_UNKNOWN(CMenuItemPlacer);
 
 // The chatbox host (m_8) Trigger drives.
 struct CMenuItemHost {
     i32 Scroll();                // 0x1830b0 __thiscall
     i32 ReplaceNode(void* node); // 0x182dd0 __thiscall
 };
+SIZE_UNKNOWN(CMenuItemHost);
 
 // The string->item catalog reached through m_4->m_10->m_10 (CMapStringToPtr::Lookup,
 // 0x1b8008) - the same two-hop the page uses (m_0 -> +0x10 ptr -> +0x10 map base).
 struct CMenuItemMap {
     i32 Lookup(const char* key, void*& out); // 0x1b8008
 };
+SIZE_UNKNOWN(CMenuItemMap);
 struct CMenuItemCatalog {
     char pad0[0x10];
     CMenuItemMap m_10; // +0x10 the string->item map base
 };
+SIZE_UNKNOWN(CMenuItemCatalog);
 struct CMenuItemHostOwner {
     char pad0[0x10];
     CMenuItemCatalog* m_10; // +0x10 -> the catalog
 };
+SIZE_UNKNOWN(CMenuItemHostOwner);
 
 // The template Init reads (its [0] is the catalog host, [4] the chatbox host).
 struct CMenuItemTemplate {
     CMenuItemHostOwner* m_0; // +0x00 -> owner/catalog host
     void* m_4;               // +0x04 -> chatbox host
 };
+SIZE_UNKNOWN(CMenuItemTemplate);
 
 struct CMenuItem {
     void* m_vptr;       // +0x00
@@ -125,5 +133,6 @@ struct CMenuItem {
     i32 Trigger();                          // 0x1856d0
     i32 Hit(i32 x, i32 y);                  // 0x185700  bounds test
 };
+SIZE_UNKNOWN(CMenuItem);
 
 #endif // GRUNTZ_MENUITEM_H

@@ -23,6 +23,7 @@ struct CMiFrame {
     i32 m_18; // +0x18  x offset
     i32 m_1c; // +0x1c  y offset
 };
+SIZE_UNKNOWN(CMiFrame);
 
 // A keyed config record (the map-lookup result): a frame range + frame table.
 struct CMiCueRec {
@@ -32,6 +33,7 @@ struct CMiCueRec {
     i32 m_64; // +0x64  frame range lo
     i32 m_68; // +0x68  frame range hi
 };
+SIZE_UNKNOWN(CMiCueRec);
 
 // The owning game manager held at g_gameReg->m_30: the draw surface lives at
 // m_4->m_14, and the config/name registry at m_10.
@@ -39,12 +41,14 @@ struct CMiDrawHost {
     char m_pad0[0x14];
     i32 m_14; // +0x14  blit surface handle
 };
+SIZE_UNKNOWN(CMiDrawHost);
 struct CMiGameMgr {
     char m_pad0[0x4];
     CMiDrawHost* m_4; // +0x04  draw host
     char m_pad8[0x10 - 0x8];
     void* m_10; // +0x10  config/name registry (Lookup host @+0x10)
 };
+SIZE_UNKNOWN(CMiGameMgr);
 
 // The music host (mgr->m_28): a non-null +0x30 gate suppresses the cue play; its
 // cue map `this` is host + 0x10.
@@ -52,15 +56,18 @@ struct CMiMusicHost {
     char m_pad0[0x30];
     void* m_30; // +0x30  gate
 };
+SIZE_UNKNOWN(CMiMusicHost);
 struct CMiGameMgrFull {
     char m_pad0[0x28];
     CMiMusicHost* m_28; // +0x28  music host
 };
+SIZE_UNKNOWN(CMiGameMgrFull);
 // The CGameReg singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c).
 struct CMiGameReg {
     char m_pad0[0x30];
     CMiGameMgr* m_30; // +0x30  active game manager (null-guard in serialize)
 };
+SIZE_UNKNOWN(CMiGameReg);
 DATA(0x0024556c)
 extern CMiGameReg* g_gameReg;
 
@@ -68,6 +75,7 @@ extern CMiGameReg* g_gameReg;
 struct CMiStrMap {
     i32 Lookup(char* key, void** out); // 0x1b8438
 };
+SIZE_UNKNOWN(CMiStrMap);
 
 // A resolved cue record: a player at +0x10 plus a draw-clock gate (+0x14 last,
 // +0x18 interval).
@@ -77,9 +85,11 @@ struct CMiCue {
     i32 m_14;   // +0x14  last draw-clock
     i32 m_18;   // +0x18  interval
 };
+SIZE_UNKNOWN(CMiCue);
 struct CMiCuePlayer {
     void ConfigureItem(i32 item, i32 a, i32 b, i32 c); // 0x1360d0
 };
+SIZE_UNKNOWN(CMiCuePlayer);
 
 // The reentrancy gate + cue-item id pair the highlight cue plays through, and the
 // draw-clock mirror (wrap-safe gate compare).
@@ -99,6 +109,7 @@ struct CMiTabHost {
     char m_pad0[0x10c];
     i32 m_10c; // +0x10c  active-tab latch
 };
+SIZE_UNKNOWN(CMiTabHost);
 
 // A polymorphic view of `this` used only for the self-virtual slot-0x28 dispatch:
 // 10 leading slots + Refresh at index 10 (byte 0x28). Declared (never defined) so
@@ -118,11 +129,13 @@ public:
     virtual void v24();
     virtual void Refresh(); // +0x28 (slot 10)
 };
+SIZE_UNKNOWN(CMiSelf);
 
 // CMapWordToOb::Lookup (0x1b8008, __thiscall, ret 8): key in, *out gets the obj.
 struct CMiWordMap {
     i32 Lookup(i32 key, void** out); // 0x1b8008
 };
+SIZE_UNKNOWN(CMiWordMap);
 
 // The config host at +0x24: holds the config object at +0x10; the lookup map
 // `this` is that object + 0x10.
@@ -130,6 +143,7 @@ struct CMiCfgHost {
     char m_pad0[0x10];
     void* m_10; // +0x10  the object carrying the map at +0x10
 };
+SIZE_UNKNOWN(CMiCfgHost);
 
 // Per-serialize round counter the CString archive helpers bump (DAT_00629ad0).
 DATA(0x00229ad0)
@@ -139,6 +153,7 @@ extern i32 g_serialCounter;
 struct CMiNameReg {
     void ReadField(i32 handle, char* tmp, i32* outZero); // 0x155630
 };
+SIZE_UNKNOWN(CMiNameReg);
 
 // The archive object passed to Serialize: field-transfer virtuals at vtable
 // byte-offsets 0x2c (Read) and 0x30 (Write).
@@ -157,6 +172,7 @@ struct CMiArchive {
     virtual void Read(void* buf, i32 n);  // +0x2c
     virtual void Write(void* buf, i32 n); // +0x30
 };
+SIZE_UNKNOWN(CMiArchive);
 
 // ---------------------------------------------------------------------------
 // CSBI_MenuItem::ClearFrame() - zero the resolved frame handle.

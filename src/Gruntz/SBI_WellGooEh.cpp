@@ -50,10 +50,12 @@ inline CSBI_Image::~CSBI_Image() {
 struct CGooPool {
     void RemoveItemA(void* item); // 0x142160
 };
+SIZE_UNKNOWN(CGooPool);
 struct CGooHost {
     char m_pad0[0x1c];
     CGooPool* m_1c; // +0x1c  surface pool
 };
+SIZE_UNKNOWN(CGooHost);
 
 // CSBI_WellGoo most-derived (vtable 0x5eadfc, 12 slots; overrides the vdtor).
 struct CSBI_WellGoo : CSBI_Image {

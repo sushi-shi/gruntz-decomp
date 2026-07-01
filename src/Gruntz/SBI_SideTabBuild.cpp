@@ -25,6 +25,7 @@ typedef void (CSbItem::*SbDeleteFn)(u32);
 struct CSbItemVtbl {
     SbDeleteFn Delete; // [0x00] scalar-deleting dtor
 };
+SIZE_UNKNOWN(CSbItemVtbl);
 class CSbItem {
 public:
     // 0xe9600 (CSBI_SideTab::BuildStatzTabStatusBar), __thiscall ret 13 args.
@@ -70,6 +71,7 @@ struct CSbBuildSettings {
     char m_pad00[0x30];
     void* m_30; // +0x30
 };
+SIZE_UNKNOWN(CSbBuildSettings);
 extern "C" CSbBuildSettings* g_mgrSettings; // 0x64556c
 
 // ---------------------------------------------------------------------------

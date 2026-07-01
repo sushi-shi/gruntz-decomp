@@ -101,6 +101,7 @@ public:
         m_30 = 0;
     }
 }; // size 0x34
+SIZE_UNKNOWN(CItemT3);
 
 // tag 2 menu item (0x3c bytes): stamp menuItem, m_8=2, clear m_34/m_30/m_38.
 class CItemMenu : public CSbItem {
@@ -115,6 +116,7 @@ public:
     i32 m_34; // +0x34
     i32 m_38; // +0x38
 }; // size 0x3c
+SIZE_UNKNOWN(CItemMenu);
 
 // tag 4 image-set item (0x3c bytes): clear m_30, stamp t4, m_8=4, clear m_34.
 class CItemT4 : public CSbItem {
@@ -128,6 +130,7 @@ public:
     i32 m_34; // +0x34
     i32 m_38; // +0x38
 }; // size 0x3c
+SIZE_UNKNOWN(CItemT4);
 
 // Polymorphic VIEW used only for the two vtable dispatches (never instantiated, so
 // no ??_7 emitted): the scalar-deleting dtor at slot 0 (the fail cleanup) and the
@@ -163,12 +166,14 @@ struct TabzGmFactory {
     char _28c[0x3ec - 0x28c];
     i32 m_3ec; // +0x3ec  reason code
 };
+SIZE_UNKNOWN(TabzGmFactory);
 struct TabzPlayer {
     i32 m_174; // rel +0x00 (abs +0x174)
     i32 m_178; // rel +0x04
     i32 m_17c; // rel +0x08
     char _pad[0x238 - 0xc];
 };
+SIZE_UNKNOWN(TabzPlayer);
 struct TabzGameReg {
     char _00[0x68];
     TabzGmFactory* m_68; // +0x68
@@ -177,6 +182,7 @@ struct TabzGameReg {
     char _138[0x174 - 0x138];
     TabzPlayer m_players[4]; // +0x174  active-player table
 };
+SIZE_UNKNOWN(TabzGameReg);
 DATA(0x0024556c)
 extern TabzGameReg* g_mgrSettings;
 
@@ -185,10 +191,12 @@ struct TabzRectHolder {
     char _00[0x10];
     RECT m_10; // +0x10
 };
+SIZE_UNKNOWN(TabzRectHolder);
 struct TabzSub {
     char _00[0x24];
     TabzRectHolder* m_24; // +0x24
 };
+SIZE_UNKNOWN(TabzSub);
 
 // ---------------------------------------------------------------------------
 // The builder host (a CSBI_RectOnly-family status bar). Placeholder fields; only
@@ -213,6 +221,7 @@ public:
     char _558[0x578 - 0x558];
     i32 m_578; // +0x578  observe/statz-only flag
 };
+SIZE_UNKNOWN(CTabzBuilder);
 
 // ===========================================================================
 // CTabzBuilder::BuildTabzDialog  @0x10a340

@@ -21,6 +21,7 @@
 struct CSideTabFrame {
     void RenderFrame(i32 surfaceCtx, i32 x, i32 y, i32 z); // 0x153790
 };
+SIZE_UNKNOWN(CSideTabFrame);
 
 // The active drawable reached via g_gameReg->m_30->m_4: its +0x14 dword is the
 // surface context passed into every RenderFrame call.
@@ -28,18 +29,21 @@ struct CSideTabDrawable {
     char m_pad0[0x14];
     i32 m_14; // +0x14  surface context
 };
+SIZE_UNKNOWN(CSideTabDrawable);
 
 // The embedded CMapStringToPtr (resource-manager +0x10) the glyph builder looks the
 // tab sprite up in. Lookup (0x1b8008, __thiscall) writes the found set to *out.
 struct CSideTabHash {
     void Lookup(char* key, void** out); // 0x1b8008
 };
+SIZE_UNKNOWN(CSideTabHash);
 // The resource manager reached via the game manager's +0x10; its +0x10 embeds the
 // name->sprite hash the builder resolves glyphs through.
 struct CSideTabResMgr {
     char m_pad0[0x10];
     CSideTabHash m_10; // +0x10
 };
+SIZE_UNKNOWN(CSideTabResMgr);
 
 // The render host chain reached via g_gameReg->m_30 (game manager). m_4 is the
 // active drawable supplying the surface context; m_10 is the resource manager.
@@ -49,6 +53,7 @@ struct CSideTabGameMgr {
     char m_pad8[0x10 - 0x8];
     CSideTabResMgr* m_10; // +0x10  resource manager (name->sprite hash host)
 };
+SIZE_UNKNOWN(CSideTabGameMgr);
 
 // A sampled grunt record (an element of the registry unit table at g_gameReg+0x68).
 // Only the stat fields BuildHandle reads are modeled.
@@ -61,6 +66,7 @@ struct CSideTabGruntRec {
     char m_pad1a0[0x3ec - 0x1a0];
     i32 m_3ec; // +0x3ec  health
 };
+SIZE_UNKNOWN(CSideTabGruntRec);
 
 // The glyph map the resolved value indexes: a [m_64..m_68]-gated table at m_14.
 struct CSideTabGlyphMap {
@@ -70,11 +76,13 @@ struct CSideTabGlyphMap {
     i32 m_64; // +0x64  glyph-index range lo gate
     i32 m_68; // +0x68  glyph-index range hi gate
 };
+SIZE_UNKNOWN(CSideTabGlyphMap);
 
 // The fallback notified (m_2c) when the sampled unit slot is empty (__thiscall, 1 arg).
 struct CSideTabFallback {
     void Notify(i32 slot); // 0x3ebd (ILT-reloc-masked)
 };
+SIZE_UNKNOWN(CSideTabFallback);
 
 // The CGameReg singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c); the game
 // manager + the per-frame unit-record table the SideTab paths touch.
@@ -84,6 +92,7 @@ struct CSideTabGameReg {
     char m_pad34[0x68 - 0x34];
     void* m_68; // +0x68  unit-record table base (rows of 15 dwords, records at +0x1c)
 };
+SIZE_UNKNOWN(CSideTabGameReg);
 DATA(0x0024556c)
 extern CSideTabGameReg* g_gameReg;
 
@@ -113,6 +122,7 @@ public:
     char m_pad54[0x58 - 0x54];
     i32 m_58; // +0x58  draw gate (0 => not built)
 };
+SIZE_UNKNOWN(CSBI_SideTab);
 
 // vslot 3: drop the two frame handles. Also reached by the destructor as the
 // member teardown.

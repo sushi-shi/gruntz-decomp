@@ -5,6 +5,7 @@
 #define STATUSBARITEM_H
 
 #include <Ints.h>
+#include <rva.h>
 
 // ---------------------------------------------------------------------------
 // CStatusBarItem - base of the SBI_* family. One class, one definition.
@@ -30,6 +31,7 @@ struct SbiRect {
     i32 m_8; // +0x08 (rel +0x1c)
     i32 m_c; // +0x0c (rel +0x20)
 };
+SIZE_UNKNOWN(SbiRect);
 
 class CStatusBarItem {
 public:
@@ -52,5 +54,6 @@ public:
     i32 m_24;         // +0x24  Setup arg2
     i32 m_28;         // +0x28
 };
+SIZE_UNKNOWN(CStatusBarItem);
 
 #endif // STATUSBARITEM_H

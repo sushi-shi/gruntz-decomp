@@ -95,6 +95,7 @@ public:
     i32 m_34; // +0x34
     i32 m_38; // +0x38
 };
+SIZE_UNKNOWN(CSbMenuItem);
 
 // The two concrete base ctors (reached via ILT thunks; __thiscall on the raw item).
 class CSBI_ImageSet : public CSbMenuItem {
@@ -118,6 +119,7 @@ struct CGmFactory {
     char m_pad[0x288];
     i32 m_288; // +0x288  MISSIONSTATUS variant selector
 };
+SIZE_UNKNOWN(CGmFactory);
 struct CGameReg {
     char m_pad00[0xc];
     i32 m_c; // +0x0c  RESUME-enable gate
@@ -159,6 +161,7 @@ public:
     char m_pad560[0x570 - 0x560];
     CSbMenuItem* m_570; // +0x570  DESTRUCT/MISSIONSTATUS slot
 };
+SIZE_UNKNOWN(CGameMenuMgr);
 
 // new + concrete ctor + manual vtable/tag stamp + the three field clears. The ctor
 // and vtable address vary by tag; the null-guard idiom is identical at every call.

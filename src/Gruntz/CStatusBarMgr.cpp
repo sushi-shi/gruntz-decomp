@@ -99,6 +99,7 @@ public:
     i32 m_30; // +0x30
     i32 m_34; // +0x34
 };
+SIZE_UNKNOWN(CSbItem);
 
 // The concrete ctors (reached via thunks; __thiscall on the raw item pointer).
 void __fastcall Sbi_CtorBase(CSbItem* p);     // ??0CStatusBarItem@@QAE@XZ (thunk 0x22c0)
@@ -111,6 +112,7 @@ public:
     void Init(i32 n); // FUN_00552480  @0x152480
     void Push(i32 v); // FUN_00552520  @0x152520
 };
+SIZE_UNKNOWN(CSbItemHelp);
 
 // The icon/sprite factory the resource/game tabs pull chip + warpstone sprites
 // from (g_gameReg.m_74 / m_68); __thiscall on the factory.
@@ -118,6 +120,7 @@ class CSbFactory {
 public:
     void* GetByIndex(i32 idx, i32 z); // thunk 0x4165 -> FUN_004e23c0
 };
+SIZE_UNKNOWN(CSbFactory);
 class CSbIconSet {
 public:
     i32 Probe(i32 a);        // thunk 0x1582 -> FUN_00479b30
@@ -125,6 +128,7 @@ public:
     void SetB(i32 a, i32 b); // thunk 0x23dd -> FUN_004eb740
     void AddRef(i32 v);      // thunk 0x3b98 -> FUN_004ea170
 };
+SIZE_UNKNOWN(CSbIconSet);
 
 // The game registry: factory at +0x68/+0x74, a per-player icon table at +0x158
 // (stride for the per-player block: 71*8; per-icon stride inside it: 0x238).
@@ -180,6 +184,7 @@ public:
     char m_padd4[0x10c - 0xd4];
     i32 m_10c; // +0x10c  current tab selector (1..5)
 };
+SIZE_UNKNOWN(CStatusBarMgr);
 
 // ===========================================================================
 // CSbItem::SetDirection  (0x0ea0f0)
@@ -214,18 +219,21 @@ struct CSbItemT3 {
 
     char m_storage[0x34];
 };
+SIZE_UNKNOWN(CSbItemT3);
 
 struct CSbItemT4 {
     inline CSbItemT4();
 
     char m_storage[0x3c];
 };
+SIZE_UNKNOWN(CSbItemT4);
 
 struct CSbItemT7 {
     inline CSbItemT7();
 
     char m_storage[0x6c];
 };
+SIZE_UNKNOWN(CSbItemT7);
 
 inline void CSbItem::Construct(void* vtbl, i32 tag) {
     Sbi_CtorBase(this);

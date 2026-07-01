@@ -29,6 +29,7 @@
 #define GRUNTZ_MENUPAGE_H
 
 #include <Ints.h>
+#include <rva.h>
 
 #include <Mfc.h>
 
@@ -160,5 +161,6 @@ public:
     CMenuPage* m_60;
     CMenuItem* m_64;
 };
+SIZE_UNKNOWN(CMenuPage);
 
 #endif // GRUNTZ_MENUPAGE_H
