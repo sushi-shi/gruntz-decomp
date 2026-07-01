@@ -27,6 +27,7 @@ struct RezFile {
     i32 GetLength();                                 // 0x1bf505
     i32 Read(void* buf, i32 len);                    // 0x1bf328
 };
+SIZE_UNKNOWN(RezFile); // CFile-temp view (NAFXCW members reloc-masked)
 
 // The sound-bank object. Polymorphic with a 0x14-slot vtable: slot 5 (+0x14) is the
 // in-memory decode, slot 15 (+0x3c) the special-name handler. The virtuals are
@@ -55,6 +56,7 @@ struct CSoundBank {
 
     i32 Load(const char* path, i32 decodeArg); // 0x138aa0
 };
+SIZE_UNKNOWN(CSoundBank); // polymorphic; only +0x5c pinned, tail opaque
 
 // 0x138aa0 - Load: the special ".." name forwards to the slot-0x3c handler; otherwise
 // open `path`, require >= 4 bytes, slurp it whole into the owned +0x5c buffer, and run

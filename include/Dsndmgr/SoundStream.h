@@ -14,7 +14,7 @@
 #ifndef DSNDMGR_SOUNDSTREAM_H
 #define DSNDMGR_SOUNDSTREAM_H
 
-#include <Ints.h>
+#include <rva.h>
 
 #include <Dsndmgr/SoundDevice.h>
 
@@ -36,6 +36,7 @@ struct StreamSource {
     i32 Seek(i32 pos);                  // 0x139ae0  m_18 = pos
     i32 Read(void* buf, i32 n, i32 at); // 0x139af0  read n bytes (at == -1: current)
 };
+SIZE_UNKNOWN(StreamSource); // partial reader view (only +0x0c/+0x18 pinned)
 
 // The streaming feeder sub-object embedded at StreamVoice+0x6c (a Timer-ish
 // pump the trace tagged Timer_1380d0). Its +0x18 word is a cursor that
@@ -106,5 +107,6 @@ public:
     // ctor's other zeroed word) is the inherited SoundDevice +0x94 list head.
     i32 m_98; // +0x98
 };
+SIZE(SoundStream, 0x9c); // 0x98 SoundDevice base + i32 m_98
 
 #endif // DSNDMGR_SOUNDSTREAM_H

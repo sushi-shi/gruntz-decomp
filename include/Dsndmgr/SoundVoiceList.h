@@ -17,7 +17,7 @@
 #ifndef SRC_DSNDMGR_SOUNDVOICELIST_H
 #define SRC_DSNDMGR_SOUNDVOICELIST_H
 
-#include <Ints.h>
+#include <rva.h>
 
 // The Rez heap free (0x1b9b82 _RezFree, __cdecl); reloc-masked rel32.
 extern "C" void RezFree(void* p);
@@ -31,6 +31,7 @@ struct DSoundLink {
     DSoundLink* m_next; // +0x00
     DSoundLink* m_prev; // +0x04
 };
+SIZE_UNKNOWN(DSoundLink); // 2-word intrusive chain link
 
 // A reaped element (RemoveMatching's view): the link occupies +0x04/+0x08 (so the
 // link pointer IS element+4), a tag @+0xc and a key @+0x10. The vptr at +0x00 is
@@ -41,6 +42,7 @@ struct DSoundElem {
     u32 m_tag; // +0x0c  (RemoveMatching skips elements whose tag != arg, unless arg==0xffff)
     u32 m_key; // +0x10
 };
+SIZE_UNKNOWN(DSoundElem); // reaped-element view (real element is larger)
 
 // The engine's {head,tail} intrusive doubly-linked-list head.
 struct DSoundList {
@@ -55,5 +57,6 @@ struct DSoundList {
         u32 tag
     );
 };
+SIZE_UNKNOWN(DSoundList); // {head,tail} intrusive list head
 
 #endif // SRC_DSNDMGR_SOUNDVOICELIST_H

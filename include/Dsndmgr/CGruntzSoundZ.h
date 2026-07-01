@@ -15,7 +15,7 @@
 #ifndef GRUNTZ_DSNDMGR_CGRUNTZSOUNDZ_H
 #define GRUNTZ_DSNDMGR_CGRUNTZSOUNDZ_H
 
-#include <Ints.h>
+#include <rva.h>
 
 #include <Mfc.h> // real MFC CMapStringToOb / CObject / CString / POSITION
 
@@ -47,6 +47,7 @@ public:
     i32 m_58;           // +0x58  AIL sequence handle (queried by IsBusy)
     i32 m_5c;           // +0x5c
 };
+SIZE(CGruntzSoundInnerZ, 0x60); // allocated 0x60 bytes (inner sound object)
 
 class CGruntzSoundZ : public CMapStringToOb {
 public:
@@ -71,5 +72,6 @@ public:
     i32 m_mdiHandle;                // +0x24
     i32 m_enabled;                  // +0x28
 };
+SIZE(CGruntzSoundZ, 0x2c); // 0x1c CMapStringToOb base + 4 dwords
 
 #endif // GRUNTZ_DSNDMGR_CGRUNTZSOUNDZ_H

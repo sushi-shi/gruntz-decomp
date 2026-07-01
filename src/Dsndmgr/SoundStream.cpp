@@ -41,6 +41,7 @@ struct StreamList {
     void Insert(void* node); // 0x1390e0
     void Unlink(void* node); // 0x1391e0
 };
+SIZE_UNKNOWN(StreamList); // {head,tail} list-head view
 
 // The device's per-voice channel sub-list reap helper (0x136f60, __thiscall on
 // the inherited +0x0c head): unlink + free every voice matching (node, mask).
@@ -49,6 +50,7 @@ struct StreamVoiceList {
     void* m_tail;
     void Reap(void* node, i32 mask); // 0x136f60
 };
+SIZE_UNKNOWN(StreamVoiceList); // {head,tail} list-head view
 
 // ---------------------------------------------------------------------------
 // SoundStream::SoundStream (0x1376d0, __thiscall). Run the base ctor, zero the

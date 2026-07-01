@@ -13,7 +13,7 @@
 #ifndef DSNDMGR_STREAMFEEDER_H
 #define DSNDMGR_STREAMFEEDER_H
 
-#include <Ints.h>
+#include <rva.h>
 
 // The streaming source reader the feeder pulls window bytes from (the same
 // polymorphic reader SoundStream.h models as StreamSource; declared here so this
@@ -22,6 +22,7 @@
 struct FeederSource {
     i32 Read(void* buf, i32 n, i32 at); // 0x139af0
 };
+SIZE_UNKNOWN(FeederSource); // thin reader view (method-only)
 
 // The feeder's owner (m_owner): a SoundDevice/SoundStream-family object that creates
 // the streaming DirectSound buffer (0x1366f0) and reaps it (RemoveBuffer
@@ -33,6 +34,7 @@ struct FeederOwner {
     // 0x136d80 - reap voices + release the COM buffer + unlink one wrapper.
     void RemoveBuffer(void* buf);
 };
+SIZE_UNKNOWN(FeederOwner); // opaque owner view (method-only)
 
 // The feeder's per-stream buffer wrapper (m_buffer): a DirectSoundMgr-derived voice
 // the feeder Lock/Unlock-fills + Stop/Pause/Resume-drives. Opaque; reloc-masked
@@ -47,6 +49,7 @@ struct FeederBuf {
     i32 Resume(i32 flag);                           // 0x135510  (resume/restart playback)
     i32 Tick(i32 now); // 0x135a70  ... actually SetCurrentPosition pump
 };
+SIZE_UNKNOWN(FeederBuf); // thin DirectSoundMgr-buffer view (method-only)
 
 // The streaming feeder. Its own vftable (0x5ef6f0) is restamped by the ctor +
 // dtor (a transitional reloc-masked DIR32 store: slot 0 = scalar-deleting dtor
@@ -99,5 +102,6 @@ struct StreamFeeder {
     // Tick (0x1380d0): sibling pump, external to this TU - reloc-masked.
     i32 TickPump(i32 now);
 };
+SIZE(StreamFeeder, 0x44); // embedded feeder sub-object (StreamVoice+0x6c..0xb0)
 
 #endif // DSNDMGR_STREAMFEEDER_H

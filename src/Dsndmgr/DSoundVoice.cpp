@@ -31,6 +31,7 @@ struct DSoundVoice {
     i32 m_rampDurationMs;      // +0x20
     i32 m_rampStartTime;       // +0x24
 };
+SIZE(DSoundVoice, 0x28); // measured: new(0x28) voice node (ctor 0x136fe0)
 
 // ---------------------------------------------------------------------------
 // 0x137060: DSoundVoice::Tick (vtbl slot 0, __thiscall, 1 arg = the current

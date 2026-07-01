@@ -11,7 +11,7 @@
 #ifndef DSNDMGR_STREAMVOICE_H
 #define DSNDMGR_STREAMVOICE_H
 
-#include <Ints.h>
+#include <rva.h>
 
 #include <Dsndmgr/StreamFeeder.h>
 
@@ -44,6 +44,7 @@ struct VoiceOwner {
     i32 ParseWave(StreamSource* src, WaveFormatX* fmtBuf, u32* outOff,
                   u32* outLen); // 0x137b70
 };
+SIZE_UNKNOWN(VoiceOwner); // partial owning-SoundStream view (only +0x78 pinned)
 
 // The per-stream voice. Its DirectSoundMgr base index-setters (SetVolumeByIndex
 // 0x1355c0 / SetPanByIndex 0x1357a0 / SetFreqByIndex 0x135920) + the base
@@ -81,5 +82,6 @@ struct StreamVoice {
     i32 SetPanByIndex(i32 idx);                                     // 0x1357a0
     i32 SetFreqByIndex(i32 idx);                                    // 0x135920
 };
+SIZE(StreamVoice, 0xb0); // 0xb0 bytes via RezAlloc (ctor 0x1375b0)
 
 #endif // DSNDMGR_STREAMVOICE_H

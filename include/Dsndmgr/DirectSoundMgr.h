@@ -15,7 +15,7 @@
 #ifndef DSNDMGR_DIRECTSOUNDMGR_H
 #define DSNDMGR_DIRECTSOUNDMGR_H
 
-#include <Ints.h>
+#include <rva.h>
 
 // DSBCAPS - the buffer-caps struct GetCaps fills (dwSize 0x14 in, dwFlags out).
 // The ctor reads dwFlags into m_caps and ignores the rest.
@@ -26,6 +26,7 @@ struct DSBCAPS {
     u32 dwUnlockTransferRate;
     u32 dwPlayCpuOverhead;
 };
+SIZE(DSBCAPS, 0x14); // 5-DWORD DirectSound buffer-caps struct
 
 // DSBUFFERDESC - the 0x14-byte sound-buffer descriptor passed to
 // IDirectSound::CreateSoundBuffer (dwSize, dwFlags, dwBufferBytes, dwReserved,
@@ -37,6 +38,7 @@ struct DSBUFFERDESC {
     u32 dwReserved;
     void* lpwfxFormat;
 };
+SIZE(DSBUFFERDESC, 0x14); // 0x14-byte DirectSound buffer descriptor
 
 struct IDirectSoundBufferZ; // forward-decl: CreateSoundBuffer's out-param type
 
@@ -67,6 +69,7 @@ struct IDirectSoundZ {
         i32(__stdcall* SetCooperativeLevel)(IDirectSoundZ*, void* hwnd, u32 level); // +0x18
     }* vtbl;
 };
+SIZE_UNKNOWN(IDirectSoundZ); // COM interface view (single vtbl pointer)
 
 // ---------------------------------------------------------------------------
 // IDirectSoundBuffer (DSOUND) - the buffer interface the per-buffer wrappers
@@ -123,6 +126,7 @@ struct IDirectSoundBufferZ {
         i32(__stdcall* Restore)(IDirectSoundBufferZ*); // +0x50
     }* vtbl;
 };
+SIZE_UNKNOWN(IDirectSoundBufferZ); // COM interface view (single vtbl pointer)
 
 // ---------------------------------------------------------------------------
 // DSoundCloneBase - a tiny polymorphic view used only to dispatch a clone's
@@ -134,6 +138,7 @@ class DSoundCloneBase {
 public:
     virtual void* ScalarDtor(i32 flag); // +0x00 slot 0
 };
+SIZE_UNKNOWN(DSoundCloneBase); // polymorphic slot-0 dispatch view
 
 // ---------------------------------------------------------------------------
 // DirectSoundMgr. Single class spanning both wrapper `this`-shapes; only the
@@ -240,5 +245,6 @@ public:
     i32 m_coopLevel;                      // +0x88  cooperative level
     u32 m_bufferFlags;                    // +0x8c  buffer-desc flags
 };
+SIZE_UNKNOWN(DirectSoundMgr); // both wrapper this-shapes; opaque tail past +0x8c
 
 #endif // DSNDMGR_DIRECTSOUNDMGR_H

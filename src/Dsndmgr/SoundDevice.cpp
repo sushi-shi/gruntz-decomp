@@ -50,6 +50,7 @@ struct SampleVoice {
     void BaseInit(IDirectSoundBufferZ* buf, SoundDevice* owner); // 0x135b10
     void ComputeDuration();                                      // 0x1359a0
 };
+SIZE(SampleVoice, 0x60); // 0x60-byte base DirectSoundMgr-buffer object
 
 // The fmt-chunk descriptor ParseWaveChunks fills (its `out` param). m_fmt is the
 // WAVEFORMATEX pointer into the RIFF blob; m_flag is a parse flag Acquire tests
@@ -62,6 +63,7 @@ struct ParseFmt {
     u32 m_0c;           // +0x0c
     u32 m_10;           // +0x10
 };
+SIZE_UNKNOWN(ParseFmt); // parser scratch descriptor (address escapes)
 
 // The RIFF/WAVE chunk parser (0x137110, __cdecl): scans a RIFF blob for the `fmt `
 // and `data` chunks, writing the fmt descriptor (*out), the PCM data pointer
@@ -85,6 +87,7 @@ struct SoundVoiceList {
     void* m_tail;
     void Reap(void* node, i32 mask); // 0x136f60
 };
+SIZE_UNKNOWN(SoundVoiceList); // {head,tail} list-head view
 
 // The intrusive buffer-list unlink helper (0x1391e0, __thiscall on the +0x04
 // list head): unlink one node given its anchor. Same as DSoundCloneList::Unlink.
@@ -94,6 +97,7 @@ struct SoundBufList {
     void Insert(void* anchor); // 0x1390e0  prepend one biased-+4 node
     void Unlink(void* anchor); // 0x1391e0
 };
+SIZE_UNKNOWN(SoundBufList); // {head,tail} list-head view
 
 // The device class's retail vftable (0x5ef6c4), stamped by ~SoundDevice at entry
 // - a transitional reloc-masked DIR32 store while the class's virtuals aren't all

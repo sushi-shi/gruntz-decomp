@@ -90,3 +90,52 @@ The per-class-verify sweep is **efficient enough to scale**, with this shape:
 Estimated fan-out: one worker per module (or per hot header + its `.cpp` set),
 each draining its SIZE + VTBL violators in ~2–3 build groups. Budget per worker
 is dominated by reads/edits, not builds (3 builds sufficed for 63+2 here).
+Per-module log of the SIZE/SIZE_UNKNOWN/VTBL completeness sweep
+(`python -m gruntz.match.class_sizes` / `class_vtables`). Records hot-header
+casualties (an annotation that rescheduled a neighbor and was reverted) and the
+per-module hotness verdict, so the full fan-out can decide where to be careful.
+
+## Dsndmgr module (2026-07-01)
+
+Scope: classes defined under `src/Dsndmgr/*` + `include/Dsndmgr/*`.
+
+Coverage delta (both checks, Dsndmgr classes only):
+- SIZE completeness: 1/36 annotated (only `DSoundCloneCtor`) -> 36/36. All
+  Dsndmgr class names now carry SIZE or SIZE_UNKNOWN.
+- VTBL completeness: 4 Dsndmgr violators remain (see "VTBL skips" below); all are
+  already bound via a manual `g_*Vtbl` DATA extern or have no in-module vtable
+  RVA, so no VTBL was added (adding one would collide on the RVA / has no target).
+
+Annotated (this sweep):
+- Exact `SIZE`: `DSoundVoice` 0x28, `SampleVoice` 0x60, `StreamVoice` 0xb0,
+  `StreamFeeder` 0x44, `SoundDevice` 0x98, `SoundStream` 0x9c,
+  `CGruntzSoundInnerZ` 0x60, `CGruntzSoundZ` 0x2c, `DSBCAPS` 0x14,
+  `DSBUFFERDESC` 0x14. (`CGruntzSoundZ` 0x2c is MSVC5-verified: its `SIZE`
+  static_assert compiled, confirming `sizeof(CMapStringToOb)==0x1c`.)
+- `SIZE_UNKNOWN` (view / partial / opaque tail / C++ sizeof != retail alloc):
+  `DSoundVoiceList`, `DSoundCloneList`, `DSoundBaseSub`, `DSoundCloneInst`,
+  `DirectSoundMgr`, `IDirectSoundZ`, `IDirectSoundBufferZ`, `DSoundCloneBase`,
+  `DSoundLink`, `DSoundElem`, `DSoundList`, `WaveFormatX`, `SoundBuf`,
+  `SoundSample`, `SoundVoiceList`, `SoundBufList`, `ParseFmt`, `RezFile`,
+  `CSoundBank`, `StreamList`, `StreamVoiceList`, `StreamSource`, `FeederSource`,
+  `FeederOwner`, `FeederBuf`, `VoiceOwner`.
+
+VTBL skips (KEEP-HAND-ROLLED / external; each logged, none added):
+- `CGruntzSoundInnerZ` — vtable 0x1ef700 already bound to `g_innerSoundVtbl`
+  (`DATA(0x001ef700)` in CGruntzSoundZ.cpp); VTBL would dup the RVA.
+- `DSoundCloneBase` — clone-base vtable 0x1ef6c0 already targeted by
+  `DATA(0x001ef6c0) g_DirectSoundBaseVtbl` (DirectSoundMgr.cpp); VTBL would dup.
+- `CSoundBank` — virtuals declared-not-defined; its vtable is external, no RVA in
+  this module.
+- `SoundSample` — cached-sample node view; its live vtable RVA is not modeled
+  (only the pure/free-restamp 0x5ef6c8, itself bound as `g_PureVtbl`/`g_vtbl_pure6c8`).
+
+Hot-header casualties: NONE. Every group built with "no regressions vs baseline";
+overall stayed 1870/3394 exact / 63.27% fuzzy throughout.
+
+Hotness verdict: **Dsndmgr headers are CLEAN (not regression-prone).** Even the
+most-included header (`DirectSoundMgr.h`, pulled by SoundDevice.h -> SoundStream.h
+and by Gruntz's CAmbientSound.h / CRandomAmbientSound.h / CDDrawSubMgrLeafScan.cpp)
+took all six annotations with zero neighbor movement. Contrast Grunt.h, where a
+lone `SIZE_UNKNOWN(CGrunt)` reschedules a neighbor. Dsndmgr is safe to annotate in
+one shot; per-class build verification was still done here and confirmed neutral.

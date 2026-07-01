@@ -129,6 +129,7 @@ struct DSoundVoiceList {
     void* m_tail;
     void Reap(void* node, i32 mask); // 0x136f60
 };
+SIZE_UNKNOWN(DSoundVoiceList); // {head,tail} list-head view
 
 // The intrusive clone-list helper (0x1391e0): unlink a clone node (its m_node44
 // anchor) from a clone-list head - __thiscall on the head, 1 stack arg (anchor).
@@ -137,6 +138,7 @@ struct DSoundCloneList {
     void* m_tail;              // +0x04
     void Unlink(void* anchor); // 0x1391e0
 };
+SIZE_UNKNOWN(DSoundCloneList); // {head,tail} list-head view
 
 // operator new / operator delete (engine allocator), reloc-masked rel32.
 void* operator new(u32);
@@ -772,11 +774,13 @@ class DSoundBaseSub : public DirectSoundMgr {
 public:
     DSoundBaseSub(IDirectSoundBufferZ* buf, DirectSoundMgr* owner);
 };
+SIZE_UNKNOWN(DSoundBaseSub); // DirectSoundMgr-derived; retail clone alloc 0x58 (< C++ sizeof)
 
 class DSoundCloneInst : public DSoundBaseSub {
 public:
     DSoundCloneInst(IDirectSoundBufferZ* buf, DirectSoundMgr* owner);
 };
+SIZE_UNKNOWN(DSoundCloneInst); // DirectSoundMgr-derived; retail clone alloc 0x58 (< C++ sizeof)
 
 // @early-stop
 // EH-state-count wall: code bytes are byte-identical (verified base-vs-target

@@ -14,7 +14,7 @@
 #ifndef DSNDMGR_SOUNDDEVICE_H
 #define DSNDMGR_SOUNDDEVICE_H
 
-#include <Ints.h>
+#include <rva.h>
 
 #include <Dsndmgr/DirectSoundMgr.h>
 
@@ -29,6 +29,7 @@ struct WaveFormatX {
     u16 wBitsPerSample;  // +0x0e
     u16 cbSize;          // +0x10
 };
+SIZE_UNKNOWN(WaveFormatX); // WAVEFORMATEX-shaped scratch header
 
 // One owned sound-buffer wrapper as the device sees it in its +0x04 collection.
 // It is a DirectSoundMgr (buffer wrapper) whose +0x04 word doubles as the
@@ -45,6 +46,7 @@ struct SoundBuf {
     i32 StopAndRewind();  // 0x135380  (buffer method)
     void StopAllClones(); // 0x136150  (buffer method)
 };
+SIZE_UNKNOWN(SoundBuf); // partial DirectSoundMgr-buffer view (only +0x00..+0x14 pinned)
 
 // One cached sample/resource node hanging off the device's +0x0c list. It is a
 // polymorphic resource object (vtable, slot 1 @ +0x04 = a "free" virtual) whose
@@ -56,6 +58,7 @@ struct SoundSample {
     virtual void Free();  // +0x04  slot 1 -> call [vtbl+4]
     SoundSample* m_link;  // +0x04  next, biased +4 (POSITION); overlays after vptr
 };
+SIZE_UNKNOWN(SoundSample); // cached-sample node view (real node is larger)
 
 class SoundDevice {
 public:
@@ -112,5 +115,6 @@ public:
     i32 m_force8Bit;                      // +0x90
     void* m_94;                           // +0x94  cached-sample list/map head
 };
+SIZE(SoundDevice, 0x98); // device base (SoundStream's m_98 is the first past-base member)
 
 #endif // DSNDMGR_SOUNDDEVICE_H
