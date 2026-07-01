@@ -85,6 +85,16 @@ MS_FLAGS = [f"--target={TARGET}", f"-fms-compatibility-version={MSC_COMPAT}",
 # DATA(0x...) macro invocation - scanned from source text (IR drops extern
 # annotations). The address is bound to the AST VarDecl below it.
 DATA_MACRO_RE = re.compile(r"\bDATA\s*\(\s*(0x[0-9a-fA-F]+)\s*\)")
+# VTBL(Class, 0x...) macro (src/rva.h) - the single-source-of-truth vtable-catalog
+# annotation placed after a class. Unlike RVA/DATA it lives in HEADERS (after the
+# class def) and carries no symbol to hang an IR annotation on, so it is scanned
+# from source text TREE-WIDE (src/ + include/) in the merge step and lowered to a
+# `??_7<Class>@@6B@` DATA row. The name is TARGET-side (the EXE has no debug
+# symbols) and reloc-masked, so it is matching-neutral tracking, not a match lever
+# (hence NO authority check - it names the datum in the catalog regardless of
+# whether any base obj references it yet). Only simple global-namespace class
+# names lower cleanly here; templated/namespaced vtables stay in vtable_names.csv.
+VTBL_MACRO_RE = re.compile(r"\bVTBL\s*\(\s*([A-Za-z_]\w*)\s*,\s*(0x[0-9a-fA-F]+)\s*\)")
 # `// @rva-symbol: <mangled> <rva> [<size>]` - a self-contained function label for
 # a compiler-generated thunk that has NO source definition to hang an RVA()
 # attribute on (a `??_G` scalar-deleting destructor). The mangled name is given
@@ -752,13 +762,41 @@ def merge_json_fragments(frags, out, label, key="rva"):
     return merged
 
 
+def vtbl_labels(repo):
+    """[(rva, "??_7<Class>@@6B@")] for every VTBL(Class, 0x..) macro under src/ +
+    include/ (comments blanked). The vtable-catalog single source of truth: a
+    class's VTBL(...) annotation lives in the class's header, so it is scanned
+    tree-wide here (in the once-per-build merge step) rather than per-TU. The
+    emitted name is TARGET-side and reloc-masked -> matching-neutral, so it is
+    NOT authority-checked. De-duplicated on (rva, name); a genuinely conflicting
+    name at one rva is left for write_symbol_names to WARN + keep-last."""
+    repo = Path(repo)
+    seen, out = set(), []
+    for root in (repo / "src", repo / "include"):
+        if not root.exists():
+            continue
+        for path in sorted(list(root.rglob("*.h")) + list(root.rglob("*.cpp"))):
+            try:
+                text = blank_comments(path.read_text())
+            except OSError:
+                continue
+            for m in VTBL_MACRO_RE.finditer(text):
+                rva = int(m.group(2), 16)
+                name = f"??_7{m.group(1)}@@6B@"
+                if (rva, name) not in seen:
+                    seen.add((rva, name))
+                    out.append((rva, name))
+    return out
+
+
 def merge_fragments(frags, out, functions_frags=None, functions_out=None,
                     globals_frags=None, globals_out=None):
     """Combine per-TU fragment CSVs into symbol_names.csv, re-applying the cross-TU
     duplicate-RVA guard + DATA dedup. Each fragment is a symbol_names.csv slice
     (rva,name,unit,size,kind) emitted by one --tu run. The per-TU functions.json /
     globals.json fragments are merged the same way (last per rva wins) so apply.py
-    sees EVERY unit's signatures/global types, not just the last TU built."""
+    sees EVERY unit's signatures/global types, not just the last TU built. VTBL()
+    vtable-catalog rows are folded in here too (tree-wide source scan)."""
     import csv as _csv
     rows, addr_sites = [], {}
     for frag in frags:
@@ -771,6 +809,10 @@ def merge_fragments(frags, out, functions_frags=None, functions_out=None,
                 rows.append((rva, r["name"], r["unit"], size, kind))
                 if kind != "data":
                     addr_sites.setdefault(rva, []).append((r["unit"], r["name"]))
+    # VTBL(Class, 0x..) catalog rows (kind=data, cosmetic "vtables" unit - synth_pdb
+    # ignores the unit for data symbols, keying the datum rename by rva->name).
+    for rva, name in vtbl_labels(REPO):
+        rows.append((rva, name, "vtables", None, "data"))
     rc = write_symbol_names(rows, addr_sites, out)
     if rc != 0:
         return rc

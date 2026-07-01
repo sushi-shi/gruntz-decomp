@@ -25,6 +25,16 @@
 //                         so many SIZE()s coalesce into one TU (All.cpp) without a
 //                         clash. Emits no code -> matching-neutral. (cf. vostok's
 //                         STATIC_SIZE_ASSERT.)
+//   SIZE_UNKNOWN(type)  - the tracking sibling of SIZE for a class whose retail
+//                         byte size is not yet pinned: marks it size-annotated
+//                         (value TBD) so the completeness check counts it, with NO
+//                         exact-size assert. Requires `type` complete; emits no
+//                         code. Every class carries SIZE(..) xor SIZE_UNKNOWN(..).
+//   VTBL(type, addr)    - after a class (after its SIZE), bind ??_7<type>@@6B@ at
+//                         retail RVA `addr` as a DATA symbol (vtable catalog).
+//                         labels.py text-scans it tree-wide -> symbol_names.csv.
+//                         Matching-NEUTRAL tracking (a vtable name is reloc-masked
+//                         in objdiff), not a match lever. Emits no code.
 //
 // IMPORTANT - the same source is compiled by clang (the label step) AND by MSVC
 // 5.0 under wine (the base objs). MSVC 5.0 predates __attribute__, [[...]], AND
@@ -68,6 +78,26 @@
 // SIZE (see header note) - clang gets static_assert for a clear diagnostic.
 #define SIZE(type, bytes) static_assert(sizeof(type) == (bytes), "sizeof(" #type ") != " #bytes)
 
+// SIZE_UNKNOWN - the size-tracking sibling of SIZE for a class whose exact retail
+// byte size is not yet pinned. It records "this class IS size-annotated (value
+// TBD)" so the class-metadata completeness check (gruntz.match.class_sizes)
+// counts it, WITHOUT asserting an exact size. Requires `type` to be a complete
+// type (catches a typo'd class name) but emits no code -> matching-neutral. Goal:
+// every class carries EXACTLY ONE of SIZE(...) / SIZE_UNKNOWN(...).
+#define SIZE_UNKNOWN(type) static_assert(sizeof(type) != 0, "size-unknown: " #type)
+
+// VTBL(type, addr) - bind the class's virtual-table symbol ??_7<type>@@6B@ at the
+// retail RVA `addr` as a DATA symbol: the single source of truth for the vtable
+// catalog. labels.py text-scans this macro tree-wide (src/ + include/) and emits
+// the ??_7 row into build/gen/symbol_names.csv (a TARGET-side name - the EXE has
+// no debug symbols, so the delinked datum's name is ours to assign). Placed right
+// after the class (after its SIZE). A vtable NAME is reloc-masked in objdiff, so
+// this is matching-neutral TRACKING, NOT a match lever. `type` must be a complete
+// type; emits no code. Only simple global-namespace class names lower cleanly to
+// ??_7<type>@@6B@ - templated/namespaced vtables keep using config/vtable_names.csv
+// or a `// @data-symbol:` label.
+#define VTBL(type, addr) static_assert(sizeof(type) != 0, "vtbl:" #addr " type:" #type)
+
 #else // MSVC 5.0 (and any other non-clang compiler): compile the labels out.
 
 #define RVA(addr, size)
@@ -82,6 +112,14 @@
 #define GRUNTZ_SIZE_CAT(a, b) GRUNTZ_SIZE_CAT_(a, b)
 #define SIZE(type, bytes)                                                                          \
     typedef char GRUNTZ_SIZE_CAT(gruntz_size_check_, __LINE__)[(sizeof(type) == (bytes)) ? 1 : -1]
+// SIZE_UNKNOWN / VTBL: like SIZE, a completeness-checked char[1] typedef (always
+// resolves to char[1], so two on the same __LINE__ in different headers are a
+// benign identical redefinition, never a clash). Requires `type` complete; emits
+// no code. `addr` is consumed only by labels.py's text scan (unused in codegen).
+#define SIZE_UNKNOWN(type)                                                                         \
+    typedef char GRUNTZ_SIZE_CAT(gruntz_sizeunk_, __LINE__)[(sizeof(type) != 0) ? 1 : -1]
+#define VTBL(type, addr)                                                                           \
+    typedef char GRUNTZ_SIZE_CAT(gruntz_vtbl_, __LINE__)[(sizeof(type) != 0) ? 1 : -1]
 
 #endif
 

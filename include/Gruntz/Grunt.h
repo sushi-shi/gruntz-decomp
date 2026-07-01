@@ -17,6 +17,7 @@
 #define SRC_GRUNTZ_GRUNT_H
 
 #include <Ints.h>
+#include <rva.h> // SIZE_UNKNOWN/VTBL class-metadata macros used below
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (g_gameReg->m_74; GetSel)
 
 // ---------------------------------------------------------------------------
@@ -1419,6 +1420,11 @@ public:
     i32 TeleportMove(i32 dx, i32 dy, i32 a, i32 b); // 0x2f3b
     void FreezeApply();                             // 0x28d8
 };
+SIZE_UNKNOWN(CGrunt); // large game object; retail byte size not yet pinned
+// NB: no VTBL here - CGrunt's RTTI vtable rva 0x1e8754 (config/vtable_names.csv) is
+// a pre-existing delinker symbol referenced by scored CGrunt/CSpotLight code, so
+// RENAMING it ??_7CGrunt@@6B@ shifts those functions' objdiff fuzzy % (a reloc-name
+// SCORING artifact, code bytes unchanged). Left for the sweep to bless per §2a.
 
 // CGrunt segment-vs-box overlap test @0x62b70 - a free (__stdcall, ret 0xc) helper:
 // does the directed segment e1->e2 cross into the axis-aligned box `p`

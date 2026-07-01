@@ -15,6 +15,7 @@
 #define NET_NETMGR_H
 
 #include <Ints.h>
+#include <rva.h> // SIZE_UNKNOWN/VTBL class-metadata macros used below
 
 // <Mfc.h> brings <windows.h> USER32 (PostMessageA / Sleep / GetAsyncKeyState - the
 // connect wait polls VK_ESCAPE to abort; HWND / UINT / ...) and the central WINMM
@@ -56,6 +57,7 @@ struct CGameMgr {
     char m_pad0[0x38];
     Utils::RegistryHelper* m_38; // +0x38  the per-game registry config writer
 };
+SIZE_UNKNOWN(CGameMgr); // partial view (only +0x38 pinned) - full retail size TBD
 
 extern CGameMgr* g_pGameMgr;
 
@@ -124,6 +126,7 @@ struct CNetVersionPacket {
     i32 m_18; // +0x18  g_remoteVersion
     i32 m_1c; // +0x1c  g_localVersion
 };
+SIZE(CNetVersionPacket, 0x20); // fully-known stack packet
 
 // ---------------------------------------------------------------------------
 // CNetMgr - the DirectPlay networking manager. Only the members the matched
@@ -150,6 +153,7 @@ struct CNetPlayerSlot {
     char m_pad174[0x37c - 0x174];
     DWORD m_37c; // +0x37c  the slot's latency value
 };
+SIZE_UNKNOWN(CNetPlayerSlot); // partial slot view (only the 3 gate/latency dwords pinned)
 
 // ---------------------------------------------------------------------------
 // One channel descriptor in the inline array at (m_4 + 0x150), stride 0x238,
@@ -951,6 +955,8 @@ public:
     void Stub_179090();
     void Stub_179130();
 };
+SIZE_UNKNOWN(CNetMgr); // network manager; retail byte size not yet pinned
+VTBL(CNetMgr, 0x001ea42c); // RTTI vtable (config/vtable_names.csv), currently un-catalogued
 
 // The HWND chain the message handlers walk: m_4 -> +0x4 -> +0x4 (the HWND).
 struct CNetHwndHolder {

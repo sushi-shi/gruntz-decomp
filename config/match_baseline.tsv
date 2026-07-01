@@ -2280,7 +2280,7 @@ goowellmgr	?LoadTeleporterGooConfig@CGooWellMgr@@QAEHH@Z	96.3620	96.3620	2	36c8f
 groupops	?Broadcast@CGroupBroadcast@@QAEHXZ	84.2364	84.2364	1	4587301968b6	0x112080
 groupops	?CenterOnGroup@CGroupSel@@QAEHH@Z	82.6018	82.6018	1	37e209e587c4	0x7cf40
 grunt	??1CGrunt@@QAE@XZ	55.5455	55.5455	1	7103cc50662d	0xf2f0
-grunt	?ArrivalRecycle@CGrunt@@QAEHHHHHH@Z	52.4272	52.4272	2	b667b6be49b1	0x59230
+grunt	?ArrivalRecycle@CGrunt@@QAEHHHHHH@Z	51.1858	51.1858	2	b667b6be49b1	0x59230
 grunt	?BeginAttack@CGrunt@@QAEHHH@Z	53.7917	53.7917	1	3d02da5c24cc	0x5b570
 grunt	?BuildEntranceAnimation@CGrunt@@QAEXH@Z	70.6037	70.6037	6	31017869150f	0x67bd0
 grunt	?BuildGruntExitAnimation@CGrunt@@QAEHXZ	99.0509	99.0509	1	b2aefcc3abff	0x641b0
@@ -2355,7 +2355,7 @@ grunt	?StepArrivalDefense@CGrunt@@QAEHXZ	42.2835	42.2835	2	a9832173d1e8	0xf2b20
 grunt	?StepArrivalDefenseLean@CGrunt@@QAEHXZ	52.3973	52.3973	2	c3fbbeb760e0	0xf8240
 grunt	?StepArrivalDrop@CGrunt@@QAEXHHHHHH@Z	7.7088	7.7088	1	731eeff2b7e9	0x4b370
 grunt	?StepCombatReaction@CGrunt@@QAEHHHHHHHHH@Z	71.1751	71.1751	2	74728b708e0e	0x646b0
-grunt	?StepCompassMove@CGrunt@@QAEHXZ	33.5138	33.5138	1	98ae4e0ea1aa	0x51c00
+grunt	?StepCompassMove@CGrunt@@QAEHXZ	32.9943	32.9943	1	98ae4e0ea1aa	0x51c00
 grunt	?StepCoordResolve@CGrunt@@QAEXXZ	9.3598	9.3598	1	7e18466adeed	0x5f310
 grunt	?StepEntranceReinit@CGrunt@@QAEHXZ	74.9359	74.9359	1	8109213253cf	0x637a0
 grunt	?StepGruntMovement@CGrunt@@QAEHXZ	5.1672	5.1672	1	ed2029033118	0x4c170
