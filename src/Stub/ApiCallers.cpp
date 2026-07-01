@@ -556,32 +556,9 @@ namespace ApiCallerStubs {
 
     // 0x00021f20 reconstructed as m4::DrawHost::MeasureLabel21f20 in src/Gruntz/m4_DrawText.cpp
 
-    // @confidence: low
-    // @source: winapi:GetAsyncKeyState;SelectObject
-    // @stub
-    RVA(0x00022160, 0x18e)
-    i32 __stdcall winapi_022160_GetAsyncKeyState_SelectObject(i32, i32, i32) {
-        return 0;
-    }
+    // 0x00022160 reconstructed as m4::PwdHost::Render22160 in src/Gruntz/m4_DrawText.cpp
 
-    // @confidence: low
-    // @source: winapi:DrawTextA;SelectObject;SetBkColor;SetBkMode;SetTextColor
-    // @stub
-    RVA(0x00022810, 0x22a)
-    i32 __stdcall winapi_022810_DrawTextA_SelectObject_SetBkColor_SetBkMode_SetTextColor(
-        i32,
-        i32,
-        i32,
-        i32,
-        i32,
-        i32,
-        i32,
-        i32,
-        i32,
-        i32
-    ) {
-        return 0;
-    }
+    // 0x00022810 reconstructed as m4::TextHost::Draw3DText22810 in src/Gruntz/m4_DrawText.cpp
 
     // @confidence: low
     // @source: winapi:IntersectRect
@@ -832,13 +809,7 @@ namespace ApiCallerStubs {
     // CreateRectRgn (0x039a60) re-homed as CreditzScreen::BuildText in
     // src/Gruntz/m4_ApiWrappers.cpp.
 
-    // @confidence: low
-    // @source: winapi:GetDlgItem;SendMessageA
-    // @stub
-    RVA(0x0003af90, 0x194)
-    i32 winapi_03af90_GetDlgItem_SendMessageA() {
-        return 0;
-    }
+    // 0x0003af90 reconstructed as m4::FillCustomLevelList in src/Gruntz/m4_CustomLevelList.cpp
 
     // GetDlgItem (0x03b1a0) re-homed as m4::FillLevelInfoDialog in
     // src/Gruntz/m4_ApiWrappers.cpp.
@@ -1815,13 +1786,7 @@ namespace ApiCallerStubs {
         }
     }
 
-    // @confidence: low
-    // @source: winapi:GetWindow;SendMessageA
-    // @stub
-    RVA(0x000c1aa0, 0x2f8)
-    i32 winapi_0c1aa0_GetWindow_SendMessageA() {
-        return 0;
-    }
+    // 0x000c1aa0 reconstructed as m4::MultiColorDlg::UpdateColorItems in src/Gruntz/m4_MultiColorDlg.cpp
 
     // @confidence: low
     // @source: winapi:SendMessageA

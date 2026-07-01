@@ -2682,6 +2682,20 @@ flags = "base"
 extra = ["/GX"]
 
 [[unit]]
+# matcher-4: multiplayer color-selection dialog item updater (EH + MFC CString).
+unit = "m4_multicolordlg"
+source = "src/Gruntz/m4_MultiColorDlg.cpp"
+flags = "base"
+extra = ["/GX"]
+
+[[unit]]
+# matcher-4: custom-level listbox filler (findfirst/next walk + lock + CString).
+unit = "m4_customlevellist"
+source = "src/Gruntz/m4_CustomLevelList.cpp"
+flags = "base"
+extra = ["/GX"]
+
+[[unit]]
 unit = "dirpal"
 source = "src/Gruntz/DirPal.cpp"
 flags = "base"
