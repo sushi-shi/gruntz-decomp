@@ -2576,9 +2576,9 @@ image	?Clear@CFileImage@@QAEXH@Z	100.0000	100.0000	2	bfee47867379	0x13edb0
 image	?DecodeBlit@CImage@@QAEHPAX0HHH0@Z	82.7639	82.7639	1	68563adce2d2	0x175930
 image	?DecodeBmp@CFileImage@@QAEPAXPADPAXI@Z	31.2544	31.2544	4	ee7ec349a997	0x143fc0
 image	?DecodeBmpHeader@CImage@@QAEHPAXHHH0@Z	95.7395	95.7395	5	5af44e6457a4	0x1757c0
-image	?DecodePcx@CFileImage@@QAEPAXPADPAXI@Z	55.6786	55.6786	4	77f8fc32ed4c	0x144ee0
+image	?DecodePcx@CFileImage@@QAEPAXPADPAXI@Z	55.7755	55.7755	4	77f8fc32ed4c	0x144ee0
 image	?DecodePcxData@CFileImage@@QAEHPAX0HHH@Z	86.2370	86.2370	1	ddfed7a9e89e	0x1457a0
-image	?DecodePcxData@CImage@@QAEHPAX00@Z	91.3291	91.3291	4	da60cf2acb73	0x176000
+image	?DecodePcxData@CImage@@QAEHPAX00@Z	91.2848	91.2848	4	da60cf2acb73	0x176000
 image	?DecodePcxEx@CFileImage@@QAEHPAD0PAX1@Z	100.0000	100.0000	5	d07ec29ad6b0	0x1459d0
 image	?DecodePid@CFileImage@@QAEPAXPADPAXI1@Z	35.4204	35.4204	4	5a4b4aeca089	0x145b10
 image	?DecodePidData@CImage@@QAEHPAX00@Z	72.7817	72.7817	4	b5df2e67ba2b	0x176440
@@ -3172,7 +3172,7 @@ rezmgr	??1CRezItmBase@@UAE@XZ	100.0000	100.0000	1	955033bff6b3	0x13c520
 rezmgr	?Close@CRezItm@@QAEHXZ	81.2820	81.2820	1	5db450ed35bd	0x13c830
 rezmgr	?FindEntry@CRezDir@@QAEHPAD@Z	100.0000	100.0000	5	44cd4dc84aaa	0x13c080
 rezmgr	?HandleDebugPosition@RezMgr@@QAEHXZ	93.1667	93.1667	5	aac0d05f5683	0x8e470
-rezmgr	?Load@CRezDirNode@@QAEHH@Z	100.0000	100.0000	5	f5c690a2c68c	0x13a0f0
+rezmgr	?Load@CRezDirNode@@QAEHH@Z	100.0000	100.0000	6	2ced9218b3cf	0x13a0f0
 rezmgr	?MakeImageKey@RezMgr@@QAEHPAXPAD0@Z	100.0000	100.0000	5	45cbafe1118c	0x13e5d0
 rezmgr	?MakeRezPath@RezMgr@@QAEHXZ	92.7923	92.7923	6	89aba364b6ae	0x91670
 rezmgr	?PerFrameTick@RezMgr@@UAEHXZ	100.0000	100.0000	5	f48f8cfdbf55	0x8b740
