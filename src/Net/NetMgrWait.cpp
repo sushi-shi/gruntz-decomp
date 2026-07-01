@@ -10,6 +10,13 @@
 #include <Net/NetMgr.h>
 #include <rva.h>
 
+// The custom-level verify-vote stat ids Poll ships (values load-bearing).
+enum {
+    STAT_VERIFY_REQUEST = 0x41c,  // guest -> host: request the level-verify vote
+    STAT_VERIFY_AGREE = 0x41d,    // host: all players agree on the level
+    STAT_VERIFY_DISAGREE = 0x41e, // host: the players disagree on the level
+};
+
 // The global game-settings/registry singleton (_g_mgrSettings @0x64556c). Poll
 // reads its four per-session player records (a 0x238-stride table based at +0x170)
 // through raw dword offsets so the `mov edx,ds:0x64556c` + record walk reloc-mask.
@@ -168,22 +175,22 @@ i32 CNetMgr::WaitForOtherPlayers() {
 
 // ---------------------------------------------------------------------------
 // CNetMgr::Poll (0xbba10, __thiscall) - block (pumping the session) until the
-// custom-level verify vote resolves (m_540 latches) or the timer runs out.
+// custom-level verify vote resolves (m_verifyDone latches) or the timer runs out.
 //
 // Two modes on the is-host latch m_528:
 //   guest (m_528==0): ship the verify request (stat 0x41c), spin with a 5s resend
 //     timer and a 15s abort timer; on each 5s lapse re-arm (AckJoinFailure) and
-//     re-send. Exits 1 once PollSession latches m_540, 0 on the 15s timeout.
+//     re-send. Exits 1 once PollSession latches m_verifyDone, 0 on the 15s timeout.
 //   host  (m_528!=0): clear the per-record ack/vote latches, spin with a 15s abort
 //     timer, and each pass scan the four active session records - if every present
-//     record has acked (m_544[i]) then vote agree/disagree by whether every ack
-//     token (m_554[i]) matches ours, push the result stat (0x41d agree / 0x41e
-//     disagree), record it (m_53c) and latch m_540. Exits 1 on resolve, 0 on timeout.
+//     record has acked (m_recordAcked[i]) then vote agree/disagree by whether every ack
+//     token (m_recordToken[i]) matches ours, push the result stat (0x41d agree / 0x41e
+//     disagree), record it (m_levelVerifyResult) and latch m_verifyDone. Exits 1 on resolve, 0 on timeout.
 //
 // @early-stop
 // Real codegen diff (~95.5%, NOT a reloc artifact): the body is byte-exact - both
 // timer paths, the array-zero loop, the 4-record scan (0x238 stride, [eax-8]/[eax]/
-// [eax-0xc] gates, the m_544/m_554 latch + token vote). objdiff MASKS REL32 call/branch
+// [eax-0xc] gates, the m_recordAcked/m_recordToken latch + token vote). objdiff MASKS REL32 call/branch
 // reloc target-names (measured: renaming the ILT-thunk callees SendNetStat/PollSession/
 // AckJoinFailure/SendStatFlag to the real ?...@CNetMgr@@ symbols moved the score 0.0%),
 // so the thunk-routed callees are NOT the cap. The residual is an epilogue
@@ -193,10 +200,10 @@ i32 CNetMgr::WaitForOtherPlayers() {
 RVA(0x000bba10, 0x1fb)
 i32 CNetMgr::Poll(i32 token) {
     if (m_useChannelLatency == 0) {
-        SendNetStat(0x41c, token, 1);
+        SendNetStat(STAT_VERIFY_REQUEST, token, 1);
         i32 resend = 0x1388;
         i32 abort = 0x3a98;
-        m_540 = 0;
+        m_verifyDone = 0;
         do {
             u32 start = timeGetTime();
             Sleep(0x32);
@@ -218,19 +225,19 @@ i32 CNetMgr::Poll(i32 token) {
             if (resend == 0) {
                 resend = 0x1388;
                 AckJoinFailure();
-                SendNetStat(0x41c, token, 1);
+                SendNetStat(STAT_VERIFY_REQUEST, token, 1);
             }
-        } while (m_540 == 0);
+        } while (m_verifyDone == 0);
         return 1;
     }
 
     i32 abort = 0x3a98;
-    m_540 = 0;
+    m_verifyDone = 0;
     for (i32 i = 0; i < 4; i++) {
-        m_544[i] = 0;
-        m_554[i] = 0;
+        m_recordAcked[i] = 0;
+        m_recordToken[i] = 0;
     }
-    while (m_540 == 0) {
+    while (m_verifyDone == 0) {
         u32 start = timeGetTime();
         Sleep(0x32);
         PollSession();
@@ -248,10 +255,10 @@ i32 CNetMgr::Poll(i32 token) {
         i32 allAgree = 1;
         i32* rec = (i32*)(g_mgrSettings + 0x170);
         for (i32 i = 0; i < 4; i++) {
-            if (rec[-2] != m_5c0 && rec[0] != 0 && rec[-3] != 0) {
-                if (m_544[i] == 0) {
+            if (rec[-2] != m_localPlayerId && rec[0] != 0 && rec[-3] != 0) {
+                if (m_recordAcked[i] == 0) {
                     allAcked = 0;
-                } else if (!(m_554[i] == token && token != 0)) {
+                } else if (!(m_recordToken[i] == token && token != 0)) {
                     allAgree = 0;
                 }
             }
@@ -259,13 +266,13 @@ i32 CNetMgr::Poll(i32 token) {
         }
         if (allAcked != 0) {
             if (allAgree != 0) {
-                SendStatFlag(0x41d, 1);
-                m_53c = 1;
-                m_540 = 1;
+                SendStatFlag(STAT_VERIFY_AGREE, 1);
+                m_levelVerifyResult = 1;
+                m_verifyDone = 1;
             } else {
-                SendStatFlag(0x41e, 1);
-                m_53c = 0;
-                m_540 = 1;
+                SendStatFlag(STAT_VERIFY_DISAGREE, 1);
+                m_levelVerifyResult = 0;
+                m_verifyDone = 1;
             }
         }
     }

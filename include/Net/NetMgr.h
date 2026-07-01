@@ -131,7 +131,7 @@ struct CNetVersionPacket {
 //   +0x004 m_4              : a sub-object whose +0x4 is a window-handle holder;
 //                             the message handlers do (((T*)m_4)->m_4)->m_4 to
 //                             reach the HWND.
-//   +0x01c m_1c             : the lParam value posted with the resync message.
+//   +0x01c m_resyncLParam   : the lParam value posted with the resync message.
 //   +0x574 m_outOfSyncGuard : OnOutOfSync's per-instance reentrancy guard.
 //   +0x584 m_584            : a state word the handlers clear on entry.
 //   +0x598 m_configSection  : a CString - the config section/value-name prefix
@@ -734,7 +734,7 @@ public:
     i32 WaitForOtherPlayers(); // 0xbb700
 
     // CreateLocalPlayer (0xbc750, /GX EH): register the local player with the peer
-    // under the local name, latch its id (m_5c0), wait for the host to admit it,
+    // under the local name, latch its id (m_localPlayerId), wait for the host to admit it,
     // then announce the join (stat 0x3f9 packet carrying the name). Returns 1.
     i32 CreateLocalPlayer();       // 0xbc750
     CString GetString5a0();        // 0xb7ad0  the local player-name CString
@@ -790,7 +790,7 @@ public:
     // from a 0x88-byte (whole-table) or 0x2c-byte (single) stat packet, and a
     // pair of register/remove helpers create / tear down one channel slot.
     // AckDropPlayer (0xba590) is declared with the bc0xx helper run below.
-    i32 ResolveLocalPlayer(); // 0xba7d0  m_localPlayer = peer->FindPlayerById(m_5c0)
+    i32 ResolveLocalPlayer(); // 0xba7d0  m_localPlayer = peer->FindPlayerById(m_localPlayerId)
     i32 BroadcastChannelTable(
         CNetPlayerEntry* recipient
     );                                   // 0xba810  serialize all channels -> 0x88 packet
@@ -857,13 +857,13 @@ public:
     char m_padc[0x14 - 0xc];
     INetReleasable* m_releaseIface; // +0x014  the secondary COM interface Destroy releases (slot 2)
     IDirectPlay4Z* m_directPlay; // +0x018  the DirectPlay session interface (IDirectPlay4-shaped)
-    i32 m_1c;                    // +0x01c  WM_COMMAND lParam value the resync handlers post
+    i32 m_resyncLParam;          // +0x01c  WM_COMMAND lParam value the resync handlers post
     char m_pad20[0x28 - 0x20];
-    i32 m_28; // +0x028  group-list item count (ReadGroupSel bound)
+    i32 m_groupCount; // +0x028  group-list item count (ReadGroupSel bound)
     char m_pad2c[0x3c - 0x2c];
     CNetListNode* m_3c; // +0x03c  head of the +0x38 player CObList (PopulatePlayerList walks it)
     char m_pad40[0x44 - 0x40];
-    i32 m_44; // +0x044  player-list item count (ReadPlayerSel bound)
+    i32 m_playerCount; // +0x044  player-list item count (ReadPlayerSel bound)
     char m_pad48[0x58 - 0x48];
     // The managed-player-object list (a by-value CObList embedded at +0x54). Its
     // 0x1c-byte body spans +0x54..+0x70; the +0x58 head node ptr below is the
@@ -888,13 +888,15 @@ public:
     i32 m_useChannelLatency; // +0x528  ack-latency source selector (set => inline m_channelLatency[])
     i32 m_sessionTerminated; // +0x52c  "the game session has been terminated"
     i32 m_530;               // +0x530  config-loaded / connection-active gate
-    i32 m_534;             // +0x534  host-mode flag (no use-site in matched code; left placeholder)
-    i32 m_removedFromGame; // +0x538  "you have been removed from the game by the host"
-    i32 m_53c;             // +0x53c  level-verify response latch (VerifyCustomLevel)
-    i32 m_540;             // +0x540  Poll's exit gate (set once the verify vote resolves)
-    i32 m_544[4];          // +0x544  Poll's per-record ack latch (one per session slot)
-    i32 m_554[4];          // +0x554  Poll's per-record vote/token latch
-    i32 m_pollAbort;       // +0x564  set => PollSession stops pumping the receive queue
+    i32 m_534;               // +0x534  drop-finalize latch: RecordDropPlayer2 sets it once every
+                             //         state-3 slot is recorded, switching AckDropPlayer to host
+                             //         teardown; exact role unproven, left placeholder
+    i32 m_removedFromGame;   // +0x538  "you have been removed from the game by the host"
+    i32 m_levelVerifyResult; // +0x53c  level-verify response latch (VerifyCustomLevel)
+    i32 m_verifyDone;        // +0x540  Poll's exit gate (set once the verify vote resolves)
+    i32 m_recordAcked[4];    // +0x544  Poll's per-record ack latch (one per session slot)
+    i32 m_recordToken[4];    // +0x554  Poll's per-record vote/token latch
+    i32 m_pollAbort;         // +0x564  set => PollSession stops pumping the receive queue
     char m_pad568[0x56c - 0x568];
     i32 m_gameFull; // +0x56c  "this game is already full"
     i32 m_versionMismatch; // +0x570  version-mismatch latch (HandleVersionCheck sets; WaitForConnect reports)
@@ -908,14 +910,15 @@ public:
     char m_pad590[0x598 - 0x590];
     CString m_configSection; // +0x598  config section/value-name prefix ("<section>_CmdDelay" etc.)
     char m_pad59c[0x5a4 - 0x59c];
-    DWORD m_cmdDelay;  // +0x5a4  the "_CmdDelay" value (also the per-command sequence scale)
-    DWORD m_resend;    // +0x5a8  the "_Resend" value
-    i32 m_gameClosed;  // +0x5ac  "this game is closed"
-    i32 m_5b0;         // +0x5b0  config word (LoadConfig copies cfg+0x8)
-    CString m_5b4;     // +0x5b4  config name CString A (LoadConfig <- cfg+0xc)
-    CString m_5b8;     // +0x5b8  config name CString B (LoadConfig <- cfg+0x8c)
-    i32 m_localPlayer; // +0x5bc  the local player descriptor ptr (gate in WaitForConnect)
-    i32 m_5c0;         // +0x5c0  local player id (inferred from +0x5bc[+4]; no use-site here)
+    DWORD m_cmdDelay; // +0x5a4  the "_CmdDelay" value (also the per-command sequence scale)
+    DWORD m_resend;   // +0x5a8  the "_Resend" value
+    i32 m_gameClosed; // +0x5ac  "this game is closed"
+    i32 m_5b0;        // +0x5b0  config word (LoadConfig copies cfg+0x8)
+    CString m_5b4;    // +0x5b4  config name CString A (LoadConfig <- cfg+0xc)
+    CString m_5b8;    // +0x5b8  config name CString B (LoadConfig <- cfg+0x8c)
+    CNetPlayerEntry* m_localPlayer; // +0x5bc  the local player descriptor (gate in WaitForConnect)
+    i32 m_localPlayerId; // +0x5c0  local player id (== m_localPlayer->m_4; matched against
+                         //         peer player ids in RecordDropPlayer2/CreateSession/Poll)
     char m_pad5c4[0x5cc - 0x5c4];
     i32 m_5cc; // +0x5cc  the resync "tick" byte derived from the session sub-object
     char m_pad5d0[0x5e0 - 0x5d0];
