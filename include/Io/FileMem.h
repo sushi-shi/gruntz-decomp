@@ -1,7 +1,7 @@
 // FileMem.h - CFileMem, the engine's CFile-derived save/pack file STREAM. It
 // wraps a CFileIO (the KERNEL32 file at +0x10) behind a CFile-style virtual
 // interface, presenting a named, position-tracked stream. Used by the "Gruntz
-// Save Game" loader (FUN_00556020) and friends.
+// Save Game" loader and friends.
 //
 // Two-level hierarchy recovered from the lifecycle (two manual vtables):
 //   CFileMemBase  - vtable 0x005efe68 (base sub-object ctor 0x00157850):

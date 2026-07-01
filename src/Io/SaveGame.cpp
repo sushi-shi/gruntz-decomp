@@ -238,9 +238,8 @@ CSaveGame::~CSaveGame() {
 }
 
 // ---------------------------------------------------------------------------
-// CSaveGame::SaveGameFile  (0x000e4b60)  [re-homed from src/Stub/CFileIO.cpp -
-// the this/ecx tracer mislabeled it CFileIO::SaveGameFile; it is a CSaveGame
-// method]. Seed the roster from a directory: m_str0 = dir, m_name = dir +
+// CSaveGame::SaveGameFile
+// Seed the roster from a directory: m_str0 = dir, m_name = dir +
 // "Gruntz.sav", zero the 0xa1c header, Init() + Load() the roster, then for each
 // of the ten slots that exists format its per-slot file path dir + "Slot" +
 // (i+1) + ".sav" into the slot record at +0x35 (wsprintfA hoists the IAT pointer

@@ -1,20 +1,6 @@
 // FileStream.cpp - CFileIO, the engine's KERNEL32 file-I/O wrapper (MFC CFile
 // work-alike). This class gates ALL engine file I/O (RezMgr, WwdFile, save/load).
 //
-// Functions matched in this TU; 9/10 BYTE-EXACT:
-//   CFileIO::CFileIO()              - ctor
-//   CFileIO::CFileIO(HANDLE)        - adopt-handle ctor
-//   CFileIO::`scalar deleting dtor`
-//   CFileIO::~CFileIO()             - dtor
-//   CFileIO::Read                   - ReadFile
-//   CFileIO::Write                  - WriteFile
-//   CFileIO::Seek                   - SetFilePointer
-//   CFileIO::GetPosition            - SetFilePointer
-//   CFileIO::Close                  - CloseHandle
-//   CFileIO::Open                   - CreateFileA
-//                                   (95.5%: one share-switch case-body layout
-//                                    coin-flip remains; logic/control-flow exact)
-//
 // All KERNEL32 calls go through the IAT (FF15 [slot]); the NAFXCW helpers
 // (CObject base vtable + CString ctor/dtor/assign/Empty, the throw helpers, the
 // path canonicalizer) are modeled as external/no-body callees so their reloc
@@ -308,8 +294,8 @@ void CFileIO::Stub_0e5700() {}
 // consumers incl. Image, and this /O1 TU is byte-exact-sensitive, so keep every
 // completeness typedef after the last function body).
 // ===========================================================================
-SIZE_UNKNOWN(CFileIO);          // CObject-derived file wrapper (partial model)
-VTBL(CFileIO, 0x001ed15c);      // derived vtable stamp from ctor 0x1befd7
+SIZE_UNKNOWN(CFileIO);     // CObject-derived file wrapper (partial model)
+VTBL(CFileIO, 0x001ed15c); // derived vtable stamp from ctor 0x1befd7
 SIZE_UNKNOWN(CFileExceptionLite);
-SIZE(SecurityAttributes, 0xc);  // complete Win32 SECURITY_ATTRIBUTES (nLength=0xc)
-SIZE_UNKNOWN(CFileIODispatch);  // CFile Seek slot-dispatch view (no emitted vtable)
+SIZE(SecurityAttributes, 0xc); // complete Win32 SECURITY_ATTRIBUTES (nLength=0xc)
+SIZE_UNKNOWN(CFileIODispatch); // CFile Seek slot-dispatch view (no emitted vtable)

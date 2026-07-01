@@ -7,16 +7,6 @@
 // in-TU yet (most slots point at still-unmatched methods), so the vptr stores
 // are manual stamps against the retail vtable addresses (reloc-masked DATA
 // externs) - the transitional workaround, not dev code.
-//
-// Cluster (the // ---- ClassUnknown_94 ---- block, 8 methods):
-//   0x00157850 CFileMemBase::CFileMemBase   (base ctor, EH)
-//   0x00157980 CFileMem::~CFileMem          (derived dtor, EH)
-//   0x00157a40 CFileMem::ResetBase          (base slot +0xc)
-//   0x00157a50 CFileMem::Reset              (derived slot +0xc)
-//   0x00165e30 CFileMem::SetName
-//   0x00165e60 CFileMem::Open
-//   0x00165ef0 CFileMem::Ready
-//   0x00165f50 CFileMem::Write
 #include <Io/FileMem.h>
 #include <rva.h>
 

@@ -61,12 +61,12 @@ public:
     ~CSaveGame();
 
     i32 SaveGameFile(const char* dir); // 0x000e4b60: build the save-file paths
-    void Reset();           // 0x000e4d20: Init() + m_name.Empty()
-    void Init();            // 0x000e4d50: zero all 10 slots, set header field = 0x25
-    i32 Load();             // 0x000e4d90
-    i32 Save(i32 a, i32 b); // 0x000e4ea0
-    void ComputeAll();      // 0x000e50a0
-    i32 Verify();           // 0x000e50f0
+    void Reset();                      // 0x000e4d20: Init() + m_name.Empty()
+    void Init();                       // 0x000e4d50: zero all 10 slots, set header field = 0x25
+    i32 Load();                        // 0x000e4d90
+    i32 Save(i32 a, i32 b);            // 0x000e4ea0
+    void ComputeAll();                 // 0x000e50a0
+    i32 Verify();                      // 0x000e50f0
     i32 FillSlot(SaveSlot* dst, const char* name, void* src); // 0x000e5130
     i32 CopySlot(SaveSlot* dst, const SaveSlot* src);         // 0x000e51d0
     i32 FillSlot2(SaveSlot* dst, i32 name, void* src);        // 0x000e5240

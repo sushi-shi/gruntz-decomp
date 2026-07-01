@@ -19,7 +19,6 @@ namespace Utils {
         // -------------------------------------------------------------------------
         // FileExists
         // Tests a path via OpenFile(OF_EXIST). Returns false for a null/empty path.
-        // (Re-emitted again elsewhere in this TU, same bytes.)
         RVA(0x001189c0, 0x45)
         i32 FileExists(char* szPath) {
             OFSTRUCT of;

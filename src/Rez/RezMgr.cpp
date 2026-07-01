@@ -2,45 +2,17 @@
 // CRezDir subdirectory nodes) and the directory walk over a Gruntz.REZ /
 // GRUNTZ.VRZ archive.
 //
-// Functions matched in this TU:
-//   CRezItm::CRezItm(parent)        BYTE-EXACT  - leaf ctor (new 0x24)
-//   CRezItmBase::~CRezItmBase()     BYTE-EXACT  - base dtor (vtbl restore + m_parent=0)
-//   CRezItm::~CRezItm()             BYTE-EXACT  - leaf dtor (/GX EH; Close + free buf)
-//   CRezItm::Read(off,base,n,buf)   99.8%       - buffered fseek/fread w/ owner Retry()
-//   CRezItm::Close()                81% (@early-stop) - fclose/free; esi<->edi regalloc wall
-//   CRezDir::CRezDir(parent,rezmgr) PLATEAU 78% - dir  ctor (new 0x38)
-//   CRezDir::FindEntry(name)        BYTE-EXACT  - is-this-a-dir? stat
-//   CRezDirNode::Load(childFlag)    BYTE-EXACT  - recursive dir parse
-//   RezMgr::MakeImageKey(...)       BYTE-EXACT  - ext-dispatch image load (.BMP/.PCX/.PID)
-//   RezMgr::MakeRezPath()           PLATEAU 92% - archive-path builder (EH/CString entropy)
-//   RezMgr::PerFrameTick()          BYTE-EXACT  - THE per-frame game tick (heart of the loop, vtbl +0x10)
+// Both ctors share the base ctor CRezItmBase::CRezItmBase (stores the base vtable
+// and the parent pointer @+0xc), then overwrite the vtable with the derived one
+// (two-phase construction; all vtable stores reloc-masked). `operator new` sizes
+// 0x24 (leaf) / 0x38 (dir) confirm the layouts. The "File is not sorted!" assert
+// string is a reloc-masked file-scope literal.
 //
-// Both ctors share the base ctor CRezItmBase::CRezItmBase (stores the
-// base vtable and the parent pointer @+0xc), then overwrite the vtable
-// with the derived one (two-phase construction; all vtable stores reloc-masked).
-// `operator new` sizes 0x24 (leaf) / 0x38 (dir) confirm the layouts. The
-// "File is not sorted!" assert string is a reloc-masked file-scope literal.
-//
-// CRezDir ctor PLATEAU (78%): all 14 member stores go to the correct offsets
-// with the correct values, but MSVC5 schedules the +0x10/+0x1c collection-vtable
-// stores and the +0x14/+0x18 head/tail zeros in a different (still-correct) order
-// than the target, and materializes the vtbl constant before the zero (vs after).
-// No source lever flips it (tried 6 store orderings + an embedded collection
-// sub-object - the sub-object emits an out-of-line ctor call, far worse). The
-// vtable operands are reloc-masked. Entropy-class residue, left per the doctrine.
-//
-// OpenSub is NOT matched here: it runs on a THIRD, distinct
-// node layout (it uses +0x1c as a child COUNT and +0x10 as a list-append target,
-// directly conflicting with the 0x38 CRezDir ctor's vtable stores at those same
-// offsets, AND with CRezDirNode's +0x10 size / +0x18 source - so all three
-// "CRezDir"-labeled functions are actually three different classes). It also
-// needs a faithful C++ EH frame, the inline CString strlen+strcpy, the embedded
-// list-append helper, two-slot virtual dispatch on the allocated child, a
-// 0xA8-byte item-header parse feeding running max-dims, and two large external
-// tail calls (a recursive FS walk + an item-record reader). >512 B of high
-// EH/CString/virtual entropy; deferred to a dedicated worker per the prompt's
-// "don't sacrifice a green fn" guidance. The container layouts it would confirm
-// are already pinned by the two ctors below.
+// OpenSub is NOT matched here: it runs on a THIRD, distinct node layout (it uses
+// +0x1c as a child COUNT and +0x10 as a list-append target, conflicting with both
+// the 0x38 CRezDir ctor's vtable stores and CRezDirNode's +0x10 size / +0x18 source
+// - so the three "CRezDir"-labeled functions are actually three different classes).
+// The container layouts it would confirm are already pinned by the two ctors below.
 #include <Rez/RezMgr.h>
 #include <rva.h>
 
@@ -627,16 +599,16 @@ void CRezDir::Stub_13b0c0() {}
 // RezAlloc/RezFree, where any header-injected typedef reschedules DecodePcxData
 // (verified). Placed after all function bodies so this TU is unperturbed too.
 // ===========================================================================
-SIZE(RezFindRec, 0x24);         // RE'd WIN32-find-style fixed record
-SIZE_UNKNOWN(CRezItmOwner);     // slot-dispatch gate view (no emitted vtable)
-SIZE(CRezItmBase, 0x10);        // "16 bytes" base (derived fields start at +0x10)
-VTBL(CRezItmBase, 0x001ef768);  // base vtable stamp from ctor 0x13c4e0
-SIZE(CRezItm, 0x24);            // operator new leaf size 0x24
-VTBL(CRezItm, 0x001ef788);      // derived vtable stamp from ctor 0x13c540
-SIZE_UNKNOWN(CRezDir);          // model pads to +0x68 runtime fields; ctor alloc 0x38
-SIZE_UNKNOWN(RezStream);        // abstract slot-view (pure virtuals, no vtable)
+SIZE(RezFindRec, 0x24);        // RE'd WIN32-find-style fixed record
+SIZE_UNKNOWN(CRezItmOwner);    // slot-dispatch gate view (no emitted vtable)
+SIZE(CRezItmBase, 0x10);       // "16 bytes" base (derived fields start at +0x10)
+VTBL(CRezItmBase, 0x001ef768); // base vtable stamp from ctor 0x13c4e0
+SIZE(CRezItm, 0x24);           // operator new leaf size 0x24
+VTBL(CRezItm, 0x001ef788);     // derived vtable stamp from ctor 0x13c540
+SIZE_UNKNOWN(CRezDir);         // model pads to +0x68 runtime fields; ctor alloc 0x38
+SIZE_UNKNOWN(RezStream);       // abstract slot-view (pure virtuals, no vtable)
 SIZE_UNKNOWN(RezSrc);
 SIZE_UNKNOWN(CRezDirNode);
-SIZE_UNKNOWN(CGameMode);        // slot-dispatch view (no emitted vtable)
+SIZE_UNKNOWN(CGameMode); // slot-dispatch view (no emitted vtable)
 SIZE_UNKNOWN(RezMgrOwner);
-SIZE_UNKNOWN(RezMgr);           // model pads to +0xfc; retail alloc is 0xa30
+SIZE_UNKNOWN(RezMgr); // model pads to +0xfc; retail alloc is 0xa30

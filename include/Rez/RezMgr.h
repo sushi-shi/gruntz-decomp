@@ -99,17 +99,9 @@ extern "C" i32 RezStricmp(const char* a, const char* b);
 // Polymorphic so the vptr lands at +0x00 and the two-phase vtable stores fall
 // out; the ctor takes the parent pointer (stored @+0xc).
 // ---------------------------------------------------------------------------
-// The owning node reached at CRezItmBase+0xc. CRezItm's stream methods poll it
-// through a virtual at slot index 2 ([vtbl+0x8]) - a "keep going / recover from a
-// short read or seek failure?" gate (nonzero => retry, zero => give up). Modeled
-// polymorphic with the slot indices kept so `mov eax,[ecx]; call [eax+8]` falls
-// out (reloc-masked indirect call); slots 0/1 are placeholders.
-class CRezItmOwner {
-public:
-    virtual void v0();   // +0x00
-    virtual void v1();   // +0x04
-    virtual i32 Retry(); // +0x08  (slot 2) - recover/keep-going gate
-};
+// The owning node reached at CRezItmBase+0xc: CRezItm's stream methods poll its
+// slot-2 Retry gate on a short read / seek failure.
+#include <Rez/RezItmOwner.h>
 
 class CRezItmBase {
 public:

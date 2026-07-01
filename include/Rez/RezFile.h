@@ -51,14 +51,8 @@ DATA(0x0021a0a8)
 extern const char s_wPlusB[];
 
 // The recover/keep-going gate (CRezItmBase's owner shape): slot-2 Retry returns
-// nonzero to retry an I/O op, zero to give up. Modeled polymorphic so
-// `mov eax,[ecx]; call [eax+8]` falls out (reloc-masked indirect call).
-class CRezItmOwner {
-public:
-    virtual void v0();   // +0x00
-    virtual void v1();   // +0x04
-    virtual i32 Retry(); // +0x08  (slot 2)
-};
+// nonzero to retry an I/O op, zero to give up.
+#include <Rez/RezItmOwner.h>
 
 class CRezFile;
 
