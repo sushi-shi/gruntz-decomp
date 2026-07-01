@@ -34,8 +34,8 @@
 // src/Gruntz/TriggerMgrEh.cpp.
 
 // ---- istream ----
-RVA(0x0016a490, 0x7a)
-void istream::istream_16a490() {} // med
+// 0x16a490 re-homed (reconstructed) as istream::get(char&) in src/Crt/IStream.cpp
+// (MSVC5 LIBCMT iostreams; virtual-base ios access).
 
 // ---- streambuf ----
 RVA(0x0016b340, 0x20)

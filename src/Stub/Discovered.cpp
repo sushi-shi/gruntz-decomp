@@ -24,6 +24,17 @@ extern void* g_vtbl5f04d8;
 // factory) in src/Gruntz/GruntzMgrTransition.cpp.
 
 // ---- CGruntzSingleCommand ----
+// 0x11f618 is NOT a game method: it is the compiler-generated EH unwind funclet
+// for the CRT `__ehvec_ctor` vector-constructor iterator at 0x11f5a0 (which is
+// __stdcall, so the this/ecx trace mis-attributed this to CGruntzSingleCommand -
+// stale ecx). The funclet has no prologue and borrows the parent ebp frame
+// ([ebp-0x20] state flag, [ebp+0x18] arg); it is a no-op on the normal-completion
+// path (parent sets [ebp-0x20]=1 before the direct `call 0x11f618`) and only
+// forwards to the partial-destruct helper 0x11f6f0 during unwinding. CRT/compiler
+// EH funclet, not standalone-reconstructable -> SKIP per game-not-CRT policy.
+// @confidence: high
+// @source: disasm (parent CRT __ehvec_ctor 0x11f5a0 direct-calls it)
+// @stub
 RVA(0x0011f618, 0x14)
 void CGruntzSingleCommand::CGruntzSingleCommand_11f618() {}
 // 0x135110 re-homed (reconstructed) as ComputeCmdPercent in src/Gruntz/GruntCmdPercent.cpp.

@@ -912,6 +912,12 @@ source = "src/Crt/StreamBuf.cpp"
 flags = "base"
 
 [[unit]]
+# MSVC5 LIBCMT iostreams `istream` input leaves (virtual-base ios access).
+unit = "crt_istream"
+source = "src/Crt/IStream.cpp"
+flags = "base"
+
+[[unit]]
 unit = "netmgr"
 source = "src/Net/NetMgr.cpp"
 flags = "eh"

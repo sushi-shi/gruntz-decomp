@@ -164,6 +164,7 @@ crangeset	3	2
 cremusentrylist	2	2
 cremusnode	4	2
 cremusreadstream	6	4
+crt_istream	1	1
 crt_streambuf	10	8
 cscanlinesurface	4	1
 cscanlinesurfacesave	1	0
@@ -210,7 +211,7 @@ drawbattlestats	1	0
 drawdebugstats	1	0
 dsoundvoice	2	1
 ehfunclets	6	6
-engine_attributed	6	0
+engine_attributed	5	0
 engine_discovered	15	8
 engine_label_stubs	242	128
 engine_unmatched_lib	11	0
@@ -1534,6 +1535,7 @@ cremusreadstream	?GetEntryTag@CRemusReadStream@@QAEHXZ	100.0000	100.0000	1	9a94e
 cremusreadstream	?Read@CRemusReadStream@@QAEHPAXIH@Z	91.1957	91.1957	2	d282033440f5	0x139af0
 cremusreadstream	?ReadAt@CRemusReadStream@@QAEHPAXHI@Z	100.0000	100.0000	1	235b7f0507a0	0x139a40
 cremusreadstream	?SetPos@CRemusReadStream@@QAEHH@Z	100.0000	100.0000	1	dbbfa0bcee57	0x139ae0
+crt_istream	?get@istream@@QAEAAV1@AAD@Z	100.0000	100.0000	1	7da8ebc32cda	0x16a490
 crt_streambuf	??0streambuf@@QAE@XZ	15.9167	15.9167	1	ef791f1f51c0	0x16b070
 crt_streambuf	??1streambuf@@QAE@XZ	100.0000	100.0000	2	ec449f8fc404	0x16b150
 crt_streambuf	?out_waiting@streambuf@@QBEHXZ	100.0000	100.0000	1	57d78b1417ca	0x21280
@@ -1774,7 +1776,6 @@ ehfunclets	?Funclet_1bd98f@@YAXXZ	100.0000	100.0000	1	6f313d2acec3	0x1bd98f
 ehfunclets	?Funclet_1bff99@@YAXXZ	100.0000	100.0000	1	75ed351a28e5	0x1bff99
 ehfunclets	?Funclet_1c1188@@YAXXZ	100.0000	100.0000	1	4ffcf8d636f7	0x1c1188
 ehfunclets	?Funclet_1ca116@@YAXXZ	100.0000	100.0000	1	4dd8201534e7	0x1ca116
-engine_attributed	?istream_16a490@istream@@QAEXXZ	0.8889	0.8889	2	827c5011e266	0x16a490
 engine_attributed	?streambuf_16b340@streambuf@@QAEXXZ	6.2500	6.2500	2	47f211096bd3	0x16b340
 engine_attributed	?streambuf_16b360@streambuf@@QAEXXZ	5.2632	5.2632	2	474b2744d48d	0x16b360
 engine_attributed	?strstreambuf_1692c0@strstreambuf@@QAEXXZ	0.7692	0.7692	2	88673457090a	0x1692c0
