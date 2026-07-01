@@ -259,3 +259,154 @@ void CDroppedObject::RegisterActs() {
     }
     *(void**)DropLookup(id2) = (void*)&DropActB_c7be0;
 }
+
+// ---------------------------------------------------------------------------
+// The game-registry singleton (0x64556c; the SAME instance every gamemode unit
+// binds as g_gameReg / g_mgrSettings). Only the fields the "A" handler touches are
+// modeled: the fx-mode selector (m_2c->m_20), the sprite factory (m_30->m_08), the
+// tile-event sink (m_68), the collision grid (m_70), and the on-screen bounds
+// (m_13c..m_148). Address-pinned so the ds:g_gameReg loads reloc-mask.
+struct DropGrid { // g_gameReg->m_70 (0x1c-byte cells; row table @ +8) - the SAME
+                  // grid shape CTimeBomb marks/reads.
+    char m_pad00[0x08];
+    char** m_8; // +0x08  row table
+    i32 m_c;    // +0x0c  width
+    i32 m_10;   // +0x10  height
+};
+struct DropSpriteFactory { // g_gameReg->m_30->m_08
+    CGameObject*
+    CreateSprite(i32 a0, i32 x, i32 y, i32 id, const char* desc, i32 flags); // 0x1597b0
+};
+struct DropReg30 { // g_gameReg->m_30
+    char m_pad00[0x08];
+    DropSpriteFactory* m_08; // +0x08
+};
+struct DropReg2c { // g_gameReg->m_2c
+    char m_pad00[0x20];
+    i32 m_20; // +0x20  fx-mode selector (the splash switch key)
+};
+struct DropTileMgr {                                  // g_gameReg->m_68
+    void PostMove(i32 x, i32 y, i32 a, i32 b, i32 c); // 0x7b930 (via the 0x400c thunk)
+};
+struct DropGameReg {
+    char m_pad00[0x2c];
+    DropReg2c* m_2c; // +0x2c
+    DropReg30* m_30; // +0x30
+    char m_pad34[0x68 - 0x34];
+    DropTileMgr* m_68; // +0x68
+    char m_pad6c[0x70 - 0x6c];
+    DropGrid* m_70; // +0x70
+    char m_pad74[0x13c - 0x74];
+    i32 m_13c; // +0x13c  X min
+    i32 m_140; // +0x140  Y min
+    i32 m_144; // +0x144  X max
+    i32 m_148; // +0x148  Y max
+};
+DATA(0x0024556c)
+extern DropGameReg* g_gameReg;
+
+// The fall-timer inputs: the frame-delta accumulator (g_645584, u32) scaled by the
+// per-tile time m_58, and the 0x5eaa00 double bias subtracted before the >m_68
+// landing test. The (i32) truncation lowers to __ftol (0x11f570).
+DATA(0x00245584)
+extern u32 g_645584;
+DATA(0x002bf3bc)
+extern "C" u32 g_6bf3bc;
+DATA(0x001eaa00)
+extern double g_dropFallBias;
+
+// The +0x1a0 animation sub-mgr advanced each draw-delta (Advance 0x15c360, the SAME
+// engine sink CTimeBomb's per-frame step drives).
+struct DropAnimSink {
+    void Advance(u32 ctx); // 0x15c360
+};
+
+// CDroppedObject::ActA @0x0c7090 - the per-frame "A" activation handler (bound into
+// the registry by RegisterActs via the DropActA_c7090 address alias). Advance the
+// fall animation, integrate the drop by the frame delta, and once the object has
+// fallen past its landing row, look up the grid cell it lands on: over deep water
+// (cell & 0x900) spawn a GAME_WATER ripple; over shallow/hazard water (cell & 2, not
+// the 0x40 solid) spawn a LEVEL_DEATHSPLASH (gated by the fx-mode selector), then in
+// all landed cases apply the LEVEL_DROPPEDOBJECTHIT geometry, intern the "B"
+// activation key, and post the tile-hit event to the registry's tile-manager.
+//
+// @early-stop
+// callee-saved-register-assignment coin-flip (~92.5%, docs/patterns/zero-register-pinning.md,
+// topic:wall topic:regalloc): the whole body is byte-faithful (verified base vs
+// target with llvm-objdump -dr) - the fall integration + __ftol, the >m_68 landing
+// inversion, the grid-cell lookup, the (cell&0x900)/(cell&2)/==0x40 split, the
+// fx-mode splash jump table, both CreateSprite/ApplyName/ApplyLookupGeometry splash
+// paths, and the hit/bute/PostMove tail all match. The sole residual is which
+// callee-saved register holds the long-lived screen-X vs the short-lived grid
+// pointer: retail pins X->edi, grid->ebx; cl pins X->ebx, grid->edi, cascading the
+// modrm register field through the landing block. Not source-steerable (tried
+// reordering the x/grid declarations - identical codegen). Parked for the final
+// sweep.
+RVA(0x000c7090, 0x21b)
+i32 CDroppedObject::ActA() {
+    ((DropAnimSink*)((char*)m_38 + 0x1a0))->Advance(g_6bf3bc);
+    m_60 = (double)g_645584 * m_58 + m_60;
+    i32 landed = (i32)(m_60 - g_dropFallBias);
+    if (landed > m_68) {
+        i32 x = m_10->m_5c;
+        DropGrid* g = g_gameReg->m_70;
+        i32 cell;
+        {
+            i32 cx = x >> 5;
+            i32 cy = m_68 >> 5;
+            if ((u32)cx < (u32)g->m_c && (u32)cy < (u32)g->m_10) {
+                cell = *(i32*)(g->m_8[cy] + cx * 0x1c);
+            } else {
+                cell = 1;
+            }
+        }
+        if ((cell & 0x900) == 0) {
+        if (cell & 2) {
+            if (cell == 0x40) {
+                m_38->m_08 |= 0x10000;
+            } else {
+                switch (g_gameReg->m_2c->m_20) {
+                    case 4:
+                    case 5:
+                    case 8:
+                        m_38->m_08 |= 0x10000;
+                        // fall through
+                    case 7:
+                    default:
+                        if (x < g_gameReg->m_144 && x >= g_gameReg->m_13c
+                            && m_68 < g_gameReg->m_148 && m_68 >= g_gameReg->m_140) {
+                            CGameObject* s = g_gameReg->m_30->m_08->CreateSprite(
+                                0, x, m_68, 0xcf84f, "Particlez", 0x40003
+                            );
+                            if (s != 0) {
+                                s->ApplyName("LEVEL_DEATHSPLASH");
+                                s->ApplyLookupGeometry("LEVEL_DEATHSPLASH", 0);
+                            }
+                        }
+                        break;
+                    case 6:
+                        break;
+                }
+            }
+        }
+    } else {
+        if (x < g_gameReg->m_144 && x >= g_gameReg->m_13c && m_68 < g_gameReg->m_148
+            && m_68 >= g_gameReg->m_140) {
+            CGameObject* s =
+                g_gameReg->m_30->m_08->CreateSprite(0, x, m_68, 0xcf84f, "Particlez", 0x40003);
+            if (s != 0) {
+                s->ApplyName("GAME_WATER");
+                s->ApplyLookupGeometry("GAME_WATER", 0);
+            }
+        }
+    }
+        m_40 = m_38->m_1b4;
+        m_38->ApplyLookupGeometry("LEVEL_DROPPEDOBJECTHIT", 0);
+        m_30 = m_14->m_1c;
+        m_14->m_1c = g_buteTree.Find(s_actKeyB);
+        g_gameReg->m_68->PostMove(m_10->m_5c, m_68, 1, 7, -1);
+        return 0;
+    }
+    m_10->m_60 = landed;
+    return 0;
+}

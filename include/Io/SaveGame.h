@@ -60,6 +60,7 @@ class CSaveGame {
 public:
     ~CSaveGame();
 
+    i32 SaveGameFile(const char* dir); // 0x000e4b60: build the save-file paths
     void Reset();           // 0x000e4d20: Init() + m_name.Empty()
     void Init();            // 0x000e4d50: zero all 10 slots, set header field = 0x25
     i32 Load();             // 0x000e4d90

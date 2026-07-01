@@ -13,6 +13,9 @@
 #include <Io/SaveGame.h>
 #include <rva.h>
 
+#include <stdlib.h> // _itoa
+#include <string.h> // memset -> inline rep stos
+
 // The save-slot dialog labeller (winapi_0e3e80_SetDlgItemTextA, ApiCallers.cpp):
 // labels one slot into four dialog controls. Declared with its real namespace +
 // signature so the rel32 call pairs by mangled name; the slot pointer flows in as
@@ -232,6 +235,36 @@ void FillGameInfoDialog(HWND hWnd, CSaveGame* sg) {
 RVA(0x00085b50, 0x56)
 CSaveGame::~CSaveGame() {
     Reset();
+}
+
+// ---------------------------------------------------------------------------
+// CSaveGame::SaveGameFile  (0x000e4b60)  [re-homed from src/Stub/CFileIO.cpp -
+// the this/ecx tracer mislabeled it CFileIO::SaveGameFile; it is a CSaveGame
+// method]. Seed the roster from a directory: m_str0 = dir, m_name = dir +
+// "Gruntz.sav", zero the 0xa1c header, Init() + Load() the roster, then for each
+// of the ten slots that exists format its per-slot file path dir + "Slot" +
+// (i+1) + ".sav" into the slot record at +0x35 (wsprintfA hoists the IAT pointer
+// into ebx across the loop). The chained CString operator+ temps + the assigned
+// CString member force the /GX EH frame.
+RVA(0x000e4b60, 0x158)
+i32 CSaveGame::SaveGameFile(const char* dir) {
+    if (dir == 0) {
+        return 0;
+    }
+    m_str0 = dir;
+    m_name = m_str0 + "Gruntz.sav";
+    memset(m_08, 0, 0xa1c);
+    Init();
+    Load();
+    for (i32 i = 0; i < 10; i++) {
+        SaveSlot* slot = GetSlot(i);
+        if (slot != 0) {
+            char numbuf[16];
+            _itoa(i + 1, numbuf, 10);
+            wsprintfA((char*)slot + 0x35, (const char*)(m_str0 + "Slot" + numbuf + ".sav"));
+        }
+    }
+    return 1;
 }
 
 // ---------------------------------------------------------------------------

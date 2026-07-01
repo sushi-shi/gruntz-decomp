@@ -30,7 +30,6 @@
 // reloc-correlation extern stubs (split from GenExterns):
 #include "CButeMgrHelper.cpp"
 #include "CButeNodeBase.cpp"
-#include "CFileIO.cpp"
 #include "CFileImageDecode.cpp"
 // CGMMenuUI.cpp removed: it was a duplicate candidate body set (carrying NO RVA
 // bindings, so it diffed nothing) of the CChatBox menu-drive methods
@@ -47,8 +46,6 @@
 #include "CCoveredPowerup.cpp"
 #include "CCursorSnapSprite.cpp"
 #include "CDoNothing.cpp"
-#include "CDoNothingNormal.cpp"
-#include "CDroppedObject.cpp"
 #include "CDroppedObjectShadow.cpp"
 #include "CExplosion.cpp"
 #include "CEyeCandyAni.cpp"

@@ -9,10 +9,11 @@
 // tearing down the +0x18 link via the embedded ~EngStr @0x16d2a0 - byte-identical
 // to ~CDoNothing @0x0000f770 / the established leaf-dtor archetype.
 //
-// NOTE: src/Stub/CDoNothingNormal.cpp still carries the un-matched ctor stub
-// (0xa9e00) against the stub-world base; this matched-world view exists ONLY to
-// host the leaf dtor against the real CUserLogic teardown. Field names are
-// placeholders; only OFFSETS + the inheritance chain are load-bearing.
+// NOTE: 0xa9e00 (the trace mis-named it the ctor; it is really the __cdecl logic-
+// worker message pump) is reconstructed in src/Gruntz/CDoNothingNormalLogic.cpp;
+// this matched-world view exists ONLY to host the leaf dtor against the real
+// CUserLogic teardown. Field names are placeholders; only OFFSETS + the
+// inheritance chain are load-bearing.
 #ifndef GRUNTZ_CDONOTHINGNORMALDTOR_H
 #define GRUNTZ_CDONOTHINGNORMALDTOR_H
 
