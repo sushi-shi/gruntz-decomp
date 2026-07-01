@@ -23,3 +23,5 @@ RVA(0x001d047f, 0x7)
 i32 CDdeView::GetActive() {
     return m_98;
 }
+
+SIZE_UNKNOWN(CDdeView); // +0x98 getter view (pad-to-touched-field)

@@ -58,3 +58,6 @@ RVA(0x000c76d0, 0x15)
 void Unmatched_c76d0() {
     g_64bf00.Method_8710(0x7d0, 0x7da);
 }
+
+SIZE_UNKNOWN(CStamp11d100); // vptr-stamp leaf view
+SIZE_UNKNOWN(WndLike);      // global CWnd-like forward view

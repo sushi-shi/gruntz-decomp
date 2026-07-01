@@ -49,3 +49,7 @@ RVA(0x00186180, 0x25)
 int Unmatched_186180(int a0, int a1, int a2, int a3) {
     return FUN_1861b0(a0, a1, 8, 0xf, 8, 0, a2, a3);
 }
+
+// Class metadata (hosted at .cpp EOF).
+SIZE_UNKNOWN(RingCtx); // ring-buffer context partial view
+SIZE_UNKNOWN(RingSrc); // source-ring partial view

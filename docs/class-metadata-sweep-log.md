@@ -331,3 +331,55 @@ Two exhaustive buckets, identical to the Net/Dsndmgr pilots' skip cases:
 Hotness verdict: **the 7 headers are CLEAN**; the ONE codegen-sensitive unit is the
 big reconstructed `TriggerMgr.cpp` (fixed via end-of-TU placement). No regression
 committed; overall stayed 1870/3394 exact / 63.33% fuzzy throughout.
+## Wap32 module (2026-07-01)
+
+Scope: classes defined in `src/Wap32/*` + `include/Wap32/*` (the WAP32 engine base
+`CGameApp`/`CGameWnd`/`CGameMgr`/`CGameResource`, the `_zvec`/`zDArray` dynamic-vector
+family, the `EngStr`/`zBitVec`/`CContainerErr` string+bit-vector helpers, and the
+`.cpp`-local COM/MFC/ring leaf views). `CGameWnd`(0x10) + `WAP32::CGameMgr`(0x2c) +
+`CContainerErr`/`zBitVec` already carried SIZE from prior matchers (skipped).
+
+Coverage delta (whole-tree SIZE counter, Wap32 worklist drained):
+- SIZE: 518/3316 -> 541/3316 annotated names (**23 Wap32 classes annotated**;
+  Wap32 SIZE violators 23 -> 0).
+- VTBL: Wap32 vtable violators 1 -> 1 (the lone `CGameResource` is an un-catalogable
+  view, below); no new catalog rows.
+
+Annotated: **22 SIZE_UNKNOWN + 1 SIZE(exact) + 0 VTBL**.
+- Exact `SIZE`: `GameInfo`(0x1d4) only — the window/launch descriptor is a
+  RE'd fixed struct whose own +0x00 `size` field is set to 0x1d4 (== the modeled
+  `sizeof`); MSVC5 compiled the assert, confirming the complete retail object size.
+- All other 22 are `SIZE_UNKNOWN` (pad-to-last-touched-field / interface / forward
+  views: `CGameApp`, `CGameResource`, `CGameWndCreateParams`, `CDdeView`, `CObj653070`,
+  `CRect`, `TextRenderer`, `CStamp11d100`, `WndLike`, `ComSingleton2f00`,
+  `ComSingleton3210`, `ComStamp`, `EngStrRenderCfg`, `EngStrRenderSub`, `EngStrRenderObj`,
+  `RingCtx`, `RingSrc`, `_zvec`, `zDArray`, `zErrHandling`, `zErrRegistry`,
+  `zMemberPtrSlot`) — none provably == the full retail object, so no exact upgrade.
+
+### Hot-header handling: `.cpp`-EOF trick, NONE regressed.
+Every annotation was appended at the EOF of the owning/including `.cpp`, so the three
+hot engine headers (`Wap32.h`, `ZVec.h`, `EngStr.h`) were NEVER edited: `Wap32.h`'s 4
+classes -> `GameApp.cpp` EOF; `ZVec.h`'s 3 -> `ZVec.cpp` EOF; `EngStr.h`'s 1 ->
+`EngStr.cpp` EOF; the `.cpp`-local classes at their own `.cpp` EOF. A single report.json
+snapshot-diff over all 3394 functions after applying all 23 -> **0 REGRESS / 0 IMPROVE**;
+build "no regressions vs baseline"; overall stayed 1873/3394 exact / 63.71% fuzzy.
+The settled `EngStrRenderText.cpp` (its EngStr_RenderText body is `@early-stop`) took
+its two class annotations at EOF with the body untouched (line-shift-neutral).
+
+Hotness verdict: **Wap32 is SAFE via the `.cpp`-EOF rule** — headers untouched, only
+one TU's EOF shifts per group, so the CDDraw mid-parse-typedef reschedule risk never
+arises. (Not tested whether an in-header typedef would regress; the EOF rule sidesteps it.)
+
+### VTBL skipped (1 — declared-but-undefined view, NOT a casualty):
+- `CGameResource` (Wap32.h): the abstract WAP32 resource base whose pointers live in
+  `CGameApp::m_4`(the CGameWnd) / `m_8`(the CGameMgr). Its 5 virtuals are all
+  declared-but-undefined in every TU we compile, so cl emits no `??_7CGameResource@@6B@`,
+  and it has no own concrete vtable RVA (the concrete resources CGameWnd@0x1ea344 /
+  CGameMgr@0x1e9b8c already carry VTBL rows in config/vtable_names.csv). No RVA guessed.
+  Same case as the Net pilot's `CNetPlayerObj` and the SBI/CDDraw view structs.
+
+### SIZE deferred (out-of-scope owner, NOT a casualty):
+- `EngStr` (rep `include/Gruntz/UserLogic.h:44`, also `src/Gruntz/WwdGameObject.cpp:36`) —
+  the CUserLogic name string, defined only in UserLogic (do-not-touch) / Gruntz files,
+  never in a Wap32 file. Belongs to the UserLogic/Gruntz module sweep (same cross-file
+  dedup rule as the SBI section's non-SBI reps). Left un-annotated here.

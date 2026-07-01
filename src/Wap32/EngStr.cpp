@@ -108,3 +108,9 @@ i32 zBitVec::SetSize(i32 nbits) {
     m_capacity = 0x20;
     return 1;
 }
+
+// EngStr.h + local render-family class metadata (hosted at .cpp EOF).
+SIZE_UNKNOWN(zErrRegistry);    // handle-table registry view (EngStr.h)
+SIZE_UNKNOWN(EngStrRenderCfg); // render-config partial (pad + drawFn)
+SIZE_UNKNOWN(EngStrRenderSub); // render-sub partial (pad + cfg)
+SIZE_UNKNOWN(EngStrRenderObj); // render-object partial (vptr + sub)

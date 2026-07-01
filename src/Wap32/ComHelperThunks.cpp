@@ -104,3 +104,8 @@ __declspec(naked) void ComAtexit_5d4c22() {
         ret
     }
 }
+
+// Class metadata (hosted at .cpp EOF).
+SIZE_UNKNOWN(ComSingleton2f00); // COM singleton forward view
+SIZE_UNKNOWN(ComSingleton3210); // session-pump singleton forward view
+SIZE_UNKNOWN(ComStamp);         // vptr-stamp base subobject view

@@ -166,3 +166,9 @@ zDArray::~zDArray() {
     }
     // ~_zvec() base destructor is chained in by the compiler (mov ecx,esi; call).
 }
+
+// ZVec.h + local class metadata (hosted at .cpp EOF; header untouched).
+SIZE_UNKNOWN(_zvec);          // dynamic-vector base (partial: no true base chain)
+SIZE_UNKNOWN(zDArray);        // derived; adds override, no storage
+SIZE_UNKNOWN(zErrHandling);   // error-reporter subobject view
+SIZE_UNKNOWN(zMemberPtrSlot); // member-ptr slot fixup view

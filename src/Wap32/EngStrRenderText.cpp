@@ -103,3 +103,7 @@ extern "C" i32 EngStr_RenderText(void* self, i32 a1, i32 a2, void* drawFn, i32 f
     g_textObj.RenderText(*str, drawFn, CRect(*rc), 1, flag, 0);
     return 1;
 }
+
+// Class metadata (annotate-only; the settled EngStr_RenderText body is untouched).
+SIZE_UNKNOWN(CRect);        // RECT view (left/top/right/bottom + CopyRect ctor)
+SIZE_UNKNOWN(TextRenderer); // global renderer view (current font/color)

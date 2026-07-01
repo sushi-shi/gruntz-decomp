@@ -522,3 +522,10 @@ void CGameApp::Stub_080dd0() {}
 
 // size 0x2c recovered from operator-new sites (gruntz.analysis.news)
 SIZE(WAP32::CGameMgr, 0x2c);
+
+// Wap32.h class metadata (hosted here at the owning .cpp's EOF so the hot
+// engine header stays untouched; EOF append is line-/parse-shift-neutral).
+SIZE_UNKNOWN(CGameApp);             // pad-to-last-touched view (m_250 last)
+SIZE_UNKNOWN(CGameResource);        // abstract resource base view
+SIZE_UNKNOWN(CGameWndCreateParams); // CreateWindowExA 12-arg pack (stack)
+SIZE(GameInfo, 0x1d4);              // self-describing: size field == sizeof == 0x1d4

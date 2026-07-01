@@ -45,3 +45,5 @@ RVA(0x001d3330, 0x10)
 void Thunk_1d3330() {
     g_obj653070.Mthd_1d485c((void*)&str_5d2fe9);
 }
+
+SIZE_UNKNOWN(CObj653070); // MFC global-object call-thunk view
