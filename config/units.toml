@@ -776,6 +776,13 @@ source = "src/Gruntz/GruntAssetLoaders.cpp"
 flags = "base"
 
 [[unit]]
+# CGrunt::LoadPickupSprites (0x65e80) - the pickup/powerup entrance-sprite loader
+# (re-homed from ApiCallers). No destructible locals -> /base.
+unit = "gruntpickupload"
+source = "src/Gruntz/GruntPickupLoad.cpp"
+flags = "base"
+
+[[unit]]
 # CGruntTileMgr::CombatCue (0x7b930) - the grunt path/occupancy mgr's spell-area
 # cue (re-homed from ApiCallers). No destructible locals -> /base.
 unit = "cgrunttilemgr"

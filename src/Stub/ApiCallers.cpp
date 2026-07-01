@@ -176,7 +176,6 @@ namespace ApiCallerStubs {
         void BootyState_OnActivate2_vfunc8();
         void LoadCreditzAssets2();
         void BuildWorldLevelKey(i32);
-        void LoadPickupSprites(i32, i32, i32, i32, i32);
         void LoadBombGruntRunConfig2();
         void LoadFreezeSpellAssets();
         void LoadFinishLevelSprite(i32);
@@ -4741,12 +4740,8 @@ namespace ApiCallerStubs {
     // LoadBombGruntRunConfig (0x65630) re-homed as CGrunt::RunMoveConfig in
     // src/Gruntz/Grunt.cpp (trace owner CGrunt; the move-config / entrance dispatch).
 
-    // @confidence: med
-    // @source: string-xref
-    // @stub
-    // proximity: CUserLogic@-0x420 | CGrunt@+0x19d0
-    RVA(0x00065e80, 0x12b8)
-    void ThisStubOwnerUnknown::LoadPickupSprites(i32, i32, i32, i32, i32) {}
+    // LoadPickupSprites (0x65e80) re-homed as CGrunt::LoadPickupSprites in
+    // src/Gruntz/GruntPickupLoad.cpp.
 
     // LoadWingzGruntSprites (0x68880) re-homed as CGrunt::LoadWingzGruntSprites
     // in src/Gruntz/GruntAssetLoaders.cpp.

@@ -1003,6 +1003,14 @@ public:
     // retire the HUD sprites, latch the "C" death anim-set, then switch on the death
     // type to resolve + apply the matching GRUNTZ_DEATHZ_* sprite + cue.
     i32 LoadGruntDeathAnimations(i32 deathType, i32 a2);
+    // @0x65e80 (ret 0x14, /base) - the pickup/powerup entrance-sprite loader: gate on
+    // grunt-kind/entrance state, bump the per-owner pickup stats, latch the "J" anim-set,
+    // then a ~90-way switch on the pickup type resolves the matching GRUNTZ_PICKUPS_*
+    // sprite (megaphone runs a 2nd unit-type switch) + fires the on-screen entrance cue.
+    i32 LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5);
+    // Pickup-loader helper this-methods (reloc-masked engine thunks).
+    void PickupResetA();                 // thunk 0x214e (__thiscall ret 0)
+    void PickupResetB(i32 a, i32 b, i32 c); // thunk 0x136b (__thiscall ret 0xc)
 
     // @0x57890 (__thiscall ret 0, /GX) - when the entrance reason is a lose-item
     // pose (0x12/0x16/0xe), spawn the one-shot "SingleAnimation" GRUNTZ_<set>_LOSEITEM

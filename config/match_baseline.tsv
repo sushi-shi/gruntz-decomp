@@ -214,7 +214,7 @@ dsoundvoice	2	1
 ehfunclets	6	6
 engine_attributed	5	0
 engine_discovered	15	8
-engine_label_stubs	239	129
+engine_label_stubs	238	129
 engine_unmatched_lib	11	0
 engstr	3	1
 eyecandytypetags	4	4
@@ -253,6 +253,7 @@ gruntdatarecord	2	2
 gruntinfotext	1	0
 gruntmovestep	1	0
 gruntpathscan	1	0
+gruntpickupload	1	0
 gruntpuddle	5	2
 gruntspawnconfig	16	8
 gruntsprintanim	1	0
@@ -1872,7 +1873,6 @@ engine_label_stubs	?LoadCustomWorldInfo@EngineLabelBacklog@@YAHPAX@Z	100.0000	10
 engine_label_stubs	?LoadGruntCombatAnimations@CGrunt@ApiCallerStubs@@QAEXHHHHHHHH@Z	0.0777	0.0777	1	cpp:590eddff1627	0x597a0
 engine_label_stubs	?LoadGruntResurrectTuning@CGruntResurrector@@QAEHHHH@Z	65.4807	65.4807	1	cpp:590eddff1627	0x7be60
 engine_label_stubs	?LoadMenuSelectSprite@CNetMgr@@QAEHPAUMenuSelectEvent@@@Z	100.0000	100.0000	1	cpp:66ed52501602	0xba620
-engine_label_stubs	?LoadPickupSprites@ThisStubOwnerUnknown@ApiCallerStubs@@QAEXHHHHH@Z	0.0833	0.0833	1	cpp:e8a4cb0d5b2a	0x65e80
 engine_label_stubs	?LoadSounds@CSplashState@@QAEHHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xf9780
 engine_label_stubs	?LoadWarlordSprites@CPlayWL_d65d0@ApiCallerStubs@@QAEHHPAH@Z	91.0553	91.0553	1	cpp:7e3328e11dac	0xd65d0
 engine_label_stubs	?LoadWave@WaveHost2_136ce0@ApiCallerStubs@@QAEHPAUWaveProbe_136ce0@2@PBDH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x136ce0
@@ -2289,7 +2289,7 @@ grunt	?BuildEntranceAnimation@CGrunt@@QAEXH@Z	70.6037	70.6037	6	31017869150f	0x6
 grunt	?BuildGruntExitAnimation@CGrunt@@QAEHXZ	99.0509	99.0509	1	b2aefcc3abff	0x641b0
 grunt	?BuildGruntLoseItemAnimation@CGrunt@@QAEHXZ	99.9032	99.9032	2	982c3efcb6f0	0x57890
 grunt	?CGrunt_IsSameType@@YA_NPAVCGrunt@@0@Z	100.0000	100.0000	1	04ada45b6431	0x3c7f0
-grunt	?CGrunt_SegBoxOverlap@@YGHPAUGruntBox@@PAUGruntSegEnd@@1@Z	78.7228	78.7228	1	bb4ee352e2c0	0x62b70
+grunt	?CGrunt_SegBoxOverlap@@YGHPAUGruntBox@@PAUGruntSegEnd@@1@Z	78.7723	78.7723	1	bb4ee352e2c0	0x62b70
 grunt	?CGrunt_TileSwitch@@YGXHHHHHH@Z	66.2000	66.2000	2	e4d83b1d7834	0x4b320
 grunt	?CanShowStamina@CGrunt@@QAEHXZ	100.0000	100.0000	3	e5851737e25e	0x514a0
 grunt	?ClaimSwitchTile@CGrunt@@QAEHXZ	61.6336	61.6336	1	564a86c19254	0x52c70
@@ -2354,7 +2354,7 @@ grunt	?StartBombGruntRun@CGrunt@@QAEHXZ	93.4333	93.4333	1	4dffa6857538	0x68520
 grunt	?StepAnimDispatchA@CGrunt@@QAEHHHHH@Z	41.6245	41.6245	2	cee096a63856	0x52fb0
 grunt	?StepAnimDispatchB@CGrunt@@QAEHXZ	40.7674	40.7674	2	4dbf079670fa	0x6a6d0
 grunt	?StepArrivalCommit@CGrunt@@QAEHXZ	1.8288	1.8288	1	d12f1cd235e5	0x692f0
-grunt	?StepArrivalDefense@CGrunt@@QAEHXZ	42.3456	42.3456	2	a9832173d1e8	0xf2b20
+grunt	?StepArrivalDefense@CGrunt@@QAEHXZ	42.2835	42.2835	2	a9832173d1e8	0xf2b20
 grunt	?StepArrivalDefenseLean@CGrunt@@QAEHXZ	52.3973	52.3973	2	c3fbbeb760e0	0xf8240
 grunt	?StepArrivalDrop@CGrunt@@QAEXHHHHHH@Z	7.7088	7.7088	1	731eeff2b7e9	0x4b370
 grunt	?StepCombatReaction@CGrunt@@QAEHHHHHHHHH@Z	71.1751	71.1751	2	74728b708e0e	0x646b0
@@ -2386,6 +2386,7 @@ gruntdatarecord	?SerializeStrings@GruntDataRecord@@QAEHPAUDataWriter@@@Z	100.000
 gruntinfotext	?winapi_0d95f0_wsprintfA@GruntInfoTextHost@@QAEHXZ	88.4979	88.4979	1	23c0b1e68ecf	0xd95f0
 gruntmovestep	?Step@CGruntMover@@QAEHPAUCGruntM@@@Z	18.1429	18.1429	1	27431664e366	0x31610
 gruntpathscan	?PathScan57db0@CGrunt@@QAEHXZ	39.3829	39.3829	1	bd38224aafd9	0x57db0
+gruntpickupload	?LoadPickupSprites@CGrunt@@QAEHHHHHH@Z	47.1890	47.1890	1	6bd0b63ecda5	0x65e80
 gruntpuddle	??0CGruntPuddle@@QAE@PAUCGameObject@@@Z	91.9504	91.9504	1	f672560977a9	0x40490
 gruntpuddle	??1CGruntPuddle@@UAE@XZ	100.0000	100.0000	1	d8797374243c	0x10d10
 gruntpuddle	?Place@CGruntPuddle@@QAEHHHHH@Z	73.5400	73.5400	2	f8ec38ad7367	0x40c30
