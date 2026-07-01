@@ -72,14 +72,21 @@ public:
     // the bound geometry, apply the teleporter lookup-geometry and re-bind the "B"
     // bute node. Returns 0.
     i32 Begin();
+    // Update (0x41aa0): the per-frame teleporter tick - advance the anim sub-mgr,
+    // poll the on-screen render flag, and when armed (m_54) test the cell for a
+    // grunt, spawn the "Teleporter"/"Wormhole" sprite, close the gate and scroll
+    // the camera to the warped grunt. Returns 0.
+    i32 Update();
     ~CTeleporter(); // 0x10dd0 (folds the CUserLogic teardown)
 
     i32 m_40; // +0x40  snapshot of m_38->m_1b4
-    char m_pad44[0x58 - 0x44];
+    char m_pad44[0x54 - 0x44];
+    i32 m_54; // +0x54  armed flag (a resolved target id)
     i32 m_58; // +0x58  running-clock snapshot (g_645588)
     i32 m_5c; // +0x5c
     i32 m_60; // +0x60  bound object's per-tile-time (m_10->m_7c->m_bc)
     i32 m_64; // +0x64
+    i32 m_68; // +0x68  "tick handled" latch
 };
 
 #endif // GRUNTZ_CTELEPORTER_H

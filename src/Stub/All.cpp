@@ -77,7 +77,6 @@
 #include "CSplashState.cpp"
 #include "CSpotLight.cpp"
 #include "CStatusBarSprite.cpp"
-#include "CTeleporter.cpp"
 #include "CTileSecretTrigger.cpp"
 #include "CToyPeek.cpp"
 #include "CUserLogic.cpp"
