@@ -27,6 +27,8 @@
 // into the prologue (immediate `cmp ...,1` in retail). Both are cl slot-allocator /
 // constant-hoist choices structured C++ can't force; the switch tail-merge + FP octant
 // block layout compound it. Same family as LoadGruntDeathAnimations. Final-sweep candidate.
+#include <Bute/ButeMgr.h>  // canonical CButeMgr (one shape)
+#include <Bute/ButeTree.h> // canonical CButeTree (one shape)
 #include <Ints.h>
 #include <string.h> // inline strcmp of the type name
 
@@ -123,15 +125,12 @@ extern CombatTypeColl g_typeColl; // ?g_typeColl@@3UCTypeKeyColl@@A @0x6bf650
 extern "C" char* g_typeNodes;     // ?g_typeNodes@@3PAXA @0x6bf66c
 extern "C" i32 g_typeCount;       // ?g_typeCount@@3HA @0x6bf670
 
-// The keyed config trees (Find/GetDwordDef, both __thiscall, reloc-masked).
-struct CombatButeTree {
-    void* Find(const char* key); // 0x16d190
-};
-extern CombatButeTree g_buteTree; // ?g_buteTree@@3VCButeTree@@A @0x6bf620
-struct CombatButeMgr {
-    u32 GetDwordDef(const char* section, const char* key, u32 def); // 0x1721e0
-};
-extern CombatButeMgr g_buteMgr; // ?g_buteMgr@@3VCButeMgr@@A @0x6453d8
+// The keyed config tree (canonical CButeTree, include/Bute/ButeTree.h): Find
+// (0x16d190) is reloc-masked __thiscall.
+extern CButeTree g_buteTree; // ?g_buteTree@@3VCButeTree@@A @0x6bf620
+// The bute-config manager (canonical CButeMgr): GetDwordDef (0x1721e0) is
+// reloc-masked __thiscall.
+extern CButeMgr g_buteMgr; // ?g_buteMgr@@3VCButeMgr@@A @0x6453d8
 
 // The occupied-coord recycle list at CGrunt+0x31c (AddHead/RemoveAll) + the shared
 // coord node free-list (head @0x645544, bias @0x64554c).
@@ -650,7 +649,7 @@ i32 CGruntCombat::LoadGruntCombatAnimations(
         double ddx = (double)newX - F(P(this, 0x10), 0x5c);
         double ddy = (double)newY - F(P(this, 0x10), 0x60);
         double dist = sqrt(ddx * ddx + ddy * ddy);
-        u32 kb = g_buteMgr.GetDwordDef(s_gruntSec, s_knockKey, 200);
+        u32 kb = g_buteMgr.GetDwordDef((char*)s_gruntSec, (char*)s_knockKey, 200);
         *(double*)((char*)this + 0x400) = dist / (double)kb;
         *(double*)((char*)this + 0x408) = (double)F(P(this, 0x10), 0x5c);
         *(double*)((char*)this + 0x410) = (double)F(P(this, 0x10), 0x60);
@@ -681,8 +680,6 @@ L_moveDone:
 }
 
 SIZE_UNKNOWN(CGruntCombat);
-SIZE_UNKNOWN(CombatButeMgr);
-SIZE_UNKNOWN(CombatButeTree);
 SIZE_UNKNOWN(CombatConvCue);
 SIZE_UNKNOWN(CombatCoordList);
 SIZE_UNKNOWN(CombatCue);

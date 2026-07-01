@@ -6,6 +6,7 @@
 // shells so their member reads / helper calls reloc-mask. Functions in retail-RVA
 // order.
 #include <Gruntz/TriggerMgr.h>
+#include <Bute/ButeMgr.h> // canonical CButeMgr (one shape)
 
 // A list node: { CTmNode* m_next; ; (x,y)* m_payload }. The payload is an (x,y)
 // pair at +0/+4. Opaque otherwise. These are the record-list / selection-list nodes.
@@ -106,13 +107,9 @@ struct CTmGameReg {
 };
 extern CTmGameReg* g_gameReg;
 
-// ?g_buteMgr@@3VCButeMgr@@A @0x6453d8 - CButeMgr::Get{Int,Color,Str} are reloc-masked.
-struct CTmButeMgr {
-    i32 GetInt(const char* section, const char* key, i32 def);   // 0x1721e0
-    i32 GetColor(const char* section, const char* key, i32 def); // 0x171aa0
-    i32 GetStr(const char* section, const char* key, char* out); // 0x171af0
-};
-extern CTmButeMgr g_buteMgr;
+// ?g_buteMgr@@3VCButeMgr@@A @0x6453d8 - the canonical CButeMgr (via TriggerMgr.h);
+// the int-with-default getter (0x1721e0) is reloc-masked __thiscall.
+extern CButeMgr g_buteMgr;
 extern i32 g_645588; // DAT_00645588 (the level base score / id sentinel)
 extern i32 g_644ca4; // DAT_00644ca4 (the secondary group sentinel; serialized by ScanGroup)
 
@@ -1027,7 +1024,7 @@ i32 CTriggerMgr::ResetCell(i32 col, i32 row, i32 force, i32 keep) {
         cell->ResetA();
         cell->ResetB();
         cell->ResetC();
-        *(i32*)((char*)cell + 0x888) = g_buteMgr.GetInt("Grunt", "CombatTimeout", 0x1388);
+        *(i32*)((char*)cell + 0x888) = g_buteMgr.GetDwordDef("Grunt", "CombatTimeout", 0x1388);
         *(i32*)((char*)cell + 0x88c) = 0;
         *(i32*)((char*)cell + 0x880) = g_645588;
         *(i32*)((char*)cell + 0x884) = 0;
@@ -2406,7 +2403,6 @@ SIZE_UNKNOWN(CTmGrid);
 SIZE_UNKNOWN(CTmGridHolder);
 SIZE_UNKNOWN(CTmRegSub30);
 SIZE_UNKNOWN(CTmGameReg);
-SIZE_UNKNOWN(CTmButeMgr);
 SIZE_UNKNOWN(CTmNameReg);
 SIZE_UNKNOWN(CTmSpriteFactory);
 SIZE_UNKNOWN(CTmSpriteDesc);

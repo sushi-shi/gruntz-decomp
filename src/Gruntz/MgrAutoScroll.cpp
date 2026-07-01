@@ -1,6 +1,6 @@
-// MgrAutoScroll.cpp - the CGameRegistry camera auto-scroll / clamp update (0x0ebd70).
+// MgrAutoScroll.cpp - the CGruntzMgr camera auto-scroll / clamp update (0x0ebd70).
 // __cdecl helper called from the render path (CPlay::Render etc., via the ILT
-// thunk at 0x2356) with arg0 = g_mgrSettings (the CGameRegistry singleton). Walks the
+// thunk at 0x2356) with arg0 = g_mgrSettings (the CGruntzMgr singleton). Walks the
 // active view (pm->m_30->m_24->m_5c), runs a timeGetTime-driven random auto-pan
 // when the countdown timer (g_64cfc4) expires, clamps the scroll to the view
 // bounds (centered on g_mgrSettings->m_8c/m_90), publishes the scaled scroll to the
@@ -8,8 +8,8 @@
 // the ButeMgr [BackPlane] ScrollDist offsets on a 64-bit ScrollTime cadence, then
 // writes the four scroll-bound fields (pm->m_13c..0x148). Field names are
 // placeholders; offsets + code bytes are the load-bearing fact.
+#include <Bute/ButeMgr.h> // canonical CButeMgr (one shape); pulls <Mfc.h> afx-first
 #include <Ints.h>
-#include <Gruntz/CGameRegistry.h>
 #include <rva.h>
 
 // The active scroll view (pm->m_30->m_24->m_5c, and the back-plane g_64c27c).
@@ -44,10 +44,21 @@ struct MgrSub {
     MgrSub2* m_24; // +0x24
 };
 
-// The retail [BackPlane] config reader (CButeMgr::GetDword, 0x172240, __thiscall).
-struct CButeMgr {
-    u32 GetDword(char* tag, char* key); // 0x172240
+struct CGruntzMgr {
+    char p00[0x30];
+    MgrSub* m_30; // +0x30
+    char p34[0x8c - 0x34];
+    i32 m_8c; // +0x8c  view half-width source
+    i32 m_90; // +0x90  view half-height source
+    char p94[0x13c - 0x94];
+    i32 m_13c; // +0x13c  scroll bound L
+    i32 m_140; // +0x140 scroll bound T
+    i32 m_144; // +0x144 scroll bound R
+    i32 m_148; // +0x148 scroll bound B
 };
+
+// The retail [BackPlane] config reader (CButeMgr::GetDword, 0x172240, __thiscall)
+// is on the canonical CButeMgr (include/Bute/ButeMgr.h).
 
 extern "C" {
     // The game frame-clock wrapper (0xcd00, reached via the ILT thunk 0x39ae): returns
@@ -58,7 +69,7 @@ extern "C" {
 
 // Reloc-masked engine globals (DIR32 data operands).
 DATA(0x0024556c)
-extern CGameRegistry* g_mgrSettings; // 0x64556c
+extern CGruntzMgr* g_mgrSettings; // 0x64556c
 DATA(0x000453d8)
 extern CButeMgr g_buteMgr;     // 0x6453d8
 extern ScrollView* g_backView; // 0x64c27c
@@ -96,8 +107,8 @@ static i32 RandRange(i32 lo, i32 hi) {
 // keeps scrollY in its stack home while this cl pins `pm` in ebp / scrollY in ebx;
 // the register/stack-slot assignment is not source-steerable here.
 RVA(0x000ebd70, 0x366)
-void UpdateMgrScroll(CGameRegistry* pm, i32* pMode, i32 snapFlag, i32 unused) {
-    ScrollView* v = (ScrollView*)pm->m_30->m_24->m_5c;
+void UpdateMgrScroll(CGruntzMgr* pm, i32* pMode, i32 snapFlag, i32 unused) {
+    ScrollView* v = pm->m_30->m_24->m_5c;
     i32 scrollX = v->m_84;
     i32 scrollY = v->m_88;
 
@@ -127,7 +138,7 @@ void UpdateMgrScroll(CGameRegistry* pm, i32* pMode, i32 snapFlag, i32 unused) {
     if (scrollX < cx - 1) {
         scrollX = cx - 1;
     }
-    ScrollView* v2 = (ScrollView*)pm->m_30->m_24->m_5c;
+    ScrollView* v2 = pm->m_30->m_24->m_5c;
     if (scrollX > v2->m_30 - cx) {
         scrollX = v2->m_30 - cx;
     }
@@ -143,7 +154,7 @@ void UpdateMgrScroll(CGameRegistry* pm, i32* pMode, i32 snapFlag, i32 unused) {
     g_lastScrollX = scrollX;
     g_lastScrollY = scrollY;
 
-    ScrollView* v3 = (ScrollView*)pm->m_30->m_24->m_5c;
+    ScrollView* v3 = pm->m_30->m_24->m_5c;
     {
         float sx = (float)scrollX;
         float sy = (float)scrollY;
@@ -182,7 +193,7 @@ void UpdateMgrScroll(CGameRegistry* pm, i32* pMode, i32 snapFlag, i32 unused) {
         }
     }
 
-    MgrSub* o = (MgrSub*)pm->m_30;
+    MgrSub* o = pm->m_30;
     pm->m_13c = o->m_24->m_5c->m_40 - 0x60;
     pm->m_140 = o->m_24->m_5c->m_44 - 0x60;
     pm->m_144 = o->m_24->m_5c->m_48 + 0x60;

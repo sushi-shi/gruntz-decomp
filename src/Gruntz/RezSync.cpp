@@ -13,7 +13,8 @@
 // ordered-call carcass, not a byte-perfect frame.
 #include <rva.h>
 #include <Ints.h>
-#include <Mfc.h> // CString + the MFC collection ctors/dtors (reloc-masked)
+#include <Mfc.h>          // CString + the MFC collection ctors/dtors (reloc-masked)
+#include <Bute/ButeMgr.h> // canonical CButeMgr / CButeStore (one shape)
 #include <string.h>
 
 #include <Gruntz/CoordNode.h> // the shared coord-pool node
@@ -218,16 +219,10 @@ struct CRemus {
     void* Fn1698c0(void*, i32, i32); // 0x1698c0
     void Fn16f760(void*, void*);     // 0x16f760
 };
-struct CButeMgr {
-    void SetErrCb(void*);                           // 0x170380
-    void InitB();                                   // 0x170330
-    u32 GetDwordDef(const char*, const char*, u32); // 0x1721e0
-    i32 ParseGroup();                               // 0x171580
-    void ClearMap(i32);                             // 0x16e070
-};
-struct CButeStore {
-    void ClearRecursive(i32); // 0x16e070
-};
+// The bute-config manager + its owned keyed stores are the canonical CButeMgr /
+// CButeStore (include/Bute/ButeMgr.h): SetErrCallback (0x170380), Init (0x170330),
+// GetDwordDef (0x1721e0), ParseGroup (0x171580), CButeStore::ClearRecursive
+// (0x16e070) are all reloc-masked __thiscall.
 extern CButeMgr g_buteMgr; // 0x6453d8
 extern CButeStore g_store6453f0, g_store64544c;
 extern i32 g_gameReg; // 0x645460
@@ -728,7 +723,7 @@ i32 RezSync::Init(void* a1, void* a2) {
     {
         CSymParser* mgr = m_34;
         void* node = mgr->ResolveQualified("GAME_ATTRIBUTEZ", &g_lab545854);
-        g_buteMgr.SetErrCb((void*)&cb_401bc2);
+        g_buteMgr.SetErrCallback((ErrCallback)&cb_401bc2);
         i32 ok = 0;
         if (node) {
             CRemus* stream = (CRemus*)node;
@@ -744,7 +739,7 @@ i32 RezSync::Init(void* a1, void* a2) {
             DecodeObj* d2 = new DecodeObj;
             g_645478 = (i32)d2;
             stream->EndParse();
-            g_buteMgr.InitB();
+            g_buteMgr.Init();
             g_store6453f0.ClearRecursive(0);
             g_645408 = 0;
             g_645418 = 0;

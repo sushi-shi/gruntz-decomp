@@ -3,21 +3,19 @@
 // COMDAT-folded one-liners, so the owning class names are placeholders; only the
 // OFFSETS + code bytes are load-bearing. Unmodeled engine callees/globals are
 // declared NO-body so their rel32/DIR32 operands reloc-mask.
+#include <Bute/ButeMgr.h> // canonical CButeMgr (one shape)
 #include <Ints.h>
 #include <rva.h>
 
 // ===========================================================================
 // 0x082b20 - tail-forward a no-arg call to the bute-manager singleton
-// (?g_buteMgr@@3VCButeMgr@@A @ VA 0x6453d8). __cdecl, no args.
+// (?g_buteMgr@@3VCButeMgr@@A @ VA 0x6453d8). __cdecl, no args. CButeMgr::Term
+// (0x170210) is on the canonical CButeMgr (include/Bute/ButeMgr.h).
 // ===========================================================================
-class CButeMgr {
-public:
-    void Flush170210(); // 0x170210 (reloc-masked)
-};
 extern CButeMgr g_buteMgr;
 RVA(0x00082b20, 0xa)
 void ButeMgrFlush82b20() {
-    g_buteMgr.Flush170210();
+    g_buteMgr.Term();
 }
 
 // ===========================================================================

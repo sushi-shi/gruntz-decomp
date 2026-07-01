@@ -1,5 +1,6 @@
 #include <Mfc.h> // CObList/CString machinery (reloc-masked); /GX EH frame
 
+#include <Bute/ButeMgr.h> // canonical CButeMgr (one shape)
 #include <rva.h>
 // VoiceSoundList.cpp - CVoiceBuilder::BuildVoiceSoundList (0x11c210, 669 B): build
 // the CStringList of valid "VOICES_<dir>[_<sub>]" sound names for speech-group `n`,
@@ -24,12 +25,9 @@ struct CVoiceBuilder {
 };
 
 // CButeMgr getter (g_buteMgr @ 0x6453d8): GetStringDef(tag, key, def) returns the
-// stored CString (or `def`) - FUN_00173180 __thiscall, ret CString*.
-struct VoiceButeMgr {
-    CString* GetStringDef(const char* tag, const char* key, CString* def); // 0x173180
-};
+// stored CString (or `def`) - 0x173180 __thiscall. On the canonical CButeMgr.
 DATA(0x002453d8)
-extern VoiceButeMgr g_buteMgr;
+extern CButeMgr g_buteMgr;
 
 // The format-into-CString helper (FUN_001b2cf5, reloc-masked free fn).
 void EngFmt(CString* out, const char* fmt, ...); // 0x1b2cf5
@@ -68,10 +66,10 @@ VoiceList* CVoiceBuilder::BuildVoiceSoundList(i32 n) {
 
     CString dir, scratch, sub, name;
     EngFmt(&scratch, "SG%i", n);
-    scratch = *g_buteMgr.GetStringDef((LPCTSTR)scratch, "DIR", &dir);
+    scratch = *g_buteMgr.GetStringDef((char*)(LPCTSTR)scratch, "DIR", &dir);
 
     EngFmt(&sub, "S%i", 1);
-    sub = *g_buteMgr.GetStringDef((LPCTSTR)scratch, (LPCTSTR)sub, &dir);
+    sub = *g_buteMgr.GetStringDef((char*)(LPCTSTR)scratch, (char*)(LPCTSTR)sub, &dir);
 
     VoiceList* list = 0;
     if (!scratch.IsEmpty()) {
@@ -92,7 +90,7 @@ VoiceList* CVoiceBuilder::BuildVoiceSoundList(i32 n) {
                 CString tmp = name;
                 list->AddName(tmp);
                 EngFmt(&sub, "S%i", i);
-                sub = *g_buteMgr.GetStringDef((LPCTSTR)scratch, (LPCTSTR)sub, &dir);
+                sub = *g_buteMgr.GetStringDef((char*)(LPCTSTR)scratch, (char*)(LPCTSTR)sub, &dir);
             } else {
                 sub.Empty();
             }
@@ -101,7 +99,6 @@ VoiceList* CVoiceBuilder::BuildVoiceSoundList(i32 n) {
     return list;
 }
 SIZE_UNKNOWN(CVoiceBuilder);
-SIZE_UNKNOWN(VoiceButeMgr);
 SIZE_UNKNOWN(VoiceList);
 SIZE_UNKNOWN(VoiceResolver);
 SIZE_UNKNOWN(VoiceRoot);

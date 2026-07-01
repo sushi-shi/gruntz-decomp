@@ -22,6 +22,7 @@
 
 #include <Mfc.h> // Win32/engine types
 
+#include <Bute/ButeMgr.h> // canonical CButeMgr (one shape)
 #include <rva.h>
 
 DATA(0x002bf3bc)
@@ -129,12 +130,10 @@ struct CProjTargetTable {
     CProjTarget* m_1c[1];                         // +0x1c  indexed by (m_204 + m_200*15)
     void Cleanup(i32 a1, i32 a2, i32 a3, i32 a4); // 0x2e96 thunk
 };
-// The [Grunt]/attribute-tuning registry singleton.
-struct CProjButeMgr {
-    i32 GetIntAttr(i32 section, const char* key); // 0x172240 __thiscall
-};
+// The [Grunt]/attribute-tuning registry singleton (canonical CButeMgr):
+// GetDword (0x172240) is reloc-masked __thiscall.
 DATA(0x002453d8)
-extern CProjButeMgr g_buteMgr;
+extern CButeMgr g_buteMgr;
 
 class CProjectile {
 public:
@@ -273,7 +272,7 @@ i32 CProjectile::Update() {
 
         // impact tail (0x61f08)
         m_1e4 = 1;
-        i32 dt = g_buteMgr.GetIntAttr(m_1c0, "AttackDowntime");
+        i32 dt = g_buteMgr.GetDword((char*)m_1c0, "AttackDowntime");
         if (m_258 == 0x3b) {
             dt = 0;
         }
@@ -312,7 +311,6 @@ i32 CProjectile::Update() {
     ArmFinish(1, 0, 0);
     return 0;
 }
-SIZE_UNKNOWN(CProjButeMgr);
 SIZE_UNKNOWN(CProjFactory);
 SIZE_UNKNOWN(CProjFactoryHolder);
 SIZE_UNKNOWN(CProjHost);

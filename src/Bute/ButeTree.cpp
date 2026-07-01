@@ -16,6 +16,7 @@
 // strlen/strcmp/strcpy lower to the /O2 repne-scas / sbb idiom / rep-movs inlines.
 //
 // Field names are placeholders; only the OFFSETS + emitted bytes are load-bearing.
+#include <Bute/ButeTree.h> // canonical CButeTree / CVariantSlot / CButeTreeNode (one shape)
 #include <Ints.h>
 #include <rva.h>
 
@@ -45,36 +46,8 @@ extern void* g_projActCache; // 0x6bf464
 DATA(0x002bf454)
 extern void* g_projActName; // 0x6bf454 (bad-arg diagnostic record cell)
 
-// The +0x04 error sink the trie reports a fatal failure through. __thiscall(this;
-// obj, a, b); the delinker names 0x16d850 ?Set@CVariantSlot@@QAEXPAXHH@Z.
-class CVariantSlot {
-public:
-    void Set(void* obj, i32 a, i32 b); // 0x16d850
-};
-
-// One crit-bit trie node (20 bytes).
-struct CButeTreeNode {
-    CButeTreeNode* m_child[2]; // +0x00 / +0x04
-    i32 m_bit;                 // +0x08  crit-bit index
-    char* m_key;               // +0x0c  owned key copy
-    void* m_value;             // +0x10  stored value
-};
-
-class CButeTree {
-public:
-    void* Find(const char* key);
-    void* Insert(const char* key, void* value);
-
-    void* m_vptr;                   // +0x00
-    CVariantSlot* m_errorSink;      // +0x04
-    char m_pad8[0x14 - 0x8];        // +0x08
-    i32 m_nodeCount;                // +0x14
-    CButeTreeNode* m_root;          // +0x18
-    CButeTreeNode* m_descentCursor; // +0x1c
-    CButeTreeNode* m_candidateLeaf; // +0x20
-    i32 m_keyBitLength;             // +0x24  strlen*8 + 7
-    i32 m_lookupPending;            // +0x28
-};
+// CVariantSlot (error sink @+0x04, Set 0x16d850), CButeTreeNode (20-byte leaf) and
+// CButeTree (the crit-bit trie) all come from the canonical <Bute/ButeTree.h>.
 
 // ===========================================================================
 // GetCallerRetAddr (0x16e0f0) - return the caller's saved return address (the
@@ -263,6 +236,3 @@ void* CButeTree::Insert(const char* key, void* value) {
     m_errorSink->Set(this, (i32)cache, 0xc);
     return 0;
 }
-
-SIZE_UNKNOWN(CButeTree);
-SIZE_UNKNOWN(CButeTreeNode);

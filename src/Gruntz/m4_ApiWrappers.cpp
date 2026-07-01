@@ -5,6 +5,7 @@
 // combat-region scan. Placeholder class/field names (m_<hexoffset>); only the
 // offsets + code bytes are load-bearing. Compiled base+/GX to mirror the
 // original stub-unit environment.
+#include <Bute/ButeMgr.h> // canonical CButeMgr (one shape); MFC-first
 #include <Win32.h>
 
 #include <Ints.h>
@@ -107,9 +108,7 @@ namespace m4 {
         i32 m_88c;          // +0x88c
         void Method_243c(); // RVA 0x243c
     };
-    struct CButeMgr {
-        i32 GetInt(const char* section, const char* key, i32 def); // RVA 0x1721e0
-    };
+    // Canonical CButeMgr (::CButeMgr); GetDwordDef (0x1721e0) is reloc-masked.
     extern CButeMgr g_buteMgr; // 0x6453d8
     extern "C" i32 g_644c54;   // 0x644c54
     extern "C" i32 g_645588;   // 0x645588
@@ -154,7 +153,7 @@ namespace m4 {
                             Method_29cd(g_644c54, j, 1, 1);
                         } else {
                             g->Method_243c();
-                            g->m_888 = g_buteMgr.GetInt("Grunt", "CombatTimeout", 0x1388);
+                            g->m_888 = g_buteMgr.GetDwordDef("Grunt", "CombatTimeout", 0x1388);
                             g->m_88c = 0;
                             g->m_880 = g_645588;
                             g->m_884 = 0;

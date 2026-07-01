@@ -18,6 +18,7 @@
 //   `dynamic initializer for g_typeColl' 0x16e730
 //   CButeTree::`scalar deleting destructor' 0x16e9c0
 #include <Mfc.h>
+#include <Bute/ButeTree.h> // canonical CButeTree / CVariantSlot (one shape)
 #include <rva.h>
 #include <string.h> // memset
 
@@ -335,12 +336,9 @@ i32 ProjTypeXfer(CXferArchive* ar) {
 // `dynamic initializer for g_buteTree' (0x16e6a0) - construct the global bute
 // tree (deeper base ctor 0x16dff0) then stamp its runtime vtables.
 // ===========================================================================
-struct CButeTree {
-    void* m_vtbl; // +0x00
-    char pad_04[0x08 - 0x04];
-    void* m_08;                     // +0x08
-    void Construct(void* a, i32 b); // 0x16dff0
-};
+// g_buteTree is the canonical CButeTree (crit-bit trie, include/Bute/ButeTree.h);
+// Construct (0x16dff0) runs the deeper base ctor. m_vptr2 is the +0x08 second-base
+// vptr.
 DATA(0x002bf620)
 extern CButeTree g_buteTree;
 extern void* g_buteTreeArg; // 0x56ea10 (ctor argument)
@@ -349,7 +347,7 @@ RVA(0x0016e6a0, 0x26)
 void DynInitButeTree() {
     g_buteTree.Construct(&g_buteTreeArg, 0);
     *(void**)&g_buteTree = &g_buteTreeVtbl;
-    g_buteTree.m_08 = &g_buteTreeSubVtbl;
+    g_buteTree.m_vptr2 = &g_buteTreeSubVtbl;
 }
 
 // Placement new (construct g_typeColl in place; no allocation, so it just runs the
@@ -399,24 +397,12 @@ void DynInitTypeColl() {
 // vtables, run the member + base teardown, and free the object when bit0 of the
 // flag is set. Returns `this`.
 // ===========================================================================
-struct CButeNode {
-    void Dtor(); // 0x16dfc0 (the +0x08 sub-object dtor, null-guarded by `this`)
-};
-struct CButeTreeFull {
-    void* m_vtbl; // +0x00
-    char pad_04[0x08 - 0x04];
-    void* m_08vtbl;              // +0x08
-    void Teardown(i32 z);        // 0x16e070
-    void BaseDtor();             // 0x16da60
-    void* ScalarDtor(u32 flags); // 0x16e9c0
-};
-
 RVA(0x0016e9c0, 0x45)
-void* CButeTreeFull::ScalarDtor(u32 flags) {
-    m_vtbl = &g_buteTreeDtorVtbl;
-    m_08vtbl = &g_buteTreeDtorSubVtbl;
-    Teardown(0);
-    ((CButeNode*)(this != 0 ? (char*)this + 8 : 0))->Dtor();
+void* CButeTree::ScalarDtor(u32 flags) {
+    m_vptr = &g_buteTreeDtorVtbl;
+    m_vptr2 = &g_buteTreeDtorSubVtbl;
+    ClearRecursive(0);
+    ((CButeTreeBase2*)(this != 0 ? (char*)this + 8 : 0))->Dtor();
     BaseDtor();
     if (flags & 1) {
         ZFree(this);
@@ -501,17 +487,8 @@ extern void* g_varProbeEnabled; // 0x6bf618
 // The slot label formatter (__cdecl(buf, value, cap)).
 extern "C" void Format_18d0f0(char* buf, i32 value, i32 cap); // 0x18d0f0
 
-class CVariantSlot {
-public:
-    void Set(void* key, i32 arg2, i32 arg3);     // 0x16d850
-    void(__cdecl* m_callback)(char* buf, i32 v); // +0x00 (call [this])
-    i32 m_04;                                    // +0x04 probe index slot
-    u16 m_08;                                    // +0x08 word storage
-    u16 m_0a;                                    // +0x0a
-    i32 m_0c;                                    // +0x0c type tag (1/2/4)
-    i32 m_10;                                    // +0x10
-    char* m_14;                                  // +0x14 label / format text
-};
+// CVariantSlot (the +0x00 callback / probe-index / word / type-tag / label slot)
+// is the canonical one in <Bute/ButeTree.h>; Set (0x16d850) is defined here.
 
 RVA(0x0016d850, 0x11e)
 void CVariantSlot::Set(void* key, i32 arg2, i32 arg3) {

@@ -12,6 +12,7 @@
 // Non-virtual title/menu logic: RefreshTitle / LoadTitleConfig / Activate /
 // RunTitle. Field names are placeholders; only OFFSETS + code bytes matter.
 #include <Gruntz/CString.h> // MFC CString (the title-roll formats into one); MFC-first
+#include <Bute/ButeMgr.h>   // canonical CButeMgr (one shape)
 #include <Gruntz/CAttract.h>
 #include <rva.h>
 
@@ -19,15 +20,10 @@
 // External engine globals (reloc-masked DATA symbols).
 // ---------------------------------------------------------------------------
 
-// The CButeMgr text-config singleton, bound under a TU-local name so it does not
-// collide with the `class CButeMgr` definitions in other units.
-class CAttractButeMgr {
-public:
-    i32 GetIntDef(char* tag, char* key, i32 def);
-};
-
+// The CButeMgr text-config singleton (canonical CButeMgr, include/Bute/ButeMgr.h);
+// bound under a TU-local variable name (same 0x6453d8 datum as g_buteMgr).
 DATA(0x002453d8)
-extern CAttractButeMgr g_attractButeMgr;
+extern CButeMgr g_attractButeMgr;
 
 // The game registry singleton; its +0x80 attract counter is reached by raw offset.
 struct CGameReg;
@@ -609,7 +605,6 @@ SIZE_UNKNOWN(AttractBusyVtbl);
 SIZE_UNKNOWN(AttractSurfaceExt);
 SIZE_UNKNOWN(AttractWndHolder);
 SIZE_UNKNOWN(CAttract);
-SIZE_UNKNOWN(CAttractButeMgr);
 SIZE_UNKNOWN(CAttractHost);
 SIZE_UNKNOWN(CAttractIdlePoll);
 SIZE_UNKNOWN(CAttractOwner);

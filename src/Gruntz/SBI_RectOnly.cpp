@@ -1,5 +1,6 @@
 #include <rva.h>
 #include <Mfc.h>
+#include <Bute/ButeMgr.h> // canonical CButeMgr (one shape)
 #include <Gruntz/StatusBarItem.h>
 // SBI_RectOnly.cpp - Gruntz CSBI_RectOnly (C:\Proj\Gruntz).
 // The constructor is matched byte-exact.
@@ -275,16 +276,10 @@ public:
 };
 SIZE_UNKNOWN(CSbiGaugeNotify);
 
-// The global attribute-config manager (?g_buteMgr, VA 0x6453d8). Only the 3-arg
-// section/key/default int getter is touched (the StatusBar delay lookups); the
-// call is a reloc-masked __thiscall, the object's DIR32 name is load-bearing so it
-// is a `class` (mangles ...@@3VCButeMgr@@A). Extern only (bound by another TU).
-class CButeMgr {
-public:
-    i32 GetIntDef(char* tag, char* key, i32 def); // 0x1721e0 (__thiscall, ret 0xc)
-    i32 GetInt(char* tag, char* key);             // 0x171af0 (__thiscall, no default)
-    i32 GetSpeed(char* tag, char* key, i32 def);  // 0x171aa0 (__thiscall, 3-arg getter)
-};
+// The global attribute-config manager (?g_buteMgr, VA 0x6453d8). GetIntDef/GetInt
+// (the StatusBar delay/speed lookups) are on the canonical CButeMgr
+// (include/Bute/ButeMgr.h); the reloc-masked __thiscall object's DIR32 name is
+// load-bearing (mangles ...@@3VCButeMgr@@A). Extern only (bound by another TU).
 extern CButeMgr g_buteMgr;
 
 // The rez-machine snooze display object at +0x348 (Update sets it from the HUD-rect
@@ -4234,8 +4229,8 @@ void CSBI_RectOnly::LoadChipMachineConfig() {
     switch (m_4c8) {
         case 2:
             if ((i64)(u32)g_dat645588 - m_beltLast >= m_beltInterval) {
-                m_514 += g_buteMgr.GetSpeed("StatusBar", "NextItemSpeed", 2);
-                m_51c += g_buteMgr.GetSpeed("StatusBar", "NextItemSpeed", 2);
+                m_514 += g_buteMgr.GetIntDef("StatusBar", "NextItemSpeed", 2);
+                m_51c += g_buteMgr.GetIntDef("StatusBar", "NextItemSpeed", 2);
                 m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "NextItemDelay", 0x64);
                 m_beltLast = (u32)g_dat645588;
             }
@@ -4284,8 +4279,8 @@ void CSBI_RectOnly::LoadChipMachineConfig() {
             break;
         case 5:
             if ((i64)(u32)g_dat645588 - m_beltLast >= m_beltInterval) {
-                m_518 += g_buteMgr.GetSpeed("StatusBar", "FallingItemSpeed", 2);
-                m_520 += g_buteMgr.GetSpeed("StatusBar", "FallingItemSpeed", 2);
+                m_518 += g_buteMgr.GetIntDef("StatusBar", "FallingItemSpeed", 2);
+                m_520 += g_buteMgr.GetIntDef("StatusBar", "FallingItemSpeed", 2);
                 m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "FallingItemDelay", 0x32);
                 m_beltLast = (u32)g_dat645588;
             }
@@ -4323,8 +4318,8 @@ void CSBI_RectOnly::LoadChipMachineConfig() {
             break;
         case 7:
             if ((i64)(u32)g_dat645588 - m_beltLast >= m_beltInterval) {
-                m_514 -= g_buteMgr.GetSpeed("StatusBar", "NextItemSpeed", 2);
-                m_51c -= g_buteMgr.GetSpeed("StatusBar", "NextItemSpeed", 2);
+                m_514 -= g_buteMgr.GetIntDef("StatusBar", "NextItemSpeed", 2);
+                m_51c -= g_buteMgr.GetIntDef("StatusBar", "NextItemSpeed", 2);
                 m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "NextItemDelay", 0x64);
                 m_beltLast = (u32)g_dat645588;
             }
@@ -4344,8 +4339,8 @@ void CSBI_RectOnly::LoadChipMachineConfig() {
             break;
         case 8: {
             if ((i64)(u32)g_dat645588 - m_beltLast >= m_beltInterval) {
-                m_518 += g_buteMgr.GetSpeed("StatusBar", "FallingItemSpeed", 2);
-                m_520 += g_buteMgr.GetSpeed("StatusBar", "(FallingItemSpeed", 2);
+                m_518 += g_buteMgr.GetIntDef("StatusBar", "FallingItemSpeed", 2);
+                m_520 += g_buteMgr.GetIntDef("StatusBar", "(FallingItemSpeed", 2);
                 m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "FallingItemDelay", 0x32);
                 m_beltLast = (u32)g_dat645588;
             }

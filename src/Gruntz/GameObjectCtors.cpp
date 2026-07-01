@@ -15,18 +15,14 @@
 //   * the CPathHazard-based ctors (base 0xb35a0 via thunk 0x2fc2):
 //     CRainCloud / CUFO.
 // Functions are defined in ascending-RVA order.
+#include <Bute/ButeTree.h> // canonical CButeTree (one shape)
 #include <rva.h>
 
 // ---------------------------------------------------------------------------
 // CButeTree - the engine bute store the tails query for their "A" node.
 // g_buteTree (0x6bf620 -> DATA rva 0x2bf620) is the global instance; Find
-// (0x16d190) is matched in src/Stub/CButeTree.cpp. Modeled minimally so
-// `g_buteTree.Find("A")` reloc-masks.
+// (0x16d190) reloc-masks. Canonical crit-bit trie (include/Bute/ButeTree.h).
 // ---------------------------------------------------------------------------
-class CButeTree {
-public:
-    void* Find(const char* key);
-};
 DATA(0x002bf620)
 extern CButeTree g_buteTree;
 

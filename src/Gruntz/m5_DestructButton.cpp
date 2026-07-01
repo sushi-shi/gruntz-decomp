@@ -4,6 +4,7 @@
 // active CPlay (from g_mgrSettings), seed the warning-delay window from the
 // StatusBar/DestructButtonWarningDelay bute setting, then drop the item to mode 0.
 // Field names are placeholders; only offsets + code bytes are load-bearing.
+#include <Bute/ButeMgr.h> // canonical CButeMgr (one shape)
 #include <rva.h>
 
 #include <Ints.h>
@@ -21,10 +22,7 @@ struct MgrSettings {
 extern "C" MgrSettings* g_mgrSettings; // 0x64556c
 
 // The CButeMgr text-config singleton (?g_buteMgr@@3VCButeMgr@@A @ 0x6453d8).
-class CButeMgr {
-public:
-    i32 GetDwordDef(char* tag, char* key, i32 def); // 0x1721e0
-};
+// GetDwordDef (0x1721e0) is on the canonical CButeMgr (include/Bute/ButeMgr.h).
 DATA(0x006453d8)
 extern CButeMgr g_buteMgr;
 

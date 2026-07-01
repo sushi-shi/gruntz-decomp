@@ -8,6 +8,7 @@
 // LAYOUT NOTE: these methods touch `this` by raw offset (the opaque-shell convention of the
 // whole class). Only the offsets + reloc-masked helpers each method touches are modelled.
 #include <Gruntz/TriggerMgr.h>
+#include <Bute/ButeMgr.h> // canonical CButeMgr (one shape)
 
 // Shared globals (same symbols as TriggerMgr.cpp; re-declared local to this TU).
 struct CTmGameRegE {
@@ -20,12 +21,9 @@ extern CTmGameRegE* g_gameReg;
 extern i32 g_644c54;
 extern void* g_renderCtx; // ?g_renderCtx@@3PAXA @0x644ca4 (Load reads into it)
 
-// CButeMgr (?g_buteMgr@@3VCButeMgr@@A @0x6453d8) - GetColor reloc-masked.
-struct CTmButeMgrE {
-    i32 GetColor(const char* section, const char* key, i32 def); // 0x171aa0
-};
-SIZE_UNKNOWN(CTmButeMgrE);
-extern CTmButeMgrE g_buteMgr;
+// CButeMgr (?g_buteMgr@@3VCButeMgr@@A @0x6453d8) - the canonical CButeMgr (via
+// TriggerMgr.h); the int-with-default getter (0x171aa0) is reloc-masked.
+extern CButeMgr g_buteMgr;
 
 // A CString temporary as the error-Format path uses it (ctor/dtor + Format are the static MFC
 // bodies, reloc-masked); the destructible temp forces the /GX frame.
@@ -451,7 +449,7 @@ i32 CTriggerMgr::ReinitGroup(i32 col, i32 row) {
     char* lvl = g_gameReg->m_2c;
     CTmStr name;
     name.Format("Level%i", *(i32*)(lvl + 0x1c), 0);
-    i32 color = g_buteMgr.GetColor(name.c_str(), "WarpStone", 0);
+    i32 color = g_buteMgr.GetIntDef((char*)name.c_str(), "WarpStone", 0);
     i32 hx = col;
     i32 hy = row;
     if (hy >= *(i32*)((char*)g_gameReg + 0x144) || hy < *(i32*)((char*)g_gameReg + 0x13c)

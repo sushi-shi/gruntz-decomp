@@ -152,17 +152,11 @@ public:
     CRITICAL_SECTION m_cs;     // +0x38
 };
 
-class CButeTree {
-public:
-    // The shared find-by-key helper (__thiscall).
-    void* Find(const char* key);
-    // Insert a key/value node (__thiscall). Returns the stored value (the retail
-    // body's trailing `mov eax,value`); callers discard it. Body in src/Bute/ButeTree.cpp.
-    void* Insert(const char* key, void* pNode);
-    // Apply a callback to each matching node (__thiscall: push flag/ctx/fn,
-    // callee-cleanup). Reloc-masked external/no-body.
-    void Walk(void (*fn)(), void* ctx, i32 flag);
-};
+// CButeTree - the shared crit-bit trie store (Find/Insert/Walk). CButeMgr's owned
+// sub-trees (m_tree/m_tree48/m_tree74) are instances of it, addressed through the
+// Tree()/Tree48() accessors below. Canonical definition (one shape) lives in
+// <Bute/ButeTree.h>.
+#include <Bute/ButeTree.h>
 
 // ---------------------------------------------------------------------------
 // CButeStore - one owned keyed-store sub-tree (CButeMgr's m_tree / m_tree48 /
@@ -368,6 +362,11 @@ public:
     // Callback trampoline + sub-object cleanup.
     void* InvokeCallback(void* (*fn)(CButeMgr*));
     void ClearHelper();
+
+    // Reset/teardown of the manager's stores (0x170210, 280 B): restamps the store
+    // vtables and tears the sub-trees down through the scalar-deleting-destructor
+    // path. No-body extern (reloc-masked); the low-RVA thunk pool tail-forwards it.
+    void Term();
 
     // Lexer sub-helpers (engine functions, reloc-masked external/no-body).
     // PeekClass classifies the current char (returns a token-class word);
