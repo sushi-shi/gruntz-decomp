@@ -632,21 +632,9 @@ namespace ApiCallerStubs {
         m_h74 = m_rc60.bottom - m_rc60.top;
     }
 
-    // @confidence: low
-    // @source: winapi:IntersectRect
-    // @stub
-    RVA(0x0002c690, 0xdb4)
-    i32 __stdcall winapi_02c690_IntersectRect(i32) {
-        return 0;
-    }
+    // 0x2c690 (CArriveMgr::Resolve2c690) reconstructed in src/Gruntz/GruntArriveResolve.cpp.
 
-    // @confidence: low
-    // @source: winapi:IntersectRect
-    // @stub
-    RVA(0x00033520, 0xbc3)
-    i32 __stdcall winapi_033520_IntersectRect(i32) {
-        return 0;
-    }
+    // 0x33520 (CStepMgr::Step33520) reconstructed in src/Gruntz/GruntStateStep.cpp.
 
     // @confidence: low
     // @source: winapi:EnableWindow;GetDlgItem;IsDlgButtonChecked
@@ -931,13 +919,7 @@ namespace ApiCallerStubs {
     // 0x4a9f0 (CGrunt::winapi_04a9f0_CopyRect_OffsetRect) reconstructed in
     // src/Gruntz/Grunt.cpp.
 
-    // @confidence: low
-    // @source: winapi:IntersectRect
-    // @stub
-    RVA(0x00057db0, 0x8f8)
-    i32 CGrunt::winapi_057db0_IntersectRect() {
-        return 0;
-    }
+    // 0x57db0 (CGrunt::PathScan57db0) reconstructed in src/Gruntz/GruntPathScan.cpp.
 
     // @confidence: low
     // @source: winapi:CopyRect;SetRect

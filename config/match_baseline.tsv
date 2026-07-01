@@ -211,7 +211,7 @@ dsoundvoice	2	1
 ehfunclets	6	6
 engine_attributed	6	0
 engine_discovered	15	8
-engine_label_stubs	253	129
+engine_label_stubs	250	129
 engine_unmatched_lib	11	0
 engstr	3	1
 eyecandytypetags	4	4
@@ -241,15 +241,18 @@ groupops	2	0
 grunt	89	16
 gruntarrivalscan	3	0
 gruntarrivalstep	1	0
+gruntarriveresolve	1	0
 gruntassetloaders	3	0
 gruntchargestep	1	0
 gruntcmdpercent	1	1
 gruntdatarecord	2	2
 gruntinfotext	1	0
 gruntmovestep	1	0
+gruntpathscan	1	0
 gruntpuddle	5	2
 gruntspawnconfig	16	8
 gruntsprintanim	1	0
+gruntstatestep	1	0
 grunttilescan	1	0
 grunttubeanim	1	0
 gruntupdatestep	2	0
@@ -1942,8 +1945,6 @@ engine_label_stubs	?winapi_01a700_CopyRect@ApiCallerStubs@@YAHXZ	0.3934	0.3934	1
 engine_label_stubs	?winapi_021f20_DrawTextA@ApiCallerStubs@@YGHHH@Z	1.6964	1.6964	1	cpp:6bf52155264d	0x21f20
 engine_label_stubs	?winapi_022160_GetAsyncKeyState_SelectObject@ApiCallerStubs@@YGHHHH@Z	1.4179	1.4179	1	cpp:6bf52155264d	0x22160
 engine_label_stubs	?winapi_022810_DrawTextA_SelectObject_SetBkColor_SetBkMode_SetTextColor@ApiCallerStubs@@YGHHHHHHHHHHH@Z	1.0417	1.0417	1	cpp:6bf52155264d	0x22810
-engine_label_stubs	?winapi_02c690_IntersectRect@ApiCallerStubs@@YGHH@Z	0.1763	0.1763	1	cpp:6bf52155264d	0x2c690
-engine_label_stubs	?winapi_033520_IntersectRect@ApiCallerStubs@@YGHH@Z	0.1990	0.1990	1	cpp:6bf52155264d	0x33520
 engine_label_stubs	?winapi_036d00_EnableWindow_GetDlgItem_IsDlgButtonChecked@ApiCallerStubs@@YAXPAX@Z	100.0000	100.0000	1	cpp:e1535087fe94	0x36d00
 engine_label_stubs	?winapi_036d50_EnableWindow_GetDlgItem_IsDlgButtonChecked@ApiCallerStubs@@YAXPAX@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x36d50
 engine_label_stubs	?winapi_036da0_EnableWindow_GetDlgItem_IsDlgButtonChecked@ApiCallerStubs@@YAXPAX@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x36da0
@@ -1957,7 +1958,6 @@ engine_label_stubs	?winapi_039a60_CreateRectRgn_DrawTextA_SetRect@ApiCallerStubs
 engine_label_stubs	?winapi_03af90_GetDlgItem_SendMessageA@ApiCallerStubs@@YAHXZ	1.5574	1.5574	1	cpp:e1535087fe94	0x3af90
 engine_label_stubs	?winapi_03b1a0_GetDlgItem@ApiCallerStubs@@YAHXZ	1.4894	1.4894	1	cpp:e1535087fe94	0x3b1a0
 engine_label_stubs	?winapi_03b310_GetDlgItem@ApiCallerStubs@@YAHPAX@Z	100.0000	100.0000	1	cpp:e832e75e29a5	0x3b310
-engine_label_stubs	?winapi_057db0_IntersectRect@CGrunt@ApiCallerStubs@@QAEHXZ	0.2665	0.2665	1	cpp:590eddff1627	0x57db0
 engine_label_stubs	?winapi_075c60_CopyRect_SetRect@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHHHHHHH@Z	1.2418	1.2418	1	cpp:e8a4cb0d5b2a	0x75c60
 engine_label_stubs	?winapi_078060_SetRect@ApiCallerStubs@@YGHHHHHH@Z	1.5447	1.5447	1	cpp:6bf52155264d	0x78060
 engine_label_stubs	?winapi_0862f0_PostMessageA_wsprintfA@ApiCallerStubs@@YGHHHH@Z	0.0448	0.0448	1	cpp:6bf52155264d	0x862f0
@@ -2372,6 +2372,7 @@ gruntarrivalscan	?ArrivalScanA@CGruntStep@@QAEHXZ	51.2879	51.2879	1	774d15a11344
 gruntarrivalscan	?ArrivalScanB@CGruntStep@@QAEHXZ	45.3241	45.3241	1	efeccc7d41dd	0xf0e20
 gruntarrivalscan	?ArrivalScanC@CGruntStep@@QAEHXZ	45.3710	45.3710	1	33af96ca185c	0xf36a0
 gruntarrivalstep	?StepArrivalDefenseAlt@CGrunt@@QAEHXZ	69.8771	69.8771	2	8b46871a0a25	0xf1c70
+gruntarriveresolve	?Resolve2c690@CArriveMgr@@QAEHPAUCArriveGrunt@@@Z	23.5223	23.5223	1	be17b57152b2	0x2c690
 gruntassetloaders	?LoadGruntAbilityTuning@CGrunt@@QAEHH@Z	90.5457	90.5457	2	7b2421d2cfbd	0x57100
 gruntassetloaders	?LoadGruntDeathAnimations@CGrunt@@QAEHHH@Z	87.0599	87.0599	2	d6d80c6ea759	0x60150
 gruntassetloaders	?LoadWingzGruntSprites@CGrunt@@QAEHH@Z	75.0193	75.0193	1	69b35c90dfb1	0x68880
@@ -2381,6 +2382,7 @@ gruntdatarecord	?DeserializeStrings@GruntDataRecord@@QAEHPAUDataWriter@@@Z	100.0
 gruntdatarecord	?SerializeStrings@GruntDataRecord@@QAEHPAUDataWriter@@@Z	100.0000	100.0000	1	71ad52c7e3da	0x56da0
 gruntinfotext	?winapi_0d95f0_wsprintfA@GruntInfoTextHost@@QAEHXZ	88.4979	88.4979	1	23c0b1e68ecf	0xd95f0
 gruntmovestep	?Step@CGruntMover@@QAEHPAUCGruntM@@@Z	18.1429	18.1429	1	27431664e366	0x31610
+gruntpathscan	?PathScan57db0@CGrunt@@QAEHXZ	39.3829	39.3829	1	bd38224aafd9	0x57db0
 gruntpuddle	??0CGruntPuddle@@QAE@PAUCGameObject@@@Z	91.9504	91.9504	1	f672560977a9	0x40490
 gruntpuddle	??1CGruntPuddle@@UAE@XZ	100.0000	100.0000	1	d8797374243c	0x10d10
 gruntpuddle	?Place@CGruntPuddle@@QAEHHHHH@Z	73.5400	73.5400	2	f8ec38ad7367	0x40c30
@@ -2403,6 +2405,7 @@ gruntspawnconfig	?PickWeighted@CGruntSpawnConfig@@QAEHHH@Z	1.0870	1.0870	1	b9cc2
 gruntspawnconfig	?ResetPicks@CGruntSpawnConfig@@QAEXXZ	100.0000	100.0000	1	6d4d20bac4c4	0x11c7f0
 gruntspawnconfig	?StopVoice@CGruntSpawnConfig@@QAEXH@Z	100.0000	100.0000	1	3b4c120126c9	0x11c730
 gruntsprintanim	?BuildGruntSprintAnimation@CGruntSprintAnim@@QAEHXZ	79.5942	79.5942	1	5f1ffbaa3fb2	0x19920
+gruntstatestep	?Step33520@CStepMgr@@QAEHPAUCStepGrunt@@@Z	56.2356	56.2356	1	70e72208dab9	0x33520
 grunttilescan	?ScanRegion32ce0@CScanMgr@@QAEHPAUCScanGrunt@@@Z	72.3417	72.3417	1	5610745c7421	0x32ce0
 grunttubeanim	?SetupTubeAnim@CGruntTube@@QAEHH@Z	72.3636	72.3636	1	bc25d7867fff	0x50a50
 gruntupdatestep	?SeekTarget@CGruntStep@@QAEHXZ	13.3685	13.3685	2	5a037b7668fa	0xf71c0

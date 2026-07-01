@@ -2093,6 +2093,22 @@ source = "src/Gruntz/GruntMoveStep.cpp"
 flags = "base"
 
 [[unit]]
+unit = "gruntstatestep"
+source = "src/Gruntz/GruntStateStep.cpp"
+flags = "base"
+
+[[unit]]
+unit = "gruntarriveresolve"
+source = "src/Gruntz/GruntArriveResolve.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "gruntpathscan"
+source = "src/Gruntz/GruntPathScan.cpp"
+flags = "eh"
+
+
+[[unit]]
 unit = "heapdiag"
 source = "src/Gruntz/HeapDiag.cpp"
 flags = "base"
