@@ -133,9 +133,9 @@ struct CDeviceListNode {
     i32 ConfigCreate(i32 a1, i32 a2, i32 a3); // 0x134be0
     void ConfigDtor();                        // 0x134c60
 
-    CDeviceListNode* m_next; // +0x00
-    i32 m_004;               // +0x04
-    void* m_payload;         // +0x08
+    CDeviceListNode* m_next;    // +0x00
+    i32 m_004;                  // +0x04
+    CDeviceListNode* m_payload; // +0x08 (destructed via ConfigDtor)
 }; // 0x88 (only +0/+4/+8 load-bearing)
 
 // ---------------------------------------------------------------------------

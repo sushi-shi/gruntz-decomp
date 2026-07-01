@@ -170,7 +170,7 @@ struct CDeviceConfigB {
     i32 m_latchedKeys;     // +0x2a8  (= -1)
     u32 m_currentKeys;     // +0x2ac
     u32 m_edgeKeys;        // +0x2b0
-    i32 m_2b4;             // +0x2b4  (= 0)
+    i32 m_flags;           // +0x2b4  (= 0)
     char m_pad2b8[0x2c8 - 0x2b8];
 }; // 0x2c8
 
@@ -196,7 +196,7 @@ inline CDeviceConfigB::CDeviceConfigB() {
     m_currentKeys = 0;
     m_edgeKeys = 0;
     m_vptr = &g_deviceConfigVtblB2;
-    m_2b4 = 0;
+    m_flags = 0;
 }
 
 // ===========================================================================
@@ -430,9 +430,9 @@ void DirectInputMgr2::FreeDeviceList() {
     while (node != 0) {
         CDeviceListNode* cur = node;
         node = node->m_next;
-        void* payload = cur->m_payload;
+        CDeviceListNode* payload = cur->m_payload;
         if (payload != 0) {
-            ((CDeviceListNode*)payload)->ConfigDtor();
+            payload->ConfigDtor();
             operator delete(payload);
         }
     }
@@ -982,7 +982,7 @@ i32 CDeviceConfigB::CreateDev(IDirectInputZ* di, const void* cfg, void* owner, u
     if (((CInputDevice*)this)->CreateDeviceWrap(di, cfg, owner) == 0) {
         return 0;
     }
-    m_2b4 = flags;
+    m_flags = flags;
     if (((CInputDevice*)this)->SetDataFormat((void*)g_mouseDataFormat) == 0) {
         return 0;
     }
@@ -1197,7 +1197,7 @@ i32 CDeviceConfigB::CreateDevJoystick(IDirectInputZ* di, const void* cfg, void* 
     if (((CInputDevice*)this)->CreateDeviceWrap(di, cfg, owner) == 0) {
         return 0;
     }
-    m_2b4 = flags;
+    m_flags = flags;
     if (((CInputDevice*)this)->SetDataFormat((void*)g_joystickDataFormat) == 0) {
         return 0;
     }

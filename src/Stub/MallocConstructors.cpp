@@ -82,6 +82,10 @@ SIZE_UNKNOWN(Node174d00);
 struct Node174d00 {
     void CtorBase(void* desc, i32 kind); // 0x16dff0 CButeNodeBase ctor (external)
     Node174d00* Construct(i32 kind);     // 0x174d00
+
+    void* m_vptr;       // +0x00  node primary vftable (manual stamp)
+    char m_pad04[0x04]; // +0x04
+    void* m_subVptr;    // +0x08  sub-object vftable (manual stamp)
 };
 
 // ===========================================================================
@@ -165,7 +169,7 @@ MallocCtor_168e70::MallocCtor_168e70() {}
 RVA(0x00174d00, 0x25)
 Node174d00* Node174d00::Construct(i32 kind) {
     CtorBase(&g_node174df0Tag, kind);
-    *(void**)((char*)this + 0x00) = &g_node174dVtbl;
-    *(void**)((char*)this + 0x08) = &g_node174dSubVtbl;
+    m_vptr = &g_node174dVtbl;
+    m_subVptr = &g_node174dSubVtbl;
     return this;
 }

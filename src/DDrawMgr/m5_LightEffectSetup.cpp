@@ -51,11 +51,12 @@ class CLightEffect {
 public:
     i32 Setup(LightDesc* d);
 
-    char m_pad00[0x1c];
-    void* m_shadeTable;     // +0x1c shade table
-    i32 m_20;               // +0x20
-    Surf* m_defaultSurface; // +0x24 default surface
-    i32 m_28;               // +0x28
+    i32 m_00;                 // +0x00
+    CShadeTableCache m_cache; // +0x04  embedded shade-table cache (0x18 B -> +0x1c)
+    void* m_shadeTable;       // +0x1c shade table
+    i32 m_20;                 // +0x20
+    Surf* m_defaultSurface;   // +0x24 default surface
+    i32 m_28;                 // +0x28
     char m_pad2c[0x30 - 0x2c];
     i32 m_30; // +0x30
     char m_pad34[0x38 - 0x34];
@@ -144,8 +145,7 @@ i32 CLightEffect::Setup(LightDesc* d) {
     }
     if (m_spanCount > 0) {
         if (d->m_overrideTable == 0) {
-            m_shadeTable = ((CShadeTableCache*)((char*)this + 4))
-                               ->HueRampTable(m_paletteHolder->m_palette, m_spanCount, 0);
+            m_shadeTable = m_cache.HueRampTable(m_paletteHolder->m_palette, m_spanCount, 0);
             m_30 = 1;
             return 1;
         }
