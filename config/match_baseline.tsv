@@ -209,7 +209,7 @@ dsoundvoice	2	1
 ehfunclets	6	6
 engine_attributed	6	0
 engine_discovered	15	8
-engine_label_stubs	274	123
+engine_label_stubs	273	123
 engine_unmatched_lib	11	0
 engstr	3	1
 eyecandytypetags	4	4
@@ -275,7 +275,7 @@ inffast	1	1
 inflate	7	6
 inftrees	6	6
 infutil	1	1
-ingameicon	10	5
+ingameicon	11	5
 ingametext	6	4
 ingameworkerhandlers	3	3
 inputdeviceconfig	1	0
@@ -1772,7 +1772,6 @@ engine_discovered	?U13Forward115520@@YAXPAUU13Obj@@HHHHHHHH@Z	94.2857	94.2857	1	
 engine_label_stubs	??0CBoomerang@@QAE@H@Z	97.3077	97.3077	1	cpp:6bf52155264d	0xe0650
 engine_label_stubs	??0CButeNodeBase@@QAE@PAXH@Z	59.5806	59.5806	1	cpp:2262ffc5f902	0x16dff0
 engine_label_stubs	??0CButeNodeEntry@@QAE@HPAX@Z	100.0000	100.0000	1	cpp:590eddff1627	0x16df70
-engine_label_stubs	??0CInGameIcon@@QAE@H@Z	0.1063	0.0981	1	cpp:6bf52155264d	0x95b10
 engine_label_stubs	??0MallocCtor_135b10@@QAE@XZ	2.5000	2.5000	1	cpp:e8a4cb0d5b2a	0x135b10
 engine_label_stubs	??0MallocCtor_136180@@QAE@XZ	2.0513	2.0513	1	cpp:e8a4cb0d5b2a	0x136180
 engine_label_stubs	??0MallocCtor_136230@@QAE@XZ	5.3333	5.3333	1	cpp:e8a4cb0d5b2a	0x136230
@@ -2687,6 +2686,7 @@ inftrees	_inflate_trees_dynamic	100.0000	100.0000	1	dfefcb841088	0x18a850
 inftrees	_inflate_trees_fixed	100.0000	100.0000	1	0a70daff599f	0x18a940
 inftrees	_inflate_trees_free	100.0000	100.0000	1	f385d577afa6	0x18aab0
 infutil	_inflate_flush	100.0000	100.0000	1	e0e7519d9f47	0x18b300
+ingameicon	??0CInGameIcon@@QAE@PAUCGameObject@@@Z	89.8288	89.8288	1	20f7c18fa9e8	0x95b10
 ingameicon	??1CInGameIcon@@UAE@XZ	100.0000	100.0000	1	fde4a2ce1197	0x11d00
 ingameicon	?HandleInput@CInGameIcon@@QAEHXZ	90.8442	90.8442	2	d070837e8c0c	0x97680
 ingameicon	?InitIconActionTable@@YAXXZ	100.0000	100.0000	1	e833f3ac9ede	0x97800

@@ -13,12 +13,27 @@
 
 #include <rva.h>
 
+#include <string.h>       // inline strcmp: the ctor's icon-name dispatch chain
 #include <Bute/ButeMgr.h> // CButeTree (the bute store Setup queries)
 #include <Wap32/ZVec.h>   // zDArray (the command-dispatch tables)
 
 // The global bute store the icon Setup queries (g_buteTree.Find). Owned by
 // another TU; declared extern so `ecx=&g_buteTree; call Find` reloc-masks.
 extern CButeTree g_buteTree;
+
+// The bute manager singleton the builder queries for the WarpStone target
+// (g_buteMgr.GetInt) - declared in <Gruntz/UserLogic.h> (pulled via the header).
+
+// EngFmt (0x1b2cf5): __cdecl variadic sprintf-into-CString - the WarpStone path
+// formats "Level%i" and "GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ%i".
+void EngFmt(CString* out, const char* fmt, ...);
+
+// The sprite/animation factory reached as g_gameReg->m_30->m_8 (its +0x8 field);
+// CreateSprite (0x1597b0, __thiscall) builds a "SimpleAnimation" glitter sprite.
+struct IconSpriteFactory {
+    CGameObject*
+    CreateSprite(i32 a0, i32 x, i32 y, i32 id, const char* desc, i32 flags); // 0x1597b0
+};
 
 // ===========================================================================
 // The two file-scope command-dispatch tables (zDArray<member-fn-ptr>) the icon
@@ -115,6 +130,356 @@ static inline i32 ResolveSlot(_zvec* v, i32 idx) {
 // destructible link forces the /GX EH frame. The empty body is enough.
 RVA(0x00011d00, 0x44)
 CInGameIcon::~CInGameIcon() {}
+
+// ===========================================================================
+// CInGameIcon::CInGameIcon(CGameObject*)  (0x095b10)  -- the HUD-icon builder
+// ===========================================================================
+// Folds the shared CUserLogic(CGameObject*) init (link ctor + logic-type register
+// + the three built-in handlers + the data seed; see <Gruntz/UserLogic.h>), stamps
+// its own vftable (0x5e7d04), then:
+//   - snaps the owner's screen pos to the 0x20 tile grid centre,
+//   - flags the owner (+0x74 sentinel / +0x8 |= 0x20000),
+//   - swaps the aux bute node (old -> m_30) and seeds the cycle geometry,
+//   - the big inline-strcmp dispatch off the icon's type name (owner->m_194+0x24):
+//     a code id into owner->m_124 and a category-configure call (SetupSprite), with
+//     the treasure / powerup(red glitter) / secret(mission gate) / curse(green
+//     glitter) groups; the WarpStonez items also stash the waypoint {x,y} into the
+//     level record (g_gameReg->m_2c +0x384.. per index) and stamp m_128,
+//   - for a WarpStone in test mode, formats the per-level warp target name and
+//     re-applies it,
+//   - builds the glitter overlay sprite, then a Check() gate either marks the
+//     owner's tile cell occupied (owner->m_188 -> cell+8, toggle 0x40000) or hides
+//     the icon (owner->m_8 |= 0x10000).
+//
+// @early-stop
+// Complete reconstruction, ~89.8% fuzzy (0%->90% from the bare stub); parked below
+// 100% on two intertwined MSVC5 /O2 walls of this 5616-byte /GX megafunction, both
+// verified via llvm-objdump -dr base-vs-target:
+//   (1) FRAME-SIZE + EH-STATE shift. The whole CUserLogic(obj) base-ctor fold + own
+//   zero-init head is BYTE-EXACT (vptr stamps, link ctor, EngStr temp, the three
+//   AddLogic* calls, the data seed - all identical). But cl allocates the local
+//   frame at sub esp,0x1c vs retail's 0x18: retail keeps `glitter` in edi across the
+//   WarpStone-format block so its [esp+0x38] slot is reused for the warpName CString,
+//   while cl spills glitter (its lifetime spans that block), forcing warpName to a
+//   fresh slot (+4). That shifts every [esp+N] operand and bumps the CString EH
+//   trylevel stamp (ebx=4 vs retail 5) in the tail. Not source-steerable.
+//   (2) INLINE-STRCMP regalloc pin (docs/patterns/zero-register-pinning.md family).
+//   The ~40-block name dispatch is shape-faithful (same sbb/sbb byte compare, same
+//   id/category, same tail-merged SetupSprite cross-jump), but cl caches the name
+//   pointer in edi from block 1 (`mov eax,edi`) whereas retail reloads [esp+0x10]
+//   for the first ~5 blocks then caches in edx - a free-list coin-flip that shifts
+//   the block byte stream. Every call, string literal, field offset, immediate and
+//   control-flow edge matches retail. Deferred to the final sweep.
+RVA(0x00095b10, 0x15f0)
+CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj) {
+    // --- CInGameIcon own-field zero-init (retail store order @0x95c00) ---
+    *(i32*)((char*)this + 0x58) = 0;
+    *(i32*)((char*)this + 0x60) = 0;
+    *(i32*)((char*)this + 0x5c) = 0;
+    *(i32*)((char*)this + 0x64) = 0;
+    *(i32*)((char*)this + 0x68) = 0;
+    *(i32*)((char*)this + 0x70) = 0;
+    *(i32*)((char*)this + 0x6c) = 0;
+    *(i32*)((char*)this + 0x74) = 0;
+
+    // snap owner's screen pos to the 0x20 tile grid centre
+    obj->m_5c = (obj->m_5c & ~0x1f) + 0x10;
+    obj->m_60 = (obj->m_60 & ~0x1f) + 0x10;
+
+    if (obj->m_74 != 0x17318) {
+        obj->m_74 = 0x17318;
+        obj->m_08 |= 0x20000;
+    }
+
+    // swap the aux bute node (save old into m_30) + seed the cycle geometry
+    CGameObjAux* aux = m_14;
+    m_30 = aux->m_1c;
+    aux->m_1c = g_buteTree.Find(s_iconKeyA);
+    m_40 = m_38->m_1b4;
+    m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
+
+    m_38->m_08 |= 2;
+    SetupSprite(0);
+
+    // second zero batch (retail @0x95ca1)
+    *(CIconRecord**)((char*)this + 0x78) = 0;
+    *(i32*)((char*)this + 0x68) = 0;
+    *(i32*)((char*)this + 0x70) = 0;
+    *(i32*)((char*)this + 0x6c) = 0;
+    *(i32*)((char*)this + 0x74) = 0;
+
+    i32 glitter = 0;
+    void* rec = *(void**)((char*)obj + 0x194);
+    if (rec != 0) {
+        CString name;
+        name = (const char*)rec + 0x24;
+
+        if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_BOMBZ") == 0) {
+            *(i32*)((char*)m_10 + 0x124) = 1;
+            SetupSprite("GAME_TREASURE");
+        } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_BOOMERANGZ") == 0) {
+            *(i32*)((char*)m_10 + 0x124) = 2;
+            SetupSprite("GAME_TREASURE");
+        } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_BRICKZ") == 0) {
+            *(i32*)((char*)m_10 + 0x124) = 3;
+            SetupSprite("GAME_TREASURE");
+        } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_CLUBZ") == 0) {
+            *(i32*)((char*)m_10 + 0x124) = 4;
+            SetupSprite("GAME_TREASURE");
+        } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_GAUNTLETZ") == 0) {
+            *(i32*)((char*)m_10 + 0x124) = 5;
+            SetupSprite("GAME_TREASURE");
+        } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_GLOVEZ") == 0) {
+            *(i32*)((char*)m_10 + 0x124) = 6;
+            SetupSprite("GAME_TREASURE");
+        } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_GOOBERZ") == 0) {
+            *(i32*)((char*)m_10 + 0x124) = 7;
+            SetupSprite("GAME_TREASURE");
+        } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_GRAVITYBOOTZ") == 0) {
+            *(i32*)((char*)m_10 + 0x124) = 8;
+            SetupSprite("GAME_TREASURE");
+        } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_GUNHATZ") == 0) {
+            *(i32*)((char*)m_10 + 0x124) = 9;
+            SetupSprite("GAME_TREASURE");
+        } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_NERFGUNZ") == 0) {
+            *(i32*)((char*)m_10 + 0x124) = 0xa;
+            SetupSprite("GAME_TREASURE");
+        } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_ROCKZ") == 0) {
+            *(i32*)((char*)m_10 + 0x124) = 0xb;
+            SetupSprite("GAME_TREASURE");
+        } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_SHIELDZ") == 0) {
+            *(i32*)((char*)m_10 + 0x124) = 0xc;
+            SetupSprite("GAME_TREASURE");
+        } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_SHOVELZ") == 0) {
+            *(i32*)((char*)m_10 + 0x124) = 0xd;
+            SetupSprite("GAME_TREASURE");
+        } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_SPRINGZ") == 0) {
+            *(i32*)((char*)m_10 + 0x124) = 0xe;
+            SetupSprite("GAME_TREASURE");
+        } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_SPYZ") == 0) {
+            *(i32*)((char*)m_10 + 0x124) = 0xf;
+            SetupSprite("GAME_TREASURE");
+        } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_SWORDZ") == 0) {
+            *(i32*)((char*)m_10 + 0x124) = 0x10;
+            SetupSprite("GAME_TREASURE");
+        } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_TIMEBOMBZ") == 0) {
+            *(i32*)((char*)m_10 + 0x124) = 0x11;
+            SetupSprite("GAME_TREASURE");
+        } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_TOOBZ") == 0) {
+            *(i32*)((char*)m_10 + 0x124) = 0x12;
+            SetupSprite("GAME_TREASURE");
+        } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_WANDZ") == 0) {
+            *(i32*)((char*)m_10 + 0x124) = 0x13;
+            SetupSprite("GAME_TREASURE");
+        } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ1") == 0) {
+            *(i32*)((char*)m_10 + 0x124) = 0x14;
+            *(i32*)((char*)m_10 + 0x128) = 1;
+            char* lvl = (char*)*(void**)((char*)g_gameReg + 0x2c);
+            *(i32*)(lvl + 0x384) = m_10->m_5c;
+            *(i32*)(lvl + 0x388) = m_10->m_60;
+            SetupSprite("GAME_TREASURE");
+        } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ2") == 0) {
+            *(i32*)((char*)m_10 + 0x124) = 0x14;
+            *(i32*)((char*)m_10 + 0x128) = 2;
+            char* lvl = (char*)*(void**)((char*)g_gameReg + 0x2c);
+            *(i32*)(lvl + 0x38c) = m_10->m_5c;
+            *(i32*)(lvl + 0x390) = m_10->m_60;
+            SetupSprite("GAME_TREASURE");
+        } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ3") == 0) {
+            *(i32*)((char*)m_10 + 0x124) = 0x14;
+            *(i32*)((char*)m_10 + 0x128) = 3;
+            char* lvl = (char*)*(void**)((char*)g_gameReg + 0x2c);
+            *(i32*)(lvl + 0x394) = m_10->m_5c;
+            *(i32*)(lvl + 0x398) = m_10->m_60;
+            SetupSprite("GAME_TREASURE");
+        } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ4") == 0) {
+            *(i32*)((char*)m_10 + 0x124) = 0x14;
+            *(i32*)((char*)m_10 + 0x128) = 4;
+            char* lvl = (char*)*(void**)((char*)g_gameReg + 0x2c);
+            *(i32*)(lvl + 0x39c) = m_10->m_5c;
+            *(i32*)(lvl + 0x3a0) = m_10->m_60;
+            SetupSprite("GAME_TREASURE");
+        } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_WELDERZ") == 0) {
+            *(i32*)((char*)m_10 + 0x124) = 0x15;
+            SetupSprite("GAME_TREASURE");
+        } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_WINGZ") == 0) {
+            *(i32*)((char*)m_10 + 0x124) = 0x16;
+            SetupSprite("GAME_TREASURE");
+        } else if (strcmp(name, "GAME_INGAMEICONZ_TOYZ_BABYWALKERZ") == 0) {
+            *(i32*)((char*)m_10 + 0x124) = 0x17;
+            SetupSprite("GAME_TREASURE");
+        } else if (strcmp(name, "GAME_INGAMEICONZ_TOYZ_BEACHBALLZ") == 0) {
+            *(i32*)((char*)m_10 + 0x124) = 0x18;
+            SetupSprite("GAME_TREASURE");
+        } else if (strcmp(name, "GAME_INGAMEICONZ_TOYZ_BIGWHEELZ") == 0) {
+            *(i32*)((char*)m_10 + 0x124) = 0x19;
+            SetupSprite("GAME_TREASURE");
+        } else if (strcmp(name, "GAME_INGAMEICONZ_TOYZ_GOKARTZ") == 0) {
+            *(i32*)((char*)m_10 + 0x124) = 0x1a;
+            SetupSprite("GAME_TREASURE");
+        } else if (strcmp(name, "GAME_INGAMEICONZ_TOYZ_JACKINTHEBOXZ") == 0) {
+            *(i32*)((char*)m_10 + 0x124) = 0x1b;
+            SetupSprite("GAME_TREASURE");
+        } else if (strcmp(name, "GAME_INGAMEICONZ_TOYZ_JUMPROPEZ") == 0) {
+            *(i32*)((char*)m_10 + 0x124) = 0x1c;
+            SetupSprite("GAME_TREASURE");
+        } else if (strcmp(name, "GAME_INGAMEICONZ_TOYZ_POGOSTICKZ") == 0) {
+            *(i32*)((char*)m_10 + 0x124) = 0x1d;
+            SetupSprite("GAME_TREASURE");
+        } else if (strcmp(name, "GAME_INGAMEICONZ_TOYZ_SCROLLZ") == 0) {
+            *(i32*)((char*)m_10 + 0x124) = 0x1e;
+            SetupSprite("GAME_TREASURE");
+        } else if (strcmp(name, "GAME_INGAMEICONZ_TOYZ_SQUEAKTOYZ") == 0) {
+            *(i32*)((char*)m_10 + 0x124) = 0x1f;
+            SetupSprite("GAME_TREASURE");
+        } else if (strcmp(name, "GAME_INGAMEICONZ_TOYZ_YOYOZ") == 0) {
+            *(i32*)((char*)m_10 + 0x124) = 0x20;
+            SetupSprite("GAME_TREASURE");
+        } else if (strcmp(name, "GAME_INGAMEICONZ_POWERUPZ_MEGAPHONEZ") == 0) {
+            *(i32*)((char*)m_10 + 0x124) = 0x32;
+            SetupSprite("GAME_TREASURE");
+        } else if (strcmp(name, "GAME_INGAMEICONZ_POWERUPZ_HEALTH1") == 0) {
+            *(i32*)((char*)m_10 + 0x124) = 0x33;
+            SetupSprite("GAME_TREASURE");
+        } else if (strcmp(name, "GAME_INGAMEICONZ_POWERUPZ_HEALTH2") == 0) {
+            *(i32*)((char*)m_10 + 0x124) = 0x34;
+            SetupSprite("GAME_TREASURE");
+        } else if (strcmp(name, "GAME_INGAMEICONZ_POWERUPZ_HEALTH3") == 0) {
+            *(i32*)((char*)m_10 + 0x124) = 0x35;
+            SetupSprite("GAME_TREASURE");
+        } else if (strcmp(name, "GAME_INGAMEICONZ_POWERUPZ_CONVERSION") == 0) {
+            *(i32*)((char*)m_10 + 0x124) = 0x39;
+            SetupSprite("GAME_POWERUP");
+            glitter = 2;
+        } else if (strcmp(name, "GAME_INGAMEICONZ_POWERUPZ_DEATHTOUCH") == 0) {
+            *(i32*)((char*)m_10 + 0x124) = 0x3a;
+            SetupSprite("GAME_POWERUP");
+            glitter = 2;
+        } else if (strcmp(name, "GAME_INGAMEICONZ_POWERUPZ_GHOST") == 0) {
+            *(i32*)((char*)m_10 + 0x124) = 0x36;
+            SetupSprite("GAME_POWERUP");
+            glitter = 2;
+        } else if (strcmp(name, "GAME_INGAMEICONZ_POWERUPZ_INVULNERABILITY") == 0) {
+            *(i32*)((char*)m_10 + 0x124) = 0x38;
+            SetupSprite("GAME_POWERUP");
+            glitter = 2;
+        } else if (strcmp(name, "GAME_INGAMEICONZ_POWERUPZ_REACTIVEARMOR") == 0) {
+            *(i32*)((char*)m_10 + 0x124) = 0x3c;
+            SetupSprite("GAME_POWERUP");
+            glitter = 2;
+        } else if (strcmp(name, "GAME_INGAMEICONZ_POWERUPZ_ROIDZ") == 0) {
+            *(i32*)((char*)m_10 + 0x124) = 0x3b;
+            SetupSprite("GAME_POWERUP");
+            glitter = 2;
+        } else if (strcmp(name, "GAME_INGAMEICONZ_POWERUPZ_SUPERSPEED") == 0) {
+            *(i32*)((char*)m_10 + 0x124) = 0x37;
+            SetupSprite("GAME_POWERUP");
+            glitter = 2;
+        } else if (strcmp(name, "GAME_INGAMEICONZ_SECRETW") == 0) {
+            if (*(i32*)((char*)g_gameReg + 0x118) != 0 && g_gameReg->m_134 == 1) {
+                m_38->m_08 |= 0x10000;
+                return;
+            }
+            *(i32*)((char*)m_10 + 0x124) = 0x5a;
+            SetupSprite("GAME_POWERUP");
+        } else if (strcmp(name, "GAME_INGAMEICONZ_SECRETA") == 0) {
+            if (*(i32*)((char*)g_gameReg + 0x118) != 0 && g_gameReg->m_134 == 1) {
+                m_38->m_08 |= 0x10000;
+                return;
+            }
+            *(i32*)((char*)m_10 + 0x124) = 0x5b;
+            SetupSprite("GAME_POWERUP");
+        } else if (strcmp(name, "GAME_INGAMEICONZ_SECRETR") == 0) {
+            if (*(i32*)((char*)g_gameReg + 0x118) != 0 && g_gameReg->m_134 == 1) {
+                m_38->m_08 |= 0x10000;
+                return;
+            }
+            *(i32*)((char*)m_10 + 0x124) = 0x5c;
+            SetupSprite("GAME_POWERUP");
+        } else if (strcmp(name, "GAME_INGAMEICONZ_SECRETP") == 0) {
+            if (*(i32*)((char*)g_gameReg + 0x118) != 0 && g_gameReg->m_134 == 1) {
+                m_38->m_08 |= 0x10000;
+                return;
+            }
+            *(i32*)((char*)m_10 + 0x124) = 0x5d;
+            SetupSprite("GAME_POWERUP");
+        } else if (strcmp(name, "GAME_INGAMEICONZ_POWERUPZ_STOPWATCH") == 0) {
+            *(i32*)((char*)m_10 + 0x124) = 0x4b;
+            SetupSprite("GAME_TREASURE");
+        } else if (strcmp(name, "GAME_INGAMEICONZ_POWERUPZ_COIN") == 0) {
+            *(i32*)((char*)m_10 + 0x124) = 0x50;
+            SetupSprite("GAME_TREASURE");
+        } else if (strcmp(name, "GAME_TOYBOX") == 0) {
+            *(i32*)((char*)m_10 + 0x124) = 0x55;
+            SetupSprite("GAME_TREASURE");
+        } else if (strcmp(name, "GAME_INGAMEICONZ_POWERUPZ_MINICAM") == 0) {
+            *(i32*)((char*)m_10 + 0x124) = 0x40;
+            glitter = 1;
+            SetupSprite("GAME_CURSE");
+        } else if (strcmp(name, "GAME_INGAMEICONZ_POWERUPZ_SCREENSHAKE") == 0) {
+            *(i32*)((char*)m_10 + 0x124) = 0x3e;
+            glitter = 1;
+            SetupSprite("GAME_CURSE");
+        } else if (strcmp(name, "GAME_INGAMEICONZ_POWERUPZ_RANDOMCOLORZ") == 0) {
+            *(i32*)((char*)m_10 + 0x124) = 0x3d;
+            glitter = 1;
+            SetupSprite("GAME_CURSE");
+        } else if (strcmp(name, "GAME_INGAMEICONZ_POWERUPZ_BLACKSCREEN") == 0) {
+            *(i32*)((char*)m_10 + 0x124) = 0x3f;
+            glitter = 1;
+            SetupSprite("GAME_CURSE");
+        }
+    }
+
+    // WarpStone test-mode: re-apply the per-level warp target sprite name.
+    if (*(i32*)((char*)m_10 + 0x124) == 0x14 && g_gameReg->m_134 == 1) {
+        char* lvl = (char*)*(void**)((char*)g_gameReg + 0x2c);
+        CString levelStr;
+        EngFmt(&levelStr, "Level%i", *(i32*)(lvl + 0x1c));
+        CString warpName;
+        i32 target = g_buteMgr.GetInt((char*)"WarpStone", (char*)(const char*)levelStr);
+        EngFmt(&warpName, "GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ%i", target);
+        m_10->ApplyName((const char*)warpName);
+        *(i32*)((char*)m_10 + 0x128) = target;
+    }
+
+    // glitter overlay sprite for the powerup / curse groups
+    if (glitter != 0) {
+        IconSpriteFactory* fac = *(IconSpriteFactory**)((char*)g_gameReg->m_30 + 8);
+        CGameObject* fx = fac->CreateSprite(0, m_10->m_5c, m_10->m_60, 0x17319, "SimpleAnimation",
+                                            0x40003);
+        *(CGameObject**)((char*)this + 0x78) = fx;
+        if (glitter == 2) {
+            fx->ApplyName("GAME_GLITTERRED");
+        }
+        if (glitter == 1) {
+            (*(CGameObject**)((char*)this + 0x78))->ApplyName("GAME_GLITTERGREEN");
+        }
+        (*(CGameObject**)((char*)this + 0x78))->ApplyLookupGeometry("GAME_CYCLE100", 0);
+    }
+
+    if (Check() == 0) {
+        m_38->m_08 |= 0x10000;
+        return;
+    }
+
+    // mark the owner's tile cell occupied (or clear the occupancy bit)
+    i32 mv = *(i32*)((char*)m_10 + 0x188);
+    CIconTileGrid* grid = g_gameReg->m_70;
+    i32 col = m_10->m_5c >> 5;
+    i32 row = m_10->m_60 >> 5;
+    if ((u32)col < (u32)grid->m_c && (u32)row < (u32)grid->m_10) {
+        char* cell = (char*)grid->m_8[row] + col * 0x1c;
+        *(i32*)(cell + 8) = mv;
+        char* cell0 = (char*)grid->m_8[row] + col * 0x1c;
+        if (mv != 0) {
+            *(i32*)cell0 |= 0x40000;
+        } else {
+            *(i32*)cell0 &= ~0x40000;
+        }
+    }
+    *(i32*)((char*)m_10 + 0x40) &= ~1;
+}
 
 // ===========================================================================
 // CInGameIcon::HandleInput  (0x097680)

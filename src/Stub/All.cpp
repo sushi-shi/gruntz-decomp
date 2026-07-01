@@ -43,7 +43,6 @@
 #include "CDroppedObjectShadow.cpp"
 #include "CGruntzCommand.cpp"
 #include "CGruntzMgr.cpp"
-#include "CInGameIcon.cpp"
 #include "CProjectile.cpp"
 #include "CSBI_Image.cpp"
 #include "CSplashState.cpp"
