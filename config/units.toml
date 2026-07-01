@@ -1840,6 +1840,21 @@ source = "src/Gruntz/CFader.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "cfaderrun"
+source = "src/Gruntz/CFaderRun.cpp"
+flags = "base"
+
+[[unit]]
+unit = "smackervideowindow"
+source = "src/Gruntz/SmackerVideoWindow.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "engstrrendertext"
+source = "src/Wap32/EngStrRenderText.cpp"
+flags = "base"
+
+[[unit]]
 unit = "cfixedptrarray32"
 source = "src/Gruntz/CFixedPtrArray32.cpp"
 flags = "base"

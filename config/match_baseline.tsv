@@ -101,6 +101,7 @@ ceyecandy	2	2
 ceyecandyani	1	0
 cfader	12	12
 cfadermgr	8	5
+cfaderrun	1	0
 cfileimage	8	2
 cfileimageblit	5	0
 cfileimageloadbyext	1	1
@@ -132,7 +133,7 @@ cimage	11	7
 cimageowned	5	2
 cimageprobe	1	1
 cimageset3	3	3
-cimagespriteblit	5	0
+cimagespriteblit	7	0
 circleshadeblit	1	0
 ckeyedlist	3	2
 classunknown30	1	0
@@ -221,9 +222,10 @@ dsoundvoice	2	1
 ehfunclets	6	6
 engine_attributed	5	0
 engine_discovered	13	7
-engine_label_stubs	207	116
+engine_label_stubs	202	116
 engine_unmatched_lib	11	0
 engstr	3	1
+engstrrendertext	1	0
 eyecandytypetags	4	4
 faderradial	1	0
 fadershapesetup	1	0
@@ -453,6 +455,7 @@ shadedescrtable	2	0
 shadetablecache	19	3
 siriusworkerhandlers	4	4
 slotcombofill	1	0
+smackervideowindow	1	0
 soundbankload	1	0
 sounddevice	16	8
 soundfontpath	1	1
@@ -1214,6 +1217,7 @@ cfadermgr	?Flush@CFaderMgr@@QAEHXZ	100.0000	100.0000	2	3d82caa2f391	0x17e160
 cfadermgr	?FreeAll@CFaderMgr@@QAEXXZ	100.0000	100.0000	2	2030f94b54ba	0x17d9a0
 cfadermgr	?Remove@CFaderMgr@@QAEXPAUCFader@@@Z	67.1111	67.1111	1	7c395e00a7e3	0x17e170
 cfadermgr	?SetConfig@CFaderMgr@@QAEHHHH@Z	100.0000	100.0000	3	c6c61071ef03	0x17d980
+cfaderrun	?RunFade@FaderRun@@QAEXIHH@Z	86.4057	86.4057	1	ce9ba500dac5	0x17e620
 cfileimage	?Decode@CFileImage@@QAEHPAVCFileImageInfo@@PAVCFileImageSrc@@HH@Z	87.4065	87.4065	1	dc0d66b3803f	0x144b30
 cfileimage	?DecodeRun@CFileImage@@QAEHPAVCFileImageInfo@@PAXHH@Z	72.3929	72.3929	1	68a1e6f3cd54	0x143cf0
 cfileimage	?DecodeThunk@CFileImage@@QAEXHHHHHHHHHH@Z	48.1538	48.1538	2	d92fa36d36df	0x141280
@@ -1358,10 +1362,12 @@ cimageprobe	?Init@CImageProbe@@QAEHXZ	100.0000	100.0000	1	2b46baccc913	0x17cbe0
 cimageset3	?Cleanup_161bf0@CImageSet3@@QAEXXZ	100.0000	100.0000	1	e6669699495e	0x161bf0
 cimageset3	?GetSize_1633e0@CImageSet3@@QAEHXZ	100.0000	100.0000	1	33643861e3a8	0x1633e0
 cimageset3	?Prune_1628d0@CImageSet3@@QAEHXZ	100.0000	100.0000	1	b81263dd19cb	0x1628d0
-cimagespriteblit	?BlitFlipH@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	82.7761	82.7761	1	cf66c6ff4fdd	0x153d90
-cimagespriteblit	?BlitFlipV@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	80.6329	80.6329	1	b3aa1a55c9d2	0x153b20
-cimagespriteblit	?BlitNorm@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	98.4925	98.4925	1	6821789c58ef	0x1538c0
-cimagespriteblit	?BlitShadeFlipV@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	73.2440	73.2440	1	61eea29b3a06	0x1544d0
+cimagespriteblit	?BlitFlipH@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	82.8358	82.8358	1	cf66c6ff4fdd	0x153d90
+cimagespriteblit	?BlitFlipV@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	80.6812	80.6812	1	b3aa1a55c9d2	0x153b20
+cimagespriteblit	?BlitNorm@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	98.4573	98.4573	1	6821789c58ef	0x1538c0
+cimagespriteblit	?BlitShadeFlipH@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	83.9091	83.9091	1	25d30d9b37b9	0x154750
+cimagespriteblit	?BlitShadeFlipHV@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	71.4789	71.4789	1	b15e9a59240e	0x153ff0
+cimagespriteblit	?BlitShadeFlipV@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	73.2679	73.2679	1	61eea29b3a06	0x1544d0
 cimagespriteblit	?BlitShadeNorm@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	99.8522	99.8522	1	0b8df3bbe25e	0x154270
 circleshadeblit	?Render@CircleShadeBlit@@QAEXHHHHHH@Z	54.5197	54.5197	1	cb51e9919710	0x180fb0
 ckeyedlist	??1CNode@@QAE@XZ	100.0000	100.0000	1	7894cc5a002b	0x379f0
@@ -1941,7 +1947,6 @@ engine_label_stubs	?Update@SelHost_0c4f80@ApiCallerStubs@@QAEXXZ	100.0000	100.00
 engine_label_stubs	?UpdatePlayers@BattlezDlg_c4230@ApiCallerStubs@@QAEHH@Z	62.1892	62.1892	1	cpp:7e3328e11dac	0xc4230
 engine_label_stubs	?Validate@VrHost_094bc0@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x94bc0
 engine_label_stubs	?directx_wrapper_caller_137720_DSOUND_1_DirectSoundCreate@ApiCallerStubs@@YGHHH@Z	98.5714	98.5714	1	cpp:6bf52155264d	0x137720
-engine_label_stubs	?directx_wrapper_caller_17c2a0_DirectDrawCreate@ApiCallerStubs@@YGHHH@Z	1.9417	1.9417	1	cpp:6bf52155264d	0x17c2a0
 engine_label_stubs	?thirdparty_138950_AIL_set_XMIDI_master_volume_8@ApiCallerStubs@@YGHH@Z	100.0000	100.0000	1	cpp:e1535087fe94	0x138950
 engine_label_stubs	?thirdparty_1389c0_AIL_XMIDI_master_volume_4@ApiCallerStubs@@YAHXZ	91.2963	91.2963	1	cpp:e1535087fe94	0x1389c0
 engine_label_stubs	?vfunc_16@StatusBarItem@@QAEHHHH@Z	51.7213	51.7213	1	cpp:66ed52501602	0xce660
@@ -2001,7 +2006,6 @@ engine_label_stubs	?winapi_0ed9f0_PtInRect@ThisStubOwnerUnknown@ApiCallerStubs@@
 engine_label_stubs	?winapi_0f60f0_IntersectRect@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHXZ	0.2225	0.2225	1	cpp:e8a4cb0d5b2a	0xf60f0
 engine_label_stubs	?winapi_0f8e20_FreeLibrary@ApiCallerStubs@@YAXXZ	100.0000	100.0000	1	cpp:6bf52155264d	0xf8e20
 engine_label_stubs	?winapi_115300_SetRect@ApiCallerStubs@@YAHPAULayerHost_115300@1@PAURectSrc_115300@1@HHHH@Z	100.0000	100.0000	1	cpp:e832e75e29a5	0x115300
-engine_label_stubs	?winapi_115930_CopyRect_OffsetRect@ApiCallerStubs@@YAHXZ	1.5267	1.5267	1	cpp:e1535087fe94	0x115930
 engine_label_stubs	?winapi_118930_SetActiveWindow_SetFocus@ApiCallerStubs@@YAXPAX@Z	100.0000	100.0000	1	cpp:e1535087fe94	0x118930
 engine_label_stubs	?winapi_118b50_OutputDebugStringA@ApiCallerStubs@@YAXH@Z	69.3478	69.3478	1	cpp:6bf52155264d	0x118b50
 engine_label_stubs	?winapi_1192d0_IsIconic@ApiCallerStubs@@YAHPAXHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x1192d0
@@ -2009,8 +2013,6 @@ engine_label_stubs	?winapi_11b3b0_timeGetTime@CGruntSpawnConfig@ApiCallerStubs@@
 engine_label_stubs	?winapi_11b7c0_timeGetTime@ApiCallerStubs@@YGHHHHHH@Z	0.8299	0.8299	1	cpp:6bf52155264d	0x11b7c0
 engine_label_stubs	?winapi_1206b0_GetLastError_HeapValidate_HeapWalk@ApiCallerStubs@@YAHXZ	1.3669	1.3669	1	cpp:e1535087fe94	0x1206b0
 engine_label_stubs	?winapi_123d10_GetCurrentThreadId_TlsSetValue@ApiCallerStubs@@YAHXZ	2.8571	2.8571	1	cpp:e1535087fe94	0x123d10
-engine_label_stubs	?winapi_153ff0_CopyRect@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHHH@Z	0.8920	0.8920	1	cpp:e8a4cb0d5b2a	0x153ff0
-engine_label_stubs	?winapi_154750_CopyRect@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHHH@Z	0.9091	0.9091	1	cpp:e8a4cb0d5b2a	0x154750
 engine_label_stubs	?winapi_15cbe0_timeGetTime@ApiCallerStubs@@YAHXZ	100.0000	100.0000	1	cpp:e1535087fe94	0x15cbe0
 engine_label_stubs	?winapi_16c9c0_InitializeCriticalSection@ApiCallerStubs@@YAXPAU_RTL_CRITICAL_SECTION@@@Z	100.0000	100.0000	1	cpp:e1535087fe94	0x16c9c0
 engine_label_stubs	?winapi_16c9d0_DeleteCriticalSection@ApiCallerStubs@@YAXPAU_RTL_CRITICAL_SECTION@@@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x16c9d0
@@ -2019,7 +2021,6 @@ engine_label_stubs	?winapi_16c9f0_LeaveCriticalSection@ApiCallerStubs@@YAXPAU_RT
 engine_label_stubs	?winapi_1770a0_CreateICA_DeleteDC_GetDeviceCaps@ApiCallerStubs@@YAHXZ	100.0000	100.0000	1	cpp:e1535087fe94	0x1770a0
 engine_label_stubs	?winapi_177160_CreatePalette_DeleteObject_GetDC_RealizePalette_ReleaseD@ApiCallerStubs@@YAXXZ	100.0000	100.0000	1	cpp:e1535087fe94	0x177160
 engine_label_stubs	?winapi_179e70_IntersectRect@ApiCallerStubs@@YGHHHHHHHHHH@Z	0.4398	0.4398	1	cpp:6bf52155264d	0x179e70
-engine_label_stubs	?winapi_17e620_GetTickCount@CFader@ApiCallerStubs@@QAEHHHH@Z	1.7925	1.7925	1	cpp:590eddff1627	0x17e620
 engine_label_stubs	?winapi_1ba677_CreateDialogIndirectParamA_GetSystemMetrics_GlobalLock@ApiCallerStubs@@YAHXZ	0.9559	0.9559	1	cpp:e1535087fe94	0x1ba677
 engine_label_stubs	?winapi_1ba819_DestroyWindow_GlobalFree_GlobalUnlock@ApiCallerStubs@@YGHHHH@Z	4.3182	4.3182	1	cpp:6bf52155264d	0x1ba819
 engine_label_stubs	?winapi_1ba9d2_EnableWindow_FindResourceA_IsWindowEnabled_LoadResource_@ApiCallerStubs@@YAHXZ	1.4130	1.4130	1	cpp:e1535087fe94	0x1ba9d2
@@ -2050,6 +2051,7 @@ engine_unmatched_lib	?Unmatched_1bb315@@YAXXZ	50.0000	50.0000	1	357eb0796de3	0x1
 engstr	??1CContainerErr@@QAE@XZ	100.0000	100.0000	1	437607bea3c5	0x16da60
 engstr	?EngStr_DrawText@@YAXPAUEngStrRenderObj@@HHHHHHHH@Z	94.2857	94.2857	2	197473bbe23e	0x115440
 engstr	?SetSize@zBitVec@@QAEHH@Z	98.7234	98.7234	1	fcee90903128	0x16e100
+engstrrendertext	_EngStr_RenderText	53.0916	53.0916	1	ba28ce115b40	0x115930
 eyecandytypetags	?GetTypeTag@CTileLogicTag3ef@@QAEHXZ	100.0000	100.0000	1	b3a74c5cac45	0xfa40
 eyecandytypetags	?GetTypeTag@CTileLogicTag41d@@QAEHXZ	100.0000	100.0000	1	295ea9c5b0b5	0x12ff0
 eyecandytypetags	?GetTypeTag@CTileLogicTag428@@QAEHXZ	100.0000	100.0000	1	8dd0fe603a69	0x11bf0
@@ -3385,6 +3387,7 @@ siriusworkerhandlers	?Handler03d670@@YAHPAUOwner@@@Z	100.0000	100.0000	1	839c531
 siriusworkerhandlers	?Handler07db20@@YAHPAUOwner@@@Z	100.0000	100.0000	1	b23002ac8904	0x7db20
 siriusworkerhandlers	?Handler07dda0@@YAHPAUOwner@@@Z	100.0000	100.0000	1	27f15168f4f5	0x7dda0
 slotcombofill	?Method2a45@CMultiSlotList@@QAEHHH@Z	59.1579	59.1579	1	da5e03287e82	0x37ff0
+smackervideowindow	?CreateVideoWindow@CSmackWin@@QAEHHH@Z	98.0097	98.0097	1	fceaa529afe6	0x17c2a0
 soundbankload	?Load@CSoundBank@@QAEHPBDH@Z	75.4737	75.4737	2	240d06367d98	0x138aa0
 sounddevice	??0SoundDevice@@QAE@XZ	56.9688	56.9688	2	72c4d8e2de4f	0x136440
 sounddevice	??1SoundDevice@@QAE@XZ	28.2353	28.2353	2	9d5238e6dbb8	0x136500

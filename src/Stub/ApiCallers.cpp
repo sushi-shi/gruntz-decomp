@@ -201,9 +201,6 @@ namespace ApiCallerStubs {
     // docs/tu-spatial-structure.md). These stubs were ThisStubOwnerUnknown;
     // their real classes live in their own TUs - these are minimal placeholder
     // hosts so each stub files under its attributed class (matching-neutral). ----
-    struct CFader {
-        i32 winapi_17e620_GetTickCount(i32, i32, i32);
-    };
     struct CGrunt {
         i32 winapi_057db0_IntersectRect();
         void LoadGruntCombatAnimations(i32, i32, i32, i32, i32, i32, i32, i32);
@@ -2843,13 +2840,8 @@ namespace ApiCallerStubs {
         return 1;
     }
 
-    // @confidence: low
-    // @source: winapi:CopyRect;OffsetRect
-    // @stub
-    RVA(0x00115930, 0x15b)
-    i32 winapi_115930_CopyRect_OffsetRect() {
-        return 0;
-    }
+    // 0x115930 (EngStr_RenderText, the text-render worker the EngStr_DrawText
+    // forwarder tail-calls) reconstructed in its true home src/Wap32/EngStr.cpp.
 
     // @confidence: low
     // @source: winapi:CopyRect
@@ -3664,23 +3656,9 @@ namespace ApiCallerStubs {
     // 0x1485b0 (DirPal::CaptureSystemPalette, C:\Proj\DDrawMgr\DIRPAL.CPP)
     // reconstructed in src/Gruntz/DirPal.cpp.
 
-    // @confidence: low
-    // @source: winapi:CopyRect
-    // @stub
-    // proximity: CImage@-0x7e0 | CRemusNode@+0x9e0
-    RVA(0x00153ff0, 0x280)
-    i32 ThisStubOwnerUnknown::winapi_153ff0_CopyRect(i32, i32) {
-        return 0;
-    }
-
-    // @confidence: low
-    // @source: winapi:CopyRect
-    // @stub
-    // proximity: CImage@-0xf40 | CRemusNode@+0x280
-    RVA(0x00154750, 0x275)
-    i32 ThisStubOwnerUnknown::winapi_154750_CopyRect(i32, i32) {
-        return 0;
-    }
+    // 0x153ff0 (CImage::BlitShadeFlipHV) + 0x154750 (CImage::BlitShadeFlipH)
+    // reconstructed in src/Image/CImageSpriteBlit.cpp (the shaded flip variants of
+    // the sprite blit/clip family).
 
     // @confidence: low
     // @source: winapi:timeGetTime
@@ -4044,13 +4022,8 @@ namespace ApiCallerStubs {
         return 0;
     }
 
-    // @confidence: low
-    // @source: directx-wrapper-caller:calls 0x17c040 (DirectDrawCreate)
-    // @stub
-    RVA(0x0017c2a0, 0x14e)
-    i32 __stdcall directx_wrapper_caller_17c2a0_DirectDrawCreate(i32, i32) {
-        return 0;
-    }
+    // 0x17c2a0 (Smacker fullscreen video-window creator) reconstructed in
+    // src/Gruntz/SmackerVideoWindow.cpp (CSmackWin::CreateVideoWindow).
 
     // 0x17c3f0 (page/cursor command handler) reconstructed in
     // src/Gruntz/ApiHiCallers.cpp (Handler_17c3f0::Init).
@@ -4483,13 +4456,8 @@ namespace ApiCallerStubs {
         ReleaseDC(hWnd, hdc);
     }
 
-    // @confidence: low
-    // @source: winapi:GetTickCount
-    // @stub
-    RVA(0x0017e620, 0x13b)
-    i32 CFader::winapi_17e620_GetTickCount(i32, i32, i32) {
-        return 0;
-    }
+    // 0x17e620 (CFader-subtype timed-fade driver) reconstructed in
+    // src/Gruntz/CFaderRun.cpp (FaderRun::RunFade).
 
     // 0x17fe00 (fader/noise-effect init) reconstructed in
     // src/Gruntz/ApiHiCallers.cpp (Fx_17fe00::Init).

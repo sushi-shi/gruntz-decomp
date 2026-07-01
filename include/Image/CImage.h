@@ -299,11 +299,13 @@ public:
     // coordinate transform), clip it against either the parent clip RECT or the
     // worker clip box, then blit via CDDSurface::BltEx (surface variants) or
     // CDDrawShadeBlit::Blit (shaded variants). See src/Image/CImageSpriteBlit.cpp.
-    void BlitNorm(CBlitInfo* info, CImage* dst);       // 0x1538c0  no flip, surface
-    void BlitFlipV(CBlitInfo* info, CImage* dst);      // 0x153b20  Y flip, surface
-    void BlitFlipH(CBlitInfo* info, CImage* dst);      // 0x153d90  X flip, surface
-    void BlitShadeNorm(CBlitInfo* info, CImage* dst);  // 0x154270  no flip, shaded
-    void BlitShadeFlipV(CBlitInfo* info, CImage* dst); // 0x1544d0  Y flip, shaded
+    void BlitNorm(CBlitInfo* info, CImage* dst);        // 0x1538c0  no flip, surface
+    void BlitFlipV(CBlitInfo* info, CImage* dst);       // 0x153b20  Y flip, surface
+    void BlitFlipH(CBlitInfo* info, CImage* dst);       // 0x153d90  X flip, surface
+    void BlitShadeFlipHV(CBlitInfo* info, CImage* dst); // 0x153ff0  X+Y flip, shaded
+    void BlitShadeNorm(CBlitInfo* info, CImage* dst);   // 0x154270  no flip, shaded
+    void BlitShadeFlipV(CBlitInfo* info, CImage* dst);  // 0x1544d0  Y flip, shaded
+    void BlitShadeFlipH(CBlitInfo* info, CImage* dst);  // 0x154750  X flip, shaded
 
     // --- layout (continues the base; base ends at +0x10) ----------------------
     i32 m_10;                // +0x10  width  (from item->m_1c)

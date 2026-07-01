@@ -358,6 +358,98 @@ void CImage::BlitFlipH(CBlitInfo* info, CImage* dst) {
 }
 
 // ---------------------------------------------------------------------------
+// 0x153ff0 - X+Y flip, shaded blit (CDDrawShadeBlit::Blit, sel/p4 = 0/0).
+// ---------------------------------------------------------------------------
+// @early-stop
+// Complete + correct - the fourth member of the shaded family, structurally
+// identical to BlitShadeNorm/FlipV. Both anchor axes are flipped (X: the
+// m_18/m_20 signs; Y: the m_24/m_14/m_1c mixed-sign chain), so it inherits the
+// SAME whole-function regalloc/reassociation wall the other flip variants hit:
+// MSVC5 reassociates the mixed-sign X/Y accumulator chains and picks a different
+// this-member->register mapping than retail, cascading downstream. Plus the
+// WrapCoord (0x295a ILT thunk) / CopyRect (IAT import) / 0x14dd90 pre-notify
+// reloc-name operand artifacts. Clip + inclusive-rect struct-copy end match.
+RVA(0x00153ff0, 0x280)
+void CImage::BlitShadeFlipHV(CBlitInfo* info, CImage* dst) {
+    i32 x = info->m_5c - m_18 + m_20 + info->m_10;
+    i32 y = info->m_60 - m_1c + m_24 + info->m_14;
+    if (info->m_08 & 0x40000) {
+        info->m_3c->m_5c->WrapCoord(&x, &y);
+    }
+    i32 right = m_10 + x - 1;
+    i32 bottom = m_14 + y - 1;
+    RECT d;
+    d.left = x;
+    d.top = y;
+    d.right = right;
+    d.bottom = bottom;
+    if (info->m_08 & 0x40000) {
+        BlitRect clipA = m_0c->m_24->m_10;
+        RECT clip;
+        CopyRect(&clip, (const RECT*)&clipA);
+        if (x < clip.left) {
+            d.left += clip.left - x;
+        }
+        if (right > clip.right) {
+            d.right += clip.right - right;
+        }
+        if (y < clip.top) {
+            d.top += clip.top - y;
+        }
+        if (bottom > clip.bottom) {
+            d.bottom += clip.bottom - bottom;
+        }
+    } else if (info->m_64 == (i32)0x80000000) {
+        if (x < 0) {
+            d.left = 0;
+        }
+        if (right >= dst->m_10) {
+            d.right = dst->m_10 - 1;
+        }
+        if (y < 0) {
+            d.top = 0;
+        }
+        if (bottom >= dst->m_14) {
+            d.bottom = dst->m_14 - 1;
+        }
+    } else {
+        if (x < info->m_64) {
+            d.left = info->m_64;
+        }
+        if (right > info->m_6c) {
+            d.right = info->m_6c;
+        }
+        if (y < info->m_68) {
+            d.top = info->m_68;
+        }
+        if (bottom > info->m_70) {
+            d.bottom = info->m_70;
+        }
+    }
+    i32 w = d.right - d.left + 1;
+    i32 h = d.bottom - d.top + 1;
+    if (w <= 0 || h <= 0) {
+        info->m_38 = -1;
+        return;
+    }
+    RECT s;
+    s.left = right - d.right;
+    s.top = bottom - d.bottom;
+    s.right = s.left + w - 1;
+    s.bottom = s.top + h - 1;
+    if (info->m_58) {
+        ((CDDrawShadeBlit*)m_30)->Notify(info->m_50, info->m_4c);
+    }
+    ((CDDrawShadeBlit*)m_30)->Blit((ShadeRect*)&d, (ShadeSrc*)dst->m_2c, (ShadeRect*)&s, 0, 0);
+    info->m_18 = d.left;
+    info->m_1c = d.top;
+    info->m_20 = *(BlitRect*)&d;
+    info->m_30 = w;
+    info->m_34 = h;
+    info->m_38 = 0;
+}
+
+// ---------------------------------------------------------------------------
 // 0x154270 - no flip, shaded blit (CDDrawShadeBlit::Blit, sel/p4 = 1/1).
 // ---------------------------------------------------------------------------
 // @early-stop
@@ -528,6 +620,95 @@ void CImage::BlitShadeFlipV(CBlitInfo* info, CImage* dst) {
         ((CDDrawShadeBlit*)m_30)->Notify(info->m_50, info->m_4c);
     }
     ((CDDrawShadeBlit*)m_30)->Blit((ShadeRect*)&d, (ShadeSrc*)dst->m_2c, (ShadeRect*)&s, 1, 0);
+    info->m_18 = d.left;
+    info->m_1c = d.top;
+    info->m_20 = *(BlitRect*)&d;
+    info->m_30 = w;
+    info->m_34 = h;
+    info->m_38 = 0;
+}
+
+// ---------------------------------------------------------------------------
+// 0x154750 - X flip, shaded blit (CDDrawShadeBlit::Blit, sel/p4 = 0/1).
+// ---------------------------------------------------------------------------
+// @early-stop
+// Complete + correct - the shaded twin of BlitFlipH. The horizontal flip makes
+// X the mixed-sign chain (m_10 + m_20 + m_5c - m_18) that MSVC5 reassociates +
+// reorders vs retail, cascading the co-scheduled X/Y register assignment (same
+// wall as the surface BlitFlipH). Plus the WrapCoord/CopyRect/0x14dd90 reloc-name
+// operand artifacts. Clip + inclusive-rect struct-copy end match retail.
+RVA(0x00154750, 0x275)
+void CImage::BlitShadeFlipH(CBlitInfo* info, CImage* dst) {
+    i32 x = info->m_10 + m_20 + info->m_5c - m_18;
+    i32 y = info->m_60 - m_24 - info->m_14 - m_1c;
+    if (info->m_08 & 0x40000) {
+        info->m_3c->m_5c->WrapCoord(&x, &y);
+    }
+    i32 right = m_10 + x - 1;
+    i32 bottom = m_14 + y - 1;
+    RECT d;
+    d.left = x;
+    d.top = y;
+    d.right = right;
+    d.bottom = bottom;
+    if (info->m_08 & 0x40000) {
+        BlitRect clipA = m_0c->m_24->m_10;
+        RECT clip;
+        CopyRect(&clip, (const RECT*)&clipA);
+        if (x < clip.left) {
+            d.left += clip.left - x;
+        }
+        if (right > clip.right) {
+            d.right += clip.right - right;
+        }
+        if (y < clip.top) {
+            d.top += clip.top - y;
+        }
+        if (bottom > clip.bottom) {
+            d.bottom += clip.bottom - bottom;
+        }
+    } else if (info->m_64 == (i32)0x80000000) {
+        if (x < 0) {
+            d.left = 0;
+        }
+        if (right >= dst->m_10) {
+            d.right = dst->m_10 - 1;
+        }
+        if (y < 0) {
+            d.top = 0;
+        }
+        if (bottom >= dst->m_14) {
+            d.bottom = dst->m_14 - 1;
+        }
+    } else {
+        if (x < info->m_64) {
+            d.left = info->m_64;
+        }
+        if (right > info->m_6c) {
+            d.right = info->m_6c;
+        }
+        if (y < info->m_68) {
+            d.top = info->m_68;
+        }
+        if (bottom > info->m_70) {
+            d.bottom = info->m_70;
+        }
+    }
+    i32 w = d.right - d.left + 1;
+    i32 h = d.bottom - d.top + 1;
+    if (w <= 0 || h <= 0) {
+        info->m_38 = -1;
+        return;
+    }
+    RECT s;
+    s.left = right - d.right;
+    s.top = bottom - d.bottom;
+    s.right = s.left + w - 1;
+    s.bottom = s.top + h - 1;
+    if (info->m_58) {
+        ((CDDrawShadeBlit*)m_30)->Notify(info->m_50, info->m_4c);
+    }
+    ((CDDrawShadeBlit*)m_30)->Blit((ShadeRect*)&d, (ShadeSrc*)dst->m_2c, (ShadeRect*)&s, 0, 1);
     info->m_18 = d.left;
     info->m_1c = d.top;
     info->m_20 = *(BlitRect*)&d;
