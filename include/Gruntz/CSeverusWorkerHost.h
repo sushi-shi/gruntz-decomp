@@ -31,15 +31,21 @@ inline CSeverusWorker::~CSeverusWorker() {
 
 class CSeverusWorkerHost : public CSeverusBase {
 public:
+    CSeverusWorkerHost(i32 a1, i32 a2, i32 a3); // 0x1615a0
     ~CSeverusWorkerHost();
 
-    char m_pad10[0x20 - 0x10];  // +0x10..+0x1f
-    char* m_20;                 // +0x20  owned buffer (RezFree'd)
-    char* m_24;                 // +0x24  owned buffer (RezFree'd)
-    char m_pad28[0x9c - 0x28];  // +0x28..+0x9b
-    SeverusObArray m_9c;        // +0x9c  owned-pointer array (~ via 0x1b561c)
-    CSeverusWorker* m_b0;       // +0xb0  worker subobject
-    char m_padB4[0x158 - 0xb4]; // +0xb4..+0x157  (ctor footprint; unread here)
+    char m_pad10[0x18 - 0x10]; // +0x10..+0x17
+    float m_18;                // +0x18  (=1.0f)
+    float m_1c;                // +0x1c  (=1.0f)
+    char* m_20;                // +0x20  owned buffer (RezFree'd)
+    char* m_24;                // +0x24  owned buffer (RezFree'd)
+    char m_pad28[0x50 - 0x28]; // +0x28..+0x4f
+    i32 m_50;                  // +0x50  (=-1)
+    char m_pad54[0x9c - 0x54]; // +0x54..+0x9b
+    SeverusObArray m_9c;       // +0x9c  owned-pointer array (ctor 0x1b55e9 / ~ 0x1b561c)
+    CSeverusWorker* m_b0;      // +0xb0  worker subobject
+    char m_padB4[0xf4 - 0xb4]; // +0xb4..+0xf3
+    i32 m_f4[0x19];            // +0xf4..+0x157  (25 dwords; memset 0 then m_f4[0]=100)
 };
 
 #endif // GRUNTZ_CSEVERUSWORKERHOST_H

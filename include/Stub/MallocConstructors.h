@@ -72,13 +72,8 @@ public:
     MallocCtor_13cac0();
 };
 
-// non-RTTI ctor @ 0x001615a0, sizeof 0x158
-class MallocCtor_1615a0 {
-public:
-    MallocCtor_1615a0();
-    char m_data[0x158]; // operator-new size; real fields TBD
-};
-SIZE(MallocCtor_1615a0, 0x158);
+// 0x001615a0 (sizeof 0x158) reconstructed as CSeverusWorkerHost::CSeverusWorkerHost
+// in src/Gruntz/CSeverusWorkerHost.cpp.
 
 // istream::istream(streambuf*) @ 0x0016b510 - MSVC5 LIBCMT iostreams. sizeof 0x60
 // (vbptr/_fGline/x_gcount = 0x0c + ios vbase 0x54). Carries the /GX EH frame and
@@ -131,37 +126,9 @@ public:
 // 0x00135b10 reconstructed as DSoundCloneInst ctor in src/Dsndmgr/DirectSoundMgr.cpp.
 // 0x00136230 reconstructed as DSoundBaseSub ctor in src/Dsndmgr/DirectSoundMgr.cpp.
 
-// non-RTTI ctor @ 0x001736a0, sizeof 0x8
-class MallocCtor_1736a0 {
-public:
-    MallocCtor_1736a0();
-    char m_data[0x8]; // operator-new size; real fields TBD
-};
-SIZE(MallocCtor_1736a0, 0x8);
-
-// non-RTTI ctor @ 0x00174cb0, sizeof 0x8
-class MallocCtor_174cb0 {
-public:
-    MallocCtor_174cb0();
-    char m_data[0x8]; // operator-new size; real fields TBD
-};
-SIZE(MallocCtor_174cb0, 0x8);
-
-// non-RTTI ctor @ 0x00173c60, sizeof 0x8
-class MallocCtor_173c60 {
-public:
-    MallocCtor_173c60();
-    char m_data[0x8]; // operator-new size; real fields TBD
-};
-SIZE(MallocCtor_173c60, 0x8);
-
-// non-RTTI ctor @ 0x00174730, sizeof 0x8
-class MallocCtor_174730 {
-public:
-    MallocCtor_174730();
-    char m_data[0x8]; // operator-new size; real fields TBD
-};
-SIZE(MallocCtor_174730, 0x8);
+// 0x001736a0 / 0x00174cb0 / 0x00173c60 / 0x00174730 (each sizeof 0x8) are the
+// op-new + payload-copy "boxed value" ctor family; reconstructed byte-exact in
+// place in src/Stub/MallocConstructors.cpp (owning class not yet attributed).
 
 // 0x001816c0 reconstructed as CFader1816c0 ctor in src/Gruntz/CFader.cpp.
 
@@ -171,21 +138,12 @@ public:
     MallocCtor_168e70();
 };
 
-// non-RTTI ctor @ 0x0017e940, sizeof 0x6c
-class MallocCtor_17e940 {
-public:
-    MallocCtor_17e940();
-    char m_data[0x6c]; // operator-new size; real fields TBD
-};
-SIZE(MallocCtor_17e940, 0x6c);
+// 0x0017e940 (sizeof 0x6c) reconstructed as CFader17e940::CFader17e940 in
+// src/Gruntz/CFader.cpp (nested-subobject CFader subtype).
 
-// non-RTTI ctor @ 0x00174d00, sizeof 0x2c
-class MallocCtor_174d00 {
-public:
-    MallocCtor_174d00();
-    char m_data[0x2c]; // operator-new size; real fields TBD
-};
-SIZE(MallocCtor_174d00, 0x2c);
+// 0x00174d00 (sizeof 0x2c) is a CButeNode-family node ctor (base ctor 0x16dff0 +
+// two re-stamped vftables); reconstructed byte-exact in place in
+// src/Stub/MallocConstructors.cpp.
 
 // The CFader subtype ctors are reconstructed in src/Gruntz/CFader.cpp:
 //   0x0017f9a0 -> CFader17f9a0    0x0017fdb0 -> CFaderSine

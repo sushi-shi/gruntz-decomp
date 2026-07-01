@@ -37,6 +37,7 @@ struct SeverusObArray {
     i32 m_nSize;             // +0x08
     i32 m_nMaxSize;          // +0x0c
     i32 m_nGrowBy;           // +0x10
+    SeverusObArray();        // 0x1b55e9 CObArray default ctor (reloc-masked rel32 callee)
     void Dtor_1b561c();      // ~CObArray (reloc-masked rel32 callee)
     ~SeverusObArray() {
         Dtor_1b561c();
@@ -59,6 +60,13 @@ struct CSeverusBase {
     i32 m_08;                // +0x08
     i32 m_0c;                // +0x0c
     CSeverusBase() {}
+    // Arg-taking base ctor used by CSeverusWorkerHost: cl inlines the vptr stamp +
+    // the three field stores at the head of the derived ctor.
+    CSeverusBase(i32 a, i32 b, i32 c) {
+        m_04 = a;
+        m_08 = b;
+        m_0c = c;
+    }
 };
 
 class CSeverusEntryList : public CSeverusBase {

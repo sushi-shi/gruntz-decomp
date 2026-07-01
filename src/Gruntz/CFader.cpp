@@ -69,6 +69,42 @@ void CFader::Set2c(i32 v) {
 }
 
 // ===========================================================================
+// CFader17e940 - a CFader subtype (ctor 0x17e940, size 0x6c) that embeds a nested
+// polymorphic sub-object at +0x58 (its own vftable 0x5f07d8 + four zeroed fields).
+// ATYPICAL vptr order: the member sub-object is constructed (its vptr + fields)
+// BEFORE the subtype's own primary vftable 0x5f07c0 is stamped -- MSVC5's ctor
+// order is base ctors, MEMBER ctors, own vptr, body (cf. CFader::CFader building
+// m_cache before its own stamp). cl inlines the member ctor, so the member vptr +
+// field zeros fall between the CFader base ctor call and the sunk own-vptr stamp.
+// ===========================================================================
+struct CFader17e940Sub {   // nested sub-object at +0x58 (own vftable 0x5f07d8)
+    virtual void v0();     // one virtual -> its own vtable (reloc-masks 0x5f07d8)
+    i32 m_04;              // +0x5c
+    i32 m_08;              // +0x60
+    i32 m_0c;              // +0x64
+    i32 m_10;              // +0x68
+    CFader17e940Sub() {
+        m_04 = 0;
+        m_10 = 0;
+        m_0c = 0;
+        m_08 = 0;
+    }
+};
+
+class CFader17e940 : public CFader {
+public:
+    CFader17e940();    // 0x17e940
+    virtual void v1(); // override the two CFader pure virtuals -> primary vftable 0x5f07c0
+    virtual void v2();
+
+    char _pad34[0x58 - 0x34]; // +0x34..+0x57
+    CFader17e940Sub m_58;     // +0x58..+0x6b (member vptr + 4 fields)
+};
+
+RVA(0x0017e940, 0x27)
+CFader17e940::CFader17e940() {}
+
+// ===========================================================================
 // CFaderSine - the case-"3" / jump-index-2 fader subtype (CFaderMgr::Add allocates
 // 0x7d5c bytes for it). Its motion virtuals (0x17ff30 / 0x180400) override the two
 // CFader pure virtuals (slots 1/2); slots 3/4 are inherited. Real polymorphic now:
