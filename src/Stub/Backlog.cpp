@@ -151,7 +151,6 @@ public:
 
 namespace EngineLabelBacklog {
 
-    void __stdcall LoadBootyCheatState(i32, i32, i32);
     void UpdateBootyWalkingGruntz();
     void BuildBootyPerfectAnimation();
     void __stdcall BuildPowerupIconKeys(PowerupKeyRegistry* reg, i32 key);
@@ -199,38 +198,10 @@ namespace EngineLabelBacklog {
 // CreateGameObjectByName (0xa3b0) graduated to src/Gruntz/GameObjectFactory.cpp as
 // RegisterGameObjectTypes (the uniform 73-entry object-type factory registrar).
 
-// LoadBootyCheatState (0x18830) - the STATEZ_BOOTY cheat-screen asset loader,
-// __thiscall(this; a1,a2,a3) (ret 0xc), a /GX routine (5 CString locals). IDENTITY
-// + STRUCTURE fully recovered (dump_target + string_xref + functions.csv); DEFERRED
-// to the final sweep as a leaf-first redo - the first-run cheat-build loop pins
-// `this` (esi) to a spill slot and juggles 5 CString locals through Format/op=/
-// inline-strcpy in a way whose exact stack coloring is not hand-reconstructable
-// without diverging the whole /GX frame (the >512B rule). Structure:
-//   - Chains the base loader FUN_000043a9(a1,a2,a3) (reloc-masked); bail 0 on fail.
-//   - First run only (guarded by g_62af10==0): build the 32-entry cheat table at
-//     g_cheatTable (0x629f50, stride 0xa0, until 0x62aef0). Per entry i:
-//       A = i/3 + 1;  C = i%3 + 1;
-//       CString key;  FormatStr(&key,  "A%dC%d", A, C);         // FUN_001b2cf5
-//       int id = g_buteMgr.GetIntDef("BootyCheatz", key, 1);    // 0x171aa0
-//       CString sect; FormatStr(&sect, "Cheat%i", id);          // reuses the slot
-//       CString text = *g_buteMgr.GetStringDef(sect, "Text", &empty);  // 0x173180 + op= 0x1b9e25
-//       CString desc = *g_buteMgr.GetStringDef(sect, "Desc", &empty);
-//       strcpy(entry-0x20, text);  strcpy(entry+0, desc);       // inline rep movs
-//     then g_62af10 = 1; destruct the 5 CStrings.
-//   - Common path (both runs): this->m_4->FUN_34ef(0); register "STATEZ_BOOTY" via
-//     this->m_8->ResolvePath (0x13c030 -> m_2c), "GAME" (-> m_34), "GRUNTZ"
-//     (-> m_30); this->m_c->m_8->Method_159ef0(); m_2c->FindSub("SOUNDZ")
-//     (0x13a230) then install "BOOTY"/"_" via m_c->m_28->ScanTree (0x157ee0);
-//     m_30->ResolvePath("SOUNDZ_WANDGRUNT") (0x13bae0) then install
-//     "GRUNTZ_WANDGRUNT"/"_"; m_2c->FindSub("IMAGEZ") then install "BOOTY"/"_" via
-//     m_c->m_10 vtable slot +0x48; ShowCursor(FALSE) loop; PumpMessages(0x100,0x40)
-//     (0x13d4e0); this->m_1b8=0; chain FUN_11c2/39c7/3b8e/1681/2d83 (bail 0 on any
-//     fail); stamp m_1c8=0x21, m_1cc=0, m_1c0=g_645588, m_1c4=0; return 1.
-// @confidence: high
-// @source: string-xref
-// @stub
-RVA(0x00018830, 0x380)
-void __stdcall EngineLabelBacklog::LoadBootyCheatState(i32, i32, i32) {}
+// LoadBootyCheatState (0x18830) graduated to src/Gruntz/BootyCheatState.cpp (eh
+// unit) as CBootyCheatState::LoadAssets - the STATEZ_BOOTY cheat-screen asset
+// loader; the five destructible CString locals of the first-run cheat-table build
+// give it the /GX exception frame.
 
 // @source: decomp-xref
 // @early-stop
@@ -743,6 +714,29 @@ i32 EngineLabelBacklog::LoadCustomWorldInfo(HWND hDlg) {
     return 1;
 }
 
+// HandleFortConquered (0x3f5f0, 1318 B) - the per-frame fort-conquest check on the
+// trigger object (`this`), a /GX routine. Structure FULLY decoded (dump_target +
+// string_xref): +0x1a0 sub-clock tick (this->m_38->m_1a0.Tick(g_6bf3bc), FUN
+// 0x15c360); mode gate on g_mgrSettings->m_134==1 (the simple ProbeA arm FUN
+// 0x3120 else the full path); HitTestCell (FUN 0x32ce) + dedup vs owner->m_124; the
+// 5-CString "<A> was conquered by <B>!" HUD message (GetName FUN 0x3e54 by value +
+// the operator+ chain FUN 0x1b9f81/0x1b9f1b + ShowMessage FUN 0x1483); tag the old
+// config entry (m_150[oldArea].m_24=1, stride 0x238); TWO handler-type re-home list
+// walks (obj->m_7c->m_10 == LAB_004017e4 / LAB_00403148) moving objects from the
+// old area to the found one (re-home helper FUN 0x4165) + a g_freeList (0x645544)
+// pop seeding the flag position (FUN 0x1b5144); a per-object Explosion/
+// GAME_EXPLOSION3 eye-candy spawn (CreateSprite FUN 0x1597b0 + Configure FUN
+// 0x1505b0) for objects inside the area rect; all exits jmp the shared epilogue.
+// DEFERRED to the final sweep as a leaf-first regalloc redo: a full-body /GX
+// reconstruction (CFortConquerTrigger::HandleConquered, ~200 lines, all callees +
+// strings named) was written and BUILDS, but retail pins `this` to ebp (reused as
+// the walk cursor) with a 0x24 frame + the canonical /GX prologue, while the /O2
+// recompile pins `this` to ebx with a 0x20 frame + hoists the `mov eax,fs:0` SEH
+// read - a this-register + frame-slot + prologue-schedule divergence that cascades
+// a byte-mismatch through all 1318 B (objdiff 0.0%, BELOW the empty-stub 27.1%
+// baseline). Per the breadth-first >512B rule (a partial under-counts AND diverges
+// its regalloc), left stubbed until the callee set + owning class + a matching
+// regalloc are modeled leaf-first.
 // @confidence: med
 // @source: decomp-xref
 // @proximity: CGruntCreationPoint@-0x930 | CWormhole@+0x680 (boundary - pick one)

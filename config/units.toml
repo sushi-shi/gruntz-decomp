@@ -426,6 +426,11 @@ source = "src/Gruntz/GruntzMgrTransition.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "bootycheatstate"
+source = "src/Gruntz/BootyCheatState.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "cplayplanescan"
 source = "src/Gruntz/CPlayPlaneScan.cpp"
 flags = "eh"
