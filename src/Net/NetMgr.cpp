@@ -2086,6 +2086,7 @@ struct CGroupNode {
     void* m_4;               // +0x04
     InterfaceObject* m_data; // +0x08
 };
+SIZE_UNKNOWN(CGroupNode); // traversal view of the +0x1c group list node
 
 // @early-stop
 // linked-list advance regalloc wall (~94.9%): the head-load + the kind switch +
@@ -2186,6 +2187,7 @@ struct CNetJoinPacket {
     i32 m_10;        // +0x10  local player id (m_localPlayerId)
     char m_14[0x14]; // +0x14  player name (strcpy)
 };
+SIZE(CNetJoinPacket, 0x28); // fully-known fixed stat-0x3f9 announce packet
 
 // The 0x11c-byte command-timing config blob SaveConfig builds and ships as stat
 // 0x416 (the inverse of LoadConfig): a flag byte, the stat id, the config word,
@@ -2202,6 +2204,7 @@ struct CNetConfigBlob {
     i32 m_114;          // +0x114  m_600
     i32 m_118;          // +0x118  m_2d8
 };
+SIZE(CNetConfigBlob, 0x11c); // fully-known fixed stat-0x416 config blob
 
 // ---------------------------------------------------------------------------
 // CNetMgr::SaveConfig  (__thiscall; ret 4; /GX EH frame).

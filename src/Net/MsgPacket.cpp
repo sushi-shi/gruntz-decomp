@@ -14,6 +14,7 @@ struct CMsgPacket {
     i32 m_populated; // +0x1c  populated flag
     char m_pad20[0x38 - 0x20];
 };
+SIZE(CMsgPacket, 0x38); // full object: the byte-matched CopyPacketHeader struct-copy is 0x38
 
 // 0x1868e0 - append a 16-bit value big-endian, advancing the cursor by 2.
 RVA(0x001868e0, 0x2f)

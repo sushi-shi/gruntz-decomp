@@ -112,6 +112,7 @@ struct CNetVersionMsg {
     i32 m_18; // +0x18  host remote-version word
     i32 m_1c; // +0x1c  host local-version word
 };
+SIZE_UNKNOWN(CNetVersionMsg); // host-version msg view (only +0x18/+0x1c pinned); size TBD
 
 // The 0x20-byte version-announce packet AnnounceVersion builds on the stack and
 // ships through the engine stat dispatcher as stat 0x417. Field offsets pinned
@@ -183,6 +184,7 @@ struct CNetChannel {
     // the call reloc-masks). 0x41f450.
     CString GetName();
 };
+SIZE_UNKNOWN(CNetChannel); // channel-descriptor view (0x238 stride not fully modeled); size TBD
 
 // A payload entry found through the m_58 player list. FindPlayerById matches on
 // the entry's +0x4 id field.
@@ -190,6 +192,7 @@ struct CNetPlayerEntry {
     char m_pad0[4];
     i32 m_4; // +0x4  the entry's id (the lookup key)
 };
+SIZE_UNKNOWN(CNetPlayerEntry); // payload-entry view (only +0x4 id pinned); size TBD
 
 // The 0x10-byte stat-packet header the SendStat* helpers fire through the
 // DirectPlay set-data slots. Only the three written fields are pinned: a flag
@@ -201,6 +204,7 @@ struct CNetStatPacket {
     i32 m_8;        // +0x8  value / player id
     char m_padc[4]; // +0xc  (0x10 total)
 };
+SIZE_UNKNOWN(CNetStatPacket); // 0x10-byte stat-packet header view; full record size TBD
 
 // A singly-linked node in the m_58 player list: +0x0 next, +0x8 payload.
 struct CNetPlayerNode {
@@ -208,6 +212,7 @@ struct CNetPlayerNode {
     char m_pad4[4];
     CNetPlayerEntry* m_8; // +0x8  the payload entry
 };
+SIZE_UNKNOWN(CNetPlayerNode); // player-list node walk-view; retail size TBD
 
 // ---------------------------------------------------------------------------
 // The per-player command-resend slot ResetPlayerCommands operates on. The
@@ -253,6 +258,7 @@ struct CNetCmdSlot {
     Init(i32 a1, i32* a2, i32 a3); // c0b10  seed a fresh slot, then ClearCmds + reset both ranges
     i32 ProcessCmd(i32 playerId, void* rec, i32 size); // c0c70  parse/dispatch a command record
 };
+SIZE(CNetCmdSlot, 0x64); // fully-laid-out inline command slot (array stride 0x64)
 
 // The DirectPlay session sub-object at CNetMgr+0x520. Two helpers are reached
 // here (external __thiscall thunks): FindCmdSlot linear-scans the four inline
@@ -265,6 +271,7 @@ struct CNetCmdBuf {
     i32 m_150;          // +0x150
     char m_pad154[0x238 - 0x154];
 };
+SIZE(CNetCmdBuf, 0x238); // fully-known command buffer (array stride 0x238)
 
 // One 0x410-byte resync entry the session keeps at +0x3b0; Verify compares slot
 // command +0x4 against entry[(m_18-2)%128].m_4. ResetAll zeroes m_0/m_4, the
@@ -317,6 +324,7 @@ struct CNetSession {
         ResetAll();
     }
 };
+SIZE(CNetSession, 0x20bb0); // fully-laid-out: +0x3b0 + 0x80*0x410 resync entries
 
 // The command-dispatch queue hanging off the CNetMgr's m_4 sub-object at +0x6c;
 // ResetPlayerCommands fires its 2-arg dispatch helper (external thunk) for each
@@ -324,6 +332,7 @@ struct CNetSession {
 struct CNetCmdQueue {
     void Dispatch(i32 cmdHead, i32 seq); // 423b40
 };
+SIZE_UNKNOWN(CNetCmdQueue); // method-only dispatch-queue view; retail size TBD
 
 // The m_4 sub-object, seen here only for its +0x6c command-dispatch queue (the
 // same object whose +0x4->+0x4 is the engine HWND - see CNetHwndHolder below).
@@ -331,6 +340,7 @@ struct CNetSubObject {
     char m_pad0[0x6c];
     CNetCmdQueue* m_6c; // +0x6c  the command-dispatch queue
 };
+SIZE_UNKNOWN(CNetSubObject); // m_4 sub-object view (only +0x6c pinned); retail size TBD
 
 // ---------------------------------------------------------------------------
 // The DirectPlay session interface CNetMgr keeps at +0x18 (an IDirectPlay4-shaped
@@ -409,6 +419,7 @@ struct IDirectPlay4Z {
         ); // +0x74 (slot 29)
     }* vtbl;
 };
+SIZE_UNKNOWN(IDirectPlay4Z); // external DirectPlay COM interface (opaque object); size TBD
 
 // ---------------------------------------------------------------------------
 // A managed player object the m_54 list holds. RemovePlayerObj (0x178e20) tears
@@ -427,6 +438,9 @@ public:
     char m_pad4[0x20 - 0x4]; // +0x04
     __POSITION* m_20;        // +0x20  cached list position
 };
+SIZE_UNKNOWN(CNetPlayerObj); // polymorphic-dispatch view (only +0x20 pinned); size TBD
+// No VTBL: this is a slot-dispatch modeling view (virtuals undefined -> cl emits no
+// vtable here); its concrete retail vtable is not confidently pinned in this TU.
 
 // ---------------------------------------------------------------------------
 // One node of the three managed CObList collections at CNetMgr+0x1c/+0x38/+0x54.
@@ -439,6 +453,7 @@ struct CNetListNode {
     char m_pad4[4];        // +0x04  prev node (unused)
     CNetPlayerObj* m_data; // +0x08  payload sub-object (polymorphic; slot1 self-destruct)
 };
+SIZE_UNKNOWN(CNetListNode); // CObList node walk-view; retail size TBD
 
 // ---------------------------------------------------------------------------
 // The managed-player object node the +0x38 player list holds. AddPlayerNode
@@ -528,6 +543,7 @@ struct INetReleasable {
         i32(__stdcall* Slot10)(INetReleasable*); // +0x10 (slot 4)
     }* vtbl;
 };
+SIZE_UNKNOWN(INetReleasable); // external COM interface (opaque object); size TBD
 
 // ---------------------------------------------------------------------------
 // The control message HandleControlMsg (0xba1a0) dispatches on: a packed record
@@ -539,6 +555,7 @@ struct CNetCtrlMsg {
     i32 m_4; // +0x4  sub-code
     i32 m_8; // +0x8  payload (player id on the player-left path)
 };
+SIZE_UNKNOWN(CNetCtrlMsg); // packed control-record view (3 dwords pinned); size TBD
 
 // The +0x4 sub-object viewed for OnPlayerLeft: it owns the per-player records
 // (FindPlayer maps a DirectPlay id -> the GruntzPlayer slot, FUN_00492e80) and a
@@ -549,6 +566,7 @@ struct CNetCtrlMsg {
 struct CNetChatLog {
     i32 AddItem(const char* text, i32 type, i32 data); // 0x00421c60
 };
+SIZE_UNKNOWN(CNetChatLog); // method-only chat-display view; retail size TBD
 
 class GruntzPlayer; // include <Gruntz/GruntzPlayer.h> in the TU that derefs it
 
@@ -558,6 +576,7 @@ struct CNetGameMgr {
     char m_pad0[0x5c];
     CNetChatLog* m_5c; // +0x5c  the chat/text display
 };
+SIZE_UNKNOWN(CNetGameMgr); // game-mgr view (only +0x5c pinned); retail size TBD
 
 // The player slot FindPlayer returns; only its name (GetName, 0x41f450, the same
 // by-value CString fetch as CNetChannel::GetName) and its +0x8 id word are
@@ -567,6 +586,7 @@ struct CNetPlayerName {
     i32 m_8;           // +0x8  player id word
     CString GetName(); // 0x41f450
 };
+SIZE_UNKNOWN(CNetPlayerName); // player-slot view (only +0x8/name pinned); retail size TBD
 
 // FUN_004db2b0 (__cdecl): g_netSlotTable[idx] = value (a global flag array at
 // 0x64c3f0). External, no body -> the call reloc-masks.
@@ -615,6 +635,7 @@ struct CNetCreateCtx {
     char m_pad0[0x74];
     void* m_74; // +0x74  the group-enumeration record
 };
+SIZE_UNKNOWN(CNetCreateCtx); // create-context view (only +0x74 pinned); retail size TBD
 extern "C" CNetCreateCtx* g_648cf4; // 0x648cf4
 
 class CNetMgr {
@@ -963,5 +984,6 @@ struct CNetHwndHolder {
     char m_pad0[4];
     void* m_4; // +0x4
 };
+SIZE_UNKNOWN(CNetHwndHolder); // HWND-chain view (only +0x4 pinned); retail size TBD
 
 #endif // NET_NETMGR_H

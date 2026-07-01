@@ -47,6 +47,10 @@ struct CNetNodeBase {
     virtual void V4();       // slot 4 (sub_004034)
 };
 inline CNetNodeBase::~CNetNodeBase() {}
+SIZE_UNKNOWN(CNetNodeBase); // CObject-like collection-node base; retail size TBD
+// No VTBL: this base subobject's vtable is the SHARED CObject-base dtor vtable
+// 0x5e8cb4, already catalogued as ?g_severusBaseDtorVtbl@@3PAXA - a VTBL here would
+// collide on that rva / mis-attribute a shared vtable to one modeling-base name.
 
 // The shared CWapNodeB string-cleanup helper (Font.cpp 0x179680): frees the two
 // owned buffers at +0x34/+0x38 and clears +0x04. Declared here only so
@@ -66,6 +70,8 @@ public:
     char m_pad04[0x54 - 0x04]; // +0x04..+0x53  the 0x50-byte DPSESSIONDESC2 copy
                                //               (lpszSessionName@+0x34, lpszPassword@+0x38)
 };
+SIZE_UNKNOWN(CNetPlayerListNode); // node view (desc copy pinned); full retail size TBD
+VTBL(CNetPlayerListNode, 0x005f0760); // own (most-derived) vtable
 
 // The source DPSESSIONDESC2 Init deep-copies: only the two name pointers it
 // duplicates are pinned (offsets within the 0x50-byte struct).
@@ -74,6 +80,7 @@ struct CNetSessionDesc {
     char* m_lpszName;     // +0x30  lpszSessionName
     char* m_lpszPassword; // +0x34  lpszPassword
 };
+SIZE_UNKNOWN(CNetSessionDesc); // DPSESSIONDESC2 view (only name ptrs pinned); size TBD
 
 // ---------------------------------------------------------------------------
 // CNetSessionNode - two CString members + two raw heap buffers.
@@ -91,6 +98,8 @@ public:
     i32 m_1c;             // +0x1c
     i32 m_listPosition;   // +0x20  cleared on teardown
 };
+SIZE_UNKNOWN(CNetSessionNode); // node view (fields to +0x20 pinned); full retail size TBD
+VTBL(CNetSessionNode, 0x005f0778); // own (final) vtable
 
 // ===========================================================================
 // CNetPlayerListNode::~CNetPlayerListNode  @0x1793b0

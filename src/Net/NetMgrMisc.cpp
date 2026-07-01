@@ -20,11 +20,13 @@ struct CNetMgrConn {
     void Disconnect(i32); // 0xba810
     void Submit(i32);     // 0xbaf00 (via thunk 0x185c)
 };
+SIZE_UNKNOWN(CNetMgrConn); // CNetMgr singleton view (only +0x528/+0x5c0 pinned); size TBD
 
 // The +0x5c sub-object whose Transform the else-branch calls.
 struct CNetXform {
     i32 Transform(i32); // 0x92e80 (via thunk 0x2e00)
 };
+SIZE_UNKNOWN(CNetXform); // method-only transform view; retail size TBD
 
 // The connect-state coordinator object ('this').
 struct CNetConnCoord {
@@ -35,6 +37,7 @@ struct CNetConnCoord {
     void OpA(i32);          // c2ab0  external
     void OpC(i32);          // c4230  external
 };
+SIZE_UNKNOWN(CNetConnCoord); // connect-coordinator view (only +0x5c pinned); size TBD
 
 // A slot object whose +0x3c..+0x48 range is cleared.
 struct CNetSlotAux {
@@ -42,6 +45,7 @@ struct CNetSlotAux {
     i32 m_3c;          // +0x3c..+0x48 (4 dwords)
     void ClearRange(); // bf120
 };
+SIZE_UNKNOWN(CNetSlotAux); // slot-clear view (only +0x3c range pinned); size TBD
 
 // Singletons the forwarders dispatch onto.
 struct CNetSingletonBe90 {
@@ -53,6 +57,7 @@ extern CNetSingletonBe90 g_netBe90; // VA 0x64be90
 struct CNetSingletonE25c {
     i32 Poll(); // 0x1b9b93
 };
+SIZE_UNKNOWN(CNetSingletonE25c); // method-only singleton view; retail size TBD
 DATA(0x0024e25c)
 extern CNetSingletonE25c g_netE25c; // VA 0x64e25c
 

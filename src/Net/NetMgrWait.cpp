@@ -47,17 +47,21 @@ struct WaitDWordArr {               // this+0x604 (a CDWordArray of per-slot vot
     char m_pad0[8];
     i32 m_8; // +0x8
 };
+SIZE_UNKNOWN(WaitDWordArr); // CDWordArray view (only +0x8 pinned); size TBD
 struct WaitReportGate { // m_peer (+0x524)
     char m_pad0[0x60];
     i32 m_60; // +0x60  peer-ready gate
 };
+SIZE_UNKNOWN(WaitReportGate); // peer view (only +0x60 pinned); size TBD
 struct WaitSoundZ {                       // m_4->m_48
     i32 Play(const char* name, i32 flag); // 0x138840
 };
+SIZE_UNKNOWN(WaitSoundZ); // method-only ambient-sound view; retail size TBD
 struct WaitLogic { // this->m_4
     char m_pad0[0x48];
     WaitSoundZ* m_48; // +0x48  ambient sound sub-mgr
 };
+SIZE_UNKNOWN(WaitLogic); // logic view (only +0x48 pinned); size TBD
 struct WaitSettings { // g_mgrSettings (0x64556c)
     char m_pad0[0x14];
     i32 m_14; // +0x14  ambient-enabled gate
@@ -67,6 +71,7 @@ struct WaitSettings { // g_mgrSettings (0x64556c)
     i32 m_8c; // +0x8c  screen width
     i32 m_90; // +0x90  screen height
 };
+SIZE_UNKNOWN(WaitSettings); // settings view (only touched offsets pinned); size TBD
 
 // ---------------------------------------------------------------------------
 // CNetMgr::WaitForOtherPlayers (0xbb700, /GX) - after clearing the per-slot vote

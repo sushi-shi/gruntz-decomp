@@ -14,6 +14,7 @@ struct CColorSlot {
     char m_0[8];                // +0x150 region
     i32 m_currentOwnerPlayerId; // +0x158  current owner player id
 };
+SIZE_UNKNOWN(CColorSlot); // +0x150 sub-region view; retail size TBD
 
 // One session command buffer (0x238). idx*0x238 == idx*71*8 -> the lea/shl/sub.
 struct CNetCmdBuf {
@@ -29,6 +30,7 @@ struct CNetLobbyMgr {
     i32 m_sessionActive;                       // +0x528  session-active flag
     void ShowError(const char* msg, i32 code); // 0xb7e30 (__thiscall, external)
 };
+SIZE_UNKNOWN(CNetLobbyMgr); // lobby-mgr singleton view (only +0x528 pinned); size TBD
 
 struct CNetSessHost {
     char m_pad0[0x5c];
@@ -36,6 +38,7 @@ struct CNetSessHost {
 
     i32 SelectColor(i32 colorIndex, i32 playerId); // 0xc4b60
 };
+SIZE_UNKNOWN(CNetSessHost); // session-host view (only +0x5c pinned); size TBD
 
 DATA(0x0024bd5c)
 extern CNetLobbyMgr* g_64bd5c;

@@ -20,6 +20,7 @@ struct MenuSelectEvent {
     i32 m_20; // +0x20
     i32 m_24; // +0x24
 };
+SIZE_UNKNOWN(MenuSelectEvent); // event view (only touched offsets pinned); size TBD
 
 // The session/player manager at CNetMgr+0x524.
 struct PlayerNode;
@@ -27,12 +28,14 @@ struct PlayerMgr {
     PlayerNode* GetPlayerData(i32 id);                         // 0x178eb0 (__thiscall)
     PlayerNode* AddSessionNode(i32 id, i32 a, i32 b, void* c); // 0x178b30 (__thiscall)
 };
+SIZE_UNKNOWN(PlayerMgr); // method-only +0x524 sub-object view; retail size TBD
 
 // The options host at CNetMgr+0x4 (CountReadyOptionsSlots @0x92e30 via the 0x38cd
 // ILT thunk; __thiscall ret 4).
 struct OptionsHost {
     i32 CountReadyOptionsSlots(i32 flag);
 };
+SIZE_UNKNOWN(OptionsHost); // method-only +0x4 sub-object view; retail size TBD
 
 // The shared positional-sound cue idiom (same shape as CPathHazard's strike cue):
 // m_c is the sound sub-mgr; m_28 its host; find "GAME_MENUS_SELECT" -> an emitter;

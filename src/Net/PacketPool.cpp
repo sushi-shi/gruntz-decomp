@@ -12,6 +12,7 @@ struct PacketPool {
     void AddCount(int n); // 0x1b4867 - CObList helper taking a count
     void* RemoveTail();   // 0x1b4a27 - CObList::RemoveTail
 };
+SIZE_UNKNOWN(PacketPool); // method-only CObList view; retail size TBD
 extern PacketPool g_pool_64aca8;
 extern int g_count_64acb4;
 

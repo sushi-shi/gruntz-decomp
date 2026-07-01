@@ -24,6 +24,10 @@ struct InterfaceObjectBase {
     virtual void V4();              // slot 4 (sub_004034)
 };
 inline InterfaceObjectBase::~InterfaceObjectBase() {}
+SIZE_UNKNOWN(InterfaceObjectBase); // CObject-like base subobject; retail size TBD
+// No VTBL: this base subobject's vtable is the SHARED CObject-base dtor vtable
+// 0x5e8cb4, already catalogued as ?g_severusBaseDtorVtbl@@3PAXA - a VTBL here would
+// collide on that rva / mis-attribute a shared vtable to one modeling-base name.
 
 class InterfaceObject : public InterfaceObjectBase {
 public:

@@ -38,6 +38,7 @@ struct PlayerNode {
     void* m_4;          // +0x04
     void* m_item;       // +0x08 (the player record)
 };
+SIZE_UNKNOWN(PlayerNode); // CObList-shaped list-node view; retail size TBD
 // The session container: a player CObList (head at +0x3c) + a scratch POSITION
 // cursor the listbox fill walks through (+0x80).
 struct Session {
@@ -46,6 +47,7 @@ struct Session {
     char m_pad2[0x80 - 0x40];
     PlayerNode* m_pos; // +0x80 (the running POSITION)
 };
+SIZE_UNKNOWN(Session); // session-container view (only +0x3c/+0x80 pinned); size TBD
 
 // ---------------------------------------------------------------------------
 // FillPlayerList() - 0x0b89e0. __stdcall(HWND hList, Session* sess): clear the

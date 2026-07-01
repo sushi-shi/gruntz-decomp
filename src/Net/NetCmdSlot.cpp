@@ -29,6 +29,7 @@ struct CObListNode {
     CObListNode* m_prev; // +0x4
     void* m_data;        // +0x8
 };
+SIZE_UNKNOWN(CObListNode); // CObList node walk-view; retail size TBD
 
 // Return a finished command to the engine's free pool (0xbf580, __cdecl): it
 // AddTail's the node onto a global recycle list. External (reloc-masked).
@@ -85,6 +86,7 @@ struct CNetMgrSub {
     char m_pad0[0x6c];
     CGruntzCmdMgr* m_cmdMgr; // +0x6c
 };
+SIZE_UNKNOWN(CNetMgrSub); // sub-object view (only +0x6c pinned); retail size TBD
 
 // The CNetMgr the slot caches at +0x1c, seen here through three members: the +0x4
 // sub-object (whose +0x6c is the grunt command manager), the DirectPlay session at
@@ -97,6 +99,7 @@ struct CNetMgrView {
 
     i32 DispatchRecv(i32 sender, void* buf, i32 size); // 0xb9750
 };
+SIZE_UNKNOWN(CNetMgrView); // CNetMgr view (only +0x4/+0x520 pinned); retail size TBD
 
 // The command record's fixed header (after the opcode/parity prefix): a sequence
 // number, two control words and a per-entry count byte; the payload follows.
@@ -106,6 +109,7 @@ struct CNetCmdHdr {
     i32 m_flags;      // +0x8  flags word
     u8 m_entryCount;  // +0xc  entry count
 };
+SIZE_UNKNOWN(CNetCmdHdr); // record header prefix (payload follows); full record size TBD
 
 // The recycled command packet AddCmd queues: sequence, owning slot, a flag byte,
 // the payload length and the inline payload copy.
@@ -117,6 +121,7 @@ struct CNetCmdPacket {
     i32 m_payloadLength; // +0xc  payload length
     char m_payload[1];   // +0x10 payload
 };
+SIZE_UNKNOWN(CNetCmdPacket); // trailing-payload packet (flexible array); fixed size TBD
 
 // ---------------------------------------------------------------------------
 // CNetSession::ResetCmdBuffers (0x0c0070, __thiscall) - zero the +0x10 head of
@@ -481,6 +486,7 @@ struct CNetSyncCheck {
 
     i32 AllSlotsReady(); // c1320
 };
+SIZE_UNKNOWN(CNetSyncCheck); // minimal view (only +0x1c/+0x3c pinned); retail size TBD
 
 // ---------------------------------------------------------------------------
 // CNetSyncCheck::AllSlotsReady (0x0c1320, __thiscall) - false (0) if any active

@@ -19,6 +19,7 @@ struct CNetCmdSlot2 {
     void FullReset(); // 0xc0c20 (external, reloc-masked)
     i32 Ready();      // 0xc1320 (external, reloc-masked)
 };
+SIZE(CNetCmdSlot2, 0x64); // fully-known inline command slot (array stride 0x64)
 
 struct CNetResyncEntry {
     i32 m_0; // +0x00
@@ -28,6 +29,7 @@ struct CNetResyncEntry {
     i32 m_c; // +0x0c
     char m_pad10[0x410 - 0x10];
 };
+SIZE(CNetResyncEntry, 0x410); // fully-known resync entry (array stride 0x410)
 
 struct CNetMgr;
 
@@ -48,8 +50,11 @@ struct CNetSession2 {
     i32 Init(void* a1, CNetMgr* a2, void* a3); // 0xbef80
     i32 Verify(i32 n);                         // 0xc0290
 };
+SIZE(CNetSession2, 0x20bb0); // fully-laid-out: +0x3b0 + 0x80*0x410 resync entries
 
-// The owning net manager: only +0x5a4 (cached by Init) is read.
+// The owning net manager: only +0x5a4 (cached by Init) is read. Its name is
+// already size-annotated on the full CNetMgr view in NetMgr.h (this is a partial
+// same-named view local to this TU).
 struct CNetMgr {
     char m_pad0[0x5a4];
     i32 m_cmdDelay; // +0x5a4

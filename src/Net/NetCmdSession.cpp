@@ -15,11 +15,13 @@ struct CNetCmd {
     i32 m_seq; // +0x0
     i32 m_4;   // +0x4
 };
+SIZE_UNKNOWN(CNetCmd); // queued-command view (2 fields pinned); retail size TBD
 
 // CNetCmdSlot helper reached only here (0xc0bb0, __thiscall, external).
 struct CNetCmdSlotReset {
     void Reset0bb0();
 };
+SIZE_UNKNOWN(CNetCmdSlotReset); // method-only helper view; retail size TBD
 
 // ---------------------------------------------------------------------------
 // CNetSession::ResetAll (0xbbf80, __thiscall) - full session reset: zero the
