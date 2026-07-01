@@ -16,6 +16,7 @@
 #define GRUNTZ_CAMBIENTSOUND_H
 
 #include <Ints.h>
+#include <Gruntz/CGameRegistry.h>
 #include <rva.h>
 
 #include <Dsndmgr/DirectSoundMgr.h>
@@ -57,14 +58,8 @@ struct WwdActiveLevel {
     char m_pad0[0x24];
     i32 m_24; // +0x24  object count (non-zero == playable)
 };
-struct WwdGameReg {
-    char m_pad0[0x10];
-    i32 m_10; // +0x10  active-level handle (Update gates on it)
-    char m_pad14[0x54 - 0x14];
-    WwdActiveLevel* m_54; // +0x54  the active world view
-};
 DATA(0x0024556c)
-extern WwdGameReg* g_gameReg;
+extern CGameRegistry* g_gameReg;
 
 // CUserBase's retail vftable (0x5e70b4) - restamped at the tail of the dtor as
 // the base sub-object is torn down. Transitional reloc-masked DIR32 store while

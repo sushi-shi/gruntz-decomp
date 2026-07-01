@@ -7,7 +7,7 @@
 // dtor put a C++ EH frame on those methods -> /GX (the `mfc` /O1 profile, matching
 // FileStream.cpp). The leaf accessors are frameless register-frame functions.
 //
-// All cross-class callees (CFileIO, CString, WwdGameReg, the CRT _strncpy, the
+// All cross-class callees (CFileIO, CString, CGameRegistry, the CRT _strncpy, the
 // MFC wait-cursor helpers) are modeled as external/no-body so their reloc
 // operands are masked in objdiff.
 #include <Io/SaveGame.h>

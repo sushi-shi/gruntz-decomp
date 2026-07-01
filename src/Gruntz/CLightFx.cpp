@@ -13,6 +13,7 @@
 #include <Gruntz/CLightFx.h>
 
 #include <rva.h>
+#include <Gruntz/CGameRegistry.h>
 
 // ---------------------------------------------------------------------------
 // The CMap core embedded at +0x10 inside each spec/effect store. Lookup(key,
@@ -51,13 +52,9 @@ struct LfxLogicPump {
 };
 
 // The global game registry (?g_gameReg, *0x64556c); only the +0x78 logic pump is
-// read here. (Declared as the engine's WwdGameReg via the existing DATA label.)
-struct WwdGameReg {
-    char m_pad00[0x78];
-    LfxLogicPump* m_78; // +0x78
-};
+// read here. (Declared as the engine's CGameRegistry via the existing DATA label.)
 DATA(0x0024556c)
-extern WwdGameReg* g_gameReg;
+extern CGameRegistry* g_gameReg;
 
 // The global bute store RebindNode re-points the object map at ("A" section).
 // g_buteTree (0x6bf620) + CButeTree::Find (0x16d190) live in the bute TUs;
@@ -200,7 +197,7 @@ i32 CLightFx::Activate(i32 spec, i32 anchorA, i32 effect, i32 anchorB) {
     i32 node = 0;
     ((LfxMapSource*)m_3c)->m_0c->m_10->m_10.Lookup(spec, &node);
     i32 found = node;
-    g_gameReg->m_78->Push(found, anchorA, 7);
+    ((LfxLogicPump*)g_gameReg->m_78)->Push(found, anchorA, 7);
     LfxObj* obj = (LfxObj*)m_38;
     if (found != 0) {
         LfxEffectNode* en = (LfxEffectNode*)found;

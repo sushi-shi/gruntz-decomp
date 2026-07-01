@@ -12,6 +12,7 @@
 // stream / sub-object vtable structs for the dispatches. External engine helpers are
 // reloc-masked.
 #include <Ints.h>
+#include <Gruntz/CGameRegistry.h>
 
 #include <rva.h>
 
@@ -50,12 +51,8 @@ struct CLevelSyncChild {
 struct MgrReset {
     void Reset(); // 0x403d55 (__thiscall)
 };
-struct GameReg {
-    char pad[0x2c];
-    MgrReset* m_2c; // +0x2c
-};
 DATA(0x0064556c)
-extern GameReg* g_gameReg;
+extern CGameRegistry* g_gameReg;
 
 class CLevelSync {
 public:
@@ -94,7 +91,7 @@ i32 CLevelSync::Sync(SyncStream* s, i32 op, i32 p4, i32 p5) {
             return 0;
         }
     } else if (op == 8) {
-        g_gameReg->m_2c->Reset();
+        ((MgrReset*)g_gameReg->m_2c)->Reset();
         if (m[0] == 0) {
             SubResetA();
             SubResetB();

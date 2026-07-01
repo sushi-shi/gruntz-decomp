@@ -12,6 +12,7 @@
 // plain __thiscall member whose codegen depends only on its body + offsets).
 // Only offsets / code bytes are load-bearing; names are placeholders.
 #include <Gruntz/UserLogic.h> // CUserLogic base (CVoiceTrigger : CUserLogic)
+#include <Gruntz/CGameRegistry.h>
 
 class CVoiceTrigger : public CUserLogic {
 public:
@@ -204,23 +205,12 @@ struct CVoiceWindow {
 };
 SIZE_UNKNOWN(CVoiceWindow);
 
-// The global game registry (WwdGameReg, RVA 0x24556c; wwdfile owns the DATA
+// The global game registry (CGameRegistry, RVA 0x24556c; wwdfile owns the DATA
 // label). The on-screen window bounds are at +0x13c/+0x140/+0x144/+0x148; the
 // cue receiver at +0x60 (CueA's `this`) and the probe sink at +0x68 (QueryAt's
 // `this`).
-struct WwdGameReg {
-    char m_pad0[0x60];
-    CVoiceSink* m_60; // +0x60 cue receiver (CueA's this)
-    char m_pad64[0x68 - 0x64];
-    CVoiceSink* m_68; // +0x68 probe sink (QueryAt's this)
-    char m_pad6c[0x13c - 0x6c];
-    i32 m_13c; // +0x13c window min x
-    i32 m_140; // +0x140 window min y
-    i32 m_144; // +0x144 window max x
-    i32 m_148; // +0x148 window max y
-};
 DATA(0x0024556c)
-extern WwdGameReg* g_gameReg;
+extern CGameRegistry* g_gameReg;
 
 // The current-area index (DAT_00644c54, VA 0x644c54 / RVA 0x244c54); the trigger
 // only fires for the active area. extern "C" so the load reloc-masks against the
@@ -317,28 +307,30 @@ void CVoiceTrigger::RegisterActs() {
 RVA(0x0011a700, 0xae)
 i32 CVoiceTrigger::Tick() {
     i32 outA, outB;
-    CVoiceHit* hit = g_gameReg->m_68->QueryAt(
-        ((CVoiceSprite*)m_10)->m_5c,
-        ((CVoiceSprite*)m_10)->m_60,
-        &((CVoiceSprite*)m_10)->m_134,
-        &outA,
-        &outB,
-        &((CVoiceSprite*)m_10)->m_144
-    );
+    CVoiceHit* hit = ((CVoiceSink*)g_gameReg->m_68)
+                         ->QueryAt(
+                             ((CVoiceSprite*)m_10)->m_5c,
+                             ((CVoiceSprite*)m_10)->m_60,
+                             &((CVoiceSprite*)m_10)->m_134,
+                             &outA,
+                             &outB,
+                             &((CVoiceSprite*)m_10)->m_144
+                         );
     if (hit && outA == g_644c54) {
         CVoiceHitSprite* hs = hit->m_10;
         i32 hy = hs->m_60;
         i32 hx = hs->m_5c;
         if (hx < g_gameReg->m_144 && hx >= g_gameReg->m_13c && hy < g_gameReg->m_148
             && hy >= g_gameReg->m_140) {
-            if (g_gameReg->m_60->CueA(
-                    hit,
-                    ((CVoiceSprite*)m_10)->m_124,
-                    ((CVoiceSprite*)m_10)->m_128,
-                    0,
-                    -1,
-                    -1
-                )) {
+            if (((CVoiceSink*)g_gameReg->m_60)
+                    ->CueA(
+                        hit,
+                        ((CVoiceSprite*)m_10)->m_124,
+                        ((CVoiceSprite*)m_10)->m_128,
+                        0,
+                        -1,
+                        -1
+                    )) {
                 ((CVoiceWindow*)m_38)->m_8 |= 0x10000;
             }
         }

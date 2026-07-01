@@ -78,7 +78,7 @@ i32 CGruntPuddle::Place(i32 a0, i32 a1, i32 a2, i32 a3) {
     m_64 = a3;
     m_68 = a0;
     m_6c = a1;
-    i32 rec = g_gameReg->m_74->GetByIndex(a1, 0);
+    i32 rec = ((CIconFactory*)g_gameReg->m_74)->GetByIndex(a1, 0);
     CGameObject* obj = m_10;
     *(i32*)((char*)obj + 0x58) = 1;
     *(i32*)((char*)obj + 0x50) = 0xa;
@@ -118,9 +118,9 @@ i32 CGruntPuddle::Place(i32 a0, i32 a1, i32 a2, i32 a3) {
 RVA(0x00040d20, 0xe3)
 i32 CGruntPuddle::Remove() {
     if (m_60 != 0) {
-        CGameReg* reg = g_gameReg;
+        CGameRegistry* reg = g_gameReg;
         i32 ty = m_58;
-        CIconTileGrid* grid = reg->m_70;
+        CIconTileGrid* grid = (CIconTileGrid*)reg->m_70;
         i32 tx = m_54;
         i32 flags;
         if ((u32)tx < (u32)grid->m_c && (u32)ty < (u32)grid->m_10) {

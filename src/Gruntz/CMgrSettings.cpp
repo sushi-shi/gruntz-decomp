@@ -22,7 +22,7 @@ i32 CMgrSettings::Serialize(CMgrArchive* arc, i32 mode, i32 a3, i32 a4) {
     if (arc == 0) {
         return 0;
     }
-    CMgrActiveHolder* lvl = g_gameReg->m_30;
+    CMgrActiveHolder* lvl = (CMgrActiveHolder*)g_gameReg->m_30;
     if (lvl == 0) {
         return 0;
     }

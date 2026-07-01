@@ -8,6 +8,7 @@
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
 #include <Gruntz/CExitTrigger.h>
+#include <Gruntz/CGameRegistry.h>
 
 // CExitTrigger::GetTypeTag @0x010870 - return the class's logic-type id. The same
 // 6-byte `mov eax,<id>; ret` virtual archetype as CTileTriggerTransition::
@@ -93,15 +94,9 @@ SIZE_UNKNOWN(CExitCueSink);
 
 // The game registry singleton (g_mgrSettings @0x64556c): +0x30 the probe-sink
 // holder, +0x68 the cue receiver, the per-area focus slots at +0x150.
-struct CExitGameReg {
-    char m_pad00[0x30];
-    CExitMgr30* m_30; // +0x30
-    char m_pad34[0x68 - 0x34];
-    CExitCueSink* m_68; // +0x68
-};
-SIZE_UNKNOWN(CExitGameReg);
+SIZE_UNKNOWN(CGameRegistry);
 DATA(0x0024556c)
-extern CExitGameReg* g_exitGameReg;
+extern CGameRegistry* g_exitGameReg;
 
 // CExitTrigger::CExitTrigger(CGameObject*) @0x03ecf0 - the 1-arg leaf ctor: the
 // standard CUserLogic(obj) init (folded inline) plus the exit tail - cl emits the
@@ -146,14 +141,14 @@ CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj) {
     }
     slot->m_220 = m_10->m_5c;
     slot->m_224 = m_10->m_60;
-    CExitEntity* e =
-        g_exitGameReg->m_30->m_8->Probe(0, m_10->m_5c, m_10->m_60, 0, "Warlord", 0x40003);
+    CExitEntity* e = ((CExitMgr30*)g_exitGameReg->m_30)
+                         ->m_8->Probe(0, m_10->m_5c, m_10->m_60, 0, "Warlord", 0x40003);
     if (e != 0) {
         e->m_124 = m_10->m_124;
         e->m_7c->m_10(e);
         m_54 = e->m_7c->m_18;
         if (m_10->m_124 == g_644c54) {
-            g_exitGameReg->m_68->m_2a0 = m_54;
+            ((CExitCueSink*)g_exitGameReg->m_68)->m_2a0 = m_54;
         }
         CExitFocusSlot* slot2 =
             (CExitFocusSlot*)((char*)g_exitGameReg + m_10->m_124 * 0x238 + 0x150);

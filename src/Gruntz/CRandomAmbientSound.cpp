@@ -63,7 +63,7 @@ struct PosSoundObj {
     char m_pad124[0x19c - 0x124];
     void* m_layer; // +0x19c  layer/desc (its +0x10 feeds the factory)
 };
-// The spatial-mgr CObArray (at g_gameReg->m_world + 0x08) RemoveAt unlinks the
+// The spatial-mgr CObArray (at g_gameReg->m_54 + 0x08) RemoveAt unlinks the
 // voice's node from.
 struct PosSoundSpatial {
     i32 RemoveAt(void* node); // 0x1b4ac7  (__thiscall)
@@ -111,7 +111,7 @@ void SpawnPosSound(PosSoundObj* obj) {
         if (sound == 0) {
             return;
         }
-        PosSoundSpatial* arr = (PosSoundSpatial*)((char*)g_gameReg->m_world + 8);
+        PosSoundSpatial* arr = (PosSoundSpatial*)((char*)g_gameReg->m_54 + 8);
         if (sound->m_mgr != 0) {
             sound->m_mgr->StopAndRewind();
             sound->m_isPlaying = 0;
@@ -129,7 +129,7 @@ void SpawnPosSound(PosSoundObj* obj) {
     obj->m_flags40 |= 1;
     aux->m_voice = 0;
     void* layer = obj->m_layer;
-    if (layer != 0 && g_gameReg != 0 && g_gameReg->m_world != 0) {
+    if (layer != 0 && g_gameReg != 0 && g_gameReg->m_54 != 0) {
         i32 pt[2];
         pt[0] = obj->m_x;
         pt[1] = obj->m_y;
@@ -187,7 +187,7 @@ i32 CRandomAmbientSound::Setup(DirectSoundMgr* mgr, i32 a2, i32 a3, AmbientBox* 
 // ---------------------------------------------------------------------------
 // Update (0x00c2a0, __thiscall, 3 args playFlag/pos/kind): the play/stop driver.
 // Gated on the mgr handle, the playing flag, and the active level
-// (g_gameReg->m_activeLevel and g_gameReg->m_world->m_objectCount). On play it reseeds
+// (g_gameReg->m_10 and ((WwdActiveLevel*)g_gameReg->m_54)->m_objectCount). On play it reseeds
 // the voice (mgr->Reseed(1,m_panIndex,0,1)), scales pos by (m_scaleA clamped)/100 then
 // m_scaleB/100 (both signed magic-/100), clamps the
 // result to [0,100], and dispatches SetVolumeByIndex (kind==0) or CloneAndPlay
@@ -222,10 +222,10 @@ void CRandomAmbientSound::Update(i32 playFlag, i32 pos, i32 kind) {
     if (m_isPlaying != 0) {
         return;
     }
-    if (g_gameReg->m_activeLevel == 0) {
+    if (g_gameReg->m_10 == 0) {
         return;
     }
-    if (g_gameReg->m_world->m_objectCount == 0) {
+    if (((WwdActiveLevel*)g_gameReg->m_54)->m_objectCount == 0) {
         return;
     }
 
@@ -400,10 +400,10 @@ void CRandomAmbientSound::UpdateAt(i32 x, i32 y, i32 force) {
     if (m_mgr == 0) {
         return;
     }
-    if (g_gameReg->m_activeLevel == 0) {
+    if (g_gameReg->m_10 == 0) {
         return;
     }
-    if (g_gameReg->m_world->m_objectCount == 0) {
+    if (((WwdActiveLevel*)g_gameReg->m_54)->m_objectCount == 0) {
         return;
     }
     ((DsndReseed*)m_mgr)->Reseed(1, m_panIndex, 0, 1);

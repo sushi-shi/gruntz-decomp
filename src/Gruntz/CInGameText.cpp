@@ -15,6 +15,7 @@
 
 #include <Bute/ButeMgr.h> // CButeTree (the registration key store)
 #include <Mfc.h>          // CString (the scratch name-vec element)
+#include <Gruntz/CGameRegistry.h>
 
 // The zvec error globals + the capture helper the inlined accessor touches on a
 // bounds miss (the same set ZVec.cpp models).
@@ -103,14 +104,8 @@ CInGameText::~CInGameText() {}
 // The global game registry (WwdGameReg, RVA 0x24556c). m_134 is the place mode
 // (==2 hides at construction); m_118 the has-window gate the on-screen check
 // polls. Only the touched fields are modeled; wwdfile owns the DATA label.
-struct CTextGameReg {
-    char m_pad0[0x118];
-    i32 m_118; // +0x118 has-window flag
-    char m_pad11c[0x134 - 0x11c];
-    i32 m_134; // +0x134 mode discriminator
-};
 DATA(0x0024556c)
-extern CTextGameReg* g_gameReg;
+extern CGameRegistry* g_gameReg;
 
 // CInGameText::CInGameText @0x099110 - fold the shared CUserLogic(obj) init, then
 // (unless the registry is in the no-place mode m_134==2) bind the "A" bute node,
@@ -258,5 +253,5 @@ i32 CInGameText::Serialize(CTextArchive* ar, i32 tag, i32 a, i32 b) {
 SIZE_UNKNOWN(CInGameText);
 SIZE_UNKNOWN(CTextActReg);
 SIZE_UNKNOWN(CTextArchive);
-SIZE_UNKNOWN(CTextGameReg);
+SIZE_UNKNOWN(CGameRegistry);
 SIZE_UNKNOWN(CTextSubObj);

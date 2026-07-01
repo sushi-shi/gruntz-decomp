@@ -15,6 +15,7 @@
 #define GRUNTZ_CWARLORD_H
 
 #include <Mfc.h> // CObject / CString (MFC TU - must precede <windows.h>)
+#include <Gruntz/CGameRegistry.h>
 
 #include <Gruntz/UserLogic.h> // CUserBase / CUserLogic / EngStr / CGameObject
 
@@ -79,20 +80,10 @@ struct CWarlordMission {
 };
 
 // ---------------------------------------------------------------------------
-// WwdGameReg - the big game-registry singleton (?g_gameReg@@3PAUWwdGameReg@@A @
+// CGameRegistry - the big game-registry singleton (?g_gameReg@@3PAUWwdGameReg@@A @
 // 0x64556c). Only the offsets the warlord's per-tick update touches are modeled.
 // ---------------------------------------------------------------------------
-struct WwdGameReg {
-    char m_pad00[0x2c];
-    CWarlordMission* m_2c; // +0x2c   single-player level/mission object
-    char m_pad30[0x60 - 0x30];
-    CRegBattleEvent* m_60; // +0x60   battle-event sink (PostBattleEvent)
-    char m_pad64[0x68 - 0x64];
-    CRegThreatHelper* m_68; // +0x68   nearest-enemy helper
-    char m_pad6c[0x134 - 0x6c];
-    i32 m_134; // +0x134  game-mode gate (1 = single-player)
-};
-extern WwdGameReg* g_gameReg;
+extern CGameRegistry* g_gameReg;
 
 // The warlord's owner/state object reached through CUserLogic::m_10 (a CGameObject
 // in the base model; the warlord casts it to this view for the +0x124/+0x188 it

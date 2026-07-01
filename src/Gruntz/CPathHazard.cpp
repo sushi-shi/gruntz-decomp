@@ -12,6 +12,7 @@
 // code bytes are load-bearing; names are placeholders for the recovered engine
 // identities.
 #include <Gruntz/CPathHazard.h>
+#include <Gruntz/CGameRegistry.h>
 
 // sqrt inlines to fsqrt at /O2; the (int)double casts lower to __ftol.
 extern "C" double sqrt(double);
@@ -117,25 +118,8 @@ struct CSndSubMgr { // reg->m_30
     CSndHost* m_28; // +0x28
 };
 
-struct CLightGameReg {
-    char m_pad00[0x30];
-    CSndSubMgr* m_30; // +0x30 sound sub-mgr (positional-sound emit)
-    char m_pad34[0x68 - 0x34];
-    CPathCueGate* m_68; // +0x68 visibility/cue gate
-    char m_pad6c[0x78 - 0x6c];
-    i32* m_78; // +0x78 ref-index/selector table
-    char m_pad7c[0x118 - 0x7c];
-    i32 m_118; // +0x118 has-window flag
-    char m_pad11c[0x134 - 0x11c];
-    i32 m_134; // +0x134 mode discriminator
-    char m_pad138[0x13c - 0x138];
-    i32 m_13c; // +0x13c visible-rect left
-    i32 m_140; // +0x140 visible-rect top
-    i32 m_144; // +0x144 visible-rect right
-    i32 m_148; // +0x148 visible-rect bottom
-};
 DATA(0x0024556c)
-extern CLightGameReg* g_lightGameReg;
+extern CGameRegistry* g_lightGameReg;
 
 // Strike config globals: the bute window source + the sound-enable flag / cue tag
 // pair the positional emit polls, plus the kill-cue clock.
@@ -320,11 +304,11 @@ i32 CPathHazard::Tick() {
     rect[1] = obj->m_60 - obj->m_198->m_1c + 7;
     rect[3] = obj->m_198->m_1c + obj->m_60 - 7;
 
-    CPathGameReg* reg = g_pathGameReg;
+    CGameRegistry* reg = g_pathGameReg;
     if (reg->m_118 == 0 || reg->m_134 != 1) {
         i32 outA, outB;
-        CPathEntity* ent =
-            (CPathEntity*)reg->m_68->QueryAt(obj->m_5c, obj->m_60, &obj->m_144, &outA, &outB, rect);
+        CPathEntity* ent = (CPathEntity*)((CPathCueGate*)reg->m_68)
+                               ->QueryAt(obj->m_5c, obj->m_60, &obj->m_144, &outA, &outB, rect);
         if (ent != 0 && ent->m_258 != 0x38) {
             if (g_pathGameReg->m_134 != 1 || outA != 0) {
                 CPathHazardVtbl* vt = *(CPathHazardVtbl**)this;
@@ -421,7 +405,7 @@ i32 CLightningHazard::SiblingTick() {
         CLightObj* o = (CLightObj*)m_10;
         o->m_58 = 1;
         o->m_50 = 7;
-        o->m_4c = g_lightGameReg->m_78[sel + 5]; // [m_78 + sel*4 + 0x14]
+        o->m_4c = ((i32*)g_lightGameReg->m_78)[sel + 5]; // [m_78 + sel*4 + 0x14]
     }
 
     ((CPathSubMgr*)((char*)m_38 + 0x1a0))->Advance(g_pathTick);
@@ -433,13 +417,13 @@ i32 CLightningHazard::SiblingTick() {
     rect[1] = obj->m_60 - obj->m_198->m_1c + 7;
     rect[3] = obj->m_198->m_1c + obj->m_60 - 7;
 
-    CLightGameReg* reg = g_lightGameReg;
+    CGameRegistry* reg = g_lightGameReg;
     if (reg->m_118 != 0 && reg->m_134 == 1) {
         // window mode, skip the query
     } else {
         i32 outA, outB;
-        CPathEntity* ent =
-            (CPathEntity*)reg->m_68->QueryAt(obj->m_5c, obj->m_60, &obj->m_144, &outA, &outB, rect);
+        CPathEntity* ent = (CPathEntity*)((CPathCueGate*)reg->m_68)
+                               ->QueryAt(obj->m_5c, obj->m_60, &obj->m_144, &outA, &outB, rect);
         if (ent != 0 && ent->m_258 != 0x38) {
             if (g_lightGameReg->m_134 != 1 || outA != 0) {
                 CLightVtbl* vt = *(CLightVtbl**)this;
@@ -455,7 +439,7 @@ i32 CLightningHazard::SiblingTick() {
         CLightObj* o = (CLightObj*)m_10;
         o->m_58 = 1;
         o->m_50 = 7;
-        o->m_4c = g_lightGameReg->m_78[0xa]; // [m_78 + 0x28]
+        o->m_4c = ((i32*)g_lightGameReg->m_78)[0xa]; // [m_78 + 0x28]
         CLightVtbl* vt = *(CLightVtbl**)this;
         (this->*(vt->BeginLeg))();
         m_30 = (void*)m_14->m_1c;
@@ -479,14 +463,14 @@ i32 CLightningHazard::ArmStrike(i32 a, i32 b) {
     m_118 = 1;
     m_128 = (i64)(u32)g_buteMgr.GetDwordDef("Hazardz", "RainCloudFlashTime", 0x7d0);
     m_120 = (i64)(u32)g_strikeClock;
-    g_lightGameReg->m_68->Strike(a, b, 9, -1);
+    ((CPathCueGate*)g_lightGameReg->m_68)->Strike(a, b, 9, -1);
 
     CLightObj* obj = (CLightObj*)m_10;
-    CLightGameReg* reg = g_lightGameReg;
+    CGameRegistry* reg = g_lightGameReg;
     i32 y = obj->m_60;
     i32 x = obj->m_5c;
     if (x < reg->m_144 && x >= reg->m_13c && y < reg->m_148 && y >= reg->m_140) {
-        CSndHost* host = reg->m_30->m_28;
+        CSndHost* host = (CSndHost*)reg->m_30->m_28;
         if (host->m_30 == 0) {
             CSndEmitter* out = 0;
             host->m_10.Find("LEVEL_CLOUDHAZARDKILL", &out);
@@ -566,7 +550,7 @@ void CPathHazard::ForwardTick() {
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 #include <rva.h>
-SIZE_UNKNOWN(CLightGameReg);
+SIZE_UNKNOWN(CGameRegistry);
 SIZE_UNKNOWN(CLightObj);
 SIZE_UNKNOWN(CLightVtbl);
 SIZE_UNKNOWN(CLightningHazard);
@@ -574,7 +558,7 @@ SIZE_UNKNOWN(CPathCtorObj);
 SIZE_UNKNOWN(CPathCtorSub);
 SIZE_UNKNOWN(CPathCueGate);
 SIZE_UNKNOWN(CPathEntity);
-SIZE_UNKNOWN(CPathGameReg);
+SIZE_UNKNOWN(CGameRegistry);
 SIZE_UNKNOWN(CPathHazardVtbl);
 SIZE_UNKNOWN(CPathLayer);
 SIZE_UNKNOWN(CPathObj);

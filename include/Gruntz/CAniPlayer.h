@@ -20,14 +20,11 @@
 #define GRUNTZ_GRUNTZ_CANIPLAYER_H
 
 #include <Ints.h>
+#include <Gruntz/CGameRegistry.h>
 
-// The WwdGameReg singleton (g_gameReg, RVA 0x64556c). Tick reaches the active
+// The CGameRegistry singleton (g_gameReg, RVA 0x64556c). Tick reaches the active
 // render path through g->m_30->m_4->m_14; reloc-masked DIR32.
-struct WwdGameReg {
-    char _pad00[0x30];
-    void* m_30; // +0x30
-};
-extern WwdGameReg* g_gameReg;
+extern CGameRegistry* g_gameReg;
 
 // The cel-animation sub-object held at CAniPlayer+0x34. Its +0x14 is the cel
 // pointer table, indexed by frame; +0x64/+0x68 are the inclusive frame range.

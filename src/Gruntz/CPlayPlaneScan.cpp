@@ -9,6 +9,7 @@
 // untouched. /GX EH frame: CPlay_0d53d0 has a stack CString error temp, and
 // CPlay_0d9290 has a stack CByteArray shuffle temp - both destructible.
 #include <Ints.h>
+#include <Gruntz/CGameRegistry.h>
 #include <rva.h>
 #include <Gruntz/CString.h>
 
@@ -150,12 +151,9 @@ struct ObjSink2dc {
 
 // The global game-manager singleton (*g_64556c) whose ReportError the error
 // paths call, and the error-formatting free helper.
-struct CGruntzMgrView {
-    void ReportError(const char* msg); // 0x08ef10 (ILT 0x417e) thiscall
-};
 extern "C" {
     DATA(0x0064556c)
-    extern CGruntzMgrView* g_64556c;
+    extern CGameRegistry* g_64556c;
 }
 // __cdecl error formatter: fills a CString from a printf-style template.
 void PlaneErrFmt(CString* dst, const char* fmt, i32 x, i32 y); // 0x1b2cf5
@@ -426,7 +424,7 @@ i32 CPlay::ScanShuffleQuads() {
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 SIZE_UNKNOWN(CByteArrayV);
-SIZE_UNKNOWN(CGruntzMgrView);
+SIZE_UNKNOWN(CGameRegistry);
 SIZE_UNKNOWN(DrawSurf);
 SIZE_UNKNOWN(GridGeom);
 SIZE_UNKNOWN(ObjSink2dc);

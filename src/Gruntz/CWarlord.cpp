@@ -209,10 +209,10 @@ i32 CWarlord::LoadAttributes() {
         return 0;
     }
 
-    WwdGameReg* reg = g_gameReg;
+    CGameRegistry* reg = g_gameReg;
     if (reg->m_134 != 1) {
         CWarlordOwner* o = (CWarlordOwner*)m_10;
-        i32 dist = reg->m_68->NearestEnemyDist(o->m_124, o->m_5c, o->m_60);
+        i32 dist = ((CRegThreatHelper*)reg->m_68)->NearestEnemyDist(o->m_124, o->m_5c, o->m_60);
         if (dist < g_buteMgr.GetIntDef("Warlordz", "PanicRadius", 0x40)) {
             NotifyFortUnderAttack();
             return 0;
@@ -251,21 +251,22 @@ i32 CWarlord::LoadAttributes2() {
         return 0;
     }
 
-    WwdGameReg* reg = g_gameReg;
+    CGameRegistry* reg = g_gameReg;
     if (reg->m_134 != 1) {
         CWarlordOwner* o = (CWarlordOwner*)m_10;
-        i32 dist = reg->m_68->NearestEnemyDist(o->m_124, o->m_5c, o->m_60);
+        i32 dist = ((CRegThreatHelper*)reg->m_68)->NearestEnemyDist(o->m_124, o->m_5c, o->m_60);
         if (dist >= g_buteMgr.GetIntDef("Warlordz", "PanicRadius", 0x40)) {
             RaiseBattleAlert();
             return 0;
         }
     } else {
-        if (reg->m_2c->m_3f4->m_4c == 0) {
+        if (((CWarlordMission*)reg->m_2c)->m_3f4->m_4c == 0) {
             ResolveMovingAnimation();
             return 0;
         }
         if ((i64)(u32)g_645588 - *(i64*)&m_88 >= *(i64*)&m_90) {
-            reg->m_60->PostBattleEvent(((CWarlordOwner*)m_10)->m_188, 0x436, -1, -1, -1);
+            ((CRegBattleEvent*)reg->m_60)
+                ->PostBattleEvent(((CWarlordOwner*)m_10)->m_188, 0x436, -1, -1, -1);
             m_90 = 0x7530;
             m_94 = 0;
             m_88 = g_645588;
@@ -282,7 +283,7 @@ i32 CWarlord::LoadAttributes2() {
 // particle at the warlord's clamped screen position (registry effect dispatch),
 // arm the panic timer on the registry sub-object, then flag the anim player.
 // @early-stop
-// DEFERRED to the final sweep: 0x127-byte function over a dozen WwdGameReg offsets
+// DEFERRED to the final sweep: 0x127-byte function over a dozen CGameRegistry offsets
 // (viewport bounds, the +0x30 effect-spawn dispatch, the +0x68 panic sub-object
 // + its +0x290 timer, the +0x150 owner-array slot). Homed so the RVA is labeled.
 RVA(0x00044f80, 0x127)

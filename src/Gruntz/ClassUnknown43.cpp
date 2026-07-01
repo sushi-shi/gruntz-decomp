@@ -6,6 +6,7 @@
 // g_mgrSettings->m_60. Field names are placeholders (offsets are load-bearing);
 // engine callees + g_mgrSettings are external (reloc-masked).
 #include <rva.h>
+#include <Gruntz/CGameRegistry.h>
 #include <Mfc.h>
 
 class ClassUnknown_43;
@@ -42,17 +43,9 @@ struct MgrObj {
     void Func3030(int a, int b, int c, int d);
     void Func39f4(void* a, int b, int c, int d, int e, int f);
 };
-struct MgrReg {
-    char pad00[0x30];
-    Reg30* m_30; // 0x30
-    char pad34[0x60 - 0x34];
-    MgrObj* m_60; // 0x60
-    char pad64[0x68 - 0x64];
-    MgrObj* m_68; // 0x68
-};
 
 DATA(0x0024556c)
-extern "C" MgrReg* g_mgrSettings; // 0x64556c
+extern "C" CGameRegistry* g_mgrSettings; // 0x64556c
 
 class ClassUnknown_43 {
 public:
@@ -113,7 +106,7 @@ int ClassUnknown_43::Update_0f7d90() {
     Box5c* a = p->m_10;
     if (a->m_5c == p->m_17c && a->m_60 == p->m_180 && Func1e97(a->m_5c, a->m_60)) {
         Box5c* b = p->m_10;
-        g_mgrSettings->m_68->Func3030(m_1ec, m_1f0, b->m_5c, b->m_60);
+        ((MgrObj*)g_mgrSettings->m_68)->Func3030(m_1ec, m_1f0, b->m_5c, b->m_60);
         return 1;
     }
     if (m_2ec <= 0x3e8) {
@@ -127,12 +120,12 @@ int ClassUnknown_43::Update_0f7d90() {
             return 1;
         }
         Box5c* c = m_10;
-        MgrReg* g = g_mgrSettings;
+        CGameRegistry* g = g_mgrSettings;
         int y = c->m_60;
         int x = c->m_5c;
-        Rect4* r = &g->m_30->m_24->m_5c->rect;
+        Rect4* r = &((Reg30*)g->m_30)->m_24->m_5c->rect;
         if (x < r->right && x >= r->left && y < r->bottom && y >= r->top) {
-            g->m_60->Func39f4(this, 0x366, -1, 0, -1, -1);
+            ((MgrObj*)g->m_60)->Func39f4(this, 0x366, -1, 0, -1, -1);
         }
     }
     m_390 = 0;
@@ -141,7 +134,7 @@ int ClassUnknown_43::Update_0f7d90() {
 
 SIZE_UNKNOWN(Box5c);
 SIZE_UNKNOWN(MgrObj);
-SIZE_UNKNOWN(MgrReg);
+SIZE_UNKNOWN(CGameRegistry);
 SIZE_UNKNOWN(Obj260);
 SIZE_UNKNOWN(Rect4);
 SIZE_UNKNOWN(Reg24);

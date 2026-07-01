@@ -20,7 +20,8 @@
 // engine classes reached by raw this+offset; every callee is a reloc-masked
 // external; the strings are $SG literals reloc-masked against the matched symbols;
 // CopyRect is hoisted through a data function-pointer global (0x6c44bc).
-#include <Mfc.h>   // MFC CString (ctor 0x1b9b93 / dtor 0x1b9cde / op=(LPCTSTR) 0x1b9e74)
+#include <Mfc.h> // MFC CString (ctor 0x1b9b93 / dtor 0x1b9cde / op=(LPCTSTR) 0x1b9e74)
+#include <Gruntz/CGameRegistry.h>
 #include <Win32.h> // RECT
 
 #include <rva.h>
@@ -62,13 +63,8 @@ struct StatArray {
     i32 SumWinRow(i32 player); // 0x1230
 };
 
-struct StatMgr {
-    char m_pad00[0x7c];
-    StatArray* m_7c; // +0x7c  per-player stat block base
-    // per-player fields at +0x158 (colour index) / +0x178 (active), stride 0x238.
-};
 DATA(0x0024556c)
-extern StatMgr* g_mgr; // *0x64556c
+extern CGameRegistry* g_mgr; // *0x64556c
 
 class CBattleStatsView {
 public:
@@ -112,27 +108,27 @@ void CBattleStatsView::DrawBattleStats() {
     // Loop 1: 6 numeric stat columns per active player.
     for (i = 0; i < 4; i++) {
         if (*(i32*)((char*)g_mgr + 0x178 + i * 0x238) != 0) {
-            EngFmt(&s, "%d", sumRun(g_mgr->m_7c, 0x348 + i * 0x10, 4));
+            EngFmt(&s, "%d", sumRun((StatArray*)g_mgr->m_7c, 0x348 + i * 0x10, 4));
             copyRect(&rc, &g_col1Rects[i]);
             DrawStatText(m_c, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
-            EngFmt(&s, "%d", sumRun(g_mgr->m_7c, 0x2d8 + i * 0x1c, 7));
+            EngFmt(&s, "%d", sumRun((StatArray*)g_mgr->m_7c, 0x2d8 + i * 0x1c, 7));
             copyRect(&rc, &g_col2Rects[i]);
             DrawStatText(m_c, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
-            EngFmt(&s, "%d", sumRun(g_mgr->m_7c, 0x238 + i * 0x28, 10));
+            EngFmt(&s, "%d", sumRun((StatArray*)g_mgr->m_7c, 0x238 + i * 0x28, 10));
             copyRect(&rc, &g_col3Rects[i]);
             DrawStatText(m_c, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
-            EngFmt(&s, "%d", sumRun(g_mgr->m_7c, 0xd8 + i * 0x58, 22));
+            EngFmt(&s, "%d", sumRun((StatArray*)g_mgr->m_7c, 0xd8 + i * 0x58, 22));
             copyRect(&rc, &g_col4Rects[i]);
             DrawStatText(m_c, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
-            EngFmt(&s, "%d", *(i32*)((char*)g_mgr->m_7c + 0x48 + i * 4));
+            EngFmt(&s, "%d", *(i32*)((char*)(StatArray*)g_mgr->m_7c + 0x48 + i * 4));
             copyRect(&rc, &g_col5Rects[i]);
             DrawStatText(m_c, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
-            EngFmt(&s, "%d", g_mgr->m_7c->SumWinRow(i));
+            EngFmt(&s, "%d", ((StatArray*)g_mgr->m_7c)->SumWinRow(i));
             copyRect(&rc, &g_col6Rects[i]);
             DrawStatText(m_c, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
         }
@@ -251,5 +247,5 @@ void CBattleStatsView::DrawBattleStats() {
 }
 
 SIZE_UNKNOWN(StatArray);
-SIZE_UNKNOWN(StatMgr);
+SIZE_UNKNOWN(CGameRegistry);
 SIZE_UNKNOWN(CBattleStatsView);

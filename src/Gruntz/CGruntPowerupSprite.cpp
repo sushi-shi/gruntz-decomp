@@ -93,7 +93,7 @@ i32 CGruntPowerupSprite::SetCell(i32 x, i32 y, i32 powerup) {
     m_cellX = x;
     m_cellY = y;
     m_powerupId = powerup;
-    i32 rec = *(i32*)(g_gameReg->m_78 + powerup * 4 + 0x14);
+    i32 rec = *(i32*)((char*)g_gameReg->m_78 + powerup * 4 + 0x14);
     CGruntRenderable* r = (CGruntRenderable*)m_10;
     r->m_58 = 1;
     r->m_50 = 7;
@@ -117,7 +117,7 @@ i32 CGruntPowerupSprite::SetCell(i32 x, i32 y, i32 powerup) {
 RVA(0x00080410, 0x51)
 i32 CGruntPowerupSprite::Update() {
     ((CIndicatorSyncHelper*)((char*)m_38 + 0x1a0))->Sync(g_indicatorSync);
-    CGruntEntry* e = ((CGruntEntry**)(g_gameReg->m_68 + 0x1c))[m_cellX * 15 + m_cellY];
+    CGruntEntry* e = ((CGruntEntry**)((char*)g_gameReg->m_68 + 0x1c))[m_cellX * 15 + m_cellY];
     if (e != 0) {
         m_10->m_5c = e->m_10->m_5c;
         m_10->m_60 = e->m_10->m_60;
@@ -147,7 +147,7 @@ i32 CGruntPowerupSprite::Serialize(PupArchive* ar, i32 mode, i32 a3, i32 a4) {
             ar->Read(&m_powerupId, 4);
             i32 id = m_powerupId;
             CGruntRenderable* r = (CGruntRenderable*)m_10;
-            i32 v = *(i32*)(g_gameReg->m_78 + id * 4 + 0x14);
+            i32 v = *(i32*)((char*)g_gameReg->m_78 + id * 4 + 0x14);
             r->m_58 = 1;
             r->m_4c = v;
             r->m_50 = 7;

@@ -164,12 +164,12 @@ ret1:
 // uses scale-1, propagating through both cell accesses.
 RVA(0x00112b70, 0x5a)
 i32 CTileGridCommand::BumpCell() {
-    TgcGameReg* reg = g_gameReg;
-    TgcLayer* layer = reg->m_30->m_24->m_5c;
+    CGameRegistry* reg = g_gameReg;
+    TgcLayer* layer = ((TgcGameMgr*)reg->m_30)->m_24->m_5c;
     i32 v = layer->m_20[m_08 + layer->m_24[m_0c]] + 1;
-    TgcLayer* layer2 = reg->m_30->m_24->m_5c;
+    TgcLayer* layer2 = ((TgcGameMgr*)reg->m_30)->m_24->m_5c;
     layer2->m_20[m_08 + layer2->m_24[m_0c]] = v;
-    reg->m_70->MarkCell(m_08, m_0c, v);
+    ((TgcRedraw*)reg->m_70)->MarkCell(m_08, m_0c, v);
     m_14 = 1;
     return 1;
 }
@@ -189,46 +189,47 @@ RVA(0x00112590, 0x166)
 i32 CTileGridCommand::ApplyMove(i32 verb) {
     i32 v;
     if (m_34 != 0) {
-        TgcGameReg* reg = g_gameReg;
-        TgcLayer* L = reg->m_30->m_24->m_5c;
+        CGameRegistry* reg = g_gameReg;
+        TgcLayer* L = ((TgcGameMgr*)reg->m_30)->m_24->m_5c;
         L->m_20[L->m_24[m_0c] + m_08] = m_34;
         v = m_34;
-        reg->m_70->MarkCell(m_08, m_0c, v);
+        ((TgcRedraw*)reg->m_70)->MarkCell(m_08, m_0c, v);
     } else {
         switch (verb) {
             case 0x22: {
-                TgcGameReg* reg = g_gameReg;
-                TgcLayer* L = reg->m_30->m_24->m_5c;
+                CGameRegistry* reg = g_gameReg;
+                TgcLayer* L = ((TgcGameMgr*)reg->m_30)->m_24->m_5c;
                 v = L->m_20[L->m_24[m_0c] + m_08] + 1;
-                TgcLayer* L2 = reg->m_30->m_24->m_5c;
+                TgcLayer* L2 = ((TgcGameMgr*)reg->m_30)->m_24->m_5c;
                 L2->m_20[L2->m_24[m_0c] + m_08] = v;
-                reg->m_70->MarkCell(m_08, m_0c, v);
+                ((TgcRedraw*)reg->m_70)->MarkCell(m_08, m_0c, v);
                 break;
             }
             case 0x1f: {
-                TgcGameReg* reg = g_gameReg;
-                TgcLayer* L = reg->m_30->m_24->m_5c;
+                CGameRegistry* reg = g_gameReg;
+                TgcLayer* L = ((TgcGameMgr*)reg->m_30)->m_24->m_5c;
                 L->m_20[L->m_24[m_0c] + m_08] = 0x5b;
-                reg->m_70->MarkCell(m_08, m_0c, 0x5b);
+                ((TgcRedraw*)reg->m_70)->MarkCell(m_08, m_0c, 0x5b);
                 break;
             }
             case 0x1e: {
-                TgcGameReg* reg = g_gameReg;
-                TgcLayer* L = reg->m_30->m_24->m_5c;
+                CGameRegistry* reg = g_gameReg;
+                TgcLayer* L = ((TgcGameMgr*)reg->m_30)->m_24->m_5c;
                 L->m_20[L->m_24[m_0c] + m_08] = 0x5a;
-                reg->m_70->MarkCell(m_08, m_0c, 0x5a);
+                ((TgcRedraw*)reg->m_70)->MarkCell(m_08, m_0c, 0x5a);
                 break;
             }
             default:
                 break;
         }
     }
-    TgcGameReg* reg = g_gameReg;
+    CGameRegistry* reg = g_gameReg;
     i32 py = (m_0c << 5) + 0x10;
     i32 px = (m_08 << 5) + 0x10;
-    reg->m_68->MarkRect(m_28, px, py, m_30, 1, 0);
+    ((TgcRegion*)reg->m_68)->MarkRect(m_28, px, py, m_30, 1, 0);
     if (m_2c != 0) {
-        TgcReport* rec = reg->m_30->m_08->Report(0, px, py, 95000, "InGameText", 0x40003);
+        TgcReport* rec =
+            ((TgcGameMgr*)reg->m_30)->m_08->Report(0, px, py, 95000, "InGameText", 0x40003);
         if (rec != 0) {
             rec->m_124 = m_2c;
         }

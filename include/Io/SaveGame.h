@@ -2,7 +2,7 @@
 // and writes a fixed-layout progress file through a stack-local CFileIO (the
 // KERNEL32 file wrapper in FileStream.cpp): a 0xa1c-byte header blob followed by
 // ten 0x100-byte slot records, each XOR-checksummed and registered into the
-// global WwdGameReg (g_gameReg).
+// global CGameRegistry (g_gameReg).
 //
 // NOTE ON PROVENANCE: the dynamic this/ecx tracer grouped these 18 methods under
 // "CFileIO" because every file-touching method constructs a CFileIO temporary on
@@ -23,19 +23,16 @@
 #ifndef SRC_IO_SAVEGAME_H
 #define SRC_IO_SAVEGAME_H
 #include <rva.h>
+#include <Gruntz/CGameRegistry.h>
 
 #include <Mfc.h> // CString + <windows.h>
 
 #include <Io/FileStream.h> // CFileIO (the stack-local file wrapper)
 
-// External WwdGameReg singleton (g_gameReg) referenced through a typed global so
+// External CGameRegistry singleton (g_gameReg) referenced through a typed global so
 // the `mov ecx,ds:g_gameReg; call <slot>` falls out as in retail. BuildLevelRezPath
 // is the __thiscall method invoked from Register() (reloc-masked no-body callee).
-struct WwdGameReg {
-    i32 BuildLevelRezPath(i32 isEmpty, i32 hi, i32 lo, i32 id);
-    void LogError(const char* msg); // 0x00404178 (the save-game error notifier)
-};
-extern WwdGameReg* g_gameReg;
+extern CGameRegistry* g_gameReg;
 
 // _strncpy: the CRT helper the FillSlot path calls (reloc-masked).
 extern "C" char* __cdecl strncpy(char* dest, const char* src, u32 n);

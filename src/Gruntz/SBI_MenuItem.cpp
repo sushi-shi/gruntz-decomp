@@ -1,6 +1,7 @@
 #include <rva.h>
 #include <Mfc.h>
 #include <Gruntz/SBI_MenuItem.h>
+#include <Gruntz/CGameRegistry.h>
 // SBI_MenuItem.cpp - Gruntz CSBI_MenuItem (C:\Proj\Gruntz), the frameless methods.
 // RTTI .?AVCSBI_MenuItem@@; most-derived of the SBI family
 //   CSBI_MenuItem : CSBI_Image : CSBI_RectOnly : CStatusBarItem.
@@ -63,13 +64,9 @@ struct CMiGameMgrFull {
 };
 SIZE_UNKNOWN(CMiGameMgrFull);
 // The CGameReg singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c).
-struct CMiGameReg {
-    char m_pad0[0x30];
-    CMiGameMgr* m_30; // +0x30  active game manager (null-guard in serialize)
-};
-SIZE_UNKNOWN(CMiGameReg);
+SIZE_UNKNOWN(CGameRegistry);
 DATA(0x0024556c)
-extern CMiGameReg* g_gameReg;
+extern CGameRegistry* g_gameReg;
 
 // The cue lookup map (CMapStringToOb::Lookup, 0x1b8438, __thiscall ret 8).
 struct CMiStrMap {
@@ -206,7 +203,7 @@ i32 CSBI_MenuItem::SerializeChain(void* arP, i32 kind, i32 a, i32 b) {
     if (ar == 0) {
         return 0;
     }
-    CMiGameMgr* mgr = g_gameReg->m_30;
+    CMiGameMgr* mgr = (CMiGameMgr*)g_gameReg->m_30;
     if (mgr == 0) {
         return 0;
     }
@@ -346,7 +343,12 @@ i32 CSBI_MenuItem::DecCounter() {
         m_28--;
         CMiFrame* f = (CMiFrame*)(void*)m_30;
         if (f) {
-            f->RenderFrame(g_gameReg->m_30->m_4->m_14, m_14 + f->m_18, m_18 + f->m_1c, 0);
+            f->RenderFrame(
+                ((CMiGameMgr*)g_gameReg->m_30)->m_4->m_14,
+                m_14 + f->m_18,
+                m_18 + f->m_1c,
+                0
+            );
         }
     }
     return 1;
@@ -448,7 +450,7 @@ i32 CSBI_MenuItem::Serialize(void* arP, i32 kind, i32 a, i32 b) {
     if (ar == 0) {
         return 0;
     }
-    CMiGameMgr* mgr = g_gameReg->m_30;
+    CMiGameMgr* mgr = (CMiGameMgr*)g_gameReg->m_30;
     if (mgr == 0) {
         return 0;
     }
@@ -496,7 +498,7 @@ i32 CSBI_MenuItem::SerializeFields(void* arP, i32 kind, i32 a, i32 b) {
     if (ar == 0) {
         return 0;
     }
-    CMiGameMgr* mgr = g_gameReg->m_30;
+    CMiGameMgr* mgr = (CMiGameMgr*)g_gameReg->m_30;
     if (mgr == 0) {
         return 0;
     }

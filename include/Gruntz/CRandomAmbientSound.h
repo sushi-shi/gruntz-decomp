@@ -20,6 +20,7 @@
 #define GRUNTZ_CRANDOMAMBIENTSOUND_H
 
 #include <Ints.h>
+#include <Gruntz/CGameRegistry.h>
 #include <rva.h>
 
 #include <Dsndmgr/DirectSoundMgr.h>
@@ -32,14 +33,8 @@ struct WwdActiveLevel {
     char m_pad0[0x24];
     i32 m_objectCount; // +0x24  object count (non-zero == playable)
 };
-struct WwdGameReg {
-    char m_pad0[0x10];
-    void* m_activeLevel; // +0x10  active-level handle (Update gates on it)
-    char m_pad14[0x54 - 0x14];
-    WwdActiveLevel* m_world; // +0x54  the active world view
-};
 DATA(0x0064556c)
-extern WwdGameReg* g_gameReg;
+extern CGameRegistry* g_gameReg;
 
 // The global frame-delta clock in ms (DAT_00645584, canonical ?g_tickDelta@@3HA);
 // the countdown at +0x50 is drained by it each Step.

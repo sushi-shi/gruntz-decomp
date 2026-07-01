@@ -49,7 +49,7 @@ void CAmbientSound::Restart() {
     if (g_gameReg->m_10 == 0) {
         return;
     }
-    if (g_gameReg->m_54->m_24 == 0) {
+    if (((WwdActiveLevel*)g_gameReg->m_54)->m_24 == 0) {
         return;
     }
     ((DsndReseed*)m_04)->Reseed(1, m_38, 0, 1);
@@ -84,7 +84,7 @@ void CAmbientSound::Restart() {
 // @early-stop
 // Tail-merge wall (~77%): retail folds the two identical (re)start tails - the
 // unbounded path's and the bounded `force` path's - into ONE block reached by an
-// unconditional `jmp`, and the merge drags a dead `g_gameReg->m_54->m_24` probe
+// unconditional `jmp`, and the merge drags a dead `((WwdActiveLevel*)g_gameReg->m_54)->m_24` probe
 // into the unbounded path. Our cl emits the tail TWICE (and DCEs the unused m_24
 // load), so the back half re-permutes. The bounded hit-test + the shared back
 // half are byte-exact; only the duplicate-vs-shared tail + a couple of regalloc
@@ -109,7 +109,7 @@ void CAmbientSound::Update(i32 x, i32 y, i32 force) {
         if (g_gameReg->m_10 == 0) {
             return;
         }
-        // Retail also probes g_gameReg->m_54->m_24 here, then (re)starts
+        // Retail also probes ((WwdActiveLevel*)g_gameReg->m_54)->m_24 here, then (re)starts
         // regardless; our cl DCEs that unused load (tail-merge wall, see below).
         if (m_04 == 0) {
             return;
@@ -143,7 +143,7 @@ void CAmbientSound::Update(i32 x, i32 y, i32 force) {
     if (inRange == 0) {
         return;
     }
-    if (g_gameReg->m_10 == 0 || g_gameReg->m_54->m_24 == 0) {
+    if (g_gameReg->m_10 == 0 || ((WwdActiveLevel*)g_gameReg->m_54)->m_24 == 0) {
         return;
     }
     if (force != 0) {

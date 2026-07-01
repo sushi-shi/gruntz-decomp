@@ -5,16 +5,13 @@
 // of per-map records, plus a flat Serialize.
 #include <Gruntz/BattlezData.h>
 #include <rva.h>
+#include <Gruntz/CGameRegistry.h>
 
 // The game-registry singleton (?g_gameReg@@3PAUWwdGameReg@@A). Minimal local
 // view: FillRecord folds reg->m_118 into each record. The DATA pin reloc-masks
 // the `mov ds:g_gameReg` load against the already-named symbol.
-struct CGameReg {
-    char m_pad00[0x118];
-    i32 m_118; // +0x118
-};
 DATA(0x0024556c)
-extern CGameReg* g_gameReg;
+extern CGameRegistry* g_gameReg;
 
 // 0xfc9c0 - the (re)initialize-with-records entry: run Init() on this, then bind
 // the record array. (The object is raw-`operator new`d by the game manager and

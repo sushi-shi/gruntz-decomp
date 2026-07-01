@@ -12,7 +12,8 @@
 // plain __thiscall member whose codegen depends only on its body + offsets).
 // Only offsets / code bytes are load-bearing; names are placeholders.
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
-#include <Gruntz/UserLogic.h>       // CUserLogic base (CSecretLevelTrigger : CUserLogic)
+#include <Gruntz/CGameRegistry.h>
+#include <Gruntz/UserLogic.h> // CUserLogic base (CSecretLevelTrigger : CUserLogic)
 
 class CSecretLevelTrigger : public CUserLogic {
 public:
@@ -108,14 +109,10 @@ struct CTrigWindow {
 };
 SIZE_UNKNOWN(CTrigWindow);
 
-// The global game registry (WwdGameReg, RVA 0x24556c; wwdfile owns the DATA
+// The global game registry (CGameRegistry, RVA 0x24556c; wwdfile owns the DATA
 // label); only the on-screen-cue receiver at +0x68 is touched.
-struct WwdGameReg {
-    char m_pad0[0x68];
-    CTriggerSink* m_68; // +0x68 on-screen-cue receiver (Probe / ScrollTo)
-};
 DATA(0x0024556c)
-extern WwdGameReg* g_gameReg;
+extern CGameRegistry* g_gameReg;
 
 // CSecretLevelTrigger::~CSecretLevelTrigger @0x010c50 - the leaf adds no
 // destructible members beyond CUserLogic, so its dtor folds the bare CUserLogic
@@ -174,7 +171,7 @@ RVA(0x00042ac0, 0x90)
 i32 CSecretLevelTrigger::Tick() {
     i32 outA, outB;
     CTrigSprite* spr = (CTrigSprite*)m_10;
-    CTrigger* hit = g_gameReg->m_68->Probe(spr->m_5c, spr->m_60, &outB, &outA, 1);
+    CTrigger* hit = ((CTriggerSink*)g_gameReg->m_68)->Probe(spr->m_5c, spr->m_60, &outB, &outA, 1);
     if (hit) {
         spr = (CTrigSprite*)m_10;
         i32 ok = 1;
@@ -187,7 +184,7 @@ i32 CSecretLevelTrigger::Tick() {
             ok = 0;
         }
         if (ok) {
-            g_gameReg->m_68->ScrollTo(outB, outA, 0xc, -1);
+            ((CTriggerSink*)g_gameReg->m_68)->ScrollTo(outB, outA, 0xc, -1);
         }
         ((CTrigWindow*)m_38)->m_8 |= 0x10000;
     }

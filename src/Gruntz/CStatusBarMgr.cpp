@@ -22,6 +22,7 @@
 //   m_10c==1 -> Statz   m_10c==2 -> Gruntz   m_10c==3 -> Resource
 //   m_10c==4 -> Multiplayer   m_10c==5 -> Game
 #include <rva.h>
+#include <Gruntz/CGameRegistry.h>
 
 #include <Mfc.h>
 
@@ -127,16 +128,8 @@ SIZE_UNKNOWN(CSbIconSet);
 
 // The game registry: factory at +0x68/+0x74, a per-player icon table at +0x158
 // (stride for the per-player block: 71*8; per-icon stride inside it: 0x238).
-struct CGameReg {
-    char m_pad[0x68];
-    CSbFactory* m_68; // +0x68
-    char m_pad6c[0x74 - 0x6c];
-    CSbFactory* m_74; // +0x74
-    char m_pad78[0x158 - 0x78];
-    i32 m_158; // +0x158 base of the icon table
-};
 DATA(0x0024556c)
-extern CGameReg* g_gameReg; // ?g_gameReg@@3PAUCGameReg@@A @ VA 0x64556c
+extern CGameRegistry* g_gameReg; // ?g_gameReg@@3PAUCGameReg@@A @ VA 0x64556c
 
 DATA(0x00244c54)
 extern i32 g_curPlayer; // DAT_00644c54

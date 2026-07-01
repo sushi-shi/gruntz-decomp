@@ -79,8 +79,8 @@ i32 CGruntSelectedSprite::SetCell(i32 x, i32 y) {
 // Every instruction matches modulo register names. Deferred to the final sweep.
 RVA(0x0007e9f0, 0x5f)
 i32 CGruntSelectedSprite::Update() {
-    CIndicatorReg* reg = g_gameReg;
-    CGruntEntry* e = ((CGruntEntry**)(reg->m_68 + 0x1c))[m_cellX * 15 + m_cellY];
+    CGameRegistry* reg = g_gameReg;
+    CGruntEntry* e = ((CGruntEntry**)((char*)reg->m_68 + 0x1c))[m_cellX * 15 + m_cellY];
     if (e != 0 && e->m_1d8 != 0) {
         ((CIndicatorSyncHelper*)((char*)m_38 + 0x1a0))->Sync(g_indicatorSync);
         m_10->m_5c = e->m_10->m_5c;

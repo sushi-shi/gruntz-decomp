@@ -9,6 +9,7 @@
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
 #include <Gruntz/CDroppedObject.h>
+#include <Gruntz/CGameRegistry.h>
 
 // ---------------------------------------------------------------------------
 // The per-coordinate activation registry CDroppedObject::FireActivation
@@ -288,22 +289,8 @@ struct DropReg2c { // g_gameReg->m_2c
 struct DropTileMgr {                                  // g_gameReg->m_68
     void PostMove(i32 x, i32 y, i32 a, i32 b, i32 c); // 0x7b930 (via the 0x400c thunk)
 };
-struct DropGameReg {
-    char m_pad00[0x2c];
-    DropReg2c* m_2c; // +0x2c
-    DropReg30* m_30; // +0x30
-    char m_pad34[0x68 - 0x34];
-    DropTileMgr* m_68; // +0x68
-    char m_pad6c[0x70 - 0x6c];
-    DropGrid* m_70; // +0x70
-    char m_pad74[0x13c - 0x74];
-    i32 m_13c; // +0x13c  X min
-    i32 m_140; // +0x140  Y min
-    i32 m_144; // +0x144  X max
-    i32 m_148; // +0x148  Y max
-};
 DATA(0x0024556c)
-extern DropGameReg* g_gameReg;
+extern CGameRegistry* g_gameReg;
 
 // The fall-timer inputs: the frame-delta accumulator (g_645584, u32) scaled by the
 // per-tile time m_58, and the 0x5eaa00 double bias subtracted before the >m_68
@@ -349,7 +336,7 @@ i32 CDroppedObject::ActA() {
     i32 landed = (i32)(m_60 - g_dropFallBias);
     if (landed > m_68) {
         i32 x = m_10->m_5c;
-        DropGrid* g = g_gameReg->m_70;
+        DropGrid* g = (DropGrid*)g_gameReg->m_70;
         i32 cell;
         {
             i32 cx = x >> 5;
@@ -365,7 +352,7 @@ i32 CDroppedObject::ActA() {
                 if (cell == 0x40) {
                     m_38->m_08 |= 0x10000;
                 } else {
-                    switch (g_gameReg->m_2c->m_20) {
+                    switch (((DropReg2c*)g_gameReg->m_2c)->m_20) {
                         case 4:
                         case 5:
                         case 8:
@@ -376,7 +363,8 @@ i32 CDroppedObject::ActA() {
                             if (x < g_gameReg->m_144 && x >= g_gameReg->m_13c
                                 && m_68 < g_gameReg->m_148 && m_68 >= g_gameReg->m_140) {
                                 CGameObject* s =
-                                    g_gameReg->m_30->m_08
+                                    ((DropReg30*)g_gameReg->m_30)
+                                        ->m_08
                                         ->CreateSprite(0, x, m_68, 0xcf84f, "Particlez", 0x40003);
                                 if (s != 0) {
                                     s->ApplyName("LEVEL_DEATHSPLASH");
@@ -393,7 +381,8 @@ i32 CDroppedObject::ActA() {
             if (x < g_gameReg->m_144 && x >= g_gameReg->m_13c && m_68 < g_gameReg->m_148
                 && m_68 >= g_gameReg->m_140) {
                 CGameObject* s =
-                    g_gameReg->m_30->m_08->CreateSprite(0, x, m_68, 0xcf84f, "Particlez", 0x40003);
+                    ((DropReg30*)g_gameReg->m_30)
+                        ->m_08->CreateSprite(0, x, m_68, 0xcf84f, "Particlez", 0x40003);
                 if (s != 0) {
                     s->ApplyName("GAME_WATER");
                     s->ApplyLookupGeometry("GAME_WATER", 0);
@@ -404,7 +393,7 @@ i32 CDroppedObject::ActA() {
         m_38->ApplyLookupGeometry("LEVEL_DROPPEDOBJECTHIT", 0);
         m_30 = m_14->m_1c;
         m_14->m_1c = g_buteTree.Find(s_actKeyB);
-        g_gameReg->m_68->PostMove(m_10->m_5c, m_68, 1, 7, -1);
+        ((DropTileMgr*)g_gameReg->m_68)->PostMove(m_10->m_5c, m_68, 1, 7, -1);
         return 0;
     }
     m_10->m_60 = landed;
@@ -417,7 +406,7 @@ SIZE_UNKNOWN(CDropColl2);
 SIZE_UNKNOWN(CDropEntry);
 SIZE_UNKNOWN(CDroppedObject);
 SIZE_UNKNOWN(DropAnimSink);
-SIZE_UNKNOWN(DropGameReg);
+SIZE_UNKNOWN(CGameRegistry);
 SIZE_UNKNOWN(DropGrid);
 SIZE_UNKNOWN(DropReg2c);
 SIZE_UNKNOWN(DropReg30);

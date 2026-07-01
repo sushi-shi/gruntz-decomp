@@ -7,7 +7,7 @@
 #include <Gruntz/CGameRegistry.h>
 #include <Gruntz/ChatBoxOwner.h>
 
-DATA(0x0064556c)
+DATA(0x0024556c)
 extern CGameRegistry* g_gameReg;
 
 // ---------------------------------------------------------------------------

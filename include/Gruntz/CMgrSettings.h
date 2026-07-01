@@ -11,6 +11,7 @@
 #define GRUNTZ_CMGRSETTINGS_H
 
 #include <Mfc.h> // real MFC CMapStringToOb / CObject (Lookup 0x1b8008, reloc-masked)
+#include <Gruntz/CGameRegistry.h>
 #include <Ints.h>
 #include <rva.h>
 
@@ -54,18 +55,14 @@ struct CMgrLookupRec {
     i32 m_68; // +0x68 hi index (inclusive)
 };
 
-// g_gameReg singleton chain (CGameReg* @ RVA 0x24556c; +0x30 active holder; its
+// g_gameReg singleton chain (CGameRegistry* @ RVA 0x24556c; +0x30 active holder; its
 // +0x10 is the registry leaf).
 struct CMgrActiveHolder {
     char _00[0x10];
     CDDrawWorkerRegistry* m_10; // +0x10
 };
-struct CGameReg {
-    char _00[0x30];
-    CMgrActiveHolder* m_30; // +0x30
-};
 DATA(0x0024556c)
-extern CGameReg* g_gameReg;
+extern CGameRegistry* g_gameReg;
 
 // Per-serialize round counter the archive bumps.
 DATA(0x00229ad0)

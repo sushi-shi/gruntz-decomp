@@ -33,7 +33,7 @@ SIZE_UNKNOWN(CGruntEntry);
 SIZE_UNKNOWN(CGruntLayerHolder);
 SIZE_UNKNOWN(CGruntRenderable);
 SIZE_UNKNOWN(CIndicatorActReg);
-SIZE_UNKNOWN(CIndicatorReg);
+SIZE_UNKNOWN(CGameRegistry);
 SIZE_UNKNOWN(CIndicatorSyncHelper);
 // LogicTypeTableInline.h
 SIZE_UNKNOWN(CLogicTypeBuilder);

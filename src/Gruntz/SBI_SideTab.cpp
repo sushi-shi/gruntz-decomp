@@ -1,6 +1,7 @@
 #include <rva.h>
 #include <Mfc.h>
 #include <Ints.h>
+#include <Gruntz/CGameRegistry.h>
 // SBI_SideTab.cpp - Gruntz CSBI_SideTab (C:\Proj\Gruntz), the frameless methods.
 // RTTI .?AVCSBI_SideTab@@; a sibling leaf of the SBI family
 //   CSBI_SideTab : CStatusBarItem  (RTTI hierarchy: {CSBI_SideTab, CStatusBarItem}).
@@ -86,15 +87,9 @@ SIZE_UNKNOWN(CSideTabFallback);
 
 // The CGameReg singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c); the game
 // manager + the per-frame unit-record table the SideTab paths touch.
-struct CSideTabGameReg {
-    char m_pad0[0x30];
-    CSideTabGameMgr* m_30; // +0x30  active game manager
-    char m_pad34[0x68 - 0x34];
-    void* m_68; // +0x68  unit-record table base (rows of 15 dwords, records at +0x1c)
-};
-SIZE_UNKNOWN(CSideTabGameReg);
+SIZE_UNKNOWN(CGameRegistry);
 DATA(0x0024556c)
-extern CSideTabGameReg* g_gameReg;
+extern CGameRegistry* g_gameReg;
 
 // ---------------------------------------------------------------------------
 // CSBI_SideTab - the side-tab status-bar item. Derives directly from
@@ -150,7 +145,7 @@ i32 CSBI_SideTab::Refresh(i32 unused) {
 RVA(0x000e99c0, 0x4c)
 i32 CSBI_SideTab::Render(i32 z) {
     if (m_58) {
-        i32 ctx = g_gameReg->m_30->m_4->m_14;
+        i32 ctx = ((CSideTabGameMgr*)g_gameReg->m_30)->m_4->m_14;
         m_30->RenderFrame(ctx, m_48, m_4c, z);
         m_34->RenderFrame(ctx, m_48 + m_50, m_4c, z);
     }
@@ -216,7 +211,8 @@ i32 CSBI_SideTab::BuildHandle() {
         return 1;
     }
     void* found = 0;
-    g_gameReg->m_30->m_10->m_10.Lookup("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", &found);
+    ((CSideTabGameMgr*)g_gameReg->m_30)
+        ->m_10->m_10.Lookup("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", &found);
     CSideTabGlyphMap* gm = (CSideTabGlyphMap*)found;
     i32 glyph;
     if (gm == 0 || val < gm->m_64 || val > gm->m_68) {

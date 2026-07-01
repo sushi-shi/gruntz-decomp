@@ -12,6 +12,7 @@
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
 #include <Gruntz/CStaticHazard.h>
+#include <Gruntz/CGameRegistry.h>
 #include <Bute/ButeMgr.h> // CButeMgr (g_buteMgr GetIntDef), CButeTree (g_buteTree)
 
 // The global bute store (g_buteTree @0x6bf620; Find 0x16d190).
@@ -113,22 +114,8 @@ struct HazGridMgr {
     i32 ScreenToCell(i32 x, i32 y, i32* outA, i32* outB, i32 z); // 0x35f3 thunk
     void MarkCell(i32 a, i32 b, i32 id, i32 flag);               // 0x2e96 thunk
 };
-struct WwdGameReg {
-    void EmitEvent(i32 a, i32 b); // 0x346d thunk (ctor lookup-miss branch)
-    char m_pad00[0x2c];
-    HazSwitchSrc* m_2c; // +0x2c
-    HazSndRoot* m_30;   // +0x30
-    char m_pad34[0x68 - 0x34];
-    HazGridMgr* m_68; // +0x68
-    char m_pad6c[0x70 - 0x6c];
-    HazGrid* m_70; // +0x70
-    char m_pad74[0x118 - 0x74];
-    i32 m_118; // +0x118  gate
-    char m_pad11c[0x134 - 0x11c];
-    i32 m_134; // +0x134  gate
-};
 DATA(0x0024556c)
-extern WwdGameReg* g_gameReg;
+extern CGameRegistry* g_gameReg;
 
 // ===========================================================================
 // FireActivation's per-coordinate activation registry (CStaticHazard's OWN
@@ -283,7 +270,7 @@ CStaticHazard::CStaticHazard(CGameObject* obj) : CUserLogic(obj) {
     m_64 = ((WwdGameObject*)m_10)->m_5c >> 5;
     m_68 = ((WwdGameObject*)m_10)->m_60 >> 5;
     ((WwdGameObject*)m_10)->m_128 = 0;
-    switch (g_gameReg->m_2c->m_20) {
+    switch (((HazSwitchSrc*)g_gameReg->m_2c)->m_20) {
         case 3:
         case 4:
         case 7:
@@ -306,7 +293,7 @@ CStaticHazard::CStaticHazard(CGameObject* obj) : CUserLogic(obj) {
     m_5c = ((WwdGameObject*)m_10)->m_120;
     m_54 = g_645588;
     HazLookupEntry* entry = 0;
-    g_gameReg->m_30->m_2c->m_10.Lookup("LEVEL_STATICHAZARDGO", &entry);
+    ((HazSndRoot*)g_gameReg->m_30)->m_2c->m_10.Lookup("LEVEL_STATICHAZARDGO", &entry);
     if (entry != 0) {
         m_58 = g_buteMgr.GetIntDef("Hazardz", "AniPad", 0x64) + entry->m_24;
     } else {
@@ -394,7 +381,7 @@ void CStaticHazard::RegisterActs() {
 // ~98%. Parked for the final sweep.
 RVA(0x000fc0b0, 0xb2)
 i32 CStaticHazard::LoadAttributes2() {
-    WwdGameReg* reg = g_gameReg;
+    CGameRegistry* reg = g_gameReg;
     if (reg->m_118 != 0 && reg->m_134 == 1) {
         return 0;
     }
@@ -458,7 +445,7 @@ i32 CStaticHazard::LoadAttributes() {
                 ((WwdGameObject*)m_10)->m_08 |= 0x20000;
             }
             // clear the hazard cell's bit-0x8000000
-            HazGrid* grid = g_gameReg->m_70;
+            HazGrid* grid = (HazGrid*)g_gameReg->m_70;
             if ((u32)m_64 < (u32)grid->m_c && (u32)m_68 < (u32)grid->m_10) {
                 *(i32*)(grid->m_8[m_68] + m_64 * 0x1c) &= 0xf7ffffff;
             }
@@ -505,26 +492,27 @@ i32 CStaticHazard::LoadAttributes() {
 dispatch:
     if (((WwdAnimSub*)((char*)m_38 + 0x1a0))->SetAnim(g_6bf3bc) == 2) {
         i32 a = 0, b = 0;
-        if (g_gameReg->m_68->ScreenToCell(
-                ((WwdGameObject*)m_10)->m_5c,
-                ((WwdGameObject*)m_10)->m_60,
-                &a,
-                &b,
-                0
-            )
+        if (((HazGridMgr*)g_gameReg->m_68)
+                ->ScreenToCell(
+                    ((WwdGameObject*)m_10)->m_5c,
+                    ((WwdGameObject*)m_10)->m_60,
+                    &a,
+                    &b,
+                    0
+                )
             != 0) {
-            g_gameReg->m_68->MarkCell(a, b, ((WwdGameObject*)m_10)->m_124, -1);
+            ((HazGridMgr*)g_gameReg->m_68)->MarkCell(a, b, ((WwdGameObject*)m_10)->m_124, -1);
         }
         if (((WwdGameObject*)m_10)->m_74 != ((WwdGameObject*)m_10)->m_128) {
             ((WwdGameObject*)m_10)->m_74 = ((WwdGameObject*)m_10)->m_128;
             ((WwdGameObject*)m_10)->m_08 |= 0x20000;
         }
-        HazGrid* grid = g_gameReg->m_70;
+        HazGrid* grid = (HazGrid*)g_gameReg->m_70;
         if ((u32)m_64 < (u32)grid->m_c && (u32)m_68 < (u32)grid->m_10) {
             *(i32*)(grid->m_8[m_68] + m_64 * 0x1c) |= 0x8000000;
         }
     } else {
-        HazGrid* grid = g_gameReg->m_70;
+        HazGrid* grid = (HazGrid*)g_gameReg->m_70;
         if ((u32)m_64 < (u32)grid->m_c && (u32)m_68 < (u32)grid->m_10) {
             *(i32*)(grid->m_8[m_68] + m_64 * 0x1c) &= 0xf7ffffff;
         }
@@ -543,7 +531,7 @@ dispatch:
                 HazAnimElem* e = d->m_10 > 0 ? *d->m_c : 0;
                 ((WwdGameObject*)m_38)->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_14);
             }
-            HazGrid* grid = g_gameReg->m_70;
+            HazGrid* grid = (HazGrid*)g_gameReg->m_70;
             if ((u32)m_64 < (u32)grid->m_c && (u32)m_68 < (u32)grid->m_10) {
                 *(i32*)(grid->m_8[m_68] + m_64 * 0x1c) &= 0xf7ffffff;
             }

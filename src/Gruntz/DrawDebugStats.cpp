@@ -22,7 +22,8 @@
 // literals reloc-masked against the matched string symbols. Only the offsets /
 // code bytes are load-bearing.
 
-#include <Mfc.h>    // real MFC CString (default ctor 0x1b9b93 / dtor 0x1b9cde / += 0x1ba0c8)
+#include <Mfc.h> // real MFC CString (default ctor 0x1b9b93 / dtor 0x1b9cde / += 0x1ba0c8)
+#include <Gruntz/CGameRegistry.h>
 #include <stdio.h>  // engine sprintf (reloc-masked)
 #include <string.h> // inline strcat/strlen intrinsics (/O2)
 
@@ -91,11 +92,8 @@ struct DbgMc { // this->m_c
 };
 // The *0x64556c game-registry singleton, this method's typed alias: GetRect
 // returns the level's text rect by out-param + value.
-struct DbgMgr {
-    RECT* GetRect(RECT* buf); // FUN_0008e3a0 __thiscall
-};
 DATA(0x0024556c)
-extern DbgMgr* g_dbgMgr; // *0x64556c, this method's alias
+extern CGameRegistry* g_dbgMgr; // *0x64556c, this method's alias
 
 struct DbgVtbl; // completed below (GetFrame @+0x6c, PostSetup @+0x94)
 class CDbgView {
@@ -188,7 +186,7 @@ void CDbgView::DrawDebugStats() {
     if (buf[0] != 0) {
         RECT rb;
         RECT lr;
-        CopyRect(&lr, g_dbgMgr->GetRect(&rb));
+        CopyRect(&lr, (RECT*)g_dbgMgr->GetRect(&rb));
         RECT dr;
         dr.left = lr.left;
         dr.top = lr.bottom - 0x1c;
@@ -213,6 +211,6 @@ SIZE_UNKNOWN(DbgDcHost);
 SIZE_UNKNOWN(DbgL14);
 SIZE_UNKNOWN(DbgDcRoot);
 SIZE_UNKNOWN(DbgMc);
-SIZE_UNKNOWN(DbgMgr);
+SIZE_UNKNOWN(CGameRegistry);
 SIZE_UNKNOWN(CDbgView);
 SIZE_UNKNOWN(DbgVtbl);

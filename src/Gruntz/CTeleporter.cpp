@@ -7,6 +7,7 @@
 // CTeleporter : CUserLogic (RTTI .?AVCTeleporter@@). Only offsets / code bytes
 // are load-bearing; names are placeholders for the recovered engine identities.
 #include <Gruntz/CTeleporter.h>
+#include <Gruntz/CGameRegistry.h>
 
 // The bound CGameObject viewed through m_10 by the bring-up: its +0x7c sub-object
 // carries the per-tile-time at +0xbc (the SAME shape CPathHazard reads as
@@ -99,25 +100,11 @@ struct CTeleMgrSub {
     i32 m_28; // +0x28
 };
 
-// The game-manager singleton (CGameReg* @ 0x64556c). Only the tick's offsets are
+// The game-manager singleton (CGameRegistry* @ 0x64556c). Only the tick's offsets are
 // modeled here; uses the shared ?g_gameReg@@3PAUCGameReg@@A name so the load
 // reloc-masks against the already-bound symbol.
-struct CGameReg {
-    char m_pad00[0x2c];
-    CTeleScroller* m_2c;      // +0x2c
-    CTeleFactoryHolder* m_30; // +0x30
-    char m_pad34[0x68 - 0x34];
-    CTeleIconTable* m_68; // +0x68
-    char m_pad6c[0x7c - 0x6c];
-    CTeleMgrSub* m_7c; // +0x7c
-    char m_pad80[0x13c - 0x80];
-    i32 m_13c; // +0x13c  view min X
-    i32 m_140; // +0x140  view min Y
-    i32 m_144; // +0x144  view max X
-    i32 m_148; // +0x148  view max Y
-};
 DATA(0x0024556c)
-extern CGameReg* g_gameReg;
+extern CGameRegistry* g_gameReg;
 
 // The current local player index (g_644c54) the warp gates on.
 DATA(0x00244c54)
@@ -226,14 +213,14 @@ i32 CTeleporter::Update() {
         return 0;
     }
 
-    CGameReg* mgr;
+    CGameRegistry* mgr;
     if (m_68 == 0) {
         CTeleVisual* o = (CTeleVisual*)m_10;
         mgr = g_gameReg;
         i32 y = o->m_60;
         i32 x = o->m_5c;
         if (x < mgr->m_144 && x >= mgr->m_13c && y < mgr->m_148 && y >= mgr->m_140) {
-            mgr->m_68->m_3fc = 1;
+            ((CTeleIconTable*)mgr->m_68)->m_3fc = 1;
         }
     }
     mgr = g_gameReg;
@@ -255,25 +242,27 @@ i32 CTeleporter::Update() {
 
     i32 outA;
     i32 outB;
-    CTeleRecord* found = mgr->m_68->HitTestCell(o->m_5c, o->m_60, &outB, &outA, 1);
+    CTeleRecord* found =
+        ((CTeleIconTable*)mgr->m_68)->HitTestCell(o->m_5c, o->m_60, &outB, &outA, 1);
     if (found == 0) {
         return 0;
     }
 
     if (((CTeleVisual*)m_10)->m_124 == 2) {
         found->StepAnimDispatchA(((CTeleVisual*)m_10)->m_164, ((CTeleVisual*)m_10)->m_168, 1, 1);
-        g_gameReg->m_7c->m_28++;
+        ((CTeleMgrSub*)g_gameReg->m_7c)->m_28++;
         m_40 = m_38->m_1b4;
         m_38->ApplyLookupGeometry(g_teleporterCloseKey, 0);
         CTeleVisual* s = (CTeleVisual*)m_10;
-        CTeleVisual* spawned = g_gameReg->m_30->m_8->CreateSprite(
-            0,
-            s->m_11c * 32 + 16,
-            s->m_120 * 32 + 16,
-            0,
-            g_teleporterSpawnKey,
-            0x40003
-        );
+        CTeleVisual* spawned = ((CTeleFactoryHolder*)g_gameReg->m_30)
+                                   ->m_8->CreateSprite(
+                                       0,
+                                       s->m_11c * 32 + 16,
+                                       s->m_120 * 32 + 16,
+                                       0,
+                                       g_teleporterSpawnKey,
+                                       0x40003
+                                   );
         if (spawned != 0) {
             spawned->m_124 = 1;
             spawned->m_128 = ((CTeleVisual*)m_10)->m_128;
@@ -283,14 +272,15 @@ i32 CTeleporter::Update() {
         }
     } else {
         CTeleVisual* s = (CTeleVisual*)m_10;
-        CTeleVisual* spawned = g_gameReg->m_30->m_8->CreateSprite(
-            0,
-            s->m_164 * 32 + 16,
-            s->m_168 * 32 + 16,
-            0,
-            g_wormholeSpawnKey,
-            0x40003
-        );
+        CTeleVisual* spawned = ((CTeleFactoryHolder*)g_gameReg->m_30)
+                                   ->m_8->CreateSprite(
+                                       0,
+                                       s->m_164 * 32 + 16,
+                                       s->m_168 * 32 + 16,
+                                       0,
+                                       g_wormholeSpawnKey,
+                                       0x40003
+                                   );
         spawned->m_164 = ((CTeleVisual*)m_10)->m_5c;
         spawned->m_168 = ((CTeleVisual*)m_10)->m_60;
         spawned->m_124 = ((CTeleVisual*)m_10)->m_128;
@@ -303,17 +293,17 @@ i32 CTeleporter::Update() {
     m_68 = 1;
     mgr = g_gameReg;
     CTeleRecord* current;
-    if (mgr->m_68->m_24c != 1) {
+    if (((CTeleIconTable*)mgr->m_68)->m_24c != 1) {
         current = 0;
     } else {
-        i32* pair = mgr->m_68->m_244->m_8;
+        i32* pair = ((CTeleIconTable*)mgr->m_68)->m_244->m_8;
         i32 row = pair[0];
         i32 col = pair[1];
-        current = ((CTeleRecord**)((char*)mgr->m_68 + 0x1c))[row * 15 + col];
+        current = ((CTeleRecord**)((char*)(CTeleIconTable*)mgr->m_68 + 0x1c))[row * 15 + col];
     }
     if (found == current && outB == g_curPlayer) {
         CTeleVisual* g = found->m_10;
-        mgr->m_2c->ResetGoals(g->m_5c, g->m_60);
+        ((CTeleScroller*)mgr->m_2c)->ResetGoals(g->m_5c, g->m_60);
     }
     return 0;
 }

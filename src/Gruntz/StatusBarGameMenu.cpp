@@ -38,6 +38,7 @@
 #include <rva.h>
 
 #include <Mfc.h>
+#include <Gruntz/CGameRegistry.h>
 
 #include <Gruntz/SbRect.h> // the by-value geometry rect each Configure takes (slot 0x2c)
 
@@ -113,16 +114,8 @@ struct CGmFactory {
     i32 m_288; // +0x288  MISSIONSTATUS variant selector
 };
 SIZE_UNKNOWN(CGmFactory);
-struct CGameReg {
-    char m_pad00[0xc];
-    i32 m_c; // +0x0c  RESUME-enable gate
-    char m_pad10[0x68 - 0x10];
-    CGmFactory* m_68; // +0x68
-    char m_pad6c[0x134 - 0x6c];
-    i32 m_134; // +0x134  mode gate (1 / 2)
-};
 DATA(0x0024556c)
-extern CGameReg* g_gameReg;
+extern CGameRegistry* g_gameReg;
 
 // ---------------------------------------------------------------------------
 // CGameMenuMgr layout (placeholder fields; only offsets are load-bearing).
@@ -191,7 +184,7 @@ void CGameMenuMgr::BuildGameMenu() {
     if (m_110 == 0x1fb) {
         // ---- briefing variant: a single MISSIONSTATUS widget ----
         it = mkImageSet(&g_vtbl_t4, 4);
-        i32 variant = (g_gameReg->m_68->m_288 == 1) ? 1 : 2;
+        i32 variant = (((CGmFactory*)g_gameReg->m_68)->m_288 == 1) ? 1 : 2;
         r.left = bx;
         r.top = by + 0xd7;
         r.right = bx + 0x9f;

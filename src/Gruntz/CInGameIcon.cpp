@@ -465,7 +465,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj) {
 
     // mark the owner's tile cell occupied (or clear the occupancy bit)
     i32 mv = *(i32*)((char*)m_10 + 0x188);
-    CIconTileGrid* grid = g_gameReg->m_70;
+    CIconTileGrid* grid = (CIconTileGrid*)g_gameReg->m_70;
     i32 col = m_10->m_5c >> 5;
     i32 row = m_10->m_60 >> 5;
     if ((u32)col < (u32)grid->m_c && (u32)row < (u32)grid->m_10) {
@@ -517,9 +517,9 @@ i32 CInGameIcon::HandleInput() {
         if (icon < 0 || icon >= 0x11) {
             icon = 0;
         }
-        rec = g_gameReg->m_74->GetByIndex(icon, 0);
+        rec = ((CIconFactory*)g_gameReg->m_74)->GetByIndex(icon, 0);
         if (rec == 0) {
-            rec = g_gameReg->m_74->GetByIndex(1, 0);
+            rec = ((CIconFactory*)g_gameReg->m_74)->GetByIndex(1, 0);
         }
     } else if (cmd == 0x1e || cmd == 0x13) {
         i32 icon;
@@ -546,9 +546,9 @@ i32 CInGameIcon::HandleInput() {
                 icon = 7;
                 break;
         }
-        rec = g_gameReg->m_74->GetByIndex(icon, 0);
+        rec = ((CIconFactory*)g_gameReg->m_74)->GetByIndex(icon, 0);
         if (rec == 0) {
-            rec = g_gameReg->m_74->GetByIndex(1, 0);
+            rec = ((CIconFactory*)g_gameReg->m_74)->GetByIndex(1, 0);
         }
     } else {
         return 1;
@@ -656,7 +656,7 @@ i32 CInGameIcon::RefreshCell() {
     i32 tileX = (obj->m_60 + 0x18) >> 5;
     i64 delta = (i64)(u32)g_iconDefault - *(i64*)&m_58;
     if (delta < *(i64*)&m_60) {
-        CIconTileGrid* grid = g_gameReg->m_70;
+        CIconTileGrid* grid = (CIconTileGrid*)g_gameReg->m_70;
         i32 cell;
         if ((u32)tileY < (u32)grid->m_c && (u32)tileX < (u32)grid->m_10) {
             i32* row = grid->m_8[tileX];
@@ -678,8 +678,8 @@ i32 CInGameIcon::RefreshCell() {
 // array of 0x1c-byte cells = 7 dwords), the cell for tileX sits at offset
 // (tileX*71)*4 ... matching retail's `eax=tileX*8-tileX` then `<<2` and the
 // `[m_8[tileY] + eax + 8]=0` / `[m_8[tileY] + eax] &= ~0x40000` pair.
-static inline void ClearTileBit(CGameReg* reg, CGameObject* owner) {
-    CIconTileGrid* grid = reg->m_70;
+static inline void ClearTileBit(CGameRegistry* reg, CGameObject* owner) {
+    CIconTileGrid* grid = (CIconTileGrid*)reg->m_70;
     i32 tileX = owner->m_60 >> 5;
     i32 tileY = owner->m_5c >> 5;
     if ((u32)tileY < (u32)grid->m_c && (u32)tileX < (u32)grid->m_10) {
@@ -710,7 +710,7 @@ static inline void ClearTileBit(CGameReg* reg, CGameObject* owner) {
 // ebx/ebp/edi allocation across the two halves is not source-steerable. Deferred.
 RVA(0x000986b0, 0x30c)
 i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
-    CGameReg* reg = g_gameReg;
+    CGameRegistry* reg = g_gameReg;
     if (reg->m_134 == 1 && arg0 != g_curPlayer && *(i32*)((char*)m_10 + 0x124) != 0x55) {
         return 0;
     }
@@ -841,7 +841,7 @@ void CInGameIcon::SetField54(i32 v) {
     void* found = 0;
     if (v != 0) {
         found = 0;
-        g_gameReg->m_30->m_28->m_10map.Lookup((void*)v, &found);
+        ((CGameRegMapHolder*)g_gameReg->m_30)->m_28->m_10map.Lookup((void*)v, &found);
     }
     m_54 = (i32)found;
 }

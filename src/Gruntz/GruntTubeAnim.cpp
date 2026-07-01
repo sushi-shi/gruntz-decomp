@@ -14,6 +14,7 @@
 // so the (large, plateauing) reconstruction stays isolated; the real home is
 // Grunt.cpp and a final-sweep re-home is harmless (offsets + bytes are identical).
 #include <rva.h>
+#include <Gruntz/CGameRegistry.h>
 
 #include <Mfc.h>    // CString + <windows.h>
 #include <string.h> // intrinsic strcmp ("D")
@@ -36,10 +37,6 @@ struct CTubeRecord { // entrance-record, 0x68-byte stride; element 0 = the CStri
 struct CTubeMgr2c {
     void Register2bc1(CString* s, i32 a, i32 b, i32 c); // 0x2bc1
 };
-struct CTubeSettings {
-    char _00[0x2c];
-    CTubeMgr2c* m_2c; // +0x2c
-};
 struct CTubeTypeNode {
     char* m_name; // +0x00  resolved type name
 };
@@ -56,7 +53,7 @@ struct CTubeAnimLookup { // CGrunt::m_14
 
 // The settings singleton (0x64556c) viewed for its +0x2c manager.
 DATA(0x0024556c)
-extern "C" CTubeSettings* g_mgrSettings;
+extern "C" CGameRegistry* g_mgrSettings;
 
 // The shared type-name registry (0x6bf650/0x6bf66c/0x6bf670).
 DATA(0x002bf650)
@@ -122,7 +119,7 @@ i32 CGruntTube::SetupTubeAnim(i32 isWater) {
     m_2a0[2] = 0;
     m_2a0[3] = 0;
     m_1c0 = isWater ? "TOOBWATERGRUNT" : "TOOBGRUNT";
-    g_mgrSettings->m_2c->Register2bc1(&m_1c0, 1, 1, 0);
+    ((CTubeMgr2c*)g_mgrSettings->m_2c)->Register2bc1(&m_1c0, 1, 1, 0);
     Reset30ee();
     Reset1677(0, 0);
     Reset160e(0, 0);
@@ -162,7 +159,7 @@ SIZE_UNKNOWN(CTubeAnimPlayer);
 SIZE_UNKNOWN(CTubeBlitParam);
 SIZE_UNKNOWN(CTubeMgr2c);
 SIZE_UNKNOWN(CTubeRecord);
-SIZE_UNKNOWN(CTubeSettings);
+SIZE_UNKNOWN(CGameRegistry);
 SIZE_UNKNOWN(CTubeStrSlot);
 SIZE_UNKNOWN(CTubeTypeColl);
 SIZE_UNKNOWN(CTubeTypeNode);

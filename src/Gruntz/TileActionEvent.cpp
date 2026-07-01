@@ -9,6 +9,7 @@
 //   (0x113f60). The big Process (0x112ee0) is a complete logical reconstruction
 //   parked at the two-jump-table wall (@early-stop) for the final sweep.
 #include <Win32.h>
+#include <Gruntz/CGameRegistry.h>
 
 #include <Gruntz/TileActionEvent.h>
 
@@ -62,22 +63,8 @@ struct CTileEventSink {
 };
 SIZE_UNKNOWN(CTileEventSink);
 
-struct WwdGameRegZ {
-    char m_pad0[0x30];
-    WwdGrSprHolder* m_30; // +0x30
-    char m_pad34[0x68 - 0x34];
-    CTileEventSink* m_68; // +0x68  tile-event sink
-    char m_pad6c[0x70 - 0x6c];
-    void* m_70; // +0x70  the action-grid manager (RefreshTile)
-    char m_pad74[0x13c - 0x74];
-    i32 m_13c; // +0x13c view min X
-    i32 m_140; // +0x140 view min Y
-    i32 m_144; // +0x144 view max X
-    i32 m_148; // +0x148 view max Y
-};
-
 DATA(0x0064556c)
-extern WwdGameRegZ* g_gameReg;
+extern CGameRegistry* g_gameReg;
 
 // The shared global at DAT_00644c54 (VA 0x644c54): used here as the per-player /
 // active-slot index into m_playerFlags[]. Already named g_tileKindMagic by the
@@ -186,7 +173,7 @@ i32 CTileActionEvent::SetActionCode(i32 code) {
         }
     }
     {
-        CActionGrid* grid = g_gameReg->m_30->m_24->m_5c;
+        CActionGrid* grid = (CActionGrid*)g_gameReg->m_30->m_24->m_5c;
         i32* cell = &grid->m_20[grid->m_24[m_tileY] + m_tileX];
         if (*cell == code) {
             return 0;
@@ -326,12 +313,13 @@ i32 CTileActionEvent::Process(i32 arg) {
             brick->Detonate(0, 1, 0, 0);
             brick->m_1e4 = 0;
         } else if (effect == 0x138) {
-            g_gameReg->m_68->PostA((m_tileX << 5) + 0x10, (m_tileY << 5) + 0x10, 1, 2, -1);
+            ((CTileEventSink*)g_gameReg->m_68)
+                ->PostA((m_tileX << 5) + 0x10, (m_tileY << 5) + 0x10, 1, 2, -1);
         } else if (effect == 0x13e) {
             i32 px = (m_tileX << 5) + 0x10;
             i32 py = (m_tileY << 5) + 0x10;
             if (px < g_gameReg->m_144 && px >= g_gameReg->m_13c && py < g_gameReg->m_148
-                && py >= g_gameReg->m_140 && g_gameReg->m_30->m_28->m_30 == 0) {
+                && py >= g_gameReg->m_140 && ((WwdGrSprHolder*)g_gameReg->m_30)->m_28->m_30 == 0) {
                 CImpactSound* snd = (CImpactSound*)Eng_FindSound("GRUNTZ_NORMALGRUNT_IMPACTMM3");
                 if (snd != 0) {
                     snd->Play((void*)g_scrollDelta, 0, 0, 0);
@@ -349,7 +337,8 @@ i32 CTileActionEvent::Process(i32 arg) {
             SetActionCode(m_actionCode);
             return 0;
         } else if (effect == 0x144) {
-            g_gameReg->m_68->PostB((m_tileX << 5) + 0x10, (m_tileY << 5) + 0x10, -1, 2);
+            ((CTileEventSink*)g_gameReg->m_68)
+                ->PostB((m_tileX << 5) + 0x10, (m_tileY << 5) + 0x10, -1, 2);
         }
     }
 
@@ -358,8 +347,8 @@ i32 CTileActionEvent::Process(i32 arg) {
     if (px < g_gameReg->m_144 && px >= g_gameReg->m_13c && py < g_gameReg->m_148
         && py >= g_gameReg->m_140) {
         CBreakSprite* spr =
-            (CBreakSprite*)
-                g_gameReg->m_30->m_8->CreateSprite(0, px, py, 0xcf84f, (void*)"Particlez", 0x40003);
+            (CBreakSprite*)((WwdGrSprHolder*)g_gameReg->m_30)
+                ->m_8->CreateSprite(0, px, py, 0xcf84f, (void*)"Particlez", 0x40003);
         if (spr != 0) {
             spr->ApplyAnim((void*)"GAME_BRICKBREAK", 0);
             // Inner dense byte-mapped switch on (effect - 0x132) -> the colored break

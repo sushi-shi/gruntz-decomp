@@ -10,6 +10,7 @@
 // load-bearing. Engine callees / globals are reloc-masked (no body). See the
 // header for the recovered layout + the conflated-region note.
 #include <Gruntz/CGruntSpawnConfig.h>
+#include <Gruntz/CGameRegistry.h>
 
 #include <Bute/ButeMgr.h> // CButeMgr g_buteMgr (GetIntDef)
 #include <rva.h>
@@ -208,11 +209,6 @@ extern CButeMgr g_buteMgr;
 // retail's state ids differ). Logic complete; deferred to the final sweep.
 // g_gameReg viewed for the LCG rand (__thiscall, ecx = the registry) + the master
 // volume the duck halves.
-struct CSpawnReg {
-    i32 Rand(); // 0xcd00 (via ILT 0x39ae)
-    char m_pad00[0x120];
-    i32 m_120; // +0x120  master volume
-};
 // The bute config gate (param_1): m_10->m_188 is the currently-active voice id.
 struct CSpawnGateInner {
     char m_pad00[0x188];
@@ -243,7 +239,7 @@ struct CSpawnConfigTree {
 // The game registry pointer at *0x64556c (reloc-masked DATA; DATA label owned by
 // another TU, but a fresh decl here is byte-neutral - the reference is by address).
 DATA(0x0064556c)
-extern CSpawnReg* g_gameReg;
+extern CGameRegistry* g_gameReg;
 
 RVA(0x0011afb0, 0x321)
 BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
@@ -574,7 +570,7 @@ SIZE_UNKNOWN(CSpawnEntry);
 SIZE_UNKNOWN(CSpawnGate);
 SIZE_UNKNOWN(CSpawnGateInner);
 SIZE_UNKNOWN(CSpawnOwner);
-SIZE_UNKNOWN(CSpawnReg);
+SIZE_UNKNOWN(CGameRegistry);
 SIZE_UNKNOWN(CSpawnRemoveColl);
 SIZE_UNKNOWN(CSpawnSpriteSource);
 SIZE_UNKNOWN(CSpawnStream);

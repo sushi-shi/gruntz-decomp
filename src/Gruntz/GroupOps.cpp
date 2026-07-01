@@ -13,6 +13,7 @@
 // leaves (map lookups, the centre helper, the diagnostics sink) are external /
 // reloc-masked.
 #include <rva.h>
+#include <Gruntz/CGameRegistry.h>
 
 // ===========================================================================
 // CenterOnGroup (0x7cf40)
@@ -35,13 +36,8 @@ struct CMapHolderA {
     char m_pad00[0x24];
     CMapHolderB* m_24; // +0x24
 };
-struct CGameRegSel {
-    char m_pad00[0x2c];
-    CCenterTarget* m_2c; // +0x2c
-    CMapHolderA* m_30;   // +0x30
-};
 DATA(0x0024556c)
-extern CGameRegSel* g_gameRegSel; // 0x64556c
+extern CGameRegistry* g_gameRegSel; // 0x64556c
 
 // A selected cell's grunt (cell->m_10) carries its tile position at +0x5c/+0x60.
 struct CSelGrunt {
@@ -88,7 +84,7 @@ i32 CGroupSel::CenterOnGroup(i32 doSelect) {
     if (n == 0) {
         return 0;
     }
-    CMapDims* dims = g_gameRegSel->m_30->m_24->m_5c;
+    CMapDims* dims = (CMapDims*)g_gameRegSel->m_30->m_24->m_5c;
     i32 minX = dims->m_30 - 1;
     i32 minY = dims->m_34 - 1;
     i32 maxX = 0;
@@ -119,7 +115,7 @@ i32 CGroupSel::CenterOnGroup(i32 doSelect) {
     } while (n != 0);
     i32 cy = minY + (maxY - minY) / 2;
     i32 cx = minX + (maxX - minX) / 2;
-    i32 r = g_gameRegSel->m_2c->Center(cx, cy);
+    i32 r = ((CCenterTarget*)g_gameRegSel->m_2c)->Center(cx, cy);
     if (r != 0 && count == 1 && *(i32*)((char*)this + 0x24c) == 1) {
         CSelKey* head = (*(CSelNode**)((char*)this + 0x244))->m_8;
         CGridCell* cell2 = m_grid[head->m_0 * 15 + head->m_4];
@@ -141,11 +137,8 @@ i32 CGroupSel::CenterOnGroup(i32 doSelect) {
 // Broadcast (0x112080)
 // ===========================================================================
 // The diagnostics sink reached as g_gameReg->Report(id, line) (0x346d thunk).
-struct CGameRegDiag {
-    i32 Report(i32 id, i32 line); // 0x346d
-};
 DATA(0x0024556c)
-extern CGameRegDiag* g_gameRegDiag; // 0x64556c
+extern CGameRegistry* g_gameRegDiag; // 0x64556c
 
 // A resolved map node: virtual prepare at slot +0x0c, +0x10 the key, +0x14 a flag.
 struct CFindNode {
@@ -233,13 +226,13 @@ i32 CGroupBroadcast::Broadcast() {
 SIZE_UNKNOWN(CCenterTarget);
 SIZE_UNKNOWN(CMapHolderB);
 SIZE_UNKNOWN(CMapHolderA);
-SIZE_UNKNOWN(CGameRegSel);
+SIZE_UNKNOWN(CGameRegistry);
 SIZE_UNKNOWN(CSelGrunt);
 SIZE_UNKNOWN(CGridCell);
 SIZE_UNKNOWN(CSelKey);
 SIZE_UNKNOWN(CSelNode);
 SIZE_UNKNOWN(CGroupSel);
-SIZE_UNKNOWN(CGameRegDiag);
+SIZE_UNKNOWN(CGameRegistry);
 SIZE_UNKNOWN(CFindNode);
 SIZE_UNKNOWN(CBcastMember);
 SIZE_UNKNOWN(CBcastListNode);

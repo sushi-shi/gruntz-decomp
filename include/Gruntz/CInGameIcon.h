@@ -13,14 +13,15 @@
 #define GRUNTZ_GRUNTZ_CINGAMEICON_H
 
 #include <rva.h>
+#include <Gruntz/CGameRegistry.h>
 
 #include <Mfc.h> // CObject/CArchive base + <windows.h>
 
 #include <Gruntz/UserLogic.h> // CUserLogic : CUserBase, EngStr, CGameObject
 
 // ---------------------------------------------------------------------------
-// CGameReg - the global game-manager singleton (the object at *0x64556c). Only
-// the offsets the icon paths touch are modeled. Named CGameReg (not the richer
+// CGameRegistry - the global game-manager singleton (the object at *0x64556c). Only
+// the offsets the icon paths touch are modeled. Named CGameRegistry (not the richer
 // CGameRegistry) so the ?g_gameReg@@3PAUCGameReg@@A data ref matches retail.
 //
 //   +0x30  m_30  : a CMap-chain holder (Set99b10 walks m_30->m_28 to a Lookup)
@@ -61,29 +62,8 @@ struct CIconFactory {
     i32 GetByIndex(i32 idx, i32 z); // 0x4165
 };
 
-struct CGameReg {
-    char m_pad00[0x30];
-    CGameRegMapHolder* m_30; // +0x30
-    char m_pad34[0x68 - 0x34];
-    void* m_68; // +0x68  cue/probe sink (place-handler post target)
-    char m_pad6c[0x70 - 0x6c];
-    CIconTileGrid* m_70; // +0x70  tile occupancy grid
-    CIconFactory* m_74;  // +0x74  icon/sprite factory (GetByIndex)
-    char m_pad78[0x120 - 0x78];
-    i32 m_120; // +0x120  active-player count gate (Setup986b0)
-    char m_pad124[0x134 - 0x124];
-    i32 m_134; // +0x134  mode discriminator (== 1)
-    char m_pad138[0x13c - 0x138];
-    i32 m_13c; // +0x13c  view min X
-    i32 m_140; // +0x140  view min Y
-    i32 m_144; // +0x144  view max X
-    i32 m_148; // +0x148  view max Y
-    char m_pad14c[0x158 - 0x14c];
-    i32 m_158; // +0x158  base of the per-player icon table
-};
-
 DATA(0x0024556c)
-extern CGameReg* g_gameReg; // ?g_gameReg@@3PAUCGameReg@@A @ VA 0x64556c
+extern CGameRegistry* g_gameReg; // ?g_gameReg@@3PAUCGameReg@@A @ VA 0x64556c
 
 DATA(0x00244c54)
 extern i32 g_curPlayer; // DAT_00644c54  (the current local player index)

@@ -16,6 +16,7 @@
 // <Mfc.h> brings <windows.h> KERNEL32 (GetCurrentDirectoryA; DWORD) and the central
 // WINMM timeGetTime decl (the per-frame draw clock).
 #include <Mfc.h>
+#include <Gruntz/CGameRegistry.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/Enums.h>
 #include <Io/FileStream.h> // CFileIO (the engine file reader IsBattlezMapFile opens)
@@ -250,16 +251,8 @@ struct ScoreSub2c { // g_gameReg->m_2c
     char m_pad0[0x1c];
     i32 m_1c; // +0x1c  cumulative score
 };
-struct WwdGameRegZ {
-    char m_pad0[0x2c];
-    ScoreSub2c* m_2c; // +0x2c
-    char m_pad30[0x58 - 0x30];
-    ScoreNotifier* m_58; // +0x58
-    char m_pad5c[0x134 - 0x5c];
-    i32 m_134; // +0x134  active gate
-};
 DATA(0x0024556c)
-extern WwdGameRegZ* g_gameReg;
+extern CGameRegistry* g_gameReg;
 
 // The +0x68 per-world delta tables: two parallel int arrays at +0x20c / +0x21c
 // indexed by g_644c54.
@@ -2163,7 +2156,7 @@ i32 CGruntzMgr::Quicksave() {
         ((TimerObj*)m_timer)->Stop();
     }
     FillSaveInfo((SaveInfo*)m_saveInfoRec, 0);
-    if (g_gameReg->m_58->Notify((i32)((char*)m_saveInfoRec + 0x35), 0x81a7)) {
+    if (((ScoreNotifier*)g_gameReg->m_58)->Notify((i32)((char*)m_saveInfoRec + 0x35), 0x81a7)) {
         ((CChatLog*)m_5c)->Insert("Game Quicksaved successfully.", 0, 0x11);
         return 1;
     }
@@ -2402,7 +2395,7 @@ void CGruntzMgr::UpdateScoreHud() {
     if (g_gameReg->m_134 != 1) {
         return;
     }
-    ScoreSub2c* sub = g_gameReg->m_2c;
+    ScoreSub2c* sub = (ScoreSub2c*)g_gameReg->m_2c;
 
     ((ScoreHud*)m_scoreHud)->m_1c += ((WorldDeltaTables*)m_cmdGrid)->m_arr20c[g_644c54];
     ((ScoreHud*)m_scoreHud)->m_20 += ((WorldDeltaTables*)m_cmdGrid)->m_arr21c[g_644c54];
@@ -2415,9 +2408,9 @@ void CGruntzMgr::UpdateScoreHud() {
 
     if (((HudGuard44*)m_44)->m_124 == 0) {
         ((ScoreHud*)m_scoreHud)->Seed(sub->m_1c, 0);
-        g_gameReg->m_58->Bump(sub->m_1c);
-        g_gameReg->m_58->Tick((sub->m_1c % 0x28) + 1);
-        g_gameReg->m_58->Notify(0, 0x81a6);
+        ((ScoreNotifier*)g_gameReg->m_58)->Bump(sub->m_1c);
+        ((ScoreNotifier*)g_gameReg->m_58)->Tick((sub->m_1c % 0x28) + 1);
+        ((ScoreNotifier*)g_gameReg->m_58)->Notify(0, 0x81a6);
     }
     ((ScoreHud*)m_scoreHud)->Refresh(sub->m_1c);
     ((ScoreHud*)m_scoreHud)->m_8 = 0;
@@ -3763,4 +3756,4 @@ SIZE_UNKNOWN(TimerObj);
 SIZE_UNKNOWN(WorldDeltaTables);
 SIZE_UNKNOWN(WorldLayer);
 SIZE_UNKNOWN(WorldLayerView);
-SIZE_UNKNOWN(WwdGameRegZ);
+SIZE_UNKNOWN(CGameRegistry);

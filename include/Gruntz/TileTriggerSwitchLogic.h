@@ -10,19 +10,12 @@
 #define SRC_GRUNTZ_TILETRIGGERSWITCHLOGIC_H
 
 #include <Ints.h>
+#include <Gruntz/CGameRegistry.h>
 #include <rva.h> // SIZE_UNKNOWN class-metadata macros used below
 
-// The WwdGameReg singleton (g_gameReg, RVA 0x64556c).  Only +0x30 (the active
+// The CGameRegistry singleton (g_gameReg, RVA 0x64556c).  Only +0x30 (the active
 // game-manager pointer) is touched by the methods here; reloc-masked DIR32.
-struct WwdGameReg {
-    // The diagnostic ack reporter (RVA 0x8dc60, __thiscall): reports a (line, code)
-    // pair when a switch-logic linkage check fails; reloc-masked rel32 callee.
-    void Ack(i32 line, i32 code); // 0x8dc60
-
-    char _pad00[0x30];
-    void* m_30; // +0x30  game-manager pointer (null-checked)
-};
-extern WwdGameReg* g_gameReg;
+extern CGameRegistry* g_gameReg;
 
 // A serialization stream: Vfunc30 (vtable slot 12) copies n bytes to/from a
 // buffer.  Only the slot offset (+0x30) matters; reloc-masked virtual call.

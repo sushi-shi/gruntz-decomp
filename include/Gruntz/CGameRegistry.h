@@ -1,8 +1,20 @@
-// CGameRegistry.h - the global game-manager singleton (the object at *0x64556c).
-// One canonical definition shared by CPlay.h (CPlay::Render reads the cue sink,
-// viewport and resource map) and Grunt.h (the CGrunt animation resolvers read the
-// visible-bounds gate and build HUD sprites via m_30->m_8->CreateSprite). Only the
-// offsets those paths touch are modeled; everything else is padding.
+// CGameRegistry.h - the one canonical shape of the global game-manager singleton
+// (?g_gameReg@@3PAUWwdGameReg@@A, the WwdGameReg* at RVA 0x24556c / VA 0x64556c).
+//
+// This object was previously modeled ~20 different ways across the tree (CGameReg,
+// WwdGameReg, WwdGameRegZ, CObjDropReg, CGmGameReg, TgcGameReg, ... one bespoke
+// partial "view" struct per TU). The USER PRINCIPLE is: different layouts = a
+// mistake; there is ONE real object. The leaf SCALAR fields (the ints below) are
+// provably consistent across every TU's disasm and are named here. The sub-object
+// POINTERS at 0x2c/0x30/0x38/0x48/0x58/0x60/0x68/0x6c/0x70/0x74/0x78/0x7c are the
+// SAME slots but each TU legitimately dereferences a *different concrete sub-object
+// type* through them (e.g. +0x68 is a placement-grid mgr in the hazard TUs, a cue
+// sink elsewhere, a status-bar factory in the HUD TUs). Rather than fabricate one
+// fake mega-type (which would be an artifact, not the devs' shape), those slots are
+// void* here and each TU casts them to its own local view type at the deref site
+// (a legitimate struct-pointer-to-sub-object cast). The three sub-objects the CGrunt
+// / CPlay animation+render cluster walks (m_30 sprite-factory holder, m_60 cue sink,
+// m_70 tile grid) are kept typed so that cluster keeps matching.
 #ifndef GRUNTZ_GRUNTZ_CGAMEREGISTRY_H
 #define GRUNTZ_GRUNTZ_CGAMEREGISTRY_H
 
@@ -24,6 +36,8 @@ struct CSpriteFactoryHolder { // the +0x30 resource/sprite-factory holder
     CSpriteFactory* m_8; // +0x08
     char m_pad0c[0x24 - 0xc];
     CGameViewport* m_24; // +0x24  viewport (cue-gate visibility source)
+    char m_pad28[0x2c - 0x28];
+    void* m_28; // +0x28
 };
 
 // The tile occupancy grid (*g_pGameRegistry+0x70) is CTileGrid, in
@@ -39,32 +53,74 @@ struct CGameRegistry {
     // The mode-3 per-frame cue step (thunk_FUN_004933e0, __thiscall): run each
     // world-draw frame when m_134==3. External/no-body (reloc-masked).
     void PerFrameCue();
+    // Registry service methods some TUs call directly on the singleton
+    // (external/no-body, reloc-masked rel32 callees).
+    void Ack(i32 line, i32 code);                               // 0x8dc60 switch-logic ack
+    i32 BuildLevelRezPath(i32 isEmpty, i32 hi, i32 lo, i32 id); // save-game rez-path builder
+    void LogError(const char* msg);                             // 0x404178 save-game error notifier
+    void EmitEvent(i32 a, i32 b);                               // hazard event emitter
+    i32 Rand();                                                 // game-mgr RNG
+    i32 RandRange(i32 lo, i32 hi);                              // game-mgr RNG range
+    i32 Report(i32 a, i32 b);          // diagnostic reporter (return often discarded)
+    void ReportError(const char* msg); // plane/scan error notifier
+    i32 RunModalDialog(const char* tmpl, void* proc, i32 flag); // modal dialog runner
+    void* GetRect(void* buf); // dev-stats bounds query (RECT* buf/ret)
 
-    char m_pad0[0xc];
+    char m_pad0[0x4];
+    void* m_4; // +0x04  window/host sub-object
+    void* m_8; // +0x08
     void* m_c; // +0x0c  active-selection / busy gate (CanQuickSave)
-    char m_pad10[0x14 - 0x10];
-    i32 m_14; // +0x14  has-window / dev flag (gates rect-update calls)
-    char m_pad18[0x30 - 0x18];
-    CSpriteFactoryHolder* m_30; // +0x30
-    char m_pad34[0x60 - 0x34];
+    i32 m_10;  // +0x10  level/state discriminator
+    i32 m_14;  // +0x14  has-window / dev flag (gates rect-update calls)
+    char m_pad18[0x2c - 0x18];
+    void* m_2c;                 // +0x2c  level/state sub-object (per-TU view)
+    CSpriteFactoryHolder* m_30; // +0x30  resource/sprite-factory holder
+    char m_pad34[0x38 - 0x34];
+    void* m_38; // +0x38  registry-helper / logger sub-object
+    char m_pad3c[0x48 - 0x3c];
+    void* m_48; // +0x48  sound/options sub-object
+    char m_pad4c[0x54 - 0x4c];
+    void* m_54; // +0x54  active-world sub-object
+    char m_pad58[0x5c - 0x58];
+    void* m_58;          // +0x58  progress / notifier sub-object
     CGruntCueSink* m_60; // +0x60  cue sink / on-screen cue receiver (->Cue)
     char m_pad64[0x68 - 0x64];
-    void* m_68; // +0x68  cue sink B (message poster)
-    char m_pad6c[0x70 - 0x6c];
+    void* m_68;      // +0x68  cue/probe/placement sink (per-TU view)
+    void* m_6c;      // +0x6c  secondary grid/cmd sub-object
     CTileGrid* m_70; // +0x70  tile occupancy grid (LoadEntranceConfig)
-    void* m_74;      // +0x74  the sprite factory (BeginGridWalk retry path)
-    char m_pad78[0x8c - 0x78];
+    void* m_74;      // +0x74  the sprite factory / ref-table (BeginGridWalk retry path)
+    void* m_78;      // +0x78  sub-object (per-TU view)
+    void* m_7c;      // +0x7c  sub-object (per-TU view)
+    char m_pad80[0x8c - 0x80];
     i32 m_8c; // +0x8c  viewport X
     i32 m_90; // +0x90  viewport Y
-    char m_pad94[0x134 - 0x94];
+    i32 m_94; // +0x94
+    i32 m_98; // +0x98
+    char m_pad9c[0x100 - 0x9c];
+    i32 m_100; // +0x100
+    char m_pad104[0x10c - 0x104];
+    i32 m_10c; // +0x10c
+    i32 m_110; // +0x110
+    char m_pad114[0x118 - 0x114];
+    i32 m_118; // +0x118
+    i32 m_11c; // +0x11c
+    i32 m_120; // +0x120
+    i32 m_124; // +0x124
+    char m_pad128[0x130 - 0x128];
+    i32 m_130; // +0x130
     i32 m_134; // +0x134 mode discriminator (==1 visible-bounds gate, ==2 alt path)
     char m_pad138[0x13c - 0x138];
     i32 m_13c; // +0x13c view min X
     i32 m_140; // +0x140 view min Y
     i32 m_144; // +0x144 view max X
     i32 m_148; // +0x148 view max Y
-    char m_pad14c[0x15c - 0x14c];
-    void* m_15c; // +0x15c level/entity-tree holder
+    char m_pad14c[0x158 - 0x14c];
+    i32 m_158;   // +0x158  base of a per-player / world slot table
+    void* m_15c; // +0x15c  level/entity-tree holder
+    char m_pad160[0x164 - 0x160];
+    i32 m_164; // +0x164
+    char m_pad168[0x170 - 0x168];
+    i32 m_170; // +0x170
 };
 
 #endif // GRUNTZ_GRUNTZ_CGAMEREGISTRY_H

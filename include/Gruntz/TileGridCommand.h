@@ -16,6 +16,7 @@
 #define SRC_GRUNTZ_TILEGRIDCOMMAND_H
 
 #include <Ints.h>
+#include <Gruntz/CGameRegistry.h>
 #include <rva.h> // SIZE_UNKNOWN class-metadata macros used below
 
 #include <Gruntz/TileTriggerContainer.h>
@@ -78,16 +79,8 @@ SIZE_UNKNOWN(TgcRegion);
 
 // The WwdGameReg singleton (g_gameReg, RVA 0x64556c); +0x30 is the active game
 // manager, +0x68 the rect-dirty helper, +0x70 the redraw helper.
-struct TgcGameReg {
-    char _pad00[0x30];
-    TgcGameMgr* m_30; // +0x30  game-manager pointer (null-checked)
-    char _pad34[0x68 - 0x34];
-    TgcRegion* m_68; // +0x68  rect-dirty helper
-    char _pad6c[0x70 - 0x6c];
-    TgcRedraw* m_70; // +0x70  redraw helper
-};
-SIZE_UNKNOWN(TgcGameReg);
-extern TgcGameReg* g_gameReg;
+SIZE_UNKNOWN(CGameRegistry);
+extern CGameRegistry* g_gameReg;
 
 // A serialization stream: Transfer (vtable slot 12, +0x30) copies n bytes
 // to/from a buffer.  Only the slot offset matters; reloc-masked virtual call.

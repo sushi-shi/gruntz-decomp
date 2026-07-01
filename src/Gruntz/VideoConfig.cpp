@@ -1,4 +1,5 @@
 #include <rva.h>
+#include <Gruntz/CGameRegistry.h>
 // VideoConfig.cpp - the video-resolution combo-box config pair on the Gruntz
 // options/setup dialog (C:\Proj\Gruntz). Both functions translate between the
 // global selected-resolution mode (g_videoResolutionMode: 1=640x480,
@@ -62,16 +63,8 @@ public:
 // The CGruntzMgr settings singleton; only the current backbuffer width/height
 // (+0x94/+0x98) are touched here. Modeled minimally (defined inline per-TU in the
 // retail source, cf. CMenuState/CPlay).
-struct CGameMgrSettings {
-    char m_pad0[0x94];
-    i32 m_94; // +0x94  backbuffer width
-    i32 m_98; // +0x98  backbuffer height
-    char m_pad9c[0x10c - 0x9c];
-    i32 m_10c; // +0x10c  "smooth scroll" checkbox state
-    i32 m_110; // +0x110  "show fps" checkbox state
-};
 DATA(0x0024556c)
-extern CGameMgrSettings* g_mgrSettings;
+extern CGameRegistry* g_mgrSettings;
 
 // 0x363a0: GetResolutionCode - map the live backbuffer (width,height) to the
 // resolution combo index (1024x768 -> 3, 800x600 -> 2, else 1).

@@ -26,6 +26,7 @@
 // pointer args and uses callee-cleanup, so they reconstruct as __stdcall free
 // functions. Returns are full-width eax (1 / 0), i.e. `int`, not bool.
 #include <Wwd/WwdFile.h>
+#include <Gruntz/CGameRegistry.h>
 #include <rva.h>
 
 #include <Mfc.h>    // CString (ValidateMainBlock takes one by value; ReadPlaneObjects builds four)
@@ -48,12 +49,8 @@ struct WwdGameRegSlot {
     char pad_0[0x24];
     char* m_wwdPath; // +0x24  a WWD path / numeric-tail string CheckHeader validates
 };
-struct WwdGameReg {
-    char pad_0[0x30];
-    WwdGameRegSlot* m_slot; // +0x30
-};
 DATA(0x0024556c)
-extern WwdGameReg* g_gameReg;
+extern CGameRegistry* g_gameReg;
 
 // ---------------------------------------------------------------------------
 // CPlaneRender::WrapCoord (__thiscall, ret 0x8). Maps a world coordinate
@@ -107,7 +104,7 @@ void CPlaneRender::WrapCoord(i32* px, i32* py) {
 // for the three reject paths, else the integer parsed from the first digit run
 // of the validated header:
 //   1. the CString must be non-empty (its length, at pszData-8, != 0);
-//   2. g_gameReg->m_slot->m_wwdPath (a filename) must be non-null;
+//   2. ((WwdGameRegSlot*)g_gameReg->m_30)->m_wwdPath (a filename) must be non-null;
 //   3. CheckHeader(that filename) into a 0x100 stack buffer must succeed.
 // Then skip leading non-digits and atoi() the first digit run. The CString is
 // unused beyond its non-empty check; `this` is never touched -> static.
@@ -118,11 +115,11 @@ i32 WwdFile::ValidateMainBlock(CString name) {
     if (name.GetLength() == 0) {
         return -1;
     }
-    if (g_gameReg->m_slot->m_wwdPath == 0) {
+    if (((WwdGameRegSlot*)g_gameReg->m_30)->m_wwdPath == 0) {
         return -1;
     }
 
-    if (WwdFile_CheckHeader(g_gameReg->m_slot->m_wwdPath, header) == 0) {
+    if (WwdFile_CheckHeader(((WwdGameRegSlot*)g_gameReg->m_30)->m_wwdPath, header) == 0) {
         return -1;
     }
 

@@ -1,6 +1,7 @@
 #include <Mfc.h> // CObList/CString machinery (reloc-masked); /GX EH frame
 
 #include <rva.h>
+#include <Gruntz/CGameRegistry.h>
 // MenuStateAssets.cpp - CMenuState::LoadAssets (0x09fe50, 835 B), the MENU game-
 // state asset loader.  Sibling of CHelpState::LoadAssets / GameLevelState loaders:
 // chains the base namespace loader, registers the "MENU" IMAGEZ+SOUNDZ namespaces
@@ -91,12 +92,8 @@ struct MenuMgrSndHost {
     char m_pad00[0x28];
     MenuSoundRegistry* m_28; // +0x28
 };
-struct MenuMgrSettings {
-    char m_pad00[0x30];
-    MenuMgrSndHost* m_30; // +0x30
-};
 DATA(0x0024556c)
-extern MenuMgrSettings* g_menuMgrSettings;
+extern CGameRegistry* g_menuMgrSettings;
 DATA(0x0022f37c)
 extern i32 g_severusCounterA; // 0x6bf37c
 
@@ -220,7 +217,7 @@ i32 CMenuState::LoadAssets(i32 a1, i32 a2, i32 a3) {
     }
 
     MenuSndEntry* fm;
-    g_menuMgrSettings->m_30->m_28->m_10.Find("MENU_MENU", &fm);
+    ((MenuMgrSndHost*)g_menuMgrSettings->m_30)->m_28->m_10.Find("MENU_MENU", &fm);
     m_1bc = (i32)fm;
     return 1;
 }
@@ -229,7 +226,7 @@ SIZE_UNKNOWN(MenuAssetMgr);
 SIZE_UNKNOWN(MenuCursorSub);
 SIZE_UNKNOWN(MenuHudObj);
 SIZE_UNKNOWN(MenuImageRegistry);
-SIZE_UNKNOWN(MenuMgrSettings);
+SIZE_UNKNOWN(CGameRegistry);
 SIZE_UNKNOWN(MenuMgrSndHost);
 SIZE_UNKNOWN(MenuRegObj);
 SIZE_UNKNOWN(MenuRegSet);

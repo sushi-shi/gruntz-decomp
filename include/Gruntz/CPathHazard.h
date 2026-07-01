@@ -16,6 +16,7 @@
 #define GRUNTZ_CPATHHAZARD_H
 
 #include <rva.h>
+#include <Gruntz/CGameRegistry.h>
 #include <Gruntz/UserLogic.h>
 
 // The waypoint the path array (this+0x90, 8-byte stride) stores: {x:int, y:int}.
@@ -67,16 +68,8 @@ struct CPathCueGate {
     void Strike(i32 a, i32 b, i32 c, i32 d); // 0x402e96 (the strike cue, __thiscall)
 };
 
-struct CPathGameReg {
-    char m_pad00[0x68];
-    CPathCueGate* m_68; // +0x68 visibility/cue gate
-    char m_pad6c[0x118 - 0x6c];
-    i32 m_118; // +0x118 has-window flag
-    char m_pad11c[0x134 - 0x11c];
-    i32 m_134; // +0x134 mode discriminator (==1 -> skip the visibility scroll)
-};
 DATA(0x0024556c)
-extern CPathGameReg* g_pathGameReg;
+extern CGameRegistry* g_pathGameReg;
 
 // The +0x1a0 sub-mgr the per-frame Tick advances once (SetGeoSource 0x15c360,
 // __thiscall ret 4, takes the g_pathTick frame counter as its int arg).

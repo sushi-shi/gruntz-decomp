@@ -1,4 +1,5 @@
 #include <rva.h>
+#include <Gruntz/CGameRegistry.h>
 // TileTriggerLoad.cpp - the version-4 deserialize handler (0x1138b0) for a tile
 // trigger-data record. Reached through the per-version Load dispatcher (0x513860,
 // sub-selector 4) under the outer Serialize switch (0x517636). It pulls a fixed
@@ -26,12 +27,8 @@ public:
 };
 
 // The game registry singleton; only its m_30 sub-manager gates this load.
-struct WwdGameReg {
-    char m_pad00[0x30];
-    void* m_30; // +0x30
-};
 DATA(0x0064556c)
-extern WwdGameReg* g_gameReg; // ?g_gameReg (0x64556c)
+extern CGameRegistry* g_gameReg; // ?g_gameReg (0x64556c)
 
 // The tile trigger-data record being loaded. Reads land at +0x08..+0x20, +0x28
 // (NB: +0x24 is skipped), then a 24-dword run from +0x2c.

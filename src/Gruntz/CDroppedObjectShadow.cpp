@@ -1,6 +1,7 @@
 // CDroppedObjectShadow.cpp - the dropped-object shadow eyecandy (C:\Proj\Gruntz),
 // a CUserLogic leaf. The 1-arg leaf ctor + the /GX leaf dtor are reconstructed here.
 #include <Gruntz/CDroppedObjectShadow.h>
+#include <Gruntz/CGameRegistry.h>
 
 // The global bute store (g_buteTree @0x6bf620; Find 0x16d190) the leaf interns "A"
 // into; named by mangled symbol so the Find call reloc-masks.
@@ -13,12 +14,8 @@ struct WwdGameRegSub {
     char m_pad00[0x28];
     i32 m_28; // +0x28
 };
-struct WwdGameReg {
-    char m_pad00[0x78];
-    WwdGameRegSub* m_78; // +0x78
-};
 DATA(0x0024556c)
-extern WwdGameReg* g_gameReg;
+extern CGameRegistry* g_gameReg;
 
 // ---------------------------------------------------------------------------
 // CDroppedObjectShadow::CDroppedObjectShadow(CGameObject*) @0xc7490 - the 1-arg
@@ -44,7 +41,7 @@ CDroppedObjectShadow::CDroppedObjectShadow(CGameObject* obj) : CUserLogic(obj) {
     m_40 = m_38->m_1b4;
     m_38->ApplyLookupGeometry("LEVEL_DROPPEDOBJECTSHADOW", 0);
     m_38->m_08 |= 0x2000002;
-    m_10->m_4c = g_gameReg->m_78->m_28;
+    m_10->m_4c = ((WwdGameRegSub*)g_gameReg->m_78)->m_28;
     m_10->m_58 = 1;
     m_10->m_50 = 7;
     if (m_10->m_74 != 0xcf84f) {

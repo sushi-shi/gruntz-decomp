@@ -20,6 +20,7 @@
 
 #include <Gruntz/CoordNode.h> // the shared coord-list node
 #include <Gruntz/UnknownClassArrays.h>
+#include <Gruntz/CGameRegistry.h>
 
 // CRT rand() (RVA 0x11fee0); used by the grid-scan helpers to pick a random
 // neighbour. External, reloc-masked.
@@ -30,17 +31,10 @@ extern "C" i32 abs(i32);
 // byte-by-byte sbb/sbb sequence against a pooled type-code literal.
 extern "C" i32 strcmp(const char*, const char*);
 
-// The WwdGameReg singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c). It
+// The CGameRegistry singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c). It
 // fronts an array of per-level records (0x238-byte stride = the
 // CGruntSpawnLevel sub-objects); only the two fields Method_025c20 reads
 // are named. Reloc-masked DATA. A struct (mangles `U`) gives the retail name.
-struct WwdGameReg {
-    char m_pad000[0x164];
-    i32 m_164; // +0x164  per-level "loaded" flag
-    char m_pad168[0x170 - 0x168];
-    i32 m_170; // +0x170  per-level "active" flag
-    char m_pad174[0x238 - 0x174];
-};
 
 // The per-element refresh method (RVA ~0x021906), a __thiscall on the array
 // bundle taking one int. Modeled as a method on a tiny helper laid over `this`
@@ -267,9 +261,9 @@ extern void* g_freeList;
 DATA(0x0024554c)
 extern i32 g_freeListNodeBias;
 
-// The WwdGameReg singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c).
+// The CGameRegistry singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c).
 DATA(0x0024556c)
-extern WwdGameReg* g_gameReg;
+extern CGameRegistry* g_gameReg;
 
 // A render-context object the cell-probe call site passes through (DAT_00644ca4 @
 // VA 0x644ca4). Reloc-masked DATA.
@@ -400,7 +394,7 @@ CBattlezSpawnMgr_or_CGruntSpawnMgr::~CBattlezSpawnMgr_or_CGruntSpawnMgr() {
 
 // ===========================================================================
 // CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_025c20  @0x025c20
-// If the current level's WwdGameReg record is not-yet-loaded but active, refresh
+// If the current level's CGameRegistry record is not-yet-loaded but active, refresh
 // every element of the first CPtrArray (m_0dc). Returns 1 unconditionally.
 // ===========================================================================
 RVA(0x00025c20, 0x55)

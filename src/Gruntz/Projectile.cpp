@@ -7,6 +7,7 @@
 // Like the rest of the family it constructs a throwing CUserBaseLink (in the
 // CUserLogic base) + a CObList, so MSVC emits the /GX EH frame -> built eh.
 #include <Gruntz/Projectile.h>
+#include <Gruntz/CGameRegistry.h>
 #include <Bute/ButeMgr.h> // CButeTree (the type-registry funnel)
 #include <math.h>         // sin / cos (StepMotion's parabola)
 #include <string.h>       // memset (1-arg spawn ctor's +0x1e0 zero-fill)
@@ -68,23 +69,8 @@ struct CTerrainPlane {
     i32 m_c;            // +0xc  width (tiles)
     i32 m_10;           // +0x10 height (tiles)
 };
-struct CGameReg {
-    char m_pad00[0x10];
-    i32 m_10; // +0x10  gate (must be non-null)
-    char m_pad14[0x2c - 0x14];
-    CProjLevelInfo* m_2c; // +0x2c  level/terrain descriptor
-    CProjSoundCat* m_30;  // +0x30
-    char m_pad34[0x68 - 0x34];
-    void* m_68; // +0x68  the 15x15 grunt-grid base
-    char m_pad6c[0x70 - 0x6c];
-    CTerrainPlane* m_70; // +0x70  terrain plane
-    char m_pad74[0x11c - 0x74];
-    i32 m_11c; // +0x11c  the sound-channel param
-    char m_pad120[0x13c - 0x120];
-    i32 m_13c, m_140, m_144, m_148; // +0x13c..+0x148  level pixel bounds {xlo,ylo,xhi,yhi}
-};
 DATA(0x0024556c)
-extern CGameReg* g_gameReg;
+extern CGameRegistry* g_gameReg;
 
 // A grunt in the hit-scan grid (g_gameReg->m_68 is a flat 15x15 cell table; each
 // cell holds a grunt ptr). Only the offsets ScanTargets touches are modeled: the
@@ -476,7 +462,7 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
     m_1dc = 0;
 
     // Spawn the LightFx shadow companion + activate its two frames.
-    CProjSpriteFactory* factory = g_gameReg->m_30->m_8;
+    CProjSpriteFactory* factory = (CProjSpriteFactory*)g_gameReg->m_30->m_8;
     m_1fc = factory->CreateSprite(0, owner->m_5c, owner->m_60, 0xcf84f, "LightFx", 0x2040003);
     if (m_1fc != 0) {
         m_1fc->m_7c->Init(m_1fc);
@@ -666,7 +652,7 @@ void CProjectile::LoadProjectileEffects() {
 
     if (m_170 == 0x16) { // WINGZ: loop the flight sound while over the level
         CGameObject* owner = m_10;
-        CGameReg* reg = g_gameReg;
+        CGameRegistry* reg = g_gameReg;
         if (owner->m_5c < reg->m_144 && owner->m_5c >= reg->m_13c && owner->m_60 < reg->m_148
             && owner->m_60 >= reg->m_140) {
             LaunchSound("GRUNTZ_WINGZGRUNT_PROJECTILELOOP");
@@ -789,8 +775,8 @@ void CProjectile::LoadProjectileEffects() {
     m_1dc = 1;
     i32 tier = 0;
     if (m_170 != 0x16) {
-        CGameReg* reg = g_gameReg;
-        CTerrainPlane* plane = reg->m_70;
+        CGameRegistry* reg = g_gameReg;
+        CTerrainPlane* plane = (CTerrainPlane*)reg->m_70;
         i32 tileX = m_17c >> 5;
         i32 tileY = m_180 >> 5;
         u32 flags;
@@ -804,7 +790,8 @@ void CProjectile::LoadProjectileEffects() {
             if (m_17c < reg->m_144 && m_17c >= reg->m_13c && m_180 < reg->m_148
                 && m_180 >= reg->m_140) {
                 CProjRenderObj* fx =
-                    reg->m_30->m_8->CreateSprite(0, m_17c, m_180, 0xcf84f, "Particlez", 0x40003);
+                    ((CProjSoundCat*)reg->m_30)
+                        ->m_8->CreateSprite(0, m_17c, m_180, 0xcf84f, "Particlez", 0x40003);
                 if (fx != 0) {
                     fx->CacheFirstFrame("GAME_WATER");
                     fx->ApplyLookupGeometry("GAME_WATER", 0);
@@ -817,7 +804,7 @@ void CProjectile::LoadProjectileEffects() {
             if (flags & 0x40) {
                 tier = 1;
             } else {
-                switch (reg->m_2c->m_20) {
+                switch (((CProjLevelInfo*)reg->m_2c)->m_20) {
                     case 4:
                     case 5:
                     case 8:
@@ -830,7 +817,8 @@ void CProjectile::LoadProjectileEffects() {
                         if (m_17c < reg->m_144 && m_17c >= reg->m_13c && m_180 < reg->m_148
                             && m_180 >= reg->m_140) {
                             CProjRenderObj* fx =
-                                reg->m_30->m_8
+                                ((CProjSoundCat*)reg->m_30)
+                                    ->m_8
                                     ->CreateSprite(0, m_17c, m_180, 0xcf84f, "Particlez", 0x40003);
                             if (fx != 0) {
                                 fx->CacheFirstFrame("LEVEL_DEATHSPLASH");
@@ -1026,7 +1014,7 @@ void CProjectile::ScanTargets(i32 impact) {
 // memory): the four engine callees - CMapStringToOb::Lookup (0x1b8438), the sample
 // factory GetItem (0x135d70) and CSample Play/StopAndRewind (0x136300) - are not
 // yet named in symbol_names.csv, so their REL32 relocs stay fuzzy against the
-// target's FUN_ names. g_gameReg IS named (CGameReg). Flips to exact once those
+// target's FUN_ names. g_gameReg IS named (CGameRegistry). Flips to exact once those
 // engine functions get RVA-annotated stubs. ~44% scoring artifact, logic complete.
 // ---------------------------------------------------------------------------
 RVA(0x000e2190, 0x83)
@@ -1034,11 +1022,11 @@ i32 CProjectile::LaunchSound(const char* key) {
     if (m_200 != 0) {
         return 0;
     }
-    CGameReg* reg = g_gameReg;
+    CGameRegistry* reg = g_gameReg;
     if (reg->m_10 == 0) {
         return 0;
     }
-    CProjSoundCat* cat = reg->m_30;
+    CProjSoundCat* cat = (CProjSoundCat*)reg->m_30;
     CProjSoundEntry* entry = 0;
     cat->m_28->m_10.Lookup(key, &entry);
     if (entry == 0) {

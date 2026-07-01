@@ -14,8 +14,9 @@
 #include <string.h> // inline strlen (repne scasb) over the scratch buffer
 
 #include <Gruntz/CSerialSub34.h> // CSerialArchive (reader), CDDrawSubMgrLeaf (registry
-                                 // leaf + KeyOfValue), CSerialObj - shared with the
-                                 // embedded +0x150 sub-record of CProjLoadRec below
+#include <Gruntz/CGameRegistry.h>
+// leaf + KeyOfValue), CSerialObj - shared with the
+// embedded +0x150 sub-record of CProjLoadRec below
 
 // ---------------------------------------------------------------------------
 // CStreamReader - the input stream the records read from. Only the +0x2c virtual
@@ -55,10 +56,6 @@ struct CRegSub30 {
     char m_pad00[0x10];
     CRegNameTable* m_10; // +0x10  the name table
 };
-struct WwdGameReg {
-    char m_pad00[0x30];
-    CRegSub30* m_30; // +0x30  the name-table sub-registry
-};
 
 // The looked-up "type table" value an indexed field resolves through: a bounded
 // array (m_14[m_64 .. m_68]) whose element at the read index becomes the field.
@@ -73,7 +70,7 @@ struct CRegTypeTable {
 // The game registry singleton (0x64556c). The delinker's canonical symbol is the
 // extern "C" _g_mgrSettings (the cplay unit owns it); reloc-masked DIR32.
 DATA(0x0024556c)
-extern "C" WwdGameReg* g_mgrSettings;
+extern "C" CGameRegistry* g_mgrSettings;
 
 // The serialize sequence counter (0x629ad0, ?g_serialCounter@@3HA): bumped once
 // per string field read.
@@ -116,11 +113,11 @@ i32 CTriggerLoadRec::Load(CStreamReader* s) {
     if (s == 0) {
         return 0;
     }
-    WwdGameReg* gr = g_mgrSettings;
+    CGameRegistry* gr = g_mgrSettings;
     if (gr == 0) {
         return 0;
     }
-    CRegSub30* reg = gr->m_30;
+    CRegSub30* reg = (CRegSub30*)gr->m_30;
     if (reg == 0) {
         return 0;
     }
@@ -260,7 +257,7 @@ i32 CEventLoadRec::Load(CStreamReader* s) {
     if (s == 0) {
         return 0;
     }
-    CRegSub30* reg = g_mgrSettings->m_30;
+    CRegSub30* reg = (CRegSub30*)g_mgrSettings->m_30;
     if (reg == 0) {
         return 0;
     }
@@ -698,7 +695,7 @@ i32 CGruntStateRec::Load(CDualReader* s, i32 mode, i32 a2, i32 a3) {
     if (s == 0) {
         return 0;
     }
-    CRegSub30* reg = g_mgrSettings->m_30;
+    CRegSub30* reg = (CRegSub30*)g_mgrSettings->m_30;
     if (reg == 0) {
         return 0;
     }

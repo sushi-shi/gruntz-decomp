@@ -21,6 +21,7 @@
 #define GRUNTZ_GRUNTINDICATORSPRITE_H
 
 #include <rva.h>
+#include <Gruntz/CGameRegistry.h>
 
 #include <Gruntz/UserLogic.h> // CUserLogic : CUserBase, EngStr, CGameObject
 
@@ -72,22 +73,16 @@ struct CGruntEntry {
 };
 
 // ---------------------------------------------------------------------------
-// CIndicatorReg - the minimal game-registry view the indicator updaters use.
+// CGameRegistry - the minimal game-registry view the indicator updaters use.
 // Same singleton as CGameReg (?g_gameReg@@3PA...@@A @ 0x64556c); modeled with
 // the grunt table at +0x68 and the bute-set table at +0x78 the powerup setter
 // reads. Declared with the registry's own type so the data ref reloc-masks.
 //   +0x68  m_68 : grunt table base (entries at +0x1c, dword stride)
 //   +0x78  m_78 : the bute lookup table the powerup setter indexes
 // ---------------------------------------------------------------------------
-struct CIndicatorReg {
-    char m_pad00[0x68];
-    char* m_68; // +0x68  grunt table base (CGruntEntry* at +0x1c[idx])
-    char m_pad6c[0x78 - 0x6c];
-    char* m_78; // +0x78  bute-set table base
-};
 
 DATA(0x0024556c)
-extern CIndicatorReg* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c
+extern CGameRegistry* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c
 
 // ---------------------------------------------------------------------------
 // A bound-object sub-object on the +0x38 game object: at +0x1a0 sits a helper

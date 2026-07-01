@@ -3,6 +3,7 @@
 // only OFFSETS + code bytes are load-bearing. Engine callees are external/no-body.
 #include <Ints.h>
 #include <rva.h>
+#include <Gruntz/CGameRegistry.h>
 
 // ---------------------------------------------------------------------------
 // 0x6b2e0: an animation effect apply - cache the owner's m_1b4 into this->m_c, run
@@ -115,13 +116,9 @@ i32 CState95::Step(i32 arg) {
 DATA(0x00245588)
 extern "C" u32 g_645588;   // tick
 extern i32 g_strikeThresh; // 0x645598
-struct CMgrSettings95 {
-    char _00[0x78];
-    i32* m_78; // +0x78  frame table base
-};
 DATA(0x0024556c)
-extern CMgrSettings95* g_mgrSettings; // 0x64556c
-extern "C" void Helper2914();         // 0x2914 (ILT thunk)
+extern CGameRegistry* g_mgrSettings; // 0x64556c
+extern "C" void Helper2914();        // 0x2914 (ILT thunk)
 
 struct CStrikeSprite {
     char _00[0x4c];
@@ -158,7 +155,7 @@ i32 CStrikeEffect::Tick() {
         } else {
             m_118 = 0;
         }
-        i32* tbl = g_mgrSettings->m_78;
+        i32* tbl = (i32*)g_mgrSettings->m_78;
         i32 frame = tbl[idx + 5];
         CStrikeSprite* spr = m_10;
         spr->m_58 = 1;
@@ -173,7 +170,7 @@ SIZE_UNKNOWN(CAnimSink2);
 SIZE_UNKNOWN(CEffect6b);
 SIZE_UNKNOWN(CGridLookup);
 SIZE_UNKNOWN(CMenuHolder95);
-SIZE_UNKNOWN(CMgrSettings95);
+SIZE_UNKNOWN(CGameRegistry);
 SIZE_UNKNOWN(CState95);
 SIZE_UNKNOWN(CStrikeEffect);
 SIZE_UNKNOWN(CStrikeSprite);

@@ -1,6 +1,7 @@
 #include <rva.h>
 #include <Mfc.h>
 #include <Ints.h>
+#include <Gruntz/CGameRegistry.h>
 // SBI_ImageSet.cpp - Gruntz CSBI_ImageSet (C:\Proj\Gruntz), the frameless methods.
 // RTTI .?AVCSBI_ImageSet@@; the most-derived of the SBI image chain
 //   CSBI_ImageSet : CSBI_Image : CSBI_RectOnly : CStatusBarItem.
@@ -57,13 +58,9 @@ struct CImageSetRegSub {
 SIZE_UNKNOWN(CImageSetRegSub);
 
 // g_gameReg->m_30 = the active registry/game-manager carrying the config map sub.
-struct CImageSetGameReg {
-    char m_pad0[0x30];
-    CImageSetRegSub* m_30; // +0x30  registry sub-object
-};
-SIZE_UNKNOWN(CImageSetGameReg);
+SIZE_UNKNOWN(CGameRegistry);
 DATA(0x0024556c)
-extern CImageSetGameReg* g_gameReg;
+extern CGameRegistry* g_gameReg;
 
 // The serialize-sequence counter bumped once per non-trivial pass.
 DATA(0x00229ad0)
@@ -98,7 +95,7 @@ i32 CSBI_ImageSet::Serialize(CImageSetStream* s, i32 mode, i32 a3, i32 a4) {
     if (s == 0) {
         return 0;
     }
-    CImageSetRegSub* reg = g_gameReg->m_30;
+    CImageSetRegSub* reg = (CImageSetRegSub*)g_gameReg->m_30;
     if (reg == 0) {
         return 0;
     }

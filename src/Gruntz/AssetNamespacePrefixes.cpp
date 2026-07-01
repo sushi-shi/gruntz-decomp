@@ -17,7 +17,8 @@
 // CARCASS doctrine: every callee is a reloc-masked external; the worker-registry /
 // leaf-scan / ani classes mirror m5_GameAssetNamespaces.cpp; strings are $SG
 // literals reloc-masked against the matched symbols.
-#include <Mfc.h>   // MFC CString (+, LoadString, ctor/dtor)
+#include <Mfc.h> // MFC CString (+, LoadString, ctor/dtor)
+#include <Gruntz/CGameRegistry.h>
 #include <Win32.h> // RECT
 
 #include <rva.h>
@@ -90,16 +91,8 @@ struct GRLightObj {
 struct GRFxObj {
     void Update(); // m_68 -> 0x15c3 (thunk)
 };
-struct GameReg {
-    char m_pad00[0x30];
-    GRAssetMgr* m_30; // +0x30
-    char m_pad34[0x60 - 0x34];
-    GRLightObj* m_60; // +0x60
-    char m_pad64[0x68 - 0x64];
-    GRFxObj* m_68; // +0x68
-};
 DATA(0x0024556c)
-extern GameReg* g_gameReg; // *0x64556c
+extern CGameRegistry* g_gameReg; // *0x64556c
 
 // The preview draw (0x1c5d) + the finish hook (0x35e4).
 extern "C" void
@@ -139,15 +132,15 @@ i32 CNamespaceLoader::BuildAssetNamespacePrefixes(
     i32 result;
     if (mode != 0) {
         if (m_c->m_10->HasKeyEqual("GRUNTZ_" + name) == 0) {
-            g_gameReg->m_60->Tick();
-            g_gameReg->m_68->Update();
+            ((GRLightObj*)g_gameReg->m_60)->Tick();
+            ((GRFxObj*)g_gameReg->m_68)->Update();
             if (lightGate != 0) {
                 CString cs;
                 cs.LoadString(0x819b);
                 RECT r = *(RECT*)((char*)g_gameReg->m_30->m_24 + 0x10);
                 RECT r2;
                 CopyRect(&r2, &r);
-                DrawPreview(g_gameReg->m_30, &cs, &r2, 0x82, 1, 0xff, 0xff, 0, 1);
+                DrawPreview((GRAssetMgr*)g_gameReg->m_30, &cs, &r2, 0x82, 1, 0xff, 0xff, 0, 1);
             }
             g_severusCounterA = 1;
             void* tree = m_30->ResolvePath("IMAGEZ_" + name);
@@ -204,4 +197,4 @@ SIZE_UNKNOWN(CSymTree);
 SIZE_UNKNOWN(GRAssetMgr);
 SIZE_UNKNOWN(GRFxObj);
 SIZE_UNKNOWN(GRLightObj);
-SIZE_UNKNOWN(GameReg);
+SIZE_UNKNOWN(CGameRegistry);

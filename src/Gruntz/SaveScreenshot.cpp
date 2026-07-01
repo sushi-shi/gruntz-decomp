@@ -14,6 +14,7 @@
 #include <rva.h>
 
 #include <Win32.h> // wsprintfA
+#include <Gruntz/CGameRegistry.h>
 
 // The registry/config object (arg2). GetInt/WriteInt are 2-arg __thiscall helpers.
 struct ScrConfig {
@@ -49,13 +50,8 @@ struct ScrOwner { // arg3
 
 // The global game/manager settings singleton (*0x64556c); m_8c/m_90 = the screen
 // capture width/height.
-struct ScrMgrSettings {
-    char m_pad00[0x8c];
-    i32 m_8c; // +0x8c  capture width
-    i32 m_90; // +0x90  capture height
-};
 DATA(0x0024556c)
-extern ScrMgrSettings* g_mgrSettings;
+extern CGameRegistry* g_mgrSettings;
 
 // @source: decomp-xref
 // @early-stop
@@ -110,7 +106,7 @@ i32 SaveScreenshot(
         return 0;
     }
 
-    ScrMgrSettings* mgr = g_mgrSettings;
+    CGameRegistry* mgr = g_mgrSettings;
     descA[0] = 0;
     descA[1] = 0;
     descA[2] = 0;
@@ -135,7 +131,7 @@ i32 SaveScreenshot(
 }
 SIZE_UNKNOWN(ScrConfig);
 SIZE_UNKNOWN(ScrImage);
-SIZE_UNKNOWN(ScrMgrSettings);
+SIZE_UNKNOWN(CGameRegistry);
 SIZE_UNKNOWN(ScrOwner);
 SIZE_UNKNOWN(ScrSurfHost);
 SIZE_UNKNOWN(ScrSurface);
