@@ -343,17 +343,16 @@ i32 DirectSoundMgr::IsLooping() {
 // ---------------------------------------------------------------------------
 // DirectSoundMgr::SetField3 (__thiscall, 1 arg). Gated on init. Sets/clears bit 0
 // of the +0x14 play-flags word (the IDirectSoundBuffer::Play looping flag). +0x14
-// overlaps m_device in the manager shape; the buffer shape uses it as play-flags,
-// so it is reached via an offset cast (the field is zero-inited as m_device).
+// overlaps m_device in the manager shape; the buffer shape uses it as m_playFlags.
 RVA(0x00135510, 0x25)
 void DirectSoundMgr::SetField3(i32 on) {
     if (m_owner->m_initialized == 0) {
         return;
     }
     if (on) {
-        *(i32*)((char*)this + 0x14) |= 1;
+        m_playFlags |= 1;
     } else {
-        *(i32*)((char*)this + 0x14) &= ~1;
+        m_playFlags &= ~1;
     }
 }
 
@@ -660,7 +659,7 @@ DirectSoundMgr* DirectSoundMgr::Clone(i32 a) {
         return 0;
     }
     ((DSoundMgrList*)&m_cloneHead)->InsertHead(&c->m_node44);
-    *(i32*)((char*)c + 0x50) = a; // +0x50  the play key
+    c->m_playKey = a;
     return c;
 }
 
@@ -804,7 +803,7 @@ DSoundCloneInst::DSoundCloneInst(IDirectSoundBufferZ* buf, DirectSoundMgr* owner
     list->m_tail = 0;
     *(void**)this = (void*)g_DirectSoundCloneVtbl;
     list->InsertHead(&m_node44);
-    *(i32*)((char*)this + 0x50) = 1;
+    m_playKey = 1;
 }
 
 RVA(0x00136230, 0x2d)
@@ -813,7 +812,7 @@ DSoundBaseSub::DSoundBaseSub(IDirectSoundBufferZ* buf, DirectSoundMgr* owner)
     *(void**)this = (void*)g_DirectSoundBaseVtbl;
     m_node44.m_inst = (DirectSoundMgr*)this;
     m_reacquireOwner = (DirectSoundMgr*)this;
-    *(i32*)((char*)this + 0x50) = 1;
+    m_playKey = 1;
 }
 
 // ---------------------------------------------------------------------------
@@ -836,13 +835,13 @@ i32 DirectSoundMgr::Play() {
     if (m_owner->m_initialized == 0) {
         return 0;
     }
-    i32 hr = m_buffer->vtbl->Play(m_buffer, 0, 0, *(u32*)((char*)this + 0x14)) != 0;
+    i32 hr = m_buffer->vtbl->Play(m_buffer, 0, 0, m_playFlags) != 0;
     if (hr != 0) {
         if (hr == (i32)0x88780096) {
             if (m_reacquireOwner->ReacquireBuffer() == 0) {
                 return 0;
             }
-            i32 hr2 = m_buffer->vtbl->Play(m_buffer, 0, 0, *(u32*)((char*)this + 0x14)) != 0;
+            i32 hr2 = m_buffer->vtbl->Play(m_buffer, 0, 0, m_playFlags) != 0;
             if (hr2 != 0) {
                 GetErrorString(DSNDMGR_FILE, 0x34c, hr2);
                 return 0;

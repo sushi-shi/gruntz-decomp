@@ -15,6 +15,8 @@
 
 #include <rva.h>
 
+#include <Dsndmgr/WaveFormatX.h> // WAVEFORMATEX-shaped PCM header (FeederStart)
+
 // The streaming source reader the feeder pulls window bytes from (the same
 // polymorphic reader SoundStream.h models as StreamSource; declared here so this
 // TU is self-contained - SoundStream.h's wider view stays in its own TU). Read
@@ -90,7 +92,7 @@ struct StreamFeeder {
         FeederOwner* owner,
         i32 arg2,
         u32 len,
-        void* fmt,
+        WaveFormatX* fmt,
         void* buf,
         i32 tickArg
     );                                       // 0x137d10

@@ -29,11 +29,11 @@ class SoundStream;
 struct StreamSource {
     void* m_vtbl; // +0x00
     char m_pad04[0x0c - 0x04];
-    u32 m_0c; // +0x0c  source length
+    u32 m_length; // +0x0c  source length
     char m_pad10[0x18 - 0x10];
-    u32 m_18; // +0x18  read cursor / file position
+    u32 m_cursor; // +0x18  read cursor / file position
 
-    i32 Seek(i32 pos);                  // 0x139ae0  m_18 = pos
+    i32 Seek(i32 pos);                  // 0x139ae0  m_cursor = pos
     i32 Read(void* buf, i32 n, i32 at); // 0x139af0  read n bytes (at == -1: current)
 };
 SIZE_UNKNOWN(StreamSource); // partial reader view (only +0x0c/+0x18 pinned)
@@ -44,13 +44,13 @@ SIZE_UNKNOWN(StreamSource); // partial reader view (only +0x0c/+0x18 pinned)
 // pre-seeds its data window (+0x2c..+0x3c) before arming.
 struct StreamFeederView {
     char m_pad00[0x18];
-    u32 m_18; // +0x18  cursor
+    u32 m_cursor; // +0x18  cursor
     char m_pad1c[0x2c - 0x1c];
-    u32 m_2c; // +0x2c  source back-pointer
-    u32 m_30; // +0x30
-    u32 m_34; // +0x34
-    u32 m_38; // +0x38  data length
-    u32 m_3c; // +0x3c  data back-pointer
+    u32 m_source;  // +0x2c  source back-pointer
+    u32 m_30;      // +0x30
+    u32 m_34;      // +0x34
+    u32 m_dataLen; // +0x38  data length
+    u32 m_dataPtr; // +0x3c  data back-pointer
     char m_pad40[0x44 - 0x40];
 
     i32 FeederStart(SoundStream* owner, void* fmt, i32 b, i32 c, StreamVoiceNode* voice, i32 d);
@@ -70,17 +70,17 @@ struct StreamVoiceNode {
     void* m_pad08;                // +0x08
     IDirectSoundBufferZ* m_buf0c; // +0x0c  the IDirectSoundBuffer to release
     char m_pad10[0x28 - 0x10];
-    u32 m_28; // +0x28  duration-ms (= m_2c*1000/m_3c)
-    u32 m_2c; // +0x2c  byte length
+    u32 m_durationMs; // +0x28  duration-ms (= m_byteLength*1000/m_avgBytesDiv)
+    u32 m_byteLength; // +0x2c  byte length
     char m_pad30[0x38 - 0x30];
-    u32 m_38; // +0x38  avg-bytes-per-sec
-    u32 m_3c; // +0x3c  avg-bytes-per-sec (divisor)
+    u32 m_avgBytes;    // +0x38  avg-bytes-per-sec
+    u32 m_avgBytesDiv; // +0x3c  avg-bytes-per-sec (divisor)
     char m_pad40[0x6c - 0x40];
     StreamFeederView m_feeder; // +0x6c  embedded streaming feeder sub-object
 
     // ctor 0x1375b0(IDirectSoundBuffer* buf, SoundStream* owner, int a, int b).
     StreamVoiceNode(IDirectSoundBufferZ* buf, SoundStream* owner, i32 a, i32 b);
-    void ComputeDuration(); // 0x1359a0  m_28 = m_2c*1000/m_3c
+    void ComputeDuration(); // 0x1359a0  m_durationMs = m_byteLength*1000/m_avgBytesDiv
 };
 
 class SoundStream : public SoundDevice {

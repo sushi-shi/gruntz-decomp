@@ -206,11 +206,18 @@ public:
     char m_pad0[0x0c];
     IDirectSoundBufferZ* m_buffer; // +0x0c  the held sound buffer (per-buffer this)
     DirectSoundMgr* m_owner;       // +0x10  owning manager back-pointer (per-buffer this)
-    IDirectSoundZ* m_device;       // +0x14  the DirectSound device (manager this)
-    u32 m_freq;                    // +0x18  cached frequency (GetFrequency)
-    i32 m_pan;                     // +0x1c  cached pan (GetPan)
-    i32 m_volume;                  // +0x20  cached volume (GetVolume)
-    u32 m_setFreq;                 // +0x24  cached SetFrequency value
+    // +0x14 is genuinely two-view: the manager shape holds the IDirectSound device
+    // here; the per-buffer shape uses the same word as the Play/looping flags
+    // (zero-inited via m_device = 0 in the ctor). Modeled as a union so both views
+    // read named members instead of an offset cast.
+    union {
+        IDirectSoundZ* m_device; // +0x14  the DirectSound device (manager this)
+        u32 m_playFlags;         // +0x14  play/looping flags (per-buffer this)
+    };
+    u32 m_freq;         // +0x18  cached frequency (GetFrequency)
+    i32 m_pan;          // +0x1c  cached pan (GetPan)
+    i32 m_volume;       // +0x20  cached volume (GetVolume)
+    u32 m_setFreq;      // +0x24  cached SetFrequency value
     u32 m_durationMs;   // +0x28  duration (ComputeDuration = m_sampleCount*1000/m_sampleRate)
     u32 m_sampleCount;  // +0x2c  sample count (set by the clone ctor)
     i32 m_reacquireCb;  // +0x30  per-buffer reacquire callback
@@ -227,7 +234,7 @@ public:
         CloneNode* m_prev;      // +0x04 (clone +0x48)
         DirectSoundMgr* m_inst; // +0x08 (clone +0x4c) back-pointer to the clone
     } m_node44;
-    char m_pad50[0x54 - 0x50];
+    i32 m_playKey;                    // +0x50  clone play key (SetVolume/CloneAndPlay tag)
     DirectSoundMgr* m_reacquireOwner; // +0x54  device/owner used to reacquire a lost buffer
     // +0x58  head of this instance's clone/child list (head@+0x58, tail@+0x5c);
     // each member is a cloned DirectSoundMgr chained through its m_node44.

@@ -260,7 +260,7 @@ i32 CSaveGame::SaveGameFile(const char* dir) {
         if (slot != 0) {
             char numbuf[16];
             _itoa(i + 1, numbuf, 10);
-            wsprintfA((char*)slot + 0x35, (const char*)(m_str0 + "Slot" + numbuf + ".sav"));
+            wsprintfA(slot->m_35, (const char*)(m_str0 + "Slot" + numbuf + ".sav"));
         }
     }
     return 1;
@@ -446,9 +446,9 @@ i32 CSaveGame::VerifySlot(SaveSlot* slot) {
     if (slot == 0) {
         return 0;
     }
-    i32 fc = *(i32*)((char*)slot + 0xfc);
-    i32 f8 = *(i32*)((char*)slot + 0xf8);
-    const char* name = (fc == 0 && f8 == 0) ? g_emptyString : ((char*)slot + 0x75);
+    i32 fc = slot->m_fc;
+    i32 f8 = slot->m_f8;
+    const char* name = (fc == 0 && f8 == 0) ? g_emptyString : slot->m_75;
     CString s(name);
     i32 r = g_gameReg->BuildLevelRezPath(fc == 0, fc, f8, slot->m_04);
     if (r == 0) {
@@ -483,9 +483,9 @@ i32 CSaveGame::Register(SaveSlot* slot) {
     if (slot == 0) {
         return 0;
     }
-    i32 fc = *(i32*)((char*)slot + 0xfc);
-    i32 f8 = *(i32*)((char*)slot + 0xf8);
-    const char* name = (fc == 0 && f8 == 0) ? g_emptyString : ((char*)slot + 0x75);
+    i32 fc = slot->m_fc;
+    i32 f8 = slot->m_f8;
+    const char* name = (fc == 0 && f8 == 0) ? g_emptyString : slot->m_75;
     CString s(name);
     return g_gameReg->BuildLevelRezPath(fc == 0, fc, f8, slot->m_04);
 }

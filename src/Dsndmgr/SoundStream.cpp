@@ -150,9 +150,9 @@ StreamVoiceNode* SoundStream::CreateStreamBuffer(WaveFormatX* fmt, u32 bytes, i3
         voice = new (voice) StreamVoiceNode(out, this, b, c);
     }
     ((StreamList*)&m_94)->Insert(voice ? &voice->m_link : 0);
-    voice->m_38 = fmt->nAvgBytesPerSec;
-    voice->m_3c = fmt->nAvgBytesPerSec;
-    voice->m_2c = bytes;
+    voice->m_avgBytes = fmt->nAvgBytesPerSec;
+    voice->m_avgBytesDiv = fmt->nAvgBytesPerSec;
+    voice->m_byteLength = bytes;
     voice->ComputeDuration();
     return voice;
 }
@@ -184,9 +184,9 @@ SoundStream::OpenStream(StreamSource* src, i32 p1, i32 p2, i32 p3, i32 p4, i32 p
         return 0;
     }
     StreamFeederView* feeder = &voice->m_feeder;
-    feeder->m_38 = dataOff;
-    feeder->m_3c = (u32)src;
-    feeder->m_2c = (u32)src;
+    feeder->m_dataLen = dataOff;
+    feeder->m_dataPtr = (u32)src;
+    feeder->m_source = (u32)src;
     feeder->m_30 = 0;
     feeder->m_34 = 0;
     if (feeder->FeederStart(this, &wf, p1, p2, voice, -1) == 0) {
@@ -249,17 +249,17 @@ i32 SoundStream::ParseWave(
         return 0;
     }
 
-    u32 end = src->m_18 + riffSize - 4;
-    if (end > src->m_0c) {
-        end = src->m_0c;
+    u32 end = src->m_cursor + riffSize - 4;
+    if (end > src->m_length) {
+        end = src->m_length;
     }
-    while (src->m_18 < end) {
+    while (src->m_cursor < end) {
         u32 chunkId;
         u32 chunkSize;
         src->Read(&chunkId, 4, -1);
         src->Read(&chunkSize, 4, -1);
         if (chunkId == 0x20746d66) {
-            i32 next = src->m_18 + chunkSize;
+            i32 next = src->m_cursor + chunkSize;
             i32 n = chunkSize;
             if (n >= 0x12) {
                 n = 0x12;
@@ -268,15 +268,15 @@ i32 SoundStream::ParseWave(
             src->Seek(next);
             gotFmt = 1;
         } else if (chunkId == 0x61746164) {
-            *outDataOff = src->m_18;
+            *outDataOff = src->m_cursor;
             *outDataLen = chunkSize;
             gotData = 1;
         }
         if (gotFmt && gotData) {
             return 1;
         }
-        if ((src->m_18 & 1) == 1) {
-            src->Seek(src->m_18 + 1);
+        if ((src->m_cursor & 1) == 1) {
+            src->Seek(src->m_cursor + 1);
         }
     }
     return 0;

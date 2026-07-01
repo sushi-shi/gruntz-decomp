@@ -48,12 +48,16 @@ extern "C" char g_emptyString[];
 // A single 0x100-byte saved-game slot record.
 struct SaveSlot {
     i32 m_type;      // +0x00  (1 = normal, 3 = ...)
-    i32 m_04;        // +0x04
+    i32 m_04;        // +0x04  level id
     i32 m_08;        // +0x08
     i32 m_0c;        // +0x0c
     i32 m_checksum;  // +0x10  (Register(this) result)
-    char m_14[0x20]; // +0x14  (name, strncpy'd 0x20)
-    char m_34[0xcc]; // +0x34  pad to 0x100
+    char m_14[0x20]; // +0x14  (short name, strncpy'd 0x20)
+    char m_34;       // +0x34
+    char m_35[0x40]; // +0x35  (".sav" file name, wsprintf'd)
+    char m_75[0x83]; // +0x75  (level path name read by Register/VerifySlot)
+    i32 m_f8;        // +0xf8
+    i32 m_fc;        // +0xfc
 };
 
 class CSaveGame {

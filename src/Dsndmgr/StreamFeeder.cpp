@@ -201,7 +201,7 @@ i32 StreamFeeder::FeederStart(
     FeederOwner* owner,
     i32 arg2,
     u32 len,
-    void* fmt,
+    WaveFormatX* fmt,
     void* buf,
     i32 tickArg
 ) {
@@ -209,7 +209,7 @@ i32 StreamFeeder::FeederStart(
     m_owner = owner;
     m_format = (u32)fmt;
     m_drained = 0;
-    if (*(u16*)((char*)fmt + 0xe) > 8) {
+    if (fmt->wBitsPerSample > 8) {
         m_silenceByte = 0;
     } else {
         m_silenceByte = 0x80;
