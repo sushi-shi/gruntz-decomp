@@ -134,10 +134,10 @@ public:
     i32 VirtualMethodUnknown20();
 
     // m_04/m_08/m_0c (and the implicit vptr) are inherited from AlbusMapBase.
-    CMapStringToOb m_10; // +0x10  m_unknownMap1 (0x10..0x2b)
-    CMapStringToOb m_2c; // +0x2c  m_unknownMap2 (0x2c..0x47)
-    CMapStringToOb m_48; // +0x48  m_unknownMap3 (0x48..0x63)
-    i32 m_64;            // +0x64  entry counter cleared by the teardown
+    CMapStringToOb m_map1; // +0x10  worker-by-key map 1 (0x10..0x2b)
+    CMapStringToOb m_map2; // +0x2c  worker-by-key map 2 (0x2c..0x47)
+    CMapStringToOb m_map3; // +0x48  worker-by-key map 3 (0x48..0x63)
+    i32 m_64;              // +0x64  entry counter cleared by the teardown
 
     // Engine-label backlog stubs (non-vtable).
     void Stub_157610();
@@ -193,7 +193,7 @@ fail:
 RVA(0x00156d20, 0x82)
 CDDrawWorkerMapSmall::~CDDrawWorkerMapSmall() {
     VirtualMethodUnknown1C();
-    // m_48 / m_2c / m_10 (reverse decl order) and the AlbusMapBase grand-base
+    // m_map3 / m_map2 / m_map1 (reverse decl order) and the AlbusMapBase grand-base
     // auto-destruct here under the /GX member-teardown trylevels.
 }
 
@@ -232,7 +232,7 @@ static inline AlbusWorkerObj* MakeAlbusWorker(const CDDrawWorkerMapSmall* parent
 }
 
 // ---------------------------------------------------------------------------
-// Map teardown (0x165810, __thiscall, /GX): iterate every entry of m_10 via
+// Map teardown (0x165810, __thiscall, /GX): iterate every entry of m_map1 via
 // GetNextAssoc, destroying each CObject* value through its scalar-deleting
 // destructor (vtbl +0x4, arg 1), RemoveAll the map, then clear the +0x64 counter.
 // Same shape as CDDrawWorkerRegistry::VirtualMethodUnknown58, plus the m_64 clear.
@@ -241,17 +241,17 @@ static inline AlbusWorkerObj* MakeAlbusWorker(const CDDrawWorkerMapSmall* parent
 RVA(0x00165810, 0xa9)
 void CDDrawWorkerMapSmall::VirtualMethodUnknown1C() {
     CObject* val = 0;
-    POSITION pos = (POSITION)(m_10.GetCount() != 0 ? -1 : 0);
+    POSITION pos = (POSITION)(m_map1.GetCount() != 0 ? -1 : 0);
     CString key;
     if (*(volatile i32*)&pos != 0) {
         do {
-            m_10.GetNextAssoc(pos, key, val);
+            m_map1.GetNextAssoc(pos, key, val);
             if (val != 0) {
                 ((AlbusWorker*)val)->ScalarDtor(1);
             }
         } while (pos != 0);
     }
-    m_10.RemoveAll();
+    m_map1.RemoveAll();
     m_64 = 0;
 }
 
@@ -268,7 +268,7 @@ void* CDDrawWorkerMapSmall::VirtualMethodUnknown28(i32 a1, const char* key, i32 
         }
         return 0;
     }
-    m_10[key] = (CObject*)w;
+    m_map1[key] = (CObject*)w;
     return w;
 }
 
@@ -283,7 +283,7 @@ void* CDDrawWorkerMapSmall::VirtualMethodUnknown2C(i32 a1, const char* key, i32 
         }
         return 0;
     }
-    m_10[key] = (CObject*)w;
+    m_map1[key] = (CObject*)w;
     return w;
 }
 
@@ -351,7 +351,7 @@ typedef i32 POSITION;
 // CMapStringToOb extended for the teardown: GetNextAssoc/RemoveAll are out-of-line
 // NAFXCW thunks (reloc-masked rel32 calls); declared with the exact MFC signatures
 // so clang mangles them to the MFC-canonical names. The internal layout fields
-// (vptr through m_nCount) are modeled so `m_10.m_nCount` accesses parent+0x1c,
+// (vptr through m_nCount) are modeled so `m_map1.m_nCount` accesses parent+0x1c,
 // matching the retail `mov eax,[edi+0x1c]` for the guard condition.
 
 // Minimal polymorphic stub for the CObject-derived values stored in the map.
@@ -363,7 +363,7 @@ public:
 };
 
 // CDDrawWorkerMapSmall surface used by the teardown - same load-bearing offsets as the
-// active class above, with the m_10 map typed for the teardown signatures.
+// active class above, with the m_map1 map typed for the teardown signatures.
 class UnknownAlbusTeardown {
 public:
     void  VirtualMethodUnknown1C();
@@ -372,11 +372,11 @@ public:
     i32                    m_04;                     // +0x04
     char                   m_pad08[0x0c - 0x08];     // +0x08..0x0b
     i32                    m_0c;                      // +0x0c
-    CMapStringToOb m_10;                      // +0x10  m_unknownMap1 (0x10..0x2b)
+    CMapStringToOb m_map1;                    // +0x10  worker-by-key map 1 (0x10..0x2b)
 };
 
 // ---------------------------------------------------------------------------
-// Map teardown: iterate all entries in m_10 via GetNextAssoc, destroying each
+// Map teardown: iterate all entries in m_map1 via GetNextAssoc, destroying each
 // CObject* value via its scalar-deleting destructor (vtbl +0x4 arg 1), then
 // RemoveAll the map and clear the m_64 counter.
 //
@@ -392,16 +392,16 @@ public:
 void UnknownAlbusTeardown::VirtualMethodUnknown1C()
 {
     CObject *val = 0;
-    i32 pos = (m_10.m_nCount != 0) ? -1 : 0;
+    i32 pos = (m_map1.m_nCount != 0) ? -1 : 0;
     CString key;
     if (*(volatile i32 *)&pos != 0) {
         do {
-            m_10.GetNextAssoc(pos, key, val);
+            m_map1.GetNextAssoc(pos, key, val);
             if (val != 0)
                 ((AlbusMapValue *)val)->ScalarDtor(1);
         } while (*(volatile i32 *)&pos != 0);
     }
-    m_10.RemoveAll();
+    m_map1.RemoveAll();
     *(i32 *)((char *)this + 0x64) = 0;
 }
 #endif

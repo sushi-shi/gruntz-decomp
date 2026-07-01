@@ -17,10 +17,10 @@
 // The clip rectangle the blit path hands in (3rd arg of Blit): left/top/right/
 // bottom-ish (only +0x0/+0x4/+0x8/+0xc are read in the bounds check).
 struct ShadeRect {
-    i32 m_00; // +0x00
-    i32 m_04; // +0x04
-    i32 m_08; // +0x08
-    i32 m_0c; // +0x0c
+    i32 left;   // +0x00
+    i32 top;    // +0x04
+    i32 right;  // +0x08
+    i32 bottom; // +0x0c
 };
 
 // The unlock interface (ShadeSrc::m_08): a COM-like object whose vtable slot 0x20
@@ -39,11 +39,11 @@ struct ShadeUnlockIface {
 // and Unlock via +0x08.
 struct ShadeSrc {
     char m_00[0x08];
-    ShadeUnlockIface* m_08; // +0x08 unlock interface
+    ShadeUnlockIface* m_surface; // +0x08 held DDraw surface (unlocked via COM slot 0x80)
     char m_0c[0x20 - 0x0c];
-    i32 m_20; // +0x20 surface pitch (row stride, bytes)
+    i32 m_pitch; // +0x20 surface pitch (row stride, bytes)
     char m_24[0xb0 - 0x24];
-    i32 m_b0;             // +0xb0 blend mode
+    i32 m_blendMode;      // +0xb0 blend mode
     u8* Lock(void* rect); // 0x13e6d0 (CDDSurface::Lock; external, reloc-masked)
 };
 
@@ -53,7 +53,7 @@ struct ShadeSrc {
 // palettes), so the field stays a raw base.
 struct ShadeDescr {
     char m_00[0x8];
-    u8* m_08; // +0x08 LUT/palette base
+    u8* m_lut; // +0x08 LUT/palette base
 };
 
 class CDDrawShadeBlit {
@@ -83,21 +83,21 @@ public:
     void ConvertRowDouble(u8* dst, u8* src, i32 count, i32 rowDelta); // 0x14d950
 
     char m_00[0x4];
-    i32 m_04;         // +0x04 sprite row width
-    i32 m_08;         // +0x08 height
-    u8* m_0c;         // +0x0c RLE sprite-stream base
-    i32 m_10;         // +0x10 RLE sprite-stream length (byte bound)
-    i32 m_14;         // +0x14 draw type / row-convert selector
-    i32 m_18;         // +0x18 light level (>>3 indexes the LUT bank) / alpha / fill byte
-    ShadeDescr* m_1c; // +0x1c palette / source-descriptor pointer
+    i32 m_width;          // +0x04 sprite row width
+    i32 m_height;         // +0x08 height
+    u8* m_rleData;        // +0x0c RLE sprite-stream base
+    i32 m_rleLen;         // +0x10 RLE sprite-stream length (byte bound)
+    i32 m_drawType;       // +0x14 draw type / row-convert selector (switch tag)
+    i32 m_18;             // +0x18 light level (>>3 indexes the LUT bank) / alpha / fill byte / LUT ptr (overloaded per draw type)
+    ShadeDescr* m_palDescr; // +0x1c palette / source-descriptor pointer
     char m_20[0x28 - 0x20];
-    u8 m_28; // +0x28 byte flag (require-mode gate)
-    u8 m_29; // +0x29 blend mode mirror (= src->m_b0)
+    u8 m_srcBpp; // +0x28 source pixel size in bytes (1 or 2); RLE run stride, ==1 gate
+    u8 m_dstBpp; // +0x29 dest pixel size in bytes (= blend mode, used as row stride)
     char m_2a[0x2c - 0x2a];
-    i32 m_2c; // +0x2c global-state-equal flag
-    u8* m_30; // +0x30 LUT bank 0 (blue/channel 2)
-    u8* m_34; // +0x34 LUT bank 1 (green/channel 1)
-    u8* m_38; // +0x38 LUT bank 2 (red/channel 0)
+    i32 m_2c;         // +0x2c pixel-format blend variant flag (RGB555/565 shift check)
+    u8* m_lutBank0;   // +0x30 blend LUT bank 0 (from g_lutBank0_673ca0)
+    u8* m_lutBank1;   // +0x34 blend LUT bank 1 (from g_lutBank1_653ca0)
+    u8* m_lutBank2;   // +0x38 blend LUT bank 2 (from g_lutBank2_663ca0)
 };
 
 #endif // GRUNTZ_CDDRAWSHADEBLIT_H

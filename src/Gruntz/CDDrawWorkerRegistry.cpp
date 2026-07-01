@@ -161,10 +161,10 @@ public:
     CString FindKeyOfValue_165360(SeverusMapValue* target);
 
     void* m_vptr;              // +0x00
-    i32 m_04;                  // +0x04  initialized to -1 when inactive
+    i32 m_status;              // +0x04  initialized to -1 when inactive
     char m_pad08[0x0c - 0x08]; // +0x08..0x0b
     i32 m_0c;                  // +0x0c  parent/root handle
-    CMapStringToOb m_10;       // +0x10  m_unknownMap
+    CMapStringToOb m_map;      // +0x10  worker-by-key map
 
     // Engine-label backlog stubs.
     void Stub_154f80();
@@ -207,7 +207,7 @@ static inline SeverusWorkerObj* MakeSeverusWorker(const CDDrawWorkerRegistry* pa
 
 static inline SeverusWorkerObj* FindOrCreateWorker(CDDrawWorkerRegistry* parent, const char* key) {
     CObject* found = 0;
-    parent->m_10.Lookup(key, found);
+    parent->m_map.Lookup(key, found);
     if (found == 0) {
         SeverusWorkerObj* worker = MakeSeverusWorker(parent);
         if (worker->Vfunc24(key) == 0) {
@@ -216,7 +216,7 @@ static inline SeverusWorkerObj* FindOrCreateWorker(CDDrawWorkerRegistry* parent,
             }
             return 0;
         }
-        parent->m_10[key] = (CObject*)worker;
+        parent->m_map[key] = (CObject*)worker;
         found = (CObject*)worker;
     }
     return (SeverusWorkerObj*)found;
@@ -331,7 +331,7 @@ i32 CDDrawWorkerRegistry::VirtualMethodUnknown28(
 RVA(0x00155280, 0x22)
 void CDDrawWorkerRegistry::VirtualMethodUnknown50(SeverusWorkerObj* worker) {
     if (worker != 0) {
-        m_10.RemoveKey((const char*)((char*)worker + 0x24));
+        m_map.RemoveKey((const char*)((char*)worker + 0x24));
         worker->ScalarDtor(1);
     }
 }
@@ -350,7 +350,7 @@ i32 CDDrawWorkerRegistry::VirtualMethodUnknown14() {
     if (m_0c == 0) {
         goto fail;
     }
-    if (m_04 != -1) {
+    if (m_status != -1) {
         return 1;
     }
 
@@ -377,14 +377,14 @@ fail:
 RVA(0x00156ec0, 0x40)
 void CDDrawWorkerRegistry::VirtualMethodUnknown54(const char* key) {
     CObject* val = 0;
-    if (m_10.Lookup(key, val)) {
-        m_10.RemoveKey(key);
+    if (m_map.Lookup(key, val)) {
+        m_map.RemoveKey(key);
         ((SeverusValue*)val)->ScalarDtor(1);
     }
 }
 
 // ---------------------------------------------------------------------------
-// Map teardown: iterate all entries in m_10 via GetNextAssoc, destroying each
+// Map teardown: iterate all entries in m_map via GetNextAssoc, destroying each
 // CObject* value via its scalar-deleting destructor (vtbl +0x4 arg 1), then
 // RemoveAll the map. Same pattern as CDDrawWorkerMapSmall::VirtualMethodUnknown1C but
 // without the final m_64 clear (that field does not exist in this class).
@@ -394,37 +394,37 @@ void CDDrawWorkerRegistry::VirtualMethodUnknown54(const char* key) {
 RVA(0x00165210, 0xa2)
 void CDDrawWorkerRegistry::VirtualMethodUnknown58() {
     CObject* val = 0;
-    POSITION pos = (POSITION)(m_10.GetCount() != 0 ? -1 : 0);
+    POSITION pos = (POSITION)(m_map.GetCount() != 0 ? -1 : 0);
     CString key;
     if (*(volatile i32*)&pos != 0) {
         do {
-            m_10.GetNextAssoc(pos, key, val);
+            m_map.GetNextAssoc(pos, key, val);
             if (val != 0) {
                 ((SeverusValue*)val)->ScalarDtor(1);
             }
         } while (pos != 0);
     }
-    m_10.RemoveAll();
+    m_map.RemoveAll();
 }
 
 // ---------------------------------------------------------------------------
 // Map teardown leaf (SEH)
-// Iterates m_10 via GetNextAssoc, destroys each CObject* value via
+// Iterates m_map via GetNextAssoc, destroys each CObject* value via
 // scalar-deleting dtor (vtbl+0x4 arg 1), then RemoveAll.
 RVA(0x001552b0, 0xa2)
 void CDDrawWorkerRegistry::MapTeardown_1552b0() {
     CObject* val = 0;
-    POSITION pos = (POSITION)(m_10.GetCount() != 0 ? -1 : 0);
+    POSITION pos = (POSITION)(m_map.GetCount() != 0 ? -1 : 0);
     CString key;
     if (*(volatile i32*)&pos != 0) {
         do {
-            m_10.GetNextAssoc(pos, key, val);
+            m_map.GetNextAssoc(pos, key, val);
             if (val != 0) {
                 ((SeverusValue*)val)->ScalarDtor(1);
             }
         } while (pos != 0);
     }
-    m_10.RemoveAll();
+    m_map.RemoveAll();
 }
 
 // ---------------------------------------------------------------------------
@@ -455,12 +455,12 @@ i32 CDDrawWorkerRegistry::RemoveKeysEqual_155360(const char* base, const char* s
     i32 n = 0;
     CObject* val = 0;
     CString key;
-    POSITION pos = (POSITION)(m_10.GetCount() != 0 ? -1 : 0);
+    POSITION pos = (POSITION)(m_map.GetCount() != 0 ? -1 : 0);
     if (*(volatile i32*)&pos != 0) {
         do {
-            m_10.GetNextAssoc(pos, key, val);
+            m_map.GetNextAssoc(pos, key, val);
             if (strncmp(key, match, len) == 0) {
-                m_10.RemoveKey(key);
+                m_map.RemoveKey(key);
                 if (val != 0) {
                     ((SeverusValue*)val)->ScalarDtor(1);
                 }
@@ -486,10 +486,10 @@ i32 CDDrawWorkerRegistry::SumSizesEqual_155460(const char* str, i32 a2) {
     i32 total = 0;
     CObject* val = 0;
     CString key;
-    POSITION pos = (POSITION)(m_10.GetCount() != 0 ? -1 : 0);
+    POSITION pos = (POSITION)(m_map.GetCount() != 0 ? -1 : 0);
     if (*(volatile i32*)&pos != 0) {
         do {
-            m_10.GetNextAssoc(pos, key, val);
+            m_map.GetNextAssoc(pos, key, val);
             if (val != 0) {
                 i32 matched;
                 if (str != 0 && *str != 0) {
@@ -518,10 +518,10 @@ i32 CDDrawWorkerRegistry::HasKeyEqual_155550(const char* str) {
     i32 len = strlen(str);
     CObject* val = 0;
     CString key;
-    POSITION pos = (POSITION)(m_10.GetCount() != 0 ? -1 : 0);
+    POSITION pos = (POSITION)(m_map.GetCount() != 0 ? -1 : 0);
     if (*(volatile i32*)&pos != 0) {
         do {
-            m_10.GetNextAssoc(pos, key, val);
+            m_map.GetNextAssoc(pos, key, val);
             if (strncmp(key, str, len) == 0) {
                 return 1;
             }
@@ -544,10 +544,10 @@ i32 CDDrawWorkerRegistry::AnyValueMatches_155630(i32 a1, i32 a2, i32 a3) {
     }
     CObject* val = 0;
     CString key;
-    POSITION pos = (POSITION)(m_10.GetCount() != 0 ? -1 : 0);
+    POSITION pos = (POSITION)(m_map.GetCount() != 0 ? -1 : 0);
     if (*(volatile i32*)&pos != 0) {
         do {
-            m_10.GetNextAssoc(pos, key, val);
+            m_map.GetNextAssoc(pos, key, val);
             if (val != 0 && ((SeverusMapValue*)val)->Probe_1525c0(a1, a2, a3)) {
                 return 1;
             }
@@ -568,11 +568,11 @@ i32 CDDrawWorkerRegistry::AnyValueMatches_155630(i32 a1, i32 a2, i32 a3) {
 RVA(0x00165360, 0xf1)
 CString CDDrawWorkerRegistry::FindKeyOfValue_165360(SeverusMapValue* target) {
     CObject* val = 0;
-    POSITION pos = (POSITION)(m_10.GetCount() != 0 ? -1 : 0);
+    POSITION pos = (POSITION)(m_map.GetCount() != 0 ? -1 : 0);
     CString key;
     if (*(volatile i32*)&pos != 0) {
         do {
-            m_10.GetNextAssoc(pos, key, val);
+            m_map.GetNextAssoc(pos, key, val);
             if (val != 0 && ((SeverusMapValue*)val)->m_10field == target->m_10field) {
                 return key;
             }

@@ -34,12 +34,12 @@ extern u8 g_lutBank0_673ca0[];
 
 RVA(0x001497f0, 0x154)
 i32 CDDrawShadeBlit::Blit(ShadeRect* p0, ShadeSrc* src, ShadeRect* clip, i32 sel, i32 p4) {
-    if (clip->m_00 < 0 || clip->m_08 > m_04 - 1 || clip->m_04 < 0 || clip->m_0c > m_08 - 1) {
+    if (clip->left < 0 || clip->right > m_width - 1 || clip->top < 0 || clip->bottom > m_height - 1) {
         return 0;
     }
 
-    i32 mode = src->m_b0;
-    m_29 = (u8)mode;
+    i32 mode = src->m_blendMode;
+    m_dstBpp = (u8)mode;
     if ((u8)mode == 2) {
         if (g_rDown == 3 && g_gDown == 3 && g_bDown == 3 && g_rUp == 0xa && g_gUp == 5) {
             m_2c = 1;
@@ -48,7 +48,7 @@ i32 CDDrawShadeBlit::Blit(ShadeRect* p0, ShadeSrc* src, ShadeRect* clip, i32 sel
         }
     }
 
-    i32 drawType = m_14;
+    i32 drawType = m_drawType;
     if (drawType == 1) {
         if (sel) {
             BlitMode_149d00(p0, src, clip, p4);
@@ -59,20 +59,20 @@ i32 CDDrawShadeBlit::Blit(ShadeRect* p0, ShadeSrc* src, ShadeRect* clip, i32 sel
     }
 
     if (drawType == 7) {
-        if (m_28 != 1 || (u8)mode != 2) {
+        if (m_srcBpp != 1 || (u8)mode != 2) {
             return 0;
         }
     }
     if (drawType == 0xa || drawType == 0xb) {
-        if (m_28 != 1 || (u8)mode != 2) {
+        if (m_srcBpp != 1 || (u8)mode != 2) {
             return 0;
         }
     }
     if (drawType == 8 || drawType == 0xb) {
         i32 bank = (m_18 >> 3) * 0x800;
-        m_30 = g_lutBank0_673ca0 + bank;
-        m_34 = g_lutBank1_653ca0 + bank;
-        m_38 = g_lutBank2_663ca0 + bank;
+        m_lutBank0 = g_lutBank0_673ca0 + bank;
+        m_lutBank1 = g_lutBank1_653ca0 + bank;
+        m_lutBank2 = g_lutBank2_663ca0 + bank;
     }
 
     if (sel) {
@@ -86,7 +86,7 @@ i32 CDDrawShadeBlit::Blit(ShadeRect* p0, ShadeSrc* src, ShadeRect* clip, i32 sel
 // ===========================================================================
 // CDDrawShadeBlit::BlitMode_149950  (0x149950) - the unselected, non-shaded RLE
 // sprite blitter (draw type 1, !sel). Lock the destination surface, fast-forward
-// the RLE stream past the top clip->m_04 rows, compute the dest row-start for the
+// the RLE stream past the top clip->top rows, compute the dest row-start for the
 // (optionally v-flipped) rect, then run one of three per-row inner loops depending
 // on the horizontal clip: full-width (no clip), right-only, or left(+right). Each
 // loop decodes the high-bit RLE (`b&0x80` = transparent skip of `b-0x80`, else an
@@ -105,101 +105,101 @@ i32 CDDrawShadeBlit::Blit(ShadeRect* p0, ShadeSrc* src, ShadeRect* clip, i32 sel
 // ~31%; the rest is the zero-register-pinning family. Deferred to the final sweep.
 RVA(0x00149950, 0x3a1)
 void CDDrawShadeBlit::BlitMode_149950(ShadeRect* dst, ShadeSrc* surf, ShadeRect* clip, i32 vflip) {
-    i32 pitch = surf->m_20;
+    i32 pitch = surf->m_pitch;
     u8* base = surf->Lock(0);
 
     i32 row = 0, pos = 0, x = 0;
-    // Prepass: skip the top clip->m_04 rows of the RLE stream.
-    if (clip->m_04 > 0) {
+    // Prepass: skip the top clip->top rows of the RLE stream.
+    if (clip->top > 0) {
         do {
-            u32 b = (u8)m_0c[pos];
+            u32 b = (u8)m_rleData[pos];
             if (b & 0x80) {
                 x += b - 0x80;
                 pos++;
             } else {
                 x += b;
-                pos += (i32)b * m_28 + 1;
+                pos += (i32)b * m_srcBpp + 1;
             }
-            if (x >= m_04) {
+            if (x >= m_width) {
                 row++;
                 x = 0;
             }
-        } while (row < clip->m_04);
+        } while (row < clip->top);
     }
 
     // Dest row-start for the (optionally v-flipped) rect.
     if (vflip) {
-        base += dst->m_0c * pitch + dst->m_00 * m_29;
+        base += dst->bottom * pitch + dst->left * m_dstBpp;
         pitch = -pitch;
     } else {
-        base += dst->m_04 * pitch + dst->m_00 * m_29;
+        base += dst->top * pitch + dst->left * m_dstBpp;
     }
 
     x = 0;
-    if (clip->m_00 != 0) {
-        // Left edge clipped (the run that crosses clip->m_00 is partially copied).
-        while (row < clip->m_0c) {
-            if (pos >= m_10) {
+    if (clip->left != 0) {
+        // Left edge clipped (the run that crosses clip->left is partially copied).
+        while (row < clip->bottom) {
+            if (pos >= m_rleLen) {
                 break;
             }
-            if (x < clip->m_00) {
+            if (x < clip->left) {
                 i32 trans = 0;
                 do {
-                    u32 b = (u8)m_0c[pos];
+                    u32 b = (u8)m_rleData[pos];
                     if (b & 0x80) {
                         x += b - 0x80;
                         pos++;
                         trans = 1;
                     } else {
                         x += b;
-                        pos += (i32)b * m_28 + 1;
+                        pos += (i32)b * m_srcBpp + 1;
                         trans = 0;
                     }
-                } while (x < clip->m_00);
-                if (x > clip->m_00 && trans == 0) {
-                    i32 bytes = (x - clip->m_00) * m_28;
-                    memcpy(base, &m_0c[pos] - bytes, bytes);
+                } while (x < clip->left);
+                if (x > clip->left && trans == 0) {
+                    i32 bytes = (x - clip->left) * m_srcBpp;
+                    memcpy(base, &m_rleData[pos] - bytes, bytes);
                 }
             }
-            if (x >= m_04) {
+            if (x >= m_width) {
                 row++;
                 base += pitch;
                 x = 0;
             } else {
-                u32 b = (u8)m_0c[pos];
+                u32 b = (u8)m_rleData[pos];
                 if (b & 0x80) {
                     x += b - 0x80;
                     pos++;
                 } else {
-                    memcpy(base + (x - clip->m_00) * m_29, &m_0c[pos + 1], (i32)b * m_28);
+                    memcpy(base + (x - clip->left) * m_dstBpp, &m_rleData[pos + 1], (i32)b * m_srcBpp);
                     x += b;
-                    pos += (i32)b * m_28 + 1;
+                    pos += (i32)b * m_srcBpp + 1;
                 }
             }
         }
-    } else if (clip->m_08 != m_04 - 1) {
+    } else if (clip->right != m_width - 1) {
         // Right edge clipped.
-        while (row <= clip->m_0c) {
-            if (pos >= m_10) {
+        while (row <= clip->bottom) {
+            if (pos >= m_rleLen) {
                 break;
             }
-            u32 b = (u8)m_0c[pos];
+            u32 b = (u8)m_rleData[pos];
             if (b & 0x80) {
                 x += b - 0x80;
                 pos++;
             } else {
                 i32 bytes;
-                if (x + (i32)b < clip->m_08) {
-                    bytes = (i32)b * m_28;
+                if (x + (i32)b < clip->right) {
+                    bytes = (i32)b * m_srcBpp;
                 } else {
-                    i32 vis = (clip->m_08 - x) * m_28;
+                    i32 vis = (clip->right - x) * m_srcBpp;
                     bytes = vis < 0 ? 0 : vis;
                 }
-                memcpy(base + x * m_29, &m_0c[pos + 1], bytes);
+                memcpy(base + x * m_dstBpp, &m_rleData[pos + 1], bytes);
                 x += b;
-                pos += (i32)b * m_28 + 1;
+                pos += (i32)b * m_srcBpp + 1;
             }
-            if (x >= m_04) {
+            if (x >= m_width) {
                 row++;
                 base += pitch;
                 x = 0;
@@ -207,20 +207,20 @@ void CDDrawShadeBlit::BlitMode_149950(ShadeRect* dst, ShadeSrc* surf, ShadeRect*
         }
     } else {
         // Full-width: no horizontal clipping.
-        while (row <= clip->m_0c) {
-            if (pos >= m_10) {
+        while (row <= clip->bottom) {
+            if (pos >= m_rleLen) {
                 break;
             }
-            u32 b = (u8)m_0c[pos];
+            u32 b = (u8)m_rleData[pos];
             if (b & 0x80) {
                 x += b - 0x80;
                 pos++;
             } else {
-                memcpy(base + x * m_29, &m_0c[pos + 1], (i32)b * m_28);
+                memcpy(base + x * m_dstBpp, &m_rleData[pos + 1], (i32)b * m_srcBpp);
                 x += b;
-                pos += (i32)b * m_28 + 1;
+                pos += (i32)b * m_srcBpp + 1;
             }
-            if (x >= m_04) {
+            if (x >= m_width) {
                 row++;
                 base += pitch;
                 x = 0;
@@ -228,14 +228,14 @@ void CDDrawShadeBlit::BlitMode_149950(ShadeRect* dst, ShadeSrc* surf, ShadeRect*
         }
     }
 
-    surf->m_08->vtbl->Unlock(surf->m_08, 0);
+    surf->m_surface->vtbl->Unlock(surf->m_surface, 0);
 }
 
 // ===========================================================================
 // CDDrawShadeBlit::BlitMode_149d00  (0x149d00) - the SELECTED (horizontally
 // flipped) sibling of BlitMode_149950. Same prepass / v-flip start / three clip
 // loops, but x runs from the sprite width down to 0 and each opaque run is copied
-// in reverse (dest pointer decreasing). The per-pixel size (m_28 == 1 -> byte,
+// in reverse (dest pointer decreasing). The per-pixel size (m_srcBpp == 1 -> byte,
 // else word) selects a manual byte/word reverse-copy loop instead of memcpy.
 // ===========================================================================
 // @early-stop
@@ -247,56 +247,56 @@ void CDDrawShadeBlit::BlitMode_149950(ShadeRect* dst, ShadeSrc* surf, ShadeRect*
 // Deferred to the final sweep.
 RVA(0x00149d00, 0x4f8)
 void CDDrawShadeBlit::BlitMode_149d00(ShadeRect* dst, ShadeSrc* surf, ShadeRect* clip, i32 vflip) {
-    i32 pitch = surf->m_20;
+    i32 pitch = surf->m_pitch;
     u8* base = surf->Lock(0);
 
     i32 row = 0, pos = 0, x = 0;
-    if (clip->m_04 > 0) {
+    if (clip->top > 0) {
         do {
-            u32 b = (u8)m_0c[pos];
+            u32 b = (u8)m_rleData[pos];
             if (b & 0x80) {
                 x += b - 0x80;
                 pos++;
             } else {
                 x += b;
-                pos += (i32)b * m_28 + 1;
+                pos += (i32)b * m_srcBpp + 1;
             }
-            if (x >= m_04) {
+            if (x >= m_width) {
                 row++;
                 x = 0;
             }
-        } while (row < clip->m_04);
+        } while (row < clip->top);
     }
     if (vflip) {
-        base += dst->m_0c * pitch + dst->m_00 * m_29;
+        base += dst->bottom * pitch + dst->left * m_dstBpp;
         pitch = -pitch;
     } else {
-        base += dst->m_04 * pitch + dst->m_00 * m_29;
+        base += dst->top * pitch + dst->left * m_dstBpp;
     }
 
-    x = m_04;
-    if (clip->m_00 != 0) {
-        // Left edge clipped, h-flipped (run crossing clip->m_00 partially copied).
-        while (row <= clip->m_0c) {
-            if (pos >= m_10) {
+    x = m_width;
+    if (clip->left != 0) {
+        // Left edge clipped, h-flipped (run crossing clip->left partially copied).
+        while (row <= clip->bottom) {
+            if (pos >= m_rleLen) {
                 break;
             }
-            u32 b = (u8)m_0c[pos];
+            u32 b = (u8)m_rleData[pos];
             if (b & 0x80) {
                 x += 0x80 - (i32)b;
                 pos++;
             } else {
                 i32 cnt = b;
-                u8* sd = &m_0c[pos + 1];
+                u8* sd = &m_rleData[pos + 1];
                 i32 bytes;
-                if (x - cnt > clip->m_00) {
-                    bytes = cnt * m_28;
+                if (x - cnt > clip->left) {
+                    bytes = cnt * m_srcBpp;
                 } else {
-                    i32 vis = (x - clip->m_00) * m_28;
+                    i32 vis = (x - clip->left) * m_srcBpp;
                     bytes = vis < 0 ? 0 : vis;
                 }
-                u8* dbase = base + (x - clip->m_00) * m_29;
-                if (m_28 == 1) {
+                u8* dbase = base + (x - clip->left) * m_dstBpp;
+                if (m_srcBpp == 1) {
                     u8* d = dbase;
                     for (i32 k = bytes; k > 0; k--) {
                         *d-- = *sd++;
@@ -309,44 +309,44 @@ void CDDrawShadeBlit::BlitMode_149d00(ShadeRect* dst, ShadeSrc* surf, ShadeRect*
                     }
                 }
                 x -= cnt;
-                pos += cnt * m_28 + 1;
+                pos += cnt * m_srcBpp + 1;
             }
             if (x <= 0) {
                 row++;
                 base += pitch;
-                x = m_04;
+                x = m_width;
             }
         }
-    } else if (clip->m_08 != m_04 - 1) {
-        // Right edge clipped, h-flipped: skip runs while x > clip->m_08.
-        while (row < clip->m_0c) {
-            if (pos >= m_10) {
+    } else if (clip->right != m_width - 1) {
+        // Right edge clipped, h-flipped: skip runs while x > clip->right.
+        while (row < clip->bottom) {
+            if (pos >= m_rleLen) {
                 break;
             }
-            if (x > clip->m_08) {
+            if (x > clip->right) {
                 i32 trans = 0;
                 do {
-                    u32 b = (u8)m_0c[pos];
+                    u32 b = (u8)m_rleData[pos];
                     if (b & 0x80) {
                         x += 0x80 - (i32)b;
                         pos++;
                         trans = 1;
                     } else {
                         x -= b;
-                        pos += (i32)b * m_28 + 1;
+                        pos += (i32)b * m_srcBpp + 1;
                         trans = 0;
                     }
-                } while (x > clip->m_08);
+                } while (x > clip->right);
                 if (x >= 0 && trans == 0) {
-                    i32 bytes = (clip->m_08 - x) * m_28;
-                    u8* s = &m_0c[pos] - bytes;
-                    if (m_28 == 1) {
-                        u8* d = base + clip->m_08 * m_29;
+                    i32 bytes = (clip->right - x) * m_srcBpp;
+                    u8* s = &m_rleData[pos] - bytes;
+                    if (m_srcBpp == 1) {
+                        u8* d = base + clip->right * m_dstBpp;
                         for (i32 k = bytes; k > 0; k--) {
                             *d-- = *s++;
                         }
                     } else {
-                        u16* d = (u16*)(base + clip->m_08 * m_29);
+                        u16* d = (u16*)(base + clip->right * m_dstBpp);
                         u16* sw = (u16*)s;
                         for (i32 k = bytes / 2; k > 0; k--) {
                             *d-- = *sw++;
@@ -357,82 +357,82 @@ void CDDrawShadeBlit::BlitMode_149d00(ShadeRect* dst, ShadeSrc* surf, ShadeRect*
             if (x <= 0) {
                 row++;
                 base += pitch;
-                x = m_04;
+                x = m_width;
             } else {
-                u32 b = (u8)m_0c[pos];
+                u32 b = (u8)m_rleData[pos];
                 if (b & 0x80) {
                     x += 0x80 - (i32)b;
                     pos++;
                 } else {
                     i32 cnt = b;
-                    u8* s = &m_0c[pos + 1];
-                    if (m_28 == 1) {
-                        u8* d = base + x * m_29;
+                    u8* s = &m_rleData[pos + 1];
+                    if (m_srcBpp == 1) {
+                        u8* d = base + x * m_dstBpp;
                         for (i32 k = cnt; k > 0; k--) {
                             *d-- = *s++;
                         }
                     } else {
-                        u16* d = (u16*)(base + x * m_29);
+                        u16* d = (u16*)(base + x * m_dstBpp);
                         u16* sw = (u16*)s;
                         for (i32 k = cnt; k > 0; k--) {
                             *d-- = *sw++;
                         }
                     }
                     x -= cnt;
-                    pos += cnt * m_28 + 1;
+                    pos += cnt * m_srcBpp + 1;
                 }
             }
         }
     } else {
-        // Full-width, h-flipped: x: m_04 -> 0, runs copied reversed.
-        while (row <= clip->m_0c) {
-            if (pos >= m_10) {
+        // Full-width, h-flipped: x: m_width -> 0, runs copied reversed.
+        while (row <= clip->bottom) {
+            if (pos >= m_rleLen) {
                 break;
             }
-            u32 b = (u8)m_0c[pos];
+            u32 b = (u8)m_rleData[pos];
             if (b & 0x80) {
                 x += 0x80 - (i32)b;
                 pos++;
             } else {
                 i32 cnt = b;
-                u8* s = &m_0c[pos + 1];
-                if (m_28 == 1) {
-                    u8* d = base + x * m_29;
+                u8* s = &m_rleData[pos + 1];
+                if (m_srcBpp == 1) {
+                    u8* d = base + x * m_dstBpp;
                     for (i32 k = cnt; k > 0; k--) {
                         *d-- = *s++;
                     }
                 } else {
-                    u16* d = (u16*)(base + x * m_29);
+                    u16* d = (u16*)(base + x * m_dstBpp);
                     u16* sw = (u16*)s;
                     for (i32 k = cnt; k > 0; k--) {
                         *d-- = *sw++;
                     }
                 }
                 x -= cnt;
-                pos += cnt * m_28 + 1;
+                pos += cnt * m_srcBpp + 1;
             }
             if (x <= 0) {
                 row++;
                 base += pitch;
-                x = m_04;
+                x = m_width;
             }
         }
     }
 
-    surf->m_08->vtbl->Unlock(surf->m_08, 0);
+    surf->m_surface->vtbl->Unlock(surf->m_surface, 0);
 }
 
 // @early-stop
 // 5363 B software alpha-compositor: deferred to the final sweep (too large to
 // converge in budget; a partial body diverges regalloc and under-counts). It
-// Lock()s the destination DirectDraw surface (src->m_20 via CDirSurf::Lock
+// Lock()s the destination DirectDraw surface (src->m_pitch via CDirSurf::Lock
 // 0x13e6d0, the only call carrying the "C:\Proj\DDrawMgr\DIRSURF.CPP" string),
 // then runs the per-blend-mode RLE blit: it scans the high-bit RLE sprite stream
 // (`test cl,0x80` -> run vs literal), decodes each row into the global scratch
 // line DAT_006bed08, and writes pixels through the 64KB 2D blend tables
-// (LUT[(srcByte<<8)|dstByte], via this->m_30/m_34/m_38 and the [this->m_1c]+8
+// (LUT[(srcByte<<8)|dstByte], via this->m_lutBank0/m_lutBank1/m_lutBank2 and the [this->m_palDescr]+8
 // channel table) into the locked surface. FOUR dense jump tables dispatch on
-// (this->m_14 - 2): 0x54b6f4 / 0x54b710 (8/10 cases) for the 8bpp paths and
+// (this->m_drawType - 2): 0x54b6f4 / 0x54b710 (8/10 cases) for the 8bpp paths and
 // 0x54b738 / 0x54b754 for the 16bpp paths (`mov si,[esi+ebp*2]; or; mov [eax],cx`).
 // DAT_006bf218 is a secondary surface/format descriptor. Identity, switch tags,
 // and the LUT plumbing are confirmed; the per-case blend bodies remain.
@@ -451,13 +451,13 @@ extern ShadeDescr* g_blendDescr; // 0x6bf218
 // BlitLoop (0x14a200) software alpha-compositor: deferred to the final sweep (too
 // large to converge in budget; a partial body diverges regalloc and under-counts).
 // Lock()s the destination surface (surf->Lock, 0x13e6d0), fast-forwards the RLE
-// stream past clip->m_04 rows, then runs the per-blend-mode RLE blit reversed
-// (h-flip). THREE dense jump tables dispatch on (m_14 - 2): 0x54c990, 0x54c9ac,
+// stream past clip->top rows, then runs the per-blend-mode RLE blit reversed
+// (h-flip). THREE dense jump tables dispatch on (m_drawType - 2): 0x54c990, 0x54c9ac,
 // 0x54c9d4 (one per horizontal-clip case = full/right/left). Each decodes the
 // high-bit RLE into the global scratch line DAT_006bed08 (+ the sub-offset
 // DAT_006bed06/07/09 partial-pixel taps), reads the 16bpp blend descriptor
-// DAT_006bf218 (g_blendDescr), and writes through this->m_30/m_34/m_38 +
-// [this->m_1c]+8 channel tables. Calls the row-blend helpers 0x14cfc0 and 0x14d950
+// DAT_006bf218 (g_blendDescr), and writes through this->m_lutBank0/m_lutBank1/m_lutBank2 +
+// [this->m_palDescr]+8 channel tables. Calls the row-blend helpers 0x14cfc0 and 0x14d950
 // per case, and the IDirectDrawSurface Unlock via [vtbl+0x80]. Identity, switch
 // tags, LUT plumbing and the clip control flow are confirmed; the per-case reverse
 // blend bodies remain. See docs/patterns/jumptable-data-overlap.md.
@@ -467,8 +467,8 @@ void CDDrawShadeBlit::BlitMode_14b770(ShadeRect* dst, ShadeSrc* surf, ShadeRect*
 // @early-stop
 // ~56% (logic complete + correct). 1446 B dense-jump-table per-row format/blend
 // converter (one of the four tables the BlitLoop family dispatches). Nine cases
-// on (m_14 - 2) over a single row: 8/16-bit palette LUTs (m_1c->m_8 /
-// g_blendDescr->m_8), RGB565 channel-split blends via m_30/m_34/m_38, and a
+// on (m_drawType - 2) over a single row: 8/16-bit palette LUTs (m_palDescr->m_lut /
+// g_blendDescr->m_lut), RGB565 channel-split blends via m_lutBank0/m_lutBank1/m_lutBank2, and a
 // magic-divide (/255) alpha lerp (case 6). Each case body is within 1-3
 // instructions of retail (per-case insn counts: case 7 matches exactly). Two
 // stacked walls: (1) the jump-table .rdata region scoring artifact
@@ -482,9 +482,9 @@ void CDDrawShadeBlit::BlitMode_14b770(ShadeRect* dst, ShadeSrc* surf, ShadeRect*
 RVA(0x0014c9f0, 0x5a6)
 void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
     i32 i;
-    switch (m_14) {
+    switch (m_drawType) {
         case 2: {
-            u8* pal = m_1c->m_08;
+            u8* pal = m_palDescr->m_lut;
             u8* sc = g_scratch;
             memcpy(g_scratch, dst, count);
             for (i = count; i > 0; i--) {
@@ -493,8 +493,8 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
             break;
         }
         case 7: {
-            u16* pal1 = (u16*)m_1c->m_08;
-            u16* pal2 = (u16*)g_blendDescr->m_08;
+            u16* pal1 = (u16*)m_palDescr->m_lut;
+            u16* pal2 = (u16*)g_blendDescr->m_lut;
             u16* sc = (u16*)g_scratch;
             memcpy(g_scratch, dst, count * 2);
             for (i = count; i > 0; i--) {
@@ -506,7 +506,7 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
             break;
         }
         case 10: {
-            u16* pal = (u16*)m_1c->m_08;
+            u16* pal = (u16*)m_palDescr->m_lut;
             for (i = count; i > 0; i--) {
                 *(u16*)dst = pal[*src++];
                 dst += 2;
@@ -521,9 +521,9 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
                 for (i = count; i > 0; i--) {
                     u32 a = *ss++;
                     u32 b = *sd++;
-                    u32 r = ((u16*)m_38)[(a & 0x1f) + ((b & 0x1f) << 5)];
-                    r |= ((u16*)m_34)[((a >> 5) & 0x1f) + (((b >> 5) & 0x1f) << 5)];
-                    r |= ((u16*)m_30)[(a >> 0xa) + (b & 0xffe0)];
+                    u32 r = ((u16*)m_lutBank2)[(a & 0x1f) + ((b & 0x1f) << 5)];
+                    r |= ((u16*)m_lutBank1)[((a >> 5) & 0x1f) + (((b >> 5) & 0x1f) << 5)];
+                    r |= ((u16*)m_lutBank0)[(a >> 0xa) + (b & 0xffe0)];
                     *(u16*)dst = (u16)r;
                     dst += 2;
                 }
@@ -533,9 +533,9 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
                 for (i = count; i > 0; i--) {
                     u32 a = *sd++;
                     u32 b = *ss++;
-                    u32 r = ((u16*)m_30)[((a >> 6) & 0x1f) + (((b >> 6) & 0x1f) << 5)];
-                    r |= ((u16*)m_34)[((a >> 0xb)) + (b & 0xffe0)];
-                    r |= ((u16*)m_38)[(a & 0x1f) + ((b & 0x1f) << 5)];
+                    u32 r = ((u16*)m_lutBank0)[((a >> 6) & 0x1f) + (((b >> 6) & 0x1f) << 5)];
+                    r |= ((u16*)m_lutBank1)[((a >> 0xb)) + (b & 0xffe0)];
+                    r |= ((u16*)m_lutBank2)[(a & 0x1f) + ((b & 0x1f) << 5)];
                     *(u16*)dst = (u16)r;
                     dst += 2;
                 }
@@ -543,16 +543,16 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
             break;
         }
         case 11: {
-            u16* pal = (u16*)m_1c->m_08;
+            u16* pal = (u16*)m_palDescr->m_lut;
             memcpy(g_scratch, dst, count * 2);
             if (m_2c) {
                 u16* sd = (u16*)g_scratch;
                 for (i = count; i > 0; i--) {
                     u32 a = pal[*src++];
                     u32 b = *sd++;
-                    u32 r = ((u16*)m_34)[((a >> 5) & 0x1f) + (((b >> 5) & 0x1f) << 5)];
-                    r |= ((u16*)m_30)[(a >> 0xa) + (b & 0xffe0)];
-                    r |= ((u16*)m_38)[(a & 0x1f) + ((b & 0x1f) << 5)];
+                    u32 r = ((u16*)m_lutBank1)[((a >> 5) & 0x1f) + (((b >> 5) & 0x1f) << 5)];
+                    r |= ((u16*)m_lutBank0)[(a >> 0xa) + (b & 0xffe0)];
+                    r |= ((u16*)m_lutBank2)[(a & 0x1f) + ((b & 0x1f) << 5)];
                     *(u16*)dst = (u16)r;
                     dst += 2;
                 }
@@ -561,9 +561,9 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
                 for (i = count; i > 0; i--) {
                     u32 a = pal[*src++];
                     u32 b = *sd++;
-                    u32 r = ((u16*)m_30)[((a >> 6) & 0x1f) + (((b >> 6) & 0x1f) << 5)];
-                    r |= ((u16*)m_34)[(a >> 0xb) + (b & 0xffe0)];
-                    r |= ((u16*)m_38)[(a & 0x1f) + ((b & 0x1f) << 5)];
+                    u32 r = ((u16*)m_lutBank0)[((a >> 6) & 0x1f) + (((b >> 6) & 0x1f) << 5)];
+                    r |= ((u16*)m_lutBank1)[(a >> 0xb) + (b & 0xffe0)];
+                    r |= ((u16*)m_lutBank2)[(a & 0x1f) + ((b & 0x1f) << 5)];
                     *(u16*)dst = (u16)r;
                     dst += 2;
                 }
@@ -571,7 +571,7 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
             break;
         }
         case 3: {
-            i32 pal = (i32)m_1c->m_08;
+            i32 pal = (i32)m_palDescr->m_lut;
             u8* sc = g_scratch;
             memcpy(g_scratch, dst, count);
             for (i = count; i > 0; i--) {
@@ -580,7 +580,7 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
             break;
         }
         case 4: {
-            i32 pal = (i32)m_1c->m_08;
+            i32 pal = (i32)m_palDescr->m_lut;
             for (i = count; i > 0; i--) {
                 *dst++ = ((u8*)m_18)[(*src++ << 8) + pal];
             }
@@ -593,7 +593,7 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
             break;
         }
         case 6: {
-            u8* pal = m_1c->m_08;
+            u8* pal = m_palDescr->m_lut;
             u8* sc = g_scratch;
             memcpy(g_scratch, dst, count);
             for (i = count; i > 0; i--) {
@@ -610,11 +610,11 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
 
 // ===========================================================================
 // 0x14cfc0 - ConvertRowFlip: the horizontally-mirrored twin of ConvertRow (the
-// selected-blit row converter). Same dense (m_14-2) jump table over nine blend
+// selected-blit row converter). Same dense (m_drawType-2) jump table over nine blend
 // cases, but the destination run is walked right-to-left and the saved-dest
 // scratch line is read back to front (rep-movs saves the run ending at dst). The
 // 8-bit cases write `*dst--`; the 16-bit RGB565 channel blends decrement by 2.
-// `base` = m_1c ? m_1c->m_08 : src (computed once before the switch).
+// `base` = m_palDescr ? m_palDescr->m_lut : src (computed once before the switch).
 // ===========================================================================
 // @early-stop
 // Same stacked walls as ConvertRow (~56%): (1) the jump-table .rdata scoring
@@ -627,9 +627,9 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
 // scheduling parks it. Cases in retail .text body order (2,7,10,8,11,3,4,5,6).
 RVA(0x0014cfc0, 0x5f1)
 void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
-    u8* base = m_1c ? m_1c->m_08 : src;
+    u8* base = m_palDescr ? m_palDescr->m_lut : src;
     i32 i;
-    switch (m_14) {
+    switch (m_drawType) {
         case 2: {
             memcpy(g_scratch, dst - count + 1, count);
             u8* sc = &g_scratch[count - 1];
@@ -639,8 +639,8 @@ void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
             break;
         }
         case 7: {
-            u16* pal1 = (u16*)m_1c->m_08;
-            u16* pal2 = (u16*)g_blendDescr->m_08;
+            u16* pal1 = (u16*)m_palDescr->m_lut;
+            u16* pal2 = (u16*)g_blendDescr->m_lut;
             memcpy(g_scratch, dst - count * 2 - 2, count * 2);
             u16* sc = (u16*)&g_scratch[count * 2 - 2];
             for (i = count; i > 0; i--) {
@@ -652,7 +652,7 @@ void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
             break;
         }
         case 10: {
-            u16* pal = (u16*)m_1c->m_08;
+            u16* pal = (u16*)m_palDescr->m_lut;
             for (i = count; i > 0; i--) {
                 *(u16*)dst = pal[*src++];
                 dst -= 2;
@@ -667,9 +667,9 @@ void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
                 for (i = count; i > 0; i--) {
                     u32 a = *ss++;
                     u32 d = *sc--;
-                    u32 r = ((u16*)m_34)[((a >> 5) & 0x1f) + (((d >> 5) & 0x1f) << 5)];
-                    r |= ((u16*)m_38)[(a & 0x1f) + ((d & 0x1f) << 5)];
-                    r |= ((u16*)m_30)[(a >> 0xa) + (((d >> 0xa) & 0x1f) << 5)];
+                    u32 r = ((u16*)m_lutBank1)[((a >> 5) & 0x1f) + (((d >> 5) & 0x1f) << 5)];
+                    r |= ((u16*)m_lutBank2)[(a & 0x1f) + ((d & 0x1f) << 5)];
+                    r |= ((u16*)m_lutBank0)[(a >> 0xa) + (((d >> 0xa) & 0x1f) << 5)];
                     *(u16*)dst = (u16)r;
                     dst -= 2;
                 }
@@ -677,9 +677,9 @@ void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
                 for (i = count; i > 0; i--) {
                     u32 a = *ss++;
                     u32 d = *sc--;
-                    u32 r = ((u16*)m_30)[(a >> 0xb) + (((d >> 0xb) & 0x1f) << 5)];
-                    r |= ((u16*)m_38)[(a & 0x1f) + ((d & 0x1f) << 5)];
-                    r |= ((u16*)m_34)[((a >> 6) & 0x1f) + (((d >> 6) & 0x1f) << 5)];
+                    u32 r = ((u16*)m_lutBank0)[(a >> 0xb) + (((d >> 0xb) & 0x1f) << 5)];
+                    r |= ((u16*)m_lutBank2)[(a & 0x1f) + ((d & 0x1f) << 5)];
+                    r |= ((u16*)m_lutBank1)[((a >> 6) & 0x1f) + (((d >> 6) & 0x1f) << 5)];
                     *(u16*)dst = (u16)r;
                     dst -= 2;
                 }
@@ -687,16 +687,16 @@ void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
             break;
         }
         case 11: {
-            u16* pal = (u16*)m_1c->m_08;
+            u16* pal = (u16*)m_palDescr->m_lut;
             memcpy(g_scratch, dst - count * 2 - 2, count * 2);
             u16* sc = (u16*)&g_scratch[count * 2 - 2];
             if (m_2c) {
                 for (i = count; i > 0; i--) {
                     u32 a = pal[*src++];
                     u32 d = *sc--;
-                    u32 r = ((u16*)m_34)[((a >> 5) & 0x1f) + (((d >> 5) & 0x1f) << 5)];
-                    r |= ((u16*)m_38)[(a & 0x1f) + ((d & 0x1f) << 5)];
-                    r |= ((u16*)m_30)[(a >> 0xa) + (((d >> 0xa) & 0x1f) << 5)];
+                    u32 r = ((u16*)m_lutBank1)[((a >> 5) & 0x1f) + (((d >> 5) & 0x1f) << 5)];
+                    r |= ((u16*)m_lutBank2)[(a & 0x1f) + ((d & 0x1f) << 5)];
+                    r |= ((u16*)m_lutBank0)[(a >> 0xa) + (((d >> 0xa) & 0x1f) << 5)];
                     *(u16*)dst = (u16)r;
                     dst -= 2;
                 }
@@ -704,9 +704,9 @@ void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
                 for (i = count; i > 0; i--) {
                     u32 a = pal[*src++];
                     u32 d = *sc--;
-                    u32 r = ((u16*)m_34)[((a >> 6) & 0x1f) + (((d >> 6) & 0x1f) << 5)];
-                    r |= ((u16*)m_38)[(a & 0x1f) + ((d & 0x1f) << 5)];
-                    r |= ((u16*)m_30)[(a >> 0xb) + (((d >> 0xb) & 0x1f) << 5)];
+                    u32 r = ((u16*)m_lutBank1)[((a >> 6) & 0x1f) + (((d >> 6) & 0x1f) << 5)];
+                    r |= ((u16*)m_lutBank2)[(a & 0x1f) + ((d & 0x1f) << 5)];
+                    r |= ((u16*)m_lutBank0)[(a >> 0xb) + (((d >> 0xb) & 0x1f) << 5)];
                     *(u16*)dst = (u16)r;
                     dst -= 2;
                 }
@@ -753,7 +753,7 @@ void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
 // ===========================================================================
 // 0x14d5e0 - ConvertRowDoubleFwd: the forward (left-to-right) twin of
 // ConvertRowDouble. Writes each converted pixel to dst AND dst+rowDelta, walking
-// dst and the saved-dest scratch line UP. Dense (m_14-2) jump table over cases
+// dst and the saved-dest scratch line UP. Dense (m_drawType-2) jump table over cases
 // 2/3/7/8 (4/5/6 fall through). Case 3 is symmetric (both rows get the m_18 LUT of
 // the saved dest; src is unused). __thiscall, ret 0x10.
 // ===========================================================================
@@ -768,9 +768,9 @@ void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
 RVA(0x0014d5e0, 0x345)
 void CDDrawShadeBlit::ConvertRowDoubleFwd(u8* dst, u8* src, i32 count, i32 rowDelta) {
     i32 i;
-    switch (m_14) {
+    switch (m_drawType) {
         case 2: {
-            u8* base = m_1c->m_08;
+            u8* base = m_palDescr->m_lut;
             memcpy(g_scratch, dst, count);
             u8* sc = g_scratch;
             for (i = count; i > 0; i--) {
@@ -783,7 +783,7 @@ void CDDrawShadeBlit::ConvertRowDoubleFwd(u8* dst, u8* src, i32 count, i32 rowDe
             break;
         }
         case 3: {
-            i32 pal = (i32)m_1c->m_08;
+            i32 pal = (i32)m_palDescr->m_lut;
             memcpy(g_scratch, dst, count);
             u8* sc = g_scratch;
             for (i = count; i > 0; i--) {
@@ -795,8 +795,8 @@ void CDDrawShadeBlit::ConvertRowDoubleFwd(u8* dst, u8* src, i32 count, i32 rowDe
             break;
         }
         case 7: {
-            u16* pal1 = (u16*)m_1c->m_08;
-            u16* pal2 = (u16*)g_blendDescr->m_08;
+            u16* pal1 = (u16*)m_palDescr->m_lut;
+            u16* pal2 = (u16*)g_blendDescr->m_lut;
             memcpy(g_scratch, dst, count * 2);
             u16* sc = (u16*)g_scratch;
             i32 rd = rowDelta & ~1;
@@ -819,9 +819,9 @@ void CDDrawShadeBlit::ConvertRowDoubleFwd(u8* dst, u8* src, i32 count, i32 rowDe
                 for (i = count; i > 0; i--) {
                     u32 d = *sc++;
                     u32 a = *ss++;
-                    u32 r = ((u16*)m_30)[(a >> 0xa) + ((d >> 5) & 0xffe0)];
-                    r |= ((u16*)m_34)[((a >> 5) & 0x1f) + (((d >> 5) & 0x1f) << 5)];
-                    r |= ((u16*)m_38)[(a & 0x1f) + ((d & 0x1f) << 5)];
+                    u32 r = ((u16*)m_lutBank0)[(a >> 0xa) + ((d >> 5) & 0xffe0)];
+                    r |= ((u16*)m_lutBank1)[((a >> 5) & 0x1f) + (((d >> 5) & 0x1f) << 5)];
+                    r |= ((u16*)m_lutBank2)[(a & 0x1f) + ((d & 0x1f) << 5)];
                     *(u16*)dst = (u16)r;
                     *(u16*)(dst + rd) = (u16)r;
                     dst += 2;
@@ -830,9 +830,9 @@ void CDDrawShadeBlit::ConvertRowDoubleFwd(u8* dst, u8* src, i32 count, i32 rowDe
                 for (i = count; i > 0; i--) {
                     u32 d = *sc++;
                     u32 a = *ss++;
-                    u32 r = ((u16*)m_30)[(a >> 0xb) + ((d >> 6) & 0xffe0)];
-                    r |= ((u16*)m_34)[((a >> 6) & 0x1f) + (((d >> 6) & 0x1f) << 5)];
-                    r |= ((u16*)m_38)[(a & 0x1f) + ((d & 0x1f) << 5)];
+                    u32 r = ((u16*)m_lutBank0)[(a >> 0xb) + ((d >> 6) & 0xffe0)];
+                    r |= ((u16*)m_lutBank1)[((a >> 6) & 0x1f) + (((d >> 6) & 0x1f) << 5)];
+                    r |= ((u16*)m_lutBank2)[(a & 0x1f) + ((d & 0x1f) << 5)];
                     *(u16*)dst = (u16)r;
                     *(u16*)(dst + rd) = (u16)r;
                     dst += 2;
@@ -845,7 +845,7 @@ void CDDrawShadeBlit::ConvertRowDoubleFwd(u8* dst, u8* src, i32 count, i32 rowDe
 
 // ===========================================================================
 // 0x14d950 - ConvertRowDouble: the vertical-double row converter (writes every
-// converted pixel to dst AND dst+rowDelta). Five (m_14-2) cases (2/3/7/8; 4/5/6
+// converted pixel to dst AND dst+rowDelta). Five (m_drawType-2) cases (2/3/7/8; 4/5/6
 // fall through to the empty default). The byte cases reverse-walk dst with the
 // saved-dest scratch line; the word cases round rowDelta down to even. Case 3 is
 // asymmetric: the dst row gets the m_18 LUT of the saved dest, the dst+rowDelta
@@ -860,9 +860,9 @@ void CDDrawShadeBlit::ConvertRowDoubleFwd(u8* dst, u8* src, i32 count, i32 rowDe
 RVA(0x0014d950, 0x377)
 void CDDrawShadeBlit::ConvertRowDouble(u8* dst, u8* src, i32 count, i32 rowDelta) {
     i32 i;
-    switch (m_14) {
+    switch (m_drawType) {
         case 2: {
-            u8* base = m_1c->m_08;
+            u8* base = m_palDescr->m_lut;
             memcpy(g_scratch, dst - count + 1, count);
             u8* sc = &g_scratch[count - 1];
             for (i = count; i > 0; i--) {
@@ -875,8 +875,8 @@ void CDDrawShadeBlit::ConvertRowDouble(u8* dst, u8* src, i32 count, i32 rowDelta
             break;
         }
         case 3: {
-            i32 pal = (i32)m_1c->m_08;
-            u8* base = m_1c->m_08;
+            i32 pal = (i32)m_palDescr->m_lut;
+            u8* base = m_palDescr->m_lut;
             memcpy(g_scratch, dst - count + 1, count);
             u8* sc = &g_scratch[count - 1];
             for (i = count; i > 0; i--) {
@@ -888,8 +888,8 @@ void CDDrawShadeBlit::ConvertRowDouble(u8* dst, u8* src, i32 count, i32 rowDelta
             break;
         }
         case 7: {
-            u16* pal1 = (u16*)m_1c->m_08;
-            u16* pal2 = (u16*)g_blendDescr->m_08;
+            u16* pal1 = (u16*)m_palDescr->m_lut;
+            u16* pal2 = (u16*)g_blendDescr->m_lut;
             memcpy(g_scratch, dst - count * 2 - 2, count * 2);
             u16* sc = (u16*)&g_scratch[count * 2 - 2];
             i32 rd = rowDelta & ~1;
@@ -912,9 +912,9 @@ void CDDrawShadeBlit::ConvertRowDouble(u8* dst, u8* src, i32 count, i32 rowDelta
                 for (i = count; i > 0; i--) {
                     u32 a = *ss++;
                     u32 d = *sc--;
-                    u32 r = ((u16*)m_30)[(a >> 0xa) + (((d >> 0xa) & 0x1f) << 5)];
-                    r |= ((u16*)m_34)[((a >> 5) & 0x1f) + (((d >> 5) & 0x1f) << 5)];
-                    r |= ((u16*)m_38)[(a & 0x1f) + ((d & 0x1f) << 5)];
+                    u32 r = ((u16*)m_lutBank0)[(a >> 0xa) + (((d >> 0xa) & 0x1f) << 5)];
+                    r |= ((u16*)m_lutBank1)[((a >> 5) & 0x1f) + (((d >> 5) & 0x1f) << 5)];
+                    r |= ((u16*)m_lutBank2)[(a & 0x1f) + ((d & 0x1f) << 5)];
                     *(u16*)dst = (u16)r;
                     *(u16*)(dst + rd) = (u16)r;
                     dst -= 2;
@@ -923,9 +923,9 @@ void CDDrawShadeBlit::ConvertRowDouble(u8* dst, u8* src, i32 count, i32 rowDelta
                 for (i = count; i > 0; i--) {
                     u32 a = *ss++;
                     u32 d = *sc--;
-                    u32 r = ((u16*)m_30)[(a >> 0xb) + (((d >> 0xb) & 0x1f) << 5)];
-                    r |= ((u16*)m_34)[((a >> 6) & 0x1f) + (((d >> 6) & 0x1f) << 5)];
-                    r |= ((u16*)m_38)[(a & 0x1f) + ((d & 0x1f) << 5)];
+                    u32 r = ((u16*)m_lutBank0)[(a >> 0xb) + (((d >> 0xb) & 0x1f) << 5)];
+                    r |= ((u16*)m_lutBank1)[((a >> 6) & 0x1f) + (((d >> 6) & 0x1f) << 5)];
+                    r |= ((u16*)m_lutBank2)[(a & 0x1f) + ((d & 0x1f) << 5)];
                     *(u16*)dst = (u16)r;
                     *(u16*)(dst + rd) = (u16)r;
                     dst -= 2;

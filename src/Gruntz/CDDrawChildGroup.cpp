@@ -92,11 +92,11 @@ public:
     virtual void VirtualMethodUnknown38();               // +0x38
     virtual void Slot3C();                               // +0x3c  (referenced by +0x1c thunk)
 
-    i32 m_04;                  // +0x04  initialized to -1 when inactive
+    i32 m_status;              // +0x04  initialized to -1 when inactive
     char m_pad08[0x0c - 0x08]; // +0x08..0x0b
-    i32 m_0c;                  // +0x0c  parent/root handle
+    i32 m_parent;                  // +0x0c  parent/root handle
     char m_pad10[0x14 - 0x10]; // +0x10..0x13
-    HermionaNode* m_14;        // +0x14  intrusive-list head
+    HermionaNode* m_head;        // +0x14  intrusive-list head
 
     // Engine-label backlog stubs.
     void Stub_1591f0();
@@ -107,10 +107,10 @@ public:
 // Same base readiness predicate used by several Lucius-derived managers.
 RVA(0x001575e0, 0x16)
 i32 CDDrawChildGroup::VirtualMethodUnknown14() {
-    if (m_0c == 0) {
+    if (m_parent == 0) {
         goto fail;
     }
-    if (m_04 != -1) {
+    if (m_status != -1) {
         return 1;
     }
 
@@ -133,7 +133,7 @@ void CDDrawChildGroup::VirtualMethodUnknown1C() {
 // below for details.
 RVA(0x00159c90, 0x23)
 void CDDrawChildGroup::VirtualMethodUnknown28(i32 a1) {
-    HermionaNode* n = m_14;
+    HermionaNode* n = m_head;
     if (n != 0) {
         do {
             HermionaNode* cur = n;
@@ -148,7 +148,7 @@ void CDDrawChildGroup::VirtualMethodUnknown28(i32 a1) {
 // dispatch.
 RVA(0x00159cc0, 0x2a)
 void CDDrawChildGroup::VirtualMethodUnknown2C(i32 a1, i32 a2) {
-    HermionaNode* n = m_14;
+    HermionaNode* n = m_head;
     if (n != 0) {
         do {
             HermionaNode* cur = n;
@@ -180,7 +180,7 @@ void CDDrawChildGroup::VirtualMethodUnknown2C(i32 a1, i32 a2) {
 // dispatch this->+0x2c with (a2,a3).
 RVA(0x00159cf0, 0x42)
 void CDDrawChildGroup::VirtualMethodUnknown30(i32 a1, i32 a2, i32 a3) {
-    HermionaNode* n = m_14;
+    HermionaNode* n = m_head;
     if (n != 0) {
         do {
             n->m_obj->Vfunc34(a1, a2, a3);
@@ -194,7 +194,7 @@ void CDDrawChildGroup::VirtualMethodUnknown30(i32 a1, i32 a2, i32 a3) {
 // As Unknown30 but the loop dispatches child +0x38.
 RVA(0x00159d40, 0x42)
 void CDDrawChildGroup::VirtualMethodUnknown34(i32 a1, i32 a2, i32 a3) {
-    HermionaNode* n = m_14;
+    HermionaNode* n = m_head;
     if (n != 0) {
         do {
             n->m_obj->Vfunc38(a1, a2, a3);
@@ -209,7 +209,7 @@ void CDDrawChildGroup::VirtualMethodUnknown34(i32 a1, i32 a2, i32 a3) {
 // dispatch, no stack args.
 RVA(0x00159d90, 0x1c)
 void CDDrawChildGroup::VirtualMethodUnknown38() {
-    HermionaNode* n = m_14;
+    HermionaNode* n = m_head;
     if (n != 0) {
         do {
             HermionaNode* cur = n;
