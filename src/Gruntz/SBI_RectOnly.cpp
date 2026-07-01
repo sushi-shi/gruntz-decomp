@@ -260,6 +260,8 @@ public:
 class CButeMgr {
 public:
     i32 GetIntDef(char* tag, char* key, i32 def); // 0x1721e0 (__thiscall, ret 0xc)
+    i32 GetInt(char* tag, char* key);             // 0x171af0 (__thiscall, no default)
+    i32 GetSpeed(char* tag, char* key, i32 def);  // 0x171aa0 (__thiscall, 3-arg getter)
 };
 extern CButeMgr g_buteMgr;
 
@@ -267,6 +269,17 @@ extern CButeMgr g_buteMgr;
 // A/B y-coords). Reloc-masked __thiscall.
 struct CSbiMachineDisplay {
     void Update(i32 a, i32 b); // 0x366b (2 args)
+};
+
+// A phase-timer record overlaid on a 24-byte slot (m_groupSlots element / the HUD-
+// rect blocks reused as timers by the rez-machine/conveyor state machines): a phase
+// state + counter, then a 64-bit last-draw-clock and a 64-bit interval. The gate is
+// `(i64)(u32)g_dat645588 - m_last >= m_interval` (the sub/sbb + signed 64-bit compare).
+struct SbiPhaseSlot {
+    i32 m_state;    // +0x00
+    i32 m_counter;  // +0x04
+    i64 m_last;     // +0x08  last draw-clock (64-bit)
+    i64 m_interval; // +0x10  wait interval (64-bit)
 };
 
 // Slot state values (CSbiSlot::m_state) named from how every site reads/writes
@@ -322,7 +335,7 @@ public:
     // Engine-label backlog stubs.
     void Stub_0ffde0();
     i32 winapi_107d00_SetRect();
-    void LoadBattlezItemConfig(i32);
+    i32 LoadBattlezItemConfig(i32);
     i32 LoadMainStatusBarSprite();
     void UpdateStatusBarTabHighlight(i32, i32, i32);
     i32 LoadDestructButtonSprite(i32);
@@ -427,6 +440,10 @@ public:
     void SetStatBar(i32 a, i32 b, i32 val); // call 0x1523 (__thiscall, 3 args)
     void SetGaugeSpan(i32 a, i32 b, i32 c); // call 0x4359 (__thiscall, 3 args)
     void RefreshFallRect();                 // call 0x1cbc (__thiscall, no args)
+    void ConveyorReturn();                  // call 0x26a3 (__thiscall, no args)
+    i32 FallItemTick();                     // call 0x2130 (__thiscall, no args)
+    void ChipNotify27f7();                  // call 0x27f7 (__thiscall, no args)
+    void ChipFinish(i32 col, i32 which, i32 row); // call 0x3968 (__thiscall, 3 args)
 
     // ----- fifth batch: item-config-loader siblings (reloc-masked ILT thunks) -----
     void RefreshHost();         // call 0x2577 (__thiscall, no args)
@@ -447,7 +464,7 @@ public:
     CSbiPtrList m_listD4; // +0xd4  trailing hit-test list (head at +0xd8)
     char m_paddc[0x10c - 0xdc];
     i32 m_activeTab; // +0x10c  active tab index
-    char m_pad110[0x114 - 0x110];
+    i32 m_110;       // +0x110  item-kind tag (LoadBattlezItemConfig sets 5)
     i32 m_statFlags[15];          // +0x114  per-stat toggle flag array
     CSbiRect* m_hitRects[15];     // +0x150  hit-test rect widgets
     CSbiStatObj* m_statObj[15];   // +0x18c  per-stat object array (notified on clear)
@@ -510,7 +527,8 @@ public:
     CSbiSlotPtr* m_hlNotify[12]; // +0x498  3 groups x 4 notify pointers
     i32 m_4c8;                   // +0x4c8  (set to 1 by InitTabRects)
     i32 m_extraNotifyArg0;       // +0x4cc  arg for (*m_extraNotify0)->Notify
-    char m_pad4d0[0x4e0 - 0x4d0];
+    i64 m_beltLast;              // +0x4d0  belt-drop timer last draw-clock (64-bit)
+    i64 m_beltInterval;          // +0x4d8  belt-drop timer interval (64-bit)
     CSbiSlotPtr* m_extraNotify0; // +0x4e0
     char m_pad4e4[0x4e8 - 0x4e4];
     i32 m_4e8;                    // +0x4e8  falling-item active flag
@@ -524,7 +542,10 @@ public:
     i32 m_508;                    // +0x508
     i32 m_50c;                    // +0x50c
     i32 m_510;                    // +0x510
-    char m_pad514[0x524 - 0x514]; // +0x514  streamed rect block
+    i32 m_514;                    // +0x514  streamed rect block (report origin)
+    i32 m_518;                    // +0x518
+    i32 m_51c;                    // +0x51c
+    i32 m_520;                    // +0x520
     i32 m_524;                    // +0x524
     i32 m_528;                    // +0x528  rez-machine snooze/wake active flag
     i32 m_52c;                    // +0x52c  rez-machine wake tick counter
@@ -541,8 +562,8 @@ public:
     char m_pad560[0x570 - 0x560];
     CSbiSlotPtr* m_modeNotify; // +0x570  notify target
     i32 m_modeArmed;           // +0x574
-    i32 m_578;                 // +0x578  (cleared on multiplayer/battlez reset)
-    char m_pad57c[0x614 - 0x57c];
+    i32 m_578;               // +0x578  (cleared on multiplayer/battlez reset)
+    i32 m_battlezPct[38];    // +0x57c  running-sum item-percent table (battlez cfg)
     i32 m_614;      // +0x614  main-status-bar frame gate
     void* m_618;    // +0x618  destruct-button display object
     i32 m_61c[4];   // +0x61c  trailing dword block (cleared on reset)
@@ -631,6 +652,7 @@ struct CSbiActiveObj {
 // The diagnostics logger at g_gameReg+0x38 (a position-string sink).
 struct CSbiLogger {
     void LogPos(char* tag, i32 subtype); // __thiscall, 2 args
+    i32 QueryPos(char* tag, i32 flag);   // 0x1395d0 (__thiscall, 2 args, returns int)
 };
 
 // The CGameReg singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c). Modeled
@@ -2653,11 +2675,87 @@ i32 CSBI_RectOnly::winapi_107d00_SetRect() {
     return 0;
 }
 
-// @confidence: med
-// @source: string-xref
-// @stub
+// 0xfdc00 - reset the item to the multiplayer-item-percent (battlez) layout: place
+// the right-anchored full-height rect from the view width, seed the cursor coords,
+// reset the widgets, then (on a successful placement probe) fill the running-sum
+// item-percent table from the Multiplayer config section (one GetInt per item, each
+// summed with the prior entry), apply the (5,3) rect, and - if the placement query
+// succeeds - refresh. Returns 1 (0 on probe failure).
+// @early-stop
+// ~93.7%: every store/offset/GetInt-sum is byte-exact vs retail. Residual is the
+// zero-register-pinning wall (docs/patterns/zero-register-pinning.md): retail pins
+// the constant 0 in edi + view-x/y in ebx/ebp, while MSVC5 here pins 0 in ebx +
+// view-x in edi - a 1-instr phase shift cascading through every =0 store, the
+// running-sum reload registers, and the trailing `push 0`. Plus the SetRect import
+// (ff 15 -> __imp_SetRect vs PTR_SetRect) + g_gameReg DIR32 naming. Not source-
+// steerable under /O2; deferred to the final sweep.
 RVA(0x000fdc00, 0x5c2)
-void CSBI_RectOnly::LoadBattlezItemConfig(i32) {}
+i32 CSBI_RectOnly::LoadBattlezItemConfig(i32 arg) {
+    m_c = arg;
+    m_4 = 0;
+    *(i32*)this = 0;
+    i32 vx = g_gameReg->m_8c;
+    i32 vy = g_gameReg->m_90;
+    SetRect((LPRECT)((char*)this + 0x10), vx - 0xa0, 0, vx, 0x1e0);
+    m_rect14.m_c = 0;
+    m_24 = vx - 0x45;
+    m_28 = vy - 0x30;
+    m_110 = 5;
+    m_tabCycle = g_644c54;
+    ResetTabWidgets2b44();
+    if (RectProbe() == 0) {
+        return 0;
+    }
+    m_activeSlot = -1;
+    m_360 = -1;
+    m_528 = 0;
+    m_52c = 0;
+    m_550 = 0;
+    m_554 = 0;
+    m_battlezPct[0] = g_buteMgr.GetInt("Multiplayer", "ToolzPercent");
+    m_battlezPct[1] = m_battlezPct[0] + g_buteMgr.GetInt("Multiplayer", "ToyzPercent");
+    m_battlezPct[2] = m_battlezPct[1] + g_buteMgr.GetInt("Multiplayer", "BrickzPercent");
+    m_battlezPct[3] = m_battlezPct[2] + g_buteMgr.GetInt("Multiplayer", "RedBrick");
+    m_battlezPct[4] = m_battlezPct[3] + g_buteMgr.GetInt("Multiplayer", "BlueBrick");
+    m_battlezPct[5] = m_battlezPct[4] + g_buteMgr.GetInt("Multiplayer", "GoldBrick");
+    m_battlezPct[6] = m_battlezPct[5] + g_buteMgr.GetInt("Multiplayer", "BlackBrick");
+    m_battlezPct[7] = m_battlezPct[6] + g_buteMgr.GetInt("Multiplayer", "BabyWalkerz");
+    m_battlezPct[8] = m_battlezPct[7] + g_buteMgr.GetInt("Multiplayer", "BeachBallz");
+    m_battlezPct[9] = m_battlezPct[8] + g_buteMgr.GetInt("Multiplayer", "BigWheelz");
+    m_battlezPct[10] = m_battlezPct[9] + g_buteMgr.GetInt("Multiplayer", "GoKartz");
+    m_battlezPct[11] = m_battlezPct[10] + g_buteMgr.GetInt("Multiplayer", "JackInTheBoxz");
+    m_battlezPct[12] = m_battlezPct[11] + g_buteMgr.GetInt("Multiplayer", "JumpRopez");
+    m_battlezPct[13] = m_battlezPct[12] + g_buteMgr.GetInt("Multiplayer", "PogoStickz");
+    m_battlezPct[14] = m_battlezPct[13] + g_buteMgr.GetInt("Multiplayer", "Scrollz");
+    m_battlezPct[15] = m_battlezPct[14] + g_buteMgr.GetInt("Multiplayer", "SqueakToyz");
+    m_battlezPct[16] = m_battlezPct[15] + g_buteMgr.GetInt("Multiplayer", "Yoyoz");
+    m_battlezPct[17] = m_battlezPct[16] + g_buteMgr.GetInt("Multiplayer", "Bombz");
+    m_battlezPct[18] = m_battlezPct[17] + g_buteMgr.GetInt("Multiplayer", "Boomerangz");
+    m_battlezPct[19] = m_battlezPct[18] + g_buteMgr.GetInt("Multiplayer", "Brickz");
+    m_battlezPct[20] = m_battlezPct[19] + g_buteMgr.GetInt("Multiplayer", "Clubz");
+    m_battlezPct[21] = m_battlezPct[20] + g_buteMgr.GetInt("Multiplayer", "Gauntletz");
+    m_battlezPct[22] = m_battlezPct[21] + g_buteMgr.GetInt("Multiplayer", "Glovez");
+    m_battlezPct[23] = m_battlezPct[22] + g_buteMgr.GetInt("Multiplayer", "Gooberz");
+    m_battlezPct[24] = m_battlezPct[23] + g_buteMgr.GetInt("Multiplayer", "GravityBootz");
+    m_battlezPct[25] = m_battlezPct[24] + g_buteMgr.GetInt("Multiplayer", "GunHatz");
+    m_battlezPct[26] = m_battlezPct[25] + g_buteMgr.GetInt("Multiplayer", "NerfGunz");
+    m_battlezPct[27] = m_battlezPct[26] + g_buteMgr.GetInt("Multiplayer", "Rockz");
+    m_battlezPct[28] = m_battlezPct[27] + g_buteMgr.GetInt("Multiplayer", "Shieldz");
+    m_battlezPct[29] = m_battlezPct[28] + g_buteMgr.GetInt("Multiplayer", "Shovelz");
+    m_battlezPct[30] = m_battlezPct[29] + g_buteMgr.GetInt("Multiplayer", "Springz");
+    m_battlezPct[31] = m_battlezPct[30] + g_buteMgr.GetInt("Multiplayer", "Spyz");
+    m_battlezPct[32] = m_battlezPct[31] + g_buteMgr.GetInt("Multiplayer", "Swordz");
+    m_battlezPct[33] = m_battlezPct[32] + g_buteMgr.GetInt("Multiplayer", "TimeBombz");
+    m_battlezPct[34] = m_battlezPct[33] + g_buteMgr.GetInt("Multiplayer", "Toobz");
+    m_battlezPct[35] = m_battlezPct[34] + g_buteMgr.GetInt("Multiplayer", "Wandz");
+    m_battlezPct[36] = m_battlezPct[35] + g_buteMgr.GetInt("Multiplayer", "Welderz");
+    m_battlezPct[37] = m_battlezPct[36] + g_buteMgr.GetInt("Multiplayer", "Wingz");
+    RectApply(5, 3);
+    if (g_gameReg->m_38->QueryPos("StatusBar Position", 0) == 1) {
+        RefreshA();
+    }
+    return 1;
+}
 
 // The main-bar setup chain hung off the game-manager: m_30->m_4->m_14->m_2c drives a
 // 2-arg rect setter; m_30->m_4->m_14 is also handed to the frame-draw helper.
@@ -2701,6 +2799,10 @@ void __stdcall MainBarDrawFrame(CSbiMainL2* obj, i32 x, i32 y, i32 flag); // 0x1
 // packs the 0x14 frame differently than retail (the statement-schedule wall shared with
 // Setup); the three notify walks + the config lookup are byte-faithful. Residual is that
 // scheduling plus the g_gameReg / GAME_STATUSBAR_MAINBAR DIR32 naming. Deferred.
+// NEIGHBOR TRIGGER: adding the LoadBattlezItemConfig/Rez/Chip bodies to this TU
+// reshuffled this function's MainBarDrawFrame arg-block register allocation (the
+// documented MSVC5 cross-function codegen leak), dropping the byte-match 95.6%->88.6%
+// with NO source change here; the frame-draw args are still byte-content-correct.
 RVA(0x000fe6b0, 0x145)
 i32 CSBI_RectOnly::LoadMainStatusBarSprite() {
     if (*(i32*)this != kSubtypeTag) {
@@ -2932,17 +3034,281 @@ i32 CSBI_RectOnly::LoadGooCookingSprite(i32 idx) {
     return 1;
 }
 
-// @confidence: med
-// @source: decomp-xref
-// @stub
+// 0x105990 - tick the rez-conveyor belt animation across the three group-A phase
+// slots (each a 24-byte phase record: state, counter, 64-bit last-clock, 64-bit
+// interval). Per slot, a state machine (1..7) advances the belt counter on a
+// draw-clock gate, reconfigures the belt/hold delays at phase transitions, and plays
+// the REZBELTRETURN/REZBELTBACKUP cues on the gauge tab. After the switch each slot's
+// notifier is fired with the current counter.
+// @early-stop
+// complete reconstruction; residual is the 64-bit draw-clock gate scheduling +
+// zero/1-register pinning across the 3-slot loop + the shared-global DIR32 naming
+// (g_gameReg/g_dat645588/g_sndEnabled...); documented regalloc/scheduling walls.
 RVA(0x00105990, 0x398)
-void CSBI_RectOnly::UpdateRezConveyorStatusBar() {}
+void CSBI_RectOnly::UpdateRezConveyorStatusBar() {
+    i32 count = 3;
+    CSbiSlotPtr** notify = m_groupNotify;
+    SbiPhaseSlot* ph = (SbiPhaseSlot*)m_groupSlots;
+    do {
+        switch (ph->m_state) {
+        case 1:
+            if (++ph->m_counter > 9) {
+                ph->m_counter = 1;
+            }
+            break;
+        case 2:
+            if ((i64)(u32)g_dat645588 - ph->m_last >= ph->m_interval) {
+                if (++ph->m_counter >= 0x12) {
+                    ph->m_counter = 0x12;
+                    ph->m_state = 7;
+                    ph->m_interval = g_buteMgr.GetIntDef("StatusBar", "ConveyorBeltHoldDelay", 0x1f4);
+                    ph->m_last = (u32)g_dat645588;
+                    ReportLog(m_extraNotifyArg0, m_514 + 0xc, m_518 + 0xc);
+                    ConveyorReturn();
+                }
+            }
+            break;
+        case 3:
+            if ((i64)(u32)g_dat645588 - ph->m_last >= ph->m_interval) {
+                if (--ph->m_counter < 0xa) {
+                    ph->m_state = 0;
+                    ph->m_counter = 1;
+                }
+            }
+            break;
+        case 4:
+            if ((i64)(u32)g_dat645588 - ph->m_last >= ph->m_interval) {
+                if (++ph->m_counter >= 0x18) {
+                    ph->m_counter = 0x18;
+                    ph->m_state = 6;
+                    ph->m_interval = g_buteMgr.GetIntDef("StatusBar", "ConveyorBeltHoldInDelay", 0x1f4);
+                    ph->m_last = (u32)g_dat645588;
+                    m_4c8 = 8;
+                    m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "FallingItemDelay", 0x32);
+                    m_beltLast = (u32)g_dat645588;
+                }
+            }
+            break;
+        case 5:
+            if ((i64)(u32)g_dat645588 - ph->m_last >= ph->m_interval) {
+                if (--ph->m_counter < 0x13) {
+                    ph->m_state = 0;
+                    ph->m_counter = 1;
+                }
+            }
+            break;
+        case 6:
+            if ((i64)(u32)g_dat645588 - ph->m_last >= ph->m_interval) {
+                if (m_activeTab == 3 && *(i32*)this != 2) {
+                    CSbiMusicHost* host = g_gameReg->m_30->m_28;
+                    if (host->m_30 == 0) {
+                        void* found = 0;
+                        ((CSbiLookupMap*)((char*)host + 0x10))->Lookup("GAME_REZBELTRETURN", &found);
+                        if (found && g_61ab20 != 0) {
+                            i32 item = g_61ab24;
+                            CSbiCueRecord* p = (CSbiCueRecord*)found;
+                            if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
+                                p->m_14 = g_6bf3c0;
+                                ((CSbiCuePlayer*)p->m_10)->ConfigureItem(item, 0, 0, 0);
+                            }
+                        }
+                    }
+                }
+                ph->m_state = 5;
+            }
+            break;
+        case 7:
+            if ((i64)(u32)g_dat645588 - ph->m_last >= ph->m_interval) {
+                if (m_activeTab == 3 && *(i32*)this != 2) {
+                    CSbiMusicHost* host = g_gameReg->m_30->m_28;
+                    if (host->m_30 == 0) {
+                        void* found = 0;
+                        ((CSbiLookupMap*)((char*)host + 0x10))->Lookup("GAME_REZBELTBACKUP", &found);
+                        if (found && g_61ab20 != 0) {
+                            i32 item = g_61ab24;
+                            CSbiCueRecord* p = (CSbiCueRecord*)found;
+                            if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
+                                p->m_14 = g_6bf3c0;
+                                ((CSbiCuePlayer*)p->m_10)->ConfigureItem(item, 0, 0, 0);
+                            }
+                        }
+                    }
+                }
+                ph->m_state = 3;
+            }
+            break;
+        }
+        if (*notify) {
+            (*notify)->Notify(ph->m_counter);
+        }
+        notify++;
+        ph++;
+    } while (--count);
+}
 
-// @confidence: med
-// @source: string-xref
-// @stub
+// 0x105e40 - drive the rez-machine (goo-machine) status bar: a two-record phase
+// machine. Record A (+0x318) handles the spew/run phases (states 5/6) throttled on a
+// 64-bit draw-clock gate; record B (+0x330) is a 1..4 switch cycling snooze / turning-
+// wheel / (on phase 0x26) the machine-slot distribution: pick a machine column from
+// the config percent (m_4cc), scan its highlight rows, and either RETRACT (empty slot
+// found) or DROP (full), arming m_groupSlots[col] + playing the cue. Then set the
+// conveyor-belt timer, feed the snooze/lever stat, and refresh the display object.
+// @early-stop
+// complete reconstruction; residual is the 64-bit draw-clock gates + MSVC cross-jump/
+// tail-merge of the shared GetIntDef/SetStatBar sequences + zero-register pinning +
+// shared-global DIR32 naming (g_gameReg/g_dat645588/g_buteMgr/g_sndEnabled). Walls.
 RVA(0x00105e40, 0x62c)
-void CSBI_RectOnly::LoadRezMachineConfig() {}
+void CSBI_RectOnly::LoadRezMachineConfig() {
+    SbiPhaseSlot* pA = (SbiPhaseSlot*)((char*)this + 0x318);
+    SbiPhaseSlot* pB = (SbiPhaseSlot*)((char*)this + 0x330);
+    SbiPhaseSlot* g = (SbiPhaseSlot*)m_groupSlots;
+    if (pA->m_state == 5) {
+        if ((i64)(u32)g_dat645588 - pA->m_last >= pA->m_interval) {
+            if (++pA->m_counter > 0x34) {
+                SetGaugeSpan(0x2b, 5, g_buteMgr.GetIntDef("StatusBar", "RightMachineRunningDelay", 0x7d));
+            } else {
+                pA->m_interval = g_buteMgr.GetIntDef("StatusBar", "RightMachineRunningDelay", 0x7d);
+                pA->m_last = (u32)g_dat645588;
+            }
+        }
+    } else if (pA->m_state == 6) {
+        if ((i64)(u32)g_dat645588 - pA->m_last >= pA->m_interval) {
+            if (++pA->m_counter > 0x44) {
+                SetGaugeSpan(0x2b, 0, 0x7fffffff);
+            } else {
+                pA->m_interval = g_buteMgr.GetIntDef("StatusBar", "RightMachineSpewingDelay", 0x7d);
+                pA->m_last = (u32)g_dat645588;
+            }
+        }
+    }
+
+    switch (pB->m_state) {
+    case 1:
+        if ((i64)(u32)g_dat645588 - pB->m_last >= pB->m_interval) {
+            if (++pB->m_counter > 8) {
+                SetStatBar(1, 1, g_buteMgr.GetIntDef("StatusBar", "LeftMachineSnoozingDelay", 0x64));
+            } else {
+                pB->m_interval = g_buteMgr.GetIntDef("StatusBar", "LeftMachineSnoozingDelay", 0x64);
+                pB->m_last = (u32)g_dat645588;
+            }
+        }
+        break;
+    case 2:
+        if ((i64)(u32)g_dat645588 - pB->m_last >= pB->m_interval) {
+            if (++pB->m_counter > 0x13) {
+                SetStatBar(0x14, 3, g_buteMgr.GetIntDef("StatusBar", "LeftMachineTurningWheelDelay", 0x64));
+                SetGaugeSpan(0x2b, 5, g_buteMgr.GetIntDef("StatusBar", "RightMachineRunningDelay", 0x7d));
+                CSbiSlot* s = m_groupSlots;
+                for (i32 i = 0; i < 3; i++) {
+                    s->m_state = 1;
+                    s->m_value = 1;
+                    s++;
+                }
+                m_4c8 = 2;
+                m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "NextItemDelay", 0x64);
+                m_beltLast = (u32)g_dat645588;
+                if (m_activeTab == 3 && *(i32*)this != 2) {
+                    CSbiMusicHost* host = g_gameReg->m_30->m_28;
+                    if (host->m_30 == 0) {
+                        void* found = 0;
+                        ((CSbiLookupMap*)((char*)host + 0x10))->Lookup("GAME_REZMACHINE", &found);
+                        if (found && g_61ab20 != 0) {
+                            i32 item = g_61ab24;
+                            CSbiCueRecord* p = (CSbiCueRecord*)found;
+                            if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
+                                p->m_14 = g_6bf3c0;
+                                ((CSbiCuePlayer*)p->m_10)->ConfigureItem(item, 0, 0, 0);
+                            }
+                        }
+                    }
+                }
+            } else {
+                pB->m_interval = g_buteMgr.GetIntDef("StatusBar", "LeftMachineWakingDelay", 0x64);
+                pB->m_last = (u32)g_dat645588;
+            }
+        }
+        break;
+    case 3:
+        if ((i64)(u32)g_dat645588 - pB->m_last >= pB->m_interval) {
+            if (++pB->m_counter > 0x1d) {
+                SetStatBar(0x14, 3, g_buteMgr.GetIntDef("StatusBar", "LeftMachineTurningWheelDelay", 0x64));
+            } else {
+                pB->m_interval = g_buteMgr.GetIntDef("StatusBar", "LeftMachineTurningWheelDelay", 0x64);
+                pB->m_last = (u32)g_dat645588;
+            }
+        }
+        break;
+    case 4:
+        if ((i64)(u32)g_dat645588 - pB->m_last >= pB->m_interval) {
+            if (++pB->m_counter == 0x26) {
+                i32 col;
+                i32 which = m_extraNotifyArg0;
+                if (which >= 0x22) {
+                    col = 2;
+                } else {
+                    col = (which >= 0x17) ? 1 : 0;
+                }
+                i32 found = 0;
+                for (i32 r = 3; r >= 0; r--) {
+                    if (m_hlGrid[col * 4 + r].m_state == 0) {
+                        found = 1;
+                        break;
+                    }
+                }
+                if (found) {
+                    g[col].m_state = 4;
+                    g[col].m_counter = 0x13;
+                    if (m_activeTab == 3 && *(i32*)this != 2) {
+                        CSbiMusicHost* host = g_gameReg->m_30->m_28;
+                        if (host->m_30 == 0) {
+                            void* fnd = 0;
+                            ((CSbiLookupMap*)((char*)host + 0x10))->Lookup("GAME_REZBELTRETRACT", &fnd);
+                            if (fnd && g_61ab20 != 0) {
+                                i32 item = g_61ab24;
+                                CSbiCueRecord* p = (CSbiCueRecord*)fnd;
+                                if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
+                                    p->m_14 = g_6bf3c0;
+                                    ((CSbiCuePlayer*)p->m_10)->ConfigureItem(item, 0, 0, 0);
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    g[col].m_state = 2;
+                    g[col].m_counter = 0xa;
+                    if (m_activeTab == 3 && *(i32*)this != 2) {
+                        CSbiMusicHost* host = g_gameReg->m_30->m_28;
+                        if (host->m_30 == 0) {
+                            void* fnd = 0;
+                            ((CSbiLookupMap*)((char*)host + 0x10))->Lookup("GAME_REZBELTDROP", &fnd);
+                            if (fnd && g_61ab20 != 0) {
+                                i32 item = g_61ab24;
+                                CSbiCueRecord* p = (CSbiCueRecord*)fnd;
+                                if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
+                                    p->m_14 = g_6bf3c0;
+                                    ((CSbiCuePlayer*)p->m_10)->ConfigureItem(item, 0, 0, 0);
+                                }
+                            }
+                        }
+                    }
+                }
+                g[0].m_interval = g_buteMgr.GetIntDef("StatusBar", "ConveyorBeltDelay", 0x64);
+                g[0].m_last = (u32)g_dat645588;
+                if (pB->m_counter > 0x2a) {
+                    SetStatBar(1, 1, g_buteMgr.GetIntDef("StatusBar", "LeftMachineSnoozingDelay", 0x64));
+                } else {
+                    pB->m_interval = g_buteMgr.GetIntDef("StatusBar", "LeftMachineLeverDelay", 0x64);
+                    pB->m_last = (u32)g_dat645588;
+                }
+            }
+        }
+        break;
+    }
+
+    if (m_348) {
+        m_348->Update(pB->m_counter, pA->m_counter);
+    }
+}
 
 // 0x106660 - snooze phase of the rez-machine status bar: pull the LeftMachineSnoozing
 // delay from the StatusBar config, feed it to the stat bar (slot 1,1) and reset the
@@ -2959,11 +3325,180 @@ void CSBI_RectOnly::UpdateRezMachineSnoozeStatusBar() {
     m_52c = 0;
 }
 
-// @confidence: med
-// @source: string-xref
-// @stub
+// 0x106bb0 - drive the chip-machine status bar: a 7-phase (m_4c8 = 2..8) switch on a
+// single 64-bit belt timer (+0x4d0). Each phase accumulates the NextItem/FallingItem
+// speed/delay config into the rect-corner running sums (m_514/m_518/m_51c/m_520),
+// advances the phase on span thresholds, plays CHIPLAND/CHIPFALLOUT cues on the gauge
+// tab, and picks a machine column from m_4cc. A rect-write flag and a refresh flag are
+// latched per phase; the tail pushes the composed rect into the falling-item notifier
+// and fires the fall-rect refresh.
+// @early-stop
+// complete reconstruction; residual is the 64-bit belt gates + heavy MSVC cross-jump/
+// tail-merge of the shared GetSpeed/GetIntDef sequences and the two flag-set tails +
+// zero-register pinning + jump-table reloc typing + shared-global DIR32 naming. Walls.
 RVA(0x00106bb0, 0x7bc)
-void CSBI_RectOnly::LoadChipMachineConfig() {}
+void CSBI_RectOnly::LoadChipMachineConfig() {
+    i32 refreshFlag = 0;
+    i32 rectFlag = 0;
+    switch (m_4c8) {
+    case 2:
+        if ((i64)(u32)g_dat645588 - m_beltLast >= m_beltInterval) {
+            m_514 += g_buteMgr.GetSpeed("StatusBar", "NextItemSpeed", 2);
+            m_51c += g_buteMgr.GetSpeed("StatusBar", "NextItemSpeed", 2);
+            m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "NextItemDelay", 0x64);
+            m_beltLast = (u32)g_dat645588;
+        }
+        if (m_514 >= 0x6d) {
+            m_514 = 0x6d;
+            m_51c = 0x84;
+            m_4c8 = 3;
+            m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "NextItemInMachineTime", 0x7d0);
+            m_beltLast = (u32)g_dat645588;
+        }
+        refreshFlag = 1;
+        break;
+    case 3:
+        if ((i64)(u32)g_dat645588 - m_beltLast >= m_beltInterval) {
+            SetGaugeSpan(0x35, 6, g_buteMgr.GetIntDef("StatusBar", "RightMachineSpewingDelay", 0x7d));
+            m_4c8 = 4;
+            m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "NextItemWaitTime", 0x1f4);
+            m_beltLast = (u32)g_dat645588;
+        }
+        break;
+    case 4:
+        if ((i64)(u32)g_dat645588 - m_beltLast >= m_beltInterval) {
+            m_4c8 = 5;
+            if (m_activeTab == 3 && *(i32*)this != 2) {
+                CSbiMusicHost* host = g_gameReg->m_30->m_28;
+                if (host->m_30 == 0) {
+                    void* found = 0;
+                    ((CSbiLookupMap*)((char*)host + 0x10))->Lookup("GAME_CHIPFALLOUT", &found);
+                    if (found && g_61ab20 != 0) {
+                        i32 item = g_61ab24;
+                        CSbiCueRecord* p = (CSbiCueRecord*)found;
+                        if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
+                            p->m_14 = g_6bf3c0;
+                            ((CSbiCuePlayer*)p->m_10)->ConfigureItem(item, 0, 0, 0);
+                        }
+                    }
+                }
+            }
+            m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "FallingItemDelay", 0x32);
+            m_beltLast = (u32)g_dat645588;
+        }
+        break;
+    case 5:
+        if ((i64)(u32)g_dat645588 - m_beltLast >= m_beltInterval) {
+            m_518 += g_buteMgr.GetSpeed("StatusBar", "FallingItemSpeed", 2);
+            m_520 += g_buteMgr.GetSpeed("StatusBar", "FallingItemSpeed", 2);
+            m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "FallingItemDelay", 0x32);
+            m_beltLast = (u32)g_dat645588;
+        }
+        if (m_520 >= 0x11c) {
+            m_520 = 0x11c;
+            m_518 = 0x104;
+            rectFlag = 1;
+            if (m_activeTab == 3 && *(i32*)this != 2) {
+                CSbiMusicHost* host = g_gameReg->m_30->m_28;
+                if (host->m_30 == 0) {
+                    void* found = 0;
+                    ((CSbiLookupMap*)((char*)host + 0x10))->Lookup("GAME_CHIPLAND", &found);
+                    if (found && g_61ab20 != 0) {
+                        i32 item = g_61ab24;
+                        CSbiCueRecord* p = (CSbiCueRecord*)found;
+                        if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
+                            p->m_14 = g_6bf3c0;
+                            ((CSbiCuePlayer*)p->m_10)->ConfigureItem(item, 0, 0, 0);
+                        }
+                    }
+                }
+            }
+            m_4c8 = 7;
+            m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "NextItemDelay", 0x64);
+            m_beltLast = (u32)g_dat645588;
+            if (m_extraNotifyArg0 >= 0x22) {
+                m_524 = 0x6d;
+            } else if (m_extraNotifyArg0 >= 0x17) {
+                m_524 = 0x45;
+            } else {
+                m_524 = 0x1d;
+            }
+        }
+        refreshFlag = 1;
+        break;
+    case 7:
+        if ((i64)(u32)g_dat645588 - m_beltLast >= m_beltInterval) {
+            m_514 -= g_buteMgr.GetSpeed("StatusBar", "NextItemSpeed", 2);
+            m_51c -= g_buteMgr.GetSpeed("StatusBar", "NextItemSpeed", 2);
+            m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "NextItemDelay", 0x64);
+            m_beltLast = (u32)g_dat645588;
+        }
+        if (m_514 <= m_524) {
+            m_514 = m_524;
+            m_51c = m_524 + 0x17;
+            rectFlag = 1;
+            ChipNotify27f7();
+            SetStatBar(0x1e, 4, g_buteMgr.GetIntDef("StatusBar", "LeftMachineLeverDelay", 0x64));
+            m_4c8 = 1;
+        }
+        refreshFlag = 1;
+        break;
+    case 8: {
+        if ((i64)(u32)g_dat645588 - m_beltLast >= m_beltInterval) {
+            m_518 += g_buteMgr.GetSpeed("StatusBar", "FallingItemSpeed", 2);
+            m_520 += g_buteMgr.GetSpeed("StatusBar", "(FallingItemSpeed", 2);
+            m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "FallingItemDelay", 0x32);
+            m_beltLast = (u32)g_dat645588;
+        }
+        i32 col;
+        if (m_extraNotifyArg0 >= 0x22) {
+            col = 2;
+        } else {
+            col = (m_extraNotifyArg0 >= 0x17) ? 1 : 0;
+        }
+        i32 row = 3;
+        while (m_hlGrid[col * 4 + row].m_state == 1) {
+            row--;
+            if (row < 0) {
+                break;
+            }
+        }
+        if (m_518 >= row * 0x20 + 0x13e) {
+            if (m_activeTab == 3 && *(i32*)this != 2) {
+                CSbiMusicHost* host = g_gameReg->m_30->m_28;
+                if (host->m_30 == 0) {
+                    void* found = 0;
+                    ((CSbiLookupMap*)((char*)host + 0x10))->Lookup("GAME_CHIPLAND", &found);
+                    if (found && g_61ab20 != 0) {
+                        i32 item = g_61ab24;
+                        CSbiCueRecord* p = (CSbiCueRecord*)found;
+                        if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
+                            p->m_14 = g_6bf3c0;
+                            ((CSbiCuePlayer*)p->m_10)->ConfigureItem(item, 0, 0, 0);
+                        }
+                    }
+                }
+            }
+            ChipFinish(col, m_extraNotifyArg0, row);
+            ConveyorReturn();
+        }
+        refreshFlag = 1;
+        break;
+    }
+    }
+
+    if (m_extraNotify0) {
+        if (rectFlag) {
+            m_extraNotify0->m_rect14[0] = m_514 + m_10;
+            m_extraNotify0->m_rect14[1] = m_518 + m_rect14.m_0;
+            m_extraNotify0->m_rect14[2] = m_51c + m_10;
+            m_extraNotify0->m_rect14[3] = m_520 + m_rect14.m_0;
+        }
+        if (refreshFlag) {
+            RefreshFallRect();
+        }
+    }
+}
 
 // 0x107590 - configure the falling-item HUD gauge from a center point (a2,a3). Latch
 // the notify arg + active flag, pull the FallingItemDelay config, seed the rect base
