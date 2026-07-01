@@ -199,11 +199,12 @@ directsoundmgr	39	29
 discoveredarray	1	0
 discoveredeh	2	2
 discoveredsmall	9	9
+drawdebugstats	1	0
 dsoundvoice	2	1
 ehfunclets	6	6
 engine_attributed	7	0
 engine_discovered	19	8
-engine_label_stubs	292	121
+engine_label_stubs	291	121
 engine_unmatched_lib	11	0
 engstr	3	1
 eyecandytypetags	4	4
@@ -1715,6 +1716,7 @@ discoveredsmall	?FreeBuffers@ClassUnknown_39@@QAEXXZ	100.0000	100.0000	1	a83982a
 discoveredsmall	?KeyPrefixBits_16e480@@YAHPBD0@Z	100.0000	100.0000	1	0549328c6170	0x16e480
 discoveredsmall	?Push@ClassUnknown_28@@QAEXPAD@Z	100.0000	100.0000	1	c3ca0ad59886	0x311b0
 discoveredsmall	?Teardown@ClassUnknown_49@@QAEXXZ	100.0000	100.0000	1	2ac97e908cb0	0x1397a0
+drawdebugstats	?DrawDebugStats@CDbgView@@QAEXXZ	99.5525	99.5525	1	f3e25a6f9dd0	0xcf770
 dsoundvoice	?Stop_1370d0@DSoundVoice@@QAEHXZ	100.0000	100.0000	2	e12755dbeadb	0x1370d0
 dsoundvoice	?Tick_137060@DSoundVoice@@QAEHH@Z	95.6977	95.6977	2	acff89983e5f	0x137060
 ehfunclets	?Funclet_11ec46@@YAXXZ	100.0000	100.0000	1	4eeac03a2744	0x11ec46
@@ -1813,7 +1815,6 @@ engine_label_stubs	?Copy@RectHost_115b30@ApiCallerStubs@@QAEPAU12@PBUtagRECT@@@Z
 engine_label_stubs	?Dispatch@Dispatcher_0cfbd0@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:e1535087fe94	0xcfbd0
 engine_label_stubs	?DrawBattleStats@EngineLabelBacklog@@YAXXZ	0.2445	0.2445	1	cpp:45e65336d4b5	0x1ed30
 engine_label_stubs	?DrawCount@DrawHost_164380@ApiCallerStubs@@QAEXPAUtagRECT@@H@Z	80.6964	80.6964	1	cpp:6bf52155264d	0x164380
-engine_label_stubs	?DrawDebugStats@EngineLabelBacklog@@YAXXZ	0.3390	0.3390	1	cpp:45e65336d4b5	0xcf770
 engine_label_stubs	?DrawLabel@DrawHost2_164420@ApiCallerStubs@@QAEXPAUtagRECT@@PAD@Z	95.0000	95.0000	1	cpp:6bf52155264d	0x164420
 engine_label_stubs	?DrawSaveGameMenu@EngineLabelBacklog@@YAXXZ	0.3436	0.3436	1	cpp:45e65336d4b5	0xe3f40
 engine_label_stubs	?FindNearest@Grid_77df0@ApiCallerStubs@@QAEPAUCell_77df0@2@PAUWorld_77df0@2@@Z	75.2816	75.2816	1	cpp:e832e75e29a5	0x77df0

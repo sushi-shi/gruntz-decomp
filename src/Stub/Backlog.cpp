@@ -153,6 +153,7 @@ namespace EngineLabelBacklog {
     void UpdateBootyWalkingGruntz();
     void BuildBootyPerfectAnimation();
     void __stdcall BuildPowerupIconKeys(PowerupKeyRegistry* reg, i32 key);
+    // DrawDebugStats graduated to src/Gruntz/DrawDebugStats.cpp.
     void DrawBattleStats();
     i32 Stub_01fd70(char* szPath);
     i32 LoadCustomWorldInfo(HWND hDlg);
@@ -169,7 +170,6 @@ namespace EngineLabelBacklog {
     void LoadAreaLevelTable();
     void LoadRollingBallHazardSprites();
     void __stdcall LoadLevelByMode(i32, i32);
-    void DrawDebugStats();
     void ValidateLevelTiles();
     void __stdcall BuildAssetNamespacePrefixes(i32, i32, i32, i32);
     void DrawSaveGameMenu();
@@ -198,9 +198,35 @@ namespace EngineLabelBacklog {
 // CreateGameObjectByName (0xa3b0) graduated to src/Gruntz/GameObjectFactory.cpp as
 // RegisterGameObjectTypes (the uniform 73-entry object-type factory registrar).
 
-// @confidence: low
+// LoadBootyCheatState (0x18830) - the STATEZ_BOOTY cheat-screen asset loader,
+// __thiscall(this; a1,a2,a3) (ret 0xc), a /GX routine (5 CString locals). IDENTITY
+// + STRUCTURE fully recovered (dump_target + string_xref + functions.csv); DEFERRED
+// to the final sweep as a leaf-first redo - the first-run cheat-build loop pins
+// `this` (esi) to a spill slot and juggles 5 CString locals through Format/op=/
+// inline-strcpy in a way whose exact stack coloring is not hand-reconstructable
+// without diverging the whole /GX frame (the >512B rule). Structure:
+//   - Chains the base loader FUN_000043a9(a1,a2,a3) (reloc-masked); bail 0 on fail.
+//   - First run only (guarded by g_62af10==0): build the 32-entry cheat table at
+//     g_cheatTable (0x629f50, stride 0xa0, until 0x62aef0). Per entry i:
+//       A = i/3 + 1;  C = i%3 + 1;
+//       CString key;  FormatStr(&key,  "A%dC%d", A, C);         // FUN_001b2cf5
+//       int id = g_buteMgr.GetIntDef("BootyCheatz", key, 1);    // 0x171aa0
+//       CString sect; FormatStr(&sect, "Cheat%i", id);          // reuses the slot
+//       CString text = *g_buteMgr.GetStringDef(sect, "Text", &empty);  // 0x173180 + op= 0x1b9e25
+//       CString desc = *g_buteMgr.GetStringDef(sect, "Desc", &empty);
+//       strcpy(entry-0x20, text);  strcpy(entry+0, desc);       // inline rep movs
+//     then g_62af10 = 1; destruct the 5 CStrings.
+//   - Common path (both runs): this->m_4->FUN_34ef(0); register "STATEZ_BOOTY" via
+//     this->m_8->ResolvePath (0x13c030 -> m_2c), "GAME" (-> m_34), "GRUNTZ"
+//     (-> m_30); this->m_c->m_8->Method_159ef0(); m_2c->FindSub("SOUNDZ")
+//     (0x13a230) then install "BOOTY"/"_" via m_c->m_28->ScanTree (0x157ee0);
+//     m_30->ResolvePath("SOUNDZ_WANDGRUNT") (0x13bae0) then install
+//     "GRUNTZ_WANDGRUNT"/"_"; m_2c->FindSub("IMAGEZ") then install "BOOTY"/"_" via
+//     m_c->m_10 vtable slot +0x48; ShowCursor(FALSE) loop; PumpMessages(0x100,0x40)
+//     (0x13d4e0); this->m_1b8=0; chain FUN_11c2/39c7/3b8e/1681/2d83 (bail 0 on any
+//     fail); stamp m_1c8=0x21, m_1cc=0, m_1c0=g_645588, m_1c4=0; return 1.
+// @confidence: high
 // @source: string-xref
-// @proximity: CBattlezDlgCustom@-0x800 | CBootyState@+0x460 (boundary - pick one)
 // @stub
 RVA(0x00018830, 0x380)
 void __stdcall EngineLabelBacklog::LoadBootyCheatState(i32, i32, i32) {}
@@ -1416,12 +1442,9 @@ i32 StatusBarItem::vfunc_16(i32 msg, i32 x, i32 y) {
     return 1;
 }
 
-// @confidence: low
-// @source: decomp-xref
-// @proximity: CGameLevel@-0x960 | CPlay@+0x9b0 (boundary - pick one)
-// @stub
-RVA(0x000cf770, 0x35e)
-void EngineLabelBacklog::DrawDebugStats() {}
+// DrawDebugStats (0xcf770) graduated to src/Gruntz/DrawDebugStats.cpp (eh unit)
+// as CDbgView::DrawDebugStats - the debug-overlay text renderer (Fps/Objs/Pos/
+// Timing/elapsed/net-stats); its FormatElapsed CString temp gives it the /GX frame.
 
 // ValidateLevelTiles (0x000d2dd0, 7652 B) is reconstructed (complete body,
 // @early-stop on the megafunction regalloc wall) in the eh unit
