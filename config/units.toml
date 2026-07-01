@@ -406,6 +406,11 @@ source = "src/Gruntz/AssetNamespacePrefixes.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "rockbreakparticles"
+source = "src/Gruntz/RockBreakParticles.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "cplayplanescan"
 source = "src/Gruntz/CPlayPlaneScan.cpp"
 flags = "eh"

@@ -208,7 +208,7 @@ dsoundvoice	2	1
 ehfunclets	6	6
 engine_attributed	7	0
 engine_discovered	16	8
-engine_label_stubs	278	123
+engine_label_stubs	277	123
 engine_unmatched_lib	11	0
 engstr	3	1
 eyecandytypetags	4	4
@@ -387,6 +387,7 @@ rezfile	6	6
 rezlist	2	2
 rezmgr	15	10
 rezutil	1	1
+rockbreakparticles	1	0
 rollingball	6	3
 savegame	22	16
 savescreenshot	1	0
@@ -1809,7 +1810,6 @@ engine_label_stubs	?Begin@ActionHost_0d7220@ApiCallerStubs@@QAEHH@Z	100.0000	100
 engine_label_stubs	?Build@GeoHost_161e80@ApiCallerStubs@@QAEXPAUtagRECT@@@Z	90.4318	90.4318	1	cpp:e1535087fe94	0x161e80
 engine_label_stubs	?Build@PalBuilder_176df0@ApiCallerStubs@@QAEHPAUtagPALETTEENTRY@@H@Z	62.0750	62.0750	1	cpp:6bf52155264d	0x176df0
 engine_label_stubs	?BuildPowerupIconKeys@EngineLabelBacklog@@YGXPAVPowerupKeyRegistry@@H@Z	53.5443	53.5443	1	cpp:e8a4cb0d5b2a	0x1e720
-engine_label_stubs	?BuildRockBreakParticles@EngineLabelBacklog@@YGXHHHH@Z	0.3344	0.3344	1	cpp:6bf52155264d	0x7b440
 engine_label_stubs	?BuildSmall@CStatzTabSmall@@QAEHHHHHHPAUCStatzRect60@@HHH@Z	62.3936	62.3936	1	cpp:aab6e5a6e511	0x112a50
 engine_label_stubs	?BuildWorldLevelPath@CPlay@@QAEXH@Z	0.4484	0.4484	1	cpp:590eddff1627	0xdbc80
 engine_label_stubs	?CButeMgrHelper_FuncA@@YAXXZ	100.0000	100.0000	1	cpp:7e7ce1192d49	0x169be0
@@ -1827,7 +1827,7 @@ engine_label_stubs	?Copy@RectHost_115b30@ApiCallerStubs@@QAEPAU12@PBUtagRECT@@@Z
 engine_label_stubs	?Dispatch@Dispatcher_0cfbd0@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:e1535087fe94	0xcfbd0
 engine_label_stubs	?DrawCount@DrawHost_164380@ApiCallerStubs@@QAEXPAUtagRECT@@H@Z	80.6964	80.6964	1	cpp:6bf52155264d	0x164380
 engine_label_stubs	?DrawLabel@DrawHost2_164420@ApiCallerStubs@@QAEXPAUtagRECT@@PAD@Z	95.0000	95.0000	1	cpp:6bf52155264d	0x164420
-engine_label_stubs	?DrawSaveGameMenu@EngineLabelBacklog@@YAXXZ	0.3436	0.3436	1	cpp:45e65336d4b5	0xe3f40
+engine_label_stubs	?DrawSaveGameMenu@EngineLabelBacklog@@YAHPAXHPAUCSaveGameMenu@@@Z	62.5704	62.5704	1	cpp:ee0ad170d8b2	0xe3f40
 engine_label_stubs	?FindNearest@Grid_77df0@ApiCallerStubs@@QAEPAUCell_77df0@2@PAUWorld_77df0@2@@Z	75.2621	75.2621	1	cpp:e832e75e29a5	0x77df0
 engine_label_stubs	?Flip@CoinHost_0da200@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:e1535087fe94	0xda200
 engine_label_stubs	?FormatGameInfoString@CGameInfo@@QAEHXZ	100.0000	100.0000	1	cpp:7e7ce1192d49	0x1183b0
@@ -1847,7 +1847,7 @@ engine_label_stubs	?Key@CmdHost_014720@ApiCallerStubs@@QAEHHH@Z	100.0000	100.000
 engine_label_stubs	?Key@CmdHost_039440@ApiCallerStubs@@QAEHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x39440
 engine_label_stubs	?Key@CmdHost_0953f0@ApiCallerStubs@@QAEHHH@Z	100.0000	100.0000	1	cpp:e1535087fe94	0x953f0
 engine_label_stubs	?Load@PalLoad_1479e0@ApiCallerStubs@@QAEHHPADH@Z	89.7286	89.7286	1	cpp:6bf52155264d	0x1479e0
-engine_label_stubs	?Load@ResLoad_144270@ApiCallerStubs@@QAEHHPADH@Z	86.9310	86.9310	1	cpp:6bf52155264d	0x144270
+engine_label_stubs	?Load@ResLoad_144270@ApiCallerStubs@@QAEHHPADH@Z	86.9885	86.9885	1	cpp:6bf52155264d	0x144270
 engine_label_stubs	?Load@StrHost_0b7ec0@ApiCallerStubs@@QAEXHH@Z	100.0000	100.0000	1	cpp:e1535087fe94	0xb7ec0
 engine_label_stubs	?LoadAttributes@CBrickz@@QAEXHH@Z	0.1490	0.1490	1	cpp:6bf52155264d	0x810f0
 engine_label_stubs	?LoadAttributes@CDroppedObjectShadow@@QAEXXZ	0.4444	0.4444	1	cpp:45e65336d4b5	0xc62e0
@@ -3181,6 +3181,7 @@ rezmgr	?Read@CRezItm@@QAEHHHIPAX@Z	100.0000	100.0000	2	317d2c857ebf	0x13c600
 rezmgr	?Stub_13b0c0@CRezDir@@QAEXXZ	0.2139	0.2139	2	0caf2154eccf	0x13b0c0
 rezmgr	?Write@CRezItm@@QAEHHHIPAX@Z	100.0000	100.0000	2	e4e65b9964df	0x13c6c0
 rezutil	_RezFree	100.0000	100.0000	1	fe93430adc1a	0x1b9b82
+rockbreakparticles	?BuildRockBreakParticles@CRockBreakMgr@@QAEHHHHH@Z	81.0936	81.0936	1	227c993e5587	0x7b440
 rollingball	??0CRollingBall@@QAE@PAUCGameObject@@@Z	78.6804	78.6804	1	38dbcbe0cf1f	0xaf820
 rollingball	??1CRollingBall@@UAE@XZ	100.0000	100.0000	1	9f5ff559b5b3	0x12f80
 rollingball	?InitActReg@CRollingBall@@SAXXZ	100.0000	100.0000	1	683351f53157	0xafd60
