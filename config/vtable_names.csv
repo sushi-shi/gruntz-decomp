@@ -209,3 +209,4 @@ name,rva,size
 ??_7streambuf@@6B@,0x1f042c,0x2c
 ??_7CMemFile@@6B@,0x1f0964,0x70
 ??_7CStringArray@@6B@,0x1f09ec,0x14
+??_7CAniElementObj@@6B@,0x1efba8,0x14

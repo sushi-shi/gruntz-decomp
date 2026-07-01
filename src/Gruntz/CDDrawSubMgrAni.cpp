@@ -47,61 +47,46 @@ void* operator new(u32 n);
 extern "C" i32 sprintf(char* buf, const char* fmt, ...);
 
 // The element's two construction vtables (reloc-masked DIR32 data): the CObject
-// base dtor vtable stamped before the base ctor, then the element primary vtable.
-DATA(0x001e8cb4)
-extern void* g_remusBaseDtorVtbl; // 0x5e8cb4 - the CObject base dtor vtable
-DATA(0x001efba8)
-extern void* g_aniElemVtbl; // 0x5efba8 - the 0x28-byte element primary vftable
-
-// The element's CObject grand-base (+0x00..+0x1b): vptr at +0, a header word at
-// +4, and the CObject base subobject at +8 whose (potentially throwing) init is
-// 0x1b55e9 (a __thiscall on element+0x8). Its ctor stamps the base-dtor vtable
-// then runs that init; being polymorphic, the derived ctor re-stamps +0 with the
-// primary vtable. A real ctor here drives the factory's `new CAniElementObj`
-// ctor-in-flight /GX frame (the half-constructed-element cleanup).
+// EXPERIMENT (aniElem realization): model the element as a REAL polymorphic
+// hierarchy so cl auto-emits ??_7CAniElementBase (masks 0x5e8cb4) + ??_7CAniElementObj
+// (masks 0x5efba8) and stamps the vptr implicitly (base then derived, vptr-first).
+// The element's CObject grand-base (+0x00..+0x1b): vptr at +0, a header word at +4,
+// and the CObject base subobject at +8 whose (potentially throwing) init is 0x1b55e9
+// (a __thiscall on element+0x8).
 struct CAniElementBase {
+    virtual void Slot00_1bef01();  // [0] 0x1bef01
+    virtual ~CAniElementBase();    // [1] scalar-deleting dtor slot
+    virtual void Slot08_0028ec();  // [2] 0x0028ec
+    virtual void Slot0C_00106e();  // [3] 0x00106e
+    virtual void Slot10_004034();  // [4] 0x004034
+    void InitBase_1b55e9();        // 0x1b55e9
+
     CAniElementBase() {
-        *(void**)this = &g_remusBaseDtorVtbl;
         ((CAniElementBase*)((char*)this + 0x8))->InitBase_1b55e9();
     }
-    void InitBase_1b55e9(); // 0x1b55e9
 
-    void* m_vptr;             // +0x00
     i32 m_04;                 // +0x04 = 0 (set by the derived ctor)
     char m_pad08[0x1c - 0x8]; // +0x08..+0x1b  CObject base subobject (0x14 bytes)
 };
+// Empty body -> folds as just the grand-base re-stamp at teardown tail.
+inline CAniElementBase::~CAniElementBase() {}
 
 // The 0x28-byte animation element (ClassUnknown_38; primary vftable @0x5efba8).
-// Its ctor stamps the element primary vtable over the base-dtor vtable the base
-// ctor left, then zeroes +0x04 and +0x1c. Configure (0x1655c0) reads its arg2's
-// tag via RemusParseSource and, on a match, links a record; the failure path
-// dispatches the scalar-deleting dtor (vtable slot+4). The vtable contents are not
-// modeled here, so the manual stamp is the transitional workaround; a declared-only
-// ~ keeps the new-expression's cleanup edge live.
+// Overrides the dtor slot (0x152e10). Configure (0x1655c0) reads its arg2's tag via
+// RemusParseSource and, on a match, links a record; the failure path deletes it via
+// the virtual scalar-deleting dtor (vtable slot+4).
 struct CAniElementObj : public CAniElementBase {
     CAniElementObj() {
-        *(void**)this = &g_aniElemVtbl;
         m_04 = 0;
         m_1c = 0;
     }
-    ~CAniElementObj(); // declared-only -> the new's failure cleanup edge
+    virtual ~CAniElementObj(); // overrides [1] (0x152e10), declared-only
 
     i32 Configure_1655c0(void* sub, void* entry, i32 flag);  // 0x1655c0 __thiscall
     i32 Configure2_165620(void* sub, void* entry, i32 flag); // 0x165620 variant
 
     i32 m_1c; // +0x1c = 0
 }; // size = 0x28
-
-// A polymorphic VIEW of the element used only for the failure-path scalar-deleting
-// dtor dispatch (vtbl slot+4): casting el to this lowers `el->ScalarDtor(1)` to the
-// retail `mov eax,[el]; mov ecx,el; call [eax+4]` __thiscall form. Declared-only
-// (never defined), so no ??_7 is emitted - the element keeps its manual stamp. Same
-// idiom as the sibling TUs' CCatalogNode / LeafScanValue.
-class CAniElemView {
-public:
-    virtual void Slot00();            // +0x00
-    virtual i32 ScalarDtor(i32 flag); // +0x04  scalar-deleting destructor
-};
 
 // The CSymTab entry's type-tag reader (RemusParseSource @0x139800, __thiscall on
 // the entry node; the 'ANI'==0x414e49 gate). Modeled as a layout-compatible view
@@ -151,8 +136,8 @@ CAniElementObj* CDDrawSubMgrAni::CreateAniEntry_1528d0(const char* key, void* en
         return 0;
     }
     if (el->Configure_1655c0(AniMgrSubObject(m_0c), entry, 0) == 0) {
-        // Foreign-vtable scalar-deleting dtor dispatch (mov eax,[el]; call [eax+4]).
-        ((CAniElemView*)el)->ScalarDtor(1);
+        // Virtual scalar-deleting dtor dispatch (mov eax,[el]; call [eax+4]).
+        delete el;
         return 0;
     }
     m_10[key] = (CObject*)el;
@@ -178,8 +163,8 @@ CAniElementObj* CDDrawSubMgrAni::CreateAniEntry2_1529b0(const char* key, void* e
         return 0;
     }
     if (el->Configure2_165620(AniMgrSubObject(m_0c), entry, 0) == 0) {
-        // Foreign-vtable scalar-deleting dtor dispatch (mov eax,[el]; call [eax+4]).
-        ((CAniElemView*)el)->ScalarDtor(1);
+        // Virtual scalar-deleting dtor dispatch (mov eax,[el]; call [eax+4]).
+        delete el;
         return 0;
     }
     m_10[key] = (CObject*)el;
@@ -235,7 +220,6 @@ i32 CDDrawSubMgrAni::ScanTree_152ad0(CSymTab* tree, const char* prefix, const ch
 }
 
 // class-metadata sweep: size annotations (SIZE_UNKNOWN = retail size TBD).
-SIZE_UNKNOWN(CAniElemView);
 SIZE_UNKNOWN(CAniElementBase);
 SIZE_UNKNOWN(CAniElementObj);
 SIZE_UNKNOWN(CSymTabTag);

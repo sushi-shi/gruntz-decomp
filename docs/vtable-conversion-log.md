@@ -66,3 +66,44 @@ non-ctor install site / already-real).
   / manager TUs are actually the built sub-object's vtable, not the manager's.
 - **`0x5e8cb4` = `??_7CObject@@6B@`** (the recurring "remus/severus base dtor
   vtable"); always foreign.
+
+## Batch 2 (CDDraw / engine WORKER family) — 2026-07-01
+
+Net effect: **1 new neutral conversion (aniElem, fully realized)**, 1 already-real
+(albus, prior), 6 KEPT (all inline-manual vptr-middle / two-vptr / CObArray-base).
+exact/fuzzy delta: **0** (`gruntz build` "no regressions vs baseline"). The key new
+finding: a worker vtable realizes **only when the object is built via a real
+`new Class` with a vptr-FIRST ctor** — the whole family is otherwise built by INLINE
+manual `operator new + field init + *(void**)w=&g_*Vtbl` in a factory, where the vptr
+stamp lands vptr-MIDDLE and cl's implicit vptr-first ctor cannot reproduce it.
+
+| Class / stamp | vtable RVA (VA) | Outcome | %-effect | Reason |
+| :-- | :-- | :-- | :-- | :-- |
+| `CAniElementObj` / `g_aniElemVtbl` | 0x1efba8 (0x5efba8) | **CONVERTED (realized)** | 0 (cddrawsubmgrani 1/3, factories 96.87% unchanged) | Built via `new CAniElementObj` with a vptr-FIRST ctor. Modeled `CAniElementBase` (grand-base, 5 CObject-interface slots, virtual dtor) + `CAniElementObj` (overrides dtor slot) real-polymorphic; **cl auto-emits `??_7CAniElementBase@@6B@` (masks 0x5e8cb4) + `??_7CAniElementObj@@6B@` (masks 0x5efba8, paired via `vtable_names.csv` 0x1efba8/0x14)** — confirmed emitted `sec 4/5` + base-then-derived `DIR32 ??_7…` stamps in the objdiff base obj. Removed 2 manual `*(void**)this=` stamps, the `g_aniElemVtbl`+`g_remusBaseDtorVtbl` externs, and the `CAniElemView` placeholder; failure path is now `delete el` (virtual scalar-deleting dtor = same `mov eax,[el]; call [eax+4]`). Synthesized `??_G/??_E/??1` thunks are emitted but **unpaired (no `RVA()`) → not counted** → neutral. |
+| `CAniRecordBase2` / `g_albusWorkerVtbl` | 0x1f02d8 (0x5f02d8) | **ALREADY-real (prior)** | — | `CAniRecord.cpp` already models the albus worker as real-polymorphic `CAniRecordBase2` (14 slots, `~CAniRecordBase2` @0x165dd0 = 100%). No action. `CDDrawWorkerMapSmall`'s `AlbusWorkerObj` foreign-stamps a *distinct* raw block it constructs inline — that stamp stays. |
+| `CShadeTableArray` / `g_shadeArrayVtbl` | 0x1efb28 (0x5efb28) | **KEPT-foreign** (final-sweep candidate) | — | CObArray-like element-array base; vptr at subobject +0 with a vptr-FIRST member store (`m_vtbl=&g_shadeArrayVtbl`) — structurally realizable like aniElem — BUT its inline ctor/dtor fold into `CShadeTableCache` ctor/dtor (0x14de30/0x14de50), the cache is 1.9%, and the CObArray base semantics risk a divergent `??_7`. Revisit in the final sweep once the cache ctor/dtor are reconstructed. |
+| `CSiriusWorker` / `g_siriusWorkerVtbl` | 0x1efb80 (0x5efb80) | **KEPT-hand-rolled (vptr-middle)** | — | Built by INLINE manual construction in `CGameObject::EnsureWorker80/88/90` (UserBaseLink.cpp): vptr stamp lands AFTER m_04/m_08/m_0c → vptr-middle. Those factories are already `@early-stop` on the zero-register-pinning wall. Also member-stored (`m_vptr=`) in SiriusWorkerHandlers/CDDrawWorkerCache. Worker virtuals unmatched. |
+| `HagridWorkerA` / `g_hagridWorkerVtblA` | 0x1efea0 (0x5efea0) | **KEPT-hand-rolled (vptr-middle)** | — | `MakeWorkerA` (CDDrawWorkerList.cpp) inline construction stamps vptr AFTER field inits. |
+| `HagridWorkerB` / `g_hagridWorkerVtblB` | 0x1efed0 (0x5efed0) | **KEPT-hand-rolled (vptr-middle)** | — | `MakeWorkerB`, ditto. |
+| `SeverusWorkerObj` / `g_severusWorkerVtbl` | 0x1efbe8 (0x5efbe8) | **KEPT-hand-rolled (inline two-vptr)** | — | `MakeSeverusWorker` (CDDrawWorkerRegistry.cpp) stamps the BASE vtbl first, then (after m_04/m_08/m_0c + CByteArray ctor) the DERIVED vtbl (vptr-middle for derived), then m_64/m_68. Worker virtuals unmatched. |
+| `SeverusWorkerBase` / `g_severusWorkerBaseVtbl` | 0x1efc30 (0x5efc30) | **KEPT-hand-rolled/foreign** | — | Base subobject vtbl stamped first in `MakeSeverusWorker`; also in `GameLevel.h`'s inline ctor + `CSeverusWorkerHost`. Same inline two-vptr wall; base virtuals unmatched. |
+| `LeafElementObj` / `g_leafElemVtbl` | 0x1eff08 (0x5eff08) | **KEPT-hand-rolled (vptr-middle factory)** | — | `~LeafElementObj` (0x158680) IS reconstructed with a vptr-first stamp, but `CreateEntry_157d70` (0x157d70, 99.81%) constructs the element by INLINE manual raw-alloc with a vptr-MIDDLE stamp. Making the class polymorphic forces vptr-first in the factory too → regresses. A class can't be split (real dtor + manual factory), so it stays. |
+
+### Rules learned / reinforced (Batch 2)
+
+- **Realization is neutral iff the object is built via `new Class` with a vptr-FIRST
+  ctor** (aniElem). Then cl auto-emits the `??_7` (base + derived) with byte-identical
+  reloc-masked stamps, AND — mapped in `vtable_names.csv` — the emitted vtable data
+  symbol pairs with the delinked target. The compiler-synthesized `??_G/??_E/??1` dtor
+  thunks are emitted but carry **no `RVA()`** → they aren't paired/counted → the unit's
+  function % is unchanged.
+- **INLINE-manual construction (`operator new` + field init + `*(void**)w=&g_*Vtbl`)
+  with a vptr-MIDDLE stamp is a hard wall** — the factory cannot reference the compiler
+  `??_7` without switching to `new`, and `new` forces the implicit vptr-first store,
+  which regresses the vptr-middle factory. This is the WHOLE worker family
+  (sirius/hagrid/severus/leaf) — the manual stamp is the faithful shape.
+- **Two-vptr inline construction (base-first then derived-middle) is a wall** for the
+  same reason (severus).
+- **A vptr-first embedded-subobject member store (shade) is structurally realizable
+  like aniElem**, but a CObArray-like base folded into a barely-reconstructed cache is
+  deferred to the final sweep.

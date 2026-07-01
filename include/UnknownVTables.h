@@ -258,14 +258,9 @@ struct SiriusWorkerVtbl {
     UnkVfn Init;                         // [9] -> 0x151e20 Init
 };
 
-// ClassWithUnknownVTable23  @ 0x005efba8  (5 slots)  refs x3  src:g_aniElemVtbl
-struct AniElemVtbl {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x152e10 `scalar_deleting_destructor'
-    UnkVfn slot2_0028ec;                 // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
-};
+// ClassWithUnknownVTable23  @ 0x005efba8  (5 slots)  src:g_aniElemVtbl
+// REALIZED as ??_7CAniElementObj@@6B@ (real polymorphic CAniElementObj in
+// src/Gruntz/CDDrawSubMgrAni.cpp; cl auto-emits the vtable). Placeholder removed.
 
 // ClassWithUnknownVTable24  @ 0x005efbc0  (10 slots)  refs x4  src:g_remusNodeVtbl
 struct RemusNodeVtbl {
