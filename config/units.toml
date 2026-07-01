@@ -411,6 +411,11 @@ source = "src/Gruntz/RockBreakParticles.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "brickzload"
+source = "src/Gruntz/BrickzLoad.cpp"
+flags = "base"
+
+[[unit]]
 unit = "cplayplanescan"
 source = "src/Gruntz/CPlayPlaneScan.cpp"
 flags = "eh"

@@ -26,7 +26,6 @@
 #include "CButeTree.cpp"
 #include "CActionArea.cpp"
 #include "CBoomerang.cpp"
-#include "CBrickz.cpp"
 // reloc-correlation extern stubs (split from GenExterns):
 #include "CButeMgrHelper.cpp"
 #include "CButeNodeBase.cpp"

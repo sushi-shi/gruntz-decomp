@@ -44,6 +44,7 @@ boundaryupper2	26	19
 boundaryupper2eh	6	2
 boundaryuppereh	10	10
 brickz	15	3
+brickzload	1	0
 bridgemovesprites	1	0
 buildgruntzcrcinfo	1	0
 butemgr	42	27
@@ -208,7 +209,7 @@ dsoundvoice	2	1
 ehfunclets	6	6
 engine_attributed	7	0
 engine_discovered	16	8
-engine_label_stubs	277	123
+engine_label_stubs	276	123
 engine_unmatched_lib	11	0
 engstr	3	1
 eyecandytypetags	4	4
@@ -773,6 +774,7 @@ brickz	?SearchEdge@CBrickz@@QAEHHHHHPAXHHH@Z	82.5373	82.5373	2	9a02e814554f	0x81
 brickz	?Serialize@CBrickz@@QAEHHHHH@Z	37.9032	37.9032	1	18774618cdf4	0x9356c
 brickz	?Unlink@CBrickz@@QAEXPAUBrickzNode@@@Z	74.9487	74.9487	2	ead4b3e1d312	0x9f690
 brickz	?UpdateDiagonals@CBrickz@@QAEHH@Z	53.5683	53.5683	1	e2065e000df7	0x82030
+brickzload	?LoadAttributes@CBrickz@@QAEHHH@Z	12.5917	12.5917	1	914ddb192d1b	0x810f0
 bridgemovesprites	?LoadBridgeMove@CPlayLevelLoad@@QAEXH@Z	77.0457	77.0457	1	8e1c162b9ed0	0x110860
 buildgruntzcrcinfo	?BuildGruntzCrcInfo@CrcOwner@@QAEXXZ	70.9695	70.9695	3	8f39c886254c	0xbf1d0
 butemgr	??1CButeMgr@@QAE@XZ	68.6322	68.6322	1	febe7cdf6ea9	0x213c0
@@ -1849,7 +1851,6 @@ engine_label_stubs	?Key@CmdHost_0953f0@ApiCallerStubs@@QAEHHH@Z	100.0000	100.000
 engine_label_stubs	?Load@PalLoad_1479e0@ApiCallerStubs@@QAEHHPADH@Z	89.7286	89.7286	1	cpp:6bf52155264d	0x1479e0
 engine_label_stubs	?Load@ResLoad_144270@ApiCallerStubs@@QAEHHPADH@Z	86.9885	86.9885	1	cpp:6bf52155264d	0x144270
 engine_label_stubs	?Load@StrHost_0b7ec0@ApiCallerStubs@@QAEXHH@Z	100.0000	100.0000	1	cpp:e1535087fe94	0xb7ec0
-engine_label_stubs	?LoadAttributes@CBrickz@@QAEXHH@Z	0.1490	0.1490	1	cpp:6bf52155264d	0x810f0
 engine_label_stubs	?LoadAttributes@CDroppedObjectShadow@@QAEXXZ	0.4444	0.4444	1	cpp:45e65336d4b5	0xc62e0
 engine_label_stubs	?LoadBootyCheatState@EngineLabelBacklog@@YGXHHH@Z	0.3788	0.3788	1	cpp:6bf52155264d	0x18830
 engine_label_stubs	?LoadByExt@CFileImage@@QAEHPAVCFileImageInfo@@PADHH@Z	99.8899	99.8899	1	cpp:590eddff1627	0x148940
