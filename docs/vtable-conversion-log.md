@@ -162,3 +162,49 @@ slots reproducible.
   re-confirms them with the Batch-2 decisive rule and adds the fileMem determination.
   Nothing here yields today; revisit fileMem in the final sweep once its vtable-slot
   scalar-dtor/`sub_` thunks are reconstructed.
+## Batch 3 (Dsndmgr / sound family) — 2026-07-01
+
+Net effect: **0 neutral conversions** (documentation only; no source change).
+exact/fuzzy delta: **0** (`gruntz build` "no regressions vs baseline",
+1873/3394 exact / 64.05% fuzzy before and after). The whole Dsndmgr sound family
+is modeled **non-polymorphically** (manual `g_*Vtbl` stamps) because every
+candidate class's virtual slots live in OTHER TUs (unmatched `sub_XXXXXX`) — a
+real-`virtual` model would make `cl` auto-emit a **divergent `??_7`** — and the
+family's ctors/dtors are already `@early-stop` on the `/GX` EH-state walls (the
+"whole family must be modeled first" deferral). The `new`-vptr-first
+realization criterion (batch 2, aniElem) is met by **none** of these: no
+`new StreamFeeder` / `new StreamVoice` / `new CGruntzSoundInnerZ` exists — all are
+embedded members / `RezAlloc`+inline-field-init. Two of the listed stamps are
+owned by **non-Dsndmgr** classes (a Bute tree node / a DinMgr2 device-config) →
+out of scope for this batch.
+
+Baseline sound units (unchanged): directsoundmgr 30/41 (69.5%), streamfeeder 7/9
+(47.9%), streamvoice 3/5 (50.9%), gruntzsoundz 14/15 (93.1%), sounddevice 8/16,
+soundstream 3/7, dsoundvoice 1/2, soundvoicelist 3/4.
+
+| Class / stamp | vtable RVA (VA) | Outcome | Reason |
+| :-- | :-- | :-- | :-- |
+| `CGruntzSoundInnerZ` / `g_innerSoundVtbl` | 0x1ef700 (0x5ef700) | **KEPT (inline-manual, no `new`)** | 16-slot vtbl; slots mostly `sub_`/thirdparty-AIL in other TUs. The inner bank is built by INLINE manual construction in `CGruntzSoundZ::CreateBank`/`CreateBank2` — `RezAlloc(0x60)` + `*(void**)raw=&g_innerSoundVtbl` (vptr-first) + field seed — NOT `new CGruntzSoundInnerZ`. `cl` only emits the implicit vptr store inside a real ctor reached via `new`/member-construction; the inline `RezAlloc`+field-init can't reference the compiler `??_7` without switching to `new` (which would reshape the create helpers). The class already declares its 13 virtuals **declared-only** (no `??_7` emitted). Same idiom as the worker family (batch 2). |
+| `DSoundBaseSub` / `g_DirectSoundBaseVtbl` | 0x1ef6c0 (0x5ef6c0) | **KEPT (family non-poly + EH wall)** | DSoundBaseSub's OWN vtbl, stamped **vptr-first in the derived ctor body** (0x136230) after chaining the `DirectSoundMgr` base ctor — the textbook derived-restamp shape. BUT the base `DirectSoundMgr` is modeled **non-polymorphic** (manual `g_DirectSoundMgrVtbl` @0x5ef6b8; virtuals external/unmatched, see `DirectSoundMgr.h` — `DSoundCloneBase` is only a thin slot-0 dispatch view). Realizing the 3-level hierarchy (DirectSoundMgr→DSoundBaseSub→DSoundCloneInst) would emit divergent `??_7DirectSoundMgr`/`??_7DSoundBaseSub`, and `~DirectSoundMgr` (0x135bb0) + `DSoundCloneInst::DSoundCloneInst` (0x135b10) are **already `@early-stop` on the /GX EH-state-count wall** ("modeling the base hierarchy re-shapes the ctor + emits a `??_7/??_G` and risks the 20 exact siblings; defer to the final sweep"). |
+| `StreamFeeder` / `g_StreamFeederVtbl` | 0x1ef6f0 (0x5ef6f0) | **KEPT (pure slot-0 + external virtuals)** | Has a real **vptr-first ctor** (0x137cd0) BUT: (a) slot 0 = `__purecall` (a PURE virtual) while the object is instantiated as a **concrete embedded member** (`StreamFeeder m_feeder` @ StreamVoice+0x6c) — `cl` cannot both put `__purecall` in slot 0 (needs `=0` ⇒ abstract) AND permit a concrete member embedding; (b) slots 1/2 (0x137e10/0x137e20) are external/unmatched ⇒ divergent `??_7`; (c) never built via `new StreamFeeder`. Realizing would also reshape the `@early-stop` `StreamVoice` ctor/dtor (0x1375b0/0x137650). The derived override provides the real slot-0 (`CopyWindow` 0x137380) — see next row. |
+| `StreamVoiceFeeder` (embedded) / `g_StreamVoiceFeederVtbl` | 0x1ef6e0 (0x5ef6e0) | **KEPT-foreign (embedded-member override)** | The DERIVED feeder-override vtbl the `StreamVoice` ctor stamps OVER its embedded `StreamFeeder` member (`*(void**)&m_feeder=&g_StreamVoiceFeederVtbl`, after the member ctor stamped the base 0x5ef6f0). `cl` can only auto-stamp a member's OWN class vtbl, never a different override into an embedded member — the restamp is inherently manual. Slots 0/1/2 (`CopyWindow` 0x137380 + `sub_137490`/`sub_1374b0`) mixed matched/external; `StreamVoice` is `@early-stop` on EH. |
+| (Bute node) / `g_streamVtbl`, `g_streamData` | 0x1f0510 / 0x1f0514 | **OUT-OF-SCOPE (Bute-owned)** | Not a Dsndmgr class: a Bute tree-node's primary vftable + its +0x08 sub-object vftable (`g_streamData` = `&g_streamVtbl+4`), stamped by the node ctor in `src/Gruntz/CButeSectionCtor.cpp` (forbidden file). Owner lives in the Bute TU. |
+| (DinMgr2 device-config) / `g_deviceConfigVtbl` (VtblA) | 0x1ef628 (0x5ef628) | **OUT-OF-SCOPE (DinMgr2-owned)** | A DirectInput device-config class vtbl, stamped in `src/DinMgr2/DirectInputMgr2.cpp` + `src/Gruntz/BoundaryUpper2*.cpp` (forbidden files). Owner is a DinMgr2 class, not Dsndmgr. |
+
+### Rules learned / reinforced (Batch 3)
+
+- **The whole Dsndmgr sound family is a "non-poly base with external virtuals"
+  family** (like the CDDraw worker family in batch 2): realization stays blocked
+  until the base classes' virtuals are matched — the compiler-emitted `??_7` would
+  otherwise diverge. Deferred to the final sweep en masse.
+- **`__purecall` in slot 0 of an instantiated-concrete class is a hard C++
+  contradiction for `cl`'s implicit vptr emission** — a pure virtual makes the class
+  abstract and un-embeddable as a concrete member, yet retail stamps the base
+  (`__purecall`-carrying) vtbl into a live member and only later overrides it. Keep
+  the manual stamp. (StreamFeeder / StreamVoiceFeeder.)
+- **An embedded-member vtable OVERRIDE can never be `cl`-auto-emitted** — the
+  compiler stamps the member's own class vtbl, not a caller-chosen override. The
+  voice's `*(void**)&m_feeder = &g_StreamVoiceFeederVtbl` is the faithful shape.
+- **No sound-family object is built via `new`** (all embedded members or
+  `RezAlloc`+inline-field-init), so the batch-2 `new`-vptr-first realization gate is
+  unmet across the board.
