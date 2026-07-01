@@ -40,7 +40,6 @@
 #include "CStatusBarMgr.cpp"
 #include "EngineExternFns.cpp"
 #include "RezMgr.cpp"
-#include "CDroppedObjectShadow.cpp"
 #include "CGruntzCommand.cpp"
 #include "CGruntzMgr.cpp"
 #include "CSBI_Image.cpp"

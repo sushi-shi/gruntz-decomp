@@ -147,7 +147,7 @@ cmovinglogicdtor	1	1
 cmovinglogicserial	3	1
 cmsgdispatch	3	3
 cmulti	16	7
-cobjectdropper	2	1
+cobjectdropper	3	2
 colorhsv	1	0
 comehfunclets	5	5
 comhelperthunks	7	7
@@ -211,7 +211,7 @@ dsoundvoice	2	1
 ehfunclets	6	6
 engine_attributed	6	0
 engine_discovered	15	8
-engine_label_stubs	263	124
+engine_label_stubs	262	124
 engine_unmatched_lib	11	0
 engstr	3	1
 eyecandytypetags	4	4
@@ -1391,8 +1391,9 @@ cmulti	?StartSession@CMulti@@QAEHHH@Z	98.4571	98.4571	1	819ff4c73d1c	0xb6580
 cmulti	?StartTitle@CMulti@@QAEHXZ	36.2880	36.2880	1	6fd7349a26cb	0xb72c0
 cmulti	?Teardown@CMulti@@QAEXXZ	100.0000	100.0000	1	40a558486d68	0xb6110
 cmulti	?Tick@CMulti@@QAEHXZ	85.9939	85.9939	1	93a3a8d8b95c	0xb6890
-cobjectdropper	??0CObjectDropper@@QAE@PAUCGameObject@@@Z	86.0249	86.0249	1	a7b1aa0f1029	0xc59f0
+cobjectdropper	??0CObjectDropper@@QAE@PAUCGameObject@@@Z	86.0249	86.0249	2	4495dbc67398	0xc59f0
 cobjectdropper	??1CObjectDropper@@UAE@XZ	100.0000	100.0000	1	c595e9e386aa	0x124f0
+cobjectdropper	?Update@CObjectDropper@@QAEHXZ	100.0000	100.0000	1	cd6ed5c6e5fb	0xc62e0
 colorhsv	?RgbToHsv@@YAXPAUColorHSV@@I@Z	45.7699	45.7699	2	671fce63329c	0x14fcc0
 comehfunclets	?Funclet_11ec59@@YAXXZ	100.0000	100.0000	1	b4360828a3a9	0x11ec59
 comehfunclets	?Funclet_1bb075@@YAXXZ	100.0000	100.0000	1	bc954d51331e	0x1bb075
@@ -1855,7 +1856,6 @@ engine_label_stubs	?Key@CmdHost_0953f0@ApiCallerStubs@@QAEHHH@Z	100.0000	100.000
 engine_label_stubs	?Load@PalLoad_1479e0@ApiCallerStubs@@QAEHHPADH@Z	89.7286	89.7286	1	cpp:6bf52155264d	0x1479e0
 engine_label_stubs	?Load@ResLoad_144270@ApiCallerStubs@@QAEHHPADH@Z	86.9310	86.9310	1	cpp:6bf52155264d	0x144270
 engine_label_stubs	?Load@StrHost_0b7ec0@ApiCallerStubs@@QAEXHH@Z	100.0000	100.0000	1	cpp:e1535087fe94	0xb7ec0
-engine_label_stubs	?LoadAttributes@CDroppedObjectShadow@@QAEXXZ	0.4444	0.4444	1	cpp:45e65336d4b5	0xc62e0
 engine_label_stubs	?LoadByExt@CFileImage@@QAEHPAVCFileImageInfo@@PADHH@Z	100.0000	100.0000	1	cpp:590eddff1627	0x148940
 engine_label_stubs	?LoadCustomWorldInfo@EngineLabelBacklog@@YAHPAX@Z	100.0000	100.0000	1	cpp:aab6e5a6e511	0x3b7c0
 engine_label_stubs	?LoadGruntCombatAnimations@CGrunt@ApiCallerStubs@@QAEXHHHHHHHH@Z	0.0777	0.0777	1	cpp:590eddff1627	0x597a0

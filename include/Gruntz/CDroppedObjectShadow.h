@@ -1,8 +1,10 @@
 // CDroppedObjectShadow.h - the dropped-object shadow eyecandy (C:\Proj\Gruntz),
-// a CUserLogic tile-logic leaf (RTTI .?AVCUserLogic@@). Only the /GX leaf dtor is
-// reconstructed here; the ctor (0xc7490) + LoadAttributes (0xc62e0) remain the
-// @stub backlog in src/Stub/CDroppedObjectShadow.cpp. Offsets + code bytes are
-// the load-bearing facts; field names are placeholders.
+// a CUserLogic tile-logic leaf (RTTI .?AVCUserLogic@@). The /GX leaf dtor + the
+// 1-arg ctor (0xc7490) are reconstructed here. NOTE: 0xc62e0 (Ghidra-labeled
+// "LoadAttributes@CDroppedObjectShadow") was a trace mis-attribution - it is
+// really CObjectDropper::Update (a LARGER sibling class); reconstructed byte-exact
+// in src/Gruntz/CObjectDropper.cpp. Offsets + code bytes are the load-bearing
+// facts; field names are placeholders.
 #ifndef GRUNTZ_CDROPPEDOBJECTSHADOW_H
 #define GRUNTZ_CDROPPEDOBJECTSHADOW_H
 
