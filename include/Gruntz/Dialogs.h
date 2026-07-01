@@ -22,6 +22,7 @@
 #include <Ints.h>
 
 class CString; // full def via <Gruntz/CString.h> below; needed by CWnd::GetWindowText
+struct HWND__; // the opaque Win32 HWND (windows.h arrives with <Gruntz/CString.h>)
 
 // ---------------------------------------------------------------------------
 // Minimal MFC base models. Only the exact mangled symbol + the calling
@@ -40,6 +41,11 @@ public:
     void EnableWindow(i32 bEnable);        // NAFXCW __thiscall (reloc-masked)
     void GetWindowTextA(CString& rString); // NAFXCW __thiscall (reloc-masked)
                                            // (GetWindowText macro-expands to this)
+    // NAFXCW static (HWND -> CWnd*), reached by call-rel32 (reloc-masks). MFC
+    // declares it PASCAL (__stdcall).
+    static CWnd* __stdcall FromHandle(HWND__* hWnd); // 0x1bb23a
+    char m_pad00[0x1c];                              // +0x00
+    HWND__* m_hWnd;                                  // +0x1c  wrapped window handle
 };
 
 // CString - the MFC string. Only its default ctor is touched (the embedded
@@ -65,6 +71,10 @@ public:
     // reached by call-rel32 (external/no-body so it reloc-masks). Inherited by the
     // dialog subclasses; their accessors tail-call it on `this`.
     CWnd* GetDlgItem(i32 nID) const;
+    // DoModal - the NAFXCW modal loop (reloc-masked). Modeled non-virtual: retail
+    // calls it directly on a known-type local (devirtualized), so a plain method
+    // reproduces the `call rel32`.
+    i32 DoModal();         // 0x1ba9d2
     char m_body[0x5c - 4]; // pad to 0x5c (vptr occupies +0x00)
 };
 
@@ -104,6 +114,10 @@ public:
     // (GetCtrlB(index)->GetWindowText), then measure it. /GX EH frame unwinds the
     // half-built local CString.
     void ReadCtrlBText(i32 index);
+
+    // ShowCustomDlg (0x17030): run a CBattlezDlgCustom modally; on IDOK, uppercase
+    // its (non-empty) custom-name string and push it into the 0x4ff control's child.
+    void ShowCustomDlg();
 
     // Slot/option helpers reached via ILT thunks (own CBattlezDlg methods, owned
     // as RVA stubs in src/Stub/ApiCallers.cpp; external/no-body here so the calls
@@ -178,6 +192,12 @@ public:
     i32 UpdateSlot();
     // GetSlotIndex (0xc4b30): the current slot index (own method, reloc-masked).
     i32 GetSlotIndex();
+
+    // SetupWorldCombo (0xc1840): fill the 0x4ff world combo from the GAME_MULTI
+    // registry path, read-only its edit child, and subclass its wndproc.
+    i32 SetupWorldCombo();
+    // Sub_c3e30 (0xc3e30 via ILT thunk): post-setup self-call (reloc-masked).
+    void Sub_c3e30();
 
     // Per-slot control accessors: switch(index) over a 4-entry control-ID table,
     // each case returning this->GetDlgItem(constID). SAME shape as

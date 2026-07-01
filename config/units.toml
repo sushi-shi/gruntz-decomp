@@ -371,6 +371,21 @@ source = "src/Gruntz/CDoNothingNormalLogic.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "multistartdlgworld"
+source = "src/Gruntz/MultiStartDlgWorld.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "lobbygrouplist"
+source = "src/Gruntz/LobbyGroupList.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "slotcombofill"
+source = "src/Gruntz/SlotComboFill.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "menustateassets"
 source = "src/Gruntz/MenuStateAssets.cpp"
 flags = "eh"

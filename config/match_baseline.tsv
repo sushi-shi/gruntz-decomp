@@ -194,7 +194,7 @@ ddrawblterrthunk	1	1
 ddrawpolyfill	1	0
 deflate	9	9
 demosetup	1	1
-dialogs	36	15
+dialogs	37	15
 directinputmgr2	36	32
 directsoundmgr	39	29
 discoveredarray	1	0
@@ -205,7 +205,7 @@ dsoundvoice	2	1
 ehfunclets	6	6
 engine_attributed	7	0
 engine_discovered	19	8
-engine_label_stubs	287	124
+engine_label_stubs	283	124
 engine_unmatched_lib	11	0
 engstr	3	1
 eyecandytypetags	4	4
@@ -282,6 +282,7 @@ leveltilevalidation	3	0
 lightfxmgr	3	3
 loadlevelbymode	1	0
 loadobjectresources	3	0
+lobbygrouplist	1	0
 logicactreg	3	0
 logicactregistrars	6	0
 logicdispatchinit	3	3
@@ -343,6 +344,7 @@ mgrtokenquery	1	1
 minervainner	1	1
 motionstate	6	5
 msgpacket	2	2
+multistartdlgworld	1	1
 namerecord	1	0
 netcmdmgr	1	1
 netcmdsession	6	4
@@ -410,6 +412,7 @@ sfselectdevice	1	0
 shadedescrtable	2	0
 shadetablecache	19	3
 siriusworkerhandlers	4	4
+slotcombofill	1	0
 soundbankload	1	0
 sounddevice	16	8
 soundfontpath	1	1
@@ -1603,7 +1606,7 @@ dialogs	??0CBattlezDlgCustom@@QAE@PAVCWnd@@@Z	100.0000	100.0000	4	796b59607a47	0
 dialogs	??0CCheckpointDlg@@QAE@PAVCWnd@@@Z	100.0000	100.0000	3	6c51964bdb81	0x234a0
 dialogs	??0CMultiStartDlg@@QAE@HPAVCWnd@@@Z	100.0000	100.0000	5	a71396cbe887	0xc1750
 dialogs	??1CBattlezDlg@@UAE@XZ	94.4444	94.4444	1	7ed27cb65fc2	0x14c90
-dialogs	??1CBattlezDlgCustom@@UAE@XZ	94.4444	94.4444	1	8ef41d520506	0x17140
+dialogs	??1CBattlezDlgCustom@@UAE@XZ	94.4444	94.4444	2	541b053bf1df	0x17140
 dialogs	??1CImgHolder@@UAE@XZ	100.0000	100.0000	1	b1f5658a71a2	0x16500
 dialogs	??1CImgHolderBase@@UAE@XZ	100.0000	100.0000	1	6702ee052eb6	0x16410
 dialogs	??1CMultiStartDlg@@UAE@XZ	95.6522	95.6522	1	d0a639c25288	0xb8960
@@ -1626,6 +1629,7 @@ dialogs	?InitPlayerSlots@CMultiStartDlg@@QAEXXZ	0.1294	0.1294	2	460bc8e04d05	0xc
 dialogs	?ReadCtrlBText@CBattlezDlg@@QAEXH@Z	69.1389	69.1389	1	6df8807040af	0x17340
 dialogs	?SetCtrlBText@CBattlezDlg@@QAEXHPBD@Z	100.0000	100.0000	2	3b905b2c10b8	0x15db0
 dialogs	?SetSlotValue@CBattlezDlg@@QAEHHH@Z	100.0000	100.0000	2	b1675baacc7b	0x17460
+dialogs	?ShowCustomDlg@CBattlezDlg@@QAEXXZ	92.9216	92.9216	1	0bdc1ac90886	0x17030
 dialogs	?ShowMultiStartDlg@CNetMgrLite@@QAEHXZ	81.3566	81.3566	1	06e6521fdf90	0xb86c0
 dialogs	?UpdateSlot@CMultiStartDlg@@QAEHXZ	91.8571	91.8571	1	583597665330	0xc1fd0
 dialogs	?winapi_016cd0_InvalidateRect@CBattlezDlg@@QAEHXZ	3.1111	3.1111	2	da2d8f0cc322	0x16cd0
@@ -1927,7 +1931,6 @@ engine_label_stubs	?winapi_015d00_SendMessageA@ApiCallerStubs@@YGXH@Z	100.0000	1
 engine_label_stubs	?winapi_015d30_SendMessageA@ApiCallerStubs@@YGHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x15d30
 engine_label_stubs	?winapi_015d70_SendMessageA@ApiCallerStubs@@YGHHH@Z	80.9167	80.9167	1	cpp:6bf52155264d	0x15d70
 engine_label_stubs	?winapi_0160f0_CreateSolidBrush_FillRect_GetClientRect@ApiCallerStubs@@YAHXZ	1.1765	1.1765	1	cpp:e1535087fe94	0x160f0
-engine_label_stubs	?winapi_017030_GetWindow@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHXZ	2.7451	2.7451	1	cpp:e8a4cb0d5b2a	0x17030
 engine_label_stubs	?winapi_0180e0_SendMessageA@ApiCallerStubs@@YGHH@Z	0.8696	0.8696	1	cpp:6bf52155264d	0x180e0
 engine_label_stubs	?winapi_019f50_timeGetTime@ApiCallerStubs@@YGHHH@Z	14.4444	14.4444	1	cpp:6bf52155264d	0x19f50
 engine_label_stubs	?winapi_01a700_CopyRect@ApiCallerStubs@@YAHXZ	0.3934	0.3934	1	cpp:e1535087fe94	0x1a700
@@ -1944,7 +1947,6 @@ engine_label_stubs	?winapi_036e10_IsDlgButtonChecked@ApiCallerStubs@@YAXPAX@Z	10
 engine_label_stubs	?winapi_036ec0_GetDlgItem_GetScrollInfo@ApiCallerStubs@@YAHPAXH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x36ec0
 engine_label_stubs	?winapi_0371e0_GetDlgItem_SetScrollInfo@ApiCallerStubs@@YAXPAXHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x371e0
 engine_label_stubs	?winapi_037260_GetScrollInfo_SetScrollInfo@ApiCallerStubs@@YAHXZ	0.8333	0.8333	1	cpp:e1535087fe94	0x37260
-engine_label_stubs	?winapi_037ff0_GetDlgItem_SendMessageA@ApiCallerStubs@@YGHHH@Z	2.6316	2.6316	1	cpp:6bf52155264d	0x37ff0
 engine_label_stubs	?winapi_038150_GetDlgItem@ApiCallerStubs@@YGHPAXHHH@Z	100.0000	100.0000	1	cpp:e1535087fe94	0x38150
 engine_label_stubs	?winapi_038220_GetDlgItem@ApiCallerStubs@@YGHPAXHPAH1@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x38220
 engine_label_stubs	?winapi_039a60_CreateRectRgn_DrawTextA_SetRect@ApiCallerStubs@@YAHXZ	1.5079	1.5079	1	cpp:e1535087fe94	0x39a60
@@ -1977,7 +1979,6 @@ engine_label_stubs	?winapi_0be2f0_GetDlgItem_SetDlgItemTextA_SetTimer@ApiCallerS
 engine_label_stubs	?winapi_0be400_GetWindowTextA_SetWindowTextA@ApiCallerStubs@@YAXPAX0@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xbe400
 engine_label_stubs	?winapi_0be490_EndDialog_KillTimer@ApiCallerStubs@@YAXPAXPAUSessionHost_0be490@1@@Z	100.0000	100.0000	1	cpp:e1535087fe94	0xbe490
 engine_label_stubs	?winapi_0be760_GetDlgItem_SetDlgItemTextA_SetTimer@ApiCallerStubs@@YAXPAX0@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xbe760
-engine_label_stubs	?winapi_0c1840_GetWindow_GetWindowLongA_SetWindowLongA@ApiCallerStubs@@YAHXZ	1.1200	1.1200	1	cpp:e1535087fe94	0xc1840
 engine_label_stubs	?winapi_0c1aa0_GetWindow_SendMessageA@ApiCallerStubs@@YAHXZ	0.7480	0.7480	1	cpp:e1535087fe94	0xc1aa0
 engine_label_stubs	?winapi_0c2980_SendMessageA@ApiCallerStubs@@YGXHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xc2980
 engine_label_stubs	?winapi_0c2e20_CreateSolidBrush_FillRect_GetClientRect@ApiCallerStubs@@YAHXZ	1.2658	1.2658	1	cpp:e1535087fe94	0xc2e20
@@ -2021,7 +2022,6 @@ engine_label_stubs	?winapi_16c9e0_EnterCriticalSection@ApiCallerStubs@@YAXPAU_RT
 engine_label_stubs	?winapi_16c9f0_LeaveCriticalSection@ApiCallerStubs@@YAXPAU_RTL_CRITICAL_SECTION@@@Z	100.0000	100.0000	1	cpp:e1535087fe94	0x16c9f0
 engine_label_stubs	?winapi_1770a0_CreateICA_DeleteDC_GetDeviceCaps@ApiCallerStubs@@YAHXZ	100.0000	100.0000	1	cpp:e1535087fe94	0x1770a0
 engine_label_stubs	?winapi_177160_CreatePalette_DeleteObject_GetDC_RealizePalette_ReleaseD@ApiCallerStubs@@YAXXZ	100.0000	100.0000	1	cpp:e1535087fe94	0x177160
-engine_label_stubs	?winapi_178470_SendMessageA@ApiCallerStubs@@YGHHH@Z	1.9388	1.9388	1	cpp:6bf52155264d	0x178470
 engine_label_stubs	?winapi_179e70_IntersectRect@ApiCallerStubs@@YGHHHHHHHHHH@Z	0.4398	0.4398	1	cpp:6bf52155264d	0x179e70
 engine_label_stubs	?winapi_17c3f0_ShowCursor@ThisStubOwnerUnknown@ApiCallerStubs@@QAEHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH@Z	1.8269	1.8269	1	cpp:e8a4cb0d5b2a	0x17c3f0
 engine_label_stubs	?winapi_17e620_GetTickCount@CFader@ApiCallerStubs@@QAEHHHH@Z	1.7925	1.7925	1	cpp:590eddff1627	0x17e620
@@ -2729,6 +2729,7 @@ loadlevelbymode	?LoadByMode@CPlayLevelLoad@@QAEHH@Z	34.8503	34.8503	2	10b320b3c1
 loadobjectresources	?LoadObjectAnimResources@CObjResTree@@QAEHPAUObjSpawnEntry@@PAUObjResLookup@@@Z	88.3103	88.3103	1	3f06cd9e89f7	0x9ac20
 loadobjectresources	?LoadObjectImageResources@CObjResTree@@QAEHPAUObjSpawnEntry@@PAUObjResLookup@@@Z	88.6611	88.6611	1	6d19727a943f	0x9a510
 loadobjectresources	?LoadObjectSoundResources@CObjResTree@@QAEHPAUObjSpawnEntry@@PAUObjResLookup@@@Z	88.3103	88.3103	1	6ace20e25485	0x9a910
+lobbygrouplist	?PopulateGroupList@CLobbyGroupMgr@@QAEXPAUHWND__@@H@Z	78.5714	78.5714	1	d87e71e6b1bb	0x178470
 logicactreg	?RegisterXLogic_62bfa0@@YAXXZ	91.1739	91.1739	1	4bad5388934b	0x3a710
 logicactreg	?RegisterXLogic_6447f8@@YAXXZ	91.1739	91.1739	1	d5fa5b0956b7	0x474b0
 logicactreg	?RegisterXLogic_646010@@YAXXZ	91.1739	91.1739	1	b3bf8e9b5058	0xadfc0
@@ -2931,6 +2932,7 @@ motionstate	?SetZ@CMotionState@@QAEXN@Z	100.0000	100.0000	1	9d25f9ec952e	0x58ca0
 motionstate	?Step@CMotionState@@QAEXN@Z	64.9479	64.9479	2	877abdf7095d	0x16ecd0
 msgpacket	?CopyPacketHeader@@YAHPAUCMsgPacket@@0@Z	100.0000	100.0000	2	499b606c8e9c	0x186a20
 msgpacket	?WritePacketU16@@YAXPAUCMsgPacket@@I@Z	100.0000	100.0000	2	2a7f6a756128	0x1868e0
+multistartdlgworld	?SetupWorldCombo@CMultiStartDlg@@QAEHXZ	100.0000	100.0000	1	a2ec1557034f	0xc1840
 namerecord	?SetNames@CNameRecord@@QAEHPAD0H@Z	96.5909	96.5909	2	2e5a80e5f1dd	0x118040
 netcmdmgr	?SelectColor@CNetSessHost@@QAEHHH@Z	100.0000	100.0000	2	ffa0a9089fd8	0xc4b60
 netcmdsession	?CheckLatency@CNetSession@@QAEHH@Z	100.0000	100.0000	1	583391306bf3	0xc04a0
@@ -3345,6 +3347,7 @@ siriusworkerhandlers	??0WorkerFull@@QAE@HHH@Z	100.0000	100.0000	2	864075c7c48f	0
 siriusworkerhandlers	?Handler03d670@@YAHPAUOwner@@@Z	100.0000	100.0000	1	839c531d42a0	0x3d670
 siriusworkerhandlers	?Handler07db20@@YAHPAUOwner@@@Z	100.0000	100.0000	1	b23002ac8904	0x7db20
 siriusworkerhandlers	?Handler07dda0@@YAHPAUOwner@@@Z	100.0000	100.0000	1	27f15168f4f5	0x7dda0
+slotcombofill	?Method2a45@CMultiSlotList@@QAEHHH@Z	59.1579	59.1579	1	da5e03287e82	0x37ff0
 soundbankload	?Load@CSoundBank@@QAEHPBDH@Z	75.4737	75.4737	2	240d06367d98	0x138aa0
 sounddevice	??0SoundDevice@@QAE@XZ	56.9688	56.9688	2	72c4d8e2de4f	0x136440
 sounddevice	??1SoundDevice@@QAE@XZ	28.2353	28.2353	2	9d5238e6dbb8	0x136500

@@ -106,7 +106,6 @@ namespace ApiCallerStubs {
     // the N/4 from the callee's `ret N`.
     struct ThisStubOwnerUnknown {
         i32 winapi_015fe0_SendMessageA(i32);
-        i32 winapi_017030_GetWindow();
         i32 winapi_032ce0_IntersectRect(i32);
         i32 winapi_075c60_CopyRect_SetRect(i32, i32, i32, i32, i32, i32);
         i32 winapi_0c46b0_KillTimer_timeGetTime_wsprintfA();
@@ -480,14 +479,6 @@ namespace ApiCallerStubs {
     }
 
     // @confidence: low
-    // @source: winapi:GetWindow
-    // @stub
-    // proximity: CBattlezDlg@-0xd0 | CBattlezDlgCustom@+0x110
-    RVA(0x00017030, 0xc1)
-    i32 ThisStubOwnerUnknown::winapi_017030_GetWindow() {
-        return 0;
-    }
-
     // @confidence: low
     // @source: winapi:SendMessageA
     // @stub
@@ -753,14 +744,6 @@ namespace ApiCallerStubs {
     // @stub
     RVA(0x00037260, 0x1fd)
     i32 winapi_037260_GetScrollInfo_SetScrollInfo() {
-        return 0;
-    }
-
-    // @confidence: low
-    // @source: winapi:GetDlgItem;SendMessageA
-    // @stub
-    RVA(0x00037ff0, 0xe7)
-    i32 __stdcall winapi_037ff0_GetDlgItem_SendMessageA(i32, i32) {
         return 0;
     }
 
@@ -1926,14 +1909,6 @@ namespace ApiCallerStubs {
             SetTimer(hWnd, 1, 0x2ee, 0);
             g_dlgItem_648ce0 = GetDlgItem(hWnd, 0x4b6);
         }
-    }
-
-    // @confidence: low
-    // @source: winapi:GetWindow;GetWindowLongA;SetWindowLongA
-    // @stub
-    RVA(0x000c1840, 0x16e)
-    i32 winapi_0c1840_GetWindow_GetWindowLongA_SetWindowLongA() {
-        return 0;
     }
 
     // @confidence: low
@@ -4065,14 +4040,6 @@ namespace ApiCallerStubs {
             return 0;
         }
         return Use176e70(data, arg);
-    }
-
-    // @confidence: low
-    // @source: winapi:SendMessageA
-    // @stub
-    RVA(0x00178470, 0x11e)
-    i32 __stdcall winapi_178470_SendMessageA(i32, i32) {
-        return 0;
     }
 
     // @confidence: low

@@ -149,7 +149,40 @@ CBattlezDlgCustom::CBattlezDlgCustom(CWnd* pParent) : CDialog(0xc3, pParent) {}
 // as ~CBattlezDlg - one extra most-derived vptr re-stamp our polymorphic model emits
 // that retail elided; chain otherwise byte-exact. ~94.4%.
 RVA(0x00017140, 0x47)
-CBattlezDlgCustom::~CBattlezDlgCustom() {}
+inline CBattlezDlgCustom::~CBattlezDlgCustom() {}
+
+// ShowCustomDlg (0x17030) - stack-construct a CBattlezDlgCustom and DoModal it;
+// on IDOK, if its custom-name CString m_5c is non-empty, uppercase it and shove it
+// into the child window of the 0x4ff combo (GetWindow(GW_CHILD) -> FromHandle ->
+// SetWindowText), then latch m_68. The /GX EH frame + inlined ~CBattlezDlgCustom
+// (member ~CString m_5c + base ~CDialog) unwind the local dialog. The dialog ctor
+// (0x1ccb thunk), DoModal, MakeUpper, GetDlgItem, FromHandle, SetWindowText, and
+// the CString ctor/dtor are all NAFXCW/thunk calls that reloc-mask. Marking
+// ~CBattlezDlgCustom `inline` is what makes /Ob1 inline the teardown here (retail
+// inlined it too - separate ~CString + ~CDialog calls, not one ??1 call).
+// @early-stop
+// vptr-restamp-presence wall (docs/patterns/eh-dtor-vptr-restamp-presence.md): the
+// inlined ~CBattlezDlgCustom teardown emits one extra `mov [esp+4],&??_7CBattlezDlgCustom`
+// vptr re-stamp before ~CString that retail elided (its vtable already equals the base
+// through the dtor). The ctor/DoModal/GetLength/MakeUpper/GetDlgItem/GetWindow/FromHandle/
+// SetWindowText chain + the /GX frame are byte-exact; the restamp shifts the tail and its
+// EH trylevel numbering (retail 0/1/2/-1 vs 0/1/-1) + the child!=0 branch polarity. Same
+// wall the out-of-line ~CBattlezDlgCustom (0x17140) hits; not source-steerable. ~92.9%.
+RVA(0x00017030, 0xc1)
+void CBattlezDlg::ShowCustomDlg() {
+    CBattlezDlgCustom dlg(0);
+    if (dlg.DoModal() == 1) {
+        if (dlg.m_5c.GetLength() != 0) {
+            dlg.m_5c.MakeUpper();
+            CWnd* item = GetDlgItem(0x4ff);
+            CWnd* child = CWnd::FromHandle(GetWindow(item->m_hWnd, GW_CHILD));
+            if (child != 0) {
+                child->SetWindowTextA(dlg.m_5c);
+                m_68 = 1;
+            }
+        }
+    }
+}
 
 // ---------------------------------------------------------------------------
 RVA(0x00017930, 0x3a)
