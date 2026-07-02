@@ -102,14 +102,14 @@ i32 CMenuPage::Configure(CMenuItem* tmpl, i32 a1, i32 a2, i32 a3, i32 a4) {
     m_4 = tmpl;
     m_c = (const char*)a1;
     m_8 = (const char*)a3;
-    *(i32*)((char*)this + 0x48) = t[7]; // tmpl+0x1c
-    *(i32*)((char*)this + 0x44) = t[6]; // tmpl+0x18
-    *(i32*)((char*)this + 0x30) = a4;
-    // 4-dword block copy tmpl+0x8 -> this+0x34 (the layout/geometry rect).
+    m_rowSpacing = t[7]; // tmpl+0x1c
+    m_headGap = t[6];    // tmpl+0x18
+    m_30 = a4;
+    // 4-dword block copy tmpl+0x8 -> this+0x34 (the layout rect L,T,R,B).
     struct Geom4 {
         i32 a, b, c, d;
     };
-    *(Geom4*)((char*)this + 0x34) = *(Geom4*)((char*)tmpl + 0x8);
+    *(Geom4*)&m_rectLeft = *(Geom4*)((char*)tmpl + 0x8);
     m_58 = 0;
     m_5c = 0;
     void* slot = 0;
@@ -393,10 +393,10 @@ i32 CMenuPage::Layout(i32 ctx) {
     if (m_30 & 4) {
         return LayoutOne(ctx);
     }
-    i32 x0 = *(i32*)((char*)this + 0x34);
-    i32 x1 = *(i32*)((char*)this + 0x3c);
+    i32 x0 = m_rectLeft;
+    i32 x1 = m_rectRight;
     i32 x = (((x1 - x0 + 1) / 2)) + m_58 + x0;
-    i32 y = m_5c + *(i32*)((char*)this + 0x38);
+    i32 y = m_5c + m_rectTop;
     CMenuPage* sub = m_60;
     if (sub) {
         i32 idx = *(i32*)((char*)sub + 0x64);
@@ -405,7 +405,7 @@ i32 CMenuPage::Layout(i32 ctx) {
         if (head) {
             y += head->m_1c;
             ((CMenuPlacer*)head)->Place(ctx, x, y, 0);
-            y += *(i32*)((char*)this + 0x44) + head->m_1c;
+            y += m_headGap + head->m_1c;
         }
     }
     CMenuListNode* node = (CMenuListNode*)m_14.GetHeadPosition();
@@ -420,7 +420,7 @@ i32 CMenuPage::Layout(i32 ctx) {
                 ((CMenuRenderHost*)m_4)->Draw(ctx, item, x, y);
             }
             y += item->GetWidth() / 2;
-            y += *(i32*)((char*)this + 0x48);
+            y += m_rowSpacing;
         }
     }
     return 1;
@@ -482,10 +482,10 @@ i32 CMenuPage::CanWrap() {
 // steerable (canonicalizes to the same register pick). Logic complete.
 RVA(0x00183e50, 0x11c)
 i32 CMenuPage::LayoutOne(i32 ctx) {
-    i32 x0 = *(i32*)((char*)this + 0x34);
-    i32 x1 = *(i32*)((char*)this + 0x3c);
+    i32 x0 = m_rectLeft;
+    i32 x1 = m_rectRight;
     i32 x = (((x1 - x0 + 1) / 2)) + m_58 + x0;
-    i32 y = m_5c + *(i32*)((char*)this + 0x38);
+    i32 y = m_5c + m_rectTop;
     CMenuPage* sub = m_60;
     if (sub) {
         i32 idx = *(i32*)((char*)sub + 0x64);
@@ -494,11 +494,10 @@ i32 CMenuPage::LayoutOne(i32 ctx) {
         if (head) {
             y += head->m_1c;
             ((CMenuPlacer*)head)->Place(ctx, x, y, 0);
-            y += *(i32*)((char*)this + 0x44) + head->m_1c;
+            y += m_headGap + head->m_1c;
         }
     }
-    i32 col = (((*(i32*)((char*)this + 0x4c)) / 2)) + *(i32*)((char*)this + 0x34)
-              + *(i32*)((char*)this + 0x54);
+    i32 col = ((m_colWidth / 2)) + m_rectLeft + m_colOffset;
     i32 ytop = y;
     i32 row = 0;
     CMenuListNode* node = (CMenuListNode*)m_14.GetHeadPosition();
@@ -513,12 +512,12 @@ i32 CMenuPage::LayoutOne(i32 ctx) {
                 ((CMenuRenderHost*)m_4)->Draw(ctx, item, col, y);
             }
             y += item->GetWidth() / 2;
-            y += *(i32*)((char*)this + 0x48);
+            y += m_rowSpacing;
         }
-        if (++row < *(i32*)((char*)this + 0x50)) {
+        if (++row < m_rowsPerCol) {
             // same column
         } else {
-            col += *(i32*)((char*)this + 0x4c);
+            col += m_colWidth;
             y = ytop;
             row = 0;
         }
@@ -541,7 +540,7 @@ i32 CMenuPage::FocusForwardN() {
     if (!pos) {
         return 0;
     }
-    i32 n = *(i32*)((char*)this + 0x50);
+    i32 n = m_rowsPerCol;
     CMenuItem* found = 0;
     if (n >= 0) {
         n++;
@@ -582,7 +581,7 @@ i32 CMenuPage::FocusBackwardN() {
     if (!pos) {
         return 0;
     }
-    i32 n = *(i32*)((char*)this + 0x50);
+    i32 n = m_rowsPerCol;
     CMenuItem* found = 0;
     if (n >= 0) {
         n++;

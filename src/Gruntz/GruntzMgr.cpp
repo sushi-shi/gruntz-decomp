@@ -1418,11 +1418,11 @@ i32 CGruntzMgr::PopTopIfMatches(CState* s) {
     if (!s) {
         return 0;
     }
-    i32 n = *(i32*)((char*)this + 0xe0);
+    i32 n = *(i32*)((char*)&m_stateStack + 8);
     if (n <= 0) {
         return 0;
     }
-    CState* top = (*(CState***)((char*)this + 0xdc))[n - 1];
+    CState* top = (*(CState***)((char*)&m_stateStack + 4))[n - 1];
     ((CStateStackZ*)&m_stateStack)->RemoveAt(n - 1, 1);
     return top == s;
 }
@@ -1433,8 +1433,8 @@ i32 CGruntzMgr::PopTopIfMatches(CState* s) {
 // (+0xe0/+0xdc) so the array base is not hoisted into a register.
 RVA(0x00090a50, 0x40)
 void CGruntzMgr::ClearStateStack() {
-    for (i32 i = 0; i < *(i32*)((char*)this + 0xe0); i++) {
-        CState* s = (*(CState***)((char*)this + 0xdc))[i];
+    for (i32 i = 0; i < *(i32*)((char*)&m_stateStack + 8); i++) {
+        CState* s = (*(CState***)((char*)&m_stateStack + 4))[i];
         if (s) {
             delete s;
         }
@@ -2184,6 +2184,10 @@ i32 CGruntzMgr::LoadOptionsSlotName(
     i32 /*a7*/
 ) {
     if (CheckPlayState()) {
+        // Authentic codegen idiom: the base folds the array's +0x150 into the
+        // field displacements (+0x170 = m_20, +0x154 = m_name), so cl emits the
+        // slot lea with disp 0; naming via &m_options[slot] shifts the lea base
+        // and drops the match (verified -3%). Kept raw.
         OptionsSlot* s = (OptionsSlot*)((char*)this + slot * 0x238);
         if (*(i32*)((char*)s + 0x170) == 0) {    // s->m_20 (options base +0x150 +0x20)
             *(CString*)((char*)s + 0x154) = val; // s->m_name (options base +0x150 +0x04)
@@ -2199,7 +2203,7 @@ i32 CGruntzMgr::LoadOptionsSlotName(
 RVA(0x00092e30, 0x39)
 i32 CGruntzMgr::CountReadyOptionsSlots(i32 anyState) {
     i32 count = 0;
-    char* p = (char*)this + 0x164; // &m_options[0].m_14
+    char* p = (char*)&m_options[0] + 0x14; // &m_options[0].m_14
     for (i32 d = 4; d != 0; d--) {
         char* slot = p - 0x14; // slot base
         if (slot && *(i32*)(p + 0xc) != 0 && (anyState != 0 || *(i32*)p != 0)) {
@@ -2222,7 +2226,7 @@ i32 CGruntzMgr::CountReadyOptionsSlots(i32 anyState) {
 // zero-register-pinning family (docs/patterns/zero-register-pinning.md).
 RVA(0x00092e80, 0x25)
 OptionsSlot* CGruntzMgr::FindOptionsSlot(i32 x) {
-    OptionsSlot* slot = (OptionsSlot*)((char*)this + 0x150);
+    OptionsSlot* slot = (OptionsSlot*)m_options;
     i32 i = 0;
     do {
         if (slot && slot->m_18 == x) {
@@ -2346,7 +2350,7 @@ i32 CGruntzMgr::BroadcastCmd(i32 a0, i32 cmd, i32 a2, i32 a3) {
             break;
     }
 
-    OptionsSlot* slot = (OptionsSlot*)((char*)this + 0x150);
+    OptionsSlot* slot = (OptionsSlot*)m_options;
     for (i32 i = 0; i < 4; i++) {
         if (slot == 0 || slot->Command(a0, cmd, a2, a3) == 0) {
             return 0;
@@ -2843,7 +2847,7 @@ void CGruntzMgr::StoreInputFlag(i32 v) {
 // the `if (&elem)` guard fall out of the manual per-element loop).
 RVA(0x00092ec0, 0x24)
 void CGruntzMgr::ClearOptionsSlots() {
-    char* p = (char*)this + 0x174; // &m_options[0].m_24
+    char* p = (char*)&m_options[0] + 0x24; // &m_options[0].m_24
     for (i32 i = 4; i != 0; i--) {
         char* elem = p - 0x24;
         if (elem) {
@@ -2874,7 +2878,7 @@ i32 CGruntzMgr::AdvanceOptionsCycle() {
     i32 cursor = (g_6455fc + 1) & 3;
     g_6455fc = cursor;
     for (i32 i = 0; i < m_optionsCount + 1; i++) {
-        OptionsSlot* slot = (OptionsSlot*)((char*)this + 0x150 + i * 0x238);
+        OptionsSlot* slot = (OptionsSlot*)&m_options[i];
         if (cursor == i && slot->m_14 == 0 && slot->m_20 != 0) {
             slot->m_38.Tick();
             cursor = g_6455fc;
@@ -2915,9 +2919,9 @@ i32 CGruntzMgr::SyncOptionsState() {
     g_6455fc = 0;
 
     i32 idx = 0;
-    OptionsTickSub* tick = &((OptionsSlot*)((char*)this + 0x150))->m_38;
-    i32* cfgp = &((OptionsSlot*)((char*)this + 0x150))->m_10;
-    i32* arm = &((OptionsSlot*)((char*)this + 0x150))->m_14;
+    OptionsTickSub* tick = &((OptionsSlot*)m_options)->m_38;
+    i32* cfgp = &((OptionsSlot*)m_options)->m_10;
+    i32* arm = &((OptionsSlot*)m_options)->m_14;
     for (i32 i = 0; i < m_optionsCount; i++) {
         i32 cfg;
         if (idx == g_644c54) {

@@ -71,9 +71,10 @@ static const char s_WG_IDLE3[] = "GRUNTZ_WINGZGRUNT_IDLE3";
 static const char s_WG_IDLE4[] = "GRUNTZ_WINGZGRUNT_IDLE4";
 static const char s_WG_IDLE5[] = "GRUNTZ_WINGZGRUNT_IDLE5";
 
-// The entrance-cell record fields (raw offset; +0x470 = field0, +0x474 = field1).
-#define CELL_F0(k) (*(CString*)((char*)this + 0x470 + (k) * 0x68))
-#define CELL_F1(k) (*(CString*)((char*)this + 0x474 + (k) * 0x68))
+// The entrance-cell record CString fields: two per m_cells[k] record (0x68 stride),
+// at record +8 (0x470) and +0xc (0x474). Byte-arith into the owned cell sub-object.
+#define CELL_F0(k) (*(CString*)((char*)&m_cells[(k)] + 8))
+#define CELL_F1(k) (*(CString*)((char*)&m_cells[(k)] + 0xc))
 #define WLOOKUP(key) (m_154->m_c->m_2c->m_10map.Lookup((key), &_out))
 
 // ---------------------------------------------------------------------------
@@ -200,7 +201,7 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
         i32* elem = desc->m_10 > 0 ? *desc->m_c : 0;
         i32 frame = elem[0x14 / 4];
         i32 idx = 3 * m_entranceCell[0] + m_entranceCell[1];
-        char* buf = GruntStrGetBuffer((char*)this + 0x470 + idx * 0x68, 0);
+        char* buf = GruntStrGetBuffer((char*)&m_cells[idx] + 8, 0);
         m_154->GameApplyLookupSprite(buf, frame);
         return 1;
     }
@@ -214,7 +215,7 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
         i32* elem = desc->m_10 > 0 ? *desc->m_c : 0;
         i32 frame = elem[0x14 / 4];
         i32 idx = 3 * m_entranceCell[0] + m_entranceCell[1];
-        char* buf = GruntStrGetBuffer((char*)this + 0x474 + idx * 0x68, 0);
+        char* buf = GruntStrGetBuffer((char*)&m_cells[idx] + 0xc, 0);
         m_154->GameApplyLookupSprite(buf, frame);
     }
     return 1;
@@ -525,7 +526,7 @@ enum GruntDeathType {
 // the final sweep.
 RVA(0x00060150, 0xd90)
 i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
-    if (*(i32*)((char*)this + 0x368) != 0) {
+    if (m_368 != 0) {
         return 0;
     }
 
@@ -534,7 +535,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
     ClearSubB();         // 0x57ce0
 
     m_10->m_40 &= ~8;
-    *(i32*)((char*)this + 0x368) = 1;
+    m_368 = 1;
     m_health = 0;
     m_entranceCommitted = 0;
 
@@ -569,7 +570,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
 
     if (m_poweredUp != 0 && m_neighborValid == 0) {
         m_entranceActive = 0;
-        *(i32*)((char*)this + 0x218) = 0;
+        m_218 = 0;
         m_neighborValid = 0;
         m_poweredUp = 0;
         Stub_062e10(1, 0, 0); // 0x62e10
@@ -586,7 +587,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
     }
 
     if (a2 != -1) {
-        *(i32*)((char*)this + 0x370) = a2;
+        m_370 = a2;
         (*(CDeathReg7c**)((char*)g_pGameRegistry + 0x7c))->Notify(a2, m_tileOwnerHi); // 0xfcc50
     }
 
@@ -774,7 +775,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
         default:
             m_prevEntranceDesc = (i32)m_154->m_1b4;
             m_154->m_1a0.SetGeometry(m_poseDeath);
-            m_154->GameApplyName(*(char**)((char*)this + 0x44c));
+            m_154->GameApplyName(*(char**)&m_44c);
             {
                 CGameRegistry* g = g_pGameRegistry;
                 i32* rect = (i32*)(g->m_30->m_24->m_5c + 0x40);
@@ -793,7 +794,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
     }
 
 pathA:
-    m_154->GameApplyName(*(char**)((char*)this + 0x44c));
+    m_154->GameApplyName(*(char**)&m_44c);
     {
         CGameRegistry* g = g_pGameRegistry;
         if (GruntPointVisible(g->m_30->m_24->m_5c + 0x40, m_10->m_5c, m_10->m_60)) {
@@ -809,13 +810,13 @@ finalize:
 tail:
     // block B: m_38c finalize cue
     if (m_entranceReason == 0x14 && g_pGameRegistry->m_134 != 1) {
-        m_tileMgr->NotifyDeathTile(m_10->m_5c, m_10->m_60, *(i32*)((char*)this + 0x38c));
+        m_tileMgr->NotifyDeathTile(m_10->m_5c, m_10->m_60, m_38c);
     }
-    if (*(i32*)((char*)this + 0x2d0) == 0xd) {
+    if (m_arrivalState == 0xd) {
         TryPowerupAtTile();
     }
     m_gruntKind = 0;
-    *(i32*)((char*)this + 0x360) = deathType;
+    m_deathType = deathType;
     return 0;
 }
 

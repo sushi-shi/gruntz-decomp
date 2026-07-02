@@ -15,7 +15,8 @@
 //   +0x10 m_10  - CString
 //   +0x14 m_14  - CPtrList of child items (m_pNodeHead lands at +0x18; node {next,prev,data@+8})
 //   +0x30 m_30  - flag byte (0x1 enabled, 0x2 hidden, 0x4 mode, 0x8 sub-mode)
-//   +0x34..+0x48 - layout / geometry scalars
+//   +0x34..+0x54 - layout scalars: rect{L,T,R,B}, headGap, rowSpacing,
+//                  colWidth, rowsPerCol, colOffset (named)
 //   +0x58 m_58  - geometry accumulator (zeroed in ctor)
 //   +0x5c m_5c  - geometry accumulator (zeroed in ctor)
 //   +0x60 m_60  - sub-page / name-cache pointer (CMapStringToPtr::Lookup result)
@@ -80,7 +81,15 @@ public:
     CString m_10;
     CPtrList m_14;
     i32 m_30;
-    char m_pad34[0x58 - 0x34];
+    i32 m_rectLeft;   // +0x34  page rect (block-copied from template +0x8): left
+    i32 m_rectTop;    // +0x38  top (initial y = m_5c + m_rectTop)
+    i32 m_rectRight;  // +0x3c  right (x center = (right-left+1)/2 + m_58 + left)
+    i32 m_rectBottom; // +0x40  bottom
+    i32 m_headGap;    // +0x44  gap after sub-page head item (template +0x18)
+    i32 m_rowSpacing; // +0x48  per-item vertical advance (template +0x1c)
+    i32 m_colWidth;   // +0x4c  column width (grid wrap step)
+    i32 m_rowsPerCol; // +0x50  rows per column / focus stride
+    i32 m_colOffset;  // +0x54  column x-offset
     i32 m_58;
     i32 m_5c;
     CMenuPage* m_60;

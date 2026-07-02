@@ -255,7 +255,10 @@ public:
     void* m_c;       // +0x00c  manager (vfn host, +0x24 chain, +0x20 sub-window)
     char m_pad10_2c[0x2c - 0x10];
     i32 m_2c; // +0x02c  saved/restored handle around the title build
-    char m_pad30_1b4[0x1b4 - 0x30];
+    char m_pad30_150[0x150 - 0x30];
+    i32 m_150; // +0x150  Tick redraw region arg b
+    i32 m_154; // +0x154  Tick redraw region arg c
+    char m_pad158_1b4[0x1b4 - 0x158];
     CString m_1b4; // +0x1b4
     char m_pad1b8_1cc[0x1cc - 0x1b8];
     i32 m_1cc; // +0x1cc  reseeded to 0
@@ -264,10 +267,12 @@ public:
     i32 m_2d4;          // +0x2d4  Drain() result
     i32 m_2d8;          // +0x2d8  rng seed
     CMultiSubDC* m_2dc; // +0x2dc  per-frame sub (Step34bd)
-    char m_pad2e0_2e4[0x2e4 - 0x2e0];
+    void* m_2e0;        // +0x2e0  per-frame sub (PBSub2e0::Step2bfd)
     CMultiSubE4* m_2e4; // +0x2e4  per-frame sub (Step2cc0)
-    char m_pad2e8_320[0x320 - 0x2e8];
-    CLobbyObjA* m_320; // +0x320  heap obj (thiscall teardown + _RezFree)
+    char m_pad2e8_30c[0x30c - 0x2e8];
+    i32 m_30c;                 // +0x30c  overlay-active flag (PumpB)
+    char m_310[0x320 - 0x310]; // +0x310  blit palette/param block (passed by address)
+    CLobbyObjA* m_320;         // +0x320  heap obj (thiscall teardown + _RezFree)
     char m_pad324_338[0x338 - 0x324];
     i32 m_338; // +0x338  ambient-window clock (int64 low, high at m_33c)
     i32 m_33c; // +0x33c
@@ -281,7 +286,19 @@ public:
     char m_pad3f4_410[0x410 - 0x3f4];
     CString m_410; // +0x410
     i32 m_414;     // +0x414  zeroed each Tick
-    char m_pad418_488[0x488 - 0x418];
+    char m_pad418_430[0x430 - 0x418];
+    i32 m_430; // +0x430  overlay-A deadline clock (int64 low, high at m_434)
+    i32 m_434; // +0x434
+    i32 m_438; // +0x438  overlay-A interval (int64 low, high at m_43c)
+    i32 m_43c; // +0x43c
+    i32 m_440; // +0x440  overlay-B deadline clock (int64 low, high at m_444)
+    i32 m_444; // +0x444
+    i32 m_448; // +0x448  overlay-B interval (int64 low, high at m_44c)
+    i32 m_44c; // +0x44c
+    char m_pad450_470[0x470 - 0x450];
+    i32 m_470; // +0x470  overlay-A enable flag
+    i32 m_474; // +0x474  overlay-B enable flag
+    char m_pad478_488[0x488 - 0x478];
     CByteArray m_488; // +0x488
     char m_pad49c_520[0x520 - 0x49c];
     CNetSession2* m_520;     // +0x520  heap obj (thiscall teardown + _RezFree)

@@ -337,7 +337,7 @@ i32 CMulti::Connect(i32 mode) {
 RVA(0x000b6890, 0x21b)
 i32 CMulti::Tick() {
     m_414 = 0;
-    vtbl()->Redraw(this, 0, *(i32*)((char*)this + 0x150), *(i32*)((char*)this + 0x154));
+    vtbl()->Redraw(this, 0, m_150, m_154);
     i32 oldT = m_5dc;
     i32 t = timeGetTime();
     m_5dc = t;
@@ -737,11 +737,11 @@ void CMulti::PumpB() {
     }
     self->H259a();
     self->H1da7();
-    if (*(i32*)((char*)this + 0x470) != 0) {
+    if (m_470 != 0) {
         mgr->m_4->m_14->m_2c->Present760(0);
         ((PBSubDC*)m_2dc)->Advance125d();
     }
-    if (*(i32*)((char*)this + 0x30c) == 0) {
+    if (m_30c == 0) {
         if (((PBSub68*)m_4->m_68)->m_230 != 0) {
             ((PBSub68*)m_4->m_68)->Fire1398();
         } else {
@@ -750,14 +750,14 @@ void CMulti::PumpB() {
     }
     self->H3850();
     (*(PBOutput**)((char*)m_4 + 0x54))->Blit1a7d(mgr->m_24->m_5c->m_84, mgr->m_24->m_5c->m_88);
-    if (*(i32*)((char*)this + 0x474) != 0) {
+    if (m_474 != 0) {
         self->H1ae6();
     } else {
         mgr->m_24->M15dc90(mgr->m_4->m_14, mgr->m_8);
         mgr->m_c->Blit34(mgr->m_4->m_14, (i32)mgr->m_4->m_18);
     }
     ((PBSubDC*)m_2dc)->Present21b7();
-    if (*(void**)((char*)this + 0x320) != 0) {
+    if (m_320 != 0) {
         PBSubDC* fx = (PBSubDC*)m_2dc;
         if (fx->m_0 != 2 && fx->m_10c != 5) {
             RECT rc;
@@ -769,7 +769,7 @@ void CMulti::PumpB() {
                 rc.top = cx;
                 SetRect(&rc, cy - 140, 5, cy - 20, 125);
             }
-            PBSub320* ov = (PBSub320*)*(void**)((char*)this + 0x320);
+            PBSub320* ov = (PBSub320*)m_320;
             ov->Tick1fa0(g_645584, 0);
             ov->Render14dd(mgr->m_4->m_14, &rc);
         }
@@ -779,26 +779,26 @@ void CMulti::PumpB() {
     if (h == 0) {
         return;
     }
-    ((PBSub2e0*)*(void**)((char*)this + 0x2e0))->Step2bfd(h);
+    ((PBSub2e0*)m_2e0)->Step2bfd(h);
     self->H3797();
     ((PBSub68*)m_4->m_68)->Reset2b85();
     self->H2e2d(g_645584);
     self->H1519(h);
-    if (*(i32*)((char*)this + 0x30c) != 0) {
-        h->Blit163f40((char*)this + 0x310, 0xff);
+    if (m_30c != 0) {
+        h->Blit163f40(m_310, 0xff);
     }
     mgr->m_4->m_10->m_2c->Present850(0);
-    PumpBRefresh2356(g_64556c, m_2dc, *(i32*)((char*)this + 0x470));
+    PumpBRefresh2356(g_64556c, m_2dc, m_470);
     if (mgr->m_24->m_5c != 0) {
         mgr->m_24->m_5c->Flush163370();
     }
-    if (*(i32*)((char*)this + 0x470) != 0) {
-        if ((i64)g_645588 - *(i64*)((char*)this + 0x430) >= *(i64*)((char*)this + 0x438)) {
+    if (m_470 != 0) {
+        if ((i64)g_645588 - *(i64*)&m_430 >= *(i64*)&m_438) {
             self->H3a85(0);
         }
     }
-    if (*(i32*)((char*)this + 0x474) != 0) {
-        if ((i64)g_645588 - *(i64*)((char*)this + 0x440) >= *(i64*)((char*)this + 0x448)) {
+    if (m_474 != 0) {
+        if ((i64)g_645588 - *(i64*)&m_440 >= *(i64*)&m_448) {
             self->H3792(0);
         }
     }

@@ -1477,14 +1477,14 @@ public:
     char m_pad340[0x344 - 0x340];
     void* m_344; // +0x344
     char m_pad348[0x358 - 0x348];
-    i32 m_358; // +0x358
-    i32 m_35c; // +0x35c
-    char m_pad360[0x364 - 0x360];
-    i32 m_364; // +0x364 (entrance: set to 1)
-    i32 m_368; // +0x368
-    i32 m_36c; // +0x36c
-    char m_pad370[0x374 - 0x370];
-    i32 m_374; // +0x374
+    i32 m_358;       // +0x358
+    i32 m_35c;       // +0x35c
+    i32 m_deathType; // +0x360 (last LoadGruntDeathAnimations kind; serialized w/ m_364)
+    i32 m_364;       // +0x364 (entrance: set to 1)
+    i32 m_368;       // +0x368 (death-animation-started latch)
+    i32 m_36c;       // +0x36c
+    i32 m_370;       // +0x370 (death-notify arg a2; serialized)
+    i32 m_374;       // +0x374
     char m_pad378[0x37c - 0x378];
     i32 m_37c; // +0x37c
     i32 m_380; // +0x380
