@@ -121,7 +121,10 @@ struct CGameObject {
     i32 m_58; // +0x58  dirty/active flag
     i32 m_5c; // +0x5c  screen x
     i32 m_60; // +0x60  screen y
-    char m_pad64[0x74 - 0x64];
+    i32 m_64; // +0x64  captured config triple (checkpoint state slots 12..14)
+    i32 m_68; // +0x68
+    i32 m_6c; // +0x6c
+    char m_pad70[0x74 - 0x70];
     i32 m_74; // +0x74
     char m_pad78[0x7c - 0x78];
     CGameObjAux* m_7c; // +0x7c
@@ -138,12 +141,19 @@ struct CGameObject {
     i32 m_124; // +0x124  sprite-selector row key (leaf ctors pass it to ApplyLookupSprite)
     i32 m_128; // +0x128  visibility/place mode (1 or 2; the on-screen gate discriminator)
     i32 m_12c; // +0x12c  CSpotLight ctor: m_58 scale gate
-    char m_pad130[0x144 - 0x130];
+    char m_pad130[0x134 - 0x130];
+    i32 m_134; // +0x134  per-side tile-span config (checkpoint/voice/exit/slime bounds)
+    i32 m_138; // +0x138
+    i32 m_13c; // +0x13c
+    i32 m_140; // +0x140
     i32 m_144; // +0x144  (CSpotLight ctor zeros 0x144/0x148/0x14c/0x150)
     i32 m_148; // +0x148
     i32 m_14c; // +0x14c
     i32 m_150; // +0x150
-    char m_pad154[0x164 - 0x154];
+    i32 m_154; // +0x154  captured config block (checkpoint state slots 8..11)
+    i32 m_158; // +0x158
+    i32 m_15c; // +0x15c
+    i32 m_160; // +0x160
     i32 m_164; // +0x164
     i32 m_168; // +0x168
     char m_pad16c[0x198 - 0x16c];

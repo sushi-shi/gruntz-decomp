@@ -25,29 +25,12 @@ public:
 };
 SIZE_UNKNOWN(CVoiceTrigger);
 
-// The bound CGameObject (m_10/m_38) viewed by the ctor: the tile-config bound
-// counts at +0x134..+0x140 and the derived screen-rect bounds at +0x144..+0x150
-// (the SAME shape CExitTrigger/CCheckpointTrigger seed). +0x08 flag word, +0x40
-// pending bit. Only the touched offsets are modeled.
-struct VTrigCtorObj {
-    char m_pad00[0x08];
-    i32 m_08; // +0x08  flag word
-    char m_pad0c[0x40 - 0x0c];
-    i32 m_40; // +0x40  pending bit
-    char m_pad44[0x5c - 0x44];
-    i32 m_5c; // +0x5c  screen X
-    i32 m_60; // +0x60  screen Y
-    char m_pad64[0x134 - 0x64];
-    i32 m_134; // +0x134  left tile span
-    i32 m_138; // +0x138  top tile span
-    i32 m_13c; // +0x13c  right tile span
-    i32 m_140; // +0x140  bottom tile span
-    i32 m_144; // +0x144  derived left bound
-    i32 m_148; // +0x148  derived top bound
-    i32 m_14c; // +0x14c  derived right bound
-    i32 m_150; // +0x150  derived bottom bound
-};
-SIZE_UNKNOWN(VTrigCtorObj);
+// The bound object is the inherited CUserLogic m_10/m_38 (CGameObject*); the ctor
+// and Tick use them directly (the CTeleporter idiom - no per-TU view cast).
+// CGameObject models the touched fields: +0x08 flag word, +0x40 pending bit, the
+// tile-config bound counts at +0x134..+0x140 (the SAME shape CExitTrigger/
+// CCheckpointTrigger seed), the derived screen-rect bounds at +0x144..+0x150, the
+// screen pos +0x5c/+0x60, and the voice-cue ids +0x124/+0x128.
 
 // ---------------------------------------------------------------------------
 // The activation registry CVoiceTrigger::RegisterActs (0x11a500) binds into - the
@@ -172,29 +155,10 @@ struct CVoiceHit {
 };
 SIZE_UNKNOWN(CVoiceHit);
 
-// The bound sprite (this->m_10): +0x5c/+0x60 = screen x/y, +0x124/+0x128 = the
-// voice-cue ids passed to CueA, +0x134/+0x144 = the probe rect bounds.
-struct CVoiceSprite {
-    char m_pad0[0x5c];
-    i32 m_5c; // +0x5c  screen x
-    i32 m_60; // +0x60  screen y
-    char m_pad64[0x124 - 0x64];
-    i32 m_124; // +0x124 voice-cue id a
-    i32 m_128; // +0x128 voice-cue id b
-    char m_pad12c[0x134 - 0x12c];
-    i32 m_134; // +0x134 probe rect lo
-    char m_pad138[0x144 - 0x138];
-    i32 m_144; // +0x144 probe rect hi
-};
-SIZE_UNKNOWN(CVoiceSprite);
-
-// The on-screen window object (this->m_38): +0x08 holds the per-frame status
-// bits (bit 0x10000 == "fired / handled this frame").
-struct CVoiceWindow {
-    char m_pad0[0x8];
-    i32 m_8; // +0x08 status bits
-};
-SIZE_UNKNOWN(CVoiceWindow);
+// Tick reads the bound object (m_10, CGameObject*) directly: +0x5c/+0x60 screen
+// x/y, +0x124/+0x128 the voice-cue ids passed to CueA, +0x134/+0x144 the probe rect
+// bounds; the on-screen window (m_38)'s +0x08 status bits carry bit 0x10000
+// ("fired / handled this frame"). All modeled on CGameObject (<Gruntz/UserLogic.h>).
 
 // The global game registry (CGameRegistry, RVA 0x24556c; wwdfile owns the DATA
 // label). The on-screen window bounds are at +0x13c/+0x140/+0x144/+0x148; the
@@ -237,20 +201,16 @@ CVoiceTrigger::~CVoiceTrigger() {}
 // source-steerable. Parked for the final sweep.
 RVA(0x00119b50, 0x1ce)
 CVoiceTrigger::CVoiceTrigger(CGameObject* obj) : CUserLogic(obj) {
-    ((VTrigCtorObj*)m_38)->m_08 |= 2;
-    ((VTrigCtorObj*)m_38)->m_40 |= 1;
+    m_38->m_08 |= 2;
+    m_38->m_40 |= 1;
     m_30 = m_14->m_1c;
     m_14->m_1c = g_buteTree.Find(s_actKeyA);
-    ((VTrigCtorObj*)m_10)->m_5c = (((VTrigCtorObj*)m_10)->m_5c & ~0x1f) + 0x10;
-    ((VTrigCtorObj*)m_10)->m_60 = (((VTrigCtorObj*)m_10)->m_60 & ~0x1f) + 0x10;
-    ((VTrigCtorObj*)m_10)->m_144 =
-        ((VTrigCtorObj*)m_10)->m_5c - (((VTrigCtorObj*)m_10)->m_134 << 5) - 7;
-    ((VTrigCtorObj*)m_10)->m_14c =
-        ((VTrigCtorObj*)m_10)->m_5c + (((VTrigCtorObj*)m_10)->m_13c << 5) + 7;
-    ((VTrigCtorObj*)m_10)->m_148 =
-        ((VTrigCtorObj*)m_10)->m_60 - (((VTrigCtorObj*)m_10)->m_138 << 5) - 7;
-    ((VTrigCtorObj*)m_10)->m_150 =
-        ((VTrigCtorObj*)m_10)->m_60 + (((VTrigCtorObj*)m_10)->m_140 << 5) + 7;
+    m_10->m_5c = (m_10->m_5c & ~0x1f) + 0x10;
+    m_10->m_60 = (m_10->m_60 & ~0x1f) + 0x10;
+    m_10->m_144 = m_10->m_5c - (m_10->m_134 << 5) - 7;
+    m_10->m_14c = m_10->m_5c + (m_10->m_13c << 5) + 7;
+    m_10->m_148 = m_10->m_60 - (m_10->m_138 << 5) - 7;
+    m_10->m_150 = m_10->m_60 + (m_10->m_140 << 5) + 7;
 }
 
 // CVoiceTrigger::InitActReg @0x11a320 - construct the trigger's OWN activation-
@@ -298,31 +258,17 @@ void CVoiceTrigger::RegisterActs() {
 RVA(0x0011a700, 0xae)
 i32 CVoiceTrigger::Tick() {
     i32 outA, outB;
-    CVoiceHit* hit = ((CVoiceSink*)g_gameReg->m_68)
-                         ->QueryAt(
-                             ((CVoiceSprite*)m_10)->m_5c,
-                             ((CVoiceSprite*)m_10)->m_60,
-                             &((CVoiceSprite*)m_10)->m_134,
-                             &outA,
-                             &outB,
-                             &((CVoiceSprite*)m_10)->m_144
-                         );
+    CVoiceHit* hit =
+        ((CVoiceSink*)g_gameReg->m_68)
+            ->QueryAt(m_10->m_5c, m_10->m_60, &m_10->m_134, &outA, &outB, &m_10->m_144);
     if (hit && outA == g_644c54) {
         CVoiceHitSprite* hs = hit->m_10;
         i32 hy = hs->m_60;
         i32 hx = hs->m_5c;
         if (hx < g_gameReg->m_144 && hx >= g_gameReg->m_13c && hy < g_gameReg->m_148
             && hy >= g_gameReg->m_140) {
-            if (((CVoiceSink*)g_gameReg->m_60)
-                    ->CueA(
-                        hit,
-                        ((CVoiceSprite*)m_10)->m_124,
-                        ((CVoiceSprite*)m_10)->m_128,
-                        0,
-                        -1,
-                        -1
-                    )) {
-                ((CVoiceWindow*)m_38)->m_8 |= 0x10000;
+            if (((CVoiceSink*)g_gameReg->m_60)->CueA(hit, m_10->m_124, m_10->m_128, 0, -1, -1)) {
+                m_38->m_08 |= 0x10000;
             }
         }
     }
