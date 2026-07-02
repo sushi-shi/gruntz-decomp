@@ -1364,11 +1364,249 @@ void CGrunt::ReadConfigFromButeMgr() {
     }
 }
 
-// @confidence: med
-// @source: decomp-xref
-// @stub
+// ---------------------------------------------------------------------------
+// CGrunt::LoadGruntMovingDeathConfig  @0x6a060  (__thiscall, ret 0)
+// Sets up the grunt's moving-death velocity vector from the tile direction under
+// its HUD center. First reads the "MovingDeathTime" bute key (default 0x3e8) and
+// stores m_400 = 16.0 / (double)ticks. Then samples the board tile-attr at the
+// grunt's current tile (m_10->m_5c/m_60 >> 5, cell dword[3]); a dense switch on
+// that direction code (two variants, chosen by g_gameReg->m_2c->+0x20 >= 5) maps
+// it to one of the 8 compass directions - each latches a velocity triple into
+// m_entranceCell[0..2] and steps m_lastTilePxX/Y by +-0x10. Finally re-latches
+// the "S" anim-set node into m_14->m_1c (saving the old into m_prevAnimSetNode)
+// and returns 1; an out-of-range direction returns 0 without the re-latch.
+// ---------------------------------------------------------------------------
+
+// "MovingDeathTime" bute key (0x60ee64) and the "S" anim-set re-latch key (0x60df94).
+static char s_MovingDeathTime[] = "MovingDeathTime";
+static const char s_animKeyS[] = "S";
+
+// The 8 compass move-velocity triples (reloc-masked DIR32 globals; runtime-init).
+i32 g_moveVecE[3];  // 0x644aa0
+i32 g_moveVecN[3];  // 0x644ab0
+i32 g_moveVecS[3];  // 0x644ac0
+i32 g_moveVecW[3];  // 0x644ad0
+i32 g_moveVecNE[3]; // 0x644ae0
+i32 g_moveVecNW[3]; // 0x644b18
+i32 g_moveVecSE[3]; // 0x644b28
+i32 g_moveVecSW[3]; // 0x644b48
+
+// @early-stop
+// jump-table-placement wall (0.4% stub -> 22%): logic is complete and correct -
+// the intro (bute GetDwordDef -> m_400 double, the board tile-attr sample, the
+// sel = g_gameReg->m_2c->+0x20 selector) is byte-exact, and BOTH dense switches
+// lower to the retail two-level byte-index+jptr tables with the 8 compass bodies
+// laid out in retail's .text order (case groups reordered per
+// docs/patterns/switch-cases-source-order.md, +6% over ascending-value order).
+// Residual: cl (this build) emits each switch's inline jump-table DATA *between*
+// the indirect `jmpl` and the case bodies, whereas retail pools BOTH switches'
+// tables past the `ret` at the function end (0x6a4a0+, outside the 0x43d body) -
+// a ~200-byte data insertion in the middle that shifts every case body offset and
+// desyncs objdiff's alignment. Not source-steerable in MSVC5 (same family as
+// docs/patterns/switch-jumptable-separate-comdat.md). Final sweep.
 RVA(0x0006a060, 0x43d)
-void CGrunt::LoadGruntMovingDeathConfig() {}
+i32 CGrunt::LoadGruntMovingDeathConfig() {
+    *(double*)((char*)this + 0x400) =
+        16.0 / (double)g_buteMgr.GetDwordDef(s_Grunt, s_MovingDeathTime, 0x3e8);
+
+    WwdGameReg* g = g_gameReg;
+    void* sub2c = *(void**)((char*)g + 0x2c);
+    GruntBoard* b = g->m_70;
+    CGruntHud* h = m_10;
+    i32 xbound = b->m_c;
+    i32 tileY = h->m_60 >> 5;
+    i32 tileX = h->m_5c >> 5;
+    i32 dir;
+    if ((u32)tileX >= (u32)xbound || (u32)tileY >= (u32)b->m_10) {
+        dir = 0;
+    } else {
+        dir = ((i32*)b->m_8[tileY])[tileX * 7 + 3];
+    }
+
+    i32 sel = *(i32*)((char*)sub2c + 0x20);
+
+// Latch the compass velocity triple into m_entranceCell[0..2] + step the last-tile
+// pixel position. Case groups are laid out so cl emits the distinct (tail-merged)
+// blocks in retail's .text order (docs/patterns/switch-cases-source-order.md).
+#define MV_VEC(V)                                                                                  \
+    m_entranceCell[0] = g_moveVec##V[0];                                                           \
+    m_entranceCell[1] = g_moveVec##V[1];                                                           \
+    m_entranceCell[2] = g_moveVec##V[2]
+#define MV_N                                                                                       \
+    MV_VEC(N);                                                                                     \
+    m_lastTilePxY -= 0x10
+#define MV_S                                                                                       \
+    MV_VEC(S);                                                                                     \
+    m_lastTilePxY += 0x10
+#define MV_E                                                                                       \
+    MV_VEC(E);                                                                                     \
+    m_lastTilePxX += 0x10
+#define MV_W                                                                                       \
+    MV_VEC(W);                                                                                     \
+    m_lastTilePxX -= 0x10
+#define MV_NE                                                                                      \
+    MV_VEC(NE);                                                                                    \
+    m_lastTilePxX += 0x10;                                                                         \
+    m_lastTilePxY -= 0x10
+#define MV_NW                                                                                      \
+    MV_VEC(NW);                                                                                    \
+    m_lastTilePxX -= 0x10;                                                                         \
+    m_lastTilePxY -= 0x10
+#define MV_SE                                                                                      \
+    MV_VEC(SE);                                                                                    \
+    m_lastTilePxX += 0x10;                                                                         \
+    m_lastTilePxY += 0x10
+#define MV_SW                                                                                      \
+    MV_VEC(SW);                                                                                    \
+    m_lastTilePxX -= 0x10;                                                                         \
+    m_lastTilePxY += 0x10
+
+    if (sel >= 5) {
+        switch (dir) {
+            case 0x86:
+            case 0x87:
+            case 0x88:
+            case 0x89:
+                MV_N;
+                break;
+            case 0x79:
+                MV_NE;
+                break;
+            case 0x6f:
+            case 0x70:
+                MV_E;
+                break;
+            case 0x63:
+            case 0x64:
+                MV_SE;
+                break;
+            case 0x65:
+            case 0x66:
+                MV_S;
+                break;
+            case 0x67:
+            case 0x68:
+                MV_SW;
+                break;
+            case 0x75:
+            case 0x76:
+                MV_W;
+                break;
+            case 0x7c:
+                MV_NW;
+                break;
+            case 0x69:
+            case 0x6a:
+            case 0x6b:
+                MV_SE;
+                break;
+            case 0x6c:
+            case 0x6d:
+            case 0x6e:
+                MV_SW;
+                break;
+            case 0x71:
+                MV_SE;
+                break;
+            case 0x74:
+                MV_SW;
+                break;
+            case 0x77:
+            case 0x78:
+                MV_E;
+                break;
+            case 0x7d:
+            case 0x7e:
+                MV_W;
+                break;
+            case 0x7f:
+            case 0x80:
+            case 0x81:
+                MV_NE;
+                break;
+            case 0x82:
+            case 0x83:
+            case 0x84:
+                MV_NW;
+                break;
+            case 0x85:
+                MV_NE;
+                break;
+            case 0x8a:
+                MV_NW;
+                break;
+            default:
+                return 0;
+        }
+    } else {
+        switch (dir) {
+            case 0x69:
+            case 0x6a:
+                MV_S;
+                break;
+            case 0x6b:
+                MV_SW;
+                break;
+            case 0x78:
+                MV_W;
+                break;
+            case 0x86:
+            case 0x87:
+                MV_NW;
+                break;
+            case 0x89:
+            case 0x8a:
+                MV_N;
+                break;
+            case 0x82:
+            case 0x83:
+                MV_NE;
+                break;
+            case 0x73:
+                MV_E;
+                break;
+            case 0x68:
+                MV_SE;
+                break;
+            case 0x6c:
+            case 0x6d:
+                MV_SE;
+                break;
+            case 0x70:
+            case 0x71:
+                MV_SW;
+                break;
+            case 0x7b:
+                MV_E;
+                break;
+            case 0x80:
+                MV_W;
+                break;
+            case 0x88:
+                MV_NE;
+                break;
+            case 0x8b:
+                MV_NW;
+                break;
+            default:
+                return 0;
+        }
+    }
+
+#undef MV_VEC
+#undef MV_N
+#undef MV_S
+#undef MV_E
+#undef MV_W
+#undef MV_NE
+#undef MV_NW
+#undef MV_SE
+#undef MV_SW
+
+    m_prevAnimSetNode = (i32)m_14->m_1c;
+    m_14->m_1c = (void*)g_entranceAnimSrc.LookupAnimSet(s_animKeyS);
+    return 1;
+}
 
 // ===========================================================================
 // Migrated CGrunt cluster (formerly the CUserLogic_* stubs in

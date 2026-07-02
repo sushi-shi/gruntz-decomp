@@ -2253,13 +2253,13 @@ grunt	?FindGridNeighbor@CGrunt@@QAEPAV1@H@Z	100.0000	100.0000	3	61dd38cb1b46	0x5
 grunt	?FinishEntranceMove@CGrunt@@QAEHXZ	100.0000	100.0000	1	a2a92c839b90	0x69fd0
 grunt	?FreeNameList@CGrunt@@UAEXXZ	76.9512	76.9512	1	2e3438eb07ba	0x48360
 grunt	?GetTilePos@CGrunt@@QAEPAUGruntTilePos@@PAU2@@Z	85.3000	85.3000	1	995269eb1311	0x31c70
-grunt	?GruntInRadius@CGrunt@@QAEHHH@Z	83.4694	83.4694	3	792deeebe86b	0x67b00
+grunt	?GruntInRadius@CGrunt@@QAEHHH@Z	83.4898	83.4898	3	792deeebe86b	0x67b00
 grunt	?InitDirVectors@CGrunt@@UAEXXZ	37.3394	37.3394	1	4fcfcf14ed6b	0x5caa0
 grunt	?Load@CGrunt@@QAEHPAVCGruntArchive@@@Z	87.2286	87.2286	1	f698d71b679c	0xd8060
 grunt	?LoadAnimNameTable@CGrunt@@QAEXHH@Z	75.9312	75.9312	3	f341d57d748b	0x49c60
 grunt	?LoadEntranceConfig@CGrunt@@QAEXXZ	78.8377	78.8377	6	7a2efa979b8d	0x67f80
 grunt	?LoadFreezeSpellAssets@CGrunt@@QAEHXZ	87.3881	87.3881	1	d26b2e9a8e95	0x69d60
-grunt	?LoadGruntMovingDeathConfig@CGrunt@@QAEXXZ	0.4132	0.4132	1	7e3c13f46f60	0x6a060
+grunt	?LoadGruntMovingDeathConfig@CGrunt@@QAEHXZ	22.1570	22.1570	1	6ce0fbc94bb6	0x6a060
 grunt	?LoadVehicleGruntAnimations@CGrunt@@QAEXXZ	93.7992	93.7992	2	777728f5a0e4	0x63db0
 grunt	?OnStruck@CGrunt@@QAEXH@Z	76.2798	76.2798	1	adbf392072d5	0x588f0
 grunt	?PlayMoveSound@CGrunt@@QAEXHH@Z	100.0000	100.0000	1	aa803a2a8575	0x511b0
@@ -2269,8 +2269,8 @@ grunt	?ReadConfigFromButeMgr@CGrunt@@QAEXXZ	96.8421	96.8421	5	39bb0fe6f60a	0x484
 grunt	?RearmAttackAnim2@CGrunt@@QAEHXZ	73.0980	73.0980	2	373788b79a8a	0x61bc0
 grunt	?RearmAttackAnim@CGrunt@@QAEHHH@Z	54.0229	54.0229	2	dbbb6d7852b6	0x61940
 grunt	?RearmEntranceDrop@CGrunt@@QAEXXZ	88.9167	88.9167	2	d64979f40a7e	0x68370
-grunt	?RectContains@CGrunt@@QAEHHH@Z	63.0081	63.0081	1	490b1e26e8f0	0x51850
-grunt	?RectContainsGated@CGrunt@@QAEHHH@Z	63.5433	63.5433	1	e41d77906d32	0x51a20
+grunt	?RectContains@CGrunt@@QAEHHH@Z	58.8145	58.8145	1	490b1e26e8f0	0x51850
+grunt	?RectContainsGated@CGrunt@@QAEHHH@Z	62.3307	62.3307	1	e41d77906d32	0x51a20
 grunt	?ResetGeometry@CGrunt@@QAEHXZ	82.8800	82.8800	3	502caa6ebbcc	0x616e0
 grunt	?ResolveAnimation@CGrunt@@QAEHXZ	95.4210	95.4210	7	ab886ceb312f	0x457b0
 grunt	?ResolveArrivalNeighbor@CGrunt@@QAEHXZ	74.9747	74.9747	2	85816637f608	0xf26f0

@@ -1088,7 +1088,7 @@ public:
     i32 CreateSelectedSprite();
 
     void ReadConfigFromButeMgr();
-    void LoadGruntMovingDeathConfig();
+    i32 LoadGruntMovingDeathConfig();
     void LoadAnimNameTable(i32 a, i32 b); // @0x49c60 (ret 8)
     // @0x51850 (ret 8) tile-rect predicate; reconstruction deferred to the final
     // sweep (a register-relative rect-walk regalloc wall - cl folds this+const to
