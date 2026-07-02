@@ -19,7 +19,7 @@ adler32	1	1
 advancedoptions	5	5
 aniadvancecursor	1	0
 aniplayer	2	0
-apihicallers	3	2
+apihicallers	3	1
 apiwrappers	7	2
 appdialogs	1	1
 apphelpers	3	3
@@ -259,7 +259,7 @@ gameapp	20	16
 gameassetnamespaces	1	0
 gamechecksum	1	0
 gamekeyhandler	1	0
-gamelevel	60	25
+gamelevel	60	26
 gamemode	44	21
 gamemodeobjlifecycle	4	3
 gameobjectctors	8	4
@@ -558,7 +558,7 @@ advancedoptions	?SetDefaults@@YAXPAUHWND__@@@Z	100.0000	100.0000	3	debb3761026d	
 aniadvancecursor	??0CAniAdvanceCursor@@QAE@HHH@Z	97.6154	97.6154	2	1e44f10275e5	0x15b730
 aniplayer	?Init@CAniPlayer@@QAEHPAUAniSeq@@0HHHHHHHHHHHH@Z	64.5543	64.5543	1	af4e113bdde4	0xe7980
 aniplayer	?Tick@CAniPlayer@@QAEHXZ	91.4889	91.4889	2	553040f9cf2b	0xe7b00
-apihicallers	?Init@Builder_168080@@QAEHPAXPAUtagRECT@@PAUPt_168080@@22222@Z	100.0000	100.0000	2	72d5a9d31548	0x168080
+apihicallers	?Init@Builder_168080@@QAEHPAXPAUtagRECT@@PAUPt_168080@@22222@Z	99.5131	99.5131	2	72d5a9d31548	0x168080
 apihicallers	?Init@Fx_17fe00@@QAEHPAUFxDesc_17fe00@@@Z	73.5392	73.5392	1	0e50dd5bc6ca	0x17fe00
 apihicallers	?Init@Handler_17c3f0@@QAEHPAXPAUObjA2_17c3f0@@PAUObjA3_17c3f0@@HHHHHHHHHHHHHHHHHHHHHHHHHHHH@Z	100.0000	100.0000	2	c6159078587d	0x17c3f0
 apiwrappers	?BuildText@CreditzScreen@m4@@QAEHXZ	98.0556	98.0556	1	7e5b86f26cc8	0x39a60
@@ -2157,8 +2157,8 @@ gameapp	?vector_deleting_destructor@CGameMgr@WAP32@@QAEXXZ	3.3333	3.3333	2	35612
 gameassetnamespaces	?LoadGameAssetNamespaces@CAssetLoader@@QAEXPAUAssetMgr@@HH@Z	72.7569	72.7569	1	693b148c3200	0xf9ea0
 gamechecksum	?ComputeSignature@CGameSyncSig@@QAEHXZ	57.6800	57.6800	1	f73b375e6779	0xc0590
 gamekeyhandler	?DispatchKey@CGamePlayInput@@QAEHHH@Z	5.4164	5.4164	2	8f5ddc83713c	0xcbcc0
-gamelevel	??0CGameLevel@@QAE@HHH@Z	94.4528	94.4528	5	722b4e18b3dc	0x15ccd0
-gamelevel	??1CGameLevel@@QAE@XZ	96.0000	96.0000	3	be6f9346ae7e	0x1611e0
+gamelevel	??0CGameLevel@@QAE@HHH@Z	94.4528	94.4528	6	c86f93a062aa	0x15ccd0
+gamelevel	??1CGameLevel@@QAE@XZ	100.0000	100.0000	4	57a801341832	0x1611e0
 gamelevel	?AdvanceA@CGameLevel@@AAEHPAXHHH@Z	93.5194	93.5194	1	ed7962b2eb86	0x15f1c0
 gamelevel	?AdvanceB@CGameLevel@@AAEHPAXHHH@Z	92.2241	92.2241	1	ac1c98577426	0x15ede0
 gamelevel	?AltStepValidate@CGameLevel@@AAEHPAX0HHPAHH@Z	71.9054	71.9054	1	7c1fc1ee8711	0x15fe40
@@ -2177,36 +2177,36 @@ gamelevel	?EditHandlerD@CGameLevel@@QAEHPAXHHH@Z	83.0000	83.0000	1	7673b10cc91e	
 gamelevel	?EditSwitch@CGameLevel@@QAEHPAXHHH@Z	88.8440	88.8440	2	0ff29dc02c1a	0x15dfb0
 gamelevel	?FindPlaneByName@CGameLevel@@QAEPAVCPlane@@PBD@Z	100.0000	100.0000	2	7baff22dc335	0x15dde0
 gamelevel	?FreeMove@CGameLevel@@AAEHPAXHHH@Z	80.8200	80.8200	1	3fb3107bd23b	0x15eb00
-gamelevel	?GetClassId@CGameLevel@@QAEHXZ	100.0000	100.0000	1	777905dbee18	0x1611b0
+gamelevel	?GetClassId@CGameLevel@@UAEHXZ	100.0000	100.0000	1	777905dbee18	0x1611b0
 gamelevel	?HoldMove@CGameLevel@@AAEHPAXHHHH@Z	90.3837	90.3837	1	5c4b4f1637f9	0x15ff20
-gamelevel	?IsLoaded@CGameLevel@@QAEHXZ	100.0000	100.0000	1	1cf4b7c05d14	0x161190
-gamelevel	?LoadFromFile@CGameLevel@@QAEHPBD@Z	100.0000	100.0000	1	69e64dfc7d35	0x15d500
-gamelevel	?LoadFromSource@CGameLevel@@QAEHPAURemusParseSource@@@Z	100.0000	100.0000	1	70a85ae50bfb	0x15d630
-gamelevel	?LoadWwd@CGameLevel@@QAEHPAUWwdHeader@@@Z	82.1894	82.1894	7	b8d3d56919e7	0x15d280
+gamelevel	?IsLoaded@CGameLevel@@UAEHXZ	100.0000	100.0000	1	1cf4b7c05d14	0x161190
+gamelevel	?LoadFromFile@CGameLevel@@UAEHPBD@Z	100.0000	100.0000	1	df34d8ccfc29	0x15d500
+gamelevel	?LoadFromSource@CGameLevel@@UAEHPAURemusParseSource@@@Z	100.0000	100.0000	1	4dceb6e4b74c	0x15d630
+gamelevel	?LoadWwd@CGameLevel@@UAEHPAUWwdHeader@@@Z	82.1894	82.1894	1	89122836e045	0x15d280
 gamelevel	?LookupTile@CGameLevel@@QAEHHH@Z	100.0000	100.0000	3	8d7a1d9ee5e5	0x82600
 gamelevel	?MainPlaneNotify@CGameLevel@@QAEXXZ	100.0000	100.0000	1	1ec3fdb6a110	0x160ee0
 gamelevel	?MainPlaneQueryA@CGameLevel@@QAEHXZ	100.0000	100.0000	2	1edf44538004	0xcedf0
 gamelevel	?MainPlaneQueryB@CGameLevel@@QAEHXZ	100.0000	100.0000	2	306d171e8aab	0xcee10
 gamelevel	?NotifyAllPlanes@CGameLevel@@QAEXXZ	100.0000	100.0000	2	98dad37498b1	0x160f40
-gamelevel	?Parse@CImageSet1@@QAEHPAX@Z	86.6667	86.6667	2	c5d7b0d2c283	0x166d40
-gamelevel	?Parse@CImageSet2@@QAEHPAX@Z	94.0741	94.0741	1	4652c32a2aa9	0x166990
-gamelevel	?Parse@CImageSet3@@QAEHPAX@Z	88.6441	88.6441	1	38c52f2968a8	0x166d70
+gamelevel	?Parse@CImageSet1@@UAEHPAX@Z	86.6667	86.6667	1	c5d7b0d2c283	0x166d40
+gamelevel	?Parse@CImageSet2@@UAEHPAX@Z	94.0741	94.0741	1	4652c32a2aa9	0x166990
+gamelevel	?Parse@CImageSet3@@UAEHPAX@Z	88.6441	88.6441	1	38c52f2968a8	0x166d70
 gamelevel	?PointInBounds@CGameLevel@@SAHPBULevelCoordRect@@HH@Z	100.0000	100.0000	1	39a2c37836c8	0x6b330
 gamelevel	?ProbeColumn@CGameLevel@@QAEHPAXH@Z	92.5641	92.5641	1	21fc5b1c7238	0x160980
 gamelevel	?ReadImageSet@CGameLevel@@AAEPAVCImageSet@@PAX@Z	100.0000	100.0000	5	d4a58a9b55e6	0x15d820
 gamelevel	?RecomputePlaneCoords@PlaneGeom@@QAEXXZ	97.0640	97.0640	3	febf93030b44	0x161c90
-gamelevel	?ReleaseChildren@CGameLevel@@QAEXXZ	100.0000	100.0000	2	9272a3b33822	0x15d680
-gamelevel	?ScalarDtor@CGameLevel@@QAEPAXI@Z	100.0000	100.0000	3	6b39bf2d7776	0x1611c0
+gamelevel	?ReleaseChildren@CGameLevel@@UAEXXZ	100.0000	100.0000	1	9272a3b33822	0x15d680
+gamelevel	?ScalarDtor@CGameLevel@@UAEPAXI@Z	100.0000	100.0000	1	6b39bf2d7776	0x1611c0
 gamelevel	?ScrollKindDispatch12@CGameLevel@@QAEHPAUScrollTarget@@HHH@Z	100.0000	100.0000	1	5a24aaef4f05	0x1671c0
 gamelevel	?ScrollStepXHi@CGameLevel@@QAEHPAUScrollTarget@@HHPAHH@Z	79.0286	79.0286	2	f7ca63012f75	0x167260
 gamelevel	?ScrollStepXLo@CGameLevel@@QAEHPAUScrollTarget@@HHPAHH@Z	78.3429	78.3429	2	ab924070de23	0x167450
 gamelevel	?ScrollStepYHi@CGameLevel@@QAEHPAUScrollTarget@@HHPAHH@Z	82.8563	82.8563	2	5910bb1b00ad	0x167640
 gamelevel	?ScrollStepYLo@CGameLevel@@QAEHPAUScrollTarget@@HHPAHH@Z	82.1667	82.1667	2	8ca190bd0b08	0x167830
-gamelevel	?SetCoordExtents@CGameLevel@@QAEHHH@Z	84.2800	84.2800	1	af009d24d456	0x15d030
-gamelevel	?SetCoords@CGameLevel@@QAEHPAULevelCoordRect@@@Z	100.0000	100.0000	1	61c6a9d4d0ff	0x15d0d0
-gamelevel	?SetCoordsAndLoad38@CGameLevel@@QAEHHPAULevelCoordRect@@@Z	100.0000	100.0000	1	506670b31d4f	0x15cf70
-gamelevel	?SetCoordsAndLoad3C@CGameLevel@@QAEHHPAULevelCoordRect@@@Z	100.0000	100.0000	1	5322c8cc92b8	0x15ceb0
-gamelevel	?SetCoordsAndLoad40@CGameLevel@@QAEHHPAULevelCoordRect@@@Z	100.0000	100.0000	1	c39d12e01f3f	0x15cdf0
+gamelevel	?SetCoordExtents@CGameLevel@@UAEHHH@Z	84.2800	84.2800	1	af009d24d456	0x15d030
+gamelevel	?SetCoords@CGameLevel@@UAEHPAULevelCoordRect@@@Z	100.0000	100.0000	1	61c6a9d4d0ff	0x15d0d0
+gamelevel	?SetCoordsAndLoad38@CGameLevel@@UAEHHPAULevelCoordRect@@@Z	100.0000	100.0000	1	df6a04e1372d	0x15cf70
+gamelevel	?SetCoordsAndLoad3C@CGameLevel@@UAEHHPAULevelCoordRect@@@Z	100.0000	100.0000	1	a32c33bd85e5	0x15ceb0
+gamelevel	?SetCoordsAndLoad40@CGameLevel@@UAEHHPAULevelCoordRect@@@Z	100.0000	100.0000	1	6ebb370f7ba0	0x15cdf0
 gamelevel	?SetExtentsAndBuildAll@CGameLevel@@QAEHHH@Z	70.6546	70.6546	1	c9f69aa91273	0x15d700
 gamelevel	?SpanCheck@CGameLevel@@AAEHHHHPAH@Z	93.1132	93.1132	1	0dca3d9c6b50	0x15f8d0
 gamelevel	?StepAxisAlt@CGameLevel@@AAEHPAXHHPAHH@Z	100.0000	100.0000	1	1e05c8939090	0x15fdb0
@@ -2214,7 +2214,7 @@ gamelevel	?StepAxisHi@CGameLevel@@AAEHPAXHHPAHH@Z	82.6949	82.6949	1	ca3b47b33d71
 gamelevel	?StepAxisLo@CGameLevel@@AAEHPAXHHPAHH@Z	82.6949	82.6949	1	6d948b316f4c	0x15e720
 gamelevel	?SyncAfterMainIndex@CGameLevel@@QAEXH@Z	100.0000	100.0000	1	9a13d0c85396	0x15db00
 gamelevel	?SyncToMainIndex@CGameLevel@@QAEXH@Z	100.0000	100.0000	1	cf4c78a48dfb	0x15dad0
-gamelevel	?Unload@CGameLevel@@QAEHXZ	100.0000	100.0000	2	a70b4b542fca	0x15d1f0
+gamelevel	?Unload@CGameLevel@@UAEHXZ	100.0000	100.0000	1	a70b4b542fca	0x15d1f0
 gamelevel	?VisitVisible@CGameLevel@@QAEXPAXH@Z	92.3282	92.3282	4	acf0ef92366c	0x15dc90
 gamelevel	?WalkColumnDown@CGameLevel@@QAEHPAXH@Z	92.7579	92.7579	1	fbf2cbdeb4cd	0x160a40
 gamemode	??0CState@@QAE@XZ	100.0000	100.0000	4	a1d9fd8bca62	0x8c750
@@ -3863,7 +3863,7 @@ wwdgameobject	?Sub150c30@CWwdGameObject@@QAEHH@Z	100.0000	100.0000	1	6e45f742194
 wwdgameobject	?Sub151780@CWwdGameObject@@QAEHH@Z	100.0000	100.0000	1	a5cc9001a34f	0x151780
 wwdgameobject	?WriteSnapshot@CWwdGameObject@@QAEHH@Z	95.9020	95.9020	2	9fee6fde6abb	0x151c00
 wwdgameobjecteh	??1CWwdGameObjectA@@UAE@XZ	95.5378	95.5378	1	777925195fbe	0x15b790
-wwdgameobjecteh	??1CWwdGameObjectB@@QAE@XZ	70.7424	70.7424	1	c7fb487544c2	0x15bd10
+wwdgameobjecteh	??1CWwdGameObjectB@@UAE@XZ	79.4545	79.4545	1	595dd1e41894	0x15bd10
 wwdgameobjecteh	??1CWwdGameObjectC@@UAE@XZ	93.6346	93.6346	1	af996333ea4c	0x15c070
 wwdgameobjecteh	??1CWwdGameObjectE@@UAE@XZ	88.7941	88.7941	1	e20ec4de9067	0x15b4f0
 wwdgameobjecteh	??1CWwdGameObjectF@@UAE@XZ	93.4466	93.4466	1	fc1f680ea25f	0x15bad0

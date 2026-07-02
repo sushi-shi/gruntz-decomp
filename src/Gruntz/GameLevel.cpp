@@ -116,28 +116,14 @@ struct PlaneGeom {
     void RecomputePlaneCoords();
 };
 
-// The two-phase vftables. The inlined CSeverusWorker ctor (in GameLevel.h) stamps the
-// base vftable; the derived CGameLevel ctor below stamps the derived one after the
-// three array members are constructed. Both stores are reloc-masked DIR32.
-DATA(0x001efc30)
-extern void* g_severusWorkerBaseVtbl; // base (SeverusWorker) vftable
-DATA(0x001f0150)
-extern void* g_gameLevelVtbl; // derived CGameLevel vftable
-// The base-subobject vftable the destructor restores after the member dtors run
-// (CSeverusWorker::~CSeverusWorker's vptr store - a different table from the base CTOR's).
+// The two-phase vptr stores are now cl-emitted: the inlined CSeverusWorker ctor (in
+// GameLevel.h) auto-stamps the base vptr (&??_7CSeverusWorker, orphan reloc-masked
+// against retail 0x5efc30) and the derived CGameLevel ctor auto-stamps the derived
+// vptr (&??_7CGameLevel, bound @0x5f0150 via VTBL below) after the three array
+// members are constructed. The only remaining manual vtable store is the grand-base
+// teardown vftable ~CSeverusWorker restamps after the member dtors run (@0x5e8cb4).
 DATA(0x001e8cb4)
 extern void* g_severusWorkerDtorVtbl;
-
-// The three CImageSet variant vftables stamped by ReadImageSet (kind 1/2/3). Their
-// contents are UNMATCHED engine code, so the factory stamps the RETAIL tables by
-// address (reloc-masked DIR32) rather than letting the compiler emit a divergent
-// vtable. (Transitional manual-stamp workaround per matcher doctrine.)
-DATA(0x001f0198)
-extern void* g_imageSet1Vtbl; // kind 1 (0x10-byte variant)
-DATA(0x001f01e0)
-extern void* g_imageSet2Vtbl; // kind 2 (0x24-byte variant)
-DATA(0x001f0228)
-extern void* g_imageSet3Vtbl; // kind 3 (0x18-byte variant)
 
 // The "unset" sentinel the ctor writes into the coord record's min corner; the
 // readiness predicate (IsLoaded) tests for it and Unload restores it.
@@ -147,13 +133,6 @@ static const i32 LEVEL_COORD_UNSET = (i32)0x80000000;
 // (no tile placed); -1 is the explicit "clear" marker.
 static const i32 TILE_UNINIT = (i32)0xeeeeeeee;
 static const i32 TILE_CLEAR = -1;
-
-static inline void StampLevelVtbl(CGameLevel* o) {
-    *(void**)o = &g_gameLevelVtbl;
-}
-static inline void StampSeverusWorkerDtorVtbl(CGameLevel* o) {
-    *(void**)o = &g_severusWorkerDtorVtbl;
-}
 
 // Stamps the shared +0xb0..+0xdc "default parameters" block. Defined inline so it
 // folds into each method exactly as the retail compiler emitted the block inline.
@@ -182,16 +161,15 @@ static inline void StampParamBlock(CGameLevel* o) {
 // written. Carries the /GX EH frame because the three array members are
 // destructible.
 //
-// RESIDUE (~89%, NOT a logic/offset/type/CFG error): the body is byte-for-byte
-// identical to retail (both two-phase vptr stores, both 0x40/0xfa/0x3e8/param-block
-// constants, the EH frame, the ret 0xc, every member offset) EXCEPT two pure
-// compiler-internal scheduling choices: (1) MSVC's funcinfo EH-state numbering base
-// is shifted by one (retail tags the three array ctors 0/1/2; this build uses the
-// -1 entry state for the first, then 0/1) and (2) one immediate (0xfa) lands in a
-// different register (eax vs ecx) because `this` is reloaded for the fs:0 restore
-// one slot earlier here. Logic + all offsets + the two-phase construction + CFG +
-// the EH frame are exact; this is the documented store-scheduling / EH-state-base
-// entropy plateau (matching-patterns.md §entropy, .claude/agents/orchestrator.md §2a/§8).
+// @early-stop
+// store-scheduling / EH-state-base entropy plateau + cl-emitted two-phase vptr.
+// The two vptr stores are now cl-generated (base ??_7CSeverusWorker orphan + derived
+// ??_7CGameLevel @0x5f0150), the derived store now matching retail's &0x5f0150 exactly.
+// Residue is the same funcinfo EH-state numbering base shift (retail tags the three
+// array ctors 0/1/2; cl uses the -1 entry state then 0/1) plus one immediate (0xfa)
+// landing in a different register from the this-reload for the fs:0 restore. Logic +
+// all offsets + the two-phase construction + CFG + the EH frame are exact; not
+// source-steerable (matching-patterns.md §entropy).
 RVA(0x0015ccd0, 0x118)
 CGameLevel::CGameLevel(i32 a1, i32 a2, i32 a3) : CSeverusWorker(a1, a2, a3) {
     m_scrollStepX = 0x40;
@@ -201,7 +179,7 @@ CGameLevel::CGameLevel(i32 a1, i32 a2, i32 a3) : CSeverusWorker(a1, a2, a3) {
     m_b8 = 1000;
     m_bc = 1000;
 
-    StampLevelVtbl(this);
+    // cl auto-stamps &??_7CGameLevel here (the derived phase of the two-phase store).
     m_planeCtx.minX = LEVEL_COORD_UNSET;
     m_mainPlane = 0;
     m_mainIndex = -1;
@@ -218,7 +196,7 @@ CGameLevel::CGameLevel(i32 a1, i32 a2, i32 a3) : CSeverusWorker(a1, a2, a3) {
 
 RVA(0x0015d280, 0x279)
 i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
-    Reset(); // vtable +0x44
+    ReleaseChildren(); // vtable +0x44 (slot 17), the pre-load reset
 
     if (hdr->wwdSignature > 0x5f4) { // signature must be <= 1524
         return 0;
@@ -446,7 +424,7 @@ i32 CGameLevel::LoadFromFile(const char* path) {
     }
 
     file.Read(buf, file.GetLength());
-    if (Vfunc38((i32)buf) == 0) {
+    if (LoadWwd((WwdHeader*)buf) == 0) { // vtable +0x38 (slot 14) load virtual
         operator delete(buf);
         return 0;
     }
@@ -466,7 +444,7 @@ i32 CGameLevel::LoadFromSource(RemusParseSource* arg) {
     if (handle == 0) {
         return 0;
     }
-    if (Vfunc38(handle) == 0) {
+    if (LoadWwd((WwdHeader*)handle) == 0) { // vtable +0x38 (slot 14) load virtual
         arg->EndParse();
         return 0;
     }
@@ -487,14 +465,14 @@ void* CGameLevel::ScalarDtor(u32 flags) {
 }
 
 // ---------------------------------------------------------------------------
-// Destructor: stamp the derived vftable, run the level cleanup, let the three
-// array members destruct (reverse construction order), then ~CSeverusWorker
-// restores the base subobject (resets m_04/m_flags/m_owner + the base dtor
-// vftable). The destructible array members give the /GX EH frame.
+// Destructor: cl auto-stamps the derived vftable @0x5f0150 at dtor entry
+// (polymorphic), then runs the level cleanup, lets the three array members destruct
+// (reverse construction order), then ~CSeverusWorker restores the base subobject
+// (resets m_04/m_flags/m_owner + the grand-base dtor vftable @0x5e8cb4). The
+// destructible array members give the /GX EH frame.
 RVA(0x001611e0, 0x82)
 CGameLevel::~CGameLevel() {
-    StampLevelVtbl(this); // derived vftable @0x5f0150 (dtor entry)
-    Unload();             // level cleanup (releases children, clears the header)
+    Unload(); // level cleanup (releases children, clears the header)
     // m_imageSets / m_planes / m_array20 auto-destruct here; ~CSeverusWorker follows.
 }
 
@@ -566,8 +544,8 @@ RVA(0x0015cdf0, 0xb8)
 i32 CGameLevel::SetCoordsAndLoad40(i32 arg1, LevelCoordRect* coords) {
     m_planeCtx = *coords;
     StampParamBlock(this);
-    if (Vfunc40(arg1) == 0) {
-        Vfunc1C();
+    if (LoadFromFile((const char*)arg1) == 0) { // vtable +0x40 (slot 16)
+        Unload();                               // vtable +0x1c (slot 7), fail/reset hook
         return 0;
     }
     return 1;
@@ -579,8 +557,8 @@ RVA(0x0015ceb0, 0xb8)
 i32 CGameLevel::SetCoordsAndLoad3C(i32 arg1, LevelCoordRect* coords) {
     m_planeCtx = *coords;
     StampParamBlock(this);
-    if (Vfunc3C(arg1) == 0) {
-        Vfunc1C();
+    if (LoadFromSource((RemusParseSource*)arg1) == 0) { // vtable +0x3c (slot 15)
+        Unload();                                       // vtable +0x1c (slot 7), fail/reset hook
         return 0;
     }
     return 1;
@@ -594,8 +572,8 @@ RVA(0x0015cf70, 0xb8)
 i32 CGameLevel::SetCoordsAndLoad38(i32 arg1, LevelCoordRect* coords) {
     m_planeCtx = *coords;
     StampParamBlock(this);
-    if (Vfunc38(arg1) == 0) {
-        Vfunc1C();
+    if (LoadWwd((WwdHeader*)arg1) == 0) { // vtable +0x38 (slot 14)
+        Unload();                         // vtable +0x1c (slot 7), fail/reset hook
         return 0;
     }
     return 1;
@@ -628,16 +606,35 @@ i32 CGameLevel::SetCoords(LevelCoordRect* coords) {
 extern "C" void* RezAlloc(u32 size); // 0x1b9b46
 extern "C" void RezFree(void* p);    // 0x1b9b82
 
-// The three CImageSet variants the factory allocates. Each is a non-polymorphic
-// shell whose INLINE ctor manually stamps the matching external vftable (and
-// zeroes its count/cursor fields), so `new CImageSetN` lowers to exactly the
-// retail `RezAlloc(size); if (p) { stamp }` shape - the allocation result
-// stays in eax across the field stores, then folds into the shared merge. The
-// padding pins each size: kind 1 = 0x10, kind 2 = 0x24, kind 3 = 0x18.
+// The three CImageSet variants the factory allocates. REAL-POLYMORPHIC now: each is
+// a flat 18-slot class so cl emits its ??_7CImageSetN@@6B@ (bound below via VTBL to
+// the retail vtable) and AUTO-stamps the vptr in the INLINE ctor - lowering
+// `new CImageSetN` to exactly the retail `RezAlloc(size); if (p) { stamp vptr; zero
+// fields }` shape. Only slot 5 (+0x14 Parse) is a matched body; the base-thunk +
+// engine slots are declared-only (their vtable entries reloc-mask). The vptr sits
+// at +0x00 (implicit); the padding pins each size: kind 1 = 0x10, kind 2 = 0x24,
+// kind 3 = 0x18. Slot RVAs (from retail 0x5f0198/01e0/0228) noted per class.
 struct CImageSet1 {
+    virtual void s00();              // [0]  0x1bef01
+    virtual void* Release(u32 flag); // [1]  +0x04  0x161350 scalar-deleting dtor
+    virtual void s08();              // [2]  0x0028ec
+    virtual void s0c();              // [3]  0x00106e
+    virtual void s10();              // [4]  0x004034
+    virtual i32 Parse(void* record); // [5]  +0x14  0x166d40
+    virtual void s18();              // [6]  0x161330
+    virtual void s1c();              // [7]  0x161340
+    virtual void s20();              // [8]  0x161380
+    virtual void s24();              // [9]  +0x24  0x161410 (GetStride slot)
+    virtual void s28();              // [10] 0x161390
+    virtual void s2c();              // [11] 0x1613a0
+    virtual void s30();              // [12] 0x1613b0
+    virtual void s34();              // [13] 0x1613c0
+    virtual void s38();              // [14] 0x1613d0
+    virtual void s3c();              // [15] 0x1613e0
+    virtual void s40();              // [16] 0x1613f0
+    virtual void s44();              // [17] 0x161400
     CImageSet1() {
-        *(void**)this = &g_imageSet1Vtbl;
-        m_04 = 0;
+        m_04 = 0; // cl auto-stamps &??_7CImageSet1 first
     }
     void* operator new(size_t n) {
         return RezAlloc((u32)n);
@@ -645,17 +642,32 @@ struct CImageSet1 {
     void operator delete(void* p) {
         RezFree(p);
     }
-    void DtorBase();         // 0x161370  base-subobject dtor (vtable restamp)
-    i32 Parse(void* record); // 0x166d40  vtbl slot +0x14
-    void* m_vtbl;            // +0x00
-    i32 m_04;                // +0x04
-    i32 m_08;                // +0x08
-    i32 m_0c;                // +0x0c
+    void DtorBase(); // 0x161370  base-subobject dtor (vtable restamp)
+    i32 m_04;        // +0x04
+    i32 m_08;        // +0x08
+    i32 m_0c;        // +0x0c
 };
 struct CImageSet2 {
+    virtual void s00();              // [0]  0x1bef01
+    virtual void* Release(u32 flag); // [1]  +0x04  0x161440 scalar-deleting dtor
+    virtual void s08();              // [2]  0x0028ec
+    virtual void s0c();              // [3]  0x00106e
+    virtual void s10();              // [4]  0x004034
+    virtual i32 Parse(void* record); // [5]  +0x14  0x166990
+    virtual void s18();              // [6]  0x161420
+    virtual void s1c();              // [7]  0x161430
+    virtual void s20();              // [8]  0x161470
+    virtual void s24();              // [9]  +0x24  0x1614a0 (GetStride slot)
+    virtual void s28();              // [10] 0x1669e0
+    virtual void s2c();              // [11] 0x166a40
+    virtual void s30();              // [12] 0x166b90
+    virtual void s34();              // [13] 0x166bf0
+    virtual void s38();              // [14] 0x166ab0
+    virtual void s3c();              // [15] 0x166b20
+    virtual void s40();              // [16] 0x166c60
+    virtual void s44();              // [17] 0x166cd0
     CImageSet2() {
-        *(void**)this = &g_imageSet2Vtbl;
-        m_04 = 0;
+        m_04 = 0; // cl auto-stamps &??_7CImageSet2 first
     }
     void* operator new(size_t n) {
         return RezAlloc((u32)n);
@@ -663,21 +675,36 @@ struct CImageSet2 {
     void operator delete(void* p) {
         RezFree(p);
     }
-    i32 Parse(void* record); // 0x166990  vtbl slot +0x14
-    void* m_vtbl;            // +0x00
-    i32 m_04;                // +0x04
-    i32 m_08;                // +0x08
-    i32 m_0c;                // +0x0c
-    i32 m_10;                // +0x10
-    i32 m_14;                // +0x14
-    i32 m_18;                // +0x18
-    i32 m_1c;                // +0x1c
-    i32 m_20;                // +0x20
+    i32 m_04; // +0x04
+    i32 m_08; // +0x08
+    i32 m_0c; // +0x0c
+    i32 m_10; // +0x10
+    i32 m_14; // +0x14
+    i32 m_18; // +0x18
+    i32 m_1c; // +0x1c
+    i32 m_20; // +0x20
 };
 struct CImageSet3 {
+    virtual void s00();              // [0]  0x1bef01
+    virtual void* Release(u32 flag); // [1]  +0x04  0x1614e0 scalar-deleting dtor
+    virtual void s08();              // [2]  0x0028ec
+    virtual void s0c();              // [3]  0x00106e
+    virtual void s10();              // [4]  0x004034
+    virtual i32 Parse(void* record); // [5]  +0x14  0x166d70
+    virtual void s18();              // [6]  0x1614b0
+    virtual void s1c();              // [7]  0x1614d0
+    virtual void s20();              // [8]  0x161570
+    virtual void s24();              // [9]  +0x24  0x161590 (GetStride slot)
+    virtual void s28();              // [10] 0x166e00
+    virtual void s2c();              // [11] 0x166e60
+    virtual void s30();              // [12] 0x166eb0
+    virtual void s34();              // [13] 0x166f20
+    virtual void s38();              // [14] 0x166f80
+    virtual void s3c();              // [15] 0x166ff0
+    virtual void s40();              // [16] 0x167050
+    virtual void s44();              // [17] 0x1670d0
     CImageSet3() {
-        *(void**)this = &g_imageSet3Vtbl;
-        m_04 = 0;
+        m_04 = 0; // cl auto-stamps &??_7CImageSet3 first
         m_14 = 0;
     }
     void* operator new(size_t n) {
@@ -686,13 +713,11 @@ struct CImageSet3 {
     void operator delete(void* p) {
         RezFree(p);
     }
-    i32 Parse(void* record); // 0x166d70  vtbl slot +0x14
-    void* m_vtbl;            // +0x00
-    i32 m_04;                // +0x04  tile width
-    i32 m_08;                // +0x08  tile height
-    i32 m_0c;                // +0x0c  log2(height)
-    i32 m_10;                // +0x10  width*height (byte size)
-    void* m_14;              // +0x14  owned pixel buffer
+    i32 m_04;   // +0x04  tile width
+    i32 m_08;   // +0x08  tile height
+    i32 m_0c;   // +0x0c  log2(height)
+    i32 m_10;   // +0x10  width*height (byte size)
+    void* m_14; // +0x14  owned pixel buffer
 };
 
 RVA(0x0015d820, 0xa3)
@@ -3060,3 +3085,16 @@ i32 CGameLevel::WalkColumnDown(void* target, i32 unused) {
     t->m_60 += final;
     return 1;
 }
+
+// --- class-metadata: the FORCE-REALIZED vtables (were the g_gameLevelVtbl /
+// g_imageSet1/2/3Vtbl manual stamps + UnknownVTables placeholders). cl now emits
+// each ??_7 (18 slots), matched slots pointing at the real methods (RVA-bound), the
+// base-thunk/engine slots reloc-masked declared-only externs. -------------------
+VTBL(CGameLevel, 0x001f0150); // ??_7CGameLevel (was g_gameLevelVtbl)
+VTBL(CImageSet1, 0x001f0198); // ??_7CImageSet1 (was g_imageSet1Vtbl)
+VTBL(CImageSet2, 0x001f01e0); // ??_7CImageSet2 (was g_imageSet2Vtbl)
+VTBL(CImageSet3, 0x001f0228); // ??_7CImageSet3 (was g_imageSet3Vtbl)
+SIZE(CImageSet1, 0x10);
+SIZE(CImageSet2, 0x24);
+SIZE_UNKNOWN(CGameLevel);
+SIZE_UNKNOWN(CImageSet);

@@ -460,29 +460,13 @@ struct Vtbl_1effd0 {
 // g_wwdObjVtbl via the factory manual stamp). NO VTBL. Placeholder removed.
 
 // ClassWithUnknownVTable50  @ 0x005f00e8  (16 slots)  refs x2
-// DEFERRED: this is the 0x159440-... err 0x1598d0-final vtable (0x1fc-byte object),
-// modeled as the FLAT CWwdGameObjectB in src/Gruntz/WwdGameObjectEh.cpp - a
-// multi-level manual vtable-restamp dtor still @early-stop on the eh-dtor trylevel
-// wall (NOT a cl-emitted ??_7). Realize when the flat B dtor converts to the real
-// CRemusNode-derived polymorphic chain. Placeholder kept for slot tracking.
-struct Vtbl_1f00e8 {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x15bcf0 `scalar_deleting_destructor'
-    UnkVfn slot2_0028ec;                 // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
-    UnkVfn slot5_15bcd0;                 // [5] -> 0x15bcd0 sub_15bcd0
-    UnkVfn slot6_001c08;                 // [6] -> 0x001c08 sub_001c08
-    UnkVfn FUN_0055bf00;                 // [7] -> 0x15bf00 FUN_0055bf00
-    UnkVfn slot8_15bce0;                 // [8] -> 0x15bce0 sub_15bce0
-    UnkVfn Helper_164790;                // [9] -> 0x164790 Helper_164790
-    UnkVfn FUN_005665e0;                 // [10] -> 0x1665e0 FUN_005665e0
-    UnkVfn slot11_1668b0;                // [11] -> 0x1668b0 sub_1668b0
-    UnkVfn slot12_1668e0;                // [12] -> 0x1668e0 sub_1668e0
-    UnkVfn slot13_166910;                // [13] -> 0x166910 sub_166910
-    UnkVfn slot14_166950;                // [14] -> 0x166950 sub_166950
-    UnkVfn Dispatch;                     // [15] -> 0x150a70 Dispatch
-};
+// REALIZED as ??_7CWwdGameObjectB@@6B@ (the 0x1598d0-final 0x1fc-byte object). The
+// flat manual-restamp dtor is now a REAL 4-level polymorphic chain in
+// src/Gruntz/WwdGameObjectEh.cpp (CWwdGameObjectB : WwdBLevel2 : WwdBMid : WwdBRemus);
+// cl auto-emits the four per-level ??_7 (orphans, since the factory in
+// CWwdObjMgrFactories.cpp still manual-stamps g_wwd1598d0FinalVtbl @0x5f00e8) and the
+// multi-phase vptr-restamp dtor chain. NO VTBL (would dup-DATA the factory's bound
+// g_wwd1598d0FinalVtbl). Placeholder removed.
 
 // ClassWithUnknownVTable51  @ 0x005f0128  src:g_wwdSubVtbl
 // REALIZED as ??_7CAniAdvanceCursor@@6B@ (real polymorphic CAniAdvanceCursor, the
@@ -491,92 +475,31 @@ struct Vtbl_1f00e8 {
 // Placeholder removed.
 
 // ClassWithUnknownVTable52  @ 0x005f0150  (18 slots)  refs x2  src:g_gameLevelVtbl
-struct GameLevelVtbl {
-    UnkVfn slot0_1bef01;       // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn ScalarDtor;         // [1] -> 0x1611c0 ScalarDtor
-    UnkVfn slot2_0028ec;       // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;       // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;       // [4] -> 0x004034 sub_004034
-    UnkVfn IsLoaded;           // [5] -> 0x161190 IsLoaded
-    UnkVfn slot6_001c08;       // [6] -> 0x001c08 sub_001c08
-    UnkVfn Unload;             // [7] -> 0x15d1f0 Unload
-    UnkVfn GetClassId;         // [8] -> 0x1611b0 GetClassId
-    UnkVfn SetCoordsAndLoad38; // [9] -> 0x15cf70 SetCoordsAndLoad38
-    UnkVfn SetCoordsAndLoad3C; // [10] -> 0x15ceb0 SetCoordsAndLoad3C
-    UnkVfn SetCoordsAndLoad40; // [11] -> 0x15cdf0 SetCoordsAndLoad40
-    UnkVfn SetCoords;          // [12] -> 0x15d0d0 SetCoords
-    UnkVfn SetCoordExtents;    // [13] -> 0x15d030 SetCoordExtents
-    UnkVfn LoadWwd;            // [14] -> 0x15d280 LoadWwd
-    UnkVfn LoadFromSource;     // [15] -> 0x15d630 LoadFromSource
-    UnkVfn LoadFromFile;       // [16] -> 0x15d500 LoadFromFile
-    UnkVfn ReleaseChildren;    // [17] -> 0x15d680 ReleaseChildren
-};
+// REALIZED as ??_7CGameLevel@@6B@ (real polymorphic CGameLevel : CSeverusWorker in
+// src/Gruntz/GameLevel.cpp; cl auto-emits the 18-slot vtable + the two-phase vptr
+// stamp - base ??_7CSeverusWorker orphan then derived @0x5f0150). The matched slots
+// (ScalarDtor/IsLoaded/Unload/GetClassId + SetCoordsAndLoad38/3C/40/SetCoords/
+// SetCoordExtents/LoadWwd/LoadFromSource/LoadFromFile/ReleaseChildren) point at the
+// real methods; the base-thunk slots (0/2/3/4/6) reloc-mask.
+// VTBL(CGameLevel, 0x001f0150). Placeholder removed.
 
 // ClassWithUnknownVTable53  @ 0x005f0198  (18 slots)  refs x1  src:g_imageSet1Vtbl
-struct ImageSet1Vtbl {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x161350 `scalar_deleting_destructor'
-    UnkVfn slot2_0028ec;                 // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
-    UnkVfn ClassUnknown_66_166d40;       // [5] -> 0x166d40 ClassUnknown_66_166d40
-    UnkVfn slot6_161330;                 // [6] -> 0x161330 sub_161330
-    UnkVfn slot7_161340;                 // [7] -> 0x161340 sub_161340
-    UnkVfn slot8_161380;                 // [8] -> 0x161380 sub_161380
-    UnkVfn slot9_161410;                 // [9] -> 0x161410 sub_161410
-    UnkVfn slot10_161390;                // [10] -> 0x161390 sub_161390
-    UnkVfn slot11_1613a0;                // [11] -> 0x1613a0 sub_1613a0
-    UnkVfn slot12_1613b0;                // [12] -> 0x1613b0 sub_1613b0
-    UnkVfn slot13_1613c0;                // [13] -> 0x1613c0 sub_1613c0
-    UnkVfn slot14_1613d0;                // [14] -> 0x1613d0 sub_1613d0
-    UnkVfn slot15_1613e0;                // [15] -> 0x1613e0 sub_1613e0
-    UnkVfn slot16_1613f0;                // [16] -> 0x1613f0 sub_1613f0
-    UnkVfn slot17_161400;                // [17] -> 0x161400 sub_161400
-};
+// REALIZED as ??_7CImageSet1@@6B@ (flat 18-slot CImageSet1 in src/Gruntz/GameLevel.cpp;
+// cl auto-emits it; the INLINE ctor auto-stamps the vptr for `new CImageSet1`). Slot 5
+// (+0x14 Parse @0x166d40) is the matched body; the rest reloc-mask.
+// VTBL(CImageSet1, 0x001f0198). Placeholder removed.
 
 // ClassWithUnknownVTable54  @ 0x005f01e0  (18 slots)  refs x1  src:g_imageSet2Vtbl
-struct ImageSet2Vtbl {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x161440 `scalar_deleting_destructor'
-    UnkVfn slot2_0028ec;                 // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
-    UnkVfn FUN_00566990;                 // [5] -> 0x166990 FUN_00566990
-    UnkVfn slot6_161420;                 // [6] -> 0x161420 sub_161420
-    UnkVfn slot7_161430;                 // [7] -> 0x161430 sub_161430
-    UnkVfn slot8_161470;                 // [8] -> 0x161470 sub_161470
-    UnkVfn slot9_1614a0;                 // [9] -> 0x1614a0 sub_1614a0
-    UnkVfn slot10_1669e0;                // [10] -> 0x1669e0 sub_1669e0
-    UnkVfn slot11_166a40;                // [11] -> 0x166a40 sub_166a40
-    UnkVfn slot12_166b90;                // [12] -> 0x166b90 sub_166b90
-    UnkVfn slot13_166bf0;                // [13] -> 0x166bf0 sub_166bf0
-    UnkVfn slot14_166ab0;                // [14] -> 0x166ab0 sub_166ab0
-    UnkVfn slot15_166b20;                // [15] -> 0x166b20 sub_166b20
-    UnkVfn slot16_166c60;                // [16] -> 0x166c60 sub_166c60
-    UnkVfn slot17_166cd0;                // [17] -> 0x166cd0 sub_166cd0
-};
+// REALIZED as ??_7CImageSet2@@6B@ (flat 18-slot CImageSet2 in src/Gruntz/GameLevel.cpp;
+// cl auto-emits it). Slot 5 (+0x14 Parse @0x166990) matched; the rest reloc-mask.
+// VTBL(CImageSet2, 0x001f01e0). Placeholder removed.
 
 // ClassWithUnknownVTable55  @ 0x005f0228  (18 slots)  refs x2  src:g_imageSet3Vtbl
-struct ImageSet3Vtbl {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x1614e0 `scalar_deleting_destructor'
-    UnkVfn slot2_0028ec;                 // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
-    UnkVfn FUN_00566d70;                 // [5] -> 0x166d70 FUN_00566d70
-    UnkVfn FUN_005614b0;                 // [6] -> 0x1614b0 FUN_005614b0
-    UnkVfn slot7_1614d0;                 // [7] -> 0x1614d0 sub_1614d0
-    UnkVfn slot8_161570;                 // [8] -> 0x161570 sub_161570
-    UnkVfn slot9_161590;                 // [9] -> 0x161590 sub_161590
-    UnkVfn slot10_166e00;                // [10] -> 0x166e00 sub_166e00
-    UnkVfn slot11_166e60;                // [11] -> 0x166e60 sub_166e60
-    UnkVfn slot12_166eb0;                // [12] -> 0x166eb0 sub_166eb0
-    UnkVfn slot13_166f20;                // [13] -> 0x166f20 sub_166f20
-    UnkVfn slot14_166f80;                // [14] -> 0x166f80 sub_166f80
-    UnkVfn slot15_166ff0;                // [15] -> 0x166ff0 sub_166ff0
-    UnkVfn slot16_167050;                // [16] -> 0x167050 sub_167050
-    UnkVfn slot17_1670d0;                // [17] -> 0x1670d0 sub_1670d0
-};
+// REALIZED as ??_7CImageSet3@@6B@ (flat 18-slot CImageSet3 factory variant in
+// src/Gruntz/GameLevel.cpp; cl auto-emits it). Slot 5 (+0x14 Parse @0x166d70)
+// matched; the rest reloc-mask. VTBL(CImageSet3, 0x001f0228). Placeholder removed.
+// (Distinct from the 0xb0-byte collection CImageSet3 in CImageSet3.cpp - same name,
+// different class; that one owns no cl-emitted vtable.)
 
 // ClassWithUnknownVTable56  @ 0x005f0270  (12 slots)  refs x2  src:g_severusWorkerHostVtbl
 // REALIZED as ??_7CSeverusWorkerHost@@6B@ (real polymorphic CSeverusBase-derived host
@@ -601,14 +524,11 @@ struct ImageSet3Vtbl {
 // AlbusWorkerObj in CDDrawWorkerMapSmall.cpp. Placeholder removed.
 
 // ClassWithUnknownVTable60  @ 0x005f0310  (6 slots)  refs x3
-struct Vtbl_1f0310 {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x168280 `scalar_deleting_destructor'
-    UnkVfn slot2_0028ec;                 // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
-    UnkVfn slot5_168060;                 // [5] -> 0x168060 sub_168060
-};
+// REALIZED as ??_7SubWidget_168080@@6B@ (flat 6-slot polymorphic SubWidget_168080 in
+// src/Gruntz/ApiHiCallers.cpp - the compound-widget's sub-widget; cl auto-emits the
+// vtable + the INLINE-ctor vptr stamp for `new SubWidget_168080`). All 6 slots are
+// engine (base-thunk / 0x168280 scalar dtor / 0x168060) declared-only -> reloc-mask.
+// VTBL(SubWidget_168080, 0x001f0310). Placeholder removed.
 
 // ClassWithUnknownVTable61  @ 0x005f0328  (6 slots)  refs x2  src:g_wwdGridVtbl
 // REALIZED as ??_7CWwdGrid@@6B@ (real polymorphic abstract CWwdGrid : CRemusBase in

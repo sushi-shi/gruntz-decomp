@@ -61,54 +61,39 @@ struct LevelCoordRect {
 struct RemusParseSource;
 
 // ---------------------------------------------------------------------------
-// CSeverusWorker - the engine base CGameLevel derives from (its methods live on
-// g_severusWorkerVtbl). The constructor (INLINE, in the header, so MSVC folds it
-// into the derived ctor and keeps the members-before-derived-vptr schedule)
-// stamps the base vftable into +0x00 and stores the three ctor args at
-// +0x04/+0x08/+0x0c. Non-polymorphic extra (no new vtable slots), so CGameLevel's
-// own vptr sits at +0x00 and its virtual slots are unchanged; the base merely
-// owns the +0x04..+0x0c data the base ctor writes.
+// CSeverusWorker - the engine base CGameLevel derives from. Its 9-slot base
+// vftable is @0x5efc30 (the same SeverusWorkerBase realized in
+// CDDrawWorkerRegistry.cpp). REAL-POLYMORPHIC: the 9 base virtual slots are
+// declared here (the engine-thunk slots declared-only; the four CGameLevel
+// specializes as overridable virtuals). The INLINE ctor stores the three args
+// (cl AUTO-stamps the base vptr &??_7CSeverusWorker - an orphan reloc-masked
+// against retail 0x5efc30, since 0x5efc30 is already VTBL(SeverusWorkerBase));
+// the INLINE dtor resets the fields then restamps the grand-base teardown vftable
+// (g_severusWorkerDtorVtbl @0x5e8cb4). Both fold into the derived CGameLevel
+// ctor/dtor, giving retail's classic two-phase vptr-store schedule.
 // ---------------------------------------------------------------------------
-extern void* g_severusWorkerBaseVtbl; // base (SeverusWorker) vftable
 extern void* g_severusWorkerDtorVtbl; // base vftable restored by ~CSeverusWorker (@0x5e8cb4)
 
-// CSeverusWorker is POLYMORPHIC (it owns the engine SeverusWorker vtable
-// @0x5efc30): its inline ctor stamps that base vftable, which is why retail keeps
-// the base vptr store live across the derived member construction before
-// CGameLevel's ctor overwrites it with the derived vtable @0x5f0150 (the classic
-// two-phase vptr-store schedule). The vtable shape (v00..Reset) lives here;
-// CGameLevel overrides the whole interface to get its own vtable, leaving slot
-// numbering (Vfunc1C@+0x1c, Vfunc38/3C/40, Reset@+0x44) unchanged.
 struct CSeverusWorker {
-    virtual void v00();
-    virtual void v04();
-    virtual void v08();
-    virtual void v0c();
-    virtual void v10();
-    virtual void v14();
-    virtual void v18();
-    virtual void Vfunc1C(); // +0x1c  fail/reset hook
-    virtual void v20();
-    virtual void v24();
-    virtual void v28();
-    virtual void v2c();
-    virtual void v30();
-    virtual void v34();
-    virtual i32 Vfunc38(i32 arg1); // +0x38
-    virtual i32 Vfunc3C(i32 arg1); // +0x3c
-    virtual i32 Vfunc40(i32 arg1); // +0x40
-    virtual void Reset();          // +0x44
+    virtual void v00();                  // [0] +0x00  engine thunk (0x1bef01)
+    virtual void* ScalarDtor(u32 flags); // [1] +0x04  scalar-deleting dtor (CGameLevel overrides)
+    virtual void v08();                  // [2] +0x08  engine thunk (0x0028ec)
+    virtual void v0c();                  // [3] +0x0c  engine thunk (0x00106e)
+    virtual void v10();                  // [4] +0x10  engine thunk (0x004034)
+    virtual i32 IsLoaded();              // [5] +0x14  CGameLevel overrides (0x161190)
+    virtual void v18();                  // [6] +0x18  engine thunk (0x001c08)
+    virtual i32 Unload();                // [7] +0x1c  CGameLevel overrides (0x15d1f0)
+    virtual i32 GetClassId();            // [8] +0x20  CGameLevel overrides (0x1611b0)
 
     CSeverusWorker(i32 a1, i32 a2, i32 a3) {
-        *(void**)this = &g_severusWorkerBaseVtbl;
         m_04 = a2;
         m_flags = a3;
         m_owner = a1;
     }
     // The base-subobject destructor: resets the three base fields and restores the
-    // base-class vftable. INLINE (in the header) so it folds into ~CGameLevel after
-    // the member array dtors, exactly as the retail compiler emitted the base-dtor
-    // tail. Stamps a different table from the ctor (the dtor-vtable @0x5e8cb4).
+    // grand-base teardown vftable. INLINE (in the header) so it folds into
+    // ~CGameLevel after the member array dtors, exactly as the retail compiler
+    // emitted the base-dtor tail (a different table from the ctor's @0x5efc30).
     ~CSeverusWorker() {
         m_04 = -1;
         m_flags = 0;
@@ -141,70 +126,36 @@ struct ScrollTarget;
 
 class CGameLevel : public CSeverusWorker {
 public:
-    // The vtable: LoadWwd is slot 0x38 (index 14) and the pre-load reset is slot
-    // 0x44 (index 17). We declare enough virtuals so `Reset` lands at offset 0x44.
-    // Several slots carry signatures the merged CDDrawLevelData methods dispatch
-    // through (Vfunc1C @+0x1c fail/reset hook; Vfunc38/3C/40 the load variants);
-    // the rest are external engine virtuals never called from this TU.
-    virtual void v00() OVERRIDE;
-    virtual void v04() OVERRIDE;
-    virtual void v08() OVERRIDE;
-    virtual void v0c() OVERRIDE;
-    virtual void v10() OVERRIDE;
-    virtual void v14() OVERRIDE;
-    virtual void v18() OVERRIDE;
-    virtual void Vfunc1C() OVERRIDE; // +0x1c  fail/reset hook
-    virtual void v20() OVERRIDE;
-    virtual void v24() OVERRIDE;
-    virtual void v28() OVERRIDE;
-    virtual void v2c() OVERRIDE;
-    virtual void v30() OVERRIDE;
-    virtual void v34() OVERRIDE;
-    // slot 0x38 (index 14) is LoadWwd itself; we keep it non-virtual below and let
-    // these dispatched-variant virtuals carry the slot numbering for Reset's offset.
-    virtual i32 Vfunc38(i32 arg1) OVERRIDE; // +0x38  load virtual (SetCoordsAndLoad38)
-    virtual i32 Vfunc3C(i32 arg1) OVERRIDE; // +0x3c  load virtual (SetCoordsAndLoad3C)
-    virtual i32 Vfunc40(i32 arg1) OVERRIDE; // +0x40  load virtual (SetCoordsAndLoad40)
-    // Pre-load reset (vtable slot 0x44 / index 17) - external engine virtual.
-    virtual void Reset() OVERRIDE;
+    // The 18-slot derived vtable @0x5f0150. REAL-POLYMORPHIC: each matched slot is
+    // the real method (RVA-bound in GameLevel.cpp), so cl emits ??_7CGameLevel@@6B@
+    // with those slots pointing at the matched functions; the engine-thunk base
+    // slots (0/2/3/4/6) are inherited declared-only from CSeverusWorker. Slots 9..17
+    // are new virtuals CGameLevel adds. cl auto-stamps this vptr in the ctor (the
+    // derived phase of the two-phase store); VTBL(CGameLevel, 0x001f0150) binds it.
+    //
+    // The three SetCoordsAndLoadNN siblings copy *coords into m_planeCtx, stamp the
+    // default-extents block, then dispatch the corresponding load virtual (slot
+    // +0x38/+0x3c/+0x40 = LoadWwd/LoadFromSource/LoadFromFile); on a 0 result they
+    // run Unload (slot +0x1c, the fail/reset hook).
+    void* ScalarDtor(u32 flags) OVERRIDE; // [1]  +0x04  0x1611c0
+    i32 IsLoaded() OVERRIDE;              // [5]  +0x14  0x161190  sentinel+owner+m_04 predicate
+    i32 Unload() OVERRIDE;                // [7]  +0x1c  0x15d1f0  full unload (+ header zero)
+    i32 GetClassId() OVERRIDE;            // [8]  +0x20  0x1611b0  class type tag (0x19)
+    virtual i32 SetCoordsAndLoad38(i32 arg1, LevelCoordRect* coords); // [9]  +0x24  0x15cf70
+    virtual i32 SetCoordsAndLoad3C(i32 arg1, LevelCoordRect* coords); // [10] +0x28  0x15ceb0
+    virtual i32 SetCoordsAndLoad40(i32 arg1, LevelCoordRect* coords); // [11] +0x2c  0x15cdf0
+    virtual i32 SetCoords(LevelCoordRect* coords);                    // [12] +0x30  0x15d0d0
+    virtual i32 SetCoordExtents(i32 w, i32 h);                        // [13] +0x34  0x15d030
+    virtual i32 LoadWwd(WwdHeader* hdr);               // [14] +0x38  0x15d280  1=ok 0=fail
+    virtual i32 LoadFromSource(RemusParseSource* arg); // [15] +0x3c  0x15d630
+    virtual i32 LoadFromFile(const char* path);        // [16] +0x40  0x15d500
+    virtual void
+    ReleaseChildren(); // [17] +0x44  0x15d680  pre-load reset (LoadWwd dispatches this)
 
     // Constructor: three args stored at +0x4/+0x8/+0xc; inits the array members,
     // the +0x10 sentinel and the +0xb0.. default-parameter block. (LevelCoordRect/
     // body in GameLevel.cpp.)
     CGameLevel(i32 a1, i32 a2, i32 a3);
-
-    // LoadWwd (vtable slot 0x38). Returns 1 on
-    // success, 0 on failure.
-    i32 LoadWwd(WwdHeader* hdr);
-
-    // --- merged from CDDrawLevelData: the matched leaves -----------------------
-    // Declared non-virtual (like LoadWwd) so the out-of-line defs in GameLevel.cpp
-    // compile; their bodies are what we match, not their slot numbers. LevelCoordRect
-    // is the file-scope coordinate record forward-declared above.
-    // The three SetCoordsAndLoadNN siblings copy *coords into m_planeCtx, stamp the
-    // default-extents block, then dispatch the corresponding load virtual (slot
-    // +0x38/+0x3c/+0x40); on a 0 result they run the +0x1c fail/reset hook.
-    i32 SetCoordsAndLoad38(i32 arg1, LevelCoordRect* coords);
-    i32 SetCoordsAndLoad3C(i32 arg1, LevelCoordRect* coords);
-    i32 SetCoordsAndLoad40(i32 arg1, LevelCoordRect* coords);
-    // Zeroes the min corner, stores (w-1,h-1) as the max corner, stamps the block.
-    i32 SetCoordExtents(i32 w, i32 h);
-    // Copies *coords into m_planeCtx, stamps the block, returns 1 (no dispatch).
-    i32 SetCoords(LevelCoordRect* coords);
-    // Readiness predicate: coord sentinel set + owner set + m_04 == -1 -> 1, else 0.
-    i32 IsLoaded();
-    // Full unload: releases every child, resets both arrays, resets the coord
-    // sentinel + main-plane fields, and zeroes the WwdHeader buffer.
-    i32 Unload();
-    // Releases every child + resets both arrays + the main-plane fields (no header zero).
-    void ReleaseChildren();
-    // Returns the class type tag (constant 0x19).
-    i32 GetClassId();
-    // Opens `path`, slurps it whole into a heap buffer, and feeds the buffer to the
-    // +0x38 load virtual. Returns 1 on success, 0 on any failure.
-    i32 LoadFromFile(const char* path);
-    // Drives a parse/load through `arg` (BeginParse/feed +0x38/EndParse).
-    i32 LoadFromSource(RemusParseSource* arg);
 
     // --- merged from the trace-discovered CGameLevel cluster -------------------
     // Tests a tile coord (x, y) against the bounds record. Free (cdecl) helper; the
@@ -309,15 +260,12 @@ public:
     // nonzero result) the object's own +0x90 notifier, returning 1. 0 if none. ret 0xc.
     i32 BroadPhase(ScrollTarget* t, i32 candX, i32 candY);
 
-    // Destructor (vtable slot 1, the ~CGameLevel @0x1611e0). Stamps the derived
-    // vftable, runs the level cleanup (Unload), then the three array members destruct
-    // and ~CSeverusWorker restores the base subobject. Declared so the member dtors
-    // + EH frame fall out; the body (manual vtable stamps) is in the .cpp.
+    // Destructor (the ~CGameLevel @0x1611e0). cl auto-stamps the derived vftable at
+    // dtor entry (polymorphic), runs the level cleanup (Unload), then the three array
+    // members destruct and ~CSeverusWorker restores the base subobject. Non-virtual;
+    // ScalarDtor (vtable slot 1) calls it. Declared so the member dtors + EH frame
+    // fall out.
     ~CGameLevel();
-
-    // The scalar-deleting destructor (vtable slot 1 thunk @0x1611c0): calls the
-    // destructor, then operator delete(this) when bit0 of the flag is set; returns this.
-    void* ScalarDtor(u32 flags);
 
 private:
     // The per-plane reader (WwdFile::ReadPlane). Same body as the one in

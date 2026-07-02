@@ -133,21 +133,29 @@ fail:
 // own size-pair, then derive the widget's own extents (min-1 + half-centers) from
 // three more size-pairs and finish with a SetRect over rc's corners.
 // ===========================================================================
-extern void* g_subVtbl_5f0310; // 0x5f0310 sub-widget vtable
 extern "C" int(__stdcall* g_pSetRect_6c44b8)(RECT*, int, int, int, int);
 
 struct Pt_168080 {
     i32 m_0; // +0x00
     i32 m_4; // +0x04
 };
+// REAL-POLYMORPHIC: the 6-slot sub-widget vtable @0x5f0310 (was g_subVtbl_5f0310)
+// is now cl-emitted (??_7SubWidget_168080@@6B@, bound via VTBL below); the INLINE
+// ctor AUTO-stamps the vptr, so `new SubWidget_168080` keeps the retail
+// `operator new(0x44); if (p) { stamp vptr; m_4=0 }` shape. All 6 slots are engine
+// (base-thunk / 0x168280 scalar dtor / 0x168060) declared-only -> reloc-masked.
 struct SubWidget_168080 {
-    void* m_vptr; // +0x00
-    i32 m_4;      // +0x04
+    virtual void s00();              // [0] 0x1bef01
+    virtual void* Release(u32 flag); // [1] +0x04  0x168280 scalar-deleting dtor
+    virtual void s08();              // [2] 0x0028ec
+    virtual void s0c();              // [3] 0x00106e
+    virtual void s10();              // [4] 0x004034
+    virtual void s14();              // [5] 0x168060
+    i32 m_4;                         // +0x04
     char m_pad8[0x44 - 8];
     i32 Setup(RECT rc, i32 a, i32 b); // 0x1915c0 (reloc-masked)
     SubWidget_168080() {
-        m_4 = 0;
-        m_vptr = &g_subVtbl_5f0310;
+        m_4 = 0; // cl auto-stamps &??_7SubWidget_168080 first
     }
 };
 struct Builder_168080 {
@@ -402,6 +410,7 @@ SIZE_UNKNOWN(Handler_17c3f0);
 SIZE_UNKNOWN(ObjA2_17c3f0);
 SIZE_UNKNOWN(ObjA3_17c3f0);
 SIZE_UNKNOWN(Pt_168080);
-SIZE_UNKNOWN(SubWidget_168080);
+SIZE(SubWidget_168080, 0x44);
 SIZE_UNKNOWN(VtblA2_17c3f0);
 SIZE_UNKNOWN(VtblA3_17c3f0);
+VTBL(SubWidget_168080, 0x001f0310); // ??_7SubWidget_168080 (was g_subVtbl_5f0310)
