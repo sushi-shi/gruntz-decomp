@@ -28,6 +28,7 @@
 #include <Mfc.h> // CDWordArray + <windows.h>
 
 #include <Gruntz/CGameRegistry.h> // WwdGameReg / g_gameReg
+#include <Gruntz/SpriteFactory.h> // the shared CSpriteFactory (CreateSprite @0x1597b0)
 
 // ---------------------------------------------------------------------------
 // The per-grunt voice/spawn record (the CGruntSpawnConfig CDWordArray element;
@@ -135,9 +136,10 @@ public:
 
 // --- the per-method helper externs (reloc-masked; no body) ---
 
-// LoadGruntVoices builds a play request through the sprite factory. The factory
-// (m_04->m_08, a CSpriteFactory) is invoked __thiscall; CreateSprite is modeled
-// as a method so `mov ecx,factory; call` falls out with no stack cleanup mismatch.
+// LoadGruntVoices builds a play request through the shared sprite factory
+// (m_04->m_08, the CSpriteFactory whose CreateSprite lives at 0x1597b0; see
+// <Gruntz/SpriteFactory.h>). The created instance is CIconSprite; this loader
+// only touches its +0x7c slot bag, so it views the result as a CSpriteHandle.
 struct CSpriteHandleSub {
     char m_00[0x10];
     void (*Activate)(void* self); // [m_7c + 0x10]  the slot-0x10 method
@@ -148,13 +150,9 @@ struct CSpriteHandle {
     char m_00[0x7c];
     CSpriteHandleSub* m_7c; // +0x7c  vtable-ish slot bag (Activate + result)
 };
-struct CSpriteFactory08 {
-    // __thiscall on the factory: (0,0,0, id, desc, flags). Returns the sprite.
-    CSpriteHandle* CreateSprite(i32 a0, i32 a1, i32 a2, i32 id, char* desc, i32 flags); // 0x1597b0
-};
 struct CSpawnSpriteSource {
     char m_00[8];
-    CSpriteFactory08* m_08; // +0x08  the factory
+    CSpriteFactory* m_08; // +0x08  the factory
 };
 
 // The voice-sprite stored in the m_08/m_0c pair. The teardown (0x11c7b0) calls
@@ -167,10 +165,6 @@ struct CSpawnVoice {
     i32 m_68; // +0x68  voice id
     i32 m_6c; // +0x6c  priority/rank (LoadGruntSpawnConfig gates on it)
 };
-
-// The "GruntVoice" sound descriptor blob the loader pushes (s_GruntVoice_0060a638).
-DATA(0x0020a638)
-extern char s_GruntVoice[];
 
 // The owned-object free path in Clear() (m_04->m_20 sub-object's remove).
 // The collection Clear() removes the m_08/m_0c entries from (reached as

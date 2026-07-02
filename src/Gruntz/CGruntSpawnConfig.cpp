@@ -151,15 +151,14 @@ void CGruntSpawnConfig::Clear() {
 // sprite-pair (m_08/m_0c). For each of the two iterations: get the source object
 // (m_04->m_08), make a sprite via CreateSprite, call its slot-0x10 method, then
 // read the sprite's m_7c->m_18 into the pair slot; bail with 0 on a null result.
-// Byte-exact apart from the 3 reloc-masked operands (CreateSprite, s_GruntVoice,
-// ClearSprites) - the reloc-mask plateau, i.e. matched (95.3% is the entropy tail).
 RVA(0x0011af00, 0x62)
 BOOL CGruntSpawnConfig::LoadGruntVoices() {
     ClearSprites();
+    i32 i = 0;
     void** slot = &m_08;
-    for (i32 i = 0; i < 2; i++, slot++) {
-        CSpriteHandle* spr = ((CSpawnSpriteSource*)m_04)
-                                 ->m_08->CreateSprite(0, 0, 0, 0xdbba1, s_GruntVoice, 0x4040003);
+    for (; i < 2; i++, slot++) {
+        CSpriteHandle* spr = (CSpriteHandle*)((CSpawnSpriteSource*)m_04)
+                                 ->m_08->CreateSprite(0, 0, 0, 0xdbba1, "GruntVoice", 0x4040003);
         spr->m_7c->Activate(spr);
         void* got = spr->m_7c->m_18;
         *slot = got;
@@ -577,7 +576,6 @@ SIZE_UNKNOWN(CSpawnStream);
 SIZE_UNKNOWN(CSpawnStreamFactory);
 SIZE_UNKNOWN(CSpawnTree);
 SIZE_UNKNOWN(CSpawnVoice);
-SIZE_UNKNOWN(CSpriteFactory08);
 SIZE_UNKNOWN(CSpriteHandle);
 SIZE_UNKNOWN(CSpriteHandleSub);
 SIZE_UNKNOWN(CSpriteReleasable);

@@ -248,16 +248,10 @@ DATA(0x0021ab24)
 extern i32 g_sndCueTag;                                       // ?g_sndCueTag@@3HA
 void __stdcall PlayAttackSound(i32 tag, i32 a, i32 b, i32 c); // thunk 0x25fe -> 0x1f940
 
-// The spell-effect key strings (CreateSprite/Activate/ApplyName take const char*).
+// The GAME_ATTACK sound cue tag (const char*). The other spell-effect key
+// strings (CreateSprite/Activate/ApplyName args) are spelled as inline literals
+// below so cl pools them into the shared read-only ??_C@ constants retail uses.
 static const char s_GAME_ATTACK[] = "GAME_ATTACK";
-static const char s_GAME_FLASH[] = "GAME_FLASH";
-static const char s_GAME_LIGHTING_FLASH[] = "GAME_LIGHTING_FLASH";
-static const char s_LightFx[] = "LightFx";
-static const char s_RollingBall[] = "RollingBall";
-static const char s_LEVEL_ROLLINGBALL_NORTH[] = "LEVEL_ROLLINGBALL_NORTH";
-static const char s_LEVEL_ROLLINGBALL_EAST[] = "LEVEL_ROLLINGBALL_EAST";
-static const char s_LEVEL_ROLLINGBALL_SOUTH[] = "LEVEL_ROLLINGBALL_SOUTH";
-static const char s_LEVEL_ROLLINGBALL_WEST[] = "LEVEL_ROLLINGBALL_WEST";
 // The bute config tag/keys (GetIntDef/GetDwordDef take char*).
 static char s_Spellz[] = "Spellz";
 static char s_FreezeRadius[] = "FreezeRadius";
@@ -318,9 +312,9 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
         case SPELLZ_FREEZE: { // freeze
             CHudSprite* spr =
                 g_pGameRegistry->m_30->m_8
-                    ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, s_LightFx, 0x40003);
+                    ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
             spr->m_7c->m_init(spr);
-            spr->m_7c->m_18->Activate(s_GAME_LIGHTING_FLASH, s_GAME_FLASH, 9, 1);
+            spr->m_7c->m_18->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 9, 1);
             return m_tileMgr->CombatCue(
                 m_lastTilePxX,
                 m_lastTilePxY,
@@ -332,9 +326,9 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
         case SPELLZ_HEALTH: { // health
             CHudSprite* spr =
                 g_pGameRegistry->m_30->m_8
-                    ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, s_LightFx, 0x40003);
+                    ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
             spr->m_7c->m_init(spr);
-            spr->m_7c->m_18->Activate(s_GAME_LIGHTING_FLASH, s_GAME_FLASH, 2, 1);
+            spr->m_7c->m_18->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 2, 1);
             return m_tileMgr->CombatCue(
                 m_lastTilePxX,
                 m_lastTilePxY,
@@ -346,9 +340,9 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
         case SPELLZ_RESURRECTION: { // resurrection
             CHudSprite* spr =
                 g_pGameRegistry->m_30->m_8
-                    ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, s_LightFx, 0x40003);
+                    ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
             spr->m_7c->m_init(spr);
-            spr->m_7c->m_18->Activate(s_GAME_LIGHTING_FLASH, s_GAME_FLASH, 8, 1);
+            spr->m_7c->m_18->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 8, 1);
             return m_tileMgr->ResurrectCue(
                 m_lastTilePxX,
                 m_lastTilePxY,
@@ -358,9 +352,9 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
         case SPELLZ_TOYZ: { // toyz
             CHudSprite* spr =
                 g_pGameRegistry->m_30->m_8
-                    ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, s_LightFx, 0x40003);
+                    ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
             spr->m_7c->m_init(spr);
-            spr->m_7c->m_18->Activate(s_GAME_LIGHTING_FLASH, s_GAME_FLASH, 7, 1);
+            spr->m_7c->m_18->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 7, 1);
             return m_tileMgr->CombatCue(
                 m_lastTilePxX,
                 m_lastTilePxY,
@@ -372,9 +366,9 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
         case SPELLZ_TELEPORT: { // teleport
             CHudSprite* spr =
                 g_pGameRegistry->m_30->m_8
-                    ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, s_LightFx, 0x40003);
+                    ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
             spr->m_7c->m_init(spr);
-            spr->m_7c->m_18->Activate(s_GAME_LIGHTING_FLASH, s_GAME_FLASH, 3, 1);
+            spr->m_7c->m_18->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 3, 1);
             return m_tileMgr->CombatCue(
                 m_lastTilePxX,
                 m_lastTilePxY,
@@ -389,10 +383,10 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 m_lastTilePxX,
                 m_lastTilePxY - 0x20,
                 0,
-                s_RollingBall,
+                "RollingBall",
                 0x40003
             );
-            n->ApplyName(s_LEVEL_ROLLINGBALL_NORTH);
+            n->ApplyName("LEVEL_ROLLINGBALL_NORTH");
             CSpriteInner* ni = n->m_7c;
             ni->m_bc = (i32)g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzSpeed, 0x3e8);
             n->m_124 = 0;
@@ -403,10 +397,10 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 m_lastTilePxX + 0x20,
                 m_lastTilePxY,
                 0,
-                s_RollingBall,
+                "RollingBall",
                 0x40003
             );
-            e->ApplyName(s_LEVEL_ROLLINGBALL_EAST);
+            e->ApplyName("LEVEL_ROLLINGBALL_EAST");
             CSpriteInner* ei = e->m_7c;
             ei->m_bc = (i32)g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzSpeed, 0x3e8);
             e->m_124 = 0;
@@ -417,10 +411,10 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 m_lastTilePxX,
                 m_lastTilePxY + 0x20,
                 0,
-                s_RollingBall,
+                "RollingBall",
                 0x40003
             );
-            s->ApplyName(s_LEVEL_ROLLINGBALL_SOUTH);
+            s->ApplyName("LEVEL_ROLLINGBALL_SOUTH");
             CSpriteInner* si = s->m_7c;
             si->m_bc = (i32)g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzSpeed, 0x3e8);
             s->m_124 = 0;
@@ -431,10 +425,10 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 m_lastTilePxX - 0x20,
                 m_lastTilePxY,
                 0,
-                s_RollingBall,
+                "RollingBall",
                 0x40003
             );
-            w->ApplyName(s_LEVEL_ROLLINGBALL_WEST);
+            w->ApplyName("LEVEL_ROLLINGBALL_WEST");
             CSpriteInner* wi = w->m_7c;
             wi->m_bc = (i32)g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzSpeed, 0x3e8);
             w->m_124 = 0;

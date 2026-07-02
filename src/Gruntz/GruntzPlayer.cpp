@@ -225,8 +225,7 @@ i32 GruntzPlayer::Serialize(void* arArg, i32 kind, i32 a3, i32 a4) {
         ar->Save(&m_224, 4);
         ar->Save(&m_228, 4);
     }
-    i32 r = ((PlayerConfigBundle*)&m_038)->Command(ar, kind, a3, a4);
-    return r != 0;
+    return ((PlayerConfigBundle*)&m_038)->Command(ar, kind, a3, a4) != 0;
 }
 
 // ===========================================================================

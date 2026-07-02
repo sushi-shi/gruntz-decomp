@@ -287,7 +287,7 @@ gruntpathscan	1	0
 gruntphasestep	1	0
 gruntpickupload	1	0
 gruntpuddle	5	2
-gruntspawnconfig	16	8
+gruntspawnconfig	16	9
 gruntsprintanim	1	0
 gruntstatestep	1	0
 grunttargetscan	1	0
@@ -300,7 +300,7 @@ gruntzcmdmgr	12	10
 gruntzcommand	17	17
 gruntzmgr	93	63
 gruntzmgrtransition	1	0
-gruntzplayer	8	3
+gruntzplayer	8	4
 gruntzsoundz	15	12
 gruntzwnd	9	9
 hash	10	9
@@ -2380,7 +2380,7 @@ gruntarrivalscan	?ArrivalScanB@CGruntStep@@QAEHXZ	45.3241	45.3241	1	efeccc7d41dd
 gruntarrivalscan	?ArrivalScanC@CGruntStep@@QAEHXZ	45.3710	45.3710	1	33af96ca185c	0xf36a0
 gruntarrivalstep	?StepArrivalDefenseAlt@CGrunt@@QAEHXZ	69.8771	69.8771	2	8b46871a0a25	0xf1c70
 gruntarriveresolve	?Resolve2c690@CArriveMgr@@QAEHPAUCArriveGrunt@@@Z	23.5223	23.5223	1	be17b57152b2	0x2c690
-gruntassetloaders	?LoadGruntAbilityTuning@CGrunt@@QAEHH@Z	90.5457	90.5457	3	ed0856f97ffb	0x57100
+gruntassetloaders	?LoadGruntAbilityTuning@CGrunt@@QAEHH@Z	90.5457	90.5457	4	41d1df286fa1	0x57100
 gruntassetloaders	?LoadGruntDeathAnimations@CGrunt@@QAEHHH@Z	87.0599	87.0599	3	fd4be0295a53	0x60150
 gruntassetloaders	?LoadWingzGruntSprites@CGrunt@@QAEHH@Z	75.0193	75.0193	1	69b35c90dfb1	0x68880
 gruntchargestep	?ChargeStep@Grunt@@QAEHXZ	21.4710	21.4710	1	24756a275ed2	0xef6b0
@@ -2410,7 +2410,7 @@ gruntspawnconfig	?GetButeSlot@CGruntSpawnConfig@@QAEPAXPAUCSpawnButeConfig@@PAUC
 gruntspawnconfig	?Init@CGruntSpawnConfig@@QAEHPAUCSpawnOwner@@@Z	55.3478	55.3478	1	daee427fc5f3	0x11adc0
 gruntspawnconfig	?IsReady@CGruntSpawnConfig@@QAEHXZ	100.0000	100.0000	1	920e1a592c09	0x11c830
 gruntspawnconfig	?LoadGruntSpawnConfig@CGruntSpawnConfig@@QAEHHHHHH@Z	76.7935	76.7935	2	488dfa776f77	0x11afb0
-gruntspawnconfig	?LoadGruntVoices@CGruntSpawnConfig@@QAEHXZ	95.3488	95.3488	2	788f9701ac23	0x11af00
+gruntspawnconfig	?LoadGruntVoices@CGruntSpawnConfig@@QAEHXZ	100.0000	100.0000	3	9c44be8aaf77	0x11af00
 gruntspawnconfig	?PickWeighted@CGruntSpawnConfig@@QAEHHH@Z	1.0870	1.0870	1	b9cc209559f5	0x11bee0
 gruntspawnconfig	?ResetPicks@CGruntSpawnConfig@@QAEXXZ	100.0000	100.0000	1	6d4d20bac4c4	0x11c7f0
 gruntspawnconfig	?StopVoice@CGruntSpawnConfig@@QAEXH@Z	100.0000	100.0000	1	3b4c120126c9	0x11c730
@@ -2567,7 +2567,7 @@ gruntzplayer	?GetDefaultName@GruntzPlayer@@SA?AVCString@@XZ	97.7778	97.7778	1	c9
 gruntzplayer	?GetDifficultyName@@YA?AVCString@@HH@Z	100.0000	100.0000	2	fd3691b39302	0xdb110
 gruntzplayer	?GetName@GruntzPlayer@@QAE?AVCString@@XZ	100.0000	100.0000	2	5bbb2546dd9f	0x1f450
 gruntzplayer	?Reset@GruntzPlayer@@QAEHXZ	94.8750	94.8750	2	70e9ae95b614	0xda9e0
-gruntzplayer	?Serialize@GruntzPlayer@@QAEHPAXHHH@Z	98.1333	98.1333	3	3479c08af349	0xdace0
+gruntzplayer	?Serialize@GruntzPlayer@@QAEHPAXHHH@Z	100.0000	100.0000	4	1709186395ba	0xdace0
 gruntzsoundz	??1CGruntzSoundZ@@UAE@XZ	91.5790	91.5790	1	eadd9784e22d	0x86040
 gruntzsoundz	?CreateBank2_1385e0@CGruntzSoundZ@@QAEPAVCGruntzSoundInnerZ@@HH@Z	90.8621	90.8621	2	37d27109d794	0x1385e0
 gruntzsoundz	?CreateBank_138670@CGruntzSoundZ@@QAEPAVCGruntzSoundInnerZ@@HHH@Z	91.1667	91.1667	3	417a46e26e76	0x138670
