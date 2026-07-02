@@ -68,10 +68,15 @@ struct DeviceConfigVtblB {
 };
 
 // ClassWithUnknownVTable6  @ 0x005ef6c8  (2 slots)  refs x4  src:g_PureVtbl
-struct PureVtbl {
-    UnkVfn __purecall;   // [0] -> 0x11fec0 __purecall
-    UnkVfn __purecall_1; // [1] -> 0x11fec0 __purecall
-};
+// The all-__purecall vtable of a 2-method ABSTRACT sound-element base (both slots ->
+// 0x11fec0 __purecall).  It is never a live object's vtable: the Dsndmgr list helpers
+// (SoundVoiceList.cpp RemoveMatching, SoundDevice.cpp FreeSamples) stamp it into a
+// reaped element right before RezFree - the inlined trivial base-dtor vptr restamp, a
+// reloc-masked DIR32 store.  Its ??_7 is emitted by the OWNING concrete element class's
+// ctor (DSoundVoice / the sample node, in an as-yet-unmodeled TU), NOT by these helper
+// TUs, so it cannot be auto-emitted where it is referenced; kept as the g_PureVtbl DATA
+// extern (bound at 0x1ef6c8) until the element class is modeled real-polymorphic.
+// Placeholder struct removed.
 
 // ClassWithUnknownVTable7  @ 0x005ef6d0  (3 slots)  refs x1
 // CATALOGED as ??_7DSoundVoice@@6B@ via VTBL() in src/Dsndmgr/DSoundVoice.cpp (the
@@ -100,29 +105,15 @@ struct Vtbl_1ef6d0 {
 // src/Bute/SymParser.cpp; 3-slot primary vtable, non-virtual dtor). Placeholder
 // removed.
 
-// ClassWithUnknownVTable12  @ 0x005ef768  (8 slots)  refs x2
-struct Vtbl_1ef768 {
-    UnkVfn slot0_13c530;                 // [0] -> 0x13c530 sub_13c530
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x13c500 `scalar_deleting_destructor'
-    UnkVfn __purecall;                   // [2] -> 0x11fec0 __purecall
-    UnkVfn __purecall_3;                 // [3] -> 0x11fec0 __purecall
-    UnkVfn __purecall_4;                 // [4] -> 0x11fec0 __purecall
-    UnkVfn __purecall_5;                 // [5] -> 0x11fec0 __purecall
-    UnkVfn __purecall_6;                 // [6] -> 0x11fec0 __purecall
-    UnkVfn __purecall_7;                 // [7] -> 0x11fec0 __purecall
-};
+// ClassWithUnknownVTable12  @ 0x005ef768 - REALIZED as ??_7CRezItmBase@@6B@ (the shared
+// resource-tree node base, real polymorphic with 6 pure virtuals + virtual dtor in
+// include/Rez/RezMgr.h; cl auto-emits). Cataloged via VTBL(CRezItmBase, 0x001ef768) in
+// src/Rez/RezMgr.cpp. Placeholder removed.
 
-// ClassWithUnknownVTable13  @ 0x005ef788  (8 slots)  refs x2
-struct Vtbl_1ef788 {
-    UnkVfn slot0_13c530;                 // [0] -> 0x13c530 sub_13c530
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x13c570 `scalar_deleting_destructor'
-    UnkVfn Read;                         // [2] -> 0x13c600 Read
-    UnkVfn FUN_0053c6c0;                 // [3] -> 0x13c6c0 FUN_0053c6c0
-    UnkVfn slot4_13c760;                 // [4] -> 0x13c760 sub_13c760
-    UnkVfn Close;                        // [5] -> 0x13c830 Close
-    UnkVfn FUN_0053c8a0;                 // [6] -> 0x13c8a0 FUN_0053c8a0
-    UnkVfn FUN_0053c8f0;                 // [7] -> 0x13c8f0 FUN_0053c8f0
-};
+// ClassWithUnknownVTable13  @ 0x005ef788 - REALIZED as ??_7CRezItm@@6B@ (the leaf
+// resource/file node CRezItm : CRezItmBase overriding the dtor + Read/Close stream
+// slots; cl auto-emits). Cataloged via VTBL(CRezItm, 0x001ef788) in src/Rez/RezMgr.cpp.
+// Placeholder removed.
 
 // ClassWithUnknownVTable14  @ 0x005ef7a8
 // REALIZED as ??_7CRezDir@@6B@ (real polymorphic CRezDir : CRezItmBase in
@@ -146,65 +137,22 @@ struct Vtbl_1ef7d0 {
 // carry the virtuals and cl emits their ??_7 (see src/Image/Image.cpp). Catalog
 // entry removed per the all-vtables mandate.
 
-// ClassWithUnknownVTable17  @ 0x005efa58  (12 slots)  refs x4  src:g_poolItemAVtbl
-struct PoolItemAVtbl {
-    UnkVfn ScalarDelete; // [0] -> 0x142340 ScalarDelete
-    UnkVfn Refresh;      // [1] -> 0x13e140 Refresh
-    UnkVfn FUN_0053e0a0; // [2] -> 0x13e0a0 FUN_0053e0a0
-    UnkVfn BlitSurf;     // [3] -> 0x13e0d0 BlitSurf
-    UnkVfn FreeSurfaces; // [4] -> 0x13e4d0 FreeSurfaces
-    UnkVfn slot5_1412d0; // [5] -> 0x1412d0 sub_1412d0
-    UnkVfn slot6_143cc0; // [6] -> 0x143cc0 sub_143cc0
-    UnkVfn slot7_13f960; // [7] -> 0x13f960 sub_13f960
-    UnkVfn slot8_13e2e0; // [8] -> 0x13e2e0 sub_13e2e0
-    UnkVfn ResolveEx;    // [9] -> 0x148890 ResolveEx
-    UnkVfn Stub_148940;  // [10] -> 0x148940 Stub_148940
-    UnkVfn LoadKeyed;    // [11] -> 0x148840 LoadKeyed
-};
-
-// ClassWithUnknownVTable18  @ 0x005efa88  (11 slots)  refs x2
-struct Vtbl_1efa88 {
-    UnkVfn _scalar_deleting_destructor_; // [0] -> 0x142800 `scalar_deleting_destructor'
-    UnkVfn Refresh;                      // [1] -> 0x13e140 Refresh
-    UnkVfn FUN_0053e0a0;                 // [2] -> 0x13e0a0 FUN_0053e0a0
-    UnkVfn BlitSurf;                     // [3] -> 0x13e0d0 BlitSurf
-    UnkVfn FreeSurfaces;                 // [4] -> 0x13e4d0 FreeSurfaces
-    UnkVfn slot5_1412d0;                 // [5] -> 0x1412d0 sub_1412d0
-    UnkVfn slot6_143cb0;                 // [6] -> 0x143cb0 sub_143cb0
-    UnkVfn slot7_13f960;                 // [7] -> 0x13f960 sub_13f960
-    UnkVfn slot8_13e2e0;                 // [8] -> 0x13e2e0 sub_13e2e0
-    UnkVfn FUN_00548a50;                 // [9] -> 0x148a50 FUN_00548a50
-    UnkVfn slot10_148ac0;                // [10] -> 0x148ac0 sub_148ac0
-};
-
-// ClassWithUnknownVTable19  @ 0x005efab8  (11 slots)  refs x3
-struct Vtbl_1efab8 {
-    UnkVfn _scalar_deleting_destructor_; // [0] -> 0x142a20 `scalar_deleting_destructor'
-    UnkVfn Refresh;                      // [1] -> 0x13e140 Refresh
-    UnkVfn FUN_00548b50;                 // [2] -> 0x148b50 FUN_00548b50
-    UnkVfn BlitSurf;                     // [3] -> 0x13e0d0 BlitSurf
-    UnkVfn FreeSurfaces;                 // [4] -> 0x13e4d0 FreeSurfaces
-    UnkVfn slot5_1412d0;                 // [5] -> 0x1412d0 sub_1412d0
-    UnkVfn slot6_143cd0;                 // [6] -> 0x143cd0 sub_143cd0
-    UnkVfn slot7_13f960;                 // [7] -> 0x13f960 sub_13f960
-    UnkVfn slot8_13e2e0;                 // [8] -> 0x13e2e0 sub_13e2e0
-    UnkVfn FUN_00548af0;                 // [9] -> 0x148af0 FUN_00548af0
-    UnkVfn slot10_148b80;                // [10] -> 0x148b80 sub_148b80
-};
-
-// ClassWithUnknownVTable20  @ 0x005efae8  (10 slots)  refs x2
-struct Vtbl_1efae8 {
-    UnkVfn _scalar_deleting_destructor_; // [0] -> 0x142d20 `scalar_deleting_destructor'
-    UnkVfn Refresh;                      // [1] -> 0x13e140 Refresh
-    UnkVfn FUN_00548cc0;                 // [2] -> 0x148cc0 FUN_00548cc0
-    UnkVfn BlitSurf;                     // [3] -> 0x13e0d0 BlitSurf
-    UnkVfn FreeSurfaces;                 // [4] -> 0x13e4d0 FreeSurfaces
-    UnkVfn slot5_1412d0;                 // [5] -> 0x1412d0 sub_1412d0
-    UnkVfn slot6_143ce0;                 // [6] -> 0x143ce0 sub_143ce0
-    UnkVfn slot7_13f960;                 // [7] -> 0x13f960 sub_13f960
-    UnkVfn slot8_13e2e0;                 // [8] -> 0x13e2e0 sub_13e2e0
-    UnkVfn FUN_00548c40;                 // [9] -> 0x148c40 FUN_00548c40
-};
+// ClassWithUnknownVTable17-20 @ 0x005efa58 / a88 / ab8 / ae8 - REALIZED as the pool-A
+// surface-item family in src/Gruntz/CDDrawPtrCollections.cpp.  GENUINE C++ VTABLES
+// (verified against the retail .rdata, NOT a pointer-to-member table): a 9-slot
+// polymorphic base (0x5ef7f0, modeled as CPoolItemBase; the base vtable datum itself is
+// bound in CDirectDrawMgr.cpp as g_poolItemVtbl) plus four derived subclasses that each
+// override {virtual dtor slot 0, the slot-2 init, the slot-6 surface op} and add their
+// own init tail slots.  cl now auto-emits each ??_7 (VTBL-bound):
+//   0x5efa58  CPoolItemA    (12 slots; dtor 0x142820, tail 9=0x148890/10=0x148940/11=0x148840)
+//   0x5efa88  CPoolItemA88  (11 slots; tail 9=0x148a50/10=0x148ac0)
+//   0x5efab8  CPoolItemAB8  (11 slots; slot 2=0x148b50; tail 9=0x148af0/10=0x148b80)
+//   0x5efae8  CPoolItemAE8  (10 slots; dtor 0x142d40, slot 2=0x148cc0; tail 9=0x148c40)
+// Placeholder structs removed.  (The init slots are invoked with per-subclass-varying
+// arities; a single C++ virtual signature serves the common arity - the odd 3-arg ab8
+// call site over-pushes two zeros, an accepted residual of the honest polymorphic
+// model.  All slot fns live in Image.cpp / boundary so the emitted vtable slots
+// reloc-mask against the retail RVAs.)
 
 // ClassWithUnknownVTable21  @ 0x005efb28  (5 slots)  refs x3  src:g_shadeArrayVtbl
 // REALIZED as ??_7CShadeTableArray@@6B@ (real CObject-derived array in
@@ -550,14 +498,17 @@ struct Vtbl_1effd0 {
 // CNetNodeBase in src/Net/NetSessionNode.cpp; cl auto-emits it). Cataloged via
 // VTBL(CNetSessionNode, 0x005f0778). Placeholder removed.
 
-// ClassWithUnknownVTable65  @ 0x005f0790  (5 slots)  refs x3
-struct Vtbl_1f0790 {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x17e430 `scalar_deleting_destructor'
-    UnkVfn slot2_17e2a0;                 // [2] -> 0x17e2a0 sub_17e2a0
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
-};
+// ClassWithUnknownVTable65  @ 0x005f0790  (5 slots)  refs x3  src:g_faderArrayVtbl
+// The vtable of CFaderArray - the CFaderMgr's growable CFader* element array (base
+// vtable @ manager +0x10, referenced in include/Gruntz/CFaderMgr.h as g_faderArrayVtbl).
+// This is a real MFC CObject-derived array: slots [0]/[3]/[4] are ILT jmp-thunks into
+// the CObject base (0x1bef01 GetRuntimeClass, 0x106e / 0x4034 AssertValid / Dump), slot
+// [1] is the scalar-deleting dtor (0x17e430) and slot [2] the Serialize override
+// (0x17e2a0).  Its ctor + dtor are INLINED into CFaderMgr's ctor (matched, 0x17d8f0) and
+// dtor (early-stopped, 0x17d910); a real CObject-derived model needs the MFC base's exact
+// 5-slot vtable AND an external ~CFaderArray, and would perturb that matched cluster, so
+// it is kept as the g_faderArrayVtbl DATA extern (bound at 0x1f0790) + manual stamp until
+// the CFaderMgr cluster is re-attacked with the real MFC base.  Placeholder struct removed.
 
 // ClassWithUnknownVTable66-73 (0x5f07a8..0x5f0890) - REALIZED as the CFader family
 // in src/Gruntz/CFader.cpp (+ include/Gruntz/CFader.h), now real C++ polymorphic

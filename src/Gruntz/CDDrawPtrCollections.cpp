@@ -81,47 +81,46 @@ struct CPtrListNode {
 
 class CDDrawPtrCollections;
 
+// The pool-A items' operator delete (invoked by the scalar-deleting dtors); the
+// engine free, reloc-masked rel32.
+void operator delete(void*);
+
 // ---------------------------------------------------------------------------
-// The polymorphic +0x47c-pool item (0xc0 B).  The factories construct it by hand
-// (inline field init + manual vtable stamp to the RETAIL vtable 0x5efa58 - a
-// reloc-masked DATA extern - because the item's virtuals live in other TUs), then
-// dispatch a virtual init slot.  Slot 0 is the scalar deleting dtor; slots 0x24 /
-// 0x2c are the two init entry points the two factories use.
+// The +0x47c-pool surface-item family.  GENUINE C++ VTABLES (verified against the
+// retail .rdata, not a pointer-to-member table): a 9-slot polymorphic BASE (vtable
+// 0x5ef7f0) plus four DERIVED subclasses (0x5efa58 / a88 / ab8 / ae8) that override
+// {virtual dtor slot 0, the slot-2 init, the slot-6 surface op} and add per-subclass
+// init tail slots.  Modeled real-polymorphic so cl emits each ??_7 and auto-stamps
+// the implicit vptr in the ctor/dtor; every slot fn is defined in a sibling TU
+// (Image.cpp / boundary) so the emitted vtable slots are reloc-masked DIR32 relocs.
+// (The earlier struct-of-pointer-to-member-fns model was a transitional workaround.)
+//
+// The init entry points the factories dispatch are ordinary virtual slots:
+//   slot 2  (byte +0x08)  the 1-arg init  - base virtual (overridden by ab8 / ae8)
+//   slot 9  (byte +0x24)  the primary init - per-subclass tail virtual
+//   slot 10 (byte +0x28)  a58's 3-arg init - a58 tail virtual
+//   slot 11 (byte +0x2c)  a58's 5-arg init - a58 tail virtual
+// A pool item is 0xc0 bytes and owns a CByteArray @+0x94 (its throwing ctor is what
+// gives each factory `new` its /GX frame).
 // ---------------------------------------------------------------------------
-// The item's vtable is modeled as a struct of __thiscall pointer-to-member fns
-// (the MSVC5-period idiom; raw `__thiscall` fn-ptrs are rejected), so each dispatch
-// lowers to `mov ecx,item; call [vtbl+slot]` with no manual cast.
-struct CPoolItemAVtbl;
-class CPoolItemA {
+class CPoolItemBase {
 public:
-    struct VptrFirst {};
+    CPoolItemBase();
 
-    inline CPoolItemA(CPoolItemAVtbl* table) {
-        m_08 = 0;
-        m_0c = 0;
-        m_pos = 0;
-        m_7c = 0;
-        m_a8 = 0;
-        m_b8 = 0;
-        vptr = table;
-    }
-    inline CPoolItemA(CPoolItemAVtbl* table, VptrFirst) {
-        vptr = table;
-        m_08 = 0;
-        m_0c = 0;
-        m_pos = 0;
-        m_7c = 0;
-        m_a8 = 0;
-        m_b8 = 0;
-    }
+    virtual ~CPoolItemBase();                          // slot 0  0x141350 (??_G 0x141330)
+    virtual i32 Refresh();                             // slot 1  0x13e140
+    virtual i32 Init1(CDDrawPtrCollections* h, i32 a); // slot 2  0x13e0a0
+    virtual i32 BlitSurf(void*, i32, i32, i32, i32);   // slot 3  0x13e0d0
+    virtual void FreeSurfaces();                       // slot 4  0x13e4d0
+    virtual i32 v14();                                 // slot 5  0x1412d0
+    virtual i32 v18();                                 // slot 6  0x141300
+    virtual i32 v1c();                                 // slot 7  0x13f960
+    virtual i32 v20();                                 // slot 8  0x13e2e0
 
-    ~CPoolItemA();       // non-deleting dtor variant 0x142820 (vtbl 0x5ef7f0)
-    void FreeSurfaces(); // 0x13e4d0 (CFileImage::FreeSurfaces, __thiscall) - external
-
-    CPoolItemAVtbl* vptr; // +0x00 - stamped to g_poolItemAVtbl (0x5efa58)
-    void* m_pos;          // +0x04 - cached CPtrList POSITION
-    i32 m_08;             // +0x08
-    i32 m_0c;             // +0x0c
+    // implicit vptr        // +0x00
+    void* m_pos; // +0x04 - cached CPtrList POSITION
+    i32 m_08;    // +0x08
+    i32 m_0c;    // +0x0c
     char _10[0x7c - 0x10];
     i32 m_7c; // +0x7c
     char _80[0x94 - 0x80];
@@ -130,82 +129,70 @@ public:
     char _ac[0xb8 - 0xac];
     i32 m_b8; // +0xb8
     char _bc[0xc0 - 0xbc];
-
-    void Delete(u32 flags);                                     // vtbl[0x00] scalar deleting dtor
-    i32 Init08(CDDrawPtrCollections*, i32);                     // vtbl[0x08]  (1-arg init)
-    i32 Init24(CDDrawPtrCollections*, i32, i32, i32, i32, i32); // vtbl[0x24]  (5-arg)
-    i32 Init24_3(CDDrawPtrCollections*, i32, i32, i32);         // vtbl[0x24]  (3-arg)
-    i32 Init24_6(CDDrawPtrCollections*, i32, i32, i32, i32, i32, i32); // vtbl[0x24]  (6-arg)
-    i32 Init28(CDDrawPtrCollections*, i32, i32, i32);                  // vtbl[0x28]  (3-arg init)
-    i32 Init2c(CDDrawPtrCollections*, i32, i32, i32, i32, i32);        // vtbl[0x2c]
-}; // 0xc0
-
-typedef void (CPoolItemA::*PoolItemDeleteFn)(u32);
-typedef i32 (CPoolItemA::*PoolItemInit1Fn)(CDDrawPtrCollections*, i32);
-typedef i32 (CPoolItemA::*PoolItemInit3Fn)(CDDrawPtrCollections*, i32, i32, i32);
-typedef i32 (CPoolItemA::*PoolItemInitFn)(CDDrawPtrCollections*, i32, i32, i32, i32, i32);
-typedef i32 (CPoolItemA::*PoolItemInit6Fn)(CDDrawPtrCollections*, i32, i32, i32, i32, i32, i32);
-struct CPoolItemAVtbl {
-    PoolItemDeleteFn Delete; // [0x00] scalar deleting dtor
-    char _04[0x08 - 0x04];
-    PoolItemInit1Fn Init08; // [0x08]
-    char _0c[0x24 - 0x0c];
-    // slot [0x24]: the init arity varies per subclass (3 / 5 / 6 args), so the
-    // same 4-byte pointer-to-member slot is viewed through the right type.
-    union {
-        PoolItemInitFn Init24;    // 5-arg (CreateA/CreateB style)
-        PoolItemInit3Fn Init24_3; // 3-arg (vtbl ab8/a88 style)
-        PoolItemInit6Fn Init24_6; // 6-arg (vtbl ae8 style)
-    };
-    PoolItemInit3Fn Init28; // [0x28]
-    PoolItemInitFn Init2c;  // [0x2c]
 };
-inline void CPoolItemA::Delete(u32 flags) {
-    (this->*(vptr->Delete))(flags);
-}
-inline i32 CPoolItemA::Init08(CDDrawPtrCollections* h, i32 a) {
-    return (this->*(vptr->Init08))(h, a);
-}
-inline i32 CPoolItemA::Init24(CDDrawPtrCollections* h, i32 a, i32 b, i32 c, i32 d, i32 e) {
-    return (this->*(vptr->Init24))(h, a, b, c, d, e);
-}
-inline i32 CPoolItemA::Init24_3(CDDrawPtrCollections* h, i32 a, i32 b, i32 c) {
-    return (this->*(vptr->Init24_3))(h, a, b, c);
-}
-inline i32 CPoolItemA::Init24_6(CDDrawPtrCollections* h, i32 a, i32 b, i32 c, i32 d, i32 e, i32 f) {
-    return (this->*(vptr->Init24_6))(h, a, b, c, d, e, f);
-}
-inline i32 CPoolItemA::Init28(CDDrawPtrCollections* h, i32 a, i32 b, i32 c) {
-    return (this->*(vptr->Init28))(h, a, b, c);
-}
-inline i32 CPoolItemA::Init2c(CDDrawPtrCollections* h, i32 a, i32 b, i32 c, i32 d, i32 e) {
-    return (this->*(vptr->Init2c))(h, a, b, c, d, e);
+SIZE(CPoolItemBase, 0xc0);
+// The base vtable 0x5ef7f0 is bound in CDirectDrawMgr.cpp (g_poolItemVtbl / CDdPoolVtbl);
+// CPoolItemBase's emitted ??_7 is left unbound here so it does not collide with that.
+
+// Zero the scalar fields (the CByteArray member + vptr are the compiler's job).
+inline CPoolItemBase::CPoolItemBase() {
+    m_08 = 0;
+    m_0c = 0;
+    m_pos = 0;
+    m_7c = 0;
+    m_a8 = 0;
+    m_b8 = 0;
 }
 
-// The retail vtables for the four pool-A item subclasses (reloc-masked DATA data).
-DATA(0x001ef7f0)
-extern CPoolItemAVtbl g_poolItemVtbl7f0; // 0x5ef7f0
-DATA(0x001efa58)
-extern CPoolItemAVtbl g_poolItemAVtbl; // 0x5efa58
-DATA(0x001efa88)
-extern CPoolItemAVtbl g_poolItemVtbla88; // 0x5efa88
-DATA(0x001efab8)
-extern CPoolItemAVtbl g_poolItemVtblab8; // 0x5efab8
-DATA(0x001efae8)
-extern CPoolItemAVtbl g_poolItemVtblae8; // 0x5efae8
-
-// A SECOND pool-A item subclass that shares the vtbl-7f0 non-deleting dtor shape
-// (vptr restamp -> FreeSurfaces -> CByteArray member dtor).  Distinct retail RVA
-// (0x142d40 vs CPoolItemA::~CPoolItemA @0x142820) but byte-identical codegen.
-class CPoolItemA7f0 {
+// vtable 0x5efa58: overrides the dtor (??_G 0x142340 / ~ 0x142820) and slot 6
+// (0x143cc0); adds three init tail slots (9 = 0x148890, 10 = 0x148940, 11 = 0x148840).
+class CPoolItemA : public CPoolItemBase {
 public:
-    ~CPoolItemA7f0();     // 0x142d40
-    void FreeSurfaces();  // 0x13e4d0 (__thiscall) - external
-    CPoolItemAVtbl* vptr; // +0x00
-    char _04[0x94 - 0x04];
-    CByteArray m_94; // +0x94
-    char _a8[0xc0 - 0xa8];
+    virtual ~CPoolItemA();                                           // slot 0  ~ 0x142820
+    virtual i32 v18() OVERRIDE;                                      // slot 6  0x143cc0
+    virtual i32 v24(CDDrawPtrCollections*, i32, i32, i32, i32, i32); // slot 9  0x148890
+    virtual i32 v28(CDDrawPtrCollections*, i32, i32, i32);           // slot 10 0x148940
+    virtual i32 v2c(CDDrawPtrCollections*, i32, i32, i32, i32, i32); // slot 11 0x148840
 };
+SIZE(CPoolItemA, 0xc0);
+VTBL(CPoolItemA, 0x001efa58);
+
+// vtable 0x5efa88: overrides the dtor (??_G 0x142800) and slot 6 (0x143cb0); adds two
+// init tail slots (9 = 0x148a50, 10 = 0x148ac0).
+class CPoolItemA88 : public CPoolItemBase {
+public:
+    virtual ~CPoolItemA88();                                         // slot 0  ??_G 0x142800
+    virtual i32 v18() OVERRIDE;                                      // slot 6  0x143cb0
+    virtual i32 v24(CDDrawPtrCollections*, i32, i32, i32, i32, i32); // slot 9  0x148a50
+    virtual i32 v28(CDDrawPtrCollections*, i32, i32, i32);           // slot 10 0x148ac0
+};
+SIZE(CPoolItemA88, 0xc0);
+VTBL(CPoolItemA88, 0x001efa88);
+
+// vtable 0x5efab8: overrides the dtor (??_G 0x142a20), slot 2 (0x148b50) and slot 6
+// (0x143cd0); adds two init tail slots (9 = 0x148af0, 10 = 0x148b80).
+class CPoolItemAB8 : public CPoolItemBase {
+public:
+    virtual ~CPoolItemAB8();                                         // slot 0  ??_G 0x142a20
+    virtual i32 Init1(CDDrawPtrCollections*, i32) OVERRIDE;          // slot 2  0x148b50
+    virtual i32 v18() OVERRIDE;                                      // slot 6  0x143cd0
+    virtual i32 v24(CDDrawPtrCollections*, i32, i32, i32, i32, i32); // slot 9  0x148af0
+    virtual i32 v28(CDDrawPtrCollections*, i32, i32, i32);           // slot 10 0x148b80
+};
+SIZE(CPoolItemAB8, 0xc0);
+VTBL(CPoolItemAB8, 0x001efab8);
+
+// vtable 0x5efae8: overrides the dtor (??_G 0x142d20 / ~ 0x142d40), slot 2 (0x148cc0)
+// and slot 6 (0x143ce0); adds one init tail slot (9 = 0x148c40, 6-arg).
+class CPoolItemAE8 : public CPoolItemBase {
+public:
+    virtual ~CPoolItemAE8();                                              // slot 0  ~ 0x142d40
+    virtual i32 Init1(CDDrawPtrCollections*, i32) OVERRIDE;               // slot 2  0x148cc0
+    virtual i32 v18() OVERRIDE;                                           // slot 6  0x143ce0
+    virtual i32 v24(CDDrawPtrCollections*, i32, i32, i32, i32, i32, i32); // slot 9  0x148c40
+};
+SIZE(CPoolItemAE8, 0xc0);
+VTBL(CPoolItemAE8, 0x001efae8);
 
 // The +0x498-pool item: a 0x38-byte struct (RezAlloc'd, vtable-less).  Field 0
 // caches the POSITION; the +0x4..+0x10 + +0x14/+0x18/+0x2c/+0x30/+0x34 dwords are
@@ -282,30 +269,30 @@ public:
     CDDrawPtrCollections();
     ~CDDrawPtrCollections();
 
-    void Clear(i32 mode);                                   // 0x142060
-    void EmptyPoolA();                                      // 0x142120  (drain +0x47c list)
-    void EmptyPoolB();                                      // 0x142ed0  (drain +0x498 list)
-    void AddItemA(CPoolItemA* item);                        // 0x142100
-    void AddItemB(CPoolItemB* item);                        // 0x142eb0
-    void RemoveItemA(CPoolItemA* item);                     // 0x142160
-    void RemoveItemB(CPoolItemB* item);                     // 0x142f10
-    CPoolItemA* Create7f0_1(i32 a);                         // 0x1421a0 (vtbl 7f0, slot08)
-    CPoolItemA* CreateA(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x142260
-    CPoolItemA* CreateB(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x1423c0
-    CPoolItemA* Createa58_1(i32 a);                         // 0x1424a0 (vtbl a58, slot08)
-    CPoolItemA* Createa58_3(i32 a, i32 b, i32 c);           // 0x142560 (vtbl a58, slot28)
-    CPoolItemA* Createa88_3(i32 a, i32 b, i32 c);           // 0x142730 (vtbl a88, slot24)
-    CPoolItemA* Createa88_1(i32 a);                         // 0x142880 (vtbl a88, slot08)
-    CPoolItemA* Createab8_3(i32 a, i32 b, i32 c);           // 0x142940 (vtbl ab8, slot24, +538)
-    CPoolItemA* Createab8_1(i32 a);                         // 0x142aa0 (vtbl ab8, slot08, +538)
-    CPoolItemA* Createab8_24_3(i32 a); // 0x142b70 (vtbl ab8, slot24 3-arg, +538)
-    CPoolItemA*
-    Createae8_6(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f);      // 0x142c40 (vtbl ae8, slot24 6-arg)
-    CPoolItemA* Createae8_1(i32 a);                             // 0x142da0 (vtbl ae8, slot08)
-    CPoolItemA* MakeAndAddB(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x142e60
-    CPoolItemB* MakeB(i32 a, i32 b);                            // 0x142fc0
-    CPoolItemB* MakeB2(i32 a, i32 b);                           // 0x142f40 (init via 0x147410)
-    CPoolItemB* MakeB3(i32 a, i32 b, i32 c);                    // 0x1430c0 (init via 0x147840)
+    void Clear(i32 mode);                                      // 0x142060
+    void EmptyPoolA();                                         // 0x142120  (drain +0x47c list)
+    void EmptyPoolB();                                         // 0x142ed0  (drain +0x498 list)
+    void AddItemA(CPoolItemBase* item);                        // 0x142100
+    void AddItemB(CPoolItemB* item);                           // 0x142eb0
+    void RemoveItemA(CPoolItemBase* item);                     // 0x142160
+    void RemoveItemB(CPoolItemB* item);                        // 0x142f10
+    CPoolItemBase* Create7f0_1(i32 a);                         // 0x1421a0 (vtbl 7f0, slot 2)
+    CPoolItemBase* CreateA(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x142260
+    CPoolItemBase* CreateB(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x1423c0
+    CPoolItemBase* Createa58_1(i32 a);                         // 0x1424a0 (vtbl a58, slot 2)
+    CPoolItemBase* Createa58_3(i32 a, i32 b, i32 c);           // 0x142560 (vtbl a58, slot 10)
+    CPoolItemBase* Createa88_3(i32 a, i32 b, i32 c);           // 0x142730 (vtbl a88, slot 9)
+    CPoolItemBase* Createa88_1(i32 a);                         // 0x142880 (vtbl a88, slot 2)
+    CPoolItemBase* Createab8_3(i32 a, i32 b, i32 c);           // 0x142940 (vtbl ab8, slot 9, +538)
+    CPoolItemBase* Createab8_1(i32 a);                         // 0x142aa0 (vtbl ab8, slot 2, +538)
+    CPoolItemBase* Createab8_24_3(i32 a); // 0x142b70 (vtbl ab8, slot 9 3-arg, +538)
+    CPoolItemBase*
+    Createae8_6(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // 0x142c40 (vtbl ae8, slot 9 6-arg)
+    CPoolItemBase* Createae8_1(i32 a);                     // 0x142da0 (vtbl ae8, slot 2)
+    CPoolItemBase* MakeAndAddB(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x142e60
+    CPoolItemB* MakeB(i32 a, i32 b);                               // 0x142fc0
+    CPoolItemB* MakeB2(i32 a, i32 b);                              // 0x142f40 (init via 0x147410)
+    CPoolItemB* MakeB3(i32 a, i32 b, i32 c);                       // 0x1430c0 (init via 0x147840)
 
     // Read the trailing 0x300-byte palette from a file and register a pool-B item built
     // from it (0x143150 -> MakeB; 0x143a30 -> Make950, the sibling builder).
@@ -389,7 +376,7 @@ void CDDrawPtrCollections::Clear(i32 mode) {
 // AddItemA (0x142100).  pool.AddTail(item); item->pos = position.
 // ---------------------------------------------------------------------------
 RVA(0x00142100, 0x18)
-void CDDrawPtrCollections::AddItemA(CPoolItemA* item) {
+void CDDrawPtrCollections::AddItemA(CPoolItemBase* item) {
     item->m_pos = m_poolA.AddTail(item);
 }
 
@@ -402,10 +389,8 @@ void CDDrawPtrCollections::EmptyPoolA() {
     while (node) {
         CPtrListNode* cur = node;
         node = node->pNext;
-        CPoolItemA* item = (CPoolItemA*)cur->data;
-        if (item) {
-            item->Delete(1);
-        }
+        CPoolItemBase* item = (CPoolItemBase*)cur->data;
+        delete item;
     }
     m_poolA.RemoveAll();
 }
@@ -414,11 +399,9 @@ void CDDrawPtrCollections::EmptyPoolA() {
 // RemoveItemA (0x142160).  pool.RemoveAt(item->pos); virtual-delete item.
 // ---------------------------------------------------------------------------
 RVA(0x00142160, 0x24)
-void CDDrawPtrCollections::RemoveItemA(CPoolItemA* item) {
+void CDDrawPtrCollections::RemoveItemA(CPoolItemBase* item) {
     m_poolA.RemoveAt((POSITION)item->m_pos);
-    if (item) {
-        item->Delete(1);
-    }
+    delete item;
 }
 
 // ---------------------------------------------------------------------------
@@ -427,20 +410,17 @@ void CDDrawPtrCollections::RemoveItemA(CPoolItemA* item) {
 // AddItemA, else virtual-delete. /GX. ret 0x4.
 // ---------------------------------------------------------------------------
 // @early-stop
-// rezalloc-placement-new-no-eh-frame wall (see docs/patterns/rezalloc-placement-new-
-// no-eh-frame.md): `new CPoolItemA` w/ EH-tracked throwing member ctor needs the
-// retail /GX frame; MSVC5 placement-new emits no ctor-in-flight EH state, so the body
-// is byte-exact but the frame is absent. Deferred to the final sweep.
+// EH-state wall: real-polymorphic `new CPoolItemBase` now emits the /GX ctor-in-flight
+// frame (the throwing CByteArray member ctor), but the global __ehfuncinfo state-index
+// push differs from retail (not reproducible from one TU); body byte-exact. Deferred.
 RVA(0x001421a0, 0xbe)
-CPoolItemA* CDDrawPtrCollections::Create7f0_1(i32 a) {
-    CPoolItemA* item = new CPoolItemA(&g_poolItemVtbl7f0, CPoolItemA::VptrFirst());
-    if (item->Init08(this, a)) {
+CPoolItemBase* CDDrawPtrCollections::Create7f0_1(i32 a) {
+    CPoolItemBase* item = new CPoolItemBase;
+    if (item->Init1(this, a)) {
         AddItemA(item);
         return item;
     }
-    if (item) {
-        item->Delete(1);
-    }
+    delete item;
     return 0;
 }
 
@@ -449,21 +429,17 @@ CPoolItemA* CDDrawPtrCollections::Create7f0_1(i32 a) {
 // dispatch vtbl[0x24]; on success register via AddItemA, else virtual-delete. /GX.
 // ---------------------------------------------------------------------------
 // @early-stop
-// rezalloc-placement-new-no-eh-frame wall: retail wraps `new CPoolItemA` (op-new ==
-// RezAlloc, EH-tracked throwing member ctor) in a /GX frame (push -1/push 0xb/fs:0 +
-// trylevel stamps + shared fs:0-restoring epilogue); MSVC5 placement-new emits NO
-// ctor-in-flight EH state, so the body is byte-exact but the whole frame is absent.
-// 60.5% (above the documented ~47% plateau); deferred to the final sweep.
+// EH-state wall: real-polymorphic `new CPoolItemA` emits the /GX frame; residue is the
+// global __ehfuncinfo state-index push (per-TU) + the redundant base-then-derived vptr
+// stamp order. Body byte-faithful. Deferred to the final sweep.
 RVA(0x00142260, 0xd2)
-CPoolItemA* CDDrawPtrCollections::CreateA(i32 a, i32 b, i32 c, i32 d, i32 e) {
-    CPoolItemA* item = new CPoolItemA(&g_poolItemAVtbl);
-    if (item->Init24(this, a, b, c, d, e)) {
+CPoolItemBase* CDDrawPtrCollections::CreateA(i32 a, i32 b, i32 c, i32 d, i32 e) {
+    CPoolItemA* item = new CPoolItemA;
+    if (item->v24(this, a, b, c, d, e)) {
         AddItemA(item);
         return item;
     }
-    if (item) {
-        item->Delete(1);
-    }
+    delete item;
     return 0;
 }
 
@@ -471,18 +447,16 @@ CPoolItemA* CDDrawPtrCollections::CreateA(i32 a, i32 b, i32 c, i32 d, i32 e) {
 // CreateB (0x1423c0).  Same as CreateA but dispatches vtbl[0x2c]. /GX.
 // ---------------------------------------------------------------------------
 // @early-stop
-// rezalloc-placement-new-no-eh-frame wall (same as CreateA, init slot 0x2c). 60.5%;
-// /GX frame absent, body byte-exact. Deferred to the final sweep.
+// EH-state wall (same as CreateA, init slot 11). Body byte-faithful, /GX state-index
+// residue. Deferred to the final sweep.
 RVA(0x001423c0, 0xd2)
-CPoolItemA* CDDrawPtrCollections::CreateB(i32 a, i32 b, i32 c, i32 d, i32 e) {
-    CPoolItemA* item = new CPoolItemA(&g_poolItemAVtbl);
-    if (item->Init2c(this, a, b, c, d, e)) {
+CPoolItemBase* CDDrawPtrCollections::CreateB(i32 a, i32 b, i32 c, i32 d, i32 e) {
+    CPoolItemA* item = new CPoolItemA;
+    if (item->v2c(this, a, b, c, d, e)) {
         AddItemA(item);
         return item;
     }
-    if (item) {
-        item->Delete(1);
-    }
+    delete item;
     return 0;
 }
 
@@ -491,18 +465,15 @@ CPoolItemA* CDDrawPtrCollections::CreateB(i32 a, i32 b, i32 c, i32 d, i32 e) {
 // with 1 arg; AddItemA on success. /GX. ret 0x4.
 // ---------------------------------------------------------------------------
 // @early-stop
-// rezalloc-placement-new-no-eh-frame wall (see docs/patterns/...): body byte-exact,
-// /GX ctor-in-flight frame absent. Deferred to the final sweep.
+// EH-state wall (real-polymorphic; body byte-faithful, /GX state-index residue).
 RVA(0x001424a0, 0xbe)
-CPoolItemA* CDDrawPtrCollections::Createa58_1(i32 a) {
-    CPoolItemA* item = new CPoolItemA(&g_poolItemAVtbl);
-    if (item->Init08(this, a)) {
+CPoolItemBase* CDDrawPtrCollections::Createa58_1(i32 a) {
+    CPoolItemA* item = new CPoolItemA;
+    if (item->Init1(this, a)) {
         AddItemA(item);
         return item;
     }
-    if (item) {
-        item->Delete(1);
-    }
+    delete item;
     return 0;
 }
 
@@ -511,17 +482,15 @@ CPoolItemA* CDDrawPtrCollections::Createa58_1(i32 a) {
 // with 3 args; AddItemA on success. /GX. ret 0xc.
 // ---------------------------------------------------------------------------
 // @early-stop
-// rezalloc-placement-new-no-eh-frame wall: body byte-exact, /GX frame absent.
+// EH-state wall (real-polymorphic; body byte-faithful, /GX state-index residue).
 RVA(0x00142560, 0xc8)
-CPoolItemA* CDDrawPtrCollections::Createa58_3(i32 a, i32 b, i32 c) {
-    CPoolItemA* item = new CPoolItemA(&g_poolItemAVtbl);
-    if (item->Init28(this, a, b, c)) {
+CPoolItemBase* CDDrawPtrCollections::Createa58_3(i32 a, i32 b, i32 c) {
+    CPoolItemA* item = new CPoolItemA;
+    if (item->v28(this, a, b, c)) {
         AddItemA(item);
         return item;
     }
-    if (item) {
-        item->Delete(1);
-    }
+    delete item;
     return 0;
 }
 
@@ -530,54 +499,56 @@ CPoolItemA* CDDrawPtrCollections::Createa58_3(i32 a, i32 b, i32 c) {
 // with 3 args; AddItemA on success. /GX. ret 0xc.
 // ---------------------------------------------------------------------------
 // @early-stop
-// rezalloc-placement-new-no-eh-frame wall: body byte-exact, /GX frame absent.
+// EH-state wall (real-polymorphic; body byte-faithful, /GX state-index residue).
 RVA(0x00142730, 0xc8)
-CPoolItemA* CDDrawPtrCollections::Createa88_3(i32 a, i32 b, i32 c) {
-    CPoolItemA* item = new CPoolItemA(&g_poolItemVtbla88);
-    if (item->Init24(this, a, b, c, 0, 0)) {
+CPoolItemBase* CDDrawPtrCollections::Createa88_3(i32 a, i32 b, i32 c) {
+    CPoolItemA88* item = new CPoolItemA88;
+    if (item->v24(this, a, b, c, 0, 0)) {
         AddItemA(item);
         return item;
     }
-    if (item) {
-        item->Delete(1);
-    }
+    delete item;
     return 0;
 }
 
 // ---------------------------------------------------------------------------
-// ~CPoolItemA (0x142820).  Non-deleting dtor of the pool-A item subclass (vtbl
-// 0x5ef7f0): re-stamp vptr, FreeSurfaces() teardown, then the CByteArray member
-// dtor (auto). /GX (trylevel 0 -> -1 around the member dtor). __thiscall, ret 0x0.
-// (Proximity-attributed to CDDrawPtrCollections; it is really the item's ~dtor.)
+// The shared base teardown the derived dtors inline: re-stamp the base vptr
+// (0x5ef7f0), run FreeSurfaces(), then destroy the owned CByteArray member (auto).
+// /GX (trylevel 0 -> -1 around the member dtor).  cl folds the redundant derived
+// vptr stamp (dead store), leaving the base 0x5ef7f0 stamp - matching retail's dtors.
+// (Base ~CPoolItemBase itself is CFileImage::~CFileImage @0x141350 in a sibling TU;
+// left unbound here so it does not collide.)
+// ---------------------------------------------------------------------------
+CPoolItemBase::~CPoolItemBase() {
+    FreeSurfaces();
+}
+
+// ---------------------------------------------------------------------------
+// ~CPoolItemA (0x142820).  Derived a58 non-deleting dtor - trivial body; inlines the
+// base teardown above.  __thiscall, ret 0x0.
 // ---------------------------------------------------------------------------
 // @early-stop
 // EH-state wall (docs/patterns/eh-state-numbering-base.md + eh-ctor-vptr-restamp-
-// position.md): body byte-identical, residue is (a) the unwind-funcinfo push value
-// 0xe vs 0x0 (global __ehfuncinfo state index, not reproducible from one TU) and
-// (b) the vptr restamp scheduled one instr before vs after the trylevel-0 init.
-// 94%; deferred to the final sweep.
+// position.md): body byte-identical, residue is the unwind-funcinfo push value (global
+// __ehfuncinfo state index, not reproducible from one TU) + the vptr-restamp schedule.
+// Deferred to the final sweep.
 RVA(0x00142820, 0x53)
-CPoolItemA::~CPoolItemA() {
-    vptr = &g_poolItemVtbl7f0;
-    FreeSurfaces();
-}
+CPoolItemA::~CPoolItemA() {}
 
 // ---------------------------------------------------------------------------
 // Createa88_1 (0x142880).  new 0xc0 item; ctor (vtbl 0x5efa88); dispatch vtbl[0x08]
 // with 1 arg; AddItemA on success. /GX. ret 0x4.
 // ---------------------------------------------------------------------------
 // @early-stop
-// rezalloc-placement-new-no-eh-frame wall: body byte-exact, /GX frame absent.
+// EH-state wall (real-polymorphic; body byte-faithful, /GX state-index residue).
 RVA(0x00142880, 0xbe)
-CPoolItemA* CDDrawPtrCollections::Createa88_1(i32 a) {
-    CPoolItemA* item = new CPoolItemA(&g_poolItemVtbla88);
-    if (item->Init08(this, a)) {
+CPoolItemBase* CDDrawPtrCollections::Createa88_1(i32 a) {
+    CPoolItemA88* item = new CPoolItemA88;
+    if (item->Init1(this, a)) {
         AddItemA(item);
         return item;
     }
-    if (item) {
-        item->Delete(1);
-    }
+    delete item;
     return 0;
 }
 
@@ -587,18 +558,16 @@ CPoolItemA* CDDrawPtrCollections::Createa88_1(i32 a) {
 // /GX. ret 0xc.
 // ---------------------------------------------------------------------------
 // @early-stop
-// rezalloc-placement-new-no-eh-frame wall: body byte-exact, /GX frame absent.
+// EH-state wall (real-polymorphic; body byte-faithful, /GX state-index residue).
 RVA(0x00142940, 0xd4)
-CPoolItemA* CDDrawPtrCollections::Createab8_3(i32 a, i32 b, i32 c) {
-    CPoolItemA* item = new CPoolItemA(&g_poolItemVtblab8);
-    if (item->Init24(this, a, b, c, 0, 0)) {
+CPoolItemBase* CDDrawPtrCollections::Createab8_3(i32 a, i32 b, i32 c) {
+    CPoolItemAB8* item = new CPoolItemAB8;
+    if (item->v24(this, a, b, c, 0, 0)) {
         AddItemA(item);
         fieldUnknown538 = item->m_a8;
         return item;
     }
-    if (item) {
-        item->Delete(1);
-    }
+    delete item;
     return 0;
 }
 
@@ -608,18 +577,16 @@ CPoolItemA* CDDrawPtrCollections::Createab8_3(i32 a, i32 b, i32 c) {
 // /GX. ret 0x4.
 // ---------------------------------------------------------------------------
 // @early-stop
-// rezalloc-placement-new-no-eh-frame wall: body byte-exact, /GX frame absent.
+// EH-state wall (real-polymorphic; body byte-faithful, /GX state-index residue).
 RVA(0x00142aa0, 0xca)
-CPoolItemA* CDDrawPtrCollections::Createab8_1(i32 a) {
-    CPoolItemA* item = new CPoolItemA(&g_poolItemVtblab8);
-    if (item->Init08(this, a)) {
+CPoolItemBase* CDDrawPtrCollections::Createab8_1(i32 a) {
+    CPoolItemAB8* item = new CPoolItemAB8;
+    if (item->Init1(this, a)) {
         AddItemA(item);
         fieldUnknown538 = item->m_a8;
         return item;
     }
-    if (item) {
-        item->Delete(1);
-    }
+    delete item;
     return 0;
 }
 
@@ -629,18 +596,19 @@ CPoolItemA* CDDrawPtrCollections::Createab8_1(i32 a) {
 // arg; AddItemA + cache item->m_a8 into host->fieldUnknown538 on success. /GX. ret 0x4.
 // ---------------------------------------------------------------------------
 // @early-stop
-// rezalloc-placement-new-no-eh-frame wall: body byte-exact, /GX frame absent.
+// EH-state wall + arity: this call site invokes ab8 slot 9 with only 3 game args, but
+// slot 9 (0x148af0) is the same virtual Createab8_3 calls with 5, so a single C++
+// signature can serve only one - the 3-arg site over-pushes two zeros here (accepted;
+// the retail author called the same slot with two arities). /GX state-index residue.
 RVA(0x00142b70, 0xce)
-CPoolItemA* CDDrawPtrCollections::Createab8_24_3(i32 a) {
-    CPoolItemA* item = new CPoolItemA(&g_poolItemVtblab8);
-    if (item->Init24_3(this, 0x18, 0x21, a)) {
+CPoolItemBase* CDDrawPtrCollections::Createab8_24_3(i32 a) {
+    CPoolItemAB8* item = new CPoolItemAB8;
+    if (item->v24(this, 0x18, 0x21, a, 0, 0)) {
         AddItemA(item);
         fieldUnknown538 = item->m_a8;
         return item;
     }
-    if (item) {
-        item->Delete(1);
-    }
+    delete item;
     return 0;
 }
 
@@ -649,52 +617,44 @@ CPoolItemA* CDDrawPtrCollections::Createab8_24_3(i32 a) {
 // as a 6-arg init with all six incoming args; AddItemA on success. /GX. ret 0x18.
 // ---------------------------------------------------------------------------
 // @early-stop
-// rezalloc-placement-new-no-eh-frame wall: body byte-exact, /GX frame absent.
+// EH-state wall (real-polymorphic; body byte-faithful, /GX state-index residue).
 RVA(0x00142c40, 0xd7)
-CPoolItemA* CDDrawPtrCollections::Createae8_6(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f) {
-    CPoolItemA* item = new CPoolItemA(&g_poolItemVtblae8);
-    if (item->Init24_6(this, a, b, c, d, e, f)) {
+CPoolItemBase* CDDrawPtrCollections::Createae8_6(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f) {
+    CPoolItemAE8* item = new CPoolItemAE8;
+    if (item->v24(this, a, b, c, d, e, f)) {
         AddItemA(item);
         return item;
     }
-    if (item) {
-        item->Delete(1);
-    }
+    delete item;
     return 0;
 }
 
 // ---------------------------------------------------------------------------
-// ~CPoolItemA7f0 (0x142d40).  Second pool-A subclass non-deleting dtor (vtbl
-// 0x5ef7f0): re-stamp vptr, FreeSurfaces() teardown, then the CByteArray member
-// dtor (auto). /GX. __thiscall, ret 0x0.  Byte-identical to CPoolItemA::~CPoolItemA
-// (0x142820); a distinct subclass whose dtor compiles to the same code.
+// ~CPoolItemAE8 (0x142d40).  Derived ae8 non-deleting dtor - trivial body; inlines the
+// shared base teardown (stamp 0x5ef7f0 + FreeSurfaces + member dtor).  /GX, ret 0x0.
+// Byte-identical codegen to ~CPoolItemA (0x142820); a distinct subclass.
 // ---------------------------------------------------------------------------
 // @early-stop
 // EH-state wall (same as ~CPoolItemA @0x142820): body byte-identical, residue is the
 // unwind-funcinfo push value (global __ehfuncinfo state index) + the vptr-restamp
-// scheduling around the trylevel-0 init. Deferred to the final sweep.
+// scheduling. Deferred to the final sweep.
 RVA(0x00142d40, 0x53)
-CPoolItemA7f0::~CPoolItemA7f0() {
-    vptr = &g_poolItemVtbl7f0;
-    FreeSurfaces();
-}
+CPoolItemAE8::~CPoolItemAE8() {}
 
 // ---------------------------------------------------------------------------
 // Createae8_1 (0x142da0).  new 0xc0 item; ctor (vtbl 0x5efae8); dispatch vtbl[0x08]
 // with 1 arg; AddItemA on success. /GX. ret 0x4.
 // ---------------------------------------------------------------------------
 // @early-stop
-// rezalloc-placement-new-no-eh-frame wall: body byte-exact, /GX frame absent.
+// EH-state wall (real-polymorphic; body byte-faithful, /GX state-index residue).
 RVA(0x00142da0, 0xbe)
-CPoolItemA* CDDrawPtrCollections::Createae8_1(i32 a) {
-    CPoolItemA* item = new CPoolItemA(&g_poolItemVtblae8);
-    if (item->Init08(this, a)) {
+CPoolItemBase* CDDrawPtrCollections::Createae8_1(i32 a) {
+    CPoolItemAE8* item = new CPoolItemAE8;
+    if (item->Init1(this, a)) {
         AddItemA(item);
         return item;
     }
-    if (item) {
-        item->Delete(1);
-    }
+    delete item;
     return 0;
 }
 
@@ -702,7 +662,7 @@ CPoolItemA* CDDrawPtrCollections::Createae8_1(i32 a) {
 // MakeAndAddB (0x142e60).  Tail-thunk into CreateB with arg2 |= 0x840.
 // ---------------------------------------------------------------------------
 RVA(0x00142e60, 0x27)
-CPoolItemA* CDDrawPtrCollections::MakeAndAddB(i32 a, i32 b, i32 c, i32 d, i32 e) {
+CPoolItemBase* CDDrawPtrCollections::MakeAndAddB(i32 a, i32 b, i32 c, i32 d, i32 e) {
     return CreateB(a, b, c, d | 0x840, e);
 }
 
@@ -960,8 +920,5 @@ i32 CDDrawPtrCollections::ConfigureSurface(i32 a0, i32 a1, i32 a2, i32 a3, i32 a
 SIZE_UNKNOWN(CCachedSurface);
 SIZE_UNKNOWN(CCachedSurfaceVtbl);
 SIZE_UNKNOWN(CDDrawPtrCollections);
-SIZE_UNKNOWN(CPoolItemA);
-SIZE_UNKNOWN(CPoolItemA7f0);
-SIZE_UNKNOWN(CPoolItemAVtbl);
 SIZE_UNKNOWN(CPtrListNode);
 SIZE_UNKNOWN(SurfDesc);
