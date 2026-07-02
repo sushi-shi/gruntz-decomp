@@ -70,36 +70,50 @@ struct GruntInfoTextHost {
 // post-merge. Pure allocator coin-flip; no source spelling flips the rotation.
 // The 3 `jmpl *table(,%eax,4)` rows are jump-table DIR32 displacement artifacts
 // (code bytes identical, reloc-masked). Verified base-vs-target with llvm-objdump -dr.
+// The 8 Gruntz worlds (m_20, 1-based); the line-1 name is LoadString'd from the
+// retail STRINGTABLE (ids 0x81ae..0x81b5, texts recovered from GRUNTZ.EXE .rsrc).
+// Same immediates as the bare labels -> naming is matching-neutral.
+enum World {
+    WORLD_ROCKY_ROADZ = 1,       // "Rocky Roadz"
+    WORLD_GRUNTZICLEZ = 2,       // "Gruntziclez"
+    WORLD_TROPICZ = 3,           // "Trouble in the Tropicz"
+    WORLD_HIGH_ON_SWEETZ = 4,    // "High on Sweetz"
+    WORLD_HIGH_ROLLERZ = 5,      // "High Rollerz"
+    WORLD_HONEY_I_SHRUNK = 6,    // "Honey, I Shrunk the Gruntz!"
+    WORLD_MINIATURE_MASTERZ = 7, // "The Miniature Masterz"
+    WORLD_GRUNTZ_IN_SPACE = 8,   // "Gruntz in Space"
+};
+
 RVA(0x000d95f0, 0x756)
 i32 GruntInfoTextHost::winapi_0d95f0_wsprintfA() {
-    CString s0; // tool/mode name  (line 1)
+    CString s0; // line 1: current World name (LoadString)
     CString s1; // stage/status    (line 2)
     CString s2; // grunt-type name / level basename (line 3)
     CString s3; // footer          (line 4)
 
     switch (m_20) {
-        case 1:
+        case WORLD_ROCKY_ROADZ:
             s0.LoadString(0x81ae);
             break;
-        case 2:
+        case WORLD_GRUNTZICLEZ:
             s0.LoadString(0x81af);
             break;
-        case 3:
+        case WORLD_TROPICZ:
             s0.LoadString(0x81b0);
             break;
-        case 4:
+        case WORLD_HIGH_ON_SWEETZ:
             s0.LoadString(0x81b1);
             break;
-        case 5:
+        case WORLD_HIGH_ROLLERZ:
             s0.LoadString(0x81b2);
             break;
-        case 6:
+        case WORLD_HONEY_I_SHRUNK:
             s0.LoadString(0x81b3);
             break;
-        case 7:
+        case WORLD_MINIATURE_MASTERZ:
             s0.LoadString(0x81b4);
             break;
-        case 8:
+        case WORLD_GRUNTZ_IN_SPACE:
             s0.LoadString(0x81b5);
             break;
         default:

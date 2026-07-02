@@ -112,11 +112,11 @@ enum PickupType {
     // Powerupz (gameplay: 0x36..0x3c count toward the powerup stat)
     PICKUP_GHOST = 0x36,
     PICKUP_SUPERSPEED = 0x37,
-    PICKUP_REACTIVEARMOR = 0x38,
+    PICKUP_INVULNERABILITY = 0x38,
     PICKUP_CONVERSION = 0x39,
     PICKUP_DEATHTOUCH = 0x3a,
     PICKUP_ROIDZ = 0x3b,
-    PICKUP_INVULNERABILITY = 0x3c,
+    PICKUP_REACTIVEARMOR = 0x3c,
     // Powerupz (screen fx: 0x3d..0x40, set the force-cue flag)
     PICKUP_RANDOMCOLORZ = 0x3d,
     PICKUP_SCREENSHAKE = 0x3e,
@@ -186,7 +186,7 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
         if (type >= PICKUP_BOMB && type <= PICKUP_WINGZ) {
             return 0;
         }
-        if (type >= PICKUP_GHOST && type <= PICKUP_INVULNERABILITY) {
+        if (type >= PICKUP_GHOST && type <= PICKUP_REACTIVEARMOR) {
             return 0;
         }
     }
@@ -197,7 +197,7 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
         } else if (type >= PICKUP_BABYWALKER && type <= PICKUP_YOYO) {
             STATS->m_14++;
             ((i32*)((char*)STATS + 0x1dc))[type + 10 * m_tileOwnerHi]++;
-        } else if (type >= PICKUP_GHOST && type <= PICKUP_INVULNERABILITY) {
+        } else if (type >= PICKUP_GHOST && type <= PICKUP_REACTIVEARMOR) {
             STATS->m_24++;
             ((i32*)((char*)STATS + 0x200))[type + 7 * m_tileOwnerHi]++;
         } else if (type >= PICKUP_RANDOMCOLORZ && type <= PICKUP_MINICAM) {
@@ -465,8 +465,8 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
         case PICKUP_SUPERSPEED:
             PICKUP("GRUNTZ_PICKUPS_SUPERSPEED", 0x3e9);
             break;
-        case PICKUP_REACTIVEARMOR:
-            PICKUP("GRUNTZ_PICKUPS_REACTIVEARMOR", 0x3eb);
+        case PICKUP_INVULNERABILITY:
+            PICKUP("GRUNTZ_PICKUPS_INVULNERABILITY", 0x3ec);
             break;
         case PICKUP_CONVERSION:
             PICKUP("GRUNTZ_PICKUPS_CONVERSION", 0x3e7);
@@ -477,8 +477,8 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
         case PICKUP_ROIDZ:
             PICKUP("GRUNTZ_PICKUPS_ROIDZ", 0x3ea);
             break;
-        case PICKUP_INVULNERABILITY:
-            PICKUP("GRUNTZ_PICKUPS_INVULNERABILITY", 0x3ec);
+        case PICKUP_REACTIVEARMOR:
+            PICKUP("GRUNTZ_PICKUPS_REACTIVEARMOR", 0x3eb);
             break;
         case PICKUP_RANDOMCOLORZ:
             PICKUP("GRUNTZ_PICKUPS_RANDOMCOLORZ", 0x3f1);

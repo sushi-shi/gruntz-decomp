@@ -259,11 +259,11 @@ i32 EngineLabelBacklog::LoadExplosionSprites(i32 geoB, i32 geoA, i32 variant, i3
 // __thiscall-free ret 0x18 (6 args). Returns 1 on success.
 
 // The in-game-icon type id LoadPowerupIconSprites dispatches on (type); each name is
-// confirmed by its case's GAME_INGAMEICONZ_* sprite key. Same immediates as the bare
-// labels -> naming is matching-neutral. Tool/toy ids (1..32) match CGrunt's PickupType.
-// NB: four powerup ids DISAGREE with PickupType's GRUNTZ_PICKUPS_* strings - the icon
-// subsystem swaps HEALTH1<->HEALTH3 (51/53) and REACTIVEARMOR<->INVULNERABILITY (56/60).
-// Named here from THIS file's own strings; the discrepancy is a matcher follow-up.
+// confirmed by its case's GAME_INGAMEICONZ_* sprite key + verified against the retail
+// jump table (VA 0x47c9e8/0x47cab4). Same immediates as the bare labels -> naming is
+// matching-neutral. Ids agree with CGrunt's PickupType (both traced to the retail
+// switch): the earlier HEALTH1<->HEALTH3 (51/53) mismatch was a reconstruction swap in
+// THIS file (cases had the strings transposed) and is now corrected.
 enum IconType {
     // Toolz (1..22)
     ICON_BOMB = 1,
@@ -301,9 +301,9 @@ enum IconType {
     ICON_YOYO = 32,
     // Powerupz
     ICON_MEGAPHONE = 50,
-    ICON_HEALTH3 = 51, // NB: PickupType 0x33 = HEALTH1
+    ICON_HEALTH1 = 51,
     ICON_HEALTH2 = 52,
-    ICON_HEALTH1 = 53, // NB: PickupType 0x35 = HEALTH3
+    ICON_HEALTH3 = 53,
     ICON_GHOST = 54,
     ICON_SUPERSPEED = 55,
     ICON_INVULNERABILITY = 56, // NB: PickupType 0x38 = REACTIVEARMOR
@@ -445,14 +445,14 @@ i32 EngineLabelBacklog::LoadPowerupIconSprites(
         case ICON_MEGAPHONE:
             name = "GAME_INGAMEICONZ_POWERUPZ_MEGAPHONEZ";
             break;
-        case ICON_HEALTH3:
-            name = "GAME_INGAMEICONZ_POWERUPZ_HEALTH3";
+        case ICON_HEALTH1:
+            name = "GAME_INGAMEICONZ_POWERUPZ_HEALTH1";
             break;
         case ICON_HEALTH2:
             name = "GAME_INGAMEICONZ_POWERUPZ_HEALTH2";
             break;
-        case ICON_HEALTH1:
-            name = "GAME_INGAMEICONZ_POWERUPZ_HEALTH1";
+        case ICON_HEALTH3:
+            name = "GAME_INGAMEICONZ_POWERUPZ_HEALTH3";
             break;
         case ICON_CONVERSION:
             name = "GAME_INGAMEICONZ_POWERUPZ_CONVERSION";
