@@ -153,14 +153,14 @@ i32 CTriggerMgr::Load(CTmSerReader* ar) {
     if (ar == 0) {
         return 0;
     }
-    char* lvl = *(char**)((char*)this + 0x22c);
+    char* lvl = (char*)m_level;
     if (lvl == 0) {
         return 0;
     }
-    *(i32*)((char*)this + 0x3f0) = 0;
-    *(i32*)((char*)this + 0x3f4) = 0;
-    *(i32*)((char*)this + 0x3f8) = 0;
-    *(i32*)((char*)this + 0x3fc) = 0;
+    m_soundChanA = 0;
+    m_soundChanB = 0;
+    m_3f8 = 0;
+    m_3fc = 0;
 
     CTmSerMap* map = (CTmSerMap*)(*(char**)(lvl + 0x8) + 0x48);
 
@@ -186,10 +186,10 @@ i32 CTriggerMgr::Load(CTmSerReader* ar) {
     }
 
     // per-row state bands
-    ar->Read((char*)this + 0x10c, 0x10);
-    ar->Read((char*)this + 0x11c, 0xf0);
-    ar->Read((char*)this + 0x20c, 0x10);
-    ar->Read((char*)this + 0x21c, 0x10);
+    ar->Read(m_rowCount, 0x10);
+    ar->Read(m_cellFlag, 0xf0);
+    ar->Read(m_rowStateB, 0x10);
+    ar->Read(m_rowStateC, 0x10);
 
     // the +0x260 byte table
     i32 count;
@@ -219,7 +219,7 @@ i32 CTriggerMgr::Load(CTmSerReader* ar) {
     }
 
     // the ten selection lists (+0x2d0, stride 0x1c)
-    char* sel = (char*)this + 0x2d0;
+    char* sel = m_selLists;
     i32 slot = 0xa;
     do {
         ar->Read(&count, 4);
@@ -244,7 +244,7 @@ i32 CTriggerMgr::Load(CTmSerReader* ar) {
             void* found = 0;
             void* looked = map->Lookup(key, &found) ? found : 0;
             void* obj = (looked != 0 && ((CTmSerMapObj*)looked)->GetTypeId() == 5) ? looked : 0;
-            *(void**)((char*)this + 0x23c) = obj;
+            m_goal = obj;
             if (obj == 0) {
                 return 0;
             }
@@ -262,17 +262,17 @@ i32 CTriggerMgr::Load(CTmSerReader* ar) {
                 return 0;
             }
             void* obj = ((CTmSerMapObj*)looked)->m_7c->m_18;
-            *(void**)((char*)this + 0x2a0) = obj;
+            m_pendingFx = obj;
             if (obj == 0) {
                 return 0;
             }
         } else {
-            *(void**)((char*)this + 0x2a0) = 0;
+            m_pendingFx = 0;
         }
     }
 
     // the base object list (this+0): reload from count keys
-    ar->Read((char*)this + 0x274, 0x10);
+    ar->Read(m_274, 0x10);
     ((CTmSerList*)this)->RemoveAll();
     ar->Read(&count, 4);
     for (ci = 0; ci < (u32)count; ci++) {
@@ -294,34 +294,34 @@ i32 CTriggerMgr::Load(CTmSerReader* ar) {
     }
 
     // the overlay sub-object (+0x25c): tear down the old, rebuild + Load the new
-    CTmSerOverlay* old = *(CTmSerOverlay**)((char*)this + 0x25c);
+    CTmSerOverlay* old = (CTmSerOverlay*)m_overlay;
     if (old != 0) {
         old->Clear();
         Tm_RezFree(old);
-        *(CTmSerOverlay**)((char*)this + 0x25c) = 0;
+        m_overlay = 0;
     }
     i32 hasOverlay;
     ar->Read(&hasOverlay, 4);
     if (hasOverlay != 0) {
         CTmSerOverlay* ov = new CTmSerOverlay;
-        *(CTmSerOverlay**)((char*)this + 0x25c) = ov;
+        m_overlay = ov;
         if (ov->Load(ar) == 0) {
             return 0;
         }
     }
 
     // tail scalars + two globals
-    ar->Read((char*)this + 0x230, 4);
-    ar->Read((char*)this + 0x284, 4);
-    ar->Read((char*)this + 0x288, 4);
-    ar->Read((char*)this + 0x234, 8);
-    ar->Read((char*)this + 0x2a4, 4);
-    ar->Read((char*)this + 0x3ec, 4);
-    ar->Read((char*)this + 0x400, 4);
+    ar->Read(&m_230, 4);
+    ar->Read(&m_284, 4);
+    ar->Read(&m_288, 4);
+    ar->Read(&m_recX, 8);
+    ar->Read(&m_2a4, 4);
+    ar->Read(&m_3ec, 4);
+    ar->Read(&m_groupFlag, 4);
     ar->Read(&g_644c54, 4);
     ar->Read(&g_renderCtx, 4);
-    ar->Read((char*)this + 0x2a8, 4);
-    ar->Read((char*)this + 0x3e8, 4);
+    ar->Read(&m_pendingFxKind, 4);
+    ar->Read(&m_selSentinel, 4);
     return 1;
 }
 
@@ -338,7 +338,7 @@ i32 CTriggerMgr::Load(CTmSerReader* ar) {
 RVA(0x0006d300, 0x5b2)
 i32 CTriggerMgr::ApplySwitch(i32 sx, i32 sy) {
     char* plane = g_gameReg->m_2c;
-    char* view = *(char**)(*(char**)((char*)this + 0x22c) + 0x24);
+    char* view = *(char**)((char*)m_level + 0x24);
     i32 x = sx;
     i32 y = sy;
     if (x < 0) {
@@ -397,33 +397,33 @@ i32 CTriggerMgr::ApplySwitch(i32 sx, i32 sy) {
 RVA(0x000798d0, 0x1b6)
 i32 CTriggerMgr::DestroyGroup(i32 col, i32 row, i32 force) {
     (void)force;
-    CTmObj* ov = *(CTmObj**)((char*)this + 0x25c);
+    CTmObj* ov = (CTmObj*)m_overlay;
     if (ov == 0) {
         CTmObj* fresh = new CTmObj;
-        *(CTmObj**)((char*)this + 0x25c) = fresh;
+        m_overlay = fresh;
         if (((CTmObj*)this)->Probe() == 0) {
-            CTmObj* o2 = *(CTmObj**)((char*)this + 0x25c);
+            CTmObj* o2 = (CTmObj*)m_overlay;
             if (o2 != 0) {
                 o2->Dtor();
                 operator delete(o2);
-                *(CTmObj**)((char*)this + 0x25c) = 0;
+                m_overlay = 0;
             }
             g_gameReg->ReportError(0x800a, 0x3ff);
         }
         return 0;
     }
-    if (*(i32*)((char*)ov + 0x2c) != 0 || *(i32*)((char*)this + 0x24c) != 1) {
+    if (*(i32*)((char*)ov + 0x2c) != 0 || m_recCount != 1) {
         return 0;
     }
-    i32* rec = *(i32**)(*(char**)((char*)this + 0x244) + 0x8);
-    char* cellp = *(char**)((char*)this + (rec[1] + rec[0] * 15) * 4 + 0x1c);
+    i32* rec = *(i32**)((char*)m_recHead + 0x8);
+    char* cellp = (char*)m_grid[rec[1] + rec[0] * 15];
     if (cellp == 0 || *(i32*)(cellp + 0x1ec) != g_644c54) {
         return 0;
     }
     if (((CTmObj*)this)->Place(*(i32*)(cellp + 0x1f0), *(i32*)(cellp + 0x1ec), 0) == 0) {
         return 0;
     }
-    char* view = *(char**)(*(char**)((char*)this + 0x22c) + 0x24);
+    char* view = *(char**)((char*)m_level + 0x24);
     char* sc = *(char**)(view + 0x5c) + 0x40;
     i32 ox = *(i32*)(sc) - *(i32*)(view + 0x14) + row;
     i32 oy = *(i32*)(sc + 0x4) - *(i32*)(view + 0x10) + col;
@@ -440,7 +440,7 @@ i32 CTriggerMgr::DestroyGroup(i32 col, i32 row, i32 force) {
 // cleanup diverge; the Format/GetColor/hit-test/status path is faithful. topic:wall topic:eh.
 RVA(0x00079b80, 0x194)
 i32 CTriggerMgr::ReinitGroup(i32 col, i32 row) {
-    if (*(i32*)((char*)this + 0x284) != 0) {
+    if (m_284 != 0) {
         return 0;
     }
     if (*(i32*)((char*)g_gameReg + 0x134) != 1) {
@@ -474,9 +474,9 @@ i32 CTriggerMgr::ReinitGroup(i32 col, i32 row) {
     if (((CTmObj*)(*(char**)((char*)lvl + 0x2dc)))->Place(color, outR, outC) != 0) {
         *(i32*)(*(char**)((char*)lvl + 0x2dc) + 0x548) = 1;
     } else {
-        ((CTmObj*)((char*)this + 0x260))->Place(*(i32*)((char*)this + 0x268), 0, 0);
+        ((CTmObj*)((char*)this + 0x260))->Place(m_byteCount, 0, 0);
     }
-    *(i32*)((char*)this + 0x284) = 1;
+    m_284 = 1;
     return 1;
 }
 
@@ -491,7 +491,7 @@ i32 CTriggerMgr::ReinitGroup(i32 col, i32 row) {
 RVA(0x00085c50, 0x83)
 CTriggerMgr::~CTriggerMgr() {
     Cleanup();
-    Tm_DestroyArray((char*)this + 0x2d0, 0x1c, 0xa, 0);
+    Tm_DestroyArray(m_selLists, 0x1c, 0xa, 0);
     ((CTmObj*)((char*)this + 0x260))->Dtor();
     ((CTmObj*)((char*)this + 0x240))->Dtor();
     ((CTmObj*)this)->Dtor();

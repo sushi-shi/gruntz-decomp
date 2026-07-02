@@ -7,11 +7,14 @@
 // 0x40 bytes). It reads the global game registry (g_gameReg @0x64556c) for the
 // active level/plane and drives the per-tile switch/trigger logic.
 //
-// Only the offsets the reconstructed methods touch are pinned; the rest is opaque
-// padding. Members are accessed by raw this+offset (a deliberate, naming-independent
-// choice for this externally-coupled manager - the grid cells and the level/plane
-// objects are full UNMATCHED engine classes, modeled as opaque shells so their
-// member reads / calls reloc-mask).
+// The offsets the reconstructed methods touch are named data members below (recovered
+// from how every method reads/writes them); the gaps are opaque padding. The grid cells
+// and the level/plane objects are still full UNMATCHED engine classes, so member fields
+// typed as void*/char are cast to the file-local opaque shells at their use sites (that
+// keeps those reads / calls reloc-masked). The three embedded MFC containers (base CObList
+// @0, record CObList @0x240, byte-table CByteArray @0x260) still have their base address
+// reinterpreted through the file-local list/array helpers for the reloc-masked engine
+// method bodies - their head/count scalars ARE broken out as named members.
 #ifndef SRC_GRUNTZ_TRIGGERMGR_H
 #define SRC_GRUNTZ_TRIGGERMGR_H
 #include <rva.h>
@@ -292,6 +295,59 @@ public:
     // 0x85c50: ~CTriggerMgr - the /GX destructor (drains the lists, destructs the member
     // list arrays). Reconstructed to plateau (eh sibling TU).
     ~CTriggerMgr();
+
+    // --- data layout (recovered from the raw this+offset field reads across both TUs) ---
+    // The three embedded MFC containers (base CObList @0, record CObList @0x240, byte-table
+    // CByteArray @0x260) and the ten-slot selection-list array (@0x2d0, stride 0x1c) are
+    // modeled as raw byte regions (with their head/count scalars broken out); the reconstructed
+    // methods still reinterpret those regions through the file-local CTmPtrList / CTmObArray
+    // helpers to drive the reloc-masked engine list bodies. Everything is a plain this+offset
+    // field, so naming is byte-neutral.
+    char _pad0[0x4];           // +0x000  base list vptr
+    void* m_objListHead;       // +0x004  base object-list head node
+    char _pad8[0x4];           // +0x008  base list tail
+    i32 m_objListCount;        // +0x00c  base object-list count
+    char _pad10[0xc];          // +0x010  base list free/blocks/blocksize
+    void* m_grid[0x3c];        // +0x01c  the 4x15 placed grid-object cells (stride 4)
+    i32 m_rowCount[4];         // +0x10c  per-row placed count (bumped/serialized 0x10 B)
+    i32 m_cellFlag[0x3c];      // +0x11c  parallel 4x15 per-cell flag grid; also holds the
+                               //         cached origin pair at +0x58/+0x5c (GetOriginXY, raw)
+    i32 m_rowStateB[4];        // +0x20c  per-row state band B
+    i32 m_rowStateC[4];        // +0x21c  per-row state band C
+    void* m_level;             // +0x22c  the active level object (SetLevel)
+    i32 m_230;                 // +0x230  companion state word (cleared by SetLevel)
+    i32 m_recX;                // +0x234  active-record x
+    i32 m_recY;                // +0x238  active-record y
+    void* m_goal;              // +0x23c  the goal object (CTmGoal)
+    char _pad240[0x4];         // +0x240  record list vptr
+    void* m_recHead;           // +0x244  record-list head node
+    char _pad248[0x4];         // +0x248  record list tail
+    i32 m_recCount;            // +0x24c  record-list count
+    char _pad250[0xc];         // +0x250  record list free/blocks/blocksize
+    void* m_overlay;           // +0x25c  the allocated overlay sub-object (0x40 B)
+    char _pad260[0x4];         // +0x260  byte-table array vptr
+    u8* m_byteData;            // +0x264  byte-table data pointer
+    i32 m_byteCount;           // +0x268  byte-table count
+    char _pad26c[0x8];         // +0x26c  byte-table maxsize/growby
+    char m_274[0x10];          // +0x274  serialized 16-byte region
+    i32 m_284;                 // +0x284  build/reinit gate flag
+    i32 m_288;                 // +0x288  serialized scalar
+    char _pad28c[0x4];         // +0x28c
+    char m_overlayDescA[0x10]; // +0x290  overlay descriptor block 0
+    void* m_pendingFx;         // +0x2a0  pending-fx sub-object (CTmPendingFx)
+    i32 m_2a4;                 // +0x2a4  serialized scalar
+    i32 m_pendingFxKind;       // +0x2a8  active pending overlay-fx kind
+    char _pad2ac[0x4];         // +0x2ac
+    char m_overlayDescB[0x10]; // +0x2b0  overlay descriptor block 1
+    char m_overlayDescC[0x10]; // +0x2c0  overlay descriptor block 2
+    char m_selLists[0x118];    // +0x2d0  ten selection lists (CObList, stride 0x1c)
+    i32 m_selSentinel;         // +0x3e8  selection-group latch (-1 when idle)
+    i32 m_3ec;                 // +0x3ec  serialized scalar
+    void* m_soundChanA;        // +0x3f0  DirectSound channel A
+    void* m_soundChanB;        // +0x3f4  DirectSound channel B
+    i32 m_3f8;                 // +0x3f8
+    i32 m_3fc;                 // +0x3fc
+    i32 m_groupFlag;           // +0x400  magic-group active flag
 };
 SIZE_UNKNOWN(CTriggerMgr);
 
