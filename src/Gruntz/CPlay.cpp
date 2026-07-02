@@ -2198,11 +2198,166 @@ i32 CPlay::ResumeGame() {
 RVA(0x000d0120, 0x5d8)
 void CPlay::LoadCursorSprites(i32, i32) {}
 
-// @confidence: med
-// @source: decomp-xref
-// @stub
+// CPlay::LoadScrollSpeedOptions (0xd12b0): lazy-load the bute-configured scroll
+// speed range on first use, then run the per-frame edge auto-scroll. Four edge
+// zones (left/right/top/bottom); each times a mouse-at-edge dwell against
+// timeGetTime and nudges the plane-geom scroll offset by (elapsed*speed/100)
+// clamped to 100 px, committing the new offset when anything moved. speed =
+// (int)((double)m_4->m_124 * 0.01 * range + min). The bute getter, timeGetTime
+// ptr and the ApplyScroll tail are reloc-masked; only offsets + code bytes bind.
+// @early-stop
+// scheduling wall (85.9%, from 0% stub): logic + all four edge blocks byte-faithful.
+// Residual is MSVC's interleave of the geom pointer-chase (sx/sy loads) into the
+// float speed-computation FPU latency gaps (fild/fmul/fimul/fiadd/ftol) + the
+// trailing nop padding - not source-steerable (zero-register-pinning family).
+extern "C" u8 g_scrollLoadFlags;             // 0x64c01c  lazy-load bitset (bit0 min, bit1 max)
+extern "C" i32 g_scrollMinSpeed;             // 0x64c274  cached MinScrollSpeed
+extern "C" i32 g_scrollSpeedRange;           // 0x64c270  cached (Max - Min)
+extern "C" u32(__stdcall* g_pTimeGetTime)(); // 0x6c4650
+extern CButeMgr g_buteMgr;                   // 0x6453d8
+extern "C" double g_scrollSpeedScale;        // 0x5eaa10  (== 0.01)
+
+struct ScrollGeom {
+    char p0[0x84];
+    i32 m_84, m_88; // +0x84/88  live scroll x/y offset
+};
+struct ScrollWorld {
+    char p0[0x30];
+    struct M30 {
+        char p0[0x24];
+        struct M24 {
+            char p0[0x5c];
+            ScrollGeom* m_5c; // +0x5c  plane geom
+        }* m_24;              // +0x24
+    }* m_30;                  // +0x30
+    char p34[0x8c - 0x34];
+    i32 m_8c; // +0x8c  x-extent
+    i32 m_90; // +0x90  y-extent
+    char p94[0x124 - 0x94];
+    i32 m_124; // +0x124  speed base (fild)
+};
+struct ScrollView { // CPlay view for the auto-scroll path (offset access)
+    char p0[0x4];
+    ScrollWorld* m_4; // +0x04  world/level
+    char p8[0x150 - 0x8];
+    i32 m_150; // +0x150  cursor x
+    i32 m_154; // +0x154  cursor y
+    char p158[0x4b4 - 0x158];
+    i32 m_4b4; // +0x4b4  edge active bits
+    i32 m_4b8; // +0x4b8  edge lock bits
+    char p4bc[0x508 - 0x4bc];
+    i32 m_508;                      // +0x508  last-scroll time (horizontal)
+    i32 m_50c;                      // +0x50c  last-scroll time (vertical)
+    void ApplyScroll(i32 x, i32 y); // 0x2e28 thunk (thiscall, reloc-masked)
+};
 RVA(0x000d12b0, 0x2d5)
-void CPlay::LoadScrollSpeedOptions() {}
+i32 CPlay::LoadScrollSpeedOptions() {
+    if (!(g_scrollLoadFlags & 1)) {
+        g_scrollLoadFlags |= 1;
+        g_scrollMinSpeed = g_buteMgr.GetInt("Optionz", "MinScrollSpeed");
+    }
+    if (!(g_scrollLoadFlags & 2)) {
+        g_scrollLoadFlags |= 2;
+        g_scrollSpeedRange = g_buteMgr.GetInt("Optionz", "MaxScrollSpeed")
+                             - g_buteMgr.GetInt("Optionz", "MinScrollSpeed");
+    }
+
+    ScrollView* self = (ScrollView*)this;
+    ScrollWorld* w = self->m_4;
+    i32 changed = 0;
+    i32 speed =
+        (i32)((double)w->m_124 * g_scrollSpeedScale * g_scrollSpeedRange + g_scrollMinSpeed);
+    ScrollGeom* g = w->m_30->m_24->m_5c;
+    i32 sx = g->m_84;
+    i32 sy = g->m_88;
+    i32 extentX = w->m_8c;
+    i32 extentY = w->m_90;
+
+    // LEFT edge
+    if (self->m_150 < 0xc || (self->m_4b8 & 1)) {
+        if (self->m_4b4 & 1) {
+            i32 d = (g_pTimeGetTime() - self->m_508) * speed / 100;
+            if (d) {
+                if (d > 0x64) {
+                    d = 0x64;
+                }
+                sx -= d;
+                self->m_508 = g_pTimeGetTime();
+                changed = 1;
+            }
+        } else {
+            self->m_4b4 |= 1;
+            self->m_508 = g_pTimeGetTime();
+        }
+    } else {
+        self->m_4b4 &= ~1;
+    }
+
+    // RIGHT edge
+    if (self->m_150 > extentX - 0xc || (self->m_4b8 & 4)) {
+        if (self->m_4b4 & 4) {
+            i32 d = (g_pTimeGetTime() - self->m_508) * speed / 100;
+            if (d) {
+                if (d > 0x64) {
+                    d = 0x64;
+                }
+                sx += d;
+                self->m_508 = g_pTimeGetTime();
+                changed = 1;
+            }
+        } else {
+            self->m_4b4 |= 4;
+            self->m_508 = g_pTimeGetTime();
+        }
+    } else {
+        self->m_4b4 &= ~4;
+    }
+
+    // TOP edge
+    if (self->m_154 < 0xf || (self->m_4b8 & 2)) {
+        if (self->m_4b4 & 2) {
+            i32 d = (g_pTimeGetTime() - self->m_50c) * speed / 100;
+            if (d) {
+                if (d > 0x64) {
+                    d = 0x64;
+                }
+                sy -= d;
+                self->m_50c = g_pTimeGetTime();
+                changed = 1;
+            }
+        } else {
+            self->m_4b4 |= 2;
+            self->m_50c = g_pTimeGetTime();
+        }
+    } else {
+        self->m_4b4 &= ~2;
+    }
+
+    // BOTTOM edge
+    if (self->m_154 > extentY - 0xf || (self->m_4b8 & 8)) {
+        if (self->m_4b4 & 8) {
+            i32 d = (g_pTimeGetTime() - self->m_50c) * speed / 100;
+            if (d) {
+                if (d > 0x64) {
+                    d = 0x64;
+                }
+                sy += d;
+                self->m_50c = g_pTimeGetTime();
+                changed = 1;
+            }
+        } else {
+            self->m_4b4 |= 8;
+            self->m_50c = g_pTimeGetTime();
+        }
+    } else {
+        self->m_4b4 &= ~8;
+    }
+
+    if (changed) {
+        self->ApplyScroll(sx, sy);
+    }
+    return 1;
+}
 
 // @confidence: med
 // @source: string-xref

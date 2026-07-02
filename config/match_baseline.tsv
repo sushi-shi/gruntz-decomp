@@ -1369,10 +1369,10 @@ cimage	?Create24@CImage@@QAEHPAVCImageFrameDesc@@HH@Z	100.0000	100.0000	1	d26457
 cimage	?Create@CImage@@QAEHPAVCImageFrameDesc@@H@Z	99.0909	99.0909	1	265411fcc2f9	0x152e90
 cimage	?FreeAll@CImage@@QAEXXZ	100.0000	100.0000	2	352e41f9a876	0x153260
 cimage	?LoadDispatch@CImage@@QAEHPAVCImageFrameDesc@@IPAXH@Z	99.8611	99.8611	2	2044bead9ce7	0x152fb0
-cimage	?Reload@CImage@@QAEHPAVCImageSource@@H@Z	99.4000	99.4000	1	e20e8f38a9a4	0x153380
+cimage	?Reload@CImage@@QAEHPAVCImageSource@@H@Z	99.4000	99.4000	2	62ec363a3316	0x153380
 cimage	?RenderFrame@CImage@@QAEXPAX000@Z	100.0000	100.0000	1	43b44fcb1e6d	0x153790
 cimage	?RenderFrameClipped@CImage@@QAEXPAX0000@Z	100.0000	100.0000	1	3da75c815733	0x153810
-cimage	?Resolve@CImage@@QAEHPAVCImageSource@@H@Z	100.0000	100.0000	2	d1cb4ee64159	0x152f20
+cimage	?Resolve@CImage@@QAEHPAVCImageSource@@H@Z	100.0000	100.0000	3	6dc2964b1ec8	0x152f20
 cimageowned	??0CImageOwned@@QAE@XZ	100.0000	100.0000	1	27471851f4c1	0x148ce0
 cimageowned	?Build@CImageOwned@@QAEHPAVCImageBuildDesc@@HH@Z	79.6791	79.6791	1	63cfd0efa565	0x1490d0
 cimageowned	?BuildRle@CImageOwned@@QAEHPAXHHHH0@Z	97.7528	97.7528	2	a734902d2f42	0x148d40
@@ -1543,7 +1543,7 @@ cplay	?LoadImageBanks@CPlay@@QAEHXZ	100.0000	100.0000	1	f5cca6022e05	0xcffe0
 cplay	?LoadLevelImages@CPlay@@QAEHH@Z	100.0000	100.0000	1	6d6d0a76484e	0xdb7e0
 cplay	?LoadLevelSounds@CPlay@@QAEHH@Z	100.0000	100.0000	1	6500e8a7f24a	0xdb6c0
 cplay	?LoadSBITextEdges@CPlay@@QAEXPAD@Z	97.7831	97.7831	1	382ab9278cff	0xd1710
-cplay	?LoadScrollSpeedOptions@CPlay@@QAEXXZ	0.5000	0.5000	1	1bb238e16fd9	0xd12b0
+cplay	?LoadScrollSpeedOptions@CPlay@@QAEHXZ	85.9200	85.9200	1	6cdabfb50968	0xd12b0
 cplay	?ModeCleanup@CPlay@@QAEXXZ	99.6154	99.6154	1	49243b4e5268	0xcb740
 cplay	?NotifyVisibleEntities@CPlay@@QAEHXZ	74.8676	74.8676	2	3cd6ac295b6a	0xd9050
 cplay	?OnExit@CPlay@@QAEXXZ	94.7917	94.7917	1	a2f4e9737e46	0xcb400
@@ -2606,7 +2606,7 @@ helperhost	?Helper_166040@HelperHost@@QAEHHH@Z	95.0000	95.0000	2	c19517f1187a	0x
 iconloaders	?BuildBootyPerfectAnimation@EngineLabelBacklog@@QAEHXZ	100.0000	100.0000	6	e9baf6d1a7cd	0x1c070
 iconloaders	?LoadCameraSprite@EngineLabelBacklog@@QAEHXZ	86.8000	86.8000	6	f384394dc579	0x78960
 iconloaders	?LoadExplosionSprites@EngineLabelBacklog@@QAEHHHHH@Z	98.0727	98.0727	6	0ededc104450	0x7b330
-iconloaders	?LoadPowerupIconSprites@EngineLabelBacklog@@QAEHHHHHHH@Z	33.8559	33.8559	8	f767a8f21182	0x7c620
+iconloaders	?LoadPowerupIconSprites@EngineLabelBacklog@@QAEHHHHHHH@Z	33.8559	33.8559	9	d44791c50c05	0x7c620
 iconloaders	?LoadToyBoxIcon@EngineLabelBacklog@@QAEHHHHHH@Z	99.9444	99.9444	3	90fabf16a3bf	0x7a3f0
 image	??1CFileImage@@UAE@XZ	100.0000	100.0000	1	7252e7ab41e8	0x141350
 image	??1CFileImageSurface@@UAE@XZ	100.0000	100.0000	1	8f95b4aa6ff0	0x142360
@@ -3758,7 +3758,7 @@ userlogic	?winapi_064540_PostMessageA@CUserLogic@@QAEHXZ	86.4156	86.4156	3	886fc
 userlogic	?winapi_0ee800_IntersectRect_PtInRect@CUserLogic@@QAEHXZ	0.2653	0.2653	2	f2ccbcb9c820	0xee800
 userlogicctoremit	??0CUserLogic@@QAE@PAUCGameObject@@@Z	89.0000	89.0000	1	cpp:aca2e8db625f	0x58cd0
 userlogicctoremit	??0CUserLogic@@QAE@XZ	100.0000	100.0000	1	cpp:aca2e8db625f	0x138d0
-vehiclegruntsprites	?LoadVehicleGruntSprites@CGruntCmdObj@@QAEHH@Z	37.2626	37.2626	4	936cf4f8484b	0x50ce0
+vehiclegruntsprites	?LoadVehicleGruntSprites@CGruntCmdObj@@QAEHH@Z	37.2626	37.2626	5	6824061f7aa4	0x50ce0
 videoconfig	?GetResolutionCode@@YAHXZ	100.0000	100.0000	2	d5dadac49ea7	0x363a0
 videoconfig	?LoadVideoResolutionConfig@@YAXPAXHH@Z	97.2737	97.2737	8	e6f5fec6b5c4	0x36f30
 videoconfig	?SaveVideoCheckboxes@@YAXPAX@Z	99.5000	99.5000	1	3ee4b1c6c6fb	0x378c0
