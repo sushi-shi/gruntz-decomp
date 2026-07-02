@@ -11,13 +11,17 @@
 // install it at m_curState, run its slot-1 activate, and sync the state managers.
 //
 // The state objects are the CState/CPlay/CMulti mode hierarchy (see GameMode.h /
-// CPlay.h / CMulti.h); here they are modeled as real-polymorphic sized shells
-// (CTsBaseA / CTsBaseB carry the vptr, each StXxx leaf is a distinct polymorphic
-// class) carrying only the destructible members (so the EH-state ladder emits). cl
-// auto-stamps each leaf's ??_7StXxx at ctor entry, replacing the old manual retail-
-// vtable stamps (the retail vtables live in other TUs; the auto-stamp reloc-masks to
-// ??_7StXxx just as the old bare-extern stamp did, and the mid-body stamps move to
-// ctor entry - an accepted codegen shift). Field names are placeholders; offsets +
+// CPlay.h / CMulti.h). The param-1 replay path constructs the REAL, fully-modeled
+// CState (`new CState`) - CState alone has a standalone ctor (0x8c750) to call, so no
+// shell or (CState*)this view is needed there. The switch-case LEAF states have NO
+// standalone ctor in retail (their construction exists only inlined here), so each is
+// modeled as a reduced real-polymorphic sized shell (CTsBaseA / CTsBaseB carry the
+// vptr, each StXxx leaf is a distinct polymorphic class) carrying only the
+// destructible members (so the EH-state ladder emits). cl auto-stamps each leaf's
+// ??_7StXxx at ctor entry, which reloc-masks the retail leaf vtable. The St* names
+// are deliberate: naming a leaf after its real class would make cl emit
+// ??_7<RealClass> here and the delinker would STEAL that retail vtable's binding from
+// the real class's TU (see the IDENTITY MAP). Field names are placeholders; offsets +
 // code bytes are load-bearing.
 #include <Gruntz/GruntzMgr.h>
 #include <rva.h>
@@ -92,14 +96,19 @@ void Ts_Set(void* self, i32 a, i32 b, i32 c, i32 d); // 0x8c380 (member Set, 4 a
 // IDENTITY MAP (recovered: each shell's retail vtable = the named ??_7CxxxState in
 // config/vtable_names.csv; the switch key is the stateId TransitionState is asked
 // for). These are reduced sized-shells kept TU-local (this factory can't share
-// CPlay.h/GameMode.h/CMulti.h's frames - see the file header); the St* names mark
-// them as shells rather than the real classes so a grep for `class CPlay` finds
-// only CPlay.h:
+// CPlay.h/GameMode.h/CMulti.h's frames - see the file header). The St* names are
+// LOAD-BEARING, not just grep hygiene: naming a shell after its real class would make
+// cl emit `??_7<RealClass>` here, and the delinker would then bind that retail vtable
+// RVA to THIS unit - STEALING it from the real class's TU (gamemode/cplaydtor/cmulti/
+// cattract/...). So each leaf keeps a distinct St* name; only its param + retail
+// vtable are noted:
 //   StPlain2 =CAttract(0x5ea194) StPlay=CPlay(0x5ea0bc) StPlain5=CMenuState(0x5e9e84)
 //   StPlain7 =CDemo(0x5e9f0c)    StParam8=CCreditsState(0x5e9c64)
 //   StPlain9 =CHelpState(0x5e9dfc) StBooty=CBootyState(0x5e9cec)
 //   StPlain14=CSplashState(0x5e9d74) StMulti=CMulti(0x5e9fe4)
-//   StMultiBooty=CMultiBootyState(0x5e9bdc) StBare=CState(0x5ea21c)
+//   StMultiBooty=CMultiBootyState(0x5e9bdc)
+// (The param-1 replay path is NOT a shell: it constructs the REAL, fully-modeled
+// CState via `new CState`, since CState alone has a standalone ctor @0x8c750 to call.)
 struct StPlain2 : CTsBaseA { // param 2, 0x1c0, ??_7StPlain2 (retail 0x5ea194)
     char m_pad[0x1c0 - 0x1b4];
     StPlain2() {}
@@ -166,54 +175,8 @@ struct StMulti : CTsBaseB { // param 17 (CMulti), 0x660, ??_7StMulti (retail 0x5
     StMulti();
 };
 
-// The m_a4 replay fast-path builds a bare CState directly (raw new, no base ctor).
-// Standalone real-polymorphic shell: cl auto-stamps ??_7StBare at ctor entry (retail
-// stamped 0x5ea21c here), then runs the field init. sizeof 0x1b4.
-struct StBare { // ??_7StBare (retail CState 0x5ea21c)
-    virtual void v0();
-    char m_data[0x1b4 - 4];
-    StBare();
-};
-
-// Field-heavy ctors defined out-of-line for readability (still inline-folded into
-// the factory's new-expressions).
-StBare::StBare() {
-    // StBare IS CState (retail ??_7CState 0x5ea21c) and this field-zeroing is exactly
-    // CState::CState (0x8c750). View the shell as its real class to write the recovered
-    // CState fields (CState.h) by name; source order preserved (store scheduling).
-    CState* s = (CState*)this;
-    s->m_4 = 0;
-    s->m_8 = 0;
-    s->m_c = 0;
-    s->m_28 = 0;
-    s->m_2c = 0;
-    s->m_14 = 0;
-    s->m_18 = 0;
-    s->m_38 = 0;
-    s->m_3c = 0;
-    s->m_4c = 0;
-    s->m_24 = 0;
-    s->m_160 = 0;
-    s->m_164 = 0;
-    s->m_168 = 0;
-    s->m_170 = 0x40;
-    s->m_16c = 0;
-    s->m_174 = 0x40;
-    s->m_178 = 0;
-    s->m_180 = 0x40;
-    s->m_17c = 0;
-    s->m_184 = 0x40;
-    s->m_188 = 0;
-    s->m_190 = 0;
-    s->m_18c = 0;
-    s->m_194 = 0;
-    s->m_198 = 0;
-    s->m_1a0 = 0;
-    s->m_19c = 0;
-    s->m_1a4 = 0;
-    s->m_150 = 0;
-    s->m_154 = 0;
-}
+// Field-heavy leaf ctors defined out-of-line for readability (still inline-folded
+// into the factory's new-expressions).
 StBooty::StBooty() {
     char* p = (char*)this;
     *(i32*)(p + 0x1c0) = 0;
@@ -351,9 +314,13 @@ i32 CGruntzMgr::TransitionState(i32 stateId, i32 a2, i32 keepCurrent, i32 a4) {
     }
 
     if (m_a4 != 0) {
-        // Real-polymorphic: new StBare runs the ??_7StBare-stamping ctor (the old
-        // raw new + manual CState-vtable stamp + field init).
-        m_curState = (CState*)new StBare;
+        // The replay fast-path constructs a bare, fully-modeled CState (its ctor is
+        // the standalone CState::CState @0x8c750). No shell, no (CState*)this view -
+        // this is the real class. The external `call ??0CState` vs retail's inlined
+        // field init is a call-vs-inline delta inside this factory's @early-stop EH
+        // residue (measured neutral, 43.10% either way); ??_7CState stays owned by
+        // its real TU (gamemode) - the ctor stamps it, this new-expression doesn't.
+        m_curState = new CState;
         return 1;
     }
 
@@ -426,7 +393,6 @@ SIZE_UNKNOWN(CTsState);
 SIZE_UNKNOWN(CTsSub45);
 SIZE_UNKNOWN(MfcBytes);
 SIZE_UNKNOWN(MfcStr);
-SIZE_UNKNOWN(StBare);
 SIZE_UNKNOWN(StBooty);
 SIZE_UNKNOWN(StMulti);
 SIZE_UNKNOWN(StMultiBooty);
