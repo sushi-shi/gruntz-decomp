@@ -49,6 +49,12 @@ namespace Utils {
 CString __stdcall operator+(const CString& lhs, const char* rhs);
 
 // ---------------------------------------------------------------------------
+// Forward declarations (defined in the TU that dereferences them).
+// ---------------------------------------------------------------------------
+class GruntzPlayer;  // <Gruntz/GruntzPlayer.h>  - the leaving-player slot
+class CGruntzCmdMgr; // <Gruntz/GruntzCmdMgr.h>  - the m_4 game-mgr's +0x6c command manager
+
+// ---------------------------------------------------------------------------
 // The game-manager singleton - only its +0x38 RegistryHelper is
 // touched here (the config persistence target). Modeled as a tiny struct with
 // the member at the right offset.
@@ -341,21 +347,10 @@ struct CNetSession {
 };
 SIZE(CNetSession, 0x20bb0); // fully-laid-out: +0x3b0 + 0x80*0x410 resync entries
 
-// The command-dispatch queue hanging off the CNetMgr's m_4 sub-object at +0x6c;
-// ResetPlayerCommands fires its 2-arg dispatch helper (external thunk) for each
-// command sequence number in the reset range.
-struct CNetCmdQueue {
-    void Dispatch(i32 cmdHead, i32 seq); // 423b40
-};
-SIZE_UNKNOWN(CNetCmdQueue); // method-only dispatch-queue view; retail size TBD
-
-// The m_4 sub-object, seen here only for its +0x6c command-dispatch queue (the
-// same object whose +0x4->+0x4 is the engine HWND - see CNetHwndHolder below).
-struct CNetSubObject {
-    char m_pad0[0x6c];
-    CNetCmdQueue* m_6c; // +0x6c  the command-dispatch queue
-};
-SIZE_UNKNOWN(CNetSubObject); // m_4 sub-object view (only +0x6c pinned); retail size TBD
+// The +0x6c command-dispatch queue (its Dispatch/EnqueueCommand) is the real
+// CGruntzCmdMgr the game-manager sub-object owns at CGruntzMgr+0x6c - now modeled
+// as CNetGameMgr::m_6c (a CGruntzCmdMgr*, see below), consolidating the former
+// per-TU CNetCmdQueue/CNetSubObject/CNetMgrSub placeholder views into one type.
 
 // ---------------------------------------------------------------------------
 // The DirectPlay session interface CNetMgr keeps at +0x18 (an IDirectPlay4-shaped
@@ -618,25 +613,47 @@ struct CNetChatLog {
 };
 SIZE_UNKNOWN(CNetChatLog); // method-only chat-display view; retail size TBD
 
-class GruntzPlayer; // include <Gruntz/GruntzPlayer.h> in the TU that derefs it
+// The window object at CNetGameMgr+0x4: its own +0x4 holds the engine HWND. The
+// message handlers post through m_4->m_4->m_4 (game-mgr -> window -> HWND); this
+// folds the former generic CNetHwndHolder "+0x4 holder" placeholder.
+struct CNetGameWnd {
+    char m_pad0[4];
+    HWND m_hwnd; // +0x4  the engine HWND
+};
+SIZE_UNKNOWN(CNetGameWnd); // window view (only +0x4 HWND pinned); retail size TBD
 
+// ---------------------------------------------------------------------------
+// CNetGameMgr - the ONE canonical view of CNetMgr's +0x4 game-manager sub-object
+// (the CGruntzMgr the net layer drives; modeled minimally here to avoid a
+// cross-module dependency on GruntzMgr.h). It consolidates the former per-TU
+// placeholder views of the same object: CNetHwndHolder (+0x4 window/HWND chain),
+// CNetSubObject / CNetMgrSub (+0x6c command manager), and OptionsHost
+// (CountActiveChannels @0x492e30). The +0x4 sub-object is ALSO the base of the
+// inline per-channel slot array at +0x150 (see CNetChannel / CNetPlayerSlot).
+// ---------------------------------------------------------------------------
 struct CNetGameMgr {
     GruntzPlayer* FindPlayer(i32 id);  // 0x00492e80 -> the leaving player's slot (no storage)
-    i32 CountActiveChannels(i32 flag); // 0x00492e30 -> # active channels (RegisterChannel gate)
-    char m_pad0[0x5c];
+    i32 CountActiveChannels(i32 flag); // 0x00492e30 -> # active channels (RegisterChannel/
+                                       //              menu-select "ready options" gate)
+    char m_pad0[4];                    // +0x00
+    CNetGameWnd* m_wnd;                // +0x04  the window (its +0x4 is the engine HWND)
+    char m_pad8[0x5c - 8];
     CNetChatLog* m_5c; // +0x5c  the chat/text display
+    char m_pad60[0x6c - 0x60];
+    CGruntzCmdMgr* m_6c; // +0x6c  the grunt command manager (Dispatch/EnqueueCommand)
 };
-SIZE_UNKNOWN(CNetGameMgr); // game-mgr view (only +0x5c pinned); retail size TBD
+SIZE_UNKNOWN(CNetGameMgr); // game-mgr view (+0x4/+0x5c/+0x6c pinned); retail size TBD
 
-// The player slot FindPlayer returns; only its name (GetName, 0x41f450, the same
-// by-value CString fetch as CNetChannel::GetName) and its +0x8 id word are
-// touched by the chat broadcaster.
-struct CNetPlayerName {
-    char m_pad0[8];
-    i32 m_8;           // +0x8  player id word
-    CString GetName(); // 0x41f450
+// The DirectPlay player-descriptor node the +0x38 player CObList holds (the
+// payload PopulatePlayerList lists into the Win32 list box). Only its +0x34
+// name-string pointer is touched (LB_ADDSTRING). This is a DISTINCT object from
+// the GruntzPlayer slot CNetGameMgr::FindPlayer returns (whose name is the +0x4
+// CString / GetName @0x1f450) - the chat broadcaster uses GruntzPlayer directly.
+struct CNetPlayerDesc {
+    char m_pad0[0x34];
+    char* m_34; // +0x34  name string (LB_ADDSTRING source)
 };
-SIZE_UNKNOWN(CNetPlayerName); // player-slot view (only +0x8/name pinned); retail size TBD
+SIZE_UNKNOWN(CNetPlayerDesc); // descriptor-node view (only +0x34 name pinned); size TBD
 
 // FUN_004db2b0 (__cdecl): g_netSlotTable[idx] = value (a global flag array at
 // 0x64c3f0). External, no body -> the call reloc-masks.
@@ -931,11 +948,12 @@ public:
     i32 DispatchRecvMsg(i32 sender, char* buf, i32 size); // 0xb9750 (ret used by ProcessCmd)
 
     char m_pad0[4]; // +0x000
-    // The engine sub-object reached through several views: ->m_4->m_4 is the HWND
-    // holder the message handlers PostMessageA through; +0x6c is the command queue
-    // (CNetSubObject); and (CNetPlayerSlot*)m_4 is the base of the four per-player
-    // ack-latency slots. No single clean type -> left as the +0x4 sub-object ptr.
-    void* m_4; // +0x004
+    // The +0x4 game-manager sub-object (the canonical CNetGameMgr view above):
+    // ->m_wnd->m_hwnd is the HWND the message handlers PostMessageA through; ->m_6c
+    // is the CGruntzCmdMgr command manager. The +0x4 object is ALSO the base of the
+    // inline per-player ack-latency / channel slot array at +0x150, reached through
+    // the byte-base casts (CNetPlayerSlot*)m_4 / (char*)m_4 + 0x150 + ...
+    CNetGameMgr* m_4; // +0x004
     // A CString member at +0x8 (GetName returns a copy of it by value).
     CString m_8; // +0x008
     // Another sub-object pointer (like m_4, reached through per-TU views): the sound
@@ -961,12 +979,15 @@ public:
     // The three list-box selection latches (one per managed list). Each list's
     // ReadXxxSel reader writes the selected item's data here when it is in range;
     // the matching clear-loop zeroes it (along with the +0x7c/+0x80/+0x84 id below).
-    i32 m_groupSel;     // +0x70  group-list selected item data (ReadGroupSel)
-    i32 m_playerSel;    // +0x74  player-list selected item data (ReadPlayerSel)
-    i32 m_sessionSel;   // +0x78  player-object-list selected item data
-    i32 m_groupSelId;   // +0x7c  group-list selection id (zeroed with m_groupSel on clear)
-    i32 m_playerSelId;  // +0x80  player-list selection id (zeroed with m_playerSel on clear)
-    i32 m_sessionSelId; // +0x84  player-object-list selection id (zeroed with m_sessionSel on clear)
+    i32 m_groupSel;   // +0x70  group-list selected item data (ReadGroupSel)
+    i32 m_playerSel;  // +0x74  player-list selected item data (ReadPlayerSel)
+    i32 m_sessionSel; // +0x78  player-object-list selected item data
+    i32 m_groupSelId; // +0x7c  group-list selection id (zeroed with m_groupSel on clear)
+    // +0x80/+0x84: cleared with the selection latches, but retail also reuses each as
+    // the running list-walk cursor its Populate<X>List loop advances (a node pointer),
+    // so they are typed as the node they hold - no int<->pointer casts at the walks.
+    CNetListNode* m_playerSelId;  // +0x80  player-list walk cursor / selection id
+    CNetListNode* m_sessionSelId; // +0x84  player-object-list walk cursor / selection id
     char m_pad88[0x2d8 - 0x88];
     i32 m_2d8; // +0x2d8  a command-timing config word (LoadConfig copies cfg+0x118)
     char m_pad2dc[0x520 - 0x2dc];
@@ -1059,12 +1080,5 @@ public:
 };
 SIZE_UNKNOWN(CNetMgr);     // network manager; retail byte size not yet pinned
 VTBL(CNetMgr, 0x001ea42c); // RTTI vtable (config/vtable_names.csv), currently un-catalogued
-
-// The HWND chain the message handlers walk: m_4 -> +0x4 -> +0x4 (the HWND).
-struct CNetHwndHolder {
-    char m_pad0[4];
-    void* m_4; // +0x4
-};
-SIZE_UNKNOWN(CNetHwndHolder); // HWND-chain view (only +0x4 pinned); retail size TBD
 
 #endif // NET_NETMGR_H

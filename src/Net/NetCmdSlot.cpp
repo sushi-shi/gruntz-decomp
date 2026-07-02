@@ -14,7 +14,8 @@
 //   - three __stdcall helpers over a 3-int player-id set (find/add/clear), and
 //   - a session-readiness check on an as-yet-unidentified owner object that
 //     holds a CNetMgr* at +0x1c and a per-slot ack-flag array at +0x3c.
-#include <Net/NetMgr.h> // <Mfc.h> -> CObList / POSITION / CObject (reloc-masked)
+#include <Net/NetMgr.h>          // <Mfc.h> -> CObList / POSITION / CObject (reloc-masked)
+#include <Gruntz/GruntzCmdMgr.h> // CNetGameMgr::m_6c real command manager (EnqueueCommand)
 #include <rva.h>
 
 // The CObList node shape (CObject list): +0x0 next, +0x4 prev, +0x8 payload.
@@ -72,20 +73,23 @@ public:
     static CGruntzMultiCommand* Allocate(); // 0x24360
 };
 
-// The per-game command manager reached through CNetMgr->m_4->m_6c; ProcessCmd
-// hands each parsed grunt command to it.
-struct CGruntzCmdMgr {
-    void EnqueueCommand(i32 a, void* cmd); // 0x23d10
+// The per-game command manager reached through CNetMgr->m_4->m_6c is the real
+// CGruntzCmdMgr (EnqueueCommand @0x23d10); ProcessCmd hands each parsed grunt
+// command to it. Shared via the canonical CNetGameMgr::m_6c (folds the former
+// local CGruntzCmdMgr/CNetMgrSub placeholders).
+
+// The CNetMgr the slot caches at +0x1c, seen here through three members: the +0x4
+// game-mgr sub-object (CNetGameMgr; whose +0x6c is the grunt command manager), the
+// DirectPlay session at +0x520, and DispatchRecvMsg (0xb9750) for the high-bit relay.
+struct CNetMgrView {
+    char m_pad0[4];
+    CNetGameMgr* m_sub; // +0x04
+    char m_pad8[0x520 - 8];
+    CNetSession* m_session; // +0x520  the session sub-object
+
+    i32 DispatchRecv(i32 sender, void* buf, i32 size); // 0xb9750
 };
-// The game-manager sub-object hanging off CNetMgr+0x4 (its +0x6c is the grunt
-// command manager). The shared CNetMgr models m_4 as an untyped sub-object ptr (it
-// has "no single clean type" - reached through several per-TU views, see NetMgr.h);
-// this is the command-manager view of it.
-struct CNetMgrSub {
-    char m_pad0[0x6c];
-    CGruntzCmdMgr* m_cmdMgr; // +0x6c
-};
-SIZE_UNKNOWN(CNetMgrSub); // CNetMgr+0x4 game-sub, command-manager view (only +0x6c pinned)
+SIZE_UNKNOWN(CNetMgrView); // CNetMgr view (only +0x4/+0x520 pinned); retail size TBD
 
 // The command record's fixed header (after the opcode/parity prefix): a sequence
 // number, two control words and a per-entry count byte; the payload follows.
@@ -182,7 +186,7 @@ i32 CNetCmdSlot::ProcessCmd(i32 playerId, void* rec, i32 size) {
         return 1;
     }
     if (opcode & 0x80) {
-        return ((CNetMgr*)m_owner)->DispatchRecvMsg(m_cmdHead[6], (char*)rec, size);
+        return ((CNetMgrView*)m_owner)->DispatchRecv(m_cmdHead[6], rec, size);
     }
     if (odd == 0) {
         if (m_resetGuard != 0) {
@@ -209,7 +213,7 @@ i32 CNetCmdSlot::ProcessCmd(i32 playerId, void* rec, i32 size) {
     rem -= 13;
 
     if (m_resetGuard != 0 && odd) {
-        CNetCmdSlot* slot = ((CNetMgr*)m_owner)->m_session->FindCmdSlot(playerId);
+        CNetCmdSlot* slot = ((CNetMgrView*)m_owner)->m_session->FindCmdSlot(playerId);
         if (slot == 0) {
             return 0;
         }
@@ -258,7 +262,7 @@ i32 CNetCmdSlot::ProcessCmd(i32 playerId, void* rec, i32 size) {
         }
         i32 consumed = obj->Parse(cursor, rem);
         obj->m_submitted = 1;
-        ((CNetMgrSub*)((CNetMgr*)m_owner)->m_4)->m_cmdMgr->EnqueueCommand(0, obj);
+        ((CNetMgrView*)m_owner)->m_sub->m_6c->EnqueueCommand(0, obj);
         rem -= consumed;
         cursor += consumed;
     }

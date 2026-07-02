@@ -166,6 +166,10 @@ public:
     //            phase from the manager state. flag != 0 -> also AddTail onto
     //            the nested +0x1c list (with the phase tag).
     void EnqueueCommand(i32 flag, void* cmd);
+    // 0x423b40 (via ILT 0x2a63) - re-dispatch a queued command by sequence during
+    // the net resend pass (CNetMgr::ResetPlayerCommands: m_4->m_6c->Dispatch).
+    // External/no-body here (reloc-masked thiscall).
+    void Dispatch(i32 cmdHead, i32 seq);
     // 0x024890 - the command-queue (de)serializer. mode 4 = write the queue to
     // the stream; mode 7 = read it back, rebuilding the queue.
     i32 Serialize(GzStream* stream, i32 mode, i32 a3, i32 a4);

@@ -30,6 +30,7 @@
 #include <stdio.h>  // sprintf (the chat-line formatter)
 
 #include <Gruntz/GruntzPlayer.h> // OnPlayerLeft derefs the leaving player's slot
+#include <Gruntz/GruntzCmdMgr.h> // CNetGameMgr::m_6c command manager (ResetPlayerCommands Dispatch)
 
 CGameMgr* g_pGameMgr;
 
@@ -186,8 +187,8 @@ void CNetMgr::OnMultiPause() {
     g_sharedFlag = 0;
 
     if (r == DISPATCH_RESYNC) {
-        void* hwnd = ((CNetHwndHolder*)((CNetHwndHolder*)m_4)->m_4)->m_4;
-        PostMessageA((HWND)hwnd, WM_COMMAND, 0x80d7, m_resyncLParam);
+        HWND hwnd = m_4->m_wnd->m_hwnd;
+        PostMessageA(hwnd, WM_COMMAND, 0x80d7, m_resyncLParam);
     }
 }
 
@@ -209,15 +210,15 @@ void CNetMgr::OnOutOfSync() {
 
     switch (r) {
         case DISPATCH_RESYNC: {
-            void* hwnd = ((CNetHwndHolder*)((CNetHwndHolder*)m_4)->m_4)->m_4;
-            PostMessageA((HWND)hwnd, WM_COMMAND, 0x80d7, m_resyncLParam);
+            HWND hwnd = m_4->m_wnd->m_hwnd;
+            PostMessageA(hwnd, WM_COMMAND, 0x80d7, m_resyncLParam);
             break;
         }
         case DISPATCH_RESET:
             break;
         default: {
-            void* hwnd = ((CNetHwndHolder*)((CNetHwndHolder*)m_4)->m_4)->m_4;
-            PostMessageA((HWND)hwnd, WM_COMMAND, 0x8023, 0);
+            HWND hwnd = m_4->m_wnd->m_hwnd;
+            PostMessageA(hwnd, WM_COMMAND, 0x8023, 0);
             break;
         }
     }
@@ -522,7 +523,7 @@ i32 CNetMgr::OnPlayerLeft(i32 playerId) {
         return 0;
     }
 
-    CNetGameMgr* gm = (CNetGameMgr*)m_4;
+    CNetGameMgr* gm = m_4;
     GruntzPlayer* slot = gm->FindPlayer(playerId);
     if (slot == 0) {
         return 0;
@@ -542,7 +543,7 @@ i32 CNetMgr::OnPlayerLeft(i32 playerId) {
     SetNetSlot(slot->m_008, 1);
 
     CString line = slot->GetName() + " has left the game.";
-    ((CNetGameMgr*)m_4)->m_5c->AddItem((char*)(const char*)line, 0x20, 0x11);
+    m_4->m_5c->AddItem((char*)(const char*)line, 0x20, 0x11);
 
     if (blob != 0) {
         m_peer->RemovePlayerObj(blob);
@@ -712,7 +713,7 @@ i32 CNetMgr::RegisterChannelFrom(const char* name, i32 b, i32 e, i32 f) {
 // eh-state-numbering-base.md. Deferred to the final sweep.
 RVA(0x000baac0, 0x12e)
 i32 CNetMgr::RegisterChannel(const char* name, i32 id, i32 c, i32 d, i32 idx, i32 e) {
-    if (((CNetGameMgr*)m_4)->CountActiveChannels(1) >= 4) {
+    if (m_4->CountActiveChannels(1) >= 4) {
         return 0;
     }
 
@@ -943,8 +944,7 @@ i32 CNetMgr::BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd) 
 
     char line[0x12c];
     if (toChat != 0) {
-        CNetPlayerName* player =
-            (CNetPlayerName*)((CNetGameMgr*)m_4)->FindPlayer(m_localPlayer->m_4);
+        GruntzPlayer* player = m_4->FindPlayer(m_localPlayer->m_4);
         CString name = player->GetName();
         sprintf(line, "%s: %s", (const char*)name, text);
     } else {
@@ -955,10 +955,9 @@ i32 CNetMgr::BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd) 
         if (hWnd != 0) {
             ShowChatLine(line, hWnd);
         } else {
-            CNetPlayerName* player =
-                (CNetPlayerName*)((CNetGameMgr*)m_4)->FindPlayer(m_localPlayerId);
+            GruntzPlayer* player = m_4->FindPlayer(m_localPlayerId);
             if (player != 0) {
-                ((CNetGameMgr*)m_4)->m_5c->AddItem(line, 0x30, player->m_8);
+                m_4->m_5c->AddItem(line, 0x30, player->m_008);
             }
         }
     }
@@ -1508,8 +1507,8 @@ void CNetMgr::OnDropPlayer() {
             break;
         case DISPATCH_ABORT: {
             m_session->ResetCmdBuffers();
-            void* hwnd = ((CNetHwndHolder*)((CNetHwndHolder*)m_4)->m_4)->m_4;
-            PostMessageA((HWND)hwnd, WM_COMMAND, 0x8023, 0);
+            HWND hwnd = m_4->m_wnd->m_hwnd;
+            PostMessageA(hwnd, WM_COMMAND, 0x8023, 0);
             break;
         }
         case DISPATCH_PLAYERLEFT:
@@ -1738,7 +1737,7 @@ i32 CNetMgr::ResetPlayerCommands(i32 id) {
     i32 seq = (slot->m_baseSeq + 1) * (i32)m_cmdDelay;
     i32 end = seq + (i32)m_cmdDelay * 3;
     for (; seq < end; seq++) {
-        ((CNetSubObject*)m_4)->m_6c->Dispatch(*slot->m_cmdHead, seq);
+        m_4->m_6c->Dispatch(*slot->m_cmdHead, seq);
         slot->RemoveCmd(seq / (i32)m_cmdDelay);
     }
     slot->ResetTriple(slot->m_rangeA);
@@ -1816,8 +1815,8 @@ void CNetMgr::HandleVersionCheck(CNetVersionMsg* msg) {
                 "This version is not the same as the host computer's version of the game.",
                 0
             );
-            void* hwnd = ((CNetHwndHolder*)((CNetHwndHolder*)m_4)->m_4)->m_4;
-            PostMessageA((HWND)hwnd, WM_COMMAND, 0x8023, 0);
+            HWND hwnd = m_4->m_wnd->m_hwnd;
+            PostMessageA(hwnd, WM_COMMAND, 0x8023, 0);
         }
     }
     if (mismatch) {
@@ -2243,25 +2242,24 @@ void CNetMgr::PopulatePlayerList(void* hList) {
     SendMessageA((HWND)hList, LB_RESETCONTENT, 0, 0);
 
     CNetListNode* node = m_3c;
-    m_playerSelId = (i32)node;
-    CNetPlayerName* payload;
+    m_playerSelId = node;
+    CNetPlayerDesc* payload;
     if (node != 0) {
-        m_playerSelId = (i32)node->m_next;
-        payload = (CNetPlayerName*)node->m_data;
+        m_playerSelId = node->m_next;
+        payload = (CNetPlayerDesc*)node->m_data;
     } else {
         payload = 0;
     }
 
     while (payload != 0) {
-        i32 r = (i32)
-            SendMessageA((HWND)hList, LB_ADDSTRING, 0, (LPARAM) * (i32*)((char*)payload + 0x34));
+        i32 r = (i32)SendMessageA((HWND)hList, LB_ADDSTRING, 0, (LPARAM)payload->m_34);
         if (r != -1) {
             SendMessageA((HWND)hList, LB_SETITEMDATA, r, (LPARAM)payload);
         }
-        CNetListNode* cur = (CNetListNode*)m_playerSelId;
+        CNetListNode* cur = m_playerSelId;
         if (cur != 0) {
-            payload = (CNetPlayerName*)cur->m_data;
-            m_playerSelId = (i32)cur->m_next;
+            payload = (CNetPlayerDesc*)cur->m_data;
+            m_playerSelId = cur->m_next;
         } else {
             payload = 0;
         }
@@ -2546,10 +2544,10 @@ void CNetMgr::PopulateSessionList(void* hList) {
     SendMessageA((HWND)hList, LB_RESETCONTENT, 0, 0);
 
     CNetListNode* node = (CNetListNode*)m_58;
-    m_sessionSelId = (i32)node;
+    m_sessionSelId = node;
     CNetSessionNode* payload;
     if (node != 0) {
-        m_sessionSelId = (i32)node->m_next;
+        m_sessionSelId = node->m_next;
         payload = (CNetSessionNode*)node->m_data;
     } else {
         payload = 0;
@@ -2561,10 +2559,10 @@ void CNetMgr::PopulateSessionList(void* hList) {
         if (r != -1) {
             SendMessageA((HWND)hList, LB_SETITEMDATA, r, (LPARAM)payload);
         }
-        CNetListNode* cur = (CNetListNode*)m_sessionSelId;
+        CNetListNode* cur = m_sessionSelId;
         if (cur != 0) {
             payload = (CNetSessionNode*)cur->m_data;
-            m_sessionSelId = (i32)cur->m_next;
+            m_sessionSelId = cur->m_next;
         } else {
             payload = 0;
         }

@@ -31,12 +31,9 @@ struct PlayerMgr {
 };
 SIZE_UNKNOWN(PlayerMgr); // method-only +0x524 sub-object view; retail size TBD
 
-// The options host at CNetMgr+0x4 (CountReadyOptionsSlots @0x92e30 via the 0x38cd
-// ILT thunk; __thiscall ret 4).
-struct OptionsHost {
-    i32 CountReadyOptionsSlots(i32 flag);
-};
-SIZE_UNKNOWN(OptionsHost); // method-only +0x4 sub-object view; retail size TBD
+// The "ready options" count is CNetGameMgr::CountActiveChannels @0x492e30 (via the
+// 0x38cd ILT thunk; __thiscall ret 4) - the SAME method the channel cluster gates
+// on; the former OptionsHost placeholder folded into the canonical m_4 view.
 
 // The shared positional-sound cue idiom (same shape as CPathHazard's strike cue):
 // m_c is the sound sub-mgr; m_28 its host; find "GAME_MENUS_SELECT" -> an emitter;
@@ -101,7 +98,7 @@ i32 CNetMgr::LoadMenuSelectSprite(void* evp) {
     }
     if (m_530 == 0 && m_connected == 0) {
         if (m_useChannelLatency != 0) {
-            if (((OptionsHost*)m_4)->CountReadyOptionsSlots(1) >= 4) {
+            if (m_4->CountActiveChannels(1) >= 4) {
                 SendStat3(ev->m_8, 0x3fe, 1);
                 return 0;
             }
