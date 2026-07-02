@@ -185,8 +185,18 @@ struct CMultiVtbl {
 
 class CMulti {
 public:
-    ~CMulti(); // 0x08d270 (most-derived /GX dtor; stamps 3 vtables, tears the
-               // CString/CByteArray run)
+    // Realized real-polymorphic: a virtual dtor makes cl emit ??_7CMulti@@6B@. The
+    // vptr occupies +0x00 (where the old CMultiVtbl* m_vtbl lived - same offset, so
+    // every matched CMulti method is codegen-neutral). ~CMulti's leading manual
+    // g_vtbl_CMulti stamp is dropped so cl's implicit entry vptr-store survives (a
+    // leading manual stamp would dead-store-eliminate the implicit one -> no ??_7).
+    // Tick dispatches through vtbl() (reads the vptr as a CMultiVtbl*), preserving
+    // its +0x7c/+0x98 indirect-call bytes.
+    virtual ~CMulti(); // 0x08d270 (most-derived /GX dtor; stamps CPlay/CState, tears
+                       // the CString/CByteArray run)
+    CMultiVtbl* vtbl() {
+        return *(CMultiVtbl**)this;
+    }
 
     // Teardown helper run first by the dtor (and standalone @0xb6110): drains the
     // lobby sub-objects and pushes the final stat flags.
@@ -229,10 +239,10 @@ public:
     void ArmSlotInner();                                      // 0x02ade0 (on m_150[i]+0x38)
 
     // --- layout (placeholder names; offsets are the load-bearing truth) ---
-    CMultiVtbl* m_vtbl; // +0x000  vptr (Tick dispatches through +0x7c / +0x98)
-    CMultiLogic* m_4;   // +0x004  the CState owner / logic object
-    void* m_8;          // +0x008  string registry (FUN_0053c030 lookup)
-    void* m_c;          // +0x00c  manager (vfn host, +0x24 chain, +0x20 sub-window)
+    // +0x000  vptr (compiler ??_7CMulti; Tick dispatches via vtbl() -> +0x7c/+0x98)
+    CMultiLogic* m_4; // +0x004  the CState owner / logic object
+    void* m_8;        // +0x008  string registry (FUN_0053c030 lookup)
+    void* m_c;        // +0x00c  manager (vfn host, +0x24 chain, +0x20 sub-window)
     char m_pad10_2c[0x2c - 0x10];
     i32 m_2c; // +0x02c  saved/restored handle around the title build
     char m_pad30_1b4[0x1b4 - 0x30];

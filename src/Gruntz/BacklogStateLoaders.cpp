@@ -21,12 +21,44 @@ struct CHelpAssetRoot { // m_4 / arg1 points here
     char m_pad00[0x4];
     CHelpMsgPump* m_4; // +0x4
 };
+// Realized real-polymorphic: 26 virtual slots (0x68 vtable) + out-of-line dtor so
+// cl emits ??_7CHelpState@@6B@. vptr occupies +0x00 (was m_pad00[4]); LoadAssets
+// touches only >= +0x04, so its codegen is unchanged. The dtor calls a DEFINED
+// member (RealizeAnchor) to keep cl's implicit vptr-store alive; emitted dtor/??_G/
+// ??_7 carry no RVA -> unpaired -> matching-neutral.
 class CHelpState {
 public:
+    virtual ~CHelpState();           // slot 0
+    virtual void Vslot01();          // slot 1
+    virtual void ReleaseResources(); // slot 2
+    virtual void Vslot03();
+    virtual void Vslot04();
+    virtual void Vslot05();
+    virtual void Vslot06();
+    virtual void Vslot07();
+    virtual void Vslot08();
+    virtual void Vslot09();
+    virtual void Vslot0a();
+    virtual void Vslot0b();
+    virtual void Vslot0c();
+    virtual void Vslot0d();
+    virtual void Vslot0e();
+    virtual void Vslot0f();
+    virtual void Vslot10();
+    virtual void Vslot11();
+    virtual void Vslot12();
+    virtual void Vslot13();
+    virtual void Vslot14();
+    virtual void Vslot15();
+    virtual void Vslot16();
+    virtual void Vslot17();
+    virtual void Vslot18();
+    virtual void Vslot19();
+
     i32 LoadAssets(i32, i32, i32);
     i32 LoadGameAssetNamespaces(i32, i32, i32); // base loader; reloc-masked external call
+    i32 RealizeAnchor(); // out-of-line anchor the dtor calls (keeps the vptr store)
 
-    char m_pad00[0x4];
     CHelpAssetRoot* m_4; // +0x4
     CHelpAssetSet* m_8;  // +0x8
     char m_pad0c[0x2c - 0xc];
@@ -205,6 +237,15 @@ i32 CHelpState::LoadAssets(i32 a1, i32 a2, i32 a3) {
     }
     m_4->m_4->Pump(0x100, 0x40);
     return 1;
+}
+
+// Realization anchor (unpaired, no RVA): a defined member the dtor calls so cl keeps
+// the implicit vptr-store and emits ??_7CHelpState@@6B@.
+i32 CHelpState::RealizeAnchor() {
+    return m_2c != 0;
+}
+CHelpState::~CHelpState() {
+    RealizeAnchor();
 }
 
 // ---------------------------------------------------------------------------

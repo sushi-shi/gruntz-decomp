@@ -134,20 +134,26 @@ void ResetCoordPool82fa0() {
 // 0x085540 - stamp the vtable (0x5e9b8c) then tail-call the base teardown
 // (0x13ddb0). __thiscall.
 // ===========================================================================
-// 0x1e9b8c KEPT: ??_7CGameMgr@@6B@ is not emitted by cl (class not polymorphic-
-// modeled), so removing the DATA pin only unnames the RVA.
-DATA(0x001e9b8c)
+// REALIZED: model the base WAP32::CGameMgr as a global 6-slot (0x18) polymorphic
+// CGameMgr - the delinker names its vtable ??_7CGameMgr@@6B@ globally (config/
+// vtable_names.csv). 0x85540 IS that dtor (restamp the base vtable + UnknownClose),
+// so cl's implicit entry vptr-store - the old manual `vptr = &g_vtbl_5e9b8c` is
+// dropped so it survives - emits ??_7CGameMgr@@6B@ (masks 0x5e9b8c). The bare extern
+// g_vtbl_5e9b8c stays for CScalarDtor855a0's manual (reloc-masked) restamp.
 extern void* g_vtbl_5e9b8c;
-struct CTeardown85540 {
-    void* vptr;
-    void Base13ddb0(); // 0x13ddb0 (reloc-masked)
-    void Teardown();
+struct CGameMgr {
+    virtual ~CGameMgr(); // 0x85540 (slot 0): implicit base-vtable restamp + UnknownClose
+    virtual void s1();
+    virtual void s2();
+    virtual void s3();
+    virtual void s4();
+    virtual void s5();
+    void UnknownClose(); // 0x13ddb0 (reloc-masked)
 };
-SIZE_UNKNOWN(CTeardown85540);
+SIZE_UNKNOWN(CGameMgr);
 RVA(0x00085540, 0xb)
-void CTeardown85540::Teardown() {
-    vptr = (void*)&g_vtbl_5e9b8c;
-    Base13ddb0();
+CGameMgr::~CGameMgr() {
+    UnknownClose();
 }
 
 // ===========================================================================

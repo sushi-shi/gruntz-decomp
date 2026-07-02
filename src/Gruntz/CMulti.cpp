@@ -148,7 +148,8 @@ extern void MultiJoinHandler(); // 0x004b8020 (reloc-masked function address)
 // Documented EH-state-machine wall; deferred to the final sweep.
 RVA(0x0008d270, 0x124)
 CMulti::~CMulti() {
-    *(void**)this = g_vtbl_CMulti;
+    // cl's implicit vptr store (??_7CMulti) stamps here at dtor entry; the old manual
+    // `*(void**)this = g_vtbl_CMulti` is dropped so the implicit store survives.
     Teardown();
     // CMulti sub-object teardown (high block).
     m_604.~CByteArray();
@@ -332,7 +333,7 @@ i32 CMulti::Connect(i32 mode) {
 RVA(0x000b6890, 0x21b)
 i32 CMulti::Tick() {
     m_414 = 0;
-    m_vtbl->Redraw(this, 0, *(i32*)((char*)this + 0x150), *(i32*)((char*)this + 0x154));
+    vtbl()->Redraw(this, 0, *(i32*)((char*)this + 0x150), *(i32*)((char*)this + 0x154));
     i32 oldT = m_5dc;
     i32 t = timeGetTime();
     m_5dc = t;
@@ -376,7 +377,7 @@ i32 CMulti::Tick() {
     if (m_520->IsBusy() && m_564 == 0) {
         fin = 1;
     }
-    m_vtbl->PostRedraw(this);
+    vtbl()->PostRedraw(this);
     void* sub = *(void**)((char*)*(void**)((char*)m_c + 0x24) + 0x5c);
     if (sub) {
         ((CMultiSubTick*)sub)->SubTick(); // FUN_00563300 (thiscall on m_c->m_24->m_5c)

@@ -251,6 +251,9 @@ public:
 SIZE_UNKNOWN(CCreditsState);
 class CCreditsState : public CState {
 public:
+    // Out-of-line dtor (defined in GameMode.cpp, calls ReleaseResources) so cl emits
+    // ??_7CCreditsState@@6B@ - the same realization pattern as CMenuState/CBootyState.
+    virtual ~CCreditsState() OVERRIDE;
     virtual i32 Update() OVERRIDE;       // return 8;  (slot 4)
     virtual i32 Render() OVERRIDE;       // the per-frame credits draw (this TU)
     virtual i32 InputVirtual() OVERRIDE; // slot 8 (+0x20) - polled each frame

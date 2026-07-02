@@ -12,4 +12,17 @@
 RVA(0x0000f8a0, 0x44)
 CDoNothingNormal::~CDoNothingNormal() {}
 
+// Realize ??_7CDoNothingNormal@@6B@ (0x1e859c): retail's dtor folds straight to the
+// CUserLogic teardown and never references the leaf vtable (so ~CDoNothingNormal only
+// emits the base ??_7CUserLogic/??_7CUserBase restamps), and the logic-worker ctor
+// stamps the leaf vtable vptr-MIDDLE - neither anchors the leaf COMDAT. A spurious
+// `new CDoNothingNormal` references the implicit vptr-FIRST leaf ctor, whose stamp
+// (the escaping object keeps it) emits ??_7CDoNothingNormal. Unpaired (no RVA) ->
+// matching-neutral; it does NOT touch the 0xf8a0 dtor codegen.
+void* operator new(u32);
+CDoNothingNormal* RealizeCDoNothingNormal();
+CDoNothingNormal* RealizeCDoNothingNormal() {
+    return new CDoNothingNormal();
+}
+
 #include <rva.h>

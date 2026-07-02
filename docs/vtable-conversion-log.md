@@ -832,3 +832,52 @@ makes the cosmetic `vtables`-unit data symbol imperfect (tracking, not a match l
   `CWwdObjMgrFactories` RezAlloc factory manual-stamps it mid-construction and cannot
   reference a `cl`-emitted `??_7` without a `new`-based wide-object-ctor rewrite (the
   same documented VTable47-50 orphan case). Deferred to the wide-object-ctor sweep.
+## Iteration 2 (game-state/app classes FORCE-realized) — 2026-07-02
+
+Scope: the Batch-5 "removing the pin only unnames the RVA" list — the eight RTTI
+vtables whose class was NOT polymorphic-modeled enough for `cl` to emit `??_7`, so a
+bare pin-removal (batch 5) left the RVA UNNAMED. Mandate: model each real-polymorphic
++ force `cl` to emit `??_7<Class>`, THEN drop the `DATA()` pin. **All 8 realized**,
+`gruntz build` GREEN, **0 regressions** (1835/3363 exact / 64.38% fuzzy unchanged — a
+compiler `??_7` is reloc-masked, matching-neutral). No dup-DATA (the pins are gone).
+
+| Class | vtable RVA | how realized (TU) |
+| :-- | :-- | :-- |
+| `CSplashState` | 0x1e9d74 | polymorphic (26 slots) + out-of-line dtor calling a DEFINED anchor (CSplashState.cpp) |
+| `CHelpState` | 0x1e9dfc | polymorphic (26 slots) + out-of-line dtor + anchor (BacklogStateLoaders.cpp) |
+| `CCreditsState` | 0x1e9c64 | added `virtual ~CCreditsState()` calling ReleaseResources (GameMode.cpp) — same pattern as the already-realized CMenuState/CBootyState |
+| `CDemo` | 0x1e9f0c | renamed the self-contained view `CDerivedStateD` -> `CDemo` (CPlayDtor.cpp); its 0x8d0d0 dtor now auto-emits `??_7CDemo` |
+| `CPlay` | 0x1ea0bc | renamed the self-contained view `CPlayD` -> `CPlay` (CPlayDtor.cpp); its 0x8c830 dtor now auto-emits `??_7CPlay` |
+| `CMulti` | 0x1e9fe4 | made polymorphic (virtual dtor; vptr replaces the `CMultiVtbl* m_vtbl` field at +0, Tick dispatches via a `vtbl()` accessor = codegen-neutral) + dropped the leading manual g_vtbl_CMulti stamp so cl's implicit entry store survives (CMulti.cpp) |
+| `CDoNothingNormal` | 0x1e859c | spurious `new CDoNothingNormal` anchor (CDoNothingNormalDtor.cpp) — see below |
+| `CGameMgr` | 0x1e9b8c | modeled the 0x85540 base-teardown as a global 6-slot `CGameMgr` dtor (BoundaryLowerThunks.cpp); its implicit restamp (old manual `vptr=&g_vtbl_5e9b8c` dropped) emits the CSV-named global `??_7CGameMgr@@6B@` (masks the base WAP32::CGameMgr vtable 0x5e9b8c) |
+
+### The realization MECHANISM (why batch-5 pin-removal alone failed) — generalizes
+
+`cl` emits `??_7X` only when a compiled OBJ contains a **surviving reference** to it —
+i.e. an out-of-line ctor/dtor (or a `new X`) whose IMPLICIT vptr-store on X's OWN
+vtable is not dead-store-eliminated. The 8 classes each hit one of:
+
+- **Not polymorphic at all** (`CMulti` used a plain `CMultiVtbl* m_vtbl` member, no
+  virtuals). Fix: give it a virtual dtor (vptr takes the same +0 offset -> neutral).
+- **Empty out-of-line dtor -> the entry vptr-store is DSE'd** (MEASURED: an empty
+  `~CSplashState(){}` emits NEITHER `??1` NOR `??_7`; the whole dtor COMDAT is elided).
+  Fix: the dtor must call a **DEFINED** member so `cl` keeps the store (a call to a
+  *declared-only* virtual is not enough — replicate CMenuState, which calls its real
+  out-of-line ReleaseResources). A tiny `RealizeAnchor(){ return m_2c != 0; }` works.
+- **Leaf stamp DSE'd between entry and the base restamp** (`CDoNothingNormal`): retail's
+  dtor folds straight to the CUserLogic teardown and never touches the leaf vtable, so
+  `~CDoNothingNormal` emits only the base `??_7CUserLogic/??_7CUserBase` restamps; the
+  leaf entry-stamp is dead between it and the CUserLogic restamp. The logic-worker ctor
+  stamps the leaf vptr-MIDDLE. Fix: a spurious `new CDoNothingNormal` references the
+  implicit vptr-FIRST leaf ctor whose stamp (the escaping object keeps it) anchors the
+  `??_7` — WITHOUT touching the byte-exact 0xf8a0 dtor.
+- **Self-contained view under the wrong name** (`CPlayD`/`CDerivedStateD`): the view
+  already emitted a vtable, just as `??_7CPlayD`/`??_7CDerivedStateD` (orphans). Renaming
+  the view to the RTTI name (`CPlay`/`CDemo`) makes the SAME dtor emit the correctly-
+  named `??_7` that pairs via config/vtable_names.csv. Codegen-neutral (rename only).
+
+Emitted dtor/`??_G`/`??_7` carry no `RVA()` (unpaired) unless the dtor is already a
+matched RVA'd function -> matching-neutral. Vtable size mismatch (e.g. a 1-slot emitted
+`??_7CDemo` vs the 0xac retail datum) is neutral (reloc-masked data, not diffed) — same
+as the already-realized CMenuState (41-slot model vs 0x68 datum).

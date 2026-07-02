@@ -59,13 +59,48 @@ struct CString {
 DATA(0x0064e25c)
 extern CString g_assetRoot;
 
+// Realized real-polymorphic: 26 virtual slots (0x68 vtable) + a real out-of-line
+// dtor so cl emits ??_7CSplashState@@6B@. The vptr occupies +0x00 (was
+// m_pad00[4]); LoadSounds only touches >= +0x04 so its codegen is unchanged. The
+// dtor calls a DEFINED member (RealizeAnchor) so cl's implicit entry vptr-store
+// survives (an empty dtor - or one calling only a declared-only virtual - gets
+// dead-store-eliminated, dropping the ??_7 reference). The emitted dtor/??_G/??_7
+// carry no RVA -> unpaired -> matching-neutral.
 class CSplashState {
 public:
+    virtual ~CSplashState();         // slot 0
+    virtual void Vslot01();          // slot 1
+    virtual void ReleaseResources(); // slot 2
+    virtual void Vslot03();
+    virtual void Vslot04();
+    virtual void Vslot05();
+    virtual void Vslot06();
+    virtual void Vslot07();
+    virtual void Vslot08();
+    virtual void Vslot09();
+    virtual void Vslot0a();
+    virtual void Vslot0b();
+    virtual void Vslot0c();
+    virtual void Vslot0d();
+    virtual void Vslot0e();
+    virtual void Vslot0f();
+    virtual void Vslot10();
+    virtual void Vslot11();
+    virtual void Vslot12();
+    virtual void Vslot13();
+    virtual void Vslot14();
+    virtual void Vslot15();
+    virtual void Vslot16();
+    virtual void Vslot17();
+    virtual void Vslot18();
+    virtual void Vslot19();
+
     i32 LoadSounds(i32 a, i32 b, i32 c);
 
     i32 LoadGameAssetNamespaces(i32 a, i32 b, i32 c); // LoadGameAssetNamespaces
 
-    char m_pad00[0x4];
+    i32 RealizeAnchor(); // defined out-of-line; the dtor calls it (keeps the vptr store)
+
     CSplashView* m_4;     // +0x04 display/view object
     CAssetNamespace* m_8; // +0x08 named-namespace registry root
     CSplashOwner* m_c;    // +0x0c owner (its m_28 is the sound loader)
@@ -102,4 +137,15 @@ i32 CSplashState::LoadSounds(i32 a, i32 b, i32 c) {
         m_c->m_28->LoadNamespace(soundz, g_emptyString, "_");
     }
     return 1;
+}
+
+// Realization anchor (unpaired, no RVA): a defined member the dtor calls so cl
+// keeps the implicit vptr-store and emits ??_7CSplashState@@6B@.
+i32 CSplashState::RealizeAnchor() {
+    return m_2c != 0;
+}
+
+// Out-of-line dtor to force the ??_7CSplashState@@6B@ COMDAT (unpaired, no RVA).
+CSplashState::~CSplashState() {
+    RealizeAnchor();
 }

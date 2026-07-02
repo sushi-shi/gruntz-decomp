@@ -784,6 +784,13 @@ void CCreditsState::ReleaseResources() {
     ((CGameModeBase*)this)->BaseCleanup();
 }
 
+// CCreditsState::~CCreditsState (unpaired, no RVA): calls the defined ReleaseResources
+// so cl keeps the implicit vptr-store and emits ??_7CCreditsState@@6B@ (masks 0x5e9c64;
+// the GruntzMgrTransition DATA pin is removed). Matching-neutral.
+CCreditsState::~CCreditsState() {
+    ReleaseResources();
+}
+
 // @confidence: high
 // @source: decomp-xref
 // CCreditsState::FinishState() (0x39c40): clear the playing gate, return 1.
@@ -1435,4 +1442,3 @@ SIZE_UNKNOWN(CBootyM4Sub);
 SIZE_UNKNOWN(CBootyOwnerView);
 SIZE_UNKNOWN(CMenuMusicPlayer);
 SIZE_UNKNOWN(CMenuMusic);
-
