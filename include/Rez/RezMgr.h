@@ -14,7 +14,7 @@
 // CRezItmBase (16 bytes) - the shared base of every directory-tree node. Both
 // ctors call the same base ctor (stores base vtbl @+0 and
 // the parent pointer @+0xc).
-//   +0x00  m_vtbl   : vtable pointer (base; the derived ctor
+//   +0x00  vptr     : vtable pointer (base; the derived ctor
 //                     overwrites it - two-phase construction).
 //   +0x04  m_4      : (not written by these ctors)
 //   +0x08  m_8      : (not written by these ctors; OpenSub zeroes its owner's +8)
@@ -31,10 +31,10 @@
 // node (derived vtbl). The ctor inits an embedded child collection
 // sub-object (two vtables at +0x10 and +0x1c) and bookkeeping; the
 // higher fields (+0x40..+0x64) are written by Load/OpenSub at runtime.
-//   +0x10  m_vtblA : (collection vtable #1)
-//   +0x14  m_14    : 0        (collection head)
-//   +0x18  m_18    : 0        (collection tail)
-//   +0x1c  m_vtblB : (collection vtable #2)
+//   +0x10  listA   : (embedded child collection #1: vptr,head,tail)
+//   +0x14  ..head  : 0        (collection head)
+//   +0x18  ..tail  : 0        (collection tail)
+//   +0x1c  listB   : (embedded child collection #2: vptr,head,tail)
 //   +0x20  m_20 :0  +0x24 m_24:0  +0x28 m_28:0  +0x34 m_34:0
 //   +0x2c  m_2c    : ctor arg2 (the owning RezMgr back-pointer)
 //   +0x30  m_30    : 1        ("valid"/initialized flag)
@@ -165,6 +165,22 @@ extern "C" u32 RezFWrite(void* buf, u32 size, u32 n, void* fp); // 0x18cb40
 // datum name (was the anonymous Vtbl_1ef7a8 in UnknownVTables.h); reloc-masked,
 // matching-neutral.
 // ---------------------------------------------------------------------------
+// The embedded child collection sub-object CRezDir carries twice (an intrusive
+// {vptr,head,tail} list at +0x10 and +0x1c). REAL POLYMORPHIC (ALL-VTABLES): each
+// is a polymorphic list whose implicit vptr the CRezDir ctor auto-stamps (both
+// resolve to the same child-collection vtable 0x1ef7c8). The default ctor zeroes
+// the head/tail links.
+VTBL(CRezDirList, 0x001ef7c8);
+struct CRezDirList {
+    CRezDirList() {
+        m_head = 0;
+        m_tail = 0;
+    }
+    virtual ~CRezDirList(); // +0x00  vptr (external no-body dtor)
+    void* m_head;           // +0x04
+    void* m_tail;           // +0x08
+};
+
 VTBL(CRezDir, 0x001ef7a8);
 class CRezDir : public CRezItmBase {
 public:
@@ -174,17 +190,13 @@ public:
     i32 FindEntry(char* name);
     // OpenSub is NOT matched in this TU - see RezMgr.cpp note.
 
-    // --- ctor-initialized embedded child collection (+0x10..+0x34) ---
-    void* m_vtblA; // +0x10  (collection vtable)
-    i32 m_14;      // +0x14  (= 0, collection head)
-    i32 m_18;      // +0x18  (= 0, collection tail)
-    void* m_vtblB; // +0x1c  (collection vtable)
-    i32 m_20;      // +0x20  (= 0)
-    i32 m_24;      // +0x24  (= 0)
-    i32 m_28;      // +0x28  (= 0)
-    void* m_2c;    // +0x2c  (= ctor arg2)
-    i32 m_30;      // +0x30  (= 1)
-    i32 m_34;      // +0x34  (= 0)
+    // --- ctor-initialized embedded child collection (+0x10..+0x27) ---
+    CRezDirList m_listA; // +0x10  {vptr,head,tail}
+    CRezDirList m_listB; // +0x1c  {vptr,head,tail}
+    i32 m_28;            // +0x28  (= 0)
+    void* m_2c;          // +0x2c  (= ctor arg2)
+    i32 m_30;            // +0x30  (= 1)
+    i32 m_34;            // +0x34  (= 0)
     // --- runtime-only fields (NOT set by the ctor) ---
     i32 m_38;      // +0x38  (second collection base; Load walks &this+0x38)
     i32 m_3c;      // +0x3c

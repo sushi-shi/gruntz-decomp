@@ -8,14 +8,6 @@
 
 #include <Bute/SymParser.h>
 
-// The +0x10 CObjList sub-object's two vtables (embedded-member stamps kept as raw
-// field writes). CSymParser's own primary vtable is now ??_7CSymParser@@6B@
-// (0x5ef750, cl-emitted; see SymParser.h). Reloc-masked DATA() externs.
-DATA(0x005ef760)
-void* CObjList_purecall_vftbl;
-DATA(0x005ef75c)
-void* CObjList_ctor_vftbl;
-
 // 0x13ab00: the 3-arg buffer constructor. Construct the sub-object members (the +0x10
 // object list, the +0x80 hash table, the +0x88 node list) + stamp the primary vtable,
 // build-then-discard a default CSymParser temp, then drive the buffer through
@@ -24,17 +16,17 @@ void* CObjList_ctor_vftbl;
 // unmatched TU - a reloc-masked call.)
 // @early-stop
 // ~74.8% (real polymorphic now, ALL-VTABLES phase): the primary vptr is auto-
-// stamped by cl @+0 at ctor entry (was the hand-rolled mid-body m_vtbl store); the
+// stamped by cl @+0 at ctor entry (was the hand-rolled mid-body vptr store); the
 // /GX frame, the member-init store sequence (m_list, the +0x80 hash Init(1), the
 // +0x88 node-list), the discarded default-temp ctor/dtor pair and the ParseBuffer
 // 3-arg tail are byte-faithful. Residual is the /GX trylevel state-NUMBERING wall
 // (docs/patterns/eh-state-numbering-base.md) + the vptr-first schedule. Final sweep.
 RVA(0x0013ab00, 0xac)
 CSymParser::CSymParser(void* buf, i32 a2, i32 a3) {
-    // cl auto-stamps ??_7CSymParser @+0 at ctor entry (== the old m_vtbl stamp).
+    // cl auto-stamps ??_7CSymParser @+0 at ctor entry, and the m_list member ctor
+    // auto-stamps ??_7CObjList @+0x10 (== the old CObjList_ctor_vftbl stamp).
     m_list.m_head = 0;
     m_list.m_tail = 0;
-    m_list.m_vtbl = &CObjList_ctor_vftbl;
     m_hash.Init(1);
     m_nodes.m_head = 0;
     m_nodes.m_tail = 0;

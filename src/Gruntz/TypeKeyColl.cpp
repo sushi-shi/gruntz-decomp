@@ -337,8 +337,8 @@ i32 ProjTypeXfer(CXferArchive* ar) {
 // tree (deeper base ctor 0x16dff0) then stamp its runtime vtables.
 // ===========================================================================
 // g_buteTree is the canonical CButeTree (crit-bit trie, include/Bute/ButeTree.h);
-// Construct (0x16dff0) runs the deeper base ctor. m_vptr2 is the +0x08 second-base
-// vptr.
+// Construct (0x16dff0) runs the deeper base ctor. The +0x00 / +0x08 runtime vptrs are
+// stamped via raw casts (CButeTree is now real-polymorphic MI, no manual vptr fields).
 DATA(0x002bf620)
 extern CButeTree g_buteTree;
 
@@ -346,7 +346,7 @@ RVA(0x0016e6a0, 0x26)
 void DynInitButeTree() {
     g_buteTree.Construct(&g_buteTreeArg, 0);
     *(void**)&g_buteTree = &g_buteTreeVtbl;
-    g_buteTree.m_vptr2 = &g_buteTreeSubVtbl;
+    *(void**)((char*)&g_buteTree + 8) = &g_buteTreeSubVtbl;
 }
 
 // Placement new (construct g_typeColl in place; no allocation, so it just runs the
@@ -398,8 +398,8 @@ void DynInitTypeColl() {
 // ===========================================================================
 RVA(0x0016e9c0, 0x45)
 void* CButeTree::ScalarDtor(u32 flags) {
-    m_vptr = &g_buteTreeDtorVtbl;
-    m_vptr2 = &g_buteTreeDtorSubVtbl;
+    *(void**)this = &g_buteTreeDtorVtbl;
+    *(void**)((char*)this + 8) = &g_buteTreeDtorSubVtbl;
     ClearRecursive(0);
     ((CButeTreeBase2*)(this != 0 ? (char*)this + 8 : 0))->Dtor();
     BaseDtor();

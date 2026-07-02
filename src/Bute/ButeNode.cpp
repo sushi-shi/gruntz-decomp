@@ -24,7 +24,7 @@
 // no-body here so the `push msg; call` shape is reloc-masked. REAL POLYMORPHIC
 // (ALL-VTABLES phase): the vtbl@0 field is now the implicit vptr (virtual dtor);
 // the derived CButeNodeBase ctor auto-stamps ??_7CButeNodeBase @+0 after the
-// external base ctor returns (== the old manual g_buteNodeVtbl restamp). The base
+// external base ctor returns (== the old manual whole-object restamp). The base
 // stays destructible so the derived ctor keeps its /GX unwind frame.
 extern void* g_buteNodeErrMsg; // DAT_006bf480 - the node's error-message global
 
@@ -36,16 +36,12 @@ public:
     void* m_msg; // +0x04
 };
 
-// The +0x8 member's promoted "sub" vtable, re-stamped into the CButeNodeEntry
-// member's vptr by the CButeNodeBase ctor (the "incorrect load into struct" the
-// ALL-VTABLES phase keeps as a raw vptr write). Reloc-masked file-scope address.
-extern void* g_buteNodeSubVtbl; // 0x5e949c -> stamped at this+0x8
-
-// The embedded node subobject at CButeNodeBase+0x8: a small keyed-store entry.
-// REAL POLYMORPHIC: its ctor (0x16df70) auto-stamps ??_7CButeNodeEntry (retail
-// 0x5f04d8) at +0x0, then stores desc@+4, (WORD)n@+8, 0@+0xc. (Making it a real
-// virtual sinks the auto-vptr stamp to FIRST rather than the old hand-rolled
-// last-store; the vptr-position shift is accepted per the ALL-VTABLES mandate.)
+// The node subobject at CButeNodeBase+0x8 (a small keyed-store entry): the SECOND
+// polymorphic base of CButeNodeBase. REAL POLYMORPHIC: its ctor (0x16df70) auto-
+// stamps ??_7CButeNodeEntry (retail 0x5f04d8) at +0x0, then stores desc@+4,
+// (WORD)n@+8, 0@+0xc. As CButeNodeBase's second base it lands at +0x08 and its vptr
+// is promoted to the second-base-in-derived vtable (0x5e949c) automatically by cl
+// (== the old manual raw sub-vtable write).
 class CButeNodeEntry {
 public:
     CButeNodeEntry(i32 n, void* desc);
@@ -59,17 +55,17 @@ public:
 SIZE_UNKNOWN(CButeNodeEntry);
 VTBL(CButeNodeEntry, 0x005f04d8); // the entry member's own (base) vtable
 
-// CButeNodeBase layout:
-//   +0x00  CContainerErr base (vptr, msg)
-//   +0x08  CButeNodeEntry subobject (vptr, desc, kind, 0) - spans +0x08..+0x18
+// CButeNodeBase layout (multiply-derived, two vptrs):
+//   +0x00  CContainerErr base   (vptr, msg)
+//   +0x08  CButeNodeEntry base  (vptr, desc, kind, 0) - spans +0x08..+0x18
 //   +0x18  m_18 : child link, zeroed
 //   +0x28  m_28 : child link, zeroed
-class CButeNodeBase : public CContainerErr {
+class CButeNodeBase : public CContainerErr, public CButeNodeEntry {
 public:
     CButeNodeBase(void* desc, i32 n);
 
-    CButeNodeEntry m_entry; // +0x08 (0x10 bytes -> ends at +0x18)
-    i32 m_18;               // +0x18
+    // CButeNodeEntry base occupies +0x08..+0x18
+    i32 m_18; // +0x18
     char m_pad1c[0x28 - 0x1c];
     i32 m_28; // +0x28
 };
@@ -90,55 +86,45 @@ CButeNodeEntry::CButeNodeEntry(i32 n, void* desc) {
     m_c = 0;
 }
 
-// CButeNodeBase ctor (0x16dff0): run the CContainerErr base ctor + the m_entry
-// member ctor, promote the m_entry member's vptr to the "sub" vtable 0x5e949c
-// (raw vptr write - the promoted second vtable can't be a C++-nameable ??_7), zero
-// the two child links, then cl auto-stamps ??_7CButeNodeBase @+0 (== the old manual
-// g_buteNodeVtbl restamp). /GX unwind frame from the two destructible sub-objects.
-// Was 100% with the hand-rolled manual stamps; the auto-vptr-first stamps are
-// accepted per the ALL-VTABLES mandate (regression OK).
+// CButeNodeBase ctor (0x16dff0): run the CContainerErr primary base ctor + the
+// CButeNodeEntry second-base ctor, then cl auto-stamps the two most-derived vptrs
+// (??_7CButeNodeBase @+0 = 0x5e94ac, and the second-base-in-derived vtable @+8 =
+// 0x5e949c) and zeroes the two child links. /GX unwind frame from the two
+// destructible base sub-objects. (Was 100% hand-rolled; the auto-vptr stamps are
+// accepted per the ALL-VTABLES mandate.)
 // @early-stop
-// vptr-position wall (~96.1%, was 100%): real polymorphism auto-stamps ??_7 @+0
-// and the member's implicit vptr, shifting the stamp schedule vs the hand-rolled
-// stores. Logic byte-faithful; converted per the ALL-VTABLES mandate.
+// vptr-position wall (~96.1%, was 100%): real MI polymorphism auto-stamps both
+// vptrs FIRST, shifting the stamp schedule vs the hand-rolled last-stores. Logic
+// byte-faithful; converted per the ALL-VTABLES mandate.
 RVA(0x0016dff0, 0x73)
 CButeNodeBase::CButeNodeBase(void* desc, i32 n)
-    : CContainerErr(&g_buteNodeErrMsg), m_entry(n, desc) {
-    *(void**)&m_entry = &g_buteNodeSubVtbl;
+    : CContainerErr(&g_buteNodeErrMsg), CButeNodeEntry(n, desc) {
     m_18 = 0;
     m_28 = 0;
 }
 
 // ===========================================================================
-// CButeNodeBase-derived config-tree node ctor (0x174d00), re-homed from
-// src/Stub/MallocConstructors (was "Node174d00"). A concrete zPTree-family node:
-// base-constructs via the CButeNodeBase ctor (0x16dff0, descriptor @0x574df0 +
-// kind arg), then re-stamps its two most-derived vftables (primary @0x5f051c at
-// +0x00, +0x08 sub-object vftable @0x5f0518). Clean leaf (no op-new, no EH frame).
-// The concrete class has no RTTI type-descriptor in retail (manual-vtbl node, like
-// the CButeSection stream nodes) so the name stays a placeholder; base + module
-// (CButeNodeBase, the .bute config tree) are proven. Manual stamps per the zPTree
-// family convention (cf. CButeSection::Construct / CButeNodeBase above).
+// CButeCfgNode174d - a concrete CButeNodeBase-derived config-tree node ctor
+// (0x174d00), re-homed from src/Stub/MallocConstructors (was "Node174d00"). A
+// zPTree-family node. REAL POLYMORPHIC (ALL-VTABLES): derives from CButeNodeBase so
+// cl auto-stamps its two most-derived vftables (primary @0x5f051c at +0x00 and the
+// second-base-in-derived vtable @0x5f0518 at +0x08) after the external base ctor
+// runs (== the old manual double stamp). The concrete class has no RTTI
+// type-descriptor in retail so the name stays a placeholder; base + module
+// (CButeNodeBase, the .bute config tree) are proven.
 extern u8 g_node174df0Tag; // 0x574df0  kind descriptor (in .text)
-DATA(0x001f0518)
-extern void* g_node174dSubVtbl; // 0x5f0518  +0x08 sub-object vftable
-DATA(0x001f051c)
-extern void* g_node174dVtbl; // 0x5f051c  node primary vftable
 
-struct CButeCfgNode174d {
-    void CtorBase(void* desc, i32 kind);   // 0x16dff0 CButeNodeBase ctor (foreign call)
-    CButeCfgNode174d* Construct(i32 kind); // 0x174d00
-
-    void* m_vptr;       // +0x00  node primary vftable (manual stamp)
-    char m_pad04[0x04]; // +0x04
-    void* m_subVptr;    // +0x08  sub-object vftable (manual stamp)
+VTBL(CButeCfgNode174d, 0x005f051c); // node primary (most-derived) vtable @+0x00
+class CButeCfgNode174d : public CButeNodeBase {
+public:
+    CButeCfgNode174d(i32 kind); // 0x174d00
 };
 SIZE_UNKNOWN(CButeCfgNode174d);
 
+// @early-stop
+// vptr-schedule wall (ALL-VTABLES): the base ctor is called first, then cl stamps
+// the two most-derived vptrs, but the compiler's vptr-first schedule + the base's
+// own vptr-position wall shift the store order vs the hand-rolled double-stamp. Was
+// 100% hand-rolled; converted per the ALL-VTABLES mandate (regression OK).
 RVA(0x00174d00, 0x25)
-CButeCfgNode174d* CButeCfgNode174d::Construct(i32 kind) {
-    CtorBase(&g_node174df0Tag, kind);
-    m_vptr = &g_node174dVtbl;
-    m_subVptr = &g_node174dSubVtbl;
-    return this;
-}
+CButeCfgNode174d::CButeCfgNode174d(i32 kind) : CButeNodeBase(&g_node174df0Tag, kind) {}

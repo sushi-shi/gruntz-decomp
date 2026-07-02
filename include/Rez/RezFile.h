@@ -58,12 +58,14 @@ class CRezFile;
 
 // The intrusive open/closed LRU list embedded at CRezFileMgr+0x10 / +0x1c. Remove
 // (0x1852e0, the engine CObjList::Remove) unlinks a node; Append (0x1851e0) splices
-// one in. Both __thiscall on the {vtbl,head,tail} head; external no-body so the
-// `lea/add ecx,&list; push node; call` shapes fall out, reloc-masked.
+// one in. Both __thiscall on the {vptr,head,tail} head; external no-body so the
+// `lea/add ecx,&list; push node; call` shapes fall out, reloc-masked. REAL
+// POLYMORPHIC (ALL-VTABLES): the +0x00 vtable is the implicit vptr (virtual dtor);
+// the list is never constructed in this TU so no ??_7 is emitted here.
 struct CObjList {
-    void* m_vtbl;     // +0x00
-    CRezFile* m_head; // +0x04
-    CRezFile* m_tail; // +0x08  (the LRU eviction candidate when read off +0x18)
+    virtual ~CObjList(); // +0x00  vptr (external no-body dtor)
+    CRezFile* m_head;    // +0x04
+    CRezFile* m_tail;    // +0x08  (the LRU eviction candidate when read off +0x18)
 
     void Remove(void* node); // 0x1852e0
     void Append(void* node); // 0x1851e0

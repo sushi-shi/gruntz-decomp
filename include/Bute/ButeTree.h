@@ -8,9 +8,9 @@
 // placeholders; only the OFFSETS + emitted bytes are load-bearing.
 //
 // NOTE: CButeMgr's owned sub-trees (m_tree/m_tree48/m_tree74) are instances of
-// THIS class, but ButeMgr.h currently models them from the /GX destructor's
-// teardown view as `struct CButeStore` (two manual vptrs at +0/+8). CButeStore and
-// CButeTree are the SAME 0x2c-byte class; fully folding CButeStore into CButeTree
+// THIS class, but ButeMgr.h models them from the /GX destructor's teardown view as
+// `struct CButeStore` (also real-polymorphic MI now, two bases at +0/+8). CButeStore
+// and CButeTree are the SAME 0x2c-byte class; fully folding CButeStore into CButeTree
 // is a deep re-match of CButeMgr::~CButeMgr (0x213c0) and is deferred. See the
 // dedup report / docs.
 #ifndef SRC_BUTE_BUTETREE_H
@@ -47,7 +47,27 @@ struct CButeTreeBase2 {
     void Dtor(); // 0x16dfc0
 };
 
-class CButeTree {
+// CButeTree is multiply-derived (two vptrs), the same 0x2c-byte shape as CButeStore.
+// REAL POLYMORPHIC (ALL-VTABLES): a primary base at +0x00 and a second base at
+// +0x08. The two runtime/dtor-phase vptr stamps (TypeKeyColl.cpp) write these via raw
+// casts; making the class polymorphic keeps the fields flat but drops the manual vptr
+// field names.
+struct CButeTreePrimary {
+    virtual void P0();         // +0x00  primary vptr
+    CVariantSlot* m_errorSink; // +0x04
+};
+struct CButeTreeSecond {
+    virtual void S0();              // +0x00 (this+0x08)  second-base vptr
+    char m_pad0c[0x14 - 0x0c];      // +0x04 (+0x0c)
+    i32 m_nodeCount;                // +0x08 (+0x14)
+    CButeTreeNode* m_root;          // +0x0c (+0x18)
+    CButeTreeNode* m_descentCursor; // +0x10 (+0x1c)
+    CButeTreeNode* m_candidateLeaf; // +0x14 (+0x20)
+    i32 m_keyBitLength;             // +0x18 (+0x24)  strlen*8 + 7
+    i32 m_lookupPending;            // +0x1c (+0x28)
+};
+
+class CButeTree : public CButeTreePrimary, public CButeTreeSecond {
 public:
     void* Find(const char* key);                // 0x16d190
     void* Insert(const char* key, void* value); // 0x16db90
@@ -62,17 +82,6 @@ public:
     void ClearRecursive(i32 recurse); // 0x16e070
     void BaseDtor();                  // 0x16da60
     void* ScalarDtor(u32 flags);      // 0x16e9c0
-
-    void* m_vptr;                   // +0x00
-    CVariantSlot* m_errorSink;      // +0x04
-    void* m_vptr2;                  // +0x08  second-base vptr
-    char m_pad0c[0x14 - 0x0c];      // +0x0c
-    i32 m_nodeCount;                // +0x14
-    CButeTreeNode* m_root;          // +0x18
-    CButeTreeNode* m_descentCursor; // +0x1c
-    CButeTreeNode* m_candidateLeaf; // +0x20
-    i32 m_keyBitLength;             // +0x24  strlen*8 + 7
-    i32 m_lookupPending;            // +0x28
 };
 
 #endif // SRC_BUTE_BUTETREE_H

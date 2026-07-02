@@ -116,7 +116,7 @@ struct ButeRef24 {
 // setter (SetSub) + the virtual-base vtable-init thunks reconstructed below.
 //
 // Layout recovered from the ctor's field-init list (0x169c00):
-//   +0x00  m_vptr    : vptr (0x5f03bc, shared with the dtor's vtable restore)
+//   +0x00  vptr      : vptr (0x5f03bc, shared with the dtor's vtable restore)
 //   +0x04  m_pSub    : void* - a sub-object pointer (the dtor/Set delete-and-
 //                      replace target; its slot-0 is a scalar deleting dtor)
 //   +0x08  m_flags   : int   - flag word (Set toggles bit 0x4 from sub nullness)
@@ -131,27 +131,36 @@ struct ButeRef24 {
 //   +0x30  m_30      : int   - zero-init
 //   +0x34  m_34      : int   - -1
 //   +0x38  m_cs      : CRITICAL_SECTION (per-instance, Initialize/Delete'd)
+// REAL POLYMORPHIC (ALL-VTABLES): the +0x00 vptr is implicit (virtual dtor); its
+// own primary vtable ??_7CButeMgrHelper @0x5f03bc (VTBL cataloged at ButeMgr.cpp
+// EOF). The constructor (0x169c00) and the teardown dtor (0x169d70) are modeled as a
+// real C++ ctor/dtor so cl auto-stamps the vptr (== the old manual stamp),
+// reloc-masked.
 class CButeMgrHelper {
 public:
     void FuncA();
-    void FuncB();
 
-    // The constructor: zero-init the fields, stamp the vptr, set the constants,
-    // init the per-instance critical section, and one-time-init the shared
-    // critical section under a ref-count guard.
-    CButeMgrHelper* Construct();
+    // The constructor: zero-init the fields, stamp the vptr (auto), set the
+    // constants, init the per-instance critical section, and one-time-init the
+    // shared critical section under a ref-count guard. (0x169c00, was Construct.)
+    CButeMgrHelper();
+    // The teardown/cleanup dtor (0x169d70, was FuncB): restore the vptr (auto),
+    // reset m_34, drop the shared crit-sec under the ref-count guard, delete the
+    // per-instance one, tear down the owned +0x4 sub-object, reset sub + flag word.
+    virtual ~CButeMgrHelper();
     // Replace the sub-object at +0x4 (delete the old one through its vtable when
     // owned), then toggle bit 0x4 of m_flags from the new pointer's nullness.
     void SetSub(void* p);
     // The virtual-base vtable-init thunks (compiler vbase ctor closures): each
     // stamps a virtual-base subobject's vptr through the this-relative vbtable;
-    // the A/B pair tail into the C/D ret-only thunks.
+    // the A/B pair tail into the C/D ret-only thunks. TERMINAL virtual-inheritance
+    // wall - the vbase construction tables can't be reproduced from a clean model.
     void InitVbaseA();
     void InitVbaseB();
     void InitVbaseC();
     void InitVbaseD();
 
-    void* m_vptr;              // +0x00
+    // vptr implicit @ +0x00 (??_7CButeMgrHelper@@6B@ = 0x5f03bc)
     void* m_pSub;              // +0x04
     i32 m_flags;               // +0x08  flag word (SetSub toggles bit 0x4)
     i32 m_0c;                  // +0x0c
@@ -180,16 +189,17 @@ public:
 // at +8, both polymorphic (two vptrs). The mgr's /GX destructor tears each one
 // down inline at its own trylevel; the member destructor reproduces that
 // multiply-derived teardown:
-//   (1) re-stamp the two most-derived vptrs (g_storeVtblA @+0, g_storeVtblB @+8),
+//   (1) re-stamp the two most-derived vptrs (0x5e94ac @+0, 0x5e949c @+8),
 //   (2) run the derived clear body (recursive node-free, __thiscall(this, 0)),
 //   (3) restore the second base's vptr (__thiscall on the masked `this+8`,
 //       `neg ecx; sbb ecx,ecx; and ecx,ebx` second-base-this adjust),
 //   (4) run the primary-base destructor (__thiscall(this)).
 // Only the SIZE + the two-vptr teardown are load-bearing; the interior is opaque.
-// The two vptr values are reloc-masked externals; the three teardown callees are
-// __thiscall engine functions (no body) so `mov ecx,this; call` falls out masked.
-extern "C" void g_storeVtblA(); // 0x5e94ac  most-derived (scalar-deleting) vptr
-extern "C" void g_storeVtblB(); // 0x5e949c  second-base vptr
+// REAL POLYMORPHIC (ALL-VTABLES): CButeStore is modeled as a real multiply-derived
+// class (a primary store base at +0x00 == 0x5e94ac, a second base at +0x08 ==
+// 0x5e949c), so the /GX dtor auto-stamps both most-derived vptrs (== the old manual
+// store-vtable re-stamps), reloc-masked; the three teardown callees are __thiscall
+// engine functions (no body) so `mov ecx,this; call` falls out masked.
 
 // The second-base subobject at +0x8: its vptr restore (0x16dfc0) is a __thiscall
 // `mov [ecx],<vtbl>; ret`. Modeled as a tiny receiver so the call lands the
@@ -209,17 +219,26 @@ struct CButeStoreNode {
     void* m_val;             // +0x10  value (callback target, freed)
 };
 
-struct CButeStore {
-    void* m_vptrA;              // +0x00  most-derived vptr
-    char m_pad04[4];            // +0x04
-    void* m_vptrB;              // +0x08  second-base vptr
-    void(__cdecl* m_cb)(void*); // +0x0c  per-value callback (ClearRecursive fires it)
-    char m_flags;               // +0x10  flag byte (bit 2 gates the callback)
-    char m_pad11[0x14 - 0x11];  // +0x11  opaque keyed-store interior
-    i32 m_14;                   // +0x14  reset-to-empty field (Parse zeros it)
-    CButeStoreNode* m_root18;   // +0x18  tree root (Parse zeros it)
-    char m_pad1c[0x28 - 0x1c];  // +0x1c  opaque
-    i32 m_28;                   // +0x28  reset-to-empty field (Parse zeros it)
+// The primary store base at +0x00 (most-derived scalar-deleting vptr 0x5e94ac).
+struct CButeStorePrimary {
+    virtual void P0(); // +0x00  most-derived (scalar-deleting) vptr
+    char m_pad04[4];   // +0x04
+};
+
+// The second base at +0x08 (second-base vptr 0x5e949c); carries the keyed-store
+// interior fields (offsets shown relative to the enclosing CButeStore).
+struct CButeStoreSecond {
+    virtual void S0();          // +0x00 (this+0x08)  second-base vptr
+    void(__cdecl* m_cb)(void*); // +0x04 (+0x0c)  per-value callback (ClearRecursive fires)
+    char m_flags;               // +0x08 (+0x10)  flag byte (bit 2 gates the callback)
+    char m_pad09[0x0c - 0x09];  // +0x09 (+0x11)  opaque keyed-store interior
+    i32 m_14;                   // +0x0c (+0x14)  reset-to-empty field (Parse zeros it)
+    CButeStoreNode* m_root18;   // +0x10 (+0x18)  tree root (Parse zeros it)
+    char m_pad14[0x20 - 0x14];  // +0x14 (+0x1c)  opaque
+    i32 m_28;                   // +0x20 (+0x28)  reset-to-empty field (Parse zeros it)
+};
+
+struct CButeStore : public CButeStorePrimary, public CButeStoreSecond {
     // The derived clear body (0x16e070): recursively frees the keyed nodes.
     // __thiscall(this, recurse); callee-cleans 4.
     void ClearRecursive(i32 recurse);
@@ -234,8 +253,8 @@ struct CButeStore {
     // The primary-base destructor (0x16da60): restore vptr + tear down [this+4].
     void BaseDtor(); // __thiscall(this)
     ~CButeStore() {
-        m_vptrA = (void*)&g_storeVtblA;
-        m_vptrB = (void*)&g_storeVtblB;
+        // cl auto-stamps the two most-derived vptrs (0x5e94ac @+0, 0x5e949c @+8) at
+        // dtor entry (== the old manual re-stamps), reloc-masked.
         ClearRecursive(0);
         // The second base lives at this+8; the compiler null-masks the adjust
         // (`neg ecx; sbb ecx,ecx; and ecx,ebx`) -> RestoreVptr on (this?this+8:0).
@@ -259,15 +278,10 @@ struct CButeTail {
 
 // ---------------------------------------------------------------------------
 // CButeNode - a per-tag store node allocated by ParseTagLine (0x2c bytes). Built
-// via `new CButeNode(2, descriptor)`: the engine ctor runs, then the
-// derived class's two vtable pointers are written inline at +0x00 / +0x08
-// (a multiply-derived node with two vptrs). Modeled
-// with an external (no-body) ctor; the vtable stores are emitted by the source
-// `new` expression and are reloc-masked.
-// The +0x08 second sub-object vtable the node carries (kept as a raw field write -
-// the "incorrect load into struct" the ALL-VTABLES phase leaves manual). External/
-// reloc-masked file-scope address.
-extern void* g_nodeVtblB;
+// via `new CButeNode(2, descriptor)`: the engine base ctor runs, then the derived
+// class's two vtable pointers are written at +0x00 / +0x08 (a multiply-derived node
+// with two vptrs). REAL POLYMORPHIC (ALL-VTABLES): the derived ctor auto-stamps
+// ??_7CButeNode @+0x00 and the second sub-object's vptr @+0x08.
 
 // CButeNodeBase - the engine base subobject ctor (__thiscall(this,
 // desc, n)). Declared external/no-body so the `mov ecx,this; call` __thiscall
@@ -277,19 +291,25 @@ public:
     CButeNodeBase(void* desc, i32 n);
 };
 
+// The +0x08 second sub-object: a small polymorphic node subobject whose implicit
+// vptr the CButeNode ctor auto-stamps (== the old raw second-vtable store). Modeled
+// as an embedded polymorphic member so the second vptr lands at +0x08, reloc-masked.
+class CButeNodeSub {
+public:
+    virtual void Slot0(); // +0x00 (this+0x08): second sub-object vptr
+};
+
 // CButeNode - REAL POLYMORPHIC (ALL-VTABLES phase): the derived ctor runs the
-// engine base ctor, then cl auto-stamps ??_7CButeNode @+0x00 (== the old
-// g_nodeVtblA store); the +0x08 second vptr stays a raw field write.
+// engine base ctor, then cl auto-stamps ??_7CButeNode @+0x00 and the m_sub member's
+// implicit vptr @+0x08 (== the old two hand-rolled node vtable stores).
 class CButeNode : public CButeNodeBase {
 public:
     virtual ~CButeNode(); // +0x00 vptr; external no-body dtor
 
-    CButeNode(void* desc, i32 n) : CButeNodeBase(desc, n) {
-        m_vtblB = &g_nodeVtblB;
-    }
+    CButeNode(void* desc, i32 n) : CButeNodeBase(desc, n) {}
     // vptr implicit @ +0x00 (??_7CButeNode@@6B@)
     char m_pad04[4];          // +0x04
-    void* m_vtblB;            // +0x08
+    CButeNodeSub m_sub;       // +0x08  second sub-object (implicit vptr)
     char m_pad0c[0x2c - 0xc]; // pad to 0x2c bytes total
 };
 

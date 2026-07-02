@@ -184,25 +184,19 @@ i32 CRezItm::Close() {
     return ok;
 }
 
-// The embedded child-collection vftable both CRezDir sub-objects install (a
-// vftable in .rdata; modeled as a labeled datum so taking its address
-// reloc-matches the engine instead of a bare immediate).
-DATA(0x001ef7c8)
-extern i32 g_rezDirChildVtbl;
-
 // ---------------------------------------------------------------------------
 // CRezDir::CRezDir(parent, rezMgr)
-// Base ctor, then: m_14=0, m_18=0, m_vtblA=m_vtblB=&g_rezDirChildVtbl (embedded
-// child collection's two vtables), m_20=m_24=m_28=m_34=0, derived vtbl,
-// m_2c=rezMgr, m_30=1.
+// Base ctor, then the two embedded child-collection list members auto-construct
+// (each stamps ??_7CRezDirList @0x1ef7c8 and zeroes head/tail), the derived vtbl
+// is stamped, then m_28=0, m_34=0, m_2c=rezMgr, m_30=1.
+// @early-stop
+// vptr-schedule wall (ALL-VTABLES): real-polymorphic list members auto-stamp their
+// vptr FIRST (vptr,head,tail) and the compiler zeroes m_28/m_34 after the derived
+// vptr, vs retail's head,tail,vtbl store order + pre-vptr field zeroing. The two
+// child collections + the CRezItmBase base are byte-faithful; converted per the
+// ALL-VTABLES mandate (was the hand-rolled child-collection double-stamp).
 RVA(0x0013c940, 0x46)
 CRezDir::CRezDir(void* parent, void* rezMgr) : CRezItmBase(parent) {
-    m_14 = 0;
-    m_18 = 0;
-    m_vtblA = (void*)&g_rezDirChildVtbl;
-    m_vtblB = (void*)&g_rezDirChildVtbl;
-    m_20 = 0;
-    m_24 = 0;
     m_28 = 0;
     m_34 = 0;
     m_2c = rezMgr;
@@ -626,6 +620,7 @@ SIZE(CRezItmBase, 0x10);       // "16 bytes" base (derived fields start at +0x10
 VTBL(CRezItmBase, 0x001ef768); // base vtable stamp from ctor 0x13c4e0
 SIZE(CRezItm, 0x24);           // operator new leaf size 0x24
 VTBL(CRezItm, 0x001ef788);     // derived vtable stamp from ctor 0x13c540
+SIZE(CRezDirList, 0xc);        // embedded child-collection list {vptr,head,tail}
 SIZE_UNKNOWN(CRezDir);         // model pads to +0x68 runtime fields; ctor alloc 0x38
 SIZE_UNKNOWN(RezStream);       // abstract slot-view (pure virtuals, no vtable)
 SIZE_UNKNOWN(RezSrc);

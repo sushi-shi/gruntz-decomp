@@ -34,10 +34,10 @@ i32 MakeSymSeed(); // 0x13ba70
 // The shared empty-string literal (?g_emptyString) the root scope is named with.
 extern const char g_emptyString[]; // 0x6293f4
 
-// The +0x10 CObjList sub-object's abstract vtable (0x5ef760). CSymParser's own
-// primary vtable (0x5ef750) is now REAL POLYMORPHIC (??_7CSymParser@@6B@, 3-slot,
-// non-virtual dtor) - see the class below. Reloc-masked DATA() extern.
-extern void* CObjList_purecall_vftbl; // 0x5ef760
+// CSymParser's own primary vtable (0x5ef750) is REAL POLYMORPHIC (??_7CSymParser@@6B@,
+// 3-slot, non-virtual dtor) - see the class below. The +0x10 CObjList sub-object is
+// also real polymorphic now (??_7CObjList @0x5ef760); the ctor/dtor vptr stamps
+// reloc-mask against it.
 
 // A polymorphic list node: { vptr@+0, next@+4, prev@+8 }. Its vtable carries a
 // scalar-deleting dtor at slot 1 (+0x4, a delete-flag arg) and a teardown/detach
@@ -59,24 +59,22 @@ public:
 
 // The CObjList sub-object embedded at +0x10: an intrusive doubly-linked list of
 // polymorphic nodes. Its Remove (0x1852e0, __thiscall on the list head) unlinks a
-// node from the {head@+4, tail@+8} pair.
+// node from the {head@+4, tail@+8} pair. REAL POLYMORPHIC (ALL-VTABLES): the +0x00
+// abstract list-interface vtable is the implicit vptr (virtual dtor). The enclosing
+// CSymParser ctor auto-stamps the vptr and its /GX dtor auto-restores it as the
+// last member-destruct - both reloc-mask against ??_7CObjList (0x5ef760); retail's
+// distinct ctor(0x5ef75c)/dtor(0x5ef760) sub-vtable addresses collapse to one.
+VTBL(CObjList, 0x005ef760);
 struct CObjList {
-    void* m_vtbl;     // +0x00 (this+0x10): abstract list-interface vtable
-    CObjNode* m_head; // +0x04 (this+0x14)
-    CObjNode* m_tail; // +0x08 (this+0x18)
-    i32 m_count;      // +0x0c (this+0x1c)
+    virtual ~CObjList() {} // +0x00 (this+0x10): abstract list-interface vptr
+    CObjNode* m_head;      // +0x04 (this+0x14)
+    CObjNode* m_tail;      // +0x08 (this+0x18)
+    i32 m_count;           // +0x0c (this+0x1c)
 
     // Remove(node): unlink a node from the chain (0x1852e0).
     void Remove(CObjNode* node);
     // Link(node): splice a freshly-built reader node onto the list (0x1851e0).
     void Link(void* node);
-
-    // The list sub-object's teardown restores its vptr to the abstract base
-    // (0x5ef760) - the `[this+0x10]=0x5ef760` the owning /GX dtor emits as the
-    // last member-destruct, after the +0x80 hash's RemoveAll.
-    ~CObjList() {
-        m_vtbl = &CObjList_purecall_vftbl;
-    }
 };
 
 // A node owned by the +0x88 CHashSlotList: it owns a buffer at +0x08; the list
@@ -100,11 +98,6 @@ struct CParserHash : public CHashBase {
         RemoveAll();
     }
 };
-
-// The +0x10 list sub-object vtable the CONSTRUCTORS stamp (0x5ef75c) - 4 bytes ahead
-// of the 0x5ef760 the destructor restores (a distinct MI sub-vtable slot). Reloc-
-// masked DATA() extern.
-extern void* CObjList_ctor_vftbl; // 0x5ef75c
 
 // ---------------------------------------------------------------------------
 // CSymParser - the ButeMgr parser/owner. REAL POLYMORPHIC (ALL-VTABLES phase):

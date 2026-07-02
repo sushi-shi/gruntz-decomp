@@ -1141,7 +1141,7 @@ RVA(0x00171a40, 0x14)
 void CButeMgr::ClearHelper() {
     CButeMgrHelper* h = (CButeMgrHelper*)((char*)this + 0x14);
     h->FuncA();
-    h->FuncB();
+    h->~CButeMgrHelper();
 }
 
 // ===========================================================================
@@ -1487,18 +1487,19 @@ extern "C" void Helper_DeleteCriticalSection(void* cs); // 0x16c9d0 (FuncB clean
 DATA(0x006bf3c8)
 extern "C" CRITICAL_SECTION g_helperSharedCS; // 0x6bf3c8
 
-// The helper's primary vtable (shared with the cleanup dtor's restore); the four
-// virtual-base vtables the init thunks stamp. Reloc-masked file-scope addresses.
-DATA(0x005f03bc)
-extern "C" void* g_helperVtbl; // 0x5f03bc
+// The four virtual-base SUBOBJECT construction tables the vbase-init thunks stamp
+// (TERMINAL virtual-inheritance wall - these ??_8-style construction tables can't be
+// reproduced from a clean C++ model, so the vbase thunks keep their raw writes; the
+// referents are DATA-bound so the writes reloc-mask). The helper's OWN primary vtable
+// (0x5f03bc) is now the cl-emitted ??_7CButeMgrHelper (ctor/dtor auto-stamp).
 DATA(0x005f0374)
-extern "C" void* g_helperVbaseVtblA; // 0x5f0374
+extern "C" void* g_helperVbaseSubA; // 0x5f0374
 DATA(0x005f0384)
-extern "C" void* g_helperVbaseVtblB; // 0x5f0384
+extern "C" void* g_helperVbaseSubB; // 0x5f0384
 DATA(0x005f045c)
-extern "C" void* g_helperVbaseVtblC; // 0x5f045c
+extern "C" void* g_helperVbaseSubC; // 0x5f045c
 DATA(0x005f047c)
-extern "C" void* g_helperVbaseVtblD; // 0x5f047c
+extern "C" void* g_helperVbaseSubD; // 0x5f047c
 
 // The sub-object at +0x4. Its slot-0 virtual is a __thiscall scalar-deleting
 // dtor (`mov eax,[ecx]; push 1; call [eax]`): modeled polymorphically so the
@@ -1517,7 +1518,7 @@ struct CButeSub {
 RVA(0x001697c0, 0x13)
 void CButeMgrHelper::InitVbaseA() {
     i32* vbptr = *(i32**)((char*)this - 0xc);
-    *(void**)((char*)this - 0xc + vbptr[1]) = &g_helperVbaseVtblA;
+    *(void**)((char*)this - 0xc + vbptr[1]) = &g_helperVbaseSubA;
     InitVbaseC();
 }
 
@@ -1527,17 +1528,23 @@ void CButeMgrHelper::InitVbaseA() {
 RVA(0x001699c0, 0x13)
 void CButeMgrHelper::InitVbaseB() {
     i32* vbptr = *(i32**)((char*)this - 0x8);
-    *(void**)((char*)this - 0x8 + vbptr[1]) = &g_helperVbaseVtblB;
+    *(void**)((char*)this - 0x8 + vbptr[1]) = &g_helperVbaseSubB;
     InitVbaseD();
 }
 
 // ---------------------------------------------------------------------------
-// CButeMgrHelper::Construct (0x169c00)
-// Constructor: zero-init the data fields, stamp the vptr + the type constants,
-// init the per-instance critical section, and one-time-init the shared critical
-// section under a ref-count guard.
+// CButeMgrHelper::CButeMgrHelper (0x169c00, was Construct)
+// Constructor: zero-init the data fields, stamp the vptr (cl auto @+0) + the type
+// constants, init the per-instance critical section, and one-time-init the shared
+// critical section under a ref-count guard.
+// @early-stop
+// vptr-schedule wall (ALL-VTABLES): as a real ctor cl auto-stamps ??_7CButeMgrHelper
+// @+0 at entry (was the hand-rolled mid-body primary-vtable store), shifting the store
+// schedule. Logic byte-faithful; converted per the ALL-VTABLES mandate. (Also this is
+// a virtual-inheritance class - see the vbase thunks below - so a fully clean ctor is
+// terminal; the primary vptr is now cl-emitted, the vbase tables stay raw.)
 RVA(0x00169c00, 0x67)
-CButeMgrHelper* CButeMgrHelper::Construct() {
+CButeMgrHelper::CButeMgrHelper() {
     m_pSub = 0;
     m_0c = 0;
     m_10 = 0;
@@ -1545,7 +1552,6 @@ CButeMgrHelper* CButeMgrHelper::Construct() {
     m_24 = 0;
     m_30 = 0;
     m_ownsSub = 0;
-    m_vptr = &g_helperVtbl;
     m_flags = 4;
     m_28 = 6;
     m_2c = 0x20;
@@ -1554,17 +1560,19 @@ CButeMgrHelper* CButeMgrHelper::Construct() {
     if (g_helperRefCount++ == 0) {
         Helper_InitCriticalSection(&g_helperSharedCS);
     }
-    return this;
 }
 
 // ---------------------------------------------------------------------------
-// CButeMgrHelper::FuncB (0x169d70) - the helper cleanup: restore the vptr, reset
-// m_34, drop the shared critical section under the ref-count guard, delete the
-// per-instance one, tear down the owned +0x4 sub-object through its slot-0 scalar
-// dtor, then reset the sub pointer + the flag word. ClearHelper's FuncA/FuncB pair.
+// CButeMgrHelper::~CButeMgrHelper (0x169d70, was FuncB) - the helper cleanup dtor:
+// restore the vptr (cl auto @+0), reset m_34, drop the shared critical section under
+// the ref-count guard, delete the per-instance one, tear down the owned +0x4
+// sub-object through its slot-0 scalar dtor, then reset the sub pointer + the flag
+// word. ClearHelper drives FuncA then this dtor.
+// @early-stop
+// vptr-schedule wall (ALL-VTABLES): as a real dtor cl auto-stamps ??_7CButeMgrHelper
+// @+0 at entry (was the hand-rolled primary-vtable restore). Logic byte-faithful.
 RVA(0x00169d70, 0x5a)
-void CButeMgrHelper::FuncB() {
-    m_vptr = &g_helperVtbl;
+CButeMgrHelper::~CButeMgrHelper() {
     m_34 = -1;
     if (--g_helperRefCount == 0) {
         Helper_DeleteCriticalSection(&g_helperSharedCS);
@@ -1601,7 +1609,7 @@ void CButeMgrHelper::SetSub(void* p) {
 RVA(0x0016b650, 0xf)
 void CButeMgrHelper::InitVbaseC() {
     i32* vbptr = *(i32**)((char*)this - 0xc);
-    *(void**)((char*)this - 0xc + vbptr[1]) = &g_helperVbaseVtblC;
+    *(void**)((char*)this - 0xc + vbptr[1]) = &g_helperVbaseSubC;
 }
 
 // ---------------------------------------------------------------------------
@@ -1610,7 +1618,7 @@ void CButeMgrHelper::InitVbaseC() {
 RVA(0x0016c0c0, 0xf)
 void CButeMgrHelper::InitVbaseD() {
     i32* vbptr = *(i32**)((char*)this - 0x8);
-    *(void**)((char*)this - 0x8 + vbptr[1]) = &g_helperVbaseVtblD;
+    *(void**)((char*)this - 0x8 + vbptr[1]) = &g_helperVbaseSubD;
 }
 
 // --- class-metadata sweep (Bute module): SIZE annotations hosted at this .cpp EOF.
@@ -1621,8 +1629,12 @@ void CButeMgrHelper::InitVbaseD() {
 SIZE_UNKNOWN(CButeValue);
 SIZE_UNKNOWN(ButeRef24);
 SIZE_UNKNOWN(CButeMgrHelper);
+VTBL(CButeMgrHelper, 0x005f03bc); // helper's own primary vtable (ctor/dtor auto-stamp)
 SIZE_UNKNOWN(CButeStoreBase2);
+SIZE_UNKNOWN(CButeStorePrimary);
+SIZE_UNKNOWN(CButeStoreSecond);
 SIZE_UNKNOWN(CButeStore);
+SIZE_UNKNOWN(CButeNodeSub);
 SIZE_UNKNOWN(CButeTail);
 SIZE_UNKNOWN(CButeNode);
 SIZE_UNKNOWN(CButeRef5);
