@@ -1512,7 +1512,7 @@ cparticlez	?Update@CParticlez@@QAEHXZ	100.0000	100.0000	1	8283acc5ef84	0x47090
 cpathhazard	??0CPathHazard@@QAE@PAUCGameObject@@@Z	91.3233	91.3233	1	6cff72b2da29	0xb35a0
 cpathhazard	??1CLightningHazard@@UAE@XZ	100.0000	100.0000	1	f8326e95f521	0x13280
 cpathhazard	??1CPathHazard@@UAE@XZ	100.0000	100.0000	1	60974e654df7	0x13340
-cpathhazard	?ArmStrike@CLightningHazard@@QAEHHH@Z	94.9296	94.9296	2	c5b604f0864b	0xb4640
+cpathhazard	?ArmStrike@CLightningHazard@@QAEHHH@Z	94.9296	94.9296	3	ef3ab1a97a07	0xb4640
 cpathhazard	?BeginLeg@CPathHazard@@QAEHXZ	84.2358	84.2358	1	b0e64016c92a	0xb47e0
 cpathhazard	?ForwardTick@CPathHazard@@QAEXXZ	100.0000	100.0000	1	a46d1c7f75bb	0xb5070
 cpathhazard	?GetTypeTag@CPathHazard@@QAEHXZ	100.0000	100.0000	1	3d6c6e5939e1	0x132f0
@@ -2823,7 +2823,7 @@ msgpacket	?WritePacketU16@@YAXPAUCMsgPacket@@I@Z	100.0000	100.0000	2	2a7f6a75612
 multicolordlg	?UpdateColorItems@MultiColorDlg@m4@@QAEHXZ	89.7165	89.7165	1	c3ab88e97c67	0xc1aa0
 multistartdlgworld	?SetupWorldCombo@CMultiStartDlg@@QAEHXZ	100.0000	100.0000	1	a2ec1557034f	0xc1840
 namerecord	?SetNames@CNameRecord@@QAEHPAD0H@Z	96.5909	96.5909	2	2e5a80e5f1dd	0x118040
-netcmdmgr	?SelectColor@CNetSessHost@@QAEHHH@Z	100.0000	100.0000	2	ffa0a9089fd8	0xc4b60
+netcmdmgr	?SelectColor@CNetSessHost@@QAEHHH@Z	100.0000	100.0000	3	377de74d4441	0xc4b60
 netcmdsession	?CheckLatency@CNetSession@@QAEHH@Z	100.0000	100.0000	2	2c89a119d9b7	0xc04a0
 netcmdsession	?CreateSlot@CNetSession@@QAEPAUCNetCmdSlot@@HH@Z	100.0000	100.0000	2	34e35f742279	0xbfff0
 netcmdsession	?FindCmdSlot@CNetSession@@QAEPAUCNetCmdSlot@@H@Z	100.0000	100.0000	2	a72c43033d2d	0xc00a0
@@ -2940,9 +2940,9 @@ netmgr	?TeardownLists@CNetMgr@@QAEXXZ	20.2593	20.2593	1	2470ec00b8ad	0xb6000
 netmgr	?VerifyCustomLevel@CNetMgr@@QAEHHH@Z	7.1702	7.1702	2	f4e26819863c	0xb8fc0
 netmgr	?WaitForConnect@CNetMgr@@QAEHXZ	74.0809	74.0809	5	5676879b5f9c	0xbca50
 netmgrerror	?ReportError@CNetMgr@@SAXPADHHPAX@Z	100.0000	100.0000	1	4c76abe210b0	0x1776a0
-netmgrmenuselect	?LoadMenuSelectSprite@CNetMgr@@QAEHPAX@Z	100.0000	100.0000	2	be471bcf61fc	0xba620
+netmgrmenuselect	?LoadMenuSelectSprite@CNetMgr@@QAEHPAX@Z	100.0000	100.0000	3	6d870d858904	0xba620
 netmgrmisc	?ClearRange@CNetSlotAux@@QAEXXZ	84.2857	84.2857	1	3bf776dc8916	0xbf120
-netmgrmisc	?Drive@CNetConnCoord@@QAEXXZ	100.0000	100.0000	2	5c39d274c0d3	0xc40b0
+netmgrmisc	?Drive@CNetConnCoord@@QAEXXZ	100.0000	100.0000	3	6bdefe4bd85a	0xc40b0
 netmgrmisc	?NetConfigureBe90@@YAXXZ	100.0000	100.0000	1	39468a8eca59	0xc5f00
 netmgrmisc	?NetPollE25c@@YAHXZ	100.0000	100.0000	1	2f309aba1fc2	0xf9710
 netmgrmisc	?Step@CNetConnCoord@@QAEXXZ	100.0000	100.0000	1	de12e712a594	0xc2a20

@@ -13,6 +13,7 @@
 // identities.
 #include <Gruntz/CPathHazard.h>
 #include <Gruntz/CGameRegistry.h>
+#include <Gruntz/SoundCue.h> // the shared positional-sound cue subsystem
 
 // sqrt inlines to fsqrt at /O2; the (int)double casts lower to __ftol.
 extern "C" double sqrt(double);
@@ -91,32 +92,10 @@ struct CLightObj {
     char m_pad148[0x198 - 0x148];
     CPathLayer* m_198; // +0x198 layer descriptor
 };
-// The positional-sound emitter ArmStrike's "LEVEL_CLOUDHAZARDKILL" cue resolves
-// to: m_10 the play host (Play 0x1360d0), m_14 the last-play clock, m_18 the
-// cooldown interval (an unsigned `(now - m_14) >= m_18` gate).
-struct CSndPlayHost {
-    void Play(i32 tag, i32 a, i32 b, i32 c); // FUN_001360d0 __thiscall
-};
-struct CSndEmitter {
-    char m_pad00[0x10];
-    CSndPlayHost* m_10; // +0x10
-    u32 m_14;           // +0x14 last-play clock
-    u32 m_18;           // +0x18 cooldown interval
-};
-// The finder embedded at CSndHost+0x10 (out-param Find, 0x1b8438), the gate at +0x30.
-struct CSndFinder {
-    void Find(char* szName, CSndEmitter** out); // FUN_001b8438 __thiscall
-};
-struct CSndHost { // reg->m_30->m_28
-    char m_pad00[0x10];
-    CSndFinder m_10;           // +0x10 embedded
-    char m_pad11[0x30 - 0x11]; // -> +0x30
-    i32 m_30;                  // +0x30 gate (must be 0 to emit)
-};
-struct CSndSubMgr { // reg->m_30
-    char m_pad00[0x28];
-    CSndHost* m_28; // +0x28
-};
+// The positional-sound cue idiom (shared with the menu-select handler, see
+// <Gruntz/SoundCue.h>): ArmStrike looks up "LEVEL_CLOUDHAZARDKILL" -> an emitter
+// (m_10 the CSoundCueMgr play-object, m_14 last-play clock, m_18 cooldown), then
+// plays it through the cue manager when the per-emitter cooldown has elapsed.
 
 DATA(0x0024556c)
 extern CGameRegistry* g_lightGameReg;
@@ -473,7 +452,7 @@ i32 CLightningHazard::ArmStrike(i32 a, i32 b) {
         CSndHost* host = (CSndHost*)reg->m_30->m_28;
         if (host->m_30 == 0) {
             CSndEmitter* out = 0;
-            host->m_10.Find("LEVEL_CLOUDHAZARDKILL", &out);
+            host->m_10.Lookup("LEVEL_CLOUDHAZARDKILL", &out);
             if (out != 0) {
                 i32 enabled = g_sndEnabled;
                 i32 tag = g_sndCueTag;
@@ -481,7 +460,7 @@ i32 CLightningHazard::ArmStrike(i32 a, i32 b) {
                     u32 now = g_killCueClock;
                     if ((u32)(now - out->m_14) >= out->m_18) {
                         out->m_14 = now;
-                        out->m_10->Play(tag, 0, 0, 0);
+                        out->m_10->ConfigureItem(tag, 0, 0, 0);
                     }
                 }
             }
@@ -564,8 +543,3 @@ SIZE_UNKNOWN(CPathLayer);
 SIZE_UNKNOWN(CPathObj);
 SIZE_UNKNOWN(CPathSubMgr);
 SIZE_UNKNOWN(CPathWaypoint);
-SIZE_UNKNOWN(CSndEmitter);
-SIZE_UNKNOWN(CSndFinder);
-SIZE_UNKNOWN(CSndHost);
-SIZE_UNKNOWN(CSndPlayHost);
-SIZE_UNKNOWN(CSndSubMgr);

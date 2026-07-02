@@ -230,14 +230,19 @@ public:
     void OnDropPlayer();                    // 0x0bc110
     i32 RebindHost();                       // 0x0bc750  (also CNetMgr-shared)
     i32 RebindHostAlt();                    // 0x0bc460
-    i32 ReadGroupSel();                     // 0x0b76a0
-    i32 PumpA();                            // 0x0b6b40  (timeGetTime/wsprintf helper)
-    i32 PumpAReady();                       // PumpA head probe (thiscall) 0x??
-    void PumpAReset();                      // PumpA idle reset (thiscall) 0x??
-    i32 PumpAIndex();                       // PumpA ambient index (thiscall) 0x??
-    void PumpB();                           // 0x0b6e90
-    void OnOutOfSync();                     // 0x0bae40
-    void RefreshSlotTable();                // 0x021bd0  (free fn-ish thiscall on this)
+    // The connect-drive helpers the Net-side coordinator (NetMgrMisc.cpp) reaches
+    // off the g_64bd5c singleton. In the 0xb6110-0xbc420 lobby cluster; Ghidra labels
+    // them CNetMgr:: (Broadcast*), a heuristic mis-attribution of this CMulti cluster.
+    i32 BroadcastChannelTable(i32 entry); // 0x0ba810
+    i32 BroadcastOneChannel(i32 chan);    // 0x0baf00
+    i32 ReadGroupSel();                   // 0x0b76a0
+    i32 PumpA();                          // 0x0b6b40  (timeGetTime/wsprintf helper)
+    i32 PumpAReady();                     // PumpA head probe (thiscall) 0x??
+    void PumpAReset();                    // PumpA idle reset (thiscall) 0x??
+    i32 PumpAIndex();                     // PumpA ambient index (thiscall) 0x??
+    void PumpB();                         // 0x0b6e90
+    void OnOutOfSync();                   // 0x0bae40
+    void RefreshSlotTable();              // 0x021bd0  (free fn-ish thiscall on this)
     // m_4-side per-slot helpers used by StartSession (thiscall on the +0x38 inner).
     void FreeSlotInner();                                    // 0x025ca0 (on m_150[i]+0x38)
     i32 LoadSlotConfig(CGruntzMgr* logic, i32 idx, i32 m10); // 0x025020 (on m_150[i]+0x38)

@@ -6,17 +6,9 @@
 // field is at +0x158. All callees/globals are external (reloc-masked). Field names
 // are placeholders; only offsets + code bytes are load-bearing.
 #include <Ints.h>
-#include <Net/NetMgr.h> // shared CNetCmdBuf / CColorSlot (0x238-byte command buffer)
+#include <Net/NetMgr.h>    // shared CNetCmdBuf / CColorSlot (0x238-byte command buffer)
+#include <Gruntz/CMulti.h> // the g_64bd5c singleton is a CMulti (xref-proven)
 #include <rva.h>
-
-// The session/lobby manager singleton (g_64bd5c); only its +0x528 "in session"
-// flag and its chat-error method are reached.
-struct CNetLobbyMgr {
-    char m_pad0[0x528];
-    i32 m_sessionActive;                       // +0x528  session-active flag
-    void ShowError(const char* msg, i32 code); // 0xb7e30 (__thiscall, external)
-};
-SIZE_UNKNOWN(CNetLobbyMgr); // lobby-mgr singleton view (only +0x528 pinned); size TBD
 
 struct CNetSessHost {
     char m_pad0[0x5c];
@@ -26,8 +18,11 @@ struct CNetSessHost {
 };
 SIZE_UNKNOWN(CNetSessHost); // session-host view (only +0x5c pinned); size TBD
 
+// The multiplayer game-state singleton (g_64bd5c) is a CMulti: its +0x528 is-host
+// latch and the ReportVersionMsg chat-error method (0xb7e30) reached off it are both
+// CMulti's (xref: the CNetMgr::ShowError label was a heuristic mis-attribution).
 DATA(0x0024bd5c)
-extern CNetLobbyMgr* g_64bd5c;
+extern CMulti* g_64bd5c;
 
 extern i32 CheckColorTaken(i32 pid);    // 0xdb2d0 (__cdecl, external)
 extern void SetColorFlag(i32 a, i32 b); // 0xdb2b0 (__cdecl, external)
@@ -35,10 +30,10 @@ extern void SetColorFlag(i32 a, i32 b); // 0xdb2b0 (__cdecl, external)
 RVA(0x000c4b60, 0x77)
 i32 CNetSessHost::SelectColor(i32 colorIndex, i32 playerId) {
     CColorSlot* colorSlot = &m_cmdBuffers[colorIndex].m_sel;
-    if (g_64bd5c->m_sessionActive != 0) {
+    if (g_64bd5c->m_528 != 0) {
         i32 r = CheckColorTaken(playerId);
         if (r == 0) {
-            g_64bd5c->ShowError("Someone has already selected that color.", r);
+            g_64bd5c->ReportVersionMsg("Someone has already selected that color.", r);
             return 0;
         }
         SetColorFlag(colorSlot->m_currentOwnerPlayerId, 1);

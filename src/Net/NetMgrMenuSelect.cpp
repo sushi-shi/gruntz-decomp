@@ -8,7 +8,8 @@
 // a direct 2-arg CNetMgr method - a genuine RE ambiguity at the same RVA. So the
 // +0x524 sub-object keeps its own PlayerMgr type here; the shared CNetMgr is used for
 // everything else (m_peer @+0x524 is cast to PlayerMgr for the 4-arg calls).
-#include <Net/NetMgr.h> // the single shared CNetMgr
+#include <Net/NetMgr.h>      // the single shared CNetMgr
+#include <Gruntz/SoundCue.h> // the shared positional-sound cue subsystem
 #include <rva.h>
 
 // The menu-select event the handler is handed (edi): +0x4 the "armed" gate (==1),
@@ -35,31 +36,10 @@ SIZE_UNKNOWN(PlayerMgr); // method-only +0x524 sub-object view; retail size TBD
 // 0x38cd ILT thunk; __thiscall ret 4) - the SAME method the channel cluster gates
 // on; the former OptionsHost placeholder folded into the canonical m_4 view.
 
-// The shared positional-sound cue idiom (same shape as CPathHazard's strike cue):
-// m_c is the sound sub-mgr; m_28 its host; find "GAME_MENUS_SELECT" -> an emitter;
-// gate on g_sndEnabled + the kill-cue clock cooldown, then Play.
-struct CSndPlayHost {
-    void Play(i32 tag, i32 a, i32 b, i32 c); // 0x1360d0 (__thiscall)
-};
-struct CSndEmitter {
-    char m_pad00[0x10];
-    CSndPlayHost* m_10; // +0x10
-    u32 m_14;           // +0x14 last-play clock
-    u32 m_18;           // +0x18 cooldown interval
-};
-struct CSndFinder {
-    void Find(const char* name, CSndEmitter** out); // 0x1b8438 (__thiscall)
-};
-struct CSndHost {
-    char m_pad00[0x10];
-    CSndFinder m_10;           // +0x10 embedded finder
-    char m_pad11[0x30 - 0x11]; // -> +0x30
-    i32 m_30;                  // +0x30 gate (must be 0 to emit)
-};
-struct CSndSubMgr {
-    char m_pad00[0x28];
-    CSndHost* m_28; // +0x28
-};
+// The positional-sound cue idiom (shared with CPathHazard's strike cue, see
+// <Gruntz/SoundCue.h>): m_c is the sound sub-mgr; m_28 its host; look up
+// "GAME_MENUS_SELECT" -> an emitter; gate on g_sndEnabled + the kill-cue clock
+// cooldown, then play through the cue manager.
 
 DATA(0x0021ab20)
 extern i32 g_sndEnabled; // 0x61ab20
@@ -109,7 +89,7 @@ i32 CNetMgr::LoadMenuSelectSprite(void* evp) {
         CSndHost* host = ((CSndSubMgr*)m_c)->m_28;
         if (host->m_30 == 0) {
             CSndEmitter* out = 0;
-            host->m_10.Find("GAME_MENUS_SELECT", &out);
+            host->m_10.Lookup("GAME_MENUS_SELECT", &out);
             CSndEmitter* e = out;
             if (e != 0) {
                 i32 enabled = g_sndEnabled;
@@ -118,7 +98,7 @@ i32 CNetMgr::LoadMenuSelectSprite(void* evp) {
                     u32 now = g_killCueClock;
                     if ((u32)(now - e->m_14) >= e->m_18) {
                         e->m_14 = now;
-                        e->m_10->Play(tag, 0, 0, 0);
+                        e->m_10->ConfigureItem(tag, 0, 0, 0);
                     }
                 }
             }
