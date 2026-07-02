@@ -17,7 +17,6 @@ actreg4	1	0
 actregsiblings	3	0
 adler32	1	1
 advancedoptions	5	5
-ailseq	13	11
 aniadvancecursor	1	0
 aniplayer	2	0
 apihicallers	3	1
@@ -229,15 +228,13 @@ discoveredarray	1	0
 discoveredeh	2	2
 discoveredsmall	10	10
 drawbattlestats	1	0
-drawcounter	2	0
 drawdebugstats	1	0
 drawtext	3	0
 dsoundvoice	2	1
 ehfunclets	6	6
 ehunwindfunclets	11	11
-engine_label_stubs	105	78
-engineexternfns	6	6
-enginelabelbacklog	13	5
+engine_discovered	11	7
+engine_label_stubs	174	116
 engstr	3	1
 engstrrendertext	1	0
 eyecandytypetags	4	4
@@ -354,7 +351,6 @@ m3compilerthunks	3	3
 m3ehfunclets	12	9
 m3mfcleaves	2	2
 mainmenubuilder	1	0
-mallocconstructors	21	5
 maplogic	5	4
 mapmgr	9	7
 menuitem	14	13
@@ -396,7 +392,6 @@ orphanleaves	7	7
 orphanmethods	4	2
 packetpool	2	2
 palettebmp	1	0
-palettebuild	6	5
 palettecopy	1	0
 palettelerp	1	1
 playercommandstep	1	0
@@ -458,7 +453,6 @@ shadetablecache	19	4
 siriusworkerhandlers	4	3
 slotcombofill	1	0
 smackervideowindow	1	0
-smackplayer	8	6
 soundbankload	1	0
 sounddevice	16	7
 soundfontpath	1	1
@@ -498,7 +492,6 @@ tiletriggerwiring	1	0
 tilewireswitchlogic	1	0
 timesplit	1	1
 timestring	1	1
-tracediscoveredleaves	11	7
 trees	19	19
 triggermgr	52	13
 triggermgr_eh	5	0
@@ -562,19 +555,6 @@ advancedoptions	?LoadOptions@@YAXPAUHWND__@@PAVRegistryHelper@Utils@@@Z	100.0000
 advancedoptions	?SaveOption@@YAXPAUHWND__@@PAVRegistryHelper@Utils@@PADK@Z	100.0000	100.0000	3	cc78dc6b6272	0xb110
 advancedoptions	?SaveOptions@@YAXPAUHWND__@@PAVRegistryHelper@Utils@@@Z	100.0000	100.0000	3	42bc821feac7	0xb270
 advancedoptions	?SetDefaults@@YAXPAUHWND__@@@Z	100.0000	100.0000	3	debb3761026d	0xb160
-ailseq	?Init@AilHost_138490@ApiCallerStubs@@QAEHHHH@Z	99.8077	99.8077	1	175d6e7effef	0x138490
-ailseq	?Init@AilSeq_138c20@ApiCallerStubs@@QAEHPAXIPAD@Z	100.0000	100.0000	1	caf71e97f144	0x138c20
-ailseq	?Pause@AilSeq@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	833d89f386be	0x138e90
-ailseq	?Play@AilSeq@ApiCallerStubs@@QAEHHH@Z	100.0000	100.0000	1	6ec89874f42a	0x138e10
-ailseq	?ReleaseHandle@AilSeq@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	6a6ef6b8e72d	0x138dd0
-ailseq	?Resume@AilSeq@ApiCallerStubs@@QAEHH@Z	100.0000	100.0000	1	9fb6fad1ae68	0x138ed0
-ailseq	?SetLoop@AilSeq@ApiCallerStubs@@QAEHH@Z	100.0000	100.0000	1	70100c184e88	0x139030
-ailseq	?SetTempo@AilSeq@ApiCallerStubs@@QAEHHH@Z	100.0000	100.0000	1	808a3bae973d	0x138f90
-ailseq	?SetVolume@AilSeq@ApiCallerStubs@@QAEHHH@Z	100.0000	100.0000	1	166dc915cc94	0x138fd0
-ailseq	?Shutdown@AilMgr_1384f0@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	c82e8e4056bf	0x1384f0
-ailseq	?Stop@AilSeq@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	be156445f639	0x138e60
-ailseq	?thirdparty_138950_AIL_set_XMIDI_master_volume_8@ApiCallerStubs@@YGHH@Z	100.0000	100.0000	1	16d77c3920fb	0x138950
-ailseq	?thirdparty_1389c0_AIL_XMIDI_master_volume_4@ApiCallerStubs@@YAHXZ	91.2963	91.2963	1	a6bc5270e0d6	0x1389c0
 aniadvancecursor	??0CAniAdvanceCursor@@QAE@HHH@Z	97.6154	97.6154	2	1e44f10275e5	0x15b730
 aniplayer	?Init@CAniPlayer@@QAEHPAUAniSeq@@0HHHHHHHHHHHH@Z	64.5543	64.5543	1	af4e113bdde4	0xe7980
 aniplayer	?Tick@CAniPlayer@@QAEHXZ	91.4889	91.4889	2	553040f9cf2b	0xe7b00
@@ -1853,8 +1833,6 @@ discoveredsmall	?KeyPrefixBits_16e480@@YAHPBD0@Z	100.0000	100.0000	1	0549328c617
 discoveredsmall	?Push@ClassUnknown_28@@QAEXPAD@Z	100.0000	100.0000	1	c3ca0ad59886	0x311b0
 discoveredsmall	?Teardown@ClassUnknown_49@@QAEXXZ	100.0000	100.0000	1	2ac97e908cb0	0x1397a0
 drawbattlestats	?DrawBattleStats@CBattleStatsView@@QAEXXZ	84.5575	84.5575	2	fb063a9d6f3b	0x1ed30
-drawcounter	?DrawCount@DrawHost_164380@ApiCallerStubs@@QAEXPAUtagRECT@@H@Z	80.6964	80.6964	1	cbbbff79bd5a	0x164380
-drawcounter	?DrawLabel@DrawHost2_164420@ApiCallerStubs@@QAEXPAUtagRECT@@PAD@Z	95.0000	95.0000	1	f5fd1dc45900	0x164420
 drawdebugstats	?DrawDebugStats@CDbgView@@QAEXXZ	99.5525	99.5525	2	f6006c949c32	0xcf770
 drawtext	?Draw3DText22810@TextHost@m4@@QAEHPAX0PAUtagRECT@@HHHHHHH@Z	82.4896	82.4896	1	6a456550000f	0x22810
 drawtext	?MeasureLabel21f20@DrawHost@m4@@QAEHPAXPBD@Z	72.0179	72.0179	1	03c0979cae0b	0x21f20
@@ -1878,19 +1856,64 @@ ehunwindfunclets	?Unmatched_1ca095@@YAXXZ	100.0000	100.0000	1	78dd37064b9b	0x1ca
 ehunwindfunclets	?Unmatched_1ca2c3@@YAXXZ	100.0000	100.0000	1	d94cf78ebda1	0x1ca2c3
 ehunwindfunclets	?Unmatched_1d3184@@YAXXZ	100.0000	100.0000	1	ab6930993936	0x1d3184
 ehunwindfunclets	?Unmatched_1d4271@@YAXXZ	100.0000	100.0000	1	02cb9635db35	0x1d4271
+engine_discovered	??0ClassUnknown_15@@QAE@XZ	100.0000	100.0000	1	f5402effacd2	0x1d38a1
+engine_discovered	??0ClassUnknown_45@@QAE@XZ	100.0000	100.0000	1	50998ec8bdf3	0x8c3b0
+engine_discovered	?ClassUnknown_16_1d496b@ClassUnknown_16@@QAEXXZ	3.6364	3.6364	1	2d71a7c5a87b	0x1d496b
+engine_discovered	?ClassUnknown_33_11f6b9@ClassUnknown_33@@QAEXXZ	9.0909	9.0909	1	835f56f8e975	0x11f6b9
+engine_discovered	?ClassUnknown_50_16dfc0@ClassUnknown_50@@QAEXXZ	100.0000	100.0000	1	accb4d51f7ed	0x16dfc0
+engine_discovered	?ClassUnknown_51_11eaf5@ClassUnknown_51@@QAEXXZ	100.0000	100.0000	1	c8bcaf7b0435	0x11eaf5
+engine_discovered	?ClassUnknown_52_11eaa8@ClassUnknown_52@@QAEXXZ	100.0000	100.0000	1	dc25e16e2488	0x11eaa8
+engine_discovered	?ClassUnknown_53_11cf30@ClassUnknown_53@@QAEXXZ	100.0000	100.0000	1	48e7ac7139e8	0x11cf30
+engine_discovered	?ClassUnknown_54_11cee3@ClassUnknown_54@@QAEXXZ	100.0000	100.0000	1	b7348565ac07	0x11cee3
+engine_discovered	?U13Forward1154b0@@YAXPAUU13Obj@@HHHHHHHH@Z	94.2857	94.2857	1	7f5f055dbad7	0x1154b0
+engine_discovered	?U13Forward115520@@YAXPAUU13Obj@@HHHHHHHH@Z	94.2857	94.2857	1	aa702f81012b	0x115520
+engine_label_stubs	??0Boxed16a@@QAE@HPBUMallocPayload16@@@Z	100.0000	100.0000	1	cpp:966e3696e854	0x174cb0
+engine_label_stubs	??0Boxed16b@@QAE@HPBUMallocPayload16@@@Z	100.0000	100.0000	1	cpp:966e3696e854	0x173c60
+engine_label_stubs	??0Boxed24@@QAE@HPBUMallocPayload24@@@Z	100.0000	100.0000	1	cpp:966e3696e854	0x174730
+engine_label_stubs	??0BoxedStr@@QAE@HABUMallocStr@@@Z	100.0000	100.0000	1	cpp:966e3696e854	0x1736a0
+engine_label_stubs	??0MallocCtor_136180@@QAE@XZ	2.0513	2.0513	1	cpp:966e3696e854	0x136180
+engine_label_stubs	??0MallocCtor_139bf0@@QAE@XZ	2.5806	2.5806	1	cpp:966e3696e854	0x139bf0
+engine_label_stubs	??0MallocCtor_139c80@@QAE@XZ	4.6552	4.6552	1	cpp:966e3696e854	0x139c80
+engine_label_stubs	??0MallocCtor_13aa10@@QAE@XZ	2.5000	2.5000	1	cpp:966e3696e854	0x13aa10
+engine_label_stubs	??0MallocCtor_13cac0@@QAE@XZ	2.3214	2.3214	1	cpp:966e3696e854	0x13cac0
+engine_label_stubs	??0MallocCtor_15b390@@QAE@XZ	1.0127	1.0127	1	cpp:966e3696e854	0x15b390
+engine_label_stubs	??0MallocCtor_168e70@@QAE@XZ	9.2857	9.2857	1	cpp:966e3696e854	0x168e70
+engine_label_stubs	??0MallocCtor_169700@@QAE@XZ	1.5686	1.5686	1	cpp:966e3696e854	0x169700
+engine_label_stubs	??0MallocCtor_1698c0@@QAE@XZ	1.2121	1.2121	1	cpp:966e3696e854	0x1698c0
+engine_label_stubs	??0MallocCtor_169ad0@@QAE@XZ	1.0667	1.0667	1	cpp:966e3696e854	0x169ad0
+engine_label_stubs	??0MallocCtor_169fb0@@QAE@XZ	1.2121	1.2121	1	cpp:966e3696e854	0x169fb0
+engine_label_stubs	??0MallocCtor_16b510@@QAE@XZ	1.8182	1.8182	1	cpp:966e3696e854	0x16b510
+engine_label_stubs	??0MallocCtor_16bfa0@@QAE@XZ	2.3529	2.3529	1	cpp:966e3696e854	0x16bfa0
+engine_label_stubs	??0MallocCtor_16c570@@QAE@XZ	2.2131	2.2131	1	cpp:966e3696e854	0x16c570
+engine_label_stubs	??0MallocCtor_184960@@QAE@XZ	2.0513	2.0513	1	cpp:966e3696e854	0x184960
+engine_label_stubs	??0MallocCtor_192390@@QAE@XZ	1.0526	1.0526	1	cpp:966e3696e854	0x192390
+engine_label_stubs	?Advance@Movie_17c8e0@ApiCallerStubs@@QAEHHH@Z	100.0000	100.0000	1	cpp:966e3696e854	0x17c8e0
 engine_label_stubs	?Append@EditAppendHost_0c2ce0@ApiCallerStubs@@QAEXPAD@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xc2ce0
+engine_label_stubs	?Apply@PalHost_1775f0@ApiCallerStubs@@QAEHPBDH@Z	100.0000	100.0000	1	cpp:966e3696e854	0x1775f0
 engine_label_stubs	?Begin@ActionHost_0d7220@ApiCallerStubs@@QAEHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xd7220
 engine_label_stubs	?Build@GeoHost_161e80@ApiCallerStubs@@QAEXPAUtagRECT@@@Z	90.4318	90.4318	1	cpp:e1535087fe94	0x161e80
+engine_label_stubs	?Build@PalBuilder_176df0@ApiCallerStubs@@QAEHPAUtagPALETTEENTRY@@H@Z	62.0750	62.0750	1	cpp:966e3696e854	0x176df0
+engine_label_stubs	?BuildPowerupIconKeys@EngineLabelBacklog@@YGXPAVPowerupKeyRegistry@@H@Z	53.5443	53.5443	1	cpp:966e3696e854	0x1e720
+engine_label_stubs	?BuildSmall@CStatzTabSmall@@QAEHHHHHHPAUCStatzRect60@@HHH@Z	62.3936	62.3936	1	cpp:966e3696e854	0x112a50
 engine_label_stubs	?Cancel@CmdHost_0de590@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:6bf52155264d	0xde590
 engine_label_stubs	?Check@KeyHost_01f8a0@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x1f8a0
 engine_label_stubs	?Cleanup@GdiOwner_175c90@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x175c90
 engine_label_stubs	?Clip@ClipHost_02b340@ApiCallerStubs@@QAEXPBUtagRECT@@@Z	81.3000	81.3000	1	cpp:6bf52155264d	0x2b340
+engine_label_stubs	?Close@SmackHost_17c9b0@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:966e3696e854	0x17c9b0
+engine_label_stubs	?Construct@Node174d00@@QAEPAU1@H@Z	100.0000	100.0000	1	cpp:966e3696e854	0x174d00
 engine_label_stubs	?Copy@RectHost_115b30@ApiCallerStubs@@QAEPAU12@PBUtagRECT@@@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x115b30
 engine_label_stubs	?Dispatch@Dispatcher_0cfbd0@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:e1535087fe94	0xcfbd0
+engine_label_stubs	?DrawCount@DrawHost_164380@ApiCallerStubs@@QAEXPAUtagRECT@@H@Z	80.6964	80.6964	1	cpp:966e3696e854	0x164380
+engine_label_stubs	?DrawLabel@DrawHost2_164420@ApiCallerStubs@@QAEXPAUtagRECT@@PAD@Z	95.0000	95.0000	1	cpp:966e3696e854	0x164420
+engine_label_stubs	?DrawSaveGameMenu@EngineLabelBacklog@@YAHPAXHPAUCSaveGameMenu@@@Z	62.5704	62.5704	1	cpp:966e3696e854	0xe3f40
 engine_label_stubs	?FindNearest@Grid_77df0@ApiCallerStubs@@QAEPAUCell_77df0@2@PAUWorld_77df0@2@@Z	75.2621	75.2621	1	cpp:e832e75e29a5	0x77df0
 engine_label_stubs	?Flip@CoinHost_0da200@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:e1535087fe94	0xda200
+engine_label_stubs	?FormatGameInfoString@CGameInfo@@QAEHXZ	100.0000	100.0000	1	cpp:966e3696e854	0x1183b0
 engine_label_stubs	?Free@GlobalOwner_1c09de@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x1c09de
 engine_label_stubs	?GetRect@RectQuery_08e3a0@ApiCallerStubs@@QAEXPAUtagRECT@@@Z	85.1200	85.1200	1	cpp:6bf52155264d	0x8e3a0
+engine_label_stubs	?HandleFortConquered@EngineLabelBacklog@@YAXXZ	0.2710	0.2710	1	cpp:966e3696e854	0x3f5f0
+engine_label_stubs	?Init@AilHost_138490@ApiCallerStubs@@QAEHHHH@Z	99.8077	99.8077	1	cpp:966e3696e854	0x138490
+engine_label_stubs	?Init@AilSeq_138c20@ApiCallerStubs@@QAEHPAXIPAD@Z	100.0000	100.0000	1	cpp:966e3696e854	0x138c20
 engine_label_stubs	?Init@Region_182ab0@ApiCallerStubs@@QAEHPAUTileSrcHost_182ab0@2@HPAUtagRECT@@HHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x182ab0
 engine_label_stubs	?Key@CmdHost_014720@ApiCallerStubs@@QAEHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x14720
 engine_label_stubs	?Key@CmdHost_039440@ApiCallerStubs@@QAEHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x39440
@@ -1898,37 +1921,65 @@ engine_label_stubs	?Key@CmdHost_0953f0@ApiCallerStubs@@QAEHHH@Z	100.0000	100.000
 engine_label_stubs	?Load@PalLoad_1479e0@ApiCallerStubs@@QAEHHPADH@Z	89.7286	89.7286	1	cpp:6bf52155264d	0x1479e0
 engine_label_stubs	?Load@ResLoad_144270@ApiCallerStubs@@QAEHHPADH@Z	86.9310	86.9310	1	cpp:6bf52155264d	0x144270
 engine_label_stubs	?Load@StrHost_0b7ec0@ApiCallerStubs@@QAEXHH@Z	100.0000	100.0000	1	cpp:e1535087fe94	0xb7ec0
+engine_label_stubs	?LoadCustomWorldInfo@EngineLabelBacklog@@YAHPAX@Z	100.0000	100.0000	1	cpp:966e3696e854	0x3b7c0
+engine_label_stubs	?LoadGruntResurrectTuning@CGruntResurrector@@QAEHHHH@Z	65.4807	65.4807	1	cpp:966e3696e854	0x7be60
 engine_label_stubs	?LoadWarlordSprites@CPlayWL_d65d0@ApiCallerStubs@@QAEHHPAH@Z	91.0553	91.0553	1	cpp:7e3328e11dac	0xd65d0
 engine_label_stubs	?LoadWave@WaveHost2_136ce0@ApiCallerStubs@@QAEHPAUWaveProbe_136ce0@2@PBDH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x136ce0
 engine_label_stubs	?LoadWave@WaveHost_136a30@ApiCallerStubs@@QAEHPBDHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x136a30
 engine_label_stubs	?Notify@ModeHost_08f480@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x8f480
+engine_label_stubs	?OnActivate_vfunc8@BootyState@@QAEHXZ	100.0000	100.0000	1	cpp:966e3696e854	0x1f6f0
 engine_label_stubs	?OnClick@ClickHost_0394b0@ApiCallerStubs@@QAEHHHH@Z	50.5500	50.5500	1	cpp:e1535087fe94	0x394b0
 engine_label_stubs	?OnInitDialog@TimerDlg_0c2cb0@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:e1535087fe94	0xc2cb0
 engine_label_stubs	?OnReset@ReplayDlg_c3e30@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:e832e75e29a5	0xc3e30
 engine_label_stubs	?Open@DPlayHost_0b77a0@ApiCallerStubs@@QAEHXZ	98.3607	98.3607	1	cpp:6bf52155264d	0xb77a0
 engine_label_stubs	?Open@Screen_0fe460@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:e1535087fe94	0xfe460
+engine_label_stubs	?OpenHi@SmkPlayer_17c570@ApiCallerStubs@@QAEHHHHHH@Z	70.7324	70.7324	1	cpp:966e3696e854	0x17c630
+engine_label_stubs	?OpenLo@SmkPlayer_17c570@ApiCallerStubs@@QAEHHHHHH@Z	70.7324	70.7324	1	cpp:966e3696e854	0x17c570
 engine_label_stubs	?Paint@PaintHost_0fac70@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0xfac70
+engine_label_stubs	?Pause@AilSeq@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:966e3696e854	0x138e90
 engine_label_stubs	?Pick0183f0@DlgHost@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x183f0
+engine_label_stubs	?Play@AilSeq@ApiCallerStubs@@QAEHHH@Z	100.0000	100.0000	1	cpp:966e3696e854	0x138e10
 engine_label_stubs	?Post@CmdHost_090220@ApiCallerStubs@@QAEXH@Z	100.0000	100.0000	1	cpp:e1535087fe94	0x90220
+engine_label_stubs	?Pump@Movie_17c8e0@ApiCallerStubs@@QAEHHH@Z	100.0000	100.0000	1	cpp:966e3696e854	0x17c790
 engine_label_stubs	?Quickload@QlHost_092710@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x92710
+engine_label_stubs	?RelayHwnd@@YAXP6AHXZ@Z	100.0000	100.0000	1	cpp:966e3696e854	0x1437e0
+engine_label_stubs	?ReleaseHandle@AilSeq@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:966e3696e854	0x138dd0
+engine_label_stubs	?RenderFrame@MoviePlayer_17caa0@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:966e3696e854	0x17caa0
 engine_label_stubs	?Reset@RectWnd_fe600@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0xfe600
+engine_label_stubs	?Resume@AilSeq@ApiCallerStubs@@QAEHH@Z	100.0000	100.0000	1	cpp:966e3696e854	0x138ed0
 engine_label_stubs	?Roll@RngBox_00cd70@ApiCallerStubs@@QAEXHHHH@Z	72.3590	72.3590	1	cpp:6bf52155264d	0xcd70
+engine_label_stubs	?Run@DeleteObjHost_177070@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:966e3696e854	0x177070
 engine_label_stubs	?Run@LibHost_1bf577@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:e1535087fe94	0x1bf577
 engine_label_stubs	?Set@RectHost_08c380@ApiCallerStubs@@QAEXHHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x8c380
+engine_label_stubs	?SetLoop@AilSeq@ApiCallerStubs@@QAEHH@Z	100.0000	100.0000	1	cpp:966e3696e854	0x139030
+engine_label_stubs	?SetTempo@AilSeq@ApiCallerStubs@@QAEHHH@Z	100.0000	100.0000	1	cpp:966e3696e854	0x138f90
+engine_label_stubs	?SetVolume@AilSeq@ApiCallerStubs@@QAEHHH@Z	100.0000	100.0000	1	cpp:966e3696e854	0x138fd0
 engine_label_stubs	?Setup4@PalCtx_147f30@ApiCallerStubs@@QAEXHHHH@Z	99.6226	99.6226	1	cpp:6bf52155264d	0x147ff0
 engine_label_stubs	?Setup6@PalCtx_147f30@ApiCallerStubs@@QAEXHHDDDH@Z	99.6552	99.6552	1	cpp:6bf52155264d	0x147f30
 engine_label_stubs	?Show@BlitHost_0d00a0@ApiCallerStubs@@QAEXH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xd00a0
 engine_label_stubs	?Show@MsgHost_08ee70@ApiCallerStubs@@QAEHHH@Z	98.4815	98.4815	1	cpp:6bf52155264d	0x8ee70
+engine_label_stubs	?Shutdown@AilMgr_1384f0@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:966e3696e854	0x1384f0
+engine_label_stubs	?Snapshot@PalCache_17cd90@ApiCallerStubs@@QAEXPAX@Z	100.0000	100.0000	1	cpp:966e3696e854	0x17cd90
+engine_label_stubs	?Stop@AilSeq@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:966e3696e854	0x138e60
+engine_label_stubs	?Stub_01fd70@EngineLabelBacklog@@YAHPAD@Z	100.0000	100.0000	1	cpp:966e3696e854	0x1fd70
+engine_label_stubs	?Stub_0f90f0@EngineLabelBacklog@@YAHPAD@Z	100.0000	100.0000	1	cpp:966e3696e854	0xf90f0
+engine_label_stubs	?Teardown@CursHost_17c510@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:966e3696e854	0x17c510
 engine_label_stubs	?Tick@Throttle_137e30@ApiCallerStubs@@QAEHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x137e30
 engine_label_stubs	?Tick@Timer_1380d0@ApiCallerStubs@@QAEHH@Z	100.0000	100.0000	1	cpp:e1535087fe94	0x1380d0
 engine_label_stubs	?Toggle@RosterHost_0c50f0@ApiCallerStubs@@QAEXH@Z	97.6531	97.6531	1	cpp:6bf52155264d	0xc50f0
+engine_label_stubs	?Tune1770e0@PalBuilder_176df0@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:966e3696e854	0x1770e0
 engine_label_stubs	?Update0@SelHost_0c4ee0@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:6bf52155264d	0xc4ee0
 engine_label_stubs	?Update1@SelHost_0c4ee0@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:6bf52155264d	0xc4f30
 engine_label_stubs	?Update3@SelHost_0c4ee0@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:6bf52155264d	0xc4fd0
+engine_label_stubs	?Update@CHelpBookSprite@@QAEHXZ	75.7485	75.7485	1	cpp:966e3696e854	0x997c0
 engine_label_stubs	?Update@SelHost_0c4f80@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:e1535087fe94	0xc4f80
 engine_label_stubs	?UpdatePlayers@BattlezDlg_c4230@ApiCallerStubs@@QAEHH@Z	62.1892	62.1892	1	cpp:7e3328e11dac	0xc4230
 engine_label_stubs	?Validate@VrHost_094bc0@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x94bc0
 engine_label_stubs	?directx_wrapper_caller_137720_DSOUND_1_DirectSoundCreate@ApiCallerStubs@@YGHHH@Z	98.5714	98.5714	1	cpp:6bf52155264d	0x137720
+engine_label_stubs	?thirdparty_138950_AIL_set_XMIDI_master_volume_8@ApiCallerStubs@@YGHH@Z	100.0000	100.0000	1	cpp:966e3696e854	0x138950
+engine_label_stubs	?thirdparty_1389c0_AIL_XMIDI_master_volume_4@ApiCallerStubs@@YAHXZ	91.2963	91.2963	1	cpp:966e3696e854	0x1389c0
+engine_label_stubs	?vfunc_16@StatusBarItem@@QAEHHHH@Z	51.7213	51.7213	1	cpp:966e3696e854	0xce660
+engine_label_stubs	?vfunc_9@BootyState@@QAEHH@Z	94.7973	94.7973	1	cpp:966e3696e854	0x18d30
 engine_label_stubs	?winapi_00c840_CopyRect_SetRect@ApiCallerStubs@@YAHPAUObj_c840@1@@Z	93.8598	93.8598	1	cpp:e832e75e29a5	0xc840
 engine_label_stubs	?winapi_00cd00_timeGetTime@ApiCallerStubs@@YAHXZ	100.0000	100.0000	1	cpp:e1535087fe94	0xcd00
 engine_label_stubs	?winapi_014d00_GetWindow_GetWindowLongA_SetWindowLongA@ApiCallerStubs@@YGHH@Z	0.2387	0.2387	1	cpp:6bf52155264d	0x14d00
@@ -1982,26 +2033,14 @@ engine_label_stubs	?winapi_16c9c0_InitializeCriticalSection@ApiCallerStubs@@YAXP
 engine_label_stubs	?winapi_16c9d0_DeleteCriticalSection@ApiCallerStubs@@YAXPAU_RTL_CRITICAL_SECTION@@@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x16c9d0
 engine_label_stubs	?winapi_16c9e0_EnterCriticalSection@ApiCallerStubs@@YAXPAU_RTL_CRITICAL_SECTION@@@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x16c9e0
 engine_label_stubs	?winapi_16c9f0_LeaveCriticalSection@ApiCallerStubs@@YAXPAU_RTL_CRITICAL_SECTION@@@Z	100.0000	100.0000	1	cpp:e1535087fe94	0x16c9f0
+engine_label_stubs	?winapi_1770a0_CreateICA_DeleteDC_GetDeviceCaps@ApiCallerStubs@@YAHXZ	100.0000	100.0000	1	cpp:966e3696e854	0x1770a0
+engine_label_stubs	?winapi_177160_CreatePalette_DeleteObject_GetDC_RealizePalette_ReleaseD@ApiCallerStubs@@YAXXZ	100.0000	100.0000	1	cpp:966e3696e854	0x177160
 engine_label_stubs	?winapi_179e70_IntersectRect@ApiCallerStubs@@YGHHHHHHHHHH@Z	0.4398	0.4398	1	cpp:6bf52155264d	0x179e70
-engineexternfns	?RelayHwnd@@YAXP6AHXZ@Z	100.0000	100.0000	1	174527afdddb	0x1437e0
-engineexternfns	_CheckExePath	100.0000	100.0000	1	fad442e16a8e	0x2e6e
-engineexternfns	_Eng_RegionCueA	100.0000	100.0000	1	f0826f0bf9d7	0x3936
-engineexternfns	_MultiDispatch@12	100.0000	100.0000	1	443ad3feeb3e	0x3cab
-engineexternfns	_RezAssertFail	100.0000	100.0000	1	afc4cb16914d	0x184e00
-engineexternfns	_StartupGate	100.0000	100.0000	1	c8cad1a6344e	0x2f59
-enginelabelbacklog	?BuildPowerupIconKeys@EngineLabelBacklog@@YGXPAVPowerupKeyRegistry@@H@Z	53.5443	53.5443	1	13537d4a8ea9	0x1e720
-enginelabelbacklog	?BuildSmall@CStatzTabSmall@@QAEHHHHHHPAUCStatzRect60@@HHH@Z	62.3936	62.3936	1	e0a6cc9a1a7b	0x112a50
-enginelabelbacklog	?DrawSaveGameMenu@EngineLabelBacklog@@YAHPAXHPAUCSaveGameMenu@@@Z	62.5704	62.5704	1	90918455cff4	0xe3f40
-enginelabelbacklog	?FormatGameInfoString@CGameInfo@@QAEHXZ	100.0000	100.0000	1	e9b5224f1312	0x1183b0
-enginelabelbacklog	?HandleFortConquered@EngineLabelBacklog@@YAXXZ	0.2710	0.2710	1	c2e96ba98c32	0x3f5f0
-enginelabelbacklog	?LoadCustomWorldInfo@EngineLabelBacklog@@YAHPAX@Z	100.0000	100.0000	1	0f41f80e5e8d	0x3b7c0
-enginelabelbacklog	?LoadGruntResurrectTuning@CGruntResurrector@@QAEHHHH@Z	65.4807	65.4807	1	95cd472067d0	0x7be60
-enginelabelbacklog	?OnActivate_vfunc8@BootyState@@QAEHXZ	100.0000	100.0000	1	e388c454170b	0x1f6f0
-enginelabelbacklog	?Stub_01fd70@EngineLabelBacklog@@YAHPAD@Z	100.0000	100.0000	1	96392aed815e	0x1fd70
-enginelabelbacklog	?Stub_0f90f0@EngineLabelBacklog@@YAHPAD@Z	100.0000	100.0000	1	6de4d9a7b2ce	0xf90f0
-enginelabelbacklog	?Update@CHelpBookSprite@@QAEHXZ	75.7485	75.7485	1	2c352e37e39a	0x997c0
-enginelabelbacklog	?vfunc_16@StatusBarItem@@QAEHHHH@Z	51.7213	51.7213	1	c12223d302d9	0xce660
-enginelabelbacklog	?vfunc_9@BootyState@@QAEHH@Z	94.7973	94.7973	1	babe88ec4969	0x18d30
+engine_label_stubs	_CheckExePath	100.0000	100.0000	1	cpp:966e3696e854	0x2e6e
+engine_label_stubs	_Eng_RegionCueA	100.0000	100.0000	1	cpp:966e3696e854	0x3936
+engine_label_stubs	_MultiDispatch@12	100.0000	100.0000	1	cpp:966e3696e854	0x3cab
+engine_label_stubs	_RezAssertFail	100.0000	100.0000	1	cpp:966e3696e854	0x184e00
+engine_label_stubs	_StartupGate	100.0000	100.0000	1	cpp:966e3696e854	0x2f59
 engstr	??1CContainerErr@@QAE@XZ	100.0000	100.0000	1	437607bea3c5	0x16da60
 engstr	?EngStr_DrawText@@YAXPAUEngStrRenderObj@@HHHHHHHH@Z	94.2857	94.2857	2	197473bbe23e	0x115440
 engstr	?SetSize@zBitVec@@QAEHH@Z	98.7234	98.7234	1	fcee90903128	0x16e100
@@ -2773,27 +2812,6 @@ m3ehfunclets	?Funclet_1d4be7@@YAXXZ	85.0000	85.0000	1	0acdb09ac0cf	0x1d4be7
 m3mfcleaves	?GetActive@CDdeView@@QAEHXZ	100.0000	100.0000	1	c20a38911429	0x1d047f
 m3mfcleaves	?ModuleStateField30@@YAHXZ	100.0000	100.0000	1	bf3a2e7a831a	0x1ce95f
 mainmenubuilder	?BuildMainMenuTree@@YAXPAX@Z	77.6725	77.6725	2	77164b63ab1c	0xa11d0
-mallocconstructors	??0Boxed16a@@QAE@HPBUMallocPayload16@@@Z	100.0000	100.0000	1	3e7523d94900	0x174cb0
-mallocconstructors	??0Boxed16b@@QAE@HPBUMallocPayload16@@@Z	100.0000	100.0000	1	41b9088dfc9d	0x173c60
-mallocconstructors	??0Boxed24@@QAE@HPBUMallocPayload24@@@Z	100.0000	100.0000	1	1da36f16eab0	0x174730
-mallocconstructors	??0BoxedStr@@QAE@HABUMallocStr@@@Z	100.0000	100.0000	1	0633d9a89407	0x1736a0
-mallocconstructors	??0MallocCtor_136180@@QAE@XZ	2.0513	2.0513	1	1098ab74afb2	0x136180
-mallocconstructors	??0MallocCtor_139bf0@@QAE@XZ	2.5806	2.5806	1	cc131feec5e8	0x139bf0
-mallocconstructors	??0MallocCtor_139c80@@QAE@XZ	4.6552	4.6552	1	a4c92c491383	0x139c80
-mallocconstructors	??0MallocCtor_13aa10@@QAE@XZ	2.5000	2.5000	1	aca8cc118b57	0x13aa10
-mallocconstructors	??0MallocCtor_13cac0@@QAE@XZ	2.3214	2.3214	1	fb746bc92eaa	0x13cac0
-mallocconstructors	??0MallocCtor_15b390@@QAE@XZ	1.0127	1.0127	1	a510370cd846	0x15b390
-mallocconstructors	??0MallocCtor_168e70@@QAE@XZ	9.2857	9.2857	1	b49f72d92fa4	0x168e70
-mallocconstructors	??0MallocCtor_169700@@QAE@XZ	1.5686	1.5686	1	cf210dbef221	0x169700
-mallocconstructors	??0MallocCtor_1698c0@@QAE@XZ	1.2121	1.2121	1	f61fbc4686a8	0x1698c0
-mallocconstructors	??0MallocCtor_169ad0@@QAE@XZ	1.0667	1.0667	1	31962c7cb14e	0x169ad0
-mallocconstructors	??0MallocCtor_169fb0@@QAE@XZ	1.2121	1.2121	1	4219384c2483	0x169fb0
-mallocconstructors	??0MallocCtor_16b510@@QAE@XZ	1.8182	1.8182	1	841938273c7e	0x16b510
-mallocconstructors	??0MallocCtor_16bfa0@@QAE@XZ	2.3529	2.3529	1	a7df3786761b	0x16bfa0
-mallocconstructors	??0MallocCtor_16c570@@QAE@XZ	2.2131	2.2131	1	7132bf3246b7	0x16c570
-mallocconstructors	??0MallocCtor_184960@@QAE@XZ	2.0513	2.0513	1	37ece4fb9f7c	0x184960
-mallocconstructors	??0MallocCtor_192390@@QAE@XZ	1.0526	1.0526	1	9bcafbd9f652	0x192390
-mallocconstructors	?Construct@Node174d00@@QAEPAU1@H@Z	100.0000	100.0000	1	c8a0f5823e29	0x174d00
 maplogic	??1CMapLogic@@UAE@XZ	100.0000	100.0000	1	baec3be51eff	0x113c0
 maplogic	?FreeNodes@CMapLogic@@QAEXXZ	100.0000	100.0000	2	8cb172a03e69	0x85480
 maplogic	?MapSerializeCurve@@YAHPAUCMapArchive@@H@Z	100.0000	100.0000	3	daaffc7e391f	0xec230
@@ -3038,12 +3056,6 @@ orphanmethods	?Tick@CStrikeEffect@@QAEHXZ	98.9429	98.9429	2	d4a88df396bb	0xb4350
 packetpool	?Unmatched_bef10@@YAXXZ	100.0000	100.0000	1	34d60f4d27ed	0xbef10
 packetpool	?Unmatched_bf530@@YAPAXH@Z	100.0000	100.0000	1	096be294be27	0xbf530
 palettebmp	?LoadBmpPalette@CPalLoader@@QAEHPBDH@Z	98.4889	98.4889	2	dc1d1e374304	0x177480
-palettebuild	?Apply@PalHost_1775f0@ApiCallerStubs@@QAEHPBDH@Z	100.0000	100.0000	1	c0971b8fd7d2	0x1775f0
-palettebuild	?Build@PalBuilder_176df0@ApiCallerStubs@@QAEHPAUtagPALETTEENTRY@@H@Z	62.0750	62.0750	1	89fffdc8b191	0x176df0
-palettebuild	?Run@DeleteObjHost_177070@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	935fa0aa42c2	0x177070
-palettebuild	?Tune1770e0@PalBuilder_176df0@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	58f21741a891	0x1770e0
-palettebuild	?winapi_1770a0_CreateICA_DeleteDC_GetDeviceCaps@ApiCallerStubs@@YAHXZ	100.0000	100.0000	1	1493ce13a523	0x1770a0
-palettebuild	?winapi_177160_CreatePalette_DeleteObject_GetDC_RealizePalette_ReleaseD@ApiCallerStubs@@YAXXZ	100.0000	100.0000	1	5e5ba9929f36	0x177160
 palettecopy	?UploadPalette@CPaletteHost@@QAEXXZ	61.1613	61.1613	1	a0802ff9a4b4	0x17ca10
 palettelerp	?Tick@PaletteLerp@@QAEHXZ	100.0000	100.0000	1	ea0e8cf89357	0x1480a0
 playercommandstep	?Dispatch@CCmdHandler@@QAEHIIIIIII@Z	14.9593	14.9593	3	fe01a4e792c0	0xd1b60
@@ -3328,14 +3340,6 @@ siriusworkerhandlers	?Handler07db20@@YAHPAUOwner@@@Z	100.0000	100.0000	1	b23002a
 siriusworkerhandlers	?Handler07dda0@@YAHPAUOwner@@@Z	100.0000	100.0000	1	27f15168f4f5	0x7dda0
 slotcombofill	?Method2a45@CMultiSlotList@@QAEHHH@Z	59.1579	59.1579	1	da5e03287e82	0x37ff0
 smackervideowindow	?CreateVideoWindow@CSmackWin@@QAEHHH@Z	98.0097	98.0097	2	78294a1a8f51	0x17c2a0
-smackplayer	?Advance@Movie_17c8e0@ApiCallerStubs@@QAEHHH@Z	100.0000	100.0000	1	f5a779c35243	0x17c8e0
-smackplayer	?Close@SmackHost_17c9b0@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	2f01fe9fef51	0x17c9b0
-smackplayer	?OpenHi@SmkPlayer_17c570@ApiCallerStubs@@QAEHHHHHH@Z	70.7324	70.7324	1	7f4d9584c3ee	0x17c630
-smackplayer	?OpenLo@SmkPlayer_17c570@ApiCallerStubs@@QAEHHHHHH@Z	70.7324	70.7324	1	e0b7d2bdb3e0	0x17c570
-smackplayer	?Pump@Movie_17c8e0@ApiCallerStubs@@QAEHHH@Z	100.0000	100.0000	1	0b30c4d6ba6f	0x17c790
-smackplayer	?RenderFrame@MoviePlayer_17caa0@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	39d98d691925	0x17caa0
-smackplayer	?Snapshot@PalCache_17cd90@ApiCallerStubs@@QAEXPAX@Z	100.0000	100.0000	1	54e65e39288a	0x17cd90
-smackplayer	?Teardown@CursHost_17c510@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	6e8d0995cf03	0x17c510
 soundbankload	?Load@CSoundBank@@QAEHPBDH@Z	75.4737	75.4737	2	240d06367d98	0x138aa0
 sounddevice	??0SoundDevice@@QAE@XZ	57.3438	57.3438	3	b7f66a8ceb61	0x136440
 sounddevice	??1SoundDevice@@UAE@XZ	28.2353	28.2353	1	d69f702e7b2b	0x136500
@@ -3543,17 +3547,6 @@ tiletriggerwiring	?AddLogicDefaults@CTileTriggerWiring@@QAEXHHHHHHHHH@Z	75.8788	
 tilewireswitchlogic	?WireTileSwitchLogic@CTileWireLogic@@QAEHPAXHH@Z	10.4111	10.4111	1	9ae2975a0b4e	0x6c130
 timesplit	?SplitMillisToHMS@@YAXIPAI00@Z	100.0000	100.0000	1	3eadc01ae691	0x119210
 timestring	?FormatElapsedTime@@YA?AVCString@@I@Z	100.0000	100.0000	1	53b405a2e5d6	0x1190f0
-tracediscoveredleaves	??0ClassUnknown_15@@QAE@XZ	100.0000	100.0000	1	f5402effacd2	0x1d38a1
-tracediscoveredleaves	??0ClassUnknown_45@@QAE@XZ	100.0000	100.0000	1	50998ec8bdf3	0x8c3b0
-tracediscoveredleaves	?ClassUnknown_16_1d496b@ClassUnknown_16@@QAEXXZ	3.6364	3.6364	1	2d71a7c5a87b	0x1d496b
-tracediscoveredleaves	?ClassUnknown_33_11f6b9@ClassUnknown_33@@QAEXXZ	9.0909	9.0909	1	835f56f8e975	0x11f6b9
-tracediscoveredleaves	?ClassUnknown_50_16dfc0@ClassUnknown_50@@QAEXXZ	100.0000	100.0000	1	accb4d51f7ed	0x16dfc0
-tracediscoveredleaves	?ClassUnknown_51_11eaf5@ClassUnknown_51@@QAEXXZ	100.0000	100.0000	1	c8bcaf7b0435	0x11eaf5
-tracediscoveredleaves	?ClassUnknown_52_11eaa8@ClassUnknown_52@@QAEXXZ	100.0000	100.0000	1	dc25e16e2488	0x11eaa8
-tracediscoveredleaves	?ClassUnknown_53_11cf30@ClassUnknown_53@@QAEXXZ	100.0000	100.0000	1	48e7ac7139e8	0x11cf30
-tracediscoveredleaves	?ClassUnknown_54_11cee3@ClassUnknown_54@@QAEXXZ	100.0000	100.0000	1	b7348565ac07	0x11cee3
-tracediscoveredleaves	?U13Forward1154b0@@YAXPAUU13Obj@@HHHHHHHH@Z	94.2857	94.2857	1	7f5f055dbad7	0x1154b0
-tracediscoveredleaves	?U13Forward115520@@YAXPAUU13Obj@@HHHHHHHH@Z	94.2857	94.2857	1	aa702f81012b	0x115520
 trees	__tr_flush_block	100.0000	100.0000	1	54a1b09eba2f	0x188ad0
 trees	__tr_init	100.0000	100.0000	1	cpp:0c188df83c46	0x188440
 trees	__tr_stored_block	100.0000	100.0000	1	36d19f528991	0x1887a0

@@ -1,14 +1,9 @@
-#include <Win32.h>  // ShowCursor / dialog + rect helpers
+#include <Win32.h> // ShowCursor (matching-neutral; ApiCallers.cpp in this aggregate already pulls it)
 #include <stdio.h>  // engine sprintf (reloc-masked) - LoadGruntzPalette / FormatGameInfoString
 #include <string.h> // inline strlen/strcat/memset intrinsics (/O2) - FormatGameInfoString
 
 #include <rva.h>
-// EngineLabelBacklog.cpp - engine-label game-state loaders/dispatchers whose owning
-// class the trace could not attribute (BootyState / CHelpBookSprite / CGruntResurrector
-// / StatusBarItem / CGameInfo / CStatzTabSmall / the EngineLabelBacklog namespace free
-// fns). Re-homed out of the src/Stub/ aggregate (was src/Stub/Backlog.cpp) into a real
-// module TU; base+/GX mirrors the original stub-unit environment. Only offsets + code
-// bytes are load-bearing.
+// Backlog.cpp - engine-label stubs without a class attribution.
 
 // Folded engine-label stubs with a known owning class.
 // A named asset-namespace registry slot (BootyState's m_28/m_2c/m_30). Lookup()

@@ -1,7 +1,5 @@
 #include <rva.h>
-// EngineExternFns.cpp - non-member engine externs (free + C-linkage). Re-homed out
-// of the src/Stub/ aggregate (was src/Stub/EngineExternFns.cpp); a real module TU
-// so src/Stub/ shrinks toward empty. base+/GX mirrors the original stub-unit env.
+// EngineExternFns.cpp - non-member engine externs (free + C-linkage), reloc-correlation. See All.cpp.
 
 // ---------------------------------------------------------------------------
 // Incremental-link jump islands (ILT thunks): each is a 5-byte `jmp rel32` to
