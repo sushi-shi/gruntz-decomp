@@ -74,7 +74,7 @@ void operator delete(void*);
 // re-stamp (masks 0x5e8cb4) at the member-teardown dtor's tail - no manual
 // `*(void**)this = &g_*Vtbl`. Slot 1 is a REGULAR virtual (not a C++ dtor) so the
 // derived can override it with its explicit ??_G scalar-deleting destructor WITHOUT
-// cl auto-generating a clashing ??_G. Same shape as CDDrawSubMgrLucius.
+// cl auto-generating a clashing ??_G. Same shape as CDDrawSubMgrGrandBase.
 class SiriusCacheBase {
 public:
     virtual void FUN_005bef01();        // [0] 0x1bef01 (shared thunk, declared-only)

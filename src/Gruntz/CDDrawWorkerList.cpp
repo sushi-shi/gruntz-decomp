@@ -198,7 +198,7 @@ public:
 };
 
 // ---------------------------------------------------------------------------
-// Same base readiness predicate used by several Lucius-derived managers.
+// Same base readiness predicate used by several CDDrawSubMgr-derived managers.
 RVA(0x00156f00, 0x16)
 i32 CDDrawWorkerList::VirtualMethodUnknown14() {
     if (m_pSurfaceMgr == 0) {

@@ -10,14 +10,14 @@
 //   ClassUnknown_40: 0x168d00 ResolveIndices (whitespace-split the name string
 //                    into tokens, look each up in the owner's CMapStringToPtr, and
 //                    store the resolved indices in a RezAlloc'd array). /GX frame.
-//   ClassUnknown_41: 0x165dd0 the base-2 (g_albusWorkerVtbl) destructor (frees the
+//   ClassUnknown_41: 0x165dd0 the base-2 (CAniRecordBase2) destructor (frees the
 //                    +0x10 buffer-virtual, resets the base subobject to CObject),
 //                    0x168ee0 / 0x168fb0 the two buffer (de)allocation virtuals
 //                    that go through the owner's pool allocator (owner+0x1c).
 //
 // The class is multiply-derived: a primary base whose vftable is g_aniRecordVtbl
 // @0x5f02c0 (5 slots, slot1 dtor 0x165780/0x1657a0) and a secondary CObject base
-// whose vftable is g_albusWorkerVtbl @0x5f02d8 (14 slots, = 0x5f02c0+0x18; slot1 dtor
+// whose vftable is CAniRecordBase2 @0x5f02d8 (14 slots, = 0x5f02c0+0x18; slot1 dtor
 // 0x165db0/0x165dd0). Both share the CObject-like grand-base vftable @0x5e8cb4. vtable-4
 // is NULL for both (verified) -> no RTTI COL, so the two base dtors are modeled as REAL
 // polymorphic types deriving from a shared empty-dtor grand-base (CAniRecordRemusBase);
@@ -33,7 +33,7 @@
 #include <string.h> // strlen (inline repnz scas)
 #include <Globals.h>
 
-// The three vftables (g_aniRecordVtbl @0x5f02c0, g_albusWorkerVtbl @0x5f02d8, the shared
+// The three vftables (g_aniRecordVtbl @0x5f02c0, CAniRecordBase2 @0x5f02d8, the shared
 // grand-base @0x5e8cb4) are no longer manual DATA() externs: the base classes below are
 // real polymorphic types, so cl emits the implicit ??_7 + grand-base re-stamps (reloc-
 // masked against the target's differently-named symbols). All three are still DATA()-bound
@@ -139,7 +139,7 @@ struct CAniRecordRemusBase {
 inline CAniRecordRemusBase::~CAniRecordRemusBase() {}
 
 // ---------------------------------------------------------------------------
-// 0x165dd0: the SECONDARY base (g_albusWorkerVtbl @0x5f02d8, 14 slots) destructor.
+// 0x165dd0: the SECONDARY base (CAniRecordBase2 @0x5f02d8, 14 slots) destructor.
 // /GX. Real virtual: cl stamps ??_7 (masks 0x5f02d8) at ENTRY (stamp-first), frees the
 // +0x10 work buffer (FreeBuf), resets the CObject header (m_04=-1, m_08=0, m_0c=0), then
 // the implicit grand-base re-stamp (masks 0x5e8cb4) folds LAST. The 9 extra slots (5..13)
@@ -385,4 +385,4 @@ SIZE_UNKNOWN(CAniRecordPool);
 SIZE_UNKNOWN(CAniRecordPrimary);
 SIZE_UNKNOWN(CAniRecordRemusBase);
 VTBL(CAniRecordPrimary, 0x001f02c0); // ??_7 (was g_aniRecordVtbl, 5 slots)
-VTBL(CAniRecordBase2, 0x001f02d8);   // ??_7 (was g_albusWorkerVtbl, 14 slots)
+VTBL(CAniRecordBase2, 0x001f02d8);   // ??_7 (14 slots)

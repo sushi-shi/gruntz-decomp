@@ -35,12 +35,12 @@
 
 // The object reached via m_parent->+0x24->+0x5c; its 0x1628d0 method is run by the
 // ClearAll cleanup (0x1591f0).
-class HermRootObj {
+class CDDrawGroupRoot {
 public:
     void Method_1628d0(); // 0x1628d0 (__thiscall)
 };
 
-class HermionaChild {
+class CDDrawGroupChild {
 public:
     virtual void Slot00();                        // +0x00
     virtual i32 ScalarDtor(i32 flag);             // +0x04  scalar-deleting destructor
@@ -65,10 +65,10 @@ public:
 };
 
 // One node of the intrusive list at +0x14: next pointer @0, child object @8.
-struct HermionaNode {
-    HermionaNode* m_next; // +0x00
-    i32 m_04;             // +0x04
-    HermionaChild* m_obj; // +0x08
+struct CDDrawGroupNode {
+    CDDrawGroupNode* m_next; // +0x00
+    i32 m_04;                // +0x04
+    CDDrawGroupChild* m_obj; // +0x08
 };
 
 // ---------------------------------------------------------------------------
@@ -106,14 +106,14 @@ public:
     char m_pad08[0x0c - 0x08]; // +0x08..0x0b
     i32 m_parent;              // +0x0c  parent/root handle
     char m_pad10[0x14 - 0x10]; // +0x10..0x13
-    HermionaNode* m_head;      // +0x14  intrusive-list head
+    CDDrawGroupNode* m_head;   // +0x14  intrusive-list head
 
     // Engine-label backlog stubs.
     void Stub_1591f0();
 };
 
 // ---------------------------------------------------------------------------
-// Same base readiness predicate used by several Lucius-derived managers.
+// Same base readiness predicate used by several CDDrawSubMgr-derived managers.
 RVA(0x001575e0, 0x16)
 i32 CDDrawChildGroup::VirtualMethodUnknown14() {
     if (m_parent == 0) {
@@ -142,10 +142,10 @@ void CDDrawChildGroup::VirtualMethodUnknown1C() {
 // below for details.
 RVA(0x00159c90, 0x23)
 void CDDrawChildGroup::VirtualMethodUnknown28(i32 a1) {
-    HermionaNode* n = m_head;
+    CDDrawGroupNode* n = m_head;
     if (n != 0) {
         do {
-            HermionaNode* cur = n;
+            CDDrawGroupNode* cur = n;
             n = n->m_next;
             cur->m_obj->Slot2C(a1);
         } while (n != 0);
@@ -157,10 +157,10 @@ void CDDrawChildGroup::VirtualMethodUnknown28(i32 a1) {
 // dispatch.
 RVA(0x00159cc0, 0x2a)
 void CDDrawChildGroup::VirtualMethodUnknown2C(i32 a1, i32 a2) {
-    HermionaNode* n = m_head;
+    CDDrawGroupNode* n = m_head;
     if (n != 0) {
         do {
-            HermionaNode* cur = n;
+            CDDrawGroupNode* cur = n;
             n = n->m_next;
             cur->m_obj->Slot30(a1, a2);
         } while (n != 0);
@@ -189,7 +189,7 @@ void CDDrawChildGroup::VirtualMethodUnknown2C(i32 a1, i32 a2) {
 // dispatch this->+0x2c with (a2,a3).
 RVA(0x00159cf0, 0x42)
 void CDDrawChildGroup::VirtualMethodUnknown30(i32 a1, i32 a2, i32 a3) {
-    HermionaNode* n = m_head;
+    CDDrawGroupNode* n = m_head;
     if (n != 0) {
         do {
             n->m_obj->Vfunc34(a1, a2, a3);
@@ -203,7 +203,7 @@ void CDDrawChildGroup::VirtualMethodUnknown30(i32 a1, i32 a2, i32 a3) {
 // As Unknown30 but the loop dispatches child +0x38.
 RVA(0x00159d40, 0x42)
 void CDDrawChildGroup::VirtualMethodUnknown34(i32 a1, i32 a2, i32 a3) {
-    HermionaNode* n = m_head;
+    CDDrawGroupNode* n = m_head;
     if (n != 0) {
         do {
             n->m_obj->Vfunc38(a1, a2, a3);
@@ -218,10 +218,10 @@ void CDDrawChildGroup::VirtualMethodUnknown34(i32 a1, i32 a2, i32 a3) {
 // dispatch, no stack args.
 RVA(0x00159d90, 0x1c)
 void CDDrawChildGroup::VirtualMethodUnknown38() {
-    HermionaNode* n = m_head;
+    CDDrawGroupNode* n = m_head;
     if (n != 0) {
         do {
-            HermionaNode* cur = n;
+            CDDrawGroupNode* cur = n;
             n = n->m_next;
             cur->m_obj->m_d8 = -1;
         } while (n != 0);
@@ -239,16 +239,16 @@ RVA(0x001591f0, 0x54)
 void CDDrawChildGroup::Stub_1591f0() {
     void* p = *(void**)((char*)m_parent + 0x24);
     if (p != 0) {
-        HermRootObj* q = *(HermRootObj**)((char*)p + 0x5c);
+        CDDrawGroupRoot* q = *(CDDrawGroupRoot**)((char*)p + 0x5c);
         if (q != 0) {
             q->Method_1628d0();
         }
     }
-    HermionaNode* n = m_head;
+    CDDrawGroupNode* n = m_head;
     while (n != 0) {
-        HermionaNode* cur = n;
+        CDDrawGroupNode* cur = n;
         n = n->m_next;
-        HermionaChild* obj = cur->m_obj;
+        CDDrawGroupChild* obj = cur->m_obj;
         if (obj != 0) {
             obj->ScalarDtor(1);
         }
@@ -263,6 +263,6 @@ void CDDrawChildGroup::Stub_1591f0() {
 // real class (list/map ops + CWwdObject + InsertSorted sibling).
 
 SIZE_UNKNOWN(CDDrawChildGroup);
-SIZE_UNKNOWN(HermionaChild);
-SIZE_UNKNOWN(HermionaNode);
-SIZE_UNKNOWN(HermRootObj);
+SIZE_UNKNOWN(CDDrawGroupChild);
+SIZE_UNKNOWN(CDDrawGroupNode);
+SIZE_UNKNOWN(CDDrawGroupRoot);

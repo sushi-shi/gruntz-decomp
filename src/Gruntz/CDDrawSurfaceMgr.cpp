@@ -72,11 +72,11 @@ public:
     void Cleanup_155e20();
 
     CDDrawSubMgr* m_04; // +0x04  CDDrawSubMgrPages
-    CDDrawSubMgr* m_08; // +0x08  Hermiona
+    CDDrawSubMgr* m_08; // +0x08  CDDrawChildGroup
     CDDrawSubMgr* m_0c; // +0x0c  CDDrawWorkerList
     CDDrawSubMgr* m_10; // +0x10  Severus
     CDDrawSubMgr* m_14; // +0x14  Sirius
-    CDDrawSubMgr* m_18; // +0x18  Albus
+    CDDrawSubMgr* m_18; // +0x18  CDDrawWorkerMapSmall
     void* m_1c;         // +0x1c  Filch
     void* m_20;         // +0x20  Voldemort
     CDDrawSubMgr* m_24; // +0x24  Remus
@@ -359,11 +359,11 @@ i32 CDDrawSurfaceMgr::UnknownVirtualMethod34(i32, i32, i32, i32, void*) {
 //   children instead stamp base vtbl 0x5efc30 + [+4]=[+8]=0 + [+c]=this], inline
 //   CMap member ctors(0xa), then stamp the derived vtbl; store into this->m_XX:
 //     m_04 = new(0x1c)  vtbl 0x5efe08                                   (CDDrawSubMgrPages)
-//     m_08 = new(0x6c)  ctor156cb0 + maps@0x10/0x2c/0x48 vtbl 0x5efdc0  (Hermiona = CWwdObjMgr)
+//     m_08 = new(0x6c)  ctor156cb0 + maps@0x10/0x2c/0x48 vtbl 0x5efdc0  (CDDrawChildGroup / CWwdObjMgr view)
 //     m_0c = new(0x2c)  ctor156cb0 + map@0x10          vtbl 0x5efd88    (CDDrawWorkerList)
 //     m_10 = new(0x2c)  severus-base + map@0x10(0x1b7e17) vtbl 0x5efd28 (Severus)
 //     m_14 = new(0x2c)  severus-base + map@0x10(0x1b7e17) vtbl 0x5efd00 (Sirius)
-//     m_18 = new(0x68)  ctor156cb0 + maps@0x10/2c/48(0x1b7e17) vtbl 0x5efcc8 (Albus = CDDrawWorkerMapSmall)
+//     m_18 = new(0x68)  ctor156cb0 + maps@0x10/2c/48(0x1b7e17) vtbl 0x5efcc8 (CDDrawWorkerMapSmall)
 //     m_24 = new(0x6d4) ctor 0x15ccd0                                   (Remus)
 //     m_28 = new(0x38)  severus-base + map@0x10(0x1b8247) vtbl 0x5efca0 (= CDDrawSubMgrLeafScan)
 //     m_2c = new(0x2c)  severus-base + map@0x10(0x1b8247) vtbl 0x5efc78 (= CDDrawSubMgrLeaf)

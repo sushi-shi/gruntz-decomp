@@ -5,7 +5,7 @@
 // inline strlen/strcpy + a CTime header), which a base-flagged TU would un-frame.
 //
 // `this` (CDDrawSurfaceMgr) is reached at ebp: the run-callback is stored into
-// m_3c (+0x3c) on entry; the dispatch walks the m_08 (Hermiona, +0x08) and m_24
+// m_3c (+0x3c) on entry; the dispatch walks the m_08 (CDDrawChildGroup, +0x08) and m_24
 // (Remus, +0x24) children through five blit modes (push 1/3/4/5), invoking the
 // optional run-callback (m_3c) before each child op.
 //
@@ -48,7 +48,7 @@ public:
     i32 RestoreChildren(SnapRunCallback cb, char* name, i32 arg3);
 
     char m_pad00[0x08]; // +0x00..+0x07 (vptr + slot)
-    void* m_08;         // +0x08  Hermiona child (the m_08 blit-op target)
+    void* m_08;         // +0x08  CDDrawChildGroup child (the m_08 blit-op target)
     char m_pad0c[0x24 - 0x0c];
     void* m_24; // +0x24  Remus child (the m_24 blit-op target = CGameLevel)
     char m_pad28[0x3c - 0x28];
@@ -85,9 +85,9 @@ public:
     char m_pad20[0x0c];  // +0x20..+0x2b (cursors + tail)
 };
 
-// The child blit-op targets. m_08 child (Hermiona) carries ops 0x15abc0 /
+// The child blit-op targets. m_08 child (CDDrawChildGroup) carries ops 0x15abc0 /
 // 0x15acb0 / 0x15ac20 / 0x15b020; the m_24 child (Remus) carries 0x160f70.
-struct HermionaChild {
+struct CDDrawChildGroupOps {
     i32 Probe();                                 // 0x15abc0  (__thiscall, no arg)
     i32 BlitA(Serializer* s, i32 arg);           // 0x15acb0
     i32 BlitB(Serializer* s, i32 mode, i32 arg); // 0x15ac20
@@ -135,7 +135,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(SnapRunCallback cb, i32 arg1, char* name,
     *(i32*)(header + 0x0c) = now.GetLocalTm(0)->tm_mday;
     *(i32*)(header + 0x0c) = now.GetLocalTm(0)->tm_year + 0x76c;
     strcpy(header + 0x10, name);
-    i32 probe = ((HermionaChild*)m_08)->Probe();
+    i32 probe = ((CDDrawChildGroupOps*)m_08)->Probe();
     *(u32*)(header + 0x114) = g_61ab14;
     *(i32*)(header + 0x118) = probe;
     S.Write(header, 0x120);
@@ -144,13 +144,13 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(SnapRunCallback cb, i32 arg1, char* name,
     if (m_3c && cb(this, &S, 1, 0, 0) == 0) {
         return 0;
     }
-    if (((HermionaChild*)m_08)->BlitA(&S, arg3) == 0) {
+    if (((CDDrawChildGroupOps*)m_08)->BlitA(&S, arg3) == 0) {
         return 0;
     }
     if (m_3c && cb(this, &S, 3, 0, 0) == 0) {
         return 0;
     }
-    if (((HermionaChild*)m_08)->BlitB(&S, 3, arg3) == 0) {
+    if (((CDDrawChildGroupOps*)m_08)->BlitB(&S, 3, arg3) == 0) {
         return 0;
     }
     if (((RemusChild*)m_24)->BlitD(&S, 3, 0, 0) == 0) {
@@ -159,7 +159,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(SnapRunCallback cb, i32 arg1, char* name,
     if (m_3c && cb(this, &S, 4, 0, 0) == 0) {
         return 0;
     }
-    if (((HermionaChild*)m_08)->BlitC(&S, arg3) == 0) {
+    if (((CDDrawChildGroupOps*)m_08)->BlitC(&S, arg3) == 0) {
         return 0;
     }
     if (((RemusChild*)m_24)->BlitD(&S, 4, 0, 0) == 0) {
@@ -168,7 +168,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(SnapRunCallback cb, i32 arg1, char* name,
     if (m_3c && cb(this, &S, 5, 0, 0) == 0) {
         return 0;
     }
-    if (((HermionaChild*)m_08)->BlitB(&S, 5, arg3) == 0) {
+    if (((CDDrawChildGroupOps*)m_08)->BlitB(&S, 5, arg3) == 0) {
         return 0;
     }
     if (((RemusChild*)m_24)->BlitD(&S, 5, 0, 0) == 0) {
@@ -185,7 +185,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(SnapRunCallback cb, i32 arg1, char* name,
 // counterpart of SnapshotChildren. Opens the same CFileMem-backed serializer over
 // `name`, reads back the 0x120-byte header (publishing header[0x114] -> g_61ab14),
 // then replays the run-callback (m_3c, REQUIRED here - a null m_3c rejects) and the
-// child load-ops over the m_08 (Hermiona) + m_24 (Remus/CGameLevel) children for
+// child load-ops over the m_08 (CDDrawChildGroup) + m_24 (Remus/CGameLevel) children for
 // modes 2/6/7/8. Success closes via End()/MainPlaneQueryB()/Close(). Field/method
 // names are placeholders; OFFSETS, vtable slots, sizes, store order and the ordered
 // call sequence are load-bearing. Engine callees are reloc-masked external.
@@ -227,14 +227,14 @@ i32 CDDrawSurfaceMgr::RestoreChildren(SnapRunCallback cb, char* name, i32 arg3) 
         return 0;
     }
     g_61ab14 = *(u32*)(header + 0x114);
-    ((HermionaChild*)m_08)->Refresh();
-    if (((HermionaChild*)m_08)->LoadA(&S, *(i32*)(header + 0x110), arg3) == 0) {
+    ((CDDrawChildGroupOps*)m_08)->Refresh();
+    if (((CDDrawChildGroupOps*)m_08)->LoadA(&S, *(i32*)(header + 0x110), arg3) == 0) {
         return 0;
     }
     if (m_3c == 0 || m_3c(this, &S, 6, arg3, (i32)header) == 0) {
         return 0;
     }
-    if (((HermionaChild*)m_08)->BlitB(&S, 6, arg3) == 0) {
+    if (((CDDrawChildGroupOps*)m_08)->BlitB(&S, 6, arg3) == 0) {
         return 0;
     }
     if (((RemusChild*)m_24)->BlitD(&S, 6, 0, 0) == 0) {
@@ -243,7 +243,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(SnapRunCallback cb, char* name, i32 arg3) 
     if (m_3c == 0 || m_3c(this, &S, 7, arg3, (i32)header) == 0) {
         return 0;
     }
-    if (((HermionaChild*)m_08)->LoadB(&S, *(i32*)(header + 0x110), arg3) == 0) {
+    if (((CDDrawChildGroupOps*)m_08)->LoadB(&S, *(i32*)(header + 0x110), arg3) == 0) {
         return 0;
     }
     if (((RemusChild*)m_24)->BlitD(&S, 7, 0, 0) == 0) {
@@ -252,7 +252,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(SnapRunCallback cb, char* name, i32 arg3) 
     if (m_3c == 0 || m_3c(this, &S, 8, arg3, (i32)header) == 0) {
         return 0;
     }
-    if (((HermionaChild*)m_08)->BlitB(&S, 8, arg3) == 0) {
+    if (((CDDrawChildGroupOps*)m_08)->BlitB(&S, 8, arg3) == 0) {
         return 0;
     }
     if (((RemusChild*)m_24)->BlitD(&S, 8, 0, 0) == 0) {

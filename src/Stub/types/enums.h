@@ -271,7 +271,7 @@ enum Commands {
  *     table[100] = 0        (full volume; log2(1) = 0)
  *
  * The full 101-value array is embedded in the binary; it lives in
- * UnknownSalazar::unknownLookupTable[101] (see
+ * SoundDeviceLayout::unknownLookupTable[101] (see
  * ../managers/ddrawmgr_surface_family.h — HYPOTHESIZED DDrawMgr family).
  * @approx tomalla 1.0.1.77 (verified by tomalla against the binary table).
  * Modeled here as the generating spec, not the 101 literals.

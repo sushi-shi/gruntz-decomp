@@ -1,6 +1,6 @@
 #include <rva.h>
 // CRemusNode.cpp - a leaf node in the CDirectDrawMgr surface/page-manager
-// Lucius/Remus family (the "remus base dtor vtable" lineage; the base subobject
+// CDDrawSubMgr/Remus family (the "remus base dtor vtable" lineage; the base subobject
 // vftable g_remusBaseDtorVtbl @0x5e8cb4 is restamped at ~CRemusNode exit). The
 // node's own primary vftable is at RVA 0x1efbc0 (g_remusNodeVtbl). The node's
 // virtuals are not yet matched, so the vftable is referenced as a reloc-masked

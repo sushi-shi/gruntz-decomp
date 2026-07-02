@@ -10,9 +10,9 @@
 // from the DDrawMgr group; reuse its real types instead of placeholder casts.
 #include <Gruntz/CDirectDrawMgr.h>
 #include <Globals.h>
-// UnknownLucius.cpp - tomalla-named DDraw surface/page-manager shared base
+// CDDrawSubMgr.cpp - tomalla-named DDraw surface/page-manager shared base
 // (CDDrawSubMgr).  This is the polymorphic base for the 10 sub-
-// managers (CDDrawSubMgrPages, Hermiona, CDDrawWorkerList, etc.).  Two functions:
+// managers (CDDrawSubMgrPages, CDDrawChildGroup, CDDrawWorkerList, etc.).  Two functions:
 //   ctor  - seeds the three fields + stamps vtable.
 //   dtor  - SEH-framed: calls VirtualMethodUnknown1C
 //           cleanup, resets fields, chains base dtor.
@@ -26,7 +26,7 @@
 // src/Stub/types/ddrawmgr_surface_family.h.
 class CDDrawSurfaceMgr;
 
-// The Lucius and CObject vtables are used in the dtor vtable chain, emitted
+// The CDDrawSubMgr and CObject vtables are used in the dtor vtable chain, emitted
 // automatically by the compiler.
 class CDDrawSubMgrBase {
 public:
@@ -63,7 +63,7 @@ void operator delete(void*);
 // The CObject-like family grand-base: 5-slot vtable (masks 0x5e8cb4), header fields
 // +0x04..+0x0c, non-virtual ~ = the field resets + the implicit base ??_7 re-stamp.
 // Slot 1 is the (declared-only) ??_G scalar-deleting dtor. Same shape as
-// CDDrawSubMgrLucius / SiriusCacheBase.
+// CDDrawSubMgrGrandBase / SiriusCacheBase.
 struct FamilyMapBase {
     virtual void s0();                  // [0]
     virtual void* ScalarDtor(i32 flag); // [1]
@@ -317,7 +317,7 @@ public:
 // ---------------------------------------------------------------------------
 // CDDrawSubMgr::CDDrawSubMgr
 // Chains the Hogwarts(int) base ctor (inlined: this+0x04 = unknown2), stamps
-// the Lucius vtable (compiler-generated), then seeds the remaining fields.
+// the CDDrawSubMgr vtable (compiler-generated), then seeds the remaining fields.
 // ---------------------------------------------------------------------------
 RVA(0x00156cb0, 0x20)
 CDDrawSubMgr::CDDrawSubMgr(CDDrawSurfaceMgr* pSurfaceMgr, i32 unknown2, i32 unknown3)

@@ -58,7 +58,7 @@ public:
 // The worker virtual interface. Slots laid out so the dispatched methods land at
 // the byte offsets the target uses: +0x04 scalar-deleting dtor, +0x28/+0x2c the
 // two factory siblings. Declarations only - never defined, so no ??_7 emitted.
-class AlbusWorker {
+class CDDrawMapWorker {
 public:
     virtual void FUN_005bef01();                 // [0] 0x1bef01
     virtual i32 ScalarDtor(i32 flag);            // [1] 0x165db0 scalar-deleting destructor
@@ -76,11 +76,11 @@ public:
 };
 
 // The 0x14-byte worker layout. Only the seeded offsets are load-bearing.
-// Real polymorphic: `new AlbusWorkerObj` makes cl auto-emit ??_7AlbusWorkerObj
-// (masks the retail vtable 0x5f02d8) and stamp the vptr in the ctor - no manual
-// `*(void**)w = &g_albusWorkerVtbl` store (ALL-VTABLES mandate).
-struct AlbusWorkerObj : public AlbusWorker {
-    AlbusWorkerObj() {}
+// Real polymorphic: `new CDDrawMapWorkerObj` makes cl auto-emit ??_7CDDrawMapWorkerObj
+// (masks the retail vtable 0x5f02d8 = CAniRecordBase2) and stamp the vptr in the ctor -
+// no manual `*(void**)w = <retail 0x5f02d8 vtbl>` store (ALL-VTABLES mandate).
+struct CDDrawMapWorkerObj : public CDDrawMapWorker {
+    CDDrawMapWorkerObj() {}
     i32 m_04; // +0x04  = parent->m_1c (an internal field of map1)
     i32 m_08; // +0x08  = 0
     i32 m_0c; // +0x0c  = parent->m_0c (the CDDrawSurfaceMgr handle)
@@ -110,23 +110,23 @@ public:
 // the three managed fields (reset on teardown) follow. The base's virtual dtor body
 // holds the field resets; being polymorphic + having the destructible CMapStringToOb
 // members gives ~CDDrawWorkerMapSmall its /GX frame.
-struct AlbusMapBase {
-    virtual void FUN_005bef01(); // [0] 0x1bef01 grand-base thunk
-    virtual ~AlbusMapBase();     // [1] scalar-deleting dtor
-    virtual void FUN_004028ec(); // [2] 0x0028ec
-    virtual void FUN_0040106e(); // [3] 0x00106e
-    virtual void FUN_00404034(); // [4] 0x004034
+struct CDDrawWorkerMapBase {
+    virtual void FUN_005bef01();    // [0] 0x1bef01 grand-base thunk
+    virtual ~CDDrawWorkerMapBase(); // [1] scalar-deleting dtor
+    virtual void FUN_004028ec();    // [2] 0x0028ec
+    virtual void FUN_0040106e();    // [3] 0x00106e
+    virtual void FUN_00404034();    // [4] 0x004034
 
     i32 m_04; // +0x04
     i32 m_08; // +0x08
     i32 m_0c; // +0x0c  parent CDDrawSurfaceMgr handle
-    AlbusMapBase() {}
+    CDDrawWorkerMapBase() {}
 };
 
 // Field resets only -> cl emits the implicit ??_7-base re-stamp (masks 0x5e8cb4) as
 // the dtor's tail. (vptr-position wall: cl sinks the stamp before/after the resets
 // per its EH-state schedule; see ~CDDrawWorkerMapSmall.)
-inline AlbusMapBase::~AlbusMapBase() {
+inline CDDrawWorkerMapBase::~CDDrawWorkerMapBase() {
     m_04 = -1;
     m_08 = 0;
     m_0c = 0;
@@ -139,10 +139,10 @@ inline AlbusMapBase::~AlbusMapBase() {
 // occupy lower vtable slots (slot numbers not load-bearing, only bodies), placed
 // last.
 // ---------------------------------------------------------------------------
-class CDDrawWorkerMapSmall : public AlbusMapBase {
+class CDDrawWorkerMapSmall : public CDDrawWorkerMapBase {
 public:
     // The leaf vtable (??_7CDDrawWorkerMapSmall @0x5efcc8) is 13 slots: the 5 shared
-    // CObject slots from AlbusMapBase, then 8 leaf virtuals at slots 5..12. They are
+    // CObject slots from CDDrawWorkerMapBase, then 8 leaf virtuals at slots 5..12. They are
     // declared here in slot order so cl lays the emitted vtable out byte-for-byte
     // (the unreconstructed slots 6/8 are declared-only -> reloc-masked references).
     virtual i32 VirtualMethodUnknown14();  // [5]  0x156cd0
@@ -158,7 +158,7 @@ public:
     // VirtualMethodUnknown20 (0x157600) is NOT a vtable slot - a plain method.
     i32 VirtualMethodUnknown20();
 
-    // m_04/m_08/m_0c (and the implicit vptr) are inherited from AlbusMapBase.
+    // m_04/m_08/m_0c (and the implicit vptr) are inherited from CDDrawWorkerMapBase.
     CMapStringToOb m_map1; // +0x10  worker-by-key map 1 (0x10..0x2b)
     CMapStringToOb m_map2; // +0x2c  worker-by-key map 2 (0x2c..0x47)
     CMapStringToOb m_map3; // +0x48  worker-by-key map 3 (0x48..0x63)
@@ -171,7 +171,7 @@ public:
 
 // CMapStringToOb internal field at parent+0x1c (seeds worker->m_04). Read off the
 // parent so it reloc-frees as `mov ecx,[edi+0x1c]`.
-static inline i32 AlbusReadField1c(const CDDrawWorkerMapSmall* p) {
+static inline i32 MapReadField1c(const CDDrawWorkerMapSmall* p) {
     return *(const i32*)((const char*)p + 0x1c);
 }
 
@@ -193,9 +193,9 @@ fail:
 
 // ---------------------------------------------------------------------------
 // ~CDDrawWorkerMapSmall (0x156d20, __thiscall, /GX): now a REAL virtual dtor. cl
-// stamps ??_7CDDrawWorkerMapSmall (masks g_albusClassVtbl @0x5efcc8) at entry, runs
+// stamps ??_7CDDrawWorkerMapSmall (masks the retail vtable @0x5efcc8) at entry, runs
 // the map teardown (VirtualMethodUnknown1C), then destructs the three CMapStringToOb
-// members (reverse decl order, descending trylevels) and the AlbusMapBase grand-base
+// members (reverse decl order, descending trylevels) and the CDDrawWorkerMapBase grand-base
 // (field resets + implicit ??_7-base re-stamp masking 0x5e8cb4). No manual stamp.
 // The /GX member-teardown frame falls out of the destructible CMapStringToOb members
 // + the polymorphic base (docs/patterns/eh-dtor-model-members-as-destructible.md).
@@ -203,7 +203,7 @@ fail:
 // @early-stop
 // vptr-position wall (~94%, twin of CDDrawWorker::~CDDrawWorker): every
 // instruction matches retail EXCEPT the grand-base vptr re-stamp POSITION - cl emits
-// `mov [esi],??_7AlbusMapBase` BEFORE the m_04/m_08/m_0c resets (base-dtor entry
+// `mov [esi],??_7CDDrawWorkerMapBase` BEFORE the m_04/m_08/m_0c resets (base-dtor entry
 // stamp), retail sinks it AFTER (verified llvm-objdump -dr base vs target on
 // CDDrawWorker: base 0x41 stamp-then-resets, target 0x9a resets-then-stamp). The
 // implicit base transition forces stamp-first; not source-steerable (the manual model
@@ -213,7 +213,7 @@ fail:
 RVA(0x00156d20, 0x82)
 CDDrawWorkerMapSmall::~CDDrawWorkerMapSmall() {
     VirtualMethodUnknown1C();
-    // m_map3 / m_map2 / m_map1 (reverse decl order) and the AlbusMapBase grand-base
+    // m_map3 / m_map2 / m_map1 (reverse decl order) and the CDDrawWorkerMapBase grand-base
     // auto-destruct here under the /GX member-teardown trylevels.
 }
 
@@ -234,11 +234,11 @@ CDDrawWorkerMapSmall::~CDDrawWorkerMapSmall() {
 // equally-live, so the allocator's choice is name-/order-independent here. Every
 // source ordering of the two reads and the two stores produced the identical pairing;
 // no source lever flips it. All 42 other instructions + both ret paths byte-exact.
-static inline AlbusWorkerObj* MakeAlbusWorker(const CDDrawWorkerMapSmall* parent) {
-    AlbusWorkerObj* w = new AlbusWorkerObj;
+static inline CDDrawMapWorkerObj* MakeMapWorker(const CDDrawWorkerMapSmall* parent) {
+    CDDrawMapWorkerObj* w = new CDDrawMapWorkerObj;
     if (w != 0) {
         i32 surfaceMgr = parent->m_0c;
-        w->m_04 = AlbusReadField1c(parent);
+        w->m_04 = MapReadField1c(parent);
         w->m_08 = 0;
         w->m_0c = surfaceMgr;
         w->m_10 = 0;
@@ -262,7 +262,7 @@ void CDDrawWorkerMapSmall::VirtualMethodUnknown1C() {
         do {
             m_map1.GetNextAssoc(pos, key, val);
             if (val != 0) {
-                ((AlbusWorker*)val)->ScalarDtor(1);
+                ((CDDrawMapWorker*)val)->ScalarDtor(1);
             }
         } while (pos != 0);
     }
@@ -276,7 +276,7 @@ void CDDrawWorkerMapSmall::VirtualMethodUnknown1C() {
 // scalar-deleting dtor and return 0.
 RVA(0x00165990, 0x77)
 void* CDDrawWorkerMapSmall::VirtualMethodUnknown28(i32 a1, const char* key, i32 a3) {
-    AlbusWorkerObj* w = MakeAlbusWorker(this);
+    CDDrawMapWorkerObj* w = MakeMapWorker(this);
     if (w->Vfunc28(a1, a3) == 0) {
         if (w != 0) {
             w->ScalarDtor(1);
@@ -291,7 +291,7 @@ void* CDDrawWorkerMapSmall::VirtualMethodUnknown28(i32 a1, const char* key, i32 
 // As Unknown28 but dispatches the worker's +0x2c virtual.
 RVA(0x00165a10, 0x77)
 void* CDDrawWorkerMapSmall::VirtualMethodUnknown2C(i32 a1, const char* key, i32 a3) {
-    AlbusWorkerObj* w = MakeAlbusWorker(this);
+    CDDrawMapWorkerObj* w = MakeMapWorker(this);
     if (w->Vfunc2C(a1, a3) == 0) {
         if (w != 0) {
             w->ScalarDtor(1);
@@ -340,7 +340,7 @@ i32 CDDrawWorkerMapSmall::FUN_00556db0() {
 // key is null) and return it.
 // @early-stop
 // worker-ctor vptr-position wall: retail stamps the 0x5f02d8 worker vtable AFTER the
-// field seeds (vptr-last); the polymorphic `new AlbusWorkerObj` stamps vptr-first.
+// field seeds (vptr-last); the polymorphic `new CDDrawMapWorkerObj` stamps vptr-first.
 // Logic/CFG/offsets/the Lock-Unlock/dispatch/inline-strcpy/map-store reproduced.
 RVA(0x001658c0, 0xcc)
 void* CDDrawWorkerMapSmall::Factory_1658c0(CDDrawSurfaceSource* a1, const char* key, i32 a3) {
@@ -348,17 +348,17 @@ void* CDDrawWorkerMapSmall::Factory_1658c0(CDDrawSurfaceSource* a1, const char* 
     if (data == 0) {
         return 0;
     }
-    AlbusWorkerObj* w = new AlbusWorkerObj;
+    CDDrawMapWorkerObj* w = new CDDrawMapWorkerObj;
     if (w != 0) {
         w->m_08 = 0;
         w->m_10 = 0;
-        w->m_04 = AlbusReadField1c(this);
+        w->m_04 = MapReadField1c(this);
         w->m_0c = m_0c;
     }
-    if (((AlbusWorker*)w)->Vfunc28(data, a3) == 0) {
+    if (((CDDrawMapWorker*)w)->Vfunc28(data, a3) == 0) {
         a1->Unlock_1399d0();
         if (w != 0) {
-            ((AlbusWorker*)w)->ScalarDtor(1);
+            ((CDDrawMapWorker*)w)->ScalarDtor(1);
         }
         return 0;
     }
@@ -389,16 +389,16 @@ void* CDDrawWorkerMapSmall::Factory_165a90(CDDrawSurfaceSource* a1, i32 a2, i32 
         return 0;
     }
     const char* keyHandle = a1->m_0c;
-    AlbusWorkerObj* w = new AlbusWorkerObj;
+    CDDrawMapWorkerObj* w = new CDDrawMapWorkerObj;
     if (w != 0) {
-        w->m_04 = AlbusReadField1c(this);
+        w->m_04 = MapReadField1c(this);
         w->m_08 = 0;
         w->m_0c = m_0c;
         w->m_10 = 0;
     }
-    if (((AlbusWorker*)w)->Vfunc30(data, (i32)a1, a3) == 0) {
+    if (((CDDrawMapWorker*)w)->Vfunc30(data, (i32)a1, a3) == 0) {
         if (w != 0) {
-            ((AlbusWorker*)w)->ScalarDtor(1);
+            ((CDDrawMapWorker*)w)->ScalarDtor(1);
         }
         return 0;
     }
@@ -428,7 +428,7 @@ void CDDrawWorkerMapSmall::Stub_165b90() {
         do {
             m_map1.GetNextAssoc(pos, key, val);
             if (val != 0) {
-                ((AlbusWorker*)val)->ScalarDtor(1);
+                ((CDDrawMapWorker*)val)->ScalarDtor(1);
             }
         } while (pos != 0);
     }
@@ -470,7 +470,7 @@ typedef i32 POSITION;
 
 // Minimal polymorphic stub for the CObject-derived values stored in the map.
 // Only the scalar-deleting destructor (+0x04) is load-bearing.
-class AlbusMapValue {
+class CDDrawMapValue {
 public:
     virtual void Dummy();               // +0x00
     virtual i32  ScalarDtor(i32 flag);  // +0x04
@@ -478,7 +478,7 @@ public:
 
 // CDDrawWorkerMapSmall surface used by the teardown - same load-bearing offsets as the
 // active class above, with the m_map1 map typed for the teardown signatures.
-class UnknownAlbusTeardown {
+class CDDrawWorkerMapSmallTeardown {
 public:
     void  VirtualMethodUnknown1C();
 
@@ -503,7 +503,7 @@ public:
 // on re-enable, annotate this definition with the retail address 0x165b90
 // size 0xa9 (the macro literal is omitted here so verify_stub_labels' text
 // scan does not treat this preserved WIP copy as a duplicate of Stub_165b90)
-void UnknownAlbusTeardown::VirtualMethodUnknown1C()
+void CDDrawWorkerMapSmallTeardown::VirtualMethodUnknown1C()
 {
     CObject *val = 0;
     i32 pos = (m_map1.m_nCount != 0) ? -1 : 0;
@@ -512,7 +512,7 @@ void UnknownAlbusTeardown::VirtualMethodUnknown1C()
         do {
             m_map1.GetNextAssoc(pos, key, val);
             if (val != 0)
-                ((AlbusMapValue *)val)->ScalarDtor(1);
+                ((CDDrawMapValue *)val)->ScalarDtor(1);
         } while (*(volatile i32 *)&pos != 0);
     }
     m_map1.RemoveAll();
@@ -521,14 +521,14 @@ void UnknownAlbusTeardown::VirtualMethodUnknown1C()
 // Size annotations for the two #if-0'd WIP classes: kept INSIDE the disabled
 // block so the (preprocessor-unaware) class_sizes text-scan counts them while
 // the compiler skips them (they are not defined in the compiled TU).
-SIZE_UNKNOWN(AlbusMapValue);
-SIZE_UNKNOWN(UnknownAlbusTeardown);
+SIZE_UNKNOWN(CDDrawMapValue);
+SIZE_UNKNOWN(CDDrawWorkerMapSmallTeardown);
 #endif
 
-SIZE_UNKNOWN(AlbusMapBase);
-SIZE_UNKNOWN(AlbusWorker);
-SIZE(AlbusWorkerObj, 0x14);
+SIZE_UNKNOWN(CDDrawWorkerMapBase);
+SIZE_UNKNOWN(CDDrawMapWorker);
+SIZE(CDDrawMapWorkerObj, 0x14);
 SIZE_UNKNOWN(CDDrawSubMgrRemus);
 SIZE_UNKNOWN(CDDrawSurfaceSource);
 SIZE_UNKNOWN(CDDrawWorkerMapSmall);
-VTBL(CDDrawWorkerMapSmall, 0x001efcc8); // ??_7CDDrawWorkerMapSmall (was g_albusClassVtbl)
+VTBL(CDDrawWorkerMapSmall, 0x001efcc8); // ??_7CDDrawWorkerMapSmall @0x5efcc8

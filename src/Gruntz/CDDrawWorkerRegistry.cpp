@@ -416,7 +416,7 @@ i32 CDDrawWorkerRegistry::VirtualMethodUnknown20() {
 }
 
 // ---------------------------------------------------------------------------
-// Same base readiness predicate used by several Lucius-derived managers.
+// Same base readiness predicate used by several CDDrawSubMgr-derived managers.
 RVA(0x001576d0, 0x16)
 i32 CDDrawWorkerRegistry::VirtualMethodUnknown14() {
     if (m_0c == 0) {
