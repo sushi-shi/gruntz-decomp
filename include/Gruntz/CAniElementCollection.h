@@ -19,12 +19,11 @@
 #include <Ints.h>
 
 // An owned CObject element: the deleting destructor is vtable slot 1 (byte +0x04),
-// __thiscall (flags arg). DeleteAll dispatches `el->vtbl[1](1)` per live element.
+// __thiscall (flags arg). DeleteAll dispatches `el->ScalarDtor(1)` per live element
+// as a real virtual call (retail `mov edx,[ecx]; call [edx+4]`).
 struct CAniRecordView {
-    struct Vtbl {
-        void* m_slot0;
-        void* (CAniRecordView::*m_deleteDtor)(u32); // +0x04  scalar-deleting dtor
-    }* m_vptr;
+    virtual void Slot00();              // slot 0 (+0x00)
+    virtual void* ScalarDtor(u32 flag); // slot 1 (+0x04) scalar-deleting dtor
 };
 
 // The owned-pointer array embedded at +0x08 (engine CObArray; vtbl 0x5ed494).

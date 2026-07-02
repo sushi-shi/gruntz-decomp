@@ -12,8 +12,15 @@
 #include <Ints.h>
 #include <rva.h>
 
-// Reloc-masked engine vtable still referenced by the WwdSub member dtor (0x5e8cb4).
-extern void* g_wapObjectDtorVtbl;
+// The wap-object teardown grand-base (vtable 0x5e8cb4, shared ??_7CWapObject).
+// Just the vptr; empty explicit body (re-stamps only). Folded LAST, sinking the
+// base vptr store to the function tail (it is preceded by call-free field writes).
+// A real polymorphic base -> cl auto-emits the grand-base re-stamp (was the manual
+// `m_vptr = &g_wapObjectDtorVtbl` store in the WwdSub member dtor).
+struct CWapObject {
+    virtual ~CWapObject();
+};
+inline CWapObject::~CWapObject() {}
 
 // An owned polymorphic worker. Its scalar-deleting destructor is vtable slot 1
 // (`mov eax,[ecx]; push 1; call [eax+4]`); declared-only (foreign vtable).
@@ -32,17 +39,17 @@ struct WwdName {
     char* m_data;
 };
 
-// The embedded +0x1a0 command sub-object as the (flat) B variant models it.
-struct WwdSub {
+// The embedded +0x1a0 command sub-object (B variant). Real polymorphic base
+// (CWapObject, vtable 0x5e8cb4): cl auto-emits the grand-base vptr re-stamp at
+// teardown (was a manual `m_vptr = &g_wapObjectDtorVtbl` store). Mirrors WwdSubA.
+struct WwdSub : public CWapObject {
     void DtorImpl(); // 0x15c2c0  __thiscall
     ~WwdSub() {
         DtorImpl();
-        m_vptr = &g_wapObjectDtorVtbl;
     }
-    void* m_vptr; // 0x1a0
-    i32 m_04;     // 0x1a4
-    i32 m_08;     // 0x1a8
-    i32 m_0c;     // 0x1ac
+    i32 m_04; // 0x1a4
+    i32 m_08; // 0x1a8
+    i32 m_0c; // 0x1ac
 };
 
 // Manual scalar-delete of an owned worker pointer (the retail idiom).
@@ -83,14 +90,6 @@ inline WwdEdgeA::~WwdEdgeA() {
     a = (i32)0x80000000;
     b = -1;
 }
-
-// The wap-object teardown grand-base (vtable 0x5e8cb4 = g_wapObjectDtorVtbl).
-// Just the vptr; empty explicit body (re-stamps only). Folded LAST, sinking the
-// base vptr store to the function tail (it is preceded by call-free field writes).
-struct CWapObject {
-    virtual ~CWapObject();
-};
-inline CWapObject::~CWapObject() {}
 
 // A's embedded +0x1a0 command sub-object, modeled polymorphically: its own vtable
 // 0x5f0128, a member-teardown helper (0x15c2c0), an EdgeB sentinel, then the wap-object base

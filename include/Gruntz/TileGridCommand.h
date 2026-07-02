@@ -102,16 +102,12 @@ public:
 };
 SIZE_UNKNOWN(TgcStream);
 
-// A polymorphic VIEW of the command used only to fire its slot-0 virtual (the
-// duty-edge tick): cast the (manually-vptr'd, non-polymorphic) command to this
-// and call Tick() -> mov eax,[this]; mov ecx,this; call [eax].
-struct TgcTickView {
-    virtual void Tick(); // slot 0
-};
-SIZE_UNKNOWN(TgcTickView);
-
 class CTileGridCommand {
 public:
+    // slot 0 (+0x00): the duty-edge tick virtual (real polymorphic; was fired via a
+    // TgcTickView cast of a manual-vptr command -> mov eax,[this]; call [eax]).
+    virtual void Tick();
+
     void RecordMove();             // 0x112880
     i32 Serialize(TgcStream* s);   // 0x113ae0
     i32 Deserialize(TgcStream* s); // 0x113c10
@@ -128,7 +124,7 @@ public:
     // the move into the in-game text log.  __thiscall.
     i32 ApplyMove(i32 verb); // 0x112590
 
-    void* m_vptr;                // +0x00
+    // +0x00  implicit vptr (real virtual Tick above; was an explicit void* m_vptr)
     i32 m_typeTag;               // +0x04  type tag (0x17/0x18 duty-cycle discriminant)
     i32 m_08;                    // +0x08  coord x
     i32 m_0c;                    // +0x0c  coord y

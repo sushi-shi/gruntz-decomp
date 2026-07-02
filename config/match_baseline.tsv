@@ -1598,7 +1598,7 @@ crangeset	?AddRange@CRangeSet@@QAEXII@Z	100.0000	100.0000	1	ed00b3a920e2	0x184be
 crangeset	?Contains@CRangeSet@@QAE_NI@Z	100.0000	100.0000	1	958ae75d3e77	0x184ba0
 creditzassets	?LoadCreditzAssets@CCreditsState@@QAEXXZ	100.0000	100.0000	1	301211db2fb6	0x39dc0
 cremusentrylist	??1CAniElement@@UAE@XZ	100.0000	100.0000	1	9f6537a52b2b	0x152e30
-cremusentrylist	?DeleteAll@CAniElement@@QAEXXZ	100.0000	100.0000	1	cbc0325c7375	0x165730
+cremusentrylist	?DeleteAll@CAniElement@@QAEXXZ	100.0000	100.0000	2	4b5253372073	0x165730
 cremusnode	??0CResolveNode@@QAE@HHH@Z	61.5882	61.5882	1	337b5868e2b3	0x15b2c0
 cremusnode	??0CResolveNode@@QAE@XZ	88.5833	88.5833	1	337b5868e2b3	0x1549d0
 cremusnode	??1CResolveNode@@UAE@XZ	78.8182	78.8182	1	ff3cfef4763a	0x154a50
@@ -3408,7 +3408,7 @@ tileactionevent	?SerializeFields@CTileActionEvent@@QAEHPAX@Z	100.0000	100.0000	2
 tileactionevent	?SetActionCode@CTileActionEvent@@QAEHH@Z	0.0000	0.0000	3	b6711db4cec4	0x112da0
 tilegridcommand	?ApplyMove@CTileGridCommand@@QAEHH@Z	70.3622	70.3622	3	9392be192bee	0x112590
 tilegridcommand	?BumpCell@CTileGridCommand@@QAEHXZ	73.1351	73.1351	2	3a014168554d	0x112b70
-tilegridcommand	?Classify@CTileGridCommand@@QAEHH@Z	95.9578	95.9578	2	e827640fb926	0x112970
+tilegridcommand	?Classify@CTileGridCommand@@QAEHH@Z	95.9578	95.9578	3	c68c8f4f48f8	0x112970
 tilegridcommand	?Deserialize@CTileGridCommand@@QAEHPAVTgcStream@@@Z	100.0000	100.0000	2	af4672a3727c	0x113c10
 tilegridcommand	?RecordMove@CTileGridCommand@@QAEXXZ	100.0000	100.0000	1	23f12c9ec885	0x112880
 tilegridcommand	?Serialize@CTileGridCommand@@QAEHPAVTgcStream@@@Z	100.0000	100.0000	3	d3ec3e7ddd70	0x113ae0
@@ -3774,7 +3774,7 @@ wwdgameobject	?Sub150c30@CWwdGameObject@@QAEHH@Z	100.0000	100.0000	1	6e45f742194
 wwdgameobject	?Sub151780@CWwdGameObject@@QAEHH@Z	100.0000	100.0000	1	a5cc9001a34f	0x151780
 wwdgameobject	?WriteSnapshot@CWwdGameObject@@QAEHH@Z	95.9020	95.9020	2	9fee6fde6abb	0x151c00
 wwdgameobjecteh	??1CWwdGameObjectA@@UAE@XZ	95.5378	95.5378	1	777925195fbe	0x15b790
-wwdgameobjecteh	??1CWwdGameObjectB@@UAE@XZ	79.4545	79.4545	1	595dd1e41894	0x15bd10
+wwdgameobjecteh	??1CWwdGameObjectB@@UAE@XZ	83.1439	83.1439	1	595dd1e41894	0x15bd10
 wwdgameobjecteh	??1CWwdGameObjectC@@UAE@XZ	93.6346	93.6346	2	a7231db31062	0x15c070
 wwdgameobjecteh	??1CWwdGameObjectE@@UAE@XZ	88.7941	88.7941	2	5cac17081515	0x15b4f0
 wwdgameobjecteh	??1CWwdGameObjectF@@UAE@XZ	93.4466	93.4466	2	b230a9476ec3	0x15bad0

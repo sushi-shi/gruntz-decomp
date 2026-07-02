@@ -117,12 +117,12 @@ i32 CTileGridCommand::Classify(i32 arg) {
         u32 period = (u32)m_30 + (u32)m_28;
         if (elapsed > period) {
             if (m_typeTag == 0x18) {
-                ((TgcTickView*)this)->Tick();
+                Tick();
                 return 0;
             }
             if (m_typeTag != 0x17) {
                 if (m_dutyOn == 1) {
-                    ((TgcTickView*)this)->Tick();
+                    Tick();
                 }
                 return -1;
             }
@@ -132,7 +132,7 @@ i32 CTileGridCommand::Classify(i32 arg) {
             if (m_dutyOn != 0) {
                 goto ret1;
             }
-            ((TgcTickView*)this)->Tick();
+            Tick();
             m_dutyOn = 1;
             if (m_typeTag == 0x18) {
                 return 0;
@@ -142,7 +142,7 @@ i32 CTileGridCommand::Classify(i32 arg) {
         if (m_dutyOn != 1) {
             goto ret1;
         }
-        ((TgcTickView*)this)->Tick();
+        Tick();
         m_dutyOn = 0;
         if (m_typeTag == 0x17) {
             goto ret1;

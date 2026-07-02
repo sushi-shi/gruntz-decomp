@@ -30,7 +30,7 @@ void CAniElement::DeleteAll() {
     for (i32 i = 0; i < m_items.m_nSize; i++) {
         CAniRecordView* el = m_items.m_pData[i];
         if (el != 0) {
-            (el->*(el->m_vptr->m_deleteDtor))(1);
+            el->ScalarDtor(1);
         }
     }
     if (m_buf != 0) {
