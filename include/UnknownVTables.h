@@ -34,14 +34,9 @@ typedef void (*UnkVfn)(void);
 // Placeholder struct removed.
 
 // ClassWithUnknownVTable7  @ 0x005ef6d0  (3 slots)  refs x1
-// CATALOGED as ??_7DSoundVoice@@6B@ via VTBL() in src/Dsndmgr/DSoundVoice.cpp (the
-// 0x28-byte playing-voice node). Non-polymorphic (explicit m_vtbl; its ctor 0x136fe0
-// lives in another TU and hand-stamps the vtable, so cl cannot auto-emit it); kept.
-struct Vtbl_1ef6d0 {
-    UnkVfn Tick_137060;  // [0] -> 0x137060 DSoundVoice::Tick
-    UnkVfn Stop_1370d0;  // [1] -> 0x1370d0 DSoundVoice::Stop
-    UnkVfn slot2_137630; // [2] -> 0x137630 sub_137630
-};
+// REALIZED (stale placeholder removed): 0x1ef6d0 is already named ??_7DSoundVoice@@6B@
+// via VTBL(DSoundVoice, 0x001ef6d0) in src/Dsndmgr/DSoundVoice.cpp (0x28-byte playing-
+// voice node; slots Tick 0x137060 / Stop 0x1370d0 / +0x137630). Placeholder removed.
 
 // ClassWithUnknownVTable8  @ 0x005ef6e0  (3 slots)  refs x1  src:g_StreamVoiceFeederVtbl
 // REALIZED as ??_7StreamVoiceFeeder@@6B@ (real StreamFeeder-derived voice feeder in
@@ -76,16 +71,10 @@ struct Vtbl_1ef6d0 {
 // Cataloged via VTBL(CRezDir, 0x001ef7a8). Placeholder removed.
 
 // ClassWithUnknownVTable15  @ 0x005ef7d0  (8 slots)  refs x2
-struct Vtbl_1ef7d0 {
-    UnkVfn slot0_13cef0;                 // [0] -> 0x13cef0 sub_13cef0
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x13cb60 `scalar_deleting_destructor'
-    UnkVfn FUN_0053cc00;                 // [2] -> 0x13cc00 FUN_0053cc00
-    UnkVfn FUN_0053cca0;                 // [3] -> 0x13cca0 FUN_0053cca0
-    UnkVfn slot4_13cd40;                 // [4] -> 0x13cd40 sub_13cd40
-    UnkVfn slot5_13cd50;                 // [5] -> 0x13cd50 sub_13cd50
-    UnkVfn FUN_0053cd60;                 // [6] -> 0x13cd60 FUN_0053cd60
-    UnkVfn slot7_13cdb0;                 // [7] -> 0x13cdb0 sub_13cdb0
-};
+// REALIZED as ??_7CVtbl_1ef7d0@@6B@ (real polymorphic Rez-family node in
+// src/Gruntz/FinalVtables.cpp; slot 0 = 0x13cef0, slot 1 = dtor 0x13cb60, slots 2-7
+// declared-only; cl auto-emits the vtable via the out-of-line-dtor anchor;
+// VTBL(CVtbl_1ef7d0, 0x001ef7d0)). Placeholder removed.
 
 // ClassWithUnknownVTable16 @ 0x005ef7f0 (was src:g_fileImageVtbl) - CONVERTED to
 // real polymorphic: CFileImage / CFileImageSurface / CImageSurfaceItemInit now
@@ -139,16 +128,10 @@ struct Vtbl_1ef7d0 {
 // VTBL(SeverusWorkerBase, 0x001efc30)). Placeholder removed.
 
 // ClassWithUnknownVTable27  @ 0x005efc58  (8 slots)  refs x2
-struct Vtbl_1efc58 {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x155890 `scalar_deleting_destructor'
-    UnkVfn slot2_0028ec;                 // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
-    UnkVfn UnknownVirtualMethod14;       // [5] -> 0x155f00 UnknownVirtualMethod14
-    UnkVfn UnknownVirtualMethod18;       // [6] -> 0x155900 UnknownVirtualMethod18
-    UnkVfn Cleanup_155e20;               // [7] -> 0x155e20 Cleanup_155e20
-};
+// REALIZED as ??_7CVtbl_1efc58@@6B@ (real CObject-style polymorphic tracking class in
+// src/Gruntz/FinalVtables.cpp; slots 0/2/3/4 base thunks, slot 1 = dtor 0x155890,
+// slots 5-7 declared-only; cl auto-emits via the out-of-line-dtor anchor;
+// VTBL(CVtbl_1efc58, 0x001efc58)). Placeholder removed.
 
 // ClassWithUnknownVTable28  @ 0x005efc78  (9 slots)  refs x2  src:g_catalogVtbl
 // REALIZED as ??_7CDDrawSubMgrLeaf@@6B@ (real polymorphic CDDrawSubMgrLeaf in
@@ -172,70 +155,26 @@ struct Vtbl_1efc58 {
 // VTBL(CDDrawWorkerCache, 0x001efd00)). Placeholder removed.
 
 // ClassWithUnknownVTable32  @ 0x005efd28  (23 slots)  refs x2
-struct Vtbl_1efd28 {
-    UnkVfn slot0_1bef01;           // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn Stub_156df0;            // [1] -> 0x156df0 Stub_156df0
-    UnkVfn slot2_0028ec;           // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;           // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;           // [4] -> 0x004034 sub_004034
-    UnkVfn slot5_156dc0;           // [5] -> 0x156dc0 sub_156dc0
-    UnkVfn VirtualMethodUnknown18; // [6] -> 0x154aa0 VirtualMethodUnknown18
-    UnkVfn VirtualMethodUnknown1C; // [7] -> 0x154ac0 VirtualMethodUnknown1C
-    UnkVfn VirtualMethodUnknown20; // [8] -> 0x156de0 VirtualMethodUnknown20
-    UnkVfn VirtualMethodUnknown24; // [9] -> 0x154df0 VirtualMethodUnknown24
-    UnkVfn VirtualMethodUnknown28; // [10] -> 0x154f60 VirtualMethodUnknown28
-    UnkVfn VirtualMethodUnknown2C; // [11] -> 0x154f40 VirtualMethodUnknown2C
-    UnkVfn VirtualMethodUnknown30; // [12] -> 0x154ce0 VirtualMethodUnknown30
-    UnkVfn VirtualMethodUnknown34; // [13] -> 0x154f20 VirtualMethodUnknown34
-    UnkVfn VirtualMethodUnknown38; // [14] -> 0x154ae0 VirtualMethodUnknown38
-    UnkVfn VirtualMethodUnknown3C; // [15] -> 0x154f00 VirtualMethodUnknown3C
-    UnkVfn VirtualMethodUnknown40; // [16] -> 0x154be0 VirtualMethodUnknown40
-    UnkVfn Stub_156e80;            // [17] -> 0x156e80 Stub_156e80
-    UnkVfn Stub_154f80;            // [18] -> 0x154f80 Stub_154f80
-    UnkVfn Stub_155160;            // [19] -> 0x155160 Stub_155160
-    UnkVfn VirtualMethodUnknown50; // [20] -> 0x155280 VirtualMethodUnknown50
-    UnkVfn VirtualMethodUnknown54; // [21] -> 0x156ec0 VirtualMethodUnknown54
-    UnkVfn MapTeardown_1552b0;     // [22] -> 0x1552b0 MapTeardown_1552b0
-};
+// REALIZED as ??_7CVtbl_1efd28@@6B@ (CDDrawWorkerRegistry's OWN 23-slot vtable, whose
+// slot-1 dtor 0x156df0 = CDDrawWorkerRegistry::Stub_156df0). Modeled as a standalone
+// CObject-style polymorphic tracking class in src/Gruntz/FinalVtables.cpp (the matched
+// slot fns in CDDrawWorkerRegistry.cpp are NOT redefined -> no dup-RVA; all slots
+// declared-only, dtor is the out-of-line anchor; VTBL(CVtbl_1efd28, 0x001efd28)).
+// Placeholder removed.
 
 // ClassWithUnknownVTable33  @ 0x005efd88  (14 slots)  refs x2
-struct Vtbl_1efd88 {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x156f30 `scalar_deleting_destructor'
-    UnkVfn slot2_0028ec;                 // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
-    UnkVfn VirtualMethodUnknown14;       // [5] -> 0x156f00 VirtualMethodUnknown14
-    UnkVfn Stub_156fc0;                  // [6] -> 0x156fc0 Stub_156fc0
-    UnkVfn CDDrawWorkerList_163bc0;      // [7] -> 0x163bc0 CDDrawWorkerList_163bc0
-    UnkVfn VirtualMethodUnknown20;       // [8] -> 0x156f20 VirtualMethodUnknown20
-    UnkVfn VirtualMethodUnknown24;       // [9] -> 0x156fd0 VirtualMethodUnknown24
-    UnkVfn VirtualMethodUnknown28;       // [10] -> 0x1573e0 VirtualMethodUnknown28
-    UnkVfn VirtualMethodUnknown2C;       // [11] -> 0x157330 VirtualMethodUnknown2C
-    UnkVfn VirtualMethodUnknown30;       // [12] -> 0x157150 VirtualMethodUnknown30
-    UnkVfn VirtualMethodUnknown34;       // [13] -> 0x163bf0 VirtualMethodUnknown34
-};
+// REALIZED as ??_7CVtbl_1efd88@@6B@ (real CObject-style polymorphic tracking class in
+// src/Gruntz/FinalVtables.cpp; slots 0/2/3/4 base thunks, slot 1 = dtor 0x156f30,
+// slot 7 = CDDrawWorkerList 0x163bc0, slots declared-only; out-of-line-dtor anchor;
+// VTBL(CVtbl_1efd88, 0x001efd88)). Placeholder removed.
 
 // ClassWithUnknownVTable34  @ 0x005efdc0  (17 slots)  refs x2
-struct Vtbl_1efdc0 {
-    UnkVfn slot0_1bef01;             // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn Stub_157610;              // [1] -> 0x157610 Stub_157610
-    UnkVfn slot2_0028ec;             // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;             // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;             // [4] -> 0x004034 sub_004034
-    UnkVfn VirtualMethodUnknown14;   // [5] -> 0x1575e0 VirtualMethodUnknown14
-    UnkVfn VirtualMethodUnknown1C;   // [6] -> 0x1576c0 VirtualMethodUnknown1C
-    UnkVfn VirtualMethodUnknown1C_7; // [7] -> 0x1591e0 VirtualMethodUnknown1C
-    UnkVfn VirtualMethodUnknown20;   // [8] -> 0x157600 VirtualMethodUnknown20
-    UnkVfn Stub_159a70;              // [9] -> 0x159a70 Stub_159a70
-    UnkVfn VirtualMethodUnknown28;   // [10] -> 0x159c90 VirtualMethodUnknown28
-    UnkVfn VirtualMethodUnknown2C;   // [11] -> 0x159cc0 VirtualMethodUnknown2C
-    UnkVfn VirtualMethodUnknown30;   // [12] -> 0x159cf0 VirtualMethodUnknown30
-    UnkVfn VirtualMethodUnknown34;   // [13] -> 0x159d40 VirtualMethodUnknown34
-    UnkVfn VirtualMethodUnknown38;   // [14] -> 0x159d90 VirtualMethodUnknown38
-    UnkVfn Stub_1591f0;              // [15] -> 0x1591f0 Stub_1591f0
-    UnkVfn slot16_159f00;            // [16] -> 0x159f00 sub_159f00
-};
+// REALIZED as ??_7CVtbl_1efdc0@@6B@ (a SECOND vtable of CDDrawWorkerMapSmall whose
+// slot-1 dtor 0x157610 = CDDrawWorkerMapSmall::Stub_157610; its primary is
+// ??_7CDDrawWorkerMapSmall @0x1efcc8). Modeled as a standalone CObject-style
+// polymorphic tracking class in src/Gruntz/FinalVtables.cpp (a per-class ??_7CVtbl_
+// primary names the datum; the matched slot fns are NOT redefined -> no dup-RVA;
+// out-of-line-dtor anchor; VTBL(CVtbl_1efdc0, 0x001efdc0)). Placeholder removed.
 
 // ClassWithUnknownVTable35  @ 0x005efe08  (10 slots)  refs x2
 // REALIZED as ??_7CDDrawSubMgrDraco@@6B@ (real polymorphic CDDrawSubMgrDraco in
@@ -282,39 +221,17 @@ struct Vtbl_1efdc0 {
 // removed. Placeholder removed.
 
 // ClassWithUnknownVTable43  @ 0x005eff30  (15 slots)  refs x3
-struct Vtbl_1eff30 {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x1590d0 `scalar_deleting_destructor'
-    UnkVfn slot2_0028ec;                 // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
-    UnkVfn slot5_159090;                 // [5] -> 0x159090 sub_159090
-    UnkVfn slot6_001c08;                 // [6] -> 0x001c08 sub_001c08
-    UnkVfn TeardownSurface;              // [7] -> 0x163e20 TeardownSurface
-    UnkVfn slot8_1590c0;                 // [8] -> 0x1590c0 sub_1590c0
-    UnkVfn slot9_158fd0;                 // [9] -> 0x158fd0 sub_158fd0
-    UnkVfn slot10_164250;                // [10] -> 0x164250 sub_164250
-    UnkVfn slot11_163db0;                // [11] -> 0x163db0 sub_163db0
-    UnkVfn FUN_00563c90;                 // [12] -> 0x163c90 FUN_00563c90
-    UnkVfn slot13_163e50;                // [13] -> 0x163e50 sub_163e50
-    UnkVfn slot14_163ee0;                // [14] -> 0x163ee0 sub_163ee0
-};
+// REALIZED (stale placeholder removed): 0x5eff30 is CDDrawSurfacePair's OWN vtable,
+// already modeled real-polymorphic in src/Gruntz/CDDrawSurfacePair.cpp
+// (VTBL(CDDrawSurfacePair, 0x005eff30); dtor 0x1590d0 -> ??1 0x1590f0, slot 7
+// TeardownSurface 0x163e20, slot 12 Create 0x163c90). Not a separate class.
+// Placeholder removed.
 
 // ClassWithUnknownVTable44  @ 0x005eff70  (11 slots)  refs x1
-struct Vtbl_1eff70 {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x159190 `scalar_deleting_destructor'
-    UnkVfn slot2_0028ec;                 // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
-    UnkVfn slot5_159150;                 // [5] -> 0x159150 sub_159150
-    UnkVfn slot6_001c08;                 // [6] -> 0x001c08 sub_001c08
-    UnkVfn slot7_1591d0;                 // [7] -> 0x1591d0 sub_1591d0
-    UnkVfn slot8_159180;                 // [8] -> 0x159180 sub_159180
-    UnkVfn
-        directx_wrapper_caller_1644a0_DirectDrawCreate_DirectDrawEnumerateA; // [9] -> 0x1644a0 directx_wrapper_caller_1644a0_DirectDrawCreate_DirectDrawEnumerateA
-    UnkVfn slot10_1646b0; // [10] -> 0x1646b0 sub_1646b0
-};
+// REALIZED as ??_7CVtbl_1eff70@@6B@ (real CObject-style polymorphic tracking class in
+// src/Gruntz/FinalVtables.cpp; slots 0/2/3/4/6 base thunks, slot 1 = dtor 0x159190,
+// slot 9 = CDDrawSurfacePair 0x1644a0, slots declared-only; out-of-line-dtor anchor;
+// VTBL(CVtbl_1eff70, 0x001eff70)). Placeholder removed.
 
 // ClassWithUnknownVTable45  @ 0x005effa0  (11 slots)  refs x1  src:g_severusWorker3Vtbl
 // REALIZED as ??_7CSeverusWorker3@@6B@ (real polymorphic leaf-worker whose 3-arg
@@ -322,27 +239,12 @@ struct Vtbl_1eff70 {
 // VTBL(CSeverusWorker3, 0x001effa0)). Placeholder removed.
 
 // ClassWithUnknownVTable46  @ 0x005effd0  (19 slots)  refs x2
-struct Vtbl_1effd0 {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x15c050 `scalar_deleting_destructor'
-    UnkVfn slot2_0028ec;                 // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
-    UnkVfn slot5_15c000;                 // [5] -> 0x15c000 sub_15c000
-    UnkVfn slot6_001c08;                 // [6] -> 0x001c08 sub_001c08
-    UnkVfn FUN_0055c200;                 // [7] -> 0x15c200 FUN_0055c200
-    UnkVfn slot8_15c020;                 // [8] -> 0x15c020 sub_15c020
-    UnkVfn Helper_164790;                // [9] -> 0x164790 Helper_164790
-    UnkVfn Setup;                        // [10] -> 0x150d60 Setup
-    UnkVfn FUN_005660f0;                 // [11] -> 0x1660f0 FUN_005660f0
-    UnkVfn slot12_1661d0;                // [12] -> 0x1661d0 sub_1661d0
-    UnkVfn slot13_1662a0;                // [13] -> 0x1662a0 sub_1662a0
-    UnkVfn slot14_1664a0;                // [14] -> 0x1664a0 sub_1664a0
-    UnkVfn Play;                         // [15] -> 0x151150 Play
-    UnkVfn FUN_0055c1d0;                 // [16] -> 0x15c1d0 FUN_0055c1d0
-    UnkVfn slot17_15c030;                // [17] -> 0x15c030 sub_15c030
-    UnkVfn slot18_15c040;                // [18] -> 0x15c040 sub_15c040
-};
+// REALIZED (stale placeholder removed): 0x1effd0 is already named
+// ?g_wwd159250FinalVtbl@@3PAXA (a DATA symbol) - a WWD factory ORPHAN whose
+// CWwdObjMgrFactories RezAlloc factory manual-stamps it mid-construction and cannot
+// reference a cl-emitted ??_7 without a `new`-based wide-object-ctor rewrite (the
+// documented VTable47-50 orphan case). The g_ DATA symbol owns the RVA; a competing
+// ??_7 would dup-DATA. Deferred to the wide-object-ctor sweep. Placeholder removed.
 
 // ClassWithUnknownVTable47  @ 0x005f0020  (16 slots)  refs x9  src:g_wwdGameObjectVtbl
 // REALIZED as ??_7CWwdGameObjectE@@6B@ (the "Mid" base game object in

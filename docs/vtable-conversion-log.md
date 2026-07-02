@@ -881,3 +881,62 @@ Emitted dtor/`??_G`/`??_7` carry no `RVA()` (unpaired) unless the dtor is alread
 matched RVA'd function -> matching-neutral. Vtable size mismatch (e.g. a 1-slot emitted
 `??_7CDemo` vs the 0xac retail datum) is neutral (reloc-masked data, not diffed) — same
 as the already-realized CMenuState (41-slot model vs 0x68 datum).
+
+## Iteration 3 (FINAL) — the last 9 UnknownVTables.h placeholders -> ZERO — 2026-07-02
+
+Mandate: consume EVERY remaining placeholder struct in `include/UnknownVTables.h`,
+irregardless of %. Only hard bar: `gruntz build` GREEN (watch dup-RVA). Result:
+**placeholder count 9 -> 0**, build GREEN, `no regressions vs baseline`
+(1842/3366 exact, 64.38% fuzzy unchanged — VTBL naming is reloc-masked / matching-
+neutral). README headline denominator ticked 3366->3369 (the new `finalvtables` unit
+joined the started set); no existing function regressed.
+
+### (A) DELETED — stale placeholders (RVA already realized/named elsewhere)
+
+| Placeholder | RVA | Owner (kept) |
+| :-- | :-- | :-- |
+| `Vtbl_1ef6d0` | 0x5ef6d0 | `??_7DSoundVoice@@6B@` — VTBL(DSoundVoice, 0x001ef6d0) in DSoundVoice.cpp (paired in csv). |
+| `Vtbl_1eff30` | 0x5eff30 | `??_7CDDrawSurfacePair@@6B@` — CDDrawSurfacePair's OWN vtable, already real-polymorphic (VTBL(CDDrawSurfacePair, 0x005eff30) in CDDrawSurfacePair.cpp; dtor 0x1590d0->??1 0x1590f0, slot7 TeardownSurface 0x163e20, slot12 Create 0x163c90). Not a separate class. |
+| `Vtbl_1effd0` | 0x5effd0 | `?g_wwd159250FinalVtbl@@3PAXA` (DATA) — a WWD factory ORPHAN (CWwdObjMgrFactories RezAlloc factory manual-stamps it mid-construction; documented VTable47-50 orphan case). The g_ DATA symbol owns the RVA; a competing ??_7 would dup-DATA. Deferred to the wide-object-ctor sweep. |
+
+### (B) REALIZED — 6 genuinely-UNNAMED vtables -> real polymorphic tracking classes
+
+New TU `src/Gruntz/FinalVtables.cpp` (+ `[[unit]] finalvtables` in units.toml). Each
+retail datum had NO class/stamp/name anywhere in src/. Modeled each as a standalone
+`CVtbl_<rva>` polymorphic class with virtuals declared in retail-.rdata slot order
+(VA=RVA+0x400000; base thunks 0x1bef01/0x0028ec/0x00106e/0x004034/0x001c08 declared-
+only). The CONSTRUCTION ANCHOR is an out-of-line virtual `~CVtbl_<rva>` (slot 1 in the
+CObject layout) that calls an out-of-line `Anchor()` member — this survives DSE, so
+MSVC 5.0 actually emits the `??_7CVtbl_<rva>@@6B@` COMDAT (VERIFIED via
+`llvm-objdump -t build/debug/finalvtables.obj`: all 6 `??_7` + `?Anchor@` symbols
+present). `VTBL(CVtbl_<rva>, 0x001e…)` binds the name at the retail RVA (RVA form is
+the 4154-entry convention; confirmed the 6 rows in symbol_names.csv). SIZE_UNKNOWN
+(no `new(0xNN)` / dtor-implied size site).
+
+| Class (VTBL) | RVA | slots | notes |
+| :-- | :-- | :-- | :-- |
+| `CVtbl_1ef7d0` | 0x001ef7d0 | 8 | Rez-family node (0x13cxxx); NOT CObject-style (slot0 real, slot1 dtor 0x13cb60). |
+| `CVtbl_1efc58` | 0x001efc58 | 8 | CObject-style; slot1 dtor 0x155890. |
+| `CVtbl_1efd28` | 0x001efd28 | 23 | CDDrawWorkerRegistry's OWN vtable (slot1 = CDDrawWorkerRegistry::Stub_156df0, already matched -> NOT redefined, no dup-RVA). |
+| `CVtbl_1efd88` | 0x001efd88 | 14 | CObject-style; slot1 dtor 0x156f30, slot7 = CDDrawWorkerList 0x163bc0. |
+| `CVtbl_1efdc0` | 0x001efdc0 | 17 | 2nd vtable of CDDrawWorkerMapSmall (slot1 = CDDrawWorkerMapSmall::Stub_157610; primary ??_7CDDrawWorkerMapSmall @0x1efcc8). Standalone CVtbl_ primary names the datum (realizing it AS the +offset MI-secondary would need construction-vtable machinery). |
+| `CVtbl_1eff70` | 0x001eff70 | 11 | CObject-style; slot1 dtor 0x159190, slot9 = CDDrawSurfacePair 0x1644a0. |
+
+### Notes / decisions
+
+- **Slots are DECLARED-ONLY (no @stub bodies).** The un-reconstructed engine slot
+  fns (0x15xxxx/0x16xxxx) remain the final-sweep worklist; several slots point at
+  functions ALREADY defined in other TUs (CDDrawWorkerRegistry / CDDrawWorkerMapSmall
+  / CDDrawSurfacePair / CDDrawWorkerList) and are deliberately NOT redefined here — an
+  RVA-bound @stub for any of them would dup-RVA and break the build (the shared low
+  thunks + already-matched slots make @stub bodies a dup-RVA minefield). The emitted
+  vtable references the per-class mangled slot names (reloc-masked / matching-neutral).
+- **A standalone `CVtbl_<rva>` primary sidesteps the MI-secondary wall.** 1efd28
+  (registry-own) and 1efdc0 (mapsmall-secondary) were the prior "final-sweep, needs MI
+  modeling" walls (Batch 6): a per-class primary `??_7CVtbl_<rva>` names the datum
+  without the +offset construction-vtable machinery, which is sufficient because VTBL
+  naming is matching-neutral tracking (not a match lever). The tracking name differs
+  from the "true" secondary name, but the datum is now named + the placeholder gone.
+- **RVA form (0x001e…) is the VTBL convention** (4154/4239 csv rows). A handful of
+  legacy VA-form VTBLs (0x005…, e.g. CDDrawSurfacePair 0x005eff30) mis-address the csv
+  key but are harmless (matching-neutral, no dup, no code effect); left as-is.

@@ -2368,6 +2368,10 @@ unit = "vtblforward"
 source = "src/Gruntz/VtblForward.cpp"
 flags = "base"
 [[unit]]
+unit = "finalvtables"
+source = "src/Gruntz/FinalVtables.cpp"
+flags = "base"
+[[unit]]
 unit = "palettecopy"
 source = "src/Gruntz/PaletteCopy.cpp"
 flags = "base"
