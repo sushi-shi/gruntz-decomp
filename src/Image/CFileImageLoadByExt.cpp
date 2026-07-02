@@ -1,27 +1,14 @@
 // CFileImageLoadByExt.cpp - CFileImage::LoadByExt (0x148940), the .BMP/.PCX/.PID
 // file-extension dispatcher (== the DIRSURF.CPP surface). Re-homed from
-// src/Stub/CFileImageDecode.cpp.
-//
-// Kept in its own TU (NOT folded into CFileImage.cpp) with a minimal CFileImage view
-// to avoid disturbing CFileImage.cpp's byte-exact neighbors. The default-loader branch
-// is just CFileImage::Load (the RT_BITMAP loader at 0x144270, body in the ApiCallers
-// TU) - the same __thiscall `this`, no separate wrapper class.
-// Only offsets / code bytes are load-bearing; helpers are reloc-masked externals.
+// src/Stub/CFileImageDecode.cpp; uses the single-source CFileImage in <Image/Image.h>
+// (no local view). The default-loader branch is CFileImage::Load (the RT_BITMAP loader
+// at 0x144270, body in the ApiCallers TU) - the same __thiscall `this`. Only offsets /
+// code bytes are load-bearing; helpers are reloc-masked externals.
+#include <Mfc.h> // afx-first (Image.h uses MFC/Win32 types)
+
+#include <Image/Image.h>
+
 #include <rva.h>
-
-class CFileImageInfo; // the decode-target info block (reloc-masked param type)
-
-class CFileImage {
-public:
-    i32 LoadByExt(CFileImageInfo* info, char* path, i32 flags, i32 a4);
-    i32 LoadFile2(CFileImageInfo* info, const char* path, i32 flags); // 0x143e60 .BMP
-    i32 LoadFile(CFileImageInfo* info, const char* path, i32 flags);  // 0x144d80 .PCX
-    i32 DecodePcxEx(char* a, char* b, void* c, void* d);              // 0x1459d0 .PID
-    // The RT_BITMAP resource loader (its `this` is the same CFileImage; external
-    // no-body/reloc-masked - the body lives in the ApiCallers TU).
-    i32 Load(i32 a, char* name, i32 c); // 0x144270 (thiscall, default loader)
-    void FillPalette(void* pal);        // 0x13eb40
-};
 
 // The engine's own strrchr / case-insensitive compare (cdecl C-linkage helpers).
 extern "C" char* RezStrrchr(const char* s, i32 c);       // FUN_00120680 (_RezStrrchr)
@@ -30,11 +17,19 @@ extern "C" i32 RezStricmp(const char* a, const char* b); // FUN_0011fdf0 (_RezSt
 // CFileImage::LoadByExt - load an image by inspecting its file
 // extension. Forces the IMAGEZ flag (|0x40), finds the extension, and dispatches
 // to LoadFile2 (.BMP) / LoadFile (.PCX) / DecodePcxEx (.PID) or the default loader
-// (ResLoad_144270::Load, the same __thiscall `this`). On a successful load (except
-// the .PID path) it fills the palette from a4 when a4 != -1.
+// (Load @0x144270, the same __thiscall `this`). On a successful load (except the
+// .PID path) it fills the palette from a4 when a4 != -1.
 // @source: string-xref (.BMP/.PCX/.PID extension table)
+//
+// @early-stop
+// scheduling wall (~99.9%): with the single-source polymorphic CFileImage (no local
+// view - the reconstruction-hack view the devs never wrote), MSVC reschedules one
+// stack-arg load (`movl 0x1c(%esp),%eax`, the a4 read) one instruction later than
+// retail; all other code bytes are byte-identical (llvm-objdump -dr base vs target).
+// Not source-steerable on a leaf this small; the correct shared-class shape is kept
+// over the byte-match (per the no-multiple-views mandate).
 RVA(0x00148940, 0x102)
-i32 CFileImage::LoadByExt(CFileImageInfo* info, char* path, i32 flags, i32 a4) {
+i32 CFileImage::LoadByExt(CFileImage* info, char* path, i32 flags, i32 a4) {
     flags |= 0x40;
     i32 doFill = 1;
     char* ext = RezStrrchr(path, '.');

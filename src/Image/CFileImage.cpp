@@ -5,11 +5,14 @@
 // Lock (0x13e6d0) / Unlock (vtable +0x80), the decode runners (0x140aa0/0x140c50/
 // 0x145270/0x1453f0), the Blit (0x13faa0) and the inner thunk (0x1471d0) are all
 // external engine callees (reloc-masked); the export/load methods slurp through the
-// real MFC CFile. See include/Image/CFileImage.h for the layout.
+// real MFC CFile. See include/Image/Image.h for the (single-source) CFileImage layout.
 //
 // Field names are placeholders; only the OFFSETS + emitted bytes are load-bearing.
 // ---------------------------------------------------------------------------
-#include <Image/CFileImage.h>
+#include <Mfc.h> // CFile (the export path slurps through the real MFC CFile) - afx-first
+
+#include <Image/Image.h>             // the single-source CFileImage (the DIRSURF surface)
+#include <Image/CFileImageRecords.h> // DecodeSrc / BmpFileHeader / TgaHeader (this TU's records)
 
 #include <Io/FileStream.h> // CFileIO (engine KERNEL32 file wrapper; LoadFile2)
 
@@ -21,28 +24,14 @@
 void* operator new(u32 n);
 extern "C" void RezFree(void* p);
 
-// The DecodeRun source descriptor (a run-length image header distinct from
-// CFileImageSrc): the dims @+0x12/+0x16 fed to BlitSurf, the run-data offset @+0x0a,
-// the format word @+0x1c (8/0x18), and the trailing palette @+0x36. Packed: the dword
-// fields sit at unaligned offsets (the engine reads them with plain x86 movs).
-#pragma pack(push, 1)
-struct DecodeSrc {
-    char _00[0x0a];
-    i32 m_0a; // +0x0a  run-data byte offset
-    char _0e[0x12 - 0x0e];
-    i32 m_12; // +0x12  dim a
-    i32 m_16; // +0x16  dim b
-    char _1a[0x1c - 0x1a];
-    u16 m_1c; // +0x1c  format word
-    char _1e[0x36 - 0x1e];
-    // +0x36  source palette the grayscale-ramp build reads
-};
-#pragma pack(pop)
+// DecodeSrc (the DecodeRun run-length source header) and BmpFileHeader / TgaHeader (the
+// on-stack export headers) are declared in <Image/CFileImageRecords.h>; ClipRect16 in
+// <Image/Image.h>. No class/struct definitions live in this .cpp.
 
 // The DecodeRun grayscale-ramp scratch (reloc-masked global at 0x683ef0; 0x400 bytes).
 
 // ClipRect16 (the 16-byte rect/clip record) + the inner blit/decode worker
-// CFileImage::Run (0x1471d0) are declared on CFileImage in <Image/CFileImage.h>.
+// CFileImage::Run (0x1471d0) are declared on CFileImage in <Image/Image.h>.
 
 // The 256*3 grayscale-ramp scratch buffer the 24-bit decode-convert path fills
 // (reloc-masked global at 0x684af0; +0x401 = the running write cursor, +0x801 = end).
@@ -73,7 +62,7 @@ void CFileImage::FlipVertical() {
     }
     u8* tmp = (u8*)operator new(m_width);
     if (tmp == 0) {
-        m_surface->Unlock(0);
+        ((CFileImageHeldSurface*)m_8)->Unlock(0);
         return;
     }
 
@@ -119,7 +108,7 @@ void CFileImage::FlipVertical() {
         } while (i < half);
     }
 
-    m_surface->Unlock(0);
+    ((CFileImageHeldSurface*)m_8)->Unlock(0);
     RezFree(tmp);
 }
 
@@ -160,7 +149,7 @@ void CFileImage::
 // offset/CFG-faithful, but MSVC's spilled-reg + ramp-cursor scheduling diverges from the
 // one allocation retail emitted. Deferred to the final sweep.
 RVA(0x00143cf0, 0x16b)
-i32 CFileImage::DecodeRun(CFileImageInfo* info, void* srcv, i32, i32 b) {
+i32 CFileImage::DecodeRun(CFileImage* info, void* srcv, i32, i32 b) {
     DecodeSrc* src = (DecodeSrc*)srcv;
     i32 srcFmt = src->m_1c;
     if (srcFmt != 8 && srcFmt != 0x18) {
@@ -168,11 +157,11 @@ i32 CFileImage::DecodeRun(CFileImageInfo* info, void* srcv, i32, i32 b) {
     }
 
     i32 convert = 0;
-    i32 curFmt = info->m_538;
+    i32 curFmt = info->m_palBitCount;
     if (curFmt != srcFmt) {
         convert = 1;
     }
-    if (convert && curFmt == 8 && info->m_93c == 0) {
+    if (convert && curFmt == 8 && info->m_hasPalette == 0) {
         return 0;
     }
 
@@ -191,8 +180,8 @@ i32 CFileImage::DecodeRun(CFileImageInfo* info, void* srcv, i32, i32 b) {
             } while (w < g_683ef0 + 0x400);
             pal = g_683ef0;
         } else if (curFmt == 8) {
-            if (info->m_93c != 0) {
-                pal = info->m_53c;
+            if (info->m_hasPalette != 0) {
+                pal = info->m_palette;
             } else {
                 pal = 0;
             }
@@ -228,7 +217,7 @@ i32 CFileImage::DecodeRun(CFileImageInfo* info, void* srcv, i32, i32 b) {
 // /GX funcinfo state index push (eh-state-numbering-base.md) plus the DecodeRun callee's
 // own divergence (it is the branch-scheduling wall above). Deferred to the final sweep.
 RVA(0x00143e60, 0x15b)
-i32 CFileImage::LoadFile2(CFileImageInfo* info, const char* path, i32 mode) {
+i32 CFileImage::LoadFile2(CFileImage* info, const char* path, i32 mode) {
     CFileIO file;
     if (!file.Open(path, 0, 0)) {
         return 0;
@@ -250,16 +239,6 @@ i32 CFileImage::LoadFile2(CFileImageInfo* info, const char* path, i32 mode) {
     return result;
 }
 
-// A BMP RGBQUAD palette entry + the on-stack 14-byte BITMAPFILEHEADER the export
-// builds (the 2-byte "BM" magic is strcpy'd from g_imageTag, then bfSize / bfOffBits).
-struct BmpFileHeader {
-    char magic[2]; // +0x00  "BM"
-    char _02[0x06 - 0x02];
-    u32 bfSize;    // +0x06  (width*0x28 + 0x436)
-    u32 _0a;       // +0x0a
-    u32 bfOffBits; // +0x0e -> stored at struct +0x0e... (0x436)
-};
-
 // ---------------------------------------------------------------------------
 // SaveBmp - write this 8-bit image to a BMP file. Validates the surface
 // (IsValid), the filename (non-null, non-empty), the 8-bit depth, and the palette
@@ -278,7 +257,7 @@ struct BmpFileHeader {
 // Deferred to the final sweep.
 RVA(0x001443b0, 0x284)
 i32 CFileImage::SaveBmp(const char* path, void* pal, i32 mode) {
-    if (IsValid() == 0) {
+    if (((CFileImageVtblView*)this)->IsValid() == 0) {
         return 0;
     }
     if (path == 0) {
@@ -287,7 +266,7 @@ i32 CFileImage::SaveBmp(const char* path, void* pal, i32 mode) {
     if (*path == 0) {
         return 0;
     }
-    if (m_bpp != 8) {
+    if (m_a8 != 8) {
         return 0;
     }
     CFileImagePal* src = (CFileImagePal*)pal;
@@ -339,12 +318,12 @@ i32 CFileImage::SaveBmp(const char* path, void* pal, i32 mode) {
     CFile file;
     if (mode != 0) {
         if (!file.Open(path, 0x2001, 0)) {
-            m_surface->Unlock(0);
+            ((CFileImageHeldSurface*)m_8)->Unlock(0);
             return 0;
         }
     } else {
         if (!file.Open(path, 0x1001, 0)) {
-            m_surface->Unlock(0);
+            ((CFileImageHeldSurface*)m_8)->Unlock(0);
             return 0;
         }
     }
@@ -359,21 +338,9 @@ i32 CFileImage::SaveBmp(const char* path, void* pal, i32 mode) {
         --row;
     }
 
-    m_surface->Unlock(0);
+    ((CFileImageHeldSurface*)m_8)->Unlock(0);
     return 1;
 }
-
-// The on-stack 0x2c-byte header the 24-bit export writes (a TGA-ish record): the
-// "BM"-style magic strcpy'd from g_imageTag at +0, the width/height + a +0x10 size
-// (width*height*3 + 0x3a), and the +0x10/+0x12 plane/bitcount words.
-struct TgaHeader {
-    char magic[2]; // +0x00
-    char _02[0x06 - 0x02];
-    u32 size; // +0x06  (width*height*3 + 0x3a)
-    char _0a[0x10 - 0x0a];
-    i16 planes;   // +0x10
-    i16 bitCount; // +0x12
-};
 
 // ---------------------------------------------------------------------------
 // SaveTga - write this 24-bit image to a TGA file. Mirrors SaveBmp but for
@@ -390,7 +357,7 @@ struct TgaHeader {
 RVA(0x00144900, 0x227)
 i32 CFileImage::SaveTga(const char* path, void* pal, i32 mode) {
     (void)pal;
-    if (IsValid() == 0) {
+    if (((CFileImageVtblView*)this)->IsValid() == 0) {
         return 0;
     }
     if (path == 0) {
@@ -399,7 +366,7 @@ i32 CFileImage::SaveTga(const char* path, void* pal, i32 mode) {
     if (*path == 0) {
         return 0;
     }
-    if (m_bpp != 0x18) {
+    if (m_a8 != 0x18) {
         return 0;
     }
 
@@ -420,12 +387,12 @@ i32 CFileImage::SaveTga(const char* path, void* pal, i32 mode) {
     CFile file;
     if (mode != 0) {
         if (!file.Open(path, 0x2001, 0)) {
-            m_surface->Unlock(0);
+            ((CFileImageHeldSurface*)m_8)->Unlock(0);
             return 0;
         }
     } else {
         if (!file.Open(path, 0x1001, 0)) {
-            m_surface->Unlock(0);
+            ((CFileImageHeldSurface*)m_8)->Unlock(0);
             return 0;
         }
     }
@@ -446,7 +413,7 @@ i32 CFileImage::SaveTga(const char* path, void* pal, i32 mode) {
         --row;
     }
 
-    m_surface->Unlock(0);
+    ((CFileImageHeldSurface*)m_8)->Unlock(0);
     return 1;
 }
 
@@ -467,7 +434,7 @@ i32 CFileImage::SaveTga(const char* path, void* pal, i32 mode) {
 // allocation; logic + offsets + CFG + the run-decoder dispatch are exact (the base
 // disasm is structurally byte-faithful). Deferred to the final sweep.
 RVA(0x00144b30, 0x250)
-i32 CFileImage::Decode(CFileImageInfo* info, CFileImageSrc* src, i32 len, i32 mode) {
+i32 CFileImage::Decode(CFileImage* info, CFileImageSrc* src, i32 len, i32 mode) {
     if (src == 0) {
         return 0;
     }
@@ -484,11 +451,11 @@ i32 CFileImage::Decode(CFileImageInfo* info, CFileImageSrc* src, i32 len, i32 mo
     }
 
     i32 convert = 0;
-    i32 curFmt = info->m_538;
+    i32 curFmt = info->m_palBitCount;
     if (curFmt != srcFmt) {
         convert = 1;
     }
-    if (convert && curFmt == 8 && info->m_93c == 0) {
+    if (convert && curFmt == 8 && info->m_hasPalette == 0) {
         return 0;
     }
 
@@ -510,8 +477,8 @@ i32 CFileImage::Decode(CFileImageInfo* info, CFileImageSrc* src, i32 len, i32 mo
             } while (w < g_grayRamp + 0x401);
             palette = g_grayRamp;
         } else if (curFmt == 8) {
-            if (info->m_93c != 0) {
-                palette = info->m_53c;
+            if (info->m_hasPalette != 0) {
+                palette = info->m_palette;
             } else {
                 palette = 0;
             }
@@ -520,7 +487,7 @@ i32 CFileImage::Decode(CFileImageInfo* info, CFileImageSrc* src, i32 len, i32 mo
         }
     }
 
-    if (BeginDecode(info, width, height, 0, mode) == 0) {
+    if (((CFileImageVtblView*)this)->BeginDecode(info, width, height, 0, mode) == 0) {
         return 0;
     }
 
@@ -579,7 +546,7 @@ i32 CFileImage::Decode(CFileImageInfo* info, CFileImageSrc* src, i32 len, i32 mo
 // RezFree'd after Decode (and on a short read). ret 0xc.
 // ---------------------------------------------------------------------------
 RVA(0x00144d80, 0x15b)
-i32 CFileImage::LoadFile(CFileImageInfo* info, const char* path, i32 mode) {
+i32 CFileImage::LoadFile(CFileImage* info, const char* path, i32 mode) {
     CFile file;
     if (!file.Open(path, 0, 0)) {
         return 0;
@@ -602,16 +569,16 @@ i32 CFileImage::LoadFile(CFileImageInfo* info, const char* path, i32 mode) {
 }
 
 // ===========================================================================
-// Class-metadata annotations (EOF-hosted). CFileImageHeldSurface (the CFileImage.h
-// slot-dispatch view) emits no vtable -> VTBL skip.
+// Class-metadata annotations (EOF-hosted). CFileImageHeldSurface (the thiscall
+// held-surface slot-dispatch view) emits no vtable -> VTBL skip. CFileImageInfo was
+// folded into CFileImage (it is a 2nd CFileImage instance passed as `info`).
 // ===========================================================================
-// --- CFileImage.h header classes ---
+// --- shared CFileImage (Image.h) header classes ---
 SIZE_UNKNOWN(CFileImageHeldSurface);
 SIZE_UNKNOWN(CFileImageSrc);
 SIZE_UNKNOWN(CFileImagePal);
-SIZE_UNKNOWN(CFileImageInfo);
 SIZE_UNKNOWN(CFileImage);
-// --- CFileImage.cpp local views ---
+// --- header data-record structs (Image.h / CFileImageRecords.h; annotated here) ---
 SIZE_UNKNOWN(DecodeSrc);
 SIZE(ClipRect16, 0x10); // 16-byte by-value rect/clip record
 SIZE_UNKNOWN(BmpFileHeader);

@@ -1088,11 +1088,11 @@ RVA(0x00144350, 0x5f)
 i32 CFileImage::SaveDispatch(void* a1, void* a2, void* a3) {
     switch (m_a8) {
         case 0x18:
-            return Save24(a1, a2, a3);
+            return SaveTga((const char*)a1, a2, (i32)a3); // 24bpp -> 0x144900
         case 0x10:
             return SaveRle16(a1, a2, a3);
         case 8:
-            return Save8(a1, a2, a3);
+            return SaveBmp((const char*)a1, a2, (i32)a3); // 8bpp -> 0x1443b0
         default:
             return 0;
     }
@@ -1741,12 +1741,12 @@ i32 CFileImage::ResolveEx(void* surf, void* buf, i32 type, u32 size, i32 ctrl, i
             }
             break;
         case FMT_PCX:
-            if (!DecodePcxData2(surf, buf, size, c)) {
+            if (!Decode((CFileImage*)surf, (CFileImageSrc*)buf, (i32)size, c)) {
                 return 0;
             }
             break;
         case FMT_BMP:
-            if (!DecodeBmpData(surf, buf, size, c)) {
+            if (!DecodeRun((CFileImage*)surf, buf, (i32)size, c)) {
                 return 0;
             }
             break;
@@ -1762,8 +1762,9 @@ i32 CFileImage::ResolveEx(void* surf, void* buf, i32 type, u32 size, i32 ctrl, i
 // ===========================================================================
 // Class-metadata annotations (EOF-hosted). This TU's REZ-loader family is named
 // distinctly (CRezImage / CRezImageSource / CRezSurfaceItem) so it no longer clashes
-// with the RTTI CImage cluster in CImage.h. CFileImage stays the shared DIRSURF
-// surface (partial model here, canonical in CFileImage.h). Only names
+// with the RTTI CImage cluster in CImage.h. CFileImage is the shared DIRSURF surface,
+// now single-sourced in this header (the former include/Image/CFileImage.h was folded
+// in - see docs/multi-view-worklist.md). Only names
 // first-represented in this TU are annotated below. CFileImageElement is a slot-0
 // dtor view (no emitted vtable -> VTBL skip).
 // ===========================================================================

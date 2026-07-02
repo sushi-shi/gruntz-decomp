@@ -111,7 +111,7 @@ cfadermgr	8	5
 cfaderrun	1	0
 cfileimage	8	2
 cfileimageblit	5	0
-cfileimageloadbyext	1	1
+cfileimageloadbyext	1	0
 cfileimagerundecode	4	0
 cfixedptrarray32	3	2
 cfortressflag	7	4
@@ -1236,20 +1236,20 @@ cfadermgr	?FreeAll@CFaderMgr@@QAEXXZ	100.0000	100.0000	2	2030f94b54ba	0x17d9a0
 cfadermgr	?Remove@CFaderMgr@@QAEXPAUCFader@@@Z	67.1111	67.1111	1	7c395e00a7e3	0x17e170
 cfadermgr	?SetConfig@CFaderMgr@@QAEHHHH@Z	100.0000	100.0000	3	c6c61071ef03	0x17d980
 cfaderrun	?RunFade@FaderRun@@QAEXIHH@Z	86.4057	86.4057	1	ce9ba500dac5	0x17e620
-cfileimage	?Decode@CFileImage@@QAEHPAVCFileImageInfo@@PAVCFileImageSrc@@HH@Z	87.4720	87.4720	1	dc0d66b3803f	0x144b30
-cfileimage	?DecodeRun@CFileImage@@QAEHPAVCFileImageInfo@@PAXHH@Z	72.3929	72.3929	1	68a1e6f3cd54	0x143cf0
+cfileimage	?Decode@CFileImage@@QAEHPAV1@PAVCFileImageSrc@@HH@Z	87.4065	87.4065	1	ba52b87b8a3c	0x144b30
+cfileimage	?DecodeRun@CFileImage@@QAEHPAV1@PAXHH@Z	72.3929	72.3929	1	7471263667a7	0x143cf0
 cfileimage	?DecodeThunk@CFileImage@@QAEXHHHHHHHHHH@Z	48.1538	48.1538	3	c920a14a70fe	0x141280
-cfileimage	?FlipVertical@CFileImage@@QAEXXZ	62.4649	62.4649	1	5a7fdb00d65d	0x13ebb0
-cfileimage	?LoadFile2@CFileImage@@QAEHPAVCFileImageInfo@@PBDH@Z	100.0000	100.0000	1	555ef8ac35e2	0x143e60
-cfileimage	?LoadFile@CFileImage@@QAEHPAVCFileImageInfo@@PBDH@Z	100.0000	100.0000	1	8adca29db6ce	0x144d80
-cfileimage	?SaveBmp@CFileImage@@QAEHPBDPAXH@Z	60.8842	60.8842	1	d7bdcf4dd7ed	0x1443b0
-cfileimage	?SaveTga@CFileImage@@QAEHPBDPAXH@Z	60.8182	60.8182	1	c29726d33513	0x144900
-cfileimageblit	?Blit1624@CFileImage@@QAEHPAXH@Z	71.1484	71.1484	2	1d18b978c383	0x13fce0
+cfileimage	?FlipVertical@CFileImage@@QAEXXZ	62.4649	62.4649	2	ca810b9278de	0x13ebb0
+cfileimage	?LoadFile2@CFileImage@@QAEHPAV1@PBDH@Z	100.0000	100.0000	1	bddd4ee54393	0x143e60
+cfileimage	?LoadFile@CFileImage@@QAEHPAV1@PBDH@Z	100.0000	100.0000	1	4741355a053c	0x144d80
+cfileimage	?SaveBmp@CFileImage@@QAEHPBDPAXH@Z	60.8842	60.8842	2	26a2f0961c93	0x1443b0
+cfileimage	?SaveTga@CFileImage@@QAEHPBDPAXH@Z	60.8182	60.8182	2	59e103b41187	0x144900
+cfileimageblit	?Blit1624@CFileImage@@QAEHPAXH@Z	71.1484	71.1406	2	1d18b978c383	0x13fce0
 cfileimageblit	?Blit168@CFileImage@@QAEHPAX0H@Z	67.5044	67.5044	2	b01c1f669219	0x13fbb0
 cfileimageblit	?Blit2416@CFileImage@@QAEHPAXH@Z	82.0000	82.0000	2	807a8a6aae68	0x13ff80
 cfileimageblit	?Blit816@CFileImage@@QAEHPAX0H@Z	66.2889	66.2889	2	d585516b7b4b	0x140420
 cfileimageblit	?Blit824@CFileImage@@QAEHPAX0H@Z	58.8610	58.8610	2	36e09f86c749	0x140110
-cfileimageloadbyext	?LoadByExt@CFileImage@@QAEHPAVCFileImageInfo@@PADHH@Z	100.0000	100.0000	2	fc4c3f70a68a	0x148940
+cfileimageloadbyext	?LoadByExt@CFileImage@@QAEHPAV1@PADHH@Z	99.8899	99.8899	1	68125686b083	0x148940
 cfileimagerundecode	?DecodeRun24@CFileImage@@QAEHPAX@Z	99.5437	99.5437	2	e98702b4daad	0x140c50
 cfileimagerundecode	?DecodeRun8@CFileImage@@QAEHPAX@Z	99.5000	99.5000	2	98f4666b90fc	0x140aa0
 cfileimagerundecode	?RunDecode1@CFileImage@@QAEHPAX0HH@Z	99.5726	99.5726	1	e7d9cf805b71	0x145270
@@ -2581,11 +2581,11 @@ image	?DecodeBmp@CFileImage@@QAEPAXPADPAXI@Z	31.2544	31.2544	4	ee7ec349a997	0x14
 image	?DecodeBmpHeader@CRezImage@@QAEHPAXHHH0@Z	95.7395	95.7395	1	54279666e0b3	0x1757c0
 image	?DecodePcx@CFileImage@@QAEPAXPADPAXI@Z	55.7755	55.7755	4	77f8fc32ed4c	0x144ee0
 image	?DecodePcxData@CFileImage@@QAEHPAX0HHH@Z	86.2370	86.2370	1	ddfed7a9e89e	0x1457a0
-image	?DecodePcxData@CRezImage@@QAEHPAX00@Z	91.2848	91.2848	1	02415d581e6f	0x176000
+image	?DecodePcxData@CRezImage@@QAEHPAX00@Z	91.3291	91.3291	1	02415d581e6f	0x176000
 image	?DecodePcxEx@CFileImage@@QAEHPAD0PAX1@Z	100.0000	100.0000	5	d07ec29ad6b0	0x1459d0
 image	?DecodePid@CFileImage@@QAEPAXPADPAXI1@Z	35.4204	35.4204	4	5a4b4aeca089	0x145b10
 image	?DecodePidData@CRezImage@@QAEHPAX00@Z	72.7817	72.7817	1	97bb62b54635	0x176440
-image	?DecodeResData@CRezImage@@QAEHPAX00@Z	96.2692	96.2692	1	e60af7217afc	0x175e00
+image	?DecodeResData@CRezImage@@QAEHPAX00@Z	96.4615	96.4615	1	e60af7217afc	0x175e00
 image	?DecodeRidData@CRezImage@@QAEHPAX00@Z	74.2963	74.2963	1	810bbd370cfe	0x1762c0
 image	?Fill@CFileImage@@QAEHI@Z	100.0000	100.0000	2	c98017d6e689	0x13e760
 image	?FillPalette@CFileImage@@QAEXPAX@Z	100.0000	100.0000	3	dad3b894ce8a	0x13eb40
@@ -2604,8 +2604,8 @@ image	?LoadPid@CFileImage@@QAEPAXPAD0PAX@Z	100.0000	100.0000	5	d56dd78c8d12	0x14
 image	?LoadPid@CRezImage@@QAEHPADPAX1@Z	100.0000	100.0000	1	8c1265ffd00c	0x1766a0
 image	?LoadRid@CRezImage@@QAEHPADPAX1@Z	100.0000	100.0000	1	d0c5aeafafc4	0x176310
 image	?Resolve@CFileImage@@QAEHPAX0HI0@Z	100.0000	100.0000	3	2da671d6a3c0	0x13e550
-image	?ResolveEx@CFileImage@@QAEHPAX0HIHH@Z	100.0000	100.0000	4	42be466cd065	0x148890
-image	?SaveDispatch@CFileImage@@QAEHPAX00@Z	100.0000	100.0000	2	d01c007ca1cd	0x144350
+image	?ResolveEx@CFileImage@@QAEHPAX0HIHH@Z	100.0000	100.0000	5	956364fcfc15	0x148890
+image	?SaveDispatch@CFileImage@@QAEHPAX00@Z	100.0000	100.0000	3	f0d6b189e23f	0x144350
 image	?SaveFile@CFileImage@@QAEHPADHPAX1@Z	100.0000	100.0000	2	88239218f56a	0x13f910
 image	?SaveRle16@CFileImage@@QAEHPAX00@Z	52.5687	52.5687	2	6e4ec4a8e637	0x144640
 image	?ScalarDelete@CFileImageSurface@@QAEPAXI@Z	100.0000	100.0000	2	faea0c2b336a	0x142340
