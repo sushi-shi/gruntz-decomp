@@ -17,6 +17,18 @@
 // The engine __cdecl deallocator (reloc-masked rel32). _RezFree @0x1b9b82.
 extern "C" void RezFree(void* p);
 
+// The image-source format tag (CImageSource::GetTag, a packed 3-char fourcc) that
+// both Resolve and Reload dispatch on to pick the format loader index (1..4). Named
+// by the literal tag bytes (low byte first); PMB/XCP are the reversed extension
+// (-> BMP / PCX loaders). Same immediates as the bare literals -> matching-neutral;
+// the switch key stays (u32) so the compare keeps its unsigned ja/je codegen.
+enum ImageFormatTag {
+    IMGTAG_PMB = 0x424d50, // "PMB" -> BMP loader (index 1)
+    IMGTAG_XCP = 0x504358, // "XCP" -> PCX loader (index 2)
+    IMGTAG_DIR = 0x524944, // "DIR" -> loader index 3
+    IMGTAG_DIP = 0x504944, // "DIP" -> loader index 4
+};
+
 // The +0x28 load virtual (LoadDispatch, slot 10) reached via the vtable from
 // Resolve. Modeled as a __thiscall pointer-to-member in a typed vtable struct (the
 // MSVC5-period idiom; the class is complete -> 4-byte PMF) so the call lowers to
@@ -91,16 +103,16 @@ RVA(0x00152f20, 0x86)
 i32 CImage::Resolve(CImageSource* src, i32 arg) {
     i32 index;
     switch ((u32)src->GetTag()) {
-        case 0x424d50: // 'PMB' (BMP)
+        case IMGTAG_PMB: // BMP
             index = 1;
             break;
-        case 0x504358: // 'XCP'
+        case IMGTAG_XCP: // PCX
             index = 2;
             break;
-        case 0x524944: // 'DIR'
+        case IMGTAG_DIR:
             index = 3;
             break;
-        case 0x504944: // 'DIP'
+        case IMGTAG_DIP:
             index = 4;
             break;
         default:
@@ -369,16 +381,16 @@ i32 CImage::Reload(CImageSource* src, i32 arg) {
 
     i32 index;
     switch ((u32)src->GetTag()) {
-        case 0x424d50: // 'PMB' (BMP)
+        case IMGTAG_PMB: // BMP
             index = 1;
             break;
-        case 0x504358: // 'XCP'
+        case IMGTAG_XCP: // PCX
             index = 2;
             break;
-        case 0x524944: // 'DIR'
+        case IMGTAG_DIR:
             index = 3;
             break;
-        case 0x504944: // 'DIP'
+        case IMGTAG_DIP:
             index = 4;
             break;
         default:

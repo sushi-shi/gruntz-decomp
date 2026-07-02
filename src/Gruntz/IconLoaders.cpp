@@ -1,6 +1,7 @@
 #include <rva.h>
 #include <Gruntz/CString.h>
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory + CSpriteIconNode shape
+#include <Gruntz/PickupType.h>    // the shared object/pickup/grunt-kind type id space
 #include <Bute/ButeMgr.h>
 // IconLoaders.cpp - the in-game-icon / powerup / explosion / camera / booty-perfect
 // sprite loaders (C:\Proj\Gruntz). Each builds a named sprite-set key, asks the
@@ -258,68 +259,13 @@ i32 EngineLabelBacklog::LoadExplosionSprites(i32 geoB, i32 geoA, i32 variant, i3
 // runs its own CreateSprite("TimeBomb", ...) + a CoveredTimeBombTime default.
 // __thiscall-free ret 0x18 (6 args). Returns 1 on success.
 
-// The in-game-icon type id LoadPowerupIconSprites dispatches on (type); each name is
+// The in-game-icon type id LoadPowerupIconSprites dispatches on (type) is PickupType,
+// the shared object/pickup/grunt-kind id space in <Gruntz/PickupType.h>. Each name is
 // confirmed by its case's GAME_INGAMEICONZ_* sprite key + verified against the retail
-// jump table (VA 0x47c9e8/0x47cab4). Same immediates as the bare labels -> naming is
-// matching-neutral. Ids agree with CGrunt's PickupType (both traced to the retail
-// switch): the earlier HEALTH1<->HEALTH3 (51/53) mismatch was a reconstruction swap in
-// THIS file (cases had the strings transposed) and is now corrected.
-enum IconType {
-    // Toolz (1..22)
-    ICON_BOMB = 1,
-    ICON_BOOMERANG = 2,
-    ICON_BRICK = 3,
-    ICON_CLUB = 4,
-    ICON_GAUNTLETZ = 5,
-    ICON_GLOVEZ = 6,
-    ICON_GOOBER = 7,
-    ICON_GRAVITYBOOTZ = 8,
-    ICON_GUNHAT = 9,
-    ICON_NERFGUN = 10,
-    ICON_ROCK = 11,
-    ICON_SHIELD = 12,
-    ICON_SHOVEL = 13,
-    ICON_SPRING = 14,
-    ICON_SPY = 15,
-    ICON_SWORD = 16,
-    ICON_TIMEBOMB = 17,
-    ICON_TOOB = 18,
-    ICON_WAND = 19,
-    ICON_WARPSTONE = 20, // per-level WARPSTONEZ%i
-    ICON_WELDER = 21,
-    ICON_WINGZ = 22,
-    // Toyz (23..32)
-    ICON_BABYWALKER = 23,
-    ICON_BEACHBALL = 24,
-    ICON_BIGWHEEL = 25,
-    ICON_GOKART = 26,
-    ICON_JACKINTHEBOX = 27,
-    ICON_JUMPROPE = 28,
-    ICON_POGOSTICK = 29,
-    ICON_SCROLL = 30,
-    ICON_SQUEAKTOY = 31,
-    ICON_YOYO = 32,
-    // Powerupz
-    ICON_MEGAPHONE = 50,
-    ICON_HEALTH1 = 51,
-    ICON_HEALTH2 = 52,
-    ICON_HEALTH3 = 53,
-    ICON_GHOST = 54,
-    ICON_SUPERSPEED = 55,
-    ICON_INVULNERABILITY = 56, // NB: PickupType 0x38 = REACTIVEARMOR
-    ICON_CONVERSION = 57,
-    ICON_DEATHTOUCH = 58,
-    ICON_ROIDZ = 59,
-    ICON_REACTIVEARMOR = 60, // NB: PickupType 0x3c = INVULNERABILITY
-    ICON_STOPWATCH = 75,
-    ICON_COIN = 80,
-    // Secret warp letters (spell "WARP")
-    ICON_SECRET_W = 90,
-    ICON_SECRET_A = 91,
-    ICON_SECRET_R = 92,
-    ICON_SECRET_P = 93,
-    ICON_COVEREDTIMEBOMB = 99,
-};
+// jump table (VA 0x47c9e8/0x47cab4); the ids AGREE with CGrunt's LoadPickupSprites (both
+// traced to the retail switch). Same immediates as the bare labels -> matching-neutral.
+// (The warp-letter cases are PICKUP_W/A/R/P; the icon-only covered timebomb is
+// PICKUP_COVEREDTIMEBOMB = 99.)
 
 RVA(0x0007c620, 0x3c5)
 i32 EngineLabelBacklog::LoadPowerupIconSprites(
@@ -336,64 +282,64 @@ i32 EngineLabelBacklog::LoadPowerupIconSprites(
 
     CString name;
     switch (type) {
-        case ICON_BOMB:
+        case PICKUP_BOMB:
             name = "GAME_INGAMEICONZ_TOOLZ_BOMBZ";
             break;
-        case ICON_BOOMERANG:
+        case PICKUP_BOOMERANG:
             name = "GAME_INGAMEICONZ_TOOLZ_BOOMERANGZ";
             break;
-        case ICON_BRICK:
+        case PICKUP_BRICK:
             name = "GAME_INGAMEICONZ_TOOLZ_BRICKZ";
             break;
-        case ICON_CLUB:
+        case PICKUP_CLUB:
             name = "GAME_INGAMEICONZ_TOOLZ_CLUBZ";
             break;
-        case ICON_GAUNTLETZ:
+        case PICKUP_GAUNTLETZ:
             name = "GAME_INGAMEICONZ_TOOLZ_GAUNTLETZ";
             break;
-        case ICON_GLOVEZ:
+        case PICKUP_GLOVEZ:
             name = "GAME_INGAMEICONZ_TOOLZ_GLOVEZ";
             break;
-        case ICON_GOOBER:
+        case PICKUP_GOOBER:
             name = "GAME_INGAMEICONZ_TOOLZ_GOOBERZ";
             break;
-        case ICON_GRAVITYBOOTZ:
+        case PICKUP_GRAVITYBOOTZ:
             name = "GAME_INGAMEICONZ_TOOLZ_GRAVITYBOOTZ";
             break;
-        case ICON_GUNHAT:
+        case PICKUP_GUNHAT:
             name = "GAME_INGAMEICONZ_TOOLZ_GUNHATZ";
             break;
-        case ICON_NERFGUN:
+        case PICKUP_NERFGUN:
             name = "GAME_INGAMEICONZ_TOOLZ_NERFGUNZ";
             break;
-        case ICON_ROCK:
+        case PICKUP_ROCK:
             name = "GAME_INGAMEICONZ_TOOLZ_ROCKZ";
             break;
-        case ICON_SHIELD:
+        case PICKUP_SHIELD:
             name = "GAME_INGAMEICONZ_TOOLZ_SHIELDZ";
             break;
-        case ICON_SHOVEL:
+        case PICKUP_SHOVEL:
             name = "GAME_INGAMEICONZ_TOOLZ_SHOVELZ";
             break;
-        case ICON_SPRING:
+        case PICKUP_SPRING:
             name = "GAME_INGAMEICONZ_TOOLZ_SPRINGZ";
             break;
-        case ICON_SPY:
+        case PICKUP_SPY:
             name = "GAME_INGAMEICONZ_TOOLZ_SPYZ";
             break;
-        case ICON_SWORD:
+        case PICKUP_SWORD:
             name = "GAME_INGAMEICONZ_TOOLZ_SWORDZ";
             break;
-        case ICON_TIMEBOMB:
+        case PICKUP_TIMEBOMB:
             name = "GAME_INGAMEICONZ_TOOLZ_TIMEBOMBZ";
             break;
-        case ICON_TOOB:
+        case PICKUP_TOOB:
             name = "GAME_INGAMEICONZ_TOOLZ_TOOBZ";
             break;
-        case ICON_WAND:
+        case PICKUP_WAND:
             name = "GAME_INGAMEICONZ_TOOLZ_WANDZ";
             break;
-        case ICON_WARPSTONE:
+        case PICKUP_WARPSTONE:
             if (g_gameReg->m_visibleBoundsMode == 1) {
                 CResourceTracker* rt = g_gameReg->m_resourceTracker;
                 CString lvl;
@@ -406,94 +352,94 @@ i32 EngineLabelBacklog::LoadPowerupIconSprites(
                 name.Format("GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ%i", warpIdx);
             }
             break;
-        case ICON_WELDER:
+        case PICKUP_WELDER:
             name = "GAME_INGAMEICONZ_TOOLZ_WELDERZ";
             break;
-        case ICON_WINGZ:
+        case PICKUP_WINGZ:
             name = "GAME_INGAMEICONZ_TOOLZ_WINGZ";
             break;
-        case ICON_BABYWALKER:
+        case PICKUP_BABYWALKER:
             name = "GAME_INGAMEICONZ_TOYZ_BABYWALKERZ";
             break;
-        case ICON_BEACHBALL:
+        case PICKUP_BEACHBALL:
             name = "GAME_INGAMEICONZ_TOYZ_BEACHBALLZ";
             break;
-        case ICON_BIGWHEEL:
+        case PICKUP_BIGWHEEL:
             name = "GAME_INGAMEICONZ_TOYZ_BIGWHEELZ";
             break;
-        case ICON_GOKART:
+        case PICKUP_GOKART:
             name = "GAME_INGAMEICONZ_TOYZ_GOKARTZ";
             break;
-        case ICON_JACKINTHEBOX:
+        case PICKUP_JACKINTHEBOX:
             name = "GAME_INGAMEICONZ_TOYZ_JACKINTHEBOXZ";
             break;
-        case ICON_JUMPROPE:
+        case PICKUP_JUMPROPE:
             name = "GAME_INGAMEICONZ_TOYZ_JUMPROPEZ";
             break;
-        case ICON_POGOSTICK:
+        case PICKUP_POGOSTICK:
             name = "GAME_INGAMEICONZ_TOYZ_POGOSTICKZ";
             break;
-        case ICON_SCROLL:
+        case PICKUP_SCROLL:
             name = "GAME_INGAMEICONZ_TOYZ_SCROLLZ";
             break;
-        case ICON_SQUEAKTOY:
+        case PICKUP_SQUEAKTOY:
             name = "GAME_INGAMEICONZ_TOYZ_SQUEAKTOYZ";
             break;
-        case ICON_YOYO:
+        case PICKUP_YOYO:
             name = "GAME_INGAMEICONZ_TOYZ_YOYOZ";
             break;
-        case ICON_MEGAPHONE:
+        case PICKUP_MEGAPHONE:
             name = "GAME_INGAMEICONZ_POWERUPZ_MEGAPHONEZ";
             break;
-        case ICON_HEALTH1:
+        case PICKUP_HEALTH1:
             name = "GAME_INGAMEICONZ_POWERUPZ_HEALTH1";
             break;
-        case ICON_HEALTH2:
+        case PICKUP_HEALTH2:
             name = "GAME_INGAMEICONZ_POWERUPZ_HEALTH2";
             break;
-        case ICON_HEALTH3:
+        case PICKUP_HEALTH3:
             name = "GAME_INGAMEICONZ_POWERUPZ_HEALTH3";
             break;
-        case ICON_CONVERSION:
+        case PICKUP_CONVERSION:
             name = "GAME_INGAMEICONZ_POWERUPZ_CONVERSION";
             break;
-        case ICON_DEATHTOUCH:
+        case PICKUP_DEATHTOUCH:
             name = "GAME_INGAMEICONZ_POWERUPZ_DEATHTOUCH";
             break;
-        case ICON_GHOST:
+        case PICKUP_GHOST:
             name = "GAME_INGAMEICONZ_POWERUPZ_GHOST";
             break;
-        case ICON_REACTIVEARMOR:
+        case PICKUP_REACTIVEARMOR:
             name = "GAME_INGAMEICONZ_POWERUPZ_REACTIVEARMOR";
             break;
-        case ICON_ROIDZ:
+        case PICKUP_ROIDZ:
             name = "GAME_INGAMEICONZ_POWERUPZ_ROIDZ";
             break;
-        case ICON_INVULNERABILITY:
+        case PICKUP_INVULNERABILITY:
             name = "GAME_INGAMEICONZ_POWERUPZ_INVULNERABILITY";
             break;
-        case ICON_SUPERSPEED:
+        case PICKUP_SUPERSPEED:
             name = "GAME_INGAMEICONZ_POWERUPZ_SUPERSPEED";
             break;
-        case ICON_SECRET_W:
+        case PICKUP_W:
             name = "GAME_INGAMEICONZ_SECRETW";
             break;
-        case ICON_SECRET_A:
+        case PICKUP_A:
             name = "GAME_INGAMEICONZ_SECRETA";
             break;
-        case ICON_SECRET_R:
+        case PICKUP_R:
             name = "GAME_INGAMEICONZ_SECRETR";
             break;
-        case ICON_SECRET_P:
+        case PICKUP_P:
             name = "GAME_INGAMEICONZ_SECRETP";
             break;
-        case ICON_STOPWATCH:
+        case PICKUP_STOPWATCH:
             name = "GAME_INGAMEICONZ_POWERUPZ_STOPWATCH";
             break;
-        case ICON_COIN:
+        case PICKUP_COIN:
             name = "GAME_INGAMEICONZ_POWERUPZ_COIN";
             break;
-        case ICON_COVEREDTIMEBOMB: {
+        case PICKUP_COVEREDTIMEBOMB: {
             CIconSprite* tb = g_gameReg->m_factoryHolder->m_factory
                                   ->CreateSprite(0, geoB, geoA, 0xf, "TimeBomb", 0x40003);
             if (tb) {
