@@ -21,12 +21,12 @@
 
 #include <Gruntz/CWwdObjMgr.h> // the shared object-collection manager class
 #include <Gruntz/CWwdWorker.h> // the shared per-object worker class
+#include <Globals.h>
 
 // Engine heap allocator (operator new / RezAlloc). Reloc-masked __cdecl extern.
 extern "C" void* RezAlloc(unsigned int size); // 0x1b9b46
 
 // The running WWD object-id counter (?g_wwdObjIdCounter@@3HA @ 0x61ab14).
-extern i32 g_wwdObjIdCounter;
 
 // Intermediate (post-base) and final wide-object vtables. Reloc-masked DATA
 // externs (RVA = VA - 0x400000). Each factory's object has its own final vtable.

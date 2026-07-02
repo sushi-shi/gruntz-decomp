@@ -6,10 +6,10 @@
 #include <rva.h>
 
 #include <stdio.h>
+#include <Globals.h>
 
 DATA(0x006bf37c)
 extern i32 g_severusCounterA;
-extern i32 g_buildNumber;
 
 class CSymParser {
 public:

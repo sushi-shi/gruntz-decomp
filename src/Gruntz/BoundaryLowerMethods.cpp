@@ -5,6 +5,7 @@
 // NO-body so their rel32/DIR32 operands reloc-mask. Defined in retail-RVA order.
 #include <Ints.h>
 #include <rva.h>
+#include <Globals.h>
 
 // ===========================================================================
 // 0x0213a0 - virtual-base field getter: read the field at +0x04 of the virtual
@@ -480,8 +481,6 @@ struct CParserdb {
     i32 Resolve13bae0(void* arg); // 0x13bae0
 };
 SIZE_UNKNOWN(CParserdb);
-extern u8 g_dat60b588; // 0x60b588 (new pin)
-extern u8 g_dat613054; // 0x613054 (new pin)
 struct Cdb750 {
     char pad0[0xc];
     CHolderdb* m_c; // +0x0c

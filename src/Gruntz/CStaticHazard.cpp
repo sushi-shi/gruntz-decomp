@@ -15,6 +15,7 @@
 #include <Gruntz/CStaticHazard.h>
 #include <Gruntz/CGameRegistry.h>
 #include <Bute/ButeMgr.h> // CButeMgr (g_buteMgr GetIntDef), CButeTree (g_buteTree)
+#include <Globals.h>
 
 // The global bute store (g_buteTree @0x6bf620; Find 0x16d190).
 extern CButeTree g_buteTree;
@@ -26,7 +27,6 @@ DATA(0x002bf3bc)
 extern "C" u32 g_6bf3bc;
 
 // A .data global the ctor copies into the bound object's +0x124 (DAT_0064553c).
-extern "C" i32 g_64553c;
 
 // ---------------------------------------------------------------------------
 // The bound game object (the inherited CUserLogic m_10/m_38 both point at it).
@@ -131,15 +131,8 @@ struct CHaznColl2 {
 };
 extern "C" i32 ActAlloc(); // 0x16d990
 
-extern i32 g_haznLo;
-extern i32 g_haznHi;
-extern char* g_haznBase;
-extern i32 g_haznStride;
-extern CHaznEntry* g_haznCur;
-extern i32 g_haznScratch;
 DATA(0x0024e3d0)
 extern CHaznColl g_haznColl;
-extern CHaznColl2* g_haznColl2;
 DATA(0x002bf464)
 extern void* g_actCache;
 DATA(0x002bf428)

@@ -10,6 +10,7 @@
 #include <rva.h>
 
 #include <Ints.h>
+#include <Globals.h>
 
 class CSymTab {
 public:
@@ -79,9 +80,7 @@ public:
 
 // The "BACK" plane cache (reloc-masked DIR32 store).
 struct ScrollView;
-extern ScrollView* g_backView; // 0x64c27c
 // The alternate-level-set gate (second run of levels). Single DATA binding here.
-extern "C" i32 g_6455f0; // 0x6455f0
 
 RVA(0x000dbc80, 0x309)
 i32 CWorldState::BuildWorldLevelPath(i32 unused) {

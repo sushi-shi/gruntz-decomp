@@ -9,6 +9,7 @@
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
 #include <Gruntz/CToobSpikez.h>
+#include <Globals.h>
 
 // ===========================================================================
 // CToobSpikez logic dispatcher (0x114480) - the __cdecl per-object message pump
@@ -126,15 +127,8 @@ struct CToobColl2 {
 };
 extern "C" i32 ActAlloc(); // 0x16d990
 
-extern i32 g_toobLo;
-extern i32 g_toobHi;
-extern char* g_toobBase;
-extern i32 g_toobStride;
-extern CToobEntry* g_toobCur;
-extern i32 g_toobScratch;
 DATA(0x0024e978)
 extern CToobColl g_toobColl;
-extern CToobColl2* g_toobColl2;
 DATA(0x002bf464)
 extern void* g_actCache;
 DATA(0x002bf428)

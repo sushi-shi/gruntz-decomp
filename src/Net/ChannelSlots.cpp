@@ -6,8 +6,7 @@
 // an extern (its storage lives in retail .data).
 #include <Ints.h>
 #include <rva.h>
-
-extern "C" i32 g_64c3f0[17];
+#include <Globals.h>
 
 // Reset every slot to "free" (1).
 RVA(0x000db1d0, 0x14)

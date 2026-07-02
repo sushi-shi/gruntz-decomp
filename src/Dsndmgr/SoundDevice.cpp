@@ -12,6 +12,7 @@
 #include <Rez/RezMgr.h> // RezAlloc/RezFree - the engine heap allocator/deallocator
 #include <math.h>       // acos / pow (intrinsic __CIacos / __CIpow) in VolumeToAttenuation
 #include <rva.h>
+#include <Globals.h>
 
 // The __FILE__ string the device wrappers pass to GetErrorString (the shared
 // DSNDMGR.CPP $SG pooled constant, 0x619ef8).
@@ -118,10 +119,6 @@ i32 g_volumeTable[100];
 
 // The x87 transfer-curve constants VolumeToAttenuation reads (.rdata doubles);
 // reloc-masked DIR32 operands, named here so the references pair.
-extern const double c_volScale; // 0x5ef698  v / c_volScale, and the final * c_volScale
-extern const double c_volNum;   // 0x5ef6a0  numerator of the reciprocal
-extern const double c_powExp;   // 0x5ef6a8  pow() exponent
-extern const double c_acosNorm; // 0x5ef6b0  acos() normalizer arg
 
 // The engine global operator delete (RezFree-backed, 0x1b9b82) the scalar-deleting
 // destructor tail-calls; reloc-masked rel32 (also redeclared near AcquireFile).

@@ -31,6 +31,7 @@
 // ---------------------------------------------------------------------------
 #include <Mfc.h>    // real MFC CStringArray / CMapStringToPtr / CString / CObject
 #include <string.h> // strlen (inline repnz scas)
+#include <Globals.h>
 
 // The three vftables (g_aniRecordVtbl @0x5f02c0, g_albusWorkerVtbl @0x5f02d8, the shared
 // grand-base @0x5e8cb4) are no longer manual DATA() externs: the base classes below are
@@ -40,7 +41,6 @@
 
 // g_aniParsedNameLen (0x6bf3c4): the parsed name length the catalog builder uses
 // to advance the record stream cursor; Parse sets it (strlen of the name).
-extern i32 g_aniParsedNameLen;
 
 // Global operator new (engine NAFXCW _RezAlloc @0x1b9b46); external/no-body.
 void* operator new(u32 n);

@@ -16,6 +16,7 @@
 #include <string.h>       // inline strcmp: the ctor's icon-name dispatch chain
 #include <Bute/ButeMgr.h> // CButeTree (the bute store Setup queries)
 #include <Wap32/ZVec.h>   // zDArray (the command-dispatch tables)
+#include <Globals.h>
 
 // The global bute store the icon Setup queries (g_buteTree.Find). Owned by
 // another TU; declared extern so `ecx=&g_buteTree; call Find` reloc-masks.
@@ -53,8 +54,6 @@ extern LogicFnTable g_iconStateTable; // 0x645928
 
 // --- the shared registration infrastructure (mirror of CInGameText's) --------
 // The zvec error globals the inlined accessors touch on a bounds miss.
-extern u32 g_zvecErrSentinel;    // 0x6bf464
-extern void* g_zvecErrToken;     // 0x6bf428
 extern void* zErr_CaptureRetB(); // 0x16d990
 
 DATA(0x0021aea8)

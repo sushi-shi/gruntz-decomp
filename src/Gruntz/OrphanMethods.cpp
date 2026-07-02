@@ -4,6 +4,7 @@
 #include <Ints.h>
 #include <rva.h>
 #include <Gruntz/CGameRegistry.h>
+#include <Globals.h>
 
 // ---------------------------------------------------------------------------
 // 0x6b2e0: an animation effect apply - cache the owner's m_1b4 into this->m_c, run
@@ -83,7 +84,6 @@ struct CMenuHolder95 {
     char _00[4];
     CWorkerObj95* m_4; // +0x04
 };
-extern u8 g_6111b0; // 0x6111b0
 
 struct CState95 {
     char _00[4];

@@ -12,6 +12,7 @@
 
 #include <Ints.h>
 #include <rva.h>
+#include <Globals.h>
 
 // The game-manager singleton at *0x64556c (dedup winner name `_g_64556c`); only
 // the mode discriminator (m_134), the single-page flag (m_130) and the level-name
@@ -29,7 +30,6 @@ extern "C" WwdGameRegInfo* g_64556c;
 // The engine empty-string sentinel (0x6293f4) and the multi-page flag
 // (DAT_006455f0); both reloc-masked DIR32 data referents.
 extern "C" char g_emptyString[]; // 0x6293f4
-extern "C" i32 g_6455f0;         // 0x6455f0
 
 // EngStr text-draw forwarder (__cdecl, 0x115440) - obj, string, rect, a font
 // selector, then five trailing style args. Reloc-masked rel32 callee.

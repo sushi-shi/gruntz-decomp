@@ -72,6 +72,7 @@
 // The zoned sound-bank manager (CWorld::m_48); RegionEnter/RegionLeave pause +
 // resume the currently-playing zoned sound via its real (named) methods.
 #include <Dsndmgr/CGruntzSoundZ.h>
+#include <Globals.h>
 
 // The registry's +0x68 cue-sink B sub-object CanQuickSave probes at +0x400.
 struct CRegSub68 {
@@ -215,19 +216,8 @@ extern "C" {
     extern CGameMgrSettings* g_mgrSettings; // = g_64556c (the CGruntzMgr singleton)
     DATA(0x0020ccc4)
     extern i32 g_videoResolutionMode;
-    extern i32 g_opt_22bd68;
-    extern i32 g_opt_22bd6c;
-    extern i32 g_opt_22bd70;
-    extern i32 g_opt_22bd84;
-    extern i32 g_opt_22bdc4;
-    extern i32 g_opt_22bdc8;
-    extern i32 g_opt_22bdcc;
-    extern i32 g_opt_22bdd0;
-    extern i32 g_opt_22bdd4;
     DATA(0x002455b4)
     extern i32 g_gate_2455b4;
-    extern i32 g_gate_2455bc;
-    extern i32 g_gate_2455c0;
 }
 
 // A free helper (FUN_004923b0, cdecl/1 arg) run on the XMIDI-active path before
@@ -1463,10 +1453,7 @@ extern "C" {
     void ProfLog(void* sink, const char* fmt, ...);
 }
 // The two timing accumulators ProfileInputFrame folds the back-half phases into.
-extern "C" {
-    extern i32 g_profAccA; // DAT_0064c284
-    extern i32 g_profAccB; // DAT_0064c288
-}
+extern "C" {}
 
 // The draw-surface flush sink (m_c->m_4->m_10->m_2c) torn through a thiscall flush.
 struct CProfFlush {

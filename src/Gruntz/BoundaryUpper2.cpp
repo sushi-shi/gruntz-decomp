@@ -10,6 +10,7 @@
 #include <Ints.h>
 #include <string.h> // memset -> rep stos at /O2
 #include <rva.h>
+#include <Globals.h>
 
 // The engine __cdecl allocator/deallocator (operator new/delete; reloc-masked
 // rel32). 0x1b9b46 / 0x1b9b82.
@@ -97,7 +98,6 @@ C1396f0* C1396f0::Init() {
 // restore-handler function pointer is installed, tail-jump it; else log a warning
 // and return 0. __cdecl.
 // ---------------------------------------------------------------------------
-extern i32 (*g_restoreHandler)();             // 0x683edc
 extern void __cdecl DDrawLogLine(char* line); // 0x141cb0
 RVA(0x001437f0, 0x1b)
 i32 RestoreLostSurfaces_1437f0() {

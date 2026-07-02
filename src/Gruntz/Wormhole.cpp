@@ -42,6 +42,7 @@
 // minimal class so the `ecx=&g_buteMgr; call GetIntDef` shape reloc-masks against
 // the already-matched CButeMgr::GetIntDef (butemgr unit).
 #include <Bute/ButeMgr.h>
+#include <Globals.h>
 DATA(0x002453d8)
 extern CButeMgr g_buteMgr;
 
@@ -193,8 +194,6 @@ extern NameVec g_buteNameVec;
 
 // The zvec error globals + the capture helper the inlined accessor touches on a
 // bounds miss (the same set ZVec.cpp models).
-extern u32 g_zvecErrSentinel;    // 0x6bf464
-extern void* g_zvecErrToken;     // 0x6bf428
 extern void* zErr_CaptureRetB(); // 0x16d990
 
 // The "Wormhole"-logic registration key (the .data string constant @ 0x60a454,
@@ -388,8 +387,7 @@ void CWormhole::LoadColors() {
     s->m_4c = colorEntry;
 }
 
-extern char s_actKeyA[];          // "A" (0x60a454)
-extern char g_wormholeSpawnKey[]; // "Wormhole" (0x60a7ac)
+extern char s_actKeyA[]; // "A" (0x60a454)
 // ---------------------------------------------------------------------------
 // CWormhole::CWormhole(CGameObject*) @0x03fc70 - the 1-arg leaf ctor: the shared
 // CUserLogic(obj) init (folded inline; the throwing CUserBaseLink forces the /GX
@@ -441,7 +439,6 @@ CWormhole::CWormhole(CGameObject* obj) : CUserLogic(obj) {
 // table (+0x78) at [id*4 + 0x14] and re-seed the bound object's draw trio.
 // ---------------------------------------------------------------------------
 #include <Gruntz/CSerialSub34.h>
-extern char g_wormholeSpawnKey[]; // "Wormhole" @ 0x60a7ac
 RVA(0x0003fed0, 0xa9)
 i32 CWormhole::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
     if (!SerializeChain(ar, tag, c, d)) {

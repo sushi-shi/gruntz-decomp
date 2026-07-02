@@ -6,16 +6,11 @@
 // caller-supplied descriptor (or, when null, the mode's global default) into the
 // object's +0x1c field.
 #include <rva.h>
+#include <Globals.h>
 
 struct ShadeDescr;
 
 // Seven global ShadeDescr* slots; only +0x6bf218 carries a real RTTI name.
-extern ShadeDescr* g_shadeDescr208;
-extern ShadeDescr* g_shadeDescr20c;
-extern ShadeDescr* g_shadeDescr210;
-extern ShadeDescr* g_shadeDescr214;
-extern ShadeDescr* g_shadeDescr21c;
-extern ShadeDescr* g_shadeDescr220;
 extern ShadeDescr* g_blendDescr; // 0x6bf218
 
 // @early-stop

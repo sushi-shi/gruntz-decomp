@@ -18,6 +18,7 @@
 #include <string.h>
 
 #include <Gruntz/CoordNode.h> // the shared coord-pool node
+#include <Globals.h>
 
 // retail's global allocator is the nothrow pool alloc; MSVC5 `new T` emits the
 // post-alloc null-check + ctor-in-flight EH-state store the retail body has.
@@ -34,7 +35,6 @@ extern i32 g_freeBias;         // 0x64554c
 extern void* g_mgrPtr;         // 0x64556c
 extern u32 g_startTick;        // 0x645580
 extern i32 g_645584;           // 0x645584
-extern i32 g_wap32Run80;       // 0x653c80
 extern i32 g_653c5c;           // 0x653c5c
 extern i32 g_sndEnabled;       // 0x61ab20
 extern i32 g_2455b4, g_2455bc, g_2455c0, g_2455c4, g_2455c8, g_2455cc;

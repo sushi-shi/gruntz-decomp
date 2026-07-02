@@ -8,6 +8,7 @@
 // The discovered cluster's surface helpers (Blt/Flip/BltFast on CDDSurface) come
 // from the DDrawMgr group; reuse its real types instead of placeholder casts.
 #include <Gruntz/CDirectDrawMgr.h>
+#include <Globals.h>
 // UnknownLucius.cpp - tomalla-named DDraw surface/page-manager shared base
 // (CDDrawSubMgr).  This is the polymorphic base for the 10 sub-
 // managers (Draco, Hermiona, Hagrid, etc.).  Two functions:
@@ -2003,7 +2004,6 @@ extern "C" void* RezAlloc(u32 size); // 0x1b9b46
 extern "C" void RezFree(void* p); // 0x1b9b82
 
 // The global object-id counter the factory stamps into +0x188 and post-increments.
-extern i32 g_wwdObjIdCounter; // 0x61ab14
 
 // The constructed wide object's first (CWwdGameObject) vtable, then its final
 // (g_wwdObjVtbl) vtable.  Reloc-masked DATA externs (RVA = VA - 0x400000).

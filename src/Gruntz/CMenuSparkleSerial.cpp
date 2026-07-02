@@ -4,10 +4,9 @@
 // archive (mode 4 = write via vtbl[0x30], mode 7 = read via vtbl[0x2c]). Plain /O2
 // leaf (no /GX). The base/sub serialize + the archive Read/Write are reloc-masked.
 #include <Gruntz/CMenuSparkleSerial.h>
+#include <Globals.h>
 
 // The two serialized 4-byte globals (.data). Reloc-masked DIR32 referents.
-extern i32 g_5ea3d4; // 0x5ea3d4
-extern i32 g_5ea3d8; // 0x5ea3d8
 
 // ===========================================================================
 // CMenuSparkle::Serialize  (0xae1c0)

@@ -6,6 +6,7 @@
 #include <Gruntz/BattlezData.h>
 #include <rva.h>
 #include <Gruntz/CGameRegistry.h>
+#include <Globals.h>
 
 // The game-registry singleton (?g_gameReg@@3PAUWwdGameReg@@A). Minimal local
 // view: FillRecord folds reg->m_118 into each record. The DATA pin reloc-masks
@@ -219,7 +220,6 @@ i32 CBattlezData::InBounds(i32 unused) {
 // 0xfce00 - ratio over the current group of 4 records: (Sum m_24) / (Sum m_3c),
 // or 0 when the m_3c sum is zero. Both sums are accumulated in float (fild);
 // g_zeroF (0.0f) seeds the accumulators and the divide-by-zero guard.
-extern float g_zeroF;
 RVA(0x000fce00, 0x56)
 float CBattlezData::GroupRatio() {
     float den = g_zeroF;

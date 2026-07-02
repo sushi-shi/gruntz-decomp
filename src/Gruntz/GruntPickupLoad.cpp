@@ -9,6 +9,7 @@
 #include <rva.h>
 #include <string.h>
 #include <Bute/ButeMgr.h> // CButeTree g_buteTree (Find)
+#include <Globals.h>
 
 extern CButeTree g_buteTree; // ?g_buteTree@@3VCButeTree@@A @0x6bf620
 
@@ -23,9 +24,6 @@ extern CTypeKeyColl g_typeColl; // ?g_typeColl@@3UCTypeKeyColl@@A
 // The single-char anim-code key strings (reloc-masked .rodata).
 DATA(0x0020a454)
 extern char s_codeA[]; // "A"
-extern char s_codeD[]; // "D"
-extern char s_codeE[]; // "E"
-extern char s_codeJ[]; // "J"
 
 // The per-owner pickup-stat block hung off g_gameReg+0x7c (reloc-masked). Reloaded
 // through the global each use (matches retail: it reloads g_gameReg + [+0x7c]).

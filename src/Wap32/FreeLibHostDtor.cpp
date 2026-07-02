@@ -11,6 +11,7 @@
 #include <rva.h>
 
 #include <Win32.h>
+#include <Globals.h>
 
 // The derived/base scalar-deleting-destructor vtables stamped on entry/exit
 // (reloc-masked DATA symbols).
@@ -18,7 +19,6 @@ extern void* const Vtbl_5eb6c4;
 extern void* const Vtbl_5ec26c;
 
 // The FreeLibrary IAT entry (retail calls it indirectly: ff 15 [0x6c3fdc]).
-extern int(__stdcall* g_impFreeLibrary)(void*);
 
 RVA(0x001d4a18, 0x3c)
 __declspec(naked) int FreeLibHost_Dtor() {

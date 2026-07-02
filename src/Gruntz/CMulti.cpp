@@ -16,6 +16,7 @@
 #include <Gruntz/CMulti.h>
 #include <stdio.h>  // engine sprintf (reloc-masked)
 #include <stdlib.h> // srand (reloc-masked)
+#include <Globals.h>
 
 // ---------------------------------------------------------------------------
 // Engine globals the session loop touches (re-declared TU-local with their
@@ -25,16 +26,12 @@ DATA(0x002455fc)
 extern "C" i32 g_6455fc; // 0x6455fc  cleared at session start
 DATA(0x00244c54)
 extern "C" i32 g_644c54; // 0x644c54  default cue wParam (= *host)
-extern "C" i32 g_648cec; // 0x648cec
 DATA(0x00245580)
 extern "C" u32 g_645580; // 0x645580  draw clock
 DATA(0x00245584)
 extern "C" u32 g_645584; // 0x645584  delta cap
 DATA(0x00245588)
-extern "C" u32 g_645588;    // 0x645588  accum clock
-extern "C" u32 g_648d14;    // 0x648d14  drop-throttle deadline
-extern "C" i32 g_611d88;    // 0x611d88  saved dropped-player id
-extern "C" i32 g_60fab8[4]; // 0x60fab8  the 16-byte net-bind template
+extern "C" u32 g_645588; // 0x645588  accum clock
 
 // The game-manager singleton + a divisor for the TITLE%d index.
 DATA(0x0024556c)
@@ -101,8 +98,6 @@ extern void* g_vtbl_CState[]; // 0x5ea21c  (CState)
 // The DirectPlay error globals (shared with CNetMgr::ReportError; same .data
 // addresses, re-declared TU-local so the DIR32 operands reloc-mask).
 // ---------------------------------------------------------------------------
-extern "C" i32 g_code;      // 0x6bf6fc  hr & 0xffff (the (%i) arg)
-extern "C" char g_szCode[]; // 0x6bf700  error-code name buffer
 
 // ---------------------------------------------------------------------------
 // External engine helpers CMulti drives (reloc-masked rel32 calls). The names

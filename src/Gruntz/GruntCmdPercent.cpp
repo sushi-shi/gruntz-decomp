@@ -5,11 +5,7 @@
 // non-negative inputs. Shares the volume-curve constant pool with SoundDevice.cpp.
 #include <rva.h>
 #include <math.h> // pow -> __CIpow ; (int)double -> __ftol
-
-extern const double c_volScale; // 0x5ef698  == 100
-extern const double c_volNum;   // 0x5ef6a0  == 1
-extern const double c_powExp;   // 0x5ef6a8  == 10
-extern const double c_acosNorm; // 0x5ef6b0  == 2
+#include <Globals.h>
 
 RVA(0x00135110, 0x8e)
 i32 ComputeCmdPercent(i32 v) {

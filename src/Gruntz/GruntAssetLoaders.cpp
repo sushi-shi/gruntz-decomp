@@ -12,12 +12,11 @@
 #include <rva.h>
 #include <string.h>
 #include <Bute/ButeMgr.h> // CButeMgr g_buteMgr (GetIntDef / GetDwordDef)
+#include <Globals.h>
 
 extern CButeMgr g_buteMgr; // ?g_buteMgr@@3VCButeMgr@@A
 
 // The wingz-duration FP constants (reloc-masked .rodata doubles).
-extern double g_wingzScale; // 0x5e9a48
-extern double g_wingzBias;  // 0x5e9a50
 
 // The global running game clock (reloc-masked).
 extern "C" u32 g_645588;

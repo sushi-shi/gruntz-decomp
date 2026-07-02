@@ -23,6 +23,7 @@
 // Logic + offsets + every call/immediate/branch/store are byte-faithful.
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
 #include <Gruntz/ActReg.h>          // the shared activation-registrar archetype (CActReg)
+#include <Globals.h>
 
 // The second activation key string "B" (0x60d1bc); g_nextActId/s_actKeyA + the
 // name registry come from <Gruntz/ActNameRegistry.h>.
@@ -257,23 +258,10 @@ extern CLookupColl g_reg_644af0; // 0x644af0  (per-class table)
 
 // The 19 action-key strings (s_actKeyA/B come from above; the rest are .rdata
 // string constants named by address). Referenced so the `push key` reloc-masks.
-extern char k_60cc90[];
 extern char k_60cca4[];
 extern char k_60d2ec[];
-extern char k_60d2e8[];
-extern char k_60cc9c[];
-extern char k_60d7fc[];
-extern char k_60cca0[];
 extern char k_60cc94[];
 extern char k_60d7f8[];
-extern char k_60cc98[];
-extern char k_60d7f4[];
-extern char k_60dc04[];
-extern char k_60dc0c[];
-extern char k_60beb8[];
-extern char k_60dc08[];
-extern char k_60bebc[];
-extern char k_60df94[];
 
 // The 19 per-action handler entries (ILT thunks), referenced by address.
 extern "C" void H_402ac2();

@@ -11,6 +11,7 @@
 
 #include <rva.h>
 #include <string.h>
+#include <Globals.h>
 
 // operator new / operator delete (NAFXCW) - external, reloc-masked rel32.
 void* operator new(u32 n);
@@ -18,16 +19,8 @@ void operator delete(void* p);
 
 // The three shade-LUT banks (u8[] read as u16 windows), keyed by the fade
 // offset + the channel value.
-extern u8 g_lutBank0_673ca0[];
-extern u8 g_lutBank1_653ca0[];
-extern u8 g_lutBank2_663ca0[];
 
 // The active pixel-format descriptor (channel shifts/sizes), selecting variant.
-extern i32 g_pfRedShift;   // 0x683ea0
-extern i32 g_pfGreenSize;  // 0x683ea4
-extern i32 g_pfRedSize;    // 0x683eac
-extern i32 g_pfGreenShift; // 0x683eb0
-extern i32 g_pfBlueSize;   // 0x683eb4
 
 struct LutSurf {
     void (**m_vtbl)(void*, i32); // +0x00 dispatch table (slot 0x80/4 = notify)

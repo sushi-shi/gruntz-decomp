@@ -9,6 +9,7 @@
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
 #include <Gruntz/CParticlez.h>
+#include <Globals.h>
 
 // ---------------------------------------------------------------------------
 // The per-coordinate activation registry CParticlez::FireActivation
@@ -34,15 +35,8 @@ struct CPartColl2 {
 };
 extern "C" i32 ActAlloc(); // 0x16d990
 
-extern i32 g_partLo;
-extern i32 g_partHi;
-extern char* g_partBase;
-extern i32 g_partStride;
-extern CPartEntry* g_partCur;
-extern i32 g_partScratch;
 DATA(0x00244870)
 extern CPartColl g_partColl;
-extern CPartColl2* g_partColl2;
 DATA(0x002bf464)
 extern void* g_actCache;
 DATA(0x002bf428)

@@ -5,6 +5,7 @@
 //             0/1/2 result with this exact fcomp/fcompp schedule).
 #include <rva.h>
 #include <string.h>
+#include <Globals.h>
 
 // ---------------------------------------------------------------------------
 // 0x17f500 - zero `count` consecutive 0x28-byte records at `dst`.
@@ -15,7 +16,6 @@ void __stdcall ZeroRecords(void* dst, int count) {
 }
 
 // The ds:-relative scale constant (VA 0x6256f0) the classifier multiplies by.
-extern double g_scale6256f0;
 
 // ---------------------------------------------------------------------------
 // 0x18c1f5 - classify the x87 top value: 0 if not whole; else 1, or 2 when it

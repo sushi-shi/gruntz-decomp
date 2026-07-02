@@ -8,6 +8,7 @@
 // compiler emit a divergent ??_7.
 #include <Wap32/ZVec.h>
 #include <rva.h>
+#include <Globals.h>
 
 // The retail vtables this cluster stamps (reloc-masked address operands).
 DATA(0x001e70fc)
@@ -35,8 +36,6 @@ struct zMemberPtrSlot {
 };
 
 // The error-report globals + the "out of memory" message.
-extern u32 g_zvecErrSentinel; // 0x6bf464
-extern void* g_zvecErrToken;  // 0x6bf428
 DATA(0x0021adf4)
 extern const char s_out_of_memory[]; // 0x61adf4
 

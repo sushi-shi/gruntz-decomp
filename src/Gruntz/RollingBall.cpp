@@ -41,6 +41,7 @@
 
 #include <rva.h>
 #include <string.h> // inline strcmp for the ctor's direction-name match
+#include <Globals.h>
 
 // The handler entry the per-class registry yields: its first dword receives the
 // per-frame handler PMF (Update, a 4-byte code ptr on this single-inheritance
@@ -189,7 +190,6 @@ struct CRbReg {
 // 32.0 (the per-tile-time -> per-frame-speed reciprocal numerator), VA 0x5ea3e0
 // (?g_slimeSpeedNum@@3NB; the consolidated global is pinned via <Globals.h>, so
 // reference it as a plain extern - the same way KitchenSlime's LoadSprites does).
-extern const double g_slimeSpeedNum;
 
 // g_buteTree (the "A" node store) comes from <Gruntz/ActNameRegistry.h>; g_buteMgr
 // (the per-tile-time GetDwordDef) from <Bute/ButeMgr.h> via UserLogic.h.

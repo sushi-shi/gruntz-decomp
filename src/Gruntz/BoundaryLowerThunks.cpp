@@ -10,6 +10,7 @@
 #include <Gruntz/ActReg.h>     // shared activation-registrar archetype (CActReg + aliases)
 #include <Gruntz/CHaznColl.h>  // shared coordinate/activation-registry collection
 #include <Gruntz/CTBombColl.h> // shared coordinate/activation-registry collection
+#include <Globals.h>
 
 // ===========================================================================
 // Tiny string/object globals (already pinned in their owning TUs - reuse the
@@ -76,7 +77,6 @@ void RegRange5bc50() {
 // 0x1e9b0c REALIZED as ??_7CGameApp@@6B@ (gruntzapp emits it); DATA pin removed so
 // the compiler vtable wins the RVA. Manual stamp below stays reloc-masked.
 extern void* g_vtbl_5e9b0c; // 0x5e9b0c  (CGameApp)
-extern i32 g_instCount653c6c;
 struct CTeardown80cf0 {
     void* vptr;        // +0x00
     void Base13d8c0(); // 0x13d8c0 (reloc-masked)
@@ -94,7 +94,6 @@ void CTeardown80cf0::Teardown() {
 // 0x082aa0 - register thunk: hand the address of a global descriptor (0x60aac8)
 // to a manager singleton (0x6451a8) method (0x1d38c5, __thiscall(void*)). __cdecl.
 // ===========================================================================
-extern i32 g_desc60aac8;
 struct CMgr6451a8 {
     void Register(void* desc); // 0x1d38c5 (reloc-masked)
 };
@@ -115,10 +114,9 @@ struct CoordPool {
     void Recycle(void* elem); // 0x0311b0
 };
 SIZE_UNKNOWN(CoordPool);
-extern CoordPool g_coordPool;   // 0x645540 (UnknownClassArrays.cpp)
-extern void* g_freeList;        // 0x645544 (Projectile.cpp)
-extern i32 g_poolScratch645548; // 0x645548 (new pin)
-extern i32 g_freeListNodeBias;  // 0x64554c (Projectile.cpp)
+extern CoordPool g_coordPool;  // 0x645540 (UnknownClassArrays.cpp)
+extern void* g_freeList;       // 0x645544 (Projectile.cpp)
+extern i32 g_freeListNodeBias; // 0x64554c (Projectile.cpp)
 RVA(0x00082fa0, 0x17)
 void ResetCoordPool82fa0() {
     *(i32*)&g_coordPool = 0;
@@ -185,7 +183,6 @@ void* CScalarDtor855a0::ScalarDtor(u32 flags) {
 // 0x1ea344 REALIZED as ??_7CGameWnd@@6B@ (gruntzwnd emits it); DATA pin removed so
 // the compiler vtable wins the RVA. Manual stamp below stays reloc-masked.
 extern void* g_vtbl_5ea344; // 0x5ea344  (CGameWnd)
-extern i32 g_singleton653c68;
 struct CTeardown94c10 {
     void* vptr;
     void Base13cfb0(); // 0x13cfb0 (reloc-masked)

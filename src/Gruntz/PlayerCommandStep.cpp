@@ -11,6 +11,7 @@
 #include <Ints.h>
 
 #include <rva.h>
+#include <Globals.h>
 
 #define F(base, o) (*(i32*)((char*)(base) + (o)))
 #define P(base, o) (*(char**)((char*)(base) + (o)))
@@ -73,7 +74,6 @@ extern CCueTag g_sndCueTag;
 
 DATA(0x00644c54)
 extern i32 g_localPlayer; // g_644c54
-extern void* g_renderCtx; // g_644ca4
 DATA(0x0064556c)
 extern char* g_mgrSettings; // ->m_134
 

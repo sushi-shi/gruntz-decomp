@@ -13,6 +13,7 @@
 // Field names are placeholders; OFFSETS + emitted code bytes are load-bearing.
 #include <Gruntz/CRandomAmbientSound.h>
 #include <rva.h>
+#include <Globals.h>
 
 // The base CUserBase vftable (VA 0x5e70b4) the base ctor stamps. Manual store -
 // see the header note. Referenced by address so the DIR32 operand reloc-masks.
@@ -79,7 +80,6 @@ void SpawnPosSound(PosSoundObj* obj);
 // StopPosSound (0x00c9d0): mark the request "stop" (state 2 in the global queue
 // at 0x62990c) and run the spawn/stop driver.
 // ---------------------------------------------------------------------------
-extern i32 g_posSoundReq; // DAT_0062990c
 
 RVA(0x0000c9d0, 0x18)
 void StopPosSound(PosSoundObj* obj) {

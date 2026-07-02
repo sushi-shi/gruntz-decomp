@@ -17,10 +17,10 @@
 // CMovingLogicCurve view of the same +0x38 region.
 #include <Gruntz/MotionState.h>
 #include <rva.h>
+#include <Globals.h>
 
 // The ms->units scale the elapsed-clock delta is multiplied by (0x5f04f0, a
 // read-only .rdata double read via `fmul [mem]`); sits just before g_motionNegHalf.
-extern const double g_5f04f0;
 
 // The shared -0.5 easing constant (0x5f04f8; owner Globals.cpp) used by the tail
 // velocity fix-ups. Declared via MotionState.h (g_motionNegHalf).

@@ -61,6 +61,7 @@
 
 #include <Win32.h> // timeGetTime / UpdateWindow / ShowCursor (reloc-masked IAT)
 #include <rva.h>
+#include <Globals.h>
 
 // ---------------------------------------------------------------------------
 // Shared singletons + the per-mode/per-area globals (named so DIR32 reloc-mask).
@@ -69,10 +70,8 @@ extern void* g_64556c;           // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
 extern "C" i32 g_645580;         // DAT_00645580
 extern "C" i32 g_645584;         // DAT_00645584
 extern "C" i32 g_645588;         // DAT_00645588 (running game clock; cleared here)
-extern "C" i32 g_6455f0;         // DAT_006455f0 (multi-page flag)
 extern "C" i32 g_644c54;         // DAT_00644c54 (area index)
 extern "C" i32 g_645270;         // DAT_00645270 (area page size)
-extern "C" i32 g_64553c;         // DAT_0064553c (area sub-index)
 extern void* g_645570;           // DAT_00645570
 extern "C" i32 g_64558c;         // DAT_0064558c
 extern "C" i32 g_64e35c;         // DAT_0064e35c

@@ -19,6 +19,7 @@
 #include <Win32.h>  // RECT + IntersectRect
 #include <math.h>   // fild/fsqrt/__ftol board distance
 #include <string.h> // inline strcmp type-name gate
+#include <Globals.h>
 
 // --- offset-faithful views (offsets + called methods load-bearing; reloc-masked) ---
 struct CStepCoord {
@@ -51,13 +52,7 @@ struct CStepTypeColl {
 extern CStepTypeColl g_typeColl; // ?g_typeColl@@3UCTypeKeyColl@@A (0x6bf650)
 
 // The single-char type keys pooled in .rdata (named in Globals.cpp).
-extern char k_60cca0[]; // "I"
-extern char k_60cc9c[]; // "G"
-extern char k_60cc98[]; // "L"
-extern char k_60beb8[]; // "P"
 extern char k_60cc94[]; // "J"
-extern char k_60cc90[]; // "C"
-extern char k_60bebc[]; // "R"
 
 struct CStepGrunt {                                              // g (esi)
     void GetTilePos36c0(CStepCoord* out);                        // 0x36c0

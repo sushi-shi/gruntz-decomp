@@ -17,33 +17,14 @@
 #include <string.h> // memset (rep stos intrinsic)
 
 #include <Gruntz/KeyRecv_f8ec0.h> // the SFMAN32 device interface (*0x64e0b0)
+#include <Globals.h>
 
 typedef i32(__cdecl* SFFactory)(i32 flags, KeyRecv_f8ec0** out);
 
-extern KeyRecv_f8ec0* g_keyRecv_64e0b0; // *0x64e0b0
-extern void* g_initFlag_64e0b8;         // 0x64e0b8 (set to 1 on success)
-extern u32 g_sfVer;                     // 0x64e0a0 (best-device rating / -1)
-extern WORD g_word_64dd28;              // 0x64dd28 (best device index)
+extern WORD g_word_64dd28; // 0x64dd28 (best device index)
 
-extern void* g_dll_64e0a8; // SFMAN32.DLL handle
 DATA(0x0024e0ac)
 extern SFFactory* g_factory_64e0ac; // the "SFManager" data export (ptr-to-fnptr)
-extern i32 g_factoryRc_64da88;
-extern u16 g_count_64e0a4;       // device count
-extern u16 g_idx_64da80;         // current device index
-extern u16 g_caps_64df30;        // caps query buffer base / size field
-extern u32 g_capsFlags_64df36;   // caps flags (caps + 6)
-extern char g_capsName_64df46[]; // caps name (caps + 0x16)
-extern char g_traceBuf_64da90[]; // sprintf scratch
-extern u32 g_ratingRaw_64da84;
-extern char g_ratingBuf_64dbe0[];
-extern u8 g_ratings_64e0c0[]; // per-device rating bytes
-extern u16 g_remaining_64df98;
-extern u32 g_id_64df9c; // packed device id
-extern "C" char g_id0_613dff;
-extern "C" char g_id1_613e00;
-extern "C" char g_id2_613e01;
-extern "C" char g_id3_613e02;
 
 // @early-stop
 // MSVC5 u16-global codegen wall (~74%): the full control flow - the SFMAN32.DLL

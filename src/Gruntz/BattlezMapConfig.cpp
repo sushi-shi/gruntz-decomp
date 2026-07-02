@@ -39,6 +39,7 @@
 // so the `ecx=&g_buteMgr; call Get*` shape reloc-masks against the already-matched
 // CButeMgr getters (butemgr unit).
 #include <Bute/ButeMgr.h>
+#include <Globals.h>
 DATA(0x002453d8)
 extern CButeMgr g_buteMgr;
 
@@ -58,19 +59,14 @@ extern "C" void __stdcall SetAtGrow(i32 arrayHandle, void* node);
 // DIR32 reloc to the descriptor on its immediate (imm32 = &descN + 5). Modeling the
 // RHS as `(int)(&descN + 5)` reproduces that relocation byte-for-byte. The records
 // are never dereferenced - only their address rides the immediate.
-extern char g_typeDesc1[];
-extern char g_typeDesc2[];
-extern char g_typeDesc3[];
 
 // The C runtime PRNG (reloc-masked).
 extern "C" i32 rand(void);
 
 // The FP scale constant the difficulty rescale multiplies by (a 4-byte float in
 // .data; fmuls reads it). Reloc-masked const datum.
-extern const float g_diffScale;
 
 // The difficulty-tier sink the rescale stamps (5 Hard / 10 Normal / 20 Easy).
-extern i32 g_diffTier;
 
 // ---------------------------------------------------------------------------
 // The level object-list node + the per-tag store the loops walk.

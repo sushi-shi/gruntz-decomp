@@ -21,6 +21,7 @@
 #include <Gruntz/GruntzPlayer.h>
 
 #include <string.h> // inlined memset / strcpy in Serialize (rep stos / rep movs)
+#include <Globals.h>
 
 // The MFC empty C string (the afxEmptyString data buffer @0x6293f4); the name
 // CString members default-init to it. Reloc-masked DATA.
@@ -33,8 +34,6 @@ extern i32 g_serialCounter;
 
 // The per-player config name tables the two free getters below index by enum.
 // Each is an array of char* into the rodata string pool. Reloc-masked DATA.
-extern char* g_colorNames[];      // "Color 0".."Color 7"
-extern char* g_difficultyNames[]; // "Easy"/"Normal"/"Hard"
 
 // The archive/order object Serialize streams through. Its field-transfer entries
 // are the virtuals at vtable byte-offsets 0x2c (Load) and 0x30 (Save), each taking

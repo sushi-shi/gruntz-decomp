@@ -6,14 +6,10 @@
 #include <rva.h>
 #include <string.h>
 #include <stdio.h>
+#include <Globals.h>
 // timeGetTime (WINMM frame clock) comes from <Mfc.h>'s central decl (via <Wap32.h>).
 
-extern i32 g_wap32Now;
-extern i32 g_wap32FrameDelta;
-extern i32 g_wap32ClockReset;
 // Two run-state timing defaults CGameMgr::Run seeds to 0x64 (100).
-extern i32 g_wap32Run7c;
-extern i32 g_wap32Run80;
 
 // Instance counter (bumped per ctor). Shared
 // (declared in Wap32.h) so the inline ~CGameApp - which CGruntzApp's dtor
@@ -533,8 +529,7 @@ void* WAP32::CGameMgr::vector_deleting_destructor(unsigned int flags) {
 // ??_GCGameApp thunk with ~CGameApp inlined): stamp the CGameApp vftable (0x5e9b0c),
 // run CloseResources (0x13d8c0), decrement the live-instance counter, then the
 // delete-flag tail; returns `this`. Same teardown as CTeardown80cf0::Teardown.
-extern void* g_vtbl_5e9b0c;   // 0x5e9b0c (CGameApp vftable)
-extern i32 g_instCount653c6c; // 0x653c6c (live CGameApp count)
+extern void* g_vtbl_5e9b0c; // 0x5e9b0c (CGameApp vftable)
 RVA(0x00080dd0, 0x32)
 void* CGameApp::Stub_080dd0(unsigned int flags) {
     *(void**)this = &g_vtbl_5e9b0c;

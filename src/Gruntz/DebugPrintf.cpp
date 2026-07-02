@@ -7,6 +7,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <Globals.h>
 
 // The debug-output sink object; its first dword is reset, then it is configured
 // from the parsed keyword string.
@@ -16,8 +17,6 @@ struct CDebugSink {
 };
 DATA(0x006bf850)
 extern CDebugSink g_6bf850;
-
-extern i32 g_6bf8dc; // debug-output mode
 
 class CDebugConfig {
 public:

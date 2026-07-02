@@ -47,6 +47,7 @@
 // C++ EH frame (the CString copy + the node ctor under unwind) -> /GX.
 #include <Bute/ButeMgr.h>
 #include <rva.h>
+#include <Globals.h>
 
 // Global operator new (engine NAFXCW); external/no-body so the
 // `push 0x2c; call ??2; add esp,4` shape falls out reloc-masked.
@@ -63,11 +64,9 @@ extern i32 g_nodeDescriptor;
 //                       WORDs); three adjacent columns are read off the same
 //                       base (g_transTable[i], [i+1], [i+2] -> base +0/+2/+4).
 // ---------------------------------------------------------------------------
-extern "C" i16 g_charClass[];  // 0x61cf40
-extern "C" i16 g_transTable[]; // 0x61d140  (state x class table, row stride 147)
 // The token-type column is read off the table's second WORD (0x61d142): retail
 // folds the +1 into the data symbol's address, so it is its own DATA extern.
-extern "C" i16 g_transTable142[][147]; // 0x61d142
+// (g_transTable142 comes from <Globals.h>.)
 
 // The shared empty C string (0x6293f4); Init assigns it into the two scratch
 // CStrings.
@@ -1409,7 +1408,6 @@ extern "C" void Helper_DeleteCriticalSection(void* cs); // 0x16c9d0 (FuncB clean
 
 // The shared one-time-init guard + the shared critical section (reloc-masked
 // file-scope DATA externs at 0x6bf400 / 0x6bf3c8).
-extern "C" i32 g_helperRefCount; // 0x6bf400
 DATA(0x006bf3c8)
 extern "C" CRITICAL_SECTION g_helperSharedCS; // 0x6bf3c8
 

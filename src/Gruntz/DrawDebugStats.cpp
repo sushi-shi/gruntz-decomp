@@ -28,8 +28,8 @@
 #include <string.h> // inline strcat/strlen intrinsics (/O2)
 
 #include <rva.h>
+#include <Globals.h>
 
-extern u8 g_debugFlags; // 0x6455f4  debug-overlay flag bits
 DATA(0x00245588)
 extern "C" u32 g_645588; // a wrap-safe draw/elapsed counter (FormatElapsed arg + %lu)
 

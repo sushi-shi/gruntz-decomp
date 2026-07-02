@@ -28,15 +28,6 @@ extern WORD g_word_64dace; // 0x64dace  config block A +2 (=0)
 extern WORD g_word_64dd28; // 0x64dd28  soundfont load token
 
 // The soundfont path/state globals.
-extern u32 g_sfCfgB0;     // 0x64dad0  config block B +0 (=0x80)
-extern char* g_sfCurPath; // 0x64dad4  the path currently being tried
-extern u16 g_sfCfgB12;    // 0x64dadc  config block B +0xc (=0)
-extern char g_sfLocal4[]; // 0x64dc28  "<dir>\Gruntz4.SF2"
-extern char g_sfMusic[];  // 0x64dd30  "<drive>:\MUSIC\Gruntz.SF2"
-extern char g_sfMusic4[]; // 0x64dae0  "<drive>:\MUSIC\Gruntz4.SF2"
-extern char g_sfLocal[];  // 0x64de30  "<dir>\Gruntz.SF2"
-extern char g_sfDir[];    // 0x64dfa0  current-directory scratch (0xff)
-extern u32 g_sfVer;       // 0x64e0a0  build/version selector
 
 // 0xf8ec0 (via ILT thunk 0x3382): re-seed the music device key table.
 int InitKeys_f8ec0();

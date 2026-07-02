@@ -19,10 +19,10 @@
 #include <Gruntz/BzState.h>
 
 #include <rva.h>
+#include <Globals.h>
 
 // Per-player idle-sprite id table (0x5e9068), the wand/flag cue tag + enable gate,
 // the wrap-safe draw clock, the "A" action-key string, and the inline-RNG state.
-extern i32 g_idleSpriteIds[4]; // 0x5e9068
 DATA(0x0021ab24)
 extern i32 g_sndCueTag; // 0x61ab24
 DATA(0x0021ab20)
@@ -35,8 +35,6 @@ extern "C" {
     DATA(0x002c4650)
     extern u32(__stdcall* g_pTimeGetTime)(); // PTR_timeGetTime_006c4650
 }
-extern u8 g_randSeeded; // 0x6c127d  seed-init flag (bit 0)
-extern i32 g_randSeed;  // 0x6c1288  LCG seed
 
 // ===========================================================================
 // UpdateBootyWalkingGruntz @0x1b690 - the per-frame booty walking-grunt state

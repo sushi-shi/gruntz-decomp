@@ -9,12 +9,12 @@
 
 #include <DDrawMgr/CDDSurface.h>  // canonical CDDSurface (Blt @0x13ee60)
 #include <Gruntz/KeyRecv_f8ec0.h> // the *0x64e0b0 receiver (shared w/ SFSelectDevice)
+#include <Globals.h>
 
 // ===========================================================================
 // 0x001b9b8d (6B) - getter that returns the address of a global descriptor
 // (PTR_DAT_006156f4). `mov eax, OFFSET g; ret`.
 // ===========================================================================
-extern void* g_desc_6156f4;
 RVA(0x001b9b8d, 0x6)
 void** Get_1b9b8d() {
     return &g_desc_6156f4;
@@ -195,7 +195,6 @@ void CGameModeBase::Reset() {
     BaseCleanup();
 }
 
-extern char s_PREVIEW_6135e8[]; // "PREVIEW"
 // @early-stop
 // regalloc wall (topic:wall topic:regalloc): same m_28-intermediate register
 // micro-diff as Reset; logic + named callees + the "_" string literal match
@@ -295,8 +294,6 @@ void EnableButtons_be820(HWND hDlg, DlgData_be820* obj) {
 // vtable slot +0x34 on a global receiver; set the scratch word each iteration.
 // __cdecl(); returns 0 if the flag is clear else 1.
 // ===========================================================================
-extern void* g_initFlag_64e0b8;
-extern KeyRecv_f8ec0* g_keyRecv_64e0b0;
 DATA(0x0024dace)
 extern WORD g_word_64dace;
 DATA(0x0024dacc)
@@ -399,7 +396,6 @@ void Tree_193340::Walk(WalkCb_193340 cb, i32 ctx, TNode_193340* node) {
 // the front surface with arg0, Flip the back surface, then Refresh again.
 // __thiscall(arg0). m_c->m_4 is reloaded each statement (not cached across).
 // ===========================================================================
-extern i32 g_suppress_64e360;
 // The +0x2c surface controller (CopyRect 0x13f460, Flip 0x13e850), no-body.
 struct SurfCtl_faec0 {
     void CopyRect(i32 a, i32 b); // 0x13f460

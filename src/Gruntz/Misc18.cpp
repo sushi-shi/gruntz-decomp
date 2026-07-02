@@ -3,6 +3,7 @@
 //   0x18a190  BitFlush  - flushes the 16-bit pack accumulator to the byte stream.
 #include <Ints.h>
 #include <rva.h>
+#include <Globals.h>
 
 // --- 0x186990 : free a record + its owned buffers through self->m_24 ----------
 struct FreeNode {
@@ -93,10 +94,6 @@ void BitFlush(BitBuf* b) {
 extern "C" void* memset(void* d, i32 c, unsigned int n);
 
 // Four u16 fields of the current mode's record in a 0xc-stride constant table.
-extern u16 g_modeTab_e8; // 0x624fe8
-extern u16 g_modeTab_ea; // 0x624fea
-extern u16 g_modeTab_ec; // 0x624fec
-extern u16 g_modeTab_ee; // 0x624fee
 
 struct Coder {
     char pad00[0x20];

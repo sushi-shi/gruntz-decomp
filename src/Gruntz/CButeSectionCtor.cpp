@@ -19,9 +19,9 @@
 // epilogues are the residual.  The final-sweep upgrade is to model the embedded
 // streams + CStrings as real destructible members so cl emits the frame itself.
 #include <rva.h>
+#include <Globals.h>
 
 // The stream base ctor argument tag (a .text descriptor @0x574de0).
-extern u8 g_streamTag; // 0x574de0
 
 // The node's two most-derived vftables, re-stamped over the tables the base ctor
 // laid down (reloc-masked DIR32 data). g_streamData @0x5f0514 is NOT data: it is
@@ -36,7 +36,6 @@ extern u8 g_streamTag; // 0x574de0
 // (src/Stub/CButeNodeBase.cpp). Foreign sub-object re-stamps stay manual.
 DATA(0x001f0510)
 extern void* g_streamVtbl; // 0x5f0510  node's primary vftable (4 slots)
-extern void* g_streamData; // 0x5f0514  node's +0x08 sub-object vftable (= &g_streamVtbl+4)
 
 // Sub-object ctors / leaves (all __thiscall, no body -> rel32 reloc-masks).
 struct CBSecString {

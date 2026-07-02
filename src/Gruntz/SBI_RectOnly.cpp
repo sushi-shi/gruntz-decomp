@@ -2,6 +2,7 @@
 #include <Mfc.h>
 #include <Bute/ButeMgr.h> // canonical CButeMgr (one shape)
 #include <Gruntz/StatusBarItem.h>
+#include <Globals.h>
 // SBI_RectOnly.cpp - Gruntz CSBI_RectOnly (C:\Proj\Gruntz).
 // The constructor is matched byte-exact.
 //
@@ -3044,8 +3045,6 @@ i32 CSBI_RectOnly::BuildStatusBarTabs() {
 // The inlined game RNG (shared with BootyWalkAnim / CGruntSpawnConfig): the LCG
 // seed + the seed-init flag (bit 0) + the timeGetTime entry pointer. Bound (DATA)
 // by BootyWalkAnim / m5_SoundTickCtor; referenced here as reloc-masked externs.
-extern u8 g_randSeeded;                      // 0x6c127d  seed-init flag (bit 0)
-extern i32 g_randSeed;                       // 0x6c1288  LCG seed
 extern "C" u32(__stdcall* g_pTimeGetTime)(); // 0x6c4650
 
 // MSVC-style LCG rand() (x = x*214013 + 2531011), lazily seeded from timeGetTime.

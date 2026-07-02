@@ -13,6 +13,7 @@
 #include <Bute/ButeMgr.h> // CButeTree (the shared registration key store)
 #include <Mfc.h>          // CString (the scratch name-vec element)
 #include <Wap32/ZVec.h>   // zDArray<member-fn-ptr> dispatch table + zvec accessors
+#include <Globals.h>
 
 // The animation sub-object embedded at CGameObject+0x1a0 (the bound object is
 // CUserLogic::m_38). Its setter (0x15c360, __thiscall, 1 arg) re-targets the
@@ -65,8 +66,6 @@ extern NameVec g_buteNameVec;
 
 // The zvec error globals + the capture helper the inlined accessor touches on a
 // bounds miss (the same set ZVec.cpp models).
-extern u32 g_zvecErrSentinel;    // 0x6bf464
-extern void* g_zvecErrToken;     // 0x6bf428
 extern void* zErr_CaptureRetB(); // 0x16d990
 
 // The logic registration key (the .data string constant @ 0x60a454, the SAME key

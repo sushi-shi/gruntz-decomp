@@ -42,6 +42,7 @@
 // already-matched decoder callers), but their bodies touch the rich surface
 // layout + call the CDDSurface COM thunks (Lock/SetColorKey, reloc-masked).
 #include <Gruntz/CDirectDrawMgr.h>
+#include <Globals.h>
 
 // The .PID/.PCX-via-RezMgr flags word (header+4). Monolith's WAP32 layout
 // (libwap32 wap32/pid.h, mirrored in src/Stub/types/wwd.h). Same immediates as
@@ -1002,7 +1003,6 @@ public:
 };
 DATA(0x00253c88)
 extern CImageCache g_imageCache; // 0x653c88
-extern i32 g_imageCacheIndex;    // 0x653c90
 
 // The owner of the factory (this) is not touched by the body; modeled as an
 // opaque shell so the call lowers to the retail __thiscall frame.

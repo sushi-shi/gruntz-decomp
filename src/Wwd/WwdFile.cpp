@@ -33,12 +33,11 @@
 #include <stdio.h>  // sprintf
 #include <stdlib.h> // atoi
 #include <string.h> // memcpy + inline strcpy/strlen (rep movs / repne scas)
+#include <Globals.h>
 
 // The shared map-name scratch buffer GetMapBaseName strcpy's the path into
 // (0x62c010), plus its 4-byte predecessor slot (0x62c00c) the extension-truncation
 // store indexes through. Reloc-masked DATA pins.
-extern char g_mapNamePre[4];
-extern char g_mapNameBuf[0x200];
 
 // ---------------------------------------------------------------------------
 // The game registry global (?g_gameReg@@3PAUCGameReg@@A @ VA 0x64556c). Only the

@@ -9,6 +9,7 @@
 // recovered engine identities.
 #include <Gruntz/CTBombColl.h> // shared coordinate/activation-registry collection
 #include <Gruntz/CTimeBomb.h>
+#include <Globals.h>
 
 // ---------------------------------------------------------------------------
 // The per-coordinate activation registry CTimeBomb::FireActivation (0x0e1830)
@@ -31,15 +32,8 @@ struct CTBombColl2 {
 SIZE_UNKNOWN(CTBombColl2);
 extern "C" i32 ActAlloc(); // 0x16d990
 
-extern i32 g_tbombLo;
-extern i32 g_tbombHi;
-extern char* g_tbombBase;
-extern i32 g_tbombStride;
-extern CTBombEntry* g_tbombCur;
-extern i32 g_tbombScratch;
 DATA(0x0024c780)
 extern CTBombColl g_tbombColl;
-extern CTBombColl2* g_tbombColl2;
 DATA(0x002bf464)
 extern void* g_actCache;
 DATA(0x002bf428)

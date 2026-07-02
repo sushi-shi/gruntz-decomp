@@ -7,6 +7,7 @@
 #include <Ints.h>
 #include <rva.h>
 #include <Rez/RezMgr.h>
+#include <Globals.h>
 
 extern "C" void* memcpy(void* d, const void* s, unsigned int n);
 extern "C" void* memset(void* d, int c, unsigned int n);
@@ -51,7 +52,6 @@ DATA(0x0024aca8)
 extern CPtrList g_pool; // 0x64aca8
 
 // The "[end]"-tagged broadcast scratch buffer for the receive loop (0x800 B).
-extern char g_649858[0x800]; // 0x649858
 
 // --- The per-slot descriptor pointed to by m_0c --------------------------------
 struct SlotInfo {
@@ -367,19 +367,6 @@ i32 CLobbySync::SendAll() {
 // The two outgoing-packet staging buffers (BSS).  Ghidra split each into one
 // DAT symbol per written field offset, so we declare each offset as its own
 // labeled extern for the abs stores to reloc-pair.
-extern unsigned char gB_flag; // 0x64a058
-extern i32 gB_val;            // 0x64a059
-extern i32 gB_m14;            // 0x64a05d
-extern i32 gB_e04;            // 0x64a061
-extern unsigned char gB_e08;  // 0x64a065
-extern unsigned char gB_data; // 0x64a066
-
-extern unsigned char gA_flag; // 0x64a8a8
-extern unsigned char gA_slot; // 0x64a8a9
-extern i32 gA_seq;            // 0x64a8aa
-extern i32 gA_e04;            // 0x64a8b2
-extern unsigned char gA_e08;  // 0x64a8b6
-extern unsigned char gA_data; // 0x64a8b7
 
 // @early-stop
 // regalloc cascade (~84%): logic byte-exact; ecx/edx + esi/eax allocation for the

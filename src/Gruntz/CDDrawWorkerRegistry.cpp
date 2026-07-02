@@ -27,6 +27,7 @@
 #include <Mfc.h>
 #include <string.h> // strncpy (the StringCopy leaf, reloc-masked)
 #include <stdio.h>  // sprintf ("%s%s%s" path builder in Stub_154f80 / Stub_155160)
+#include <Globals.h>
 class CDDrawWorkerRegistry;
 
 // CString (4-byte char* wrapper). Only the default ctor + dtor are needed;
@@ -130,10 +131,8 @@ struct SeverusWorkerObj : public SeverusWorkerBase {
 }; // 0x6c
 typedef SeverusWorkerObj SeverusWorker;
 
-extern i32 g_severusScratch[25];
 DATA(0x002bf37c)
 extern i32 g_severusCounterA;
-extern i32 g_severusCounterB;
 
 // ---------------------------------------------------------------------------
 // CDDrawWorkerRegistry - only the load-bearing offset is modeled: the CMapStringToOb at
@@ -198,7 +197,6 @@ public:
 DATA(0x006293f4)
 extern char g_emptyString[]; // 0x6293f4
 DATA(0x0060b588)
-extern unsigned char g_dat60b588; // 0x60b588
 class RegView48 {
 public:
     virtual void s00();

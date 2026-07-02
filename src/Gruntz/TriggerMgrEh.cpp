@@ -9,6 +9,7 @@
 // whole class). Only the offsets + reloc-masked helpers each method touches are modelled.
 #include <Gruntz/TriggerMgr.h>
 #include <Bute/ButeMgr.h> // canonical CButeMgr (one shape)
+#include <Globals.h>
 
 // Shared globals (same symbols as TriggerMgr.cpp; re-declared local to this TU).
 struct CTmGameRegE {
@@ -19,7 +20,6 @@ struct CTmGameRegE {
 SIZE_UNKNOWN(CTmGameRegE);
 extern CTmGameRegE* g_gameReg;
 extern i32 g_644c54;
-extern void* g_renderCtx; // ?g_renderCtx@@3PAXA @0x644ca4 (Load reads into it)
 
 // CButeMgr (?g_buteMgr@@3VCButeMgr@@A @0x6453d8) - the canonical CButeMgr (via
 // TriggerMgr.h); the int-with-default getter (0x171aa0) is reloc-masked.

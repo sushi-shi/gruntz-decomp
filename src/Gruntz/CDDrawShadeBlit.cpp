@@ -12,6 +12,7 @@
 
 #include <rva.h>
 #include <string.h> // inline rep-movs memcpy intrinsic
+#include <Globals.h>
 
 // The live screen RGB-format shift table at 0x683ea0..0x683eb4 - already named by
 // CLightFxRender.cpp; the mode-2 gate compares these against the magic 5/10/3/3/3
@@ -28,9 +29,6 @@ DATA(0x00283eb4)
 extern i32 g_bDown; // 0x683eb4
 
 // The three 2048-byte-strided translucency LUT banks selected by the light level.
-extern u8 g_lutBank1_653ca0[];
-extern u8 g_lutBank2_663ca0[];
-extern u8 g_lutBank0_673ca0[];
 
 RVA(0x001497f0, 0x154)
 i32 CDDrawShadeBlit::Blit(ShadeRect* p0, ShadeSrc* src, ShadeRect* clip, i32 sel, i32 p4) {
@@ -447,7 +445,6 @@ void CDDrawShadeBlit::BlitLoop(ShadeRect* p0, ShadeSrc* src, ShadeRect* clip, i3
 // The global scratch line the row converter saves the destination into before an
 // in-place blend (DAT_006bed08), and the secondary palette/format descriptor
 // (DAT_006bf218) used by the 16-bit alpha path. Reloc-masked.
-extern u8 g_scratch[]; // 0x6bed08
 DATA(0x002bf218)
 extern ShadeDescr* g_blendDescr; // 0x6bf218
 

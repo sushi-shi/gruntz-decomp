@@ -16,6 +16,7 @@
 // bytes are load-bearing (campaign doctrine).
 // ---------------------------------------------------------------------------
 #include <Gruntz/CAniElement.h>
+#include <Globals.h>
 
 // Global operator new (engine NAFXCW _RezAlloc @0x1b9b46); external/no-body so its
 // rel32 call is reloc-masked.
@@ -25,7 +26,6 @@ extern "C" void RezFree(void* p);
 
 // Set by the record parser (0x168c60) to the parsed name length; the builder uses
 // it to advance the record-stream cursor. 0x6bf3c4 -> file RVA 0x2bf3c4.
-extern i32 g_aniParsedNameLen;
 
 // The 'ANI' source entry's tag reader / parse session (RemusParseSource family,
 // __thiscall on the entry node). Modeled as a layout-compatible view so the

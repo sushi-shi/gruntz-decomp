@@ -21,10 +21,10 @@
 #include <rva.h>
 
 #include <Gruntz/CDirectDrawMgr.h>
+#include <Globals.h>
 
 // The shared 256-entry palette->16bpp lookup table (file RVA 0x283ca0 = VA
 // 0x683ca0, 512 bytes, ending exactly at g_rUp). Built by the 8->16 blitters.
-extern u16 g_lut16[256];
 
 // The live screen RGB-format shift table (file RVA 0x283ea0..0x283eb4). Same
 // differently-named symbols as elsewhere; reloc-masked.

@@ -6,6 +6,7 @@
 // names are placeholders; only OFFSETS + code bytes are load-bearing.
 #include <Gruntz/CStringNode.h> // the type-name teardown slot
 #include <Gruntz/UserLogic.h>
+#include <Globals.h>
 
 // The leaf game-object whose dtor opens this TU. A CUserLogic leaf: its only
 // destructible member is the inherited +0x18 EngStr link, so the dtor folds the
@@ -29,13 +30,6 @@ extern CProjReg g_projReg;
 // the collection; the lo/hi/base/cur/stride/scratch fields are separate
 // DATA-pinned BSS globals reached by direct ds: loads). Same archetype as the
 // kitchen-slime / projectile activation tables.
-extern struct CProjReg2* g_projRegColl2; // 0x62938c  (Insert dispatcher)
-extern i32 g_projRegLo;                  // 0x629390
-extern i32 g_projRegHi;                  // 0x629394
-extern char* g_projRegBase;              // 0x629398
-extern struct R3Entry* g_projRegCur;     // 0x62939c
-extern i32 g_projRegStride;              // 0x6293a0
-extern i32 g_projRegScratch;             // 0x6293a8
 
 // The shared alloc-cache pair + the alloc helper the rebuild path drives.
 DATA(0x002bf464)

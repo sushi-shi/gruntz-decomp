@@ -13,6 +13,7 @@
 
 #include <Ints.h>
 #include <math.h>
+#include <Globals.h>
 
 // The static draw workspace (0x6a21f8..). Four vertex records, 0x1c stride; the
 // helpers take &g_drawWS[0].
@@ -24,7 +25,6 @@ DATA(0x001efb10)
 extern float g_c10;
 DATA(0x001efb20)
 extern float g_c20;
-extern float g_c24;
 
 // A draw param the draw helper consumes (0x6becf8).
 DATA(0x002becf8)

@@ -23,10 +23,10 @@
 
 #include <DDrawMgr/CDDSurface.h>    // canonical CDDSurface (BltEx blit backend)
 #include <Gruntz/CDDrawShadeBlit.h> // canonical CDDrawShadeBlit (+ ShadeRect/ShadeSrc)
+#include <Globals.h>
 
 // The 25-int severus scratch block (shared with CDDrawWorkerRegistry); [1] carries
 // the BltEx blend-mode word, the base is the DDBLTFX-style fx pointer.
-extern i32 g_severusScratch[25];
 
 // The origin-remap target reached through info->m_3c->m_5c (bit 0x40000): the
 // world-coordinate wrap/transform CSpritePlaneRender::WrapCoord (0xa000, reached via the

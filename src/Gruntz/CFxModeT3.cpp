@@ -16,6 +16,7 @@
 #include <math.h> // sqrt -> fsqrt
 #include <rva.h>
 #include <string.h> // rep-movs element copy / memset in the array grow
+#include <Globals.h>
 
 // A box whose +0x18 / +0x1c are its width / height (read by the param derive).
 struct FxBox;
@@ -59,8 +60,6 @@ struct FxPointArray {
 // the two .rdata float constants the projection compares/biases against.
 DATA(0x002c4490)
 extern void(__stdcall* g_OffsetRect)(void* r, i32 dx, i32 dy); // PTR_OffsetRect_006c4490
-extern float g_fxBias;                                         // 0x5f07ec
-extern float g_fxEps;                                          // 0x5f07f4
 
 // Rez heap for the array grow (reloc-masked).
 extern "C" void* RezAlloc(u32 size); // 0x1b9b46

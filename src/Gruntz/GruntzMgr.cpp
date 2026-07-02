@@ -23,6 +23,7 @@
 #include <rva.h>
 #include <stdio.h>  // engine sprintf (reloc-masked) for the toggle-message formatter
 #include <string.h> // engine strstr (reloc-masked) for the Battlez header probe
+#include <Globals.h>
 
 namespace Utils {
     namespace WinAPI {
@@ -90,7 +91,6 @@ extern "C" {
 extern "C" {
     DATA(0x00248ce8)
     extern i32 g_648ce8; // DAT_00648ce8  (timeGetTime base stamp)
-    extern i32 g_6455c8; // DAT_006455c8  (joystick-disable flag)
 }
 
 // AccrueScoreTime's engine views. g_gameReg->m_7c is the registry's HUD/score
@@ -229,8 +229,6 @@ extern "C" {
     extern i32 g_645508; // DAT_00645508
     extern i32 g_64550c; // DAT_0064550c
 }
-extern i32 g_warpX; // ?g_warpX@@3HA
-extern i32 g_warpY; // ?g_warpY@@3HA
 
 extern "C" {
     extern i32 g_644c54; // DAT_00644c54  (active player/world index)
@@ -450,7 +448,6 @@ extern "C" {
 // masked DATA refs; only the load/store shapes are load-bearing. g_severusCounterB
 // is the C++-mangled ?g_severusCounterB@@3HA (no extern "C"); the rest are DAT_
 // C globals pinned by their DATA() RVA so the DIR32 reloc pairs.
-extern i32 g_severusCounterB; // ?g_severusCounterB@@3HA  (0x6bf380)
 extern "C" {
     DATA(0x00283ea0)
     extern i32 g_683ea0; // DAT_00683ea0  (red shift-up)
@@ -463,8 +460,6 @@ extern "C" {
     DATA(0x00283eb4)
     extern i32 g_683eb4; // DAT_00683eb4  (blue shift-down)
     // The world-mode reload globals LoadWorldMode resets (reloc-masked).
-    extern i32 g_6455dc; // DAT_006455dc
-    extern i32 g_6455e0; // DAT_006455e0
     DATA(0x002455b4)
     extern i32 g_6455b4; // DAT_006455b4  (alt-flag, reload kind 1/5)
 }
@@ -678,8 +673,6 @@ CString GetWorldFileFromWindow(HWND hwnd, i32 flag);
 // g_wap32FrameDelta are the engine's just-refreshed clock (mangled C++ globals,
 // stored into the game-side mirror g_645580/g_645584); g_6bf3c0/g_6bf3bc are the
 // draw-clock pair (extern "C" -> the _g_* C symbols). All reloc-masked DATA refs.
-extern i32 g_wap32Now;        // ?g_wap32Now@@3HA
-extern i32 g_wap32FrameDelta; // ?g_wap32FrameDelta@@3HA
 extern "C" {
     extern u32 g_645580; // game-side now mirror (DAT_00645580)
     extern u32 g_645584; // game-side delta mirror (DAT_00645584)
@@ -752,7 +745,6 @@ struct CChatLog {
 // The shared scratch buffer the toggle-message formatter renders "<item> is
 // ON/OFF" into before logging it (reloc-masked DATA ref). The format helper is
 // the statically-linked CRT sprintf (FUN_0051f890; reloc-masked call).
-extern "C" char g_msgScratch[]; // 0x6452d8
 
 // -------------------------------------------------------------------------
 // CGruntzMgr::GoToNextLevel (0x08d850; ret). Only when the live state is PLAY

@@ -16,6 +16,7 @@
 #include <Gruntz/CViewport.h>          // shared world->screen transform
 #include <Gruntz/UserLogic.h>
 #include <rva.h>
+#include <Globals.h>
 
 // ---------------------------------------------------------------------------
 // CButeTree (declared in <Bute/ButeMgr.h>, pulled via UserLogic.h) - the engine
@@ -451,15 +452,8 @@ struct CActColl2 {
 };
 extern "C" i32 ActAlloc(); // 0x16d990
 
-extern i32 g_actLo;
-extern i32 g_actHi;
-extern char* g_actBase;
-extern i32 g_actStride;
-extern CActEntry* g_actCur;
-extern i32 g_actScratch;
 DATA(0x00244688)
 extern CActColl g_actColl;
-extern CActColl2* g_actColl2;
 DATA(0x002bf464)
 extern void* g_actCache;
 DATA(0x002bf428)

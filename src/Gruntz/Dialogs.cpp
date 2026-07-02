@@ -14,6 +14,7 @@
 // ---------------------------------------------------------------------------
 #include <Gruntz/Dialogs.h>
 #include <rva.h>
+#include <Globals.h>
 
 // The global CGameRegistry CMultiStartDlg's ctor snapshots: it copies
 // g_gameReg->m_2c into the file-scope sink g_64bd5c (both reloc-masked DIR32).
@@ -26,8 +27,6 @@ extern i32 g_64bd5c; // the file-scope int sink (reloc-masked DATA symbol)
 
 // The per-dialog static MFC message maps (each GetMessageMap returns &<map>).
 // Referenced as reloc-masked DATA externs (RVA = VA - 0x400000).
-extern const i32 g_msgmap_CBattlezDlgColors;
-extern const i32 g_msgmap_CCheckpointDlg;
 
 // ---------------------------------------------------------------------------
 // CMultiStartDlg multiplayer-setup helpers (BuildSlotList / UpdateSlot model).
@@ -697,14 +696,12 @@ void CBattlezDlg::ReadCtrlBText(i32 index) {
 // that. All control flow + the logic (modal run, m_528/FindRec/m_538 teardown,
 // the registry GAME_KEY cue throttle, Sleep) is byte-aligned; only the three
 // cleanup sites differ.
-extern i32 g_dlgResultSink; // DAT_00648ce0 (cleared after the modal run)
 DATA(0x0021ab20)
 extern i32 g_sndEnabled; // ?g_sndEnabled@@3HA
 DATA(0x0021ab24)
 extern i32 g_sndCueTag; // ?g_sndCueTag@@3HA
 DATA(0x002bf3c0)
 extern i32 g_killCueClock; // _g_killCueClock
-extern char s_GameKey[];   // s_GAME_KEY_00611ec4 (registry key literal)
 
 // The cue emitter held at record+0x10; Trigger @0x1360d0 (__thiscall, 4 args).
 struct CCueEmitter {

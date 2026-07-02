@@ -16,6 +16,7 @@
 
 #include <rva.h>
 #include <Win32.h> // IsDlgButtonChecked + HWND (real USER32 header)
+#include <Globals.h>
 
 // ---------------------------------------------------------------------------
 // The game-manager singleton (*g_64556c) the options reader commits into - the
@@ -37,22 +38,10 @@ extern "C" {
     // (0x6455c0) - the SAME gates CPlay::ApplyGameOptions tests.
     DATA(0x002455b4)
     extern i32 g_gate_2455b4;
-    extern i32 g_gate_2455bc;
-    extern i32 g_gate_2455c0;
 
     // The options-dialog staging globals (.data ints): LoadGameOptionsToDialog
     // (0x036860) snapshots g_gameReg into them then pushes them into the controls;
     // CPlay::ApplyGameOptions (0x036be0) reads them back. SAME g_opt_* set CPlay names.
-    extern i32 g_opt_22bd64;
-    extern i32 g_opt_22bd68;
-    extern i32 g_opt_22bd6c;
-    extern i32 g_opt_22bd70;
-    extern i32 g_opt_22bd84;
-    extern i32 g_opt_22bdc4;
-    extern i32 g_opt_22bdc8;
-    extern i32 g_opt_22bdcc;
-    extern i32 g_opt_22bdd0;
-    extern i32 g_opt_22bdd4;
 }
 
 // Screen-resolution detector (0x036f30-2 sibling at 0x0363a0): reads g_gameReg's

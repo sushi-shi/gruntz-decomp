@@ -20,6 +20,7 @@
 #include <rva.h>
 
 #include <string.h> // inline strcpy intrinsic (/O2) for the cheat-table copy
+#include <Globals.h>
 
 // The global CButeMgr instance the cheat table reads from (0x6453d8).
 DATA(0x002453d8)
@@ -30,11 +31,8 @@ extern "C" char g_emptyString[];
 // `mov edi,ds:g_ShowCursor; call edi` cached-ptr loop idiom (AppHelpers.cpp).
 extern int(__stdcall* g_ShowCursor)(int);
 // First-run guard (DAT_0062af10): 0 until the cheat table is built.
-extern i32 g_bootyCheatBuilt;
 // The 25-entry cheat text/desc table (0x629f50 .. 0x62aef0, stride 0xa0). The
 // loop pointer walks [base .. end); each entry's text lands at p-0x20, desc at p.
-extern char g_cheatTable[];
-extern char g_cheatTableEnd[];
 // The +0x1c0 mode-record seed (_g_645588).
 DATA(0x00245588)
 extern i32 g_645588;

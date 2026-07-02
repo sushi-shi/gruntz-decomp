@@ -20,10 +20,10 @@
 #include <Gruntz/BzState.h>
 
 #include <rva.h>
+#include <Globals.h>
 
 // Per-player idle-sprite id table (0x5e9068) + the trailing 4-sprite geometry
 // table (0x5e8fe4, {timer, id} pairs), and the wand-cue ambient sound tag.
-extern i32 g_idleSpriteIds[4]; // 0x5e9068
 struct BzGeomPair {
     i32 m_timer;    // +0x00  timer
     i32 m_spriteId; // +0x04  sprite id
@@ -45,15 +45,12 @@ extern RECT g_levelMsgRectsB[8]; // 0x60b8f8
 // The secret-bonus message tables: a "+0x3d"-encoded buffer pair (decoded in place
 // by the SetAt cipher) for the single-record banner, plus the per-row table indexed
 // by (rowBase*3 + row), each row a 0xa0-byte record carrying two encoded strings.
-extern char g_secretMsgA[0x20]; // 0x62ae30  encoded
-extern char g_secretMsgB[0x20]; // 0x62ae50  encoded
 struct SecretMsgRow {
     char strA[0x20]; // +0x00  encoded line A
     char strB[0x80]; // +0x20  encoded line B
 };
 DATA(0x00229f30)
 extern SecretMsgRow g_secretMsgRows[]; // 0x629f30  (0xa0 stride)
-extern float g_secretRatioScale;       // 0x5e93b0
 
 // The shared HUD message-sprite helper (0x1154b0, __cdecl): pushes a transient
 // text sprite carrying `text` into `rect` with the given duration/colour flags.

@@ -13,6 +13,7 @@
 #include <rva.h>
 #include <stdlib.h> // qsort in the palette-sort builders
 #include <string.h> // inlined memcpy (rep movsl) in FindRemove
+#include <Globals.h>
 
 // The live screen RGB-format shift/mask table at 0x683ea0..0x683eb4 - already
 // named by CLightFxRender.cpp / CDDrawShadeBlit.cpp. The builders gate on the
@@ -154,13 +155,6 @@ void CShadeTableCache::FreeNodes() {
 
 // Luma-shift float constants at 0x5efb40..0x5efb5c (the gamma/luminance build).
 // Reloc-masked .rdata literals; named so the operands pair.
-extern float g_one;    // 1.0
-extern float g_255;    // 255.0
-extern float g_p01;    // 0.01
-extern float g_lumaR;  // 0.5859375
-extern float g_lumaG;  // 0.296875
-extern float g_lumaB;  // 0.109375
-extern float g_inv255; // 1/255
 DATA(0x001efb5c)
 extern float g_negone; // -1.0
 

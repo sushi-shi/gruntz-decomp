@@ -6,6 +6,7 @@
 #include <Ints.h>
 #include <rva.h>
 #include <string.h> // inline strlen / memset intrinsics
+#include <Globals.h>
 
 // The retail CUserBase vtable (?g_vtbl_CUserBase@@3PAPAXA @ VA 0x5e70b4). Both
 // stamp helpers store its address by name (the transitional manual-stamp form),
@@ -66,7 +67,6 @@ void CFinalize8b90::Finalize(i32 arg) {
 // 0x00af50 - reset a global DWORD to 0 (the global at VA 0x6295d8 / RVA 0x2295d8).
 // __cdecl free function.
 // ===========================================================================
-extern "C" i32 g_dat6295d8;
 RVA(0x0000af50, 0xb)
 void ResetDat6295d8() {
     g_dat6295d8 = 0;

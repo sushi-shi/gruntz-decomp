@@ -4,6 +4,7 @@
 
 #include <Io/FileStream.h> // engine CFileIO (palette loaders)
 #include <string.h>        // memset (inlined to rep stos at /O2 /Oi)
+#include <Globals.h>
 // CDDrawPtrCollections.cpp - tomalla-named standalone class in the ddrawmgr surface/page
 // manager "Harry Potter" family (tomalla's UnknownFilch, 0x948 B, NO RTTI vtable).
 // It owns two CPtrList item pools (+0x47c / +0x498) plus a CPtrArray (+0x4b4 - its own
@@ -37,7 +38,6 @@ public:
     // (reloc-masked rel32; same archetype as DirectInputMgr2::GetErrorString).
     static void GetErrorString(char* file, i32 line, i32 hr); // 0x141400
 };
-extern "C" CDirectDrawMgr* g_DirectDrawMgr; // 0x6bed00
 
 // The DDrawMgr source-path $SG the surface/palette methods pass to GetErrorString.
 #define DDRAWMGR_FILE "C:\\Proj\\DDrawMgr\\DDRAWMGR.CPP"

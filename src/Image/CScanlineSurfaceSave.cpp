@@ -14,9 +14,9 @@
 
 #include <Image/CScanlineSurface.h>
 #include <rva.h>
+#include <Globals.h>
 
 // The 14-byte "BM" BITMAPFILEHEADER template copied up front ($SG .rdata).
-extern char g_bmpHeaderTemplate[]; // 0x61aabc
 
 // The stack CFile temp: ctor/dtor act on the object base; the engine writer's Open lives
 // on the +0xc sub-object and Write on the +0x8 sub-object (the embedded stream bases), so

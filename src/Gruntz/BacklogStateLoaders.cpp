@@ -1,6 +1,7 @@
 #include <Win32.h> // ShowCursor (reloc-masked)
 
 #include <rva.h>
+#include <Globals.h>
 // BacklogStateLoaders.cpp - game-state asset/activate loaders + small free
 // helpers in a frameless /O2 (base) unit.  Each carries its real owning class; only offsets /
 // code bytes are load-bearing (helpers are reloc-masked externals).
@@ -140,7 +141,6 @@ struct GLSMapMgr {    // this->m_2dc
 struct GLSResetMgr {
     void Reset(); // FUN_00533110 __thiscall
 };
-extern GLSResetMgr* g_glsResetMgr;
 // The game-manager singleton (0x64556c); mangled ?g_gameReg@@3PAUWwdGameReg@@A.
 struct WwdGameReg;
 DATA(0x0064556c)

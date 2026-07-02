@@ -11,6 +11,7 @@
 #include <Bute/ButeMgr.h> // canonical CButeMgr (one shape); pulls <Mfc.h> afx-first
 #include <Ints.h>
 #include <rva.h>
+#include <Globals.h>
 
 // The active scroll view (pm->m_30->m_24->m_5c, and the back-plane g_64c27c).
 struct ScrollView {
@@ -71,24 +72,15 @@ extern "C" {
 DATA(0x0024556c)
 extern CGruntzMgr* g_mgrSettings; // 0x64556c
 DATA(0x000453d8)
-extern CButeMgr g_buteMgr;     // 0x6453d8
-extern ScrollView* g_backView; // 0x64c27c
+extern CButeMgr g_buteMgr; // 0x6453d8
 DATA(0x00245588)
 extern u32 g_frameTime; // 0x645588
 DATA(0x00245584)
 extern u32 g_frameDelta; // 0x645584
 DATA(0x0024cfc0)
 extern u32 g_scrollClock; // 0x64cfc0
-extern u32 g_scrollTimer; // 0x64cfc4
-extern i32 g_panMinX;     // 0x645508
-extern i32 g_panMaxX;     // 0x64550c
-extern i32 g_jitterX;     // 0x6452a4
-extern i32 g_jitterY;     // 0x6452cc
-extern i32 g_lastScrollX; // 0x64cfd0
-extern i32 g_lastScrollY; // 0x64cfd4
 DATA(0x0024cfb0)
 extern i64 g_scrollAccum; // 0x64cfb0 (64-bit)
-extern i64 g_scrollLimit; // 0x64cfb8 (64-bit)
 
 // timeGetTime-driven random value in [lo, hi]; inlined three times by retail.
 static i32 RandRange(i32 lo, i32 hi) {

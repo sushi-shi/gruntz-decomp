@@ -8,6 +8,7 @@
 #include <Mfc.h> // CString (Empty / copy ctor / operator=)
 
 #include <Ints.h>
+#include <Globals.h>
 
 // The CUSTOM_WORLDINFO dialog procedure handed to RunModalDialog (pushed code
 // address, reloc-masked DIR32 against the named LAB_ symbol).
@@ -21,7 +22,6 @@ DATA(0x0022c25c)
 extern CString g_str62c25c; // 0x62c25c
 DATA(0x0022c264)
 extern CString g_str62c264; // 0x62c264
-extern i32 g_dat62c268;     // 0x62c268
 DATA(0x0022c26c)
 extern i32 g_dat62c26c; // 0x62c26c
 DATA(0x0022c270)

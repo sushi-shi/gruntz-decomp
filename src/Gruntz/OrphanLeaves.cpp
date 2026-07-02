@@ -6,10 +6,10 @@
 // are external/no-body so their call rel32 / DIR32 reloc-mask.
 #include <Ints.h>
 #include <rva.h>
+#include <Globals.h>
 
 // ---------------------------------------------------------------------------
 // 0x183d0: return the address of a fixed global (a runtime-class / map pointer).
-extern void* g_5e8e98;
 
 RVA(0x000183d0, 0x6)
 void* GetGlobal5e8e98() {

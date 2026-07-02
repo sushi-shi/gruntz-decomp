@@ -23,6 +23,7 @@
 #include <string.h> // memset
 
 #include <Gruntz/CStringNode.h> // the type-name teardown slot
+#include <Globals.h>
 
 // ===========================================================================
 // Vtables (UNMATCHED engine tables - stamped by address, reloc-masked DIR32).
@@ -69,7 +70,6 @@ DATA(0x002bf66c)
 extern void* g_typeNodes;
 
 // The deeper-base ctor argument (a data tag global at 0x6bf468).
-extern u8 g_zArrayTag;
 
 // The "Inconsistent bounds" / "out of memory" message strings are emitted as
 // literals (their DIR32 references reloc-mask against the retail $SG symbols).
@@ -341,7 +341,6 @@ i32 ProjTypeXfer(CXferArchive* ar) {
 // vptr.
 DATA(0x002bf620)
 extern CButeTree g_buteTree;
-extern void* g_buteTreeArg; // 0x56ea10 (ctor argument)
 
 RVA(0x0016e6a0, 0x26)
 void DynInitButeTree() {

@@ -20,6 +20,7 @@
 // WM_INITDIALOG/WM_COMMAND ids all come from the real <windows.h> (via Win32.h;
 // pure-Win32 TU, no MFC).
 #include <Win32.h>
+#include <Globals.h>
 
 // The engine's registry/config helper (Utils::RegistryHelper) - only the one
 // method this proc calls is declared, to keep the symbol set tiny.
@@ -56,8 +57,6 @@ extern CGameRegistry* g_gameReg;
 
 // File-scope sinks the IDOK path stores the two edit-field values into before
 // the (optional) registry write (reloc-masked DIR32 stores).
-extern i32 g_warpX; // 0x612610
-extern i32 g_warpY; // 0x612614
 
 // ---------------------------------------------------------------------------
 // WarpDialogProc - the warp-cheat dialog callback.

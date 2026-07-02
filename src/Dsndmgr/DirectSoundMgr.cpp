@@ -27,6 +27,7 @@
 // uType is MB_ICONEXCLAMATION (0x30); the old hand-rolled macro mislabeled that
 // value as the "hand" icon, whose real windows.h value is 0x10.
 #include <Win32.h>
+#include <Globals.h>
 
 // Reporting-mode globals (live in .data). g_logEnabled drives the
 // OutputDebugStringA path, g_msgBoxEnabled the MessageBox path; g_beepEnabled
@@ -83,7 +84,6 @@ extern i32 g_volumeTable[100];
 // The pan lookup table SetPanByIndex indexes (0x653c48, immediately after the
 // volume table). Read at indices <= 0 from this base: a positive arg reads the
 // negated entry, a negative arg the entry direct.
-extern i32 g_panTable[];
 
 // The 0x28-byte "playing voice" node minted by CloneAndPlay. Its 6-arg __thiscall
 // ctor (0x136fe0) stamps a vtable (0x5ef6d0) + the play params; CloneAndPlay then

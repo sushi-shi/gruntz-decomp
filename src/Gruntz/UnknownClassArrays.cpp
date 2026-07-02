@@ -21,6 +21,7 @@
 #include <Gruntz/CoordNode.h> // the shared coord-list node
 #include <Gruntz/UnknownClassArrays.h>
 #include <Gruntz/CGameRegistry.h>
+#include <Globals.h>
 
 // CRT rand() (RVA 0x11fee0); used by the grid-scan helpers to pick a random
 // neighbour. External, reloc-masked.
@@ -267,7 +268,6 @@ extern CGameRegistry* g_gameReg;
 
 // A render-context object the cell-probe call site passes through (DAT_00644ca4 @
 // VA 0x644ca4). Reloc-masked DATA.
-extern void* g_renderCtx;
 
 // One animation-name record: its first dword is the C-string name (record->m_0).
 struct NameRecord {
@@ -329,7 +329,6 @@ struct UnitMutator {
 
 // The difficulty/spawn scale factor (?g_diffScale@@3MB, a `const float` @ VA
 // 0x5e96ec). Reloc-masked DATA; read by the fild/fmul spawn-budget computation.
-extern const float g_diffScale;
 
 // ===========================================================================
 // CBattlezSpawnMgr_or_CGruntSpawnMgr::CBattlezSpawnMgr_or_CGruntSpawnMgr  @0x024dc0
@@ -2430,9 +2429,6 @@ endZero:
 // The board-step run flag + the result cell it records (the (col,row) of the cell
 // that satisfied the step). Reloc-masked DATA; the recursive flood-fill clears
 // g_stepRun and stamps g_stepCol / g_stepRow when it commits.
-extern i32 g_stepRun;
-extern i32 g_stepCol;
-extern i32 g_stepRow;
 
 // The query object held at this->m_014: ResolveCell (RVA 0x011171d0... thunk
 // 0x02838) maps a packed (col<<8|row) to its cell record. __thiscall, reloc-masked.
@@ -3243,7 +3239,6 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_034c70(i32 unitArg) {
 // ===========================================================================
 // The zvec error globals + the return-capture helper + the reporter (the same set
 // ZVec.cpp models). Declared here so the calls/stores reloc-mask.
-extern void* g_zvecErrToken;     // 0x6bf428
 extern void* zErr_CaptureRetB(); // 0x16d990
 struct ZErrTarget {
     void* m_vptr;

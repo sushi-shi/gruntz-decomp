@@ -13,6 +13,7 @@
 // Only offsets / code bytes are load-bearing; names are placeholders.
 #include <Gruntz/UserLogic.h> // CUserLogic base (CVoiceTrigger : CUserLogic)
 #include <Gruntz/CGameRegistry.h>
+#include <Globals.h>
 
 class CVoiceTrigger : public CUserLogic {
 public:
@@ -68,15 +69,8 @@ struct CVTrigColl2 {
 SIZE_UNKNOWN(CVTrigColl2);
 extern "C" i32 ActAlloc(); // 0x16d990
 
-extern i32 g_vtrigLo;
-extern i32 g_vtrigHi;
-extern char* g_vtrigBase;
-extern i32 g_vtrigStride;
-extern CVTrigEntry* g_vtrigCur;
-extern i32 g_vtrigScratch;
 DATA(0x00251500)
 extern CVTrigColl g_vtrigColl;
-extern CVTrigColl2* g_vtrigColl2;
 DATA(0x002bf464)
 extern void* g_actCache;
 DATA(0x002bf428)

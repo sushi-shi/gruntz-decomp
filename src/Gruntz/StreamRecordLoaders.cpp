@@ -15,6 +15,7 @@
 
 #include <Gruntz/CSerialSub34.h> // CSerialArchive (reader), CDDrawSubMgrLeaf (registry
 #include <Gruntz/CGameRegistry.h>
+#include <Globals.h>
 // leaf + KeyOfValue), CSerialObj - shared with the
 // embedded +0x150 sub-record of CProjLoadRec below
 
@@ -420,7 +421,6 @@ struct CArchiveMgr {
 };
 
 // The global default sink one raw field reads into (DAT_00612618).
-extern i32 g_archiveDefault612618;
 
 // One outer entry of the m_3a8 nested-array block: {void** base; i32 count}.
 struct CArchiveSubArray {

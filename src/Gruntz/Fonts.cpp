@@ -15,11 +15,11 @@
 // ---------------------------------------------------------------------------
 #include <Font/Font.h>
 #include <rva.h>
+#include <Globals.h>
 
 // The four global Font instances + the load-once flag + the four .fnt file-name
 // literals, addressed by fixed VA so the loads reloc-mask against the matched
 // Font::LoadFont and the CString literal-ctor.
-extern i32 g_loadedFlag;
 DATA(0x0024eac0)
 extern Font g_largeFont;
 DATA(0x0024eae8)

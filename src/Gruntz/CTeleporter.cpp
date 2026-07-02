@@ -10,6 +10,7 @@
 #include <Gruntz/ActReg.h>             // shared activation-registrar archetype (CTeleporterActReg)
 #include <Gruntz/CTeleSpriteFactory.h> // shared teleporter HUD-sprite factory
 #include <Gruntz/CGameRegistry.h>
+#include <Globals.h>
 
 // The bound CGameObject viewed through m_10 by the bring-up: its +0x7c sub-object
 // carries the per-tile-time at +0xbc (the SAME shape CPathHazard reads as
@@ -111,9 +112,6 @@ DATA(0x00244c54)
 extern i32 g_curPlayer;
 
 // The spawn keys + the close-geometry key (.rdata constants).
-extern char g_teleporterSpawnKey[]; // "Teleporter" @ 0x60a72c
-extern char g_wormholeSpawnKey[];   // "Wormhole" @ 0x60a7ac
-extern char g_teleporterCloseKey[]; // "GAME_TELEPORTERCLOSE" @ 0x60d1fc
 
 // CTeleporter::~CTeleporter @0x010dd0 - the leaf adds no destructible members
 // beyond CUserLogic, so its dtor folds the bare CUserLogic teardown: store the

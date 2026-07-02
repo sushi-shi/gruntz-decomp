@@ -12,12 +12,11 @@
 #include <math.h>         // sin / cos (StepMotion's parabola)
 #include <string.h>       // memset (1-arg spawn ctor's +0x1e0 zero-fill)
 #include <rva.h>
+#include <Globals.h>
 
 // StepMotion's two motion-phase thresholds (.rdata doubles) + the int amplitude
 // global it folds into the trajectory (loaded as a double via fild). DATA pins so
 // the fcomp/mov loads reloc-mask against the named symbols.
-extern const double g_projPhase0;
-extern const double g_projPhase1;
 DATA(0x00245584)
 extern i32 g_645584;
 
@@ -528,15 +527,8 @@ extern i32 g_projTypeCounter; // 0x61aea8 (global type counter)
 
 // R2 - the projectile's per-coordinate activation table (@0x64c758).
 struct CProjActEntry;
-extern i32 g_projActLo;
-extern i32 g_projActHi;
-extern char* g_projActBase;
-extern i32 g_projActStride;
-extern CProjActEntry* g_projActCur;
-extern i32 g_projActScratch;
 DATA(0x0024c758)
 extern CProjColl g_projActColl;
-extern CProjColl2* g_projActColl2;
 
 // The CString slot teardown (0x1b9b93 __thiscall) + name assign (0x1b9e74).
 struct CProjStringNode {

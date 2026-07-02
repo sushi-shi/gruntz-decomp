@@ -4,16 +4,11 @@
 // globals (already-named data symbols).
 #include <Ints.h>
 #include <rva.h>
+#include <Globals.h>
 
 extern "C" i32 g_645588;  // per-frame sync salt
 extern u32 g_scrollClock; // 0x64cfc0
-extern u32 g_scrollTimer; // 0x64cfc4
 extern i64 g_scrollAccum; // 0x64cfb0 (64-bit)
-extern i64 g_scrollLimit; // 0x64cfb8 (64-bit)
-extern i32 g_jitterX;     // 0x6452a4
-extern i32 g_jitterY;     // 0x6452cc
-extern i32 g_panMinX;     // 0x645508
-extern i32 g_panMaxX;     // 0x64550c
 
 RVA(0x000ec1c0, 0x43)
 void Cmd_ApplyScrollParams_0ec1c0(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {

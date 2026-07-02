@@ -10,9 +10,9 @@
 // against the matched string symbol; only offsets + code bytes are load-bearing.
 #include <Gruntz/Dialogs.h>
 #include <rva.h>
+#include <Globals.h>
 
 // The old edit-child window-proc snapshot the subclass saves (reloc-masked DATA).
-extern i32 g_64bdc0; // DAT_0064bdc0
 
 // The subclass window-proc installed on the combo's edit child (0x4c1a10). Only
 // its address is taken (push offset -> DIR32 reloc-masks).

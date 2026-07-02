@@ -9,6 +9,7 @@
 #include <rva.h>
 
 #include <Gruntz/CStringNode.h> // the type-name teardown slot
+#include <Globals.h>
 
 // The shared type-name registry (R1 @0x6bf650) - identical to the other registrars.
 struct CTypeColl {
@@ -57,13 +58,6 @@ struct CActReg4 {
 };
 DATA(0x002446d8)
 extern CActReg4 g_actReg4;
-extern struct CActReg4Coll2* g_actReg4Coll2;
-extern i32 g_actReg4Lo;
-extern i32 g_actReg4Hi;
-extern char* g_actReg4Base;
-extern struct R4Entry* g_actReg4Cur;
-extern i32 g_actReg4Stride;
-extern i32 g_actReg4Scratch;
 struct CActReg4Coll2 {
     void Insert(void* coll, void* item, i32 n); // 0x16d850
 };

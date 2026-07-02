@@ -17,11 +17,11 @@
 
 #include <Gruntz/CWwdObjMgr.h> // the shared object-collection manager class
 #include <Mfc.h> // CPtrList, CMapPtrToPtr (real afxcoll, for the m_10/m_2c/m_48 layout)
+#include <Globals.h>
 
 // The running WWD object-id counter (?g_wwdObjIdCounter@@3HA @ 0x61ab14; the DATA
 // label is owned by CDDrawSubMgr.cpp). LoadObjects publishes each loaded object's
 // id here across the factory call, then restores it.
-extern i32 g_wwdObjIdCounter;
 
 // The per-object descriptor the reader fills (0xa0 bytes). +0x04 is the dedup id,
 // +0x08 the kind selector, +0x14 the object's name string (the resolver key).

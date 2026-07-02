@@ -4,6 +4,7 @@
 #include <Gruntz/CStringNode.h> // the type-name teardown slot
 #include <Gruntz/UserLogic.h> // CUserLogic base (CKitchenSlime : CUserLogic) for the leaf-dtor fold
 #include <Gruntz/Sprite.h>    // CSprite (frame-data value; the looked-up direction sprite)
+#include <Globals.h>
 // KitchenSlime.cpp - CKitchenSlime::LoadSprites @0x0b3160 (C:\Proj\Gruntz). The
 // kitchen-slime hazard's per-step "advance to the next walkable tile" driver: it
 // probes up to four tiles in the slime's current travel direction (m_10->m_124),
@@ -103,7 +104,6 @@ struct CSlimeEntity {
 };
 
 // 32.0 (the per-tile-time -> per-frame-speed reciprocal numerator).
-extern const double g_slimeSpeedNum; // VA 0x5ea3e0
 
 // Per-frame scroll/scale factor (.data int) Tick multiplies into m_58 to get the
 // per-frame pixel step.
@@ -176,15 +176,8 @@ struct CKSlimeColl2 {
 };
 extern "C" i32 ActAlloc(); // 0x16d990
 
-extern i32 g_kslimeLo;
-extern i32 g_kslimeHi;
-extern char* g_kslimeBase;
-extern i32 g_kslimeStride;
-extern CKSlimeEntry* g_kslimeCur;
-extern i32 g_kslimeScratch;
 DATA(0x00246228)
 extern CKSlimeColl g_kslimeColl;
-extern CKSlimeColl2* g_kslimeColl2;
 DATA(0x002bf464)
 extern void* g_actCache;
 DATA(0x002bf428)

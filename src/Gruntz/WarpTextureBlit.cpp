@@ -14,6 +14,7 @@
 // load-bearing fact.
 #include <Ints.h>
 #include <rva.h>
+#include <Globals.h>
 
 extern "C" int __ftol(); // 0x11f570 ((int) of an x87 value)
 
@@ -48,17 +49,10 @@ DATA(0x002856f8)
 extern i32 g_warpEdgeR[]; // 0x6856f8
 
 // The rasterizer global scratch (all reloc-masked DATA).
-extern i16 g_warpColorkey; // 0x6becfc
-extern i32 g_warpTexBase;  // 0x6a16f8  (locked texture base)
 DATA(0x002a2ce8)
 extern i32 g_warpDestRow; // 0x6a2ce8  (current dest scanline base)
-extern i32 g_warpUMask;   // 0x6becf0  (texture index row-mask)
 DATA(0x002becf4)
 extern i32 g_warpDestPtr; // 0x6becf4  (current dest pixel ptr)
-extern i32 g_warpU;       // 0x6856f0  (u accumulator)
-extern i32 g_warpV;       // 0x6856f4  (v accumulator)
-extern i32 g_warpUStep;   // 0x6a16fc  (u per-pixel step)
-extern i32 g_warpVStep;   // 0x6a1700  (v per-pixel step)
 
 // The fixed-point scale constants (0x5efb18, 0x5efb1c = its negation).
 DATA(0x001efb18)

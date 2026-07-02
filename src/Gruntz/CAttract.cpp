@@ -15,6 +15,7 @@
 #include <Bute/ButeMgr.h>   // canonical CButeMgr (one shape)
 #include <Gruntz/CAttract.h>
 #include <rva.h>
+#include <Globals.h>
 
 // ---------------------------------------------------------------------------
 // External engine globals (reloc-masked DATA symbols).
@@ -60,7 +61,6 @@ public:
 };
 
 // The screen-type tag (DAT_00504358) ResolveScreen keys off.
-extern i32 g_screenTag;
 
 // The menu page worker (m_c->m_04 re-typed): its fader (0x158b40, ret 8) runs the
 // title fade, returning non-zero when the fade is still in progress. Named to retail
@@ -109,7 +109,6 @@ struct AttractActorList {
     i32 m_count;             // +0x04
     AttractActor* m_data[1]; // +0x08  inline pointer array
 };
-extern AttractActorList* g_actorList;
 
 // The per-frame time delta (countdown source for m_1b4). C linkage so the symbol
 // pairs with the target's _g_645584 (the convention across the gamemode units).

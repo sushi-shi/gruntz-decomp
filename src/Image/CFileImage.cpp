@@ -14,6 +14,7 @@
 #include <Io/FileStream.h> // CFileIO (engine KERNEL32 file wrapper; LoadFile2)
 
 #include <string.h> // memcpy / strlen (inlined to rep movs / repne scas)
+#include <Globals.h>
 
 // Engine allocator/freer (reloc-masked rel32). operator new @0x1b9b46 (NAFXCW),
 // _RezFree @0x1b9b82.
@@ -39,7 +40,6 @@ struct DecodeSrc {
 #pragma pack(pop)
 
 // The DecodeRun grayscale-ramp scratch (reloc-masked global at 0x683ef0; 0x400 bytes).
-extern u8 g_683ef0[];
 
 // The inner blit/decode worker 0x141280 forwards into (reloc-masked __thiscall). It
 // takes a 16-byte rect/clip record by value (built on the thunk's stack from the last
@@ -53,10 +53,8 @@ struct ImageWorkerThis {
 
 // The 256*3 grayscale-ramp scratch buffer the 24-bit decode-convert path fills
 // (reloc-masked global at 0x684af0; +0x401 = the running write cursor, +0x801 = end).
-extern u8 g_grayRamp[];
 
 // The format string the save/decode path scans with strlen (reloc-masked).
-extern char g_imageTag[];
 
 // ---------------------------------------------------------------------------
 // FlipVertical - swap the locked surface's rows top-to-bottom through a

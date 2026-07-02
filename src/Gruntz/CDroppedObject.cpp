@@ -10,6 +10,7 @@
 // recovered engine identities.
 #include <Gruntz/CDroppedObject.h>
 #include <Gruntz/CGameRegistry.h>
+#include <Globals.h>
 
 // ---------------------------------------------------------------------------
 // The per-coordinate activation registry CDroppedObject::FireActivation
@@ -36,15 +37,8 @@ struct CDropColl2 {
 };
 extern "C" i32 ActAlloc(); // 0x16d990
 
-extern i32 g_dropLo;
-extern i32 g_dropHi;
-extern char* g_dropBase;
-extern i32 g_dropStride;
-extern CDropEntry* g_dropCur;
-extern i32 g_dropScratch;
 DATA(0x0024bed8)
 extern CDropColl g_dropColl;
-extern CDropColl2* g_dropColl2;
 DATA(0x002bf464)
 extern void* g_actCache;
 DATA(0x002bf428)
@@ -296,7 +290,6 @@ DATA(0x00245584)
 extern u32 g_645584;
 DATA(0x002bf3bc)
 extern "C" u32 g_6bf3bc;
-extern double g_dropFallBias;
 
 // The +0x1a0 animation sub-mgr advanced each draw-delta (Advance 0x15c360, the SAME
 // engine sink CTimeBomb's per-frame step drives).
