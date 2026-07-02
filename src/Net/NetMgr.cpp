@@ -1458,6 +1458,11 @@ void CNetMgr::Stub_0b9750() {}
 // ms it busy-waits the remainder (ActiveWait) and re-stamps; otherwise, if the
 // frame ran long (> 0x28 ms) and the sync gate m_syncGate is set, it flips the
 // global low-bit sync toggle and returns it.
+// @early-stop
+// regalloc + schedule wall (~71%): logic byte-faithful (timeGetTime, the delta/stamp
+// stores, the <=0x1e ActiveWait re-stamp, the >0x28 sync-toggle). Retail pins this->esi
+// and now->edi and orders `m_lastFrameDelta` store before `m_lastFrameTime`; cl swaps
+// the callee-saved pins (this->edi) and reorders the two stores. Not steerable. Final sweep.
 RVA(0x000bc070, 0x73)
 u32 CNetMgr::FrameSyncWait() {
     u32 now = timeGetTime();
@@ -1585,6 +1590,11 @@ i32 CNetMgr::SetupTcpIpConfig() {
 // 60s or on Esc (-> status 0x8022, fail), pumps the receive queue, and reports +
 // fails on any of the session-state flags (terminated / removed / closed / full
 // / version-mismatch). Returns 1 once m_admitted latches (admitted), 0 on any failure.
+// @early-stop
+// tail-merge + regalloc wall (~74%): logic byte-faithful. Retail inlines the shared
+// `xor eax,eax; pop..; ret` early-out epilogue at each guard site + holds the timeGetTime
+// import ptr in ebp; cl tail-merges the identical zero-return epilogues and uses ebx.
+// See identical-return-epilogue-tailmerge.md (topic:wall). Final sweep.
 RVA(0x000bca50, 0x155)
 i32 CNetMgr::WaitForConnect() {
     if (m_peer == 0) {
@@ -1706,6 +1716,10 @@ i32 CNetMgr::LoadConfig(void* cfg) {
 // sequence number in the slot's window ([(seq0+1)..(seq0+1)+3] scaled by the
 // per-command delay m_cmdDelay) re-dispatches the command through m_4's queue and
 // drops it from the slot. Finally clears the slot's two command ranges.
+// @early-stop
+// schedule wall (92.8%): logic byte-faithful; retail reads m_4->m_6c later (into eax
+// then ecx) and picks ecx/edx for the two ClearRange lea'd args where cl reads it
+// earlier (into ecx) and picks edx/eax. Instruction-schedule permutation. Final sweep.
 RVA(0x000bcf20, 0xaf)
 i32 CNetMgr::ResetPlayerCommands(i32 id) {
     if (m_connected == 0) {
@@ -1817,6 +1831,11 @@ void CNetMgr::HandleVersionCheck(CNetVersionMsg* msg) {
 // Builds a 0x20-byte version-announce packet on the stack (flag byte, the
 // CButeMgr config word, g_cfgWord, stat id 0x417, and the local/remote version
 // pair) and ships it through the engine stat dispatcher as stat 0x417.
+// @early-stop
+// store-schedule wall (90%): logic byte-faithful (the 0x20 memset, the |0x80 flag,
+// g_cfgWord/g_remoteVersion/param fields, the 0x417 send). Retail interleaves the
+// packet field stores and the stack-arg-block setup at a different anchor than cl;
+// an instruction-schedule permutation of the same store multiset. Final sweep.
 RVA(0x000bd180, 0x66)
 void CNetMgr::AnnounceVersion(i32 param) {
     CNetVersionPacket packet;
@@ -2610,8 +2629,9 @@ RVA(0x00178e90, 0x20)
 CNetPlayerEntry* CNetMgr::FindPlayerById(i32 id) {
     CNetPlayerNode* node = m_58;
     while (node != 0) {
-        CNetPlayerEntry* entry = node->m_8;
+        CNetPlayerNode* cur = node;
         node = node->m_next;
+        CNetPlayerEntry* entry = cur->m_8;
         if (entry->m_4 == id) {
             return entry;
         }

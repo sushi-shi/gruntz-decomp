@@ -28,6 +28,9 @@ void CHashBase::RemoveAll() {
 // then splice the biased node (entry+4) into the bucket's chain. The `?:` keeps
 // the null-check `lea ecx,[esi+4]/xor ecx,ecx` even though the engine never feeds
 // a null entry here.
+// @early-stop
+// SIB base/index coin-flip (99.55%): retail `lea [eax+ecx+8]` (idx<<4 as base) vs
+// cl `lea [ecx+eax+8]` (m_buckets as base); operand-typing/reorder do not flip it.
 RVA(0x00184a70, 0x34)
 void CHashBase::Insert(CHashInsertNode* node) {
     node->m_owner = this;

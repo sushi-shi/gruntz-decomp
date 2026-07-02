@@ -166,6 +166,10 @@ CSymTab::CSymTab(
 // reverse declaration order (m_symbols then m_subTabs) at descending trylevels --
 // the /GX member-teardown frame (docs/patterns/eh-dtor-model-members-as-
 // destructible.md).
+// @early-stop
+// this-register + /GX-frame wall (88.7%): logic + both member-teardown walks are
+// byte-faithful; retail pins this->ebp where cl uses ebx, and the /GX scopetable push
+// immediate (0xb vs 0x0) is reloc-masked. A callee-saved coin-flip. Final sweep.
 RVA(0x00139ee0, 0x11e)
 CSymTab::~CSymTab() {
     CHashTableEntry* cur;

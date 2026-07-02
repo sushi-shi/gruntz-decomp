@@ -84,6 +84,13 @@ i32 CNetSession2::Init(void* a1, CNetMgr* a2, void* a3) {
     return 1;
 }
 
+// @early-stop
+// slot-pointer anchor + member re-read wall (~89.5%): logic byte-faithful (the
+// per-slot armed==3 / resetGuard gate, the baseSeq window test, the Ready()+
+// latchedSeq branch). Retail anchors the slot cursor at +0x24 (m_resetGuard) and
+// re-reads resetGuard with `cmp $0,(esi)` each test; cl CSEs the read into a reg
+// and anchors at +0x34 (m_baseSeq). Splitting the else-if into two ifs regressed
+// it (87.2%); the anchor is a non-steerable addressing-mode tie-break. Final sweep.
 RVA(0x000c0290, 0x63)
 i32 CNetSession2::Verify(i32 n) {
     for (i32 i = 0; i < 4; i++) {

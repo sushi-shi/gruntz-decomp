@@ -377,7 +377,7 @@ netcmdsession	6	4
 netcmdslot	16	11
 netgamedlg	3	0
 netgamedlgwatch	1	0
-netmgr	89	48
+netmgr	89	49
 netmgrerror	1	1
 netmgrmenuselect	1	1
 netmgrmisc	5	4
@@ -2392,7 +2392,7 @@ gruntinfotext	?winapi_0d95f0_wsprintfA@GruntInfoTextHost@@QAEHXZ	88.4979	88.4979
 gruntmovestep	?Step@CGruntMover@@QAEHPAUCGruntM@@@Z	18.1429	18.1429	1	27431664e366	0x31610
 gruntpathscan	?PathScan57db0@CGrunt@@QAEHXZ	39.3829	39.3829	2	6d80437a50ce	0x57db0
 gruntphasestep	?PhaseStep@CGrunt@gruntphase@@QAEHXZ	31.4567	31.4567	2	7221033df479	0xf60f0
-gruntpickupload	?LoadPickupSprites@CGrunt@@QAEHHHHHH@Z	47.1890	47.1890	2	dcf069b0c2e1	0x65e80
+gruntpickupload	?LoadPickupSprites@CGrunt@@QAEHHHHHH@Z	47.1890	47.1890	3	80d6128e69d1	0x65e80
 gruntpuddle	??0CGruntPuddle@@QAE@PAUCGameObject@@@Z	91.9504	91.9504	1	f672560977a9	0x40490
 gruntpuddle	??1CGruntPuddle@@UAE@XZ	100.0000	100.0000	1	d8797374243c	0x10d10
 gruntpuddle	?Place@CGruntPuddle@@QAEHHHHH@Z	73.5400	73.5400	3	dcb6baed4642	0x40c30
@@ -2786,10 +2786,10 @@ logicrecord	?Dispatch@CLogicRecord@@QAEHHHPAX0@Z	79.6203	79.6203	1	5db0447ef675	
 logicrecord	?Init@CLogicRecord@@QAEHPAXH@Z	100.0000	100.0000	1	13cd2b4bb6f4	0x151e20
 logicrecord	?Load@CLogicRecord@@QAEHPAVLogicArchive@@@Z	100.0000	100.0000	1	f15fadec497e	0x164960
 logicrecord	?Save@CLogicRecord@@QAEHPAVLogicArchive@@@Z	100.0000	100.0000	1	72b3a072e2bc	0x164d80
-logicrecorddispatch	?LogicDispatchA@@YAHPAULogicDispatchOwner@@@Z	100.0000	100.0000	2	4e1b6b3ff711	0xfb660
-logicrecorddispatch	?LogicDispatchB@@YAHPAULogicDispatchOwner@@@Z	100.0000	100.0000	2	7f1c5a4dab56	0x10d3d0
-logicrecorddispatch	?LogicDispatchC@@YAHPAULogicDispatchOwner@@@Z	100.0000	100.0000	2	b40417e3950c	0x46850
-logicrecorddispatch	?LogicDispatchD@@YAHPAULogicDispatchOwner@@@Z	100.0000	100.0000	2	834b527f71db	0xdeb20
+logicrecorddispatch	?LogicDispatchA@@YAHPAULogicDispatchOwner@@@Z	100.0000	100.0000	3	0dd8682eeae9	0xfb660
+logicrecorddispatch	?LogicDispatchB@@YAHPAULogicDispatchOwner@@@Z	100.0000	100.0000	3	fc1dfdb6b5fd	0x10d3d0
+logicrecorddispatch	?LogicDispatchC@@YAHPAULogicDispatchOwner@@@Z	100.0000	100.0000	3	8c50b0469e34	0x46850
+logicrecorddispatch	?LogicDispatchD@@YAHPAULogicDispatchOwner@@@Z	100.0000	100.0000	3	ae81c4328081	0xdeb20
 logictypetable	?BuildLogicTypeTable@@YGXPAUCLogicTypeBuilder@@@Z	87.9167	87.9167	6	313ac91839f7	0x8a40
 logicworkerhandlers	?HandlerA9CC0@@YAHPAUOwner@@@Z	100.0000	100.0000	1	cc9db04aaadc	0xa9cc0
 logicworkerhandlers	?HandlerAA5A0@@YAHPAUOwner@@@Z	100.0000	100.0000	1	d909b08dc631	0xaa5a0
@@ -2959,7 +2959,7 @@ netmgr	?EnumProviderCb@@YGHPAXPADII0@Z	100.0000	100.0000	1	5b3e7cb083e5	0x1782d0
 netmgr	?EnumServiceProviders@CNetMgr@@QAEHH@Z	100.0000	100.0000	1	57d686147288	0x178280
 netmgr	?EnumSessions@CNetMgr@@QAEHPAX0@Z	100.0000	100.0000	5	bca9b98ca5df	0x179130
 netmgr	?Find@CNetMgr@@QAEPAUInterfaceObject@@H@Z	94.9219	94.9219	2	396044bd00e0	0x179270
-netmgr	?FindPlayerById@CNetMgr@@QAEPAUCNetPlayerEntry@@H@Z	87.6923	87.6923	4	ce8d7b0def71	0x178e90
+netmgr	?FindPlayerById@CNetMgr@@QAEPAUCNetPlayerEntry@@H@Z	100.0000	100.0000	5	222a182b216d	0x178e90
 netmgr	?FrameSyncWait@CNetMgr@@QAEIXZ	70.7250	70.7250	5	d648fa188145	0xbc070
 netmgr	?GetConfigNameA@CNetMgr@@QAE?AVCString@@XZ	100.0000	100.0000	1	b8eea0ef362d	0xb6090
 netmgr	?GetConfigNameB@CNetMgr@@QAE?AVCString@@XZ	100.0000	100.0000	1	5afc2c8dee04	0xb60d0

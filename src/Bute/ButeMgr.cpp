@@ -518,6 +518,9 @@ CString* CButeMgr::GetStringDef(char* tag, char* key, CString* def) {
 // specific failure and returns a shared empty CString. The empty string is a
 // function-local static CString (MFC magic-static: one-shot guarded ctor +
 // atexit-registered dtor) returned by address on every error path.
+// @early-stop
+// regalloc coin-flip (99.63%): body byte-exact; retail holds tag/key in ebx/edi,
+// cl swaps to edi/ebx (+ the /GX scopetable push immediate, reloc-masked). Final sweep.
 RVA(0x001731d0, 0xb6)
 char* CButeMgr::GetString(char* tag, char* key) {
     static CString s_empty("");
@@ -553,6 +556,11 @@ char* CButeMgr::GetString(char* tag, char* key) {
 // bool directly (`return ScanToken(3)`) elides that normalization; the explicit
 // canonicalization reproduces the retail tail byte-for-byte (the SEH cleanup spans
 // the value, so MSVC re-canonicalizes the bool after restoring fs:[0]).
+// @early-stop
+// vtable-mandate wall (99.29%): body byte-exact but the inlined `new CButeNode`
+// base-ctor call site is `lea 0x4(edi),ecx` (CButeNodeBase at +4, behind the
+// ALL-VTABLES-mandated implicit vptr) vs retail `mov edi,ecx` (base at +0). Reverting
+// CButeNode to a manual vtable would flip it but violates the ALL-VTABLES mandate. Final sweep.
 RVA(0x001711b0, 0xf5)
 bool CButeMgr::ParseTagLine() {
     if (!ScanToken(4)) {
@@ -584,6 +592,10 @@ bool CButeMgr::ParseTagLine() {
 // values/punctuation (ButeLex_ReadValue/ReadIdent), append chars to the token
 // buffer, advance the lexer (ButeLex_NextChar), and recurse for nested groups.
 // Reports "Bad symbol encountered" (with m_lineNo) on the error class.
+// @early-stop
+// jump-table scoring artifact (95%): the 6-way `jmp *tbl[eax*4]` dispatch + all case
+// bodies match, but objdiff mis-pairs the inline .rdata jump-table region against the
+// code (base `jmp *(,eax,4)` vs retail `jmp *0x1e4(,eax,4)`). CODE bytes match. Final sweep.
 RVA(0x001704c0, 0x1e3)
 bool CButeMgr::Parse() {
     const i32 kLexStartState = 0x11; // initial lexer state seeded into PeekClass
@@ -1054,6 +1066,12 @@ CButeRef6* CButeMgr::GetRef6(char* tag, char* key) {
     return &s_default;
 }
 
+// @early-stop
+// zero-register coin-flip (84.2%): identical to GetRef5/6 (both 100%) but the
+// magic-static `s_default` field-zeroing crosses cl's threshold to pin 0 in ebp
+// (`push ebp; xor ebp,ebp; mov [X],ebp` + `cmp ebp,eax`) where retail uses
+// immediate stores + `test eax,eax`. Retail's own codegen is inconsistent across
+// the identical GetRef5/7 pair; not steerable without regressing GetRef5. Final sweep.
 RVA(0x00174240, 0xe3)
 CButeRef7* CButeMgr::GetRef7(char* tag, char* key) {
     static CButeRef7 s_default;
@@ -1075,6 +1093,9 @@ CButeRef7* CButeMgr::GetRef7(char* tag, char* key) {
     return &s_default;
 }
 
+// @early-stop
+// zero-register coin-flip (85.5%): see GetRef7 - retail immediate zero-stores +
+// `test eax,eax`, cl pins 0 in ebp. Not steerable without regressing GetRef5. Final sweep.
 RVA(0x001747c0, 0xcf)
 CButeRef8* CButeMgr::GetRef8(char* tag, char* key) {
     static CButeRef8 s_default;
@@ -1129,6 +1150,11 @@ void CButeMgr::ClearHelper() {
 // Allocates 4-byte storage, stores the value, sets the type field.
 // Returns `this` (or NULL on alloc failure, though the target code always
 // returns `this` with pValue reset to NULL).
+// @early-stop
+// const-materialize wall (92%): logic byte-exact; the sole residual is the alloc-
+// fail store `pValue=0` - retail `xor eax,eax; mov [esi+4],eax` (register 0) vs cl's
+// immediate `mov dword [esi+4],0`. Whole Set* family; see const-materialize-into-
+// reg-vs-immediate.md. Not source-steerable. Final sweep.
 RVA(0x00172000, 0x31)
 CButeValue* CButeValue::SetDword(i32 type, u32 val) {
     this->type = type;
@@ -1146,6 +1172,8 @@ CButeValue* CButeValue::SetDword(i32 type, u32 val) {
 // CButeValue::SetFloat
 // ===========================================================================
 // Allocates 4-byte float storage, stores the value.
+// @early-stop
+// const-materialize wall (92%): alloc-fail `pValue=0` reg-vs-immediate; see SetDword.
 RVA(0x00172680, 0x31)
 CButeValue* CButeValue::SetFloat(i32 type, float val) {
     this->type = type;
@@ -1163,6 +1191,8 @@ CButeValue* CButeValue::SetFloat(i32 type, float val) {
 // CButeValue::SetInt
 // ===========================================================================
 // Allocates 4-byte int storage, stores the value.
+// @early-stop
+// const-materialize wall (92%): alloc-fail `pValue=0` reg-vs-immediate; see SetDword.
 RVA(0x00172b90, 0x31)
 CButeValue* CButeValue::SetInt(i32 type, i32 val) {
     this->type = type;
@@ -1180,6 +1210,8 @@ CButeValue* CButeValue::SetInt(i32 type, i32 val) {
 // CButeValue::SetDouble
 // ===========================================================================
 // Allocates 8-byte double storage, stores the value.  Returns `this`.
+// @early-stop
+// const-materialize wall (92.7%): alloc-fail `pValue=0` reg-vs-immediate; see SetDword.
 RVA(0x00173140, 0x38)
 CButeValue* CButeValue::SetDouble(i32 type, double val) {
     this->type = type;
