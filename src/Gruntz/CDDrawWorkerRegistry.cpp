@@ -26,6 +26,7 @@
 // (CString / CMapStringToOb signatures also via the shim includes below).
 #include <Mfc.h>
 #include <string.h> // strncpy (the StringCopy leaf, reloc-masked)
+#include <stdio.h>  // sprintf ("%s%s%s" path builder in Stub_154f80 / Stub_155160)
 class CDDrawWorkerRegistry;
 
 // CString (4-byte char* wrapper). Only the default ctor + dtor are needed;
@@ -173,10 +174,90 @@ public:
     CMapStringToOb m_map;      // +0x10  worker-by-key map
 
     // Engine-label backlog stubs.
-    void Stub_154f80();
-    void Stub_155160();
-    void Stub_156df0();
-    void Stub_156e80();
+    i32 Stub_154f80(class RegDirHandle* dir, const char* sub, const char* prefix);
+    i32 Stub_155160(class RegDirHandle* dir, const char* sub, const char* prefix);
+    void* Stub_156df0(i32 flag);
+    i32 Stub_156e80(class RegProbeChain* a1, i32 a2);
+};
+
+// operator delete + the member-teardown host (real ~ at 0x156e10, CDDrawSubMgr.cpp,
+// as CDDrawRegistryDtorHost::~) that this class's ??_G scalar-dtor (0x156df0) calls.
+void operator delete(void*);
+class CDDrawRegistryDtorHost {
+public:
+    ~CDDrawRegistryDtorHost();
+};
+
+// Helpers for Stub_156e80 (0x156e80): a probe chain (0x13b900 -> object, whose
+// 0x13a230 yields the result) and the parent's +0x48 vtable dispatch.
+class RegProbeChain {
+public:
+    class RegProbeChain* Get_13b900(i32 a); // 0x13b900
+    void* Deref_13a230();                   // 0x13a230
+};
+DATA(0x006293f4)
+extern char g_emptyString[]; // 0x6293f4
+DATA(0x0060b588)
+extern unsigned char g_dat60b588; // 0x60b588
+class RegView48 {
+public:
+    virtual void s00();
+    virtual void s04();
+    virtual void s08();
+    virtual void s0c();
+    virtual void s10();
+    virtual void s14();
+    virtual void s18();
+    virtual void s1c();
+    virtual void s20();
+    virtual void s24();
+    virtual void s28();
+    virtual void s2c();
+    virtual void s30();
+    virtual void s34();
+    virtual void s38();
+    virtual void s3c();
+    virtual void s40();
+    virtual void s44();
+    virtual i32 Vfunc48(void* a, const char* b, void* c); // +0x48
+    virtual i32 Vfunc4C(void* a, const char* b, void* c); // +0x4c
+    virtual void s50();
+    virtual void Vfunc54(const char* key); // +0x54
+};
+
+// A directory-tree cursor: 0x13a260 (first child), 0x13a280 (next child); each entry's
+// +0x00 is a name string.
+class RegDirEntry {
+public:
+    char* m_name; // +0x00
+};
+class RegDirHandle {
+public:
+    RegDirEntry* First_13a260();              // 0x13a260 (__thiscall)
+    RegDirEntry* Next_13a280(RegDirEntry* e); // 0x13a280 (__thiscall, 1 arg)
+};
+
+// A worker value viewed for the +0x28/+0x3c dispatches + the +0x18 status field.
+class RegWorkerValue {
+public:
+    virtual void v00();
+    virtual void v04();
+    virtual void v08();
+    virtual void v0c();
+    virtual void v10();
+    virtual void v14();
+    virtual void v18();
+    virtual void v1c();
+    virtual void v20();
+    virtual void v24();
+    virtual void Slot28(i32 dir); // +0x28
+    virtual void v2c();
+    virtual void v30();
+    virtual void v34();
+    virtual void v38();
+    virtual i32 Slot3C(i32 dir); // +0x3c
+    char m_pad04[0x18 - 0x04];
+    i32 m_18; // +0x18  status field
 };
 
 static inline i32 SeverusReadField1c(const CDDrawWorkerRegistry* p) {
@@ -578,30 +659,131 @@ CString CDDrawWorkerRegistry::FindKeyOfValue_165360(SeverusMapValue* target) {
 // -------------------------------------------------------------------------
 // Engine-label backlog stubs.
 // -------------------------------------------------------------------------
-// @confidence: high
-// @source: tomalla
-// @stub
+// ---------------------------------------------------------------------------
+// 0x154f80: walk the directory tree under `dir`; for each entry build a path string
+// ("<sub><prefix><name>" when sub is set, else just the name) into a 0x100 heap buffer
+// and accumulate this->+0x48(entry, buf, prefix). Then, when sub is set, find-or-create
+// the keyed worker, dispatch its +0x28(dir), and either run this->+0x54(sub) (worker
+// inactive) or bump the count. /GX EH frame for the partially-built worker.
+// @early-stop
+// worker-ctor + regalloc wall: the directory walk / sprintf-vs-strcpy / +0x48 dispatch
+// / find-or-create (SeverusWorkerObj) / +0x28 / status branch are reproduced; retail's
+// inline worker construction seeds fields before the CByteArray ctor + stamps the
+// derived vtable last, and the buffer/entry register schedule differs. Reloc-masked
+// EH-state + map/thunk names. Logic/CFG/offsets complete.
 RVA(0x00154f80, 0x1d5)
-void CDDrawWorkerRegistry::Stub_154f80() {}
+i32 CDDrawWorkerRegistry::Stub_154f80(RegDirHandle* dir, const char* sub, const char* prefix) {
+    char* buf = (char*)operator new(0x100);
+    i32 count = 0;
+    if (buf == 0) {
+        return count;
+    }
+    buf[0] = 0;
+    RegDirEntry* e = dir->First_13a260();
+    while (e != 0) {
+        if (sub != 0 && *sub != 0) {
+            sprintf(buf, "%s%s%s", sub, prefix, e->m_name);
+        } else {
+            strcpy(buf, e->m_name);
+        }
+        count += ((RegView48*)this)->Vfunc48(e, buf, (void*)prefix);
+        e = dir->Next_13a280(e);
+    }
+    if (sub != 0 && *sub != 0) {
+        SeverusWorkerObj* w = FindOrCreateWorker(this, sub);
+        if (w == 0) {
+            return 0;
+        }
+        ((RegWorkerValue*)w)->Slot28((i32)dir);
+        if (((RegWorkerValue*)w)->m_18 == 0) {
+            ((RegView48*)this)->Vfunc54(sub);
+        } else {
+            ++count;
+        }
+    }
+    operator delete(buf);
+    return count;
+}
 
-// @confidence: high
-// @source: tomalla
-// @stub
+// ---------------------------------------------------------------------------
+// 0x155160: the read-side twin of Stub_154f80 - walk the directory tree, build the
+// same path string, and accumulate this->+0x4c(entry, buf, prefix) (a negative result
+// aborts to -1). Then, when sub is set, Lookup it in the map; if present, dispatch its
+// +0x3c(dir) (a -1 aborts to -1) and bump the count when the value's +0x18 is positive.
+// No EH frame (plain /O2 leaf). Returns the accumulated count.
+// @early-stop
+// regalloc/loop-schedule wall: the walk / sprintf-vs-strcpy / +0x4c dispatch + <0
+// abort / Lookup / +0x3c dispatch + -1 abort / +0x18 count are reproduced; the
+// buffer/entry/count register schedule + reloc-masked thunk names are the residual.
 RVA(0x00155160, 0x11e)
-void CDDrawWorkerRegistry::Stub_155160() {}
+i32 CDDrawWorkerRegistry::Stub_155160(RegDirHandle* dir, const char* sub, const char* prefix) {
+    char* buf = (char*)operator new(0x100);
+    i32 count = 0;
+    RegDirEntry* e = dir->First_13a260();
+    while (e != 0) {
+        if (sub != 0 && *sub != 0) {
+            sprintf(buf, "%s%s%s", sub, prefix, e->m_name);
+        } else {
+            strcpy(buf, e->m_name);
+        }
+        i32 r = ((RegView48*)this)->Vfunc4C(e, buf, (void*)prefix);
+        if (r < 0) {
+            operator delete(buf);
+            return -1;
+        }
+        count += r;
+        e = dir->Next_13a280(e);
+    }
+    if (sub != 0 && *sub != 0) {
+        CObject* out = 0;
+        m_map.Lookup(sub, out);
+        if (out != 0) {
+            if (((RegWorkerValue*)out)->Slot3C((i32)dir) == -1) {
+                operator delete(buf);
+                return -1;
+            }
+            if (((RegWorkerValue*)out)->m_18 > 0) {
+                ++count;
+            }
+        }
+    }
+    operator delete(buf);
+    return count;
+}
 
-// @confidence: high
-// @source: tomalla
-// @stub
+// ---------------------------------------------------------------------------
+// 0x156df0: ??_G scalar-deleting destructor - run the real member-teardown ~
+// (0x156e10, CDDrawSubMgr.cpp as CDDrawRegistryDtorHost::~) then operator delete.
+SYMBOL(??_GCDDrawRegistryDtorHost @@UAEPAXI@Z)
 RVA(0x00156df0, 0x1e)
-void CDDrawWorkerRegistry::Stub_156df0() {}
+void* CDDrawWorkerRegistry::Stub_156df0(i32 flag) {
+    ((CDDrawRegistryDtorHost*)this)->CDDrawRegistryDtorHost::~CDDrawRegistryDtorHost();
+    if (flag & 1) {
+        operator delete(this);
+    }
+    return this;
+}
 
-// @confidence: high
-// @source: tomalla
-// @stub
+// ---------------------------------------------------------------------------
+// 0x156e80: probe `arg1` through 0x13b900(arg2) -> object, deref via 0x13a230; if
+// the result is non-null, dispatch this->+0x48 with (result, g_emptyString,
+// &g_dat60b588) and return it, else 0. __thiscall, 2 args (ret 8).
 RVA(0x00156e80, 0x38)
-void CDDrawWorkerRegistry::Stub_156e80() {}
+i32 CDDrawWorkerRegistry::Stub_156e80(RegProbeChain* arg1, i32 arg2) {
+    RegProbeChain* obj = arg1->Get_13b900(arg2);
+    void* result = obj->Deref_13a230();
+    if (result == 0) {
+        return 0;
+    }
+    return ((RegView48*)this)->Vfunc48(result, g_emptyString, &g_dat60b588);
+}
 
+SIZE_UNKNOWN(CDDrawRegistryDtorHost);
+SIZE_UNKNOWN(RegProbeChain);
+SIZE_UNKNOWN(RegView48);
+SIZE_UNKNOWN(RegDirEntry);
+SIZE_UNKNOWN(RegDirHandle);
+SIZE_UNKNOWN(RegWorkerValue);
 SIZE_UNKNOWN(SeverusMapValue);
 SIZE_UNKNOWN(SeverusValue);
 SIZE(SeverusWorkerObj, 0x6c);

@@ -41,24 +41,38 @@ class CObject;
 // MFC-canonical mangling. <Mfc.h> also brings CString / POSITION for the teardown.
 #include <Gruntz/CMapStringToOb.h>
 #include <Gruntz/CString.h>
+#include <string.h> // strcpy (the inline CRT copy in the two elaborate factories)
+
+// operator delete + placement new for the factories / the mis-homed scalar dtor.
+void operator delete(void*);
+
+// The sibling 3-map manager (vtable 0x5efdc0) whose scalar-deleting destructor
+// (0x157610) landed in this TU during the vtable scan; its real member-teardown ~
+// is 0x157630 (CDDrawSubMgr.cpp, as CDDrawSubMgrRemus::~CDDrawSubMgrRemus). Declared
+// so the scalar-dtor's call reloc names ??1CDDrawSubMgrRemus@@UAE@XZ.
+class CDDrawSubMgrRemus {
+public:
+    virtual ~CDDrawSubMgrRemus();
+};
 
 // The worker virtual interface. Slots laid out so the dispatched methods land at
 // the byte offsets the target uses: +0x04 scalar-deleting dtor, +0x28/+0x2c the
 // two factory siblings. Declarations only - never defined, so no ??_7 emitted.
 class AlbusWorker {
 public:
-    virtual void FUN_005bef01();         // [0] 0x1bef01
-    virtual i32 ScalarDtor(i32 flag);    // [1] 0x165db0 scalar-deleting destructor
-    virtual void FUN_004028ec();         // [2] 0x0028ec
-    virtual void FUN_0040106e();         // [3] 0x00106e
-    virtual void FUN_00404034();         // [4] 0x004034
-    virtual void FUN_00565d90();         // [5] 0x165d90
-    virtual void FUN_00401c08();         // [6] 0x001c08
-    virtual void FUN_00568fb0();         // [7] 0x168fb0
-    virtual void FUN_00565da0();         // [8] 0x165da0
-    virtual void FUN_00568f20();         // [9] 0x168f20
-    virtual i32 Vfunc28(i32 a1, i32 a3); // [10] 0x168ee0
-    virtual i32 Vfunc2C(i32 a1, i32 a3); // [11] 0x168ea0
+    virtual void FUN_005bef01();                 // [0] 0x1bef01
+    virtual i32 ScalarDtor(i32 flag);            // [1] 0x165db0 scalar-deleting destructor
+    virtual void FUN_004028ec();                 // [2] 0x0028ec
+    virtual void FUN_0040106e();                 // [3] 0x00106e
+    virtual void FUN_00404034();                 // [4] 0x004034
+    virtual void FUN_00565d90();                 // [5] 0x165d90
+    virtual void FUN_00401c08();                 // [6] 0x001c08
+    virtual void FUN_00568fb0();                 // [7] 0x168fb0
+    virtual void FUN_00565da0();                 // [8] 0x165da0
+    virtual void FUN_00568f20();                 // [9] 0x168f20
+    virtual i32 Vfunc28(i32 a1, i32 a3);         // [10] 0x168ee0
+    virtual i32 Vfunc2C(i32 a1, i32 a3);         // [11] 0x168ea0
+    virtual i32 Vfunc30(i32 a1, i32 a2, i32 a3); // [12] +0x30
 };
 
 // The 0x14-byte worker layout. Only the seeded offsets are load-bearing.
@@ -72,6 +86,20 @@ struct AlbusWorkerObj : public AlbusWorker {
     i32 m_0c; // +0x0c  = parent->m_0c (the HarryPotter handle)
     i32 m_10; // +0x10  = 0
 }; // 0x14
+
+// The surface/resource arg passed to the two elaborate factories (0x1658c0/0x165a90):
+// a __thiscall Lock (0x139960 -> data ptr) / Unlock (0x1399d0), a format-id probe
+// (0x139800), a +0x0c key handle, and a name at +0x00. Reloc-masked __thiscall
+// callees; only the method offsets + the +0x0c/+0x00 reads are load-bearing.
+class HarrySurface {
+public:
+    i32 Probe_139800();   // 0x139800  format id
+    i32 Lock_139960();    // 0x139960  -> data ptr
+    void Unlock_1399d0(); // 0x1399d0
+    const char* m_name;   // +0x00
+    char m_pad04[0x0c - 0x04];
+    const char* m_0c; // +0x0c  key handle
+};
 
 // The CObject-like grand-base shared by the whole "Harry Potter" surface family
 // (its dtor vtable is g_remusBaseDtorVtbl @0x5e8cb4 = the 5-slot CObject interface
@@ -118,14 +146,14 @@ public:
     // declared here in slot order so cl lays the emitted vtable out byte-for-byte
     // (the unreconstructed slots 6/8 are declared-only -> reloc-masked references).
     virtual i32 VirtualMethodUnknown14();  // [5]  0x156cd0
-    virtual void FUN_00556db0();           // [6]  0x156db0 (RVA-bound worklist stub)
+    virtual i32 FUN_00556db0();            // [6]  0x156db0 (state predicate, returns 1)
     virtual void VirtualMethodUnknown1C(); // [7]  0x165810
     virtual void FUN_00556cf0();           // [8]  0x156cf0 (shared, declared-only)
-    virtual void Stub_1658c0();            // [9]  0x1658c0
-    virtual void* VirtualMethodUnknown28(i32 a1, const char* key, i32 a3); // [10] 0x165990
-    virtual void* VirtualMethodUnknown2C(i32 a1, const char* key, i32 a3); // [11] 0x165a10
-    virtual void Stub_165a90();                                            // [12] 0x165a90
-    virtual ~CDDrawWorkerMapSmall();                                       // overrides slot [1]
+    virtual void* Factory_1658c0(HarrySurface* a1, const char* key, i32 a3); // [9] 0x1658c0
+    virtual void* VirtualMethodUnknown28(i32 a1, const char* key, i32 a3);   // [10] 0x165990
+    virtual void* VirtualMethodUnknown2C(i32 a1, const char* key, i32 a3);   // [11] 0x165a10
+    virtual void* Factory_165a90(HarrySurface* a1, i32 a2, i32 a3);          // [12] 0x165a90
+    virtual ~CDDrawWorkerMapSmall();                                         // overrides slot [1]
 
     // VirtualMethodUnknown20 (0x157600) is NOT a vtable slot - a plain method.
     i32 VirtualMethodUnknown20();
@@ -137,7 +165,7 @@ public:
     i32 m_64;              // +0x64  entry counter cleared by the teardown
 
     // Engine-label backlog stubs (non-vtable).
-    void Stub_157610();
+    void* Stub_157610(i32 flag);
     void Stub_165b90();
 };
 
@@ -285,37 +313,128 @@ i32 CDDrawWorkerMapSmall::VirtualMethodUnknown20() {
 // -------------------------------------------------------------------------
 // Engine-label backlog stubs.
 // -------------------------------------------------------------------------
-// @confidence: med
-// @source: tomalla
-// @stub
+// ---------------------------------------------------------------------------
+// 0x157610: scalar-deleting destructor of the sibling CDDrawSubMgrRemus (vtable
+// 0x5efdc0); landed in this TU during the vtable scan. Runs the real member-teardown
+// ~CDDrawSubMgrRemus (0x157630, CDDrawSubMgr.cpp) then operator delete under the flag.
+SYMBOL(??_GCDDrawSubMgrRemus @@UAEPAXI@Z)
 RVA(0x00157610, 0x1e)
-void CDDrawWorkerMapSmall::Stub_157610() {}
+void* CDDrawWorkerMapSmall::Stub_157610(i32 flag) {
+    ((CDDrawSubMgrRemus*)this)->CDDrawSubMgrRemus::~CDDrawSubMgrRemus();
+    if (flag & 1) {
+        operator delete(this);
+    }
+    return this;
+}
 
-// Leaf vtable slot [6] (0x156db0): a game virtual not yet reconstructed - RVA-bound
-// worklist stub so cl binds the real slot symbol into ??_7CDDrawWorkerMapSmall.
-// @confidence: high
-// @source: vtable-scan
-// @stub
+// Leaf vtable slot [6] (0x156db0): constant state predicate returning 1.
 RVA(0x00156db0, 0x6)
-void CDDrawWorkerMapSmall::FUN_00556db0() {}
+i32 CDDrawWorkerMapSmall::FUN_00556db0() {
+    return 1;
+}
 
-// @confidence: high
-// @source: tomalla
-// @stub
+// ---------------------------------------------------------------------------
+// 0x1658c0: lock the surface arg (Lock_139960 -> data); on 0 bail. Build a worker,
+// dispatch its +0x28 virtual with (data, a3); unlock. On failure destroy the worker
+// and return 0; on success store it in m_map1 under `key` (or the surface name when
+// key is null) and return it.
+// @early-stop
+// worker-ctor vptr-position wall: retail stamps the 0x5f02d8 worker vtable AFTER the
+// field seeds (vptr-last); the polymorphic `new AlbusWorkerObj` stamps vptr-first.
+// Logic/CFG/offsets/the Lock-Unlock/dispatch/inline-strcpy/map-store reproduced.
 RVA(0x001658c0, 0xcc)
-void CDDrawWorkerMapSmall::Stub_1658c0() {}
+void* CDDrawWorkerMapSmall::Factory_1658c0(HarrySurface* a1, const char* key, i32 a3) {
+    i32 data = a1->Lock_139960();
+    if (data == 0) {
+        return 0;
+    }
+    AlbusWorkerObj* w = new AlbusWorkerObj;
+    if (w != 0) {
+        w->m_08 = 0;
+        w->m_10 = 0;
+        w->m_04 = AlbusReadField1c(this);
+        w->m_0c = m_0c;
+    }
+    if (((AlbusWorker*)w)->Vfunc28(data, a3) == 0) {
+        a1->Unlock_1399d0();
+        if (w != 0) {
+            ((AlbusWorker*)w)->ScalarDtor(1);
+        }
+        return 0;
+    }
+    a1->Unlock_1399d0();
+    const char* k = key != 0 ? key : a1->m_name;
+    char buf[0x40];
+    strcpy(buf, k);
+    m_map1[buf] = (CObject*)w;
+    return w;
+}
 
-// @confidence: high
-// @source: tomalla
-// @stub
+// ---------------------------------------------------------------------------
+// 0x165a90: require the surface's format id (Probe_139800) to be 0x504358; lock it
+// (Lock_139960 -> data), bail on 0. Build a worker, dispatch its +0x30 virtual with
+// (data, a1, a3). On failure destroy the worker and return 0; on success store it in
+// m_map1 under the surface's +0x0c handle (or the surface name when null) and return.
+// @early-stop
+// worker-ctor vptr-position wall (twin of Factory_1658c0): logic/CFG/offsets/the
+// format check/Lock/dispatch/inline-strcpy/map-store reproduced; retail stamps the
+// worker vtable vptr-last, the polymorphic `new` stamps vptr-first.
 RVA(0x00165a90, 0xf4)
-void CDDrawWorkerMapSmall::Stub_165a90() {}
+void* CDDrawWorkerMapSmall::Factory_165a90(HarrySurface* a1, i32 a2, i32 a3) {
+    if (a1->Probe_139800() != 0x504358) {
+        return 0;
+    }
+    i32 data = a1->Lock_139960();
+    if (data == 0) {
+        return 0;
+    }
+    const char* keyHandle = a1->m_0c;
+    AlbusWorkerObj* w = new AlbusWorkerObj;
+    if (w != 0) {
+        w->m_04 = AlbusReadField1c(this);
+        w->m_08 = 0;
+        w->m_0c = m_0c;
+        w->m_10 = 0;
+    }
+    if (((AlbusWorker*)w)->Vfunc30(data, (i32)a1, a3) == 0) {
+        if (w != 0) {
+            ((AlbusWorker*)w)->ScalarDtor(1);
+        }
+        return 0;
+    }
+    const char* k = keyHandle != 0 ? keyHandle : a1->m_name;
+    char buf[0x40];
+    strcpy(buf, k);
+    m_map1[buf] = (CObject*)w;
+    return w;
+}
 
-// @confidence: high
-// @source: tomalla
-// @stub
+// ---------------------------------------------------------------------------
+// 0x165b90: map teardown twin of VirtualMethodUnknown1C (0x165810) - iterate every
+// entry of m_map1 via GetNextAssoc destroying each value through its scalar-deleting
+// destructor (vtbl +0x4 arg 1), RemoveAll the map, then clear the +0x64 counter. /GX
+// EH frame for the local CString key.
+// @early-stop
+// EH-frame register-schedule wall (~82%): logic/CFG/offsets/all calls (GetNextAssoc/
+// RemoveAll/scalar-dtor)/args are byte-faithful; the residual is the TU-context EH-
+// state/val-slot schedule (the identical source matched 100% at 0x165810) + the
+// reloc-masked EH-state push. docs/patterns/zero-register-pinning.md.
 RVA(0x00165b90, 0xa9)
-void CDDrawWorkerMapSmall::Stub_165b90() {}
+void CDDrawWorkerMapSmall::Stub_165b90() {
+    CObject* val = 0;
+    POSITION pos = (POSITION)(m_map1.GetCount() != 0 ? -1 : 0);
+    CString key;
+    if (*(volatile i32*)&pos != 0) {
+        do {
+            m_map1.GetNextAssoc(pos, key, val);
+            if (val != 0) {
+                ((AlbusWorker*)val)->ScalarDtor(1);
+            }
+        } while (pos != 0);
+    }
+    m_map1.RemoveAll();
+    m_64 = 0;
+}
 
 // ---------------------------------------------------------------------------
 // WIP (DO NOT ENABLE AS-IS): reconstructed CDDrawWorkerMapSmall::VirtualMethodUnknown1C
@@ -409,5 +528,7 @@ SIZE_UNKNOWN(UnknownAlbusTeardown);
 SIZE_UNKNOWN(AlbusMapBase);
 SIZE_UNKNOWN(AlbusWorker);
 SIZE(AlbusWorkerObj, 0x14);
+SIZE_UNKNOWN(CDDrawSubMgrRemus);
+SIZE_UNKNOWN(HarrySurface);
 SIZE_UNKNOWN(CDDrawWorkerMapSmall);
 VTBL(CDDrawWorkerMapSmall, 0x001efcc8); // ??_7CDDrawWorkerMapSmall (was g_albusClassVtbl)

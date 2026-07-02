@@ -161,9 +161,40 @@ public:
 
     ~CDDrawWorkerList(); // 0x163bc0 (walk+destroy children, then ~CObList(m_workers))
 
-    // Engine-label backlog stubs.
-    void Stub_156f50();
-    void Stub_156fc0();
+    // Engine-label backlog stub (state predicate).
+    i32 Stub_156fc0();
+};
+
+// operator delete + the sibling manager (vtable 0x5efd88) whose real member-teardown
+// destructor (0x156f50) landed in this TU. Its teardown helper is CDDrawWorkerList's
+// 0x163bc0 (reloc-masked cross-ref); it destructs a CObList member at +0x10 and resets
+// the CObject-like header fields via the grand-base.
+void operator delete(void*);
+
+class WorkerListSibBase {
+public:
+    virtual void s0();
+    virtual void* ScalarDtor(i32 flag);
+    virtual void s2();
+    virtual void s3();
+    virtual void s4();
+    ~WorkerListSibBase();
+    i32 m_04; // +0x04
+    i32 m_08; // +0x08
+    i32 m_0c; // +0x0c
+    WorkerListSibBase() {}
+};
+inline WorkerListSibBase::~WorkerListSibBase() {
+    m_04 = -1;
+    m_08 = 0;
+    m_0c = 0;
+}
+
+class CDDrawWorkerListSib : public WorkerListSibBase {
+public:
+    void Cleanup_163bc0();  // declared-only teardown helper (0x163bc0)
+    ~CDDrawWorkerListSib(); // 0x156f50
+    CObList m_10;           // +0x10
 };
 
 // ---------------------------------------------------------------------------
@@ -384,19 +415,32 @@ void CDDrawWorkerList::VirtualMethodUnknown34(i32 a1, i32 a2) {
     }
 }
 
-// @confidence: high
-// @source: tomalla
-// @stub
+// ---------------------------------------------------------------------------
+// 0x156f50: real member-teardown ~ of the sibling manager (vtable 0x5efd88): stamp the
+// class vtable, run the cleanup helper (0x163bc0), destruct the CObList member @+0x10,
+// reset the header fields + restamp the grand-base vtable (0x5e8cb4).
+// @early-stop
+// eh-unit-rule wall: retail compiled this dtor's TU /GX (it carries a push-1/handler/
+// fs:0 SEH frame around the member teardown); CDDrawWorkerList.cpp is /MT (base) to
+// keep its frameless factory neighbours matched, so cl emits no EH frame here. The
+// vtable stamps / cleanup call / CObList destruct / field resets are reproduced; the
+// SEH prologue/epilogue + reloc-masked names are the residual. Re-home in the sweep.
 RVA(0x00156f50, 0x68)
-void CDDrawWorkerList::Stub_156f50() {}
+CDDrawWorkerListSib::~CDDrawWorkerListSib() {
+    Cleanup_163bc0();
+    // implicit: ~m_10 (CObList) then ~WorkerListSibBase (field resets + base restamp).
+}
 
-// @confidence: high
-// @source: tomalla
-// @stub
+// ---------------------------------------------------------------------------
+// Constant state predicate returning 1.
 RVA(0x00156fc0, 0x6)
-void CDDrawWorkerList::Stub_156fc0() {}
+i32 CDDrawWorkerList::Stub_156fc0() {
+    return 1;
+}
 
 SIZE_UNKNOWN(CDDrawWorkerList);
+SIZE_UNKNOWN(CDDrawWorkerListSib);
+SIZE_UNKNOWN(WorkerListSibBase);
 SIZE_UNKNOWN(HagridChild);
 SIZE_UNKNOWN(HagridWorker);
 SIZE(HagridWorkerA, 0x7c);

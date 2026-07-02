@@ -30,10 +30,20 @@
 // The child object dispatched per list node. Slots laid out so the broadcast
 // virtuals land at +0x34 / +0x38, with +0x2c and +0x30 used by other methods.
 // Declarations only - never defined.
+#include <Gruntz/CObList.h>
+#include <Gruntz/CMapStringToOb.h>
+
+// The object reached via m_parent->+0x24->+0x5c; its 0x1628d0 method is run by the
+// ClearAll cleanup (0x1591f0).
+class HermRootObj {
+public:
+    void Method_1628d0(); // 0x1628d0 (__thiscall)
+};
+
 class HermionaChild {
 public:
     virtual void Slot00();                        // +0x00
-    virtual void Slot04();                        // +0x04
+    virtual i32 ScalarDtor(i32 flag);             // +0x04  scalar-deleting destructor
     virtual void Slot08();                        // +0x08
     virtual void Slot0C();                        // +0x0c
     virtual void Slot10();                        // +0x10
@@ -222,11 +232,32 @@ void CDDrawChildGroup::VirtualMethodUnknown38() {
 // -------------------------------------------------------------------------
 // Engine-label backlog stubs.
 // -------------------------------------------------------------------------
-// @confidence: high
-// @source: tomalla
-// @stub
+// ---------------------------------------------------------------------------
+// 0x1591f0: ClearAll cleanup - run m_parent->+0x24->+0x5c->0x1628d0 (when present),
+// walk the +0x10 CObList destroying each node's child via its scalar-deleting
+// destructor, then RemoveAll the +0x10 list and the +0x2c / +0x48 collections.
 RVA(0x001591f0, 0x54)
-void CDDrawChildGroup::Stub_1591f0() {}
+void CDDrawChildGroup::Stub_1591f0() {
+    void* p = *(void**)((char*)m_parent + 0x24);
+    if (p != 0) {
+        HermRootObj* q = *(HermRootObj**)((char*)p + 0x5c);
+        if (q != 0) {
+            q->Method_1628d0();
+        }
+    }
+    HermionaNode* n = m_head;
+    while (n != 0) {
+        HermionaNode* cur = n;
+        n = n->m_next;
+        HermionaChild* obj = cur->m_obj;
+        if (obj != 0) {
+            obj->ScalarDtor(1);
+        }
+    }
+    ((CObList*)((char*)this + 0x10))->RemoveAll();
+    ((CMapStringToOb*)((char*)this + 0x2c))->RemoveAll();
+    ((CMapStringToOb*)((char*)this + 0x48))->RemoveAll();
+}
 
 // @confidence: high
 // @source: tomalla
@@ -237,3 +268,4 @@ void CDDrawChildGroup::Stub_159a70() {}
 SIZE_UNKNOWN(CDDrawChildGroup);
 SIZE_UNKNOWN(HermionaChild);
 SIZE_UNKNOWN(HermionaNode);
+SIZE_UNKNOWN(HermRootObj);

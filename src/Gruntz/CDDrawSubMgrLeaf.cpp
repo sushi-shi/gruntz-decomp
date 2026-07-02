@@ -39,13 +39,27 @@ public:
     virtual i32 ScalarDtor(i32 flag); // +0x04  scalar-deleting destructor
 };
 
+// The real member-teardown dtor (0x157570) lives in CDDrawSubMgrLeafScan.cpp as
+// CDDrawSubMgrLeafScan::~CDDrawSubMgrLeafScan (vtable 0x5efca0). Referenced so the
+// ??_G scalar-dtor below (0x157550) emits a call reloc naming that dtor.
+class CDDrawSubMgrLeafScan {
+public:
+    virtual ~CDDrawSubMgrLeafScan();
+};
+
+// CDDrawMapHolder: the tomalla placeholder carrying three CDDrawSubMgrLeafScan methods
+// that landed in this TU (a map @+0x10 keyed by name, plus two flag fields at +0x2c/
+// +0x30 read by the readiness predicate).
 class CDDrawMapHolder {
 public:
-    void ClearUnknownMap();
+    i32 VirtualMethodUnknown14(); // 0x157530
+    void ClearUnknownMap();       // 0x157bc0
+    void* ScalarDtor(i32 flag);   // 0x157550 (??_G of CDDrawSubMgrLeafScan)
 
-    // Engine-label backlog stubs.
-    void VirtualMethodUnknown14();
-    ~CDDrawMapHolder();
+    char m_pad00[0x10];  // +0x00 .. +0x0f
+    CMapStringToOb m_10; // +0x10  name-keyed value map (0x10..0x2b)
+    i32 m_2c;            // +0x2c
+    i32 m_30;            // +0x30
 };
 
 // CDDrawSubMgrLucius - the CObject-like family grand-base (vptr + the three header
@@ -87,7 +101,7 @@ public:
     // slots 6/8 are declared-only -> reloc-masked references).
     void* ScalarDtor(i32 flag) OVERRIDE;   // [1] ??_G scalar-deleting destructor (0x1577c0)
     virtual i32 VirtualMethodUnknown14();  // [5] 0x1577a0
-    virtual void FUN_00552640();           // [6] 0x152640 (RVA-bound worklist stub)
+    virtual i32 FUN_00552640();            // [6] 0x152640 (state predicate, returns 1)
     virtual void VirtualMethodUnknown1C(); // [7] 0x152650
     virtual void FUN_00554a00();           // [8] 0x154a00 (shared, declared-only)
 
@@ -328,34 +342,65 @@ void* CDDrawSubMgrLeaf::ScalarDtor(i32 flag) {
 
 // Engine-label backlog stubs (moved from src/Stub/CDDrawMapHolder.cpp).
 
-// Leaf vtable slot [6] (0x152640): a game virtual not yet reconstructed - RVA-bound
-// worklist stub so cl binds the real slot symbol into ??_7CDDrawSubMgrLeaf.
-// @confidence: high
-// @source: vtable-scan
-// @stub
+// Leaf vtable slot [6] (0x152640): constant state predicate returning 1.
 RVA(0x00152640, 0x6)
-void CDDrawSubMgrLeaf::FUN_00552640() {}
+i32 CDDrawSubMgrLeaf::FUN_00552640() {
+    return 1;
+}
 
-// @confidence: high
-// @source: tomalla
-// @stub
+// ---------------------------------------------------------------------------
+// Readiness predicate: ready when either flag field (+0x2c / +0x30) is set.
 RVA(0x00157530, 0x17)
-void CDDrawMapHolder::VirtualMethodUnknown14() {}
+i32 CDDrawMapHolder::VirtualMethodUnknown14() {
+    if (m_2c != 0) {
+        return 1;
+    }
+    if (m_30 != 0) {
+        return 1;
+    }
+    return 0;
+}
 
-// @confidence: high
-// @source: tomalla
-// @stub
+// ---------------------------------------------------------------------------
+// Scalar-deleting destructor (??_G of CDDrawSubMgrLeafScan at 0x157550): run the real
+// member-teardown ~CDDrawSubMgrLeafScan (0x157570) then operator delete under the flag.
+SYMBOL(??_GCDDrawSubMgrLeafScan @@UAEPAXI@Z)
 RVA(0x00157550, 0x1e)
-CDDrawMapHolder::~CDDrawMapHolder() {}
+void* CDDrawMapHolder::ScalarDtor(i32 flag) {
+    ((CDDrawSubMgrLeafScan*)this)->CDDrawSubMgrLeafScan::~CDDrawSubMgrLeafScan();
+    if (flag & 1) {
+        operator delete(this);
+    }
+    return this;
+}
 
-// @confidence: high
-// @source: tomalla
-// @stub
+// ---------------------------------------------------------------------------
+// 0x157bc0: iterate every entry of the name-keyed map via GetNextAssoc, destroying
+// each value through its scalar-deleting destructor (vtbl +0x4 arg 1), then RemoveAll.
+// /GX EH frame for the local CString key. Same shape as FreeAll_152720.
+// @early-stop
+// store-scheduling coin-flip (~94%): byte-identical to retail except the `val = 0`
+// store position + the reloc-masked EH-state push (same family wall as FreeAll_152720).
+// docs/patterns/zero-register-pinning.md.
 RVA(0x00157bc0, 0xa2)
-void CDDrawMapHolder::ClearUnknownMap() {}
+void CDDrawMapHolder::ClearUnknownMap() {
+    CObject* val = 0;
+    POSITION pos = (POSITION)(m_10.GetCount() != 0 ? -1 : 0);
+    CString key;
+    if (*(volatile i32*)&pos != 0) {
+        do {
+            m_10.GetNextAssoc(pos, key, val);
+            if (val != 0) {
+                ((CCatalogNode*)val)->ScalarDtor(1);
+            }
+        } while (pos != 0);
+    }
+    m_10.RemoveAll();
+}
 
 SIZE_UNKNOWN(CCatalogNode);
 SIZE_UNKNOWN(CDDrawMapHolder);
+SIZE_UNKNOWN(CDDrawSubMgrLeafScan);
 SIZE_UNKNOWN(CDDrawSubMgrLucius);
 SIZE_UNKNOWN(CDDrawSubMgrLeaf);
 VTBL(CDDrawSubMgrLeaf, 0x001efc78); // ??_7CDDrawSubMgrLeaf (was g_catalogVtbl)

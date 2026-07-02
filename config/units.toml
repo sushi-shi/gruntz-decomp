@@ -1332,7 +1332,7 @@ flags = "base"
 [[unit]]
 unit = "cddrawsubmgrdraco"
 source = "src/Gruntz/CDDrawSubMgrDraco.cpp"
-flags = "base"
+flags = "eh"
 
 [[unit]]
 unit = "cddrawchildgroup"
@@ -1427,7 +1427,7 @@ flags = "eh"
 [[unit]]
 unit = "cddrawworkercache"
 source = "src/Gruntz/CDDrawWorkerCache.cpp"
-flags = "base"
+flags = "eh"
 
 [[unit]]
 unit = "wwdspatialmgr"

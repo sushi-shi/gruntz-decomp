@@ -65,37 +65,60 @@ struct SiriusWorkerObj : public SiriusWorker {
     i32 m_178; // +0x178 = 0
 }; // size = 0x17c
 
+// operator delete (called by the scalar-deleting dtor under the delete flag).
+void operator delete(void*);
+
+// The CObject-like family grand-base (vptr + the three header fields +0x04..+0x0c).
+// Modeled as a REAL polymorphic base (its 5-slot vtable is the shared
+// g_severusWorkerDtorVtbl @0x5e8cb4) so cl emits the implicit grand-base vptr
+// re-stamp (masks 0x5e8cb4) at the member-teardown dtor's tail - no manual
+// `*(void**)this = &g_*Vtbl`. Slot 1 is a REGULAR virtual (not a C++ dtor) so the
+// derived can override it with its explicit ??_G scalar-deleting destructor WITHOUT
+// cl auto-generating a clashing ??_G. Same shape as CDDrawSubMgrLucius.
+class SiriusCacheBase {
+public:
+    virtual void FUN_005bef01();        // [0] 0x1bef01 (shared thunk, declared-only)
+    virtual void* ScalarDtor(i32 flag); // [1] scalar-deleting dtor (regular virtual)
+    virtual void FUN_004028ec();        // [2] 0x0028ec (shared thunk, declared-only)
+    virtual void FUN_0040106e();        // [3] 0x00106e (shared thunk, declared-only)
+    virtual void FUN_00404034();        // [4] 0x004034 (shared thunk, declared-only)
+    ~SiriusCacheBase();
+
+    i32 m_04; // +0x04  -1 when inactive
+    i32 m_08; // +0x08
+    i32 m_0c; // +0x0c  parent/root handle
+    SiriusCacheBase() {}
+};
+
+inline SiriusCacheBase::~SiriusCacheBase() {
+    m_04 = -1;
+    m_08 = 0;
+    m_0c = 0;
+}
+
 // ---------------------------------------------------------------------------
 // CDDrawWorkerCache - the CMapStringToOb at +0x10, and the parent fields copied
 // into the worker (m_0c, m_1c from inside the map's internal area).
 // ---------------------------------------------------------------------------
 // Real polymorphic now (own 10-slot vtable ??_7CDDrawWorkerCache @0x5efd00, was
 // Vtbl_1efd00 / ClassWithUnknownVTable31). Slots 0/2/3/4 are the shared CObject
-// thunks, slot 1 the virtual dtor (0x157700), slots 5/6/7 unreconstructed leaf
-// virtuals (declared-only, reloc-masked), slot 8 = VirtualMethodUnknown20 (0x1576f0)
-// and slot 9 = VirtualMethodUnknown24 (0x1652c0). cl auto-emits the vtable; the
-// implicit vptr-stamp replaces the explicit m_vptr store.
-class CDDrawWorkerCache {
+// thunks, slot 1 the ??_G scalar-deleting dtor (0x157700), slots 5/6/7 unreconstructed
+// leaf virtuals (declared-only, reloc-masked), slot 8 = VirtualMethodUnknown20
+// (0x1576f0) and slot 9 = VirtualMethodUnknown24 (0x1652c0). cl auto-emits the vtable.
+class CDDrawWorkerCache : public SiriusCacheBase {
 public:
-    virtual void FUN_005bef01();          // [0] 0x1bef01 (shared thunk, declared-only)
-    virtual ~CDDrawWorkerCache();         // [1] 0x157700 scalar-deleting dtor
-    virtual void FUN_004028ec();          // [2] 0x0028ec (shared thunk, declared-only)
-    virtual void FUN_0040106e();          // [3] 0x00106e (shared thunk, declared-only)
-    virtual void FUN_00404034();          // [4] 0x004034 (shared thunk, declared-only)
+    void* ScalarDtor(i32 flag) OVERRIDE;  // [1] ??_G scalar-deleting dtor (0x157700)
     virtual void FUN_005576d0();          // [5] 0x1576d0 (declared-only)
     virtual void FUN_00557790();          // [6] 0x157790 (declared-only)
-    virtual void FUN_00565210();          // [7] 0x165210 (declared-only)
+    virtual void FUN_00565210();          // [7] 0x165210 (teardown, defined in Registry TU)
     virtual i32 VirtualMethodUnknown20(); // [8] 0x1576f0
     virtual void* VirtualMethodUnknown24(i32 a1, const char* key, i32 a3); // [9] 0x1652c0
 
-    // Engine-label backlog stub (non-virtual).
-    void VirtualMethod_157720();
+    // The real member-teardown destructor (0x157720); the ??_G scalar dtor calls it.
+    ~CDDrawWorkerCache();
 
-    // vptr implicit @ +0x00
-    i32 m_04;                  // +0x04  -1 when inactive
-    char m_pad08[0x0c - 0x08]; // +0x08..0x0b
-    i32 m_0c;                  // +0x0c  parent/root handle
-    CMapStringToOb m_10;       // +0x10  map (internal field at +0x1c seeds worker->m_04)
+    // m_04/m_08/m_0c (and the implicit vptr) are inherited from SiriusCacheBase.
+    CMapStringToOb m_10; // +0x10  map (internal field at +0x1c seeds worker->m_04)
 };
 
 // Read field at +0x1c from the parent (inside the CMapStringToOb), used to
@@ -157,19 +180,39 @@ void* CDDrawWorkerCache::VirtualMethodUnknown24(i32 a1, const char* key, i32 a3)
     return w;
 }
 
-// Engine-label backlog stubs (moved from src/Stub/CDDrawWorkerCache.cpp).
-
-// @confidence: high
-// @source: tomalla
-// @stub
+// ---------------------------------------------------------------------------
+// Scalar-deleting destructor (the vtable slot+4 override, ??_G at 0x157700): run
+// the real member-teardown ~, then operator delete this if the low flag bit is set.
+// SYMBOL() pins the ??_G mangling; it overrides SiriusCacheBase's slot-1 regular
+// virtual so the leaf vtable carries it at slot 1 WITHOUT cl auto-generating a
+// clashing ??_G. Same idiom as CDDrawSubMgrLeaf::ScalarDtor.
+SYMBOL(??_GCDDrawWorkerCache @@UAEPAXI@Z)
 RVA(0x00157700, 0x1e)
-CDDrawWorkerCache::~CDDrawWorkerCache() {}
+void* CDDrawWorkerCache::ScalarDtor(i32 flag) {
+    this->~CDDrawWorkerCache();
+    if (flag & 1) {
+        operator delete(this);
+    }
+    return this;
+}
 
-// @confidence: med
-// @source: call-xref
-// @stub
+// ---------------------------------------------------------------------------
+// The real member-teardown destructor (0x157720, /GX): cl stamps ??_7CDDrawWorkerCache
+// (masks 0x5efd00) at entry, runs the map teardown (FUN_00565210, the shared
+// VirtualMethodUnknown58 @0x165210), then destructs the CMapStringToOb member and the
+// SiriusCacheBase grand-base (field resets + implicit ??_7-base re-stamp masking
+// 0x5e8cb4). No manual stamp. /GX member-teardown frame from the destructible map.
+// @early-stop
+// vptr-position wall (~95%, twin of CDDrawSubMgrLeaf/CSeverusEntryList): every
+// instruction matches retail EXCEPT the grand-base vptr re-stamp POSITION (cl emits
+// the base-dtor entry stamp before the m_04/m_08/m_0c resets; retail sinks it after)
+// + the reloc-masked EH-state/teardown/vtable symbol names. Logic complete.
 RVA(0x00157720, 0x68)
-void CDDrawWorkerCache::VirtualMethod_157720() {}
+CDDrawWorkerCache::~CDDrawWorkerCache() {
+    FUN_00565210();
+    // implicit: ~m_10 (CMapStringToOb), then ~SiriusCacheBase (field resets + the
+    // grand-base ??_7 re-stamp) - reproduces retail's teardown order.
+}
 
 SIZE_UNKNOWN(CDDrawWorkerCache);
 SIZE_UNKNOWN(SiriusWorker);

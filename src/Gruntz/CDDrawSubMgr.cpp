@@ -34,9 +34,6 @@ public:
     }
     virtual ~CDDrawSubMgrBase() {}
     i32 m_fieldBaseUnknown; // +0x04
-
-    // Engine-label backlog stubs.
-    void Constructor_156e10();
 };
 
 class CDDrawSubMgr : public CDDrawSubMgrBase {
@@ -45,12 +42,11 @@ public:
     virtual ~CDDrawSubMgr() OVERRIDE;
     virtual void VirtualMethodUnknown14();
     virtual i32 VirtualMethodUnknown18();
-    virtual void VirtualMethodUnknown1C(); // cleanup — defined in CDDrawSubMgrDraco.cpp
-    virtual void VirtualMethodUnknown20();
+    virtual i32 VirtualMethodUnknown1C(); // 0x1576c0 (state predicate, returns 1)
+    virtual i32 VirtualMethodUnknown20(); // 0x157790 (state predicate, returns 1)
 
-    // Engine-label backlog stubs.
-    void Constructor_157630();
-    void Stub_155720();
+    // Engine-label backlog stub (scalar-deleting dtor of a far sibling class).
+    void* Stub_155720(i32 flag);
 
     i32 fieldUnknown8;                // +0x08
     CDDrawSurfaceMgr* m_pHarryPotter; // +0x0c
@@ -58,6 +54,57 @@ public:
 
 // operator delete (used indirectly via VirtualMethodUnknown1C; may throw -> /GX).
 void operator delete(void*);
+
+// ---- Mis-homed family member-teardown destructors (from the vtable scan) --------
+#include <Gruntz/CMapStringToOb.h>
+
+// The CObject-like family grand-base: 5-slot vtable (masks 0x5e8cb4), header fields
+// +0x04..+0x0c, non-virtual ~ = the field resets + the implicit base ??_7 re-stamp.
+// Slot 1 is the (declared-only) ??_G scalar-deleting dtor. Same shape as
+// CDDrawSubMgrLucius / SiriusCacheBase.
+struct FamilyMapBase {
+    virtual void s0();                  // [0]
+    virtual void* ScalarDtor(i32 flag); // [1]
+    virtual void s2();                  // [2]
+    virtual void s3();                  // [3]
+    virtual void s4();                  // [4]
+    ~FamilyMapBase();
+    i32 m_04; // +0x04
+    i32 m_08; // +0x08
+    i32 m_0c; // +0x0c
+    FamilyMapBase() {}
+};
+inline FamilyMapBase::~FamilyMapBase() {
+    m_04 = -1;
+    m_08 = 0;
+    m_0c = 0;
+}
+
+// 3-map sibling (vtable 0x5efdc0): member-teardown ~ at 0x157630; its ??_G scalar-dtor
+// (0x157610) lives in CDDrawWorkerMapSmall.cpp and calls this ~.
+struct CDDrawSubMgrRemus : public FamilyMapBase {
+    void Cleanup_1591e0(); // teardown helper (0x1591e0), declared-only
+    ~CDDrawSubMgrRemus();  // 0x157630
+    CMapStringToOb m_10;   // +0x10
+    CMapStringToOb m_2c;   // +0x2c
+    CMapStringToOb m_48;   // +0x48
+    i32 m_64;              // +0x64
+};
+
+// 1-map sibling (vtable 0x5efd28): member-teardown ~ at 0x156e10; its ??_G scalar-dtor
+// (0x156df0) lives in CDDrawWorkerRegistry.cpp and calls this ~.
+struct CDDrawRegistryDtorHost : public FamilyMapBase {
+    void Cleanup_154ac0();     // teardown helper (0x154ac0), declared-only
+    ~CDDrawRegistryDtorHost(); // 0x156e10
+    CMapStringToOb m_10;       // +0x10
+};
+
+// The far sibling class (real member-teardown ~ at 0xd5d70) whose ??_G scalar-deleting
+// destructor (0x155720) landed in this TU; referenced so the ??_G call reloc names it.
+class CDDrawSubMgrFar {
+public:
+    virtual ~CDDrawSubMgrFar();
+};
 
 // ---------------------------------------------------------------------------
 // The 0x158xxx-0x15c970 discovered cluster is a DISTINCT, LARGER class than the
@@ -299,42 +346,63 @@ i32 CDDrawSubMgr::VirtualMethodUnknown18() {
     return 0;
 }
 
-// Engine-label backlog stubs (moved from src/Stub/CDDrawSubMgr.cpp).
-// VirtualMethodUnknown20 is the vtable anchor above; carry its backlog RVA here.
-// @confidence: med
-// @source: tomalla
-// @stub
+// ---------------------------------------------------------------------------
+// Constant state predicate returning 1.
 RVA(0x00157790, 0x6)
-void CDDrawSubMgr::VirtualMethodUnknown20() {}
+i32 CDDrawSubMgr::VirtualMethodUnknown20() {
+    return 1;
+}
 
-// 0x155720 was labeled ~CDDrawSubMgr in the backlog, but the real (virtual) dtor
-// is 0x1574d0 above (??1...@UAE, matched); 0x155720 is a distinct retail function
-// of unknown identity - keep it in the worklist under a neutral name.
-// @confidence: low
-// @source: rtti-vptr
-// @stub
-RVA(0x00155720, 0x1e)
-void CDDrawSubMgr::Stub_155720() {}
-
-// @confidence: med
-// @source: call-xref
-// @stub
-RVA(0x00157630, 0x82)
-void CDDrawSubMgr::Constructor_157630() {}
-
-// @confidence: med
-// @source: tomalla
-// @stub
+// ---------------------------------------------------------------------------
+// Constant state predicate returning 1 (0x1576c0).
 RVA(0x001576c0, 0x6)
-void CDDrawSubMgr::VirtualMethodUnknown1C() {}
+i32 CDDrawSubMgr::VirtualMethodUnknown1C() {
+    return 1;
+}
 
-// Engine-label backlog stubs (moved from src/Stub/CDDrawSubMgrBase.cpp).
+// ---------------------------------------------------------------------------
+// 0x155720: scalar-deleting destructor of a far sibling class (real member-teardown
+// ~ at 0xd5d70) that landed in this TU. Runs the real ~ then operator delete.
+// @early-stop
+// reloc-masked cross-module dtor name: the ~ target (0xd5d70) is a distinct
+// engine class in another module; its label won't match the ??1CDDrawSubMgrFar
+// reference. The scalar-dtor code bytes (call ~ / test flag / operator delete) match.
+RVA(0x00155720, 0x1e)
+void* CDDrawSubMgr::Stub_155720(i32 flag) {
+    ((CDDrawSubMgrFar*)this)->CDDrawSubMgrFar::~CDDrawSubMgrFar();
+    if (flag & 1) {
+        operator delete(this);
+    }
+    return this;
+}
 
-// @confidence: med
-// @source: call-xref
-// @stub
+// ---------------------------------------------------------------------------
+// 0x157630: member-teardown ~ of the 3-map sibling CDDrawSubMgrRemus (vtable 0x5efdc0).
+// Runs the cleanup helper (0x1591e0), then the three CMapStringToOb members and the
+// FamilyMapBase grand-base auto-destruct (reverse decl order + field resets + the
+// grand-base ??_7 re-stamp masking 0x5e8cb4). /GX member-teardown frame.
+// @early-stop
+// vptr-position wall (~95%, family twin): every instruction matches retail except the
+// grand-base vptr re-stamp position (cl stamps at base-dtor entry, retail sinks it
+// after the field resets) + the reloc-masked EH-state/teardown/map-dtor names.
+RVA(0x00157630, 0x82)
+CDDrawSubMgrRemus::~CDDrawSubMgrRemus() {
+    Cleanup_1591e0();
+    // implicit: ~m_48, ~m_2c, ~m_10, ~FamilyMapBase (resets + base restamp).
+}
+
+// ---------------------------------------------------------------------------
+// 0x156e10: member-teardown ~ of the 1-map sibling CDDrawRegistryDtorHost (vtable
+// 0x5efd28). Runs the cleanup helper (0x154ac0), then the CMapStringToOb member and
+// the FamilyMapBase grand-base auto-destruct. /GX member-teardown frame.
+// @early-stop
+// vptr-position wall (~95%, family twin): grand-base vptr re-stamp position + the
+// reloc-masked EH-state/teardown/map-dtor names are the residual.
 RVA(0x00156e10, 0x68)
-void CDDrawSubMgrBase::Constructor_156e10() {}
+CDDrawRegistryDtorHost::~CDDrawRegistryDtorHost() {
+    Cleanup_154ac0();
+    // implicit: ~m_10, ~FamilyMapBase (resets + base restamp).
+}
 
 // ===========================================================================
 // Discovered cluster (CDDrawWorkerMgr / CDDrawBlitParam) — banked methods.
@@ -2424,6 +2492,10 @@ SIZE_UNKNOWN(CDDrawBlitWorker);
 SIZE_UNKNOWN(CDDrawRect);
 SIZE_UNKNOWN(CDDrawSubMgr);
 SIZE_UNKNOWN(CDDrawSubMgrBase);
+SIZE_UNKNOWN(CDDrawSubMgrFar);
+SIZE_UNKNOWN(CDDrawSubMgrRemus);
+SIZE_UNKNOWN(CDDrawRegistryDtorHost);
+SIZE_UNKNOWN(FamilyMapBase);
 SIZE_UNKNOWN(CDDrawWorkerDisp);
 SIZE_UNKNOWN(CDDrawWorkerGeom);
 SIZE_UNKNOWN(CDDrawWorkerNode);

@@ -33,24 +33,100 @@ public:
 // slots 8/9 the backlog stubs. cl auto-emits the vtable; the implicit vptr-stamp
 // replaces the explicit m_vptr. Three owned-child pointers at +0x10/+0x14/+0x18.
 // ---------------------------------------------------------------------------
+// operator delete (called by the scalar-deleting dtor under the delete flag).
+void operator delete(void*);
+inline void* operator new(u32, void* p) {
+    return p;
+}
+
+// The two spawned-worker vtables, stamped manually into the heap block AFTER the
+// external base ctor runs (transitional workaround: the workers' virtuals live in
+// other TUs, so cl can't emit these vtables - referenced as reloc-masked DATA externs).
+DATA(0x005eff70)
+extern i32 g_dracoWorkerAVtbl; // 0x5eff70
+DATA(0x005eff30)
+extern i32 g_dracoWorkerBVtbl; // 0x5eff30
+
+// The real member-teardown dtor (0x1574d0) lives in CDDrawSubMgr.cpp as
+// CDDrawSubMgr::~CDDrawSubMgr (SAME retail class, vtable 0x5efe08 - the tomalla
+// "cluster" is split across two TUs). Referenced so the ??_G scalar-dtor below emits
+// a call reloc naming ??1CDDrawSubMgr@@UAE@XZ (matching retail's 0x1574d0 label).
+class CDDrawSubMgr {
+public:
+    virtual ~CDDrawSubMgr();
+};
+
+// The two spawned worker types built by VirtualMethodUnknown24 (0x1588f0): a 0x30-byte
+// "A" child (ctor 0x158f30, vtable 0x5eff70, dispatch +0x24) and two 0x34-byte "B"
+// children (ctor 0x156cb0 = CDDrawSubMgr::CDDrawSubMgr, vtable 0x5eff30, dispatch +0x30).
+class DracoWorkerA {
+public:
+    virtual void v00();
+    virtual void v04();
+    virtual void v08();
+    virtual void v0c();
+    virtual void v10();
+    virtual void v14();
+    virtual void v18();
+    virtual void v1c();
+    virtual void v20();
+    virtual i32 Vfunc24(i32 a1, i32 a2, i32 a3); // slot 9 (@0x24)
+    DracoWorkerA(i32 handle, i32 a2, i32 a3);    // 0x158f30
+    char m_pad04[0x2c - 0x04];
+    i32 m_2c; // +0x2c
+}; // 0x30
+
+class DracoWorkerB {
+public:
+    virtual void v00();
+    virtual void v04();
+    virtual void v08();
+    virtual void v0c();
+    virtual void v10();
+    virtual void v14();
+    virtual void v18();
+    virtual void v1c();
+    virtual void v20();
+    virtual void v24();
+    virtual void v28();
+    virtual void v2c();
+    virtual i32 Vfunc30(i32 a1, i32 a2, i32 a3, i32 a4); // slot 12 (@0x30)
+    DracoWorkerB(i32 handle, i32 a2, i32 a3);            // 0x156cb0
+    char m_pad04[0x10 - 0x04];
+    i32 m_10; // +0x10
+    char m_pad14[0x2c - 0x14];
+    i32 m_2c; // +0x2c
+    i32 m_30; // +0x30
+}; // 0x34
+
+// The parent/root handle object at CDDrawSubMgrDraco+0x0c; the factory records an
+// error code into its +0x38 field when a child fails.
+class DracoRoot {
+public:
+    i32 m_pad00[0x0e]; // +0x00..0x37
+    i32 m_38;          // +0x38  error code slot
+};
+
+// ---------------------------------------------------------------------------
 class CDDrawSubMgrDraco {
 public:
     virtual void FUN_005bef01();           // [0] 0x1bef01 (shared thunk, declared-only)
-    virtual ~CDDrawSubMgrDraco();          // [1] 0x1574b0 scalar-deleting dtor
+    virtual void* ScalarDtor(i32 flag);    // [1] ??_G scalar-deleting dtor (0x1574b0)
     virtual void FUN_004028ec();           // [2] 0x0028ec (shared thunk, declared-only)
     virtual void FUN_0040106e();           // [3] 0x00106e (shared thunk, declared-only)
     virtual void FUN_00404034();           // [4] 0x004034 (shared thunk, declared-only)
     virtual i32 VirtualMethodUnknown14();  // [5] 0x157480
     virtual void FUN_00401c08();           // [6] 0x001c08 (shared thunk, declared-only)
     virtual void VirtualMethodUnknown1C(); // [7] 0x158ac0
-    virtual void Stub_1574a0();            // [8] 0x1574a0 (backlog stub)
-    virtual void Stub_1588f0();            // [9] 0x1588f0 (backlog stub)
+    virtual i32 VirtualMethodUnknown20();  // [8] 0x1574a0 (state id)
+    virtual i32 VirtualMethodUnknown24(i32 a1, i32 a2, i32 a3, i32 a4); // [9] 0x1588f0
 
     // vptr implicit @ +0x00
-    char m_pad04[0x10 - 0x04];
-    DracoChild* m_10; // +0x10
-    DracoChild* m_14; // +0x14
-    DracoChild* m_18; // +0x18
+    char m_pad04[0x0c - 0x04];
+    DracoRoot* m_0c;  // +0x0c  parent/root handle
+    DracoChild* m_10; // +0x10  (DracoWorkerA object, viewed as DracoChild by VM1C)
+    DracoChild* m_14; // +0x14  (DracoWorkerB object)
+    DracoChild* m_18; // +0x18  (DracoWorkerB object)
 };
 
 // ---------------------------------------------------------------------------
@@ -90,30 +166,99 @@ void CDDrawSubMgrDraco::VirtualMethodUnknown1C() {
     }
 }
 
-// -------------------------------------------------------------------------
-// Engine-label backlog stubs.
-// -------------------------------------------------------------------------
-// @confidence: high
-// @source: tomalla
-// @stub
+// ---------------------------------------------------------------------------
+// Constant state id.
 RVA(0x001574a0, 0x6)
-void CDDrawSubMgrDraco::Stub_1574a0() {}
+i32 CDDrawSubMgrDraco::VirtualMethodUnknown20() {
+    return 0xf;
+}
 
-// @confidence: high
-// @source: tomalla
-// @stub
-// slot[1] scalar-deleting dtor (0x1574b0); cl auto-stamps the vptr at entry.
+// ---------------------------------------------------------------------------
+// Scalar-deleting destructor (??_G at 0x1574b0): run the real member-teardown
+// ~CDDrawSubMgr (0x1574d0, the same retail class in CDDrawSubMgr.cpp), then
+// operator delete this if the low flag bit is set. Slot 1 override.
+SYMBOL(??_GCDDrawSubMgrDraco @@UAEPAXI@Z)
 RVA(0x001574b0, 0x1e)
-CDDrawSubMgrDraco::~CDDrawSubMgrDraco() {}
+void* CDDrawSubMgrDraco::ScalarDtor(i32 flag) {
+    ((CDDrawSubMgr*)this)->CDDrawSubMgr::~CDDrawSubMgr();
+    if (flag & 1) {
+        operator delete(this);
+    }
+    return this;
+}
 
-// @confidence: high
-// @source: tomalla
-// @stub
+// ---------------------------------------------------------------------------
+// 0x1588f0: build the three owned children then run their per-stage init. Alloc
+// child A (0x30, ctor 0x158f30(handle,0,0), vtable 0x5eff70) -> m_10; child B and C
+// (0x34, ctor 0x156cb0 = CDDrawSubMgr(handle,N,0), vtable 0x5eff30, m_10=0/m_2c=0/
+// m_30=1) -> m_14/m_18. Then A->Vfunc24, B->Vfunc30, and (unless arg4&1) C->Vfunc30,
+// each with (a1,a2,a3[,0]); on any failure stamp the root's +0x38 error code
+// (0x7d1/0x7d2/0x7d3 if not already set) and return 0. All-ok -> 1. /GX EH frame
+// tracks the partially-built children during construction.
+// @early-stop
+// vptr-position / worker-ctor-shape wall: retail stamps each child's derived vtable
+// (0x5eff70 / 0x5eff30) AFTER the base ctor + field seeds (vptr-last); the polymorphic
+// `new` model stamps vptr-first, and the two child ctors/vtables are foreign engine
+// data (reloc-masked). Logic/CFG/offsets/error-codes reproduced.
 RVA(0x001588f0, 0x1c5)
-void CDDrawSubMgrDraco::Stub_1588f0() {}
+i32 CDDrawSubMgrDraco::VirtualMethodUnknown24(i32 a1, i32 a2, i32 a3, i32 a4) {
+    DracoWorkerA* a = (DracoWorkerA*)operator new(0x30);
+    if (a != 0) {
+        new (a) DracoWorkerA((i32)m_0c, 0, 0);
+        *(i32**)a = &g_dracoWorkerAVtbl;
+        a->m_2c = 0;
+    }
+    m_10 = (DracoChild*)a;
+
+    DracoWorkerB* b = (DracoWorkerB*)operator new(0x34);
+    if (b != 0) {
+        new (b) DracoWorkerB((i32)m_0c, 1, 0);
+        b->m_10 = 0;
+        *(i32**)b = &g_dracoWorkerBVtbl;
+        b->m_2c = 0;
+        b->m_30 = 1;
+    }
+    m_14 = (DracoChild*)b;
+
+    DracoWorkerB* c = (DracoWorkerB*)operator new(0x34);
+    if (c != 0) {
+        new (c) DracoWorkerB((i32)m_0c, 2, 0);
+        c->m_10 = 0;
+        *(i32**)c = &g_dracoWorkerBVtbl;
+        c->m_2c = 0;
+        c->m_30 = 1;
+    }
+    m_18 = (DracoChild*)c;
+
+    if (a->Vfunc24(a1, a2, a3) == 0) {
+        if (m_0c->m_38 == 0) {
+            m_0c->m_38 = 0x7d1;
+        }
+        return 0;
+    }
+    if (b->Vfunc30(a1, a2, a3, 0) == 0) {
+        if (m_0c->m_38 == 0) {
+            m_0c->m_38 = 0x7d2;
+        }
+        return 0;
+    }
+    if (!(a4 & 1)) {
+        if (c->Vfunc30(a1, a2, a3, 0) == 0) {
+            if (m_0c->m_38 == 0) {
+                m_0c->m_38 = 0x7d3;
+            }
+            return 0;
+        }
+    }
+    return 1;
+}
 
 SIZE_UNKNOWN(CDDrawSubMgrDraco);
+SIZE_UNKNOWN(CDDrawSubMgr);
 SIZE_UNKNOWN(DracoChild);
+SIZE_UNKNOWN(DracoRoot);
+SIZE(DracoWorkerA, 0x30);
+SIZE(DracoWorkerB, 0x34);
 // ??_7CDDrawSubMgrDraco (was Vtbl_1efe08 / ClassWithUnknownVTable35; 10 slots). cl
 // auto-emits it from the real-polymorphic class; retail datum reloc-masked ->
 // matching-neutral catalog tracking.
