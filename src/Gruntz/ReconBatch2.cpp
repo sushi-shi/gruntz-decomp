@@ -12,37 +12,19 @@
 #include <Globals.h>
 
 // ===========================================================================
-// 0x001b9b8d (6B) - getter that returns the address of a global descriptor
-// (PTR_DAT_006156f4). `mov eax, OFFSET g; ret`.
+// 0x000be820 (73B) - EnableWindow(GetDlgItem(hDlg, id), obj->m_528) for ids
+// 0x4d0 and 0x4d1. __cdecl(hDlg, obj). Clean Win32 idiom.
 // ===========================================================================
-RVA(0x001b9b8d, 0x6)
-void** Get_1b9b8d() {
-    return &g_desc_6156f4;
-}
-
-// ===========================================================================
-// 0x00112840 (12B) - `return LoadSwitchDownSprite() != 0;`. The trailing
-// neg/sbb/neg is the int->bool normalize (docs/patterns/int-to-bool-normalize).
-// ===========================================================================
-i32 LoadSwitchDownSprite_2e0f();
-RVA(0x00112840, 0xc)
-i32 Probe_112840() {
-    return LoadSwitchDownSprite_2e0f() != 0;
-}
-
-// ===========================================================================
-// 0x00115630 (10B) - forward to a Font method on the medium-font global
-// (tail call: `mov ecx,&g_mediumFont; jmp Font::Method`).
-// ===========================================================================
-class Font {
-public:
-    Font* Ctor179700(); // tail-called on the global (retail: ??0Font@@QAE@XZ)
+struct DlgData_be820 {
+    char m_pad0[0x528];
+    i32 m_528; // +0x528 enable flag
 };
-DATA(0x0024eae8)
-extern Font g_mediumFont;
-RVA(0x00115630, 0xa)
-Font* Forward_115630() {
-    return g_mediumFont.Ctor179700();
+RVA(0x000be820, 0x49)
+void EnableButtons_be820(HWND hDlg, DlgData_be820* obj) {
+    if (hDlg && obj) {
+        EnableWindow(GetDlgItem(hDlg, 0x4d0), obj->m_528);
+        EnableWindow(GetDlgItem(hDlg, 0x4d1), obj->m_528);
+    }
 }
 
 // ===========================================================================
@@ -59,6 +41,38 @@ void AddTail_bf580(void* p) {
 }
 
 // ===========================================================================
+// 0x000c0460 (46B) - scan 4 embedded 0x64-byte entries; return the first whose
+// type==3, field4==0 and field10 > key (unsigned), else 0. __thiscall(1 arg).
+// ===========================================================================
+struct Entry_c0460 {
+    i32 m_0; // +0x00 type
+    i32 m_4; // +0x04
+    char m_pad8[0x10 - 0x8];
+    u32 m_10; // +0x10
+    char m_pad14[0x64 - 0x14];
+};
+struct EntryOwner_c0460 {
+    char m_pad0[0x20];
+    Entry_c0460 m_entries[4]; // +0x20
+    Entry_c0460* Find(u32 key);
+};
+// @early-stop
+// regalloc wall (topic:wall topic:regalloc): structure byte-identical to retail
+// (lea/loop/guards/ja/ret all match); residual is the key<->counter register
+// swap (retail key=ecx/counter=edx, cl here key=edx/counter=ecx) driven by the
+// key-load vs lea schedule order, not source-steerable, ~88.75%.
+RVA(0x000c0460, 0x2e)
+Entry_c0460* EntryOwner_c0460::Find(u32 key) {
+    Entry_c0460* p = &m_entries[0];
+    for (i32 i = 0; i < 4; i++, p++) {
+        if (p && p->m_0 == 3 && p->m_4 == 0 && p->m_10 > key) {
+            return p;
+        }
+    }
+    return 0;
+}
+
+// ===========================================================================
 // 0x000c2a80 (19B) - call two sibling __thiscall methods on `this`
 // (Sub0c2ab0(3) then Sub0c40b0()).
 // ===========================================================================
@@ -71,52 +85,6 @@ RVA(0x000c2a80, 0x13)
 void Host_c2a80::Run() {
     Sub0c2ab0(3);
     Sub0c40b0();
-}
-
-// ===========================================================================
-// 0x001816a0 (28B) - if a held item handle is present, remove it from the owned
-// list and clear it. Sibling of 0x00181660 (same class: m_2c list, m_40 handle).
-// ===========================================================================
-class CPoolItemA;
-class CDDrawPtrCollections {
-public:
-    void RemoveItemA(CPoolItemA* h);                            // 0x142160
-    CPoolItemA* MakeAndAddB(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x142e60
-};
-struct Worker181x_181x {
-    void* m_vptr;                // +0x00
-    char m_pad04[0x2c - 0x04];   // +0x04..0x2b
-    CDDrawPtrCollections* m_2c;  // +0x2c  owned item collection
-    char m_pad30[0x38 - 0x30];   // +0x30..0x37
-    CDDSurface* m_38;            // +0x38
-    char m_pad3c[0x40 - 0x3c];   // +0x3c..0x3f
-    CPoolItemA* m_40;            // +0x40  held item handle (0 = none)
-    char m_pad44[0x48 - 0x44];   // +0x44..0x47
-    i32 m_48;                    // +0x48
-    char m_pad4c[0x2060 - 0x4c]; // +0x4c..0x205f
-    i32 m_2060;                  // +0x2060 count
-    i32 m_2064;                  // +0x2064
-    i32 m_2068;                  // +0x2068
-    void DropItem();             // 0x1816a0
-    void AddItem();              // 0x181660
-};
-RVA(0x001816a0, 0x1c)
-void Worker181x_181x::DropItem() {
-    if (m_40) {
-        m_2c->RemoveItemA(m_40);
-        m_40 = 0;
-    }
-}
-
-// 0x00181660 (64B) - if active (m_2060>0 && m_48), allocate+register an item via
-// the owned collection and Blt it onto m_38; store the new handle into m_40.
-RVA(0x00181660, 0x40)
-void Worker181x_181x::AddItem() {
-    if (m_2060 > 0 && m_48 != 0) {
-        CPoolItemA* h = m_2c->MakeAndAddB(m_2064, m_2068, 0, 0, -1);
-        m_40 = h;
-        ((CDDSurface*)h)->Blt(m_38);
-    }
 }
 
 // ===========================================================================
@@ -182,20 +150,6 @@ public:
     void ResetPreview(); // 0x0de140
 };
 // @early-stop
-// regalloc wall (topic:wall topic:regalloc): logic byte-faithful (every load/
-// call/offset + the 3 named callees match); residual is the m_28 intermediate
-// register choice in the pointer chain (retail reuses eax: eax->eax->ecx; cl
-// here picks fresh ecx/edx) - a 2-3 byte modrm-field micro-diff, ~98.7%.
-RVA(0x000f9840, 0x29)
-void CGameModeBase::Reset() {
-    if (m_c->m_28->m_2c != 0) {
-        m_c->m_28->m_2c->Free();
-    }
-    m_c->m_28->ClearUnknownMap();
-    BaseCleanup();
-}
-
-// @early-stop
 // regalloc wall (topic:wall topic:regalloc): same m_28-intermediate register
 // micro-diff as Reset; logic + named callees + the "_" string literal match
 // retail, ~98.8%.
@@ -206,87 +160,6 @@ void CGameModeBase::ResetPreview() {
     }
     ((CDDrawSubMgrLeafScan*)m_c->m_28)->RemoveKeysEqual_157c70(s_PREVIEW_6135e8, "_");
     BaseCleanup();
-}
-
-// ===========================================================================
-// 0x000c0460 (46B) - scan 4 embedded 0x64-byte entries; return the first whose
-// type==3, field4==0 and field10 > key (unsigned), else 0. __thiscall(1 arg).
-// ===========================================================================
-struct Entry_c0460 {
-    i32 m_0; // +0x00 type
-    i32 m_4; // +0x04
-    char m_pad8[0x10 - 0x8];
-    u32 m_10; // +0x10
-    char m_pad14[0x64 - 0x14];
-};
-struct EntryOwner_c0460 {
-    char m_pad0[0x20];
-    Entry_c0460 m_entries[4]; // +0x20
-    Entry_c0460* Find(u32 key);
-};
-// @early-stop
-// regalloc wall (topic:wall topic:regalloc): structure byte-identical to retail
-// (lea/loop/guards/ja/ret all match); residual is the key<->counter register
-// swap (retail key=ecx/counter=edx, cl here key=edx/counter=ecx) driven by the
-// key-load vs lea schedule order, not source-steerable, ~88.75%.
-RVA(0x000c0460, 0x2e)
-Entry_c0460* EntryOwner_c0460::Find(u32 key) {
-    Entry_c0460* p = &m_entries[0];
-    for (i32 i = 0; i < 4; i++, p++) {
-        if (p && p->m_0 == 3 && p->m_4 == 0 && p->m_10 > key) {
-            return p;
-        }
-    }
-    return 0;
-}
-
-// ===========================================================================
-// 0x000fafa0 (59B) - __stdcall(4) validity gate: returns 0 if arg0 is null;
-// for kind 4 / 7 validates arg0 through a per-kind checker (return 0 on fail);
-// otherwise (and on success) returns 1.
-// ===========================================================================
-i32 __stdcall Check4_2ce8(i32 h); // 0x0faff0 (kind 4)
-i32 __stdcall Check7_36bb(i32 h); // 0x0fb1c0 (kind 7)
-// @early-stop
-// regalloc wall (topic:wall topic:regalloc): the switch body (cmp 4 je / cmp 7
-// jne / kind7 inline / kind4 trailing) is byte-identical to retail; residual is
-// a0 landing in ecx (cl) vs eax (retail) - so the a0==0 return needs an extra
-// xor eax, and the push/cmp register encodings shift. The switch dispatch claims
-// eax for `kind`; not source-steerable. ~93.3%.
-RVA(0x000fafa0, 0x3b)
-i32 __stdcall Validate_fafa0(i32 a0, i32 kind, i32 a2, i32 a3) {
-    if (a0 == 0) {
-        return 0;
-    }
-    switch (kind) {
-        case 4:
-            if (Check4_2ce8(a0) == 0) {
-                return 0;
-            }
-            break;
-        case 7:
-            if (Check7_36bb(a0) == 0) {
-                return 0;
-            }
-            break;
-    }
-    return 1;
-}
-
-// ===========================================================================
-// 0x000be820 (73B) - EnableWindow(GetDlgItem(hDlg, id), obj->m_528) for ids
-// 0x4d0 and 0x4d1. __cdecl(hDlg, obj). Clean Win32 idiom.
-// ===========================================================================
-struct DlgData_be820 {
-    char m_pad0[0x528];
-    i32 m_528; // +0x528 enable flag
-};
-RVA(0x000be820, 0x49)
-void EnableButtons_be820(HWND hDlg, DlgData_be820* obj) {
-    if (hDlg && obj) {
-        EnableWindow(GetDlgItem(hDlg, 0x4d0), obj->m_528);
-        EnableWindow(GetDlgItem(hDlg, 0x4d1), obj->m_528);
-    }
 }
 
 // ===========================================================================
@@ -314,80 +187,18 @@ i32 InitKeys_f8ec0() {
     return 1;
 }
 
-// ===========================================================================
-// 0x001104f0 (86B) - one-shot init: if already initialized (m_20) return 0; else
-// scatter the 8 __stdcall args into member fields, set m_20=1, m_1c=0; return 1.
-// ===========================================================================
-struct Init8_1104f0 {
-    i32 m_0;
-    i32 m_4;
-    i32 m_8;
-    i32 m_c;
-    i32 m_10;
-    i32 m_14;
-    i32 m_18;
-    i32 m_1c;
-    i32 m_20;
-    i32 m_24;
-    i32 m_28;
-    i32 Init(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7);
-};
-RVA(0x001104f0, 0x56)
-i32 Init8_1104f0::Init(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7) {
-    if (m_20) {
-        return 0;
+// @early-stop
+// regalloc wall (topic:wall topic:regalloc): logic byte-faithful (every load/
+// call/offset + the 3 named callees match); residual is the m_28 intermediate
+// register choice in the pointer chain (retail reuses eax: eax->eax->ecx; cl
+// here picks fresh ecx/edx) - a 2-3 byte modrm-field micro-diff, ~98.7%.
+RVA(0x000f9840, 0x29)
+void CGameModeBase::Reset() {
+    if (m_c->m_28->m_2c != 0) {
+        m_c->m_28->m_2c->Free();
     }
-    m_4 = a1;
-    m_8 = a2;
-    m_c = a3;
-    m_10 = a4;
-    m_24 = a0;
-    m_18 = a6;
-    m_28 = a7;
-    m_1c = 0;
-    m_14 = a5;
-    m_20 = 1;
-    return 1;
-}
-
-// ===========================================================================
-// 0x00193340 (97B) - recursive tree walk. For each node call cb(node->m_c,
-// node->m_10, ctx); recurse on the left child then iterate to the right child
-// while the child's key (m_8) exceeds the node's. __thiscall(cb, ctx, node).
-// ===========================================================================
-typedef void(__cdecl* WalkCb_193340)(i32, i32, i32);
-struct TNode_193340 {
-    TNode_193340* m_0; // +0x00 left
-    TNode_193340* m_4; // +0x04 right
-    i32 m_8;           // +0x08 key
-    i32 m_c;           // +0x0c
-    i32 m_10;          // +0x10
-};
-struct Tree_193340 {
-    char m_pad0[0x18];
-    TNode_193340* m_18; // +0x18 root
-    void Walk(WalkCb_193340 cb, i32 ctx, TNode_193340* node);
-};
-RVA(0x00193340, 0x61)
-void Tree_193340::Walk(WalkCb_193340 cb, i32 ctx, TNode_193340* node) {
-    while (1) {
-        if (node == 0) {
-            node = m_18;
-            if (node == 0) {
-                return;
-            }
-        }
-        cb(node->m_c, node->m_10, ctx);
-        TNode_193340* l = node->m_0;
-        if (l != 0 && l->m_8 > node->m_8) {
-            Walk(cb, ctx, l);
-        }
-        TNode_193340* r = node->m_4;
-        if (r == 0 || r->m_8 <= node->m_8) {
-            return;
-        }
-        node = r;
-    }
+    m_c->m_28->ClearUnknownMap();
+    BaseCleanup();
 }
 
 // ===========================================================================
@@ -433,6 +244,114 @@ void PresentHost_faec0::Present(i32 arg0) {
 }
 
 // ===========================================================================
+// 0x000fafa0 (59B) - __stdcall(4) validity gate: returns 0 if arg0 is null;
+// for kind 4 / 7 validates arg0 through a per-kind checker (return 0 on fail);
+// otherwise (and on success) returns 1.
+// ===========================================================================
+i32 __stdcall Check4_2ce8(i32 h); // 0x0faff0 (kind 4)
+i32 __stdcall Check7_36bb(i32 h); // 0x0fb1c0 (kind 7)
+// @early-stop
+// regalloc wall (topic:wall topic:regalloc): the switch body (cmp 4 je / cmp 7
+// jne / kind7 inline / kind4 trailing) is byte-identical to retail; residual is
+// a0 landing in ecx (cl) vs eax (retail) - so the a0==0 return needs an extra
+// xor eax, and the push/cmp register encodings shift. The switch dispatch claims
+// eax for `kind`; not source-steerable. ~93.3%.
+RVA(0x000fafa0, 0x3b)
+i32 __stdcall Validate_fafa0(i32 a0, i32 kind, i32 a2, i32 a3) {
+    if (a0 == 0) {
+        return 0;
+    }
+    switch (kind) {
+        case 4:
+            if (Check4_2ce8(a0) == 0) {
+                return 0;
+            }
+            break;
+        case 7:
+            if (Check7_36bb(a0) == 0) {
+                return 0;
+            }
+            break;
+    }
+    return 1;
+}
+
+// ===========================================================================
+// 0x001104f0 (86B) - one-shot init: if already initialized (m_20) return 0; else
+// scatter the 8 __stdcall args into member fields, set m_20=1, m_1c=0; return 1.
+// ===========================================================================
+struct Init8_1104f0 {
+    i32 m_0;
+    i32 m_4;
+    i32 m_8;
+    i32 m_c;
+    i32 m_10;
+    i32 m_14;
+    i32 m_18;
+    i32 m_1c;
+    i32 m_20;
+    i32 m_24;
+    i32 m_28;
+    i32 Init(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7);
+};
+RVA(0x001104f0, 0x56)
+i32 Init8_1104f0::Init(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7) {
+    if (m_20) {
+        return 0;
+    }
+    m_4 = a1;
+    m_8 = a2;
+    m_c = a3;
+    m_10 = a4;
+    m_24 = a0;
+    m_18 = a6;
+    m_28 = a7;
+    m_1c = 0;
+    m_14 = a5;
+    m_20 = 1;
+    return 1;
+}
+
+// ===========================================================================
+// 0x00112840 (12B) - `return LoadSwitchDownSprite() != 0;`. The trailing
+// neg/sbb/neg is the int->bool normalize (docs/patterns/int-to-bool-normalize).
+// ===========================================================================
+i32 LoadSwitchDownSprite_2e0f();
+RVA(0x00112840, 0xc)
+i32 Probe_112840() {
+    return LoadSwitchDownSprite_2e0f() != 0;
+}
+
+// ===========================================================================
+// 0x00115630 (10B) - forward to a Font method on the medium-font global
+// (tail call: `mov ecx,&g_mediumFont; jmp Font::Method`).
+// ===========================================================================
+class Font {
+public:
+    Font* Ctor179700(); // tail-called on the global (retail: ??0Font@@QAE@XZ)
+};
+DATA(0x0024eae8)
+extern Font g_mediumFont;
+RVA(0x00115630, 0xa)
+Font* Forward_115630() {
+    return g_mediumFont.Ctor179700();
+}
+
+// ===========================================================================
+// 0x0011e8dc (7B) - __thiscall vptr re-stamp: store the base dtor vtable
+// (g_severusWorkerDtorVtbl) into [this].
+// ===========================================================================
+DATA(0x001e8cb4)
+extern void* g_severusWorkerDtorVtbl;
+struct Obj_11e8dc {
+    void* m_vptr; // +0x00
+    void StampVtbl();
+};
+RVA(0x0011e8dc, 0x7)
+void Obj_11e8dc::StampVtbl() {
+    m_vptr = &g_severusWorkerDtorVtbl;
+}
+// ===========================================================================
 // 0x0016f6e0 (118B) - __stdcall(src, dst): while the descriptor-defined flag bit
 // of src is clear, read an 8-byte record from src, transform it (Fn16f7f0), and
 // write it to dst; remember src->m_8; finally Finish dst with the last m_8.
@@ -475,19 +394,100 @@ void __stdcall Copy_16f6e0(Src_16f6e0* src, Dst_16f6e0* dst) {
 }
 
 // ===========================================================================
-// 0x0011e8dc (7B) - __thiscall vptr re-stamp: store the base dtor vtable
-// (g_severusWorkerDtorVtbl) into [this].
+// 0x001816a0 (28B) - if a held item handle is present, remove it from the owned
+// list and clear it. Sibling of 0x00181660 (same class: m_2c list, m_40 handle).
 // ===========================================================================
-DATA(0x001e8cb4)
-extern void* g_severusWorkerDtorVtbl;
-struct Obj_11e8dc {
-    void* m_vptr; // +0x00
-    void StampVtbl();
+class CPoolItemA;
+class CDDrawPtrCollections {
+public:
+    void RemoveItemA(CPoolItemA* h);                            // 0x142160
+    CPoolItemA* MakeAndAddB(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x142e60
 };
-RVA(0x0011e8dc, 0x7)
-void Obj_11e8dc::StampVtbl() {
-    m_vptr = &g_severusWorkerDtorVtbl;
+struct Worker181x_181x {
+    void* m_vptr;                // +0x00
+    char m_pad04[0x2c - 0x04];   // +0x04..0x2b
+    CDDrawPtrCollections* m_2c;  // +0x2c  owned item collection
+    char m_pad30[0x38 - 0x30];   // +0x30..0x37
+    CDDSurface* m_38;            // +0x38
+    char m_pad3c[0x40 - 0x3c];   // +0x3c..0x3f
+    CPoolItemA* m_40;            // +0x40  held item handle (0 = none)
+    char m_pad44[0x48 - 0x44];   // +0x44..0x47
+    i32 m_48;                    // +0x48
+    char m_pad4c[0x2060 - 0x4c]; // +0x4c..0x205f
+    i32 m_2060;                  // +0x2060 count
+    i32 m_2064;                  // +0x2064
+    i32 m_2068;                  // +0x2068
+    void DropItem();             // 0x1816a0
+    void AddItem();              // 0x181660
+};
+// 0x00181660 (64B) - if active (m_2060>0 && m_48), allocate+register an item via
+// the owned collection and Blt it onto m_38; store the new handle into m_40.
+RVA(0x00181660, 0x40)
+void Worker181x_181x::AddItem() {
+    if (m_2060 > 0 && m_48 != 0) {
+        CPoolItemA* h = m_2c->MakeAndAddB(m_2064, m_2068, 0, 0, -1);
+        m_40 = h;
+        ((CDDSurface*)h)->Blt(m_38);
+    }
 }
+
+RVA(0x001816a0, 0x1c)
+void Worker181x_181x::DropItem() {
+    if (m_40) {
+        m_2c->RemoveItemA(m_40);
+        m_40 = 0;
+    }
+}
+
+// ===========================================================================
+// 0x00193340 (97B) - recursive tree walk. For each node call cb(node->m_c,
+// node->m_10, ctx); recurse on the left child then iterate to the right child
+// while the child's key (m_8) exceeds the node's. __thiscall(cb, ctx, node).
+// ===========================================================================
+typedef void(__cdecl* WalkCb_193340)(i32, i32, i32);
+struct TNode_193340 {
+    TNode_193340* m_0; // +0x00 left
+    TNode_193340* m_4; // +0x04 right
+    i32 m_8;           // +0x08 key
+    i32 m_c;           // +0x0c
+    i32 m_10;          // +0x10
+};
+struct Tree_193340 {
+    char m_pad0[0x18];
+    TNode_193340* m_18; // +0x18 root
+    void Walk(WalkCb_193340 cb, i32 ctx, TNode_193340* node);
+};
+RVA(0x00193340, 0x61)
+void Tree_193340::Walk(WalkCb_193340 cb, i32 ctx, TNode_193340* node) {
+    while (1) {
+        if (node == 0) {
+            node = m_18;
+            if (node == 0) {
+                return;
+            }
+        }
+        cb(node->m_c, node->m_10, ctx);
+        TNode_193340* l = node->m_0;
+        if (l != 0 && l->m_8 > node->m_8) {
+            Walk(cb, ctx, l);
+        }
+        TNode_193340* r = node->m_4;
+        if (r == 0 || r->m_8 <= node->m_8) {
+            return;
+        }
+        node = r;
+    }
+}
+
+// ===========================================================================
+// 0x001b9b8d (6B) - getter that returns the address of a global descriptor
+// (PTR_DAT_006156f4). `mov eax, OFFSET g; ret`.
+// ===========================================================================
+RVA(0x001b9b8d, 0x6)
+void** Get_1b9b8d() {
+    return &g_desc_6156f4;
+}
+
 SIZE_UNKNOWN(CView_faec0);
 SIZE_UNKNOWN(Desc_16f6e0);
 SIZE_UNKNOWN(DlgData_be820);
