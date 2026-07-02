@@ -16,7 +16,8 @@
 
 #include <ComDefs.h> // STDMETHOD / HRESULT - the DirectPlay COM interface macros
 #include <Ints.h>
-#include <rva.h> // SIZE_UNKNOWN/VTBL class-metadata macros used below
+#include <rva.h>             // SIZE_UNKNOWN/VTBL class-metadata macros used below
+#include <Wap32/WapObject.h> // CWapObject - the shared CObject-like grand-base
 
 // <Mfc.h> brings <windows.h> USER32 (PostMessageA / Sleep / GetAsyncKeyState - the
 // connect wait polls VK_ESCAPE to abort; HWND / UINT / ...) and the central WINMM
@@ -538,11 +539,9 @@ public:
     CString GetName();
 };
 
-// The shared CObject base-dtor vptr (0x5e8cb4) TeardownLists (the CNetMgr dtor
-// helper) re-installs manually. CNetMgr is a huge cross-TU class whose own vtable
-// (0x5ea42c) is not fully modeled, so it stays a manual stamp (documented wall);
-// this datum is the CObject grand-base table shared with the node bases above.
-extern "C" void* g_netGroupNodeDtorVtbl; // 0x5e8cb4 (CObject base-dtor vptr; TeardownLists)
+// (The shared CObject grand-base dtor vptr @0x5e8cb4 that ~CNetMgr re-installs is no
+// longer a manual stamp: CNetMgr derives from CWapObject, whose inline dtor cl folds
+// into ~CNetMgr as the grand-base restamp - see Wap32/WapObject.h.)
 // PTR_LAB_005f0588 - the QueryInterface riid pointer the Init wrapper (0x178170)
 // hands to slot 0 (a static GUID blob; DIR32 reloc-masked). 0x5f0588.
 extern "C" void* g_netDirectPlayRiid; // 0x5f0588
@@ -693,8 +692,15 @@ struct CNetCreateCtx {
 SIZE_UNKNOWN(CNetCreateCtx);        // create-context view (only +0x74 pinned); retail size TBD
 extern "C" CNetCreateCtx* g_648cf4; // 0x648cf4
 
-class CNetMgr {
+// CNetMgr derives from the shared CWapObject grand-base (Wap32/WapObject.h): its own
+// vtable (??_7CNetMgr@@6B@, 0x1ea42c) overrides only slot 1 (the dtor); slots 0/2/3/4
+// come from inheritance. cl auto-emits the own vptr stamp at ~CNetMgr entry AND folds
+// the CWapObject grand-base restamp (masks 0x5e8cb4) at the dtor tail - no manual
+// stamp.
+class CNetMgr : public CWapObject {
 public:
+    virtual ~CNetMgr() OVERRIDE; // slot 1  (dtor; ??1 @0xb6000, ??_G @0x260d thunk)
+
     void OnMultiOptions();
     void OnMultiPause();
     void OnOutOfSync();
@@ -935,7 +941,7 @@ public:
     i32 PollSession();                                    // 0xb95f0
     i32 DispatchRecvMsg(i32 sender, char* buf, i32 size); // 0xb9750 (ret used by ProcessCmd)
 
-    char m_pad0[4]; // +0x000
+    // (vptr implicit at +0x000; was `char m_pad0[4]`)
     // The +0x4 game-manager sub-object (the canonical CNetGameMgr view above):
     // ->m_wnd->m_hwnd is the HWND the message handlers PostMessageA through; ->m_6c
     // is the CGruntzCmdMgr command manager. The +0x4 object is ALSO the base of the
@@ -1028,8 +1034,8 @@ public:
     i32* m_608; // +0x608  the pending-drop id array (RecordDropPlayer fills it)
     i32 m_60c;  // +0x60c  the pending-drop id array element count
 
-    // The managed-list teardown run of the destructor (0x0b6000).
-    void TeardownLists();
+    // The managed-list teardown run of the destructor (~CNetMgr, 0x0b6000) is
+    // declared as `virtual ~CNetMgr()` in the vtable block above.
 
     // SetupServices (0xb78b0, /GX): enumerate the peer's service providers and, on
     // success, dispatch MULTI_HOST/JOINSERVICES and write the selected service /
@@ -1071,6 +1077,6 @@ public:
     i32 Stub_0b5460(i32 a1, i32 a2, i32 a3);
 };
 SIZE_UNKNOWN(CNetMgr);     // network manager; retail byte size not yet pinned
-VTBL(CNetMgr, 0x001ea42c); // RTTI vtable (config/vtable_names.csv), currently un-catalogued
+VTBL(CNetMgr, 0x001ea42c); // ??_7CNetMgr@@6B@ (config/vtable_names.csv); cl-emitted
 
 #endif // NET_NETMGR_H

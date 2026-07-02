@@ -110,7 +110,7 @@ cexplosion	2	1
 ceyecandy	2	2
 ceyecandyani	1	0
 cfader	12	12
-cfadermgr	8	5
+cfadermgr	8	6
 cfaderrun	1	0
 cfileimage	8	2
 cfileimageblit	5	0
@@ -1244,7 +1244,7 @@ cfader	?Set2c@CFader@@QAEXH@Z	100.0000	100.0000	1	ede94c0e181f	0x17e780
 cfader	?SetTimers@CFader@@QAEXHH@Z	100.0000	100.0000	1	f5abacb4e2fd	0x17e760
 cfader	?Wait@CFader@@QAEXH@Z	100.0000	100.0000	1	22403b8571db	0x17e510
 cfadermgr	??0CFaderMgr@@QAE@XZ	100.0000	100.0000	2	9cb95492edb8	0x17d8f0
-cfadermgr	??1CFaderMgr@@QAE@XZ	82.8889	82.8889	1	9bd8a535fa45	0x17d910
+cfadermgr	??1CFaderMgr@@QAE@XZ	100.0000	100.0000	1	9bd8a535fa45	0x17d910
 cfadermgr	?Add@CFaderMgr@@QAEPAUCFader@@HPAU2@@Z	0.0000	0.0000	3	2014bfb13bbf	0x17d9c0
 cfadermgr	?DeleteAll@CFaderMgr@@QAEXXZ	100.0000	100.0000	1	7c42fa42e763	0x17e1d0
 cfadermgr	?Flush@CFaderMgr@@QAEHXZ	100.0000	100.0000	2	3d82caa2f391	0x17e160
@@ -2851,6 +2851,7 @@ netgamedlg	?UpdateSlot@CNetGameDlg@@QAEXH@Z	69.3281	69.3281	2	fe74cff67000	0xc2a
 netgamedlg	?VerifyCustomLevel@CNetGameDlg@@QAEXXZ	54.5664	54.5664	1	5364ad374d00	0xc4c00
 netgamedlgwatch	?Watchdog@CNetDlgWatch@@QAEXXZ	93.9344	93.9344	1	49e7c22d7396	0xc46b0
 netmgr	??0CNetCmdSlot@@QAE@XZ	78.8372	78.8372	2	811fcad30bbf	0xbbec0
+netmgr	??1CNetMgr@@UAE@XZ	44.2963	44.2963	1	6e6d009cef61	0xb6000
 netmgr	?AckDropPlayer@CNetMgr@@QAEXH@Z	100.0000	100.0000	2	3dda1d693889	0xba590
 netmgr	?AddGroupNode@CNetMgr@@QAEHPAX0@Z	100.0000	100.0000	2	1c1e0e079a9b	0x178360
 netmgr	?AddPlayerNode@CNetMgr@@QAEHPAX@Z	82.3454	82.3454	2	ace661daeb67	0x1786d0
@@ -2936,7 +2937,6 @@ netmgr	?SetGroupDataFrom@CNetMgr@@QAEHPAUCNetPlayerEntry@@HHH@Z	100.0000	100.000
 netmgr	?SetupServices@CNetMgr@@QAEHXZ	98.2243	98.2243	1	f80327667583	0xb78b0
 netmgr	?SetupTcpIpConfig@CNetMgr@@QAEHXZ	74.2317	74.2317	1	714d37cf75e6	0xbc460
 netmgr	?Stub_0b5460@CNetMgr@@QAEHHHH@Z	70.9235	70.9235	1	e9efdc13b60b	0xb5460
-netmgr	?TeardownLists@CNetMgr@@QAEXXZ	20.2593	20.2593	1	2470ec00b8ad	0xb6000
 netmgr	?VerifyCustomLevel@CNetMgr@@QAEHHH@Z	7.1702	7.1702	2	f4e26819863c	0xb8fc0
 netmgr	?WaitForConnect@CNetMgr@@QAEHXZ	74.0809	74.0809	5	5676879b5f9c	0xbca50
 netmgrerror	?ReportError@CNetMgr@@SAXPADHHPAX@Z	100.0000	100.0000	1	4c76abe210b0	0x1776a0

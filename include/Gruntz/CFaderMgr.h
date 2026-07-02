@@ -19,6 +19,7 @@
 
 #include <Ints.h>
 #include <rva.h>
+#include <Wap32/WapObject.h> // CWapObject - the shared CObject-like grand-base
 
 // The array element. Polymorphic: slot 0 of its vtable is the scalar-deleting
 // destructor, invoked as `pFader->Delete(1)` to free a fader (__thiscall virtual
@@ -29,46 +30,42 @@ struct CFader {
     virtual void* Delete(i32 flags) = 0; // slot 0 (vptr at +0x00)
 };
 
-// The growable element-array subobject (lives at manager +0x10). Polymorphic:
-// its own vftable is at +0x00. Layout mirrors a CPtrArray: m_pData(+0x04),
-// m_nSize(+0x08), m_nMaxSize(+0x0c), m_nGrowBy(+0x10). Its destructor (restore
-// vtable, free m_pData, restore grand-base vtable) is inlined - as a member dtor -
-// into the manager dtor, which is what gives that dtor its /GX EH frame. Its grow
-// logic (SetAtGrow) is inlined by Add.
-struct CFaderArray {
-    void* m_vtbl;     // +0x00 (manager +0x10)
+// The growable element-array subobject (lives at manager +0x10). A CWapObject-derived
+// polymorphic node: its own vftable (@0x5f0790, uncatalogued -> unpaired ??_7CFaderArray)
+// overrides the grand-base dtor (slot 1, retail 0x17e430) and slot 2 (retail 0x17e2a0);
+// slots 0/3/4 come from CWapObject via inheritance. cl stamps ??_7CFaderArray vptr-first
+// in the ctor and folds the ~CWapObject grand-base restamp (masks 0x5e8cb4) into the
+// dtor - no manual stamp. Layout mirrors a CPtrArray: m_pData(+0x04), m_nSize(+0x08),
+// m_nMaxSize(+0x0c), m_nGrowBy(+0x10). Both ctor/dtor are inlined - as member subobject
+// ctor/dtor - into CFaderMgr's ctor/dtor (the dtor's /GX EH frame comes from the
+// member teardown). The grow logic (SetAtGrow) is inlined by Add.
+struct CFaderArray : public CWapObject {
+    virtual ~CFaderArray() OVERRIDE;      // slot 1 (retail dtor 0x17e430)
+    virtual void FUN_004028ec() OVERRIDE; // slot 2 (retail 0x17e2a0)
+
     CFader** m_pData; // +0x04 (manager +0x14)
     i32 m_nSize;      // +0x08 (manager +0x18)
     i32 m_nMaxSize;   // +0x0c (manager +0x1c)
     i32 m_nGrowBy;    // +0x10 (manager +0x20)
 
     CFaderArray();
-    ~CFaderArray();
 };
 
-// Foreign vftables stamped by the array teardown (reloc-masked DIR32 data).
-DATA(0x001f0790)
-extern void* g_faderArrayVtbl; // 0x5f0790 - the element-array base vtable
-DATA(0x001e8cb4)
-extern void* g_wapObjectDtorVtbl; // 0x5e8cb4 - the grand-base dtor vtable
-
-// Stamp the array vftable (the vptr init the compiler cannot emit for us while
-// the array's vtable contents are unmodeled) then zero the bookkeeping fields, in
+// cl stamps ??_7CFaderArray vptr-first, then zero the bookkeeping fields in
 // declaration-store order pData/growby/maxsize/size. Inlined into CFaderMgr's ctor.
 inline CFaderArray::CFaderArray() {
-    m_vtbl = &g_faderArrayVtbl;
     m_pData = 0;
     m_nGrowBy = 0;
     m_nMaxSize = 0;
     m_nSize = 0;
 }
 
+// Free m_pData; cl folds the own vptr stamp (entry) + the ~CWapObject grand-base
+// restamp (masks 0x5e8cb4) around it.
 inline CFaderArray::~CFaderArray() {
-    m_vtbl = &g_faderArrayVtbl;
     if (m_pData) {
         operator delete(m_pData);
     }
-    m_vtbl = &g_wapObjectDtorVtbl;
 }
 
 class CFaderMgr {

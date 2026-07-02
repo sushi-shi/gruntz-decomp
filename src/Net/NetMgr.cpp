@@ -1154,6 +1154,10 @@ struct CFreeNodesView {
 // (0x5ea42c). Both vptr stamps are manual (the class's real vtable is the
 // un-catalogued wall - see TeardownLists) but the 3 CObList members drive the /GX
 // EH states 1..3 exactly.
+// Driver-local inline-peer construction: the connect driver new-builds a peer
+// CNetMgr inline (no ctor call), so its base vptr stamp stays manual + faithful,
+// distinct from the real CNetMgr : CWapObject (whose vptrs cl emits).
+extern void* g_netGroupNodeDtorVtbl; // 0x5e8cb4 (CWapObject base vtable)
 struct CNetPeerBase {
     void* m_vptr; // +0x00
     CNetPeerBase() {
@@ -1448,33 +1452,28 @@ i32 CNetMgr::Stub_0b5460(i32 a1, i32 a2, i32 a3) {
 #undef MF
 }
 
-// The CNetMgr own vtable (??_7CNetMgr@@6B@, 0x5ea42c) the teardown stamps at entry;
-// referenced by address (reloc-masked) rather than cl-emitted (the class's virtuals
-// aren't catalogued, so cl would emit a divergent table). The base-dtor vptr is the
-// shared 0x5e8cb4 (g_netGroupNodeDtorVtbl).
-extern "C" void* g_netMgrVtbl; // 0x5ea42c
-
 // ---------------------------------------------------------------------------
-// CNetMgr::TeardownLists  (0x0b6000, __thiscall) - the managed-list teardown run of
-// the destructor: stamp the own vptr, run the session Destroy, then destruct the
-// three managed CObLists at +0x54/+0x38/+0x1c (reverse order), and stamp the base
-// CObject dtor vptr.
+// CNetMgr::~CNetMgr  (0x0b6000, __thiscall ??1) - the managed-list teardown run of
+// the destructor. Fully cl-emitted vtable stamps now: CNetMgr is a real polymorphic
+// class (own ??_7CNetMgr@@6B@ @0x1ea42c) deriving from CWapObject, so the compiler
+// writes the own vptr at dtor entry (masks 0x1ea42c) AND folds the CWapObject
+// grand-base restamp (masks 0x5e8cb4) at the tail - no manual `*(void**)this = &g_*`
+// store. The body runs the session Destroy then destructs the three managed CObLists
+// at +0x54/+0x38/+0x1c (reverse order).
 // @early-stop
-// vtable + /GX-frame wall: the own-vptr stamp (0x5ea42c), the Destroy call, the three
-// reverse-order CObList member dtors and the base-vptr stamp (0x5e8cb4) are all
-// reproduced, but retail wraps the three CObList teardowns in the compiler's /GX
-// unwind frame with descending EH-state cookies (2/1/0) - which only the auto member
-// destruction of a real polymorphic CNetMgr (vtable 0x5ea42c) emits. That vtable is
-// un-catalogued, so making the class polymorphic would emit a divergent table; the
-// manual stamp keeps the stores exact but loses the EH frame. Final sweep.
+// /GX-frame residual: the cl-emitted own + grand-base vptr stamps, the Destroy call
+// and the three reverse-order CObList member dtors are all reproduced, but retail
+// wraps the three CObList teardowns in the compiler's /GX unwind frame with
+// descending EH-state cookies (2/1/0) - which only the auto member destruction of
+// real embedded `CObList` members (at +0x1c/+0x38/+0x54) emits. Those are still
+// offset-cast, so the frame is the residual. Final sweep once the three CObList
+// members are modeled by value.
 RVA(0x000b6000, 0x6d)
-void CNetMgr::TeardownLists() {
-    *(void**)this = &g_netMgrVtbl;
+CNetMgr::~CNetMgr() {
     Destroy();
     ((CObList*)((char*)this + 0x54))->~CObList();
     ((CObList*)((char*)this + 0x38))->~CObList();
     ((CObList*)((char*)this + 0x1c))->~CObList();
-    *(void**)this = &g_netGroupNodeDtorVtbl;
 }
 
 // ---------------------------------------------------------------------------
