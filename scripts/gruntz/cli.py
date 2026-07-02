@@ -526,6 +526,21 @@ def cmd_link(args) -> None:
              "--names", str(GEN_NAMES)])
 
 
+def cmd_exe_diff(args) -> None:
+    """Whole-EXE comparison: candidate GRUNTZ.EXE vs retail (layout + bytes).
+
+    One level up from per-object objdiff: reads the candidate EXE + .map produced
+    by `gruntz link` and diffs the whole image against retail - PE headers/section
+    table, .text RVA layout fidelity (the RVA-reorder lever), and name-aligned
+    linked-byte identity. Prints the proposed tracked EXE-match numbers. Run
+    `gruntz link` first to (re)generate the candidate. See gruntz.analysis.exe_diff.
+    """
+    cmd = [sys.executable, "-m", "gruntz.analysis.exe_diff"]
+    if args.json:
+        cmd += ["--json"]
+    run(cmd)
+
+
 def cmd_todo(args) -> None:
     """Obj symbols with no @address yet (the matching worklist) - a discovery aid.
 
@@ -630,6 +645,10 @@ def main() -> None:
     lk.add_argument("--analyze", action="store_true",
                     help="print the layout/link-order report after linking")
     lk.set_defaults(func=cmd_link)
+    xd = sub.add_parser("exe-diff", help="whole-EXE diff: candidate vs retail "
+                        "(layout + linked bytes; needs `gruntz link` first)")
+    xd.add_argument("--json", action="store_true", help="emit the JSON summary only")
+    xd.set_defaults(func=cmd_exe_diff)
     sub.add_parser("todo", help="obj symbols lacking an @address (worklist)"
                    ).set_defaults(func=cmd_todo)
     sub.add_parser("clean", help="nuke build/ + stray artifacts (HEAVY re-init after)"
