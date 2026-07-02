@@ -233,8 +233,8 @@ drawtext	3	0
 dsoundvoice	2	1
 ehfunclets	6	6
 ehunwindfunclets	11	11
-engine_discovered	13	7
-engine_label_stubs	184	116
+engine_discovered	11	7
+engine_label_stubs	174	116
 engstr	3	1
 engstrrendertext	1	0
 eyecandytypetags	4	4
@@ -1858,8 +1858,6 @@ ehunwindfunclets	?Unmatched_1d3184@@YAXXZ	100.0000	100.0000	1	ab6930993936	0x1d3
 ehunwindfunclets	?Unmatched_1d4271@@YAXXZ	100.0000	100.0000	1	02cb9635db35	0x1d4271
 engine_discovered	??0ClassUnknown_15@@QAE@XZ	100.0000	100.0000	1	f5402effacd2	0x1d38a1
 engine_discovered	??0ClassUnknown_45@@QAE@XZ	100.0000	100.0000	1	50998ec8bdf3	0x8c3b0
-engine_discovered	?CGruntzSingleCommand_11f618@CGruntzSingleCommand@@QAEXXZ	10.0000	10.0000	1	4a4d0e24746c	0x11f618
-engine_discovered	?CGruntzSingleCommand_18c022@CGruntzSingleCommand@@QAEXXZ	0.7874	0.7874	1	ad61ecca3c94	0x18c022
 engine_discovered	?ClassUnknown_16_1d496b@ClassUnknown_16@@QAEXXZ	3.6364	3.6364	1	2d71a7c5a87b	0x1d496b
 engine_discovered	?ClassUnknown_33_11f6b9@ClassUnknown_33@@QAEXXZ	9.0909	9.0909	1	835f56f8e975	0x11f6b9
 engine_discovered	?ClassUnknown_50_16dfc0@ClassUnknown_50@@QAEXXZ	100.0000	100.0000	3	accb4d51f7ed	0x16dfc0
@@ -1892,7 +1890,6 @@ engine_label_stubs	??0MallocCtor_192390@@QAE@XZ	1.0526	1.0526	1	cpp:e8a4cb0d5b2a
 engine_label_stubs	?Advance@Movie_17c8e0@ApiCallerStubs@@QAEHHH@Z	100.0000	100.0000	1	cpp:e832e75e29a5	0x17c8e0
 engine_label_stubs	?Append@EditAppendHost_0c2ce0@ApiCallerStubs@@QAEXPAD@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xc2ce0
 engine_label_stubs	?Apply@PalHost_1775f0@ApiCallerStubs@@QAEHPBDH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x1775f0
-engine_label_stubs	?BaseCleanup@CGameModeBase@@QAEXXZ	40.0000	40.0000	1	cpp:2262ffc5f902	0x3f53
 engine_label_stubs	?Begin@ActionHost_0d7220@ApiCallerStubs@@QAEHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xd7220
 engine_label_stubs	?Build@GeoHost_161e80@ApiCallerStubs@@QAEXPAUtagRECT@@@Z	90.4318	90.4318	1	cpp:e1535087fe94	0x161e80
 engine_label_stubs	?Build@PalBuilder_176df0@ApiCallerStubs@@QAEHPAUtagPALETTEENTRY@@H@Z	62.0750	62.0750	1	cpp:6bf52155264d	0x176df0
@@ -1947,7 +1944,6 @@ engine_label_stubs	?Pump@Movie_17c8e0@ApiCallerStubs@@QAEHHH@Z	100.0000	100.0000
 engine_label_stubs	?Quickload@QlHost_092710@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x92710
 engine_label_stubs	?RelayHwnd@@YAXP6AHXZ@Z	100.0000	100.0000	1	cpp:e832e75e29a5	0x1437e0
 engine_label_stubs	?ReleaseHandle@AilSeq@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x138dd0
-engine_label_stubs	?RemoveTail@CGruntzCmdList@@QAEPAXXZ	9.3333	9.3333	1	cpp:2262ffc5f902	0x1b4a27
 engine_label_stubs	?RenderFrame@MoviePlayer_17caa0@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:e832e75e29a5	0x17caa0
 engine_label_stubs	?Reset@RectWnd_fe600@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0xfe600
 engine_label_stubs	?Resume@AilSeq@ApiCallerStubs@@QAEHH@Z	100.0000	100.0000	1	cpp:e1535087fe94	0x138ed0
@@ -2032,8 +2028,6 @@ engine_label_stubs	?winapi_118b50_OutputDebugStringA@ApiCallerStubs@@YAXH@Z	69.3
 engine_label_stubs	?winapi_1192d0_IsIconic@ApiCallerStubs@@YAHPAXHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x1192d0
 engine_label_stubs	?winapi_11b3b0_timeGetTime@CGruntSpawnConfig@ApiCallerStubs@@QAEHHHHHHH@Z	0.7336	0.7336	1	cpp:590eddff1627	0x11b3b0
 engine_label_stubs	?winapi_11b7c0_timeGetTime@ApiCallerStubs@@YGHHHHHH@Z	0.8299	0.8299	1	cpp:6bf52155264d	0x11b7c0
-engine_label_stubs	?winapi_1206b0_GetLastError_HeapValidate_HeapWalk@ApiCallerStubs@@YAHXZ	1.3669	1.3669	1	cpp:e1535087fe94	0x1206b0
-engine_label_stubs	?winapi_123d10_GetCurrentThreadId_TlsSetValue@ApiCallerStubs@@YAHXZ	2.8571	2.8571	1	cpp:e1535087fe94	0x123d10
 engine_label_stubs	?winapi_15cbe0_timeGetTime@ApiCallerStubs@@YAHXZ	100.0000	100.0000	1	cpp:e1535087fe94	0x15cbe0
 engine_label_stubs	?winapi_16c9c0_InitializeCriticalSection@ApiCallerStubs@@YAXPAU_RTL_CRITICAL_SECTION@@@Z	100.0000	100.0000	1	cpp:e1535087fe94	0x16c9c0
 engine_label_stubs	?winapi_16c9d0_DeleteCriticalSection@ApiCallerStubs@@YAXPAU_RTL_CRITICAL_SECTION@@@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x16c9d0
@@ -2042,12 +2036,6 @@ engine_label_stubs	?winapi_16c9f0_LeaveCriticalSection@ApiCallerStubs@@YAXPAU_RT
 engine_label_stubs	?winapi_1770a0_CreateICA_DeleteDC_GetDeviceCaps@ApiCallerStubs@@YAHXZ	100.0000	100.0000	1	cpp:e1535087fe94	0x1770a0
 engine_label_stubs	?winapi_177160_CreatePalette_DeleteObject_GetDC_RealizePalette_ReleaseD@ApiCallerStubs@@YAXXZ	100.0000	100.0000	1	cpp:e1535087fe94	0x177160
 engine_label_stubs	?winapi_179e70_IntersectRect@ApiCallerStubs@@YGHHHHHHHHHH@Z	0.4398	0.4398	1	cpp:6bf52155264d	0x179e70
-engine_label_stubs	?winapi_1ba677_CreateDialogIndirectParamA_GetSystemMetrics_GlobalLock@ApiCallerStubs@@YAHXZ	0.9559	0.9559	1	cpp:e1535087fe94	0x1ba677
-engine_label_stubs	?winapi_1ba819_DestroyWindow_GlobalFree_GlobalUnlock@ApiCallerStubs@@YGHHHH@Z	4.3182	4.3182	1	cpp:6bf52155264d	0x1ba819
-engine_label_stubs	?winapi_1ba9d2_EnableWindow_FindResourceA_IsWindowEnabled_LoadResource_@ApiCallerStubs@@YAHXZ	1.4130	1.4130	1	cpp:e1535087fe94	0x1ba9d2
-engine_label_stubs	?winapi_1baaef_EnableWindow_GetActiveWindow_SetActiveWindow@ApiCallerStubs@@YAHXZ	5.3846	5.3846	1	cpp:e1535087fe94	0x1baaef
-engine_label_stubs	?winapi_1bb31b_CallWindowProcA_GetPropA_RemovePropA_SetWindowLongA@ApiCallerStubs@@YGHHHHH@Z	1.9588	1.9588	1	cpp:6bf52155264d	0x1bb31b
-engine_label_stubs	?winapi_1bbff4_GetClassInfoA_RegisterClassA@ApiCallerStubs@@YGHH@Z	3.8462	3.8462	1	cpp:6bf52155264d	0x1bbff4
 engine_label_stubs	_CheckExePath	100.0000	100.0000	1	cpp:2262ffc5f902	0x2e6e
 engine_label_stubs	_Eng_RegionCueA	100.0000	100.0000	1	cpp:2262ffc5f902	0x3936
 engine_label_stubs	_MultiDispatch@12	100.0000	100.0000	1	cpp:2262ffc5f902	0x3cab

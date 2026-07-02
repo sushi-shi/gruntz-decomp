@@ -12,31 +12,14 @@ extern void* g_severusWorkerDtorVtbl;
 extern void* g_vtbl5f04d8;
 
 // ---- CGruntzSingleCommand ----
-// 0x11f618 is NOT a game method: it is the compiler-generated EH unwind funclet
-// for the CRT `__ehvec_ctor` vector-constructor iterator at 0x11f5a0 (which is
-// __stdcall, so the this/ecx trace mis-attributed this to CGruntzSingleCommand -
-// stale ecx). The funclet has no prologue and borrows the parent ebp frame
-// ([ebp-0x20] state flag, [ebp+0x18] arg); it is a no-op on the normal-completion
-// path (parent sets [ebp-0x20]=1 before the direct `call 0x11f618`) and only
-// forwards to the partial-destruct helper 0x11f6f0 during unwinding. CRT/compiler
-// EH funclet, not standalone-reconstructable -> SKIP per game-not-CRT policy.
-// @confidence: high
-// @source: disasm (parent CRT __ehvec_ctor 0x11f5a0 direct-calls it)
-// @stub
-RVA(0x0011f618, 0x14)
-void CGruntzSingleCommand::CGruntzSingleCommand_11f618() {}
-// 0x18c022 is NOT a CGruntzSingleCommand method: it is the CRT `pow`/`_CIpow`
-// floating-point power routine (fstcw + the 0x27f control-word guard; 2^(y*log2 x)
-// via fyl2x; NaN/Inf exponent classification against 0x7ff00000; fsave/frstor around
-// the slow-path 0x18db50 call). The this/ecx trace mis-attributed it here off a stale
-// ecx - entry `mov ecx,eax` makes ecx the hi-dword of the first double arg, not a
-// `this`. CRT library math, not a game method -> SKIP per game-not-CRT policy; NOT
-// re-homable to a game class.
-// @confidence: high
-// @source: disasm (fstcw + 0x27f cw-guard, fyl2x, 0x7ff00000 NaN/Inf tests = CRT pow/_CIpow)
-// @stub
-RVA(0x0018c022, 0x1d3)
-void CGruntzSingleCommand::CGruntzSingleCommand_18c022() {}
+// 0x11f618 and 0x18c022 were stub-attributed here off a stale ecx; both are CRT
+// library, not game methods, so they are FID-carved (config/library_labels.csv,
+// manual-stub-reclass) and no longer stubbed here:
+//   0x11f618 - the compiler-generated EH unwind funclet for the CRT `__ehvec_ctor`
+//              vector-constructor iterator at 0x11f5a0 (borrows the parent ebp
+//              frame; forwards to the partial-destruct helper only on unwind).
+//   0x18c022 - the CRT `pow`/`_CIpow` FP power routine (fstcw + 0x27f cw-guard,
+//              2^(y*log2 x) via fyl2x, 0x7ff00000 NaN/Inf classification).
 
 // ---- ClassUnknown_13 ----
 // Two __cdecl forwarder twins (trace mis-attributed as __thiscall methods): read a

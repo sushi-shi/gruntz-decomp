@@ -3348,3 +3348,7 @@ rva,name,lib,confidence,source
 0x1bae6a,crt_E_static_dtor_1bae6a,LIBCMT,HIGH,manual-crt-reclass
 0x1baea8,crt_E_static_dtor_1baea8,LIBCMT,HIGH,manual-crt-reclass
 0x1bb315,crt_static_ptr_1bb315,LIBCMT,HIGH,manual-crt-reclass
+0x11f618,crt_ehvec_ctor_unwind_11f618,LIBCMT,HIGH,manual-stub-reclass
+0x18c022,crt_pow_18c022,LIBCMT,HIGH,manual-stub-reclass
+0x1ba819,mfc_dialog_teardown_1ba819,NAFXCW,HIGH,manual-stub-reclass
+0x1baaef,mfc_modal_activate_1baaef,NAFXCW,HIGH,manual-stub-reclass

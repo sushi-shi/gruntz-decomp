@@ -663,7 +663,14 @@ i32 EngineLabelBacklog::LoadCustomWorldInfo(HWND hDlg) {
 // @confidence: med
 // @source: decomp-xref
 // @proximity: CGruntCreationPoint@-0x930 | CWormhole@+0x680 (boundary - pick one)
-// @stub
+// @early-stop
+// >512B /GX regalloc wall (documented above): the full-body reconstruction was
+// written and BUILDS but scores 0.0% - retail pins `this` to ebp with a 0x24 frame +
+// canonical /GX prologue, while the /O2 recompile pins `this` to ebx with a 0x20 frame
+// + a hoisted `mov eax,fs:0`, a this-register + frame-slot divergence that cascades a
+// byte-mismatch through all 1318 B, BELOW the empty-stub 27.1% baseline. Kept as the
+// empty stub (the highest-% version) per the >512B REVERT rule; final-sweep leaf-first
+// redo needs the callee set + owning class + a matching regalloc modeled first.
 RVA(0x0003f5f0, 0x526)
 void EngineLabelBacklog::HandleFortConquered() {}
 

@@ -29,9 +29,9 @@ public:
 class CGruntzSingleCommand {
 public:
     void CGruntzSingleCommand_0ec1c0();
-    void CGruntzSingleCommand_11f618();
     void CGruntzSingleCommand_135110();
-    void CGruntzSingleCommand_18c022();
+    // 0x11f618 (CRT __ehvec_ctor unwind funclet) and 0x18c022 (CRT pow/_CIpow) are
+    // FID-carved as library (config/library_labels.csv), not game methods.
 };
 class CLogicRecord {
 public:
