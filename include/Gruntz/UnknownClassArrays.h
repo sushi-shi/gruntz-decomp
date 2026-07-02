@@ -20,6 +20,18 @@
 
 #include <Mfc.h> // CPtrArray, CDWordArray (real afxcoll, 0x14 layout)
 
+// The three TU-shared pointer members below (m_004/m_008/m_00c) point at real engine
+// objects, modeled as the file-local views defined in UnknownClassArrays.cpp:
+//   m_004 = the level/game spawn context (holds the CTriggerMgr at +0x68 + the
+//           per-band records, 0x238 stride);
+//   m_008 = the level's CTriggerMgr (<Gruntz/TriggerMgr.h>, the 4x15 cell grid);
+//   m_00c = the CBrickz pathfinding-grid container.
+// Forward-declared so each member carries its real type (was void*/char* + per-site
+// facet casts). All are 4-byte pointers, so the retype is matching-neutral.
+class CTriggerMgr;
+struct GruntSpawnCtx;
+struct Board;
+
 SIZE_UNKNOWN(CBattlezSpawnMgr_or_CGruntSpawnMgr);
 class CBattlezSpawnMgr_or_CGruntSpawnMgr {
 public:
@@ -64,10 +76,10 @@ public:
     i32 winapi_031ca0_IntersectRect(i32);
     i32 winapi_032060_IntersectRect(i32);
 
-    i32 m_000;                  // +0x000  (vtbl-slot / first dword; some methods test/clear it)
-    void* m_004;                // +0x004  level/board object pointer
-    char* m_008;                // +0x008  grid base: a cell array, 0x3c-byte stride
-    void* m_00c;                // +0x00c  board/tile-map object pointer
+    i32 m_000;            // +0x000  (vtbl-slot / first dword; some methods test/clear it)
+    GruntSpawnCtx* m_004; // +0x004  the level/game spawn context (records + CTriggerMgr@+0x68)
+    CTriggerMgr* m_008;   // +0x008  the level's CTriggerMgr (the 4x15 cell grid @+0x1c)
+    Board* m_00c;         // +0x00c  the CBrickz pathfinding-grid / tile-map
     char m_pad010[0x18 - 0x10]; // +0x010  (untouched by ctor)
     i32 m_018;                  // +0x018  = 0  (current cell index)
     i32 m_01c;                  // +0x01c  = 1

@@ -157,6 +157,48 @@ struct GridUnit {
     void RecycleCoords(); // 0x0343f0
 };
 
+// The level's CTriggerMgr, held at this->m_008 (the real class, <Gruntz/TriggerMgr.h>:
+// ?ApplyTriggerB@CTriggerMgr@@ @0x06e120). This is the file-local view of only what
+// this TU touches - the base object-list head at +0x04 (the candidate list) and the
+// 4x15 placed-cell grid at +0x1c (stride 4, GridUnit* cells, indexed [band*15 + k]).
+// ApplyTriggerB / Probe / ProbeCell are its __thiscall methods (Probe/ProbeCell =
+// FUN_46b6d0, Ghidra class-unattributed - the screen-coord -> cell-index probe called
+// on the trigger-mgr `this` in a 13-arg and a 9-arg form). Declared-only, reloc-masked.
+class CTriggerMgr {
+public:
+    char m_pad00[0x04];
+    void* m_objListHead; // +0x04  base object-list head (the candidate list)
+    char m_pad08[0x1c - 0x08];
+    void* m_grid[0x3c]; // +0x1c  the 4x15 placed-cell grid (GridUnit* cells, stride 4)
+    void ApplyTriggerB(i32 a, i32 b, i32 x, i32 y); // 0x06e120
+    i32 Probe(
+        i32 cell,
+        i32 sx,
+        i32 sy,
+        i32 a3,
+        i32 a4,
+        i32 a5,
+        i32 a6,
+        i32 a7,
+        i32 a8,
+        i32 a9,
+        i32 a10,
+        i32 a11,
+        i32 a12
+    ); // 0x46b6d0
+    i32 ProbeCell(
+        i32 a0,
+        i32 a1,
+        void* a2,
+        i32 a3,
+        void* a4,
+        i32 a5,
+        i32 a6,
+        i32 a7,
+        i32 a8
+    ); // 0x46b6d0
+};
+
 // A {x, y} coordinate pair (a list node's +0x8 payload).
 struct Coord {
     i32 m_x; // +0x00
@@ -180,10 +222,13 @@ struct Tile {
     char m_pad01[0x1c - 1];
 };
 
-// The board/tile map held at this->m_00c: m_rows is a row-pointer table; a row
-// is a Tile array indexed by x. m_w / m_h are the in-bounds limits. m_60.. is a
-// "dirty rect" (left/top/right/bottom) recomputed by the IntersectRect-clamp
-// idiom, with the derived span at m_70 / m_74.
+// The board/tile map held at this->m_00c: the pathfinding-grid container of the
+// Brickz family (real class CBrickz, <Gruntz/Brickz.h>; the field-name semantics
+// differ so this is the local view of what this TU touches). m_rows is a row-pointer
+// table; a row is a Tile array indexed by x. m_w / m_h are the in-bounds limits.
+// m_60.. is a "dirty rect" (left/top/right/bottom) recomputed by the
+// IntersectRect-clamp idiom, with the derived span at m_70 / m_74. FindPath and
+// Clip are its real methods, dispatched __thiscall on m_00c.
 struct Board {
     char m_pad00[0x08];
     Tile** m_rows; // +0x08  rows[y][x] -> Tile
@@ -196,11 +241,18 @@ struct Board {
     i32 m_6c; // +0x6c  bottom
     i32 m_70; // +0x70  right-left span
     i32 m_74; // +0x74  bottom-top span
-    // The A* pathfinder (RVA 0x081e10, CBrickz::CBrickz_081e10 in src/Stub): a
-    // __thiscall on the board taking (srcX, srcY, dstX, dstY, CObList* out, ...).
-    // External, reloc-masked (no body); modeled here so `mov ecx,[this+0xc]; call`
-    // falls out with the right convention.
+    // The A* pathfinder (RVA 0x081e10, CBrickz::SearchEdge): a __thiscall on the
+    // board taking (srcX, srcY, dstX, dstY, CObList* out, ...). External,
+    // reloc-masked (no body); modeled here so `mov ecx,[this+0xc]; call` falls out.
     i32 FindPath(i32 sx, i32 sy, i32 dx, i32 dy, CObList* out, i32, i32, i32);
+};
+
+// The board dirty-rect clip finaliser (RVA 0x02b340, ?Clip@ClipHost_02b340@...): a
+// __thiscall on m_00c (facet of Board) taking a RECT* (null here). Kept as its own
+// view: the 0x2b340 stub carries a distinct delinker symbol, so folding Clip into
+// Board perturbs a neighbour (-0.09% on Method_0358a0). External, reloc-masked.
+struct ClipHost {
+    void Clip(const RECT*); // 0x02b340
 };
 
 // A GridUnit __thiscall helper (RVA 0x029a50, thunk 0x036c0) that copies the
@@ -268,31 +320,26 @@ struct ViewMapper {
     void WorldToScreen(Coord* out, i32 wx, i32 wy); // 0x0311e0
 };
 
-// The game-mode dispatcher reached via this->m_004->m_68: ProbeCell
-// (RVA 0x046b6d0, thunk 0x040bb) is a __thiscall taking the screen coord + a
-// flag bag; it returns a candidate cell index (-1 on miss). External,
-// reloc-masked (no body).
-struct CellProbe {
-    i32 ProbeCell(
-        i32 a0,
-        i32 a1,
-        void* a2,
-        i32 a3,
-        void* a4,
-        i32 a5,
-        i32 a6,
-        i32 a7,
-        i32 a8
-    ); // 0x046b6d0
-};
-
-// The two map-query helpers reached via this->m_004 (m_30->m_24->...): GetCell
-// (RVA 0x0516f20, thunk 0x021df) and a sibling (RVA 0x0516ee0, thunk 0x01c21),
-// both __thiscall returning a per-cell record pointer (null on miss). External,
-// reloc-masked (no body).
-struct MapQuery {
+// The level/game spawn context held at this->m_004: the object the spawn state
+// machine drives. Its header sub-objects are named members below; the per-band
+// records (0x238 stride) are reached by raw offset ((char*)m_004 + band*0x238 +
+// field) since their fields overlap past the nominal stride. QueryA/QueryB
+// (0x0516f20 / 0x0516ee0) are its __thiscall cell/record lookups; the cell-index
+// probe (ProbeCell @0x046b6d0) is dispatched on its m_68 CTriggerMgr. Real class
+// undetermined (Ghidra FUN_ for the queries); file-local view of what this TU touches.
+struct GruntSpawnCtx {
+    char m_pad00[0x10];
+    void* m_10; // +0x10  the level geometry object (UnitLevel*)
+    void* m_14; // +0x14  the cell resolver (CellResolver)
+    char m_pad18[0x30 - 0x18];
+    void* m_30; // +0x30  the scene/surface mgr (->m_8 = scene collection,
+                //         ->m_24->m_5c = the ViewMapper)
+    char m_pad34[0x68 - 0x34];
+    CTriggerMgr* m_68; // +0x68  the level's CTriggerMgr (cell probe / trigger applier)
+    char m_pad6c[0x70 - 0x6c];
+    char* m_70;                         // +0x70  the direct cell table (0x67-marker fast path)
     void* QueryA(i32 packed, i32 flag); // 0x0516f20
-    void* QueryB(i32 packed, i32 flag); // 0x0516ee0
+    void* QueryB(void* node, i32 flag); // 0x0516ee0
 };
 
 // ---- Reloc-masked engine globals --------------------------------------------
@@ -378,7 +425,7 @@ struct UnitMutator {
 // The two runtime-config globals the spawn state machine copies into the unit's
 // m_250/m_254 slots (DAT_0060ccc0 = 0x98f, DAT_0062b7ec = a state code). Reloc-
 // masked DATA (VA - 0x400000). The per-level records are the shared m_004-indexed
-// 0x238-stride block (see Method_0358a0's BandRec); the fields the spawn state
+// 0x238-stride block (the m_004-indexed 0x238-stride records); the fields the spawn state
 // machine reaches (+0x170/+0x174 ready-flags, +0x188 edge sub-object, +0x258/+0x25c
 // queued point, record+0x280 re-route gate) are read by raw offset like the siblings.
 DATA(0x0020ccc0)
@@ -394,7 +441,7 @@ extern i32 g_stepTimer;
 // The scene-hit dispatcher reached via g_gameReg->m_60 (RVA 0x11b3b0, thunk
 // 0x039f4): a __thiscall taking (unit, 0x366, -1, 0, -1, -1). External, reloc-
 // masked (no body); modeled as a method on a tiny object (the same idiom as
-// UnitMutator/GridTrigger) so `mov ecx,[reg+0x60]; call` falls out.
+// UnitMutator/UnitCommit) so `mov ecx,[reg+0x60]; call` falls out.
 struct SceneHit {
     void Fire(void* unit, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5); // 0x11b3b0
 };
@@ -530,7 +577,7 @@ void* CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02ad40(i32) {
     }
     band = band % 4;
     i32 cell = rand() % 15;
-    GridUnit** row = (GridUnit**)(m_008 + band * 0x3c + 0x1c);
+    GridUnit** row = (GridUnit**)&m_008->m_grid[band * 15];
     for (i32 i = 0; i < 15; i++) {
         GridUnit* u = *row;
         if (u != 0 && *(i32*)((char*)u + 0x364) == 0) {
@@ -573,7 +620,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_025d90() {
     if (m_000 == 0) {
         return 1;
     }
-    if (*(void**)((char*)m_004 + 0x68) == 0) {
+    if (m_004->m_68 == 0) {
         return 0;
     }
     if (m_04c - m_050 > m_048) {
@@ -582,7 +629,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_025d90() {
     }
     // Level off the mode-3 countdowns: find the minimum, subtract it from each.
     i32 mn = 0x10;
-    GridUnit** row = (GridUnit**)(m_008 + m_018 * 0x3c + 0x1c);
+    GridUnit** row = (GridUnit**)&m_008->m_grid[m_018 * 15];
     for (i32 s = 15; s != 0; s--) {
         GridUnit* u = *row;
         if (u != 0 && u->m_2d4 == 3 && u->m_2e0 < mn) {
@@ -592,7 +639,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_025d90() {
     }
     if (mn != 0 && mn != 0x10) {
         for (i32 k = 0; k < 15; k++) {
-            GridUnit* u = ((GridUnit**)(m_008 + m_018 * 0x3c + 0x1c))[k];
+            GridUnit* u = (GridUnit*)m_008->m_grid[m_018 * 15 + k];
             if (u != 0 && u->m_2d4 == 3) {
                 u->m_2e0 -= mn;
             }
@@ -605,7 +652,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_025d90() {
     GridUnit* forcedUnit = 0;
     if (m_05c - m_058 > m_054) {
         i32 r = rand() % 15;
-        GridUnit* u = ((GridUnit**)(m_008 + m_018 * 0x3c + 0x1c))[r];
+        GridUnit* u = (GridUnit*)m_008->m_grid[m_018 * 15 + r];
         forcedUnit = u;
         forced = 0;
         if (u != 0 && u->m_2d4 == 3 && u->m_2e0 == 0) {
@@ -614,7 +661,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_025d90() {
         if (!forced) {
             if (rand() % 10 != 0) {
                 i32 r2 = rand() % 15;
-                GridUnit* u2 = ((GridUnit**)(m_008 + m_018 * 0x3c + 0x1c))[r2];
+                GridUnit* u2 = (GridUnit*)m_008->m_grid[m_018 * 15 + r2];
                 if (u2 != 0) {
                     Method_02f620((i32)u2);
                 }
@@ -625,7 +672,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_025d90() {
         } else {
             // The eligibility scan: walk the row (the forced unit overrides slot 0).
             for (i32 b = 0; b < 15; b++) {
-                GridUnit* unit = ((GridUnit**)(m_008 + m_018 * 0x3c + 0x1c))[b];
+                GridUnit* unit = (GridUnit*)m_008->m_grid[m_018 * 15 + b];
                 if (forced) {
                     unit = forcedUnit;
                 }
@@ -769,7 +816,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_025d90() {
 // level chains (m_004->m_30->m_24->m_5c) are modeled by raw offset. Final sweep.
 RVA(0x00026470, 0x29d)
 i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_026470(i32) {
-    GridUnit** row = (GridUnit**)(m_008 + m_018 * 0x3c + 0x1c);
+    GridUnit** row = (GridUnit**)&m_008->m_grid[m_018 * 15];
     i32 occupied = 0;
     for (i32 c = 15; c != 0; c--) {
         if (*row != 0) {
@@ -794,7 +841,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_026470(i32) {
         cand = cands[i];
         i32 usable = 1;
         if (cand != 0) {
-            i32* tilePtr = (i32*)&((Tile*)((Board*)m_00c)->m_rows[cand->m_y])[cand->m_x];
+            i32* tilePtr = (i32*)&((Tile*)(m_00c)->m_rows[cand->m_y])[cand->m_x];
             for (i32 t = 0; t < 7; t++) {
                 tileRec[t] = tilePtr[t];
             }
@@ -817,28 +864,27 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_026470(i32) {
         }
     }
     Coord screen;
-    char* lvl = (char*)m_004;
-    char* m30 = *(char**)(lvl + 0x30);
+    char* m30 = (char*)m_004->m_30;
     char* m24 = *(char**)(m30 + 0x24);
     ((ViewMapper*)*(void**)(m24 + 0x5c))->WorldToScreen(&screen, cand->m_x << 5, cand->m_y << 5);
     i32 cell;
     if (slot38 != 0) {
-        cell = ((CellProbe*)(*(void**)((char*)m_004 + 0x68)))
-                   ->ProbeCell(m_018, screen.m_x, (void*)0x186a0, 2, g_renderCtx, 0, 0, 0, 0);
+        cell =
+            m_004->m_68->ProbeCell(m_018, screen.m_x, (void*)0x186a0, 2, g_renderCtx, 0, 0, 0, 0);
     } else {
-        cell = ((CellProbe*)(*(void**)((char*)m_004 + 0x68)))
-                   ->ProbeCell(m_018, screen.m_x, (void*)0x186a0, 0, g_renderCtx, 0, 0, 0, 0);
+        cell =
+            m_004->m_68->ProbeCell(m_018, screen.m_x, (void*)0x186a0, 0, g_renderCtx, 0, 0, 0, 0);
     }
     if (cell == -1) {
         return 0;
     }
-    GridUnit* unit = ((GridUnit**)(*(void**)((char*)m_004 + 0x68)))[cell * 3 + m_018 * 3];
+    GridUnit* unit = ((GridUnit**)(m_004->m_68))[cell * 3 + m_018 * 3];
     if (unit == 0) {
         return 0;
     }
     slot38 = rand() % 100;
     i32 freeCount = 0;
-    GridUnit** r2 = (GridUnit**)(m_008 + m_018 * 0x3c + 0x1c);
+    GridUnit** r2 = (GridUnit**)&m_008->m_grid[m_018 * 15];
     for (i32 k = 15; k != 0; k--) {
         GridUnit* g = *r2;
         if (g != 0 && g->m_2d8 == 0) {
@@ -908,7 +954,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02a570_IntersectRect(i32 unitArg)
     void* pos = unit->m_320;
     Coord center;
     ((UnitGeom*)unit)->GetCoord(&center);
-    Board* board = (Board*)m_00c;
+    Board* board = m_00c;
     i32 cx = center.m_x >> 5;
     i32 cy = center.m_y >> 5;
     RECT bounds;
@@ -1076,7 +1122,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02ab80_PtInRect(
             continue;
         }
         for (i32 i = 0; i < 15; i++) {
-            GridUnit* u = *(GridUnit**)(m_008 + band * 0x3c + 0x1c + i * 4);
+            GridUnit* u = (GridUnit*)m_008->m_grid[band * 15 + i];
             if (u == 0) {
                 continue;
             }
@@ -1134,16 +1180,6 @@ struct UnitRectGate {
 // taking (packedA, packedB, coordX, coordY). External, reloc-masked.
 struct UnitCommit {
     void Commit(i32 a, i32 b, i32 x, i32 y); // 0x05b050
-};
-// The grid trigger applier (RVA 0x06e120, ApplyTriggerB) reached via this->m_008: a
-// __thiscall taking (packedA, packedB, coordX, coordY). External, reloc-masked.
-struct GridTrigger {
-    void Apply(i32 a, i32 b, i32 x, i32 y); // 0x06e120
-};
-// The board's dirty-rect clip finaliser (RVA 0x02b340, ?Clip@ClipHost_02b340@...):
-// a __thiscall on the board taking a RECT* (null here). External, reloc-masked.
-struct ClipHost {
-    void Clip(const RECT*); // 0x02b340
 };
 
 // ===========================================================================
@@ -1216,10 +1252,10 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02ae00_IntersectRect(i32 unitArg,
         if (((UnitRectGate*)tgt)->Contains(ul->m_5c, ul->m_60) != 0) {
             if (tgt->m_198 == 0x1e) {
                 UnitLevel* tl = (UnitLevel*)tgt->m_010;
-                ((GridTrigger*)m_008)->Apply(tgt->m_1ec, tgt->m_1f0, tl->m_5c, tl->m_60);
+                m_008->ApplyTriggerB(tgt->m_1ec, tgt->m_1f0, tl->m_5c, tl->m_60);
             } else {
                 UnitLevel* ul2 = (UnitLevel*)unit->m_010;
-                ((GridTrigger*)m_008)->Apply(tgt->m_1ec, tgt->m_1f0, ul2->m_5c, ul2->m_60);
+                m_008->ApplyTriggerB(tgt->m_1ec, tgt->m_1f0, ul2->m_5c, ul2->m_60);
             }
             return 1;
         }
@@ -1242,7 +1278,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02ae00_IntersectRect(i32 unitArg,
     i32 left = (tl2->m_5c >> 5) - 5;
     i32 xcoord = (tl->m_5c >> 5) + r2 - 5;
     i32 right = (tl2->m_5c >> 5) + 5;
-    Board* board = (Board*)m_00c;
+    Board* board = m_00c;
     i32 bottom = (tl2->m_60 >> 5) + 5;
     i32 top = (tl2->m_60 >> 5) - 5;
     RECT box;
@@ -1553,7 +1589,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02bfc0(i32 objArg, void* kindArg,
 // CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02c0a0  @0x02c0a0
 // Mark a unit as "state 3" with a value, then count how many OTHER units in the
 // current cell-row are also state 3 and record that count on the unit.
-//   grid row = m_008 + m_018*0x3c, the 15-entry unit array starts at +0x1c.
+//   grid row = m_008->m_grid[m_018*15 .. +15) (the CTriggerMgr 4x15 cell grid).
 // ===========================================================================
 RVA(0x0002c0a0, 0x78)
 i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02c0a0(i32 unitArg, i32 value) {
@@ -1564,7 +1600,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02c0a0(i32 unitArg, i32 value) {
     m_148 = 0;
     unit->m_2d4 = 3;
     unit->m_2e4 = value;
-    void** units = (void**)m_008 + m_018 * 15 + 7;
+    void** units = m_008->m_grid + m_018 * 15;
     i32 count = 0;
     for (i32 k = 0; k < 15; k++) {
         GridUnit* p = (GridUnit*)units[k];
@@ -1667,7 +1703,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02c140_IntersectRect_PtInRect(i32
     Coord c4;
     ((UnitGeom*)unit)->GetCoord(&c4);
     box.left = (c4.m_x >> 5) - 3;
-    Board* board = (Board*)m_00c;
+    Board* board = m_00c;
     RECT bounds;
     ((RectInit*)&bounds)->Set(0, 0, board->m_w, board->m_h);
     RECT clamp;
@@ -1681,7 +1717,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02c140_IntersectRect_PtInRect(i32
     board->m_70 = board->m_68 - board->m_60;
     board->m_74 = board->m_6c - board->m_64;
     // Iterate the scene collection for kind-matching units inside the box.
-    SceneColl* coll = (SceneColl*)(*(void**)((char*)(*(void**)((char*)m_004 + 0x30)) + 8));
+    SceneColl* coll = (SceneColl*)(*(void**)((char*)(m_004->m_30) + 8));
     coll->m_68 = coll->m_14;
     SceneObj* g = coll->GetNext();
     while (g != 0) {
@@ -1713,7 +1749,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02c140_IntersectRect_PtInRect(i32
             if (PtInRect(&box, pt)) {
                 if (special != 0 && unit->m_258 == 0) {
                     if (Method_0300c0(unitArg, gx, gy, 0x2000098b, 0, 0) != 0) {
-                        Board* bd = (Board*)m_00c;
+                        Board* bd = m_00c;
                         RECT mb;
                         mb.left = 0;
                         mb.top = 0;
@@ -1740,7 +1776,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02c140_IntersectRect_PtInRect(i32
                     }
                     if (p2 == 0) {
                         if (Method_0300c0(unitArg, gx, gy, 0x2000098b, 0, 0) != 0) {
-                            Board* bd = (Board*)m_00c;
+                            Board* bd = m_00c;
                             RECT r1;
                             ((RectInit*)&r1)->Set(0, 0, bd->m_w, bd->m_h);
                             RECT r2;
@@ -1762,7 +1798,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02c140_IntersectRect_PtInRect(i32
             }
         }
         // Back-edge: the inlined first GetNext pop, tail-continuing via the helper.
-        SceneColl* c = (SceneColl*)(*(void**)((char*)(*(void**)((char*)m_004 + 0x30)) + 8));
+        SceneColl* c = (SceneColl*)(*(void**)((char*)(m_004->m_30) + 8));
         g = 0;
         if (c->m_68 != 0) {
             SceneNode* nd = c->m_68;
@@ -1820,7 +1856,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02dfa0_IntersectRect(
     Coord g2;
     ((UnitGeom*)unit)->GetCoord(&g2);
     i32 left = (g2.m_x >> 5) - 8;
-    Board* board = (Board*)m_00c;
+    Board* board = m_00c;
     RECT bounds;
     ((RectInit*)&bounds)->Set(0, 0, board->m_w, board->m_h);
     RECT box;
@@ -1956,7 +1992,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02e3a0_PtInRect(i32 unitArg) {
             continue;
         }
         for (i32 i = 0; i < 15; i++) {
-            GridUnit* u = *(GridUnit**)(m_008 + band * 0x3c + 0x1c + i * 4);
+            GridUnit* u = (GridUnit*)m_008->m_grid[band * 15 + i];
             if (u == 0) {
                 continue;
             }
@@ -2034,7 +2070,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02e3a0_PtInRect(i32 unitArg) {
     if ((u32)unit->m_2ec <= 0x64) {
         return 1;
     }
-    Board* board = (Board*)m_00c;
+    Board* board = m_00c;
     RECT bounds;
     ((RectInit*)&bounds)->Set(0, 0, board->m_w, board->m_h);
     RECT* boxp = &box;
@@ -2360,7 +2396,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02f620(i32 unitArg) {
         }
         if (mode == 3) {
             // Reseed: count idle units in the current cell-row; bail if 2+ already.
-            GridUnit** row = (GridUnit**)(m_008 + m_018 * 0x3c + 0x1c);
+            GridUnit** row = (GridUnit**)&m_008->m_grid[m_018 * 15];
             i32 nIdle = 0;
             for (i32 s = 15; s != 0; s--) {
                 GridUnit* u = *row;
@@ -2373,7 +2409,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02f620(i32 unitArg) {
                 return 1;
             }
             for (i32 b = 0; b < 15; b++) {
-                GridUnit* u = ((GridUnit**)(m_008 + m_018 * 0x3c + 0x1c))[b];
+                GridUnit* u = (GridUnit*)m_008->m_grid[m_018 * 15 + b];
                 if (u == 0) {
                     continue;
                 }
@@ -2539,7 +2575,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_0300c0(
     if ((lvl->m_5c >> 5) == gx && (lvl->m_60 >> 5) == gy) {
         return 0;
     }
-    if (((Board*)m_00c)->FindPath(lvl->m_5c >> 5, lvl->m_60 >> 5, gx, gy, &list, a6, a4, a5) == 0) {
+    if ((m_00c)->FindPath(lvl->m_5c >> 5, lvl->m_60 >> 5, gx, gy, &list, a6, a4, a5) == 0) {
         return 0;
     }
     if (list.GetCount() == 0) {
@@ -2626,7 +2662,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_0302c0(i32 unitArg, i32 gx, i32 g
         }
     }
     UnitLevel* lvl = (UnitLevel*)unit->m_010;
-    if (((Board*)m_00c)->FindPath(lvl->m_5c >> 5, lvl->m_60 >> 5, gx, gy, &list, 0, a5, a5) == 0) {
+    if ((m_00c)->FindPath(lvl->m_5c >> 5, lvl->m_60 >> 5, gx, gy, &list, 0, a5, a5) == 0) {
         return 0;
     }
     if (list.GetCount() == 0) {
@@ -2689,7 +2725,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_030530(i32 unitArg) {
     if (node == 0) {
         return 0;
     }
-    Tile** rows = ((Board*)m_00c)->m_rows;
+    Tile** rows = (m_00c)->m_rows;
     while (node != 0) {
         CoordNode* cur = node;
         node = node->m_next;
@@ -2719,7 +2755,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_030530(i32 unitArg) {
 // spelling found. Deferred to the final sweep.
 RVA(0x000305b0, 0x121)
 i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_0305b0(i32 selfUnit, i32 qx, i32 qy) {
-    void** units = (void**)m_008 + m_018 * 15 + 7;
+    void** units = m_008->m_grid + m_018 * 15;
     for (i32 i = 0; i < 15; i++) {
         GridUnit* unit = (GridUnit*)units[i];
         if (unit == 0) {
@@ -2732,7 +2768,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_0305b0(i32 selfUnit, i32 qx, i32 
             continue;
         }
         if (unit->m_328 != 0 && unit->m_320 != 0) {
-            Board* board = (Board*)m_00c;
+            Board* board = m_00c;
             CoordNode* node = (CoordNode*)unit->m_320;
             while (node != 0) {
                 CoordNode* cur = node;
@@ -2785,7 +2821,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_030730(i32 cellX, i32 cellY, i32,
     if (cellX == m_018) {
         return 1;
     }
-    GridUnit* src = ((GridUnit**)(m_008 + cellX * 0x3c + 0x1c))[cellY];
+    GridUnit* src = (GridUnit*)m_008->m_grid[cellX * 15 + cellY];
     if (src == 0) {
         return 0;
     }
@@ -2800,7 +2836,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_030730(i32 cellX, i32 cellY, i32,
         }
     }
     for (i32 i = 0; i < 15; i++) {
-        GridUnit* u = ((GridUnit**)(m_008 + m_018 * 0x3c + 0x1c))[i];
+        GridUnit* u = (GridUnit*)m_008->m_grid[m_018 * 15 + i];
         if (u == 0) {
             continue;
         }
@@ -2848,30 +2884,6 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_030730(i32 cellX, i32 cellY, i32,
     return 1;
 }
 
-// The grid object held at this->m_008: SpawnProbe (RVA 0x046b6d0, thunk 0x040bb,
-// shared with Method_026470's cell probe) is a __thiscall that maps a screen
-// coordinate + a flag bag to a candidate cell index (-1 on miss). Called here with
-// ecx = m_008 (kept live since the row-count loop); modeled as a method on the grid
-// so the convention falls out. External, reloc-masked (no body). The 13-arg form is
-// distinct from Method_026470's 9-arg ProbeCell call into the SAME retail routine.
-struct GridSpawnProbe {
-    i32 Probe(
-        i32 cell,
-        i32 sx,
-        i32 sy,
-        i32 a3,
-        i32 a4,
-        i32 a5,
-        i32 a6,
-        i32 a7,
-        i32 a8,
-        i32 a9,
-        i32 a10,
-        i32 a11,
-        i32 a12
-    ); // 0x046b6d0
-};
-
 // ===========================================================================
 // CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_030990  @0x030990
 // Try to seed a fresh spawn unit at a screen cell. Count the occupied units in the
@@ -2892,7 +2904,7 @@ struct GridSpawnProbe {
 // docs/patterns/zero-register-pinning.md). Deferred to the final sweep.
 RVA(0x00030990, 0x11b)
 i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_030990(i32 ax, i32 ay) {
-    GridUnit** row = (GridUnit**)(m_008 + m_018 * 0x3c + 0x1c);
+    GridUnit** row = (GridUnit**)&m_008->m_grid[m_018 * 15];
     i32 occupied = 0;
     for (i32 c = 15; c != 0; c--) {
         if (*row != 0) {
@@ -2904,27 +2916,25 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_030990(i32 ax, i32 ay) {
     if (occupied >= *(i32*)(rec + 0x378)) {
         return 0;
     }
-    i32 cell = ((GridSpawnProbe*)m_008)
-                   ->Probe(
-                       m_018,
-                       (ay << 5) + 0x10,
-                       (ax << 5) + 0x10,
-                       0x186a0,
-                       3,
-                       *(i32*)(rec + 0x158),
-                       0,
-                       0,
-                       0x11,
-                       0,
-                       0,
-                       0,
-                       0
-                   );
+    i32 cell = m_008->Probe(
+        m_018,
+        (ay << 5) + 0x10,
+        (ax << 5) + 0x10,
+        0x186a0,
+        3,
+        *(i32*)(rec + 0x158),
+        0,
+        0,
+        0x11,
+        0,
+        0,
+        0,
+        0
+    );
     if (cell == -1) {
         return 0;
     }
-    GridUnit* unit =
-        ((GridUnit**)((char*)(*(void**)((char*)m_004 + 0x68)) + 0x1c))[cell + m_018 * 15];
+    GridUnit* unit = ((GridUnit**)((char*)(m_004->m_68) + 0x1c))[cell + m_018 * 15];
     if (unit == 0) {
         return 0;
     }
@@ -2981,14 +2991,14 @@ void* CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_030f20(void* out, i32 unitArg, 
         i32 k = 0;
         if (count > 0) {
             Candidate** arr = *(Candidate***)(rec + 0x4);
-            char* grid = m_008;
+            CTriggerMgr* grid = m_008;
             i32 cell = m_018;
             for (;;) {
                 Candidate* cand = arr[r];
                 i32 cx = cand->m_x;
                 i32 cy = cand->m_y;
                 i32 ok = 1;
-                GridUnit** row = (GridUnit**)(grid + cell * 0x3c + 0x1c);
+                GridUnit** row = (GridUnit**)&grid->m_grid[cell * 15];
                 for (i32 j = 15; j != 0; j--) {
                     GridUnit* u = *row;
                     if (u != 0 && u->m_328 != 0) {
@@ -3047,7 +3057,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_031ca0_IntersectRect(i32 unitArg)
     i32 tx = unit->m_2f0;
     i32 ty = unit->m_2f4;
     if (tx != -1 && ty != -1) {
-        GridUnit* target = ((GridUnit**)(m_008 + tx * 0x3c + 0x1c))[ty];
+        GridUnit* target = (GridUnit*)m_008->m_grid[tx * 15 + ty];
         if (target != 0) {
             UnitLevel* lvl = (UnitLevel*)target->m_010;
             if (((CoordCheck*)unit)->Occupied(lvl->m_5c, lvl->m_60) != 0) {
@@ -3068,7 +3078,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_031ca0_IntersectRect(i32 unitArg)
             }
             // Clamp the board dirty-rect to (0,0,w,h): the CRect / IntersectRect
             // copy-back idiom (shared with GruntPathScan's SCAN_BOUNDS).
-            Board* board = (Board*)m_00c;
+            Board* board = m_00c;
             RECT r1;
             ((RectInit*)&r1)->Set(0, 0, board->m_w, board->m_h);
             RECT r2;
@@ -3167,7 +3177,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_031ca0_IntersectRect(i32 unitArg)
 // all four coord recyclers (g_coordPool via CoordListWalk::Advance / g_freeList inline) are
 // reconstructed in shape + order. Residual is the register-relative record-address regalloc
 // (cl strength-reduces the band*0x238 lea-chain + folds the +0x170/+0x188/+0x258 sub-offsets
-// differently per arm, the documented Method_0358a0/BandRec wall) + the box-stack-slot
+// differently per arm, the documented Method_0358a0 record-address wall) + the box-stack-slot
 // schedule; foreign board/record chains modeled by raw offset. Not source-steerable.
 RVA(0x00032060, 0x7bd)
 i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_032060_IntersectRect(i32 unitArg) {
@@ -3392,7 +3402,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_032060_IntersectRect(i32 unitArg)
     if (unit->m_2d4 != 7) {
         return 1;
     }
-    Board* board = (Board*)m_00c;
+    Board* board = m_00c;
     RECT box2;
     box2.left = 0;
     box2.top = 0;
@@ -3642,7 +3652,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_029b40(i32 unitArg) {
         goto recycleBail;
     }
     {
-        Board* board = (Board*)m_00c;
+        Board* board = m_00c;
         i32 tile0;
         if ((u32)ux < (u32)board->m_w && (u32)uy < (u32)board->m_h) {
             i32* row = (i32*)board->m_rows[uy];
@@ -3835,15 +3845,14 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02d800(i32 a4, i32 col, i32 row, 
         return 0;
     }
     for (;;) {
-        Board* board = (Board*)m_00c;
+        Board* board = m_00c;
         i32 tileOff = ((col * 7) << 2);
         i32* tile = (i32*)((char*)board->m_rows[row] + tileOff);
         i32 word = *tile;
         if (word & 0x800000) {
             CObList list(10);
-            UnitLevel* lvl = (UnitLevel*)*(void**)((char*)m_004 + 0x10);
-            if (((Board*)m_00c)
-                    ->FindPath(lvl->m_5c >> 5, lvl->m_60 >> 5, col, row, &list, 1, 0x4903, 0)
+            UnitLevel* lvl = (UnitLevel*)m_004->m_10;
+            if ((m_00c)->FindPath(lvl->m_5c >> 5, lvl->m_60 >> 5, col, row, &list, 1, 0x4903, 0)
                 != 0) {
                 // Route found: handled by the commit tail below (shared path).
                 i32 dummy = 0;
@@ -3852,8 +3861,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02d800(i32 a4, i32 col, i32 row, 
             list.RemoveAll();
         }
         if (word & 0x400000) {
-            void* cell =
-                ((CellResolver*)*(void**)((char*)m_004 + 0x14))->ResolveCell((col << 8) + row);
+            void* cell = ((CellResolver*)m_004->m_14)->ResolveCell((col << 8) + row);
             if (m_018 != 0) {
                 if (cell == 0) {
                     break;
@@ -3862,8 +3870,8 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02d800(i32 a4, i32 col, i32 row, 
                     break;
                 }
                 CObList list2(10);
-                UnitLevel* lvl = (UnitLevel*)*(void**)((char*)m_004 + 0x10);
-                if (((Board*)m_00c)
+                UnitLevel* lvl = (UnitLevel*)m_004->m_10;
+                if ((m_00c)
                         ->FindPath(lvl->m_5c >> 5, lvl->m_60 >> 5, col, row, &list2, 1, 0x4003, 0)
                     != 0) {
                     void* head = list2.GetHeadPosition();
@@ -3901,9 +3909,8 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02d800(i32 a4, i32 col, i32 row, 
                 break;
             }
             CObList list3(10);
-            UnitLevel* lvl = (UnitLevel*)*(void**)((char*)m_004 + 0x10);
-            if (((Board*)m_00c)
-                    ->FindPath(lvl->m_5c >> 5, lvl->m_60 >> 5, col, row, &list3, 1, 0x4003, 0)
+            UnitLevel* lvl = (UnitLevel*)m_004->m_10;
+            if ((m_00c)->FindPath(lvl->m_5c >> 5, lvl->m_60 >> 5, col, row, &list3, 1, 0x4003, 0)
                 != 0) {
                 void* head = list3.GetHeadPosition();
                 g_stepRun = 0;
@@ -3934,7 +3941,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02d800(i32 a4, i32 col, i32 row, 
         i32* nt;
         i32 nw;
 
-        b = (Board*)m_00c;
+        b = m_00c;
         if ((u32)cm < (u32)b->m_w) {
             nt = (i32*)((char*)b->m_rows[row] + ((cm * 7) << 2));
             nw = *nt;
@@ -3942,7 +3949,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02d800(i32 a4, i32 col, i32 row, 
                 Method_02d800(a4, cm, row, a5);
             }
         }
-        b = (Board*)m_00c;
+        b = m_00c;
         if ((u32)cp < (u32)b->m_w) {
             nt = (i32*)((char*)b->m_rows[row] + ((cp * 7) << 2));
             nw = *nt;
@@ -3950,7 +3957,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02d800(i32 a4, i32 col, i32 row, 
                 Method_02d800(a4, cp, row, a5);
             }
         }
-        b = (Board*)m_00c;
+        b = m_00c;
         if ((u32)rm < (u32)b->m_w) {
             nt = (i32*)((char*)b->m_rows[rm] + ((col * 7) << 2));
             nw = *nt;
@@ -3958,7 +3965,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02d800(i32 a4, i32 col, i32 row, 
                 Method_02d800(a4, col, rm, a5);
             }
         }
-        b = (Board*)m_00c;
+        b = m_00c;
         if ((u32)rp < (u32)b->m_w) {
             nt = (i32*)((char*)b->m_rows[rp] + ((col * 7) << 2));
             nw = *nt;
@@ -3966,7 +3973,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02d800(i32 a4, i32 col, i32 row, 
                 Method_02d800(a4, col, rp, a5);
             }
         }
-        b = (Board*)m_00c;
+        b = m_00c;
         if ((u32)cp < (u32)b->m_w && (u32)rm < (u32)b->m_h) {
             nt = (i32*)((char*)b->m_rows[rm] + ((cp * 7) << 2));
             nw = *nt;
@@ -3974,7 +3981,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02d800(i32 a4, i32 col, i32 row, 
                 Method_02d800(a4, cp, rm, a5);
             }
         }
-        b = (Board*)m_00c;
+        b = m_00c;
         if ((u32)cp < (u32)b->m_w && (u32)rp < (u32)b->m_h) {
             nt = (i32*)((char*)b->m_rows[rp] + ((cp * 7) << 2));
             nw = *nt;
@@ -3982,7 +3989,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02d800(i32 a4, i32 col, i32 row, 
                 Method_02d800(a4, cp, rp, a5);
             }
         }
-        b = (Board*)m_00c;
+        b = m_00c;
         if ((u32)cm < (u32)b->m_w && (u32)rp < (u32)b->m_h) {
             nt = (i32*)((char*)b->m_rows[rp] + ((cm * 7) << 2));
             nw = *nt;
@@ -3990,7 +3997,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02d800(i32 a4, i32 col, i32 row, 
                 Method_02d800(a4, cm, rp, a5);
             }
         }
-        b = (Board*)m_00c;
+        b = m_00c;
         if ((u32)cm < (u32)b->m_w && (u32)rm < (u32)b->m_h) {
             nt = (i32*)((char*)b->m_rows[rm] + ((cm * 7) << 2));
             nw = *nt;
@@ -4046,7 +4053,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02edb0(i32 unitArg, i32 useArg, i
             n = n->m_next;
             Coord* c = cur->m_coord;
             if (c != 0) {
-                Tile* row = ((Board*)m_00c)->m_rows[c->m_y];
+                Tile* row = (m_00c)->m_rows[c->m_y];
                 if (((i32*)&row[c->m_x])[0] & 4) {
                     tx = c->m_x;
                     ty = c->m_y;
@@ -4092,7 +4099,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02edb0(i32 unitArg, i32 useArg, i
             CoordNode* p = (CoordNode*)unit->m_320;
             Coord* c = ((CoordNode*)p)->m_coord;
             i32 word;
-            Board* b = (Board*)m_00c;
+            Board* b = m_00c;
             if ((u32)c->m_x < (u32)b->m_w && (u32)c->m_y < (u32)b->m_h) {
                 word = ((i32*)&((Tile*)b->m_rows[c->m_y])[c->m_x])[0];
             } else {
@@ -4111,7 +4118,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02edb0(i32 unitArg, i32 useArg, i
     i32 r = rand() % 15;
     i32 scanned = 0;
     for (;;) {
-        GridUnit* cand = ((GridUnit**)(m_008 + m_018 * 0x3c + 0x1c))[r];
+        GridUnit* cand = (GridUnit*)m_008->m_grid[m_018 * 15 + r];
         if (cand != 0) {
             UnitLevel* lvl = (UnitLevel*)cand->m_010;
             if (lvl->m_5c == cand->m_17c && lvl->m_60 == cand->m_180 && cand->m_1fc != 0
@@ -4205,17 +4212,16 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02edb0(i32 unitArg, i32 useArg, i
                         Coord oc;
                         ((UnitGeom*)unit)->GetCoord(&oc);
                         UnitLevel* dl = (UnitLevel*)cand->m_010;
-                        if (((Board*)m_00c)
-                                ->FindPath(
-                                    oc.m_x >> 5,
-                                    oc.m_y >> 5,
-                                    dl->m_5c >> 5,
-                                    dl->m_60 >> 5,
-                                    &list,
-                                    1,
-                                    0x98b,
-                                    flags
-                                )
+                        if ((m_00c)->FindPath(
+                                oc.m_x >> 5,
+                                oc.m_y >> 5,
+                                dl->m_5c >> 5,
+                                dl->m_60 >> 5,
+                                &list,
+                                1,
+                                0x98b,
+                                flags
+                            )
                             != 0) {
                             if (list.GetHeadPosition() != 0) {
                                 // Recycle the unit's old path coords onto g_coordPool.
@@ -4266,19 +4272,10 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02edb0(i32 unitArg, i32 useArg, i
     return 0;
 }
 
-// The level/board query object held at this->m_004: QueryA (RVA 0x0516f20, thunk
-// 0x021df) maps a packed (col<<8|row) cell to its sub-cell record; QueryB (RVA
-// 0x0516ee0, thunk 0x01c21) resolves a stored node to its {x,y,...} record. Both
-// __thiscall on m_004. External, reloc-masked (no body).
-struct LevelQuery {
-    void* QueryA(i32 packed, i32 flag); // 0x0516f20
-    void* QueryB(void* node, i32 flag); // 0x0516ee0
-};
-
 // ===========================================================================
 // CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_030b20  @0x030b20  (/GX EH frame)
 // Best-fit reroute: locate the cell record for (col,row) - directly when its tile
-// dword[4] == 0x67, else via LevelQuery::QueryA - then scan its 24-entry sub-cell
+// dword[4] == 0x67, else via m_004->QueryA - then scan its 24-entry sub-cell
 // pointer block for the candidate, not colliding with `unit` (Method_0305b0),
 // nearest (min squared-distance) to the unit's level coord. If one is found and is
 // reachable, build the FindPath flag word from the unit's 0x16/0x12 anim modes,
@@ -4302,12 +4299,12 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_030b20(i32 unitArg, i32 col, i32 
     i32 goalY = lvl->m_60 >> 5;
     // The cell record for (col,row): a direct table slot when its tile marker is
     // 0x67, else resolved through QueryA on the packed coordinate.
-    Tile* tile = &((Tile*)((Board*)m_00c)->m_rows[row])[col];
+    Tile* tile = &((Tile*)(m_00c)->m_rows[row])[col];
     char* cell;
     if (*(i32*)((char*)tile + 0x10) == 0x67) {
-        cell = *(char**)((char*)m_004 + 0x70);
+        cell = m_004->m_70;
     } else {
-        cell = (char*)((LevelQuery*)m_004)->QueryA((col << 8) + row, 0);
+        cell = (char*)m_004->QueryA((col << 8) + row, 0);
     }
     i32 bestX = col;
     i32 bestY = col;
@@ -4318,7 +4315,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_030b20(i32 unitArg, i32 col, i32 
         while ((i32)(((char*)scan - cell - 0x3c) & ~3) < 0x60) {
             void* node = *scan;
             if (node != 0) {
-                void* rec = ((LevelQuery*)m_004)->QueryB(node, 0);
+                void* rec = m_004->QueryB(node, 0);
                 if (rec != 0) {
                     i32 cx = *(i32*)((char*)rec + 0x8);
                     i32 cy = *(i32*)((char*)rec + 0xc);
@@ -4334,7 +4331,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_030b20(i32 unitArg, i32 col, i32 
         while ((i32)(((char*)scan2 - cell - 0x3c) & ~3) < 0x60) {
             void* node = *scan2;
             if (node != 0) {
-                void* rec = ((LevelQuery*)m_004)->QueryB(node, 0);
+                void* rec = m_004->QueryB(node, 0);
                 if (rec != 0) {
                     i32 cx = *(i32*)((char*)rec + 0x8);
                     i32 cy = *(i32*)((char*)rec + 0xc);
@@ -4378,8 +4375,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_030b20(i32 unitArg, i32 col, i32 
         flags |= 0x100;
     }
     UnitLevel* lvl2 = (UnitLevel*)unit->m_010;
-    if (((Board*)m_00c)
-            ->FindPath(lvl2->m_5c >> 5, lvl2->m_60 >> 5, bestX, bestY, &list, 1, 0x98f, flags)
+    if ((m_00c)->FindPath(lvl2->m_5c >> 5, lvl2->m_60 >> 5, bestX, bestY, &list, 1, 0x98f, flags)
         == 0) {
         // No route: hand off to the sibling coord state machine and bail.
         Method_02edb0(unitArg, 1, bestX, bestY);
@@ -4470,7 +4466,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_0350d0(i32 unitArg) {
     }
     GridCand* best = 0;
     i32 bestDist = 0x7fffffff;
-    GridCandNode* node = *(GridCandNode**)(m_008 + 4);
+    GridCandNode* node = (GridCandNode*)m_008->m_objListHead;
     while (node != 0) {
         GridCand* cand = (GridCand*)node->m_payload;
         node = node->m_next;
@@ -4553,7 +4549,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_034c70(i32 unitArg) {
     }
     i32 x = unit->m_2f0;
     i32 y = unit->m_2f4;
-    Tile* tile = &((Tile*)((Board*)m_00c)->m_rows[y])[x];
+    Tile* tile = &((Tile*)(m_00c)->m_rows[y])[x];
     if (tile->m_flags & 0x20) {
         if (unit->m_2ec <= m_0b4) {
             return 1;
@@ -4630,11 +4626,6 @@ void CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_034960(i32 sentinel, i32 code) {
 // m_004 indexes the per-band records at stride 0x238; the +0x150/+0x188 sub-objects'
 // candidate vectors live at +0xf4 (array) / +0xf8 (count) / +0xd0,+0xd4 (default coord).
 // ===========================================================================
-// The m_004-indexed per-band record (0x238 stride); only the touched band sub-object
-// fields are reached (by raw offset, since they extend past the nominal stride).
-struct BandRec {
-    char m_pad[0x238];
-};
 // A band candidate {x, y} pair the candidate-vector entries point at.
 struct ProbePair {
     i32 m_x; // +0x00
@@ -4662,7 +4653,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_0358a0(i32 unitArg) {
     char* recB0 = 0;
     i32 cell = unit->m_2f0;
     if (cell >= 0 && cell < 4) {
-        char* rec = (char*)((BandRec*)m_004 + cell);
+        char* rec = (char*)m_004 + cell * 0x238;
         recA = rec + 0x150;
         recB0 = rec + 0x188;
     }
@@ -4676,7 +4667,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_0358a0(i32 unitArg) {
                 r++;
             }
             i32 band = r % 4;
-            char* recB = (char*)((BandRec*)m_004 + band) + 0x188;
+            char* recB = (char*)m_004 + band * 0x238 + 0x188;
             i32 cnt = *(i32*)(recB + 0xf8);
             i32 x = *(i32*)(recB + 0xd0);
             i32 y = *(i32*)(recB + 0xd4);
@@ -4694,7 +4685,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_0358a0(i32 unitArg) {
             unit->m_2ec = 0;
             return 1;
         }
-        char* recB = (char*)((BandRec*)m_004 + cell) + 0x188;
+        char* recB = (char*)m_004 + cell * 0x238 + 0x188;
         if (recB == 0) {
             return 1;
         }
@@ -4770,12 +4761,10 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_0358a0(i32 unitArg) {
     return 1;
 }
 SIZE_UNKNOWN(AnimNameResolver);
-SIZE_UNKNOWN(BandRec);
 SIZE_UNKNOWN(Board);
 SIZE_UNKNOWN(Candidate);
-SIZE_UNKNOWN(CellProbe);
 SIZE_UNKNOWN(ClipHost);
-SIZE_UNKNOWN(GridTrigger);
+SIZE_UNKNOWN(GruntSpawnCtx);
 SIZE_UNKNOWN(SceneColl);
 SIZE_UNKNOWN(SceneNode);
 SIZE_UNKNOWN(SceneObj);
@@ -4787,12 +4776,9 @@ SIZE_UNKNOWN(ElementRefresher);
 SIZE_UNKNOWN(EmitArg);
 SIZE_UNKNOWN(GridCand);
 SIZE_UNKNOWN(GridCandNode);
-SIZE_UNKNOWN(GridSpawnProbe);
 SIZE_UNKNOWN(GridUnit);
 SIZE_UNKNOWN(GridUnitSpawn);
 SIZE_UNKNOWN(Kind4Validator);
-SIZE_UNKNOWN(LevelQuery);
-SIZE_UNKNOWN(MapQuery);
 SIZE_UNKNOWN(NameRecord);
 SIZE_UNKNOWN(ProbePair);
 SIZE_UNKNOWN(RectInit);
