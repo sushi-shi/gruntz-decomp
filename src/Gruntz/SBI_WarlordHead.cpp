@@ -108,7 +108,7 @@ i32 CSBI_WarlordHead::ShowFrames(i32 show, i32 arg2) {
         return 0;
     }
 
-    CWhFrame* f = (cfg->m_64 <= 1 && cfg->m_68 >= 1) ? cfg->m_14[1] : 0;
+    CImage* f = (cfg->m_64 <= 1 && cfg->m_68 >= 1) ? cfg->m_14[1] : 0;
     if (f == 0) {
         return 0;
     }
@@ -116,7 +116,7 @@ i32 CSBI_WarlordHead::ShowFrames(i32 show, i32 arg2) {
         WhShowItem(show, 0);
     }
     if (arg2 && f->m_30) {
-        ((CWhFrame*)f->m_30)->m_1c = arg2;
+        f->m_30->m_1c = arg2;
     }
 
     f = (cfg->m_64 <= 2 && cfg->m_68 >= 2) ? cfg->m_14[2] : 0;
@@ -127,7 +127,7 @@ i32 CSBI_WarlordHead::ShowFrames(i32 show, i32 arg2) {
         WhShowItem(show, 0);
     }
     if (arg2 && f->m_30) {
-        ((CWhFrame*)f->m_30)->m_1c = arg2;
+        f->m_30->m_1c = arg2;
     }
     return 1;
 }
@@ -164,22 +164,22 @@ i32 CSBI_WarlordHead::Render(i32 z) {
     i32 ctx = g_gameReg->m_30->m_4->m_14;
 
     CWhConfig* cfg = m_34;
-    CWhFrame* f;
+    CImage* f;
     if (m_3c == 1) {
         f = (cfg->m_64 > 3 || cfg->m_68 < 3) ? 0 : cfg->m_14[3];
     } else {
         f = (cfg->m_64 > 4 || cfg->m_68 < 4) ? 0 : cfg->m_14[4];
     }
     if (f) {
-        ((CWhRenderTarget*)f)->RenderFrame(ctx, m_14 + f->m_18, m_18 + f->m_1c, 0);
+        f->RenderFrame((void*)ctx, (void*)(m_14 + f->m_18), (void*)(m_18 + f->m_1c), 0);
     }
 
     cfg = m_34;
     i32 idx = m_38;
-    CWhFrame* g = (idx < cfg->m_64 || idx > cfg->m_68) ? 0 : cfg->m_14[idx];
+    CImage* g = (idx < cfg->m_64 || idx > cfg->m_68) ? 0 : cfg->m_14[idx];
     m_30 = g;
     if (g) {
-        ((CWhRenderTarget*)g)->RenderFrame(ctx, m_14 + g->m_18, m_18 + g->m_1c, 0);
+        g->RenderFrame((void*)ctx, (void*)(m_14 + g->m_18), (void*)(m_18 + g->m_1c), 0);
     }
     return 1;
 }

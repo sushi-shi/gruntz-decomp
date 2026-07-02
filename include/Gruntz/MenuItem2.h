@@ -31,29 +31,23 @@
 #include <Mfc.h>
 
 #include <Gruntz/MenuItem.h>
+#include <Image/CImage.h> // the canonical frame-record class (CImage::RenderFrame @0x153790)
 
-// A frame record (a CImageSet frame, used as a CImage): a draw-offset pair at
-// m_18/m_1c. RenderFrame (0x153790, __thiscall) blits it at a screen position. Same
-// shape the rest of the engine's sprite chain uses (cf. SBI_GruntMachine CGmFrame).
-struct CMenuFrame {
-    char m_pad0[0x18];
-    i32 m_18;                                              // +0x18  x draw offset
-    i32 m_1c;                                              // +0x1c  y draw offset
-    void RenderFrame(i32 surfaceCtx, i32 x, i32 y, i32 z); // 0x153790
-};
-SIZE_UNKNOWN(CMenuFrame);
+// The per-frame record (a CImageSet frame) is the RTTI-confirmed CImage: a
+// draw-offset pair at m_18/m_1c, blitted by CImage::RenderFrame (0x153790,
+// __thiscall). Modeled by the shared <Image/CImage.h> definition.
 
 // The per-state sprite (a CImageSet): a frame table at m_14 indexed by a signed
 // frame index gated to [m_64, m_68]. GetAt is the bounds-checked accessor the cursor
 // helpers inline (same shape as CImageSet::GetAt).
 struct CMenuSprite {
     char m_pad0[0x14];
-    CMenuFrame** m_14; // +0x14  frame table
+    CImage** m_14; // +0x14  frame table
     char m_pad18[0x64 - 0x18];
     i32 m_64; // +0x64  frame-index range lo
     i32 m_68; // +0x68  frame-index range hi
 
-    CMenuFrame* GetAt(i32 idx) {
+    CImage* GetAt(i32 idx) {
         if (idx < m_64 || idx > m_68) {
             return 0;
         }
@@ -78,7 +72,7 @@ public:
 
     // Non-virtual __thiscall frame-cursor helpers (bodies in MenuItem2.cpp):
     CMenuSprite* GetCurrentSprite(); // 0x185950
-    CMenuFrame* GetCurrentFrame();   // 0x185970
+    CImage* GetCurrentFrame();       // 0x185970
     i32 NextFrame();                 // 0x1859c0
 
     CMenuSprite* m_5c; // +0x5c  NORMAL sprite

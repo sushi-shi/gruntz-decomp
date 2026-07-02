@@ -70,11 +70,11 @@ i32 CMenuItem2::Place(i32 ctx, i32 x, i32 y) {
         py = x;
         px = y;
     }
-    CMenuFrame* f = GetCurrentFrame();
+    CImage* f = GetCurrentFrame();
     if (!f) {
         return 0;
     }
-    f->RenderFrame(ctx, py, px, 0);
+    f->RenderFrame((void*)ctx, (void*)py, (void*)px, 0);
     m_34 = py - f->m_18;
     m_3c = py + f->m_18;
     m_38 = px - f->m_1c;
@@ -104,12 +104,12 @@ CMenuSprite* CMenuItem2::GetCurrentSprite() {
 // `if(!s) return 0` guard (saving only esi there), the recompile pushes edi upfront so
 // every return epilogue differs by a pop. docs/patterns/shrink-wrapped-callee-save-push.md.
 RVA(0x00185970, 0x4d)
-CMenuFrame* CMenuItem2::GetCurrentFrame() {
+CImage* CMenuItem2::GetCurrentFrame() {
     CMenuSprite* s = GetCurrentSprite();
     if (!s) {
         return 0;
     }
-    CMenuFrame* f = s->GetAt(m_68);
+    CImage* f = s->GetAt(m_68);
     if (f) {
         return f;
     }

@@ -2762,11 +2762,11 @@ menuitem	?NotifyCmd@CMenuItem@@QAEHXZ	100.0000	100.0000	1	fe60e2c85c02	0x185580
 menuitem	?Place@CMenuItem@@UAEHHHH@Z	99.1364	99.1364	1	c3085a22d234	0x1855f0
 menuitem	?Reset@CMenuItem@@UAEXXZ	100.0000	100.0000	1	fc603e28c52a	0x184730
 menuitem	?Trigger@CMenuItem@@UAEHXZ	100.0000	100.0000	1	a3a678df99af	0x1856d0
-menuitem2	?GetCurrentFrame@CMenuItem2@@QAEPAUCMenuFrame@@XZ	60.6757	60.6757	1	bf5ed4e4b532	0x185970
+menuitem2	?GetCurrentFrame@CMenuItem2@@QAEPAVCImage@@XZ	60.6757	60.6757	1	c705afa10c9f	0x185970
 menuitem2	?GetCurrentSprite@CMenuItem2@@QAEPAUCMenuSprite@@XZ	100.0000	100.0000	2	35486db27ce7	0x185950
 menuitem2	?Init@CMenuItem2@@UAEHHHHHHH@Z	91.6211	91.6211	1	26fbaff3d87f	0x185750
 menuitem2	?NextFrame@CMenuItem2@@QAEHXZ	100.0000	100.0000	1	ab04a760196f	0x1859c0
-menuitem2	?Place@CMenuItem2@@UAEHHHH@Z	98.8367	98.8367	1	a81ca44860fb	0x1858d0
+menuitem2	?Place@CMenuItem2@@UAEHHHH@Z	98.8367	98.8367	2	7f1696af6092	0x1858d0
 menupage	??1CMenuPage@@QAE@XZ	100.0000	100.0000	1	677d46434f16	0x183250
 menupage	?Activate@CMenuPage@@QAEHXZ	100.0000	100.0000	1	9f249bbb20a4	0x183dd0
 menupage	?AddItem2@CMenuPage@@QAEPAVCMenuItem2@@HHHHH@Z	33.8482	33.8482	2	db4307ecb22a	0x1836f0
@@ -3112,7 +3112,7 @@ savegame	?VerifySlot@CSaveGame@@QAEHPAUSaveSlot@@@Z	43.9830	43.9830	3	43dc7b13fb
 savegamemenu	?DrawSaveGameMenu@@YAHPAXHPAUCSaveGameMenu@@@Z	62.5704	62.5704	1	22d81452061a	0xe3f40
 saverecload	?Load@SaveRecord@@QAEHPAULoadStream@@@Z	95.9116	95.9116	1	8394a0c8957d	0xfaff0
 savescreenshot	?SaveScreenshot@@YAHHPAUScrConfig@@PAUScrOwner@@HHPADH@Z	96.7564	96.7564	3	f81be79868e9	0x114ff0
-sbi_gruntmachine	?Render@CSBI_GruntMachine@@QAEHH@Z	87.3590	87.3590	1	d8c0e8492784	0xe8cb0
+sbi_gruntmachine	?Render@CSBI_GruntMachine@@QAEHH@Z	91.5897	91.5897	2	28dbaf9c1bff	0xe8cb0
 sbi_gruntmachine	?Reset@CSBI_GruntMachine@@QAEXXZ	100.0000	100.0000	1	539d6616e793	0xe8c70
 sbi_gruntmachine	?SetFrames@CSBI_GruntMachine@@QAEXHH@Z	100.0000	100.0000	1	90c8ff4c6d8d	0xe8dc0
 sbi_gruntmachine_eh	??1CSBI_GruntMachine@@UAE@XZ	100.0000	100.0000	1	39b102f07725	0x104ce0
@@ -3124,7 +3124,7 @@ sbi_imagesetani_eh	??1CSBI_ImageSetAni@@UAE@XZ	100.0000	100.0000	1	7354647071fa	
 sbi_menuitem	?Blit@CSBI_MenuItem@@QAEHXZ	100.0000	100.0000	1	89b04f10c391	0xe84f0
 sbi_menuitem	?ClearFrame2@CSBI_MenuItem@@QAEXXZ	100.0000	100.0000	1	54de26b0f1b5	0xe81a0
 sbi_menuitem	?ClearFrame@CSBI_MenuItem@@QAEXXZ	100.0000	100.0000	1	b89098c623b9	0xe6d90
-sbi_menuitem	?DecCounter@CSBI_MenuItem@@QAEHXZ	100.0000	100.0000	2	63b540be32d5	0xe82a0
+sbi_menuitem	?DecCounter@CSBI_MenuItem@@QAEHXZ	100.0000	100.0000	3	c50a11685877	0xe82a0
 sbi_menuitem	?InitItem@CSBI_MenuItem@@QAEHHHHHHHHHPAXHH@Z	67.8261	67.8261	1	711c194f8a6c	0xe80e0
 sbi_menuitem	?ProbeState@CSBI_MenuItem@@QAEHH@Z	100.0000	100.0000	1	624cf65074d2	0xe8480
 sbi_menuitem	?ResolveFrame@CSBI_MenuItem@@QAEHHH@Z	45.7547	45.7547	2	3cb2c6865db6	0xe81e0
@@ -3219,11 +3219,11 @@ sbi_statztabgruntbar	?Reset@CSBI_StatzTabGruntBar@@QAEXXZ	100.0000	100.0000	1	77
 sbi_statztabgruntbar	?Update@CSBI_StatzTabGruntBar@@QAEHXZ	91.6923	91.6923	1	065f88460c02	0xea6c0
 sbi_statztabgruntbar_eh	??1CSBI_StatzTabGruntBar@@UAE@XZ	100.0000	100.0000	1	602538baa837	0x104b00
 sbi_tabzdialog_eh	?BuildTabzDialog@CTabzBuilder@@QAEHXZ	83.7185	83.7185	3	6c854a21a4a4	0x10a340
-sbi_warlordhead	?Render@CSBI_WarlordHead@@QAEHH@Z	86.9054	86.9054	1	9b308dc210c6	0xeb880
+sbi_warlordhead	?Render@CSBI_WarlordHead@@QAEHH@Z	86.9054	86.9054	2	03767a0beab6	0xeb880
 sbi_warlordhead	?Serialize@CSBI_WarlordHead@@QAEHPAUCImageSetStream@@HHH@Z	100.0000	100.0000	1	b6cb91fa6424	0xe7cd0
 sbi_warlordhead	?SetState@CSBI_WarlordHead@@QAEHH@Z	100.0000	100.0000	1	034d997853c4	0xeb830
 sbi_warlordhead	?SetupImage@CSBI_WarlordHead@@QAEHHHHHHHHHHHH@Z	46.2105	46.2105	1	16d818a3069c	0xeb6b0
-sbi_warlordhead	?ShowFrames@CSBI_WarlordHead@@QAEHHH@Z	92.2716	92.2716	1	73cec54353b2	0xeb740
+sbi_warlordhead	?ShowFrames@CSBI_WarlordHead@@QAEHHH@Z	92.2716	92.2716	2	006a7d9003b4	0xeb740
 sbi_warlordhead_eh	??1CSBI_WarlordHead@@UAE@XZ	100.0000	100.0000	1	7b4689ef7bd9	0x104a00
 sbi_wellgoo	?Tick@CSBI_WellGoo@@QAEHXZ	83.0000	83.0000	1	34178faa97ab	0xe6380
 sbi_wellgoo_eh	??1CSBI_WellGoo@@UAE@XZ	100.0000	100.0000	3	ab3f7a404f15	0x104bb0

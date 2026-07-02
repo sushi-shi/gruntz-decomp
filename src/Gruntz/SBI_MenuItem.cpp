@@ -3,6 +3,7 @@
 #include <Gruntz/SBI_MenuItem.h>
 #include <Gruntz/CGameRegistry.h>
 #include <Gruntz/SbiConfig.h> // canonical config-host family (one shape)
+#include <Image/CImage.h>     // canonical frame-record class (CImage::RenderFrame @0x153790)
 // SBI_MenuItem.cpp - Gruntz CSBI_MenuItem (C:\Proj\Gruntz), the frameless methods.
 // RTTI .?AVCSBI_MenuItem@@; most-derived of the SBI family
 //   CSBI_MenuItem : CSBI_Image : CSBI_RectOnly : CStatusBarItem.
@@ -16,16 +17,10 @@
 // Shared engine views (modeled minimally; the methods/fields touched are the only
 // load-bearing facts - every call through them is reloc-masked).
 
-// The drawable animation-frame object held at m_30: its blit entry (RenderFrame,
-// 0x153790, __thiscall) draws the frame at a screen position; m_18/m_1c are the
-// frame's draw-origin offsets. No body on RenderFrame -> reloc-masked.
-struct CMiFrame {
-    void RenderFrame(i32 pSurf, i32 x, i32 y, i32 z); // 0x153790
-    char m_pad0[0x18];
-    i32 m_18; // +0x18  x offset
-    i32 m_1c; // +0x1c  y offset
-};
-SIZE_UNKNOWN(CMiFrame);
+// The drawable animation-frame object held at m_30 is the RTTI-confirmed CImage:
+// its blit entry (CImage::RenderFrame, 0x153790, __thiscall) draws the frame at a
+// screen position; m_18/m_1c are the frame's draw-origin offsets. Modeled by the
+// shared <Image/CImage.h> definition; the RenderFrame call is reloc-masked.
 
 // A keyed config record (the map-lookup result) -> shared CSbiConfigRecord
 // (<Gruntz/SbiConfig.h>).
@@ -323,12 +318,12 @@ RVA(0x000e82a0, 0x45)
 i32 CSBI_MenuItem::DecCounter() {
     if (m_28 > 0) {
         m_28--;
-        CMiFrame* f = (CMiFrame*)(void*)m_30;
+        CImage* f = (CImage*)m_30;
         if (f) {
             f->RenderFrame(
-                ((CMiGameMgr*)g_gameReg->m_30)->m_4->m_14,
-                m_14 + f->m_18,
-                m_18 + f->m_1c,
+                (void*)((CMiGameMgr*)g_gameReg->m_30)->m_4->m_14,
+                (void*)(m_14 + f->m_18),
+                (void*)(m_18 + f->m_1c),
                 0
             );
         }

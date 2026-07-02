@@ -55,17 +55,17 @@ i32 CSBI_GruntMachine::Render(i32 z) {
 
     i32 ctx = g_gameReg->m_30->m_4->m_14;
 
-    CGmFrame* f = m_44;
+    CImage* f = m_44;
     if (f) {
-        f->RenderFrame(ctx, m_14 + f->m_18, m_18 + f->m_1c, 0);
+        f->RenderFrame((void*)ctx, (void*)(m_14 + f->m_18), (void*)(m_18 + f->m_1c), 0);
     }
     f = m_3c;
     if (f) {
-        f->RenderFrame(ctx, m_14 + f->m_18 + 0x2c, m_18 + f->m_1c, 0);
+        f->RenderFrame((void*)ctx, (void*)(m_14 + f->m_18 + 0x2c), (void*)(m_18 + f->m_1c), 0);
     }
     f = m_34;
     if (f) {
-        f->RenderFrame(ctx, m_14 + f->m_18, m_18 + f->m_1c, 0);
+        f->RenderFrame((void*)ctx, (void*)(m_14 + f->m_18), (void*)(m_18 + f->m_1c), 0);
     }
     return 1;
 }
