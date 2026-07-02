@@ -1,6 +1,7 @@
+#include <Wap32/CObject.h> // Wap::CObject - the shared engine grand-base
 #include <rva.h>
 // CResolveNode.cpp - a leaf node in the CDirectDrawMgr surface/page-manager
-// CDDrawSubMgr family (the CWapObject base dtor vtable lineage; the base subobject
+// CDDrawSubMgr family (the Wap::CObject base dtor vtable lineage; the base subobject
 // vftable g_wapObjectDtorVtbl @0x5e8cb4 is restamped at ~CResolveNode exit). The
 // node's own primary vftable is at RVA 0x1efbc0 (g_resolveNodeVtbl). The node's
 // virtuals are not yet matched, so the vftable is referenced as a reloc-masked
@@ -16,25 +17,15 @@
 //   0x1647e0  Init(a1..a6): seeds fields, dispatches virtual slot 9, returns 1
 
 // ALL-VTABLES mandate: the node is now a REAL polymorphic two-level class. The
-// CObject-like grand-base (CWapObject, 5-slot interface @0x5e8cb4) and the
+// CObject grand-base (Wap::CObject, 5-slot interface @0x5e8cb4) and the
 // node's own primary vtable (10-slot @0x5efbc0, mapped ??_7CResolveNode in
 // config/vtable_names.csv) are cl-auto-emitted: the ctors stamp ??_7CResolveNode
-// (vptr-first) and ~CResolveNode folds the ??_7CWapObject grand-base re-stamp
+// (vptr-first) and ~CResolveNode folds the ??_7Wap@@CObject grand-base re-stamp
 // (masks 0x5e8cb4) - no manual `*(void**)this = &g_*Vtbl` stores.
-struct CWapObject {
-    virtual void WapV0();  // [0] 0x1bef01
-    virtual ~CWapObject(); // [1] scalar-deleting dtor slot
-    virtual void WapV2();  // [2] 0x0028ec
-    virtual void WapV3();  // [3] 0x00106e
-    virtual void WapV4();  // [4] 0x004034
-    CWapObject() {}
-};
-// Empty body -> cl emits ONLY the implicit grand-base vptr re-stamp (masks 0x5e8cb4).
-inline CWapObject::~CWapObject() {}
 
 // The 0x68-byte node. Layout recovered from the ctor/dtor/Init stores; the gaps
 // are unread scratch (the family's resolution-ladder block).
-class CResolveNode : public CWapObject {
+class CResolveNode : public Wap::CObject {
 public:
     virtual void Slot5();          // [5] 0x154a10
     virtual void Slot6();          // [6] 0x001c08
@@ -99,7 +90,7 @@ CResolveNode::~CResolveNode() {
     m_04 = -1;
     m_08 = 0;
     m_0c = 0;
-    // ~CWapObject folds the grand-base vptr re-stamp (masks 0x5e8cb4) here.
+    // ~Wap::CObject folds the grand-base vptr re-stamp (masks 0x5e8cb4) here.
 }
 
 // @early-stop
@@ -139,4 +130,4 @@ i32 CResolveNode::Init(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6) {
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 SIZE_UNKNOWN(CResolveNode);
-SIZE_UNKNOWN(CWapObject);
+SIZE_UNKNOWN(Wap::CObject);

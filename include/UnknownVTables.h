@@ -113,7 +113,7 @@ typedef void (*UnkVfn)(void);
 // src/Gruntz/CDDrawSubMgrAni.cpp; cl auto-emits the vtable). Placeholder removed.
 
 // ClassWithUnknownVTable24  @ 0x005efbc0  (10 slots)  refs x4  src:g_resolveNodeVtbl
-// REALIZED as ??_7CResolveNode@@6B@ (real polymorphic CResolveNode : CWapObject in
+// REALIZED as ??_7CResolveNode@@6B@ (real polymorphic CResolveNode : Wap::CObject in
 // src/Gruntz/CResolveNode.cpp; cl auto-emits the vtable). Placeholder removed.
 
 // ClassWithUnknownVTable25  @ 0x005efbe8  (17 slots)  refs x6  src:g_ddrawWorkerVtbl
@@ -336,7 +336,7 @@ typedef void (*UnkVfn)(void);
 // VTBL(SubWidget_168080, 0x001f0310). Placeholder removed.
 
 // ClassWithUnknownVTable61  @ 0x005f0328  (6 slots)  refs x2  src:g_wwdGridVtbl
-// REALIZED as ??_7CWwdGrid@@6B@ (real polymorphic abstract CWwdGrid : CWapObject in
+// REALIZED as ??_7CWwdGrid@@6B@ (real polymorphic abstract CWwdGrid : Wap::CObject in
 // include/Gruntz/WwdGrid.h; cl auto-emits the 6-slot vtable with __purecall @slot5).
 // VTBL(CWwdGrid, 0x001f0328) pairs it (RVA was unbound). Placeholder removed.
 

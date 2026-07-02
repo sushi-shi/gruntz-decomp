@@ -132,6 +132,10 @@ struct LeafRootHandle {
 // this base carries a NON-TRIVIAL dtor, the derived ~LeafElementObj gets a /GX EH
 // frame protecting the base teardown across the Release() call (the half-destructed
 // element cleanup edge). Same shape as LeafScanBase / CResolveNode.
+// NAME-AUDIT (vtable_hierarchy --name-audit): maps to RTTI CObject @0x1e8cb4, but
+// KEPT as a real intermediate - it carries the m_04/m_08/m_0c header past the bare
+// vptr, so it is NOT a bare-Wap::CObject fold (Wap32/CObject.h). Do not rename to
+// CObject (would ODR-clash + collapse the /GX dtor teardown level).
 struct LeafElementBase {
     virtual void FUN_005bef01(); // [0] 0x1bef01 (shared thunk, declared-only)
     virtual ~LeafElementBase();  // [1] scalar-deleting dtor (0x158660 ??_G)
@@ -215,6 +219,10 @@ void operator delete(void* p);
 // Its virtual ~ holds the field resets; the base transition stamp is implicit. This
 // is the tail the derived dtor chains into AFTER the map member is destroyed.
 // ---------------------------------------------------------------------------
+// NAME-AUDIT (vtable_hierarchy --name-audit): maps to RTTI CObject @0x1e8cb4, but
+// KEPT as a real intermediate - it carries the m_04/m_08/m_0c header past the bare
+// vptr, so it is NOT a bare-Wap::CObject fold (Wap32/CObject.h). Do not rename to
+// CObject (would ODR-clash + collapse the /GX dtor teardown level).
 class LeafScanBase {
 public:
     virtual void FUN_005bef01(); // [0] 0x1bef01 (shared thunk, declared-only)

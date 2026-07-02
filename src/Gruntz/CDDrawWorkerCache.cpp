@@ -75,6 +75,10 @@ void operator delete(void*);
 // `*(void**)this = &g_*Vtbl`. Slot 1 is a REGULAR virtual (not a C++ dtor) so the
 // derived can override it with its explicit ??_G scalar-deleting destructor WITHOUT
 // cl auto-generating a clashing ??_G. Same shape as CDDrawSubMgrGrandBase.
+// NAME-AUDIT (vtable_hierarchy --name-audit): maps to RTTI CObject @0x1e8cb4, but
+// KEPT as a real intermediate - it carries the m_04/m_08/m_0c header past the bare
+// vptr, so it is NOT a bare-Wap::CObject fold (Wap32/CObject.h). Do not rename to
+// CObject (would ODR-clash + collapse the /GX dtor teardown level).
 class CDDrawWorkerCacheBase {
 public:
     virtual void FUN_005bef01();        // [0] 0x1bef01 (shared thunk, declared-only)

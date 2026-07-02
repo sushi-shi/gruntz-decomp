@@ -37,7 +37,7 @@
 // grand-base @0x5e8cb4) are no longer manual DATA() externs: the base classes below are
 // real polymorphic types, so cl emits the implicit ??_7 + grand-base re-stamps (reloc-
 // masked against the target's differently-named symbols). All three are still DATA()-bound
-// in other TUs (CAniElement / CDDrawWorkerMapSmall / the CWapObject family) so the target stays named.
+// in other TUs (CAniElement / CDDrawWorkerMapSmall / the Wap::CObject family) so the target stays named.
 
 // g_aniParsedNameLen (0x6bf3c4): the parsed name length the catalog builder uses
 // to advance the record stream cursor; Parse sets it (strlen of the name).
@@ -129,7 +129,11 @@ public:
 // with an EMPTY virtual dtor, so cl emits ONLY the implicit grand-base vptr re-stamp
 // (the LAST store at each derived dtor's tail) - no manual `m_vptr = &g_*Vtbl`. The
 // CObject header is the implicit vptr @+0x00 then the +0x04/+0x08/+0x0c fields the
-// base-2 dtor resets. eh-dtor-implicit-vptr-stamp-first.md sub-case 2 (the CWapObject family).
+// base-2 dtor resets. eh-dtor-implicit-vptr-stamp-first.md sub-case 2 (the Wap::CObject family).
+// NAME-AUDIT (vtable_hierarchy --name-audit): maps to RTTI CObject @0x1e8cb4, but
+// KEPT as a real intermediate - it carries the m_04/m_08/m_0c header past the bare
+// vptr and is the SHARED base of CAniRecordBase2 + CAniRecordPrimary, so it is NOT
+// a bare-Wap::CObject fold (Wap32/CObject.h). Do not rename to CObject.
 struct CAniRecordObjBase {
     virtual void FUN_005bef01();  // [0] 0x1bef01 (shared GetRuntimeClass thunk)
     virtual ~CAniRecordObjBase(); // [1] scalar-deleting dtor

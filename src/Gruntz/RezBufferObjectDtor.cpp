@@ -3,6 +3,7 @@
 // buffer, then (base subobject teardown) restamp the CObject base dtor vtable
 // (0x5e8cb4). The destructible base subobject forces the /GX EH frame.
 #include <Ints.h>
+#include <Wap32/CObject.h> // Wap::CObject - the shared engine grand-base
 #include <rva.h>
 
 // The CObject base dtor vtable (VA 0x5e8cb4, g_wapObjectDtorVtbl, pinned in many
@@ -16,15 +17,11 @@ extern void* g_wapObjectDtorVtbl;
 // as potentially-throwing and keeps the /GX base-subobject unwind frame.
 void RezFree(void* p);
 
-// The CObject base subobject, modeled polymorphically: empty dtor body; cl stamps
-// ??_7CWapObject (masks g_wapObjectDtorVtbl @0x5e8cb4) as the folded base.
-struct CWapObject {
-    virtual ~CWapObject(); // implicit vptr @ +0x00
-};
-inline CWapObject::~CWapObject() {}
+// The CObject base subobject is Wap::CObject (Wap32/CObject.h): empty dtor body; cl
+// stamps ??_7Wap@@CObject (masks g_wapObjectDtorVtbl @0x5e8cb4) as the folded base.
 
 // The worker: a +0x4 heap buffer freed on teardown.
-struct CRezBufferObject : CWapObject {
+struct CRezBufferObject : Wap::CObject {
     char* m_4; // +0x04  heap buffer
     ~CRezBufferObject();
 };
@@ -42,7 +39,7 @@ CRezBufferObject::~CRezBufferObject() {
     }
 }
 SIZE_UNKNOWN(CRezBufferObject);
-SIZE_UNKNOWN(CWapObject);
+SIZE_UNKNOWN(Wap::CObject);
 // ??_7CRezBufferObject (was g_rezBufferObjectVtbl @0x5f07d8, ClassWithUnknownVTable
 // entry). cl auto-emits it from the real-polymorphic CRezBufferObject; retail's
 // 5-slot datum is reloc-masked, so this VTBL is matching-neutral catalog tracking.

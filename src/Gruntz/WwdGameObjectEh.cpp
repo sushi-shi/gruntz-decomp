@@ -3,24 +3,20 @@
 // (docs/patterns/eh-dtor-multilevel-polymorphic-chain.md): a base CWwdGameObject
 // "Mid" level (vtable 0x5f0020) owns the four polymorphic worker pointers, a CString
 // name (+0xdc), and two RAII sentinel-handle members (EdgeA/EdgeB) whose call-free
-// dtors clear the base fields; its grand-base CWapObject (vtable 0x5e8cb4) just
+// dtors clear the base fields; its grand-base Wap::CObject (vtable 0x5e8cb4) just
 // re-stamps. The thin factory variants A/C/F derive from Mid (each with its own
 // most-derived vtable) and re-run the worker pass before folding Mid. cl emits the
 // per-level vptr re-stamps + /GX trylevel chain; the stamps reloc-mask against the
 // retail engine vtables. Field names are placeholders; only offsets + code bytes
 // are load-bearing.
 #include <Ints.h>
+#include <Wap32/CObject.h> // Wap::CObject - the shared engine grand-base
 #include <rva.h>
 
-// The wap-object teardown grand-base (vtable 0x5e8cb4, shared ??_7CWapObject).
-// Just the vptr; empty explicit body (re-stamps only). Folded LAST, sinking the
-// base vptr store to the function tail (it is preceded by call-free field writes).
-// A real polymorphic base -> cl auto-emits the grand-base re-stamp (was the manual
-// `m_vptr = &g_wapObjectDtorVtbl` store in the WwdSub member dtor).
-struct CWapObject {
-    virtual ~CWapObject();
-};
-inline CWapObject::~CWapObject() {}
+// The wap-object teardown grand-base is Wap::CObject (vtable 0x5e8cb4, shared
+// ??_7Wap@@CObject; Wap32/CObject.h). Its empty inline dtor re-stamps only, folded
+// LAST (sinking the base vptr store to the function tail, preceded by call-free
+// field writes) - was the manual `m_vptr = &g_wapObjectDtorVtbl` store.
 
 // An owned polymorphic worker. Its scalar-deleting destructor is vtable slot 1
 // (`mov eax,[ecx]; push 1; call [eax+4]`); declared-only (foreign vtable).
@@ -40,9 +36,9 @@ struct WwdName {
 };
 
 // The embedded +0x1a0 command sub-object (B variant). Real polymorphic base
-// (CWapObject, vtable 0x5e8cb4): cl auto-emits the grand-base vptr re-stamp at
+// (Wap::CObject, vtable 0x5e8cb4): cl auto-emits the grand-base vptr re-stamp at
 // teardown (was a manual `m_vptr = &g_wapObjectDtorVtbl` store). Mirrors WwdSubA.
-struct WwdSub : public CWapObject {
+struct WwdSub : public Wap::CObject {
     void DtorImpl(); // 0x15c2c0  __thiscall
     ~WwdSub() {
         DtorImpl();
@@ -94,7 +90,7 @@ inline WwdEdgeA::~WwdEdgeA() {
 // A's embedded +0x1a0 command sub-object, modeled polymorphically: its own vtable
 // 0x5f0128, a member-teardown helper (0x15c2c0), an EdgeB sentinel, then the wap-object base
 // base re-stamp folded in.
-struct WwdSubA : public CWapObject {
+struct WwdSubA : public Wap::CObject {
     ~WwdSubA();
     void DtorImpl(); // 0x15c2c0
     WwdEdgeB m_04;   // +0x04 (0x1a4/0x1a8/0x1ac)
@@ -108,7 +104,7 @@ inline WwdSubA::~WwdSubA() {
 // workers, clears m_c0/m_d8 + the EdgeA shadow (groupX), then the CString member
 // dtor, then folds EdgeA, EdgeB and the wap-object grand base (groupY + base-vtable stamp).
 // ---------------------------------------------------------------------------
-class CWwdGameObjectE : public CWapObject {
+class CWwdGameObjectE : public Wap::CObject {
 public:
     ~CWwdGameObjectE(); // 0x15b4f0
 
@@ -390,7 +386,7 @@ SIZE(CWwdGameObjectF, 0x18c);
 SIZE_UNKNOWN(WwdEdgeA);
 SIZE_UNKNOWN(WwdEdgeB);
 SIZE_UNKNOWN(WwdName);
-SIZE_UNKNOWN(CWapObject);
+SIZE_UNKNOWN(Wap::CObject);
 SIZE_UNKNOWN(WwdSub);
 SIZE_UNKNOWN(WwdSubA);
 SIZE_UNKNOWN(WwdWorker);

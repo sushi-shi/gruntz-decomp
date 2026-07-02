@@ -110,6 +110,10 @@ public:
 // the three managed fields (reset on teardown) follow. The base's virtual dtor body
 // holds the field resets; being polymorphic + having the destructible CMapStringToOb
 // members gives ~CDDrawWorkerMapSmall its /GX frame.
+// NAME-AUDIT (vtable_hierarchy --name-audit): maps to RTTI CObject @0x1e8cb4, but
+// KEPT as a real intermediate - it carries the m_04/m_08/m_0c header past the bare
+// vptr, so it is NOT a bare-Wap::CObject fold (Wap32/CObject.h). Do not rename to
+// CObject (would ODR-clash + collapse the /GX dtor teardown level).
 struct CDDrawWorkerMapBase {
     virtual void FUN_005bef01();    // [0] 0x1bef01 grand-base thunk
     virtual ~CDDrawWorkerMapBase(); // [1] scalar-deleting dtor

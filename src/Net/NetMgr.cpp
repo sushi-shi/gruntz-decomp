@@ -1156,8 +1156,8 @@ struct CFreeNodesView {
 // EH states 1..3 exactly.
 // Driver-local inline-peer construction: the connect driver new-builds a peer
 // CNetMgr inline (no ctor call), so its base vptr stamp stays manual + faithful,
-// distinct from the real CNetMgr : CWapObject (whose vptrs cl emits).
-extern void* g_netGroupNodeDtorVtbl; // 0x5e8cb4 (CWapObject base vtable)
+// distinct from the real CNetMgr : Wap::CObject (whose vptrs cl emits).
+extern void* g_netGroupNodeDtorVtbl; // 0x5e8cb4 (Wap::CObject base vtable)
 struct CNetPeerBase {
     void* m_vptr; // +0x00
     CNetPeerBase() {
@@ -1455,8 +1455,8 @@ i32 CNetMgr::Stub_0b5460(i32 a1, i32 a2, i32 a3) {
 // ---------------------------------------------------------------------------
 // CNetMgr::~CNetMgr  (0x0b6000, __thiscall ??1) - the managed-list teardown run of
 // the destructor. Fully cl-emitted vtable stamps now: CNetMgr is a real polymorphic
-// class (own ??_7CNetMgr@@6B@ @0x1ea42c) deriving from CWapObject, so the compiler
-// writes the own vptr at dtor entry (masks 0x1ea42c) AND folds the CWapObject
+// class (own ??_7CNetMgr@@6B@ @0x1ea42c) deriving from Wap::CObject, so the compiler
+// writes the own vptr at dtor entry (masks 0x1ea42c) AND folds the Wap::CObject
 // grand-base restamp (masks 0x5e8cb4) at the tail - no manual `*(void**)this = &g_*`
 // store. The body runs the session Destroy then destructs the three managed CObLists
 // at +0x54/+0x38/+0x1c (reverse order).
@@ -2817,7 +2817,7 @@ i32 CNetMgr::AddGroupNode(void* guid, void* name) {
 
     node->m_4 = (i32)guid;
     node->m_name = (const char*)name;
-    node->m_c = (i32)((CObList*)((char*)this + 0x1c))->AddTail((CObject*)node);
+    node->m_c = (i32)((CObList*)((char*)this + 0x1c))->AddTail((::CObject*)node);
     return (i32)node;
 }
 
@@ -2898,7 +2898,7 @@ i32 CNetMgr::AddPlayerNode(void* playerDesc) {
         return 0;
     }
 
-    node->m_54 = (__POSITION*)((CObList*)((char*)this + 0x38))->AddTail((CObject*)node);
+    node->m_54 = (__POSITION*)((CObList*)((char*)this + 0x38))->AddTail((::CObject*)node);
     return (i32)node;
 }
 
@@ -3197,7 +3197,7 @@ i32 CNetMgr::AddSessionNode(void* a, void* b) {
     }
 
     if (node != 0) {
-        __POSITION* pos = (__POSITION*)((CObList*)((char*)this + 0x54))->AddTail((CObject*)node);
+        __POSITION* pos = (__POSITION*)((CObList*)((char*)this + 0x54))->AddTail((::CObject*)node);
         if (pos == 0) {
             delete node;
         } else {

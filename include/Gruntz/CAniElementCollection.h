@@ -8,7 +8,7 @@
 //
 // Layout recovered from the factory (0x1528d0, `new` 0x28 bytes) + the dtor +
 // DeleteAll helper:
-//   +0x00 vptr (CWapObject)
+//   +0x00 vptr (Wap::CObject)
 //   +0x04 m_04   (zeroed at construct)
 //   +0x08 m_items  CObArray of owned CObject* (vtbl 0x5ed494; m_pData@+0xc, m_nSize@+0x10)
 //   +0x1c m_buf  a heap buffer freed (RezFree) on teardown
@@ -17,6 +17,7 @@
 #define GRUNTZ_CANIELEMENTCOLLECTION_H
 
 #include <Ints.h>
+#include <Wap32/CObject.h> // Wap::CObject - the shared engine grand-base
 
 // An owned CObject element: the deleting destructor is vtable slot 1 (byte +0x04),
 // __thiscall (flags arg). DeleteAll dispatches `el->ScalarDtor(1)` per live element
@@ -45,22 +46,13 @@ struct CAniRecordArray {
     void SetSize(i32 newSize, i32 growBy);
 };
 
-// The CWapObject engine base (CObject-like, grand-base vtable @0x5e8cb4): the implicit
+// The Wap::CObject engine base (CObject grand-base vtable @0x5e8cb4): the implicit
 // vptr @+0x00 + the 5-slot CObject-style interface (slot0/dtor/slot2/slot3/slot4 ->
 // the shared sub_1bef01/scalar-dtor/sub_0028ec/sub_00106e/sub_004034). Real
 // polymorphic: the empty inline virtual dtor makes cl emit the implicit
-// ??_7CWapObject grand-base re-stamp (reloc-masks 0x5e8cb4) folded into the leaf
+// ??_7Wap@@CObject grand-base re-stamp (reloc-masks 0x5e8cb4) folded into the leaf
 // dtor, and the destructible base subobject gives ~CAniElement its /GX frame.
-struct CWapObject {
-    virtual void WapV0();  // slot 0 (sub_1bef01)
-    virtual ~CWapObject(); // slot 1 (scalar-deleting dtor)
-    virtual void WapV2();  // slot 2 (sub_0028ec)
-    virtual void WapV3();  // slot 3 (sub_00106e)
-    virtual void WapV4();  // slot 4 (sub_004034)
-    CWapObject() {}
-};
-
-class CAniElement : public CWapObject {
+class CAniElement : public Wap::CObject {
 public:
     virtual ~CAniElement();
     void DeleteAll(); // 0x165730  delete every owned element, free m_buf, RemoveAll
@@ -69,9 +61,5 @@ public:
     CAniRecordArray m_items; // +0x08  owned-pointer array (m_pData@+0xc, m_nSize@+0x10)
     void* m_buf;             // +0x1c  heap buffer (RezFree'd on teardown)
 };
-
-// Empty body -> cl emits ONLY the implicit grand-base vptr re-stamp (0x5e8cb4),
-// folded into the leaf dtor as the last store.
-inline CWapObject::~CWapObject() {}
 
 #endif // GRUNTZ_CANIELEMENTCOLLECTION_H

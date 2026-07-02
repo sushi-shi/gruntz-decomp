@@ -53,6 +53,10 @@ extern "C" i32 sprintf(char* buf, const char* fmt, ...);
 // The element's CObject grand-base (+0x00..+0x1b): vptr at +0, a header word at +4,
 // and the CObject base subobject at +8 whose (potentially throwing) init is 0x1b55e9
 // (a __thiscall on element+0x8).
+// NAME-AUDIT (vtable_hierarchy --name-audit): maps to RTTI CObject @0x1e8cb4, but
+// KEPT as a real intermediate - it carries a data header (m_04 + the CObject base
+// subobject) past the bare vptr, so it is NOT a bare-Wap::CObject fold
+// (Wap32/CObject.h). Do not rename to CObject (would ODR-clash + break the dtor).
 struct CAniElementBase {
     virtual void FUN_005bef01(); // [0] 0x1bef01
     virtual ~CAniElementBase();  // [1] scalar-deleting dtor slot (0x152e10)

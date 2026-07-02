@@ -8,6 +8,7 @@
 // addresses are load-bearing for matching.
 
 // HWND comes from the real <windows.h> (via Win32.h; pure-Win32 TU, no MFC).
+#include <Wap32/CObject.h> // Wap::CObject - the shared engine grand-base
 #include <Win32.h>
 typedef i32 intptr_t; // VC5 predates <stdint.h>; the one HP_Callback cast below needs it.
 
@@ -32,23 +33,14 @@ public:
 
 struct CDDrawSubMgrLeafScan; // defined below; m_28 points at one
 
-// The CObject-like grand base (vtable @0x5e8cb4): the implicit vptr @+0x00 + the
-// 5-slot CObject interface, with the scalar-deleting dtor at slot 1. Real
-// polymorphic base subobject: the empty inline virtual dtor makes cl emit the
-// implicit grand-base re-stamp (reloc-masks 0x5e8cb4) folded LAST into
+// The CObject grand base is Wap::CObject (vtable @0x5e8cb4; Wap32/CObject.h): the
+// implicit vptr @+0x00 + the 5-slot CObject interface, with the scalar-deleting dtor
+// at slot 1. Real polymorphic base subobject: the empty inline virtual dtor makes cl
+// emit the implicit grand-base re-stamp (reloc-masks 0x5e8cb4) folded LAST into
 // ~CDDrawSurfaceMgr, and the destructible base subobject supplies the dtor's /GX
-// EH frame. Placing it here also fixes the derived vtable layout: the dtor lands
-// at slot 1 and UnknownVirtualMethod14 (byte 0x14) at slot 5, etc.
-struct CDDrawSurfaceMgrBase {
-    virtual void FUN_005bef01();     // [0] 0x1bef01
-    virtual ~CDDrawSurfaceMgrBase(); // [1] scalar-deleting dtor
-    virtual void FUN_004028ec();     // [2] 0x0028ec
-    virtual void FUN_0040106e();     // [3] 0x00106e
-    virtual void FUN_00404034();     // [4] 0x004034
-};
-inline CDDrawSurfaceMgrBase::~CDDrawSurfaceMgrBase() {}
-
-class CDDrawSurfaceMgr : public CDDrawSurfaceMgrBase {
+// EH frame. The base also fixes the derived vtable layout: the dtor lands at slot 1
+// and UnknownVirtualMethod14 (byte 0x14) at slot 5, etc.
+class CDDrawSurfaceMgr : public Wap::CObject {
 public:
     CDDrawSurfaceMgr();
     virtual ~CDDrawSurfaceMgr();
@@ -138,7 +130,7 @@ CDDrawSurfaceMgr::CDDrawSurfaceMgr() {
 // CDDrawSurfaceMgr::~CDDrawSurfaceMgr() (0x1558b0, __thiscall, /GX)
 // Real polymorphic with the CObject base subobject now: cl emits the implicit
 // ??_7CDDrawSurfaceMgr own-vptr stamp in the ENTRY state (stamp-first), runs the
-// owned-child teardown (Cleanup_155e20), then the empty ~CDDrawSurfaceMgrBase
+// owned-child teardown (Cleanup_155e20), then the empty ~Wap::CObject base
 // folds the implicit grand-base re-stamp last. The destructible base subobject
 // supplies the /GX EH frame. (eh-dtor-implicit-vptr-stamp-first.md /
 // eh-dtor-needs-base-subobject.md.)
@@ -359,12 +351,12 @@ i32 CDDrawSurfaceMgr::UnknownVirtualMethod34(i32, i32, i32, i32, void*) {
 //     m_04 = new(0x1c)  vtbl 0x5efe08                                   (CDDrawSubMgrPages)
 //     m_08 = new(0x6c)  ctor156cb0 + maps@0x10/0x2c/0x48 vtbl 0x5efdc0  (CDDrawChildGroup / CWwdObjMgr view)
 //     m_0c = new(0x2c)  ctor156cb0 + map@0x10          vtbl 0x5efd88    (CDDrawWorkerList)
-//     m_10 = new(0x2c)  CWapObject-base + map@0x10(0x1b7e17) vtbl 0x5efd28 (CDDrawSurfaceDesc submgr)
-//     m_14 = new(0x2c)  CWapObject-base + map@0x10(0x1b7e17) vtbl 0x5efd00 (CDDrawWorkerCache)
+//     m_10 = new(0x2c)  Wap::CObject-base + map@0x10(0x1b7e17) vtbl 0x5efd28 (CDDrawSurfaceDesc submgr)
+//     m_14 = new(0x2c)  Wap::CObject-base + map@0x10(0x1b7e17) vtbl 0x5efd00 (CDDrawWorkerCache)
 //     m_18 = new(0x68)  ctor156cb0 + maps@0x10/2c/48(0x1b7e17) vtbl 0x5efcc8 (CDDrawWorkerMapSmall)
 //     m_24 = new(0x6d4) ctor 0x15ccd0                                   (CDDrawResolveSubMgr)
-//     m_28 = new(0x38)  CWapObject-base + map@0x10(0x1b8247) vtbl 0x5efca0 (= CDDrawSubMgrLeafScan)
-//     m_2c = new(0x2c)  CWapObject-base + map@0x10(0x1b8247) vtbl 0x5efc78 (= CDDrawSubMgrLeaf)
+//     m_28 = new(0x38)  Wap::CObject-base + map@0x10(0x1b8247) vtbl 0x5efca0 (= CDDrawSubMgrLeafScan)
+//     m_2c = new(0x2c)  Wap::CObject-base + map@0x10(0x1b8247) vtbl 0x5efc78 (= CDDrawSubMgrLeaf)
 //     m_1c = new(0x948) ctor 0x141cc0                                   (CDDrawPtrCollections)
 //     m_20 = new(0x9c)  ctor 0x1376d0                                   (SoundStream)
 //   Validate phase: for m_08,m_0c,m_10,m_14,m_18,m_2c call child->vslot0x18(); on
@@ -379,7 +371,7 @@ RVA(0x00155900, 0x519)
 void CDDrawSurfaceMgr::UnknownVirtualMethod18() {}
 
 SIZE_UNKNOWN(CDDrawSubMgrItem);
-SIZE_UNKNOWN(CDDrawSurfaceMgrBase);
+SIZE_UNKNOWN(Wap::CObject);
 SIZE_UNKNOWN(DDChildSlot0);
 SIZE_UNKNOWN(DDChildSlot1);
 SIZE_UNKNOWN(CDDrawPtrCollections);

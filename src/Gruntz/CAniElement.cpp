@@ -42,6 +42,10 @@ public:
 // polymorphic (the 5-slot AniRecordVtbl @0x5f02c0) so `new CAniRecordInit` makes cl
 // auto-emit ??_7CAniRecordInit + stamp the vptr in the ctor - no manual
 // `m_vptr = &g_aniRecordVtbl` store.
+// NAME-AUDIT (vtable_hierarchy --name-audit): maps to RTTI CObject @0x1e8cb4 (adds
+// no new virtuals), but KEPT as a real standalone class - it is `new`'d directly
+// and carries its own 0x34-byte record, so it is NOT a bare-Wap::CObject fold
+// (Wap32/CObject.h). Do not rename to CObject (would ODR-clash).
 struct CAniRecordInit {
     virtual void FUN_005bef01(); // [0] 0x1bef01
     virtual ~CAniRecordInit();   // [1] scalar-deleting dtor slot (0x165780)

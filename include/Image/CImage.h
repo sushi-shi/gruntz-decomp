@@ -5,7 +5,7 @@
 // CImage type-descriptor in the binary; primary vftable @0x5eaa2c). It is a
 // surface-backed image element in the DDrawMgr image family and a SIBLING
 // of CDDrawSurfacePair (include/Gruntz/CDDrawSurfacePair.h): both derive from the
-// same polymorphic CWapObject base (grand-base dtor vtable @0x5e8cb4) and share
+// same polymorphic Wap::CObject base (grand-base dtor vtable @0x5e8cb4) and share
 // the +0x04/+0x08/+0x0c base header and the +0x0c parent /
 // +0x2c held-surface (CPoolItemA) / +0x30 owned-object layout.
 //
@@ -43,7 +43,7 @@ class CBlitInfo; // the sprite blit/draw request (esi); defined in CImageSpriteB
 class CImageParent; // +0x0c parent (CDDrawPtrCollections); defined below
 
 // ---------------------------------------------------------------------------
-// CImageBase - the polymorphic CWapObject base (same one as
+// CImageBase - the polymorphic Wap::CObject base (same one as
 // CSurfacePairBase). POLYMORPHIC with a REAL virtual destructor: its inline body
 // resets the three base fields, and MSVC appends the implicit base-vptr re-stamp
 // (the grand-base dtor vtable @0x5e8cb4) - so the dtor's TWO vptr stamps are both
