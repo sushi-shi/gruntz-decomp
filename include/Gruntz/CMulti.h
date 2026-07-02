@@ -23,18 +23,22 @@
 
 // Per-frame sub-objects driven by PumpA (0x0b6b40); reconstructed TU-local in
 // CMulti.cpp (thiscall receivers, all out-of-line -> reloc-masked).
-class CMultiSubDC;  // CMulti::m_2dc
-class CMultiSubE4;  // CMulti::m_2e4
-class CMultiSlot48; // CMultiLogic::m_48
-class CMultiSub68;  // CMultiLogic::m_68
-class CMultiSub70;  // CMultiLogic::m_70
+class CMultiSubDC;   // CMulti::m_2dc
+class CMultiSubE4;   // CMulti::m_2e4
+class CGruntzSoundZ; // CGruntzMgr::m_48
+class CMultiSub68;   // CGruntzMgr::m_68
+class CMultiSub70;   // CGruntzMgr::m_70
 
-// The CState owner/logic object at CMulti+0x04 (CState::m_4). CMulti's lobby /
-// error-report methods drive it through three thiscall entry points (all
-// out-of-line -> reloc-masked): a 1-arg log sink (the "%s (%i)" line), a 3-arg
-// modal-dialog runner, and a chain to a Win32 focus restore. Modeled as a tiny
-// helper so `mov ecx,[esi+4]; call rel32` falls out with no stack cleanup.
-// The pre-dialog hook receiver (CMultiLogic::m_60); PreDialog() runs as a
+// The CState owner at CMulti+0x04 (CState::m_4) is the CGruntzMgr game manager
+// (RECOVERED: its +0x48 sound object is CGruntzSoundZ and its +0x150 4-entry
+// 0x238-stride table is CGruntzMgr::m_options[4] - identical to GruntzMgr.h; the
+// state factory CGruntzMgr::TransitionState passes `this`=CGruntzMgr to each
+// state's activate). Modeled here as a reduced MFC-free view isolated to
+// CMulti.cpp (the CGruntzMgr/CGameRegistry dual-view precedent). CMulti's lobby /
+// error-report methods drive it through thiscall entry points (all out-of-line ->
+// reloc-masked): a 1-arg log sink (the "%s (%i)" line), a 3-arg modal-dialog
+// runner, and a chain to a Win32 focus restore.
+// The pre-dialog hook receiver (CGruntzMgr::m_60); PreDialog() runs as a
 // thiscall (ecx = the receiver) with no stack args (reloc-masked).
 class CMultiDialogHook {
 public:
@@ -42,10 +46,10 @@ public:
     void StartTitleHook(); // 0x0011c7b0  (m_4->m_60 chain in StartTitle)
 };
 
-// A per-frame entry of CMultiLogic's +0x150 sub-object table (stride 0x238). The
+// A per-frame entry of CGruntzMgr's +0x150 sub-object table (stride 0x238). The
 // session-start path arms each entry's inner sub-object (+0x38) and conditionally
 // pokes it; placeholder offsets, only the stride/offsets are load-bearing.
-class CMultiLogicEntry {
+class CGruntzMgrOptions {
 public:
     char m_pad00_10[0x10];
     i32 m_10; // +0x10  passed to LoadSlotConfig
@@ -75,7 +79,7 @@ public:
     void Step20b3(i32 v);          // per-frame poke (PumpA, thiscall)
 };
 
-// A small descriptor referenced through CMultiLogic+0xc4 (flags at +0x4, name at +0x8).
+// A small descriptor referenced through CGruntzMgr+0xc4 (flags at +0x4, name at +0x8).
 class CMultiLogicDesc {
 public:
     void* m_0;
@@ -85,14 +89,14 @@ public:
     char* m_c; // +0x0c  ... -> +0x8 string copied into a CString
 };
 
-class CMultiLogic {
+class CGruntzMgr {
 public:
-    void* m_0;        // +0x00
-    CMultiLogic* m_4; // +0x04  the inner object (the focus-restore chain)
+    void* m_0;       // +0x00
+    CGruntzMgr* m_4; // +0x04  the inner object (the focus-restore chain)
     char m_pad8_c[0xc - 0x8];
     i32 m_c; // +0x0c  active gate (PumpA)
     char m_pad10_48[0x48 - 0x10];
-    CMultiSlot48* m_48; // +0x48  ambient slot manager (PumpA)
+    CGruntzSoundZ* m_48; // +0x48  ambient slot manager (PumpA)
     char m_pad4c_5c[0x5c - 0x4c];
     CMultiLogicList* m_5c;  // +0x5c  list manager (StartSession poke target)
     CMultiDialogHook* m_60; // +0x60  the pre-dialog thiscall receiver
@@ -109,7 +113,7 @@ public:
     char m_padC8_110[0x110 - 0xc8];
     i32 m_110; // +0x110 receives CMulti::m_590 on teardown
     char m_pad114_150[0x150 - 0x114];
-    CMultiLogicEntry m_150[4]; // +0x150  the 4-entry slot table (stride 0x238)
+    CGruntzMgrOptions m_150[4]; // +0x150  the 4-entry slot table (stride 0x238)
 
     // 1-arg log/append sink (reloc-masked); takes the formatted line.
     void LogLine(char* line);
@@ -138,7 +142,7 @@ public:
 // method (ecx = the object, no stack args) then handed to the engine free. The
 // CMulti session loop drives the lobby object (m_520) through a set of thiscall
 // entry points (all out-of-line -> reloc-masked); placeholder names.
-class CLobbyObjB { // m_520
+class CNetSession2 { // m_520
 public:
     void Teardown();                      // 0x004b6220 (NOT a CMulti method)
     void* FindSlot(i32 key);              // 0x004c0460  scan the +0x20 4x0x64 slot table
@@ -158,7 +162,7 @@ public:
     void Teardown(); // 0x004a3360
 };
 
-// A CLobbyObjB slot element (returned by FindSlot, stride 0x64) -- carries an
+// A CNetSession2 slot element (returned by FindSlot, stride 0x64) -- carries an
 // inner manager at +0xc. Its FUN_004bc3f0 method (NOT a CMulti method) appends
 // the host name into the inner manager. Placeholder.
 class CLobbySlot {
@@ -235,15 +239,15 @@ public:
     void OnOutOfSync();                     // 0x0bae40
     void RefreshSlotTable();                // 0x021bd0  (free fn-ish thiscall on this)
     // m_4-side per-slot helpers used by StartSession (thiscall on the +0x38 inner).
-    void FreeSlotInner();                                     // 0x025ca0 (on m_150[i]+0x38)
-    i32 LoadSlotConfig(CMultiLogic* logic, i32 idx, i32 m10); // 0x025020 (on m_150[i]+0x38)
-    void ArmSlotInner();                                      // 0x02ade0 (on m_150[i]+0x38)
+    void FreeSlotInner();                                    // 0x025ca0 (on m_150[i]+0x38)
+    i32 LoadSlotConfig(CGruntzMgr* logic, i32 idx, i32 m10); // 0x025020 (on m_150[i]+0x38)
+    void ArmSlotInner();                                     // 0x02ade0 (on m_150[i]+0x38)
 
     // --- layout (placeholder names; offsets are the load-bearing truth) ---
     // +0x000  vptr (compiler ??_7CMulti; Tick dispatches via vtbl() -> +0x7c/+0x98)
-    CMultiLogic* m_4; // +0x004  the CState owner / logic object
-    void* m_8;        // +0x008  string registry (FUN_0053c030 lookup)
-    void* m_c;        // +0x00c  manager (vfn host, +0x24 chain, +0x20 sub-window)
+    CGruntzMgr* m_4; // +0x004  the CState owner / logic object
+    void* m_8;       // +0x008  string registry (FUN_0053c030 lookup)
+    void* m_c;       // +0x00c  manager (vfn host, +0x24 chain, +0x20 sub-window)
     char m_pad10_2c[0x2c - 0x10];
     i32 m_2c; // +0x02c  saved/restored handle around the title build
     char m_pad30_1b4[0x1b4 - 0x30];
@@ -275,7 +279,7 @@ public:
     char m_pad418_488[0x488 - 0x418];
     CByteArray m_488; // +0x488
     char m_pad49c_520[0x520 - 0x49c];
-    CLobbyObjB* m_520;       // +0x520  heap obj (thiscall teardown + _RezFree)
+    CNetSession2* m_520;     // +0x520  heap obj (thiscall teardown + _RezFree)
     CMultiReportGate* m_524; // +0x524  released via vtable +0x4 scalar dtor; the join/report gate
     i32 m_528;               // +0x528  is-host latch
     char m_pad52c_534[0x534 - 0x52c];

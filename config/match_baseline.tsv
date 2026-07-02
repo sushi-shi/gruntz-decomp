@@ -1477,14 +1477,14 @@ cmulti	?DropTimeout@CMulti@@QAEXXZ	78.9107	78.9107	1	9c15dde73037	0xbc2d0
 cmulti	?GetString59c@CMulti@@QAE?AVCString@@XZ	100.0000	100.0000	1	cc47d2a6b3da	0xb7a90
 cmulti	?GetString5a0@CMulti@@QAE?AVCString@@XZ	100.0000	100.0000	1	dfdf4df5c88a	0xb7ad0
 cmulti	?JoinSession@CMulti@@QAEHXZ	100.0000	100.0000	1	9a2e0c390aa8	0xb7fe0
-cmulti	?PumpA@CMulti@@QAEHXZ	88.3707	88.3707	1	fecd5702b6cd	0xb6b40
+cmulti	?PumpA@CMulti@@QAEHXZ	88.3707	88.3707	2	4a3f165867d8	0xb6b40
 cmulti	?PumpB@CMulti@@QAEXXZ	83.1602	83.1602	1	78419380c03c	0xb6e90
 cmulti	?ReportNetError@CMulti@@QAEXXZ	95.2000	95.2000	1	59b1f15e8f6f	0xb7f60
 cmulti	?ReportVersionMsg@CMulti@@QAEXPADH@Z	100.0000	100.0000	1	a2306abc654e	0xb7e30
 cmulti	?RunErrorDialog@CMulti@@QAEHPADPAXH@Z	100.0000	100.0000	1	f5d13574d2fd	0xbc250
-cmulti	?StartSession@CMulti@@QAEHHH@Z	98.4571	98.4571	1	819ff4c73d1c	0xb6580
+cmulti	?StartSession@CMulti@@QAEHHH@Z	98.4571	98.4571	2	10c6025d83ec	0xb6580
 cmulti	?StartTitle@CMulti@@QAEHXZ	36.2880	36.2880	1	6fd7349a26cb	0xb72c0
-cmulti	?Teardown@CMulti@@QAEXXZ	100.0000	100.0000	1	40a558486d68	0xb6110
+cmulti	?Teardown@CMulti@@QAEXXZ	100.0000	100.0000	2	bbf67dffca1b	0xb6110
 cmulti	?Tick@CMulti@@QAEHXZ	85.9939	85.9939	2	cc9bb60eb2df	0xb6890
 cobjectdropper	??0CObjectDropper@@QAE@PAUCGameObject@@@Z	86.0249	86.0249	2	4495dbc67398	0xc59f0
 cobjectdropper	??1CObjectDropper@@UAE@XZ	100.0000	100.0000	1	c595e9e386aa	0x124f0
@@ -1634,7 +1634,7 @@ csoundfxemitter	?Method_faa60@CSoundFxEmitter@@QAEHHHH@Z	100.0000	100.0000	2	bb2
 csplashstate	?LoadSounds@CSplashState@@QAEHHHH@Z	100.0000	100.0000	1	76fd1b44cd6c	0xf9780
 cspotlight	?Update_0b1ee0@CSpotLight@@QAEHXZ	55.5056	55.5056	1	b26a2794af0b	0xb1ee0
 cspotlightctor	??0CSpotLight@@QAE@PAUCGameObject@@@Z	84.4734	84.4734	1	2e3c37ee322e	0xb1200
-cstateleaf8cf30	??1CStateLeaf8cf30@@UAE@XZ	100.0000	100.0000	1	1de116667397	0x8cf30
+cstateleaf8cf30	??1CHelpState@@UAE@XZ	100.0000	100.0000	1	b3e2189a4d39	0x8cf30
 cstatichazard	??0CStaticHazard@@QAE@PAUCGameObject@@@Z	82.5635	82.5635	2	1eb592d42a72	0xfb7a0
 cstatichazard	??1CStaticHazard@@UAE@XZ	100.0000	100.0000	1	2c9522f3c281	0x12b30
 cstatichazard	?FireActivation@CStaticHazard@@QAEXH@Z	100.0000	100.0000	1	69cb76687143	0xfbbf0

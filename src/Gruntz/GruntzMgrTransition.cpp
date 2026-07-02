@@ -89,6 +89,17 @@ struct CTsSub45 {
 void Ts_Set(void* self, i32 a, i32 b, i32 c, i32 d); // 0x8c380 (member Set, 4 args)
 
 // ---- the CState-derived state shells (sized to the retail objects) ----------
+// IDENTITY MAP (recovered: each shell's retail vtable = the named ??_7CxxxState in
+// config/vtable_names.csv; the switch key is the stateId TransitionState is asked
+// for). These are reduced sized-shells kept TU-local (this factory can't share
+// CPlay.h/GameMode.h/CMulti.h's frames - see the file header); the St* names mark
+// them as shells rather than the real classes so a grep for `class CPlay` finds
+// only CPlay.h:
+//   StPlain2 =CAttract(0x5ea194) StPlay=CPlay(0x5ea0bc) StPlain5=CMenuState(0x5e9e84)
+//   StPlain7 =CDemo(0x5e9f0c)    StParam8=CCreditsState(0x5e9c64)
+//   StPlain9 =CHelpState(0x5e9dfc) StBooty=CBootyState(0x5e9cec)
+//   StPlain14=CSplashState(0x5e9d74) StMulti=CMulti(0x5e9fe4)
+//   StMultiBooty=CMultiBootyState(0x5e9bdc) StBare=CState(0x5ea21c)
 struct StPlain2 : CTsBaseA { // param 2, 0x1c0, ??_7StPlain2 (retail 0x5ea194)
     char m_pad[0x1c0 - 0x1b4];
     StPlain2() {}

@@ -191,7 +191,7 @@ void CMulti::Teardown() {
         SendNetStat(0x402, 0x4d2, 1);
         SendStatFlag(0x3ea, 1);
     }
-    CLobbyObjB* p520 = m_520;
+    CNetSession2* p520 = m_520;
     if (p520) {
         p520->Teardown();
         RezFree(p520);
@@ -256,7 +256,7 @@ i32 CMulti::StartSession(i32 mode, i32 unused) {
         return 0;
     }
     for (i32 i = 0; i < 4; ++i) {
-        CMultiLogicEntry* e = &m_4->m_150[i];
+        CGruntzMgrOptions* e = &m_4->m_150[i];
         if (e == 0) {
             return 0;
         }
@@ -466,24 +466,27 @@ struct McHost { // CMulti::m_c
 };
 
 // Per-frame receivers (thiscall, out-of-line -> reloc-masked).
-class CMultiSlotObj { // CObjF139030 target of CMultiSlot48::m_1c
+// CGruntzMgr::m_48 is the CGruntzSoundZ sound object (RECOVERED via xref: 0x138840
+// = CGruntzSoundZ::Play_138840, 0x138730 = CGruntzSoundZ::Lookup_138730 which
+// returns a CGruntzSoundInnerZ* - the +0x1c inner, same shape as GruntzMgr.h).
+class CGruntzSoundInnerZ { // CGruntzSoundZ::m_1c (Lookup_138730 result)
 public:
     void Do139030(i32 flag); // 0x139030
 };
-class CMultiSlot48 { // CMultiLogic::m_48
+class CGruntzSoundZ { // CGruntzMgr::m_48
 public:
-    void Add138840(char* name, i32 flag);  // 0x138840
-    CMultiSlotObj* Find138730(char* name); // 0x138730
+    void Play_138840(char* name, i32 flag);        // 0x138840
+    CGruntzSoundInnerZ* Lookup_138730(char* name); // 0x138730
     char m_pad0[0x1c];
-    CMultiSlotObj* m_1c; // +0x1c
+    CGruntzSoundInnerZ* m_1c; // +0x1c
 };
-class CMultiSub68 { // CMultiLogic::m_68
+class CMultiSub68 { // CGruntzMgr::m_68
 public:
     void Step3017(i32 dt); // 0x3017
 };
-class CMultiSub70 { // CMultiLogic::m_70
+class CMultiSub70 { // CGruntzMgr::m_70
 public:
-    void Step3562(CMultiLogic* logic); // 0x3562
+    void Step3562(CGruntzMgr* logic); // 0x3562
 };
 class CMultiSubDC { // CMulti::m_2dc
 public:
@@ -517,9 +520,9 @@ i32 CMulti::PumpA() {
             char name[0x40];
             wsprintfA(name, "AMBIENT%d", PumpAIndex());
             if (*(i32*)((char*)g_64556c + 0x14) != 0) {
-                m_4->m_48->Add138840(name, 1);
+                m_4->m_48->Play_138840(name, 1);
             } else {
-                CMultiSlotObj* p = m_4->m_48->Find138730(name);
+                CGruntzSoundInnerZ* p = m_4->m_48->Lookup_138730(name);
                 if (p) {
                     m_4->m_48->m_1c = p;
                 }
@@ -654,12 +657,12 @@ public:
     char m_pad10_24[0x24 - 0x10];
     PBComp* m_24; // +0x24
 };
-// The output sink hung off CMultiLogic::m_54 (thiscall 2-arg blit).
+// The output sink hung off CGruntzMgr::m_54 (thiscall 2-arg blit).
 class PBOutput {
 public:
     void Blit1a7d(i32 w, i32 h); // 0x00001a7d
 };
-// CMultiLogic::m_5c poll target (per-frame tick) and m_68 FX driver.
+// CGruntzMgr::m_5c poll target (per-frame tick) and m_68 FX driver.
 class PBListSink {
 public:
     void Tick441c(u32 clock); // 0x0000441c
@@ -1044,16 +1047,16 @@ SIZE_UNKNOWN(CMultiDialogHook);
 SIZE_UNKNOWN(CPlay);  // local dtor-view (stamps ??_7CPlay in ~CMulti)
 SIZE_UNKNOWN(CState); // local dtor-view (stamps ??_7CState in ~CMulti)
 SIZE_UNKNOWN(CMultiLevelLoader);
-SIZE_UNKNOWN(CMultiLogic);
+SIZE_UNKNOWN(CGruntzMgr);
 SIZE_UNKNOWN(CMultiLogicDesc);
-SIZE_UNKNOWN(CMultiLogicEntry);
+SIZE_UNKNOWN(CGruntzMgrOptions);
 SIZE_UNKNOWN(CMultiLogicList);
 SIZE_UNKNOWN(CMultiLogicNode);
 SIZE_UNKNOWN(CMultiNetGate);
 SIZE_UNKNOWN(CMultiPlayer);
 SIZE_UNKNOWN(CMultiReportGate);
-SIZE_UNKNOWN(CMultiSlot48);
-SIZE_UNKNOWN(CMultiSlotObj);
+SIZE_UNKNOWN(CGruntzSoundZ);
+SIZE_UNKNOWN(CGruntzSoundInnerZ);
 SIZE_UNKNOWN(CMultiStateBase);
 SIZE_UNKNOWN(CMultiSub68);
 SIZE_UNKNOWN(CMultiSub70);
