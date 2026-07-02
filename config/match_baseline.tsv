@@ -2935,7 +2935,7 @@ netmgr	?SetGroupData2@CNetMgr@@QAEHPAUCNetPlayerEntry@@0HHH@Z	100.0000	100.0000	
 netmgr	?SetGroupDataFrom@CNetMgr@@QAEHPAUCNetPlayerEntry@@HHH@Z	100.0000	100.0000	2	ea3fd468cc71	0x179090
 netmgr	?SetupServices@CNetMgr@@QAEHXZ	98.2243	98.2243	1	f80327667583	0xb78b0
 netmgr	?SetupTcpIpConfig@CNetMgr@@QAEHXZ	74.2317	74.2317	1	714d37cf75e6	0xbc460
-netmgr	?Stub_0b5460@CNetMgr@@QAEXXZ	0.0696	0.0696	2	3f9cd5683bce	0xb5460
+netmgr	?Stub_0b5460@CNetMgr@@QAEHHHH@Z	70.9235	70.9235	1	e9efdc13b60b	0xb5460
 netmgr	?TeardownLists@CNetMgr@@QAEXXZ	20.2593	20.2593	1	2470ec00b8ad	0xb6000
 netmgr	?VerifyCustomLevel@CNetMgr@@QAEHHH@Z	7.1702	7.1702	2	f4e26819863c	0xb8fc0
 netmgr	?WaitForConnect@CNetMgr@@QAEHXZ	74.0809	74.0809	5	5676879b5f9c	0xbca50

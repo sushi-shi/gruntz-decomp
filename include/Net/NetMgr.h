@@ -1075,8 +1075,12 @@ public:
     void PopulateGroupList(void* hList, i32 flag); // 0x1784be
     void SetServiceName(CString s);                // 0xb7730
 
-    // Engine-label backlog stubs.
-    void Stub_0b5460();
+    // The multiplayer connect/init driver (0xb5460, /GX, 18 EH states): runs the
+    // whole "start a networked game" sequence - the peer CNetMgr, the CSBI_RectOnly
+    // session, the interface object and the command manager are all operator-new'd
+    // and wired here, then the connect wait + first poll are kicked off. Returns 1
+    // on a fully-established session, 0 on any failure. (a1 must be non-null.)
+    i32 Stub_0b5460(i32 a1, i32 a2, i32 a3);
 };
 SIZE_UNKNOWN(CNetMgr);     // network manager; retail byte size not yet pinned
 VTBL(CNetMgr, 0x001ea42c); // RTTI vtable (config/vtable_names.csv), currently un-catalogued
