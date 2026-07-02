@@ -1,6 +1,7 @@
 #include <rva.h>
 #include <Mfc.h>
-#include <Bute/ButeMgr.h> // canonical CButeMgr (one shape)
+#include <Bute/ButeMgr.h>     // canonical CButeMgr (one shape)
+#include <Gruntz/SbiConfig.h> // canonical config-host family (one shape)
 #include <Gruntz/StatusBarItem.h>
 #include <Globals.h>
 // SBI_RectOnly.cpp - Gruntz CSBI_RectOnly (C:\Proj\Gruntz).
@@ -129,31 +130,9 @@ public:
 };
 SIZE_UNKNOWN(CSbiRect);
 
-// The ConfigureRect host (its arg1): carries a config object at +0x10 that holds a
-// CMapStringToOb at +0x10; the looked-up cue record exposes a frame range at
-// +0x64/+0x68 and a frame table at +0x14.
-struct CSbiCfgMap {
-    i32 Lookup(i32 key, void** out); // CMapWordToOb::Lookup (ret 8)
-};
-SIZE_UNKNOWN(CSbiCfgMap);
-struct CSbiCfgObj {
-    char m_pad0[0x10];
-    void* m_10; // +0x10  the config object holding the map at +0x10
-};
-SIZE_UNKNOWN(CSbiCfgObj);
-struct CSbiCfgHost {
-    char m_pad0[0x10];
-    CSbiCfgObj* m_10; // +0x10
-};
-SIZE_UNKNOWN(CSbiCfgHost);
-struct CSbiCfgRecord {
-    char m_pad0[0x14];
-    i32* m_14; // +0x14  frame table
-    char m_pad18[0x64 - 0x18];
-    i32 m_64; // +0x64  frame range lo / default frame
-    i32 m_68; // +0x68  frame range hi
-};
-SIZE_UNKNOWN(CSbiCfgRecord);
+// The ConfigureRect host (its arg2), its lookup map + record come from the shared
+// canonical family (<Gruntz/SbiConfig.h>): CSbiConfigHost / CSbiConfigMap /
+// CSbiConfigRecord (host->m_10 carries the CMapWordToOb map at its +0x10).
 
 // A per-stat widget object (m_statObj[]): a sibling thunk drives its (tag,on)
 // notifier; the call is reloc-masked, so only the arg shape is load-bearing.
@@ -418,7 +397,7 @@ public:
 
     i32 ConfigureRect(
         i32 sub,
-        CSbiCfgHost* host,
+        CSbiConfigHost* host,
         i32 cmd,
         i32 obj,
         i32 r0,
@@ -2084,7 +2063,7 @@ void CSBI_RectOnly::ClearTabGroup() {
 RVA(0x000e72f0, 0xc4)
 i32 CSBI_RectOnly::ConfigureRect(
     i32 sub,
-    CSbiCfgHost* host,
+    CSbiConfigHost* host,
     i32 cmd,
     i32 obj,
     i32 r0,
@@ -2114,14 +2093,12 @@ i32 CSBI_RectOnly::ConfigureRect(
     if (key == 0) {
         return 0;
     }
-    void* found = 0;
-    CSbiCfgMap* map = (CSbiCfgMap*)((char*)host->m_10 + 0x10);
-    map->Lookup(key, &found);
-    m_34 = (i32)found;
-    if (found == 0) {
+    CSbiConfigRecord* rec = 0;
+    host->m_10->m_10map.Lookup(key, &rec);
+    m_34 = (i32)rec;
+    if (rec == 0) {
         return 0;
     }
-    CSbiCfgRecord* rec = (CSbiCfgRecord*)found;
     i32 f = frame;
     if (f == -1) {
         f = rec->m_64;

@@ -2,6 +2,7 @@
 #include <Mfc.h>
 #include <Gruntz/SBI_MenuItem.h>
 #include <Gruntz/CGameRegistry.h>
+#include <Gruntz/SbiConfig.h> // canonical config-host family (one shape)
 // SBI_MenuItem.cpp - Gruntz CSBI_MenuItem (C:\Proj\Gruntz), the frameless methods.
 // RTTI .?AVCSBI_MenuItem@@; most-derived of the SBI family
 //   CSBI_MenuItem : CSBI_Image : CSBI_RectOnly : CStatusBarItem.
@@ -26,15 +27,8 @@ struct CMiFrame {
 };
 SIZE_UNKNOWN(CMiFrame);
 
-// A keyed config record (the map-lookup result): a frame range + frame table.
-struct CMiCueRec {
-    char m_pad0[0x14];
-    i32* m_14; // +0x14  frame table
-    char m_pad18[0x64 - 0x18];
-    i32 m_64; // +0x64  frame range lo
-    i32 m_68; // +0x68  frame range hi
-};
-SIZE_UNKNOWN(CMiCueRec);
+// A keyed config record (the map-lookup result) -> shared CSbiConfigRecord
+// (<Gruntz/SbiConfig.h>).
 
 // The owning game manager held at g_gameReg->m_30: the draw surface lives at
 // m_4->m_14, and the config/name registry at m_10.
@@ -128,19 +122,8 @@ public:
 };
 SIZE_UNKNOWN(CMiSelf);
 
-// CMapWordToOb::Lookup (0x1b8008, __thiscall, ret 8): key in, *out gets the obj.
-struct CMiWordMap {
-    i32 Lookup(i32 key, void** out); // 0x1b8008
-};
-SIZE_UNKNOWN(CMiWordMap);
-
-// The config host at +0x24: holds the config object at +0x10; the lookup map
-// `this` is that object + 0x10.
-struct CMiCfgHost {
-    char m_pad0[0x10];
-    void* m_10; // +0x10  the object carrying the map at +0x10
-};
-SIZE_UNKNOWN(CMiCfgHost);
+// The config host + its lookup map + record come from the shared canonical family
+// (<Gruntz/SbiConfig.h>): CSbiConfigHost / CSbiConfigMap / CSbiConfigRecord.
 
 // Per-serialize round counter the CString archive helpers bump (DAT_00629ad0).
 DATA(0x00229ad0)
@@ -220,7 +203,7 @@ i32 CSBI_MenuItem::SerializeChain(void* arP, i32 kind, i32 a, i32 b) {
             if (strlen(name) != 0) {
                 void* found = 0;
                 ((CMiStrMap*)((char*)mgr->m_10 + 0x10))->Lookup(name, &found);
-                CMiCueRec* r = (CMiCueRec*)found;
+                CSbiConfigRecord* r = (CSbiConfigRecord*)found;
                 if (r && idx >= r->m_64 && idx <= r->m_68) {
                     m_30 = r->m_14[idx];
                 } else {
@@ -306,15 +289,14 @@ i32 CSBI_MenuItem::ResolveFrame(i32 key, i32 a) {
     if (key == 0) {
         return key;
     }
-    void* rec = 0;
-    CMiCfgHost* host = (CMiCfgHost*)m_24;
-    CMiWordMap* map = (CMiWordMap*)((char*)host->m_10 + 0x10);
-    map->Lookup(key, &rec);
+    CSbiConfigRecord* rec = 0;
+    CSbiConfigHost* host = (CSbiConfigHost*)m_24;
+    host->m_10->m_10map.Lookup(key, &rec);
     m_38 = rec;
     if (rec == 0) {
         return (i32)rec;
     }
-    CMiCueRec* r = (CMiCueRec*)rec;
+    CSbiConfigRecord* r = rec;
     if (a == -1) {
         i32 lo = r->m_64;
         m_30 = r->m_14[lo];
@@ -397,7 +379,7 @@ i32 CSBI_MenuItem::SetState(i32 state, i32 a) {
             }
         }
     }
-    CMiCueRec* r = (CMiCueRec*)m_38;
+    CSbiConfigRecord* r = (CSbiConfigRecord*)m_38;
     i32 frame;
     if (state >= r->m_64 && state <= r->m_68) {
         frame = r->m_14[state];

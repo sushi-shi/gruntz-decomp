@@ -38,7 +38,7 @@ SIZE_UNKNOWN(CWhFrame);
 
 // The resolved config record (CSBI_Image::m_34 / the ImageSet lookup result): a
 // frame-index range gate at m_64/m_68 and a frame table at m_14 (an array of
-// CWhFrame*). Same CImageCfgRecord shape used by SBI_Image.cpp.
+// CWhFrame*). Same shape as CSbiConfigRecord (<Gruntz/SbiConfig.h>).
 struct CWhConfig {
     char m_pad0[0x14];
     CWhFrame** m_14; // +0x14  frame table (array of frame-record pointers)

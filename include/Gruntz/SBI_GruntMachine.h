@@ -37,8 +37,8 @@ struct CGmFrame {
 SIZE_UNKNOWN(CGmFrame);
 
 // The resolved config record (CSBI_GruntMachine::m_30): a frame-index range gate at
-// m_64/m_68 and a frame table at m_14 (an array of CGmFrame*). Same CImageCfgRecord
-// shape used by the rest of the SBI image family.
+// m_64/m_68 and a frame table at m_14 (an array of CGmFrame*). Same CSbiConfigRecord
+// shape as CSbiConfigRecord (<Gruntz/SbiConfig.h>).
 struct CGmConfig {
     char m_pad0[0x14];
     CGmFrame** m_14; // +0x14  frame table (array of frame-record pointers)
