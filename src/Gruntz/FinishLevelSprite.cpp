@@ -7,6 +7,7 @@
 // bytes are load-bearing.
 #include <rva.h>
 
+#include <Gruntz/Grunt.h>       // the ONE CGrunt definition (dedup; ResolveDeathAnimation)
 #include <Gruntz/SoundCueMgr.h> // the ONE CSoundCueMgr shape (ConfigureItem @0x1360d0)
 #include <Ints.h>
 
@@ -20,11 +21,6 @@ extern "C" {
     DATA(0x006bf3c0)
     extern u32 g_killCueClock;
 }
-
-class CGrunt {
-public:
-    i32 ResolveDeathAnimation(); // 0x0455f0
-};
 
 // CSoundCueMgr - ConfigureItem pushes a cue; +0x28 carries the cue duration (both
 // modeled in <Gruntz/SoundCueMgr.h>).

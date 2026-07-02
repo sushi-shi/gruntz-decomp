@@ -161,7 +161,9 @@ struct CTmListNode {
 // The type-identity check compares the descriptor's slot-4 against the address of
 // CGrunt::ReadConfigFromButeMgr (the retail uses its method address as the type tag;
 // reloc-masked DIR32). Forward-declared with just that method so `&CGrunt::...` carries
-// the reloc without pulling the full CGrunt layout.
+// the reloc without pulling the full CGrunt layout. NOTE: cannot include Grunt.h here
+// (it pulls CGameRegistry.h whose g_gameReg type clashes with this TU's own g_gameReg
+// decl - build-breaker; see docs/vtable-conversion-log.md). Kept as a minimal view.
 class CGrunt {
 public:
     void ReadConfigFromButeMgr();

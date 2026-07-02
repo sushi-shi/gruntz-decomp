@@ -217,7 +217,7 @@ i32 CGrunt::ResolveMovingAnimation() {
         return 0;
     }
 
-    m_38->SetAnim(s_GRUNTZ_ + m_typeName + s__MOVING);
+    m_38->SetAnim(s_GRUNTZ_ + TypeName() + s__MOVING);
 
     m_activeAnimDesc = (i32)m_38->m_1b4;
     m_38->m_1a0.SetGeometry(m_movingGeoSrc);
@@ -258,7 +258,7 @@ i32 CGrunt::ResolveDeathAnimation() {
     m_activeAnimDesc = (i32)m_38->m_1b4;
     m_38->m_1a0.SetGeometry(m_deathGeoSrc);
 
-    m_38->SetAnim(s_GRUNTZ_ + m_typeName + s__DEATH);
+    m_38->SetAnim(s_GRUNTZ_ + TypeName() + s__DEATH);
 
     m_prevAnimSetNode = (i32)m_14->m_1c;
     m_14->m_1c = g_animLookupTree.Find(s_keyC);
@@ -290,7 +290,7 @@ i32 CGrunt::ResolveAnimation() {
     m_activeAnimDesc = (i32)m_38->m_1b4;
     m_38->m_1a0.SetGeometry(m_joyGeoSrc);
 
-    m_38->SetAnim(s_GRUNTZ_ + m_typeName + s__JOY);
+    m_38->SetAnim(s_GRUNTZ_ + TypeName() + s__JOY);
 
     m_prevAnimSetNode = (i32)m_14->m_1c;
     m_14->m_1c = g_animLookupTree.Find(s_keyE);
@@ -330,7 +330,7 @@ i32 CGrunt::ResolveIdleAnimation() {
     CAnimElem* elem = desc->m_10 > 0 ? *desc->m_c : 0;
     i32 frame = elem->m_14;
 
-    m_38->SetAnimEx(s_GRUNTZ_ + m_typeName + s__IDLE, frame);
+    m_38->SetAnimEx(s_GRUNTZ_ + TypeName() + s__IDLE, frame);
 
     m_prevAnimSetNode = (i32)m_14->m_1c;
     m_14->m_1c = g_animLookupTree.Find(s_keyA);
@@ -365,7 +365,7 @@ i32 CGrunt::ResolveBattlecryAnimation() {
     m_activeAnimDesc = (i32)m_38->m_1b4;
     m_38->m_1a0.SetGeometry(m_battlecryGeoSrc[idx]);
 
-    m_38->SetAnim(s_GRUNTZ_ + m_typeName + s__BATTLECRY);
+    m_38->SetAnim(s_GRUNTZ_ + TypeName() + s__BATTLECRY);
 
     m_prevAnimSetNode = (i32)m_14->m_1c;
     m_14->m_1c = g_animLookupTree.Find(s_keyF);
@@ -819,7 +819,7 @@ latch:
         }
     }
 
-    CString key = (const char*)&m_474[(3 * col + row) * 0x68];
+    CString key = (const char*)((char*)m_468 + 0xc + (3 * col + row) * 0x68);
 
     CEntranceAnimDescColl* desc = m_154->m_1b4;
     i32* elem = desc->m_10 > 0 ? *desc->m_c : 0;
@@ -1418,48 +1418,32 @@ bool CGrunt_IsSameType(CGrunt* a, CGrunt* b) {
     return *(void**)((char*)a + 8) == *(void**)((char*)b + 8);
 }
 
-// The teardown helpers and the three retail vtables (reloc-masked).
-void* g_cgruntVtbl;    // 0x5e8754
-void* g_userLogicVtbl; // 0x5e705c
-void* g_userBaseVtbl;  // 0x5e70b4
-
 // ---------------------------------------------------------------------------
 // CGrunt::~CGrunt   @0xf2f0   (__thiscall, /GX leaf dtor)
-// Stamp the most-derived vtable (0x5e8754), drain the per-grunt name caches
-// (FreeNameList), then tear down the six owned sub-objects in /GX trylevel order
-// (the +0x468 cell array via the vector-dtor iterator, the two +0x44c/+0x448
-// CStrings, the two +0x338/+0x31c CObLists, m_animSetName @+0x1c0), and finally
-// fold the bare CUserLogic base teardown (CUserLogic vptr -> ~EngStr on the +0x18
-// link -> CUserBase vptr). Every callee is external/reloc-masked.
+// CGrunt is now a real polymorphic CUserLogic leaf, so the compiler auto-emits
+// the /GX frame + the three vptr restamps (CGrunt 0x5e8754 -> CUserLogic 0x5e705c
+// -> CUserBase 0x5e70b4) and the per-member descending trylevel teardown: the body
+// runs FreeNameList, then MSVC destructs the six owned members in reverse-decl
+// order (m_468[9] via __ehvec_dtor, m_44c/m_448 ~CString, m_338/m_31c ~CObList,
+// m_animSetName@+0x1c0 ~CString), folds ~CUserLogic (the +0x18 EngStr link) then
+// ~CUserBase. Every teardown callee is external/reloc-masked.
 //
 // @early-stop
-// /GX EH-state-numbering wall (docs/patterns/eh-state-numbering-base.md +
-// eh-dtor-model-members-as-destructible.md): the destructible-member model
-// recovers the full /GX frame (push -1/fs:0), the __thiscall member-dtor calls
-// (lea ecx,[this+off]; call - no stack push/cleanup), the correct member offsets
-// (+0x468/+0x44c/+0x448/+0x338/+0x31c/+0x1c0) in retail order, the vector-dtor
-// iterator args, the three vptr restamps, and the base ~EngStr fold - all
-// byte-faithful in shape/order (42%->55.5%). The residue is the per-member
-// descending trylevel chain ([esp+0x14] = 7,6,5,4,3,2,1 then 8): retail numbers
-// each member's own EH state because CGrunt's members are true value subobjects of
-// a CUserLogic-derived class, whereas the flat CGrunt model destructs them via
-// explicit method calls (one trylevel). Emitting the per-member states needs CGrunt
-// re-rooted on CUserLogic with the six members as real value fields - a TU-wide
-// restructure that would shift the ~40 other matched methods. Deferred to the
-// final sweep.
+// EH-state-base-numbering wall (docs/patterns/eh-dtor-multilevel-polymorphic-chain.md
+// + eh-state-numbering-base.md): the real polymorphic CUserBase<-CUserLogic<-CGrunt
+// chain now auto-emits the /GX frame, the three vptr restamps (0x5e8754 -> 0x5e705c
+// -> 0x5e70b4), the per-member __ehvec_dtor + ~CString/~CObList/~EngStr teardowns in
+// retail order, and the descending trylevel chain - all byte-faithful in
+// shape/order (55.5% -> 94.9%). The COUNT of EH states matches (8), but retail numbers
+// them 1..8 (FreeNameList region=7, six members 6..1, base m_18=8) while MSVC numbers
+// mine 0..7 (off by one) because retail reserves state 0 for the CUserLogic base
+// subobject construction, and it reserves an extra local dword (`sub esp,8` vs my
+// `push ecx`; `add esp,0x14` vs `0x10`). Closing this needs the base construction
+// state propagated into the derived dtor's state table (the CUserLogic ctor visible in
+// this TU) - deferred to the final sweep.
 RVA(0x0000f2f0, 0xc8)
 CGrunt::~CGrunt() {
-    *(void**)this = &g_cgruntVtbl;
     FreeNameList();
-    GruntVecDtor((char*)this + 0x468, 0x68, 9, &GruntCellDtor);
-    ((GruntStrSub*)((char*)this + 0x44c))->Dtor();
-    ((GruntStrSub*)((char*)this + 0x448))->Dtor();
-    ((GruntListSub*)((char*)this + 0x338))->Dtor();
-    ((GruntListSub*)((char*)this + 0x31c))->Dtor();
-    ((GruntStrSub*)((char*)this + 0x1c0))->Dtor();
-    *(void**)this = &g_userLogicVtbl;
-    ((GruntLinkSub*)((char*)this + 0x18))->Dtor();
-    *(void**)this = &g_userBaseVtbl;
 }
 
 // ---------------------------------------------------------------------------

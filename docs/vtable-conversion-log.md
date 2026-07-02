@@ -382,3 +382,39 @@ via cl-emitted ??_7 (CSeverusBase/CRemusBase/AlbusMapBase real bases); their lef
   base re-stamps (CUserBase/CState/CObject/containerErr) in non-ctor or shared-base sites;
   CAmbientSound.cpp's remaining stamp is the shared CUserBase base (own vtable already
   realized via CWorldSoundSet).
+## Batch 4 (the GRUNT family — ALL-VTABLES mandate) — 2026-07-02
+
+The ALL-VTABLES phase override: implement EVERY vtable in the grunt-entity scope as
+a real C++ polymorphic class even where slots aren't all matched; accept layout/load
+divergence + % regressions; only hard bar is `gruntz build` GREEN.
+
+| Class / stamp | vtable RVA (VA) | Outcome | %-effect | Reason |
+| :-- | :-- | :-- | :-- | :-- |
+| `CGrunt` / `g_cgruntVtbl` | 0x1e8754 (0x5e8754) | **CONVERTED** | `~CGrunt` dtor 55.5%→94.9% | Modeled the full single-inheritance chain `CUserBase(3 slots) <- CUserLogic(16) <- CGrunt(17)` real-polymorphic (virtual dtor at slot 0), so `cl` auto-emits `??_7CGrunt/CUserLogic/CUserBase@@6B@`, the three vptr restamps, and the per-member /GX trylevel teardown. The six owned members (+0x1c0 CString, +0x31c/+0x338 CObList, +0x448/+0x44c CString, +0x468[9] cell array) are now value subobjects; +0x18 EngStr link is `CUserLogic::m_18`. Removed the 3 manual `*(void**)this=&g_*Vtbl` stamps + the `g_cgruntVtbl/g_userLogicVtbl/g_userBaseVtbl` externs + `GruntVecDtor`/`GruntCellDtor`. Residual is the EH-state-base-numbering wall (state COUNT matches at 8; retail numbers 1..8, MSVC gives 0..7) — `@early-stop` in Grunt.cpp. |
+| `CUserLogic` / `g_userLogicVtbl` | 0x1e705c (0x5e705c) | **CONVERTED** | — | Emitted as the CGrunt base's `??_7CUserLogic@@6B@` (16 slots; slots 1/6/11 named SerializeMove/InitDirVectors/FreeNameList, the rest declared-only). CGrunt-local reconstruction of the class (the tile-logic game-object family keeps its own member view in include/Gruntz/UserLogic.h; the two never coexist in a TU — Grunt.h's 5 includers pull neither UserLogic.h). |
+| `CUserBase` / `g_userBaseVtbl` | 0x1e70b4 (0x5e70b4) | **CONVERTED** | — | Emitted as the root `??_7CUserBase@@6B@` (3 slots: dtor + 2 declared-only). Same CGrunt-local reconstruction note as CUserLogic. |
+
+### CGrunt dedup (the loose-end)
+
+| TU | Local CGrunt view | Outcome | Reason |
+| :-- | :-- | :-- | :-- |
+| `FinishLevelSprite.cpp` | method-only (`ResolveDeathAnimation`) | **UNIFIED** → `#include <Gruntz/Grunt.h>` | Compiles clean; the `m_2a0->ResolveDeathAnimation()` call is a non-virtual direct call (codegen-neutral). |
+| `TriggerMgr.cpp` | method-only (`ReadConfigFromButeMgr` PMF tag + 2 calls) | **KEPT (build-breaker)** | Including Grunt.h pulls CGameRegistry.h whose `g_gameReg` type clashes with this TU's own `g_gameReg` decl → `error C2371 redefinition`. Reverted; documented inline. |
+| `GruntPhaseStep.cpp`, `GruntPathScan.cpp` | full raw-offset layouts (local type names: MapObj*/AnimRec*/TileMgr*, CScanSub10*/CScanNode*, m_31c/m_320/m_324/m_2ec…) | **DEFERRED** | Genuine layout duplicates, but the 0%-matched method bodies are written against local member vocabularies absent from Grunt.h; unifying needs a per-function rewrite (a separate pass), and these TUs hit the same g_gameReg-style include clashes. |
+| `ApiCallers.cpp` (src/Stub) | method-only (backlog) | **DEFERRED** | src/Stub backlog file (holds real bodies; do not bulk-move per MEMORY). |
+
+### Rules learned / reinforced (Batch 4)
+
+- **A multi-level `/GX` dtor chain DOES convert cleanly to a real polymorphic
+  hierarchy** (eh-dtor-multilevel-polymorphic-chain.md): modeling the whole base
+  chain + the destructible members as value subobjects lets `cl` auto-emit the frame,
+  the N vptr restamps, and the __ehvec_dtor/member teardowns — the manual stamps and
+  `g_*Vtbl` externs all drop out. Big win where the residual was "no per-member
+  trylevel" (55.5%→94.9%).
+- **Beware stray CString value members that retail's dtor does NOT own.** CGrunt's
+  +0x54 type-name CString would add a spurious auto-destruct + shift every EH state;
+  modeled it as a raw `void* m_typeName` viewed via `TypeName()` (a `*(CString*)&`
+  cast — codegen-neutral) so ~CGrunt tears down only the six members retail does.
+- **The heavy shared header can clash on globals.** Unifying a per-TU CGrunt view by
+  `#include <Gruntz/Grunt.h>` pulls CGameRegistry.h; TUs with their own `g_gameReg`
+  decl (TriggerMgr) break — a real build-breaker, revert that TU.

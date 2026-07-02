@@ -858,26 +858,27 @@ public:
 };
 
 // ---------------------------------------------------------------------------
-// ~CGrunt teardown support (the leaf dtor @0xf2f0). CGrunt is a CUserLogic leaf
-// (most-derived vtable 0x5e8754) that, unlike the bare game-object leaves, OWNS
-// six destructible sub-objects torn down (in /GX trylevel order) before the base
-// teardown folds in (CUserLogic vptr 0x5e705c -> inline ~EngStr on the +0x18
-// link -> CUserBase vptr 0x5e70b4). All callees external/no-body (reloc-masked).
-//   +0x468  a 9-elem array (stride 0x68) torn via the MSVC vector-dtor iterator
-//           (FUN_0051f640) with the per-element dtor &g_gruntCellDtor (0x4023a6)
+// ~CGrunt teardown support (the leaf dtor @0xf2f0). CGrunt is a real CUserLogic
+// leaf (most-derived vtable 0x5e8754); the base chain CUserBase <- CUserLogic <-
+// CGrunt is modeled polymorphic below, so the compiler AUTO-emits the three vptr
+// restamps (CGrunt 0x5e8754 -> CUserLogic 0x5e705c -> CUserBase 0x5e70b4) and the
+// per-member /GX trylevel teardown. CGrunt OWNS six destructible sub-objects torn
+// down (in /GX trylevel order) before the base teardown folds in:
+//   +0x468  CGruntCellRec[9] (stride 0x68) torn via the MSVC __ehvec_dtor iterator
+//           with the per-element dtor 0x4023a6
 //   +0x44c  ~CString (0x1b9cde)        +0x448  ~CString (0x1b9cde)
 //   +0x338  ~CObList (0x1b48c6)        +0x31c  ~CObList (0x1b48c6)
 //   +0x1c0  ~CString = m_animSetName (0x1b9cde)
-//   +0x18   ~EngStr  (0x16d2a0) the CUserLogic link base teardown
-// The three vptr stores reference the RETAIL vtables by address (reloc-masked
-// DATA externs); the most-derived class isn't fully modelled so the compiler
-// can't emit them.
-extern void* g_cgruntVtbl;    // 0x5e8754  ??_7CGrunt (most-derived)
-extern void* g_userLogicVtbl; // 0x5e705c  ??_7CUserLogic
-extern void* g_userBaseVtbl;  // 0x5e70b4  ??_7CUserBase
-extern void GruntCellDtor();  // 0x4023a6  per-cell vector-dtor element callback
-// The MSVC __ehvec_dtor-style array teardown helper: (base, stride, count, dtor).
-void GruntVecDtor(void* base, i32 stride, i32 count, void (*dtor)()); // 0x51f640
+//   +0x18   ~EngStr  (0x16d2a0) the CUserLogic link base teardown (in ~CUserLogic)
+// All teardown callees are external/no-body (reloc-masked).
+
+// The +0x468 owned-cell array element (9 x 0x68). Its per-element dtor is the
+// engine callback at 0x4023a6 (external/reloc-masked); as a value-array member of
+// CGrunt, MSVC auto-emits the __ehvec_dtor(base, 0x68, 9, &~CGruntCellRec) teardown.
+struct CGruntCellRec {
+    char m_pad[0x68];
+    ~CGruntCellRec(); // 0x4023a6 (out-of-line; reloc-masked)
+};
 // Each owned sub-object is torn down by its engine dtor reached __thiscall (this in
 // ecx, no stack arg/cleanup). Modeled as a 1-method receiver so `lea ecx,[this+off];
 // call` falls out, and as a real value member with `~T(){Dtor();}` so the /GX frame's
@@ -1016,9 +1017,68 @@ public:
 //   +0x3f4  m_toyTime     (ToyTime gate / Add arg)
 //   +0x3f8  m_wingzTime     (WingzTime gate / Add arg)
 // ---------------------------------------------------------------------------
-SIZE_UNKNOWN(CGrunt);
-class CGrunt {
+// CGrunt's game-object base chain (single inheritance; RTTI-recovered slot counts
+// 3 / 16 / 17). Each level is polymorphic with a virtual dtor at slot 0, so the
+// compiler auto-stamps the three vptrs (in ~CGrunt: CGrunt 0x5e8754 -> CUserLogic
+// 0x5e705c -> CUserBase 0x5e70b4) and folds the base teardowns. Slot names are
+// placeholders except the ones CGrunt defines in Grunt.cpp (slot 1 SerializeMove
+// 0x53b80, slot 6 InitDirVectors 0x5caa0, slot 11 FreeNameList 0x48360, slot 16
+// StepCoordResolve 0x5f310); the rest are declared-only (impls external/reloc-
+// masked). This is a CGrunt-local reconstruction of CUserBase/CUserLogic (the
+// tile-logic game-object family uses include/Gruntz/UserLogic.h's member view of
+// the same engine classes; the two never coexist in a TU - see
+// docs/vtable-conversion-log.md).
+class CUserBase {
 public:
+    virtual ~CUserBase();                                       // slot 0  (0x5e70b4[0])
+    virtual i32 SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4); // slot 1
+    virtual void UbSlot08();                                    // slot 2
+    char m_pad4[0x10 - 4];
+    CGruntHud* m_10;       // +0x10
+    CAnimLookupNode* m_14; // +0x14  (anim-set lookup holder)
+};                         // size 0x18
+inline CUserBase::~CUserBase() {} // final base vptr restamp (0x5e70b4)
+
+class CUserLogic : public CUserBase {
+public:
+    virtual ~CUserLogic() OVERRIDE;                             // slot 0
+    i32 SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) OVERRIDE; // slot 1 (0x16e7f0)
+    void UbSlot08() OVERRIDE;                                   // slot 2
+    virtual void UlSlot0c();                                    // slot 3
+    virtual void UlSlot10();                                    // slot 4
+    virtual void UlSlot14();                                    // slot 5
+    virtual void InitDirVectors();                             // slot 6  (0x88d0)
+    virtual void UlSlot1c();                                    // slot 7  (inherited by CGrunt)
+    virtual void UlSlot20();                                    // slot 8
+    virtual void UlSlot24();                                    // slot 9
+    virtual void UlSlot28();                                    // slot 10 (inherited)
+    virtual void FreeNameList();                               // slot 11 (0x8970)
+    virtual void UlSlot30();                                    // slot 12 (inherited)
+    virtual void UlSlot34();                                    // slot 13 (inherited)
+    virtual void UlSlot38();                                    // slot 14 (inherited)
+    virtual void UlSlot3c();                                    // slot 15 (inherited)
+    GruntLinkSub m_18;         // +0x18  EngStr link (destructible; ~EngStr 0x16d2a0)
+    char m_pad1c[0x30 - 0x1c]; // +0x1c..+0x30
+};                             // size 0x30
+inline CUserLogic::~CUserLogic() {} // auto-destructs m_18, restamps 0x5e705c
+
+// ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CGrunt);
+class CGrunt : public CUserLogic {
+public:
+    // vtable overrides in slot order (see the base chain above):
+    virtual ~CGrunt() OVERRIDE;                                        // slot 0  @0xf2f0
+    i32 SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) OVERRIDE; // slot 1  @0x53b80
+    void UbSlot08() OVERRIDE;                                          // slot 2  (0xf2a0)
+    void UlSlot0c() OVERRIDE;                                          // slot 3  (0x5d210)
+    void UlSlot10() OVERRIDE;                                          // slot 4  (0x5bcd0)
+    void UlSlot14() OVERRIDE;                                          // slot 5  (0x5ecd0)
+    void InitDirVectors() OVERRIDE;                                   // slot 6  @0x5caa0
+    void UlSlot20() OVERRIDE;                                          // slot 8  (0x62b40)
+    void UlSlot24() OVERRIDE;                                          // slot 9  (0x61cb0)
+    void FreeNameList() OVERRIDE;                                     // slot 11 @0x48360
+    virtual void StepCoordResolve();                                  // slot 16 @0x5f310
+
     i32 CreateHealthSprite();
     i32 CreateToySprite();
     i32 CreateStaminaSprite();
@@ -1109,17 +1169,22 @@ public:
     i32 winapi_04a9f0_CopyRect_OffsetRect();
     i32 RectSegProbe(void* r, void* a, void* b); // call 0x4138 (__thiscall, 3 args)
 
-    char m_pad0[0x10];
-    CGruntHud* m_10;       // +0x10
-    CAnimLookupNode* m_14; // +0x14  (anim-set lookup holder)
-    char m_pad18[0x30 - 0x18];
+    // Data members. vptr(+0), m_10(+0x10), m_14(+0x14) are in CUserBase; the +0x18
+    // EngStr link is CUserLogic::m_18. CGrunt's own members begin at +0x30.
     i32 m_prevAnimSetNode; // +0x30  (saved old m_14->m_1c before re-latch)
     char m_pad34[0x38 - 0x34];
     CGruntAnimState* m_38; // +0x38  (animation player)
     char m_pad3c[0x40 - 0x3c];
     i32 m_activeAnimDesc; // +0x40  (cached m_38->m_1b4)
     char m_pad44[0x54 - 0x44];
-    CString m_typeName;                       // +0x54  (grunt-type name CString)
+    // +0x54 grunt-type name. Stored as a raw CString body (a single char* -
+    // m_pszData) so ~CGrunt does NOT auto-destruct it (retail's leaf dtor tears
+    // down only the six members below, NOT +0x54); viewed as a CString via
+    // TypeName() at its five concat sites (codegen-neutral: same CString lvalue).
+    void* m_typeName; // +0x54  (grunt-type CString body; not owned by ~CGrunt)
+    CString& TypeName() {
+        return *(CString*)&m_typeName;
+    }
     i32 m_idleGeoSrc[(0x68 - 0x58) / 4];      // +0x58  (Idle geometry sources)
     i32 m_battlecryGeoSrc[(0x74 - 0x68) / 4]; // +0x68  (Battlecry geometry sources)
     i32 m_joyGeoSrc;                          // +0x74  (generic/_JOY geometry source)
@@ -1202,7 +1267,11 @@ public:
     i32 m_30c;       // +0x30c (arrival: cleared)
     i32 m_310;       // +0x310 (arrival: cleared)
     i32 m_314;       // +0x314 (arrival: cleared)
-    char m_pad318[0x364 - 0x318];
+    char m_pad318[0x31c - 0x318];
+    GruntListSub m_31c; // +0x31c (~CObList 0x1b48c6; destructed by ~CGrunt)
+    char m_pad31d[0x338 - 0x31d];
+    GruntListSub m_338; // +0x338 (~CObList 0x1b48c6; destructed by ~CGrunt)
+    char m_pad339[0x364 - 0x339];
     i32 m_364; // +0x364 (entrance: set to 1)
     char m_pad368[0x394 - 0x368];
     // The per-pose animation-name index table (LoadAnimNameTable @0x49c60 fills
@@ -1233,14 +1302,18 @@ public:
     i32 m_tileClaimed; // +0x420 (arrival-claimed latch)
     char m_pad424[0x43c - 0x424];
     i32 m_entranceCell[3]; // +0x43c (entrance-cell triple: [0]=col, [1]=row, [2]=m_444 reason)
-    char m_pad448[0x450 - 0x448];
+    GruntStrSub m_448;     // +0x448 (~CString 0x1b9cde; destructed by ~CGrunt)
+    char m_pad449[0x44c - 0x449];
+    GruntStrSub m_44c; // +0x44c (~CString 0x1b9cde; destructed by ~CGrunt)
+    char m_pad44d[0x450 - 0x44d];
     i32 m_arrivalPhase; // +0x450 (arrival/update dispatch phase: 2 = in-flight, 3 = committing)
     char m_pad454[0x460 - 0x454];
     i32 m_lowStaminaCued;  // +0x460 (low-stamina off-screen cue latch)
     i32 m_arrivalNotified; // +0x464 (entrance-reset latch flag)
-    char m_pad468[0x474 - 0x468];
-    char m_474[1]; // +0x474 (entrance-cell record table; 0x68-byte stride records)
-    char m_pad475[0x820 - 0x475];
+    // +0x468 owned-cell array (9 x 0x68, +0x468..+0x810; entrance-cell record table,
+    // 0x68-byte stride). Value array so ~CGrunt auto-emits the __ehvec_dtor teardown.
+    CGruntCellRec m_468[9]; // +0x468..+0x810
+    char m_pad810[0x820 - 0x810];
     i32 m_idleAnchorLo;       // +0x820 (idle-timer: low)
     i32 m_idleAnchorHi;       // +0x824 (idle-timer: high)
     i32 m_idleDelayLo;        // +0x828 (idle-timer: delay low)
@@ -1284,7 +1357,8 @@ public:
     void EntranceArrivalHook(i32 a, i32 b); // thunk_FUN_0044d060 (2-arg; arrival commit)
 
     // ---- migrated CGrunt cluster (ex-CUserLogic_*) ----
-    ~CGrunt();                              // @0xf2f0  /GX leaf dtor (6 members + base fold)
+    // (~CGrunt / SerializeMove / InitDirVectors / FreeNameList / StepCoordResolve
+    // are the vtable slots declared at the top of the class.)
     void EnsureStruckSlot(const char* key); // @0x57b70 lazily build/play the +0x424 sample
     i32 UpdateEntranceAnim();               // @0x690a0 entrance-anim/arrival update step
     void ApplyMoveKind(i32 v);              // @0x57100 (thunk_0x3c29) 1-arg move-kind apply
@@ -1317,7 +1391,6 @@ public:
     void SetEntrancePos(i32 a, i32 b); // @0x4d060 (ret 8)
     void EntranceTileOffset(i32* out); // @0x56f80 (ret 4) adjacent-tile pixel pos
     void ComputeFacing(double dt);     // @0x57060 (ret 8)
-    void FreeNameList();               // @0x48360
     i32 ResetGeometry();               // @0x616e0
     void DispatchVtbl24();             // @0x6b260 (jmp [vtbl+0x24])
 
@@ -1333,7 +1406,7 @@ public:
     // load. The eight 16-byte (double-pair) records at +0x810..+0x880 stream
     // directly; the sub-records at +0x150/+0x43c/+0x278/+0x308/+0x890..+0x8c0
     // serialize through their own engine helpers (external/reloc-masked).
-    i32 SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4);
+    // (SerializeMove is the vtable slot-1 override, declared at the top of CGrunt.)
     // The head sub-serializer @0x16e7f0 (uncertain shape; left external).
     i32 SerializeAnimState(CGruntArchive* ar, i32 mode, i32 a3, i32 a4);
     i32 SerPreStep4(CGruntArchive* ar); // mode-4 pre-step (engine thunk)
@@ -1348,13 +1421,13 @@ public:
     // member offset they touch is in this layout). All three drive the grunt's
     // arrival/entrance bookkeeping + the occupied-slot recycle.
     i32 ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e); // @0x59230 (ret 0x14)
-    void InitDirVectors();                                    // @0x5caa0 (ret 0; reset/init)
+    // (InitDirVectors is the vtable slot-6 override, declared at the top of CGrunt.)
     i32 UpdateArrival(i32 a1, i32 a2);                        // @0x62110 (ret 0x8)
 
     void StepArrivalDrop(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // @0x4b370 (ret 0x18, /GX)
     i32 StepGruntMovement(); // @0x4c170 (ret 0)         - the per-tick move step
     i32 StepAnimDispatchA(i32 a, i32 b, i32 c, i32 d); // @0x52fb0 (ret 0x10)
-    void StepCoordResolve();                           // @0x5f310 (ret 0)
+    // (StepCoordResolve is the vtable slot-16 override, declared at the top of CGrunt.)
     i32 StepAnimDispatchB();                           // @0x6a6d0 (ret 0)
     // @0x637a0 (ret 0) - the I-code entrance re-stamp dispatch step: D/L reject,
     // reset the +0x8c0 struck timer, on the "I" anim re-notify the tile mgr, then
