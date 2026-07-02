@@ -3591,13 +3591,13 @@ unknownclassarrays	?RecycleCoords@GridUnit@@QAEXXZ	99.7826	99.7826	1	8aaa33538dd
 unknownclassarrays	?Serialize_02b420@CBattlezSpawnMgr_or_CGruntSpawnMgr@@QAEHPAX@Z	100.0000	100.0000	1	40c70ea0542d	0x2b420
 unknownclassarrays	?winapi_0267c0_IntersectRect_PtInRect@CBattlezSpawnMgr_or_CGruntSpawnMgr@@QAEHXZ	0.0596	0.0596	1	0f94e6c9cedf	0x267c0
 unknownclassarrays	?winapi_02a570_IntersectRect@CBattlezSpawnMgr_or_CGruntSpawnMgr@@QAEHH@Z	60.6182	60.6182	2	6dc06ae43e59	0x2a570
-unknownclassarrays	?winapi_02ab80_PtInRect@CBattlezSpawnMgr_or_CGruntSpawnMgr@@QAEHHHHH@Z	77.8661	77.8661	2	5bfcdc7967fa	0x2ab80
+unknownclassarrays	?winapi_02ab80_PtInRect@CBattlezSpawnMgr_or_CGruntSpawnMgr@@QAEHHHHH@Z	77.8750	77.8750	2	5bfcdc7967fa	0x2ab80
 unknownclassarrays	?winapi_02ae00_IntersectRect@CBattlezSpawnMgr_or_CGruntSpawnMgr@@QAEHHH@Z	84.1995	84.1995	2	b9fd502fa3f6	0x2ae00
 unknownclassarrays	?winapi_02c140_IntersectRect_PtInRect@CBattlezSpawnMgr_or_CGruntSpawnMgr@@QAEHH@Z	69.0547	69.0547	2	0327589a358e	0x2c140
 unknownclassarrays	?winapi_02dfa0_IntersectRect@CBattlezSpawnMgr_or_CGruntSpawnMgr@@QAEHHHHH@Z	59.6554	59.6554	2	2badd86a7338	0x2dfa0
-unknownclassarrays	?winapi_02e3a0_PtInRect@CBattlezSpawnMgr_or_CGruntSpawnMgr@@QAEHH@Z	0.2997	0.2997	1	0ce26dfe59a7	0x2e3a0
+unknownclassarrays	?winapi_02e3a0_PtInRect@CBattlezSpawnMgr_or_CGruntSpawnMgr@@QAEHH@Z	58.1940	58.1940	2	552e6b4405fb	0x2e3a0
 unknownclassarrays	?winapi_031ca0_IntersectRect@CBattlezSpawnMgr_or_CGruntSpawnMgr@@QAEHH@Z	80.6009	80.6009	2	504230cfd972	0x31ca0
-unknownclassarrays	?winapi_032060_IntersectRect@CBattlezSpawnMgr_or_CGruntSpawnMgr@@QAEHH@Z	0.3368	0.3368	1	fa7c95fa128b	0x32060
+unknownclassarrays	?winapi_032060_IntersectRect@CBattlezSpawnMgr_or_CGruntSpawnMgr@@QAEHH@Z	44.6788	44.6788	2	00a5428b72a7	0x32060
 unknownclassincgruntzmgr	??0CGruntSpawnLevel@@QAE@XZ	85.3478	85.3478	1	006e4071467e	0xda790
 unknownclassincgruntzmgr	??1CGruntSpawnLevel@@QAE@XZ	72.3182	72.3182	1	da4634b11447	0x83260
 unknownfileioctor	??0UnknownFileIOOwner@@QAE@XZ	100.0000	100.0000	1	f7bfa1365cf3	0x8fea0

@@ -136,15 +136,20 @@ struct GridUnit {
     i32 m_2e4; // +0x2e4
     i32 m_2e8; // +0x2e8
     i32 m_2ec; // +0x2ec
-    i32 m_2f0; // +0x2f0
-    i32 m_2f4; // +0x2f4
-    char m_pad2f8[0x31c - 0x2f8];
+    i32 m_2f0; // +0x2f0  queued target x (-1 = none)
+    i32 m_2f4; // +0x2f4  queued target y (-1 = none)
+    char m_pad2f8[0x300 - 0x2f8];
+    i32 m_300; // +0x300  path goal x (-1 = none)
+    i32 m_304; // +0x304  path goal y (-1 = none)
+    char m_pad308[0x31c - 0x308];
     char m_31c[0x320 - 0x31c]; // +0x31c  occupied-coords list object base
     void* m_320;               // +0x320  list head (node->next at +0)
     void* m_324;               // +0x324
     i32 m_328;                 // +0x328  list count/flag
     char m_pad32c[0x368 - 0x32c];
     i32 m_368; // +0x368  must be 0 to dispatch
+    char m_pad36c[0x390 - 0x36c];
+    i32 m_390; // +0x390  "arrived" latch
 
     // 0x0343f0 (attributed to CBattlezSpawnMgr_or_CGruntSpawnMgr but a __thiscall ON a GridUnit):
     // recycle every occupied-coord node's payload onto g_freeList, then RemoveAll
@@ -369,6 +374,30 @@ struct UnitMutator {
 
 // The difficulty/spawn scale factor (?g_diffScale@@3MB, a `const float` @ VA
 // 0x5e96ec). Reloc-masked DATA; read by the fild/fmul spawn-budget computation.
+
+// The two runtime-config globals the spawn state machine copies into the unit's
+// m_250/m_254 slots (DAT_0060ccc0 = 0x98f, DAT_0062b7ec = a state code). Reloc-
+// masked DATA (VA - 0x400000). The per-level records are the shared m_004-indexed
+// 0x238-stride block (see Method_0358a0's BandRec); the fields the spawn state
+// machine reaches (+0x170/+0x174 ready-flags, +0x188 edge sub-object, +0x258/+0x25c
+// queued point, record+0x280 re-route gate) are read by raw offset like the siblings.
+DATA(0x0020ccc0)
+extern i32 g_spawnCfg;
+DATA(0x0022b7ec)
+extern i32 g_spawnState;
+
+// The global step timer (?g_stepTimer, DAT_00645588 @ VA 0x645588): the 32-bit
+// tick counter the m_390 latch debounces against the bundle's m_078..m_084 pair.
+DATA(0x00245588)
+extern i32 g_stepTimer;
+
+// The scene-hit dispatcher reached via g_gameReg->m_60 (RVA 0x11b3b0, thunk
+// 0x039f4): a __thiscall taking (unit, 0x366, -1, 0, -1, -1). External, reloc-
+// masked (no body); modeled as a method on a tiny object (the same idiom as
+// UnitMutator/GridTrigger) so `mov ecx,[reg+0x60]; call` falls out.
+struct SceneHit {
+    void Fire(void* unit, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5); // 0x11b3b0
+};
 
 // ===========================================================================
 // CBattlezSpawnMgr_or_CGruntSpawnMgr::CBattlezSpawnMgr_or_CGruntSpawnMgr  @0x024dc0
@@ -1872,12 +1901,249 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02dfa0_IntersectRect(
     return 1;
 }
 
-// @confidence: low
-// @source: winapi:PtInRect
-// @stub
+// ===========================================================================
+// CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02e3a0_PtInRect  @0x02e3a0
+// The nearest-idle-neighbour retarget. Build a 15x15 box (half-extent 7) around
+// the arg unit's screen coord (4 GetCoord corners), then scan the four cell-bands
+// (15 units each, skipping the current band m_018) for the eligible (m_1fc set,
+// m_368/m_1e4/m_220 clear, anim name not C/R/J/G/L, m_258 != 0x36) unit whose
+// grid coord is inside the box, keeping the manhattan-distance-squared nearest.
+// If one is found (and the arg unit's m_2ec cooldown > 0x64), clamp the board
+// dirty-rect to that box, build the FindPath flag word from the unit's 0x12/0x16/
+// 0xe anim modes, and re-path the unit toward it (Method_0300c0, flags 0x1000d8f).
+// On a route, debounce the m_390 latch (a g_stepTimer window against m_078..m_084,
+// firing the scene hit when the unit's level coord is on-screen), re-clamp the
+// board dirty-rect, and return 1. No candidate latches m_390 and returns 0.
+// ===========================================================================
+// @early-stop
+// box-stack-slot + EH/regalloc plateau (same family as winapi_02a570/02dfa0): the
+// 4-corner box build, the band scan with the five inline-strcmp C/R/J/G/L rejects
+// (setne bool form) + PtInRect + dist^2 min-keep, the box clamp with the dead
+// maybe-null branch retail emits, the 0x12/0x16/0xe FindPath-flag build, the
+// Method_0300c0 re-path, the m_390 64-bit-timer debounce + scene-hit, and both
+// dirty-rect re-clamps are reconstructed in shape + order. Residual is the
+// compiler's stack colouring of the 6 transient Coord/box slots (the >>5 corners
+// alias the later dist temporaries) + the /GX cond-temp EH state; foreign
+// unit/board/g_gameReg chains modeled by raw offset. Not source-steerable.
 RVA(0x0002e3a0, 0x7e1)
-i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02e3a0_PtInRect(i32) {
-    return 0;
+i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02e3a0_PtInRect(i32 unitArg) {
+    GridUnit* unit = (GridUnit*)unitArg;
+    // Four GetCoord corners -> a 15x15 box (half-extent 7) around the unit.
+    RECT box;
+    Coord cA;
+    ((UnitGeom*)unit)->GetCoord(&cA);
+    cA.m_x >>= 5;
+    cA.m_y >>= 5;
+    box.bottom = cA.m_y + 7;
+    Coord cB;
+    ((UnitGeom*)unit)->GetCoord(&cB);
+    cB.m_x >>= 5;
+    cB.m_y >>= 5;
+    box.right = cB.m_x + 7;
+    Coord cC;
+    ((UnitGeom*)unit)->GetCoord(&cC);
+    cC.m_x >>= 5;
+    cC.m_y >>= 5;
+    box.top = cC.m_y - 7;
+    Coord cD;
+    ((UnitGeom*)unit)->GetCoord(&cD);
+    box.left = (cD.m_x >> 5) - 7;
+
+    GridUnit* best = 0;
+    i32 bestDist = 0x7fffffff;
+    for (i32 band = 0; band < 4; band++) {
+        if (band == m_018) {
+            continue;
+        }
+        for (i32 i = 0; i < 15; i++) {
+            GridUnit* u = *(GridUnit**)(m_008 + band * 0x3c + 0x1c + i * 4);
+            if (u == 0) {
+                continue;
+            }
+            if (u->m_1fc == 0) {
+                continue;
+            }
+            if (u->m_368 != 0) {
+                continue;
+            }
+            if (u->m_1e4 != 0) {
+                continue;
+            }
+            if (u->m_220 != 0) {
+                continue;
+            }
+            bool ne;
+            ne = strcmp(g_animNameResolver.GetRecord(*(i32*)((char*)u->m_014 + 0x1c))->m_name, "C")
+                 != 0;
+            if (!ne) {
+                continue;
+            }
+            ne = strcmp(g_animNameResolver.GetRecord(*(i32*)((char*)u->m_014 + 0x1c))->m_name, "R")
+                 != 0;
+            if (!ne) {
+                continue;
+            }
+            ne = strcmp(g_animNameResolver.GetRecord(*(i32*)((char*)u->m_014 + 0x1c))->m_name, "J")
+                 != 0;
+            if (!ne) {
+                continue;
+            }
+            ne = strcmp(g_animNameResolver.GetRecord(*(i32*)((char*)u->m_014 + 0x1c))->m_name, "G")
+                 != 0;
+            if (!ne) {
+                continue;
+            }
+            ne = strcmp(g_animNameResolver.GetRecord(*(i32*)((char*)u->m_014 + 0x1c))->m_name, "L")
+                 != 0;
+            if (!ne) {
+                continue;
+            }
+            if (u->m_258 == 0x36) {
+                continue;
+            }
+            Coord c;
+            ((UnitGeom*)u)->GetCoord(&c);
+            POINT pt;
+            pt.x = c.m_x >> 5;
+            pt.y = c.m_y >> 5;
+            if (!PtInRect(&box, pt)) {
+                continue;
+            }
+            Coord a1;
+            ((UnitGeom*)unit)->GetCoord(&a1);
+            Coord b1;
+            ((UnitGeom*)u)->GetCoord(&b1);
+            i32 dx = abs((a1.m_x >> 5) - (b1.m_x >> 5));
+            Coord a2;
+            ((UnitGeom*)unit)->GetCoord(&a2);
+            Coord b2;
+            ((UnitGeom*)u)->GetCoord(&b2);
+            i32 dy = abs((a2.m_y >> 5) - (b2.m_y >> 5));
+            i32 dist = dx * dx + dy * dy;
+            if (dist >= bestDist) {
+                continue;
+            }
+            bestDist = dist;
+            best = u;
+        }
+    }
+    if (best == 0) {
+        unit->m_390 = 1;
+        return 0;
+    }
+    if ((u32)unit->m_2ec <= 0x64) {
+        return 1;
+    }
+    Board* board = (Board*)m_00c;
+    RECT bounds;
+    ((RectInit*)&bounds)->Set(0, 0, board->m_w, board->m_h);
+    RECT* boxp = &box;
+    RECT rc;
+    if (boxp != 0) {
+        rc.left = box.left;
+        rc.top = box.top;
+        rc.right = box.right + 1;
+        rc.bottom = box.bottom + 1;
+    } else {
+        RECT r0;
+        RECT* p0 = ((RectInit*)&r0)->Set(0, 0, board->m_w, board->m_h);
+        rc.left = p0->left;
+        rc.top = p0->top;
+        rc.right = p0->right;
+        rc.bottom = p0->bottom;
+    }
+    if (!IntersectRect((RECT*)&board->m_60, &rc, &bounds)) {
+        *(RECT*)&board->m_60 = rc;
+    }
+    board->m_70 = board->m_68 - board->m_60;
+    board->m_74 = board->m_6c - board->m_64;
+    // FindPath flag word from the unit's 0x12 / 0x16 / 0xe anim modes.
+    i32 flags = 0;
+    i32 prim = unit->m_170;
+    i32 t = prim;
+    if (prim > 0x16) {
+        t = unit->m_19c;
+    }
+    if (t == 0x12) {
+        flags = 0x100;
+    }
+    t = prim;
+    if (prim > 0x16) {
+        t = unit->m_19c;
+    }
+    if (t == 0x16) {
+        flags = 0x942;
+    }
+    if (prim > 0x16) {
+        prim = unit->m_19c;
+    }
+    if (prim == 0xe) {
+        flags = 0x1000;
+    }
+    Coord bc;
+    ((UnitGeom*)best)->GetCoord(&bc);
+    if (Method_0300c0((i32)unit, bc.m_x >> 5, bc.m_y >> 5, 0x1000d8f, flags, 1) == 0) {
+        // Re-path failed: re-clamp the board dirty-rect, clear the cooldown, ret 0.
+        RECT fb;
+        fb.left = 0;
+        fb.top = 0;
+        RECT fr;
+        RECT* fp = ((RectInit*)&fr)->Set(0, 0, board->m_w, board->m_h);
+        fb.right = board->m_w;
+        fb.bottom = board->m_h;
+        RECT frc;
+        frc.left = fp->left;
+        frc.top = fp->top;
+        frc.right = fp->right;
+        frc.bottom = fp->bottom;
+        if (!IntersectRect((RECT*)&board->m_60, &frc, &fb)) {
+            *(RECT*)&board->m_60 = frc;
+        }
+        board->m_70 = board->m_68 - board->m_60;
+        board->m_74 = board->m_6c - board->m_64;
+        unit->m_2ec = 0;
+        return 0;
+    }
+    if (unit->m_2d4 != 3) {
+        unit->m_2d4 = 0;
+        unit->m_254 = 0;
+    }
+    if (unit->m_390 != 0) {
+        __int64 elapsed = (__int64)(u32)g_stepTimer - *(__int64*)&m_078;
+        if (elapsed >= *(__int64*)&m_080) {
+            unit->m_390 = 0;
+            UnitLevel* lvl = (UnitLevel*)unit->m_010;
+            char* chain = *(char**)((char*)*(void**)((char*)g_gameReg + 0x30) + 0x24);
+            chain = *(char**)(chain + 0x5c);
+            RECT* hit = (RECT*)(chain + 0x40);
+            if (lvl->m_5c < hit->right && lvl->m_5c >= hit->left && lvl->m_60 < hit->bottom
+                && lvl->m_60 >= hit->top) {
+                ((SceneHit*)*(void**)((char*)g_gameReg + 0x60))->Fire(unit, 0x366, -1, 0, -1, -1);
+            }
+            *(__int64*)&m_078 = 0;
+            m_080 = 0x1388;
+            m_084 = 0;
+            m_078 = g_stepTimer;
+            m_07c = 0;
+        }
+    }
+    // Re-clamp the board dirty-rect to the board bounds, clear the cooldown, ret 1.
+    RECT gb;
+    ((RectInit*)&gb)->Set(0, 0, board->m_w, board->m_h);
+    RECT gr2;
+    RECT* gp = ((RectInit*)&gr2)->Set(0, 0, board->m_w, board->m_h);
+    RECT grc;
+    grc.left = gp->left;
+    grc.top = gp->top;
+    grc.right = gp->right;
+    grc.bottom = gp->bottom;
+    if (!IntersectRect((RECT*)&board->m_60, &grc, &gb)) {
+        *(RECT*)&board->m_60 = grc;
+    }
+    board->m_70 = board->m_68 - board->m_60;
+    board->m_74 = board->m_6c - board->m_64;
+    unit->m_2ec = 0;
+    return 1;
 }
 
 // ===========================================================================
@@ -2876,12 +3142,307 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_031ca0_IntersectRect(i32 unitArg)
     return 1;
 }
 
-// @confidence: low
-// @source: winapi:IntersectRect
-// @stub
+// ===========================================================================
+// CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_032060_IntersectRect  @0x032060
+// The per-unit spawn-path state machine, keyed on the unit's m_2d4 mode. First
+// resolve the target band (m_2e8): pick a fresh random one (avoiding the current
+// band m_018, requiring the record's +0x170 ready / +0x174 clear) when unset, or
+// re-validate the stored one (recycling the unit's coords + resetting on an invalid
+// record). Then, for a unit that holds no coords (m_328 == 0), dispatch on m_2d4:
+//   0 -> seed the goal (m_300/m_304) from the band record or a Method_030f20 re-route,
+//        keeping the nearer of the current vs stored goal, and advance to mode 6;
+//   6 -> if the idle timer (m_2ec) exceeds m_0bc, measure the distance to the goal:
+//        arrive (mode 7) within 4 tiles, else re-place toward it (GridUnitSpawn::Place,
+//        flag word from the 0x12/0x16/0xe anim modes) and, on failure, walk the m_254
+//        state code to its next value;
+//   7 -> clamp the board dirty-rect to the board bounds and place at the band's queued
+//        point (Place, flags 0x987).
+// A unit that DOES hold coords (m_328 != 0) only advances mode 6 -> 7 once within range,
+// recycling its coords onto g_freeList. Returns 1.
+// ===========================================================================
+// @early-stop
+// large no-EH state-machine plateau (same family as winapi_02e3a0): the m_2e8 band-pick
+// (signed rand()%4 with the m_018 skip), the m_2d4 0/6/7 dispatch with all three re-place
+// arms + the m_254 state-code walk, the box clamp, both FindPath-flag else-if chains, and
+// all four coord recyclers (g_coordPool via CoordListWalk::Advance / g_freeList inline) are
+// reconstructed in shape + order. Residual is the register-relative record-address regalloc
+// (cl strength-reduces the band*0x238 lea-chain + folds the +0x170/+0x188/+0x258 sub-offsets
+// differently per arm, the documented Method_0358a0/BandRec wall) + the box-stack-slot
+// schedule; foreign board/record chains modeled by raw offset. Not source-steerable.
 RVA(0x00032060, 0x7bd)
-i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_032060_IntersectRect(i32) {
-    return 0;
+i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_032060_IntersectRect(i32 unitArg) {
+    GridUnit* unit = (GridUnit*)unitArg;
+    if (unit->m_2d4 == 3) {
+        return 1;
+    }
+    i32 band = unit->m_2e8;
+    if (band == -1) {
+        band = rand() % 4;
+        if (band == m_018) {
+            band++;
+        }
+        band = band % 4;
+        char* rec = (char*)m_004 + band * 0x238;
+        if (*(i32*)(rec + 0x174) != 0) {
+            return 1;
+        }
+        if (*(i32*)(rec + 0x170) == 0) {
+            return 1;
+        }
+        unit->m_2e8 = band;
+        unit->m_300 = -1;
+        unit->m_304 = -1;
+    } else {
+        char* rec = (char*)m_004 + band * 0x238;
+        if (*(i32*)(rec + 0x174) != 0 || *(i32*)(rec + 0x170) == 0) {
+            // Invalid record: recycle the unit's coords onto g_coordPool, reset state.
+            if (unit->m_328 != 0) {
+                void* pos = unit->m_320;
+                if (pos != 0) {
+                    do {
+                        void* coord = *(void**)((CoordListWalk*)&unit->m_31c)->Advance(&pos);
+                        if (coord != 0) {
+                            g_coordPool.Recycle(coord);
+                        }
+                    } while (pos != 0);
+                }
+                ((CObList*)&unit->m_31c)->RemoveAll();
+            }
+            unit->m_2f0 = -1;
+            unit->m_2f4 = -1;
+            unit->m_300 = -1;
+            unit->m_2e8 = -1;
+            unit->m_304 = -1;
+            unit->m_2d4 = 0;
+            unit->m_250 = g_spawnCfg;
+            unit->m_254 = g_spawnState;
+            return 1;
+        }
+    }
+    band = unit->m_2e8;
+    char* rec = (char*)m_004 + band * 0x238;
+    i32 rx = *(i32*)(rec + 0x258);
+    i32 ry = *(i32*)(rec + 0x25c);
+    char* edge = rec + 0x188;
+    if (unit->m_328 != 0) {
+        if (unit->m_2d4 != 6) {
+            return 1;
+        }
+        i32 gx = unit->m_300;
+        i32 gy = unit->m_304;
+        if (gx == -1 || gy == -1) {
+            // Reset the goal: recycle the unit's coords onto g_freeList.
+            unit->m_2d4 = 0;
+            if (unit->m_328 != 0) {
+                CoordNode* n = (CoordNode*)unit->m_320;
+                while (n != 0) {
+                    CoordNode* cur = n;
+                    n = n->m_next;
+                    if (cur->m_coord != 0) {
+                        void** node = (void**)((char*)cur->m_coord - g_freeListNodeBias);
+                        *node = g_freeList;
+                        g_freeList = node;
+                    }
+                }
+                ((CObList*)&unit->m_31c)->RemoveAll();
+            }
+            unit->m_300 = -1;
+            unit->m_304 = -1;
+            return 1;
+        }
+        UnitLevel* lvl = (UnitLevel*)unit->m_010;
+        i32 dx = abs(gx - (lvl->m_5c >> 5));
+        i32 dy = abs(gy - (lvl->m_60 >> 5));
+        if (dx * dx + dy * dy > 0x10) {
+            return 1;
+        }
+        CoordNode* n = (CoordNode*)unit->m_320;
+        while (n != 0) {
+            CoordNode* cur = n;
+            n = n->m_next;
+            if (cur->m_coord != 0) {
+                void** node = (void**)((char*)cur->m_coord - g_freeListNodeBias);
+                *node = g_freeList;
+                g_freeList = node;
+            }
+        }
+        ((CObList*)&unit->m_31c)->RemoveAll();
+        unit->m_2d4 = 7;
+        unit->m_250 = g_spawnCfg;
+        unit->m_254 = 0x248;
+        return 1;
+    }
+    if (unit->m_2d4 == 0) {
+        unit->m_250 = g_spawnCfg;
+        unit->m_254 = g_spawnState;
+        i32 gx = unit->m_300;
+        if (gx == -1) {
+            i32 x, y;
+            if (*(i32*)(edge + 0xf8) != 0) {
+                Coord out;
+                Coord* r = (Coord*)Method_030f20(&out, (i32)unit, band);
+                x = r->m_x;
+                y = r->m_y;
+            } else {
+                x = rx;
+                y = ry;
+            }
+            unit->m_300 = x;
+            unit->m_304 = y;
+            unit->m_2d4 = 6;
+            return 1;
+        }
+        i32 gy = unit->m_304;
+        Coord c1;
+        ((UnitGeom*)unit)->GetCoord(&c1);
+        i32 dxA = abs(rx - (c1.m_x >> 5));
+        Coord c2;
+        ((UnitGeom*)unit)->GetCoord(&c2);
+        i32 dyA = abs(ry - (c2.m_y >> 5));
+        i32 distA = dxA * dxA + dyA * dyA;
+        i32 dxB = abs(rx - gx);
+        i32 dyB = abs(ry - gy);
+        i32 distB = dxB * dxB + dyB * dyB;
+        if (distA > distB) {
+            unit->m_2d4 = 6;
+        }
+        return 1;
+    }
+    if (unit->m_2d4 == 6) {
+        if ((u32)unit->m_2ec <= (u32)m_0bc) {
+            return 1;
+        }
+        i32 gx = unit->m_300;
+        i32 gy = unit->m_304;
+        if (gx == -1 || gy == -1) {
+            // Reset the goal: recycle the unit's coords onto g_coordPool.
+            unit->m_2d4 = 0;
+            if (unit->m_328 != 0) {
+                CoordNode* n = (CoordNode*)unit->m_320;
+                while (n != 0) {
+                    CoordNode* cur = n;
+                    n = n->m_next;
+                    if (cur->m_coord != 0) {
+                        g_coordPool.Recycle(cur->m_coord);
+                    }
+                }
+                ((CObList*)&unit->m_31c)->RemoveAll();
+            }
+            unit->m_300 = -1;
+            unit->m_304 = -1;
+            return 1;
+        }
+        UnitLevel* lvl = (UnitLevel*)unit->m_010;
+        i32 dx = abs(gx - (lvl->m_5c >> 5));
+        i32 dy = abs(gy - (lvl->m_60 >> 5));
+        if (dx * dx + dy * dy <= 0x10) {
+            unit->m_2d4 = 7;
+            unit->m_250 = g_spawnCfg;
+            unit->m_254 = 0x248;
+            return 1;
+        }
+        i32 prim = unit->m_170;
+        i32 cfg = unit->m_250;
+        i32 flags = unit->m_254;
+        i32 t = prim;
+        if (prim > 0x16) {
+            t = unit->m_19c;
+        }
+        if (t == 0x12) {
+            flags |= 0x100;
+        } else {
+            t = prim;
+            if (prim > 0x16) {
+                t = unit->m_19c;
+            }
+            if (t == 0xe) {
+                flags |= 0x1000;
+            } else {
+                if (prim > 0x16) {
+                    prim = unit->m_19c;
+                }
+                if (prim == 0x16) {
+                    flags |= 0x942;
+                }
+            }
+        }
+        if (((GridUnitSpawn*)unit)->Place(gx, gy, 0, cfg, 0, flags) != 0) {
+            unit->m_250 = g_spawnCfg;
+            unit->m_254 = g_spawnState;
+            unit->m_2ec = 0;
+            return 1;
+        }
+        i32 st = unit->m_254;
+        if (st == g_spawnState) {
+            unit->m_254 = 0x40;
+        } else if (st == 0x40) {
+            unit->m_254 = 0x248;
+        } else if (st == 0x248) {
+            unit->m_254 = 0x20;
+        } else if (st == 0x20) {
+            unit->m_254 = 0x228;
+        } else if (st == 0x228) {
+            unit->m_254 = 0x268;
+        } else if (st == 0x268) {
+            unit->m_254 = 0x4268;
+        }
+        unit->m_2ec = 0;
+        return 1;
+    }
+    if (unit->m_2d4 != 7) {
+        return 1;
+    }
+    Board* board = (Board*)m_00c;
+    RECT box2;
+    box2.left = 0;
+    box2.top = 0;
+    RECT bounds;
+    RECT* bp = ((RectInit*)&bounds)->Set(0, 0, board->m_w, board->m_h);
+    box2.right = board->m_w;
+    box2.bottom = board->m_h;
+    RECT rc;
+    rc.left = bp->left;
+    rc.top = bp->top;
+    rc.right = bp->right;
+    rc.bottom = bp->bottom;
+    if (!IntersectRect((RECT*)&board->m_60, &rc, &box2)) {
+        *(RECT*)&board->m_60 = rc;
+    }
+    board->m_70 = board->m_68 - board->m_60;
+    board->m_74 = board->m_6c - board->m_64;
+    i32 prim = unit->m_170;
+    i32 flags = unit->m_254;
+    i32 t = prim;
+    if (prim > 0x16) {
+        t = unit->m_19c;
+    }
+    if (t == 0x12) {
+        flags |= 0x100;
+    } else {
+        t = prim;
+        if (prim > 0x16) {
+            t = unit->m_19c;
+        }
+        if (t == 0xe) {
+            flags |= 0x1000;
+        } else {
+            if (prim > 0x16) {
+                prim = unit->m_19c;
+            }
+            if (prim == 0x16) {
+                flags |= 0x942;
+            }
+        }
+    }
+    if (((GridUnitSpawn*)unit)->Place(rx, ry, 0, 0x987, 1, flags) != 0) {
+        unit->m_250 = g_spawnCfg;
+        unit->m_254 = g_spawnState;
+        unit->m_2ec = 0;
+        return 1;
+    }
+    unit->m_2ec = 0;
+    unit->m_254 = 0x4268;
+    return 1;
 }
 
 // ===========================================================================
