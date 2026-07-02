@@ -45,6 +45,7 @@ Subcommands
 import argparse
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -193,6 +194,20 @@ def cmd_build(args) -> None:
         log("regressions vs baseline ...")
         subprocess.run([sys.executable, "-m", "gruntz.match.status",
                         "--report", str(REPORT), "check"], cwd=str(REPO), env=_pkg_env())
+
+    # Class-metadata invariants. Every vtable-bearing class should carry a
+    # VTBL/manual/RTTI catalog entry, and every class a SIZE/SIZE_UNKNOWN - so a
+    # class added without one is caught here, not later. REPORTING for now (a
+    # backlog of un-annotated per-TU placeholder structs remains); flip each to a
+    # fatal `run(...)` once its count reaches 0. See gruntz.match.class_{vtables,sizes}.
+    for mod, tag in (("class_vtables", "VTBL"), ("class_sizes", "SIZE")):
+        r = subprocess.run([sys.executable, "-m", f"gruntz.match.{mod}"],
+                           cwd=str(REPO), capture_output=True, text=True, env=_pkg_env())
+        n = sum(1 for ln in (r.stdout + r.stderr).splitlines()
+                if re.match(r"\s*\S+:\d+:", ln))
+        if n:
+            log(f"{tag}: {n} class(es) missing {tag}() "
+                f"(python -m gruntz.match.{mod} for the list)")
 
 
 def cmd_labels(args) -> None:
