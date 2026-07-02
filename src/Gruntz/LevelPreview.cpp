@@ -139,7 +139,7 @@ public:
 RVA(0x000de200, 0x85)
 i32 CPreviewState::Tick() {
     IDirectDrawSurfaceZ* surf = m_0c->m_04->m_10->m_2c->m_8;
-    if (surf == 0 || surf->vtbl->IsLost(surf) != 0) {
+    if (surf == 0 || surf->IsLost() != 0) {
         if (Advance() == 0) {
             m_04->ReportError(0x8006, 0xfa0);
             return 0;

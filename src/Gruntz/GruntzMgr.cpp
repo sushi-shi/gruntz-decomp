@@ -20,10 +20,51 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/Enums.h>
 #include <Io/FileStream.h> // CFileIO (the engine file reader IsBattlezMapFile opens)
+#include <ComDefs.h>       // STDMETHOD / HRESULT - the world-dispatch / DirectPlayLobby COM macros
 #include <rva.h>
 #include <stdio.h>  // engine sprintf (reloc-masked) for the toggle-message formatter
 #include <string.h> // engine strstr (reloc-masked) for the Battlez header probe
 #include <Globals.h>
+
+// ---------------------------------------------------------------------------
+// The two COM-interface views CGruntzMgr dispatches on. Defined HERE (the only TU
+// that calls their slots) rather than in the widely-included class header, so the
+// STDMETHOD virtual-interface footprint stays out of GruntzMgr.h's ~14 includers.
+// ---------------------------------------------------------------------------
+
+// A polymorphic world sub-object (CWorldZ::m_1c -> *m_1c): abstract __stdcall COM
+// interface, only slot 10 (+0x28) is dispatched. STDMETHOD_(void, ...) ==
+// `virtual void __stdcall`, so `d->Slot0a()` lowers to `mov eax,[d]; call [eax+0x28]`.
+SIZE_UNKNOWN(CWorldDispatch);
+struct CWorldDispatch {
+    STDMETHOD_(void, v00)() PURE;
+    STDMETHOD_(void, v01)() PURE;
+    STDMETHOD_(void, v02)() PURE;
+    STDMETHOD_(void, v03)() PURE;
+    STDMETHOD_(void, v04)() PURE;
+    STDMETHOD_(void, v05)() PURE;
+    STDMETHOD_(void, v06)() PURE;
+    STDMETHOD_(void, v07)() PURE;
+    STDMETHOD_(void, v08)() PURE;
+    STDMETHOD_(void, v09)() PURE;
+    STDMETHOD_(void, Slot0a)() PURE; // slot 10 (+0x28)
+};
+
+// IDirectPlayLobby-shaped COM interface (CGruntzMgr::m_lobby): abstract __stdcall,
+// STDMETHOD form; only Release (slot 2) + GetConnectionSettings (slot 8, called
+// twice in the size-probe / fill idiom) are pinned.
+SIZE_UNKNOWN(IDirectPlayLobbyZ);
+struct IDirectPlayLobbyZ {
+    STDMETHOD(QueryInterface)(void* riid, void* out) PURE; // slot 0
+    STDMETHOD(v01)() PURE;                                 // slot 1
+    STDMETHOD(Release)() PURE;                             // slot 2  (+0x08)
+    STDMETHOD(v03)() PURE;                                 // slot 3
+    STDMETHOD(v04)() PURE;                                 // slot 4
+    STDMETHOD(v05)() PURE;                                 // slot 5
+    STDMETHOD(v06)() PURE;                                 // slot 6
+    STDMETHOD(v07)() PURE;                                 // slot 7
+    STDMETHOD(GetConnectionSettings)(u32 appId, void* lpData, u32* lpdwSize) PURE; // slot 8 (+0x20)
+};
 
 namespace Utils {
     namespace WinAPI {
@@ -943,7 +984,7 @@ i32 CGruntzMgr::InitializeLobbyConnectionSettings() {
     m_lobbyResult = 0;
 
     if (m_lobby) {
-        m_lobby->vtbl->Release(m_lobby);
+        m_lobby->Release();
         m_lobby = 0;
     }
 
@@ -967,7 +1008,7 @@ i32 CGruntzMgr::InitializeLobbyConnectionSettings() {
     }
 
     u32 dwSize = 0;
-    hr = m_lobby->vtbl->GetConnectionSettings(m_lobby, 0, 0, &dwSize);
+    hr = m_lobby->GetConnectionSettings(0, 0, &dwSize);
     if (hr != 0 && hr != (i32)0x8877001e) { // !DPERR_BUFFERTOOSMALL
         CNetMgr::ReportError(
             "C:\\Proj\\Gruntz\\GruntzMgr.cpp",
@@ -975,19 +1016,19 @@ i32 CGruntzMgr::InitializeLobbyConnectionSettings() {
             hr,
             ((CGameWnd*)m_4)->m_hwnd
         );
-        m_lobby->vtbl->Release(m_lobby);
+        m_lobby->Release();
         m_lobby = 0;
         return 0;
     }
 
     m_connSettings = operator new(dwSize);
     if (!m_connSettings) {
-        m_lobby->vtbl->Release(m_lobby);
+        m_lobby->Release();
         m_lobby = 0;
         return 0;
     }
 
-    hr = m_lobby->vtbl->GetConnectionSettings(m_lobby, 0, m_connSettings, &dwSize);
+    hr = m_lobby->GetConnectionSettings(0, m_connSettings, &dwSize);
     if (hr) {
         CNetMgr::ReportError(
             "C:\\Proj\\Gruntz\\GruntzMgr.cpp",
@@ -995,7 +1036,7 @@ i32 CGruntzMgr::InitializeLobbyConnectionSettings() {
             hr,
             ((CGameWnd*)m_4)->m_hwnd
         );
-        m_lobby->vtbl->Release(m_lobby);
+        m_lobby->Release();
         m_lobby = 0;
         return 0;
     }
@@ -2656,7 +2697,7 @@ void CGruntzMgr::EnterModalUI(i32 arg) {
     if (m_world) {
         RedrawMapIndex(m_world->m_4->m_14);
         CWorldDispatch* d = *m_world->m_1c;
-        d->vtbl->Slot0a(d);
+        d->Slot0a();
     }
 
     i32(WINAPI * show)(i32) = g_pShowCursor;
@@ -2700,7 +2741,7 @@ i32 CGruntzMgr::ExitModalUI(CModalDialog* dlg, i32 notify) {
             notify = 0;
         }
         CWorldDispatch* d = *m_world->m_1c;
-        d->vtbl->Slot0a(d);
+        d->Slot0a();
     }
 
     i32(WINAPI * show)(i32) = g_pShowCursor;
@@ -3140,7 +3181,7 @@ void CGruntzMgr::UnknownClose() {
     }
     CloseSettingsStore();
     if (m_lobby) {
-        m_lobby->vtbl->Release(m_lobby);
+        m_lobby->Release();
         m_lobby = 0;
     }
     if (m_connSettings) {
@@ -3274,7 +3315,7 @@ i32 CGruntzMgr::RunModalDialog(const char* tmpl, void* dlgProc, i32 flag) {
             flag = 0;
         }
         CWorldDispatch* d = *m_world->m_1c;
-        d->vtbl->Slot0a(d);
+        d->Slot0a();
     }
 
     i32(WINAPI * show)(i32) = g_pShowCursor;

@@ -99,14 +99,11 @@ struct CWorldSub28 {
 };
 struct CWorldView;
 // A polymorphic sub-object held in the world at +0x1c, dispatched through a
-// pointer-to-pointer (`*m_1c`) then vtbl slot 10 (+0x28).
-SIZE_UNKNOWN(CWorldDispatch);
-struct CWorldDispatch {
-    struct Vtbl {
-        void* s0[10];
-        void(__stdcall* Slot0a)(CWorldDispatch*); // +0x28
-    }* vtbl;
-};
+// pointer-to-pointer (`*m_1c`) then virtual slot 10 (+0x28). The full COM-interface
+// definition (real virtuals) lives in GruntzMgr.cpp - the only TU that dispatches on
+// it; here CWorldZ::m_1c is a pointer, so a forward declaration suffices (keeps this
+// widely-included class header free of the <ComDefs.h> STDMETHOD footprint).
+struct CWorldDispatch;
 // The world's +0x4 sub-object exposes a map-index field at +0x14.
 SIZE_UNKNOWN(CWorldSub4);
 struct CWorldSub4 {
@@ -125,24 +122,11 @@ struct CWorldZ {
 };
 
 // Minimal IDirectPlayLobby-shaped COM surface used by
-// InitializeLobbyConnectionSettings: only the two vtable slots it calls are
-// needed - Release (slot 2, +0x8) and GetConnectionSettings (slot 8, +0x20,
-// called twice in the size-probe / fill-buffer idiom). The call rel32/IAT
-// displacements reloc-mask; only the slot offsets + arg shapes are load-bearing.
-SIZE_UNKNOWN(IDirectPlayLobbyZ);
-struct IDirectPlayLobbyZ {
-    struct Vtbl {
-        void *slot0, *slot1;
-        i32(__stdcall* Release)(IDirectPlayLobbyZ*); // +0x08
-        void *slot3, *slot4, *slot5, *slot6, *slot7;
-        i32(__stdcall* GetConnectionSettings)(
-            IDirectPlayLobbyZ*,
-            u32 appId,
-            void* lpData,
-            u32* lpdwSize
-        ); // +0x20
-    }* vtbl;
-};
+// InitializeLobbyConnectionSettings (Release slot 2 / GetConnectionSettings slot 8,
+// called twice in the size-probe / fill idiom). The full COM-interface definition
+// (real virtuals) lives in GruntzMgr.cpp - the only TU that dispatches on it; the
+// CGruntzMgr::m_lobby member is a pointer, so a forward declaration suffices here.
+struct IDirectPlayLobbyZ;
 
 SIZE(CGruntzMgr, 0xa30);
 class CGruntzMgr : public WAP32::CGameMgr {

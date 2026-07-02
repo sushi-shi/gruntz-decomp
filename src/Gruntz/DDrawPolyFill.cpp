@@ -133,7 +133,7 @@ i32 FillPolygon(FillVert* verts, i32 count, CDDSurface* surf, i16 color) {
             pDesc = (i32*)((char*)pDesc + 0x1c);
         } while (--rowCount != 0);
     }
-    surf->m_8->vtbl->Unlock(surf->m_8, 0);
+    surf->m_8->Unlock(0);
     return 1;
 }
 

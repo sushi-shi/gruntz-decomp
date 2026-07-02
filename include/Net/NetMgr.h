@@ -14,6 +14,7 @@
 #ifndef NET_NETMGR_H
 #define NET_NETMGR_H
 
+#include <ComDefs.h> // STDMETHOD / HRESULT - the DirectPlay COM interface macros
 #include <Ints.h>
 #include <rva.h> // SIZE_UNKNOWN/VTBL class-metadata macros used below
 
@@ -365,73 +366,60 @@ SIZE(CNetSession, 0x20bb0); // fully-laid-out: +0x3b0 + 0x80*0x410 resync entrie
 //   +0x68 (slot 26)  SetData5  (a, b, c, d, e)              -> HRESULT
 // ---------------------------------------------------------------------------
 struct IDirectPlay4Z {
-    // External DirectPlay COM interface vtable (no dplay.h in dx/Include, so the
-    // slot layout is hand-modeled). COM slots are __stdcall with the interface
-    // pointer as the explicit first arg -> NOT convertible to C++ __thiscall
-    // virtuals; the explicit function-pointer table is the load-bearing model.
-    struct Vtable {
-        i32(__stdcall* QueryInterface)(IDirectPlay4Z*, void* riid, void* out); // +0x00 (slot 0)
-        char m_pad4[0xc - 0x4];
-        i32(__stdcall* Open)(IDirectPlay4Z*, void* a, void* b, i32 c); // +0x0c (slot 3)
-        char m_pad10[0x18 - 0x10];
-        i32(__stdcall* GetSessionDesc)(
-            IDirectPlay4Z*,
-            void* a,
-            void* b,
-            i32 c,
-            i32 d,
-            i32 e
-        ); // +0x18 (slot 6)
-        char m_pad1c[0x30 - 0x1c];
-        i32(__stdcall* EnumGroupsCb)(
-            IDirectPlay4Z*,
-            void* desc,
-            void* callback,
-            void* ctx,
-            i32 flags
-        ); // +0x30 (slot 12)
-        i32(__stdcall* EnumPlayers)(
-            IDirectPlay4Z*,
-            void* desc,
-            void* a,
-            void* callback,
-            void* ctx,
-            void* flags
-        );                                                            // +0x34 (slot 13)
-        i32(__stdcall* Enum2)(IDirectPlay4Z*, void* desc, void* ctx); // +0x38
-        char m_pad3c[0x44 - 0x3c];
-        i32(__stdcall*
-                GetMessageCount)(IDirectPlay4Z*, i32 idPlayer, i32* lpCount); // +0x44 (slot 17)
-        char m_pad48[0x50 - 0x48];
-        i32(__stdcall* GetData2)(
-            IDirectPlay4Z*,
-            i32 id,
-            void* lpData,
-            u32* lpSize,
-            u32 fl
-        ); // +0x50
-        char m_pad54[0x58 - 0x54];
-        i32(__stdcall* GetPlayerData2)(IDirectPlay4Z*, void* in, void* out); // +0x58 (slot 22)
-        char m_pad5c[0x60 - 0x5c];
-        i32(__stdcall* EnumGroups)(IDirectPlay4Z*, void* desc, i32 flags); // +0x60 (slot 24)
-        i32(__stdcall* Receive)(
-            IDirectPlay4Z*,
-            i32* lpidFrom,
-            i32* lpidTo,
-            i32 flags,
-            void* lpData,
-            i32* lpSize
-        ); // +0x64 (slot 25)
-        i32(__stdcall* SetData5)(IDirectPlay4Z*, i32 a, i32 b, i32 c, i32 d, i32 e); // +0x68
-        char m_pad6c[0x74 - 0x6c];
-        i32(__stdcall* GetData5)(
-            IDirectPlay4Z*,
-            i32 id,
-            void* lpData,
-            i32 size,
-            i32 fl
-        ); // +0x74 (slot 29)
-    }* vtbl;
+    // External DirectPlay-shaped COM interface (abstract, __stdcall; no dplay.h in
+    // dx/Include, so the slot layout is hand-modeled). STDMETHOD == `virtual HRESULT
+    // __stdcall`, so `dp->Method(args)` lowers to `mov eax,[dp]; call [eax+slot]` -
+    // the runtime COM slot the engine never link-resolves. Only the called slots
+    // carry signatures; slot names follow the reconstructor's functional labels (the
+    // DirectPlay method identities are not all pinned - GetMessageCount slot 17 and
+    // Receive slot 25 land at their real DX indices, the rest are best-effort).
+    STDMETHOD(QueryInterface)(void* riid, void* out) PURE;                 // slot 0
+    STDMETHOD(v01)() PURE;                                                 // slot 1
+    STDMETHOD(v02)() PURE;                                                 // slot 2
+    STDMETHOD(Open)(void* a, void* b, i32 c) PURE;                         // slot 3  (+0x0c)
+    STDMETHOD(v04)() PURE;                                                 // slot 4
+    STDMETHOD(v05)() PURE;                                                 // slot 5
+    STDMETHOD(GetSessionDesc)(void* a, void* b, i32 c, i32 d, i32 e) PURE; // slot 6 (+0x18)
+    STDMETHOD(v07)() PURE;                                                 // slot 7
+    STDMETHOD(v08)() PURE;                                                 // slot 8
+    STDMETHOD(v09)() PURE;                                                 // slot 9
+    STDMETHOD(v0a)() PURE;                                                 // slot 10
+    STDMETHOD(v0b)() PURE;                                                 // slot 11
+    STDMETHOD(EnumGroupsCb)(
+        void* desc,
+        void* callback,
+        void* ctx,
+        i32 flags
+    ) PURE; // slot 12 (+0x30)
+    STDMETHOD(EnumPlayers)(
+        void* desc,
+        void* a,
+        void* callback,
+        void* ctx,
+        void* flags
+    ) PURE;                                                              // slot 13 (+0x34)
+    STDMETHOD(Enum2)(void* desc, void* ctx) PURE;                        // slot 14 (+0x38)
+    STDMETHOD(v0f)() PURE;                                               // slot 15
+    STDMETHOD(v10)() PURE;                                               // slot 16
+    STDMETHOD(GetMessageCount)(i32 idPlayer, i32* lpCount) PURE;         // slot 17 (+0x44)
+    STDMETHOD(v12)() PURE;                                               // slot 18
+    STDMETHOD(v13)() PURE;                                               // slot 19
+    STDMETHOD(GetData2)(i32 id, void* lpData, u32* lpSize, u32 fl) PURE; // slot 20 (+0x50)
+    STDMETHOD(v15)() PURE;                                               // slot 21
+    STDMETHOD(GetPlayerData2)(void* in, void* out) PURE;                 // slot 22 (+0x58)
+    STDMETHOD(v17)() PURE;                                               // slot 23
+    STDMETHOD(EnumGroups)(void* desc, i32 flags) PURE;                   // slot 24 (+0x60)
+    STDMETHOD(Receive)(
+        i32* lpidFrom,
+        i32* lpidTo,
+        i32 flags,
+        void* lpData,
+        i32* lpSize
+    ) PURE;                                                           // slot 25 (+0x64)
+    STDMETHOD(SetData5)(i32 a, i32 b, i32 c, i32 d, i32 e) PURE;      // slot 26 (+0x68)
+    STDMETHOD(v1b)() PURE;                                            // slot 27
+    STDMETHOD(v1c)() PURE;                                            // slot 28
+    STDMETHOD(GetData5)(i32 id, void* lpData, i32 size, i32 fl) PURE; // slot 29 (+0x74)
 };
 SIZE_UNKNOWN(IDirectPlay4Z); // external DirectPlay COM interface (opaque object); size TBD
 
@@ -579,14 +567,14 @@ extern "C" void NetEnumCb();
 // are pinned; everything else is opaque padding. __stdcall (COM convention).
 // ---------------------------------------------------------------------------
 struct INetReleasable {
-    // External COM interface (IUnknown-shaped): __stdcall slots, explicit `this`
-    // first arg -> hand-modeled function-pointer table, not C++ virtuals.
-    struct Vtable {
-        char m_pad0[8];
-        i32(__stdcall* Release)(INetReleasable*); // +0x08 (slot 2)
-        char m_padc[0x10 - 0xc];
-        i32(__stdcall* Slot10)(INetReleasable*); // +0x10 (slot 4)
-    }* vtbl;
+    // External COM interface (IUnknown-shaped, abstract, __stdcall). STDMETHOD form
+    // (== `virtual HRESULT __stdcall`); only Release (slot 2) and the slot-4 teardown
+    // hook the Destroy path calls are pinned, everything else is placeholder.
+    STDMETHOD(QueryInterface)(void* riid, void* out) PURE; // slot 0
+    STDMETHOD(v01)() PURE;                                 // slot 1
+    STDMETHOD(Release)() PURE;                             // slot 2  (+0x08)
+    STDMETHOD(v03)() PURE;                                 // slot 3
+    STDMETHOD(Slot10)() PURE;                              // slot 4  (+0x10)
 };
 SIZE_UNKNOWN(INetReleasable); // external COM interface (opaque object); size TBD
 

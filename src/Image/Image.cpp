@@ -759,7 +759,7 @@ i32 CFileImage::BlitDirect(void* src, i32 mode) {
             p += n;
         }
     }
-    this->m_8->vtbl->Unlock(this->m_8, 0);
+    this->m_8->Unlock(0);
     return 1;
 }
 
@@ -851,7 +851,7 @@ i32 CFileImage::Blit248(void* srcv, void* palv, i32 mode) {
             }
         }
     }
-    this->m_8->vtbl->Unlock(this->m_8, 0);
+    this->m_8->Unlock(0);
     return 1;
 }
 
@@ -889,13 +889,13 @@ void CFileImage::FreeSurfaces() {
     m_elements.SetSize(0, -1);
     if (this->m_8 != 0) {
         if ((this->m_7c & 1) == 0) {
-            this->m_8->vtbl->Release(this->m_8);
+            this->m_8->Release();
         }
         this->m_8 = 0;
     }
     if (this->m_c != 0) {
         if ((this->m_7c & 1) == 0) {
-            this->m_c->vtbl->Release(this->m_c);
+            this->m_c->Release();
         }
         this->m_c = 0;
     }
@@ -1044,7 +1044,7 @@ void CFileImage::Clear(i32 white) {
     }
     fx[0] = 0x64;                         // dwSize @+0x0
     fx[2] = white ? (i32)0xff0062 : 0x42; // fill flags @+0x8
-    i32 hr = this->m_8->vtbl->Blt(this->m_8, 0, 0, 0, 0x1020000, fx);
+    i32 hr = this->m_8->Blt(0, 0, 0, 0x1020000, fx);
     if (hr != 0) {
         if (white != 0) {
             Fill(0xff);
@@ -1190,7 +1190,7 @@ i32 CFileImage::SaveRle16(void* a1, void* a2, void* a3) {
         ok = file.Open((char*)a2, 0x1001, 0);
     }
     if (ok == 0) {
-        this->m_8->vtbl->Unlock(this->m_8, 0);
+        this->m_8->Unlock(0);
         RezFree(line);
         return 0;
     }
@@ -1213,7 +1213,7 @@ i32 CFileImage::SaveRle16(void* a1, void* a2, void* a3) {
         file.Write(line, 3 * width);
     }
 
-    this->m_8->vtbl->Unlock(this->m_8, 0);
+    this->m_8->Unlock(0);
     RezFree(line);
     return 1;
 }

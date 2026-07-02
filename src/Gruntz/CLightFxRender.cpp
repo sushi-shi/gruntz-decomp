@@ -8,20 +8,15 @@
 //
 // Field names are placeholders (m_<hexoffset>); only offsets + code bytes are
 // load-bearing. See <Gruntz/CLightFxRender.h> for the layout.
+#include <DDrawMgr/CDDSurface.h> // IDirectDrawSurfaceZ (the held surface's Unlock, slot 32)
 #include <Gruntz/CLightFxRender.h>
 
 #include <Gruntz/CGameRegistry.h> // the g_gameReg singleton (0x24556c) canonical view
 #include <rva.h>
 
-// The unlock interface (LfxBorderCtx::m_8 / LfxSurface::m_8): a COM-like object
-// whose vtable slot 0x20 releases the surface lock. Modeled as a typed vtable so
-// the dispatch (mov eax,[iface]; call [eax+0x80]) falls out with no cast.
-struct LfxUnlockIface {
-    struct Vtbl {
-        void* s0[0x20];
-        void(__stdcall* Unlock)(LfxUnlockIface*, i32); // slot 0x20 -> [vtbl+0x80]
-    }* vtbl;
-};
+// The held surface (LfxBorderCtx::m_08 / LfxSurface::m_08) is the real
+// IDirectDrawSurface COM interface: `s->m_08->Unlock(0)` dispatches through slot 32
+// (+0x80). The canonical IDirectDrawSurfaceZ lives in <DDrawMgr/CDDSurface.h>.
 
 // The DirectDraw work surface (this+0x10, callers pass it at +0x2c).
 //   +0x08 unlock interface (Resize's own unlock path)
@@ -29,7 +24,7 @@ struct LfxUnlockIface {
 //   +0x20 row stride (per y) / +0xb0 column stride (per x), in bytes
 struct LfxSurface {
     char m_pad[0x8];
-    LfxUnlockIface* m_08; // +0x08 unlock interface
+    IDirectDrawSurfaceZ* m_08; // +0x08 held DirectDraw surface (Unlock via slot 32)
     char m_pad0c[0x18 - 0xc];
     i32 m_18; // +0x18 surface height-in-tiles / divisor
     i32 m_1c; // +0x1c surface width-in-tiles / divisor
@@ -46,7 +41,7 @@ struct LfxSurface {
 // +0x2c the locked work surface (pitch / stride / Lock).
 struct LfxBorderCtx {
     char m_pad0[0x8];
-    LfxUnlockIface* m_08; // +0x08 unlock interface
+    IDirectDrawSurfaceZ* m_08; // +0x08 held DirectDraw surface (Unlock via slot 32)
     char m_pad0c[0x2c - 0xc];
     LfxSurface* m_2c; // +0x2c the work surface
 };
@@ -405,7 +400,7 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
             }
         }
     }
-    m_10->m_08->vtbl->Unlock(m_10->m_08, 0);
+    m_10->m_08->Unlock(0);
     return 1;
 }
 
@@ -512,7 +507,7 @@ void CLightFxRender::DrawBorder(LfxRect* r, LfxBorderCtx* ctx, i32 color) {
         lp += surf->m_20;
         rp += surf->m_20;
     }
-    ctx->m_08->vtbl->Unlock(ctx->m_08, 0);
+    ctx->m_08->Unlock(0);
 }
 
 // ===========================================================================

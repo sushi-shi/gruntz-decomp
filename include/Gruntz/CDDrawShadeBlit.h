@@ -25,16 +25,12 @@ struct ShadeRect {
     i32 bottom; // +0x0c
 };
 
-// The unlock interface (ShadeSrc::m_08): a COM-like object whose vtable slot 0x20
-// releases the surface lock. Typed vtable so the dispatch (mov eax,[iface];
-// call [eax+0x80]) falls out with no cast.
-SIZE_UNKNOWN(ShadeUnlockIface);
-struct ShadeUnlockIface {
-    struct Vtbl {
-        void* s0[0x20];
-        void(__stdcall* Unlock)(ShadeUnlockIface*, i32); // slot 0x20 -> [vtbl+0x80]
-    }* vtbl;
-};
+// ShadeSrc::m_08 is the held DirectDraw surface: `surf->m_surface->Unlock(0)`
+// dispatches through the real IDirectDrawSurface COM interface (Unlock is slot 32,
+// +0x80). The canonical IDirectDrawSurfaceZ lives in <DDrawMgr/CDDSurface.h>;
+// forward-declared here (pointer member only) so this header stays lean for the
+// non-dispatching includers, and the full interface is pulled in by the .cpp.
+struct IDirectDrawSurfaceZ;
 
 // The render-source / destination surface (2nd arg of Blit). +0xb0 is the blend
 // mode (==2 enables the special global-state check; read in Blit). The per-mode
@@ -43,7 +39,7 @@ struct ShadeUnlockIface {
 SIZE_UNKNOWN(ShadeSrc);
 struct ShadeSrc {
     char m_00[0x08];
-    ShadeUnlockIface* m_surface; // +0x08 held DDraw surface (unlocked via COM slot 0x80)
+    IDirectDrawSurfaceZ* m_surface; // +0x08 held DDraw surface (unlocked via COM slot 0x80/Unlock)
     char m_0c[0x20 - 0x0c];
     i32 m_pitch; // +0x20 surface pitch (row stride, bytes)
     char m_24[0xb0 - 0x24];

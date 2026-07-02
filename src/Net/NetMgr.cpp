@@ -404,7 +404,7 @@ i32 CNetMgr::PollSession() {
     } else {
         IDirectPlay4Z* dp = m_peer->m_directPlay;
         count = 0;
-        i32 hr = dp->vtbl->GetMessageCount(dp, m_localPlayer->m_4, &count);
+        i32 hr = dp->GetMessageCount(m_localPlayer->m_4, &count);
         if (hr) {
             count = 0;
         }
@@ -423,7 +423,7 @@ i32 CNetMgr::PollSession() {
         i32 size = 0x800;
         i32 idTo = m_localPlayer->m_4;
         IDirectPlay4Z* dp = m_peer->m_directPlay;
-        i32 hr = dp->vtbl->Receive(dp, &size, &idTo, 1, (void*)g_recvBuffer, &size);
+        i32 hr = dp->Receive(&size, &idTo, 1, (void*)g_recvBuffer, &size);
         if (hr) {
             ReportError("c:\\proj\\incs\\netmgr.h", 0x141, hr, 0);
             if (hr) {
@@ -2618,7 +2618,7 @@ i32 CNetMgr::InitFromProvider(void* a, i32 c, i32 d, i32 e, i32 f) {
         return 0;
     }
     IDirectPlay4Z* raw = (IDirectPlay4Z*)m_releaseIface;
-    hr = raw->vtbl->QueryInterface(raw, (void*)&g_netDirectPlayRiid, &m_directPlay);
+    hr = raw->QueryInterface((void*)&g_netDirectPlayRiid, &m_directPlay);
     if (hr != 0) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x50, hr, 0);
         Destroy();
@@ -2658,13 +2658,13 @@ RVA(0x00178170, 0xba)
 i32 CNetMgr::Init(void* a, i32 c, i32 d, i32 e, i32 f) {
     IDirectPlay4Z* iface = (IDirectPlay4Z*)a;
     void* out = a;
-    i32 hr = iface->vtbl->Open(iface, 0, &out, 0);
+    i32 hr = iface->Open(0, &out, 0);
     if (hr != 0) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x78, hr, 0);
         Destroy();
         return 0;
     }
-    hr = iface->vtbl->QueryInterface(iface, g_netDirectPlayRiid, &m_directPlay);
+    hr = iface->QueryInterface(g_netDirectPlayRiid, &m_directPlay);
     if (hr != 0) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x81, hr, 0);
         Destroy();
@@ -2698,7 +2698,7 @@ void CNetMgr::Destroy() {
     ClearSessionList();
 
     if (m_releaseIface != 0) {
-        m_releaseIface->vtbl->Release(m_releaseIface);
+        m_releaseIface->Release();
         m_releaseIface = 0;
     }
     // The DirectPlay interface releases through the same IUnknown-shaped vtable
@@ -2707,9 +2707,9 @@ void CNetMgr::Destroy() {
     // matching retail's reload of [this+0x18].
     INetReleasable*& dp = *(INetReleasable**)&m_directPlay;
     if (dp != 0) {
-        dp->vtbl->Slot10(dp);
+        dp->Slot10();
         INetReleasable* again = dp;
-        again->vtbl->Release(again);
+        again->Release();
         dp = 0;
     }
 }
@@ -2758,7 +2758,7 @@ static i32 __stdcall EnumProviderCb(void* guid, char* name, u32 major, u32 minor
         if (dp == 0) {
             return 1;
         }
-        ((INetReleasable*)dp)->vtbl->Release((INetReleasable*)dp);
+        ((INetReleasable*)dp)->Release();
     }
 
     return self->AddGroupNode(guid, name) != 0;
@@ -2932,7 +2932,7 @@ i32 CNetMgr::EnumPlayersInto(void* a, void* b) {
     *(i32*)(desc + 0x24) = guid[3];
 
     IDirectPlay4Z* com = m_directPlay;
-    i32 hr = com->vtbl->EnumPlayers(com, desc, a, (void*)&NetEnumPlayerCb, this, b);
+    i32 hr = com->EnumPlayers(desc, a, (void*)&NetEnumPlayerCb, this, b);
     if (hr) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x1c9, hr, 0);
         return hr;
@@ -3071,7 +3071,7 @@ i32 CNetMgr::EnumGroupsInto(void* a, void* b, i32 c, i32 d) {
     }
 
     IDirectPlay4Z* iface = m_directPlay;
-    i32 hr = iface->vtbl->EnumGroups(iface, buf, 2);
+    i32 hr = iface->EnumGroups(buf, 2);
     if (hr != 0) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x29e, hr, 0);
         return 0;
@@ -3079,7 +3079,7 @@ i32 CNetMgr::EnumGroupsInto(void* a, void* b, i32 c, i32 d) {
 
     i32 size = 0;
     iface = m_directPlay;
-    iface->vtbl->GetPlayerData2(iface, 0, &size);
+    iface->GetPlayerData2(0, &size);
     if (size == 0) {
         return 0;
     }
@@ -3088,7 +3088,7 @@ i32 CNetMgr::EnumGroupsInto(void* a, void* b, i32 c, i32 d) {
         return 0;
     }
     iface = m_directPlay;
-    hr = iface->vtbl->GetPlayerData2(iface, blob, &size);
+    hr = iface->GetPlayerData2(blob, &size);
     if (hr != 0) {
         RezFree(blob);
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x2b1, hr, 0);
@@ -3112,7 +3112,7 @@ i32 CNetMgr::EnumPlayersCb(void* a, i32 b, i32 c, i32 d) {
     }
 
     IDirectPlay4Z* iface = m_directPlay;
-    i32 hr = iface->vtbl->EnumGroups(iface, (char*)a + 4, 1);
+    i32 hr = iface->EnumGroups((char*)a + 4, 1);
     if (hr != 0) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x2dc, hr, 0);
         return 0;
@@ -3130,7 +3130,7 @@ i32 CNetMgr::EnumGroupsAll() {
     ClearSessionList();
 
     IDirectPlay4Z* iface = m_directPlay;
-    i32 hr = iface->vtbl->EnumGroupsCb(iface, 0, (void*)&NetEnumCb, this, 0);
+    i32 hr = iface->EnumGroupsCb(0, (void*)&NetEnumCb, this, 0);
     if (hr != 0) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x30a, hr, 0);
         return hr;
@@ -3161,7 +3161,7 @@ i32 CNetMgr::EnumGroupsRange(void* rec, i32 flags) {
     desc[3] = r[3];
 
     IDirectPlay4Z* iface = m_directPlay;
-    i32 hr = iface->vtbl->EnumGroupsCb(iface, desc, (void*)&NetEnumCb, this, flags);
+    i32 hr = iface->EnumGroupsCb(desc, (void*)&NetEnumCb, this, flags);
     if (hr != 0) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x327, hr, 0);
         return hr;
@@ -3191,7 +3191,7 @@ i32 CNetMgr::AddSessionNode(void* a, void* b) {
 
     if (node->InitSession((i32)a, (const char*)b, (const char*)b, (i32)b) != 0) {
         IDirectPlay4Z* iface = m_directPlay;
-        i32 hr = iface->vtbl->GetData5(iface, ((CNetSessionNode*)a)->m_sessionId, node, 4, 1);
+        i32 hr = iface->GetData5(((CNetSessionNode*)a)->m_sessionId, node, 4, 1);
         if (hr != 0) {
             ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x36c, hr, 0);
         }
@@ -3232,7 +3232,7 @@ i32 CNetMgr::CreatePlayer(void* a, i32 b, i32 c) {
     desc[3] = c;
 
     IDirectPlay4Z* iface = m_directPlay;
-    i32 hr = iface->vtbl->GetSessionDesc(iface, &desc[0], &out, (i32)a, 0, 0);
+    i32 hr = iface->GetSessionDesc(&desc[0], &out, (i32)a, 0, 0);
     if (hr != 0) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x3bb, hr, 0);
         return 0;
@@ -3355,7 +3355,7 @@ void* CNetMgr::GetPlayerData(i32 id) {
     void* data;
     data = 0;
     size = 4;
-    i32 hr = m_directPlay->vtbl->GetData2(m_directPlay, id, &data, &size, 1);
+    i32 hr = m_directPlay->GetData2(id, &data, &size, 1);
     return hr ? 0 : data;
 }
 
@@ -3369,7 +3369,7 @@ RVA(0x00178ef0, 0x5c)
 i32 CNetMgr::SetGroupData2(CNetPlayerEntry* a, CNetPlayerEntry* b, i32 c, i32 d, i32 e) {
     i32 ida = a ? a->m_4 : 0;
     i32 idb = b ? b->m_4 : 0;
-    i32 hr = m_directPlay->vtbl->SetData5(m_directPlay, ida, idb, c, d, e);
+    i32 hr = m_directPlay->SetData5(ida, idb, c, d, e);
     if (hr) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x46d, hr, 0);
     }
@@ -3383,7 +3383,7 @@ i32 CNetMgr::SetGroupData2(CNetPlayerEntry* a, CNetPlayerEntry* b, i32 c, i32 d,
 // (NetMgr.cpp:1170).
 RVA(0x00178fc0, 0x44)
 i32 CNetMgr::SetData(i32 a, i32 b, i32 c, i32 d, i32 e) {
-    i32 hr = m_directPlay->vtbl->SetData5(m_directPlay, a, b, c, d, e);
+    i32 hr = m_directPlay->SetData5(a, b, c, d, e);
     if (hr) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x492, hr, 0);
     }
@@ -3399,7 +3399,7 @@ i32 CNetMgr::SetData(i32 a, i32 b, i32 c, i32 d, i32 e) {
 RVA(0x00179090, 0x4c)
 i32 CNetMgr::SetGroupDataFrom(CNetPlayerEntry* a, i32 c, i32 d, i32 e) {
     i32 ida = a ? a->m_4 : 0;
-    i32 hr = m_directPlay->vtbl->SetData5(m_directPlay, ida, 0, c, d, e);
+    i32 hr = m_directPlay->SetData5(ida, 0, c, d, e);
     if (hr) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x4da, hr, 0);
     }
@@ -3420,7 +3420,7 @@ i32 CNetMgr::EnumSessions(void* desc, void* ctx) {
 
     memset(desc, 0, 0x28);
     *(i32*)desc = 0x28;
-    i32 hr = m_directPlay->vtbl->Enum2(m_directPlay, desc, ctx);
+    i32 hr = m_directPlay->Enum2(desc, ctx);
     if (hr) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x52a, hr, 0);
         return 0;

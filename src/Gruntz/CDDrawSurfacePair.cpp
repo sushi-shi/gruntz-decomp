@@ -161,13 +161,13 @@ i32 CDDrawSurfacePair::RestoreIfLost() {
         return 1;
     }
     IDirectDrawSurfaceZ* s = m_surface->m_8;
-    if (s != 0 && s->vtbl->IsLost(s) == 0) {
+    if (s != 0 && s->IsLost() == 0) {
         return 1;
     }
     IDirectDrawSurfaceZ* r = m_surface->m_8;
     // Named local before `== 0` so MSVC emits the setcc form (xor/test/sete/mov),
     // not the neg/sbb/inc normalize. docs/patterns/return-bool-via-local-setcc.md.
-    i32 hr = r->vtbl->Restore(r);
+    i32 hr = r->Restore();
     return hr == 0;
 }
 
@@ -248,7 +248,7 @@ void CDDrawSurfacePair::DrawBox(i32* rect, i32 color) {
     }
 
     // Unlock the held surface.
-    sv->m_8->vtbl->Unlock(sv->m_8, 0);
+    sv->m_8->Unlock(0);
 }
 
 // ---------------------------------------------------------------------------
@@ -309,7 +309,7 @@ void CDDrawSurfacePair::DrawCross(i32 x, i32 y) {
     }
 
     DrawSurfaceView* sv = (DrawSurfaceView*)m_surface;
-    sv->m_8->vtbl->Unlock(sv->m_8, 0);
+    sv->m_8->Unlock(0);
 }
 
 // ---------------------------------------------------------------------------
@@ -441,10 +441,8 @@ i32 CDDrawSurfacePair::directx_wrapper_caller_1644a0_DirectDrawCreate_DirectDraw
 // 98.67%).  docs/patterns/reread-member-view-pointer.md / zero-register-pinning.md.
 RVA(0x00164660, 0x46)
 i32 CDDrawSurfacePair::Probe_164660() {
-    return m_surface == 0
-           || (m_surface->m_8 != 0 && m_surface->m_8->vtbl->IsLost(m_surface->m_8) == 0)
-           || m_surface->m_8->vtbl->Restore(m_surface->m_8) == 0
-           || m_surface->m_8->vtbl->Restore(m_surface->m_8) == 0;
+    return m_surface == 0 || (m_surface->m_8 != 0 && m_surface->m_8->IsLost() == 0)
+           || m_surface->m_8->Restore() == 0 || m_surface->m_8->Restore() == 0;
 }
 
 SIZE_UNKNOWN(CDDAttachedSurface);

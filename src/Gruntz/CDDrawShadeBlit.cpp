@@ -8,6 +8,7 @@
 // Field names are placeholders; offsets + code bytes are load-bearing. The three
 // other mode-loop callees (0x149950/0x149d00/0x14b770) and the surface Lock are
 // external/reloc-masked. See <Gruntz/CDDrawShadeBlit.h> for the layout.
+#include <DDrawMgr/CDDSurface.h> // IDirectDrawSurfaceZ (ShadeSrc::m_surface->Unlock)
 #include <Gruntz/CDDrawShadeBlit.h>
 
 #include <rva.h>
@@ -231,7 +232,7 @@ void CDDrawShadeBlit::BlitMode_149950(ShadeRect* dst, ShadeSrc* surf, ShadeRect*
         }
     }
 
-    surf->m_surface->vtbl->Unlock(surf->m_surface, 0);
+    surf->m_surface->Unlock(0);
 }
 
 // ===========================================================================
@@ -422,7 +423,7 @@ void CDDrawShadeBlit::BlitMode_149d00(ShadeRect* dst, ShadeSrc* surf, ShadeRect*
         }
     }
 
-    surf->m_surface->vtbl->Unlock(surf->m_surface, 0);
+    surf->m_surface->Unlock(0);
 }
 
 // @early-stop

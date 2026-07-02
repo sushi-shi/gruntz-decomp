@@ -20,6 +20,7 @@
 #ifndef GRUNTZ_CDIRECTDRAWMGR_H
 #define GRUNTZ_CDIRECTDRAWMGR_H
 
+#include <ComDefs.h> // STDMETHOD / HRESULT - the DirectDraw COM interface macros
 #include <rva.h>
 
 // IDirectDrawSurfaceZ (the surface COM interface) + CDDSurface (the wrapper) live
@@ -42,37 +43,48 @@ struct IDirectDrawPaletteZ; // forward (CreatePalette out param)
 
 SIZE_UNKNOWN(IDirectDraw2Z);
 struct IDirectDraw2Z {
-    struct Vtbl {
-        i32(__stdcall* QueryInterface)(IDirectDraw2Z*, const void* riid, void** out); // +0x00
-        char m_pad4[0x14 - 0x04];
-        i32(__stdcall* CreatePalette)(
-            IDirectDraw2Z*,
-            u32 flags,
-            void* entries,
-            IDirectDrawPaletteZ** out,
-            void* unk
-        ); // +0x14
-        i32(__stdcall* CreateSurface)(
-            IDirectDraw2Z*,
-            void* desc,
-            IDirectDrawSurfaceZ** out,
-            void* unk
-        ); // +0x18
-        char m_pad1c[0x2c - 0x1c];
-        i32(__stdcall* GetCaps)(IDirectDraw2Z*, void* driverCaps, void* helCaps); // +0x2c
-        i32(__stdcall* GetDisplayMode)(IDirectDraw2Z*, void* desc);               // +0x30
-        char m_pad34[0x50 - 0x34];
-        i32(__stdcall* SetCooperativeLevel)(IDirectDraw2Z*, void* hwnd, u32 level); // +0x50
-        i32(__stdcall* SetDisplayMode)(
-            IDirectDraw2Z*,
-            u32 w,
-            u32 h,
-            u32 bpp,
-            u32 refresh,
-            u32 flags
-        );                                                                  // +0x54
-        i32(__stdcall* WaitForVerticalBlank)(IDirectDraw2Z*, u32, void* h); // +0x58 (slot 22)
-    }* vtbl;
+    // Real COM interface (abstract), declared the dev-authentic SDK way with the
+    // STDMETHOD macro (== `virtual HRESULT __stdcall`), so `dd->Method(args)` lowers
+    // to the same `mov eax,[dd]; call [eax+slot]` the manual vtbl-struct dispatch did.
+    // Every DX6 slot is pinned at its retail index; only the called ones carry args.
+    STDMETHOD(QueryInterface)(const void* riid, void** out) PURE; // slot 0
+    STDMETHOD_(u32, AddRef)() PURE;                               // slot 1
+    STDMETHOD_(u32, Release)() PURE;                              // slot 2
+    STDMETHOD(Compact)() PURE;                                    // slot 3
+    STDMETHOD(CreateClipper)() PURE;                              // slot 4
+    STDMETHOD(CreatePalette)(
+        u32 flags,
+        void* entries,
+        IDirectDrawPaletteZ** out,
+        void* unk
+    ) PURE; // slot 5  (+0x14)
+    STDMETHOD(CreateSurface)(
+        void* desc,
+        IDirectDrawSurfaceZ** out,
+        void* unk
+    ) PURE;                                                                       // slot 6 (+0x18)
+    STDMETHOD(DuplicateSurface)() PURE;                                           // slot 7
+    STDMETHOD(EnumDisplayModes)(u32 flags, void* desc, void* ctx, void* cb) PURE; // slot 8 (+0x20)
+    STDMETHOD(EnumSurfaces)() PURE;                                               // slot 9
+    STDMETHOD(FlipToGDISurface)() PURE;                                           // slot 10
+    STDMETHOD(GetCaps)(void* driverCaps, void* helCaps) PURE;                     // slot 11 (+0x2c)
+    STDMETHOD(GetDisplayMode)(void* desc) PURE;                                   // slot 12 (+0x30)
+    STDMETHOD(GetFourCCCodes)() PURE;                                             // slot 13
+    STDMETHOD(GetGDISurface)() PURE;                                              // slot 14
+    STDMETHOD(GetMonitorFrequency)() PURE;                                        // slot 15
+    STDMETHOD(GetScanLine)() PURE;                                                // slot 16
+    STDMETHOD(GetVerticalBlankStatus)() PURE;                                     // slot 17
+    STDMETHOD(Initialize)() PURE;                                                 // slot 18
+    STDMETHOD(RestoreDisplayMode)() PURE;                                         // slot 19
+    STDMETHOD(SetCooperativeLevel)(void* hwnd, u32 level) PURE;                   // slot 20 (+0x50)
+    STDMETHOD(SetDisplayMode)(
+        u32 w,
+        u32 h,
+        u32 bpp,
+        u32 refresh,
+        u32 flags
+    ) PURE;                                                   // slot 21 (+0x54)
+    STDMETHOD(WaitForVerticalBlank)(u32 flags, void* h) PURE; // slot 22 (+0x58)
 };
 
 // ---------------------------------------------------------------------------
@@ -84,29 +96,15 @@ struct IDirectDraw2Z {
 // ---------------------------------------------------------------------------
 SIZE_UNKNOWN(IDirectDrawPaletteZ);
 struct IDirectDrawPaletteZ {
-    struct Vtbl {
-        char m_pad0[0x10];
-        i32(__stdcall* GetEntries)(
-            IDirectDrawPaletteZ*,
-            u32 flags,
-            u32 start,
-            u32 count,
-            void* entries
-        ); // +0x10
-        i32(__stdcall* Initialize)(
-            IDirectDrawPaletteZ*,
-            void* dd,
-            u32 flags,
-            void* entries
-        ); // +0x14
-        i32(__stdcall* SetEntries)(
-            IDirectDrawPaletteZ*,
-            u32 flags,
-            u32 start,
-            u32 count,
-            void* entries
-        ); // +0x18
-    }* vtbl;
+    // Real COM interface (abstract), STDMETHOD form (== `virtual HRESULT __stdcall`)
+    // so `pal->Method(args)` lowers to the same `mov eax,[pal]; call [eax+slot]`.
+    STDMETHOD(QueryInterface)(const void* riid, void** out) PURE;               // slot 0
+    STDMETHOD_(u32, AddRef)() PURE;                                             // slot 1
+    STDMETHOD_(u32, Release)() PURE;                                            // slot 2
+    STDMETHOD(GetCaps)(void* caps) PURE;                                        // slot 3
+    STDMETHOD(GetEntries)(u32 flags, u32 start, u32 count, void* entries) PURE; // slot 4 (+0x10)
+    STDMETHOD(Initialize)(void* dd, u32 flags, void* entries) PURE;             // slot 5 (+0x14)
+    STDMETHOD(SetEntries)(u32 flags, u32 start, u32 count, void* entries) PURE; // slot 6 (+0x18)
 };
 
 // ---------------------------------------------------------------------------

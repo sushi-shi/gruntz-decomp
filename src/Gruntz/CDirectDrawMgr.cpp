@@ -9,7 +9,7 @@
 //     and retry, then report a still-bad HRESULT.
 //   * CDDPalette (DIRPAL.CPP) - palette Get/SetEntries thunks.
 //
-// Every wrapper does iface->vtbl->Method(iface, args...) so the retail
+// Every wrapper does iface->Method(args...) so the retail
 // `call *off(reg)` COM dispatch falls out; only the called slots are pinned.
 // Locals are placeholders, the switch case VALUES, GetErrorString (file, line,
 // hr) tuples and string contents are load-bearing.
@@ -88,7 +88,7 @@ extern "C" IDirectDraw2Z* g_DirectDraw; // 0x683ee8
 // on SURFACELOST restore-and-retry, else report. Returns m_34 on hard fail.
 RVA(0x0013e6d0, 0x88)
 i32 CDDSurface::Lock(void* rect) {
-    i32 hr = m_8->vtbl->Lock(m_8, rect, m_desc, 1, 0);
+    i32 hr = m_8->Lock(rect, m_desc, 1, 0);
     if (hr == 0) {
         return m_34;
     }
@@ -96,7 +96,7 @@ i32 CDDSurface::Lock(void* rect) {
         if (RestoreLost() == 0) {
             return 0;
         }
-        hr = m_8->vtbl->Lock(m_8, 0, m_desc, 1, 0);
+        hr = m_8->Lock(0, m_desc, 1, 0);
         if (hr == 0) {
             return m_34;
         }
@@ -110,7 +110,7 @@ i32 CDDSurface::Lock(void* rect) {
 // CDDSurface::SetPalette (__thiscall). m_8->SetPalette(pal->m_4).
 RVA(0x0013e690, 0x35)
 i32 CDDSurface::SetPalette(CDDPalette* pal, i32 unused) {
-    i32 hr = m_8->vtbl->SetPalette(m_8, pal->m_4);
+    i32 hr = m_8->SetPalette(pal->m_4);
     if (hr == 0) {
         return 1;
     }
@@ -125,7 +125,7 @@ i32 CDDSurface::Flip(CDDSurface* target) {
     if (target != 0) {
         tsurf = target->m_8;
     }
-    i32 hr = m_8->vtbl->Flip(m_8, tsurf, 1);
+    i32 hr = m_8->Flip(tsurf, 1);
     if (hr == 0) {
         return 0;
     }
@@ -133,7 +133,7 @@ i32 CDDSurface::Flip(CDDSurface* target) {
         if (RestoreLost() == 0) {
             return hr;
         }
-        hr = m_8->vtbl->Flip(m_8, tsurf, 1);
+        hr = m_8->Flip(tsurf, 1);
         if (hr == 0) {
             return 0;
         }
@@ -147,7 +147,7 @@ i32 CDDSurface::Flip(CDDSurface* target) {
 // CDDSurface::SetColorKey (__thiscall). m_8->SetColorKey(flags, key).
 RVA(0x0013eaa0, 0x39)
 i32 CDDSurface::SetColorKey(u32 flags, void* key) {
-    i32 hr = m_8->vtbl->SetColorKey(m_8, flags, key);
+    i32 hr = m_8->SetColorKey(flags, key);
     if (hr != 0) {
         CDirectDrawMgr::GetErrorString(DIRSURF_FILE, 0x353, hr);
         return hr;
@@ -161,10 +161,10 @@ RVA(0x0013ee60, 0x8d)
 i32 CDDSurface::Blt(CDDSurface* src) {
     void* srcRect = src->m_80;
     void* dstRect = m_80;
-    i32 hr = m_8->vtbl->Blt(m_8, dstRect, src->m_8, srcRect, 0x1000000, 0);
+    i32 hr = m_8->Blt(dstRect, src->m_8, srcRect, 0x1000000, 0);
     if (hr == (i32)DDERR_SURFACELOST) {
         if (RestoreLost()) {
-            hr = m_8->vtbl->Blt(m_8, dstRect, src->m_8, srcRect, 0x1000000, 0);
+            hr = m_8->Blt(dstRect, src->m_8, srcRect, 0x1000000, 0);
         } else {
             return (i32)DDERR_SURFACELOST;
         }
@@ -181,13 +181,13 @@ RVA(0x0013eef0, 0x98)
 i32 CDDSurface::BltEx(void* dstRect, CDDSurface* src, void* srcRect, u32 flags, void* fx) {
     i32 hr;
     if (src != 0) {
-        hr = m_8->vtbl->Blt(m_8, dstRect, src->m_8, srcRect, flags, fx);
+        hr = m_8->Blt(dstRect, src->m_8, srcRect, flags, fx);
     } else {
-        hr = m_8->vtbl->Blt(m_8, dstRect, 0, srcRect, flags, fx);
+        hr = m_8->Blt(dstRect, 0, srcRect, flags, fx);
     }
     if (hr == (i32)DDERR_SURFACELOST) {
         if (RestoreLost()) {
-            hr = m_8->vtbl->Blt(m_8, dstRect, src->m_8, srcRect, flags, fx);
+            hr = m_8->Blt(dstRect, src->m_8, srcRect, flags, fx);
         } else {
             return (i32)DDERR_SURFACELOST;
         }
@@ -201,10 +201,10 @@ i32 CDDSurface::BltEx(void* dstRect, CDDSurface* src, void* srcRect, u32 flags, 
 // CDDSurface::BltFast (__thiscall, ret 0x14 => 5 args). SURFACELOST retry.
 RVA(0x0013ef90, 0x8b)
 i32 CDDSurface::BltFast(u32 x, u32 y, CDDSurface* src, void* srcRect, u32 trans) {
-    i32 hr = m_8->vtbl->BltFast(m_8, x, y, src->m_8, srcRect, trans);
+    i32 hr = m_8->BltFast(x, y, src->m_8, srcRect, trans);
     if (hr == (i32)DDERR_SURFACELOST) {
         if (RestoreLost()) {
-            hr = m_8->vtbl->BltFast(m_8, x, y, src->m_8, srcRect, trans);
+            hr = m_8->BltFast(x, y, src->m_8, srcRect, trans);
         } else {
             return (i32)DDERR_SURFACELOST;
         }
@@ -304,7 +304,7 @@ void BuildColorChannelTables() {
 RVA(0x0013fa60, 0x40)
 i32 CDDSurface::GetColorKey() {
     u32 key[2];
-    i32 hr = m_8->vtbl->GetColorKey(m_8, 8, key);
+    i32 hr = m_8->GetColorKey(8, key);
     if (hr != (i32)DDERR_NOCOLORKEY) {
         if (hr == 0) {
             return key[0];
@@ -325,7 +325,7 @@ i32 CDDSurface::Refresh(IDirectDrawSurfaceZ* surf) {
         *d++ = 0;
     }
     *(i32*)m_desc = 0x6c; // dwSize
-    i32 hr = m_8->vtbl->GetSurfaceDesc(m_8, m_desc);
+    i32 hr = m_8->GetSurfaceDesc(m_desc);
     if (hr != 0) {
         CDirectDrawMgr::GetErrorString(DIRSURF_FILE, 0x7e, hr);
     }
@@ -655,7 +655,7 @@ i32 CDirectDrawMgr::CreateDevice(
             }
             return 0;
         }
-        chr = m_4->vtbl->QueryInterface(m_4, IID_IDirectDraw2, (void**)this);
+        chr = m_4->QueryInterface(IID_IDirectDraw2, (void**)this);
         if (chr != 0) {
             CDirectDrawMgr::GetErrorString(0, 0, chr);
             if (m_944 == 0) {
@@ -665,7 +665,7 @@ i32 CDirectDrawMgr::CreateDevice(
         }
     }
 
-    i32 hr = m_0->vtbl->SetCooperativeLevel(m_0, hwnd, coopFlags);
+    i32 hr = m_0->SetCooperativeLevel(hwnd, coopFlags);
     if (hr != 0) {
         CDirectDrawMgr::GetErrorString(DDRAWMGR_H_FILE, 0x120, hr);
     }
@@ -687,7 +687,7 @@ i32 CDirectDrawMgr::CreateDevice(
     }
     m_caps[0] = 0x17c;
     m_helCaps[0] = 0x17c;
-    hr = m_0->vtbl->GetCaps(m_0, m_caps, m_helCaps);
+    hr = m_0->GetCaps(m_caps, m_helCaps);
     if (hr != 0) {
         CDirectDrawMgr::GetErrorString(DDRAWMGR_FILE, 0xad, hr);
     }
@@ -714,7 +714,7 @@ i32 CDirectDrawMgr::CreateDevice(
             *d++ = 0;
         }
         desc[0] = 0x6c;
-        hr = m_0->vtbl->GetDisplayMode(m_0, desc);
+        hr = m_0->GetDisplayMode(desc);
         if (hr == 0) {
             m_538 = desc[0x15];
         }
@@ -741,7 +741,7 @@ i32 CDDPalette::Create(IDirectDraw2Z* dd, void* entries, u32 flags) {
         *(i32*)(m_c + i) = *(i32*)((char*)entries + i);
     }
     m_10 = (u8*)operator new(0x400);
-    i32 hr = dd->vtbl->CreatePalette(dd, flags, entries, &m_4, 0);
+    i32 hr = dd->CreatePalette(flags, entries, &m_4, 0);
     if (hr == 0) {
         return 1;
     }
@@ -965,9 +965,9 @@ void CDDPalette::SetAndNotify(i32 start, i32 count, i32* data, i32 a4) {
     }
     if (g_DirectDrawMgr != 0) {
         IDirectDraw2Z* dd = g_DirectDrawMgr->m_0;
-        dd->vtbl->WaitForVerticalBlank(dd, 1, 0);
+        dd->WaitForVerticalBlank(1, 0);
     }
-    m_4->vtbl->SetEntries(m_4, 0, start, count, data);
+    m_4->SetEntries(0, start, count, data);
 }
 
 // CDDPalette::GetEntries (__thiscall, ret 0 => no args). Lazily allocates the
@@ -985,7 +985,7 @@ i32 CDDPalette::GetEntries() {
             return 0;
         }
     }
-    i32 hr = m_4->vtbl->GetEntries(m_4, 0, 0, 0x100, m_10);
+    i32 hr = m_4->GetEntries(0, 0, 0x100, m_10);
     if (hr != 0) {
         CDirectDrawMgr::GetErrorString(DIRPAL_FILE, 0x265, hr);
     }
@@ -1013,9 +1013,9 @@ void CDDPalette::Apply(i32 a1) {
     }
     if (g_DirectDrawMgr != 0) {
         IDirectDraw2Z* dd = g_DirectDrawMgr->m_0;
-        dd->vtbl->WaitForVerticalBlank(dd, 1, 0);
+        dd->WaitForVerticalBlank(1, 0);
     }
-    m_4->vtbl->SetEntries(m_4, 0, 0, 0x100, readback);
+    m_4->SetEntries(0, 0, 0x100, readback);
 }
 
 // CDDPalette::SetRange (__thiscall, ret 0x18 => 6 args).
@@ -1026,7 +1026,7 @@ i32 CDDPalette::SetRange(i32 start, i32 count, u8 r, u8 g, u8 b, u32 flags) {
         m_c[i * 4 + 1] = g;
         m_c[i * 4 + 2] = b;
     }
-    i32 hr = m_4->vtbl->SetEntries(m_4, flags, start, count, m_c + start * 4);
+    i32 hr = m_4->SetEntries(flags, start, count, m_c + start * 4);
     if (hr != 0) {
         CDirectDrawMgr::GetErrorString(DIRPAL_FILE, 0x2a3, hr);
     }
@@ -1067,14 +1067,14 @@ i32 CDDPageMgr::Init(void* window, DDModeInfo* mode, u32 coopFlags) {
     if (DirectDrawCreate(0, (IDirectDrawSurfaceZ**)&m_18, 0) != 0) {
         return 0;
     }
-    if (m_18->vtbl->QueryInterface(m_18, IID_IDirectDraw2, (void**)&m_14) != 0) {
+    if (m_18->QueryInterface(IID_IDirectDraw2, (void**)&m_14) != 0) {
         return 0;
     }
-    if (m_14->vtbl->SetCooperativeLevel(m_14, window, coopFlags) != 0) {
+    if (m_14->SetCooperativeLevel(window, coopFlags) != 0) {
         HandleError();
         return 0;
     }
-    if (m_14->vtbl->SetDisplayMode(m_14, w, h, bpp, 0, 0) != 0) {
+    if (m_14->SetDisplayMode(w, h, bpp, 0, 0) != 0) {
         HandleError();
         return 0;
     }
@@ -1087,23 +1087,23 @@ i32 CDDPageMgr::Init(void* window, DDModeInfo* mode, u32 coopFlags) {
     *(i32*)m_desc = 0x6c;
     m_24 = 1;                       // [esi+0x34]=1 -> desc field? actually m_34; placeholder
     *(i32*)(m_desc + 0x68) = 0x200; // [esi+0x98]
-    if (m_14->vtbl->CreateSurface(m_14, m_desc, &m_20, 0) != 0) {
+    if (m_14->CreateSurface(m_desc, &m_20, 0) != 0) {
         HandleError();
         return 0;
     }
 
-    if (m_20->vtbl->QueryInterface(m_20, IID_IDirectDrawSurface3, (void**)&m_1c) != 0) {
+    if (m_20->QueryInterface(IID_IDirectDrawSurface3, (void**)&m_1c) != 0) {
         return 0;
     }
 
     OnModeSet(w);
 
     if (mode->bpp == 8) {
-        if (m_14->vtbl->CreatePalette(m_14, 4, m_108, &m_2c, 0) != 0) {
+        if (m_14->CreatePalette(4, m_108, &m_2c, 0) != 0) {
             HandleError();
             return 0;
         }
-        m_1c->vtbl->SetPalette(m_1c, m_2c);
+        m_1c->SetPalette(m_2c);
         m_510 = 0;
     }
 
@@ -1158,7 +1158,7 @@ i32 CDDPageMgr::CheckMode16() {
     DDModeDesc desc;
     memset(&desc, 0, sizeof(desc));
     desc.dwSize = 0x6c;
-    if (m_14->vtbl->GetDisplayMode(m_14, &desc) != 0) {
+    if (m_14->GetDisplayMode(&desc) != 0) {
         return 0;
     }
 
@@ -1233,13 +1233,8 @@ struct CDdPoolThis {
     void AddPoolItem(void* item);  // 0x142100
 };
 
-// IDirectDraw EnumDisplayModes lives at vtable +0x20 (slot 8); reach it through a
-// local vtable view so the shared IDirectDraw2Z struct is untouched.
-struct CDdEnumVtbl {
-    char m_pad00[0x20];
-    i32(__stdcall* EnumModes)(IDirectDraw2Z*, u32, void*, void*, void*); // +0x20
-};
 // The EnumDisplayModes callback (0x143390); only its address is referenced.
+// (EnumDisplayModes is slot 8 / +0x20 on the shared IDirectDraw2Z interface.)
 extern "C" void DdEnumModesCallback(); // 0x143390
 
 // @early-stop
@@ -1255,7 +1250,7 @@ void CDirectDrawMgr::SetupCaps() {
     }
     arr->SetSize(0, -1);
     g_modeArray.SetSize(0, -1);
-    i32 hr = ((CDdEnumVtbl*)m_0->vtbl)->EnumModes(m_0, 0, 0, 0, (void*)DdEnumModesCallback);
+    i32 hr = m_0->EnumDisplayModes(0, 0, 0, (void*)DdEnumModesCallback);
     if (hr != 0) {
         CDirectDrawMgr::GetErrorString(DDRAWMGR_FILE, 0x507, hr);
     }
@@ -1290,10 +1285,22 @@ void CDirectDrawMgr::SetupCaps() {
 // The descriptor source (arg0->m_8): a COM-style interface; slot +0x30 fills the
 // two out params.  Reloc-masked __stdcall.
 struct CDdDescSrc {
-    struct Vtbl {
-        char m_pad00[0x30];
-        i32(__stdcall* Make)(CDdDescSrc*, void* outB, void* outA); // +0x30
-    }* vtbl;
+    // COM-style interface (abstract, __stdcall); only slot 12 (+0x30) is invoked.
+    // STDMETHOD form == `virtual HRESULT __stdcall`, so `m_8->Make(...)` lowers to
+    // `mov eax,[m_8]; call [eax+0x30]` (was the manual vtbl-struct dispatch).
+    STDMETHOD(v00)() PURE;
+    STDMETHOD(v01)() PURE;
+    STDMETHOD(v02)() PURE;
+    STDMETHOD(v03)() PURE;
+    STDMETHOD(v04)() PURE;
+    STDMETHOD(v05)() PURE;
+    STDMETHOD(v06)() PURE;
+    STDMETHOD(v07)() PURE;
+    STDMETHOD(v08)() PURE;
+    STDMETHOD(v09)() PURE;
+    STDMETHOD(v0a)() PURE;
+    STDMETHOD(v0b)() PURE;
+    STDMETHOD(Make)(void* outB, void* outA) PURE; // slot 12 (+0x30)
 };
 struct CDdCreateArg {
     char m_pad00[8];
@@ -1322,7 +1329,7 @@ void* CDirectDrawMgr::CreatePoolItem(void* arg0v, void* arg1) {
     CDdCreateArg* arg0 = (CDdCreateArg*)arg0v;
     void* outA = 0;
     void* outB;
-    i32 hr = arg0->m_8->vtbl->Make(arg0->m_8, &outB, &outA);
+    i32 hr = arg0->m_8->Make(&outB, &outA);
     if (hr != 0) {
         CDirectDrawMgr::GetErrorString(DDRAWMGR_FILE, 0x6ae, hr);
         return 0;

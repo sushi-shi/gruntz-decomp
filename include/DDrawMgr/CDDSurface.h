@@ -8,13 +8,17 @@
 #ifndef DDRAWMGR_CDDSURFACE_H
 #define DDRAWMGR_CDDSURFACE_H
 
+#include <ComDefs.h> // STDMETHOD / HRESULT - the DirectDrawSurface COM interface macros
 #include <Ints.h>
 #include <rva.h>
 
 // ---------------------------------------------------------------------------
 // IDirectDrawSurface (DDRAW) - the surface interface the CDDSurface thunks
-// drive. Only the slots called are pinned, at their retail vtable byte offsets
-// (3 IUnknown slots + the surface methods, each 4 bytes):
+// drive, declared the dev-authentic SDK way with STDMETHOD (== `virtual HRESULT
+// __stdcall`) so `iface->Method(args)` lowers to the same `mov eax,[iface];
+// call [eax+slot]` the manual vtbl-struct dispatch did. Every DX6 slot is pinned
+// at its retail vtable index; only the slots the thunks call carry meaningful
+// signatures. The called surface methods (each 4 bytes, IUnknown triad heads):
 //   +0x14 (slot  5)  Blt             (LPRECT, surf, LPRECT, DWORD, LPDDBLTFX)
 //   +0x1c (slot  7)  BltFast         (DWORD, DWORD, surf, LPRECT, DWORD)
 //   +0x2c (slot 11)  Flip            (surf, DWORD)
@@ -24,57 +28,56 @@
 //   +0x64 (slot 25)  Lock            (LPRECT, LPDDSURFACEDESC, DWORD, HANDLE)
 //   +0x74 (slot 29)  SetColorKey     (DWORD, LPDDCOLORKEY)
 //   +0x7c (slot 31)  SetPalette      (palette)
-// COM => __stdcall with the interface pointer as the hidden first ("this") arg;
-// the wrappers always call iface->vtbl->Method(iface, ...).
+//   +0x80 (slot 32)  Unlock          (LPRECT)
+// COM => __stdcall with the interface pointer as the hidden `this` arg.
 // ---------------------------------------------------------------------------
 SIZE_UNKNOWN(IDirectDrawSurfaceZ);
 struct IDirectDrawSurfaceZ {
-    struct Vtbl {
-        i32(__stdcall* QueryInterface)(IDirectDrawSurfaceZ*, const void* riid, void** out); // +0x00
-        char m_pad4[0x08 - 0x04];
-        u32(__stdcall* Release)(IDirectDrawSurfaceZ*); // +0x08 (slot 2, IUnknown)
-        char m_padc[0x14 - 0x0c];
-        i32(__stdcall* Blt)(
-            IDirectDrawSurfaceZ*,
-            void* dstRect,
-            IDirectDrawSurfaceZ* src,
-            void* srcRect,
-            u32 flags,
-            void* bltfx
-        ); // +0x14
-        char m_pad18[0x1c - 0x18];
-        i32(__stdcall* BltFast)(
-            IDirectDrawSurfaceZ*,
-            u32 x,
-            u32 y,
-            IDirectDrawSurfaceZ* src,
-            void* srcRect,
-            u32 trans
-        ); // +0x1c
-        char m_pad20[0x2c - 0x20];
-        i32(__stdcall* Flip)(IDirectDrawSurfaceZ*, IDirectDrawSurfaceZ* target,
-                             u32 flags); // +0x2c
-        char m_pad30[0x40 - 0x30];
-        i32(__stdcall* GetColorKey)(IDirectDrawSurfaceZ*, u32 flags, void* key); // +0x40
-        char m_pad44[0x58 - 0x44];
-        i32(__stdcall* GetSurfaceDesc)(IDirectDrawSurfaceZ*, void* desc); // +0x58
-        char m_pad5c[0x60 - 0x5c];
-        i32(__stdcall* IsLost)(IDirectDrawSurfaceZ*); // +0x60 (slot 24)
-        i32(__stdcall* Lock)(
-            IDirectDrawSurfaceZ*,
-            void* rect,
-            void* desc,
-            u32 flags,
-            void* event
-        ); // +0x64
-        char m_pad68[0x6c - 0x68];
-        i32(__stdcall* Restore)(IDirectDrawSurfaceZ*); // +0x6c (slot 27)
-        char m_pad70[0x74 - 0x70];
-        i32(__stdcall* SetColorKey)(IDirectDrawSurfaceZ*, u32 flags, void* key); // +0x74
-        char m_pad78[0x7c - 0x78];
-        i32(__stdcall* SetPalette)(IDirectDrawSurfaceZ*, void* palette); // +0x7c
-        i32(__stdcall* Unlock)(IDirectDrawSurfaceZ*, void* rect);        // +0x80
-    }* vtbl;
+    STDMETHOD(QueryInterface)(const void* riid, void** out) PURE; // slot 0
+    STDMETHOD_(u32, AddRef)() PURE;                               // slot 1
+    STDMETHOD_(u32, Release)() PURE;                              // slot 2  (+0x08)
+    STDMETHOD(AddAttachedSurface)() PURE;                         // slot 3
+    STDMETHOD(AddOverlayDirtyRect)() PURE;                        // slot 4
+    STDMETHOD(Blt)(
+        void* dstRect,
+        IDirectDrawSurfaceZ* src,
+        void* srcRect,
+        u32 flags,
+        void* bltfx
+    ) PURE;                     // slot 5  (+0x14)
+    STDMETHOD(BltBatch)() PURE; // slot 6
+    STDMETHOD(BltFast)(
+        u32 x,
+        u32 y,
+        IDirectDrawSurfaceZ* src,
+        void* srcRect,
+        u32 trans
+    ) PURE;                                                               // slot 7  (+0x1c)
+    STDMETHOD(DeleteAttachedSurface)() PURE;                              // slot 8
+    STDMETHOD(EnumAttachedSurfaces)() PURE;                               // slot 9
+    STDMETHOD(EnumOverlayZOrders)() PURE;                                 // slot 10
+    STDMETHOD(Flip)(IDirectDrawSurfaceZ* target, u32 flags) PURE;         // slot 11 (+0x2c)
+    STDMETHOD(GetAttachedSurface)() PURE;                                 // slot 12
+    STDMETHOD(GetBltStatus)() PURE;                                       // slot 13
+    STDMETHOD(GetCaps)() PURE;                                            // slot 14
+    STDMETHOD(GetClipper)() PURE;                                         // slot 15
+    STDMETHOD(GetColorKey)(u32 flags, void* key) PURE;                    // slot 16 (+0x40)
+    STDMETHOD(GetDC)() PURE;                                              // slot 17
+    STDMETHOD(GetFlipStatus)() PURE;                                      // slot 18
+    STDMETHOD(GetOverlayPosition)() PURE;                                 // slot 19
+    STDMETHOD(GetPalette)() PURE;                                         // slot 20
+    STDMETHOD(GetPixelFormat)() PURE;                                     // slot 21
+    STDMETHOD(GetSurfaceDesc)(void* desc) PURE;                           // slot 22 (+0x58)
+    STDMETHOD(Initialize)() PURE;                                         // slot 23
+    STDMETHOD(IsLost)() PURE;                                             // slot 24 (+0x60)
+    STDMETHOD(Lock)(void* rect, void* desc, u32 flags, void* event) PURE; // slot 25 (+0x64)
+    STDMETHOD(ReleaseDC)() PURE;                                          // slot 26
+    STDMETHOD(Restore)() PURE;                                            // slot 27 (+0x6c)
+    STDMETHOD(SetClipper)() PURE;                                         // slot 28
+    STDMETHOD(SetColorKey)(u32 flags, void* key) PURE;                    // slot 29 (+0x74)
+    STDMETHOD(SetOverlayPosition)() PURE;                                 // slot 30
+    STDMETHOD(SetPalette)(void* palette) PURE;                            // slot 31 (+0x7c)
+    STDMETHOD(Unlock)(void* rect) PURE;                                   // slot 32 (+0x80)
 };
 
 // ---------------------------------------------------------------------------

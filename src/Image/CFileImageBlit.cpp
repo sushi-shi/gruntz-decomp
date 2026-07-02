@@ -86,7 +86,7 @@ i32 CFileImage::Blit168(void* srcv, void* palv, i32 mode) {
             }
         }
     }
-    this->m_8->vtbl->Unlock(this->m_8, 0);
+    this->m_8->Unlock(0);
     return 1;
 }
 
@@ -132,7 +132,7 @@ i32 CFileImage::Blit1624(void* srcv, i32 mode) {
             }
         }
     }
-    this->m_8->vtbl->Unlock(this->m_8, 0);
+    this->m_8->Unlock(0);
     return 1;
 }
 
@@ -174,7 +174,7 @@ i32 CFileImage::Blit2416(void* srcv, i32 mode) {
             }
         }
     }
-    this->m_8->vtbl->Unlock(this->m_8, 0);
+    this->m_8->Unlock(0);
     return 1;
 }
 
@@ -261,7 +261,7 @@ i32 CFileImage::Blit824(void* srcv, void* palv, i32 mode) {
             }
         }
     }
-    this->m_8->vtbl->Unlock(this->m_8, 0);
+    this->m_8->Unlock(0);
     return 1;
 }
 
@@ -348,6 +348,6 @@ i32 CFileImage::Blit816(void* srcv, void* palv, i32 mode) {
             }
         }
     }
-    this->m_8->vtbl->Unlock(this->m_8, 0);
+    this->m_8->Unlock(0);
     return 1;
 }
