@@ -578,31 +578,49 @@ i32 RezMgr::UpdateClock() {
 // -------------------------------------------------------------------------
 // Engine-label backlog stubs.
 // -------------------------------------------------------------------------
-// @confidence: high
-// @source: rez-trace
-// @stub
-RVA(0x0013b0c0, 0x238)
-void CRezDir::Stub_13b0c0() {}
+// (CRezDir::Stub_13b0c0 @0x13b0c0 was a Ghidra mislabel: its real owner is
+// CSymParser - it sits between ParseBuffer and ParseRecords and drives them on
+// `this`. Reconstructed as CSymParser::LoadEntry in src/Bute/SymParser.cpp.)
 
 // -------------------------------------------------------------------------
-// CRezParseNode::Construct (0x13cac0) - a CRezItmBase-derived rez tree node,
-// re-homed from src/Stub/MallocConstructors. xref (gruntz.analysis.xref): built by
-// CSymParser::ParseRecords (0x13b300, the .rez directory/symbol parser). Base-ctors
-// via CRezItmBase::CRezItmBase (0x13c4e0), stamps its own vtable (0x5ef7d0),
-// heap-copies its name string into +0x10, stores its parent at +0x18, and links
-// itself into the parent dir's child CRezList via CRezList::AddHead (0x1851e0). A
-// third CRezItmBase-derived class alongside CRezItm/CRezDir; exact name unresolved
-// (non-RTTI vtable 0x5ef7d0), modeled as a plain shell so the stub is
-// matching-neutral. Reconstruction deferred.
-struct CRezParseNode {
-    CRezParseNode* Construct(void* parent, void* nameSrc, void* owner); // 0x13cac0
+// CRezParseNode : CRezItmBase (0x13cac0 = its ctor) - a rez parse-tree node,
+// the third CRezItmBase-derived class alongside CRezItm/CRezDir (its own vtable
+// 0x1ef7d0). xref (gruntz.analysis.xref): built by CSymParser::ParseRecords
+// (0x13b300, the .rez directory/symbol parser; Ghidra name ?Construct - a ctor
+// that returns `this`). Base-ctors CRezItmBase(parent), stamps the derived vtable,
+// records the owner @+0x18, heap-copies its name string into +0x10 (m_14 = 0
+// alongside), and links itself into the owner's child list at owner+0x1c via
+// CRezList::AddHead (0x1851e0). Real-polymorphic (CRezItmBase-derived) so the
+// base-ctor call + derived-vptr stamp + /GX base-cleanup frame fall out; the
+// distinct derived vtable stays a cosmetic/unbound COMDAT here (its retail datum
+// 0x1ef7d0 is emitted by FinalVtables as CVtbl_1ef7d0 - the reloc-masked vptr
+// store matches whichever symbol names it).
+struct RezChildList {         // the owner's child list embedded at owner+0x1c
+    void* m_0;                // +0x00
+    void* m_head;             // +0x04
+    void* m_tail;             // +0x08
+    void AddHead(void* node); // 0x1851e0 (extern, reloc-masked)
 };
-// @confidence: high
-// @source: xref
-// @stub
+class CRezParseNode : public CRezItmBase {
+public:
+    CRezParseNode(void* parent, char* nameSrc, void* owner);
+    virtual void v0(); // forces a distinct derived vtable (the +0x1ef7d0 stamp)
+
+    char* m_10; // +0x10  heap-copied name
+    i32 m_14;   // +0x14  (= 0)
+    void* m_18; // +0x18  owner (its child list is at owner+0x1c)
+};
+
 RVA(0x0013cac0, 0x9b)
-CRezParseNode* CRezParseNode::Construct(void* parent, void* nameSrc, void* owner) {
-    return this;
+CRezParseNode::CRezParseNode(void* parent, char* nameSrc, void* owner) : CRezItmBase(parent) {
+    m_18 = owner;
+    m_14 = 0;
+    char* buf = (char*)::operator new(strlen(nameSrc) + 1);
+    m_10 = buf;
+    strcpy(buf, nameSrc);
+    // AddHead reloads the owner from m_18 (this+0x18) rather than keeping the arg
+    // live in a callee-saved reg - matches retail's `mov ecx,[ebx+0x18]; add ecx,0x1c`.
+    ((RezChildList*)((char*)m_18 + 0x1c))->AddHead(this);
 }
 
 // ===========================================================================

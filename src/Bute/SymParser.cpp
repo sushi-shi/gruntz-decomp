@@ -234,6 +234,114 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
     return 1;
 }
 
+// ---------------------------------------------------------------------------
+// The two archive-tree node classes LoadEntry builds. A directory node (ctor
+// 0x13c940 = CRezDir, size 0x38) and a file node (ctor 0x13c540 = CRezItm, size
+// 0x24). Both expose Read at vtable slot 2 (+0x08) and Open at slot 4 (+0x10) -
+// modeled as a shared local interface (ctors extern/reloc-masked, no vtable
+// emitted in this TU) so the `call [reg+8]` / `call [reg+0x10]` dispatches and
+// the `new X(...)` operator-new(size)+ctor sequences fall out.
+struct CRezNode {
+    virtual void nv0();                                        // slot 0 (+0x00)
+    virtual void nv1();                                        // slot 1 (+0x04)
+    virtual i32 Read(i32 off, i32 base, u32 count, void* buf); // slot 2 (+0x08)
+    virtual void nv3();                                        // slot 3 (+0x0c)
+    virtual i32 Open(char* name, i32 flag, i32 x);             // slot 4 (+0x10)
+};
+struct CRezDirNodeN : CRezNode {
+    CRezDirNodeN(void* parent, void* rezMgr); // 0x13c940 (extern)
+    char m_pad[0x38 - 0x04];
+};
+struct CRezFileNodeN : CRezNode {
+    CRezFileNodeN(void* parent); // 0x13c540 (extern)
+    char m_pad[0x24 - 0x04];
+};
+
+// ---------------------------------------------------------------------------
+// LoadEntry (0x13b0c0) - mount one archive entry `name` into the scope tree.
+// Gate on m_40; cache `name` into m_cachedSourceBuffer; Classify() it. A
+// directory (Classify != 0) builds a CRezDir node, links it into m_list, opens
+// it and recurses ParseRecords into it. A file builds a CRezItm node, opens it,
+// Reads its 0xa8-byte header to fold the running max dims (+0x54..+0x60) and
+// runs the root scope's ApplyRecursive over it. The two `new X(...)` sites carry
+// the MSVC5 nothrow-new null check + /GX ctor-throw cleanup (trylevel 0 for the
+// dir new, 1 for the file new). Called by RezSync::Init to mount GRUNTZ.VRZ/.ZZZ/
+// .XXX. Ghidra-mislabeled CRezDir::Stub_13b0c0 (re-homed from src/Rez/RezMgr.cpp).
+// @early-stop
+// 98.3% - STRUCTURALLY byte-exact (verified llvm-objdump -dr base vs target): every
+// opcode/ModRM, both nothrow-new null checks AND all three /GX ctor-throw state
+// writes (mov [esp+ehstate], 0 / 1 / -1) match retail exactly. The sole residual is
+// the MSVC5 scratch-register coin-flip on ~5 load-then-push arg sites (the two m_64
+// free cleanups, the ParseRecords/ApplyRecursive/Read arg loads): retail rotates
+// eax<-ecx<-edx where cl picks ecx<-edx<-eax for the same temps - identical
+// instruction stream, opposite scratch assignment, not source-steerable
+// (docs/patterns regalloc coin-flip). Plus the reloc-masked node-ctor / operator-new
+// / ParseRecords / ApplyRecursive operands. Parked for the final sweep.
+RVA(0x0013b0c0, 0x238)
+i32 CSymParser::LoadEntry(char* name, i32 flag) {
+    if (m_40 == 0) {
+        return 0;
+    }
+    m_08 = 0;
+    if (m_cachedSourceBuffer) {
+        ::operator delete(m_cachedSourceBuffer);
+    }
+    char* buf = (char*)::operator new(strlen(name) + 1);
+    m_cachedSourceBuffer = buf;
+    strcpy(buf, name);
+
+    if (Classify(name)) {
+        CRezDirNodeN* node = new CRezDirNodeN(this, (void*)m_2c);
+        if (node == 0) {
+            ::operator delete(m_cachedSourceBuffer);
+            m_cachedSourceBuffer = 0;
+            return 0;
+        }
+        m_list.Link(node);
+        m_list.m_count++;
+        if (node->Open(name, 1, 0) == 0) {
+            return 0;
+        }
+        m_parseArmed = (void*)1;
+        ParseRecords(node, m_root, (char*)m_cachedSourceBuffer, flag);
+        return 1;
+    }
+
+    CRezFileNodeN* node = new CRezFileNodeN(this);
+    if (node == 0) {
+        ::operator delete(m_cachedSourceBuffer);
+        m_cachedSourceBuffer = 0;
+        return 0;
+    }
+    m_list.Link(node);
+    m_list.m_count++;
+    if (node->Open(name, 1, 0) == 0) {
+        return 0;
+    }
+
+    char hdr[0xa8];
+    node->Read(0, 0, 0xa8, hdr);
+    u32 v;
+    v = *(u32*)(hdr + 0x97);
+    if (v > (u32)m_54) {
+        m_54 = v;
+    }
+    v = *(u32*)(hdr + 0x9b);
+    if (v > (u32)m_longestScopeNameLen) {
+        m_longestScopeNameLen = v;
+    }
+    v = *(u32*)(hdr + 0x9f);
+    if (v > (u32)m_longestLeafNameLen) {
+        m_longestLeafNameLen = v;
+    }
+    v = *(u32*)(hdr + 0xa3);
+    if (v > (u32)m_60) {
+        m_60 = v;
+    }
+    m_root->ApplyRecursive((i32)node, *(i32*)(hdr + 0x83), *(i32*)(hdr + 0x87), flag);
+    return 1;
+}
+
 // ParseRecords' CRT directory-walk family (_findfirst/_findnext/_findclose @0x11f900/
 // 0x11fa30/0x11fb50), _strlwr (0x18d330), _splitpath (0x18c530), atoi (0x11ff10) and the
 // per-file leaf builders (0x13b970 / 0x13cac0). All reloc-masked. The "." / ".." / "\\"

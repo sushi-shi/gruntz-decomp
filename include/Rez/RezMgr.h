@@ -210,9 +210,6 @@ public:
     i32 m_5c;      // +0x5c  (max x)
     i32 m_60;      // +0x60  (max y)
     void* m_name;  // +0x64  (cached lookup-name buffer)
-
-    // Engine-label backlog stubs.
-    void Stub_13b0c0();
 };
 
 // ---------------------------------------------------------------------------

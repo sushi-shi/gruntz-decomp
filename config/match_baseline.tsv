@@ -413,7 +413,7 @@ rezbufferobjectdtor	1	1
 rezcoll	2	2
 rezfile	6	6
 rezlist	2	2
-rezmgr	17	11
+rezmgr	16	12
 rezsync	1	0
 rezutil	1	1
 ringbuffer	2	2
@@ -475,7 +475,7 @@ streamfeeder	9	6
 streamrecordloaders	5	0
 streamvoice	5	3
 surfacepalette	1	1
-symparser	12	5
+symparser	13	5
 symtab	22	11
 terraintileloader	1	0
 tileactionevent	7	4
@@ -2558,7 +2558,7 @@ image	?DecodeBmp@CFileImage@@QAEPAXPADPAXI@Z	31.2544	31.2544	4	ee7ec349a997	0x14
 image	?DecodeBmpHeader@CRezImage@@QAEHPAXHHH0@Z	95.7395	95.7395	1	54279666e0b3	0x1757c0
 image	?DecodePcx@CFileImage@@QAEPAXPADPAXI@Z	55.7755	55.7755	4	77f8fc32ed4c	0x144ee0
 image	?DecodePcxData@CFileImage@@QAEHPAX0HHH@Z	86.2370	86.2370	1	ddfed7a9e89e	0x1457a0
-image	?DecodePcxData@CRezImage@@QAEHPAX00@Z	91.2848	91.2848	1	02415d581e6f	0x176000
+image	?DecodePcxData@CRezImage@@QAEHPAX00@Z	91.3291	91.3291	1	02415d581e6f	0x176000
 image	?DecodePcxEx@CFileImage@@QAEHPAD0PAX1@Z	100.0000	100.0000	5	d07ec29ad6b0	0x1459d0
 image	?DecodePid@CFileImage@@QAEPAXPADPAXI1@Z	35.4204	35.4204	4	5a4b4aeca089	0x145b10
 image	?DecodePidData@CRezImage@@QAEHPAX00@Z	72.7817	72.7817	1	97bb62b54635	0x176440
@@ -3060,10 +3060,10 @@ rezlist	?AddTail@CRezList@@QAEXPAUCRezListNode@@@Z	100.0000	100.0000	2	1b4afd801
 rezmgr	??0CRezDir@@QAE@PAX0@Z	79.6818	79.6818	6	8a34af1d7db6	0x13c940
 rezmgr	??0CRezItm@@QAE@PAX@Z	100.0000	100.0000	4	f168abdbb8b4	0x13c540
 rezmgr	??0CRezItmBase@@QAE@PAX@Z	100.0000	100.0000	4	cb122a3428e6	0x13c4e0
+rezmgr	??0CRezParseNode@@QAE@PAXPAD0@Z	100.0000	100.0000	1	1c99b848ac06	0x13cac0
 rezmgr	??1CRezItm@@UAE@XZ	100.0000	100.0000	1	8ec9f735c5bc	0x13c590
 rezmgr	??1CRezItmBase@@UAE@XZ	100.0000	100.0000	1	955033bff6b3	0x13c520
 rezmgr	?Close@CRezItm@@QAEHXZ	81.2820	81.2820	1	5db450ed35bd	0x13c830
-rezmgr	?Construct@CRezParseNode@@QAEPAU1@PAX00@Z	3.3929	3.3929	1	82208ae79ef9	0x13cac0
 rezmgr	?FindEntry@CRezDir@@QAEHPAD@Z	100.0000	100.0000	5	44cd4dc84aaa	0x13c080
 rezmgr	?HandleDebugPosition@RezMgr@@QAEHXZ	93.1667	93.1667	5	aac0d05f5683	0x8e470
 rezmgr	?Load@CRezDirNode@@QAEHH@Z	100.0000	100.0000	6	2ced9218b3cf	0x13a0f0
@@ -3071,7 +3071,6 @@ rezmgr	?MakeImageKey@RezMgr@@QAEHPAXPAD0@Z	100.0000	100.0000	5	45cbafe1118c	0x13
 rezmgr	?MakeRezPath@RezMgr@@QAEHXZ	92.7923	92.7923	6	89aba364b6ae	0x91670
 rezmgr	?PerFrameTick@RezMgr@@UAEHXZ	100.0000	100.0000	5	f48f8cfdbf55	0x8b740
 rezmgr	?Read@CRezItm@@QAEHHHIPAX@Z	100.0000	100.0000	2	317d2c857ebf	0x13c600
-rezmgr	?Stub_13b0c0@CRezDir@@QAEXXZ	0.2139	0.2139	2	0caf2154eccf	0x13b0c0
 rezmgr	?UpdateClock@RezMgr@@QAEHXZ	100.0000	100.0000	1	1ee5ba0cb302	0x13ddc0
 rezmgr	?Write@CRezItm@@QAEHHHIPAX@Z	100.0000	100.0000	2	e4e65b9964df	0x13c6c0
 rezsync	?Init@RezSync@@QAEHPAX0@Z	63.6562	63.6562	4	4420111734c8	0x83450
@@ -3369,6 +3368,7 @@ symparser	??1CSymParser@@QAE@XZ	99.9908	99.9908	5	3edc61cfcdba	0x13abc0
 symparser	?AddNode@CSymParser@@QAEXPAX@Z	100.0000	100.0000	2	3b86ac8fbdfb	0x13c210
 symparser	?Clear@CSymParser@@QAEPAXH@Z	91.3803	91.3803	4	3893e570e7df	0x13b850
 symparser	?Construct@CSymParseConfig@@QAEPAU1@XZ	2.5000	2.5000	1	0b1843aa89d5	0x13aa10
+symparser	?LoadEntry@CSymParser@@QAEHPADH@Z	98.2888	98.2888	1	3e556ae6a639	0x13b0c0
 symparser	?ParseBuffer@CSymParser@@QAEHPAXHH@Z	77.1300	77.1300	4	85b86ab816a3	0x13ad00
 symparser	?ParseRecords@CSymParser@@QAEHPAXPAVCSymTab@@PADH@Z	55.4189	55.4189	2	ab1bf892b25d	0x13b300
 symparser	?PopParseSlot@CSymParser@@QAEPAXXZ	77.1304	77.1304	2	029bb41c10e2	0x13c0c0

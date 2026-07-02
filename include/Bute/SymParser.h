@@ -142,6 +142,13 @@ public:
     // builds the right reader + the root scope and folds the records into it.
     i32 ParseBuffer(void* buf, i32 a, i32 b); // 0x13ad00
 
+    // LoadEntry (0x13b0c0): mount one archive entry named `name`. Ghidra-mislabeled
+    // CRezDir::Stub_13b0c0; the real owner is CSymParser (it sits between ParseBuffer
+    // and ParseRecords and drives ParseRecords/ApplyRecursive on `this`). A directory
+    // builds a CRezDir node + recurses ParseRecords; a file builds a CRezItm node,
+    // reads its 0xa8-byte header and runs the root scope's ApplyRecursive.
+    i32 LoadEntry(char* name, i32 flag); // 0x13b0c0
+
     // ParseRecords (0x13b300): the recursive directory/record loader ParseBuffer drives
     // (__thiscall, 4 args). Enumerates `path` via _findfirst/_findnext, building child
     // scopes (CreateSub) per subdir and leaf records per file, recursing into each dir.
