@@ -1,4 +1,4 @@
-// m5_CreditzAssets.cpp - the credits music-bank swap tick (RVA 0x39dc0).
+// CreditzAssets.cpp - the credits music-bank swap tick (RVA 0x39dc0).
 //
 // Toggles m_1c4; on the rising edge it (re)starts the CREDITZ bank and hands the
 // MONOLITH cue to the global mixer; on the falling edge it stops the MONOLITH cue

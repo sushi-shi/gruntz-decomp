@@ -15,7 +15,7 @@ CCheckpointTrigger::~CCheckpointTrigger() {}
 // The class's activation-coordinate registry singleton (@0x64e7c0), built by the
 // shared registry ctor (0x408710) over the fixed [2000,2010] range. CCheckpointActReg
 // is the shared <Gruntz/ActReg.h> CActReg-derived alias; only Construct is used here
-// (RegisterActs, which needs its full ResolveEntry, lives in m2_ActRegSiblings.cpp).
+// (RegisterActs, which needs its full ResolveEntry, lives in ActRegSiblings.cpp).
 SIZE_UNKNOWN(CCheckpointActReg);
 DATA(0x0024e7c0)
 extern CCheckpointActReg g_checkpointActReg; // 0x64e7c0

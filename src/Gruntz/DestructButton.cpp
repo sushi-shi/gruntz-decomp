@@ -1,4 +1,4 @@
-// m5_DestructButton.cpp - CSBI_RectOnly::UpdateDestructButton (RVA 0x10bc30).
+// DestructButton.cpp - CSBI_RectOnly::UpdateDestructButton (RVA 0x10bc30).
 //
 // Arms the "destruct button" status-bar warning: latch the snapshot timer on the
 // active CPlay (from g_mgrSettings), seed the warning-delay window from the

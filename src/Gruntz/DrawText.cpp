@@ -1,4 +1,4 @@
-// m4_DrawText.cpp - a dialog label text-measure/render helper re-homed out of
+// DrawText.cpp - a dialog label text-measure/render helper re-homed out of
 // src/Stub/ApiCallers.cpp (matcher-4, low-RVA half).
 //
 // measure a CString label into the item's rect (DrawTextA with

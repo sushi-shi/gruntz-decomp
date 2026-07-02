@@ -1,4 +1,4 @@
-// m5_StateImages.cpp - a CState/CAttract-family vfunc-8 image loader (RVA 0xa09a0).
+// StateImages.cpp - a CState/CAttract-family vfunc-8 image loader (RVA 0xa09a0).
 //
 // Resolves the "IMAGEZ" namespace in the state's symbol table and asks the active
 // DDraw worker registry (mgr->m_10) to load it (vtable slot +0x4c); on success it

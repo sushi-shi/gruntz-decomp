@@ -1,4 +1,4 @@
-// m5_FileGetStatus.cpp - CFile::GetStatus (RVA 0x1c152f).
+// FileGetStatus.cpp - CFile::GetStatus (RVA 0x1c152f).
 //
 // Fills a CFileStatus from the open handle: zero it, copy the path, then (if the
 // handle is live) read the file times, size and attribute byte, converting each

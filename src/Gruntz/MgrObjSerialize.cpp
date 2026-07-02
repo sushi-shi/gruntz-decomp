@@ -1,4 +1,4 @@
-// m2_MgrObjSerialize.cpp - serialize methods of a large persisted game-mgr object
+// MgrObjSerialize.cpp - serialize methods of a large persisted game-mgr object
 // (C:\Proj\Gruntz). The object's Save writes its fields through a writer/archive
 // whose Write(buf,len) is virtual slot 11 (vtbl+0x2c); the whole pass is gated on
 // the CGruntzMgr settings singleton (_g_mgrSettings) being live. Offsets + code

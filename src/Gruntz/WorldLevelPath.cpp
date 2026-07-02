@@ -1,4 +1,4 @@
-// m5_WorldLevelPath.cpp - resolve the world's active level record by mode
+// WorldLevelPath.cpp - resolve the world's active level record by mode
 // (RVA 0xdbc80, /GX). The compound sibling of CWorldState::BuildWorldLevelKey
 // (0x3c0e0): resets the level record, then depending on the world's name/mode
 // selects a namespace key ("BATTLEZ\<name>", "MULTI\<name>", "WORLDZ\LEVEL%i",

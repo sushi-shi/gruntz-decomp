@@ -1,4 +1,4 @@
-// m2_GameChecksum.cpp - the multiplayer game-state signature accumulator
+// GameChecksum.cpp - the multiplayer game-state signature accumulator
 // (C:\Proj\Gruntz). Walks the 60-entry object table (this->m_4->m_4->m_68,
 // indexed 0x1c..0x108 step 4, in 4 batches of 15) and folds a large set of each
 // object's fields plus the global sync salt (g_645588 @0x645588) and a per-object

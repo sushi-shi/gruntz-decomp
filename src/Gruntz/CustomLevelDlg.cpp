@@ -1,4 +1,4 @@
-// m4_CustomLevelDlg.cpp - the Battlez/custom-level dialog helper re-homed out of
+// CustomLevelDlg.cpp - the Battlez/custom-level dialog helper re-homed out of
 // src/Stub/ApiCallers.cpp (0x000180e0). __thiscall on the dialog host: when the
 // incoming flag is 0 it (re)fills the custom-level listbox (item 0x516) by walking
 // "<gamedir>\custom\*.wwd" under the shared reentrancy lock, prefixing each match

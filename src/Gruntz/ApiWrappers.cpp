@@ -1,4 +1,4 @@
-// m4_ApiWrappers.cpp - game helpers that call Win32/CRT through the IAT,
+// ApiWrappers.cpp - game helpers that call Win32/CRT through the IAT,
 // re-homed out of src/Stub/ApiCallers.cpp (matcher-4, low-RVA half).
 //
 // These are real game functions (not CRT): a browser-launch helper and a grunt

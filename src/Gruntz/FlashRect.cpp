@@ -1,4 +1,4 @@
-// m4_FlashRect.cpp - two near-identical dialog "flash a highlight rectangle"
+// FlashRect.cpp - two near-identical dialog "flash a highlight rectangle"
 // helpers re-homed out of src/Stub/ApiCallers.cpp (matcher-4, low-RVA half).
 //
 // Both walk a 4-entry item table, map each child window's client rect into the

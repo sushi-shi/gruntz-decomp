@@ -1,4 +1,4 @@
-// m5_ConfigStoreWrite.cpp - CConfigStore::WriteProfileInt / WriteProfileBinary.
+// ConfigStoreWrite.cpp - CConfigStore::WriteProfileInt / WriteProfileBinary.
 //
 // The 0x1bf*-0x1d5* registry/COM helper module (framed profile, /O2 /Oy-): retail
 // keeps ebp frame pointers with full /O2 register allocation. Companion to

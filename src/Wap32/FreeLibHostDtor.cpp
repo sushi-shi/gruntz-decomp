@@ -1,4 +1,4 @@
-// m5_FreeLibHostDtor.cpp - the FreeLibrary-owning helper destructor body (RVA
+// FreeLibHostDtor.cpp - the FreeLibrary-owning helper destructor body (RVA
 // 0x1d4a18), part of the 0x1bf*-0x1d5* COM/registry helper module.
 //
 // The retail function's true entry is 0x1d4a0d (`mov eax,OFFSET handler; call

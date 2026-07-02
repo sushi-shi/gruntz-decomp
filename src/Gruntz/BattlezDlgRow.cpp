@@ -1,4 +1,4 @@
-// m5_BattlezDlgRow.cpp - CBattlezDlg row enable/disable toggle (RVA 0x15fe0).
+// BattlezDlgRow.cpp - CBattlezDlg row enable/disable toggle (RVA 0x15fe0).
 //
 // For a battlez roster row: query its four child controls, and if the row's combo
 // (control A) reports a selection, enable controls B/C/D and raise the row's

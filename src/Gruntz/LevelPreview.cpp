@@ -1,4 +1,4 @@
-// m5_LevelPreview.cpp - the level-preview screen tick (RVA 0xde420).
+// LevelPreview.cpp - the level-preview screen tick (RVA 0xde420).
 //
 // Advances the PREVIEW%i counter, resolves the next \SCREENZ\%s namespace, fades
 // its title in and (when the live surface is free) plays the teleporter-open cue;

@@ -15,7 +15,7 @@
 //
 // The ~15 "GRUNTZ_"+name CString temps give it the /GX exception frame -> `eh` unit.
 // CARCASS doctrine: every callee is a reloc-masked external; the worker-registry /
-// leaf-scan / ani classes mirror m5_GameAssetNamespaces.cpp; strings are $SG
+// leaf-scan / ani classes mirror GameAssetNamespaces.cpp; strings are $SG
 // literals reloc-masked against the matched symbols.
 #include <Mfc.h> // MFC CString (+, LoadString, ctor/dtor)
 #include <Gruntz/CGameRegistry.h>

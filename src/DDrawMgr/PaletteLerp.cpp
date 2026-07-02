@@ -1,4 +1,4 @@
-// m5_PaletteLerp.cpp - the palette colour-interpolation "tick" (RVA 0x1480a0).
+// PaletteLerp.cpp - the palette colour-interpolation "tick" (RVA 0x1480a0).
 //
 // A DDrawMgr palette-fade object: each tick lerps the live palette (m_livePalette) from a
 // captured source (m_sourcePalette) toward either a target palette (m_targetPalette) or a fixed RGB

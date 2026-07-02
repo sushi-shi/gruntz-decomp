@@ -1,4 +1,4 @@
-// m5_LightEffectSetup.cpp - a shade/lighting effect setup pass (RVA 0x1804a0).
+// LightEffectSetup.cpp - a shade/lighting effect setup pass (RVA 0x1804a0).
 //
 // Captures a descriptor's surface/colour parameters into the effect object, clips
 // the centre point to the surface rect (early-out if outside), fills the per-scan

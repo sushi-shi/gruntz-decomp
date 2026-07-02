@@ -1,4 +1,4 @@
-// m5_SoundTickCtor.cpp - the timer/sound-instance constructor (RVA 0x136fe0).
+// SoundTickCtor.cpp - the timer/sound-instance constructor (RVA 0x136fe0).
 //
 // A __thiscall /GX (FPO, esp-relative SEH) constructor reached from CloneAndPlay:
 // it links the SEH frame, stamps the Tick vtable (0x5ef6d0), seeds the six member

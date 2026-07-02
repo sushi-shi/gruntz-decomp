@@ -100,7 +100,7 @@ extern HWND g_dlgItem_648ce0;
 extern "C" void* RezAlloc(u32 size);
 
 // USER32 entry points reached through game-owned IAT-style function pointers
-// (ff 15 [ptr]); g_pSendMessageA is the same global m5_BattlezDlgRow.cpp binds.
+// (ff 15 [ptr]); g_pSendMessageA is the same global BattlezDlgRow.cpp binds.
 DATA(0x006c4520)
 extern HWND(__stdcall* g_pGetFocus)();
 DATA(0x006c44a4)

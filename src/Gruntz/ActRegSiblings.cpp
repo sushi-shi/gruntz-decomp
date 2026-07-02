@@ -1,4 +1,4 @@
-// m2_ActRegSiblings.cpp - two CUserLogic-leaf RegisterActs siblings (C:\Proj\Gruntz).
+// ActRegSiblings.cpp - two CUserLogic-leaf RegisterActs siblings (C:\Proj\Gruntz).
 //
 // Both bind a per-frame activation handler to the shared "A" key via the global
 // name registry, then store the handler PMF into the class's own activation-

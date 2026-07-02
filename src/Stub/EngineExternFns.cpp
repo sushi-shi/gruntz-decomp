@@ -33,7 +33,7 @@ struct CRangeSet {
 struct CDebugSink {
     i32 m_0;
 };
-extern CDebugSink g_6bf850; // 0x6bf850 (DATA-bound in m5_DebugPrintf.cpp)
+extern CDebugSink g_6bf850; // 0x6bf850 (DATA-bound in DebugPrintf.cpp)
 extern i32 g_6bf8dc;        // debug-output mode (DATA-bound in Globals.cpp)
 
 // C-linkage engine functions (reloc-correlation).

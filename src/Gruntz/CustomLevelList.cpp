@@ -1,4 +1,4 @@
-// m4_CustomLevelList.cpp - the "fill the custom-level listbox" dialog helper
+// CustomLevelList.cpp - the "fill the custom-level listbox" dialog helper
 // re-homed out of src/Stub/ApiCallers.cpp (matcher-4, low-RVA half).
 //
 // clear listbox 0x3fc, bail if the "Custom" gate is set, then walk the

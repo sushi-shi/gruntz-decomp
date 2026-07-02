@@ -1,4 +1,4 @@
-// m5_DebugPrintf.cpp - parse the DPRINTF env var into the debug-output mode (RVA
+// DebugPrintf.cpp - parse the DPRINTF env var into the debug-output mode (RVA
 // 0x185000). Reads %DPRINTF%, upper-cases it, and maps the first matching device
 // keyword to the global mode word (g_6bf8dc); the parsed string is then handed to
 // the sink-configure helper. __thiscall, returns this. Field names are

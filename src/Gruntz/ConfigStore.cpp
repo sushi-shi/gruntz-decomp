@@ -136,5 +136,5 @@ i32 CConfigStore::GetInt(char* szSection, char* szKey, i32 nDefault) {
 }
 
 // CConfigStore is defined in the shared ConfigStore.h (also included by
-// m5_ConfigStoreWrite.cpp); its SIZE stays here to avoid touching that header.
+// ConfigStoreWrite.cpp); its SIZE stays here to avoid touching that header.
 SIZE_UNKNOWN(CConfigStore);

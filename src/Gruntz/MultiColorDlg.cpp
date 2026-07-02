@@ -1,4 +1,4 @@
-// m4_MultiColorDlg.cpp - the multiplayer color-selection dialog item updater
+// MultiColorDlg.cpp - the multiplayer color-selection dialog item updater
 // re-homed out of src/Stub/ApiCallers.cpp (matcher-4, low-RVA half).
 //
 // refresh three dialog items (0x4ff combo, 0x42b, 0x4e9) plus the

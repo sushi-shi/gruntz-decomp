@@ -1,4 +1,4 @@
-// m5_GameAssetNamespaces.cpp - load the per-area GAME asset namespaces (RVA
+// GameAssetNamespaces.cpp - load the per-area GAME asset namespaces (RVA
 // 0xf9ea0). Resolves AREA%i, then lazily scans the GAME image/sound/aniz trees
 // into the worker registries, builds the tool/toy colour table and the two 64x64
 // scratch pools. Field names are placeholders; only offsets + code bytes are

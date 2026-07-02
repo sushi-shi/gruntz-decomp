@@ -134,8 +134,8 @@ source = "src/Gruntz/ConfigStore.cpp"
 flags = "framed"
 
 [[unit]]
-unit = "m5_configstorewrite"
-source = "src/Gruntz/m5_ConfigStoreWrite.cpp"
+unit = "configstorewrite"
+source = "src/Gruntz/ConfigStoreWrite.cpp"
 flags = "framed"
 
 [[unit]]
@@ -441,8 +441,8 @@ source = "src/Gruntz/GruntTileScan.cpp"
 flags = "base"
 
 [[unit]]
-unit = "m5_worldlevelpath"
-source = "src/Gruntz/m5_WorldLevelPath.cpp"
+unit = "worldlevelpath"
+source = "src/Gruntz/WorldLevelPath.cpp"
 flags = "eh"
 
 [[unit]]
@@ -1680,8 +1680,8 @@ source = "src/DDrawMgr/ShadeTableCache.cpp"
 flags = "eh"
 
 [[unit]]
-unit = "m5_palettelerp"
-source = "src/DDrawMgr/m5_PaletteLerp.cpp"
+unit = "palettelerp"
+source = "src/DDrawMgr/PaletteLerp.cpp"
 flags = "base"
 
 [[unit]]
@@ -2303,39 +2303,39 @@ source = "src/Gruntz/CustomWorldDialog.cpp"
 flags = "base"
 
 [[unit]]
-unit = "m1_ehfunclets"
+unit = "ehunwindfunclets"
 source = "src/Wap32/EhUnwindFunclets.cpp"
 flags = "base"
 [[unit]]
-unit = "m1_packetpool"
+unit = "packetpool"
 source = "src/Net/PacketPool.cpp"
 flags = "base"
 [[unit]]
-unit = "m1_glyphtable"
+unit = "glyphtable"
 source = "src/Gruntz/GlyphTable.cpp"
 flags = "base"
 [[unit]]
-unit = "m1_cluster0c"
+unit = "cluster0c"
 source = "src/Gruntz/Cluster0c.cpp"
 flags = "base"
 [[unit]]
-unit = "m1_apphelpers"
+unit = "apphelpers"
 source = "src/Gruntz/AppHelpers.cpp"
 flags = "base"
 [[unit]]
-unit = "m1_timesplit"
+unit = "timesplit"
 source = "src/Utils/TimeSplit.cpp"
 flags = "base"
 [[unit]]
-unit = "m1_ringbuffer"
+unit = "ringbuffer"
 source = "src/Wap32/RingBuffer.cpp"
 flags = "base"
 [[unit]]
-unit = "m1_wapmisc"
+unit = "wapmisc"
 source = "src/Wap32/WapMisc.cpp"
 flags = "base"
 [[unit]]
-unit = "m1_faderdtor"
+unit = "faderdtor"
 source = "src/Wap32/FaderDtor.cpp"
 flags = "base"
 
@@ -2437,44 +2437,44 @@ source = "src/Net/NetThingDtor.cpp"
 flags = "eh"
 
 [[unit]]
-unit = "m2_actregsiblings"
-source = "src/Gruntz/m2_ActRegSiblings.cpp"
+unit = "actregsiblings"
+source = "src/Gruntz/ActRegSiblings.cpp"
 flags = "eh"
 [[unit]]
-unit = "m2_mgrobjserialize"
-source = "src/Gruntz/m2_MgrObjSerialize.cpp"
+unit = "mgrobjserialize"
+source = "src/Gruntz/MgrObjSerialize.cpp"
 flags = "eh"
 [[unit]]
-unit = "m2_arraye40"
-source = "src/Gruntz/m2_ArrayE40.cpp"
+unit = "arraye40"
+source = "src/Gruntz/ArrayE40.cpp"
 flags = "base"
 [[unit]]
-unit = "m2_gamechecksum"
-source = "src/Gruntz/m2_GameChecksum.cpp"
+unit = "gamechecksum"
+source = "src/Gruntz/GameChecksum.cpp"
 flags = "base"
 
 [[unit]]
-unit = "m1_lobbysync"
+unit = "lobbysync"
 source = "src/Gruntz/LobbySync.cpp"
 flags = "base"
 [[unit]]
-unit = "m1_netgamedlg"
+unit = "netgamedlg"
 source = "src/Gruntz/NetGameDlg.cpp"
 flags = "eh"
 [[unit]]
-unit = "m1_fadersetup"
+unit = "fadersetup"
 source = "src/Gruntz/FaderElemSetup.cpp"
 flags = "base"
 [[unit]]
-unit = "m1_glyphstr"
+unit = "glyphstr"
 source = "src/Gruntz/GlyphStringDraw.cpp"
 flags = "base"
 [[unit]]
-unit = "m1_misc18"
+unit = "misc18"
 source = "src/Gruntz/Misc18.cpp"
 flags = "base"
 [[unit]]
-unit = "m1_saverecload"
+unit = "saverecload"
 source = "src/Gruntz/SaveRecordLoad.cpp"
 flags = "base"
 
@@ -2487,38 +2487,38 @@ unit = "sbi_imageset_eh"
 source = "src/Gruntz/SBI_ImageSetEh.cpp"
 flags = "eh"
 [[unit]]
-unit = "m5_destructbutton"
-source = "src/Gruntz/m5_DestructButton.cpp"
+unit = "destructbutton"
+source = "src/Gruntz/DestructButton.cpp"
 flags = "base"
 
 [[unit]]
-unit = "m5_stateimages"
-source = "src/Gruntz/m5_StateImages.cpp"
+unit = "stateimages"
+source = "src/Gruntz/StateImages.cpp"
 flags = "base"
 
 [[unit]]
-unit = "m5_finishlevelsprite"
-source = "src/Gruntz/m5_FinishLevelSprite.cpp"
+unit = "finishlevelsprite"
+source = "src/Gruntz/FinishLevelSprite.cpp"
 flags = "base"
 
 [[unit]]
-unit = "m5_creditzassets"
-source = "src/Gruntz/m5_CreditzAssets.cpp"
+unit = "creditzassets"
+source = "src/Gruntz/CreditzAssets.cpp"
 flags = "base"
 
 [[unit]]
-unit = "m5_debugprintf"
-source = "src/Gruntz/m5_DebugPrintf.cpp"
+unit = "debugprintf"
+source = "src/Gruntz/DebugPrintf.cpp"
 flags = "base"
 
 [[unit]]
-unit = "m5_battlezdlgrow"
-source = "src/Gruntz/m5_BattlezDlgRow.cpp"
+unit = "battlezdlgrow"
+source = "src/Gruntz/BattlezDlgRow.cpp"
 flags = "base"
 
 [[unit]]
-unit = "m5_levelpreview"
-source = "src/Gruntz/m5_LevelPreview.cpp"
+unit = "levelpreview"
+source = "src/Gruntz/LevelPreview.cpp"
 flags = "base"
 
 [[unit]]
@@ -2532,47 +2532,47 @@ source = "src/Gruntz/CImageProbe.cpp"
 flags = "base"
 
 [[unit]]
-unit = "m5_lighteffectsetup"
-source = "src/DDrawMgr/m5_LightEffectSetup.cpp"
+unit = "lighteffectsetup"
+source = "src/DDrawMgr/LightEffectSetup.cpp"
 flags = "base"
 
 [[unit]]
-unit = "m5_worldlevelkey"
-source = "src/Gruntz/m5_WorldLevelKey.cpp"
+unit = "worldlevelkey"
+source = "src/Gruntz/WorldLevelKey.cpp"
 flags = "eh"
 
 [[unit]]
-unit = "m5_filegetstatus"
-source = "src/Gruntz/m5_FileGetStatus.cpp"
+unit = "filegetstatus"
+source = "src/Gruntz/FileGetStatus.cpp"
 flags = "framed"
 
 [[unit]]
-unit = "m5_freelibhostdtor"
-source = "src/Wap32/m5_FreeLibHostDtor.cpp"
+unit = "freelibhostdtor"
+source = "src/Wap32/FreeLibHostDtor.cpp"
 flags = "framed"
 
 [[unit]]
-unit = "m5_soundtickctor"
-source = "src/Gruntz/m5_SoundTickCtor.cpp"
+unit = "soundtickctor"
+source = "src/Gruntz/SoundTickCtor.cpp"
 flags = "base"
 
 [[unit]]
-unit = "m5_gameassetnamespaces"
-source = "src/Gruntz/m5_GameAssetNamespaces.cpp"
+unit = "gameassetnamespaces"
+source = "src/Gruntz/GameAssetNamespaces.cpp"
 flags = "base"
 
 [[unit]]
-unit = "m2_bracketvalue"
+unit = "bracketvalue"
 source = "src/Gruntz/BracketValueParse.cpp"
 flags = "base"
 
 [[unit]]
-unit = "m2_obj5f0890dtor"
+unit = "obj5f0890dtor"
 source = "src/Gruntz/Obj5f0890Dtor.cpp"
 flags = "eh"
 
 [[unit]]
-unit = "m2_mgrslotswap"
+unit = "mgrslotswap"
 source = "src/Gruntz/MgrSlotSwap.cpp"
 flags = "base"
 
@@ -2632,43 +2632,43 @@ flags = "base"
 [[unit]]
 # matcher-4: game API-wrapper helpers re-homed from src/Stub/ApiCallers.cpp
 # (low-RVA half). base+/GX mirrors the original stub-unit environment.
-unit = "m4_apiwrappers"
-source = "src/Gruntz/m4_ApiWrappers.cpp"
+unit = "apiwrappers"
+source = "src/Gruntz/ApiWrappers.cpp"
 flags = "base"
 extra = ["/GX"]
 
 [[unit]]
 # matcher-4: the two dialog flash-rect helpers (EH + severus/imgHolder scratch).
-unit = "m4_flashrect"
-source = "src/Gruntz/m4_FlashRect.cpp"
+unit = "flashrect"
+source = "src/Gruntz/FlashRect.cpp"
 flags = "base"
 extra = ["/GX"]
 
 [[unit]]
 # matcher-4: dialog label text measure/render helper (EH + CString + scratch).
-unit = "m4_drawtext"
-source = "src/Gruntz/m4_DrawText.cpp"
+unit = "drawtext"
+source = "src/Gruntz/DrawText.cpp"
 flags = "base"
 extra = ["/GX"]
 
 [[unit]]
 # matcher-4: multiplayer color-selection dialog item updater (EH + MFC CString).
-unit = "m4_multicolordlg"
-source = "src/Gruntz/m4_MultiColorDlg.cpp"
+unit = "multicolordlg"
+source = "src/Gruntz/MultiColorDlg.cpp"
 flags = "base"
 extra = ["/GX"]
 
 [[unit]]
 # matcher-4: custom-level listbox filler (findfirst/next walk + lock + CString).
-unit = "m4_customlevellist"
-source = "src/Gruntz/m4_CustomLevelList.cpp"
+unit = "customlevellist"
+source = "src/Gruntz/CustomLevelList.cpp"
 flags = "base"
 extra = ["/GX"]
 
 [[unit]]
 # matcher-3: custom-level dialog populate/select (thiscall, magic-static CString + walk).
-unit = "m4_customleveldlg"
-source = "src/Gruntz/m4_CustomLevelDlg.cpp"
+unit = "customleveldlg"
+source = "src/Gruntz/CustomLevelDlg.cpp"
 flags = "base"
 extra = ["/GX"]
 

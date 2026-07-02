@@ -1,4 +1,4 @@
-// m5_WorldLevelKey.cpp - resolve the WORLDZ\LEVEL%i record for the active world
+// WorldLevelKey.cpp - resolve the WORLDZ\LEVEL%i record for the active world
 // (RVA 0x3c0e0). Resets the level record, formats its namespace key, resolves it,
 // and on success runs the record's load hook + NotifyAllPlanes and raises its
 // dirty bit. Field names are placeholders; only offsets + code bytes are

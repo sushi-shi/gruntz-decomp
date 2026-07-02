@@ -1,4 +1,4 @@
-// m5_FinishLevelSprite.cpp - the finish-level state-sprite driver (RVA 0x7c3d0).
+// FinishLevelSprite.cpp - the finish-level state-sprite driver (RVA 0x7c3d0).
 //
 // A 6-way state transition for the "finish level" overlay: entering state 1 looks
 // up the GAME\FINISHLEVEL sprite, latches its completion timer and (when the live
