@@ -122,6 +122,24 @@ extern WwdGameReg* g_gameReg;
 RVA(0x00010e90, 0x44)
 CFortressFlag::~CFortressFlag() {}
 
+// CFortressFlag::HandleFortConquered @0x03f5f0 (1318 B) - the per-frame fort-
+// conquest check (re-homed from src/Stub/Backlog.cpp; Ghidra symbol cluster proves
+// CFortressFlag ownership: adjacent to NotifyFortUnderAttack @0x45270 / the
+// CFortressFlag ctor/dtor / BuildFortSplashParticles @0x44f80). Structure decoded:
+// the +0x1a0 sub-clock tick, the g_mgrSettings->m_134 mode gate, HitTestCell + dedup
+// vs owner->m_124, the 5-CString "<A> was conquered by <B>!" HUD message, the config
+// re-tag, the two handler-type re-home list walks + a g_freeList pop, and a
+// per-object GAME_EXPLOSION3 eye-candy spawn.
+// @early-stop
+// >512B /GX regalloc wall: the full-body reconstruction BUILDS but scores 0.0% (below
+// the empty-stub baseline) - retail pins `this` to ebp with a 0x24 frame + canonical
+// /GX prologue while the /O2 recompile pins `this` to ebx with a 0x20 frame + a
+// hoisted `mov eax,fs:0`, a this-register + frame-slot divergence cascading through
+// all 1318 B. Kept as the empty (highest-%) stub per the >512B REVERT rule; final-
+// sweep leaf-first redo needs the callee set + a matching regalloc modeled first.
+RVA(0x0003f5f0, 0x526)
+void CFortressFlag::HandleFortConquered() {}
+
 // CFortressFlag::CFortressFlag @0x045d30 - fold the shared CUserLogic(obj) init,
 // run the eyecandy z-clamp, pick the flag's faction name (a 4-way switch on the
 // sprite-selector m_124: KING/NAPOLEAN/PATTON/VIKING - any other selector hides

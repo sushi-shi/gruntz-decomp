@@ -3396,3 +3396,12 @@ rva,name,lib,confidence,source
 0x1c7e6d,Dtor_1c7e6d,GAME-ASM,HIGH,asm-carveout
 0x18c1f5,IntegerScale,GAME-ASM,HIGH,asm-carveout
 0x16e0f0,GetCallerRetAddr,GAME-ASM,HIGH,asm-carveout
+0x08c3b0,??0CRgn@@QAE@XZ,NAFXCW,MED,manual-stub-reclass
+0x1d38a1,mfc_afx_win_state_ctor_1d38a1,NAFXCW,MED,manual-stub-reclass
+0x1d496b,mfc_winapp_eh_funclet_1d496b,NAFXCW,MED,manual-stub-reclass
+0x11f6b9,crt_eh_funclet_11f6b9,LIBCMT,MED,manual-stub-reclass
+0x11cee3,mfc_exception_base_dtor_11cee3,NAFXCW,MED,manual-stub-reclass
+0x11cf30,mfc_exception_base_dtor_11cf30,NAFXCW,MED,manual-stub-reclass
+0x11eaa8,mfc_exception_base_dtor_11eaa8,NAFXCW,MED,manual-stub-reclass
+0x11eaf5,mfc_exception_base_dtor_11eaf5,NAFXCW,MED,manual-stub-reclass
+0x16dfc0,bute_node_entry_base_dtor_16dfc0,LIBCMT,LOW,manual-stub-reclass

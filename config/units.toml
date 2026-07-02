@@ -904,11 +904,53 @@ unit = "cfileimageloadbyext"
 source = "src/Image/CFileImageLoadByExt.cpp"
 flags = "eh"
 
+# --- semantic stub-elim: re-homed from src/Stub/Backlog.cpp + Discovered.cpp ---
 [[unit]]
-# trace-discovered class memberships (gruntz.analysis.gen_class_stubs); own TU so
-# the minimal class decls never clash with the real models in other units.
-unit = "engine_discovered"
-source = "src/Stub/Discovered.cpp"
+# CBootyState::vfunc_9 (slot 9) + CMultiBootyState::OnActivate2 (slot 8) - vtable-proven.
+unit = "bootystateactivate"
+source = "src/Gruntz/BootyStateActivate.cpp"
+flags = "base"
+
+[[unit]]
+# LoadCustomWorldInfo (0x3b7c0) CUSTOM_WORLDINFO dialog helper (sibling of CustomWorldDialog).
+unit = "customworldinfodlg"
+source = "src/Gruntz/CustomWorldInfoDlg.cpp"
+flags = "base"
+
+[[unit]]
+# CPlay::vfunc_16 (slot 16) in-game pointer/click dispatcher (sibling of GameKeyHandler).
+unit = "gamemousehandler"
+source = "src/Gruntz/GameMouseHandler.cpp"
+flags = "base"
+
+[[unit]]
+# CCheckpointTriggerSwitchLogic slot-1 builder (0x112a50) - vtable-proven.
+unit = "checkpointswitchbuild"
+source = "src/Gruntz/CheckpointSwitchBuild.cpp"
+flags = "base"
+
+[[unit]]
+# DrawSaveGameMenu (0xe3f40) save-game dialog command dispatcher.
+unit = "savegamemenu"
+source = "src/Gruntz/SaveGameMenu.cpp"
+flags = "base"
+
+[[unit]]
+# CGruntResurrector::LoadGruntResurrectTuning (0x7be60) - sibling of CRockBreakMgr.
+unit = "gruntresurrectradius"
+source = "src/Gruntz/GruntResurrectRadius.cpp"
+flags = "base"
+
+[[unit]]
+# CInGameText::Update (0x997c0) per-frame tick - Ghidra cluster attribution.
+unit = "cingametextupdate"
+source = "src/Gruntz/CInGameTextUpdate.cpp"
+flags = "base"
+
+[[unit]]
+# CGameInfo::FormatGameInfoString (0x1183b0) save-game info query builder.
+unit = "gameinfostring"
+source = "src/Gruntz/GameInfoString.cpp"
 flags = "base"
 
 [[unit]]

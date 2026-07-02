@@ -18,7 +18,7 @@
 
 #include <rva.h> // RVA()/RVAU() label macros the included stub files use
 
-#include "Backlog.cpp"
+// Backlog.cpp fully re-homed to real class TUs (semantic stub-elim); file removed.
 #include "ApiCallers.cpp"
 // CButeTree defines CButeTree + g_buteTree, shared by the game-object ctors that
 // remain here (and by GameObjectCtors.cpp / UserLogic.cpp) -> include early.

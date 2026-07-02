@@ -471,3 +471,163 @@ i32 EngineLabelBacklog::LoadPowerupIconSprites(
 SIZE_UNKNOWN(CResourceTracker);
 SIZE_UNKNOWN(CSpriteVtbl);
 SIZE_UNKNOWN(EngineLabelBacklog);
+
+// ---------------------------------------------------------------------------
+// BuildPowerupIconKeys (0x1e720) - seeds the "GAME_INGAMEICONZ" icon-key group,
+// then appends one tool/toy/powerup key string selected by `key` (a sparse switch;
+// out-of-range / gap keys fall through to POWERUPZ_COIN). Sibling of the
+// LoadPowerupIconSprites loader above (same GAME_INGAMEICONZ subsystem); re-homed
+// from src/Stub/Backlog.cpp. The registry object (arg1=esi): SetGroup() seeds the
+// group key, Add() appends one entry (both __thiscall, reloc-masked externals).
+// @early-stop
+// jump-table-data-overlap scoring wall (~53%): code bytes byte-exact vs retail
+// (verified by raw byte-compare; only the index-table/jump-table base reloc
+// operands + $L labels differ). See docs/patterns/jumptable-data-overlap.md.
+SIZE_UNKNOWN(PowerupKeyRegistry);
+class PowerupKeyRegistry {
+public:
+    void SetGroup(char* key); // FUN_001b9e74 __thiscall
+    void Add(char* key);      // FUN_001ba0c8 __thiscall
+};
+
+RVA(0x0001e720, 0x2fe)
+void __stdcall BuildPowerupIconKeys(PowerupKeyRegistry* reg, i32 key) {
+    reg->SetGroup("GAME_INGAMEICONZ");
+    switch (key) {
+        case 1:
+            reg->Add("TOOLZ_BOMBZ");
+            return;
+        case 2:
+            reg->Add("TOOLZ_BOOMERANGZ");
+            return;
+        case 3:
+            reg->Add("TOOLZ_BRICKZ");
+            return;
+        case 4:
+            reg->Add("TOOLZ_CLUBZ");
+            return;
+        case 5:
+            reg->Add("TOOLZ_GAUNTLETZ");
+            return;
+        case 6:
+            reg->Add("TOOLZ_GLOVEZ");
+            return;
+        case 7:
+            reg->Add("TOOLZ_GOOBERZ");
+            return;
+        case 8:
+            reg->Add("TOOLZ_GRAVITYBOOTZ");
+            return;
+        case 9:
+            reg->Add("TOOLZ_GUNHATZ");
+            return;
+        case 10:
+            reg->Add("TOOLZ_NERFGUNZ");
+            return;
+        case 11:
+            reg->Add("TOOLZ_ROCKZ");
+            return;
+        case 12:
+            reg->Add("TOOLZ_SHIELDZ");
+            return;
+        case 13:
+            reg->Add("TOOLZ_SHOVELZ");
+            return;
+        case 14:
+            reg->Add("TOOLZ_SPRINGZ");
+            return;
+        case 15:
+            reg->Add("TOOLZ_SPYZ");
+            return;
+        case 16:
+            reg->Add("TOOLZ_SWORDZ");
+            return;
+        case 17:
+            reg->Add("TOOLZ_TIMEBOMBZ");
+            return;
+        case 18:
+            reg->Add("TOOLZ_TOOBZ");
+            return;
+        case 19:
+            reg->Add("TOOLZ_WANDZ");
+            return;
+        case 20:
+            reg->Add("TOOLZ_WARPSTONEZ1");
+            return;
+        case 21:
+            reg->Add("TOOLZ_WELDERZ");
+            return;
+        case 22:
+            reg->Add("TOOLZ_WINGZ");
+            return;
+        case 23:
+            reg->Add("TOYZ_BABYWALKERZ");
+            return;
+        case 24:
+            reg->Add("TOYZ_BEACHBALLZ");
+            return;
+        case 25:
+            reg->Add("TOYZ_BIGWHEELZ");
+            return;
+        case 26:
+            reg->Add("TOYZ_GOKARTZ");
+            return;
+        case 27:
+            reg->Add("TOYZ_JACKINTHEBOXZ");
+            return;
+        case 28:
+            reg->Add("TOYZ_JUMPROPEZ");
+            return;
+        case 29:
+            reg->Add("TOYZ_POGOSTICKZ");
+            return;
+        case 30:
+            reg->Add("TOYZ_SCROLLZ");
+            return;
+        case 31:
+            reg->Add("TOYZ_SQUEAKTOYZ");
+            return;
+        case 32:
+            reg->Add("TOYZ_YOYOZ");
+            return;
+        case 50:
+            reg->Add("POWERUPZ_MEGAPHONEZ");
+            return;
+        case 54:
+            reg->Add("POWERUPZ_GHOST");
+            return;
+        case 55:
+            reg->Add("POWERUPZ_SUPERSPEED");
+            return;
+        case 56:
+            reg->Add("POWERUPZ_INVULNERABILITY");
+            return;
+        case 57:
+            reg->Add("POWERUPZ_CONVERSION");
+            return;
+        case 58:
+            reg->Add("POWERUPZ_DEATHTOUCH");
+            return;
+        case 59:
+            reg->Add("POWERUPZ_ROIDZ");
+            return;
+        case 60:
+            reg->Add("POWERUPZ_REACTIVEARMOR");
+            return;
+        case 61:
+            reg->Add("POWERUPZ_RANDOMCOLORZ");
+            return;
+        case 62:
+            reg->Add("POWERUPZ_SCREENSHAKE");
+            return;
+        case 63:
+            reg->Add("POWERUPZ_BLACKSCREEN");
+            return;
+        case 64:
+            reg->Add("POWERUPZ_MINICAM");
+            return;
+        default:
+            reg->Add("POWERUPZ_COIN");
+            return;
+    }
+}

@@ -33,6 +33,36 @@ namespace Utils {
         }
 
         // -------------------------------------------------------------------------
+        // FileExists COMDAT sibling copies. The inline FileExists helper is folded
+        // by MSVC into other TUs, emitting byte-identical copies at their own RVAs
+        // (re-homed from src/Stub/Backlog.cpp, which held these as Stub_0f90f0 /
+        // Stub_01fd70). Same bytes as FileExists above.
+        RVA(0x000f90f0, 0x45)
+        i32 FileExistsCopyF90F0(char* szPath) {
+            OFSTRUCT of;
+
+            if (!szPath) {
+                return 0;
+            }
+            if (!*szPath) {
+                return 0;
+            }
+            return OpenFile(szPath, &of, 0x4000 /*OF_EXIST*/) != -1;
+        }
+        RVA(0x0001fd70, 0x45)
+        i32 FileExistsCopy1FD70(char* szPath) {
+            OFSTRUCT of;
+
+            if (!szPath) {
+                return 0;
+            }
+            if (!*szPath) {
+                return 0;
+            }
+            return OpenFile(szPath, &of, 0x4000 /*OF_EXIST*/) != -1;
+        }
+
+        // -------------------------------------------------------------------------
         // ActiveWait
         // Busy-waits ~milliseconds using timeGetTime (no Sleep; spins).
         RVA(0x0013dfe0, 0x21)
