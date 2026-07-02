@@ -173,6 +173,16 @@ struct CDeviceConfigB {
     i32 m_flags;           // +0x2b4  (= 0)
     char m_pad2b8[0x2c8 - 0x2b8];
 }; // 0x2c8
+SIZE(CDeviceConfigB, 0x2c8); // measured: InitB new's 0x2c8 (device-B config object)
+// Non-polymorphic (explicit m_vptr, foreign engine vtable stamped in the ctor); VTBL
+// is a catalog name only - cl emits no ??_7CDeviceConfigB here (reloc-masked).
+VTBL(CDeviceConfigB, 0x001ef640); // retail device-B (mouse) vtable (src g_deviceConfigVtblB2)
+
+// CInputDevice (= CDeviceConfigA, keyboard device) metadata. Also non-polymorphic
+// (explicit m_vptr, foreign engine vtable @0x5ef628 stamped in the dtor chain), so
+// VTBL is a catalog name only (reloc-masked). SIZE from InitA's new 0x338.
+SIZE(CInputDevice, 0x338);
+VTBL(CInputDevice, 0x001ef628); // retail keyboard-device vtable (src g_deviceConfigVtblA)
 
 inline CInputDevice::CInputDevice() {
     m_device = 0;

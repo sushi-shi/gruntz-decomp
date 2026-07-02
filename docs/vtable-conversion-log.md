@@ -492,3 +492,57 @@ model IS complete to +0x1f8).
   ??_7** — cl dead-store-eliminates its implicit vptr store (overwritten by the
   manual stamp), so the manual-stamp shape is a stable faithful reproduction that a
   naive "remove the stamp" would destabilize (GameLevel).
+## Batch 5 (SIZE+VTBL retrofit — Dsndmgr / DinMgr2 / Wap32 / DDrawMgr) — 2026-07-02
+
+VTBL()/SIZE() **retrofit** pass over the four device-manager modules. Every vtable
+these modules own or stamp now carries a real `??_7<Class>@@6B@` catalog name (via a
+VTBL() macro atop/beside the class) plus an exact SIZE() where `new(0xNN)`/`RezAlloc`
+pins it. **All matching-neutral** (MSVC sees nothing; a vtable name is reloc-masked) —
+build stayed GREEN, `no regressions vs baseline` (1835/3361 exact, 64.39% fuzzy).
+
+**Realized (cl-emitted ??_7) — VTBL added atop the class:**
+
+| Class | vtable RVA | SIZE | TU |
+| :-- | :-- | :-- | :-- |
+| `SoundDevice` | 0x1ef6c4 | 0x98 | include/Dsndmgr/SoundDevice.h |
+| `SoundStream` | 0x1ef6ec | 0x9c | include/Dsndmgr/SoundStream.h |
+| `StreamFeeder` | 0x1ef6f0 | 0x44 | include/Dsndmgr/StreamFeeder.h |
+| `StreamVoiceFeeder` | 0x1ef6e0 | 0x44 | include/Dsndmgr/StreamFeeder.h |
+| `CGruntzSoundInnerZ` | 0x1ef700 | 0x60 | include/Dsndmgr/CGruntzSoundZ.h |
+| `DirectSoundMgr` | 0x1ef6b8 | (unk) | include/Dsndmgr/DirectSoundMgr.h |
+| `DSoundBaseSub` | 0x1ef6c0 | (unk) | src/Dsndmgr/DirectSoundMgr.cpp |
+| `DSoundCloneInst` | 0x1ef6bc | (unk) | src/Dsndmgr/DirectSoundMgr.cpp |
+| `CShadeTableArray` | 0x1efb28 | 0x14 | src/DDrawMgr/ShadeTableCache.cpp |
+
+**Non-polymorphic (manual stamp KEPT; VTBL is a target-side catalog name only):**
+
+| Class | vtable RVA | SIZE | Why kept | TU |
+| :-- | :-- | :-- | :-- | :-- |
+| `CInputDevice` (=CDeviceConfigA) | 0x1ef628 | 0x338 | explicit m_vptr + /GX dtor restamps a 3-level base subobject chain (0x628/0x680/0x670) — needs the multilevel polymorphic model (eh-dtor-multilevel), dtor already `@early-stop` 42.7% | src/DinMgr2/DirectInputMgr2.cpp |
+| `CDeviceConfigB` | 0x1ef640 | 0x2c8 | explicit m_vptr, foreign engine vtable ctor-stamped | src/DinMgr2/DirectInputMgr2.cpp |
+| `DSoundVoice` | 0x1ef6d0 | 0x28 | explicit m_vtbl; ctor 0x136fe0 lives in another TU (cl cannot auto-emit) | src/Dsndmgr/DSoundVoice.cpp |
+| `CContainerErr` | 0x1f04cc | (unk) | vptr-LAST ctor store (Batch 1 empirically regressed the real-virtual model) | src/Wap32/EngStr.cpp |
+| `CShadeArrayBase` | (masks CObject 0x1e8cb4) | 0x14 | grand-base vtable is CObject's; already cataloged | src/DDrawMgr/ShadeTableCache.cpp (SIZE only) |
+
+**Not attempted (remaining in scope — documented structural walls / out-of-module):**
+- `PureVtbl` (0x1ef6c8): all-`__purecall` "poison" vtable stamped in a element-reaper
+  (SoundDevice/SoundVoiceList), NOT a ctor — cl cannot auto-emit; no real class name.
+- `g_StreamVoiceVtbl` (0x1ef6e0 embedded feeder override): vptr-override-after-base wall.
+- `g_zDArrayVtbl`/`g_zDArrayDtorVtbl` (0x1e70fc/0x1f04d4): templated names (kept in
+  config/vtable_names.csv, not VTBL-expressible); non-ctor `Construct` install site.
+- `g_vtbl_5ec26c` (ComHelperThunks): already `??_7CNoTrackObject@@6B@` in csv (MFC base).
+- DinMgr2 vtables 0x1ef658 (joystick) / 0x1ef670 / 0x1ef680: base-subobject / joystick
+  vtables with no clean single owning-class name (would require inventing names).
+- `Vtbl_1ef7a8`/`1ef7d0` (Rez), `PoolItemAVtbl` family `1efa88`/`1efab8`/`1efae8`
+  (CDDrawPtrCollections, Gruntz TU): foreign — the item virtuals live in other TUs, the
+  factory hand-stamps `g_poolItemVtbl*` DATA externs; not "driveable to zero" here and
+  outside the four assigned modules.
+
+### Rule learned (Batch 5)
+
+- **`SIZE`/`VTBL` in a HEADER that pulls `<Win32.h>`/windows.h collides with the Win32
+  `SIZE` type when the header is `#include`d BEFORE `<rva.h>` in the .cpp** (the macro
+  isn't defined yet at header-parse, so `SIZE(Class,0xNN)` parses `SIZE` as the windef.h
+  struct → `C2059 syntax error : constant` + `C2378 SIZE redefinition`). Fix: host the
+  SIZE/VTBL in the .cpp (after its `#include <rva.h>`), like GameApp's EOF metadata —
+  DirectInputMgr2.h / ShadeTableCache.h class metadata lives in their .cpp for this reason.

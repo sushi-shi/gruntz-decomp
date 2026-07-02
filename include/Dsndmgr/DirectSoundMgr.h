@@ -258,6 +258,7 @@ public:
     i32 m_coopLevel;                      // +0x88  cooperative level
     u32 m_bufferFlags;                    // +0x8c  buffer-desc flags
 };
-SIZE_UNKNOWN(DirectSoundMgr); // both wrapper this-shapes; opaque tail past +0x8c
+SIZE_UNKNOWN(DirectSoundMgr);     // both wrapper this-shapes; opaque tail past +0x8c
+VTBL(DirectSoundMgr, 0x001ef6b8); // cl-emitted ??_7DirectSoundMgr@@6B@ (base subobject dtor)
 
 #endif // DSNDMGR_DIRECTSOUNDMGR_H

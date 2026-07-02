@@ -104,6 +104,7 @@ public:
     // ctor's other zeroed word) is the inherited SoundDevice +0x94 list head.
     i32 m_98; // +0x98
 };
-SIZE(SoundStream, 0x9c); // 0x98 SoundDevice base + i32 m_98
+SIZE(SoundStream, 0x9c);       // 0x98 SoundDevice base + i32 m_98
+VTBL(SoundStream, 0x001ef6ec); // cl-emitted ??_7SoundStream@@6B@ (virtual dtor override)
 
 #endif // DSNDMGR_SOUNDSTREAM_H

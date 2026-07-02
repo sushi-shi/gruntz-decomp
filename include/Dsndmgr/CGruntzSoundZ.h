@@ -70,7 +70,8 @@ public:
     i32 m_58;          // +0x58  AIL sequence handle (queried by IsBusy)
     i32 m_5c;          // +0x5c
 };
-SIZE(CGruntzSoundInnerZ, 0x60); // allocated 0x60 bytes (inner sound object)
+SIZE(CGruntzSoundInnerZ, 0x60);       // allocated 0x60 bytes (inner sound object)
+VTBL(CGruntzSoundInnerZ, 0x001ef700); // cl-emitted ??_7CGruntzSoundInnerZ@@6B@ (16-slot)
 
 class CGruntzSoundZ : public CMapStringToOb {
 public:

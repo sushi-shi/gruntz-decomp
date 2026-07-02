@@ -95,6 +95,13 @@ inline CShadeTableArray::~CShadeTableArray() {
         operator delete(m_pData);
     }
 }
+// Class metadata (hosted here, not in ShadeTableCache.h, which is parsed before
+// rva.h and pulls windows.h's SIZE type). CShadeArrayBase's grand-base vtable
+// masks ??_7CObject@@6B@ (0x1e8cb4, already cataloged), so only CShadeTableArray
+// gets a VTBL.
+SIZE(CShadeArrayBase, 0x14);        // CObArray-like grand base (vptr + 4 array fields)
+SIZE(CShadeTableArray, 0x14);       // adds no fields over CShadeArrayBase
+VTBL(CShadeTableArray, 0x001efb28); // cl-emitted ??_7CShadeTableArray@@6B@
 
 // ===========================================================================
 // 0x14de30 - ctor: array subobject ctor (stamp vtable, zero fields), then the

@@ -70,6 +70,8 @@ struct CShadeTableArray : CShadeArrayBase {
     void Vf2();                        // 0x14fe90  overrides slot 2 (declared-only)
     void SetSizeGrow(i32 n, i32 grow); // 0x150040
 };
+// SIZE/VTBL for CShadeArrayBase + CShadeTableArray are in ShadeTableCache.cpp
+// (this header is parsed before rva.h, and pulls windows.h's SIZE type).
 
 // The live 256-entry RGB palette base (0x6bf224), each entry a 4-byte
 // {r,g,b,pad} record. The sort/remap builders publish the working palette here

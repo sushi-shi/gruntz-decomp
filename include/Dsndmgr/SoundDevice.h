@@ -50,15 +50,15 @@ SIZE_UNKNOWN(SoundSample); // cached-sample node view (real node is larger)
 
 class SoundDevice {
 public:
-    SoundDevice();                     // 0x136440  /GX EH base ctor (was the Ghidra placeholder
-                                       // "UnknownSalazar"): zero the two intrusive list members,
-                                       // stamp the device vptr, BuildVolumeTable, zero the rest.
-    void* ScalarDtor(i32 flag);        // 0x1364c0  ??_G vtable slot-0 scalar-deleting dtor:
-                                       // ~SoundDevice then (flag&1) operator delete; returns this.
-    virtual ~SoundDevice();            // 0x136500  /GX EH destructor (vtable 0x5ef6c4) -> Shutdown.
-                                       // ALL-VTABLES phase: virtual so cl auto-emits ??_7SoundDevice
-                                       // @@6B@ (0x5ef6c4) + auto-stamps/resets the vptr.
-    void Shutdown();                   // 0x136690  release every owned buffer, primary, device
+    SoundDevice();              // 0x136440  /GX EH base ctor (was the Ghidra placeholder
+                                // "UnknownSalazar"): zero the two intrusive list members,
+                                // stamp the device vptr, BuildVolumeTable, zero the rest.
+    void* ScalarDtor(i32 flag); // 0x1364c0  ??_G vtable slot-0 scalar-deleting dtor:
+                                // ~SoundDevice then (flag&1) operator delete; returns this.
+    virtual ~SoundDevice();     // 0x136500  /GX EH destructor (vtable 0x5ef6c4) -> Shutdown.
+                                // ALL-VTABLES phase: virtual so cl auto-emits ??_7SoundDevice
+                                // @@6B@ (0x5ef6c4) + auto-stamps/resets the vptr.
+    void Shutdown();            // 0x136690  release every owned buffer, primary, device
     void RemoveBuffer(SoundBuf* node); // 0x136d80  reap voices + release + unlink one buffer
     void StopAll();                    // 0x136de0  StopAndRewind+StopAllClones over the buffer list
     i32 FreeSamples(); // 0x136ed0  free + unlink every cached sample in the +0x0c list
@@ -105,6 +105,7 @@ public:
     i32 m_force8Bit;                      // +0x90
     void* m_94;                           // +0x94  cached-sample list/map head
 };
-SIZE(SoundDevice, 0x98); // device base (SoundStream's m_98 is the first past-base member)
+SIZE(SoundDevice, 0x98);       // device base (SoundStream's m_98 is the first past-base member)
+VTBL(SoundDevice, 0x001ef6c4); // cl-emitted ??_7SoundDevice@@6B@ (virtual dtor)
 
 #endif // DSNDMGR_SOUNDDEVICE_H

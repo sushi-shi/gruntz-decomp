@@ -68,6 +68,11 @@ void EngStr_DrawText(
 // error handler. 0x16da60.
 DATA(0x001f04cc)
 extern void* const g_CContainerErrVtbl; // 0x5f04cc
+// Catalog the retail vtable under the real class name. CContainerErr is kept
+// non-polymorphic (explicit m_vptr, vptr-LAST ctor store - a real-virtual model
+// forces cl's vptr-first store and regresses; see docs/vtable-conversion-log.md),
+// so the stamp stays; VTBL is a target-side name only (reloc-masked).
+VTBL(CContainerErr, 0x001f04cc);
 
 RVA(0x0016da60, 0x12)
 CContainerErr::~CContainerErr() {

@@ -60,10 +60,9 @@ SIZE_UNKNOWN(FeederBuf); // thin DirectSoundMgr-buffer view (method-only)
 // the class stays concrete/embeddable), slot 1 FeedData (0x137e10), slot 2 OnDrain
 // (0x137e20). The voice's embedded feeder overrides slot 0 with CopyWindow (0x137380).
 struct StreamFeeder {
-    virtual i32
-    Feed(void* d1, u32 n1, u32* g1, void* d2, u32 n2, u32* g2); // [0] feed-two-regions
-    virtual i32 FeedData();                                     // [1] 0x137e10
-    virtual void OnDrain();                                     // [2] 0x137e20
+    virtual i32 Feed(void* d1, u32 n1, u32* g1, void* d2, u32 n2, u32* g2); // [0] feed-two-regions
+    virtual i32 FeedData();                                                 // [1] 0x137e10
+    virtual void OnDrain();                                                 // [2] 0x137e20
 
     // vptr @ +0x00 (implicit); first real field at +0x04.
     FeederOwner* m_owner; // +0x04  owner (SoundStream/SoundDevice)
@@ -103,7 +102,8 @@ struct StreamFeeder {
     // Tick (0x1380d0): sibling pump, external to this TU - reloc-masked.
     i32 TickPump(i32 now);
 };
-SIZE(StreamFeeder, 0x44); // embedded feeder sub-object (StreamVoice+0x6c..0xb0)
+SIZE(StreamFeeder, 0x44);       // embedded feeder sub-object (StreamVoice+0x6c..0xb0)
+VTBL(StreamFeeder, 0x001ef6f0); // cl-emitted ??_7StreamFeeder@@6B@ (3-slot base)
 
 // The DERIVED per-voice feeder (retail vtable 0x5ef6e0) embedded at StreamVoice+0x6c.
 // ALL-VTABLES phase: a real StreamFeeder-derived override so cl auto-emits
@@ -114,11 +114,11 @@ SIZE(StreamFeeder, 0x44); // embedded feeder sub-object (StreamVoice+0x6c..0xb0)
 // are declared-only overrides (bodies external).
 struct StreamVoiceFeeder : StreamFeeder {
     StreamVoiceFeeder() {} // empty: base ctor stamps 0x5ef6f0, cl then stamps 0x5ef6e0
-    virtual i32
-    Feed(void* dst1, u32 n1, u32* got1, void* dst2, u32 n2, u32* got2); // [0] 0x137380
-    virtual i32 FeedData();                                             // [1] 0x137490
-    virtual void OnDrain();                                             // [2] 0x1374b0
+    virtual i32 Feed(void* dst1, u32 n1, u32* got1, void* dst2, u32 n2, u32* got2); // [0] 0x137380
+    virtual i32 FeedData();                                                         // [1] 0x137490
+    virtual void OnDrain();                                                         // [2] 0x1374b0
 };
-SIZE(StreamVoiceFeeder, 0x44); // derived feeder; no added fields
+SIZE(StreamVoiceFeeder, 0x44);       // derived feeder; no added fields
+VTBL(StreamVoiceFeeder, 0x001ef6e0); // cl-emitted ??_7StreamVoiceFeeder@@6B@ (derived override)
 
 #endif // DSNDMGR_STREAMFEEDER_H

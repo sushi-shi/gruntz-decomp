@@ -307,7 +307,7 @@ public:
     u32 m_edgeKeys;        // +0x2b0  raw current snapshot (pre-latch)
     u32 m_keyTable[0x20];  // +0x2b4..0x333  scan-code table (0x20 dwords)
     i32 m_modeFlags;       // +0x334  keyboard/mouse mode flag (bit 0 = direct/async mode)
-};
+}; // 0x338  (SIZE/VTBL in DirectInputMgr2.cpp - this header is parsed before rva.h)
 
 // Polymorphic VIEW over the manually-stamped foreign vtable (@0x5ef628): the
 // CreateDeviceWrap path (0x134260) dispatches the +0x14 (slot 5) virtual on `this`

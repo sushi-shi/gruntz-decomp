@@ -187,14 +187,16 @@ public:
     DSoundBaseSub(IDirectSoundBufferZ* buf, DirectSoundMgr* owner);
     ~DSoundBaseSub(); // 0x136260  base-subobject dtor (implicit vptr reset + chain)
 };
-SIZE_UNKNOWN(DSoundBaseSub); // DirectSoundMgr-derived; retail clone alloc 0x58 (< C++ sizeof)
+SIZE_UNKNOWN(DSoundBaseSub);     // DirectSoundMgr-derived; retail clone alloc 0x58 (< C++ sizeof)
+VTBL(DSoundBaseSub, 0x001ef6c0); // cl-emitted ??_7DSoundBaseSub@@6B@
 
 class DSoundCloneInst : public DSoundBaseSub {
 public:
     DSoundCloneInst(IDirectSoundBufferZ* buf, DirectSoundMgr* owner);
     ~DSoundCloneInst(); // 0x135bb0  clone-drain dtor
 };
-SIZE_UNKNOWN(DSoundCloneInst); // DirectSoundMgr-derived; retail clone alloc 0x58 (< C++ sizeof)
+SIZE_UNKNOWN(DSoundCloneInst);     // DirectSoundMgr-derived; retail clone alloc 0x58 (< C++ sizeof)
+VTBL(DSoundCloneInst, 0x001ef6bc); // cl-emitted ??_7DSoundCloneInst@@6B@
 
 // ---------------------------------------------------------------------------
 // DirectSoundMgr::~DirectSoundMgr (__thiscall) - the base-subobject dtor. Body is

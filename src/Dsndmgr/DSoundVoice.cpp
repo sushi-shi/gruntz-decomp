@@ -32,6 +32,9 @@ struct DSoundVoice {
     i32 m_rampStartTime;       // +0x24
 };
 SIZE(DSoundVoice, 0x28); // measured: new(0x28) voice node (ctor 0x136fe0)
+// Non-polymorphic (explicit m_vtbl; ctor 0x136fe0 lives in another TU and stamps the
+// vtable, so cl cannot auto-emit it here). VTBL is a catalog name only (reloc-masked).
+VTBL(DSoundVoice, 0x001ef6d0); // retail voice-node vtable (3 slots: Tick/Stop/+137630)
 
 // ---------------------------------------------------------------------------
 // DSoundVoice::Tick (vtbl slot 0, __thiscall, 1 arg = the current

@@ -13,6 +13,11 @@
 typedef void (*UnkVfn)(void);
 
 // ClassWithUnknownVTable1  @ 0x005ef628  (6 slots)  refs x2  src:g_deviceConfigVtblA
+// CATALOGED as ??_7CInputDevice@@6B@ via VTBL() in src/DinMgr2/DirectInputMgr2.cpp.
+// Kept a manual stamp: CInputDevice is non-polymorphic (explicit m_vptr) and its /GX
+// deleting-dtor chain re-stamps a 3-level base-subobject vtable sequence
+// (0x5ef628/0x5ef680/0x5ef670); a real-virtual model needs the multilevel polymorphic
+// base chain (eh-dtor-multilevel-polymorphic-chain.md) - deferred to the final sweep.
 struct DeviceConfigVtblA {
     UnkVfn _scalar_deleting_destructor_; // [0] -> 0x1332e0 `scalar_deleting_destructor'
     UnkVfn CreateDeviceWrap;             // [1] -> 0x134260 CreateDeviceWrap
@@ -22,7 +27,9 @@ struct DeviceConfigVtblA {
     UnkVfn slot5_1332c0;                 // [5] -> 0x1332c0 sub_1332c0
 };
 
-// ClassWithUnknownVTable2  @ 0x005ef640  (6 slots)  refs x2
+// ClassWithUnknownVTable2  @ 0x005ef640  (6 slots)  refs x2  src:g_deviceConfigVtblB2
+// CATALOGED as ??_7CDeviceConfigB@@6B@ via VTBL() in src/DinMgr2/DirectInputMgr2.cpp
+// (device-B/mouse config). Non-polymorphic (explicit m_vptr, ctor-stamped); kept.
 struct Vtbl_1ef640 {
     UnkVfn _scalar_deleting_destructor_; // [0] -> 0x1334d0 `scalar_deleting_destructor'
     UnkVfn CreateDeviceWrap;             // [1] -> 0x134260 CreateDeviceWrap
@@ -66,10 +73,14 @@ struct PureVtbl {
     UnkVfn __purecall_1; // [1] -> 0x11fec0 __purecall
 };
 
-// ClassWithUnknownVTable7  @ 0x005ef6d0  (2 slots)  refs x1
+// ClassWithUnknownVTable7  @ 0x005ef6d0  (3 slots)  refs x1
+// CATALOGED as ??_7DSoundVoice@@6B@ via VTBL() in src/Dsndmgr/DSoundVoice.cpp (the
+// 0x28-byte playing-voice node). Non-polymorphic (explicit m_vtbl; its ctor 0x136fe0
+// lives in another TU and hand-stamps the vtable, so cl cannot auto-emit it); kept.
 struct Vtbl_1ef6d0 {
-    UnkVfn ClassUnknown_55_137060; // [0] -> 0x137060 ClassUnknown_55_137060
-    UnkVfn ClassUnknown_55_1370d0; // [1] -> 0x1370d0 ClassUnknown_55_1370d0
+    UnkVfn Tick_137060;  // [0] -> 0x137060 DSoundVoice::Tick
+    UnkVfn Stop_1370d0;  // [1] -> 0x1370d0 DSoundVoice::Stop
+    UnkVfn slot2_137630; // [2] -> 0x137630 sub_137630
 };
 
 // ClassWithUnknownVTable8  @ 0x005ef6e0  (3 slots)  refs x1  src:g_StreamVoiceFeederVtbl
