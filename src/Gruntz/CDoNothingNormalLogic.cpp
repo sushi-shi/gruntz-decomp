@@ -30,22 +30,19 @@ struct Owner;
 // set m_34/m_38/m_3c (the leaf does). Modeled as a non-polymorphic base class so
 // the leaf record chains it; the throwing link ctor inside forces the /GX EH frame.
 struct CUserLogicOOL {
+    virtual void Vf0();          // +0x00  declared-only vptr anchor (polymorphic base)
     CUserLogicOOL(Owner* owner); // 0x58cd0
-    void* m_vptr;                // +0x00
     char m_pad04[0x34 - 0x04];   // +0x04..+0x33
     Owner* m_34;                 // +0x34
     Owner* m_38;                 // +0x38
     void* m_3c;                  // +0x3c
 };
 
-// The engine CDoNothingNormal vtable (0x5e859c); stamped by address so the DIR32
-// store reloc-masks. Owned by another TU.
-// REALIZED: ??_7CDoNothingNormal@@6B@ is emitted by cl in CDoNothingNormalDtor.cpp
-// (a spurious `new CDoNothingNormal` anchors the leaf-ctor vptr-first stamp), so the
-// DATA pin is dropped and the compiler ??_7 wins 0x1e859c. This vptr-MIDDLE manual
-// stamp stays as a bare-extern reloc-masked ref against it.
-extern void* g_vtbl5e859c;
-
+// Real polymorphic: DnnRec (a distinct polymorphic leaf) makes cl auto-stamp its own
+// ??_7DnnRec at ctor entry, replacing the old vptr-MIDDLE manual stamp of the engine
+// CDoNothingNormal vtable (0x5e859c; realized as ??_7CDoNothingNormal in
+// CDoNothingNormalDtor.cpp). The auto-stamp lands at ctor entry (after the base ctor)
+// rather than after the member stores - an accepted codegen shift (see @early-stop).
 struct DnnRec : CUserLogicOOL {
     char m_leaf[0x54 - 0x40]; // +0x40..+0x53
     DnnRec(Owner* owner);
@@ -101,7 +98,6 @@ inline DnnRec::DnnRec(Owner* owner) : CUserLogicOOL(owner) {
     m_34 = owner;
     m_38 = owner;
     m_3c = owner->m_7c;
-    m_vptr = &g_vtbl5e859c;
     m_38->m_08 |= 1;
 }
 
@@ -112,10 +108,10 @@ inline DnnRec::DnnRec(Owner* owner) : CUserLogicOOL(owner) {
 // case-0 leaf-ctor-tail scheduling/regalloc coin-flip (~97.9%, topic:wall
 // topic:scheduling): the whole pump + the new/base-ctor/EH-state framework are
 // byte-identical (verified base vs target with llvm-objdump -dr). Two residual
-// deltas, both in the inlined case-0 tail: (1) MSVC schedules the vptr immediate-
-// store `mov [esi],offset g_vtbl5e859c` one slot early, before the `m_3c =
-// owner->m_7c` load/store, whereas retail keeps the load+use adjacent and stamps
-// the vptr after; (2) MSVC lowers `m_38->m_08 |= 1` as an 8-byte load / or al,1 /
+// deltas, both in the inlined case-0 tail: (1) MSVC now auto-stamps the ??_7DnnRec
+// vptr at ctor entry (after the base ctor), whereas retail stamps the leaf vtable
+// vptr-MIDDLE, after the `m_3c = owner->m_7c` load/store; (2) MSVC lowers
+// `m_38->m_08 |= 1` as an 8-byte load / or al,1 /
 // store through the live param edi, whereas retail reloads m_38 from [esi+0x38]
 // and does the 7-byte `or dword [eax+0x8],1` RMW - making the body 1 byte longer.
 // Neither is source-steerable (tried reordered stores, a temp for the load, and a

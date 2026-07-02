@@ -12,10 +12,6 @@ extern "C" void EhStaticDtor_5ce97f();
 extern "C" void EhStaticDtor_5d4245();
 extern "C" void EhStaticDtor_5d4c22();
 
-// The scalar-deleting-destructor vtable the base ctor stamps (VA 0x5ec26c).
-DATA(0x001ec26c)
-extern void* g_vtbl_5ec26c;
-
 // File-scope engine singletons the forwarders dispatch onto.
 struct ComSingleton2f00 {
     void Activate(int on); // 0x1baf15
@@ -29,9 +25,13 @@ struct ComSingleton3210 {
 DATA(0x00253210)
 extern ComSingleton3210 g_com653210; // VA 0x653210
 
-// A base subobject whose ctor only stamps the vtable pointer.
-struct ComStamp {
-    void Ctor(); // 0x1d4722
+// A base subobject whose vptr-restore stamps the vtable pointer. Real polymorphic:
+// the plain (non-deleting) dtor of a class with a virtual dtor restores the vptr at
+// entry, emitting `mov [ecx], offset ??_7CNoTrackObject@@6B@; ret` - byte-identical
+// to the retail 7-byte stamp (a ctor would add a return-this `mov eax,ecx`). ??_7 at
+// 0x1ec26c (config/vtable_names.csv); the scalar-dtor slot reloc-masks.
+struct CNoTrackObject {
+    virtual ~CNoTrackObject(); // 0x1d4722
 };
 
 // ---------------------------------------------------------------------------
@@ -48,12 +48,10 @@ __declspec(naked) void ComDetach_1c0a41() {
 }
 
 // ---------------------------------------------------------------------------
-// 0x1d4722 - stamp the base vtable pointer.
+// 0x1d4722 - the vptr-restore: cl stamps the ??_7CNoTrackObject vptr, then ret.
 // ---------------------------------------------------------------------------
 RVA(0x001d4722, 0x7)
-void ComStamp::Ctor() {
-    *(void**)this = &g_vtbl_5ec26c;
-}
+CNoTrackObject::~CNoTrackObject() {}
 
 // ---------------------------------------------------------------------------
 // 0x1d4c0c - forward to the session-pump singleton.
@@ -108,4 +106,4 @@ __declspec(naked) void ComAtexit_5d4c22() {
 // Class metadata (hosted at .cpp EOF).
 SIZE_UNKNOWN(ComSingleton2f00); // COM singleton forward view
 SIZE_UNKNOWN(ComSingleton3210); // session-pump singleton forward view
-SIZE_UNKNOWN(ComStamp);         // vptr-stamp base subobject view
+SIZE_UNKNOWN(CNoTrackObject);   // vptr-stamp base subobject view (??_7 at 0x1ec26c)

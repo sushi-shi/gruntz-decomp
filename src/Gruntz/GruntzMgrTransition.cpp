@@ -11,33 +11,19 @@
 // install it at m_curState, run its slot-1 activate, and sync the state managers.
 //
 // The state objects are the CState/CPlay/CMulti mode hierarchy (see GameMode.h /
-// CPlay.h / CMulti.h); here they are modeled as sized shells carrying only the
-// destructible members (so the EH-state ladder emits) + the manual retail-vtable
-// stamp (the polymorphic vtables live in other TUs). Field names are placeholders;
-// offsets + code bytes are load-bearing.
+// CPlay.h / CMulti.h); here they are modeled as real-polymorphic sized shells
+// (CTsBaseA / CTsBaseB carry the vptr, each StXxx leaf is a distinct polymorphic
+// class) carrying only the destructible members (so the EH-state ladder emits). cl
+// auto-stamps each leaf's ??_7StXxx at ctor entry, replacing the old manual retail-
+// vtable stamps (the retail vtables live in other TUs; the auto-stamp reloc-masks to
+// ??_7StXxx just as the old bare-extern stamp did, and the mid-body stamps move to
+// ctor entry - an accepted codegen shift). Field names are placeholders; offsets +
+// code bytes are load-bearing.
 #include <Gruntz/GruntzMgr.h>
 #include <rva.h>
 
 // operator new / the game heap (0x1b9b46), reloc-masked.
 void* operator new(u32);
-
-// The retail state vtables, referenced by address (reloc-masked). REALIZED (DATA pin
-// removed, compiler ??_7 wins the RVA via config/vtable_names.csv): CState (0x1ea21c),
-// CAttract (0x1ea194), CMenuState (0x1e9e84), CBootyState (0x1e9cec), CMultiBootyState
-// (0x1e9bdc) - the gamemode/cattract units model these polymorphic. The other six do
-// NOT emit their ??_7 (their classes aren't polymorphic-modeled), so their DATA pins
-// stay (removing them only unnames the RVA). The manual stamps below stay reloc-masked.
-extern void* g_vtbl_CState[]; // 0x5ea21c  (CState, realized)
-extern void* g_vtbl_5ea194[]; // 0x5ea194  (CAttract, realized)
-extern void* g_vtbl_CPlay[];  // 0x5ea0bc  (CPlay, REALIZED: ??_7 from CPlayDtor.cpp)
-extern void* g_vtbl_CMulti[]; // 0x5e9fe4  (CMulti, REALIZED: ??_7 from CMulti.cpp)
-extern void* g_vtbl_5e9f0c[]; // 0x5e9f0c  (CDemo, REALIZED: ??_7 from CPlayDtor.cpp)
-extern void* g_vtbl_5e9e84[]; // 0x5e9e84  (CMenuState, realized)
-extern void* g_vtbl_5e9dfc[]; // 0x5e9dfc  (CHelpState, REALIZED: ??_7 from BacklogStateLoaders.cpp)
-extern void* g_vtbl_5e9d74[]; // 0x5e9d74  (CSplashState, REALIZED: ??_7 from CSplashState.cpp)
-extern void* g_vtbl_5e9cec[]; // 0x5e9cec  (CBootyState, realized)
-extern void* g_vtbl_5e9c64[]; // 0x5e9c64  (CCreditsState, REALIZED: ??_7 from GameMode.cpp)
-extern void* g_vtbl_5e9bdc[]; // 0x5e9bdc  (CMultiBootyState, realized)
 
 // The DirectInputMgr2 singleton (*g_645570) re-armed after the install (ReadAll).
 struct CDInputMgrZ {
@@ -80,14 +66,18 @@ struct MfcBytes {
 };
 
 // The two out-of-line base ctors (0x8c750 = CState base; 0x8c9d0 = CPlay base for
-// the multiplayer/param-7 states). Declared no-body -> reloc-masked base calls.
+// the multiplayer/param-7 states). Declared no-body -> reloc-masked base calls. Both
+// are polymorphic (a declared-only virtual anchors the vptr at +0x00) so each derived
+// StXxx leaf becomes a distinct polymorphic class whose ctor cl auto-stamps.
 struct CTsBaseA {
-    CTsBaseA(); // 0x8c750
-    char m_cstate[0x1b4];
+    virtual void v0();        // +0x00 vptr anchor
+    CTsBaseA();               // 0x8c750
+    char m_cstate[0x1b4 - 4]; // +0x04..+0x1b4
 };
 struct CTsBaseB {
-    CTsBaseB(); // 0x8c9d0 (CPlay layout, 0x520)
-    char m_cplay[0x520];
+    virtual void v0();       // +0x00 vptr anchor
+    CTsBaseB();              // 0x8c9d0 (CPlay layout, 0x520)
+    char m_cplay[0x520 - 4]; // +0x04..+0x520
 };
 
 // Two extra member sub-objects the param-8 state builds (a small ctor @0x8c3b0 and
@@ -99,58 +89,49 @@ struct CTsSub45 {
 void Ts_Set(void* self, i32 a, i32 b, i32 c, i32 d); // 0x8c380 (member Set, 4 args)
 
 // ---- the CState-derived state shells (sized to the retail objects) ----------
-struct StPlain2 : CTsBaseA { // param 2, 0x1c0, vtbl 0x5ea194
+struct StPlain2 : CTsBaseA { // param 2, 0x1c0, ??_7StPlain2 (retail 0x5ea194)
     char m_pad[0x1c0 - 0x1b4];
-    StPlain2() {
-        *(void**)this = g_vtbl_5ea194;
-    }
+    StPlain2() {}
 };
-struct StPlain5 : CTsBaseA { // param 5, 0x1c0, vtbl 0x5e9e84
+struct StPlain5 : CTsBaseA { // param 5, 0x1c0, ??_7StPlain5 (retail 0x5e9e84)
     char m_pad[0x1c0 - 0x1b4];
     StPlain5() {
-        *(void**)this = g_vtbl_5e9e84;
         *(i32*)((char*)this + 0x1b4) = 0;
     }
 };
-struct StPlain9 : CTsBaseA { // param 9, 0x1b8, vtbl 0x5e9dfc
+struct StPlain9 : CTsBaseA { // param 9, 0x1b8, ??_7StPlain9 (retail 0x5e9dfc)
     char m_pad[0x1b8 - 0x1b4];
-    StPlain9() {
-        *(void**)this = g_vtbl_5e9dfc;
-    }
+    StPlain9() {}
 };
-struct StPlain14 : CTsBaseA { // param 14, 0x1bc, vtbl 0x5e9d74
+struct StPlain14 : CTsBaseA { // param 14, 0x1bc, ??_7StPlain14 (retail 0x5e9d74)
     char m_pad[0x1bc - 0x1b4];
     StPlain14() {
-        *(void**)this = g_vtbl_5e9d74;
         *(i32*)((char*)this + 0x1b4) = 0;
     }
 };
-struct StPlain7 : CTsBaseB { // param 7, 0x528, vtbl 0x5e9f0c
+struct StPlain7 : CTsBaseB { // param 7, 0x528, ??_7StPlain7 (retail 0x5e9f0c)
     char m_pad[0x528 - 0x520];
-    StPlain7() {
-        *(void**)this = g_vtbl_5e9f0c;
-    }
+    StPlain7() {}
 };
-struct StMultiBooty : CTsBaseA { // param 18, 0x244, vtbl 0x5e9bdc
+struct StMultiBooty : CTsBaseA { // param 18, 0x244, ??_7StMultiBooty (retail 0x5e9bdc)
     char m_pad[0x244 - 0x1b4];
     StMultiBooty() {
-        *(void**)this = g_vtbl_5e9bdc;
         *(i32*)((char*)this + 0x1b4) = 0;
         *(i32*)((char*)this + 0x1b8) = 0x64;
     }
 };
-struct StBooty : CTsBaseA { // param 10, 0x320, vtbl 0x5e9cec
+struct StBooty : CTsBaseA { // param 10, 0x320, ??_7StBooty (retail 0x5e9cec)
     char m_pad[0x320 - 0x1b4];
     StBooty();
 };
-struct StParam8 : CTsBaseA { // param 8, 0x218, vtbl 0x5e9c64
+struct StParam8 : CTsBaseA { // param 8, 0x218, ??_7StParam8 (retail 0x5e9c64)
     char m_pad1b4[0x1e8 - 0x1b4];
     CTsSub45 m_1e8; // +0x1e8
     MfcStr m_1f0;   // +0x1f0
     char m_pad1f4[0x218 - 0x1f4];
     StParam8();
 };
-struct StPlay : CTsBaseA { // param 3 (CPlay), 0x520, vtbl 0x5ea0bc
+struct StPlay : CTsBaseA { // param 3 (CPlay), 0x520, ??_7StPlay (retail 0x5ea0bc)
     MfcStr m_1b4;          // +0x1b4
     char m_pad1b8[0x370 - 0x1b8];
     MfcBytes m_370; // +0x370
@@ -163,7 +144,7 @@ struct StPlay : CTsBaseA { // param 3 (CPlay), 0x520, vtbl 0x5ea0bc
     char m_pad49c[0x520 - 0x49c];
     StPlay();
 };
-struct StMulti : CTsBaseB { // param 17 (CMulti), 0x660, vtbl 0x5e9fe4
+struct StMulti : CTsBaseB { // param 17 (CMulti), 0x660, ??_7StMulti (retail 0x5e9fe4)
     char m_pad520[0x598 - 0x520];
     MfcStr m_598, m_59c, m_5a0; // +0x598/+0x59c/+0x5a0
     char m_pad5a4[0x5b4 - 0x5a4];
@@ -174,15 +155,57 @@ struct StMulti : CTsBaseB { // param 17 (CMulti), 0x660, vtbl 0x5e9fe4
     StMulti();
 };
 
+// The m_a4 replay fast-path builds a bare CState directly (raw new, no base ctor).
+// Standalone real-polymorphic shell: cl auto-stamps ??_7StBare at ctor entry (retail
+// stamped 0x5ea21c here), then runs the field init. sizeof 0x1b4.
+struct StBare { // ??_7StBare (retail CState 0x5ea21c)
+    virtual void v0();
+    char m_data[0x1b4 - 4];
+    StBare();
+};
+
 // Field-heavy ctors defined out-of-line for readability (still inline-folded into
 // the factory's new-expressions).
+StBare::StBare() {
+    char* p = (char*)this;
+    *(i32*)(p + 0x4) = 0;
+    *(i32*)(p + 0x8) = 0;
+    *(i32*)(p + 0xc) = 0;
+    *(i32*)(p + 0x28) = 0;
+    *(i32*)(p + 0x2c) = 0;
+    *(i32*)(p + 0x14) = 0;
+    *(i32*)(p + 0x18) = 0;
+    *(i32*)(p + 0x38) = 0;
+    *(i32*)(p + 0x3c) = 0;
+    *(char*)(p + 0x4c) = 0;
+    *(i32*)(p + 0x24) = 0;
+    *(i32*)(p + 0x160) = 0;
+    *(i32*)(p + 0x164) = 0;
+    *(i32*)(p + 0x168) = 0;
+    *(i32*)(p + 0x170) = 0x40;
+    *(i32*)(p + 0x16c) = 0;
+    *(i32*)(p + 0x174) = 0x40;
+    *(i32*)(p + 0x178) = 0;
+    *(i32*)(p + 0x180) = 0x40;
+    *(i32*)(p + 0x17c) = 0;
+    *(i32*)(p + 0x184) = 0x40;
+    *(i32*)(p + 0x188) = 0;
+    *(i32*)(p + 0x190) = 0;
+    *(i32*)(p + 0x18c) = 0;
+    *(i32*)(p + 0x194) = 0;
+    *(i32*)(p + 0x198) = 0;
+    *(i32*)(p + 0x1a0) = 0;
+    *(i32*)(p + 0x19c) = 0;
+    *(i32*)(p + 0x1a4) = 0;
+    *(i32*)(p + 0x150) = 0;
+    *(i32*)(p + 0x154) = 0;
+}
 StBooty::StBooty() {
     char* p = (char*)this;
     *(i32*)(p + 0x1c0) = 0;
     *(i32*)(p + 0x1c8) = 0;
     *(i32*)(p + 0x1c4) = 0;
     *(i32*)(p + 0x1cc) = 0;
-    *(void**)this = g_vtbl_5e9cec;
     *(i32*)(p + 0x1b8) = 0;
     *(i32*)(p + 0x1bc) = 0x64;
     *(i32*)(p + 0x2c4) = 0;
@@ -205,7 +228,6 @@ StBooty::StBooty() {
 }
 StParam8::StParam8() {
     char* p = (char*)this;
-    *(void**)this = g_vtbl_5e9c64;
     *(i32*)(p + 0x1b8) = 0;
     *(i32*)(p + 0x1bc) = 0;
     *(i32*)(p + 0x1c0) = 0;
@@ -240,7 +262,6 @@ StPlay::StPlay() {
     *(i32*)(p + 0x400) = 0;
     *(i32*)(p + 0x3fc) = 0;
     *(i32*)(p + 0x404) = 0;
-    *(void**)this = g_vtbl_CPlay;
     *(i32*)(p + 0x1bc) = 0;
     *(i32*)(p + 0x1c0) = 0;
     *(i32*)(p + 0x1c8) = 0;
@@ -271,7 +292,6 @@ StPlay::StPlay() {
 }
 StMulti::StMulti() {
     char* p = (char*)this;
-    *(void**)this = g_vtbl_CMulti;
     *(i32*)(p + 0x520) = 0;
     *(i32*)(p + 0x524) = 0;
     *(i32*)(p + 0x590) = 1;
@@ -317,42 +337,9 @@ i32 CGruntzMgr::TransitionState(i32 stateId, i32 a2, i32 keepCurrent, i32 a4) {
     }
 
     if (m_a4 != 0) {
-        char* p = (char*)operator new(0x1b4);
-        if (p != 0) {
-            *(void**)p = g_vtbl_CState;
-            *(i32*)(p + 0x4) = 0;
-            *(i32*)(p + 0x8) = 0;
-            *(i32*)(p + 0xc) = 0;
-            *(i32*)(p + 0x28) = 0;
-            *(i32*)(p + 0x2c) = 0;
-            *(i32*)(p + 0x14) = 0;
-            *(i32*)(p + 0x18) = 0;
-            *(i32*)(p + 0x38) = 0;
-            *(i32*)(p + 0x3c) = 0;
-            *(char*)(p + 0x4c) = 0;
-            *(i32*)(p + 0x24) = 0;
-            *(i32*)(p + 0x160) = 0;
-            *(i32*)(p + 0x164) = 0;
-            *(i32*)(p + 0x168) = 0;
-            *(i32*)(p + 0x170) = 0x40;
-            *(i32*)(p + 0x16c) = 0;
-            *(i32*)(p + 0x174) = 0x40;
-            *(i32*)(p + 0x178) = 0;
-            *(i32*)(p + 0x180) = 0x40;
-            *(i32*)(p + 0x17c) = 0;
-            *(i32*)(p + 0x184) = 0x40;
-            *(i32*)(p + 0x188) = 0;
-            *(i32*)(p + 0x190) = 0;
-            *(i32*)(p + 0x18c) = 0;
-            *(i32*)(p + 0x194) = 0;
-            *(i32*)(p + 0x198) = 0;
-            *(i32*)(p + 0x1a0) = 0;
-            *(i32*)(p + 0x19c) = 0;
-            *(i32*)(p + 0x1a4) = 0;
-            *(i32*)(p + 0x150) = 0;
-            *(i32*)(p + 0x154) = 0;
-        }
-        m_curState = (CState*)p;
+        // Real-polymorphic: new StBare runs the ??_7StBare-stamping ctor (the old
+        // raw new + manual CState-vtable stamp + field init).
+        m_curState = (CState*)new StBare;
         return 1;
     }
 
@@ -425,6 +412,7 @@ SIZE_UNKNOWN(CTsState);
 SIZE_UNKNOWN(CTsSub45);
 SIZE_UNKNOWN(MfcBytes);
 SIZE_UNKNOWN(MfcStr);
+SIZE_UNKNOWN(StBare);
 SIZE_UNKNOWN(StBooty);
 SIZE_UNKNOWN(StMulti);
 SIZE_UNKNOWN(StMultiBooty);

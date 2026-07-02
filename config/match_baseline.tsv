@@ -395,7 +395,7 @@ projectile	13	4
 projectileupdate	1	0
 pulsehighlight	2	2
 pyramidbridgesprites	1	0
-randomambientsound	9	4
+randomambientsound	9	3
 reconbatch2	19	14
 reconbatch2o1	5	4
 recordfill	1	1
@@ -1189,7 +1189,7 @@ cdonothing	??0CDoNothing@@QAE@PAUCGameObject@@@Z	90.1709	90.1709	1	db3e3603e62c	
 cdonothing	??1CDoNothing@@UAE@XZ	100.0000	100.0000	1	a06511f63ae0	0xf770
 cdonothing	?GetTypeTag@CDoNothing@@QAEHXZ	100.0000	100.0000	1	6ca2183a4b81	0xf6b0
 cdonothingnormaldtor	??1CDoNothingNormal@@UAE@XZ	100.0000	100.0000	1	9d57e19fe32a	0xf8a0
-cdonothingnormallogic	?HandlerA9E00@@YAHPAUOwner@@@Z	97.8817	97.8817	1	b78315bd0f11	0xa9e00
+cdonothingnormallogic	?HandlerA9E00@@YAHPAUOwner@@@Z	97.5269	97.5269	1	b78315bd0f11	0xa9e00
 cdroppedobject	??0CDroppedObject@@QAE@PAUCGameObject@@@Z	88.1269	88.1269	1	9362852a3a42	0xc68b0
 cdroppedobject	??1CDroppedObject@@UAE@XZ	100.0000	100.0000	1	dd689e9b78c2	0x125b0
 cdroppedobject	?ActA@CDroppedObject@@QAEHXZ	92.5157	92.5157	3	baaa409e1529	0xc7090
@@ -1436,7 +1436,7 @@ cmovinglogicserial	?WriteCurve@@YAAAVCButeText@@AAV1@ABUCMovingLogicCurve@@@Z	10
 cmsgdispatch	?Dispatch_aa0a0@@YAHPAUCMsg@@@Z	100.0000	100.0000	1	482f4c54567e	0xaa0a0
 cmsgdispatch	?Dispatch_aa1e0@@YAHPAUCMsg@@@Z	100.0000	100.0000	1	1976412462fe	0xaa1e0
 cmsgdispatch	?Dispatch_aa460@@YAHPAUCMsg@@@Z	100.0000	100.0000	2	b1eb4d0efe29	0xaa460
-cmulti	??1CMulti@@UAE@XZ	0.0000	0.0000	1	9c3161cef8e0	0x8d270
+cmulti	??1CMulti@@UAE@XZ	0.0000	0.0000	2	340736e86fa9	0x8d270
 cmulti	?AckJoinFailure@CMulti@@QAEXXZ	100.0000	100.0000	1	bac115793e8c	0xbc420
 cmulti	?ClearString59c@CMulti@@QAEAAVCString@@AAV2@@Z	49.3529	49.3529	1	6f457816186b	0xb76c0
 cmulti	?ClearString5a0@CMulti@@QAEAAVCString@@AAV2@@Z	49.3529	49.3529	1	dc23b4db8d9d	0xb7730
@@ -1458,13 +1458,13 @@ cobjectdropper	??0CObjectDropper@@QAE@PAUCGameObject@@@Z	86.0249	86.0249	2	4495d
 cobjectdropper	??1CObjectDropper@@UAE@XZ	100.0000	100.0000	1	c595e9e386aa	0x124f0
 cobjectdropper	?Update@CObjectDropper@@QAEHXZ	100.0000	100.0000	2	7e18511faa29	0xc62e0
 colorhsv	?RgbToHsv@@YAXPAUColorHSV@@I@Z	45.7699	45.7699	2	671fce63329c	0x14fcc0
+comhelperthunks	??1CNoTrackObject@@UAE@XZ	100.0000	100.0000	1	d617d26c06bd	0x1d4722
 comhelperthunks	?ComActivate2f00@@YAXXZ	100.0000	100.0000	1	a4800685df63	0x1bae1f
 comhelperthunks	?ComAtexit_5ce97f@@YAXXZ	100.0000	100.0000	1	c5e0abfd52fa	0x1ce973
 comhelperthunks	?ComAtexit_5d4245@@YAXXZ	100.0000	100.0000	1	5e7510af6c0c	0x1d4239
 comhelperthunks	?ComAtexit_5d4c22@@YAXXZ	100.0000	100.0000	1	9c9d6eb5df8c	0x1d4c16
 comhelperthunks	?ComDetach_1c0a41@@YAXXZ	100.0000	100.0000	1	669f59f2acaa	0x1c0a41
 comhelperthunks	?ComPump3210@@YAXXZ	100.0000	100.0000	1	4d940e10e212	0x1d4c0c
-comhelperthunks	?Ctor@ComStamp@@QAEXXZ	100.0000	100.0000	1	8f58e507d3dd	0x1d4722
 configstore	?GetInt@CConfigStore@@QAEHPAD0H@Z	17.6905	17.6905	1	00a531e13933	0x1d4fbd
 configstore	?OpenRoot@CConfigStore@@QAEPAUHKEY__@@XZ	57.7385	57.7385	1	906a02758db6	0x1d4ee3
 configstore	?OpenSubKey@CConfigStore@@QAEPAUHKEY__@@PAD@Z	56.9394	56.9394	1	84aab5890a22	0x1d4f77
@@ -2101,7 +2101,7 @@ gameapp	?InitializeGameWindow@CGameApp@@UAEPAVCGameWnd@@XZ	100.0000	100.0000	4	d
 gameapp	?ReportError@CGameApp@@UAEXIJ@Z	100.0000	100.0000	6	2168394333a9	0x13dcb0
 gameapp	?Run@CGameMgr@WAP32@@UAEHPAVCGameWnd@@PAD@Z	100.0000	100.0000	5	45c4a6801f19	0x13dd50
 gameapp	?RunMessageLoop@CGameApp@@UAEHXZ	100.0000	100.0000	6	0eaa934fda9f	0x13d910
-gameapp	?Stub_080dd0@CGameApp@@QAEPAXI@Z	100.0000	100.0000	1	84e44a3d89ce	0x80dd0
+gameapp	?Stub_080dd0@CGameApp@@QAEPAXI@Z	100.0000	100.0000	2	41a8178d7c61	0x80dd0
 gameapp	?UnknownClose@CGameMgr@WAP32@@UAEXXZ	100.0000	100.0000	3	ad24dadf8cb7	0x13ddb0
 gameapp	?UnknownMethodInitializeTimeGlobal@CGameMgr@WAP32@@QAEXXZ	100.0000	100.0000	4	259f552ba808	0x13dea0
 gameapp	?VirtualUnknownMethod02@CGameApp@@UAEHPAUGameInfo@@PAUtagWNDCLASSA@@PAUtagCREATESTRUCTA@@@Z	97.3765	97.3765	6	702b9f081ed9	0x13d5d0
@@ -2522,7 +2522,7 @@ gruntzmgr	?TopState@CGruntzMgr@@QAEPAVCState@@XZ	100.0000	100.0000	2	d1407d256ef
 gruntzmgr	?UnknownClose@CGruntzMgr@@UAEXXZ	78.5569	78.5569	2	f7023ad31c11	0x855e0
 gruntzmgr	?UnloadSoundChain@CGruntzMgr@@QAEXXZ	100.0000	100.0000	2	d0f043efcdce	0x8f740
 gruntzmgr	?UpdateScoreHud@CGruntzMgr@@QAEXXZ	100.0000	100.0000	3	1651dfdfbac6	0x860b0
-gruntzmgrtransition	?TransitionState@CGruntzMgr@@QAEHHHHH@Z	48.7596	48.7596	1	b7fb8751bdcb	0x8b960
+gruntzmgrtransition	?TransitionState@CGruntzMgr@@QAEHHHHH@Z	43.0998	43.0998	2	042c3c166b48	0x8b960
 gruntzplayer	??0GruntzPlayer@@QAE@H@Z	42.4510	42.4510	2	d21c9c879458	0xda870
 gruntzplayer	??0GruntzPlayer@@QAE@XZ	0.0000	0.0000	2	d21c9c879458	0xda960
 gruntzplayer	?GetColorName@@YA?AVCString@@HH@Z	100.0000	100.0000	2	9ae1e9e792c0	0xdb050
@@ -3029,7 +3029,7 @@ projectileupdate	?Update@CProjectile@@QAEHXZ	15.9027	15.9027	3	be7635913d3f	0x61
 pulsehighlight	?Serialize@CPulseHighlight@@QAEHPAVCSerialArchive@@HHH@Z	100.0000	100.0000	1	6c48e6d77651	0x8600
 pulsehighlight	?Tick@CPulseHighlight@@QAEHXZ	100.0000	100.0000	1	1da816c051e1	0x8440
 pyramidbridgesprites	?LoadPyramidBridge@CPlayLevelLoad@@QAEXH@Z	7.3030	7.3030	2	fc1e88cb93b0	0x110c10
-randomambientsound	?BaseInit@CRandomAmbientSound@@QAEXXZ	100.0000	100.0000	2	6677ad7bb931	0xbb40
+randomambientsound	??0CRandomAmbientSound@@QAE@XZ	73.0000	73.0000	1	9fe4968b914e	0xbb40
 randomambientsound	?Setup@CRandomAmbientSound@@QAEHPAVDirectSoundMgr@@HHPAUAmbientBox@@H@Z	100.0000	100.0000	2	1309d2bb8bac	0xbe50
 randomambientsound	?SetupFromMap@CRandomAmbientSound@@QAEXPAUAmbSoundMapHolder@@PAXHHPAUAmbientPoint@@H@Z	88.7500	88.7500	2	da2589e0ad0a	0xc4b0
 randomambientsound	?SetupPos@CRandomAmbientSound@@QAEHPAVDirectSoundMgr@@HHPAUAmbientPoint@@H@Z	100.0000	100.0000	2	d2919d8a4749	0xc530

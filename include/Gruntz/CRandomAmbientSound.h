@@ -12,10 +12,11 @@
 // it is a different, non-polymorphic class.
 //
 // Field names are placeholders (m_<hexoffset>); only OFFSETS + emitted code bytes
-// are load-bearing (campaign doctrine). The base CUserBase vptr (0x5e70b4) is
-// stamped by the base ctor via a manual store (the transitional workaround: this
-// class's full vtable 0x5e713c and its virtuals are not all reconstructed here, so
-// a polymorphic model would emit a divergent ??_7).
+// are load-bearing (campaign doctrine). Real polymorphic: a declared-only virtual
+// anchor makes cl emit ??_7CRandomAmbientSound@@6B@ (this class's own vtable at
+// 0x5e713c, named in config/vtable_names.csv) and auto-stamp the vptr in the ctor -
+// so the base init no longer needs a manual vptr store (the base-vtable stamp
+// target 0x5e70b4 becomes this class's own vtable, an accepted codegen shift).
 #ifndef GRUNTZ_CRANDOMAMBIENTSOUND_H
 #define GRUNTZ_CRANDOMAMBIENTSOUND_H
 
@@ -97,7 +98,10 @@ struct AmbSoundRecord {
 
 class CRandomAmbientSound {
 public:
-    void BaseInit(); // 0x00bb40  base init (stamps the CUserBase vptr); void (no return-this)
+    // Declared-only virtual anchor: makes the class polymorphic so cl emits
+    // ??_7CRandomAmbientSound and auto-stamps the vptr in the ctor (slot reloc-masks).
+    virtual void Vf0();
+    CRandomAmbientSound(); // 0x00bb40  base init (cl auto-stamps the vptr)
     // Setup(world, a2, a3, box, a5): seed the mgr handle + play params, copy/clear
     // the primary box, clear the secondary box. Returns 1 (0 on a null world).
     i32 Setup(DirectSoundMgr* mgr, i32 a2, i32 a3, AmbientBox* box, i32 a5); // 0x00be50
@@ -117,7 +121,7 @@ public:
     ~CRandomAmbientSound();             // 0x00bb60  scalar-deleting / full dtor (defined elsewhere)
 
     // --- layout (sizeof 0x58) -------------------------------------------------
-    void* m_vptr;          // +0x00  CUserBase vptr (0x5e70b4) then 0x5e713c
+    // +0x00  vptr (compiler ??_7CRandomAmbientSound; was the manual m_vptr slot)
     DirectSoundMgr* m_mgr; // +0x04  the sound-mgr handle (mgr->...)
     i32 m_lastPosition;    // +0x08  last play position / pan base
     i32 m_scaleA;          // +0x0c  scale A (compared to 5; -0xf above)

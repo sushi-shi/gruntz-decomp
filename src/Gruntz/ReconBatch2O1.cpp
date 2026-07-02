@@ -10,8 +10,8 @@
 // (PTR_LAB_005ed0e4); returns this.
 // ===========================================================================
 // Real-polymorphic: cl auto-stamps the vptr (??_7Obj_11e4d0@@6B@) and emits the
-// 5-slot vtable (retail 0x5ed0e4; declared-only slots reloc-mask). Manual
-// `m_vptr = &g_vtbl_5ed0e4` stamp removed per the all-vtables mandate.
+// 5-slot vtable (retail 0x5ed0e4; declared-only slots reloc-mask). The manual
+// vptr-stamp of the retail vtable was removed per the all-vtables mandate.
 struct Obj_11e4d0 {
     virtual void Slot00(); // +0x00 vptr
     virtual void Slot04();

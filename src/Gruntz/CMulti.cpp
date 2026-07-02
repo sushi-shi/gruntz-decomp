@@ -83,16 +83,27 @@ public:
 };
 
 // ---------------------------------------------------------------------------
-// The three retail vtables the most-derived dtor stamps as it walks the sub-
-// objects (referenced by address as reloc-masked DATA externs; their contents
-// are not reproduced in this TU, so a polymorphic model would emit a divergent
-// ??_7 - the manual stamp is the transitional workaround).
-// ---------------------------------------------------------------------------
-// REALIZED as ??_7CMulti / ??_7CPlay / ??_7CState (gamemode unit emits them). DATA
-// pins removed so the compiler vtables win the RVAs; manual stamps stay reloc-masked.
-extern void* g_vtbl_CMulti[]; // 0x5e9fe4  (CMulti)
-extern void* g_vtbl_CPlay[];  // 0x5ea0bc  (CPlay)
-extern void* g_vtbl_CState[]; // 0x5ea21c  (CState)
+// Real-polymorphic dtor views of the CPlay / CState sub-objects the most-derived
+// ~CMulti walks. Each has a virtual dtor whose auto vptr-restore stamps ??_7CPlay@@6B@
+// (0x5ea0bc) / ??_7CState@@6B@ (0x5ea21c) - name-matching config/vtable_names.csv -
+// in place of the old manual vtable stamps. Each is STANDALONE (not : the other) so
+// its inline dtor stamps + runs ONLY its own base teardown (CPlayDtorBody / BaseCleanup);
+// ~CMulti keeps the explicit member teardown between them in retail order. The inlined
+// dtor lowers to `mov [this],offset ??_7X; mov ecx,this; call <BaseTeardown>` - the
+// same two instructions the manual stamp + call produced, only the reloc names change.
+// (~CMulti itself already auto-stamps ??_7CMulti at dtor entry via CMulti's virtual dtor.)
+struct CPlay {
+    void CPlayDtorBody(); // 0x04c8700 (the CPlay sub-object teardown, thiscall)
+    virtual ~CPlay() {
+        CPlayDtorBody();
+    }
+};
+struct CState {
+    void BaseCleanup(); // 0x00403f53 (CState's base teardown, thiscall)
+    virtual ~CState() {
+        BaseCleanup();
+    }
+};
 
 // ---------------------------------------------------------------------------
 // The DirectPlay error globals (shared with CNetMgr::ReportError; same .data
@@ -143,8 +154,8 @@ extern void MultiJoinHandler(); // 0x004b8020 (reloc-masked function address)
 // Documented EH-state-machine wall; deferred to the final sweep.
 RVA(0x0008d270, 0x124)
 CMulti::~CMulti() {
-    // cl's implicit vptr store (??_7CMulti) stamps here at dtor entry; the old manual
-    // `*(void**)this = g_vtbl_CMulti` is dropped so the implicit store survives.
+    // cl's implicit vptr store (??_7CMulti) stamps here at dtor entry (CMulti's own
+    // virtual dtor); no manual stamp is needed at the most-derived level.
     Teardown();
     // CMulti sub-object teardown (high block).
     m_604.~CByteArray();
@@ -153,9 +164,8 @@ CMulti::~CMulti() {
     m_5a0.~CString();
     m_59c.~CString();
     m_598.~CString();
-    // CPlay sub-object.
-    *(void**)this = g_vtbl_CPlay;
-    CPlayDtorBody();
+    // CPlay sub-object: ~CPlay stamps ??_7CPlay then runs CPlayDtorBody.
+    ((CPlay*)this)->CPlay::~CPlay();
     m_488.~CByteArray();
     m_410.~CString();
     // the CByteArray[4] vector at +0x3a4.
@@ -164,9 +174,8 @@ CMulti::~CMulti() {
     }
     m_370.~CByteArray();
     m_1b4.~CString();
-    // CState sub-object.
-    *(void**)this = g_vtbl_CState;
-    ((CMultiStateBase*)this)->BaseCleanup();
+    // CState sub-object: ~CState stamps ??_7CState then runs BaseCleanup.
+    ((CState*)this)->CState::~CState();
 }
 
 // ===========================================================================
@@ -1032,6 +1041,8 @@ void CMulti::AckJoinFailure() {
 SIZE_UNKNOWN(CLobbyObjA);
 SIZE_UNKNOWN(CMulti);
 SIZE_UNKNOWN(CMultiDialogHook);
+SIZE_UNKNOWN(CPlay);  // local dtor-view (stamps ??_7CPlay in ~CMulti)
+SIZE_UNKNOWN(CState); // local dtor-view (stamps ??_7CState in ~CMulti)
 SIZE_UNKNOWN(CMultiLevelLoader);
 SIZE_UNKNOWN(CMultiLogic);
 SIZE_UNKNOWN(CMultiLogicDesc);

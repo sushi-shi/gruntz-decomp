@@ -1,8 +1,8 @@
 // CStateLeaf8cf30.cpp - a CState-derived leaf game-state whose /GX destructor
 // (0x8cf30) is an orphan COMDAT. Same EH leaf-dtor archetype as ~CAttract
 // (0x8cd90): stamp the derived vtable (0x5e9dfc), run the member teardown (0x1357)
-// under the EH frame, then chain CState's vtable (g_vtbl_CState 0x5ea21c) + base
-// dtor (0x3f53). Placeholder class name; only OFFSETS + code bytes are load-bearing.
+// under the EH frame, then chain the CState vtable (0x5ea21c) + base dtor (0x3f53).
+// Placeholder class name; only OFFSETS + code bytes are load-bearing.
 #include <Gruntz/CState.h>
 #include <rva.h>
 

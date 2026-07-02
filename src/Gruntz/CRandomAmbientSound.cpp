@@ -6,19 +6,13 @@
 // when it expires rerolls a fresh interval (global LCG rand) and (re)plays via
 // Update; Update starts/stops the DirectSoundMgr voice.
 //
-// The base CUserBase vptr (0x5e70b4) is stamped manually (transitional workaround:
-// the full 0x5e713c vtable / its virtuals are not reconstructed here, so letting
-// the compiler emit a polymorphic ??_7 would diverge).
+// Real polymorphic: the ctor auto-stamps ??_7CRandomAmbientSound (this class's own
+// vtable 0x5e713c); no manual vptr store (see the header note).
 //
 // Field names are placeholders; OFFSETS + emitted code bytes are load-bearing.
 #include <Gruntz/CRandomAmbientSound.h>
 #include <rva.h>
 #include <Globals.h>
-
-// The base CUserBase vftable (VA 0x5e70b4) the base ctor stamps. Manual store -
-// see the header note. Referenced by address so the DIR32 operand reloc-masks.
-DATA(0x001e70b4)
-extern void* g_vtbl_CUserBase[]; // 0x5e70b4
 
 // The CRT sqrt intrinsic (UpdateAt's positional falloff). Declared so MSVC emits
 // the inline `fsqrt`; no body.
@@ -144,12 +138,11 @@ void SpawnPosSound(PosSoundObj* obj) {
 // ---------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------
-// Base ctor (0x00bb40): stamp the CUserBase vptr, clear the mgr handle (+0x04)
+// Base ctor (0x00bb40): cl auto-stamps the vptr, then clear the mgr handle (+0x04)
 // and +0x3c. The rest is set up by Setup.
 // ---------------------------------------------------------------------------
 RVA(0x0000bb40, 0xf)
-void CRandomAmbientSound::BaseInit() {
-    m_vptr = g_vtbl_CUserBase;
+CRandomAmbientSound::CRandomAmbientSound() {
     m_mgr = 0;
     m_3c = 0;
 }

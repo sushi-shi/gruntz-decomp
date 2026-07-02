@@ -526,15 +526,14 @@ void* WAP32::CGameMgr::vector_deleting_destructor(unsigned int flags) {
 // -------------------------------------------------------------------------
 
 // CGameApp::Stub_080dd0 @0x080dd0 - the CGameApp scalar-deleting destructor (the
-// ??_GCGameApp thunk with ~CGameApp inlined): stamp the CGameApp vftable (0x5e9b0c),
-// run CloseResources (0x13d8c0), decrement the live-instance counter, then the
-// delete-flag tail; returns `this`. Same teardown as CTeardown80cf0::Teardown.
-extern void* g_vtbl_5e9b0c; // 0x5e9b0c (CGameApp vftable)
+// ??_GCGameApp thunk with ~CGameApp inlined). Real polymorphic: the explicit
+// qualified this->CGameApp::~CGameApp() inlines the (inline, virtual) dtor, whose
+// auto vptr-restore stamps ??_7CGameApp@@6B@ (0x5e9b0c) and whose body runs
+// CloseResources() + the instance-counter decrement - so the manual vtable stamp
+// (and the retail-vtable / instance-counter aliases) are gone.
 RVA(0x00080dd0, 0x32)
 void* CGameApp::Stub_080dd0(unsigned int flags) {
-    *(void**)this = &g_vtbl_5e9b0c;
-    CGameApp::CloseResources(); // qualified -> direct (non-virtual) call to the body
-    --g_instCount653c6c;
+    this->CGameApp::~CGameApp();
     if (flags & 1) {
         operator delete(this);
     }

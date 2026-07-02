@@ -187,9 +187,10 @@ class CMulti {
 public:
     // Realized real-polymorphic: a virtual dtor makes cl emit ??_7CMulti@@6B@. The
     // vptr occupies +0x00 (where the old CMultiVtbl* m_vtbl lived - same offset, so
-    // every matched CMulti method is codegen-neutral). ~CMulti's leading manual
-    // g_vtbl_CMulti stamp is dropped so cl's implicit entry vptr-store survives (a
-    // leading manual stamp would dead-store-eliminate the implicit one -> no ??_7).
+    // every matched CMulti method is codegen-neutral). ~CMulti's leading manual vptr
+    // stamp is dropped so cl's implicit entry vptr-store survives (a leading manual
+    // stamp would dead-store-eliminate the implicit one -> no ??_7). The mid-dtor
+    // CPlay/CState restamps are realized via local dtor-view classes in CMulti.cpp.
     // Tick dispatches through vtbl() (reads the vptr as a CMultiVtbl*), preserving
     // its +0x7c/+0x98 indirect-call bytes.
     virtual ~CMulti(); // 0x08d270 (most-derived /GX dtor; stamps CPlay/CState, tears
