@@ -88,61 +88,36 @@ CRezDir13cb80::~CRezDir13cb80() {
 }
 
 // ---------------------------------------------------------------------------
-// 0x1333b0 / 0x133460 / 0x1334f0 - the DirectInput device-config dtor chain. Each
-// stamps its most-derived vftable, runs its member teardown(s), then walks down the
-// base-subobject vftables (B @0x5ef680 -> C @0x5ef670) re-releasing, advancing the
-// [esp+0x10] try-level after each. Manual-vptr (the foreign device vtables aren't
-// reproducible polymorphically, and the grand-base ~G @0x133370 is already matched
-// standalone in BoundaryUpper2.cpp - making G polymorphic here would dup it).
+// 0x1333b0 - CInputDevBase's standalone /GX base-subobject destructor (the middle
+// level of the DirectInput device chain): stamp base vftable B @0x5ef680, ReleaseBase,
+// stamp grand-base C @0x5ef670, BaseDtorC. Kept manual-vptr here: the LEAF dtors
+// (keyboard 0x133300 / mouse 0x1334f0 / joystick 0x133460) are now modeled real-
+// polymorphic in src/DinMgr2/DirectInputMgr2.cpp (cl inlines this base unwind into
+// each), but this standalone base dtor can't be bound here without dup'ing DinMgr2's
+// inline CInputDevBase (its emitted COMDAT is unbound). Grand-base ~G @0x133370 is
+// matched standalone in BoundaryUpper2.cpp.
 // ---------------------------------------------------------------------------
-extern void* g_deviceConfigVtblB;     // 0x5ef680
-extern void* g_deviceConfigVtblC;     // 0x5ef670
-extern void* g_deviceConfigVtblB2;    // 0x5ef640
-extern void* g_deviceConfigScalarDel; // 0x5ef658
+extern void* g_deviceConfigVtblB; // 0x5ef680
+extern void* g_deviceConfigVtblC; // 0x5ef670
 struct DevCfgChain {
     void* m_vptr;
     void ReleaseBase(); // 0x1342b0
-    void Free6d0();     // 0x1346d0
-    void Free360();     // 0x134360
     void BaseDtorC();   // 0x134d50
     void DtorD1();
-    void DtorD2();
-    void DtorD3();
 };
 SIZE_UNKNOWN(DevCfgChain);
 // @early-stop
 // eh-dtor-needs-base-subobject wall (docs/patterns/eh-dtor-needs-base-subobject.md):
 // body is byte-correct (stamp B / ReleaseBase / stamp C / BaseDtorC) but retail wraps
 // it in a /GX frame with [esp+0x10] try-level stamps (0 / -1) from real base-subobject
-// dtors, unreachable under this manual-vptr shape (foreign vtables + already-matched ~G).
+// dtors, unreachable under this manual-vptr shape. DROPPED 42.7% -> 34.2% by an
+// UNRELATED change: the device chain's base/root vtables 0x5ef680/0x5ef670 are now
+// named ??_7CInputDevBase / ??_7CInputDevRoot (cl-emitted via VTBL in DirectInputMgr2.cpp),
+// so this manual `&g_deviceConfigVtblB/C` stamp reloc-name-mismatches them. Binding a
+// real ~CInputDevBase here would dup DinMgr2's inline base dtor - deferred to a final
+// sweep that reunifies the whole chain in one TU.
 RVA(0x001333b0, 0x55)
 void DevCfgChain::DtorD1() {
-    m_vptr = &g_deviceConfigVtblB;
-    ReleaseBase();
-    m_vptr = &g_deviceConfigVtblC;
-    BaseDtorC();
-}
-// @early-stop
-// eh-dtor-needs-base-subobject wall: 3-level (scalar-del @0x5ef658 -> B -> C). Body
-// byte-correct (stamp scalar-del / Free6d0 / stamp B / ReleaseBase / stamp C / BaseDtorC);
-// the /GX try-level frame (0 / 1 / -1) is unreachable under the manual-vptr shape.
-RVA(0x00133460, 0x6a)
-void DevCfgChain::DtorD2() {
-    m_vptr = &g_deviceConfigScalarDel;
-    Free6d0();
-    m_vptr = &g_deviceConfigVtblB;
-    ReleaseBase();
-    m_vptr = &g_deviceConfigVtblC;
-    BaseDtorC();
-}
-// @early-stop
-// eh-dtor-needs-base-subobject wall: 3-level (B2 @0x5ef640 -> B -> C). Body byte-correct
-// (stamp B2 / Free360 / stamp B / ReleaseBase / stamp C / BaseDtorC); the /GX try-level
-// frame (0 / 1 / -1) is unreachable under the manual-vptr shape.
-RVA(0x001334f0, 0x6a)
-void DevCfgChain::DtorD3() {
-    m_vptr = &g_deviceConfigVtblB2;
-    Free360();
     m_vptr = &g_deviceConfigVtblB;
     ReleaseBase();
     m_vptr = &g_deviceConfigVtblC;

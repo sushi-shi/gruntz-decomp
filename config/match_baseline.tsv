@@ -49,7 +49,7 @@ boundarytaileh	1	0
 boundarythunks	15	15
 boundaryupper	33	30
 boundaryupper2	26	19
-boundaryupper2eh	6	2
+boundaryupper2eh	4	2
 boundaryuppereh	10	10
 bracketvalue	1	1
 brickz	15	3
@@ -221,7 +221,7 @@ deflate	9	9
 demosetup	1	1
 destructbutton	1	1
 dialogs	37	15
-directinputmgr2	36	32
+directinputmgr2	41	38
 directsoundmgr	41	30
 dirpal	1	0
 discoveredarray	1	0
@@ -808,8 +808,6 @@ boundaryupper2eh	??0CFxModeT3@@QAE@XZ	100.0000	100.0000	1	662f901c9e49	0x17e7c0
 boundaryupper2eh	??1CRezDir13c9b0@@UAE@XZ	99.9750	99.9750	2	4625c1d094fb	0x13c9b0
 boundaryupper2eh	??1CRezDir13cb80@@UAE@XZ	100.0000	100.0000	2	efda8e56901f	0x13cb80
 boundaryupper2eh	?DtorD1@DevCfgChain@@QAEXXZ	34.2381	34.2381	1	0857b79db11b	0x1333b0
-boundaryupper2eh	?DtorD2@DevCfgChain@@QAEXXZ	42.7200	42.7200	1	969b5231d37a	0x133460
-boundaryupper2eh	?DtorD3@DevCfgChain@@QAEXXZ	42.7200	42.7200	1	b889db1b69b6	0x1334f0
 boundaryuppereh	??1C138a50@@UAE@XZ	100.0000	100.0000	2	6a3ac20d44d0	0x138a50
 boundaryuppereh	??1C14fe30@@UAE@XZ	100.0000	100.0000	2	bd89cc45cdd3	0x14fe30
 boundaryuppereh	??1C15b6d0@@UAE@XZ	100.0000	100.0000	1	08895d124e69	0x15b6d0
@@ -1738,17 +1736,19 @@ dialogs	?winapi_016dc0_InvalidateRect@CBattlezDlg@@QAEHXZ	3.1111	3.1111	2	b6f0b2
 dialogs	?winapi_016e90_InvalidateRect@CBattlezDlg@@QAEHXZ	3.1111	3.1111	2	e8ce8ce52214	0x16e90
 dialogs	?winapi_016f60_InvalidateRect@CBattlezDlg@@QAEHXZ	3.1111	3.1111	2	ff4266fd4473	0x16f60
 dialogs	?winapi_0171b0_GetWindow_SendMessageA@CBattlezDlg@@QAEHXZ	2.2581	2.2581	2	0ad2b069c401	0x171b0
-directinputmgr2	??1CInputDevice@@QAE@XZ	42.7200	42.7200	1	fb07b92f3f3e	0x133300
+directinputmgr2	??1CDeviceConfigB@@UAE@XZ	100.0000	100.0000	1	c62ca3a967e3	0x1334f0
+directinputmgr2	??1CDeviceConfigC@@UAE@XZ	100.0000	100.0000	1	89205836fb54	0x133460
+directinputmgr2	??1CInputDevice@@UAE@XZ	100.0000	100.0000	1	863bd4b2c2b6	0x133300
 directinputmgr2	??1DirectInputMgr2@@QAE@XZ	100.0000	100.0000	1	921586318b25	0x85fc0
 directinputmgr2	?Acquire@CInputDevice@@QAEHXZ	100.0000	100.0000	4	bc01821bd119	0x134fb0
 directinputmgr2	?AddController@DirectInputMgr2@@QAEPAXHHH@Z	100.0000	100.0000	3	99dc5c60bb95	0x1331e0
 directinputmgr2	?AddControllerArr@DirectInputMgr2@@QAEXHHHHHHH@Z	100.0000	100.0000	2	c2b038a901a2	0x133260
-directinputmgr2	?Create@CInputDevice@@QAEHPAUIDirectInputZ@@PBXPAX@Z	100.0000	100.0000	4	b0be7f483b8d	0x134cb0
+directinputmgr2	?Create@CInputDevRoot@@QAEHPAUIDirectInputZ@@PBXPAX@Z	100.0000	100.0000	1	252c2c0f5e0e	0x134cb0
 directinputmgr2	?Create@DirectInputMgr2@@QAEHPAX0I@Z	100.0000	100.0000	1	dfe521d36482	0x132ce0
 directinputmgr2	?CreateDev@CDeviceConfigB@@QAEHPAUIDirectInputZ@@PBXPAXI@Z	100.0000	100.0000	2	3b37d00ff18e	0x1342c0
 directinputmgr2	?CreateDev@CInputDevice@@QAEHPAUIDirectInputZ@@PBXPAXI@Z	100.0000	100.0000	1	79bc6184cdff	0x133b50
 directinputmgr2	?CreateDevJoystick@CDeviceConfigB@@QAEHPAUIDirectInputZ@@PBXPAXI@Z	100.0000	100.0000	2	febd19664f0f	0x134630
-directinputmgr2	?CreateDeviceWrap@CInputDevice@@QAEHPAUIDirectInputZ@@PBXPAX@Z	100.0000	100.0000	2	9ac8a491e36f	0x134260
+directinputmgr2	?CreateDeviceWrap@CInputDevBase@@QAEHPAUIDirectInputZ@@PBXPAX@Z	100.0000	100.0000	1	68d1f02f6505	0x134260
 directinputmgr2	?EnumGameControllers@DirectInputMgr2@@QAEHI@Z	100.0000	100.0000	1	286e8e297a97	0x132f80
 directinputmgr2	?FreeDeviceList@DirectInputMgr2@@QAEXXZ	100.0000	100.0000	3	382156cf8497	0x1331a0
 directinputmgr2	?GetErrorString@DirectInputMgr2@@SAXPADHH@Z	100.0000	100.0000	1	b7c4bb55f899	0x133590
@@ -1764,7 +1764,7 @@ directinputmgr2	?PollJoystick@CInputDevice@@QAEHXZ	100.0000	100.0000	1	dba36e7a9
 directinputmgr2	?PollMouse@CInputDevice@@QAEHXZ	100.0000	100.0000	1	2d5be5b831f5	0x1343b0
 directinputmgr2	?ReadAll@DirectInputMgr2@@QAEHXZ	100.0000	100.0000	3	c7b72012e78d	0x133110
 directinputmgr2	?ReadState@CInputDevice@@QAEPAXXZ	100.0000	100.0000	3	63f5b847170b	0x134d90
-directinputmgr2	?ReleaseDevices@CInputDevice@@QAEXXZ	100.0000	100.0000	2	c847948a6481	0x134d50
+directinputmgr2	?ReleaseDevices@CInputDevRoot@@QAEXXZ	100.0000	100.0000	1	2e416e81546a	0x134d50
 directinputmgr2	?SetCooperativeLevel@CInputDevice@@QAEHI@Z	100.0000	100.0000	1	13e837e39333	0x134ef0
 directinputmgr2	?SetDataFormat@CInputDevice@@QAEHPAX@Z	100.0000	100.0000	4	f390255ce040	0x134eb0
 directinputmgr2	?SetProperty@CInputDevice@@QAEHPBXPAX@Z	100.0000	100.0000	4	6a4a1014f473	0x134f30
@@ -1772,8 +1772,11 @@ directinputmgr2	?SetPropertyDword@CInputDevice@@QAEHPBXIII@Z	100.0000	100.0000	1
 directinputmgr2	?SetupAxes@CDeviceConfigB@@QAEHXZ	100.0000	100.0000	1	bc0618c896cf	0x134710
 directinputmgr2	?SetupKeyTable@CInputDevice@@QAEXXZ	94.5946	94.5946	4	4eb5da0c1327	0x133c30
 directinputmgr2	?Shutdown@DirectInputMgr2@@QAEXXZ	100.0000	100.0000	3	0cd0fa1efa29	0x132d90
+directinputmgr2	?Slot3@CInputDevRoot@@UAEHXZ	100.0000	100.0000	1	cefc2272aba0	0x1332b0
+directinputmgr2	?Slot4@CInputDevBase@@UAEHXZ	100.0000	100.0000	1	1a477298ef2a	0x133410
+directinputmgr2	?Slot5@CInputDevBase@@UAEHXZ	100.0000	100.0000	1	574d81b2aebe	0x1332c0
 directinputmgr2	?Teardown@CInputDevice@@QAEXXZ	100.0000	100.0000	2	f32e81f04bab	0x133bf0
-directinputmgr2	?Unacquire@CInputDevice@@QAEHXZ	100.0000	100.0000	3	76cbc70bdd81	0x134fe0
+directinputmgr2	?Unacquire@CInputDevRoot@@QAEHXZ	100.0000	100.0000	1	25ff4ff9c516	0x134fe0
 directsoundmgr	??0DSoundBaseSub@@QAE@PAUIDirectSoundBufferZ@@PAVDirectSoundMgr@@@Z	100.0000	100.0000	3	d0c7785c306a	0x136230
 directsoundmgr	??0DSoundCloneInst@@QAE@PAUIDirectSoundBufferZ@@PAVDirectSoundMgr@@@Z	85.7188	85.7188	4	608b7597273c	0x135b10
 directsoundmgr	??0DirectSoundMgr@@QAE@PAUIDirectSoundBufferZ@@PAV0@@Z	100.0000	100.0000	6	84e4b0ce528d	0x1351d0

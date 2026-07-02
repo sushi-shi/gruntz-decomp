@@ -12,60 +12,15 @@
 
 typedef void (*UnkVfn)(void);
 
-// ClassWithUnknownVTable1  @ 0x005ef628  (6 slots)  refs x2  src:g_deviceConfigVtblA
-// CATALOGED as ??_7CInputDevice@@6B@ via VTBL() in src/DinMgr2/DirectInputMgr2.cpp.
-// Kept a manual stamp: CInputDevice is non-polymorphic (explicit m_vptr) and its /GX
-// deleting-dtor chain re-stamps a 3-level base-subobject vtable sequence
-// (0x5ef628/0x5ef680/0x5ef670); a real-virtual model needs the multilevel polymorphic
-// base chain (eh-dtor-multilevel-polymorphic-chain.md) - deferred to the final sweep.
-struct DeviceConfigVtblA {
-    UnkVfn _scalar_deleting_destructor_; // [0] -> 0x1332e0 `scalar_deleting_destructor'
-    UnkVfn CreateDeviceWrap;             // [1] -> 0x134260 CreateDeviceWrap
-    UnkVfn Teardown;                     // [2] -> 0x133bf0 Teardown
-    UnkVfn slot3_1332b0;                 // [3] -> 0x1332b0 sub_1332b0
-    UnkVfn Poll;                         // [4] -> 0x133d00 Poll
-    UnkVfn slot5_1332c0;                 // [5] -> 0x1332c0 sub_1332c0
-};
-
-// ClassWithUnknownVTable2  @ 0x005ef640  (6 slots)  refs x2  src:g_deviceConfigVtblB2
-// CATALOGED as ??_7CDeviceConfigB@@6B@ via VTBL() in src/DinMgr2/DirectInputMgr2.cpp
-// (device-B/mouse config). Non-polymorphic (explicit m_vptr, ctor-stamped); kept.
-struct Vtbl_1ef640 {
-    UnkVfn _scalar_deleting_destructor_; // [0] -> 0x1334d0 `scalar_deleting_destructor'
-    UnkVfn CreateDeviceWrap;             // [1] -> 0x134260 CreateDeviceWrap
-    UnkVfn FUN_00534360;                 // [2] -> 0x134360 FUN_00534360
-    UnkVfn slot3_1332b0;                 // [3] -> 0x1332b0 sub_1332b0
-    UnkVfn FUN_005343b0;                 // [4] -> 0x1343b0 FUN_005343b0
-    UnkVfn slot5_1332c0;                 // [5] -> 0x1332c0 sub_1332c0
-};
-
-// ClassWithUnknownVTable3  @ 0x005ef658  (6 slots)  refs x2
-struct Vtbl_1ef658 {
-    UnkVfn _scalar_deleting_destructor_; // [0] -> 0x133440 `scalar_deleting_destructor'
-    UnkVfn CreateDeviceWrap;             // [1] -> 0x134260 CreateDeviceWrap
-    UnkVfn FUN_005346d0;                 // [2] -> 0x1346d0 FUN_005346d0
-    UnkVfn slot3_1332b0;                 // [3] -> 0x1332b0 sub_1332b0
-    UnkVfn FUN_005347d0;                 // [4] -> 0x1347d0 FUN_005347d0
-    UnkVfn slot5_1332c0;                 // [5] -> 0x1332c0 sub_1332c0
-};
-
-// ClassWithUnknownVTable4  @ 0x005ef670  (4 slots)  refs x6  src:g_deviceConfigVtblC
-struct DeviceConfigVtblC {
-    UnkVfn vector_deleting_destructor; // [0] -> 0x133380 vector_deleting_destructor
-    UnkVfn Create;                     // [1] -> 0x134cb0 Create
-    UnkVfn ReleaseDevices;             // [2] -> 0x134d50 ReleaseDevices
-    UnkVfn slot3_1332b0;               // [3] -> 0x1332b0 sub_1332b0
-};
-
-// ClassWithUnknownVTable5  @ 0x005ef680  (6 slots)  refs x4  src:g_deviceConfigVtblB
-struct DeviceConfigVtblB {
-    UnkVfn _scalar_deleting_destructor_; // [0] -> 0x133420 `scalar_deleting_destructor'
-    UnkVfn CreateDeviceWrap;             // [1] -> 0x134260 CreateDeviceWrap
-    UnkVfn ReleaseDevices;               // [2] -> 0x1342b0 ReleaseDevices
-    UnkVfn slot3_1332b0;                 // [3] -> 0x1332b0 sub_1332b0
-    UnkVfn slot4_133410;                 // [4] -> 0x133410 sub_133410
-    UnkVfn slot5_1332c0;                 // [5] -> 0x1332c0 sub_1332c0
-};
+// ClassWithUnknownVTable1..5  @ 0x005ef628 / 640 / 658 / 670 / 680 - the DirectInput
+// device-config chain. Now modeled REAL-POLYMORPHIC in include/DinMgr2/DirectInputMgr2.h:
+//   ??_7CInputDevRoot  (0x1ef670, 4 slots)   VTBL(CInputDevRoot,  0x001ef670)
+//   ??_7CInputDevBase  (0x1ef680, 6 slots)   VTBL(CInputDevBase,  0x001ef680)
+//   ??_7CInputDevice   (0x1ef628, keyboard)  VTBL(CInputDevice,   0x001ef628)
+//   ??_7CDeviceConfigB (0x1ef640, mouse)     VTBL(CDeviceConfigB, 0x001ef640)
+//   ??_7CDeviceConfigC (0x1ef658, joystick)  VTBL(CDeviceConfigC, 0x001ef658)
+// cl auto-emits all five ??_7 + the implicit vptr stamp / multilevel /GX dtor chain
+// (the manual g_deviceConfigVtbl* stamps are gone). Placeholders removed.
 
 // ClassWithUnknownVTable6  @ 0x005ef6c8  (2 slots)  refs x4  src:g_PureVtbl
 // The all-__purecall vtable of a 2-method ABSTRACT sound-element base (both slots ->

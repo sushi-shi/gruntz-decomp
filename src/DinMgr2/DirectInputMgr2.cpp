@@ -101,16 +101,11 @@ extern "C" char g_emptyString[]; // 0x6293f4
 void* operator new(u32);
 void operator delete(void*);
 
-// The foreign device-config vftable InitA stamps into its new'd 0x338 object
-// (@0x5ef628). Referenced as DIR32 data; we never emit this vtable. The deleting-
-// destructor chain (0x133300) walks two base-subobject vtables in turn (@0x5ef680
-// then @0x5ef670) as it tears the object down. All three are reloc-masked DIR32.
-DATA(0x001ef628)
-extern void* g_deviceConfigVtblA; // 0x5ef628
-DATA(0x001ef680)
-extern void* g_deviceConfigVtblB; // 0x5ef680
-DATA(0x001ef670)
-extern void* g_deviceConfigVtblC; // 0x5ef670
+// The three device-config vtables (0x5ef628 keyboard / 0x5ef640 mouse / 0x5ef658
+// joystick) and their two base-subobject vtables (0x5ef680 / 0x5ef670) are now
+// EMITTED by cl from the real CInputDev* hierarchy (see the header): the ctors/dtor
+// auto-stamp the implicit vptr, so there is no manual g_deviceConfigVtbl* stamp any
+// more. The VTBL() catalog bindings below name each emitted ??_7 at its retail RVA.
 
 // The keyboard DIDATAFORMAT (c_dfDIKeyboard) CreateDev passes to SetDataFormat
 // (@0x590aa0, a const in .text). Pushed by address (reloc-masked DIR32 operand).
@@ -136,55 +131,30 @@ extern const u8 g_joystickDataFormat[]; // 0x591590
 DATA(0x001ef548)
 extern const u8 g_deviceConfigA[]; // 0x5ef548
 
-// The device-B config object (InputDevice.cpp sibling of CDeviceConfigA): a 0x2c8-
-// byte object with the SAME prefix layout (m_device/+4, m_device2/+8, +0x29c..+0x2b4)
-// but stamped with its own foreign vftable (@0x5ef640) and brought up via a distinct
-// CreateDev entry (0x1342c0). Modeled with no body so the calls reloc-mask; the
-// vtable + config-blob are reloc-masked DIR32 operands.
-DATA(0x001ef640)
-extern void* g_deviceConfigVtblB2; // 0x5ef640 - device-B foreign vftable
-
 DATA(0x001ef538)
 extern const u8 g_deviceConfigB[]; // 0x5ef538 - device-B CreateDev config blob
 
-struct CDeviceConfigB {
-    inline CDeviceConfigB();
-
-    i32 CreateDev(IDirectInputZ* di, const void* cfg, void* owner, u32 flags); // 0x1342c0
-    // The joystick-device sibling bring-up (0x134630) + its DI axis configurator
-    // (0x134710); IsReady (0x1343a0) is the device-B CreateDev success check.
-    // The non-keyboard device-config objects share the CInputDevice IDirectInputDevice-
-    // wrapper prefix, so these call the shared wrappers (CreateDeviceWrap/SetDataFormat/
-    // SetCooperativeLevel/SetProperty) by reinterpreting `this` as CInputDevice*.
-    i32 CreateDevJoystick(IDirectInputZ* di, const void* cfg, void* owner, u32 flags); // 0x134630
-    i32 SetupAxes();                                                                   // 0x134710
-    i32 IsReady();                                                                     // 0x1343a0
-
-    void* m_vptr;                   // +0x000  stamped to g_deviceConfigVtblB2 (@0x5ef640)
-    IDirectInputDeviceZ* m_device;  // +0x004
-    IDirectInputDeviceZ* m_device2; // +0x008
-    char m_padc[0x29c - 0x0c];
-    void* m_hwnd;          // +0x29c
-    void* m_stateBuffer;   // +0x2a0
-    u32 m_stateBufferSize; // +0x2a4  (untouched by InitB)
-    i32 m_latchedKeys;     // +0x2a8  (= -1)
-    u32 m_currentKeys;     // +0x2ac
-    u32 m_edgeKeys;        // +0x2b0
-    i32 m_flags;           // +0x2b4  (= 0)
-    char m_pad2b8[0x2c8 - 0x2b8];
-}; // 0x2c8
-SIZE(CDeviceConfigB, 0x2c8); // measured: InitB new's 0x2c8 (device-B config object)
-// Non-polymorphic (explicit m_vptr, foreign engine vtable stamped in the ctor); VTBL
-// is a catalog name only - cl emits no ??_7CDeviceConfigB here (reloc-masked).
-VTBL(CDeviceConfigB, 0x001ef640); // retail device-B (mouse) vtable (src g_deviceConfigVtblB2)
-
-// CInputDevice (= CDeviceConfigA, keyboard device) metadata. Also non-polymorphic
-// (explicit m_vptr, foreign engine vtable @0x5ef628 stamped in the dtor chain), so
-// VTBL is a catalog name only (reloc-masked). SIZE from InitA's new 0x338.
+// ---------------------------------------------------------------------------
+// Class-metadata catalog: cl EMITS these five ??_7 vtables from the real
+// CInputDev* hierarchy (header). SIZE from the InitA/InitB `new` sizes; the two
+// base-subobject vtables + the joystick leaf are size-unknown (never allocated
+// standalone here / built by another TU).
+// ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CInputDevRoot);
+VTBL(CInputDevRoot, 0x001ef670); // grand-base vtable (4 slots)
+SIZE_UNKNOWN(CInputDevBase);
+VTBL(CInputDevBase, 0x001ef680); // middle-base vtable (6 slots)
 SIZE(CInputDevice, 0x338);
-VTBL(CInputDevice, 0x001ef628); // retail keyboard-device vtable (src g_deviceConfigVtblA)
+VTBL(CInputDevice, 0x001ef628); // keyboard-device vtable
+SIZE(CDeviceConfigB, 0x2c8);
+VTBL(CDeviceConfigB, 0x001ef640); // mouse-device vtable
+SIZE_UNKNOWN(CDeviceConfigC);
+VTBL(CDeviceConfigC, 0x001ef658); // joystick-device vtable
 
-inline CInputDevice::CInputDevice() {
+// Shared-base ctor: zero the device fields + arm the latch. Inlined into InitA's
+// `new CInputDevice` / InitB's `new CDeviceConfigB`; cl auto-stamps the implicit
+// vptr (no manual g_deviceConfigVtbl* store any more).
+inline CInputDevRoot::CInputDevRoot() {
     m_device = 0;
     m_device2 = 0;
     m_hwnd = 0;
@@ -192,21 +162,37 @@ inline CInputDevice::CInputDevice() {
     m_latchedKeys = -1;
     m_currentKeys = 0;
     m_edgeKeys = 0;
-    m_vptr = &g_deviceConfigVtblA;
+}
+inline CInputDevBase::CInputDevBase() {}
+
+inline CInputDevice::CInputDevice() {
     memset(m_keyTable, 0, sizeof(m_keyTable));
     m_modeFlags = 0;
 }
 
 inline CDeviceConfigB::CDeviceConfigB() {
-    m_device = 0;
-    m_device2 = 0;
-    m_hwnd = 0;
-    m_stateBuffer = 0;
+    m_flags = 0;
+}
+
+// The base placeholder virtual slots (declared count-exact in the header). Three of
+// them have real reloc-bound bodies (their retail addresses were previously unbound):
+//   Slot3 = IsValid (0x1332b0), Slot4 = base poll stub (0x133410), Slot5 = reset-state
+//   (0x1332c0). Slot1/Slot2 map to the non-virtual Create/ReleaseDevices helpers, so
+//   their vtable entries are reloc-masked placeholders (declared, not defined).
+RVA(0x001332b0, 0xb)
+i32 CInputDevRoot::Slot3() {
+    return m_device2 != 0;
+}
+RVA(0x00133410, 0x3)
+i32 CInputDevBase::Slot4() {
+    return 0;
+}
+RVA(0x001332c0, 0x1e)
+i32 CInputDevBase::Slot5() {
     m_latchedKeys = -1;
     m_currentKeys = 0;
     m_edgeKeys = 0;
-    m_vptr = &g_deviceConfigVtblB2;
-    m_flags = 0;
+    return 1;
 }
 
 // ===========================================================================
@@ -499,27 +485,36 @@ void DirectInputMgr2::AddControllerArr(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i
 // GetErrorString); the rest of its methods follow GetErrorString below.
 // ===========================================================================
 
-// CInputDevice::~CInputDevice (__thiscall). The /GX deleting-destructor chain: with
-// the EH frame live it stamps the most-derived vftable (@0x5ef628), tears the object
-// down (Teardown frees the snapshot buffer + releases the COM devices), then walks
-// the two base-subobject vftables (@0x5ef680 then @0x5ef670) re-releasing as it
-// unwinds, advancing the [esp+0x10] try-level stamp (0 / 1 / -1) after each step.
-// @early-stop
-// eh-dtor-needs-base-subobject wall (docs/patterns/eh-dtor-needs-base-subobject.md), 42.7%:
-// body content is byte-correct (3 vptr stamps @0x5ef628/0x5ef680/0x5ef670 + Teardown +
-// ReleaseDevices x2, all reloc-masked) but retail wraps it in a /GX EH frame (push -1 /
-// push handler / mov fs:0) with [esp+0x10] try-level stamps (0/1/-1) advanced after each
-// step - that frame comes from real base-subobject dtors, unreachable under the
-// manual-vptr non-polymorphic shape this class needs (its foreign vtable @0x5ef628 isn't
-// reproducible). Deferred to the final sweep.
+// (The two base-subobject destructors are defined inline in the header - each a
+// single ReleaseDevices cleanup - so cl inlines the full base unwind, stamp-by-stamp,
+// into every leaf's /GX destructor. The standalone base dtor 0x1333b0 lives in
+// BoundaryUpper2Eh.cpp; cl's copies here are unbound and only drive the leaf unwinds
+// + force ??_7CInputDevRoot / ??_7CInputDevBase emission.)
+
+// CInputDevice::~CInputDevice (__thiscall, 0x133300). Now a REAL polymorphic /GX
+// multilevel deleting-dtor: cl auto-emits the EH frame + the vptr re-stamp down the
+// chain (0x5ef628 keyboard -> 0x5ef680 base -> 0x5ef670 root) with the [esp+0x10]
+// try-level stamps, then Teardown()s the leaf and inlines each base cleanup
+// (ReleaseDevices). Replaces the manual-vptr stamp shape that capped this at 42.7%.
 RVA(0x00133300, 0x6a)
 CInputDevice::~CInputDevice() {
-    m_vptr = &g_deviceConfigVtblA;
     Teardown();
-    m_vptr = &g_deviceConfigVtblB;
-    ReleaseDevices();
-    m_vptr = &g_deviceConfigVtblC;
-    ReleaseDevices();
+}
+
+// CDeviceConfigC::~CDeviceConfigC (joystick, 0x133460) and CDeviceConfigB::~CDeviceConfigB
+// (mouse, 0x1334f0): the two sibling /GX multilevel deleting-dtors, same shape as
+// ~CInputDevice - cl auto-emits the EH frame + vptr re-stamp (leaf 0x5ef658/0x5ef640 ->
+// base 0x5ef680 -> root 0x5ef670) with the [esp+0x10] try-level stamps, then calls the
+// leaf teardown (Free6d0 / Free360, bodies in BoundaryUpper.cpp - reloc-masked) and
+// inlines each base cleanup (ReleaseDevices). Replaces the manual-vptr DevCfgChain
+// stamps that were @early-stop in BoundaryUpper2Eh.cpp.
+RVA(0x00133460, 0x6a)
+CDeviceConfigC::~CDeviceConfigC() {
+    Free6d0();
+}
+RVA(0x001334f0, 0x6a)
+CDeviceConfigB::~CDeviceConfigB() {
+    Free360();
 }
 
 // ---------------------------------------------------------------------------
@@ -961,7 +956,7 @@ i32 CInputDevice::Poll() {
 // hwnd), runs the CreateDevice+QI bring-up (Create), then dispatches the +0x14
 // configure virtual through the stamped foreign vtable. Returns 1 on success.
 RVA(0x00134260, 0x43)
-i32 CInputDevice::CreateDeviceWrap(IDirectInputZ* di, const void* guid, void* hwnd) {
+i32 CInputDevBase::CreateDeviceWrap(IDirectInputZ* di, const void* guid, void* hwnd) {
     if (di == 0) {
         return 0;
     }
@@ -971,7 +966,7 @@ i32 CInputDevice::CreateDeviceWrap(IDirectInputZ* di, const void* guid, void* hw
     if (Create(di, guid, hwnd) == 0) {
         return 0;
     }
-    ((CInputDeviceVtblView*)this)->Slot14();
+    Slot5(); // +0x14 configure dispatch (virtual, slot 5)
     return 1;
 }
 
@@ -1265,7 +1260,7 @@ i32 CDeviceConfigB::SetupAxes() {
 // IDirectInput::CreateDevice into m_device, then QueryInterfaces it to the v2 device
 // interface (m_device2). Each COM failure is reported; returns whether m_device2 is non-null.
 RVA(0x00134cb0, 0x94)
-i32 CInputDevice::Create(IDirectInputZ* di, const void* deviceGuid, void* hwnd) {
+i32 CInputDevRoot::Create(IDirectInputZ* di, const void* deviceGuid, void* hwnd) {
     if (di == 0) {
         return 0;
     }
@@ -1293,7 +1288,7 @@ i32 CInputDevice::Create(IDirectInputZ* di, const void* deviceGuid, void* hwnd) 
 // device (m_device2), Releases the created device (m_device), then clears the device handles +
 // the cached hwnd / state buffer pointer.
 RVA(0x00134d50, 0x3b)
-void CInputDevice::ReleaseDevices() {
+void CInputDevRoot::ReleaseDevices() {
     if (m_device2 != 0) {
         Unacquire();
         m_device2->vtbl->Release(m_device2);
@@ -1410,7 +1405,7 @@ i32 CInputDevice::Acquire() {
 // CInputDevice::Unacquire (__thiscall, no args). IDirectInputDevice::Unacquire
 // (slot +0x20); returns whether the HRESULT was success (0).
 RVA(0x00134fe0, 0x13)
-i32 CInputDevice::Unacquire() {
+i32 CInputDevRoot::Unacquire() {
     i32 hr = m_device2->vtbl->Unacquire(m_device2);
     return hr == 0;
 }
