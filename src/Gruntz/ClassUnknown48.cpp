@@ -43,8 +43,31 @@ public:
     List m_1c;   // 0x1c
     List m_24;   // 0x24
     Mgr2c* m_2c; // 0x2c
+    // The two ctors (re-homed from src/Stub/MallocConstructors): xref confirms both
+    // are called by CSymTab::FindOrAddSym (0x13a940), so ClassUnknown_48 is the
+    // CSymTab symbol-entry node whose teardown is the dtor below (its layout - vptr
+    // stamped @+0x4=0x5ef744, the m_1c/m_24 array-backed lists built by the container
+    // ctor 0x184960/0x184950, m_18=this, m_2c - matches the dtor's exactly).
+    ClassUnknown_48(void* a, void* b, void* c, void* d); // 0x139bf0
+    ClassUnknown_48(void* a, void* b, void* c);          // 0x139c80
     ~ClassUnknown_48();
 };
+
+// reconstruction deferred: the m_1c/m_24 members are array-backed containers built
+// by 0x184960/0x184950 (a shared sym-subsystem container, homed in SymTab.cpp),
+// which is not yet modeled; the attribution (CSymTab entry ctor) is proven by xref.
+// @confidence: high
+// @source: xref
+// @stub
+RVA(0x00139bf0, 0x71)
+ClassUnknown_48::ClassUnknown_48(void* a, void* b, void* c, void* d) {}
+
+// reconstruction deferred (see the 4-arg ctor above); same class, 3-arg overload.
+// @confidence: high
+// @source: xref
+// @stub
+RVA(0x00139c80, 0x6c)
+ClassUnknown_48::ClassUnknown_48(void* a, void* b, void* c) {}
 
 RVA(0x00139cf0, 0xd7)
 ClassUnknown_48::~ClassUnknown_48() {

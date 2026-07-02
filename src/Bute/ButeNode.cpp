@@ -108,3 +108,37 @@ CButeNodeBase::CButeNodeBase(void* desc, i32 n)
     m_18 = 0;
     m_28 = 0;
 }
+
+// ===========================================================================
+// CButeNodeBase-derived config-tree node ctor (0x174d00), re-homed from
+// src/Stub/MallocConstructors (was "Node174d00"). A concrete zPTree-family node:
+// base-constructs via the CButeNodeBase ctor (0x16dff0, descriptor @0x574df0 +
+// kind arg), then re-stamps its two most-derived vftables (primary @0x5f051c at
+// +0x00, +0x08 sub-object vftable @0x5f0518). Clean leaf (no op-new, no EH frame).
+// The concrete class has no RTTI type-descriptor in retail (manual-vtbl node, like
+// the CButeSection stream nodes) so the name stays a placeholder; base + module
+// (CButeNodeBase, the .bute config tree) are proven. Manual stamps per the zPTree
+// family convention (cf. CButeSection::Construct / CButeNodeBase above).
+extern u8 g_node174df0Tag; // 0x574df0  kind descriptor (in .text)
+DATA(0x001f0518)
+extern void* g_node174dSubVtbl; // 0x5f0518  +0x08 sub-object vftable
+DATA(0x001f051c)
+extern void* g_node174dVtbl; // 0x5f051c  node primary vftable
+
+struct CButeCfgNode174d {
+    void CtorBase(void* desc, i32 kind);   // 0x16dff0 CButeNodeBase ctor (foreign call)
+    CButeCfgNode174d* Construct(i32 kind); // 0x174d00
+
+    void* m_vptr;       // +0x00  node primary vftable (manual stamp)
+    char m_pad04[0x04]; // +0x04
+    void* m_subVptr;    // +0x08  sub-object vftable (manual stamp)
+};
+SIZE_UNKNOWN(CButeCfgNode174d);
+
+RVA(0x00174d00, 0x25)
+CButeCfgNode174d* CButeCfgNode174d::Construct(i32 kind) {
+    CtorBase(&g_node174df0Tag, kind);
+    m_vptr = &g_node174dVtbl;
+    m_subVptr = &g_node174dSubVtbl;
+    return this;
+}

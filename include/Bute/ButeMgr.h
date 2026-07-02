@@ -81,11 +81,27 @@ struct CButeValue {
     CButeValue* SetDword(i32 type, u32 val);
     CButeValue* SetFloat(i32 type, float val);
     CButeValue* SetDouble(i32 type, double val);
+    // The struct/string value setters: op-new a payload block, copy-construct the
+    // source into it, store the type-tag (+0x00) + payload ptr (+0x04). SetString
+    // boxes a CString (kButeString, /GX unwind on the throwing copy-ctor),
+    // SetRef5/SetRef8 a 16-byte struct (kButeRef5/kButeRef8), SetRef7 a 24-byte
+    // struct (kButeRef7). Re-homed from src/Stub/MallocConstructors (were
+    // BoxedStr/Boxed16a/Boxed16b/Boxed24).
+    CButeValue* SetString(i32 type, const CString& src);
+    CButeValue* SetRef5(i32 type, const struct ButeRef16* src);
+    CButeValue* SetRef7(i32 type, const struct ButeRef24* src);
+    CButeValue* SetRef8(i32 type, const struct ButeRef16* src);
 
     // CopyValue (@0x172040): copy `other`'s payload into this value's storage,
     // sized by THIS value's type-tag (a jump-table switch over ButeType). Returns
     // this.
     CButeValue* CopyValue(CButeValue* other);
+};
+
+// The 16-byte (kButeRef5 / kButeRef8) payload, copied as a struct so MSVC lowers
+// it to four memberwise dword stores (SetRef5/SetRef8's op-new'd copy).
+struct ButeRef16 {
+    i32 w[4];
 };
 
 // The 24-byte (kButeRef7) payload, copied as a struct so MSVC lowers it to the

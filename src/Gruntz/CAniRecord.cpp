@@ -359,6 +359,23 @@ void CAniRecord::FreeBuf_168fb0() {
     }
 }
 
+// ---------------------------------------------------------------------------
+// CAniStrArray::GetAt (0x168e70) - a by-value CString-array element accessor,
+// re-homed from src/Stub/MallocConstructors. Returns (via the RVO return slot) a
+// copy of the CString at this->m_data[index] (`lea &m_data[i]; CString::CString`
+// copy-ctor 0x1b9ba3). xref (gruntz.analysis.xref): CAniRecord::ResolveIndices
+// (0x168d00). Modeled as the small string-array view CAniRecord indexes.
+struct CAniStrArray {
+    char m_00[4];             // +0x00
+    CString* m_data;          // +0x04  CString array base (4-byte elements)
+    CString GetAt(int index); // 0x168e70
+};
+SIZE_UNKNOWN(CAniStrArray);
+RVA(0x00168e70, 0x27)
+CString CAniStrArray::GetAt(int index) {
+    return m_data[index];
+}
+
 SIZE_UNKNOWN(CAniMapOwner);
 SIZE_UNKNOWN(CAniRecord);
 SIZE_UNKNOWN(CAniRecordBase2);

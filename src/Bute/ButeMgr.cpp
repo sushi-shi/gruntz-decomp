@@ -1226,6 +1226,50 @@ CButeValue* CButeValue::SetDouble(i32 type, double val) {
 }
 
 // ===========================================================================
+// CButeValue::SetString / SetRef5 / SetRef7 / SetRef8
+// ===========================================================================
+// The struct/string value setters (re-homed from src/Stub/MallocConstructors,
+// where they were the "boxed value" ctor family): store the type-tag at +0x00,
+// op-new a payload block, copy-construct the source into it, store the block ptr
+// at +0x04, return `this`. cl's new-expression yields the retail alloc-fail
+// `pValue = <register-0>` (not the const-materialize immediate that walls SetInt
+// et al., because the payload copy already leaves 0 in eax on failure).
+
+// SetString (0x1736a0): box a CString copy (4-byte payload). The throwing CString
+// copy-ctor drives a /GX new-expression EH frame (delete-on-unwind).
+RVA(0x001736a0, 0x5f)
+CButeValue* CButeValue::SetString(i32 type, const CString& src) {
+    this->type = type;
+    this->pValue = new CString(src);
+    return this;
+}
+
+// SetRef5 (0x173c60): box a 16-byte struct copy (four memberwise dword stores).
+RVA(0x00173c60, 0x49)
+CButeValue* CButeValue::SetRef5(i32 type, const ButeRef16* src) {
+    this->type = type;
+    this->pValue = new ButeRef16(*src);
+    return this;
+}
+
+// SetRef7 (0x174730): box a 24-byte struct copy (rep movsd, 6 dwords).
+RVA(0x00174730, 0x3c)
+CButeValue* CButeValue::SetRef7(i32 type, const ButeRef24* src) {
+    this->type = type;
+    this->pValue = new ButeRef24(*src);
+    return this;
+}
+
+// SetRef8 (0x174cb0): box a 16-byte struct copy (twin of SetRef5; distinct call
+// sites use the kButeRef8 type-tag). Same codegen as SetRef5.
+RVA(0x00174cb0, 0x49)
+CButeValue* CButeValue::SetRef8(i32 type, const ButeRef16* src) {
+    this->type = type;
+    this->pValue = new ButeRef16(*src);
+    return this;
+}
+
+// ===========================================================================
 // Lexer cluster (CButeMgr 0x170330-0x171a60) + the destructor at 0x0213c0.
 // All __thiscall. The CButeTree sub-objects, the recursive node-walks, the
 // stream reader, and the static lexer tables are reloc-masked externals.

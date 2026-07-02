@@ -353,6 +353,27 @@ CWwdGameObject* CWwdObjMgrL::CreateObject_166640(int a1, int a2, int a3, int a4,
     return result;
 }
 
+// ---------------------------------------------------------------------------
+// CWwdGameObj15b390::Construct (0x15b390) - a per-kind CWwdGameObject in-place ctor,
+// re-homed from src/Stub/MallocConstructors. xref (gruntz.analysis.xref): reached
+// through the CreateObject dispatchers CWwdObjMgr::CreateObject_1598d0 (0x1598d0),
+// CWwdObjMgrL::CreateObject_166640 (0x166640) and WwdFile::ReadPlaneObjects
+// (0x162af0). Base-stamps ??_7CRemusNode (0x5efbc0), op-news a SiriusWorkerObj
+// (??_7 0x5efb80, size 0x17c) at +0x7c, final-stamps g_wwdGameObjectVtbl (0x5f0020),
+// bumps g_wwdObjIdCounter (0x61ab14). A sibling of the wide-object ctors above; its
+// large body sits at the same rezalloc-placement-new EH wall (see the TU header),
+// so it is homed as a shell here. Reconstruction deferred.
+struct CWwdGameObj15b390 {
+    CWwdGameObj15b390* Construct(int a, int b, int c); // 0x15b390
+};
+// @confidence: high
+// @source: xref
+// @stub
+RVA(0x0015b390, 0x128)
+CWwdGameObj15b390* CWwdGameObj15b390::Construct(int a, int b, int c) {
+    return this;
+}
+
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 SIZE_UNKNOWN(CWwdCmd1a0);
@@ -365,3 +386,4 @@ SIZE_UNKNOWN(CWwdRemusBaseA);
 SIZE_UNKNOWN(CWwdRemusBaseB);
 SIZE_UNKNOWN(CWwdSub9c);
 SIZE_UNKNOWN(CWwdSubB8);
+SIZE_UNKNOWN(CWwdGameObj15b390); // 0x15b390 per-kind wide-object ctor (CRemusNode base)

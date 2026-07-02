@@ -3405,3 +3405,11 @@ rva,name,lib,confidence,source
 0x11eaa8,mfc_exception_base_dtor_11eaa8,NAFXCW,MED,manual-stub-reclass
 0x11eaf5,mfc_exception_base_dtor_11eaf5,NAFXCW,MED,manual-stub-reclass
 0x16dfc0,bute_node_entry_base_dtor_16dfc0,LIBCMT,LOW,manual-stub-reclass
+0x16b510,??0istream@@QAE@PAVstreambuf@@@Z,LIBCIMT,HIGH,manual-crt-reclass
+0x16bfa0,??0ostream@@QAE@PAVstreambuf@@@Z,LIBCIMT,HIGH,manual-crt-reclass
+0x16c570,?seekp@ostream@@QAEAAV1@JW4seek_dir@ios@@@Z,LIBCIMT,HIGH,manual-crt-reclass
+0x192390,??0fstream@@QAE@PBDHH@Z,LIBCIMT,HIGH,manual-crt-reclass
+0x169fb0,??0ifstream@@QAE@PBDHH@Z,LIBCIMT,HIGH,manual-crt-reclass
+0x169ad0,??0strstream@@QAE@PADHH@Z,LIBCIMT,HIGH,manual-crt-reclass
+0x1698c0,??0ostrstream@@QAE@PADHH@Z,LIBCIMT,HIGH,manual-crt-reclass
+0x169700,??0istrstream@@QAE@PADH@Z,LIBCIMT,HIGH,manual-crt-reclass

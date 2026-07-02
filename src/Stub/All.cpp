@@ -24,4 +24,7 @@
 // remain here (and by GameObjectCtors.cpp / UserLogic.cpp) -> include early.
 #include "CButeTree.cpp"
 #include "EngineExternFns.cpp"
-#include "MallocConstructors.cpp"
+// MallocConstructors.cpp removed: its 21 op-new/malloc-site ctors were all
+// SEMANTICALLY re-homed (Bute CButeValue setters + CButeNodeBase node -> src/Bute;
+// DSoundCloneCtor/CSymTab/CRez/CWwd/CAniRecord ctors -> their real class TUs; the
+// MSVC iostream (LIBCIMT) ctors -> config/library_labels.csv FID carve-out).

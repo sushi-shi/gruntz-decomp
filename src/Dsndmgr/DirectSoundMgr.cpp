@@ -158,6 +158,10 @@ struct DSoundCloneCtor {
         DirectSoundMgr* original
     ); // 0x136180
 
+    // The base DirectSoundMgr ctor (0x1351d0), chained as a foreign (reloc-masked)
+    // call so the shell struct need not derive from the polymorphic base.
+    void ChainBaseCtor(IDirectSoundBufferZ* buf, DirectSoundMgr* owner);
+
     char _pad[0x58]; // shell; real object is 0x58 B (the new(0x58) operand)
 };
 SIZE(DSoundCloneCtor, 0x58); // measured: new(0x58) -> ctor 0x136180
@@ -172,6 +176,42 @@ inline DSoundCloneCtor::DSoundCloneCtor(
 
 inline void* DSoundCloneCtor::operator new(u32) {
     return ::operator new(0x58);
+}
+
+// DSoundCloneCtor::Construct (0x136180) - the DirectSoundMgr clone-instance ctor,
+// re-homed from src/Stub/MallocConstructors (was MallocCtor_136180). Confirmed by
+// xref: the sole caller is DirectSoundMgr::Clone (0x135c20), which `new`s it. Chains
+// the DirectSoundMgr base ctor (0x1351d0), seeds the clone back-ptr (m_4c=self), the
+// original DirectSoundMgr (m_54), m_50=1, copies the param block +0x2c..+0x38 from
+// the original, and runs ComputeDuration (0x1359a0). Defining it here resolves the
+// Clone->Construct reloc that was previously dangling (the body lived in the stub
+// bucket under a different name).
+// @early-stop
+// vptr/EH wall: the retail ctor also (a) carries a /GX ctor-in-flight frame for the
+// destructible DirectSoundMgr base and (b) re-stamps ??_7DSoundBaseSub (0x5ef6c0)
+// after the base ctor. The shell struct can't emit the base's /GX frame and can't
+// reference the VTBL(DSoundBaseSub)-bound vtable without a dup-DATA conflict, so
+// those two are the residual; the base-ctor call, field seeds and ComputeDuration
+// are byte-faithful. Final-sweep: model it as a real DirectSoundMgr-derived class.
+RVA(0x00136180, 0x86)
+DSoundCloneCtor* DSoundCloneCtor::Construct(
+    IDirectSoundBufferZ* buf,
+    DirectSoundMgr* owner,
+    DirectSoundMgr* original
+) {
+    ChainBaseCtor(buf, owner);
+    char* self = (char*)this;
+    *(DSoundCloneCtor**)(self + 0x4c) = this;
+    *(DirectSoundMgr**)(self + 0x54) = original;
+    *(i32*)(self + 0x50) = 1;
+    char* src = (char*)original;
+    *(i32*)(self + 0x2c) = *(i32*)(src + 0x2c);
+    *(i32*)(self + 0x30) = *(i32*)(src + 0x30);
+    *(i32*)(self + 0x34) = *(i32*)(src + 0x34);
+    *(i32*)(self + 0x3c) = *(i32*)(src + 0x3c);
+    *(i32*)(self + 0x38) = *(i32*)(src + 0x38);
+    ((DirectSoundMgr*)this)->ComputeDuration();
+    return this;
 }
 
 // ---------------------------------------------------------------------------

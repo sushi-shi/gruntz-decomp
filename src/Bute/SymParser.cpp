@@ -496,8 +496,29 @@ void CObjList::Remove(CObjNode* node) {
     }
 }
 
+// ---------------------------------------------------------------------------
+// CSymParseConfig::Construct (0x13aa10) - a symbol-parser config/state object,
+// re-homed from src/Stub/MallocConstructors. Stamps vtable 0x5ef750, builds a
+// CSymList (0x184960) at +0x80, and seeds the parse config defaults (+0x24=1,
+// +0x28=0x77359400, +0x2c=3, +0x40=1, +0x08=1, +0x70/+0x74=0x13, +0x78=5,
+// +0x7c=9, +0x90=0x64). xref (gruntz.analysis.xref): built by CSymParser::CSymParser
+// (0x13ab00), RezSync::Init (0x83450) and CGruntzMgr::LoadWorldMode (0x91a40). Exact
+// class name unresolved (non-RTTI vtable 0x5ef750); modeled as a plain shell.
+// Reconstruction deferred.
+struct CSymParseConfig {
+    CSymParseConfig* Construct(); // 0x13aa10
+};
+// @confidence: high
+// @source: xref
+// @stub
+RVA(0x0013aa10, 0xdc)
+CSymParseConfig* CSymParseConfig::Construct() {
+    return this;
+}
+
 // --- class-metadata sweep (Bute module): SymParser.h + .cpp-local SIZE at this .cpp
 // EOF (all SIZE_UNKNOWN). CSymTab (also in SymParser.h) is annotated in SymTab.cpp.
+SIZE_UNKNOWN(CSymParseConfig); // 0x13aa10 parser config/state (name TBD)
 SIZE_UNKNOWN(CObjNode); // declared-but-undefined virtual slots; no vtable emitted here (no VTBL)
 SIZE_UNKNOWN(CObjList);
 SIZE_UNKNOWN(CSlotNode);

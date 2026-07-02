@@ -593,6 +593,27 @@ i32 RezMgr::UpdateClock() {
 RVA(0x0013b0c0, 0x238)
 void CRezDir::Stub_13b0c0() {}
 
+// -------------------------------------------------------------------------
+// CRezParseNode::Construct (0x13cac0) - a CRezItmBase-derived rez tree node,
+// re-homed from src/Stub/MallocConstructors. xref (gruntz.analysis.xref): built by
+// CSymParser::ParseRecords (0x13b300, the .rez directory/symbol parser). Base-ctors
+// via CRezItmBase::CRezItmBase (0x13c4e0), stamps its own vtable (0x5ef7d0),
+// heap-copies its name string into +0x10, stores its parent at +0x18, and links
+// itself into the parent dir's child CRezList via CRezList::AddHead (0x1851e0). A
+// third CRezItmBase-derived class alongside CRezItm/CRezDir; exact name unresolved
+// (non-RTTI vtable 0x5ef7d0), modeled as a plain shell so the stub is
+// matching-neutral. Reconstruction deferred.
+struct CRezParseNode {
+    CRezParseNode* Construct(void* parent, void* nameSrc, void* owner); // 0x13cac0
+};
+// @confidence: high
+// @source: xref
+// @stub
+RVA(0x0013cac0, 0x9b)
+CRezParseNode* CRezParseNode::Construct(void* parent, void* nameSrc, void* owner) {
+    return this;
+}
+
 // ===========================================================================
 // Class-metadata annotations for the RezMgr.h classes. Hosted at EOF of this TU
 // (not in the header): RezMgr.h is pulled into the /O2-sensitive Image.cpp for
@@ -611,4 +632,5 @@ SIZE_UNKNOWN(RezSrc);
 SIZE_UNKNOWN(CRezDirNode);
 SIZE_UNKNOWN(CGameMode); // slot-dispatch view (no emitted vtable)
 SIZE_UNKNOWN(RezMgrOwner);
-SIZE_UNKNOWN(RezMgr); // model pads to +0xfc; retail alloc is 0xa30
+SIZE_UNKNOWN(RezMgr);        // model pads to +0xfc; retail alloc is 0xa30
+SIZE_UNKNOWN(CRezParseNode); // 0x13cac0 CRezItmBase-derived parse node (name TBD)

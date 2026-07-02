@@ -740,7 +740,28 @@ i32 CSymTab::ResolveQualified(const char* name, void* arg) {
     return scope->Insert(qual, arg);
 }
 
+// ---------------------------------------------------------------------------
+// CSymList::Construct (0x184960) - the sym-subsystem's array-backed list container
+// ctor, re-homed from src/Stub/MallocConstructors. op-news (count<<4)+4 bytes (an
+// int header + count 16-byte elements), stores count at +0x00 and the data ptr at
+// +0x04, element-constructs via 0x11f5a0. xref (gruntz.analysis.xref): built by the
+// CSymTab entry ctors (0x139bf0/0x139c80), CSymTab::CSymTab (0x139de0),
+// CSymParser::CSymParser (0x13ab00) and CSymParseConfig (0x13aa10) - i.e. the
+// list members throughout the symbol table/parser. Modeled as a plain shell;
+// reconstruction deferred.
+struct CSymList {
+    CSymList* Construct(int count); // 0x184960
+};
+// @confidence: high
+// @source: xref
+// @stub
+RVA(0x00184960, 0x70)
+CSymList* CSymList::Construct(int count) {
+    return this;
+}
+
 // CSymParser (also in SymTab.h) is annotated in SymParser.cpp.
+SIZE_UNKNOWN(CSymList); // 0x184960 array-backed list container (sym subsystem)
 SIZE_UNKNOWN(RezColl);
 SIZE_UNKNOWN(RezNode);
 SIZE_UNKNOWN(CHashTable);
