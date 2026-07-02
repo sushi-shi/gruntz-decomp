@@ -11,19 +11,20 @@
 # [flags]  - named flag profiles (full flag sets); EVERY [[unit]] selects one via
 #            `flags = "<name>"`. `base` is the locked VC5 default (cl /c /O2 /MT,
 #            cdecl; see docs/zlib-matching.md); `eh` adds the C++ exception-
-#            handling frame (/GX); `mfc` is the MFC-derived /O1 (favor size) + /GX.
+#            handling frame (/GX); `mfc` is the MFC-derived /O1 (favor size) + /GX;
+#            `framed` adds /Oy- (keep frame pointers); `framedeh` = framed + /GX.
 # [[unit]] - one TU: `unit` (stem; obj is <unit>.obj, target <unit>.c.obj; must
 #            match symbol_names.csv's unit column), `source` (repo-relative path),
-#            `flags` (a [flags] profile name), and optional `extra` (per-TU flags
-#            appended to the profile - the /GR + /GX knob; see below).
+#            and `flags` (a [flags] profile name). Pick the profile whose FULL set
+#            you need - /GX is a profile choice (eh/mfc/framedeh), never a bolt-on.
 #
-# Per-TU /GR + /GX knob (`extra`): MSVC5 enables RTTI only under /GR (default OFF),
-# so a polymorphic class compiled here emits a vtable with NO Complete Object
-# Locator - matching retail's NON-RTTI vtables. To match an RTTI class (one whose
-# retail vtable carries a COL at vtable-4) the compiler must emit the COL + RTTI
-# tree (??_R0..R4), which needs `extra = ["/GR"]` on that TU. /GX is likewise
-# available via `extra = ["/GX"]` for a base-profile TU (or just use the `eh`
-# profile). Opt-in per unit; absent == unchanged, so adding the knob is
+# Per-TU /GR (RTTI) knob (`extra`) - CURRENTLY UNUSED, kept as an escape hatch:
+# MSVC5 enables RTTI only under /GR (default OFF), so a polymorphic class compiled
+# here emits a vtable with NO Complete Object Locator - matching retail's NON-RTTI
+# vtables. To match an RTTI class (retail vtable carries a COL at vtable-4) the
+# compiler must emit the COL + RTTI tree (??_R0..R4), which would need
+# `extra = ["/GR"]` on that TU. No reconstructed unit needs this yet. (/GX is NOT
+# an `extra` - it lives in the eh/mfc/framedeh profiles.) When first needed it is
 # matching-NEUTRAL until a unit reconstructs its full vtable + base subobject and
 # opts in. See docs/vtable-map.md.
 #
@@ -42,6 +43,7 @@ mfc    = ["/nologo", "/c", "/O1", "/MT", "/GX"]
 # registry/COM helper module (0x1bf*-0x1d5*) with ebp frames retained yet fully
 # register-allocated. docs/patterns/o2-optimizer-bailout-framed.md.
 framed = ["/nologo", "/c", "/O2", "/MT", "/Oy-"]
+framedeh = ["/nologo", "/c", "/O2", "/MT", "/Oy-", "/GX"]
 o1     = ["/nologo", "/c", "/O1", "/MT"]
 # unoptimized + intrinsics: full ebp frame, every local/arg through memory, plain
 # idiv (no strength reduction), yet pow/etc. via the __CIxxx FP intrinsic (/Oi).
@@ -143,8 +145,7 @@ flags = "framed"
 # temp, so /Oy- (framed) + /GX (the EH frame for the destructible CString).
 unit = "configstoreread"
 source = "src/Gruntz/ConfigStoreRead.cpp"
-flags = "framed"
-extra = ["/GX"]
+flags = "framedeh"
 
 [[unit]]
 # 0x1bf*-0x1c7* registry/COM/mouse-wheel helpers - framed (/O2 /Oy-).
@@ -865,8 +866,7 @@ flags = "eh"
 [[unit]]
 unit = "engine_label_stubs"
 source = "src/Stub/All.cpp"
-flags = "base"
-extra = ["/GX"]
+flags = "eh"
 
 # --- re-homed out of the src/Stub/ CClass files into their module TUs (flags "eh"
 # == the engine_label_stubs base+/GX the sources came from; matching-neutral). ---
@@ -1177,8 +1177,7 @@ flags = "eh"
 # (an `__EH_prolog` ebp EH frame).
 unit = "filepathinfo"
 source = "src/Gruntz/FilePathInfo.cpp"
-flags = "framed"
-extra = ["/GX"]
+flags = "framedeh"
 
 [[unit]]
 # CProjectile::Update (Projectile::vfunc_9 @0x61cb0) - the per-frame projectile
@@ -2644,57 +2643,49 @@ flags = "base"
 # (low-RVA half). base+/GX mirrors the original stub-unit environment.
 unit = "apiwrappers"
 source = "src/Gruntz/ApiWrappers.cpp"
-flags = "base"
-extra = ["/GX"]
+flags = "eh"
 
 [[unit]]
 # matcher-4: the two dialog flash-rect helpers (EH + severus/imgHolder scratch).
 unit = "flashrect"
 source = "src/Gruntz/FlashRect.cpp"
-flags = "base"
-extra = ["/GX"]
+flags = "eh"
 
 [[unit]]
 # matcher-4: dialog label text measure/render helper (EH + CString + scratch).
 unit = "drawtext"
 source = "src/Gruntz/DrawText.cpp"
-flags = "base"
-extra = ["/GX"]
+flags = "eh"
 
 [[unit]]
 # matcher-4: multiplayer color-selection dialog item updater (EH + MFC CString).
 unit = "multicolordlg"
 source = "src/Gruntz/MultiColorDlg.cpp"
-flags = "base"
-extra = ["/GX"]
+flags = "eh"
 
 [[unit]]
 # matcher-4: custom-level listbox filler (findfirst/next walk + lock + CString).
 unit = "customlevellist"
 source = "src/Gruntz/CustomLevelList.cpp"
-flags = "base"
-extra = ["/GX"]
+flags = "eh"
 
 [[unit]]
 # matcher-3: custom-level dialog populate/select (thiscall, magic-static CString + walk).
 unit = "customleveldlg"
 source = "src/Gruntz/CustomLevelDlg.cpp"
-flags = "base"
-extra = ["/GX"]
+flags = "eh"
 
 [[unit]]
 # matcher-3: game-mode/object initializer (four owned sub-objects + /GX teardown).
 unit = "modeobjinit"
 source = "src/Gruntz/ModeObjInit.cpp"
-flags = "base"
-extra = ["/GX"]
+flags = "eh"
 
 [[unit]]
 # matcher-3: CGrunt arrival/relocation phase state machine (5x5 border scan + tail).
 unit = "gruntphasestep"
 source = "src/Gruntz/GruntPhaseStep.cpp"
-flags = "base"
-extra = ["/GX"]
+flags = "eh"
 
 [[unit]]
 unit = "dirpal"
