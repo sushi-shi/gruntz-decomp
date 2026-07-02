@@ -20,14 +20,19 @@
 #include <Gruntz/LogicRecord.h>
 #include <rva.h>
 
-// The most-derived record vftable (0x5efb80), stamped at dtor entry, and the
-// base-subobject vftable (0x5e8cb4) re-stamped at dtor exit - transitional
-// reloc-masked DIR32 stores while the class stays non-polymorphic (its virtuals
-// live in other TUs, so letting the compiler emit a vtable would diverge).
-DATA(0x001efb80)
-extern void* const g_LogicRecordVtbl[];
-DATA(0x001e8cb4)
-extern void* const g_LogicRecordBaseVtbl[];
+// The most-derived record vftable (0x1efb80 == ??_7AnimWorkerObj) stamped at dtor
+// entry, and the shared CObject base-subobject vftable (0x1e8cb4) re-stamped at
+// dtor exit - transitional reloc-masked DIR32 stores while the class stays
+// non-polymorphic (its /GX dtor frame needs the real base subobject; letting cl
+// emit a vtable would diverge - see the @early-stop note + the header identity note).
+//
+// 0x1efb80 is cl-emitted as ??_7AnimWorkerObj (VTBL() in CDDrawWorkerCache.cpp) -
+// this 0x17c-byte class IS that worker under a second view - so the derived stamp
+// can't name that ??_7 and stays a reloc-masked extern. The base stamp uses the
+// canonical shared g_wapObjectDtorVtbl (bound once in ReconBatch2.cpp), the same
+// name every other CObject-base manual restamp uses - so its reloc resolves.
+extern void* const g_animWorkerObjVtbl[]; // ??_7AnimWorkerObj @0x1efb80 (reloc-masked)
+extern void* g_wapObjectDtorVtbl;         // 0x1e8cb4 shared CObject base dtor vtable
 
 // Engine operator delete (0x1b9b82, __cdecl) - reloc-masked rel32.
 extern "C" void Engine_Delete(void* p);
@@ -44,7 +49,7 @@ extern "C" void Engine_Delete(void* p);
 // model can't emit. Defer to the final sweep once the base + full vtable are modeled.
 RVA(0x00151da0, 0x80)
 CLogicRecord::~CLogicRecord() {
-    m_vptr = (void*)g_LogicRecordVtbl;
+    m_vptr = (void*)g_animWorkerObjVtbl;
     m_10 = 0;
     if (m_14) {
         Engine_Delete(m_14);
@@ -59,7 +64,7 @@ CLogicRecord::~CLogicRecord() {
     m_08 = 0;
     m_0c = 0;
     m_04 = -1;
-    m_vptr = (void*)g_LogicRecordBaseVtbl;
+    m_vptr = &g_wapObjectDtorVtbl;
 }
 
 // ---------------------------------------------------------------------------

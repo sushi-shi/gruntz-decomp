@@ -2715,7 +2715,7 @@ logicactregistrars	?RegisterLogic_6445e8@@YAXXZ	79.0149	79.0149	1	f49cc393dbd5	0
 logicdispatchinit	?InitLogicDispatch_6445e8@@YAXXZ	100.0000	100.0000	1	411a6d3f16f3	0x406d0
 logicdispatchinit	?InitLogicDispatch_6447f8@@YAXXZ	100.0000	100.0000	1	bc277da00830	0x472d0
 logicdispatchinit	?InitLogicDispatch_646060@@YAXXZ	100.0000	100.0000	1	c7a99d1f8f2e	0xacb30
-logicrecord	??1CLogicRecord@@QAE@XZ	56.7250	56.7250	1	574971764638	0x151da0
+logicrecord	??1CLogicRecord@@QAE@XZ	56.7250	56.7250	2	30e8be6b7b13	0x151da0
 logicrecord	?Consume@CLogicRecord@@QAEHH@Z	100.0000	100.0000	1	30815d7b8ca4	0x15b340
 logicrecord	?Dispatch@CLogicRecord@@QAEHHHPAX0@Z	79.6203	79.6203	1	5db0447ef675	0x164830
 logicrecord	?Init@CLogicRecord@@QAEHPAXH@Z	100.0000	100.0000	1	13cd2b4bb6f4	0x151e20

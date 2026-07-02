@@ -4,9 +4,19 @@
 // owner+0x80). The record carries a flat block of replayable state (offsets
 // 0x10..0x178) read/written through a stream object whose vtable exposes
 // Write@slot 0x2c and Read@slot 0x30 (CArchive/IStream-like). Non-RTTI vtable
-// (0x5efb80) - the class has plain virtuals on CObject but no DECLARE_DYNAMIC,
+// (0x1efb80) - the class has plain virtuals on CObject but no DECLARE_DYNAMIC,
 // so the name is a reconstruction placeholder; only offsets + code bytes are
 // load-bearing.
+//
+// IDENTITY: this 0x17c-byte class IS the "AnimWorkerObj" worker modeled in
+// src/Gruntz/CDDrawWorkerCache.cpp - same size, same most-derived vtable 0x1efb80
+// (cl-emitted there as ??_7AnimWorkerObj via VTBL(), so the same RVA can't carry
+// two names). The two coexist as a REQUIRED dual-view (vtable-realization-ctor-
+// boundary): the CDDrawWorkerCache factory needs the real-polymorphic form so cl
+// emits the ??_7 + implicit ctor vptr stamp, while this @early-stop /GX dtor still
+// needs the manual-vptr non-polymorphic form (its frame needs the real base
+// subobject). Unify into one shared class in the final vtable-reunification sweep,
+// once ~CLogicRecord can be a real polymorphic dtor.
 #ifndef GRUNTZ_LOGICRECORD_H
 #define GRUNTZ_LOGICRECORD_H
 
