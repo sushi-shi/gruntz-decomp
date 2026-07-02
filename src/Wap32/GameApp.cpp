@@ -503,21 +503,48 @@ void WAP32::CGameMgr::UnknownMethodInitializeTimeGlobal() {
 // 0x5e9b8c) NOR CGruntzMgr (vftable 0x5e9b64). It is a (storage-free) method on
 // CGameMgr ONLY so MSVC mangles it to the retail symbol name; see the note on
 // the declaration in Wap32.h.
-// @confidence: high
-// @source: tomalla
-// @stub
+// The DirectInput device-config grand-base (vftable 0x5ef670 == ??_7CInputDevRoot,
+// named in DirectInputMgr2.cpp) + its base-subobject teardown (0x134d50). The
+// engine allocator's operator delete. All reloc-masked.
+extern void* g_deviceConfigVtblC; // 0x5ef670
+struct DICfgC {
+    void BaseTeardown(); // 0x134d50
+};
+void operator delete(void*); // engine allocator (0x1b9b82)
+
+// WAP32::CGameMgr::vector_deleting_destructor @0x133380 - the DICfgC scalar-deleting
+// dtor (mangled through CGameMgr for the retail symbol name): stamp the C vftable,
+// run the base teardown, conditionally free, return `this`.
 RVA(0x00133380, 0x24)
-void WAP32::CGameMgr::vector_deleting_destructor() {}
+void* WAP32::CGameMgr::vector_deleting_destructor(unsigned int flags) {
+    *(void**)this = &g_deviceConfigVtblC;
+    ((DICfgC*)this)->BaseTeardown();
+    if (flags & 1) {
+        operator delete(this);
+    }
+    return this;
+}
 
 // -------------------------------------------------------------------------
 // Engine-label backlog stubs.
 // -------------------------------------------------------------------------
 
-// @confidence: high
-// @source: tomalla
-// @stub
+// CGameApp::Stub_080dd0 @0x080dd0 - the CGameApp scalar-deleting destructor (the
+// ??_GCGameApp thunk with ~CGameApp inlined): stamp the CGameApp vftable (0x5e9b0c),
+// run CloseResources (0x13d8c0), decrement the live-instance counter, then the
+// delete-flag tail; returns `this`. Same teardown as CTeardown80cf0::Teardown.
+extern void* g_vtbl_5e9b0c;   // 0x5e9b0c (CGameApp vftable)
+extern i32 g_instCount653c6c; // 0x653c6c (live CGameApp count)
 RVA(0x00080dd0, 0x32)
-void CGameApp::Stub_080dd0() {}
+void* CGameApp::Stub_080dd0(unsigned int flags) {
+    *(void**)this = &g_vtbl_5e9b0c;
+    CGameApp::CloseResources(); // qualified -> direct (non-virtual) call to the body
+    --g_instCount653c6c;
+    if (flags & 1) {
+        operator delete(this);
+    }
+    return this;
+}
 
 // size 0x2c recovered from operator-new sites (gruntz.analysis.news)
 SIZE(WAP32::CGameMgr, 0x2c);

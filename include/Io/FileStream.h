@@ -49,8 +49,9 @@ public:
     i32 m_open;      // +0x08
     CString m_name;  // +0x0c
 
-    // Engine-label backlog stubs.
-    void Stub_0bd3e0();
+    // Reopen the shared global file object (0x646778) around a close: open(path,
+    // 0x1000), close, open(path, 1). Static-like (ignores `this`).
+    void Stub_0bd3e0(char* path);
     void Stub_0e5550();
     void Stub_0e5700();
 };

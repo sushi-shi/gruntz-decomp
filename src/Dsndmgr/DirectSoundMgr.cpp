@@ -1079,20 +1079,111 @@ void DirectSoundMgr::GetErrorString(char* file, i32 line, i32 hr) {
 }
 
 // -------------------------------------------------------------------------
-// Engine-label backlog stubs (relocated from src/Stub/ - own this class here).
-// -------------------------------------------------------------------------
-// @confidence: low
-// @source: winapi:timeGetTime
-// @stub
+// winapi_136e20_timeGetTime @0x136e20 - the per-tick voice-list purge. The voice
+// list is embedded at this+0xc (a DSoundList head, same list InsertHead/Reap use);
+// each element carries an intrusive link at +0x04, so element == link - 4. Once per
+// tick window (guarded by m_78 + the m_7c timestamp), walk the list and for every
+// element whose per-frame update (virtual slot 0) reports "done" (0), unlink it,
+// restamp its vptr to the pure base, and free it. The `time == -1` arm resolves the
+// current time via the timeGetTime pointer.
+// @early-stop
+// select-zero-mask-dest-register wall (docs/patterns/select-zero-mask-dest-register.md,
+// SAME as DSoundList::RemoveMatching @0x136f60): byte-exact except the `e ? &link : 0`
+// mask (neg/sbb/and) lands in a different free-list register than retail.
+#include <Dsndmgr/SoundVoiceList.h>          // DSoundList / DSoundLink (Unlink @0x1391e0)
+extern void* const g_PureVtbl[];             // 0x5ef6c8 pure base vtable
+extern "C" u32(__stdcall* g_pTimeGetTime)(); // 0x6c4650
+// The reaped element carries a real vptr at +0; the per-frame update is virtual
+// slot 0 (call [vtbl]). Declared-only virtual -> no vtable emitted (never
+// instantiated), the call just dispatches.
+struct TickElem {
+    virtual i32 Tick(i32 t); // +0x00 slot 0
+    DSoundLink m_link;       // +0x04
+};
 RVA(0x00136e20, 0xa8)
-i32 DirectSoundMgr::winapi_136e20_timeGetTime(i32) {
-    return 0;
+i32 DirectSoundMgr::winapi_136e20_timeGetTime(i32 time) {
+    if (*(i32*)((char*)this + 0x78) == 0) {
+        return 0;
+    }
+    DSoundList* list = (DSoundList*)((char*)this + 0xc);
+    TickElem* e = list->m_head ? (TickElem*)((char*)list->m_head - 4) : 0;
+    if (e == 0) {
+        return 0;
+    }
+    if (time == -1) {
+        time = (i32)g_pTimeGetTime();
+    }
+    if ((u32)time <= *(u32*)((char*)this + 0x7c)) {
+        return 1;
+    }
+    *(i32*)((char*)this + 0x7c) = time;
+    do {
+        DSoundLink* n = e->m_link.m_next;
+        TickElem* next = n ? (TickElem*)((char*)n - 4) : 0;
+        if (e->Tick(time) == 0) {
+            list->Unlink(e ? &e->m_link : 0);
+            if (e) {
+                *(void**)e = (void*)g_PureVtbl;
+                operator delete(e);
+            }
+        }
+        e = next;
+    } while (e);
+    return 1;
 }
 
-// @confidence: low
-// @source: winapi:timeGetTime
-// @stub
+// -------------------------------------------------------------------------
+// winapi_137ac0_timeGetTime @0x137ac0 - the per-frame sub-manager tick. Walk the
+// outer sub-object list (this+0x94, link-at-+4 chain), and for each sub-object:
+// advance its inner voice list (sub+0x6c) with the current time (0x137e30), poll
+// its guard (sub->m_74, 0x1353f0); when the guard reports idle (0) and the sub is
+// active (m_68), stop the inner list (0x1380d0) if flagged (m_60) and retire the
+// sub (0x1379d0) if flagged (m_64). Records the guard result back into m_68.
+struct SubInnerList {
+    void Tick(i32 t); // 0x137e30
+    void Stop(i32 x); // 0x1380d0
+};
+struct SubGuard {
+    i32 Poll(); // 0x1353f0
+};
+struct SubNode {
+    char m_pad0[0x4];
+    void* m_next; // +0x04  chain link
+    char m_pad8[0x60 - 0x8];
+    i32 m_60;                  // +0x60
+    i32 m_64;                  // +0x64
+    i32 m_68;                  // +0x68
+    char m_pad6c[0x74 - 0x6c]; // inner voice list embedded at +0x6c
+    SubGuard* m_74;            // +0x74
+};
+struct SubTickMgr {
+    void RemoveSub(SubNode* n); // 0x1379d0
+};
 RVA(0x00137ac0, 0xa2)
-i32 DirectSoundMgr::winapi_137ac0_timeGetTime(i32) {
-    return 0;
+i32 DirectSoundMgr::winapi_137ac0_timeGetTime(i32 time) {
+    if (time == -1) {
+        time = (i32)g_pTimeGetTime();
+    }
+    void* head = *(void**)((char*)this + 0x94);
+    SubNode* o = head ? (SubNode*)((char*)head - 4) : 0;
+    while (o) {
+        SubNode* next = o->m_next ? (SubNode*)((char*)o->m_next - 4) : 0;
+        SubInnerList* inner = (SubInnerList*)((char*)o + 0x6c);
+        inner->Tick(time);
+        i32 r = o->m_74->Poll();
+        if (r == 0 && o->m_68 != 0) {
+            if (o->m_60 != 0) {
+                inner->Stop(-1);
+            }
+            if (o->m_64 != 0) {
+                ((SubTickMgr*)this)->RemoveSub(o);
+                o = 0;
+            }
+        }
+        if (o) {
+            o->m_68 = r;
+        }
+        o = next;
+    }
+    return 1;
 }

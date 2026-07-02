@@ -181,10 +181,12 @@ namespace WAP32 {
         i32 m_24; // +0x24  start tick (timeGetTime, by InitTimeFields)
 
         // Engine-label backlog stub @0x133380. NOT actually a CGameMgr method (it
-        // scalar-deletes some other class, vftable 0x5ef670) - but the retail symbol
-        // is labelled `?...@CGameMgr@WAP32@@QAEXXZ`, so the base obj must mangle it
-        // through this class. A method adds NO storage, so sizeof stays 0x2c.
-        void vector_deleting_destructor();
+        // scalar-deletes the DirectInput device-config grand-base, vftable 0x5ef670)
+        // - but the retail symbol is labelled `?...@CGameMgr@WAP32@@QAEXXZ`, so the
+        // base obj must mangle it through this class. A method adds NO storage, so
+        // sizeof stays 0x2c. Vector-deleting form: stamp the C vftable, run the base
+        // subobject teardown (0x134d50), then the delete-flag tail; returns `this`.
+        void* vector_deleting_destructor(unsigned int flags);
 
     private:
         char m_pad28[0x2c - 0x28];
@@ -291,9 +293,9 @@ public:
     i32 m_24c;                    // +0x24c  error code
     i32 m_250;                    // +0x250  error detail
 
-    // Engine-label backlog stubs.
-
-    void Stub_080dd0();
+    // The CGameApp scalar-deleting destructor (0x080dd0): stamp the vtable, run
+    // CloseResources, decrement the live-instance counter, then the delete-flag tail.
+    void* Stub_080dd0(unsigned int flags);
 };
 
 #endif // WAP32_H

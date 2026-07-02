@@ -17,15 +17,15 @@
 SIZE_UNKNOWN(CWormhole);
 class CWormhole : public CUserLogic {
 public:
-    static void InitActReg();      // 0x03f210
-    static void RegisterActs();    // 0x03f3f0
-    i32 AdvanceAnim();             // 0x03f5f0 (the per-frame handler PMF)
-    void SpawnPartners();          // 0x0403b0
-    void LoadColors();             // 0x0411f0
-    void Stub_03fc70();            // 0x03fc70
-    void Stub_03fed0();            // 0x03fed0
-    void Stub_0412c0();            // 0x0412c0 (per-partner config re-run)
-    virtual ~CWormhole() OVERRIDE; // 0x010980 (folded leaf teardown, /GX frame)
+    static void InitActReg();                     // 0x03f210
+    static void RegisterActs();                   // 0x03f3f0
+    i32 AdvanceAnim();                            // 0x03f5f0 (the per-frame handler PMF)
+    CWormhole(CGameObject* obj);                  // 0x03fc70 (1-arg leaf ctor, /GX frame)
+    void SpawnPartners();                         // 0x0403b0
+    void LoadColors();                            // 0x0411f0
+    i32 Serialize(i32 ar, i32 tag, i32 c, i32 d); // 0x03fed0 (two-chain + tag-8 color fixup)
+    i32 Stub_0412c0();                            // 0x0412c0 (per-partner config re-run)
+    virtual ~CWormhole() OVERRIDE;                // 0x010980 (folded leaf teardown, /GX frame)
 };
 
 #endif // GRUNTZ_CWORMHOLE_H

@@ -32,9 +32,6 @@ public:
     i32 OnRButtonUpImpl(WPARAM keys, i32 x, i32 y);      // slot 17 @0x094a60
     i32 OnRButtonDblClkImpl(WPARAM keys, i32 x, i32 y);  // slot 20 @0x094ae0
 
-    // Engine-label backlog stubs.
-    void Stub_094670();
-
     // Reaches the running game manager through the owning CGameApp.
     CGruntzMgr* GameMgr() {
         return (CGruntzMgr*)((CGameApp*)m_owner)->m_8;
@@ -138,13 +135,11 @@ i32 CGruntzWnd::Wap32GameWndVfunc0() {
 }
 
 // -------------------------------------------------------------------------
-// Engine-label backlog stubs.
-// -------------------------------------------------------------------------
-// @confidence: high
-// @source: tomalla
-// @stub
-RVA(0x00094670, 0x1e)
-void CGruntzWnd::Stub_094670() {}
+// CGruntzWnd::`scalar deleting destructor' (0x094670) - the compiler-generated
+// ??_G thunk (call ~CGruntzWnd; if (flags & 1) operator delete(this); return this).
+// It has no source body (cl synthesizes it into the emitted vftable), so pin it by
+// mangled name; the dtor + delete rel32 calls reloc-mask.
+// @rva-symbol: ??_GCGruntzWnd@@UAEPAXI@Z 0x00094670 0x1e
 
 // size 0x10 recovered from operator-new sites (gruntz.analysis.news)
 SIZE(CGruntzWnd, 0x10);

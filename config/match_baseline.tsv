@@ -222,7 +222,7 @@ demosetup	1	1
 destructbutton	1	1
 dialogs	37	15
 directinputmgr2	41	38
-directsoundmgr	41	30
+directsoundmgr	41	32
 dirpal	1	0
 discoveredarray	1	0
 discoveredeh	2	2
@@ -255,7 +255,7 @@ fontconfig	9	5
 fonts	2	1
 freelibhostdtor	1	1
 fxmodet3	1	0
-gameapp	20	16
+gameapp	20	18
 gameassetnamespaces	1	0
 gamechecksum	1	0
 gamekeyhandler	1	0
@@ -295,14 +295,14 @@ grunttilescan	1	0
 grunttubeanim	1	0
 gruntupdatestep	2	0
 gruntvoice	6	4
-gruntzapp	10	9
+gruntzapp	10	10
 gruntzcmdmgr	12	10
 gruntzcommand	17	17
 gruntzmgr	93	63
 gruntzmgrtransition	1	0
 gruntzplayer	8	3
 gruntzsoundz	15	12
-gruntzwnd	9	8
+gruntzwnd	9	9
 hash	10	9
 heapdiag	1	0
 helperhost	2	0
@@ -524,7 +524,7 @@ winmain	1	1
 worldlevelkey	1	1
 worldlevelpath	1	1
 worldsoundset	13	5
-wormhole	8	3
+wormhole	8	5
 wwdfile	21	2
 wwdgameobject	13	6
 wwdgameobjecteh	5	0
@@ -1247,7 +1247,7 @@ cfileimage	?LoadFile@CFileImage@@QAEHPAVCFileImageInfo@@PBDH@Z	100.0000	100.0000
 cfileimage	?SaveBmp@CFileImage@@QAEHPBDPAXH@Z	60.8842	60.8842	1	d7bdcf4dd7ed	0x1443b0
 cfileimage	?SaveTga@CFileImage@@QAEHPBDPAXH@Z	60.8182	60.8182	1	c29726d33513	0x144900
 cfileimageblit	?Blit1624@CFileImage@@QAEHPAXH@Z	71.1484	71.1484	1	dbcfd49b6d90	0x13fce0
-cfileimageblit	?Blit168@CFileImage@@QAEHPAX0H@Z	67.5044	67.5044	1	c4a546c7b7fc	0x13fbb0
+cfileimageblit	?Blit168@CFileImage@@QAEHPAX0H@Z	66.0088	66.0088	1	c4a546c7b7fc	0x13fbb0
 cfileimageblit	?Blit2416@CFileImage@@QAEHPAXH@Z	82.0000	82.0000	1	845cad102f7b	0x13ff80
 cfileimageblit	?Blit816@CFileImage@@QAEHPAX0H@Z	66.2889	66.2889	1	d9382ebaeea4	0x140420
 cfileimageblit	?Blit824@CFileImage@@QAEHPAX0H@Z	58.8610	58.8610	1	22f2a3c5f113	0x140110
@@ -1816,8 +1816,8 @@ directsoundmgr	?SetVolumeByIndex@DirectSoundMgr@@QAEHH@Z	100.0000	100.0000	2	de6
 directsoundmgr	?StopAllClones@DirectSoundMgr@@QAEXXZ	100.0000	100.0000	2	9794fd044e46	0x136150
 directsoundmgr	?StopAndRewind@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	4	6573311d6e81	0x135380
 directsoundmgr	?Unlock@DirectSoundMgr@@QAEHPAXI0I@Z	100.0000	100.0000	2	1173b7b823c7	0x1359c0
-directsoundmgr	?winapi_136e20_timeGetTime@DirectSoundMgr@@QAEHH@Z	2.6667	2.6667	2	593c6f38b8c5	0x136e20
-directsoundmgr	?winapi_137ac0_timeGetTime@DirectSoundMgr@@QAEHH@Z	2.9231	2.9231	2	63f8b426702d	0x137ac0
+directsoundmgr	?winapi_136e20_timeGetTime@DirectSoundMgr@@QAEHH@Z	100.0000	100.0000	3	bbbd3b396222	0x136e20
+directsoundmgr	?winapi_137ac0_timeGetTime@DirectSoundMgr@@QAEHH@Z	100.0000	100.0000	3	bdf3b44652a1	0x137ac0
 dirpal	?CaptureSystemPalette@DirPal@@QAEHXZ	68.3871	68.3871	2	1a12177e257f	0x1485b0
 discoveredarray	?SetSize@CDwArray@@QAEXHH@Z	86.4113	86.4113	1	be6e873f54f3	0x150040
 discoveredeh	??1CButeStore@@UAE@XZ	100.0000	100.0000	1	68fa8bb3d039	0x174d70
@@ -2081,7 +2081,7 @@ filestream	?GetPosition@CFileIO@@QAEJXZ	100.0000	100.0000	4	7114720e1b32	0x1bf3d
 filestream	?Open@CFileIO@@QAEHPBDIPAX@Z	95.7798	95.7798	5	7b51b9c0f9cb	0x1bf200
 filestream	?Read@CFileIO@@QAEIPAXI@Z	100.0000	100.0000	5	a56b90957c6e	0x1bf328
 filestream	?Seek@CFileIO@@QAEJJH@Z	100.0000	100.0000	5	8b8088fe579a	0x1bf3ad
-filestream	?Stub_0bd3e0@CFileIO@@QAEXXZ	2.5000	2.5000	2	fa489b764b30	0xbd3e0
+filestream	?Stub_0bd3e0@CFileIO@@QAEXPAD@Z	79.0625	79.0625	1	0781dab90954	0xbd3e0
 filestream	?Stub_0e5550@CFileIO@@QAEXXZ	0.9302	0.9302	2	6ed1362acefa	0xe5550
 filestream	?Stub_0e5700@CFileIO@@QAEXXZ	2.3256	2.3256	2	ea19cd7ab31f	0xe5700
 filestream	?Write@CFileIO@@QAEXPBXI@Z	100.0000	100.0000	5	0c752c60199f	0x1bf362
@@ -2138,13 +2138,13 @@ gameapp	?InitializeGameWindow@CGameApp@@UAEPAVCGameWnd@@XZ	100.0000	100.0000	4	d
 gameapp	?ReportError@CGameApp@@UAEXIJ@Z	100.0000	100.0000	6	2168394333a9	0x13dcb0
 gameapp	?Run@CGameMgr@WAP32@@UAEHPAVCGameWnd@@PAD@Z	100.0000	100.0000	5	45c4a6801f19	0x13dd50
 gameapp	?RunMessageLoop@CGameApp@@UAEHXZ	100.0000	100.0000	6	0eaa934fda9f	0x13d910
-gameapp	?Stub_080dd0@CGameApp@@QAEXXZ	2.5000	2.5000	2	d410b22f13d8	0x80dd0
+gameapp	?Stub_080dd0@CGameApp@@QAEPAXI@Z	100.0000	100.0000	1	84e44a3d89ce	0x80dd0
 gameapp	?UnknownClose@CGameMgr@WAP32@@UAEXXZ	100.0000	100.0000	3	ad24dadf8cb7	0x13ddb0
 gameapp	?UnknownMethodInitializeTimeGlobal@CGameMgr@WAP32@@QAEXXZ	100.0000	100.0000	4	259f552ba808	0x13dea0
 gameapp	?VirtualUnknownMethod02@CGameApp@@UAEHPAUGameInfo@@PAUtagWNDCLASSA@@PAUtagCREATESTRUCTA@@@Z	97.3765	97.3765	6	702b9f081ed9	0x13d5d0
 gameapp	?VirtualUnknownMethod03@CGameApp@@UAEHPAUHINSTANCE__@@PAD11HHH@Z	100.0000	100.0000	3	d6391a951d57	0x13d7b0
 gameapp	?VirtualUnknownMethod09@CGameApp@@UAEXXZ	100.0000	100.0000	4	a25a05503939	0x13dc70
-gameapp	?vector_deleting_destructor@CGameMgr@WAP32@@QAEXXZ	3.3333	3.3333	2	356122a8377e	0x133380
+gameapp	?vector_deleting_destructor@CGameMgr@WAP32@@QAEPAXI@Z	100.0000	100.0000	1	18b0cc6771e6	0x133380
 gameassetnamespaces	?LoadGameAssetNamespaces@CAssetLoader@@QAEXPAUAssetMgr@@HH@Z	72.7569	72.7569	1	693b148c3200	0xf9ea0
 gamechecksum	?ComputeSignature@CGameSyncSig@@QAEHXZ	57.6800	57.6800	1	f73b375e6779	0xc0590
 gamekeyhandler	?DispatchKey@CGamePlayInput@@QAEHHH@Z	5.4164	5.4164	2	8f5ddc83713c	0xcbcc0
@@ -2434,7 +2434,7 @@ gruntzapp	?ErrorDialogProc@CGruntzApp@@SGHPAUHWND__@@IIJ@Z	100.0000	100.0000	4	1
 gruntzapp	?InitializeGameManager@CGruntzApp@@UAEPAVCGameMgr@WAP32@@XZ	100.0000	100.0000	7	fe11f2fe80fb	0x80a20
 gruntzapp	?ShowError@CGruntzApp@@UAEXXZ	100.0000	100.0000	7	aa5e38983cf1	0x80ac0
 gruntzapp	?ShowMessage@CGruntzApp@@QAEXPADPAUHWND__@@@Z	100.0000	100.0000	3	6f4b95c0c758	0x80c00
-gruntzapp	?Stub_112820@CGruntzApp@@QAEXXZ	20.0000	20.0000	4	5c05d76328a4	0x112820
+gruntzapp	?Stub_112820@CGruntzApp@@QAEHXZ	100.0000	100.0000	1	6d05d940b33e	0x112820
 gruntzapp	?VirtualUnknownMethod03@CGruntzApp@@UAEHPAUHINSTANCE__@@PAD11HHH@Z	100.0000	100.0000	4	3b37ac9526be	0x80930
 gruntzapp	?VirtualUnknownMethod04@CGruntzApp@@UAEHHHH@Z	100.0000	100.0000	6	04de218aad44	0x80aa0
 gruntzcmdmgr	??1CGruntzCmdMgr@@QAE@XZ	100.0000	100.0000	1	d02a34496b22	0x85bd0
@@ -2585,13 +2585,13 @@ gruntzsoundz	?StopBank_138900@CGruntzSoundZ@@QAEHH@Z	100.0000	100.0000	1	66c7925
 gruntzsoundz	?StopCurrent_1388a0@CGruntzSoundZ@@QAEXXZ	100.0000	100.0000	1	99f267d9da6f	0x1388a0
 gruntzwnd	??0CGruntzWnd@@QAE@XZ	100.0000	100.0000	5	cce3fed8f7f8	0x94640
 gruntzwnd	??1CGruntzWnd@@UAE@XZ	100.0000	100.0000	1	e178d8d8603b	0x946a0
+gruntzwnd	??_GCGruntzWnd@@UAEPAXI@Z	100.0000	100.0000	1	cpp:42f77745a20a	0x94670
 gruntzwnd	?OnActivateAppImpl@CGruntzWnd@@QAEHIJ@Z	100.0000	100.0000	1	d43076a1cc33	0x94b20
 gruntzwnd	?OnCloseImpl@CGruntzWnd@@QAEHXZ	100.0000	100.0000	1	d976afe1279e	0x94b90
 gruntzwnd	?OnKeyUpImpl@CGruntzWnd@@QAEHIJ@Z	100.0000	100.0000	1	c94c3c4c140c	0x94920
 gruntzwnd	?OnRButtonDblClkImpl@CGruntzWnd@@QAEHIHH@Z	100.0000	100.0000	1	0f44d4968260	0x94ae0
 gruntzwnd	?OnRButtonDownImpl@CGruntzWnd@@QAEHIHH@Z	100.0000	100.0000	1	5307d2869b72	0x94a20
 gruntzwnd	?OnRButtonUpImpl@CGruntzWnd@@QAEHIHH@Z	100.0000	100.0000	1	2ea6169b961a	0x94a60
-gruntzwnd	?Stub_094670@CGruntzWnd@@QAEXXZ	3.6364	3.6364	4	efb99feddc33	0x94670
 hash	?FindInt@CHash@@QAEPAXI@Z	100.0000	100.0000	2	57f7fda2e733	0x13c360
 hash	?HashInt@CHash@@QAEII@Z	100.0000	100.0000	1	c516bb837bca	0x13c350
 hash	?HashStr@CHash@@QAEIPBD@Z	100.0000	100.0000	1	648a12137325	0x13c240
@@ -3175,7 +3175,7 @@ savegame	?CheckField20@CSaveGame@@QAEHXZ	100.0000	100.0000	2	3389d231b6f6	0xe569
 savegame	?ComputeAll@CSaveGame@@QAEXXZ	90.8800	90.8800	2	d62fcdc450f1	0xe50a0
 savegame	?CopySlot@CSaveGame@@QAEHPAUSaveSlot@@PBU2@@Z	100.0000	100.0000	2	bd61e3ee90f6	0xe51d0
 savegame	?Decode@CSaveGame@@QAEHPAE@Z	83.7600	83.7600	2	dcc605c87c7d	0xe5460
-savegame	?Encode@CSaveGame@@QAEHPAE@Z	89.2917	89.2917	2	b5d70bbdf923	0xe5410
+savegame	?Encode@CSaveGame@@QAEHPAE@Z	91.4167	91.4167	2	b5d70bbdf923	0xe5410
 savegame	?FillGameInfoDialog@@YAXPAUHWND__@@PAVCSaveGame@@@Z	100.0000	100.0000	2	f10804ac17b7	0x9e0b0
 savegame	?FillSaveDialog@@YAXPAUHWND__@@PAVCSaveGame@@@Z	100.0000	100.0000	2	248399bdcce6	0xe3c60
 savegame	?FillSlot2@CSaveGame@@QAEHPAUSaveSlot@@HPAX@Z	100.0000	100.0000	2	d2b4d97c68ae	0xe5240
@@ -3811,14 +3811,14 @@ worldsoundset	?Resume@CWorldSoundSet@@QAEXXZ	99.6970	99.6970	1	526dc5538b8a	0xbc
 worldsoundset	?Retune@CWorldSoundSet@@QAEXHH@Z	86.2571	86.2571	1	a8ba0daa5bc0	0xbd60
 worldsoundset	?Stop@CWorldSoundSet@@QAEXXZ	100.0000	100.0000	1	909b0518053a	0xbc80
 worldsoundset	?Teardown@CWorldSoundSet@@QAEXXZ	100.0000	100.0000	1	587b40d75372	0xb660
+wormhole	??0CWormhole@@QAE@PAUCGameObject@@@Z	94.3833	94.3833	1	7001ebaa2c9e	0x3fc70
 wormhole	??1CWormhole@@UAE@XZ	100.0000	100.0000	1	0bc584d4a684	0x10980
 wormhole	?InitWormholeDispatch@@YAXXZ	100.0000	100.0000	1	b32c3c59c233	0x3ffd0
 wormhole	?LoadColors@CWormhole@@QAEXXZ	100.0000	100.0000	8	44774ed3d148	0x411f0
 wormhole	?RegisterWormholeLogic@@YAXXZ	96.4783	96.4783	1	81619d8095cc	0x401b0
+wormhole	?Serialize@CWormhole@@QAEHHHHH@Z	100.0000	100.0000	1	407ce264631e	0x3fed0
 wormhole	?SpawnPartners@CWormhole@@QAEXXZ	93.1500	93.1500	2	197ace0c35e0	0x403b0
-wormhole	?Stub_03fc70@CWormhole@@QAEXXZ	0.3333	0.3333	4	b52ffef5d830	0x3fc70
-wormhole	?Stub_03fed0@CWormhole@@QAEXXZ	0.6349	0.6349	4	77e92219c343	0x3fed0
-wormhole	?Stub_0412c0@CWormhole@@QAEXXZ	3.5714	3.5714	4	e051969c2768	0x412c0
+wormhole	?Stub_0412c0@CWormhole@@QAEHXZ	100.0000	100.0000	1	cc8cf0293b80	0x412c0
 wwdfile	?CenterScrollA@CPlaneRender@@QAEHXZ	87.8750	87.8750	1	caafea006407	0x163300
 wwdfile	?CenterScrollB@CPlaneRender@@QAEHXZ	87.9464	87.9464	1	3eb87c589b6b	0x163370
 wwdfile	?Draw@CPlaneRender@@QAEXPAX@Z	0.1391	0.1391	1	f705be10435a	0x162010

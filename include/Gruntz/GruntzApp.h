@@ -37,8 +37,11 @@ public:
     WAP32::CGameMgr* InitializeGameManager() OVERRIDE;
     static INT_PTR __stdcall ErrorDialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
-    // Engine-label backlog stubs.
-    void Stub_112820();
+    // Boolified forward: calls the switch-down-sprite loader on `this` (thiscall,
+    // reloc-masked) and normalises the int result to a bool (neg/sbb/neg).
+    i32 Stub_112820();
+    // The forwarded thiscall callee (retail 0x110570); no body -> reloc-masked.
+    i32 LoadSwitchDownSprite();
 };
 
 #endif // GRUNTZ_GRUNTZ_GRUNTZAPP_H

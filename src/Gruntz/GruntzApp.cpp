@@ -233,11 +233,12 @@ void* CreateU10O() {
 // -------------------------------------------------------------------------
 // Engine-label backlog stubs.
 // -------------------------------------------------------------------------
-// @confidence: high
-// @source: tomalla
-// @stub
+// Boolified forward to the switch-down-sprite loader (thiscall on `this`, retail
+// 0x110570). `!= 0` lowers to the int->bool neg/sbb/neg normalize.
 RVA(0x00112820, 0xc)
-void CGruntzApp::Stub_112820() {}
+i32 CGruntzApp::Stub_112820() {
+    return LoadSwitchDownSprite() != 0;
+}
 
 // size 0x254 recovered from operator-new sites (gruntz.analysis.news)
 

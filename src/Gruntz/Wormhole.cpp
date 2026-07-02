@@ -388,26 +388,110 @@ void CWormhole::LoadColors() {
     s->m_4c = colorEntry;
 }
 
-// -------------------------------------------------------------------------
-// Engine-label backlog stubs.
-// -------------------------------------------------------------------------
-// @confidence: med
-// @source: rtti-vptr
-// @stub
+extern char s_actKeyA[];          // "A" (0x60a454)
+extern char g_wormholeSpawnKey[]; // "Wormhole" (0x60a7ac)
+// ---------------------------------------------------------------------------
+// CWormhole::CWormhole(CGameObject*) @0x03fc70 - the 1-arg leaf ctor: the shared
+// CUserLogic(obj) init (folded inline; the throwing CUserBaseLink forces the /GX
+// EH frame) plus the wormhole tail - cl auto-stamps the implicit leaf vftable
+// (??_7CWormhole @0x5e817c), raise the bound object's create/pending bits, apply
+// the GAME_WORMHOLE name + geometry, seed the m_74 "spawned" marker, cache the "A"
+// bute node, and resolve+stamp the draw color (the LoadColors/Serialize tail).
+//
+// @early-stop
+// EH-state-numbering wall (docs/patterns/eh-state-numbering-base.md): the body is
+// byte-faithful (the CUserLogic init, the implicit leaf vptr stamp, the flag RMWs,
+// the name/geo apply, the "A" cache, the color resolve/stamp); the residue is this
+// ctor's own __ehfuncinfo state numbering + the leaf vptr-restamp scheduling
+// position (docs/patterns/eh-ctor-vptr-restamp-position.md). The SAME plateau as
+// CVoiceTrigger / CTimeBomb / the other bute ctors; not source-steerable.
 RVA(0x0003fc70, 0x1db)
-void CWormhole::Stub_03fc70() {}
+CWormhole::CWormhole(CGameObject* obj) : CUserLogic(obj) {
+    m_38->m_08 |= 0x2000002;
+    m_38->ApplyName("GAME_WORMHOLE");
+    *(i32*)((char*)this + 0x40) = m_38->m_1b4;
+    m_38->ApplyLookupGeometry("GAME_WORMHOLE", 0);
+    if (m_10->m_74 != 0x1869f) {
+        m_10->m_74 = 0x1869f;
+        m_10->m_08 |= 0x20000;
+    }
+    m_30 = m_14->m_1c;
+    m_14->m_1c = g_buteTree.Find(s_actKeyA);
+    i32 kind = ((CWormholeState*)m_10)->m_124;
+    i32 color;
+    if (kind == -1) {
+        i32* colorTable = ((i32**)g_gameReg)[0x78 / 4];
+        color = colorTable[g_buteMgr.GetIntDef(g_wormholeSpawnKey, "EntranceColor", 3) + 0x14 / 4];
+    } else {
+        i32* colorTable = ((i32**)g_gameReg)[0x78 / 4];
+        color = colorTable[kind + 0x14 / 4];
+    }
+    CWormholeState* s = (CWormholeState*)m_10;
+    s->m_58 = 1;
+    s->m_50 = 7;
+    s->m_4c = color;
+}
 
-// @confidence: med
-// @source: decomp-xref
-// @stub
+// ---------------------------------------------------------------------------
+// CWormhole::Serialize @0x03fed0 - the two-chain Serialize override (SAME archetype
+// as CFortressFlag::Serialize @0x46410): chain the shared CUserLogic helper, then
+// the +0x34 sub-object's chain; on the post-load tag (tag == 8), resolve the
+// wormhole draw color. m_124 == -1 -> the config default (GetIntDef("Wormhole",
+// "EntranceColor", 3)), else the cached kind index; look it up in g_gameReg's color
+// table (+0x78) at [id*4 + 0x14] and re-seed the bound object's draw trio.
+// ---------------------------------------------------------------------------
+#include <Gruntz/CSerialSub34.h>
+extern char g_wormholeSpawnKey[]; // "Wormhole" @ 0x60a7ac
 RVA(0x0003fed0, 0xa9)
-void CWormhole::Stub_03fed0() {}
+i32 CWormhole::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
+    if (!SerializeChain(ar, tag, c, d)) {
+        return 0;
+    }
+    if (!((CSerialSub34*)((char*)this + 0x34))
+             ->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d)) {
+        return 0;
+    }
+    if (tag == 8) {
+        // Do NOT cache m_10 in a pointer local (pins it in esi); read the kind into
+        // a value local (reused by the else index) and reload m_10 for the stores.
+        i32 kind = ((CWormholeState*)m_10)->m_124;
+        i32 color;
+        if (kind == -1) {
+            i32* colorTable = ((i32**)g_gameReg)[0x78 / 4];
+            color =
+                colorTable[g_buteMgr.GetIntDef(g_wormholeSpawnKey, "EntranceColor", 3) + 0x14 / 4];
+        } else {
+            i32* colorTable = ((i32**)g_gameReg)[0x78 / 4];
+            color = colorTable[kind + 0x14 / 4];
+        }
+        // Cache m_10 only for the store trio (retail reloads it into esi once here).
+        CWormholeState* s = (CWormholeState*)m_10;
+        s->m_58 = 1;
+        s->m_50 = 7;
+        s->m_4c = color;
+    }
+    return 1;
+}
 
-// @confidence: med
-// @source: decomp-xref
-// @stub
+// ---------------------------------------------------------------------------
+// CWormhole::Stub_0412c0 - re-apply the bound object's wormhole config (the tail
+// the ctor shares): stamp the WORMHOLE name + TELEPORTEROPEN geometry on m_38,
+// re-cache the "A" act-key node (m_14->m_1c, saving the old into m_30), raise the
+// two local flags, then clear bit0 of the bound object's m_40.
+// ---------------------------------------------------------------------------
+extern char s_actKeyA[]; // "A" (0x60a454)
 RVA(0x000412c0, 0x63)
-void CWormhole::Stub_0412c0() {}
+i32 CWormhole::Stub_0412c0() {
+    m_38->ApplyName("GAME_WORMHOLE");
+    *(i32*)((char*)this + 0x40) = m_38->m_1b4;
+    m_38->ApplyLookupGeometry("GAME_TELEPORTEROPEN", 0);
+    m_30 = m_14->m_1c;
+    m_14->m_1c = g_buteTree.Find(s_actKeyA);
+    *(i32*)((char*)this + 0x54) = 1;
+    *(i32*)((char*)this + 0x68) = 0;
+    m_38->m_40 &= ~1;
+    return 1;
+}
 SIZE_UNKNOWN(CSpawnAux);
 SIZE_UNKNOWN(CSpawnHolder);
 SIZE_UNKNOWN(CSpawnObj);
