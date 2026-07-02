@@ -28,6 +28,8 @@ class CMultiSubE4;   // CMulti::m_2e4
 class CGruntzSoundZ; // CGruntzMgr::m_48
 class CMultiSub68;   // CGruntzMgr::m_68
 class CMultiSub70;   // CGruntzMgr::m_70
+class CGruntzMgr;    // CState owner at CMulti+0x04 (fwd for CSlotConfig::Load)
+class CLobbySlot;    // CNetSession2 slot element (fwd for FindSlot's return)
 
 // The CState owner at CMulti+0x04 (CState::m_4) is the CGruntzMgr game manager
 // (RECOVERED: its +0x48 sound object is CGruntzSoundZ and its +0x150 4-entry
@@ -46,18 +48,29 @@ public:
     void StartTitleHook(); // 0x0011c7b0  (m_4->m_60 chain in StartTitle)
 };
 
+// CGruntzMgrOptions's inner slot-config sub-object (+0x38). StartSession drives it
+// per-slot through three thiscall entry points (ecx = &m_inner; out-of-line ->
+// reloc-masked); only the +0x38 offset + 0x200 span are load-bearing.
+class CSlotConfig {
+public:
+    void FreeSlot();                               // 0x025ca0
+    i32 Load(CGruntzMgr* logic, i32 idx, i32 m10); // 0x025020
+    void Arm();                                    // 0x02ade0
+    char m_pad[0x238 - 0x38];
+};
+
 // A per-frame entry of CGruntzMgr's +0x150 sub-object table (stride 0x238). The
 // session-start path arms each entry's inner sub-object (+0x38) and conditionally
 // pokes it; placeholder offsets, only the stride/offsets are load-bearing.
 class CGruntzMgrOptions {
 public:
     char m_pad00_10[0x10];
-    i32 m_10; // +0x10  passed to LoadSlotConfig
+    i32 m_10; // +0x10  passed to CSlotConfig::Load
     i32 m_14; // +0x14
     char m_pad18_20[0x20 - 0x18];
     i32 m_20; // +0x20
     char m_pad24_38[0x38 - 0x24];
-    char m_inner[0x238 - 0x38]; // +0x38  inner sub-object (FreeSlot / LoadSlotConfig / ArmSlot)
+    CSlotConfig m_inner; // +0x38  inner slot-config sub-object
 };
 
 // The +0x6c list head's element type (CObList node, removed via RemoveHead).
@@ -145,7 +158,7 @@ public:
 class CNetSession2 { // m_520
 public:
     void Teardown();                      // 0x004b6220 (NOT a CMulti method)
-    void* FindSlot(i32 key);              // 0x004c0460  scan the +0x20 4x0x64 slot table
+    CLobbySlot* FindSlot(i32 key);        // 0x004c0460  scan the +0x20 4x0x64 slot table
     void StartTick();                     // 0x000bf150
     i32 Step(i32 dt);                     // 0x000bf5a0
     i32 Drain();                          // 0x000bf9e0
@@ -243,10 +256,21 @@ public:
     void PumpB();                         // 0x0b6e90
     void OnOutOfSync();                   // 0x0bae40
     void RefreshSlotTable();              // 0x021bd0  (free fn-ish thiscall on this)
-    // m_4-side per-slot helpers used by StartSession (thiscall on the +0x38 inner).
-    void FreeSlotInner();                                    // 0x025ca0 (on m_150[i]+0x38)
-    i32 LoadSlotConfig(CGruntzMgr* logic, i32 idx, i32 m10); // 0x025020 (on m_150[i]+0x38)
-    void ArmSlotInner();                                     // 0x02ade0 (on m_150[i]+0x38)
+    // Out-of-line CMulti bodies reached by thiscall on `this` (reloc-masked): the
+    // mode-driven level loader (StartSession) and the title-screen loader (StartTitle).
+    i32 LoadLevelByMode(i32 mode, i32 flags);                    // 0x000ca200
+    i32 LoadTitleScreen(char* name, i32 a, i32 b, i32 c, i32 d); // 0x004fa350
+    // PumpB's own thiscall helpers (ecx = this; out-of-line, reloc-masked).
+    void H259a(); // reset pass
+    void H1da7();
+    void H434a();
+    void H3850();
+    void H1ae6();
+    void H2e2d(u32 clock);
+    void H1519(void* h);
+    void H3797();
+    void H3a85(i32 v);
+    void H3792(i32 v);
 
     // --- layout (placeholder names; offsets are the load-bearing truth) ---
     // +0x000  vptr (compiler ??_7CMulti; Tick dispatches via vtbl() -> +0x7c/+0x98)

@@ -211,11 +211,6 @@ void CMulti::Teardown() {
     CPlayDtorBody();
 }
 
-// External CMulti method: load the level for the chosen mode (thiscall, 2 args).
-class CMultiLevelLoader {
-public:
-    i32 LoadLevelByMode(i32 mode, i32 flags); // 0x000ca200
-};
 // FUN_00021bd0 is invoked both on `this` (CMulti) and on m_4->m_5c; one symbol,
 // so it is modeled on a neutral helper and reached by cast at both sites.
 class CRefresh21bd0 {
@@ -252,7 +247,7 @@ i32 CMulti::StartSession(i32 mode, i32 unused) {
     m_5e4 = timeGetTime();
     m_574 = 0;
     m_5cc = m_520->m_10 - 1;
-    if (((CMultiLevelLoader*)this)->LoadLevelByMode(mode, 0) == 0) {
+    if (LoadLevelByMode(mode, 0) == 0) {
         return 0;
     }
     for (i32 i = 0; i < 4; ++i) {
@@ -260,12 +255,12 @@ i32 CMulti::StartSession(i32 mode, i32 unused) {
         if (e == 0) {
             return 0;
         }
-        ((CMulti*)((char*)e + 0x38))->FreeSlotInner();
-        if (((CMulti*)((char*)e + 0x38))->LoadSlotConfig(m_4, i, e->m_10) == 0) {
+        e->m_inner.FreeSlot();
+        if (e->m_inner.Load(m_4, i, e->m_10) == 0) {
             return 0;
         }
         if (e->m_14 && e->m_20) {
-            ((CMulti*)((char*)e + 0x38))->ArmSlotInner();
+            e->m_inner.Arm();
         }
     }
     this->RefreshSlotTable();
@@ -624,7 +619,7 @@ public:
     virtual void s10();
     virtual void s11();
     virtual void s12();
-    virtual void Blit34(void* a, i32 b); // +0x34
+    virtual void Blit34(void* a, void* b); // +0x34
 };
 // The m_c->m_24 chain and its +0x5c compositor target.
 class PBCompTarget { // m_c->m_24->m_5c
@@ -692,20 +687,6 @@ public:
     void Tick1fa0(u32 clock, i32 flag);    // 0x00001fa0
     void Render14dd(void* pane, RECT* rc); // 0x000014dd
 };
-// PumpB's own thiscall helpers on CMulti (out-of-line; ecx=this).
-class PBSelf {
-public:
-    void H259a();          // 0x0000259a  reset pass
-    void H1da7();          // 0x00001da7
-    void H434a();          // 0x0000434a
-    void H3850();          // 0x00003850
-    void H1ae6();          // 0x00001ae6
-    void H2e2d(u32 clock); // 0x00002e2d
-    void H1519(void* h);   // 0x00001519
-    void H3797();          // 0x00003797
-    void H3a85(i32 v);     // 0x00003a85
-    void H3792(i32 v);     // 0x00003792
-};
 // The compositor refresh helper (__cdecl free fn). 0x00002356
 extern "C" void PumpBRefresh2356(void* reg, void* fx, i32 flag);
 
@@ -720,23 +701,22 @@ extern "C" void PumpBRefresh2356(void* reg, void* fx, i32 flag);
 RVA(0x000b6e90, 0x34d)
 void CMulti::PumpB() {
     PBMgr* mgr = (PBMgr*)m_c;
-    PBSelf* self = (PBSelf*)this;
     if (m_594 == 0 && m_4->m_c != 0) {
-        self->H259a();
+        H259a();
         mgr->m_24->M15dc90(mgr->m_4->m_14, mgr->m_8);
-        mgr->m_c->Blit34(mgr->m_4->m_14, (i32)mgr->m_4->m_18);
+        mgr->m_c->Blit34(mgr->m_4->m_14, mgr->m_4->m_18);
         ((PBSubDC*)m_2dc)->Present21b7();
         PBPane* h = mgr->m_4->m_14;
         if (h == 0) {
             return;
         }
-        self->H2e2d(g_645584);
-        self->H1519(h);
+        H2e2d(g_645584);
+        H1519(h);
         mgr->m_4->m_10->m_2c->Present850(0);
         return;
     }
-    self->H259a();
-    self->H1da7();
+    H259a();
+    H1da7();
     if (m_470 != 0) {
         mgr->m_4->m_14->m_2c->Present760(0);
         ((PBSubDC*)m_2dc)->Advance125d();
@@ -745,16 +725,16 @@ void CMulti::PumpB() {
         if (((PBSub68*)m_4->m_68)->m_230 != 0) {
             ((PBSub68*)m_4->m_68)->Fire1398();
         } else {
-            self->H434a();
+            H434a();
         }
     }
-    self->H3850();
+    H3850();
     (*(PBOutput**)((char*)m_4 + 0x54))->Blit1a7d(mgr->m_24->m_5c->m_84, mgr->m_24->m_5c->m_88);
     if (m_474 != 0) {
-        self->H1ae6();
+        H1ae6();
     } else {
         mgr->m_24->M15dc90(mgr->m_4->m_14, mgr->m_8);
-        mgr->m_c->Blit34(mgr->m_4->m_14, (i32)mgr->m_4->m_18);
+        mgr->m_c->Blit34(mgr->m_4->m_14, mgr->m_4->m_18);
     }
     ((PBSubDC*)m_2dc)->Present21b7();
     if (m_320 != 0) {
@@ -780,10 +760,10 @@ void CMulti::PumpB() {
         return;
     }
     ((PBSub2e0*)m_2e0)->Step2bfd(h);
-    self->H3797();
+    H3797();
     ((PBSub68*)m_4->m_68)->Reset2b85();
-    self->H2e2d(g_645584);
-    self->H1519(h);
+    H2e2d(g_645584);
+    H1519(h);
     if (m_30c != 0) {
         h->Blit163f40(m_310, 0xff);
     }
@@ -794,21 +774,16 @@ void CMulti::PumpB() {
     }
     if (m_470 != 0) {
         if ((i64)g_645588 - *(i64*)&m_430 >= *(i64*)&m_438) {
-            self->H3a85(0);
+            H3a85(0);
         }
     }
     if (m_474 != 0) {
         if ((i64)g_645588 - *(i64*)&m_440 >= *(i64*)&m_448) {
-            self->H3792(0);
+            H3792(0);
         }
     }
 }
 
-// External CMulti method: load the named title screen (5-arg thiscall). 0x004fa350
-class CMultiTitleLoader {
-public:
-    i32 LoadTitleScreen(char* name, i32 a, i32 b, i32 c, i32 d); // 0x004fa350
-};
 // The m_c->m_4 view-reset target (thiscall). FUN_00558dc0.
 class CMultiViewReset {
 public:
@@ -846,7 +821,7 @@ i32 CMulti::StartTitle() {
     i32 idx = *(i32*)((char*)g_64556c + 0x80) % g_645534 + 1;
     CString title;
     title.Format("TITLE%d", idx);
-    if (((CMultiTitleLoader*)this)->LoadTitleScreen((char*)(const char*)title, 0, 0, 1, 0) == 0) {
+    if (LoadTitleScreen((char*)(const char*)title, 0, 0, 1, 0) == 0) {
         m_2c = saved;
         return 0;
     }
@@ -1017,7 +992,7 @@ void CMulti::DropTimeout() {
         AckJoinFailure();
         g_648d14 = timeGetTime() + 0x3e8;
     }
-    CLobbySlot* slot = (CLobbySlot*)m_520->FindSlot(0x2710);
+    CLobbySlot* slot = m_520->FindSlot(0x2710);
     if (slot == 0) {
         return;
     }
@@ -1046,10 +1021,10 @@ SIZE_UNKNOWN(CMulti);
 SIZE_UNKNOWN(CMultiDialogHook);
 SIZE_UNKNOWN(CPlay);  // local dtor-view (stamps ??_7CPlay in ~CMulti)
 SIZE_UNKNOWN(CState); // local dtor-view (stamps ??_7CState in ~CMulti)
-SIZE_UNKNOWN(CMultiLevelLoader);
 SIZE_UNKNOWN(CGruntzMgr);
 SIZE_UNKNOWN(CMultiLogicDesc);
 SIZE_UNKNOWN(CGruntzMgrOptions);
+SIZE_UNKNOWN(CSlotConfig);
 SIZE_UNKNOWN(CMultiLogicList);
 SIZE_UNKNOWN(CMultiLogicNode);
 SIZE_UNKNOWN(CMultiNetGate);
@@ -1064,7 +1039,6 @@ SIZE_UNKNOWN(CMultiSubDC);
 SIZE_UNKNOWN(CMultiSubE4);
 SIZE_UNKNOWN(CMultiSubTick);
 SIZE_UNKNOWN(CMultiTickWin);
-SIZE_UNKNOWN(CMultiTitleLoader);
 SIZE_UNKNOWN(CMultiViewReset);
 SIZE_UNKNOWN(CMultiVtbl);
 SIZE_UNKNOWN(CRefresh21bd0);
@@ -1077,7 +1051,6 @@ SIZE_UNKNOWN(PBMgr);
 SIZE_UNKNOWN(PBOutput);
 SIZE_UNKNOWN(PBPane);
 SIZE_UNKNOWN(PBRenderTarget);
-SIZE_UNKNOWN(PBSelf);
 SIZE_UNKNOWN(PBSub2e0);
 SIZE_UNKNOWN(PBSub320);
 SIZE_UNKNOWN(PBSub4);
