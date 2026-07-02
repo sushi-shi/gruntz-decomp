@@ -31,6 +31,7 @@
 
 #include <Gruntz/GruntzPlayer.h> // OnPlayerLeft derefs the leaving player's slot
 #include <Gruntz/GruntzCmdMgr.h> // CNetGameMgr::m_6c command manager (ResetPlayerCommands Dispatch)
+#include <Gruntz/SoundCue.h>     // DispatchRecvMsg's chat cue (m_c sound sub-mgr -> "GAME_CHAT")
 
 CGameMgr* g_pGameMgr;
 
@@ -953,7 +954,7 @@ i32 CNetMgr::BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd) 
 
     if (showWnd != 0) {
         if (hWnd != 0) {
-            ShowChatLine(line, hWnd);
+            ShowChatLine(hWnd, line);
         } else {
             GruntzPlayer* player = m_4->FindPlayer(m_localPlayerId);
             if (player != 0) {
@@ -1444,11 +1445,394 @@ i32 CNetMgr::OnJoinConfirm(void* hDlg) {
     return 1;
 }
 
-// @confidence: med
-// @source: decomp-xref
-// @stub
+// ---------------------------------------------------------------------------
+// CNetMgr::DispatchRecvMsg  (0xb9750, __thiscall; /GX EH frame).
+// The per-received-message dispatcher PollSession hands each DirectPlay packet to.
+// A null buffer -> 0. A zero `sender` is a local control record forwarded to
+// HandleControlMsg. Otherwise it resolves the sender's command slot (clearing that
+// slot's latched latency once a connection/rejoin is up), gates on the bit7 flag,
+// then switches on the message id (msg->m_id, 0x3e8..0x423) - the 60-entry jump
+// table the compiler emits (a byte index table + a distinct-target array). Every
+// handled arm returns 1; the default (and the early null/flag guards) return 0.
+
+// The channel in-use table accessors (ChannelSlots.cpp, __cdecl free functions).
+i32 ChannelSlots_Get(i32 i);         // 0xdb2d0
+i32 ChannelSlots_FindFree();         // 0xdb280
+void ChannelSlots_Set(i32 i, i32 v); // 0xdb2b0
+
+// The per-player channel/color holder (Cdb200 @0xdb200): swap the held slot to `c`
+// (returns 1 when accepted). External __thiscall -> reloc-masked.
+struct CNetColorHolder {
+    i32 SwapColor(i32 c); // 0xdb200
+};
+
+// The engine positional-sound player (0x1f940, __stdcall(tag,0,0,0)) the chat cue
+// fires through the 0x25fe incremental-link thunk. External -> reloc-masked.
+extern "C" void __stdcall PlaySoundCue(i32 tag, i32 a, i32 b, i32 c); // 0x1f940
+
+// The sprintf-into-CString engine formatter (0x1b2cf5, __cdecl(&dst, fmt, ...)) the
+// version-mismatch arm builds the diagnostic line with. External -> reloc-masked.
+void NetFmtStr(CString* dst, const char* fmt, ...); // 0x1b2cf5
+
+// The cached USER32 PostMessageA pointer (the game's own function-pointer global,
+// distinct from the IAT import) + the modal chat-sink handle. DIR32 reloc-masked.
+extern "C" i32(WINAPI* g_pPostMessageA)(void*, u32, u32, i32); // 0x6c44c8
+extern i32 g_dlgResultSink;                                    // 0x648ce0
+extern i32 g_sndCueTag;                                        // 0x61ab24
+
+// The received-message view: a bit7 flag byte, the message id, then a payload the
+// arms read as a word / channel byte / chat text depending on the id.
+struct CNetMsg {
+    u8 m_0; // +0x00  flag byte (bit7 => "process me")
+    char m_pad1[3];
+    i32 m_4;     // +0x04  message id (switch tag)
+    i32 m_8;     // +0x08  payload word (id / value / timestamp; byte +0x09 = channel)
+    char m_c[4]; // +0x0c  chat text start / channel payload (byte +0x0d)
+    i32 m_10;    // +0x10
+    i32 m_14;    // +0x14  player id (channel-assign path)
+};
+
+// @early-stop
+// tail-merge + regalloc wall (~78%): the whole dispatcher is byte-faithful - the
+// /GX prologue, the sender==0 HandleControlMsg forward, the command-slot latency
+// clear, the 60-entry byte-index jump table (COMDAT emitted + case grouping exact),
+// and every one of the 32 arms. The residual is MSVC's per-guard tail-merge coin
+// flip (some guards `jne b9e80` share the trailing `mov eax,1`, others inline it -
+// steered as far as source allows by break/return + the call-result-null inline
+// idiom) plus register-choice/scheduling nits inside the channel-latency,
+// running-ping-average (0x420) and record-ack (0x41c/0x421) arms (eax<->edx /
+// esi<->edi recolor, store-order permutation). Not further source-steerable. Final sweep.
 RVA(0x000b9750, 0x74e)
-void CNetMgr::Stub_0b9750() {}
+i32 CNetMgr::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
+    CNetMsg* msg = (CNetMsg*)buf;
+    if (msg == 0) {
+        return 0;
+    }
+    if (sender == 0) {
+        return HandleControlMsg((CNetCtrlMsg*)msg, size);
+    }
+
+    CNetPlayerEntry* pd = (CNetPlayerEntry*)m_peer->GetPlayerData(sender);
+    if (m_connected != 0 || m_57c != 0) {
+        if (pd != 0) {
+            CNetCmdSlot* slot = m_session->FindCmdSlot(pd->m_4);
+            if (slot != 0) {
+                slot->m_latency = 0;
+            }
+        }
+    }
+
+    if ((msg->m_0 & 0x80) == 0) {
+        return 0;
+    }
+
+    switch (msg->m_4) {
+        case 0x3e8:
+            m_534 = 1;
+            return 1;
+
+        case 0x3fc:
+            m_530 = 1;
+            return 1;
+
+        case 0x3ed:
+            if (m_534 != 0) {
+                break;
+            }
+            RecordDropPlayer2((i32)pd, sender);
+            break;
+
+        case 0x422: {
+            if (m_connected == 0) {
+                break;
+            }
+            GruntzPlayer* player = m_4->FindPlayer(sender);
+            if (player == 0) {
+                return 1;
+            }
+            if (player->m_030 == 0) {
+                player->m_030 = 1;
+                g_activePlayers++;
+            }
+            OnMultiOptions();
+            break;
+        }
+
+        case 0x423: {
+            if (m_connected == 0) {
+                break;
+            }
+            GruntzPlayer* player = m_4->FindPlayer(sender);
+            if (player == 0) {
+                return 1;
+            }
+            if (player->m_030 == 0) {
+                break;
+            }
+            player->m_030 = 0;
+            g_activePlayers--;
+            break;
+        }
+
+        case 0x3f0: {
+            if (g_dlgResultSink != 0) {
+                ShowChatLine((void*)g_dlgResultSink, msg->m_c);
+                break;
+            }
+            if (m_connected == 0) {
+                break;
+            }
+            GruntzPlayer* player = m_4->FindPlayer(sender);
+            if (player == 0) {
+                return 1;
+            }
+            m_4->m_5c->AddItem(msg->m_c, 0x30, player->m_008);
+            CSndHost* host = ((CSndSubMgr*)m_c)->m_28;
+            if (host->m_30 != 0) {
+                break;
+            }
+            CSndEmitter* e = 0;
+            host->m_10.Lookup("GAME_CHAT", &e);
+            if (e == 0) {
+                break;
+            }
+            PlaySoundCue(g_sndCueTag, 0, 0, 0);
+            break;
+        }
+
+        case 0x411:
+            if (m_pollAbort != 0) {
+                break;
+            }
+            ReportNetError("You have been dropped from the game.", 0);
+            g_pPostMessageA(m_4->m_wnd->m_hwnd, 0x111, 0x8023, 0);
+            m_pollAbort = 1;
+            break;
+
+        case 0x410:
+            AckDropPlayer(msg->m_8);
+            break;
+
+        case 0x3ea:
+            OnPlayerLeft(sender);
+            ResetPlayerCommands(sender);
+            g_playerLeftFlag = 1;
+            break;
+
+        case 0x3f7:
+            if (m_useChannelLatency == 0) {
+                break;
+            }
+            BroadcastChannelTable(pd);
+            break;
+
+        case 0x3f8:
+            if (m_useChannelLatency != 0) {
+                break;
+            }
+            ParseChannelTable(msg);
+            g_playerLeftFlag = 1;
+            break;
+
+        case 0x3f9:
+            if (m_useChannelLatency == 0) {
+                break;
+            }
+            if (m_connected != 0) {
+                break;
+            }
+            if (m_4->CountActiveChannels(1) >= 4) {
+                break;
+            }
+            if (ChannelSlots_Get(((u8*)&msg->m_8)[1]) == 0) {
+                ((u8*)&msg->m_8)[1] = (u8)ChannelSlots_FindFree();
+            }
+            ChannelSlots_Set(((u8*)&msg->m_8)[1], 0);
+            RegisterChannelRec(msg);
+            BroadcastChannelTable(0);
+            SaveConfig(pd);
+            g_playerLeftFlag = 1;
+            break;
+
+        case 0x3fa: {
+            if (m_useChannelLatency == 0) {
+                break;
+            }
+            if (m_connected != 0) {
+                break;
+            }
+            GruntzPlayer* player = m_4->FindPlayer(msg->m_14);
+            if (player == 0) {
+                return 0;
+            }
+            if (((CNetColorHolder*)player)->SwapColor((u8)msg->m_c[1]) == 0) {
+                msg->m_c[1] = (char)player->m_008;
+                SendStatTo(pd, 0x419, 1);
+            }
+            ParseOneChannel(msg);
+            BroadcastChannelTable(0);
+            g_playerLeftFlag = 1;
+            break;
+        }
+
+        case 0x3fb:
+            if (m_useChannelLatency != 0) {
+                break;
+            }
+            m_removedFromGame = 1;
+            break;
+
+        case 0x419:
+            if (m_useChannelLatency != 0) {
+                break;
+            }
+            m_568 = 1;
+            break;
+
+        case 0x3fd:
+            if (m_useChannelLatency != 0) {
+                break;
+            }
+            m_gameClosed = 1;
+            break;
+
+        case 0x3fe:
+            if (m_useChannelLatency != 0) {
+                break;
+            }
+            m_gameFull = 1;
+            break;
+
+        case 0x41f:
+            SendStatValue(sender, 0x420, msg->m_8, 0);
+            break;
+
+        case 0x420: {
+            i32 stamp = msg->m_8;
+            u32 now = timeGetTime();
+            i32 delta = now - stamp;
+            GruntzPlayer* player = ((CNetGameMgr*)g_mgrSettings)->FindPlayer(sender);
+            if (player == 0) {
+                return 1;
+            }
+            i32 num = player->m_22c * player->m_230 + delta;
+            i32 np1 = player->m_230 + 1;
+            player->m_230 = np1;
+            player->m_22c = num / np1;
+            break;
+        }
+
+        case 0x421: {
+            if (m_useChannelLatency == 0) {
+                break;
+            }
+            GruntzPlayer* player = ((CNetGameMgr*)g_mgrSettings)->FindPlayer(sender);
+            if (player == 0) {
+                return 1;
+            }
+            m_channelLatency[player->m_playerIndex] = msg->m_8;
+            break;
+        }
+
+        case 0x41d:
+            m_verifyDone = 1;
+            m_levelVerifyResult = 1;
+            return 1;
+
+        case 0x41e:
+            m_levelVerifyResult = 0;
+            m_verifyDone = 1;
+            return 1;
+
+        case 0x41c: {
+            GruntzPlayer* player = ((CNetGameMgr*)g_mgrSettings)->FindPlayer(sender);
+            if (player == 0) {
+                return 1;
+            }
+            m_recordAcked[player->m_playerIndex] = 1;
+            m_recordToken[player->m_playerIndex] = msg->m_8;
+            break;
+        }
+
+        case 0x402:
+            m_5c4 = msg->m_8;
+            m_584 = 1;
+            return 1;
+
+        case 0x403:
+            if (m_useChannelLatency == 0) {
+                break;
+            }
+            if (m_connected == 0) {
+                break;
+            }
+            if (m_534 == 0) {
+                break;
+            }
+            SendStatFlag(0x404, 1);
+            OnOutOfSync();
+            break;
+
+        case 0x404:
+            if (m_connected == 0) {
+                break;
+            }
+            OnOutOfSync();
+            break;
+
+        case 0x407:
+            if (m_connected == 0) {
+                break;
+            }
+            OnMultiPause();
+            break;
+
+        case 0x415:
+            if (m_useChannelLatency == 0) {
+                break;
+            }
+            SaveConfig(pd);
+            break;
+
+        case 0x416:
+            if (LoadConfig(msg) == 0) {
+                break;
+            }
+            m_admitted = 1;
+            break;
+
+        case 0x417:
+            HandleVersionCheck((CNetVersionMsg*)msg);
+            break;
+
+        case 0x418: {
+            CString result;
+            if (pd != 0) {
+                CString name = ((CNetMgr*)pd)->GetName();
+                NetFmtStr(
+                    &result,
+                    "*** %s has a different version of the game.",
+                    (const char*)name
+                );
+            } else {
+                NetFmtStr(&result, "*** A player had a different version of the game.");
+            }
+            if (g_dlgResultSink != 0) {
+                ShowChatLine((void*)g_dlgResultSink, result);
+            } else {
+                m_4->m_5c->AddItem(result, 0, 0x11);
+            }
+            break;
+        }
+
+        case 0x3f6:
+            break;
+
+        default:
+            return 0;
+    }
+    return 1;
+}
 
 // ---------------------------------------------------------------------------
 // CNetMgr::FrameSyncWait  (__thiscall).

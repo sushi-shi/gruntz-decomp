@@ -920,7 +920,7 @@ public:
     // The chat-window dispatcher BroadcastChatLine fires when the show-window flag
     // is set: posts the assembled line to a Win32 chat control (SendMessageA-based
     // helper). __thiscall; external (sibling 0xbb3e0), no body here.
-    void ShowChatLine(const char* line, void* hWnd); // 0xbb3e0
+    void ShowChatLine(void* hWnd, const char* text); // 0xbb3e0
 
     // ---- 0xbc0xx cluster ---------------------------------------------------
     // The cluster's matched methods (defined in NetMgr.cpp).
@@ -1005,14 +1005,14 @@ public:
     i32 m_recordAcked[4];    // +0x544  Poll's per-record ack latch (one per session slot)
     i32 m_recordToken[4];    // +0x554  Poll's per-record vote/token latch
     i32 m_pollAbort;         // +0x564  set => PollSession stops pumping the receive queue
-    char m_pad568[0x56c - 0x568];
-    i32 m_gameFull; // +0x56c  "this game is already full"
+    i32 m_568;               // +0x568  channel-latency "removed slot" latch (dispatch id 0x419)
+    i32 m_gameFull;          // +0x56c  "this game is already full"
     i32 m_versionMismatch; // +0x570  version-mismatch latch (HandleVersionCheck sets; WaitForConnect reports)
     i32 m_outOfSyncGuard; // +0x574  OnOutOfSync per-instance reentrancy guard
     i32 m_syncGate;       // +0x578  gates the frame-sync long-frame toggle
-    char m_pad57c[0x580 - 0x57c];
-    i32 m_connected; // +0x580  connection established (gates resend/version report)
-    i32 m_584;       // +0x584  state word cleared on each dispatch handler entry (role unproven)
+    i32 m_57c;            // +0x57c  reconnect/rejoin-in-progress gate (OR'd with m_connected)
+    i32 m_connected;      // +0x580  connection established (gates resend/version report)
+    i32 m_584; // +0x584  state word cleared on each dispatch handler entry (role unproven)
     char m_pad588[0x58c - 0x588];
     i32 m_admitted; // +0x58c  set once the local player is admitted (connect-wait exit latch)
     char m_pad590[0x598 - 0x590];
@@ -1027,7 +1027,8 @@ public:
     CNetPlayerEntry* m_localPlayer; // +0x5bc  the local player descriptor (gate in WaitForConnect)
     i32 m_localPlayerId; // +0x5c0  local player id (== m_localPlayer->m_4; matched against
                          //         peer player ids in RecordDropPlayer2/CreateSession/Poll)
-    char m_pad5c4[0x5cc - 0x5c4];
+    i32 m_5c4;           // +0x5c4  sender-id latch (dispatch id 0x402 records msg->m_8 here)
+    char m_pad5c8[0x5cc - 0x5c8];
     i32 m_5cc; // +0x5cc  the resync "tick" byte derived from the session sub-object
     char m_pad5d0[0x5e0 - 0x5d0];
     u32 m_lastFrameDelta; // +0x5e0  last frame-sync delta (ms)
@@ -1076,7 +1077,6 @@ public:
 
     // Engine-label backlog stubs.
     void Stub_0b5460();
-    void Stub_0b9750();
 };
 SIZE_UNKNOWN(CNetMgr);     // network manager; retail byte size not yet pinned
 VTBL(CNetMgr, 0x001ea42c); // RTTI vtable (config/vtable_names.csv), currently un-catalogued
