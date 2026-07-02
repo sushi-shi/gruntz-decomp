@@ -8,7 +8,7 @@
 //   ForwardTick   @0x0b5070 - a thin non-virtual forwarder to vslot 16 (Tick).
 //
 // CPathHazard : CUserLogic (the base hierarchy comes from <Gruntz/UserLogic.h>);
-// the hazard reads the bound CGameObject (m_10/m_38) as CPathObj. Only offsets /
+// the hazard reads the bound CGameObject (m_10/m_38) directly. Only offsets /
 // code bytes are load-bearing; names are placeholders for the recovered engine
 // identities.
 #include <Gruntz/CPathHazard.h>
@@ -78,20 +78,11 @@ DATA(0x00245588)
 extern i32 g_strikeClock;  // 0x645588 (the draw-clock; also g_pathLegTag)
 extern i32 g_strikeThresh; // 0x645598 (compared to 0x64)
 
-// g_gameReg's +0x78 ref-index table (the strike sprite-frame selectors) and the
-// +0x118/+0x134 window-mode gates, plus the bound-object's +0x144 query rect.
-struct CLightObj {
-    char m_pad00[0x4c];
-    i32 m_4c; // +0x4c  sprite-ref handle
-    i32 m_50; // +0x50  state (set to 7)
-    char m_pad54[0x58 - 0x54];
-    i32 m_58;       // +0x58  active flag (set to 1)
-    i32 m_5c, m_60; // +0x5c/+0x60 screen position
-    char m_pad64[0x144 - 0x64];
-    i32 m_144; // +0x144 query rect base
-    char m_pad148[0x198 - 0x148];
-    CPathLayer* m_198; // +0x198 layer descriptor
-};
+// The sibling hazard reads its bound CGameObject (m_10) directly: the draw trio
+// (+0x4c sprite-ref / +0x50 state / +0x58 active), screen pos (+0x5c/+0x60), the
+// +0x144 query-rect base and the +0x198 layer descriptor - all on CGameObject.
+// g_gameReg's +0x78 ref-index table holds the strike sprite-frame selectors; its
+// +0x118/+0x134 are the window-mode gates.
 // The positional-sound cue idiom (shared with the menu-select handler, see
 // <Gruntz/SoundCue.h>): ArmStrike looks up "LEVEL_CLOUDHAZARDKILL" -> an emitter
 // (m_10 the CSoundCueMgr play-object, m_14 last-play clock, m_18 cooldown), then
@@ -272,7 +263,7 @@ RVA(0x000b4020, 0x26c)
 i32 CPathHazard::Tick() {
     ((CPathSubMgr*)((char*)m_38 + 0x1a0))->Advance(g_pathTick);
 
-    CPathObj* obj = (CPathObj*)m_10;
+    CGameObject* obj = m_10;
     // The probe rect (a 4-int local) the on-screen query tests, computed
     // unconditionally: {left, top, right, bottom} around the bound object's
     // screen position, inset by the layer base (m_198->m_18/m_1c, re-read each
@@ -298,7 +289,7 @@ i32 CPathHazard::Tick() {
         }
     }
 
-    CPathObj* m10 = (CPathObj*)m_10;
+    CGameObject* m10 = m_10;
     i32 wx = m_fc;
     if (m10->m_5c == wx) {
         i32 wy = m_100;
@@ -308,7 +299,7 @@ i32 CPathHazard::Tick() {
             m_68 = (double)wy;
             CPathHazardVtbl* vt = *(CPathHazardVtbl**)this;
             (this->*(vt->Arrive))();
-            i32 segs = ((CPathObj*)m_10)->m_120;
+            i32 segs = m_10->m_120;
             if (segs > 0) {
                 m_110 = segs;
                 m_114 = 0;
@@ -350,8 +341,8 @@ i32 CPathHazard::Tick() {
         }
     }
 
-    ((CPathObj*)m_10)->m_5c = newX;
-    ((CPathObj*)m_10)->m_60 = newY;
+    m_10->m_5c = newX;
+    m_10->m_60 = newY;
     return 0;
 }
 
@@ -381,7 +372,7 @@ i32 CLightningHazard::SiblingTick() {
         } else if (g_strikeThresh < 0x64) {
             sel = 0;
         }
-        CLightObj* o = (CLightObj*)m_10;
+        CGameObject* o = m_10;
         o->m_58 = 1;
         o->m_50 = 7;
         o->m_4c = ((i32*)g_lightGameReg->m_78)[sel + 5]; // [m_78 + sel*4 + 0x14]
@@ -389,7 +380,7 @@ i32 CLightningHazard::SiblingTick() {
 
     ((CPathSubMgr*)((char*)m_38 + 0x1a0))->Advance(g_pathTick);
 
-    CLightObj* obj = (CLightObj*)m_10;
+    CGameObject* obj = m_10;
     i32 rect[4];
     rect[0] = obj->m_5c - obj->m_198->m_18 + 7;
     rect[2] = obj->m_198->m_18 + obj->m_5c - 7;
@@ -415,7 +406,7 @@ i32 CLightningHazard::SiblingTick() {
 
     i64 legElapsed = (i64)(u32)g_strikeClock - m_108;
     if (legElapsed >= m_110) {
-        CLightObj* o = (CLightObj*)m_10;
+        CGameObject* o = m_10;
         o->m_58 = 1;
         o->m_50 = 7;
         o->m_4c = ((i32*)g_lightGameReg->m_78)[0xa]; // [m_78 + 0x28]
@@ -444,7 +435,7 @@ i32 CLightningHazard::ArmStrike(i32 a, i32 b) {
     m_120 = (i64)(u32)g_strikeClock;
     ((CPathCueGate*)g_lightGameReg->m_68)->Strike(a, b, 9, -1);
 
-    CLightObj* obj = (CLightObj*)m_10;
+    CGameObject* obj = m_10;
     CGameRegistry* reg = g_lightGameReg;
     i32 y = obj->m_60;
     i32 x = obj->m_5c;
@@ -480,7 +471,7 @@ i32 CLightningHazard::ArmStrike(i32 a, i32 b) {
 // every offset / immediate / branch matches retail. Logic byte-for-byte correct.
 RVA(0x000b47e0, 0x170)
 i32 CPathHazard::BeginLeg() {
-    CPathObj* obj = (CPathObj*)m_10;
+    CGameObject* obj = m_10;
     i32 idx = m_f8;
     i32 wx = PATH_WAYPOINTS(this)[idx].x;
     m_fc = wx;
@@ -530,16 +521,12 @@ void CPathHazard::ForwardTick() {
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 #include <rva.h>
 SIZE_UNKNOWN(CGameRegistry);
-SIZE_UNKNOWN(CLightObj);
 SIZE_UNKNOWN(CLightVtbl);
 SIZE_UNKNOWN(CLightningHazard);
 SIZE_UNKNOWN(CPathCtorObj);
 SIZE_UNKNOWN(CPathCtorSub);
 SIZE_UNKNOWN(CPathCueGate);
 SIZE_UNKNOWN(CPathEntity);
-SIZE_UNKNOWN(CGameRegistry);
 SIZE_UNKNOWN(CPathHazardVtbl);
-SIZE_UNKNOWN(CPathLayer);
-SIZE_UNKNOWN(CPathObj);
 SIZE_UNKNOWN(CPathSubMgr);
 SIZE_UNKNOWN(CPathWaypoint);

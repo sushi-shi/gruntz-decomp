@@ -143,27 +143,11 @@ extern CButeMgr g_buteMgr;
 // The running game clock (DAT_00645588) the ctor seeds m_startTimeLo from.
 extern "C" u32 g_645588;
 
-// The bound game object (CUserLogic m_10/m_38 both point at it): the timebomb
-// reads offsets past what CGameObject models, so the inherited pointer is cast to
-// this TU-local view (the CStaticHazard/CTeleporter bound-object idiom). Re-read
-// m_10/m_38 per access so each member load matches retail's reload.
-struct TBombObj {
-    void ApplyName(const char* key);                     // 0x150540
-    void ApplyLookupGeometry(const char* key, i32 flag); // 0x1505b0
-    char m_pad00[0x08];
-    i32 m_08; // +0x08  flag word
-    char m_pad0c[0x5c - 0x0c];
-    i32 m_5c; // +0x5c  screen X
-    i32 m_60; // +0x60  screen Y
-    char m_pad64[0x74 - 0x64];
-    i32 m_74; // +0x74  z gate
-    char m_pad78[0x120 - 0x78];
-    i32 m_120; // +0x120  per-tile time gate
-    i32 m_124; // +0x124
-    char m_pad128[0x1b4 - 0x128];
-    i32 m_1b4; // +0x1b4  active-anim descriptor pointer
-};
-SIZE_UNKNOWN(TBombObj);
+// The bound game object is the inherited CUserLogic m_10/m_38 (both point at the
+// same CGameObject); the ctor reads/writes it directly (+0x08 flag word, +0x5c/
+// +0x60 screen pos, +0x74 z gate, +0x120 per-tile-time gate, +0x124, +0x1b4
+// active-anim descriptor, and ApplyName/ApplyLookupGeometry) - all modeled on
+// CGameObject (<Gruntz/UserLogic.h>). Re-reads m_10/m_38 per access, matching retail.
 
 // The game registry singleton's collision grid (g_gameReg->m_70): an 0x1c-byte
 // cell grid (m_8[row] -> cell-row base; cols 0x1c B apart) bounded by m_c x m_10.
@@ -211,38 +195,38 @@ extern TBombGameReg* g_gameReg;
 // for the final sweep.
 RVA(0x000e1b90, 0x23d)
 CTimeBomb::CTimeBomb(CGameObject* obj) : CUserLogic(obj) {
-    ((TBombObj*)m_38)->m_08 |= 0x2000002;
-    if (((TBombObj*)m_10)->m_74 != 0xf) {
-        ((TBombObj*)m_10)->m_74 = 0xf;
-        ((TBombObj*)m_10)->m_08 |= 0x20000;
+    m_38->m_08 |= 0x2000002;
+    if (m_10->m_74 != 0xf) {
+        m_10->m_74 = 0xf;
+        m_10->m_08 |= 0x20000;
     }
-    ((TBombObj*)m_38)->ApplyName("GAME_TIMEBOMB");
+    m_38->ApplyName("GAME_TIMEBOMB");
     m_30 = m_14->m_1c;
     m_14->m_1c = g_buteTree.Find("A");
-    m_40 = ((TBombObj*)m_38)->m_1b4;
-    if (((TBombObj*)m_10)->m_120 > 0) {
-        ((TBombObj*)m_38)->ApplyLookupGeometry("GAME_TIMEBOMBFAST", 0);
-        m_durationLo = ((TBombObj*)m_10)->m_120;
+    m_40 = m_38->m_1b4;
+    if (m_10->m_120 > 0) {
+        m_38->ApplyLookupGeometry("GAME_TIMEBOMBFAST", 0);
+        m_durationLo = m_10->m_120;
         m_durationHi = 0;
         m_startTimeLo = g_645588;
         m_startTimeHi = 0;
         m_fastPhase = 1;
     } else {
-        ((TBombObj*)m_38)->ApplyLookupGeometry("GAME_TIMEBOMBSLOW", 0);
+        m_38->ApplyLookupGeometry("GAME_TIMEBOMBSLOW", 0);
         m_durationLo = (i32)g_buteMgr.GetDwordDef("Projectile", "TimeBombSlowTime", 0xfa0);
         m_durationHi = 0;
         m_startTimeLo = g_645588;
         m_startTimeHi = 0;
         m_fastPhase = 0;
     }
-    i32 cx = ((TBombObj*)m_10)->m_5c >> 5;
-    i32 cy = ((TBombObj*)m_10)->m_60 >> 5;
+    i32 cx = m_10->m_5c >> 5;
+    i32 cy = m_10->m_60 >> 5;
     TBombGrid* g = g_gameReg->m_70;
     if (cx < g->m_c && cy < g->m_10) {
         char* row = g->m_8[cy];
         *(i32*)(row + cx * 0x1c) |= 0x1000000;
     }
-    ((TBombObj*)m_10)->m_124 = -1;
+    m_10->m_124 = -1;
 }
 
 // CTimeBomb::FireActivation @0x0e1830 - look the activation coordinate up in the

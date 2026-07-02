@@ -84,25 +84,10 @@ SIZE_UNKNOWN(CTriggerSink);
 // match for the trigger to fire.
 SIZE_UNKNOWN(CTrigger);
 
-// The bound sprite (this->m_10): +0x5c/+0x60 = screen x/y, +0x11c/+0x120 =
-// required level/layer ids. Typed view of the CUserLogic m_10 object.
-struct CTrigSprite {
-    char m_pad0[0x5c];
-    i32 m_5c; // +0x5c  screen x
-    i32 m_60; // +0x60  screen y
-    char m_pad64[0x11c - 0x64];
-    i32 m_11c; // +0x11c required level id
-    i32 m_120; // +0x120 required layer id
-};
-SIZE_UNKNOWN(CTrigSprite);
-
-// The on-screen window object (this->m_38): +0x08 holds the per-frame status bits
-// (bit 0x10000 == "stalled / handled this frame").
-struct CTrigWindow {
-    char m_pad0[0x8];
-    i32 m_8; // +0x08 status bits
-};
-SIZE_UNKNOWN(CTrigWindow);
+// The bound sprite (this->m_10, a CGameObject*): +0x5c/+0x60 = screen x/y,
+// +0x11c/+0x120 = required level/layer ids; the on-screen window (this->m_38)'s
+// +0x08 holds the per-frame status bits (bit 0x10000 == "stalled / handled this
+// frame"). All modeled on CGameObject (<Gruntz/UserLogic.h>) - read directly.
 
 // The global game registry (CGameRegistry, RVA 0x24556c; wwdfile owns the DATA
 // label); only the on-screen-cue receiver at +0x68 is touched.
@@ -165,13 +150,14 @@ void CSecretLevelTrigger::RegisterActs() {
 RVA(0x00042ac0, 0x90)
 i32 CSecretLevelTrigger::Tick() {
     i32 outA, outB;
-    CTrigSprite* spr = (CTrigSprite*)m_10;
+    CGameObject* spr = m_10;
     CTrigger* hit = ((CTriggerSink*)g_gameReg->m_68)->Probe(spr->m_5c, spr->m_60, &outB, &outA, 1);
     if (hit) {
-        spr = (CTrigSprite*)m_10;
+        spr = m_10;
         i32 ok = 1;
         i32 lvl = spr->m_11c;
         i32 lyr = spr->m_120;
+        // (m_11c/m_120 = required level/layer ids on the bound CGameObject)
         if (lvl != 0 && hit->m_170 != lvl) {
             ok = 0;
         }
@@ -181,7 +167,7 @@ i32 CSecretLevelTrigger::Tick() {
         if (ok) {
             ((CTriggerSink*)g_gameReg->m_68)->ScrollTo(outB, outA, 0xc, -1);
         }
-        ((CTrigWindow*)m_38)->m_8 |= 0x10000;
+        m_38->m_08 |= 0x10000;
     }
     return 0;
 }

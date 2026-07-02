@@ -25,33 +25,11 @@ struct CPathWaypoint {
     i32 y; // +0x04
 };
 
-// The +0x198 layer descriptor the screen-rect bounds poll: +0x18 base X, +0x1c
-// base Y. The bound CGameObject's m_5c/m_60 are screen coords relative to it.
-struct CPathLayer {
-    char m_pad00[0x18];
-    i32 m_18; // +0x18 layer base X
-    i32 m_1c; // +0x1c layer base Y
-};
-
-// The bound CGameObject viewed by the hazard (this->m_10 == this->m_38). Only
-// the touched offsets are modeled; it overlays the CGameObject from UserLogic.h
-// (the bodies reinterpret m_10/m_38 at each use, codegen-neutral).
-struct CPathObj {
-    char m_pad00[0x5c];
-    i32 m_5c; // +0x5c  current tile X (the integrator writes back here)
-    i32 m_60; // +0x60  current tile Y
-    char m_pad64[0x7c - 0x64];
-    CPathObj* m_7c; // +0x7c  the per-tile-time owner (m_7c->m_bc)
-    char m_pad80[0xbc - 0x80];
-    i32 m_bc; // +0xbc  per-tile time (the speed reciprocal numerator)
-    char m_padc0[0x120 - 0xc0];
-    i32 m_120; // +0x120 leg/segment count remaining
-    i32 m_124; // +0x124
-    char m_pad128[0x144 - 0x128];
-    i32 m_144; // +0x144 the on-screen rect base (Tick passes &m_144 to QueryAt)
-    char m_pad148[0x198 - 0x148];
-    CPathLayer* m_198; // +0x198 the layer descriptor
-};
+// The hazard reads its bound CGameObject (this->m_10 == this->m_38) directly:
+// screen pos (+0x5c/+0x60), the +0x7c aux (per-tile time m_7c->m_bc), leg/segment
+// count (+0x120), the on-screen rect base (+0x144, passed to QueryAt) and the
+// +0x198 layer descriptor (CGameObjLayer, its +0x18/+0x1c base offsets) - all
+// modeled on CGameObject / CGameObjLayer in <Gruntz/UserLogic.h>, no per-TU view.
 
 // The entity QueryAt returns; +0x258 is its type/state tag (0x38 == this hazard
 // itself, so its own footprint is ignored).
@@ -119,7 +97,7 @@ extern "C" i32 __ftol(); // 0x11f570 (declared so the call reloc-masks if needed
 
 // ---------------------------------------------------------------------------
 // CPathHazard : CUserLogic - the path-following hazard. The inherited m_10/m_38
-// (CUserLogic) hold the bound CGameObject; the hazard reads it as CPathObj. The
+// (CUserLogic) hold the bound CGameObject; the hazard reads it directly. The
 // leaf adds the movement-integrator state at +0x58 and the path/waypoint state
 // at +0x90.. The CUserLogic base gives the +0x18 destructible link, so the dtor
 // folds the shared teardown (the /GX leaf-dtor archetype).

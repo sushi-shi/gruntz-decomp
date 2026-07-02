@@ -89,10 +89,10 @@ extern void* g_animWorkerVtbl;
 // +0x10/+0x14 bounds + +0x1c base offset). Only the touched offsets are modeled.
 struct CGameObjLayer {
     char m_pad00[0x10];
-    i32 m_10; // +0x10
-    i32 m_14; // +0x14
-    char m_pad18[0x1c - 0x18];
-    i32 m_1c; // +0x1c
+    i32 m_10; // +0x10  z-clamp bound (eyecandy)
+    i32 m_14; // +0x14  z-clamp bound (eyecandy)
+    i32 m_18; // +0x18  layer base X (path/dropper screen-rect origin)
+    i32 m_1c; // +0x1c  layer base Y / base offset
 };
 
 struct CGameObject {

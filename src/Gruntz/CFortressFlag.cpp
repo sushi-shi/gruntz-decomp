@@ -67,18 +67,9 @@ struct CSerialSub34 {
     i32 Chain(i32 a, i32 b, i32 c, i32 d); // 0x8c00
 };
 
-// The bound sprite/game-object (this->m_10). The tag-8 fixup reads its +0x124
-// sprite-selector key and re-seeds the +0x4c/+0x50/+0x58 state trio. Modeled as
-// a typed view of the same object the CUserLogic base holds at m_10.
-struct CFlagSprite {
-    char m_pad0[0x4c];
-    i32 m_4c; // +0x4c  selected sprite handle (written from GetSel)
-    i32 m_50; // +0x50  state (set to 0xa)
-    char m_pad54[0x58 - 0x54];
-    i32 m_58; // +0x58  state flag (set to 1)
-    char m_pad5c[0x124 - 0x5c];
-    i32 m_124; // +0x124 sprite-selector row key
-};
+// The bound sprite/game-object is the inherited CUserLogic m_10 (a CGameObject*):
+// the tag-8 fixup reads its +0x124 sprite-selector key and re-seeds the
+// +0x4c/+0x50/+0x58 state trio directly (all modeled on CGameObject).
 
 // The level sprite-ref table (g_gameReg->m_74). GetSel(i, bAlt) (0xe23c0) returns
 // the selected sprite handle for ref-row i; modeled NO-body so the call
@@ -181,7 +172,7 @@ CFortressFlag::CFortressFlag(CGameObject* obj) : CUserLogic(obj) {
     m_38->m_08 |= 3;
     i32 idx = g_gameReg->m_158[m_10->m_124 * 71].m_idx;
     i32 sel = g_gameReg->m_74->GetSel(idx, 0);
-    CFlagSprite* spr = (CFlagSprite*)m_10;
+    CGameObject* spr = m_10;
     spr->m_58 = 1;
     spr->m_50 = 0xa;
     spr->m_4c = sel;
@@ -251,10 +242,10 @@ i32 CFortressFlag::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
         return 0;
     }
     if (tag == 8) {
-        CFlagSprite* spr = (CFlagSprite*)m_10;
+        CGameObject* spr = m_10;
         i32 idx = g_gameReg->m_158[spr->m_124 * 71].m_idx;
         i32 sel = g_gameReg->m_74->GetSel(idx, 0);
-        spr = (CFlagSprite*)m_10;
+        spr = m_10;
         spr->m_58 = 1;
         spr->m_50 = 0xa;
         spr->m_4c = sel;
@@ -263,7 +254,6 @@ i32 CFortressFlag::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
 }
 
 #include <rva.h>
-SIZE_UNKNOWN(CFlagSprite);
 SIZE_UNKNOWN(CFortressFlag);
 SIZE_UNKNOWN(CFortressFlagActEntry);
 SIZE_UNKNOWN(CFortressFlagActReg);
