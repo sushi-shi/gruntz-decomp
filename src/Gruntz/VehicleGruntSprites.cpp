@@ -64,6 +64,23 @@ struct CGruntCmdObj {
     i32 m_region1[4]; // +0x2c0
 };
 
+// The toy/vehicle grunt kind LoadVehicleGruntSprites dispatches on (kind, 0x17..0x20);
+// each name is confirmed by its case's "<NAME>GRUNT" sprite key. These ids match the
+// toy band of CGrunt's PickupType (23..32) but NOT Enums.h's guessed GruntType ordering
+// (a reconciliation flag). Same immediates as the bare labels -> naming is matching-neutral.
+enum VehicleGruntKind {
+    VGRUNT_BABYWALKER = 0x17,
+    VGRUNT_BEACHBALL = 0x18,
+    VGRUNT_BIGWHEEL = 0x19,
+    VGRUNT_GOKART = 0x1a,
+    VGRUNT_JACKINTHEBOX = 0x1b,
+    VGRUNT_JUMPROPE = 0x1c,
+    VGRUNT_POGOSTICK = 0x1d,
+    VGRUNT_SCROLL = 0x1e,
+    VGRUNT_SQUEAKTOY = 0x1f,
+    VGRUNT_YOYO = 0x20,
+};
+
 // @early-stop
 // ~37%: COMPLETE + correct (prologue/dispatch/jump-table/common CString-tail/
 // tile-A-B gate + the two registrations all model retail). Residual is a /O2
@@ -82,7 +99,7 @@ i32 CGruntCmdObj::LoadVehicleGruntSprites(i32 kind) {
     CString name;
     i32* r0;
     switch (kind) {
-        case 0x17:
+        case VGRUNT_BABYWALKER:
             r0 = m_region0;
             r0[0] = -1;
             r0[1] = -1;
@@ -95,7 +112,7 @@ i32 CGruntCmdObj::LoadVehicleGruntSprites(i32 kind) {
             r0[3] = 0;
             name = "BABYWALKERGRUNT";
             break;
-        case 0x18:
+        case VGRUNT_BEACHBALL:
             r0 = m_region0;
             r0[0] = -1;
             r0[1] = -1;
@@ -108,7 +125,7 @@ i32 CGruntCmdObj::LoadVehicleGruntSprites(i32 kind) {
             r0[3] = 0;
             name = "BEACHBALLGRUNT";
             break;
-        case 0x19:
+        case VGRUNT_BIGWHEEL:
             r0 = m_region0;
             r0[0] = -1;
             r0[1] = -1;
@@ -121,7 +138,7 @@ i32 CGruntCmdObj::LoadVehicleGruntSprites(i32 kind) {
             r0[3] = 0;
             name = "BIGWHEELGRUNT";
             break;
-        case 0x1a:
+        case VGRUNT_GOKART:
             r0 = m_region0;
             r0[0] = -1;
             r0[1] = -1;
@@ -134,7 +151,7 @@ i32 CGruntCmdObj::LoadVehicleGruntSprites(i32 kind) {
             r0[3] = 0;
             name = "GOKARTGRUNT";
             break;
-        case 0x1b:
+        case VGRUNT_JACKINTHEBOX:
             r0 = m_region0;
             r0[0] = -1;
             r0[1] = -1;
@@ -147,7 +164,7 @@ i32 CGruntCmdObj::LoadVehicleGruntSprites(i32 kind) {
             r0[3] = 0;
             name = "JACKINTHEBOXGRUNT";
             break;
-        case 0x1c:
+        case VGRUNT_JUMPROPE:
             r0 = m_region0;
             r0[0] = -1;
             r0[1] = -1;
@@ -160,7 +177,7 @@ i32 CGruntCmdObj::LoadVehicleGruntSprites(i32 kind) {
             r0[3] = 0;
             name = "JUMPROPEGRUNT";
             break;
-        case 0x1d:
+        case VGRUNT_POGOSTICK:
             r0 = m_region0;
             r0[0] = -1;
             r0[1] = -1;
@@ -173,7 +190,7 @@ i32 CGruntCmdObj::LoadVehicleGruntSprites(i32 kind) {
             r0[3] = 0;
             name = "POGOSTICKGRUNT";
             break;
-        case 0x1e:
+        case VGRUNT_SCROLL:
             r0 = m_region0;
             r0[0] = -1;
             r0[1] = -1;
@@ -186,7 +203,7 @@ i32 CGruntCmdObj::LoadVehicleGruntSprites(i32 kind) {
             r0[3] = 0;
             name = "SCROLLGRUNT";
             break;
-        case 0x1f:
+        case VGRUNT_SQUEAKTOY:
             r0 = m_region0;
             r0[0] = -1;
             r0[1] = -1;
@@ -199,7 +216,7 @@ i32 CGruntCmdObj::LoadVehicleGruntSprites(i32 kind) {
             r0[3] = 0;
             name = "SQUEAKTOYGRUNT";
             break;
-        case 0x20:
+        case VGRUNT_YOYO:
             r0 = m_region0;
             r0[0] = -1;
             r0[1] = -1;

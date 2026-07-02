@@ -109,12 +109,12 @@ enum Toy {
  * Warlord - 4 enemy bosses. Sprite namespace WARLORDZ_<NAME>.
  * ------------------------------------------------------------------ */
 enum Warlord {
-    WARLORD_KING,     // WARLORDZ_KING
-    WARLORD_NAPOLEAN, // WARLORDZ_NAPOLEAN  (sic - spelled this way in the binary)
-    WARLORD_PATTON,   // WARLORDZ_PATTON
-    WARLORD_VIKING,   // WARLORDZ_VIKING
+    WARLORD_KING,     // WARLORDZ_KING     = 0
+    WARLORD_NAPOLEAN, // WARLORDZ_NAPOLEAN = 1  (sic - spelled this way in the binary)
+    WARLORD_PATTON,   // WARLORDZ_PATTON   = 2
+    WARLORD_VIKING,   // WARLORDZ_VIKING   = 3
     WARLORD_COUNT     // = 4
-    // (unverified) exact integer values / ordering unverified against the binary
+    // VERIFIED: ordering matches CFortressFlag's m_124 switch (GAME_FORTRESSFLAGZ_*).
 };
 
 /* ------------------------------------------------------------------ *

@@ -10,6 +10,7 @@
 // recovered engine identities.
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
 #include <Gruntz/CFortressFlag.h>
+#include <Gruntz/Enums.h> // Warlord - the m_124 flag-owner roster (KING/NAPOLEAN/PATTON/VIKING)
 
 // The handler entry the per-class registry yields: its first dword receives the
 // per-frame handler PMF (AdvanceAnim, a 4-byte code ptr on this single-inheritance
@@ -143,16 +144,16 @@ CFortressFlag::CFortressFlag(CGameObject* obj) : CUserLogic(obj) {
     }
     const char* name;
     switch (m_10->m_124) {
-        case 0:
+        case WARLORD_KING:
             name = "GAME_FORTRESSFLAGZ_KING";
             break;
-        case 1:
+        case WARLORD_NAPOLEAN:
             name = "GAME_FORTRESSFLAGZ_NAPOLEAN";
             break;
-        case 2:
+        case WARLORD_PATTON:
             name = "GAME_FORTRESSFLAGZ_PATTON";
             break;
-        case 3:
+        case WARLORD_VIKING:
             name = "GAME_FORTRESSFLAGZ_VIKING";
             break;
         default:

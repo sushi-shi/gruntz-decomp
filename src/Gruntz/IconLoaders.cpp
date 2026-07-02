@@ -258,6 +258,69 @@ i32 EngineLabelBacklog::LoadExplosionSprites(i32 geoB, i32 geoA, i32 variant, i3
 // runs its own CreateSprite("TimeBomb", ...) + a CoveredTimeBombTime default.
 // __thiscall-free ret 0x18 (6 args). Returns 1 on success.
 
+// The in-game-icon type id LoadPowerupIconSprites dispatches on (type); each name is
+// confirmed by its case's GAME_INGAMEICONZ_* sprite key. Same immediates as the bare
+// labels -> naming is matching-neutral. Tool/toy ids (1..32) match CGrunt's PickupType.
+// NB: four powerup ids DISAGREE with PickupType's GRUNTZ_PICKUPS_* strings - the icon
+// subsystem swaps HEALTH1<->HEALTH3 (51/53) and REACTIVEARMOR<->INVULNERABILITY (56/60).
+// Named here from THIS file's own strings; the discrepancy is a matcher follow-up.
+enum IconType {
+    // Toolz (1..22)
+    ICON_BOMB = 1,
+    ICON_BOOMERANG = 2,
+    ICON_BRICK = 3,
+    ICON_CLUB = 4,
+    ICON_GAUNTLETZ = 5,
+    ICON_GLOVEZ = 6,
+    ICON_GOOBER = 7,
+    ICON_GRAVITYBOOTZ = 8,
+    ICON_GUNHAT = 9,
+    ICON_NERFGUN = 10,
+    ICON_ROCK = 11,
+    ICON_SHIELD = 12,
+    ICON_SHOVEL = 13,
+    ICON_SPRING = 14,
+    ICON_SPY = 15,
+    ICON_SWORD = 16,
+    ICON_TIMEBOMB = 17,
+    ICON_TOOB = 18,
+    ICON_WAND = 19,
+    ICON_WARPSTONE = 20, // per-level WARPSTONEZ%i
+    ICON_WELDER = 21,
+    ICON_WINGZ = 22,
+    // Toyz (23..32)
+    ICON_BABYWALKER = 23,
+    ICON_BEACHBALL = 24,
+    ICON_BIGWHEEL = 25,
+    ICON_GOKART = 26,
+    ICON_JACKINTHEBOX = 27,
+    ICON_JUMPROPE = 28,
+    ICON_POGOSTICK = 29,
+    ICON_SCROLL = 30,
+    ICON_SQUEAKTOY = 31,
+    ICON_YOYO = 32,
+    // Powerupz
+    ICON_MEGAPHONE = 50,
+    ICON_HEALTH3 = 51, // NB: PickupType 0x33 = HEALTH1
+    ICON_HEALTH2 = 52,
+    ICON_HEALTH1 = 53, // NB: PickupType 0x35 = HEALTH3
+    ICON_GHOST = 54,
+    ICON_SUPERSPEED = 55,
+    ICON_INVULNERABILITY = 56, // NB: PickupType 0x38 = REACTIVEARMOR
+    ICON_CONVERSION = 57,
+    ICON_DEATHTOUCH = 58,
+    ICON_ROIDZ = 59,
+    ICON_REACTIVEARMOR = 60, // NB: PickupType 0x3c = INVULNERABILITY
+    ICON_STOPWATCH = 75,
+    ICON_COIN = 80,
+    // Secret warp letters (spell "WARP")
+    ICON_SECRET_W = 90,
+    ICON_SECRET_A = 91,
+    ICON_SECRET_R = 92,
+    ICON_SECRET_P = 93,
+    ICON_COVEREDTIMEBOMB = 99,
+};
+
 RVA(0x0007c620, 0x3c5)
 i32 EngineLabelBacklog::LoadPowerupIconSprites(
     i32 type,
@@ -273,64 +336,64 @@ i32 EngineLabelBacklog::LoadPowerupIconSprites(
 
     CString name;
     switch (type) {
-        case 1:
+        case ICON_BOMB:
             name = "GAME_INGAMEICONZ_TOOLZ_BOMBZ";
             break;
-        case 2:
+        case ICON_BOOMERANG:
             name = "GAME_INGAMEICONZ_TOOLZ_BOOMERANGZ";
             break;
-        case 3:
+        case ICON_BRICK:
             name = "GAME_INGAMEICONZ_TOOLZ_BRICKZ";
             break;
-        case 4:
+        case ICON_CLUB:
             name = "GAME_INGAMEICONZ_TOOLZ_CLUBZ";
             break;
-        case 5:
+        case ICON_GAUNTLETZ:
             name = "GAME_INGAMEICONZ_TOOLZ_GAUNTLETZ";
             break;
-        case 6:
+        case ICON_GLOVEZ:
             name = "GAME_INGAMEICONZ_TOOLZ_GLOVEZ";
             break;
-        case 7:
+        case ICON_GOOBER:
             name = "GAME_INGAMEICONZ_TOOLZ_GOOBERZ";
             break;
-        case 8:
+        case ICON_GRAVITYBOOTZ:
             name = "GAME_INGAMEICONZ_TOOLZ_GRAVITYBOOTZ";
             break;
-        case 9:
+        case ICON_GUNHAT:
             name = "GAME_INGAMEICONZ_TOOLZ_GUNHATZ";
             break;
-        case 10:
+        case ICON_NERFGUN:
             name = "GAME_INGAMEICONZ_TOOLZ_NERFGUNZ";
             break;
-        case 11:
+        case ICON_ROCK:
             name = "GAME_INGAMEICONZ_TOOLZ_ROCKZ";
             break;
-        case 12:
+        case ICON_SHIELD:
             name = "GAME_INGAMEICONZ_TOOLZ_SHIELDZ";
             break;
-        case 13:
+        case ICON_SHOVEL:
             name = "GAME_INGAMEICONZ_TOOLZ_SHOVELZ";
             break;
-        case 14:
+        case ICON_SPRING:
             name = "GAME_INGAMEICONZ_TOOLZ_SPRINGZ";
             break;
-        case 15:
+        case ICON_SPY:
             name = "GAME_INGAMEICONZ_TOOLZ_SPYZ";
             break;
-        case 16:
+        case ICON_SWORD:
             name = "GAME_INGAMEICONZ_TOOLZ_SWORDZ";
             break;
-        case 17:
+        case ICON_TIMEBOMB:
             name = "GAME_INGAMEICONZ_TOOLZ_TIMEBOMBZ";
             break;
-        case 18:
+        case ICON_TOOB:
             name = "GAME_INGAMEICONZ_TOOLZ_TOOBZ";
             break;
-        case 19:
+        case ICON_WAND:
             name = "GAME_INGAMEICONZ_TOOLZ_WANDZ";
             break;
-        case 20:
+        case ICON_WARPSTONE:
             if (g_gameReg->m_visibleBoundsMode == 1) {
                 CResourceTracker* rt = g_gameReg->m_resourceTracker;
                 CString lvl;
@@ -343,94 +406,94 @@ i32 EngineLabelBacklog::LoadPowerupIconSprites(
                 name.Format("GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ%i", warpIdx);
             }
             break;
-        case 21:
+        case ICON_WELDER:
             name = "GAME_INGAMEICONZ_TOOLZ_WELDERZ";
             break;
-        case 22:
+        case ICON_WINGZ:
             name = "GAME_INGAMEICONZ_TOOLZ_WINGZ";
             break;
-        case 23:
+        case ICON_BABYWALKER:
             name = "GAME_INGAMEICONZ_TOYZ_BABYWALKERZ";
             break;
-        case 24:
+        case ICON_BEACHBALL:
             name = "GAME_INGAMEICONZ_TOYZ_BEACHBALLZ";
             break;
-        case 25:
+        case ICON_BIGWHEEL:
             name = "GAME_INGAMEICONZ_TOYZ_BIGWHEELZ";
             break;
-        case 26:
+        case ICON_GOKART:
             name = "GAME_INGAMEICONZ_TOYZ_GOKARTZ";
             break;
-        case 27:
+        case ICON_JACKINTHEBOX:
             name = "GAME_INGAMEICONZ_TOYZ_JACKINTHEBOXZ";
             break;
-        case 28:
+        case ICON_JUMPROPE:
             name = "GAME_INGAMEICONZ_TOYZ_JUMPROPEZ";
             break;
-        case 29:
+        case ICON_POGOSTICK:
             name = "GAME_INGAMEICONZ_TOYZ_POGOSTICKZ";
             break;
-        case 30:
+        case ICON_SCROLL:
             name = "GAME_INGAMEICONZ_TOYZ_SCROLLZ";
             break;
-        case 31:
+        case ICON_SQUEAKTOY:
             name = "GAME_INGAMEICONZ_TOYZ_SQUEAKTOYZ";
             break;
-        case 32:
+        case ICON_YOYO:
             name = "GAME_INGAMEICONZ_TOYZ_YOYOZ";
             break;
-        case 50:
+        case ICON_MEGAPHONE:
             name = "GAME_INGAMEICONZ_POWERUPZ_MEGAPHONEZ";
             break;
-        case 51:
+        case ICON_HEALTH3:
             name = "GAME_INGAMEICONZ_POWERUPZ_HEALTH3";
             break;
-        case 52:
+        case ICON_HEALTH2:
             name = "GAME_INGAMEICONZ_POWERUPZ_HEALTH2";
             break;
-        case 53:
+        case ICON_HEALTH1:
             name = "GAME_INGAMEICONZ_POWERUPZ_HEALTH1";
             break;
-        case 57:
+        case ICON_CONVERSION:
             name = "GAME_INGAMEICONZ_POWERUPZ_CONVERSION";
             break;
-        case 58:
+        case ICON_DEATHTOUCH:
             name = "GAME_INGAMEICONZ_POWERUPZ_DEATHTOUCH";
             break;
-        case 54:
+        case ICON_GHOST:
             name = "GAME_INGAMEICONZ_POWERUPZ_GHOST";
             break;
-        case 60:
+        case ICON_REACTIVEARMOR:
             name = "GAME_INGAMEICONZ_POWERUPZ_REACTIVEARMOR";
             break;
-        case 59:
+        case ICON_ROIDZ:
             name = "GAME_INGAMEICONZ_POWERUPZ_ROIDZ";
             break;
-        case 56:
+        case ICON_INVULNERABILITY:
             name = "GAME_INGAMEICONZ_POWERUPZ_INVULNERABILITY";
             break;
-        case 55:
+        case ICON_SUPERSPEED:
             name = "GAME_INGAMEICONZ_POWERUPZ_SUPERSPEED";
             break;
-        case 90:
+        case ICON_SECRET_W:
             name = "GAME_INGAMEICONZ_SECRETW";
             break;
-        case 91:
+        case ICON_SECRET_A:
             name = "GAME_INGAMEICONZ_SECRETA";
             break;
-        case 92:
+        case ICON_SECRET_R:
             name = "GAME_INGAMEICONZ_SECRETR";
             break;
-        case 93:
+        case ICON_SECRET_P:
             name = "GAME_INGAMEICONZ_SECRETP";
             break;
-        case 75:
+        case ICON_STOPWATCH:
             name = "GAME_INGAMEICONZ_POWERUPZ_STOPWATCH";
             break;
-        case 80:
+        case ICON_COIN:
             name = "GAME_INGAMEICONZ_POWERUPZ_COIN";
             break;
-        case 99: {
+        case ICON_COVEREDTIMEBOMB: {
             CIconSprite* tb = g_gameReg->m_factoryHolder->m_factory
                                   ->CreateSprite(0, geoB, geoA, 0xf, "TimeBomb", 0x40003);
             if (tb) {

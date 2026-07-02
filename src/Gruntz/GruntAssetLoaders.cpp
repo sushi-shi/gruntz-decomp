@@ -268,6 +268,18 @@ static char s_TeleportRadius[] = "TeleportRadius";
 static char s_RollingBallzSpeed[] = "RollingBallzSpeed";
 static char s_RollingBallzTime[] = "RollingBallzTime";
 
+// The random grunt spell/ability effect LoadGruntAbilityTuning dispatches on (idx);
+// each name is confirmed by its case comment + its "Spellz" bute radius key. Same
+// immediates as the bare labels -> naming is matching-neutral.
+enum SpellzEffect {
+    SPELLZ_FREEZE = 1,       // FreezeRadius
+    SPELLZ_HEALTH = 2,       // HealthRadius
+    SPELLZ_RESURRECTION = 3, // RessurectionRadius
+    SPELLZ_TOYZ = 4,         // ToyzRadius
+    SPELLZ_TELEPORT = 5,     // TeleportRadius
+    SPELLZ_ROLLINGBALL = 6,  // RollingBallzSpeed/Time (spawns 4 directional ballz)
+};
+
 // @early-stop
 // Create*-sprite register coin-flip wall (~90.5%): the prologue (incl. the ebp=0 +
 // 4th-saved-reg pin recovered via the rolling-ball m_7c temps), the random-index pick,
@@ -303,7 +315,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
     }
 
     switch (idx) {
-        case 1: { // freeze
+        case SPELLZ_FREEZE: { // freeze
             CHudSprite* spr =
                 g_pGameRegistry->m_30->m_8
                     ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, s_LightFx, 0x40003);
@@ -317,7 +329,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 -1
             );
         }
-        case 2: { // health
+        case SPELLZ_HEALTH: { // health
             CHudSprite* spr =
                 g_pGameRegistry->m_30->m_8
                     ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, s_LightFx, 0x40003);
@@ -331,7 +343,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 -1
             );
         }
-        case 3: { // resurrection
+        case SPELLZ_RESURRECTION: { // resurrection
             CHudSprite* spr =
                 g_pGameRegistry->m_30->m_8
                     ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, s_LightFx, 0x40003);
@@ -343,7 +355,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 g_buteMgr.GetIntDef(s_Spellz, s_RessurectionRadius, 8)
             );
         }
-        case 4: { // toyz
+        case SPELLZ_TOYZ: { // toyz
             CHudSprite* spr =
                 g_pGameRegistry->m_30->m_8
                     ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, s_LightFx, 0x40003);
@@ -357,7 +369,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 -1
             );
         }
-        case 5: { // teleport
+        case SPELLZ_TELEPORT: { // teleport
             CHudSprite* spr =
                 g_pGameRegistry->m_30->m_8
                     ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, s_LightFx, 0x40003);
@@ -371,7 +383,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 -1
             );
         }
-        case 6: { // rolling ball (4 directions)
+        case SPELLZ_ROLLINGBALL: { // rolling ball (4 directions)
             CHudSprite* n = g_pGameRegistry->m_30->m_8->CreateSprite(
                 0,
                 m_lastTilePxX,
@@ -468,6 +480,28 @@ static const char s_dEXITZ[] = "GRUNTZ_EXITZ";
 static const char s_dExitKeyB[] = "B";
 static const char s_NORMALGRUNT_DEATH[] = "GRUNTZ_NORMALGRUNT_DEATH";
 
+// The grunt death type LoadGruntDeathAnimations dispatches on (deathType, 0..0xf);
+// each name is confirmed by its case's GRUNTZ_DEATHZ_* sprite key above. deathType 1
+// (normal) + 13 fall through to the default NORMALGRUNT_DEATH path. Same immediates as
+// the bare labels -> naming is matching-neutral.
+enum GruntDeathType {
+    DEATH_DROP = 0,        // entrance-drop; no death sprite (NotifyEntranceDrop)
+    DEATH_NORMAL = 1,      // default NORMALGRUNT_DEATH (also the pathA re-fire value)
+    DEATH_SQUASH = 2,      // GRUNTZ_DEATHZ_SQUASH
+    DEATH_HOLE = 3,        // GRUNTZ_DEATHZ_HOLE
+    DEATH_SINK = 4,        // GRUNTZ_DEATHZ_SINK
+    DEATH_MELT = 5,        // GRUNTZ_DEATHZ_MELT
+    DEATH_SHATTER = 6,     // GRUNTZ_DEATHZ_SHATTER (FREEZE anim)
+    DEATH_BURN = 7,        // GRUNTZ_DEATHZ_BURN
+    DEATH_FALL = 8,        // GRUNTZ_DEATHZ_FALL / QUICKFALL by tile attr
+    DEATH_ELECTROCUTE = 9, // GRUNTZ_DEATHZ_ELECTROCUTE
+    DEATH_KAROKE = 10,     // GRUNTZ_DEATHZ_KAROKE
+    DEATH_EXPLODE = 11,    // GRUNTZ_DEATHZ_EXPLODE
+    DEATH_DRAIN = 12,      // GRUNTZ_EXITZ_DRAIN
+    DEATH_FALL2 = 14,      // GRUNTZ_DEATHZ_FALL2 / QUICKFALL2 by tile attr
+    DEATH_QUICKFALL = 15,  // GRUNTZ_DEATHZ_QUICKFALL (FALL anim)
+};
+
 // Resolve the active-anim descriptor's first-element frame number.
 #define DEATH_FRAME()                                                                              \
     (m_154->m_1b4->m_10 > 0 ? (*m_154->m_1b4->m_c)[0x14 / 4] : ((i32*)0)[0x14 / 4])
@@ -563,7 +597,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
     }
 
     switch (deathType) {
-        case 2: // GRUNTZ_DEATHZ_SQUASH
+        case DEATH_SQUASH: // GRUNTZ_DEATHZ_SQUASH
             if (m_entranceReason == 1) {
                 m_prevEntranceDesc = (i32)m_154->m_1b4;
                 m_154->SetGeometryEx(m_poseDeath, 0);
@@ -576,12 +610,12 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
             DEATH_CUE(0x35b);
             goto finalize;
 
-        case 0:
+        case DEATH_DROP:
             m_tileMgr->NotifyEntranceDrop(m_tileOwnerHi, m_tileOwnerLo, 0);
             m_154->m_8 |= 0x10000;
             goto tail;
 
-        case 4: // GRUNTZ_DEATHZ_SINK
+        case DEATH_SINK: // GRUNTZ_DEATHZ_SINK
             m_poseDeath = (i32)m_154->m_c->m_2c->LookupValue(s_DEATHZ_SINK);
             m_prevEntranceDesc = (i32)m_154->m_1b4;
             m_154->SetGeometryEx(m_poseDeath, 0);
@@ -591,7 +625,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
             Step6a060();
             goto tail;
 
-        case 3: // GRUNTZ_DEATHZ_HOLE
+        case DEATH_HOLE: // GRUNTZ_DEATHZ_HOLE
             m_poseDeath = (i32)m_154->m_c->m_2c->LookupValue(s_DEATHZ_HOLE);
             m_prevEntranceDesc = (i32)m_154->m_1b4;
             m_154->SetGeometryEx(m_poseDeath, 0);
@@ -599,7 +633,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
             DEATH_CUE(0x357);
             goto finalize;
 
-        case 6: // GRUNTZ_DEATHZ_SHATTER (apply FREEZE)
+        case DEATH_SHATTER: // GRUNTZ_DEATHZ_SHATTER (apply FREEZE)
             m_poseDeath = (i32)m_154->m_c->m_2c->LookupValue(s_DEATHZ_SHATTER);
             m_prevEntranceDesc = (i32)m_154->m_1b4;
             m_154->SetGeometryEx(m_poseDeath, 0);
@@ -607,7 +641,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
             DEATH_CUE(0x354);
             goto finalize;
 
-        case 7: // GRUNTZ_DEATHZ_BURN
+        case DEATH_BURN: // GRUNTZ_DEATHZ_BURN
             m_poseDeath = (i32)m_154->m_c->m_2c->LookupValue(s_DEATHZ_BURN);
             m_prevEntranceDesc = (i32)m_154->m_1b4;
             m_154->SetGeometryEx(m_poseDeath, 0);
@@ -615,7 +649,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
             DEATH_CUE(0x352);
             goto finalize;
 
-        case 15: // GRUNTZ_DEATHZ_QUICKFALL (apply FALL), snap to tile center
+        case DEATH_QUICKFALL: // GRUNTZ_DEATHZ_QUICKFALL (apply FALL), snap to tile center
             m_10->m_5c = (m_10->m_5c & ~0x1f) + 0x10;
             m_10->m_60 = (m_10->m_60 & ~0x1f) + 0x10;
             m_poseDeath = (i32)m_154->m_c->m_2c->LookupValue(s_DEATHZ_QUICKFALL);
@@ -629,7 +663,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
             DEATH_CUE(0x357);
             goto finalize;
 
-        case 8: { // FALL / QUICKFALL by tile attribute
+        case DEATH_FALL: { // FALL / QUICKFALL by tile attribute
             CTileGrid* grid = g_pGameRegistry->m_70;
             i32 attr = ((i32*)grid->m_8[m_10->m_60 >> 5])[(m_10->m_5c >> 5) * 7 + 4];
             i32 tag = 0x355;
@@ -654,7 +688,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
             goto tail;
         }
 
-        case 14: { // FALL2 / QUICKFALL2 by tile attribute
+        case DEATH_FALL2: { // FALL2 / QUICKFALL2 by tile attribute
             CTileGrid* grid = g_pGameRegistry->m_70;
             i32 attr = ((i32*)grid->m_8[m_10->m_60 >> 5])[(m_10->m_5c >> 5) * 7 + 4];
             i32 tag = 0x355;
@@ -681,7 +715,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
             goto tail;
         }
 
-        case 9: { // GRUNTZ_DEATHZ_ELECTROCUTE
+        case DEATH_ELECTROCUTE: { // GRUNTZ_DEATHZ_ELECTROCUTE
             CSprite* out = 0;
             m_154->m_c->m_2c->m_10map.Lookup(s_DEATHZ_ELECTROCUTE, &out);
             m_poseDeath = (i32)out;
@@ -692,7 +726,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
             goto finalize;
         }
 
-        case 5: {              // GRUNTZ_DEATHZ_MELT
+        case DEATH_MELT: {     // GRUNTZ_DEATHZ_MELT
             ApplySetState1(1); // 0x4322
             CSprite* out = 0;
             m_154->m_c->m_2c->m_10map.Lookup(s_DEATHZ_MELT, &out);
@@ -704,7 +738,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
             goto finalize;
         }
 
-        case 10: { // GRUNTZ_DEATHZ_KAROKE
+        case DEATH_KAROKE: { // GRUNTZ_DEATHZ_KAROKE
             CSprite* out = 0;
             m_154->m_c->m_2c->m_10map.Lookup(s_DEATHZ_KAROKE, &out);
             m_poseDeath = (i32)out;
@@ -715,7 +749,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
             goto tail;
         }
 
-        case 11: { // GRUNTZ_DEATHZ_EXPLODE
+        case DEATH_EXPLODE: { // GRUNTZ_DEATHZ_EXPLODE
             if (m_entranceReason == 1) {
                 m_prevEntranceDesc = (i32)m_154->m_1b4;
                 m_154->m_1a0.SetGeometry(m_poseDeath);
@@ -731,7 +765,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
             goto finalize;
         }
 
-        case 12: { // GRUNTZ_EXITZ_DRAIN (apply EXITZ), re-latch "B"
+        case DEATH_DRAIN: { // GRUNTZ_EXITZ_DRAIN (apply EXITZ), re-latch "B"
             CSprite* out = 0;
             m_154->m_c->m_2c->m_10map.Lookup(s_EXITZ_DRAIN, &out);
             m_poseDeath = (i32)out;
@@ -772,7 +806,7 @@ pathA:
             g->m_60->CueSpawn(this, 3, -1, -1, -1);
         }
     }
-    deathType = 1;
+    deathType = DEATH_NORMAL;
     goto tail;
 
 finalize:

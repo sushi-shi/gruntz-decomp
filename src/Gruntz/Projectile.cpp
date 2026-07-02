@@ -291,6 +291,19 @@ CProjectile::~CProjectile() {
 // ===========================================================================
 extern CButeTree g_buteTree;
 
+// The shooter-grunt projectile kind LoadProjectileSprites dispatches on (kind);
+// each name is confirmed by its case's GRUNTZ_<NAME>GRUNT_PROJECTILE sprite key +
+// its "<Name>ProjectileTimePerTile" bute key. Same immediates as the bare labels
+// -> naming is matching-neutral.
+enum ProjectileKind {
+    PROJ_BOOMERANG = 2, // GRUNTZ_BOOMERANGGRUNT
+    PROJ_GUNHAT = 9,    // GRUNTZ_GUNHATGRUNT
+    PROJ_NERFGUN = 10,  // GRUNTZ_NERFGUNGRUNT
+    PROJ_ROCK = 11,     // GRUNTZ_ROCKGRUNT
+    PROJ_WELDER = 21,   // GRUNTZ_WELDERGRUNT
+    PROJ_WINGZ = 22,    // GRUNTZ_WINGZGRUNT
+};
+
 // @early-stop
 // x87-scheduling + EH-frame-size wall (~58%, docs/patterns, same family as
 // StepMotion ~70% and gx-scoped-local-eh-frame-size): the prologue, the tile-snap
@@ -323,7 +336,7 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
     i32 count = 1;
 
     switch (kind) {
-        case 11: // ROCK
+        case PROJ_ROCK: // ROCK
             key = "GRUNTZ_ROCKGRUNT_PROJECTILE";
             m_190 = g_buteMgr.GetDwordDef(
                 (char*)"Projectile",
@@ -332,7 +345,7 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
             );
             m_1d8 = 1;
             break;
-        case 9: // GUNHAT
+        case PROJ_GUNHAT: // GUNHAT
             key = "GRUNTZ_GUNHATGRUNT_PROJECTILE";
             m_190 = g_buteMgr.GetDwordDef(
                 (char*)"Projectile",
@@ -341,7 +354,7 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
             );
             m_1d8 = 1;
             break;
-        case 2: // BOOMERANG
+        case PROJ_BOOMERANG: // BOOMERANG
             key = "GRUNTZ_BOOMERANGGRUNT_PROJECTILE";
             m_190 = g_buteMgr.GetDwordDef(
                 (char*)"Projectile",
@@ -350,7 +363,7 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
             );
             m_1d8 = 0;
             break;
-        case 10: // NERFGUN
+        case PROJ_NERFGUN: // NERFGUN
             key = "GRUNTZ_NERFGUNGRUNT_PROJECTILE";
             m_190 = g_buteMgr.GetDwordDef(
                 (char*)"Projectile",
@@ -359,7 +372,7 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
             );
             m_1d8 = 1;
             break;
-        case 21: // WELDER
+        case PROJ_WELDER: // WELDER
             key = "GRUNTZ_WELDERGRUNT_PROJECTILE";
             m_190 = g_buteMgr.GetDwordDef(
                 (char*)"Projectile",
@@ -368,7 +381,7 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
             );
             m_1d8 = 1;
             break;
-        case 22: { // WINGZ
+        case PROJ_WINGZ: { // WINGZ
             key = "GRUNTZ_WINGZGRUNT_PROJECTILE";
             m_190 = g_buteMgr.GetDwordDef(
                 (char*)"Projectile",
