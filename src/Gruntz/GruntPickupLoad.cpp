@@ -58,6 +58,80 @@ struct MegaHolder {
         AT_I32(0x3d8) = a4;                                                                        \
     } while (0)
 
+// The object-type id (LoadPickupSprites `type` / the megaphone-announce unit type)
+// that selects the GRUNTZ_PICKUPS_<NAME> entrance sprite. Values are byte-verified
+// from the matched dispatch switch; each name is confirmed by its case's sprite
+// string. Same immediates as the bare labels -> naming is matching-neutral.
+enum PickupType {
+    PICKUP_NONE = 0,
+    // Toolz (1..22, alphabetical)
+    PICKUP_BOMB = 1,
+    PICKUP_BOOMERANG = 2,
+    PICKUP_BRICK = 3,
+    PICKUP_CLUB = 4,
+    PICKUP_GAUNTLETZ = 5,
+    PICKUP_GLOVEZ = 6,
+    PICKUP_GOOBER = 7,
+    PICKUP_GRAVITYBOOTZ = 8,
+    PICKUP_GUNHAT = 9,
+    PICKUP_NERFGUN = 10,
+    PICKUP_ROCK = 11,
+    PICKUP_SHIELD = 12,
+    PICKUP_SHOVEL = 13,
+    PICKUP_SPRING = 14,
+    PICKUP_SPY = 15,
+    PICKUP_SWORD = 16,
+    PICKUP_TIMEBOMB = 17,
+    PICKUP_TOOB = 18,
+    PICKUP_WAND = 19,
+    PICKUP_WARPSTONE = 20, // = 0x14 (excluded from the weapon stat counter)
+    PICKUP_WELDER = 21,
+    PICKUP_WINGZ = 22, // = 0x16
+    // Toyz (23..32, alphabetical)
+    PICKUP_BABYWALKER = 23, // = 0x17
+    PICKUP_BEACHBALL = 24,
+    PICKUP_BIGWHEEL = 25,
+    PICKUP_GOKART = 26,
+    PICKUP_JACKINTHEBOX = 27,
+    PICKUP_JUMPROPE = 28,
+    PICKUP_POGOSTICK = 29,
+    PICKUP_SCROLL = 30,
+    PICKUP_SQUEAKTOY = 31,
+    PICKUP_YOYO = 32, // = 0x20
+    // Colored brickz
+    PICKUP_REDBRICK = 0x23,   // = 35
+    PICKUP_BLUEBRICK = 0x24,  // = 36
+    PICKUP_GOLDBRICK = 0x25,  // = 37
+    PICKUP_BLACKBRICK = 0x26, // = 38
+    // Megaphone (announces a unit-type count via the inner switch)
+    PICKUP_MEGAPHONE = 0x32,
+    // Health
+    PICKUP_HEALTH1 = 0x33,
+    PICKUP_HEALTH2 = 0x34,
+    PICKUP_HEALTH3 = 0x35,
+    // Powerupz (gameplay: 0x36..0x3c count toward the powerup stat)
+    PICKUP_GHOST = 0x36,
+    PICKUP_SUPERSPEED = 0x37,
+    PICKUP_REACTIVEARMOR = 0x38,
+    PICKUP_CONVERSION = 0x39,
+    PICKUP_DEATHTOUCH = 0x3a,
+    PICKUP_ROIDZ = 0x3b,
+    PICKUP_INVULNERABILITY = 0x3c,
+    // Powerupz (screen fx: 0x3d..0x40, set the force-cue flag)
+    PICKUP_RANDOMCOLORZ = 0x3d,
+    PICKUP_SCREENSHAKE = 0x3e,
+    PICKUP_BLACKSCREEN = 0x3f,
+    PICKUP_MINICAM = 0x40,
+    PICKUP_STOPWATCH = 0x4b,
+    PICKUP_COIN = 0x50,
+    // Warp letters (spell "WARP")
+    PICKUP_W = 0x5a,
+    PICKUP_A = 0x5b,
+    PICKUP_R = 0x5c,
+    PICKUP_P = 0x5d,
+    PICKUP_HELPBOX = 0x5e,
+};
+
 // @early-stop
 // Lookup out-param zero-init scheduling wall (docs/patterns/outparam-zeroinit-scheduling.md),
 // amplified across the ~90 switch cases: prologue/switch-jump-table/case CFG/tail are all
@@ -86,7 +160,7 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
     if (m_entranceActive != 0) {
         return 0;
     }
-    if (type >= 0x23 && type <= 0x26) {
+    if (type >= PICKUP_REDBRICK && type <= PICKUP_BLACKBRICK) {
         i32 st = m_entranceReason;
         if (st > 0x16) {
             st = AT_I32(0x19c);
@@ -109,24 +183,24 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
         PickupResetB(1, 0, 0);
     }
     if (m_entranceReason == 0x14) {
-        if (type >= 1 && type <= 0x16) {
+        if (type >= PICKUP_BOMB && type <= PICKUP_WINGZ) {
             return 0;
         }
-        if (type >= 0x36 && type <= 0x3c) {
+        if (type >= PICKUP_GHOST && type <= PICKUP_INVULNERABILITY) {
             return 0;
         }
     }
     if (a5 != 0) {
-        if (type >= 1 && type <= 0x16 && type != 0x14) {
+        if (type >= PICKUP_BOMB && type <= PICKUP_WINGZ && type != PICKUP_WARPSTONE) {
             STATS->m_18++;
             ((i32*)((char*)STATS + 0xd4))[type + 22 * m_tileOwnerHi]++;
-        } else if (type >= 0x17 && type <= 0x20) {
+        } else if (type >= PICKUP_BABYWALKER && type <= PICKUP_YOYO) {
             STATS->m_14++;
             ((i32*)((char*)STATS + 0x1dc))[type + 10 * m_tileOwnerHi]++;
-        } else if (type >= 0x36 && type <= 0x3c) {
+        } else if (type >= PICKUP_GHOST && type <= PICKUP_INVULNERABILITY) {
             STATS->m_24++;
             ((i32*)((char*)STATS + 0x200))[type + 7 * m_tileOwnerHi]++;
-        } else if (type >= 0x3d && type <= 0x40) {
+        } else if (type >= PICKUP_RANDOMCOLORZ && type <= PICKUP_MINICAM) {
             ((i32*)((char*)STATS + 0x254))[type + 4 * m_tileOwnerHi]++;
         }
     }
@@ -137,238 +211,238 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
     i32 id = 0;
     a2 = 0; // force-cue local (reuses the consumed arg2 slot)
     switch (type) {
-        case 0:
+        case PICKUP_NONE:
             return 1;
-        case 1:
+        case PICKUP_BOMB:
             PICKUP("GRUNTZ_PICKUPS_BOMB", 0x3c3);
             break;
-        case 2:
+        case PICKUP_BOOMERANG:
             PICKUP("GRUNTZ_PICKUPS_BOOMERANG", 0x3c4);
             break;
-        case 3:
+        case PICKUP_BRICK:
             PICKUP("GRUNTZ_PICKUPS_BRICK", 0x3c5);
             break;
-        case 4:
+        case PICKUP_CLUB:
             PICKUP("GRUNTZ_PICKUPS_CLUB", 0x3c6);
             break;
-        case 5:
+        case PICKUP_GAUNTLETZ:
             PICKUP("GRUNTZ_PICKUPS_GAUNTLETZ", 0x3c7);
             break;
-        case 6:
+        case PICKUP_GLOVEZ:
             PICKUP("GRUNTZ_PICKUPS_GLOVEZ", 0x3c8);
             break;
-        case 7:
+        case PICKUP_GOOBER:
             PICKUP("GRUNTZ_PICKUPS_GOOBER", 0x3ca);
             break;
-        case 8:
+        case PICKUP_GRAVITYBOOTZ:
             PICKUP("GRUNTZ_PICKUPS_GRAVITYBOOTZ", 0x3cb);
             break;
-        case 9:
+        case PICKUP_GUNHAT:
             PICKUP("GRUNTZ_PICKUPS_GUNHAT", 0x3cc);
             break;
-        case 10:
+        case PICKUP_NERFGUN:
             PICKUP("GRUNTZ_PICKUPS_NERFGUN", 0x3cf);
             break;
-        case 11:
+        case PICKUP_ROCK:
             PICKUP("GRUNTZ_PICKUPS_ROCK", 0x3d1);
             break;
-        case 12:
+        case PICKUP_SHIELD:
             PICKUP("GRUNTZ_PICKUPS_SHIELD", 0x3d3);
             break;
-        case 13:
+        case PICKUP_SHOVEL:
             PICKUP("GRUNTZ_PICKUPS_SHOVEL", 0x3d4);
             break;
-        case 14:
+        case PICKUP_SPRING:
             PICKUP("GRUNTZ_PICKUPS_SPRING", 0x3d5);
             break;
-        case 15:
+        case PICKUP_SPY:
             PICKUP("GRUNTZ_PICKUPS_SPY", 0x3d6);
             break;
-        case 16:
+        case PICKUP_SWORD:
             PICKUP("GRUNTZ_PICKUPS_SWORD", 0x3d8);
             break;
-        case 17:
+        case PICKUP_TIMEBOMB:
             PICKUP("GRUNTZ_PICKUPS_TIMEBOMB", 0x3d9);
             break;
-        case 18:
+        case PICKUP_TOOB:
             PICKUP("GRUNTZ_PICKUPS_TOOB", 0x3da);
             break;
-        case 19:
+        case PICKUP_WAND:
             PICKUP("GRUNTZ_PICKUPS_WAND", 0x3db);
             break;
-        case 20:
+        case PICKUP_WARPSTONE:
             PICKUP("GRUNTZ_PICKUPS_WARPSTONE", 0x3dc);
             break;
-        case 21:
+        case PICKUP_WELDER:
             PICKUP("GRUNTZ_PICKUPS_WELDER", 0x3dd);
             break;
-        case 22:
+        case PICKUP_WINGZ:
             PICKUP("GRUNTZ_PICKUPS_WINGZ", 0x3de);
             break;
-        case 23:
+        case PICKUP_BABYWALKER:
             PICKUP("GRUNTZ_PICKUPS_BABYWALKER", 0x3c0);
             break;
-        case 24:
+        case PICKUP_BEACHBALL:
             PICKUP("GRUNTZ_PICKUPS_BEACHBALL", 0x3c1);
             break;
-        case 25:
+        case PICKUP_BIGWHEEL:
             PICKUP("GRUNTZ_PICKUPS_BIGWHEEL", 0x3c2);
             break;
-        case 26:
+        case PICKUP_GOKART:
             PICKUP("GRUNTZ_PICKUPS_GOKART", 0x3c9);
             break;
-        case 27:
+        case PICKUP_JACKINTHEBOX:
             PICKUP("GRUNTZ_PICKUPS_JACKINTHEBOX", 0x3cd);
             break;
-        case 28:
+        case PICKUP_JUMPROPE:
             PICKUP("GRUNTZ_PICKUPS_JUMPROPE", 0x3ce);
             break;
-        case 29:
+        case PICKUP_POGOSTICK:
             PICKUP("GRUNTZ_PICKUPS_POGOSTICK", 0x3d0);
             break;
-        case 30:
+        case PICKUP_SCROLL:
             PICKUP("GRUNTZ_PICKUPS_SCROLL", 0x3d2);
             break;
-        case 31:
+        case PICKUP_SQUEAKTOY:
             PICKUP("GRUNTZ_PICKUPS_SQUEAKTOY", 0x3d7);
             break;
-        case 32:
+        case PICKUP_YOYO:
             PICKUP("GRUNTZ_PICKUPS_YOYO", 0x3df);
             break;
-        case 0x23:
+        case PICKUP_REDBRICK:
             PICKUP("GRUNTZ_PICKUPS_REDBRICK", 0x3e3);
             break;
-        case 0x24:
+        case PICKUP_BLUEBRICK:
             PICKUP("GRUNTZ_PICKUPS_BLUEBRICK", 0x3e1);
             break;
-        case 0x25:
+        case PICKUP_GOLDBRICK:
             PICKUP("GRUNTZ_PICKUPS_GOLDBRICK", 0x3e2);
             break;
-        case 0x26:
+        case PICKUP_BLACKBRICK:
             PICKUP("GRUNTZ_PICKUPS_BLACKBRICK", 0x3e0);
             break;
-        case 0x32: {
+        case PICKUP_MEGAPHONE: {
             MegaHolder* mh = *(MegaHolder**)((char*)g_gameReg + 0x2c);
             a4 = 0;
             m_154->m_c->m_2c->m_10map.Lookup("GRUNTZ_PICKUPS_MEGAPHONE", (CSprite**)&a4);
             AT_I32(0x3d8) = a4;
             i32 n = mh->m_2dc->Count();
             if (a5 != 0) {
-                if (n >= 1 && n <= 0x16 && n != 0x14) {
+                if (n >= PICKUP_BOMB && n <= PICKUP_WINGZ && n != PICKUP_WARPSTONE) {
                     STATS->m_18++;
                     ((i32*)((char*)STATS + 0xd4))[n + 22 * m_tileOwnerHi]++;
-                } else if (n >= 0x17 && n <= 0x20) {
+                } else if (n >= PICKUP_BABYWALKER && n <= PICKUP_YOYO) {
                     STATS->m_14++;
                     ((i32*)((char*)STATS + 0x1dc))[n + 10 * m_tileOwnerHi]++;
                 }
             }
             switch (n) {
-                case 1:
+                case PICKUP_BOMB:
                     id = 0x39b;
                     break;
-                case 2:
+                case PICKUP_BOOMERANG:
                     id = 0x39c;
                     break;
-                case 3:
+                case PICKUP_BRICK:
                     id = 0x39d;
                     break;
-                case 4:
+                case PICKUP_CLUB:
                     id = 0x39e;
                     break;
-                case 5:
+                case PICKUP_GAUNTLETZ:
                     id = 0x39f;
                     break;
-                case 6:
+                case PICKUP_GLOVEZ:
                     id = 0x3a0;
                     break;
-                case 7:
+                case PICKUP_GOOBER:
                     id = 0x3a2;
                     break;
-                case 8:
+                case PICKUP_GRAVITYBOOTZ:
                     id = 0x3a3;
                     break;
-                case 9:
+                case PICKUP_GUNHAT:
                     id = 0x3a4;
                     break;
-                case 10:
+                case PICKUP_NERFGUN:
                     id = 0x3a7;
                     break;
-                case 11:
+                case PICKUP_ROCK:
                     id = 0x3a9;
                     break;
-                case 12:
+                case PICKUP_SHIELD:
                     id = 0x3ab;
                     break;
-                case 13:
+                case PICKUP_SHOVEL:
                     id = 0x3ac;
                     break;
-                case 14:
+                case PICKUP_SPRING:
                     id = 0x3ad;
                     break;
-                case 15:
+                case PICKUP_SPY:
                     id = 0x3ae;
                     break;
-                case 16:
+                case PICKUP_SWORD:
                     id = 0x3b0;
                     break;
-                case 17:
+                case PICKUP_TIMEBOMB:
                     id = 0x3b1;
                     break;
-                case 18:
+                case PICKUP_TOOB:
                     id = 0x3b2;
                     break;
-                case 19:
+                case PICKUP_WAND:
                     id = 0x3b3;
                     break;
-                case 20:
+                case PICKUP_WARPSTONE:
                     id = 0x3b4;
                     break;
-                case 21:
+                case PICKUP_WELDER:
                     id = 0x3b5;
                     break;
-                case 22:
+                case PICKUP_WINGZ:
                     id = 0x3b6;
                     break;
-                case 23:
+                case PICKUP_BABYWALKER:
                     id = 0x398;
                     break;
-                case 24:
+                case PICKUP_BEACHBALL:
                     id = 0x399;
                     break;
-                case 25:
+                case PICKUP_BIGWHEEL:
                     id = 0x39a;
                     break;
-                case 26:
+                case PICKUP_GOKART:
                     id = 0x3a1;
                     break;
-                case 27:
+                case PICKUP_JACKINTHEBOX:
                     id = 0x3a5;
                     break;
-                case 28:
+                case PICKUP_JUMPROPE:
                     id = 0x3a6;
                     break;
-                case 29:
+                case PICKUP_POGOSTICK:
                     id = 0x3a8;
                     break;
-                case 30:
+                case PICKUP_SCROLL:
                     id = 0x3aa;
                     break;
-                case 31:
+                case PICKUP_SQUEAKTOY:
                     id = 0x3af;
                     break;
-                case 32:
+                case PICKUP_YOYO:
                     id = 0x3b7;
                     break;
-                case 35:
+                case PICKUP_REDBRICK:
                     id = 0x3bb;
                     break;
-                case 36:
+                case PICKUP_BLUEBRICK:
                     id = 0x3b9;
                     break;
-                case 37:
+                case PICKUP_GOLDBRICK:
                     id = 0x3ba;
                     break;
-                case 38:
+                case PICKUP_BLACKBRICK:
                     id = 0x3b8;
                     break;
                 default:
@@ -376,71 +450,71 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
             }
             break;
         }
-        case 0x33:
+        case PICKUP_HEALTH1:
             PICKUP("GRUNTZ_PICKUPS_HEALTH1", 0x3e4);
             break;
-        case 0x34:
+        case PICKUP_HEALTH2:
             PICKUP("GRUNTZ_PICKUPS_HEALTH2", 0x3e5);
             break;
-        case 0x35:
+        case PICKUP_HEALTH3:
             PICKUP("GRUNTZ_PICKUPS_HEALTH3", 0x3e6);
             break;
-        case 0x36:
+        case PICKUP_GHOST:
             PICKUP("GRUNTZ_PICKUPS_GHOST", 0x3ed);
             break;
-        case 0x37:
+        case PICKUP_SUPERSPEED:
             PICKUP("GRUNTZ_PICKUPS_SUPERSPEED", 0x3e9);
             break;
-        case 0x38:
+        case PICKUP_REACTIVEARMOR:
             PICKUP("GRUNTZ_PICKUPS_REACTIVEARMOR", 0x3eb);
             break;
-        case 0x39:
+        case PICKUP_CONVERSION:
             PICKUP("GRUNTZ_PICKUPS_CONVERSION", 0x3e7);
             break;
-        case 0x3a:
+        case PICKUP_DEATHTOUCH:
             PICKUP("GRUNTZ_PICKUPS_DEATHTOUCH", 0x3e8);
             break;
-        case 0x3b:
+        case PICKUP_ROIDZ:
             PICKUP("GRUNTZ_PICKUPS_ROIDZ", 0x3ea);
             break;
-        case 0x3c:
+        case PICKUP_INVULNERABILITY:
             PICKUP("GRUNTZ_PICKUPS_INVULNERABILITY", 0x3ec);
             break;
-        case 0x3d:
+        case PICKUP_RANDOMCOLORZ:
             PICKUP("GRUNTZ_PICKUPS_RANDOMCOLORZ", 0x3f1);
             a2 = 1;
             break;
-        case 0x3e:
+        case PICKUP_SCREENSHAKE:
             PICKUP("GRUNTZ_PICKUPS_SCREENSHAKE", 0x3f0);
             a2 = 1;
             break;
-        case 0x3f:
+        case PICKUP_BLACKSCREEN:
             PICKUP("GRUNTZ_PICKUPS_BLACKSCREEN", 0x3ef);
             a2 = 1;
             break;
-        case 0x40:
+        case PICKUP_MINICAM:
             PICKUP("GRUNTZ_PICKUPS_MINICAM", 0x3ee);
             a2 = 1;
             break;
-        case 0x4b:
+        case PICKUP_STOPWATCH:
             PICKUP("GRUNTZ_PICKUPS_STOPWATCH", 0x3bf);
             break;
-        case 0x50:
+        case PICKUP_COIN:
             PICKUP("GRUNTZ_PICKUPS_COIN", 0x3bf);
             break;
-        case 0x5a:
+        case PICKUP_W:
             PICKUP("GRUNTZ_PICKUPS_W", 0x3bf);
             break;
-        case 0x5b:
+        case PICKUP_A:
             PICKUP("GRUNTZ_PICKUPS_A", 0x3bf);
             break;
-        case 0x5c:
+        case PICKUP_R:
             PICKUP("GRUNTZ_PICKUPS_R", 0x3bf);
             break;
-        case 0x5d:
+        case PICKUP_P:
             PICKUP("GRUNTZ_PICKUPS_P", 0x3bf);
             break;
-        case 0x5e:
+        case PICKUP_HELPBOX:
             PICKUP("GRUNTZ_PICKUPS_HELPBOX", 0x3be);
             break;
         default:
