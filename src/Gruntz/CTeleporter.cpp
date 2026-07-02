@@ -12,61 +12,32 @@
 #include <Gruntz/CGameRegistry.h>
 #include <Globals.h>
 
-// The bound CGameObject viewed through m_10 by the bring-up: its +0x7c sub-object
-// carries the per-tile-time at +0xbc (the SAME shape CPathHazard reads as
-// CPathObj). Only the touched offsets are modeled; it overlays CGameObject.
-struct CTeleBoundOwner {
-    char m_pad00[0x7c];
-    CTeleBoundOwner* m_7c; // +0x7c  per-tile-time owner
-    char m_pad80[0xbc - 0x80];
-    i32 m_bc; // +0xbc  per-tile time
-};
+// The bound / spawned visual object the tick reads + re-seeds IS the engine
+// CGameObject (the inherited CUserLogic m_10/m_38 both point at it; ApplyLookup-
+// Geometry @0x1505b0, screen x/y @+0x5c/+0x60, tile col/row @+0x11c/+0x120, the
+// +0x7c aux carrying the per-tile clock at +0xbc, the +0x1a0 anim sub-mgr's
+// idle/active flags at +0x1c0/+0x1c8). All those offsets live in the shared
+// CGameObject / CGameObjAux (<Gruntz/UserLogic.h>), so this TU uses them directly
+// - no per-TU visual/bound-owner "view" and no cast off m_10/m_38.
 
 // ===========================================================================
 // CTeleporter::Update (0x41aa0) collaborators (modeled NO-body / by offset so
 // the calls + field loads reloc-mask against the engine symbols).
+//
+// The CTele* structs below (record / scroller / icon-table / sel-holder / mgr-sub)
+// are the SANCTIONED per-TU views of the 0x64556c multi-view game-manager singleton's
+// void* sub-object slots (m_2c/m_68/m_7c) - see <Gruntz/CGameRegistry.h>: those slots
+// hold a *different concrete type per TU*, so each TU casts them to its own local view
+// at the deref site (a real struct-pointer-to-sub-object cast, not an artifact). Kept
+// by that design; the singleton itself is owned by CGruntzMgr (classifier scope).
 // ===========================================================================
 
-// The bound / spawned visual object (CGameObject) the tick reads + re-seeds.
-struct CTeleVisualAux {
-    char m_pad00[0xbc];
-    i32 m_bc; // +0xbc  per-tile time
-};
-struct CTeleVisual {
-    void ApplyLookupGeometry(const char* key, i32 flag); // 0x1505b0
-    char m_pad00[0x8];
-    i32 m_8; // +0x08  render-dirty flags
-    char m_pad0c[0x40 - 0xc];
-    i32 m_40; // +0x40  geometry flag
-    char m_pad44[0x5c - 0x44];
-    i32 m_5c; // +0x5c  screen X
-    i32 m_60; // +0x60  screen Y
-    char m_pad64[0x7c - 0x64];
-    CTeleVisualAux* m_7c; // +0x7c
-    char m_pad80[0x114 - 0x80];
-    i32 m_114; // +0x114
-    i32 m_118; // +0x118
-    i32 m_11c; // +0x11c  tile column (Teleporter spawn)
-    i32 m_120; // +0x120  tile row (Teleporter spawn)
-    i32 m_124; // +0x124  command/mode (==1, ==2)
-    i32 m_128; // +0x128
-    char m_pad12c[0x164 - 0x12c];
-    i32 m_164; // +0x164
-    i32 m_168; // +0x168
-    char m_pad16c[0x1b4 - 0x16c];
-    i32 m_1b4; // +0x1b4  geometry id snapshot
-    char m_pad1b8[0x1c0 - 0x1b8];
-    i32 m_1c0; // +0x1c0  anim active flag  (sink+0x20)
-    char m_pad1c4[0x1c8 - 0x1c4];
-    i32 m_1c8; // +0x1c8  anim idle flag    (sink+0x28)
-};
-
 // The logic record HitTestCell returns / the registry's active cell entry; its
-// m_10 is the bound visual. StepAnimDispatchA (0x52fb0 via the 0x2f3b thunk).
+// m_10 is the bound CGameObject. StepAnimDispatchA (0x52fb0 via the 0x2f3b thunk).
 struct CTeleRecord {
     void StepAnimDispatchA(i32 a, i32 b, i32 c, i32 d); // 0x52fb0
     char m_pad00[0x10];
-    CTeleVisual* m_10; // +0x10
+    CGameObject* m_10; // +0x10
 };
 
 // The camera/scroll sub-mgr at mgr->m_2c (ResetGoals 0xd5f00 via the 0x2e28 thunk).
@@ -74,11 +45,10 @@ struct CTeleScroller {
     void ResetGoals(i32 x, i32 y); // 0xd5f00
 };
 // The sprite factory reached as mgr->m_30->m_8 (CreateSprite 0x1597b0) is the shared
-// <Gruntz/CTeleSpriteFactory.h> class; its result is cast to CTeleVisual*.
-struct CTeleFactoryHolder {
-    char m_pad00[0x8];
-    CTeleSpriteFactory* m_8; // +0x08
-};
+// <Gruntz/CTeleSpriteFactory.h> class. g_gameReg->m_30 is already the real
+// CSpriteFactoryHolder (<Gruntz/CGameRegistry.h>); its m_8 (CSpriteFactory*) is cast to
+// the complete CTeleSpriteFactory at the call site - no separate local holder view.
+
 // The selection holder at mgr->m_68->m_244 (its +0x8 -> the {row,col} index pair).
 struct CTeleSelHolder {
     char m_pad00[0x8];
@@ -162,7 +132,7 @@ i32 CTeleporter::Begin() {
         return 0;
     }
 
-    m_60 = ((CTeleBoundOwner*)m_10)->m_7c->m_bc;
+    m_60 = m_10->m_7c->m_bc;
     m_64 = 0;
     m_58 = g_645588;
     m_5c = 0;
@@ -194,10 +164,10 @@ i32 CTeleporter::Begin() {
 RVA(0x00041aa0, 0x312)
 i32 CTeleporter::Update() {
     ((CTeleAnimSink*)((char*)m_38 + 0x1a0))->Advance(g_6bf3bc);
-    CTeleVisual* a = (CTeleVisual*)m_38;
+    CGameObject* a = m_38;
     if (a->m_1c8 != 0 && a->m_1c0 == 0) {
-        if (((CTeleVisual*)m_10)->m_124 == 1) {
-            a->m_8 |= 0x10000;
+        if (m_10->m_124 == 1) {
+            a->m_08 |= 0x10000;
         } else {
             a->m_40 |= 1;
         }
@@ -206,7 +176,7 @@ i32 CTeleporter::Update() {
 
     CGameRegistry* mgr;
     if (m_68 == 0) {
-        CTeleVisual* o = (CTeleVisual*)m_10;
+        CGameObject* o = m_10;
         mgr = g_gameReg;
         i32 y = o->m_60;
         i32 x = o->m_5c;
@@ -219,13 +189,13 @@ i32 CTeleporter::Update() {
         return 0;
     }
 
-    CTeleVisual* o = (CTeleVisual*)m_10;
+    CGameObject* o = m_10;
     if (o->m_7c->m_bc != 0) {
         i64 delta = (i64)(u32)g_645588 - *(i64*)&m_58;
         if (delta >= *(i64*)&m_60) {
             m_40 = m_38->m_1b4;
             m_38->ApplyLookupGeometry(g_teleporterCloseKey, 0);
-            ((CTeleVisual*)m_10)->m_7c->m_bc = 0;
+            m_10->m_7c->m_bc = 0;
             m_68 = 1;
             return 0;
         }
@@ -239,14 +209,14 @@ i32 CTeleporter::Update() {
         return 0;
     }
 
-    if (((CTeleVisual*)m_10)->m_124 == 2) {
-        found->StepAnimDispatchA(((CTeleVisual*)m_10)->m_164, ((CTeleVisual*)m_10)->m_168, 1, 1);
+    if (m_10->m_124 == 2) {
+        found->StepAnimDispatchA(m_10->m_164, m_10->m_168, 1, 1);
         ((CTeleMgrSub*)g_gameReg->m_7c)->m_28++;
         m_40 = m_38->m_1b4;
         m_38->ApplyLookupGeometry(g_teleporterCloseKey, 0);
-        CTeleVisual* s = (CTeleVisual*)m_10;
-        CTeleVisual* spawned = (CTeleVisual*)((CTeleFactoryHolder*)g_gameReg->m_30)
-                                   ->m_8->CreateSprite(
+        CGameObject* s = m_10;
+        CGameObject* spawned = (CGameObject*)((CTeleSpriteFactory*)g_gameReg->m_30->m_8)
+                                   ->CreateSprite(
                                        0,
                                        s->m_11c * 32 + 16,
                                        s->m_120 * 32 + 16,
@@ -256,15 +226,15 @@ i32 CTeleporter::Update() {
                                    );
         if (spawned != 0) {
             spawned->m_124 = 1;
-            spawned->m_128 = ((CTeleVisual*)m_10)->m_128;
-            spawned->m_164 = ((CTeleVisual*)m_10)->m_114;
-            spawned->m_168 = ((CTeleVisual*)m_10)->m_118;
+            spawned->m_128 = m_10->m_128;
+            spawned->m_164 = m_10->m_114;
+            spawned->m_168 = m_10->m_118;
             spawned->m_7c->m_bc = 0;
         }
     } else {
-        CTeleVisual* s = (CTeleVisual*)m_10;
-        CTeleVisual* spawned = (CTeleVisual*)((CTeleFactoryHolder*)g_gameReg->m_30)
-                                   ->m_8->CreateSprite(
+        CGameObject* s = m_10;
+        CGameObject* spawned = (CGameObject*)((CTeleSpriteFactory*)g_gameReg->m_30->m_8)
+                                   ->CreateSprite(
                                        0,
                                        s->m_164 * 32 + 16,
                                        s->m_168 * 32 + 16,
@@ -272,10 +242,10 @@ i32 CTeleporter::Update() {
                                        g_wormholeSpawnKey,
                                        0x40003
                                    );
-        spawned->m_164 = ((CTeleVisual*)m_10)->m_5c;
-        spawned->m_168 = ((CTeleVisual*)m_10)->m_60;
-        spawned->m_124 = ((CTeleVisual*)m_10)->m_128;
-        found->StepAnimDispatchA(((CTeleVisual*)m_10)->m_164, ((CTeleVisual*)m_10)->m_168, 0, 0);
+        spawned->m_164 = m_10->m_5c;
+        spawned->m_168 = m_10->m_60;
+        spawned->m_124 = m_10->m_128;
+        found->StepAnimDispatchA(m_10->m_164, m_10->m_168, 0, 0);
         m_40 = m_38->m_1b4;
         m_38->ApplyLookupGeometry(g_teleporterCloseKey, 0);
     }
@@ -293,7 +263,7 @@ i32 CTeleporter::Update() {
         current = ((CTeleRecord**)((char*)(CTeleIconTable*)mgr->m_68 + 0x1c))[row * 15 + col];
     }
     if (found == current && outB == g_curPlayer) {
-        CTeleVisual* g = found->m_10;
+        CGameObject* g = found->m_10;
         ((CTeleScroller*)mgr->m_2c)->ResetGoals(g->m_5c, g->m_60);
     }
     return 0;
@@ -303,15 +273,11 @@ i32 CTeleporter::Update() {
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 #include <rva.h>
 SIZE_UNKNOWN(CTeleAnimSink);
-SIZE_UNKNOWN(CTeleBoundOwner);
-SIZE_UNKNOWN(CTeleFactoryHolder);
 SIZE_UNKNOWN(CTeleIconTable);
 SIZE_UNKNOWN(CTeleMgrSub);
 SIZE_UNKNOWN(CTeleRecord);
 SIZE_UNKNOWN(CTeleScroller);
 SIZE_UNKNOWN(CTeleSelHolder);
 SIZE_UNKNOWN(CTeleSpriteFactory);
-SIZE_UNKNOWN(CTeleVisual);
-SIZE_UNKNOWN(CTeleVisualAux);
 SIZE_UNKNOWN(CTeleporter);
 SIZE_UNKNOWN(CTeleporterActReg);

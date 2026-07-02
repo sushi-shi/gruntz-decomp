@@ -130,7 +130,8 @@ struct CGameObject {
     CAnimWorker* m_88; // +0x88  lazily-built worker (EnsureWorker88)
     char m_pad8c[0x90 - 0x8c];
     CAnimWorker* m_90; // +0x90  lazily-built worker (EnsureWorker90)
-    char m_pad94[0x118 - 0x94];
+    char m_pad94[0x114 - 0x94];
+    i32 m_114; // +0x114  (teleporter spawn: source-tile coordinate mirror)
     i32 m_118; // +0x118  CSpotLight ctor: pi/0 mode gate
     i32 m_11c; // +0x11c  CSpotLight ctor: settings-table index
     i32 m_120; // +0x120  CSpotLight ctor: SpotLightTime override
@@ -149,6 +150,10 @@ struct CGameObject {
     CGameObjLayer* m_198; // +0x198
     char m_pad19c[0x1b4 - 0x19c];
     i32 m_1b4; // +0x1b4
+    char m_pad1b8[0x1c0 - 0x1b8];
+    i32 m_1c0; // +0x1c0  the +0x1a0 anim sub-mgr's idle flag  (sink+0x20)
+    char m_pad1c4[0x1c8 - 0x1c4];
+    i32 m_1c8; // +0x1c8  the +0x1a0 anim sub-mgr's active flag (sink+0x28)
 };
 
 // The +0x7c sub-object: its +0x08 flags, +0x1c bute-node and +0x130 timer are
@@ -158,7 +163,9 @@ struct CGameObjAux {
     i32 m_08; // +0x08
     char m_pad0c[0x1c - 0x0c];
     void* m_1c; // +0x1c
-    char m_pad20[0x130 - 0x20];
+    char m_pad20[0xbc - 0x20];
+    i32 m_bc; // +0xbc  per-tile time (teleporter reads the bound object's clock here)
+    char m_padc0[0x130 - 0xc0];
     i32 m_130; // +0x130
 };
 

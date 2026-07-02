@@ -30,6 +30,12 @@ public:
 };
 
 // The active render target reached as g_gameReg->m_30->m_4->m_14.
+// DISPOSITION: g_gameReg->m_30 is the real CSpriteFactoryHolder (<Gruntz/CGameRegistry.h>),
+// but this TU walks its +0x4 render-holder chain (m_4->m_14) which that shared header
+// (owned by the CGruntzMgr singleton view - classifier scope) does not model. Rather
+// than extend the shared registry header from here, the +0x4/+0x14 chain is kept as
+// the sanctioned per-TU sub-object view (the multi-view-singleton idiom CGameRegistry.h
+// endorses). Not a fabricated identity - the concrete render target has no local RTTI.
 struct AniGameMgr {
     char _pad00[4];
     void* m_4; // +0x04  -> render holder (+0x14 is the target)

@@ -66,6 +66,10 @@ public:
 
 // The owner node (record+0x0c). Its +0x08 is a flags word the buffer virtuals OR
 // a bit into; its +0x1c is the pool above.
+// DISPOSITION: CAniRecordOwner / CAniMapOwner are the record's owner nodes reached by
+// this-offset from the record's parse/alloc paths; neither carries an RTTI vtable, so
+// there is no recoverable class name. Kept as honest minimal by-offset models (no
+// fabricated identity); resolvable only if their owning subsystem is later RTTI-pinned.
 class CAniRecordOwner {
 public:
     i32 m_00, m_04; // +0x00..+0x07

@@ -85,6 +85,11 @@ struct HazAnimDesc {
 // ---------------------------------------------------------------------------
 // The game registry singleton (?g_gameReg@@3PAUWwdGameReg@@A). Modeled here with
 // the offsets the static-hazard paths touch.
+// DISPOSITION: HazSwitchSrc/HazLookupEntry/HazSndCat/HazSndRoot/HazGrid are the
+// SANCTIONED per-TU views of the 0x64556c multi-view singleton's void* sub-object
+// slots (see <Gruntz/CGameRegistry.h>: each TU casts the slot to its own concrete
+// sub-object type at the deref site). The singleton is the CGruntzMgr view (classifier
+// scope); these stay as the endorsed per-TU sub-object casts, not fabricated types.
 // ---------------------------------------------------------------------------
 struct HazSwitchSrc {
     char m_pad00[0x20];

@@ -83,6 +83,14 @@ extern CTrigMgr* g_mgrSettings; // ?g_mgrSettings (0x64556c)
 // The built trigger-logic object. The 14 distinct ctor thunks (0-arg __thiscall,
 // returning the object) and the 3 register thunks (4-arg __thiscall, returning success)
 // are reloc-masked externals reached through the incremental-link thunk table.
+//
+// DISPOSITION (CTrigLogic8c/9c/C8): these are NOT single classes - each is a SIZE
+// BUCKET (0x8c/0x9c/0xc8 bytes) that the switch allocates for SEVERAL distinct real
+// leaf classes (e.g. CTrigLogic8c covers ctor thunks 0x3206/0x3eb3/0x4192/0x2db5/
+// 0x332d/0x2f72 = 6 different trigger-logic leaves). A single real class name can't
+// stand for a size bucket, so they are kept as honest size-tagged models; the real
+// per-id leaf classes (CTileMultiTriggerSwitchLogic, CGiantRockLogic, ... in
+// TileTriggerDerivedCtors.cpp) each name themselves where individually reconstructed.
 struct CTrigLogic {
     struct Ctor3206Tag {};
     struct Ctor3eb3Tag {};

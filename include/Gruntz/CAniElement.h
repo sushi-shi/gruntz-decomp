@@ -42,6 +42,10 @@ struct CAniSource {
 // (vtable slot+4) for the failure-path teardown. Parse/GetSize live in their own
 // cluster (external/no-body); the vtable contents are not modeled, so the builder
 // stamps the primary vtable by address (reloc-masked DATA extern).
+// DISPOSITION: the REAL class is CAniRecord (src/Gruntz/CAniRecord.cpp, VTBL @0x1f02c0)
+// - the same 0x34-byte frame record fully reconstructed there. This is a minimal
+// duplicate view kept because CAniRecord is not yet in a shared header; collapsing the
+// two is a header-dedup follow-up, not a rename (the identity is already known).
 class CAniRecordView {
 public:
     virtual void Slot00();                           // +0x00

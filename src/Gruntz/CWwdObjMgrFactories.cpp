@@ -46,6 +46,13 @@ extern void* g_wwd1598d0FinalVtbl; // 0x5f00e8
 class CWwdGameObject;
 
 // --- sub-object ctors (all __thiscall, reloc-masked no-body) -----------------
+// DISPOSITION: the wide CWwdGameObject's base is the real CResolveNode (RTTI vtable
+// @0x5efbc0, named), but its embedded sub-objects (CWwdSub9c/SubB8/Cmd1a0/List1dc)
+// have NO RTTI on their vtables - the only nameable identity in this cluster is
+// CResolveNode. These placeholders are the embedded-sub-object ctors modeled by
+// this-offset so the placement-ctor calls reloc-mask; the whole factory sits at the
+// rezalloc-placement-new EH wall (@early-stop), so they are kept as honest minimal
+// models (no fabricated class names) pending a matcher that models `new T`.
 // Base "CResolveNode" 3-arg ctor (root, a, flags). 0x15b2c0 for the 159250/159440
 // objects, 0x15b390 for the 1598d0 object.
 class CWwdResolveBaseA {

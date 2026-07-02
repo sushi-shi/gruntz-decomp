@@ -1648,9 +1648,9 @@ cstatusbarspriteacts	??0CStatusBarSprite@@QAE@PAUCGameObject@@@Z	93.2083	93.2083
 cstatusbarspriteacts	?InitActReg@CStatusBarSprite@@SAXXZ	100.0000	100.0000	1	162867839555	0x10c430
 cstatusbarspriteacts	?RegisterActs@CStatusBarSprite@@SAXXZ	92.9130	92.9130	2	dec761b26a46	0x10c610
 cteleporter	??1CTeleporter@@UAE@XZ	100.0000	100.0000	1	0aa6d090845e	0x10dd0
-cteleporter	?Begin@CTeleporter@@QAEHXZ	87.6667	87.6667	1	ac212a968adf	0x419e0
+cteleporter	?Begin@CTeleporter@@QAEHXZ	87.6667	87.6667	2	492bb31c0c85	0x419e0
 cteleporter	?InitActReg@CTeleporter@@SAXXZ	100.0000	100.0000	1	16ec1bd1d09e	0x414a0
-cteleporter	?Update@CTeleporter@@QAEHXZ	98.9103	98.9103	3	e51580561533	0x41aa0
+cteleporter	?Update@CTeleporter@@QAEHXZ	98.9103	98.9103	4	be7f3a68288c	0x41aa0
 ctilescan	?Scan@CTileScan@@QAEHPAUCScanArg@@@Z	71.2269	71.2269	1	f98f3f2ec20a	0x35f10
 ctimebomb	??0CTimeBomb@@QAE@PAUCGameObject@@@Z	83.4645	83.4645	2	288afa4935b3	0xe1b90
 ctimebomb	??1CTimeBomb@@UAE@XZ	100.0000	100.0000	1	82a73e5a479d	0x12a70
