@@ -178,38 +178,41 @@ struct StBare { // ??_7StBare (retail CState 0x5ea21c)
 // Field-heavy ctors defined out-of-line for readability (still inline-folded into
 // the factory's new-expressions).
 StBare::StBare() {
-    char* p = (char*)this;
-    *(i32*)(p + 0x4) = 0;
-    *(i32*)(p + 0x8) = 0;
-    *(i32*)(p + 0xc) = 0;
-    *(i32*)(p + 0x28) = 0;
-    *(i32*)(p + 0x2c) = 0;
-    *(i32*)(p + 0x14) = 0;
-    *(i32*)(p + 0x18) = 0;
-    *(i32*)(p + 0x38) = 0;
-    *(i32*)(p + 0x3c) = 0;
-    *(char*)(p + 0x4c) = 0;
-    *(i32*)(p + 0x24) = 0;
-    *(i32*)(p + 0x160) = 0;
-    *(i32*)(p + 0x164) = 0;
-    *(i32*)(p + 0x168) = 0;
-    *(i32*)(p + 0x170) = 0x40;
-    *(i32*)(p + 0x16c) = 0;
-    *(i32*)(p + 0x174) = 0x40;
-    *(i32*)(p + 0x178) = 0;
-    *(i32*)(p + 0x180) = 0x40;
-    *(i32*)(p + 0x17c) = 0;
-    *(i32*)(p + 0x184) = 0x40;
-    *(i32*)(p + 0x188) = 0;
-    *(i32*)(p + 0x190) = 0;
-    *(i32*)(p + 0x18c) = 0;
-    *(i32*)(p + 0x194) = 0;
-    *(i32*)(p + 0x198) = 0;
-    *(i32*)(p + 0x1a0) = 0;
-    *(i32*)(p + 0x19c) = 0;
-    *(i32*)(p + 0x1a4) = 0;
-    *(i32*)(p + 0x150) = 0;
-    *(i32*)(p + 0x154) = 0;
+    // StBare IS CState (retail ??_7CState 0x5ea21c) and this field-zeroing is exactly
+    // CState::CState (0x8c750). View the shell as its real class to write the recovered
+    // CState fields (CState.h) by name; source order preserved (store scheduling).
+    CState* s = (CState*)this;
+    s->m_4 = 0;
+    s->m_8 = 0;
+    s->m_c = 0;
+    s->m_28 = 0;
+    s->m_2c = 0;
+    s->m_14 = 0;
+    s->m_18 = 0;
+    s->m_38 = 0;
+    s->m_3c = 0;
+    s->m_4c = 0;
+    s->m_24 = 0;
+    s->m_160 = 0;
+    s->m_164 = 0;
+    s->m_168 = 0;
+    s->m_170 = 0x40;
+    s->m_16c = 0;
+    s->m_174 = 0x40;
+    s->m_178 = 0;
+    s->m_180 = 0x40;
+    s->m_17c = 0;
+    s->m_184 = 0x40;
+    s->m_188 = 0;
+    s->m_190 = 0;
+    s->m_18c = 0;
+    s->m_194 = 0;
+    s->m_198 = 0;
+    s->m_1a0 = 0;
+    s->m_19c = 0;
+    s->m_1a4 = 0;
+    s->m_150 = 0;
+    s->m_154 = 0;
 }
 StBooty::StBooty() {
     char* p = (char*)this;
