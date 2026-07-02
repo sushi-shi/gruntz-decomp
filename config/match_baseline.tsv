@@ -1299,7 +1299,7 @@ cgruntcreationpoint	?RegisterActs@CGruntCreationPoint@@SAXXZ	92.9130	92.9130	2	2
 cgrunthealthsprite	??1CGruntHealthSprite@@UAE@XZ	100.0000	100.0000	1	819b10e75882	0x11fb0
 cgrunthealthsprite	?InitActReg@CGruntHealthSprite@@SAXXZ	100.0000	100.0000	1	dcb0a2ec95e1	0x7ecf0
 cgrunthealthsprite	?RegisterActs@CGruntHealthSprite@@SAXXZ	92.9130	92.9130	1	5bf737bfab96	0x7eed0
-cgrunthealthsprite	?SetHealthGlyph@CGruntHealthSprite@@QAEHHHH@Z	100.0000	100.0000	2	90ae1ba8aaea	0x7f0d0
+cgrunthealthsprite	?SetHealthGlyph@CGruntHealthSprite@@QAEHHHH@Z	100.0000	100.0000	3	1cccda46c7b6	0x7f0d0
 cgruntpowerupsprite	??1CGruntPowerupSprite@@UAE@XZ	100.0000	100.0000	1	083563c3491b	0x12370
 cgruntpowerupsprite	?InitActReg@CGruntPowerupSprite@@SAXXZ	100.0000	100.0000	1	ade10531ce1f	0x7ffa0
 cgruntpowerupsprite	?RegisterActs@CGruntPowerupSprite@@SAXXZ	92.9130	92.9130	1	f3c621493d68	0x80180

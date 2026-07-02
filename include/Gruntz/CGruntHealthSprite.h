@@ -21,31 +21,13 @@
 #define GRUNTZ_CGRUNTHEALTHSPRITE_H
 
 #include <rva.h>
-#include <Gruntz/GruntIndicatorSprite.h> // CIndicatorActReg + g_healthActReg
-#include <Gruntz/UserLogic.h>            // CUserLogic base (CGruntHealthSprite : CUserLogic)
-
-// The [m_64..m_68]-gated glyph table the bound object holds at +0x194 (the SAME
-// shape as CStatzGlyphMap: glyph table at +0x14, lo/hi index gate at +0x64/+0x68).
-SIZE_UNKNOWN(CHealthGlyphMap);
-struct CHealthGlyphMap {
-    char m_pad0[0x14];
-    i32* m_14; // +0x14  glyph table
-    char m_pad18[0x64 - 0x18];
-    i32 m_64; // +0x64  glyph-index range lo gate
-    i32 m_68; // +0x68  glyph-index range hi gate
-};
-
-// The bound object (CUserLogic::m_10) view this method touches: the resolved-slot
-// mirror (+0x190), the gated glyph map (+0x194) and the resolved glyph (+0x198).
-// A local view (distinct fields from the shared CGameObject) so the deep offset
-// reads stay self-contained.
-SIZE_UNKNOWN(CHealthSpriteObj);
-struct CHealthSpriteObj {
-    char m_pad0[0x190];
-    i32 m_190;              // +0x190  resolved slot mirror
-    CHealthGlyphMap* m_194; // +0x194  gated glyph table
-    i32 m_198;              // +0x198  resolved glyph mirror
-};
+// The health glyph resolve reads its bound game object (CUserLogic::m_10) through
+// the SAME shared views the indicator sprites use: CGruntRenderable (the bound
+// grunt renderable) and its +0x194 gated lookup table CGruntLayerHolder
+// (table @+0x14, [m_64..m_68] index gate - the shared gated-lookup archetype,
+// also seen as CStatzGlyphMap). No health-local duplicate view is kept.
+#include <Gruntz/GruntIndicatorSprite.h> // CIndicatorActReg + g_healthActReg + CGruntRenderable/CGruntLayerHolder
+#include <Gruntz/UserLogic.h> // CUserLogic base (CGruntHealthSprite : CUserLogic)
 
 SIZE_UNKNOWN(CGruntHealthSprite);
 class CGruntHealthSprite : public CUserLogic {
