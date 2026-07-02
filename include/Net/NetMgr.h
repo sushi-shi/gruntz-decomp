@@ -527,6 +527,8 @@ public:
 extern "C" void* g_netPlayerNodeVtbl;      // 0x5f0760
 extern "C" void* g_netSessionNodeDtorVtbl; // 0x5e8cb4 (base-dtor vptr during CString ctors)
 extern "C" void* g_netSessionNodeVtbl;     // 0x5f0778 (final vptr)
+extern "C" void* g_netGroupNodeDtorVtbl; // 0x5e8cb4 (base-dtor vptr; shared with the session node)
+extern "C" void* g_netGroupNodeVtbl;     // 0x5f0748 (InterfaceObject final vptr; AddGroupNode)
 // PTR_LAB_005f0588 - the QueryInterface riid pointer the Init wrapper (0x178170)
 // hands to slot 0 (a static GUID blob; DIR32 reloc-masked). 0x5f0588.
 extern "C" void* g_netDirectPlayRiid; // 0x5f0588
@@ -734,13 +736,15 @@ public:
     i32 ProbeLatency(i32 flag);   // 0x... secondary latency probe
     void WriteCmdDelay(i32 flag); // 0x... persist m_cmdDelay/m_resend
 
-    // Backlog (not yet reconstructed - left as @stub in NetMgr.cpp):
-    //   0x178360  AddGroupNode  - operator-new'd 0x10 node (2-phase vtbl + CString
-    //                             member + /GX EH frame) AddTail'd onto the +0x1c list
-    //   0x1788a0  EnumGroupsInto- 0x50-desc EnumGroups COM call + GetPlayerData2 +
-    //                             operator-new/RezFree juggling; calls sibling 0x1786d0
-    void Stub_178360(); // 0x178360
-    void Stub_1788a0(); // 0x1788a0
+    // The provider/group cluster (0x178xxx). InitFromProvider DirectPlayCreate's a
+    // fresh DP object for a selected service-provider GUID + queries IDirectPlay4;
+    // EnumServiceProviders refills the +0x1c group list via DirectPlayEnumerate;
+    // AddGroupNode operator-new's a 0x10 InterfaceObject node onto the +0x1c list;
+    // EnumGroupsInto probes a group's players + adds a player node (0x1786d0).
+    i32 InitFromProvider(void* a, i32 c, i32 d, i32 e, i32 f); // 0x1780b0
+    i32 EnumServiceProviders(i32 validated);                   // 0x178280
+    i32 AddGroupNode(void* guid, void* name);                  // 0x178360
+    i32 EnumGroupsInto(void* a, void* b, i32 c, i32 d);        // 0x1788a0
 
     // The diagnostic error reporter (lives in the netmgrerror TU; static
     // __cdecl). Declared here so the wrappers can route HRESULTs through it.
@@ -981,25 +985,44 @@ public:
     i32* m_608; // +0x608  the pending-drop id array (RecordDropPlayer fills it)
     i32 m_60c;  // +0x60c  the pending-drop id array element count
 
+    // The managed-list teardown run of the destructor (0x0b6000).
+    void TeardownLists();
+
+    // SetupServices (0xb78b0, /GX): enumerate the peer's service providers and, on
+    // success, dispatch MULTI_HOST/JOINSERVICES and write the selected service /
+    // player-name / game-name into the engine config store; returns the selected
+    // provider. DispatchServices/GetGameName are its external helpers.
+    i32 SetupServices();                                       // 0xb78b0
+    i32 DispatchServices(const char* cmd, i32 flag, void* cb); // 0xbc250
+    CString GetGameName();                                     // 0xb7a90
+
+    // JoinAndRegisterChannel (0xb8b10, /GX): build the command-timing config string,
+    // enumerate the host group into it, create the local player, and register the
+    // local channel; returns the enum result iff the channel registered.
+    i32 JoinAndRegisterChannel(); // 0xb8b10
+
+    // The connection-config family (all /GX). DetectConnectionConfig resolves the
+    // connection class from the selected provider + loads its "<section>_CmdDelay/
+    // _Resend" timing then joins; SetupTcpIpConfig is the TcpIp-specific variant that
+    // loads config + creates the local player + registers the channel inline;
+    // OnJoinConfirm reads the join dialog, resolves the player + config, and ships
+    // the "player joined" packet.
+    i32 DetectConnectionConfig();  // 0xb82e0
+    i32 SetupTcpIpConfig();        // 0xbc460
+    i32 OnJoinConfirm(void* hDlg); // 0xb8cf0
+    // The "dyn command-delay" config setter OnJoinConfirm applies (0xb76c0,
+    // __thiscall, CString by value); external/no-body so the call reloc-masks.
+    void ApplyDynSetting(CString s); // 0xb76c0
+
+    // The setup dialog's helpers: PopulateGroupList fills the service-provider combo
+    // from the group list (0x1784be); SetServiceName records the entered service name
+    // (0xb7730, CString by value). Both external/no-body (reloc-masked).
+    void PopulateGroupList(void* hList, i32 flag); // 0x1784be
+    void SetServiceName(CString s);                // 0xb7730
+
     // Engine-label backlog stubs.
     void Stub_0b5460();
-    void Stub_0b6000();
-    void Stub_0b78b0();
-    void Stub_0b7b10();
-    void Stub_0b82e0();
-    void Stub_0b8b10();
-    void Stub_0b8cf0();
     void Stub_0b9750();
-    void Stub_0bc460();
-    void Stub_1780b0();
-    void Stub_178280();
-    void Stub_1782d0();
-    void Stub_178e20();
-    void Stub_178eb0();
-    void Stub_178ef0();
-    void Stub_178fc0();
-    void Stub_179090();
-    void Stub_179130();
 };
 SIZE_UNKNOWN(CNetMgr);     // network manager; retail byte size not yet pinned
 VTBL(CNetMgr, 0x001ea42c); // RTTI vtable (config/vtable_names.csv), currently un-catalogued
