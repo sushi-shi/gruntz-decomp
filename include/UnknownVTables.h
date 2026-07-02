@@ -546,67 +546,29 @@ struct Vtbl_1effd0 {
 };
 
 // ClassWithUnknownVTable47  @ 0x005f0020  (16 slots)  refs x9  src:g_wwdGameObjectVtbl
-struct WwdGameObjectVtbl {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x15b4c0 `scalar_deleting_destructor'
-    UnkVfn slot2_0028ec;                 // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
-    UnkVfn slot5_15b370;                 // [5] -> 0x15b370 sub_15b370
-    UnkVfn slot6_001c08;                 // [6] -> 0x001c08 sub_001c08
-    UnkVfn FUN_0055b5d0;                 // [7] -> 0x15b5d0 FUN_0055b5d0
-    UnkVfn slot8_154a00;                 // [8] -> 0x154a00 sub_154a00
-    UnkVfn Helper_164790;                // [9] -> 0x164790 Helper_164790
-    UnkVfn Setup;                        // [10] -> 0x150d60 Setup
-    UnkVfn __purecall;                   // [11] -> 0x11fec0 __purecall
-    UnkVfn __purecall_12;                // [12] -> 0x11fec0 __purecall
-    UnkVfn __purecall_13;                // [13] -> 0x11fec0 __purecall
-    UnkVfn __purecall_14;                // [14] -> 0x11fec0 __purecall
-    UnkVfn Play;                         // [15] -> 0x151150 Play
-};
+// REALIZED as ??_7CWwdGameObjectE@@6B@ (the "Mid" base game object in
+// src/Gruntz/WwdGameObjectEh.cpp; cl auto-emits it). ORPHAN: the delinked 0x5f0020
+// datum stays named g_wwdGameObjectVtbl because the CWwdObjMgrFactories factories
+// MANUAL-stamp it (`*(void**)obj = &g_wwdGameObjectVtbl`) and cannot reference the
+// compiler ??_7 without a `new`-based ctor rewrite -> NO VTBL (would dup-DATA the
+// bound g_wwdGameObjectVtbl). Placeholder removed.
 
 // ClassWithUnknownVTable48  @ 0x005f0060  (17 slots)  refs x2
-struct Vtbl_1f0060 {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x15bab0 `scalar_deleting_destructor'
-    UnkVfn slot2_0028ec;                 // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
-    UnkVfn slot5_15ba40;                 // [5] -> 0x15ba40 sub_15ba40
-    UnkVfn slot6_001c08;                 // [6] -> 0x001c08 sub_001c08
-    UnkVfn FUN_0055bc50;                 // [7] -> 0x15bc50 FUN_0055bc50
-    UnkVfn slot8_15ba60;                 // [8] -> 0x15ba60 sub_15ba60
-    UnkVfn Helper_164790;                // [9] -> 0x164790 Helper_164790
-    UnkVfn Setup;                        // [10] -> 0x150d60 Setup
-    UnkVfn slot11_15ba70;                // [11] -> 0x15ba70 sub_15ba70
-    UnkVfn slot12_15ba80;                // [12] -> 0x15ba80 sub_15ba80
-    UnkVfn slot13_15ba90;                // [13] -> 0x15ba90 sub_15ba90
-    UnkVfn slot14_15baa0;                // [14] -> 0x15baa0 sub_15baa0
-    UnkVfn Play;                         // [15] -> 0x151150 Play
-    UnkVfn FUN_0055bc30;                 // [16] -> 0x15bc30 FUN_0055bc30
-};
+// REALIZED as ??_7CWwdGameObjectF@@6B@ (the 0x159440-final variant in
+// src/Gruntz/WwdGameObjectEh.cpp; the 0x18c-byte object). ORPHAN (same reason as
+// VTable47: bound to g_wwd159440FinalVtbl via the factory manual stamp). NO VTBL.
 
 // ClassWithUnknownVTable49  @ 0x005f00a8  (16 slots)  refs x6  src:g_wwdObjVtbl
-struct WwdObjVtbl {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x15b770 `scalar_deleting_destructor'
-    UnkVfn slot2_0028ec;                 // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
-    UnkVfn slot5_15b370;                 // [5] -> 0x15b370 sub_15b370
-    UnkVfn slot6_001c08;                 // [6] -> 0x001c08 sub_001c08
-    UnkVfn FUN_0055b980;                 // [7] -> 0x15b980 FUN_0055b980
-    UnkVfn slot8_15b760;                 // [8] -> 0x15b760 sub_15b760
-    UnkVfn Helper_164790;                // [9] -> 0x164790 Helper_164790
-    UnkVfn Init;                         // [10] -> 0x15b940 Init
-    UnkVfn slot11_15ba20;                // [11] -> 0x15ba20 sub_15ba20
-    UnkVfn slot12_150660;                // [12] -> 0x150660 sub_150660
-    UnkVfn slot13_1506b0;                // [13] -> 0x1506b0 sub_1506b0
-    UnkVfn slot14_1508a0;                // [14] -> 0x1508a0 sub_1508a0
-    UnkVfn Dispatch;                     // [15] -> 0x150a70 Dispatch
-};
+// REALIZED as ??_7CWwdGameObjectA@@6B@ (the 0x166640-final variant in
+// src/Gruntz/WwdGameObjectEh.cpp; the 0x1dc-byte object). ORPHAN (bound to
+// g_wwdObjVtbl via the factory manual stamp). NO VTBL. Placeholder removed.
 
 // ClassWithUnknownVTable50  @ 0x005f00e8  (16 slots)  refs x2
+// DEFERRED: this is the 0x159440-... err 0x1598d0-final vtable (0x1fc-byte object),
+// modeled as the FLAT CWwdGameObjectB in src/Gruntz/WwdGameObjectEh.cpp - a
+// multi-level manual vtable-restamp dtor still @early-stop on the eh-dtor trylevel
+// wall (NOT a cl-emitted ??_7). Realize when the flat B dtor converts to the real
+// CRemusNode-derived polymorphic chain. Placeholder kept for slot tracking.
 struct Vtbl_1f00e8 {
     UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
     UnkVfn _scalar_deleting_destructor_; // [1] -> 0x15bcf0 `scalar_deleting_destructor'
@@ -737,13 +699,10 @@ struct Vtbl_1f0270 {
 };
 
 // ClassWithUnknownVTable57  @ 0x005f02a8  (5 slots)  refs x4  src:g_wwdGridIterVtbl
-struct WwdGridIterVtbl {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x163a20 `scalar_deleting_destructor'
-    UnkVfn slot2_0028ec;                 // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
-};
+// REALIZED as ??_7CWwdGridIter@@6B@ (real polymorphic 5-slot CObject-style cursor in
+// src/Gruntz/WwdSpatialMgr.cpp; cl auto-emits the vtable + implicit vptr-first stamp).
+// NO VTBL: 0x5f02a8 is SHARED (also g_planeRenderVtbl in wwdfile), so the emitted
+// ??_7CWwdGridIter is an orphan (unpaired, matching-neutral). Placeholder removed.
 
 // ClassWithUnknownVTable58  @ 0x005f02c0  (5 slots)  refs x2  src:g_aniRecordVtbl
 struct AniRecordVtbl {
@@ -783,14 +742,9 @@ struct Vtbl_1f0310 {
 };
 
 // ClassWithUnknownVTable61  @ 0x005f0328  (6 slots)  refs x2  src:g_wwdGridVtbl
-struct WwdGridVtbl {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x168bf0 `scalar_deleting_destructor'
-    UnkVfn slot2_0028ec;                 // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
-    UnkVfn __purecall;                   // [5] -> 0x11fec0 __purecall
-};
+// REALIZED as ??_7CWwdGrid@@6B@ (real polymorphic abstract CWwdGrid : CRemusBase in
+// include/Gruntz/WwdGrid.h; cl auto-emits the 6-slot vtable with __purecall @slot5).
+// VTBL(CWwdGrid, 0x001f0328) pairs it (RVA was unbound). Placeholder removed.
 
 // ClassWithUnknownVTable62  @ 0x005f0748  (5 slots)  refs x2
 struct Vtbl_1f0748 {

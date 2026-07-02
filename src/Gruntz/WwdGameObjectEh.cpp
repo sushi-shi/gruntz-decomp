@@ -342,11 +342,14 @@ CWwdGameObjectC::~CWwdGameObjectC() {
     m_20.b = -1;              // 0x38
     // Mid (CWwdGameObjectE) folds the CString member + EdgeA/EdgeB + severus stamp.
 }
-SIZE_UNKNOWN(CWwdGameObjectA);
-SIZE_UNKNOWN(CWwdGameObjectB);
-SIZE_UNKNOWN(CWwdGameObjectC);
+// Exact retail object sizes from the CWwdObjMgrFactories RezAlloc(0xNN) calls:
+// A=0x166640 (0x1dc), B=0x1598d0 (0x1fc), C=0x159250 (0x190), F=0x159440 (0x18c).
+// E (Mid) is the shared base subobject, not directly allocated -> size unknown.
+SIZE(CWwdGameObjectA, 0x1dc);
+SIZE(CWwdGameObjectB, 0x1fc);
+SIZE(CWwdGameObjectC, 0x190);
 SIZE_UNKNOWN(CWwdGameObjectE);
-SIZE_UNKNOWN(CWwdGameObjectF);
+SIZE(CWwdGameObjectF, 0x18c);
 SIZE_UNKNOWN(WwdEdgeA);
 SIZE_UNKNOWN(WwdEdgeB);
 SIZE_UNKNOWN(WwdName);

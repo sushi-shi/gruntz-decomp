@@ -418,3 +418,77 @@ divergence + % regressions; only hard bar is `gruntz build` GREEN.
 - **The heavy shared header can clash on globals.** Unifying a per-TU CGrunt view by
   `#include <Gruntz/Grunt.h>` pulls CGameRegistry.h; TUs with their own `g_gameReg`
   decl (TriggerMgr) break — a real build-breaker, revert that TU.
+
+## Batch 5 (Wwd + GameLevel cluster, vtable-walls + retrofit) — 2026-07-02
+
+Scope: `src/Gruntz/` Wwd*/WwdGameObject*/CWwdObjMgr*/WwdSpatialMgr/GameLevel* +
+headers. Mandate: drive the cluster's vtables to zero, irregardless of %,
+regressions accepted, only hard bar `gruntz build` GREEN. Coordinator addendum:
+`SIZE(Class,0xNN)` + `VTBL(Class,0x<rva>)` atop every realized/retrofit virtual
+class; use the exact factory/ctor `RezAlloc(0xNN)`/`new(0xNN)` size where known.
+
+Net: **1 fresh REALIZE (CWwdGridIter) + 1 paired retrofit (CWwdGrid) + 3 catalog
+retrofits (already-realized orphan factory vtables) + 4 exact SIZEs**. Overall
+1835/3361 exact / 64.38% fuzzy (was 64.39%); build GREEN, no dup-DATA. 3 accepted
+regressions (CWwdGridIter realization, all on already-`@early-stop` walls).
+
+### REALIZED / RETROFIT
+
+| vtable (RVA) | class | action | VTBL? | SIZE |
+| :-- | :-- | :-- | :-- | :-- |
+| WwdGridVtbl 0x5f0328 | `CWwdGrid` (WwdGrid.h) | RETROFIT — was already real-polymorphic (abstract, `__purecall` @slot5), cl auto-emits ??_7CWwdGrid; placeholder removed | **VTBL(CWwdGrid,0x001f0328)** — 0x1f0328 was UNBOUND, so pairing is pure gain (emitted ??_7 now pairs the delinked datum) | **SIZE 0x44** (grid-setup RezAlloc(0x44) x3 @0x168094/af/cd) |
+| WwdGridIterVtbl 0x5f02a8 | `CWwdGridIter` (WwdSpatialMgr.cpp) | REALIZE — converted the `void* m_vptr` member + manual `m_vptr=g_wwdGridIterVtbl` stamp to a 5-slot CObject-style polymorphic class (dtor @slot1, RemusV0/2/3/4 declared-only). cl auto-emits the implicit vptr-FIRST ctor stamp (== the old first-store). Extern + placeholder removed | **NO VTBL** — 0x5f02a8 is SHARED (already bound `g_planeRenderVtbl` in wwdfile); emitted ??_7CWwdGridIter is an orphan (unpaired, neutral) | **SIZE 0x44** (embedded m_iter spans CWwdSpatialMgr +0x70..+0xb4) |
+| WwdGameObjectVtbl 0x5f0020 | `CWwdGameObjectE` (Mid, WwdGameObjectEh.cpp) | RETROFIT catalog — ALREADY realized in batch 4; cl emits orphan ??_7CWwdGameObjectE. Placeholder removed | **NO VTBL** — bound `g_wwdGameObjectVtbl` via the factory manual stamp (can't reference the compiler ??_7 without a `new`-ctor rewrite) | SIZE_UNKNOWN (Mid base subobject, not directly allocated) |
+| Vtbl_1f0060 0x5f0060 | `CWwdGameObjectF` (159440 variant) | RETROFIT catalog — orphan ??_7CWwdGameObjectF. Placeholder removed | NO VTBL (bound g_wwd159440FinalVtbl) | **SIZE 0x18c** (factory RezAlloc(0x18c)) |
+| WwdObjVtbl 0x5f00a8 | `CWwdGameObjectA` (166640 variant) | RETROFIT catalog — orphan ??_7CWwdGameObjectA. Placeholder removed | NO VTBL (bound g_wwdObjVtbl) | **SIZE 0x1dc** (factory RezAlloc(0x1dc)) |
+| — 0x5effd0 | `CWwdGameObjectC` (159250 variant) | (not a scope catalog entry) orphan ??_7CWwdGameObjectC | — | **SIZE 0x190** (factory RezAlloc(0x190)) |
+
+`CWwdGameObjectB` (the 0x1598d0/0x1fc flat variant) got **SIZE 0x1fc** (its flat
+model IS complete to +0x1f8).
+
+### DEFERRED (documented walls — NOT attempted; big rewrite, high revert risk)
+
+- **GameLevelVtbl 0x5f0150 (`CGameLevel`) / g_severusWorkerBaseVtbl 0x5efc30
+  (`CSeverusWorker`)** — `CGameLevel` is already declared polymorphic BUT the base
+  obj emits NO ??_7 (verified `llvm-objdump -t gamelevel.obj`): the manual two-phase
+  stamps (`CSeverusWorker` ctor stamps g_severusWorkerBaseVtbl, `StampLevelVtbl`
+  stamps g_gameLevelVtbl) make cl DEAD-STORE-ELIMINATE its implicit vptr stores, so
+  the ctor reproduces retail's exact 2-store two-phase sequence (89% — a documented
+  faithful KEEP from batch 1). Realizing needs a CGrunt-style multi-level refactor:
+  `CSeverusWorker` is modeled with 18 slots for CGameLevel's slot-numbering but the
+  REAL SeverusWorker base vtable @0x5efc30 is only **9 slots**, and ~CSeverusWorker
+  restamps 0x5e8cb4 (CObject grand-base) — so a correct realization = remodel
+  CSeverusWorker to 9 slots + a CObject grand-base + CGameLevel adds 9. That emits a
+  divergent 18-slot ??_7CSeverusWorker and destabilizes the 89% ctor + the whole
+  CImageSet family. NO VTBL possible either (0x1f0150 bound g_gameLevelVtbl; a phantom
+  ??_7CGameLevel binding would dup-DATA). Final-sweep candidate.
+- **Vtbl_1f00e8 0x5f00e8 (`CWwdGameObjectB`, the 0x1598d0-final flat variant)** —
+  `~CWwdGameObjectB` is a FLAT manual multi-vtable-restamp dtor (`@early-stop`
+  eh-dtor trylevel wall). Not a cl-emitted ??_7. Realize when it converts to the
+  CRemusNode-derived polymorphic chain (like A/C/F). Placeholder kept for slot
+  tracking.
+- **wwd game-object FACTORY realization (CWwdObjMgrFactories.cpp)** — the four
+  factories build via `RezAlloc + placement + two-phase vtable stamp` (`@early-stop`
+  rezalloc-placement-new-no-EH-frame wall). The dtor variants A/C/E/F are ALREADY
+  real-polymorphic (their ??_7 emitted, orphan), but the CTOR side keeps the manual
+  stamps because pairing the ??_7 to the delinked datum needs the factory to
+  construct via `new WideObj`-with-throwing-ctor — the documented final-sweep upgrade.
+- **Vtbl_1f0270 0x5f0270** — OUT OF SCOPE: stamped in `CSeverusWorkerHost.cpp` (not a
+  Wwd*/GameLevel* file). Owner is a severus-worker-host class.
+- **Vtbl_1f0310 0x5f0310** — NO owning class found in `src/` (unreferenced catalog
+  orphan). Left as a placeholder.
+
+### Rules reinforced (Batch 5)
+
+- **Add VTBL only when the vtable RVA is UNBOUND.** CWwdGrid's 0x1f0328 was free →
+  pair it (win). Every other scope vtable RVA is already bound to a `g_*Vtbl` DATA
+  extern (the factory/manager manual stamps reference it), so a VTBL would dup-DATA
+  and break the build — the emitted ??_7 must stay an ORPHAN (matching-neutral).
+- **Realizing a class whose vtable is SHARED still removes the catalog placeholder**
+  (correct devs' shape) but only emits an orphan ??_7 and can regress neighbors that
+  embed/scope the object (CWwdGridIter: CountInRect/FlushGrid/ForEachGrid −2..−4% on
+  the /GX scoped-local frame). Accepted per the irregardless-of-% mandate.
+- **A polymorphic class whose ctor manual-stamps `*(void**)this=&extern` emits NO
+  ??_7** — cl dead-store-eliminates its implicit vptr store (overwritten by the
+  manual stamp), so the manual-stamp shape is a stable faithful reproduction that a
+  naive "remove the stamp" would destabilize (GameLevel).

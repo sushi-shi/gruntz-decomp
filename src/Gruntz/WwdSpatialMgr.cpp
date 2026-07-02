@@ -101,24 +101,36 @@ public:
 
 // Position-iterator over a CWwdGrid: a rect-restricted cursor that walks every
 // grid cell overlapping a query rectangle and visits each node truly inside it
-// (optionally unlinking it). The retail object's vptr is the shared engine table
-// at 0x5f02a8 (its virtuals live in another TU); stamp it via a reloc-masked
-// DATA() extern (transitional manual vtable).
+// (optionally unlinking it). REAL POLYMORPHIC now: the retail object's vtable @
+// 0x5f02a8 is the 5-slot CObject-style interface (slot0 sub_1bef01, slot1 the
+// scalar-deleting dtor 0x163a20, slots 2/3/4 the shared sub_0028ec/sub_00106e/
+// sub_004034). Declaring the 5 virtuals makes cl auto-emit ??_7CWwdGridIter + the
+// implicit vptr-FIRST ctor stamp (== the old `m_vptr = g_wwdGridIterVtbl` first-
+// store shape). The 4 non-dtor virtuals are declared-only (bodies in sibling TUs;
+// reloc-masked). NO VTBL: 0x5f02a8 is the SHARED engine vtable (already bound as
+// g_planeRenderVtbl in wwdfile), so the emitted ??_7CWwdGridIter is an orphan
+// (unpaired) - matching-neutral tracking, per the batch-4 shared-vtable rule.
 //
-// Cursor layout (offsets from 0x191b10/0x191c30): the grid @ +0x04, the current
-// matched node @ +0x08, the saved-next node @ +0x0c, the clamped query rect @
-// +0x10..+0x1c, the cell-range corners @ +0x20..+0x2c, and the live cell-walk
-// counters @ +0x30..+0x3c, with the remove flag @ +0x40.
+// Cursor layout (offsets from 0x191b10/0x191c30): implicit vptr @ +0x00, the grid
+// @ +0x04, the current matched node @ +0x08, the saved-next node @ +0x0c, the
+// clamped query rect @ +0x10..+0x1c, the cell-range corners @ +0x20..+0x2c, and
+// the live cell-walk counters @ +0x30..+0x3c, with the remove flag @ +0x40.
+SIZE(CWwdGridIter, 0x44);
 class CWwdGridIter {
 public:
+    virtual void RemusV0();  // slot 0 (0x1bef01, declared-only)
+    virtual ~CWwdGridIter(); // slot 1 (scalar-deleting dtor 0x163a20; engine teardown)
+    virtual void RemusV2();  // slot 2 (0x0028ec, declared-only)
+    virtual void RemusV3();  // slot 3 (0x00106e, declared-only)
+    virtual void RemusV4();  // slot 4 (0x004034, declared-only)
+
     CWwdGridIter();
-    ~CWwdGridIter();                                // 0x191c70-ish engine teardown
     WwdGridNode* Start(CWwdGrid* grid, i32 remove); // 0x191ad0 init cursor + first
     WwdGridNode* Init(CWwdGrid* grid, WwdRect rect,
                       i32 remove); // 0x191b10 set rect + first
     WwdGridNode* GetNext();        // 0x191c30 advance the cursor
 
-    void* m_vptr;        // +0x00  = &g_wwdGridIterVtbl (0x5f02a8)
+    // implicit vptr @ +0x00  (= 0x5f02a8, shared g_planeRenderVtbl)
     CWwdGrid* m_grid;    // +0x04
     WwdGridNode* m_cur;  // +0x08  current matched node
     WwdGridNode* m_next; // +0x0c saved-next (cell head cursor)
@@ -133,8 +145,6 @@ public:
     i32 m_rowBase;       // +0x3c  current row-base linear index
     i32 m_remove;        // +0x40  unlink-as-visited flag
 };
-DATA(0x005f02a8)
-extern void* g_wwdGridIterVtbl[];
 
 // --- the cluster class -----------------------------------------------------
 
@@ -271,11 +281,10 @@ i32 CWwdSpatialMgr::CountInRect(CWwdGrid* grid) {
     return count;
 }
 
-// The iterator ctor stamps the shared engine vtable (0x5f02a8) and zeros the
-// cursor fields inline; the dtor is the engine teardown that gives this TU its
-// /GX EH frame. Both are reloc-masked w.r.t. the vtable address.
+// The iterator ctor: cl auto-emits the implicit vptr-FIRST stamp (??_7CWwdGridIter
+// -> reloc-masks the shared 0x5f02a8), then zeros the cursor fields inline; the
+// dtor is the engine teardown that gives this TU its /GX EH frame.
 inline CWwdGridIter::CWwdGridIter() {
-    m_vptr = g_wwdGridIterVtbl;
     m_grid = 0;
     m_cur = 0;
 }
@@ -585,7 +594,6 @@ walk:
     }
     goto top;
 }
-SIZE_UNKNOWN(CWwdGridIter);
 SIZE_UNKNOWN(CWwdObjWorker);
 SIZE_UNKNOWN(CWwdSpatialMgr);
 SIZE_UNKNOWN(WwdBucketHead);

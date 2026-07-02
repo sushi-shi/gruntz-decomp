@@ -3872,10 +3872,10 @@ wwdgrid	?Clear@CWwdGrid@@QAEHXZ	100.0000	100.0000	2	3fa965687146	0x191a70
 wwdgrid	?FreeBuckets@CWwdGrid@@QAEXXZ	100.0000	100.0000	2	ea8c19f6d6f0	0x191800
 wwdgrid	?Query@CWwdGrid@@QAEHHHHHH@Z	99.7188	99.7188	3	68bcd2e8a5c6	0x1918c0
 wwdgrid	?Remove@CWwdGrid@@QAEXPAUWwdRegion@@@Z	100.0000	100.0000	2	40d0b5598a9f	0x191890
-wwdspatialmgr	?CountInRect@CWwdSpatialMgr@@QAEHPAVCWwdGrid@@@Z	86.1539	86.1539	3	901c39b3a8ff	0x168460
+wwdspatialmgr	?CountInRect@CWwdSpatialMgr@@QAEHPAVCWwdGrid@@@Z	84.2308	84.2308	3	901c39b3a8ff	0x168460
 wwdspatialmgr	?FlushAll@CWwdSpatialMgr@@QAEHXZ	100.0000	100.0000	1	9038dde5139b	0x168960
-wwdspatialmgr	?FlushGrid@CWwdSpatialMgr@@QAEHPAVCWwdGrid@@@Z	84.6809	84.6809	1	1a818c7558af	0x168990
-wwdspatialmgr	?ForEachGrid@CWwdSpatialMgr@@QAEHPAVCWwdGrid@@P6AXPAVCWwdObject@@@Z@Z	89.1622	89.1622	1	50ba5385711e	0x168a70
+wwdspatialmgr	?FlushGrid@CWwdSpatialMgr@@QAEHPAVCWwdGrid@@@Z	82.5532	82.5532	1	1a818c7558af	0x168990
+wwdspatialmgr	?ForEachGrid@CWwdSpatialMgr@@QAEHPAVCWwdGrid@@P6AXPAVCWwdObject@@@Z@Z	84.8649	84.8649	1	50ba5385711e	0x168a70
 wwdspatialmgr	?FreeGrids@CWwdSpatialMgr@@QAEXXZ	100.0000	100.0000	1	86831d8ccca0	0x1682f0
 wwdspatialmgr	?GetFirstObject@CWwdSpatialMgr@@QAEPAVCWwdObject@@XZ	100.0000	100.0000	1	fd056d884404	0x168af0
 wwdspatialmgr	?GetNext@CWwdGridIter@@QAEPAUWwdGridNode@@XZ	93.7073	93.7073	3	2f17e9d4685f	0x191c30

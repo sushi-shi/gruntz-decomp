@@ -57,6 +57,9 @@ struct BucketHead {
 // implicit ??_7CRemusBase grand-base re-stamp (reloc-masks 0x5e8cb4) folded into
 // every leaf dtor, and the destructible base subobject gives ~CWwdGrid its /GX
 // frame. The 4 non-dtor virtuals live in sibling TUs (declared, reloc-masked).
+// NO VTBL: ??_7CRemusBase masks the SHARED CObject vtable @0x5e8cb4 (already bound
+// as g_severusWorkerDtorVtbl in reconbatch2) - a per-class VTBL would dup-DATA.
+SIZE_UNKNOWN(CRemusBase);
 struct CRemusBase {
     virtual void RemusV0(); // slot 0 (sub_1bef01)
     virtual ~CRemusBase();  // slot 1 (scalar-deleting dtor)
@@ -70,8 +73,10 @@ struct CRemusBase {
 // implicit ??_7CWwdGrid vptr stamp, ~CWwdGrid the implicit stamp-first re-stamp,
 // and the per-object query callback is the pure virtual OnFound at slot 5 (vtbl
 // +0x14, == retail's __purecall slot). cl emits ??_7CWwdGrid (slot relocs mask
-// the 0x5f0328 target).
-SIZE_UNKNOWN(CWwdGrid);
+// the 0x5f0328 target); VTBL pairs the emitted ??_7CWwdGrid with the delinked
+// datum (0x1f0328 was unbound). Exact size 0x44 (grid-setup RezAlloc(0x44) x3).
+SIZE(CWwdGrid, 0x44);
+VTBL(CWwdGrid, 0x001f0328);
 class CWwdGrid : public CRemusBase {
 public:
     // ctor: build the grid over rect (x0,y0,x1,y1) with cell sizes cellW/cellH.
