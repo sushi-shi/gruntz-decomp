@@ -104,9 +104,6 @@ public:
     CGruntToyTimeSprite(CSpriteObj* obj);
     // GetTypeTag (0x120e0): 6-byte per-class logic-type id accessor (0x411).
     i32 GetTypeTag();
-    // GetToyTime (0x7fca0): tiny __stdcall +0x3f4 accessor (ret 4), sibling of
-    // CGruntWingzTimeSprite::GetWingzTime (+0x3f8). Host modeled minimally below.
-    static i32 __stdcall GetToyTime(struct CToyTimeHost* o);
     char m_pad3c[0x5c - 0x3c];
     i32 m_5c; // +0x5c
     i32 m_60; // +0x60
@@ -117,6 +114,11 @@ struct CToyTimeHost {
     char m_pad0[0x3f4];
     i32 m_3f4; // +0x3f4  toy timer value
 };
+
+// GetToyTime (0x7fca0): free __stdcall +0x3f4 accessor (ret 4), sibling of
+// GetWingzTime (+0x3f8). Not a sprite member: the ecx trace mis-homed this
+// __stdcall callee (stale-ecx owner); it reads a foreign host, no fn-ptr storage.
+i32 __stdcall GetToyTime(CToyTimeHost* o);
 
 class CGruntWingzTimeSprite : public CGruntSpriteBase {
 public:
@@ -181,10 +183,10 @@ CGruntToyTimeSprite::CGruntToyTimeSprite(CSpriteObj* obj) : CGruntSpriteBase(obj
     m_60 = -0x20;
 }
 
-// CGruntToyTimeSprite::GetToyTime @0x0007fca0 - read the bound object's +0x3f4
-// toy-timer field. __stdcall (`mov eax,[esp+4]; mov eax,[eax+0x3f4]; ret 4`).
+// GetToyTime @0x0007fca0 - free __stdcall accessor: read the bound host's +0x3f4
+// toy-timer field (`mov eax,[esp+4]; mov eax,[eax+0x3f4]; ret 4`).
 RVA(0x0007fca0, 0xd)
-i32 __stdcall CGruntToyTimeSprite::GetToyTime(CToyTimeHost* o) {
+i32 __stdcall GetToyTime(CToyTimeHost* o) {
     return o->m_3f4;
 }
 

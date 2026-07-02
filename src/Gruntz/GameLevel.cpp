@@ -1596,7 +1596,7 @@ void CGameLevel::NotifyAllPlanes() {
 // between the arg pushes (2 regs), MSVC pre-loads all three (eax/ecx/edx). See
 // docs/patterns/pin-local-for-callee-saved-reg.md. Entropy tail; deferred.
 RVA(0x00167130, 0x83)
-i32 __stdcall CGameLevel::ApplyScroll(CGameLevel* lvl, i32 a, i32 b, i32 c) {
+i32 __stdcall ApplyScroll(CGameLevel* lvl, i32 a, i32 b, i32 c) {
     LevelScroll* s = (LevelScroll*)lvl;
     i32 eax = 0;
     i32 prevX = s->scrollX;

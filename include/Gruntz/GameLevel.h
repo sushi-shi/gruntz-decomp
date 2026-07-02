@@ -234,11 +234,6 @@ public:
     // serializer), then forwards (arg2, arg2, arg3) to a level-resolve helper.
     i32 EditDispatch(void* sink, i32 arg1, i32 arg2, i32 arg3);
 
-    // The scroll-state setter the clamp drivers tail into. Takes the level
-    // explicitly (the edit-state +0xe4 machine viewed as scroll x/y at +0x5c/+0x60).
-    // __stdcall (callee-cleans its 4 stack args: ret 0x10).
-    static i32 __stdcall ApplyScroll(CGameLevel* lvl, i32 a, i32 b, i32 c);
-
     // ScrollKindDispatch12 (@0x1671c0, __thiscall this=level): the per-axis scroll
     // dispatcher ApplyScroll fans brush-kinds 1..2 into. For each axis, when the
     // target's scroll (+0x5c/+0x60) differs from the goal, call the matching
@@ -313,5 +308,13 @@ public:
     i32 m_d0, m_d4, m_d8, m_dc;    // +0xD0  individual roles unproven - left as offsets)
     WwdHeader m_header;            // +0xE0  (1524 B copy)
 };
+
+// ApplyScroll (@0x00167130): the scroll-state setter the clamp/edit drivers tail
+// into. Takes the level explicitly (the edit-state +0xe4 machine viewed as scroll
+// x/y at +0x5c/+0x60) and is __stdcall (callee-cleans its 4 stack args: ret 0x10).
+// A free helper, not a CGameLevel member: it is a __stdcall callee (the ecx trace's
+// class owner is stale for those) and EditSwitch calls it with an explicit level
+// (ApplyScroll(target, ...)), not a `this` dispatch.
+i32 __stdcall ApplyScroll(CGameLevel* lvl, i32 a, i32 b, i32 c);
 
 #endif // SRC_GRUNTZ_GAMELEVEL_H

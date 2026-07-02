@@ -8,9 +8,12 @@
 // beyond CUserLogic, so its dtor folds the bare CUserLogic teardown (the /GX
 // leaf-dtor archetype).
 //
-// GetWingzTime (0x07fd90) is a tiny __stdcall accessor: read the bound object's
+// GetWingzTime (0x07fd90) is a free __stdcall accessor: read the bound grunt's
 // +0x3f8 wingz-timer field and return it (ret 4 -> callee cleanup -> one stack
-// arg, NOT __thiscall).
+// arg, NOT __thiscall). It is a standalone `int __stdcall(CGrunt*)` helper, not a
+// member of the sprite - the this/ecx trace only mis-homed it here (stale-ecx
+// attribution is unreliable for __stdcall callees): it reads a foreign CGrunt,
+// not this sprite, and has no fn-pointer storage. Declared free below.
 //
 // Field names are placeholders; only OFFSETS + the inheritance chain are
 // load-bearing.
@@ -24,10 +27,11 @@ class CGruntWingzTimeSprite : public CUserLogic {
 public:
     // GetTypeTag (0x121a0): the 6-byte per-class logic-type id accessor (0x417).
     i32 GetTypeTag();
-    // GetWingzTime (0x07fd90): tiny __stdcall accessor (ret 4) reading the bound
-    // CGrunt's m_wingzTime (+0x3f8).
-    static i32 __stdcall GetWingzTime(CGrunt* o); // 0x07fd90
-    ~CGruntWingzTimeSprite();                     // 0x0121f0 (folds the CUserLogic teardown)
+    ~CGruntWingzTimeSprite(); // 0x0121f0 (folds the CUserLogic teardown)
 };
+
+// GetWingzTime (0x07fd90): free __stdcall accessor (ret 4) reading the bound
+// CGrunt's m_wingzTime (+0x3f8).
+i32 __stdcall GetWingzTime(CGrunt* o);
 
 #endif // GRUNTZ_CGRUNTWINGZTIMESPRITE_H

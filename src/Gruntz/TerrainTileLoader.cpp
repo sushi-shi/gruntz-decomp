@@ -123,13 +123,16 @@ namespace {
 // ---------------------------------------------------------------------------
 class CTerrainTileLoader {
 public:
-    void __stdcall Load(i32 actionIndex, i32 a2, i32 ty, i32 a4, i32 tx, i32 sub);
+    // __thiscall member (retail passes `this` in ecx: `mov esi,ecx` prologue). The
+    // earlier `__stdcall` here was a reconstruction artifact - a real member's
+    // convention is __thiscall, not callee-cleanup-with-stack-this.
+    void Load(i32 actionIndex, i32 a2, i32 ty, i32 a4, i32 tx, i32 sub);
     char m_pad[4];
 };
 
 // ===========================================================================
 RVA(0x00075e90, 0x1329)
-void __stdcall CTerrainTileLoader::Load(i32 actionIndex, i32 a2, i32 ty, i32 a4, i32 tx, i32 sub) {
+void CTerrainTileLoader::Load(i32 actionIndex, i32 a2, i32 ty, i32 a4, i32 tx, i32 sub) {
     void* self = this;
     i32 x = tx;
     i32 y = ty;

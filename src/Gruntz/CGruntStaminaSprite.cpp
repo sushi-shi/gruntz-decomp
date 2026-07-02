@@ -22,10 +22,12 @@ i32 CGruntStaminaSprite::GetTypeTag() {
 RVA(0x00012070, 0x44)
 CGruntStaminaSprite::~CGruntStaminaSprite() {}
 
-// CGruntStaminaSprite::GetStaminaTime @0x0007fbb0 - read the bound object's +0x3f0
-// stamina-timer field and return it. __stdcall (single stack arg, callee cleanup -
-// `mov eax,[esp+4]; mov eax,[eax+0x3f0]; ret 4`).
+// GetStaminaTime @0x0007fbb0 - free __stdcall accessor: read the bound grunt's
+// +0x3f0 stamina-timer field and return it (single stack arg, callee cleanup -
+// `mov eax,[esp+4]; mov eax,[eax+0x3f0]; ret 4`). Not a sprite member: the ecx
+// trace mis-homed this __stdcall callee (stale-ecx owner); it reads a foreign
+// CGrunt and is never stored as a fn pointer.
 RVA(0x0007fbb0, 0xd)
-i32 __stdcall CGruntStaminaSprite::GetStaminaTime(CGrunt* o) {
+i32 __stdcall GetStaminaTime(CGrunt* o) {
     return o->m_stamina;
 }

@@ -27,10 +27,12 @@ i32 CGruntWingzTimeSprite::GetTypeTag() {
 RVA(0x000121f0, 0x44)
 CGruntWingzTimeSprite::~CGruntWingzTimeSprite() {}
 
-// CGruntWingzTimeSprite::GetWingzTime @0x07fd90 - read the bound object's +0x3f8
-// wingz-timer field and return it. __stdcall (single stack arg, callee cleanup -
-// `mov eax,[esp+4]; mov eax,[eax+0x3f8]; ret 4`).
+// GetWingzTime @0x07fd90 - free __stdcall accessor: read the bound grunt's +0x3f8
+// wingz-timer field and return it (single stack arg, callee cleanup -
+// `mov eax,[esp+4]; mov eax,[eax+0x3f8]; ret 4`). Not a sprite member: the ecx
+// trace mis-homed this __stdcall callee (stale-ecx owner); it reads a foreign
+// CGrunt and is never stored as a fn pointer.
 RVA(0x0007fd90, 0xd)
-i32 __stdcall CGruntWingzTimeSprite::GetWingzTime(CGrunt* o) {
+i32 __stdcall GetWingzTime(CGrunt* o) {
     return o->m_wingzTime;
 }

@@ -22,10 +22,13 @@ class CGruntStaminaSprite : public CUserLogic {
 public:
     // GetTypeTag (0x12020): the 6-byte per-class logic-type id accessor (0x410).
     i32 GetTypeTag();
-    // GetStaminaTime (0x07fbb0): tiny __stdcall accessor (ret 4) reading the bound
-    // CGrunt's m_stamina (+0x3f0), the sibling of GetWingzTime (m_wingzTime +0x3f8).
-    static i32 __stdcall GetStaminaTime(CGrunt* o); // 0x07fbb0
-    ~CGruntStaminaSprite();                         // 0x00012070 (folds the CUserLogic teardown)
+    ~CGruntStaminaSprite(); // 0x00012070 (folds the CUserLogic teardown)
 };
+
+// GetStaminaTime (0x07fbb0): free __stdcall accessor (ret 4) reading the bound
+// CGrunt's m_stamina (+0x3f0), the sibling of GetWingzTime (m_wingzTime +0x3f8).
+// Standalone helper, not a sprite member - stale-ecx trace mis-homing (the
+// __stdcall callee reads a foreign CGrunt, no fn-pointer storage).
+i32 __stdcall GetStaminaTime(CGrunt* o);
 
 #endif // GRUNTZ_CGRUNTSTAMINASPRITE_H
