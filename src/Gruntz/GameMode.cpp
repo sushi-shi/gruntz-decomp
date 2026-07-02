@@ -505,12 +505,6 @@ i32 CCreditsState::InputVirtual() {
 RVA(0x0001d440, 0xd7d)
 void CBootyState::vfunc_1() {}
 
-// @confidence: med
-// @source: rtti-vptr
-// @stub
-RVA(0x0008d5e0, 0x8b)
-void CCreditsState::Stub_08d5e0() {}
-
 // @confidence: low
 // @source: winapi:SelectClipRgn;SetBkMode
 // @stub
@@ -612,11 +606,32 @@ void CState::BuildBootyWalkingGruntz() {}
 RVA(0x0001c210, 0x4b5)
 void CBootyState::CheckWarpLetterBonus() {}
 
-// @confidence: med
-// @source: decomp-xref
-// @stub
+// CMenuState::BuildVersionString (0xa0d80): format the on-screen version banner
+// into a transient CString, append " (SPAWN MODE)" when the CD prompt latched the
+// spawn install, then hand it to the shared HUD-message sprite helper into the
+// caller-supplied RECT (the 4 args form the RECT by value). The build/patch field
+// g_65160c selects the two- vs three-number version format.
+extern "C" i32 g_651608;         // 0x651608  version field A
+extern "C" i32 g_65160c;         // 0x65160c  build/patch field (0 -> two-number format)
+extern "C" i32 g_651610;         // 0x651610  version field B
+extern "C" i32 g_cdPromptResult; // 0x6455ec  spawn-mode latch
+// The shared HUD message-sprite helper (0x1154b0 via the 0x1f00 ILT thunk,
+// __cdecl): push a transient text sprite carrying `text` into `rect`.
+void ShowHudMessage(void* sink, CString* text, RECT* rect, i32 dur, i32 a, i32 b, i32 c, i32 d,
+                    i32 e); // 0x1154b0
 RVA(0x000a0d80, 0xd7)
-void CMenuState::BuildVersionString(i32, i32, i32, i32) {}
+void CMenuState::BuildVersionString(i32 rectLeft, i32, i32, i32) {
+    CString str;
+    if (g_65160c == 0) {
+        str.Format("Gruntz v%d.%d", g_651608, g_651610);
+    } else {
+        str.Format("Gruntz v%d.%d%d", g_651608, g_65160c, g_651610);
+    }
+    if (g_cdPromptResult) {
+        str += " (SPAWN MODE)";
+    }
+    ShowHudMessage(m_c, &str, (RECT*)&rectLeft, 0x64, 1, 0xff, 0xff, 0, 0);
+}
 
 // The "STATEZ_CREDITZ" registered object (m_2c): same Register source as
 // CHelpState (FUN_0053c030). FindSet/FindSubset/Resolve/IsLoaded below are the
@@ -925,9 +940,12 @@ void CCreditsState::ReleaseResources() {
     ((CGameModeBase*)this)->BaseCleanup();
 }
 
-// CCreditsState::~CCreditsState (unpaired, no RVA): calls the defined ReleaseResources
-// so cl keeps the implicit vptr-store and emits ??_7CCreditsState@@6B@ (masks 0x5e9c64;
-// the GruntzMgrTransition DATA pin is removed). Matching-neutral.
+// CCreditsState::~CCreditsState (`??1`, 0x8d5e0): stamp the CCreditsState vptr, run
+// ReleaseResources (the credits teardown), then cl auto-destroys the m_1f0 CString
+// (~CString @0x1b9cde) and the m_1e8 image list (stamp/DeleteImageList/base-restore)
+// in reverse-declaration order before chaining the ~CState base. /GX EH frame for the
+// member unwind. ReleaseResources / the callees all reloc-mask.
+RVA(0x0008d5e0, 0x8b)
 CCreditsState::~CCreditsState() {
     ReleaseResources();
 }

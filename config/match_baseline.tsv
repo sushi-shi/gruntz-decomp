@@ -260,7 +260,7 @@ gameassetnamespaces	1	0
 gamechecksum	1	0
 gamekeyhandler	1	0
 gamelevel	60	26
-gamemode	44	21
+gamemode	44	23
 gamemodeobjlifecycle	4	3
 gameobjectctors	8	4
 gameobjectfactory	1	1
@@ -2208,16 +2208,17 @@ gamelevel	?VisitVisible@CGameLevel@@QAEXPAXH@Z	92.3282	92.3282	4	acf0ef92366c	0x
 gamelevel	?WalkColumnDown@CGameLevel@@QAEHPAXH@Z	92.7579	92.7579	1	fbf2cbdeb4cd	0x160a40
 gamemode	??0CState@@QAE@XZ	100.0000	100.0000	4	a1d9fd8bca62	0x8c750
 gamemode	??1CBootyState@@UAE@XZ	100.0000	100.0000	1	899f9930b960	0x8d440
+gamemode	??1CCreditsState@@UAE@XZ	100.0000	100.0000	1	76701af27730	0x8d5e0
 gamemode	??1CMenuState@@UAE@XZ	100.0000	100.0000	1	7e8055f2f15c	0x8ce60
 gamemode	??1CMultiBootyState@@UAE@XZ	100.0000	100.0000	1	e3b4ba267d7a	0x8d510
 gamemode	??_GCState@@UAEPAXI@Z	100.0000	100.0000	1	cpp:2601fb2a9496	0x8c710
 gamemode	?BuildBootyWalkingGruntz@CState@@QAEXXZ	0.6579	0.6579	1	ec771b9e0f06	0x1b450
-gamemode	?BuildVersionString@CMenuState@@QAEXHHHH@Z	1.6129	1.6129	2	cba34bc68989	0xa0d80
+gamemode	?BuildVersionString@CMenuState@@QAEXHHHH@Z	100.0000	100.0000	3	7a5141c2b00e	0xa0d80
 gamemode	?BuildWarpStoneGlitterAnimation@CState@@QAEHXZ	88.1274	88.1274	1	80744100f058	0x19540
 gamemode	?CheckPerfectBonus@CMultiBootyState@@QAEHXZ	100.0000	100.0000	2	9fc93e05a397	0x1c0f0
 gamemode	?CheckWarpLetterBonus@CBootyState@@QAEXXZ	0.2849	0.2849	1	86e864f54e78	0x1c210
 gamemode	?FinishState@CCreditsState@@QAEHXZ	100.0000	100.0000	1	b2c3a49646dc	0x39c40
-gamemode	?FlashColor@CCreditsState@@QAEHXZ	70.4231	70.4231	1	fcd764f9eff7	0x39d00
+gamemode	?FlashColor@CCreditsState@@QAEHXZ	66.5769	66.5769	1	fcd764f9eff7	0x39d00
 gamemode	?FormatHudText@CMenuState@@QAEXH@Z	0.3094	0.3094	2	639568dc3209	0x1af70
 gamemode	?ForwardIdleAnim@CMultiBootyState@@QAEHHH@Z	100.0000	100.0000	1	4efc3adad86f	0x1d420
 gamemode	?FrameSlot24@CMultiBootyState@@UAEHH@Z	100.0000	100.0000	2	1df26f9626ef	0x1e570
@@ -2241,7 +2242,6 @@ gamemode	?StartMusic@CMenuState@@QAEXXZ	94.7561	94.7561	2	7c0e029ce454	0xa05a0
 gamemode	?StepGlitterAnim@CMultiBootyState@@QAEXXZ	80.1343	80.1343	3	bc8e61e2a888	0x196c0
 gamemode	?StepVideo@CCreditsState@@QAEHXZ	95.0000	95.0000	1	e9612fee4d4c	0x39c60
 gamemode	?StopMusicChain@CMenuState@@QAEXXZ	99.7059	99.7059	1	f84633f00b69	0xa0640
-gamemode	?Stub_08d5e0@CCreditsState@@QAEXXZ	3.0303	3.0303	2	55b18b536e0d	0x8d5e0
 gamemode	?Update@CBootyState@@UAEHXZ	100.0000	100.0000	5	96557d6664de	0x8d3f0
 gamemode	?Update@CCreditsState@@UAEHXZ	100.0000	100.0000	5	c1f02e1607eb	0x8d590
 gamemode	?Update@CMenuState@@UAEHXZ	100.0000	100.0000	5	7d32b0573c0d	0x8ce10
@@ -2386,11 +2386,11 @@ gruntcmdpercent	?ComputeCmdPercent@@YAHH@Z	100.0000	100.0000	2	32370a43dd27	0x13
 gruntcombatanim	?LoadGruntCombatAnimations@CGruntCombat@@QAEHHHHHHHHH@Z	40.8920	40.8920	3	054233c9de15	0x597a0
 gruntdatarecord	?DeserializeStrings@GruntDataRecord@@QAEHPAUDataWriter@@@Z	100.0000	100.0000	1	d96d2c87cdd6	0x56eb0
 gruntdatarecord	?SerializeStrings@GruntDataRecord@@QAEHPAUDataWriter@@@Z	100.0000	100.0000	1	71ad52c7e3da	0x56da0
-gruntinfotext	?winapi_0d95f0_wsprintfA@GruntInfoTextHost@@QAEHXZ	88.4979	88.4979	2	21e32639afed	0xd95f0
+gruntinfotext	?winapi_0d95f0_wsprintfA@GruntInfoTextHost@@QAEHXZ	88.4979	88.4979	3	f1489bb640c1	0xd95f0
 gruntmovestep	?Step@CGruntMover@@QAEHPAUCGruntM@@@Z	18.1429	18.1429	1	27431664e366	0x31610
 gruntpathscan	?PathScan57db0@CGrunt@@QAEHXZ	39.3829	39.3829	2	6d80437a50ce	0x57db0
 gruntphasestep	?PhaseStep@CGrunt@gruntphase@@QAEHXZ	31.4567	31.4567	2	7221033df479	0xf60f0
-gruntpickupload	?LoadPickupSprites@CGrunt@@QAEHHHHHH@Z	47.1890	47.1890	3	80d6128e69d1	0x65e80
+gruntpickupload	?LoadPickupSprites@CGrunt@@QAEHHHHHH@Z	47.1890	47.1890	4	38d48cde8043	0x65e80
 gruntpuddle	??0CGruntPuddle@@QAE@PAUCGameObject@@@Z	91.9504	91.9504	1	f672560977a9	0x40490
 gruntpuddle	??1CGruntPuddle@@UAE@XZ	100.0000	100.0000	1	d8797374243c	0x10d10
 gruntpuddle	?Place@CGruntPuddle@@QAEHHHHH@Z	73.5400	73.5400	3	dcb6baed4642	0x40c30
@@ -2606,7 +2606,7 @@ helperhost	?Helper_166040@HelperHost@@QAEHHH@Z	95.0000	95.0000	2	c19517f1187a	0x
 iconloaders	?BuildBootyPerfectAnimation@EngineLabelBacklog@@QAEHXZ	100.0000	100.0000	6	e9baf6d1a7cd	0x1c070
 iconloaders	?LoadCameraSprite@EngineLabelBacklog@@QAEHXZ	86.8000	86.8000	6	f384394dc579	0x78960
 iconloaders	?LoadExplosionSprites@EngineLabelBacklog@@QAEHHHHH@Z	98.0727	98.0727	6	0ededc104450	0x7b330
-iconloaders	?LoadPowerupIconSprites@EngineLabelBacklog@@QAEHHHHHHH@Z	33.8559	33.8559	7	2a2f8f1cdec5	0x7c620
+iconloaders	?LoadPowerupIconSprites@EngineLabelBacklog@@QAEHHHHHHH@Z	33.8559	33.8559	8	f767a8f21182	0x7c620
 iconloaders	?LoadToyBoxIcon@EngineLabelBacklog@@QAEHHHHHH@Z	99.9444	99.9444	3	90fabf16a3bf	0x7a3f0
 image	??1CFileImage@@UAE@XZ	100.0000	100.0000	1	7252e7ab41e8	0x141350
 image	??1CFileImageSurface@@UAE@XZ	100.0000	100.0000	1	8f95b4aa6ff0	0x142360
@@ -3390,7 +3390,7 @@ spritereftable	?GetA@CSpriteRefTable@@QAEPAVCSpriteRef@@H@Z	100.0000	100.0000	2	
 spritereftable	?GetB@CSpriteRefTable@@QAEPAVCSpriteRef@@H@Z	100.0000	100.0000	2	cc61c1ed518e	0xe2390
 spritereftable	?GetSel@CSpriteRefTable@@QAEHHH@Z	100.0000	100.0000	3	868f80632ae2	0xe23c0
 spritereftable	?Init@CSpriteRefTable@@QAEHHH@Z	100.0000	100.0000	3	c5776332c494	0xe2250
-spritereftable	?LoadGruntzPalette@CSpriteRefTable@@QAEHHH@Z	96.9231	96.9231	2	d0b19c2a0077	0xe2d10
+spritereftable	?LoadGruntzPalette@CSpriteRefTable@@QAEHHH@Z	96.9231	96.9231	3	4283df7009ab	0xe2d10
 spritereftable	?LoadToolToyPalettes@CSpriteRefTable@@QAEHH@Z	100.0000	100.0000	2	8fa99dc5b7fa	0xe2980
 spritereftable	?Reset@CSpriteRefTable@@QAEXXZ	100.0000	100.0000	2	fcb1880fdad7	0xe2290
 spriteresource	?ApplyGeometryDirect@CGruntAnimPlayer@@QAEXHH@Z	100.0000	100.0000	1	77aad38a5c97	0x58b60

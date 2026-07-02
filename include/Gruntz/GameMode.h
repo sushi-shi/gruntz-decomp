@@ -244,6 +244,23 @@ public:
     void BuildVersionString(i32, i32, i32, i32);
 };
 
+// CImageList-owning sub-object embedded at CCreditsState+0x1e8 (an MFC CImageList
+// the credits screen builds). Modeled as the twin of Dialogs' CImgHolder: a
+// CObject-ish grand-base (vtable 0x5e8cb4) + the derived holder (vtable 0x5e8cd4)
+// whose virtual dtor frees the image list (CImageList::DeleteImageList @0x1c6a5c).
+// Real-virtual model - cl emits the implicit ??_7 stamps (reloc-masked); the base
+// dtor folds into ~CCreditsState as the final base-vptr restore.
+struct CCreditsImgBase {
+    virtual ~CCreditsImgBase() {}
+};
+struct CCreditsImageList : CCreditsImgBase {
+    void DeleteImageList(); // 0x1c6a5c (NAFXCW, reloc-masked)
+    // Inline so ~CCreditsState folds the stamp/DeleteImageList/base-restore teardown
+    // (retail inlines it; an out-of-line ??1 would emit a `call` and shrink the frame).
+    virtual ~CCreditsImageList() { DeleteImageList(); }
+    void* m_hImageList; // +0x04
+};
+
 // CCreditsState - the credits state. Render
 // is the canonical Render spine: input poll -> input-virtual bail -> cursor anim
 // -> per-entity Update loop -> message scan -> two sub-steps -> draw -> two
@@ -251,8 +268,8 @@ public:
 SIZE_UNKNOWN(CCreditsState);
 class CCreditsState : public CState {
 public:
-    // Out-of-line dtor (defined in GameMode.cpp, calls ReleaseResources) so cl emits
-    // ??_7CCreditsState@@6B@ - the same realization pattern as CMenuState/CBootyState.
+    // Out-of-line dtor (0x8d5e0, GameMode.cpp): runs ReleaseResources then cl auto-
+    // destroys the m_1f0 CString + the m_1e8 image list before chaining ~CState.
     virtual ~CCreditsState() OVERRIDE;
     virtual i32 Update() OVERRIDE;       // return 8;  (slot 4)
     virtual i32 Render() OVERRIDE;       // the per-frame credits draw (this TU)
@@ -265,10 +282,6 @@ public:
     void Sub2();
     void Sub3();
 
-    // Engine-label backlog stub: the scalar-deleting dtor. A
-    // non-virtual placeholder so the carefully-built vftable (slots 4..8) is
-    // unchanged; the real ??1/??_G is not matched here.
-    void Stub_08d5e0();
     i32 winapi_0396f0_SelectClipRgn_SetBkMode();
 
     // ReleaseResources (0x38f00): the credits teardown - free the pooled resource,
@@ -288,7 +301,10 @@ public:
     i32 m_1bc; // +0x1bc flash re-roll timer
     char m_pad1c0[0x1c4 - 0x1c0];
     i32 m_1c4; // +0x1c4 conditional-FX gate
-    char m_pad1c8[0x208 - 0x1c8];
+    char m_pad1c8[0x1e8 - 0x1c8];
+    CCreditsImageList m_1e8; // +0x1e8 embedded image list (freed by ~CCreditsState)
+    CString m_1f0;           // +0x1f0 credits caption CString (freed by ~CCreditsState)
+    char m_pad1f4[0x208 - 0x1f4];
     i32 m_208; // +0x208 video playing gate
     char m_pad20c[0x210 - 0x20c];
     void* m_210; // +0x210 Smacker video handle
