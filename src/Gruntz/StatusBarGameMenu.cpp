@@ -13,9 +13,9 @@
 // Owner verified by the member writes: m_c (the configure `code` arg), the base coords
 // m_10/m_14, the +0xb8 Game CPtrList, the m_110==0x1fb briefing gate, the m_354
 // "show RESUME" gate, the m_558/m_55c/m_570 destruct-button state, and the per-command
-// slot stores. The widget subclasses' virtuals live in other TUs, so their vtables are
-// stamped directly (DATA() externs, reloc-masked) - a transitional workaround, NOT dev
-// code. Field names are placeholders; only the OFFSETS + code bytes are load-bearing.
+// slot stores. The widgets are REAL polymorphic CSBI_ImageSet / CSBI_MenuItem leaves,
+// so `new CSBI_ImageSet` makes cl auto-stamp the retail vtable (config/vtable_names.csv);
+// no manual stamp. Field names are placeholders; only the OFFSETS + code bytes matter.
 //
 // @early-stop
 // ~37% /GX menu builder; LOGIC COMPLETE, parked for the final sweep / a leaf-first redo
@@ -48,13 +48,18 @@
 
 class CGameMenuMgr;
 
-// The GAMETAB widget view. Polymorphic so MSVC emits native __thiscall vtable
-// dispatch (call [edx+0x2c] / [edx+0x30]); the vtable VALUES are stamped directly to
-// the retail CSBI_* tables after construction. Eleven leading placeholder virtuals
-// line Configure up to slot 0x2c. Slot 0 is the scalar-deleting dtor (used by the
-// EH cleanup's `delete it`).
+// The GAMETAB widget base. Polymorphic so MSVC emits native __thiscall vtable
+// dispatch (call [edx+0x2c] / [edx+0x30]); the concrete CSBI_ImageSet / CSBI_MenuItem
+// leaves below auto-stamp the retail vtables. Eleven leading placeholder virtuals line
+// Configure up to slot 0x2c. Slot 0 is the scalar-deleting dtor (the fail `delete it`).
+// The inline base ctor zeroes the base fields the retail base ctor cleared.
 class CSbMenuItem {
 public:
+    CSbMenuItem() {
+        m_4 = 0;
+        m_24 = 0;
+        m_28 = 0;
+    }
     virtual ~CSbMenuItem(); // +0x00
     virtual void v04();
     virtual void v08();
@@ -78,9 +83,8 @@ public:
     );                            // +0x2c
     virtual void Activate(i32 a); // +0x30
 
-    void* m_vptr; // +0x00
-    i32 m_4;      // +0x04
-    i32 m_8;      // +0x08  type tag (2 / 4)
+    i32 m_4; // +0x04
+    i32 m_8; // +0x08  type tag (2 / 4)
     char pad0c[0x24 - 0x0c];
     i32 m_24; // +0x24
     i32 m_28; // +0x28
@@ -91,22 +95,31 @@ public:
 };
 SIZE_UNKNOWN(CSbMenuItem);
 
-// The two concrete base ctors (reached via ILT thunks; __thiscall on the raw item).
-class CSBI_ImageSet : public CSbMenuItem {
+// The concrete widget leaves. `new CSBI_ImageSet` / `new CSBI_MenuItem` makes MSVC
+// auto-stamp the retail ??_7CSBI_ImageSet@@6B@ (0x5eac4c) / ??_7CSBI_MenuItem@@6B@
+// (0x5eab4c) vtables (catalogued in config/vtable_names.csv) - no manual stamp. The
+// inline ctor sets the per-tag fields the retail mk* helper wrote after the ctor
+// (m_8 = tag, m_34 = m_30 = m_38 = 0). Both are 0x3c bytes (the base CSbMenuItem size).
+class CSBI_ImageSet : public CSbMenuItem { // vtable 0x5eac4c, tag 4
 public:
-    CSBI_ImageSet(); // ??0CSBI_ImageSet@@QAE@XZ (thunk 0x1e88 -> 0x101fa0)
+    CSBI_ImageSet() {
+        m_8 = 4;
+        m_34 = 0;
+        m_30 = 0;
+        m_38 = 0;
+    }
 };
-class CStatusBarItem : public CSbMenuItem {
+SIZE(CSBI_ImageSet, 0x3c);
+class CSBI_MenuItem : public CSbMenuItem { // vtable 0x5eab4c, tag 2
 public:
-    CStatusBarItem(); // ??0CStatusBarItem@@QAE@XZ (thunk 0x22c0 -> 0x1005d0)
+    CSBI_MenuItem() {
+        m_8 = 2;
+        m_34 = 0;
+        m_30 = 0;
+        m_38 = 0;
+    }
 };
-
-// The retail vtables (manual-stamp model; stamped directly). Reloc-masked DATA().
-// 0x1eab4c/0x1eac4c realized as ??_7CSBI_MenuItem@@6B@ / ??_7CSBI_ImageSet@@6B@ (their
-// dtor *Eh.cpp TUs emit them). DATA pins removed so the compiler vtables win the RVAs;
-// the manual stamps below stay as reloc-masked refs (vptr-middle inline-ctor wall).
-extern void* g_vtbl_menuItem; // 0x5eab4c (CSBI_MenuItem, tag 2)
-extern void* g_vtbl_t4;       // 0x5eac4c (CSBI_ImageSet, tag 4)
+SIZE(CSBI_MenuItem, 0x3c);
 
 // The game registry singleton (?g_gameReg, DATA 0x64556c). Only the fields the
 // builder touches are modeled.
@@ -150,27 +163,6 @@ public:
 };
 SIZE_UNKNOWN(CGameMenuMgr);
 
-// new + concrete ctor + manual vtable/tag stamp + the three field clears. The ctor
-// and vtable address vary by tag; the null-guard idiom is identical at every call.
-static CSbMenuItem* mkImageSet(void* vtbl, i32 tag) {
-    CSbMenuItem* p = new CSBI_ImageSet;
-    *(void**)p = vtbl;
-    p->m_8 = tag;
-    p->m_34 = 0;
-    p->m_30 = 0;
-    p->m_38 = 0;
-    return p;
-}
-static CSbMenuItem* mkBase(void* vtbl, i32 tag) {
-    CSbMenuItem* p = new CStatusBarItem;
-    *(void**)p = vtbl;
-    p->m_8 = tag;
-    p->m_34 = 0;
-    p->m_30 = 0;
-    p->m_38 = 0;
-    return p;
-}
-
 // ===========================================================================
 // CGameMenuMgr::BuildGameMenu  @0x101580
 // ===========================================================================
@@ -184,7 +176,7 @@ void CGameMenuMgr::BuildGameMenu() {
 
     if (m_110 == 0x1fb) {
         // ---- briefing variant: a single MISSIONSTATUS widget ----
-        it = mkImageSet(&g_vtbl_t4, 4);
+        it = new CSBI_ImageSet;
         i32 variant = (((CGmFactory*)g_gameReg->m_68)->m_288 == 1) ? 1 : 2;
         r.left = bx;
         r.top = by + 0xd7;
@@ -211,7 +203,7 @@ void CGameMenuMgr::BuildGameMenu() {
 
     // ---- RESUME or PAUSE in the first slot ----
     if (m_354 != 0 && g_gameReg->m_c != 0) {
-        it = mkImageSet(&g_vtbl_menuItem, 2);
+        it = new CSBI_MenuItem;
         r.left = bx;
         r.top = by + 0xd5;
         r.right = bx + 0x9f;
@@ -224,7 +216,7 @@ void CGameMenuMgr::BuildGameMenu() {
         }
         m_b8.AddTail(it);
     } else {
-        it = mkImageSet(&g_vtbl_menuItem, 2);
+        it = new CSBI_MenuItem;
         r.left = bx;
         r.top = by + 0xd5;
         r.right = bx + 0x9f;
@@ -240,7 +232,7 @@ void CGameMenuMgr::BuildGameMenu() {
     m_1dc = it;
 
     // ---- LOAD ----
-    it = mkImageSet(&g_vtbl_menuItem, 2);
+    it = new CSBI_MenuItem;
     r.left = bx;
     r.top = by + 0x125;
     r.right = bx + 0x9f;
@@ -258,7 +250,7 @@ void CGameMenuMgr::BuildGameMenu() {
     }
 
     // ---- SAVE ----
-    it = mkBase(&g_vtbl_menuItem, 2);
+    it = new CSBI_MenuItem;
     r.left = bx;
     r.top = by + 0xfd;
     r.right = bx + 0x9f;
@@ -276,7 +268,7 @@ void CGameMenuMgr::BuildGameMenu() {
     }
 
     // ---- SETTINGS ----
-    it = mkBase(&g_vtbl_menuItem, 2);
+    it = new CSBI_MenuItem;
     r.left = bx;
     r.top = by + 0x14d;
     r.right = bx + 0x9f;
@@ -291,7 +283,7 @@ void CGameMenuMgr::BuildGameMenu() {
     m_1e8 = it;
 
     // ---- HELP ----
-    it = mkBase(&g_vtbl_menuItem, 2);
+    it = new CSBI_MenuItem;
     r.left = bx;
     r.top = by + 0x175;
     r.right = bx + 0x9f;
@@ -309,7 +301,7 @@ void CGameMenuMgr::BuildGameMenu() {
     }
 
     // ---- QUIT (inlined ctor in retail) ----
-    it = mkImageSet(&g_vtbl_menuItem, 2);
+    it = new CSBI_MenuItem;
     r.left = bx;
     r.top = by + 0x19d;
     r.right = bx + 0x9f;
@@ -324,7 +316,7 @@ void CGameMenuMgr::BuildGameMenu() {
     m_1f0 = it;
 
     // ---- DESTRUCT (CSBI_ImageSet, tag 4) ----
-    it = mkImageSet(&g_vtbl_t4, 4);
+    it = new CSBI_ImageSet;
     r.left = bx + 0x22;
     r.top = by + 0x1be;
     r.right = bx + 0x7d;

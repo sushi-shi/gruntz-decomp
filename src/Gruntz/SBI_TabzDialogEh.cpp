@@ -14,10 +14,11 @@
 // for delete-on-throw (the incrementing [esp+0x48] trylevel state machine 0..0xb).
 //
 // Item build idiom (identical to CGameMenuMgr::BuildGameMenu 0x101580): operator
-// new(0x34|0x3c) -> out-of-line base ctor -> manual vtable stamp (g_vtbl_t3 /
-// g_vtbl_menuItem / g_vtbl_t4, reloc-masked DATA externs) + type tag m_8=3/2/4 +
-// per-item field clears -> the slot-0x2c setup call. On setup==0: scalar-delete
-// (slot 0) + return 0. On success: m_d4.AddTail(item) + the per-command store.
+// new(0x34|0x3c) -> out-of-line base ctor -> compiler-stamped retail vtable
+// (??_7CSBI_Image / ??_7CSBI_MenuItem / ??_7CSBI_ImageSet, auto-named via
+// config/vtable_names.csv) + type tag m_8=3/2/4 + per-item field clears -> the
+// slot-0x2c setup call. On setup==0: `delete item` (the slot-0 scalar-deleting dtor)
+// + return 0. On success: m_d4.AddTail(item) + the per-command store.
 //
 // @early-stop
 // Big /GX TABZ_DIALOG builder; ~83.9% fuzzy, LOGIC COMPLETE. The ctor-in-flight /GX
@@ -54,92 +55,30 @@
 // Throwing global operator new (engine _RezAlloc @0x1b9b46); no body -> reloc-masked.
 void* operator new(u32 n);
 
-// The retail item vtables (manual-stamp model; the vtable CONTENTS live in other
-// unmatched TUs so we stamp the retail addresses directly). Reloc-masked DATA().
-// 0x1eac0c/0x1eab4c/0x1eac4c realized as ??_7CSBI_Image / ??_7CSBI_MenuItem /
-// ??_7CSBI_ImageSet (their dtor *Eh.cpp TUs emit them). DATA pins removed so the
-// compiler vtables win the RVAs; the manual stamps stay as reloc-masked refs.
-extern void* g_vtbl_t3;       // 0x5eac0c  (CSBI_Image, tag 3)
-extern void* g_vtbl_menuItem; // 0x5eab4c  (CSBI_MenuItem, tag 2)
-extern void* g_vtbl_t4;       // 0x5eac4c  (CSBI_ImageSet, tag 4)
-
 // The ?g_pCopyRect@@3P6GXPAUtagRECT@@PBU1@@ZA global fn-pointer (VA 0x6c44bc): a
 // __stdcall RECT copier called `call ds:[g_pCopyRect]`. Reloc-masked DATA().
 DATA(0x002c44bc)
 extern void(__stdcall* g_pCopyRect)(RECT* dst, const RECT* src);
 
 // ---------------------------------------------------------------------------
-// The status-bar item family. Base carries the manual vtable pointer + the tag;
-// the base ctor is OUT-OF-LINE (declared-only) so `new Item` emits the retail
-// out-of-line ctor `call` and, being a throw point, the ctor-in-flight /GX frame.
-// The derived ctors are inline (they land at each new-site: stamp + field clears).
-// Non-polymorphic (manual stamp), so dispatch goes through the SbView cast below.
+// The status-bar item family: a REAL polymorphic base (CSbDialogItem) whose
+// concrete leaves are the retail CSBI_* classes. `new CSBI_Image` makes MSVC
+// auto-stamp the retail ??_7CSBI_Image@@6B@ vtable (0x5eac0c, catalogued in
+// config/vtable_names.csv) - no manual stamp. The base ctor is OUT-OF-LINE
+// (declared-only) so `new` emits the retail throwing base-ctor `call` + the /GX
+// ctor-in-flight EH frame; the derived ctors are inline (the tag + field clears
+// that land at each new-site). The virtual dtor (slot 0) is the scalar-deleting dtor
+// the fail-path `delete` dispatches; Setup is slot 0x2c (`call [edx+0x2c]`).
 // FACET 3 of the status-bar item family (CSbDialogItem here / CSbConfigItem in
 // CStatusBarMgr.cpp / CSbBuildItem in SBI_SideTabBuild.cpp) - the SAME retail class,
 // three incompatible C++ dispatch models (see CStatusBarMgr.cpp for the rationale).
-// FACET 3 = a manual-stamp base with an OUT-OF-LINE ctor so `new Item` emits the
-// retail throwing base-ctor `call` + the /GX ctor-in-flight EH frame.
+// FACET 3 = an out-of-line base ctor so `new` emits the throwing base-ctor `call` +
+// the /GX ctor-in-flight EH frame.
 // ---------------------------------------------------------------------------
 class CSbDialogItem {
 public:
-    CSbDialogItem();  // out-of-line -> the 0x22c0/0x1e88 base-ctor call (throwing -> /GX)
-    ~CSbDialogItem(); // declared-only -> keeps the new-expression's delete-on-throw edge
-
-    void* m_vptr; // +0x00  manual-stamp vtable pointer
-    i32 m_4;      // +0x04
-    i32 m_8;      // +0x08  type tag
-    char _pad0c[0x30 - 0x0c];
-    i32 m_30; // +0x30
-}; // size 0x34
-
-// tag 3 image item (0x34 bytes): stamp t3, m_8=3, clear m_30.
-class CItemT3 : public CSbDialogItem {
-public:
-    CItemT3() {
-        *(void**)this = &g_vtbl_t3;
-        m_8 = 3;
-        m_30 = 0;
-    }
-}; // size 0x34
-SIZE_UNKNOWN(CItemT3);
-
-// tag 2 menu item (0x3c bytes): stamp menuItem, m_8=2, clear m_34/m_30/m_38.
-class CItemMenu : public CSbDialogItem {
-public:
-    CItemMenu() {
-        *(void**)this = &g_vtbl_menuItem;
-        m_8 = 2;
-        m_34 = 0;
-        m_30 = 0;
-        m_38 = 0;
-    }
-    i32 m_34; // +0x34
-    i32 m_38; // +0x38
-}; // size 0x3c
-SIZE_UNKNOWN(CItemMenu);
-
-// tag 4 image-set item (0x3c bytes): clear m_30, stamp t4, m_8=4, clear m_34.
-class CItemT4 : public CSbDialogItem {
-public:
-    CItemT4() {
-        m_30 = 0;
-        *(void**)this = &g_vtbl_t4;
-        m_8 = 4;
-        m_34 = 0;
-    }
-    i32 m_34; // +0x34
-    i32 m_38; // +0x38
-}; // size 0x3c
-SIZE_UNKNOWN(CItemT4);
-
-// Polymorphic VIEW used only for the two vtable dispatches (never instantiated, so
-// no ??_7 emitted): the scalar-deleting dtor at slot 0 (the fail cleanup) and the
-// 8-arg Setup at slot 0x2c. Casting an item to this lowers `it->Setup(...)` to the
-// retail `mov edx,[it]; call [edx+0x2c]` __thiscall dispatch. Same idiom as the
-// sibling TUs' CAniElemView / CSbMenuItem.
-class SbView {
-public:
-    virtual void ScalarDtor(i32 flag); // +0x00
+    CSbDialogItem();          // out-of-line -> the 0x22c0/0x1e88 base-ctor call (throwing -> /GX)
+    virtual ~CSbDialogItem(); // slot 0 (scalar-deleting dtor; the fail-path delete)
     virtual void v04();
     virtual void v08();
     virtual void v0c();
@@ -159,8 +98,51 @@ public:
         const char* key,
         i32 flag,
         i32 e
-    ); // +0x2c
-};
+    ); // slot 0x2c
+
+    i32 m_4; // +0x04
+    i32 m_8; // +0x08  type tag
+    char _pad0c[0x30 - 0x0c];
+    i32 m_30; // +0x30
+}; // size 0x34
+SIZE(CSbDialogItem, 0x34);
+
+// tag 3 image item: m_8=3, clear m_30.  vtable 0x5eac0c
+class CSBI_Image : public CSbDialogItem {
+public:
+    CSBI_Image() {
+        m_8 = 3;
+        m_30 = 0;
+    }
+}; // size 0x34
+SIZE(CSBI_Image, 0x34);
+
+// tag 2 menu item: m_8=2, clear m_34/m_30/m_38.  vtable 0x5eab4c
+class CSBI_MenuItem : public CSbDialogItem {
+public:
+    CSBI_MenuItem() {
+        m_8 = 2;
+        m_34 = 0;
+        m_30 = 0;
+        m_38 = 0;
+    }
+    i32 m_34; // +0x34
+    i32 m_38; // +0x38
+}; // size 0x3c
+SIZE(CSBI_MenuItem, 0x3c);
+
+// tag 4 image-set item: clear m_30, m_8=4, clear m_34.  vtable 0x5eac4c
+class CSBI_ImageSet : public CSbDialogItem {
+public:
+    CSBI_ImageSet() {
+        m_30 = 0;
+        m_8 = 4;
+        m_34 = 0;
+    }
+    i32 m_34; // +0x34
+    i32 m_38; // +0x38
+}; // size 0x3c
+SIZE(CSBI_ImageSet, 0x3c);
 
 // ---------------------------------------------------------------------------
 // The g_mgrSettings singleton chain (DATA 0x64556c, RVA 0x24556c). Only the fields
@@ -248,60 +230,51 @@ i32 CTabzBuilder::BuildTabzDialog() {
 
     if (m_554 != 0) {
         // ---- confirm dialog: AREYOUSURE + YES/NO ----
-        CItemT3* areYouSure = new CItemT3;
-        if (!((SbView*)areYouSure)
-                 ->Setup(
-                     this,
-                     m_c,
-                     0x321,
-                     6,
-                     SbRect(cx - 0x5e, cy - 0x3c, cx + 0x5e, cy + 0x3d),
-                     "GAME_STATUSBAR_TABZ_DIALOG_AREYOUSURE",
-                     -1,
-                     0
-                 )) {
-            if (areYouSure) {
-                ((SbView*)areYouSure)->ScalarDtor(1);
-            }
+        CSBI_Image* areYouSure = new CSBI_Image;
+        if (!areYouSure->Setup(
+                this,
+                m_c,
+                0x321,
+                6,
+                SbRect(cx - 0x5e, cy - 0x3c, cx + 0x5e, cy + 0x3d),
+                "GAME_STATUSBAR_TABZ_DIALOG_AREYOUSURE",
+                -1,
+                0
+            )) {
+            delete areYouSure;
             return 0;
         }
         m_d4.AddTail((CObject*)areYouSure);
 
-        CItemMenu* yes = new CItemMenu;
-        if (!((SbView*)yes)
-                 ->Setup(
-                     this,
-                     m_c,
-                     0x327,
-                     6,
-                     SbRect(cx - 0x45, cy + 0x11, cx - 0x12, cy + 0x28),
-                     "GAME_STATUSBAR_TABZ_DIALOG_YES",
-                     -1,
-                     0
-                 )) {
-            if (yes) {
-                ((SbView*)yes)->ScalarDtor(1);
-            }
+        CSBI_MenuItem* yes = new CSBI_MenuItem;
+        if (!yes->Setup(
+                this,
+                m_c,
+                0x327,
+                6,
+                SbRect(cx - 0x45, cy + 0x11, cx - 0x12, cy + 0x28),
+                "GAME_STATUSBAR_TABZ_DIALOG_YES",
+                -1,
+                0
+            )) {
+            delete yes;
             return 0;
         }
         m_d4.AddTail((CObject*)yes);
         m_1fc = yes;
 
-        CItemMenu* no = new CItemMenu;
-        if (!((SbView*)no)
-                 ->Setup(
-                     this,
-                     m_c,
-                     0x328,
-                     6,
-                     SbRect(cx + 0xd, cy + 0x11, cx + 0x40, cy + 0x28),
-                     "GAME_STATUSBAR_TABZ_DIALOG_NO",
-                     -1,
-                     0
-                 )) {
-            if (no) {
-                ((SbView*)no)->ScalarDtor(1);
-            }
+        CSBI_MenuItem* no = new CSBI_MenuItem;
+        if (!no->Setup(
+                this,
+                m_c,
+                0x328,
+                6,
+                SbRect(cx + 0xd, cy + 0x11, cx + 0x40, cy + 0x28),
+                "GAME_STATUSBAR_TABZ_DIALOG_NO",
+                -1,
+                0
+            )) {
+            delete no;
             return 0;
         }
         m_d4.AddTail((CObject*)no);
@@ -310,21 +283,18 @@ i32 CTabzBuilder::BuildTabzDialog() {
     }
 
     // ---- main tabz dialog: DIALOG then a mission/mode decision tree ----
-    CItemT3* dialog = new CItemT3;
-    if (!((SbView*)dialog)
-             ->Setup(
-                 this,
-                 m_c,
-                 0x321,
-                 6,
-                 SbRect(cx - 0x8e, cy - 0x48, cx + 0x8e, cy + 0x48),
-                 "GAME_STATUSBAR_TABZ_DIALOG",
-                 -1,
-                 0
-             )) {
-        if (dialog) {
-            ((SbView*)dialog)->ScalarDtor(1);
-        }
+    CSBI_Image* dialog = new CSBI_Image;
+    if (!dialog->Setup(
+            this,
+            m_c,
+            0x321,
+            6,
+            SbRect(cx - 0x8e, cy - 0x48, cx + 0x8e, cy + 0x48),
+            "GAME_STATUSBAR_TABZ_DIALOG",
+            -1,
+            0
+        )) {
+        delete dialog;
         return 0;
     }
     m_d4.AddTail((CObject*)dialog);
@@ -333,100 +303,85 @@ i32 CTabzBuilder::BuildTabzDialog() {
 
     if (g_mgrSettings->m_68->m_288 == 1) {
         // mission accomplished
-        CItemT4* status = new CItemT4;
-        if (!((SbView*)status)
-                 ->Setup(
-                     this,
-                     m_c,
-                     0x322,
-                     6,
-                     SbRect(cx - 0x8e, cy - 0x31, cx + 0x8d, cy - 0x16),
-                     "GAME_STATUSBAR_TABZ_DIALOG_MISSIONSTATUS",
-                     1,
-                     0
-                 )) {
-            if (status) {
-                ((SbView*)status)->ScalarDtor(1);
-            }
+        CSBI_ImageSet* status = new CSBI_ImageSet;
+        if (!status->Setup(
+                this,
+                m_c,
+                0x322,
+                6,
+                SbRect(cx - 0x8e, cy - 0x31, cx + 0x8d, cy - 0x16),
+                "GAME_STATUSBAR_TABZ_DIALOG_MISSIONSTATUS",
+                1,
+                0
+            )) {
+            delete status;
             return 0;
         }
         m_d4.AddTail((CObject*)status);
 
-        CItemT4* rsn = new CItemT4;
-        if (!((SbView*)rsn)
-                 ->Setup(
-                     this,
-                     m_c,
-                     0x326,
-                     6,
-                     SbRect(cx - 0x7c, cy - 0x11, cx + 0x73, cy + 0x4),
-                     "GAME_STATUSBAR_TABZ_DIALOG_REASON",
-                     reason,
-                     0
-                 )) {
-            if (rsn) {
-                ((SbView*)rsn)->ScalarDtor(1);
-            }
+        CSBI_ImageSet* rsn = new CSBI_ImageSet;
+        if (!rsn->Setup(
+                this,
+                m_c,
+                0x326,
+                6,
+                SbRect(cx - 0x7c, cy - 0x11, cx + 0x73, cy + 0x4),
+                "GAME_STATUSBAR_TABZ_DIALOG_REASON",
+                reason,
+                0
+            )) {
+            delete rsn;
             return 0;
         }
         m_d4.AddTail((CObject*)rsn);
 
         if (g_mgrSettings->m_134 == 1) {
-            CItemMenu* next = new CItemMenu;
-            if (!((SbView*)next)
-                     ->Setup(
-                         this,
-                         m_c,
-                         0x324,
-                         6,
-                         SbRect(cx - 0x7d, cy + 0x17, cx - 0xe, cy + 0x32),
-                         "GAME_STATUSBAR_TABZ_DIALOG_PLAYNEXTLEVEL",
-                         -1,
-                         0
-                     )) {
-                if (next) {
-                    ((SbView*)next)->ScalarDtor(1);
-                }
+            CSBI_MenuItem* next = new CSBI_MenuItem;
+            if (!next->Setup(
+                    this,
+                    m_c,
+                    0x324,
+                    6,
+                    SbRect(cx - 0x7d, cy + 0x17, cx - 0xe, cy + 0x32),
+                    "GAME_STATUSBAR_TABZ_DIALOG_PLAYNEXTLEVEL",
+                    -1,
+                    0
+                )) {
+                delete next;
                 return 0;
             }
             m_d4.AddTail((CObject*)next);
             m_1f4 = next;
 
-            CItemMenu* quit = new CItemMenu;
-            if (!((SbView*)quit)
-                     ->Setup(
-                         this,
-                         m_c,
-                         0x325,
-                         6,
-                         SbRect(cx, cy + 0x17, cx + 0x6f, cy + 0x32),
-                         "GAME_STATUSBAR_TABZ_DIALOG_QUITTOMAINMENU",
-                         -1,
-                         0
-                     )) {
-                if (quit) {
-                    ((SbView*)quit)->ScalarDtor(1);
-                }
+            CSBI_MenuItem* quit = new CSBI_MenuItem;
+            if (!quit->Setup(
+                    this,
+                    m_c,
+                    0x325,
+                    6,
+                    SbRect(cx, cy + 0x17, cx + 0x6f, cy + 0x32),
+                    "GAME_STATUSBAR_TABZ_DIALOG_QUITTOMAINMENU",
+                    -1,
+                    0
+                )) {
+                delete quit;
                 return 0;
             }
             m_d4.AddTail((CObject*)quit);
             m_1f8 = quit;
         } else {
-            CItemMenu* statz = new CItemMenu;
-            if (!((SbView*)statz)
-                     ->Setup(
-                         this,
-                         m_c,
-                         0x325,
-                         6,
-                         SbRect(cx - 0x39, cy + 0x17, cx + 0x36, cy + 0x32),
-                         "GAME_STATUSBAR_TABZ_DIALOG_STATZ",
-                         -1,
-                         0
-                     )) {
-                if (statz) {
-                    ((SbView*)statz)->ScalarDtor(1);
-                }
+            CSBI_MenuItem* statz = new CSBI_MenuItem;
+            if (!statz->Setup(
+                    this,
+                    m_c,
+                    0x325,
+                    6,
+                    SbRect(cx - 0x39, cy + 0x17, cx + 0x36, cy + 0x32),
+                    "GAME_STATUSBAR_TABZ_DIALOG_STATZ",
+                    -1,
+                    0
+                )) {
+                delete statz;
                 return 0;
             }
             m_d4.AddTail((CObject*)statz);
@@ -436,80 +391,68 @@ i32 CTabzBuilder::BuildTabzDialog() {
     }
 
     // mission not complete
-    CItemT4* status = new CItemT4;
-    if (!((SbView*)status)
-             ->Setup(
-                 this,
-                 m_c,
-                 0x322,
-                 6,
-                 SbRect(cx - 0x8e, cy - 0x31, cx + 0x8d, cy - 0x16),
-                 "GAME_STATUSBAR_TABZ_DIALOG_MISSIONSTATUS",
-                 2,
-                 0
-             )) {
-        if (status) {
-            ((SbView*)status)->ScalarDtor(1);
-        }
+    CSBI_ImageSet* status = new CSBI_ImageSet;
+    if (!status->Setup(
+            this,
+            m_c,
+            0x322,
+            6,
+            SbRect(cx - 0x8e, cy - 0x31, cx + 0x8d, cy - 0x16),
+            "GAME_STATUSBAR_TABZ_DIALOG_MISSIONSTATUS",
+            2,
+            0
+        )) {
+        delete status;
         return 0;
     }
     m_d4.AddTail((CObject*)status);
 
-    CItemT4* rsn = new CItemT4;
-    if (!((SbView*)rsn)
-             ->Setup(
-                 this,
-                 m_c,
-                 0x326,
-                 6,
-                 SbRect(cx - 0x7c, cy - 0x11, cx + 0x73, cy + 0x4),
-                 "GAME_STATUSBAR_TABZ_DIALOG_REASON",
-                 reason,
-                 0
-             )) {
-        if (rsn) {
-            ((SbView*)rsn)->ScalarDtor(1);
-        }
+    CSBI_ImageSet* rsn = new CSBI_ImageSet;
+    if (!rsn->Setup(
+            this,
+            m_c,
+            0x326,
+            6,
+            SbRect(cx - 0x7c, cy - 0x11, cx + 0x73, cy + 0x4),
+            "GAME_STATUSBAR_TABZ_DIALOG_REASON",
+            reason,
+            0
+        )) {
+        delete rsn;
         return 0;
     }
     m_d4.AddTail((CObject*)rsn);
 
     if (g_mgrSettings->m_134 == 1) {
-        CItemMenu* replay = new CItemMenu;
-        if (!((SbView*)replay)
-                 ->Setup(
-                     this,
-                     m_c,
-                     0x324,
-                     6,
-                     SbRect(cx - 0x7d, cy + 0x17, cx - 0xe, cy + 0x32),
-                     "GAME_STATUSBAR_TABZ_DIALOG_REPLAYLEVEL",
-                     -1,
-                     0
-                 )) {
-            if (replay) {
-                ((SbView*)replay)->ScalarDtor(1);
-            }
+        CSBI_MenuItem* replay = new CSBI_MenuItem;
+        if (!replay->Setup(
+                this,
+                m_c,
+                0x324,
+                6,
+                SbRect(cx - 0x7d, cy + 0x17, cx - 0xe, cy + 0x32),
+                "GAME_STATUSBAR_TABZ_DIALOG_REPLAYLEVEL",
+                -1,
+                0
+            )) {
+            delete replay;
             return 0;
         }
         m_d4.AddTail((CObject*)replay);
         m_1f4 = replay;
 
-        CItemMenu* quit = new CItemMenu;
-        if (!((SbView*)quit)
-                 ->Setup(
-                     this,
-                     m_c,
-                     0x325,
-                     6,
-                     SbRect(cx, cy + 0x17, cx + 0x6f, cy + 0x32),
-                     "GAME_STATUSBAR_TABZ_DIALOG_QUITTOMAINMENU",
-                     -1,
-                     0
-                 )) {
-            if (quit) {
-                ((SbView*)quit)->ScalarDtor(1);
-            }
+        CSBI_MenuItem* quit = new CSBI_MenuItem;
+        if (!quit->Setup(
+                this,
+                m_c,
+                0x325,
+                6,
+                SbRect(cx, cy + 0x17, cx + 0x6f, cy + 0x32),
+                "GAME_STATUSBAR_TABZ_DIALOG_QUITTOMAINMENU",
+                -1,
+                0
+            )) {
+            delete quit;
             return 0;
         }
         m_d4.AddTail((CObject*)quit);
@@ -527,63 +470,54 @@ i32 CTabzBuilder::BuildTabzDialog() {
     }
 
     if (count >= 2) {
-        CItemMenu* observe = new CItemMenu;
-        if (!((SbView*)observe)
-                 ->Setup(
-                     this,
-                     m_c,
-                     0x324,
-                     6,
-                     SbRect(cx - 0x7d, cy + 0x17, cx - 0xe, cy + 0x32),
-                     "GAME_STATUSBAR_TABZ_DIALOG_OBSERVE",
-                     -1,
-                     0
-                 )) {
-            if (observe) {
-                ((SbView*)observe)->ScalarDtor(1);
-            }
+        CSBI_MenuItem* observe = new CSBI_MenuItem;
+        if (!observe->Setup(
+                this,
+                m_c,
+                0x324,
+                6,
+                SbRect(cx - 0x7d, cy + 0x17, cx - 0xe, cy + 0x32),
+                "GAME_STATUSBAR_TABZ_DIALOG_OBSERVE",
+                -1,
+                0
+            )) {
+            delete observe;
             return 0;
         }
         m_d4.AddTail((CObject*)observe);
         m_1f4 = observe;
         m_578 = 1;
 
-        CItemMenu* statz = new CItemMenu;
-        if (!((SbView*)statz)
-                 ->Setup(
-                     this,
-                     m_c,
-                     0x325,
-                     6,
-                     SbRect(cx, cy + 0x17, cx + 0x6f, cy + 0x32),
-                     "GAME_STATUSBAR_TABZ_DIALOG_STATZ",
-                     -1,
-                     0
-                 )) {
-            if (statz) {
-                ((SbView*)statz)->ScalarDtor(1);
-            }
+        CSBI_MenuItem* statz = new CSBI_MenuItem;
+        if (!statz->Setup(
+                this,
+                m_c,
+                0x325,
+                6,
+                SbRect(cx, cy + 0x17, cx + 0x6f, cy + 0x32),
+                "GAME_STATUSBAR_TABZ_DIALOG_STATZ",
+                -1,
+                0
+            )) {
+            delete statz;
             return 0;
         }
         m_d4.AddTail((CObject*)statz);
         m_1f8 = statz;
     } else {
         m_578 = 0;
-        CItemMenu* statz = new CItemMenu;
-        if (!((SbView*)statz)
-                 ->Setup(
-                     this,
-                     m_c,
-                     0x325,
-                     6,
-                     SbRect(cx - 0x39, cy + 0x17, cx + 0x36, cy + 0x32),
-                     "GAME_STATUSBAR_TABZ_DIALOG_STATZ",
-                     -1,
-                     0
-                 )) {
-            if (statz) {
-                ((SbView*)statz)->ScalarDtor(1);
-            }
+        CSBI_MenuItem* statz = new CSBI_MenuItem;
+        if (!statz->Setup(
+                this,
+                m_c,
+                0x325,
+                6,
+                SbRect(cx - 0x39, cy + 0x17, cx + 0x36, cy + 0x32),
+                "GAME_STATUSBAR_TABZ_DIALOG_STATZ",
+                -1,
+                0
+            )) {
+            delete statz;
             return 0;
         }
         m_d4.AddTail((CObject*)statz);

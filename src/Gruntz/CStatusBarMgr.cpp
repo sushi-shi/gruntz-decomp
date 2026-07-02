@@ -14,9 +14,10 @@
 //     (+0x204..+0x520, +0x61c..+0x62c) it stashes the created widgets into.
 //   - tab keys are all GAME_STATUSBAR_TABZ_* / GAME_INGAMEICONZ_* assets.
 //
-// The created subclasses' virtuals live in other TUs, so their vtables cannot be
-// reproduced here; the vtable address is stamped directly (DATA() externs,
-// reloc-masked) as a transitional workaround, NOT dev code.
+// The created widgets are REAL polymorphic subclasses (CSBI_Image / CSBI_ImageSet /
+// CSBI_WellGoo, derived from the CSbConfigItem base): `new CSBI_Image` makes MSVC
+// auto-stamp the retail ??_7CSBI_Image@@6B@ vtable (0x5eac0c, catalogued in
+// config/vtable_names.csv), so no manual vtable-pointer stamp is needed.
 //
 // Switch case -> tab (from the jump table at VA 0x504020):
 //   m_10c==1 -> Statz   m_10c==2 -> Gruntz   m_10c==3 -> Resource
@@ -48,14 +49,20 @@ class CStatusBarMgr;
 // frame. One MSVC5 spelling emits only one of the three shapes, so the facets are
 // renamed apart (documented) rather than merged.
 //
-// CStatusBarItem subtype "view" - polymorphic so MSVC emits native __thiscall
-// vtable dispatch (call [edx+0x2c] etc.). The vtable VALUES are stamped directly
-// to the retail CSBI_* tables after construction (the subclass virtuals live in
-// other TUs, so the compiler-emitted vtable can't be reproduced); the eleven
-// leading placeholder virtuals line Configure up to slot +0x2c and ConfigureEx
-// to +0x34. Deleting dtor is slot 0.
+// CSbConfigItem is the shared base "view": polymorphic so MSVC emits native
+// __thiscall vtable dispatch (call [edx+0x2c] etc.). The eleven leading placeholder
+// virtuals line Configure up to slot +0x2c and ConfigureEx to +0x34; the deleting
+// dtor is slot 0. Each concrete tab widget is a REAL derived class (CSBI_Image /
+// CSBI_ImageSet / CSBI_WellGoo below), so `new CSBI_Image` makes cl auto-stamp the
+// retail ??_7CSBI_Image@@6B@ vtable - no manual vtable stamp. The inline base ctor
+// zeroes the base fields the retail ??0CStatusBarItem (0x1005d0) cleared.
 class CSbConfigItem {
 public:
+    CSbConfigItem() {
+        m_4 = 0;
+        m_24 = 0;
+        m_28 = 0;
+    }
     virtual ~CSbConfigItem(); // +0x00 (scalar deleting dtor)
     virtual void v04();       // +0x04
     virtual void v08();       // +0x08
@@ -94,7 +101,6 @@ public:
     // SetDirection (0xea0f0): pick one of four direction tuples from the two
     // boolean selectors and forward to the +0x38 virtual.
     void SetDirection(i32 a, i32 b); // 0x0ea0f0
-    inline void Construct(void* vtbl, i32 tag);
 
     i32 m_4; // +0x04
     i32 m_8; // +0x08 type tag (3/4/5/6/7/8/9/0xb)
@@ -106,10 +112,39 @@ public:
 };
 SIZE_UNKNOWN(CSbConfigItem);
 
-// The concrete ctors (reached via thunks; __thiscall on the raw item pointer).
-void __fastcall Sbi_CtorBase(CSbConfigItem* p);     // ??0CStatusBarItem@@QAE@XZ (thunk 0x22c0)
-void __fastcall Sbi_CtorImageSet(CSbConfigItem* p); // ??0CSBI_ImageSet@@QAE@XZ (thunk 0x1e88)
-void __fastcall Sbi_CtorImgList(CSbConfigItem* p);  // ??0... (thunk 0x315c)
+// The concrete tab-widget subclasses. `new CSBI_Image` makes MSVC auto-stamp the
+// retail ??_7CSBI_Image@@6B@ vtable (0x5eac0c) - the vtable-name catalog in
+// config/vtable_names.csv names it on the target side (reloc-masked). The inline
+// ctor sets the per-tag fields the retail Construct wrote after the base ctor
+// (m_8 = tag, m_30 = 0). Trailing padding pins each operator-new size to retail.
+class CSBI_Image : public CSbConfigItem { // vtable 0x5eac0c, size 0x34
+public:
+    CSBI_Image() {
+        m_8 = 3;
+        m_30 = 0;
+    }
+};
+SIZE(CSBI_Image, 0x34);
+
+class CSBI_ImageSet : public CSbConfigItem { // vtable 0x5eac4c, size 0x3c
+public:
+    CSBI_ImageSet() {
+        m_8 = 4;
+        m_30 = 0;
+    }
+    char _pad34[0x3c - 0x34];
+};
+SIZE(CSBI_ImageSet, 0x3c);
+
+class CSBI_WellGoo : public CSbConfigItem { // vtable 0x5eadfc, size 0x6c
+public:
+    CSBI_WellGoo() {
+        m_8 = 7;
+        m_30 = 0;
+    }
+    char _pad34[0x6c - 0x34];
+};
+SIZE(CSBI_WellGoo, 0x6c);
 
 // The shared item helpers driven on a freshly created icon-set item.
 class CSbItemHelp {
@@ -142,16 +177,6 @@ extern CGameRegistry* g_gameReg; // ?g_gameReg@@3PAUCGameReg@@A @ VA 0x64556c
 
 DATA(0x00244c54)
 extern i32 g_curPlayer; // DAT_00644c54
-
-// The concrete CSBI subclass vtables (retail addresses; stamped directly). t3/t4/t7
-// are realized as ??_7CSBI_Image@@6B@ / ??_7CSBI_ImageSet@@6B@ / ??_7CSBI_WellGoo@@6B@
-// (their dtor *Eh.cpp TUs emit them); DATA pins removed so the compiler vtables win.
-// The remaining tags (5/6/8/9/0xb) are likewise realized as ??_7 (SBI_*Eh.cpp emit
-// them via config/vtable_names.csv); their externs are dropped here until the matching
-// LoadTabSprites tag sites are reconstructed (nothing in this TU stamps them yet).
-extern void* g_vtbl_t3[]; // 0x5eac0c (CSBI_Image, tag 3)
-extern void* g_vtbl_t4[]; // 0x5eac4c (CSBI_ImageSet, tag 4)
-extern void* g_vtbl_t7[]; // 0x5eadfc (tag 7 = CSBI_WellGoo)
 
 // ---------------------------------------------------------------------------
 // CStatusBarMgr layout (placeholder fields; only offsets are load-bearing).
@@ -200,49 +225,6 @@ void CSbConfigItem::SetDirection(i32 a, i32 b) {
 // ===========================================================================
 // CStatusBarMgr::LoadTabSprites  @0x102250
 // ===========================================================================
-// new + concrete ctor + manual vtable/tag stamp (clearing m_30). The ctor and
-// vtable address vary by tag; the null-guard + ctor + stamp idiom is identical
-// at every one of the ~37 call sites.
-struct CSbItemT3 {
-    inline CSbItemT3();
-
-    char m_storage[0x34];
-};
-SIZE_UNKNOWN(CSbItemT3);
-
-struct CSbItemT4 {
-    inline CSbItemT4();
-
-    char m_storage[0x3c];
-};
-SIZE_UNKNOWN(CSbItemT4);
-
-struct CSbItemT7 {
-    inline CSbItemT7();
-
-    char m_storage[0x6c];
-};
-SIZE_UNKNOWN(CSbItemT7);
-
-inline void CSbConfigItem::Construct(void* vtbl, i32 tag) {
-    Sbi_CtorBase(this);
-    *(void**)this = vtbl;
-    m_8 = tag;
-    m_30 = 0;
-}
-
-inline CSbItemT3::CSbItemT3() {
-    ((CSbConfigItem*)this)->Construct(g_vtbl_t3, 3);
-}
-
-inline CSbItemT4::CSbItemT4() {
-    ((CSbConfigItem*)this)->Construct(g_vtbl_t4, 4);
-}
-
-inline CSbItemT7::CSbItemT7() {
-    ((CSbConfigItem*)this)->Construct(g_vtbl_t7, 7);
-}
-
 // Per-tab builder. The Configure args (recovered from every call site) are:
 //   Configure(this, code, type, idx, rect, key, flag, 0)
 // `type` = tab index, `code` an incrementing per-item id, `idx` 2/3/4/5/1,
@@ -272,7 +254,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
 
     switch (m_10c) {
         case 2: // ---- Gruntz tab ----
-            it = (CSbConfigItem*)new CSbItemT3;
+            it = (CSbConfigItem*)new CSBI_Image;
             r.left = bx + 0x18;
             r.top = by + 0xaf;
             r.right = bx + 0x70;
@@ -294,7 +276,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             }
             m_64.AddTail(it);
             for (i = 0; i < 5; i++) {
-                it = (CSbConfigItem*)new CSbItemT4;
+                it = (CSbConfigItem*)new CSBI_ImageSet;
                 r.left = bx + 0xe + i * 0x36;
                 r.top = by + 0xfe;
                 r.right = bx + 0x39 + i * 0x36;
@@ -316,7 +298,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 }
                 m_64.AddTail(it);
             }
-            it = (CSbConfigItem*)new CSbItemT3;
+            it = (CSbConfigItem*)new CSBI_Image;
             r.left = bx + 0x4c;
             r.top = by + 0xc8;
             r.right = bx + 0x97;
@@ -328,7 +310,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_64.AddTail(it);
-            it = (CSbConfigItem*)new CSbItemT3;
+            it = (CSbConfigItem*)new CSBI_Image;
             r.left = bx + 0x1e;
             r.top = by + 0xc4;
             r.right = bx + 0x3d;
@@ -349,7 +331,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_64.AddTail(it);
-            it = (CSbConfigItem*)new CSbItemT3;
+            it = (CSbConfigItem*)new CSBI_Image;
             r.left = bx + 0x68;
             r.top = by + 0x1cf;
             r.right = bx + 0x87;
@@ -370,7 +352,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_64.AddTail(it);
-            it = (CSbConfigItem*)new CSbItemT7;
+            it = (CSbConfigItem*)new CSBI_WellGoo;
             r.left = bx + 0x6e;
             r.top = by + 0xf8;
             r.right = bx + 0x81 + 0x6e;
@@ -394,7 +376,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             return 1;
 
         case 3: // ---- Resource tab ----
-            it = (CSbConfigItem*)new CSbItemT3;
+            it = (CSbConfigItem*)new CSBI_Image;
             r.left = bx + 0x18;
             r.top = by + 0xaf;
             r.right = bx + 0x70;
@@ -415,7 +397,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_80.AddTail(it);
-            it = (CSbConfigItem*)new CSbItemT3;
+            it = (CSbConfigItem*)new CSBI_Image;
             r.left = bx;
             r.top = by + 0x135;
             r.right = bx + 0x9f;
@@ -436,7 +418,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_80.AddTail(it);
-            it = (CSbConfigItem*)new CSbItemT3;
+            it = (CSbConfigItem*)new CSBI_Image;
             r.left = bx;
             r.top = by + 0xfb;
             r.right = bx + 0x9f;
@@ -457,7 +439,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_80.AddTail(it);
-            it = (CSbConfigItem*)new CSbItemT3;
+            it = (CSbConfigItem*)new CSBI_Image;
             r.left = bx + 0x48;
             r.top = by + 0xd3;
             r.right = bx + 0x67;
@@ -481,7 +463,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             return 1;
 
         case 1: // ---- Statz tab ----
-            it = (CSbConfigItem*)new CSbItemT3;
+            it = (CSbConfigItem*)new CSBI_Image;
             r.left = bx + 0x18;
             r.top = by + 0xaf;
             r.right = bx + 0x70;
@@ -505,7 +487,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             return 1;
 
         case 4: // ---- Multiplayer tab ----
-            it = (CSbConfigItem*)new CSbItemT3;
+            it = (CSbConfigItem*)new CSBI_Image;
             r.left = bx + 0x18;
             r.top = by + 0xaf;
             r.right = bx + 0x70;
@@ -529,7 +511,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             return 1;
 
         case 5: // ---- Game tab ----
-            it = (CSbConfigItem*)new CSbItemT3;
+            it = (CSbConfigItem*)new CSBI_Image;
             r.left = bx + 0x18;
             r.top = by + 0xaf;
             r.right = bx + 0x70;

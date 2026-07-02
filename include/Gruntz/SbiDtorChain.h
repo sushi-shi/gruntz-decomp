@@ -16,8 +16,7 @@
 // most-derived dtor and - because the base subobjects are non-trivial - emits the
 // full /GX SEH frame (push -1/handler/fs:0 + descending trylevel stamps) plus the
 // per-level vptr re-stamps. The ??_7 vftables auto-derive on the target (RTTI;
-// config/vtable_names.csv), replacing the transitional manual
-// `*(void**)this = &g_vtbl_*` stamps.
+// config/vtable_names.csv), replacing the transitional manual vtable-pointer stamps.
 //
 // A class is INLINE-base in most TUs but the OUT-OF-LINE leaf in exactly one (its
 // own scalar-dtor TU). That TU #defines the matching SBI_OWN_*_DTOR macro before

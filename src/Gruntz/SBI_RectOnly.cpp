@@ -1722,8 +1722,8 @@ void CSBI_RectOnly::Teardown() {
 RVA(0x00104d60, 0x48)
 i32 CSBI_RectOnly::TryActivate() {
     // Offset-0 read: in retail this object's slot 0 holds a small integer
-    // subtype tag (the manual-vtable-stamp device shared with CStatusBarMgr's
-    // g_vtbl_t* tags), not a real C++ vptr. We model the vtable via `virtual`,
+    // subtype tag (the manual-vtable-stamp tag device shared with CStatusBarMgr),
+    // not a real C++ vptr. We model the vtable via `virtual`,
     // so slot 0 cannot also be a named field here without dropping the vtable;
     // the raw `*(int*)this` read is the faithful model. See report (flagged).
     if (*(i32*)this == kSubtypeTag) {
@@ -2733,13 +2733,19 @@ struct SbiTabRect {
 };
 SIZE_UNKNOWN(SbiTabRect);
 
-// A top-level status-bar tab widget. Polymorphic so cl emits __thiscall vtable
+// A top-level status-bar tab widget base. Polymorphic so cl emits __thiscall vtable
 // dispatch (Setup at slot 2 / Configure at slot 11 / Activate at slot 12); the
-// vtable VALUES are stamped directly to the retail tables after construction
-// (transitional manual-stamp - the subclass vtables live in other TUs). Slot 0 is
-// the scalar-deleting dtor used by the throw/fail cleanup's `delete it`.
+// concrete leaves below are REAL derived classes so `new` auto-stamps their vtable.
+// The inline base ctor zeroes the base fields the retail base ctor cleared. Slot 0 is
+// the scalar-deleting dtor used by the throw/fail cleanup's `delete it`. Fields end at
+// +0x30 (the rect-widget size); the menu-item's m_30/m_34/m_38 live in CSBI_MenuItem.
 class CSbiTab {
 public:
+    CSbiTab() {
+        m_4 = 0;
+        m_24 = 0;
+        m_28 = 0;
+    }
     virtual ~CSbiTab(); // slot 0
     virtual void s04();
     virtual i32
@@ -2763,26 +2769,41 @@ public:
         i32 e
     );                            // slot 11
     virtual void Activate(i32 a); // slot 12
-    void* m_vptr;
     i32 m_4;
     i32 m_8; // type tag (1 rect / 2 menu)
     char m_padc[0x24 - 0xc];
     i32 m_24;
     i32 m_28;
     char m_pad2c[0x30 - 0x2c];
-    i32 m_30;
-    i32 m_34;
-    i32 m_38;
 };
-SIZE_UNKNOWN(CSbiTab);
+SIZE(CSbiTab, 0x30);
 
-// The concrete 0x3c base ctor reached via an ILT thunk (__thiscall on the raw item).
-class CSbiTabBase {
+// tag-1 rect-only sub-widget (0x30). Its TRUE retail class is CSBI_RectOnly (vtable
+// 0x5eab8c), but that name is bound in this TU to the big status-bar HOST (the `this`
+// of BuildStatusBarTabs), so the sub-widget carries this placeholder name; MSVC still
+// auto-stamps a real vtable (reloc-masked, as the retail name is unavailable here).
+class CSbiRectSub : public CSbiTab { // TRUE class CSBI_RectOnly, vtable 0x5eab8c
 public:
-    CSbiTabBase(); // ??0CStatusBarItem thunk 0x22c0
-    char m_raw[0x3c];
+    CSbiRectSub() {
+        m_8 = 1;
+    }
 };
-SIZE_UNKNOWN(CSbiTabBase);
+SIZE(CSbiRectSub, 0x30);
+
+// tag-2 menu item (0x3c). vtable 0x5eab4c -> auto-named ??_7CSBI_MenuItem@@6B@.
+class CSBI_MenuItem : public CSbiTab {
+public:
+    CSBI_MenuItem() {
+        m_8 = 2;
+        m_34 = 0;
+        m_30 = 0;
+        m_38 = 0;
+    }
+    i32 m_30; // +0x30
+    i32 m_34; // +0x34
+    i32 m_38; // +0x38
+};
+SIZE(CSBI_MenuItem, 0x3c);
 
 // The MULTIPLAYERTAB frame descriptor (widget->m_38): a frame-index gate
 // (+0x64/+0x68) plus a value table (+0x14 -> +0x10).
@@ -2806,14 +2827,6 @@ struct CTabList {
 };
 SIZE_UNKNOWN(CTabList);
 
-// The retail tab vtables (manual-stamp model; g_vtbl_menuItem is DATA-bound by
-// StatusBarGameMenu). Reloc-masked.
-// 0x1eab8c/0x1eab4c realized as ??_7CSBI_RectOnly@@6B@ / ??_7CSBI_MenuItem@@6B@
-// (SBI_RectOnlyDtorEh.cpp / SBI_MenuItemEh.cpp emit them). DATA pins removed so the
-// compiler vtables win the RVAs; the manual stamps below stay as reloc-masked refs.
-extern void* g_vtbl_rectBase; // 0x5eab8c (CSBI_RectOnly)
-extern void* g_vtbl_menuItem; // 0x5eab4c (CSBI_MenuItem)
-
 // 0xffde0 - build the five top-level status-bar tabs (STATZ/GRUNTZ/RESOURCE/
 // MULTIPLAYER/GAMETAB) plus three rect-only sub-widgets, once (m_358 gate). Each
 // widget is heap-allocated, its retail vtable + type tag stamped, then Setup/
@@ -2825,14 +2838,15 @@ extern void* g_vtbl_menuItem; // 0x5eab4c (CSBI_MenuItem)
 // Finishes with three validity probes; returns 0 on any failure, else latches
 // m_358 = 1 and returns 1.
 // @early-stop
-// /GX EH-frame + manual-vtable wall - identical archetype to StatusBarGameMenu::
-// BuildGameMenu (also @early-stop ~37%). The dominant residual is structural: retail
-// carries a /GX frame + a per-item incrementing EH state machine because each item's
-// operator-new + ctor is inlined and its setup call is a delete-on-throw region;
-// modeled here with visible operator-new/thunk-ctor + manual vtable stamps, cl's EH
-// bookkeeping + the by-value rect arg scheduling diverge, shifting the frame. Plus
-// the manual vtable-stamp DIR32 naming (g_vtbl_rectBase/g_vtbl_menuItem) and the
-// GAMETAB $SG strings. Logic complete; deferred to the final sweep (re-attack once
+// /GX EH-frame wall - identical archetype to StatusBarGameMenu::BuildGameMenu (also
+// @early-stop ~37%). The dominant residual is structural: retail carries a /GX frame +
+// a per-item incrementing EH state machine because each item's operator-new + ctor is
+// inlined and its setup call is a delete-on-throw region; modeled here with real
+// polymorphic sub-widget classes (CSbiRectSub / CSBI_MenuItem, whose ctors MSVC
+// auto-stamps - no manual vtable stamp), cl's EH bookkeeping + the by-value rect arg
+// scheduling diverge, shifting the frame. The rect sub-widget's true class CSBI_RectOnly
+// collides with the HOST name so its vtable stays reloc-masked; the CSBI_MenuItem vtable
+// is now correctly named. Logic complete; deferred to the final sweep (re-attack once
 // the CSBI_* item ctors land and the frame can be reproduced).
 RVA(0x000ffde0, 0x5b1)
 i32 CSBI_RectOnly::BuildStatusBarTabs() {
@@ -2849,14 +2863,7 @@ i32 CSBI_RectOnly::BuildStatusBarTabs() {
     SbiTabRect r;
 
     // ---- rect-only sub-widget A (id 0x259) ----
-    it = (CSbiTab*)::operator new(0x30);
-    if (it) {
-        it->m_4 = 0;
-        it->m_24 = 0;
-        it->m_28 = 0;
-        *(void**)it = &g_vtbl_rectBase;
-        it->m_8 = 1;
-    }
+    it = new CSbiRectSub;
     r.l = bx + 0x7c;
     r.t = by + 0xad;
     r.r = bx + 0x88;
@@ -2870,14 +2877,7 @@ i32 CSBI_RectOnly::BuildStatusBarTabs() {
     ((CTabList*)((char*)this + 0x2c))->AddTail(it);
 
     // ---- rect-only sub-widget B (id 0x25a) ----
-    it = (CSbiTab*)::operator new(0x30);
-    if (it) {
-        it->m_4 = 0;
-        it->m_24 = 0;
-        it->m_28 = 0;
-        *(void**)it = &g_vtbl_rectBase;
-        it->m_8 = 1;
-    }
+    it = new CSbiRectSub;
     r.l = bx + 0x8a;
     r.t = by + 0xb9;
     r.r = bx + 0x96;
@@ -2891,14 +2891,7 @@ i32 CSBI_RectOnly::BuildStatusBarTabs() {
     ((CTabList*)((char*)this + 0x2c))->AddTail(it);
 
     // ---- rect-only sub-widget C (id 0x25b) ----
-    it = (CSbiTab*)::operator new(0x30);
-    if (it) {
-        it->m_4 = 0;
-        it->m_24 = 0;
-        it->m_28 = 0;
-        *(void**)it = &g_vtbl_rectBase;
-        it->m_8 = 1;
-    }
+    it = new CSbiRectSub;
     r.l = bx + 0x83;
     r.t = by + 0xbb;
     r.r = bx + 0x8f;
@@ -2912,12 +2905,7 @@ i32 CSBI_RectOnly::BuildStatusBarTabs() {
     ((CTabList*)((char*)this + 0x2c))->AddTail(it);
 
     // ---- STATZTAB (menu item, type 1) ----
-    it = (CSbiTab*)new CSbiTabBase;
-    *(void**)it = &g_vtbl_menuItem;
-    it->m_8 = 2;
-    it->m_34 = 0;
-    it->m_30 = 0;
-    it->m_38 = 0;
+    it = new CSBI_MenuItem;
     r.l = bx + 0x42;
     r.t = by + 0x82;
     r.r = bx + 0x62;
@@ -2932,12 +2920,7 @@ i32 CSBI_RectOnly::BuildStatusBarTabs() {
     m_1c8 = (CSbiSprite*)it;
 
     // ---- GRUNTZTAB (menu item, type 2) ----
-    it = (CSbiTab*)new CSbiTabBase;
-    *(void**)it = &g_vtbl_menuItem;
-    it->m_8 = 2;
-    it->m_34 = 0;
-    it->m_30 = 0;
-    it->m_38 = 0;
+    it = new CSBI_MenuItem;
     r.l = bx + 0x04;
     r.t = by + 0x82;
     r.r = bx + 0x24;
@@ -2952,12 +2935,7 @@ i32 CSBI_RectOnly::BuildStatusBarTabs() {
     m_1d0 = (CSbiSprite*)it;
 
     // ---- RESOURCETAB (menu item, type 3) ----
-    it = (CSbiTab*)new CSbiTabBase;
-    *(void**)it = &g_vtbl_menuItem;
-    it->m_8 = 2;
-    it->m_34 = 0;
-    it->m_30 = 0;
-    it->m_38 = 0;
+    it = new CSBI_MenuItem;
     r.l = bx + 0x24;
     r.t = by + 0x82;
     r.r = bx + 0x44;
@@ -2972,12 +2950,7 @@ i32 CSBI_RectOnly::BuildStatusBarTabs() {
     m_1cc = (CSbiSprite*)it;
 
     // ---- MULTIPLAYERTAB (menu item, type 4) ----
-    it = (CSbiTab*)new CSbiTabBase;
-    *(void**)it = &g_vtbl_menuItem;
-    it->m_8 = 2;
-    it->m_34 = 0;
-    it->m_30 = 0;
-    it->m_38 = 0;
+    it = new CSBI_MenuItem;
     r.l = bx + 0x60;
     r.t = by + 0x82;
     r.r = bx + 0x80;
@@ -2991,31 +2964,22 @@ i32 CSBI_RectOnly::BuildStatusBarTabs() {
     ((CTabList*)((char*)this + 0x2c))->AddTail(it);
     m_1d4 = (CSbiSprite*)it;
     if (g_gameReg->m_134 == 1) {
-        it->m_34 = 4;
-        SbiTabFrame* f = (SbiTabFrame*)it->m_38;
+        CSBI_MenuItem* mp = (CSBI_MenuItem*)it;
+        mp->m_34 = 4;
+        SbiTabFrame* f = (SbiTabFrame*)mp->m_38;
         i32 v;
         if (f != 0 && f->m_64 <= 4 && f->m_68 >= 4) {
             v = f->m_14->m_10;
         } else {
             v = 0;
         }
-        it->m_30 = v;
-        it->m_4 = 0;
-        it->v28();
+        mp->m_30 = v;
+        mp->m_4 = 0;
+        mp->v28();
     }
 
     // ---- GAMETAB (menu item, type 5; inline ctor) ----
-    it = (CSbiTab*)::operator new(0x3c);
-    if (it) {
-        it->m_4 = 0;
-        it->m_24 = 0;
-        it->m_28 = 0;
-        *(void**)it = &g_vtbl_menuItem;
-        it->m_8 = 2;
-        it->m_34 = 0;
-        it->m_30 = 0;
-        it->m_38 = 0;
-    }
+    it = new CSBI_MenuItem;
     r.l = bx + 0x7e;
     r.t = by + 0x82;
     r.r = bx + 0x9e;

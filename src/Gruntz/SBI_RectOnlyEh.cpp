@@ -24,10 +24,10 @@ SIZE_UNKNOWN(CSbiLazySub);
 // The two scalar destructors (~CSBI_RectOnly @0x100700, ~CSBI_ImageSet @0x102000)
 // that used to live here moved to SBI_RectOnlyDtorEh.cpp / SBI_ImageSetEh.cpp,
 // where each is modeled as a REAL polymorphic chain so MSVC emits the /GX frame
-// (the manual `*(void**)this = &g_vtbl_*` stamp could not). The shared base
-// CSBI_RectOnly is the out-of-line leaf in one and the inline base in the other,
-// so they must be separate TUs. The g_vtbl_* DATA symbols those stamps referenced
-// are now owned by CStatusBarMgr.cpp (g_vtbl_t3/t4) + the catalog ??_7 auto-namer.
+// (a manual vtable stamp could not). The shared base CSBI_RectOnly is the
+// out-of-line leaf in one and the inline base in the other, so they must be
+// separate TUs. The SBI item vtables are now emitted by the compiler from the real
+// polymorphic classes (the catalog ??_7 auto-namer in config/vtable_names.csv).
 
 // The MSVC 'eh vector destructor iterator' runtime (0x51f640): runs `dtor` over
 // `count` elements of `stride` from `base`, descending. Reloc-masked rel32 callee.
