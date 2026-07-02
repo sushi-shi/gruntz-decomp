@@ -52,7 +52,6 @@ extern i32 g_bDown; // blue  down-shift
 // the inner LUT-lookup idiom is correct, only the register file is permuted.
 RVA(0x0013fbb0, 0x126)
 i32 CFileImage::Blit168(void* srcv, void* palv, i32 mode) {
-    CDDSurface* s = (CDDSurface*)this;
     u8* pal = (u8*)palv;
     if (pal == 0) {
         return 0;
@@ -65,29 +64,29 @@ i32 CFileImage::Blit168(void* srcv, void* palv, i32 mode) {
         u8 b = (u8)((u8)pal[-2] >> g_bDown);
         *lut++ = (u16)(((u32)r << g_rUp) | ((u32)g << g_gUp) | (u32)b);
     } while (lut < g_lut16 + 256);
-    i32 locked = s->Lock(0);
+    i32 locked = this->Lock(0);
     if (locked == 0) {
         return 0;
     }
     u8* src = (u8*)srcv;
     if (mode == 2) {
-        for (i32 row = *(i32*)(s->m_desc + 8) - 1; row >= 0; row--) {
-            u16* dst = (u16*)((u8*)locked + row * *(i32*)(s->m_desc + 0x10));
-            for (i32 col = 0; col < *(i32*)(s->m_desc + 0xc); col++) {
+        for (i32 row = *(i32*)(this->m_desc + 8) - 1; row >= 0; row--) {
+            u16* dst = (u16*)((u8*)locked + row * *(i32*)(this->m_desc + 0x10));
+            for (i32 col = 0; col < *(i32*)(this->m_desc + 0xc); col++) {
                 u8 idx = *src++;
                 *dst++ = g_lut16[idx];
             }
         }
     } else {
-        for (i32 row = 0; row < *(i32*)(s->m_desc + 8); row++) {
-            u16* dst = (u16*)((u8*)locked + row * *(i32*)(s->m_desc + 0x10));
-            for (i32 col = 0; col < *(i32*)(s->m_desc + 0xc); col++) {
+        for (i32 row = 0; row < *(i32*)(this->m_desc + 8); row++) {
+            u16* dst = (u16*)((u8*)locked + row * *(i32*)(this->m_desc + 0x10));
+            for (i32 col = 0; col < *(i32*)(this->m_desc + 0xc); col++) {
                 u8 idx = *src++;
                 *dst++ = g_lut16[idx];
             }
         }
     }
-    s->m_8->vtbl->Unlock(s->m_8, 0);
+    this->m_8->vtbl->Unlock(this->m_8, 0);
     return 1;
 }
 
@@ -101,16 +100,15 @@ i32 CFileImage::Blit168(void* srcv, void* palv, i32 mode) {
 // codegen. Logic exact; documented MSVC5 /O2 register-allocation plateau.
 RVA(0x0013fce0, 0x17f)
 i32 CFileImage::Blit1624(void* srcv, i32 mode) {
-    CDDSurface* s = (CDDSurface*)this;
-    i32 locked = s->Lock(0);
+    i32 locked = this->Lock(0);
     if (locked == 0) {
         return 0;
     }
     u8* src = (u8*)srcv;
     if (mode == 2) {
-        for (i32 row = *(i32*)(s->m_desc + 8) - 1; row >= 0; row--) {
-            u16* dst = (u16*)((u8*)locked + row * *(i32*)(s->m_desc + 0x10));
-            for (i32 col = 0; col < *(i32*)(s->m_desc + 0xc); col++) {
+        for (i32 row = *(i32*)(this->m_desc + 8) - 1; row >= 0; row--) {
+            u16* dst = (u16*)((u8*)locked + row * *(i32*)(this->m_desc + 0x10));
+            for (i32 col = 0; col < *(i32*)(this->m_desc + 0xc); col++) {
                 u8 b = src[0];
                 u8 g = src[1];
                 u8 r = src[2];
@@ -121,9 +119,9 @@ i32 CFileImage::Blit1624(void* srcv, i32 mode) {
             }
         }
     } else {
-        for (i32 row = 0; row < *(i32*)(s->m_desc + 8); row++) {
-            u16* dst = (u16*)((u8*)locked + row * *(i32*)(s->m_desc + 0x10));
-            for (i32 col = 0; col < *(i32*)(s->m_desc + 0xc); col++) {
+        for (i32 row = 0; row < *(i32*)(this->m_desc + 8); row++) {
+            u16* dst = (u16*)((u8*)locked + row * *(i32*)(this->m_desc + 0x10));
+            for (i32 col = 0; col < *(i32*)(this->m_desc + 0xc); col++) {
                 u8 b = src[0];
                 u8 g = src[1];
                 u8 r = src[2];
@@ -134,7 +132,7 @@ i32 CFileImage::Blit1624(void* srcv, i32 mode) {
             }
         }
     }
-    s->m_8->vtbl->Unlock(s->m_8, 0);
+    this->m_8->vtbl->Unlock(this->m_8, 0);
     return 1;
 }
 
@@ -148,16 +146,15 @@ i32 CFileImage::Blit1624(void* srcv, i32 mode) {
 // the one stack temp are MSVC5 /O2 register-allocation coin-flips. Logic exact.
 RVA(0x0013ff80, 0x184)
 i32 CFileImage::Blit2416(void* srcv, i32 mode) {
-    CDDSurface* s = (CDDSurface*)this;
-    i32 locked = s->Lock(0);
+    i32 locked = this->Lock(0);
     if (locked == 0) {
         return 0;
     }
     u16* src = (u16*)srcv;
     if (mode == 2) {
-        for (i32 row = *(i32*)(s->m_desc + 8) - 1; row >= 0; row--) {
-            u16* dst = (u16*)((u8*)locked + row * *(i32*)(s->m_desc + 0x10));
-            for (i32 col = 0; col < *(i32*)(s->m_desc + 0xc); col++) {
+        for (i32 row = *(i32*)(this->m_desc + 8) - 1; row >= 0; row--) {
+            u16* dst = (u16*)((u8*)locked + row * *(i32*)(this->m_desc + 0x10));
+            for (i32 col = 0; col < *(i32*)(this->m_desc + 0xc); col++) {
                 u16 px = *src++;
                 dst[0] = (u16)(u8)((u8)(u16)(px >> g_rUp) << g_rDown);
                 dst[1] = (u16)(u8)((u8)(u16)(px >> g_gUp) << g_gDown);
@@ -166,9 +163,9 @@ i32 CFileImage::Blit2416(void* srcv, i32 mode) {
             }
         }
     } else {
-        for (i32 row = 0; row < *(i32*)(s->m_desc + 8); row++) {
-            u16* dst = (u16*)((u8*)locked + row * *(i32*)(s->m_desc + 0x10));
-            for (i32 col = 0; col < *(i32*)(s->m_desc + 0xc); col++) {
+        for (i32 row = 0; row < *(i32*)(this->m_desc + 8); row++) {
+            u16* dst = (u16*)((u8*)locked + row * *(i32*)(this->m_desc + 0x10));
+            for (i32 col = 0; col < *(i32*)(this->m_desc + 0xc); col++) {
                 u16 px = *src++;
                 dst[0] = (u16)(u8)((u8)(u16)(px >> g_rUp) << g_rDown);
                 dst[1] = (u16)(u8)((u8)(u16)(px >> g_gUp) << g_gDown);
@@ -177,7 +174,7 @@ i32 CFileImage::Blit2416(void* srcv, i32 mode) {
             }
         }
     }
-    s->m_8->vtbl->Unlock(s->m_8, 0);
+    this->m_8->vtbl->Unlock(this->m_8, 0);
     return 1;
 }
 
@@ -194,20 +191,19 @@ i32 CFileImage::Blit2416(void* srcv, i32 mode) {
 // break) is faithful; only the regalloc/scheduling of the spills diverges.
 RVA(0x00140110, 0x30b)
 i32 CFileImage::Blit824(void* srcv, void* palv, i32 mode) {
-    CDDSurface* s = (CDDSurface*)this;
     u8* pal = (u8*)palv;
     if (pal == 0) {
         return 0;
     }
-    i32 locked = s->Lock(0);
+    i32 locked = this->Lock(0);
     if (locked == 0) {
         return 0;
     }
     u8* src = (u8*)srcv;
     if (mode == 2) {
-        for (i32 row = *(i32*)(s->m_desc + 8) - 1; row >= 0; row--) {
-            u8* dst = (u8*)locked + row * *(i32*)(s->m_desc + 0x10);
-            for (i32 col = 0; col < *(i32*)(s->m_desc + 0xc); col++) {
+        for (i32 row = *(i32*)(this->m_desc + 8) - 1; row >= 0; row--) {
+            u8* dst = (u8*)locked + row * *(i32*)(this->m_desc + 0x10);
+            for (i32 col = 0; col < *(i32*)(this->m_desc + 0xc); col++) {
                 i32 s0 = src[0];
                 i32 s1 = src[1];
                 i32 s2 = src[2];
@@ -235,9 +231,9 @@ i32 CFileImage::Blit824(void* srcv, void* palv, i32 mode) {
             }
         }
     } else {
-        for (i32 row = 0; row < *(i32*)(s->m_desc + 8); row++) {
-            u8* dst = (u8*)locked + row * *(i32*)(s->m_desc + 0x10);
-            for (i32 col = 0; col < *(i32*)(s->m_desc + 0xc); col++) {
+        for (i32 row = 0; row < *(i32*)(this->m_desc + 8); row++) {
+            u8* dst = (u8*)locked + row * *(i32*)(this->m_desc + 0x10);
+            for (i32 col = 0; col < *(i32*)(this->m_desc + 0xc); col++) {
                 i32 s0 = src[0];
                 i32 s1 = src[1];
                 i32 s2 = src[2];
@@ -265,7 +261,7 @@ i32 CFileImage::Blit824(void* srcv, void* palv, i32 mode) {
             }
         }
     }
-    s->m_8->vtbl->Unlock(s->m_8, 0);
+    this->m_8->vtbl->Unlock(this->m_8, 0);
     return 1;
 }
 
@@ -282,20 +278,19 @@ i32 CFileImage::Blit824(void* srcv, void* palv, i32 mode) {
 // blue<->pal[2] min-SSD, exact-match break) is faithful.
 RVA(0x00140420, 0x34f)
 i32 CFileImage::Blit816(void* srcv, void* palv, i32 mode) {
-    CDDSurface* s = (CDDSurface*)this;
     u8* pal = (u8*)palv;
     if (pal == 0) {
         return 0;
     }
-    i32 locked = s->Lock(0);
+    i32 locked = this->Lock(0);
     if (locked == 0) {
         return 0;
     }
     u16* src = (u16*)srcv;
     if (mode == 2) {
-        for (i32 row = *(i32*)(s->m_desc + 8) - 1; row >= 0; row--) {
-            u8* dst = (u8*)locked + row * *(i32*)(s->m_desc + 0x10);
-            for (i32 col = 0; col < *(i32*)(s->m_desc + 0xc); col++) {
+        for (i32 row = *(i32*)(this->m_desc + 8) - 1; row >= 0; row--) {
+            u8* dst = (u8*)locked + row * *(i32*)(this->m_desc + 0x10);
+            for (i32 col = 0; col < *(i32*)(this->m_desc + 0xc); col++) {
                 u16 px = *src++;
                 i32 red = (u8)((u8)(u16)(px >> g_rUp) << g_rDown);
                 i32 green = (u8)((u8)(u16)(px >> g_gUp) << g_gDown);
@@ -323,9 +318,9 @@ i32 CFileImage::Blit816(void* srcv, void* palv, i32 mode) {
             }
         }
     } else {
-        for (i32 row = 0; row < *(i32*)(s->m_desc + 8); row++) {
-            u8* dst = (u8*)locked + row * *(i32*)(s->m_desc + 0x10);
-            for (i32 col = 0; col < *(i32*)(s->m_desc + 0xc); col++) {
+        for (i32 row = 0; row < *(i32*)(this->m_desc + 8); row++) {
+            u8* dst = (u8*)locked + row * *(i32*)(this->m_desc + 0x10);
+            for (i32 col = 0; col < *(i32*)(this->m_desc + 0xc); col++) {
                 u16 px = *src++;
                 i32 red = (u8)((u8)(u16)(px >> g_rUp) << g_rDown);
                 i32 green = (u8)((u8)(u16)(px >> g_gUp) << g_gDown);
@@ -353,6 +348,6 @@ i32 CFileImage::Blit816(void* srcv, void* palv, i32 mode) {
             }
         }
     }
-    s->m_8->vtbl->Unlock(s->m_8, 0);
+    this->m_8->vtbl->Unlock(this->m_8, 0);
     return 1;
 }

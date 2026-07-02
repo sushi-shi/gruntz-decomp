@@ -99,6 +99,12 @@ public:
     i32 m_93c; // +0x93c  has-palette flag
 };
 
+// The 16-byte rect/clip record DecodeThunk builds on the stack and passes by value to
+// the inner blit/decode worker (0x1471d0).
+struct ClipRect16 {
+    i32 a, b, c, d;
+};
+
 class CFileImage {
 public:
     // slot +0x14 (IsValid) and slot +0x0c (BeginDecode: lock + prep) of this object's
@@ -146,11 +152,14 @@ public:
         i32 r1,
         i32 r2,
         i32 r3
-    );                                                                       // 0x141280
-    i32 SaveBmp(const char* path, void* pal, i32 mode);                      // 0x1443b0
-    i32 SaveTga(const char* path, void* pal, i32 mode);                      // 0x144900
-    i32 Decode(CFileImageInfo* info, CFileImageSrc* src, i32 len, i32 mode); // 0x144b30
-    i32 LoadFile(CFileImageInfo* info, const char* path, i32 mode);          // 0x144d80
+    ); // 0x141280
+    // The inner blit/decode worker DecodeThunk tail-calls (same __thiscall `this`;
+    // external no-body/reloc-masked - the body lives in another TU).
+    i32 Run(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, ClipRect16 clip); // 0x1471d0
+    i32 SaveBmp(const char* path, void* pal, i32 mode);                       // 0x1443b0
+    i32 SaveTga(const char* path, void* pal, i32 mode);                       // 0x144900
+    i32 Decode(CFileImageInfo* info, CFileImageSrc* src, i32 len, i32 mode);  // 0x144b30
+    i32 LoadFile(CFileImageInfo* info, const char* path, i32 mode);           // 0x144d80
 
     // vptr @+0x00
     char _04[0x08 - 0x04];

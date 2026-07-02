@@ -27,6 +27,8 @@
 
 #include <Ints.h>
 
+#include <DDrawMgr/CDDSurface.h> // IDirectDrawSurfaceZ (the held COM surface interface) + the
+                                 // CDDSurface wrapper's foreign vtable (IsValid/v20 dispatch)
 #include <Io/FileStream.h>
 
 // ---------------------------------------------------------------------------
@@ -140,6 +142,24 @@ public:
     CPtrArray m_elements;      // +0x94  owned element array (auto member-dtor)
 };
 
+// CFileImage's own (foreign, shared) surface vtable lives at 0x5ef7f0 - a hand-rolled
+// vtable a cl-emitted ??_7 would diverge from (the vtable-realization boundary). So
+// CFileImage carries only its dtor virtual; the two surface virtuals it dispatches
+// (IsValid @0x14, v20 @0x20) go through this pointer-only dispatch interface. It holds
+// NO data (not a second view of the struct) - only the vtable slots, so the call lowers
+// to the exact `mov eax,[this]; call [eax+slot]` the foreign vtable expects.
+struct CFileImageVtblView {
+    virtual void v00();
+    virtual void v04();
+    virtual void v08();
+    virtual void v0c();
+    virtual void v10();
+    virtual i32 IsValid(); // slot 5, @0x14
+    virtual void v18();
+    virtual void v1c();
+    virtual i32 v20(void* a); // slot 8, @0x20
+};
+
 class CFileImage {
 public:
     void* LoadBmp(char* name, char* path);
@@ -176,7 +196,23 @@ public:
     // runs the *Data decoders and installs the transparency colour after.
     i32 Resolve(void* surf, void* buf, i32 type, u32 size, void* surf2);
     i32 ResolveEx(void* surf, void* buf, i32 type, u32 size, i32 ctrl, i32 trans);
-    i32 Fill(u32 color);   // colour-fill blt (0x13e760)
+    i32 Fill(u32 color); // colour-fill blt (0x13e760)
+
+    // The held-surface COM thunks (DIRSURF.CPP), external no-body/reloc-masked; the
+    // same object exposes them so the decoders/blitters reach the DirectDraw surface
+    // without a separate wrapper-class view. __thiscall.
+    i32 Lock(void* rect);                                                    // 0x13e6d0
+    i32 BltEx(void* dstRect, void* src, void* srcRect, u32 flags, void* fx); // 0x13eef0
+    i32 SetColorKey(u32 flags, void* key);                                   // 0x13eaa0
+
+    // The RLE row-decoders' surface accessors (external no-body/reloc-masked leaf
+    // __thiscall): width/height getters, the pitch-scale (m_pitch * n) row base, and
+    // the slot-0x80 Unlock thunk. Same object => plain methods, no wrapper-class view.
+    i32 GetWidth();     // 0x141310  (returns m_width)
+    i32 GetHeight();    // 0x141320  (returns m_height)
+    i32 Scale(i32 n);   // 0x1413c0  (returns m_pitch * n)
+    void UnlockThunk(); // 0x1413b0  (m_8->vtbl[0x80](m_8, 0))
+
     virtual ~CFileImage(); // 0x141350  (virtual: the implicit vptr stamp lands stamp-first)
 
     // The shared surface-teardown helper the destructor calls before destroying
@@ -222,17 +258,37 @@ public:
     i32 Blit824(void* src, void* palette, i32 mode); // 0x140110 (ret 0xc)
     i32 Blit816(void* src, void* palette, i32 mode); // 0x140420 (ret 0xc)
 
-    // Layout. The OFFSETS are load-bearing. This is the same physical object the
-    // CDDSurface wrapper holds (DIRSURF.CPP); the decoders touch only the geometry
-    // (height/width) and the palette context (bitcount/palette/have-palette flag).
+    // Layout. The OFFSETS are load-bearing. This IS the DIRSURF.CPP surface object
+    // (the CDDSurface wrapper is the same physical struct) - the full surface layout
+    // is modeled here directly rather than viewed through a separate wrapper class.
     // vptr @+0x00 (implicit, polymorphic; the compiler emits the dtor's stamp).
-    char m_pad04[0x18 - 0x04];  // +0x04
-    i32 m_height;               // +0x18  surface height (compared vs decoded height)
-    i32 m_width;                // +0x1c  surface width  (compared vs decoded width)
-    char m_pad20[0x94 - 0x20];  // +0x20
+    char m_pad04[0x08 - 0x04]; // +0x04
+    IDirectDrawSurfaceZ* m_8;  // +0x08  held DirectDraw surface (released via Release)
+    IDirectDrawSurfaceZ* m_c;  // +0x0c  held back/secondary surface (also released)
+    union {                    // +0x10  DDSURFACEDESC scratch (m_desc-relative accessors)
+        char m_desc[0x24];
+        struct {
+            char m_descpad10[0x18 - 0x10];
+            i32 m_height; // +0x18  surface height (compared vs decoded height)
+            i32 m_width;  // +0x1c  surface width  (compared vs decoded width)
+            i32 m_pitch;  // +0x20  row stride
+        };
+    };
+    i32 m_34;                   // +0x34  desc lPitch (returned by Lock)
+    char m_pad38[0x64 - 0x38];  // +0x38
+    i32 m_64;                   // +0x64  pixel-format bit depth / colour-key colour
+    char m_pad68[0x7c - 0x68];  // +0x68
+    i32 m_7c;                   // +0x7c  don't-own flag (bit0 => surfaces not released)
+    char m_pad80[0x94 - 0x80];  // +0x80
     CPtrArray m_elements;       // +0x94  owned element array (m_pData@0x98 / m_nSize@0x9c);
                                 //        FreeSurfaces scalar-dtor-deletes each then RemoveAll
-    char m_pada8[0x538 - 0xa8]; // +0xa8
+    i32 m_a8;                   // +0xa8  raw bit depth (8/16/24; the SaveDispatch selector)
+    i32 m_ac;                   // +0xac
+    i32 m_b0;                   // +0xb0
+    i32 m_b4;                   // +0xb4
+    i32 m_b8;                   // +0xb8  cleared by the surface teardown
+    i32 m_bc;                   // +0xbc
+    char m_padc0[0x538 - 0xc0]; // +0xc0
     i32 m_palBitCount;          // +0x538  bits per pixel of the palette context
     i32 m_palette[0x100];       // +0x53c  256-entry palette (ends at 0x93c)
     i32 m_hasPalette;           // +0x93c  have-palette flag

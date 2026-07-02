@@ -984,11 +984,11 @@ i32 CDeviceConfigB::CreateDev(IDirectInputZ* di, const void* cfg, void* owner, u
     if (owner == 0) {
         return 0;
     }
-    if (((CInputDevice*)this)->CreateDeviceWrap(di, cfg, owner) == 0) {
+    if (CreateDeviceWrap(di, cfg, owner) == 0) {
         return 0;
     }
     m_flags = flags;
-    if (((CInputDevice*)this)->SetDataFormat((void*)g_mouseDataFormat) == 0) {
+    if (SetDataFormat((void*)g_mouseDataFormat) == 0) {
         return 0;
     }
     void* buf = operator new(0x10);
@@ -997,7 +997,7 @@ i32 CDeviceConfigB::CreateDev(IDirectInputZ* di, const void* cfg, void* owner, u
     }
     m_stateBuffer = buf;
     m_stateBufferSize = 0x10;
-    if (((CInputDevice*)this)->SetCooperativeLevel(DISCL_NONEXCLUSIVE | DISCL_FOREGROUND) == 0) {
+    if (SetCooperativeLevel(DISCL_NONEXCLUSIVE | DISCL_FOREGROUND) == 0) {
         return 0;
     }
     return IsReady() != 0;
@@ -1199,11 +1199,11 @@ i32 CDeviceConfigB::CreateDevJoystick(IDirectInputZ* di, const void* cfg, void* 
     if (owner == 0) {
         return 0;
     }
-    if (((CInputDevice*)this)->CreateDeviceWrap(di, cfg, owner) == 0) {
+    if (CreateDeviceWrap(di, cfg, owner) == 0) {
         return 0;
     }
     m_flags = flags;
-    if (((CInputDevice*)this)->SetDataFormat((void*)g_joystickDataFormat) == 0) {
+    if (SetDataFormat((void*)g_joystickDataFormat) == 0) {
         return 0;
     }
     void* buf = operator new(0x110);
@@ -1212,7 +1212,7 @@ i32 CDeviceConfigB::CreateDevJoystick(IDirectInputZ* di, const void* cfg, void* 
     }
     m_stateBuffer = buf;
     m_stateBufferSize = 0x110;
-    if (((CInputDevice*)this)->SetCooperativeLevel(DISCL_NONEXCLUSIVE | DISCL_FOREGROUND) == 0) {
+    if (SetCooperativeLevel(DISCL_NONEXCLUSIVE | DISCL_FOREGROUND) == 0) {
         return 0;
     }
     return SetupAxes() != 0;
@@ -1242,17 +1242,17 @@ i32 CDeviceConfigB::SetupAxes() {
     range.dwHow = 1;
     range.lMin = -1000;
     range.lMax = 1000;
-    if (((CInputDevice*)this)->SetProperty((const void*)4, &range) == 0) {
+    if (SetProperty((const void*)4, &range) == 0) {
         return 0;
     }
     range.dwObj = 4;
-    if (((CInputDevice*)this)->SetProperty((const void*)4, &range) == 0) {
+    if (SetProperty((const void*)4, &range) == 0) {
         return 0;
     }
-    if (((CInputDevice*)this)->SetPropertyDword((const void*)5, 0, 1, 0x1388) == 0) {
+    if (SetPropertyDword((const void*)5, 0, 1, 0x1388) == 0) {
         return 0;
     }
-    return ((CInputDevice*)this)->SetPropertyDword((const void*)5, 4, 1, 0x1388) != 0;
+    return SetPropertyDword((const void*)5, 4, 1, 0x1388) != 0;
 }
 
 // CInputDevice::Create (__thiscall, ret 0xc => 3 args). Caches the
@@ -1328,7 +1328,7 @@ void* CInputDevice::ReadState() {
 // CInputDevice::SetDataFormat (__thiscall, ret 4 => 1 arg). Pass-through to
 // IDirectInputDevice::SetDataFormat; report on failure.
 RVA(0x00134eb0, 0x3b)
-i32 CInputDevice::SetDataFormat(void* fmt) {
+i32 CInputDevRoot::SetDataFormat(void* fmt) {
     if (fmt == 0) {
         return 0;
     }
@@ -1344,7 +1344,7 @@ i32 CInputDevice::SetDataFormat(void* fmt) {
 // IDirectInputDevice::SetCooperativeLevel with the cached hwnd (m_hwnd) and the
 // given flags; report on failure.
 RVA(0x00134ef0, 0x3c)
-i32 CInputDevice::SetCooperativeLevel(u32 flags) {
+i32 CInputDevRoot::SetCooperativeLevel(u32 flags) {
     i32 hr = m_device2->vtbl->SetCooperativeLevel(m_device2, m_hwnd, flags);
     if (hr != 0) {
         DirectInputMgr2::GetErrorString(INPUTDEVICE_FILE, 0x128, hr);
@@ -1356,7 +1356,7 @@ i32 CInputDevice::SetCooperativeLevel(u32 flags) {
 // CInputDevice::SetProperty (__thiscall, ret 8 => 2 args). Pass-through to
 // IDirectInputDevice::SetProperty; report on failure.
 RVA(0x00134f30, 0x40)
-i32 CInputDevice::SetProperty(const void* rguid, void* prop) {
+i32 CInputDevRoot::SetProperty(const void* rguid, void* prop) {
     if (prop == 0) {
         return 0;
     }
@@ -1374,7 +1374,7 @@ i32 CInputDevice::SetProperty(const void* rguid, void* prop) {
 // to SetProperty(rguid, &prop). The data fields are filled from the args first,
 // then the two fixed size words.
 RVA(0x00134f70, 0x40)
-i32 CInputDevice::SetPropertyDword(const void* rguid, u32 dwObj, u32 dwHow, u32 dwData) {
+i32 CInputDevRoot::SetPropertyDword(const void* rguid, u32 dwObj, u32 dwHow, u32 dwData) {
     struct DIPropDword {
         u32 dwSize;       // +0x00
         u32 dwHeaderSize; // +0x04

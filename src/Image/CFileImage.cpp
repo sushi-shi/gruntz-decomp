@@ -41,15 +41,8 @@ struct DecodeSrc {
 
 // The DecodeRun grayscale-ramp scratch (reloc-masked global at 0x683ef0; 0x400 bytes).
 
-// The inner blit/decode worker 0x141280 forwards into (reloc-masked __thiscall). It
-// takes a 16-byte rect/clip record by value (built on the thunk's stack from the last
-// 4 args) plus the six leading scalar args.
-struct ClipRect16 {
-    i32 a, b, c, d;
-};
-struct ImageWorkerThis {
-    i32 Run(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, ClipRect16 clip); // 0x1471d0
-};
+// ClipRect16 (the 16-byte rect/clip record) + the inner blit/decode worker
+// CFileImage::Run (0x1471d0) are declared on CFileImage in <Image/CFileImage.h>.
 
 // The 256*3 grayscale-ramp scratch buffer the 24-bit decode-convert path fills
 // (reloc-masked global at 0x684af0; +0x401 = the running write cursor, +0x801 = end).
@@ -150,7 +143,7 @@ void CFileImage::
     clip.b = r1;
     clip.c = r2;
     clip.d = r3;
-    ((ImageWorkerThis*)this)->Run(a1, a2, a3, a4, a5, a6, clip);
+    this->Run(a1, a2, a3, a4, a5, a6, clip);
 }
 
 // ---------------------------------------------------------------------------
@@ -621,6 +614,5 @@ SIZE_UNKNOWN(CFileImage);
 // --- CFileImage.cpp local views ---
 SIZE_UNKNOWN(DecodeSrc);
 SIZE(ClipRect16, 0x10); // 16-byte by-value rect/clip record
-SIZE_UNKNOWN(ImageWorkerThis);
 SIZE_UNKNOWN(BmpFileHeader);
 SIZE_UNKNOWN(TgaHeader);

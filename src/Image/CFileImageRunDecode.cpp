@@ -7,37 +7,17 @@
 // RunDecode1/RunDecode3 take an explicit (dst,src,w,h) and decode one buffer.
 //
 // Modeled offset-faithfully: the surface width/height come from the m_1c/m_18
-// getters (0x141310/0x141320), the row base from B_1413c0::Scale (m_20 * row), the
-// teardown from Owner1413::Thunk - all reloc-masked external __thiscall calls on the
-// shared surface object. Locals are declared in retail's /Od stack-slot order so the
-// [ebp-N] displacements match byte-for-byte.
+// getters (GetWidth/GetHeight, 0x141310/0x141320), the row base from Scale (0x1413c0,
+// m_pitch * row), the teardown from UnlockThunk (0x1413b0) - all reloc-masked external
+// __thiscall calls on the same surface object (CFileImage). Locals are declared in
+// retail's /Od stack-slot order so the [ebp-N] displacements match byte-for-byte.
 #include <Image/Image.h>
 #include <rva.h>
 
-#include <Gruntz/CDirectDrawMgr.h> // CDDSurface::Lock (0x13e6d0)
-
-// The surface geometry getters (0x141310 -> m_1c width, 0x141320 -> m_18 height),
-// unnamed in retail; reloc-masked __thiscall leaf getters.
-struct RunSurf {
-    i32 GetWidth();  // 0x141310
-    i32 GetHeight(); // 0x141320
-};
-
-// The pitch-scale helper (0x1413c0, `return m_20 * n`) - same placeholder owner as
-// src/Gruntz/BoundaryUpper.cpp so the call reloc-masks against the same symbol.
-struct B_1413c0 {
-    i32 _0[8];
-    i32 m_20;
-    i32 Scale(i32 n);
-};
-
-// The Unlock thunk (0x1413b0, `(*m_8->vtbl[0x80])(m_8, 0)`) - same placeholder owner
-// as BoundaryUpper.cpp.
-struct Owner1413 {
-    char _0[8];
-    void* m_8;
-    void Thunk();
-};
+// The RLE row-decoders dispatch to the same-object surface accessors declared on
+// CFileImage: the m_width/m_height getters (0x141310/0x141320), the pitch-scale row
+// base Scale (0x1413c0, m_pitch * row), the Unlock thunk (0x1413b0), and Lock
+// (0x13e6d0) - all reloc-masked external __thiscall leaves (bodies in other TUs).
 
 // ---------------------------------------------------------------------------
 // CFileImage::DecodeRun8 (ret 4) - RLE-decode an 8bpp run-stream (arg0)
@@ -66,16 +46,16 @@ i32 CFileImage::DecodeRun8(void* src) {
     if (src == 0) {
         return 0;
     }
-    width = ((RunSurf*)this)->GetWidth();
-    height = ((RunSurf*)this)->GetHeight();
+    width = this->GetWidth();
+    height = this->GetHeight();
     carry = 0;
     sp = (u8*)src;
-    locked = ((CDDSurface*)this)->Lock(0);
+    locked = this->Lock(0);
     if (locked == 0) {
         return 0;
     }
     for (row = 0; row < height; row++) {
-        dst = (u8*)(locked + ((B_1413c0*)this)->Scale(row));
+        dst = (u8*)(locked + this->Scale(row));
         cols = width;
         if (carry > 0) {
             for (k = 0; k < carry; k++) {
@@ -108,7 +88,7 @@ i32 CFileImage::DecodeRun8(void* src) {
             }
         }
     }
-    ((Owner1413*)this)->Thunk();
+    this->UnlockThunk();
     return 1;
 }
 
@@ -199,16 +179,16 @@ i32 CFileImage::DecodeRun24(void* src) {
     if (src == 0) {
         return 0;
     }
-    locked = ((CDDSurface*)this)->Lock(0);
+    locked = this->Lock(0);
     if (locked == 0) {
         return 0;
     }
     carry = 0;
     sp = (u8*)src;
     dst = 0;
-    for (row = 0; row < ((RunSurf*)this)->GetHeight(); row++) {
-        dst = (u8*)(locked + ((B_1413c0*)this)->Scale(row) + 2);
-        cols = ((RunSurf*)this)->GetWidth();
+    for (row = 0; row < this->GetHeight(); row++) {
+        dst = (u8*)(locked + this->Scale(row) + 2);
+        cols = this->GetWidth();
         if (carry > 0) {
             for (k = 0; k < carry; k++) {
                 *dst = pixel;
@@ -239,8 +219,8 @@ i32 CFileImage::DecodeRun24(void* src) {
                 cols--;
             }
         }
-        dst = (u8*)(locked + ((B_1413c0*)this)->Scale(row) + 1);
-        cols = ((RunSurf*)this)->GetWidth();
+        dst = (u8*)(locked + this->Scale(row) + 1);
+        cols = this->GetWidth();
         if (carry > 0) {
             for (k = 0; k < carry; k++) {
                 *dst = pixel;
@@ -271,8 +251,8 @@ i32 CFileImage::DecodeRun24(void* src) {
                 cols--;
             }
         }
-        dst = (u8*)(locked + ((B_1413c0*)this)->Scale(row));
-        cols = ((RunSurf*)this)->GetWidth();
+        dst = (u8*)(locked + this->Scale(row));
+        cols = this->GetWidth();
         if (carry > 0) {
             for (k = 0; k < carry; k++) {
                 *dst = pixel;
@@ -304,7 +284,7 @@ i32 CFileImage::DecodeRun24(void* src) {
             }
         }
     }
-    ((Owner1413*)this)->Thunk();
+    this->UnlockThunk();
     return 1;
 }
 
@@ -436,5 +416,3 @@ i32 CFileImage::RunDecode3(void* dstBuf, void* src, i32 width, i32 height) {
     }
     return 1;
 }
-
-SIZE_UNKNOWN(RunSurf);

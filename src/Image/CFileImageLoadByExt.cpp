@@ -2,22 +2,14 @@
 // file-extension dispatcher (== the DIRSURF.CPP surface). Re-homed from
 // src/Stub/CFileImageDecode.cpp.
 //
-// Kept in its own TU (NOT folded into CFileImage.cpp): the default-loader branch
-// dispatches through a `this`-cast to the RT_BITMAP loader at 0x144270 (defined in
-// the ApiCallers grab-bag as ResLoad_144270::Load); modeling that cast against the
-// full CFileImage class in CFileImage.cpp risks its byte-exact neighbors, so the
-// self-contained minimal model is preserved here (byte-identical to the former stub).
+// Kept in its own TU (NOT folded into CFileImage.cpp) with a minimal CFileImage view
+// to avoid disturbing CFileImage.cpp's byte-exact neighbors. The default-loader branch
+// is just CFileImage::Load (the RT_BITMAP loader at 0x144270, body in the ApiCallers
+// TU) - the same __thiscall `this`, no separate wrapper class.
 // Only offsets / code bytes are load-bearing; helpers are reloc-masked externals.
 #include <rva.h>
 
 class CFileImageInfo; // the decode-target info block (reloc-masked param type)
-
-// The RT_BITMAP resource loader at 0x144270 (its `this` is the same CFileImage;
-// declared minimally here so its __thiscall `call` reloc-masks - defined in the
-// ApiCallers TU as ResLoad_144270::Load).
-struct ResLoad_144270 {
-    i32 Load(i32 a, char* name, i32 c); // 0x144270 (thiscall)
-};
 
 class CFileImage {
 public:
@@ -25,7 +17,10 @@ public:
     i32 LoadFile2(CFileImageInfo* info, const char* path, i32 flags); // 0x143e60 .BMP
     i32 LoadFile(CFileImageInfo* info, const char* path, i32 flags);  // 0x144d80 .PCX
     i32 DecodePcxEx(char* a, char* b, void* c, void* d);              // 0x1459d0 .PID
-    void FillPalette(void* pal);                                      // 0x13eb40
+    // The RT_BITMAP resource loader (its `this` is the same CFileImage; external
+    // no-body/reloc-masked - the body lives in the ApiCallers TU).
+    i32 Load(i32 a, char* name, i32 c); // 0x144270 (thiscall, default loader)
+    void FillPalette(void* pal);        // 0x13eb40
 };
 
 // The engine's own strrchr / case-insensitive compare (cdecl C-linkage helpers).
@@ -56,7 +51,7 @@ i32 CFileImage::LoadByExt(CFileImageInfo* info, char* path, i32 flags, i32 a4) {
             return 0;
         }
         doFill = 0;
-    } else if (((ResLoad_144270*)this)->Load((i32)info, path, flags) == 0) {
+    } else if (this->Load((i32)info, path, flags) == 0) {
         return 0;
     }
     if (a4 != -1 && doFill != 0) {
@@ -64,5 +59,3 @@ i32 CFileImage::LoadByExt(CFileImageInfo* info, char* path, i32 flags, i32 a4) {
     }
     return 1;
 }
-
-SIZE_UNKNOWN(ResLoad_144270);

@@ -264,6 +264,13 @@ public:
     void ReleaseDevices();                                             // 0x134d50
     i32 Unacquire();                                                   // 0x134fe0
 
+    // Shared COM device-config thunks: they touch only the root-owned m_device2 /
+    // m_hwnd, so every device leaf (keyboard/mouse/joystick) reaches them directly.
+    i32 SetDataFormat(void* fmt);                                              // 0x134eb0
+    i32 SetCooperativeLevel(u32 flags);                                        // 0x134ef0
+    i32 SetProperty(const void* rguid, void* prop);                            // 0x134f30
+    i32 SetPropertyDword(const void* rguid, u32 dwObj, u32 dwHow, u32 dwData); // 0x134f70
+
     // --- layout ---------------------------------------------------------------
     IDirectInputDeviceZ* m_device;  // +0x004  the created device (CreateDevice out)
     IDirectInputDeviceZ* m_device2; // +0x008  the QI'd v2 device interface (slot dispatch)
@@ -309,10 +316,6 @@ public:
     i32 PollJoystick();                                                        // 0x1347d0
     i32 PollDevice();                                                          // 0x135040
     void* ReadState();                                                         // 0x134d90
-    i32 SetDataFormat(void* fmt);                                              // 0x134eb0
-    i32 SetCooperativeLevel(u32 flags);                                        // 0x134ef0
-    i32 SetProperty(const void* rguid, void* prop);                            // 0x134f30
-    i32 SetPropertyDword(const void* rguid, u32 dwObj, u32 dwHow, u32 dwData); // 0x134f70
     i32 Acquire();                                                             // 0x134fb0
 
     u32 m_keyTable[0x20]; // +0x2b4..0x333  scan-code table (0x20 dwords)

@@ -36,11 +36,13 @@
 #include <rva.h>
 // <string.h>: strrchr (find the ext dot) / _stricmp (the case-insensitive ext compare).
 #include <string.h>
-// CDDSurface (DIRSURF.CPP) is the SAME object as CFileImage here - the file-image
-// surface and the DirectDraw surface wrapper are one class viewed two ways. The
-// blitters/run-decoders are its leaf methods (named CFileImage::* to match the
-// already-matched decoder callers), but their bodies touch the rich surface
-// layout + call the CDDSurface COM thunks (Lock/SetColorKey, reloc-masked).
+// The file-image surface and the DirectDraw surface wrapper (DIRSURF.CPP) are ONE
+// class: the full surface layout + COM thunks (Lock/BltEx/SetColorKey, reloc-masked)
+// are modeled directly on CFileImage (see <Image/Image.h>), not viewed through a
+// separate CDDSurface wrapper. The two foreign-vtable virtuals it dispatches (IsValid,
+// v20) go through the pointer-only CFileImageVtblView (the vtable-realization boundary:
+// the shared surface vtable 0x5ef7f0 can't be cl-emitted). CDirectDrawMgr is included
+// only for CDirectDrawMgr::GetErrorString (the Fill error path).
 #include <Gruntz/CDirectDrawMgr.h>
 #include <Globals.h>
 
@@ -613,11 +615,10 @@ i32 CRezImage::LoadDefault(char* name, void* a2, void* a3) {
 }
 
 // ===========================================================================
-// CFileImage surface helpers (DIRSURF.CPP leaf methods). `this` is the same
-// object the CDDSurface wrapper holds, so the bodies view it as a CDDSurface to
-// reach the rich surface layout + the COM thunks. Named CFileImage::* to pair
-// with the matched decoder callers; placed in retail-RVA order (all below the
-// CFileImage decoders' RVAs, so they lead the CFileImage section).
+// CFileImage surface helpers (DIRSURF.CPP leaf methods). The rich surface layout +
+// COM thunks are CFileImage's own (it IS the DirectDraw surface object), reached
+// directly via members/methods - no separate wrapper-class view. Placed in retail-RVA
+// order (all below the CFileImage decoders' RVAs, so they lead the CFileImage section).
 // ===========================================================================
 
 // ---------------------------------------------------------------------------
@@ -630,22 +631,21 @@ i32 CRezImage::LoadDefault(char* name, void* a2, void* a3) {
 // own slot-8 virtual with `surf`.
 RVA(0x0013e0d0, 0x66)
 i32 CFileImage::BlitSurf(void* surf, i32 width, i32 height, i32 a4, i32 a5) {
-    CDDSurface* s = (CDDSurface*)this;
-    i32* desc = (i32*)s->m_desc;
+    i32* desc = (i32*)this->m_desc;
     for (i32 i = 0x1b; i != 0; i--) {
         *desc++ = 0;
     }
-    *(i32*)(s->m_desc + 0x68) = a5; // m_78
-    *(i32*)(s->m_desc + 0xc) = width;
-    *(i32*)(s->m_desc + 8) = height;
-    *(i32*)s->m_desc = 0x6c;    // dwSize
-    *(i32*)(s->m_desc + 4) = 7; // dwFlags
+    *(i32*)(this->m_desc + 0x68) = a5; // m_78
+    *(i32*)(this->m_desc + 0xc) = width;
+    *(i32*)(this->m_desc + 8) = height;
+    *(i32*)this->m_desc = 0x6c;    // dwSize
+    *(i32*)(this->m_desc + 4) = 7; // dwFlags
     if (a4 != 0 && a4 != ((CFileImage*)surf)->m_palBitCount) {
-        *(i32*)(s->m_desc + 4) = 0x1007;
-        *(i32*)(s->m_desc + 0x48) = 0x20; // m_58
-        s->m_64 = a4;
+        *(i32*)(this->m_desc + 4) = 0x1007;
+        *(i32*)(this->m_desc + 0x48) = 0x20; // m_58
+        this->m_64 = a4;
     }
-    return s->v20(surf);
+    return ((CFileImageVtblView*)this)->v20(surf);
 }
 
 // ---------------------------------------------------------------------------
@@ -693,7 +693,6 @@ i32 CFileImage::Resolve(void* surf, void* buf, i32 type, u32 size, void* surf2) 
 // CDirectDrawMgr::GetErrorString (DIRSURF.CPP, line 0x22c). Returns hr == DD_OK.
 RVA(0x0013e760, 0x63)
 i32 CFileImage::Fill(u32 color) {
-    CDDSurface* s = (CDDSurface*)this;
     i32 fx[0x19]; // DDBLTFX (0x64 bytes)
     i32* p = fx;
     for (i32 i = 0x19; i != 0; i--) {
@@ -701,7 +700,7 @@ i32 CFileImage::Fill(u32 color) {
     }
     fx[0] = 0x64;          // dwSize
     fx[0x14] = (i32)color; // dwFillColor @ +0x50
-    i32 hr = s->BltEx(0, 0, 0, 0x1000400, fx);
+    i32 hr = this->BltEx(0, 0, 0, 0x1000400, fx);
     if (hr != 0) {
         CDirectDrawMgr::GetErrorString((char*)"C:\\Proj\\DDrawMgr\\DIRSURF.CPP", 0x22c, hr);
     }
@@ -715,16 +714,15 @@ i32 CFileImage::Fill(u32 color) {
 // source colour key to {arg, arg} (DDCKEY_SRCBLT = 8).
 RVA(0x0013eb40, 0x3c)
 void CFileImage::FillPalette(void* arg) {
-    CDDSurface* s = (CDDSurface*)this;
     u32 ck[2];
     ck[0] = (u32)arg;
     ck[1] = (u32)arg;
     if ((i32)arg != -1) {
-        s->m_bc = 1;
+        this->m_bc = 1;
     } else {
-        s->m_bc = 0;
+        this->m_bc = 0;
     }
-    s->SetColorKey(8, ck);
+    this->SetColorKey(8, ck);
 }
 
 // ---------------------------------------------------------------------------
@@ -735,34 +733,33 @@ void CFileImage::FillPalette(void* arg) {
 // down. Unlock and return 1.
 RVA(0x0013ece0, 0xc7)
 i32 CFileImage::BlitDirect(void* src, i32 mode) {
-    CDDSurface* s = (CDDSurface*)this;
-    i32 locked = s->Lock(0);
+    i32 locked = this->Lock(0);
     if (locked == 0) {
         return 0;
     }
     u8* p = (u8*)src;
     if (mode == 2) {
-        for (i32 row = *(i32*)(s->m_desc + 8) - 1; row >= 0; row--) {
-            u8* dst = (u8*)locked + row * *(i32*)(s->m_desc + 0x10);
+        for (i32 row = *(i32*)(this->m_desc + 8) - 1; row >= 0; row--) {
+            u8* dst = (u8*)locked + row * *(i32*)(this->m_desc + 0x10);
             u8* sp = p;
-            i32 n = s->m_ac;
+            i32 n = this->m_ac;
             for (i32 i = n; i > 0; i--) {
                 *dst++ = *sp++;
             }
             p += n;
         }
     } else {
-        for (i32 row = 0; row < *(i32*)(s->m_desc + 8); row++) {
-            u8* dst = (u8*)locked + row * *(i32*)(s->m_desc + 0x10);
+        for (i32 row = 0; row < *(i32*)(this->m_desc + 8); row++) {
+            u8* dst = (u8*)locked + row * *(i32*)(this->m_desc + 0x10);
             u8* sp = p;
-            i32 n = s->m_ac;
+            i32 n = this->m_ac;
             for (i32 i = n; i > 0; i--) {
                 *dst++ = *sp++;
             }
             p += n;
         }
     }
-    s->m_8->vtbl->Unlock(s->m_8, 0);
+    this->m_8->vtbl->Unlock(this->m_8, 0);
     return 1;
 }
 
@@ -775,8 +772,7 @@ i32 CFileImage::BlitDirect(void* src, i32 mode) {
 // combinations return 0.
 RVA(0x0013faa0, 0x108)
 i32 CFileImage::Blit(void* src, i32 bitcount, void* palette, i32 mode) {
-    CDDSurface* s = (CDDSurface*)this;
-    i32 dest = s->m_a8;
+    i32 dest = this->m_a8;
     if ((dest == 0) == bitcount) {
         return BlitDirect(src, mode);
     }
@@ -825,20 +821,19 @@ i32 CFileImage::Blit(void* src, i32 bitcount, void* palette, i32 mode) {
 // 91%). Regalloc-ordering wall (docs/patterns/zero-register-pinning.md).
 RVA(0x0013fe60, 0x11e)
 i32 CFileImage::Blit248(void* srcv, void* palv, i32 mode) {
-    CDDSurface* s = (CDDSurface*)this;
     u8* pal = (u8*)palv;
     if (pal == 0) {
         return 0;
     }
-    i32 locked = s->Lock(0);
+    i32 locked = this->Lock(0);
     if (locked == 0) {
         return 0;
     }
     u8* src = (u8*)srcv;
     if (mode == 2) {
-        for (i32 row = *(i32*)(s->m_desc + 8) - 1; row >= 0; row--) {
-            u8* dst = (u8*)locked + row * *(i32*)(s->m_desc + 0x10);
-            for (i32 col = 0; col < *(i32*)(s->m_desc + 0xc); col++) {
+        for (i32 row = *(i32*)(this->m_desc + 8) - 1; row >= 0; row--) {
+            u8* dst = (u8*)locked + row * *(i32*)(this->m_desc + 0x10);
+            for (i32 col = 0; col < *(i32*)(this->m_desc + 0xc); col++) {
                 u8 idx = *src++;
                 *dst++ = pal[idx * 4 + 2];
                 *dst++ = pal[idx * 4 + 1];
@@ -846,9 +841,9 @@ i32 CFileImage::Blit248(void* srcv, void* palv, i32 mode) {
             }
         }
     } else {
-        for (i32 row = 0; row < *(i32*)(s->m_desc + 8); row++) {
-            u8* dst = (u8*)locked + row * *(i32*)(s->m_desc + 0x10);
-            for (i32 col = 0; col < *(i32*)(s->m_desc + 0xc); col++) {
+        for (i32 row = 0; row < *(i32*)(this->m_desc + 8); row++) {
+            u8* dst = (u8*)locked + row * *(i32*)(this->m_desc + 0x10);
+            for (i32 col = 0; col < *(i32*)(this->m_desc + 0xc); col++) {
                 u8 idx = *src++;
                 *dst++ = pal[idx * 4 + 2];
                 *dst++ = pal[idx * 4 + 1];
@@ -856,7 +851,7 @@ i32 CFileImage::Blit248(void* srcv, void* palv, i32 mode) {
             }
         }
     }
-    s->m_8->vtbl->Unlock(s->m_8, 0);
+    this->m_8->vtbl->Unlock(this->m_8, 0);
     return 1;
 }
 
@@ -885,7 +880,6 @@ CFileImage::~CFileImage() {
 // IDirectDrawSurfaces (m_8/m_c) and null them, and clear m_b8.
 RVA(0x0013e4d0, 0x7e)
 void CFileImage::FreeSurfaces() {
-    CDDSurface* s = (CDDSurface*)this;
     for (u32 i = 0; i < (u32)m_elements.GetSize(); i++) {
         CFileImageElement* e = (CFileImageElement*)m_elements[i];
         if (e != 0) {
@@ -893,19 +887,19 @@ void CFileImage::FreeSurfaces() {
         }
     }
     m_elements.SetSize(0, -1);
-    if (s->m_8 != 0) {
-        if ((s->m_7c & 1) == 0) {
-            s->m_8->vtbl->Release(s->m_8);
+    if (this->m_8 != 0) {
+        if ((this->m_7c & 1) == 0) {
+            this->m_8->vtbl->Release(this->m_8);
         }
-        s->m_8 = 0;
+        this->m_8 = 0;
     }
-    if (s->m_c != 0) {
-        if ((s->m_7c & 1) == 0) {
-            s->m_c->vtbl->Release(s->m_c);
+    if (this->m_c != 0) {
+        if ((this->m_7c & 1) == 0) {
+            this->m_c->vtbl->Release(this->m_c);
         }
-        s->m_c = 0;
+        this->m_c = 0;
     }
-    s->m_b8 = 0;
+    this->m_b8 = 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -1043,7 +1037,6 @@ i32 CImageFactory::Build_13e9a0(CRezImageSource* src, i32 a2) {
 // non-zero (failed/lost) HRESULT colour-fill it white (0xff) or black (0) via Fill.
 RVA(0x0013edb0, 0x78)
 void CFileImage::Clear(i32 white) {
-    CDDSurface* s = (CDDSurface*)this;
     i32 fx[0x19]; // DDBLTFX (0x64 bytes)
     i32* p = fx;
     for (i32 i = 0x19; i != 0; i--) {
@@ -1051,7 +1044,7 @@ void CFileImage::Clear(i32 white) {
     }
     fx[0] = 0x64;                         // dwSize @+0x0
     fx[2] = white ? (i32)0xff0062 : 0x42; // fill flags @+0x8
-    i32 hr = s->m_8->vtbl->Blt(s->m_8, 0, 0, 0, 0x1020000, fx);
+    i32 hr = this->m_8->vtbl->Blt(this->m_8, 0, 0, 0, 0x1020000, fx);
     if (hr != 0) {
         if (white != 0) {
             Fill(0xff);
@@ -1068,7 +1061,7 @@ void CFileImage::Clear(i32 white) {
 // dispatcher and return its result.
 RVA(0x0013f910, 0x4a)
 i32 CFileImage::SaveFile(char* buf, i32 type, void* a3, void* a4) {
-    if (((CDDSurface*)this)->IsValid() == 0) {
+    if (((CFileImageVtblView*)this)->IsValid() == 0) {
         return 0;
     }
     if (buf == 0) {
@@ -1093,7 +1086,7 @@ i32 CFileImage::SaveFile(char* buf, i32 type, void* a3, void* a4) {
 // ladder.
 RVA(0x00144350, 0x5f)
 i32 CFileImage::SaveDispatch(void* a1, void* a2, void* a3) {
-    switch (((CDDSurface*)this)->m_a8) {
+    switch (m_a8) {
         case 0x18:
             return Save24(a1, a2, a3);
         case 0x10:
@@ -1139,8 +1132,7 @@ extern i32 g_bDown; // blue  down-shift
 // complete + correct; both are documented non-steerable plateaus.
 RVA(0x00144640, 0x2be)
 i32 CFileImage::SaveRle16(void* a1, void* a2, void* a3) {
-    CDDSurface* s = (CDDSurface*)this;
-    if (s->IsValid() == 0) {
+    if (((CFileImageVtblView*)this)->IsValid() == 0) {
         return 0;
     }
     if (a1 == 0) {
@@ -1149,7 +1141,7 @@ i32 CFileImage::SaveRle16(void* a1, void* a2, void* a3) {
     if (*(char*)a1 == 0) {
         return 0;
     }
-    if (s->m_a8 != 0x10) {
+    if (this->m_a8 != 0x10) {
         return 0;
     }
 
@@ -1169,8 +1161,8 @@ i32 CFileImage::SaveRle16(void* a1, void* a2, void* a3) {
     bfh.bfReserved1 = 0;
     bfh.bfReserved2 = 0;
 
-    i32 height = *(i32*)(s->m_desc + 8);  // dwHeight
-    i32 width = *(i32*)(s->m_desc + 0xc); // dwWidth
+    i32 height = *(i32*)(this->m_desc + 8);  // dwHeight
+    i32 width = *(i32*)(this->m_desc + 0xc); // dwWidth
     bih.biHeight = height;
     bih.biWidth = width;
     bfh.bfSize = 3 * width * height + 0x3a;
@@ -1184,7 +1176,7 @@ i32 CFileImage::SaveRle16(void* a1, void* a2, void* a3) {
         return 0;
     }
 
-    u8* locked = (u8*)s->Lock(0);
+    u8* locked = (u8*)this->Lock(0);
     if (locked == 0) {
         RezFree(line);
         return 0;
@@ -1198,7 +1190,7 @@ i32 CFileImage::SaveRle16(void* a1, void* a2, void* a3) {
         ok = file.Open((char*)a2, 0x1001, 0);
     }
     if (ok == 0) {
-        s->m_8->vtbl->Unlock(s->m_8, 0);
+        this->m_8->vtbl->Unlock(this->m_8, 0);
         RezFree(line);
         return 0;
     }
@@ -1208,7 +1200,7 @@ i32 CFileImage::SaveRle16(void* a1, void* a2, void* a3) {
     file.Write(&bih, 0x2c);
 
     for (i32 row = height - 1; row >= 0; row--) {
-        u8* src = locked + row * *(i32*)(s->m_desc + 0x10);
+        u8* src = locked + row * *(i32*)(this->m_desc + 0x10);
         u8* dst = line;
         for (i32 x = 0; x < width; x++) {
             u16 px = *(u16*)src;
@@ -1221,7 +1213,7 @@ i32 CFileImage::SaveRle16(void* a1, void* a2, void* a3) {
         file.Write(line, 3 * width);
     }
 
-    s->m_8->vtbl->Unlock(s->m_8, 0);
+    this->m_8->vtbl->Unlock(this->m_8, 0);
     RezFree(line);
     return 1;
 }
