@@ -1,16 +1,13 @@
 // ComHelperThunks.cpp - small leaf glue from the engine's COM/registry-helper
-// module (the 0x1bf*-0x1d5* run): a vptr-stamping base ctor, a detach getter,
-// three static-destructor atexit-registration thunks, and two one-line forwarders
-// onto file-scope engine singletons. All callees/globals are external symbols
-// (reloc-masked rel32/DIR32); only the instruction selection is load-bearing.
+// module (the 0x1bf*-0x1d5* run): a vptr-stamping base dtor and two one-line
+// forwarders onto file-scope engine singletons. All callees/globals are external
+// symbols (reloc-masked rel32/DIR32); only the instruction selection is load-bearing.
+//
+// The detach getter (0x1c0a41, `and [ecx],0`) and the three static-destructor
+// atexit-registration thunks (0x1ce973 / 0x1d4239 / 0x1d4c16) had no plain-C++
+// spelling (they were __declspec(naked) bodies), so they are carved to
+// config/library_labels.csv (asm-carveout: GAME-ASM / MSVC-THUNK) instead.
 #include <rva.h>
-
-extern "C" int atexit(void (*func)(void));
-
-// The static destructors the three atexit thunks register (external, reloc-masked).
-extern "C" void EhStaticDtor_5ce97f();
-extern "C" void EhStaticDtor_5d4245();
-extern "C" void EhStaticDtor_5d4c22();
 
 // File-scope engine singletons the forwarders dispatch onto.
 struct ComSingleton2f00 {
@@ -35,19 +32,6 @@ struct CNoTrackObject {
 };
 
 // ---------------------------------------------------------------------------
-// 0x1c0a41 - return *this(+0) and clear it. Retail zeroes via `and [ecx],0`
-// (3-byte sign-extended-imm8 AND); MSVC5 lowers any C++ `=0`/`&=0` to a 6-byte
-// `mov [ecx],0`, so the AND form is reconstructed verbatim.
-RVA(0x001c0a41, 0x6)
-__declspec(naked) void ComDetach_1c0a41() {
-    __asm {
-        mov eax, dword ptr [ecx]
-        and dword ptr [ecx], 0
-        ret
-    }
-}
-
-// ---------------------------------------------------------------------------
 // 0x1d4722 - the vptr-restore: cl stamps the ??_7CNoTrackObject vptr, then ret.
 // ---------------------------------------------------------------------------
 RVA(0x001d4722, 0x7)
@@ -67,40 +51,6 @@ void ComPump3210() {
 RVA(0x001bae1f, 0xd)
 void ComActivate2f00() {
     g_com652f00.Activate(1);
-}
-
-// ---------------------------------------------------------------------------
-// 0x1ce973 / 0x1d4239 / 0x1d4c16 - register a static object's destructor. These
-// are CRT-emitted registration stubs whose 1-dword cdecl cleanup is `pop ecx`;
-// MSVC5 /O2 lowers a C++ `atexit(fn)` to `add esp,4`, so they are verbatim.
-RVA(0x001ce973, 0xc)
-__declspec(naked) void ComAtexit_5ce97f() {
-    __asm {
-        push offset EhStaticDtor_5ce97f
-        call atexit
-        pop ecx
-        ret
-    }
-}
-
-RVA(0x001d4239, 0xc)
-__declspec(naked) void ComAtexit_5d4245() {
-    __asm {
-        push offset EhStaticDtor_5d4245
-        call atexit
-        pop ecx
-        ret
-    }
-}
-
-RVA(0x001d4c16, 0xc)
-__declspec(naked) void ComAtexit_5d4c22() {
-    __asm {
-        push offset EhStaticDtor_5d4c22
-        call atexit
-        pop ecx
-        ret
-    }
 }
 
 // Class metadata (hosted at .cpp EOF).

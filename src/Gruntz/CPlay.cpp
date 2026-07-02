@@ -4208,25 +4208,10 @@ i32 CPlay::SetEffectSpriteDurations() {
     return 1;
 }
 
-// --- ILT jmp thunks for CPlay::RegionEnter/RegionLeave (re-homed from src/Stub/
-// CPlay.cpp). Two low-RVA 5-byte ILT `jmp rel32` thunks landing on the real bodies
-// above; there is no plain-C++ source form for a bare unframed `jmp`, so each is a
-// __declspec(naked) body whose single jmp's rel32 reloc-masks against the named
-// target (same approach as NetThunks.cpp). Distinct names -> no symbol collision.
-extern "C" {
-    void n_RegionEnter_d88f0(); // CPlay::RegionEnter (0xd88f0)
-    void n_RegionLeave_d8960(); // CPlay::RegionLeave (0xd8960)
-}
-
-RVA(0x000019f1, 0x5)
-__declspec(naked) void Ilt_RegionLeave_19f1() {
-    __asm { jmp n_RegionLeave_d8960 }
-}
-
-RVA(0x00001b9a, 0x5)
-__declspec(naked) void Ilt_RegionEnter_1b9a() {
-    __asm { jmp n_RegionEnter_d88f0 }
-}
+// The two low-RVA 5-byte ILT `jmp rel32` islands for CPlay::RegionEnter/RegionLeave
+// (0x1b9a / 0x19f1) are linker-emitted incremental-link thunks, not game code; they
+// are carved to config/library_labels.csv (asm-carveout) rather than reconstructed
+// as naked jmp bodies.
 
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.

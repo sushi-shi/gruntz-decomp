@@ -18,6 +18,32 @@ struct CDebugSink {
 DATA(0x006bf850)
 extern CDebugSink g_6bf850;
 
+// ---------------------------------------------------------------------------
+// 0x184e00 - debug-gated assert/printf (re-homed from src/Stub/EngineExternFns.cpp):
+// when the debug mode (g_6bf8dc) is armed and channel 0 is enabled in the debug-
+// channel set (g_6bf850, viewed as a CRangeSet), vsprintf the varargs into a
+// 256-byte stack buffer and hand it to the sink (0x184df0). Body byte-identical (the
+// vsprintf / sink call relocs are reloc-masked). va_list is spelled `(char*)(&fmt+1)`
+// to avoid <stdarg.h>. Contains is external - only its mangled name is load-bearing.
+// ---------------------------------------------------------------------------
+struct CRangeSet {
+    bool Contains(u32 value); // 0x184ba0 (src/Gruntz/CRangeSet.cpp, external)
+};
+extern "C" {
+    int vsprintf(char* buf, const char* fmt, char* va); // 0x121770 (CRT)
+    void DebugSink_184df0(char* line);                  // 0x184df0 (1-byte sink)
+
+    RVA(0x00184e00, 0x55)
+    SYMBOL(_RezAssertFail)
+    void RezAssertFail(char* fmt, ...) {
+        char buf[256];
+        if (g_6bf8dc != 1 && g_6bf8dc != 0 && !((CRangeSet*)&g_6bf850)->Contains(0)) {
+            vsprintf(buf, fmt, (char*)(&fmt + 1));
+            DebugSink_184df0(buf);
+        }
+    }
+}
+
 class CDebugConfig {
 public:
     CDebugConfig* InitFromEnv(); // 0x185000

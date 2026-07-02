@@ -103,6 +103,16 @@ C1396f0* C1396f0::Init() {
 }
 
 // ---------------------------------------------------------------------------
+// 0x1437e0 - install the DDraw "restore lost surfaces" handler (re-homed from
+// src/Stub/EngineExternFns.cpp): store the supplied function pointer to
+// g_restoreHandler (0x683edc; read back by RestoreLostSurfaces_1437f0). __cdecl.
+// ---------------------------------------------------------------------------
+RVA(0x001437e0, 0xa)
+void RelayHwnd(i32 (*handler)()) {
+    g_restoreHandler = handler;
+}
+
+// ---------------------------------------------------------------------------
 // 0x1437f0 - CDDrawPtrCollections "restore lost surfaces" trampoline: if the
 // restore-handler function pointer is installed, tail-jump it; else log a warning
 // and return 0. __cdecl.

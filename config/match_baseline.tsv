@@ -50,7 +50,7 @@ boundarytail	9	3
 boundarytaileh	1	0
 boundarythunks	15	15
 boundaryupper	33	30
-boundaryupper2	26	18
+boundaryupper2	27	19
 boundaryupper2eh	4	2
 boundaryuppereh	10	10
 bracketvalue	1	1
@@ -170,14 +170,14 @@ cmsgdispatch	3	3
 cmulti	18	7
 cobjectdropper	3	2
 colorhsv	1	0
-comhelperthunks	7	7
+comhelperthunks	3	3
 configstore	4	0
 configstoreread	2	0
 configstorewrite	2	0
 connslotlist	3	3
 cparticlez	5	4
 cpathhazard	9	4
-cplay	72	32
+cplay	70	30
 cplaydtor	2	2
 cplayplanescan	2	0
 cplaysync	1	1
@@ -220,7 +220,7 @@ cwwdobjmgrfactories	5	0
 databuffer	8	6
 ddrawblterrthunk	1	1
 ddrawpolyfill	1	0
-debugprintf	1	1
+debugprintf	2	2
 deflate	9	9
 demosetup	1	1
 destructbutton	1	1
@@ -235,7 +235,7 @@ drawbattlestats	1	0
 drawdebugstats	1	0
 drawtext	3	0
 dsoundvoice	2	1
-engine_label_stubs	132	102
+engine_label_stubs	126	96
 engstr	3	1
 engstrrendertext	1	0
 eyecandytypetags	4	4
@@ -797,6 +797,7 @@ boundaryupper2	?Init@C1396f0@@QAEPAU1@XZ	56.6667	56.6667	2	25313e8176d1	0x1396f0
 boundaryupper2	?Init@CDDPageMgr@@QAEHXZ	100.0000	100.0000	2	cbd1a910d64f	0x17b510
 boundaryupper2	?Lookup@CDDPageMgr@@QAEHI@Z	100.0000	100.0000	2	bf16a6dde231	0x17b840
 boundaryupper2	?PackTag_13b910@@YGIPBD@Z	100.0000	100.0000	2	8b7d6cc7721d	0x13b910
+boundaryupper2	?RelayHwnd@@YAXP6AHXZ@Z	100.0000	100.0000	1	174527afdddb	0x1437e0
 boundaryupper2	?Remove@CSymTab13a530@@QAEHPAUSymEntry1@@PAUSymEntry2@@@Z	100.0000	100.0000	1	c07f076aa7b8	0x13a530
 boundaryupper2	?Reset@CDDrawWorkerA@@QAEXXZ	90.3333	90.3333	2	da74f4a4ee5a	0x1570d0
 boundaryupper2	?Reset@CDDrawWorkerB@@QAEXXZ	90.3333	90.3333	2	cb36c6012014	0x157240
@@ -1490,10 +1491,6 @@ cobjectdropper	?Update@CObjectDropper@@QAEHXZ	100.0000	100.0000	2	7e18511faa29	0
 colorhsv	?RgbToHsv@@YAXPAUColorHSV@@I@Z	45.7699	45.7699	2	671fce63329c	0x14fcc0
 comhelperthunks	??1CNoTrackObject@@UAE@XZ	100.0000	100.0000	1	d617d26c06bd	0x1d4722
 comhelperthunks	?ComActivate2f00@@YAXXZ	100.0000	100.0000	1	a4800685df63	0x1bae1f
-comhelperthunks	?ComAtexit_5ce97f@@YAXXZ	100.0000	100.0000	1	c5e0abfd52fa	0x1ce973
-comhelperthunks	?ComAtexit_5d4245@@YAXXZ	100.0000	100.0000	1	5e7510af6c0c	0x1d4239
-comhelperthunks	?ComAtexit_5d4c22@@YAXXZ	100.0000	100.0000	1	9c9d6eb5df8c	0x1d4c16
-comhelperthunks	?ComDetach_1c0a41@@YAXXZ	100.0000	100.0000	1	669f59f2acaa	0x1c0a41
 comhelperthunks	?ComPump3210@@YAXXZ	100.0000	100.0000	1	4d940e10e212	0x1d4c0c
 configstore	?GetInt@CConfigStore@@QAEHPAD0H@Z	17.6905	17.6905	1	00a531e13933	0x1d4fbd
 configstore	?OpenRoot@CConfigStore@@QAEPAUHKEY__@@XZ	57.7385	57.7385	1	906a02758db6	0x1d4ee3
@@ -1545,8 +1542,6 @@ cplay	?FindStartPointAt@CPlay@@QAEHHHPAH0@Z	83.2237	83.2237	1	39473fdf4fa0	0xd5f
 cplay	?ForwardReady@CPlay@@QAEHXZ	100.0000	100.0000	1	4cf18aed0e73	0xcee70
 cplay	?FreeListTeardown@CPlay@@QAEXXZ	99.1195	99.1195	1	b71aa3bef15e	0xcb480
 cplay	?HandleDragMove@CPlay@@QAEHHHH@Z	34.9732	34.9732	5	b6fa80cc293f	0xd0db0
-cplay	?Ilt_RegionEnter_1b9a@@YAXXZ	100.0000	100.0000	1	b81dc7b4b8ca	0x1b9a
-cplay	?Ilt_RegionLeave_19f1@@YAXXZ	100.0000	100.0000	1	cb0554e3a920	0x19f1
 cplay	?LoadActionTileSprites@CPlay@@QAEHH@Z	100.0000	100.0000	1	41bdcb1f7ef0	0xdb600
 cplay	?LoadCursorSprites@CPlay@@QAEXHH@Z	0.1664	0.1664	2	858399a45131	0xd0120
 cplay	?LoadGameAnims@CPlay@@QAEHH@Z	100.0000	100.0000	1	bac9b26c28a0	0xdb9b0
@@ -1698,6 +1693,7 @@ databuffer	?Set@CDataBuffer@@QAEHIH@Z	100.0000	100.0000	3	1f57cf41190e	0x1501a0
 ddrawblterrthunk	?BltChecked@DDrawBltHost@@QAEHXZ	100.0000	100.0000	1	ecbf87185768	0x8dd80
 ddrawpolyfill	?FillPolygon@@YAHPAUFillVert@@HPAVCDDSurface@@F@Z	67.4485	67.4485	1	44a8c1f046af	0x146fe0
 debugprintf	?InitFromEnv@CDebugConfig@@QAEPAV1@XZ	100.0000	100.0000	1	9c7af45f7192	0x185000
+debugprintf	_RezAssertFail	100.0000	100.0000	1	afc4cb16914d	0x184e00
 deflate	_deflate	100.0000	100.0000	1	cpp:343fdff5d853	0x186620
 deflate	_deflateInit2_	100.0000	100.0000	1	cpp:343fdff5d853	0x1861b0
 deflate	_deflateReset	100.0000	100.0000	1	cpp:343fdff5d853	0x1864d0
@@ -1893,7 +1889,6 @@ engine_label_stubs	?Pick0183f0@DlgHost@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	
 engine_label_stubs	?Play@AilSeq@ApiCallerStubs@@QAEHHH@Z	100.0000	100.0000	1	cpp:966e3696e854	0x138e10
 engine_label_stubs	?Post@CmdHost_090220@ApiCallerStubs@@QAEXH@Z	100.0000	100.0000	1	cpp:e1535087fe94	0x90220
 engine_label_stubs	?Quickload@QlHost_092710@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x92710
-engine_label_stubs	?RelayHwnd@@YAXP6AHXZ@Z	100.0000	100.0000	1	cpp:966e3696e854	0x1437e0
 engine_label_stubs	?ReleaseHandle@AilSeq@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:966e3696e854	0x138dd0
 engine_label_stubs	?RenderFrame@MoviePlayer_17caa0@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:966e3696e854	0x17caa0
 engine_label_stubs	?Reset@RectWnd_fe600@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0xfe600
@@ -1979,11 +1974,6 @@ engine_label_stubs	?winapi_16c9f0_LeaveCriticalSection@ApiCallerStubs@@YAXPAU_RT
 engine_label_stubs	?winapi_1770a0_CreateICA_DeleteDC_GetDeviceCaps@ApiCallerStubs@@YAHXZ	100.0000	100.0000	1	cpp:966e3696e854	0x1770a0
 engine_label_stubs	?winapi_177160_CreatePalette_DeleteObject_GetDC_RealizePalette_ReleaseD@ApiCallerStubs@@YAXXZ	100.0000	100.0000	1	cpp:966e3696e854	0x177160
 engine_label_stubs	?winapi_179e70_IntersectRect@ApiCallerStubs@@YGHHHHHHHHHH@Z	0.4398	0.4398	1	cpp:6bf52155264d	0x179e70
-engine_label_stubs	_CheckExePath	100.0000	100.0000	1	cpp:966e3696e854	0x2e6e
-engine_label_stubs	_Eng_RegionCueA	100.0000	100.0000	1	cpp:966e3696e854	0x3936
-engine_label_stubs	_MultiDispatch@12	100.0000	100.0000	1	cpp:966e3696e854	0x3cab
-engine_label_stubs	_RezAssertFail	100.0000	100.0000	1	cpp:966e3696e854	0x184e00
-engine_label_stubs	_StartupGate	100.0000	100.0000	1	cpp:966e3696e854	0x2f59
 engstr	??1CContainerErr@@QAE@XZ	100.0000	100.0000	1	437607bea3c5	0x16da60
 engstr	?EngStr_DrawText@@YAXPAUEngStrRenderObj@@HHHHHHHH@Z	94.2857	94.2857	2	197473bbe23e	0x115440
 engstr	?SetSize@zBitVec@@QAEHH@Z	98.7234	98.7234	1	fcee90903128	0x16e100

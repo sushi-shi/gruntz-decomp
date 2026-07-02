@@ -3413,3 +3413,13 @@ rva,name,lib,confidence,source
 0x169ad0,??0strstream@@QAE@PADHH@Z,LIBCIMT,HIGH,manual-crt-reclass
 0x1698c0,??0ostrstream@@QAE@PADHH@Z,LIBCIMT,HIGH,manual-crt-reclass
 0x169700,??0istrstream@@QAE@PADH@Z,LIBCIMT,HIGH,manual-crt-reclass
+0x0019f1,Ilt_RegionLeave_19f1,MSVC-THUNK,HIGH,asm-carveout
+0x001b9a,Ilt_RegionEnter_1b9a,MSVC-THUNK,HIGH,asm-carveout
+0x002e6e,Ilt_CheckExePath_2e6e,MSVC-THUNK,HIGH,asm-carveout
+0x002f59,Ilt_StartupGate_2f59,MSVC-THUNK,HIGH,asm-carveout
+0x003936,Ilt_EngRegionCueA_3936,MSVC-THUNK,HIGH,asm-carveout
+0x003cab,Ilt_MultiDispatch_3cab,MSVC-THUNK,HIGH,asm-carveout
+0x1c0a41,ComDetach_1c0a41,GAME-ASM,HIGH,asm-carveout
+0x1ce973,ComAtexit_5ce97f,MSVC-THUNK,HIGH,asm-carveout
+0x1d4239,ComAtexit_5d4245,MSVC-THUNK,HIGH,asm-carveout
+0x1d4c16,ComAtexit_5d4c22,MSVC-THUNK,HIGH,asm-carveout

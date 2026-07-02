@@ -20,10 +20,13 @@
 
 // Backlog.cpp fully re-homed to real class TUs (semantic stub-elim); file removed.
 #include "ApiCallers.cpp"
-// CButeTree defines CButeTree + g_buteTree, shared by the game-object ctors that
-// remain here (and by GameObjectCtors.cpp / UserLogic.cpp) -> include early.
-#include "CButeTree.cpp"
-#include "EngineExternFns.cpp"
+// CButeTree.cpp removed: it only re-declared the shared g_buteTree DATA binding
+// (0x2bf620), already bound by TypeKeyColl.cpp (the real dyn-initializer) + the
+// game-object ctor TUs; nothing left in this aggregate referenced it.
+// EngineExternFns.cpp removed: its 4 ILT `jmp` islands (CheckExePath / StartupGate /
+// Eng_RegionCueA / MultiDispatch) were carved to config/library_labels.csv
+// (asm-carveout), and its 2 real bodies re-homed - RezAssertFail (0x184e00) ->
+// src/Gruntz/DebugPrintf.cpp, RelayHwnd (0x1437e0) -> src/Gruntz/BoundaryUpper2.cpp.
 // MallocConstructors.cpp removed: its 21 op-new/malloc-site ctors were all
 // SEMANTICALLY re-homed (Bute CButeValue setters + CButeNodeBase node -> src/Bute;
 // DSoundCloneCtor/CSymTab/CRez/CWwd/CAniRecord ctors -> their real class TUs; the
