@@ -192,6 +192,13 @@ extern "C" char g_60ce74[]; // "MONOLITH" (FindSound name)
 // CView* m_c) to its own CGMOwner/CGMView reconstructions.
 #include <Gruntz/CState.h>
 
+// Single-type leaf-state sub-object views, defined in GameMode.cpp; forward-
+// declared so the leaf members below are typed to their real class (no per-site
+// cast). Each is a pointer slot, so the typing is codegen-neutral.
+struct CMenuMusic;       // CMenuState::m_1bc       - menu music controller
+struct CCreditsVideo;    // CCreditsState::m_210    - Smacker video handle
+struct CBootyBonusState; // CMultiBootyState::m_2f8 - bonus scroll/flags object
+
 // ---------------------------------------------------------------------------
 // The concrete leaf states. Each overrides Update() to return its own state-ID
 // tag (the 6-byte stub) - the only override modeled here for the leaf match
@@ -238,9 +245,9 @@ public:
     void FormatHudText(struct CHudBuf* buf, i32 sel);
 
     char m_pad1a8[0x1b4 - 0x1a8];
-    CGMMenuUI* m_1b4; // +0x1b4 the menu UI object the scans drive
-    i32 m_1b8;        // +0x1b8 fade/poll duration
-    i32 m_1bc;        // +0x1bc music sub-object / enable gate
+    CGMMenuUI* m_1b4;  // +0x1b4 the menu UI object the scans drive
+    i32 m_1b8;         // +0x1b8 fade/poll duration
+    CMenuMusic* m_1bc; // +0x1bc menu music controller (player + draw-clock gate)
     char m_pad1c0[0x1d0 - 0x1c0];
     i32 m_1d0; // +0x1d0  live-game flag (FormatHudText getter-path gate)
 
@@ -312,7 +319,7 @@ public:
     char m_pad1f4[0x208 - 0x1f4];
     i32 m_208; // +0x208 video playing gate
     char m_pad20c[0x210 - 0x20c];
-    void* m_210; // +0x210 Smacker video handle
+    CCreditsVideo* m_210; // +0x210 Smacker video handle
 
     i32 LoadCreditzStateAssets(i32 a1, i32 a2, i32 a3);
     i32 InitAttractTitle();
@@ -391,7 +398,7 @@ public:
     char m_pad1ec[0x1fc - 0x1ec];
     void* m_1fc; // +0x1fc the trailing/cursor letter sprite
     char m_pad200[0x2f8 - 0x200];
-    void* m_2f8; // +0x2f8 the bonus state object (m_5c phase / m_8 flags)
+    CBootyBonusState* m_2f8; // +0x2f8 the bonus state object (m_5c phase / m_8 flags)
 };
 
 #endif // SRC_GRUNTZ_GAMEMODE_H

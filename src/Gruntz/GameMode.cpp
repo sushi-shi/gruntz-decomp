@@ -1324,9 +1324,9 @@ void CCreditsState::ReleaseResources() {
     }
     // Cache the video handle in a local so it stays pinned in edi across the
     // Teardown call (retail reuses the same register for the RezFree push).
-    void* vh = m_210;
+    CCreditsVideo* vh = m_210;
     if (vh) {
-        ((CCreditsVideo*)vh)->Teardown();
+        vh->Teardown();
         RezFree(vh);
         m_210 = 0;
     }
@@ -1375,7 +1375,7 @@ i32 CCreditsState::StepVideo() {
         CCreditsDrawHolder* dst = v->m_18;
         CCreditsDrawHolder* src = v->m_14;
         if (!Eng_SmackStep(dst->m_2c->m_8, -1)) {
-            ((CCreditsVideo*)m_210)->Close();
+            m_210->Close();
             ret = FinishState();
         }
         if (dst && src) {
@@ -1514,9 +1514,10 @@ struct CBootyBonusState {
 struct CBootyDrawObj {
     i32 FrameReady(i32 z); // FUN_004fcd70
 };
+struct CBootyMusicHost; // the g_gameReg+0x30 music host (defined below)
 struct CBootyGameReg {
     char m_pad00[0x30];
-    void* m_30; // +0x30 music host
+    CBootyMusicHost* m_30; // +0x30 music host
     char m_pad34[0x7c - 0x34];
     CBootyDrawObj* m_7c; // +0x7c draw object
     char m_pad80[0x11c - 0x80];
@@ -1528,11 +1529,12 @@ struct CBootyGameReg {
 
 // The Lookup output ("BOOTY_LOOP"/"BOOTY_PERFECT" cue entry): a player @+0x10
 // (the ConfigureItem `this`), and a draw-clock gate (last @+0x14, interval @+0x18).
+struct CBootyPlayer; // the found-cue player (ConfigureItem target; defined below)
 struct CBootyFound {
     char m_pad00[0x10];
-    void* m_10; // +0x10 player (ConfigureItem this)
-    i32 m_14;   // +0x14 last draw-clock
-    i32 m_18;   // +0x18 interval
+    CBootyPlayer* m_10; // +0x10 player (ConfigureItem this)
+    i32 m_14;           // +0x14 last draw-clock
+    i32 m_18;           // +0x18 interval
 };
 
 // The embedded CMapStringToOb the cue lookup runs on (M28+0x10, reached by offset).
@@ -1727,10 +1729,10 @@ i32 CMultiBootyState::CheckPerfectBonus() {
     if (!BOOTY_REG->m_7c->FrameReady(-1)) {
         return 1;
     }
-    CBootyBonusState* st = (CBootyBonusState*)m_2f8;
+    CBootyBonusState* st = m_2f8;
     i32 phase = st->m_5c;
     if (phase == (i32)0xffffff7e) {
-        CBootyMusicHost* host = (CBootyMusicHost*)BOOTY_REG->m_30;
+        CBootyMusicHost* host = BOOTY_REG->m_30;
         i32 item = BOOTY_REG->m_11c;
         CBootyMusicHost::M28* m28 = host->m_28;
         if (m28->m_30 == 0) {
@@ -1741,16 +1743,16 @@ i32 CMultiBootyState::CheckPerfectBonus() {
                 CBootyFound* p = (CBootyFound*)found;
                 if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
                     p->m_14 = g_6bf3c0;
-                    ((CBootyPlayer*)p->m_10)->ConfigureItem(item, 0, 0, 0);
+                    p->m_10->ConfigureItem(item, 0, 0, 0);
                 }
             }
         }
     }
     if (phase >= 0x302) {
-        ((CBootyBonusState*)m_2f8)->m_8 |= 0x10000;
+        m_2f8->m_8 |= 0x10000;
         return 1;
     }
-    ((CBootyBonusState*)m_2f8)->m_5c = phase + 0xa;
+    m_2f8->m_5c = phase + 0xa;
     return 1;
 }
 
@@ -1801,7 +1803,7 @@ i32 CMultiBootyState::FrameSlot24(i32) {
     ((CBootyFlushView*)((CGMView*)m_c)->m_4)->Flush();
     BuildPage(0x50, 0x3e8, 0, 1);
 
-    CBootyMusicHost* host = (CBootyMusicHost*)BOOTY_REG->m_30;
+    CBootyMusicHost* host = BOOTY_REG->m_30;
     i32 item = BOOTY_REG->m_11c;
     CBootyMusicHost::M28* m28 = host->m_28;
     if (m28->m_30 == 0) {
@@ -1812,7 +1814,7 @@ i32 CMultiBootyState::FrameSlot24(i32) {
             CBootyFound* p = (CBootyFound*)found;
             if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
                 p->m_14 = g_6bf3c0;
-                ((CBootyPlayer*)p->m_10)->ConfigureItem(item, 0, 0, 1);
+                p->m_10->ConfigureItem(item, 0, 0, 1);
             }
         }
     }
@@ -2004,7 +2006,7 @@ void CMenuState::StartMusic() {
         g_61ab20 = 1;
     }
     i32 item = g_gameReg->m_11c;
-    CMenuMusic* mus = (CMenuMusic*)m_1bc;
+    CMenuMusic* mus = m_1bc;
     if (flag) {
         u32 clk = g_6bf3c0;
         if (clk - mus->m_14 >= (u32)mus->m_18) {
@@ -2024,12 +2026,12 @@ void CMenuState::StopMusicChain() {
     if (m_1bc == 0) {
         return;
     }
-    CMenuMusic* mus = (CMenuMusic*)m_1bc;
+    CMenuMusic* mus = m_1bc;
     if (!mus->m_10->IsPlaying()) {
         return;
     }
-    ((CMenuMusic*)m_1bc)->m_10->Stop(0, 0x1f4, 1);
-    if (!((CMenuMusic*)m_1bc)->m_10->IsPlaying()) {
+    m_1bc->m_10->Stop(0, 0x1f4, 1);
+    if (!m_1bc->m_10->IsPlaying()) {
         return;
     }
     do {
@@ -2037,7 +2039,7 @@ void CMenuState::StopMusicChain() {
         if (r) {
             r->TickAnim(-1);
         }
-    } while (((CMenuMusic*)m_1bc)->m_10->IsPlaying());
+    } while (m_1bc->m_10->IsPlaying());
 }
 
 // CMenuState::FrameSlot28(int) (slot 10 / +0x28, 0xa06d0): flush + flip the menu
