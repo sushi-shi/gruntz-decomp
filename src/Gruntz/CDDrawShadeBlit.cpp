@@ -112,7 +112,7 @@ void CDDrawShadeBlit::BlitMode_149950(ShadeRect* dst, ShadeSrc* surf, ShadeRect*
     // Prepass: skip the top clip->top rows of the RLE stream.
     if (clip->top > 0) {
         do {
-            u32 b = (u8)m_rleData[pos];
+            u32 b = m_rleData[pos];
             if (b & 0x80) {
                 x += b - 0x80;
                 pos++;
@@ -145,7 +145,7 @@ void CDDrawShadeBlit::BlitMode_149950(ShadeRect* dst, ShadeSrc* surf, ShadeRect*
             if (x < clip->left) {
                 i32 trans = 0;
                 do {
-                    u32 b = (u8)m_rleData[pos];
+                    u32 b = m_rleData[pos];
                     if (b & 0x80) {
                         x += b - 0x80;
                         pos++;
@@ -166,7 +166,7 @@ void CDDrawShadeBlit::BlitMode_149950(ShadeRect* dst, ShadeSrc* surf, ShadeRect*
                 base += pitch;
                 x = 0;
             } else {
-                u32 b = (u8)m_rleData[pos];
+                u32 b = m_rleData[pos];
                 if (b & 0x80) {
                     x += b - 0x80;
                     pos++;
@@ -187,7 +187,7 @@ void CDDrawShadeBlit::BlitMode_149950(ShadeRect* dst, ShadeSrc* surf, ShadeRect*
             if (pos >= m_rleLen) {
                 break;
             }
-            u32 b = (u8)m_rleData[pos];
+            u32 b = m_rleData[pos];
             if (b & 0x80) {
                 x += b - 0x80;
                 pos++;
@@ -215,7 +215,7 @@ void CDDrawShadeBlit::BlitMode_149950(ShadeRect* dst, ShadeSrc* surf, ShadeRect*
             if (pos >= m_rleLen) {
                 break;
             }
-            u32 b = (u8)m_rleData[pos];
+            u32 b = m_rleData[pos];
             if (b & 0x80) {
                 x += b - 0x80;
                 pos++;
@@ -257,7 +257,7 @@ void CDDrawShadeBlit::BlitMode_149d00(ShadeRect* dst, ShadeSrc* surf, ShadeRect*
     i32 row = 0, pos = 0, x = 0;
     if (clip->top > 0) {
         do {
-            u32 b = (u8)m_rleData[pos];
+            u32 b = m_rleData[pos];
             if (b & 0x80) {
                 x += b - 0x80;
                 pos++;
@@ -285,7 +285,7 @@ void CDDrawShadeBlit::BlitMode_149d00(ShadeRect* dst, ShadeSrc* surf, ShadeRect*
             if (pos >= m_rleLen) {
                 break;
             }
-            u32 b = (u8)m_rleData[pos];
+            u32 b = m_rleData[pos];
             if (b & 0x80) {
                 x += 0x80 - (i32)b;
                 pos++;
@@ -330,7 +330,7 @@ void CDDrawShadeBlit::BlitMode_149d00(ShadeRect* dst, ShadeSrc* surf, ShadeRect*
             if (x > clip->right) {
                 i32 trans = 0;
                 do {
-                    u32 b = (u8)m_rleData[pos];
+                    u32 b = m_rleData[pos];
                     if (b & 0x80) {
                         x += 0x80 - (i32)b;
                         pos++;
@@ -363,7 +363,7 @@ void CDDrawShadeBlit::BlitMode_149d00(ShadeRect* dst, ShadeSrc* surf, ShadeRect*
                 base += pitch;
                 x = m_width;
             } else {
-                u32 b = (u8)m_rleData[pos];
+                u32 b = m_rleData[pos];
                 if (b & 0x80) {
                     x += 0x80 - (i32)b;
                     pos++;
@@ -393,7 +393,7 @@ void CDDrawShadeBlit::BlitMode_149d00(ShadeRect* dst, ShadeSrc* surf, ShadeRect*
             if (pos >= m_rleLen) {
                 break;
             }
-            u32 b = (u8)m_rleData[pos];
+            u32 b = m_rleData[pos];
             if (b & 0x80) {
                 x += 0x80 - (i32)b;
                 pos++;
@@ -574,18 +574,18 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
             break;
         }
         case 3: {
-            i32 pal = (i32)m_palDescr->m_lut;
+            u8* base = m_palDescr->m_lut;
             u8* sc = g_scratch;
             memcpy(g_scratch, dst, count);
             for (i = count; i > 0; i--) {
-                *dst++ = ((u8*)m_18)[(*sc++ << 8) + pal];
+                *dst++ = base[(*sc++ << 8) + m_18];
             }
             break;
         }
         case 4: {
-            i32 pal = (i32)m_palDescr->m_lut;
+            u8* base = m_palDescr->m_lut;
             for (i = count; i > 0; i--) {
-                *dst++ = ((u8*)m_18)[(*src++ << 8) + pal];
+                *dst++ = base[(*src++ << 8) + m_18];
             }
             break;
         }
@@ -717,18 +717,16 @@ void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
             break;
         }
         case 3: {
-            i32 pal = (i32)base;
             memcpy(g_scratch, dst - count + 1, count);
             u8* sc = &g_scratch[count - 1];
             for (i = count; i > 0; i--) {
-                *dst-- = ((u8*)m_18)[(*sc-- << 8) + pal];
+                *dst-- = base[(*sc-- << 8) + m_18];
             }
             break;
         }
         case 4: {
-            i32 pal = (i32)base;
             for (i = count; i > 0; i--) {
-                *dst-- = ((u8*)m_18)[(*src++ << 8) + pal];
+                *dst-- = base[(*src++ << 8) + m_18];
             }
             break;
         }
@@ -786,12 +784,12 @@ void CDDrawShadeBlit::ConvertRowDoubleFwd(u8* dst, u8* src, i32 count, i32 rowDe
             break;
         }
         case 3: {
-            i32 pal = (i32)m_palDescr->m_lut;
+            u8* base = m_palDescr->m_lut;
             memcpy(g_scratch, dst, count);
             u8* sc = g_scratch;
             for (i = count; i > 0; i--) {
-                dst[0] = ((u8*)m_18)[(*sc << 8) + pal];
-                dst[rowDelta] = ((u8*)m_18)[(*sc << 8) + pal];
+                dst[0] = base[(*sc << 8) + m_18];
+                dst[rowDelta] = base[(*sc << 8) + m_18];
                 dst++;
                 sc++;
             }
@@ -878,12 +876,11 @@ void CDDrawShadeBlit::ConvertRowDouble(u8* dst, u8* src, i32 count, i32 rowDelta
             break;
         }
         case 3: {
-            i32 pal = (i32)m_palDescr->m_lut;
             u8* base = m_palDescr->m_lut;
             memcpy(g_scratch, dst - count + 1, count);
             u8* sc = &g_scratch[count - 1];
             for (i = count; i > 0; i--) {
-                dst[0] = ((u8*)m_18)[(*sc << 8) + pal];
+                dst[0] = base[(*sc << 8) + m_18];
                 dst[rowDelta] = base[(*sc << 8) + *src];
                 dst--;
                 sc--;

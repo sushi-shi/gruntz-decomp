@@ -91,7 +91,7 @@ public:
     u8* m_rleData;  // +0x0c RLE sprite-stream base
     i32 m_rleLen;   // +0x10 RLE sprite-stream length (byte bound)
     i32 m_drawType; // +0x14 draw type / row-convert selector (switch tag)
-    i32 m_18; // +0x18 light level (>>3 indexes the LUT bank) / alpha / fill byte / LUT ptr (overloaded per draw type)
+    i32 m_18; // +0x18 light level: >>3 selects the LUT bank (Blit); low index into m_palDescr->m_lut (cases 3/4); alpha (case 6); fill byte (case 5)
     ShadeDescr* m_palDescr; // +0x1c palette / source-descriptor pointer
     char m_20[0x28 - 0x20];
     u8 m_srcBpp; // +0x28 source pixel size in bytes (1 or 2); RLE run stride, ==1 gate
