@@ -54,6 +54,14 @@ convention across `src/` + `config/match-queue.md`; leave the size arg unpadded.
 1. **Pull the target.** `python -m gruntz.analysis.dump_target <rva>` (disasm + relocs), the
    Ghidra decomp, `python -m gruntz.analysis.clangd_query def|refs|hover|symbol`,
    `extern_harvest`/`string_xref` for the referent set.
+   **USE GHIDRA XREFS — they unblock attribution and are generally useful, not a last resort.**
+   `python -m gruntz.analysis.xref <rva|name>` gives the retail call/jmp CALLER graph
+   (`--callees` for the other direction, `--raw` for addresses) — the caller-side complement of
+   `dump_target`. Combined with the Ghidra decomp's xrefs (who reads/writes a field, who news a
+   class, which vtable slot holds a fn), this is the primary tool for: attributing an orphan/
+   placeholder function to its REAL owning class (who calls it on what `this`), confirming a
+   vtable slot's owner, resolving a dangling reloc, and finding the whole method-cluster of a
+   class. When a target's class/owner is unclear, xref FIRST — don't guess from the name.
 2. **Reconstruct the types** (class layout from offsets/sizes; each extern's *real* signature)
    **and the bodies** (C++ that lowers to the same instruction selection + scheduling).
 3. **Build + diff:** `gruntz build`, then read the per-function objdiff. **Run it INSIDE one
