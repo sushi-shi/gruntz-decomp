@@ -8,7 +8,7 @@
 //   * clips the rect against either the parent clip RECT (bit 0x40000) or the
 //     worker clip box (info->m_64.. or the 0x80000000 "use dest extents" sentinel);
 //   * builds the matching source sub-rect and blits via CSpriteDDSurface::BltEx (the
-//     three "surface" variants, mode word in g_severusScratch[1]) or
+//     three "surface" variants, mode word in g_bltFxScratch[1]) or
 //     CDDrawShadeBlit::Blit (the two "shaded" variants, with an optional
 //     pre-notify when info->m_58 is set);
 //   * records the clipped rect + dimensions back into the worker (info->m_18..).
@@ -25,7 +25,7 @@
 #include <Gruntz/CDDrawShadeBlit.h> // canonical CDDrawShadeBlit (+ ShadeRect/ShadeSrc)
 #include <Globals.h>
 
-// The 25-int severus scratch block (shared with CDDrawWorkerRegistry); [1] carries
+// The 25-int g_bltFxScratch block (shared with CDDrawWorkerRegistry); [1] carries
 // the BltEx blend-mode word, the base is the DDBLTFX-style fx pointer.
 
 // The origin-remap target reached through info->m_3c->m_5c (bit 0x40000): the
@@ -153,8 +153,8 @@ void CImage::BlitNorm(CBlitInfo* info, CImage* dst) {
     s.bottom = s.top + h;
     d.right += 1;
     d.bottom += 1;
-    g_severusScratch[1] = 6;
-    ((CDDSurface*)dst->m_2c)->BltEx(&d, (CDDSurface*)m_2c, &s, 0x8800, g_severusScratch);
+    g_bltFxScratch[1] = 6;
+    ((CDDSurface*)dst->m_2c)->BltEx(&d, (CDDSurface*)m_2c, &s, 0x8800, g_bltFxScratch);
     d.right -= 1;
     d.bottom -= 1;
     info->m_18 = d.left;
@@ -246,8 +246,8 @@ void CImage::BlitFlipV(CBlitInfo* info, CImage* dst) {
     s.bottom = s.top + h;
     d.right += 1;
     d.bottom += 1;
-    g_severusScratch[1] = 2;
-    ((CDDSurface*)dst->m_2c)->BltEx(&d, (CDDSurface*)m_2c, &s, 0x8800, g_severusScratch);
+    g_bltFxScratch[1] = 2;
+    ((CDDSurface*)dst->m_2c)->BltEx(&d, (CDDSurface*)m_2c, &s, 0x8800, g_bltFxScratch);
     d.right -= 1;
     d.bottom -= 1;
     info->m_18 = d.left;
@@ -336,8 +336,8 @@ void CImage::BlitFlipH(CBlitInfo* info, CImage* dst) {
     s.bottom = s.top + h;
     d.right += 1;
     d.bottom += 1;
-    g_severusScratch[1] = 4;
-    ((CDDSurface*)dst->m_2c)->BltEx(&d, (CDDSurface*)m_2c, &s, 0x8800, g_severusScratch);
+    g_bltFxScratch[1] = 4;
+    ((CDDSurface*)dst->m_2c)->BltEx(&d, (CDDSurface*)m_2c, &s, 0x8800, g_bltFxScratch);
     d.right -= 1;
     d.bottom -= 1;
     info->m_18 = d.left;

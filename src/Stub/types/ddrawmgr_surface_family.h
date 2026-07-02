@@ -21,9 +21,9 @@
  *       during CGruntzMgr init.
  *     - Its UnknownVirtualMethod18(hWnd, 0x280, 0x1e0, 0x10, flags)
  *       = (640, 480, 16bpp, flags) — a classic display-mode init.
- *     - UnknownSeverus owns a static UnknownDirectDrawStructure that is a
+ *     - CDDrawSurfaceDescLayout owns a static UnknownDirectDrawStructure that is a
  *       DDSURFACEDESC-shaped struct (dwSize @0) it zeroes/sizes — classic DDraw.
- *     - UnknownRemus's ctor seeds a resolution/scaling ladder.
+ *     - CDDrawResolveSubMgrLayout's ctor seeds a resolution/scaling ladder.
  *     - SoundDeviceLayout/SoundStream hold the 101-entry volume->attenuation
  *       lookup table (see enums.h GruntzVolumeAttenuation).
  *
@@ -39,9 +39,9 @@
  *     -> CDDrawSubMgrBaseLayout (0x8)
  *         -> CDDrawSubMgrLayout (0x10)
  *             |- CDDrawSubMgrPagesLayout (0x1c) | CDDrawChildGroupLayout (0x6c) | CDDrawWorkerListLayout (0x2c)
- *             |- UnknownSeverus (0x2c, static DDSURFACEDESC) | CDDrawWorkerCache (0x2c)
- *             |- CDDrawWorkerMapSmallLayout (0x68) | UnknownRemus (0x6d4, resolution ladder)
- *             '- UnknownMinerva (0x38) | UnknownPettigrew (0x2c)
+ *             |- CDDrawSurfaceDescLayout (0x2c, static DDSURFACEDESC) | CDDrawWorkerCache (0x2c)
+ *             |- CDDrawWorkerMapSmallLayout (0x68) | CDDrawResolveSubMgrLayout (0x6d4, resolution ladder)
+ *             '- CDDrawSubMgrLeafScanLayout (0x38) | CDDrawSubMgrLeafLayout (0x2c)
  *   Standalone:
  *     CDDrawPtrCollections (0x948)
  *     SoundDeviceLayout (0x94) -> SoundStream (0x9c, attenuation table)
@@ -151,10 +151,10 @@ struct UnknownDirectDrawStructure {
     char _pad04[0x64 - 0x04]; // +0x04
 }; // 0x64
 
-class UnknownSeverus : public CDDrawSubMgrLayout {
+class CDDrawSurfaceDescLayout : public CDDrawSubMgrLayout {
 public:
-    UnknownSeverus(CDDrawSurfaceMgrLayout* p, i32 u2, i32 u3);
-    virtual ~UnknownSeverus() OVERRIDE;
+    CDDrawSurfaceDescLayout(CDDrawSurfaceMgrLayout* p, i32 u2, i32 u3);
+    virtual ~CDDrawSurfaceDescLayout() OVERRIDE;
     CMapStringToOb m_unknownMap; // +0x10  (widest sub-manager vtable, 18 slots)
 
     //@address: 006c0270  (static data anchor, @approx tomalla 1.0.1.77)
@@ -183,10 +183,10 @@ public:
 }; // 0x68
 
 /* Seeds the resolution/scaling ladder in its ctor. */
-class UnknownRemus : public CDDrawSubMgrLayout {
+class CDDrawResolveSubMgrLayout : public CDDrawSubMgrLayout {
 public:
-    UnknownRemus(CDDrawSurfaceMgrLayout* p, i32 u2, i32 u3);
-    virtual ~UnknownRemus() OVERRIDE;
+    CDDrawResolveSubMgrLayout(CDDrawSurfaceMgrLayout* p, i32 u2, i32 u3);
+    virtual ~CDDrawResolveSubMgrLayout() OVERRIDE;
     i32 fieldUnknown10;                                                 // +0x10
     char _pad14[0x20 - 0x14];                                           // +0x14..+0x1f
     CObArray m_unknownObArray1;                                         // +0x20
@@ -200,10 +200,10 @@ public:
     char _unknownBuffer[0x6d4 - 0xe0]; // +0xe0  (~1.5KB scratch/scaling buffer)
 }; // 0x6d4
 
-class UnknownMinerva : public CDDrawSubMgrLayout {
+class CDDrawSubMgrLeafScanLayout : public CDDrawSubMgrLayout {
 public:
-    UnknownMinerva(CDDrawSurfaceMgrLayout* p, i32 u2, i32 u3);
-    virtual ~UnknownMinerva() OVERRIDE;
+    CDDrawSubMgrLeafScanLayout(CDDrawSurfaceMgrLayout* p, i32 u2, i32 u3);
+    virtual ~CDDrawSubMgrLeafScanLayout() OVERRIDE;
     void ClearUnknownMap();
     CMapStringToPtr m_unknownMap; // +0x10
     i32 fieldUnknown2C;           // +0x2c
@@ -211,10 +211,10 @@ public:
     i32 fieldUnknown34;           // +0x34
 }; // 0x38
 
-class UnknownPettigrew : public CDDrawSubMgrLayout {
+class CDDrawSubMgrLeafLayout : public CDDrawSubMgrLayout {
 public:
-    UnknownPettigrew(CDDrawSurfaceMgrLayout* p, i32 u2, i32 u3);
-    virtual ~UnknownPettigrew() OVERRIDE;
+    CDDrawSubMgrLeafLayout(CDDrawSurfaceMgrLayout* p, i32 u2, i32 u3);
+    virtual ~CDDrawSubMgrLeafLayout() OVERRIDE;
     CMapStringToPtr m_unknownMap; // +0x10
 }; // 0x2c
 
@@ -277,20 +277,20 @@ public:
     virtual void UnknownVirtualMethod1C();
 
     // One owned sub-manager per slot (names = tomalla placeholders).
-    CDDrawSubMgrLayout* m_pSubMgrPages;        // +0x04
-    CDDrawSubMgrLayout* m_pChildGroup;         // +0x08
-    CDDrawSubMgrLayout* m_pWorkerList;         // +0x0c
-    CDDrawSubMgrLayout* fieldUnknownSeverus;   // +0x10
-    CDDrawSubMgrLayout* fieldUnknownSirius;    // +0x14
-    CDDrawSubMgrLayout* m_pWorkerMapSmall;     // +0x18
-    CDDrawPtrCollections* fieldUnknownFilch;           // +0x1c
-    SoundStream* fieldUnknownVoldemort;   // +0x20
-    CDDrawSubMgrLayout* fieldUnknownRemus;     // +0x24
-    UnknownMinerva* fieldUnknownMinerva;       // +0x28
-    CDDrawSubMgrLayout* fieldUnknownPettigrew; // +0x2c
-    HWND m_hWnd;                               // +0x30
-    i32 m_flagsUnknown;                        // +0x34
-    i32 fieldUnknown38, fieldUnknown3C;        // +0x38, +0x3c
+    CDDrawSubMgrLayout* m_pSubMgrPages;            // +0x04
+    CDDrawSubMgrLayout* m_pChildGroup;             // +0x08
+    CDDrawSubMgrLayout* m_pWorkerList;             // +0x0c
+    CDDrawSubMgrLayout* m_pSurfaceDesc;            // +0x10
+    CDDrawSubMgrLayout* m_pWorkerCache;            // +0x14
+    CDDrawSubMgrLayout* m_pWorkerMapSmall;         // +0x18
+    CDDrawPtrCollections* m_pPtrCollections;       // +0x1c
+    SoundStream* m_pSoundStream;                   // +0x20
+    CDDrawSubMgrLayout* m_pSubMgrResolve;          // +0x24
+    CDDrawSubMgrLeafScanLayout* m_pSubMgrLeafScan; // +0x28
+    CDDrawSubMgrLayout* m_pSubMgrLeaf;             // +0x2c
+    HWND m_hWnd;                                   // +0x30
+    i32 m_flagsUnknown;                            // +0x34
+    i32 fieldUnknown38, fieldUnknown3C;            // +0x38, +0x3c
 
     //@address: 006c0314  (static data anchors, @approx tomalla 1.0.1.77)
     static i32 staticUnknown1;
@@ -316,11 +316,11 @@ SIZE_UNKNOWN(CDDrawSubMgrPagesLayout);
 SIZE_UNKNOWN(CDDrawPtrCollections);
 SIZE_UNKNOWN(CDDrawWorkerListLayout);
 SIZE_UNKNOWN(CDDrawChildGroupLayout);
-SIZE_UNKNOWN(UnknownMinerva);
-SIZE_UNKNOWN(UnknownPettigrew);
-SIZE_UNKNOWN(UnknownRemus);
+SIZE_UNKNOWN(CDDrawSubMgrLeafScanLayout);
+SIZE_UNKNOWN(CDDrawSubMgrLeafLayout);
+SIZE_UNKNOWN(CDDrawResolveSubMgrLayout);
 SIZE_UNKNOWN(SoundDeviceLayout);
-SIZE_UNKNOWN(UnknownSeverus);
+SIZE_UNKNOWN(CDDrawSurfaceDescLayout);
 SIZE_UNKNOWN(CDDrawWorkerCache);
 SIZE_UNKNOWN(SoundStream);
 

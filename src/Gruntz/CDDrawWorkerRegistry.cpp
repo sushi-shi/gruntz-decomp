@@ -131,7 +131,7 @@ struct CDDrawWorker : public CLoadable {
 }; // 0x6c
 
 DATA(0x002bf37c)
-extern i32 g_severusCounterA;
+extern i32 g_resourceInstallActive;
 
 // ---------------------------------------------------------------------------
 // CDDrawWorkerRegistry - only the load-bearing offset is modeled: the CMapStringToOb at
@@ -299,9 +299,9 @@ static inline CDDrawWorker* FindOrCreateWorker(CDDrawWorkerRegistry* parent, con
 RVA(0x00154aa0, 0x20)
 i32 CDDrawWorkerRegistry::VirtualMethodUnknown18() {
     for (i32 i = 0; i < 25; ++i) {
-        g_severusScratch[i] = 0;
+        g_bltFxScratch[i] = 0;
     }
-    g_severusScratch[0] = 100;
+    g_bltFxScratch[0] = 100;
     return 1;
 }
 
@@ -310,8 +310,8 @@ i32 CDDrawWorkerRegistry::VirtualMethodUnknown18() {
 RVA(0x00154ac0, 0x12)
 void CDDrawWorkerRegistry::VirtualMethodUnknown1C() {
     ((CWorkerVtableView*)this)->Slot58();
-    g_severusCounterA = 0;
-    g_severusCounterB = 0;
+    g_resourceInstallActive = 0;
+    g_surfaceColorKey = 0;
 }
 
 // ---------------------------------------------------------------------------

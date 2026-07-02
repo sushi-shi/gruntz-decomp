@@ -95,7 +95,7 @@ struct MenuMgrSndHost {
 DATA(0x0024556c)
 extern CGameRegistry* g_menuMgrSettings;
 DATA(0x0022f37c)
-extern i32 g_severusCounterA; // 0x6bf37c
+extern i32 g_resourceInstallActive; // 0x6bf37c
 
 // The heap-allocated MENU HUD object (0x7c bytes): a CObList at +0x24 and two
 // CString members at +0x44/+0x48, then its own sub-init (FUN_004010c8).  The
@@ -167,9 +167,9 @@ i32 CMenuState::LoadAssets(i32 a1, i32 a2, i32 a3) {
         if (set == 0) {
             return 0;
         }
-        g_severusCounterA = 1;
+        g_resourceInstallActive = 1;
         m_c->m_10->Install(set, "MENU", "_");
-        g_severusCounterA = 0;
+        g_resourceInstallActive = 0;
     }
 
     if (!m_c->m_28->Has("MENU")) {

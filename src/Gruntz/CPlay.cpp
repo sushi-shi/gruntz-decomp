@@ -2380,8 +2380,8 @@ void CPlay::BuildGruntTypeNameTable(i32, i32, i32, i32) {}
 // casts `this` to the self-contained CPlayRes view below (a struct-view-of-this
 // overlay - matching-neutral, keeps Render untouched).
 
-extern i32 g_severusCounterA;    // ?g_severusCounterA@@3HA @0x6bf37c (mangled-name match)
-extern "C" char g_emptyString[]; // _g_emptyString @0x6293f4
+extern i32 g_resourceInstallActive; // ?g_resourceInstallActive@@3HA @0x6bf37c (mangled-name match)
+extern "C" char g_emptyString[];    // _g_emptyString @0x6293f4
 
 // A level's named-set source (this->m_28 / this->m_34, and the banks cached in
 // m_30/m_34). LookupSet (0x13bae0) resolves "TILEZ"/"IMAGEZ"/"SOUNDZ"/"ANIZ".
@@ -2439,7 +2439,7 @@ i32 CPlay::LoadActionTileSprites(i32 force) {
 
     self->m_c->m_10->Register("ACTION", g_emptyString);
     self->m_c->m_10->Register("BACK", g_emptyString);
-    g_severusCounterA = 0;
+    g_resourceInstallActive = 0;
 
     void* tiles = self->m_28->LookupSet("TILEZ");
     if (!tiles) {
@@ -2450,7 +2450,7 @@ i32 CPlay::LoadActionTileSprites(i32 force) {
 }
 
 // LoadLevelSounds (0x0db6c0) - register the LEVEL namespace then install the
-// level's SOUNDZ set through m_c->m_28 (non-virtual). Single Register, no severus
+// level's SOUNDZ set through m_c->m_28 (non-virtual). Single Register, no install-gate
 // reset. Same int-return idiom as its siblings.
 RVA(0x000db6c0, 0x70)
 i32 CPlay::LoadLevelSounds(i32 force) {
@@ -2474,7 +2474,7 @@ i32 CPlay::LoadLevelSounds(i32 force) {
 
 // LoadLevelImages (0x0db7e0) - sibling of LoadActionTileSprites; a single Register
 // (LEVEL), then install the level's IMAGEZ set through the +0x48 virtual slot.
-// Brackets the install with two severus-counter resets.
+// Brackets the install with two install-active resets.
 RVA(0x000db7e0, 0x84)
 i32 CPlay::LoadLevelImages(i32 force) {
     CPlayRes* self = (CPlayRes*)this;
@@ -2486,20 +2486,20 @@ i32 CPlay::LoadLevelImages(i32 force) {
     }
 
     self->m_c->m_10->Register("LEVEL", "_");
-    g_severusCounterA = 0;
+    g_resourceInstallActive = 0;
 
     void* images = self->m_28->LookupSet("IMAGEZ");
     if (!images) {
         return 0;
     }
     self->m_c->m_10->Install(images, "LEVEL", "_");
-    g_severusCounterA = 0;
+    g_resourceInstallActive = 0;
     return 1;
 }
 
 // LoadGameImages (0x0db8a0) - the GAME-namespace image loader. No force gate, no
 // Register; reads m_34 (the cached GAME bank) for the IMAGEZ set, installs through
-// the +0x48 virtual slot. Brackets the install with severus = 1 then 0.
+// the +0x48 virtual slot. Brackets the install with the install-active flag = 1 then 0.
 RVA(0x000db8a0, 0x67)
 i32 CPlay::LoadGameImages(i32 force) {
     CPlayRes* self = (CPlayRes*)this;
@@ -2510,18 +2510,18 @@ i32 CPlay::LoadGameImages(i32 force) {
         return 1;
     }
 
-    g_severusCounterA = 1;
+    g_resourceInstallActive = 1;
     void* images = self->m_34->LookupSet("IMAGEZ");
     if (!images) {
         return 0;
     }
     self->m_c->m_10->Install(images, "GAME", "_");
-    g_severusCounterA = 0;
+    g_resourceInstallActive = 0;
     return 1;
 }
 
 // LoadGameSounds (0x0db930) - the GAME-namespace sound loader. Reads m_34 for the
-// SOUNDZ set and installs through m_c->m_28 (non-virtual). No Register, no severus.
+// SOUNDZ set and installs through m_c->m_28 (non-virtual). No Register, no install-gate.
 RVA(0x000db930, 0x53)
 i32 CPlay::LoadGameSounds(i32 force) {
     CPlayRes* self = (CPlayRes*)this;
@@ -2541,7 +2541,7 @@ i32 CPlay::LoadGameSounds(i32 force) {
 }
 
 // LoadGameAnims (0x0db9b0) - the GAME-namespace animation loader. Reads m_34 for
-// the ANIZ set and installs through m_c->m_2c (non-virtual). No Register/severus.
+// the ANIZ set and installs through m_c->m_2c (non-virtual). No Register/install-gate.
 RVA(0x000db9b0, 0x53)
 i32 CPlay::LoadGameAnims(i32 force) {
     CPlayRes* self = (CPlayRes*)this;
@@ -2746,9 +2746,9 @@ i32 CPlay::LoadGruntSoundNamespaces(void* notify) {
 // ===========================================================================
 // CPlay::BuildSpriteImageKeyTable (0x0dd540) - install the per-grunt IMAGE namespaces
 // (GRUNTZ_<X>) into the image registry (m_c->m_10, virtual install at +0x48), each
-// sourced from the GRUNTZ bank's IMAGEZ_<X> set; brackets the run with the severus
+// sourced from the GRUNTZ bank's IMAGEZ_<X> set; brackets the run with the install-active
 // counter (1 .. 0) and ticks the notify object after each install. A missing source
-// set aborts (return 0, severus left set). __thiscall.
+// set aborts (return 0, install-active flag left set). __thiscall.
 // ===========================================================================
 RVA(0x000dd540, 0x241)
 i32 CPlay::BuildSpriteImageKeyTable(void* notify) {
@@ -2756,7 +2756,7 @@ i32 CPlay::BuildSpriteImageKeyTable(void* notify) {
     if (!self->m_c) {
         return 0;
     }
-    g_severusCounterA = 1;
+    g_resourceInstallActive = 1;
     if (!self->m_c->m_10->Has("GRUNTZ_NORMALGRUNT")) {
         void* s = self->m_30->LookupSet("IMAGEZ_NORMALGRUNT");
         if (!s) {
@@ -2827,7 +2827,7 @@ i32 CPlay::BuildSpriteImageKeyTable(void* notify) {
             ((CLoadNotify*)notify)->OnLoaded();
         }
     }
-    g_severusCounterA = 0;
+    g_resourceInstallActive = 0;
     return 1;
 }
 

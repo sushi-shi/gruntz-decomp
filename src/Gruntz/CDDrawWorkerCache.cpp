@@ -47,7 +47,7 @@ public:
 };
 
 // The 0x17c-byte worker layout. Only the seeded offsets are load-bearing.
-// Real polymorphic: `new AnimWorkerObj` makes cl auto-emit ??_7SiriusWorkerObj
+// Real polymorphic: `new AnimWorkerObj` makes cl auto-emit ??_7AnimWorkerObj
 // (masks the retail vtable 0x5efb80) and stamp the vptr in the ctor - no manual
 // `*(void**)w = &g_animWorkerVtbl` store (ALL-VTABLES mandate).
 struct AnimWorkerObj : public AnimWorker {
@@ -136,7 +136,7 @@ i32 CDDrawWorkerCache::VirtualMethodUnknown20() {
 }
 
 // Inline worker constructor. Real `new AnimWorkerObj`: the ctor stamps the vptr
-// (cl-implicit, vptr-first) and cl auto-emits ??_7SiriusWorkerObj; then seed the
+// (cl-implicit, vptr-first) and cl auto-emits ??_7AnimWorkerObj; then seed the
 // fields. (ALL-VTABLES mandate: the vptr store is now compiler-implicit, moving
 // from vptr-middle to vptr-first - a code regression accepted for the real shape.)
 static inline AnimWorkerObj* MakeAnimWorker(const CDDrawWorkerCache* parent) {
@@ -217,7 +217,7 @@ CDDrawWorkerCache::~CDDrawWorkerCache() {
 SIZE_UNKNOWN(CDDrawWorkerCache);
 SIZE_UNKNOWN(AnimWorker);
 SIZE(AnimWorkerObj, 0x17c);
-VTBL(AnimWorkerObj, 0x001efb80); // ??_7SiriusWorkerObj (was g_animWorkerVtbl)
+VTBL(AnimWorkerObj, 0x001efb80); // ??_7AnimWorkerObj (was g_animWorkerVtbl)
 // ??_7CDDrawWorkerCache (was Vtbl_1efd00 / ClassWithUnknownVTable31; 10 slots). cl
 // auto-emits it from the real-polymorphic class; retail datum is reloc-masked ->
 // matching-neutral catalog tracking.

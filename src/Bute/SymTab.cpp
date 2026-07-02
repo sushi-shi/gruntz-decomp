@@ -1,4 +1,4 @@
-// SymTab.cpp - CSymTab, the Remus/ButeMgr hierarchical symbol table (the tree of
+// SymTab.cpp - CSymTab, the ButeMgr hierarchical symbol table (the tree of
 // named scopes the .bute parser builds). Recovered from the this/ecx trace group
 // "ClassUnknown_12" (4 methods at 0x139ee0/0x13a230/0x13bae0/0x13be40), all on a
 // single object shape with two embedded engine hash tables at +0x38/+0x40 and the
@@ -13,8 +13,8 @@ DATA(0x005ef748)
 void* CSymTab_node_vftable;
 
 // A leaf record's parse stream: EndParse releases its inline buffer (0x1399d0,
-// CRemusReadStream); reloc-masked __thiscall, modeled with no body here.
-class CRemusReadStream {
+// CParseSource); reloc-masked __thiscall, modeled with no body here.
+class CParseSource {
 public:
     i32 EndParse(); // 0x1399d0
 };
@@ -261,7 +261,7 @@ i32 CSymTab::ReleaseParseBuffers(i32 recurse) {
         while (rec) {
             void* sub = NextSym2(rec);
             while (sub) {
-                ((CRemusReadStream*)sub)->EndParse();
+                ((CParseSource*)sub)->EndParse();
                 sub = NextSym3(sub);
             }
             rec = NextSym(rec);

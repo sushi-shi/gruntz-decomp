@@ -46,13 +46,13 @@ extern void* g_wwd1598d0FinalVtbl; // 0x5f00e8
 class CWwdGameObject;
 
 // --- sub-object ctors (all __thiscall, reloc-masked no-body) -----------------
-// Base "CRemusNode" 3-arg ctor (root, a, flags). 0x15b2c0 for the 159250/159440
+// Base "CResolveNode" 3-arg ctor (root, a, flags). 0x15b2c0 for the 159250/159440
 // objects, 0x15b390 for the 1598d0 object.
-class CWwdRemusBaseA {
+class CWwdResolveBaseA {
 public:
     void Ctor(int root, int a, int flags); // 0x15b2c0
 };
-class CWwdRemusBaseB {
+class CWwdResolveBaseB {
 public:
     void Ctor(int root, int a, int flags); // 0x15b390
 };
@@ -149,7 +149,7 @@ CWwdObjMgr::CreateObject_159250(int a1, int a2, int a3, int a4, int a5, int a6, 
     CWwdGameObject* result;
     if (obj != 0) {
         int root = (int)m_0c;
-        ((CWwdRemusBaseA*)obj)->Ctor(root, a1, a7);
+        ((CWwdResolveBaseA*)obj)->Ctor(root, a1, a7);
         CWwdSub9c* s9c = (CWwdSub9c*)(obj + 0x9c);
         s9c->Ctor();
         s9c->m_18 = 0;
@@ -201,7 +201,7 @@ CWwdGameObject* CWwdObjMgr::CreateObject_159440(int a1, int a2, int a3, int a4) 
     CWwdGameObject* result;
     if (obj != 0) {
         int root = (int)m_0c;
-        ((CWwdRemusBaseA*)obj)->Ctor(root, a1, a4);
+        ((CWwdResolveBaseA*)obj)->Ctor(root, a1, a4);
         CWwdSub9c* s9c = (CWwdSub9c*)(obj + 0x9c);
         s9c->Ctor();
         s9c->m_18 = 0;
@@ -252,7 +252,7 @@ CWwdGameObject* CWwdObjMgr::CreateObject_1598d0(int a1, int a2, int a3, int a4, 
     CWwdGameObject* result;
     if (obj != 0) {
         int root = (int)m_0c;
-        ((CWwdRemusBaseB*)obj)->Ctor(root, a1, a6);
+        ((CWwdResolveBaseB*)obj)->Ctor(root, a1, a6);
         ((CWwdCmd1a0*)(obj + 0x1a0))->Ctor(root, a1, a6);
         *(void**)(obj + 0x1a0) = &g_wwdSubVtbl;
         *(int*)(obj + 0x1b0) = 0;
@@ -316,7 +316,7 @@ CWwdGameObject* CWwdObjMgrL::CreateObject_166640(int a1, int a2, int a3, int a4,
     CWwdGameObject* result;
     if (obj != 0) {
         int root = m_0c;
-        ((CWwdRemusBaseB*)obj)->Ctor(root, a1, a6);
+        ((CWwdResolveBaseB*)obj)->Ctor(root, a1, a6);
         *(int*)(obj + 0x1a4) = a1;
         *(int*)(obj + 0x1a8) = a6;
         *(int*)(obj + 0x1ac) = root;
@@ -358,7 +358,7 @@ CWwdGameObject* CWwdObjMgrL::CreateObject_166640(int a1, int a2, int a3, int a4,
 // re-homed from src/Stub/MallocConstructors. xref (gruntz.analysis.xref): reached
 // through the CreateObject dispatchers CWwdObjMgr::CreateObject_1598d0 (0x1598d0),
 // CWwdObjMgrL::CreateObject_166640 (0x166640) and WwdFile::ReadPlaneObjects
-// (0x162af0). Base-stamps ??_7CRemusNode (0x5efbc0), op-news an AnimWorkerObj
+// (0x162af0). Base-stamps ??_7CResolveNode (0x5efbc0), op-news an AnimWorkerObj
 // (??_7 0x5efb80, size 0x17c) at +0x7c, final-stamps g_wwdGameObjectVtbl (0x5f0020),
 // bumps g_wwdObjIdCounter (0x61ab14). A sibling of the wide-object ctors above; its
 // large body sits at the same rezalloc-placement-new EH wall (see the TU header),
@@ -382,8 +382,8 @@ SIZE_UNKNOWN(CWwdFactoryB);
 SIZE_UNKNOWN(CWwdList1dc);
 SIZE_UNKNOWN(CWwdObjList);
 SIZE_UNKNOWN(CWwdObjMgrL);
-SIZE_UNKNOWN(CWwdRemusBaseA);
-SIZE_UNKNOWN(CWwdRemusBaseB);
+SIZE_UNKNOWN(CWwdResolveBaseA);
+SIZE_UNKNOWN(CWwdResolveBaseB);
 SIZE_UNKNOWN(CWwdSub9c);
 SIZE_UNKNOWN(CWwdSubB8);
-SIZE_UNKNOWN(CWwdGameObj15b390); // 0x15b390 per-kind wide-object ctor (CRemusNode base)
+SIZE_UNKNOWN(CWwdGameObj15b390); // 0x15b390 per-kind wide-object ctor (CResolveNode base)

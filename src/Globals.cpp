@@ -577,9 +577,9 @@ extern ShadeDescr* g_shadeDescr21c;
 DATA(0x002bf220)
 extern ShadeDescr* g_shadeDescr220;
 DATA(0x002bf318)
-extern i32 g_severusScratch[25];
+extern i32 g_bltFxScratch[25];
 DATA(0x002bf380)
-extern i32 g_severusCounterB;
+extern i32 g_surfaceColorKey;
 DATA(0x002bf3c4)
 extern i32 g_aniParsedNameLen;
 DATA(0x002bf454)

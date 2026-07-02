@@ -13,7 +13,7 @@ void* operator new(u32 n);
 
 // The name compare against the pooled ".." token (0x120090, __cdecl 2-arg; strcmp/
 // _mbscmp). Reloc-masked rel32; the ".." is the shared $SG constant (0x5ee8ec) the
-// Remus parser also references, so reach it by symbol so the DIR32 pairs.
+// ButeMgr parser also references, so reach it by symbol so the DIR32 pairs.
 extern "C" i32 SbNameCmp(const char* a, const char* b); // 0x120090
 DATA(0x001ee8ec)
 extern char g_dotDot[]; // 0x5ee8ec  ".."

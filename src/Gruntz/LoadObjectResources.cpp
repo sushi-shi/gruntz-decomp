@@ -16,12 +16,12 @@
 //   4. Re-scan the child entries; for each still-unwanted (flag==0) one, build the
 //      "{IMAGEZ|SOUNDZ|ANIZ}_<name>" key, ResolvePath it in src, and Install it
 //      through the registry, then mark the flag.  The Image arm brackets the
-//      install with the g_severusCounterA tile-counter gate.
+//      install with the g_resourceInstallActive tile-counter gate.
 // The local CObList carries a destructor -> the /GX exception frame.  Only offsets
 // / code bytes are load-bearing; helpers are reloc-masked engine externs.
 
 DATA(0x002bf37c)
-extern i32 g_severusCounterA; // ?g_severusCounterA@@3HA (Image install bracket)
+extern i32 g_resourceInstallActive; // ?g_resourceInstallActive@@3HA (Image install bracket)
 
 // A child entry of the tree (the value stored in a builder node and returned by
 // FindAdd).  Carries the +4 "wanted" flag and its asset name (returned by value).
@@ -124,7 +124,7 @@ struct CObjResTree {
 // @early-stop
 // ~88.7%: complete + correct (the OBJECTZ_ GetNextAssoc scan, FindAdd reconcile,
 // CObList drain via the registry's ProcessNew, the IMAGEZ_%s sprintf + CSymTab
-// ResolvePath + the polymorphic vtable Install, and the g_severusCounterA bracket
+// ResolvePath + the polymorphic vtable Install, and the g_resourceInstallActive bracket
 // are all byte-faithful, strings/relocs aligned). Residual: retail's frame is 0xb4
 // vs this build's 0xac because retail reserves a guarded CString cleanup slot
 // ([esp+0x24] with its construction guard at [esp+0x1c]) that it NEVER constructs
@@ -181,14 +181,14 @@ i32 CObjResTree::LoadObjectImageResources(ObjSpawnEntry* entry, ObjResLookup* sr
     while (e != 0) {
         if (e->m_4 == 0) {
             char buf[0x80];
-            g_severusCounterA = 1;
+            g_resourceInstallActive = 1;
             sprintf(buf, "IMAGEZ_%s", (const char*)(LPCTSTR)e->GetSpriteName());
             void* handle = src->ResolvePath(buf);
             if (handle == 0) {
                 return 0;
             }
             entry->m_10->Install(handle, (char*)(LPCTSTR)e->GetAssetName(), "");
-            g_severusCounterA = 0;
+            g_resourceInstallActive = 0;
             e->m_4 = 1;
         }
         if (b->m_cursor == 0) {
@@ -205,7 +205,7 @@ i32 CObjResTree::LoadObjectImageResources(ObjSpawnEntry* entry, ObjResLookup* sr
 // @source: decomp-xref
 // @early-stop
 // ~88.3%: complete + correct Image sibling (SOUNDZ_ key, CMapStringToPtr source,
-// the concrete entry->m_28 ProcessNew/Install, no severus bracket). Same phantom
+// the concrete entry->m_28 ProcessNew/Install, no install-gate bracket). Same phantom
 // guarded-CString +8 frame-shift wall documented on the Image arm above.
 RVA(0x0009a910, 0x261)
 i32 CObjResTree::LoadObjectSoundResources(ObjSpawnEntry* entry, ObjResLookup* src) {

@@ -6,7 +6,7 @@
 // Teardown / the destructor scalar-delete every channel and RemoveAll the list.
 //
 // All engine callees are reloc-masked __thiscall externs:
-//   MinervaInner::MinervaInner_136ed0 (0x136ed0), DirectSoundMgr::StopAndRewind
+//   SoundDevice::FreeSamples (0x136ed0), DirectSoundMgr::StopAndRewind
 //   (0x135380) / winapi_136e20_timeGetTime (0x136e20),
 //   CSoundChannel scalar-dtor (vtbl slot 0) / Retune (vtbl slot 3) / Recompute
 //   (0x00bf10), CSoundChannelList::RemoveAll (0x1b48a6) / ~ (0x1b48c6), and the
@@ -118,7 +118,7 @@ RVA(0x0000bc30, 0x3a)
 void CWorldSoundSet::Restart(void* a1) {
     m_04 = a1;
     if (m_world->m_2c != 0) {
-        ((MinervaInner*)m_world->m_2c)->MinervaInner_136ed0();
+        ((SoundDevice*)m_world->m_2c)->FreeSamples();
     }
     CSoundNode* node = m_list.m_head;
     while (node != 0) {
@@ -138,7 +138,7 @@ void CWorldSoundSet::Restart(void* a1) {
 RVA(0x0000bc80, 0x44)
 void CWorldSoundSet::Stop() {
     if (m_world != 0 && m_world->m_2c != 0) {
-        ((MinervaInner*)m_world->m_2c)->MinervaInner_136ed0();
+        ((SoundDevice*)m_world->m_2c)->FreeSamples();
     }
     CSoundNode* node = m_list.m_head;
     while (node != 0) {
@@ -400,5 +400,5 @@ SIZE_UNKNOWN(CSoundChannel);
 SIZE_UNKNOWN(CSoundChannelList);
 SIZE_UNKNOWN(CSoundNode);
 SIZE_UNKNOWN(CWorldSoundSet);
-SIZE_UNKNOWN(MinervaInner);
+SIZE_UNKNOWN(SoundDevice);
 SIZE_UNKNOWN(SoundChannelNew);

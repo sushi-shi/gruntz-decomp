@@ -1,6 +1,6 @@
-// SymTab.h - CSymTab, the Remus/ButeMgr hierarchical symbol table.
+// SymTab.h - CSymTab, the ButeMgr hierarchical symbol table.
 //
-// The Remus parser (RemusParseSource @0x139800/0x139960/0x1399d0, right next to
+// The ButeMgr parser (CParseSource @0x139800/0x139960/0x1399d0, right next to
 // these methods) builds a tree of named scopes through CSymTab. Each node is a
 // two-level keyed store reached through two hash tables:
 //   +0x38  m_subTabs  - child CSymTab scopes (nested namespaces); freed by
@@ -119,7 +119,7 @@ public:
     void* m_buckets; // +0x04
 };
 
-// CSymParser - the owning Remus parser (CSymTab::m_owner @+0x18 points back to it).
+// CSymParser - the owning ButeMgr parser (CSymTab::m_owner @+0x18 points back to it).
 // The single full definition lives in <Bute/SymParser.h>; here it is only a
 // forward-declaration (m_owner is a pointer, so the layout is not needed in this
 // header). The methods that deref m_owner live in SymTab.cpp, which includes

@@ -445,8 +445,8 @@ extern "C" {
 // -------------------------------------------------------------------------
 // The packed-color global SetColorDepth writes + the RGB shift/mask globals it
 // reads (the engine's per-bit-depth color-format conversion table). All reloc-
-// masked DATA refs; only the load/store shapes are load-bearing. g_severusCounterB
-// is the C++-mangled ?g_severusCounterB@@3HA (no extern "C"); the rest are DAT_
+// masked DATA refs; only the load/store shapes are load-bearing. g_surfaceColorKey
+// is the C++-mangled ?g_surfaceColorKey@@3HA (no extern "C"); the rest are DAT_
 // C globals pinned by their DATA() RVA so the DIR32 reloc pairs.
 extern "C" {
     DATA(0x00283ea0)
@@ -1678,7 +1678,7 @@ i32 CGruntzMgr::SetGruntColor(i32 sinkArg, i32 key, i32 idx) {
 
 // -------------------------------------------------------------------------
 // CGruntzMgr::SetColorDepth (0x091170; ret 4). Sets the engine's packed RGB color
-// (g_severusCounterB) for the given display depth. The depth must be 8/16/24 and a
+// (g_surfaceColorKey) for the given display depth. The depth must be 8/16/24 and a
 // world must be loaded; otherwise it returns 0. For 8bpp the color clears; for
 // 24bpp it is the fixed 0xff0084; for 16bpp it is repacked from the per-channel
 // shift/mask globals (red 0xff, green 0, blue 0x84 each sar'd down then shl'd up
@@ -1687,7 +1687,7 @@ i32 CGruntzMgr::SetGruntColor(i32 sinkArg, i32 key, i32 idx) {
 // CODE byte-exact: the double depth switch, the 8/24bpp stores, and the 16bpp
 // per-channel pack (u16-truncated so the three `and 0xffff` stay inline, matching
 // retail's schedule) all match to the byte. The residual ~17% is the reloc-typing
-// scoring artifact: the g_683ea*/g_severusCounterB DIR32 data refs score against
+// scoring artifact: the g_683ea*/g_surfaceColorKey DIR32 data refs score against
 // the differently-typed delinked target (docs/matching-patterns.md fuzzy% note),
 // NOT a code difference.
 RVA(0x00091170, 0xad)
@@ -1699,7 +1699,7 @@ i32 CGruntzMgr::SetColorDepth(i32 depth) {
         return 0;
     }
     if (depth == 8) {
-        g_severusCounterB = 0;
+        g_surfaceColorKey = 0;
         return 1;
     }
     if (depth == 0x10) {
@@ -1711,11 +1711,11 @@ i32 CGruntzMgr::SetColorDepth(i32 depth) {
         i32 packed = (u16)((0xff >> g_683eac) << g_683ea0);
         packed |= (u16)((0 >> g_683eb0) << g_683ea4);
         packed |= (u16)(0x84 >> g_683eb4);
-        g_severusCounterB = packed;
+        g_surfaceColorKey = packed;
         return 1;
     }
     if (depth == 0x18) {
-        g_severusCounterB = 0xff0084;
+        g_surfaceColorKey = 0xff0084;
         return 1;
     }
     return 1;

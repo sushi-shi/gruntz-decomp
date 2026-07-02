@@ -1,11 +1,11 @@
-// CRemusReadStream.cpp - the positioned byte-reader over a Remus parse source
+// CParseSource.cpp - the positioned byte-reader over a ButeMgr parse source
 // (trace placeholder ClassUnknown_85, RVAs 0x139ae0 / 0x139af0). SetPos seeks
 // the cursor; Read copies up to `len` bytes (clamped to the limit) from whichever
 // backing store is live - the mapped source, the inline buffer, or the virtual
 // reader. Self-contained except the inlined memcpy (rep movs at /O2 /Oi) and the
 // reader vtable dispatch. Names are placeholders, offsets + code bytes are
 // load-bearing.
-#include <Gruntz/CRemusReadStream.h>
+#include <Gruntz/CParseSource.h>
 
 #include <rva.h>
 #include <string.h>
@@ -18,7 +18,7 @@ extern "C" void RezFree(void* p);
 // 0x139800 - GetEntryTag: return the first dword of the keyed-store entry m_04.
 // ===========================================================================
 RVA(0x00139800, 0x6)
-i32 CRemusReadStream::GetEntryTag() {
+i32 CParseSource::GetEntryTag() {
     return *(i32*)m_04;
 }
 
@@ -29,7 +29,7 @@ i32 CRemusReadStream::GetEntryTag() {
 // virtual Read of the whole limit; on a short read, free + return 0.
 // ===========================================================================
 RVA(0x00139960, 0x6b)
-i32 CRemusReadStream::BeginParse() {
+i32 CParseSource::BeginParse() {
     if (m_10->m_48 != 0) {
         return m_14 - m_10->m_0c + m_10->m_48;
     }
@@ -54,7 +54,7 @@ i32 CRemusReadStream::BeginParse() {
 // 0x1399d0 - EndParse: release the inline parse buffer; returns 1.
 // ===========================================================================
 RVA(0x001399d0, 0x21)
-i32 CRemusReadStream::EndParse() {
+i32 CParseSource::EndParse() {
     if (m_38 != 0) {
         RezFree((void*)m_38);
         m_38 = 0;
@@ -69,8 +69,8 @@ i32 CRemusReadStream::EndParse() {
 // paths return 1; the virtual-reader path returns whether the full `len` was read.
 // ===========================================================================
 RVA(0x00139a40, 0x95)
-i32 CRemusReadStream::ReadAt(void* dst, i32 pos, u32 len) {
-    RemusMappedSource* sd = m_10;
+i32 CParseSource::ReadAt(void* dst, i32 pos, u32 len) {
+    ParseMappedSource* sd = m_10;
     if (sd->m_48 != 0) {
         memcpy(dst, (const void*)(m_14 - sd->m_0c + pos + sd->m_48), len);
         return 1;
@@ -86,7 +86,7 @@ i32 CRemusReadStream::ReadAt(void* dst, i32 pos, u32 len) {
 // 0x139ae0 - SetPos(pos): move the read cursor; returns 1.
 // ===========================================================================
 RVA(0x00139ae0, 0xf)
-i32 CRemusReadStream::SetPos(i32 pos) {
+i32 CParseSource::SetPos(i32 pos) {
     m_18 = pos;
     return 1;
 }
@@ -106,7 +106,7 @@ i32 CRemusReadStream::SetPos(i32 pos) {
 // sd->m_0c to a reg first, plus a je-vs-jbe 1-byte branch encoding on the empty
 // check. Not source-steerable. ~89%; SetPos is 100%.
 RVA(0x00139af0, 0xcc)
-i32 CRemusReadStream::Read(void* dst, u32 len, i32 seekPos) {
+i32 CParseSource::Read(void* dst, u32 len, i32 seekPos) {
     if (seekPos != -1) {
         SetPos(seekPos);
     }
@@ -117,7 +117,7 @@ i32 CRemusReadStream::Read(void* dst, u32 len, i32 seekPos) {
         want = m_0c - pos;
     }
     if (want != 0) {
-        RemusMappedSource* sd = m_10;
+        ParseMappedSource* sd = m_10;
         if (sd->m_48) {
             const char* base = (const char*)(m_14 - sd->m_0c + sd->m_48 + pos);
             memcpy(dst, base, want);
@@ -140,6 +140,6 @@ i32 CRemusReadStream::Read(void* dst, u32 len, i32 seekPos) {
 
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
-SIZE_UNKNOWN(CRemusReadStream);
-SIZE_UNKNOWN(RemusMappedSource);
-SIZE_UNKNOWN(RemusVReader);
+SIZE_UNKNOWN(CParseSource);
+SIZE_UNKNOWN(ParseMappedSource);
+SIZE_UNKNOWN(ParseVReader);

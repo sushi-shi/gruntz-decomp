@@ -5,10 +5,10 @@
 #include <Ints.h>
 
 // ---------------------------------------------------------------------------
-// CDDrawSurfacePair - a surface-backed drawing region in the DDrawMgr "Remus"
+// CDDrawSurfacePair - a surface-backed drawing region in the DDrawMgr
 // image family. It derives from the engine CLoadable base (the same
 // polymorphic base CGameLevel derives from: its grand-base dtor vtable is
-// g_wapObjectDtorVtbl == g_remusBaseDtorVtbl @0x5e8cb4). Its own vtable is
+// g_wapObjectDtorVtbl == g_wapObjectDtorVtbl @0x5e8cb4). Its own vtable is
 // @0x5eff30. It owns ONE held DDraw surface (a CPoolItemA, the CDDSurface
 // wrapper) borrowed from the parent CDirectDrawMgr's surface pool, plus a cached
 // pixel geometry (width @+0x10 / height @+0x14 / bpp @+0x18) and an x/y offset

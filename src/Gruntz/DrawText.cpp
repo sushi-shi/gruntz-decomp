@@ -4,7 +4,7 @@
 // measure a CString label into the item's rect (DrawTextA with
 // DT_CALCRECT-ish flags 0x420), clamp the used width into g_62b434, then run the
 // engine text renderer at that origin. The scratch draw object is the same
-// three-level severus/imgHolder hierarchy as m4_FlashRect (vtables in other TUs
+// three-level image-worker/imgHolder hierarchy as m4_FlashRect (vtables in other TUs
 // -> reloc-masked); its dtor chain inlines but its 3-arg ctor is out-of-line.
 // Placeholder names; only offsets + code bytes are load-bearing. base+/GX.
 #include <Win32.h>
@@ -21,7 +21,7 @@ namespace m4 {
     // DrawTextA through the game Win32 pointer table (0x6c454c) -> reloc-masked.
     extern int(__stdcall* g_pDrawTextA)(HDC, LPCSTR, int, LPRECT, UINT); // 0x006c454c
 
-    // The severus/imgHolder scratch (see m4_FlashRect): inline dtor chain, but
+    // The image-worker/imgHolder scratch (see m4_FlashRect): inline dtor chain, but
     // this call site builds it with a 3-arg out-of-line ctor.
     struct SevWorker2 {
         virtual ~SevWorker2() {}
@@ -62,7 +62,7 @@ namespace m4 {
     // regalloc + EH-state wall (~72%). Complete correct reconstruction: the /GX
     // frame, the empty-CString (*(text-8)==0) gate, the rect copy + DrawTextA
     // measure, the min(provW,textW) clamp into g_62b434, and the Bind/Push/MoveTo/
-    // Draw render with the inline severus/imgHolder scratch dtor chain all align
+    // Draw render with the inline image-worker/imgHolder scratch dtor chain all align
     // by shape (llvm-objdump -dr). Residual is MSVC5 using a 4th callee-saved reg
     // (ebp) where retail packs into ebx/esi/edi (so the arg + local offsets shift)
     // plus the EH scope-table addend (0 vs 8) - not steerable from source.

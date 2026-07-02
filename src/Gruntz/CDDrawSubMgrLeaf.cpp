@@ -64,9 +64,9 @@ public:
 
 // CDDrawSubMgrGrandBase - the CObject-like family grand-base (vptr + the three header
 // fields +0x04..+0x0c). Modeled as a REAL polymorphic base (its 5-slot vtable is
-// the shared g_remusBaseDtorVtbl @0x5e8cb4 = sub_1bef01 / scalar-dtor / sub_0028ec /
+// the shared g_wapObjectDtorVtbl @0x5e8cb4 = sub_1bef01 / scalar-dtor / sub_0028ec /
 // sub_00106e / sub_004034) so cl emits the implicit grand-base vptr re-stamp (masks
-// 0x5e8cb4) at the leaf dtor's tail - no manual `*(void**)this = &g_remusBaseDtorVtbl`.
+// 0x5e8cb4) at the leaf dtor's tail - no manual `*(void**)this = &g_wapObjectDtorVtbl`.
 // Slot 1 is a REGULAR virtual (not a C++ dtor) so the leaf can override it with its
 // explicit ??_G scalar-deleting destructor ScalarDtor_1577c0 WITHOUT cl auto-generating
 // a clashing ??_G. The field resets live in the non-virtual ~ (its body); the base

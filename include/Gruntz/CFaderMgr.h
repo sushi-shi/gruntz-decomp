@@ -50,7 +50,7 @@ struct CFaderArray {
 DATA(0x001f0790)
 extern void* g_faderArrayVtbl; // 0x5f0790 - the element-array base vtable
 DATA(0x001e8cb4)
-extern void* g_remusBaseDtorVtbl; // 0x5e8cb4 - the grand-base dtor vtable
+extern void* g_wapObjectDtorVtbl; // 0x5e8cb4 - the grand-base dtor vtable
 
 // Stamp the array vftable (the vptr init the compiler cannot emit for us while
 // the array's vtable contents are unmodeled) then zero the bookkeeping fields, in
@@ -68,7 +68,7 @@ inline CFaderArray::~CFaderArray() {
     if (m_pData) {
         operator delete(m_pData);
     }
-    m_vtbl = &g_remusBaseDtorVtbl;
+    m_vtbl = &g_wapObjectDtorVtbl;
 }
 
 class CFaderMgr {

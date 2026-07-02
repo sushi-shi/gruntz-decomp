@@ -14,7 +14,7 @@
 //     path, else `name`), BeginParse -> memcpy 0x5f4 bytes -> EndParse, and return
 //     the descriptor's +0x2ec field. Any resolve/insert/parse failure returns 0.
 //
-// CARCASS doctrine: the owning class + the Remus symbol tree are engine classes
+// CARCASS doctrine: the owning class + the ButeMgr symbol tree are engine classes
 // reached by raw this+offset; every callee is a reloc-masked external; the format
 // / namespace strings are $SG literals reloc-masked against the matched string
 // symbols. The Insert() flags arg (0x575744) is a NON-relocated literal constant
@@ -25,7 +25,7 @@
 
 #include <rva.h>
 
-// The Remus symbol tree the rez data is resolved/parsed through.
+// The ButeMgr symbol tree the rez data is resolved/parsed through.
 struct CSymNode {
     CSymNode* Insert(const char* key, i32 flags); // 0x13a000 (2nd arg is a non-reloc literal)
     void* BeginParse();                           // 0x139960  returns the 0x5f4-byte block

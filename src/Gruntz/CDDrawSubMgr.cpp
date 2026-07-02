@@ -84,13 +84,13 @@ inline FamilyMapBase::~FamilyMapBase() {
 
 // 3-map sibling (vtable 0x5efdc0): member-teardown ~ at 0x157630; its ??_G scalar-dtor
 // (0x157610) lives in CDDrawWorkerMapSmall.cpp and calls this ~.
-struct CDDrawSubMgrRemus : public FamilyMapBase {
-    void Cleanup_1591e0(); // teardown helper (0x1591e0), declared-only
-    ~CDDrawSubMgrRemus();  // 0x157630
-    CMapStringToOb m_10;   // +0x10
-    CMapStringToOb m_2c;   // +0x2c
-    CMapStringToOb m_48;   // +0x48
-    i32 m_64;              // +0x64
+struct CDDrawChildGroupDtorHost : public FamilyMapBase {
+    void Cleanup_1591e0();       // teardown helper (0x1591e0), declared-only
+    ~CDDrawChildGroupDtorHost(); // 0x157630
+    CMapStringToOb m_10;         // +0x10
+    CMapStringToOb m_2c;         // +0x2c
+    CMapStringToOb m_48;         // +0x48
+    i32 m_64;                    // +0x64
 };
 
 // 1-map sibling (vtable 0x5efd28): member-teardown ~ at 0x156e10; its ??_G scalar-dtor
@@ -112,7 +112,7 @@ public:
 // The 0x158xxx-0x15c970 discovered cluster is a DISTINCT, LARGER class than the
 // small CDDrawSubMgr above (verified: that class's vtable is g_loadableVtbl
 // with fields at 0x04/0x08/0x0c; the cluster reads 0x0c/0x10/0x14/0x18/0x2c/0x48/0x54
-// and is constructed by Constructor_157630, whose vtable is g_remusBaseDtorVtbl).
+// and is constructed by Constructor_157630, whose vtable is g_wapObjectDtorVtbl).
 // The cluster carries TWO objects:
 //   - the worker MANAGER (this == 0x158xxx methods): m_0c worker, m_10/m_14/m_18
 //     polymorphic surface-pairs, m_2c/m_48 CMaps, m_54 bool.
@@ -379,7 +379,7 @@ void* CDDrawSubMgr::Stub_155720(i32 flag) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x157630: member-teardown ~ of the 3-map sibling CDDrawSubMgrRemus (vtable 0x5efdc0).
+// 0x157630: member-teardown ~ of the 3-map sibling CDDrawChildGroupDtorHost (vtable 0x5efdc0).
 // Runs the cleanup helper (0x1591e0), then the three CMapStringToOb members and the
 // FamilyMapBase grand-base auto-destruct (reverse decl order + field resets + the
 // grand-base ??_7 re-stamp masking 0x5e8cb4). /GX member-teardown frame.
@@ -388,7 +388,7 @@ void* CDDrawSubMgr::Stub_155720(i32 flag) {
 // grand-base vptr re-stamp position (cl stamps at base-dtor entry, retail sinks it
 // after the field resets) + the reloc-masked EH-state/teardown/map-dtor names.
 RVA(0x00157630, 0x82)
-CDDrawSubMgrRemus::~CDDrawSubMgrRemus() {
+CDDrawChildGroupDtorHost::~CDDrawChildGroupDtorHost() {
     Cleanup_1591e0();
     // implicit: ~m_48, ~m_2c, ~m_10, ~FamilyMapBase (resets + base restamp).
 }
@@ -2124,8 +2124,8 @@ class CWwdSubCtorB { // 0x15b270
 public:
     void Ctor();
 };
-// CRemusNode 3-arg ctor at 0x15b2c0 (root, a2, a3).
-class CWwdRemusBase {
+// CResolveNode 3-arg ctor at 0x15b2c0 (root, a2, a3).
+class CWwdResolveBase {
 public:
     void Ctor(i32 root, i32 a2, i32 a3); // 0x15b2c0
 };
@@ -2535,7 +2535,7 @@ CWwdGameObject* CWwdObjMgr::CreateObject_159600(i32 a1, i32 a2, i32 a3, i32 a4, 
     CWwdGameObject* result;
     if (obj != 0) {
         i32 root = (i32)m_0c;
-        ((CWwdRemusBase*)obj)->Ctor(root, a1, flags);
+        ((CWwdResolveBase*)obj)->Ctor(root, a1, flags);
         ((CWwdSubCtorA*)(obj + 0x9c))->Ctor();
         ((CWwdSubCtorB*)(obj + 0xb8))->Ctor();
         ((CWwdLabel*)(obj + 0xdc))->Ctor();
@@ -2596,7 +2596,7 @@ SIZE_UNKNOWN(CDDrawRect);
 SIZE_UNKNOWN(CDDrawSubMgr);
 SIZE_UNKNOWN(CDDrawSubMgrBase);
 SIZE_UNKNOWN(CDDrawSubMgrFar);
-SIZE_UNKNOWN(CDDrawSubMgrRemus);
+SIZE_UNKNOWN(CDDrawChildGroupDtorHost);
 SIZE_UNKNOWN(CDDrawRegistryDtorHost);
 SIZE_UNKNOWN(FamilyMapBase);
 SIZE_UNKNOWN(CDDrawWorkerDisp);
@@ -2617,7 +2617,7 @@ SIZE_UNKNOWN(CWwdNotifier);
 SIZE_UNKNOWN(CWwdObjMgr);
 SIZE_UNKNOWN(CWwdObject);
 SIZE_UNKNOWN(CWwdProbeObject);
-SIZE_UNKNOWN(CWwdRemusBase);
+SIZE_UNKNOWN(CWwdResolveBase);
 SIZE_UNKNOWN(CWwdSlot9c);
 SIZE_UNKNOWN(CWwdSubCtorA);
 SIZE_UNKNOWN(CWwdSubCtorB);

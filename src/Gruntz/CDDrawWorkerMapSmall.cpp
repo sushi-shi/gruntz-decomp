@@ -48,11 +48,11 @@ void operator delete(void*);
 
 // The sibling 3-map manager (vtable 0x5efdc0) whose scalar-deleting destructor
 // (0x157610) landed in this TU during the vtable scan; its real member-teardown ~
-// is 0x157630 (CDDrawSubMgr.cpp, as CDDrawSubMgrRemus::~CDDrawSubMgrRemus). Declared
-// so the scalar-dtor's call reloc names ??1CDDrawSubMgrRemus@@UAE@XZ.
-class CDDrawSubMgrRemus {
+// is 0x157630 (CDDrawSubMgr.cpp, as CDDrawChildGroupDtorHost::~CDDrawChildGroupDtorHost). Declared
+// so the scalar-dtor's call reloc names ??1CDDrawChildGroupDtorHost@@UAE@XZ.
+class CDDrawChildGroupDtorHost {
 public:
-    virtual ~CDDrawSubMgrRemus();
+    virtual ~CDDrawChildGroupDtorHost();
 };
 
 // The worker virtual interface. Slots laid out so the dispatched methods land at
@@ -102,7 +102,7 @@ public:
 };
 
 // The CObject-like grand-base shared by the whole "DDraw surface manager" surface family
-// (its dtor vtable is g_remusBaseDtorVtbl @0x5e8cb4 = the 5-slot CObject interface
+// (its dtor vtable is g_wapObjectDtorVtbl @0x5e8cb4 = the 5-slot CObject interface
 // sub_1bef01 / scalar-dtor / sub_0028ec / sub_00106e / sub_004034). Modeled as a
 // REAL polymorphic base so cl emits the implicit grand-base vptr re-stamp (masks
 // 0x5e8cb4) at ~CDDrawWorkerMapSmall's tail and stamps ??_7CDDrawWorkerMapSmall at
@@ -314,13 +314,13 @@ i32 CDDrawWorkerMapSmall::VirtualMethodUnknown20() {
 // Engine-label backlog stubs.
 // -------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-// 0x157610: scalar-deleting destructor of the sibling CDDrawSubMgrRemus (vtable
+// 0x157610: scalar-deleting destructor of the sibling CDDrawChildGroupDtorHost (vtable
 // 0x5efdc0); landed in this TU during the vtable scan. Runs the real member-teardown
-// ~CDDrawSubMgrRemus (0x157630, CDDrawSubMgr.cpp) then operator delete under the flag.
-SYMBOL(??_GCDDrawSubMgrRemus @@UAEPAXI@Z)
+// ~CDDrawChildGroupDtorHost (0x157630, CDDrawSubMgr.cpp) then operator delete under the flag.
+SYMBOL(??_GCDDrawChildGroupDtorHost @@UAEPAXI@Z)
 RVA(0x00157610, 0x1e)
 void* CDDrawWorkerMapSmall::Stub_157610(i32 flag) {
-    ((CDDrawSubMgrRemus*)this)->CDDrawSubMgrRemus::~CDDrawSubMgrRemus();
+    ((CDDrawChildGroupDtorHost*)this)->CDDrawChildGroupDtorHost::~CDDrawChildGroupDtorHost();
     if (flag & 1) {
         operator delete(this);
     }
@@ -528,7 +528,7 @@ SIZE_UNKNOWN(CDDrawWorkerMapSmallTeardown);
 SIZE_UNKNOWN(CDDrawWorkerMapBase);
 SIZE_UNKNOWN(CDDrawMapWorker);
 SIZE(CDDrawMapWorkerObj, 0x14);
-SIZE_UNKNOWN(CDDrawSubMgrRemus);
+SIZE_UNKNOWN(CDDrawChildGroupDtorHost);
 SIZE_UNKNOWN(CDDrawSurfaceSource);
 SIZE_UNKNOWN(CDDrawWorkerMapSmall);
 VTBL(CDDrawWorkerMapSmall, 0x001efcc8); // ??_7CDDrawWorkerMapSmall @0x5efcc8

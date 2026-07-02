@@ -1,10 +1,10 @@
 #include <rva.h>
 // CDDrawSurfacePair.cpp - a surface-backed drawing region in the DDrawMgr
-// "Remus" image family. It owns one held DDraw surface (a CPoolItemA, the
+// DDrawMgr image family. It owns one held DDraw surface (a CPoolItemA, the
 // CDDSurface wrapper) borrowed from the parent CDirectDrawMgr's surface pool,
 // plus a cached pixel geometry (width @+0x10 / height @+0x14 / bpp @+0x18) and an
 // x/y offset window @+0x1c. Its own vtable is @0x5eff30; the grand-base dtor
-// vtable is g_remusBaseDtorVtbl @0x5e8cb4. See include/Gruntz/CDDrawSurfacePair.h.
+// vtable is g_wapObjectDtorVtbl @0x5e8cb4. See include/Gruntz/CDDrawSurfacePair.h.
 //
 // This TU carries four of the class's methods (in retail-RVA order):
 //   BltSelf       (0x03a1d0) - BltFast another pair's surface onto ours

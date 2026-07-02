@@ -58,11 +58,11 @@ void DICfgC::DtorC() {
 }
 
 // ---------------------------------------------------------------------------
-// 0x1396f0 - CRemusReadStream-area init: stamp the +0x1c vftable (@0x5ef740), zero
+// 0x1396f0 - CParseSource-area init: stamp the +0x1c vftable (@0x5ef740), zero
 // the bookkeeping fields, self-link +0x30. Returns `this`. __thiscall.
 //
 // NOTE: the 0x5ef740 vtable is a SECONDARY / embedded intrusive-hash-node vtable
-// (stamped at +0x1c, NOT a class's primary +0 vptr) in the CSymParser/CRemusReadStream
+// (stamped at +0x1c, NOT a class's primary +0 vptr) in the CSymParser/CParseSource
 // subsystem. Realized as a cl-emitted ??_7HashNode1396f0 (an embedded polymorphic node
 // member at +0x1c, placement-constructed so its implicit vptr stamp supplies the
 // `mov [ecx+0x1c],offset ??_7` store) - the mandated real-polymorphic form.

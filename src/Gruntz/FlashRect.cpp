@@ -5,7 +5,7 @@
 // host window's client coords, build a random-gray (or fixed 0x808080) solid
 // brush, and FillRect it - the 0x160f0 variant deflates the rect by 2px, the
 // 0x0c2e20 variant does not (and returns 1). The scratch draw object is a
-// three-level severus/imgHolder hierarchy: its vtables live in other TUs so
+// three-level image-worker/imgHolder hierarchy: its vtables live in other TUs so
 // they are referenced by address (reloc-masked); we model the hierarchy with
 // real virtual dtors so MSVC5 emits the /GX EH frame + the inline vptr-stamp
 // destructor chain that retail shows. Placeholder names; only offsets + code
@@ -31,7 +31,7 @@ namespace m4 {
     extern HBRUSH(__stdcall* g_pCreateSolidBrush)(COLORREF);      // 0x006c3eac
     extern int(__stdcall* g_pFillRect)(HDC, const RECT*, HBRUSH); // 0x006c44e0
 
-    // The three-level draw-scratch hierarchy (severus worker <- image holder <-
+    // The three-level draw-scratch hierarchy (image worker <- image holder <-
     // most-derived). Vtables are external (other TUs) -> reloc-masked stamps.
     struct SevWorker {
         virtual ~SevWorker() {}
@@ -96,7 +96,7 @@ namespace m4 {
     // @early-stop
     // EH frame-size + regalloc wall (~84%). Complete correct reconstruction: the
     // /GX EH frame, the 4-slot loop, the child->host rect map, the 3x inlined LCG
-    // color, the severus/imgHolder ctor + inline vptr-stamp dtor chain, the
+    // color, the image-worker/imgHolder ctor + inline vptr-stamp dtor chain, the
     // rect-deflate and the NULL-guarded brush select all match by shape
     // (llvm-objdump -dr). Residual is MSVC5 reserving a 0x70 frame vs our 0x24
     // (so dc/EH-state slots shift) and swapping the ecx/edx scratch regs in the

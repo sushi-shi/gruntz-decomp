@@ -72,7 +72,7 @@ public:
 // is real-polymorphic, so cl emits ??_7CDDrawSubMgrLeafScan + the implicit grand-base
 // re-stamp. The 0x1c cache element (LeafElementObj) is now real-polymorphic too
 // (below), so its grand-base dtor vtable (0x5e8cb4) is the cl-emitted
-// ??_7LeafElementBase - the manual g_remusBaseDtorVtbl stamp is gone from this TU.
+// ??_7LeafElementBase - the manual g_wapObjectDtorVtbl stamp is gone from this TU.
 
 // VM18 (0x157ae0) on the existing CDDrawSubMgrLeaf TU: clears the +0x10 map and
 // zeroes +0x2c. Reloc-masked external __thiscall call from the dtor.
@@ -118,8 +118,8 @@ extern "C" u32 g_6bf3c0; // draw-clock mirror
 // reader whose two virtuals are BeginParse (0x139960 -> the parsed RIFF/WAVE blob,
 // or 0) and EndParse (0x1399d0). Modeled as a layout-compatible view (the
 // `mov ecx,src; call <thunk>` reloc-masks); the trace tagged the same reader
-// RemusParseSource (the symtab/parse-stream node).
-class RemusParseSource {
+// CParseSource (the symtab/parse-stream node).
+class CParseSource {
 public:
     i32 BeginParse(); // 0x139960  parse + return the RIFF/WAVE blob (or 0)
     void EndParse();  // 0x1399d0  release the parse cursor
@@ -140,7 +140,7 @@ struct LeafRootHandle {
 // virtual ~ resets the three fields; the base transition stamp is implicit. Because
 // this base carries a NON-TRIVIAL dtor, the derived ~LeafElementObj gets a /GX EH
 // frame protecting the base teardown across the Release() call (the half-destructed
-// element cleanup edge). Same shape as LeafScanBase / CRemusNode.
+// element cleanup edge). Same shape as LeafScanBase / CResolveNode.
 struct LeafElementBase {
     virtual void FUN_005bef01(); // [0] 0x1bef01 (shared thunk, declared-only)
     virtual ~LeafElementBase();  // [1] scalar-deleting dtor (0x158660 ??_G)
@@ -167,15 +167,15 @@ inline LeafElementBase::~LeafElementBase() {
 // (0x158760) loads + acquires the element's buffer; Release (0x1587c0) frees it (both
 // non-virtual __thiscall members reached only from the element).
 struct LeafElementObj : public LeafElementBase {
-    virtual void LeafSlot5_158650();             // [5] 0x158650 (declared-only)
-    virtual void FUN_00401c08();                 // [6] 0x001c08 (shared thunk, declared-only)
-    virtual void LeafSlot7_1587c0();             // [7] 0x1587c0 (declared-only; == Release addr)
-    virtual void LeafSlot8_154a00();             // [8] 0x154a00 (declared-only)
-    ~LeafElementObj();                           // overrides slot [1]
-    LeafElementObj(i32 count, i32 handle);       // inline; folded into the factory
-    i32 Configure_158760(RemusParseSource* src); // 0x158760 __thiscall element configure
-    i32 Configure2_158720(void* riff);           // 0x158720 raw-RIFF configure variant
-    void Release_1587c0();                       // 0x1587c0 release the acquired buffer
+    virtual void LeafSlot5_158650();         // [5] 0x158650 (declared-only)
+    virtual void FUN_00401c08();             // [6] 0x001c08 (shared thunk, declared-only)
+    virtual void LeafSlot7_1587c0();         // [7] 0x1587c0 (declared-only; == Release addr)
+    virtual void LeafSlot8_154a00();         // [8] 0x154a00 (declared-only)
+    ~LeafElementObj();                       // overrides slot [1]
+    LeafElementObj(i32 count, i32 handle);   // inline; folded into the factory
+    i32 Configure_158760(CParseSource* src); // 0x158760 __thiscall element configure
+    i32 Configure2_158720(void* riff);       // 0x158720 raw-RIFF configure variant
+    void Release_1587c0();                   // 0x1587c0 release the acquired buffer
 
     i32 m_10; // +0x10 = 0  the acquired DirectSound buffer
     i32 m_14; // +0x14 = 0
@@ -219,7 +219,7 @@ void operator delete(void* p);
 // ---------------------------------------------------------------------------
 // The shared CObject-like grand-base: vptr + status word at +0x04 + handle at
 // +0x0c. Modeled as a REAL polymorphic base (its 5-slot vtable is the shared
-// g_remusBaseDtorVtbl @0x5e8cb4) so cl emits the implicit grand-base vptr re-stamp
+// g_wapObjectDtorVtbl @0x5e8cb4) so cl emits the implicit grand-base vptr re-stamp
 // (masks 0x5e8cb4) at the derived dtor's tail -- no manual `*(void**)this = &g_*Vtbl`.
 // Its virtual ~ holds the field resets; the base transition stamp is implicit. This
 // is the tail the derived dtor chains into AFTER the map member is destroyed.
@@ -445,7 +445,7 @@ LeafElementObj* CDDrawSubMgrLeafScan::CreateEntry_157d70(const char* key, void* 
     if (e == 0) {
         return 0;
     }
-    if (e->Configure_158760((RemusParseSource*)arg2) == 0) {
+    if (e->Configure_158760((CParseSource*)arg2) == 0) {
         delete e; // virtual scalar-deleting dtor (vtbl[1](1))
         return 0;
     }
@@ -517,7 +517,7 @@ LeafElementObj::~LeafElementObj() {
 // src->edi and reuses esi as the return carrier, computing ok eagerly before
 // EndParse). Tried 3 result/store spellings; no source lever flips the homing. Logic complete.
 RVA(0x00158760, 0x59)
-i32 LeafElementObj::Configure_158760(RemusParseSource* src) {
+i32 LeafElementObj::Configure_158760(CParseSource* src) {
     i32 blob = src->BeginParse();
     if (blob == 0) {
         return 0;
@@ -777,7 +777,7 @@ SIZE_UNKNOWN(LeafScanSoundArg);
 SIZE_UNKNOWN(LeafScanVM18Sink);
 SIZE_UNKNOWN(LeafScanValue);
 SIZE_UNKNOWN(LeafSumSource);
-SIZE_UNKNOWN(RemusParseSource);
+SIZE_UNKNOWN(CParseSource);
 SIZE_UNKNOWN(SoundDeviceStartView);
 VTBL(CDDrawSubMgrLeafScan, 0x001efca0); // ??_7CDDrawSubMgrLeafScan (was g_leafScanVtbl)
 // ??_7LeafElementObj (was g_leafElemVtbl @0x5eff08, LeafElemVtbl / ClassWithUnknownVTable42).

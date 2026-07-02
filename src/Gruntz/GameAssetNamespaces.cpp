@@ -9,7 +9,7 @@
 #include <Globals.h>
 
 DATA(0x006bf37c)
-extern i32 g_severusCounterA;
+extern i32 g_resourceInstallActive;
 
 class CSymParser {
 public:
@@ -142,9 +142,9 @@ void CAssetLoader::LoadGameAssetNamespaces(AssetMgr* mgr, i32 areaArg, i32 a3) {
         if (img == 0) {
             return;
         }
-        g_severusCounterA = 1;
+        g_resourceInstallActive = 1;
         m_c->m_10->LoadTree(img, "GAME", "_");
-        g_severusCounterA = 0;
+        g_resourceInstallActive = 0;
     }
     if (m_c->m_28->HasKeyEqual("GAME") == 0) {
         void* snd = m_8->ResolvePath("GAME_SOUNDZ");

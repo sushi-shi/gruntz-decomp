@@ -1,10 +1,10 @@
 #include <rva.h>
 // CImage.cpp - the RTTI-confirmed polymorphic CImage (`.?AVCImage@@`, primary
-// vftable @0x5eaa2c), a surface-backed image element in the DDrawMgr "Remus"
+// vftable @0x5eaa2c), a surface-backed image element in the DDrawMgr
 // image family and a sibling of CDDrawSurfacePair. Three methods (retail-RVA
 // order): the cleanup virtual FreeAll (0x153260, slot 7), the /GX destructor
 // ~CImage (0x0d5e80), and RenderFrame (0x153790) - the sprite-frame draw that
-// resolves a clip rectangle through a shared CRemusNode singleton then dispatches
+// resolves a clip rectangle through a shared CResolveNode singleton then dispatches
 // the +0x38 render virtual.
 //
 // See include/Image/CImage.h for the layout + the loader-CImage naming note.
@@ -51,21 +51,21 @@ inline i32 CImageLoadDispatch::LoadVirtual(CImageFrameDesc* desc, u32 mode, void
 // ---------------------------------------------------------------------------
 // (vtable slot 12): Create. The Create24 sibling without the mode args:
 // allocate a surface from the parent pool's 3-arg create (CreateC @0x142560) for
-// (desc, capArg, flagsArg) - where flagsArg = keyed ? g_severusCounterB : -1 and
-// capArg = g_severusCounterA ? 0x800 : 0 - then cache the surface geometry (w/h,
+// (desc, capArg, flagsArg) - where flagsArg = keyed ? g_surfaceColorKey : -1 and
+// capArg = g_resourceInstallActive ? 0x800 : 0 - then cache the surface geometry (w/h,
 // halved) and clear the m_20/m_24 origin. __thiscall, ret 8 (2 stack args).
 // @early-stop
 // 99.09% - structurally identical to the 100% sibling Create24, plus the two
-// g_severusCounterA/B DIR32 reloc artifacts. The lone code residual is the geometry
+// g_resourceInstallActive/B DIR32 reloc artifacts. The lone code residual is the geometry
 // temp register: retail caches w(item->m_1c) in edx and h in ecx; cl (with one fewer
 // call arg than Create24) swaps them to ecx/edx. The 3-vs-5-arg call shifts the post-
 // call allocator state - not steerable from Create's own source.
 // ---------------------------------------------------------------------------
 RVA(0x00152e90, 0x8b)
 i32 CImage::Create(CImageFrameDesc* desc, i32 keyed) {
-    i32 flagsArg = (keyed != 0) ? g_severusCounterB : -1;
+    i32 flagsArg = (keyed != 0) ? g_surfaceColorKey : -1;
     i32 capArg = 0;
-    if (g_severusCounterA != 0) {
+    if (g_resourceInstallActive != 0) {
         capArg = 0x800;
     }
     CImageSurfaceItem* item = m_0c->m_1c->CreateC((i32)desc, capArg, flagsArg);
@@ -139,7 +139,7 @@ i32 CImage::Resolve(CImageSource* src, i32 arg) {
 // @early-stop
 // 99.86% - all 108 instructions byte-identical to retail (verified llvm-objdump
 // base vs target). The lone residual is the objdiff reloc-typing scoring artifact
-// on the two g_severusCounterA/B DIR32 refs (REL32-vs-DIR32 against differently-
+// on the two g_resourceInstallActive/B DIR32 refs (REL32-vs-DIR32 against differently-
 // named symbols); the code bytes match. See MEMORY objdiff-reloc-scoring.
 // ---------------------------------------------------------------------------
 RVA(0x00152fb0, 0x123)
@@ -157,7 +157,7 @@ i32 CImage::LoadDispatch(CImageFrameDesc* desc, u32 mode, void* a, i32 b) {
         }
         return 1;
     }
-    i32 flagsArg = (b != 0) ? g_severusCounterB : -1;
+    i32 flagsArg = (b != 0) ? g_surfaceColorKey : -1;
     if (mode == 4 || mode == 3) {
         i32 g10 = desc->m_10;
         i32 g14 = desc->m_14;
@@ -168,7 +168,7 @@ i32 CImage::LoadDispatch(CImageFrameDesc* desc, u32 mode, void* a, i32 b) {
         m_24 = 0;
     }
     i32 capArg = 0;
-    if (g_severusCounterA != 0) {
+    if (g_resourceInstallActive != 0) {
         capArg = 0x800;
     }
     CImageSurfaceItem* item = m_0c->m_1c->CreateA((i32)desc, (i32)mode, a, capArg, flagsArg);
@@ -193,15 +193,15 @@ i32 CImage::LoadDispatch(CImageFrameDesc* desc, u32 mode, void* a, i32 b) {
 // ---------------------------------------------------------------------------
 // (vtable slot 9): Create24. Allocate a surface from the parent pool's
 // Create24 variant (CreateB @0x1423c0) for (desc, mode, NULL, capArg, flagsArg) -
-// where flagsArg = keyed ? g_severusCounterB : -1 and capArg = g_severusCounterA ?
+// where flagsArg = keyed ? g_surfaceColorKey : -1 and capArg = g_resourceInstallActive ?
 // 0x800 : 0 - then cache the surface geometry (w/h, halved) and clear the m_20/m_24
 // origin. __thiscall, ret 0xc (3 stack args).
 // ---------------------------------------------------------------------------
 RVA(0x001530e0, 0x92)
 i32 CImage::Create24(CImageFrameDesc* desc, i32 mode, i32 keyed) {
-    i32 flagsArg = (keyed != 0) ? g_severusCounterB : -1;
+    i32 flagsArg = (keyed != 0) ? g_surfaceColorKey : -1;
     i32 capArg = 0;
-    if (g_severusCounterA != 0) {
+    if (g_resourceInstallActive != 0) {
         capArg = 0x800;
     }
     CImageSurfaceItem* item = m_0c->m_1c->CreateB((i32)desc, mode, 0, capArg, flagsArg);
@@ -331,7 +331,7 @@ i32 CImage::CopyFrom(CImage* other) {
 // (the slot-7 + slot-11 virtuals) with the caller's args. Otherwise parse the new
 // source directly: read its 3-char tag (BMP=1/CPX=2/RID=3/PID=4), prime it, then
 // rebuild the held surface via the pool's Reload (0x13e550) with the resolved
-// index/source/severus-flag. __thiscall, ret 8.
+// index/source/install-flag. __thiscall, ret 8.
 //
 // The tag switch is the same unsigned binary-search tree as Resolve (key u32, the
 // ja/je fourcc compares); docs/patterns/switch-key-unsigned-ja-vs-jg.md.
@@ -403,7 +403,7 @@ i32 CImage::Reload(CImageSource* src, i32 arg) {
     if (src->m_0c == 0) {
         return 0;
     }
-    return m_2c->Reload((void*)m_0c->m_1c, resolved, index, (void*)src->m_0c, g_severusCounterB);
+    return m_2c->Reload((void*)m_0c->m_1c, resolved, index, (void*)src->m_0c, g_surfaceColorKey);
 }
 
 // ---------------------------------------------------------------------------
@@ -424,19 +424,19 @@ CImage::~CImage() {
 
 // ---------------------------------------------------------------------------
 // 0x153790: render a sprite frame. Resolve a clip context through a shared
-// CRemusNode singleton (a function-local static, built once via MSVC5's guarded
+// CResolveNode singleton (a function-local static, built once via MSVC5's guarded
 // magic-static init), feeding it the parent collection (m_0c) and the (b,c,d)
 // geometry; on success dispatch the +0x38 render virtual passing the clip context
 // and the first arg. __thiscall, ret 0x10 (4 stack args).
 // ---------------------------------------------------------------------------
 
-// The shared clip/resolve singleton: a CRemusNode (vtable 0x5efbc0). Its default
+// The shared clip/resolve singleton: a CResolveNode (vtable 0x5efbc0). Its default
 // ctor (0x1549d0) + the resolve method (0x1647e0) are external engine __thiscall
 // callees, modeled here as a tiny host so the magic-static init + the resolve
 // call reloc-mask. The atexit dtor thunk (0x553800) is the static's cleanup.
-class CRemusClip {
+class CResolveNode {
 public:
-    CRemusClip();                                                         // 0x1549d0
+    CResolveNode();                                                       // 0x1549d0
     i32 Resolve(void* parent, i32 z1, void* b, void* c, void* d, i32 z2); // 0x1647e0
 };
 
@@ -447,21 +447,21 @@ public:
 struct CImageVtbl;
 class CImageDispatch {
 public:
-    CImageVtbl* vptr;                            // +0x00
-    void RenderImage(CRemusClip* clip, void* a); // vtbl[0x38]
+    CImageVtbl* vptr;                              // +0x00
+    void RenderImage(CResolveNode* clip, void* a); // vtbl[0x38]
 };
-typedef void (CImageDispatch::*RenderImageFn)(CRemusClip*, void*);
+typedef void (CImageDispatch::*RenderImageFn)(CResolveNode*, void*);
 struct CImageVtbl {
     char _00[0x38 - 0x00];     // slots 0..13 (@0x00..0x34)
     RenderImageFn RenderImage; // [0x38]
 };
-inline void CImageDispatch::RenderImage(CRemusClip* clip, void* a) {
+inline void CImageDispatch::RenderImage(CResolveNode* clip, void* a) {
     (this->*(vptr->RenderImage))(clip, a);
 }
 
 RVA(0x00153790, 0x6a)
 void CImage::RenderFrame(void* a, void* b, void* c, void* d) {
-    static CRemusClip clip; // magic-static guard @0x6bf314, ctor 0x1549d0 + atexit
+    static CResolveNode clip; // magic-static guard @0x6bf314, ctor 0x1549d0 + atexit
     if (clip.Resolve(m_0c, 0, b, c, d, 0)) {
         ((CImageDispatch*)this)->RenderImage(&clip, a);
     }
@@ -469,7 +469,7 @@ void CImage::RenderFrame(void* a, void* b, void* c, void* d) {
 
 // ---------------------------------------------------------------------------
 // 0x153810: render a sprite frame into a caller-supplied clip rect. Same shape as
-// RenderFrame (resolve through a shared CRemusClip singleton, then dispatch the
+// RenderFrame (resolve through a shared CResolveNode singleton, then dispatch the
 // +0x38 render virtual) but with a second magic-static singleton (guard @0x6bf29c,
 // object @0x6bf228) and an extra `rect` arg whose 4 ints are stashed into a static
 // clip rect (@0x6bf28c) before the dispatch. __thiscall, ret 0x14 (5 stack args).
@@ -481,7 +481,7 @@ static i32 g_imageClipRect[4]; // @0x6bf28c
 
 RVA(0x00153810, 0x95)
 void CImage::RenderFrameClipped(void* a, void* b, void* c, void* rect, void* d) {
-    static CRemusClip clip; // magic-static guard @0x6bf29c, ctor 0x1549d0 + atexit
+    static CResolveNode clip; // magic-static guard @0x6bf29c, ctor 0x1549d0 + atexit
     if (clip.Resolve(m_0c, 0, b, c, d, 0)) {
         if (rect != 0) {
             g_imageClipRect[0] = ((i32*)rect)[0];
@@ -497,7 +497,7 @@ void CImage::RenderFrameClipped(void* a, void* b, void* c, void* rect, void* d) 
 // Class-metadata annotations (EOF-hosted: CImage.h is included by several /O2
 // Image TUs whose leaf decoders are byte-exact-sensitive, so keep the completeness
 // typedefs after the last function). VTBL skips (logged): CImageBase's vtable is
-// the shared grand-base 0x5e8cb4 (already ?g_severusWorkerDtorVtbl); CImageSurfaceItem
+// the shared grand-base 0x5e8cb4 (already ?g_wapObjectDtorVtbl); CImageSurfaceItem
 // / CImageSource are flagged [virtual] only via their polymorphic Gruntz defs, not
 // this view. CImage itself is RTTI-catalogued (??_7CImage@@ @0x5eaa2c).
 // ===========================================================================
@@ -522,6 +522,6 @@ SIZE_UNKNOWN(CImageLoadDispatch);
 SIZE_UNKNOWN(CImageLoadVtbl);
 SIZE_UNKNOWN(CImageReloadDispatch);
 SIZE_UNKNOWN(CImageReloadVtbl);
-SIZE_UNKNOWN(CRemusClip);
+SIZE_UNKNOWN(CResolveNode);
 SIZE_UNKNOWN(CImageDispatch);
 SIZE_UNKNOWN(CImageVtbl);

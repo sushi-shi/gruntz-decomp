@@ -1,4 +1,4 @@
-// SymParser.h - CSymParser, the Remus parser/owner that builds the CSymTab scope
+// SymParser.h - CSymParser, the ButeMgr parser/owner that builds the CSymTab scope
 // tree (the object CSymTab::m_owner @+0x18 points back to). Recovered from the
 // ctor (0x13aa10), the /GX scalar destructor (0x13abc0), the Clear method
 // (0x13b850) and the three path-resolution thunks (0x13bff0/0x13c030/0x13c210),
@@ -107,7 +107,7 @@ struct CParserHash : public CHashBase {
 extern void* CObjList_ctor_vftbl; // 0x5ef75c
 
 // ---------------------------------------------------------------------------
-// CSymParser - the Remus parser/owner. REAL POLYMORPHIC (ALL-VTABLES phase):
+// CSymParser - the ButeMgr parser/owner. REAL POLYMORPHIC (ALL-VTABLES phase):
 // primary vtable ??_7CSymParser@@6B@ @0x5ef750 (3 non-dtor slots; the dtor is
 // non-virtual - not in the vtable). cl auto-stamps the vptr @+0 at the start of
 // the ctor AND the (non-virtual, but polymorphic-class) dtor - the manual

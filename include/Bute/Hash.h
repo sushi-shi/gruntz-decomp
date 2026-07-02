@@ -2,7 +2,7 @@
 // CSymTab at +0x38 (child scopes) and +0x40 (leaf symbols). 8 bytes:
 // { u32 m_count; CHashSlot* m_buckets; }.
 //
-// Shape recovered from the call graph (callers all in the 0x139../0x13a.. Remus
+// Shape recovered from the call graph (callers all in the 0x139../0x13a.. ButeMgr
 // parser region): a NON-TEMPLATE base with the key-agnostic slot machinery
 // (Lookup 0x184b40, Remove 0x184ab0, RemoveAll 0x184a40 - ONE physical copy each,
 // called by both instances) and a TEMPLATE CHash<T> adding the key-typed lookups

@@ -19,14 +19,14 @@
 // The engine handles the sound pokes through. These are minimal __thiscall shells
 // declared under the SAME mangled names the retail objects carry (the names the
 // delinker assigned at the call targets), so each reloc-masked call pairs by name:
-//   MinervaInner::MinervaInner_136ed0   @ 0x136ed0
+//   SoundDevice::FreeSamples   @ 0x136ed0
 //   DirectSoundMgr::StopAndRewind       @ 0x135380
 //   DirectSoundMgr::winapi_136e20_timeGetTime @ 0x136e20
-// (The world's +0x2c handle is poked both as a MinervaInner and as a DirectSoundMgr
+// (The world's +0x2c handle is poked both as a SoundDevice and as a DirectSoundMgr
 // - the engine overlays both views on the one sub-object; the binary proves it.)
-class MinervaInner {
+class SoundDevice {
 public:
-    void MinervaInner_136ed0(); // 0x136ed0  (thiscall, no args)
+    void FreeSamples(); // 0x136ed0  (thiscall, no args)
 };
 
 class DirectSoundMgr {
@@ -102,7 +102,7 @@ struct SoundChannelNew {
 // (a DirectSoundMgr-ish sub-object), then poked via the engine helpers.
 struct CRandomAmbientWorld {
     char m_pad00[0x2c];
-    DirectSoundMgr* m_2c; // +0x2c  sub-object handle (also viewed as MinervaInner)
+    DirectSoundMgr* m_2c; // +0x2c  sub-object handle (also viewed as SoundDevice)
 };
 
 class CWorldSoundSet {

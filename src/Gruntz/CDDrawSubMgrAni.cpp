@@ -73,7 +73,7 @@ inline CAniElementBase::~CAniElementBase() {}
 
 // The 0x28-byte animation element (ClassUnknown_38; primary vftable @0x5efba8).
 // Overrides the dtor slot (0x152e10). Configure (0x1655c0) reads its arg2's tag via
-// RemusParseSource and, on a match, links a record; the failure path deletes it via
+// CParseSource and, on a match, links a record; the failure path deletes it via
 // the virtual scalar-deleting dtor (vtable slot+4).
 struct CAniElementObj : public CAniElementBase {
     CAniElementObj() {
@@ -88,7 +88,7 @@ struct CAniElementObj : public CAniElementBase {
     i32 m_1c; // +0x1c = 0
 }; // size = 0x28
 
-// The CSymTab entry's type-tag reader (RemusParseSource @0x139800, __thiscall on
+// The CSymTab entry's type-tag reader (CParseSource @0x139800, __thiscall on
 // the entry node; the 'ANI'==0x414e49 gate). Modeled as a layout-compatible view
 // so `mov ecx,entry; call 0x139800` falls out; external/no-body.
 class CSymTabTag {

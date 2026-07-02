@@ -223,7 +223,7 @@ public:
     void ReportWorldStatus(i32 a); // @0x090ac0 (map m_world->m_38 status to ReportError)
     i32 LoadMonologoSprite();      // @0x090d10 (PLAY-only: find/toggle/create the MONOLITH logo)
     i32 SetGruntColor(i32 sink, i32 key, i32 idx); // @0x0910d0 (recolor a sink cell)
-    i32 SetColorDepth(i32 depth);    // @0x091170 (set the packed g_severusCounterB color by depth)
+    i32 SetColorDepth(i32 depth);    // @0x091170 (set the packed g_surfaceColorKey color by depth)
     i32 LoadWorldMode(i32 mode);     // @0x091a40 (switch the world video/color mode + reload)
     i32 ResetWorldState(i32 notify); // @0x091e20 (idle/exit-prep the world, reset cursor)
     void StopBankIfActive();         // @0x092000 (if m_sound && m_14: m_sound->StopAll())

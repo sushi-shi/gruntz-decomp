@@ -112,9 +112,9 @@ typedef void (*UnkVfn)(void);
 // REALIZED as ??_7CAniElementObj@@6B@ (real polymorphic CAniElementObj in
 // src/Gruntz/CDDrawSubMgrAni.cpp; cl auto-emits the vtable). Placeholder removed.
 
-// ClassWithUnknownVTable24  @ 0x005efbc0  (10 slots)  refs x4  src:g_remusNodeVtbl
-// REALIZED as ??_7CRemusNode@@6B@ (real polymorphic CRemusNode : CRemusNodeBase in
-// src/Gruntz/CRemusNode.cpp; cl auto-emits the vtable). Placeholder removed.
+// ClassWithUnknownVTable24  @ 0x005efbc0  (10 slots)  refs x4  src:g_resolveNodeVtbl
+// REALIZED as ??_7CResolveNode@@6B@ (real polymorphic CResolveNode : CWapObject in
+// src/Gruntz/CResolveNode.cpp; cl auto-emits the vtable). Placeholder removed.
 
 // ClassWithUnknownVTable25  @ 0x005efbe8  (17 slots)  refs x6  src:g_ddrawWorkerVtbl
 // REALIZED as ??_7CDDrawWorker@@6B@ (real polymorphic CDDrawWorker built via
@@ -217,7 +217,7 @@ typedef void (*UnkVfn)(void);
 // REALIZED as ??_7LeafElementObj@@6B@ (real polymorphic 0x1c-byte cache element in
 // src/Gruntz/CDDrawSubMgrLeafScan.cpp; ctor/dtor cl-auto-stamp; 5 grand-base slots +
 // 4 leaf virtuals; VTBL(LeafElementObj, 0x001eff08)). The grand-base dtor vtable
-// (0x5e8cb4) is the cl-emitted ??_7LeafElementBase - manual g_remusBaseDtorVtbl stamp
+// (0x5e8cb4) is the cl-emitted ??_7LeafElementBase - manual g_wapObjectDtorVtbl stamp
 // removed. Placeholder removed.
 
 // ClassWithUnknownVTable43  @ 0x005eff30  (15 slots)  refs x3
@@ -267,7 +267,7 @@ typedef void (*UnkVfn)(void);
 // ClassWithUnknownVTable50  @ 0x005f00e8  (16 slots)  refs x2
 // REALIZED as ??_7CWwdGameObjectB@@6B@ (the 0x1598d0-final 0x1fc-byte object). The
 // flat manual-restamp dtor is now a REAL 4-level polymorphic chain in
-// src/Gruntz/WwdGameObjectEh.cpp (CWwdGameObjectB : WwdBLevel2 : WwdBMid : WwdBRemus);
+// src/Gruntz/WwdGameObjectEh.cpp (CWwdGameObjectB : WwdBLevel2 : WwdBMid : WwdBResolve);
 // cl auto-emits the four per-level ??_7 (orphans, since the factory in
 // CWwdObjMgrFactories.cpp still manual-stamps g_wwd1598d0FinalVtbl @0x5f00e8) and the
 // multi-phase vptr-restamp dtor chain. NO VTBL (would dup-DATA the factory's bound
@@ -325,8 +325,8 @@ typedef void (*UnkVfn)(void);
 // ClassWithUnknownVTable59  @ 0x005f02d8  (14 slots)  refs x5  src:g_albusWorkerVtbl
 // REALIZED as ??_7CAniRecordBase2@@6B@ (real polymorphic secondary base of CAniRecord in
 // src/Gruntz/CAniRecord.cpp; cl auto-emits the 14-slot vtable;
-// VTBL(CAniRecordBase2, 0x001f02d8)). Also modeled (truncated 12-slot view) as
-// AlbusWorkerObj in CDDrawWorkerMapSmall.cpp. Placeholder removed.
+// VTBL(CAniRecordBase2, 0x001f02d8)). Also modeled (truncated 12-slot view) in
+// CDDrawWorkerMapSmall.cpp. Placeholder removed.
 
 // ClassWithUnknownVTable60  @ 0x005f0310  (6 slots)  refs x3
 // REALIZED as ??_7SubWidget_168080@@6B@ (flat 6-slot polymorphic SubWidget_168080 in
@@ -336,7 +336,7 @@ typedef void (*UnkVfn)(void);
 // VTBL(SubWidget_168080, 0x001f0310). Placeholder removed.
 
 // ClassWithUnknownVTable61  @ 0x005f0328  (6 slots)  refs x2  src:g_wwdGridVtbl
-// REALIZED as ??_7CWwdGrid@@6B@ (real polymorphic abstract CWwdGrid : CRemusBase in
+// REALIZED as ??_7CWwdGrid@@6B@ (real polymorphic abstract CWwdGrid : CWapObject in
 // include/Gruntz/WwdGrid.h; cl auto-emits the 6-slot vtable with __purecall @slot5).
 // VTBL(CWwdGrid, 0x001f0328) pairs it (RVA was unbound). Placeholder removed.
 

@@ -118,11 +118,11 @@ public:
 SIZE(CWwdGridIter, 0x44);
 class CWwdGridIter {
 public:
-    virtual void RemusV0();  // slot 0 (0x1bef01, declared-only)
+    virtual void WapV0();    // slot 0 (0x1bef01, declared-only)
     virtual ~CWwdGridIter(); // slot 1 (scalar-deleting dtor 0x163a20; engine teardown)
-    virtual void RemusV2();  // slot 2 (0x0028ec, declared-only)
-    virtual void RemusV3();  // slot 3 (0x00106e, declared-only)
-    virtual void RemusV4();  // slot 4 (0x004034, declared-only)
+    virtual void WapV2();    // slot 2 (0x0028ec, declared-only)
+    virtual void WapV3();    // slot 3 (0x00106e, declared-only)
+    virtual void WapV4();    // slot 4 (0x004034, declared-only)
 
     CWwdGridIter();
     WwdGridNode* Start(CWwdGrid* grid, i32 remove); // 0x191ad0 init cursor + first

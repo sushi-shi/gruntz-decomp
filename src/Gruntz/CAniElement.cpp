@@ -27,7 +27,7 @@ extern "C" void RezFree(void* p);
 // Set by the record parser (0x168c60) to the parsed name length; the builder uses
 // it to advance the record-stream cursor. 0x6bf3c4 -> file RVA 0x2bf3c4.
 
-// The 'ANI' source entry's tag reader / parse session (RemusParseSource family,
+// The 'ANI' source entry's tag reader / parse session (CParseSource family,
 // __thiscall on the entry node). Modeled as a layout-compatible view so the
 // `mov ecx,entry; call` forms fall out; external/no-body.
 class CAniEntry {

@@ -66,22 +66,22 @@
 // ---------------------------------------------------------------------------
 // Shared singletons + the per-mode/per-area globals (named so DIR32 reloc-mask).
 // ---------------------------------------------------------------------------
-extern void* g_64556c;           // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
-extern "C" i32 g_645580;         // DAT_00645580
-extern "C" i32 g_645584;         // DAT_00645584
-extern "C" i32 g_645588;         // DAT_00645588 (running game clock; cleared here)
-extern "C" i32 g_644c54;         // DAT_00644c54 (area index)
-extern "C" i32 g_645270;         // DAT_00645270 (area page size)
-extern void* g_645570;           // DAT_00645570
-extern "C" i32 g_64558c;         // DAT_0064558c
-extern "C" i32 g_64e35c;         // DAT_0064e35c
-extern "C" i32 g_6bf3c0;         // _g_6bf3c0 (draw-clock mirror)
-extern "C" i32 g_6bf3bc;         // _g_6bf3bc (default geo)
-extern i32 g_severusCounterA;    // ?g_severusCounterA@@3HA @0x6bf37c
-extern void* g_612618;           // DAT_00612618 (last-level cache)
-extern void* g_61139c;           // PTR_DAT_0061139c
-extern void* g_buteMgr;          // ?g_buteMgr@@3VCButeMgr@@A @0x6453d8
-extern "C" char g_emptyString[]; // _g_emptyString @0x6293f4
+extern void* g_64556c;              // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
+extern "C" i32 g_645580;            // DAT_00645580
+extern "C" i32 g_645584;            // DAT_00645584
+extern "C" i32 g_645588;            // DAT_00645588 (running game clock; cleared here)
+extern "C" i32 g_644c54;            // DAT_00644c54 (area index)
+extern "C" i32 g_645270;            // DAT_00645270 (area page size)
+extern void* g_645570;              // DAT_00645570
+extern "C" i32 g_64558c;            // DAT_0064558c
+extern "C" i32 g_64e35c;            // DAT_0064e35c
+extern "C" i32 g_6bf3c0;            // _g_6bf3c0 (draw-clock mirror)
+extern "C" i32 g_6bf3bc;            // _g_6bf3bc (default geo)
+extern i32 g_resourceInstallActive; // ?g_resourceInstallActive@@3HA @0x6bf37c
+extern void* g_612618;              // DAT_00612618 (last-level cache)
+extern void* g_61139c;              // PTR_DAT_0061139c
+extern void* g_buteMgr;             // ?g_buteMgr@@3VCButeMgr@@A @0x6453d8
+extern "C" char g_emptyString[];    // _g_emptyString @0x6293f4
 
 // ---------------------------------------------------------------------------
 // Engine helpers reached through reloc-masked __thiscall ILT thunks (no body).
@@ -302,7 +302,7 @@ i32 CPlayLevelLoad::LoadByMode(i32 level) {
     if (I32(gameReg, 0x134) == 3) {
         LlInitClock(timeGetTime());
     }
-    g_severusCounterA = 0;
+    g_resourceInstallActive = 0;
     LlSetMode(self, 0);
     LlClearTimers(PTR(g_64556c, 0x7c));
     LlObListInit((char*)PTR(g_64556c, 0x6c) + 0x1c);
@@ -664,7 +664,7 @@ i32 CPlayLevelLoad::LoadByMode(i32 level) {
         void* host8 = PTR(PTR(self, 0xc), 0x8);
         (*(void (**)(void*, i32))((char*)*(void**)host8 + 0x24))(host8, 0); // host8 vtable +0x24
         if (I32(&warpTemp, 0) == 0) {
-            // empty cursor-snap set -> reset the severus tile id
+            // empty cursor-snap set -> reset the resource-install flag
             void* tiles = PTR(self, 0x2dc);
             i32 id = (I32(tiles, 0) == 0) ? 0x1a9 : 0x249;
             if (!LlEqSet(PTR(self, 0x3f4), id)) {

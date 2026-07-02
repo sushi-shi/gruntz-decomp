@@ -212,7 +212,7 @@ name,rva,size
 ??_7CAniElementObj@@6B@,0x1efba8,0x14
 ??_7CDDrawWorkerA@@6B@,0x1efea0,0x30
 ??_7CDDrawWorkerB@@6B@,0x1efed0,0x38
-??_7CRemusNode@@6B@,0x1efbc0,0x28
+??_7CResolveNode@@6B@,0x1efbc0,0x28
 ??_7CGruntzSoundInnerZ@@6B@,0x1ef700,0x40
 ??_7DirectSoundMgr@@6B@,0x1ef6b8,0x4
 ??_7DSoundCloneInst@@6B@,0x1ef6bc,0x4

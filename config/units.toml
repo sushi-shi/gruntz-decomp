@@ -234,7 +234,7 @@ flags = "eh"
 
 [[unit]]
 unit = "cremusentrylist"
-source = "src/Gruntz/CRemusEntryList.cpp"
+source = "src/Gruntz/CAniElementCollection.cpp"
 flags = "eh"
 
 [[unit]]
@@ -1118,7 +1118,7 @@ flags = "base"
 
 [[unit]]
 unit = "cremusnode"
-source = "src/Gruntz/CRemusNode.cpp"
+source = "src/Gruntz/CResolveNode.cpp"
 flags = "base"
 
 [[unit]]
@@ -1864,7 +1864,7 @@ flags = "base"
 
 [[unit]]
 unit = "cremusreadstream"
-source = "src/Gruntz/CRemusReadStream.cpp"
+source = "src/Gruntz/CParseSource.cpp"
 flags = "base"
 
 [[unit]]
@@ -2049,7 +2049,7 @@ flags = "base"
 
 [[unit]]
 unit = "minervainner"
-source = "src/Gruntz/MinervaInner.cpp"
+source = "src/Gruntz/SoundStreamTeardown.cpp"
 flags = "base"
 
 [[unit]]

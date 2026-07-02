@@ -65,7 +65,7 @@
 // @0x139960) opens/primes it and returns a handle; EndParse (FUN_005399d0
 // @0x1399d0) tears it down. Both are unmatched engine leaves taking the source as
 // `this`; declared with no body so the thiscall sites reloc-mask in objdiff.
-struct RemusParseSource {
+struct CParseSource {
     i32 BeginParse();
     void EndParse();
 };
@@ -152,7 +152,7 @@ static inline void StampParamBlock(CGameLevel* o) {
 }
 
 // ===========================================================================
-// CGameLevel ("UnknownRemus") constructor. Three args (ret 0xc): they land at
+// CGameLevel ("CDDrawResolveSubMgrLayout") constructor. Three args (ret 0xc): they land at
 // +0x4, +0x8, +0xc. Inlined base ctor (CLoadable, in the header) stamps the
 // CLoadable base vftable @0x5efc30 and the args, then the three MFC arrays at
 // +0x20/+0x34/+0x48 are constructed, then the derived CGameLevel vftable @0x5f0150
@@ -351,7 +351,7 @@ fail:
 // ===========================================================================
 
 // ---------------------------------------------------------------------------
-// Remus adds a +0x10 sentinel check before the common parent/status predicate.
+// CGameLevel::IsLoaded (0x161190) adds a +0x10 sentinel check before the common parent/status predicate.
 RVA(0x00161190, 0x1f)
 i32 CGameLevel::IsLoaded() {
     if (m_planeCtx.minX == LEVEL_COORD_UNSET) {
@@ -400,7 +400,7 @@ i32 CGameLevel::SetCoordExtents(i32 w, i32 h) {
 }
 
 // -------------------------------------------------------------------------
-// Engine-label backlog stubs (merged from UnknownRemus).
+// Engine-label backlog stubs (merged from CDDrawResolveSubMgrLayout).
 // -------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------
@@ -439,7 +439,7 @@ i32 CGameLevel::LoadFromFile(const char* path) {
 // +0x38 result (1/0). BeginParse/EndParse are unmatched engine leaves on the arg
 // object (reloc-masked thiscall).
 RVA(0x0015d630, 0x41)
-i32 CGameLevel::LoadFromSource(RemusParseSource* arg) {
+i32 CGameLevel::LoadFromSource(CParseSource* arg) {
     i32 handle = arg->BeginParse();
     if (handle == 0) {
         return 0;
@@ -557,8 +557,8 @@ RVA(0x0015ceb0, 0xb8)
 i32 CGameLevel::SetCoordsAndLoad3C(i32 arg1, LevelCoordRect* coords) {
     m_planeCtx = *coords;
     StampParamBlock(this);
-    if (LoadFromSource((RemusParseSource*)arg1) == 0) { // vtable +0x3c (slot 15)
-        Unload();                                       // vtable +0x1c (slot 7), fail/reset hook
+    if (LoadFromSource((CParseSource*)arg1) == 0) { // vtable +0x3c (slot 15)
+        Unload();                                   // vtable +0x1c (slot 7), fail/reset hook
         return 0;
     }
     return 1;

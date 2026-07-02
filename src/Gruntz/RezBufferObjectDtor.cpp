@@ -5,11 +5,11 @@
 #include <Ints.h>
 #include <rva.h>
 
-// The CObject base dtor vtable (VA 0x5e8cb4, g_remusBaseDtorVtbl, pinned in many
+// The CObject base dtor vtable (VA 0x5e8cb4, g_wapObjectDtorVtbl, pinned in many
 // TUs). Reloc-masked. The most-derived vtable (0x5f07d8) is now the cl-emitted
 // ??_7CRezBufferObject (VTBL below); the manual g_rezBufferObjectVtbl DATA-pin is gone.
 DATA(0x001e8cb4)
-extern void* g_remusBaseDtorVtbl;
+extern void* g_wapObjectDtorVtbl;
 
 // The Rez heap free (0x1b9b82, __cdecl) the worker's +0x4 buffer is released
 // through (reloc-masked rel32). C++ linkage (not extern "C") so MSVC5 treats it
@@ -17,7 +17,7 @@ extern void* g_remusBaseDtorVtbl;
 void RezFree(void* p);
 
 // The CObject base subobject, modeled polymorphically: empty dtor body; cl stamps
-// ??_7CWapObject (masks g_remusBaseDtorVtbl @0x5e8cb4) as the folded base.
+// ??_7CWapObject (masks g_wapObjectDtorVtbl @0x5e8cb4) as the folded base.
 struct CWapObject {
     virtual ~CWapObject(); // implicit vptr @ +0x00
 };

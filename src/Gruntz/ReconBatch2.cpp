@@ -116,11 +116,11 @@ i32 OptOwner_c4b30::Resolve() {
 
 // ===========================================================================
 // 0x000f9840 / 0x000de140 (cleanup pair, CGameModeBase) - free the owned sub-
-// resource (MinervaInner::Free), clear/prune the sub-manager map, then run the
+// resource (SoundStream::Free), clear/prune the sub-manager map, then run the
 // base teardown (CGameModeBase::BaseCleanup). m_c->m_28 (the map holder) is
 // reloaded each statement, not cached.
 // ===========================================================================
-class MinervaInner {
+class SoundStream {
 public:
     void Free(); // 0x137a80
 };
@@ -130,7 +130,7 @@ public:
 class CDDrawMapHolder {
 public:
     char m_pad0[0x2c];
-    MinervaInner* m_2c;     // +0x2c
+    SoundStream* m_2c;      // +0x2c
     void ClearUnknownMap(); // 0x157bc0
 };
 class CDDrawSubMgrLeafScan {

@@ -1,8 +1,8 @@
 #include <rva.h>
-// CRemusNode.cpp - a leaf node in the CDirectDrawMgr surface/page-manager
-// CDDrawSubMgr/Remus family (the "remus base dtor vtable" lineage; the base subobject
-// vftable g_remusBaseDtorVtbl @0x5e8cb4 is restamped at ~CRemusNode exit). The
-// node's own primary vftable is at RVA 0x1efbc0 (g_remusNodeVtbl). The node's
+// CResolveNode.cpp - a leaf node in the CDirectDrawMgr surface/page-manager
+// CDDrawSubMgr family (the CWapObject base dtor vtable lineage; the base subobject
+// vftable g_wapObjectDtorVtbl @0x5e8cb4 is restamped at ~CResolveNode exit). The
+// node's own primary vftable is at RVA 0x1efbc0 (g_resolveNodeVtbl). The node's
 // virtuals are not yet matched, so the vftable is referenced as a reloc-masked
 // DIR32 datum and stamped manually rather than modeled polymorphically (an
 // incomplete polymorphic class would emit a divergent ??_7 vtable). Only the
@@ -11,30 +11,30 @@
 // Methods (all plain /O2 /MT leaves, NO EH frame, __thiscall):
 //   0x1549d0  default ctor (seeds sentinels, m_0c = 0)
 //   0x154a30  ??_G scalar-deleting destructor (in Discovered.cpp slot 1 of vtbl)
-//   0x154a50  ~CRemusNode (resets fields, restamps base vptr)
+//   0x154a50  ~CResolveNode (resets fields, restamps base vptr)
 //   0x15b2c0  parameterized ctor (root + two scalars)
 //   0x1647e0  Init(a1..a6): seeds fields, dispatches virtual slot 9, returns 1
 
 // ALL-VTABLES mandate: the node is now a REAL polymorphic two-level class. The
-// CObject-like grand-base (CRemusNodeBase, 5-slot interface @0x5e8cb4) and the
-// node's own primary vtable (10-slot @0x5efbc0, mapped ??_7CRemusNode in
-// config/vtable_names.csv) are cl-auto-emitted: the ctors stamp ??_7CRemusNode
-// (vptr-first) and ~CRemusNode folds the ??_7CRemusNodeBase grand-base re-stamp
+// CObject-like grand-base (CWapObject, 5-slot interface @0x5e8cb4) and the
+// node's own primary vtable (10-slot @0x5efbc0, mapped ??_7CResolveNode in
+// config/vtable_names.csv) are cl-auto-emitted: the ctors stamp ??_7CResolveNode
+// (vptr-first) and ~CResolveNode folds the ??_7CWapObject grand-base re-stamp
 // (masks 0x5e8cb4) - no manual `*(void**)this = &g_*Vtbl` stores.
-struct CRemusNodeBase {
-    virtual void RemusV0();    // [0] 0x1bef01
-    virtual ~CRemusNodeBase(); // [1] scalar-deleting dtor slot
-    virtual void RemusV2();    // [2] 0x0028ec
-    virtual void RemusV3();    // [3] 0x00106e
-    virtual void RemusV4();    // [4] 0x004034
-    CRemusNodeBase() {}
+struct CWapObject {
+    virtual void WapV0();  // [0] 0x1bef01
+    virtual ~CWapObject(); // [1] scalar-deleting dtor slot
+    virtual void WapV2();  // [2] 0x0028ec
+    virtual void WapV3();  // [3] 0x00106e
+    virtual void WapV4();  // [4] 0x004034
+    CWapObject() {}
 };
 // Empty body -> cl emits ONLY the implicit grand-base vptr re-stamp (masks 0x5e8cb4).
-inline CRemusNodeBase::~CRemusNodeBase() {}
+inline CWapObject::~CWapObject() {}
 
 // The 0x68-byte node. Layout recovered from the ctor/dtor/Init stores; the gaps
 // are unread scratch (the family's resolution-ladder block).
-class CRemusNode : public CRemusNodeBase {
+class CResolveNode : public CWapObject {
 public:
     virtual void Slot5();          // [5] 0x154a10
     virtual void Slot6();          // [6] 0x001c08
@@ -42,9 +42,9 @@ public:
     virtual void Slot8();          // [8] 0x154a00
     virtual i32 Resolve(i32, i32); // [9] 0x164790
 
-    CRemusNode();
-    CRemusNode(i32 root, i32 a2, i32 a3);
-    virtual ~CRemusNode();
+    CResolveNode();
+    CResolveNode(i32 root, i32 a2, i32 a3);
+    virtual ~CResolveNode();
     i32 Init(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6);
 
     // vptr implicit at +0x00
@@ -71,7 +71,7 @@ public:
 // fields, then stamps the node vftable. No arg-store to float, unlike the
 // parameterized ctor below.
 RVA(0x001549d0, 0x29)
-CRemusNode::CRemusNode() {
+CResolveNode::CResolveNode() {
     m_0c = 0;
     m_20 = (i32)0x80000000;
     m_38 = -1;
@@ -81,25 +81,25 @@ CRemusNode::CRemusNode() {
     m_40 = 0;
 }
 
-// ~CRemusNode: resets the sentinels/base fields and restamps the base-subobject
+// ~CResolveNode: resets the sentinels/base fields and restamps the base-subobject
 // (CObject-like) dtor vftable. Trivial base -> no member teardown, no EH frame.
 // @early-stop
 // sentinel-seed store-scheduling wall (docs/patterns/sentinel-seed-ctor-store-schedule.md):
 // the body is byte-identical EXCEPT the single immediate vptr restamp store
-// (`mov [ecx],&g_remusBaseDtorVtbl`). Retail defers it to just after the eax
+// (`mov [ecx],&g_wapObjectDtorVtbl`). Retail defers it to just after the eax
 // sentinel chain (`xor eax,eax` then the store, before m_08/m_0c); MSVC5 here
 // eagerly hoists the data-independent immediate store to position 2 (right after
 // `mov eax,0x80000000`). No source order steers it (tried vptr-first/mid/last; all
 // ~78.8%) - the immediate store carries no dependency. Logic complete.
 RVA(0x00154a50, 0x23)
-CRemusNode::~CRemusNode() {
+CResolveNode::~CResolveNode() {
     m_5c = (i32)0x80000000;
     m_20 = (i32)0x80000000;
     m_38 = -1;
     m_04 = -1;
     m_08 = 0;
     m_0c = 0;
-    // ~CRemusNodeBase folds the grand-base vptr re-stamp (masks 0x5e8cb4) here.
+    // ~CWapObject folds the grand-base vptr re-stamp (masks 0x5e8cb4) here.
 }
 
 // @early-stop
@@ -108,7 +108,7 @@ CRemusNode::~CRemusNode() {
 // m_38 (-1) store to different positions than retail; 3 field-order spellings all
 // ~60%. Source steers which arg lands in edx, not the store schedule. Logic complete.
 RVA(0x0015b2c0, 0x3d)
-CRemusNode::CRemusNode(i32 root, i32 a2, i32 a3) {
+CResolveNode::CResolveNode(i32 root, i32 a2, i32 a3) {
     m_04 = a2;
     m_08 = a3;
     m_0c = root;
@@ -121,10 +121,10 @@ CRemusNode::CRemusNode(i32 root, i32 a2, i32 a3) {
 }
 
 // Init: seeds m_0c/m_04/m_08 from args, clears m_4c/m_58, sets m_50 = 1, then
-// dispatches the node's virtual slot 9 (g_remusNodeVtbl[9] = 0x164790) with two
+// dispatches the node's virtual slot 9 (g_resolveNodeVtbl[9] = 0x164790) with two
 // of the args, finally stores a5 into m_40 and returns TRUE.
 RVA(0x001647e0, 0x48)
-i32 CRemusNode::Init(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6) {
+i32 CResolveNode::Init(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6) {
     m_0c = a1;
     m_04 = a2;
     m_08 = a6;
@@ -138,5 +138,5 @@ i32 CRemusNode::Init(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6) {
 
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
-SIZE_UNKNOWN(CRemusNode);
-SIZE_UNKNOWN(CRemusNodeBase);
+SIZE_UNKNOWN(CResolveNode);
+SIZE_UNKNOWN(CWapObject);

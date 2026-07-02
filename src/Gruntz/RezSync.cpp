@@ -210,8 +210,8 @@ struct H7c {
     i32 Fn10d7(void*); // 0x10d7
 };
 
-// GAME_ATTRIBUTEZ bute/remus load helpers (reloc-masked)
-struct CRemus {
+// GAME_ATTRIBUTEZ ButeMgr config load helpers (reloc-masked)
+struct CParseSource {
     i32 BeginParse();                // 0x139960
     i32 EndParse();                  // 0x1399d0
     void* Fn169700(void*, i32);      // 0x169700
@@ -725,7 +725,7 @@ i32 RezSync::Init(void* a1, void* a2) {
         g_buteMgr.SetErrCallback((ErrCallback)&cb_401bc2);
         i32 ok = 0;
         if (node) {
-            CRemus* stream = (CRemus*)node;
+            CParseSource* stream = (CParseSource*)node;
             g_6454e6 = 1;
             i32 esz = stream->BeginParse();
             void* src = *(void**)((char*)stream + 0xc);

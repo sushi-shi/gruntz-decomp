@@ -24,7 +24,7 @@ extern "C" double pow(double, double);
 // subobject teardown.
 // ===========================================================================
 // Real polymorphic now: cl emits the implicit ??_7CWwdGrid own-vptr stamp in the
-// ENTRY state (stamp-first, == retail), then FreeBuckets, then the ~CRemusBase
+// ENTRY state (stamp-first, == retail), then FreeBuckets, then the ~CWapObject
 // grand-base re-stamp folds in. /GX frame from the destructible base subobject.
 // (eh-dtor-implicit-vptr-stamp-first.md.)
 RVA(0x001682a0, 0x46)
@@ -176,7 +176,7 @@ i32 CWwdGrid::Clear() {
 // ~74%: three stacked walls, all logic byte-faithful. (1) the log2/pow x87 path
 // (fldln2/fld 2.0/fyl2x/fdiv/__ftol/__CIpow) has a non-steerable FP-stack
 // schedule (docs/patterns/x87-fp-stack-schedule.md). (2) the real polymorphic
-// CRemusBase subobject shifts the /GX __ehfuncinfo state-id base
+// CWapObject subobject shifts the /GX __ehfuncinfo state-id base
 // (docs/patterns/eh-state-numbering-base.md) - the trade that took the dtor to
 // 100% (real-virtual implicit stamp-first). (3) the 4 rect-field stores fuse to a
 // `lea edx,[esi+0x28]` pointer-block in retail but stay direct member stores here

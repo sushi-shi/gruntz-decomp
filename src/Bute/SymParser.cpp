@@ -1,4 +1,4 @@
-// SymParser.cpp - CSymParser, the Remus parser/owner that builds + owns the
+// SymParser.cpp - CSymParser, the ButeMgr parser/owner that builds + owns the
 // CSymTab scope tree (the object CSymTab::m_owner @+0x18 points back to). The five
 // methods (trace group "ClassUnknown_11") all operate on one object shape that
 // owns a heap root CSymTab at +0x44, an intrusive polymorphic-object list at +0x10
@@ -415,7 +415,7 @@ void CSymParser::AddNode(void* rec) {
     }
 }
 
-// A parse-slot record (0x3c bytes): a CRemusReadStream whose hash-node prefix is at
+// A parse-slot record (0x3c bytes): a CParseSource whose hash-node prefix is at
 // +0x1c (stamped by Init) and whose self-ptr lives at +0x30. Init (0x1396f0) stamps
 // the node vtable + nulls the body; reloc-masked __thiscall, no body here.
 struct CParseSlot {

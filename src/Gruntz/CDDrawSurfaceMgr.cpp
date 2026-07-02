@@ -30,7 +30,7 @@ public:
     CDDrawSubMgrItem* m_10;
 };
 
-struct MinervaMgr; // defined below; m_28 points at one
+struct CDDrawSubMgrLeafScan; // defined below; m_28 points at one
 
 // The CObject-like grand base (vtable @0x5e8cb4): the implicit vptr @+0x00 + the
 // 5-slot CObject interface, with the scalar-deleting dtor at slot 1. Real
@@ -71,21 +71,21 @@ public:
     // Owned-child teardown helper, called by ~CDDrawSurfaceMgr (0x1558b0).
     void Cleanup_155e20();
 
-    CDDrawSubMgr* m_04; // +0x04  CDDrawSubMgrPages
-    CDDrawSubMgr* m_08; // +0x08  CDDrawChildGroup
-    CDDrawSubMgr* m_0c; // +0x0c  CDDrawWorkerList
-    CDDrawSubMgr* m_10; // +0x10  Severus
-    CDDrawSubMgr* m_14; // +0x14  Sirius
-    CDDrawSubMgr* m_18; // +0x18  CDDrawWorkerMapSmall
-    void* m_1c;         // +0x1c  Filch
-    void* m_20;         // +0x20  Voldemort
-    CDDrawSubMgr* m_24; // +0x24  Remus
-    MinervaMgr* m_28;   // +0x28  Minerva
-    void* m_2c;         // +0x2c  Pettigrew
-    HWND m_hWnd;        // +0x30
-    i32 m_flags;        // +0x34
-    i32 m_38;           // +0x38
-    i32 m_3c;           // +0x3c
+    CDDrawSubMgr* m_04;         // +0x04  CDDrawSubMgrPages
+    CDDrawSubMgr* m_08;         // +0x08  CDDrawChildGroup
+    CDDrawSubMgr* m_0c;         // +0x0c  CDDrawWorkerList
+    CDDrawSubMgr* m_10;         // +0x10  CDDrawSurfaceDesc submgr (static DDSURFACEDESC)
+    CDDrawSubMgr* m_14;         // +0x14  CDDrawWorkerCache
+    CDDrawSubMgr* m_18;         // +0x18  CDDrawWorkerMapSmall
+    void* m_1c;                 // +0x1c  CDDrawPtrCollections
+    void* m_20;                 // +0x20  SoundStream
+    CDDrawSubMgr* m_24;         // +0x24  resolution submgr (CDDrawResolveSubMgr / CGameLevel)
+    CDDrawSubMgrLeafScan* m_28; // +0x28  CDDrawSubMgrLeafScan
+    void* m_2c;                 // +0x2c  CDDrawSubMgrLeaf
+    HWND m_hWnd;                // +0x30
+    i32 m_flags;                // +0x34
+    i32 m_38;                   // +0x38
+    i32 m_3c;                   // +0x3c
 };
 
 DATA(0x002bf3c0)
@@ -95,8 +95,8 @@ extern "C" u32 g_6bf3bc; // draw-delta mirror
 
 // Polymorphic-delete views for the owned children torn down by Cleanup_155e20.
 // Most children carry the engine scalar-deleting destructor at vtable slot 1
-// (`mov eax,[child]; push 1; call [eax+4]`); the Voldemort surface at +0x20 has
-// it at slot 0 (`call [eax]`). The Filch object at +0x1c is a heap object with a
+// (`mov eax,[child]; push 1; call [eax+4]`); the SoundStream at +0x20 has
+// it at slot 0 (`call [eax]`). The CDDrawPtrCollections at +0x1c is a heap object with a
 // non-virtual __thiscall dtor + an explicit RezFree.
 struct DDChildSlot1 {
     virtual void Slot00();
@@ -151,7 +151,7 @@ CDDrawSurfaceMgr::~CDDrawSurfaceMgr() {
 // CDDrawSurfaceMgr::Cleanup_155e20() (0x155e20, __thiscall)
 // Tear down every owned child in the engine's fixed teardown order. Each child
 // carries the scalar-deleting destructor at vtable slot 1 (slot 0 for the
-// Voldemort surface at +0x20); the Filch object at +0x1c is a heap object freed
+// SoundStream at +0x20); the CDDrawPtrCollections at +0x1c is a heap object freed
 // by its non-virtual dtor + RezFree. Frameless (the dev's explicit teardown, not
 // a compiler member-dtor chain), so no /GX frame here.
 // @early-stop
@@ -203,10 +203,10 @@ void CDDrawSurfaceMgr::Cleanup_155e20() {
         ((DDChildSlot1*)m_2c)->Destroy(1);
         m_2c = 0;
     }
-    CDDrawPtrCollections* filch = (CDDrawPtrCollections*)m_1c;
-    if (filch) {
-        filch->Dtor();
-        RezFree(filch);
+    CDDrawPtrCollections* ptrColl = (CDDrawPtrCollections*)m_1c;
+    if (ptrColl) {
+        ptrColl->Dtor();
+        RezFree(ptrColl);
         m_1c = 0;
     }
     m_3c = 0;
@@ -246,32 +246,30 @@ fail:
     return 0;
 }
 
-// Helper structs for __thiscall external functions.
-struct MinervaInner {
-    void Free();
-};
+// Helper structs for __thiscall external functions. Both the m_20 stream
+// and the CDDrawSubMgrLeafScan +0x2c inner are the same SoundStream (Free @0x137a80).
 struct SoundStream {
     void Free();
 };
-struct MinervaMgr {
+struct CDDrawSubMgrLeafScan {
     void ClearMap();
     char m_pad00[0x2c];
-    MinervaInner* m_2c; // +0x2c  inner (Free'd on context teardown)
+    SoundStream* m_2c; // +0x2c  inner (Free'd on context teardown)
 };
 extern void __cdecl RelayHwnd(void* hWnd);
 extern i32 __stdcall CreateChildSurface(i32 x, i32 y, i32 flags);
-struct RemusCoordsHelper {
+struct CDDrawResolveSubMgr {
     i32 SetCoords(i32 x, i32 y);
 };
 typedef i32(__cdecl* HP_Callback)(void*, void*, i32, i32, i32);
 
 // ---------------------------------------------------------------------------
 // CDDrawSurfaceMgr::UnknownVirtualMethod20()
-// Frees context — cleans up the Voldemort surface and the Minerva map.
+// Frees context — cleans up the SoundStream (m_20) and the CDDrawSubMgrLeafScan map.
 RVA(0x00155fc0, 0x2e)
 void CDDrawSurfaceMgr::UnknownVirtualMethod20() {
     if (m_28 != 0) {
-        MinervaInner* inner = m_28->m_2c;
+        SoundStream* inner = m_28->m_2c;
         if (inner != 0) {
             inner->Free();
         }
@@ -294,7 +292,7 @@ i32 CDDrawSurfaceMgr::UnknownVirtualMethod24(i32 x, i32 y, i32 flags) {
         }
     }
     if (m_24 != 0) {
-        if (((RemusCoordsHelper*)m_24)->SetCoords(x, y) == 0) {
+        if (((CDDrawResolveSubMgr*)m_24)->SetCoords(x, y) == 0) {
             return 0;
         }
     }
@@ -355,24 +353,24 @@ i32 CDDrawSurfaceMgr::UnknownVirtualMethod34(i32, i32, i32, i32, void*) {
 // DECODED STRUCTURE (for the final sweep — retail-verified from 0x155900):
 //   m_30 = hWnd (arg1);  m_34 = flags (arg5).
 //   Then a run of `child = new T(...)` blocks (EH state in [esp+0x1c]/[esp+0x20]),
-//   each: op-new(size) -> if non-null: base-ctor 0x156cb0(0,0,this) [severus
+//   each: op-new(size) -> if non-null: base-ctor 0x156cb0(0,0,this) [surface-desc
 //   children instead stamp base vtbl 0x5efc30 + [+4]=[+8]=0 + [+c]=this], inline
 //   CMap member ctors(0xa), then stamp the derived vtbl; store into this->m_XX:
 //     m_04 = new(0x1c)  vtbl 0x5efe08                                   (CDDrawSubMgrPages)
 //     m_08 = new(0x6c)  ctor156cb0 + maps@0x10/0x2c/0x48 vtbl 0x5efdc0  (CDDrawChildGroup / CWwdObjMgr view)
 //     m_0c = new(0x2c)  ctor156cb0 + map@0x10          vtbl 0x5efd88    (CDDrawWorkerList)
-//     m_10 = new(0x2c)  severus-base + map@0x10(0x1b7e17) vtbl 0x5efd28 (Severus)
-//     m_14 = new(0x2c)  severus-base + map@0x10(0x1b7e17) vtbl 0x5efd00 (Sirius)
+//     m_10 = new(0x2c)  CWapObject-base + map@0x10(0x1b7e17) vtbl 0x5efd28 (CDDrawSurfaceDesc submgr)
+//     m_14 = new(0x2c)  CWapObject-base + map@0x10(0x1b7e17) vtbl 0x5efd00 (CDDrawWorkerCache)
 //     m_18 = new(0x68)  ctor156cb0 + maps@0x10/2c/48(0x1b7e17) vtbl 0x5efcc8 (CDDrawWorkerMapSmall)
-//     m_24 = new(0x6d4) ctor 0x15ccd0                                   (Remus)
-//     m_28 = new(0x38)  severus-base + map@0x10(0x1b8247) vtbl 0x5efca0 (= CDDrawSubMgrLeafScan)
-//     m_2c = new(0x2c)  severus-base + map@0x10(0x1b8247) vtbl 0x5efc78 (= CDDrawSubMgrLeaf)
-//     m_1c = new(0x948) ctor 0x141cc0                                   (Filch)
-//     m_20 = new(0x9c)  ctor 0x1376d0                                   (Voldemort)
+//     m_24 = new(0x6d4) ctor 0x15ccd0                                   (CDDrawResolveSubMgr)
+//     m_28 = new(0x38)  CWapObject-base + map@0x10(0x1b8247) vtbl 0x5efca0 (= CDDrawSubMgrLeafScan)
+//     m_2c = new(0x2c)  CWapObject-base + map@0x10(0x1b8247) vtbl 0x5efc78 (= CDDrawSubMgrLeaf)
+//     m_1c = new(0x948) ctor 0x141cc0                                   (CDDrawPtrCollections)
+//     m_20 = new(0x9c)  ctor 0x1376d0                                   (SoundStream)
 //   Validate phase: for m_08,m_0c,m_10,m_14,m_18,m_2c call child->vslot0x18(); on
 //   0 (and m_38==0) set m_38 = 0x3e9..0x3ee and return 0; m_24->vslot0x34(w,h) ->
 //   0x3ef; m_04->vslot0x24(w,h,flags,arg5) -> 0x3f0.  Then flags&0x20 => m_24[+8]|=4;
-//   Voldemort setup via 0x137720 with mode (bl&0x80?2:1), teardown-on-fail via
+//   SoundStream setup via 0x137720 with mode (bl&0x80?2:1), teardown-on-fail via
 //   vslot0/[+0] scalar-delete + 0x3f1; finally m_28->0x157a80(1) validate.  ret 0x14.
 // @confidence: high
 // @source: tomalla
@@ -385,6 +383,6 @@ SIZE_UNKNOWN(CDDrawSurfaceMgrBase);
 SIZE_UNKNOWN(DDChildSlot0);
 SIZE_UNKNOWN(DDChildSlot1);
 SIZE_UNKNOWN(CDDrawPtrCollections);
-SIZE_UNKNOWN(MinervaMgr);
-SIZE_UNKNOWN(RemusCoordsHelper);
+SIZE_UNKNOWN(CDDrawSubMgrLeafScan);
+SIZE_UNKNOWN(CDDrawResolveSubMgr);
 SIZE_UNKNOWN(SoundStream);

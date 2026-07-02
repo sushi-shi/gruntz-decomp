@@ -6,7 +6,7 @@
 //
 // `this` (CDDrawSurfaceMgr) is reached at ebp: the run-callback is stored into
 // m_3c (+0x3c) on entry; the dispatch walks the m_08 (CDDrawChildGroup, +0x08) and m_24
-// (Remus, +0x24) children through five blit modes (push 1/3/4/5), invoking the
+// (CGameLevel, +0x24) children through five blit modes (push 1/3/4/5), invoking the
 // optional run-callback (m_3c) before each child op.
 //
 // The serializer temp S (at [esp+0x10]) is a CFile-backed stream: a name CString
@@ -50,7 +50,7 @@ public:
     char m_pad00[0x08]; // +0x00..+0x07 (vptr + slot)
     void* m_08;         // +0x08  CDDrawChildGroup child (the m_08 blit-op target)
     char m_pad0c[0x24 - 0x0c];
-    void* m_24; // +0x24  Remus child (the m_24 blit-op target = CGameLevel)
+    void* m_24; // +0x24  CGameLevel child (the m_24 blit-op target = CGameLevel)
     char m_pad28[0x3c - 0x28];
     SnapRunCallback m_3c; // +0x3c  run-callback
 };
@@ -86,7 +86,7 @@ public:
 };
 
 // The child blit-op targets. m_08 child (CDDrawChildGroup) carries ops 0x15abc0 /
-// 0x15acb0 / 0x15ac20 / 0x15b020; the m_24 child (Remus) carries 0x160f70.
+// 0x15acb0 / 0x15ac20 / 0x15b020; the m_24 child (CGameLevel) carries 0x160f70.
 struct CDDrawChildGroupOps {
     i32 Probe();                                 // 0x15abc0  (__thiscall, no arg)
     i32 BlitA(Serializer* s, i32 arg);           // 0x15acb0
@@ -96,7 +96,7 @@ struct CDDrawChildGroupOps {
     i32 LoadA(Serializer* s, i32 n, i32 arg);    // 0x15ad30  (load path)
     i32 LoadB(Serializer* s, i32 n, i32 arg);    // 0x15b0e0  (load path)
 };
-struct RemusChild {
+struct CGameLevelBlit {
     i32 BlitD(Serializer* s, i32 mode, i32 a, i32 b); // 0x160f70
     i32 MainPlaneQueryB();                            // 0xcee10 (load success tail)
 };
@@ -153,7 +153,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(SnapRunCallback cb, i32 arg1, char* name,
     if (((CDDrawChildGroupOps*)m_08)->BlitB(&S, 3, arg3) == 0) {
         return 0;
     }
-    if (((RemusChild*)m_24)->BlitD(&S, 3, 0, 0) == 0) {
+    if (((CGameLevelBlit*)m_24)->BlitD(&S, 3, 0, 0) == 0) {
         return 0;
     }
     if (m_3c && cb(this, &S, 4, 0, 0) == 0) {
@@ -162,7 +162,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(SnapRunCallback cb, i32 arg1, char* name,
     if (((CDDrawChildGroupOps*)m_08)->BlitC(&S, arg3) == 0) {
         return 0;
     }
-    if (((RemusChild*)m_24)->BlitD(&S, 4, 0, 0) == 0) {
+    if (((CGameLevelBlit*)m_24)->BlitD(&S, 4, 0, 0) == 0) {
         return 0;
     }
     if (m_3c && cb(this, &S, 5, 0, 0) == 0) {
@@ -171,7 +171,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(SnapRunCallback cb, i32 arg1, char* name,
     if (((CDDrawChildGroupOps*)m_08)->BlitB(&S, 5, arg3) == 0) {
         return 0;
     }
-    if (((RemusChild*)m_24)->BlitD(&S, 5, 0, 0) == 0) {
+    if (((CGameLevelBlit*)m_24)->BlitD(&S, 5, 0, 0) == 0) {
         return 0;
     }
 
@@ -185,7 +185,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(SnapRunCallback cb, i32 arg1, char* name,
 // counterpart of SnapshotChildren. Opens the same CFileMem-backed serializer over
 // `name`, reads back the 0x120-byte header (publishing header[0x114] -> g_61ab14),
 // then replays the run-callback (m_3c, REQUIRED here - a null m_3c rejects) and the
-// child load-ops over the m_08 (CDDrawChildGroup) + m_24 (Remus/CGameLevel) children for
+// child load-ops over the m_08 (CDDrawChildGroup) + m_24 (CGameLevel) children for
 // modes 2/6/7/8. Success closes via End()/MainPlaneQueryB()/Close(). Field/method
 // names are placeholders; OFFSETS, vtable slots, sizes, store order and the ordered
 // call sequence are load-bearing. Engine callees are reloc-masked external.
@@ -237,7 +237,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(SnapRunCallback cb, char* name, i32 arg3) 
     if (((CDDrawChildGroupOps*)m_08)->BlitB(&S, 6, arg3) == 0) {
         return 0;
     }
-    if (((RemusChild*)m_24)->BlitD(&S, 6, 0, 0) == 0) {
+    if (((CGameLevelBlit*)m_24)->BlitD(&S, 6, 0, 0) == 0) {
         return 0;
     }
     if (m_3c == 0 || m_3c(this, &S, 7, arg3, (i32)header) == 0) {
@@ -246,7 +246,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(SnapRunCallback cb, char* name, i32 arg3) 
     if (((CDDrawChildGroupOps*)m_08)->LoadB(&S, *(i32*)(header + 0x110), arg3) == 0) {
         return 0;
     }
-    if (((RemusChild*)m_24)->BlitD(&S, 7, 0, 0) == 0) {
+    if (((CGameLevelBlit*)m_24)->BlitD(&S, 7, 0, 0) == 0) {
         return 0;
     }
     if (m_3c == 0 || m_3c(this, &S, 8, arg3, (i32)header) == 0) {
@@ -255,16 +255,16 @@ i32 CDDrawSurfaceMgr::RestoreChildren(SnapRunCallback cb, char* name, i32 arg3) 
     if (((CDDrawChildGroupOps*)m_08)->BlitB(&S, 8, arg3) == 0) {
         return 0;
     }
-    if (((RemusChild*)m_24)->BlitD(&S, 8, 0, 0) == 0) {
+    if (((CGameLevelBlit*)m_24)->BlitD(&S, 8, 0, 0) == 0) {
         return 0;
     }
 
     S.End();
-    ((RemusChild*)m_24)->MainPlaneQueryB();
+    ((CGameLevelBlit*)m_24)->MainPlaneQueryB();
     S.Close();
     return 1;
 }
 
-SIZE_UNKNOWN(RemusChild);
+SIZE_UNKNOWN(CGameLevelBlit);
 SIZE_UNKNOWN(Serializer);
 SIZE_UNKNOWN(SnapStream);

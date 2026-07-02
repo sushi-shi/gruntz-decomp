@@ -214,17 +214,17 @@ CWwdGameObjectF::~CWwdGameObjectF() {
 }
 
 // ---------------------------------------------------------------------------
-// 0x15bd10 - the CRemusNode-derived variant (extra +0x1dc CObList, leading init call
-// 0x166810, trailing base CRemusNode dtor 0x429b). REAL-POLYMORPHIC 4-level chain
+// 0x15bd10 - the CResolveNode-derived variant (extra +0x1dc CObList, leading init call
+// 0x166810, trailing base CResolveNode dtor 0x429b). REAL-POLYMORPHIC 4-level chain
 // (the vtable @0x5f00e8 was g_wwd1598d0FinalVtbl / UnknownVTable50): the destructor's
 // four manual vtable restamps become the cl-emitted per-level vptr stamps of
 //   CWwdGameObjectB (0x5f00e8) : WwdBLevel2 (0x5f00a8) : WwdBMid (0x5f0020)
-//                             : WwdBRemus (0x5efbc0, virtual dtor -> DtorBase 0x429b)
+//                             : WwdBResolve (0x5efbc0, virtual dtor -> DtorBase 0x429b)
 // so cl auto-generates the multi-phase restamp + /GX trylevel chain; each stamp
 // reloc-masks against the retail engine vtable. Each level owns a contiguous field
 // range + one destructible member (CString@+0xdc / WwdSub@+0x1a0 / CObList@+0x1dc);
 // the derived-level dtor bodies re-clear inherited base fields exactly like retail's
-// per-phase re-clears. This is the CRemusNode-derived variant the flat model was
+// per-phase re-clears. This is the CResolveNode-derived variant the flat model was
 // @early-stop on (eh-dtor-multilevel-polymorphic-chain.md).
 // ---------------------------------------------------------------------------
 
@@ -237,11 +237,11 @@ struct WwdObList {
     i32 m_head; // +0x1dc
 };
 
-// Grand-base (vtable 0x5efbc0): a CRemusNode-style base with a virtual dtor (making
+// Grand-base (vtable 0x5efbc0): a CResolveNode-style base with a virtual dtor (making
 // the whole chain polymorphic). Restamps its vftable then tail-calls the base
-// CRemusNode teardown (0x429b). Owns the +0x04..+0x5c fields; folded LAST.
-struct WwdBRemus {
-    virtual ~WwdBRemus();
+// CResolveNode teardown (0x429b). Owns the +0x04..+0x5c fields; folded LAST.
+struct WwdBResolve {
+    virtual ~WwdBResolve();
     void DtorBase(); // 0x429b
     i32 m_04;        // +0x04
     i32 m_08;        // +0x08
@@ -254,7 +254,7 @@ struct WwdBRemus {
     i32 m_5c;               // +0x5c
     char _p60[0x7c - 0x60]; // pad so WwdBMid's m_7c lands at +0x7c
 };
-inline WwdBRemus::~WwdBRemus() {
+inline WwdBResolve::~WwdBResolve() {
     m_5c = (i32)0x80000000;
     m_20 = (i32)0x80000000;
     m_38 = -1;
@@ -262,8 +262,8 @@ inline WwdBRemus::~WwdBRemus() {
 }
 
 // Mid level (vtable 0x5f0020): frees the four workers, clears m_c0/m_d8 + the
-// inherited edge fields, then its CString member folds, then ~WwdBRemus.
-struct WwdBMid : public WwdBRemus {
+// inherited edge fields, then its CString member folds, then ~WwdBResolve.
+struct WwdBMid : public WwdBResolve {
     ~WwdBMid();
     WwdWorker* m_7c; // +0x7c
     WwdWorker* m_80; // +0x80
@@ -288,7 +288,7 @@ inline WwdBMid::~WwdBMid() {
     m_5c = (i32)0x80000000;
     m_20 = (i32)0x80000000;
     m_38 = -1;
-    // m_dc (CString) auto-destroyed, then ~WwdBRemus folds.
+    // m_dc (CString) auto-destroyed, then ~WwdBResolve folds.
 }
 
 // Level-2 (vtable 0x5f00a8): clears the m_18c block + runs SubB, then its embedded
@@ -395,7 +395,7 @@ SIZE_UNKNOWN(CWapObject);
 SIZE_UNKNOWN(WwdSub);
 SIZE_UNKNOWN(WwdSubA);
 SIZE_UNKNOWN(WwdWorker);
-SIZE_UNKNOWN(WwdBRemus);
+SIZE_UNKNOWN(WwdBResolve);
 SIZE_UNKNOWN(WwdBMid);
 SIZE_UNKNOWN(WwdBLevel2);
 SIZE_UNKNOWN(WwdObList);

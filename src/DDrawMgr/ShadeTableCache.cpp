@@ -31,7 +31,7 @@ extern i32 g_bDown; // 0x683eb4
 
 // ALL-VTABLES phase: the array vtable (0x5efb28) + the CObject grand-base dtor
 // vtable (0x5e8cb4) are now cl-emitted from the real CShadeArrayBase/CShadeTableArray
-// polymorphic hierarchy - the manual g_shadeArrayVtbl / g_remusBaseDtorVtbl stamps
+// polymorphic hierarchy - the manual g_shadeArrayVtbl / g_wapObjectDtorVtbl stamps
 // are gone (cl auto-stamps in the array ctor + auto-resets in the array dtor).
 
 // The working palette base (0x6bf224): the sort/remap builders stash the active

@@ -4,10 +4,10 @@
 // the per-object sibling of CAssetLoader::LoadGameAssetNamespaces (m5_
 // GameAssetNamespaces.cpp): it lazily scans this object's GRUNTZ_ image/sound/aniz
 // trees into the three worker registries (this->m_c->m_10/m_28/m_2c), resolving the
-// "IMAGEZ_"/"SOUNDZ_"/"ANIZ_"+name trees off this->m_30 (the Remus parser).
+// "IMAGEZ_"/"SOUNDZ_"/"ANIZ_"+name trees off this->m_30 (the ButeMgr parser).
 //
 //   - mode != 0 (full): if the GRUNTZ_ image key is absent, optionally run the
-//     lighting/preview draw (lightGate), then g_severusCounterA-gate a
+//     lighting/preview draw (lightGate), then g_resourceInstallActive-gate a
 //     ResolvePath("IMAGEZ_"+name) + the registry's vtable LoadTree (+0x48), then run
 //     the finish hook (finishGate); the sound/aniz trees ScanTree when absent.
 //   - mode == 0 (rescan): if the GRUNTZ_ key is PRESENT, re-load it directly
@@ -24,9 +24,9 @@
 #include <rva.h>
 
 DATA(0x002bf37c)
-extern i32 g_severusCounterA; // 0x6bf37c
+extern i32 g_resourceInstallActive; // 0x6bf37c
 
-// The Remus symbol tree (this->m_30): ResolvePath a dotted namespace to its node.
+// The ButeMgr symbol tree (this->m_30): ResolvePath a dotted namespace to its node.
 struct CSymTree {
     void* ResolvePath(const char* path); // 0x13bae0
 };
@@ -112,7 +112,7 @@ public:
 // @source: decomp-xref
 // @early-stop
 // /GX shared-return block-layout wall (~90.5%): the logic, both mode branches, the
-// three GRUNTZ_ namespace registrations, the lighting/preview draw, g_severusCounterA
+// three GRUNTZ_ namespace registrations, the lighting/preview draw, g_resourceInstallActive
 // gating and the vtable-LoadTree/direct-load split are all byte-identical to retail.
 // The residual is where cl places the single return-cleanup epilogue: the recompile
 // makes the ResolvePath-fail path the fall-through (epilogue mid-body at ~0x173) and
@@ -142,14 +142,14 @@ i32 CNamespaceLoader::BuildAssetNamespacePrefixes(
                 CopyRect(&r2, &r);
                 DrawPreview((GRAssetMgr*)g_gameReg->m_30, &cs, &r2, 0x82, 1, 0xff, 0xff, 0, 1);
             }
-            g_severusCounterA = 1;
+            g_resourceInstallActive = 1;
             void* tree = m_30->ResolvePath("IMAGEZ_" + name);
             if (tree == 0) {
                 result = 0;
                 goto done;
             }
             m_c->m_10->LoadTree(tree, "GRUNTZ_" + name, "_");
-            g_severusCounterA = 0;
+            g_resourceInstallActive = 0;
             if (finishGate != 0) {
                 FinishAssetLoad();
             }

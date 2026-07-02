@@ -3,7 +3,7 @@
 // CHash<T> over a non-template key-agnostic base; the two byte-identical
 // instantiations are modeled as CHashBase + CHash ("_a") / CHashB ("_b"). See
 // include/Bute/Hash.h for the layout + the call-graph evidence. Recovered from
-// the trace group "ClassUnknown_13" (callers all in the Remus parser region).
+// the trace group "ClassUnknown_13" (callers all in the ButeMgr parser region).
 #include <rva.h>
 
 #include <Bute/Hash.h>

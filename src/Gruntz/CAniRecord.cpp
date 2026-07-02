@@ -20,7 +20,7 @@
 // whose vftable is CAniRecordBase2 @0x5f02d8 (14 slots, = 0x5f02c0+0x18; slot1 dtor
 // 0x165db0/0x165dd0). Both share the CObject-like grand-base vftable @0x5e8cb4. vtable-4
 // is NULL for both (verified) -> no RTTI COL, so the two base dtors are modeled as REAL
-// polymorphic types deriving from a shared empty-dtor grand-base (CAniRecordRemusBase);
+// polymorphic types deriving from a shared empty-dtor grand-base (CAniRecordObjBase);
 // cl emits the implicit ??_7 stamps (reloc-masked, /GR stays off). The leaf record
 // (CAniRecord) stays a non-polymorphic data-layout class (explicit m_vptr @+0x00) so its
 // matched leaves keep their offsets. eh-dtor-implicit-vptr-stamp-first.md (sub-case 2).
@@ -37,7 +37,7 @@
 // grand-base @0x5e8cb4) are no longer manual DATA() externs: the base classes below are
 // real polymorphic types, so cl emits the implicit ??_7 + grand-base re-stamps (reloc-
 // masked against the target's differently-named symbols). All three are still DATA()-bound
-// in other TUs (CAniElement / CDDrawWorkerMapSmall / the Remus family) so the target stays named.
+// in other TUs (CAniElement / CDDrawWorkerMapSmall / the CWapObject family) so the target stays named.
 
 // g_aniParsedNameLen (0x6bf3c4): the parsed name length the catalog builder uses
 // to advance the record stream cursor; Parse sets it (strlen of the name).
@@ -125,18 +125,18 @@ public:
 // with an EMPTY virtual dtor, so cl emits ONLY the implicit grand-base vptr re-stamp
 // (the LAST store at each derived dtor's tail) - no manual `m_vptr = &g_*Vtbl`. The
 // CObject header is the implicit vptr @+0x00 then the +0x04/+0x08/+0x0c fields the
-// base-2 dtor resets. eh-dtor-implicit-vptr-stamp-first.md sub-case 2 (the "Remus" family).
-struct CAniRecordRemusBase {
-    virtual void FUN_005bef01();    // [0] 0x1bef01 (shared GetRuntimeClass thunk)
-    virtual ~CAniRecordRemusBase(); // [1] scalar-deleting dtor
-    virtual void FUN_004028ec();    // [2] 0x0028ec
-    virtual void FUN_0040106e();    // [3] 0x00106e
-    virtual void FUN_00404034();    // [4] 0x004034
+// base-2 dtor resets. eh-dtor-implicit-vptr-stamp-first.md sub-case 2 (the CWapObject family).
+struct CAniRecordObjBase {
+    virtual void FUN_005bef01();  // [0] 0x1bef01 (shared GetRuntimeClass thunk)
+    virtual ~CAniRecordObjBase(); // [1] scalar-deleting dtor
+    virtual void FUN_004028ec();  // [2] 0x0028ec
+    virtual void FUN_0040106e();  // [3] 0x00106e
+    virtual void FUN_00404034();  // [4] 0x004034
 
     i32 m_04, m_08, m_0c; // +0x04..+0x0f (CObject header)
 };
 // Empty body => folds as JUST the grand-base re-stamp at each derived dtor's tail.
-inline CAniRecordRemusBase::~CAniRecordRemusBase() {}
+inline CAniRecordObjBase::~CAniRecordObjBase() {}
 
 // ---------------------------------------------------------------------------
 // 0x165dd0: the SECONDARY base (CAniRecordBase2 @0x5f02d8, 14 slots) destructor.
@@ -145,7 +145,7 @@ inline CAniRecordRemusBase::~CAniRecordRemusBase() {}
 // the implicit grand-base re-stamp (masks 0x5e8cb4) folds LAST. The 9 extra slots (5..13)
 // are declared-only (reloc-masked); the buffer (de)allocation virtuals live as the regular
 // CAniRecord methods below (slots 7/10/11/12 = FreeBuf/Alloc168ee0/Alloc168ea0/Alloc168f60).
-struct CAniRecordBase2 : CAniRecordRemusBase {
+struct CAniRecordBase2 : CAniRecordObjBase {
     virtual ~CAniRecordBase2();  // [1] overrides; UAE
     virtual void FUN_00565d90(); // [5] 0x165d90
     virtual void FUN_00401c08(); // [6] 0x001c08
@@ -176,7 +176,7 @@ CAniRecordBase2::~CAniRecordBase2() {
 // layout, no extra slots) destructor. /GX. Real virtual: cl stamps ??_7 (masks 0x5f02c0)
 // at ENTRY (stamp-first), frees the +0x30 resolved-index array (RezFree), clears the owner
 // sentinel (0xffff) / count / array, then the implicit grand-base re-stamp folds LAST.
-struct CAniRecordPrimary : CAniRecordRemusBase {
+struct CAniRecordPrimary : CAniRecordObjBase {
     virtual ~CAniRecordPrimary(); // [1] overrides; UAE
 };
 
@@ -383,6 +383,6 @@ SIZE_UNKNOWN(CAniRecordBuf);
 SIZE_UNKNOWN(CAniRecordOwner);
 SIZE_UNKNOWN(CAniRecordPool);
 SIZE_UNKNOWN(CAniRecordPrimary);
-SIZE_UNKNOWN(CAniRecordRemusBase);
+SIZE_UNKNOWN(CAniRecordObjBase);
 VTBL(CAniRecordPrimary, 0x001f02c0); // ??_7 (was g_aniRecordVtbl, 5 slots)
 VTBL(CAniRecordBase2, 0x001f02d8);   // ??_7 (14 slots)

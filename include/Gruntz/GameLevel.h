@@ -58,7 +58,7 @@ struct LevelCoordRect {
 
 // The parse-source object passed to LoadFromSource. Defined in
 // GameLevel.cpp; only the pointer type appears here so a forward decl suffices.
-struct RemusParseSource;
+struct CParseSource;
 
 // ---------------------------------------------------------------------------
 // CLoadable - the engine base CGameLevel derives from. Its 9-slot base
@@ -146,9 +146,9 @@ public:
     virtual i32 SetCoordsAndLoad40(i32 arg1, LevelCoordRect* coords); // [11] +0x2c  0x15cdf0
     virtual i32 SetCoords(LevelCoordRect* coords);                    // [12] +0x30  0x15d0d0
     virtual i32 SetCoordExtents(i32 w, i32 h);                        // [13] +0x34  0x15d030
-    virtual i32 LoadWwd(WwdHeader* hdr);               // [14] +0x38  0x15d280  1=ok 0=fail
-    virtual i32 LoadFromSource(RemusParseSource* arg); // [15] +0x3c  0x15d630
-    virtual i32 LoadFromFile(const char* path);        // [16] +0x40  0x15d500
+    virtual i32 LoadWwd(WwdHeader* hdr);           // [14] +0x38  0x15d280  1=ok 0=fail
+    virtual i32 LoadFromSource(CParseSource* arg); // [15] +0x3c  0x15d630
+    virtual i32 LoadFromFile(const char* path);    // [16] +0x40  0x15d500
     virtual void
     ReleaseChildren(); // [17] +0x44  0x15d680  pre-load reset (LoadWwd dispatches this)
 

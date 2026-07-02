@@ -14,7 +14,7 @@
 //       fold in.
 //
 // Both derive from the engine CObject-like collection-node base whose dtor
-// vtable is g_remusBaseDtorVtbl @0x5e8cb4 (the same grand-base the Remus/Severus
+// vtable is g_wapObjectDtorVtbl @0x5e8cb4 (the same grand-base the CWapObject-derived
 // DDraw nodes restamp). The nodes' own virtuals are not modeled, so their primary
 // vtables are referenced by address as reloc-masked DATA externs and stamped
 // manually; letting cl emit a vtable would diverge. The CString member teardown

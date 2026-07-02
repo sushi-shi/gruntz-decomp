@@ -3,9 +3,9 @@
 
 // CImage.h - the RTTI-confirmed polymorphic CImage (`.?AVCImage@@`, the ONLY
 // CImage type-descriptor in the binary; primary vftable @0x5eaa2c). It is a
-// surface-backed image element in the DDrawMgr "Remus" image family and a SIBLING
+// surface-backed image element in the DDrawMgr image family and a SIBLING
 // of CDDrawSurfacePair (include/Gruntz/CDDrawSurfacePair.h): both derive from the
-// same polymorphic SeverusWorker base (grand-base dtor vtable g_remusBaseDtorVtbl
+// same polymorphic CWapObject base (grand-base dtor vtable g_wapObjectDtorVtbl
 // @0x5e8cb4) and share the +0x04/+0x08/+0x0c base header and the +0x0c parent /
 // +0x2c held-surface (CPoolItemA) / +0x30 owned-object layout.
 //
@@ -37,13 +37,13 @@ class CString;   // real MFC CString (4-byte ptr); completed via <Mfc.h> in the 
 class CBlitInfo; // the sprite blit/draw request (esi); defined in CImageSpriteBlit.cpp
 
 // The two vtables in the dtor chain: this class's own (0x5eaa2c) and the
-// grand-base CObject dtor vtable (0x5e8cb4 = g_remusBaseDtorVtbl). Reloc-masked
+// grand-base CObject dtor vtable (0x5e8cb4 = g_wapObjectDtorVtbl). Reloc-masked
 // DATA externs (the manual stamps reference the RETAIL tables, whose contents are
 // unmatched engine code).
 class CImageParent; // +0x0c parent (CDDrawPtrCollections); defined below
 
 // ---------------------------------------------------------------------------
-// CImageBase - the polymorphic SeverusWorker/"Remus" base (same one as
+// CImageBase - the polymorphic CWapObject base (same one as
 // CSurfacePairBase). POLYMORPHIC with a REAL virtual destructor: its inline body
 // resets the three base fields, and MSVC appends the implicit base-vptr re-stamp
 // (the grand-base dtor vtable @0x5e8cb4) - so the dtor's TWO vptr stamps are both
@@ -52,7 +52,7 @@ class CImageParent; // +0x0c parent (CDDrawPtrCollections); defined below
 // ~CImage and supplies the /GX EH frame (docs/patterns/
 // eh-dtor-multilevel-polymorphic-chain.md, inline-base-dtor-folds-into-leaves.md).
 // Its emitted vtable (??_7CImageBase) reloc-masks against the target's 0x5e8cb4
-// grand-base stamp (which the shared g_severusWorkerDtorVtbl names; the stamp
+// grand-base stamp (which the shared g_wapObjectDtorVtbl names; the stamp
 // bytes are identical, the masked operand differs only in symbol name).
 // ---------------------------------------------------------------------------
 class CImageBase {
@@ -76,7 +76,7 @@ public:
     CImageParent* m_0c; // +0x0c  parent CDDrawPtrCollections (its surface pool at +0x1c)
 };
 
-// The source sub-object held at CImageSurfaceItem::m_08 (a polymorphic Remus
+// The source sub-object held at CImageSurfaceItem::m_08 (a polymorphic parse-source
 // parse-node). Reload (slot 13) probes it via two vtable slots: +0x60 reports
 // whether the surface is still clean (skip rebuild), +0x6c returns whether it has
 // a live source descriptor (re-run Resolve) vs none (parse the new source). Its
@@ -256,7 +256,7 @@ public:
     i32 m_14; // +0x14
 };
 
-// The Remus parse-source the Resolve virtual drives: GetTag (0x139800) reads its
+// The ButeMgr parse source the Resolve virtual drives: GetTag (0x139800) reads its
 // 3-char format tag, Resolve (0x139960) primes it, Release (0x1399d0) tears it
 // down; its +0x0c field feeds the LoadDispatch call. Reloc-masked __thiscall.
 class CImageSource {
@@ -269,11 +269,11 @@ public:
     i32 m_0c; // +0x0c
 };
 
-// The two severus load counters (?g_severusCounterA/B@@3HA), gating the CreateA
-// cap (0x800) and the flags arg. Reloc-masked C++ globals.
+// The resource-install gate (@0x6bf37c) and the surface color-key (@0x6bf380),
+// gating the CreateA cap (0x800) and the flags arg. Reloc-masked C++ globals.
 DATA(0x002bf37c)
-extern i32 g_severusCounterA;
-extern i32 g_severusCounterB;
+extern i32 g_resourceInstallActive;
+extern i32 g_surfaceColorKey;
 
 // ClassUnknown_36 (0x14dd90): a __stdcall(i32, i32) post-load notify the slot-13
 // path fires with (2, 0). Reloc-masked external; no body.

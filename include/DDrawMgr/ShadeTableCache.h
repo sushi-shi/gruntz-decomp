@@ -45,7 +45,7 @@ struct CShadeTable {
 // modeled as a REAL 2-level polymorphic hierarchy (like CAniElementBase) so cl
 // auto-emits both vtables + auto-stamps/resets the vptr:
 //   CShadeArrayBase  - the CObArray-like grand base, masks ??_7CObject@@6B@
-//                      (g_remusBaseDtorVtbl @0x5e8cb4); 5 CObject-interface slots.
+//                      (g_wapObjectDtorVtbl @0x5e8cb4); 5 CObject-interface slots.
 //   CShadeTableArray - the element array, masks ??_7CShadeTableArray (0x5efb28);
 //                      overrides slot 1 (dtor 0x150020) + slot 2 (0x14fe90).
 // The cache ctor/dtor inline the array ctor/dtor: cl stamps 0x5efb28 in the ctor,
