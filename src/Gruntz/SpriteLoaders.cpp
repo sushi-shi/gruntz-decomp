@@ -61,12 +61,13 @@ struct CTimerSlot {
     i32 m_24; // +0x24
 };
 
-// The loading bar reaches the resource object through this->m_c.
-// The canonical CGameRegistry view of the singleton (*0x24556c). The world/
-// resource mgr (+0x30 -> CResMgr), level state (+0x2c -> CLevelState) and notify
-// target (+0x68 -> CLevelNotify) are cast locally at the deref sites; the
-// per-player timer-slot array at +0x150 (stride 0x238) and the m_15c sub-object
-// are reached via raw offsets off the singleton base.
+// The loading bar reaches the resource object through this->m_c (its own CResMgr).
+// The canonical CGameRegistry view of the singleton (*0x24556c). The resource mgr
+// (+0x30, typed CSpriteFactoryHolder) is reached without a cast; its +0x08 factory
+// exposes both CreateSprite (grunt cluster) and the key-lookup facet (cast to
+// CKeyTable here). The current-state (+0x2c) is typed CState*; the notify target
+// (+0x68) is a genuinely reused slot cast locally; the per-player timer-slot array
+// at +0x150 (stride 0x238) and the m_15c sub-object are reached via raw offsets.
 DATA(0x0024556c)
 extern CGameRegistry* g_gameReg;
 
@@ -201,7 +202,7 @@ CTimer* CTimer::Init() {
 RVA(0x0009bb00, 0x119)
 i32 CTimer::LoadTimerSprite(i32 a, i32 b) {
     CSprite* spr = 0;
-    ((CResMgr*)g_gameReg->m_30)->m_10->m_10map.Lookup("GAME_TIMER", &spr);
+    g_gameReg->m_30->m_10->m_10map.Lookup("GAME_TIMER", &spr);
     m_8 = (i32*)spr;
     if (!spr) {
         return 0;
@@ -321,7 +322,7 @@ i32 CTimer::Tick(i32 dt) {
         if (key != 0) {
             i32 found = 0;
             CTimerNotifyObj* obj =
-                (CTimerNotifyObj*)((CResMgr*)g_gameReg->m_30)->m_8->FindByKey((i32)key, &found);
+                (CTimerNotifyObj*)((CKeyTable*)g_gameReg->m_30->m_8)->FindByKey((i32)key, &found);
             CTimerNotifyObj* hit = found ? obj : (CTimerNotifyObj*)key;
             if (hit != 0 && hit->m_7c->m_18 != 0) {
                 hit->m_7c->m_18->ResolveDeathAnimation();
@@ -335,7 +336,7 @@ i32 CTimer::Tick(i32 dt) {
         if (key != 0) {
             i32 found = 0;
             CTimerNotifyObj* obj =
-                (CTimerNotifyObj*)((CResMgr*)g_gameReg->m_30)->m_8->FindByKey((i32)key, &found);
+                (CTimerNotifyObj*)((CKeyTable*)g_gameReg->m_30->m_8)->FindByKey((i32)key, &found);
             CTimerNotifyObj* hit = found ? obj : (CTimerNotifyObj*)key;
             if (hit != 0 && hit->m_7c->m_18 != 0) {
                 hit->m_7c->m_18->NotifyFortUnderAttack();
@@ -529,7 +530,7 @@ i32 CTimer::Serialize(CTimerArchive* ar) {
     if (ar == 0) {
         return 0;
     }
-    CResMgr* mgr = (CResMgr*)g_gameReg->m_30;
+    CSpriteFactoryHolder* mgr = g_gameReg->m_30;
     if (mgr == 0) {
         return 0;
     }

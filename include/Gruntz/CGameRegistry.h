@@ -23,16 +23,23 @@
 // WwdGameReg, WwdGameRegZ, CObjDropReg, CGmGameReg, TgcGameReg, ... one bespoke
 // partial "view" struct per TU). The USER PRINCIPLE is: different layouts = a
 // mistake; there is ONE real object. The leaf SCALAR fields (the ints below) are
-// provably consistent across every TU's disasm and are named here. The sub-object
-// POINTERS at 0x2c/0x30/0x38/0x48/0x58/0x60/0x68/0x6c/0x70/0x74/0x78/0x7c are the
-// SAME slots but each TU legitimately dereferences a *different concrete sub-object
-// type* through them (e.g. +0x68 is a placement-grid mgr in the hazard TUs, a cue
-// sink elsewhere, a status-bar factory in the HUD TUs). Rather than fabricate one
-// fake mega-type (which would be an artifact, not the devs' shape), those slots are
-// void* here and each TU casts them to its own local view type at the deref site
-// (a legitimate struct-pointer-to-sub-object cast). The three sub-objects the CGrunt
-// / CPlay animation+render cluster walks (m_30 sprite-factory holder, m_60 cue sink,
-// m_70 tile grid) are kept typed so that cluster keeps matching.
+// provably consistent across every TU's disasm and are named here.
+//
+// The SINGLE-TYPE sub-object pointers are typed here so their consumers reach them
+// WITHOUT a per-site cast: m_2c (CState* current game-state), m_30 (the resource
+// manager - CSpriteFactoryHolder, the retail CResMgr: draw target + sprite factory
+// + image registry + view + sound/anim), m_60 (cue sink), m_70 (tile grid). Sub-
+// object TYPES defined in <Gruntz/ResMgr.h>/<Gruntz/CViewport.h> are forward-
+// declared (not included) to keep this ~60-TU-wide header light.
+//
+// The REUSED slots at 0x38/0x48/0x58/0x68/0x6c/0x74/0x78/0x7c genuinely hold a
+// *different concrete object per game-mode* (e.g. +0x68 is a placement/cue grid in
+// single-player, the goo-well mgr in battlez, a light-fx target in the fx TUs; +0x7c
+// is the score/HUD sink under several battlez/teleporter facets). Fabricating one
+// fake mega-type would be an artifact, not the devs' shape (and a wrong unifying
+// type is worse than a documented base + downcast), so those stay void* and each TU
+// casts to its own concrete view - a legitimate, AUTHENTIC downcast, not a squeeze
+// hack.
 #ifndef GRUNTZ_GRUNTZ_CGAMEREGISTRY_H
 #define GRUNTZ_GRUNTZ_CGAMEREGISTRY_H
 
@@ -40,21 +47,41 @@
 
 struct CSpriteFactory; // +0x30 -> +0x08 factory (CreateSprite); Grunt.h completes it
 class CGruntCueSink;   // +0x60 on-screen cue receiver; Grunt.h completes it
+class CState;          // +0x2c current game-state; CState.h completes it
+// Sub-objects of the +0x30 resource manager, defined in <Gruntz/ResMgr.h> /
+// <Gruntz/CViewport.h>; forward-declared here so consumers reach them typed
+// (no per-site cast) without pulling those headers into this ~60-TU-wide view.
+struct CDrawTarget;    // +0x30->+0x04 active draw surface (m_drawContext at +0x14)
+struct CImageRegistry; // +0x30->+0x10 image/tile registry (name->sprite map)
 
-// The viewport object reached as g->m_30->m_24 (its +0x5c is the rect base the
-// on-screen cue gate's visibility helper consumes at +0x40). Used by the
-// entrance-reset (CGrunt::Stub_062e10) focused-grunt cue path.
+// The level/view object reached as g->m_30->m_24: +0x10 the on-screen bar RECT
+// (the action/option menu bar), +0x5c the world->screen viewport (WrapCoord;
+// its +0x40 is the rect base the on-screen cue gate's visibility helper reads).
+// Used by the menu bar and the entrance-reset focused-grunt cue path.
 struct CGameViewport {
-    char m_pad0[0x5c];
-    i32 m_5c; // +0x5c  rect/clip base (helper reads +0x40 off this)
+    char m_pad0[0x10];
+    i32 m_barRect[4]; // +0x10  on-screen bar RECT (left,top,right,bottom)
+    char m_pad20[0x5c - 0x20];
+    // A CViewport* (world->screen transform; base +0x40 = clip rect). Modeled i32
+    // because the CGrunt visibility helpers take it as a raw address (int) arg;
+    // the menu bar casts it to CViewport at the two sites it calls methods on.
+    i32 m_5c; // +0x5c
 };
 
-struct CSpriteFactoryHolder { // the +0x30 resource/sprite-factory holder
-    char m_pad0[0x8];
-    CSpriteFactory* m_8; // +0x08
-    char m_pad0c[0x24 - 0xc];
-    CGameViewport* m_24; // +0x24  viewport (cue-gate visibility source)
-    void* m_28;          // +0x28
+// The +0x30 game resource/level manager (the retail CResMgr; ResMgr.h models the
+// same object for the loaders and CPlay). Every view of *0x24556c reaches its
+// resources through this one holder: the draw surface (+0x04), the sprite/object
+// factory (+0x08, CreateSprite + key lookup), the image registry (+0x10), the
+// level/view object (+0x24) and the sound/anim registry (+0x28).
+struct CSpriteFactoryHolder {
+    char m_pad0[0x4];
+    CDrawTarget* m_drawTarget; // +0x04  active draw surface
+    CSpriteFactory* m_8;       // +0x08  sprite/object factory (CreateSprite / key lookup)
+    char m_pad0c[0x10 - 0xc];
+    CImageRegistry* m_10; // +0x10  image/tile registry (name->sprite map)
+    char m_pad14[0x24 - 0x14];
+    CGameViewport* m_24; // +0x24  level/view object (bar RECT + viewport)
+    void* m_28;          // +0x28  sound/anim registry (per-TU view)
 };
 
 // The tile occupancy grid (*g_pGameRegistry+0x70) is CTileGrid, in
@@ -94,7 +121,8 @@ struct CGameRegistry {
     i32 m_10;         // +0x10  base m_10 run-state (level/state discriminator)
     i32 m_14;         // +0x14  base m_14 run-state (has-window / level-loaded gate)
     char m_pad18[0x2c - 0x18];
-    void* m_2c;                 // +0x2c  == m_curState (current game-state)
+    CState* m_2c;               // +0x2c  == m_curState (current game-state; concrete
+                                //         states downcast to their play/level view)
     CSpriteFactoryHolder* m_30; // +0x30  == m_world (world/map; grunt reaches the
                                 //         sprite factory via m_30->m_8)
     char m_pad34[0x38 - 0x34];
@@ -107,13 +135,16 @@ struct CGameRegistry {
     char m_pad5c[0x60 - 0x5c];
     CGruntCueSink* m_60; // +0x60  == m_timer (grunt: cue sink / ->Cue receiver)
     char m_pad64[0x68 - 0x64];
-    void* m_68;      // +0x68  == m_cmdGrid (grunt: cue/probe/placement sink)
+    void* m_68;      // +0x68  == m_cmdGrid. REUSED slot (authentic per-mode downcast):
+                     //         placement/cue grid (CGruntRec**) in single-player, the
+                     //         goo-well mgr in battlez, a light-fx target in the fx TUs.
     void* m_6c;      // +0x6c  == m_cmdSubMgr (secondary grid/cmd sub-object)
-    CTileGrid* m_70; // +0x70  == m_cmdNotify (tile occupancy grid; the cmd sink
-                     //         writes cell heights into it - LoadEntranceConfig)
+    CTileGrid* m_70; // +0x70  == m_cmdNotify (tile occupancy grid + tile-system
+                     //         notifier; the cmd sink writes cell heights into it)
     void* m_74;      // +0x74  sprite factory / ref-table (BeginGridWalk retry path)
     void* m_78;      // +0x78  sub-object (per-TU view)
-    void* m_7c;      // +0x7c  == m_scoreHud (HUD/score accumulator + cmd sink)
+    void* m_7c;      // +0x7c  == m_scoreHud (HUD/score accumulator + cmd sink);
+                     //         battlez views it as the CBzData score tracker facet.
     char m_pad80[0x8c - 0x80];
     i32 m_8c; // +0x8c  == m_modeW (live video-mode width; cmp ...,0x280==640)
     i32 m_90; // +0x90  == m_modeH (live video-mode height; ==480)

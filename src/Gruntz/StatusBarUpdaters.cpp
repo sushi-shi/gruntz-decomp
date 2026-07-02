@@ -72,11 +72,8 @@ struct CMapTileGrid {
     i32* m_20; // +0x20  cell-state table
     i32* m_24; // +0x24  row-offset table
 };
-// The tile-system notifier at registry +0x70.
-struct CTileNotifier {
-    void Notify(i32 x, i32 y, i32 state);
-};
-SIZE_UNKNOWN(CTileNotifier);
+// The tile-system notifier at registry +0x70 is the canonical CTileGrid
+// (<Gruntz/CTileGrid.h>), viewed through its Notify facet.
 // The registry's +0x30 holder: it carries the tile-grid holder (+0x24 -> +0x5c
 // grid) and the status-bar holder (+0x28).
 struct CRegHolder {
@@ -89,10 +86,10 @@ struct CRegHolder {
 };
 SIZE_UNKNOWN(CRegHolder);
 // The canonical CGameRegistry view of the singleton (*0x24556c). The resource
-// holder (+0x30 -> CRegHolder), the group table (+0x68) and the tile notifier
-// (+0x70 -> CTileNotifier) are void*/CSpriteFactoryHolder*/CTileGrid* in the
-// canonical layout, so this TU casts them locally at the deref sites; the
-// view-bounds rectangle scalars (+0x13c..+0x148) match directly.
+// holder (+0x30 -> CRegHolder) and group table (+0x68) are void*/CResMgr* in the
+// canonical layout, so this TU casts them locally at the deref sites; the tile
+// notifier (+0x70) is the canonical CTileGrid (Notify facet), reached without a
+// cast, and the view-bounds rectangle scalars (+0x13c..+0x148) match directly.
 DATA(0x0024556c)
 extern CGameRegistry* g_gameReg; // the game-manager singleton
 
@@ -438,7 +435,7 @@ void EngineLabelBacklog::LoadSwitchDownSprite() {
     i32 v = g->m_20[g->m_24[m_c] + m_8] + 1;
     CMapTileGrid* g2 = ((CRegHolder*)g_gameReg->m_30)->m_24->m_5c;
     g2->m_20[g2->m_24[m_c] + m_8] = v;
-    ((CTileNotifier*)g_gameReg->m_70)->Notify(m_8, m_c, v);
+    g_gameReg->m_70->Notify(m_8, m_c, v);
 
     i32 px = (m_8 << 5) + 0x10;
     i32 py = (m_c << 5) + 0x10;
@@ -472,7 +469,7 @@ void EngineLabelBacklog::LoadSwitchUpSprite() {
     i32 v = g->m_20[g->m_24[m_c] + m_8] - 1;
     CMapTileGrid* g2 = ((CRegHolder*)g_gameReg->m_30)->m_24->m_5c;
     g2->m_20[g2->m_24[m_c] + m_8] = v;
-    ((CTileNotifier*)g_gameReg->m_70)->Notify(m_8, m_c, v);
+    g_gameReg->m_70->Notify(m_8, m_c, v);
 
     i32 px = (m_8 << 5) + 0x10;
     i32 py = (m_c << 5) + 0x10;

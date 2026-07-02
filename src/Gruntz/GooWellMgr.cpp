@@ -139,11 +139,22 @@ struct PlayerSlot {
     char _30[0x238 - 0x30];
 };
 
-// The game-registry singleton, canonical CGameRegistry view. The game-mode object
-// (+0x2c -> CGameObj2c), resource holder (+0x30 -> CMgrHolderX), goo-well mgr
-// (+0x68 -> CGooWellMgr) and battlez tracker (+0x7c -> CBzData) are void*/typed
-// slots cast locally at the deref sites; the m_10/m_11c/m_134 scalars match, and
-// the per-player slot array at +0x150 (stride 0x238) is reached via raw offset.
+// The game-registry singleton, canonical CGameRegistry view. The slots this TU
+// walks are typed there; the local casts below are AUTHENTIC view/downcasts, not
+// squeeze-hacks:
+//   +0x2c  m_2c is CState* (current game-state); CGameObj2c is the concrete
+//          battlez play-mode DOWNCAST (its gauge/placement/overlay methods).
+//   +0x30  m_30 is the typed CSpriteFactoryHolder resource mgr; CMgrHolderX is
+//          this TU's LATERAL view of its two keyed-lookup facets (the sound name
+//          map at +0x28->+0x10 and the id map at +0x08->+0x48, both engine Lookup
+//          helpers). The canonical holder keeps those facets untyped so the loader
+//          cluster's CreateSprite/FindByKey shapes stay byte-exact; unifying the
+//          inner map types into CSpriteFactoryHolder is a follow-up matcher.
+//   +0x68  m_68 is a genuinely REUSED slot (placement/cue grid in single-player,
+//          this CGooWellMgr in battlez) - a real per-mode object downcast.
+//   +0x7c  m_7c is the score/HUD sink; CBzData is its battlez MarkFlag facet.
+// The m_10/m_11c/m_134 scalars match, and the per-player slot array at +0x150
+// (stride 0x238) is reached via raw offset.
 DATA(0x0024556c)
 extern CGameRegistry* g_gameReg;
 

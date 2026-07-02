@@ -68,14 +68,9 @@ struct CSlimeLevel {
     i32 m_144; // +0x144 on-screen rect base (Tick passes &m_144 to the cue gate)
 };
 
-// The level tile map reached via g_gameReg->m_70. m_c/m_10 = grid extents,
-// m_8 = the row table (row[gy][gx*7] is the tile-flags word).
-struct CTileMap {
-    char m_pad0[0x8];
-    i32** m_8; // +0x08  row table
-    i32 m_c;   // +0x0c  grid width
-    i32 m_10;  // +0x10  grid height
-};
+// The level tile map reached via g_gameReg->m_70 is the canonical CTileGrid
+// (<Gruntz/CTileGrid.h>): m_c/m_10 = grid extents, m_8 = the row table
+// (row[gy][gx*7] is the tile-flags word).
 // The on-screen object reached as g_gameReg->m_68 (the visibility/cue gate). Its
 // QueryAt resolves the entity under the slime's screen rect and ScrollTo posts a
 // scroll; modeled NO-body so both calls reloc-mask.
@@ -645,7 +640,7 @@ i32 CKitchenSlime::LoadSprites() {
         i32 gx = tileX >> 5;
         i32 gy = tileY >> 5;
         i32 tileFlags;
-        CTileMap* map = (CTileMap*)g_gameReg->m_70;
+        CTileGrid* map = g_gameReg->m_70;
         if ((u32)gx >= (u32)map->m_c || (u32)gy >= (u32)map->m_10) {
             tileFlags = 1;
         } else {
@@ -779,5 +774,4 @@ SIZE_UNKNOWN(CSlimeSubMgr);
 SIZE_UNKNOWN(CSlimeTiming);
 SIZE_UNKNOWN(CSprite);
 SIZE_UNKNOWN(CStringNode);
-SIZE_UNKNOWN(CTileMap);
 SIZE_UNKNOWN(CTypeNameEntryView);

@@ -12,6 +12,10 @@
 #include <Ints.h>
 
 struct CTileGrid {
+    // The tile-system notifier facet (registry +0x70 viewed by the status-bar
+    // updaters): flags a cell dirty/updated. NO-body -> the call reloc-masks.
+    void Notify(i32 x, i32 y, i32 state);
+
     char m_pad0[0x8];
     i32** m_8; // +0x08  row-pointer table (cell = (i32*)m_8[tileY] + tileX*7)
     i32 m_c;   // +0x0c  width in tiles
