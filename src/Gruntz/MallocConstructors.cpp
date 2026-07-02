@@ -1,7 +1,9 @@
 #include <rva.h>
-#include <Stub/MallocConstructors.h>
-// MallocConstructors.cpp - constructor bodies for MallocConstructors.h (RVA-labeled
-// so they delink/diff against retail).
+#include <Gruntz/MallocConstructors.h>
+// MallocConstructors.cpp - operator-new/malloc-site ctors (owning class not yet
+// attributed; placeholder MallocCtor_<rva> / boxed-value names). Re-homed out of
+// the src/Stub/ aggregate into a real module TU. RVA-labeled so they delink/diff
+// against retail.
 //
 // Reconstructed in place (owning class not yet attributed):
 //   0x001736a0 / 0x00174cb0 / 0x00173c60 / 0x00174730 - the op-new + payload-copy

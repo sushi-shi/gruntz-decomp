@@ -905,10 +905,11 @@ source = "src/Image/CFileImageLoadByExt.cpp"
 flags = "eh"
 
 [[unit]]
-# trace-discovered class memberships (gruntz.analysis.gen_class_stubs); own TU so
-# the minimal class decls never clash with the real models in other units.
-unit = "engine_discovered"
-source = "src/Stub/Discovered.cpp"
+# matcher-5: trace-discovered unattributed leaf methods/ctors/vtable-restore thunks
+# re-homed out of src/Stub/Discovered.cpp into a real module TU (own TU so the
+# minimal ClassUnknown_N decls never clash with the real models in other units).
+unit = "tracediscoveredleaves"
+source = "src/Gruntz/TraceDiscoveredLeaves.cpp"
 flags = "base"
 
 [[unit]]
@@ -2699,6 +2700,30 @@ flags = "base"
 unit = "lutshaderect"
 source = "src/Gruntz/LutShadeRect.cpp"
 flags = "base"
+
+[[unit]]
+# matcher-5: non-member engine externs (ILT jmp-islands + RezAssertFail/RelayHwnd)
+# re-homed from src/Stub/EngineExternFns.cpp. base+/GX mirrors the stub-unit env.
+unit = "engineexternfns"
+source = "src/Gruntz/EngineExternFns.cpp"
+flags = "base"
+extra = ["/GX"]
+
+[[unit]]
+# matcher-5: operator-new/malloc-site ctors (unattributed placeholder classes)
+# re-homed from src/Stub/MallocConstructors.cpp. base+/GX mirrors the stub-unit env.
+unit = "mallocconstructors"
+source = "src/Gruntz/MallocConstructors.cpp"
+flags = "base"
+extra = ["/GX"]
+
+[[unit]]
+# matcher-5: engine-label game-state loaders/dispatchers (unattributed classes)
+# re-homed from src/Stub/Backlog.cpp. base+/GX mirrors the stub-unit env.
+unit = "enginelabelbacklog"
+source = "src/Gruntz/EngineLabelBacklog.cpp"
+flags = "base"
+extra = ["/GX"]
 
 [[unit]]
 unit = "globals"
