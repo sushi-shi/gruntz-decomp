@@ -213,3 +213,12 @@ name,rva,size
 ??_7HagridWorkerA@@6B@,0x1efea0,0x30
 ??_7HagridWorkerB@@6B@,0x1efed0,0x38
 ??_7CRemusNode@@6B@,0x1efbc0,0x28
+??_7CGruntzSoundInnerZ@@6B@,0x1ef700,0x40
+??_7DirectSoundMgr@@6B@,0x1ef6b8,0x4
+??_7DSoundCloneInst@@6B@,0x1ef6bc,0x4
+??_7DSoundBaseSub@@6B@,0x1ef6c0,0x4
+??_7SoundDevice@@6B@,0x1ef6c4,0x4
+??_7SoundStream@@6B@,0x1ef6ec,0x4
+??_7StreamFeeder@@6B@,0x1ef6f0,0xc
+??_7StreamVoiceFeeder@@6B@,0x1ef6e0,0xc
+??_7CShadeTableArray@@6B@,0x1efb28,0x14

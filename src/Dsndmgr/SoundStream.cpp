@@ -25,12 +25,10 @@ inline void* operator new(u32, void* p) {
     return p;
 }
 
-// The stream class's retail vftable (0x5ef6ec), restamped by ~SoundStream at
-// entry - a transitional reloc-masked DIR32 store while the derived class's
-// virtuals aren't all matched (so it stays non-polymorphic and the compiler
-// emits no vtable).
-DATA(0x001ef6ec)
-extern void* const g_SoundStreamVtbl[];
+// ALL-VTABLES phase: the stream vftable (0x5ef6ec) is now cl-emitted as
+// ??_7SoundStream@@6B@ from the real polymorphic SoundStream : SoundDevice (virtual
+// dtor override); the ctor auto-stamps it and the dtor auto-resets it + chains
+// ~SoundDevice (was the manual g_SoundStreamVtbl stamps).
 
 // The inherited intrusive instance-list helpers on the +0x94 head (same engine
 // list family DirectSoundMgr models as the clone list): Insert (0x1390e0, prepend
@@ -58,16 +56,15 @@ SIZE_UNKNOWN(StreamVoiceList); // {head,tail} list-head view
 // The 0x5ef6ec stamp + the 0x137710 shared dtor (via the scalar dtor below)
 // prove it is SoundStream's.
 // @early-stop
-// residual (~97%): a vptr-store scheduling coin-flip - retail stamps the 0x5ef6ec
-// vptr AFTER the two zero stores, cl schedules it first (no source-order lever flips
-// it). The former base-ctor symbol ambiguity is RESOLVED: 0x136440 is now modeled as
-// SoundDevice::SoundDevice (was the Ghidra placeholder ??0UnknownSalazar), so the
-// implicit base call pairs by name in both the recompiled and delinked objects.
+// vptr-position wall: retail stamps the 0x5ef6ec vptr AFTER the two zero stores
+// (vptr-last), but the ALL-VTABLES real-polymorphic model forces cl's implicit
+// vptr-first store at ctor entry (after the SoundDevice base ctor). Body (base ctor
+// + two zeros) otherwise matches; the vptr-position divergence is accepted.
 RVA(0x001376d0, 0x20)
 SoundStream::SoundStream() {
+    // cl auto-stamps ??_7SoundStream@@6B@ (0x5ef6ec) here (was the manual store).
     m_94 = 0;
     m_98 = 0;
-    *(void**)this = (void*)g_SoundStreamVtbl;
 }
 
 // ---------------------------------------------------------------------------
@@ -85,12 +82,11 @@ void* SoundStream::ScalarDtor(i32 flag) {
 }
 
 // ---------------------------------------------------------------------------
-// SoundStream::~SoundStream (__thiscall). Restamp the stream vptr,
-// then tail-jump into the base SoundDevice destructor (which runs the teardown).
+// SoundStream::~SoundStream (__thiscall). Empty body: cl resets the vptr to
+// ??_7SoundStream@@6B@ (0x5ef6ec) then chains ~SoundDevice (the teardown) - was
+// the hand-rolled restamp + implicit base-dtor tail.
 RVA(0x00137710, 0xb)
-SoundStream::~SoundStream() {
-    *(void**)this = (void*)g_SoundStreamVtbl;
-}
+SoundStream::~SoundStream() {}
 
 // ---------------------------------------------------------------------------
 // SoundStream::CreateStreamBuffer (__thiscall, /GX EH frame). Validate

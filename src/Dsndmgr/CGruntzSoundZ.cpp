@@ -21,12 +21,13 @@
 #include <Rez/RezMgr.h> // RezAlloc - the engine heap allocator (reloc-masked)
 #include <rva.h>
 
-// The inner sound object's retail vftable (0x5ef700 -> RVA 0x1ef700). Stamped into
-// each freshly-allocated bank by address (a reloc-masked DIR32 store) - the
-// transitional vtable workaround, since the inner class's virtuals live in another
-// TU and are not all matched, so the compiler must not emit a vtable of its own.
-DATA(0x001ef700)
-extern void* g_innerSoundVtbl;
+// ALL-VTABLES phase: CGruntzSoundInnerZ is now a REAL polymorphic class (16
+// virtuals in slot order), so cl auto-emits ??_7CGruntzSoundInnerZ@@6B@ and stamps
+// the vptr inside its ctor. The create helpers construct it via placement-new into
+// the RezAlloc'd block (was the manual `*(void**)raw=&g_innerSoundVtbl` + field seed).
+inline void* operator new(u32, void* p) {
+    return p;
+}
 
 // Miles Sound System (AIL) sequence-status query, reached through the IAT
 // (call ds:[__imp__AIL_sequence_status@4]); used by CGruntzSoundInnerZ::IsBusy.
@@ -86,21 +87,9 @@ CGruntzSoundInnerZ* CGruntzSoundZ::CreateBank2_1385e0(i32 a1, i32 a2) {
     if (m_enabled == 0) {
         return 0;
     }
-    char* raw = (char*)RezAlloc(0x60);
-    CGruntzSoundInnerZ* inner;
-    if (raw != 0) {
-        *(void**)raw = &g_innerSoundVtbl;
-        *(raw + 0x04) = 0;
-        *(i32*)(raw + 0x44) = 0;
-        *(i32*)(raw + 0x48) = 0;
-        *(i32*)(raw + 0x4c) = 0;
-        *(i32*)(raw + 0x54) = 0x64;
-        *(i32*)(raw + 0x50) = 0x64;
-        *(i32*)(raw + 0x58) = 0;
-        *(i32*)(raw + 0x5c) = 0;
-        inner = (CGruntzSoundInnerZ*)raw;
-    } else {
-        inner = 0;
+    CGruntzSoundInnerZ* inner = (CGruntzSoundInnerZ*)RezAlloc(0x60);
+    if (inner != 0) {
+        new (inner) CGruntzSoundInnerZ();
     }
     if (inner->Init2(a1, a2) == 0) {
         if (inner != 0) {
@@ -121,21 +110,9 @@ CGruntzSoundInnerZ* CGruntzSoundZ::CreateBank_138670(i32 a1, i32 a2, i32 a3) {
     if (m_enabled == 0) {
         return 0;
     }
-    char* raw = (char*)RezAlloc(0x60);
-    CGruntzSoundInnerZ* inner;
-    if (raw != 0) {
-        *(void**)raw = &g_innerSoundVtbl;
-        *(raw + 0x04) = 0;
-        *(i32*)(raw + 0x44) = 0;
-        *(i32*)(raw + 0x48) = 0;
-        *(i32*)(raw + 0x4c) = 0;
-        *(i32*)(raw + 0x54) = 0x64;
-        *(i32*)(raw + 0x50) = 0x64;
-        *(i32*)(raw + 0x58) = 0;
-        *(i32*)(raw + 0x5c) = 0;
-        inner = (CGruntzSoundInnerZ*)raw;
-    } else {
-        inner = 0;
+    CGruntzSoundInnerZ* inner = (CGruntzSoundInnerZ*)RezAlloc(0x60);
+    if (inner != 0) {
+        new (inner) CGruntzSoundInnerZ();
     }
     if (inner->Init(a1, a2, a3) == 0) {
         if (inner != 0) {

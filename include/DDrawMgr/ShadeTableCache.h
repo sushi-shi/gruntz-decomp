@@ -41,18 +41,33 @@ struct CShadeTable {
     i32 LoadFile(struct CMemFile* f, i32 size, i32 k); // 0x150330
 };
 
-// The growable element-array subobject (lives at class +0x04). Polymorphic: its
-// own vftable is at +0x00. Its destructor restores the array vtable, frees
-// m_pData, and restores the grand-base vtable - the cache dtor inlines this.
-struct CShadeTableArray {
-    void* m_vtbl;          // +0x00 (parent +0x04)
-    CShadeTable** m_pData; // +0x04 (parent +0x08)
-    i32 m_nSize;           // +0x08 (parent +0x0c)
-    i32 m_nMaxSize;        // +0x0c (parent +0x10)
-    i32 m_nGrowBy;         // +0x10 (parent +0x14)
+// The growable element-array subobject (lives at cache +0x04). ALL-VTABLES phase:
+// modeled as a REAL 2-level polymorphic hierarchy (like CAniElementBase) so cl
+// auto-emits both vtables + auto-stamps/resets the vptr:
+//   CShadeArrayBase  - the CObArray-like grand base, masks ??_7CObject@@6B@
+//                      (g_remusBaseDtorVtbl @0x5e8cb4); 5 CObject-interface slots.
+//   CShadeTableArray - the element array, masks ??_7CShadeTableArray (0x5efb28);
+//                      overrides slot 1 (dtor 0x150020) + slot 2 (0x14fe90).
+// The cache ctor/dtor inline the array ctor/dtor: cl stamps 0x5efb28 in the ctor,
+// resets 0x5efb28 then chains the CObject grand-base reset (0x5e8cb4) in the dtor.
+struct CShadeArrayBase {
+    virtual void Vf0();         // [0] 0x1bef01
+    virtual ~CShadeArrayBase(); // [1] CObject dtor slot
+    virtual void Vf2();         // [2] 0x0028ec
+    virtual void Vf3();         // [3] 0x00106e
+    virtual void Vf4();         // [4] 0x004034
 
+    // vptr @ +0x00 (cache +0x04); fields follow.
+    CShadeTable** m_pData; // +0x04 (cache +0x08)
+    i32 m_nSize;           // +0x08 (cache +0x0c)
+    i32 m_nMaxSize;        // +0x0c (cache +0x10)
+    i32 m_nGrowBy;         // +0x10 (cache +0x14)
+};
+
+struct CShadeTableArray : CShadeArrayBase {
     CShadeTableArray();
-    ~CShadeTableArray();
+    ~CShadeTableArray();               // 0x150020  overrides slot 1
+    void Vf2();                        // 0x14fe90  overrides slot 2 (declared-only)
     void SetSizeGrow(i32 n, i32 grow); // 0x150040
 };
 

@@ -301,7 +301,7 @@ gruntzcommand	17	17
 gruntzmgr	93	63
 gruntzmgrtransition	1	0
 gruntzplayer	8	3
-gruntzsoundz	15	14
+gruntzsoundz	15	12
 gruntzwnd	9	8
 hash	10	9
 heapdiag	1	0
@@ -449,15 +449,15 @@ scattersamples	2	1
 severusworkerdtor	1	1
 sfselectdevice	1	0
 shadedescrtable	2	0
-shadetablecache	19	3
+shadetablecache	19	4
 siriusworkerhandlers	4	3
 slotcombofill	1	0
 smackervideowindow	1	0
 soundbankload	1	0
-sounddevice	16	8
+sounddevice	16	7
 soundfontpath	1	1
 soundresmap	1	0
-soundstream	7	3
+soundstream	7	2
 soundtickctor	1	1
 soundvoicelist	4	3
 spriteloaders	10	5
@@ -472,7 +472,7 @@ statusbargamemenu	1	0
 statusbaritem	2	1
 statusbartabbuilders	3	0
 statusbarupdaters	7	0
-streamfeeder	9	7
+streamfeeder	9	6
 streamrecordloaders	5	0
 streamvoice	5	3
 surfacepalette	1	1
@@ -1772,12 +1772,13 @@ directinputmgr2	?SetupKeyTable@CInputDevice@@QAEXXZ	94.5946	94.5946	4	4eb5da0c13
 directinputmgr2	?Shutdown@DirectInputMgr2@@QAEXXZ	100.0000	100.0000	3	0cd0fa1efa29	0x132d90
 directinputmgr2	?Teardown@CInputDevice@@QAEXXZ	100.0000	100.0000	2	f32e81f04bab	0x133bf0
 directinputmgr2	?Unacquire@CInputDevice@@QAEHXZ	100.0000	100.0000	3	76cbc70bdd81	0x134fe0
-directsoundmgr	??0DSoundBaseSub@@QAE@PAUIDirectSoundBufferZ@@PAVDirectSoundMgr@@@Z	100.0000	100.0000	2	665532ffffc4	0x136230
-directsoundmgr	??0DSoundCloneInst@@QAE@PAUIDirectSoundBufferZ@@PAVDirectSoundMgr@@@Z	89.3750	89.3750	3	9f0f64961d8b	0x135b10
-directsoundmgr	??0DirectSoundMgr@@QAE@PAUIDirectSoundBufferZ@@PAV0@@Z	100.0000	100.0000	5	9b3cf563bc1e	0x1351d0
-directsoundmgr	??1DirectSoundMgr@@QAE@XZ	54.4483	54.4483	2	dc5874689677	0x135bb0
+directsoundmgr	??0DSoundBaseSub@@QAE@PAUIDirectSoundBufferZ@@PAVDirectSoundMgr@@@Z	100.0000	100.0000	3	d0c7785c306a	0x136230
+directsoundmgr	??0DSoundCloneInst@@QAE@PAUIDirectSoundBufferZ@@PAVDirectSoundMgr@@@Z	85.7188	85.7188	4	608b7597273c	0x135b10
+directsoundmgr	??0DirectSoundMgr@@QAE@PAUIDirectSoundBufferZ@@PAV0@@Z	100.0000	100.0000	6	84e4b0ce528d	0x1351d0
+directsoundmgr	??1DSoundBaseSub@@UAE@XZ	100.0000	100.0000	1	1beec211bc4e	0x136260
+directsoundmgr	??1DSoundCloneInst@@UAE@XZ	99.9655	99.9655	1	681814f22fdf	0x135bb0
+directsoundmgr	??1DirectSoundMgr@@UAE@XZ	100.0000	100.0000	1	70e6312f0246	0x135300
 directsoundmgr	?ApplyAndPlay@DirectSoundMgr@@QAEHHHHH@Z	100.0000	100.0000	2	6af7920ca856	0x136300
-directsoundmgr	?BaseDtor@DirectSoundMgr@@QAEXXZ	100.0000	100.0000	1	220c935476fd	0x136260
 directsoundmgr	?Clone@DirectSoundMgr@@QAEPAV1@H@Z	97.4118	97.4118	4	a439b0c5a9ee	0x135c20
 directsoundmgr	?CloneAndPlay@DirectSoundMgr@@QAEHHHH@Z	100.0000	100.0000	3	3bfdce249f7c	0x135660
 directsoundmgr	?ComputeDuration@DirectSoundMgr@@QAEXXZ	100.0000	100.0000	2	efe805a378d5	0x1359a0
@@ -1797,7 +1798,6 @@ directsoundmgr	?Play@DirectSoundMgr@@QAEHXZ	95.5172	95.5172	3	9d81f83143af	0x136
 directsoundmgr	?ReacquireBuffer@DirectSoundMgr@@QAEHXZ	99.6154	99.6154	2	624ff199808e	0x135340
 directsoundmgr	?ReacquireViaCallback@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	3	b562836d8dba	0x1365e0
 directsoundmgr	?RemoveClone@DirectSoundMgr@@QAEXPAV1@@Z	100.0000	100.0000	2	7875878133be	0x135d20
-directsoundmgr	?RestampBufferVtbl@DirectSoundMgr@@QAEXXZ	100.0000	100.0000	1	aa6cff1de3fb	0x135300
 directsoundmgr	?Restore@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	4	2d71bdf5406d	0x135310
 directsoundmgr	?SetCooperativeLevel@DirectSoundMgr@@QAEHPAXI@Z	100.0000	100.0000	2	d8ac0ca008f6	0x1365f0
 directsoundmgr	?SetCurrentPosition@DirectSoundMgr@@QAEHI@Z	100.0000	100.0000	2	45b5a2f7e845	0x135a70
@@ -2576,8 +2576,8 @@ gruntzplayer	?GetName@GruntzPlayer@@QAE?AVCString@@XZ	100.0000	100.0000	2	5bbb25
 gruntzplayer	?Reset@GruntzPlayer@@QAEHXZ	94.8750	94.8750	2	70e9ae95b614	0xda9e0
 gruntzplayer	?Serialize@GruntzPlayer@@QAEHPAXHHH@Z	98.1333	98.1333	3	3479c08af349	0xdace0
 gruntzsoundz	??1CGruntzSoundZ@@UAE@XZ	91.5790	91.5790	1	eadd9784e22d	0x86040
-gruntzsoundz	?CreateBank2_1385e0@CGruntzSoundZ@@QAEPAVCGruntzSoundInnerZ@@HH@Z	100.0000	100.0000	1	70c23a95a540	0x1385e0
-gruntzsoundz	?CreateBank_138670@CGruntzSoundZ@@QAEPAVCGruntzSoundInnerZ@@HHH@Z	100.0000	100.0000	2	b662c03967cb	0x138670
+gruntzsoundz	?CreateBank2_1385e0@CGruntzSoundZ@@QAEPAVCGruntzSoundInnerZ@@HH@Z	90.8621	90.8621	2	37d27109d794	0x1385e0
+gruntzsoundz	?CreateBank_138670@CGruntzSoundZ@@QAEPAVCGruntzSoundInnerZ@@HHH@Z	91.1667	91.1667	3	417a46e26e76	0x138670
 gruntzsoundz	?Insert_138700@CGruntzSoundZ@@QAEXPAVCGruntzSoundInnerZ@@@Z	100.0000	100.0000	2	09baae7d0a84	0x138700
 gruntzsoundz	?IsBusy@CGruntzSoundInnerZ@@QAEHXZ	100.0000	100.0000	1	ff67b00529a2	0x138f60
 gruntzsoundz	?IsPlaying_138920@CGruntzSoundZ@@QAEHXZ	100.0000	100.0000	2	11607c292047	0x138920
@@ -3323,24 +3323,24 @@ sfselectdevice	?SFManager_SelectBestDevice@@YAHXZ	73.5827	73.5827	2	277831f44be8
 shadedescrtable	?Select@ShadeSelector@@QAEXHPAUShadeDescr@@@Z	68.5938	68.5938	2	980c21c9b21b	0x14dd90
 shadedescrtable	?SetShadeDescr@@YAXPAUShadeDescr@@H@Z	61.8966	61.8966	2	d7ce23754255	0x14dcf0
 shadetablecache	??0CShadeTableCache@@QAE@XZ	100.0000	100.0000	2	877851623bba	0x14de30
-shadetablecache	??1CShadeTableCache@@QAE@XZ	80.1333	80.1333	3	dc4bfb9af1fc	0x14de50
+shadetablecache	??1CShadeTableCache@@QAE@XZ	100.0000	100.0000	3	dc4bfb9af1fc	0x14de50
 shadetablecache	?AddFromArray@CShadeTableCache@@QAEPAUCShadeTable@@PBD@Z	76.6319	76.6319	2	53049858f5b6	0x14f6c0
 shadetablecache	?AddFromFile@CShadeTableCache@@QAEPAUCShadeTable@@PBDH@Z	69.5232	69.5232	2	2cb3fd4d7507	0x14f8b0
-shadetablecache	?AddTable@CShadeTableCache@@QAEPAUCShadeTable@@M@Z	73.5659	73.5659	3	82bf4f5d1559	0x14f080
+shadetablecache	?AddTable@CShadeTableCache@@QAEPAUCShadeTable@@M@Z	73.8132	73.8132	3	82bf4f5d1559	0x14f080
 shadetablecache	?AlphaTable@CShadeTableCache@@QAEPAUCShadeTable@@PAE@Z	92.5632	92.5632	3	e88cfe1d8a72	0x14f5b0
-shadetablecache	?CompareHue@CShadeTableCache@@SAHPBX0@Z	89.6857	89.6857	1	9fd4c9c2f52f	0x14fa60
+shadetablecache	?CompareHue@CShadeTableCache@@SAHPBX0@Z	89.4857	89.4857	1	9fd4c9c2f52f	0x14fa60
 shadetablecache	?FindNearestColor@CShadeTableCache@@SAHPAUPalEntry@@HHH@Z	64.3200	64.3200	1	21c2efef9e51	0x14fbf0
 shadetablecache	?FindRemove@CShadeTableCache@@QAEXPAUCShadeTable@@@Z	91.5556	91.5556	2	c56be1b35741	0x14fb80
 shadetablecache	?FlashTable@CShadeTableCache@@QAEPAUCShadeTable@@PAUPalEntry@@HHHH@Z	55.3884	55.3884	2	2200b07c3c4e	0x14df40
 shadetablecache	?FreeNodes@CShadeTableCache@@QAEXXZ	100.0000	100.0000	1	200336a988e4	0x14ded0
-shadetablecache	?GammaTable@CShadeTableCache@@QAEPAUCShadeTable@@PAUPalEntry@@HH@Z	78.7200	78.7200	2	128f43925d62	0x14e9f0
+shadetablecache	?GammaTable@CShadeTableCache@@QAEPAUCShadeTable@@PAUPalEntry@@HH@Z	78.2629	78.2629	2	128f43925d62	0x14e9f0
 shadetablecache	?GreyTable@CShadeTableCache@@QAEPAUCShadeTable@@XZ	78.4621	78.4621	3	57c2e032929b	0x14eef0
 shadetablecache	?HsvShiftTable@CShadeTableCache@@QAEPAUCShadeTable@@PAUPalEntry@@HH@Z	30.1881	30.1881	2	2f69bf58a09e	0x14e540
-shadetablecache	?HueRampTable@CShadeTableCache@@QAEPAUCShadeTable@@PAUPalEntry@@HH@Z	63.5319	63.5319	2	16f4fbeb2774	0x14e830
+shadetablecache	?HueRampTable@CShadeTableCache@@QAEPAUCShadeTable@@PAUPalEntry@@HH@Z	64.3475	64.3475	2	16f4fbeb2774	0x14e830
 shadetablecache	?HueSortTable@CShadeTableCache@@QAEPAUCShadeTable@@PAUPalEntry@@@Z	96.3517	96.3517	2	e36b060fd333	0x14ede0
 shadetablecache	?Init@CShadeTableCache@@QAEHXZ	100.0000	100.0000	2	2d4bdb790e4f	0x14dec0
 shadetablecache	?LumaSortTable@CShadeTableCache@@QAEPAUCShadeTable@@PAUPalEntry@@@Z	96.3517	96.3517	2	ad69497c8386	0x14ec00
-shadetablecache	?SubTable@CShadeTableCache@@QAEPAUCShadeTable@@H@Z	71.6763	71.6763	3	d17e3029429b	0x14f310
+shadetablecache	?SubTable@CShadeTableCache@@QAEPAUCShadeTable@@H@Z	74.2029	74.2029	3	d17e3029429b	0x14f310
 siriusworkerhandlers	??0WorkerFull@@QAE@HHH@Z	98.1765	98.1765	3	617fb6512b6b	0x15b300
 siriusworkerhandlers	?Handler03d670@@YAHPAUOwner@@@Z	100.0000	100.0000	1	839c531d42a0	0x3d670
 siriusworkerhandlers	?Handler07db20@@YAHPAUOwner@@@Z	100.0000	100.0000	1	b23002ac8904	0x7db20
@@ -3348,8 +3348,8 @@ siriusworkerhandlers	?Handler07dda0@@YAHPAUOwner@@@Z	100.0000	100.0000	1	27f1516
 slotcombofill	?Method2a45@CMultiSlotList@@QAEHHH@Z	59.1579	59.1579	1	da5e03287e82	0x37ff0
 smackervideowindow	?CreateVideoWindow@CSmackWin@@QAEHHH@Z	98.0097	98.0097	2	78294a1a8f51	0x17c2a0
 soundbankload	?Load@CSoundBank@@QAEHPBDH@Z	75.4737	75.4737	2	240d06367d98	0x138aa0
-sounddevice	??0SoundDevice@@QAE@XZ	56.9688	56.9688	2	72c4d8e2de4f	0x136440
-sounddevice	??1SoundDevice@@QAE@XZ	28.2353	28.2353	2	9d5238e6dbb8	0x136500
+sounddevice	??0SoundDevice@@QAE@XZ	57.3438	57.3438	3	b7f66a8ceb61	0x136440
+sounddevice	??1SoundDevice@@UAE@XZ	28.2353	28.2353	1	d69f702e7b2b	0x136500
 sounddevice	?Acquire@SoundDevice@@QAEPAVDirectSoundMgr@@PAXII@Z	99.7685	99.7685	2	7cb0e98baaf5	0x136910
 sounddevice	?AcquireFile@SoundDevice@@QAEPAVDirectSoundMgr@@PADII@Z	100.0000	100.0000	2	d40ca1c2fa29	0x136860
 sounddevice	?BuildVolumeTable@SoundDevice@@SAXXZ	100.0000	100.0000	1	7b6c96db57e0	0x1351a0
@@ -3357,7 +3357,7 @@ sounddevice	?CreateBuffer@SoundDevice@@QAEPAVDirectSoundMgr@@PAUWaveFormatX@@II@
 sounddevice	?FreeSamples@SoundDevice@@QAEHXZ	77.4074	77.4074	3	b38b351c006d	0x136ed0
 sounddevice	?ReloadRiff@SoundDevice@@QAEHPAVDirectSoundMgr@@PAXI@Z	93.1376	93.1376	2	38fbe010cb85	0x136bd0
 sounddevice	?RemoveBuffer@SoundDevice@@QAEXPAUSoundBuf@@@Z	100.0000	100.0000	2	bb4ba36e48ee	0x136d80
-sounddevice	?ScalarDtor@SoundDevice@@QAEPAXH@Z	100.0000	100.0000	1	9b104204e4b9	0x1364c0
+sounddevice	?ScalarDtor@SoundDevice@@QAEPAXH@Z	76.3636	76.3636	1	9b104204e4b9	0x1364c0
 sounddevice	?SetPrimaryFormat@SoundDevice@@QAEHPAX@Z	100.0000	100.0000	3	7dee4b17532f	0x1371a0
 sounddevice	?Shutdown@SoundDevice@@QAEXXZ	100.0000	100.0000	2	3f1a3e1acfdb	0x136690
 sounddevice	?StopAll@SoundDevice@@QAEXXZ	100.0000	100.0000	2	5a2d39a0ddc0	0x136de0
@@ -3366,13 +3366,13 @@ sounddevice	?VolumeToAttenuation@SoundDevice@@SAHH@Z	58.1111	58.1111	1	ccabb2037
 sounddevice	_ParseWaveChunks	98.2281	98.2281	1	55419d1096d0	0x137110
 soundfontpath	?BuildSoundFontPath@@YAHD@Z	100.0000	100.0000	1	c4c449448d50	0xf8f30
 soundresmap	?RemoveByValue@CSoundResMap@@QAEXPAVCSoundRes@@@Z	74.8000	74.8000	1	d14ccc097d38	0x157b00
-soundstream	??0SoundStream@@QAE@XZ	96.8000	96.8000	1	434a7f246c67	0x1376d0
-soundstream	??1SoundStream@@QAE@XZ	100.0000	100.0000	1	611af7941630	0x137710
+soundstream	??0SoundStream@@QAE@XZ	96.8000	96.8000	2	18f8193ac687	0x1376d0
+soundstream	??1SoundStream@@UAE@XZ	100.0000	100.0000	1	153ae3f9d9be	0x137710
 soundstream	?CreateStreamBuffer@SoundStream@@QAEPAUStreamVoiceNode@@PAUWaveFormatX@@IHHH@Z	47.0744	47.0744	2	055424ce4115	0x137780
 soundstream	?DestroyVoice@SoundStream@@QAEXPAUStreamVoiceNode@@@Z	100.0000	100.0000	1	65c36bdefb0b	0x1379d0
 soundstream	?OpenStream@SoundStream@@QAEPAUStreamVoiceNode@@PAUStreamSource@@HHHHH@Z	90.5714	90.5714	2	f191bc6619fd	0x137900
 soundstream	?ParseWave@SoundStream@@QAEHPAUStreamSource@@PAUWaveFormatX@@PAI2@Z	98.2640	98.2640	2	4c3129d38105	0x137b70
-soundstream	?ScalarDtor@SoundStream@@QAEPAXH@Z	100.0000	100.0000	1	be19e171f842	0x1376f0
+soundstream	?ScalarDtor@SoundStream@@QAEPAXH@Z	76.3636	76.3636	1	be19e171f842	0x1376f0
 soundtickctor	?SoundTick_Ctor@@YAHXZ	100.0000	100.0000	1	eb13fef5cc82	0x136fe0
 soundvoicelist	?InsertHead@DSoundList@@QAEXPAUDSoundLink@@@Z	100.0000	100.0000	1	dbbaa64039bc	0x1390e0
 soundvoicelist	?InsertTail@DSoundList@@QAEXPAUDSoundLink@@@Z	100.0000	100.0000	1	b2001e2d12ac	0x139110
@@ -3432,12 +3432,12 @@ statusbarupdaters	?UpdateChipGrinderStatusBar@EngineLabelBacklog@@QAEXXZ	80.7372
 statusbarupdaters	?UpdateDestructButtonStatusBar@EngineLabelBacklog@@QAEXXZ	94.6667	94.6667	4	04a8f72dddff	0x10b320
 statusbarupdaters	?UpdateGruntOvenStatusBar@EngineLabelBacklog@@QAEXXZ	79.8947	79.8947	4	283e98145fb0	0x105310
 statusbarupdaters	?UpdateWarpStoneStatusBar@EngineLabelBacklog@@QAEHHHHH@Z	81.2286	81.2286	5	ead5ee9ca605	0x109bd0
-streamfeeder	??0StreamFeeder@@QAE@XZ	100.0000	100.0000	2	652f5af8d919	0x137cd0
-streamfeeder	?Cleanup@StreamFeeder@@QAEXXZ	100.0000	100.0000	2	3b7e1539756d	0x137cf0
-streamfeeder	?CopyWindow@StreamFeeder@@QAEHPAXIPAI0I1@Z	100.0000	100.0000	3	4792ce7417f6	0x137380
-streamfeeder	?FeederReset@StreamFeeder@@QAEXH@Z	100.0000	100.0000	3	c1c8f32594b7	0x137dc0
-streamfeeder	?FeederStart@StreamFeeder@@QAEHPAUFeederOwner@@HIPAUWaveFormatX@@PAXH@Z	96.8254	96.8254	1	d5854e4fa4fb	0x137d10
-streamfeeder	?FillBuffer@StreamFeeder@@QAEHII@Z	88.5679	88.5679	2	471e2b81f341	0x137f30
+streamfeeder	??0StreamFeeder@@QAE@XZ	100.0000	100.0000	3	dd5e2b58970e	0x137cd0
+streamfeeder	?Cleanup@StreamFeeder@@QAEXXZ	90.9091	90.9091	3	f5b4a3a5718a	0x137cf0
+streamfeeder	?Feed@StreamVoiceFeeder@@UAEHPAXIPAI0I1@Z	100.0000	100.0000	1	19b49d936aad	0x137380
+streamfeeder	?FeederReset@StreamFeeder@@QAEXH@Z	100.0000	100.0000	4	8799b576d2fd	0x137dc0
+streamfeeder	?FeederStart@StreamFeeder@@QAEHPAUFeederOwner@@HIPAUWaveFormatX@@PAXH@Z	96.8254	96.8254	2	016eb2985c5e	0x137d10
+streamfeeder	?FillBuffer@StreamFeeder@@QAEHII@Z	88.5679	88.5679	3	09453e106e06	0x137f30
 streamfeeder	?Pause@StreamFeeder@@QAEHXZ	100.0000	100.0000	3	33e1988166b7	0x137f00
 streamfeeder	?Resume@StreamFeeder@@QAEHXZ	100.0000	100.0000	3	86ad0903156c	0x137ed0
 streamfeeder	?SeedWindow@StreamFeeder@@QAEHPAXII@Z	100.0000	100.0000	2	f0835d417132	0x137340
@@ -3446,7 +3446,7 @@ streamrecordloaders	?Load@CEventLoadRec@@QAEHPAVCStreamReader@@@Z	93.9657	93.965
 streamrecordloaders	?Load@CGruntStateRec@@QAEHPAVCDualReader@@HHH@Z	90.5323	90.5323	3	3d6a6840b1b2	0xea990
 streamrecordloaders	?Load@CProjLoadRec@@QAEHPAVCSerialArchive@@HHPAVCSerialObj@@@Z	84.0770	84.0770	2	fcf7645a85ba	0xe0d40
 streamrecordloaders	?Load@CTriggerLoadRec@@QAEHPAVCStreamReader@@@Z	92.2366	92.2366	2	eae63a42ac28	0x9bb0
-streamvoice	??0StreamVoice@@QAE@PAUIDirectSoundBufferZ@@PAVDirectSoundMgr@@HH@Z	35.8824	35.8824	1	32868b69f13b	0x1375b0
+streamvoice	??0StreamVoice@@QAE@PAUIDirectSoundBufferZ@@PAVDirectSoundMgr@@HH@Z	35.7647	35.7647	2	509fa9895bd4	0x1375b0
 streamvoice	??1StreamVoice@@QAE@XZ	42.4643	42.4643	1	59cc0331f52c	0x137650
 streamvoice	?ComputeRatio@StreamVoice@@QAEIXZ	100.0000	100.0000	2	6757fd67071e	0x137590
 streamvoice	?Configure@StreamVoice@@QAEHHHHH@Z	100.0000	100.0000	2	0b1e8d24ac07	0x137520

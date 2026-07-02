@@ -19,33 +19,56 @@
 
 #include <Mfc.h> // real MFC CMapStringToOb / CObject / CString / POSITION
 
-// The inner per-bank sound object (allocated 0x60 bytes, vtable @ 0x5ef700). Only
-// the load-bearing virtual slots are declared so the dispatches lower to the exact
-// `mov eax,[obj]; call [eax+N]` __thiscall sequences. Declarations only - never
-// defined here, so no ??_7 is emitted in this TU; the retail vtable is referenced
-// only by address (reloc-masked) when an instance is created.
+// The inner per-bank sound object (allocated 0x60 bytes, vtable @ 0x5ef700).
+// ALL-VTABLES phase: modeled REAL-POLYMORPHIC (16 virtuals in slot order from the
+// retail vtable 0x5ef700). cl auto-emits ??_7CGruntzSoundInnerZ@@6B@ and stamps the
+// vptr in the (inline) ctor; the create helpers construct it via placement-new so
+// the vptr store falls out implicitly (was the manual `*(void**)raw=&g_innerSoundVtbl`).
+// Slots whose bodies live in other TUs are declared-only (external slot refs in the
+// emitted vtable); slot 0 is kept non-pure (a concrete embeddable class - retail
+// slot 0 is sub_1bef01, not __purecall).
 class CGruntzSoundInnerZ {
 public:
-    virtual void Slot00();                    // +0x00
-    virtual i32 ScalarDtor(i32 flag);         // +0x04  scalar deleting dtor
-    virtual void Slot08();                    // +0x08
-    virtual void Slot0C();                    // +0x0c
-    virtual void Slot10();                    // +0x10
-    virtual i32 Init(i32 a1, i32 a2, i32 a3); // +0x14  one-time setup (3 args)
-    virtual i32 Init2(i32 a1, i32 a2);        // +0x18  alternate setup (2 args)
-    virtual void Slot1C();                    // +0x1c
-    virtual i32 Slot20();                     // +0x20  "is started" gate (IsBusy)
-    virtual i32 Play(i32 hDriver, i32 a2);    // +0x24
-    virtual i32 Slot28();                     // +0x28  StopAll forwards here
-    virtual i32 Slot2C(i32 a1);               // +0x2c  StopBank forwards here
-    virtual i32 Stop();                       // +0x30  stop / status query
+    virtual void Slot00();                    // [0]  0x1bef01
+    virtual i32 ScalarDtor(i32 flag);         // [1]  0x138a30  scalar deleting dtor
+    virtual void Slot08();                    // [2]  0x0028ec
+    virtual void Slot0C();                    // [3]  0x00106e
+    virtual void Slot10();                    // [4]  0x004034
+    virtual i32 Init(i32 a1, i32 a2, i32 a3); // [5]  0x138c20  one-time setup (3 args)
+    virtual i32 Init2(i32 a1, i32 a2);        // [6]  0x138aa0  alternate setup (2 args)
+    virtual void Slot1C();                    // [7]  0x138dd0
+    virtual i32 Slot20();                     // [8]  0x138a10  "is started" gate (IsBusy)
+    virtual i32 Play(i32 hDriver, i32 a2);    // [9]  0x138e10
+    virtual i32 Slot28();                     // [10] 0x138e90  StopAll forwards here
+    virtual i32 Slot2C(i32 a1);               // [11] 0x138ed0  StopBank forwards here
+    virtual i32 Stop();                       // [12] 0x138e60  stop / status query
+    virtual void Slot34();                    // [13] 0x138f20
+    virtual void Slot38();                    // [14] 0x138a20
+    virtual void Slot3C();                    // [15] 0x138d50
+
+    // Inline ctor: cl stamps ??_7 first, then seeds the fields in retail store
+    // order (was the create helpers' manual stamp + field seed).
+    CGruntzSoundInnerZ() {
+        m_name[0] = 0;
+        m_44 = 0;
+        m_48 = 0;
+        m_4c = 0;
+        m_54 = 0x64;
+        m_50 = 0x64;
+        m_58 = 0;
+        m_5c = 0;
+    }
 
     i32 IsBusy(); // RVA 0x138f60 - Slot20() gate + AIL_sequence_status(m_58)
 
-    char m_name[0x40];  // +0x04  inline map key/name buffer
-    char m_pad44[0x14]; // +0x44 .. +0x58 seeded by the create helpers
-    i32 m_58;           // +0x58  AIL sequence handle (queried by IsBusy)
-    i32 m_5c;           // +0x5c
+    char m_name[0x40]; // +0x04  inline map key/name buffer
+    i32 m_44;          // +0x44  seeded 0 by the ctor
+    i32 m_48;          // +0x48  seeded 0
+    i32 m_4c;          // +0x4c  seeded 0
+    i32 m_50;          // +0x50  seeded 0x64
+    i32 m_54;          // +0x54  seeded 0x64
+    i32 m_58;          // +0x58  AIL sequence handle (queried by IsBusy)
+    i32 m_5c;          // +0x5c
 };
 SIZE(CGruntzSoundInnerZ, 0x60); // allocated 0x60 bytes (inner sound object)
 

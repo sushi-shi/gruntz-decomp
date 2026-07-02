@@ -50,10 +50,13 @@ struct StreamVoice {
     i32 m_60; // +0x60  cached ctor arg b
     i32 m_64; // +0x64  cached ctor arg a
     i32 m_68; // +0x68  zero-init in ctor
-    // +0x6c  embedded streaming feeder sub-object. Held inline as StreamFeeder
-    // (m_feeder). The voice's +0x9c / +0xa8 stores land INSIDE this feeder: +0x9c =
-    // feeder+0x30 (loop flag m_loop), +0xa8 = feeder+0x3c (window length m_windowLength).
-    StreamFeeder m_feeder;
+    // +0x6c  embedded streaming feeder sub-object. ALL-VTABLES phase: held as the
+    // DERIVED StreamVoiceFeeder (retail vtable 0x5ef6e0) so cl auto-constructs it
+    // base-then-derived (0x5ef6f0 then 0x5ef6e0) - was a base StreamFeeder + a manual
+    // `*(void**)&m_feeder = g_StreamVoiceFeederVtbl` override in the voice ctor. The
+    // voice's +0x9c / +0xa8 stores land INSIDE this feeder: +0x9c = feeder+0x30 (loop
+    // flag m_loop), +0xa8 = feeder+0x3c (window length m_windowLength).
+    StreamVoiceFeeder m_feeder;
 
     // ctor 0x1375b0(IDirectSoundBuffer* buf, SoundStream* owner, int a, int b). The
     // empty mem-init list keeps the feeder default-constructed (its ctor 0x137cd0)

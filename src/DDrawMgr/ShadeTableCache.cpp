@@ -28,11 +28,10 @@ extern i32 g_gDown; // 0x683eb0
 DATA(0x00283eb4)
 extern i32 g_bDown; // 0x683eb4
 
-// The two foreign vftables stamped by the array ctor/dtor, as DIR32 data.
-DATA(0x001efb28)
-extern void* g_shadeArrayVtbl; // 0x5efb28 - the element-array base vtable
-DATA(0x001e8cb4)
-extern void* g_remusBaseDtorVtbl; // 0x5e8cb4 - the grand-base dtor vtable
+// ALL-VTABLES phase: the array vtable (0x5efb28) + the CObject grand-base dtor
+// vtable (0x5e8cb4) are now cl-emitted from the real CShadeArrayBase/CShadeTableArray
+// polymorphic hierarchy - the manual g_shadeArrayVtbl / g_remusBaseDtorVtbl stamps
+// are gone (cl auto-stamps in the array ctor + auto-resets in the array dtor).
 
 // The working palette base (0x6bf224): the sort/remap builders stash the active
 // palette pointer here for their __cdecl comparators. Reloc-masked DATA.
@@ -76,8 +75,12 @@ struct CMemFile {
 // CShadeTableArray - the embedded element-array subobject. Its inline ctor/dtor
 // fold into the cache ctor/dtor: stamp the array vtable, zero/free m_pData.
 // ===========================================================================
+// Empty grand-base dtor: cl emits just the CObject vptr reset (0x5e8cb4) at the
+// array dtor's tail.
+inline CShadeArrayBase::~CShadeArrayBase() {}
+
 inline CShadeTableArray::CShadeTableArray() {
-    m_vtbl = &g_shadeArrayVtbl;
+    // cl auto-stamps ??_7CShadeTableArray (0x5efb28) here (was m_vtbl = &g_shadeArrayVtbl).
     m_pData = 0;
     m_nGrowBy = 0;
     m_nMaxSize = 0;
@@ -85,11 +88,12 @@ inline CShadeTableArray::CShadeTableArray() {
 }
 
 inline CShadeTableArray::~CShadeTableArray() {
-    m_vtbl = &g_shadeArrayVtbl;
+    // cl resets the vptr to 0x5efb28 (entry), runs the free, then chains
+    // ~CShadeArrayBase which resets the CObject vtable (0x5e8cb4) - was the two
+    // manual m_vtbl stamps.
     if (m_pData) {
         operator delete(m_pData);
     }
-    m_vtbl = &g_remusBaseDtorVtbl;
 }
 
 // ===========================================================================

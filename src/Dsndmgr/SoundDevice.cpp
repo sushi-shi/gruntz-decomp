@@ -99,11 +99,10 @@ struct SoundBufList {
 };
 SIZE_UNKNOWN(SoundBufList); // {head,tail} list-head view
 
-// The device class's retail vftable (0x5ef6c4), stamped by ~SoundDevice at entry
-// - a transitional reloc-masked DIR32 store while the class's virtuals aren't all
-// matched (so the class stays non-polymorphic and the compiler emits no vtable).
-DATA(0x001ef6c4)
-extern void* const g_SoundDeviceVtbl[];
+// ALL-VTABLES phase: the device vftable (0x5ef6c4) is now cl-emitted as
+// ??_7SoundDevice@@6B@ from the real polymorphic SoundDevice (virtual dtor); the
+// ctor auto-stamps it and the dtor auto-resets it (was the manual g_SoundDeviceVtbl
+// stamps).
 
 // SoundBuf::StopAndRewind (0x135380) / StopAllClones (0x136150) are external
 // DirectSoundMgr buffer methods (defined in DirectSoundMgr.cpp); declared with no
@@ -183,11 +182,11 @@ void SoundDevice::BuildVolumeTable() {
 // dtor + the list members) is modelled as destructible subobjects atomically.
 RVA(0x00136440, 0x74)
 SoundDevice::SoundDevice() {
+    // cl auto-stamps ??_7SoundDevice@@6B@ (0x5ef6c4) here (was the manual store).
     m_bufferHead = 0;
     m_bufferTail = 0;
     m_voiceHead = 0;
     m_voiceTail = 0;
-    *(void**)this = (void*)g_SoundDeviceVtbl;
     m_initialized = 0;
     BuildVolumeTable();
     m_80 = 0;
@@ -224,7 +223,7 @@ void* SoundDevice::ScalarDtor(i32 flag) {
 // is modeled; converting now would regress the 3 exact siblings.
 RVA(0x00136500, 0x43)
 SoundDevice::~SoundDevice() {
-    *(void**)this = (void*)g_SoundDeviceVtbl;
+    // cl auto-resets the vptr to ??_7SoundDevice@@6B@ (0x5ef6c4) here (was manual).
     if (m_initialized) {
         Shutdown();
     }

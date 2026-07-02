@@ -16,16 +16,18 @@
 
 namespace {
 
-    // The voice's retail primary vftable (0x5ef6d8, restamped by the dtor) and the
-    // feeder-override vftable (0x5ef6e0, stamped over the embedded feeder by the
-    // ctor) - transitional reloc-masked DIR32 stores while the voice's virtuals
-    // (its scalar-deleting dtor 0x137630 + the feeder-override slots 0x537380..) live
-    // in other TUs, so the class stays non-polymorphic and the compiler emits no
-    // vtable of its own.
+    // The voice's retail primary vftable (0x5ef6d8, stamped by the ctor + restamped
+    // by the dtor). ALL-VTABLES phase: the feeder-override vtable (0x5ef6e0) is now
+    // cl-emitted as ??_7StreamVoiceFeeder@@6B@ via the derived StreamVoiceFeeder
+    // member (base-then-derived construction) - its manual override store is gone.
+    // The voice's OWN vtable (0x5ef6d8) stays a manual reloc-masked DIR32 store: the
+    // voice is a FLAT class whose fields (m_60/m_64/m_68) overlap the DirectSoundMgr
+    // clone base's +0x60..+0x78 padding, so it cannot be a real C++ derived class,
+    // and its vptr is stamped AFTER the manual BaseInit (a vptr-override-after-base
+    // that cl's implicit vptr-first store cannot reproduce). Kept manual; see
+    // docs/vtable-conversion-log.md.
     DATA(0x001ef6d8)
     extern void* const g_StreamVoiceVtbl[];
-    DATA(0x001ef6e0)
-    extern void* const g_StreamVoiceFeederVtbl[];
 
 } // namespace
 
@@ -45,7 +47,8 @@ StreamVoice::StreamVoice(IDirectSoundBufferZ* buf, DirectSoundMgr* owner, i32 a,
     BaseInit(buf, owner);
     *(void**)this = (void*)g_StreamVoiceVtbl;
     m_64 = a;
-    *(void**)&m_feeder = (void*)g_StreamVoiceFeederVtbl;
+    // m_feeder (StreamVoiceFeeder) is cl-constructed (0x5ef6f0 then 0x5ef6e0) as a
+    // member before this body - the manual feeder-override store is gone.
     m_60 = b;
     m_68 = 0;
 }

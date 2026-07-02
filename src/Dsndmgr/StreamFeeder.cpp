@@ -11,41 +11,12 @@
 #include <rva.h>
 #include <string.h> // memset (inlined to rep stos)
 
-// The feeder's virtuals (slot 0 dtor 0x11fec0, slot 1 FeedData 0x137e10, slot 2
-// OnDrain 0x137e20) live in other TUs. Dispatch them through pointer-to-member
-// types so the calls are __thiscall (this in ecx) - a single-inheritance pmf is
-// just a 4-byte code pointer, so reinterpreting the raw vtable slot is exact.
-typedef i32 (StreamFeeder::*FeederVFn)();
-union VSlot {
-    void* p;
-    FeederVFn fn;
-};
-
-inline FeederVFn vslot(void* vtbl, i32 slot) {
-    VSlot v;
-    v.p = ((void**)vtbl)[slot];
-    return v.fn;
-}
-
-// Slot 0 (0x11fec0) is the feed-into-two-regions virtual: (p1, n1, &got1, p2,
-// n2, &got2) -> int. Same pmf-via-union trick for the __thiscall convention.
-typedef i32 (StreamFeeder::*FeedRegionsFn)(void*, u32, u32*, void*, u32, u32*);
-union VSlot0 {
-    void* p;
-    FeedRegionsFn fn;
-};
-
-inline FeedRegionsFn vslot0(void* vtbl) {
-    VSlot0 v;
-    v.p = ((void**)vtbl)[0];
-    return v.fn;
-}
-
-// The feeder's retail vftable (0x5ef6f0), restamped by the ctor + dtor - a
-// transitional reloc-masked DIR32 store while its virtuals (0x11fec0 / 0x137e10
-// / 0x137e20) live in other TUs, so the class stays non-polymorphic.
-DATA(0x001ef6f0)
-extern void* const g_StreamFeederVtbl[];
+// ALL-VTABLES phase: StreamFeeder is now a REAL polymorphic base (see
+// StreamFeeder.h). The slot dispatches use the declared virtuals directly (slot 0
+// Feed, slot 1 FeedData, slot 2 OnDrain) - `this->Feed(...)` lowers to the same
+// `mov eax,[this]; call [eax+N]` the old pmf-via-union did. cl auto-emits
+// ??_7StreamFeeder@@6B@ (0x5ef6f0) and stamps the vptr in the ctor (was the manual
+// g_StreamFeederVtbl store).
 
 // ---------------------------------------------------------------------------
 // StreamFeeder::SeedWindow (__thiscall, 3 args). Arm the data window
@@ -65,14 +36,14 @@ i32 StreamFeeder::SeedWindow(void* src, u32 off, u32 len) {
 }
 
 // ---------------------------------------------------------------------------
-// StreamFeeder::CopyWindow (__thiscall, 6 args - two
-// (dst, n, *got) triples). Stream-copy up to `n` bytes into each destination
-// region from the running window cursor (m_sourceOffset), reporting the byte count read in
-// *got, and looping back to the window start (m_windowStart) at the end when the loop
-// flag (m_loop) is set. Each chunk is read through StreamSource::Read (0x139af0)
-// at the source back-pointer (m_source). This is the slot-0 feed virtual's body.
+// StreamVoiceFeeder::Feed (was CopyWindow) - the derived voice-feeder's slot-0
+// override (__thiscall, 6 args - two (dst, n, *got) triples). Stream-copy up to `n`
+// bytes into each destination region from the running window cursor (m_sourceOffset),
+// reporting the byte count read in *got, and looping back to the window start
+// (m_windowStart) at the end when the loop flag (m_loop) is set. Each chunk is read
+// through StreamSource::Read (0x139af0) at the source back-pointer (m_source).
 RVA(0x00137380, 0x10e)
-i32 StreamFeeder::CopyWindow(void* dst1, u32 n1, u32* got1, void* dst2, u32 n2, u32* got2) {
+i32 StreamVoiceFeeder::Feed(void* dst1, u32 n1, u32* got1, void* dst2, u32 n2, u32* got2) {
     if (dst1 != 0 && n1 > 0) {
         u32 want = n1;
         if (m_sourceOffset + n1 > m_windowEnd) {
@@ -115,7 +86,7 @@ i32 StreamFeeder::CopyWindow(void* dst1, u32 n1, u32* got1, void* dst2, u32 n2, 
 // buffer/cursor/flag fields.
 RVA(0x00137cd0, 0x1a)
 StreamFeeder::StreamFeeder() {
-    *(void**)this = (void*)g_StreamFeederVtbl;
+    // cl auto-stamps ??_7StreamFeeder@@6B@ (0x5ef6f0) here (was the manual store).
     m_buffer = 0;
     m_armed = 0;
     m_bufferCursor = 0;
@@ -124,11 +95,15 @@ StreamFeeder::StreamFeeder() {
 }
 
 // ---------------------------------------------------------------------------
-// StreamFeeder::Cleanup (__thiscall - the dtor body). Restamp the
-// vptr, tear down the armed buffer, clear m_buffer.
+// StreamFeeder::Cleanup (__thiscall - the dtor body). Tear down the armed buffer,
+// clear m_buffer. ALL-VTABLES phase: the leading vptr restamp (was
+// `*(void**)this = g_StreamFeederVtbl`) is dropped - the vptr is now cl-managed and
+// this is a named teardown method (not the dtor), so it cannot reference ??_7.
+// @early-stop
+// vptr-restamp drop: Cleanup no longer emits the leading vptr reset (a plain method
+// can't reference the cl-emitted ??_7StreamFeeder); the teardown body is unchanged.
 RVA(0x00137cf0, 0x20)
 void StreamFeeder::Cleanup() {
-    *(void**)this = (void*)g_StreamFeederVtbl;
     if (m_armed != 0) {
         FeederReset(1);
     }
@@ -145,7 +120,7 @@ void StreamFeeder::FeederReset(i32 doStop) {
         if (m_drained != 0) {
             Pause();
         }
-        (this->*vslot(m_vtbl, 2))(); // OnDrain (slot 2)
+        OnDrain(); // slot 2 (virtual)
         if (doStop != 0) {
             m_owner->RemoveBuffer(m_buffer);
         }
@@ -223,7 +198,7 @@ i32 StreamFeeder::FeederStart(
         return 0;
     }
     m_armed = 1;
-    if ((this->*vslot(m_vtbl, 1))() == 0) { // FeedData (slot 1)
+    if (FeedData() == 0) { // slot 1 (virtual)
         FeederReset(1);
         return 0;
     }
@@ -259,7 +234,7 @@ i32 StreamFeeder::FillBuffer(u32 writePos, u32 bytes) {
     u32 got1 = 0;
     u32 got2 = 0;
     if (m_pendingBytes == 0) {
-        if ((this->*vslot0(m_vtbl))(p1, n1, &got1, p2, n2, &got2) == 0) {
+        if (Feed(p1, n1, &got1, p2, n2, &got2) == 0) { // slot 0 (virtual)
             m_buffer->Unlock(p1, n1, p2, n2);
             return 0;
         }

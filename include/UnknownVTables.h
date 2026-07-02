@@ -73,39 +73,16 @@ struct Vtbl_1ef6d0 {
 };
 
 // ClassWithUnknownVTable8  @ 0x005ef6e0  (3 slots)  refs x1  src:g_StreamVoiceFeederVtbl
-struct StreamVoiceFeederVtbl {
-    UnkVfn CopyWindow;   // [0] -> 0x137380 CopyWindow
-    UnkVfn slot1_137490; // [1] -> 0x137490 sub_137490
-    UnkVfn slot2_1374b0; // [2] -> 0x1374b0 sub_1374b0
-};
+// REALIZED as ??_7StreamVoiceFeeder@@6B@ (real StreamFeeder-derived voice feeder in
+// src/Dsndmgr/StreamFeeder.h; cl auto-emits). Placeholder removed.
 
 // ClassWithUnknownVTable9  @ 0x005ef6f0  (3 slots)  refs x2  src:g_StreamFeederVtbl
-struct StreamFeederVtbl {
-    UnkVfn __purecall;   // [0] -> 0x11fec0 __purecall
-    UnkVfn slot1_137e10; // [1] -> 0x137e10 sub_137e10
-    UnkVfn slot2_137e20; // [2] -> 0x137e20 sub_137e20
-};
+// REALIZED as ??_7StreamFeeder@@6B@ (real polymorphic StreamFeeder base in
+// src/Dsndmgr/StreamFeeder.h; cl auto-emits). Placeholder removed.
 
 // ClassWithUnknownVTable10  @ 0x005ef700  (16 slots)  refs x3  src:g_innerSoundVtbl
-struct InnerSoundVtbl {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x138a30 `scalar_deleting_destructor'
-    UnkVfn slot2_0028ec;                 // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
-    UnkVfn
-        thirdparty_138c20_AIL_allocate_sequence_handle_4_AIL_init_sequence_12_AIL_; // [5] -> 0x138c20 thirdparty_138c20_AIL_allocate_sequence_handle_4_AIL_init_sequence_12_AIL_
-    UnkVfn FUN_00538aa0;  // [6] -> 0x138aa0 FUN_00538aa0
-    UnkVfn ReleaseHandle; // [7] -> 0x138dd0 ReleaseHandle
-    UnkVfn slot8_138a10;  // [8] -> 0x138a10 sub_138a10
-    UnkVfn Play;          // [9] -> 0x138e10 Play
-    UnkVfn Pause;         // [10] -> 0x138e90 Pause
-    UnkVfn Resume;        // [11] -> 0x138ed0 Resume
-    UnkVfn Stop;          // [12] -> 0x138e60 Stop
-    UnkVfn FUN_00538f20;  // [13] -> 0x138f20 FUN_00538f20
-    UnkVfn slot14_138a20; // [14] -> 0x138a20 sub_138a20
-    UnkVfn slot15_138d50; // [15] -> 0x138d50 sub_138d50
-};
+// REALIZED as ??_7CGruntzSoundInnerZ@@6B@ (real polymorphic CGruntzSoundInnerZ in
+// src/Dsndmgr/CGruntzSoundZ.cpp; cl auto-emits the vtable). Placeholder removed.
 
 // ClassWithUnknownVTable11  @ 0x005ef750  (3 slots)  refs x3
 struct Vtbl_1ef750 {
@@ -228,13 +205,9 @@ struct Vtbl_1efae8 {
 };
 
 // ClassWithUnknownVTable21  @ 0x005efb28  (5 slots)  refs x3  src:g_shadeArrayVtbl
-struct ShadeArrayVtbl {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x150020 `scalar_deleting_destructor'
-    UnkVfn slot2_14fe90;                 // [2] -> 0x14fe90 sub_14fe90
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
-};
+// REALIZED as ??_7CShadeTableArray@@6B@ (real CObject-derived array in
+// src/DDrawMgr/ShadeTableCache.{h,cpp}; cl auto-emits it + the CObject-masking
+// ??_7CShadeArrayBase). Placeholder removed.
 
 // ClassWithUnknownVTable22  @ 0x005efb80  (10 slots)  refs x7  src:g_siriusWorkerVtbl
 struct SiriusWorkerVtbl {

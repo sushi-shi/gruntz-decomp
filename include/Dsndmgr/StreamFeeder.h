@@ -53,12 +53,19 @@ struct FeederBuf {
 };
 SIZE_UNKNOWN(FeederBuf); // thin DirectSoundMgr-buffer view (method-only)
 
-// The streaming feeder. Its own vftable (0x5ef6f0) is restamped by the ctor +
-// dtor (a transitional reloc-masked DIR32 store: slot 0 = scalar-deleting dtor
-// 0x11fec0, slot 1 = FeedData 0x137e10, slot 2 = OnDrain 0x137e20 - all external,
-// so the class stays non-polymorphic and the compiler emits no vtable).
+// The streaming feeder. ALL-VTABLES phase: REAL polymorphic base - cl auto-emits
+// ??_7StreamFeeder@@6B@ (0x5ef6f0) and auto-stamps the vptr in the ctor (0x137cd0).
+// The 3 slots are declared-only virtuals (bodies external / overridden by the
+// derived voice-feeder): slot 0 Feed (retail base = __purecall; kept non-pure so
+// the class stays concrete/embeddable), slot 1 FeedData (0x137e10), slot 2 OnDrain
+// (0x137e20). The voice's embedded feeder overrides slot 0 with CopyWindow (0x137380).
 struct StreamFeeder {
-    void* m_vtbl;         // +0x00  (retail vtable 0x5ef6f0; virtuals external)
+    virtual i32
+    Feed(void* d1, u32 n1, u32* g1, void* d2, u32 n2, u32* g2); // [0] feed-two-regions
+    virtual i32 FeedData();                                     // [1] 0x137e10
+    virtual void OnDrain();                                     // [2] 0x137e20
+
+    // vptr @ +0x00 (implicit); first real field at +0x04.
     FeederOwner* m_owner; // +0x04  owner (SoundStream/SoundDevice)
     FeederBuf* m_buffer;  // +0x08  per-stream DirectSound buffer wrapper
     u32 m_bufferCursor;   // +0x0c  read cursor into the buffer (write phase)
@@ -78,16 +85,8 @@ struct StreamFeeder {
     u32 m_windowEnd;    // +0x40  window end (start+length)
 
     i32 SeedWindow(void* src, u32 off, u32 len); // 0x137340
-    i32 CopyWindow(
-        void* dst1,
-        u32 n1,
-        u32* got1,
-        void* dst2,
-        u32 n2,
-        u32* got2
-    );              // 0x137380 (slot-0 feed)
-    StreamFeeder(); // 0x137cd0
-    void Cleanup(); // 0x137cf0  (dtor body)
+    StreamFeeder();                              // 0x137cd0
+    void Cleanup();                              // 0x137cf0  (dtor body)
     i32 FeederStart(
         FeederOwner* owner,
         i32 arg2,
@@ -105,5 +104,21 @@ struct StreamFeeder {
     i32 TickPump(i32 now);
 };
 SIZE(StreamFeeder, 0x44); // embedded feeder sub-object (StreamVoice+0x6c..0xb0)
+
+// The DERIVED per-voice feeder (retail vtable 0x5ef6e0) embedded at StreamVoice+0x6c.
+// ALL-VTABLES phase: a real StreamFeeder-derived override so cl auto-emits
+// ??_7StreamVoiceFeeder@@6B@ (0x5ef6e0) via base-then-derived member construction
+// (base ctor stamps 0x5ef6f0, then the derived vptr 0x5ef6e0) - was the manual
+// `*(void**)&m_feeder = g_StreamVoiceFeederVtbl` override. Adds no fields (size 0x44).
+// Overrides: slot 0 Feed = CopyWindow (0x137380); slots 1/2 (0x137490 / 0x1374b0)
+// are declared-only overrides (bodies external).
+struct StreamVoiceFeeder : StreamFeeder {
+    StreamVoiceFeeder() {} // empty: base ctor stamps 0x5ef6f0, cl then stamps 0x5ef6e0
+    virtual i32
+    Feed(void* dst1, u32 n1, u32* got1, void* dst2, u32 n2, u32* got2); // [0] 0x137380
+    virtual i32 FeedData();                                             // [1] 0x137490
+    virtual void OnDrain();                                             // [2] 0x1374b0
+};
+SIZE(StreamVoiceFeeder, 0x44); // derived feeder; no added fields
 
 #endif // DSNDMGR_STREAMFEEDER_H

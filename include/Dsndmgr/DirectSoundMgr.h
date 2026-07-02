@@ -148,8 +148,15 @@ SIZE_UNKNOWN(DSoundCloneBase); // polymorphic slot-0 dispatch view
 class DirectSoundMgr {
 public:
     // --- per-buffer wrappers (this = a buffer object, m_buffer = the buffer) --
+    // ALL-VTABLES phase: real 3-level polymorphic hierarchy
+    // (DirectSoundMgr -> DSoundBaseSub -> DSoundCloneInst) so cl auto-emits
+    // ??_7DirectSoundMgr@@6B@ (0x5ef6b8) / ??_7DSoundBaseSub (0x5ef6c0) /
+    // ??_7DSoundCloneInst (0x5ef6bc) and auto-stamps/auto-resets the vptr. The
+    // former RestampBufferVtbl (0x135300) is now ~DirectSoundMgr (the base
+    // subobject dtor: implicit vptr reset only); BaseDtor (0x136260) is
+    // ~DSoundBaseSub; the clone-drain dtor (0x135bb0) is ~DSoundCloneInst.
     DirectSoundMgr(IDirectSoundBufferZ* buf, DirectSoundMgr* owner); // 0x1351d0 ctor
-    void RestampBufferVtbl();      // 0x135300  store the buffer vtbl into *this (base dtor tail)
+    virtual ~DirectSoundMgr();     // 0x135300  base-subobject dtor (implicit vptr reset)
     i32 Restore();                 // 0x135310  m_buffer->Restore()
     i32 StopAndRewind();           // 0x135380  Stop + SetCurrentPosition(0)
     i32 IsPlaying();               // 0x1353f0  GetStatus & DSBSTATUS_PLAYING
@@ -181,9 +188,7 @@ public:
     i32 GetCurrentPosition(u32* play, u32* write);    // 0x135a20
     i32 SetCurrentPosition(u32 pos);                  // 0x135a70
     i32 GetFormat(void* fmt, u32 size, u32* written); // 0x135ac0
-    ~DirectSoundMgr();                                // 0x135bb0  destructor (frees clone list)
     DirectSoundMgr* Clone(i32 a); // 0x135c20  new a clone instance, dup the buffer, link it
-    void BaseDtor(); // 0x136260  base-subobject dtor (stamps clone vtbl, tail 0x135300)
     i32 ApplyAndPlay(i32 vol, i32 pan, i32 freq, i32 d); // 0x136300  apply params + play
     i32 ReacquireViaCallback();              // 0x1365e0  tail-dispatch through m_reacquireMethod
     void RemoveClone(DirectSoundMgr* clone); // 0x135d20  release + unlink one clone
@@ -203,7 +208,8 @@ public:
     i32 winapi_137ac0_timeGetTime(i32);
 
     // --- layout ---------------------------------------------------------------
-    char m_pad0[0x0c];
+    // vptr @ +0x00 (implicit, from the virtual dtor); the first real field is at +0x0c.
+    char m_pad4[0x0c - 0x04];
     IDirectSoundBufferZ* m_buffer; // +0x0c  the held sound buffer (per-buffer this)
     DirectSoundMgr* m_owner;       // +0x10  owning manager back-pointer (per-buffer this)
     // +0x14 is genuinely two-view: the manager shape holds the IDirectSound device

@@ -55,7 +55,9 @@ public:
                                        // stamp the device vptr, BuildVolumeTable, zero the rest.
     void* ScalarDtor(i32 flag);        // 0x1364c0  ??_G vtable slot-0 scalar-deleting dtor:
                                        // ~SoundDevice then (flag&1) operator delete; returns this.
-    ~SoundDevice();                    // 0x136500  /GX EH destructor (vtable 0x5ef6c4) -> Shutdown
+    virtual ~SoundDevice();            // 0x136500  /GX EH destructor (vtable 0x5ef6c4) -> Shutdown.
+                                       // ALL-VTABLES phase: virtual so cl auto-emits ??_7SoundDevice
+                                       // @@6B@ (0x5ef6c4) + auto-stamps/resets the vptr.
     void Shutdown();                   // 0x136690  release every owned buffer, primary, device
     void RemoveBuffer(SoundBuf* node); // 0x136d80  reap voices + release + unlink one buffer
     void StopAll();                    // 0x136de0  StopAndRewind+StopAllClones over the buffer list
@@ -87,7 +89,7 @@ public:
     static void BuildVolumeTable();            // 0x1351a0  fill g_volumeTable[0..100]
 
     // --- layout ---------------------------------------------------------------
-    void* m_vtbl;            // +0x00
+    // vptr @ +0x00 (implicit, from the virtual dtor); first real field at +0x04.
     SoundBuf* m_bufferHead;  // +0x04  owned-buffer list head (biased +4)
     void* m_bufferTail;      // +0x08  owned-buffer list tail
     void* m_voiceHead;       // +0x0c  voice/channel sub-list head (per-buffer remove)
