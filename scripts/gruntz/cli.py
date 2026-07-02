@@ -556,6 +556,19 @@ def cmd_exe_diff(args) -> None:
     run(cmd)
 
 
+def cmd_lint(args) -> None:
+    """On-demand clang-tidy DE-HACK finder (READ-ONLY worklist; never auto-fix).
+
+    Thin alias for `python -m gruntz.analysis.tidy_audit`: runs the curated
+    finder config (config/tidy-audit.yaml, deliberately OFF the editor's
+    always-on path) over src/ and prints the categorized de-hack backlog -
+    C-style/reinterpret casts, dead/unused decls, bugprone smells - with
+    per-check totals + top files by cast count. Pass paths to scope it, --csv
+    to dump file,line,check,message. Never runs with `-fix`.
+    """
+    run([sys.executable, "-m", "gruntz.analysis.tidy_audit", *args.rest])
+
+
 def cmd_todo(args) -> None:
     """Obj symbols with no @address yet (the matching worklist) - a discovery aid.
 
@@ -666,6 +679,12 @@ def main() -> None:
     xd.set_defaults(func=cmd_exe_diff)
     sub.add_parser("todo", help="obj symbols lacking an @address (worklist)"
                    ).set_defaults(func=cmd_todo)
+    ln = sub.add_parser("lint", help="on-demand clang-tidy de-hack finder "
+                        "(read-only worklist; casts/dead/unused; never auto-fix)")
+    ln.add_argument("rest", nargs=argparse.REMAINDER,
+                    help="args passed through to gruntz.analysis.tidy_audit "
+                         "(paths, --csv FILE, --top N, -j N)")
+    ln.set_defaults(func=cmd_lint)
     sub.add_parser("clean", help="nuke build/ + stray artifacts (HEAVY re-init after)"
                    ).set_defaults(func=cmd_clean)
 

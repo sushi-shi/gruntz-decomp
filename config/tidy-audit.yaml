@@ -1,0 +1,53 @@
+# tidy-audit.yaml - ON-DEMAND clang-tidy DE-HACK FINDER config.
+#
+# READ-ONLY worklist generator for the matching campaign. It surfaces the
+# decompile "hacks" the de-hack passes remove: C-style pointer-punning casts
+# (the `(char*)this`, `(CFoo*)m_8`, `*(i32*)(B+0xNN)`, `(T*)0xADDR` idioms),
+# explicit reinterpret_casts, dead/unused declarations, and a few bugprone
+# smells. Every finding is AST-real (clang parses the TU), so unlike an `rg`
+# sweep it never trips on the same token in a comment or string literal.
+#
+# THREE HARD RULES (see scripts/gruntz/analysis/tidy_audit.py + CLAUDE.md):
+#   1. NEVER auto-fix. This config is only ever run WITHOUT `-fix`. clang-tidy's
+#      rewrites would edit matched code; the real fix is always a later, manual,
+#      objdiff-verified de-hack, one class at a time.
+#   2. NEVER place this at the repo root as `.clang-tidy`. clangd auto-discovers
+#      a file named `.clang-tidy` and would then run these checks live in the
+#      editor on every keystroke. This file lives under config/ with a
+#      non-magic name so the editor never picks it up; the runner passes it
+#      explicitly via `clang-tidy --config-file=config/tidy-audit.yaml`.
+#   3. It is a FINDER, not a linter gate: WarningsAsErrors is empty, so it never
+#      fails a build. Consume its output as a backlog (`gruntz lint`).
+#
+# The check set is deliberately curated to the de-hack surface and kept
+# low-noise: matching-neutral floods (narrowing, easily-swappable-params,
+# magic-numbers, naming) are intentionally left OUT.
+Checks: >
+  -*,
+  google-readability-casting,
+  cppcoreguidelines-pro-type-cstyle-cast,
+  cppcoreguidelines-pro-type-reinterpret-cast,
+  misc-unused-using-decls,
+  misc-unused-parameters,
+  bugprone-macro-parentheses,
+  bugprone-suspicious-include,
+  bugprone-suspicious-memory-comparison,
+  bugprone-suspicious-memset-usage,
+  bugprone-suspicious-missing-comma,
+  bugprone-suspicious-semicolon,
+  bugprone-suspicious-string-compare,
+  bugprone-suspicious-enum-usage,
+  bugprone-suspicious-realloc-usage
+
+# Never promote a finding to an error - this is a worklist, not a gate.
+WarningsAsErrors: ''
+
+# Report findings in the project's own headers too (include/ and src/ headers),
+# not just the .cpp being compiled. System/toolchain headers come in via
+# `-imsvc` (system includes), so clang-tidy suppresses them regardless. The
+# runner additionally dedupes header findings seen through many TUs and keeps
+# only paths under src/ or include/.
+HeaderFilterRegex: 'include/.*|src/.*'
+
+# Read-only: no reformatting of any rewrite (we never rewrite).
+FormatStyle: none
