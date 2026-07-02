@@ -56,6 +56,16 @@ void DICfgC::DtorC() {
 // ---------------------------------------------------------------------------
 // 0x1396f0 - CRemusReadStream-area init: stamp the +0x1c vftable (@0x5ef740), zero
 // the bookkeeping fields, self-link +0x30. Returns `this`. __thiscall.
+//
+// NOTE: the 0x5ef740 vtable is a SECONDARY / embedded intrusive-hash-node vtable
+// (stamped at +0x1c, NOT a class's primary +0 vptr) in the CSymParser/CRemusReadStream
+// subsystem - unrelated to the menu classes. Realizing it as a cl-emitted ??_7
+// (embed a polymorphic node member at +0x1c + placement-construct it) was tried and
+// REVERTED: it regressed this 100% match to ~57% - the node ctor's implicit vptr
+// stamp reorders/expands relative to the delicate `volatile`-pinned +0x30 store
+// sequence this init depends on. Left as the reloc-masked manual g_vtbl_1396f0 stamp
+// (a valid transitional state); a proper realization belongs with a CSymParser
+// hash-node class recovery, not the menu vtable pass. (Init stays byte-exact.)
 // ---------------------------------------------------------------------------
 DATA(0x001ef740)
 extern void* g_vtbl_1396f0; // 0x5ef740

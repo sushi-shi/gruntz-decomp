@@ -54,14 +54,14 @@ i32 CMenuItem2::Init(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
     return 1;
 }
 
-// draw the current animation frame at the placed (or argument)
-// coordinates, then cache the resulting hit rect.
+// the slot-9 Place override: draw the current animation frame at the placed (or
+// argument) coordinates, then cache the resulting hit rect.
 // @early-stop
 // regalloc tie (~98.8%): body byte-aligned; the residual is which callee-saved reg
 // (ebx vs ebp) holds the py/px coordinate pair -- retail pins py(m_44) in ebp, the
 // recompile in ebx. Identical not-source-steerable tie as CMenuItem::Place (0x1855f0).
 RVA(0x001858d0, 0x72)
-i32 CMenuItem2::Draw(i32 ctx, i32 x, i32 y) {
+i32 CMenuItem2::Place(i32 ctx, i32 x, i32 y) {
     i32 py, px;
     if (m_44 != (i32)0xeeeeeeee) {
         py = m_44;

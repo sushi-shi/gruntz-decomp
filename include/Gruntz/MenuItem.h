@@ -6,6 +6,15 @@
 // from a template + key/label strings, and dispatches Place / Notify / Trigger /
 // Hit through the vtable. Recovered from the 0x1845b0..0x185700 cluster.
 //
+// CMenuItem is a REAL polymorphic class (vftable @0x5f08c0, 14 slots): declaring
+// the 14 virtuals in slot order makes MSVC emit ??_7CMenuItem@@6B@ + the scalar
+// deleting destructor (slot 0) + the implicit vptr stamp in the ctor/dtor. VTBL()
+// (in MenuItem.cpp) catalogs the 0x1f08c0 datum (was UnknownVTables
+// ClassWithUnknownVTable74 / g_menuItemVtbl); the slot relocs + the stamp
+// reloc-mask against the (differently-named) retail symbols. No manual g_*Vtbl
+// stamp needed. The eight game slots without a reconstructed body (4/5/6/7/8/10/
+// 11/13) are declared-only virtuals -> external reloc-masked references.
+//
 // Layout (offsets + code bytes are load-bearing; field names are placeholders):
 //   +0x00 vptr  -> 0x5f08c0
 //   +0x04 m_4   - template->[0] (the owner / catalog host)
@@ -32,30 +41,7 @@
 
 #include <Mfc.h>
 
-struct CMenuItem;
-
-// A polymorphic view of the item's vtable so `mov eax,[this]; call [eax+N]`
-// dispatch falls out WITHOUT emitting a ??_7 here (none of these virtuals is
-// defined in this TU -> no vtable materialized -> no clash with MenuPage's
-// DATA(0x005f08c0)). The slots Init/dtor/Place/... call live in other clusters.
-// Slot order (offset = index*4): +0x0c Reset, +0x34 OnInit are the two reached.
-struct CMenuItemView {
-    virtual void Vf00();  // +0x00 dtor
-    virtual void Vf04();  // +0x04 Init
-    virtual void Vf08();  // +0x08
-    virtual void Reset(); // +0x0c
-    virtual void Vf10();  // +0x10
-    virtual void Vf14();  // +0x14
-    virtual void Vf18();  // +0x18
-    virtual void Vf1c();  // +0x1c
-    virtual void Vf20();  // +0x20
-    virtual void Vf24();  // +0x24
-    virtual void Vf28();  // +0x28
-    virtual void Vf2c();  // +0x2c
-    virtual void Vf30();  // +0x30
-    virtual i32 OnInit(); // +0x34 (Init's post-config hook)
-};
-SIZE_UNKNOWN(CMenuItemView);
+class CMenuItem;
 
 // The sub-page row placer reached through m_28 (CMenuItem::Place at 0x153790).
 struct CMenuItemPlacer {
@@ -94,8 +80,34 @@ struct CMenuItemTemplate {
 };
 SIZE_UNKNOWN(CMenuItemTemplate);
 
-struct CMenuItem {
-    void* m_vptr;       // +0x00
+class CMenuItem {
+public:
+    CMenuItem();          // inlined leaf ctor (CStrings + implicit vptr + sentinels)
+    virtual ~CMenuItem(); // 0x184690  slot 0 (scalar-deleting-dtor thunk @0x184670)
+    virtual i32 Init(i32, i32, i32, i32, i32, i32); // 0x185460  slot 1
+    virtual void Dispatch0c();                      // 0x185510  slot 2  (tail -> Reset)
+    virtual void Reset();                           // 0x184730  slot 3
+    virtual i32 GetWidth();                         // 0x185550  slot 4  (declared-only)
+    virtual void Vf5();                             // 0x185520  slot 5  (declared-only)
+    virtual void Vf6();                             // 0x184650  slot 6  (declared-only)
+    virtual void Detach();                          // 0x1855d0  slot 7  (declared-only)
+    virtual void Notify(void* arg);                 // 0x1855e0  slot 8  (declared-only)
+    virtual i32 Place(i32 ctx, i32 x, i32 y);       // 0x1855f0  slot 9
+    virtual i32 Configure(void* notify);            // 0x185690  slot 10 (declared-only)
+    virtual void Release();                         // 0x1856c0  slot 11 (declared-only)
+    virtual i32 Trigger();                          // 0x1856d0  slot 12
+    virtual i32 OnInit();                           // 0x184660  slot 13 (declared-only)
+
+    // Non-virtual __thiscall helpers/accessors (bodies in MenuItem.cpp):
+    CString GetName();     // 0x1845b0  return m_10
+    CString GetField4c();  // 0x1845d0  return m_4c
+    CString GetField50();  // 0x1845f0  return m_50
+    CString GetField54();  // 0x184610  return m_54
+    CString GetField58();  // 0x184630  return m_58
+    i32 NotifyCmd();       // 0x185580  PostMessage WM_COMMAND (called by Trigger)
+    i32 Hit(i32 x, i32 y); // 0x185700  bounds test
+
+    // implicit vptr    // +0x00
     void* m_4;          // +0x04
     CMenuItemHost* m_8; // +0x08
     void* m_c;          // +0x0c
@@ -118,21 +130,23 @@ struct CMenuItem {
     CString m_50;       // +0x50
     CString m_54;       // +0x54
     CString m_58;       // +0x58
-
-    CString GetName();    // 0x1845b0  return m_10
-    CString GetField4c(); // 0x1845d0 return m_4c
-    CString GetField50(); // 0x1845f0 return m_50
-    CString GetField54(); // 0x184610 return m_54
-    CString GetField58(); // 0x184630 return m_58
-    ~CMenuItem();         // 0x184690  /GX teardown
-    void Reset();         // 0x184730  zero scalars + Empty the four trailing CStrings
-    i32 Init(i32, i32, i32, i32, i32, i32); // 0x185460
-    void Dispatch0c();                      // 0x185510  mov eax,[ecx]; jmp [eax+0xc]
-    i32 Notify();                           // 0x185580  PostMessage WM_COMMAND
-    i32 Place(i32 ctx, i32 x, i32 y);       // 0x1855f0
-    i32 Trigger();                          // 0x1856d0
-    i32 Hit(i32 x, i32 y);                  // 0x185700  bounds test
 };
-SIZE_UNKNOWN(CMenuItem);
+
+// The leaf ctor MSVC inlines into the page's AddItem/AddSubItem: the six CString
+// members + implicit vptr stamp fall out of the ctor prologue; the body zeroes the
+// scalar fields, sets the two sentinels, and clears the four trailing CStrings.
+inline CMenuItem::CMenuItem() {
+    m_8 = 0;
+    m_c = 0;
+    m_28 = 0;
+    m_4 = 0;
+    m_2c = 0;
+    m_34 = (i32)0xeeeeeeee;
+    m_44 = (i32)0xeeeeeeee;
+    m_4c.Empty();
+    m_50.Empty();
+    m_54.Empty();
+    m_58.Empty();
+}
 
 #endif // GRUNTZ_MENUITEM_H

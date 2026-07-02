@@ -71,33 +71,10 @@ struct CMenuPlacer {
 };
 SIZE_UNKNOWN(CMenuPlacer);
 
-// The child item's vtable (its contents live in the 0x184670+ TU). Referenced by
-// address so the inlined ctor's `mov [item],&vtbl` reloc-masks against retail's.
-DATA(0x005f08c0)
-extern void* g_menuItemVtbl;
-
-// The inlined leaf ctor the page's AddItem/AddSubItem reproduce: default-construct
-// the six CStrings, stamp the vtable, zero the scalar fields, set the sentinels.
-void CMenuItem::Construct() {
-    new (&m_10) CString();
-    new (&m_14) CString();
-    new (&m_4c) CString();
-    new (&m_50) CString();
-    new (&m_54) CString();
-    new (&m_58) CString();
-    m_8 = 0;
-    m_c = 0;
-    m_28 = 0;
-    m_4 = 0;
-    m_2c = 0;
-    *(void**)this = &g_menuItemVtbl;
-    m_34 = (i32)0xeeeeeeee;
-    m_44 = (i32)0xeeeeeeee;
-    m_4c.Empty();
-    m_50.Empty();
-    m_54.Empty();
-    m_58.Empty();
-}
+// The leaf ctor CMenuItem() (default-construct the six CStrings, implicit vptr
+// stamp, zero the scalar fields, set the sentinels) is inline in MenuItem.h; the
+// page's AddItem/AddSubItem construct it with placement new so MSVC inlines it (and
+// the implicit `mov [item],&??_7CMenuItem@@6B@` stamp reloc-masks against retail).
 
 // ===========================================================================
 
@@ -438,7 +415,7 @@ i32 CMenuPage::Layout(i32 ctx) {
         CMenuItem* item = cur->data;
         if (item) {
             y += item->GetWidth() / 2;
-            item->Place((void*)ctx, x, y);
+            item->Place(ctx, x, y);
             if (item->m_24 == 2 && !(m_30 & 8)) {
                 ((CMenuRenderHost*)m_4)->Draw(ctx, item, x, y);
             }
@@ -531,7 +508,7 @@ i32 CMenuPage::LayoutOne(i32 ctx) {
         CMenuItem* item = cur->data;
         if (item) {
             y += item->GetWidth() / 2;
-            item->Place((void*)ctx, col, y);
+            item->Place(ctx, col, y);
             if (item->m_24 == 2 && !(m_30 & 8)) {
                 ((CMenuRenderHost*)m_4)->Draw(ctx, item, col, y);
             }
@@ -717,7 +694,7 @@ i32 CMenuPage::SelectFwd2() {
     if (!m_64) {
         return 0;
     }
-    CString key = m_64->GetKey1();
+    CString key = m_64->GetField4c();
     CMenuItem* item = FindByName((const char*)key);
     if (item) {
         i32 k = item->m_24;
@@ -740,7 +717,7 @@ i32 CMenuPage::SelectBack2() {
     if (!m_64) {
         return 0;
     }
-    CString key = m_64->GetKey2();
+    CString key = m_64->GetField50();
     CMenuItem* item = FindByName((const char*)key);
     if (item) {
         i32 k = item->m_24;
@@ -820,7 +797,7 @@ RVA(0x00183460, 0x13d)
 CMenuItem* CMenuPage::AddItem(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
     CMenuItem* item = (CMenuItem*)RezAlloc(0x5c);
     if (item) {
-        item->Construct();
+        new (item) CMenuItem();
     }
     if (item->Init(a0, a1, a2, a3, a4, a5) == 0) {
         if (item) {
@@ -838,7 +815,7 @@ RVA(0x001835a0, 0x14b)
 CMenuItem* CMenuPage::AddSubItem(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
     CMenuItem* item = (CMenuItem*)RezAlloc(0x5c);
     if (item) {
-        item->Construct();
+        new (item) CMenuItem();
     }
     if (item->Init(a0, a1, a2, a3, a4, a5) == 0) {
         if (item) {
@@ -851,31 +828,20 @@ CMenuItem* CMenuPage::AddSubItem(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5)
     return Append(item) ? item : 0;
 }
 
-// The derived (0x74-byte) item's vtable, referenced by address so the re-stamp
-// reloc-masks against retail (its contents live in the 0x184730+ TU).
-DATA(0x005f08f8)
-extern void* g_menuItem2Vtbl;
-
-// allocate (RezAlloc 0x74) + construct the derived item: run the base
-// ctor, re-stamp the derived vtable, seed the extra fields, Init it (vtable +0x4),
-// then on success run its derived hook (vtable +0x38) and append (else delete).
+// allocate (RezAlloc 0x74) + construct the derived item (the CMenuItem2() ctor runs
+// the base ctor -> derived vptr stamp -> seeds m_5c..m_70), Init it (vtable +0x4),
+// then on success run its slot-14 setter (SetFrame) and append (else delete).
 // @early-stop
-// /GX placement-new wall (~34%, same as AddItem): retail INLINES the 6-CString
-// base ctor raising a /GX EH frame (push -1/fs:0) with descending trylevel writes
-// around each CString construct; the recompile keeps the ctor out-of-line
-// (Construct()) so it emits no frame. docs/patterns/rezalloc-placement-new-no-eh-frame.md.
+// /GX placement-new wall (~34%): retail INLINES the 6-CString base ctor raising a
+// /GX EH frame (push -1/fs:0) with descending trylevel writes around each CString
+// construct. Now that the base/derived ctors are real inline ctors, MSVC inlines
+// them here too; the residual is the EH trylevel scheduling
+// (docs/patterns/rezalloc-placement-new-no-eh-frame.md).
 RVA(0x001836f0, 0x160)
 CMenuItem2* CMenuPage::AddItem2(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
     CMenuItem2* item = (CMenuItem2*)RezAlloc(0x74);
     if (item) {
-        item->Construct();
-        *(void**)item = &g_menuItem2Vtbl;
-        item->m_5c = 0;
-        item->m_60 = 0;
-        item->m_64 = 0;
-        item->m_68 = 0;
-        item->m_6c = 0;
-        item->m_70 = 0x64;
+        new (item) CMenuItem2();
     }
     if (item->Init(a4, a3, a2, a1, a0, (i32)this) == 0) {
         if (item) {
@@ -883,12 +849,11 @@ CMenuItem2* CMenuPage::AddItem2(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
         }
         return 0;
     }
-    (*(i32(**)(CMenuItem2*, i32))(*(void***)item + 0xe))(item, a0);
+    item->SetFrame(a0);
     return Append(item) ? item : 0;
 }
 
-// like AddItem2, but the base field-reset is out-of-line (ResetFields,
-// 0x184730) and the new item links its parent context (m_30/m_1c) on success.
+// like AddItem2, but the new item links its parent context (m_30/m_1c) on success.
 // @early-stop
 // same /GX placement-new wall as AddItem2 (the inlined 6-CString base ctor + the
 // EH trylevel chain). Logic complete; deferred to the final sweep.
@@ -896,21 +861,7 @@ RVA(0x00183850, 0x13b)
 CMenuItem2* CMenuPage::AddSubItem2(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7) {
     CMenuItem2* item = (CMenuItem2*)RezAlloc(0x74);
     if (item) {
-        new (&item->m_10) CString();
-        new (&item->m_14) CString();
-        new (&item->m_4c) CString();
-        new (&item->m_50) CString();
-        new (&item->m_54) CString();
-        new (&item->m_58) CString();
-        *(void**)item = &g_menuItemVtbl;
-        item->ResetFields();
-        *(void**)item = &g_menuItem2Vtbl;
-        item->m_5c = 0;
-        item->m_60 = 0;
-        item->m_64 = 0;
-        item->m_68 = 0;
-        item->m_6c = 0;
-        item->m_70 = 0x64;
+        new (item) CMenuItem2();
     }
     if (item->Init(a6, a4, a2, a1, a0, (i32)this) == 0) {
         if (item) {
@@ -918,7 +869,7 @@ CMenuItem2* CMenuPage::AddSubItem2(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a
         }
         return 0;
     }
-    (*(i32(**)(CMenuItem2*, i32))(*(void***)item + 0xe))(item, a7);
+    item->SetFrame(a7);
     *(i32*)((char*)item + 0x30) = a2;
     item->m_1c = a3;
     return Append(item) ? item : 0;

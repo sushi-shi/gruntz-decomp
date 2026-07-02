@@ -527,41 +527,18 @@ struct Vtbl_1effd0 {
 // Slots 1/2 are the base's two pure virtuals (v1/v2); each subtype overrides them,
 // so the slot NAMES are C++-mandated shared names (not FUN_<rva>-nameable).
 
-// ClassWithUnknownVTable74  @ 0x005f08c0  (14 slots)  refs x6  src:g_menuItemVtbl
-struct MenuItemVtbl {
-    UnkVfn _scalar_deleting_destructor_; // [0] -> 0x184670 `scalar_deleting_destructor'
-    UnkVfn Init;                         // [1] -> 0x185460 Init
-    UnkVfn Dispatch0c;                   // [2] -> 0x185510 Dispatch0c
-    UnkVfn Reset;                        // [3] -> 0x184730 Reset
-    UnkVfn slot4_185550;                 // [4] -> 0x185550 sub_185550
-    UnkVfn slot5_185520;                 // [5] -> 0x185520 sub_185520
-    UnkVfn slot6_184650;                 // [6] -> 0x184650 sub_184650
-    UnkVfn slot7_1855d0;                 // [7] -> 0x1855d0 sub_1855d0
-    UnkVfn slot8_1855e0;                 // [8] -> 0x1855e0 sub_1855e0
-    UnkVfn Place;                        // [9] -> 0x1855f0 Place
-    UnkVfn slot10_185690;                // [10] -> 0x185690 sub_185690
-    UnkVfn slot11_1856c0;                // [11] -> 0x1856c0 sub_1856c0
-    UnkVfn Trigger;                      // [12] -> 0x1856d0 Trigger
-    UnkVfn slot13_184660;                // [13] -> 0x184660 sub_184660
-};
-
-// ClassWithUnknownVTable75  @ 0x005f08f8  (15 slots)  refs x3
-struct Vtbl_1f08f8 {
-    UnkVfn _scalar_deleting_destructor_; // [0] -> 0x1847c0 `scalar_deleting_destructor'
-    UnkVfn FUN_00585750;                 // [1] -> 0x185750 FUN_00585750
-    UnkVfn Dispatch0c;                   // [2] -> 0x185510 Dispatch0c
-    UnkVfn slot3_184890;                 // [3] -> 0x184890 sub_184890
-    UnkVfn slot4_185890;                 // [4] -> 0x185890 sub_185890
-    UnkVfn slot5_185880;                 // [5] -> 0x185880 sub_185880
-    UnkVfn slot6_184780;                 // [6] -> 0x184780 sub_184780
-    UnkVfn slot7_1855d0;                 // [7] -> 0x1855d0 sub_1855d0
-    UnkVfn slot8_1858a0;                 // [8] -> 0x1858a0 sub_1858a0
-    UnkVfn FUN_005858d0;                 // [9] -> 0x1858d0 FUN_005858d0
-    UnkVfn slot10_185690;                // [10] -> 0x185690 sub_185690
-    UnkVfn slot11_1856c0;                // [11] -> 0x1856c0 sub_1856c0
-    UnkVfn Trigger;                      // [12] -> 0x1856d0 Trigger
-    UnkVfn slot13_1847b0;                // [13] -> 0x1847b0 sub_1847b0
-    UnkVfn FUN_005847a0;                 // [14] -> 0x1847a0 FUN_005847a0
-};
+// ClassWithUnknownVTable74 (@0x5f08c0, 14 slots) / ClassWithUnknownVTable75
+// (@0x5f08f8, 15 slots) - REALIZED as the polymorphic CMenuItem / CMenuItem2 in
+// include/Gruntz/MenuItem.h + MenuItem2.h (+ VTBL() catalog rows in MenuItem.cpp);
+// cl now emits ??_7CMenuItem@@6B@ / ??_7CMenuItem2@@6B@ + the scalar-deleting-dtor
+// thunks + the implicit vptr stamps. The former placeholder slot map:
+//   0x5f08c0: ??_G 0x184670 / Init 0x185460 / Dispatch0c 0x185510 / Reset 0x184730 /
+//             GetWidth 0x185550 / Vf5 0x185520 / Vf6 0x184650 / Detach 0x1855d0 /
+//             Notify 0x1855e0 / Place 0x1855f0 / Configure 0x185690 / Release 0x1856c0 /
+//             Trigger 0x1856d0 / OnInit 0x184660
+//   0x5f08f8: ??_G 0x1847c0 / Init 0x185750 / Dispatch0c 0x185510 / Reset 0x184890 /
+//             GetWidth 0x185890 / Vf5 0x185880 / Vf6 0x184780 / Detach 0x1855d0 /
+//             Notify 0x1858a0 / Place(draw) 0x1858d0 / Configure 0x185690 /
+//             Release 0x1856c0 / Trigger 0x1856d0 / OnInit 0x1847b0 / SetFrame 0x1847a0
 
 #endif // GRUNTZ_UNKNOWN_VTABLES_H

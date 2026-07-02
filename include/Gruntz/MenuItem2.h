@@ -2,11 +2,18 @@
 //
 // CMenuItem2 derives from CMenuItem (the 0x5c-byte leaf in MenuItem.h) and adds a
 // per-state sprite trio plus a current-frame cursor. Its vtable (0x5f08f8,
-// g_menuItem2Vtbl) overrides the visual slots: Init (0x185750) resolves three
-// CImageSet sprites by name ("<key>_NORMAL/_SELECTED/_DISABLED") out of the same
-// catalog CMenuItem::Init uses, and the Place override (0x1858d0) draws the current
-// animation frame and caches its hit rect. Three non-virtual helpers walk the frame
+// ??_7CMenuItem2@@6B@, 15 slots) overrides the visual slots and adds one new slot:
+// Init (0x185750) resolves three CImageSet sprites by name
+// ("<key>_NORMAL/_SELECTED/_DISABLED"); the Place override (0x1858d0) draws the
+// current animation frame and caches its hit rect; the slot-14 setter (0x1847a0,
+// SetFrame) is reached by AddItem2. Three non-virtual helpers walk the frame
 // cursor. Recovered from the 0x185750..0x185a10 cluster.
+//
+// CMenuItem2 is a REAL polymorphic derived class: MSVC emits ??_7CMenuItem2@@6B@
+// (VTBL() catalogs the 0x1f08f8 datum, was UnknownVTables ClassWithUnknownVTable75
+// / g_menuItem2Vtbl) and auto-stamps the derived vptr after the base ctor/dtor.
+// The overrides without a reconstructed body (Reset/GetWidth/Vf5/Vf6/Notify/OnInit)
+// and the new SetFrame slot are declared-only -> reloc-masked external references.
 //
 // Layout (CMenuItem base is 0x5c; offsets + code bytes load-bearing):
 //   +0x5c m_5c  - CImageSet* NORMAL-state sprite
@@ -55,21 +62,43 @@ struct CMenuSprite {
 };
 SIZE_UNKNOWN(CMenuSprite);
 
-struct CMenuItem2 : CMenuItem {
+class CMenuItem2 : public CMenuItem {
+public:
+    CMenuItem2();          // inlined derived ctor (base ctor + derived vptr + fields)
+    virtual ~CMenuItem2(); // 0x1847e0  slot 0 (scalar-deleting-dtor thunk @0x1847c0)
+    virtual i32 Init(i32, i32, i32, i32, i32, i32) OVERRIDE; // 0x185750  slot 1
+    virtual void Reset() OVERRIDE;                           // 0x184890  slot 3  (decl-only)
+    virtual i32 GetWidth() OVERRIDE;                         // 0x185890  slot 4  (decl-only)
+    virtual void Vf5() OVERRIDE;                             // 0x185880  slot 5  (decl-only)
+    virtual void Vf6() OVERRIDE;                             // 0x184780  slot 6  (decl-only)
+    virtual void Notify(void* arg) OVERRIDE;                 // 0x1858a0  slot 8  (decl-only)
+    virtual i32 Place(i32 ctx, i32 x, i32 y) OVERRIDE;       // 0x1858d0  slot 9  (draws frame)
+    virtual i32 OnInit() OVERRIDE;                           // 0x1847b0  slot 13 (decl-only)
+    virtual void SetFrame(i32 v); // 0x1847a0  slot 14 (new; body in BoundaryUpper)
+
+    // Non-virtual __thiscall frame-cursor helpers (bodies in MenuItem2.cpp):
+    CMenuSprite* GetCurrentSprite(); // 0x185950
+    CMenuFrame* GetCurrentFrame();   // 0x185970
+    i32 NextFrame();                 // 0x1859c0
+
     CMenuSprite* m_5c; // +0x5c  NORMAL sprite
     CMenuSprite* m_60; // +0x60  SELECTED sprite
     CMenuSprite* m_64; // +0x64  DISABLED sprite
     i32 m_68;          // +0x68  current frame index
     i32 m_6c;          // +0x6c
-    i32 m_70;          // +0x70
-
-    ~CMenuItem2();                                            // 0x1847e0 (in menuitem TU)
-    i32 Init(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5); // 0x185750
-    i32 Draw(i32 ctx, i32 x, i32 y);                          // 0x1858d0
-    CMenuSprite* GetCurrentSprite();                          // 0x185950
-    CMenuFrame* GetCurrentFrame();                            // 0x185970
-    i32 NextFrame();                                          // 0x1859c0
+    i32 m_70;          // +0x70  seeded to 0x64
 };
-SIZE_UNKNOWN(CMenuItem2);
+
+// The derived ctor MSVC inlines into the page's AddItem2/AddSubItem2: the base
+// CMenuItem() ctor (base vptr + CStrings + sentinels) runs first, then the implicit
+// derived vptr stamp, then this body seeds the sprite/cursor fields.
+inline CMenuItem2::CMenuItem2() {
+    m_5c = 0;
+    m_60 = 0;
+    m_64 = 0;
+    m_68 = 0;
+    m_6c = 0;
+    m_70 = 0x64;
+}
 
 #endif // GRUNTZ_MENUITEM2_H

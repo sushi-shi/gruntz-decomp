@@ -4,24 +4,30 @@
 // (0x5f08c0). Recovered from the 0x1845b0..0x185700 cluster (was ClassUnknown_46).
 // The page (src/Gruntz/MenuPage.cpp) constructs one per named menu entry, Init()s
 // it from a template + key/label strings, and drives Place / Trigger / Hit / the
-// teardown through the vtable (modeled as the polymorphic CMenuItemView so the two
-// reached slots dispatch without emitting a clashing ??_7). The /GX EH frame on the
-// dtor comes from its six destructible CString members; the scalar helpers stay
-// frameless (no destructible local), so they coexist in this eh TU like MenuPage.
+// teardown through the vtable. CMenuItem / CMenuItem2 are now REAL polymorphic
+// classes (14 / 15 virtuals declared in slot order): MSVC emits ??_7CMenuItem@@6B@
+// (@0x5f08c0) and ??_7CMenuItem2@@6B@ (@0x5f08f8) + the scalar-deleting-dtor thunks
+// + the implicit vptr stamps; the VTBL() rows below catalog those retail data so
+// the slot relocs + stamps reloc-mask (no manual g_*Vtbl needed). The /GX EH frame
+// on the dtor comes from its six destructible CString members; the scalar helpers
+// stay frameless (no destructible local), so they coexist in this eh TU like
+// MenuPage.
 #include <rva.h>
 
 #include <Gruntz/MenuItem.h>
 #include <Gruntz/MenuItem2.h>
 
-// The vtable is stamped by address (its full contents span other clusters, so we
-// don't emit a ??_7 here that would collide with MenuPage's DATA(0x005f08c0)).
-DATA(0x005f08c0)
-extern void* g_menuItemVtbl;
+// Own base vtable (14 slots): dtor + Init + Dispatch0c + Reset + 8 game slots +
+// Place + Trigger. cl emits ??_7CMenuItem@@6B@; VTBL pairs the 0x1f08c0 datum (was
+// UnknownVTables ClassWithUnknownVTable74 / g_menuItemVtbl).
+SIZE(CMenuItem, 0x5c);
+VTBL(CMenuItem, 0x001f08c0);
 
-// The derived (CMenuItem2) vtable, stamped at the top of ~CMenuItem2 before its
-// own slot-0xc teardown hook. Reloc-masked DATA() (manual-stamp device).
-DATA(0x005f08f8)
-extern void* g_menuItem2Vtbl;
+// Derived vtable (15 slots): the visual overrides + one new setter slot. cl emits
+// ??_7CMenuItem2@@6B@; VTBL pairs the 0x1f08f8 datum (was ClassWithUnknownVTable75
+// / g_menuItem2Vtbl).
+SIZE(CMenuItem2, 0x74);
+VTBL(CMenuItem2, 0x001f08f8);
 
 // ===========================================================================
 
@@ -55,20 +61,17 @@ CString CMenuItem::GetField58() {
     return m_58;
 }
 
-// destructor: re-stamp the vtable, run the slot-0xc teardown hook,
-// then destroy the six CString members (auto, reverse declaration order).
-// Marked `inline` so the derived ~CMenuItem2 (0x1847e0) inlines this base teardown
-// like retail did (/Ob1 only inlines inline-marked fns); MSVC still emits this
-// out-of-line COMDAT because the derived dtor odr-uses it. Keep the `inline`.
-// @early-stop
-// reloc-masking scoring artifact (~96.6%): every instruction is byte-identical to
-// retail (verified mnemonic-for-mnemonic, base vs delinked target) -- the only
-// residual is the vptr store's masked operand (our DIR32 to g_menuItemVtbl vs
-// retail's ??_7 at 0x5f08c0, a differently-named symbol). Code is a full match;
-// see docs/patterns/reloc-typing-vptr-global.md (topic:scoring-artifact).
+// destructor (100%): the compiler re-stamps the vptr (mov [this],&??_7CMenuItem@@6B@),
+// then we run the slot-0xc teardown hook, then the six CString members are
+// destroyed (auto, reverse declaration order). Now that the vtable is realized
+// (VTBL binds ??_7CMenuItem@@6B@ at 0x5f08c0), the vptr-store reloc names the SAME
+// symbol on both sides -> exact (was the ~96.6% reloc-masking artifact under the
+// manual g_menuItemVtbl stamp). Marked `inline` so the derived ~CMenuItem2
+// (0x1847e0) inlines this base teardown like retail did (/Ob1 only inlines
+// inline-marked fns); MSVC still emits this out-of-line COMDAT because the derived
+// dtor odr-uses it (and slot 0's scalar-deleting thunk references it). Keep `inline`.
 RVA(0x00184690, 0x91)
 inline CMenuItem::~CMenuItem() {
-    m_vptr = &g_menuItemVtbl;
     Dispatch0c();
 }
 
@@ -88,27 +91,21 @@ void CMenuItem::Reset() {
     m_58.Empty();
 }
 
-// CMenuItem2 destructor: stamp the derived vtable, run its slot-0xc
-// teardown hook, then the inlined base ~CMenuItem (re-stamp the base vtable, its
-// own slot-0xc hook, and the six CString member dtors). Defined in this TU (not
-// menuitem2) because retail emitted it adjacent to ~CMenuItem (0x184690) so MSVC
-// could inline the base teardown; the /GX EH frame falls out of the destructible
-// CString members the base owns.
-// @early-stop
-// ~92.3% (eh-dtor-vptr-stamp-vs-trylevel-order wall): the full instruction stream
-// is byte-identical to retail EXCEPT the two entry vptr stores - retail schedules
-// each `mov [this],<vtbl>` BEFORE its `mov [esp+0x10],<trylevel>` write, our /GX
-// emits the trylevel write first. Not steerable from C (the EH-state machine's
-// order); same plateau as CSeverusEntryList::~CSeverusEntryList. The base
-// ~CMenuItem inlines correctly: marking 0x184690 `inline` lets /Ob1 reproduce
-// retail's inline-into-derived teardown, and MSVC still emits the 0x184690 COMDAT
-// because this derived dtor odr-uses it. docs/patterns/eh-dtor-vptr-stamp-vs-trylevel-order.md.
+// CMenuItem2 destructor (100%): the compiler stamps the derived vtable, we run its
+// slot-0xc teardown hook, then the inlined base ~CMenuItem re-stamps the base
+// vtable, runs its own slot-0xc hook, and destroys the six CString members. Defined
+// in this TU (not menuitem2) because retail emitted it adjacent to ~CMenuItem
+// (0x184690) so MSVC could inline the base teardown; the /GX EH frame falls out of
+// the destructible CString members the base owns. Realizing both vtables (VTBL binds
+// ??_7CMenuItem2@@6B@ @0x5f08f8 and ??_7CMenuItem@@6B@ @0x5f08c0) makes the two
+// entry vptr-store relocs name the SAME symbols on both sides -> exact (was the
+// ~92.3% vptr-stamp-vs-trylevel-order plateau under the manual g_*Vtbl stamps).
 RVA(0x001847e0, 0xa6)
 CMenuItem2::~CMenuItem2() {
-    m_vptr = &g_menuItem2Vtbl;
     Dispatch0c();
-    // base ~CMenuItem inlined here: stamps g_menuItemVtbl, its Dispatch0c hook,
-    // and destroys m_58/m_54/m_50/m_4c/m_14/m_10 (reverse declaration order).
+    // compiler stamps ??_7CMenuItem2@@6B@ at entry, then the base ~CMenuItem is
+    // inlined here: it stamps ??_7CMenuItem@@6B@, runs its Dispatch0c hook, and
+    // destroys m_58/m_54/m_50/m_4c/m_14/m_10 (reverse declaration order).
 }
 
 // configure the item from a template (a0) + strings; resolve the
@@ -133,7 +130,7 @@ i32 CMenuItem::Init(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
     } else {
         m_24 = 1;
     }
-    if (!((CMenuItemView*)this)->OnInit()) {
+    if (!OnInit()) {
         void* slot = 0;
         ((CMenuItemHostOwner*)m_4)->m_10->m_10.Lookup((const char*)a2, slot);
         m_28 = slot;
@@ -147,12 +144,13 @@ i32 CMenuItem::Init(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
 // tail-dispatch through vtable slot +0x0c (mov eax,[ecx]; jmp [eax+0xc]).
 RVA(0x00185510, 0x5)
 void CMenuItem::Dispatch0c() {
-    ((CMenuItemView*)this)->Reset();
+    Reset();
 }
 
 // notify: PostMessage WM_COMMAND to the host window(s) keyed off m_8->m_4.
+// (Non-virtual internal helper called by Trigger; NOT the slot-8 virtual Notify.)
 RVA(0x00185580, 0x4a)
-i32 CMenuItem::Notify() {
+i32 CMenuItem::NotifyCmd() {
     i32 id = m_18;
     if (!id) {
         return id;
@@ -211,7 +209,7 @@ i32 CMenuItem::Place(i32 ctx, i32 x, i32 y) {
 RVA(0x001856d0, 0x25)
 i32 CMenuItem::Trigger() {
     m_8->Scroll();
-    Notify();
+    NotifyCmd();
     m_8->ReplaceNode(*(void**)&m_14);
     return 1;
 }

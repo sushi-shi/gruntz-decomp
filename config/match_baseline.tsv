@@ -353,7 +353,7 @@ m3mfcleaves	2	2
 mainmenubuilder	1	0
 maplogic	5	4
 mapmgr	9	7
-menuitem	14	11
+menuitem	14	13
 menuitem2	5	2
 menupage	31	16
 menusparkleserial	1	1
@@ -2837,31 +2837,31 @@ mapmgr	??1CMapMgr@@QAE@XZ	100.0000	100.0000	4	b55e2d3c334c	0x9e9e0
 mapmgr	?Allocate@CMapArrayA@@QAEHI@Z	70.8800	70.8800	1	5c87dca127e3	0x9e740
 mapmgr	?Allocate@CMapArrayB@@QAEHI@Z	62.0000	62.0000	1	eb9ec81cd657	0x9e860
 mapmgr	?Reset@CMapMgr@@UAEXXZ	100.0000	100.0000	4	2dbc6f60f2f5	0x9ec30
-menuitem	??1CMenuItem2@@QAE@XZ	92.3077	92.3077	1	581f946ff267	0x1847e0
-menuitem	??1CMenuItem@@QAE@XZ	96.5714	96.5714	2	dfde4cda6d34	0x184690
-menuitem	?Dispatch0c@CMenuItem@@QAEXXZ	100.0000	100.0000	1	b89ca68497d8	0x185510
+menuitem	??1CMenuItem2@@UAE@XZ	100.0000	100.0000	1	0bf4a7cab540	0x1847e0
+menuitem	??1CMenuItem@@UAE@XZ	100.0000	100.0000	1	2236c8838708	0x184690
+menuitem	?Dispatch0c@CMenuItem@@UAEXXZ	100.0000	100.0000	1	2eda53896218	0x185510
 menuitem	?GetField4c@CMenuItem@@QAE?AVCString@@XZ	100.0000	100.0000	1	08cd19551a24	0x1845d0
 menuitem	?GetField50@CMenuItem@@QAE?AVCString@@XZ	100.0000	100.0000	1	198224ca967a	0x1845f0
 menuitem	?GetField54@CMenuItem@@QAE?AVCString@@XZ	100.0000	100.0000	1	03356630dbee	0x184610
 menuitem	?GetField58@CMenuItem@@QAE?AVCString@@XZ	100.0000	100.0000	1	b1b3c810e677	0x184630
 menuitem	?GetName@CMenuItem@@QAE?AVCString@@XZ	100.0000	100.0000	1	42c38040b74b	0x1845b0
 menuitem	?Hit@CMenuItem@@QAEHHH@Z	100.0000	100.0000	1	5c96338120b2	0x185700
-menuitem	?Init@CMenuItem@@QAEHHHHHHH@Z	100.0000	100.0000	1	27e27be9ec17	0x185460
-menuitem	?Notify@CMenuItem@@QAEHXZ	100.0000	100.0000	1	02ff30273f0b	0x185580
-menuitem	?Place@CMenuItem@@QAEHHHH@Z	99.1364	99.1364	1	c3085a22d234	0x1855f0
-menuitem	?Reset@CMenuItem@@QAEXXZ	100.0000	100.0000	1	fc603e28c52a	0x184730
-menuitem	?Trigger@CMenuItem@@QAEHXZ	100.0000	100.0000	1	d0ee200e0292	0x1856d0
-menuitem2	?Draw@CMenuItem2@@QAEHHHH@Z	98.8367	98.8367	1	f4084e5a89f0	0x1858d0
+menuitem	?Init@CMenuItem@@UAEHHHHHHH@Z	100.0000	100.0000	1	e95d1d080ac3	0x185460
+menuitem	?NotifyCmd@CMenuItem@@QAEHXZ	100.0000	100.0000	1	fe60e2c85c02	0x185580
+menuitem	?Place@CMenuItem@@UAEHHHH@Z	99.1364	99.1364	1	c3085a22d234	0x1855f0
+menuitem	?Reset@CMenuItem@@UAEXXZ	100.0000	100.0000	1	fc603e28c52a	0x184730
+menuitem	?Trigger@CMenuItem@@UAEHXZ	100.0000	100.0000	1	a3a678df99af	0x1856d0
 menuitem2	?GetCurrentFrame@CMenuItem2@@QAEPAUCMenuFrame@@XZ	60.6757	60.6757	1	bf5ed4e4b532	0x185970
 menuitem2	?GetCurrentSprite@CMenuItem2@@QAEPAUCMenuSprite@@XZ	100.0000	100.0000	2	35486db27ce7	0x185950
-menuitem2	?Init@CMenuItem2@@QAEHHHHHHH@Z	91.6211	91.6211	1	26fbaff3d87f	0x185750
+menuitem2	?Init@CMenuItem2@@UAEHHHHHHH@Z	91.6211	91.6211	1	26fbaff3d87f	0x185750
 menuitem2	?NextFrame@CMenuItem2@@QAEHXZ	100.0000	100.0000	1	ab04a760196f	0x1859c0
+menuitem2	?Place@CMenuItem2@@UAEHHHH@Z	98.8367	98.8367	1	a81ca44860fb	0x1858d0
 menupage	??1CMenuPage@@QAE@XZ	100.0000	100.0000	1	677d46434f16	0x183250
 menupage	?Activate@CMenuPage@@QAEHXZ	100.0000	100.0000	1	9f249bbb20a4	0x183dd0
-menupage	?AddItem2@CMenuPage@@QAEPAVCMenuItem2@@HHHHH@Z	31.1339	31.1339	1	168c7648ab07	0x1836f0
-menupage	?AddItem@CMenuPage@@QAEPAVCMenuItem@@HHHHHH@Z	34.0099	34.0099	1	4400292d0cb6	0x183460
-menupage	?AddSubItem2@CMenuPage@@QAEPAVCMenuItem2@@HHHHHHHH@Z	59.9412	59.9412	1	476858ddd267	0x183850
-menupage	?AddSubItem@CMenuPage@@QAEPAVCMenuItem@@HHHHHH@Z	35.1429	35.1429	1	b1997f81d2b4	0x1835a0
+menupage	?AddItem2@CMenuPage@@QAEPAVCMenuItem2@@HHHHH@Z	33.8482	33.8482	2	db4307ecb22a	0x1836f0
+menupage	?AddItem@CMenuPage@@QAEPAVCMenuItem@@HHHHHH@Z	34.0099	34.0099	2	e2741e5b1be0	0x183460
+menupage	?AddSubItem2@CMenuPage@@QAEPAVCMenuItem2@@HHHHHHHH@Z	49.6765	49.6765	2	febf81056d22	0x183850
+menupage	?AddSubItem@CMenuPage@@QAEPAVCMenuItem@@HHHHHH@Z	35.1429	35.1429	2	a29859ae7df8	0x1835a0
 menupage	?Append@CMenuPage@@QAEPAXPAVCMenuItem@@@Z	100.0000	100.0000	1	d272df6d6ed8	0x183430
 menupage	?CanWrap@CMenuPage@@QAEHXZ	95.3846	95.3846	1	a72c9138e7a2	0x183e30
 menupage	?Clear@CMenuPage@@QAEXXZ	100.0000	100.0000	2	5aae933dd9bd	0x1833c0
@@ -2876,15 +2876,15 @@ menupage	?FocusPrev@CMenuPage@@QAEHXZ	77.1277	77.1277	3	07b9ff11529b	0x183d10
 menupage	?GetKey@CMenuPage@@QAE?AVCString@@XZ	100.0000	100.0000	1	3f39754fd89e	0x1832d0
 menupage	?HitTest@CMenuPage@@QAEPAVCMenuItem@@HH@Z	100.0000	100.0000	2	070f53bfc1c1	0x184100
 menupage	?InitDefaults@CMenuPage@@QAEXXZ	100.0000	100.0000	1	54f1bb15a397	0x1833a0
-menupage	?Layout@CMenuPage@@QAEHH@Z	99.9806	99.9806	2	da99dfec2797	0x183b60
-menupage	?LayoutOne@CMenuPage@@QAEHH@Z	99.9825	99.9825	3	54fe5848bf09	0x183e50
+menupage	?Layout@CMenuPage@@QAEHH@Z	99.9806	99.9806	3	ad7b6f9e0222	0x183b60
+menupage	?LayoutOne@CMenuPage@@QAEHH@Z	99.9825	99.9825	4	f0f1f0a75b76	0x183e50
 menupage	?NotifyAll@CMenuPage@@QAEHPAX@Z	100.0000	100.0000	2	121f4b485f85	0x183b30
 menupage	?ReleaseAll@CMenuPage@@QAEHXZ	100.0000	100.0000	2	1ab4df53bf4b	0x183990
 menupage	?RestoreFocus@CMenuPage@@QAEHXZ	60.6759	60.6759	2	b100fb066310	0x1839d0
-menupage	?SelectBack2@CMenuPage@@QAEHXZ	62.0000	62.0000	1	702732fa2ed9	0x184310
+menupage	?SelectBack2@CMenuPage@@QAEHXZ	62.0000	62.0000	2	9f4869018b04	0x184310
 menupage	?SelectBackward@CMenuPage@@QAEHXZ	60.8194	60.8194	1	9df148bf4a84	0x1844d0
 menupage	?SelectForward@CMenuPage@@QAEHXZ	60.8194	60.8194	1	891990b30b8a	0x1843f0
-menupage	?SelectFwd2@CMenuPage@@QAEHXZ	62.0000	62.0000	1	be98c737a2a4	0x184230
+menupage	?SelectFwd2@CMenuPage@@QAEHXZ	62.0000	62.0000	2	bb2b135ec9cc	0x184230
 menupage	?SetFocus@CMenuPage@@QAEHPAVCMenuItem@@H@Z	100.0000	100.0000	1	20f58cb55e3b	0x183ad0
 menupage	?Switch@CMenuPage@@QAEHH@Z	100.0000	100.0000	1	493ec45e749b	0x183df0
 menusparkleserial	?Serialize@CMenuSparkle@@QAEHPAVCMsSerialArchive@@HHH@Z	100.0000	100.0000	1	69a5586462c4	0xae1c0
