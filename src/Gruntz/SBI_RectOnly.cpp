@@ -699,6 +699,18 @@ SIZE_UNKNOWN(CSbiLogger);
 
 // The CGameReg singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c). Modeled
 // minimally - only the members/methods the reconstructed bodies touch.
+//
+// CONSOLIDATION DEFERRED (canonical view = CGameRegistry/CGruntzMgr): unlike the
+// other 0x24556c views (KitchenSlime/GooWellMgr/SBI_MenuItem/...) which were folded
+// to the canonical types, THIS view carries TU-specific __thiscall METHODS on the
+// singleton (Fn29aa @0x29aa, SetToggle @0x409d, HiPump @0x1fc8, ReportError(i32,i32),
+// inline ViewSize()) plus fields the canonical layouts do not expose (m_c/m_10/m_4).
+// Those methods/fields cannot move into the shared CGameRegistry.h / GruntzMgr.h
+// without breaching the fat-header wall (any addition there regresses a neighbor via
+// MSVC cross-fn codegen leak), and reaching them through the canonical type would
+// need a per-site methods-cast view - re-introducing exactly the per-TU view struct
+// the consolidation removes. Left as the local view; re-attack in the final sweep if
+// the canonical methods/fields ever become expressible cleanly.
 // The window host at g_gameReg+0x4: carries the game HWND at +0x4 (the
 // PostMessage target).
 struct CSbiWndHost {

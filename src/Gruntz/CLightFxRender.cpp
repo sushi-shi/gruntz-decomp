@@ -10,6 +10,7 @@
 // load-bearing. See <Gruntz/CLightFxRender.h> for the layout.
 #include <Gruntz/CLightFxRender.h>
 
+#include <Gruntz/CGameRegistry.h> // the g_gameReg singleton (0x24556c) canonical view
 #include <rva.h>
 
 // The unlock interface (LfxBorderCtx::m_8 / LfxSurface::m_8): a COM-like object
@@ -126,12 +127,9 @@ struct LfxBlitTarget {
     void Blit(i32 px, i32 py, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7); // FUN_00479520
 };
 
-// g_gameReg singleton (*0x64556c); only the +0x68 surface slot is read.
-struct CGameReg {
-    char m_pad[0x68];
-    LfxBlitTarget* m_68;
-};
-extern CGameReg* g_gameReg;
+// g_gameReg singleton (*0x64556c) - the canonical CGameRegistry view; only the
+// +0x68 surface slot is read (cast locally to LfxBlitTarget at the deref site).
+extern CGameRegistry* g_gameReg;
 
 // One tile cell of the grid row (stride 0x1c): +0x4 the tile id (-1 = empty),
 // +0xc a direct index into the +0x4c color buffer.
@@ -1673,7 +1671,7 @@ i32 CLightFxRender::ApplyGlobal(i32, i32 x, i32 y) {
     if (!ClampRect(x, y, cell, 0x20)) {
         return 0;
     }
-    g_gameReg->m_68->Blit(cell[0] * 32 + 16, cell[1] * 32 + 16, 0, 0, 0, 0, 1);
+    ((LfxBlitTarget*)g_gameReg->m_68)->Blit(cell[0] * 32 + 16, cell[1] * 32 + 16, 0, 0, 0, 0, 1);
     return 1;
 }
 

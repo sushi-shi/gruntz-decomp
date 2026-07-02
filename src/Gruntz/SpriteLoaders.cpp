@@ -1,7 +1,8 @@
 #include <rva.h>
-#include <string.h>        // inlined memset / strcpy in CTimer::Serialize (rep stos / rep movs)
-#include <Gruntz/ResMgr.h> // CResMgr (m_8 key table, m_10 image registry) + CKeyTable
-#include <Gruntz/Sprite.h> // CSprite (frame-data value) + CSpriteHashTable
+#include <string.h> // inlined memset / strcpy in CTimer::Serialize (rep stos / rep movs)
+#include <Gruntz/CGameRegistry.h> // g_gameReg singleton (0x24556c) canonical view
+#include <Gruntz/ResMgr.h>        // CResMgr (m_8 key table, m_10 image registry) + CKeyTable
+#include <Gruntz/Sprite.h>        // CSprite (frame-data value) + CSpriteHashTable
 // SpriteLoaders.cpp - two sibling HUD/UI sprite loaders that pull a named sprite
 // out of the engine's string-keyed sprite-set hash table and cache individual
 // animation frames off it (C:\Proj\Gruntz). Both share the same idiom:
@@ -61,21 +62,13 @@ struct CTimerSlot {
 };
 
 // The loading bar reaches the resource object through this->m_c.
-// The game-manager singleton (g_gameReg) reaches it through g_gameReg->m_30.
-// The expiry path also touches m_2c (level state), m_68 (notify), a per-player
-// timer-slot array at +0x150 (stride 0x238) and m_15c (a sub-object whose first
-// slot overlaps the array, so it is read via the raw offset).
-struct CGameReg {
-    char m_pad00[0x2c];
-    CLevelState* m_2c; // +0x2c
-    CResMgr* m_30;     // +0x30
-    char m_pad34[0x68 - 0x34];
-    CLevelNotify* m_68; // +0x68
-    char m_pad6c[0x150 - 0x6c];
-    char m_150[0x238]; // +0x150  base of the per-player timer-slot array (stride 0x238)
-};
+// The canonical CGameRegistry view of the singleton (*0x24556c). The world/
+// resource mgr (+0x30 -> CResMgr), level state (+0x2c -> CLevelState) and notify
+// target (+0x68 -> CLevelNotify) are cast locally at the deref sites; the
+// per-player timer-slot array at +0x150 (stride 0x238) and the m_15c sub-object
+// are reached via raw offsets off the singleton base.
 DATA(0x0024556c)
-extern CGameReg* g_gameReg;
+extern CGameRegistry* g_gameReg;
 
 // ---------------------------------------------------------------------------
 // CLoadingBar::LoadLoadingBarSprite
@@ -208,7 +201,7 @@ CTimer* CTimer::Init() {
 RVA(0x0009bb00, 0x119)
 i32 CTimer::LoadTimerSprite(i32 a, i32 b) {
     CSprite* spr = 0;
-    g_gameReg->m_30->m_10->m_10map.Lookup("GAME_TIMER", &spr);
+    ((CResMgr*)g_gameReg->m_30)->m_10->m_10map.Lookup("GAME_TIMER", &spr);
     m_8 = (i32*)spr;
     if (!spr) {
         return 0;
@@ -313,14 +306,14 @@ i32 CTimer::Tick(i32 dt) {
         m_34 = 0;
         m_48 = 0;
         m_4c = 0;
-        CLevelState* ls = g_gameReg->m_2c;
+        CLevelState* ls = (CLevelState*)g_gameReg->m_2c;
         ls->m_4f4 = 1;
         ls->m_400 = 0x1f4;
         ls->m_404 = 0;
         ls->m_3f8 = g_645588;
         ls->m_3fc = 0;
-        g_gameReg->m_68->Notify(g_644c54);
-        CTimerSlot* slot = (CTimerSlot*)((char*)&g_gameReg->m_150 + g_644c54 * 0x238);
+        ((CLevelNotify*)g_gameReg->m_68)->Notify(g_644c54);
+        CTimerSlot* slot = (CTimerSlot*)((char*)g_gameReg + 0x150 + g_644c54 * 0x238);
         if (slot != 0) {
             slot->m_24 = 1;
         }
@@ -328,7 +321,7 @@ i32 CTimer::Tick(i32 dt) {
         if (key != 0) {
             i32 found = 0;
             CTimerNotifyObj* obj =
-                (CTimerNotifyObj*)g_gameReg->m_30->m_8->FindByKey((i32)key, &found);
+                (CTimerNotifyObj*)((CResMgr*)g_gameReg->m_30)->m_8->FindByKey((i32)key, &found);
             CTimerNotifyObj* hit = found ? obj : (CTimerNotifyObj*)key;
             if (hit != 0 && hit->m_7c->m_18 != 0) {
                 hit->m_7c->m_18->ResolveDeathAnimation();
@@ -342,7 +335,7 @@ i32 CTimer::Tick(i32 dt) {
         if (key != 0) {
             i32 found = 0;
             CTimerNotifyObj* obj =
-                (CTimerNotifyObj*)g_gameReg->m_30->m_8->FindByKey((i32)key, &found);
+                (CTimerNotifyObj*)((CResMgr*)g_gameReg->m_30)->m_8->FindByKey((i32)key, &found);
             CTimerNotifyObj* hit = found ? obj : (CTimerNotifyObj*)key;
             if (hit != 0 && hit->m_7c->m_18 != 0) {
                 hit->m_7c->m_18->NotifyFortUnderAttack();
@@ -536,7 +529,7 @@ i32 CTimer::Serialize(CTimerArchive* ar) {
     if (ar == 0) {
         return 0;
     }
-    CResMgr* mgr = g_gameReg->m_30;
+    CResMgr* mgr = (CResMgr*)g_gameReg->m_30;
     if (mgr == 0) {
         return 0;
     }

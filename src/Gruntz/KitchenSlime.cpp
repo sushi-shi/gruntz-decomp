@@ -5,6 +5,7 @@
 #include <Gruntz/UserLogic.h> // CUserLogic base (CKitchenSlime : CUserLogic) for the leaf-dtor fold
 #include <Gruntz/Sprite.h>    // CSprite (frame-data value; the looked-up direction sprite)
 #include <Globals.h>
+#include <Gruntz/CGameRegistry.h> // g_gameReg singleton (0x24556c) canonical view
 #include <Gruntz/CTypeNameEntryView.h>
 // KitchenSlime.cpp - CKitchenSlime::LoadSprites @0x0b3160 (C:\Proj\Gruntz). The
 // kitchen-slime hazard's per-step "advance to the next walkable tile" driver: it
@@ -84,18 +85,10 @@ struct CSlimeCueGate {
     void ScrollTo(i32 a, i32 b, i32 mode, i32 flags);                    // 0x6bcb0
 };
 
-struct CGameReg {
-    char m_pad0[0x68];
-    CSlimeCueGate* m_68; // +0x68  on-screen visibility/cue gate
-    char m_pad6c[0x70 - 0x6c];
-    CTileMap* m_70; // +0x70
-    char m_pad74[0x118 - 0x74];
-    i32 m_118; // +0x118 has-window flag
-    char m_pad11c[0x134 - 0x11c];
-    i32 m_134; // +0x134 mode discriminator (==1 -> skip the visibility scroll)
-};
+// The canonical CGameRegistry view of the singleton; m_68 (cue gate) and m_70
+// (tile map) are void*/CTileGrid* here, cast locally at the deref sites.
 DATA(0x0024556c)
-extern CGameReg* g_gameReg;
+extern CGameRegistry* g_gameReg;
 
 // The entity QueryAt returns; +0x258 is its type/state tag (0x38 == the slime
 // itself, so its own footprint is ignored when probing the destination tile).
@@ -477,14 +470,14 @@ RVA(0x000b2ca0, 0x29c)
 i32 CKitchenSlime::Tick() {
     ((CSlimeAnimPlayer*)m_38)->m_1a0.Advance(g_slimeTick);
 
-    CGameReg* reg = g_gameReg;
+    CGameRegistry* reg = g_gameReg;
     if (reg->m_118 == 0 || reg->m_134 != 1) {
         CSlimeLevel* lvl = (CSlimeLevel*)m_10;
         i32 outX, outY;
-        CSlimeEntity* ent =
-            (CSlimeEntity*)reg->m_68->QueryAt(lvl->m_5c, lvl->m_60, &lvl->m_144, &outY, &outX, 0);
+        CSlimeEntity* ent = (CSlimeEntity*)((CSlimeCueGate*)reg->m_68)
+                                ->QueryAt(lvl->m_5c, lvl->m_60, &lvl->m_144, &outY, &outX, 0);
         if (ent && ent->m_258 != 0x38) {
-            g_gameReg->m_68->ScrollTo(outY, outX, 5, -1);
+            ((CSlimeCueGate*)g_gameReg->m_68)->ScrollTo(outY, outX, 5, -1);
         }
     }
 
@@ -652,7 +645,7 @@ i32 CKitchenSlime::LoadSprites() {
         i32 gx = tileX >> 5;
         i32 gy = tileY >> 5;
         i32 tileFlags;
-        CTileMap* map = g_gameReg->m_70;
+        CTileMap* map = (CTileMap*)g_gameReg->m_70;
         if ((u32)gx >= (u32)map->m_c || (u32)gy >= (u32)map->m_10) {
             tileFlags = 1;
         } else {
@@ -771,7 +764,6 @@ i32 CKitchenSlime::LoadSprites() {
 // size 0x90 from operator-new vtable attribution (gruntz.analysis.news)
 SIZE(CKitchenSlime, 0x90);
 
-SIZE_UNKNOWN(CGameReg);
 SIZE_UNKNOWN(CKSlimeColl);
 SIZE_UNKNOWN(CKSlimeColl2);
 SIZE_UNKNOWN(CKSlimeEntry);

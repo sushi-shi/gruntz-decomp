@@ -1,7 +1,8 @@
 #include <rva.h>
 #include <Bute/ButeMgr.h>
-#include <Gruntz/SoundCueMgr.h> // the ONE CSoundCueMgr shape (ConfigureItem @0x1360d0)
-#include <Gruntz/Sprite.h>      // CSprite (frame-data value) + CSpriteHashTable
+#include <Gruntz/CGameRegistry.h> // g_gameReg singleton (0x24556c) canonical view
+#include <Gruntz/SoundCueMgr.h>   // the ONE CSoundCueMgr shape (ConfigureItem @0x1360d0)
+#include <Gruntz/Sprite.h>        // CSprite (frame-data value) + CSpriteHashTable
 // StatusBarUpdaters.cpp - the per-widget HUD status-bar updaters and switch-tile
 // sprite loaders (C:\Proj\Gruntz). They live on the big in-game game-mode object
 // (the EngineLabelBacklog placeholder the rest of the backlog hangs off) and
@@ -87,24 +88,13 @@ struct CRegHolder {
     CStatusBarHolder* m_28; // +0x28
 };
 SIZE_UNKNOWN(CRegHolder);
-// The single typed view of the game-manager singleton (*0x24556c) this TU uses:
-// the resource holder (+0x30), the group table (+0x68), the tile notifier (+0x70)
-// and the view-bounds rectangle (+0x13c..+0x148).
-struct CGameReg {
-    char m_pad00[0x30];
-    CRegHolder* m_30; // +0x30
-    char m_pad34[0x68 - 0x34];
-    i32* m_68; // +0x68  group-record table
-    char m_pad6c[0x70 - 0x6c];
-    CTileNotifier* m_70; // +0x70
-    char m_pad74[0x13c - 0x74];
-    i32 m_13c; // +0x13c  view min X
-    i32 m_140; // +0x140  view min Y
-    i32 m_144; // +0x144  view max X
-    i32 m_148; // +0x148  view max Y
-};
+// The canonical CGameRegistry view of the singleton (*0x24556c). The resource
+// holder (+0x30 -> CRegHolder), the group table (+0x68) and the tile notifier
+// (+0x70 -> CTileNotifier) are void*/CSpriteFactoryHolder*/CTileGrid* in the
+// canonical layout, so this TU casts them locally at the deref sites; the
+// view-bounds rectangle scalars (+0x13c..+0x148) match directly.
 DATA(0x0024556c)
-extern CGameReg* g_gameReg; // the game-manager singleton
+extern CGameRegistry* g_gameReg; // the game-manager singleton
 
 // ---------------------------------------------------------------------------
 // EngineLabelBacklog - the placeholder class the backlog stubs hang off (modeled
@@ -231,7 +221,7 @@ void EngineLabelBacklog::UpdateGruntOvenStatusBar() {
             if (frame >= 0x1a) {
                 tab->m_0 = 2;
                 frame = 0x1a;
-                CStatusBarHolder* h = g_gameReg->m_30->m_28;
+                CStatusBarHolder* h = ((CRegHolder*)g_gameReg->m_30)->m_28;
                 if (h->m_30 == 0) {
                     CSprite* spr = 0;
                     h->m_10map.Lookup("GAME_COOKINGCOMPLETE", &spr);
@@ -339,7 +329,7 @@ void EngineLabelBacklog::UpdateChipGrinderStatusBar() {
         } else if (m[0x510 / 4] >= 0x1bf) {
             if (m[0x4e8 / 4] != 2) {
                 if (m[0x10c / 4] == 3 && m[0] != 2) {
-                    CStatusBarHolder* h = g_gameReg->m_30->m_28;
+                    CStatusBarHolder* h = ((CRegHolder*)g_gameReg->m_30)->m_28;
                     if (h->m_30 == 0) {
                         CSprite* spr = 0;
                         h->m_10map.Lookup("GAME_REZGRINDING", &spr);
@@ -415,7 +405,7 @@ i32 EngineLabelBacklog::LoadStatzTabToggleSprite(i32 value, i32 idx) {
         item->m_4 = one;
         if (m[0x10c / 4] == one) {
             ((CStatzTabSub*)m[idx + 0x18c / 4])->Toggle(m[0], one);
-            CStatusBarHolder* h = g_gameReg->m_30->m_28;
+            CStatusBarHolder* h = ((CRegHolder*)g_gameReg->m_30)->m_28;
             if (h->m_30 == 0) {
                 CSprite* spr = 0;
                 h->m_10map.Lookup("GAME_STATZTABTOGGLE", &spr);
@@ -444,17 +434,17 @@ i32 EngineLabelBacklog::LoadStatzTabToggleSprite(i32 value, i32 idx) {
 // status-bar advance. Latches m_14 = 1 (down). __thiscall.
 RVA(0x00110570, 0xfb)
 void EngineLabelBacklog::LoadSwitchDownSprite() {
-    CMapTileGrid* g = g_gameReg->m_30->m_24->m_5c;
+    CMapTileGrid* g = ((CRegHolder*)g_gameReg->m_30)->m_24->m_5c;
     i32 v = g->m_20[g->m_24[m_c] + m_8] + 1;
-    CMapTileGrid* g2 = g_gameReg->m_30->m_24->m_5c;
+    CMapTileGrid* g2 = ((CRegHolder*)g_gameReg->m_30)->m_24->m_5c;
     g2->m_20[g2->m_24[m_c] + m_8] = v;
-    g_gameReg->m_70->Notify(m_8, m_c, v);
+    ((CTileNotifier*)g_gameReg->m_70)->Notify(m_8, m_c, v);
 
     i32 px = (m_8 << 5) + 0x10;
     i32 py = (m_c << 5) + 0x10;
     if (px < g_gameReg->m_144 && px >= g_gameReg->m_13c && py < g_gameReg->m_148
         && py >= g_gameReg->m_140) {
-        CStatusBarHolder* h = g_gameReg->m_30->m_28;
+        CStatusBarHolder* h = ((CRegHolder*)g_gameReg->m_30)->m_28;
         if (h->m_30 == 0) {
             CSprite* spr = 0;
             h->m_10map.Lookup("GAME_SWITCHDOWN", &spr);
@@ -478,17 +468,17 @@ void EngineLabelBacklog::LoadSwitchDownSprite() {
 // the GAME_SWITCHUP advance, and latches m_14 = 0 (up). __thiscall.
 RVA(0x001106b0, 0xf4)
 void EngineLabelBacklog::LoadSwitchUpSprite() {
-    CMapTileGrid* g = g_gameReg->m_30->m_24->m_5c;
+    CMapTileGrid* g = ((CRegHolder*)g_gameReg->m_30)->m_24->m_5c;
     i32 v = g->m_20[g->m_24[m_c] + m_8] - 1;
-    CMapTileGrid* g2 = g_gameReg->m_30->m_24->m_5c;
+    CMapTileGrid* g2 = ((CRegHolder*)g_gameReg->m_30)->m_24->m_5c;
     g2->m_20[g2->m_24[m_c] + m_8] = v;
-    g_gameReg->m_70->Notify(m_8, m_c, v);
+    ((CTileNotifier*)g_gameReg->m_70)->Notify(m_8, m_c, v);
 
     i32 px = (m_8 << 5) + 0x10;
     i32 py = (m_c << 5) + 0x10;
     if (px < g_gameReg->m_144 && px >= g_gameReg->m_13c && py < g_gameReg->m_148
         && py >= g_gameReg->m_140) {
-        CStatusBarHolder* h = g_gameReg->m_30->m_28;
+        CStatusBarHolder* h = ((CRegHolder*)g_gameReg->m_30)->m_28;
         if (h->m_30 == 0) {
             CSprite* spr = 0;
             h->m_10map.Lookup("GAME_SWITCHUP", &spr);
@@ -521,7 +511,7 @@ i32 EngineLabelBacklog::UpdateWarpStoneStatusBar(i32 a0, i32 phase, i32 srcX, i3
 
     CSprite* spr = 0;
     i32 n = phase + 1;
-    g_gameReg->m_30->m_28->m_10map.Lookup("GAME_STATUSBAR_TABZ_GAMETAB_WARP", &spr);
+    ((CRegHolder*)g_gameReg->m_30)->m_28->m_10map.Lookup("GAME_STATUSBAR_TABZ_GAMETAB_WARP", &spr);
     i32* frame = (spr && n >= spr->m_64 && n <= spr->m_68) ? spr->m_10.m_pData[n] : 0;
     m[0x38 / 4] = (i32)frame;
     if (frame == 0) {
@@ -565,7 +555,7 @@ i32 EngineLabelBacklog::UpdateWarpStoneStatusBar(i32 a0, i32 phase, i32 srcX, i3
     *(double*)&m[0x28 / 4] = (double)dist2 / dist;
     *(double*)&m[0x30 / 4] = (double)dxv / dist;
 
-    CStatusBarHolder* h = g_gameReg->m_30->m_28;
+    CStatusBarHolder* h = ((CRegHolder*)g_gameReg->m_30)->m_28;
     if (h->m_30 == 0) {
         CSprite* fly = 0;
         h->m_10map.Lookup("GAME_WARPSTONEFLY", &fly);

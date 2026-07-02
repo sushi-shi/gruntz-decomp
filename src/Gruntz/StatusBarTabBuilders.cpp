@@ -10,6 +10,7 @@
 // body / by-address DATA externs).
 #include <Win32.h>
 
+#include <Gruntz/CGameRegistry.h> // g_gameReg singleton (0x24556c) canonical view
 #include <Ints.h>
 #include <rva.h>
 
@@ -74,19 +75,12 @@ namespace StatusBarTabBuilders {
         char m_24[0x238 - 0x24];
     };
 
-    // The game registry / settings singleton (?g_gameReg, DATA 0x64556c). Only the
-    // fields these builders touch are modeled.
-    struct CSbSettings {
-        char m_00[0x30];
-        CSbOwner* m_30; // +0x30  the level's namespace owner (StatzTab path)
-        char m_34[0x74 - 0x34];
-        CSpriteRefTable* m_74; // +0x74
-        char m_78[0x138 - 0x78];
-        CSbWorldSlot m_138[1]; // +0x138  per-world slot array (size 0x238)
-    };
-
-    DATA(0x0064556c)
-    extern CSbSettings* g_gameReg;
+    // The game registry / settings singleton (*0x24556c) - the canonical
+    // CGameRegistry view. The namespace owner (+0x30 -> CSbOwner), sprite-ref table
+    // (+0x74 -> CSpriteRefTable) and per-world slot array (+0x138, stride 0x238 ->
+    // CSbWorldSlot) are cast locally at the deref sites.
+    DATA(0x0024556c)
+    extern CGameRegistry* g_gameReg;
     DATA(0x00644c54)
     extern i32 g_644c54;
 
@@ -232,9 +226,10 @@ namespace StatusBarTabBuilders {
         if (s == 0) {
             return 0;
         }
-        i32 sel = g_gameReg->m_74->GetSel(g_gameReg->m_138[g_644c54].m_20, 0);
+        i32 sel = ((CSpriteRefTable*)g_gameReg->m_74)
+                      ->GetSel(((CSbWorldSlot*)((char*)g_gameReg + 0x138))[g_644c54].m_20, 0);
         if (sel == 0) {
-            sel = g_gameReg->m_74->GetSel(1, 0);
+            sel = ((CSpriteRefTable*)g_gameReg->m_74)->GetSel(1, 0);
         }
         m_30->SetAllTypes(10);
         m_30->SetAllFormats(sel);
@@ -294,7 +289,8 @@ namespace StatusBarTabBuilders {
         m_54 = onLeft;
         if (onLeft == 0) {
             void* out = 0;
-            g_gameReg->m_30->m_10->m_10.Lookup("GAME_STATUSBAR_TABZ_STATZTAB_TABONRIGHT", &out);
+            ((CSbOwner*)g_gameReg->m_30)
+                ->m_10->m_10.Lookup("GAME_STATUSBAR_TABZ_STATZTAB_TABONRIGHT", &out);
             CSbImageSet* n = (CSbImageSet*)out;
             i32 v;
             if (n == 0 || n->m_64 > 1 || n->m_68 < 1) {
@@ -307,7 +303,8 @@ namespace StatusBarTabBuilders {
             m_48 = (p7 - p5) / 2 + parent->m_18;
         } else {
             void* out = 0;
-            g_gameReg->m_30->m_10->m_10.Lookup("GAME_STATUSBAR_TABZ_STATZTAB_TABONLEFT", &out);
+            ((CSbOwner*)g_gameReg->m_30)
+                ->m_10->m_10.Lookup("GAME_STATUSBAR_TABZ_STATZTAB_TABONLEFT", &out);
             CSbImageSet* n = (CSbImageSet*)out;
             i32 v;
             if (n == 0 || n->m_64 > 1 || n->m_68 < 1) {

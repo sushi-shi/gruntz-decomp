@@ -1,11 +1,12 @@
 #include <rva.h>
+#include <Gruntz/CGameRegistry.h> // g_gameReg singleton (0x24556c) canonical view
 #include <Gruntz/CString.h>
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory + CSpriteIconNode shape
 #include <Gruntz/PickupType.h>    // the shared object/pickup/grunt-kind type id space
 #include <Bute/ButeMgr.h>
 // IconLoaders.cpp - the in-game-icon / powerup / explosion / camera / booty-perfect
 // sprite loaders (C:\Proj\Gruntz). Each builds a named sprite-set key, asks the
-// global HUD sprite factory (g_gameReg->m_factoryHolder->m_factory->CreateSprite) for the sprite,
+// global HUD sprite factory (g_gameReg->m_30->m_8->CreateSprite) for the sprite,
 // then caches/forwards something off it through the shared sprite-resource leaves
 // (CGruntSprite::CacheFirstFrame, CGruntAnimPlayer::ApplyLookupGeometry - both in
 // the spriteresource unit, reloc-masked). Only offsets / code bytes are
@@ -24,10 +25,8 @@
 extern "C" void IconClassInitA(); // 0x40288d
 extern "C" void IconClassInitB(); // 0x402bad
 
-struct CSpriteFactoryHolder {
-    char m_pad0[0x8];
-    CSpriteFactory* m_factory; // +0x08
-};
+// CSpriteFactoryHolder (the singleton's +0x30 slot, also this icon class's +0x22c
+// member) is the canonical <Gruntz/CGameRegistry.h> type (its m_8 == m_factory).
 
 // The game-manager singleton (g_gameReg, *0x64556c). Different loaders read a
 // handful of its slots (viewport +0x8c/+0x90, a level-tracker +0x2c, the
@@ -36,20 +35,12 @@ struct CResourceTracker {
     char m_pad0[0x1c];
     i32 m_levelNumber; // +0x1c  (Level number source)
 };
-struct CGameReg {
-    void Report(i32 code, i32 sub); // 0x40346d __thiscall (icon-overflow report)
-
-    char m_pad0[0x2c];
-    CResourceTracker* m_resourceTracker;   // +0x2c
-    CSpriteFactoryHolder* m_factoryHolder; // +0x30
-    char m_pad34[0x8c - 0x34];
-    i32 m_viewportX; // +0x8c  viewport X
-    i32 m_viewportY; // +0x90  viewport Y
-    char m_pad94[0x134 - 0x94];
-    i32 m_visibleBoundsMode; // +0x134 visible-bounds mode gate (==1)
-};
+// The canonical CGameRegistry view of the singleton (*0x24556c). The resource
+// tracker (+0x2c -> CResourceTracker) is cast locally; the sprite-factory holder
+// (+0x30 -> m_30), viewport X/Y (+0x8c/+0x90 -> m_8c/m_90), the visible-bounds
+// gate (+0x134 -> m_134) and Report() are exposed by the canonical layout.
 DATA(0x0024556c)
-extern CGameReg* g_gameReg;
+extern CGameRegistry* g_gameReg;
 
 // The attribute manager (butemgr unit), reached as the g_buteMgr singleton.
 extern CButeMgr g_buteMgr;
@@ -126,8 +117,8 @@ public:
 
 RVA(0x0001c070, 0x59)
 i32 EngineLabelBacklog::BuildBootyPerfectAnimation() {
-    CIconSprite* spr = g_gameReg->m_factoryHolder->m_factory
-                           ->CreateSprite(0, (i32)0xffffff7e, 0xf0, 0x64, "SimpleAnimation", 3);
+    CIconSprite* spr =
+        g_gameReg->m_30->m_8->CreateSprite(0, (i32)0xffffff7e, 0xf0, 0x64, "SimpleAnimation", 3);
     m_bootyPerfectSprite = spr;
     if (!spr) {
         return 0;
@@ -153,9 +144,9 @@ i32 EngineLabelBacklog::LoadCameraSprite() {
         return 0;
     }
 
-    i32 vx = g_gameReg->m_viewportX;
-    i32 vy = g_gameReg->m_viewportY;
-    i32 count = *(*(i32**)((char*)g_gameReg->m_resourceTracker + 0x2dc));
+    i32 vx = g_gameReg->m_8c;
+    i32 vy = g_gameReg->m_90;
+    i32 count = *(*(i32**)((char*)g_gameReg->m_2c + 0x2dc));
 
     i32 ax, cx;
     if (count == 0) {
@@ -166,7 +157,7 @@ i32 EngineLabelBacklog::LoadCameraSprite() {
         cx = vy - 0x28;
     }
 
-    CSpriteFactory* fac = m_factoryHolder->m_factory;
+    CSpriteFactory* fac = m_factoryHolder->m_8;
     CIconSprite* spr = fac->CreateSprite(0, ax, cx, 0xf4240, "DoNothing", 1);
     m_cameraSprite = spr;
     spr->m_initVtbl->Init(spr);
@@ -179,7 +170,7 @@ i32 EngineLabelBacklog::LoadCameraSprite() {
 // ===========================================================================
 //
 // Lazily creates the "GAME_TOYBOX" in-game icon at tile (x>>5, y>>5): first walks
-// the factory's live-icon list (m_factoryHolder->m_factory->m_liveIcons) and bails (return 0) if an
+// the factory's live-icon list (m_factoryHolder->m_8->m_liveIcons) and bails (return 0) if an
 // existing icon of one of the two icon classes already sits on that tile;
 // otherwise CreateSprite("InGameIcon"), cache its frame, stamp the four config
 // slots and the +0x40 visible bit.  __thiscall, ret 0x14 (5 args).
@@ -190,7 +181,7 @@ i32 EngineLabelBacklog::LoadCameraSprite() {
 
 RVA(0x0007a3f0, 0xd7)
 i32 EngineLabelBacklog::LoadToyBoxIcon(i32 x, i32 y, i32 a3, i32 a4, i32 a5) {
-    CSpriteFactory* fac = m_factoryHolder->m_factory;
+    CSpriteFactory* fac = m_factoryHolder->m_8;
     i32 tx = x >> 5;
     i32 ty = y >> 5;
 
@@ -232,7 +223,7 @@ i32 EngineLabelBacklog::LoadToyBoxIcon(i32 x, i32 y, i32 a3, i32 a4, i32 a5) {
 
 RVA(0x0007b330, 0xc6)
 i32 EngineLabelBacklog::LoadExplosionSprites(i32 geoB, i32 geoA, i32 variant, i32 dummy) {
-    CSpriteFactory* fac = m_factoryHolder->m_factory;
+    CSpriteFactory* fac = m_factoryHolder->m_8;
     CIconSprite* spr = fac->CreateSprite(0, geoB, geoA, 0, "Explosion", 0x40003);
     if (spr) {
         i32 v = variant;
@@ -340,8 +331,8 @@ i32 EngineLabelBacklog::LoadPowerupIconSprites(
             name = "GAME_INGAMEICONZ_TOOLZ_WANDZ";
             break;
         case PICKUP_WARPSTONE:
-            if (g_gameReg->m_visibleBoundsMode == 1) {
-                CResourceTracker* rt = g_gameReg->m_resourceTracker;
+            if (g_gameReg->m_134 == 1) {
+                CResourceTracker* rt = (CResourceTracker*)g_gameReg->m_2c;
                 CString lvl;
                 lvl.Format("Level%i", rt->m_levelNumber);
                 name.Format(
@@ -440,8 +431,8 @@ i32 EngineLabelBacklog::LoadPowerupIconSprites(
             name = "GAME_INGAMEICONZ_POWERUPZ_COIN";
             break;
         case PICKUP_COVEREDTIMEBOMB: {
-            CIconSprite* tb = g_gameReg->m_factoryHolder->m_factory
-                                  ->CreateSprite(0, geoB, geoA, 0xf, "TimeBomb", 0x40003);
+            CIconSprite* tb =
+                g_gameReg->m_30->m_8->CreateSprite(0, geoB, geoA, 0xf, "TimeBomb", 0x40003);
             if (tb) {
                 tb->m_120 = g_buteMgr.GetDwordDef("Powerupz", "CoveredTimeBombTime", 0x7d0);
             }
@@ -451,8 +442,8 @@ i32 EngineLabelBacklog::LoadPowerupIconSprites(
             return 0;
     }
 
-    CIconSprite* spr = g_gameReg->m_factoryHolder->m_factory
-                           ->CreateSprite(0, geoB, geoA, 0x17318, "InGameIcon", 0x40003);
+    CIconSprite* spr =
+        g_gameReg->m_30->m_8->CreateSprite(0, geoB, geoA, 0x17318, "InGameIcon", 0x40003);
     if (!spr) {
         return 0;
     }

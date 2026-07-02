@@ -16,22 +16,18 @@
 #include <rva.h>
 
 #include <Gruntz/CTileGrid.h>  // the registry +0x70 tile occupancy grid
+#include <Gruntz/GruntzMgr.h>  // canonical MFC-side g_gameReg singleton view (CGruntzMgr)
 #include <Gruntz/PickupType.h> // the shared object/pickup/grunt-kind type id space
 
-// g_mgrSettings (0x64556c) - the game registry. m_2c registers a named sprite set;
-// m_70 is the tile grid (m_8 = row-pointer array; each cell is 0x1c bytes with the
-// tile code at +0x10, indexed by the >>5 tile coords).
+// The game registry singleton (*0x24556c) - the canonical MFC-side CGruntzMgr view.
+// Its +0x2c slot registers a named sprite set (cast to CSpriteSetReg); its +0x70
+// tile grid (m_cmdNotify, cast to CTileGrid) has m_8 = row-pointer array, each cell
+// 0x1c bytes with the tile code at +0x10, indexed by the >>5 tile coords.
 struct CSpriteSetReg {
     void Register(CString* name, i32 a, i32 b, i32 c); // 0x2bc1 __thiscall
 };
-struct CGameReg {
-    char m_pad0[0x2c];
-    CSpriteSetReg* m_2c; // +0x2c
-    char m_pad30[0x70 - 0x30];
-    CTileGrid* m_70; // +0x70  tile occupancy grid (shared CTileGrid)
-};
 DATA(0x0024556c)
-extern "C" CGameReg* g_mgrSettings; // 0x64556c
+extern CGruntzMgr* g_gameReg;
 
 // The grunt-command object's follow-up registrar (this->m_260).
 struct CGruntCmdObj;
@@ -223,9 +219,9 @@ i32 CGruntCmdObj::LoadVehicleGruntSprites(i32 kind) {
             break;
     }
 
-    g_mgrSettings->m_2c->Register(&name, 1, 1, 0);
+    ((CSpriteSetReg*)g_gameReg->m_curState)->Register(&name, 1, 1, 0);
 
-    i32 code = ((i32*)g_mgrSettings->m_70->m_8[m_180 >> 5])[(m_17c >> 5) * 7 + 4];
+    i32 code = ((i32*)((CTileGrid*)g_gameReg->m_cmdNotify)->m_8[m_180 >> 5])[(m_17c >> 5) * 7 + 4];
     if (code == 0x41 || code == 0x42) {
         if (m_10->m_5c == m_17c && m_10->m_60 == m_180) {
             m_260->RegisterA(this, m_17c, m_180);

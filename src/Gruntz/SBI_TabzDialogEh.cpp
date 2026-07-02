@@ -49,8 +49,9 @@
 #include <Ints.h>
 #include <Mfc.h>
 
-#include <Gruntz/SbRect.h> // the by-value geometry rect the slot-0x2c setup takes (arg5..8);
-                           // built as a temp per call (sub esp,0x10 + four stores) via its ctor
+#include <Gruntz/GruntzMgr.h> // canonical MFC-side g_gameReg singleton view (CGruntzMgr)
+#include <Gruntz/SbRect.h>    // the by-value geometry rect the slot-0x2c setup takes (arg5..8);
+                              // built as a temp per call (sub esp,0x10 + four stores) via its ctor
 
 // Throwing global operator new (engine _RezAlloc @0x1b9b46); no body -> reloc-masked.
 void* operator new(u32 n);
@@ -173,17 +174,12 @@ struct TabzPlayer {
     char _pad[0x238 - 0xc];
 };
 SIZE_UNKNOWN(TabzPlayer);
-struct TabzGameReg {
-    char _00[0x68];
-    TabzGmFactory* m_68; // +0x68
-    char _6c[0x134 - 0x6c];
-    i32 m_134; // +0x134  test-mode gate
-    char _138[0x174 - 0x138];
-    TabzPlayer m_players[4]; // +0x174  active-player table
-};
-SIZE_UNKNOWN(TabzGameReg);
+// The canonical MFC-side CGruntzMgr view of the singleton (*0x24556c). The +0x68
+// active-level/mission object (m_cmdGrid, cast to TabzGmFactory) and the +0x174
+// per-player table (stride 0x238, cast to TabzPlayer) are reached via local cast /
+// raw offset; the +0x134 test-mode gate matches directly.
 DATA(0x0024556c)
-extern TabzGameReg* g_mgrSettings;
+extern CGruntzMgr* g_gameReg;
 
 // The host sub-object at +0xc: a two-hop RECT holder (m_c->m_24 + 0x10 = RECT).
 struct TabzRectHolder {
@@ -308,9 +304,9 @@ i32 CTabzBuilder::BuildTabzDialog() {
     }
     m_d4.AddTail((CObject*)dialog);
 
-    i32 reason = g_mgrSettings->m_68->m_3ec;
+    i32 reason = ((TabzGmFactory*)g_gameReg->m_cmdGrid)->m_3ec;
 
-    if (g_mgrSettings->m_68->m_288 == 1) {
+    if (((TabzGmFactory*)g_gameReg->m_cmdGrid)->m_288 == 1) {
         // mission accomplished
         CSBI_ImageSet* status = new CSBI_ImageSet;
         if (!status->Setup(
@@ -344,7 +340,7 @@ i32 CTabzBuilder::BuildTabzDialog() {
         }
         m_d4.AddTail((CObject*)rsn);
 
-        if (g_mgrSettings->m_134 == 1) {
+        if (g_gameReg->m_134 == 1) {
             CSBI_MenuItem* next = new CSBI_MenuItem;
             if (!next->Setup(
                     this,
@@ -432,7 +428,7 @@ i32 CTabzBuilder::BuildTabzDialog() {
     }
     m_d4.AddTail((CObject*)rsn);
 
-    if (g_mgrSettings->m_134 == 1) {
+    if (g_gameReg->m_134 == 1) {
         CSBI_MenuItem* replay = new CSBI_MenuItem;
         if (!replay->Setup(
                 this,
@@ -472,8 +468,9 @@ i32 CTabzBuilder::BuildTabzDialog() {
     // count active players (m_178!=0 && m_17c==0 && m_174==0) over the 4 slots.
     i32 count = 0;
     for (i32 i = 0; i < 4; i++) {
-        if (g_mgrSettings->m_players[i].m_178 != 0 && g_mgrSettings->m_players[i].m_17c == 0
-            && g_mgrSettings->m_players[i].m_174 == 0) {
+        if (((TabzPlayer*)((char*)g_gameReg + 0x174))[i].m_178 != 0
+            && ((TabzPlayer*)((char*)g_gameReg + 0x174))[i].m_17c == 0
+            && ((TabzPlayer*)((char*)g_gameReg + 0x174))[i].m_174 == 0) {
             count++;
         }
     }

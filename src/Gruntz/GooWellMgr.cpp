@@ -16,7 +16,8 @@
 // callee/global is an external no-body decl so its `call rel32` / DIR32 operand
 // reloc-masks.
 #include <rva.h>
-#include <Bute/ButeMgr.h> // CButeMgr (g_buteMgr.GetDwordDef)
+#include <Bute/ButeMgr.h>         // CButeMgr (g_buteMgr.GetDwordDef)
+#include <Gruntz/CGameRegistry.h> // g_gameReg singleton (0x24556c) canonical view
 
 struct CGooWellMgr;
 struct CGameObj2c;
@@ -138,26 +139,13 @@ struct PlayerSlot {
     char _30[0x238 - 0x30];
 };
 
-// The game-registry singleton (?g_gameReg@@3PAU...). Minimal local view.
-struct CGameReg {
-    char _0[0x10];
-    i32 m_10; // +0x10
-    char _14[0x2c - 0x14];
-    CGameObj2c* m_2c;  // +0x2c
-    CMgrHolderX* m_30; // +0x30
-    char _34[0x68 - 0x34];
-    CGooWellMgr* m_68; // +0x68
-    char _6c[0x7c - 0x6c];
-    CBzData* m_7c; // +0x7c
-    char _80[0x11c - 0x80];
-    i32 m_11c; // +0x11c
-    char _120[0x134 - 0x120];
-    i32 m_134; // +0x134
-    char _138[0x150 - 0x138];
-    PlayerSlot m_players[4]; // +0x150
-};
+// The game-registry singleton, canonical CGameRegistry view. The game-mode object
+// (+0x2c -> CGameObj2c), resource holder (+0x30 -> CMgrHolderX), goo-well mgr
+// (+0x68 -> CGooWellMgr) and battlez tracker (+0x7c -> CBzData) are void*/typed
+// slots cast locally at the deref sites; the m_10/m_11c/m_134 scalars match, and
+// the per-player slot array at +0x150 (stride 0x238) is reached via raw offset.
 DATA(0x0024556c)
-extern CGameReg* g_gameReg;
+extern CGameRegistry* g_gameReg;
 
 struct CGooWellMgr {
     char _0[0x10c];
@@ -206,7 +194,7 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
         if (m_3f8) {
             if (!m_3f0) {
                 CLookObj* out = 0;
-                g_gameReg->m_30->m_28->m_map10.Lookup("LEVEL_ROLLINGBALL", out);
+                ((CMgrHolderX*)g_gameReg->m_30)->m_28->m_map10.Lookup("LEVEL_ROLLINGBALL", out);
                 if (out && out->m_10) {
                     m_3f0 = out->m_10->GetItem();
                     if (m_3f0) {
@@ -222,7 +210,7 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
         if (m_3fc) {
             if (!m_3f4) {
                 CLookObj* out = 0;
-                g_gameReg->m_30->m_28->m_map10.Lookup("GAME_TELEPORTLOOP", out);
+                ((CMgrHolderX*)g_gameReg->m_30)->m_28->m_map10.Lookup("GAME_TELEPORTLOOP", out);
                 if (out && out->m_10) {
                     m_3f4 = out->m_10->GetItem();
                     if (m_3f4) {
@@ -242,15 +230,15 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
     i32 count = 0;
     PlayerSlot* pslot = 0;
     for (i32 k = 0; k < 4; k++) {
-        pslot = &g_gameReg->m_players[k];
+        pslot = (PlayerSlot*)((char*)g_gameReg + 0x150 + k * 0x238);
         if (pslot->m_28 && !pslot->m_2c && !pslot->m_24) {
             count++;
         }
     }
-    if (count <= 1 && m_288 == 2 && g_gameReg->m_2c->m_2dc->m_550 == 0
-        && g_gameReg->m_2c->m_2dc->m_554 == 0 && m_2a0 == 0) {
+    if (count <= 1 && m_288 == 2 && ((CGameObj2c*)g_gameReg->m_2c)->m_2dc->m_550 == 0
+        && ((CGameObj2c*)g_gameReg->m_2c)->m_2dc->m_554 == 0 && m_2a0 == 0) {
         if ((i64)g_645588 - m_290 >= m_298) {
-            g_gameReg->m_2c->EnterOverlayDrag(0);
+            ((CGameObj2c*)g_gameReg->m_2c)->EnterOverlayDrag(0);
         }
     }
 
@@ -264,9 +252,9 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
         }
         if ((i64)g_645588 - m_290 >= m_298) {
             if (g_gameReg->m_134 == 2) {
-                g_gameReg->m_2c->m_594 = 1;
+                ((CGameObj2c*)g_gameReg->m_2c)->m_594 = 1;
             }
-            g_gameReg->m_2c->EnterOverlayDrag(0);
+            ((CGameObj2c*)g_gameReg->m_2c)->EnterOverlayDrag(0);
             m_2a4 = 0;
             return 0;
         }
@@ -280,13 +268,13 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
         if (g_gameReg->m_134 == 1 && m_2a0 != 0) {
             goto done;
         }
-        g_gameReg->m_2c->EnterOverlayDrag(0);
+        ((CGameObj2c*)g_gameReg->m_2c)->EnterOverlayDrag(0);
         m_2a4 = 0;
         return 0;
     }
 
     {
-        CGameObj2c* obj = g_gameReg->m_2c;
+        CGameObj2c* obj = (CGameObj2c*)g_gameReg->m_2c;
         if (g_gameReg->m_134 != 1) {
             i32 idx = obj->ClearPlacedObjects();
             if (idx != -1) {
@@ -301,7 +289,8 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
                         if (slot && slot->m_28 && !slot->m_2c && !slot->m_24) {
                             slot->m_24 = 1;
                             CLookObj* out = 0;
-                            if (g_gameReg->m_30->m_8->m_map48.Lookup(slot->m_c, out) && out) {
+                            if (((CMgrHolderX*)g_gameReg->m_30)->m_8->m_map48.Lookup(slot->m_c, out)
+                                && out) {
                                 if (out->m_7c->m_18) {
                                     out->m_7c->m_18->ResolveDeathAnimation();
                                 }
@@ -310,11 +299,13 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
                         }
                     } else {
                         if (g_644c54 == i) {
-                            g_gameReg->m_68->Notify(2);
+                            ((CGooWellMgr*)g_gameReg->m_68)->Notify(2);
                         }
                         if (lastSlot && lastSlot->m_28 && !lastSlot->m_2c && !lastSlot->m_24) {
                             CLookObj* out = 0;
-                            if (g_gameReg->m_30->m_8->m_map48.Lookup(lastSlot->m_c, out) && out) {
+                            if (((CMgrHolderX*)g_gameReg->m_30)
+                                    ->m_8->m_map48.Lookup(lastSlot->m_c, out)
+                                && out) {
                                 if (out->m_7c->m_18) {
                                     out->m_7c->m_18->ResolveAnimation();
                                 }
@@ -323,7 +314,7 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
                         }
                     }
                 }
-                g_gameReg->m_7c->MarkFlag(idx, i);
+                ((CBzData*)g_gameReg->m_7c)->MarkFlag(idx, i);
                 return 0;
             }
         }
@@ -366,7 +357,7 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
             if (i == g_644c54) {
                 continue;
             }
-            PlayerSlot* slot = &g_gameReg->m_players[i];
+            PlayerSlot* slot = (PlayerSlot*)((char*)g_gameReg + 0x150 + i * 0x238);
             if (slot->m_28 && !slot->m_2c && !slot->m_24) {
                 goto done;
             }
