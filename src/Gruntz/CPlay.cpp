@@ -215,29 +215,18 @@ extern "C" {
     extern CGameMgrSettings* g_mgrSettings; // = g_64556c (the CGruntzMgr singleton)
     DATA(0x0020ccc4)
     extern i32 g_videoResolutionMode;
-    DATA(0x0022bd68)
     extern i32 g_opt_22bd68;
-    DATA(0x0022bd6c)
     extern i32 g_opt_22bd6c;
-    DATA(0x0022bd70)
     extern i32 g_opt_22bd70;
-    DATA(0x0022bd84)
     extern i32 g_opt_22bd84;
-    DATA(0x0022bdc4)
     extern i32 g_opt_22bdc4;
-    DATA(0x0022bdc8)
     extern i32 g_opt_22bdc8;
-    DATA(0x0022bdcc)
     extern i32 g_opt_22bdcc;
-    DATA(0x0022bdd0)
     extern i32 g_opt_22bdd0;
-    DATA(0x0022bdd4)
     extern i32 g_opt_22bdd4;
     DATA(0x002455b4)
     extern i32 g_gate_2455b4;
-    DATA(0x002455bc)
     extern i32 g_gate_2455bc;
-    DATA(0x002455c0)
     extern i32 g_gate_2455c0;
 }
 
@@ -1475,9 +1464,7 @@ extern "C" {
 }
 // The two timing accumulators ProfileInputFrame folds the back-half phases into.
 extern "C" {
-    DATA(0x0024c284)
     extern i32 g_profAccA; // DAT_0064c284
-    DATA(0x0024c288)
     extern i32 g_profAccB; // DAT_0064c288
 }
 

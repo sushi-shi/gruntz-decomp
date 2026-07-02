@@ -20,7 +20,6 @@
 
 // The ms->units scale the elapsed-clock delta is multiplied by (0x5f04f0, a
 // read-only .rdata double read via `fmul [mem]`); sits just before g_motionNegHalf.
-DATA(0x001f04f0)
 extern const double g_5f04f0;
 
 // The shared -0.5 easing constant (0x5f04f8; owner Globals.cpp) used by the tail

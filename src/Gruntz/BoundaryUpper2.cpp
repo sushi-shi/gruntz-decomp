@@ -97,7 +97,6 @@ C1396f0* C1396f0::Init() {
 // restore-handler function pointer is installed, tail-jump it; else log a warning
 // and return 0. __cdecl.
 // ---------------------------------------------------------------------------
-DATA(0x00283edc)
 extern i32 (*g_restoreHandler)();             // 0x683edc
 extern void __cdecl DDrawLogLine(char* line); // 0x141cb0
 RVA(0x001437f0, 0x1b)

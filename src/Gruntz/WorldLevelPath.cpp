@@ -81,7 +81,6 @@ public:
 struct ScrollView;
 extern ScrollView* g_backView; // 0x64c27c
 // The alternate-level-set gate (second run of levels). Single DATA binding here.
-DATA(0x002455f0)
 extern "C" i32 g_6455f0; // 0x6455f0
 
 RVA(0x000dbc80, 0x309)

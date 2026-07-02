@@ -25,41 +25,24 @@ extern void* g_initFlag_64e0b8;         // 0x64e0b8 (set to 1 on success)
 extern u32 g_sfVer;                     // 0x64e0a0 (best-device rating / -1)
 extern WORD g_word_64dd28;              // 0x64dd28 (best device index)
 
-DATA(0x0024e0a8)
 extern void* g_dll_64e0a8; // SFMAN32.DLL handle
 DATA(0x0024e0ac)
 extern SFFactory* g_factory_64e0ac; // the "SFManager" data export (ptr-to-fnptr)
-DATA(0x0024da88)
 extern i32 g_factoryRc_64da88;
-DATA(0x0024e0a4)
-extern u16 g_count_64e0a4; // device count
-DATA(0x0024da80)
-extern u16 g_idx_64da80; // current device index
-DATA(0x0024df30)
-extern u16 g_caps_64df30; // caps query buffer base / size field
-DATA(0x0024df36)
-extern u32 g_capsFlags_64df36; // caps flags (caps + 6)
-DATA(0x0024df46)
+extern u16 g_count_64e0a4;       // device count
+extern u16 g_idx_64da80;         // current device index
+extern u16 g_caps_64df30;        // caps query buffer base / size field
+extern u32 g_capsFlags_64df36;   // caps flags (caps + 6)
 extern char g_capsName_64df46[]; // caps name (caps + 0x16)
-DATA(0x0024da90)
 extern char g_traceBuf_64da90[]; // sprintf scratch
-DATA(0x0024da84)
 extern u32 g_ratingRaw_64da84;
-DATA(0x0024dbe0)
 extern char g_ratingBuf_64dbe0[];
-DATA(0x0024e0c0)
 extern u8 g_ratings_64e0c0[]; // per-device rating bytes
-DATA(0x0024df98)
 extern u16 g_remaining_64df98;
-DATA(0x0024df9c)
 extern u32 g_id_64df9c; // packed device id
-DATA(0x0020dfff)
 extern "C" char g_id0_613dff;
-DATA(0x0020e000)
 extern "C" char g_id1_613e00;
-DATA(0x0020e001)
 extern "C" char g_id2_613e01;
-DATA(0x0020e002)
 extern "C" char g_id3_613e02;
 
 // @early-stop

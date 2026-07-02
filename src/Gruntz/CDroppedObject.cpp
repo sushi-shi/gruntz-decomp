@@ -296,7 +296,6 @@ DATA(0x00245584)
 extern u32 g_645584;
 DATA(0x002bf3bc)
 extern "C" u32 g_6bf3bc;
-DATA(0x001eaa00)
 extern double g_dropFallBias;
 
 // The +0x1a0 animation sub-mgr advanced each draw-delta (Advance 0x15c360, the SAME

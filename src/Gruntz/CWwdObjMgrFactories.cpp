@@ -26,8 +26,7 @@
 extern "C" void* RezAlloc(unsigned int size); // 0x1b9b46
 
 // The running WWD object-id counter (?g_wwdObjIdCounter@@3HA @ 0x61ab14).
-DATA(0x0021ab14)
-extern int g_wwdObjIdCounter;
+extern i32 g_wwdObjIdCounter;
 
 // Intermediate (post-base) and final wide-object vtables. Reloc-masked DATA
 // externs (RVA = VA - 0x400000). Each factory's object has its own final vtable.

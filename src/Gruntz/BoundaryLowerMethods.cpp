@@ -480,9 +480,7 @@ struct CParserdb {
     i32 Resolve13bae0(void* arg); // 0x13bae0
 };
 SIZE_UNKNOWN(CParserdb);
-DATA(0x0020b588)
 extern u8 g_dat60b588; // 0x60b588 (new pin)
-DATA(0x00213054)
 extern u8 g_dat613054; // 0x613054 (new pin)
 struct Cdb750 {
     char pad0[0xc];

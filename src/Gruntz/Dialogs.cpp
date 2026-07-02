@@ -641,7 +641,6 @@ void CBattlezDlg::ReadCtrlBText(i32 index) {
 // that. All control flow + the logic (modal run, m_528/FindRec/m_538 teardown,
 // the registry GAME_KEY cue throttle, Sleep) is byte-aligned; only the three
 // cleanup sites differ.
-DATA(0x00248ce0)
 extern i32 g_dlgResultSink; // DAT_00648ce0 (cleared after the modal run)
 DATA(0x0021ab20)
 extern i32 g_sndEnabled; // ?g_sndEnabled@@3HA
@@ -649,8 +648,7 @@ DATA(0x0021ab24)
 extern i32 g_sndCueTag; // ?g_sndCueTag@@3HA
 DATA(0x002bf3c0)
 extern i32 g_killCueClock; // _g_killCueClock
-DATA(0x00211ec4)
-extern char s_GameKey[]; // s_GAME_KEY_00611ec4 (registry key literal)
+extern char s_GameKey[];   // s_GAME_KEY_00611ec4 (registry key literal)
 
 // The cue emitter held at record+0x10; Trigger @0x1360d0 (__thiscall, 4 args).
 struct CCueEmitter {
@@ -774,4 +772,3 @@ SIZE_UNKNOWN(CNetCfgSub);
 SIZE_UNKNOWN(CNetCfg);
 SIZE_UNKNOWN(CNetDlgHost);
 SIZE_UNKNOWN(CNetMgrLite);
-

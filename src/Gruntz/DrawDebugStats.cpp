@@ -29,7 +29,6 @@
 
 #include <rva.h>
 
-DATA(0x002455f4)
 extern u8 g_debugFlags; // 0x6455f4  debug-overlay flag bits
 DATA(0x00245588)
 extern "C" u32 g_645588; // a wrap-safe draw/elapsed counter (FormatElapsed arg + %lu)

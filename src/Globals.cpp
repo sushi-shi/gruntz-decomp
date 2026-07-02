@@ -20,6 +20,7 @@ struct CKSlimeColl2;
 struct CKSlimeEntry;
 struct CPartColl2;
 struct CPartEntry;
+struct CPreviewMgr;
 struct CProjActEntry;
 struct CProjColl2;
 struct CTBombColl2;
@@ -31,6 +32,7 @@ struct CVTrigEntry;
 struct GLSResetMgr;
 struct KeyRecv_f8ec0;
 struct ScrollView;
+struct ShadeDescr;
 
 DATA(0x0000b620)
 extern char g_typeDesc3[];
@@ -48,16 +50,28 @@ DATA(0x001e8d10)
 extern const i32 g_msgmap_CBattlezDlgColors;
 DATA(0x001e8e98)
 extern void* g_5e8e98;
+DATA(0x001e9068)
+extern i32 g_idleSpriteIds[4]; // 0x5e9068
+DATA(0x001e93b0)
+extern float g_secretRatioScale; // 0x5e93b0
 DATA(0x001e94b8)
 extern const i32 g_msgmap_CCheckpointDlg;
 DATA(0x001e96ec)
 extern const float g_diffScale;
+DATA(0x001e9a48)
+extern double g_wingzScale; // 0x5e9a48
+DATA(0x001e9a50)
+extern double g_wingzBias; // 0x5e9a50
 DATA(0x001ea3d4)
 extern i32 g_5ea3d4; // 0x5ea3d4
 DATA(0x001ea3d8)
 extern i32 g_5ea3d8; // 0x5ea3d8
 DATA(0x001ea3e0)
 extern const double g_slimeSpeedNum; // VA 0x5ea3e0
+DATA(0x001ea9f0)
+extern const double g_objDropDiv;
+DATA(0x001eaa00)
+extern double g_dropFallBias;
 DATA(0x001eaae8)
 extern const double g_projPhase0;
 DATA(0x001eab00)
@@ -92,6 +106,8 @@ DATA(0x001f0428)
 extern void* g_zvecErrToken; // 0x6bf428
 DATA(0x001f0464)
 extern u32 g_zvecErrSentinel; // 0x6bf464
+DATA(0x001f04f0)
+extern const double g_5f04f0;
 DATA(0x001f04f8)
 extern const double g_motionNegHalf;
 DATA(0x001f0508)
@@ -102,6 +118,14 @@ DATA(0x001f07ec)
 extern float g_fxBias; // 0x5f07ec
 DATA(0x001f07f4)
 extern float g_fxEps; // 0x5f07f4
+DATA(0x0020a72c)
+extern char g_teleporterSpawnKey[]; // "Teleporter" @ 0x60a72c
+DATA(0x0020a7ac)
+extern char g_wormholeSpawnKey[]; // "Wormhole" @ 0x60a7ac
+DATA(0x0020aac8)
+extern i32 g_desc60aac8;
+DATA(0x0020b588)
+extern u8 g_dat60b588; // 0x60b588 (new pin)
 DATA(0x0020beb8)
 extern char k_60beb8[];
 DATA(0x0020bebc)
@@ -109,7 +133,7 @@ extern char k_60bebc[];
 DATA(0x0020cc90)
 extern char k_60cc90[];
 DATA(0x0020cc94)
-extern char k_60cc94[];
+extern char s_codeJ[]; // "J"
 DATA(0x0020cc98)
 extern char k_60cc98[];
 DATA(0x0020cc9c)
@@ -117,15 +141,15 @@ extern char k_60cc9c[];
 DATA(0x0020cca0)
 extern char k_60cca0[];
 DATA(0x0020cca4)
-extern char k_60cca4[];
+extern char s_codeD[]; // "D"
+DATA(0x0020d1fc)
+extern char g_teleporterCloseKey[]; // "GAME_TELEPORTERCLOSE" @ 0x60d1fc
 DATA(0x0020d2e8)
 extern char k_60d2e8[];
 DATA(0x0020d2ec)
-extern char k_60d2ec[];
+extern char s_codeE[]; // "E"
 DATA(0x0020d7f4)
 extern char k_60d7f4[];
-DATA(0x0020d7f8)
-extern char k_60d7f8[];
 DATA(0x0020d7fc)
 extern char k_60d7fc[];
 DATA(0x0020dc04)
@@ -136,24 +160,38 @@ DATA(0x0020dc0c)
 extern char k_60dc0c[];
 DATA(0x0020df94)
 extern char k_60df94[];
+DATA(0x0020dfff)
+extern "C" char g_id0_613dff;
+DATA(0x0020e000)
+extern "C" char g_id1_613e00;
+DATA(0x0020e001)
+extern "C" char g_id2_613e01;
+DATA(0x0020e002)
+extern "C" char g_id3_613e02;
 DATA(0x0020fab8)
 extern "C" i32 g_60fab8[4]; // 0x60fab8  the 16-byte net-bind template
 DATA(0x002111b0)
 extern u8 g_6111b0; // 0x6111b0
 DATA(0x00211d88)
 extern "C" i32 g_611d88; // 0x611d88  saved dropped-player id
+DATA(0x00211ec4)
+extern char s_GameKey[]; // s_GAME_KEY_00611ec4 (registry key literal)
 DATA(0x00212610)
 extern i32 g_warpX; // 0x612610
 DATA(0x00212614)
 extern i32 g_warpY; // 0x612614
 DATA(0x00212618)
 extern i32 g_archiveDefault612618;
+DATA(0x00213054)
+extern u8 g_dat613054; // 0x613054 (new pin)
 DATA(0x002135e8)
 extern char s_PREVIEW_6135e8[]; // "PREVIEW"
 DATA(0x002156f4)
 extern void* g_desc_6156f4;
 DATA(0x0021aabc)
 extern char g_bmpHeaderTemplate[]; // 0x61aabc
+DATA(0x0021ab14)
+extern i32 g_wwdObjIdCounter; // 0x61ab14
 DATA(0x0021cf40)
 extern "C" i16 g_charClass[]; // 0x61cf40
 DATA(0x0021d140)
@@ -184,10 +222,20 @@ DATA(0x002293a0)
 extern i32 g_projRegStride; // 0x6293a0
 DATA(0x002293a8)
 extern i32 g_projRegScratch; // 0x6293a8
+DATA(0x002295d8)
+extern "C" i32 g_dat6295d8;
 DATA(0x0022990c)
 extern i32 g_posSoundReq; // DAT_0062990c
-DATA(0x00229930)
-extern i32 g_saveBuf[0x24]; // VA 0x629930
+DATA(0x00229f50)
+extern char g_cheatTable[];
+DATA(0x0022ae30)
+extern char g_secretMsgA[0x20]; // 0x62ae30  encoded
+DATA(0x0022ae50)
+extern char g_secretMsgB[0x20]; // 0x62ae50  encoded
+DATA(0x0022aef0)
+extern char g_cheatTableEnd[];
+DATA(0x0022af10)
+extern i32 g_bootyCheatBuilt;
 DATA(0x0022b6dc)
 extern i32 g_stepRun;
 DATA(0x0022b730)
@@ -240,8 +288,6 @@ DATA(0x00244888)
 extern i32 g_partStride;
 DATA(0x00244890)
 extern i32 g_partScratch;
-DATA(0x00244ca4)
-extern void* g_renderCtx;
 DATA(0x002452a4)
 extern i32 g_jitterX; // 0x6452a4
 DATA(0x002452cc)
@@ -254,10 +300,16 @@ DATA(0x0024550c)
 extern i32 g_panMaxX; // 0x64550c
 DATA(0x0024553c)
 extern "C" i32 g_64553c;
+DATA(0x00245548)
+extern i32 g_poolScratch645548; // 0x645548 (new pin)
 DATA(0x00245574)
 extern AttractActorList* g_actorList;
-DATA(0x00245598)
-extern i32 g_strikeThresh; // 0x645598 (compared to 0x64)
+DATA(0x002455ec)
+extern "C" i32 g_cdPromptResult; // 0x6455ec
+DATA(0x002455f0)
+extern "C" i32 g_6455f0; // 0x6455f0
+DATA(0x002455f4)
+extern u8 g_debugFlags; // 0x6455f4  debug-overlay flag bits
 DATA(0x0024622c)
 extern CKSlimeColl2* g_kslimeColl2;
 DATA(0x00246230)
@@ -272,6 +324,8 @@ DATA(0x00246240)
 extern i32 g_kslimeStride;
 DATA(0x00246248)
 extern i32 g_kslimeScratch;
+DATA(0x00248ce0)
+extern i32 g_dlgResultSink; // DAT_00648ce0 (cleared after the modal run)
 DATA(0x00248cec)
 extern "C" i32 g_648cec; // 0x648cec
 DATA(0x00248d14)
@@ -304,6 +358,8 @@ DATA(0x0024a8b7)
 extern unsigned char gA_data; // 0x64a8b7
 DATA(0x0024acb4)
 extern i32 g_poolCount; // 0x64acb4 (g_pool.m_count)
+DATA(0x0024bdc0)
+extern i32 g_64bdc0; // DAT_0064bdc0
 DATA(0x0024bedc)
 extern CDropColl2* g_dropColl2;
 DATA(0x0024bee0)
@@ -358,10 +414,54 @@ DATA(0x0024cfd0)
 extern i32 g_lastScrollX; // 0x64cfd0
 DATA(0x0024cfd4)
 extern i32 g_lastScrollY; // 0x64cfd4
+DATA(0x0024da80)
+extern u16 g_idx_64da80; // current device index
+DATA(0x0024da84)
+extern u32 g_ratingRaw_64da84;
+DATA(0x0024da88)
+extern i32 g_factoryRc_64da88;
+DATA(0x0024da90)
+extern char g_traceBuf_64da90[]; // sprintf scratch
+DATA(0x0024dad0)
+extern u32 g_sfCfgB0; // 0x64dad0  config block B +0 (=0x80)
+DATA(0x0024dad4)
+extern char* g_sfCurPath; // 0x64dad4  the path currently being tried
+DATA(0x0024dadc)
+extern u16 g_sfCfgB12; // 0x64dadc  config block B +0xc (=0)
+DATA(0x0024dae0)
+extern char g_sfMusic4[]; // 0x64dae0  "<drive>:\MUSIC\Gruntz4.SF2"
+DATA(0x0024dbe0)
+extern char g_ratingBuf_64dbe0[];
+DATA(0x0024dc28)
+extern char g_sfLocal4[]; // 0x64dc28  "<dir>\Gruntz4.SF2"
+DATA(0x0024dd30)
+extern char g_sfMusic[]; // 0x64dd30  "<drive>:\MUSIC\Gruntz.SF2"
+DATA(0x0024de30)
+extern char g_sfLocal[]; // 0x64de30  "<dir>\Gruntz.SF2"
+DATA(0x0024df30)
+extern u16 g_caps_64df30; // caps query buffer base / size field
+DATA(0x0024df36)
+extern u32 g_capsFlags_64df36; // caps flags (caps + 6)
+DATA(0x0024df46)
+extern char g_capsName_64df46[]; // caps name (caps + 0x16)
+DATA(0x0024df98)
+extern u16 g_remaining_64df98;
+DATA(0x0024df9c)
+extern u32 g_id_64df9c; // packed device id
+DATA(0x0024dfa0)
+extern char g_sfDir[]; // 0x64dfa0  current-directory scratch (0xff)
+DATA(0x0024e0a0)
+extern u32 g_sfVer; // 0x64e0a0  build/version selector
+DATA(0x0024e0a4)
+extern u16 g_count_64e0a4; // device count
+DATA(0x0024e0a8)
+extern void* g_dll_64e0a8; // SFMAN32.DLL handle
 DATA(0x0024e0b0)
 extern KeyRecv_f8ec0* g_keyRecv_64e0b0;
 DATA(0x0024e0b8)
 extern void* g_initFlag_64e0b8;
+DATA(0x0024e0c0)
+extern u8 g_ratings_64e0c0[]; // per-device rating bytes
 DATA(0x0024e360)
 extern i32 g_suppress_64e360;
 DATA(0x0024e3d4)
@@ -408,12 +508,24 @@ DATA(0x00251518)
 extern i32 g_vtrigStride;
 DATA(0x00251520)
 extern i32 g_vtrigScratch;
+DATA(0x00253484)
+extern i32 g_wheelInited; // 0x653484
+DATA(0x00253488)
+extern i32 g_wheelScrollLines; // 0x653488
+DATA(0x00253490)
+extern u16 g_wheelMode; // 0x653490  0=undetected, 1=no wheel msg, 2=wheel present
 DATA(0x00253c48)
 extern i32 g_panTable[];
+DATA(0x00253c68)
+extern i32 g_singleton653c68;
+DATA(0x00253c6c)
+extern i32 g_instCount653c6c;
 DATA(0x00253c70)
 extern i32 g_wap32Now; // ?g_wap32Now@@3HA
 DATA(0x00253c74)
 extern i32 g_wap32FrameDelta;
+DATA(0x00253c78)
+extern i32 g_wap32ClockReset;
 DATA(0x00253c7c)
 extern i32 g_wap32Run7c; // ?g_wap32Run7c@@3HA  (run-state countdown)
 DATA(0x00253c80)
@@ -428,6 +540,10 @@ DATA(0x00263ca0)
 extern u8 g_lutBank2_663ca0[];
 DATA(0x00273ca0)
 extern u8 g_lutBank0_673ca0[];
+DATA(0x00283ca0)
+extern u16 g_lut16[256];
+DATA(0x00283edc)
+extern i32 (*g_restoreHandler)(); // 0x683edc
 DATA(0x00283ef0)
 extern u8 g_683ef0[];
 DATA(0x002856f0)
@@ -448,16 +564,28 @@ DATA(0x002bed00)
 extern "C" CDirectDrawMgr* g_DirectDrawMgr; // 0x6bed00
 DATA(0x002bed08)
 extern u8 g_scratch[]; // 0x6bed08
+DATA(0x002bf208)
+extern ShadeDescr* g_shadeDescr208;
+DATA(0x002bf20c)
+extern ShadeDescr* g_shadeDescr20c;
+DATA(0x002bf210)
+extern ShadeDescr* g_shadeDescr210;
+DATA(0x002bf214)
+extern ShadeDescr* g_shadeDescr214;
+DATA(0x002bf21c)
+extern ShadeDescr* g_shadeDescr21c;
+DATA(0x002bf220)
+extern ShadeDescr* g_shadeDescr220;
 DATA(0x002bf318)
 extern i32 g_severusScratch[25];
 DATA(0x002bf380)
 extern i32 g_severusCounterB;
 DATA(0x002bf3c4)
 extern i32 g_aniParsedNameLen;
+DATA(0x002bf454)
+extern void* g_projActName; // 0x6bf454 (the bad-arg diagnostic record cell)
 DATA(0x002bf468)
 extern u8 g_zArrayTag;
-DATA(0x002bf498)
-extern i32 g_keyArray[];
 DATA(0x002bf6f8)
 extern "C" i32 g_hr; // 0x6bf6f8  - the raw HRESULT, saved at entry
 DATA(0x002bf6fc)
@@ -466,6 +594,10 @@ DATA(0x002bf700)
 extern "C" char g_szCode[]; // 0x6bf700  error-code name buffer
 DATA(0x002bf740)
 extern "C" char g_szMsg[]; // 0x6bf740  - description buffer
+DATA(0x002c127d)
+extern u8 g_randSeeded; // 0x6c127d  seed-init flag (bit 0)
+DATA(0x002c1288)
+extern i32 g_randSeed; // 0x6c1288  LCG seed
 DATA(0x005eab40)
 extern float g_zeroF;
 DATA(0x00612f78)
@@ -480,17 +612,70 @@ DATA(0x0062c00c)
 extern char g_mapNamePre[4];
 DATA(0x0062c010)
 extern char g_mapNameBuf[0x200];
-DATA(0x00644c54)
-extern i32 g_tileKindMagic;
+DATA(0x00644ca4)
+extern void* g_renderCtx; // g_644ca4
+DATA(0x006454e8)
+extern char* g_areaNames[];
 DATA(0x00645570)
 extern GLSResetMgr* g_glsResetMgr;
-DATA(0x006455ec)
-extern i32 g_multiplayerAvail;
+DATA(0x0064c814)
+extern CPreviewMgr* g_previewMgr;
+DATA(0x0064c868)
+extern void* g_previewImage;
 DATA(0x00651614)
 extern i32 g_buildNumber;
+DATA(0x00683ea0)
+extern i32 g_pfRedShift; // 0x683ea0
+DATA(0x00683ea4)
+extern i32 g_pfGreenSize; // 0x683ea4
+DATA(0x00683eac)
+extern i32 g_pfRedSize; // 0x683eac
+DATA(0x00683eb0)
+extern i32 g_pfGreenShift; // 0x683eb0
+DATA(0x00683eb4)
+extern i32 g_pfBlueSize; // 0x683eb4
 DATA(0x00684af0)
 extern u8 g_grayRamp[];
+DATA(0x006bf400)
+extern "C" i32 g_helperRefCount; // 0x6bf400
 DATA(0x006bf8dc)
 extern i32 g_6bf8dc; // debug-output mode
 DATA(0x006c3fdc)
 extern int(__stdcall* g_impFreeLibrary)(void*);
+
+extern "C" {
+    DATA(0x0022bd64)
+    extern i32 g_opt_22bd64;
+    DATA(0x0022bd68)
+    extern i32 g_opt_22bd68;
+    DATA(0x0022bd6c)
+    extern i32 g_opt_22bd6c;
+    DATA(0x0022bd70)
+    extern i32 g_opt_22bd70;
+    DATA(0x0022bd84)
+    extern i32 g_opt_22bd84;
+    DATA(0x0022bdc4)
+    extern i32 g_opt_22bdc4;
+    DATA(0x0022bdc8)
+    extern i32 g_opt_22bdc8;
+    DATA(0x0022bdcc)
+    extern i32 g_opt_22bdcc;
+    DATA(0x0022bdd0)
+    extern i32 g_opt_22bdd0;
+    DATA(0x0022bdd4)
+    extern i32 g_opt_22bdd4;
+    DATA(0x002455bc)
+    extern i32 g_gate_2455bc;
+    DATA(0x002455c0)
+    extern i32 g_gate_2455c0;
+    DATA(0x002455c8)
+    extern i32 g_6455c8; // DAT_006455c8  (joystick-disable flag)
+    DATA(0x002455dc)
+    extern i32 g_6455dc; // DAT_006455dc
+    DATA(0x002455e0)
+    extern i32 g_6455e0; // DAT_006455e0
+    DATA(0x0024c284)
+    extern i32 g_profAccA; // DAT_0064c284
+    DATA(0x0024c288)
+    extern i32 g_profAccB; // DAT_0064c288
+}

@@ -90,7 +90,6 @@ extern "C" {
 extern "C" {
     DATA(0x00248ce8)
     extern i32 g_648ce8; // DAT_00648ce8  (timeGetTime base stamp)
-    DATA(0x002455c8)
     extern i32 g_6455c8; // DAT_006455c8  (joystick-disable flag)
 }
 
@@ -464,9 +463,7 @@ extern "C" {
     DATA(0x00283eb4)
     extern i32 g_683eb4; // DAT_00683eb4  (blue shift-down)
     // The world-mode reload globals LoadWorldMode resets (reloc-masked).
-    DATA(0x002455dc)
     extern i32 g_6455dc; // DAT_006455dc
-    DATA(0x002455e0)
     extern i32 g_6455e0; // DAT_006455e0
     DATA(0x002455b4)
     extern i32 g_6455b4; // DAT_006455b4  (alt-flag, reload kind 1/5)

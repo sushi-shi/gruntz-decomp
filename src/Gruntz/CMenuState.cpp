@@ -37,33 +37,21 @@ extern "C" {
     // (0x6455c0) - the SAME gates CPlay::ApplyGameOptions tests.
     DATA(0x002455b4)
     extern i32 g_gate_2455b4;
-    DATA(0x002455bc)
     extern i32 g_gate_2455bc;
-    DATA(0x002455c0)
     extern i32 g_gate_2455c0;
 
     // The options-dialog staging globals (.data ints): LoadGameOptionsToDialog
     // (0x036860) snapshots g_gameReg into them then pushes them into the controls;
     // CPlay::ApplyGameOptions (0x036be0) reads them back. SAME g_opt_* set CPlay names.
-    DATA(0x0022bd64)
     extern i32 g_opt_22bd64;
-    DATA(0x0022bd68)
     extern i32 g_opt_22bd68;
-    DATA(0x0022bd6c)
     extern i32 g_opt_22bd6c;
-    DATA(0x0022bd70)
     extern i32 g_opt_22bd70;
-    DATA(0x0022bd84)
     extern i32 g_opt_22bd84;
-    DATA(0x0022bdc4)
     extern i32 g_opt_22bdc4;
-    DATA(0x0022bdc8)
     extern i32 g_opt_22bdc8;
-    DATA(0x0022bdcc)
     extern i32 g_opt_22bdcc;
-    DATA(0x0022bdd0)
     extern i32 g_opt_22bdd0;
-    DATA(0x0022bdd4)
     extern i32 g_opt_22bdd4;
 }
 

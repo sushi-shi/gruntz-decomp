@@ -30,7 +30,6 @@ struct CLevelInfo {
 
 // The 11-entry area-name table (questz "Stage %d of <area>"). An array of char*
 // indexed by (level-1)/4; modeled by-address so the load is reloc-masked.
-DATA(0x006454e8)
 extern char* g_areaNames[];
 
 // The preview-image loader singleton (m_14-style image manager) + the loaded
@@ -38,9 +37,7 @@ extern char* g_areaNames[];
 struct CPreviewMgr {
     void* LoadImage(void* pData, i32 fmt, i32 flags); // 0x1751f0 __thiscall
 };
-DATA(0x0064c814)
 extern CPreviewMgr* g_previewMgr;
-DATA(0x0064c868)
 extern void* g_previewImage;
 
 // @early-stop  (94.46% - logic/frame/branches all faithful)

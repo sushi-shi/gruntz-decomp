@@ -1935,7 +1935,6 @@ extern "C" void* RezAlloc(u32 size); // 0x1b9b46
 extern "C" void RezFree(void* p); // 0x1b9b82
 
 // The global object-id counter the factory stamps into +0x188 and post-increments.
-DATA(0x0021ab14)
 extern i32 g_wwdObjIdCounter; // 0x61ab14
 
 // The constructed wide object's first (CWwdGameObject) vtable, then its final

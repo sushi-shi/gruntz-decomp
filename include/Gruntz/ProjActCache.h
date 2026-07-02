@@ -29,8 +29,7 @@ DATA(0x002bf464)
 extern void* g_projActCache; // 0x6bf464 (?g_projActCache@@3PAXA)
 DATA(0x002bf428)
 extern void* g_projActAllocResult; // 0x6bf428 (?g_projActAllocResult@@3PAXA)
-DATA(0x002bf454)
-extern void* g_projActName; // 0x6bf454 (the bad-arg diagnostic record cell)
+extern void* g_projActName;        // 0x6bf454 (the bad-arg diagnostic record cell)
 
 // _ReturnAddress()-style helper (0x16e0f0: mov eax,[ebp+4]; ret) - records where
 // the failing allocation was requested. Reloc-masked (no body).

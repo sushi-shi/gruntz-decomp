@@ -144,7 +144,6 @@ extern "C" u32 g_645584; // 0x645584
 extern "C" u32 g_6bf3bc; // 0x6bf3bc
 
 // 1000.0 (the per-tile-time -> per-frame-speed reciprocal numerator), VA 0x5ea9f0.
-DATA(0x001ea9f0)
 extern const double g_objDropDiv;
 
 // CObjectDropper::~CObjectDropper (0x124f0) - the /GX leaf dtor folds the bare

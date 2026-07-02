@@ -111,11 +111,8 @@ DATA(0x00244c54)
 extern i32 g_curPlayer;
 
 // The spawn keys + the close-geometry key (.rdata constants).
-DATA(0x0020a72c)
 extern char g_teleporterSpawnKey[]; // "Teleporter" @ 0x60a72c
-DATA(0x0020a7ac)
-extern char g_wormholeSpawnKey[]; // "Wormhole" @ 0x60a7ac
-DATA(0x0020d1fc)
+extern char g_wormholeSpawnKey[];   // "Wormhole" @ 0x60a7ac
 extern char g_teleporterCloseKey[]; // "GAME_TELEPORTERCLOSE" @ 0x60d1fc
 
 // CTeleporter::~CTeleporter @0x010dd0 - the leaf adds no destructible members

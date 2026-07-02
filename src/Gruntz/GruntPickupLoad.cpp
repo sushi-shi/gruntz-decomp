@@ -23,11 +23,8 @@ extern CTypeKeyColl g_typeColl; // ?g_typeColl@@3UCTypeKeyColl@@A
 // The single-char anim-code key strings (reloc-masked .rodata).
 DATA(0x0020a454)
 extern char s_codeA[]; // "A"
-DATA(0x0020cca4)
 extern char s_codeD[]; // "D"
-DATA(0x0020d2ec)
 extern char s_codeE[]; // "E"
-DATA(0x0020cc94)
 extern char s_codeJ[]; // "J"
 
 // The per-owner pickup-stat block hung off g_gameReg+0x7c (reloc-masked). Reloaded

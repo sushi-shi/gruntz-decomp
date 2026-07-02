@@ -66,7 +66,6 @@ void CFinalize8b90::Finalize(i32 arg) {
 // 0x00af50 - reset a global DWORD to 0 (the global at VA 0x6295d8 / RVA 0x2295d8).
 // __cdecl free function.
 // ===========================================================================
-DATA(0x002295d8)
 extern "C" i32 g_dat6295d8;
 RVA(0x0000af50, 0xb)
 void ResetDat6295d8() {

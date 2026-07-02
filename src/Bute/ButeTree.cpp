@@ -43,8 +43,7 @@ DATA(0x002bf428)
 extern void* g_projActAllocResult; // 0x6bf428
 DATA(0x002bf464)
 extern void* g_projActCache; // 0x6bf464
-DATA(0x002bf454)
-extern void* g_projActName; // 0x6bf454 (bad-arg diagnostic record cell)
+extern void* g_projActName;  // 0x6bf454 (bad-arg diagnostic record cell)
 
 // CVariantSlot (error sink @+0x04, Set 0x16d850), CButeTreeNode (20-byte leaf) and
 // CButeTree (the crit-bit trie) all come from the canonical <Bute/ButeTree.h>.

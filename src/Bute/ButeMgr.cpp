@@ -1409,7 +1409,6 @@ extern "C" void Helper_DeleteCriticalSection(void* cs); // 0x16c9d0 (FuncB clean
 
 // The shared one-time-init guard + the shared critical section (reloc-masked
 // file-scope DATA externs at 0x6bf400 / 0x6bf3c8).
-DATA(0x006bf400)
 extern "C" i32 g_helperRefCount; // 0x6bf400
 DATA(0x006bf3c8)
 extern "C" CRITICAL_SECTION g_helperSharedCS; // 0x6bf3c8

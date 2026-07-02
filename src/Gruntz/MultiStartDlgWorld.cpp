@@ -12,7 +12,6 @@
 #include <rva.h>
 
 // The old edit-child window-proc snapshot the subclass saves (reloc-masked DATA).
-DATA(0x0024bdc0)
 extern i32 g_64bdc0; // DAT_0064bdc0
 
 // The subclass window-proc installed on the combo's edit child (0x4c1a10). Only

@@ -23,8 +23,7 @@
 // spawn requested" result the launcher reads after the prompt.
 DATA(0x00251618)
 extern "C" HINSTANCE g_appResHandle; // 0x651618
-DATA(0x002455ec)
-extern "C" i32 g_cdPromptResult; // 0x6455ec
+extern "C" i32 g_cdPromptResult;     // 0x6455ec
 
 // Engine launch helpers (reloc-masked __cdecl).
 extern "C" i32 IsGruntzCDInAnyDrive();    // 0x402540

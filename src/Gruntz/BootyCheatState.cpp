@@ -30,13 +30,10 @@ extern "C" char g_emptyString[];
 // `mov edi,ds:g_ShowCursor; call edi` cached-ptr loop idiom (AppHelpers.cpp).
 extern int(__stdcall* g_ShowCursor)(int);
 // First-run guard (DAT_0062af10): 0 until the cheat table is built.
-DATA(0x0022af10)
 extern i32 g_bootyCheatBuilt;
 // The 25-entry cheat text/desc table (0x629f50 .. 0x62aef0, stride 0xa0). The
 // loop pointer walks [base .. end); each entry's text lands at p-0x20, desc at p.
-DATA(0x00229f50)
 extern char g_cheatTable[];
-DATA(0x0022aef0)
 extern char g_cheatTableEnd[];
 // The +0x1c0 mode-record seed (_g_645588).
 DATA(0x00245588)

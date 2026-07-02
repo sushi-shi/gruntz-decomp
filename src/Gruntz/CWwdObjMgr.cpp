@@ -21,7 +21,6 @@
 // The running WWD object-id counter (?g_wwdObjIdCounter@@3HA @ 0x61ab14; the DATA
 // label is owned by CDDrawSubMgr.cpp). LoadObjects publishes each loaded object's
 // id here across the factory call, then restores it.
-DATA(0x0021ab14)
 extern i32 g_wwdObjIdCounter;
 
 // The per-object descriptor the reader fills (0xa0 bytes). +0x04 is the dedup id,

@@ -46,13 +46,10 @@ i32 __stdcall ClsidToInProcServer(char* szClsid, CString* out) {
 }
 
 // The cached IntelliMouse wheel-scroll-lines state (lazily detected once).
-DATA(0x00253484)
-extern i32 g_wheelInited; // 0x653484
-DATA(0x00253488)
+extern i32 g_wheelInited;      // 0x653484
 extern i32 g_wheelScrollLines; // 0x653488
 DATA(0x0025348c)
 extern UINT g_wheelMsg; // 0x65348c  RegisterWindowMessage("MSH_SCROLL_LINES_MSG")
-DATA(0x00253490)
 extern u16 g_wheelMode; // 0x653490  0=undetected, 1=no wheel msg, 2=wheel present
 
 // GetWheelScrollLines (0x1c7cb3) - the IntelliMouse "lines per wheel notch"

@@ -10,7 +10,6 @@
 
 extern i32 g_wap32Now;
 extern i32 g_wap32FrameDelta;
-DATA(0x00253c78)
 extern i32 g_wap32ClockReset;
 // Two run-state timing defaults CGameMgr::Run seeds to 0x64 (100).
 extern i32 g_wap32Run7c;

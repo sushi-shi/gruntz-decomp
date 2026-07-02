@@ -10,17 +10,11 @@
 struct ShadeDescr;
 
 // Seven global ShadeDescr* slots; only +0x6bf218 carries a real RTTI name.
-DATA(0x002bf208)
 extern ShadeDescr* g_shadeDescr208;
-DATA(0x002bf20c)
 extern ShadeDescr* g_shadeDescr20c;
-DATA(0x002bf210)
 extern ShadeDescr* g_shadeDescr210;
-DATA(0x002bf214)
 extern ShadeDescr* g_shadeDescr214;
-DATA(0x002bf21c)
 extern ShadeDescr* g_shadeDescr21c;
-DATA(0x002bf220)
 extern ShadeDescr* g_shadeDescr220;
 extern ShadeDescr* g_blendDescr; // 0x6bf218
 
