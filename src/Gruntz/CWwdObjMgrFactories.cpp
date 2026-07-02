@@ -28,20 +28,35 @@ extern "C" void* RezAlloc(unsigned int size); // 0x1b9b46
 
 // The running WWD object-id counter (?g_wwdObjIdCounter@@3HA @ 0x61ab14).
 
-// Intermediate (post-base) and final wide-object vtables. Reloc-masked DATA
-// externs (RVA = VA - 0x400000). Each factory's object has its own final vtable.
+// Wide-object vtables the factories INLINE-stamp mid-construction. The disasm
+// (dump_target 0x1598d0 @0x159948/0x159957/0x159991) proves retail writes each
+// `mov [reg], offset <vtable>` INLINE - NOT a ctor call - so these stay factory
+// inline-construction stamps (a real ctor call would emit `call Ctor`, mismatch).
+// Reloc-masked externs (RVA = VA - 0x400000).
+//
+// The five wide-object tables below are REALIZED dtor-first in
+// src/Gruntz/WwdGameObjectEh.cpp (CWwdGameObjectE/C/F/A/B), but only the dtor slot
+// is modeled there (cl emits a short orphan ??_7 with the dtor at slot 0), while
+// retail's tables are 16-19 slots with the scalar-deleting dtor at slot 1 - so a
+// VTBL binding here would name a wrong-slot datum (a tooling artifact). The g_ DATA
+// symbol therefore keeps naming the (un-modeled) retail datum; a real ??_7 catalog
+// name awaits the wide-object-ctor `new`-rewrite sweep. Kept pinned.
 DATA(0x001f0020)
 extern void* g_wwdGameObjectVtbl; // 0x5f0020  (post-base, 159250/159440)
 DATA(0x001effd0)
 extern void* g_wwd159250FinalVtbl; // 0x5effd0
 DATA(0x001f0060)
 extern void* g_wwd159440FinalVtbl; // 0x5f0060
-DATA(0x001f0128)
-extern void* g_wwdSubVtbl; // 0x5f0128  (+0x1a0 sub-object, 1598d0)
 DATA(0x001f00a8)
 extern void* g_wwdObjVtbl; // 0x5f00a8  (post-base, 1598d0)
 DATA(0x001f00e8)
 extern void* g_wwd1598d0FinalVtbl; // 0x5f00e8
+// The +0x1a0 sub-object table 0x5f0128 IS fully realized: ??_7CAniAdvanceCursor
+// (9 slots, dtor at slot 1) in src/Wwd/CAniAdvanceCursor.cpp, which OWNS the RVA
+// catalog name via VTBL. UNPINNED so the factory's inline sub-object stamp
+// reloc-masks against the real ??_7 (the manual g_wwdSubVtbl DATA placeholder is
+// drained).
+extern void* g_wwdSubVtbl; // 0x5f0128  (+0x1a0 sub-object, realized CAniAdvanceCursor)
 
 class CWwdGameObject;
 

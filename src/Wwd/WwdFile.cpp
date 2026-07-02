@@ -528,8 +528,11 @@ struct WwdPlaneRender {
     i32 Init(void* src, i32* p0, i32* p1, i32* p2, i32* p3, i32* p4, i32* p5);
 };
 
-DATA(0x001f02a8)
-extern void* g_planeRenderVtbl; // 0x5f02a8
+// 0x5f02a8 is realized as ??_7CWwdGridIter (5 slots, dtor at slot 1) in
+// src/Gruntz/WwdSpatialMgr.cpp, which OWNS the RVA catalog name via VTBL. UNPINNED
+// here so RebuildPlanes' inline +0x70 embedded-cursor stamp reloc-masks against the
+// real ??_7 (the manual g_planeRenderVtbl DATA placeholder is drained).
+extern void* g_planeRenderVtbl; // 0x5f02a8  (realized CWwdGridIter, factory inline-construction)
 
 #define WLOADER(t, off) (*(t*)((char*)this + (off)))
 

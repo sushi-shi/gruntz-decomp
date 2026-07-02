@@ -107,15 +107,19 @@ public:
 // sub_004034). Declaring the 5 virtuals makes cl auto-emit ??_7CWwdGridIter + the
 // implicit vptr-FIRST ctor stamp (== the old `m_vptr = g_wwdGridIterVtbl` first-
 // store shape). The 4 non-dtor virtuals are declared-only (bodies in sibling TUs;
-// reloc-masked). NO VTBL: 0x5f02a8 is the SHARED engine vtable (already bound as
-// g_planeRenderVtbl in wwdfile), so the emitted ??_7CWwdGridIter is an orphan
-// (unpaired) - matching-neutral tracking, per the batch-4 shared-vtable rule.
+// reloc-masked). This TU OWNS the 0x5f02a8 vtable catalog name via VTBL below:
+// WwdFile::RebuildPlanes only INLINE-stamps this table into its worker's +0x70
+// embedded cursor (genuine inline-construction, not a ctor call), and now
+// references g_planeRenderVtbl as an UNPINNED extern so its stamp reloc-masks
+// against this real ??_7CWwdGridIter (the manual g_planeRenderVtbl DATA pin is
+// drained). 5 slots with the dtor at slot 1, matching retail exactly.
 //
 // Cursor layout (offsets from 0x191b10/0x191c30): implicit vptr @ +0x00, the grid
 // @ +0x04, the current matched node @ +0x08, the saved-next node @ +0x0c, the
 // clamped query rect @ +0x10..+0x1c, the cell-range corners @ +0x20..+0x2c, and
 // the live cell-walk counters @ +0x30..+0x3c, with the remove flag @ +0x40.
 SIZE(CWwdGridIter, 0x44);
+VTBL(CWwdGridIter, 0x005f02a8);
 class CWwdGridIter {
 public:
     virtual void WapV0();    // slot 0 (0x1bef01, declared-only)
