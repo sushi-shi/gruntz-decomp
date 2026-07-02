@@ -275,7 +275,7 @@ public:
     virtual void InitializeDefaultCreateStruct();           // +0x40
 
     // Static window procedure stored into m_wc.lpfnWndProc.
-    static LRESULT __stdcall GameWindowProc(HWND, UINT, WPARAM, LPARAM);
+    static LRESULT CALLBACK GameWindowProc(HWND, UINT, WPARAM, LPARAM);
 
     // Non-virtual modal-screen handler (reloc-masked; ?@2b0d).
     void RunModal(i32 id, HWND hwnd);

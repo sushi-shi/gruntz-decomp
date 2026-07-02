@@ -61,7 +61,7 @@ extern CGameRegistry* g_gameReg;
 // ---------------------------------------------------------------------------
 // WarpDialogProc - the warp-cheat dialog callback.
 RVA(0x0008e4e0, 0x172)
-INT_PTR __stdcall WarpDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
+INT_PTR CALLBACK WarpDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     char szValue[64];
 
     switch (msg) {

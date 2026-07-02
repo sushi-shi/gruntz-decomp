@@ -28,7 +28,7 @@ extern i32 GetGameDir(char* buf, i32 cb);
 // FUN_00004282 __cdecl: tests a path exists (OpenFile probe). ret nonzero on ok.
 extern i32 PathFileExists(char* path);
 // The CUSTOM_WORLDINFO dialog proc (RVA 0x305d), reloc-masked code pointer.
-extern "C" INT_PTR __stdcall CustomWorldInfoDlgProc(HWND, UINT, WPARAM, LPARAM);
+extern "C" INT_PTR CALLBACK CustomWorldInfoDlgProc(HWND, UINT, WPARAM, LPARAM);
 
 // LoadCustomWorldInfo (0x3b7c0) - reads the level name from the dialog's listbox
 // (id 0x3fc), builds "<gameDir>\Custom\<level>.WWD" through the global key builders,

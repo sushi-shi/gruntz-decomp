@@ -76,7 +76,7 @@ extern "C" {
 
 // The Advanced Options modal dialog proc (matched, unit advancedoptions). Its
 // address is taken for DialogBoxParamA (reloc-masked via a thunk).
-i32 __stdcall AdvancedOptionsDialogProc(HWND, UINT, WPARAM, LPARAM);
+i32 CALLBACK AdvancedOptionsDialogProc(HWND, UINT, WPARAM, LPARAM);
 
 // CGruntzApp - the game application object `new`'d on the normal path, defined
 // once in <Gruntz/GruntzApp.h>. WinMain touches only its vtable: slot 2

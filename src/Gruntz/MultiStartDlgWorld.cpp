@@ -16,7 +16,7 @@
 
 // The subclass window-proc installed on the combo's edit child (0x4c1a10). Only
 // its address is taken (push offset -> DIR32 reloc-masks).
-extern "C" i32 __stdcall WndProc_c1a10(HWND__* hWnd, u32 msg, u32 wParam, i32 lParam);
+extern "C" i32 CALLBACK WndProc_c1a10(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 // The GAME_MULTI registry path -> a name registry (m_5c is the CNetDlgHost* the
 // ctor stored as i32; its m_34 is the registry). ResolvePath returns a symbol

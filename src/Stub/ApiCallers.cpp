@@ -1123,7 +1123,7 @@ namespace ApiCallerStubs {
     extern i32 g_dlgVal_645564;
     // __stdcall DlgProc(hDlg, msg, wParam, lParam): a numeric settings dialog.
     RVA(0x00092ab0, 0x20d)
-    i32 __stdcall winapi_092ab0_EndDialog(HWND hDlg, u32 msg, i32 wParam, i32 lParam) {
+    i32 CALLBACK winapi_092ab0_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
         switch (msg) {
             case 0x110:
                 SetDlgItemInt(hDlg, 0x4db, g_dlgVal_64526c, 0);
@@ -1215,7 +1215,7 @@ namespace ApiCallerStubs {
     void __cdecl DlgInit_2ee6(HWND hDlg, i32 v);                  // RVA 0x2ee6
     // __stdcall DlgProc(hDlg, msg, wParam, lParam).
     RVA(0x0009dff0, 0x8c)
-    i32 __stdcall winapi_09dff0_EndDialog(HWND hDlg, i32 msg, i32 wParam, i32 lParam) {
+    i32 CALLBACK winapi_09dff0_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
         switch (msg) {
             case 0x111:
                 if (wParam == 2 || wParam == 1) {
@@ -1426,7 +1426,8 @@ namespace ApiCallerStubs {
     void OnLobbyCancel_2ae0(HWND, PeerSession_0be490*); // RVA 0x2ae0
     // __stdcall DlgProc(hWnd, msg, wParam, lParam): the network-lobby dialog proc.
     RVA(0x000bdc00, 0x10c)
-    i32 __stdcall winapi_0bdc00_EndDialog_KillTimer(HWND hWnd, u32 msg, u32 wParam, i32 lParam) {
+    i32 CALLBACK
+    winapi_0bdc00_EndDialog_KillTimer(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         g_curDlg_64557c = hWnd;
         if (PreHandleLobbyMsg_38c3(hWnd, msg, wParam, lParam)) {
             return 1;
@@ -1488,8 +1489,12 @@ namespace ApiCallerStubs {
     // (sibling of the lobby proc at 0xbdc00). WM_COMMAND ends the dialog on a set of
     // button IDs; WM_TIMER (0x113) polls the abort deadline and re-posts the cancel.
     RVA(0x000be0a0, 0x1c7)
-    i32 __stdcall
-    winapi_0be0a0_EndDialog_KillTimer_PostMessageA(HWND hWnd, u32 msg, u32 wParam, i32 lParam) {
+    i32 CALLBACK winapi_0be0a0_EndDialog_KillTimer_PostMessageA(
+        HWND hWnd,
+        UINT msg,
+        WPARAM wParam,
+        LPARAM lParam
+    ) {
         g_curDlg_64557c = hWnd;
         if (PreHandleLobbyMsg_38c3(hWnd, msg, wParam, lParam)) {
             return 1;
@@ -2180,7 +2185,7 @@ namespace ApiCallerStubs {
     void __cdecl DlgInit_2e05(HWND hDlg, i32 v);                  // RVA 0x2e05
     // __stdcall DlgProc(hDlg, msg, wParam, lParam).
     RVA(0x000e35f0, 0x77)
-    i32 __stdcall winapi_0e35f0_EndDialog(HWND hDlg, i32 msg, i32 wParam, i32 lParam) {
+    i32 CALLBACK winapi_0e35f0_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
         switch (msg) {
             case 0x111:
                 if (wParam == 2) {
@@ -2218,7 +2223,7 @@ namespace ApiCallerStubs {
     // The SetDlgItemTextA helper (RVA 0xe4850) is reached here via thunk 0x103c.
     // __stdcall DialogProc: OK closes; Cancel runs the helper sub-object; init fills.
     RVA(0x000e3a40, 0xb0)
-    i32 __stdcall winapi_0e3a40_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
+    i32 CALLBACK winapi_0e3a40_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
         switch (msg) {
             case 0x110:
                 if (g_dlgInfoText == 0) {
@@ -2245,7 +2250,7 @@ namespace ApiCallerStubs {
 
     // __stdcall DialogProc: OK/Cancel close the dialog; WM_INITDIALOG fills a line.
     RVA(0x000e3b20, 0x86)
-    i32 __stdcall winapi_0e3b20_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
+    i32 CALLBACK winapi_0e3b20_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
         switch (msg) {
             case 0x110:
                 if (g_dlgInfoText == 0) {
@@ -2270,7 +2275,7 @@ namespace ApiCallerStubs {
 
     // __stdcall DlgProc(hDlg, msg, wParam, lParam): OK/Cancel end the dialog.
     RVA(0x000e3be0, 0x52)
-    i32 __stdcall winapi_0e3be0_EndDialog(HWND hDlg, i32 msg, i32 wParam, i32 lParam) {
+    i32 CALLBACK winapi_0e3be0_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
         switch (msg) {
             case 0x110:
                 return 1;

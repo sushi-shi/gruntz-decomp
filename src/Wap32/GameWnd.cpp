@@ -153,7 +153,7 @@ void CGameWnd::PumpMessages(u32 filterMsg, i32 count) {
 // Point messages (WM_MOVE / mouse) split lParam into LOWORD(x)/HIWORD(y); the
 // (int) low/high words come straight off lParam (& 0xffff / >> 16).
 RVA(0x0013cff0, 0x35c)
-LRESULT __stdcall CGameApp::GameWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+LRESULT CALLBACK CGameApp::GameWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     CGameWnd* pWnd = g_activeGameWnd;
     if (!pWnd) {
         return DefWindowProcA(hwnd, uMsg, wParam, lParam);

@@ -170,12 +170,8 @@ WAP32::CGameMgr* CGruntzApp::InitializeGameManager() {
 // (No SYMBOL() override: the real HWND signature mangles to PAUHWND__ identically
 // on both sides - like the sibling DialogProcs - so the natural name pairs.)
 RVA(0x00080c70, 0x55)
-INT_PTR __stdcall CGruntzApp::ErrorDialogProc(
-    HWND hWnd,
-    UINT message,
-    WPARAM wParam,
-    LPARAM lParam
-) {
+INT_PTR CALLBACK
+CGruntzApp::ErrorDialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
     g_errorHwnd = hWnd;
 
     switch (message) {
@@ -207,7 +203,7 @@ i32 CGruntzApp::VirtualUnknownMethod04(i32 a, i32 b, i32 c) {
 // Copies the message into the shared g_errorText buffer (inline strcpy) then
 // shows the MESSAGE dialog (DialogBoxParamA, FF15 [IAT]) with MsgDialogProc -
 // the dialog proc lives in another TU, so it is taken via an extern thunk.
-extern "C" INT_PTR __stdcall MsgDialogProc(HWND, UINT, WPARAM, LPARAM);
+extern "C" INT_PTR CALLBACK MsgDialogProc(HWND, UINT, WPARAM, LPARAM);
 RVA(0x00080c00, 0x48)
 void CGruntzApp::ShowMessage(char* msg, HWND hParent) {
     strcpy(g_errorText, msg);
