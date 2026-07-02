@@ -2034,51 +2034,48 @@ inline void* operator new(u32, void* p) {
     return p;
 }
 
-// AddGroupNode's node: the DirectPlay group-list entry (0x10 bytes, the
-// InterfaceObject shape - InterfaceObject.cpp). The most-derived vtable 0x5f0748
-// is cl-emitted there (VTBL); re-emitting it here would dup-DATA, so both the
-// base-dtor vptr (0x5e8cb4) and the final vptr (0x5f0748) are stamped manually and
-// the +0x8 name CString is placement-constructed at the node offset.
-struct CNetGroupNode {
-    virtual void Slot00();               // +0x00
-    virtual void SelfDestruct(i32 flag); // +0x04  slot 1 (self-destruct)
-    i32 m_4;                             // +0x04  the service-provider GUID (stored raw)
-    CString m_name;                      // +0x08  the provider name
-    i32 m_c;                             // +0x0c  cached AddTail position
+// AddGroupNode's node: the DirectPlay group-list entry (0x10 bytes), the real
+// polymorphic InterfaceObject shape (InterfaceObject.cpp owns ??_7InterfaceObject
+// @0x5f0748). Real polymorphic now (ALL-VTABLES mandate): `new CNetGroupNode()`
+// makes cl emit the two-phase vptr stamp (CObject-base vtbl 0x5e8cb4 then own
+// 0x5f0748) around the +0x8 CString member ctor and the /GX new-cleanup frame - no
+// manual `*(void**)node = &g_net*Vtbl` stamp. The vtables cl emits here are orphans
+// (reloc-mask 0x5e8cb4 / 0x5f0748; the latter owned by InterfaceObject.cpp's VTBL,
+// so no VTBL is attached here -> no dup-DATA).
+struct CNetGroupNodeBase {
+    virtual void V0();            // slot 0 (sub_1bef01)
+    virtual ~CNetGroupNodeBase(); // slot 1 (scalar-deleting dtor)
+    virtual void V2();            // slot 2 (sub_0028ec)
+    virtual void V3();            // slot 3 (sub_00106e)
+    virtual void V4();            // slot 4 (sub_004034)
 };
+inline CNetGroupNodeBase::~CNetGroupNodeBase() {}
+
+struct CNetGroupNode : CNetGroupNodeBase {
+    i32 m_4;        // +0x04  the service-provider GUID (stored raw)
+    CString m_name; // +0x08  the provider name
+    i32 m_c;        // +0x0c  cached AddTail position
+    CNetGroupNode() {
+        m_4 = 0;
+        m_c = 0;
+    }
+    virtual ~CNetGroupNode();
+};
+inline CNetGroupNode::~CNetGroupNode() {}
 
 // ---------------------------------------------------------------------------
 // CNetMgr::AddGroupNode  (__thiscall; ret 0x8, 2 args; /GX EH frame in retail).
-// operator-new's a 0x10-byte group node, brings up its name CString, then (given a
-// non-null GUID + name) records the GUID, assigns the name, and AddTail's the node
-// onto the +0x1c group CObList (caching the position at +0xc). On a null GUID/name
-// it self-destructs the node (vtable slot 1) and returns 0.
-// @early-stop
-// manual-stamp EH-frame wall: the operator-new'd node, the 2-phase vptr stamp
-// (0x5e8cb4 base-dtor then 0x5f0748 final) around the placement CString ctor, the
-// GUID/name stores, the CObList::AddTail and the slot-1 self-destruct are all
-// reproduced byte-for-byte in the body, but the InterfaceObject vtable at 0x5f0748
-// belongs to InterfaceObject.cpp (a cl-emitted VTBL) and cannot be re-emitted here
-// (dup-DATA), forcing a manual stamp - which drops the compiler's /GX new-cleanup
-// frame + EH-state cookie stores retail emits around the member CString's lifetime.
-// Final sweep: re-home into InterfaceObject.cpp with the real polymorphic ctor.
+// `new`-constructs a 0x10-byte group node (real polymorphic ctor: two-phase vptr
+// stamp around the name CString ctor), then (given a non-null GUID + name) records
+// the GUID, assigns the name, and AddTail's the node onto the +0x1c group CObList
+// (caching the position at +0xc). On a null GUID/name it deletes the node (the
+// slot-1 scalar-deleting dtor) and returns 0.
 RVA(0x00178360, 0xc8)
 i32 CNetMgr::AddGroupNode(void* guid, void* name) {
-    CNetGroupNode* node = (CNetGroupNode*)operator new(0x10);
-    if (node != 0) {
-        *(void**)node = &g_netGroupNodeDtorVtbl; // 0x5e8cb4
-        new (&node->m_name) CString();
-        *(void**)node = &g_netGroupNodeVtbl; // 0x5f0748
-        node->m_4 = 0;
-        node->m_c = 0;
-    } else {
-        node = 0;
-    }
+    CNetGroupNode* node = new CNetGroupNode();
 
     if (guid == 0 || name == 0) {
-        if (node != 0) {
-            node->SelfDestruct(1);
-        }
+        delete node;
         return 0;
     }
 
@@ -2147,32 +2144,21 @@ i32 CNetMgr::ReadGroupSel(void* hList) {
 // its name); if the init fails it self-destructs the node and returns 0,
 // otherwise AddTail's it onto the +0x38 CObList and caches the position at +0x54.
 // @early-stop
-// regalloc wall (~92%): the RezAlloc + vptr-stamp + zero-loop, the Init call with
-// the self-destruct-on-fail, and the AddTail-into-+0x38 are all byte-aligned, but
-// retail keeps playerDesc->ebx / this->ebp where cl swaps them (ebp/ebx), and the
-// vptr store / lea schedule one pair differently. Not steerable. Final sweep.
+// regalloc wall (~92%): the `new` node (real-polymorphic ctor: coalesced vptr
+// stamp + zero-loop), the Init call with the delete-on-fail, and the
+// AddTail-into-+0x38 are all byte-aligned, but retail keeps playerDesc->ebx /
+// this->ebp where cl swaps them (ebp/ebx), and the vptr store / lea schedule one
+// pair differently. Not steerable. Final sweep.
 RVA(0x001786d0, 0x77)
 i32 CNetMgr::AddPlayerNode(void* playerDesc) {
     if (playerDesc == 0) {
         return 0;
     }
 
-    CNetPlayerListNode* node = (CNetPlayerListNode*)RezAlloc(0x58);
-    if (node != 0) {
-        *(void**)node = &g_netPlayerNodeVtbl;
-        i32* body = (i32*)((char*)node + 4);
-        for (i32 i = 0; i < 0x14; i++) {
-            body[i] = 0;
-        }
-        node->m_54 = 0;
-    } else {
-        node = 0;
-    }
+    CNetPlayerListNode* node = new CNetPlayerListNode();
 
     if (node->Init(playerDesc) == 0) {
-        if (node != 0) {
-            node->SelfDestruct(1);
-        }
+        delete node;
         return 0;
     }
 
@@ -2457,30 +2443,15 @@ i32 CNetMgr::EnumGroupsRange(void* rec, i32 flags) {
 // AddTail's the node onto the +0x54 list, self-destructing it if AddTail fails
 // and clearing its +0x20. The two CString temps' dtors run under the /GX frame.
 // @early-stop
-// /GX EH-temp + scheduling wall (~56%): the RezAlloc'd node, the two-vptr stamp
-// around the scoped CString temps, the InitSession call, the GetData5(slot 0x74)
-// probe + ReportError, and the AddTail/self-destruct tail are all reconstructed,
-// but retail interleaves the two CString stack-temp ctors/dtors with the node-member
-// stores and the EH-state cookie sequence in a way a clean C++ scoped temp won't
-// express. Largest residual of the cluster; final-sweep redo with the node class
-// fully modeled. See docs/patterns/gx-scoped-local-eh-frame-size.md.
+// /GX EH-frame scheduling wall: the `new`-built node (real-polymorphic ctor:
+// two-phase vptr stamp around the two CString MEMBER ctors + the 4 scalar zeroes,
+// under the compiler's new-cleanup frame), the InitSession call, the GetData5(slot
+// 0x74) probe + ReportError, and the AddTail/delete tail are all reconstructed; the
+// residual is the EH-state cookie sequence retail emits around the member CStrings'
+// lifetime vs the delete-on-AddTail-fail cleanup. Final-sweep candidate.
 RVA(0x00178b30, 0x140)
 i32 CNetMgr::AddSessionNode(void* a, void* b) {
-    CNetSessionNode* node = (CNetSessionNode*)RezAlloc(0x24);
-    if (node != 0) {
-        *(void**)node = &g_netSessionNodeDtorVtbl;
-        {
-            CString temp1;
-            CString temp2;
-            *(void**)node = &g_netSessionNodeVtbl;
-            node->m_sessionId = 0;
-            node->m_listPosition = 0;
-            node->m_ownedBufferA = 0;
-            node->m_ownedBufferB = 0;
-        }
-    } else {
-        node = 0;
-    }
+    CNetSessionNode* node = new CNetSessionNode();
 
     if (node->InitSession((i32)a, (const char*)b, (const char*)b, (i32)b) != 0) {
         IDirectPlay4Z* iface = m_directPlay;
@@ -2493,9 +2464,7 @@ i32 CNetMgr::AddSessionNode(void* a, void* b) {
     if (node != 0) {
         __POSITION* pos = (__POSITION*)((CObList*)((char*)this + 0x54))->AddTail((CObject*)node);
         if (pos == 0) {
-            if (node != 0) {
-                node->SelfDestruct(1);
-            }
+            delete node;
         } else {
             node->m_listPosition = (i32)pos;
         }

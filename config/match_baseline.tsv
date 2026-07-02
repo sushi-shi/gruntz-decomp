@@ -377,7 +377,7 @@ netcmdsession	6	4
 netcmdslot	16	11
 netgamedlg	3	0
 netgamedlgwatch	1	0
-netmgr	89	49
+netmgr	89	50
 netmgrerror	1	1
 netmgrmenuselect	1	1
 netmgrmisc	5	4
@@ -2852,9 +2852,9 @@ netgamedlg	?VerifyCustomLevel@CNetGameDlg@@QAEXXZ	54.5664	54.5664	1	5364ad374d00
 netgamedlgwatch	?Watchdog@CNetDlgWatch@@QAEXXZ	93.9344	93.9344	1	49e7c22d7396	0xc46b0
 netmgr	??0CNetCmdSlot@@QAE@XZ	78.8372	78.8372	2	811fcad30bbf	0xbbec0
 netmgr	?AckDropPlayer@CNetMgr@@QAEXH@Z	100.0000	100.0000	2	3dda1d693889	0xba590
-netmgr	?AddGroupNode@CNetMgr@@QAEHPAX0@Z	66.3443	66.3443	1	da1d7c9a417c	0x178360
-netmgr	?AddPlayerNode@CNetMgr@@QAEHPAX@Z	92.2727	92.2727	1	f4b1a6c46c27	0x1786d0
-netmgr	?AddSessionNode@CNetMgr@@QAEHPAX0@Z	55.7706	55.7706	2	8722f9918cae	0x178b30
+netmgr	?AddGroupNode@CNetMgr@@QAEHPAX0@Z	100.0000	100.0000	2	1c1e0e079a9b	0x178360
+netmgr	?AddPlayerNode@CNetMgr@@QAEHPAX@Z	82.3454	82.3454	2	ace661daeb67	0x1786d0
+netmgr	?AddSessionNode@CNetMgr@@QAEHPAX0@Z	65.0550	65.0550	3	bf9390b73253	0x178b30
 netmgr	?AnnounceVersion@CNetMgr@@QAEXH@Z	90.1000	90.1000	5	f9e1f9c715a8	0xbd180
 netmgr	?ApplyCmdDelayDefaults@CNetMgr@@QAEXXZ	100.0000	100.0000	6	f6fa2de8b3f2	0xb85a0
 netmgr	?AutoTuneCmdDelay@CNetMgr@@QAEXXZ	68.0192	68.0192	1	f1354a3af662	0xbcc10

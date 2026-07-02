@@ -3,8 +3,8 @@
 // class whose vtable is 0x5f0128 (the same table WwdFile.cpp's ReadPlaneObjects
 // stamps into the +0x1A0 embedded sub-object). REAL POLYMORPHIC (ALL-VTABLES
 // phase): this TU owns ??_7CAniAdvanceCursor@@6B@ @0x5f0128 (9-slot WWD-object
-// vtable; dtor at slot 1), so cl auto-stamps the vptr in the ctor - the manual
-// g_wwdSubVtbl stamp is gone. No destructible locals -> no /GX frame.
+// vtable; dtor at slot 1), so cl auto-stamps the vptr in the ctor - no manual
+// sub-object-vtable stamp in this ctor. No destructible locals -> no /GX frame.
 #include <rva.h>
 
 #include <Ints.h>

@@ -13,9 +13,10 @@
 // implicit vptr @+0x00 + the 5-slot CObject-style interface. Real polymorphic: the
 // empty inline virtual dtor makes cl emit the implicit grand-base re-stamp
 // (reloc-masks 0x5e8cb4) folded LAST into the leaf dtor, after the CString member
-// teardown. The factory (AddGroupNode, NetMgr.cpp) still stamps the own vtable
-// (0x5f0748) via its own manual stamp; here the dtor's own-vptr stamp is the
-// implicit ??_7InterfaceObject (reloc-masks the same target).
+// teardown. The factory (AddGroupNode, NetMgr.cpp) is now also real polymorphic
+// (`new CNetGroupNode`): cl auto-stamps the own vtable (0x5f0748) in the ctor, so
+// there is no manual stamp anywhere. Here the dtor's own-vptr stamp is the implicit
+// ??_7InterfaceObject (reloc-masks the same target).
 struct InterfaceObjectBase {
     virtual void V0();              // slot 0 (sub_1bef01)
     virtual ~InterfaceObjectBase(); // slot 1 (scalar-deleting dtor)
@@ -25,9 +26,9 @@ struct InterfaceObjectBase {
 };
 inline InterfaceObjectBase::~InterfaceObjectBase() {}
 SIZE_UNKNOWN(InterfaceObjectBase); // CObject-like base subobject; retail size TBD
-// No VTBL: this base subobject's vtable is the SHARED CObject-base dtor vtable
-// 0x5e8cb4, already catalogued as ?g_wapObjectDtorVtbl@@3PAXA - a VTBL here would
-// collide on that rva / mis-attribute a shared vtable to one modeling-base name.
+// No VTBL: this base subobject's vtable is the SHARED CObject grand-base dtor
+// table at 0x5e8cb4 (the DATA symbol already catalogued for that rva) - a VTBL
+// here would collide on that rva / mis-attribute a shared vtable to one base name.
 
 // Own (most-derived) vtable @0x5f0748: cl auto-emits ??_7InterfaceObject (the dtor
 // below defines the class's key virtual). Retrofit the retail datum name (was the

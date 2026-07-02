@@ -14,11 +14,11 @@
 //       fold in.
 //
 // Both derive from the engine CObject-like collection-node base whose dtor
-// vtable is g_wapObjectDtorVtbl @0x5e8cb4 (the same grand-base the CWapObject-derived
-// DDraw nodes restamp). The nodes' own virtuals are not modeled, so their primary
-// vtables are referenced by address as reloc-masked DATA externs and stamped
-// manually; letting cl emit a vtable would diverge. The CString member teardown
-// + the destructible base subobject give the dtors their /GX EH frame.
+// vtable lives at 0x5e8cb4 (the shared CObject grand-base). Both nodes are now
+// REAL POLYMORPHIC: cl auto-emits their own vtables (0x5f0760 / 0x5f0778, orphan
+// reloc-masked) and auto-stamps them in the ctor (the node factories in NetMgr.cpp
+// now `new` these classes) and dtor. The CString member teardown + the
+// destructible base subobject give the dtors their /GX EH frame.
 //
 // Field names are placeholders (m_<hexoffset>); only the OFFSETS + code bytes are
 // load-bearing.
@@ -48,9 +48,9 @@ struct CNetNodeBase {
 };
 inline CNetNodeBase::~CNetNodeBase() {}
 SIZE_UNKNOWN(CNetNodeBase); // CObject-like collection-node base; retail size TBD
-// No VTBL: this base subobject's vtable is the SHARED CObject-base dtor vtable
-// 0x5e8cb4, already catalogued as ?g_wapObjectDtorVtbl@@3PAXA - a VTBL here would
-// collide on that rva / mis-attribute a shared vtable to one modeling-base name.
+// No VTBL: this base subobject's vtable is the SHARED CObject grand-base dtor
+// table at 0x5e8cb4 (the DATA symbol already catalogued for that rva) - a VTBL
+// here would collide on that rva / mis-attribute a shared vtable to one base name.
 
 // The shared CWapNodeB string-cleanup helper (Font.cpp 0x179680): frees the two
 // owned buffers at +0x34/+0x38 and clears +0x04. Declared here only so

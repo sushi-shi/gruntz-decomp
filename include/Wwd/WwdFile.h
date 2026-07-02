@@ -52,7 +52,13 @@ public:
     i32 Read(void* buf, i32 len);
 
 private:
-    void* m_vtbl;   // +0x00
+    // +0x00 is the engine vtable pointer of this EXTERNAL binary-file-stream class
+    // (its ctor/dtor/Open/Read are all unmatched engine code, reloc-masked). Our
+    // code never touches this slot; it is a pure layout placeholder so m_handle
+    // lands at +0x04. Modeling it as C++ virtuals would make cl emit a WRONG,
+    // incomplete vtable in this TU (its real virtuals are unmodeled) and regress
+    // the neighbouring Save -> kept as an opaque leading word.
+    void* m_00;     // +0x00  engine vptr (opaque)
     void* m_handle; // +0x04  HANDLE (-1 when closed)
     i32 m_open;     // +0x08  open/refcount flag
     void* m_name;   // +0x0C  CString filename buffer

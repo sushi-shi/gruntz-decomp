@@ -370,7 +370,11 @@ SIZE_UNKNOWN(CNetSubObject); // m_4 sub-object view (only +0x6c pinned); retail 
 //   +0x68 (slot 26)  SetData5  (a, b, c, d, e)              -> HRESULT
 // ---------------------------------------------------------------------------
 struct IDirectPlay4Z {
-    struct Vtbl {
+    // External DirectPlay COM interface vtable (no dplay.h in dx/Include, so the
+    // slot layout is hand-modeled). COM slots are __stdcall with the interface
+    // pointer as the explicit first arg -> NOT convertible to C++ __thiscall
+    // virtuals; the explicit function-pointer table is the load-bearing model.
+    struct Vtable {
         i32(__stdcall* QueryInterface)(IDirectPlay4Z*, void* riid, void* out); // +0x00 (slot 0)
         char m_pad4[0xc - 0x4];
         i32(__stdcall* Open)(IDirectPlay4Z*, void* a, void* b, i32 c); // +0x0c (slot 3)
@@ -471,37 +475,57 @@ struct CNetListNode {
 SIZE_UNKNOWN(CNetListNode); // CObList node walk-view; retail size TBD
 
 // ---------------------------------------------------------------------------
-// The managed-player object node the +0x38 player list holds. AddPlayerNode
-// (0x1786d0) operator-new's a 0x58-byte node (vptr 0x5f0760), zeroes its body
-// (0x14 dwords from +0x4), inits it from the DirectPlay player descriptor (the
-// 0x1795a0 helper, which copies the 0x50-byte descriptor in and trims its name),
-// and AddTail's it onto the +0x38 CObList, caching the returned __POSITION at
-// +0x54. Modeled polymorphically so `node->SelfDestruct(1)` emits the slot-1
-// thiscall on the new'd node; the vtable is stamped from the retail address.
-// ---------------------------------------------------------------------------
-class CNetPlayerListNode {
-public:
-    virtual void Slot00();               // +0x00
-    virtual void SelfDestruct(i32 flag); // +0x04  slot 1 (self-destruct)
+// The shared CObject-like collection-node base (grand-base vtable @0x5e8cb4): the
+// 5-slot CObject-style interface + the implicit vptr @+0x00. Real polymorphic so
+// `new CNetPlayerListNode/CNetSessionNode` two-phase-stamps the base then the
+// derived vtable (cl-emitted, reloc-masking 0x5e8cb4/0x5f0760/0x5f0778) with the
+// compiler's /GX new-cleanup frame - replacing the old manual g_net*NodeVtbl
+// stamps. The emitted node vtables here are orphans (their RVAs are owned by
+// NetSessionNode.cpp's VTBLs), so no VTBL is attached -> no dup-DATA.
+struct CNetNodeBase {
+    virtual void V0();       // slot 0 (sub_1bef01)
+    virtual ~CNetNodeBase(); // slot 1 (scalar-deleting dtor)
+    virtual void V2();       // slot 2 (sub_0028ec)
+    virtual void V3();       // slot 3 (sub_00106e)
+    virtual void V4();       // slot 4 (sub_004034)
+};
+inline CNetNodeBase::~CNetNodeBase() {}
 
+// ---------------------------------------------------------------------------
+// The managed-player object node the +0x38 player list holds. AddPlayerNode
+// (0x1786d0) `new`-builds a 0x58-byte node (vptr 0x5f0760), whose ctor zeroes its
+// body (0x14 dwords from +0x4) + m_54, then inits it from the DirectPlay player
+// descriptor (the 0x1795a0 helper, which copies the 0x50-byte descriptor in and
+// trims its name), and AddTail's it onto the +0x38 CObList, caching the returned
+// __POSITION at +0x54.
+// ---------------------------------------------------------------------------
+class CNetPlayerListNode : public CNetNodeBase {
+public:
     char m_body[0x54 - 0x4]; // +0x04  the 0x50-byte player descriptor + name ptr
     __POSITION* m_54;        // +0x54  cached AddTail position
 
-    i32 Init(void* playerDesc); // 0x1795a0  copy + trim the descriptor
+    // Zero the 0x14-dword body + m_54 (the retail ctor sequence AddPlayerNode
+    // inlines: single coalesced vptr stamp 0x5f0760 then the zero loop).
+    CNetPlayerListNode() {
+        i32* body = (i32*)((char*)this + 4);
+        for (i32 i = 0; i < 0x14; i++) {
+            body[i] = 0;
+        }
+        m_54 = 0;
+    }
+    virtual ~CNetPlayerListNode(); // 0x1793b0 (NetSessionNode.cpp)
+    i32 Init(void* playerDesc);    // 0x1795a0  copy + trim the descriptor
 };
 
 // ---------------------------------------------------------------------------
 // The session-list node the +0x54 list holds: AddSessionNode (0x178b30,
-// /GX EH) operator-new's a 0x24-byte node (base-dtor vptr 0x5e8cb4 during the
-// two CString ctors, final vptr 0x5f0778), inits its two CString members at
-// +0x8/+0xc and zeroes +0x4/+0x14/+0x18/+0x20, then GetData5's (slot 0x74) the
-// session blob and AddTail's the node onto the +0x54 list.
+// /GX EH) `new`-builds a 0x24-byte node (base-dtor vptr 0x5e8cb4 during the two
+// CString member ctors, final vptr 0x5f0778), whose ctor zeroes +0x4/+0x14/+0x18/
+// +0x20, then GetData5's (slot 0x74) the session blob and AddTail's the node onto
+// the +0x54 list.
 // ---------------------------------------------------------------------------
-class CNetSessionNode {
+class CNetSessionNode : public CNetNodeBase {
 public:
-    virtual void Slot00();               // +0x00
-    virtual void SelfDestruct(i32 flag); // +0x04
-
     i32 m_sessionId;      // +0x04
     CString m_8;          // +0x08  name CString
     CString m_c;          // +0x0c  second CString
@@ -510,6 +534,16 @@ public:
     char* m_ownedBufferA; // +0x18  owned buffer (freed first)
     i32 m_1c;             // +0x1c
     i32 m_listPosition;   // +0x20  cached AddTail position
+
+    // The retail ctor AddSessionNode inlines: base stamp 0x5e8cb4, the two CString
+    // members' default ctors, final stamp 0x5f0778, then zero the 4 scalar fields.
+    CNetSessionNode() {
+        m_sessionId = 0;
+        m_listPosition = 0;
+        m_ownedBufferA = 0;
+        m_ownedBufferB = 0;
+    }
+    virtual ~CNetSessionNode(); // 0x179420 (NetSessionNode.cpp)
 
     // The 4-arg init the session-node ctor runs (0x1796c0): store the dword id
     // (+0x4) and the second dword (+0x10), assign the two CStrings (+0x8/+0xc), and
@@ -521,14 +555,11 @@ public:
     CString GetName();
 };
 
-// The retail vtables stamped into the new'd nodes (transitional: the node
-// classes' virtuals aren't all matched, so cl can't emit a matching vtable -
-// reference the retail tables directly as reloc-masked DATA externs).
-extern "C" void* g_netPlayerNodeVtbl;      // 0x5f0760
-extern "C" void* g_netSessionNodeDtorVtbl; // 0x5e8cb4 (base-dtor vptr during CString ctors)
-extern "C" void* g_netSessionNodeVtbl;     // 0x5f0778 (final vptr)
-extern "C" void* g_netGroupNodeDtorVtbl; // 0x5e8cb4 (base-dtor vptr; shared with the session node)
-extern "C" void* g_netGroupNodeVtbl;     // 0x5f0748 (InterfaceObject final vptr; AddGroupNode)
+// The shared CObject base-dtor vptr (0x5e8cb4) TeardownLists (the CNetMgr dtor
+// helper) re-installs manually. CNetMgr is a huge cross-TU class whose own vtable
+// (0x5ea42c) is not fully modeled, so it stays a manual stamp (documented wall);
+// this datum is the CObject grand-base table shared with the node bases above.
+extern "C" void* g_netGroupNodeDtorVtbl; // 0x5e8cb4 (CObject base-dtor vptr; TeardownLists)
 // PTR_LAB_005f0588 - the QueryInterface riid pointer the Init wrapper (0x178170)
 // hands to slot 0 (a static GUID blob; DIR32 reloc-masked). 0x5f0588.
 extern "C" void* g_netDirectPlayRiid; // 0x5f0588
@@ -553,7 +584,9 @@ extern "C" void NetEnumCb();
 // are pinned; everything else is opaque padding. __stdcall (COM convention).
 // ---------------------------------------------------------------------------
 struct INetReleasable {
-    struct Vtbl {
+    // External COM interface (IUnknown-shaped): __stdcall slots, explicit `this`
+    // first arg -> hand-modeled function-pointer table, not C++ virtuals.
+    struct Vtable {
         char m_pad0[8];
         i32(__stdcall* Release)(INetReleasable*); // +0x08 (slot 2)
         char m_padc[0x10 - 0xc];

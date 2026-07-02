@@ -534,9 +534,15 @@ extern void* g_planeRenderVtbl; // 0x5f02a8
 #define WLOADER(t, off) (*(t*)((char*)this + (off)))
 
 // @early-stop
-// throwing-new EH-frame wall: the worker rebuild + the 6-pair init + the
-// ReadPlaneObjects loop are faithful, but the partial-construct exception
-// cleanup frame's trylevel/handler bytes are not source-steerable.
+// throwing-new EH-frame + embedded-vtable-stamp wall: the worker rebuild + the
+// 6-pair init + the ReadPlaneObjects loop are faithful, but (a) the
+// partial-construct exception cleanup frame's trylevel/handler bytes are not
+// source-steerable, and (b) the worker's EMBEDDED sub-object at +0x70 has its
+// vtable stamped manually (g_planeRenderVtbl @0x5f02a8 = ??_7CWwdGridIter, realized
+// in WwdSpatialMgr.cpp; and g_wapObjectDtorVtbl @0x5e8cb4 = the CObject base-dtor
+// table on the fail path). The worker's own +0x00 vptr is ZEROED here (not a
+// polymorphic outer object), so `new WwdPlaneRender` cannot express this; the
+// embedded-object-at-offset re-stamp is the only expressible form (wall).
 RVA(0x001628f0, 0x1fc)
 i32 WwdFile::RebuildPlanes(i32 base, i32 count) {
     if (base == 0) {
@@ -601,6 +607,16 @@ i32 WwdFile::RebuildPlanes(i32 base, i32 count) {
     return 1;
 }
 
+// @early-stop
+// non-ctor factory-stamp wall: this is a factory, not a ??0 ctor - the 0x1dc game
+// object and its +0x1A0 sub-object are brought up by the EXTERNAL engine ctors
+// (Construct 0x15b390 / 0x156cb0, unmatched), then their derived vtables are
+// re-stamped by address (g_wwdObjVtbl @0x5f00a8 = ??_7CWwdGameObjectA / g_wwdSubVtbl
+// @0x5f0128 = ??_7CAniAdvanceCursor, both realized real-polymorphic in their own
+// TUs but ORPHAN-bound to those g_ DATA symbols). A `new`-based rewrite is
+// impossible here (the construction is external engine code), and a VTBL on the
+// realized classes would dup-DATA the factory's bound g_ symbols -> the manual
+// re-stamp is the only expressible form (compiler-model wall). Logic byte-faithful.
 RVA(0x00162af0, 0x806)
 i32 WwdFile::ReadPlaneObjects(const i32* src) {
     if (src == 0) {
