@@ -19,27 +19,18 @@
 // The save-slot dialog labeller (winapi_0e3e80_SetDlgItemTextA, ApiCallers.cpp):
 // labels one slot into four dialog controls. Declared with its real namespace +
 // signature so the rel32 call pairs by mangled name; the slot pointer flows in as
-// the NameItem_09e2d0* it expects (a forward-declared opaque). Reloc-masked.
+// the SaveSlot* it expects (== CSaveGame::GetSlot()'s record; forward-declared in
+// ApiCallerStubs so both this TU and its definer ApiCallers.cpp pair by mangled
+// name - the minimal ApiCallerStubs::SaveSlot view there reads only its +0x14
+// name). Reloc-masked.
 namespace ApiCallerStubs {
-    struct NameItem_09e2d0;
-    void winapi_0e3e80_SetDlgItemTextA(
-        HWND hWnd,
-        NameItem_09e2d0* item,
-        i32 id3,
-        i32 id4,
-        i32 id5,
-        i32 id6
-    );
+    struct SaveSlot;
+    void
+    winapi_0e3e80_SetDlgItemTextA(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6);
     // The GAME_INFO dialog's variant of the same per-slot labeller (0x9e2d0); same
     // signature, different control-state side effects. Reloc-masked no-body callee.
-    void winapi_09e2d0_SetDlgItemTextA(
-        HWND hWnd,
-        NameItem_09e2d0* item,
-        i32 id3,
-        i32 id4,
-        i32 id5,
-        i32 id6
-    );
+    void
+    winapi_09e2d0_SetDlgItemTextA(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6);
 } // namespace ApiCallerStubs
 
 // ---------------------------------------------------------------------------
@@ -54,7 +45,7 @@ void FillSaveDialog(HWND hWnd, CSaveGame* sg) {
     using ApiCallerStubs::winapi_0e3e80_SetDlgItemTextA;
     winapi_0e3e80_SetDlgItemTextA(
         hWnd,
-        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(0),
+        (ApiCallerStubs::SaveSlot*)sg->GetSlot(0),
         0x435,
         0x490,
         0x49a,
@@ -62,7 +53,7 @@ void FillSaveDialog(HWND hWnd, CSaveGame* sg) {
     );
     winapi_0e3e80_SetDlgItemTextA(
         hWnd,
-        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(1),
+        (ApiCallerStubs::SaveSlot*)sg->GetSlot(1),
         0x436,
         0x491,
         0x49b,
@@ -70,7 +61,7 @@ void FillSaveDialog(HWND hWnd, CSaveGame* sg) {
     );
     winapi_0e3e80_SetDlgItemTextA(
         hWnd,
-        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(2),
+        (ApiCallerStubs::SaveSlot*)sg->GetSlot(2),
         0x437,
         0x492,
         0x49c,
@@ -78,7 +69,7 @@ void FillSaveDialog(HWND hWnd, CSaveGame* sg) {
     );
     winapi_0e3e80_SetDlgItemTextA(
         hWnd,
-        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(3),
+        (ApiCallerStubs::SaveSlot*)sg->GetSlot(3),
         0x438,
         0x493,
         0x49d,
@@ -86,7 +77,7 @@ void FillSaveDialog(HWND hWnd, CSaveGame* sg) {
     );
     winapi_0e3e80_SetDlgItemTextA(
         hWnd,
-        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(4),
+        (ApiCallerStubs::SaveSlot*)sg->GetSlot(4),
         0x439,
         0x494,
         0x49e,
@@ -94,7 +85,7 @@ void FillSaveDialog(HWND hWnd, CSaveGame* sg) {
     );
     winapi_0e3e80_SetDlgItemTextA(
         hWnd,
-        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(5),
+        (ApiCallerStubs::SaveSlot*)sg->GetSlot(5),
         0x43a,
         0x495,
         0x49f,
@@ -102,7 +93,7 @@ void FillSaveDialog(HWND hWnd, CSaveGame* sg) {
     );
     winapi_0e3e80_SetDlgItemTextA(
         hWnd,
-        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(6),
+        (ApiCallerStubs::SaveSlot*)sg->GetSlot(6),
         0x43b,
         0x496,
         0x4a0,
@@ -110,7 +101,7 @@ void FillSaveDialog(HWND hWnd, CSaveGame* sg) {
     );
     winapi_0e3e80_SetDlgItemTextA(
         hWnd,
-        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(7),
+        (ApiCallerStubs::SaveSlot*)sg->GetSlot(7),
         0x43c,
         0x497,
         0x4a1,
@@ -118,7 +109,7 @@ void FillSaveDialog(HWND hWnd, CSaveGame* sg) {
     );
     winapi_0e3e80_SetDlgItemTextA(
         hWnd,
-        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(8),
+        (ApiCallerStubs::SaveSlot*)sg->GetSlot(8),
         0x43d,
         0x498,
         0x4a2,
@@ -126,7 +117,7 @@ void FillSaveDialog(HWND hWnd, CSaveGame* sg) {
     );
     winapi_0e3e80_SetDlgItemTextA(
         hWnd,
-        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(9),
+        (ApiCallerStubs::SaveSlot*)sg->GetSlot(9),
         0x43e,
         0x499,
         0x4a3,
@@ -148,7 +139,7 @@ void FillGameInfoDialog(HWND hWnd, CSaveGame* sg) {
     using ApiCallerStubs::winapi_09e2d0_SetDlgItemTextA;
     winapi_09e2d0_SetDlgItemTextA(
         hWnd,
-        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(0),
+        (ApiCallerStubs::SaveSlot*)sg->GetSlot(0),
         0x435,
         0x490,
         0x49a,
@@ -156,7 +147,7 @@ void FillGameInfoDialog(HWND hWnd, CSaveGame* sg) {
     );
     winapi_09e2d0_SetDlgItemTextA(
         hWnd,
-        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(1),
+        (ApiCallerStubs::SaveSlot*)sg->GetSlot(1),
         0x436,
         0x491,
         0x49b,
@@ -164,7 +155,7 @@ void FillGameInfoDialog(HWND hWnd, CSaveGame* sg) {
     );
     winapi_09e2d0_SetDlgItemTextA(
         hWnd,
-        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(2),
+        (ApiCallerStubs::SaveSlot*)sg->GetSlot(2),
         0x437,
         0x492,
         0x49c,
@@ -172,7 +163,7 @@ void FillGameInfoDialog(HWND hWnd, CSaveGame* sg) {
     );
     winapi_09e2d0_SetDlgItemTextA(
         hWnd,
-        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(3),
+        (ApiCallerStubs::SaveSlot*)sg->GetSlot(3),
         0x438,
         0x493,
         0x49d,
@@ -180,7 +171,7 @@ void FillGameInfoDialog(HWND hWnd, CSaveGame* sg) {
     );
     winapi_09e2d0_SetDlgItemTextA(
         hWnd,
-        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(4),
+        (ApiCallerStubs::SaveSlot*)sg->GetSlot(4),
         0x439,
         0x494,
         0x49e,
@@ -188,7 +179,7 @@ void FillGameInfoDialog(HWND hWnd, CSaveGame* sg) {
     );
     winapi_09e2d0_SetDlgItemTextA(
         hWnd,
-        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(5),
+        (ApiCallerStubs::SaveSlot*)sg->GetSlot(5),
         0x43a,
         0x495,
         0x49f,
@@ -196,7 +187,7 @@ void FillGameInfoDialog(HWND hWnd, CSaveGame* sg) {
     );
     winapi_09e2d0_SetDlgItemTextA(
         hWnd,
-        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(6),
+        (ApiCallerStubs::SaveSlot*)sg->GetSlot(6),
         0x43b,
         0x496,
         0x4a0,
@@ -204,7 +195,7 @@ void FillGameInfoDialog(HWND hWnd, CSaveGame* sg) {
     );
     winapi_09e2d0_SetDlgItemTextA(
         hWnd,
-        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(7),
+        (ApiCallerStubs::SaveSlot*)sg->GetSlot(7),
         0x43c,
         0x497,
         0x4a1,
@@ -212,7 +203,7 @@ void FillGameInfoDialog(HWND hWnd, CSaveGame* sg) {
     );
     winapi_09e2d0_SetDlgItemTextA(
         hWnd,
-        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(8),
+        (ApiCallerStubs::SaveSlot*)sg->GetSlot(8),
         0x43d,
         0x498,
         0x4a2,
@@ -220,7 +211,7 @@ void FillGameInfoDialog(HWND hWnd, CSaveGame* sg) {
     );
     winapi_09e2d0_SetDlgItemTextA(
         hWnd,
-        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(9),
+        (ApiCallerStubs::SaveSlot*)sg->GetSlot(9),
         0x43e,
         0x499,
         0x4a3,

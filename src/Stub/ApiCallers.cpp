@@ -1241,23 +1241,18 @@ namespace ApiCallerStubs {
         }
     }
 
-    // An item whose validity is probed by Check2694; its display name is at +0x14.
-    struct NameItem_09e2d0 {
+    // A CSaveGame save-slot record (Io/SaveGame.h SaveSlot; here a minimal view
+    // reading only its +0x14 short name). Validity is probed by Check2694.
+    struct SaveSlot {
         char m_pad0[0x14];
         char m_14[1]; // +0x14 (name string)
     };
-    i32 __cdecl Check2694(NameItem_09e2d0* item); // RVA 0x2694
+    i32 __cdecl Check2694(SaveSlot* item); // RVA 0x2694
     // "(Empty)" fallback display string (s_(Empty)_006113e0).
     // __cdecl(hWnd, item, id3, id4, id5, id6): label item into id3, enable 4 ctrls.
     RVA(0x0009e2d0, 0x84)
-    void winapi_09e2d0_SetDlgItemTextA(
-        HWND hWnd,
-        NameItem_09e2d0* item,
-        i32 id3,
-        i32 id4,
-        i32 id5,
-        i32 id6
-    ) {
+    void
+    winapi_09e2d0_SetDlgItemTextA(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6) {
         i32 flag;
         if (Check2694(item)) {
             SetDlgItemTextA(hWnd, id3, item->m_14);
@@ -2296,14 +2291,8 @@ namespace ApiCallerStubs {
     // __cdecl(hWnd, item, id3, id4, id5, id6): label item into id3, then enable the
     // first two controls unconditionally and the last two only if the item is valid.
     RVA(0x000e3e80, 0x86)
-    void winapi_0e3e80_SetDlgItemTextA(
-        HWND hWnd,
-        NameItem_09e2d0* item,
-        i32 id3,
-        i32 id4,
-        i32 id5,
-        i32 id6
-    ) {
+    void
+    winapi_0e3e80_SetDlgItemTextA(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6) {
         i32 flag;
         if (Check2694(item)) {
             SetDlgItemTextA(hWnd, id3, item->m_14);
