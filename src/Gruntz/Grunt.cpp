@@ -577,20 +577,326 @@ i32 CGrunt::CreateSelectedSprite() {
     return 1;
 }
 
-// -------------------------------------------------------------------------
-// Engine-label backlog stubs.
-// -------------------------------------------------------------------------
-// @confidence: med
-// @source: rtti-vptr
-// @stub
-RVA(0x00047a10, 0x770)
-void CGrunt::Stub_047a10() {}
+// ---------------------------------------------------------------------------
+// CGrunt::CGrunt(owner)  @0x47a10  (__thiscall, /GX, ret 4) - the grunt spawn
+// constructor. Structurally the CGrunt twin of CProjectile::CProjectile(owner):
+// CMovingLogic is CGrunt's true intermediate base (RTTI vftable 0x5e87ac), so the
+// ctor folds the inlined CMovingLogic(owner) init (CUserLogic base ctor, the
+// CMotionState motion band @+0x38, the four default coordinate bounds seeded from
+// m_14->{m_2c,m_34,m_30,m_38}, the 11-double SetParams + SetZ) then runs the huge
+// CGrunt field-init block + the six owned-member ctors (m_animSetName / m_31c /
+// m_338 / m_448 / m_44c / m_468[9]) and the two vptr restamps (CMovingLogic ->
+// CGrunt). All engine callees external/reloc-masked.
+// ---------------------------------------------------------------------------
+// The default entrance-cell record + the +0x438 datum the ctor copies in (the
+// CMovingLogic motion helper + bound constants are defined in Grunt.h). Reloc-masked.
+extern i32 g_gruntDefEntranceCell[3];              // 0x6448e8 (default entrance-cell record)
+extern i32 g_gruntCtor64558c;                      // 0x64558c (-> m_438)
+static const char s_NORMALGRUNT[] = "NORMALGRUNT"; // 0x60d404
 
-// @confidence: med
-// @source: string-xref
-// @stub
+// CGrunt::Update() @0x16ea90 (__thiscall) the ctor fires after the motion setup.
+struct CGruntUpdateThis {
+    void Update(); // 0x16ea90
+};
+
+// @early-stop
+// member-init/body-split + Projectile-ctor residue wall (~78%, up from a 0% stub):
+// logic/CFG/offsets/moving-init/field-block all byte-faithful (the CMovingLogic base
+// now emits the CMotionState band + coordinate bounds + SetParams/SetZ FIRST and the
+// CMovingLogic->CGrunt vptr restamp pair, taking 74%->78% with ~CGrunt held at 94.9%).
+// Residue is codegen ordering the source cannot steer: (a) MSVC runs the six owned
+// value-member ctors (m_animSetName/m_31c/m_338/m_448/m_44c/m_468[9]) in the member-init
+// PHASE (grouped after the base ctor, before the body) while retail interleaves them
+// among the scalar inits - but the members must stay value-typed for ~CGrunt's auto
+// __ehvec_dtor/~CString/~CObList teardown (94.9%), and manual body construction would
+// regress the dtor; (b) the +0x38 CMotionState ctor emits AFTER the CMovingLogic vptr
+// stamp, retail before it (the documented CProjectile 1-arg-ctor residue,
+// docs/patterns Init-after-vptr); (c) the resulting regalloc coin-flip pins `owner` in
+// ebx not ebp, shifting the prologue param-load + every owner use; (d) the +0x810 timer
+// band's lo/hi dword interleave + the /GX EH-state numbering. All entropy/ordering
+// class, no source lever; deferred to the final sweep.
+
+// The +0x810..+0x8cc timer band (12 x 16-byte = 24 doubles) zeroed twice; MSVC
+// schedules each 16-byte block's four dword stores in {+0,+8,+4,+c} column order.
+#define GRUNT_ZERO_TIMER_BLOCK(p, b)                                                               \
+    do {                                                                                           \
+        *(i32*)((char*)(p) + (b) + 0x0) = 0;                                                       \
+        *(i32*)((char*)(p) + (b) + 0x8) = 0;                                                       \
+        *(i32*)((char*)(p) + (b) + 0x4) = 0;                                                       \
+        *(i32*)((char*)(p) + (b) + 0xc) = 0;                                                       \
+    } while (0)
+#define GRUNT_ZERO_TIMER_BAND(p)                                                                   \
+    do {                                                                                           \
+        GRUNT_ZERO_TIMER_BLOCK((p), 0x810);                                                        \
+        GRUNT_ZERO_TIMER_BLOCK((p), 0x820);                                                        \
+        GRUNT_ZERO_TIMER_BLOCK((p), 0x830);                                                        \
+        GRUNT_ZERO_TIMER_BLOCK((p), 0x840);                                                        \
+        GRUNT_ZERO_TIMER_BLOCK((p), 0x850);                                                        \
+        GRUNT_ZERO_TIMER_BLOCK((p), 0x860);                                                        \
+        GRUNT_ZERO_TIMER_BLOCK((p), 0x870);                                                        \
+        GRUNT_ZERO_TIMER_BLOCK((p), 0x880);                                                        \
+        GRUNT_ZERO_TIMER_BLOCK((p), 0x890);                                                        \
+        GRUNT_ZERO_TIMER_BLOCK((p), 0x8a0);                                                        \
+        GRUNT_ZERO_TIMER_BLOCK((p), 0x8b0);                                                        \
+        GRUNT_ZERO_TIMER_BLOCK((p), 0x8c0);                                                        \
+    } while (0)
+
+RVA(0x00047a10, 0x770)
+CGrunt::CGrunt(void* owner) : CMovingLogic(owner) {
+    // --- CGrunt field-init block (retail offset order; the inlined CMovingLogic
+    // base ctor above did the CMotionState band @+0x38 + coordinate bounds) ---
+    *(i32*)((char*)this + 0x148) = 0;
+    *(i32*)((char*)this + 0x14c) = 0;
+    *(i32*)((char*)m_10 + 0xe4) = 7;
+    ((CGruntUpdateThis*)this)->Update();
+    *(void**)((char*)this + 0x150) = owner;
+    m_154 = (CEntranceAnimPlayer*)owner;
+    m_158 = (CGruntSndResMgr*)*(void**)((char*)owner + 0x7c);
+    m_struckClockLo = 0;
+    m_struckTimerLo = 0;
+    m_struckClockHi = 0;
+    m_struckTimerHi = 0;
+    *(i32*)((char*)this + 0x278) = 0;
+    *(i32*)((char*)this + 0x280) = 0;
+    *(i32*)((char*)this + 0x27c) = 0;
+    *(i32*)((char*)this + 0x284) = 0;
+    m_308 = 0;
+    m_310 = 0;
+    m_30c = 0;
+    m_314 = 0;
+
+    // The +0x810..+0x8cc timer band (24 doubles, zeroed).
+    GRUNT_ZERO_TIMER_BAND(this);
+
+    // Second-phase field inits (post CGrunt vptr restamp).
+    m_entranceCell[0] = g_gruntDefEntranceCell[0];
+    m_entranceCell[1] = g_gruntDefEntranceCell[1];
+    m_entranceCell[2] = g_gruntDefEntranceCell[2];
+    *(i32*)((char*)this + 0x434) = *(i32*)((char*)m_10 + 0x11c);
+    *(i32*)((char*)this + 0x438) = g_gruntCtor64558c;
+    *(i32*)((char*)m_10 + 0xe4) = 1;
+    *(i32*)((char*)this + 0x430) = 0;
+    *(i32*)((char*)this + 0x42c) = 0;
+    m_poseWalk = 0;
+    m_poseAttack1 = 0;
+    m_poseAttack2 = 0;
+    m_poseAttackIdle = 0;
+    m_poseStruck1 = 0;
+    m_poseStruck2 = 0;
+    m_poseIdle[0] = 0;
+    m_poseIdle[1] = 0;
+    m_poseIdle[2] = 0;
+    m_poseIdle4 = 0;
+    m_poseIdle5 = 0;
+    m_poseItem = 0;
+    m_poseItem2 = 0;
+    m_poseDeath = 0;
+    m_poseToy1 = 0;
+    m_poseToy2 = 0;
+    m_poseToyBreak = 0;
+    *(i32*)((char*)this + 0x3d8) = 0;
+    m_arrived = 0;
+    *(i32*)((char*)m_154 + 0xe8) = 0x100000;
+    *(i32*)((char*)m_154 + 0xec) = 0x3d1;
+    *(i32*)((char*)m_154 + 8) |= 0x2000100;
+    *(i32*)((char*)m_154 + 0xf4) |= 0x103f;
+    *(i32*)((char*)m_154 + 0xf0) = 1;
+    m_tileOwnerHi = -1;
+    m_tileOwnerLo = -1;
+    m_neighborCol = -1;
+    *(i32*)((char*)this + 0x38c) = 0;
+    m_entranceReason = 0;
+    *(i32*)((char*)this + 0x198) = 0;
+    *(i32*)((char*)this + 0x194) = 0;
+    m_gruntKind = 0;
+    *(i32*)((char*)this + 0x19c) = 0;
+    m_animSetName = s_NORMALGRUNT;
+    m_neighborRow = -1;
+    m_entranceCommitted = 1;
+    m_healthSprite = 0;
+    *(i32*)((char*)this + 0x290) = -1;
+    m_staminaSprite = 0;
+    m_toyTimeSprite = 0;
+    m_wingzTimeSprite = 0;
+    m_selectedSprite = 0;
+    m_toySprite = 0;
+    m_powerupSprite = 0;
+    *(i32*)((char*)this + 0x210) = 0;
+    *(i32*)((char*)this + 0x218) = 0;
+    m_neighborValid = 0;
+    m_230 = 0;
+    *(i32*)((char*)this + 0x234) = 0;
+    m_wingzEnabled = 0;
+    m_tileClaimed = 0;
+    *(i32*)((char*)this + 0x428) = 0;
+    *(i32*)((char*)this + 0x294) = -1;
+    *(i32*)((char*)this + 0x298) = 1;
+    *(i32*)((char*)this + 0x29c) = 1;
+    *(i32*)((char*)this + 0x2a0) = 0;
+    *(i32*)((char*)this + 0x2a4) = 0;
+    *(i32*)((char*)this + 0x2a8) = 0;
+    *(i32*)((char*)this + 0x2ac) = 0;
+    *(i32*)((char*)this + 0x2b0) = 0;
+    *(i32*)((char*)this + 0x2b4) = 0;
+    *(i32*)((char*)this + 0x2b8) = 0;
+    *(i32*)((char*)this + 0x2bc) = 0;
+    *(i32*)((char*)this + 0x2c0) = 0;
+    *(i32*)((char*)this + 0x2c4) = 0;
+    *(i32*)((char*)this + 0x2c8) = 0;
+    *(i32*)((char*)this + 0x2cc) = 0;
+    GRUNT_ZERO_TIMER_BAND(this);
+    m_308 = 0;
+    m_310 = 0;
+    m_30c = 0;
+    m_314 = 0;
+    *(i32*)((char*)this + 0x2f8) = -1;
+    *(i32*)((char*)this + 0x2fc) = -1;
+    m_arrivalNotified = 0;
+    m_2d4 = 0;
+    *(i32*)((char*)this + 0x2d8) = 0;
+    {
+        CGruntHud* h = m_10;
+        i32 lim = h->m_60 + 0x186a0;
+        if (h->m_74 != lim) {
+            h->m_74 = lim;
+            h->m_8 |= 0x20000;
+        }
+    }
+    *(i32*)((char*)this + 0x390) = 1;
+}
+
+// ---------------------------------------------------------------------------
+// CGrunt::Stub_048470(kind, dirOnly)  @0x48470  (__thiscall, /GX, ret 8) - the
+// per-cell entrance sprite-name loader: for each of the 9 direction cells
+// (CGruntCellRec[9] @+0x468, five CString name fields at +0/+4/+8/+c/+10 =
+// ATTACK/STRUCK/WALK/IDLE/ITEM) build the frame key "GRUNTZ_" + m_animSetName +
+// "_<DIR>_<POSE>" via the two AFXAPI operator+ overloads and assign it. kind==0
+// loads the full pose set + the grunt-level _DEATH name (m_44c); kind!=0 loads
+// only the direction-only WALK-cell names + _BREAK (m_448) when dirOnly!=0, else
+// just "GRUNTZ_"+m_animSetName into m_448. Tail: latch the move-cursor sprite
+// (g_gameReg->m_74->GetSel(m_1f4, kind)) into the HUD (m_10->m_4c) + mark m_58.
+// Each concat -> a pair of stack CString temps (/GX EH frame); reloc-masked.
+static const char s_d48_NORTHWEST_WALK[] = "_NORTHWEST_WALK";
+static const char s_d48_NORTH_WALK[] = "_NORTH_WALK";
+static const char s_d48_NORTHEAST_WALK[] = "_NORTHEAST_WALK";
+static const char s_d48_WEST_WALK[] = "_WEST_WALK";
+static const char s_d48_EAST_WALK[] = "_EAST_WALK";
+static const char s_d48_SOUTHWEST_WALK[] = "_SOUTHWEST_WALK";
+static const char s_d48_SOUTH_WALK[] = "_SOUTH_WALK";
+static const char s_d48_SOUTHEAST_WALK[] = "_SOUTHEAST_WALK";
+static const char s_d48_NORTHWEST_STRUCK[] = "_NORTHWEST_STRUCK";
+static const char s_d48_NORTH_STRUCK[] = "_NORTH_STRUCK";
+static const char s_d48_NORTHEAST_STRUCK[] = "_NORTHEAST_STRUCK";
+static const char s_d48_WEST_STRUCK[] = "_WEST_STRUCK";
+static const char s_d48_EAST_STRUCK[] = "_EAST_STRUCK";
+static const char s_d48_SOUTHWEST_STRUCK[] = "_SOUTHWEST_STRUCK";
+static const char s_d48_SOUTH_STRUCK[] = "_SOUTH_STRUCK";
+static const char s_d48_SOUTHEAST_STRUCK[] = "_SOUTHEAST_STRUCK";
+static const char s_d48_NORTHWEST_ATTACK[] = "_NORTHWEST_ATTACK";
+static const char s_d48_NORTH_ATTACK[] = "_NORTH_ATTACK";
+static const char s_d48_NORTHEAST_ATTACK[] = "_NORTHEAST_ATTACK";
+static const char s_d48_WEST_ATTACK[] = "_WEST_ATTACK";
+static const char s_d48_EAST_ATTACK[] = "_EAST_ATTACK";
+static const char s_d48_SOUTHWEST_ATTACK[] = "_SOUTHWEST_ATTACK";
+static const char s_d48_SOUTH_ATTACK[] = "_SOUTH_ATTACK";
+static const char s_d48_SOUTHEAST_ATTACK[] = "_SOUTHEAST_ATTACK";
+static const char s_d48_NORTHWEST_IDLE[] = "_NORTHWEST_IDLE";
+static const char s_d48_NORTH_IDLE[] = "_NORTH_IDLE";
+static const char s_d48_NORTHEAST_IDLE[] = "_NORTHEAST_IDLE";
+static const char s_d48_WEST_IDLE[] = "_WEST_IDLE";
+static const char s_d48_EAST_IDLE[] = "_EAST_IDLE";
+static const char s_d48_SOUTHWEST_IDLE[] = "_SOUTHWEST_IDLE";
+static const char s_d48_SOUTH_IDLE[] = "_SOUTH_IDLE";
+static const char s_d48_SOUTHEAST_IDLE[] = "_SOUTHEAST_IDLE";
+static const char s_d48_NORTHWEST_ITEM[] = "_NORTHWEST_ITEM";
+static const char s_d48_NORTH_ITEM[] = "_NORTH_ITEM";
+static const char s_d48_NORTHEAST_ITEM[] = "_NORTHEAST_ITEM";
+static const char s_d48_WEST_ITEM[] = "_WEST_ITEM";
+static const char s_d48_EAST_ITEM[] = "_EAST_ITEM";
+static const char s_d48_SOUTHWEST_ITEM[] = "_SOUTHWEST_ITEM";
+static const char s_d48_SOUTH_ITEM[] = "_SOUTH_ITEM";
+static const char s_d48_SOUTHEAST_ITEM[] = "_SOUTHEAST_ITEM";
+static const char s_d48_DEATH[] = "_DEATH";
+static const char s_d48_NORTHWEST[] = "_NORTHWEST";
+static const char s_d48_NORTH[] = "_NORTH";
+static const char s_d48_NORTHEAST[] = "_NORTHEAST";
+static const char s_d48_WEST[] = "_WEST";
+static const char s_d48_EAST[] = "_EAST";
+static const char s_d48_SOUTHWEST[] = "_SOUTHWEST";
+static const char s_d48_SOUTH[] = "_SOUTH";
+static const char s_d48_SOUTHEAST[] = "_SOUTHEAST";
+static const char s_d48_BREAK[] = "_BREAK";
+
 RVA(0x00048470, 0x131b)
-void CGrunt::Stub_048470(i32, i32) {}
+void CGrunt::Stub_048470(i32 kind, i32 dirOnly) {
+    if (kind == 0) {
+        *(CString*)((char*)this + 0x470) = s_GRUNTZ_ + m_animSetName + s_d48_NORTHWEST_WALK;
+        *(CString*)((char*)this + 0x4d8) = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_WALK;
+        *(CString*)((char*)this + 0x540) = s_GRUNTZ_ + m_animSetName + s_d48_NORTHEAST_WALK;
+        *(CString*)((char*)this + 0x5a8) = s_GRUNTZ_ + m_animSetName + s_d48_WEST_WALK;
+        *(CString*)((char*)this + 0x610) = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_WALK;
+        *(CString*)((char*)this + 0x678) = s_GRUNTZ_ + m_animSetName + s_d48_EAST_WALK;
+        *(CString*)((char*)this + 0x6e0) = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHWEST_WALK;
+        *(CString*)((char*)this + 0x748) = s_GRUNTZ_ + m_animSetName + s_d48_SOUTH_WALK;
+        *(CString*)((char*)this + 0x7b0) = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHEAST_WALK;
+        *(CString*)((char*)this + 0x46c) = s_GRUNTZ_ + m_animSetName + s_d48_NORTHWEST_STRUCK;
+        *(CString*)((char*)this + 0x4d4) = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_STRUCK;
+        *(CString*)((char*)this + 0x53c) = s_GRUNTZ_ + m_animSetName + s_d48_NORTHEAST_STRUCK;
+        *(CString*)((char*)this + 0x5a4) = s_GRUNTZ_ + m_animSetName + s_d48_WEST_STRUCK;
+        *(CString*)((char*)this + 0x60c) = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_STRUCK;
+        *(CString*)((char*)this + 0x674) = s_GRUNTZ_ + m_animSetName + s_d48_EAST_STRUCK;
+        *(CString*)((char*)this + 0x6dc) = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHWEST_STRUCK;
+        *(CString*)((char*)this + 0x744) = s_GRUNTZ_ + m_animSetName + s_d48_SOUTH_STRUCK;
+        *(CString*)((char*)this + 0x7ac) = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHEAST_STRUCK;
+        *(CString*)((char*)this + 0x468) = s_GRUNTZ_ + m_animSetName + s_d48_NORTHWEST_ATTACK;
+        *(CString*)((char*)this + 0x4d0) = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_ATTACK;
+        *(CString*)((char*)this + 0x538) = s_GRUNTZ_ + m_animSetName + s_d48_NORTHEAST_ATTACK;
+        *(CString*)((char*)this + 0x5a0) = s_GRUNTZ_ + m_animSetName + s_d48_WEST_ATTACK;
+        *(CString*)((char*)this + 0x608) = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_ATTACK;
+        *(CString*)((char*)this + 0x670) = s_GRUNTZ_ + m_animSetName + s_d48_EAST_ATTACK;
+        *(CString*)((char*)this + 0x6d8) = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHWEST_ATTACK;
+        *(CString*)((char*)this + 0x740) = s_GRUNTZ_ + m_animSetName + s_d48_SOUTH_ATTACK;
+        *(CString*)((char*)this + 0x7a8) = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHEAST_ATTACK;
+        *(CString*)((char*)this + 0x474) = s_GRUNTZ_ + m_animSetName + s_d48_NORTHWEST_IDLE;
+        *(CString*)((char*)this + 0x4dc) = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_IDLE;
+        *(CString*)((char*)this + 0x544) = s_GRUNTZ_ + m_animSetName + s_d48_NORTHEAST_IDLE;
+        *(CString*)((char*)this + 0x5ac) = s_GRUNTZ_ + m_animSetName + s_d48_WEST_IDLE;
+        *(CString*)((char*)this + 0x614) = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_IDLE;
+        *(CString*)((char*)this + 0x67c) = s_GRUNTZ_ + m_animSetName + s_d48_EAST_IDLE;
+        *(CString*)((char*)this + 0x6e4) = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHWEST_IDLE;
+        *(CString*)((char*)this + 0x74c) = s_GRUNTZ_ + m_animSetName + s_d48_SOUTH_IDLE;
+        *(CString*)((char*)this + 0x7b4) = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHEAST_IDLE;
+        *(CString*)((char*)this + 0x478) = s_GRUNTZ_ + m_animSetName + s_d48_NORTHWEST_ITEM;
+        *(CString*)((char*)this + 0x4e0) = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_ITEM;
+        *(CString*)((char*)this + 0x548) = s_GRUNTZ_ + m_animSetName + s_d48_NORTHEAST_ITEM;
+        *(CString*)((char*)this + 0x5b0) = s_GRUNTZ_ + m_animSetName + s_d48_WEST_ITEM;
+        *(CString*)((char*)this + 0x618) = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_ITEM;
+        *(CString*)((char*)this + 0x680) = s_GRUNTZ_ + m_animSetName + s_d48_EAST_ITEM;
+        *(CString*)((char*)this + 0x6e8) = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHWEST_ITEM;
+        *(CString*)((char*)this + 0x750) = s_GRUNTZ_ + m_animSetName + s_d48_SOUTH_ITEM;
+        *(CString*)((char*)this + 0x7b8) = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHEAST_ITEM;
+        *(CString*)((char*)this + 0x44c) = s_GRUNTZ_ + m_animSetName + s_d48_DEATH;
+    } else if (dirOnly != 0) {
+        *(CString*)((char*)this + 0x470) = s_GRUNTZ_ + m_animSetName + s_d48_NORTHWEST;
+        *(CString*)((char*)this + 0x4d8) = s_GRUNTZ_ + m_animSetName + s_d48_NORTH;
+        *(CString*)((char*)this + 0x540) = s_GRUNTZ_ + m_animSetName + s_d48_NORTHEAST;
+        *(CString*)((char*)this + 0x5a8) = s_GRUNTZ_ + m_animSetName + s_d48_WEST;
+        *(CString*)((char*)this + 0x610) = s_GRUNTZ_ + m_animSetName + s_d48_NORTH;
+        *(CString*)((char*)this + 0x678) = s_GRUNTZ_ + m_animSetName + s_d48_EAST;
+        *(CString*)((char*)this + 0x6e0) = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHWEST;
+        *(CString*)((char*)this + 0x748) = s_GRUNTZ_ + m_animSetName + s_d48_SOUTH;
+        *(CString*)((char*)this + 0x7b0) = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHEAST;
+        *(CString*)((char*)this + 0x448) = s_GRUNTZ_ + m_animSetName + s_d48_BREAK;
+    } else {
+        *(CString*)((char*)this + 0x448) = s_GRUNTZ_ + m_animSetName;
+    }
+    i32 sel = g_gameReg->m_74->GetSel(m_1f4_moveIcon, kind);
+    CGruntHud* h = m_10;
+    i32 keep50 = h->m_50;
+    h->m_58 = 1;
+    h->m_50 = keep50;
+    h->m_4c = sel;
+}
 
 // ---------------------------------------------------------------------------
 // CGrunt::LoadAnimNameTable(int kind, int toyOnly)   @0x49c60

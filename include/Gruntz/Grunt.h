@@ -878,22 +878,33 @@ public:
 // CGrunt, MSVC auto-emits the __ehvec_dtor(base, 0x68, 9, &~CGruntCellRec) teardown.
 struct CGruntCellRec {
     char m_pad[0x68];
+    CGruntCellRec();  // 0x401e9c (per-element ctor; the ctor's __ehvec_ctor callback)
     ~CGruntCellRec(); // 0x4023a6 (out-of-line; reloc-masked)
 };
 // Each owned sub-object is torn down by its engine dtor reached __thiscall (this in
 // ecx, no stack arg/cleanup). Modeled as a 1-method receiver so `lea ecx,[this+off];
 // call` falls out, and as a real value member with `~T(){Dtor();}` so the /GX frame's
-// per-member descending trylevel chain is what the compiler emits.
+// per-member descending trylevel chain is what the compiler emits. The default ctor
+// mirrors it (the CGrunt ctor member-inits each via the engine CString/CObList ctor,
+// reloc-masked): CString() @0x1b9b93, CObList(nBlock=0xa) @0x1b4867.
 SIZE_UNKNOWN(GruntStrSub);
 struct GruntStrSub { // +0x44c / +0x448 / +0x1c0  (~CString 0x1b9cde)
+    void CtorImpl(); // 0x1b9b93 (CString default ctor)
     void Dtor();
+    GruntStrSub() {
+        CtorImpl();
+    }
     ~GruntStrSub() {
         Dtor();
     }
 };
 SIZE_UNKNOWN(GruntListSub);
-struct GruntListSub { // +0x338 / +0x31c  (~CObList 0x1b48c6)
+struct GruntListSub {          // +0x338 / +0x31c  (~CObList 0x1b48c6)
+    void CtorImpl(i32 nBlock); // 0x1b4867 (CObList ctor, block size)
     void Dtor();
+    GruntListSub() {
+        CtorImpl(0xa);
+    }
     ~GruntListSub() {
         Dtor();
     }
@@ -1044,7 +1055,8 @@ inline CUserBase::~CUserBase() {} // final base vptr restamp (0x5e70b4)
 
 class CUserLogic : public CUserBase {
 public:
-    virtual ~CUserLogic() OVERRIDE;                                          // slot 0
+    CUserLogic(void* owner);        // 0x58cd0 (base ctor; external/reloc-masked)
+    virtual ~CUserLogic() OVERRIDE; // slot 0
     i32 SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) OVERRIDE; // slot 1 (0x16e7f0)
     void UbSlot08() OVERRIDE;                                                // slot 2
     virtual void UlSlot0c();                                                 // slot 3
@@ -1066,8 +1078,103 @@ public:
 inline CUserLogic::~CUserLogic() {} // auto-destructs m_18, restamps 0x5e705c
 
 // ---------------------------------------------------------------------------
+// CMovingLogic : CUserLogic - CGrunt's true moving-object base (RTTI vftable
+// 0x5e87ac; the same base CProjectile derives from). It adds three virtuals over
+// the CUserBase/CUserLogic chain but NO data of its own that shifts CGrunt's
+// members (the motion band it initializes at +0x38 and the +0xa8 coordinate
+// bounds overlay CGrunt's own named members). Its ctor is inlined into every leaf
+// (here CGrunt::CGrunt), so it is modeled inline. Its leaf dtor is trivial and its
+// most-derived vptr restamp dead-eliminates at /O2 (see CMovingLogicDtor.h), so
+// ~CGrunt still folds CGrunt -> CUserLogic -> CUserBase unchanged.
+//
+// The CMotionState motion band embedded at +0x38 (reached via a cast so the CGrunt
+// overlay layout stays put) + the shared default-bound doubles the ctor seeds.
+struct CGruntMotionBand {
+    void Init(); // 0x136d0 (CMotionState ctor; retail via thunk 0x34db)
+    i32 SetParams(
+        double a0,
+        double a1,
+        double a2,
+        double a3,
+        double a4,
+        double a5,
+        double a6,
+        double a7,
+        double a8,
+        double a9,
+        double a10
+    );                   // 0x58bc0 (thunk 0x2ccf)
+    void SetZ(double z); // 0x58ca0 (thunk 0x3ea9)
+};
+extern const double g_movingLogicMin;  // 0x5f04b0 (-2147483647.0)
+extern const double g_movingLogicMax;  // 0x5f04b8 (2147483646.0)
+extern const double g_gruntSpawnScale; // 0x5e9738 (spawn-seed velocity scale)
+extern u32 g_5f04e8;                   // 0x5f04e8 (default-Z int)
+extern u32 g_gruntSpawnClock;          // 0x645588 (spawn-seed clock; reloc-masked)
+
+class CMovingLogic : public CUserLogic {
+public:
+    CMovingLogic(void* owner);        // inlined into CGrunt::CGrunt (out-of-line 0x13940)
+    virtual ~CMovingLogic() OVERRIDE; // trivial; most-derived vptr restamp DCE'd
+    virtual void MovingSlot40a();     // slot 16
+    virtual void MovingSlot40b();     // slot 17
+    virtual void MovingSlot40c();     // slot 18
+};
+inline CMovingLogic::~CMovingLogic() {}
+inline CMovingLogic::CMovingLogic(void* owner) : CUserLogic(owner) {
+    CGruntMotionBand* mb = (CGruntMotionBand*)((char*)this + 0x38);
+    mb->Init();
+    {
+        i32 v = *(i32*)((char*)m_14 + 0x2c);
+        if (v == 0) {
+            *(double*)((char*)this + 0xa8) = g_movingLogicMin;
+        } else {
+            *(double*)((char*)this + 0xa8) = (double)v;
+        }
+    }
+    {
+        i32 v = *(i32*)((char*)m_14 + 0x34);
+        if (v == 0) {
+            *(double*)((char*)this + 0xb0) = g_movingLogicMin;
+        } else {
+            *(double*)((char*)this + 0xb0) = (double)v;
+        }
+    }
+    {
+        i32 v = *(i32*)((char*)m_14 + 0x30);
+        if (v == 0) {
+            *(double*)((char*)this + 0xc0) = g_movingLogicMax;
+        } else {
+            *(double*)((char*)this + 0xc0) = (double)v;
+        }
+    }
+    {
+        i32 v = *(i32*)((char*)m_14 + 0x38);
+        if (v == 0) {
+            *(double*)((char*)this + 0xc8) = g_movingLogicMax;
+        } else {
+            *(double*)((char*)this + 0xc8) = (double)v;
+        }
+    }
+    mb->SetParams(
+        (double)m_10->m_5c,
+        (double)m_10->m_60,
+        0.0,
+        (double)*(i32*)((char*)m_10 + 0x164),
+        (double)*(i32*)((char*)m_10 + 0x168),
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        (double)g_gruntSpawnClock * g_gruntSpawnScale,
+        0.0
+    );
+    mb->SetZ((double)g_5f04e8);
+}
+
+// ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CGrunt);
-class CGrunt : public CUserLogic {
+class CGrunt : public CMovingLogic {
 public:
     // vtable overrides in slot order (see the base chain above):
     virtual ~CGrunt() OVERRIDE;                                              // slot 0  @0xf2f0
@@ -1344,8 +1451,12 @@ public:
     i32 m_898; // +0x898 (wingz: = wingz-duration; (long)(m_wingzTime*scale-bias))
     i32 m_89c; // +0x89c (wingz: = 0)
 
+    // The grunt's spawn constructor @0x47a10 (__thiscall, the CMovingLogic-base
+    // moving-object ctor: base CUserLogic(owner), the CMotionState motion band at
+    // +0x38 + the twelve default coordinate bounds, then the huge field-init block).
+    CGrunt(void* owner);
+
     // Engine-label backlog stubs.
-    void Stub_047a10();
     void Stub_048400();
     void Stub_048470(i32 a, i32 b);        // (2-arg; called from LoadEntranceConfig tail)
     void Stub_062e10(i32 a, i32 b, i32 c); // (ret 0xc) - 3-arg entrance reset
