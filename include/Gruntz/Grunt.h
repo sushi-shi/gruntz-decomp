@@ -119,7 +119,11 @@ struct CGruntHud {
     i32 m_138; // +0x138  (arrival: view-cull, cleared)
     i32 m_13c; // +0x13c  (arrival: view-cull, cleared)
     i32 m_140; // +0x140  (arrival: view-cull, cleared)
-    char m_pad144[0x188 - 0x144];
+    char m_pad144[0x148 - 0x144];
+    i32 m_148;   // +0x148
+    i32 m_14c;   // +0x14c
+    void* m_150; // +0x150
+    char m_pad154[0x188 - 0x154];
     i32 m_188; // +0x188  (cue arg)
 };
 
@@ -207,7 +211,8 @@ public:
 
     char m_pad0[0x1a0];
     CGruntAnimSub m_1a0; // +0x1a0  (geometry sub-player)
-    char m_pad1a4[0x1b4 - 0x1a4];
+    i32 m_1a4;           // +0x1a4
+    char m_pad1a8[0x1b4 - 0x1a8];
     CAnimDescColl* m_1b4; // +0x1b4  active-anim descriptor
 };
 
@@ -361,9 +366,19 @@ public:
     char m_pad0[0x8];
     i32 m_8;              // +0x08  state-flag word (death loader |= 1 / |= 0x10000)
     CEntranceResMgr* m_c; // +0x0c  resource object (lookup table holder)
-    char m_pad10[0x1a0 - 0x10];
+    char m_pad10[0x148 - 0x10];
+    i32 m_148;   // +0x148
+    i32 m_14c;   // +0x14c
+    void* m_150; // +0x150
+    char m_pad154[0x18c - 0x154];
+    i32 m_18c; // +0x18c
+    char m_pad190[0x194 - 0x190];
+    i32 m_194;              // +0x194
+    i32 m_198;              // +0x198
+    i32 m_19c;              // +0x19c
     CEntranceAnimSub m_1a0; // +0x1a0 geometry sub-player
-    char m_pad1a4[0x1b4 - 0x1a4];
+    i32 m_1a4;              // +0x1a4
+    char m_pad1a8[0x1b4 - 0x1a8];
     CEntranceAnimDescColl* m_1b4; // +0x1b4 active-anim descriptor
     char m_pad1b8[0x1c0 - 0x1b8];
     i32 m_1c0; // +0x1c0 (entrance-done flag B: 0 -> run reset)
@@ -688,7 +703,29 @@ public:
     // (the address is monotonic, so retail strength-reduces it to a running pointer).
     char m_pad0[0x1c];
     CGrunt* m_grid[4][15]; // +0x1c
-    char m_pad10c[0x22c - 0x10c];
+    char m_pad10c[0x148 - 0x10c];
+    i32 m_148;   // +0x148
+    i32 m_14c;   // +0x14c
+    void* m_150; // +0x150
+    char m_pad154[0x18c - 0x154];
+    i32 m_18c; // +0x18c
+    char m_pad190[0x194 - 0x190];
+    i32 m_194;      // +0x194
+    i32 m_198;      // +0x198
+    i32 m_19c;      // +0x19c
+    i32 m_moveMode; // +0x1a0
+    i32 m_1a4;      // +0x1a4
+    char m_pad1a8[0x1dc - 0x1a8];
+    i32 m_1dc; // +0x1dc
+    i32 m_1e0; // +0x1e0
+    char m_pad1e4[0x208 - 0x1e4];
+    i32 m_208; // +0x208
+    i32 m_20c; // +0x20c
+    i32 m_210; // +0x210
+    i32 m_214; // +0x214
+    i32 m_218; // +0x218
+    char m_pad21c[0x228 - 0x21c];
+    i32 m_228;       // +0x228
     CTileReg* m_22c; // +0x22c  the level registry (board dims)
 };
 
@@ -1308,7 +1345,10 @@ public:
     char m_pad98[0xa8 - 0x98];
     i32 m_animResolved; // +0xa8  (resolve gate / dirty flag)
     i32 m_deathCueArg;  // +0xac  (cue arg)
-    char m_padb0[0x154 - 0xb0];
+    char m_padb0[0x148 - 0xb0];
+    i32 m_148;                     // +0x148
+    i32 m_14c;                     // +0x14c
+    void* m_150;                   // +0x150
     CEntranceAnimPlayer* m_154;    // +0x154 (entrance animation player)
     struct CGruntSndResMgr* m_158; // +0x158 (ability/sound resource mgr)
     i32 m_prevEntranceDesc;        // +0x15c (= m_154->m_1b4 cache)
@@ -1320,9 +1360,14 @@ public:
     i32 m_lastTilePxY;    // +0x180 (LoadEntranceConfig: last occupied tile Y, pixel; -1 = none)
     i32 m_184;            // +0x184 (ClaimSwitchTile: = m_lastTilePxX after switch)
     i32 m_188_tilePxY;    // +0x188 (ClaimSwitchTile: = m_lastTilePxY after switch)
-    char m_pad18c[0x190 - 0x18c];
-    i32 m_toyBlendPct; // +0x190 (anim-name loader: TOY1/TOY2 blend percent)
-    char m_pad194[0x1b8 - 0x194];
+    i32 m_18c;            // +0x18c
+    i32 m_toyBlendPct;    // +0x190 (anim-name loader: TOY1/TOY2 blend percent)
+    i32 m_194;            // +0x194
+    i32 m_198;            // +0x198
+    i32 m_19c;            // +0x19c
+    i32 m_moveMode;       // +0x1a0
+    i32 m_1a4;            // +0x1a4
+    char m_pad1a8[0x1b8 - 0x1a8];
     CHudSprite* m_selectedSprite;  // +0x1b8
     CHudSprite* m_toySprite;       // +0x1bc
     CString m_animSetName;         // +0x1c0  (anim-name loader: "GRUNTZ_"+m_animSetName+...)
@@ -1332,28 +1377,36 @@ public:
     CHudSprite* m_wingzTimeSprite; // +0x1d0
     CHudSprite* m_powerupSprite;   // +0x1d4
     i32 m_arrived;                 // +0x1d8 (entrance-arrival gate)
-    char m_pad1dc[0x1e4 - 0x1dc];
-    i32 m_entranceActive; // +0x1e4 (entrance: set to 1)
-    i32 m_arrivalPending; // +0x1e8 (SnapToLastTile/ClaimSwitchTile arrival-commit latch)
-    i32 m_tileOwnerHi;    // +0x1ec
-    i32 m_tileOwnerLo;    // +0x1f0
-    i32 m_1f4_moveIcon;   // +0x1f4 (SelectMoveIcon: clamped icon index, [0,0x11))
+    i32 m_1dc;                     // +0x1dc
+    i32 m_1e0;                     // +0x1e0
+    i32 m_entranceActive;          // +0x1e4 (entrance: set to 1)
+    i32 m_arrivalPending;          // +0x1e8 (SnapToLastTile/ClaimSwitchTile arrival-commit latch)
+    i32 m_tileOwnerHi;             // +0x1ec
+    i32 m_tileOwnerLo;             // +0x1f0
+    i32 m_1f4_moveIcon;            // +0x1f4 (SelectMoveIcon: clamped icon index, [0,0x11))
     char m_pad1f8[0x1fc - 0x1f8];
     i32 m_entranceCommitted; // +0x1fc (entrance: cleared)
     i32 m_neighborCol;       // +0x200 (grid-neighbor: column, -1 = none)
     i32 m_neighborRow;       // +0x204 (grid-neighbor: row, -1 = none)
-    char m_pad208[0x21c - 0x208];
-    i32 m_neighborValid; // +0x21c (grid-neighbor: cleared on miss)
-    i32 m_poweredUp;     // +0x220 (powered-up gate; 0 = run entrance reset)
-    char m_pad224[0x22c - 0x224];
-    i32 m_22c; // +0x22c (entrance-drop: latched anim re-init gate)
-    i32 m_230; // +0x230 (entrance-arrival: cleared)
-    char m_pad234[0x238 - 0x234];
+    i32 m_208;               // +0x208
+    i32 m_20c;               // +0x20c
+    i32 m_210;               // +0x210
+    i32 m_214;               // +0x214
+    i32 m_218;               // +0x218
+    i32 m_neighborValid;     // +0x21c (grid-neighbor: cleared on miss)
+    i32 m_poweredUp;         // +0x220 (powered-up gate; 0 = run entrance reset)
+    char m_pad224[0x228 - 0x224];
+    i32 m_228;          // +0x228
+    i32 m_22c;          // +0x22c (entrance-drop: latched anim re-init gate)
+    i32 m_230;          // +0x230 (entrance-arrival: cleared)
+    i32 m_234;          // +0x234
     i32 m_wingzEnabled; // +0x238
-    char m_pad23c[0x244 - 0x23c];
+    i32 m_23c;          // +0x23c
+    i32 m_240;          // +0x240
     i32 m_resetApplied; // +0x244 (entrance-reset: 0 then 1 = "applied" flag)
     i32 m_arrivalFlags; // +0x248 (arrival flag word; |= 0x18040402)
-    char m_pad24c[0x258 - 0x24c];
+    i32 m_24c;          // +0x24c
+    char m_pad250[0x258 - 0x250];
     i32 m_gruntKind;          // +0x258 (grunt type/kind; ==0x37 -> halve TimePerTile)
     i32 m_entranceArmed;      // +0x25c (entrance: set to 1)
     CGruntTileMgr* m_tileMgr; // +0x260 (path/occupancy sub-manager)
@@ -1362,28 +1415,71 @@ public:
     i32 m_struckClockHi;      // +0x26c (= 0)
     i32 m_struckTimerLo;      // +0x270 (= 0xfa0 struck cooldown window)
     i32 m_struckTimerHi;      // +0x274 (= 0)
-    char m_pad278[0x2d0 - 0x278];
-    i32 m_arrivalState; // +0x2d0 (arrival: = 4)
-    i32 m_2d4;          // +0x2d4 (arrival: = 0)
-    char m_pad2d8[0x2dc - 0x2d8];
+    i32 m_278;                // +0x278
+    i32 m_27c;                // +0x27c
+    i32 m_280;                // +0x280
+    i32 m_284;                // +0x284
+    char m_pad288[0x290 - 0x288];
+    i32 m_290;            // +0x290
+    i32 m_294;            // +0x294
+    i32 m_298;            // +0x298
+    i32 m_29c;            // +0x29c
+    i32 m_2a0;            // +0x2a0
+    i32 m_2a4;            // +0x2a4
+    i32 m_2a8;            // +0x2a8
+    i32 m_2ac;            // +0x2ac
+    i32 m_2b0;            // +0x2b0
+    i32 m_2b4;            // +0x2b4
+    i32 m_2b8;            // +0x2b8
+    i32 m_2bc;            // +0x2bc
+    i32 m_2c0;            // +0x2c0
+    i32 m_2c4;            // +0x2c4
+    i32 m_2c8;            // +0x2c8
+    i32 m_2cc;            // +0x2cc
+    i32 m_arrivalState;   // +0x2d0 (arrival: = 4)
+    i32 m_2d4;            // +0x2d4 (arrival: = 0)
+    i32 m_2d8;            // +0x2d8
     i32 m_defenderRadius; // +0x2dc (defender radius / arrival kind)
-    char m_pad2e0[0x2f0 - 0x2e0];
-    i32 m_2f0; // +0x2f0 (arrival: = -1)
-    i32 m_2f4; // +0x2f4 (arrival: = -1)
-    char m_pad2f8[0x300 - 0x2f8];
-    i32 m_defenderX; // +0x300 (arrival: = m_lastTilePxX)
-    i32 m_defenderY; // +0x304 (arrival: = m_lastTilePxY)
-    i32 m_308;       // +0x308 (arrival: cleared)
-    i32 m_30c;       // +0x30c (arrival: cleared)
-    i32 m_310;       // +0x310 (arrival: cleared)
-    i32 m_314;       // +0x314 (arrival: cleared)
-    char m_pad318[0x31c - 0x318];
+    char m_pad2e0[0x2ec - 0x2e0];
+    i32 m_dwell;        // +0x2ec
+    i32 m_2f0;          // +0x2f0 (arrival: = -1)
+    i32 m_2f4;          // +0x2f4 (arrival: = -1)
+    i32 m_2f8;          // +0x2f8
+    i32 m_2fc;          // +0x2fc
+    i32 m_defenderX;    // +0x300 (arrival: = m_lastTilePxX)
+    i32 m_defenderY;    // +0x304 (arrival: = m_lastTilePxY)
+    i32 m_308;          // +0x308 (arrival: cleared)
+    i32 m_30c;          // +0x30c (arrival: cleared)
+    i32 m_310;          // +0x310 (arrival: cleared)
+    i32 m_314;          // +0x314 (arrival: cleared)
+    i32 m_318;          // +0x318
     GruntListSub m_31c; // +0x31c (~CObList 0x1b48c6; destructed by ~CGrunt)
-    char m_pad31d[0x338 - 0x31d];
+    char m_pad31d[0x320 - 0x31d];
+    GruntCoordNode* m_320; // +0x320
+    char m_pad324[0x328 - 0x324];
+    i32 m_328; // +0x328
+    char m_pad32c[0x338 - 0x32c];
     GruntListSub m_338; // +0x338 (~CObList 0x1b48c6; destructed by ~CGrunt)
-    char m_pad339[0x364 - 0x339];
+    char m_pad339[0x33c - 0x339];
+    CGruntListNode* m_33c; // +0x33c
+    char m_pad340[0x344 - 0x340];
+    void* m_344; // +0x344
+    char m_pad348[0x358 - 0x348];
+    i32 m_358; // +0x358
+    i32 m_35c; // +0x35c
+    char m_pad360[0x364 - 0x360];
     i32 m_364; // +0x364 (entrance: set to 1)
-    char m_pad368[0x394 - 0x368];
+    i32 m_368; // +0x368
+    i32 m_36c; // +0x36c
+    char m_pad370[0x374 - 0x370];
+    i32 m_374; // +0x374
+    char m_pad378[0x37c - 0x378];
+    i32 m_37c; // +0x37c
+    i32 m_380; // +0x380
+    i32 m_384; // +0x384
+    i32 m_388; // +0x388
+    i32 m_38c; // +0x38c
+    i32 m_390; // +0x390
     // The per-pose animation-name index table (LoadAnimNameTable @0x49c60 fills
     // it from "GRUNTZ_"+m_animSetName+"_<POSE>" lookups). The entrance code reads
     // the IDLE1/2/3 slots (m_poseIdle/m_3b0/m_3b4) as its geometry-source triple.
@@ -1402,15 +1498,27 @@ public:
     i32 m_poseToyBreak;   // +0x3cc (_TOY-BREAK)
     i32 m_poseItem;       // +0x3d0 (_ITEM)
     i32 m_poseItem2;      // +0x3d4 (_ITEM2)
-    char m_pad3d8[0x3ec - 0x3d8];
+    i32 m_3d8;            // +0x3d8
+    char m_pad3dc[0x3e4 - 0x3dc];
+    i32 m_3e4;       // +0x3e4
+    i32 m_3e8;       // +0x3e8
     i32 m_health;    // +0x3ec
     i32 m_stamina;   // +0x3f0
     i32 m_toyTime;   // +0x3f4
     i32 m_wingzTime; // +0x3f8
-    char m_pad3fc[0x41c - 0x3fc];
+    char m_pad3fc[0x400 - 0x3fc];
+    double m_400;      // +0x400
+    double m_408;      // +0x408
+    double m_410;      // +0x410
+    i32 m_418;         // +0x418
     i32 m_timePerTile; // +0x41c (TimePerTile config; ComputeFacing time divisor; halved for kind 0x37)
-    i32 m_tileClaimed; // +0x420 (arrival-claimed latch)
-    char m_pad424[0x43c - 0x424];
+    i32 m_tileClaimed;     // +0x420 (arrival-claimed latch)
+    CGruntSub* m_424;      // +0x424
+    CGruntSub* m_428;      // +0x428
+    i32 m_42c;             // +0x42c
+    i32 m_430;             // +0x430
+    i32 m_434;             // +0x434
+    i32 m_438;             // +0x438
     i32 m_entranceCell[3]; // +0x43c (entrance-cell triple: [0]=col, [1]=row, [2]=m_444 reason)
     GruntStrSub m_448;     // +0x448 (~CString 0x1b9cde; destructed by ~CGrunt)
     char m_pad449[0x44c - 0x449];
@@ -1422,8 +1530,11 @@ public:
     i32 m_arrivalNotified; // +0x464 (entrance-reset latch flag)
     // +0x468 owned-cell array (9 x 0x68, +0x468..+0x810; entrance-cell record table,
     // 0x68-byte stride). Value array so ~CGrunt auto-emits the __ehvec_dtor teardown.
-    CGruntCellRec m_468[9]; // +0x468..+0x810
-    char m_pad810[0x820 - 0x810];
+    CGruntCellRec m_468[9];   // +0x468..+0x810
+    i32 m_810;                // +0x810
+    i32 m_814;                // +0x814
+    i32 m_818;                // +0x818
+    i32 m_81c;                // +0x81c
     i32 m_idleAnchorLo;       // +0x820 (idle-timer: low)
     i32 m_idleAnchorHi;       // +0x824 (idle-timer: high)
     i32 m_idleDelayLo;        // +0x828 (idle-timer: delay low)
@@ -1450,6 +1561,12 @@ public:
     i32 m_894; // +0x894 (wingz: = 0)
     i32 m_898; // +0x898 (wingz: = wingz-duration; (long)(m_wingzTime*scale-bias))
     i32 m_89c; // +0x89c (wingz: = 0)
+    char m_pad8a0[0x8c0 - 0x8a0]; // +0x8a0/+0x8b0 sub-ser records
+    i32 m_8c0;                    // +0x8c0
+    i32 m_8c4;                    // +0x8c4
+    i32 m_8c8;                    // +0x8c8
+    i32 m_8cc;                    // +0x8cc
+    i32 m_8d0;                    // +0x8d0
 
     // The grunt's spawn constructor @0x47a10 (__thiscall, the CMovingLogic-base
     // moving-object ctor: base CUserLogic(owner), the CMotionState motion band at
