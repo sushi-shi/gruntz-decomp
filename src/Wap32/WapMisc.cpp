@@ -1,7 +1,6 @@
 // WapMisc.cpp - assorted tiny engine leaves (anonymous owners).
 //
 //  0x11d100 - vtable-stamp leaf: *this = &vtbl (a ctor/teardown that only sets vptr).
-//  0x1c7e6d - CView-derived destructor: reset vptr then tail-jmp the base ~CView.
 //  0x1155b0 - forward a no-arg call to a method on the g_largeFont global (tail-jmp).
 //  0x1bae5d - forward (-1) to a method on a global CWnd-like object.
 //  0xc76d0  - forward (0x7d0,0x7da) to a method on a global object.
@@ -16,17 +15,6 @@ struct CStamp11d100 {
 RVA(0x0011d100, 0x7)
 void CStamp11d100::Stamp() {
     vptr = (void*)&Vtbl_5ec26c;
-}
-
-// --- 0x1c7e6d : CView-derived dtor (vptr reset + tail-jmp base ~CView) --------
-extern void* const Vtbl_5ed854;
-extern "C" void DtorCView_1c8e3a(); // 0x1c8e3a ~CView
-RVA(0x001c7e6d, 0xb)
-__declspec(naked) void Dtor_1c7e6d() {
-    __asm {
-        mov dword ptr [ecx], OFFSET Vtbl_5ed854
-        jmp DtorCView_1c8e3a
-    }
 }
 
 // --- 0x1155b0 : forward to a g_largeFont method ------------------------------

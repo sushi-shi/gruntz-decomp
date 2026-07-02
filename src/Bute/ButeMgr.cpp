@@ -1456,12 +1456,6 @@ extern "C" void* g_helperVbaseVtblC; // 0x5f045c
 DATA(0x005f047c)
 extern "C" void* g_helperVbaseVtblD; // 0x5f047c
 
-// The most-derived vtable FuncA (the vbase-ctor displacement adjustor thunk)
-// stamps at the displaced slot, and the real ctor body it tail-jmps into.
-DATA(0x005f0394)
-extern void* g_butemgrhelper_vtbl_5f0394;       // 0x5f0394
-extern "C" void CButeMgrHelper_VbaseCtorBody(); // 0x16c950 (FuncA jmp target)
-
 // The sub-object at +0x4. Its slot-0 virtual is a __thiscall scalar-deleting
 // dtor (`mov eax,[ecx]; push 1; call [eax]`): modeled polymorphically so the
 // receiver lands in ecx and the call carries no caller-side cleanup.
@@ -1491,24 +1485,6 @@ void CButeMgrHelper::InitVbaseB() {
     i32* vbptr = *(i32**)((char*)this - 0x8);
     *(void**)((char*)this - 0x8 + vbptr[1]) = &g_helperVbaseVtblB;
     InitVbaseD();
-}
-
-// ---------------------------------------------------------------------------
-// CButeMgrHelper::FuncA (0x169be0) - the virtual-base-class displacement adjustor
-// (vtordisp) thunk MSVC auto-generates for a vbase ctor: load the vbtable handle at
-// [this-0x14], read the +4 displacement, stamp the most-derived vtable (0x5f0394)
-// at the displaced slot, then tail-jmp the real ctor body (0x16c950). C++ can't
-// express the vbase adjustor directly, so it is emitted as a naked thunk; `this`
-// arrives in ecx as for the original __thiscall thunk. RVA-keyed pairing absorbs
-// the FuncA-vs-?vtordisp name mismatch and the two reloc operands mask.
-RVA(0x00169be0, 0x13)
-__declspec(naked) void CButeMgrHelper_FuncA() {
-    __asm {
-        mov eax, [ecx - 0x14]
-        mov edx, [eax + 4]
-        mov dword ptr [edx + ecx - 0x14], offset g_butemgrhelper_vtbl_5f0394
-        jmp CButeMgrHelper_VbaseCtorBody
-    }
 }
 
 // ---------------------------------------------------------------------------

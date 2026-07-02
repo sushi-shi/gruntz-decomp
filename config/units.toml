@@ -977,10 +977,6 @@ unit = "channelslots"
 source = "src/Net/ChannelSlots.cpp"
 flags = "base"
 
-[[unit]]
-unit = "netthunks"
-source = "src/Net/NetThunks.cpp"
-flags = "base"
 
 [[unit]]
 unit = "winmain"
@@ -2303,10 +2299,6 @@ source = "src/Gruntz/CustomWorldDialog.cpp"
 flags = "base"
 
 [[unit]]
-unit = "ehunwindfunclets"
-source = "src/Wap32/EhUnwindFunclets.cpp"
-flags = "base"
-[[unit]]
 unit = "packetpool"
 source = "src/Net/PacketPool.cpp"
 flags = "base"
@@ -2334,18 +2326,10 @@ flags = "base"
 unit = "wapmisc"
 source = "src/Wap32/WapMisc.cpp"
 flags = "base"
-[[unit]]
-unit = "faderdtor"
-source = "src/Wap32/FaderDtor.cpp"
-flags = "base"
 
 [[unit]]
 unit = "netcmdsession"
 source = "src/Net/NetCmdSession.cpp"
-flags = "base"
-[[unit]]
-unit = "ehfunclets"
-source = "src/Wap32/EhFunclets.cpp"
 flags = "base"
 [[unit]]
 unit = "comhelperthunks"
@@ -2394,10 +2378,6 @@ unit = "reconbatch2o1"
 source = "src/Gruntz/ReconBatch2O1.cpp"
 flags = "o1"
 
-[[unit]]
-unit = "comehfunclets"
-source = "src/Gruntz/ComEhFunclets.cpp"
-flags = "base"
 
 [[unit]]
 unit = "bitarray"
@@ -2426,14 +2406,6 @@ flags = "base"
 [[unit]]
 unit = "netsession2"
 source = "src/Net/NetSession2.cpp"
-flags = "base"
-[[unit]]
-unit = "m3ehfunclets"
-source = "src/Wap32/M3EhFunclets.cpp"
-flags = "base"
-[[unit]]
-unit = "m3compilerthunks"
-source = "src/Wap32/M3CompilerThunks.cpp"
 flags = "base"
 [[unit]]
 unit = "netthingdtor"
@@ -2550,15 +2522,7 @@ unit = "filegetstatus"
 source = "src/Gruntz/FileGetStatus.cpp"
 flags = "framed"
 
-[[unit]]
-unit = "freelibhostdtor"
-source = "src/Wap32/FreeLibHostDtor.cpp"
-flags = "framed"
 
-[[unit]]
-unit = "soundtickctor"
-source = "src/Gruntz/SoundTickCtor.cpp"
-flags = "base"
 
 [[unit]]
 unit = "gameassetnamespaces"

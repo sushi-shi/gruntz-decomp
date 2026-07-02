@@ -27,8 +27,9 @@ extern "C" i32 strcmp(const char* a, const char* b);
 extern "C" char* strcpy(char* d, const char* s);
 
 // _ReturnAddress()-style helper (0x16e0f0: mov eax,[ebp+4]; ret) - records where
-// a failing call originated. A 4-byte leaf with no frame; emitted via a naked
-// stub so its `call` reloc names the real symbol (vs the delinker's FUN_<rva>).
+// a failing call originated. A frameless 4-byte naked leaf with no plain-C++ form;
+// carved out (config/library_labels.csv) so Find's `call` reloc-masks it as an
+// external symbol rather than transcribing raw instruction bytes here.
 void* GetCallerRetAddr(); // 0x16e0f0
 
 // The engine heap allocator (NAFXCW operator-new replacement, __cdecl).
@@ -47,18 +48,6 @@ extern void* g_projActCache; // 0x6bf464
 
 // CVariantSlot (error sink @+0x04, Set 0x16d850), CButeTreeNode (20-byte leaf) and
 // CButeTree (the crit-bit trie) all come from the canonical <Bute/ButeTree.h>.
-
-// ===========================================================================
-// GetCallerRetAddr (0x16e0f0) - return the caller's saved return address (the
-// alloc-context recorder). A frameless 4-byte leaf: `mov eax,[ebp+4]; ret`.
-// ===========================================================================
-RVA(0x0016e0f0, 0x4)
-__declspec(naked) void* GetCallerRetAddr() {
-    __asm {
-        mov eax, dword ptr [ebp + 4]
-        ret
-    }
-}
 
 // ===========================================================================
 // CButeTree::Find (0x16d190) - descend the trie by the key's crit bits, then
