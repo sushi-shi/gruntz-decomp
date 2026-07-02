@@ -2973,7 +2973,7 @@ packetpool	?Unmatched_bef10@@YAXXZ	100.0000	100.0000	1	34d60f4d27ed	0xbef10
 packetpool	?Unmatched_bf530@@YAPAXH@Z	100.0000	100.0000	1	096be294be27	0xbf530
 palettebmp	?LoadBmpPalette@CPalLoader@@QAEHPBDH@Z	98.4889	98.4889	2	dc1d1e374304	0x177480
 palettecopy	?UploadPalette@CPaletteHost@@QAEXXZ	61.1613	61.1613	1	a0802ff9a4b4	0x17ca10
-palettelerp	?Tick@PaletteLerp@@QAEHXZ	100.0000	100.0000	1	ea0e8cf89357	0x1480a0
+palettelerp	?Tick@PaletteLerp@@QAEHXZ	100.0000	100.0000	2	cae649118118	0x1480a0
 playercommandstep	?Dispatch@CCmdHandler@@QAEHIIIIIII@Z	16.7571	16.7571	3	fe01a4e792c0	0xd1b60
 polyclipraster	?RotateRasterize@@YAHPAUClipVtx@@HHHHHHHHH@Z	53.4152	53.4152	2	5d4f70a420b8	0x146550
 portalpath	?LaunchPortalExe@@YGHPAD@Z	100.0000	100.0000	1	7220403c8bd3	0x90550

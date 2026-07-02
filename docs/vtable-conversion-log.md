@@ -1051,3 +1051,81 @@ restamps), `CWwdObjMgrFactories.cpp` (wwd factory two-phase stamps), `GameLevel.
 `ReconBatch2.cpp` / `WwdGameObjectEh.cpp` / `UserBaseLink.cpp` / `AnimWorkerHandlers.cpp`
 (CObject/anim-worker restores). Most are documented walls in prior batches; the
 CAniElementCollection PMF is the one clear neutral win.
+## Batch 6 (DDrawMgr + Io + Gruntz SBI/menu/state cluster sweep) — 2026-07-02
+
+Scope: drain manual vtables in `src/DDrawMgr` + `include/DDrawMgr`, `src/Io` +
+`include/Io`, and the Gruntz-core SBI_*/CStatusBar*/CMenu*/CMenuState/CState*/
+CGruntzMgr*/CAni*/CWwd*/tile/trigger/booty vtable forms (avoiding matcher-2's
+CDDraw-worker/surface/Fader/Multi/BzState/Sprite/GameText/MapLogic/Grunt/Projectile
+cluster). Mandate: real polymorphic classes, accept regressions, only hard bar a
+green `gruntz build`. Net: **1 fresh CONVERT (PalObj, neutral)**; the rest of the
+scope was **already drained by batches 1-5** or is a documented compiler wall.
+Overall 1812/3276 exact (55.3%), 65.90% fuzzy — unchanged, `no regressions vs
+baseline`. Build GREEN.
+
+### CONVERTED
+
+| Class / form | vtable | File | Action |
+| :-- | :-- | :-- | :-- |
+| `PalObj` / `Vtbl` struct (typed fn-ptr table) | ext (slot 6 +0x18) | DDrawMgr/PaletteLerp.cpp | The owning palette object (external, another TU) was dispatched via a `struct Vtbl{void* s0[6]; SetEntries;}* vptr` typed-table. Converted to a real polymorphic interface: 6 declared-only placeholder virtuals + `virtual void __stdcall SetEntries(...)` at slot 6. Never constructed here (pointer-only) -> no `??_7` emitted; call is `m_paletteObj->SetEntries(...)`. **Matching-neutral** (PaletteLerp::Tick 0x1480a0 unchanged) — same `mov eax,[obj]; push args; call [eax+0x18]`. Removed the nested `Vtbl` struct + `vptr` member. |
+
+### KEEP (already-realized or documented wall — manual form is faithful/blessed)
+
+- **`IDirectDrawSurfaceZ` / `Vtbl` (include/DDrawMgr/CDDSurface.h)** — NOT a game
+  stamp: the tree-wide external **DirectDraw COM interface** dispatch convention
+  (`iface->vtbl->Method(iface,...)`), used by ~40 sites in CDirectDrawMgr.cpp alone +
+  CDDrawShadeBlit/CDDrawSurfacePair (all **matcher-2's cluster, off-limits**) + DinMgr2
+  DirectInput + Net DirectPlay. The doctrine BLESSES the typed-vtable-struct for
+  external COM; `CDDSurface` itself is already real-polymorphic (v00..v20 virtuals).
+  Converting would touch off-limits files + dozens of TUs. KEEP.
+- **`CShadeTableArray` (DDrawMgr/ShadeTableCache.cpp)** — already realized (batch 5):
+  cl auto-stamps `??_7CShadeTableArray` (0x5efb28) in the array ctor/dtor.
+- **Io `CFileIO` (FileStream.cpp/.h)** — already real-polymorphic (`: public CObject`,
+  virtual dtor). The `CFileIODispatch` placeholder-virtual view in `GetLength` is the
+  doctrine-BLESSED "typed vtable struct" for the SINGLE virtual dispatch retail makes
+  there (`Seek` @slot 12 / +0x30), NOT a manual stamp. Xref proves the ~15 other Seek
+  callers + all Read callers do **direct** `call rel32` (`?Seek@CFileIO@@QAE...` =
+  non-virtual `QAE`); the vtable @0x1ed15c is `??_7CFile@@6B@` (library, 23 slots).
+  Making Seek/Read/Write/Open virtual would (a) flip those direct callers to virtual
+  dispatch (regress) and (b) DEVIRTUALIZE `CFileMem`'s embedded-value `m_file.Open()`
+  calls to direct — the opposite of retail's virtual dispatch (which is why FileMem.cpp
+  uses the `CFileIOView` reinterpret to FORCE it). The two dispatch VIEWS are the
+  correct faithful shape. KEEP.
+- **Io `CFileMem` / `CFileMemBase` (FileMem.cpp/.h)** — already real-polymorphic
+  (batch 3/4): cl emits `??_7CFileMemBase`/`??_7CFileMem`, VTBL bound. `CFileIOView` is
+  a blessed reinterpret dispatch view (forces the inner file's virtual slots).
+- **Io `CFmb1578b0` = standalone `~CFileMemBase` @0x1578b0 (BoundaryTailEh.cpp)** — a
+  flat-model reconstruction of an ALREADY-realized class, `@early-stop` on the
+  __thiscall-absolute-vtable-slot dispatch wall (`call ds:[vtbl+0xc]` MSVC5 cannot
+  spell). Cross-file merge into FileMem.cpp risks a double-Reset in the paired
+  `~CFileMem` (0x157980, the base-dtor chain would re-emit the inlined Reset). KEEP.
+- **Gruntz `CMenuItem`/`CMenuItem2` (MenuItem.cpp)** — already real-polymorphic (VTBL
+  binds 0x5f08c0/0x5f08f8; dtors 100%). The `g_menuItemVtbl` mentions are historical
+  comments.
+- **Gruntz SBI status-bar (`CSbiTab`/`CSbiRectSub`/`CSBI_MenuItem`, SBI_RectOnly.cpp)**
+  — already real-polymorphic, built via `new` (cl auto-stamps their vtables); the
+  factory `BuildStatusBarTabs` is `@early-stop` on the /GX EH-frame wall. No manual
+  stamp remains.
+- **Gruntz `CTileTriggerContainer` (TileTriggerContainer.cpp)** — the
+  `*(void**)elem = &g_tileGridCmdVtbl` / `g_tileTriggerSwitchVtbl` stamps are on a
+  **FOREIGN element** (`CTileGridCommand`, vtable 0x5eaea4 in another TU) during inline
+  scalar-delete inside a list-walk (`@early-stop` regalloc wall) — not cl-auto-emittable
+  (no ctor/dtor of THIS class emits an element's base-vtable restamp). KEEP.
+- **Gruntz `CWwdObjMgrFactories` factories** — inline raw-alloc + base-`Construct` +
+  vtable re-stamp (vptr-not-at-ctor-entry); the wide-object classes live in other TUs.
+  Documented factory wall (batches 4/5). KEEP.
+- **Gruntz `CLogicRecord` (LogicRecord.cpp)** — `~CLogicRecord` manual two-phase vptr
+  restamp (`@early-stop` eh-dtor-needs-base-subobject wall); vtable 0x5efb80 shared with
+  the SiriusWorker/CLogicRecord-base-2 family. Deferred (batch 4). KEEP.
+
+### Rule reinforced
+
+- **A typed fn-ptr `Vtbl` struct for an EXTERNAL, never-constructed object converts
+  neutrally to a declared-only polymorphic interface** (PalObj): pointer-only means no
+  `??_7` is emitted, and an `__stdcall` virtual reproduces the COM-style explicit-`this`
+  push exactly, so `obj->Method(...)` == the old `obj->vtbl->Method(obj,...)` byte for
+  byte. This is the cast-free "model the class polymorphically" form; do it when the
+  object is external + single-TU. When the same typed-table is a **tree-wide COM
+  convention** (IDirectDrawSurface) or its dispatch VIEW isolates the one virtual call a
+  class otherwise reaches non-virtually (CFileIODispatch/CFileIOView), the struct/view
+  is the blessed faithful shape — KEEP.

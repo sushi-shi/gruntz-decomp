@@ -14,12 +14,19 @@
 DATA(0x006c4650)
 extern u32(__stdcall* g_pTimeGetTime)();
 
+// The owning palette object (external, class in another TU). Real polymorphic
+// interface: only SetEntries (slot 6, +0x18) is invoked. Slots 0..5 are
+// declared-only placeholders to land SetEntries at byte offset 0x18. The object
+// is never constructed here (pointer-only), so no ??_7 is emitted. SetEntries is
+// __stdcall (COM-style: the palette object is pushed as the explicit first arg).
 struct PalObj {
-    struct Vtbl {
-        void* s0[6];                                                // slots 0x00..0x14
-        void(__stdcall* SetEntries)(PalObj*, i32, i32, i32, void*); // +0x18
-    };
-    Vtbl* vptr;
+    virtual void Slot00();
+    virtual void Slot04();
+    virtual void Slot08();
+    virtual void Slot0c();
+    virtual void Slot10();
+    virtual void Slot14();
+    virtual void __stdcall SetEntries(i32 flags, i32 first, i32 count, void* entries); // +0x18
 };
 SIZE_UNKNOWN(PalObj);
 
@@ -79,8 +86,7 @@ i32 PaletteLerp::Tick() {
                     i++;
                 } while (i < m_firstColorIndex + m_colorCount);
             }
-            m_paletteObj->vptr->SetEntries(
-                m_paletteObj,
+            m_paletteObj->SetEntries(
                 0,
                 m_firstColorIndex,
                 m_colorCount,
@@ -107,8 +113,7 @@ i32 PaletteLerp::Tick() {
                     i++;
                 } while (i < m_firstColorIndex + m_colorCount);
             }
-            m_paletteObj->vptr->SetEntries(
-                m_paletteObj,
+            m_paletteObj->SetEntries(
                 0,
                 m_firstColorIndex,
                 m_colorCount,
