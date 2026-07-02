@@ -6,7 +6,7 @@
 #include <string.h>        // memset (inlined to rep stos at /O2 /Oi)
 #include <Globals.h>
 // CDDrawPtrCollections.cpp - tomalla-named standalone class in the ddrawmgr surface/page
-// manager "DDraw surface manager" family (tomalla's UnknownFilch, 0x948 B, NO RTTI vtable).
+// manager "DDraw surface manager" family (tomalla's CDDrawPtrCollections, 0x948 B, NO RTTI vtable).
 // It owns two CPtrList item pools (+0x47c / +0x498) plus a CPtrArray (+0x4b4 - its own
 // m_pData@+0x4b8 / m_nSize@+0x4bc internals are walked by Clear), and caches two surface
 // objects at +0x00 / +0x04.  The ctor constructs the three MFC containers with the given
@@ -261,7 +261,7 @@ struct CCachedSurfaceVtbl {
 };
 
 // ---------------------------------------------------------------------------
-// CDDrawPtrCollections - the host (tomalla UnknownFilch).  Only the offsets the
+// CDDrawPtrCollections - the host (tomalla CDDrawPtrCollections).  Only the offsets the
 // reconstructed methods touch are modeled; the rest is padding.
 // ---------------------------------------------------------------------------
 class CDDrawPtrCollections {

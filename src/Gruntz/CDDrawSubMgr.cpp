@@ -63,7 +63,7 @@ void operator delete(void*);
 // The CObject-like family grand-base: 5-slot vtable (masks 0x5e8cb4), header fields
 // +0x04..+0x0c, non-virtual ~ = the field resets + the implicit base ??_7 re-stamp.
 // Slot 1 is the (declared-only) ??_G scalar-deleting dtor. Same shape as
-// CDDrawSubMgrGrandBase / SiriusCacheBase.
+// CDDrawSubMgrGrandBase / CDDrawWorkerCacheBase.
 struct FamilyMapBase {
     virtual void s0();                  // [0]
     virtual void* ScalarDtor(i32 flag); // [1]
@@ -2129,7 +2129,7 @@ class CWwdRemusBase {
 public:
     void Ctor(i32 root, i32 a2, i32 a3); // 0x15b2c0
 };
-// The 0x17c-byte sprite-animation worker built at +0x7c (SiriusWorker, 0x15b300).
+// The 0x17c-byte sprite-animation worker built at +0x7c (AnimWorker, 0x15b300).
 // CWwdWorker is the shared <Gruntz/CWwdWorker.h> class (the per-object worker at +0x7c).
 // The CString ctor (0x1b9b93) for the +0xdc label.
 class CWwdLabel {

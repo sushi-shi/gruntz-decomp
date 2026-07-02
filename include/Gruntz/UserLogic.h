@@ -77,17 +77,17 @@ struct CUserBaseLink {
 struct CGameObjAux; // the sub-object reached through CGameObject::m_7c
 
 // The lazily-built per-object worker held at CGameObject::m_88 / +0x90 (the same
-// 0x17c-byte "sirius worker" SiriusWorkerHandlers.cpp models): foreign vtable
+// 0x17c-byte anim worker AnimWorkerHandlers.cpp models): foreign vtable
 // 0x5efb80, the existing worker's slot-7 reuses it (vtbl[0x1c]), and the freshly-
 // built one is fed CGameObject->m_10's payload through slot 9 (vtbl[0x24]).
 // Modeled as a polymorphic class so both `mov eax,[w]; call [eax+N]` dispatches
 // fall out; its vtable lives in another TU (the worker ctor stamps 0x5efb80 by
-// address - g_siriusWorkerVtbl - so this TU never emits one).
+// address - g_animWorkerVtbl - so this TU never emits one).
 // Polymorphic so the vtable-slot dispatches (`mov eax,[w]; call [eax+0x1c]` and
 // `call [eax+0x24]`) fall out; the vtable itself is the foreign 0x5efb80 stamped
 // by address in the ctor, so this class never emits one (the named virtuals only
 // drive the dispatch shape - slot 7 @ +0x1c, slot 9 @ +0x24).
-class CSiriusWorker {
+class CAnimWorker {
 public:
     virtual void Slot00();              // +0x00
     virtual void Slot01();              // +0x04
@@ -115,7 +115,7 @@ public:
 
 // The foreign worker vftable (0x5efb80); the worker ctor stamps it by address so
 // the DIR32 vptr store reloc-masks. Owned by another TU.
-extern void* g_siriusWorkerVtbl;
+extern void* g_animWorkerVtbl;
 
 // The +0x198 layer descriptor several eyecandy ctors poll for z-clamping (its
 // +0x10/+0x14 bounds + +0x1c base offset). Only the touched offsets are modeled.
@@ -156,12 +156,12 @@ struct CGameObject {
     char m_pad64[0x74 - 0x64];
     i32 m_74; // +0x74
     char m_pad78[0x7c - 0x78];
-    CGameObjAux* m_7c;   // +0x7c
-    CSiriusWorker* m_80; // +0x80  lazily-built worker (EnsureWorker80)
+    CGameObjAux* m_7c; // +0x7c
+    CAnimWorker* m_80; // +0x80  lazily-built worker (EnsureWorker80)
     char m_pad84[0x88 - 0x84];
-    CSiriusWorker* m_88; // +0x88  lazily-built worker (EnsureWorker88)
+    CAnimWorker* m_88; // +0x88  lazily-built worker (EnsureWorker88)
     char m_pad8c[0x90 - 0x8c];
-    CSiriusWorker* m_90; // +0x90  lazily-built worker (EnsureWorker90)
+    CAnimWorker* m_90; // +0x90  lazily-built worker (EnsureWorker90)
     char m_pad94[0x118 - 0x94];
     i32 m_118; // +0x118  CSpotLight ctor: pi/0 mode gate
     i32 m_11c; // +0x11c  CSpotLight ctor: settings-table index

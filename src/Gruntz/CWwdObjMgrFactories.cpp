@@ -358,7 +358,7 @@ CWwdGameObject* CWwdObjMgrL::CreateObject_166640(int a1, int a2, int a3, int a4,
 // re-homed from src/Stub/MallocConstructors. xref (gruntz.analysis.xref): reached
 // through the CreateObject dispatchers CWwdObjMgr::CreateObject_1598d0 (0x1598d0),
 // CWwdObjMgrL::CreateObject_166640 (0x166640) and WwdFile::ReadPlaneObjects
-// (0x162af0). Base-stamps ??_7CRemusNode (0x5efbc0), op-news a SiriusWorkerObj
+// (0x162af0). Base-stamps ??_7CRemusNode (0x5efbc0), op-news an AnimWorkerObj
 // (??_7 0x5efb80, size 0x17c) at +0x7c, final-stamps g_wwdGameObjectVtbl (0x5f0020),
 // bumps g_wwdObjIdCounter (0x61ab14). A sibling of the wide-object ctors above; its
 // large body sits at the same rezalloc-placement-new EH wall (see the TU header),

@@ -42,8 +42,8 @@ struct CAnimDescColl {
 // the state id and, for state 0, builds the CTileTriggerTransition state object.
 //   +0x18  the current state object (a CTileTriggerTransition-family leaf)
 //   +0x1c  the state id (0, 0x1d, 0x1e, 0x50..0x53, 0x3e8, ...)
-// This is the same worker/pump pattern as the Sirius-worker family - see
-// src/Gruntz/SiriusWorkerHandlers.cpp for the canonical model.
+// This is the same worker/pump pattern as the anim-worker family - see
+// src/Gruntz/AnimWorkerHandlers.cpp for the canonical model.
 // ---------------------------------------------------------------------------
 // The state object reached through the controller: the pump dispatches by state
 // id to its vtable slots at byte offsets 0x18/0x28/0x2c/0x30/0x34/0x38/0x3c

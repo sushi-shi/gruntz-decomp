@@ -29,7 +29,7 @@
 // Projectile.cpp). Read unsigned -> the (double) conversion is the {lo,0} fild.
 extern "C" u32 g_645588;
 
-// The lazily-built per-object worker at CGameObject+0x98 (the CSiriusWorker the
+// The lazily-built per-object worker at CGameObject+0x98 (the CAnimWorker the
 // UserLogic family builds); only its two per-frame scroll deltas are touched.
 struct MlScrollWorker {
     char _00[0x174];

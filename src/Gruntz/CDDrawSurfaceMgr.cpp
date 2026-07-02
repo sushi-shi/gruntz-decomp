@@ -105,7 +105,7 @@ struct DDChildSlot1 {
 struct DDChildSlot0 {
     virtual void Destroy(u32 flags); // slot 0: scalar-deleting destructor
 };
-struct FilchObj {
+struct CDDrawPtrCollections {
     void Dtor(); // 0x141d50, __thiscall /GX destructor
 };
 extern "C" void RezFree(void* p); // 0x1b9b82, __cdecl engine operator delete
@@ -203,7 +203,7 @@ void CDDrawSurfaceMgr::Cleanup_155e20() {
         ((DDChildSlot1*)m_2c)->Destroy(1);
         m_2c = 0;
     }
-    FilchObj* filch = (FilchObj*)m_1c;
+    CDDrawPtrCollections* filch = (CDDrawPtrCollections*)m_1c;
     if (filch) {
         filch->Dtor();
         RezFree(filch);
@@ -250,7 +250,7 @@ fail:
 struct MinervaInner {
     void Free();
 };
-struct VoldemortObj {
+struct SoundStream {
     void Free();
 };
 struct MinervaMgr {
@@ -278,7 +278,7 @@ void CDDrawSurfaceMgr::UnknownVirtualMethod20() {
         m_28->ClearMap();
     }
     if (m_20 != 0) {
-        ((VoldemortObj*)m_20)->Free();
+        ((SoundStream*)m_20)->Free();
     }
 }
 
@@ -384,7 +384,7 @@ SIZE_UNKNOWN(CDDrawSubMgrItem);
 SIZE_UNKNOWN(CDDrawSurfaceMgrBase);
 SIZE_UNKNOWN(DDChildSlot0);
 SIZE_UNKNOWN(DDChildSlot1);
-SIZE_UNKNOWN(FilchObj);
+SIZE_UNKNOWN(CDDrawPtrCollections);
 SIZE_UNKNOWN(MinervaMgr);
 SIZE_UNKNOWN(RemusCoordsHelper);
-SIZE_UNKNOWN(VoldemortObj);
+SIZE_UNKNOWN(SoundStream);

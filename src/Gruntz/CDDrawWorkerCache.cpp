@@ -32,7 +32,7 @@ class CObject;
 
 // The worker virtual interface. Slots laid out so the dispatched method lands
 // at byte offset +0x24. Declarations only - never defined, so no ??_7 emitted.
-class SiriusWorker {
+class AnimWorker {
 public:
     virtual void FUN_005bef01();         // [0] 0x1bef01
     virtual i32 ScalarDtor(i32 flag);    // [1] 0x151d80 scalar-deleting destructor
@@ -47,11 +47,11 @@ public:
 };
 
 // The 0x17c-byte worker layout. Only the seeded offsets are load-bearing.
-// Real polymorphic: `new SiriusWorkerObj` makes cl auto-emit ??_7SiriusWorkerObj
+// Real polymorphic: `new AnimWorkerObj` makes cl auto-emit ??_7SiriusWorkerObj
 // (masks the retail vtable 0x5efb80) and stamp the vptr in the ctor - no manual
-// `*(void**)w = &g_siriusWorkerVtbl` store (ALL-VTABLES mandate).
-struct SiriusWorkerObj : public SiriusWorker {
-    SiriusWorkerObj() {}
+// `*(void**)w = &g_animWorkerVtbl` store (ALL-VTABLES mandate).
+struct AnimWorkerObj : public AnimWorker {
+    AnimWorkerObj() {}
     i32 m_04; // +0x04  = parent->m_1c
     i32 m_08; // +0x08  = 0
     i32 m_0c; // +0x0c  = parent->m_0c
@@ -75,22 +75,22 @@ void operator delete(void*);
 // `*(void**)this = &g_*Vtbl`. Slot 1 is a REGULAR virtual (not a C++ dtor) so the
 // derived can override it with its explicit ??_G scalar-deleting destructor WITHOUT
 // cl auto-generating a clashing ??_G. Same shape as CDDrawSubMgrGrandBase.
-class SiriusCacheBase {
+class CDDrawWorkerCacheBase {
 public:
     virtual void FUN_005bef01();        // [0] 0x1bef01 (shared thunk, declared-only)
     virtual void* ScalarDtor(i32 flag); // [1] scalar-deleting dtor (regular virtual)
     virtual void FUN_004028ec();        // [2] 0x0028ec (shared thunk, declared-only)
     virtual void FUN_0040106e();        // [3] 0x00106e (shared thunk, declared-only)
     virtual void FUN_00404034();        // [4] 0x004034 (shared thunk, declared-only)
-    ~SiriusCacheBase();
+    ~CDDrawWorkerCacheBase();
 
     i32 m_04; // +0x04  -1 when inactive
     i32 m_08; // +0x08
     i32 m_0c; // +0x0c  parent/root handle
-    SiriusCacheBase() {}
+    CDDrawWorkerCacheBase() {}
 };
 
-inline SiriusCacheBase::~SiriusCacheBase() {
+inline CDDrawWorkerCacheBase::~CDDrawWorkerCacheBase() {
     m_04 = -1;
     m_08 = 0;
     m_0c = 0;
@@ -105,7 +105,7 @@ inline SiriusCacheBase::~SiriusCacheBase() {
 // thunks, slot 1 the ??_G scalar-deleting dtor (0x157700), slots 5/6/7 unreconstructed
 // leaf virtuals (declared-only, reloc-masked), slot 8 = VirtualMethodUnknown20
 // (0x1576f0) and slot 9 = VirtualMethodUnknown24 (0x1652c0). cl auto-emits the vtable.
-class CDDrawWorkerCache : public SiriusCacheBase {
+class CDDrawWorkerCache : public CDDrawWorkerCacheBase {
 public:
     void* ScalarDtor(i32 flag) OVERRIDE;  // [1] ??_G scalar-deleting dtor (0x157700)
     virtual void FUN_005576d0();          // [5] 0x1576d0 (declared-only)
@@ -117,13 +117,13 @@ public:
     // The real member-teardown destructor (0x157720); the ??_G scalar dtor calls it.
     ~CDDrawWorkerCache();
 
-    // m_04/m_08/m_0c (and the implicit vptr) are inherited from SiriusCacheBase.
+    // m_04/m_08/m_0c (and the implicit vptr) are inherited from CDDrawWorkerCacheBase.
     CMapStringToOb m_10; // +0x10  map (internal field at +0x1c seeds worker->m_04)
 };
 
 // Read field at +0x1c from the parent (inside the CMapStringToOb), used to
 // seed worker->m_04.
-static inline i32 SiriusReadField1c(const CDDrawWorkerCache* p) {
+static inline i32 ReadWorkerCacheField1c(const CDDrawWorkerCache* p) {
     return *(const i32*)((const char*)p + 0x1c);
 }
 
@@ -135,14 +135,14 @@ i32 CDDrawWorkerCache::VirtualMethodUnknown20() {
     return 0x13;
 }
 
-// Inline worker constructor. Real `new SiriusWorkerObj`: the ctor stamps the vptr
+// Inline worker constructor. Real `new AnimWorkerObj`: the ctor stamps the vptr
 // (cl-implicit, vptr-first) and cl auto-emits ??_7SiriusWorkerObj; then seed the
 // fields. (ALL-VTABLES mandate: the vptr store is now compiler-implicit, moving
 // from vptr-middle to vptr-first - a code regression accepted for the real shape.)
-static inline SiriusWorkerObj* MakeSiriusWorker(const CDDrawWorkerCache* parent) {
-    SiriusWorkerObj* w = new SiriusWorkerObj;
+static inline AnimWorkerObj* MakeAnimWorker(const CDDrawWorkerCache* parent) {
+    AnimWorkerObj* w = new AnimWorkerObj;
     if (w != 0) {
-        i32 field1c = SiriusReadField1c(parent);
+        i32 field1c = ReadWorkerCacheField1c(parent);
         i32 surfaceMgr = parent->m_0c;
         w->m_04 = field1c;
         w->m_08 = 0;
@@ -168,7 +168,7 @@ static inline SiriusWorkerObj* MakeSiriusWorker(const CDDrawWorkerCache* parent)
 // ---------------------------------------------------------------------------
 RVA(0x001652c0, 0x92)
 void* CDDrawWorkerCache::VirtualMethodUnknown24(i32 a1, const char* key, i32 a3) {
-    SiriusWorkerObj* w = MakeSiriusWorker(this);
+    AnimWorkerObj* w = MakeAnimWorker(this);
 
     if (w->Vfunc24(a1, a3) == 0) {
         if (w != 0) {
@@ -183,7 +183,7 @@ void* CDDrawWorkerCache::VirtualMethodUnknown24(i32 a1, const char* key, i32 a3)
 // ---------------------------------------------------------------------------
 // Scalar-deleting destructor (the vtable slot+4 override, ??_G at 0x157700): run
 // the real member-teardown ~, then operator delete this if the low flag bit is set.
-// SYMBOL() pins the ??_G mangling; it overrides SiriusCacheBase's slot-1 regular
+// SYMBOL() pins the ??_G mangling; it overrides CDDrawWorkerCacheBase's slot-1 regular
 // virtual so the leaf vtable carries it at slot 1 WITHOUT cl auto-generating a
 // clashing ??_G. Same idiom as CDDrawSubMgrLeaf::ScalarDtor.
 SYMBOL(??_GCDDrawWorkerCache @@UAEPAXI@Z)
@@ -200,7 +200,7 @@ void* CDDrawWorkerCache::ScalarDtor(i32 flag) {
 // The real member-teardown destructor (0x157720, /GX): cl stamps ??_7CDDrawWorkerCache
 // (masks 0x5efd00) at entry, runs the map teardown (FUN_00565210, the shared
 // VirtualMethodUnknown58 @0x165210), then destructs the CMapStringToOb member and the
-// SiriusCacheBase grand-base (field resets + implicit ??_7-base re-stamp masking
+// CDDrawWorkerCacheBase grand-base (field resets + implicit ??_7-base re-stamp masking
 // 0x5e8cb4). No manual stamp. /GX member-teardown frame from the destructible map.
 // @early-stop
 // vptr-position wall (~95%, twin of CDDrawSubMgrLeaf/CDDrawWorker): every
@@ -210,14 +210,14 @@ void* CDDrawWorkerCache::ScalarDtor(i32 flag) {
 RVA(0x00157720, 0x68)
 CDDrawWorkerCache::~CDDrawWorkerCache() {
     FUN_00565210();
-    // implicit: ~m_10 (CMapStringToOb), then ~SiriusCacheBase (field resets + the
+    // implicit: ~m_10 (CMapStringToOb), then ~CDDrawWorkerCacheBase (field resets + the
     // grand-base ??_7 re-stamp) - reproduces retail's teardown order.
 }
 
 SIZE_UNKNOWN(CDDrawWorkerCache);
-SIZE_UNKNOWN(SiriusWorker);
-SIZE(SiriusWorkerObj, 0x17c);
-VTBL(SiriusWorkerObj, 0x001efb80); // ??_7SiriusWorkerObj (was g_siriusWorkerVtbl)
+SIZE_UNKNOWN(AnimWorker);
+SIZE(AnimWorkerObj, 0x17c);
+VTBL(AnimWorkerObj, 0x001efb80); // ??_7SiriusWorkerObj (was g_animWorkerVtbl)
 // ??_7CDDrawWorkerCache (was Vtbl_1efd00 / ClassWithUnknownVTable31; 10 slots). cl
 // auto-emits it from the real-polymorphic class; retail datum is reloc-masked ->
 // matching-neutral catalog tracking.

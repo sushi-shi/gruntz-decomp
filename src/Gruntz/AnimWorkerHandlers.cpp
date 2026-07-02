@@ -1,6 +1,6 @@
-// SiriusWorkerHandlers.cpp - the Sirius-worker message-handler family + the
+// AnimWorkerHandlers.cpp - the anim-worker message-handler family + the
 // out-of-line worker constructor (foreign vtable 0x5efb80, the same 0x17c-byte
-// worker family as CDDrawWorkerCache's SiriusWorkerObj and the CWwdGameObject
+// worker family as CDDrawWorkerCache's AnimWorkerObj and the CWwdGameObject
 // +0x7c AnimWorker).
 //
 // The three 0xf1 handlers (0x03d670 / 0x07db20 / 0x07dda0) are __cdecl FREE
@@ -19,7 +19,7 @@
 // `new` size + ctor target): 0x54 (CWormhole::Stub_03fc70 family), 0x5c
 // (CGruntSelectedSprite), 0x60 (CGruntToySprite).
 //
-// The 0x15b300 ctor is the out-of-line 3-arg SiriusWorker constructor (the body
+// The 0x15b300 ctor is the out-of-line 3-arg AnimWorker constructor (the body
 // the 0x150eb0 factory / VirtualMethodUnknown24 inline): stamp the foreign vptr,
 // seed +0x04/+0x08/+0x0c from the args, zero the working fields.
 //
@@ -215,10 +215,10 @@ i32 Handler07dda0(Owner* owner) {
 }
 
 // ---------------------------------------------------------------------------
-// SiriusWorker 3-arg ctor (0x15b300, __thiscall, ret 0xc). Real-polymorphic: cl
+// AnimWorker 3-arg ctor (0x15b300, __thiscall, ret 0xc). Real-polymorphic: cl
 // auto-stamps the vptr (??_7WorkerFull@@6B@; retail vtable 0x5efb80, 10 declared-
 // only slots reloc-mask) and seeds the three context fields (b -> +0x04, c ->
-// +0x08, a -> +0x0c), zeroing the rest. Manual `m_vptr = &g_siriusWorkerVtbl`
+// +0x08, a -> +0x0c), zeroing the rest. Manual `m_vptr = &g_animWorkerVtbl`
 // stamp + the extern removed per the all-vtables mandate.
 struct WorkerFull {
     virtual void Slot00(); // +0x00  vptr

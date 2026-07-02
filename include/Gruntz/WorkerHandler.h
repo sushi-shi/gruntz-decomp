@@ -1,5 +1,5 @@
 // WorkerHandler.h - the shared archetype for the 0xf1-family worker message
-// handlers (InGameWorkerHandlers / LogicWorkerHandlers / SiriusWorkerHandlers).
+// handlers (InGameWorkerHandlers / LogicWorkerHandlers / AnimWorkerHandlers).
 // Each handler reads owner->m_7c (the worker), then runs a /GX message pump keyed
 // on the worker's UNSIGNED state tag worker->m_1c, `new`ing a polymorphic
 // SubRecord on state 0 and dispatching vtable slots on the other states. Only the

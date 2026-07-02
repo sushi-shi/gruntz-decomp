@@ -1,5 +1,5 @@
 // LogicWorkerHandlers.cpp - a fourth family of the 0xf1 logic-worker message
-// handlers (the same archetype as SiriusWorkerHandlers / InGameWorkerHandlers).
+// handlers (the same archetype as AnimWorkerHandlers / InGameWorkerHandlers).
 //
 // The four handlers (0x0a9cc0 / 0x0aa5a0 / 0x0aa960 / 0x0af0a0) are __cdecl FREE
 // functions (the owner is a stack arg at [esp+0x18]; ecx is never touched - the

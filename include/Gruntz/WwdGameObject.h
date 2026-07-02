@@ -8,7 +8,7 @@
 // WwdFile::ReadPlaneObjects (0x162af0) constructs one per record via the ctor
 // at 0x15b390 (NOT reconstructed here - it lives in the eh-frame ctor TU). The
 // object owns a sprite-animation worker at +0x7c (0x17c-byte, the same family
-// as CDDrawWorkerCache's SiriusWorker, foreign vtable g_*Vtbl), a small
+// as CDDrawWorkerCache's AnimWorker, foreign vtable g_*Vtbl), a small
 // command-dispatch sub-object at +0x1a0, and a back-pointer to its owning
 // manager at +0x0c.
 //

@@ -103,9 +103,9 @@ typedef void (*UnkVfn)(void);
 // src/DDrawMgr/ShadeTableCache.{h,cpp}; cl auto-emits it + the CObject-masking
 // ??_7CShadeArrayBase). Placeholder removed.
 
-// ClassWithUnknownVTable22  @ 0x005efb80  (10 slots)  refs x7  src:g_siriusWorkerVtbl
-// REALIZED as ??_7SiriusWorkerObj@@6B@ (real polymorphic SiriusWorkerObj built via
-// `new` in src/Gruntz/CDDrawWorkerCache.cpp; cl auto-emits the vtable; VTBL(SiriusWorkerObj,
+// ClassWithUnknownVTable22  @ 0x005efb80  (10 slots)  refs x7  src:g_animWorkerVtbl
+// REALIZED as ??_7AnimWorkerObj@@6B@ (real polymorphic AnimWorkerObj built via
+// `new` in src/Gruntz/CDDrawWorkerCache.cpp; cl auto-emits the vtable; VTBL(AnimWorkerObj,
 // 0x001efb80)). Placeholder removed.
 
 // ClassWithUnknownVTable23  @ 0x005efba8  (5 slots)  src:g_aniElemVtbl

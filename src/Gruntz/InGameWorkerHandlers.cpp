@@ -1,7 +1,7 @@
 // InGameWorkerHandlers.cpp - the in-game-HUD worker message-handler family, the
-// twin of SiriusWorkerHandlers (src/Gruntz/SiriusWorkerHandlers.cpp). Same /GX
+// twin of AnimWorkerHandlers (src/Gruntz/AnimWorkerHandlers.cpp). Same /GX
 // message-pump shape; these dispatch on the in-game HUD worker hanging at
-// owner->m_7c instead of the Sirius worker.
+// owner->m_7c instead of the anim worker.
 //
 // The three handlers (0x095750 / 0x095890 / 0x0aa6e0) are __cdecl FREE functions
 // (the owner is a stack arg at [esp+0x18], ecx is never `this` - the trace

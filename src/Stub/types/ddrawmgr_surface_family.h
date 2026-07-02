@@ -24,7 +24,7 @@
  *     - UnknownSeverus owns a static UnknownDirectDrawStructure that is a
  *       DDSURFACEDESC-shaped struct (dwSize @0) it zeroes/sizes — classic DDraw.
  *     - UnknownRemus's ctor seeds a resolution/scaling ladder.
- *     - SoundDeviceLayout/UnknownVoldemort hold the 101-entry volume->attenuation
+ *     - SoundDeviceLayout/SoundStream hold the 101-entry volume->attenuation
  *       lookup table (see enums.h GruntzVolumeAttenuation).
  *
  * @approx tomalla 1.0.1.77 — all OFFSETS / SIZES / vtable-SLOTS / INHERITANCE below
@@ -39,12 +39,12 @@
  *     -> CDDrawSubMgrBaseLayout (0x8)
  *         -> CDDrawSubMgrLayout (0x10)
  *             |- CDDrawSubMgrPagesLayout (0x1c) | CDDrawChildGroupLayout (0x6c) | CDDrawWorkerListLayout (0x2c)
- *             |- UnknownSeverus (0x2c, static DDSURFACEDESC) | UnknownSirius (0x2c)
+ *             |- UnknownSeverus (0x2c, static DDSURFACEDESC) | CDDrawWorkerCache (0x2c)
  *             |- CDDrawWorkerMapSmallLayout (0x68) | UnknownRemus (0x6d4, resolution ladder)
  *             '- UnknownMinerva (0x38) | UnknownPettigrew (0x2c)
  *   Standalone:
- *     UnknownFilch (0x948)
- *     SoundDeviceLayout (0x94) -> UnknownVoldemort (0x9c, attenuation table)
+ *     CDDrawPtrCollections (0x948)
+ *     SoundDeviceLayout (0x94) -> SoundStream (0x9c, attenuation table)
  *   The manager CDDrawSurfaceMgrLayout (CObject; 0x40) owns one of each
  *   subclass via 11 pointer fields @4..2c + hWnd @30 + flags @34.
  * ================================================================================
@@ -165,10 +165,10 @@ public:
     static i32 staticUnknown2;
 }; // 0x2c
 
-class UnknownSirius : public CDDrawSubMgrLayout {
+class CDDrawWorkerCache : public CDDrawSubMgrLayout {
 public:
-    UnknownSirius(CDDrawSurfaceMgrLayout* p, i32 u2, i32 u3);
-    virtual ~UnknownSirius() OVERRIDE;
+    CDDrawWorkerCache(CDDrawSurfaceMgrLayout* p, i32 u2, i32 u3);
+    virtual ~CDDrawWorkerCache() OVERRIDE;
     CMapStringToOb m_unknownMap; // +0x10
 }; // 0x2c
 
@@ -219,9 +219,9 @@ public:
 }; // 0x2c
 
 /* Standalone (NOT a CDDrawSubMgr subclass; no vtable). */
-class UnknownFilch {
+class CDDrawPtrCollections {
 public:
-    UnknownFilch();
+    CDDrawPtrCollections();
     i32 fieldUnknown000, fieldUnknown004;                  // +0x00, +0x04
     char _pad008[0x47c - 0x08];                            // +0x08
     CPtrList m_unknownPtrList1;                            // +0x47c
@@ -255,10 +255,10 @@ public:
     static i32 getLookupTableValue(i32 index);
 }; // 0x94
 
-class UnknownVoldemort : public SoundDeviceLayout {
+class SoundStream : public SoundDeviceLayout {
 public:
-    UnknownVoldemort();
-    virtual ~UnknownVoldemort() OVERRIDE;
+    SoundStream();
+    virtual ~SoundStream() OVERRIDE;
     i32 fieldUnknown94, fieldUnknown98; // +0x94, +0x98
 }; // 0x9c
 
@@ -283,8 +283,8 @@ public:
     CDDrawSubMgrLayout* fieldUnknownSeverus;   // +0x10
     CDDrawSubMgrLayout* fieldUnknownSirius;    // +0x14
     CDDrawSubMgrLayout* m_pWorkerMapSmall;     // +0x18
-    UnknownFilch* fieldUnknownFilch;           // +0x1c
-    UnknownVoldemort* fieldUnknownVoldemort;   // +0x20
+    CDDrawPtrCollections* fieldUnknownFilch;           // +0x1c
+    SoundStream* fieldUnknownVoldemort;   // +0x20
     CDDrawSubMgrLayout* fieldUnknownRemus;     // +0x24
     UnknownMinerva* fieldUnknownMinerva;       // +0x28
     CDDrawSubMgrLayout* fieldUnknownPettigrew; // +0x2c
@@ -313,7 +313,7 @@ SIZE_UNKNOWN(CDDrawSubMgrLayout);
 SIZE_UNKNOWN(CDDrawSurfaceMgrLayout);
 SIZE_UNKNOWN(UnknownDirectDrawStructure);
 SIZE_UNKNOWN(CDDrawSubMgrPagesLayout);
-SIZE_UNKNOWN(UnknownFilch);
+SIZE_UNKNOWN(CDDrawPtrCollections);
 SIZE_UNKNOWN(CDDrawWorkerListLayout);
 SIZE_UNKNOWN(CDDrawChildGroupLayout);
 SIZE_UNKNOWN(UnknownMinerva);
@@ -321,7 +321,7 @@ SIZE_UNKNOWN(UnknownPettigrew);
 SIZE_UNKNOWN(UnknownRemus);
 SIZE_UNKNOWN(SoundDeviceLayout);
 SIZE_UNKNOWN(UnknownSeverus);
-SIZE_UNKNOWN(UnknownSirius);
-SIZE_UNKNOWN(UnknownVoldemort);
+SIZE_UNKNOWN(CDDrawWorkerCache);
+SIZE_UNKNOWN(SoundStream);
 
 #endif /* MANAGERS_DDRAWMGR_SURFACE_FAMILY_H */

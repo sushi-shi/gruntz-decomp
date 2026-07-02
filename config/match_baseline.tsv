@@ -18,6 +18,7 @@ actregsiblings	3	0
 adler32	1	1
 advancedoptions	5	5
 aniadvancecursor	1	0
+animworkerhandlers	4	3
 aniplayer	2	0
 apihicallers	3	1
 apiwrappers	7	2
@@ -449,7 +450,6 @@ scattersamples	2	1
 sfselectdevice	1	0
 shadedescrtable	2	0
 shadetablecache	19	4
-siriusworkerhandlers	4	3
 slotcombofill	1	0
 smackervideowindow	7	4
 soundbankload	1	0
@@ -457,6 +457,7 @@ sounddevice	16	7
 soundfontpath	1	1
 soundresmap	1	0
 soundstream	7	2
+soundstreamfree	1	1
 soundvoicelist	4	3
 spriteloaders	10	5
 spriteref	2	1
@@ -506,7 +507,6 @@ userlogicctoremit	2	1
 vehiclegruntsprites	1	0
 videoconfig	4	1
 voicesoundlist	1	0
-voldemortobj	1	1
 vtblforward	1	1
 wallproject	1	0
 wanderidlestep	1	0
@@ -554,6 +554,10 @@ advancedoptions	?SaveOption@@YAXPAUHWND__@@PAVRegistryHelper@Utils@@PADK@Z	100.0
 advancedoptions	?SaveOptions@@YAXPAUHWND__@@PAVRegistryHelper@Utils@@@Z	100.0000	100.0000	3	42bc821feac7	0xb270
 advancedoptions	?SetDefaults@@YAXPAUHWND__@@@Z	100.0000	100.0000	3	debb3761026d	0xb160
 aniadvancecursor	??0CAniAdvanceCursor@@QAE@HHH@Z	97.6154	97.6154	2	1e44f10275e5	0x15b730
+animworkerhandlers	??0WorkerFull@@QAE@HHH@Z	98.1765	98.1765	1	617fb6512b6b	0x15b300
+animworkerhandlers	?Handler03d670@@YAHPAUOwner@@@Z	100.0000	100.0000	1	839c531d42a0	0x3d670
+animworkerhandlers	?Handler07db20@@YAHPAUOwner@@@Z	100.0000	100.0000	1	b23002ac8904	0x7db20
+animworkerhandlers	?Handler07dda0@@YAHPAUOwner@@@Z	100.0000	100.0000	1	27f15168f4f5	0x7dda0
 aniplayer	?Init@CAniPlayer@@QAEHPAUAniSeq@@0HHHHHHHHHHHH@Z	64.5543	64.5543	1	af4e113bdde4	0xe7980
 aniplayer	?Tick@CAniPlayer@@QAEHXZ	91.4889	91.4889	2	553040f9cf2b	0xe7b00
 apihicallers	?Init@Builder_168080@@QAEHPAXPAUtagRECT@@PAUPt_168080@@22222@Z	99.5131	99.5131	2	72d5a9d31548	0x168080
@@ -1094,10 +1098,10 @@ cddrawsubmgrpages	?VirtualMethodUnknown20@CDDrawSubMgrPages@@UAEHXZ	100.0000	100
 cddrawsubmgrpages	?VirtualMethodUnknown24@CDDrawSubMgrPages@@UAEHHHHH@Z	65.9748	65.9748	1	bac9c26ed5ab	0x1588f0
 cddrawsurfacemgr	??0CDDrawSurfaceMgr@@QAE@XZ	100.0000	100.0000	5	06a0488572fd	0x155840
 cddrawsurfacemgr	??1CDDrawSurfaceMgr@@UAE@XZ	100.0000	100.0000	2	a14f65509f82	0x1558b0
-cddrawsurfacemgr	?Cleanup_155e20@CDDrawSurfaceMgr@@QAEXXZ	96.1236	96.1236	1	f8c53c988eee	0x155e20
+cddrawsurfacemgr	?Cleanup_155e20@CDDrawSurfaceMgr@@QAEXXZ	96.1236	96.1236	2	7086e7481e20	0x155e20
 cddrawsurfacemgr	?UnknownVirtualMethod14@CDDrawSurfaceMgr@@UAEHXZ	100.0000	100.0000	6	26deb5b232cc	0x155f00
 cddrawsurfacemgr	?UnknownVirtualMethod18@CDDrawSurfaceMgr@@QAEXXZ	0.0998	0.0998	4	06635cbf0579	0x155900
-cddrawsurfacemgr	?UnknownVirtualMethod20@CDDrawSurfaceMgr@@UAEXXZ	100.0000	100.0000	5	ae524f417d5b	0x155fc0
+cddrawsurfacemgr	?UnknownVirtualMethod20@CDDrawSurfaceMgr@@UAEXXZ	100.0000	100.0000	6	81758b6508e6	0x155fc0
 cddrawsurfacemgr	?UnknownVirtualMethod24@CDDrawSurfaceMgr@@UAEHHHH@Z	97.8250	97.8250	7	275daa8fe12e	0x155f60
 cddrawsurfacemgr	?UnknownVirtualMethod28@CDDrawSurfaceMgr@@UAEXPAX@Z	100.0000	100.0000	5	9480406e5471	0x155f50
 cddrawsurfacemgr	?UnknownVirtualMethod38@CDDrawSurfaceMgr@@UAEHPAXHHH@Z	100.0000	100.0000	6	4f82654368f6	0x156a90
@@ -1114,10 +1118,10 @@ cddrawsurfacepair	?TeardownSurface@CDDrawSurfacePair@@QAEXXZ	100.0000	100.0000	2
 cddrawsurfacepair	?directx_wrapper_caller_1644a0_DirectDrawCreate_DirectDrawEnumerateA@CDDrawSurfacePair@@QAEHHHH@Z	87.4172	87.4172	3	69c49b464f06	0x1644a0
 cddrawworker	??1CDDrawWorker@@UAE@XZ	94.8750	94.8750	1	5cdfcc8a13a6	0x1557a0
 cddrawworker	?DeleteAll@CDDrawWorker@@QAEXXZ	100.0000	100.0000	1	40113baa6093	0x151eb0
-cddrawworkercache	??1CDDrawWorkerCache@@QAE@XZ	94.8750	94.8750	1	5336fb38d514	0x157720
+cddrawworkercache	??1CDDrawWorkerCache@@QAE@XZ	94.8750	94.8750	2	ef4a5460ef10	0x157720
 cddrawworkercache	?ScalarDtor@CDDrawWorkerCache@@UAEPAXH@Z	100.0000	100.0000	1	ecfc4338209c	0x157700
 cddrawworkercache	?VirtualMethodUnknown20@CDDrawWorkerCache@@UAEHXZ	100.0000	100.0000	1	8b0bc0260838	0x1576f0
-cddrawworkercache	?VirtualMethodUnknown24@CDDrawWorkerCache@@UAEPAXHPBDH@Z	54.6071	54.6071	1	5d1d5af84489	0x1652c0
+cddrawworkercache	?VirtualMethodUnknown24@CDDrawWorkerCache@@UAEPAXHPBDH@Z	54.6071	54.6071	2	ae81a89479c4	0x1652c0
 cddrawworkerhost	??0CDDrawWorkerHost@@QAE@HHH@Z	100.0000	100.0000	1	e8aede4e2564	0x1615a0
 cddrawworkerhost	??1CDDrawWorkerHost@@UAE@XZ	85.7500	85.7500	1	9fd90e770fe7	0x163af0
 cddrawworkerlist	??1CDDrawWorkerList@@QAE@XZ	100.0000	100.0000	1	8d1c7e634d56	0x163bc0
@@ -3257,10 +3261,6 @@ shadetablecache	?HueSortTable@CShadeTableCache@@QAEPAUCShadeTable@@PAUPalEntry@@
 shadetablecache	?Init@CShadeTableCache@@QAEHXZ	100.0000	100.0000	2	2d4bdb790e4f	0x14dec0
 shadetablecache	?LumaSortTable@CShadeTableCache@@QAEPAUCShadeTable@@PAUPalEntry@@@Z	96.3517	96.3517	2	ad69497c8386	0x14ec00
 shadetablecache	?SubTable@CShadeTableCache@@QAEPAUCShadeTable@@H@Z	74.2029	74.2029	3	d17e3029429b	0x14f310
-siriusworkerhandlers	??0WorkerFull@@QAE@HHH@Z	98.1765	98.1765	3	617fb6512b6b	0x15b300
-siriusworkerhandlers	?Handler03d670@@YAHPAUOwner@@@Z	100.0000	100.0000	1	839c531d42a0	0x3d670
-siriusworkerhandlers	?Handler07db20@@YAHPAUOwner@@@Z	100.0000	100.0000	1	b23002ac8904	0x7db20
-siriusworkerhandlers	?Handler07dda0@@YAHPAUOwner@@@Z	100.0000	100.0000	1	27f15168f4f5	0x7dda0
 slotcombofill	?Method2a45@CMultiSlotList@@QAEHHH@Z	59.1579	59.1579	1	da5e03287e82	0x37ff0
 smackervideowindow	?Advance@CSmackWin@@QAEHHH@Z	100.0000	100.0000	1	9cd7f5e24eac	0x17c8e0
 smackervideowindow	?CloseSmacker@CSmackWin@@QAEHXZ	100.0000	100.0000	1	79da4def0202	0x17c9b0
@@ -3295,6 +3295,7 @@ soundstream	?DestroyVoice@SoundStream@@QAEXPAUStreamVoiceNode@@@Z	100.0000	100.0
 soundstream	?OpenStream@SoundStream@@QAEPAUStreamVoiceNode@@PAUStreamSource@@HHHHH@Z	90.5714	90.5714	2	f191bc6619fd	0x137900
 soundstream	?ParseWave@SoundStream@@QAEHPAUStreamSource@@PAUWaveFormatX@@PAI2@Z	98.2640	98.2640	2	4c3129d38105	0x137b70
 soundstream	?ScalarDtor@SoundStream@@QAEPAXH@Z	76.3636	76.3636	1	be19e171f842	0x1376f0
+soundstreamfree	?Free@SoundStream@@QAEXXZ	100.0000	100.0000	1	37466e3c128f	0x137740
 soundvoicelist	?InsertHead@DSoundList@@QAEXPAUDSoundLink@@@Z	100.0000	100.0000	1	dbbaa64039bc	0x1390e0
 soundvoicelist	?InsertTail@DSoundList@@QAEXPAUDSoundLink@@@Z	100.0000	100.0000	1	b2001e2d12ac	0x139110
 soundvoicelist	?RemoveMatching@DSoundList@@QAEXII@Z	99.4000	99.4000	1	f32687293f30	0x136f60
@@ -3617,9 +3618,9 @@ userbaselink	??4EngStr@@QAEAAU0@ABU0@@Z	2.2222	2.2222	2	d0d3e615ad57	0x16d2f0
 userbaselink	?AddLogicAttack@CGameObject@@QAEXPAD@Z	5.2632	5.2632	2	72e127a9c85b	0x151030
 userbaselink	?AddLogicBump@CGameObject@@QAEXPAD@Z	5.2632	5.2632	2	6cb0e644d71f	0x151110
 userbaselink	?AddLogicHit@CGameObject@@QAEXPAD@Z	5.2632	5.2632	2	c8ba1df48c6e	0x150f50
-userbaselink	?EnsureWorker80@CGameObject@@QAEHPAU1@@Z	92.9474	92.9474	1	55a4078d66d2	0x150eb0
-userbaselink	?EnsureWorker88@CGameObject@@QAEXPAU1@@Z	66.2807	66.2807	1	99c24eb04cfb	0x150f90
-userbaselink	?EnsureWorker90@CGameObject@@QAEXPAU1@@Z	66.2807	66.2807	1	db073fe07139	0x151070
+userbaselink	?EnsureWorker80@CGameObject@@QAEHPAU1@@Z	92.9474	92.9474	2	12ee2986a35b	0x150eb0
+userbaselink	?EnsureWorker88@CGameObject@@QAEXPAU1@@Z	66.2807	66.2807	2	a50946afec2e	0x150f90
+userbaselink	?EnsureWorker90@CGameObject@@QAEXPAU1@@Z	66.2807	66.2807	2	2db9b2624114	0x151070
 userlogic	??0CAniCycle@@QAE@PAUCGameObject@@@Z	89.0632	89.0632	2	3fc14839e1e8	0xaad20
 userlogic	??0CBehindCandy@@QAE@PAUCGameObject@@@Z	88.7265	88.7265	2	a4e166512356	0xac3f0
 userlogic	??0CBehindCandyAni@@QAE@PAUCGameObject@@@Z	51.7537	51.7537	2	3b3d019e9d02	0xad540
@@ -3693,7 +3694,6 @@ videoconfig	?LoadVideoResolutionConfig@@YAXPAXHH@Z	97.2737	97.2737	8	e6f5fec6b5c
 videoconfig	?SaveVideoCheckboxes@@YAXPAX@Z	99.5000	99.5000	1	3ee4b1c6c6fb	0x378c0
 videoconfig	?SaveVideoResolutionConfig@@YAXPAX0@Z	88.8148	88.8148	7	3668fb144dff	0x370a0
 voicesoundlist	?BuildVoiceSoundList@CVoiceBuilder@@QAEPAUVoiceList@@H@Z	79.3141	79.3141	2	e7dcb9b4df41	0x11c210
-voldemortobj	?Free@VoldemortObj@@QAEXXZ	100.0000	100.0000	1	6f6323401633	0x137740
 vtblforward	?Accept@CVtblRecv@@QAEHHHHHHPAHHHH@Z	100.0000	100.0000	1	0ce4b442400b	0x110460
 wallproject	?ProjectWallQuad@@YAHHHHHHHHHHHH@Z	39.5180	39.5180	2	ec1b9f828e2a	0x1471d0
 wanderidlestep	?WanderStep@CGruntWander@@QAEHXZ	73.8481	73.8481	2	fa0dd402c50e	0xed9f0

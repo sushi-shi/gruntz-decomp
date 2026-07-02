@@ -1673,8 +1673,8 @@ source = "src/Gruntz/LogicRecord.cpp"
 flags = "eh"
 
 [[unit]]
-unit = "siriusworkerhandlers"
-source = "src/Gruntz/SiriusWorkerHandlers.cpp"
+unit = "animworkerhandlers"
+source = "src/Gruntz/AnimWorkerHandlers.cpp"
 flags = "eh"
 
 [[unit]]
@@ -2043,8 +2043,8 @@ source = "src/Rez/RezColl.cpp"
 flags = "base"
 
 [[unit]]
-unit = "voldemortobj"
-source = "src/Gruntz/VoldemortObj.cpp"
+unit = "soundstreamfree"
+source = "src/Gruntz/SoundStreamFree.cpp"
 flags = "base"
 
 [[unit]]
