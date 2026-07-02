@@ -14,22 +14,15 @@
 #include <Win32.h>
 #include <rva.h>
 
-namespace {
-
-    // The voice's retail primary vftable (0x5ef6d8, stamped by the ctor + restamped
-    // by the dtor). ALL-VTABLES phase: the feeder-override vtable (0x5ef6e0) is now
-    // cl-emitted as ??_7StreamVoiceFeeder@@6B@ via the derived StreamVoiceFeeder
-    // member (base-then-derived construction) - its manual override store is gone.
-    // The voice's OWN vtable (0x5ef6d8) stays a manual reloc-masked DIR32 store: the
-    // voice is a FLAT class whose fields (m_60/m_64/m_68) overlap the DirectSoundMgr
-    // clone base's +0x60..+0x78 padding, so it cannot be a real C++ derived class,
-    // and its vptr is stamped AFTER the manual BaseInit (a vptr-override-after-base
-    // that cl's implicit vptr-first store cannot reproduce). Kept manual; see
-    // docs/vtable-conversion-log.md.
-    DATA(0x001ef6d8)
-    extern void* const g_StreamVoiceVtbl[];
-
-} // namespace
+// ALL-VTABLES phase: StreamVoice is now a REAL polymorphic class (declared-only
+// slot-0 virtual, see StreamVoice.h). cl manages the vptr - it auto-stamps its own
+// ??_7StreamVoice at ctor entry and auto-resets it at dtor entry (was the manual
+// voice-vptr DIR32 stores). No VTBL is attached: retail's voice vtable 0x5ef6d8
+// is a 1-slot scalar-deleting-dtor pointer packed INSIDE DSoundVoice's vtable storage
+// (0x5ef6d0..0x5ef6dc), so cl cannot emit it as a standalone class vtable. The voice
+// is also a FLAT class (m_60/m_64/m_68 overlap the DirectSoundMgr clone base padding)
+// whose vptr retail stamps AFTER the manual BaseInit - a vptr-override-after-base that
+// cl's implicit vptr-first store cannot reproduce (the ctor/dtor EH wall below).
 
 // ---------------------------------------------------------------------------
 // StreamVoice::StreamVoice (__thiscall, /GX EH frame). Construct the
@@ -44,8 +37,8 @@ namespace {
 // Dsndmgr class family is modeled.
 RVA(0x001375b0, 0x77)
 StreamVoice::StreamVoice(IDirectSoundBufferZ* buf, DirectSoundMgr* owner, i32 a, i32 b) {
+    // cl auto-stamps ??_7StreamVoice at ctor entry (was a manual voice-vptr store).
     BaseInit(buf, owner);
-    *(void**)this = (void*)g_StreamVoiceVtbl;
     m_64 = a;
     // m_feeder (StreamVoiceFeeder) is cl-constructed (0x5ef6f0 then 0x5ef6e0) as a
     // member before this body - the manual feeder-override store is gone.
@@ -119,7 +112,7 @@ u32 StreamVoice::ComputeRatio() {
 // ~DirectSoundMgr (0x135bb0); defer to the final sweep.
 RVA(0x00137650, 0x64)
 StreamVoice::~StreamVoice() {
-    *(void**)this = (void*)g_StreamVoiceVtbl;
+    // cl auto-resets the vptr to ??_7StreamVoice at dtor entry (was the manual store).
     m_feeder.FeederReset(0);
     m_feeder.Cleanup();
     BaseDtor();

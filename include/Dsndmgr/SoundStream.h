@@ -27,7 +27,7 @@ class SoundStream;
 // Seek(0x139ae0) sets +0x18; Read(0x139af0) reads `n` bytes at an explicit (or
 // -1 = current) cursor. The trace tagged this reader ClassUnknown_85.
 struct StreamSource {
-    void* m_vtbl; // +0x00
+    virtual void Slot0(); // +0x00  vptr slot (polymorphic reader; declared-only)
     char m_pad04[0x0c - 0x04];
     u32 m_length; // +0x0c  source length
     char m_pad10[0x18 - 0x10];
@@ -65,7 +65,8 @@ struct StreamFeederView {
 // voices are reaped, the COM buffer released, the node unlinked, then its
 // scalar-deleting destructor runs.
 struct StreamVoiceNode {
-    void* m_vtbl;                 // +0x00
+    virtual void
+    Slot0(); // +0x00  vptr slot (voice vtable 0x5ef6d8, stamped by the ctor; declared-only)
     StreamVoiceNode* m_link;      // +0x04  next, biased +4 (POSITION)
     void* m_pad08;                // +0x08
     IDirectSoundBufferZ* m_buf0c; // +0x0c  the IDirectSoundBuffer to release

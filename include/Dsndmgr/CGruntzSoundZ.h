@@ -23,7 +23,7 @@
 // ALL-VTABLES phase: modeled REAL-POLYMORPHIC (16 virtuals in slot order from the
 // retail vtable 0x5ef700). cl auto-emits ??_7CGruntzSoundInnerZ@@6B@ and stamps the
 // vptr in the (inline) ctor; the create helpers construct it via placement-new so
-// the vptr store falls out implicitly (was the manual `*(void**)raw=&g_innerSoundVtbl`).
+// the vptr store falls out implicitly (was a manual `*(void**)raw = &innerVtable`).
 // Slots whose bodies live in other TUs are declared-only (external slot refs in the
 // emitted vtable); slot 0 is kept non-pure (a concrete embeddable class - retail
 // slot 0 is sub_1bef01, not __purecall).

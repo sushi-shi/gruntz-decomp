@@ -91,7 +91,8 @@ extern i32 g_volumeTable[100];
 // The ctor is external (modeled here, defined in 0x136fe0); a placement-new call
 // lowers to `mov ecx,voice; call 0x136fe0` reloc-masked.
 struct DSoundMgrVoice {
-    void* m_vtbl; // +0x00
+    virtual void
+    Slot0(); // +0x00  vptr slot (voice vtable 0x5ef6d0, stamped by the external ctor; declared-only)
     struct Link { // +0x04  the intrusive list-anchor
         Link* m_next;
         Link* m_prev;
@@ -268,14 +269,14 @@ DirectSoundMgr::DirectSoundMgr(IDirectSoundBufferZ* buf, DirectSoundMgr* owner) 
 
     DSBCAPS caps;
     caps.dwSize = sizeof(DSBCAPS);
-    if (buf->vtbl->GetCaps(buf, &caps) == 0) {
+    if (buf->GetCaps(&caps) == 0) {
         m_caps = caps.dwFlags;
     } else {
         m_caps = 0;
     }
 
     if ((m_caps & DSBCAPS_CTRLFREQUENCY) == DSBCAPS_CTRLFREQUENCY) {
-        i32 hr = buf->vtbl->GetFrequency(buf, &m_freq) != 0;
+        i32 hr = buf->GetFrequency(&m_freq) != 0;
         if (hr) {
             GetErrorString(DSNDMGR_FILE, 0x58, hr);
         }
@@ -283,7 +284,7 @@ DirectSoundMgr::DirectSoundMgr(IDirectSoundBufferZ* buf, DirectSoundMgr* owner) 
     m_setFreq = m_freq;
 
     if ((m_caps & DSBCAPS_CTRLPAN) == DSBCAPS_CTRLPAN) {
-        i32 hr = buf->vtbl->GetPan(buf, &m_pan) != 0;
+        i32 hr = buf->GetPan(&m_pan) != 0;
         if (hr) {
             GetErrorString(DSNDMGR_FILE, 0x60, hr);
         }
@@ -292,7 +293,7 @@ DirectSoundMgr::DirectSoundMgr(IDirectSoundBufferZ* buf, DirectSoundMgr* owner) 
     }
 
     if ((m_caps & DSBCAPS_CTRLVOLUME) == DSBCAPS_CTRLVOLUME) {
-        i32 hr = buf->vtbl->GetVolume(buf, &m_volume) != 0;
+        i32 hr = buf->GetVolume(&m_volume) != 0;
         if (hr) {
             GetErrorString(DSNDMGR_FILE, 0x68, hr);
         }
@@ -308,7 +309,7 @@ DirectSoundMgr::DirectSoundMgr(IDirectSoundBufferZ* buf, DirectSoundMgr* owner) 
 // bool is what is both tested and forwarded as the reporter's hr.
 RVA(0x00135310, 0x2a)
 i32 DirectSoundMgr::Restore() {
-    i32 hr = m_buffer->vtbl->Restore(m_buffer) != 0;
+    i32 hr = m_buffer->Restore() != 0;
     if (hr) {
         GetErrorString(DSNDMGR_FILE, 0x7b, hr);
         return 0;
@@ -344,12 +345,12 @@ i32 DirectSoundMgr::StopAndRewind() {
     if (m_owner->m_initialized == 0) {
         return 0;
     }
-    i32 hr = m_buffer->vtbl->Stop(m_buffer) != 0;
+    i32 hr = m_buffer->Stop() != 0;
     if (hr) {
         GetErrorString(DSNDMGR_FILE, 0x99, hr);
         return 0;
     }
-    hr = m_buffer->vtbl->SetCurrentPosition(m_buffer, 0) != 0;
+    hr = m_buffer->SetCurrentPosition(0) != 0;
     if (hr) {
         GetErrorString(DSNDMGR_FILE, 0x9e, hr);
     }
@@ -371,7 +372,7 @@ i32 DirectSoundMgr::IsPlaying() {
         return 0;
     }
     u32 status;
-    i32 hr = m_buffer->vtbl->GetStatus(m_buffer, &status) != 0;
+    i32 hr = m_buffer->GetStatus(&status) != 0;
     if (hr) {
         GetErrorString(DSNDMGR_FILE, 0xac, hr);
         return 0;
@@ -392,7 +393,7 @@ i32 DirectSoundMgr::IsLooping() {
         return 0;
     }
     u32 status;
-    i32 hr = m_buffer->vtbl->GetStatus(m_buffer, &status) != 0;
+    i32 hr = m_buffer->GetStatus(&status) != 0;
     if (hr) {
         GetErrorString(DSNDMGR_FILE, 0xbb, hr);
         return 0;
@@ -427,7 +428,7 @@ i32 DirectSoundMgr::SetVolume(i32 vol) {
     if ((m_caps & DSBCAPS_CTRLVOLUME) != DSBCAPS_CTRLVOLUME) {
         return 0;
     }
-    i32 hr = m_buffer->vtbl->SetVolume(m_buffer, vol) != 0;
+    i32 hr = m_buffer->SetVolume(vol) != 0;
     if (hr) {
         GetErrorString(DSNDMGR_FILE, 0xf6, hr);
         return 0;
@@ -455,7 +456,7 @@ i32 DirectSoundMgr::GetVolume() {
         return 0;
     }
     i32 vol;
-    i32 hr = m_buffer->vtbl->GetVolume(m_buffer, &vol) != 0;
+    i32 hr = m_buffer->GetVolume(&vol) != 0;
     if (hr) {
         GetErrorString(DSNDMGR_FILE, 0x10e, hr);
         return 0;
@@ -515,7 +516,7 @@ i32 DirectSoundMgr::SetPan(i32 pan) {
     if ((m_caps & DSBCAPS_CTRLPAN) != DSBCAPS_CTRLPAN) {
         return 0;
     }
-    i32 hr = m_buffer->vtbl->SetPan(m_buffer, pan) != 0;
+    i32 hr = m_buffer->SetPan(pan) != 0;
     if (hr) {
         GetErrorString(DSNDMGR_FILE, 0x141, hr);
         return 0;
@@ -547,7 +548,7 @@ i32 DirectSoundMgr::GetPan() {
         return 0;
     }
     i32 pan;
-    i32 hr = m_buffer->vtbl->GetPan(m_buffer, &pan) != 0;
+    i32 hr = m_buffer->GetPan(&pan) != 0;
     if (hr) {
         GetErrorString(DSNDMGR_FILE, 0x15e, hr);
         return 0;
@@ -567,7 +568,7 @@ i32 DirectSoundMgr::SetFrequency(u32 freq) {
     if ((m_caps & DSBCAPS_CTRLFREQUENCY) != DSBCAPS_CTRLFREQUENCY) {
         return 0;
     }
-    i32 hr = m_buffer->vtbl->SetFrequency(m_buffer, freq);
+    i32 hr = m_buffer->SetFrequency(freq);
     if (hr) {
         GetErrorString(DSNDMGR_FILE, 0x180, hr);
         return 0;
@@ -616,7 +617,7 @@ i32 DirectSoundMgr::Unlock(void* p1, u32 n1, void* p2, u32 n2) {
     if (m_owner->m_initialized == 0) {
         return 0;
     }
-    i32 hr = m_buffer->vtbl->Unlock(m_buffer, p1, n1, p2, n2) != 0;
+    i32 hr = m_buffer->Unlock(p1, n1, p2, n2) != 0;
     if (hr) {
         GetErrorString(DSNDMGR_FILE, 0x1bb, hr);
         return 0;
@@ -632,7 +633,7 @@ i32 DirectSoundMgr::GetCurrentPosition(u32* play, u32* write) {
     if (m_owner->m_initialized == 0) {
         return 0;
     }
-    i32 hr = m_buffer->vtbl->GetCurrentPosition(m_buffer, play, write) != 0;
+    i32 hr = m_buffer->GetCurrentPosition(play, write) != 0;
     if (hr) {
         GetErrorString(DSNDMGR_FILE, 0x1c8, hr);
         return 0;
@@ -648,7 +649,7 @@ i32 DirectSoundMgr::SetCurrentPosition(u32 pos) {
     if (m_owner->m_initialized == 0) {
         return 0;
     }
-    i32 hr = m_buffer->vtbl->SetCurrentPosition(m_buffer, pos) != 0;
+    i32 hr = m_buffer->SetCurrentPosition(pos) != 0;
     if (hr) {
         GetErrorString(DSNDMGR_FILE, 0x1d5, hr);
         return 0;
@@ -663,7 +664,7 @@ i32 DirectSoundMgr::GetFormat(void* fmt, u32 size, u32* written) {
     if (m_owner->m_initialized == 0) {
         return 0;
     }
-    i32 hr = m_buffer->vtbl->GetFormat(m_buffer, fmt, size, written) != 0;
+    i32 hr = m_buffer->GetFormat(fmt, size, written) != 0;
     if (hr) {
         GetErrorString(DSNDMGR_FILE, 0x1e2, hr);
         return 0;
@@ -708,7 +709,7 @@ DirectSoundMgr* DirectSoundMgr::Clone(i32 a) {
     }
     DirectSoundMgr* c = (DirectSoundMgr*)clone;
     IDirectSoundZ* dev = m_owner->m_device;
-    i32 hr = dev->vtbl->DuplicateSoundBuffer(dev, m_buffer, &c->m_buffer) != 0;
+    i32 hr = dev->DuplicateSoundBuffer(m_buffer, &c->m_buffer) != 0;
     if (hr) {
         GetErrorString(DSNDMGR_FILE, 0x217, hr);
         return 0;
@@ -730,7 +731,7 @@ void DirectSoundMgr::RemoveClone(DirectSoundMgr* clone) {
     }
     if (clone != this) {
         IDirectSoundBufferZ* buf = clone->m_buffer;
-        buf->vtbl->Release(buf);
+        buf->Release();
         clone->m_buffer = 0;
     }
     ((DSoundCloneList*)&m_cloneHead)->Unlink(&clone->m_node44);
@@ -758,8 +759,7 @@ i32 DirectSoundMgr::LockConvert(void* src, u32 lockBytes, u32 convert) {
     void* p2;
     u32 n1;
     u32 n2;
-    i32 hr =
-        m_buffer->vtbl->Lock(m_buffer, 0, lockBytes, &p1, &n1, &p2, &n2, DSBLOCK_ENTIREBUFFER) != 0;
+    i32 hr = m_buffer->Lock(0, lockBytes, &p1, &n1, &p2, &n2, DSBLOCK_ENTIREBUFFER) != 0;
     if (hr) {
         GetErrorString(DSNDMGR_FILE, 0x2bd, hr);
         return 0;
@@ -797,7 +797,7 @@ i32 DirectSoundMgr::LockConvert(void* src, u32 lockBytes, u32 convert) {
         }
     }
 
-    hr = m_buffer->vtbl->Unlock(m_buffer, p1, n1, p2, n2) != 0;
+    hr = m_buffer->Unlock(p1, n1, p2, n2) != 0;
     if (hr) {
         GetErrorString(DSNDMGR_FILE, 0x2e1, hr);
         return 0;
@@ -862,13 +862,13 @@ i32 DirectSoundMgr::Play() {
     if (m_owner->m_initialized == 0) {
         return 0;
     }
-    i32 hr = m_buffer->vtbl->Play(m_buffer, 0, 0, m_playFlags) != 0;
+    i32 hr = m_buffer->Play(0, 0, m_playFlags) != 0;
     if (hr != 0) {
         if (hr == (i32)0x88780096) {
             if (m_reacquireOwner->ReacquireBuffer() == 0) {
                 return 0;
             }
-            i32 hr2 = m_buffer->vtbl->Play(m_buffer, 0, 0, m_playFlags) != 0;
+            i32 hr2 = m_buffer->Play(0, 0, m_playFlags) != 0;
             if (hr2 != 0) {
                 GetErrorString(DSNDMGR_FILE, 0x34c, hr2);
                 return 0;
@@ -925,7 +925,7 @@ i32 DirectSoundMgr::Lock(u32 off, u32 bytes, void** p1, u32* n1, void** p2, u32*
     if (m_owner->m_initialized == 0) {
         return 0;
     }
-    i32 hr = m_buffer->vtbl->Lock(m_buffer, off, bytes, p1, n1, p2, n2, flags) != 0;
+    i32 hr = m_buffer->Lock(off, bytes, p1, n1, p2, n2, flags) != 0;
     if (!hr) {
         return 1;
     }
@@ -933,7 +933,7 @@ i32 DirectSoundMgr::Lock(u32 off, u32 bytes, void** p1, u32* n1, void** p2, u32*
         if (m_reacquireOwner->ReacquireBuffer() == 0) {
             return 0;
         }
-        hr = m_buffer->vtbl->Lock(m_buffer, off, bytes, p1, n1, p2, n2, flags) != 0;
+        hr = m_buffer->Lock(off, bytes, p1, n1, p2, n2, flags) != 0;
         if (!hr) {
             return 1;
         }
@@ -956,10 +956,10 @@ i32 DirectSoundMgr::Create(void* hwnd, u32 level, u32 flags) {
     if (created) {
         return 0;
     }
-    i32 hr = m_device->vtbl->SetCooperativeLevel(m_device, hwnd, level) != 0;
+    i32 hr = m_device->SetCooperativeLevel(hwnd, level) != 0;
     if (hr) {
         GetErrorString(DSNDMGR_FILE, 0x3b0, hr);
-        m_device->vtbl->Release(m_device);
+        m_device->Release();
         return 0;
     }
     m_coopLevel = level;
@@ -991,7 +991,7 @@ i32 DirectSoundMgr::SetCooperativeLevel(void* hwnd, u32 level) {
     if (m_initialized == 0) {
         return 0;
     }
-    i32 hr = m_device->vtbl->SetCooperativeLevel(m_device, hwnd, level) != 0;
+    i32 hr = m_device->SetCooperativeLevel(hwnd, level) != 0;
     if (hr) {
         GetErrorString(DSNDMGR_FILE, 0x3cf, hr);
         return 0;
@@ -1018,7 +1018,7 @@ i32 DirectSoundMgr::CreatePrimaryBuffer() {
         memset(&desc, 0, sizeof(desc));
         desc.dwSize = sizeof(DSBUFFERDESC);
         desc.dwFlags = m_bufferFlags | DSBCAPS_PRIMARYBUFFER;
-        i32 hr = m_device->vtbl->CreateSoundBuffer(m_device, &desc, &m_primaryBuffer, 0) != 0;
+        i32 hr = m_device->CreateSoundBuffer(&desc, &m_primaryBuffer, 0) != 0;
         if (hr) {
             GetErrorString(DSNDMGR_FILE, 0x6ab, hr);
             return 0;
@@ -1139,8 +1139,7 @@ void DirectSoundMgr::GetErrorString(char* file, i32 line, i32 hr) {
 // select-zero-mask-dest-register wall (docs/patterns/select-zero-mask-dest-register.md,
 // SAME as DSoundList::RemoveMatching @0x136f60): byte-exact except the `e ? &link : 0`
 // mask (neg/sbb/and) lands in a different free-list register than retail.
-#include <Dsndmgr/SoundVoiceList.h>          // DSoundList / DSoundLink (Unlink @0x1391e0)
-extern void* const g_PureVtbl[];             // 0x5ef6c8 pure base vtable
+#include <Dsndmgr/SoundVoiceList.h> // DSoundList / DSoundLink / PureSoundElemVtable (0x5ef6c8)
 extern "C" u32(__stdcall* g_pTimeGetTime)(); // 0x6c4650
 // The reaped element carries a real vptr at +0; the per-frame update is virtual
 // slot 0 (call [vtbl]). Declared-only virtual -> no vtable emitted (never
@@ -1172,7 +1171,7 @@ i32 DirectSoundMgr::winapi_136e20_timeGetTime(i32 time) {
         if (e->Tick(time) == 0) {
             list->Unlink(e ? &e->m_link : 0);
             if (e) {
-                *(void**)e = (void*)g_PureVtbl;
+                *(void**)e = (void*)PureSoundElemVtable;
                 operator delete(e);
             }
         }

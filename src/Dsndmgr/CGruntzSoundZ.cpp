@@ -24,7 +24,7 @@
 // ALL-VTABLES phase: CGruntzSoundInnerZ is now a REAL polymorphic class (16
 // virtuals in slot order), so cl auto-emits ??_7CGruntzSoundInnerZ@@6B@ and stamps
 // the vptr inside its ctor. The create helpers construct it via placement-new into
-// the RezAlloc'd block (was the manual `*(void**)raw=&g_innerSoundVtbl` + field seed).
+// the RezAlloc'd block (was a manual `*(void**)raw = &innerVtable` + field seed).
 inline void* operator new(u32, void* p) {
     return p;
 }

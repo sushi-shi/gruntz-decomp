@@ -25,7 +25,7 @@
 // node (MFC POSITION bias), so node = (link - 4). The +0x0c slot holds the
 // IDirectSoundBuffer to release.
 struct SoundBuf {
-    void* m_vtbl;                 // +0x00  (DirectSoundMgr buffer vtable)
+    virtual void Slot0();         // +0x00  vptr slot (DirectSoundMgr buffer vtable; declared-only)
     SoundBuf* m_link;             // +0x04  next, biased +4 (POSITION)
     void* m_pad08;                // +0x08
     IDirectSoundBufferZ* m_buf0c; // +0x0c  the IDirectSoundBuffer to release

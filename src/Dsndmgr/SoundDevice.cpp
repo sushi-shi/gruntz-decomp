@@ -36,7 +36,8 @@ inline void* operator new(u32, void* p) {
 // ComputeDuration. BaseInit (0x135b10) + ComputeDuration (0x1359a0) are the shared
 // DirectSoundMgr-base helpers (defined in their own TUs); reloc-masked __thiscall.
 struct SampleVoice {
-    void* m_vtbl;        // +0x00  (retail vtable 0x5ef6bc; virtuals external)
+    virtual void
+    Slot0(); // +0x00  vptr slot (retail vtable 0x5ef6bc, stamped by BaseInit; declared-only)
     SampleVoice* m_link; // +0x04  owned-buffer-list link, biased +4 (POSITION)
     char m_pad08[0x18 - 0x08];
     u32 m_formatWord; // +0x18  wFormatTag|nChannels of the WAVEFORMATEX
@@ -75,10 +76,11 @@ extern "C" i32 ParseWaveChunks(void* riff, ParseFmt* out, void** dataOut, u32* s
 // The owned-buffer-list prepend helper (0x1390e0, __thiscall on the +0x04 head):
 // link one node (biased +4) at the head. Same engine helper as DSoundList::InsertHead.
 
-// The abstract-base ("pure") vftable (0x5ef6c8) a freed sample's vptr is restamped
-// to before RezFree - a transitional reloc-masked DIR32 store.
+// PureSoundElem's vtable (0x5ef6c8) - a freed sample's vptr is reset to this pure base
+// before RezFree (a reloc-masked DIR32 reference to the real class's table; MSVC's dtor
+// codegen dead-eliminates the equivalent base-subobject reset, so it stays explicit).
 DATA(0x001ef6c8)
-extern void* const g_PureVtbl[];
+extern void* const PureSoundElemVtable[];
 
 // The device's voice/channel sub-list reap helper (0x136f60, __thiscall on the
 // +0x0c list head): unlink + free every voice matching (arg, mask). Same engine
@@ -102,7 +104,7 @@ SIZE_UNKNOWN(SoundBufList); // {head,tail} list-head view
 
 // ALL-VTABLES phase: the device vftable (0x5ef6c4) is now cl-emitted as
 // ??_7SoundDevice@@6B@ from the real polymorphic SoundDevice (virtual dtor); the
-// ctor auto-stamps it and the dtor auto-resets it (was the manual g_SoundDeviceVtbl
+// ctor auto-stamps it and the dtor auto-resets it (was the manual device-vptr
 // stamps).
 
 // SoundBuf::StopAndRewind (0x135380) / StopAllClones (0x136150) are external
@@ -239,9 +241,9 @@ void SoundDevice::Shutdown() {
             node = m_bufferHead ? (SoundBuf*)((char*)m_bufferHead - 4) : 0;
         }
         if (m_primaryBuffer) {
-            m_primaryBuffer->vtbl->Release(m_primaryBuffer);
+            m_primaryBuffer->Release();
         }
-        m_device->vtbl->Release(m_device);
+        m_device->Release();
     }
     m_initialized = 0;
 }
@@ -291,7 +293,7 @@ DirectSoundMgr* SoundDevice::CreateBuffer(WaveFormatX* fmt, u32 bytes, u32 flags
     desc.dwReserved = 0;
     desc.lpwfxFormat = &wf;
 
-    i32 hr = m_device->vtbl->CreateSoundBuffer(m_device, &desc, &out, 0) != 0;
+    i32 hr = m_device->CreateSoundBuffer(&desc, &out, 0) != 0;
     if (hr) {
         DirectSoundMgr::GetErrorString(DSNDMGR_FILE, 0x422, hr);
         return 0;
@@ -302,7 +304,9 @@ DirectSoundMgr* SoundDevice::CreateBuffer(WaveFormatX* fmt, u32 bytes, u32 flags
 
     SampleVoice* voice = (SampleVoice*)RezAlloc(0x60);
     if (voice) {
-        voice = new (voice) SampleVoice;
+        // SampleVoice is a passive polymorphic view; its real vptr (0x5ef6bc) is
+        // stamped by BaseInit (the external DSoundCloneInst ctor 0x135b10), so no
+        // placement-new default ctor runs here (was a no-op `new (voice) SampleVoice`).
         voice->BaseInit(out, this);
     }
     voice->m_formatWord = *(u32*)&fmt->wFormatTag;
@@ -497,7 +501,7 @@ void SoundDevice::RemoveBuffer(SoundBuf* node) {
     if (m_initialized) {
         ((SoundVoiceList*)&m_voiceHead)->Reap(node, 0xffff);
         if (node->m_buf0c) {
-            node->m_buf0c->vtbl->Release(node->m_buf0c);
+            node->m_buf0c->Release();
             node->m_buf0c = 0;
         }
         ((SoundBufList*)&m_bufferHead)->Unlink(node ? &node->m_link : 0);
@@ -544,7 +548,7 @@ i32 SoundDevice::FreeSamples() {
         node->Free();
         ((SoundBufList*)&m_voiceHead)->Unlink(node ? &node->m_link : 0);
         if (node) {
-            *(void**)node = (void*)g_PureVtbl;
+            *(void**)node = (void*)PureSoundElemVtable;
             RezFree(node);
         }
         node = next;
@@ -609,7 +613,7 @@ i32 SoundDevice::SetPrimaryFormat(void* fmt) {
     if (CreatePrimaryBuffer() == 0) {
         return 0;
     }
-    i32 hr = m_primaryBuffer->vtbl->SetFormat(m_primaryBuffer, fmt) != 0;
+    i32 hr = m_primaryBuffer->SetFormat(fmt) != 0;
     if (hr) {
         DirectSoundMgr::GetErrorString(DSNDMGR_FILE, 0x678, hr);
         return 0;

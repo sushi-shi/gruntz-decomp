@@ -28,7 +28,7 @@ inline void* operator new(u32, void* p) {
 // ALL-VTABLES phase: the stream vftable (0x5ef6ec) is now cl-emitted as
 // ??_7SoundStream@@6B@ from the real polymorphic SoundStream : SoundDevice (virtual
 // dtor override); the ctor auto-stamps it and the dtor auto-resets it + chains
-// ~SoundDevice (was the manual g_SoundStreamVtbl stamps).
+// ~SoundDevice (was the manual stream-vptr stamps).
 
 // The inherited intrusive instance-list helpers on the +0x94 head (same engine
 // list family DirectSoundMgr models as the clone list): Insert (0x1390e0, prepend
@@ -132,7 +132,7 @@ StreamVoiceNode* SoundStream::CreateStreamBuffer(WaveFormatX* fmt, u32 bytes, i3
     desc.dwReserved = 0;
     desc.lpwfxFormat = &wf;
 
-    i32 hr = m_device->vtbl->CreateSoundBuffer(m_device, &desc, &out, 0) != 0;
+    i32 hr = m_device->CreateSoundBuffer(&desc, &out, 0) != 0;
     if (hr) {
         DirectSoundMgr::GetErrorString(DSNDMGSR_FILE, 0x678, hr);
         return 0;
@@ -201,7 +201,7 @@ void SoundStream::DestroyVoice(StreamVoiceNode* voice) {
     if (m_initialized) {
         voice->m_feeder.FeederReset(0);
         ((StreamVoiceList*)&m_voiceHead)->Reap(voice, 0xffff);
-        voice->m_buf0c->vtbl->Release(voice->m_buf0c);
+        voice->m_buf0c->Release();
         voice->m_buf0c = 0;
         ((StreamList*)&m_94)->Unlink(voice ? &voice->m_link : 0);
         if (voice) {

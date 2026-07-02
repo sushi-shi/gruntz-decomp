@@ -41,7 +41,12 @@ SIZE_UNKNOWN(VoiceOwner); // partial owning-SoundStream view (only +0x78 pinned)
 // init/dtor (0x135b10 / 0x135bb0) are reloc-masked __thiscall calls into the base
 // run; the voice only ever calls these, so a thin own-decl view is matching-neutral.
 struct StreamVoice {
-    void* m_vtbl; // +0x00  (retail vtable 0x5ef6d8; virtuals external)
+    // Real polymorphic voice (vptr @ +0x00). cl auto-stamps its own ??_7StreamVoice in
+    // the ctor/dtor (was a manual voice-vptr store). No VTBL: retail's voice
+    // vtable 0x5ef6d8 is a 1-slot scalar-deleting-dtor pointer that overlaps DSoundVoice's
+    // packed vtable storage (0x5ef6d0..0x5ef6dc), so cl cannot emit it as a standalone
+    // class vtable - the vptr-override-after-manual-BaseInit stays an EH/position wall.
+    virtual void Slot0(); // +0x00  vptr slot (declared-only)
     char m_pad04[0x10 - 0x04];
     VoiceOwner* m_owner; // +0x10  owning SoundStream (also the base m_owner)
     char m_pad14[0x3c - 0x14];
@@ -53,7 +58,7 @@ struct StreamVoice {
     // +0x6c  embedded streaming feeder sub-object. ALL-VTABLES phase: held as the
     // DERIVED StreamVoiceFeeder (retail vtable 0x5ef6e0) so cl auto-constructs it
     // base-then-derived (0x5ef6f0 then 0x5ef6e0) - was a base StreamFeeder + a manual
-    // `*(void**)&m_feeder = g_StreamVoiceFeederVtbl` override in the voice ctor. The
+    // feeder-vptr override store in the voice ctor. The
     // voice's +0x9c / +0xa8 stores land INSIDE this feeder: +0x9c = feeder+0x30 (loop
     // flag m_loop), +0xa8 = feeder+0x3c (window length m_windowLength).
     StreamVoiceFeeder m_feeder;

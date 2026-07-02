@@ -109,7 +109,7 @@ VTBL(StreamFeeder, 0x001ef6f0); // cl-emitted ??_7StreamFeeder@@6B@ (3-slot base
 // ALL-VTABLES phase: a real StreamFeeder-derived override so cl auto-emits
 // ??_7StreamVoiceFeeder@@6B@ (0x5ef6e0) via base-then-derived member construction
 // (base ctor stamps 0x5ef6f0, then the derived vptr 0x5ef6e0) - was the manual
-// `*(void**)&m_feeder = g_StreamVoiceFeederVtbl` override. Adds no fields (size 0x44).
+// manual feeder-vptr override store. Adds no fields (size 0x44).
 // Overrides: slot 0 Feed = CopyWindow (0x137380); slots 1/2 (0x137490 / 0x1374b0)
 // are declared-only overrides (bodies external).
 struct StreamVoiceFeeder : StreamFeeder {

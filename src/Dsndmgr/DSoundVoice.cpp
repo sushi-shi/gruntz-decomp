@@ -19,10 +19,12 @@
 // (0x136fe0) + these two methods: an intrusive list-anchor at +0x04, a live flag
 // at +0x0c, the cloned buffer at +0x10, then the ramp params.
 struct DSoundVoice {
-    i32 Tick_137060(i32 now); // 0x137060  vtbl slot 0
-    i32 Stop_1370d0();        // 0x1370d0  vtbl slot 1
+    // Real polymorphic node (vptr @ +0x00). Slots 0/1 (Tick/Stop) are defined here, so
+    // cl emits ??_7DSoundVoice@@6B@ (0x5ef6d0) referencing them + the external slot 2.
+    virtual i32 Tick_137060(i32 now); // +0x00  vtbl slot 0  0x137060
+    virtual i32 Stop_1370d0();        // +0x04  vtbl slot 1  0x1370d0
+    virtual i32 Slot2_137630();       // +0x08  vtbl slot 2  0x137630 (declared-only, external)
 
-    void* m_vtbl;              // +0x00
     char m_pad04[0x10 - 0x04]; // +0x04  intrusive anchor (+0x04) + live flag (+0x0c)
     DirectSoundMgr* m_buffer;  // +0x10  the cloned DirectSound buffer
     i32 m_stopAndRewind;       // +0x14
@@ -31,10 +33,8 @@ struct DSoundVoice {
     i32 m_rampDurationMs;      // +0x20
     i32 m_rampStartTime;       // +0x24
 };
-SIZE(DSoundVoice, 0x28); // measured: new(0x28) voice node (ctor 0x136fe0)
-// Non-polymorphic (explicit m_vtbl; ctor 0x136fe0 lives in another TU and stamps the
-// vtable, so cl cannot auto-emit it here). VTBL is a catalog name only (reloc-masked).
-VTBL(DSoundVoice, 0x001ef6d0); // retail voice-node vtable (3 slots: Tick/Stop/+137630)
+SIZE(DSoundVoice, 0x28);       // measured: new(0x28) voice node (ctor 0x136fe0)
+VTBL(DSoundVoice, 0x001ef6d0); // cl-emitted ??_7DSoundVoice@@6B@ (Tick/Stop/+137630)
 
 // ---------------------------------------------------------------------------
 // DSoundVoice::Tick (vtbl slot 0, __thiscall, 1 arg = the current

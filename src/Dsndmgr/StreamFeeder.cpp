@@ -16,7 +16,7 @@
 // Feed, slot 1 FeedData, slot 2 OnDrain) - `this->Feed(...)` lowers to the same
 // `mov eax,[this]; call [eax+N]` the old pmf-via-union did. cl auto-emits
 // ??_7StreamFeeder@@6B@ (0x5ef6f0) and stamps the vptr in the ctor (was the manual
-// g_StreamFeederVtbl store).
+// manual feeder-vptr store).
 
 // ---------------------------------------------------------------------------
 // StreamFeeder::SeedWindow (__thiscall, 3 args). Arm the data window
@@ -97,7 +97,7 @@ StreamFeeder::StreamFeeder() {
 // ---------------------------------------------------------------------------
 // StreamFeeder::Cleanup (__thiscall - the dtor body). Tear down the armed buffer,
 // clear m_buffer. ALL-VTABLES phase: the leading vptr restamp (was
-// `*(void**)this = g_StreamFeederVtbl`) is dropped - the vptr is now cl-managed and
+// manual feeder-vptr store) is dropped - the vptr is now cl-managed and
 // this is a named teardown method (not the dtor), so it cannot reference ??_7.
 // @early-stop
 // vptr-restamp drop: Cleanup no longer emits the leading vptr reset (a plain method

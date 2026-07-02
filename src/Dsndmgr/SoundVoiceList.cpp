@@ -10,10 +10,9 @@
 #include <Dsndmgr/SoundVoiceList.h>
 #include <rva.h>
 
-// The abstract-base ("pure") vftable (0x5ef6c8) a reaped element's vptr is
-// restamped to before RezFree - a transitional reloc-masked DIR32 store.
+// PureSoundElem's vtable (0x5ef6c8) - the reaped-element vptr reset target.
 DATA(0x001ef6c8)
-extern void* const g_PureVtbl[];
+extern void* const PureSoundElemVtable[];
 
 // ---------------------------------------------------------------------------
 // RemoveMatching (__thiscall, 2 stack args). Walk the chain; unlink +
@@ -41,7 +40,7 @@ void DSoundList::RemoveMatching(u32 key, u32 tag) {
         if (e->m_key == key) {
             Unlink(e ? node : 0);
             if (e) {
-                e->m_vtbl = (void*)g_PureVtbl;
+                *(void**)e = (void*)PureSoundElemVtable; // reset vptr to the pure base (0x5ef6c8)
                 RezFree(e);
             }
         }

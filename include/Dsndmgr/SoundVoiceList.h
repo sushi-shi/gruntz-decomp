@@ -22,10 +22,6 @@
 // The Rez heap free (0x1b9b82 _RezFree, __cdecl); reloc-masked rel32.
 extern "C" void RezFree(void* p);
 
-// The abstract-base ("pure") vftable (0x5ef6c8) a reaped element's vptr is
-// restamped to before RezFree - a transitional reloc-masked DIR32 store.
-extern void* const g_PureVtbl[]; // 0x5ef6c8
-
 // A chain link as the list sees it: the biased `element+4` pointer.
 struct DSoundLink {
     DSoundLink* m_next; // +0x00
@@ -33,11 +29,26 @@ struct DSoundLink {
 };
 SIZE_UNKNOWN(DSoundLink); // 2-word intrusive chain link
 
-// A reaped element (RemoveMatching's view): the link occupies +0x04/+0x08 (so the
-// link pointer IS element+4), a tag @+0xc and a key @+0x10. The vptr at +0x00 is
-// restamped to the pure base on free.
-struct DSoundElem {
-    void* m_vtbl;      // +0x00
+// The abstract "pure" sound-element base (retail vtable 0x5ef6c8: 2 slots, both
+// __purecall). ALL-VTABLES phase: modeled REAL-POLYMORPHIC (2 pure virtuals) so the
+// reaped elements are real derived types; the class is never instantiated, so cl
+// emits no ??_7PureSoundElem here.
+struct PureSoundElem {
+    virtual void Slot0() = 0; // +0x00  __purecall
+    virtual void Slot1() = 0; // +0x04  __purecall
+};
+SIZE_UNKNOWN(PureSoundElem); // abstract element base (vptr only)
+
+// The address of PureSoundElem's vtable (0x5ef6c8). The list reapers reset a reaped
+// element's vptr to this base right before RezFree (the inlined trivial base-subobject
+// dtor) - a `*(void**)e = &vtable` store MSVC's dtor codegen dead-eliminates as a dead
+// store, so it stays an explicit reloc-masked DIR32 reference to the real class's table.
+extern void* const PureSoundElemVtable[]; // 0x5ef6c8 = ??_7PureSoundElem@@6B@
+
+// A reaped element (RemoveMatching's view): a PureSoundElem-derived object whose link
+// occupies +0x04/+0x08 (the link pointer IS element+4), a tag @+0xc and a key @+0x10.
+struct DSoundElem : PureSoundElem {
+    // vptr @ +0x00 (inherited from PureSoundElem)
     DSoundLink m_link; // +0x04  { next@+0x04, prev@+0x08 }
     u32 m_tag; // +0x0c  (RemoveMatching skips elements whose tag != arg, unless arg==0xffff)
     u32 m_key; // +0x10

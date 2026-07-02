@@ -9,9 +9,9 @@
 // never collide): the device-level methods (m_device = IDirectSound, gated on the
 // m_initialized flag) and the per-buffer methods (m_buffer = IDirectSoundBuffer,
 // m_owner = the owning manager, gated on m_owner->m_initialized, caps in m_caps).
-// Every wrapper does `iface->vtbl->Method(iface, args...)` so the retail
-// `call *off(reg)` COM dispatch falls out; only the called slots are pinned, the
-// rest is padding.
+// Each interface is a real abstract COM class (__stdcall virtuals), so a wrapper's
+// `iface->Method(args...)` lowers to the retail `mov eax,[iface]; call [eax+slot]`
+// COM dispatch; only the called slots carry meaningful signatures, the rest pad.
 #ifndef DSNDMGR_DIRECTSOUNDMGR_H
 #define DSNDMGR_DIRECTSOUNDMGR_H
 
@@ -44,32 +44,29 @@ struct IDirectSoundBufferZ; // forward-decl: CreateSoundBuffer's out-param type
 
 // ---------------------------------------------------------------------------
 // IDirectSound (DSOUND) - the device interface DirectSoundCreate returns. Only
-// the slots the manager calls are pinned. COM convention => __stdcall with the
-// interface pointer as the hidden first ("this") argument; the manager always
-// invokes them as iface->vtbl->Method(iface, ...).
+// the slots the manager calls are pinned. COM convention => __stdcall virtuals with
+// the interface pointer as the hidden `this`; the manager invokes them as
+// iface->Method(...).
 //   +0x0c (slot 3)  CreateSoundBuffer  (LPCDSBUFFERDESC, LPDIRECTSOUNDBUFFER*, LPUNKNOWN)
 //   +0x18 (slot 6)  SetCooperativeLevel(HWND, DWORD)
 // ---------------------------------------------------------------------------
 struct IDirectSoundZ {
-    struct Vtbl {
-        char m_pad0[0x08];
-        i32(__stdcall* Release)(IDirectSoundZ*); // +0x08
-        i32(__stdcall* CreateSoundBuffer)(
-            IDirectSoundZ*,
-            void* desc,
-            IDirectSoundBufferZ** out,
-            void* unk
-        ); // +0x0c
-        char m_pad10[0x14 - 0x10];
-        i32(__stdcall* DuplicateSoundBuffer)(
-            IDirectSoundZ*,
-            IDirectSoundBufferZ* original,
-            IDirectSoundBufferZ** out
-        );                                                                          // +0x14
-        i32(__stdcall* SetCooperativeLevel)(IDirectSoundZ*, void* hwnd, u32 level); // +0x18
-    }* vtbl;
+    // Real COM interface (abstract): every slot is a __stdcall virtual with the
+    // interface pointer as the hidden `this`, so `iface->Method(args)` lowers to the
+    // same `mov eax,[iface]; call [eax+slot]` the manual vtbl-struct dispatch did.
+    virtual i32 __stdcall QueryInterface(void* iid, void** out) = 0; // slot 0
+    virtual u32 __stdcall AddRef() = 0;                              // slot 1
+    virtual i32 __stdcall Release() = 0;                             // slot 2  (+0x08)
+    virtual i32 __stdcall
+    CreateSoundBuffer(void* desc, IDirectSoundBufferZ** out, void* unk) = 0; // slot 3  (+0x0c)
+    virtual i32 __stdcall GetCaps(void* caps) = 0; // slot 4  (+0x10, unused)
+    virtual i32 __stdcall DuplicateSoundBuffer(
+        IDirectSoundBufferZ* original,
+        IDirectSoundBufferZ** out
+    ) = 0;                                                                // slot 5  (+0x14)
+    virtual i32 __stdcall SetCooperativeLevel(void* hwnd, u32 level) = 0; // slot 6  (+0x18)
 };
-SIZE_UNKNOWN(IDirectSoundZ); // COM interface view (single vtbl pointer)
+SIZE_UNKNOWN(IDirectSoundZ); // COM interface view (single vptr)
 
 // ---------------------------------------------------------------------------
 // IDirectSoundBuffer (DSOUND) - the buffer interface the per-buffer wrappers
@@ -90,43 +87,33 @@ SIZE_UNKNOWN(IDirectSoundZ); // COM interface view (single vtbl pointer)
 //   +0x50 (slot 20) Restore             ()
 // ---------------------------------------------------------------------------
 struct IDirectSoundBufferZ {
-    struct Vtbl {
-        char m_pad0[0x08];
-        i32(__stdcall* Release)(IDirectSoundBufferZ*);             // +0x08
-        i32(__stdcall* GetCaps)(IDirectSoundBufferZ*, void* caps); // +0x0c
-        i32(__stdcall* GetCurrentPosition)(IDirectSoundBufferZ*, u32* play,
-                                           u32* write); // +0x10
-        i32(__stdcall* GetFormat)(IDirectSoundBufferZ*, void* fmt, u32 size,
-                                  u32* written);                       // +0x14
-        i32(__stdcall* GetVolume)(IDirectSoundBufferZ*, i32* vol);     // +0x18
-        i32(__stdcall* GetPan)(IDirectSoundBufferZ*, i32* pan);        // +0x1c
-        i32(__stdcall* GetFrequency)(IDirectSoundBufferZ*, u32* freq); // +0x20
-        i32(__stdcall* GetStatus)(IDirectSoundBufferZ*, u32* status);  // +0x24
-        char m_pad28[0x2c - 0x28];
-        i32(__stdcall* Lock)(
-            IDirectSoundBufferZ*,
-            u32 off,
-            u32 bytes,
-            void** p1,
-            u32* n1,
-            void** p2,
-            u32* n2,
-            u32 fl
-        ); // +0x2c
-        i32(__stdcall* Play)(IDirectSoundBufferZ*, u32 r1, u32 r2,
-                             u32 flags);                                   // +0x30
-        i32(__stdcall* SetCurrentPosition)(IDirectSoundBufferZ*, u32 pos); // +0x34
-        i32(__stdcall* SetFormat)(IDirectSoundBufferZ*, void* fmt);        // +0x38
-        i32(__stdcall* SetVolume)(IDirectSoundBufferZ*, i32 vol);          // +0x3c
-        i32(__stdcall* SetPan)(IDirectSoundBufferZ*, i32 pan);             // +0x40
-        i32(__stdcall* SetFrequency)(IDirectSoundBufferZ*, u32 freq);      // +0x44
-        i32(__stdcall* Stop)(IDirectSoundBufferZ*);                        // +0x48
-        i32(__stdcall* Unlock)(IDirectSoundBufferZ*, void* p1, u32 n1, void* p2,
-                               u32 n2);                // +0x4c
-        i32(__stdcall* Restore)(IDirectSoundBufferZ*); // +0x50
-    }* vtbl;
+    // Real COM interface (abstract): __stdcall virtuals dispatched via the vptr, so
+    // `buf->Method(args)` lowers to `mov eax,[buf]; call [eax+slot]` (was the manual
+    // vtbl-struct dispatch). Only the touched slots carry meaningful signatures.
+    virtual i32 __stdcall QueryInterface(void* iid, void** out) = 0;        // slot 0
+    virtual u32 __stdcall AddRef() = 0;                                     // slot 1
+    virtual i32 __stdcall Release() = 0;                                    // slot 2  (+0x08)
+    virtual i32 __stdcall GetCaps(void* caps) = 0;                          // slot 3  (+0x0c)
+    virtual i32 __stdcall GetCurrentPosition(u32* play, u32* write) = 0;    // slot 4  (+0x10)
+    virtual i32 __stdcall GetFormat(void* fmt, u32 size, u32* written) = 0; // slot 5  (+0x14)
+    virtual i32 __stdcall GetVolume(i32* vol) = 0;                          // slot 6  (+0x18)
+    virtual i32 __stdcall GetPan(i32* pan) = 0;                             // slot 7  (+0x1c)
+    virtual i32 __stdcall GetFrequency(u32* freq) = 0;                      // slot 8  (+0x20)
+    virtual i32 __stdcall GetStatus(u32* status) = 0;                       // slot 9  (+0x24)
+    virtual i32 __stdcall Initialize(void* dsound, void* desc) = 0; // slot 10 (+0x28, unused)
+    virtual i32 __stdcall
+    Lock(u32 off, u32 bytes, void** p1, u32* n1, void** p2, u32* n2, u32 fl) = 0; // slot 11 (+0x2c)
+    virtual i32 __stdcall Play(u32 r1, u32 r2, u32 flags) = 0;                    // slot 12 (+0x30)
+    virtual i32 __stdcall SetCurrentPosition(u32 pos) = 0;                        // slot 13 (+0x34)
+    virtual i32 __stdcall SetFormat(void* fmt) = 0;                               // slot 14 (+0x38)
+    virtual i32 __stdcall SetVolume(i32 vol) = 0;                                 // slot 15 (+0x3c)
+    virtual i32 __stdcall SetPan(i32 pan) = 0;                                    // slot 16 (+0x40)
+    virtual i32 __stdcall SetFrequency(u32 freq) = 0;                             // slot 17 (+0x44)
+    virtual i32 __stdcall Stop() = 0;                                             // slot 18 (+0x48)
+    virtual i32 __stdcall Unlock(void* p1, u32 n1, void* p2, u32 n2) = 0;         // slot 19 (+0x4c)
+    virtual i32 __stdcall Restore() = 0;                                          // slot 20 (+0x50)
 };
-SIZE_UNKNOWN(IDirectSoundBufferZ); // COM interface view (single vtbl pointer)
+SIZE_UNKNOWN(IDirectSoundBufferZ); // COM interface view (single vptr)
 
 // ---------------------------------------------------------------------------
 // DSoundCloneBase - a tiny polymorphic view used only to dispatch a clone's
