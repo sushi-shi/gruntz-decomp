@@ -12,30 +12,9 @@
 
 #include <Mfc.h> // real MFC CMapStringToOb / CObject (Lookup 0x1b8008, reloc-masked)
 #include <Gruntz/CGameRegistry.h>
+#include <Gruntz/SerialArchive.h> // shared CSerialArchive stream (Read @ +0x2c / Write @ +0x30)
 #include <Ints.h>
 #include <rva.h>
-
-// The serialize stream: a polymorphic CArchive-like whose vtable holds Read @
-// +0x2c and Write @ +0x30 (typed PMF vtable, reloc-masked dispatch).
-struct CMgrArchiveVtbl;
-class CMgrArchive {
-public:
-    CMgrArchiveVtbl* vptr; // +0x00
-    void Read(void* buf, i32 len);
-    void Write(const void* buf, i32 len);
-};
-typedef void (CMgrArchive::*CMgrIoFn)(void*, i32);
-struct CMgrArchiveVtbl {
-    char _00[0x2c];
-    CMgrIoFn Read;  // [0x2c]
-    CMgrIoFn Write; // [0x30]
-};
-inline void CMgrArchive::Read(void* buf, i32 len) {
-    (this->*(vptr->Read))(buf, len);
-}
-inline void CMgrArchive::Write(const void* buf, i32 len) {
-    (this->*(vptr->Write))((void*)buf, len);
-}
 
 // The registry leaf reached as g_gameReg->m_30->m_10: a CDDrawWorkerRegistry with
 // the name map at +0x10 (read path) and the reverse name+index probe (write path).
@@ -71,7 +50,7 @@ extern i32 g_serialCount;
 // The settings record itself.
 class CMgrSettings {
 public:
-    i32 Serialize(CMgrArchive* arc, i32 mode, i32 a3, i32 a4); // 0x109e00
+    i32 Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4); // 0x109e00
 
     i32 m_00, m_04, m_08, m_0c;          // +0x00..+0x0c (m_0c unstreamed)
     double m_10, m_18, m_20, m_28, m_30; // +0x10..+0x30

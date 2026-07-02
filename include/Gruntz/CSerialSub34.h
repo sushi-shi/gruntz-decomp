@@ -25,29 +25,9 @@
 
 #include <Mfc.h> // CObject / CMapStringToOb / CString + <windows.h>
 
-// The serialize/archive object (param1): a polymorphic CArchive-like stream whose
-// vtable holds Read @ slot +0x2c and Write @ slot +0x30. Modeled as a typed PMF
-// vtable (period MSVC5 idiom) so the dispatch lowers to `mov eax,[arc]; call
-// [eax+0x2c]` with callee-side cleanup. Reloc-masked.
-struct CSerialArchiveVtbl;
-class CSerialArchive {
-public:
-    CSerialArchiveVtbl* vptr; // +0x00
-    void Read(void* buf, i32 len);
-    void Write(const void* buf, i32 len);
-};
-typedef void (CSerialArchive::*SerialIoFn)(void*, i32);
-struct CSerialArchiveVtbl {
-    char _00[0x2c - 0x00];
-    SerialIoFn Read;  // [0x2c]
-    SerialIoFn Write; // [0x30]
-};
-inline void CSerialArchive::Read(void* buf, i32 len) {
-    (this->*(vptr->Read))(buf, len);
-}
-inline void CSerialArchive::Write(const void* buf, i32 len) {
-    (this->*(vptr->Write))((void*)buf, len);
-}
+// The serialize/archive object (param1): the shared WAP32 stream interface (Read @
+// slot +0x2c / Write @ slot +0x30), now a real declared-only virtual class.
+#include <Gruntz/SerialArchive.h>
 
 // The class name registry (matches CDDrawSubMgrLeaf.cpp): the name->value map sits
 // at +0x10 (CMapStringToOb::Lookup is the 0x1b8438 call); KeyOfValue_152d30 turns a

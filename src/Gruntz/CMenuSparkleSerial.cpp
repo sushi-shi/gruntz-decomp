@@ -12,7 +12,7 @@
 // CMenuSparkle::Serialize  (0xae1c0)
 // ===========================================================================
 RVA(0x000ae1c0, 0xae)
-i32 CMenuSparkle::Serialize(CMsSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
+i32 CMenuSparkle::Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
     if (arc == 0) {
         return 0;
     }
@@ -41,5 +41,3 @@ i32 CMenuSparkle::Serialize(CMsSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
 SIZE_UNKNOWN(CMenuSparkle);
 SIZE_UNKNOWN(CMenuSparkleBase);
 SIZE_UNKNOWN(CMenuSparkleSub);
-SIZE_UNKNOWN(CMsSerialArchive);
-SIZE_UNKNOWN(CMsSerialArchiveVtbl);

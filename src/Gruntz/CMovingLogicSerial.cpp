@@ -64,7 +64,7 @@ CButeText& WriteCurve(CButeText& accum, const CMovingLogicCurve& c) {
 // (paired 100%) / ReadCurve, the four trailing-int transfers and the base chain
 // are all byte-faithful. Logic complete; deferred to the final sweep.
 RVA(0x0016f4a0, 0x1da)
-i32 CMovingLogic::Serialize(CMlSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
+i32 CMovingLogic::Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
     if (arc == 0) {
         return 0;
     }
@@ -119,7 +119,7 @@ i32 CMovingLogic::Serialize(CMlSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
 // g_logicTypesRegistered transfers and the read-mode back-pointer seeding are all
 // byte-faithful. Logic complete; deferred to the final sweep with its sibling.
 RVA(0x0016e7f0, 0x1cf)
-i32 CMovingLogicBase::Serialize(CMlSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
+i32 CMovingLogicBase::Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
     if (arc == 0) {
         return 0;
     }
@@ -171,8 +171,6 @@ SIZE_UNKNOWN(CButeReadTemp);
 SIZE_UNKNOWN(CButeText);
 SIZE_UNKNOWN(CButeVbaseTeardown);
 SIZE_UNKNOWN(CButeWriteTemp);
-SIZE_UNKNOWN(CMlSerialArchive);
-SIZE_UNKNOWN(CMlSerialArchiveVtbl);
 SIZE_UNKNOWN(CMlSerialCtx);
 SIZE_UNKNOWN(CMovingLogicBase);
 SIZE_UNKNOWN(CMovingLogicCurve);

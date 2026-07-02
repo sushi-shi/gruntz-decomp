@@ -44,27 +44,9 @@ struct CMovingLogicCurve {
 // the vbase subobject (+0xc) - that vbase this-adjust is a documented MSVC5 wall,
 // so the construct/teardown are modeled here as reloc-masked helper views.
 
-// The serialize/archive stream (same shape as CSerialSub34's): a polymorphic
-// CArchive-like whose vtable holds Read @ +0x2c and Write @ +0x30.
-struct CMlSerialArchiveVtbl;
-class CMlSerialArchive {
-public:
-    CMlSerialArchiveVtbl* vptr; // +0x00
-    void Read(void* buf, i32 len);
-    void Write(const void* buf, i32 len);
-};
-typedef void (CMlSerialArchive::*CMlSerialIoFn)(void*, i32);
-struct CMlSerialArchiveVtbl {
-    char _00[0x2c];
-    CMlSerialIoFn Read;  // [0x2c]
-    CMlSerialIoFn Write; // [0x30]
-};
-inline void CMlSerialArchive::Read(void* buf, i32 len) {
-    (this->*(vptr->Read))(buf, len);
-}
-inline void CMlSerialArchive::Write(const void* buf, i32 len) {
-    (this->*(vptr->Write))((void*)buf, len);
-}
+// The serialize/archive stream: the shared WAP32 stream interface (Read @ +0x2c /
+// Write @ +0x30), a real declared-only virtual class.
+#include <Gruntz/SerialArchive.h>
 
 // RezAlloc/RezFree (0x1b9b46 / 0x1b9b82) - the engine block allocator.
 void* RezAlloc(i32 size); // 0x1b9b46
@@ -123,7 +105,7 @@ struct CMlSerialCtx {
 // seed the back-pointers (m_c/m_10) and m_14 from the context arg.
 class CMovingLogicBase {
 public:
-    i32 Serialize(CMlSerialArchive* arc, i32 mode, i32 a3, i32 a4); // 0x16e7f0
+    i32 Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4); // 0x16e7f0
 
     void* _vptr;     // +0x00
     i32 m_4;         // +0x04
@@ -140,7 +122,7 @@ public:
 // CMovingLogic: vtable + the 0x108-byte curve at +0x38 + four trailing ints.
 class CMovingLogic {
 public:
-    i32 Serialize(CMlSerialArchive* arc, i32 mode, i32 a3, i32 a4); // 0x16f4a0
+    i32 Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4); // 0x16f4a0
 
     void* _vptr;            // +0x00
     char _04[0x34];         // +0x04

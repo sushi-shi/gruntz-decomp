@@ -18,7 +18,7 @@
 // + pin-local-for-callee-saved-reg). Not source-steerable (& and || forms both
 // normalize to the same fail-first regalloc). Logic complete; final-sweep deferred.
 RVA(0x00109e00, 0x245)
-i32 CMgrSettings::Serialize(CMgrArchive* arc, i32 mode, i32 a3, i32 a4) {
+i32 CMgrSettings::Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
     if (arc == 0) {
         return 0;
     }
@@ -87,7 +87,5 @@ i32 CMgrSettings::Serialize(CMgrArchive* arc, i32 mode, i32 a3, i32 a4) {
 #include <rva.h>
 SIZE_UNKNOWN(CDDrawWorkerRegistry);
 SIZE_UNKNOWN(CMgrActiveHolder);
-SIZE_UNKNOWN(CMgrArchive);
-SIZE_UNKNOWN(CMgrArchiveVtbl);
 SIZE_UNKNOWN(CMgrLookupRec);
 SIZE_UNKNOWN(CMgrSettings);

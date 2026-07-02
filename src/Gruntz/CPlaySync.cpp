@@ -10,12 +10,12 @@
 // external (reloc-masked). Field names are placeholders; only offsets + emitted
 // bytes are load-bearing (campaign doctrine).
 #include <Gruntz/CPlay.h>
-#include <Gruntz/CMenuSparkleSerial.h> // CMsSerialArchive (Read @ +0x2c, Write @ +0x30)
+#include <Gruntz/SerialArchive.h> // shared CSerialArchive stream (Read @ +0x2c, Write @ +0x30)
 
 // A child sync sub-object: the three sync-able children (m_guts / m_frameMarker /
 // m_beginMarker) each expose the same 4-arg sync entry (reloc-masked, no body).
 struct CPlaySyncChild {
-    i32 Sync(CMsSerialArchive* ar, i32 mode, i32 a2, i32 a3); // reloc-masked
+    i32 Sync(CSerialArchive* ar, i32 mode, i32 a2, i32 a3); // reloc-masked
 };
 
 // The world sound manager reached as m_4->m_48 (play a named cue). reloc-masked.
@@ -41,7 +41,7 @@ struct CPlaySoundMgr {
 // CPlay::SyncState  (0x0d7520)
 // ===========================================================================
 RVA(0x000d7520, 0x3b9)
-i32 CPlay::SyncState(CMsSerialArchive* ar, i32 mode, i32 a2, i32 a3) {
+i32 CPlay::SyncState(CSerialArchive* ar, i32 mode, i32 a2, i32 a3) {
     if (ar == 0) {
         return 0;
     }
