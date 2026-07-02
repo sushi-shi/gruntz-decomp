@@ -2555,8 +2555,8 @@ i32 CGrunt::RectContains(i32 x, i32 y) {
     i32 px = x >> 5;
     i32 py = y >> 5;
 
-    i32* ra = (i32*)((char*)this + 0x290);
-    i32* rb = (i32*)((char*)this + 0x2a0);
+    i32* ra = (i32*)(&m_290);
+    i32* rb = (i32*)(&m_2a0);
 
     RECT r1;
     r1.left = ra[0] + dx;
@@ -2605,8 +2605,8 @@ i32 CGrunt::RectContainsGated(i32 x, i32 y) {
     i32 dx = m_lastTilePxX >> 5;
     i32 dy = m_lastTilePxY >> 5;
 
-    i32* ra = (i32*)((char*)this + 0x2b0);
-    i32* rb = (i32*)((char*)this + 0x2c0);
+    i32* ra = (i32*)(&m_2b0);
+    i32* rb = (i32*)(&m_2c0);
 
     RECT r1;
     r1.left = ra[0] + dx;
@@ -3212,7 +3212,7 @@ void CGrunt::FreeNameList() {
                 node = (void**)next;
             } while (node);
         }
-        ((CGruntColl*)((char*)this + 0x31c))->Reset();
+        ((CGruntColl*)(&m_31c))->Reset();
     }
 
     while (1) {
@@ -3224,7 +3224,7 @@ void CGrunt::FreeNameList() {
         if (list == 0) {
             continue;
         }
-        void* p = ((CGruntList*)((char*)this + 0x338))->RemoveHead();
+        void* p = ((CGruntList*)(&m_338))->RemoveHead();
         GruntNode_Delete(p);
     }
 }
@@ -3386,7 +3386,7 @@ void CGrunt::SetEntrancePos(i32 a, i32 b) {
                 node = (void**)next;
             } while (node);
         }
-        ((CGruntColl*)((char*)this + 0x31c))->Reset();
+        ((CGruntColl*)(&m_31c))->Reset();
     }
 }
 
@@ -3421,7 +3421,7 @@ i32 CGrunt::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
     if (SerializeAnimState(ar, mode, a3, a4) == 0) {
         return 0;
     }
-    if (((CGruntSubSer*)((char*)this + 0x150))->Serialize(ar, mode, a3, a4) == 0) {
+    if (((CGruntSubSer*)(&m_150))->Serialize(ar, mode, a3, a4) == 0) {
         return 0;
     }
     switch (mode) {
@@ -3439,21 +3439,21 @@ i32 CGrunt::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
             m_tileMgr = (CGruntTileMgr*)g_gameReg->m_68;
             break;
     }
-    ((CGruntSubSer*)((char*)this + 0x43c))->Serialize(ar, mode, a3, a4);
-    SerRecord(ar, mode, (char*)this + 0x810);
-    SerRecord(ar, mode, (char*)this + 0x820);
-    SerRecord(ar, mode, (char*)this + 0x830);
-    SerRecord(ar, mode, (char*)this + 0x840);
-    SerRecord(ar, mode, (char*)this + 0x850);
-    SerRecord(ar, mode, (char*)this + 0x860);
-    SerRecord(ar, mode, (char*)this + 0x870);
-    SerRecord(ar, mode, (char*)this + 0x880);
-    ((CGruntSubSer*)((char*)this + 0x890))->Serialize(ar, mode, a3, a4);
-    ((CGruntSubSer*)((char*)this + 0x8a0))->Serialize(ar, mode, a3, a4);
-    ((CGruntSubSer*)((char*)this + 0x8b0))->Serialize(ar, mode, a3, a4);
-    ((CGruntSubSer*)((char*)this + 0x8c0))->Serialize(ar, mode, a3, a4);
-    ((CGruntSubSer*)((char*)this + 0x308))->Serialize(ar, mode, a3, a4);
-    ((CGruntSubSer*)((char*)this + 0x278))->Serialize(ar, mode, a3, a4);
+    ((CGruntSubSer*)(&m_entranceCell))->Serialize(ar, mode, a3, a4);
+    SerRecord(ar, mode, (char*)&m_810);
+    SerRecord(ar, mode, (char*)&m_idleAnchorLo);
+    SerRecord(ar, mode, (char*)&m_idleTimerLo);
+    SerRecord(ar, mode, (char*)&m_entranceClockLo);
+    SerRecord(ar, mode, (char*)&m_850);
+    SerRecord(ar, mode, (char*)&m_860);
+    SerRecord(ar, mode, (char*)&m_870);
+    SerRecord(ar, mode, (char*)&m_880);
+    ((CGruntSubSer*)(&m_890))->Serialize(ar, mode, a3, a4);
+    ((CGruntSubSer*)(&m_8a0))->Serialize(ar, mode, a3, a4);
+    ((CGruntSubSer*)(&m_8b0))->Serialize(ar, mode, a3, a4);
+    ((CGruntSubSer*)(&m_8c0))->Serialize(ar, mode, a3, a4);
+    ((CGruntSubSer*)(&m_308))->Serialize(ar, mode, a3, a4);
+    ((CGruntSubSer*)(&m_278))->Serialize(ar, mode, a3, a4);
     return 1;
 }
 
@@ -3740,106 +3740,109 @@ i32 CGrunt::Save(CGruntArchive* ar) {
         }
     }
     ar->Write(buf, 0x80);
-    ar->Write((char*)this + 0x18c, 4);
-    ar->Write((char*)this + 0x190, 4);
-    ar->Write((char*)this + 0x194, 4);
-    ar->Write((char*)this + 0x170, 4);
-    ar->Write((char*)this + 0x198, 4);
-    ar->Write((char*)this + 0x19c, 4);
-    ar->Write((char*)this + 0x1a0, 4);
-    ar->Write((char*)this + 0x1a4, 4);
-    ar->Write((char*)this + 0x1a8, 4);
-    ar->Write((char*)this + 0x1ac, 4);
-    ar->Write((char*)this + 0x1b0, 4);
-    ar->Write((char*)this + 0x1b4, 4);
-    ar->Write((char*)this + 0x1d8, 4);
-    ar->Write((char*)this + 0x174, 8);
-    ar->Write((char*)this + 0x17c, 8);
-    ar->Write((char*)this + 0x184, 8);
-    ar->Write((char*)this + 0x1dc, 8);
-    ar->Write((char*)this + 0x1e4, 4);
-    ar->Write((char*)this + 0x1e8, 4);
-    ar->Write((char*)this + 0x1ec, 4);
-    ar->Write((char*)this + 0x1f0, 4);
-    ar->Write((char*)this + 0x1f4, 4);
-    ar->Write((char*)this + 0x1f8, 4);
-    ar->Write((char*)this + 0x1fc, 4);
-    ar->Write((char*)this + 0x200, 8);
-    ar->Write((char*)this + 0x208, 8);
-    ar->Write((char*)this + 0x210, 4);
-    ar->Write((char*)this + 0x214, 4);
-    ar->Write((char*)this + 0x218, 4);
-    ar->Write((char*)this + 0x21c, 4);
-    ar->Write((char*)this + 0x220, 4);
-    ar->Write((char*)this + 0x224, 4);
-    ar->Write((char*)this + 0x228, 4);
-    ar->Write((char*)this + 0x22c, 4);
-    ar->Write((char*)this + 0x230, 4);
-    ar->Write((char*)this + 0x290, 16);
-    ar->Write((char*)this + 0x2a0, 16);
-    ar->Write((char*)this + 0x2b0, 16);
-    ar->Write((char*)this + 0x2c0, 16);
-    ar->Write((char*)this + 0x3ec, 4);
-    ar->Write((char*)this + 0x3f0, 4);
-    ar->Write((char*)this + 0x3f4, 4);
-    ar->Write((char*)this + 0x3f8, 4);
-    ar->Write((char*)this + 0x400, 8);
-    ar->Write((char*)this + 0x418, 4);
-    ar->Write((char*)this + 0x42c, 4);
-    ar->Write((char*)this + 0x430, 4);
-    ar->Write((char*)this + 0x434, 4);
-    ar->Write((char*)this + 0x438, 4);
-    ar->Write((char*)this + 0x2d0, 4);
-    ar->Write((char*)this + 0x2d4, 4);
-    ar->Write((char*)this + 0x2d8, 4);
-    ar->Write((char*)this + 0x2dc, 4);
-    ar->Write((char*)this + 0x2e0, 4);
-    ar->Write((char*)this + 0x2e4, 4);
-    ar->Write((char*)this + 0x2ec, 4);
-    ar->Write((char*)this + 0x2f0, 8);
-    ar->Write((char*)this + 0x300, 8);
-    ar->Write((char*)this + 0x354, 4);
-    ar->Write((char*)this + 0x358, 4);
-    ar->Write((char*)this + 0x35c, 4);
-    ar->Write((char*)this + 0x3dc, 8);
-    ar->Write((char*)this + 0x3e4, 8);
-    ar->Write((char*)this + 0x450, 4);
-    ar->Write((char*)this + 0x41c, 4);
-    ar->Write((char*)this + 0x408, 8);
-    ar->Write((char*)this + 0x410, 8);
-    ar->Write((char*)this + 0x8d0, 4);
-    ar->Write((char*)this + 0x234, 4);
-    ar->Write((char*)this + 0x238, 4);
-    ar->Write((char*)this + 0x23c, 4);
-    ar->Write((char*)this + 0x240, 4);
-    ar->Write((char*)this + 0x244, 4);
-    ar->Write((char*)this + 0x248, 4);
-    ar->Write((char*)this + 0x24c, 4);
-    ar->Write((char*)this + 0x258, 4);
-    ar->Write((char*)this + 0x25c, 4);
-    ar->Write((char*)this + 0x360, 4);
-    ar->Write((char*)this + 0x364, 4);
-    ar->Write((char*)this + 0x318, 4);
-    ar->Write((char*)this + 0x2f8, 8);
-    ar->Write((char*)this + 0x36c, 4);
-    ar->Write((char*)this + 0x454, 4);
-    ar->Write((char*)this + 0x370, 4);
-    ar->Write((char*)this + 0x420, 4);
-    ar->Write((char*)this + 0x368, 4);
-    ar->Write((char*)this + 0x458, 8);
-    ar->Write((char*)this + 0x250, 4);
-    ar->Write((char*)this + 0x254, 4);
-    ar->Write((char*)this + 0x374, 4);
-    ar->Write((char*)this + 0x37c, 4);
-    ar->Write((char*)this + 0x380, 4);
-    ar->Write((char*)this + 0x384, 4);
-    ar->Write((char*)this + 0x388, 4);
-    ar->Write((char*)this + 0x390, 4);
-    ar->Write((char*)this + 0x378, 4);
-    ar->Write((char*)this + 0x38c, 4);
-    ar->Write((char*)this + 0x460, 4);
-    ar->Write((char*)this + 0x2e8, 4);
-    ar->Write((char*)this + 0x288, 8);
+    ar->Write(&m_18c, 4);
+    ar->Write(&m_toyBlendPct, 4);
+    ar->Write(&m_194, 4);
+    ar->Write(&m_entranceReason, 4);
+    ar->Write(&m_198, 4);
+    ar->Write(&m_19c, 4);
+    ar->Write(&m_moveMode, 4);
+    ar->Write(&m_1a4, 4);
+    ar->Write(&m_1a8, 4);
+    ar->Write(&m_1ac, 4);
+    ar->Write(&m_1b0, 4);
+    ar->Write(&m_1b4, 4);
+    ar->Write(&m_arrived, 4);
+    ar->Write(&m_entrancePxX, 8);
+    ar->Write(&m_lastTilePxX, 8);
+    ar->Write(&m_184, 8);
+    ar->Write(&m_1dc, 8);
+    ar->Write(&m_entranceActive, 4);
+    ar->Write(&m_arrivalPending, 4);
+    ar->Write(&m_tileOwnerHi, 4);
+    ar->Write(&m_tileOwnerLo, 4);
+    ar->Write(&m_1f4_moveIcon, 4);
+    ar->Write(&m_1f8, 4);
+    ar->Write(&m_entranceCommitted, 4);
+    ar->Write(&m_neighborCol, 8);
+    ar->Write(&m_208, 8);
+    ar->Write(&m_210, 4);
+    ar->Write(&m_214, 4);
+    ar->Write(&m_218, 4);
+    ar->Write(&m_neighborValid, 4);
+    ar->Write(&m_poweredUp, 4);
+    ar->Write(&m_224, 4);
+    ar->Write(&m_228, 4);
+    ar->Write(&m_22c, 4);
+    ar->Write(&m_230, 4);
+    ar->Write(&m_290, 16);
+    ar->Write(&m_2a0, 16);
+    ar->Write(&m_2b0, 16);
+    ar->Write(&m_2c0, 16);
+    ar->Write(&m_health, 4);
+    ar->Write(&m_stamina, 4);
+    ar->Write(&m_toyTime, 4);
+    ar->Write(&m_wingzTime, 4);
+    ar->Write(
+        (char*)this + 0x400,
+        8
+    ); // m_400 double (raw: converting shifts a neighbor's regalloc)
+    ar->Write(&m_418, 4);
+    ar->Write(&m_42c, 4);
+    ar->Write(&m_430, 4);
+    ar->Write(&m_434, 4);
+    ar->Write(&m_438, 4);
+    ar->Write(&m_arrivalState, 4);
+    ar->Write(&m_2d4, 4);
+    ar->Write(&m_2d8, 4);
+    ar->Write(&m_defenderRadius, 4);
+    ar->Write(&m_2e0, 4);
+    ar->Write(&m_2e4, 4);
+    ar->Write(&m_dwell, 4);
+    ar->Write(&m_2f0, 8);
+    ar->Write(&m_defenderX, 8);
+    ar->Write(&m_354, 4);
+    ar->Write(&m_358, 4);
+    ar->Write(&m_35c, 4);
+    ar->Write(&m_3dc, 8);
+    ar->Write(&m_3e4, 8);
+    ar->Write(&m_arrivalPhase, 4);
+    ar->Write(&m_timePerTile, 4);
+    ar->Write((char*)this + 0x408, 8); // m_408 double (raw: see m_400 note)
+    ar->Write((char*)this + 0x410, 8); // m_410 double (raw: see m_400 note)
+    ar->Write(&m_8d0, 4);
+    ar->Write(&m_234, 4);
+    ar->Write(&m_wingzEnabled, 4);
+    ar->Write(&m_23c, 4);
+    ar->Write(&m_240, 4);
+    ar->Write(&m_resetApplied, 4);
+    ar->Write(&m_arrivalFlags, 4);
+    ar->Write(&m_24c, 4);
+    ar->Write(&m_gruntKind, 4);
+    ar->Write(&m_entranceArmed, 4);
+    ar->Write(&m_deathType, 4);
+    ar->Write(&m_364, 4);
+    ar->Write(&m_318, 4);
+    ar->Write(&m_2f8, 8);
+    ar->Write(&m_36c, 4);
+    ar->Write(&m_454, 4);
+    ar->Write(&m_370, 4);
+    ar->Write(&m_tileClaimed, 4);
+    ar->Write(&m_368, 4);
+    ar->Write(&m_458, 8);
+    ar->Write(&m_250, 4);
+    ar->Write(&m_254, 4);
+    ar->Write(&m_374, 4);
+    ar->Write(&m_37c, 4);
+    ar->Write(&m_380, 4);
+    ar->Write(&m_384, 4);
+    ar->Write(&m_388, 4);
+    ar->Write(&m_390, 4);
+    ar->Write(&m_378, 4);
+    ar->Write(&m_38c, 4);
+    ar->Write(&m_lowStaminaCued, 4);
+    ar->Write(&m_2e8, 4);
+    ar->Write(&m_288, 8);
 
     for (CGruntListNode* node = m_33c; node; node = node->m_next) {
         ar->Write(node->m_data, 0x2c);
@@ -3877,21 +3880,21 @@ i32 CGrunt::Load(CGruntArchive* ar) {
         return 0;
     }
 
-    ar->Read((char*)this + 0x1bc, 4);
-    ar->Read((char*)this + 0x1c0, 4);
-    ar->Read((char*)this + 0x1cc, 4);
-    ar->Read((char*)this + 0x2d8, 4);
-    ar->Read((char*)this + 0x2ec, 4);
-    ar->Read((char*)this + 0x2f0, 4);
-    ar->Read((char*)this + 0x2f4, 4);
-    ar->Read((char*)this + 0x2f8, 4);
-    ar->Read((char*)this + 0x2fc, 8);
-    ar->Read((char*)this + 0x360, 8);
-    ar->Read((char*)this + 0x368, 4);
-    ar->Read((char*)this + 0x36c, 4);
+    ar->Read(&m_toySprite, 4);
+    ar->Read(&m_animSetName, 4);
+    ar->Read(&m_toyTimeSprite, 4);
+    ar->Read(&m_2d8, 4);
+    ar->Read(&m_dwell, 4);
+    ar->Read(&m_2f0, 4);
+    ar->Read(&m_2f4, 4);
+    ar->Read(&m_2f8, 4);
+    ar->Read(&m_2fc, 8);
+    ar->Read(&m_deathType, 8);
+    ar->Read(&m_368, 4);
+    ar->Read(&m_36c, 4);
 
     {
-        GruntLoadColl* coll = (GruntLoadColl*)((char*)this + 0x370);
+        GruntLoadColl* coll = (GruntLoadColl*)(&m_370);
         for (i32 i = 0; i < coll->m_count; i++) {
             void* node = coll->m_data[i];
             if (node) {
@@ -3916,13 +3919,13 @@ i32 CGrunt::Load(CGruntArchive* ar) {
         }
     }
 
-    ar->Read((char*)this + 0x384, 8);
-    ar->Read((char*)this + 0x38c, 8);
-    ar->Read((char*)this + 0x394, 8);
-    ar->Read((char*)this + 0x39c, 8);
+    ar->Read(&m_384, 8);
+    ar->Read(&m_38c, 8);
+    ar->Read(&m_poseWalk, 8);
+    ar->Read(&m_poseAttack2, 8);
 
     {
-        GruntLoadColl* coll = (GruntLoadColl*)((char*)this + 0x3a4);
+        GruntLoadColl* coll = (GruntLoadColl*)(&m_poseStruck1);
         i32 k = 4;
         do {
             for (i32 i = 0; i < coll->m_count; i++) {
@@ -3951,12 +3954,12 @@ i32 CGrunt::Load(CGruntArchive* ar) {
         } while (--k);
     }
 
-    ar->Read((char*)this + 0x408, 4);
+    ar->Read(&m_408, 4);
     g_serialCounter++;
     char buf512[0x200];
     ar->Read(buf512, 0x200);
-    ((GruntLoadStr*)((char*)this + 0x410))->Assign(buf512);
-    ar->Read((char*)this + 0x40c, 4);
+    ((GruntLoadStr*)(&m_410))->Assign(buf512);
+    ar->Read((char*)&m_408 + 4, 4);
     ar->Read(&g_load612618, 4);
 
     g_serialCounter++;
@@ -3987,9 +3990,9 @@ i32 CGrunt::Load(CGruntArchive* ar) {
         m_cells[0].m_64 = (i32)entry2;
     }
 
-    ar->Read((char*)this + 0x4d8, 4);
-    ar->Read((char*)this + 0x4dc, 4);
-    ar->Read((char*)this + 0x4e0, 4);
+    ar->Read(&m_cells[1].m_walk, 4);
+    ar->Read(&m_cells[1].m_idle, 4);
+    ar->Read(&m_cells[1].m_item, 4);
     g_serialCounter++;
     i32 v;
     ar->Read(&v, 4);
@@ -4006,32 +4009,32 @@ i32 CGrunt::Load(CGruntArchive* ar) {
         return 0;
     }
 
-    ar->Read((char*)this + 0x4e8, 4);
-    ar->Read((char*)this + 0x4ec, 4);
-    ar->Read((char*)this + 0x4f4, 4);
-    ar->Read((char*)this + 0x1c4, 4);
-    ar->Read((char*)this + 0x484, 4);
-    ar->Read((char*)this + 0x4f8, 4);
-    ar->Read((char*)this + 0x4fc, 4);
-    ar->Read((char*)this + 0x500, 4);
-    ar->Read((char*)this + 0x4f0, 4);
-    ar->Read((char*)this + 0x504, 4);
-    ar->Read((char*)this + 0x414, 4);
-    ar->Read((char*)this + 0x418, 4);
-    ar->Read((char*)this + 0x41c, 4);
-    ar->Read((char*)this + 0x420, 4);
-    ar->Read((char*)this + 0x424, 4);
-    ar->Read((char*)this + 0x428, 2);
-    ar->Read((char*)this + 0x470, 4);
-    ar->Read((char*)this + 0x474, 4);
-    ar->Read((char*)this + 0x478, 4);
-    ar->Read((char*)this + 0x47c, 4);
-    ar->Read((char*)this + 0x480, 4);
-    ar->Read((char*)this + 0x4b0, 4);
-    ar->Read((char*)this + 0x4d4, 4);
-    ar->Read((char*)this + 0x49c, 4);
+    ar->Read(&m_cells[1].m_18, 4);
+    ar->Read(&m_cells[1].m_1c, 4);
+    ar->Read(&m_cells[1].m_24, 4);
+    ar->Read(&m_healthSprite, 4);
+    ar->Read(&m_cells[0].m_1c, 4);
+    ar->Read(&m_cells[1].m_28, 4);
+    ar->Read(&m_cells[1].m_2c, 4);
+    ar->Read(&m_cells[1].m_30, 4);
+    ar->Read(&m_cells[1].m_20, 4);
+    ar->Read(&m_cells[1].m_34, 4);
+    ar->Read((char*)&m_410 + 4, 4);
+    ar->Read(&m_418, 4);
+    ar->Read(&m_timePerTile, 4);
+    ar->Read(&m_tileClaimed, 4);
+    ar->Read(&m_424, 4);
+    ar->Read(&m_428, 2);
+    ar->Read(&m_cells[0].m_walk, 4);
+    ar->Read(&m_cells[0].m_idle, 4);
+    ar->Read(&m_cells[0].m_item, 4);
+    ar->Read(&m_cells[0].m_14, 4);
+    ar->Read(&m_cells[0].m_18, 4);
+    ar->Read(&m_cells[0].m_48, 4);
+    ar->Read(&m_cells[1].m_struck, 4);
+    ar->Read(&m_cells[0].m_34, 4);
     m_cells[1].m_40 = 2;
-    ar->Read((char*)this + 0x514, 4);
+    ar->Read(&m_cells[1].m_44, 4);
 
     i32 n488;
     ar->Read(&n488, 4);
@@ -4392,7 +4395,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
         }
     }
 
-    ((CGruntExitHolder*)((char*)this + 0x150))->Apply(found, 0);
+    ((CGruntExitHolder*)(&m_150))->Apply(found, 0);
     i32* elem = m_154->m_1b4->At(0);
     i32 frame = elem[0x14 / 4];
     m_154->GameApplyLookupSprite(s_GRUNTZ_EXITZ, frame);
@@ -4465,7 +4468,7 @@ void CGrunt::LoadVehicleGruntAnimations() {
 
             CEntranceAnimDescColl* desc = m_154->m_1b4;
             i32* elem = desc->m_10 > 0 ? *desc->m_c : 0;
-            char* buf = GruntStrGetBuffer((char*)this + 0x448, 0);
+            char* buf = GruntStrGetBuffer(&m_448, 0);
             m_154->GameApplyLookupSprite(buf, elem[0x14 / 4]);
 
             CGruntHud* h = m_10;
@@ -4612,7 +4615,7 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
     }
 
     m_prevEntranceDesc = (i32)m_154->m_1b4;
-    m_154->m_1a0.SetGeometry(*(i32*)((char*)this + poseIdx * 4 + 0x3d0));
+    m_154->m_1a0.SetGeometry((&m_poseItem)[poseIdx]);
 
     i32 col = m_entranceCell[0];
     i32 row = m_entranceCell[1];
@@ -4660,7 +4663,7 @@ i32 CGrunt::UpdateEntranceAnim() {
         i32* elem = desc->m_10 > 0 ? *desc->m_c : 0;
         i32 frame = elem[0x14 / 4];
 
-        char* buf = GruntStrGetBuffer((char*)this + 0x448, 0);
+        char* buf = GruntStrGetBuffer(&m_448, 0);
         m_154->SetAnimFrame(buf, frame);
 
         m_228 = 1;
@@ -5137,7 +5140,7 @@ void CGrunt::StepArrivalDrop(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f) {
                 g_coordPool.Recycle(cur->m_coord);
             }
         }
-        ((CObList*)((char*)this + 0x31c))->RemoveAll();
+        ((CObList*)(&m_31c))->RemoveAll();
     }
     StepDropApply();
     return;
@@ -5810,7 +5813,7 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
                 }
                 node = (void**)next;
             }
-            ((CGruntColl*)((char*)this + 0x31c))->Reset();
+            ((CGruntColl*)(&m_31c))->Reset();
         }
 
         m_228 = 0;
@@ -5828,12 +5831,12 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
             m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeP);
             i32 toyIdx = rand() % 2;
             m_prevEntranceDesc = (i32)m_154->m_1b4;
-            m_154->SetGeometryEx(*(i32*)((char*)this + toyIdx * 4 + 0x3c4), 0);
+            m_154->SetGeometryEx((&m_poseToy1)[toyIdx], 0);
 
             CEntranceAnimDescColl* desc = m_154->m_1b4;
             i32* el = desc->m_10 > 0 ? *desc->m_c : 0;
             i32 frame = el[0x14 / 4];
-            char* buf = GruntStrGetBuffer((char*)this + 0x448, 0);
+            char* buf = GruntStrGetBuffer(&m_448, 0);
             m_154->SetAnimFrame(buf, frame);
 
             i32 cueTier = ((toyIdx != 0) ? 0xa : 0) + 0x406;
@@ -5930,14 +5933,14 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
     }
 
     CEntranceAnimDescColl* cur = m_154->m_1b4;
-    i32 want = *(i32*)((char*)this + sel * 4 + 0x3c4);
+    i32 want = (&m_poseToy1)[sel];
     if ((i32)cur != want) {
         m_prevEntranceDesc = (i32)m_154->m_1b4;
         m_154->m_1a0.SetGeometry(want);
         CEntranceAnimDescColl* desc = m_154->m_1b4;
         i32* el = desc->m_10 > 0 ? *desc->m_c : 0;
         i32 frame = el[0x14 / 4];
-        char* buf = GruntStrGetBuffer((char*)this + 0x448, 0);
+        char* buf = GruntStrGetBuffer(&m_448, 0);
         m_154->SetAnimFrame(buf, frame);
     }
 
@@ -6097,7 +6100,7 @@ i32 CGrunt::RearmAttackAnim(i32 col, i32 row) {
 
     CEntranceAnimPlayer* p = m_154;
     m_prevEntranceDesc = (i32)p->m_1b4;
-    p->m_1a0.SetGeometry(*(i32*)((char*)this + idx * 4 + 0x398));
+    p->m_1a0.SetGeometry((&m_poseAttack1)[idx]);
 
     CEntranceAnimDescColl* desc = m_154->m_1b4;
     i32* el = desc->m_10 > 0 ? *desc->m_c : 0;
@@ -6521,7 +6524,7 @@ tail:
     }
 
     m_218 = 0;
-    i32 pose = *(i32*)((char*)this + a1 * 4 + 0x3a4);
+    i32 pose = (&m_poseStruck1)[a1];
     m_prevEntranceDesc = (i32)m_154->m_1b4;
     m_154->m_1a0.SetGeometry(pose);
     i32 frame;
@@ -6579,7 +6582,7 @@ i32 CGrunt::ResolveArrivalReposition() {
     m_defenderX = m_lastTilePxX;
     m_defenderY = m_lastTilePxY;
     if (occ != 0 && GruntInRadius(occ->m_tileOwnerHi, occ->m_tileOwnerLo) != 0) {
-        if ((u32) * (u32*)((char*)this + 0x2ec) > 0xfa) {
+        if ((u32)m_dwell > 0xfa) {
             CGruntHud* oh = occ->m_10;
             if (TileSwitch6(oh->m_5c >> 5, oh->m_60 >> 5, 0, m_arrivalFlags, 1, 0) != 0) {
                 CGruntHud* oh2 = occ->m_10;
@@ -6774,7 +6777,7 @@ i32 CGrunt::StepArrivalDefense() {
                 m_2d4 = 0;
                 return 1;
             }
-            if ((u32) * (u32*)((char*)this + 0x2ec) > 0x1f4) {
+            if ((u32)m_dwell > 0x1f4) {
                 StepArrivalDrop(occ->m_lastTilePxX, occ->m_lastTilePxY, 0, m_arrivalFlags, 1, 0);
                 m_dwell = 0;
             }
@@ -6845,7 +6848,7 @@ i32 CGrunt::StepArrivalDefense() {
             if (occ == 0) {
                 goto L_f308a;
             }
-            if ((u32) * (u32*)((char*)this + 0x2ec) <= 0x3e8) {
+            if ((u32)m_dwell <= 0x3e8) {
                 goto L_f308a;
             }
             if (GruntInRadius(occ->m_tileOwnerHi, occ->m_tileOwnerLo) == 0) {
@@ -6879,7 +6882,7 @@ i32 CGrunt::StepArrivalDefense() {
             if (m_318 == 0) {
                 return 1;
             }
-            if ((u32) * (u32*)((char*)this + 0x2ec) <= 0xbb8) {
+            if ((u32)m_dwell <= 0xbb8) {
                 return 1;
             }
             if ((i64)(u32)g_645588 - *(i64*)&m_308 >= *(i64*)&m_310) {
@@ -7045,7 +7048,7 @@ i32 CGrunt::StepArrivalDefenseLean() {
                 m_2d4 = 0;
                 return 1;
             }
-            if ((u32) * (u32*)((char*)this + 0x2ec) > 0x1f4) {
+            if ((u32)m_dwell > 0x1f4) {
                 StepArrivalDrop(occ->m_lastTilePxX, occ->m_lastTilePxY, 0, m_arrivalFlags, 1, 0);
                 m_dwell = 0;
             }
@@ -7088,7 +7091,7 @@ i32 CGrunt::StepArrivalDefenseLean() {
             if (m_318 == 0) {
                 return 1;
             }
-            if ((u32) * (u32*)((char*)this + 0x2ec) <= 0xbb8) {
+            if ((u32)m_dwell <= 0xbb8) {
                 return 1;
             }
             if ((i64)(u32)g_645588 - *(i64*)&m_308 >= *(i64*)&m_310) {
