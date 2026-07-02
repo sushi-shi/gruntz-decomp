@@ -15,7 +15,8 @@
 //   +0x18  m_tree       : the parsed store root (CButeTree). The getters do
 //                         `lea ecx,[this+0x18]; Find(tag)` for the tag-group,
 //                         then `Find(key)` on it for the typed value record.
-//   +0x44  m_pNode      : void* - last-created store node (set by ParseTagLine).
+//   +0x44  m_pNode      : CButeTree* - last-created store node (a CButeNode, which
+//                         is-a keyed store; ParseAttributeFile Find/Inserts through it).
 //   +0xa4  m_pText      : ptr to a value-text accumulator host; the parser
 //                         appends to its +0xc CString (CString::operator+=).
 //   +0xa8  m_curChar    : char  - the lexer's current character.
@@ -465,7 +466,7 @@ public:
     CString m_errStr;             // +0x10  scratch the error reporter formats into
     ErrCallback m_errCallback;    // +0x14  optional error-callback fn-ptr
     CButeStore m_tree;            // +0x18  the keyed store root (0x2c bytes)
-    void* m_pNode;                // +0x44
+    CButeTree* m_pNode;           // +0x44  active store node (a CButeNode used as a keyed tree)
     CButeStore m_tree48;          // +0x48  second store sub-tree
     CButeStore m_tree74;          // +0x74  third store sub-tree
     void* m_stream;               // +0xa0  the input source stream object

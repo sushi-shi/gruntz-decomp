@@ -577,7 +577,10 @@ bool CButeMgr::ParseTagLine() {
             return false;
         }
         CButeNode* node = new CButeNode(&g_nodeDescriptor, 2);
-        m_pNode = node;
+        // The node IS the per-tag keyed store; ParseAttributeFile reaches it as a
+        // CButeTree. The bridging cast flags the deferred CButeNode-derives-CButeTree
+        // dedup (see ButeTree.h) - once modeled, this cast vanishes too.
+        m_pNode = (CButeTree*)node;
         t->Insert(tok, node);
     }
 
@@ -707,7 +710,7 @@ bool ButeMgr::ParseAttributeFile() {
 
     bool bDup = false;
     if (!self->m_writeMode) {
-        if (((CButeTree*)self->m_pNode)->Find((const char*)self->m_str104)) {
+        if (self->m_pNode->Find((const char*)self->m_str104)) {
             self->ReportError(s_fmtDupTag, self->m_str104.GetBuffer(0));
             bDup = true;
         }
@@ -745,7 +748,7 @@ bool ButeMgr::ParseAttributeFile() {
                         n->pValue = 0;
                     }
                 }
-                ((CButeTree*)self->m_pNode)->Insert((const char*)self->m_str104, n);
+                self->m_pNode->Insert((const char*)self->m_str104, n);
             }
             break;
         }
@@ -772,7 +775,7 @@ bool ButeMgr::ParseAttributeFile() {
                         n->pValue = 0;
                     }
                 }
-                ((CButeTree*)self->m_pNode)->Insert((const char*)self->m_str104, n);
+                self->m_pNode->Insert((const char*)self->m_str104, n);
             }
             break;
         }
@@ -799,7 +802,7 @@ bool ButeMgr::ParseAttributeFile() {
                         n->pValue = 0;
                     }
                 }
-                ((CButeTree*)self->m_pNode)->Insert((const char*)self->m_str104, n);
+                self->m_pNode->Insert((const char*)self->m_str104, n);
             }
             break;
         }
@@ -823,7 +826,7 @@ bool ButeMgr::ParseAttributeFile() {
                         n->pValue = 0;
                     }
                 }
-                ((CButeTree*)self->m_pNode)->Insert((const char*)self->m_str104, n);
+                self->m_pNode->Insert((const char*)self->m_str104, n);
             }
             break;
         }
@@ -846,7 +849,7 @@ bool ButeMgr::ParseAttributeFile() {
                         n->pValue = 0;
                     }
                 }
-                ((CButeTree*)self->m_pNode)->Insert((const char*)self->m_str104, n);
+                self->m_pNode->Insert((const char*)self->m_str104, n);
             }
             break;
         }
@@ -878,7 +881,7 @@ bool ButeMgr::ParseAttributeFile() {
                         n->pValue = 0;
                     }
                 }
-                ((CButeTree*)self->m_pNode)->Insert((const char*)self->m_str104, n);
+                self->m_pNode->Insert((const char*)self->m_str104, n);
             }
             break;
         }
@@ -906,7 +909,7 @@ bool ButeMgr::ParseAttributeFile() {
                         n->pValue = 0;
                     }
                 }
-                ((CButeTree*)self->m_pNode)->Insert((const char*)self->m_str104, n);
+                self->m_pNode->Insert((const char*)self->m_str104, n);
             }
             break;
         }
@@ -939,7 +942,7 @@ bool ButeMgr::ParseAttributeFile() {
                         n->pValue = 0;
                     }
                 }
-                ((CButeTree*)self->m_pNode)->Insert((const char*)self->m_str104, n);
+                self->m_pNode->Insert((const char*)self->m_str104, n);
             }
             break;
         }
@@ -969,7 +972,7 @@ bool ButeMgr::ParseAttributeFile() {
                         n->pValue = 0;
                     }
                 }
-                ((CButeTree*)self->m_pNode)->Insert((const char*)self->m_str104, n);
+                self->m_pNode->Insert((const char*)self->m_str104, n);
             }
             break;
         }
@@ -989,7 +992,7 @@ bool ButeMgr::ParseAttributeFile() {
                     n->type = 4;
                     n->pValue = new CString(s);
                 }
-                ((CButeTree*)self->m_pNode)->Insert((const char*)self->m_str104, n);
+                self->m_pNode->Insert((const char*)self->m_str104, n);
             }
             break;
         }
