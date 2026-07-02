@@ -134,6 +134,10 @@ static const i32 LEVEL_COORD_UNSET = (i32)0x80000000;
 static const i32 TILE_UNINIT = (i32)0xeeeeeeee;
 static const i32 TILE_CLEAR = -1;
 
+// The +0x134 axis-low bracket's "unset" sentinel (INT_MIN): WalkColumnDown and
+// BroadPhase test it before treating an object's AABB as a live box.
+static const i32 AXIS_UNSET = (i32)0x80000000;
+
 // Stamps the shared +0xb0..+0xdc "default parameters" block. Defined inline so it
 // folds into each method exactly as the retail compiler emitted the block inline.
 static inline void StampParamBlock(CGameLevel* o) {
@@ -211,7 +215,7 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
     // retail compiler pins `block` in the callee-saved register and reloads `hdr`'s
     // own fields through a spilled pointer for the rest of the function.
     char* block = (char*)hdr;
-    char* ehAlloc = 0; // inflate buffer freed on every exit path
+    Bytef* ehAlloc = 0; // inflate buffer freed on every exit path
 
     // The flags field is read twice (the COMPRESS test and the m_flags store); the
     // retail compiler materializes &hdr->flags once and dereferences it both times,
@@ -221,12 +225,12 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
     if (*pflags & 0x2) // COMPRESS: inflate the main block
     {
         u32 allocSize = hdr->mainBlockLength + hdr->wwdSignature + 0x40;
-        char* buf = (char*)operator new(allocSize);
+        Bytef* buf = (Bytef*)operator new(allocSize);
         if (buf == 0) {
             return 0;
         }
 
-        block = (char*)WwdFile_InflateMainBlock((WwdHeader*)hdr, (Bytef*)buf, allocSize - 0x20);
+        block = (char*)WwdFile_InflateMainBlock(hdr, buf, allocSize - 0x20);
         if (block == 0) {
             operator delete(buf);
             return 0;
@@ -637,7 +641,7 @@ struct CImageSet1 {
         m_04 = 0; // cl auto-stamps &??_7CImageSet1 first
     }
     void* operator new(size_t n) {
-        return RezAlloc((u32)n);
+        return RezAlloc(n);
     }
     void operator delete(void* p) {
         RezFree(p);
@@ -670,7 +674,7 @@ struct CImageSet2 {
         m_04 = 0; // cl auto-stamps &??_7CImageSet2 first
     }
     void* operator new(size_t n) {
-        return RezAlloc((u32)n);
+        return RezAlloc(n);
     }
     void operator delete(void* p) {
         RezFree(p);
@@ -708,7 +712,7 @@ struct CImageSet3 {
         m_14 = 0;
     }
     void* operator new(size_t n) {
-        return RezAlloc((u32)n);
+        return RezAlloc(n);
     }
     void operator delete(void* p) {
         RezFree(p);
@@ -2115,8 +2119,8 @@ i32 CGameLevel::BroadPhase(ScrollTarget* tp, i32 candX, i32 candY) {
     do {
         BPNode* nx = node->next;
         BPObj* obj = node->obj;
-        if (obj != t && (obj->flags & 0x100) && (t->maskB & obj->maskA)
-            && t->boxL != (i32)0x80000000 && obj->boxL != (i32)0x80000000) {
+        if (obj != t && (obj->flags & 0x100) && (t->maskB & obj->maskA) && t->boxL != AXIS_UNSET
+            && obj->boxL != AXIS_UNSET) {
             i32 tLeft = t->boxL + t->originX;
             i32 tBot = t->boxB + t->originY;
             i32 tRight = t->originX + t->boxR;
@@ -2812,12 +2816,15 @@ i32 CGameLevel::StepAxisAlt(void* target, i32 a1, i32 a2, i32* outY, i32 a3) {
         return 0;
     }
 
-    ObjNode* node = *(ObjNode**)((char*)((char**)m_owner)[2] + 0x14);
+    // Walk the owner's object chain (the same links BroadPhase models: owner+0x8 -> mgr,
+    // mgr+0x14 -> head) and validate each candidate whose collision category (+0xe8) is
+    // exactly 0x80.
+    BPNode* node = ((BPOwner*)m_owner)->mgr->head;
     while (node != 0) {
-        ObjNode* cur = node;
+        BPNode* cur = node;
         node = node->next;
-        ObjPayload* pl = cur->obj;
-        if (*(i32*)((char*)pl + 0xe8) == 0x80) {
+        BPObj* pl = cur->obj;
+        if (pl->maskA == 0x80) {
             if (AltStepValidate(t, pl, a1, a2, outY, a3) != 0) {
                 t->editKind = 1;
                 t->holdAnchor = (i32)pl;
@@ -3056,7 +3063,7 @@ i32 CGameLevel::ProbeColumn(void* target, i32 dx) {
 RVA(0x00160a40, 0x201)
 i32 CGameLevel::WalkColumnDown(void* target, i32 unused) {
     ProbeTarget* t = (ProbeTarget*)target;
-    if (t->m_134 == (i32)0x80000000) {
+    if (t->m_134 == AXIS_UNSET) {
         return 0;
     }
     if (m_mainPlane == 0) {

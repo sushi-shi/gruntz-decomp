@@ -2086,7 +2086,7 @@ gamelevel	?AdvanceB@CGameLevel@@AAEHPAXHHH@Z	92.2241	92.2241	1	ac1c98577426	0x15
 gamelevel	?AltStepValidate@CGameLevel@@AAEHPAX0HHPAHH@Z	71.9054	71.9054	1	7c1fc1ee8711	0x15fe40
 gamelevel	?ApplyScroll@@YGHPAVCGameLevel@@HHH@Z	94.7826	94.7826	1	592b87081e74	0x167130
 gamelevel	?AxisProbe@CGameLevel@@AAEHHH@Z	99.8667	99.8667	1	eed79d5e847e	0x161270
-gamelevel	?BroadPhase@CGameLevel@@QAEHPAUScrollTarget@@HH@Z	71.9552	71.9552	1	23fce0a2a0c4	0x167ea0
+gamelevel	?BroadPhase@CGameLevel@@QAEHPAUScrollTarget@@HH@Z	71.9552	71.9552	2	caa91ac52b2c	0x167ea0
 gamelevel	?BuildAllPlanes@CGameLevel@@QAEXPAULevelCoordRect@@@Z	100.0000	100.0000	1	f9a8f0e1ee87	0x15da80
 gamelevel	?ClampScroll@CGameLevel@@QAEHPAXHHH@Z	70.7413	70.7413	3	3f62b93aa933	0x15de40
 gamelevel	?ClampSpan@CGameLevel@@AAEHHHPAH0@Z	99.8305	99.8305	1	2ca0e3403535	0x15ffe0
@@ -2104,7 +2104,7 @@ gamelevel	?HoldMove@CGameLevel@@AAEHPAXHHHH@Z	90.3837	90.3837	1	5c4b4f1637f9	0x1
 gamelevel	?IsLoaded@CGameLevel@@UAEHXZ	100.0000	100.0000	1	1cf4b7c05d14	0x161190
 gamelevel	?LoadFromFile@CGameLevel@@UAEHPBD@Z	100.0000	100.0000	1	df34d8ccfc29	0x15d500
 gamelevel	?LoadFromSource@CGameLevel@@UAEHPAUCParseSource@@@Z	100.0000	100.0000	1	81b1a07ab4f5	0x15d630
-gamelevel	?LoadWwd@CGameLevel@@UAEHPAUWwdHeader@@@Z	82.1894	82.1894	1	89122836e045	0x15d280
+gamelevel	?LoadWwd@CGameLevel@@UAEHPAUWwdHeader@@@Z	82.1894	82.1894	2	9b4f2274a96b	0x15d280
 gamelevel	?LookupTile@CGameLevel@@QAEHHH@Z	100.0000	100.0000	3	8d7a1d9ee5e5	0x82600
 gamelevel	?MainPlaneNotify@CGameLevel@@QAEXXZ	100.0000	100.0000	1	1ec3fdb6a110	0x160ee0
 gamelevel	?MainPlaneQueryA@CGameLevel@@QAEHXZ	100.0000	100.0000	2	1edf44538004	0xcedf0
@@ -2131,14 +2131,14 @@ gamelevel	?SetCoordsAndLoad3C@CGameLevel@@UAEHHPAULevelCoordRect@@@Z	100.0000	10
 gamelevel	?SetCoordsAndLoad40@CGameLevel@@UAEHHPAULevelCoordRect@@@Z	100.0000	100.0000	1	6ebb370f7ba0	0x15cdf0
 gamelevel	?SetExtentsAndBuildAll@CGameLevel@@QAEHHH@Z	70.6546	70.6546	1	c9f69aa91273	0x15d700
 gamelevel	?SpanCheck@CGameLevel@@AAEHHHHPAH@Z	93.1132	93.1132	1	0dca3d9c6b50	0x15f8d0
-gamelevel	?StepAxisAlt@CGameLevel@@AAEHPAXHHPAHH@Z	100.0000	100.0000	1	1e05c8939090	0x15fdb0
+gamelevel	?StepAxisAlt@CGameLevel@@AAEHPAXHHPAHH@Z	100.0000	100.0000	2	7df64b0e1717	0x15fdb0
 gamelevel	?StepAxisHi@CGameLevel@@AAEHPAXHHPAHH@Z	82.6949	82.6949	1	ca3b47b33d71	0x15e870
 gamelevel	?StepAxisLo@CGameLevel@@AAEHPAXHHPAHH@Z	82.6949	82.6949	1	6d948b316f4c	0x15e720
 gamelevel	?SyncAfterMainIndex@CGameLevel@@QAEXH@Z	100.0000	100.0000	1	9a13d0c85396	0x15db00
 gamelevel	?SyncToMainIndex@CGameLevel@@QAEXH@Z	100.0000	100.0000	1	cf4c78a48dfb	0x15dad0
 gamelevel	?Unload@CGameLevel@@UAEHXZ	100.0000	100.0000	1	a70b4b542fca	0x15d1f0
 gamelevel	?VisitVisible@CGameLevel@@QAEXPAXH@Z	92.3282	92.3282	4	acf0ef92366c	0x15dc90
-gamelevel	?WalkColumnDown@CGameLevel@@QAEHPAXH@Z	92.7579	92.7579	1	fbf2cbdeb4cd	0x160a40
+gamelevel	?WalkColumnDown@CGameLevel@@QAEHPAXH@Z	92.7579	92.7579	2	0c2cca8d8360	0x160a40
 gamemode	??0CState@@QAE@XZ	100.0000	100.0000	4	a1d9fd8bca62	0x8c750
 gamemode	??1CBootyState@@UAE@XZ	100.0000	100.0000	1	899f9930b960	0x8d440
 gamemode	??1CCreditsState@@UAE@XZ	100.0000	100.0000	1	76701af27730	0x8d5e0
