@@ -257,7 +257,9 @@ struct CCreditsImageList : CCreditsImgBase {
     void DeleteImageList(); // 0x1c6a5c (NAFXCW, reloc-masked)
     // Inline so ~CCreditsState folds the stamp/DeleteImageList/base-restore teardown
     // (retail inlines it; an out-of-line ??1 would emit a `call` and shrink the frame).
-    virtual ~CCreditsImageList() { DeleteImageList(); }
+    virtual ~CCreditsImageList() {
+        DeleteImageList();
+    }
     void* m_hImageList; // +0x04
 };
 
@@ -312,6 +314,11 @@ public:
     i32 LoadCreditzStateAssets(i32 a1, i32 a2, i32 a3);
     i32 InitAttractTitle();
     i32 ShowAttractTitle(); // 0x393b0 (gate on the state core, hide cursor, init title)
+
+    // Own attract-title tail helpers reached via ILT thunks (reloc-masked
+    // self-calls; formerly the CAttractSelf `this`-alias view).
+    i32 FadeInTitle(char* name, i32 a, i32 b, i32 c, i32 d, i32 e); // 0x1fa1f0
+    i32 BuildMenuPage(i32 x, i32 w, i32 h, i32 flag);               // 0x1fa8f0
 };
 
 SIZE_UNKNOWN(CBootyState);
@@ -352,6 +359,11 @@ public:
     void MoveLettersByDir(); // 0x19b90 - the 8-direction letter walk (jump-table)
     i32 CheckPerfectBonus(); // 0x1c0f0 - "BOOTY_PERFECT" cue + scroll advance
     i32 QueryGruntSlots();   // 0x1ecf0 - scan 4 reg records for an empty slot
+
+    // Own booty-title tail helpers reached via ILT thunks (reloc-masked self-calls;
+    // formerly the CBootyAnimSelf `this`-alias view).
+    i32 FadeInTitle(char* name, i32 a, i32 b, i32 c, i32 d, i32 e); // FUN_004fa1f0
+    void BuildPage(i32 x, i32 w, i32 h, i32 flag);                  // FUN_004fa8f0
 
     // Ready-gate + paint (0x1ce30): if the active/ready virtual (CState slot 3) fires,
     // run the per-frame paint and return its normalized result, else 0.

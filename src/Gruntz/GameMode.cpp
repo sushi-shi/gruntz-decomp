@@ -617,8 +617,17 @@ extern "C" i32 g_651610;         // 0x651610  version field B
 extern "C" i32 g_cdPromptResult; // 0x6455ec  spawn-mode latch
 // The shared HUD message-sprite helper (0x1154b0 via the 0x1f00 ILT thunk,
 // __cdecl): push a transient text sprite carrying `text` into `rect`.
-void ShowHudMessage(void* sink, CString* text, RECT* rect, i32 dur, i32 a, i32 b, i32 c, i32 d,
-                    i32 e); // 0x1154b0
+void ShowHudMessage(
+    void* sink,
+    CString* text,
+    RECT* rect,
+    i32 dur,
+    i32 a,
+    i32 b,
+    i32 c,
+    i32 d,
+    i32 e
+); // 0x1154b0
 RVA(0x000a0d80, 0xd7)
 void CMenuState::BuildVersionString(i32 rectLeft, i32, i32, i32) {
     CString str;
@@ -821,11 +830,8 @@ struct CMenuRootA {
 struct CAttractStateMgrA {
     void* LookupState(char* name); // 0x13c030
 };
-// this (CCreditsState) reached through its own ILT thunks (0x1e60/0x1843).
-struct CAttractSelf {
-    i32 FadeInTitle(char* name, i32 a, i32 b, i32 c, i32 d, i32 e); // 0x1fa1f0
-    i32 BuildMenuPage(i32 x, i32 w, i32 h, i32 flag);               // 0x1fa8f0
-};
+// CCreditsState's own FadeInTitle/BuildMenuPage are declared on the class (GameMode.h);
+// they are reached through its own ILT thunks (0x1e60/0x1843).
 // The CButeMgr text-config singleton (same 0x6453d8 datum as g_buteMgr) + the
 // attract-state count divisor. TU-local views; both reloc-mask.
 struct CButeCfg {
@@ -859,7 +865,7 @@ i32 CCreditsState::InitAttractTitle() {
     if (state == 0) {
         return 0;
     }
-    i32 faded = ((CAttractSelf*)this)->FadeInTitle(titleName, 0, 0, 1, 0, 0);
+    i32 faded = FadeInTitle(titleName, 0, 0, 1, 0, 0);
     m_2c = (i32)saved;
     if (faded == 0) {
         return 0;
@@ -867,7 +873,7 @@ i32 CCreditsState::InitAttractTitle() {
     CMenuBrightTgt* tgt = root->m_04->m_14->m_2c;
     tgt->SetBrightness(g_buteCfg.GetIntDef("Menu", "BrightnessPercent", 0x32), 0);
     root->m_04->TransTitle();
-    ((CAttractSelf*)this)->BuildMenuPage(0x50, 0x3e8, 0, 1);
+    BuildMenuPage(0x50, 0x3e8, 0, 1);
     return 1;
 }
 
@@ -1163,10 +1169,8 @@ struct CBootyPlayer {
 struct CBootyFlushView {
     void Flush(); // FUN_00558ee0
 };
-struct CBootyAnimSelf { // `this` view for the engine tail helpers (reached via thunks)
-    i32 FadeInTitle(char* name, i32 a, i32 b, i32 c, i32 d, i32 e); // FUN_004fa1f0
-    void BuildPage(i32 x, i32 w, i32 h, i32 flag);                  // FUN_004fa8f0
-};
+// CMultiBootyState's own FadeInTitle/BuildPage are declared on the class (GameMode.h);
+// they are reached through its own ILT thunks.
 
 // ReleaseResources teardown chain: m_4 (owner) -> m_60 sub-object -> Teardown (the
 // __thiscall no-arg FUN_0051c7b0, reloc-masked).
@@ -1403,12 +1407,12 @@ void CMultiBootyState::ReleaseResources() {
 // player on the draw-clock window. Returns 1.
 RVA(0x0001e570, 0xb4)
 i32 CMultiBootyState::FrameSlot24(i32) {
-    i32 ok = ((CBootyAnimSelf*)this)->FadeInTitle("multi", 0, 0, 0, 0, 1);
+    i32 ok = FadeInTitle("multi", 0, 0, 0, 0, 1);
     if (!ok) {
         return ok; // eax already 0 (the FadeInTitle result) - no xor/mov re-materialize
     }
     ((CBootyFlushView*)((CGMView*)m_c)->m_4)->Flush();
-    ((CBootyAnimSelf*)this)->BuildPage(0x50, 0x3e8, 0, 1);
+    BuildPage(0x50, 0x3e8, 0, 1);
 
     CBootyMusicHost* host = (CBootyMusicHost*)BOOTY_REG->m_30;
     i32 item = BOOTY_REG->m_11c;
@@ -1596,7 +1600,6 @@ SIZE_UNKNOWN(CBootyLookupMap);
 SIZE_UNKNOWN(CBootyMusicHost);
 SIZE_UNKNOWN(CBootyPlayer);
 SIZE_UNKNOWN(CBootyFlushView);
-SIZE_UNKNOWN(CBootyAnimSelf);
 SIZE_UNKNOWN(CBootyM4Sub);
 SIZE_UNKNOWN(CBootyOwnerView);
 SIZE_UNKNOWN(CMenuMusicPlayer);

@@ -2163,10 +2163,10 @@ gamemode	?FinishState@CCreditsState@@QAEHXZ	100.0000	100.0000	1	b2c3a49646dc	0x3
 gamemode	?FlashColor@CCreditsState@@QAEHXZ	66.5769	66.5769	1	fcd764f9eff7	0x39d00
 gamemode	?FormatHudText@CMenuState@@QAEXH@Z	0.3094	0.3094	2	639568dc3209	0x1af70
 gamemode	?ForwardIdleAnim@CMultiBootyState@@QAEHHH@Z	100.0000	100.0000	1	4efc3adad86f	0x1d420
-gamemode	?FrameSlot24@CMultiBootyState@@UAEHH@Z	100.0000	100.0000	2	1df26f9626ef	0x1e570
+gamemode	?FrameSlot24@CMultiBootyState@@UAEHH@Z	100.0000	100.0000	3	d9e4105e2d39	0x1e570
 gamemode	?FrameSlot28@CMenuState@@UAEHH@Z	100.0000	100.0000	2	e9d8da09d7f7	0xa06d0
 gamemode	?GenMenuRandPos@@YGXHPAH0@Z	89.3724	89.3724	3	e5f14c89a313	0x19cd0
-gamemode	?InitAttractTitle@CCreditsState@@QAEHXZ	81.2079	81.2079	1	12851ec2df86	0x39570
+gamemode	?InitAttractTitle@CCreditsState@@QAEHXZ	81.2079	81.2079	2	1cb1c7a9667d	0x39570
 gamemode	?LoadCreditzStateAssets@CCreditsState@@QAEHHHH@Z	100.0000	100.0000	2	5f8f1a3eb875	0x38d20
 gamemode	?LoadGruntEffectSprites@CState@@QAEXXZ	0.2268	0.2268	1	4762f4e00dc7	0x1a040
 gamemode	?MoveLettersByDir@CMultiBootyState@@QAEXXZ	59.9241	59.9241	2	6a387478dfd5	0x19b90
