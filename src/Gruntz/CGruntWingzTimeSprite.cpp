@@ -31,6 +31,6 @@ CGruntWingzTimeSprite::~CGruntWingzTimeSprite() {}
 // wingz-timer field and return it. __stdcall (single stack arg, callee cleanup -
 // `mov eax,[esp+4]; mov eax,[eax+0x3f8]; ret 4`).
 RVA(0x0007fd90, 0xd)
-i32 __stdcall CGruntWingzTimeSprite::GetWingzTime(CWingzTimeHost* o) {
-    return o->m_3f8;
+i32 __stdcall CGruntWingzTimeSprite::GetWingzTime(CGrunt* o) {
+    return o->m_wingzTime;
 }

@@ -31,41 +31,9 @@
 
 #include <rva.h>
 
-// ---------------------------------------------------------------------------
-// EngStr - the engine's small string class (the "incs" CString clone). Layout
-// {vptr@0, ?@4, len@8, buf@0xc}; size 0x10. Used by the +0x18 link's name field
-// and as the throw-away temp the 1-arg ctors build from the global empty string.
-// Its three operations live in the engine string TU, modeled NO-body so the
-// calls reloc-mask:
-//   EngStr(char const*, int) = 0x16d3a0  (836B; construct from a C string)
-//   operator=(EngStr const&) = 0x16d2f0  (172B; deep copy-assign)
-//   ~EngStr()                = 0x16d2a0  (38B)
-// ---------------------------------------------------------------------------
-struct EngStr {
-    EngStr(); // default (unused; lets the link's empty ctor stub compile)
-    EngStr(const char* s, i32 n);
-    ~EngStr();
-    EngStr& operator=(const EngStr& o);
-    void* m_0;
-    i32 m_4;
-    i32 m_8;
-    char* m_c;
-};
-
-// The global empty C string the link's name field is seeded from (0x6293f4).
-extern "C" char g_emptyString[];
-
-// ---------------------------------------------------------------------------
-// CUserBaseLink - the destructible sub-object embedded at CUserLogic+0x18. Its
-// only field is an EngStr name. Its ctor (0x16d710) is the one out-of-line
-// constructor the whole game-object family chains; it can throw, which is what
-// makes MSVC emit the /GX EH frame in every leaf ctor.
-// ---------------------------------------------------------------------------
-struct CUserBaseLink {
-    CUserBaseLink();    // 0x16d710 (out-of-line; can throw)
-    ~CUserBaseLink() {} // inline: folds to the embedded ~EngStr call in leaf dtors
-    EngStr m_str;       // +0x00  (its name field; the 0x5f04c8 EngStr vptr)
-};
+// EngStr + the destructible +0x18 link sub-object (CUserBaseLink), shared with
+// the CGrunt world so both embed the identical link (see Gruntz/EngStr.h).
+#include <Gruntz/EngStr.h>
 
 // ---------------------------------------------------------------------------
 // CGameObject - the engine object the 1-arg ctors are handed (read into edi).
@@ -225,10 +193,20 @@ public:
 };
 
 // ---------------------------------------------------------------------------
-// CUserLogic : CUserBase - 12 virtuals (vftable 0x5e705c). Owns the shared data
-// layout + the link sub-object. The default ctor just constructs the link (used
-// by the no-arg leaves). The inline 1-arg ctor folds the full shared init into
-// each leaf's 1-arg ctor.
+// CUserLogic : CUserBase (vftable 0x5e705c, 16 slots; only the first 12 modeled
+// here - the tile-logic leaves stamp the vftable by address, so the extra slots
+// need not be declared). Owns the shared data layout + the +0x18 link sub-object.
+// The default ctor just constructs the link (used by the no-arg leaves). The
+// inline 1-arg ctor folds the full shared init into each leaf's 1-arg ctor.
+//
+// TRUE SIZE = 0x30 (see the NOTE below). This "fat" view extends the class to
+// 0x40 by ABSORBING the tile-logic leaves' common tail m_30/m_34/m_38/m_3c into
+// the base - a byte-neutral modeling convenience (all tile-logic leaves set
+// m_34/m_38/m_3c = obj/obj/obj->m_7c right after the folded base init, so folding
+// the tail into the base ctor reproduces every leaf's bytes without spelling it
+// out per leaf). The CGrunt world (<Gruntz/Grunt.h>) models the SAME class at its
+// true 0x30 boundary, because CGrunt uses 0x30..0x3c for its OWN (different)
+// fields. Both are correct expressions of one class - see the NOTE.
 // ---------------------------------------------------------------------------
 class CUserLogic : public CUserBase {
 public:
@@ -292,9 +270,27 @@ public:
     CGameObject* m_38;    // +0x38
     CGameObjAux* m_3c;    // +0x3c
 };
-// NOTE: CUserLogic is 0x40 (proven: CPathHazard's ctor is byte-exact with this
-// size). The 0x54 a thin leaf new's is the leaf's OWN size = CUserLogic(0x40) +
-// 0x14 leaf fields - NOT evidence that CUserLogic is 0x54.
+// NOTE - the ONE TRUE CUserLogic size is 0x30, NOT 0x40. Evidence (retail):
+//   * The base ctor CUserLogic(CGameObject*) @0x58cd0 initializes fields only
+//     through m_2c (the highest write is `mov [esi+0x2c],2`), then returns. It
+//     never writes 0x30..0x3c. -> the base object ends at 0x30.
+//   * CGrunt : CUserLogic (<Gruntz/Grunt.h>) places its OWN, byte-exact-matched
+//     members at 0x30 (m_prevAnimSetNode), 0x38 (anim player), 0x40 (activeAnim)
+//     - proving the base it inherits is exactly 0x30.
+//   * The ??_7CUserLogic@@6B@ vftable is 16 slots (0x40 bytes); ??_7CUserBase is
+//     3 slots (config/vtable_names.csv).
+// m_30/m_34/m_38/m_3c above are NOT base fields: they are the tile-logic leaves'
+// common tail (each LEAF's 1-arg ctor sets m_34/m_38/m_3c itself; the standalone
+// base ctor 0x58cd0 does not). This header folds them into the base purely so the
+// shared inline ctor can spell them once; the layout is byte-identical to a true
+// 0x30 base + a 0x10 leaf tail. A thin leaf new's 0x54 = 0x30 base + 0x24 leaf
+// (0x10 tail + 0x14 own) - either boundary label gives the same offsets/size.
+// UNIFYING the two class names into one 0x30 def would need a CTileLogic
+// intermediate reparenting ~50 leaves + ~30 tuned 1-arg ctors (inline-depth /
+// macro-controlled tail, UserLogicCtorEmit.cpp) - a byte-neutral change with real
+// de-tuning risk and NO correctness gain (both views already encode the true
+// 0x30). Kept as a documented byte-compatible dual-model; the two never coexist
+// in a TU (the CGrunt-HUD sprites that bridge them include only Grunt.h).
 
 // Shared 1-arg init the leaves fold in. Inline so MSVC inlines it; stores the
 // CUserLogic vptr, then the full init. Defined here (not the .cpp) because only

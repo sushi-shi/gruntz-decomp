@@ -18,6 +18,7 @@
 
 #include <Ints.h>
 #include <rva.h>                   // SIZE_UNKNOWN/VTBL class-metadata macros used below
+#include <Gruntz/EngStr.h>         // shared CUserBaseLink (+0x18 EngStr link; ~EngStr 0x16d2a0)
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (g_gameReg->m_74; GetSel)
 
 // ---------------------------------------------------------------------------
@@ -897,13 +898,8 @@ struct GruntListSub { // +0x338 / +0x31c  (~CObList 0x1b48c6)
         Dtor();
     }
 };
-SIZE_UNKNOWN(GruntLinkSub);
-struct GruntLinkSub { // +0x18  the CUserLogic base link (~EngStr 0x16d2a0)
-    void Dtor();
-    ~GruntLinkSub() {
-        Dtor();
-    }
-};
+// The +0x18 CUserLogic link is the shared CUserBaseLink (EngStr, ~EngStr 0x16d2a0)
+// from <Gruntz/EngStr.h> - identical sub-object to the tile-logic family's.
 
 // A 10-virtual interface view for CGrunt::DispatchVtbl24's tail call (vtable
 // slot 0x24 = index 9). Calling Slot9() emits `mov eax,[ecx]; jmp [eax+0x24]`.
@@ -1024,10 +1020,17 @@ public:
 // placeholders except the ones CGrunt defines in Grunt.cpp (slot 1 SerializeMove
 // 0x53b80, slot 6 InitDirVectors 0x5caa0, slot 11 FreeNameList 0x48360, slot 16
 // StepCoordResolve 0x5f310); the rest are declared-only (impls external/reloc-
-// masked). This is a CGrunt-local reconstruction of CUserBase/CUserLogic (the
-// tile-logic game-object family uses include/Gruntz/UserLogic.h's member view of
-// the same engine classes; the two never coexist in a TU - see
-// docs/vtable-conversion-log.md).
+// masked). This is a CGrunt-local reconstruction of CUserBase/CUserLogic modeled
+// at CUserLogic's TRUE 0x30 boundary: the base ctor 0x58cd0 inits only through
+// +0x2c, and CGrunt's own byte-exact members start at +0x30, so the base is 0x30
+// (NOT the fat 0x40 the tile-logic family's <Gruntz/UserLogic.h> view uses, which
+// absorbs those leaves' shared 0x30..0x3c tail - a byte-neutral boundary label;
+// see the size NOTE in UserLogic.h + docs/vtable-conversion-log.md). The +0x18
+// EngStr link is the SHARED CUserBaseLink (<Gruntz/EngStr.h>), so this world and
+// the tile-logic world tear it down via the identical ~EngStr (0x16d2a0). The two
+// CUserLogic class views still never coexist in one TU; the CGrunt-HUD sprites
+// that read CGrunt fields (CGruntStaminaSprite/CGruntWingzTimeSprite) include only
+// this header.
 class CUserBase {
 public:
     virtual ~CUserBase();                                                   // slot 0  (0x5e70b4[0])
@@ -1057,8 +1060,8 @@ public:
     virtual void UlSlot34();     // slot 13 (inherited)
     virtual void UlSlot38();     // slot 14 (inherited)
     virtual void UlSlot3c();     // slot 15 (inherited)
-    GruntLinkSub m_18;           // +0x18  EngStr link (destructible; ~EngStr 0x16d2a0)
-    char m_pad1c[0x30 - 0x1c];   // +0x1c..+0x30
+    CUserBaseLink m_18;          // +0x18  EngStr link (destructible; ~EngStr 0x16d2a0)
+    char m_pad28[0x30 - 0x28];   // +0x28..+0x30
 }; // size 0x30
 inline CUserLogic::~CUserLogic() {} // auto-destructs m_18, restamps 0x5e705c
 

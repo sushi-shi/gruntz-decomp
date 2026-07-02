@@ -16,24 +16,16 @@
 #define GRUNTZ_CGRUNTSTAMINASPRITE_H
 
 #include <rva.h>
-#include <Gruntz/UserLogic.h> // CUserLogic base (CGruntStaminaSprite : CUserLogic)
-
-// The bound grunt/game-object the accessor reads the +0x3f0 stamina-timer out of.
-// Only that touched offset is load-bearing; modeled minimally (cf. CWingzTimeHost).
-SIZE_UNKNOWN(CStaminaTimeHost);
-struct CStaminaTimeHost {
-    char m_pad0[0x3f0];
-    i32 m_3f0; // +0x3f0  stamina timer value
-};
+#include <Gruntz/Grunt.h> // CUserLogic base + CGrunt (the accessor's bound grunt)
 
 class CGruntStaminaSprite : public CUserLogic {
 public:
     // GetTypeTag (0x12020): the 6-byte per-class logic-type id accessor (0x410).
     i32 GetTypeTag();
-    // GetStaminaTime (0x07fbb0): tiny __stdcall +0x3f0 accessor (ret 4), the
-    // stamina-timer sibling of CGruntWingzTimeSprite::GetWingzTime (+0x3f8).
-    static i32 __stdcall GetStaminaTime(CStaminaTimeHost* o); // 0x07fbb0
-    ~CGruntStaminaSprite(); // 0x00012070 (folds the CUserLogic teardown)
+    // GetStaminaTime (0x07fbb0): tiny __stdcall accessor (ret 4) reading the bound
+    // CGrunt's m_stamina (+0x3f0), the sibling of GetWingzTime (m_wingzTime +0x3f8).
+    static i32 __stdcall GetStaminaTime(CGrunt* o); // 0x07fbb0
+    ~CGruntStaminaSprite();                         // 0x00012070 (folds the CUserLogic teardown)
 };
 
 #endif // GRUNTZ_CGRUNTSTAMINASPRITE_H

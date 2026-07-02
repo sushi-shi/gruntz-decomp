@@ -26,6 +26,6 @@ CGruntStaminaSprite::~CGruntStaminaSprite() {}
 // stamina-timer field and return it. __stdcall (single stack arg, callee cleanup -
 // `mov eax,[esp+4]; mov eax,[eax+0x3f0]; ret 4`).
 RVA(0x0007fbb0, 0xd)
-i32 __stdcall CGruntStaminaSprite::GetStaminaTime(CStaminaTimeHost* o) {
-    return o->m_3f0;
+i32 __stdcall CGruntStaminaSprite::GetStaminaTime(CGrunt* o) {
+    return o->m_stamina;
 }
