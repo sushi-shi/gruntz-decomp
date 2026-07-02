@@ -2547,10 +2547,10 @@ iconloaders	?LoadPowerupIconSprites@EngineLabelBacklog@@QAEHHHHHHH@Z	33.8559	33.
 iconloaders	?LoadToyBoxIcon@EngineLabelBacklog@@QAEHHHHHH@Z	99.9444	99.9444	4	7e6693732fa2	0x7a3f0
 image	??1CFileImage@@UAE@XZ	100.0000	100.0000	1	7252e7ab41e8	0x141350
 image	??1CFileImageSurface@@UAE@XZ	100.0000	100.0000	1	8f95b4aa6ff0	0x142360
-image	?Blit248@CFileImage@@QAEHPAX0H@Z	94.3103	94.3103	3	7c0a2c7f460f	0x13fe60
+image	?Blit248@CFileImage@@QAEHPAX0H@Z	94.3103	94.3103	4	306536842d5e	0x13fe60
 image	?Blit@CFileImage@@QAEHPAXH0H@Z	100.0000	100.0000	3	c6c4f431bcd8	0x13faa0
-image	?BlitDirect@CFileImage@@QAEHPAXH@Z	70.4941	70.4941	4	ab35065b9e92	0x13ece0
-image	?BlitSurf@CFileImage@@QAEHPAXHHHH@Z	100.0000	100.0000	4	e7b171ac7d34	0x13e0d0
+image	?BlitDirect@CFileImage@@QAEHPAXH@Z	70.4941	70.4941	5	dc201628873c	0x13ece0
+image	?BlitSurf@CFileImage@@QAEHPAXHHHH@Z	100.0000	100.0000	5	69f70b98ffb6	0x13e0d0
 image	?Build_13e9a0@CImageFactory@@QAEHPAVCRezImageSource@@H@Z	84.5692	84.5692	2	5c10ad4a4229	0x13e9a0
 image	?Clear@CFileImage@@QAEXH@Z	100.0000	100.0000	4	668fff39468f	0x13edb0
 image	?DecodeBlit@CRezImage@@QAEHPAX0HHH0@Z	82.7361	82.7361	1	1dab25229951	0x175930
@@ -2562,7 +2562,7 @@ image	?DecodePcxData@CRezImage@@QAEHPAX00@Z	91.3291	91.3291	1	02415d581e6f	0x176
 image	?DecodePcxEx@CFileImage@@QAEHPAD0PAX1@Z	100.0000	100.0000	5	d07ec29ad6b0	0x1459d0
 image	?DecodePid@CFileImage@@QAEPAXPADPAXI1@Z	35.4204	35.4204	4	5a4b4aeca089	0x145b10
 image	?DecodePidData@CRezImage@@QAEHPAX00@Z	72.7817	72.7817	1	97bb62b54635	0x176440
-image	?DecodeResData@CRezImage@@QAEHPAX00@Z	96.4615	96.4615	1	e60af7217afc	0x175e00
+image	?DecodeResData@CRezImage@@QAEHPAX00@Z	96.4615	96.4615	2	21532b7f118e	0x175e00
 image	?DecodeRidData@CRezImage@@QAEHPAX00@Z	74.2963	74.2963	1	810bbd370cfe	0x1762c0
 image	?Fill@CFileImage@@QAEHI@Z	100.0000	100.0000	2	c98017d6e689	0x13e760
 image	?FillPalette@CFileImage@@QAEXPAX@Z	100.0000	100.0000	3	dad3b894ce8a	0x13eb40
@@ -2584,7 +2584,7 @@ image	?Resolve@CFileImage@@QAEHPAX0HI0@Z	100.0000	100.0000	3	2da671d6a3c0	0x13e5
 image	?ResolveEx@CFileImage@@QAEHPAX0HIHH@Z	100.0000	100.0000	5	956364fcfc15	0x148890
 image	?SaveDispatch@CFileImage@@QAEHPAX00@Z	100.0000	100.0000	3	f0d6b189e23f	0x144350
 image	?SaveFile@CFileImage@@QAEHPADHPAX1@Z	100.0000	100.0000	2	88239218f56a	0x13f910
-image	?SaveRle16@CFileImage@@QAEHPAX00@Z	52.5687	52.5687	3	b3859682b2b9	0x144640
+image	?SaveRle16@CFileImage@@QAEHPAX00@Z	52.5687	52.5687	4	89b091ade39f	0x144640
 image	?ScalarDelete@CFileImageSurface@@QAEPAXI@Z	100.0000	100.0000	2	faea0c2b336a	0x142340
 imagepolyclip	?ImagePolyClipRect@@YAHPAUPolyVtx@@HHHHH@Z	68.9572	68.9572	1	5c33c21cc94b	0x1461b0
 imagepool	?AddImageDispatch@CImagePool@@QAEPAUPalBuilder_176df0@ApiCallerStubs@@PAXIHH@Z	99.1111	99.1111	2	f6feb690780f	0x175680

@@ -298,13 +298,13 @@ extern "C" HINSTANCE g_hResModule; // 0x6bf6e0
 // buf+0x2c) and hand it to the shared blitter.
 RVA(0x00175e00, 0x3d)
 i32 CRezImage::DecodeResData(void* buf, void* a2, void* a3) {
-    u8* hdr = (u8*)buf;
-    i32 bitcount = *(u16*)(hdr + 0xe);
-    i32 height = *(i32*)(hdr + 8);
-    i32 width = *(i32*)(hdr + 4);
-    void* src = hdr + 0x2c;
+    BITMAPINFOHEADER* ih = (BITMAPINFOHEADER*)buf;
+    i32 bitcount = ih->biBitCount;
+    i32 height = ih->biHeight;
+    i32 width = ih->biWidth;
+    void* src = (u8*)buf + 0x2c;
     if (bitcount == 8) {
-        src = hdr + *(i32*)hdr + 0x400;
+        src = (u8*)buf + ih->biSize + 0x400;
     }
     return DecodeBlit(src, a2, width, height, bitcount, a3);
 }
@@ -636,8 +636,8 @@ i32 CFileImage::BlitSurf(void* surf, i32 width, i32 height, i32 a4, i32 a5) {
         *desc++ = 0;
     }
     *(i32*)(this->m_desc + 0x68) = a5; // m_78
-    *(i32*)(this->m_desc + 0xc) = width;
-    *(i32*)(this->m_desc + 8) = height;
+    this->m_width = width;
+    this->m_height = height;
     *(i32*)this->m_desc = 0x6c;    // dwSize
     *(i32*)(this->m_desc + 4) = 7; // dwFlags
     if (a4 != 0 && a4 != ((CFileImage*)surf)->m_palBitCount) {
@@ -733,14 +733,14 @@ void CFileImage::FillPalette(void* arg) {
 // down. Unlock and return 1.
 RVA(0x0013ece0, 0xc7)
 i32 CFileImage::BlitDirect(void* src, i32 mode) {
-    i32 locked = this->Lock(0);
+    u8* locked = (u8*)this->Lock(0);
     if (locked == 0) {
         return 0;
     }
     u8* p = (u8*)src;
     if (mode == 2) {
-        for (i32 row = *(i32*)(this->m_desc + 8) - 1; row >= 0; row--) {
-            u8* dst = (u8*)locked + row * *(i32*)(this->m_desc + 0x10);
+        for (i32 row = this->m_height - 1; row >= 0; row--) {
+            u8* dst = locked + row * this->m_pitch;
             u8* sp = p;
             i32 n = this->m_ac;
             for (i32 i = n; i > 0; i--) {
@@ -749,8 +749,8 @@ i32 CFileImage::BlitDirect(void* src, i32 mode) {
             p += n;
         }
     } else {
-        for (i32 row = 0; row < *(i32*)(this->m_desc + 8); row++) {
-            u8* dst = (u8*)locked + row * *(i32*)(this->m_desc + 0x10);
+        for (i32 row = 0; row < this->m_height; row++) {
+            u8* dst = locked + row * this->m_pitch;
             u8* sp = p;
             i32 n = this->m_ac;
             for (i32 i = n; i > 0; i--) {
@@ -825,15 +825,15 @@ i32 CFileImage::Blit248(void* srcv, void* palv, i32 mode) {
     if (pal == 0) {
         return 0;
     }
-    i32 locked = this->Lock(0);
+    u8* locked = (u8*)this->Lock(0);
     if (locked == 0) {
         return 0;
     }
     u8* src = (u8*)srcv;
     if (mode == 2) {
-        for (i32 row = *(i32*)(this->m_desc + 8) - 1; row >= 0; row--) {
-            u8* dst = (u8*)locked + row * *(i32*)(this->m_desc + 0x10);
-            for (i32 col = 0; col < *(i32*)(this->m_desc + 0xc); col++) {
+        for (i32 row = this->m_height - 1; row >= 0; row--) {
+            u8* dst = locked + row * this->m_pitch;
+            for (i32 col = 0; col < this->m_width; col++) {
                 u8 idx = *src++;
                 *dst++ = pal[idx * 4 + 2];
                 *dst++ = pal[idx * 4 + 1];
@@ -841,9 +841,9 @@ i32 CFileImage::Blit248(void* srcv, void* palv, i32 mode) {
             }
         }
     } else {
-        for (i32 row = 0; row < *(i32*)(this->m_desc + 8); row++) {
-            u8* dst = (u8*)locked + row * *(i32*)(this->m_desc + 0x10);
-            for (i32 col = 0; col < *(i32*)(this->m_desc + 0xc); col++) {
+        for (i32 row = 0; row < this->m_height; row++) {
+            u8* dst = locked + row * this->m_pitch;
+            for (i32 col = 0; col < this->m_width; col++) {
                 u8 idx = *src++;
                 *dst++ = pal[idx * 4 + 2];
                 *dst++ = pal[idx * 4 + 1];
@@ -1161,8 +1161,8 @@ i32 CFileImage::SaveRle16(void* a1, void* a2, void* a3) {
     bfh.bfReserved1 = 0;
     bfh.bfReserved2 = 0;
 
-    i32 height = *(i32*)(this->m_desc + 8);  // dwHeight
-    i32 width = *(i32*)(this->m_desc + 0xc); // dwWidth
+    i32 height = this->m_height; // dwHeight
+    i32 width = this->m_width;   // dwWidth
     bih.biHeight = height;
     bih.biWidth = width;
     bfh.bfSize = 3 * width * height + 0x3a;
@@ -1200,7 +1200,7 @@ i32 CFileImage::SaveRle16(void* a1, void* a2, void* a3) {
     file.Write(&bih, 0x2c);
 
     for (i32 row = height - 1; row >= 0; row--) {
-        u8* src = locked + row * *(i32*)(this->m_desc + 0x10);
+        u8* src = locked + row * this->m_pitch;
         u8* dst = line;
         for (i32 x = 0; x < width; x++) {
             u16 px = *(u16*)src;
