@@ -830,62 +830,62 @@ static const char s_d48_BREAK[] = "_BREAK";
 RVA(0x00048470, 0x131b)
 void CGrunt::Stub_048470(i32 kind, i32 dirOnly) {
     if (kind == 0) {
-        *(CString*)((char*)this + 0x470) = s_GRUNTZ_ + m_animSetName + s_d48_NORTHWEST_WALK;
-        *(CString*)((char*)this + 0x4d8) = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_WALK;
-        *(CString*)((char*)this + 0x540) = s_GRUNTZ_ + m_animSetName + s_d48_NORTHEAST_WALK;
-        *(CString*)((char*)this + 0x5a8) = s_GRUNTZ_ + m_animSetName + s_d48_WEST_WALK;
-        *(CString*)((char*)this + 0x610) = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_WALK;
-        *(CString*)((char*)this + 0x678) = s_GRUNTZ_ + m_animSetName + s_d48_EAST_WALK;
-        *(CString*)((char*)this + 0x6e0) = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHWEST_WALK;
-        *(CString*)((char*)this + 0x748) = s_GRUNTZ_ + m_animSetName + s_d48_SOUTH_WALK;
-        *(CString*)((char*)this + 0x7b0) = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHEAST_WALK;
-        *(CString*)((char*)this + 0x46c) = s_GRUNTZ_ + m_animSetName + s_d48_NORTHWEST_STRUCK;
-        *(CString*)((char*)this + 0x4d4) = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_STRUCK;
-        *(CString*)((char*)this + 0x53c) = s_GRUNTZ_ + m_animSetName + s_d48_NORTHEAST_STRUCK;
-        *(CString*)((char*)this + 0x5a4) = s_GRUNTZ_ + m_animSetName + s_d48_WEST_STRUCK;
-        *(CString*)((char*)this + 0x60c) = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_STRUCK;
-        *(CString*)((char*)this + 0x674) = s_GRUNTZ_ + m_animSetName + s_d48_EAST_STRUCK;
-        *(CString*)((char*)this + 0x6dc) = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHWEST_STRUCK;
-        *(CString*)((char*)this + 0x744) = s_GRUNTZ_ + m_animSetName + s_d48_SOUTH_STRUCK;
-        *(CString*)((char*)this + 0x7ac) = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHEAST_STRUCK;
-        *(CString*)((char*)this + 0x468) = s_GRUNTZ_ + m_animSetName + s_d48_NORTHWEST_ATTACK;
-        *(CString*)((char*)this + 0x4d0) = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_ATTACK;
-        *(CString*)((char*)this + 0x538) = s_GRUNTZ_ + m_animSetName + s_d48_NORTHEAST_ATTACK;
-        *(CString*)((char*)this + 0x5a0) = s_GRUNTZ_ + m_animSetName + s_d48_WEST_ATTACK;
-        *(CString*)((char*)this + 0x608) = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_ATTACK;
-        *(CString*)((char*)this + 0x670) = s_GRUNTZ_ + m_animSetName + s_d48_EAST_ATTACK;
-        *(CString*)((char*)this + 0x6d8) = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHWEST_ATTACK;
-        *(CString*)((char*)this + 0x740) = s_GRUNTZ_ + m_animSetName + s_d48_SOUTH_ATTACK;
-        *(CString*)((char*)this + 0x7a8) = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHEAST_ATTACK;
-        *(CString*)((char*)this + 0x474) = s_GRUNTZ_ + m_animSetName + s_d48_NORTHWEST_IDLE;
-        *(CString*)((char*)this + 0x4dc) = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_IDLE;
-        *(CString*)((char*)this + 0x544) = s_GRUNTZ_ + m_animSetName + s_d48_NORTHEAST_IDLE;
-        *(CString*)((char*)this + 0x5ac) = s_GRUNTZ_ + m_animSetName + s_d48_WEST_IDLE;
-        *(CString*)((char*)this + 0x614) = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_IDLE;
-        *(CString*)((char*)this + 0x67c) = s_GRUNTZ_ + m_animSetName + s_d48_EAST_IDLE;
-        *(CString*)((char*)this + 0x6e4) = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHWEST_IDLE;
-        *(CString*)((char*)this + 0x74c) = s_GRUNTZ_ + m_animSetName + s_d48_SOUTH_IDLE;
-        *(CString*)((char*)this + 0x7b4) = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHEAST_IDLE;
-        *(CString*)((char*)this + 0x478) = s_GRUNTZ_ + m_animSetName + s_d48_NORTHWEST_ITEM;
-        *(CString*)((char*)this + 0x4e0) = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_ITEM;
-        *(CString*)((char*)this + 0x548) = s_GRUNTZ_ + m_animSetName + s_d48_NORTHEAST_ITEM;
-        *(CString*)((char*)this + 0x5b0) = s_GRUNTZ_ + m_animSetName + s_d48_WEST_ITEM;
-        *(CString*)((char*)this + 0x618) = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_ITEM;
-        *(CString*)((char*)this + 0x680) = s_GRUNTZ_ + m_animSetName + s_d48_EAST_ITEM;
-        *(CString*)((char*)this + 0x6e8) = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHWEST_ITEM;
-        *(CString*)((char*)this + 0x750) = s_GRUNTZ_ + m_animSetName + s_d48_SOUTH_ITEM;
-        *(CString*)((char*)this + 0x7b8) = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHEAST_ITEM;
+        m_cells[0].m_walk = s_GRUNTZ_ + m_animSetName + s_d48_NORTHWEST_WALK;
+        m_cells[1].m_walk = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_WALK;
+        m_cells[2].m_walk = s_GRUNTZ_ + m_animSetName + s_d48_NORTHEAST_WALK;
+        m_cells[3].m_walk = s_GRUNTZ_ + m_animSetName + s_d48_WEST_WALK;
+        m_cells[4].m_walk = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_WALK;
+        m_cells[5].m_walk = s_GRUNTZ_ + m_animSetName + s_d48_EAST_WALK;
+        m_cells[6].m_walk = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHWEST_WALK;
+        m_cells[7].m_walk = s_GRUNTZ_ + m_animSetName + s_d48_SOUTH_WALK;
+        m_cells[8].m_walk = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHEAST_WALK;
+        m_cells[0].m_struck = s_GRUNTZ_ + m_animSetName + s_d48_NORTHWEST_STRUCK;
+        m_cells[1].m_struck = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_STRUCK;
+        m_cells[2].m_struck = s_GRUNTZ_ + m_animSetName + s_d48_NORTHEAST_STRUCK;
+        m_cells[3].m_struck = s_GRUNTZ_ + m_animSetName + s_d48_WEST_STRUCK;
+        m_cells[4].m_struck = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_STRUCK;
+        m_cells[5].m_struck = s_GRUNTZ_ + m_animSetName + s_d48_EAST_STRUCK;
+        m_cells[6].m_struck = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHWEST_STRUCK;
+        m_cells[7].m_struck = s_GRUNTZ_ + m_animSetName + s_d48_SOUTH_STRUCK;
+        m_cells[8].m_struck = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHEAST_STRUCK;
+        m_cells[0].m_attack = s_GRUNTZ_ + m_animSetName + s_d48_NORTHWEST_ATTACK;
+        m_cells[1].m_attack = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_ATTACK;
+        m_cells[2].m_attack = s_GRUNTZ_ + m_animSetName + s_d48_NORTHEAST_ATTACK;
+        m_cells[3].m_attack = s_GRUNTZ_ + m_animSetName + s_d48_WEST_ATTACK;
+        m_cells[4].m_attack = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_ATTACK;
+        m_cells[5].m_attack = s_GRUNTZ_ + m_animSetName + s_d48_EAST_ATTACK;
+        m_cells[6].m_attack = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHWEST_ATTACK;
+        m_cells[7].m_attack = s_GRUNTZ_ + m_animSetName + s_d48_SOUTH_ATTACK;
+        m_cells[8].m_attack = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHEAST_ATTACK;
+        m_cells[0].m_idle = s_GRUNTZ_ + m_animSetName + s_d48_NORTHWEST_IDLE;
+        m_cells[1].m_idle = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_IDLE;
+        m_cells[2].m_idle = s_GRUNTZ_ + m_animSetName + s_d48_NORTHEAST_IDLE;
+        m_cells[3].m_idle = s_GRUNTZ_ + m_animSetName + s_d48_WEST_IDLE;
+        m_cells[4].m_idle = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_IDLE;
+        m_cells[5].m_idle = s_GRUNTZ_ + m_animSetName + s_d48_EAST_IDLE;
+        m_cells[6].m_idle = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHWEST_IDLE;
+        m_cells[7].m_idle = s_GRUNTZ_ + m_animSetName + s_d48_SOUTH_IDLE;
+        m_cells[8].m_idle = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHEAST_IDLE;
+        m_cells[0].m_item = s_GRUNTZ_ + m_animSetName + s_d48_NORTHWEST_ITEM;
+        m_cells[1].m_item = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_ITEM;
+        m_cells[2].m_item = s_GRUNTZ_ + m_animSetName + s_d48_NORTHEAST_ITEM;
+        m_cells[3].m_item = s_GRUNTZ_ + m_animSetName + s_d48_WEST_ITEM;
+        m_cells[4].m_item = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_ITEM;
+        m_cells[5].m_item = s_GRUNTZ_ + m_animSetName + s_d48_EAST_ITEM;
+        m_cells[6].m_item = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHWEST_ITEM;
+        m_cells[7].m_item = s_GRUNTZ_ + m_animSetName + s_d48_SOUTH_ITEM;
+        m_cells[8].m_item = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHEAST_ITEM;
         *(CString*)&m_44c = s_GRUNTZ_ + m_animSetName + s_d48_DEATH;
     } else if (dirOnly != 0) {
-        *(CString*)((char*)this + 0x470) = s_GRUNTZ_ + m_animSetName + s_d48_NORTHWEST;
-        *(CString*)((char*)this + 0x4d8) = s_GRUNTZ_ + m_animSetName + s_d48_NORTH;
-        *(CString*)((char*)this + 0x540) = s_GRUNTZ_ + m_animSetName + s_d48_NORTHEAST;
-        *(CString*)((char*)this + 0x5a8) = s_GRUNTZ_ + m_animSetName + s_d48_WEST;
-        *(CString*)((char*)this + 0x610) = s_GRUNTZ_ + m_animSetName + s_d48_NORTH;
-        *(CString*)((char*)this + 0x678) = s_GRUNTZ_ + m_animSetName + s_d48_EAST;
-        *(CString*)((char*)this + 0x6e0) = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHWEST;
-        *(CString*)((char*)this + 0x748) = s_GRUNTZ_ + m_animSetName + s_d48_SOUTH;
-        *(CString*)((char*)this + 0x7b0) = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHEAST;
+        m_cells[0].m_walk = s_GRUNTZ_ + m_animSetName + s_d48_NORTHWEST;
+        m_cells[1].m_walk = s_GRUNTZ_ + m_animSetName + s_d48_NORTH;
+        m_cells[2].m_walk = s_GRUNTZ_ + m_animSetName + s_d48_NORTHEAST;
+        m_cells[3].m_walk = s_GRUNTZ_ + m_animSetName + s_d48_WEST;
+        m_cells[4].m_walk = s_GRUNTZ_ + m_animSetName + s_d48_NORTH;
+        m_cells[5].m_walk = s_GRUNTZ_ + m_animSetName + s_d48_EAST;
+        m_cells[6].m_walk = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHWEST;
+        m_cells[7].m_walk = s_GRUNTZ_ + m_animSetName + s_d48_SOUTH;
+        m_cells[8].m_walk = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHEAST;
         *(CString*)&m_448 = s_GRUNTZ_ + m_animSetName + s_d48_BREAK;
     } else {
         *(CString*)&m_448 = s_GRUNTZ_ + m_animSetName;
@@ -1125,7 +1125,7 @@ latch:
         }
     }
 
-    CString key = (const char*)((char*)m_468 + 0xc + (3 * col + row) * 0x68);
+    CString key = (const char*)&m_cells[3 * col + row].m_idle;
 
     CEntranceAnimDescColl* desc = m_154->m_1b4;
     i32* elem = desc->m_10 > 0 ? *desc->m_c : 0;
@@ -1318,6 +1318,9 @@ i32 CGrunt::StepEntranceReinit() {
     i32 base = cell[0] + col;
     i32 row = base * 3;
     i32 idx = base + row * 4;
+    // idx == base*13, so idx*8 == base*0x68: MSVC's strength-reduced form of the
+    // &m_cells[base].m_walk address. Kept raw so cl re-emits the same lea chain
+    // (m_cells[base].m_walk would regenerate base*0x68 as an imul and diverge).
     char* nm = GruntStrGetBuffer((char*)this + idx * 8 + 0x470, 0);
     m_154->SetAnimName(nm);
     return 0;
@@ -2086,7 +2089,7 @@ void CGrunt::PlaySound(i32 range, CGruntVoiceRec rec) {
             i32 col = m_entranceCell[0];
             i32 row = m_entranceCell[1];
             i32 index = 3 * col + row;
-            const char* nm = ((CGruntCell*)((char*)this + 0x468 + index * 0x68))->GetName(0);
+            const char* nm = ((CGruntCell*)&m_cells[index])->GetName(0);
             m_154->SetAnimFrame(nm, frame);
         }
         goto store;
@@ -2123,7 +2126,7 @@ idle:
         i32 col = rec.m_0;
         i32 row = rec.m_4;
         i32 index = 3 * col + row;
-        const char* nm = ((CGruntCell*)((char*)this + 0x474 + index * 0x68))->GetName(0);
+        const char* nm = ((CGruntCell*)&m_cells[index].m_idle)->GetName(0);
         m_154->SetAnimFrame(nm, frame);
     }
     goto store;
@@ -2137,7 +2140,7 @@ walk:
         i32 col = rec.m_0;
         i32 row = rec.m_4;
         i32 index = 3 * col + row;
-        const char* nm = ((CGruntCell*)((char*)this + 0x470 + index * 0x68))->GetName(0);
+        const char* nm = ((CGruntCell*)&m_cells[index].m_walk)->GetName(0);
         m_154->SetAnimName(nm);
     }
 
@@ -3962,14 +3965,14 @@ i32 CGrunt::Load(CGruntArchive* ar) {
     i32 idx;
     ar->Read(&idx, 4);
     if (strlen(buf80a) == 0) {
-        *(i32*)((char*)this + 0x4d0) = 0;
+        *(i32*)&m_cells[1].m_attack = 0;
     } else {
         GruntIdEntry* entry = 0;
         ((GruntNameIdMap*)(res->m_10 + 0x10))->Lookup(buf80a, &entry);
         if (entry == 0 || idx < entry->m_64 || idx > entry->m_68) {
-            *(i32*)((char*)this + 0x4d0) = 0;
+            *(i32*)&m_cells[1].m_attack = 0;
         } else {
-            *(i32*)((char*)this + 0x4d0) = entry->m_14[idx];
+            *(i32*)&m_cells[1].m_attack = entry->m_14[idx];
         }
     }
 
@@ -3978,10 +3981,10 @@ i32 CGrunt::Load(CGruntArchive* ar) {
     ar->Read(buf80b, 0x80);
     void* entry2 = 0;
     if (strlen(buf80b) == 0) {
-        *(i32*)((char*)this + 0x4cc) = 0;
+        m_cells[0].m_64 = 0;
     } else {
         ((GruntNameIdMap*)(res->m_10 + 0x10))->LookupNode(buf80b, &entry2);
-        *(i32*)((char*)this + 0x4cc) = (i32)entry2;
+        m_cells[0].m_64 = (i32)entry2;
     }
 
     ar->Read((char*)this + 0x4d8, 4);
@@ -3998,7 +4001,7 @@ i32 CGrunt::Load(CGruntArchive* ar) {
     } else {
         ve = oe->Kind() == 5 ? (i32)oe : 0;
     }
-    *(i32*)((char*)this + 0x4e4) = ve;
+    m_cells[1].m_14 = ve;
     if (ve == 0 && entry2 != 0) {
         return 0;
     }
@@ -4027,7 +4030,7 @@ i32 CGrunt::Load(CGruntArchive* ar) {
     ar->Read((char*)this + 0x4b0, 4);
     ar->Read((char*)this + 0x4d4, 4);
     ar->Read((char*)this + 0x49c, 4);
-    *(i32*)((char*)this + 0x510) = 2;
+    m_cells[1].m_40 = 2;
     ar->Read((char*)this + 0x514, 4);
 
     i32 n488;
@@ -4084,7 +4087,7 @@ i32 CGrunt::ResetGeometry() {
     i32 col = m_entranceCell[0];
     i32 row = m_entranceCell[1];
     i32 index = 3 * col + row;
-    const char* name = ((CGruntCell*)((char*)this + 0x468 + index * 0x68))->GetName(0);
+    const char* name = ((CGruntCell*)&m_cells[index])->GetName(0);
     m_154->SetAnimFrame(name, frame);
 
     m_prevAnimSetNode = (i32)m_14->m_1c;
@@ -4278,6 +4281,9 @@ void CGrunt::RearmEntranceDrop() {
 
         i32 col = m_entranceCell[0];
         i32 row = m_entranceCell[1];
+        // (3col+row+0xb)*0x68 == &m_cells[3col+row].m_item (0xb*0x68 == 0x478). Kept
+        // raw: cl folds the (idx+0xb)*0x68 multiply, which array indexing would split
+        // into idx*0x68 + 0x478 and diverge.
         const char* name = ((CGruntCell*)((char*)this + (3 * col + row + 0xb) * 0x68))->GetName(0);
         m_154->SetAnimFrame(name, frame);
     }
@@ -4794,7 +4800,7 @@ i32 CGrunt::StepArrivalCommit() {
             m_154->m_1a0.SetGeometry(m_poseWalk);
             i32* cell = m_entranceCell;
             i32 base = 3 * cell[0] + cell[1];
-            char* nm = GruntStrGetBuffer((char*)this + base * 0x68 + 0x470, 0);
+            char* nm = GruntStrGetBuffer(&m_cells[base].m_walk, 0);
             m_154->SetAnimName(nm);
         } else {
             Stub_062e10(1, 0, 0);

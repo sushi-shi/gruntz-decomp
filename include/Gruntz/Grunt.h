@@ -910,13 +910,25 @@ public:
 //   +0x18   ~EngStr  (0x16d2a0) the CUserLogic link base teardown (in ~CUserLogic)
 // All teardown callees are external/no-body (reloc-masked).
 
-// The +0x468 owned-cell array element (9 x 0x68). Its per-element dtor is the
-// engine callback at 0x4023a6 (external/reloc-masked); as a value-array member of
-// CGrunt, MSVC auto-emits the __ehvec_dtor(base, 0x68, 9, &~CGruntCellRec) teardown.
+// The +0x468 owned-cell array element (9 x 0x68), one per direction. Five per-pose
+// anim-name CStrings at +0/4/8/c/10 (ATTACK/STRUCK/WALK/IDLE/ITEM) the entrance
+// name loader (Stub_048470) fills; the serialized-record dwords at +0x14/+0x40/+0x64
+// the Load path streams. Its per-element ctor/dtor are engine callbacks (0x401e9c /
+// 0x4023a6, external/reloc-masked); as a value-array member of CGrunt, MSVC auto-emits
+// the __ehvec_ctor/__ehvec_dtor(base, 0x68, 9, &CGruntCellRec::{ctor,dtor}).
 struct CGruntCellRec {
-    char m_pad[0x68];
-    CGruntCellRec();  // 0x401e9c (per-element ctor; the ctor's __ehvec_ctor callback)
-    ~CGruntCellRec(); // 0x4023a6 (out-of-line; reloc-masked)
+    CString m_attack; // +0x00  "GRUNTZ_<name>_<DIR>_ATTACK"
+    CString m_struck; // +0x04  "GRUNTZ_<name>_<DIR>_STRUCK"
+    CString m_walk;   // +0x08  "GRUNTZ_<name>_<DIR>_WALK" / "GRUNTZ_<name>_<DIR>"
+    CString m_idle;   // +0x0c  "GRUNTZ_<name>_<DIR>_IDLE"
+    CString m_item;   // +0x10  "GRUNTZ_<name>_<DIR>_ITEM"
+    i32 m_14;         // +0x14  (serialized record dword)
+    char m_pad18[0x40 - 0x18];
+    i32 m_40; // +0x40  (serialized record dword)
+    char m_pad44[0x64 - 0x44];
+    i32 m_64;         // +0x64  (serialized record dword)
+    CGruntCellRec();  // 0x401e9c (per-element ctor; the __ehvec_ctor callback)
+    ~CGruntCellRec(); // 0x4023a6 (per-element dtor; reloc-masked)
 };
 // Each owned sub-object is torn down by its engine dtor reached __thiscall (this in
 // ecx, no stack arg/cleanup). Modeled as a 1-method receiver so `lea ecx,[this+off];
@@ -1530,7 +1542,7 @@ public:
     i32 m_arrivalNotified; // +0x464 (entrance-reset latch flag)
     // +0x468 owned-cell array (9 x 0x68, +0x468..+0x810; entrance-cell record table,
     // 0x68-byte stride). Value array so ~CGrunt auto-emits the __ehvec_dtor teardown.
-    CGruntCellRec m_468[9];   // +0x468..+0x810
+    CGruntCellRec m_cells[9]; // +0x468..+0x810  (per-direction anim-name cell records)
     i32 m_810;                // +0x810
     i32 m_814;                // +0x814
     i32 m_818;                // +0x818
