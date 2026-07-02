@@ -525,22 +525,13 @@ struct CWorldLookupHolder {
     char m_pad0[0x10];
     CColorLookup m_10; // +0x10  (sub-object, NOT a pointer)
 };
-// A TU-local view of the world exposing its +0x10 lookup-holder pointer.
-struct CWorldLookupView {
-    char m_pad0[0x10];
-    CWorldLookupHolder* m_10; // +0x10
-};
 // The recolor entrypoint (FUN_005532b0): takes the resolved cell pointer by value;
 // callee cleans the arg (no `add esp,4` at the call site -> __stdcall). Reloc-masked.
 void __stdcall RecolorCell(i32 cell);
 
-// A TU-local view of the world exposing its +0x38 status code (the load-result
-// code ReportWorldStatus maps to a message id). The code is UNSIGNED: the switch
-// range checks emit `cmp;ja/jbe` (unsigned), not the signed `jg/jle`.
-struct CWorldStatusView {
-    char m_pad0[0x38];
-    u32 m_38; // +0x38  status code
-};
+// The world's +0x38 load-status code (mapped to a message id by ReportWorldStatus)
+// is now a real CWorldZ member (GruntzMgr.h). It is UNSIGNED: the switch range checks
+// emit `cmp;ja/jbe` (unsigned), not the signed `jg/jle`.
 
 // LoadWorldMode's reloc-masked siblings (engine objects reached through the
 // manager's member pointers; all are __thiscall, so each is modeled as a method on
@@ -596,13 +587,6 @@ struct CWorldRegistrar {
 };
 // The per-load world-object factory (CreateGameObjectByName, __cdecl, reloc-masked).
 void CreateWorldObjects(void* world);
-
-// The world view's +0x24 sub-object exposes a two-entry extent pair at +0x64/+0x68
-// the mode reload stamps to 0xe (a default tile-region size).
-struct CWorldModeView {
-    char m_pad0[0x64];
-    i32 m_64, m_68; // +0x64/+0x68
-};
 
 // ResetWorldState's MFC wait-cursor pair. Retail inlines the global ::Begin/
 // EndWaitCursor (AfxGetApp()->...); modeled as reloc-masked free fns here (only
@@ -661,34 +645,40 @@ public:
     virtual i32 Command(i32 a, i32 b, i32 c, i32 d); // slot 1 (+0x04)
 };
 
-// The loaded world's height/influence grid (reached via m_world->m_24->m_5c). m_20
-// is the value grid, m_24 the per-column base offset table.
-struct CHeightGrid {
-    char m_pad0[0x20];
-    i32* m_20; // +0x20  value grid
+// The world's layer/plane object: an element of the active view's +0x38 layer array
+// AND the object its +0x5c distinguished-layer slot points at (same memory, so one
+// type). A visibility flag word at +0x8 (bit 0 = locked, bit 1 = visible); the height
+// grid (value grid +0x20, per-column base table +0x24); the loaded map's playable
+// field limits (+0x30/+0x34); and the edge origins (+0x40..+0x4c) all live here - each
+// caller reads only the facet it needs.
+struct CWorldLayer {
+    char m_pad0[0x8];
+    i32 m_8; // +0x08  flag word (bit 0 = locked, bit 1 = visible)
+    char m_pad0c[0x20 - 0xc];
+    i32* m_20; // +0x20  height value grid
     i32* m_24; // +0x24  per-column base table
+    char m_pad28[0x30 - 0x28];
+    i32 m_30, m_34; // +0x30/+0x34  playable field width/height limits
+    char m_pad38[0x40 - 0x38];
+    i32 m_40, m_44, m_48, m_4c; // +0x40..+0x4c  edge origins
 };
 
-// The active world view at m_world->m_24; its +0x5c holds the height grid.
-struct CWorldViewZ {
-    char m_pad0[0x5c];
-    CHeightGrid* m_5c; // +0x5c
-};
-
-// The scroll/camera view at m_world->m_24 (a CWorldView): a tile rect at
-// +0x10..+0x1c and the three scaled-extent output pairs at +0xc8..+0xdc that
-// RecomputeViewScale fills; +0x5c is a CWorldEdges sub-object (origin fields at
-// +0x40..+0x4c). The view's rescale notify is a reloc-masked thiscall.
-struct CWorldEdges {
-    char m_pad0[0x40];
-    i32 m_40, m_44, m_48, m_4c; // +0x40..+0x4c
-};
-struct CScrollView {
+// The active world view held at m_world->m_24. One object; each manager method reads a
+// different facet: the tile rect (+0x10..+0x1c) + the three scaled-extent output pairs
+// (+0xc8..+0xdc) RecomputeViewScale fills, the layer array (+0x38 base / +0x3c count),
+// the distinguished layer/plane (+0x5c), and the mode-reload extent pair (+0x64/+0x68
+// LoadWorldMode stamps to 0xe). The rescale notify is a reloc-masked thiscall.
+struct CWorldView {
     char m_pad0[0x10];
-    i32 m_10, m_14, m_18, m_1c; // +0x10..+0x1c  tile rect
-    char m_pad20[0x5c - 0x20];
-    CWorldEdges* m_5c; // +0x5c
-    char m_pad60[0xc8 - 0x60];
+    i32 m_10, m_14, m_18, m_1c; // +0x10..+0x1c  tile rect (scroll extents)
+    char m_pad20[0x38 - 0x20];
+    CWorldLayer** m_38; // +0x38  layer array
+    i32 m_3c;           // +0x3c  layer count
+    char m_pad40[0x5c - 0x40];
+    CWorldLayer* m_5c; // +0x5c  distinguished layer / plane
+    char m_pad60[0x64 - 0x60];
+    i32 m_64, m_68; // +0x64/+0x68  mode-reload extent pair
+    char m_pad6c[0xc8 - 0x6c];
     i32 m_c8, m_cc; // +0xc8/+0xcc  scale-1 extents
     i32 m_d0, m_d4; // +0xd0/+0xd4  scale-2 extents
     i32 m_d8, m_dc; // +0xd8/+0xdc  scale-3 extents
@@ -754,20 +744,10 @@ CGruntzMgrOptions::CGruntzMgrOptions() {}
 CGruntzMgrOptions::~CGruntzMgrOptions() {}
 
 // -------------------------------------------------------------------------
-// The world's +0x24 view exposes a layer array (+0x38 base, +0x3c count) plus a
-// distinguished sub-layer (+0x5c); each layer carries a flag word at +0x8 whose
-// bit 1 (0x2) is a visibility toggle the level-cycle / debug methods flip.
-struct WorldLayer {
-    char m_pad0[0x8];
-    i32 m_8; // +0x08  flag word (bit 0 = locked, bit 1 = visible)
-};
-struct WorldLayerView {
-    char m_pad0[0x38];
-    WorldLayer** m_38; // +0x38  layer array
-    i32 m_3c;          // +0x3c  layer count
-    char m_pad40[0x5c - 0x40];
-    WorldLayer* m_5c; // +0x5c  distinguished sub-layer
-};
+// The world's +0x24 view (CWorldView, defined above) exposes a layer array (+0x38
+// base, +0x3c count) plus a distinguished sub-layer (+0x5c); each layer (CWorldLayer)
+// carries a flag word at +0x8 whose bit 1 (0x2) is a visibility toggle the level-cycle
+// / debug methods flip.
 
 // The live state's +0x1c "current level index" the next/prev cycle reads/writes
 // (a CState field inside the +0x1c..+0x24 gap; the offset is load-bearing, so a
@@ -1064,7 +1044,7 @@ i32 CGruntzMgr::InitializeLobbyConnectionSettings() {
 RVA(0x0008efe0, 0x54)
 i32 CGruntzMgr::ToggleObjectLayer() {
     if (Wap32GameMgrVfunc3() && m_world) {
-        WorldLayerView* view = (WorldLayerView*)m_world->m_24;
+        CWorldView* view = m_world->m_24;
         if (view) {
             i32 count = view->m_3c;
             // (count==4 ? count-1 : count) - 1: best-scoring spelling (96.7%); it
@@ -1074,7 +1054,7 @@ i32 CGruntzMgr::ToggleObjectLayer() {
             // `if(idx==4)idx--;idx--;` form regresses to 88% (view in edx). The
             // fold is the constant-CSE tiebreak, not source-steerable.
             i32 idx = (count == 4 ? count - 1 : count) - 1;
-            WorldLayer* layer = (idx < 0 || idx >= count) ? 0 : view->m_38[idx];
+            CWorldLayer* layer = (idx < 0 || idx >= count) ? 0 : view->m_38[idx];
             if (layer && !(layer->m_8 & 1)) {
                 layer->m_8 ^= 2;
                 return 1;
@@ -1091,9 +1071,9 @@ i32 CGruntzMgr::ToggleObjectLayer() {
 RVA(0x0008f060, 0x35)
 i32 CGruntzMgr::ToggleHeightLayer() {
     if (Wap32GameMgrVfunc3() && m_world) {
-        WorldLayerView* view = (WorldLayerView*)m_world->m_24;
+        CWorldView* view = m_world->m_24;
         if (view) {
-            WorldLayer* layer = view->m_5c;
+            CWorldLayer* layer = view->m_5c;
             if (layer) {
                 layer->m_8 ^= 2;
                 return 1;
@@ -1110,9 +1090,9 @@ i32 CGruntzMgr::ToggleHeightLayer() {
 RVA(0x0008f0b0, 0x46)
 i32 CGruntzMgr::ToggleBaseLayer() {
     if (Wap32GameMgrVfunc3() && m_world) {
-        WorldLayerView* view = (WorldLayerView*)m_world->m_24;
+        CWorldView* view = m_world->m_24;
         if (view) {
-            WorldLayer* layer = (view->m_3c > 0) ? view->m_38[0] : 0;
+            CWorldLayer* layer = (view->m_3c > 0) ? view->m_38[0] : 0;
             if (layer && !(layer->m_8 & 1)) {
                 layer->m_8 ^= 2;
                 return 1;
@@ -1520,7 +1500,7 @@ void CGruntzMgr::ReportWorldStatus(i32 a) {
     if (m_world == 0) {
         ReportError(0x800a, a);
     }
-    u32 status = ((CWorldStatusView*)m_world)->m_38;
+    u32 status = m_world->m_38;
     if (status == 0) {
         ReportError(0x800a, a);
     }
@@ -1704,7 +1684,7 @@ i32 CGruntzMgr::SetGruntColor(i32 sinkArg, i32 key, i32 idx) {
     CColorRow* sink = (CColorRow*)sinkArg;
     if (sink && key) {
         i32* out = 0;
-        ((CWorldLookupView*)m_world)->m_10->m_10.Lookup(key, &out);
+        m_world->m_10->m_10.Lookup(key, &out);
         CColorRow* row = (CColorRow*)out;
         if (row && row->m_14[row->m_64]) {
             i32 cell = (idx < sink->m_64 || idx > sink->m_68) ? 0 : sink->m_14[idx];
@@ -1827,7 +1807,7 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
     }
 
     ((CWorldRegistrar*)m_world)->RegisterCallback((void*)ModeResetCallback);
-    CWorldModeView* view = (CWorldModeView*)m_world->m_24;
+    CWorldView* view = m_world->m_24;
     view->m_64 = 0xe;
     view->m_68 = 0xe;
     CreateWorldObjects(m_world);
@@ -2325,7 +2305,7 @@ void CGruntzMgr::RecomputeViewScale() {
     if (m_world == 0) {
         return;
     }
-    CScrollView* view = (CScrollView*)m_world->m_24;
+    CWorldView* view = m_world->m_24;
     float fw = (float)(view->m_18 - view->m_10 + 1);
     float fh = (float)(view->m_1c - view->m_14 + 1);
 
@@ -2333,24 +2313,24 @@ void CGruntzMgr::RecomputeViewScale() {
     view->m_cc = (i32)(fh * 1.4f);
     view->Notify();
 
-    view = (CScrollView*)m_world->m_24;
+    view = m_world->m_24;
     view->m_d0 = (i32)(fw * 5.3f);
     view->m_d4 = (i32)(fh * 5.3f);
     view->Notify();
 
-    view = (CScrollView*)m_world->m_24;
+    view = m_world->m_24;
     view->m_d8 = (i32)(fw * 1.12f);
     view->m_dc = (i32)(fh * 1.12f);
     view->Notify();
 
-    CScrollView* v = (CScrollView*)m_world->m_24;
+    CWorldView* v = m_world->m_24;
     if (v->m_5c == 0) {
         return;
     }
     m_viewOriginL = v->m_5c->m_40 - 0x60;
-    m_viewOriginT = ((CScrollView*)m_world->m_24)->m_5c->m_44 - 0x60;
-    m_viewOriginR = ((CScrollView*)m_world->m_24)->m_5c->m_48 + 0x60;
-    m_viewOriginB = ((CScrollView*)m_world->m_24)->m_5c->m_4c + 0x60;
+    m_viewOriginT = m_world->m_24->m_5c->m_44 - 0x60;
+    m_viewOriginR = m_world->m_24->m_5c->m_48 + 0x60;
+    m_viewOriginB = m_world->m_24->m_5c->m_4c + 0x60;
 }
 
 // -------------------------------------------------------------------------
@@ -3011,7 +2991,7 @@ i32 CGruntzMgr::SyncOptionsState() {
 // Then forwards (row, col, value) to the +0x70 notify object (reloc-masked).
 RVA(0x00111ec0, 0x37)
 void CGruntzMgr::SetCellHeight(i32 row, i32 col, i32 value) {
-    CHeightGrid* grid = ((CWorldViewZ*)m_world->m_24)->m_5c;
+    CWorldLayer* grid = m_world->m_24->m_5c;
     i32 idx = grid->m_24[col] + row;
     grid->m_20[idx] = value;
     ((CNotify70*)m_cmdNotify)->Set(row, col, value);
@@ -3567,14 +3547,8 @@ i32 CGruntzMgr::CheckDisplayBoundsB() {
 //
 // The SetVideoMode symbol pairs the @early-stop CheckDisplayBoundsA/B and the
 // RestoreVideoMode/CheckSavedMode call sites (previously the Boundary_08df00 stub).
-struct SvmField { // m_world->m_24->m_5c: the loaded map's playable extent
-    char p0[0x30];
-    i32 m_30, m_34; // +0x30/+0x34  field width/height limits
-};
-struct SvmWorldView { // m_world->m_24
-    char p0[0x5c];
-    SvmField* m_5c; // +0x5c
-};
+// The loaded map's playable extent (m_world->m_24->m_5c) is the shared CWorldLayer;
+// SetVideoMode reads its +0x30/+0x34 field width/height limits.
 struct SvmGuts { // m_curState->m_2dc: the HUD/guts subsystem
     i32 m_0;     // +0x00  state (0/1 -> which poke order)
     char p4[0x614 - 4];
@@ -3610,7 +3584,7 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
     }
     if (m_curState->Update() == 3 || m_curState->Update() == 0x11) {
         if (m_world->m_24 != 0) {
-            SvmField* f = ((SvmWorldView*)m_world->m_24)->m_5c;
+            CWorldLayer* f = m_world->m_24->m_5c;
             if (f != 0) {
                 if (w > f->m_30 || h > f->m_34) {
                     SvmStateView* st = (SvmStateView*)m_curState;
@@ -3724,7 +3698,6 @@ SIZE_UNKNOWN(CActiveSub2dc);
 SIZE_UNKNOWN(CChatLog);
 SIZE_UNKNOWN(CColorLookup);
 SIZE_UNKNOWN(CColorRow);
-SIZE_UNKNOWN(CHeightGrid);
 SIZE_UNKNOWN(CInput54);
 SIZE_UNKNOWN(CLevelState);
 SIZE_UNKNOWN(CWorldMenuMap);
@@ -3746,20 +3719,16 @@ SIZE_UNKNOWN(CPointXY);
 SIZE_UNKNOWN(CRezSurface94);
 SIZE_UNKNOWN(CSaveDlgBase);
 SIZE_UNKNOWN(CSaveNameDlg);
-SIZE_UNKNOWN(CScrollView);
 SIZE_UNKNOWN(CSerializerZ);
 SIZE_UNKNOWN(CSettingsWriter);
 SIZE_UNKNOWN(CWorldCoordResolver);
 SIZE_UNKNOWN(CWorldDelete);
-SIZE_UNKNOWN(CWorldEdges);
+SIZE_UNKNOWN(CWorldLayer);
 SIZE_UNKNOWN(CWorldLookupHolder);
-SIZE_UNKNOWN(CWorldLookupView);
 SIZE_UNKNOWN(CWorldMenuHolder);
 SIZE_UNKNOWN(CWorldModeIface);
-SIZE_UNKNOWN(CWorldModeView);
 SIZE_UNKNOWN(CWorldRegistrar);
-SIZE_UNKNOWN(CWorldStatusView);
-SIZE_UNKNOWN(CWorldViewZ);
+SIZE_UNKNOWN(CWorldView);
 SIZE_UNKNOWN(CmdGridFlagView);
 SIZE_UNKNOWN(CmdSink);
 SIZE_UNKNOWN(CmdSinkV);
@@ -3784,12 +3753,8 @@ SIZE_UNKNOWN(ScoreSub2c);
 SIZE_UNKNOWN(StateMgr578Z);
 SIZE_UNKNOWN(StateMgrBZ);
 SIZE_UNKNOWN(StateScoreView);
-SIZE_UNKNOWN(SvmField);
 SIZE_UNKNOWN(SvmGuts);
 SIZE_UNKNOWN(SvmStateView);
-SIZE_UNKNOWN(SvmWorldView);
 SIZE_UNKNOWN(TimerObj);
 SIZE_UNKNOWN(WorldDeltaTables);
-SIZE_UNKNOWN(WorldLayer);
-SIZE_UNKNOWN(WorldLayerView);
 SIZE_UNKNOWN(CGameRegistry);

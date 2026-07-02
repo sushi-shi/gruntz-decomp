@@ -98,6 +98,10 @@ struct CWorldSub28 {
     CWorldSub2c* m_2c; // +0x2c
 };
 struct CWorldView;
+// The world's +0x10 recolor lookup holder (its own +0x10 is an embedded CColorLookup);
+// CWorldZ::m_10 is a pointer, so a forward declaration suffices - the holder's full
+// layout lives in GruntzMgr.cpp, the only TU that walks it.
+struct CWorldLookupHolder;
 // A polymorphic sub-object held in the world at +0x1c, dispatched through a
 // pointer-to-pointer (`*m_1c`) then virtual slot 10 (+0x28). The full COM-interface
 // definition (real virtuals) lives in GruntzMgr.cpp - the only TU that dispatches on
@@ -110,15 +114,23 @@ struct CWorldSub4 {
     char m_pad0[0x14];
     i32 m_14; // +0x14
 };
+// The real loaded-world/map object (CGruntzMgr::m_world). One object; each manager
+// method that touches it reads a different facet: the +0x4 map sub-object, the +0x10
+// recolor lookup holder, the +0x1c polymorphic dispatch, the +0x24 active view, the
+// +0x28 sound/state sub-controller and the +0x38 load-status code.
 SIZE_UNKNOWN(CWorldZ);
 struct CWorldZ {
     char m_pad0[0x4];
     CWorldSub4* m_4; // +0x04
-    char m_pad8[0x1c - 0x8];
+    char m_pad8[0x10 - 0x8];
+    CWorldLookupHolder* m_10; // +0x10  recolor lookup holder
+    char m_pad14[0x1c - 0x14];
     CWorldDispatch** m_1c; // +0x1c
     char m_pad20[0x24 - 0x20];
     CWorldView* m_24;  // +0x24  active world view
     CWorldSub28* m_28; // +0x28
+    char m_pad2c[0x38 - 0x2c];
+    u32 m_38; // +0x38  load-status code (ReportWorldStatus maps it to a message id)
 };
 
 // Minimal IDirectPlayLobby-shaped COM surface used by
