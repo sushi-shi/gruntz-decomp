@@ -859,12 +859,10 @@ i32 CFileImage::Blit248(void* srcv, void* palv, i32 mode) {
     return 1;
 }
 
-// The CFileImage vtable (reloc-masked .rdata global). The destructor restores the
-// vptr to it before tearing the object down; the class's virtuals live in other
-// (unmatched) TUs, so the vtable is modeled as a DATA extern + a manual stamp
-// rather than letting the compiler emit a divergent one.
-DATA(0x001ef7f0)
-extern void* g_fileImageVtbl; // 0x5ef7f0
+// CFileImage / CFileImageSurface / CImageSurfaceItemInit are all real-polymorphic
+// now: cl emits their ??_7 and stamps the vptr (compiler-implicit, stamp-first)
+// in the ctor/dtor. The shared surface vtable (0x5ef7f0) reloc-masks; no manual
+// g_fileImageVtbl extern/stamp remains (all-vtables mandate).
 
 // ---------------------------------------------------------------------------
 // CFileImage::~CFileImage
@@ -970,10 +968,16 @@ public:
     CByteArrayMember m_94;     // +0x94
     char m_pada8[0xc0 - 0x98]; // +0xa8/+0xb8 zeroed
 };
+// Real-polymorphic (2-slot foreign surface-item vtable 0x5ef7f0; declared-only
+// slots reloc-mask). cl auto-stamps the vptr (??_7CImageSurfaceItemInit@@6B@) at
+// ctor entry - the manual `*(void**)this = &g_fileImageVtbl` stamp already stamped
+// the vptr FIRST, so the store position is preserved. Extern + stamp removed per
+// the all-vtables mandate.
 class CImageSurfaceItemInit {
 public:
+    virtual void* Delete(u32 flags); // slot 0 (@0x00) scalar-deleting dtor
+    virtual i32 Load(void* src);     // slot 1 (@0x04)
     inline CImageSurfaceItemInit() {
-        *(void**)this = &g_fileImageVtbl;
         *(i32*)((char*)this + 0x08) = 0;
         *(i32*)((char*)this + 0x0c) = 0;
         *(i32*)((char*)this + 0x04) = 0;
@@ -982,9 +986,9 @@ public:
         *(i32*)((char*)this + 0xb8) = 0;
     }
 
-    char m_pad00[0x94];
-    CByteArrayMember m_94;
-    char m_pada8[0xc0 - 0x95];
+    char m_pad04[0x94 - 0x04]; // +0x04
+    CByteArrayMember m_94;     // +0x94
+    char m_pada8[0xc0 - 0x98]; // +0xa8/+0xb8
 };
 
 // The global image cache the new item is filed into.

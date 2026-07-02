@@ -162,18 +162,10 @@ struct Vtbl_1ef7d0 {
     UnkVfn slot7_13cdb0;                 // [7] -> 0x13cdb0 sub_13cdb0
 };
 
-// ClassWithUnknownVTable16  @ 0x005ef7f0  (9 slots)  refs x8  src:g_fileImageVtbl
-struct FileImageVtbl {
-    UnkVfn _scalar_deleting_destructor_; // [0] -> 0x141330 `scalar_deleting_destructor'
-    UnkVfn Refresh;                      // [1] -> 0x13e140 Refresh
-    UnkVfn FUN_0053e0a0;                 // [2] -> 0x13e0a0 FUN_0053e0a0
-    UnkVfn BlitSurf;                     // [3] -> 0x13e0d0 BlitSurf
-    UnkVfn FreeSurfaces;                 // [4] -> 0x13e4d0 FreeSurfaces
-    UnkVfn slot5_1412d0;                 // [5] -> 0x1412d0 sub_1412d0
-    UnkVfn slot6_141300;                 // [6] -> 0x141300 sub_141300
-    UnkVfn slot7_13f960;                 // [7] -> 0x13f960 sub_13f960
-    UnkVfn slot8_13e2e0;                 // [8] -> 0x13e2e0 sub_13e2e0
-};
+// ClassWithUnknownVTable16 @ 0x005ef7f0 (was src:g_fileImageVtbl) - CONVERTED to
+// real polymorphic: CFileImage / CFileImageSurface / CImageSurfaceItemInit now
+// carry the virtuals and cl emits their ??_7 (see src/Image/Image.cpp). Catalog
+// entry removed per the all-vtables mandate.
 
 // ClassWithUnknownVTable17  @ 0x005efa58  (12 slots)  refs x4  src:g_poolItemAVtbl
 struct PoolItemAVtbl {

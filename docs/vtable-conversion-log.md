@@ -208,3 +208,65 @@ soundstream 3/7, dsoundvoice 1/2, soundvoicelist 3/4.
 - **No sound-family object is built via `new`** (all embedded members or
   `RezAlloc`+inline-field-init), so the batch-2 `new`-vptr-first realization gate is
   unmet across the board.
+
+## Batch 4 (Gruntz N-Z + Image, all-vtables override) — 2026-07-02
+
+Mandate override: apply EVERY manual vtable stamp as a real C++ polymorphic class,
+accept divergence + regressions; ONLY hard bar is `gruntz build` GREEN. Scope: all
+`src/Gruntz/` files whose basename starts N-Z + all `src/Image/`.
+
+### CONVERTED (5 sites — real-ctor stamps, cl now auto-emits `??_7` + vptr)
+
+| Class / stamp | vtable | File | Notes |
+| :-- | :-- | :-- | :-- |
+| `Obj_11e4d0` / `g_vtbl_5ed0e4` | 0x5ed0e4 (5 slots) | ReconBatch2O1.cpp | Real ctor; 5 declared-only virtuals; extern removed. |
+| `WorkerFull` / `g_siriusWorkerVtbl` | 0x5efb80 (10 slots) | SiriusWorkerHandlers.cpp | Real 3-arg ctor; now `@early-stop` (vptr-last: retail stamps vptr AFTER m_04/m_08/m_0c). |
+| `CImageFrame` / `g_imageFrameVtbl` | 0x5eaa2c (13 slots, CImage) | Image/ImageSet.{h,cpp} | Merged `CImageFrameLoader` slots onto the class; factories dispatch `nf->Load30/Delete` directly; extern + placeholder struct removed. |
+| `CImageSurfaceItemInit` / `g_fileImageVtbl` | 0x5ef7f0 (2 slots used) | Image/Image.cpp | Real ctor; vptr already stamped FIRST so store position preserved; extern removed; UnknownVTables.h entry removed. |
+| `CFrameWorker` / `g_imageVtbl` | 0x5eaa2c (12 slots, CImage) | Gruntz/SpriteResource.cpp | Replaced the manual `CFrameWorkerVtbl` PMF table with real virtuals (Destroy@04, Resolve@2c); extern + PMF typedefs removed. |
+
+Effect: **-5 exact overall** (vptr-first regressions on the converted ctors + 2
+neighbour drops in the image/imageset TUs: `CImageSet::GetMemoryUsage` 100->99.96
+and `CFileImage::DecodePcx` 55.78->55.68). Accepted per the mandate. Build GREEN.
+
+### NOT compiler-auto-emittable (kept manual + documented — a hard `cl` wall, not a preference)
+
+`cl` only emits `??_7` + the implicit vptr store inside a REAL `??0` ctor / `??1`
+dtor. The following stamps live where no such ctor/dtor exists, so a polymorphic
+model cannot reproduce them without inventing a fake ctor/hierarchy (large
+divergence + build-break risk on already-`@early-stop` functions):
+
+- **Return-`this` `Construct` helpers** — `ZDArrayDerived.cpp` `CZDArrayDerived::
+  Construct(lo,hi)` / `g_zDArrayVtbl` (0x5e70fc, own 1-slot vtable, currently 100%).
+  A method that returns `this` after an in-place base-build is NOT a ctor; turning
+  it into one loses the return-`this` shape and needs a shared 2D-array base. Same
+  idiom as `CMenuItem::Construct` (batch 1). Kept.
+- **Dtor-phase base-vtable RE-STAMPS** — `TileTriggerContainer.cpp`
+  `g_tileGridCmdVtbl`/`g_tileTriggerSwitchVtbl` (inline element scalar-delete: restore
+  base vtbl, clear field, RezFree — all `@early-stop` list-walk regalloc); `ReconBatch2.cpp`
+  `Obj_11e8dc::StampVtbl` / `g_severusWorkerDtorVtbl` (0x5e8cb4 = MFC `??_7CObject`,
+  a bare 7-byte base restamp); `WwdGameObjectEh.cpp` flat B-variant dtor (multi-level
+  `g_wwd*`/`g_remus*` restamps, `@early-stop`; the A/C/F variants are ALREADY real
+  polymorphic and cl auto-emits their restamps). A base restamp during teardown is
+  not the class's own construction vtable → no single `??_7` expresses it.
+- **Runtime vtable SWAPS (construction -> runtime)** — `TypeKeyColl.cpp`
+  `DynInitButeTree`/`DynInitTypeColl` swap `g_buteTreeVtbl`/`g_buteTreeSubVtbl`/
+  `g_typeCollRunVtbl` over a just-constructed global (virtual-base construction vtbl
+  then runtime vtbl); `CButeTree::ScalarDtor` swaps the dtor-phase vtbls. A single
+  compiler `??_7` cannot express a two-vtable construction->runtime swap. (`g_keyFinderVtbl`
+  is NOT a vtable at all — 0x16e220 is a `.text` callback function stored in a struct
+  field; making CKeyFinder polymorphic would fabricate a false vtable, so kept.)
+- **Custom-allocator inline construction** — `UserBaseLink.cpp` EnsureWorker80/88/90
+  `g_siriusWorkerVtbl` (RezOpNew + inline field block + mid-sequence vptr stamp, all
+  three `@early-stop` on the zero-register-pin wall). A placement-new ctor would add
+  the documented placement null-guard + vptr-first divergence; and the vtable is
+  shared with the out-of-scope `CDDrawWorkerCache.cpp` ('C'), so the shared header
+  extern must stay. The sibling `WorkerFull` ctor variant IS converted (above).
+- **Multi-vtable status-bar tab HIERARCHY (needs the real CSBI_* ctors)** —
+  `StatusBarGameMenu.cpp`, `SBI_RectOnly.cpp`, `SBI_TabzDialogEh.cpp`,
+  `SBI_SideTabBuild.cpp` stamp ONE placeholder `CSbiTab`/`CSbiTabBase` with FIVE
+  different vtables (`g_vtbl_rectBase`/`menuItem`/`t3`/`t4`/`sideTab`) by type tag. A
+  class can carry only ONE compiler `??_7`; reproducing this needs a base + 5 derived
+  classes each with its own placement-new ctor — beyond a mechanical stamp swap and
+  high build-break risk on the already-`@early-stop` /GX EH-frame archetype. This IS
+  the documented "re-attack once the CSBI_* item ctors land" final-sweep work.

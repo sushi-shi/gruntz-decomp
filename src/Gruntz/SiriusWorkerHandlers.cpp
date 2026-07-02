@@ -215,20 +215,26 @@ i32 Handler07dda0(Owner* owner) {
 }
 
 // ---------------------------------------------------------------------------
-// SiriusWorker 3-arg ctor (0x15b300, __thiscall, ret 0xc). Stamp the foreign
-// vptr and seed the three context fields (b -> +0x04, c -> +0x08, a -> +0x0c),
-// zeroing the rest.
-//
-// The foreign worker vftable (0x5efb80), DIR32 data (RVA = VA - 0x400000).
-DATA(0x001efb80)
-extern void* g_siriusWorkerVtbl;
-
+// SiriusWorker 3-arg ctor (0x15b300, __thiscall, ret 0xc). Real-polymorphic: cl
+// auto-stamps the vptr (??_7WorkerFull@@6B@; retail vtable 0x5efb80, 10 declared-
+// only slots reloc-mask) and seeds the three context fields (b -> +0x04, c ->
+// +0x08, a -> +0x0c), zeroing the rest. Manual `m_vptr = &g_siriusWorkerVtbl`
+// stamp + the extern removed per the all-vtables mandate.
 struct WorkerFull {
+    virtual void Slot00(); // +0x00  vptr
+    virtual void Slot04();
+    virtual void Slot08();
+    virtual void Slot0C();
+    virtual void Slot10();
+    virtual void Slot14();
+    virtual void Slot18();
+    virtual void Slot1C();
+    virtual void Slot20();
+    virtual void Slot24();
     WorkerFull(i32 a, i32 b, i32 c);
-    void* m_vptr; // +0x00
-    i32 m_04;     // +0x04  <- b
-    i32 m_08;     // +0x08  <- c
-    i32 m_0c;     // +0x0c  <- a
+    i32 m_04; // +0x04  <- b
+    i32 m_08; // +0x08  <- c
+    i32 m_0c; // +0x0c  <- a
     i32 m_10;
     i32 m_14;
     i32 m_18;
@@ -239,16 +245,16 @@ struct WorkerFull {
     i32 m_178;
 };
 
-// Byte-exact. The arg-store order is load-bearing: assigning m_04/m_08/m_0c (b,c,a)
-// in THIS order makes cl hold the 2nd-referenced arg (c) in edx across the m_0c store,
-// reproducing retail's `m_4=b; m_c=a; m_8=c` schedule. The natural m_04/m_0c/m_08 order
-// holds `a` instead and ascending-sorts the stores (one byte off).
+// The arg-store order (b,c,a into m_04/m_08/m_0c) is load-bearing.
+// @early-stop
+// vptr-last wall: retail stamps the vptr AFTER m_04/m_08/m_0c, but a real-virtual
+// class forces cl's implicit vptr-first store at ctor entry. Field-store order
+// preserved; only the vptr position diverges (mandate: convert anyway).
 RVA(0x0015b300, 0x40)
 WorkerFull::WorkerFull(i32 a, i32 b, i32 c) {
     m_04 = b;
     m_08 = c;
     m_0c = a;
-    m_vptr = &g_siriusWorkerVtbl;
     m_10 = 0;
     m_14 = 0;
     m_18 = 0;

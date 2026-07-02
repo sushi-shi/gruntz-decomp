@@ -44,49 +44,42 @@ extern void* operator new(u32 size);
 // The insert allocates a raw 0x34-byte CImage and INLINES its construction
 // (vptr stamp + field init) at the new-site - it does NOT call an out-of-line
 // ctor - then drives the slot-11 Resolve virtual and, on failure, the slot-1
-// scalar dtor. Both are manual vtable dispatches because the vptr is a raw
-// reloc-masked stamp (the table contents are external engine code).
+// scalar dtor. Now modeled real-polymorphic (all-vtables mandate): cl auto-stamps
+// the vptr (??_7CFrameWorker@@6B@; the foreign CImage @0x5eaa2c slots stay
+// declared-only, reloc-masked) so both dispatches lower to `mov eax,[this];
+// call [eax+off]`. Manual CFrameWorkerVtbl PMF table + g_imageVtbl stamp removed.
 // ---------------------------------------------------------------------------
-DATA(0x001eaa2c)
-extern void* g_imageVtbl; // 0x5eaa2c - CImage primary vftable
-
-struct CFrameWorkerVtbl;
 struct CFrameWorker {
+    virtual void Slot00();                   // +0x00
+    virtual void Destroy(i32 flag);          // +0x04  (slot 1, scalar dtor)
+    virtual void Slot08();                   // +0x08
+    virtual void Slot0C();                   // +0x0c
+    virtual void Slot10();                   // +0x10
+    virtual void Slot14();                   // +0x14
+    virtual void Slot18();                   // +0x18
+    virtual void Slot1C();                   // +0x1c
+    virtual void Slot20();                   // +0x20
+    virtual void Slot24();                   // +0x24
+    virtual void Slot28();                   // +0x28
+    virtual i32 Resolve(void* src, i32 arg); // +0x2c  (slot 11)
+
     inline CFrameWorker(i32 frameNumber, void* parent) {
         m_04 = frameNumber;
         m_08 = 0;
         m_0c = parent;
-        vptr = (CFrameWorkerVtbl*)&g_imageVtbl;
         *(i32*)(_10 + 0x00) = 0; // +0x10
         *(i32*)(_10 + 0x04) = 0; // +0x14
         m_2c = 0;
         m_30 = 0;
     }
 
-    CFrameWorkerVtbl* vptr; // +0x00
-    i32 m_04;               // +0x04  frame number
-    i32 m_08;               // +0x08
-    void* m_0c;             // +0x0c  parent (sprite->m_c)
-    char _10[0x2c - 0x10];  // +0x10  (m_10/m_14 zeroed, rest untouched)
-    i32 m_2c;               // +0x2c
-    i32 m_30;               // +0x30
-
-    i32 Resolve(void* src, i32 arg); // vtbl[0x2c] (slot 11)
-    void Destroy(i32 flag);          // vtbl[0x04] (slot 1, scalar dtor)
+    i32 m_04;              // +0x04  frame number
+    i32 m_08;              // +0x08
+    void* m_0c;            // +0x0c  parent (sprite->m_c)
+    char _10[0x2c - 0x10]; // +0x10  (m_10/m_14 zeroed, rest untouched)
+    i32 m_2c;              // +0x2c
+    i32 m_30;              // +0x30
 };
-typedef i32 (CFrameWorker::*ResolveFn)(void*, i32);
-typedef void (CFrameWorker::*DestroyFn)(i32);
-struct CFrameWorkerVtbl {
-    DestroyFn Destroy;     // [0x04]
-    char _08[0x2c - 0x08]; // slots 2..10
-    ResolveFn Resolve;     // [0x2c]
-};
-inline i32 CFrameWorker::Resolve(void* src, i32 arg) {
-    return (this->*(vptr->Resolve))(src, arg);
-}
-inline void CFrameWorker::Destroy(i32 flag) {
-    (this->*(vptr->Destroy))(flag);
-}
 
 // ===========================================================================
 // CGruntSprite::CacheFirstFrame  @0x150540
@@ -440,7 +433,6 @@ i32 CSprite::GetFrame(i32 n) {
     return 0;
 }
 SIZE_UNKNOWN(CFrameWorker);
-SIZE_UNKNOWN(CFrameWorkerVtbl);
 SIZE_UNKNOWN(CGruntAnimPlayer);
 SIZE_UNKNOWN(CGruntAnimSub2);
 SIZE_UNKNOWN(CGruntSprite);

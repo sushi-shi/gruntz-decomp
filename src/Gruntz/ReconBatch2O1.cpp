@@ -9,17 +9,21 @@
 // 0x0011e4d0 (13B) - small object ctor: zero m_4, stamp the manual vtable
 // (PTR_LAB_005ed0e4); returns this.
 // ===========================================================================
-DATA(0x001ed0e4)
-extern void* g_vtbl_5ed0e4;
+// Real-polymorphic: cl auto-stamps the vptr (??_7Obj_11e4d0@@6B@) and emits the
+// 5-slot vtable (retail 0x5ed0e4; declared-only slots reloc-mask). Manual
+// `m_vptr = &g_vtbl_5ed0e4` stamp removed per the all-vtables mandate.
 struct Obj_11e4d0 {
-    void* m_vptr; // +0x00
-    i32 m_4;      // +0x04
+    virtual void Slot00(); // +0x00 vptr
+    virtual void Slot04();
+    virtual void Slot08();
+    virtual void Slot0C();
+    virtual void Slot10();
+    i32 m_4; // +0x04
     Obj_11e4d0();
 };
 RVA(0x0011e4d0, 0xd)
 Obj_11e4d0::Obj_11e4d0() {
     m_4 = 0;
-    m_vptr = &g_vtbl_5ed0e4;
 }
 
 // ===========================================================================

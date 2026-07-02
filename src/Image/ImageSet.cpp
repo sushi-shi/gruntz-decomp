@@ -20,32 +20,10 @@
 // Global operator new (NAFXCW new-handler loop).
 extern void* operator new(u32 size);
 
-// The retail CImageFrame vtable (.?AVCImage@@ @0x5eaa2c) the factory manually
-// stamps into a freshly allocated frame (the frame's own virtuals are unmatched
-// engine code, so the stamp is a transitional reloc-masked DATA ref, not an
-// emitted ??_7).
-DATA(0x001eaa2c)
-extern void* g_imageFrameVtbl[];
-
-// The frame seen through its (unmatched) vtable: the loader virtual each factory
-// overload runs, plus the scalar-deleting dtor at slot +0x04. A polymorphic view
-// so the __thiscall vtable dispatch falls out; no vtable is emitted (no slot is
-// defined here).
-struct CImageFrameLoader {
-    virtual void* v00();
-    virtual void* Delete(i32 flags); // +0x04  scalar-deleting dtor
-    virtual void* v08();
-    virtual void* v0c();
-    virtual void* v10();
-    virtual void* v14();
-    virtual void* v18();
-    virtual void* v1c();
-    virtual void* v20();
-    virtual i32 Load24(i32 a, i32 b, i32 c);        // +0x24
-    virtual i32 Load28(i32 a, i32 b, i32 c, i32 d); // +0x28
-    virtual void* v2c();
-    virtual i32 Load30(i32 a, i32 b); // +0x30
-};
+// CImageFrame is now real-polymorphic (its 13 slots are declared on the class in
+// ImageSet.h; the foreign CImage @0x5eaa2c virtuals stay unmatched -> declared-
+// only, reloc-masked). cl auto-stamps the vptr (??_7CImageFrame@@6B@) in the
+// ctor; the manual g_imageFrameVtbl extern + stamp are gone (all-vtables mandate).
 
 // MFC CObArray::SetAtGrow on the embedded frame array (CImageSet::m_array @+0x10).
 struct CImageFrameArray {
@@ -56,7 +34,6 @@ inline CImageFrame::CImageFrame(void* owner, i32 index) {
     m_index = index;
     m_8 = 0;
     m_owner = owner;
-    m_vptr = &g_imageFrameVtbl;
     m_width = 0;
     m_height = 0;
     m_surface = 0;
@@ -75,9 +52,9 @@ CImageFrame* CImageSet::CreateFrame30(i32 a0, i32 index, i32 a2) {
 
     CImageFrame* nf = new CImageFrame(m_owner, index);
 
-    if (((CImageFrameLoader*)nf)->Load30(a0, a2) == 0) {
+    if (nf->Load30(a0, a2) == 0) {
         if (nf != 0) {
-            ((CImageFrameLoader*)nf)->Delete(1);
+            nf->Delete(1);
         }
         return 0;
     }
@@ -102,9 +79,9 @@ CImageFrame* CImageSet::CreateFrame28(i32 a0, i32 a1, i32 index, i32 a3) {
 
     CImageFrame* nf = new CImageFrame(m_owner, index);
 
-    if (((CImageFrameLoader*)nf)->Load28(a0, a1, a3, 1) == 0) {
+    if (nf->Load28(a0, a1, a3, 1) == 0) {
         if (nf != 0) {
-            ((CImageFrameLoader*)nf)->Delete(1);
+            nf->Delete(1);
         }
         return 0;
     }
@@ -129,9 +106,9 @@ CImageFrame* CImageSet::CreateFrame24(i32 a0, i32 a1, i32 index, i32 a3) {
 
     CImageFrame* nf = new CImageFrame(m_owner, index);
 
-    if (((CImageFrameLoader*)nf)->Load24(a0, a1, a3) == 0) {
+    if (nf->Load24(a0, a1, a3) == 0) {
         if (nf != 0) {
-            ((CImageFrameLoader*)nf)->Delete(1);
+            nf->Delete(1);
         }
         return 0;
     }
@@ -250,9 +227,8 @@ i32 CImageSet::FindFrame(CImageFrame* frame, char* outName, i32* outIndex) {
 }
 
 // Class-metadata annotations (EOF-hosted; ImageSet.h is pulled into Gruntz/
-// LightFxMgr.cpp). CImageFrameLoader is a slot-dispatch view (no emitted vtable).
+// LightFxMgr.cpp). CImageFrame is real-polymorphic (cl emits ??_7CImageFrame).
 SIZE_UNKNOWN(CImageFormat);
 SIZE_UNKNOWN(CImageFrameSurface);
 SIZE_UNKNOWN(CImageFrame);
-SIZE_UNKNOWN(CImageFrameLoader);
 SIZE_UNKNOWN(CImageFrameArray);
