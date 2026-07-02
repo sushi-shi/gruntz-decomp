@@ -1986,8 +1986,8 @@ eyecandytypetags	?GetTypeTag@CTileLogicTag429@@QAEHXZ	100.0000	100.0000	1	a1b467
 faderradial	?Build@CFaderRadial@@QAEHPAUFrConfig@@@Z	63.2690	63.2690	2	0dcdc6f34b74	0x17fa40
 fadersetup	?Apply@CFaderElem@@QAEHPAUFaderArg@@@Z	89.7442	89.7442	1	8ac12d98c0d2	0x17f5e0
 fadershapesetup	?Setup@CFaderShape@@QAEHPAUFInit@@@Z	40.6732	40.6732	2	240efcb86eb0	0x1817e0
-fadertilerender	?RenderTile@CFaderTileRender@@QAEXHH@Z	59.0975	59.0975	1	493537d54304	0x182610
-fadertilerender	?RenderWarpTile@CFaderTileRender@@QAEXHH@Z	44.0194	44.0194	2	912dc33c068a	0x181e50
+fadertilerender	?RenderTile@CFaderTileRender@@QAEXHH@Z	59.0975	59.0975	2	ab59cd54fb61	0x182610
+fadertilerender	?RenderWarpTile@CFaderTileRender@@QAEXHH@Z	43.9935	43.9935	3	95c5531d38a1	0x181e50
 feccrypt	?FecDecode@@YGXPBDPADG@Z	100.0000	100.0000	1	5b0e31c468f8	0x17bfe0
 feccrypt	?FecEncode@@YGXPBDPAD@Z	100.0000	100.0000	1	6bc3315ae515	0x17bf70
 feccrypt	?ReadArchive@CFecFile@@QAEHPBD@Z	71.3600	71.3600	2	b0a1392b9cfe	0x17b5f0

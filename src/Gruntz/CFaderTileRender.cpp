@@ -8,8 +8,9 @@
 // copies/zeros a destination strip (gated on m_54) and finally writes the scratch
 // line back into the working buffer. The two src bases (m_47c straight / m_484
 // LUT) and dest base (m_480) are addressed in pixel*bpp units; the per-column
-// row offsets come from m_44 / m_48 / m_4c, and the per-pixel source taps from the
-// m_478 table. Field names are placeholders; offsets + code bytes are load-bearing.
+// row offsets come from m_44 / m_48 / m_4c, and the per-pixel source taps are
+// pixel indices from the m_478 table. Field names are placeholders; offsets +
+// code bytes are load-bearing.
 #include <Ints.h>
 
 #include <rva.h>
@@ -20,12 +21,14 @@ struct TileSurf {
     char pad[0xb0];
     i32 m_b0; // bytes per pixel
 };
+SIZE_UNKNOWN(TileSurf);
 
 // m_1c target: a palette/LUT descriptor whose +0x8 is the 2D remap table base.
 struct TileLut {
     char pad[0x8];
     u8* m_08;
 };
+SIZE_UNKNOWN(TileLut);
 
 class CFaderTileRender {
 public:
@@ -47,13 +50,14 @@ public:
     i32 m_60;  // +0x60 wrap span (used by the PI-scaled warp)
     i32 m_64;  // +0x64 column count
     char m_68[0x478 - 0x68];
-    u8** m_478; // +0x478 per-pixel source-tap table (pointers / indices)
+    i32* m_478; // +0x478 per-pixel source-tap table (pixel indices)
     u8* m_47c;  // +0x47c straight src base
     u8* m_480;  // +0x480 dest base
     u8* m_484;  // +0x484 gather src base
     u8* m_488;  // +0x488 scratch line
     u8* m_48c;  // +0x48c per-pixel LUT selector
 };
+SIZE(CFaderTileRender, 0x7d5c);
 
 // ===========================================================================
 // 0x182610 - RenderTile: assemble + write back one (2*m_58)-wide line per column.
@@ -92,35 +96,35 @@ void CFaderTileRender::RenderTile(i32 arg0, i32 arg1) {
     }
 
     u8* srcA = m_47c + (arg0 - x0) * bpp;
-    i32 srcB = (i32)m_484 + (arg0 - x0) * bpp;
+    u8* srcB = m_484 + (arg0 - x0) * bpp;
     if (m_64 <= 0) {
         return;
     }
 
     for (i32 j = 0; j < m_64; j++) {
         u8* rowSrcA = srcA + m_44[j];
-        i32 rowSrcB = srcB + m_4c[j];
+        u8* rowSrcB = srcB + m_4c[j];
 
         if (m_5c) {
             u8* lut = m_1c->m_08;
             for (i32 k = 0; k < stride; k++) {
-                u8 b = *(u8*)((i32)m_478[k] + rowSrcB);
+                u8 b = rowSrcB[m_478[k]];
                 m_488[x0 + k] = lut[(b << 6) + m_48c[k]];
             }
         } else if (bpp == 1) {
             for (i32 k = 0; k < stride; k++) {
-                m_488[x0 + k] = *(u8*)((i32)m_478[k] + rowSrcB);
+                m_488[x0 + k] = rowSrcB[m_478[k]];
             }
         } else if (bpp == 2) {
             for (i32 k = 0; k < stride; k++) {
-                u8* s = (u8*)(rowSrcB + (i32)m_478[k] * 2);
+                u8* s = rowSrcB + m_478[k] * 2;
                 u8* d = m_488 + (x0 + k) * 2;
                 d[0] = s[0];
                 d[1] = s[1];
             }
         } else if (bpp == 3) {
             for (i32 k = 0; k < stride; k++) {
-                u8* s = (u8*)(rowSrcB + (i32)m_478[k] * 3);
+                u8* s = rowSrcB + m_478[k] * 3;
                 u8* d = m_488 + (x0 + k) * 3;
                 d[0] = s[0];
                 d[1] = s[1];
@@ -184,21 +188,21 @@ void CFaderTileRender::RenderWarpTile(i32 arg0, i32 arg1) {
         if (m_64 > 0) {
             i32 base = bpp * arg0;
             do {
-                u8* dstLine = (u8*)(m_44[col] + base + (i32)m_47c);
-                i32 gsrc = m_4c[col] + base + (i32)m_484;
-                i32 ssrc = m_48[col] + base + (i32)m_480;
+                u8* dstLine = m_44[col] + base + m_47c;
+                u8* gsrc = m_4c[col] + base + m_484;
+                u8* ssrc = m_48[col] + base + m_480;
                 if (m_5c == 0) {
                     if (bpp == 1) {
                         i32 i = 0;
                         i32 t = colBase;
                         if (colBase > 0) {
                             do {
-                                *(u8*)(i + (i32)m_488) = *(u8*)(ssrc + i);
+                                m_488[i] = ssrc[i];
                                 i++;
                             } while (i < colBase);
                         }
                         for (; t < stride; t++) {
-                            *(u8*)(t + (i32)m_488) = *(u8*)((i32)m_478[t] + gsrc);
+                            m_488[t] = gsrc[m_478[t]];
                         }
                     } else if (bpp == 2) {
                         i32 i = 0;
@@ -206,26 +210,26 @@ void CFaderTileRender::RenderWarpTile(i32 arg0, i32 arg1) {
                         if (colBase > 0) {
                             do {
                                 i32 o = i * 2;
-                                *(u8*)(o + (i32)m_488) = *(u8*)(ssrc + o);
-                                *(u8*)(o + 1 + (i32)m_488) = *(u8*)(ssrc + 1 + o);
+                                m_488[o] = ssrc[o];
+                                m_488[o + 1] = ssrc[o + 1];
                                 i++;
                             } while (i < colBase);
                         }
                         while (t < stride) {
                             i32 e = t + 1;
-                            *(u8*)((i32)m_488 - 2 + e * 2) = *(u8*)(gsrc + (i32)m_478[t] * 2);
-                            *(u8*)((i32)m_488 - 1 + e * 2) = *(u8*)(gsrc + 1 + (i32)m_478[t] * 2);
+                            m_488[e * 2 - 2] = gsrc[m_478[t] * 2];
+                            m_488[e * 2 - 1] = gsrc[m_478[t] * 2 + 1];
                             t = e;
                         }
                     } else if (bpp == 3) {
                         if (colBase > 0) {
                             i32 d = 0;
-                            u8* sp = (u8*)(ssrc + 2);
+                            u8* sp = ssrc + 2;
                             i32 c = colBase;
                             do {
-                                *(u8*)(d + (i32)m_488) = sp[-2];
-                                *(u8*)(d + 1 + (i32)m_488) = sp[-1];
-                                *(u8*)(d + 2 + (i32)m_488) = *sp;
+                                m_488[d] = sp[-2];
+                                m_488[d + 1] = sp[-1];
+                                m_488[d + 2] = *sp;
                                 d += 3;
                                 c--;
                                 sp += 3;
@@ -234,27 +238,25 @@ void CFaderTileRender::RenderWarpTile(i32 arg0, i32 arg1) {
                         if (colBase < stride) {
                             i32 d = colBase * 3;
                             for (i32 t = colBase; t < stride; t++) {
-                                *(u8*)(d + (i32)m_488) = *(u8*)(gsrc + (i32)m_478[t] * 3);
-                                *(u8*)(d + 1 + (i32)m_488) = *(u8*)((i32)m_478[t] * 3 + 1 + gsrc);
-                                *(u8*)(d + 2 + (i32)m_488) = *(u8*)((i32)m_478[t] * 3 + 2 + gsrc);
+                                m_488[d] = gsrc[m_478[t] * 3];
+                                m_488[d + 1] = gsrc[m_478[t] * 3 + 1];
+                                m_488[d + 2] = gsrc[m_478[t] * 3 + 2];
                                 d += 3;
                             }
                         }
                     }
                 } else {
-                    i32 lut = (i32)m_1c->m_08;
+                    u8* lut = m_1c->m_08;
                     i32 i = 0;
                     i32 t = colBase;
                     if (colBase > 0) {
                         do {
-                            *(u8*)(i + (i32)m_488) = *(u8*)(ssrc + i);
+                            m_488[i] = ssrc[i];
                             i++;
                         } while (i < colBase);
                     }
                     for (; t < stride; t++) {
-                        *(u8*)(t + (i32)m_488) =
-                            *(u8*)((u32)m_48c[t] + lut
-                                   + (u32) * (u8*)((i32)m_478[t] + gsrc) * 0x40);
+                        m_488[t] = lut[(u32)m_48c[t] + (u32)gsrc[m_478[t]] * 0x40];
                     }
                 }
                 u8* sp = m_488;
@@ -276,7 +278,7 @@ void CFaderTileRender::RenderWarpTile(i32 arg0, i32 arg1) {
                 } else {
                     i32 c2 = bpp * arg1;
                     dstLine -= c2;
-                    u8* s2 = (u8*)((arg0 - arg1) * bpp + m_48[col] + (i32)m_480);
+                    u8* s2 = (arg0 - arg1) * bpp + m_48[col] + m_480;
                     if (c2 > 0) {
                         do {
                             *dstLine = *s2;
@@ -293,9 +295,9 @@ void CFaderTileRender::RenderWarpTile(i32 arg0, i32 arg1) {
         i32 col = 0;
         i32 base = bpp * arg0;
         do {
-            u8* dstLine = (u8*)(m_44[col] + base + (i32)m_47c);
-            i32 gsrc = m_4c[col] + base + (i32)m_484;
-            i32 ssrc = m_48[col] + base + (i32)m_480;
+            u8* dstLine = m_44[col] + base + m_47c;
+            u8* gsrc = m_4c[col] + base + m_484;
+            u8* ssrc = m_48[col] + base + m_480;
             if (m_5c == 0) {
                 if (bpp == 1) {
                     i32 i = 0;
@@ -304,12 +306,12 @@ void CFaderTileRender::RenderWarpTile(i32 arg0, i32 arg1) {
                     if (colBase > 0) {
                         do {
                             e = i + 1;
-                            *(u8*)(i + (i32)m_488) = *(u8*)((i32)m_478[i] + gsrc);
+                            m_488[i] = gsrc[m_478[i]];
                             i = e;
                         } while (e < colBase);
                     }
                     for (; t < stride; t++) {
-                        *(u8*)(t + (i32)m_488) = *(u8*)(ssrc + t);
+                        m_488[t] = ssrc[t];
                     }
                 } else if (bpp == 2) {
                     i32 i = 0;
@@ -318,24 +320,23 @@ void CFaderTileRender::RenderWarpTile(i32 arg0, i32 arg1) {
                         do {
                             i32 o = i * 4;
                             i++;
-                            *(u8*)((i32)m_488 - 2 + i * 2) = *(u8*)(gsrc + (i32)m_478[o / 4] * 2);
-                            *(u8*)((i32)m_488 - 1 + i * 2) =
-                                *(u8*)(gsrc + 1 + (i32)m_478[i - 1] * 2);
+                            m_488[i * 2 - 2] = gsrc[m_478[o / 4] * 2];
+                            m_488[i * 2 - 1] = gsrc[m_478[i - 1] * 2 + 1];
                         } while (i < colBase);
                     }
                     for (; t < stride; t++) {
                         i32 o = t * 2;
-                        *(u8*)(o + (i32)m_488) = *(u8*)(ssrc + o);
-                        *(u8*)(o + 1 + (i32)m_488) = *(u8*)(ssrc + 1 + o);
+                        m_488[o] = ssrc[o];
+                        m_488[o + 1] = ssrc[o + 1];
                     }
                 } else if (bpp == 3) {
                     i32 k = 0;
                     if (colBase > 0) {
                         i32 d = 0;
                         do {
-                            *(u8*)(d + (i32)m_488) = *(u8*)(gsrc + (i32)m_478[k] * 3);
-                            *(u8*)(d + 1 + (i32)m_488) = *(u8*)((i32)m_478[k] * 3 + 1 + gsrc);
-                            *(u8*)(d + 2 + (i32)m_488) = *(u8*)((i32)m_478[k] * 3 + 2 + gsrc);
+                            m_488[d] = gsrc[m_478[k] * 3];
+                            m_488[d + 1] = gsrc[m_478[k] * 3 + 1];
+                            m_488[d + 2] = gsrc[m_478[k] * 3 + 2];
                             k++;
                             d += 3;
                         } while (k < colBase);
@@ -343,11 +344,11 @@ void CFaderTileRender::RenderWarpTile(i32 arg0, i32 arg1) {
                     if (colBase < stride) {
                         i32 d = colBase * 3;
                         i32 c = stride - colBase;
-                        u8* sp = (u8*)(ssrc + 2 + d);
+                        u8* sp = ssrc + 2 + d;
                         do {
-                            *(u8*)(d + (i32)m_488) = sp[-2];
-                            *(u8*)(d + 1 + (i32)m_488) = sp[-1];
-                            *(u8*)(d + 2 + (i32)m_488) = *sp;
+                            m_488[d] = sp[-2];
+                            m_488[d + 1] = sp[-1];
+                            m_488[d + 2] = *sp;
                             d += 3;
                             c--;
                             sp += 3;
@@ -355,21 +356,19 @@ void CFaderTileRender::RenderWarpTile(i32 arg0, i32 arg1) {
                     }
                 }
             } else {
-                i32 lut = (i32)m_1c->m_08;
+                u8* lut = m_1c->m_08;
                 i32 i = 0;
                 i32 t = colBase;
                 i32 e;
                 if (colBase > 0) {
                     do {
                         e = i + 1;
-                        *(u8*)(i + (i32)m_488) =
-                            *(u8*)((u32)m_48c[i] + lut
-                                   + (u32) * (u8*)((i32)m_478[i] + gsrc) * 0x40);
+                        m_488[i] = lut[(u32)m_48c[i] + (u32)gsrc[m_478[i]] * 0x40];
                         i = e;
                     } while (e < colBase);
                 }
                 for (; t < stride; t++) {
-                    *(u8*)(t + (i32)m_488) = *(u8*)(ssrc + t);
+                    m_488[t] = ssrc[t];
                 }
             }
             u8* sp = m_488;
@@ -390,7 +389,7 @@ void CFaderTileRender::RenderWarpTile(i32 arg0, i32 arg1) {
                 }
             } else {
                 i32 c2 = bpp * arg1;
-                u8* s2 = (u8*)((arg0 + stride) * bpp + m_48[col] + (i32)m_480);
+                u8* s2 = (arg0 + stride) * bpp + m_48[col] + m_480;
                 dstLine += cnt;
                 if (c2 > 0) {
                     do {
