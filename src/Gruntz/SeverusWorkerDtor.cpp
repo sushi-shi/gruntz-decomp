@@ -5,10 +5,9 @@
 #include <Ints.h>
 #include <rva.h>
 
-// The most-derived vtable (VA 0x5f07d8) and the CObject base dtor vtable
-// (VA 0x5e8cb4, g_remusBaseDtorVtbl, pinned in many TUs). Both reloc-masked.
-DATA(0x001f07d8)
-extern void* g_severusWorkerVtbl;
+// The CObject base dtor vtable (VA 0x5e8cb4, g_remusBaseDtorVtbl, pinned in many
+// TUs). Reloc-masked. The most-derived vtable (0x5f07d8) is now the cl-emitted
+// ??_7CSeverusWorkerX (VTBL below); the manual g_severusWorkerVtbl DATA-pin is gone.
 DATA(0x001e8cb4)
 extern void* g_remusBaseDtorVtbl;
 
@@ -44,3 +43,7 @@ CSeverusWorkerX::~CSeverusWorkerX() {
 }
 SIZE_UNKNOWN(CSeverusWorkerX);
 SIZE_UNKNOWN(SeverusWorkerBase);
+// ??_7CSeverusWorkerX (was g_severusWorkerVtbl @0x5f07d8, ClassWithUnknownVTable
+// entry). cl auto-emits it from the real-polymorphic CSeverusWorkerX; retail's
+// 5-slot datum is reloc-masked, so this VTBL is matching-neutral catalog tracking.
+VTBL(CSeverusWorkerX, 0x001f07d8);

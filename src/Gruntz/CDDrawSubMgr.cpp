@@ -2228,23 +2228,23 @@ CWwdSlot9c::CWwdSlot9c() {
     m_08 = 0;
 }
 
-// The severus worker base vtable (stamped last in the wide-object dtors) and a
-// small polymorphic worker whose 3-arg ctor stamps a leaf vtable.  Reloc-masked
-// DATA externs (RVA = VA - 0x400000).
+// The severus worker base vtable (stamped last in the wide-object dtors).
+// Reloc-masked DATA extern (RVA = VA - 0x400000). The leaf-worker vtable (0x5effa0)
+// is now the cl-emitted ??_7CSeverusWorker3 (real-polymorphic; VTBL below).
 DATA(0x001e8cb4)
 extern void* g_severusWorkerDtorVtbl; // 0x5e8cb4
-DATA(0x001effa0)
-extern void* g_severusWorker3Vtbl; // 0x5effa0
 
 // 0x158f30: 3-arg leaf-worker ctor — store the three args at +0x4/+0x8/+0xc,
-// stamp the leaf vtable, zero +0x10.  __thiscall, ret 0xc.
-class CSeverusWorker3 {
-public:
-    void* m_vtbl; // +0x00
-    i32 m_04;     // +0x04
-    i32 m_08;     // +0x08
-    i32 m_0c;     // +0x0c
-    i32 m_10;     // +0x10
+// stamp the leaf vtable (cl-implicit vptr-first), zero +0x10.  __thiscall, ret 0xc.
+// Real-polymorphic now: the single virtual forces cl to emit ??_7CSeverusWorker3 +
+// auto-stamp the vptr in the ctor prologue (was a manual g_severusWorker3Vtbl store,
+// vptr-middle -> vptr-first regression accepted per the all-vtables mandate).
+struct CSeverusWorker3 {
+    virtual void v0(); // implicit vptr @ +0x00 (own vtable reloc-masks 0x5effa0)
+    i32 m_04;          // +0x04
+    i32 m_08;          // +0x08
+    i32 m_0c;          // +0x0c
+    i32 m_10;          // +0x10
     CSeverusWorker3(i32 a1, i32 a2, i32 a3);
 };
 RVA(0x00158f30, 0x27)
@@ -2252,9 +2252,9 @@ CSeverusWorker3::CSeverusWorker3(i32 a1, i32 a2, i32 a3) {
     m_04 = a2;
     m_08 = a3;
     m_0c = a1;
-    m_vtbl = &g_severusWorker3Vtbl;
     m_10 = 0;
 }
+VTBL(CSeverusWorker3, 0x001effa0); // ??_7CSeverusWorker3 (was g_severusWorker3Vtbl)
 
 // 0x158fb0: severus worker base re-init — +0x4 = -1, +0x8/+0xc/+0x10 = 0, stamp
 // the base vtable.  A void method (keeps `this` in ecx; not a ctor).  ret 0.

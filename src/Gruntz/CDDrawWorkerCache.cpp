@@ -69,16 +69,29 @@ struct SiriusWorkerObj : public SiriusWorker {
 // CDDrawWorkerCache - the CMapStringToOb at +0x10, and the parent fields copied
 // into the worker (m_0c, m_1c from inside the map's internal area).
 // ---------------------------------------------------------------------------
+// Real polymorphic now (own 10-slot vtable ??_7CDDrawWorkerCache @0x5efd00, was
+// Vtbl_1efd00 / ClassWithUnknownVTable31). Slots 0/2/3/4 are the shared CObject
+// thunks, slot 1 the virtual dtor (0x157700), slots 5/6/7 unreconstructed leaf
+// virtuals (declared-only, reloc-masked), slot 8 = VirtualMethodUnknown20 (0x1576f0)
+// and slot 9 = VirtualMethodUnknown24 (0x1652c0). cl auto-emits the vtable; the
+// implicit vptr-stamp replaces the explicit m_vptr store.
 class CDDrawWorkerCache {
 public:
-    i32 VirtualMethodUnknown20();
-    void* VirtualMethodUnknown24(i32 a1, const char* key, i32 a3);
+    virtual void FUN_005bef01();          // [0] 0x1bef01 (shared thunk, declared-only)
+    virtual ~CDDrawWorkerCache();         // [1] 0x157700 scalar-deleting dtor
+    virtual void FUN_004028ec();          // [2] 0x0028ec (shared thunk, declared-only)
+    virtual void FUN_0040106e();          // [3] 0x00106e (shared thunk, declared-only)
+    virtual void FUN_00404034();          // [4] 0x004034 (shared thunk, declared-only)
+    virtual void FUN_005576d0();          // [5] 0x1576d0 (declared-only)
+    virtual void FUN_00557790();          // [6] 0x157790 (declared-only)
+    virtual void FUN_00565210();          // [7] 0x165210 (declared-only)
+    virtual i32 VirtualMethodUnknown20(); // [8] 0x1576f0
+    virtual void* VirtualMethodUnknown24(i32 a1, const char* key, i32 a3); // [9] 0x1652c0
 
-    // Engine-label backlog stubs.
-    ~CDDrawWorkerCache();
+    // Engine-label backlog stub (non-virtual).
     void VirtualMethod_157720();
 
-    void* m_vptr;              // +0x00
+    // vptr implicit @ +0x00
     i32 m_04;                  // +0x04  -1 when inactive
     char m_pad08[0x0c - 0x08]; // +0x08..0x0b
     i32 m_0c;                  // +0x0c  parent/root handle
@@ -162,3 +175,7 @@ SIZE_UNKNOWN(CDDrawWorkerCache);
 SIZE_UNKNOWN(SiriusWorker);
 SIZE(SiriusWorkerObj, 0x17c);
 VTBL(SiriusWorkerObj, 0x001efb80); // ??_7SiriusWorkerObj (was g_siriusWorkerVtbl)
+// ??_7CDDrawWorkerCache (was Vtbl_1efd00 / ClassWithUnknownVTable31; 10 slots). cl
+// auto-emits it from the real-polymorphic class; retail datum is reloc-masked ->
+// matching-neutral catalog tracking.
+VTBL(CDDrawWorkerCache, 0x001efd00);

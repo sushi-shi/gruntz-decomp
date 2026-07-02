@@ -68,13 +68,11 @@ public:
     i32 StartPrimary_137200(); // 0x137200
 };
 
-// The grand-base dtor vtable (0x5e8cb4) - still referenced by the FOREIGN element
-// base (LeafElementBase) below, which stays a manual stamp (the 0x1c element's
-// ctor/full vtable live in unmatched TUs). The sub-manager's OWN vtable (0x5efca0)
-// is no longer an extern: CDDrawSubMgrLeafScan is now real-polymorphic, so cl emits
-// ??_7CDDrawSubMgrLeafScan + the implicit grand-base re-stamp (see below).
-DATA(0x005e8cb4)
-extern void* g_remusBaseDtorVtbl;
+// The sub-manager's OWN vtable (0x5efca0) is no longer an extern: CDDrawSubMgrLeafScan
+// is real-polymorphic, so cl emits ??_7CDDrawSubMgrLeafScan + the implicit grand-base
+// re-stamp. The 0x1c cache element (LeafElementObj) is now real-polymorphic too
+// (below), so its grand-base dtor vtable (0x5e8cb4) is the cl-emitted
+// ??_7LeafElementBase - the manual g_remusBaseDtorVtbl stamp is gone from this TU.
 
 // VM18 (0x157ae0) on the existing CDDrawSubMgrLeaf TU: clears the +0x10 map and
 // zeroes +0x2c. Reloc-masked external __thiscall call from the dtor.
@@ -111,13 +109,11 @@ DATA(0x006bf3c0)
 extern "C" u32 g_6bf3c0; // draw-clock mirror
 
 // ----- The 0x1c-byte cache element + its factory (CreateEntry_157d70) -----
-// operator new(0x1c); the factory stamps the element vtable (0x5eff08), copies
-// the map count (this+0x1c) and handle (this+0x0c), zeroes the rest, then runs
-// the element's Configure (0x158760) keyed by arg2; on success links it into the
-// map and stamps the redraw arg (this+0x34). The vtable contents are not modeled
-// here, so the manual stamp is the transitional workaround.
-DATA(0x005eff08)
-extern void* g_leafElemVtbl; // 0x5eff08 - the 0x1c-byte element vftable
+// operator new(0x1c); the factory constructs the element (real ctor auto-stamps the
+// element vtable 0x5eff08 = cl-emitted ??_7LeafElementObj), copies the map count
+// (this+0x1c) and handle (this+0x0c), zeroes the rest, then runs the element's
+// Configure (0x158760) keyed by arg2; on success links it into the map and stamps
+// the redraw arg (this+0x34). LeafElementObj is real-polymorphic now (VTBL at EOF).
 // The element's draw-source the factory passes to Configure: a polymorphic
 // reader whose two virtuals are BeginParse (0x139960 -> the parsed RIFF/WAVE blob,
 // or 0) and EndParse (0x1399d0). Modeled as a layout-compatible view (the
@@ -137,41 +133,46 @@ struct LeafRootHandle {
     SoundDevice* m_20; // +0x20  the owning DSound device
 };
 
-// The 0x1c-byte cache element's virtual interface: slot+4 is the scalar-deleting
-// dtor the factory's failure path dispatches through (`mov edx,[e]; push 1;
-// call [edx+4]`). Declared-only (never defined), so no ??_7 is emitted; the
-// factory manually stamps the real foreign vtable instead.
-class LeafElement {
-public:
-    virtual void FUN_005bef01();      // [0] 0x1bef01 (shared thunk, declared-only)
-    virtual i32 ScalarDtor(i32 flag); // +0x04 scalar-deleting destructor
-};
-// The element's CObject-like base subobject (vptr + status word at +0x04 + root
-// handle at +0x0c). Its (inlined) destructor resets those fields and restamps the
-// grand-base dtor vtable -- the tail the element dtor chains into AFTER Release.
-// Because this base carries a NON-TRIVIAL dtor, the derived ~LeafElementObj gets a
-// /GX EH frame protecting the base teardown across the Release() call (the
-// half-destructed-element cleanup edge). Same shape as the LeafScanBase / CRemusNode
-// family.
-struct LeafElementBase : public LeafElement {
-    ~LeafElementBase() {
-        m_04 = -1;
-        m_08 = 0;
-        m_0c = 0;
-        *(void**)this = &g_remusBaseDtorVtbl;
-    }
+// The element's CObject-like grand-base subobject (vptr + status word at +0x04 +
+// root handle at +0x0c). Modeled as a REAL polymorphic base (its 5-slot vtable is
+// the shared grand-base) so cl emits the implicit grand-base vptr re-stamp (masks
+// 0x5e8cb4) at the derived dtor's tail -- no manual `*(void**)this = &g_*Vtbl`. Its
+// virtual ~ resets the three fields; the base transition stamp is implicit. Because
+// this base carries a NON-TRIVIAL dtor, the derived ~LeafElementObj gets a /GX EH
+// frame protecting the base teardown across the Release() call (the half-destructed
+// element cleanup edge). Same shape as LeafScanBase / CRemusNode.
+struct LeafElementBase {
+    virtual void FUN_005bef01(); // [0] 0x1bef01 (shared thunk, declared-only)
+    virtual ~LeafElementBase();  // [1] scalar-deleting dtor (0x158660 ??_G)
+    virtual void FUN_004028ec(); // [2] 0x0028ec (shared thunk, declared-only)
+    virtual void FUN_0040106e(); // [3] 0x00106e (shared thunk, declared-only)
+    virtual void FUN_00404034(); // [4] 0x004034 (shared thunk, declared-only)
 
     i32 m_04; // +0x04 = parent map count (-1 when dead)
     i32 m_08; // +0x08 = 0
     i32 m_0c; // +0x0c = parent root handle (LeafRootHandle*)
+    LeafElementBase() {}
 };
-// The 0x1c-byte element layout. Only the seeded offsets are load-bearing. Its
-// ~dtor (0x158680) stamps the element vtable, runs Release, then the base
-// subobject dtor auto-fires (reset +0x04/+0x08/+0x0c + restamp grand-base vtbl).
-// Configure (0x158760) loads + acquires the element's buffer; Release (0x1587c0)
-// frees it (both non-virtual __thiscall members reached only from the element).
+inline LeafElementBase::~LeafElementBase() {
+    m_04 = -1;
+    m_08 = 0;
+    m_0c = 0;
+}
+// The 0x1c-byte element layout. Only the seeded offsets are load-bearing. Its 9-slot
+// vtable (??_7LeafElementObj @0x5eff08) is 5 shared grand-base slots (slot 1 = the
+// virtual dtor) + 4 leaf virtuals (slots 5..8), declared-only so cl references them
+// externally (reloc-masked). Its ctor auto-stamps the element vtable + seeds the
+// fields; ~dtor (0x158680) auto-stamps it, runs Release, then the base subobject dtor
+// auto-fires (reset +0x04/+0x08/+0x0c + implicit grand-base re-stamp). Configure
+// (0x158760) loads + acquires the element's buffer; Release (0x1587c0) frees it (both
+// non-virtual __thiscall members reached only from the element).
 struct LeafElementObj : public LeafElementBase {
-    ~LeafElementObj();
+    virtual void LeafSlot5_158650();             // [5] 0x158650 (declared-only)
+    virtual void FUN_00401c08();                 // [6] 0x001c08 (shared thunk, declared-only)
+    virtual void LeafSlot7_1587c0();             // [7] 0x1587c0 (declared-only; == Release addr)
+    virtual void LeafSlot8_154a00();             // [8] 0x154a00 (declared-only)
+    ~LeafElementObj();                           // overrides slot [1]
+    LeafElementObj(i32 count, i32 handle);       // inline; folded into the factory
     i32 Configure_158760(RemusParseSource* src); // 0x158760 __thiscall element configure
     i32 Configure2_158720(void* riff);           // 0x158720 raw-RIFF configure variant
     void Release_1587c0();                       // 0x1587c0 release the acquired buffer
@@ -180,8 +181,15 @@ struct LeafElementObj : public LeafElementBase {
     i32 m_14; // +0x14 = 0
     i32 m_18; // +0x18 = 0 (-> parent->m_34 on success)
 }; // size = 0x1c
-static inline void StampLeafElemVtbl(LeafElementObj* e) {
-    *(void**)e = &g_leafElemVtbl;
+// Seed order mirrors the factory's writes: count, 0, handle (base fields), then the
+// zeroed tail with +0x18 before +0x14. The vptr is cl-auto-stamped (ctor prologue).
+inline LeafElementObj::LeafElementObj(i32 count, i32 handle) {
+    m_04 = count;
+    m_08 = 0;
+    m_0c = handle;
+    m_10 = 0;
+    m_18 = 0;
+    m_14 = 0;
 }
 
 // ----- The recursive directory walker (ScanTree_157ee0) -----
@@ -203,8 +211,10 @@ public:
 };
 // The buffer freed at the walker's tail (_RezFree @0x1b9b82).
 extern "C" void RezFree(void* p);
-// Global operator new (engine NAFXCW, operator_new @0x1b9b46); external/no-body.
+// Global operator new/delete (engine NAFXCW, operator_new @0x1b9b46); external/
+// no-body. `delete e` on the polymorphic element routes through operator delete.
 void* operator new(u32 n);
+void operator delete(void* p);
 
 // ---------------------------------------------------------------------------
 // The shared CObject-like grand-base: vptr + status word at +0x04 + handle at
@@ -282,29 +292,14 @@ static inline i32 LeafReadMapCount(const CDDrawSubMgrLeafScan* p) {
     return *(const i32*)((const char*)p + 0x1c);
 }
 
-// Inline element constructor. New's the raw 0x1c block; on success seeds the
-// fields in the exact order the factory writes them (map count, then handle, the
-// foreign vtable stamp, then the zeroed tail with +0x18 before +0x14). The
-// raw/result split reproduces the MSVC `new`-expression null merge (the
-// `mov esi,eax; jmp; xor esi,esi` shape).
+// Inline element constructor. A real `new LeafElementObj(count, handle)`: cl emits
+// the operator-new + null-guarded ctor call; the ctor auto-stamps the element vptr
+// (??_7LeafElementObj) and seeds the fields (map count, handle, zeroed tail). The
+// count/handle reads happen before the alloc (they are the ctor args).
 static inline LeafElementObj* MakeLeafElement(const CDDrawSubMgrLeafScan* parent) {
-    LeafElementObj* raw = (LeafElementObj*)operator new(sizeof(LeafElementObj));
-    LeafElementObj* e;
-    if (raw != 0) {
-        i32 count = LeafReadMapCount(parent);
-        i32 handle = parent->m_0c;
-        raw->m_04 = count;
-        raw->m_08 = 0;
-        raw->m_0c = handle;
-        StampLeafElemVtbl(raw);
-        raw->m_10 = 0;
-        raw->m_18 = 0;
-        raw->m_14 = 0;
-        e = raw;
-    } else {
-        e = 0;
-    }
-    return e;
+    i32 count = LeafReadMapCount(parent);
+    i32 handle = parent->m_0c;
+    return new LeafElementObj(count, handle);
 }
 
 // ---------------------------------------------------------------------------
@@ -451,7 +446,7 @@ LeafElementObj* CDDrawSubMgrLeafScan::CreateEntry_157d70(const char* key, void* 
         return 0;
     }
     if (e->Configure_158760((RemusParseSource*)arg2) == 0) {
-        e->ScalarDtor(1);
+        delete e; // virtual scalar-deleting dtor (vtbl[1](1))
         return 0;
     }
     m_10[key] = (CObject*)e;
@@ -480,7 +475,7 @@ LeafElementObj* CDDrawSubMgrLeafScan::CreateEntry2_157e00(const char* key, void*
         return 0;
     }
     if (e->Configure2_158720(arg2) == 0) {
-        e->ScalarDtor(1);
+        delete e; // virtual scalar-deleting dtor (vtbl[1](1))
         return 0;
     }
     m_10[key] = (CObject*)e;
@@ -489,22 +484,23 @@ LeafElementObj* CDDrawSubMgrLeafScan::CreateEntry2_157e00(const char* key, void*
 }
 
 // ---------------------------------------------------------------------------
-// 0x158680: ~LeafElementObj (the non-deleting destructor). Stamps the element's
-// own vtable, runs Release (frees the acquired buffer), then chains the inlined
-// base teardown: reset +0x04/+0x08/+0x0c and restamp the grand-base dtor vtable.
-// /GX EH frame -- Release runs while the base subobject is still live, so its
-// teardown is unwind-protected (the half-destructed-element cleanup edge).
+// 0x158680: ~LeafElementObj (the non-deleting destructor). cl auto-stamps the
+// element's own vtable (??_7LeafElementObj) at entry, runs Release (frees the
+// acquired buffer), then chains the base teardown: reset +0x04/+0x08/+0x0c and the
+// implicit grand-base re-stamp (??_7LeafElementBase, masks 0x5e8cb4). /GX EH frame --
+// Release runs while the base subobject is still live, so its teardown is unwind-
+// protected (the half-destructed-element cleanup edge).
 // @early-stop
-// 94% -- EH-state/funclet plateau (docs/seh-eh.md): every instruction matches; the
-// residual rows are the EH unwind-map index (`push $0` vs retail's `push $8`) + the
-// one-position schedule of the `mov [esp+0x10],0` EH-state store + the reloc-masked
-// vtable/handler symbol names (g_leafElemVtbl/g_remusBaseDtorVtbl/__except_list all
-// pair against differently-named retail symbols at the SAME addresses). Logic complete.
+// EH-state/funclet plateau (docs/seh-eh.md): the vtable is now cl-emitted (real
+// polymorphic, ALL-VTABLES mandate) so the own-vptr + grand-base stamps are compiler
+// implicit; residual is the /GX EH unwind-map index + the one-position schedule of the
+// EH-state store + the reloc-masked ??_7/handler symbol names (pair against differently
+// -named retail symbols at the SAME addresses). Logic complete.
 RVA(0x00158680, 0x5b)
 LeafElementObj::~LeafElementObj() {
-    StampLeafElemVtbl(this);
     Release_1587c0();
-    // ~LeafElementBase auto-fires here: reset +0x04/+0x08/+0x0c, restamp grand-base vtbl.
+    // cl auto-stamps ??_7LeafElementObj at entry; ~LeafElementBase auto-fires here:
+    // reset +0x04/+0x08/+0x0c + implicit grand-base re-stamp (masks 0x5e8cb4).
 }
 
 // ---------------------------------------------------------------------------
@@ -773,9 +769,8 @@ CString CDDrawSubMgrLeafScan::FindKeyOfValue_158570(LeafScanValue* target) {
 SIZE_UNKNOWN(DirNode);
 SIZE_UNKNOWN(LeafCue);
 SIZE_UNKNOWN(LeafCuePlayer);
-SIZE_UNKNOWN(LeafElement);
 SIZE_UNKNOWN(LeafElementBase);
-SIZE_UNKNOWN(LeafElementObj);
+SIZE(LeafElementObj, 0x1c);
 SIZE_UNKNOWN(LeafRootHandle);
 SIZE_UNKNOWN(LeafScanBase);
 SIZE_UNKNOWN(LeafScanSoundArg);
@@ -785,3 +780,7 @@ SIZE_UNKNOWN(LeafSumSource);
 SIZE_UNKNOWN(RemusParseSource);
 SIZE_UNKNOWN(SoundDeviceStartView);
 VTBL(CDDrawSubMgrLeafScan, 0x001efca0); // ??_7CDDrawSubMgrLeafScan (was g_leafScanVtbl)
+// ??_7LeafElementObj (was g_leafElemVtbl @0x5eff08, LeafElemVtbl / ClassWithUnknownVTable42).
+// cl auto-emits it from the real-polymorphic element; retail's 9-slot datum is
+// reloc-masked -> matching-neutral catalog tracking.
+VTBL(LeafElementObj, 0x001eff08);

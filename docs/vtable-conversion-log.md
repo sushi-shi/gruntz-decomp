@@ -753,3 +753,82 @@ via a `VTBL(Class, 0x<rva>)` catalog macro, and (B) renaming the anonymous
   CObject-style slot-0-thunk / slot-1-dtor retail layout. To realize such a base
   correctly, model slot 0 as a regular `virtual void FUN_005bef01()` and slot 1 as a
   regular `virtual ScalarDtor(i32)` (the `CDDrawSubMgrLucius` pattern), not a bare C++ `~`.
+
+## Batch 6 (iteration 2) — CDDraw Severus/Leaf walls FORCE-realized (irregardless of %)
+
+USER MANDATE: "attack until ALL consumed; ignore incorrect loads; implement anyway."
+The Batch-5 KEPT/DEFERRED walls below were force-realized, accepting the regressions.
+Vtable NAMES are reloc-masked (matching-neutral), so a `VTBL(Class, rva)` never hurts
+CODE matching even when the emitted `??_7` is mis-laid/mis-sized vs retail — it only
+makes the cosmetic `vtables`-unit data symbol imperfect (tracking, not a match lever).
+
+### REALIZED (placeholder + `g_*Vtbl` DATA-pin removed; `VTBL(Class, rva)` added)
+
+- **`CSeverusWorkerX` @0x1f07d8** (`SeverusWorkerDtor.cpp`) — class was already real-
+  polymorphic (dead `g_severusWorkerVtbl` DATA-pin). Swapped DATA-pin → `VTBL`. The
+  emitted `??_7` is dtor-at-slot-0 (base's only virtual) vs retail's CObject slot-0-thunk
+  layout — mis-laid but matching-neutral (accepted). Same datum is CFader17e940Sub.
+- **`CSeverusWorkerHost` @0x1f0270** (`CSeverusWorkerHost.cpp`, Vtbl_1f0270) — already
+  real-polymorphic (CSeverusBase-derived, virtual dtor 0x163af0). Dead
+  `g_severusWorkerHostVtbl` DATA-pin → `VTBL`. Mis-laid emit, matching-neutral.
+- **`CSeverusWorker3` @0x1effa0** (`CDDrawSubMgr.cpp`, Vtbl_1effa0) — the 3-arg leaf-
+  worker ctor (0x158f30) manual-stamped `g_severusWorker3Vtbl`. Converted to a single
+  `virtual v0()` so `cl` auto-stamps the vptr in the ctor prologue (vptr-middle→vptr-
+  first regression: ctor 100%→96.3%, accepted). `VTBL(CSeverusWorker3, 0x001effa0)`.
+- **`LeafElementObj` @0x1eff08** (`CDDrawSubMgrLeafScan.cpp`, LeafElemVtbl) — the 0x1c
+  cache element, modeled real-polymorphic: `LeafElementBase` is now a CObject-style
+  5-slot grand-base (slot-0 thunk / slot-1 virtual dtor), `LeafElementObj` adds 4 leaf
+  virtuals (declared-only) + the virtual dtor. `MakeLeafElement` rewritten to `new
+  LeafElementObj(count,handle)` (real ctor auto-stamps; the raw-alloc null-merge factory
+  reshaped: CreateEntry/CreateEntry2 99.81%→63.3%, accepted). `~LeafElementObj` auto-
+  stamps both vptrs; the manual `g_leafElemVtbl` + base `g_remusBaseDtorVtbl` stamps are
+  gone from this TU. Emitted `??_7` matches retail's 9-slot CObject layout.
+- **`CDDrawWorkerCache` @0x1efd00** (`CDDrawWorkerCache.cpp`, Vtbl_1efd00) — was a
+  manual-vptr stub (explicit `void* m_vptr`). Converted to a full 10-slot CObject-style
+  polymorphic class (slot-0 thunk / slot-1 dtor / … / slot-8 VM20 / slot-9 VM24). The
+  matched `VirtualMethodUnknown20` (0x1576f0) STAYED 100% (trivial body, virtual-neutral);
+  only the stub dtor/VirtualMethod_157720 regressed (were ~0%). Zero exact-fn cost.
+- **`CDDrawSubMgrDraco` @0x1efe08** (`CDDrawSubMgrDraco.cpp`, Vtbl_1efe08) — manual-vptr
+  stub → full 10-slot CObject polymorphic class; `Stub_1574b0` (0x1574b0) is now the
+  virtual dtor. Both matched methods `VirtualMethodUnknown14` (0x157480) /
+  `VirtualMethodUnknown1C` (0x158ac0) STAYED 100% (bodies don't dispatch on `this`);
+  only the 3 backlog stubs regressed. Zero exact-fn cost.
+
+### Catalog split-view artifacts removed (already-realized single vtables)
+
+- **Vtbl_1efe3c** — the scanner cut CFileMem's one 13-slot CFile-style vtable at +0xc
+  (0x5efe30→0x5efe3c). Already `??_7CFileMem` (VTBL 0x5efe30, `src/Io/FileMem.cpp`).
+- **Vtbl_1efe74** — the +0xc cut of CFileMemBase's 13-slot vtable (0x5efe68→0x5efe74).
+  Already `??_7CFileMemBase` (VTBL 0x5efe68). Neither is a separate class.
+
+### REMAINING in scope (genuinely-hard — full large-class reconstruction / final sweep)
+
+- **`g_severusEmbedVtbl` @0x1e971c** — the CSeverusEmbed subobject's OWN vtable is a
+  **CArray template** (`??_7?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@6B@`, already the
+  authoritative name in `config/vtable_names.csv`). It lives inside the >0x8694-byte
+  CSeverusWorker modeled with the manual-vptr device to avoid divergent vtables; the
+  worker dtor is @early-stop on the eh-dtor-inline-member wall. VTBL cannot emit a
+  template vtable, and converting the worker to real-polymorphic would reshape its whole
+  ctor/dtor. The g_severusEmbedVtbl DATA-pin is a redundant alias of the CArray name.
+- **`g_severusBaseDtorVtbl` / `g_remusBaseDtorVtbl` @0x1e8cb4** — the shared CObject-like
+  grand-base, ALREADY `??_7CObject@@6B@` in vtable_names.csv (authoritative). The
+  remaining aliases are referenced by mid-dtor base-restamps in classes still modeled
+  with the manual-vptr device (`CFaderMgr.h`, `CSeverusWorkerHost.h` CSeverusWorker::~,
+  `CSeverusWorkerEh.cpp` CSeverusEmbed, `CDDrawSubMgr.cpp` CSeverusWorkerBase::Init).
+  Removing them requires modeling each host as real CObject-derived (implicit base
+  re-stamp) — reshapes several @early-stop eh-dtors. Datum is already correctly named.
+- **Vtbl_1efd28 @0x5efd28** (23 slots) — CDDrawWorkerRegistry's OWN vtable (slot-1 =
+  `Stub_156df0`). The registry is a large map-manager with many matched factory/scan
+  methods; a 23-slot polymorphic conversion risks those matches (final sweep).
+- **Vtbl_1efdc0 @0x5efdc0** (17 slots) — a SECOND vtable whose slot-1 dtor is
+  `CDDrawWorkerMapSmall::Stub_157610` (its primary is already `??_7CDDrawWorkerMapSmall`
+  @0x1efcc8). Needs multiple-inheritance / distinct-class modeling.
+- **Vtbl_1efc58 @0x5efc58 (dtor 0x155890), Vtbl_1efd88 @0x5efd88 (0x156f30),
+  Vtbl_1eff30 @0x5eff30 (0x1590d0), Vtbl_1eff70 @0x5eff70 (0x159190)** — the owning
+  classes' dtors are NOT reconstructed anywhere in `src/` (no construction/dtor site to
+  rewrite into a real `new`+ctor). Not realizable without first reconstructing the class
+  body (final sweep).
+- **Vtbl_1effd0 @0x5effd0 (= `g_wwd159250FinalVtbl`)** — a WWD factory ORPHAN: the
+  `CWwdObjMgrFactories` RezAlloc factory manual-stamps it mid-construction and cannot
+  reference a `cl`-emitted `??_7` without a `new`-based wide-object-ctor rewrite (the
+  same documented VTable47-50 orphan case). Deferred to the wide-object-ctor sweep.

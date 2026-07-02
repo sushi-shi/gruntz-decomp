@@ -26,25 +26,31 @@ public:
 };
 
 // ---------------------------------------------------------------------------
-// CDDrawSubMgrDraco - only the load-bearing offsets are modeled: three owned-child
-// pointers at +0x10/+0x14/+0x18. The matched method occupies a lower vtable slot
-// (its slot number is not load-bearing, only its body is matched), placed last.
+// CDDrawSubMgrDraco - real polymorphic now (own 10-slot vtable ??_7CDDrawSubMgrDraco
+// @0x5efe08, was Vtbl_1efe08 / ClassWithUnknownVTable35). Slots 0/2/3/4/6 are the
+// shared CObject thunks, slot 1 the virtual dtor (0x1574b0), slot 5 =
+// VirtualMethodUnknown14 (0x157480), slot 7 = VirtualMethodUnknown1C (0x158ac0),
+// slots 8/9 the backlog stubs. cl auto-emits the vtable; the implicit vptr-stamp
+// replaces the explicit m_vptr. Three owned-child pointers at +0x10/+0x14/+0x18.
 // ---------------------------------------------------------------------------
 class CDDrawSubMgrDraco {
 public:
-    i32 VirtualMethodUnknown14();
-    void VirtualMethodUnknown1C();
+    virtual void FUN_005bef01();           // [0] 0x1bef01 (shared thunk, declared-only)
+    virtual ~CDDrawSubMgrDraco();          // [1] 0x1574b0 scalar-deleting dtor
+    virtual void FUN_004028ec();           // [2] 0x0028ec (shared thunk, declared-only)
+    virtual void FUN_0040106e();           // [3] 0x00106e (shared thunk, declared-only)
+    virtual void FUN_00404034();           // [4] 0x004034 (shared thunk, declared-only)
+    virtual i32 VirtualMethodUnknown14();  // [5] 0x157480
+    virtual void FUN_00401c08();           // [6] 0x001c08 (shared thunk, declared-only)
+    virtual void VirtualMethodUnknown1C(); // [7] 0x158ac0
+    virtual void Stub_1574a0();            // [8] 0x1574a0 (backlog stub)
+    virtual void Stub_1588f0();            // [9] 0x1588f0 (backlog stub)
 
-    void* m_vptr; // +0x00 (vptr; not touched here)
+    // vptr implicit @ +0x00
     char m_pad04[0x10 - 0x04];
     DracoChild* m_10; // +0x10
     DracoChild* m_14; // +0x14
     DracoChild* m_18; // +0x18
-
-    // Engine-label backlog stubs.
-    void Stub_1574a0();
-    void Stub_1574b0();
-    void Stub_1588f0();
 };
 
 // ---------------------------------------------------------------------------
@@ -96,8 +102,9 @@ void CDDrawSubMgrDraco::Stub_1574a0() {}
 // @confidence: high
 // @source: tomalla
 // @stub
+// slot[1] scalar-deleting dtor (0x1574b0); cl auto-stamps the vptr at entry.
 RVA(0x001574b0, 0x1e)
-void CDDrawSubMgrDraco::Stub_1574b0() {}
+CDDrawSubMgrDraco::~CDDrawSubMgrDraco() {}
 
 // @confidence: high
 // @source: tomalla
@@ -107,3 +114,7 @@ void CDDrawSubMgrDraco::Stub_1588f0() {}
 
 SIZE_UNKNOWN(CDDrawSubMgrDraco);
 SIZE_UNKNOWN(DracoChild);
+// ??_7CDDrawSubMgrDraco (was Vtbl_1efe08 / ClassWithUnknownVTable35; 10 slots). cl
+// auto-emits it from the real-polymorphic class; retail datum reloc-masked ->
+// matching-neutral catalog tracking.
+VTBL(CDDrawSubMgrDraco, 0x001efe08);

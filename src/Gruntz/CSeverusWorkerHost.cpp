@@ -9,9 +9,9 @@
 
 #include <Gruntz/CSeverusWorkerHost.h>
 
-// The host's own primary vtable (foreign engine datum, reloc-masked DATA()).
-DATA(0x001f0270)
-extern void* g_severusWorkerHostVtbl; // 0x5f0270
+// The host's own primary vtable (0x5f0270) is now the cl-emitted
+// ??_7CSeverusWorkerHost (real-polymorphic CSeverusBase-derived class; VTBL at
+// EOF). The manual g_severusWorkerHostVtbl DATA-pin (Vtbl_1f0270 catalog) is gone.
 
 // The engine Rez heap free (_RezFree 0x1b9b82, cdecl C) used for the two owned
 // buffers (and, via CWwdSpatialMgr::operator delete, the worker).
@@ -77,3 +77,7 @@ CSeverusWorkerHost::~CSeverusWorkerHost() {
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 SIZE_UNKNOWN(CSeverusWorkerHost);
+// ??_7CSeverusWorkerHost (was g_severusWorkerHostVtbl @0x5f0270, Vtbl_1f0270 /
+// ClassWithUnknownVTable56). cl auto-emits it from the real-polymorphic host;
+// retail's 12-slot datum is reloc-masked -> matching-neutral catalog tracking.
+VTBL(CSeverusWorkerHost, 0x001f0270);
