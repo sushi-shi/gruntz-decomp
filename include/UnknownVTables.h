@@ -782,77 +782,20 @@ struct Vtbl_1f0790 {
     UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
 };
 
-// ClassWithUnknownVTable66  @ 0x005f07a8  (5 slots)  refs x2
-struct Vtbl_1f07a8 {
-    UnkVfn _scalar_deleting_destructor_; // [0] -> 0x17e480 `scalar_deleting_destructor'
-    UnkVfn __purecall;                   // [1] -> 0x11fec0 __purecall
-    UnkVfn __purecall_2;                 // [2] -> 0x11fec0 __purecall
-    UnkVfn slot3_17e790;                 // [3] -> 0x17e790 sub_17e790
-    UnkVfn slot4_17e7a0;                 // [4] -> 0x17e7a0 sub_17e7a0
-};
-
-// ClassWithUnknownVTable67  @ 0x005f07c0  (5 slots)  refs x2
-struct Vtbl_1f07c0 {
-    UnkVfn _scalar_deleting_destructor_; // [0] -> 0x17e970 `scalar_deleting_destructor'
-    UnkVfn slot1_17ef00;                 // [1] -> 0x17ef00 sub_17ef00
-    UnkVfn slot2_17f120;                 // [2] -> 0x17f120 sub_17f120
-    UnkVfn slot3_17e790;                 // [3] -> 0x17e790 sub_17e790
-    UnkVfn slot4_17e7a0;                 // [4] -> 0x17e7a0 sub_17e7a0
-};
-
-// ClassWithUnknownVTable68  @ 0x005f07d8  (5 slots)  refs x3
-struct Vtbl_1f07d8 {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x17f310 `scalar_deleting_destructor'
-    UnkVfn slot2_17f130;                 // [2] -> 0x17f130 sub_17f130
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
-};
-
-// ClassWithUnknownVTable69  @ 0x005f07f8  (5 slots)  refs x2
-struct Vtbl_1f07f8 {
-    UnkVfn _scalar_deleting_destructor_; // [0] -> 0x17f550 `scalar_deleting_destructor'
-    UnkVfn slot1_17f660;                 // [1] -> 0x17f660 sub_17f660
-    UnkVfn slot2_17f950;                 // [2] -> 0x17f950 sub_17f950
-    UnkVfn slot3_17e790;                 // [3] -> 0x17e790 sub_17e790
-    UnkVfn slot4_17e7a0;                 // [4] -> 0x17e7a0 sub_17e7a0
-};
-
-// ClassWithUnknownVTable70  @ 0x005f0810  (5 slots)  refs x2
-struct Vtbl_1f0810 {
-    UnkVfn _scalar_deleting_destructor_; // [0] -> 0x17f9d0 `scalar_deleting_destructor'
-    UnkVfn slot1_17fc60;                 // [1] -> 0x17fc60 sub_17fc60
-    UnkVfn slot2_17fda0;                 // [2] -> 0x17fda0 sub_17fda0
-    UnkVfn slot3_17e790;                 // [3] -> 0x17e790 sub_17e790
-    UnkVfn slot4_17e7a0;                 // [4] -> 0x17e7a0 sub_17e7a0
-};
-
-// ClassWithUnknownVTable71  @ 0x005f0848  (5 slots)  refs x2  src:g_faderSineVtbl
-struct FaderSineVtbl {
-    UnkVfn _scalar_deleting_destructor_; // [0] -> 0x17fdd0 `scalar_deleting_destructor'
-    UnkVfn slot1_17ff30;                 // [1] -> 0x17ff30 sub_17ff30
-    UnkVfn slot2_180400;                 // [2] -> 0x180400 sub_180400
-    UnkVfn slot3_17e790;                 // [3] -> 0x17e790 sub_17e790
-    UnkVfn slot4_17e7a0;                 // [4] -> 0x17e7a0 sub_17e7a0
-};
-
-// ClassWithUnknownVTable72  @ 0x005f0870  (5 slots)  refs x2
-struct Vtbl_1f0870 {
-    UnkVfn _scalar_deleting_destructor_; // [0] -> 0x180430 `scalar_deleting_destructor'
-    UnkVfn slot1_180640;                 // [1] -> 0x180640 sub_180640
-    UnkVfn slot2_1814f0;                 // [2] -> 0x1814f0 sub_1814f0
-    UnkVfn FUN_00581660;                 // [3] -> 0x181660 FUN_00581660
-    UnkVfn FUN_005816a0;                 // [4] -> 0x1816a0 FUN_005816a0
-};
-
-// ClassWithUnknownVTable73  @ 0x005f0890  (5 slots)  refs x2
-struct Vtbl_1f0890 {
-    UnkVfn _scalar_deleting_destructor_; // [0] -> 0x181700 `scalar_deleting_destructor'
-    UnkVfn slot1_181b00;                 // [1] -> 0x181b00 sub_181b00
-    UnkVfn slot2_182900;                 // [2] -> 0x182900 sub_182900
-    UnkVfn slot3_17e790;                 // [3] -> 0x17e790 sub_17e790
-    UnkVfn slot4_17e7a0;                 // [4] -> 0x17e7a0 sub_17e7a0
-};
+// ClassWithUnknownVTable66-73 (0x5f07a8..0x5f0890) - REALIZED as the CFader family
+// in src/Gruntz/CFader.cpp (+ include/Gruntz/CFader.h), now real C++ polymorphic
+// classes with VTBL() catalog bindings (cl auto-emits ??_7 + the implicit vptr
+// stamp). The retail slot RVAs formerly documented by these placeholder structs:
+//   0x5f07a8 CFader           dtor 0x17e480 / __purecall x2 (slots 1/2, pure) / 0x17e790 / 0x17e7a0
+//   0x5f07c0 CFader17e940     dtor 0x17e970 / 0x17ef00 / 0x17f120 / 0x17e790 / 0x17e7a0
+//   0x5f07d8 CFader17e940Sub  0x1bef01 / dtor 0x17f310 / 0x17f130 / 0x106e(ILT) / 0x4034(ILT)
+//   0x5f07f8 CFaderFlat       dtor 0x17f550 / 0x17f660 / 0x17f950 / 0x17e790 / 0x17e7a0
+//   0x5f0810 CFader17f9a0     dtor 0x17f9d0 / 0x17fc60 / 0x17fda0 / 0x17e790 / 0x17e7a0
+//   0x5f0848 CFaderSine       dtor 0x17fdd0 / 0x17ff30 / 0x180400 / 0x17e790 / 0x17e7a0
+//   0x5f0870 CFader180410     dtor 0x180430 / 0x180640 / 0x1814f0 / 0x181660 / 0x1816a0
+//   0x5f0890 CFader1816c0     dtor 0x181700 / 0x181b00 / 0x182900 / 0x17e790 / 0x17e7a0
+// Slots 1/2 are the base's two pure virtuals (v1/v2); each subtype overrides them,
+// so the slot NAMES are C++-mandated shared names (not FUN_<rva>-nameable).
 
 // ClassWithUnknownVTable74  @ 0x005f08c0  (14 slots)  refs x6  src:g_menuItemVtbl
 struct MenuItemVtbl {

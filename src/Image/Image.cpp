@@ -959,10 +959,14 @@ class CByteArrayMember {
 public:
     CByteArrayMember(); // 0x1b4f0b (reloc-masked rel32)
 };
+// Dispatch view of the built item: the SHARED CPoolItemA base vtable ??@0x1ef7f0
+// (VA 0x5ef7f0, 9 slots; uncataloged - a foreign shared base also stamped by
+// CFileImage/CPoolItemA/CDDSurface). Slots named by their retail 0x1ef7f0 vtable-slot
+// RVA (FUN_<rva>): slot 0 = 0x141330 (scalar dtor), slot 1 = 0x13e140.
 class CRezSurfaceItem {
 public:
-    virtual void* Delete(u32 flags); // slot 0 (@0x00) scalar-deleting dtor
-    virtual i32 Load(void* src);     // slot 1 (@0x04)
+    virtual void* FUN_00141330(u32 flags); // slot 0 @+0x00  scalar-deleting dtor
+    virtual i32 FUN_0013e140(void* src);   // slot 1 @+0x04
 
     char m_pad04[0x94 - 0x04]; // +0x04 (m_04/m_08/m_0c/m_7c zeroed)
     CByteArrayMember m_94;     // +0x94
@@ -975,8 +979,8 @@ public:
 // the all-vtables mandate.
 class CImageSurfaceItemInit {
 public:
-    virtual void* Delete(u32 flags); // slot 0 (@0x00) scalar-deleting dtor
-    virtual i32 Load(void* src);     // slot 1 (@0x04)
+    virtual void* FUN_00141330(u32 flags); // slot 0 @+0x00  scalar-deleting dtor
+    virtual i32 FUN_0013e140(void* src);   // slot 1 @+0x04
     inline CImageSurfaceItemInit() {
         *(i32*)((char*)this + 0x08) = 0;
         *(i32*)((char*)this + 0x0c) = 0;
@@ -1023,10 +1027,10 @@ i32 CImageFactory::Build_13e9a0(CRezImageSource* src, i32 a2) {
     void* payload = 0;
     if (src->Probe(&g_imageProbeTag, &payload) != 0) {
         CRezSurfaceItem* item = (CRezSurfaceItem*)new CImageSurfaceItemInit;
-        if (item->Load(payload)) {
+        if (item->FUN_0013e140(payload)) { // slot 1 @+0x04  Load
             g_imageCache.SetAtGrow(g_imageCacheIndex, item);
         } else if (item) {
-            item->Delete(1);
+            item->FUN_00141330(1); // slot 0 @+0x00  scalar-deleting dtor
         }
     }
     return 1;
@@ -1774,5 +1778,8 @@ i32 CFileImage::ResolveEx(void* surf, void* buf, i32 type, u32 size, i32 ctrl, i
 SIZE_UNKNOWN(CFileImageElement);
 SIZE_UNKNOWN(CImageExtLoader);
 SIZE_UNKNOWN(CByteArrayMember);
-SIZE_UNKNOWN(CImageSurfaceItemInit);
+// CImageSurfaceItemInit: real-polymorphic (cl emits ??_7CImageSurfaceItemInit), but its
+// vtable is the SHARED CPoolItemA base @0x1ef7f0 - no per-class VTBL (would misname the
+// shared datum). Exact size 0xc0: `new CImageSurfaceItemInit` allocates the 0xc0 item.
+SIZE(CImageSurfaceItemInit, 0xc0);
 SIZE_UNKNOWN(CImageFactory);

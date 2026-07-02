@@ -2623,7 +2623,7 @@ image	?Blit248@CFileImage@@QAEHPAX0H@Z	94.3103	94.3103	1	3af3a5a4a2fa	0x13fe60
 image	?Blit@CFileImage@@QAEHPAXH0H@Z	100.0000	100.0000	2	181d8e710203	0x13faa0
 image	?BlitDirect@CFileImage@@QAEHPAXH@Z	70.4941	70.4941	2	d45ef879a365	0x13ece0
 image	?BlitSurf@CFileImage@@QAEHPAXHHHH@Z	100.0000	100.0000	3	f4d5a5e5672c	0x13e0d0
-image	?Build_13e9a0@CImageFactory@@QAEHPAVCRezImageSource@@H@Z	84.5692	84.5692	1	abb347f8c8e3	0x13e9a0
+image	?Build_13e9a0@CImageFactory@@QAEHPAVCRezImageSource@@H@Z	84.5692	84.5692	2	5c10ad4a4229	0x13e9a0
 image	?Clear@CFileImage@@QAEXH@Z	100.0000	100.0000	2	bfee47867379	0x13edb0
 image	?DecodeBlit@CRezImage@@QAEHPAX0HHH0@Z	82.7639	82.7639	1	1dab25229951	0x175930
 image	?DecodeBmp@CFileImage@@QAEPAXPADPAXI@Z	31.2544	31.2544	4	ee7ec349a997	0x143fc0
@@ -2680,9 +2680,9 @@ imagepool	?SetPalette@GdiOwner_175c90@ApiCallerStubs@@QAEXPAXH@Z	100.0000	100.00
 imagerle16encode	?EncodeRle16@CImageRle16@@QAEPAXPBE@Z	65.3946	65.3946	2	857c96e8d564	0x1495d0
 imagerotate	?ImageRotateBlit@@YAXHHPAHHPAUImgRect@@HMMHH@Z	32.3353	32.3353	2	78f462bd39c5	0x145f60
 imagesavebmp	?SaveBmp@CImageSaver@@QAEHVCString@@HHHHHHHH@Z	18.8182	18.8182	3	6754f1343636	0x149250
-imageset	?CreateFrame24@CImageSet@@QAEPAVCImageFrame@@HHHH@Z	99.4267	99.4267	3	ea2dbc478df2	0x152110
-imageset	?CreateFrame28@CImageSet@@QAEPAVCImageFrame@@HHHH@Z	99.4342	99.4342	3	76e76fd6da92	0x152060
-imageset	?CreateFrame30@CImageSet@@QAEPAVCImageFrame@@HHH@Z	99.4110	99.4110	3	741ecc9ca2b2	0x151fb0
+imageset	?CreateFrame24@CImageSet@@QAEPAVCImageFrame@@HHHH@Z	99.4267	99.4267	4	951d118877b3	0x152110
+imageset	?CreateFrame28@CImageSet@@QAEPAVCImageFrame@@HHHH@Z	99.4342	99.4342	4	79922eaddc4b	0x152060
+imageset	?CreateFrame30@CImageSet@@QAEPAVCImageFrame@@HHH@Z	99.4110	99.4110	4	9a507e30eb72	0x151fb0
 imageset	?FindFrame@CImageSet@@QAEHPAVCImageFrame@@PADPAH@Z	100.0000	100.0000	2	943441ee77bf	0x1525c0
 imageset	?GetMemoryUsage@CImageSet@@QAEHH@Z	99.9623	99.9623	2	f8eae28b718d	0x1523f0
 imageset	?SetAllField18@CImageSet@@QAEHH@Z	100.0000	100.0000	1	a7a2fafe1b75	0x1524d0
@@ -3408,7 +3408,7 @@ spriteresource	?CacheFrame@CGruntSprite@@QAEXPBDH@Z	84.2571	84.2571	2	37e6bc8781
 spriteresource	?ConfigureItem@CSoundCueMgr@@QAEHHHHH@Z	100.0000	100.0000	1	59c3bd874a81	0x1360d0
 spriteresource	?CreateSprite@CSpriteFactory@@QAEPAUCIconSprite@@HHHHPBDH@Z	94.1176	94.1176	1	5df5abf17846	0x1597b0
 spriteresource	?GetFrame@CSprite@@QAEHH@Z	100.0000	100.0000	1	48906c68982d	0x15cc30
-spriteresource	?InsertFrame@CSprite@@QAEPAUCFrameWorker@@PAXHH@Z	99.4110	99.4110	2	32386fc09a11	0x151f00
+spriteresource	?InsertFrame@CSprite@@QAEPAUCFrameWorker@@PAXHH@Z	99.4110	99.4110	3	c8a64cfc9254	0x151f00
 spriteresource	?LookupAnimSprite@CGruntAnimPlayer@@QAEHPBD@Z	73.0435	73.0435	1	07b112262249	0x150610
 startupprompt	?StartUpPrompt@@YAHPAUHWND__@@@Z	97.9951	97.9951	1	a3e252acbdce	0x1f9b0
 statedispatch	?StateDispatch@@YGHPAUCStateCtx@@HH@Z	32.4881	32.4881	1	59d826efce87	0x9b770

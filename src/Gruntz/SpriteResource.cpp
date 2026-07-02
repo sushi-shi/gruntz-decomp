@@ -40,28 +40,32 @@
 extern void* operator new(u32 size);
 
 // ---------------------------------------------------------------------------
-// The frame-worker is a CImage (RTTI .?AVCImage@@, primary vftable @0x5eaa2c).
-// The insert allocates a raw 0x34-byte CImage and INLINES its construction
-// (vptr stamp + field init) at the new-site - it does NOT call an out-of-line
-// ctor - then drives the slot-11 Resolve virtual and, on failure, the slot-1
-// scalar dtor. Now modeled real-polymorphic (all-vtables mandate): cl auto-stamps
-// the vptr (??_7CFrameWorker@@6B@; the foreign CImage @0x5eaa2c slots stay
-// declared-only, reloc-masked) so both dispatches lower to `mov eax,[this];
-// call [eax+off]`. Manual CFrameWorkerVtbl PMF table + g_imageVtbl stamp removed.
+// The frame-worker is a CImage (RTTI .?AVCImage@@, SHARED vtable ??_7CImage@@6B@
+// @0x1eaa2c / VA 0x5eaa2c, cataloged in config/vtable_names.csv). The insert
+// allocates a raw 0x34-byte CImage and INLINES its construction (vptr stamp + field
+// init) at the new-site - it does NOT call an out-of-line ctor - then drives the
+// slot-11 Resolve virtual and, on failure, the slot-1 scalar dtor. Now modeled
+// real-polymorphic (all-vtables mandate): cl auto-stamps the vptr
+// (??_7CFrameWorker@@6B@; the foreign CImage slots stay declared-only, reloc-masked)
+// so both dispatches lower to `mov eax,[this]; call [eax+off]`. Slots named by their
+// retail vtable-slot RVA read from the 0x1eaa2c .rdata (FUN_<rva>); the low ones
+// (0x1000-0x7c20) are ILT jmp-thunks into the CObject/MFC base. NO VTBL(): the vtable
+// is the shared ??_7CImage. Manual CFrameWorkerVtbl PMF table + g_imageVtbl stamp
+// removed.
 // ---------------------------------------------------------------------------
 struct CFrameWorker {
-    virtual void Slot00();                   // +0x00
-    virtual void Destroy(i32 flag);          // +0x04  (slot 1, scalar dtor)
-    virtual void Slot08();                   // +0x08
-    virtual void Slot0C();                   // +0x0c
-    virtual void Slot10();                   // +0x10
-    virtual void Slot14();                   // +0x14
-    virtual void Slot18();                   // +0x18
-    virtual void Slot1C();                   // +0x1c
-    virtual void Slot20();                   // +0x20
-    virtual void Slot24();                   // +0x24
-    virtual void Slot28();                   // +0x28
-    virtual i32 Resolve(void* src, i32 arg); // +0x2c  (slot 11)
+    virtual void FUN_001bef01();                  // [0]  +0x00
+    virtual void FUN_00002adb(i32 flag);          // [1]  +0x04  scalar-deleting dtor (ILT)
+    virtual void FUN_000028ec();                  // [2]  +0x08 (ILT)
+    virtual void FUN_0000106e();                  // [3]  +0x0c (ILT)
+    virtual void FUN_00004034();                  // [4]  +0x10 (ILT)
+    virtual void FUN_000013b6();                  // [5]  +0x14 (ILT)
+    virtual void FUN_00001c08();                  // [6]  +0x18 (ILT)
+    virtual void FUN_00153260();                  // [7]  +0x1c  CImage::FreeAll
+    virtual void FUN_000042aa();                  // [8]  +0x20 (ILT)
+    virtual void FUN_001530e0();                  // [9]  +0x24  CImage::Create24
+    virtual void FUN_00152fb0();                  // [10] +0x28  CImage::LoadDispatch
+    virtual i32 FUN_00152f20(void* src, i32 arg); // [11] +0x2c  CImage::Resolve
 
     inline CFrameWorker(i32 frameNumber, void* parent) {
         m_04 = frameNumber;
@@ -402,9 +406,9 @@ CFrameWorker* CSprite::InsertFrame(void* src, i32 n, i32 mode) {
         return 0;
     }
     CFrameWorker* worker = new CFrameWorker(n, m_c);
-    if (!worker->Resolve(src, mode)) {
+    if (!worker->FUN_00152f20(src, mode)) { // slot 11 @+0x2c  CImage::Resolve
         if (worker) {
-            worker->Destroy(1);
+            worker->FUN_00002adb(1); // slot 1 @+0x04  scalar-deleting dtor
         }
         return 0;
     }
@@ -432,7 +436,10 @@ i32 CSprite::GetFrame(i32 n) {
     }
     return 0;
 }
-SIZE_UNKNOWN(CFrameWorker);
+// CFrameWorker is real-polymorphic (cl emits ??_7CFrameWorker). Its vtable is the
+// SHARED ??_7CImage@@6B@ (0x1eaa2c) - no per-class VTBL (would collide/misname). Exact
+// size 0x34: the insert allocates the 0x34-byte raw CImage (ctor writes to m_30+0x30).
+SIZE(CFrameWorker, 0x34);
 SIZE_UNKNOWN(CGruntAnimPlayer);
 SIZE_UNKNOWN(CGruntAnimSub2);
 SIZE_UNKNOWN(CGruntSprite);

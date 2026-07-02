@@ -52,9 +52,9 @@ CImageFrame* CImageSet::CreateFrame30(i32 a0, i32 index, i32 a2) {
 
     CImageFrame* nf = new CImageFrame(m_owner, index);
 
-    if (nf->Load30(a0, a2) == 0) {
+    if (nf->FUN_00152e90(a0, a2) == 0) { // slot 12 @+0x30  CImage::Create
         if (nf != 0) {
-            nf->Delete(1);
+            nf->FUN_00002adb(1); // slot 1 @+0x04  scalar-deleting dtor
         }
         return 0;
     }
@@ -79,9 +79,9 @@ CImageFrame* CImageSet::CreateFrame28(i32 a0, i32 a1, i32 index, i32 a3) {
 
     CImageFrame* nf = new CImageFrame(m_owner, index);
 
-    if (nf->Load28(a0, a1, a3, 1) == 0) {
+    if (nf->FUN_00152fb0(a0, a1, a3, 1) == 0) { // slot 10 @+0x28  CImage::LoadDispatch
         if (nf != 0) {
-            nf->Delete(1);
+            nf->FUN_00002adb(1); // slot 1 @+0x04  scalar-deleting dtor
         }
         return 0;
     }
@@ -106,9 +106,9 @@ CImageFrame* CImageSet::CreateFrame24(i32 a0, i32 a1, i32 index, i32 a3) {
 
     CImageFrame* nf = new CImageFrame(m_owner, index);
 
-    if (nf->Load24(a0, a1, a3) == 0) {
+    if (nf->FUN_001530e0(a0, a1, a3) == 0) { // slot 9 @+0x24  CImage::Create24
         if (nf != 0) {
-            nf->Delete(1);
+            nf->FUN_00002adb(1); // slot 1 @+0x04  scalar-deleting dtor
         }
         return 0;
     }
@@ -227,8 +227,11 @@ i32 CImageSet::FindFrame(CImageFrame* frame, char* outName, i32* outIndex) {
 }
 
 // Class-metadata annotations (EOF-hosted; ImageSet.h is pulled into Gruntz/
-// LightFxMgr.cpp). CImageFrame is real-polymorphic (cl emits ??_7CImageFrame).
+// LightFxMgr.cpp). CImageFrame is real-polymorphic (cl emits ??_7CImageFrame). Its
+// vtable is the SHARED ??_7CImage@@6B@ (0x1eaa2c, in config/vtable_names.csv) - no
+// per-class VTBL(CImageFrame) (would collide/misname that datum). Exact size 0x34:
+// `new CImageFrame` allocates the 0x34-byte raw CImage (layout ends at m_format+0x30).
 SIZE_UNKNOWN(CImageFormat);
 SIZE_UNKNOWN(CImageFrameSurface);
-SIZE_UNKNOWN(CImageFrame);
+SIZE(CImageFrame, 0x34);
 SIZE_UNKNOWN(CImageFrameArray);

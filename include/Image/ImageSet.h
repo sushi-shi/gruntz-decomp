@@ -46,23 +46,28 @@ class CImageFrame {
 public:
     inline CImageFrame(void* owner, i32 index);
 
-    // Real-polymorphic view of the frame's (unmatched, foreign CImage @0x5eaa2c)
-    // vtable: cl auto-stamps the vptr (??_7CImageFrame@@6B@, declared-only slots
-    // reloc-mask). Manual `m_vptr = &g_imageFrameVtbl` stamp removed per the
-    // all-vtables mandate. Slots the factory dispatches: Delete@04, Load24/28/30.
-    virtual void* v00();
-    virtual void* Delete(i32 flags); // +0x04  scalar-deleting dtor
-    virtual void* v08();
-    virtual void* v0c();
-    virtual void* v10();
-    virtual void* v14();
-    virtual void* v18();
-    virtual void* v1c();
-    virtual void* v20();
-    virtual i32 Load24(i32 a, i32 b, i32 c);        // +0x24
-    virtual i32 Load28(i32 a, i32 b, i32 c, i32 d); // +0x28
-    virtual void* v2c();
-    virtual i32 Load30(i32 a, i32 b); // +0x30
+    // The frame element IS an RTTI CImage: its vtable is the SHARED ??_7CImage@@6B@
+    // at RVA 0x1eaa2c (VA 0x5eaa2c, 18 slots / 0x48; cataloged in
+    // config/vtable_names.csv). Real-polymorphic: cl auto-stamps the CImageFrame vptr
+    // at ctor entry; the declared-only slots reloc-mask. Slots are named by their
+    // retail vtable-slot RVA read from the 0x1eaa2c .rdata (FUN_<rva>); the low ones
+    // (0x1000-0x7c20) are ILT jmp-thunks into the CObject/MFC base. NO VTBL() here -
+    // the vtable is the shared ??_7CImage (already at 0x1eaa2c); a per-class VTBL
+    // would collide/misname the datum. Manual `m_vptr = &g_imageFrameVtbl` stamp
+    // removed per the all-vtables mandate.
+    virtual void* FUN_001bef01();                         // [0]  +0x00
+    virtual void* FUN_00002adb(i32 flags);                // [1]  +0x04  scalar-deleting dtor (ILT)
+    virtual void* FUN_000028ec();                         // [2]  +0x08 (ILT)
+    virtual void* FUN_0000106e();                         // [3]  +0x0c (ILT)
+    virtual void* FUN_00004034();                         // [4]  +0x10 (ILT)
+    virtual void* FUN_000013b6();                         // [5]  +0x14 (ILT)
+    virtual void* FUN_00001c08();                         // [6]  +0x18 (ILT)
+    virtual void* FUN_00153260();                         // [7]  +0x1c  CImage::FreeAll
+    virtual void* FUN_000042aa();                         // [8]  +0x20 (ILT)
+    virtual i32 FUN_001530e0(i32 a, i32 b, i32 c);        // [9]  +0x24  CImage::Create24
+    virtual i32 FUN_00152fb0(i32 a, i32 b, i32 c, i32 d); // [10] +0x28  CImage::LoadDispatch
+    virtual void* FUN_00152f20();                         // [11] +0x2c  CImage::Resolve
+    virtual i32 FUN_00152e90(i32 a, i32 b);               // [12] +0x30  CImage::Create
 
     i32 m_index;   // +0x04  frame index
     i32 m_8;       // +0x08
