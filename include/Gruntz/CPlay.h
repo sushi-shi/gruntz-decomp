@@ -572,7 +572,7 @@ public:
     i32 winapi_0d0b30_CopyRect(i32);
     void LoadCursorSprites(i32, i32);
     i32 LoadScrollSpeedOptions();
-    void BuildGruntTypeNameTable(i32, i32, i32, i32);
+    i32 BuildGruntTypeNameTable(i32, i32, i32, i32);
 };
 
 // ===========================================================================

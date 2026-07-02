@@ -2359,11 +2359,134 @@ i32 CPlay::LoadScrollSpeedOptions() {
     return 1;
 }
 
-// @confidence: med
-// @source: string-xref
-// @stub
+// BuildGruntTypeNameTable (0xdc6d0): map a grunt-type id to its bute namespace key
+// via a 58-case jump table (NORMALGRUNT default), then register it through the shared
+// namespace-loader tail (BindWarlordName == the 0x2bc1 CNamespaceLoader thunk). The
+// TOOB case is special: it registers TOOBGRUNT first and, only if that succeeds, ALSO
+// registers TOOBWATERGRUNT (a separate `return`, not a `break`, so a2/a3/a4 stay in
+// edi/ebx/ebp local to the TOOB block instead of being hoisted for the whole fn). The
+// CString name temp forces the /GX EH frame.
+// @early-stop
+// jump-table-data-overlap wall (33.3%, from 0% stub): the full body is byte-exact vs
+// retail (verified llvm-objdump -dr base vs target — prologue, dispatch, all 58 case
+// pushes, the TOOB/TOOBWATER special path, and the shared destruct-tail all match). The
+// residual is the 194-byte switch data (58-entry index byte-table + 34-slot jump table)
+// which cl emits as separate $L symbols vs the delinker inlining it into the fn symbol
+// at fn+0x218/+0x2a4; the table DATA + the 2 dispatch reloc operands never pair. Not
+// source-steerable (docs/patterns/jumptable-data-overlap.md, cf. LoadPowerupIconSprites).
 RVA(0x000dc6d0, 0x215)
-void CPlay::BuildGruntTypeNameTable(i32, i32, i32, i32) {}
+i32 CPlay::BuildGruntTypeNameTable(i32 typeIdx, i32 a2, i32 a3, i32 a4) {
+    CString name("NORMALGRUNT");
+    switch (typeIdx) {
+        case 1:
+            name = "BOMBGRUNT";
+            break;
+        case 2:
+            name = "BOOMERANGGRUNT";
+            break;
+        case 3:
+            name = "BRICKGRUNT";
+            break;
+        case 4:
+            name = "CLUBGRUNT";
+            break;
+        case 5:
+            name = "GAUNTLETZGRUNT";
+            break;
+        case 6:
+            name = "GLOVEZGRUNT";
+            break;
+        case 7:
+            name = "GOOBERGRUNT";
+            break;
+        case 8:
+            name = "GRAVITYBOOTZGRUNT";
+            break;
+        case 9:
+            name = "GUNHATGRUNT";
+            break;
+        case 10:
+            name = "NERFGUNGRUNT";
+            break;
+        case 11:
+            name = "ROCKGRUNT";
+            break;
+        case 12:
+            name = "SHIELDGRUNT";
+            break;
+        case 13:
+            name = "SHOVELGRUNT";
+            break;
+        case 14:
+            name = "SPRINGGRUNT";
+            break;
+        case 15:
+            name = "SPYGRUNT";
+            break;
+        case 16:
+            name = "SWORDGRUNT";
+            break;
+        case 17:
+            name = "TIMEBOMBGRUNT";
+            break;
+        case 18:
+            name = "TOOBGRUNT";
+            if (this->BindWarlordName(name, a2, a3, a4) == 0) {
+                return 0;
+            }
+            name = "TOOBWATERGRUNT";
+            return this->BindWarlordName(name, a2, a3, a4);
+        case 19:
+            name = "WANDGRUNT";
+            break;
+        case 20:
+            name = "WARPSTONEGRUNT";
+            break;
+        case 21:
+            name = "WELDERGRUNT";
+            break;
+        case 22:
+            name = "WINGZGRUNT";
+            break;
+        case 23:
+            name = "BABYWALKERGRUNT";
+            break;
+        case 24:
+            name = "BEACHBALLGRUNT";
+            break;
+        case 25:
+            name = "BIGWHEELGRUNT";
+            break;
+        case 26:
+            name = "GOKARTGRUNT";
+            break;
+        case 27:
+            name = "JACKINTHEBOXGRUNT";
+            break;
+        case 28:
+            name = "JUMPROPEGRUNT";
+            break;
+        case 29:
+            name = "POGOSTICKGRUNT";
+            break;
+        case 30:
+            name = "SCROLLGRUNT";
+            break;
+        case 31:
+            name = "SQUEAKTOYGRUNT";
+            break;
+        case 32:
+            name = "YOYOGRUNT";
+            break;
+        case 57:
+            name = "HAREKRISHNAGRUNT";
+            break;
+        case 58:
+            name = "REAPERGRUNT";
+            break;
+    }
+    return this->BindWarlordName(name, a2, a3, a4);
+}
 
 // ===========================================================================
 // Per-level resource loaders (trace-discovered CPlay __thiscall cluster).

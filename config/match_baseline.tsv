@@ -40,7 +40,7 @@ blowfish	4	3
 bootycheatstate	1	0
 bootymessages	3	0
 bootystateactivate	2	1
-bootywalkanim	1	0
+bootywalkanim	2	0
 boundaryleaflogic	15	15
 boundarylowerdtors	6	5
 boundarylowermethods	30	19
@@ -260,7 +260,7 @@ gamechecksum	1	0
 gameinfostring	1	1
 gamekeyhandler	1	0
 gamelevel	60	26
-gamemode	44	23
+gamemode	43	23
 gamemodeobjlifecycle	4	3
 gamemousehandler	1	0
 gameobjectctors	8	4
@@ -633,7 +633,8 @@ bootymessages	?ShowLevelCompleteMessage@BzState@@QAEXXZ	98.0342	98.0342	2	2e3d18
 bootymessages	?ShowSecretBonusMessage@BzState@@QAEHXZ	93.1850	93.1850	2	a9940216abc5	0x18f00
 bootystateactivate	?OnActivate2@CMultiBootyState@@QAEHXZ	100.0000	100.0000	1	b78b5592c398	0x1f6f0
 bootystateactivate	?vfunc_9@CBootyState@@QAEHH@Z	94.7973	94.7973	1	9de4d84623a0	0x18d30
-bootywalkanim	?UpdateBootyWalkingGruntz@BzState@@QAEHXZ	90.5370	90.5370	2	ea72e2d00476	0x1b690
+bootywalkanim	?BuildBootyWalkingGruntz@BzState@@QAEHXZ	92.8158	92.8158	1	8d0e2504c08b	0x1b450
+bootywalkanim	?UpdateBootyWalkingGruntz@BzState@@QAEHXZ	93.9848	93.9848	2	ea72e2d00476	0x1b690
 boundaryleaflogic	??1L_101b0@@UAE@XZ	100.0000	100.0000	1	8ca1089d5905	0x101b0
 boundaryleaflogic	??1L_10fc0@@UAE@XZ	100.0000	100.0000	1	a623401a6b3b	0x10fc0
 boundaryleaflogic	??1L_11b80@@UAE@XZ	100.0000	100.0000	1	0ab24e93ac4d	0x11b80
@@ -1523,7 +1524,7 @@ cplay	?ArmSnapshot@CPlay@@QAEHHH@Z	99.2000	99.2000	1	896666303e5b	0xd9240
 cplay	?BeginGridWalk@CPlay@@QAEHHHHHH@Z	81.1191	81.1191	4	5929326f7458	0xd0920
 cplay	?BuildAnizKeyTable@CPlay@@QAEHPAX@Z	100.0000	100.0000	1	b165ae0cb8b9	0xddaa0
 cplay	?BuildGruntNamespaceList@CPlay@@QAEHH@Z	100.0000	100.0000	1	6652eb40d84c	0xdd050
-cplay	?BuildGruntTypeNameTable@CPlay@@QAEXHHHH@Z	0.7092	0.7092	2	ed7e76422e54	0xdc6d0
+cplay	?BuildGruntTypeNameTable@CPlay@@QAEHHHHH@Z	33.2624	33.2624	1	78c83cf0c557	0xdc6d0
 cplay	?BuildHelpReveal@CPlay@@QAEHXZ	67.8125	67.8125	3	d63528a8ea0e	0xd72c0
 cplay	?BuildMusicCategoryTable@CPlay@@QAEHH@Z	100.0000	100.0000	1	9e03b7354b74	0xdba30
 cplay	?BuildSpriteImageKeyTable@CPlay@@QAEHPAX@Z	100.0000	100.0000	2	2201d47f70f1	0xdd540
@@ -2144,7 +2145,6 @@ gamemode	??1CCreditsState@@UAE@XZ	100.0000	100.0000	1	76701af27730	0x8d5e0
 gamemode	??1CMenuState@@UAE@XZ	100.0000	100.0000	1	7e8055f2f15c	0x8ce60
 gamemode	??1CMultiBootyState@@UAE@XZ	100.0000	100.0000	1	e3b4ba267d7a	0x8d510
 gamemode	??_GCState@@UAEPAXI@Z	100.0000	100.0000	1	cpp:2601fb2a9496	0x8c710
-gamemode	?BuildBootyWalkingGruntz@CState@@QAEXXZ	0.6579	0.6579	1	ec771b9e0f06	0x1b450
 gamemode	?BuildVersionString@CMenuState@@QAEXHHHH@Z	100.0000	100.0000	3	7a5141c2b00e	0xa0d80
 gamemode	?BuildWarpStoneGlitterAnimation@CState@@QAEHXZ	88.1274	88.1274	1	80744100f058	0x19540
 gamemode	?CheckPerfectBonus@CMultiBootyState@@QAEHXZ	100.0000	100.0000	2	9fc93e05a397	0x1c0f0

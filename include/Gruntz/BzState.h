@@ -101,8 +101,17 @@ struct BzSoundSet {
 };
 SIZE_UNKNOWN(BzSoundSet);
 
+// g_mgrSettings->m_soundHolder->m_spriteFactory - the sprite/animation factory the
+// booty setup builds its per-player idle grunts through (CSpriteFactory 0x1597b0).
+struct BzSpriteFactory {
+    BzSprite* CreateSprite(i32 a, i32 b, i32 c, i32 kind, const char* type, i32 e); // 0x1597b0
+};
+SIZE_UNKNOWN(BzSpriteFactory);
+
 struct BzSoundHolder {
-    char m_pad00[0x28];
+    char m_pad00[0x8];
+    BzSpriteFactory* m_spriteFactory; // +0x08  sprite/animation factory
+    char m_pad0c[0x28 - 0xc];
     BzSoundSet* m_soundSet; // +0x28
 };
 SIZE_UNKNOWN(BzSoundHolder);
@@ -204,7 +213,9 @@ public:
     RegisterMultiNamespaces(const char* mode, i32, i32, i32, i32, i32); // 0xfa1f0 (thunk 0x1e60)
     void StartTimer(i32, i32, i32, i32);                                // 0xfa8f0 (thunk 0x1843)
     void PassClickToPlayState(i32, i32, i32);                           // 0x8d780 (thunk 0x17c1)
-    // Per-frame walking-grunt tick (BootyWalkAnim.cpp).
+    // One-time setup of the per-player idle/walking grunt sprite pairs + the per-frame
+    // walking-grunt tick (BootyWalkAnim.cpp).
+    i32 BuildBootyWalkingGruntz();  // 0x1b450
     i32 UpdateBootyWalkingGruntz(); // 0x1b690
 
     char m_pad00[0xc];

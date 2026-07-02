@@ -36,6 +36,76 @@ extern "C" {
     extern u32(__stdcall* g_pTimeGetTime)(); // PTR_timeGetTime_006c4650
 }
 
+// The per-player secret-letter table "WARP" (0x5e93a8) + the varargs status-line
+// formatter (0x1b2cf5, __cdecl(&dst, fmt, ...)); both reloc-masked.
+DATA(0x001e93a8)
+extern char g_secretChars[];                           // "WARP"
+void BzMsgFormatV(CString* dst, const char* fmt, ...); // 0x1b2cf5
+
+// ===========================================================================
+// BuildBootyWalkingGruntz @0x1b450 - the ONE-TIME setup that creates the four
+// per-player idle/walking grunt sprite pairs (mis-homed on CState by the trace;
+// really a BzState method, re-homed here beside its per-frame Update sibling). Bails
+// when the level record is suppressed or past area 0x24, resolves the active
+// selection handle, then per player builds an "anim" sprite (NORTH_WALK cycle) and a
+// "vis" sprite (the "<GAME_INGAMEICONZ_|BOOTY_DIM>SECRET<W/A/R/P>" cue) through the
+// shared sprite factory. The static CString cue buffer forces the /GX EH frame.
+// ===========================================================================
+// @early-stop
+// 92.8% (from 0.6% stub): complete + correct reconstruction - prologue byte-exact
+// (esi=this, the two inline `return 1` early-outs, the GetSel gate), the per-player
+// two-sprite create loop, the signed `(m_levelIndex-1)%4+1` prefix select, the
+// static-CString "%sSECRET%c" cue build, and the m_spriteId/m_timer stores all match.
+// Residual is non-source-steerable: (1) strength-reduction ANCHOR: retail folds the
+// two 0x10-apart sprite arrays onto one induction pointer anchored at m_visSprites
+// (esi=this+0x2c8, m_animSprites via [esi+0x10]); cl anchors at m_animSprites
+// (this+0x2d8), flipping every sprite-access displacement byte; (2) reloc-name
+// scoring artifact - the CacheFirstFrame/ApplyLookupGeometry/CreateSprite/GetSel
+// callees live on the real CGruntSprite/CGruntAnimPlayer/CSpriteFactory/CGruntSprite
+// classes but are modeled as BzSprite/BzSpriteFactory/BzSelSource methods (code bytes
+// identical, REL32 masked); (3) the /GX static-CString-guard EH frame (docs/seh-eh.md).
+RVA(0x0001b450, 0x1ac)
+i32 BzState::BuildBootyWalkingGruntz() {
+    if (g_mgrSettings->m_levelRecord->m_suppressGate != 0) {
+        return 1;
+    }
+    if (g_mgrSettings->m_levelRecord->m_levelIndex > 0x24) {
+        return 1;
+    }
+    i32 sel = g_mgrSettings->m_selSource->GetSel(0, 0);
+    if (sel == 0) {
+        return 0;
+    }
+    for (i32 i = 0; i < 4; i++) {
+        m_animSprites[i] = g_mgrSettings->m_soundHolder->m_spriteFactory
+                               ->CreateSprite(0, 0, 0, 1, "SimpleAnimation", 3);
+        if (m_animSprites[i] == 0) {
+            return 0;
+        }
+        m_animSprites[i]->CacheFirstFrame("GRUNTZ_NORMALGRUNT_NORTH_WALK");
+        m_animSprites[i]->ApplyLookupGeometry("GRUNTZ_NORMALGRUNT_WALK", 0);
+        m_animSprites[i]->m_visFlags |= 1;
+        m_animSprites[i]->m_58 = 1;
+        m_animSprites[i]->m_50 = 0xa;
+        m_animSprites[i]->m_selHandle = sel;
+        m_visSprites[i] = g_mgrSettings->m_soundHolder->m_spriteFactory
+                              ->CreateSprite(0, 0, 0, 1, "SimpleAnimation", 3);
+        if (m_visSprites[i] == 0) {
+            return 0;
+        }
+        static CString buf;
+        const char* prefix = (i < (g_mgrSettings->m_levelRecord->m_levelIndex - 1) % 4 + 1)
+                                 ? "GAME_INGAMEICONZ_"
+                                 : "BOOTY_DIM";
+        BzMsgFormatV(&buf, "%sSECRET%c", prefix, g_secretChars[i]);
+        m_visSprites[i]->CacheFirstFrame(buf);
+        m_visSprites[i]->ApplyLookupGeometry("GAME_CYCLE100", 0);
+        m_visSprites[i]->m_spriteId = g_idleSpriteIds[i] + 0xfa;
+        m_visSprites[i]->m_timer = 0xdc;
+    }
+    return 1;
+}
+
 // ===========================================================================
 // UpdateBootyWalkingGruntz @0x1b690 - the per-frame booty walking-grunt state
 // machine. Init path (m_initGate != 0): seeds each player's idle/WARP-pickup grunt

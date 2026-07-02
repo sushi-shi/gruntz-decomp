@@ -126,7 +126,7 @@ public:
 
     i32 BuildWarpStoneGlitterAnimation();
     void LoadGruntEffectSprites();
-    void BuildBootyWalkingGruntz();
+    // BuildBootyWalkingGruntz (0x1b450) re-homed to BzState (BootyWalkAnim.cpp).
 };
 
 #endif // GRUNTZ_GRUNTZ_CSTATE_H

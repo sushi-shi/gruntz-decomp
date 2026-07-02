@@ -594,11 +594,8 @@ i32 CState::BuildWarpStoneGlitterAnimation() {
 RVA(0x0001a040, 0x55e)
 void CState::LoadGruntEffectSprites() {}
 
-// @confidence: med
-// @source: decomp-xref
-// @stub
-RVA(0x0001b450, 0x1ac)
-void CState::BuildBootyWalkingGruntz() {}
+// BuildBootyWalkingGruntz (0x1b450) is re-homed to its real class BzState in
+// src/Gruntz/BootyWalkAnim.cpp (beside its per-frame Update sibling).
 
 // @confidence: med
 // @source: string-xref
