@@ -82,19 +82,20 @@ struct CGruntEntry {
 // ---------------------------------------------------------------------------
 
 DATA(0x0024556c)
-extern CGameRegistry* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c
+extern "C" CGameRegistry* g_mgrSettings; // canonical _g_mgrSettings @ VA 0x64556c
 
 // ---------------------------------------------------------------------------
 // A bound-object sub-object on the +0x38 game object: at +0x1a0 sits a helper
 // whose Sync(arg) (0x15c360, __thiscall ret 4) flushes/advances the indicator's
-// draw state. g_indicatorSync (0x6bf3bc, BSS) is the global arg it is handed.
+// draw state. g_6bf3bc (0x6bf3bc, BSS) is the draw-delta the arg carries; it is a
+// single view (extern "C" u32) shared with Projectile/CTeleporter/CGruntPuddle.
 // Both are external/no-body so the call + the load reloc-mask.
 // ---------------------------------------------------------------------------
 struct CIndicatorSyncHelper {
-    void Sync(void* ctx); // 0x15c360 (__thiscall ret 4)
+    void Sync(u32 delta); // 0x15c360 (__thiscall ret 4)
 };
 DATA(0x002bf3bc)
-extern void* g_indicatorSync; // DAT_006bf3bc
+extern "C" u32 g_6bf3bc; // canonical _g_6bf3bc @ 0x6bf3bc (draw-delta mirror)
 
 // The bute store the powerup setter seeds the "A" node from (g_buteTree.Find).
 // Also the shared activation-name registry types/globals (CActColl / CActColl2 /

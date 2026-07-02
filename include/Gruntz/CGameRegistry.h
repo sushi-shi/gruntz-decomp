@@ -54,8 +54,7 @@ struct CSpriteFactoryHolder { // the +0x30 resource/sprite-factory holder
     CSpriteFactory* m_8; // +0x08
     char m_pad0c[0x24 - 0xc];
     CGameViewport* m_24; // +0x24  viewport (cue-gate visibility source)
-    char m_pad28[0x2c - 0x28];
-    void* m_28; // +0x28
+    void* m_28;          // +0x28
 };
 
 // The tile occupancy grid (*g_pGameRegistry+0x70) is CTileGrid, in
@@ -104,8 +103,8 @@ struct CGameRegistry {
     void* m_48; // +0x48  == m_sound (sound/bank object)
     char m_pad4c[0x54 - 0x4c];
     void* m_54; // +0x54  == m_inputState (grunt: active-world view)
-    char m_pad58[0x5c - 0x58];
-    void* m_58;          // +0x58  == m_saveSink (grunt: progress / notifier)
+    void* m_58; // +0x58  == m_saveSink (grunt: progress / notifier)
+    char m_pad5c[0x60 - 0x5c];
     CGruntCueSink* m_60; // +0x60  == m_timer (grunt: cue sink / ->Cue receiver)
     char m_pad64[0x68 - 0x64];
     void* m_68;      // +0x68  == m_cmdGrid (grunt: cue/probe/placement sink)

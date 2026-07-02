@@ -11,15 +11,15 @@
 #include <Gruntz/GruntzCommand.h>
 #include <rva.h>
 
-// The game-registry singleton (?g_gameReg@@3PAUWwdGameReg@@A). Minimal local view:
-// IsActive folds reg->m_30 into a boolean. DATA-pinned so the `mov ds:g_gameReg`
-// load reloc-masks against the already-named symbol.
-struct GzGameReg {
+// The g_mgrSettings singleton (0x64556c). Minimal local view: IsActive folds
+// reg->m_30 into a boolean. extern "C" so the DATA load reloc-masks against the
+// canonical _g_mgrSettings symbol (single view; was a mis-named g_gameReg alias).
+struct MgrSettings30 {
     char m_pad0[0x30];
     i32 m_30; // +0x30
 };
 DATA(0x0024556c)
-extern GzGameReg* g_gameReg;
+extern "C" MgrSettings30* g_mgrSettings;
 
 // the registry-active predicate the read pass gates on (an out-of-line
 // twin of IsActive at 0x024a90; same body). External to this TU, reloc-masked.
@@ -292,7 +292,7 @@ i32 CGruntzCmdMgr::IsActive(i32 enable) {
     if (!enable) {
         return 0;
     }
-    return g_gameReg->m_30 != 0;
+    return g_mgrSettings->m_30 != 0;
 }
 
 // ---------------------------------------------------------------------------

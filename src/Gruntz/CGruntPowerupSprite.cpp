@@ -93,7 +93,7 @@ i32 CGruntPowerupSprite::SetCell(i32 x, i32 y, i32 powerup) {
     m_cellX = x;
     m_cellY = y;
     m_powerupId = powerup;
-    i32 rec = *(i32*)((char*)g_gameReg->m_78 + powerup * 4 + 0x14);
+    i32 rec = *(i32*)((char*)g_mgrSettings->m_78 + powerup * 4 + 0x14);
     CGruntRenderable* r = (CGruntRenderable*)m_10;
     r->m_58 = 1;
     r->m_50 = 7;
@@ -110,14 +110,14 @@ i32 CGruntPowerupSprite::SetCell(i32 x, i32 y, i32 powerup) {
 //
 // @early-stop
 // regalloc/scheduling wall (zero-register-pinning class): the logic is byte-exact
-// but cl loads g_gameReg into a different register (edx vs retail's eax) AFTER the
+// but cl loads g_mgrSettings into a different register (edx vs retail's eax) AFTER the
 // index add where retail schedules it between the lea-chain and the add, cascading
 // a register-name swap through the indexed entry load - not source-steerable.
 // Every instruction matches modulo register names. Deferred to the final sweep.
 RVA(0x00080410, 0x51)
 i32 CGruntPowerupSprite::Update() {
-    ((CIndicatorSyncHelper*)((char*)m_38 + 0x1a0))->Sync(g_indicatorSync);
-    CGruntEntry* e = ((CGruntEntry**)((char*)g_gameReg->m_68 + 0x1c))[m_cellX * 15 + m_cellY];
+    ((CIndicatorSyncHelper*)((char*)m_38 + 0x1a0))->Sync(g_6bf3bc);
+    CGruntEntry* e = ((CGruntEntry**)((char*)g_mgrSettings->m_68 + 0x1c))[m_cellX * 15 + m_cellY];
     if (e != 0) {
         m_10->m_5c = e->m_10->m_5c;
         m_10->m_60 = e->m_10->m_60;
@@ -128,7 +128,7 @@ i32 CGruntPowerupSprite::Update() {
 // CGruntPowerupSprite::Serialize @0x080490 - the serialize override. Chain the base
 // CUserLogic::SerializeChain and the +0x34 sub-object, then round-trip the own state:
 // m_cellX/m_cellY (8 B) + m_powerupId (4 B). mode 4 = write, mode 7 = read. On read, re-resolve
-// the powerup's bute-set record (g_gameReg->m_78[m_powerupId*4 + 0x14]) into the bound renderable.
+// the powerup's bute-set record (g_mgrSettings->m_78[m_powerupId*4 + 0x14]) into the bound renderable.
 RVA(0x00080490, 0xbe)
 i32 CGruntPowerupSprite::Serialize(PupArchive* ar, i32 mode, i32 a3, i32 a4) {
     if (SerializeChain((i32)ar, mode, a3, a4) == 0) {
@@ -147,7 +147,7 @@ i32 CGruntPowerupSprite::Serialize(PupArchive* ar, i32 mode, i32 a3, i32 a4) {
             ar->Read(&m_powerupId, 4);
             i32 id = m_powerupId;
             CGruntRenderable* r = (CGruntRenderable*)m_10;
-            i32 v = *(i32*)((char*)g_gameReg->m_78 + id * 4 + 0x14);
+            i32 v = *(i32*)((char*)g_mgrSettings->m_78 + id * 4 + 0x14);
             r->m_58 = 1;
             r->m_4c = v;
             r->m_50 = 7;

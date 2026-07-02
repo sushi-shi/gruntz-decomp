@@ -50,7 +50,7 @@ struct CGsSoundTable {
     void* Lookup(i32 idx, i32 flag); // 0xe23c0
 };
 DATA(0x0024556c)
-extern CGameRegistry* g_gameReg; // *0x64556c
+extern "C" CGameRegistry* g_mgrSettings; // *0x64556c (canonical _g_mgrSettings view)
 
 // The created SimpleAnimation sprite. CacheFirstFrame (0x150540) caches the named
 // first frame; ApplyLookupGeometry (0x1505b0) resolves its cycle geometry. Both
@@ -101,13 +101,13 @@ public:
 // jumptable-data-overlap.md + zero-register-pinning.md.
 RVA(0x00019920, 0x1c2)
 i32 CGruntSprintAnim::BuildGruntSprintAnimation() {
-    void* h = ((CGsSoundTable*)g_gameReg->m_74)->Lookup(0, 0);
+    void* h = ((CGsSoundTable*)g_mgrSettings->m_74)->Lookup(0, 0);
     if (!h) {
         return 0;
     }
 
     for (i32 i = 1; i <= 8; i++) {
-        m_204[i - 1] = ((CGsFactoryHolder*)g_gameReg->m_30)
+        m_204[i - 1] = ((CGsFactoryHolder*)g_mgrSettings->m_30)
                            ->m_8->CreateSprite(0, 0, 0, 2, "SimpleAnimation", 3);
         if (m_204[i - 1] == 0) {
             return 0;

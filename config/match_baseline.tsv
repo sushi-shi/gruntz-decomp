@@ -293,7 +293,7 @@ gruntvoice	6	4
 gruntzapp	10	10
 gruntzcmdmgr	12	10
 gruntzcommand	17	17
-gruntzmgr	93	63
+gruntzmgr	93	64
 gruntzmgrtransition	1	0
 gruntzplayer	8	4
 gruntzsoundz	15	12
@@ -1277,14 +1277,14 @@ cgrunthealthsprite	?SetHealthGlyph@CGruntHealthSprite@@QAEHHHH@Z	100.0000	100.00
 cgruntpowerupsprite	??1CGruntPowerupSprite@@UAE@XZ	100.0000	100.0000	1	083563c3491b	0x12370
 cgruntpowerupsprite	?InitActReg@CGruntPowerupSprite@@SAXXZ	100.0000	100.0000	1	ade10531ce1f	0x7ffa0
 cgruntpowerupsprite	?RegisterActs@CGruntPowerupSprite@@SAXXZ	92.9130	92.9130	1	f3c621493d68	0x80180
-cgruntpowerupsprite	?Serialize@CGruntPowerupSprite@@QAEHPAVPupArchive@@HHH@Z	100.0000	100.0000	3	c5be7ad67a57	0x80490
-cgruntpowerupsprite	?SetCell@CGruntPowerupSprite@@QAEHHHH@Z	100.0000	100.0000	3	1448eb6b93b9	0x80380
-cgruntpowerupsprite	?Update@CGruntPowerupSprite@@QAEHXZ	100.0000	100.0000	3	93e8b78f10b1	0x80410
+cgruntpowerupsprite	?Serialize@CGruntPowerupSprite@@QAEHPAVPupArchive@@HHH@Z	100.0000	100.0000	4	dda900acc7a4	0x80490
+cgruntpowerupsprite	?SetCell@CGruntPowerupSprite@@QAEHHHH@Z	100.0000	100.0000	4	d80283738527	0x80380
+cgruntpowerupsprite	?Update@CGruntPowerupSprite@@QAEHXZ	100.0000	100.0000	4	3b3d2795e9d3	0x80410
 cgruntselectedsprite	??1CGruntSelectedSprite@@UAE@XZ	100.0000	100.0000	1	03f353c22571	0x11e80
 cgruntselectedsprite	?InitActReg@CGruntSelectedSprite@@SAXXZ	100.0000	100.0000	1	87f14737eb97	0x7e5e0
 cgruntselectedsprite	?RegisterActs@CGruntSelectedSprite@@SAXXZ	92.9130	92.9130	1	66be750cf79b	0x7e7c0
 cgruntselectedsprite	?SetCell@CGruntSelectedSprite@@QAEHHH@Z	100.0000	100.0000	2	370c625704ce	0x7e9c0
-cgruntselectedsprite	?Update@CGruntSelectedSprite@@QAEHXZ	99.2424	99.2424	3	28f08c77975e	0x7e9f0
+cgruntselectedsprite	?Update@CGruntSelectedSprite@@QAEHXZ	99.2424	99.2424	4	e1bf268fab95	0x7e9f0
 cgruntstaminasprite	??1CGruntStaminaSprite@@UAE@XZ	100.0000	100.0000	1	5ffcecb6cc17	0x12070
 cgruntstaminasprite	?GetStaminaTime@CGruntStaminaSprite@@SGHPAUCStaminaTimeHost@@@Z	100.0000	100.0000	1	8243fe1fcda1	0x7fbb0
 cgruntstaminasprite	?GetTypeTag@CGruntStaminaSprite@@QAEHXZ	100.0000	100.0000	1	7751a50cef8a	0x12020
@@ -1295,7 +1295,7 @@ cgrunttoysprite	??1CGruntToySprite@@UAE@XZ	100.0000	100.0000	1	c705bae9e5ce	0x12
 cgrunttoysprite	?InitActReg@CGruntToySprite@@SAXXZ	100.0000	100.0000	1	1d3d94234712	0x7f540
 cgrunttoysprite	?RegisterActs@CGruntToySprite@@SAXXZ	92.9130	92.9130	1	c7cebdf2b945	0x7f720
 cgrunttoysprite	?SetCell@CGruntToySprite@@QAEHHH@Z	100.0000	100.0000	2	791f7fd4a674	0x7f920
-cgrunttoysprite	?Update@CGruntToySprite@@QAEHXZ	100.0000	100.0000	3	273737118523	0x7f960
+cgrunttoysprite	?Update@CGruntToySprite@@QAEHXZ	100.0000	100.0000	4	4d5c8d2fd24f	0x7f960
 cgrunttoytimesprite	??1CGruntToyTimeSprite@@UAE@XZ	100.0000	100.0000	1	dd4570bd359a	0x12130
 cgruntwingztimesprite	??1CGruntWingzTimeSprite@@UAE@XZ	100.0000	100.0000	1	45cfd716baa5	0x121f0
 cgruntwingztimesprite	?GetTypeTag@CGruntWingzTimeSprite@@QAEHXZ	100.0000	100.0000	1	05a69356373a	0x121a0
@@ -1484,7 +1484,7 @@ cparticlez	?Update@CParticlez@@QAEHXZ	100.0000	100.0000	1	8283acc5ef84	0x47090
 cpathhazard	??0CPathHazard@@QAE@PAUCGameObject@@@Z	91.3233	91.3233	1	6cff72b2da29	0xb35a0
 cpathhazard	??1CLightningHazard@@UAE@XZ	100.0000	100.0000	1	f8326e95f521	0x13280
 cpathhazard	??1CPathHazard@@UAE@XZ	100.0000	100.0000	1	60974e654df7	0x13340
-cpathhazard	?ArmStrike@CLightningHazard@@QAEHHH@Z	94.9155	94.9155	2	c5b604f0864b	0xb4640
+cpathhazard	?ArmStrike@CLightningHazard@@QAEHHH@Z	94.9296	94.9296	2	c5b604f0864b	0xb4640
 cpathhazard	?BeginLeg@CPathHazard@@QAEHXZ	84.2358	84.2358	1	b0e64016c92a	0xb47e0
 cpathhazard	?ForwardTick@CPathHazard@@QAEXXZ	100.0000	100.0000	1	a46d1c7f75bb	0xb5070
 cpathhazard	?GetTypeTag@CPathHazard@@QAEHXZ	100.0000	100.0000	1	3d6c6e5939e1	0x132f0
@@ -2377,7 +2377,7 @@ gruntspawnconfig	?LoadGruntVoices@CGruntSpawnConfig@@QAEHXZ	100.0000	100.0000	3	
 gruntspawnconfig	?PickWeighted@CGruntSpawnConfig@@QAEHHH@Z	1.0870	1.0870	1	b9cc209559f5	0x11bee0
 gruntspawnconfig	?ResetPicks@CGruntSpawnConfig@@QAEXXZ	100.0000	100.0000	1	6d4d20bac4c4	0x11c7f0
 gruntspawnconfig	?StopVoice@CGruntSpawnConfig@@QAEXH@Z	100.0000	100.0000	1	3b4c120126c9	0x11c730
-gruntsprintanim	?BuildGruntSprintAnimation@CGruntSprintAnim@@QAEHXZ	79.5942	79.5942	2	e17282e745bf	0x19920
+gruntsprintanim	?BuildGruntSprintAnimation@CGruntSprintAnim@@QAEHXZ	79.5942	79.5942	3	66a4ccfe9aa0	0x19920
 gruntstatestep	?Step33520@CStepMgr@@QAEHPAUCStepGrunt@@@Z	56.2408	56.2408	2	13ba3ba76504	0x33520
 grunttargetscan	?ScanNearestTarget@CGruntScan@@QAEHXZ	27.4446	27.4446	2	905973d1d06f	0xf42f0
 grunttilescan	?ScanRegion32ce0@CScanMgr@@QAEHPAUCScanGrunt@@@Z	72.3417	72.3417	1	5610745c7421	0x32ce0
@@ -2407,7 +2407,7 @@ gruntzcmdmgr	?DrainBase@CGruntzCmdMgr@@QAEXXZ	100.0000	100.0000	1	f12916b39a32	0
 gruntzcmdmgr	?EnqueueCommand@CGruntzCmdMgr@@QAEXHPAX@Z	100.0000	100.0000	1	09a6640d76df	0x23d10
 gruntzcmdmgr	?EnqueueMulti@CGruntzCmdMgr@@QAEXHDHPAEDFFD@Z	100.0000	100.0000	2	de0c153dda76	0x23ca0
 gruntzcmdmgr	?EnqueueSingle@CGruntzCmdMgr@@QAEXHDDDFFDD@Z	100.0000	100.0000	2	0bf2ba14a8ee	0x23c30
-gruntzcmdmgr	?IsActive@CGruntzCmdMgr@@QAEHH@Z	100.0000	100.0000	1	7e1c4da11ea7	0x24a90
+gruntzcmdmgr	?IsActive@CGruntzCmdMgr@@QAEHH@Z	100.0000	100.0000	2	8e789d3fd955	0x24a90
 gruntzcmdmgr	?RemoveMatchingTarget@CGruntzCmdMgr@@QAEXDD@Z	100.0000	100.0000	1	0be9361ae00d	0x23b40
 gruntzcmdmgr	?ScanTargets@CGruntzCmdMgr@@QAEHH@Z	93.8421	93.8421	1	dad8f27c81a9	0x23a10
 gruntzcmdmgr	?Serialize@CGruntzCmdMgr@@QAEHPAVGzStream@@HHH@Z	8.0838	8.0838	1	d609e4f3f663	0x24890
@@ -2486,7 +2486,7 @@ gruntzmgr	?PickPlayOrPausedState@CGruntzMgr@@QAEPAVCState@@XZ	100.0000	100.0000	
 gruntzmgr	?PollUnlessIdle@CGruntzMgr@@QAEHXZ	100.0000	100.0000	1	3135edf3199d	0x8f2f0
 gruntzmgr	?PopTopIfMatches@CGruntzMgr@@QAEHPAVCState@@@Z	100.0000	100.0000	3	0fcd71a0e7c5	0x909e0
 gruntzmgr	?PushState@CGruntzMgr@@QAEXPAVCState@@@Z	100.0000	100.0000	2	c6c7ce7105b4	0x909b0
-gruntzmgr	?Quicksave@CGruntzMgr@@QAEHXZ	93.4000	93.4000	2	0d0e34325bd2	0x92530
+gruntzmgr	?Quicksave@CGruntzMgr@@QAEHXZ	93.4091	93.4091	2	0d0e34325bd2	0x92530
 gruntzmgr	?RecomputeViewScale@CGruntzMgr@@QAEXXZ	83.1529	83.1529	3	256a10c47877	0x8f7f0
 gruntzmgr	?ReportError@CGruntzMgr@@QAEXIJ@Z	100.0000	100.0000	3	540078744175	0x8dc60
 gruntzmgr	?ReportWorldStatus@CGruntzMgr@@QAEXH@Z	96.7785	96.7785	1	fb75970534ba	0x90ac0
@@ -2521,7 +2521,7 @@ gruntzmgr	?ToggleObjectLayer@CGruntzMgr@@QAEHXZ	96.6667	96.6667	1	a292e82a1c5f	0
 gruntzmgr	?TopState@CGruntzMgr@@QAEPAVCState@@XZ	100.0000	100.0000	2	d1407d256efd	0x90980
 gruntzmgr	?UnknownClose@CGruntzMgr@@UAEXXZ	78.5569	78.5569	2	f7023ad31c11	0x855e0
 gruntzmgr	?UnloadSoundChain@CGruntzMgr@@QAEXXZ	100.0000	100.0000	2	d0f043efcdce	0x8f740
-gruntzmgr	?UpdateScoreHud@CGruntzMgr@@QAEXXZ	99.9571	99.9571	3	1651dfdfbac6	0x860b0
+gruntzmgr	?UpdateScoreHud@CGruntzMgr@@QAEXXZ	100.0000	100.0000	3	1651dfdfbac6	0x860b0
 gruntzmgrtransition	?TransitionState@CGruntzMgr@@QAEHHHHH@Z	48.7596	48.7596	1	b7fb8751bdcb	0x8b960
 gruntzplayer	??0GruntzPlayer@@QAE@H@Z	42.4510	42.4510	2	d21c9c879458	0xda870
 gruntzplayer	??0GruntzPlayer@@QAE@XZ	0.0000	0.0000	2	d21c9c879458	0xda960
