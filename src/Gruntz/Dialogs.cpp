@@ -550,46 +550,102 @@ void CBattlezDlg::ApplyOption3() {
 }
 
 // -------------------------------------------------------------------------
-// Engine-label backlog stubs (relocated from src/Stub/ - own this class here).
+// Per-color-slot apply handlers (0x16cd0/16dc0/16e90/16f60): pop the modal
+// CBattlezDlgColors picker for slot N (a0=m_5c, a1=N), and on IDOK store the
+// picked value (dlg.m_64) into slot N, refresh (Sub0173e0), then invalidate the
+// swatch control (0x501 + 2*N). The /GX EH frame unwinds the local dialog; the
+// ctor/DoModal/dtor + SetSlotValue/Sub0173e0/GetDlgItem chain + InvalidateRect
+// import all reloc-mask. The four bodies differ only in N (the a1 arg, the
+// SetSlotValue index, and the control ID).
 // -------------------------------------------------------------------------
-// @confidence: low
-// @source: winapi:InvalidateRect
-// @stub
+// @early-stop
+// eh-dtor vptr-restamp-presence wall (docs/patterns/eh-dtor-vptr-restamp-presence.md):
+// the /GX frame + CBattlezDlgColors-local ctor/DoModal/dtor + SetSlotValue/Sub0173e0/
+// GetDlgItem chain + InvalidateRect import are byte-exact, but the local dtor's polymorphic
+// teardown emits one extra vptr re-stamp retail elided (same wall the neighboring dialog
+// dtors + ShowCustomDlg hit). All four bodies score an identical 91.1% -> shared structural
+// residual, not the per-N push form. Not source-steerable.
+// The InvalidateRect import (call ff 15 [ptr]); reloc-masked DIR32.
 RVA(0x00016cd0, 0x98)
-i32 CBattlezDlg::winapi_016cd0_InvalidateRect() {
-    return 0;
+void CBattlezDlg::ApplyColorSlot0() {
+    CBattlezDlgColors dlg(m_5c, 0, 0, 0);
+    if (dlg.DoModal() == 1) {
+        if (SetSlotValue(0, dlg.m_64)) {
+            Sub0173e0();
+            InvalidateRect(GetDlgItem(0x501)->m_hWnd, 0, 1);
+        }
+    }
 }
 
-// @confidence: low
-// @source: winapi:InvalidateRect
-// @stub
+// @early-stop
+// eh-dtor vptr-restamp wall (see ApplyColorSlot0); 91.1%, logic byte-exact.
 RVA(0x00016dc0, 0x97)
-i32 CBattlezDlg::winapi_016dc0_InvalidateRect() {
-    return 0;
+void CBattlezDlg::ApplyColorSlot1() {
+    CBattlezDlgColors dlg(m_5c, 1, 0, 0);
+    if (dlg.DoModal() == 1) {
+        if (SetSlotValue(1, dlg.m_64)) {
+            Sub0173e0();
+            InvalidateRect(GetDlgItem(0x503)->m_hWnd, 0, 1);
+        }
+    }
 }
 
-// @confidence: low
-// @source: winapi:InvalidateRect
-// @stub
+// @early-stop
+// eh-dtor vptr-restamp wall (see ApplyColorSlot0); 91.1%, logic byte-exact.
 RVA(0x00016e90, 0x98)
-i32 CBattlezDlg::winapi_016e90_InvalidateRect() {
-    return 0;
+void CBattlezDlg::ApplyColorSlot2() {
+    CBattlezDlgColors dlg(m_5c, 2, 0, 0);
+    if (dlg.DoModal() == 1) {
+        if (SetSlotValue(2, dlg.m_64)) {
+            Sub0173e0();
+            InvalidateRect(GetDlgItem(0x505)->m_hWnd, 0, 1);
+        }
+    }
 }
 
-// @confidence: low
-// @source: winapi:InvalidateRect
-// @stub
+// @early-stop
+// eh-dtor vptr-restamp wall (see ApplyColorSlot0); 91.1%, logic byte-exact.
 RVA(0x00016f60, 0x98)
-i32 CBattlezDlg::winapi_016f60_InvalidateRect() {
-    return 0;
+void CBattlezDlg::ApplyColorSlot3() {
+    CBattlezDlgColors dlg(m_5c, 3, 0, 0);
+    if (dlg.DoModal() == 1) {
+        if (SetSlotValue(3, dlg.m_64)) {
+            Sub0173e0();
+            InvalidateRect(GetDlgItem(0x507)->m_hWnd, 0, 1);
+        }
+    }
 }
 
-// @confidence: low
-// @source: winapi:GetWindow;SendMessageA
-// @stub
+// CopyComboSelToChild (0x171b0): read the current selection text of the 0x4ff
+// combo (CB_GETCURSEL via the g_pSendMessageA global fn-ptr, then GetLBText into a
+// local CString) and, if non-empty, push it into the combo's child edit
+// (GetWindow(GW_CHILD) -> FromHandle -> SetWindowText) and latch m_68 = 0. /GX EH
+// frame unwinds the local CString.
+DATA(0x006c44a4)
+extern long(__stdcall* g_pSendMessageA)(void* hWnd, unsigned msg, unsigned wp, long lp);
+// @early-stop
+// 96.8%: full logic byte-exact (combo GetCurSel via g_pSendMessageA, GetLBText into the
+// local CString, GetWindow(GW_CHILD)/FromHandle/SetWindowText, m_68 latch). Residual is the
+// local CString's /GX unwind vptr/state ordering (same EH-restamp family), not steerable.
 RVA(0x000171b0, 0xca)
-i32 CBattlezDlg::winapi_0171b0_GetWindow_SendMessageA() {
-    return 0;
+void CBattlezDlg::CopyComboSelToChild() {
+    CWnd* combo = GetDlgItem(0x4ff);
+    if (combo == 0) {
+        return;
+    }
+    long sel = g_pSendMessageA(combo->m_hWnd, 0x147, 0, 0);
+    if (sel == -1) {
+        return;
+    }
+    CString s;
+    combo->GetLBText1ce7db(sel, s);
+    if (s.GetLength() != 0) {
+        CWnd* child = CWnd::FromHandle(GetWindow(GetDlgItem(0x4ff)->m_hWnd, 5));
+        if (child != 0) {
+            child->SetWindowTextA(s);
+            m_68 = 0;
+        }
+    }
 }
 
 // ---------------------------------------------------------------------------

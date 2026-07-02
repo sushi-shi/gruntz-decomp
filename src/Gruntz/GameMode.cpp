@@ -523,11 +523,76 @@ i32 CCreditsState::winapi_0396f0_SelectClipRgn_SetBkMode() {
 // Re-homed __thiscall behavioral methods (relocated from src/Stub/).
 // -------------------------------------------------------------------------
 
-// @confidence: med
-// @source: decomp-xref
-// @stub
+// BuildWarpStoneGlitterAnimation (0x19540): a CMultiBootyState (booty) method - the
+// trace mis-homed it on CState (the `this` is really a CMultiBootyState, whose
+// glitter block sits at +0x1d8..+0x1fc). Build 4 "DoNothing" warp-letter animations
+// through the mgr-settings animation factory (g_mgrSettings->m_30->m_8), stash them in
+// the +0x1ec ptr array (naming-independent offset access), set/clear their active bit,
+// then build the trailing "SimpleAnimation" glitter sprite. The factory Create/SetName/
+// SetTexture/SetCycle are reloc-masked __thiscall externs.
+struct CGlitterAnim {                       // a created animation object
+    void SetName(const char* key, i32 idx); // 0x1504d0 (this, key, idx)
+    void SetTexture(const char* key);       // 0x150540 (this, key)
+    void SetCycle(const char* key, i32 z);  // 0x1505b0 (this, key, z)
+    char m_pad00[0x40];
+    i32 m_40; // +0x40 flag word (bit0 = active)
+};
+struct CGlitterFactory {
+    // 0x1597b0: create a named animation of `kind` from a template ("DoNothing"/"SimpleAnimation").
+    CGlitterAnim* Create(i32 a, i32 b, i32 c, i32 kind, const char* type, i32 e);
+};
+struct CGlitterMgrM30 {
+    char m_pad00[0x8];
+    CGlitterFactory* m_8; // +0x08 the animation factory
+};
+struct CGlitterMgrSet {
+    char m_pad00[0x4];
+    i32 m_4; // +0x04 element count
+};
+struct CGlitterMgr {
+    char m_pad00[0x30];
+    CGlitterMgrM30* m_30; // +0x30
+    char m_pad34[0x7c - 0x34];
+    CGlitterMgrSet* m_7c; // +0x7c
+    i32 m_80;             // +0x80  attract frame counter (title rotation source)
+};
+DATA(0x0024556c)
+extern "C" CGlitterMgr* g_mgrSettings;
+// @early-stop
+// 88.1%: logic byte-faithful. Residual is the branchless-select codegen for the per-letter
+// `(i != m_1d8) ? 1 : 3` kind (retail's neg/sbb/and/add form vs cl's) + the per-iteration
+// g_mgrSettings reload scheduling. Not source-steerable.
 RVA(0x00019540, 0x12a)
-void CState::BuildWarpStoneGlitterAnimation() {}
+i32 CState::BuildWarpStoneGlitterAnimation() {
+    CMultiBootyState* self = (CMultiBootyState*)this;
+    CGlitterAnim** slot = (CGlitterAnim**)((char*)self + 0x1ec);
+    self->m_1dc = 0xc8;
+    self->m_1d8 = (g_mgrSettings->m_7c->m_4 - 1) % 4;
+    self->m_1e0 = 0;
+    self->m_1e4 = 0;
+    self->m_1e8 = 0;
+    for (i32 i = 0; i < 4; i++) {
+        CGlitterAnim* a =
+            g_mgrSettings->m_30->m_8->Create(0, 0, 0, (i != self->m_1d8) ? 1 : 3, "DoNothing", 3);
+        slot[i] = a;
+        if (a == 0) {
+            return 0;
+        }
+        a->SetName("GAME_STATUSBAR_TABZ_GAMETAB_WARP", i + 2);
+        a->m_40 |= 1;
+    }
+    for (i32 k = 0; k <= self->m_1d8; k++) {
+        slot[k]->m_40 &= ~1;
+    }
+    CGlitterAnim* g = g_mgrSettings->m_30->m_8->Create(0, 0, 0, 4, "SimpleAnimation", 3);
+    self->m_1fc = g;
+    if (g == 0) {
+        return 0;
+    }
+    g->SetTexture("GAME_GLITTERGOLD");
+    ((CGlitterAnim*)self->m_1fc)->SetCycle("GAME_CYCLE100", 0);
+    return 1;
+}
 
 // @confidence: med
 // @source: string-xref
@@ -709,11 +774,87 @@ i32 CCreditsState::ShowAttractTitle() {
     return 1;
 }
 
-// @confidence: med
-// @source: decomp-xref
-// @stub
+// InitAttractTitle (0x39570): the credits/attract title (re)init - the twin of
+// CAttract::LoadTitleConfig (CAttract.cpp). If the title view is already live (m_208),
+// just run the menu-page frame sub-steps (0x158dc0 / TransTitle / 0x158d50 + the
+// m_18 fill) and bail; otherwise pick a rotating TITLE index off the mgr frame
+// counter, format the "STATEZ_ATTRACT"/"TITLE%d" keys, resolve the attract state
+// (m_8->LookupState) into m_2c, fade the title in (FadeInTitle), apply the configured
+// "Menu"/"BrightnessPercent" level, transition the page, and build the menu page.
+// The state/menu/self sub-calls + the g_buteMgr GetIntDef are reloc-masked externs.
+extern "C" i32 sprintf(char* buf, const char* fmt, ...);
+struct CMenuBrightTgt {
+    void SetBrightness(i32 value, i32 flags); // 0x13f460
+    void Fill(i32 z);                         // 0x13e760
+};
+struct CMenuBrightHolder {
+    char m_pad00[0x2c];
+    CMenuBrightTgt* m_2c; // +0x2c
+};
+struct CMenuPageA {
+    void Method158dc0();      // 0x158dc0 no-arg
+    void TransTitle();        // 0x158e90 no-arg
+    void Method158d50(i32 z); // 0x158d50 (1 arg)
+    char m_pad00[0x14];
+    CMenuBrightHolder* m_14; // +0x14 title brightness holder
+    CMenuBrightHolder* m_18; // +0x18 menu brightness holder
+};
+struct CMenuRootA {
+    char m_pad00[0x4];
+    CMenuPageA* m_04; // +0x04
+};
+struct CAttractStateMgrA {
+    void* LookupState(char* name); // 0x13c030
+};
+// this (CCreditsState) reached through its own ILT thunks (0x1e60/0x1843).
+struct CAttractSelf {
+    i32 FadeInTitle(char* name, i32 a, i32 b, i32 c, i32 d, i32 e); // 0x1fa1f0
+    i32 BuildMenuPage(i32 x, i32 w, i32 h, i32 flag);               // 0x1fa8f0
+};
+// The CButeMgr text-config singleton (same 0x6453d8 datum as g_buteMgr) + the
+// attract-state count divisor. TU-local views; both reloc-mask.
+struct CButeCfg {
+    i32 GetIntDef(char* tag, char* key, i32 def); // canonical CButeMgr::GetIntDef
+};
+DATA(0x002453d8)
+extern CButeCfg g_buteCfg;
+extern "C" i32 g_645534;
+// @early-stop
+// 81.2%: logic byte-faithful (the twin of CAttract::LoadTitleConfig). Residual is the
+// identical-return-epilogue tail-merge wall (docs/patterns/identical-return-epilogue-tailmerge.md)
+// on the FadeInTitle fail return-0 + the sprintf stack-buffer slot layout. Not steerable.
 RVA(0x00039570, 0x122)
-void CCreditsState::InitAttractTitle() {}
+i32 CCreditsState::InitAttractTitle() {
+    CMenuRootA* root = (CMenuRootA*)m_c;
+    if (m_208 != 0) {
+        root->m_04->Method158dc0();
+        root->m_04->TransTitle();
+        root->m_04->Method158d50(0);
+        root->m_04->m_18->m_2c->Fill(0);
+        return 1;
+    }
+    char stateName[0x20];
+    char titleName[0x20];
+    i32 idx = g_mgrSettings->m_80 % g_645534 + 1;
+    sprintf(stateName, "STATEZ_ATTRACT");
+    sprintf(titleName, "TITLE%d", idx);
+    void* saved = (void*)m_2c;
+    void* state = ((CAttractStateMgrA*)m_8)->LookupState(stateName);
+    m_2c = (i32)state;
+    if (state == 0) {
+        return 0;
+    }
+    i32 faded = ((CAttractSelf*)this)->FadeInTitle(titleName, 0, 0, 1, 0, 0);
+    m_2c = (i32)saved;
+    if (faded == 0) {
+        return 0;
+    }
+    CMenuBrightTgt* tgt = root->m_04->m_14->m_2c;
+    tgt->SetBrightness(g_buteCfg.GetIntDef("Menu", "BrightnessPercent", 0x32), 0);
+    root->m_04->TransTitle();
+    ((CAttractSelf*)this)->BuildMenuPage(0x50, 0x3e8, 0, 1);
+    return 1;
+}
 
 // ===========================================================================
 // CCreditsState teardown / per-frame video + flash steps (trace-discovered).

@@ -294,7 +294,7 @@ public:
     void* m_210; // +0x210 Smacker video handle
 
     i32 LoadCreditzStateAssets(i32 a1, i32 a2, i32 a3);
-    void InitAttractTitle();
+    i32 InitAttractTitle();
     i32 ShowAttractTitle(); // 0x393b0 (gate on the state core, hide cursor, init title)
 };
 

@@ -1495,11 +1495,105 @@ i32 CUserLogic::winapi_04d800_CopyRect(i32, i32, i32, i32, i32, i32, i32, i32, i
     return 0;
 }
 
-// @confidence: low
-// @source: winapi:PostMessageA
-// @stub
+// winapi_064540 (0x64540): a per-frame "warp-to-level" trigger on a large grunt-logic
+// leaf (the `this` extends CUserLogic out to +0x360; the leaf isn't modeled, so its
+// fields are reached through a TU-local offset view). Poke the +0x1a0 arrival sub-object;
+// if it has arrived (m_28) and isn't busy (m_20), and this is warp-mode 0xc, format the
+// destination "WORLDZ\LEVEL%i" key and (if that level exists) PostMessage a WM_COMMAND
+// (0x807f) to the mgr's top-level window; then, unless suppressed (m_36c), fire the
+// arrival anim (m_260->Anim2a72), and latch the object dirty (m_154->m_8 |= 0x10000).
+// The CString + Format + the sub-object/anim/level-lookup callees all reloc-mask.
+struct CWarpArrivalSub {    // the +0x1a0 arrival sub-object of *m_154
+    void Poke15c360(i32 z); // 0x15c360
+    char m_pad04[0x20];
+    i32 m_20; // +0x20 busy gate
+    i32 m_24;
+    i32 m_28; // +0x28 arrived gate
+};
+struct CWarpM154 {
+    char m_pad00[0x8];
+    i32 m_8; // +0x08 dirty flags
+    char m_pad0c[0x1a0 - 0xc];
+    CWarpArrivalSub m_1a0; // +0x1a0
+};
+struct CWarpAnimObj {
+    void Anim2a72(i32 a, i32 b, i32 c); // 0x2a72
+};
+struct CWarpTagObj {
+    i32 Find13be40(char* name, i32 tag); // 0x13be40 (level-exists probe)
+};
+struct CWarpLevelReg {
+    char m_pad00[0x1c];
+    i32 m_1c; // +0x1c base level number
+    char m_pad20[0x28 - 0x20];
+    CWarpTagObj* m_28; // +0x28
+};
+struct CWarpMgrWnd {
+    char m_pad00[0x4];
+    void* m_4; // +0x04 top-level HWND
+};
+struct CWarpMgr {
+    char m_pad00[0x4];
+    CWarpMgrWnd* m_4; // +0x04
+    char m_pad08[0x2c - 0x8];
+    CWarpLevelReg* m_2c; // +0x2c
+};
+struct CWarpLeaf { // offset view of the grunt-logic leaf `this`
+    char m_pad000[0x154];
+    CWarpM154* m_154; // +0x154
+    char m_pad158[0x1ec - 0x158];
+    i32 m_1ec; // +0x1ec anim arg 0
+    i32 m_1f0; // +0x1f0 anim arg 1
+    char m_pad1f4[0x260 - 0x1f4];
+    CWarpAnimObj* m_260; // +0x260
+    char m_pad264[0x360 - 0x264];
+    i32 m_360; // +0x360 warp mode
+    char m_pad364[0x36c - 0x364];
+    i32 m_36c; // +0x36c anim-suppress gate
+};
+// The frame-clock snapshot fed to the arrival poke (ds:0x6bf3bc).
+extern "C" i32 g_6bf3bc;
+// The mgr singleton (same 0x64556c datum) + the WM_COMMAND PostMessageA IAT slot.
+DATA(0x0024556c)
+extern "C" CWarpMgr* g_mgrSettings;
+typedef i32(__stdcall* WarpPostFn)(void* hwnd, unsigned msg, unsigned wp, i32 lp);
+DATA(0x002c44c8)
+extern WarpPostFn g_pPostMessageA;
+// MFC CString the destination key formats into (ctor 0x1b9b93 / dtor 0x1b9cde) + the
+// free formatter helper (0x1b2cf5); modeled so the calls reloc-mask.
+struct CWarpStr {
+    char* m_pchData; // +0x00
+    CWarpStr();
+    ~CWarpStr();
+};
+extern "C" void FormatWarpStr(CWarpStr* dst, const char* fmt, ...); // 0x1b2cf5
+// @early-stop
+// 86.4%: logic byte-faithful. Residual is the leaf's offset-view register scheduling
+// (the m_154 reloads) + the /GX CString unwind state ordering; not source-steerable.
 RVA(0x00064540, 0x11c)
 i32 CUserLogic::winapi_064540_PostMessageA() {
+    CWarpLeaf* self = (CWarpLeaf*)this;
+    self->m_154->m_1a0.Poke15c360(g_6bf3bc);
+    CWarpArrivalSub* sub = &self->m_154->m_1a0;
+    if (sub->m_28 == 0) {
+        return 0;
+    }
+    if (sub->m_20 != 0) {
+        return 0;
+    }
+    if (self->m_360 == 0xc) {
+        CWarpLevelReg* reg = g_mgrSettings->m_2c;
+        i32 lvl = reg->m_1c + 0x64;
+        CWarpStr s;
+        FormatWarpStr(&s, "WORLDZ\\LEVEL%i", lvl);
+        if (reg->m_28->Find13be40(s.m_pchData, 0x575744)) {
+            g_pPostMessageA(g_mgrSettings->m_4->m_4, 0x111, 0x807f, lvl);
+        }
+    }
+    if (self->m_36c == 0) {
+        self->m_260->Anim2a72(self->m_1ec, self->m_1f0, 1);
+    }
+    self->m_154->m_8 |= 0x10000;
     return 0;
 }
 

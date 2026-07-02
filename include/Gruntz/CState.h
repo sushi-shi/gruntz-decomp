@@ -124,7 +124,7 @@ public:
     i32 m_1a0;
     i32 m_1a4;
 
-    void BuildWarpStoneGlitterAnimation();
+    i32 BuildWarpStoneGlitterAnimation();
     void LoadGruntEffectSprites();
     void BuildBootyWalkingGruntz();
 };

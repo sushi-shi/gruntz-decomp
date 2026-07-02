@@ -43,6 +43,8 @@ public:
     void EnableWindow(i32 bEnable);        // NAFXCW __thiscall (reloc-masked)
     void GetWindowTextA(CString& rString); // NAFXCW __thiscall (reloc-masked)
                                            // (GetWindowText macro-expands to this)
+    // CComboBox::GetLBText(int, CString&) (0x1ce7db) - reloc-masked __thiscall.
+    void GetLBText1ce7db(i32 nIndex, CString& rString);
     // NAFXCW static (HWND -> CWnd*), reached by call-rel32 (reloc-masks). MFC
     // declares it PASCAL (__stdcall).
     static CWnd* __stdcall FromHandle(HWND__* hWnd); // 0x1bb23a
@@ -139,11 +141,15 @@ public:
     void ApplyOption2();
     void ApplyOption3();
 
-    i32 winapi_016cd0_InvalidateRect();
-    i32 winapi_016dc0_InvalidateRect();
-    i32 winapi_016e90_InvalidateRect();
-    i32 winapi_016f60_InvalidateRect();
-    i32 winapi_0171b0_GetWindow_SendMessageA();
+    // Per-color-slot apply handlers (0x16cd0/16dc0/16e90/16f60): run the modal
+    // CBattlezDlgColors picker for slot N, store its result into the slot, refresh,
+    // and invalidate the swatch control.
+    void ApplyColorSlot0();
+    void ApplyColorSlot1();
+    void ApplyColorSlot2();
+    void ApplyColorSlot3();
+    // Copy the 0x4ff combo's current selection text into its child edit (0x171b0).
+    void CopyComboSelToChild();
 };
 
 // ---------------------------------------------------------------------------
