@@ -900,10 +900,10 @@ butetree	?Find@CButeTree@@QAEPAXPBD@Z	90.6038	90.6038	3	b873d33bf922	0x16d190
 butetree	?Insert@CButeTree@@QAEPAXPBDPAX@Z	53.3041	53.3041	3	5dfde79e85ea	0x16db90
 bzkinddispatch	?Dispatch@CBzKindDispatch@@QAEHH@Z	79.1379	79.1379	1	89b89a7bb1a2	0x37910
 cactionarea	??0CActionArea@@QAE@PAUCGameObject@@@Z	93.9057	93.9057	1	c13beac04fcc	0x7da0
-cambientsound	??1CAmbientSound@@QAE@XZ	100.0000	100.0000	1	56dbfa3599ca	0xb790
+cambientsound	??1CAmbientSound@@UAE@XZ	100.0000	100.0000	1	67c5e0cc3ab6	0xb790
 cambientsound	?Restart@CAmbientSound@@QAEXXZ	100.0000	100.0000	2	773b13e56ba7	0xbfb0
 cambientsound	?SetLevel@CAmbientSound@@QAEHHHH@Z	100.0000	100.0000	2	82d554c23b21	0xc200
-cambientsound	?Update@CAmbientSound@@QAEXHHH@Z	76.7857	76.7857	3	6407f39f99b8	0xc090
+cambientsound	?Update@CAmbientSound@@UAEXHHH@Z	76.7857	76.7857	1	6407f39f99b8	0xc090
 canicycle	?InitActReg@CAniCycle@@SAXXZ	100.0000	100.0000	1	5d76d9347b15	0xaaf00
 canicycle	?RegisterActs@CAniCycle@@SAXXZ	92.9130	92.9130	1	17ca46567be1	0xab0e0
 canielement	?AtChecked_06b270@CAniElement@@QBEPAVCObject@@H@Z	100.0000	100.0000	1	2278365ee372	0x6b270

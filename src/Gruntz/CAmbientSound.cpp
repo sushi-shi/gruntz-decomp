@@ -18,12 +18,12 @@
 // ===========================================================================
 // CAmbientSound::~CAmbientSound  (0x00b790)
 // ===========================================================================
-// Clear the voice handle (+0x04) and +0x3c, then restamp the CUserBase base
-// vptr as the sub-object unwinds. Manual vtable store (the family vtables aren't
-// reproduced yet), so the class stays non-polymorphic and the store reloc-masks.
+// Clear the voice handle (+0x04) and +0x3c; cl auto-emits the CUserBase base
+// vptr restamp (0x5e70b4) as the sub-object unwinds. Real-polymorphic now, so no
+// manual vtable store; the derived-vptr store at entry stays DCE'd (no virtual
+// dispatch in the body), matching retail's 15-byte base-restamp-only shape.
 RVA(0x0000b790, 0xf)
 CAmbientSound::~CAmbientSound() {
-    m_vptr = (void*)g_CUserBaseVtbl;
     m_04 = 0;
     m_3c = 0;
 }

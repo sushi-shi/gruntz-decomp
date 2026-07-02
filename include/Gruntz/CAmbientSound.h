@@ -17,6 +17,7 @@
 
 #include <Ints.h>
 #include <Gruntz/CGameRegistry.h>
+#include <Gruntz/UserLogic.h> // CUserBase base (CAmbientSound : CUserBase)
 #include <rva.h>
 
 #include <Dsndmgr/DirectSoundMgr.h>
@@ -61,23 +62,19 @@ struct WwdActiveLevel {
 DATA(0x0024556c)
 extern CGameRegistry* g_gameReg;
 
-// CUserBase's retail vftable (0x5e70b4) - restamped at the tail of the dtor as
-// the base sub-object is torn down. Transitional reloc-masked DIR32 store while
-// the family's vtables (0x5e710c..) aren't fully reproduced (the ctors that
-// stamp them stay stubbed), so the class stays non-polymorphic here.
-DATA(0x001e70b4)
-extern void* const g_CUserBaseVtbl[];
-
 // ---------------------------------------------------------------------------
-// CAmbientSound : CUserBase (sizeof 0x40, vftable 0x5e710c). Modeled
-// NON-polymorphic with a leading vptr field + a manual vtable stamp (the family
-// vtables aren't reproduced yet, the ctors that build them stay stubbed): the
-// dtor restamps the CUserBase base vptr inline and must NOT chain a `call
-// ~CUserBase`, which a real `virtual` base would force. The StreamFeeder device.
+// CAmbientSound : CUserBase (sizeof 0x40, vftable 0x5e710c). Real polymorphic:
+// derives from CUserBase (its +0x00 vptr) and gives cl the implicit vptr stamp /
+// base teardown. The retail ~CAmbientSound (0xb790, 15 B) stores ONLY the base
+// vptr 0x5e70b4 - the derived-vptr store is DCE'd (the body has no virtual
+// dispatch); cl reproduces the same shape from the real virtual dtor. Its own
+// vftable (0x5e710c, 4 slots) is emitted by cl (VTBL below); the ctors that build
+// it stay stubbed. The StreamFeeder device.
 // ---------------------------------------------------------------------------
-class CAmbientSound {
+VTBL(CAmbientSound, 0x001e710c);
+class CAmbientSound : public CUserBase {
 public:
-    ~CAmbientSound();
+    ~CAmbientSound() OVERRIDE;
 
     // The non-virtual level setter (0xc200): scale `value` through m_0c/m_10,
     // clamp to 0..100, then drive the voice (mode 0 -> SetVolumeByIndex, else
@@ -87,7 +84,7 @@ public:
     // The per-frame update virtual (CAmbientSound vtable slot 3 = 0xc090): keeps
     // the voice running/paused based on whether (x,y) sits inside either audible
     // box, (re)starting or fading as the listener crosses in/out.
-    void Update(i32 x, i32 y, i32 force); // 0xc090
+    virtual void Update(i32 x, i32 y, i32 force); // 0xc090  (slot 3)
 
     // The fade helper (CAmbientSound::SetLevel sibling 0xc2a0; ret 0xc) reached
     // through the same ILT thunk Update uses. External here (not a target):
@@ -99,7 +96,7 @@ public:
     // world is live. Inlines SetLevel(m_08, 0, 0)'s scale+clamp then SetVolumeByIndex.
     void Restart(); // 0xbfb0
 
-    void* m_vptr;         // +0x00  vptr (manual stamp; CAmbientSound vtable 0x5e710c)
+    // +0x00  vptr provided by CUserBase base
     DirectSoundMgr* m_04; // +0x04  the sound-mgr voice handle
     i32 m_08;             // +0x08  current level (0..100)
     i32 m_0c;             // +0x0c  level scale A (compared to 5; -0xf above)
