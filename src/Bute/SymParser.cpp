@@ -8,10 +8,9 @@
 
 #include <Bute/SymParser.h>
 
-// The two retail vtable groups (manual-stamp model; their virtuals live in other,
-// unmatched TUs). Reloc-masked DATA() externs.
-DATA(0x005ef750)
-void* CSymParser_vftable;
+// The +0x10 CObjList sub-object's two vtables (embedded-member stamps kept as raw
+// field writes). CSymParser's own primary vtable is now ??_7CSymParser@@6B@
+// (0x5ef750, cl-emitted; see SymParser.h). Reloc-masked DATA() externs.
 DATA(0x005ef760)
 void* CObjList_purecall_vftbl;
 DATA(0x005ef75c)
@@ -24,26 +23,21 @@ void* CObjList_ctor_vftbl;
 // ret 0xc; returns `this`. (The default ctor 0x13aa10 the temp uses lives in another,
 // unmatched TU - a reloc-masked call.)
 // @early-stop
-// ~77%, all teardown/build bytes exact: the /GX frame, the member-init store sequence
-// (m_list head/tail/vtbl 0x5ef75c, the +0x80 hash Init(1), the +0x88 node-list
-// head/tail, the primary vtbl 0x5ef750), the discarded default-temp ctor/dtor pair and
-// the ParseBuffer 3-arg tail are byte-identical. The residual is the documented /GX
-// trylevel state-NUMBERING wall (docs/patterns/eh-state-numbering-base.md): retail
-// seeds the member-cleanup trylevel slot [esp+0xac] to 0 (edi) and the temp's state
-// byte [esp+0xa8] to 2, where our cl seeds [esp+0xac] to 1 - an off-by-one in the
-// state base - plus a 1-instruction scheduling coin-flip (retail emits the m_list
-// stores before the hash `push 1`; cl hoists the push) and the reloc-named default-ctor
-// / 0x184960 / ParseBuffer operands (scoring artifact). Logic complete; parked for the
-// final sweep.
+// ~74.8% (real polymorphic now, ALL-VTABLES phase): the primary vptr is auto-
+// stamped by cl @+0 at ctor entry (was the hand-rolled mid-body m_vtbl store); the
+// /GX frame, the member-init store sequence (m_list, the +0x80 hash Init(1), the
+// +0x88 node-list), the discarded default-temp ctor/dtor pair and the ParseBuffer
+// 3-arg tail are byte-faithful. Residual is the /GX trylevel state-NUMBERING wall
+// (docs/patterns/eh-state-numbering-base.md) + the vptr-first schedule. Final sweep.
 RVA(0x0013ab00, 0xac)
 CSymParser::CSymParser(void* buf, i32 a2, i32 a3) {
+    // cl auto-stamps ??_7CSymParser @+0 at ctor entry (== the old m_vtbl stamp).
     m_list.m_head = 0;
     m_list.m_tail = 0;
     m_list.m_vtbl = &CObjList_ctor_vftbl;
     m_hash.Init(1);
     m_nodes.m_head = 0;
     m_nodes.m_tail = 0;
-    m_vtbl = &CSymParser_vftable;
     {
         CSymParser tmp;
     }
@@ -55,15 +49,13 @@ CSymParser::CSymParser(void* buf, i32 a2, i32 a3) {
 // CSymTab + the owned buffers, drain the +0x88 node list, then RemoveAll the +0x80
 // hash member (the trylevel-0 /GX member-teardown) and re-stamp the +0x10 list
 // sub-object vtable. The +0x80 CHashBase auto-destructs after the body.
-// @early-stop
-// ~98%, all teardown bytes exact. Residual is the /GX EH-state machine + reloc
-// naming: retail entry trylevel 2 + vptr-stamp scheduled into state 0 (early), vs
-// recompile trylevel 1 + stamp after the trylevel write (eh-dtor-vptr-stamp-vs-
-// trylevel-order wall), plus the differently-named Unwind/__except_list/PTR_*
-// reloc operands (scoring artifact). Logic complete; parked for the final sweep.
+// 100% (ALL-VTABLES phase): making CSymParser real-polymorphic lets cl auto-stamp
+// the vptr @+0 at dtor entry (into EH-state 0, early) - which is exactly the retail
+// schedule, closing the old eh-dtor-vptr-stamp-vs-trylevel-order wall that capped
+// this at ~98% while the vptr was a hand-rolled store.
 RVA(0x0013abc0, 0x13f)
 CSymParser::~CSymParser() {
-    m_vtbl = &CSymParser_vftable;
+    // cl auto-stamps ??_7CSymParser @+0 at dtor entry (polymorphic class).
     if (m_parseArmed) {
         Clear(0);
     }

@@ -84,12 +84,10 @@ struct Vtbl_1ef6d0 {
 // REALIZED as ??_7CGruntzSoundInnerZ@@6B@ (real polymorphic CGruntzSoundInnerZ in
 // src/Dsndmgr/CGruntzSoundZ.cpp; cl auto-emits the vtable). Placeholder removed.
 
-// ClassWithUnknownVTable11  @ 0x005ef750  (3 slots)  refs x3
-struct Vtbl_1ef750 {
-    UnkVfn slot0_13b9f0; // [0] -> 0x13b9f0 sub_13b9f0
-    UnkVfn slot1_13ba00; // [1] -> 0x13ba00 sub_13ba00
-    UnkVfn slot2_13ba10; // [2] -> 0x13ba10 sub_13ba10
-};
+// ClassWithUnknownVTable11  @ 0x005ef750
+// REALIZED as ??_7CSymParser@@6B@ (real polymorphic CSymParser in
+// src/Bute/SymParser.cpp; 3-slot primary vtable, non-virtual dtor). Placeholder
+// removed.
 
 // ClassWithUnknownVTable12  @ 0x005ef768  (8 slots)  refs x2
 struct Vtbl_1ef768 {
@@ -414,12 +412,9 @@ struct Vtbl_1efe08 {
     UnkVfn Stub_1588f0;            // [9] -> 0x1588f0 Stub_1588f0
 };
 
-// ClassWithUnknownVTable36  @ 0x005efe30  (3 slots)  refs x15  src:g_fileMemVtbl
-struct FileMemVtbl {
-    UnkVfn _scalar_deleting_destructor_; // [0] -> 0x157a20 `scalar_deleting_destructor'
-    UnkVfn SetName;                      // [1] -> 0x165e30 SetName
-    UnkVfn slot2_157a70;                 // [2] -> 0x157a70 sub_157a70
-};
+// ClassWithUnknownVTable36  @ 0x005efe30  src:g_fileMemVtbl
+// REALIZED as ??_7CFileMem@@6B@ (real polymorphic CFileMem in src/Io/FileMem.cpp;
+// 13-slot CFile-style vtable, scanner-split here at +0xc). Placeholder removed.
 
 // ClassWithUnknownVTable37  @ 0x005efe3c  (10 slots)  refs x28
 struct Vtbl_1efe3c {
@@ -435,12 +430,10 @@ struct Vtbl_1efe3c {
     UnkVfn Write;        // [9] -> 0x165f50 Write
 };
 
-// ClassWithUnknownVTable38  @ 0x005efe68  (3 slots)  refs x4  src:g_fileMemBaseVtbl
-struct FileMemBaseVtbl {
-    UnkVfn _scalar_deleting_destructor_; // [0] -> 0x157960 `scalar_deleting_destructor'
-    UnkVfn SetName;                      // [1] -> 0x165e30 SetName
-    UnkVfn slot2_157910;                 // [2] -> 0x157910 sub_157910
-};
+// ClassWithUnknownVTable38  @ 0x005efe68  src:g_fileMemBaseVtbl
+// REALIZED as ??_7CFileMemBase@@6B@ (abstract base of CFileMem in
+// src/Io/FileMem.cpp; 13-slot vtable, scanner-split here at +0xc). Placeholder
+// removed.
 
 // ClassWithUnknownVTable39  @ 0x005efe74  (10 slots)  refs x4
 struct Vtbl_1efe74 {
@@ -633,18 +626,11 @@ struct Vtbl_1f00e8 {
     UnkVfn Dispatch;                     // [15] -> 0x150a70 Dispatch
 };
 
-// ClassWithUnknownVTable51  @ 0x005f0128  (9 slots)  refs x7  src:g_wwdSubVtbl
-struct WwdSubVtbl {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x15b6b0 `scalar_deleting_destructor'
-    UnkVfn slot2_0028ec;                 // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
-    UnkVfn slot5_15b6a0;                 // [5] -> 0x15b6a0 sub_15b6a0
-    UnkVfn slot6_001c08;                 // [6] -> 0x001c08 sub_001c08
-    UnkVfn Reset_15c2c0;                 // [7] -> 0x15c2c0 Reset_15c2c0
-    UnkVfn slot8_154a00;                 // [8] -> 0x154a00 sub_154a00
-};
+// ClassWithUnknownVTable51  @ 0x005f0128  src:g_wwdSubVtbl
+// REALIZED as ??_7CAniAdvanceCursor@@6B@ (real polymorphic CAniAdvanceCursor, the
+// WWD sub-object class, in src/Wwd/CAniAdvanceCursor.cpp; cl auto-emits the 9-slot
+// vtable). WwdFile.cpp's +0x1A0 sub-object stamp reloc-masks against it.
+// Placeholder removed.
 
 // ClassWithUnknownVTable52  @ 0x005f0150  (18 slots)  refs x2  src:g_gameLevelVtbl
 struct GameLevelVtbl {

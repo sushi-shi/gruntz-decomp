@@ -3,19 +3,12 @@
 // interface). Built /O1 + /GX (mfc profile): MFC-derived CFile-clone code, and
 // the embedded CString member forces the C++ EH frame in ctor/dtor.
 //
-// The two class vtables (0x005efe68 base, 0x005efe30 derived) cannot be emitted
-// in-TU yet (most slots point at still-unmatched methods), so the vptr stores
-// are manual stamps against the retail vtable addresses (reloc-masked DATA
-// externs) - the transitional workaround, not dev code.
+// REAL POLYMORPHIC (ALL-VTABLES phase): CFileMemBase (abstract, vtable 0x5efe68)
+// + CFileMem (concrete, vtable 0x5efe30) are modeled as a 13-slot CFile-style
+// virtual interface. cl auto-emits ??_7CFileMemBase / ??_7CFileMem and stamps the
+// vptr in the ctor/dtor - the manual g_fileMem*Vtbl stamps are gone.
 #include <Io/FileMem.h>
 #include <rva.h>
-
-// The two retail class vtables, addressed as labeled data so the manual vptr
-// stamps reloc-match (instead of bare immediates that cap below 100%).
-DATA(0x001efe68)
-extern i32 g_fileMemBaseVtbl;
-DATA(0x001efe30)
-extern i32 g_fileMemVtbl;
 
 // The inner CFileIO presents its file ops virtually. MSVC5 rejects a __thiscall
 // fn-ptr typedef (C4234), so model the dispatch with a polymorphic VIEW class:
@@ -48,66 +41,51 @@ struct CFileIOView {
     virtual i32 Status(); // +0x54 (slot 21)
 };
 
-// CFileMem's own virtual at slot +0x1c (a read-vs-create predicate consulted by
-// Open). Same polymorphic-view trick: `mov edx,[this];call [edx+0x1c]`.
-struct CFileMemView {
-    virtual void v0();
-    virtual void v1();
-    virtual void v2();
-    virtual void v3();
-    virtual void v4();
-    virtual void v5();
-    virtual void v6();
-    virtual i32 WantRead(); // +0x1c (slot 7)
-};
-
 // ---------------------------------------------------------------------------
 // CFileMemBase::CFileMemBase  (0x00157850)
-// Base sub-object ctor: construct the CString name, stamp the base vtable,
-// zero the two scalar fields, Empty the name. The CString member (with a dtor)
+// Base sub-object ctor: cl auto-stamps the base vptr (??_7CFileMemBase), then
+// zero the two scalar fields + Empty the name. The CString member (with a dtor)
 // installs the MSVC5 EH unwind frame.
 RVA(0x00157850, 0x54)
 CFileMemBase::CFileMemBase() {
-    m_vtbl = (void*)&g_fileMemBaseVtbl;
     m_4 = 0;
     m_8 = 0;
     m_name.Empty();
 }
+
+// ~CFileMemBase - base teardown (unpinned; real body 0x157960 not reconstructed).
+// Empty so cl emits ??_GCFileMemBase for the base vtable slot 0.
+CFileMemBase::~CFileMemBase() {}
 
 // ---------------------------------------------------------------------------
 // CFileMem::~CFileMem  (0x00157980)
-// Stamp derived vtable, Reset() (derived), destruct the inner CFileIO, stamp
-// base vtable, ResetBase(), then the CString member dtor on unwind.
+// cl stamps the derived vtable at entry, run Reset() (derived), destruct the
+// inner CFileIO, call the base Reset(), then cl folds the base vtable restamp +
+// the CString member dtor on unwind.
 // @early-stop
-// manual-vtable EH-dtor wall (~59%): retail calls Reset/ResetBase devirtualized-
-// but-indirect `call ds:[vtbl+0xc]` with this in ecx (a __thiscall fn-ptr through
-// the absolute slot), which MSVC5 cannot spell -- __thiscall on a fn-ptr typedef
-// is C4234, and a __cdecl slot ptr pushes `this`/cleans the stack (worse, 54%).
-// Direct member calls (here) keep the logic exact at 59%. Plus the EH trylevel
-// store sequencing (1/0/2/-1) + the member dtor virtual-vs-direct dispatch differ.
-// See docs/patterns/eh-dtor-inline-member-vtable-stamp-thisadjust.md; deferred to
-// the final sweep. The other 7 methods are byte-exact (100%).
+// EH-dtor scheduling wall (~59%): the teardown logic is byte-faithful, but the
+// virtual-dtor auto vtable restamps + the /GX trylevel store sequencing
+// (1/0/2/-1) + the member-dtor dispatch differ from retail's manual sequence.
+// Now real-polymorphic (ALL-VTABLES phase); deferred to the final sweep.
 RVA(0x00157980, 0x74)
 CFileMem::~CFileMem() {
-    m_vtbl = (void*)&g_fileMemVtbl;
     Reset();
     m_file.~CFileIO();
-    m_vtbl = (void*)&g_fileMemBaseVtbl;
-    ResetBase();
+    CFileMemBase::Reset();
 }
 
 // ---------------------------------------------------------------------------
-// CFileMemBase::ResetBase  (0x00157a40)  (base vtable slot +0xc)
+// CFileMemBase::Reset  (0x00157a40)  (base vtable slot +0xc / slot 3)
 // Zero the two scalar fields, tail-jump CString::Empty.
 RVA(0x00157a40, 0x10)
-void CFileMem::ResetBase() {
+void CFileMemBase::Reset() {
     m_4 = 0;
     m_8 = 0;
     m_name.Empty();
 }
 
 // ---------------------------------------------------------------------------
-// CFileMem::Reset  (0x00157a50)  (derived vtable slot +0xc)
+// CFileMem::Reset  (0x00157a50)  (derived vtable slot +0xc / slot 3)
 // Zero the position pair + the two base scalars, tail-jump CString::Empty.
 RVA(0x00157a50, 0x16)
 void CFileMem::Reset() {
@@ -119,10 +97,10 @@ void CFileMem::Reset() {
 }
 
 // ---------------------------------------------------------------------------
-// CFileMem::SetName  (0x00165e30)
+// CFileMemBase::SetName  (0x00165e30)  (slot 1, shared by both vtables)
 // m_name = name; m_8 = a; m_4 = b; return 1.  (__thiscall, 3 stack args)
 RVA(0x00165e30, 0x27)
-i32 CFileMem::SetName(const char* name, i32 a, i32 b) {
+i32 CFileMemBase::SetName(const char* name, i32 a, i32 b) {
     m_name = name;
     m_8 = a;
     m_4 = b;
@@ -141,7 +119,7 @@ i32 CFileMem::Open() {
         return 0;
     }
 
-    if (((CFileMemView*)this)->WantRead()) {
+    if (WantRead()) {
         if (!((CFileIOView*)&m_file)->Open((const char*)m_name, 0, 0)) {
             return 0;
         }
@@ -207,11 +185,8 @@ i32 CFileMem::Write(const void* buf, i32 n) {
 
 // ===========================================================================
 // Class-metadata annotations (EOF-hosted; /O1+/GX MFC TU). CFileMemBase/CFileMem
-// carry manual g_fileMem*Vtbl stamps (already-named vtable RVAs) so no VTBL is
-// added; CFileIOView/CFileMemView are dummy-virtual reinterpret views (never
-// constructed -> no emitted vtable).
+// are real polymorphic (SIZE_UNKNOWN + VTBL live atop the class in FileMem.h);
+// CFileIOView is a dummy-virtual reinterpret view (never constructed -> no
+// emitted vtable).
 // ===========================================================================
-SIZE_UNKNOWN(CFileMemBase);
-SIZE_UNKNOWN(CFileMem);
 SIZE_UNKNOWN(CFileIOView);
-SIZE_UNKNOWN(CFileMemView);

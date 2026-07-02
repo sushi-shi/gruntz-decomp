@@ -17,7 +17,7 @@ actreg4	1	0
 actregsiblings	3	0
 adler32	1	1
 advancedoptions	5	5
-aniadvancecursor	1	1
+aniadvancecursor	1	0
 aniplayer	2	0
 apihicallers	3	2
 apiwrappers	7	2
@@ -56,9 +56,9 @@ brickz	15	3
 brickzload	1	0
 bridgemovesprites	1	0
 buildgruntzcrcinfo	1	0
-butemgr	44	29
+butemgr	44	28
 butemgrparse	1	0
-butenode	2	2
+butenode	2	0
 butesectionctor	1	0
 butestoreclear	1	1
 butetree	3	1
@@ -555,7 +555,7 @@ advancedoptions	?LoadOptions@@YAXPAUHWND__@@PAVRegistryHelper@Utils@@@Z	100.0000
 advancedoptions	?SaveOption@@YAXPAUHWND__@@PAVRegistryHelper@Utils@@PADK@Z	100.0000	100.0000	3	cc78dc6b6272	0xb110
 advancedoptions	?SaveOptions@@YAXPAUHWND__@@PAVRegistryHelper@Utils@@@Z	100.0000	100.0000	3	42bc821feac7	0xb270
 advancedoptions	?SetDefaults@@YAXPAUHWND__@@@Z	100.0000	100.0000	3	debb3761026d	0xb160
-aniadvancecursor	??0CAniAdvanceCursor@@QAE@HHH@Z	100.0000	100.0000	1	10fe94abf57e	0x15b730
+aniadvancecursor	??0CAniAdvanceCursor@@QAE@HHH@Z	97.6154	97.6154	2	1e44f10275e5	0x15b730
 aniplayer	?Init@CAniPlayer@@QAEHPAUAniSeq@@0HHHHHHHHHHHH@Z	64.5543	64.5543	1	af4e113bdde4	0xe7980
 aniplayer	?Tick@CAniPlayer@@QAEHXZ	91.4889	91.4889	2	553040f9cf2b	0xe7b00
 apihicallers	?Init@Builder_168080@@QAEHPAXPAUtagRECT@@PAUPt_168080@@22222@Z	100.0000	100.0000	2	72d5a9d31548	0x168080
@@ -870,7 +870,7 @@ butemgr	?NextChar@CButeMgr@@QAEXXZ	88.6667	88.6667	3	527d3af29fa4	0x170390
 butemgr	?Parse@CButeMgr@@QAE_NXZ	95.0352	95.0352	7	fa077d24fa1d	0x1704c0
 butemgr	?ParseAttributeFile@ButeMgr@@QAE_NXZ	40.8564	40.8564	3	d9b039aedf0e	0x170750
 butemgr	?ParseGroup@CButeMgr@@QAE_NXZ	94.6377	94.6377	3	ac98389d23c2	0x171580
-butemgr	?ParseTagLine@CButeMgr@@QAE_NXZ	100.0000	100.0000	7	88720ae40e1d	0x1711b0
+butemgr	?ParseTagLine@CButeMgr@@QAE_NXZ	99.2941	99.2941	7	88720ae40e1d	0x1711b0
 butemgr	?PeekState2@CButeMgr@@QAEFFD@Z	100.0000	100.0000	2	694a8ca2712b	0x170430
 butemgr	?PeekState@CButeMgr@@QAEFFD@Z	100.0000	100.0000	4	c8c52c2f0e1f	0x170400
 butemgr	?ReportError@CButeMgr@@QAAXPBDZZ	100.0000	100.0000	2	c20e761053c2	0x1706c0
@@ -884,8 +884,8 @@ butemgr	?SetInt@CButeValue@@QAEPAU1@HH@Z	92.0000	92.0000	4	7a25b2b77a80	0x172b90
 butemgr	?SetSub@CButeMgrHelper@@QAEXPAX@Z	100.0000	100.0000	2	7ceaffd01bf0	0x169dd0
 butemgr	?SkipToTag@CButeMgr@@QAE_NXZ	78.1429	78.1429	2	672209f4feee	0x171160
 butemgrparse	?Parse@CButeMgr@@QAE_NVCString@@H@Z	98.8365	98.8365	1	9ce940813d71	0x3cc20
-butenode	??0CButeNodeBase@@QAE@PAXH@Z	100.0000	100.0000	1	8448f78e3886	0x16dff0
-butenode	??0CButeNodeEntry@@QAE@HPAX@Z	100.0000	100.0000	1	54c130c6f580	0x16df70
+butenode	??0CButeNodeBase@@QAE@PAXH@Z	96.0968	96.0968	2	b92faac6a263	0x16dff0
+butenode	??0CButeNodeEntry@@QAE@HPAX@Z	82.8750	82.8750	2	f01c76111ae7	0x16df70
 butesectionctor	?Construct@CButeSection@@QAEPAV1@XZ	4.9342	4.9342	1	53fa6314a541	0x170210
 butestoreclear	?ClearRecursive@CButeStore@@QAEXH@Z	100.0000	100.0000	2	869c1d0f17d3	0x16e070
 butetree	?Find@CButeTree@@QAEPAXPBD@Z	90.6038	90.6038	3	b873d33bf922	0x16d190
@@ -1628,7 +1628,7 @@ csoundfxemitter	?Method_fa790@CSoundFxEmitter@@QAEHHHH@Z	99.0566	99.0566	1	5f485
 csoundfxemitter	?Method_fa8f0@CSoundFxEmitter@@QAEHHHHH@Z	98.3913	98.3913	1	1bdce35cd6f7	0xfa8f0
 csoundfxemitter	?Method_faa60@CSoundFxEmitter@@QAEHHHH@Z	100.0000	100.0000	2	bb213f9e7ebc	0xfaa60
 csplashstate	?LoadSounds@CSplashState@@QAEHHHH@Z	100.0000	100.0000	1	76fd1b44cd6c	0xf9780
-cspotlight	?Update_0b1ee0@CSpotLight@@QAEHXZ	55.5056	55.5056	1	b26a2794af0b	0xb1ee0
+cspotlight	?Update_0b1ee0@CSpotLight@@QAEHXZ	56.6180	56.6180	1	b26a2794af0b	0xb1ee0
 cspotlightctor	??0CSpotLight@@QAE@PAUCGameObject@@@Z	84.4734	84.4734	1	2e3c37ee322e	0xb1200
 cstateleaf8cf30	??1CStateLeaf8cf30@@UAE@XZ	100.0000	100.0000	1	1de116667397	0x8cf30
 cstatichazard	??0CStaticHazard@@QAE@PAUCGameObject@@@Z	82.5635	82.5635	2	1eb592d42a72	0xfb7a0
@@ -2066,15 +2066,15 @@ feccrypt	?FecDecode@@YGXPBDPADG@Z	100.0000	100.0000	1	5b0e31c468f8	0x17bfe0
 feccrypt	?FecEncode@@YGXPBDPAD@Z	100.0000	100.0000	1	6bc3315ae515	0x17bf70
 feccrypt	?ReadArchive@CFecFile@@QAEHPBD@Z	71.3600	71.3600	2	b0a1392b9cfe	0x17b5f0
 filegetstatus	?GetStatus@CFile@@QAEHPAUCFileStatus@@@Z	42.5882	42.5882	1	6c0966959ae9	0x1c152f
-filemem	??0CFileMemBase@@QAE@XZ	100.0000	100.0000	1	04d2148fb703	0x157850
-filemem	??1CFileMem@@QAE@XZ	59.2593	59.2593	1	ec8015f95309	0x157980
-filemem	?Open@CFileMem@@QAEHXZ	100.0000	100.0000	2	2151361073db	0x165e60
-filemem	?Read@CFileMem@@QAEHPAXH@Z	100.0000	100.0000	2	e53de8bc6a3a	0x165f00
-filemem	?Ready@CFileMem@@QAEHXZ	100.0000	100.0000	1	26548c100971	0x165ef0
-filemem	?Reset@CFileMem@@QAEXXZ	100.0000	100.0000	2	d9e38b96f792	0x157a50
-filemem	?ResetBase@CFileMem@@QAEXXZ	100.0000	100.0000	1	fd57c8dec978	0x157a40
-filemem	?SetName@CFileMem@@QAEHPBDHH@Z	100.0000	100.0000	1	58ad2fe5876a	0x165e30
-filemem	?Write@CFileMem@@QAEHPBXH@Z	100.0000	100.0000	2	2ff1146501f6	0x165f50
+filemem	??0CFileMemBase@@QAE@XZ	100.0000	100.0000	2	d75cea6c3ecf	0x157850
+filemem	??1CFileMem@@UAE@XZ	59.8148	59.8148	1	161a08579238	0x157980
+filemem	?Open@CFileMem@@UAEHXZ	100.0000	100.0000	1	8d66460d5fb4	0x165e60
+filemem	?Read@CFileMem@@UAEHPAXH@Z	100.0000	100.0000	1	e53de8bc6a3a	0x165f00
+filemem	?Ready@CFileMem@@UAEHXZ	100.0000	100.0000	1	26548c100971	0x165ef0
+filemem	?Reset@CFileMem@@UAEXXZ	100.0000	100.0000	1	d9e38b96f792	0x157a50
+filemem	?Reset@CFileMemBase@@UAEXXZ	100.0000	100.0000	1	8df80faaf0af	0x157a40
+filemem	?SetName@CFileMemBase@@UAEHPBDHH@Z	100.0000	100.0000	1	87fed6342cd4	0x165e30
+filemem	?Write@CFileMem@@UAEHPBXH@Z	100.0000	100.0000	1	2ff1146501f6	0x165f50
 filepathinfo	?CanonicalizePath@@YGHPAD0@Z	46.3067	46.3067	1	8d75f350f231	0x1bf8f8
 filepathinfo	?GetFileTimeInfo@@YGHPADPAUFileInfoRec@@@Z	38.5000	38.5000	1	04835d233a14	0x1c1609
 filepathinfo	?RestoreFileTimeInfo@@YGXPADPAUFileInfoRec@@@Z	77.3782	77.3782	1	5e0d0b7a8eca	0x1c176a
@@ -3452,8 +3452,8 @@ streamvoice	?ComputeRatio@StreamVoice@@QAEIXZ	100.0000	100.0000	2	6757fd67071e	0
 streamvoice	?Configure@StreamVoice@@QAEHHHHH@Z	100.0000	100.0000	2	0b1e8d24ac07	0x137520
 streamvoice	?SetSource@StreamVoice@@QAEHPAUStreamSource@@@Z	100.0000	100.0000	1	6052f26a3cfc	0x1374c0
 surfacepalette	?ResetPalette@CSurfacePalette@@QAEXXZ	100.0000	100.0000	2	28d2fbef3957	0x17ca60
-symparser	??0CSymParser@@QAE@PAXHH@Z	76.7805	76.7805	1	0ad58cc99225	0x13ab00
-symparser	??1CSymParser@@QAE@XZ	97.9725	97.9725	4	ac9579af9409	0x13abc0
+symparser	??0CSymParser@@QAE@PAXHH@Z	74.8293	74.8293	2	ac298995bd3d	0x13ab00
+symparser	??1CSymParser@@QAE@XZ	99.9908	99.9908	5	3edc61cfcdba	0x13abc0
 symparser	?AddNode@CSymParser@@QAEXPAX@Z	100.0000	100.0000	2	3b86ac8fbdfb	0x13c210
 symparser	?Clear@CSymParser@@QAEPAXH@Z	91.3803	91.3803	4	3893e570e7df	0x13b850
 symparser	?ParseBuffer@CSymParser@@QAEHPAXHH@Z	77.1300	77.1300	4	85b86ab816a3	0x13ad00

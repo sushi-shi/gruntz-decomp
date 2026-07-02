@@ -34,11 +34,9 @@ i32 MakeSymSeed(); // 0x13ba70
 // The shared empty-string literal (?g_emptyString) the root scope is named with.
 extern const char g_emptyString[]; // 0x6293f4
 
-// The two retail vtable groups for the class (0x5ef750 primary, 0x5ef760 the
-// abstract list-interface sub-object). The class is modeled with manual vtable
-// stamps (its virtuals point into other, unmatched TUs), so reference the retail
-// vtables by address -> reloc-masked DATA() externs.
-extern void* CSymParser_vftable;      // 0x5ef750
+// The +0x10 CObjList sub-object's abstract vtable (0x5ef760). CSymParser's own
+// primary vtable (0x5ef750) is now REAL POLYMORPHIC (??_7CSymParser@@6B@, 3-slot,
+// non-virtual dtor) - see the class below. Reloc-masked DATA() extern.
 extern void* CObjList_purecall_vftbl; // 0x5ef760
 
 // A polymorphic list node: { vptr@+0, next@+4, prev@+8 }. Its vtable carries a
@@ -109,10 +107,20 @@ struct CParserHash : public CHashBase {
 extern void* CObjList_ctor_vftbl; // 0x5ef75c
 
 // ---------------------------------------------------------------------------
-// CSymParser - the Remus parser/owner.
+// CSymParser - the Remus parser/owner. REAL POLYMORPHIC (ALL-VTABLES phase):
+// primary vtable ??_7CSymParser@@6B@ @0x5ef750 (3 non-dtor slots; the dtor is
+// non-virtual - not in the vtable). cl auto-stamps the vptr @+0 at the start of
+// the ctor AND the (non-virtual, but polymorphic-class) dtor - the manual
+// CSymParser_vftable stamps are gone. The +0x10 CObjList member keeps its own
+// manual vptr stamps (embedded-member "incorrect load into struct").
 // ---------------------------------------------------------------------------
+VTBL(CSymParser, 0x005ef750);
 class CSymParser {
 public:
+    virtual void V0(); // slot 0 (sub_13b9f0)
+    virtual void V1(); // slot 1 (sub_13ba00)
+    virtual void V2(); // slot 2 (sub_13ba10)
+
     // The default ctor (0x13aa10) lives in another (unmatched) TU - declared (no body)
     // so the 3-arg ctor's discarded temp `CSymParser tmp;` lowers to a reloc-masked
     // call; and the 3-arg buffer ctor (0x13ab00) defined in SymParser.cpp.
@@ -168,7 +176,7 @@ public:
     void* ResolvePath(const char* path);               // 0x13c030 -> root->ResolvePath
     void AddNode(void* rec);                           // 0x13c210 -> m_hash insert
 
-    void* m_vtbl; // +0x00
+    // vptr implicit @ +0x00 (??_7CSymParser@@6B@)
     // +0x04  owned delimiter-set buffer: the tokenizer split set the CSymTab path
     //         resolvers read (SymTab.cpp m_owner->m_delims), RezFree'd in the dtor.
     char* m_delims;

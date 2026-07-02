@@ -248,10 +248,9 @@ struct CButeTail {
 // (a multiply-derived node with two vptrs). Modeled
 // with an external (no-body) ctor; the vtable stores are emitted by the source
 // `new` expression and are reloc-masked.
-// ---------------------------------------------------------------------------
-// The two derived vtables the node carries. External/
-// reloc-masked file-scope addresses.
-extern void* g_nodeVtblA;
+// The +0x08 second sub-object vtable the node carries (kept as a raw field write -
+// the "incorrect load into struct" the ALL-VTABLES phase leaves manual). External/
+// reloc-masked file-scope address.
 extern void* g_nodeVtblB;
 
 // CButeNodeBase - the engine base subobject ctor (__thiscall(this,
@@ -262,16 +261,17 @@ public:
     CButeNodeBase(void* desc, i32 n);
 };
 
+// CButeNode - REAL POLYMORPHIC (ALL-VTABLES phase): the derived ctor runs the
+// engine base ctor, then cl auto-stamps ??_7CButeNode @+0x00 (== the old
+// g_nodeVtblA store); the +0x08 second vptr stays a raw field write.
 class CButeNode : public CButeNodeBase {
 public:
-    // Inline derived ctor: run the engine base ctor, then write the two derived
-    // vtable pointers at +0x00 / +0x08 (reproduces ParseTagLine's inline
-    // `call ctor; mov [node],vtblA; mov [node+8],vtblB`).
+    virtual ~CButeNode(); // +0x00 vptr; external no-body dtor
+
     CButeNode(void* desc, i32 n) : CButeNodeBase(desc, n) {
-        m_vtblA = &g_nodeVtblA;
         m_vtblB = &g_nodeVtblB;
     }
-    void* m_vtblA;            // +0x00
+    // vptr implicit @ +0x00 (??_7CButeNode@@6B@)
     char m_pad04[4];          // +0x04
     void* m_vtblB;            // +0x08
     char m_pad0c[0x2c - 0xc]; // pad to 0x2c bytes total

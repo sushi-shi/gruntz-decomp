@@ -493,11 +493,12 @@ struct WwdObjList {
     void Add(WwdGameObj* obj);
 };
 
-// The two retail vtables stamped into the object and its sub-object (transitional
-// manual stamp; reloc-masked DATA externs).
+// The object's own vtable (transitional manual stamp; reloc-masked DATA extern).
 DATA(0x001f00a8)
 extern void* g_wwdObjVtbl[]; // 0x5f00a8
-DATA(0x001f0128)
+// The sub-object vtable is realized as ??_7CAniAdvanceCursor@@6B@ (0x5f0128) in
+// CAniAdvanceCursor.cpp; referenced here as an UNPINNED extern (the VTBL there
+// owns the 0x1f0128 datum name) so this sub-object stamp reloc-masks against it.
 extern void* g_wwdSubVtbl[]; // 0x5f0128
 
 // ---------------------------------------------------------------------------
