@@ -817,12 +817,77 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02a570_IntersectRect(i32) {
     return 0;
 }
 
-// @confidence: low
-// @source: winapi:PtInRect
-// @stub
+// ===========================================================================
+// CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02ab80_PtInRect  @0x02ab80
+// Build a RECT centered at (cx,cy) with half-extents (halfW,halfH); scan the
+// four cell-bands (15 units each, skipping the current cell band m_018) for the
+// nearest idle (m_364==0) unit whose grid coord is inside the rect. On a kind-0x36
+// unit, keep it only with a ~5% roll. Track the manhattan-nearest; return it (0
+// on none). __thiscall(cx,cy,halfW,halfH).
+// ===========================================================================
+// @early-stop
+// regalloc/spill-choice wall: retail keeps arg0 (cx) live in ebp across the loop
+// and spills the band-base induction var to a stack slot (frame 0x20); this
+// reconstruction keeps the band-base in ebp and spills cx (frame 0x1c). Same live
+// set, opposite recolor -> the [esp+N] offsets shift and cascade. Logic + offsets
+// byte-exact otherwise (77.9%). Not source-steerable; deferred to the final sweep.
 RVA(0x0002ab80, 0x15e)
-i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02ab80_PtInRect(i32, i32, i32, i32) {
-    return 0;
+i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02ab80_PtInRect(
+    i32 cx,
+    i32 cy,
+    i32 halfW,
+    i32 halfH
+) {
+    RECT rect;
+    rect.left = cx - halfW;
+    rect.right = cx + halfW;
+    rect.top = cy - halfH;
+    rect.bottom = cy + halfH;
+    GridUnit* best = 0;
+    i32 bestDist = 0x7fffffff;
+    for (i32 band = 0; band < 4; band++) {
+        if (band == m_018) {
+            continue;
+        }
+        for (i32 i = 0; i < 15; i++) {
+            GridUnit* u = *(GridUnit**)(m_008 + band * 0x3c + 0x1c + i * 4);
+            if (u == 0) {
+                continue;
+            }
+            if (*(i32*)((char*)u + 0x364) != 0) {
+                continue;
+            }
+            UnitLevel* lvl = (UnitLevel*)u->m_010;
+            POINT pt;
+            pt.x = lvl->m_5c >> 5;
+            pt.y = lvl->m_60 >> 5;
+            if (!PtInRect(&rect, pt)) {
+                continue;
+            }
+            i32 keep = 1;
+            if (u->m_258 == 0x36) {
+                if (rand() % 100 > 5) {
+                    keep = 0;
+                }
+            }
+            if (keep == 0) {
+                continue;
+            }
+            lvl = (UnitLevel*)u->m_010;
+            i32 dx = abs((lvl->m_5c >> 5) - cx);
+            i32 dy = abs((lvl->m_60 >> 5) - cy);
+            i32 dist = dx + dy;
+            if (dist >= bestDist) {
+                continue;
+            }
+            if (u->m_220 != 0) {
+                rand();
+            }
+            best = u;
+            bestDist = dist;
+        }
+    }
+    return (i32)best;
 }
 
 // ===========================================================================
