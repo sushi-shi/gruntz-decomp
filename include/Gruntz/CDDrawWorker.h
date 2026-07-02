@@ -18,13 +18,14 @@
 
 #include <Ints.h>
 
-// An owned CObject element: deleting destructor at vtable slot 1 (byte +0x04),
-// __thiscall (flags arg). DeleteAll dispatches `el->vtbl[1](1)` per live element.
+// An owned CObject element: a real polymorphic object whose scalar-deleting
+// destructor is at vtable slot 1 (byte +0x04), __thiscall (flags arg). Declared-
+// only virtuals (the slot methods live in another TU) => cl emits NO ??_7 here;
+// `el->Delete(1)` lowers to the same `mov ecx,el; push 1; mov eax,[el]; call
+// [eax+0x04]` dispatch the old PMF table produced.
 struct CWorkerElement {
-    struct Vtbl {
-        void* m_slot0;
-        void* (CWorkerElement::*m_deleteDtor)(u32); // +0x04  scalar-deleting dtor
-    }* m_vptr;
+    virtual void s0();               // +0x00
+    virtual void* Delete(u32 flags); // +0x04  scalar-deleting dtor
 };
 
 // The owned-pointer array embedded at +0x10 (engine CObArray; vtbl 0x5ed494).

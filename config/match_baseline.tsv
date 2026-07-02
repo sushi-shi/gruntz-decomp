@@ -1119,7 +1119,7 @@ cddrawsurfacepair	?RestoreIfLost@CDDrawSurfacePair@@QAEHXZ	98.6667	98.6667	2	8c6
 cddrawsurfacepair	?TeardownSurface@CDDrawSurfacePair@@QAEXXZ	100.0000	100.0000	2	df8a633d06c8	0x163e20
 cddrawsurfacepair	?directx_wrapper_caller_1644a0_DirectDrawCreate_DirectDrawEnumerateA@CDDrawSurfacePair@@QAEHHHH@Z	87.4172	87.4172	3	69c49b464f06	0x1644a0
 cddrawworker	??1CDDrawWorker@@UAE@XZ	94.8750	94.8750	1	5cdfcc8a13a6	0x1557a0
-cddrawworker	?DeleteAll@CDDrawWorker@@QAEXXZ	100.0000	100.0000	1	40113baa6093	0x151eb0
+cddrawworker	?DeleteAll@CDDrawWorker@@QAEXXZ	100.0000	100.0000	2	ed5c051de7bc	0x151eb0
 cddrawworkercache	??1CDDrawWorkerCache@@QAE@XZ	94.8750	94.8750	2	ef4a5460ef10	0x157720
 cddrawworkercache	?ScalarDtor@CDDrawWorkerCache@@UAEPAXH@Z	100.0000	100.0000	1	ecfc4338209c	0x157700
 cddrawworkercache	?VirtualMethodUnknown20@CDDrawWorkerCache@@UAEHXZ	100.0000	100.0000	1	8b0bc0260838	0x1576f0

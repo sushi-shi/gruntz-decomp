@@ -157,23 +157,25 @@ struct BzLoader {
 };
 SIZE_UNKNOWN(BzLoader);
 
-// The vtable-bearing notify object (BzSink::m_notify): its notify slot lives at the
-// vtable +0x28. Modeled as a manual dispatch (reloc-masked); the class must be
-// complete before the PMF typedef.
-struct BzSink8;
-struct BzSink8Vtbl; // opaque; the notify slot lives at +0x28
-typedef void (BzSink8::*BzNotifyFn)(void* arg);
+// The vtable-bearing notify object (BzSink::m_notify): a real polymorphic object
+// whose notify slot lives at vtable +0x28 (index 10). Modeled with declared-only
+// virtuals (the slot methods live in another TU) so cl emits NO ??_7 here, yet
+// `notify->OnLoaded(arg)` lowers to the same __thiscall dispatch
+// `mov ecx,notify; push arg; mov eax,[notify]; call [eax+0x28]` the old PMF table
+// produced. This is the real devs' shape (a CObject-like sink), not a hand-roll.
 struct BzSink8 {
-    BzSink8Vtbl* m_vtbl; // +0x00
-    void OnLoaded(void* arg);
+    virtual void s00();               // +0x00
+    virtual void s04();               // +0x04
+    virtual void s08();               // +0x08
+    virtual void s0c();               // +0x0c
+    virtual void s10();               // +0x10
+    virtual void s14();               // +0x14
+    virtual void s18();               // +0x18
+    virtual void s1c();               // +0x1c
+    virtual void s20();               // +0x20
+    virtual void s24();               // +0x24
+    virtual void OnLoaded(void* arg); // +0x28  the notify slot
 };
-struct BzSink8Vtbl {
-    char m_pad00[0x28];
-    BzNotifyFn OnLoaded; // +0x28
-};
-inline void BzSink8::OnLoaded(void* arg) {
-    (this->*(m_vtbl->OnLoaded))(arg);
-}
 
 struct BzSinkSub {
     void Free(); // 0x137a80
@@ -196,7 +198,6 @@ struct BzSink {
 };
 SIZE_UNKNOWN(BzSink);
 SIZE_UNKNOWN(BzSink8);
-SIZE_UNKNOWN(BzSink8Vtbl);
 
 // The booty/secret game-state object hosting the HUD overlays + the per-frame
 // walking-grunt tick. m_sink is the HUD message sink; m_trailSprites the trailing

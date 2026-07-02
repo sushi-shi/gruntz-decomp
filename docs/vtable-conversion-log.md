@@ -980,3 +980,74 @@ ctor/dtor use distinct addrs) — the masked imm32 is name-independent (SymParse
   ctor/dtor — all lose the hand-rolled last-store schedule to cl's vptr-first auto-stamp
   (documented vptr-position wall). The bodies are byte-faithful; only the store schedule
   (or, for the ~60 header includers, unrelated /O2 register/inline scheduling) shifts.
+## Batch 6 (CDDraw-worker/surface + fader + multi cluster — audit + PMF→virtual) — 2026-07-02
+
+Scope: the coordinator's CDDraw/fader/multi list (CFaderMgr, CMulti, BzState,
+CDDrawShadeBlit, CDDrawWorker, CDirectDrawMgr, CDDrawSubMgr, Sprite.h, GameText,
+MapLogic, Grunt.h, Projectile). **Finding: the cluster's OWN-CLASS manual vtables
+were ALREADY drained by Batches 1–5** (`??_7CMulti`/`CProjectile`/`CMovingLogic`/
+`CDrawSubWorker`/`CDDrawWorker`(CLoadable)/CFader-family all cl-emitted + cataloged;
+verified in `build/gen/symbol_names.csv`). The only NEW work was two thiscall
+**PMF/fn-ptr-table dispatch structs → real declared-only virtual classes** (the
+`remove-all-manual-vtables` facet for external objects), both **matching-neutral**
+(build GREEN, 1812/3276 exact / 65.83% fuzzy, no regressions).
+
+### CONVERTED (2 — thiscall PMF table → real virtuals, neutral)
+
+| Struct → class | slot | file | dispatch |
+| :-- | :-- | :-- | :-- |
+| `BzSink8Vtbl`+`BzNotifyFn`+`m_vtbl` → `BzSink8` (11 virtuals) | OnLoaded @+0x28 (idx 10) | include/Gruntz/BzState.h | `notify->OnLoaded(arg)` == `mov ecx,notify; push arg; call [eax+0x28]` (byte-identical; ShowSecretBonusMessage 0x18f00) |
+| `CWorkerElement::Vtbl`+`m_vptr` → `CWorkerElement` (2 virtuals) | Delete @+0x04 (idx 1) | include/Gruntz/CDDrawWorker.h + .cpp | `el->Delete(1)` == old PMF; DeleteAll 0x151eb0 stays 100% |
+
+### KEPT — correct as-is (NOT manual own-class vtable hacks)
+
+- **Typed fn-ptr-table dispatch of EXTERNAL objects (the §1-recommended form, kept):**
+  `CGMInputVtbl` (GameMode.h — genuinely `__stdcall`, self-on-stack + callee-cleanup,
+  verified `mov ecx,[obj]; push obj; call [ecx+0x60]`; a C++ virtual would be thiscall →
+  diverge), `CProjShadowVtbl` (Projectile.h — a DATA struct holding a self-on-stack C
+  fn-ptr `Init(self)` @+0x10 + an object-ptr `m_18` @+0x18; not a class vtable),
+  `ShadeUnlockIface::Vtbl` / `IDirectDraw2Z`+`IDirectDrawPaletteZ::Vtbl` (external DirectX
+  COM, `__stdcall`). `CMapArchive`/`CMapVisitTarget` (MapLogic.h), `CVtblSlot9`/
+  `GruntObjEntry` (Grunt.h) are ALREADY declared-only real-virtual classes.
+- **External-MFC-container layout fields (faithful, not hacks):** `void* m_vtbl`/`m_vptr`
+  @+0x00 on the embedded CObArray/CObList views — `CFrameArray` (Sprite.h), `CMapPtrArray`
+  (MapLogic.h), `GruntLoadColl` (Grunt.h), `CWorkerObArray` (CDDrawWorker.h). These MODEL
+  a real MFC array's vptr slot; fabricating a per-class `??_7` would misrepresent the
+  MFC base ([[correctness-not-artifacts]]).
+- **`CMultiVtbl` (CMulti.h):** `CMulti` is already realized (`??_7CMulti@@6B@` @0x1e9fe4
+  bound to cmulti). The struct is a typed view over 2 unmodeled own-vtable slots
+  (Redraw @+0x7c / PostRedraw @+0x98) for Tick's documented codegen wall; full
+  realization = the 43-slot CMulti/CPlay/CState MFC hierarchy (Batch-4 DEFERRED wall).
+
+### WALLS (kept manual, documented — not ripped out)
+
+- **`CFaderArray` / `g_faderArrayVtbl` (0x5f0790)** — a REAL MFC CObject-derived array
+  (5-slot base; ILT thunks + scalar-dtor 0x17e430 + Serialize 0x17e2a0). Its ctor/dtor
+  inline into `CFaderMgr::CFaderMgr` (0x17d8f0, MATCHED) / `~CFaderMgr` (0x17d910,
+  `@early-stop`). A real model needs the exact MFC 5-slot base + an external
+  `~CFaderArray` (no separate RVA) and would perturb the matched ctor + fabricate a
+  wrong `??_7CFaderArray`. Kept (UnknownVTables.h already documents this).
+- **`CContainerErr` / `g_containerErrVtbl` (GameText.cpp 0x16d9c0)** — **vptr-LAST** ctor
+  (stores `m_msg` @+0x04 first, vptr @+0x00 last). The non-virtual `void* m_vtbl` model
+  is 100% MATCHED; a real `virtual` forces cl's implicit vptr-first store → regressed
+  gametext 3/4→2/4 (Batch-1 empirical, reverted). The manual stamp IS the faithful shape.
+- **Foreign factory / base-restore stamps (classes in other TUs):** `g_poolItemVtbl`
+  (CDirectDrawMgr.cpp 1333, CPoolItemA shared base 0x5ef7f0), `g_wwdGameObjectVtbl`/
+  `g_wwdObjFinalVtbl` (CDDrawSubMgr.cpp 2542/2559, wwd game-object factory),
+  `CDrawSubWorkerBase::Init_158fb0` (0x158fb0 — a NON-ctor re-init `void` method that
+  restamps CObject base 0x5e8cb4; cl cannot auto-emit a vptr store outside a ctor).
+
+### REMAINING Gruntz-core manual-vtable classes (for the NEXT pass — out of THIS cluster)
+
+Genuine convertible/wall stamps found by the tree-wide stamp grep, in OTHER clusters
+(NOT touched here): `CAniElementCollection.cpp` (same thiscall PMF `m_deleteDtor` idiom
+as CWorkerElement — a NEUTRAL convert candidate), `TypeKeyColl.cpp` (buteTree/typeColl
+runtime vtable SWAPS + keyFinder callback), `CButeSectionCtor.cpp` (g_streamVtbl node
+sub-objects), `TileTriggerContainer.cpp` (g_tileGridCmd/g_tileTriggerSwitch dtor-phase
+restamps), `CWwdObjMgrFactories.cpp` (wwd factory two-phase stamps), `GameLevel.cpp`/
+`GameLevel.h` (g_gameLevel/g_severusWorkerBase two-phase), `ZDArrayDerived.cpp`
+(g_zDArrayVtbl Construct helper), `CMoviePlayerEh.cpp` (g_movieScratchVtbl),
+`BoundaryUpper*.cpp` (g_deviceConfigVtbl*/CObject restores), `DiscoveredSmall.cpp` /
+`ReconBatch2.cpp` / `WwdGameObjectEh.cpp` / `UserBaseLink.cpp` / `AnimWorkerHandlers.cpp`
+(CObject/anim-worker restores). Most are documented walls in prior batches; the
+CAniElementCollection PMF is the one clear neutral win.

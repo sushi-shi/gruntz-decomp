@@ -30,7 +30,7 @@ void CDDrawWorker::DeleteAll() {
     for (i32 i = 0; i < m_items.m_nSize; i++) {
         CWorkerElement* el = m_items.m_pData[i];
         if (el != 0) {
-            (el->*(el->m_vptr->m_deleteDtor))(1);
+            el->Delete(1);
         }
     }
     m_items.SetSize(0, -1); // CObArray::RemoveAll (inlined as SetSize(0,-1))
