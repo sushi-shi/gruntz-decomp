@@ -176,12 +176,21 @@ struct Tile {
 };
 
 // The board/tile map held at this->m_00c: m_rows is a row-pointer table; a row
-// is a Tile array indexed by x. m_w / m_h are the in-bounds limits.
+// is a Tile array indexed by x. m_w / m_h are the in-bounds limits. m_60.. is a
+// "dirty rect" (left/top/right/bottom) recomputed by the IntersectRect-clamp
+// idiom, with the derived span at m_70 / m_74.
 struct Board {
     char m_pad00[0x08];
     Tile** m_rows; // +0x08  rows[y][x] -> Tile
     i32 m_w;       // +0x0c  x bound
     i32 m_h;       // +0x10  y bound
+    char m_pad14[0x60 - 0x14];
+    i32 m_60; // +0x60  dirty-rect left
+    i32 m_64; // +0x64  top
+    i32 m_68; // +0x68  right
+    i32 m_6c; // +0x6c  bottom
+    i32 m_70; // +0x70  right-left span
+    i32 m_74; // +0x74  bottom-top span
     // The A* pathfinder (RVA 0x081e10, CBrickz::CBrickz_081e10 in src/Stub): a
     // __thiscall on the board taking (srcX, srcY, dstX, dstY, CObList* out, ...).
     // External, reloc-masked (no body); modeled here so `mov ecx,[this+0xc]; call`
@@ -206,6 +215,37 @@ struct CoordPool {
 };
 DATA(0x00245540)
 extern CoordPool g_coordPool;
+
+// The coord-list node-advance helper (RVA 0x029a30, thunk 0x01de8): a __thiscall
+// on the +0x31c CObList (the `this` is ignored) taking the address of a POSITION;
+// it returns &node->data (node+8) and advances *pos to node->next. The g_coordPool
+// recycle loops iterate through it (`coord = *(void**)Advance(&pos)`). External,
+// reloc-masked (no body).
+struct CoordListWalk {
+    void* Advance(void** pos); // 0x029a30
+};
+
+// The shared rect-init helper (RVA 0x029ac0, thunk 0x034a4): a __thiscall that
+// fills a RECT (left/top/right/bottom from the four args) and returns it. The
+// board-clamp idiom builds two of these and IntersectRects them against the board
+// dirty-rect. RECT comes from <Mfc.h> (windows.h). External, reloc-masked.
+struct RectInit {
+    RECT* Set(i32 l, i32 t, i32 r, i32 b); // 0x029ac0
+};
+
+// A coord-occupancy query (RVA 0x051850, thunk 0x03c4c): a __thiscall on a unit
+// taking a packed (x,y) pair; nonzero => the cell is occupied. Used by the grid
+// state-machines below. External, reloc-masked (no body).
+struct CoordCheck {
+    i32 Occupied(i32 px, i32 py); // 0x051850
+};
+
+// The per-unit spawn/place hook (RVA 0x04b320, thunk 0x01640): a __thiscall on the
+// GridUnit taking (x, y, a2, flags, a4, a5); nonzero on a successful placement.
+// External, reloc-masked (no body).
+struct GridUnitSpawn {
+    i32 Place(i32 x, i32 y, i32 a2, i32 flags, i32 a4, i32 a5); // 0x04b320
+};
 
 // A level/board geometry object held on a unit at +0x10: its +0x5c / +0x60 carry
 // a packed (x<<5)/(y<<5) coordinate.
@@ -1226,12 +1266,126 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02c140_IntersectRect_PtInRect(i32
     return 0;
 }
 
-// @confidence: low
-// @source: winapi:IntersectRect
-// @stub
+// ===========================================================================
+// CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02dfa0_IntersectRect  @0x02dfa0
+// The flood-fill launcher. Arm g_stepRun, build a 17x17 box around the unit's
+// (>>5) coord (three GetCoord reads for the corners), clamp the board dirty-rect
+// to that box intersected with the board bounds (the IntersectRect copy-back
+// idiom), then run the recursive flood-fill (Method_02d800). If it committed
+// (g_stepRun cleared), read the tile under the unit (and, when it has a live coord
+// list, the tile under its tail coord); when a blocked (bit 0x4) tile is seen,
+// stamp the unit's packed coord and place it at the committed cell (Method_4b320,
+// g_stepCol/g_stepRow, flags 0x9c3). Finally clear the 0x2 bit across the dirty
+// region and re-clamp the board dirty-rect to the board bounds.
+// ===========================================================================
+// @early-stop
+// flood-fill-driver stack-slot plateau: logic + every call (the three GetCoords,
+// IntersectRect x2, Method_02d800, Method_4b320) is reconstructed in shape + order,
+// and the box/clamp/tile-read/clear-loop arithmetic is byte-shaped. Residual is the
+// documented overlapping stack-slot schedule of the box + the two dirty-rect
+// clamps (shared with GruntPathScan's SCAN_BOUNDS + 031ca0) and the dead
+// maybe-null box branch retail emits; foreign unit/board chains modeled by raw
+// offset. Deferred to the final sweep.
 RVA(0x0002dfa0, 0x325)
-i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02dfa0_IntersectRect(i32, i32, i32, i32) {
-    return 0;
+i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02dfa0_IntersectRect(
+    i32 unitArg,
+    i32 a1,
+    i32 a2,
+    i32 a3
+) {
+    GridUnit* unit = (GridUnit*)unitArg;
+    g_stepRun = 1;
+    // Build a 17x17 box (corner reads via three GetCoords).
+    UnitLevel* lvl = (UnitLevel*)unit->m_010;
+    i32 bottom = (lvl->m_60 >> 5) + 8;
+    Coord g0;
+    ((UnitGeom*)unit)->GetCoord(&g0);
+    i32 right = (g0.m_x >> 5) + 8;
+    Coord g1;
+    ((UnitGeom*)unit)->GetCoord(&g1);
+    i32 top = (g1.m_y >> 5) - 8;
+    Coord g2;
+    ((UnitGeom*)unit)->GetCoord(&g2);
+    i32 left = (g2.m_x >> 5) - 8;
+    Board* board = (Board*)m_00c;
+    RECT bounds;
+    ((RectInit*)&bounds)->Set(0, 0, board->m_w, board->m_h);
+    RECT box;
+    box.left = left;
+    box.top = top;
+    box.right = right + 1;
+    box.bottom = bottom + 1;
+    if (!IntersectRect((RECT*)&board->m_60, &box, &bounds)) {
+        *(RECT*)&board->m_60 = box;
+    }
+    board->m_70 = board->m_68 - board->m_60;
+    board->m_74 = board->m_6c - board->m_64;
+    Method_02d800(unitArg, a1, a2, a3);
+    if (g_stepRun == 0) {
+        i32 savedX = unit->m_174;
+        i32 savedY = unit->m_178;
+        i32 col = unit->m_174 >> 5;
+        i32 row = unit->m_178 >> 5;
+        i32 tile0;
+        if ((u32)col < (u32)board->m_w && (u32)row < (u32)board->m_h) {
+            tile0 = ((i32*)board->m_rows[row])[col * 7];
+        } else {
+            tile0 = 1;
+        }
+        i32 flag = (tile0 >> 2) & 1;
+        if (unit->m_328 != 0) {
+            Coord* c = ((CoordNode*)unit->m_324)->m_coord;
+            i32 cx = c->m_x;
+            i32 cy = c->m_y;
+            i32 tile1;
+            if ((u32)cx < (u32)board->m_w && (u32)cy < (u32)board->m_h) {
+                tile1 = ((i32*)board->m_rows[cy])[cx * 7];
+            } else {
+                tile1 = 1;
+            }
+            if (tile1 & 4) {
+                savedX = c->m_x;
+                savedY = c->m_y;
+                flag = 1;
+            }
+        }
+        ((GridUnitSpawn*)unit)->Place(g_stepCol, g_stepRow, 0, 0x9c3, 1, 0);
+        if (flag != 0) {
+            unit->m_174 = savedX;
+            unit->m_178 = savedY;
+        }
+    }
+    // Clear bit 0x2 across the board dirty region.
+    i32 dl = board->m_60;
+    i32 dt = board->m_64;
+    i32 dr = board->m_68;
+    i32 db = board->m_6c;
+    if (dl < dr) {
+        i32 colOff = (dl * 7) << 2;
+        for (i32 w = dr - dl; w != 0; w--) {
+            for (i32 r = dt; r < db; r++) {
+                ((u8*)board->m_rows[r])[colOff + 2] &= 0xfd;
+            }
+            colOff += 0x1c;
+        }
+    }
+    // Re-clamp the board dirty-rect to the board bounds (inline rect init).
+    RECT fa;
+    fa.left = 0;
+    fa.top = 0;
+    fa.right = board->m_w;
+    fa.bottom = board->m_h;
+    RECT fb;
+    fb.left = 0;
+    fb.top = 0;
+    fb.right = board->m_w;
+    fb.bottom = board->m_h;
+    if (!IntersectRect((RECT*)&board->m_60, &fa, &fb)) {
+        *(RECT*)&board->m_60 = fa;
+    }
+    board->m_70 = board->m_68 - board->m_60;
+    board->m_74 = board->m_6c - board->m_64;
+    return 1;
 }
 
 // @confidence: low
@@ -2117,12 +2271,125 @@ void* CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_030f20(void* out, i32 unitArg, 
     return o;
 }
 
-// @confidence: low
-// @source: winapi:IntersectRect
-// @stub
+// ===========================================================================
+// CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_031ca0_IntersectRect  @0x031ca0
+// The queued-unit arrival resolver. For a unit with a live target cell
+// (m_2f0/m_2f4 != -1) locate the unit at that cell (grid[m_2f0][m_2f4]); if it is
+// gone, reset the unit (mode 4 / -1 coords) recycling its path onto g_freeList.
+// If the target cell is already occupied (CoordCheck::Occupied on the target's
+// level coord), recycle the unit's path onto g_coordPool, clear the target coord
+// and hand off to winapi_02ae00. Otherwise clamp the board dirty-rect to the board
+// bounds (the CRect / IntersectRect copy-back idiom) and, once the unit's idle
+// timer passes 0x1f4, place it at the target's level (>>5) coord (Method_4b320,
+// flags m_250). A dangling target (m_2f0/m_2f4 == -1) resets via g_coordPool.
+// ===========================================================================
+// @early-stop
+// 80.6% - head regalloc wall: logic + every call (CoordCheck::Occupied, the
+// CoordListWalk/g_coordPool + raw-walk/g_freeList recycles, IntersectRect, the
+// Method_4b320 place, winapi_02ae00) is byte-exact in shape + order (the whole body
+// matches). Residual is the m_2f0/m_2f4 head: retail keeps the -1 as an immediate
+// (cmp eax,0xffffffff) and spills tx/ty to [esp+0x10]/[esp+0x14], where MSVC5 here
+// hoists -1 into edi (cmp eax,edi) and keeps tx/ty in registers - the shared-const
+// / spill recolor cascades ~0x40 head bytes. Not source-steerable; final sweep.
 RVA(0x00031ca0, 0x2f2)
-i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_031ca0_IntersectRect(i32) {
-    return 0;
+i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_031ca0_IntersectRect(i32 unitArg) {
+    GridUnit* unit = (GridUnit*)unitArg;
+    i32 tx = unit->m_2f0;
+    i32 ty = unit->m_2f4;
+    if (tx != -1 && ty != -1) {
+        GridUnit* target = ((GridUnit**)(m_008 + tx * 0x3c + 0x1c))[ty];
+        if (target != 0) {
+            UnitLevel* lvl = (UnitLevel*)target->m_010;
+            if (((CoordCheck*)unit)->Occupied(lvl->m_5c, lvl->m_60) != 0) {
+                if (unit->m_328 != 0) {
+                    void* pos = unit->m_320;
+                    while (pos != 0) {
+                        void* coord = *(void**)((CoordListWalk*)&unit->m_31c)->Advance(&pos);
+                        if (coord != 0) {
+                            g_coordPool.Recycle(coord);
+                        }
+                    }
+                    ((CObList*)&unit->m_31c)->RemoveAll();
+                }
+                unit->m_2f0 = -1;
+                unit->m_2f4 = -1;
+                winapi_02ae00_IntersectRect(unitArg, (i32)target);
+                return 1;
+            }
+            // Clamp the board dirty-rect to (0,0,w,h): the CRect / IntersectRect
+            // copy-back idiom (shared with GruntPathScan's SCAN_BOUNDS).
+            Board* board = (Board*)m_00c;
+            RECT r1;
+            ((RectInit*)&r1)->Set(0, 0, board->m_w, board->m_h);
+            RECT r2;
+            RECT* p2 = ((RectInit*)&r2)->Set(0, 0, board->m_w, board->m_h);
+            RECT rc;
+            rc.left = p2->left;
+            rc.top = p2->top;
+            rc.right = p2->right;
+            rc.bottom = p2->bottom;
+            if (!IntersectRect((RECT*)&board->m_60, &rc, &r1)) {
+                *(RECT*)&board->m_60 = rc;
+            }
+            board->m_70 = board->m_68 - board->m_60;
+            board->m_74 = board->m_6c - board->m_64;
+            if ((u32)unit->m_2ec > 0x1f4 && unit->m_328 == 0) {
+                i32 flags = unit->m_250;
+                unit->m_254 = 0x4268;
+                UnitLevel* tl = (UnitLevel*)target->m_010;
+                ((GridUnitSpawn*)unit)->Place(tl->m_5c >> 5, tl->m_60 >> 5, 0, flags, 0, 0x4268);
+                unit->m_2ec = 0;
+            }
+            return 1;
+        }
+        // The target unit is gone: reset it (mode 4 / -1 coords), recycle its path
+        // onto g_freeList.
+        i32* u = (i32*)unit;
+        u[0x2f0 / 4] = -1;
+        u[0x2f4 / 4] = -1;
+        u[0x300 / 4] = -1;
+        u[0x2d4 / 4] = 0;
+        u[0x2d8 / 4] = 4;
+        u[0x304 / 4] = -1;
+        if (unit->m_328 != 0) {
+            CoordNode* n = (CoordNode*)unit->m_320;
+            if (n != 0) {
+                void* head = g_freeList;
+                do {
+                    CoordNode* cur = n;
+                    n = n->m_next;
+                    void* coord = cur->m_coord;
+                    if (coord != 0) {
+                        void** slot = (void**)((char*)coord - g_freeListNodeBias);
+                        *slot = head;
+                        head = slot;
+                        g_freeList = head;
+                    }
+                } while (n != 0);
+            }
+            ((CObList*)&unit->m_31c)->RemoveAll();
+        }
+        return 1;
+    }
+    // A dangling target coord (m_2f0/m_2f4 == -1): reset, recycle onto g_coordPool.
+    i32* u = (i32*)unit;
+    u[0x2f0 / 4] = -1;
+    u[0x2f4 / 4] = -1;
+    u[0x300 / 4] = -1;
+    u[0x2d4 / 4] = 0;
+    u[0x2d8 / 4] = 4;
+    u[0x304 / 4] = -1;
+    if (unit->m_328 != 0) {
+        void* pos = unit->m_320;
+        while (pos != 0) {
+            void* coord = *(void**)((CoordListWalk*)&unit->m_31c)->Advance(&pos);
+            if (coord != 0) {
+                g_coordPool.Recycle(coord);
+            }
+        }
+        ((CObList*)&unit->m_31c)->RemoveAll();
+    }
+    return 1;
 }
 
 // @confidence: low
@@ -2287,9 +2554,6 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_034460(i32 unitArg) {
 // External, reloc-masked (no body).
 struct UnitMutator2 {
     void Apply(i32 a, i32 b); // 0x06dae0
-};
-struct CoordCheck {
-    i32 Occupied(i32 px, i32 py); // 0x051850
 };
 
 // ===========================================================================
@@ -3218,13 +3482,6 @@ void GridUnit::RecycleCoords() {
     ((CObList*)&m_31c)->RemoveAll();
 }
 
-// The per-unit spawn/place hook Method_034c70 fires (RVA 0x04b320, thunk 0x01640):
-// a __thiscall on the GridUnit taking (x, y, 0, flags, 0, 0); returns nonzero on a
-// successful placement. External, reloc-masked (no body).
-struct GridUnitSpawn {
-    i32 Place(i32 x, i32 y, i32 a2, i32 flags, i32 a4, i32 a5); // 0x04b320
-};
-
 // ===========================================================================
 // CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_034c70  @0x034c70
 // The queued-unit board-tile resolver. For a unit with no live coord list
@@ -3475,6 +3732,7 @@ SIZE_UNKNOWN(CellProbe);
 SIZE_UNKNOWN(CellResolver);
 SIZE_UNKNOWN(Coord);
 SIZE_UNKNOWN(CoordCheck);
+SIZE_UNKNOWN(CoordListWalk);
 SIZE_UNKNOWN(ElementRefresher);
 SIZE_UNKNOWN(EmitArg);
 SIZE_UNKNOWN(GridCand);
@@ -3487,6 +3745,7 @@ SIZE_UNKNOWN(LevelQuery);
 SIZE_UNKNOWN(MapQuery);
 SIZE_UNKNOWN(NameRecord);
 SIZE_UNKNOWN(ProbePair);
+SIZE_UNKNOWN(RectInit);
 SIZE_UNKNOWN(ScratchString);
 SIZE_UNKNOWN(SelfCommit);
 SIZE_UNKNOWN(Tile);
