@@ -23,7 +23,5 @@
 // CButeTree defines CButeTree + g_buteTree, shared by the game-object ctors that
 // remain here (and by GameObjectCtors.cpp / UserLogic.cpp) -> include early.
 #include "CButeTree.cpp"
-#include "CGameModeBase.cpp"
-#include "CGruntzCmdList.cpp"
 #include "EngineExternFns.cpp"
 #include "MallocConstructors.cpp"
