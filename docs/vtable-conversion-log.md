@@ -328,3 +328,57 @@ deleting `GruntzMgr.h` / re-pointing its includers — any of these requires the
 MFC class in the Win32-shared header, which is the C1189 break above. Not a
 final-sweep item (it is a genuine toolchain constraint, not a steerable codegen
 idiom): the correct end-state is the two reconciled views, kept in sync.
+## Batch 4 (ALL-VTABLES mandate, Gruntz [A-M] non-grunt) — 2026-07-02
+
+User mandate override: "apply ALL vtables actually; ignore incorrect loads into
+structs; implement them anyway." The vptr-first / class-private / matched-slots
+gates from batches 1-3 are LIFTED — regressions are ACCEPTED, the only hard bar is a
+green `gruntz build`. So the manual `*(void**)o = &g_*Vtbl` / raw-`operator new`
+factory stamps are converted to REAL polymorphic classes built via `new` / placement
+`new`, letting cl auto-emit `??_7` (with external slot refs, fine for per-TU COFF).
+Net: **9 vtables realized** across 7 files; the factory functions that stamped them
+regress from vptr-middle to vptr-first (accepted). Overall 55.3%->55.0% exact,
+64.44%->64.37% fuzzy (`gruntz build` GREEN, no compile errors). Blessed the 11
+factory regressions with `--accept-regressions`.
+
+| Class / vtable | RVA | File | Action |
+| :-- | :-- | :-- | :-- |
+| `SiriusWorkerObj` / 0x5efb80 | 0x1efb80 | CDDrawWorkerCache.cpp | `new SiriusWorkerObj` (ctor added), stamp+extern removed. ??_7 orphan (0x1efb80 shared w/ CLogicRecord; left unpaired). |
+| `HagridWorkerA` / 0x5efea0 | 0x1efea0 | CDDrawWorkerList.cpp | `new HagridWorkerA`; **paired** (vtable_names.csv ??_7HagridWorkerA@@6B@,0x1efea0,0x30). |
+| `HagridWorkerB` / 0x5efed0 | 0x1efed0 | CDDrawWorkerList.cpp | `new HagridWorkerB`; **paired** (??_7HagridWorkerB@@6B@,0x1efed0,0x38). |
+| `SeverusWorkerBase`+`SeverusWorkerObj` / 0x5efc30,0x5efbe8 | — | CDDrawWorkerRegistry.cpp | two-level `SeverusWorkerBase`->`SeverusWorkerObj`; `new` stamps base(0x5efc30)-then-derived(0x5efbe8) + auto CByteArray member ctor. ??_7 orphan (0x5efbe8 shared w/ CSeverusEntryList). |
+| `AlbusWorkerObj` / 0x5f02d8 | 0x1f02d8 | CDDrawWorkerMapSmall.cpp | `new AlbusWorkerObj`; ??_7 orphan (shared w/ CAniRecord base-2). |
+| `CAmbientSound`/`CAmbientPosSound`/`CRandomAmbientSound` / 0x5e710c,0x5e7124,0x5e713c | — | CWorldSoundSet.cpp | placement `new (raw) CXxx` (3 real RTTI classes); **PAIRED** — the names were already in vtable_names.csv but no TU emitted them; now the 3 factory vtables pair. |
+| `CAniRecordInit` / 0x5f02c0 | 0x1f02c0 | CAniElement.cpp | already `new CAniRecordInit`; swapped the manual-stamp ctor for 5 real virtuals. ??_7 orphan (0x5f02c0 shared w/ CAniRecord). |
+| `CRemusNode` (+`CRemusNodeBase`) / 0x5efbc0,0x5e8cb4 | 0x1efbc0 | CRemusNode.cpp | two-level real poly; ctors stamp ??_7CRemusNode vptr-first, ~ folds the ??_7CRemusNodeBase grand-base restamp (masks 0x5e8cb4). **paired** (??_7CRemusNode@@6B@,0x1efbc0,0x28). |
+
+UnknownVTables.h entries removed (realized): ClassWithUnknownVTable24 (RemusNodeVtbl),
+40 (HagridWorkerVtblA), 41 (HagridWorkerVtblB) — replaced with REALIZED comments.
+
+### Already-real-polymorphic (no action, compliant): CSeverusEntryList, CRemusEntryList,
+CSeverusWorkerHost, CSeverusWorkerEh, CDDrawSubMgrLeaf, CDDrawSubMgrLeafScan,
+CDDrawWorkerMapSmall (manager), CDDrawSubMgrAni (CAniElementObj). These already stamp
+via cl-emitted ??_7 (CSeverusBase/CRemusBase/AlbusMapBase real bases); their leftover
+`g_*Vtbl` externs are foreign-base bindings (0x5e8cb4=??_7CObject etc.) kept in place.
+
+### DEFERRED (documented, not done this batch) — real work, would break/exceed budget:
+- **CMulti / CPlay / CState (0x1e9fe4/0x1ea0bc/0x1ea21c)**: big MFC state classes
+  (0xac = 43 slots) derived through CGameMgr; converting emits a 43-slot divergent
+  ??_7 and touches the MFC hierarchy — high build-break risk. In vtable_names.csv, so a
+  future careful conversion could pair them.
+- **CMenuItem / CMenuItem2 (0x5f08c0/0x5f08f8)**: 14-slot polymorphic leaf tightly
+  coupled across MenuItem.cpp/MenuItem2.h/MenuPage.cpp (Construct helper + placement-new
+  sites + CMenuItem2 derivation, many EH @early-stop walls). Converting could turn the
+  reloc-artifact dtor plateaus (96.6%/92.3%) into 100% IF the vtable is added to csv, but
+  the multi-file coupling is a large coordinated change — deferred to a focused pass.
+- **CStatusBarMgr (CSBI_* config items)**: stamped via a non-ctor `Construct(vtbl,tag)`
+  helper (vtbl passed as an argument) — cl cannot auto-emit an implicit stamp there.
+- **wwd factories (CWwdObjMgrFactories.cpp / CDDrawSubMgr.cpp)**: inline raw-alloc +
+  base-`Construct` + vtable re-stamp (vptr-not-at-ctor-entry); the game-object classes
+  (0x5f0020/0x5f00a8/...) live in other TUs and are re-stamped mid-construction.
+- **LogicRecord (CLogicRecord 0x5efb80)**: /GX EH dtor @early-stop on the base-subobject
+  frame; vtable shared with the SiriusWorker realized above.
+- **Boundary* / ApiHiCallers / CButeSectionCtor / DiscoveredSmall / GameText**: foreign
+  base re-stamps (CUserBase/CState/CObject/containerErr) in non-ctor or shared-base sites;
+  CAmbientSound.cpp's remaining stamp is the shared CUserBase base (own vtable already
+  realized via CWorldSoundSet).

@@ -65,7 +65,11 @@ public:
 
 // The 0x7c-byte worker layouts. Only the seeded offsets are load-bearing; m_78 is
 // the one field whose store width differs between the two workers (BYTE vs int).
+// Real polymorphic: `new HagridWorkerB/A` makes cl auto-emit ??_7HagridWorkerB/A
+// (masks the retail vtables 0x5efed0 / 0x5efea0) and stamp the vptr in the ctor -
+// no manual `*(void**)w = &g_hagridWorkerVtbl*` store (ALL-VTABLES mandate).
 struct HagridWorkerB : public HagridWorker {
+    HagridWorkerB() {}
     i32 m_04;     // +0x04
     i32 m_08;     // +0x08
     i32 m_parent; // +0x0c  = parent CDDrawWorkerList::m_pHarryPotter (+0xc)
@@ -84,6 +88,7 @@ struct HagridWorkerB : public HagridWorker {
 }; // 0x7c
 
 struct HagridWorkerA : public HagridWorker {
+    HagridWorkerA() {}
     i32 m_04;     // +0x04
     i32 m_08;     // +0x08
     i32 m_parent; // +0x0c
@@ -101,12 +106,6 @@ struct HagridWorkerA : public HagridWorker {
     char m_78; // +0x78  = 0 (BYTE flag for the BYTE-flag worker)
     char _pad79[0x7c - 0x79];
 }; // 0x7c
-
-// The two foreign worker vftables, referenced as DIR32 data (RVA = VA-0x400000).
-DATA(0x001efea0)
-extern void* g_hagridWorkerVtblA; // (BYTE-flag worker)
-DATA(0x001efed0)
-extern void* g_hagridWorkerVtblB; // (int-flag worker)
 
 // The child type used in the work-node linked-list at +0x14.
 // Virtual slot +0x28 (Vfunc28) is dispatched in Unknown34; +0x74 is a
@@ -165,14 +164,6 @@ public:
     void Stub_156fc0();
 };
 
-// Stamps the worker's foreign vftable into its first dword (manual vptr store).
-static inline void StampWorkerVtblB(HagridWorkerB* w) {
-    *(void**)w = &g_hagridWorkerVtblB;
-}
-static inline void StampWorkerVtblA(HagridWorkerA* w) {
-    *(void**)w = &g_hagridWorkerVtblA;
-}
-
 // ---------------------------------------------------------------------------
 // Same base readiness predicate used by several Lucius-derived managers.
 RVA(0x00156f00, 0x16)
@@ -195,47 +186,37 @@ fail:
 // m_pHarryPotter is read INSIDE the init (after the null check), not passed as a
 // pre-evaluated argument, so its load is not hoisted above the new call.
 static inline HagridWorkerB* MakeWorkerB(const CDDrawWorkerList* parent) {
-    HagridWorkerB* raw = (HagridWorkerB*)operator new(sizeof(HagridWorkerB));
-    HagridWorkerB* w;
-    if (raw != 0) {
+    HagridWorkerB* w = new HagridWorkerB;
+    if (w != 0) {
         i32 harryPotter = parent->m_pHarryPotter;
-        raw->m_04 = 0;
-        raw->m_parent = harryPotter;
-        raw->m_08 = 0;
-        raw->m_20 = (i32)0x80000000;
-        raw->m_38 = -1;
-        raw->m_5c = (i32)0x80000000;
-        raw->m_64 = (i32)0x80000000;
-        raw->m_3c = 0;
-        raw->m_40 = 0;
-        StampWorkerVtblB(raw);
-        raw->m_78 = 0;
-        w = raw;
-    } else {
-        w = 0;
+        w->m_04 = 0;
+        w->m_parent = harryPotter;
+        w->m_08 = 0;
+        w->m_20 = (i32)0x80000000;
+        w->m_38 = -1;
+        w->m_5c = (i32)0x80000000;
+        w->m_64 = (i32)0x80000000;
+        w->m_3c = 0;
+        w->m_40 = 0;
+        w->m_78 = 0;
     }
     return w;
 }
 
 static inline HagridWorkerA* MakeWorkerA(const CDDrawWorkerList* parent) {
-    HagridWorkerA* raw = (HagridWorkerA*)operator new(sizeof(HagridWorkerA));
-    HagridWorkerA* w;
-    if (raw != 0) {
+    HagridWorkerA* w = new HagridWorkerA;
+    if (w != 0) {
         i32 harryPotter = parent->m_pHarryPotter;
-        raw->m_04 = 0;
-        raw->m_parent = harryPotter;
-        raw->m_08 = 0;
-        raw->m_20 = (i32)0x80000000;
-        raw->m_38 = -1;
-        raw->m_5c = (i32)0x80000000;
-        raw->m_64 = (i32)0x80000000;
-        raw->m_3c = 0;
-        raw->m_40 = 0;
-        StampWorkerVtblA(raw);
-        raw->m_78 = 0;
-        w = raw;
-    } else {
-        w = 0;
+        w->m_04 = 0;
+        w->m_parent = harryPotter;
+        w->m_08 = 0;
+        w->m_20 = (i32)0x80000000;
+        w->m_38 = -1;
+        w->m_5c = (i32)0x80000000;
+        w->m_64 = (i32)0x80000000;
+        w->m_3c = 0;
+        w->m_40 = 0;
+        w->m_78 = 0;
     }
     return w;
 }

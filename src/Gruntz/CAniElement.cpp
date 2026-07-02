@@ -23,12 +23,6 @@ void* operator new(u32 n);
 // The buffer is freed via _RezFree (@0x1b9b82, __cdecl).
 extern "C" void RezFree(void* p);
 
-// The 0x34-byte frame record's primary vtable (reloc-masked DIR32 data); stamped
-// by address because the record's class (ClassUnknown_39 cluster) isn't modeled
-// here. 0x5f02c0 -> file RVA 0x1f02c0.
-DATA(0x001f02c0)
-extern void* g_aniRecordVtbl;
-
 // Set by the record parser (0x168c60) to the parsed name length; the builder uses
 // it to advance the record-stream cursor. 0x6bf3c4 -> file RVA 0x2bf3c4.
 extern i32 g_aniParsedNameLen;
@@ -44,16 +38,24 @@ public:
 };
 
 // The raw 0x34-byte frame record at allocation time (only the fields the builder
-// touches before handing off to the parser).
+// touches before handing off to the parser). ALL-VTABLES mandate: modeled REAL
+// polymorphic (the 5-slot AniRecordVtbl @0x5f02c0) so `new CAniRecordInit` makes cl
+// auto-emit ??_7CAniRecordInit + stamp the vptr in the ctor - no manual
+// `m_vptr = &g_aniRecordVtbl` store.
 struct CAniRecordInit {
+    virtual void Slot00();     // [0] 0x1bef01
+    virtual ~CAniRecordInit(); // [1] scalar-deleting dtor slot (0x165780)
+    virtual void Slot08();     // [2] 0x0028ec
+    virtual void Slot0C();     // [3] 0x00106e
+    virtual void Slot10();     // [4] 0x004034
+
     inline CAniRecordInit() {
         m_2c = 0;
         m_30 = 0;
-        m_vptr = &g_aniRecordVtbl;
         m_0c = 0xffff;
     }
 
-    void* m_vptr;       // +0x00
+    // vptr implicit at +0x00
     char m_pad04[0x8];  // +0x04..+0x0b
     i32 m_0c;           // +0x0c = 0xffff
     char m_pad10[0x1c]; // +0x10..+0x2b

@@ -17,15 +17,63 @@
 #include <Rez/RezMgr.h> // RezAlloc - the engine heap allocator (reloc-masked)
 #include <rva.h>
 
-// The created channels' retail vtables, stamped by address into each fresh
-// allocation (reloc-masked DIR32 store) - the transitional vtable workaround,
-// since each class's virtuals live in another TU and are not all matched.
-DATA(0x001e710c)
-extern void* g_ambientSoundVtbl; // CAmbientSound        0x5e710c
-DATA(0x001e7124)
-extern void* g_posSoundVtbl; // CAmbientPosSound    0x5e7124
-DATA(0x001e713c)
-extern void* g_randomSoundVtbl; // CRandomAmbientSound 0x5e713c
+// ALL-VTABLES mandate: the three channel classes are now REAL polymorphic classes
+// built via placement `new (raw) CXxx`, so cl auto-emits ??_7CAmbientSound /
+// ??_7CAmbientPosSound / ??_7CRandomAmbientSound (already mapped in
+// config/vtable_names.csv at 0x1e710c / 0x1e7124 / 0x1e713c) and stamps the vptr in
+// the ctor - no manual `*(void**)raw = &g_*Vtbl` store. Each carries its own 4-slot
+// vtable (RTTI class); the layout matches SoundChannelNew (vptr + m_04/m_08/m_14/m_3c).
+inline void* operator new(u32, void* p) {
+    return p;
+}
+
+struct CAmbientSound {
+    virtual void ScalarDtor(i32 flag); // slot 0
+    virtual void Slot1();              // slot 1
+    virtual void Slot2();              // slot 2
+    virtual void Slot3();              // slot 3
+    CAmbientSound() {}
+    i32 m_04; // +0x04
+    i32 m_08; // +0x08
+    char m_pad0c[0x14 - 0x0c];
+    i32 m_14; // +0x14
+    char m_pad18[0x3c - 0x18];
+    i32 m_3c; // +0x3c
+    i32 Init6(void* world, i32 a1, i32 a2, void* a3, i32 a4, i32 a5);
+    i32 Init5(i32 a0, i32 a1, void* a2, i32 a3, i32 a4);
+};
+
+struct CAmbientPosSound {
+    virtual void ScalarDtor(i32 flag); // slot 0
+    virtual void Slot1();              // slot 1
+    virtual void Slot2();              // slot 2
+    virtual void Slot3();              // slot 3
+    CAmbientPosSound() {}
+    i32 m_04; // +0x04
+    i32 m_08; // +0x08
+    char m_pad0c[0x14 - 0x0c];
+    i32 m_14; // +0x14
+    char m_pad18[0x3c - 0x18];
+    i32 m_3c; // +0x3c
+    i32 Init6(void* world, i32 a1, i32 a2, void* a3, i32 a4, i32 a5);
+    i32 Init5(i32 a0, i32 a1, void* a2, i32 a3, i32 a4);
+};
+
+struct CRandomAmbientSound {
+    virtual void ScalarDtor(i32 flag); // slot 0
+    virtual void Slot1();              // slot 1
+    virtual void Slot2();              // slot 2
+    virtual void Slot3();              // slot 3
+    CRandomAmbientSound() {}
+    i32 m_04; // +0x04
+    i32 m_08; // +0x08
+    char m_pad0c[0x14 - 0x0c];
+    i32 m_14; // +0x14
+    char m_pad18[0x3c - 0x18];
+    i32 m_3c; // +0x3c
+    i32 Init5(i32 a0, i32 a1, void* a2, i32 a3, i32 a4);
+    void Init2(i32 a0, i32 a1, i32 a2, i32 a3);
+};
 
 // ---------------------------------------------------------------------------
 // Init: refuse a null world, otherwise stash both back-pointers, mark active and
@@ -219,14 +267,13 @@ CWorldSoundSet::~CWorldSoundSet() {
 RVA(0x0000b6a0, 0x83)
 SoundChannelNew* CWorldSoundSet::CreateAmbient6_b6a0(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
     char* raw = (char*)RezAlloc(0x40);
-    SoundChannelNew* obj;
+    CAmbientSound* obj;
     if (raw != 0) {
-        *(void**)raw = &g_ambientSoundVtbl;
-        ((SoundChannelNew*)raw)->m_04 = 0;
-        ((SoundChannelNew*)raw)->m_08 = 0x64;
-        ((SoundChannelNew*)raw)->m_14 = 0;
-        ((SoundChannelNew*)raw)->m_3c = 0;
-        obj = (SoundChannelNew*)raw;
+        obj = new (raw) CAmbientSound;
+        obj->m_04 = 0;
+        obj->m_08 = 0x64;
+        obj->m_14 = 0;
+        obj->m_3c = 0;
     } else {
         obj = 0;
     }
@@ -238,21 +285,20 @@ SoundChannelNew* CWorldSoundSet::CreateAmbient6_b6a0(i32 a0, i32 a1, i32 a2, i32
         return 0;
     }
     obj->m_3c = (i32)m_list.AddTail(obj);
-    return obj;
+    return (SoundChannelNew*)obj;
 }
 
 // CAmbientSound (0x40), 5-arg Init (no m_world).
 RVA(0x0000b7b0, 0x80)
 SoundChannelNew* CWorldSoundSet::CreateAmbient5_b7b0(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
     char* raw = (char*)RezAlloc(0x40);
-    SoundChannelNew* obj;
+    CAmbientSound* obj;
     if (raw != 0) {
-        *(void**)raw = &g_ambientSoundVtbl;
-        ((SoundChannelNew*)raw)->m_04 = 0;
-        ((SoundChannelNew*)raw)->m_08 = 0x64;
-        ((SoundChannelNew*)raw)->m_14 = 0;
-        ((SoundChannelNew*)raw)->m_3c = 0;
-        obj = (SoundChannelNew*)raw;
+        obj = new (raw) CAmbientSound;
+        obj->m_04 = 0;
+        obj->m_08 = 0x64;
+        obj->m_14 = 0;
+        obj->m_3c = 0;
     } else {
         obj = 0;
     }
@@ -264,21 +310,20 @@ SoundChannelNew* CWorldSoundSet::CreateAmbient5_b7b0(i32 a0, i32 a1, i32 a2, i32
         return 0;
     }
     obj->m_3c = (i32)m_list.AddTail(obj);
-    return obj;
+    return (SoundChannelNew*)obj;
 }
 
 // CAmbientPosSound (0x48), 6-arg Init (vtable stamped last).
 RVA(0x0000b850, 0x83)
 SoundChannelNew* CWorldSoundSet::CreatePos6_b850(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
     char* raw = (char*)RezAlloc(0x48);
-    SoundChannelNew* obj;
+    CAmbientPosSound* obj;
     if (raw != 0) {
-        ((SoundChannelNew*)raw)->m_04 = 0;
-        ((SoundChannelNew*)raw)->m_08 = 0x64;
-        ((SoundChannelNew*)raw)->m_14 = 0;
-        ((SoundChannelNew*)raw)->m_3c = 0;
-        *(void**)raw = &g_posSoundVtbl;
-        obj = (SoundChannelNew*)raw;
+        obj = new (raw) CAmbientPosSound;
+        obj->m_04 = 0;
+        obj->m_08 = 0x64;
+        obj->m_14 = 0;
+        obj->m_3c = 0;
     } else {
         obj = 0;
     }
@@ -290,21 +335,20 @@ SoundChannelNew* CWorldSoundSet::CreatePos6_b850(i32 a0, i32 a1, i32 a2, i32 a3,
         return 0;
     }
     obj->m_3c = (i32)m_list.AddTail(obj);
-    return obj;
+    return (SoundChannelNew*)obj;
 }
 
 // CAmbientPosSound (0x48), 5-arg Init.
 RVA(0x0000b960, 0x80)
 SoundChannelNew* CWorldSoundSet::CreatePos5_b960(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
     char* raw = (char*)RezAlloc(0x48);
-    SoundChannelNew* obj;
+    CAmbientPosSound* obj;
     if (raw != 0) {
-        ((SoundChannelNew*)raw)->m_04 = 0;
-        ((SoundChannelNew*)raw)->m_08 = 0x64;
-        ((SoundChannelNew*)raw)->m_14 = 0;
-        ((SoundChannelNew*)raw)->m_3c = 0;
-        *(void**)raw = &g_posSoundVtbl;
-        obj = (SoundChannelNew*)raw;
+        obj = new (raw) CAmbientPosSound;
+        obj->m_04 = 0;
+        obj->m_08 = 0x64;
+        obj->m_14 = 0;
+        obj->m_3c = 0;
     } else {
         obj = 0;
     }
@@ -316,7 +360,7 @@ SoundChannelNew* CWorldSoundSet::CreatePos5_b960(i32 a0, i32 a1, i32 a2, i32 a3,
         return 0;
     }
     obj->m_3c = (i32)m_list.AddTail(obj);
-    return obj;
+    return (SoundChannelNew*)obj;
 }
 
 // CRandomAmbientSound (0x58): 5-arg Init then an ungated 4-arg Init2.
@@ -324,14 +368,13 @@ RVA(0x0000bb60, 0x9b)
 SoundChannelNew* CWorldSoundSet::
     CreateRandom_bb60(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 a8) {
     char* raw = (char*)RezAlloc(0x58);
-    SoundChannelNew* obj;
+    CRandomAmbientSound* obj;
     if (raw != 0) {
-        ((SoundChannelNew*)raw)->m_04 = 0;
-        ((SoundChannelNew*)raw)->m_08 = 0x64;
-        ((SoundChannelNew*)raw)->m_14 = 0;
-        ((SoundChannelNew*)raw)->m_3c = 0;
-        *(void**)raw = &g_randomSoundVtbl;
-        obj = (SoundChannelNew*)raw;
+        obj = new (raw) CRandomAmbientSound;
+        obj->m_04 = 0;
+        obj->m_08 = 0x64;
+        obj->m_14 = 0;
+        obj->m_3c = 0;
     } else {
         obj = 0;
     }
@@ -344,11 +387,14 @@ SoundChannelNew* CWorldSoundSet::
     }
     obj->Init2(a4, a5, a6, a7);
     obj->m_3c = (i32)m_list.AddTail(obj);
-    return obj;
+    return (SoundChannelNew*)obj;
 }
 
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
+SIZE_UNKNOWN(CAmbientSound);
+SIZE_UNKNOWN(CAmbientPosSound);
+SIZE_UNKNOWN(CRandomAmbientSound);
 SIZE_UNKNOWN(CRandomAmbientWorld);
 SIZE_UNKNOWN(CSoundChannel);
 SIZE_UNKNOWN(CSoundChannelList);

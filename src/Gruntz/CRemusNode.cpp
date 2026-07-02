@@ -15,27 +15,39 @@
 //   0x15b2c0  parameterized ctor (root + two scalars)
 //   0x1647e0  Init(a1..a6): seeds fields, dispatches virtual slot 9, returns 1
 
-// The node's primary vftable (foreign engine datum; RVA = VA-0x400000).
-DATA(0x001efbc0)
-extern void* g_remusNodeVtbl; // 0x5efbc0
-
-// The base-subobject (CObject-like, "remus base") dtor vftable restamped at
-// ~CRemusNode exit; reloc-masked DATA() while the class stays non-polymorphic.
-DATA(0x005e8cb4)
-extern void* g_remusBaseDtorVtbl; // 0x5e8cb4
-
-struct CRemusNodeVtbl; // primary vftable view; PMF slot defined after the class
+// ALL-VTABLES mandate: the node is now a REAL polymorphic two-level class. The
+// CObject-like grand-base (CRemusNodeBase, 5-slot interface @0x5e8cb4) and the
+// node's own primary vtable (10-slot @0x5efbc0, mapped ??_7CRemusNode in
+// config/vtable_names.csv) are cl-auto-emitted: the ctors stamp ??_7CRemusNode
+// (vptr-first) and ~CRemusNode folds the ??_7CRemusNodeBase grand-base re-stamp
+// (masks 0x5e8cb4) - no manual `*(void**)this = &g_*Vtbl` stores.
+struct CRemusNodeBase {
+    virtual void RemusV0();    // [0] 0x1bef01
+    virtual ~CRemusNodeBase(); // [1] scalar-deleting dtor slot
+    virtual void RemusV2();    // [2] 0x0028ec
+    virtual void RemusV3();    // [3] 0x00106e
+    virtual void RemusV4();    // [4] 0x004034
+    CRemusNodeBase() {}
+};
+// Empty body -> cl emits ONLY the implicit grand-base vptr re-stamp (masks 0x5e8cb4).
+inline CRemusNodeBase::~CRemusNodeBase() {}
 
 // The 0x68-byte node. Layout recovered from the ctor/dtor/Init stores; the gaps
 // are unread scratch (the family's resolution-ladder block).
-class CRemusNode {
+class CRemusNode : public CRemusNodeBase {
 public:
+    virtual void Slot5();          // [5] 0x154a10
+    virtual void Slot6();          // [6] 0x001c08
+    virtual void Slot7();          // [7] 0x154a80
+    virtual void Slot8();          // [8] 0x154a00
+    virtual i32 Resolve(i32, i32); // [9] 0x164790
+
     CRemusNode();
     CRemusNode(i32 root, i32 a2, i32 a3);
-    ~CRemusNode();
+    virtual ~CRemusNode();
     i32 Init(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6);
 
-    CRemusNodeVtbl* m_vptr;   // +0x00
+    // vptr implicit at +0x00
     i32 m_04;                 // +0x04
     i32 m_08;                 // +0x08
     i32 m_0c;                 // +0x0c
@@ -55,17 +67,6 @@ public:
     i32 m_64;                 // +0x64  = 0x80000000
 };
 
-// Typed view of the node's primary vftable (g_remusNodeVtbl @0x5efbc0). Slot 9
-// (byte offset 0x24) is dispatched by Init: a __thiscall method of the node
-// taking two scalars (vtbl[9] = 0x164790). Modeled as a pointer-to-member of the
-// now-complete CRemusNode so MSVC sizes it as a 4-byte code pointer and lowers
-// the call to `mov ecx,this; call [vptr+0x24]`. The leading slots are opaque
-// pointers so the dispatched slot lands at the right byte offset.
-struct CRemusNodeVtbl {
-    void* m_slot0to8[9];                    // +0x00..+0x20
-    i32 (CRemusNode::*m_resolve)(i32, i32); // +0x24
-};
-
 // Default ctor: seeds the resolution/scaling sentinels and zeroes the base
 // fields, then stamps the node vftable. No arg-store to float, unlike the
 // parameterized ctor below.
@@ -74,7 +75,6 @@ CRemusNode::CRemusNode() {
     m_0c = 0;
     m_20 = (i32)0x80000000;
     m_38 = -1;
-    *(void**)this = &g_remusNodeVtbl;
     m_5c = (i32)0x80000000;
     m_64 = (i32)0x80000000;
     m_3c = 0;
@@ -98,8 +98,8 @@ CRemusNode::~CRemusNode() {
     m_38 = -1;
     m_04 = -1;
     m_08 = 0;
-    *(void**)this = &g_remusBaseDtorVtbl;
     m_0c = 0;
+    // ~CRemusNodeBase folds the grand-base vptr re-stamp (masks 0x5e8cb4) here.
 }
 
 // @early-stop
@@ -116,7 +116,6 @@ CRemusNode::CRemusNode(i32 root, i32 a2, i32 a3) {
     m_38 = -1;
     m_5c = (i32)0x80000000;
     m_64 = (i32)0x80000000;
-    *(void**)this = &g_remusNodeVtbl;
     m_3c = 0;
     m_40 = 0;
 }
@@ -132,7 +131,7 @@ i32 CRemusNode::Init(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6) {
     m_4c = 0;
     m_58 = 0;
     m_50 = 1;
-    (this->*(m_vptr->m_resolve))(a3, a4);
+    Resolve(a3, a4); // virtual slot 9 (0x164790)
     m_40 = a5;
     return 1;
 }
@@ -140,4 +139,4 @@ i32 CRemusNode::Init(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6) {
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 SIZE_UNKNOWN(CRemusNode);
-SIZE_UNKNOWN(CRemusNodeVtbl);
+SIZE_UNKNOWN(CRemusNodeBase);

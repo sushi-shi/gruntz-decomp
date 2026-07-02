@@ -47,7 +47,11 @@ public:
 };
 
 // The 0x17c-byte worker layout. Only the seeded offsets are load-bearing.
+// Real polymorphic: `new SiriusWorkerObj` makes cl auto-emit ??_7SiriusWorkerObj
+// (masks the retail vtable 0x5efb80) and stamp the vptr in the ctor - no manual
+// `*(void**)w = &g_siriusWorkerVtbl` store (ALL-VTABLES mandate).
 struct SiriusWorkerObj : public SiriusWorker {
+    SiriusWorkerObj() {}
     i32 m_04; // +0x04  = parent->m_1c
     i32 m_08; // +0x08  = 0
     i32 m_0c; // +0x0c  = parent->m_0c
@@ -60,14 +64,6 @@ struct SiriusWorkerObj : public SiriusWorker {
     i32 m_174; // +0x174 = 0
     i32 m_178; // +0x178 = 0
 }; // size = 0x17c
-
-// The foreign worker vftable, referenced as DIR32 data (RVA = VA-0x400000).
-DATA(0x001efb80)
-extern void* g_siriusWorkerVtbl;
-
-static inline void StampSiriusVtbl(SiriusWorkerObj* w) {
-    *(void**)w = &g_siriusWorkerVtbl;
-}
 
 // ---------------------------------------------------------------------------
 // CDDrawWorkerCache - the CMapStringToOb at +0x10, and the parent fields copied
@@ -103,28 +99,25 @@ i32 CDDrawWorkerCache::VirtualMethodUnknown20() {
     return 0x13;
 }
 
-// Inline worker constructor. New's the raw 0x17c block; on success seeds
-// the fields in the exact order the target writes them.
+// Inline worker constructor. Real `new SiriusWorkerObj`: the ctor stamps the vptr
+// (cl-implicit, vptr-first) and cl auto-emits ??_7SiriusWorkerObj; then seed the
+// fields. (ALL-VTABLES mandate: the vptr store is now compiler-implicit, moving
+// from vptr-middle to vptr-first - a code regression accepted for the real shape.)
 static inline SiriusWorkerObj* MakeSiriusWorker(const CDDrawWorkerCache* parent) {
-    SiriusWorkerObj* raw = (SiriusWorkerObj*)operator new(sizeof(SiriusWorkerObj));
-    SiriusWorkerObj* w;
-    if (raw != 0) {
+    SiriusWorkerObj* w = new SiriusWorkerObj;
+    if (w != 0) {
         i32 field1c = SiriusReadField1c(parent);
         i32 harryPotter = parent->m_0c;
-        raw->m_04 = field1c;
-        raw->m_08 = 0;
-        raw->m_0c = harryPotter;
-        StampSiriusVtbl(raw);
-        raw->m_10 = 0;
-        raw->m_14 = 0;
-        raw->m_18 = 0;
-        raw->m_170 = 0;
-        raw->m_1c = 0;
-        raw->m_174 = 0;
-        raw->m_178 = 0;
-        w = raw;
-    } else {
-        w = 0;
+        w->m_04 = field1c;
+        w->m_08 = 0;
+        w->m_0c = harryPotter;
+        w->m_10 = 0;
+        w->m_14 = 0;
+        w->m_18 = 0;
+        w->m_170 = 0;
+        w->m_1c = 0;
+        w->m_174 = 0;
+        w->m_178 = 0;
     }
     return w;
 }

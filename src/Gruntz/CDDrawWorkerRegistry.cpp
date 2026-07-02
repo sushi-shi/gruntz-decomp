@@ -89,26 +89,34 @@ public:
     virtual void Slot58();
 };
 
-class SeverusWorker {
+// Real polymorphic two-level model (ALL-VTABLES mandate): SeverusWorkerBase carries
+// the 9-slot base vtable (masks 0x5efc30), SeverusWorkerObj adds slots 9..14 and
+// carries the 15-slot derived vtable (masks 0x5efbe8). `new SeverusWorkerObj` makes
+// cl auto-emit ??_7SeverusWorkerBase + ??_7SeverusWorkerObj and stamp the base vptr
+// (base ctor) then the derived vptr (Obj ctor) - no manual `*(void**)w=&g_*Vtbl`.
+class SeverusWorkerBase {
 public:
-    virtual void Slot00();                               // +0x00
-    virtual i32 ScalarDtor(i32 flag);                    // +0x04
-    virtual void Slot08();                               // +0x08
-    virtual void Slot0C();                               // +0x0c
-    virtual void Slot10();                               // +0x10
-    virtual void Slot14();                               // +0x14
-    virtual void Slot18();                               // +0x18
-    virtual void Slot1C();                               // +0x1c
-    virtual void Slot20();                               // +0x20
+    virtual void Slot00();            // +0x00
+    virtual i32 ScalarDtor(i32 flag); // +0x04
+    virtual void Slot08();            // +0x08
+    virtual void Slot0C();            // +0x0c
+    virtual void Slot10();            // +0x10
+    virtual void Slot14();            // +0x14
+    virtual void Slot18();            // +0x18
+    virtual void Slot1C();            // +0x1c
+    virtual void Slot20();            // +0x20
+    SeverusWorkerBase() {}
+};
+
+struct SeverusWorkerObj : public SeverusWorkerBase {
     virtual i32 Vfunc24(const char* key);                // +0x24
     virtual void Slot28();                               // +0x28
     virtual i32 Vfunc2C(i32 a1, i32 a2, i32 a4, i32 a5); // +0x2c
     virtual i32 Vfunc30(i32 a1, i32 a2, i32 a4, i32 a5); // +0x30
     virtual i32 Vfunc34(i32 a1, i32 a3, i32 a4);         // +0x34
     virtual i32 Vfunc38(i32 a1, i32 a3, i32 a4);         // +0x38
-};
+    SeverusWorkerObj() {}
 
-struct SeverusWorkerObj : public SeverusWorker {
     i32 m_04;        // +0x04  parent+0x1c
     i32 m_08;        // +0x08  0
     i32 m_0c;        // +0x0c  parent+0x0c
@@ -117,11 +125,7 @@ struct SeverusWorkerObj : public SeverusWorker {
     i32 m_64; // +0x64  0x1869f
     i32 m_68; // +0x68  0
 }; // 0x6c
-
-DATA(0x001efc30)
-extern void* g_severusWorkerBaseVtbl;
-DATA(0x001efbe8)
-extern void* g_severusWorkerVtbl;
+typedef SeverusWorkerObj SeverusWorker;
 
 extern i32 g_severusScratch[25];
 DATA(0x002bf37c)
@@ -177,30 +181,18 @@ static inline i32 SeverusReadField1c(const CDDrawWorkerRegistry* p) {
     return *(const i32*)((const char*)p + 0x1c);
 }
 
-static inline void StampSeverusBaseVtbl(SeverusWorkerObj* w) {
-    *(void**)w = &g_severusWorkerBaseVtbl;
-}
-static inline void StampSeverusVtbl(SeverusWorkerObj* w) {
-    *(void**)w = &g_severusWorkerVtbl;
-}
-
 static inline SeverusWorkerObj* MakeSeverusWorker(const CDDrawWorkerRegistry* parent) {
-    SeverusWorkerObj* raw = (SeverusWorkerObj*)operator new(sizeof(SeverusWorkerObj));
-    SeverusWorkerObj* w;
-    if (raw != 0) {
+    // `new SeverusWorkerObj`: base ctor stamps 0x5efc30, the CByteArray member is
+    // default-constructed, the Obj ctor stamps 0x5efbe8 (cl-implicit vptr stores).
+    SeverusWorkerObj* w = new SeverusWorkerObj;
+    if (w != 0) {
         i32 field1c = SeverusReadField1c(parent);
         i32 harryPotter = parent->m_0c;
-        StampSeverusBaseVtbl(raw);
-        raw->m_04 = field1c;
-        raw->m_08 = 0;
-        raw->m_0c = harryPotter;
-        new (&raw->m_10) CByteArray;
-        StampSeverusVtbl(raw);
-        raw->m_64 = 99999;
-        raw->m_68 = 0;
-        w = raw;
-    } else {
-        w = 0;
+        w->m_04 = field1c;
+        w->m_08 = 0;
+        w->m_0c = harryPotter;
+        w->m_64 = 99999;
+        w->m_68 = 0;
     }
     return w;
 }

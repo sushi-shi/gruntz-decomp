@@ -62,19 +62,16 @@ public:
 };
 
 // The 0x14-byte worker layout. Only the seeded offsets are load-bearing.
+// Real polymorphic: `new AlbusWorkerObj` makes cl auto-emit ??_7AlbusWorkerObj
+// (masks the retail vtable 0x5f02d8) and stamp the vptr in the ctor - no manual
+// `*(void**)w = &g_albusWorkerVtbl` store (ALL-VTABLES mandate).
 struct AlbusWorkerObj : public AlbusWorker {
+    AlbusWorkerObj() {}
     i32 m_04; // +0x04  = parent->m_1c (an internal field of map1)
     i32 m_08; // +0x08  = 0
     i32 m_0c; // +0x0c  = parent->m_0c (the HarryPotter handle)
     i32 m_10; // +0x10  = 0
 }; // 0x14
-
-// The foreign worker vftable, referenced as DIR32 data (RVA = VA-0x400000). The
-// worker class's own ctor/full vtable live in other (unmatched) TUs, so this stays
-// the transitional manual stamp; the worker is never constructed here, only the
-// raw heap block is stamped + dispatched.
-DATA(0x001f02d8)
-extern void* g_albusWorkerVtbl;
 
 // The CObject-like grand-base shared by the whole "Harry Potter" surface family
 // (its dtor vtable is g_remusBaseDtorVtbl @0x5e8cb4 = the 5-slot CObject interface
@@ -150,11 +147,6 @@ static inline i32 AlbusReadField1c(const CDDrawWorkerMapSmall* p) {
     return *(const i32*)((const char*)p + 0x1c);
 }
 
-// Stamps the worker's foreign vftable into its first dword (manual vptr store).
-static inline void StampAlbusWorkerVtbl(AlbusWorkerObj* w) {
-    *(void**)w = &g_albusWorkerVtbl;
-}
-
 // ---------------------------------------------------------------------------
 // Reports ready when the parent/root handle is present and the base status word
 // is no longer the inactive -1 sentinel.
@@ -215,18 +207,13 @@ CDDrawWorkerMapSmall::~CDDrawWorkerMapSmall() {
 // source ordering of the two reads and the two stores produced the identical pairing;
 // no source lever flips it. All 42 other instructions + both ret paths byte-exact.
 static inline AlbusWorkerObj* MakeAlbusWorker(const CDDrawWorkerMapSmall* parent) {
-    AlbusWorkerObj* raw = (AlbusWorkerObj*)operator new(sizeof(AlbusWorkerObj));
-    AlbusWorkerObj* w;
-    if (raw != 0) {
+    AlbusWorkerObj* w = new AlbusWorkerObj;
+    if (w != 0) {
         i32 harryPotter = parent->m_0c;
-        raw->m_04 = AlbusReadField1c(parent);
-        raw->m_08 = 0;
-        raw->m_0c = harryPotter;
-        StampAlbusWorkerVtbl(raw);
-        raw->m_10 = 0;
-        w = raw;
-    } else {
-        w = 0;
+        w->m_04 = AlbusReadField1c(parent);
+        w->m_08 = 0;
+        w->m_0c = harryPotter;
+        w->m_10 = 0;
     }
     return w;
 }

@@ -255,18 +255,8 @@ struct SiriusWorkerVtbl {
 // src/Gruntz/CDDrawSubMgrAni.cpp; cl auto-emits the vtable). Placeholder removed.
 
 // ClassWithUnknownVTable24  @ 0x005efbc0  (10 slots)  refs x4  src:g_remusNodeVtbl
-struct RemusNodeVtbl {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x154a30 `scalar_deleting_destructor'
-    UnkVfn slot2_0028ec;                 // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
-    UnkVfn slot5_154a10;                 // [5] -> 0x154a10 sub_154a10
-    UnkVfn slot6_001c08;                 // [6] -> 0x001c08 sub_001c08
-    UnkVfn slot7_154a80;                 // [7] -> 0x154a80 sub_154a80
-    UnkVfn slot8_154a00;                 // [8] -> 0x154a00 sub_154a00
-    UnkVfn Helper_164790;                // [9] -> 0x164790 Helper_164790
-};
+// REALIZED as ??_7CRemusNode@@6B@ (real polymorphic CRemusNode : CRemusNodeBase in
+// src/Gruntz/CRemusNode.cpp; cl auto-emits the vtable). Placeholder removed.
 
 // ClassWithUnknownVTable25  @ 0x005efbe8  (17 slots)  refs x6  src:g_severusWorkerVtbl
 struct SeverusWorkerVtbl {
@@ -494,38 +484,14 @@ struct Vtbl_1efe74 {
 };
 
 // ClassWithUnknownVTable40  @ 0x005efea0  (12 slots)  refs x1  src:g_hagridWorkerVtblA
-struct HagridWorkerVtblA {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x1570b0 `scalar_deleting_destructor'
-    UnkVfn slot2_0028ec;                 // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
-    UnkVfn slot5_157060;                 // [5] -> 0x157060 sub_157060
-    UnkVfn slot6_001c08;                 // [6] -> 0x001c08 sub_001c08
-    UnkVfn slot7_157130;                 // [7] -> 0x157130 sub_157130
-    UnkVfn slot8_1570a0;                 // [8] -> 0x1570a0 sub_1570a0
-    UnkVfn slot9_157080;                 // [9] -> 0x157080 sub_157080
-    UnkVfn slot10_165fa0;                // [10] -> 0x165fa0 sub_165fa0
-    UnkVfn Vfunc2C;                      // [11] -> 0x157110 Vfunc2C
-};
+// REALIZED as ??_7HagridWorkerA@@6B@ (real polymorphic HagridWorkerA in
+// src/Gruntz/CDDrawWorkerList.cpp, built via `new`; vtable_names.csv 0x1efea0/0x30).
+// Placeholder removed.
 
 // ClassWithUnknownVTable41  @ 0x005efed0  (14 slots)  refs x3  src:g_hagridWorkerVtblB
-struct HagridWorkerVtblB {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x157220 `scalar_deleting_destructor'
-    UnkVfn slot2_0028ec;                 // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
-    UnkVfn slot5_157200;                 // [5] -> 0x157200 sub_157200
-    UnkVfn slot6_001c08;                 // [6] -> 0x001c08 sub_001c08
-    UnkVfn slot7_157310;                 // [7] -> 0x157310 sub_157310
-    UnkVfn slot8_157210;                 // [8] -> 0x157210 sub_157210
-    UnkVfn slot9_157080;                 // [9] -> 0x157080 sub_157080
-    UnkVfn slot10_1660b0;                // [10] -> 0x1660b0 sub_1660b0
-    UnkVfn Vfunc2C;                      // [11] -> 0x1572f0 Vfunc2C
-    UnkVfn FUN_005572b0;                 // [12] -> 0x1572b0 FUN_005572b0
-    UnkVfn Vfunc34;                      // [13] -> 0x157280 Vfunc34
-};
+// REALIZED as ??_7HagridWorkerB@@6B@ (real polymorphic HagridWorkerB in
+// src/Gruntz/CDDrawWorkerList.cpp, built via `new`; vtable_names.csv 0x1efed0/0x38).
+// Placeholder removed.
 
 // ClassWithUnknownVTable42  @ 0x005eff08  (9 slots)  refs x3  src:g_leafElemVtbl
 struct LeafElemVtbl {
