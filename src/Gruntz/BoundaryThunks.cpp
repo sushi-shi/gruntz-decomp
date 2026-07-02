@@ -97,57 +97,49 @@ void TokenMgrReset99b80() {
 }
 
 // ===========================================================================
-// 0x08c470 - constructor: stamp the CState vtable (?g_vtbl_CState@@3PAPAXA @ VA
-// 0x5ea21c) then tail-call the base init (0x3f53). __thiscall, no args.
+// 0x08c470 - a CState-base vptr restore: cl's implicit vptr-restore stamps the CState
+// vtable (0x5ea21c) then tail-jumps the base init/teardown (0x3f53). Placeholder
+// polymorphic class (the real CState dtor is modeled in GameMode.cpp; this is a
+// distinct restore, so its ??_7 reloc-masks by shape). __thiscall.
 // ===========================================================================
-extern void** g_vtbl_CState;
-struct CState8c470 {
+struct CStateSub8c470 {
     void BaseInit3f53(); // 0x3f53 (reloc-masked)
-    void Ctor();
+    virtual ~CStateSub8c470();
 };
-SIZE_UNKNOWN(CState8c470);
+SIZE_UNKNOWN(CStateSub8c470);
 RVA(0x0008c470, 0xb)
-void CState8c470::Ctor() {
-    *(void**)this = (void*)&g_vtbl_CState;
+CStateSub8c470::~CStateSub8c470() {
     BaseInit3f53();
 }
 
 // ===========================================================================
-// 0x137330 / 0x13aaf0 / 0x13ca30 - abstract-base constructors: stamp a
-// pure-call vtable into [this] and return. 0x13aaf0 and 0x13ca30 share the
-// 0x5ef760 vtable. __thiscall, no args.
+// 0x137330 / 0x13aaf0 / 0x13ca30 - abstract-base vptr restores: cl's implicit
+// vptr-restore stamps a pure-call vtable into [this] and returns (7-byte
+// `mov [ecx],offset ??_7 + ret`). 0x13aaf0 and 0x13ca30 share the 0x5ef760 pure-call
+// vtable. Real polymorphic: an empty virtual dtor emits exactly the stamp+ret (the
+// abstract element base's concrete owner is unmodeled, so the emitted ??_7 reloc-masks
+// against the retail pure-call vtable by shape). __thiscall, no args.
 // ===========================================================================
-DATA(0x001ef6c8)
-extern void** g_vtbl_pure6c8; // VA 0x5ef6c8 (pure-call vtable)
-DATA(0x001ef760)
-extern void** g_vtbl_pure760; // VA 0x5ef760 (pure-call vtable)
-
 struct CAbstract137330 {
-    void Ctor();
+    virtual ~CAbstract137330();
 };
 SIZE_UNKNOWN(CAbstract137330);
 RVA(0x00137330, 0x7)
-void CAbstract137330::Ctor() {
-    *(void**)this = (void*)&g_vtbl_pure6c8;
-}
+CAbstract137330::~CAbstract137330() {}
 
 struct CAbstract13aaf0 {
-    void Ctor();
+    virtual ~CAbstract13aaf0();
 };
 SIZE_UNKNOWN(CAbstract13aaf0);
 RVA(0x0013aaf0, 0x7)
-void CAbstract13aaf0::Ctor() {
-    *(void**)this = (void*)&g_vtbl_pure760;
-}
+CAbstract13aaf0::~CAbstract13aaf0() {}
 
 struct CAbstract13ca30 {
-    void Ctor();
+    virtual ~CAbstract13ca30();
 };
 SIZE_UNKNOWN(CAbstract13ca30);
 RVA(0x0013ca30, 0x7)
-void CAbstract13ca30::Ctor() {
-    *(void**)this = (void*)&g_vtbl_pure760;
-}
+CAbstract13ca30::~CAbstract13ca30() {}
 
 // ===========================================================================
 // 0x0853d0 - __stdcall forwarder: hand the single arg to the __cdecl rez-free

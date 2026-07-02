@@ -49,7 +49,7 @@ boundarytail	9	3
 boundarytaileh	1	0
 boundarythunks	15	15
 boundaryupper	33	30
-boundaryupper2	26	19
+boundaryupper2	26	18
 boundaryupper2eh	4	2
 boundaryuppereh	10	10
 bracketvalue	1	1
@@ -681,13 +681,15 @@ boundarylowermethods	?Serialize@Ceb970@@QAEHPAUCArchiveEb@@HHH@Z	92.4444	92.4444
 boundarylowermethods	?Set@C77dc0@@QAEXHHH@Z	100.0000	100.0000	1	af13ce28d5a0	0x77dc0
 boundarylowermethods	?Update@C1181d0@@QAEHHHH@Z	100.0000	100.0000	1	baccc5ba118f	0x1181d0
 boundarylowermethods	?Update@C118260@@QAEHPAUCRect118@@H@Z	100.0000	100.0000	1	952376069749	0x118260
+boundarylowerthunks	??1CGameApp@@UAE@XZ	100.0000	100.0000	1	cb2b600a142c	0x80cf0
 boundarylowerthunks	??1CGameMgr@@UAE@XZ	100.0000	100.0000	1	cba997d3b79f	0x85540
+boundarylowerthunks	??1CGameWnd@@UAE@XZ	100.0000	100.0000	1	507af906a1fc	0x94c10
+boundarylowerthunks	??1CStatusBaseSub100780@@UAE@XZ	100.0000	100.0000	1	6b44c2beb123	0x100780
 boundarylowerthunks	?FontForward115730@@YAXXZ	100.0000	100.0000	1	f375fb2dcb43	0x115730
 boundarylowerthunks	?FontForward1157b0@@YAXXZ	100.0000	100.0000	1	e2e4947ee163	0x1157b0
 boundarylowerthunks	?Forwardb5400@@YAXXZ	100.0000	100.0000	1	293ce7f17772	0xb5400
 boundarylowerthunks	?Forwardbd430@@YAXXZ	100.0000	100.0000	1	952f2eae266a	0xbd430
 boundarylowerthunks	?Init@CInitd5d70@@QAEXXZ	100.0000	100.0000	1	75efecd10623	0xd5d70
-boundarylowerthunks	?Init@CStatusBase100780@@QAEXXZ	100.0000	100.0000	1	e50cba7d45e1	0x100780
 boundarylowerthunks	?IsOne@CPred1182f0@@QAEHXZ	100.0000	100.0000	1	b47d0c64ddb0	0x1182f0
 boundarylowerthunks	?NotNull118310@@YAHPAX@Z	100.0000	100.0000	1	9f2ad358fc8e	0x118310
 boundarylowerthunks	?RegRange3a530@@YAXXZ	100.0000	100.0000	1	89448b3c0d30	0x3a530
@@ -699,14 +701,14 @@ boundarylowerthunks	?RegRangee17b0@@YAXXZ	100.0000	100.0000	1	1bb939a67b28	0xe17
 boundarylowerthunks	?RegRangefbb70@@YAXXZ	100.0000	100.0000	1	657a7a95f75e	0xfbb70
 boundarylowerthunks	?Register82aa0@@YAXXZ	100.0000	100.0000	1	e95f5655062c	0x82aa0
 boundarylowerthunks	?ResetCoordPool82fa0@@YAXXZ	100.0000	100.0000	1	d86686234bea	0x82fa0
-boundarylowerthunks	?ScalarDtor@CScalarDtor855a0@@QAEPAXI@Z	100.0000	100.0000	1	4afa5ee65b8e	0x855a0
+boundarylowerthunks	?ScalarDtor@CScalarDtor855a0@@QAEPAXI@Z	100.0000	100.0000	2	348173057a2e	0x855a0
 boundarylowerthunks	?Set@CSettere56b0@@QAEXXZ	100.0000	100.0000	1	2e845800230c	0xe56b0
 boundarylowerthunks	?StrFree3acb0@@YAXXZ	100.0000	100.0000	1	40c78f1f2bf4	0x3acb0
 boundarylowerthunks	?StrFree3ad30@@YAXXZ	100.0000	100.0000	1	1f30d8d2c91f	0x3ad30
 boundarylowerthunks	?StrFreeb5380@@YAXXZ	100.0000	100.0000	1	a9be3832e53f	0xb5380
 boundarylowerthunks	?StrFreebd7f0@@YAXXZ	100.0000	100.0000	1	1d75f34f8e12	0xbd7f0
-boundarylowerthunks	?Teardown@CTeardown80cf0@@QAEXXZ	100.0000	100.0000	1	c454de094983	0x80cf0
-boundarylowerthunks	?Teardown@CTeardown94c10@@QAEXXZ	100.0000	100.0000	1	6d86ac2a00d7	0x94c10
+boundarymisc	??1CUserBase@@UAE@XZ	100.0000	100.0000	1	e811e7383cca	0x87b0
+boundarymisc	??1CUserBaseSubB940@@UAE@XZ	100.0000	100.0000	1	cd346dd7b9ec	0xb940
 boundarymisc	?DialogInit37870@@YAXPAX@Z	93.3333	93.3333	1	7ef5516ef9a3	0x37870
 boundarymisc	?EndWaitCursor18430@@YAXXZ	100.0000	100.0000	1	dde845fcb9f0	0x18430
 boundarymisc	?Finalize@CFinalize8b90@@QAEXH@Z	100.0000	100.0000	1	5044485ed6d3	0x8b90
@@ -717,8 +719,6 @@ boundarymisc	?ParseSerial@@YAHPAUCSerialObj@@PAD@Z	97.5532	97.5532	1	b677fc4ff44
 boundarymisc	?Reset@CClear212a0@@QAEXXZ	100.0000	100.0000	1	fd559094fea3	0x212a0
 boundarymisc	?ResetDat6295d8@@YAXXZ	100.0000	100.0000	1	29e7262b2d34	0xaf50
 boundarymisc	?Run@CGuardedDispatch1f870@@QAEHXZ	100.0000	100.0000	1	483d8e6e5f0c	0x1f870
-boundarymisc	?StampVptr@CVtblStamp87b0@@QAEXXZ	100.0000	100.0000	1	25639f4e5de9	0x87b0
-boundarymisc	?StampVptr@CVtblStampB940@@QAEXXZ	100.0000	100.0000	1	9c0f8574f087	0xb940
 boundarymisc	?TileSwitch29af0@@YGXPAUCTileSwitch29af0@@HHHHH@Z	100.0000	100.0000	2	c16b5493f343	0x29af0
 boundarytail	?Blit@CObj23d90@@QAEXHHHHH@Z	50.4474	50.4474	1	26a8ee853016	0x23d90
 boundarytail	?BuildRecord118330@@YAHPAUOut118330@@@Z	92.6667	92.6667	2	ae4c5ca1f55b	0x118330
@@ -730,11 +730,11 @@ boundarytail	?GetName@Obj85500@@QAE?AVCString@@XZ	74.5000	74.5000	2	7dd559bb87bd
 boundarytail	?PositionUpdate@CSnd788d0@@QAEHXZ	64.8276	64.8276	1	a7c1ff565747	0x788d0
 boundarytail	?WaitKeyEdge@@YAXHH@Z	97.0422	97.0422	2	03307408d7be	0x13df30
 boundarytaileh	??1CFmb1578b0@@QAE@XZ	91.0000	91.0000	1	733b6b91b074	0x1578b0
+boundarythunks	??1CAbstract137330@@UAE@XZ	100.0000	100.0000	1	2db5e3726988	0x137330
+boundarythunks	??1CAbstract13aaf0@@UAE@XZ	100.0000	100.0000	1	5f3934677131	0x13aaf0
+boundarythunks	??1CAbstract13ca30@@UAE@XZ	100.0000	100.0000	1	a175c06938af	0x13ca30
+boundarythunks	??1CStateSub8c470@@UAE@XZ	100.0000	100.0000	1	1e99770591f5	0x8c470
 boundarythunks	?ButeMgrFlush82b20@@YAXXZ	100.0000	100.0000	2	bf81237a1014	0x82b20
-boundarythunks	?Ctor@CAbstract137330@@QAEXXZ	100.0000	100.0000	1	c8de40e9e6e2	0x137330
-boundarythunks	?Ctor@CAbstract13aaf0@@QAEXXZ	100.0000	100.0000	1	f7c52e3a9403	0x13aaf0
-boundarythunks	?Ctor@CAbstract13ca30@@QAEXXZ	100.0000	100.0000	1	c50f4eab8895	0x13ca30
-boundarythunks	?Ctor@CState8c470@@QAEXXZ	100.0000	100.0000	1	d9f051fcce1c	0x8c470
 boundarythunks	?Forward853d0@@YGXPAX@Z	100.0000	100.0000	1	c3cdfc38f501	0x853d0
 boundarythunks	?ProfSinkTick82ba0@@YAXXZ	100.0000	100.0000	1	15508b167a56	0x82ba0
 boundarythunks	?ProfSinkTick82c20@@YAXXZ	100.0000	100.0000	1	acad74a46b16	0x82c20
@@ -789,7 +789,7 @@ boundaryupper2	?Dispatch163710@@YGHPAXHHH@Z	84.2727	84.2727	2	75bf7884960d	0x163
 boundaryupper2	?DtorC@DICfgC@@QAEXXZ	100.0000	100.0000	1	8d11219c81bb	0x133370
 boundaryupper2	?Free@CDDPageMgr@@QAEHXZ	100.0000	100.0000	1	53321725c805	0x17b5a0
 boundaryupper2	?Free@CImgOwner@@QAEXPAUCImgArg@@@Z	100.0000	100.0000	2	6493bf26d799	0x174ed0
-boundaryupper2	?Init@C1396f0@@QAEPAU1@XZ	100.0000	100.0000	1	212369065c6a	0x1396f0
+boundaryupper2	?Init@C1396f0@@QAEPAU1@XZ	56.6667	56.6667	2	25313e8176d1	0x1396f0
 boundaryupper2	?Init@CDDPageMgr@@QAEHXZ	100.0000	100.0000	2	cbd1a910d64f	0x17b510
 boundaryupper2	?Lookup@CDDPageMgr@@QAEHI@Z	100.0000	100.0000	2	bf16a6dde231	0x17b840
 boundaryupper2	?PackTag_13b910@@YGIPBD@Z	100.0000	100.0000	2	8b7d6cc7721d	0x13b910

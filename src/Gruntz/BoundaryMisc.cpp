@@ -8,23 +8,21 @@
 #include <string.h> // inline strlen / memset intrinsics
 #include <Globals.h>
 
-// The retail CUserBase vtable (?g_vtbl_CUserBase@@3PAPAXA @ VA 0x5e70b4). Both
-// stamp helpers store its address by name (the transitional manual-stamp form),
-// so the DIR32 operand reloc-masks against the matched symbol.
-extern void** g_vtbl_CUserBase;
-
 // ===========================================================================
-// 0x0087b0 - stamp the CUserBase vtable into [this] and return (no return-this,
-// so a plain method - a ctor would emit `mov eax,ecx`). __thiscall, no args.
+// 0x0087b0 - CUserBase base destructor: cl's implicit vptr-restore stamps
+// ??_7CUserBase@@6B@ (0x5e70b4, config/vtable_names.csv) then returns (7-byte
+// `mov [ecx],offset ??_7CUserBase + ret`, the empty final-base dtor). Real
+// polymorphic dtor; 3 vtable slots (0xc) so the emitted ??_7 pairs the retail vtable.
+// __thiscall, no args.
 // ===========================================================================
-struct CVtblStamp87b0 {
-    void StampVptr();
+struct CUserBase {
+    virtual ~CUserBase(); // 0x87b0  slot 0 (+0x00)
+    virtual void s1();
+    virtual void s2();
 };
-SIZE_UNKNOWN(CVtblStamp87b0);
+SIZE_UNKNOWN(CUserBase);
 RVA(0x000087b0, 0x7)
-void CVtblStamp87b0::StampVptr() {
-    *(void**)this = (void*)&g_vtbl_CUserBase;
-}
+CUserBase::~CUserBase() {}
 
 // ===========================================================================
 // 0x008b90 - a finalize/teardown that fires up to two registered __thiscall
@@ -73,21 +71,20 @@ void ResetDat6295d8() {
 }
 
 // ===========================================================================
-// 0x00b940 - stamp the CUserBase vtable into [this] and zero members at +0x04 and
-// +0x3c (reloc-masked against retail's CUserBase vtable 0x5e70b4). __thiscall
-// method (no return-this).
+// 0x00b940 - a CUserBase-derived vptr restore: cl's implicit vptr-restore stamps the
+// CUserBase base vtable (0x5e70b4) then zeros members at +0x04 and +0x3c. Placeholder
+// polymorphic class (a distinct restore, not the 0x87b0 final-base dtor, so its ??_7
+// reloc-masks by shape). __thiscall (no return-this).
 // ===========================================================================
-struct CVtblStampB940 {
-    void* m_vptr; // +0x00
-    i32 m_4;      // +0x04
+struct CUserBaseSubB940 {
+    i32 m_4; // +0x04
     char m_pad8[0x3c - 0x08];
     i32 m_3c; // +0x3c
-    void StampVptr();
+    virtual ~CUserBaseSubB940();
 };
-SIZE_UNKNOWN(CVtblStampB940);
+SIZE_UNKNOWN(CUserBaseSubB940);
 RVA(0x0000b940, 0xf)
-void CVtblStampB940::StampVptr() {
-    m_vptr = (void*)&g_vtbl_CUserBase;
+CUserBaseSubB940::~CUserBaseSubB940() {
     m_4 = 0;
     m_3c = 0;
 }

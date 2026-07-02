@@ -17,6 +17,9 @@
 extern "C" void* RezAlloc(u32 n);
 extern "C" void RezFree(void* p);
 void* operator new(u32 n); // engine allocator @0x1b9b46 (same as RezAlloc)
+inline void* operator new(u32, void* p) {
+    return p;
+} // placement new (construct-in-place; no allocation)
 
 // The severus-worker teardown grand-base vtable (0x5e8cb4); stamped by address
 // (named elsewhere, reloc-masked).
@@ -60,22 +63,28 @@ void DICfgC::DtorC() {
 //
 // NOTE: the 0x5ef740 vtable is a SECONDARY / embedded intrusive-hash-node vtable
 // (stamped at +0x1c, NOT a class's primary +0 vptr) in the CSymParser/CRemusReadStream
-// subsystem - unrelated to the menu classes. Realizing it as a cl-emitted ??_7
-// (embed a polymorphic node member at +0x1c + placement-construct it) was tried and
-// REVERTED: it regressed this 100% match to ~57% - the node ctor's implicit vptr
-// stamp reorders/expands relative to the delicate `volatile`-pinned +0x30 store
-// sequence this init depends on. Left as the reloc-masked manual g_vtbl_1396f0 stamp
-// (a valid transitional state); a proper realization belongs with a CSymParser
-// hash-node class recovery, not the menu vtable pass. (Init stays byte-exact.)
+// subsystem. Realized as a cl-emitted ??_7HashNode1396f0 (an embedded polymorphic node
+// member at +0x1c, placement-constructed so its implicit vptr stamp supplies the
+// `mov [ecx+0x1c],offset ??_7` store) - the mandated real-polymorphic form.
+// @early-stop
+// vptr-middle re-install wall: the node ctor's implicit vptr stamp reschedules
+// relative to the `volatile`-pinned +0x30 dead-store sequence this init depends on, so
+// the store order diverges from retail (documented compiler-model wall, accepted per
+// the manual-vtable-removal mandate). Logic (the stamp + all field inits) complete;
+// ??_7 named via VTBL so the stamp operand still reloc-masks.
 // ---------------------------------------------------------------------------
-DATA(0x001ef740)
-extern void* g_vtbl_1396f0; // 0x5ef740
+struct HashNode1396f0 {
+    virtual void v0();
+    virtual void v1();
+};
+VTBL(HashNode1396f0, 0x001ef740); // ??_7HashNode1396f0 @ 0x5ef740 (reloc-masked)
+SIZE_UNKNOWN(HashNode1396f0);
 struct C1396f0 {
     void* m_0; // +0x00
     i32 _4[(0x10 - 0x4) / 4];
     i32 m_10; // +0x10
     i32 _14[(0x1c - 0x14) / 4];
-    void* volatile m_1c; // +0x1c
+    HashNode1396f0 m_1c; // +0x1c (embedded polymorphic node; ctor stamps its vptr)
     i32 _20[(0x30 - 0x20) / 4];
     void* volatile m_30; // +0x30 (0 then self; volatile pins the dead store + order)
     i32 m_34;            // +0x34
@@ -84,7 +93,7 @@ struct C1396f0 {
 SIZE_UNKNOWN(C1396f0);
 RVA(0x001396f0, 0x1a)
 C1396f0* C1396f0::Init() {
-    m_1c = &g_vtbl_1396f0;
+    new (&m_1c) HashNode1396f0;
     m_30 = 0;
     m_34 = 0;
     m_10 = 0;

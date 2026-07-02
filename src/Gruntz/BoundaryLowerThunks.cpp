@@ -71,22 +71,35 @@ void RegRange5bc50() {
 }
 
 // ===========================================================================
-// 0x080cf0 - teardown: stamp the vtable (0x5e9b0c), run the base teardown
-// (0x13d8c0) and decrement the live-instance counter (0x653c6c). __thiscall.
+// 0x080cf0 - CGameApp base destructor: cl's implicit vptr-restore stamps
+// ??_7CGameApp@@6B@ (0x5e9b0c, config/vtable_names.csv), then the devirtualized
+// CloseResources() (0x13d8c0) and the live-instance-counter decrement (0x653c6c).
+// Real polymorphic dtor - the 6-byte `mov [ecx],offset ??_7CGameApp` is cl's, not a
+// manual stamp. 17 vtable slots (0x44) so the emitted ??_7 pairs the retail vtable.
 // ===========================================================================
-// 0x1e9b0c REALIZED as ??_7CGameApp@@6B@ (gruntzapp emits it); DATA pin removed so
-// the compiler vtable wins the RVA. Manual stamp below stays reloc-masked.
-extern void* g_vtbl_5e9b0c; // 0x5e9b0c  (CGameApp)
-struct CTeardown80cf0 {
-    void* vptr;        // +0x00
-    void Base13d8c0(); // 0x13d8c0 (reloc-masked)
-    void Teardown();
+struct CGameApp {
+    virtual ~CGameApp();           // 0x80cf0  slot 0 (+0x00)
+    virtual void s1();             // +0x04
+    virtual void s2();             // +0x08
+    virtual void s3();             // +0x0c
+    virtual void CloseResources(); // +0x10  (0x13d8c0, devirtualized reloc-masked call)
+    virtual void s5();             // +0x14
+    virtual void s6();             // +0x18
+    virtual void s7();             // +0x1c
+    virtual void s8();             // +0x20
+    virtual void s9();             // +0x24
+    virtual void s10();            // +0x28
+    virtual void s11();            // +0x2c
+    virtual void s12();            // +0x30
+    virtual void s13();            // +0x34
+    virtual void s14();            // +0x38
+    virtual void s15();            // +0x3c
+    virtual void s16();            // +0x40
 };
-SIZE_UNKNOWN(CTeardown80cf0);
+SIZE_UNKNOWN(CGameApp);
 RVA(0x00080cf0, 0x12)
-void CTeardown80cf0::Teardown() {
-    vptr = (void*)&g_vtbl_5e9b0c;
-    Base13d8c0();
+CGameApp::~CGameApp() {
+    CloseResources();
     --g_instCount653c6c;
 }
 
@@ -132,10 +145,7 @@ void ResetCoordPool82fa0() {
 // REALIZED: model the base WAP32::CGameMgr as a global 6-slot (0x18) polymorphic
 // CGameMgr - the delinker names its vtable ??_7CGameMgr@@6B@ globally (config/
 // vtable_names.csv). 0x85540 IS that dtor (restamp the base vtable + UnknownClose),
-// so cl's implicit entry vptr-store - the old manual `vptr = &g_vtbl_5e9b8c` is
-// dropped so it survives - emits ??_7CGameMgr@@6B@ (masks 0x5e9b8c). The bare extern
-// g_vtbl_5e9b8c stays for CScalarDtor855a0's manual (reloc-masked) restamp.
-extern void* g_vtbl_5e9b8c;
+// so cl's implicit entry vptr-store emits ??_7CGameMgr@@6B@ (masks 0x5e9b8c).
 struct CGameMgr {
     virtual ~CGameMgr(); // 0x85540 (slot 0): implicit base-vtable restamp + UnknownClose
     virtual void s1();
@@ -152,24 +162,27 @@ CGameMgr::~CGameMgr() {
 }
 
 // ===========================================================================
-// 0x0855a0 - the scalar-deleting-destructor twin of CTeardown85540: stamp the
-// same base vtable (0x5e9b8c), run the base teardown (0x13ddb0 = CGameMgr::
-// UnknownClose), then (flags&1) RezFree(this) and return this. Retail labelled it
-// CGameMgrDerived::`scalar deleting destructor'; the body is the manual teardown,
-// so it homes next to its 0x85540 sibling. RezFree (0x1b9b82, _RezFree) is the
-// engine's allocator free for this Rez-managed object.
+// 0x0855a0 - the scalar-deleting-destructor twin of CGameMgr::~CGameMgr (0x85540):
+// the base-vptr-restore dtor (stamp + 0x13ddb0 teardown) folded into the delete-flag
+// tail, then (flags&1) RezFree(this) and return this. Retail labelled it
+// CGameMgrDerived::`scalar deleting destructor'. Real polymorphic: the inline
+// vptr-restore dtor supplies the stamp + teardown call; ScalarDtor folds it. RezFree
+// (0x1b9b82, _RezFree) is the engine's allocator free for this Rez-managed object.
 // ===========================================================================
 extern "C" void RezFree(void* p); // 0x1b9b82 (_RezFree)
 struct CScalarDtor855a0 {
-    void* vptr;
     void Base13ddb0(); // 0x13ddb0 (reloc-masked)
+    // inline base-vptr-restore dtor: `mov [ecx],offset ??_7 + call 0x13ddb0`. Inline
+    // so ScalarDtor's explicit dtor call folds the stamp (like the ??_G thunk).
+    virtual ~CScalarDtor855a0() {
+        Base13ddb0();
+    }
     void* ScalarDtor(u32 flags);
 };
 SIZE_UNKNOWN(CScalarDtor855a0);
 RVA(0x000855a0, 0x24)
 void* CScalarDtor855a0::ScalarDtor(u32 flags) {
-    vptr = (void*)&g_vtbl_5e9b8c;
-    Base13ddb0();
+    this->CScalarDtor855a0::~CScalarDtor855a0();
     if (flags & 1) {
         RezFree(this);
     }
@@ -177,22 +190,40 @@ void* CScalarDtor855a0::ScalarDtor(u32 flags) {
 }
 
 // ===========================================================================
-// 0x094c10 - teardown: stamp the vtable (0x5ea344), run the base teardown
-// (0x13cfb0) and clear the singleton pointer (0x653c68). __thiscall.
+// 0x094c10 - CGameWnd base destructor: cl's implicit vptr-restore stamps
+// ??_7CGameWnd@@6B@ (0x5ea344, config/vtable_names.csv), then Destroy() (0x13cfb0)
+// and clears the active-window singleton (0x653c68). Real polymorphic dtor; 22 vtable
+// slots (0x58) so the emitted ??_7 pairs the retail vtable.
 // ===========================================================================
-// 0x1ea344 REALIZED as ??_7CGameWnd@@6B@ (gruntzwnd emits it); DATA pin removed so
-// the compiler vtable wins the RVA. Manual stamp below stays reloc-masked.
-extern void* g_vtbl_5ea344; // 0x5ea344  (CGameWnd)
-struct CTeardown94c10 {
-    void* vptr;
-    void Base13cfb0(); // 0x13cfb0 (reloc-masked)
-    void Teardown();
+struct CGameWnd {
+    virtual ~CGameWnd(); // 0x94c10  slot 0 (+0x00)
+    virtual void s1();
+    virtual void s2();
+    virtual void s3();
+    virtual void s4();
+    virtual void s5();
+    virtual void s6();
+    virtual void s7();
+    virtual void s8();
+    virtual void s9();
+    virtual void s10();
+    virtual void s11();
+    virtual void s12();
+    virtual void s13();
+    virtual void s14();
+    virtual void s15();
+    virtual void s16();
+    virtual void s17();
+    virtual void s18();
+    virtual void s19();
+    virtual void s20();
+    virtual void s21();
+    void Destroy(); // 0x13cfb0 (non-virtual reloc-masked call)
 };
-SIZE_UNKNOWN(CTeardown94c10);
+SIZE_UNKNOWN(CGameWnd);
 RVA(0x00094c10, 0x16)
-void CTeardown94c10::Teardown() {
-    vptr = (void*)&g_vtbl_5ea344;
-    Base13cfb0();
+CGameWnd::~CGameWnd() {
+    Destroy();
     g_singleton653c68 = 0;
 }
 
@@ -293,22 +324,18 @@ void RegRangefbb70() {
 }
 
 // ===========================================================================
-// 0x100780 - stamp the status-base vtable (0x5eabcc) then tail-call the base
-// init (0x1d6b). __thiscall.
+// 0x100780 - a CStatusBarItem-base vptr restore: cl's implicit vptr-restore stamps
+// the status-base vtable (0x5eabcc) then tail-jumps the base init/teardown (0x1d6b).
+// Placeholder polymorphic class (the real CStatusBarItem dtor is modeled in
+// StatusBarItem.cpp; this is a distinct restore, so its ??_7 reloc-masks by shape).
 // ===========================================================================
-// 0x1eabcc realized as ??_7CStatusBarItem@@6B@ (direct base of the CSBI_* leaves;
-// their dtor *Eh.cpp TUs emit it). DATA pin removed so the compiler vtable wins the
-// RVA (config/vtable_names.csv); the manual stamp below stays as a reloc-masked ref.
-extern void** g_vtbl_statusBase; // ?g_vtbl_statusBase@@3PAPAXA
-struct CStatusBase100780 {
-    void* vptr;
+struct CStatusBaseSub100780 {
     void Base1d6b(); // 0x1d6b (reloc-masked)
-    void Init();
+    virtual ~CStatusBaseSub100780();
 };
-SIZE_UNKNOWN(CStatusBase100780);
+SIZE_UNKNOWN(CStatusBaseSub100780);
 RVA(0x00100780, 0xb)
-void CStatusBase100780::Init() {
-    vptr = (void*)&g_vtbl_statusBase;
+CStatusBaseSub100780::~CStatusBaseSub100780() {
     Base1d6b();
 }
 
