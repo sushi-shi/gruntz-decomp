@@ -39,27 +39,25 @@ public:
     virtual i32 ScalarDtor(i32 flag); // +0x04  scalar-deleting destructor
 };
 
-// The real member-teardown dtor (0x157570) lives in CDDrawSubMgrLeafScan.cpp as
-// CDDrawSubMgrLeafScan::~CDDrawSubMgrLeafScan (vtable 0x5efca0). Referenced so the
-// ??_G scalar-dtor below (0x157550) emits a call reloc naming that dtor.
+// CDDrawSubMgrLeafScan: the real sibling class (its full body + own vtable 0x5efca0
+// live in CDDrawSubMgrLeafScan.cpp). Three of its methods landed in THIS TU: the
+// readiness predicate (vtable slot [5], 0x157530), the map-clear (0x157bc0), and the
+// ??_G scalar-deleting dtor (0x157550, which forwards to the real member-teardown
+// ~CDDrawSubMgrLeafScan at 0x157570 in the sibling TU). It owns a name-keyed map at
+// +0x10 plus two flag fields at +0x2c/+0x30. Polymorphic (vptr @+0x00); the virtual
+// dtor's key function is out-of-line (own TU), so no ??_7 is emitted here.
 class CDDrawSubMgrLeafScan {
 public:
-    virtual ~CDDrawSubMgrLeafScan();
-};
+    virtual ~CDDrawSubMgrLeafScan(); // 0x157570 (member-teardown, own TU)
+    i32 VirtualMethodUnknown14();    // 0x157530  (vtable slot [5], readiness predicate)
+    void ClearUnknownMap();          // 0x157bc0
+    void* ScalarDtor(i32 flag);      // 0x157550  (??_G scalar-deleting dtor)
 
-// CDDrawMapHolder: the tomalla placeholder carrying three CDDrawSubMgrLeafScan methods
-// that landed in this TU (a map @+0x10 keyed by name, plus two flag fields at +0x2c/
-// +0x30 read by the readiness predicate).
-class CDDrawMapHolder {
-public:
-    i32 VirtualMethodUnknown14(); // 0x157530
-    void ClearUnknownMap();       // 0x157bc0
-    void* ScalarDtor(i32 flag);   // 0x157550 (??_G of CDDrawSubMgrLeafScan)
-
-    char m_pad00[0x10];  // +0x00 .. +0x0f
-    CMapStringToOb m_10; // +0x10  name-keyed value map (0x10..0x2b)
-    i32 m_2c;            // +0x2c
-    i32 m_30;            // +0x30
+    // vptr @+0x00 (implicit)
+    char m_pad04[0x10 - 0x04]; // +0x04 .. +0x0f
+    CMapStringToOb m_10;       // +0x10  name-keyed value map (0x10..0x2b)
+    i32 m_2c;                  // +0x2c
+    i32 m_30;                  // +0x30
 };
 
 // CDDrawSubMgrGrandBase - the CObject-like family grand-base (vptr + the three header
@@ -139,7 +137,7 @@ fail:
 // ---------------------------------------------------------------------------
 RVA(0x00157ae0, 0x11)
 void CDDrawSubMgrLeaf::VirtualMethodUnknown18() {
-    ((class CDDrawMapHolder*)this)->ClearUnknownMap();
+    ((CDDrawSubMgrLeafScan*)this)->ClearUnknownMap();
     m_0c = 0;
 }
 
@@ -351,7 +349,7 @@ i32 CDDrawSubMgrLeaf::FUN_00552640() {
 // ---------------------------------------------------------------------------
 // Readiness predicate: ready when either flag field (+0x2c / +0x30) is set.
 RVA(0x00157530, 0x17)
-i32 CDDrawMapHolder::VirtualMethodUnknown14() {
+i32 CDDrawSubMgrLeafScan::VirtualMethodUnknown14() {
     if (m_2c != 0) {
         return 1;
     }
@@ -366,8 +364,8 @@ i32 CDDrawMapHolder::VirtualMethodUnknown14() {
 // member-teardown ~CDDrawSubMgrLeafScan (0x157570) then operator delete under the flag.
 SYMBOL(??_GCDDrawSubMgrLeafScan @@UAEPAXI@Z)
 RVA(0x00157550, 0x1e)
-void* CDDrawMapHolder::ScalarDtor(i32 flag) {
-    ((CDDrawSubMgrLeafScan*)this)->CDDrawSubMgrLeafScan::~CDDrawSubMgrLeafScan();
+void* CDDrawSubMgrLeafScan::ScalarDtor(i32 flag) {
+    this->CDDrawSubMgrLeafScan::~CDDrawSubMgrLeafScan();
     if (flag & 1) {
         operator delete(this);
     }
@@ -383,7 +381,7 @@ void* CDDrawMapHolder::ScalarDtor(i32 flag) {
 // store position + the reloc-masked EH-state push (same family wall as FreeAll_152720).
 // docs/patterns/zero-register-pinning.md.
 RVA(0x00157bc0, 0xa2)
-void CDDrawMapHolder::ClearUnknownMap() {
+void CDDrawSubMgrLeafScan::ClearUnknownMap() {
     CObject* val = 0;
     POSITION pos = (POSITION)(m_10.GetCount() != 0 ? -1 : 0);
     CString key;
@@ -399,7 +397,6 @@ void CDDrawMapHolder::ClearUnknownMap() {
 }
 
 SIZE_UNKNOWN(CCatalogNode);
-SIZE_UNKNOWN(CDDrawMapHolder);
 SIZE_UNKNOWN(CDDrawSubMgrLeafScan);
 SIZE_UNKNOWN(CDDrawSubMgrGrandBase);
 SIZE_UNKNOWN(CDDrawSubMgrLeaf);

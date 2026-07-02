@@ -340,11 +340,7 @@ void* CDDrawWorkerList::VirtualMethodUnknown30(i32 a1, i32 a2, i32 a3, i32 a4, i
 // the list.
 RVA(0x00163c60, 0x2c)
 void CDDrawWorkerList::VirtualMethodUnknown1C() {
-    struct HLayout {
-        char _pad[0x14];
-        WorkNode* m_head;
-    };
-    WorkNode* pNode = ((HLayout*)this)->m_head;
+    WorkNode* pNode = (WorkNode*)m_workers.GetHeadPosition();
     while (pNode) {
         WorkNode* pCurrent = pNode;
         pNode = pNode->m_next;
@@ -369,11 +365,7 @@ i32 CDDrawWorkerList::VirtualMethodUnknown20() {
 // Built /MT (base, no /GX) so the member teardown carries no EH frame.
 RVA(0x00163bc0, 0x2c)
 CDDrawWorkerList::~CDDrawWorkerList() {
-    struct HLayout {
-        char _pad[0x14];
-        WorkNode* m_head;
-    };
-    WorkNode* pNode = ((HLayout*)this)->m_head;
+    WorkNode* pNode = (WorkNode*)m_workers.GetHeadPosition();
     while (pNode) {
         WorkNode* pCurrent = pNode;
         pNode = pNode->m_next;
@@ -394,11 +386,7 @@ CDDrawWorkerList::~CDDrawWorkerList() {
 //    Otherwise                                     → skip, keep node
 RVA(0x00163bf0, 0x6d)
 void CDDrawWorkerList::VirtualMethodUnknown34(i32 a1, i32 a2) {
-    struct HLayout {
-        char _pad[0x14];
-        WorkNode* m_head;
-    };
-    WorkNode* pNode = ((HLayout*)this)->m_head;
+    WorkNode* pNode = (WorkNode*)m_workers.GetHeadPosition();
     while (pNode) {
         WorkNode* pCurrent = pNode;
         CDDrawWorkerItem* child = pCurrent->m_child;

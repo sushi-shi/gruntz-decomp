@@ -63,6 +63,7 @@ public:
     void StopAll();                    // 0x136de0  StopAndRewind+StopAllClones over the buffer list
     i32 FreeSamples(); // 0x136ed0  free + unlink every cached sample in the +0x0c list
     i32 SetPrimaryFormat(void* fmt); // 0x1371a0  CreatePrimaryBuffer + primary SetFormat
+    i32 StartPrimary_137200();       // 0x137200  (extern) reads +0x78/+0x84, CreatePrimaryBuffer
     i32 CreatePrimaryBuffer();       // 0x137260  (extern, defined elsewhere)
     DirectSoundMgr* CreateBuffer(
         WaveFormatX* fmt,

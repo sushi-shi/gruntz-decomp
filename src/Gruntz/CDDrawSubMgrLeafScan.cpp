@@ -59,15 +59,6 @@ public:
     char m_pad00[0x10];   // +0x00..0x0f
     DirectSoundMgr* m_10; // +0x10
 };
-// 0x137200: a __thiscall SoundDevice method (reads +0x78/+0x84, calls
-// CreatePrimaryBuffer); still unnamed in the export set, so this call stays
-// reloc-masked. Modeled as a method on a layout-compatible view so the call
-// lowers to mov ecx,m_2c; call.
-class SoundDeviceStartView {
-public:
-    i32 StartPrimary_137200(); // 0x137200
-};
-
 // The sub-manager's OWN vtable (0x5efca0) is no longer an extern: CDDrawSubMgrLeafScan
 // is real-polymorphic, so cl emits ??_7CDDrawSubMgrLeafScan + the implicit grand-base
 // re-stamp. The 0x1c cache element (LeafElementObj) is now real-polymorphic too
@@ -731,7 +722,7 @@ i32 CDDrawSubMgrLeafScan::MatchSub_1584f0(LeafScanSoundArg* arg1, i32 arg2) {
         return 0;
     }
     if (arg2 != 0) {
-        if (((SoundDeviceStartView*)m_2c)->StartPrimary_137200() == 0) {
+        if (m_2c->StartPrimary_137200() == 0) {
             return 0;
         }
     }
@@ -774,11 +765,10 @@ SIZE(LeafElementObj, 0x1c);
 SIZE_UNKNOWN(LeafRootHandle);
 SIZE_UNKNOWN(LeafScanBase);
 SIZE_UNKNOWN(LeafScanSoundArg);
-SIZE_UNKNOWN(LeafScanVM18Sink);
 SIZE_UNKNOWN(LeafScanValue);
 SIZE_UNKNOWN(LeafSumSource);
 SIZE_UNKNOWN(CParseSource);
-SIZE_UNKNOWN(SoundDeviceStartView);
+SIZE_UNKNOWN(LeafScanVM18Sink);
 VTBL(CDDrawSubMgrLeafScan, 0x001efca0); // ??_7CDDrawSubMgrLeafScan (was g_leafScanVtbl)
 // ??_7LeafElementObj (was g_leafElemVtbl @0x5eff08, LeafElemVtbl / ClassWithUnknownVTable42).
 // cl auto-emits it from the real-polymorphic element; retail's 9-slot datum is

@@ -1,7 +1,7 @@
 #include <rva.h>
 // CDDrawWorkerHost.cpp - the scalar (non-deleting) destructor (0x163af0) of the
 // CLoadable-derived host (own vtable g_ddrawWorkerHostVtbl @0x5f0270). Stamps
-// its own vtable, shuts down + frees the +0xb0 worker (PreDestroy then delete),
+// its own vtable, shuts down + frees the +0xb0 worker (PruneCount then delete),
 // frees the two owned buffers (+0x20/+0x24), then the CWorkerObArray member (+0x9c)
 // and the CLoadable grand-base teardown fold in under the /GX frame. See
 // include/Gruntz/CDDrawWorkerHost.h.
@@ -44,8 +44,8 @@ CDDrawWorkerHost::CDDrawWorkerHost(i32 a1, i32 a2, i32 a3) : CLoadable(a2, a3, a
 
 // ===========================================================================
 // 0x163af0 - ~CDDrawWorkerHost: stamp own vtable; if the worker is live run its
-// PreDestroy (0x1688b0) and then delete it (its scalar dtor 0x1682f0 + the +0x70
-// base-vtable restamp fold into the inline ~CDDrawWorkerChild); free the two owned
+// PruneCount (0x1688b0) and then delete it (its FreeGrids body 0x1682f0 + the +0x70
+// base-vtable restamp fold into the inline ~CWwdSpatialMgr); free the two owned
 // buffers; then the +0x9c CWorkerObArray member and ~CLoadable fold in.
 // ===========================================================================
 // @early-stop
@@ -57,7 +57,7 @@ CDDrawWorkerHost::CDDrawWorkerHost(i32 a1, i32 a2, i32 a3) : CLoadable(a2, a3, a
 RVA(0x00163af0, 0xcd)
 CDDrawWorkerHost::~CDDrawWorkerHost() {
     if (m_b0 != 0) {
-        m_b0->PreDestroy();
+        m_b0->PruneCount();
     }
     if (m_b0 != 0) {
         delete m_b0;

@@ -12,20 +12,24 @@
 #include <Ints.h>
 #include <Gruntz/CDDrawWorker.h> // CWorkerObArray, CLoadable, g_wapObjectDtorVtbl
 
-// The worker subobject deleted at +0xb0. Its scalar dtor body (0x1682f0) runs,
-// then the host restamps the worker's +0x70 base vtable, then operator delete
-// frees it. PreDestroy (0x1688b0) is invoked first, as a separate guarded call.
-struct CDDrawWorkerChild {
+// The spatial-grid worker subobject at +0xb0 is a CWwdSpatialMgr (its real class,
+// defined in src/Gruntz/WwdSpatialMgr.cpp - the same object CImageSet3 owns at +0xb0).
+// Its FreeGrids body (0x1682f0) runs on teardown, then the host restamps the worker's
+// +0x70 base vtable, then operator delete frees it. PruneCount (0x1688b0) is invoked
+// first, as a separate guarded call. (matcher-3 owns the CWwd* family; this is a
+// minimal member-view of the same class - the two reloc-masked callees resolve to
+// WwdSpatialMgr.cpp's real definitions.)
+struct CWwdSpatialMgr {
     void* m_vptr;              // +0x00
     char m_pad04[0x70 - 0x04]; // +0x04..+0x6f
     void* m_70;                // +0x70  base/secondary vtable restamped on teardown
-    void PreDestroy();         // 0x1688b0  (reloc-masked external)
-    void DtorImpl();           // 0x1682f0  (reloc-masked external scalar-dtor body)
-    ~CDDrawWorkerChild();      // inline: DtorImpl() then restamp m_70
+    i32 PruneCount();          // 0x1688b0  (reloc-masked external)
+    void FreeGrids();          // 0x1682f0  (reloc-masked external scalar-dtor body)
+    ~CWwdSpatialMgr();         // inline: FreeGrids() then restamp m_70
 };
 
-inline CDDrawWorkerChild::~CDDrawWorkerChild() {
-    DtorImpl();
+inline CWwdSpatialMgr::~CWwdSpatialMgr() {
+    FreeGrids();
     m_70 = &g_wapObjectDtorVtbl;
 }
 
@@ -43,7 +47,7 @@ public:
     i32 m_50;                  // +0x50  (=-1)
     char m_pad54[0x9c - 0x54]; // +0x54..+0x9b
     CWorkerObArray m_9c;       // +0x9c  owned-pointer array (ctor 0x1b55e9 / ~ 0x1b561c)
-    CDDrawWorkerChild* m_b0;   // +0xb0  worker subobject
+    CWwdSpatialMgr* m_b0;      // +0xb0  spatial-grid worker subobject
     char m_padB4[0xf4 - 0xb4]; // +0xb4..+0xf3
     i32 m_f4[0x19];            // +0xf4..+0x157  (25 dwords; memset 0 then m_f4[0]=100)
 };
