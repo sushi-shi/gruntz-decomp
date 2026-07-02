@@ -126,7 +126,7 @@ public:
 // (adds LoadKeyed/Refresh etc. on top of CFileImage's slots; shares CFileImage's
 // teardown). The class adds no destructible members of its own, so ~CFileImageSurface
 // (0x142360) is byte-identical to ~CFileImage: it re-stamps the BASE vptr
-// (g_fileImageVtbl), runs the shared FreeSurfaces teardown and destroys the owned
+// (the shared surface vtable @0x5ef7f0), runs the shared FreeSurfaces teardown and destroys the owned
 // CPtrArray at +0x94. Modeled as a standalone shape (NOT deriving from CFileImage)
 // so its dtor inlines that teardown the way retail's second compiled copy does,
 // without disturbing the already-matched CFileImage dtor. ScalarDelete is its `??_G`

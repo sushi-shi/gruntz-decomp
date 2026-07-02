@@ -858,7 +858,7 @@ i32 CFileImage::Blit248(void* srcv, void* palv, i32 mode) {
 // CFileImage / CFileImageSurface / CImageSurfaceItemInit are all real-polymorphic
 // now: cl emits their ??_7 and stamps the vptr (compiler-implicit, stamp-first)
 // in the ctor/dtor. The shared surface vtable (0x5ef7f0) reloc-masks; no manual
-// g_fileImageVtbl extern/stamp remains (all-vtables mandate).
+// base-surface vtable extern/stamp remains (all-vtables mandate).
 
 // ---------------------------------------------------------------------------
 // CFileImage::~CFileImage
@@ -933,7 +933,7 @@ CFileImageSurface::~CFileImageSurface() {
 // Modeling pieces (all reloc-masked):
 //   - the source's slot-0 probe(magic, &out) - declared on a tiny polymorphic view;
 //   - the global CObArray registry @0x653c88 + its grow index @0x653c90;
-//   - the 0xc0 surface item (vtbl g_fileImageVtbl, CByteArray @+0x94), the same
+//   - the 0xc0 surface item (surface vtable @0x5ef7f0, CByteArray @+0x94), the same
 //     shape as CDDrawPtrCollections::Create7f0_1.
 // ---------------------------------------------------------------------------
 inline void* operator new(u32, void* p) {
@@ -969,9 +969,9 @@ public:
 };
 // Real-polymorphic (2-slot foreign surface-item vtable 0x5ef7f0; declared-only
 // slots reloc-mask). cl auto-stamps the vptr (??_7CImageSurfaceItemInit@@6B@) at
-// ctor entry - the manual `*(void**)this = &g_fileImageVtbl` stamp already stamped
-// the vptr FIRST, so the store position is preserved. Extern + stamp removed per
-// the all-vtables mandate.
+// ctor entry - the former manual surface-vtable stamp already stamped the vptr
+// FIRST, so the store position is preserved. Extern + stamp removed per the
+// all-vtables mandate.
 class CImageSurfaceItemInit {
 public:
     virtual void* FUN_00141330(u32 flags); // slot 0 @+0x00  scalar-deleting dtor
@@ -1007,7 +1007,7 @@ public:
 
 // ---------------------------------------------------------------------------
 // Probe `src` (slot 0); if it yields a payload, allocate a 0xc0 surface
-// item, construct it (CByteArray @+0x94, stamp g_fileImageVtbl, zero the scalar
+// item, construct it (CByteArray @+0x94, stamp the surface vtable, zero the scalar
 // fields), Load the payload through slot 1, and on success file it into the global
 // image cache - else virtual-delete it. /GX. ret 0xc.
 // @early-stop

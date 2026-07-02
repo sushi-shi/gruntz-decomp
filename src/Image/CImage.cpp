@@ -29,25 +29,6 @@ enum ImageFormatTag {
     IMGTAG_DIP = 0x504944, // "DIP" -> loader index 4
 };
 
-// The +0x28 load virtual (LoadDispatch, slot 10) reached via the vtable from
-// Resolve. Modeled as a __thiscall pointer-to-member in a typed vtable struct (the
-// MSVC5-period idiom; the class is complete -> 4-byte PMF) so the call lowers to
-// `mov edx,[this]; ...; call [edx+0x28]` with callee-side cleanup.
-struct CImageLoadVtbl;
-class CImageLoadDispatch {
-public:
-    CImageLoadVtbl* vptr;                                             // +0x00
-    i32 LoadVirtual(CImageFrameDesc* desc, u32 mode, void* a, i32 b); // vtbl[0x28]
-};
-typedef i32 (CImageLoadDispatch::*LoadVirtualFn)(CImageFrameDesc*, u32, void*, i32);
-struct CImageLoadVtbl {
-    char _00[0x28 - 0x00];     // slots 0..9 (@0x00..0x24)
-    LoadVirtualFn LoadVirtual; // [0x28]
-};
-inline i32 CImageLoadDispatch::LoadVirtual(CImageFrameDesc* desc, u32 mode, void* a, i32 b) {
-    return (this->*(vptr->LoadVirtual))(desc, mode, a, b);
-}
-
 // ---------------------------------------------------------------------------
 // (vtable slot 12): Create. The Create24 sibling without the mode args:
 // allocate a surface from the parent pool's 3-arg create (CreateC @0x142560) for
@@ -122,8 +103,7 @@ i32 CImage::Resolve(CImageSource* src, i32 arg) {
     if (resolved == 0) {
         return 0;
     }
-    i32 result = ((CImageLoadDispatch*)this)
-                     ->LoadVirtual((CImageFrameDesc*)resolved, (u32)index, (void*)src->m_0c, arg);
+    i32 result = this->LoadDispatch((CImageFrameDesc*)resolved, (u32)index, (void*)src->m_0c, arg);
     src->Release();
     return result;
 }
@@ -336,32 +316,11 @@ i32 CImage::CopyFrom(CImage* other) {
 // The tag switch is the same unsigned binary-search tree as Resolve (key u32, the
 // ja/je fourcc compares); docs/patterns/switch-key-unsigned-ja-vs-jg.md.
 //
-// The FreeAll (slot 7, +0x1c) + Resolve (slot 11, +0x2c) re-runs go through the
-// vtable (`call [this->vptr+N]`), so they are dispatched via a typed vtable view -
-// the manual-vtable CImage's own FreeAll/Resolve are not declared virtual.
+// The FreeAll (slot 7, +0x1c) + Resolve (slot 11, +0x2c) re-runs are ordinary virtual
+// dispatches on `this` now (CImage declares them virtual), so `this->FreeAll()` /
+// `this->Resolve(...)` lower to `call [vptr+0x1c]` / `[vptr+0x2c]`. The parse-source
+// clean/has-source probes are virtual calls on the CImageSurfaceSrc sub-object.
 // ---------------------------------------------------------------------------
-struct CImageReloadVtbl;
-class CImageReloadDispatch {
-public:
-    CImageReloadVtbl* vptr;                   // +0x00
-    void FreeAllV();                          // vtbl[0x1c] slot 7
-    i32 ResolveV(CImageSource* src, i32 arg); // vtbl[0x2c] slot 11
-};
-typedef void (CImageReloadDispatch::*FreeAllVFn)();
-typedef i32 (CImageReloadDispatch::*ResolveVFn)(CImageSource*, i32);
-struct CImageReloadVtbl {
-    char _00[0x1c - 0x00];
-    FreeAllVFn FreeAll; // [0x1c]
-    char _20[0x2c - 0x20];
-    ResolveVFn Resolve; // [0x2c]
-};
-inline void CImageReloadDispatch::FreeAllV() {
-    (this->*(vptr->FreeAll))();
-}
-inline i32 CImageReloadDispatch::ResolveV(CImageSource* src, i32 arg) {
-    return (this->*(vptr->Resolve))(src, arg);
-}
-
 RVA(0x00153380, 0xeb)
 i32 CImage::Reload(CImageSource* src, i32 arg) {
     if (m_2c == 0) {
@@ -369,14 +328,14 @@ i32 CImage::Reload(CImageSource* src, i32 arg) {
     }
     CImageSurfaceSrc* s = m_2c->m_08;
     if (s != 0) {
-        if (s->vptr->IsClean(s) == 0) {
+        if (s->IsClean() == 0) {
             return 1;
         }
     }
     s = m_2c->m_08;
-    if (s->vptr->HasSource(s) != 0) {
-        ((CImageReloadDispatch*)this)->FreeAllV();
-        return ((CImageReloadDispatch*)this)->ResolveV(src, arg);
+    if (s->HasSource() != 0) {
+        this->FreeAll();
+        return this->Resolve(src, arg);
     }
 
     i32 index;
@@ -440,30 +399,15 @@ public:
     i32 Resolve(void* parent, i32 z1, void* b, void* c, void* d, i32 z2); // 0x1647e0
 };
 
-// The +0x38 render virtual (0x153470), reached via the vtable. Modeled as a
-// __thiscall pointer-to-member-fn in a typed vtable struct (the MSVC5-period
-// idiom; raw __thiscall fn-ptrs are rejected) so the dispatch lowers to
-// `mov ecx,this; call [vptr+0x38]` with callee-side cleanup.
-struct CImageVtbl;
-class CImageDispatch {
-public:
-    CImageVtbl* vptr;                              // +0x00
-    void RenderImage(CResolveNode* clip, void* a); // vtbl[0x38]
-};
-typedef void (CImageDispatch::*RenderImageFn)(CResolveNode*, void*);
-struct CImageVtbl {
-    char _00[0x38 - 0x00];     // slots 0..13 (@0x00..0x34)
-    RenderImageFn RenderImage; // [0x38]
-};
-inline void CImageDispatch::RenderImage(CResolveNode* clip, void* a) {
-    (this->*(vptr->RenderImage))(clip, a);
-}
+// The +0x38 render virtual (slot 14, RenderImage @0x153470) is dispatched on `this`
+// as an ordinary virtual call now (`this->RenderImage(&clip, a)` -> `mov ecx,this;
+// call [vptr+0x38]`); its body is external engine code (declared-only).
 
 RVA(0x00153790, 0x6a)
 void CImage::RenderFrame(void* a, void* b, void* c, void* d) {
     static CResolveNode clip; // magic-static guard @0x6bf314, ctor 0x1549d0 + atexit
     if (clip.Resolve(m_0c, 0, b, c, d, 0)) {
-        ((CImageDispatch*)this)->RenderImage(&clip, a);
+        this->RenderImage(&clip, a);
     }
 }
 
@@ -489,7 +433,7 @@ void CImage::RenderFrameClipped(void* a, void* b, void* c, void* rect, void* d) 
             g_imageClipRect[2] = ((i32*)rect)[2];
             g_imageClipRect[3] = ((i32*)rect)[3];
         }
-        ((CImageDispatch*)this)->RenderImage(&clip, a);
+        this->RenderImage(&clip, a);
     }
 }
 
@@ -497,14 +441,14 @@ void CImage::RenderFrameClipped(void* a, void* b, void* c, void* rect, void* d) 
 // Class-metadata annotations (EOF-hosted: CImage.h is included by several /O2
 // Image TUs whose leaf decoders are byte-exact-sensitive, so keep the completeness
 // typedefs after the last function). VTBL skips (logged): CImageBase's vtable is
-// the shared grand-base 0x5e8cb4 (already ?g_wapObjectDtorVtbl); CImageSurfaceItem
+// the shared grand-base 0x5e8cb4 (the CObject dtor vtable); CImageSurfaceItem
 // / CImageSource are flagged [virtual] only via their polymorphic Gruntz defs, not
-// this view. CImage itself is RTTI-catalogued (??_7CImage@@ @0x5eaa2c).
+// this view. CImage itself is RTTI-catalogued (??_7CImage@@ @0x5eaa2c, cl-emitted
+// from the real virtuals declared in CImage.h).
 // ===========================================================================
 // --- CImage.h header classes ---
 SIZE(CImageBase, 0x10); // polymorphic base (CImage fields start at +0x10)
 SIZE_UNKNOWN(CImageSurfaceSrc);
-SIZE_UNKNOWN(CImageSurfaceSrcVtbl);
 SIZE(CImageSurfaceItem, 0xc0); // RE'd CPoolItemA item size (0xc0)
 SIZE_UNKNOWN(CImageSurfacePool);
 SIZE(CImageFrameRebuildDesc, 0x20); // 8-dword by-value frame descriptor
@@ -516,12 +460,6 @@ SIZE_UNKNOWN(CBlitClipOwner);
 SIZE_UNKNOWN(CImageParent);
 SIZE_UNKNOWN(CImageFrameDesc);
 SIZE_UNKNOWN(CImageSource);
-SIZE_UNKNOWN(CImage); // RTTI CImage (partial model; RTTI-vtable catalogued)
-// --- CImage.cpp local dispatch/vtbl views ---
-SIZE_UNKNOWN(CImageLoadDispatch);
-SIZE_UNKNOWN(CImageLoadVtbl);
-SIZE_UNKNOWN(CImageReloadDispatch);
-SIZE_UNKNOWN(CImageReloadVtbl);
+SIZE_UNKNOWN(CImage); // RTTI CImage (real-polymorphic; RTTI-vtable catalogued)
+// --- CImage.cpp local views ---
 SIZE_UNKNOWN(CResolveNode);
-SIZE_UNKNOWN(CImageDispatch);
-SIZE_UNKNOWN(CImageVtbl);

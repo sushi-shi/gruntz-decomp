@@ -5,8 +5,8 @@
 // CImage type-descriptor in the binary; primary vftable @0x5eaa2c). It is a
 // surface-backed image element in the DDrawMgr image family and a SIBLING
 // of CDDrawSurfacePair (include/Gruntz/CDDrawSurfacePair.h): both derive from the
-// same polymorphic CWapObject base (grand-base dtor vtable g_wapObjectDtorVtbl
-// @0x5e8cb4) and share the +0x04/+0x08/+0x0c base header and the +0x0c parent /
+// same polymorphic CWapObject base (grand-base dtor vtable @0x5e8cb4) and share
+// the +0x04/+0x08/+0x0c base header and the +0x0c parent /
 // +0x2c held-surface (CPoolItemA) / +0x30 owned-object layout.
 //
 // NOTE: the existing non-polymorphic loader class in src/Image/Image.cpp is ALSO
@@ -36,10 +36,10 @@ class CString;   // real MFC CString (4-byte ptr); completed via <Mfc.h> in the 
                  // (forward-decl here so includers needn't choose <Mfc.h> vs <Win32.h>)
 class CBlitInfo; // the sprite blit/draw request (esi); defined in CImageSpriteBlit.cpp
 
-// The two vtables in the dtor chain: this class's own (0x5eaa2c) and the
-// grand-base CObject dtor vtable (0x5e8cb4 = g_wapObjectDtorVtbl). Reloc-masked
-// DATA externs (the manual stamps reference the RETAIL tables, whose contents are
-// unmatched engine code).
+// The two vtables in the dtor chain: this class's own (0x5eaa2c, cl-emitted
+// ??_7CImage) and the grand-base CObject dtor vtable (0x5e8cb4). Both stamps are
+// compiler-implicit now (no manual vtable stamp); the reloc-masked operands name
+// the emitted / shared vtables.
 class CImageParent; // +0x0c parent (CDDrawPtrCollections); defined below
 
 // ---------------------------------------------------------------------------
@@ -51,9 +51,12 @@ class CImageParent; // +0x0c parent (CDDrawPtrCollections); defined below
 // eh-dtor-vptr-stamp-vs-trylevel-order wall). ~CImageBase folds into the leaf
 // ~CImage and supplies the /GX EH frame (docs/patterns/
 // eh-dtor-multilevel-polymorphic-chain.md, inline-base-dtor-folds-into-leaves.md).
-// Its emitted vtable (??_7CImageBase) reloc-masks against the target's 0x5e8cb4
-// grand-base stamp (which the shared g_wapObjectDtorVtbl names; the stamp
-// bytes are identical, the masked operand differs only in symbol name).
+// Its emitted vtable reloc-masks against the target's 0x5e8cb4 grand-base stamp
+// (the stamp bytes are identical, the masked operand differs only in symbol name).
+//
+// The seven base virtuals are declared in retail vtable-slot order (0x1eaa2c .rdata):
+// slot 0 is a base helper, slot 1 the destructor (matching retail's dtor-at-slot-1
+// layout), slots 2..6 the remaining base virtuals; CImage adds slots 7..17.
 // ---------------------------------------------------------------------------
 class CImageBase {
 public:
@@ -62,13 +65,13 @@ public:
     // store of ~CImage (matching retail's stamp-after-resets order). The empty body
     // is still non-trivial, so it supplies the leaf's /GX EH frame. The base-field
     // resets live in ~CImage's body (so they precede this fold's stamp).
-    virtual ~CImageBase() {}
-    virtual void v00();
-    virtual void v04();
-    virtual void v08();
-    virtual void v0c();
-    virtual void v10();
-    virtual void v14();
+    virtual void v00();      // slot 0  (0x1bef01)
+    virtual ~CImageBase() {} // slot 1  (the destructor)
+    virtual void v08();      // slot 2  (0x0028ec)
+    virtual void v0c();      // slot 3  (0x00106e)
+    virtual void v10();      // slot 4  (0x004034)
+    virtual void v14();      // slot 5  (0x0013b6)
+    virtual void v18();      // slot 6  (0x001c08)
 
     // vptr @+0x00 (implicit, polymorphic)
     i32 m_04;           // +0x04  status word (-1 inactive)
@@ -83,17 +86,38 @@ public:
 // vtable contents are external engine code; only the two slots are evidenced.
 //
 // The two slots are called `mov ecx,[obj]; push obj; call [ecx+N]` - the object is
-// pushed as an explicit stack arg (the vtable fn ptr is __stdcall(this), not a PMF
-// with this-in-ecx). Model the vtable entries as __stdcall fn-ptrs over the object.
-struct CImageSurfaceSrc;
-struct CImageSurfaceSrcVtbl {
-    char _00[0x60 - 0x00];
-    i32(__stdcall* IsClean)(CImageSurfaceSrc*); // [0x60]
-    char _64[0x6c - 0x64];
-    i32(__stdcall* HasSource)(CImageSurfaceSrc*); // [0x6c]
-};
+// pushed as an explicit stack arg (the slots are __stdcall(this), not this-in-ecx).
+// Modeled REAL-POLYMORPHIC with __stdcall virtuals so the dispatch falls out of the
+// language; the source is never constructed here, so cl emits no ??_7 for it.
 struct CImageSurfaceSrc {
-    CImageSurfaceSrcVtbl* vptr; // +0x00
+    virtual i32 __stdcall v00();
+    virtual i32 __stdcall v04();
+    virtual i32 __stdcall v08();
+    virtual i32 __stdcall v0c();
+    virtual i32 __stdcall v10();
+    virtual i32 __stdcall v14();
+    virtual i32 __stdcall v18();
+    virtual i32 __stdcall v1c();
+    virtual i32 __stdcall v20();
+    virtual i32 __stdcall v24();
+    virtual i32 __stdcall v28();
+    virtual i32 __stdcall v2c();
+    virtual i32 __stdcall v30();
+    virtual i32 __stdcall v34();
+    virtual i32 __stdcall v38();
+    virtual i32 __stdcall v3c();
+    virtual i32 __stdcall v40();
+    virtual i32 __stdcall v44();
+    virtual i32 __stdcall v48();
+    virtual i32 __stdcall v4c();
+    virtual i32 __stdcall v50();
+    virtual i32 __stdcall v54();
+    virtual i32 __stdcall v58();
+    virtual i32 __stdcall v5c();
+    virtual i32 __stdcall IsClean();   // slot 24 @0x60  (surface still clean => skip rebuild)
+    virtual i32 __stdcall v64();       // slot 25 @0x64
+    virtual i32 __stdcall v68();       // slot 26 @0x68
+    virtual i32 __stdcall HasSource(); // slot 27 @0x6c  (has a live source descriptor)
 };
 
 // The held +0x2c surface (a CDDrawPtrCollections CPoolItemA): LoadDispatch reads
@@ -279,18 +303,35 @@ extern i32 g_surfaceColorKey;
 // path fires with (2, 0). Reloc-masked external; no body.
 void __stdcall ImageNotify(i32 a, i32 b); // 0x14dd90
 
+class CResolveNode; // the shared clip/resolve singleton (RenderImage arg); defined in the .cpp
+
+// CImage - the RTTI polymorphic surface-backed image. REAL-POLYMORPHIC: its own
+// vtable (??_7CImage @0x5eaa2c) is cl-emitted from the virtuals declared below in
+// retail slot order (slots 7..17), and the intra-class virtual dispatches (Resolve
+// -> LoadDispatch, Reload -> FreeAll/Resolve, RenderFrame -> RenderImage) fall out
+// of the language - no manual vtable-view structs. Reconstructed slots (7/9/10/11/
+// 12/13) carry real bodies in CImage.cpp; the ILT/base + external-engine slots are
+// declared-only (reloc-masked entries in the emitted vtable).
 class CImage : public CImageBase {
 public:
-    i32 Create(CImageFrameDesc* desc, i32 keyed);                      // 0x152e90  (vtable slot 12)
-    i32 Resolve(CImageSource* src, i32 arg);                           // 0x152f20  (vtable slot 11)
-    i32 LoadDispatch(CImageFrameDesc* desc, u32 mode, void* a, i32 b); // 0x152fb0  (vtable slot 10)
-    i32 Create24(CImageFrameDesc* desc, i32 mode, i32 keyed);          // 0x1530e0  (vtable slot 9)
+    virtual ~CImage(); // 0x0d5e80 (overrides base slot 1; cl stamps ??_7CImage at entry)
+
+    virtual void FreeAll();                                           // slot 7  0x153260
+    virtual void* Slot8();                                            // slot 8  0x0042aa (ILT)
+    virtual i32 Create24(CImageFrameDesc* desc, i32 mode, i32 keyed); // slot 9  0x1530e0
+    virtual i32 LoadDispatch(CImageFrameDesc* desc, u32 mode, void* a, i32 b); // slot 10 0x152fb0
+    virtual i32 Resolve(CImageSource* src, i32 arg);                           // slot 11 0x152f20
+    virtual i32 Create(CImageFrameDesc* desc, i32 keyed);                      // slot 12 0x152e90
+    virtual i32 Reload(CImageSource* src, i32 arg);                            // slot 13 0x153380
+    virtual void RenderImage(CResolveNode* clip, void* a); // slot 14 0x153470 (external)
+    virtual void Slot15();                                 // slot 15 0x153370 (external)
+    virtual void* Slot16();                                // slot 16 0x002d6a (ILT)
+    virtual void* Slot17();                                // slot 17 0x001d1b (ILT)
+
+    // Non-virtual members (direct-called; not in the vtable).
     i32
     BuildSlot13(CImageFrameDesc* desc, void* a); // 0x153180  (non-virtual /GX builder, external)
-    void FreeAll();                              // 0x153260  (vtable slot 7)
     i32 CopyFrom(CImage* other);                 // 0x1532b0  (clone the surface from another image)
-    i32 Reload(CImageSource* src, i32 arg);      // 0x153380  (vtable slot 13)
-    virtual ~CImage();                           // 0x0d5e80
     void RenderFrame(void* a, void* b, void* c, void* d);                    // 0x153790
     void RenderFrameClipped(void* a, void* b, void* c, void* d, void* rect); // 0x153810
 

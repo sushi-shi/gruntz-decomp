@@ -502,7 +502,7 @@ void WAP32::CGameMgr::UnknownMethodInitializeTimeGlobal() {
 // The DirectInput device-config grand-base (vftable 0x5ef670 == ??_7CInputDevRoot,
 // named in DirectInputMgr2.cpp) + its base-subobject teardown (0x134d50). The
 // engine allocator's operator delete. All reloc-masked.
-extern void* g_deviceConfigVtblC; // 0x5ef670
+extern void* deviceConfigRootTable; // 0x5ef670 (the CInputDevRoot vtable datum)
 struct DICfgC {
     void BaseTeardown(); // 0x134d50
 };
@@ -511,9 +511,16 @@ void operator delete(void*); // engine allocator (0x1b9b82)
 // WAP32::CGameMgr::vector_deleting_destructor @0x133380 - the DICfgC scalar-deleting
 // dtor (mangled through CGameMgr for the retail symbol name): stamp the C vftable,
 // run the base teardown, conditionally free, return `this`.
+// @early-stop
+// cross-class-alias wall: this is really a CInputDevRoot scalar-deleting dtor but
+// the delinker mangled it under CGameMgr, so it cannot be expressed as a real
+// ~CInputDevRoot here (that ??_G is auto-emitted, unbound, by DirectInputMgr2). The
+// vptr re-stamp of a FOREIGN class's vtable is a non-ctor stamp cl cannot realize
+// (vtable-realization-ctor-boundary), so it stays an explicit `*(void**)this` store
+// of the reloc-masked CInputDevRoot vtable datum. Code bytes match.
 RVA(0x00133380, 0x24)
 void* WAP32::CGameMgr::vector_deleting_destructor(unsigned int flags) {
-    *(void**)this = &g_deviceConfigVtblC;
+    *(void**)this = &deviceConfigRootTable;
     ((DICfgC*)this)->BaseTeardown();
     if (flags & 1) {
         operator delete(this);

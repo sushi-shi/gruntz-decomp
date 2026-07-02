@@ -53,8 +53,8 @@ public:
     // retail vtable-slot RVA read from the 0x1eaa2c .rdata (FUN_<rva>); the low ones
     // (0x1000-0x7c20) are ILT jmp-thunks into the CObject/MFC base. NO VTBL() here -
     // the vtable is the shared ??_7CImage (already at 0x1eaa2c); a per-class VTBL
-    // would collide/misname the datum. Manual `m_vptr = &g_imageFrameVtbl` stamp
-    // removed per the all-vtables mandate.
+    // would collide/misname the datum. The manual image-frame vptr stamp is removed
+    // per the all-vtables mandate (cl auto-stamps the implicit vptr at ctor entry).
     virtual void* FUN_001bef01();                         // [0]  +0x00
     virtual void* FUN_00002adb(i32 flags);                // [1]  +0x04  scalar-deleting dtor (ILT)
     virtual void* FUN_000028ec();                         // [2]  +0x08 (ILT)

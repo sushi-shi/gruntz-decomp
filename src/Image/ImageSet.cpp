@@ -23,7 +23,7 @@ extern void* operator new(u32 size);
 // CImageFrame is now real-polymorphic (its 13 slots are declared on the class in
 // ImageSet.h; the foreign CImage @0x5eaa2c virtuals stay unmatched -> declared-
 // only, reloc-masked). cl auto-stamps the vptr (??_7CImageFrame@@6B@) in the
-// ctor; the manual g_imageFrameVtbl extern + stamp are gone (all-vtables mandate).
+// ctor; the manual image-frame vtable extern + stamp are gone (all-vtables mandate).
 
 // MFC CObArray::SetAtGrow on the embedded frame array (CImageSet::m_array @+0x10).
 struct CImageFrameArray {

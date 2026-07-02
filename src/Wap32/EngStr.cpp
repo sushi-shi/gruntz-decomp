@@ -32,7 +32,7 @@ struct EngStrRenderSub {
     EngStrRenderCfg* m_cfg; // +0x10
 };
 struct EngStrRenderObj {
-    void* m_vptr;          // +0x00
+    void* m_00;            // +0x00  (foreign object's first field / vptr; layout only)
     EngStrRenderSub* m_04; // +0x04
 };
 
@@ -64,19 +64,17 @@ void EngStr_DrawText(
     EngStr_RenderText(obj, a1, a2, cfg->m_drawFn, a3, a4, a5, a6, a7, a8);
 }
 
-// CContainerErr::~CContainerErr() - re-stamp the live vtable, then unregister the
-// error handler. 0x16da60.
-DATA(0x001f04cc)
-extern void* const g_CContainerErrVtbl; // 0x5f04cc
-// Catalog the retail vtable under the real class name. CContainerErr is kept
-// non-polymorphic (explicit m_vptr, vptr-LAST ctor store - a real-virtual model
-// forces cl's vptr-first store and regresses; see docs/vtable-conversion-log.md),
-// so the stamp stays; VTBL is a target-side name only (reloc-masked).
+// CContainerErr::~CContainerErr() - the compiler auto-stamps ??_7CContainerErr at
+// dtor entry (matching retail's stamp-first order), then unregisters the error
+// handler. 0x16da60. VTBL binds the emitted vtable at the retail RVA (reloc-masked).
+// Real-polymorphic now (manual vptr-field stamp drained): cl's implicit dtor-entry
+// store lands stamp-first, exactly as retail does here, so this is byte-exact. (The
+// CTOR at 0x16d9c0 - another TU - is where cl's vptr-first vs retail vptr-last store
+// order would diverge; not in this TU.)
 VTBL(CContainerErr, 0x001f04cc);
 
 RVA(0x0016da60, 0x12)
 CContainerErr::~CContainerErr() {
-    m_vptr = (void*)&g_CContainerErrVtbl;
     m_err->Remove(this, 0);
 }
 

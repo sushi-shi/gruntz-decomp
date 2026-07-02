@@ -14,8 +14,11 @@
 //     __FILE__ string + the m_device2 = COM-interface layout show they are a separate
 //     class. Names are placeholders; offsets + code bytes are load-bearing.)
 //
-// Every wrapper does iface->vtbl->Method(iface, args...) so the retail
-// `call *off(reg)` COM dispatch falls out; only the called slots are pinned.
+// Every wrapper does iface->Method(args...) so the retail `call *off(reg)` COM
+// dispatch falls out; only the called slots are pinned. The DINPUT interfaces are
+// modeled REAL-POLYMORPHIC (__stdcall virtuals in retail-vtable-slot order): they
+// are never constructed here (we only receive interface pointers), so cl emits no
+// ??_7 for them - just the virtual dispatch call bytes.
 #ifndef DINMGR2_DIRECTINPUTMGR2_H
 #define DINMGR2_DIRECTINPUTMGR2_H
 
@@ -23,36 +26,25 @@
 
 // ---------------------------------------------------------------------------
 // IDirectInput (DINPUT) - the object DirectInputCreateA returns. COM convention
-// => __stdcall with the interface pointer as the hidden first ("this") argument.
-// Slots pinned to their retail vtable offsets:
+// => __stdcall virtuals. Slots pinned to their retail vtable offsets:
 //   +0x0c (slot 3)  CreateDevice (REFGUID, LPDIRECTINPUTDEVICE*, LPUNKNOWN)
 //   +0x10 (slot 4)  EnumDevices  (DWORD, LPDIENUMDEVICESCALLBACKA, LPVOID, DWORD)
 // ---------------------------------------------------------------------------
 struct IDirectInputDeviceZ;
 
 struct IDirectInputZ {
-    struct Vtbl {
-        char m_pad0[0x08];
-        u32(__stdcall* Release)(IDirectInputZ*); // +0x08 (IUnknown::Release)
-        i32(__stdcall* CreateDevice)(
-            IDirectInputZ*,
-            const void* rguid,
-            IDirectInputDeviceZ** outDev,
-            void* unk
-        ); // +0x0c
-        i32(__stdcall* EnumDevices)(
-            IDirectInputZ*,
-            u32 devType,
-            void* callback,
-            void* ref,
-            u32 flags
-        ); // +0x10
-    }* vtbl;
+    virtual i32 __stdcall QueryInterface(const void* riid, void** out); // slot 0 +0x00
+    virtual u32 __stdcall AddRef();                                     // slot 1 +0x04
+    virtual u32 __stdcall Release();                                    // slot 2 +0x08
+    virtual i32 __stdcall
+    CreateDevice(const void* rguid, IDirectInputDeviceZ** outDev, void* unk); // slot 3 +0x0c
+    virtual i32 __stdcall
+    EnumDevices(u32 devType, void* callback, void* ref, u32 flags); // slot 4 +0x10
 };
 
 // ---------------------------------------------------------------------------
 // IDirectInputDevice (DINPUT) - the per-device interface the CInputDevice thunks
-// drive. Slots pinned to their retail vtable offsets:
+// drive. __stdcall virtuals; slots pinned to their retail vtable offsets:
 //   +0x00 (slot 0)  QueryInterface     (REFIID, LPVOID*)
 //   +0x08 (slot 2)  Release            ()
 //   +0x18 (slot 6)  SetProperty        (REFGUID, LPCDIPROPHEADER)
@@ -64,23 +56,32 @@ struct IDirectInputZ {
 //   +0x64 (slot 25) Poll               () [IDirectInputDevice2]
 // ---------------------------------------------------------------------------
 struct IDirectInputDeviceZ {
-    struct Vtbl {
-        i32(__stdcall* QueryInterface)(IDirectInputDeviceZ*, const void* riid, void** out); // +0x00
-        char m_pad4[0x08 - 0x04];
-        u32(__stdcall* Release)(IDirectInputDeviceZ*); // +0x08 (IUnknown::Release)
-        char m_pad0c[0x18 - 0x0c];
-        i32(__stdcall* SetProperty)(IDirectInputDeviceZ*, const void* rguid, void* prop); // +0x18
-        i32(__stdcall* Acquire)(IDirectInputDeviceZ*);                                    // +0x1c
-        i32(__stdcall* Unacquire)(IDirectInputDeviceZ*);                                  // +0x20
-        i32(__stdcall* GetDeviceState)(IDirectInputDeviceZ*, u32 cb, void* data);         // +0x24
-        char m_pad28[0x2c - 0x28];
-        i32(__stdcall* SetDataFormat)(IDirectInputDeviceZ*, void* fmt); // +0x2c
-        char m_pad30[0x34 - 0x30];
-        i32(__stdcall* SetCooperativeLevel)(IDirectInputDeviceZ*, void* hwnd,
-                                            u32 flags); // +0x34
-        char m_pad38[0x64 - 0x38];
-        i32(__stdcall* Poll)(IDirectInputDeviceZ*); // +0x64 (IDirectInputDevice2::Poll)
-    }* vtbl;
+    virtual i32 __stdcall QueryInterface(const void* riid, void** out); // slot 0  +0x00
+    virtual u32 __stdcall AddRef();                                     // slot 1  +0x04
+    virtual u32 __stdcall Release();                                    // slot 2  +0x08
+    virtual void __stdcall Slot3();                                     // slot 3  +0x0c
+    virtual void __stdcall Slot4();                                     // slot 4  +0x10
+    virtual void __stdcall Slot5();                                     // slot 5  +0x14
+    virtual i32 __stdcall SetProperty(const void* rguid, void* prop);   // slot 6  +0x18
+    virtual i32 __stdcall Acquire();                                    // slot 7  +0x1c
+    virtual i32 __stdcall Unacquire();                                  // slot 8  +0x20
+    virtual i32 __stdcall GetDeviceState(u32 cb, void* data);           // slot 9  +0x24
+    virtual void __stdcall Slot10();                                    // slot 10 +0x28
+    virtual i32 __stdcall SetDataFormat(void* fmt);                     // slot 11 +0x2c
+    virtual void __stdcall Slot12();                                    // slot 12 +0x30
+    virtual i32 __stdcall SetCooperativeLevel(void* hwnd, u32 flags);   // slot 13 +0x34
+    virtual void __stdcall Slot14();                                    // slot 14 +0x38
+    virtual void __stdcall Slot15();                                    // slot 15 +0x3c
+    virtual void __stdcall Slot16();                                    // slot 16 +0x40
+    virtual void __stdcall Slot17();                                    // slot 17 +0x44
+    virtual void __stdcall Slot18();                                    // slot 18 +0x48
+    virtual void __stdcall Slot19();                                    // slot 19 +0x4c
+    virtual void __stdcall Slot20();                                    // slot 20 +0x50
+    virtual void __stdcall Slot21();                                    // slot 21 +0x54
+    virtual void __stdcall Slot22();                                    // slot 22 +0x58
+    virtual void __stdcall Slot23();                                    // slot 23 +0x5c
+    virtual void __stdcall Slot24();                                    // slot 24 +0x60
+    virtual i32 __stdcall Poll();                                       // slot 25 +0x64
 };
 
 // ---------------------------------------------------------------------------
@@ -115,10 +116,10 @@ typedef CInputDevice CDeviceConfigA;
 // CPtrArray layout; the dtor empties it via SetSize(0,-1) (reloc-masked thiscall).
 // ---------------------------------------------------------------------------
 struct CDevicePtrArray {
-    ~CDevicePtrArray();                    // 0x1b4f3e (external, reloc-masked)
+    virtual ~CDevicePtrArray();            // 0x1b4f3e (external, reloc-masked; implicit vptr@0)
     void SetSize(i32 newSize, i32 growBy); // 0x1b4f75 (CObArray::SetSize)
 
-    void* m_vptr;              // +0x00  CPtrArray vftable
+    // vptr @+0x00 (implicit, polymorphic CPtrArray vftable)
     CInputDeviceBase** m_data; // +0x04  element storage
     i32 m_size;                // +0x08  element count
     i32 m_maxSize;             // +0x0c
@@ -143,11 +144,11 @@ struct CDeviceListNode {
 // MFC-derived intrusive list (head@+4, tail@+8). Methods are reloc-masked thiscall.
 // ---------------------------------------------------------------------------
 struct CDeviceList {
-    ~CDeviceList();                  // 0x1b48c6 (external, reloc-masked)
+    virtual ~CDeviceList();          // 0x1b48c6 (external, reloc-masked; implicit vptr@0)
     void Add(CDeviceListNode* node); // 0x1b4991 (append, sets [+8] tail)
     void RemoveAll();                // 0x1b48a6
 
-    void* m_vptr;            // +0x00
+    // vptr @+0x00 (implicit, polymorphic)
     CDeviceListNode* m_head; // +0x04  (manager-relative +0x30)
     CDeviceListNode* m_tail; // +0x08
     char _pad0c[0x18 - 0x0c];

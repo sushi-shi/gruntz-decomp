@@ -7,8 +7,8 @@
 //     the DirectInputCreateA bring-up (Create) and the EnumDevices wrapper.
 //   * CInputDevice (InputDevice.cpp) - thin IDirectInputDevice wrapper thunks
 //     (Create/SetDataFormat/SetCooperativeLevel/SetProperty/Acquire). Each does
-//     iface->vtbl->Method(iface, args...) so the retail `call *off(reg)` COM
-//     dispatch falls out; on a nonzero HRESULT it reports via GetErrorString.
+//     iface->Method(args...) so the retail `call *off(reg)` COM dispatch falls
+//     out; on a nonzero HRESULT it reports via GetErrorString.
 //
 // GetErrorString maps a DirectInput error code to a "<DIERR_NAME> (<code>) -
 // <description>" string and, depending on three reporting-mode globals, beeps,
@@ -104,7 +104,7 @@ void operator delete(void*);
 // The three device-config vtables (0x5ef628 keyboard / 0x5ef640 mouse / 0x5ef658
 // joystick) and their two base-subobject vtables (0x5ef680 / 0x5ef670) are now
 // EMITTED by cl from the real CInputDev* hierarchy (see the header): the ctors/dtor
-// auto-stamp the implicit vptr, so there is no manual g_deviceConfigVtbl* stamp any
+// auto-stamp the implicit vptr, so there is no manual device-config vptr stamp any
 // more. The VTBL() catalog bindings below name each emitted ??_7 at its retail RVA.
 
 // The keyboard DIDATAFORMAT (c_dfDIKeyboard) CreateDev passes to SetDataFormat
@@ -153,7 +153,7 @@ VTBL(CDeviceConfigC, 0x001ef658); // joystick-device vtable
 
 // Shared-base ctor: zero the device fields + arm the latch. Inlined into InitA's
 // `new CInputDevice` / InitB's `new CDeviceConfigB`; cl auto-stamps the implicit
-// vptr (no manual g_deviceConfigVtbl* store any more).
+// vptr (no manual device-config vptr store any more).
 inline CInputDevRoot::CInputDevRoot() {
     m_device = 0;
     m_device2 = 0;
@@ -275,7 +275,7 @@ void DirectInputMgr2::Shutdown() {
     }
     m_devices.SetSize(0, -1);
     FreeDeviceList();
-    m_directInput->vtbl->Release(m_directInput);
+    m_directInput->Release();
     m_directInput = 0;
 }
 
@@ -338,8 +338,7 @@ i32 DirectInputMgr2::EnumGameControllers(u32) {
     if (di == 0) {
         return 0;
     }
-    i32 hr = di->vtbl->EnumDevices(
-        di,
+    i32 hr = di->EnumDevices(
         DIDEVTYPE_JOYSTICK,
         (void*)&DinEnumDevicesCallback,
         (void*)this,
@@ -1268,7 +1267,7 @@ i32 CInputDevRoot::Create(IDirectInputZ* di, const void* deviceGuid, void* hwnd)
         return 0;
     }
     m_hwnd = hwnd;
-    i32 hr = di->vtbl->CreateDevice(di, deviceGuid, &m_device, 0);
+    i32 hr = di->CreateDevice(deviceGuid, &m_device, 0);
     if (hr != 0) {
         DirectInputMgr2::GetErrorString(INPUTDEVICE_FILE, 0x32, hr);
         return 0;
@@ -1276,7 +1275,7 @@ i32 CInputDevRoot::Create(IDirectInputZ* di, const void* deviceGuid, void* hwnd)
     if (m_device == 0) {
         return 0;
     }
-    hr = m_device->vtbl->QueryInterface(m_device, IID_IDirectInputDevice2A, (void**)&m_device2);
+    hr = m_device->QueryInterface(IID_IDirectInputDevice2A, (void**)&m_device2);
     if (hr != 0) {
         DirectInputMgr2::GetErrorString(INPUTDEVICE_FILE, 0x3e, hr);
         return 0;
@@ -1291,10 +1290,10 @@ RVA(0x00134d50, 0x3b)
 void CInputDevRoot::ReleaseDevices() {
     if (m_device2 != 0) {
         Unacquire();
-        m_device2->vtbl->Release(m_device2);
+        m_device2->Release();
     }
     if (m_device != 0) {
-        m_device->vtbl->Release(m_device);
+        m_device->Release();
     }
     m_device = 0;
     m_device2 = 0;
@@ -1312,7 +1311,7 @@ void* CInputDevice::ReadState() {
     if (m_stateBuffer == 0) {
         return 0;
     }
-    i32 hr = m_device2->vtbl->GetDeviceState(m_device2, m_stateBufferSize, m_stateBuffer);
+    i32 hr = m_device2->GetDeviceState(m_stateBufferSize, m_stateBuffer);
     if (hr != 0) {
         if (hr != (i32)DIERR_INPUTLOST && hr != (i32)DIERR_NOTACQUIRED) {
             DirectInputMgr2::GetErrorString(INPUTDEVICE_FILE, 0x84, hr);
@@ -1332,7 +1331,7 @@ i32 CInputDevRoot::SetDataFormat(void* fmt) {
     if (fmt == 0) {
         return 0;
     }
-    i32 hr = m_device2->vtbl->SetDataFormat(m_device2, fmt);
+    i32 hr = m_device2->SetDataFormat(fmt);
     if (hr != 0) {
         DirectInputMgr2::GetErrorString(INPUTDEVICE_FILE, 0x108, hr);
         return 0;
@@ -1345,7 +1344,7 @@ i32 CInputDevRoot::SetDataFormat(void* fmt) {
 // given flags; report on failure.
 RVA(0x00134ef0, 0x3c)
 i32 CInputDevRoot::SetCooperativeLevel(u32 flags) {
-    i32 hr = m_device2->vtbl->SetCooperativeLevel(m_device2, m_hwnd, flags);
+    i32 hr = m_device2->SetCooperativeLevel(m_hwnd, flags);
     if (hr != 0) {
         DirectInputMgr2::GetErrorString(INPUTDEVICE_FILE, 0x128, hr);
         return 0;
@@ -1360,7 +1359,7 @@ i32 CInputDevRoot::SetProperty(const void* rguid, void* prop) {
     if (prop == 0) {
         return 0;
     }
-    i32 hr = m_device2->vtbl->SetProperty(m_device2, rguid, prop);
+    i32 hr = m_device2->SetProperty(rguid, prop);
     if (hr != 0) {
         DirectInputMgr2::GetErrorString(INPUTDEVICE_FILE, 0x148, hr);
         return 0;
@@ -1394,7 +1393,7 @@ i32 CInputDevRoot::SetPropertyDword(const void* rguid, u32 dwObj, u32 dwHow, u32
 // IDirectInputDevice::Acquire; report on failure.
 RVA(0x00134fb0, 0x29)
 i32 CInputDevice::Acquire() {
-    i32 hr = m_device2->vtbl->Acquire(m_device2);
+    i32 hr = m_device2->Acquire();
     if (hr != 0) {
         DirectInputMgr2::GetErrorString(INPUTDEVICE_FILE, 0x17a, hr);
         return 0;
@@ -1406,7 +1405,7 @@ i32 CInputDevice::Acquire() {
 // (slot +0x20); returns whether the HRESULT was success (0).
 RVA(0x00134fe0, 0x13)
 i32 CInputDevRoot::Unacquire() {
-    i32 hr = m_device2->vtbl->Unacquire(m_device2);
+    i32 hr = m_device2->Unacquire();
     return hr == 0;
 }
 
@@ -1417,7 +1416,7 @@ i32 CInputDevRoot::Unacquire() {
 // (InputDevice.cpp:0x1e5); returns whether the final HRESULT was success (0).
 RVA(0x00135040, 0x65)
 i32 CInputDevice::PollDevice() {
-    i32 hr = m_device2->vtbl->Poll(m_device2);
+    i32 hr = m_device2->Poll();
     if (hr == 0) {
         return 1;
     }
@@ -1425,7 +1424,7 @@ i32 CInputDevice::PollDevice() {
         if (Acquire() == 0) {
             return 0;
         }
-        hr = m_device2->vtbl->Poll(m_device2);
+        hr = m_device2->Poll();
     }
     if (hr != 0) {
         DirectInputMgr2::GetErrorString(INPUTDEVICE_FILE, 0x1e5, hr);
