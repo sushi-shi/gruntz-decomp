@@ -342,6 +342,38 @@ i32 CDDrawSurfaceMgr::UnknownVirtualMethod34(i32, i32, i32, i32, void*) {
 
 // Engine-label backlog stubs (moved from src/Stub/CDDrawSurfaceMgr.cpp).
 
+// 0x155900 IS the real 5-arg virtual UnknownVirtualMethod18(hWnd,w,h,bpp,flags) —
+// the SurfaceMgr Init that heap-allocates all 11 owned sub-managers, validates
+// each, and configures the display.  Deferred to the final sweep: it is a 1305-B
+// /GX method whose FULL nested construction-EH funclet can only be reproduced once
+// every child is modeled as a real MFC-derived class (each child's ctor inlines
+// CMap*/CList member ctors, and the parent funclet unwinds the in-flight child +
+// its half-built map members).  The constituent leaf ctors themselves are still
+// @early-stop walls (CDDrawWorkerMapSmall/CDDrawSubMgrLeaf/CDDrawSubMgrLeafScan at
+// 94–96%), so this parent cannot exceed them until they land — a leaf-first job.
+//
+// DECODED STRUCTURE (for the final sweep — retail-verified from 0x155900):
+//   m_30 = hWnd (arg1);  m_34 = flags (arg5).
+//   Then a run of `child = new T(...)` blocks (EH state in [esp+0x1c]/[esp+0x20]),
+//   each: op-new(size) -> if non-null: base-ctor 0x156cb0(0,0,this) [severus
+//   children instead stamp base vtbl 0x5efc30 + [+4]=[+8]=0 + [+c]=this], inline
+//   CMap member ctors(0xa), then stamp the derived vtbl; store into this->m_XX:
+//     m_04 = new(0x1c)  vtbl 0x5efe08                                   (Draco)
+//     m_08 = new(0x6c)  ctor156cb0 + maps@0x10/0x2c/0x48 vtbl 0x5efdc0  (Hermiona = CWwdObjMgr)
+//     m_0c = new(0x2c)  ctor156cb0 + map@0x10          vtbl 0x5efd88    (Hagrid)
+//     m_10 = new(0x2c)  severus-base + map@0x10(0x1b7e17) vtbl 0x5efd28 (Severus)
+//     m_14 = new(0x2c)  severus-base + map@0x10(0x1b7e17) vtbl 0x5efd00 (Sirius)
+//     m_18 = new(0x68)  ctor156cb0 + maps@0x10/2c/48(0x1b7e17) vtbl 0x5efcc8 (Albus = CDDrawWorkerMapSmall)
+//     m_24 = new(0x6d4) ctor 0x15ccd0                                   (Remus)
+//     m_28 = new(0x38)  severus-base + map@0x10(0x1b8247) vtbl 0x5efca0 (= CDDrawSubMgrLeafScan)
+//     m_2c = new(0x2c)  severus-base + map@0x10(0x1b8247) vtbl 0x5efc78 (= CDDrawSubMgrLeaf)
+//     m_1c = new(0x948) ctor 0x141cc0                                   (Filch)
+//     m_20 = new(0x9c)  ctor 0x1376d0                                   (Voldemort)
+//   Validate phase: for m_08,m_0c,m_10,m_14,m_18,m_2c call child->vslot0x18(); on
+//   0 (and m_38==0) set m_38 = 0x3e9..0x3ee and return 0; m_24->vslot0x34(w,h) ->
+//   0x3ef; m_04->vslot0x24(w,h,flags,arg5) -> 0x3f0.  Then flags&0x20 => m_24[+8]|=4;
+//   Voldemort setup via 0x137720 with mode (bl&0x80?2:1), teardown-on-fail via
+//   vslot0/[+0] scalar-delete + 0x3f1; finally m_28->0x157a80(1) validate.  ret 0x14.
 // @confidence: high
 // @source: tomalla
 // @stub

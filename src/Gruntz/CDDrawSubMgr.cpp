@@ -2,9 +2,10 @@
 // <Mfc.h> brings the real MFC CPtrList / CMapPtrToPtr (afxcoll) used by the
 // CWwdObjMgr collection class below.  Must precede any windows/DirectX header.
 #include <Mfc.h>
-#include <Gruntz/CWwdObjMgr.h> // the shared object-collection manager class
-#include <Gruntz/CWwdWorker.h> // the shared per-object worker class
-#include <string.h>            // strcpy (the inline CRT copy in Serialize_15c970)
+#include <Gruntz/CWwdObjMgr.h>  // the shared object-collection manager class
+#include <Gruntz/CWwdWorker.h>  // the shared per-object worker class
+#include <Gruntz/LogicRecord.h> // CLogicRecord (the per-object kill-cue at m_7c)
+#include <string.h>             // strcpy (the inline CRT copy in Serialize_15c970)
 // The discovered cluster's surface helpers (Blt/Flip/BltFast on CDDSurface) come
 // from the DDrawMgr group; reuse its real types instead of placeholder casts.
 #include <Gruntz/CDirectDrawMgr.h>
@@ -936,7 +937,8 @@ public:
     char m_pad0c[0x74 - 0x0c]; // +0x0c..0x73
     i32 m_74;                  // +0x74 sort key
     i32 m_78;                  // +0x78 CPtrList POSITION cache
-    char m_pad7c[0x188 - 0x7c];
+    CLogicRecord* m_7c;        // +0x7c kill-cue record (Consume/callback/refcount)
+    char m_pad80[0x188 - 0x80];
     void* m_188; // +0x188 map key
 };
 
@@ -1181,6 +1183,107 @@ i32 CWwdObjMgr::PruneOrphans_15b1d0() {
         } while (pos != 0);
     }
     return n;
+}
+
+// ---------------------------------------------------------------------------
+// The shared kill-cue clock (advanced once per tick) + its per-frame delta, and
+// the cached timeGetTime import.  g_6bf3c0/g_6bf3bc are BSS mirrors used across
+// the draw/tick paths; g_pTimeGetTime is the resolved WINMM entry (bound in
+// PaletteLerp.cpp).
+extern u32(__stdcall* g_pTimeGetTime)(); // 0x6c4650
+extern "C" u32 g_killCueClock;           // 0x6bf3c0 kill-cue clock (prev now)
+extern "C" u32 g_6bf3bc;                 // 0x6bf3bc per-frame delta
+
+// The per-object cue callback fired when a cue expires (obj+0x7c +0x10; __cdecl,
+// one arg = the owning object).
+typedef void(__cdecl* KillCueFn)(void*);
+
+// ---------------------------------------------------------------------------
+// 0x159a70 (vtable slot 9): per-frame kill-cue tick.  Advances the shared kill
+// clock (when `advance`), walks the sorted list running each object's cue
+// (m_7c->Consume(delta)); an expired cue (Consume==0) either decrements its
+// refcount (+0x24) or fires its callback (+0x10).  Objects flagged 0x10000 /
+// 0x20000 are queued into two function-local static arrays; a post-pass then
+// (0x10000) unlinks+destroys them (unless flag 0x800 => destroy only) and
+// (0x20000) clears the flag and re-sorts them back into the list.
+// @early-stop
+// 93% (reconstructed from a bare stub; logic/CFG/offsets/calls all reproduced).
+// Residual is (1) unmatchable reloc NAMES: the function-local static CObArrays +
+// their guard are compiler-mangled locals (`_?killQueue@?1??...`) that the
+// delinker only knows as DAT_006bf3a8/DAT_006bf390/DAT_006bf388, and the NAFXCW
+// helpers (CObArray ctor/SetSize/SetAtGrow/atexit) are unannotated so Ghidra's
+// undecorated names differ from cl's mangled ones — all reloc-masked (bytes
+// match); (2) a regalloc/encoding coin-flip in the two array-append count loads:
+// retail pins the count in EAX (compact `a1` moffs32 form), our cl uses ecx/edx
+// (`8b 0d`), a 1-byte-per-load size slip that cascades the tail offsets.
+RVA(0x00159a70, 0x200)
+void CWwdObjMgr::TickKillCues_159a70(i32 advance) {
+    static CObArray killQueue; // 0x6bf3a8  the 0x10000 (destroy) queue
+    static CObArray sortQueue; // 0x6bf390  the 0x20000 (re-sort) queue
+    killQueue.SetSize(0, -1);
+    sortQueue.SetSize(0, -1);
+
+    if (advance != 0) {
+        u32 now = g_pTimeGetTime();
+        u32 delta = now - g_killCueClock;
+        g_killCueClock = now;
+        g_6bf3bc = delta;
+    }
+
+    struct HLayout {
+        char _pad[0x14];
+        CWwdNode* m_head;
+    };
+    CWwdNode* node = ((HLayout*)this)->m_head;
+    while (node != 0) {
+        CWwdNode* cur = node;
+        node = node->m_next;
+        CWwdObject* obj = cur->m_obj;
+        CLogicRecord* rec = obj->m_7c;
+        if (rec->Consume((i32)g_6bf3bc) == 0) {
+            i32* refc = (i32*)((char*)rec + 0x24);
+            if (*refc != 0) {
+                --*refc;
+            } else {
+                ((KillCueFn)rec->m_10)(obj);
+            }
+        }
+        i32 flags = obj->m_08;
+        if (flags & 0x10000) {
+            killQueue.Add((CObject*)obj);
+        } else if (flags & 0x20000) {
+            sortQueue.Add((CObject*)obj);
+        }
+    }
+
+    i32 i;
+    for (i = 0; i < killQueue.GetSize(); i++) {
+        CWwdObject* obj = (CWwdObject*)killQueue.GetData()[i];
+        if (obj->m_08 & 0x80000) {
+            CLogicRecord* rec = obj->m_7c;
+            rec->m_1c = 0x1d;
+            ((KillCueFn)rec->m_10)(obj);
+        }
+        if (obj->m_08 & 0x800) {
+            if (obj != 0) {
+                obj->ScalarDtor(1);
+            }
+        } else {
+            m_10.RemoveAt((POSITION)obj->m_78);
+            m_48.RemoveKey(obj->m_188);
+            m_2c.RemoveKey(obj->m_188);
+            if (obj != 0) {
+                obj->ScalarDtor(1);
+            }
+        }
+    }
+
+    for (i = 0; i < sortQueue.GetSize(); i++) {
+        CWwdObject* obj = (CWwdObject*)sortQueue.GetData()[i];
+        obj->m_08 &= ~0x20000;
+        m_10.RemoveAt((POSITION)obj->m_78);
+        InsertSorted_159e40(obj, 0);
+    }
 }
 
 // ---------------------------------------------------------------------------

@@ -47,6 +47,7 @@ public:
     i32 Deserialize_15b0e0(CWwdArchive* ar, u32 count, i32 flag);
     i32 PruneOrphans_15b1d0();
     void InsertSorted_159e40(CWwdObject* obj, i32 addToMaps);
+    void TickKillCues_159a70(i32 advance); // vtable slot 9 (per-frame kill-cue tick)
     CWwdObject* FindByWorker_15a860(i32 type, void* key);
     CWwdObject* FindByField_15a940(i32 type, void* key);
 

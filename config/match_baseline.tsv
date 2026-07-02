@@ -77,10 +77,10 @@ cbrickz	1	0
 ccheckpointtrigger	3	2
 ccursorsnapsprite	3	2
 cddpagemgr	2	1
-cddrawchildgroup	9	6
+cddrawchildgroup	8	6
 cddrawptrcollections	31	15
 cddrawshadeblit	9	1
-cddrawsubmgr	58	34
+cddrawsubmgr	59	34
 cddrawsubmgrani	3	1
 cddrawsubmgrdraco	5	4
 cddrawsubmgrleaf	15	6
@@ -942,7 +942,6 @@ ccursorsnapsprite	?Serialize@CCursorSnapSprite@@QAEHHHHH@Z	100.0000	100.0000	1	1
 cddpagemgr	?FreeAll@CDDPageMgr@@QAEHXZ	100.0000	100.0000	2	3bbee07d0444	0x17d6b0
 cddpagemgr	?RemoveAt@CDDPageMgr@@QAEHH@Z	86.3971	86.3971	2	e58301f4f40f	0x17d600
 cddrawchildgroup	?Stub_1591f0@CDDrawChildGroup@@QAEXXZ	100.0000	100.0000	5	a6027d09c5d7	0x1591f0
-cddrawchildgroup	?Stub_159a70@CDDrawChildGroup@@QAEXXZ	0.2367	0.2367	4	6bb06c5c8409	0x159a70
 cddrawchildgroup	?VirtualMethodUnknown14@CDDrawChildGroup@@QAEHXZ	100.0000	100.0000	7	2bff8dd2ad6c	0x1575e0
 cddrawchildgroup	?VirtualMethodUnknown1C@CDDrawChildGroup@@UAEXXZ	100.0000	100.0000	5	d01d2810835e	0x1591e0
 cddrawchildgroup	?VirtualMethodUnknown28@CDDrawChildGroup@@UAEXH@Z	100.0000	100.0000	7	60dcbe3d4e6d	0x159c90
@@ -1045,6 +1044,7 @@ cddrawsubmgr	?SelectCue_157a80@CDDrawBlitParam@@QAEHPAX@Z	100.0000	100.0000	1	b3
 cddrawsubmgr	?Serialize_15c970@CDDrawBlitParam@@QAEHPAVCWwdArchive@@@Z	99.4175	99.4175	1	d9613a190017	0x15c970
 cddrawsubmgr	?Setup_15c2d0@CDDrawBlitParam@@QAEXPAVCDDrawBlitParamSrc@@@Z	100.0000	100.0000	2	de9d51caa4a5	0x15c2d0
 cddrawsubmgr	?Stub_155720@CDDrawSubMgr@@QAEPAXH@Z	100.0000	100.0000	1	db478b273a65	0x155720
+cddrawsubmgr	?TickKillCues_159a70@CWwdObjMgr@@QAEXH@Z	93.0414	93.0414	1	d69be99662f0	0x159a70
 cddrawsubmgr	?TriggerBlit_1587f0@CAniBlitTrigger@@QAEHHHHH@Z	71.9167	71.9167	2	cc5d77f31245	0x1587f0
 cddrawsubmgr	?VirtualMethodUnknown1C@CDDrawSubMgr@@UAEHXZ	100.0000	100.0000	1	b586e8b8d037	0x1576c0
 cddrawsubmgr	?VirtualMethodUnknown20@CDDrawSubMgr@@UAEHXZ	100.0000	100.0000	1	0442458cf455	0x157790

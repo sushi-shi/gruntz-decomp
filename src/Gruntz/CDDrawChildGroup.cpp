@@ -110,7 +110,6 @@ public:
 
     // Engine-label backlog stubs.
     void Stub_1591f0();
-    void Stub_159a70();
 };
 
 // ---------------------------------------------------------------------------
@@ -259,11 +258,9 @@ void CDDrawChildGroup::Stub_1591f0() {
     ((CMapStringToOb*)((char*)this + 0x48))->RemoveAll();
 }
 
-// @confidence: high
-// @source: tomalla
-// @stub
-RVA(0x00159a70, 0x200)
-void CDDrawChildGroup::Stub_159a70() {}
+// NOTE: 0x159a70 (vtable slot 9, the per-frame kill-cue tick) is reconstructed as
+// CWwdObjMgr::TickKillCues_159a70 in CDDrawSubMgr.cpp — that TU already models the
+// real class (list/map ops + CWwdObject + InsertSorted sibling).
 
 SIZE_UNKNOWN(CDDrawChildGroup);
 SIZE_UNKNOWN(HermionaChild);
