@@ -260,17 +260,20 @@ public:
     // mode-driven level loader (StartSession) and the title-screen loader (StartTitle).
     i32 LoadLevelByMode(i32 mode, i32 flags);                    // 0x000ca200
     i32 LoadTitleScreen(char* name, i32 a, i32 b, i32 c, i32 d); // 0x004fa350
-    // PumpB's own thiscall helpers (ecx = this; out-of-line, reloc-masked).
-    void H259a(); // reset pass
-    void H1da7();
-    void H434a();
-    void H3850();
-    void H1ae6();
-    void H2e2d(u32 clock);
-    void H1519(void* h);
-    void H3797();
-    void H3a85(i32 v);
-    void H3792(i32 v);
+    // Inherited CPlay per-frame helpers PumpB dispatches to (CMulti : public
+    // CPlay). CMulti.cpp is modeled self-contained (no CPlay.h), so the helpers
+    // are re-declared here; all thiscall on `this`, out-of-line -> reloc-masked.
+    // Names + RVAs are the canonical CPlay bodies (src/Gruntz/CPlay.cpp).
+    void StepInputA();             // 0x0d11e0  latch the per-axis scroll/input block
+    void StepC();                  // 0x0d8d90  m_480-driven region-flip step
+    void LoadScrollSpeedOptions(); // 0x0d12b0  butemgr Min/MaxScrollSpeed "Optionz"
+    void StepScroll();             // 0x0d1ac0  recompute the scroll origin (m_4e4)
+    void NotifyVisibleEntities();  // 0x0d9050  push the visible-clip rect to entities
+    void StepGridWalk(u32 clock);  // 0x0d0a60  advance the grid-walk countdown
+    void CopyRect(void* h);        // 0x0d0b30  compute+clamp the pane copy rect (g_pCopyRect)
+    void DrawDebugStats();         // 0x0cf770  Fps/Objs/Pos/Timing/Sent debug overlay
+    void OnRegion2(i32 v);         // 0x0d8a00  arm overlay-A (m_470, deadline m_430/+0x438)
+    void OnRegion1(i32 v);         // 0x0d8aa0  arm overlay-B (m_474, deadline m_440/+0x448)
 
     // --- layout (placeholder names; offsets are the load-bearing truth) ---
     // +0x000  vptr (compiler ??_7CMulti; Tick dispatches via vtbl() -> +0x7c/+0x98)

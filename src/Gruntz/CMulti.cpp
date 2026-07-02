@@ -702,7 +702,7 @@ RVA(0x000b6e90, 0x34d)
 void CMulti::PumpB() {
     PBMgr* mgr = (PBMgr*)m_c;
     if (m_594 == 0 && m_4->m_c != 0) {
-        H259a();
+        StepInputA();
         mgr->m_24->M15dc90(mgr->m_4->m_14, mgr->m_8);
         mgr->m_c->Blit34(mgr->m_4->m_14, mgr->m_4->m_18);
         ((PBSubDC*)m_2dc)->Present21b7();
@@ -710,13 +710,13 @@ void CMulti::PumpB() {
         if (h == 0) {
             return;
         }
-        H2e2d(g_645584);
-        H1519(h);
+        StepGridWalk(g_645584);
+        CopyRect(h);
         mgr->m_4->m_10->m_2c->Present850(0);
         return;
     }
-    H259a();
-    H1da7();
+    StepInputA();
+    StepC();
     if (m_470 != 0) {
         mgr->m_4->m_14->m_2c->Present760(0);
         ((PBSubDC*)m_2dc)->Advance125d();
@@ -725,13 +725,13 @@ void CMulti::PumpB() {
         if (((PBSub68*)m_4->m_68)->m_230 != 0) {
             ((PBSub68*)m_4->m_68)->Fire1398();
         } else {
-            H434a();
+            LoadScrollSpeedOptions();
         }
     }
-    H3850();
+    StepScroll();
     (*(PBOutput**)((char*)m_4 + 0x54))->Blit1a7d(mgr->m_24->m_5c->m_84, mgr->m_24->m_5c->m_88);
     if (m_474 != 0) {
-        H1ae6();
+        NotifyVisibleEntities();
     } else {
         mgr->m_24->M15dc90(mgr->m_4->m_14, mgr->m_8);
         mgr->m_c->Blit34(mgr->m_4->m_14, mgr->m_4->m_18);
@@ -760,10 +760,10 @@ void CMulti::PumpB() {
         return;
     }
     ((PBSub2e0*)m_2e0)->Step2bfd(h);
-    H3797();
+    DrawDebugStats();
     ((PBSub68*)m_4->m_68)->Reset2b85();
-    H2e2d(g_645584);
-    H1519(h);
+    StepGridWalk(g_645584);
+    CopyRect(h);
     if (m_30c != 0) {
         h->Blit163f40(m_310, 0xff);
     }
@@ -774,12 +774,12 @@ void CMulti::PumpB() {
     }
     if (m_470 != 0) {
         if ((i64)g_645588 - *(i64*)&m_430 >= *(i64*)&m_438) {
-            H3a85(0);
+            OnRegion2(0);
         }
     }
     if (m_474 != 0) {
         if ((i64)g_645588 - *(i64*)&m_440 >= *(i64*)&m_448) {
-            H3792(0);
+            OnRegion1(0);
         }
     }
 }

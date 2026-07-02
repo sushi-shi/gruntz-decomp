@@ -339,7 +339,9 @@ Font* Forward_115630() {
 
 // ===========================================================================
 // 0x0011e8dc (7B) - __thiscall vptr re-stamp: store the base dtor vtable
-// (g_wapObjectDtorVtbl) into [this].
+// (g_wapObjectDtorVtbl) into [this]. TERMINAL manual stamp (not convertible to
+// `: public Wap::CObject`): this 7-byte fn IS the entire retail restamp - there is
+// no ctor for cl to fold an auto-stamp into, and Obj_11e8dc is a placeholder.
 // ===========================================================================
 DATA(0x001e8cb4)
 extern void* g_wapObjectDtorVtbl;

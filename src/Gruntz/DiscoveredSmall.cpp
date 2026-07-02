@@ -126,6 +126,9 @@ void ClassUnknown_39::FreeBuffers() {
 // ClassUnknown_46 @0x1591b0 - wap-object base init: seed m_4=-1, zero
 // m_8/m_c/m_10, stamp the grand-base dtor vptr. A void METHOD (keeps this in
 // ecx, eax=0; no mov eax,ecx) - see vptr-stamp-void-init-not-ctor.
+// TERMINAL manual stamp (not convertible to `: public Wap::CObject`): this is a
+// standalone void re-init method, not a ctor, so the store IS retail's own body -
+// cl's auto-stamp only lands in a ctor. Identity is a placeholder besides.
 // ---------------------------------------------------------------------------
 class ClassUnknown_46 {
 public:
