@@ -131,6 +131,15 @@ Invariant: a reconstructed method is **either ~100% (unmarked) or carries `@earl
 
 ### 1. Almost never reach for a C-style cast — model the real type instead
 
+**You may use placeholder views and casts *while* matching — but they must be GONE when you are
+done.** A `(SomeView*)`/`*(T*)((char*)this+N)` cast is legitimate *scaffolding* to get the bytes
+matching fast; it is never part of the deliverable. Before you call a function finished, do the
+de-hack pass: replace every scaffolding view/cast with the real typed shape (type the member,
+unroll the pad into named fields, model the extern's real signature, make the class polymorphic).
+A function you leave with placeholder casts is not done — it's a half-match that the next reader
+inherits as a lie about the type. The only casts that survive are the *binary-proven-authentic*
+ones below.
+
 This targets **placeholder-type and reinterpret casts** (`void*`, raw-offset, improper type) —
 those are almost always a type that should be named/typed properly. It does **not** mean strip
 explicit **numeric-conversion** casts: `(float)anInt` in float math, a deliberate `(int)`/narrowing
