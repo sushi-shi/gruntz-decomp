@@ -1260,11 +1260,11 @@ cfileimage	?LoadFile2@CFileImage@@QAEHPAV1@PBDH@Z	100.0000	100.0000	1	bddd4ee543
 cfileimage	?LoadFile@CFileImage@@QAEHPAV1@PBDH@Z	100.0000	100.0000	1	4741355a053c	0x144d80
 cfileimage	?SaveBmp@CFileImage@@QAEHPBDPAXH@Z	60.8842	60.8842	2	26a2f0961c93	0x1443b0
 cfileimage	?SaveTga@CFileImage@@QAEHPBDPAXH@Z	60.8182	60.8182	2	59e103b41187	0x144900
-cfileimageblit	?Blit1624@CFileImage@@QAEHPAXH@Z	71.1484	71.1484	3	fa6bf7debb22	0x13fce0
-cfileimageblit	?Blit168@CFileImage@@QAEHPAX0H@Z	66.0088	66.0088	3	4b2b7f6b42e7	0x13fbb0
-cfileimageblit	?Blit2416@CFileImage@@QAEHPAXH@Z	82.0000	82.0000	3	c91386d82154	0x13ff80
-cfileimageblit	?Blit816@CFileImage@@QAEHPAX0H@Z	66.2889	66.2889	3	46cf86fe1bd2	0x140420
-cfileimageblit	?Blit824@CFileImage@@QAEHPAX0H@Z	58.8610	58.8610	3	4c0902dfc7e2	0x140110
+cfileimageblit	?Blit1624@CFileImage@@QAEHPAXH@Z	71.1484	71.1484	4	f1b78988c83d	0x13fce0
+cfileimageblit	?Blit168@CFileImage@@QAEHPAX0H@Z	66.0088	66.0088	4	49c12d951e23	0x13fbb0
+cfileimageblit	?Blit2416@CFileImage@@QAEHPAXH@Z	82.0000	82.0000	4	7f6434ebb479	0x13ff80
+cfileimageblit	?Blit816@CFileImage@@QAEHPAX0H@Z	66.2889	66.2889	4	b242446e95d5	0x140420
+cfileimageblit	?Blit824@CFileImage@@QAEHPAX0H@Z	58.8610	58.8610	4	6a9a2341a161	0x140110
 cfileimageloadbyext	?LoadByExt@CFileImage@@QAEHPAV1@PADHH@Z	100.0000	100.0000	1	68125686b083	0x148940
 cfileimagerundecode	?DecodeRun24@CFileImage@@QAEHPAX@Z	99.5437	99.5437	2	e98702b4daad	0x140c50
 cfileimagerundecode	?DecodeRun8@CFileImage@@QAEHPAX@Z	99.5000	99.5000	2	98f4666b90fc	0x140aa0
