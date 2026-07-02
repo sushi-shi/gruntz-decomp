@@ -132,20 +132,20 @@ struct CNetChannelTable {
 
 // OnJoinConfirm's referents: the game's cached GetDlgItem import pointer, the
 // key=value config parser (0xf9160) + its int parse (0x11ffb0). All reloc-masked.
-extern "C" HWND(__stdcall* g_pGetDlgItem)(HWND hDlg, i32 id);           // 0x6c4564
+extern "C" HWND(WINAPI* g_pGetDlgItem)(HWND hDlg, i32 id);              // 0x6c4564
 extern "C" i32 Cfg_GetKey(char* out, const char* src, const char* key); // 0xf9160
 extern "C" i32 ParseCfgInt(const char* s);                              // 0x11ffb0
 
 // NetSetupDlgProc's referents (the multiplayer host/join setup dialog). The engine
 // caches the USER32 imports as function-pointer globals + runs a shared base dialog
 // proc first; the settings singleton supplies the Player_Name/Game_Name defaults.
-extern "C" HWND g_setupDlgHwnd;                                        // 0x64557c
-extern "C" i32 BaseDlgProc(HWND, u32 msg, u32 wParam, i32 lParam);     // 0x1192d0
-extern "C" i32(__stdcall* g_pEndDialog)(HWND, i32);                    // 0x6c44ac
-extern "C" u32(__stdcall* g_pGetDlgItemTextA)(HWND, i32, char*, i32);  // 0x6c448c
-extern "C" i32(__stdcall* g_pMessageBeep)(u32);                        // 0x6c4534
-extern "C" i32(__stdcall* g_pSetDlgItemTextA)(HWND, i32, const char*); // 0x6c4554
-extern "C" i32(__stdcall* g_pSendMessageA)(HWND, u32, u32, i32);       // 0x6c44a4
+extern "C" HWND g_setupDlgHwnd;                                     // 0x64557c
+extern "C" i32 BaseDlgProc(HWND, u32 msg, u32 wParam, i32 lParam);  // 0x1192d0
+extern "C" i32(WINAPI* g_pEndDialog)(HWND, i32);                    // 0x6c44ac
+extern "C" u32(WINAPI* g_pGetDlgItemTextA)(HWND, i32, char*, i32);  // 0x6c448c
+extern "C" i32(WINAPI* g_pMessageBeep)(u32);                        // 0x6c4534
+extern "C" i32(WINAPI* g_pSetDlgItemTextA)(HWND, i32, const char*); // 0x6c4554
+extern "C" i32(WINAPI* g_pSendMessageA)(HWND, u32, u32, i32);       // 0x6c44a4
 struct CGameSettings;
 extern "C" CGameSettings* g_mgrSettings; // 0x64556c
 struct CGameCfgStore {

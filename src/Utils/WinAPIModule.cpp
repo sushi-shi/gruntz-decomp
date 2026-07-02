@@ -23,8 +23,8 @@
 #include <Win32.h>
 #include <tlhelp32.h>
 
-typedef HANDLE(__stdcall* PFNCREATESNAPSHOT)(DWORD dwFlags, DWORD th32ProcessID);
-typedef BOOL(__stdcall* PFNMODULEWALK)(HANDLE hSnapshot, MODULEENTRY32* lpme);
+typedef HANDLE(WINAPI* PFNCREATESNAPSHOT)(DWORD dwFlags, DWORD th32ProcessID);
+typedef BOOL(WINAPI* PFNMODULEWALK)(HANDLE hSnapshot, MODULEENTRY32* lpme);
 
 namespace Utils {
     namespace WinAPI {

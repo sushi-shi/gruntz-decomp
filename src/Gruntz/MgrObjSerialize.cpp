@@ -16,7 +16,7 @@ extern "C" CMgrSettingsGate* g_mgrSettings; // _g_mgrSettings (VA 0x64556c)
 
 // Win32 ShowCursor reached through an import pointer; the loading screen hides the
 // cursor (calls until the display count goes negative).
-extern "C" int(__stdcall* g_ShowCursor)(int); // ?g_ShowCursor@@3P6GHH@ZA (0x6c44c4)
+extern "C" int(WINAPI* g_ShowCursor)(int); // ?g_ShowCursor@@3P6GHH@ZA (0x6c44c4)
 DATA(0x0024e35c)
 extern i32 g_64e35c; // 0x64e35c "splash drawn" latch
 
@@ -176,7 +176,7 @@ i32 CMgrPersistObj::Init() {
     if (m_0c == 0) {
         return 0;
     }
-    int(__stdcall * sc)(int) = g_ShowCursor;
+    int(WINAPI * sc)(int) = g_ShowCursor;
     while (sc(0) >= 0)
         ;
     if (m_0c->m_04->Method158bc0() == 0) {

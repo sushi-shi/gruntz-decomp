@@ -37,7 +37,7 @@ CString* GetColorName(CString* out);
 // CopyRect USER32 import hoisted through a data fn-ptr global (retail loads it once
 // into ebp and calls it ~13x).
 DATA(0x002c44bc)
-extern void(__stdcall* g_pCopyRect)(RECT* dst, const RECT* src); // 0x6c44bc
+extern void(WINAPI* g_pCopyRect)(RECT* dst, const RECT* src); // 0x6c44bc
 
 // The per-column source-rect tables (RECT[] in .data). Indexed by player/category.
 DATA(0x001e9178)
@@ -101,7 +101,7 @@ RVA(0x0001ed30, 0x549)
 void CBattleStatsView::DrawBattleStats() {
     CString s;
     RECT rc;
-    void(__stdcall * copyRect)(RECT*, const RECT*) = g_pCopyRect;
+    void(WINAPI * copyRect)(RECT*, const RECT*) = g_pCopyRect;
     i32 i;
     i32 c;
 

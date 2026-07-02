@@ -6,6 +6,7 @@
 #include <Ints.h>
 #include <rva.h>
 #include <string.h> // inline strlen / memset intrinsics
+#include <Win32.h>  // WINAPI (windows.h) for the g_p* import-pointer types
 #include <Globals.h>
 
 // ===========================================================================
@@ -161,7 +162,7 @@ i32 __stdcall HasMgrSlot30(void* a) {
 // +0x110 flags into two dialog check-boxes (IDs 0x46f / 0x4d5) via the cached
 // CheckDlgButton import pointer (VA 0x6c44b4). __cdecl, one HWND arg.
 // ===========================================================================
-typedef int(__stdcall* PFN_CheckDlgButton)(void* hwnd, int id, unsigned check);
+typedef int(WINAPI* PFN_CheckDlgButton)(void* hwnd, int id, unsigned check);
 DATA(0x002c44b4)
 extern PFN_CheckDlgButton p_CheckDlgButton;
 // @early-stop

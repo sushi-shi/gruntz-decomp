@@ -62,23 +62,23 @@ void operator delete(void*); // ??3@YAXPAX@Z (FUN_005b9b82) - scalar/member tear
 // reloc-masks; the DATA pin pairs the named slot). Same model as g_pShowCursor.
 extern "C" {
     DATA(0x002c4650)
-    extern u32(__stdcall* g_pTimeGetTime)(); // PTR_timeGetTime_006c4650
+    extern u32(WINAPI* g_pTimeGetTime)(); // PTR_timeGetTime_006c4650
     DATA(0x002c44a4)
-    extern i32(__stdcall* g_pSendMessageA)(
+    extern i32(WINAPI* g_pSendMessageA)(
         i32 hwnd,
         u32 msg,
         i32 wp,
         i32 lp
     ); // PTR_SendMessageA_006c44a4
     DATA(0x002c44c8)
-    extern i32(__stdcall* g_pPostMessageA)(
+    extern i32(WINAPI* g_pPostMessageA)(
         i32 hwnd,
         u32 msg,
         i32 wp,
         i32 lp
     ); // PTR_PostMessageA_006c44c8
     DATA(0x002c4550)
-    extern i32(__stdcall* g_pDialogBoxParamA)(
+    extern i32(WINAPI* g_pDialogBoxParamA)(
         i32 hInst,
         const char* tmpl,
         i32 hwnd,
@@ -303,7 +303,7 @@ public:
 // The engine reaches the USER32 cursor through a stored function pointer at
 // 0x6c44c4 (`mov edi,ds:...; call edi`), not a direct IAT call; model it as a
 // typed global fn-ptr so the indirect call shape (`call reg`) falls out.
-extern "C" i32(__stdcall* g_pShowCursor)(i32); // PTR_ShowCursor_006c44c4
+extern "C" i32(WINAPI* g_pShowCursor)(i32); // PTR_ShowCursor_006c44c4
 
 // A free helper that flushes/forces a redraw of one map index (reloc-masked).
 void RedrawMapIndex(i32 idx); // FUN_00558c70
@@ -1894,7 +1894,7 @@ i32 CGruntzMgr::ResetWorldState(i32 notify) {
         m_curState = 0;
     }
 
-    i32(__stdcall * show)(i32) = g_pShowCursor;
+    i32(WINAPI * show)(i32) = g_pShowCursor;
     while (show(1) < 0) {
     }
 
@@ -2655,7 +2655,7 @@ void CGruntzMgr::EnterModalUI(i32 arg) {
         d->vtbl->Slot0a(d);
     }
 
-    i32(__stdcall * show)(i32) = g_pShowCursor;
+    i32(WINAPI * show)(i32) = g_pShowCursor;
     i32 shown = show(1);
     while (show(1) < 0) {
     }
@@ -2699,7 +2699,7 @@ i32 CGruntzMgr::ExitModalUI(CModalDialog* dlg, i32 notify) {
         d->vtbl->Slot0a(d);
     }
 
-    i32(__stdcall * show)(i32) = g_pShowCursor;
+    i32(WINAPI * show)(i32) = g_pShowCursor;
     i32 shown = show(1);
     while (show(1) < 0) {
     }
@@ -3223,7 +3223,7 @@ void CGruntzMgr::DelayedQuit() {
     } else {
         base = 0;
     }
-    u32(__stdcall * tgt)() = g_pTimeGetTime;
+    u32(WINAPI * tgt)() = g_pTimeGetTime;
     u32 deadline = base + tgt();
     while (tgt() < deadline) {
     }
@@ -3273,7 +3273,7 @@ i32 CGruntzMgr::RunModalDialog(const char* tmpl, void* dlgProc, i32 flag) {
         d->vtbl->Slot0a(d);
     }
 
-    i32(__stdcall * show)(i32) = g_pShowCursor;
+    i32(WINAPI * show)(i32) = g_pShowCursor;
     i32 shown = show(1);
     while (show(1) < 0) {
     }

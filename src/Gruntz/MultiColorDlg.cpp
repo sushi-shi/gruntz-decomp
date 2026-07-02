@@ -16,8 +16,8 @@
 namespace m4 {
 
     // Game Win32 pointer table (0x6c44xx) -> reloc-masked indirect calls.
-    extern HWND(__stdcall* g_pGetWindow)(HWND, UINT);                       // 0x006c44d8
-    extern LRESULT(__stdcall* g_pSendMessageA)(HWND, UINT, WPARAM, LPARAM); // 0x006c44a4
+    extern HWND(WINAPI* g_pGetWindow)(HWND, UINT);                       // 0x006c44d8
+    extern LRESULT(WINAPI* g_pSendMessageA)(HWND, UINT, WPARAM, LPARAM); // 0x006c44a4
 
     // A dialog child item (CWnd-ish); its HWND lives at +0x1c. All methods are
     // out-of-line (MFC / other TUs) -> reloc-masked.

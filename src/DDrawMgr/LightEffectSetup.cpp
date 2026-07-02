@@ -21,7 +21,7 @@ SIZE(CShadeTableCache, 0x18); // RE'd heap-alloc size (CGruntzMgr +0x50)
 
 // PtInRect reached through a game-owned function pointer (ff 15).
 DATA(0x006c456c)
-extern BOOL(__stdcall* g_pPtInRect)(const RECT*, POINT);
+extern BOOL(WINAPI* g_pPtInRect)(const RECT*, POINT);
 
 struct Surf {
     char m_pad00[0x18];

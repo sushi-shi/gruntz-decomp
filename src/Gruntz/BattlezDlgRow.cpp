@@ -12,7 +12,7 @@
 
 // SendMessageA is reached through a game-owned function pointer (ff 15).
 DATA(0x006c44a4)
-extern LRESULT(__stdcall* g_pSendMessageA)(HWND, UINT, WPARAM, LPARAM);
+extern LRESULT(WINAPI* g_pSendMessageA)(HWND, UINT, WPARAM, LPARAM);
 
 class CBattlezDlg {
 public:

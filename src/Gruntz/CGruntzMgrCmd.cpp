@@ -101,9 +101,9 @@ namespace GruntzMgrCmd {
     DATA(0x006c44c0)
     extern i32(__cdecl* g_pwsprintfA)(char*, const char*, ...);
     DATA(0x006c44c4)
-    extern i32(__stdcall* g_pRand6c44c4)(i32);
+    extern i32(WINAPI* g_pRand6c44c4)(i32);
     DATA(0x006c44c8)
-    extern i32(__stdcall* g_pPostMessageA)(void*, u32, u32, i32);
+    extern i32(WINAPI* g_pPostMessageA)(void*, u32, u32, i32);
 
     // A short CString-like local (bodyless ctor/dtor) so the config command below
     // gets a destructible stack local -> forces the /GX EH frame like retail.

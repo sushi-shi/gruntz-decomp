@@ -7,6 +7,7 @@
 #include <Gruntz/Blk6c.h> // the 0x6c-byte CImageOwned transform descriptor
 
 #include <rva.h>
+#include <Win32.h> // WINAPI (windows.h) for the g_pTimeGetTime import-pointer type
 
 // The engine __cdecl allocator/deallocator (operator new/delete; reloc-masked
 // rel32). 0x1b9b46 / 0x1b9b82.
@@ -707,7 +708,7 @@ i32 ImgOwned::Commit(i32 a0, const void* a1) {
 // spin until now passes start+ms (unsigned, overflow-guarded). __stdcall, 1 arg;
 // the fn-ptr is cached in a callee-saved reg across the loop.
 // ---------------------------------------------------------------------------
-extern "C" u32(__stdcall* g_pTimeGetTime)(); // _g_pTimeGetTime @0x6c4650
+extern "C" u32(WINAPI* g_pTimeGetTime)(); // _g_pTimeGetTime @0x6c4650
 // @early-stop
 // ~83.9% regalloc wall: body byte-exact, but retail pins the cached fn-ptr in edi
 // and the deadline in esi (pushing both callee-saves upfront), while MSVC5 swaps
@@ -715,7 +716,7 @@ extern "C" u32(__stdcall* g_pTimeGetTime)(); // _g_pTimeGetTime @0x6c4650
 // flips the esi/edi pair; logic complete.
 RVA(0x0013dec0, 0x20)
 void __stdcall Delay_13dec0(u32 ms) {
-    u32(__stdcall * fn)() = g_pTimeGetTime;
+    u32(WINAPI * fn)() = g_pTimeGetTime;
     u32 now = fn();
     u32 end = now + ms;
     if (now <= end) {

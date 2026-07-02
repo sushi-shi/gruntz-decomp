@@ -177,8 +177,8 @@ namespace Utils {
             char szModule[256];  // +0x20
             char szExePath[260]; // +0x120
         };
-        typedef HANDLE(__stdcall* PFN_CreateSnapshot)(u32 dwFlags, u32 th32ProcessID);
-        typedef i32(__stdcall* PFN_Process32)(HANDLE hSnapshot, ProcEntry32* pe);
+        typedef HANDLE(WINAPI* PFN_CreateSnapshot)(u32 dwFlags, u32 th32ProcessID);
+        typedef i32(WINAPI* PFN_Process32)(HANDLE hSnapshot, ProcEntry32* pe);
 
         // Fills a MODULEENTRY32 for the main module of the given process (engine
         // helper at 0x118f60; Module32First/Next based). Reloc-masked direct call.

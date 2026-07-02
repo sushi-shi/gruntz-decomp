@@ -102,11 +102,11 @@ extern "C" void* RezAlloc(u32 size);
 // USER32 entry points reached through game-owned IAT-style function pointers
 // (ff 15 [ptr]); g_pSendMessageA is the same global BattlezDlgRow.cpp binds.
 DATA(0x006c4520)
-extern HWND(__stdcall* g_pGetFocus)();
+extern HWND(WINAPI* g_pGetFocus)();
 DATA(0x006c44a4)
-extern LRESULT(__stdcall* g_pSendMessageA)(HWND, UINT, WPARAM, LPARAM);
+extern LRESULT(WINAPI* g_pSendMessageA)(HWND, UINT, WPARAM, LPARAM);
 DATA(0x006c44f0)
-extern BOOL(__stdcall* g_pInvalidateRect)(HWND, const RECT*, BOOL);
+extern BOOL(WINAPI* g_pInvalidateRect)(HWND, const RECT*, BOOL);
 
 namespace ApiCallerStubs {
     // Fake placeholder host: these ApiCaller stubs are __thiscall (disasm shows

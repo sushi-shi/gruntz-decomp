@@ -36,7 +36,7 @@ DATA(0x00245534)
 extern i32 g_attractStateCount;
 
 // The "ShowCursor" Win32 import slot (PTR_ShowCursor_006c44c4).
-typedef i32(__stdcall* ShowCursorFn)(i32);
+typedef i32(WINAPI* ShowCursorFn)(i32);
 DATA(0x002c44c4)
 extern ShowCursorFn g_ShowCursor;
 
@@ -132,7 +132,7 @@ public:
 };
 
 // PostMessageA reached through the IAT slot (matches the engine's ff15 indirect).
-typedef i32(__stdcall* PostMessageFn)(void* hwnd, u32 msg, u32 wparam, i32 lparam);
+typedef i32(WINAPI* PostMessageFn)(void* hwnd, u32 msg, u32 wparam, i32 lparam);
 DATA(0x002c44c8)
 extern PostMessageFn g_pPostMessageA;
 

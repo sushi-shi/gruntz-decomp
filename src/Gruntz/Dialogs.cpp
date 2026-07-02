@@ -621,7 +621,7 @@ void CBattlezDlg::ApplyColorSlot3() {
 // (GetWindow(GW_CHILD) -> FromHandle -> SetWindowText) and latch m_68 = 0. /GX EH
 // frame unwinds the local CString.
 DATA(0x006c44a4)
-extern long(__stdcall* g_pSendMessageA)(void* hWnd, unsigned msg, unsigned wp, long lp);
+extern long(WINAPI* g_pSendMessageA)(void* hWnd, unsigned msg, unsigned wp, long lp);
 // @early-stop
 // 96.8%: full logic byte-exact (combo GetCurSel via g_pSendMessageA, GetLBText into the
 // local CString, GetWindow(GW_CHILD)/FromHandle/SetWindowText, m_68 latch). Residual is the

@@ -29,7 +29,7 @@ extern CButeMgr g_buteMgr;
 extern "C" char g_emptyString[];
 // The hardware-cursor hide fn-ptr (?g_ShowCursor@@3P6GHH@ZA, 0x6c44c4); the
 // `mov edi,ds:g_ShowCursor; call edi` cached-ptr loop idiom (AppHelpers.cpp).
-extern int(__stdcall* g_ShowCursor)(int);
+extern int(WINAPI* g_ShowCursor)(int);
 // First-run guard (DAT_0062af10): 0 until the cheat table is built.
 // The 25-entry cheat text/desc table (0x629f50 .. 0x62aef0, stride 0xa0). The
 // loop pointer walks [base .. end); each entry's text lands at p-0x20, desc at p.
@@ -196,7 +196,7 @@ i32 CBootyCheatState::LoadAssets(i32 a1, i32 a2, i32 a3) {
     }
 
     {
-        int(__stdcall * sc)(int) = g_ShowCursor;
+        int(WINAPI * sc)(int) = g_ShowCursor;
         while (sc(0) >= 0) {
         }
     }

@@ -11,9 +11,9 @@
 // The inlined game RNG used by the 0x17fe00 fader-noise init. This is a THIRD
 // LCG instance (its own seed-flag + state globals, distinct from the 0x6c127d/
 // 0x6c1288 and 0x6c2798 pairs), seeded lazily from timeGetTime.
-extern "C" u32(__stdcall* g_pTimeGetTime)(); // 0x6c4650
-extern u8 g_fxRandSeeded;                    // 0x6c279c  seed-init flag (bit 0)
-extern i32 g_fxRandSeed;                     // 0x6c27a8  LCG seed
+extern "C" u32(WINAPI* g_pTimeGetTime)(); // 0x6c4650
+extern u8 g_fxRandSeeded;                 // 0x6c279c  seed-init flag (bit 0)
+extern i32 g_fxRandSeed;                  // 0x6c27a8  LCG seed
 
 static __inline i32 FxRand(i32 range) {
     u32 x;
@@ -133,7 +133,7 @@ fail:
 // own size-pair, then derive the widget's own extents (min-1 + half-centers) from
 // three more size-pairs and finish with a SetRect over rc's corners.
 // ===========================================================================
-extern "C" int(__stdcall* g_pSetRect_6c44b8)(RECT*, int, int, int, int);
+extern "C" int(WINAPI* g_pSetRect_6c44b8)(RECT*, int, int, int, int);
 
 struct Pt_168080 {
     i32 m_0; // +0x00
@@ -265,7 +265,7 @@ struct VtblA3_17c3f0 {
 struct ObjA3_17c3f0 {
     VtblA3_17c3f0* vptr;
 };
-extern "C" int(__stdcall* g_pShowCursor_6c44c4)(int); // 0x6c44c4
+extern "C" int(WINAPI* g_pShowCursor_6c44c4)(int); // 0x6c44c4
 
 struct Handler_17c3f0 {
     void* m_0; // +0x00

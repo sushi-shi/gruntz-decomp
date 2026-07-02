@@ -1445,7 +1445,7 @@ i32 CPlay::DrawWorldFrames() {
 // ===========================================================================
 extern "C" {
     DATA(0x002c4650)
-    extern u32(__stdcall* g_pTimeGetTime)(); // PTR_timeGetTime_006c4650
+    extern u32(WINAPI* g_pTimeGetTime)(); // PTR_timeGetTime_006c4650
     // The profiler line sink (a global text buffer; its ADDRESS is the logger arg).
     DATA(0x00245524)
     extern i32 g_profSink; // DAT_00645524
@@ -1467,7 +1467,7 @@ struct CProfFlush {
 // ===========================================================================
 RVA(0x000ca0a0, 0x101)
 i32 CPlay::ProfileDeltaFrame() {
-    u32(__stdcall * tg)() = g_pTimeGetTime;
+    u32(WINAPI * tg)() = g_pTimeGetTime;
     i32 updates = 0;
     u32 t0 = tg();
     u32 d = g_645584;
@@ -1524,7 +1524,7 @@ extern "C" void ProfReport(void* mgr, void* guts, i32 gate);
 RVA(0x000c9e40, 0x1d7)
 i32 CPlay::ProfileInputFrame() {
     m_4w()->m_54->Blit(m_c->m_24->m_5c->m_84, m_c->m_24->m_5c->m_88); // untimed
-    u32(__stdcall * tg)() = g_pTimeGetTime;
+    u32(WINAPI * tg)() = g_pTimeGetTime;
 
     u32 t1 = tg();
     Vslot26(); // this->vtbl[+0x98]
@@ -2210,12 +2210,12 @@ void CPlay::LoadCursorSprites(i32, i32) {}
 // Residual is MSVC's interleave of the geom pointer-chase (sx/sy loads) into the
 // float speed-computation FPU latency gaps (fild/fmul/fimul/fiadd/ftol) + the
 // trailing nop padding - not source-steerable (zero-register-pinning family).
-extern "C" u8 g_scrollLoadFlags;             // 0x64c01c  lazy-load bitset (bit0 min, bit1 max)
-extern "C" i32 g_scrollMinSpeed;             // 0x64c274  cached MinScrollSpeed
-extern "C" i32 g_scrollSpeedRange;           // 0x64c270  cached (Max - Min)
-extern "C" u32(__stdcall* g_pTimeGetTime)(); // 0x6c4650
-extern CButeMgr g_buteMgr;                   // 0x6453d8
-extern "C" double g_scrollSpeedScale;        // 0x5eaa10  (== 0.01)
+extern "C" u8 g_scrollLoadFlags;          // 0x64c01c  lazy-load bitset (bit0 min, bit1 max)
+extern "C" i32 g_scrollMinSpeed;          // 0x64c274  cached MinScrollSpeed
+extern "C" i32 g_scrollSpeedRange;        // 0x64c270  cached (Max - Min)
+extern "C" u32(WINAPI* g_pTimeGetTime)(); // 0x6c4650
+extern CButeMgr g_buteMgr;                // 0x6453d8
+extern "C" double g_scrollSpeedScale;     // 0x5eaa10  (== 0.01)
 
 struct ScrollGeom {
     char p0[0x84];
@@ -3045,7 +3045,7 @@ i32 CPlay::BuildAnizKeyTable(void* notify) {
 
 // The "ShowCursor" Win32 import slot, reused verbatim from the engine
 // (?g_ShowCursor@@3P6GHH@ZA, an indirect `i32 __stdcall(i32)` fn-ptr global).
-typedef i32(__stdcall* ShowCursorFn)(i32);
+typedef i32(WINAPI* ShowCursorFn)(i32);
 DATA(0x002c44c4)
 extern ShowCursorFn g_ShowCursor;
 

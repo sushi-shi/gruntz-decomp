@@ -19,17 +19,17 @@ namespace m4 {
 
     // MS-CRT-style LCG RNG state (shared with the ApiCaller stubs); reached by
     // address -> reloc-masked. timeGetTime seeds it lazily.
-    extern char g_rngSeeded;                     // 0x006c127d  bit0 = seeded
-    extern i32 g_rngState;                       // 0x006c1288  32-bit LCG state
-    extern u32(__stdcall* g_pTimeGetTime)(void); // 0x006c4650
+    extern char g_rngSeeded;                  // 0x006c127d  bit0 = seeded
+    extern i32 g_rngState;                    // 0x006c1288  32-bit LCG state
+    extern u32(WINAPI* g_pTimeGetTime)(void); // 0x006c4650
 
     // The game's Win32 pointer table (0x6c44xx / 0x6c3eac) - typed so the
     // indirect calls reloc-mask.
-    extern BOOL(__stdcall* g_pGetClientRect)(HWND, LPRECT);       // 0x006c44e4
-    extern BOOL(__stdcall* g_pClientToScreen)(HWND, LPPOINT);     // 0x006c44ec
-    extern BOOL(__stdcall* g_pScreenToClient)(HWND, LPPOINT);     // 0x006c44e8
-    extern HBRUSH(__stdcall* g_pCreateSolidBrush)(COLORREF);      // 0x006c3eac
-    extern int(__stdcall* g_pFillRect)(HDC, const RECT*, HBRUSH); // 0x006c44e0
+    extern BOOL(WINAPI* g_pGetClientRect)(HWND, LPRECT);       // 0x006c44e4
+    extern BOOL(WINAPI* g_pClientToScreen)(HWND, LPPOINT);     // 0x006c44ec
+    extern BOOL(WINAPI* g_pScreenToClient)(HWND, LPPOINT);     // 0x006c44e8
+    extern HBRUSH(WINAPI* g_pCreateSolidBrush)(COLORREF);      // 0x006c3eac
+    extern int(WINAPI* g_pFillRect)(HDC, const RECT*, HBRUSH); // 0x006c44e0
 
     // The three-level draw-scratch hierarchy (image worker <- image holder <-
     // most-derived). Vtables are external (other TUs) -> reloc-masked stamps.
@@ -106,8 +106,8 @@ namespace m4 {
     RVA(0x000160f0, 0x245)
     void FlashHost::FlashRect160f0() {
         FlashDC dc(this);
-        BOOL(__stdcall * cts)(HWND, LPPOINT) = g_pClientToScreen;
-        BOOL(__stdcall * stc)(HWND, LPPOINT) = g_pScreenToClient;
+        BOOL(WINAPI * cts)(HWND, LPPOINT) = g_pClientToScreen;
+        BOOL(WINAPI * stc)(HWND, LPPOINT) = g_pScreenToClient;
         for (i32 i = 0; i < 4; i++) {
             FlashItem* it = GetItem2c52(i);
             if (it == 0) {
@@ -146,8 +146,8 @@ namespace m4 {
     RVA(0x000c2e20, 0x21d)
     i32 FlashHost::FlashRectC2e20() {
         FlashDC dc(this);
-        BOOL(__stdcall * cts)(HWND, LPPOINT) = g_pClientToScreen;
-        BOOL(__stdcall * stc)(HWND, LPPOINT) = g_pScreenToClient;
+        BOOL(WINAPI * cts)(HWND, LPPOINT) = g_pClientToScreen;
+        BOOL(WINAPI * stc)(HWND, LPPOINT) = g_pScreenToClient;
         for (i32 i = 0; i < 4; i++) {
             FlashItem* it = GetItem30da(i);
             if (it == 0) {

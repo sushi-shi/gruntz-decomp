@@ -46,9 +46,9 @@ extern void* g_645570; // attract host
 extern void* g_645574; // actor list
 extern void* g_645578;
 extern void* g_60fa70;
-extern u32(__stdcall* g_pTimeGetTime)();  // 0x6c4650
-extern u32(__stdcall* g_pGetTickCount)(); // 0x6c3fc8
-extern i32(__stdcall* g_ShowCursor)(i32); // 0x6c44c4
+extern u32(WINAPI* g_pTimeGetTime)();  // 0x6c4650
+extern u32(WINAPI* g_pGetTickCount)(); // 0x6c3fc8
+extern i32(WINAPI* g_ShowCursor)(i32); // 0x6c44c4
 
 extern "C" void RezSrand(u32);                       // 0x11fed0
 extern "C" char* StrUpr(char*);                      // 0x18d330

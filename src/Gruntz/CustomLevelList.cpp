@@ -16,8 +16,8 @@
 namespace m4 {
 
     // Game Win32 pointer table (reloc-masked indirect calls).
-    extern HWND(__stdcall* g_pGetDlgItem)(HWND, int);                       // 0x006c4564
-    extern LRESULT(__stdcall* g_pSendMessageA)(HWND, UINT, WPARAM, LPARAM); // 0x006c44a4
+    extern HWND(WINAPI* g_pGetDlgItem)(HWND, int);                       // 0x006c4564
+    extern LRESULT(WINAPI* g_pSendMessageA)(HWND, UINT, WPARAM, LPARAM); // 0x006c44a4
 
     // CRT-style directory walk (engine copies at these RVAs; name at +0x14).
     struct FindData {

@@ -5,6 +5,7 @@
 // runs the per-state image hook (this vtable slot +0x18) and forces the cursor
 // hidden. Field names are placeholders; only offsets + code bytes are load-bearing.
 #include <rva.h>
+#include <Win32.h> // WINAPI (windows.h) for the g_ShowCursor import-pointer type
 
 #include <Bute/SymTab.h>
 
@@ -13,7 +14,7 @@ i32 Unmatched_0face0(); // ?Unmatched_0face0@@YA...XZ
 
 // The cursor-show counter, cached in a game-owned function pointer (ff 15).
 DATA(0x006c44c4)
-extern i32(__stdcall* g_ShowCursor)(i32);
+extern i32(WINAPI* g_ShowCursor)(i32);
 
 // The active DDraw worker registry (mgr->m_10): only slot +0x4c (load namespace)
 // is reached; the lower slots pad the vtable to the right index.
@@ -84,7 +85,7 @@ i32 CImageState::LoadStateImages() {
     if (RunImageHook() == 0) {
         return 0;
     }
-    i32(__stdcall * sc)(i32) = g_ShowCursor;
+    i32(WINAPI * sc)(i32) = g_ShowCursor;
     i32 r = sc(1);
     while (r < 0) {
         r = sc(1);
@@ -117,7 +118,7 @@ i32 CBootyState::OnActivate2() {
     if (Unmatched_0face0() == 0) {
         return 0;
     }
-    i32(__stdcall * sc)(i32) = g_ShowCursor;
+    i32(WINAPI * sc)(i32) = g_ShowCursor;
     i32 r = sc(0);
     while (r >= 0) {
         r = sc(0);

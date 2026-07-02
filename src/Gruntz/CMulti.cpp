@@ -45,7 +45,7 @@ extern CString g_6473d8; // 0x6473d8
 
 // ShowCursor Win32 import slot (PTR_ShowCursor_006c44c4) - typed pointer so the
 // indirect `call [0x6c44c4]` reloc-masks.
-typedef i32(__stdcall* ShowCursorFn)(i32);
+typedef i32(WINAPI* ShowCursorFn)(i32);
 DATA(0x002c44c4)
 extern ShowCursorFn g_ShowCursor;
 

@@ -19,7 +19,7 @@ namespace m4 {
     extern i32 g_62b434;
 
     // DrawTextA through the game Win32 pointer table (0x6c454c) -> reloc-masked.
-    extern int(__stdcall* g_pDrawTextA)(HDC, LPCSTR, int, LPRECT, UINT); // 0x006c454c
+    extern int(WINAPI* g_pDrawTextA)(HDC, LPCSTR, int, LPRECT, UINT); // 0x006c454c
 
     // The image-worker/imgHolder scratch (see m4_FlashRect): inline dtor chain, but
     // this call site builds it with a 3-arg out-of-line ctor.
@@ -111,8 +111,8 @@ namespace m4 {
     // thiscall member, /GX (destructible CString). Placeholder names.
 
     // The game's Win32 pointer table entries (0x6c44xx/0x6c3exx) -> reloc-masked.
-    extern SHORT(__stdcall* g_pGetAsyncKeyState)(int);        // 0x006c4500
-    extern HGDIOBJ(__stdcall* g_pSelectObject)(HDC, HGDIOBJ); // 0x006c3ec4
+    extern SHORT(WINAPI* g_pGetAsyncKeyState)(int);        // 0x006c4500
+    extern HGDIOBJ(WINAPI* g_pSelectObject)(HDC, HGDIOBJ); // 0x006c3ec4
 
     // Password blink timer + last-format cache (reached by address).
     extern i32 g_645584; // 0x00645584 elapsed-time delta
@@ -182,7 +182,7 @@ namespace m4 {
             if (g_62b43c) {
                 Draw258b(hdc, rect);
             }
-            int(__stdcall * pDraw)(HDC, LPCSTR, int, LPRECT, UINT) = g_pDrawTextA;
+            int(WINAPI * pDraw)(HDC, LPCSTR, int, LPRECT, UINT) = g_pDrawTextA;
             RECT rc;
             rc.left = rect->left;
             rc.top = rect->top;
@@ -206,9 +206,9 @@ namespace m4 {
     // pass offset by (dx,dy) when the shadow flag is set, then the RGB(r,g,b)
     // main pass. thiscall member, 10 args, /GX (destructible CString).
 
-    extern int(__stdcall* g_pSetBkMode)(HDC, int);              // 0x006c3eb8
-    extern COLORREF(__stdcall* g_pSetBkColor)(HDC, COLORREF);   // 0x006c3eb0
-    extern COLORREF(__stdcall* g_pSetTextColor)(HDC, COLORREF); // 0x006c3eb4
+    extern int(WINAPI* g_pSetBkMode)(HDC, int);              // 0x006c3eb8
+    extern COLORREF(WINAPI* g_pSetBkColor)(HDC, COLORREF);   // 0x006c3eb0
+    extern COLORREF(WINAPI* g_pSetTextColor)(HDC, COLORREF); // 0x006c3eb4
 
     struct TextHost {
         char m_pad00[0x3c];

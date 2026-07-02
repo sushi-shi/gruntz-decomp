@@ -88,7 +88,7 @@ struct CGameSettings {
 extern "C" CGameSettings* g_mgrSettings; // _g_mgrSettings (0x64556c)
 
 // SendMessageA reached through the game's own import pointer.
-extern "C" long(__stdcall*
+extern "C" long(WINAPI*
                     g_pSendMessageA)(void* hwnd, unsigned msg, unsigned wp, long lp); // 0x6c44a4
 DATA(0x0024bdb0)
 extern CString g_64bdb0[]; // 0x64bdb0 per-channel label table
@@ -137,7 +137,7 @@ void CNetGameDlg::UpdateSlot(i32 ch) {
     M_c27c0(ch);
     M_c26c0(ch);
     ChannelSlot* s = &m_channels[ch].m_slot;
-    long(__stdcall * pSend)(void*, unsigned, unsigned, long) = g_pSendMessageA;
+    long(WINAPI * pSend)(void*, unsigned, unsigned, long) = g_pSendMessageA;
     if (pSend(owner->m_hwnd, 0x147, 0, 0) == 0) {
         if (s->m_14 != 0) {
             if (s->m_active != 0) {

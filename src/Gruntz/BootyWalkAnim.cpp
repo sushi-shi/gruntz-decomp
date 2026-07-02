@@ -33,7 +33,7 @@ DATA(0x0020a454)
 extern char s_actKeyA[]; // "A" (0x60a454)
 extern "C" {
     DATA(0x002c4650)
-    extern u32(__stdcall* g_pTimeGetTime)(); // PTR_timeGetTime_006c4650
+    extern u32(WINAPI* g_pTimeGetTime)(); // PTR_timeGetTime_006c4650
 }
 
 // The per-player secret-letter table "WARP" (0x5e93a8) + the varargs status-line

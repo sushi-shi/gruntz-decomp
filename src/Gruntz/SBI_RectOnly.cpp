@@ -2986,7 +2986,7 @@ i32 CSBI_RectOnly::BuildStatusBarTabs() {
 // The inlined game RNG (shared with BootyWalkAnim / CGruntSpawnConfig): the LCG
 // seed + the seed-init flag (bit 0) + the timeGetTime entry pointer. Bound (DATA)
 // by BootyWalkAnim / m5_SoundTickCtor; referenced here as reloc-masked externs.
-extern "C" u32(__stdcall* g_pTimeGetTime)(); // 0x6c4650
+extern "C" u32(WINAPI* g_pTimeGetTime)(); // 0x6c4650
 
 // MSVC-style LCG rand() (x = x*214013 + 2531011), lazily seeded from timeGetTime.
 // The range test is first so the divisor is proven non-zero (no idiv guard) and
@@ -3369,7 +3369,7 @@ SIZE_UNKNOWN(CSbiHiWidget);
 // dispatcher posts WM_COMMAND via it, not the direct import).
 extern "C" {
     DATA(0x002c44c8)
-    extern i32(__stdcall* g_pPostMessageA)(void*, u32, i32, i32); // 0x6c44c8
+    extern i32(WINAPI* g_pPostMessageA)(void*, u32, i32, i32); // 0x6c44c8
 }
 
 // Play GAME_TABHIGHLIGHT1 immediately (no clock gate) - variant 1: the record is

@@ -1140,7 +1140,7 @@ void DirectSoundMgr::GetErrorString(char* file, i32 line, i32 hr) {
 // SAME as DSoundList::RemoveMatching @0x136f60): byte-exact except the `e ? &link : 0`
 // mask (neg/sbb/and) lands in a different free-list register than retail.
 #include <Dsndmgr/SoundVoiceList.h> // DSoundList / DSoundLink / PureSoundElemVtable (0x5ef6c8)
-extern "C" u32(__stdcall* g_pTimeGetTime)(); // 0x6c4650
+extern "C" u32(WINAPI* g_pTimeGetTime)(); // 0x6c4650
 // The reaped element carries a real vptr at +0; the per-frame update is virtual
 // slot 0 (call [vtbl]). Declared-only virtual -> no vtable emitted (never
 // instantiated), the call just dispatches.

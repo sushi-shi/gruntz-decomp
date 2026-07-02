@@ -1190,9 +1190,9 @@ i32 CWwdObjMgr::PruneOrphans_15b1d0() {
 // the cached timeGetTime import.  g_6bf3c0/g_6bf3bc are BSS mirrors used across
 // the draw/tick paths; g_pTimeGetTime is the resolved WINMM entry (bound in
 // PaletteLerp.cpp).
-extern u32(__stdcall* g_pTimeGetTime)(); // 0x6c4650
-extern "C" u32 g_killCueClock;           // 0x6bf3c0 kill-cue clock (prev now)
-extern "C" u32 g_6bf3bc;                 // 0x6bf3bc per-frame delta
+extern u32(WINAPI* g_pTimeGetTime)(); // 0x6c4650
+extern "C" u32 g_killCueClock;        // 0x6bf3c0 kill-cue clock (prev now)
+extern "C" u32 g_6bf3bc;              // 0x6bf3bc per-frame delta
 
 // The per-object cue callback fired when a cue expires (obj+0x7c +0x10; __cdecl,
 // one arg = the owning object).

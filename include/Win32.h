@@ -14,7 +14,8 @@
 typedef int INT_PTR; // VC5 predates the <basetsd.h> pointer-width aliases
 
 // WINMM timeGetTime (frame clock); in <mmsystem.h> (modern <timeapi.h>), not in
-// <windows.h> - declared here so it isn't hand-rolled per TU.
-extern "C" __declspec(dllimport) unsigned long __stdcall timeGetTime(void);
+// <windows.h> - declared here so it isn't hand-rolled per TU, in the real
+// <mmsystem.h> form (WINAPI == __stdcall, resolved from the windows.h above).
+extern "C" __declspec(dllimport) unsigned long WINAPI timeGetTime(void);
 
 #endif // GRUNTZ_WIN32_H

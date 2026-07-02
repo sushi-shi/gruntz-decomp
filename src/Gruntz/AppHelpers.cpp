@@ -8,7 +8,7 @@
 #include <rva.h>
 #include <Win32.h>
 
-extern int(__stdcall* g_ShowCursor)(int); // ?g_ShowCursor@@3P6GHH@ZA (0x6c44c4)
+extern int(WINAPI* g_ShowCursor)(int); // ?g_ShowCursor@@3P6GHH@ZA (0x6c44c4)
 extern void* g_64e25c;
 
 struct CTitleApp {
@@ -21,7 +21,7 @@ struct CTitleApp {
 // 0xf9880
 RVA(0x000f9880, 0x43)
 int CTitleApp::OnStart(int) {
-    int(__stdcall * sc)(int) = g_ShowCursor;
+    int(WINAPI * sc)(int) = g_ShowCursor;
     while (sc(0) >= 0) {
     }
     RunTitleSeq(g_64e25c, 1, 1, 1, 0);

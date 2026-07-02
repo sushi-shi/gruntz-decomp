@@ -531,10 +531,7 @@ i32 RezMgr::HandleDebugPosition() {
     return r != 0;
 }
 
-// WINMM timeGetTime (frame clock). This is an MFC TU (RezMgr.h -> <Mfc.h>), so
-// <Win32.h> is forbidden here (afx hard-errors if windows.h came first) and it is
-// declared directly, matching <Win32.h>'s decl.
-extern "C" __declspec(dllimport) unsigned long __stdcall timeGetTime(void);
+// WINMM timeGetTime (the frame clock) comes from <Mfc.h> (via RezMgr.h).
 
 // -------------------------------------------------------------------------
 // RezMgr::UpdateClock() (0x13ddc0) - the frame-clock advance helper PerFrameTick

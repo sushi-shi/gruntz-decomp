@@ -8,11 +8,12 @@
 #include <rva.h>
 
 #include <Ints.h>
+#include <Win32.h> // WINAPI (windows.h) for the g_pTimeGetTime import-pointer type
 
 // Retail caches the timeGetTime entry point in a game-owned global pointer and
 // calls through it (ff 15), not via the import thunk.
 DATA(0x006c4650)
-extern u32(__stdcall* g_pTimeGetTime)();
+extern u32(WINAPI* g_pTimeGetTime)();
 
 // The owning palette object (external, class in another TU). Real polymorphic
 // interface: only SetEntries (slot 6, +0x18) is invoked. Slots 0..5 are

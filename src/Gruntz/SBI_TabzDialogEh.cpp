@@ -58,7 +58,7 @@ void* operator new(u32 n);
 // The ?g_pCopyRect@@3P6GXPAUtagRECT@@PBU1@@ZA global fn-pointer (VA 0x6c44bc): a
 // __stdcall RECT copier called `call ds:[g_pCopyRect]`. Reloc-masked DATA().
 DATA(0x002c44bc)
-extern void(__stdcall* g_pCopyRect)(RECT* dst, const RECT* src);
+extern void(WINAPI* g_pCopyRect)(RECT* dst, const RECT* src);
 
 // ---------------------------------------------------------------------------
 // The status-bar item family: a REAL polymorphic base (CSbDialogItem) whose

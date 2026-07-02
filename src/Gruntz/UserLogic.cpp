@@ -1550,7 +1550,7 @@ extern "C" i32 g_6bf3bc;
 // The mgr singleton (same 0x64556c datum) + the WM_COMMAND PostMessageA IAT slot.
 DATA(0x0024556c)
 extern "C" CWarpMgr* g_mgrSettings;
-typedef i32(__stdcall* WarpPostFn)(void* hwnd, unsigned msg, unsigned wp, i32 lp);
+typedef i32(WINAPI* WarpPostFn)(void* hwnd, unsigned msg, unsigned wp, i32 lp);
 DATA(0x002c44c8)
 extern WarpPostFn g_pPostMessageA;
 // MFC CString the destination key formats into (ctor 0x1b9b93 / dtor 0x1b9cde) + the

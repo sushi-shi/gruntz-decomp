@@ -37,7 +37,7 @@ namespace m4dlg {
     };
 
     // Game Win32 pointer table (reloc-masked indirect call).
-    extern LRESULT(__stdcall* g_pSendMessageA)(HWND, UINT, WPARAM, LPARAM); // 0x006c44a4
+    extern LRESULT(WINAPI* g_pSendMessageA)(HWND, UINT, WPARAM, LPARAM); // 0x006c44a4
 
     // CRT-style directory walk (engine copies at these RVAs; name at +0x14).
     struct FindData {

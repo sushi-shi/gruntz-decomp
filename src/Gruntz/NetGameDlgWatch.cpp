@@ -80,7 +80,7 @@ inline WatchSess* Sess() {
 }
 
 // The cached timeGetTime fn-ptr (DATA symbol; 0-arg, bound by m5_PaletteLerp).
-extern u32(__stdcall* g_pTimeGetTime)(); // 0x6c4650
+extern u32(WINAPI* g_pTimeGetTime)(); // 0x6c4650
 
 // Watchdog re-entrancy guard + two blink counters (.data).
 extern "C" i32 g_watchBusy;      // 0x64bdc4

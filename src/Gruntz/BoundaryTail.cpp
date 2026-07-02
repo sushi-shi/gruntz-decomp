@@ -11,8 +11,8 @@
 
 // Game-owned indirect import pointers (ff 15 / mov reg,[ptr]; call reg).
 DATA(0x006c4500)
-extern i16(__stdcall* g_pGetAsyncKeyState)(int vk);
-extern u32(__stdcall* g_pTimeGetTime)(); // bound by m5_SoundTickCtor (0x6c4650)
+extern i16(WINAPI* g_pGetAsyncKeyState)(int vk);
+extern u32(WINAPI* g_pTimeGetTime)(); // bound by m5_SoundTickCtor (0x6c4650)
 
 // ---------------------------------------------------------------------------
 // 0x13df30 - busy-wait for a key down-then-up edge on virtual-key `vk`, with an
@@ -28,15 +28,15 @@ extern u32(__stdcall* g_pTimeGetTime)(); // bound by m5_SoundTickCtor (0x6c4650)
 RVA(0x0013df30, 0xaf)
 void WaitKeyEdge(int vk, int timeoutMs) {
     if (timeoutMs == 0) {
-        i16(__stdcall * gaks)(int) = g_pGetAsyncKeyState;
+        i16(WINAPI * gaks)(int) = g_pGetAsyncKeyState;
         while (!((i32)gaks(vk) & 0x80000000))
             ;
         while ((i32)gaks(vk) & 0x80000000)
             ;
     } else {
-        u32(__stdcall * tgt)() = g_pTimeGetTime;
+        u32(WINAPI * tgt)() = g_pTimeGetTime;
         u32 deadline = tgt() + timeoutMs;
-        i16(__stdcall * gaks)(int) = g_pGetAsyncKeyState;
+        i16(WINAPI * gaks)(int) = g_pGetAsyncKeyState;
         while (!((i32)gaks(vk) & 0x80000000)) {
             if (tgt() > deadline) {
                 return;
