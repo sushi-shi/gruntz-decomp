@@ -29,6 +29,10 @@ SIZE_UNKNOWN(InterfaceObjectBase); // CObject-like base subobject; retail size T
 // 0x5e8cb4, already catalogued as ?g_severusBaseDtorVtbl@@3PAXA - a VTBL here would
 // collide on that rva / mis-attribute a shared vtable to one modeling-base name.
 
+// Own (most-derived) vtable @0x5f0748: cl auto-emits ??_7InterfaceObject (the dtor
+// below defines the class's key virtual). Retrofit the retail datum name (was the
+// anonymous Vtbl_1f0748 in UnknownVTables.h); reloc-masked, matching-neutral.
+VTBL(InterfaceObject, 0x005f0748);
 class InterfaceObject : public InterfaceObjectBase {
 public:
     i32 m_4;        // +0x04
@@ -37,6 +41,9 @@ public:
     virtual ~InterfaceObject();
     CString GetName();
 };
+// Exact size: AddGroupNode (NetMgr.cpp 0x178360) operator-new's a 0x10-byte node
+// (vptr@0 + m_4 + m_name CString + m_c).
+SIZE(InterfaceObject, 0x10);
 
 // InterfaceObject::GetName (0x179300) - copy-construct the +0x8 name CString into
 // the caller's return slot and hand it back.

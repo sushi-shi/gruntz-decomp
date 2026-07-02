@@ -546,3 +546,68 @@ build stayed GREEN, `no regressions vs baseline` (1835/3361 exact, 64.39% fuzzy)
   struct → `C2059 syntax error : constant` + `C2378 SIZE redefinition`). Fix: host the
   SIZE/VTBL in the .cpp (after its `#include <rva.h>`), like GameApp's EOF metadata —
   DirectInputMgr2.h / ShadeTableCache.h class metadata lives in their .cpp for this reason.
+## Batch 5 (Net/Bute/Rez/Wwd/Io/Stub — retrofit + wall audit) — 2026-07-02
+
+Findings: the scope's `g_*Vtbl` conversions were LARGELY done by Batches 1-4. This
+batch (a) RETROFITs the two remaining realized-but-uncatalogued own-vtables, (b)
+pins the exact SIZE for the realized Net/InterfaceObject nodes (from their
+`operator new`/`RezAlloc` sizes), (c) marks the four now-cataloged catalog entries
+REALIZED, and (d) audits every remaining scope stamp as a terminal/deferred wall.
+`gruntz build` GREEN throughout; **no regressions** (54.6% exact / 64.39% fuzzy;
+VTBL/SIZE are clang-only, matching-neutral).
+
+| Class / stamp | vtable RVA | Outcome | Reason |
+| :-- | :-- | :-- | :-- |
+| `CRezDir` (Rez) | 0x1ef7a8 | **RETROFIT (VTBL added)** | Already real-polymorphic (`CRezDir : CRezItmBase`, ctor 0x13c940 cl-auto-stamps the derived vtable), but the retail datum was the anonymous `Vtbl_1ef7a8`. Added `VTBL(CRezDir, 0x001ef7a8)` (include/Rez/RezMgr.h) → datum now named `??_7CRezDir@@6B@`. |
+| `InterfaceObject` (Net) | 0x5f0748 | **RETROFIT (VTBL + SIZE added)** | Already real-polymorphic (`InterfaceObject : InterfaceObjectBase`, dtor 0x179340 defines the key virtual so cl emits `??_7`), but the retail datum was the anonymous `Vtbl_1f0748` and the class carried NO size annotation. Added `VTBL(InterfaceObject, 0x005f0748)` + `SIZE(InterfaceObject, 0x10)` (AddGroupNode new-site). |
+| `CNetPlayerListNode` (Net) | 0x5f0760 | **SIZE pinned** | VTBL was already present (Batch <5); `SIZE_UNKNOWN → SIZE(0x58)` from AddPlayerNode's `RezAlloc(0x58)`. Catalog entry marked REALIZED. |
+| `CNetSessionNode` (Net) | 0x5f0778 | **SIZE pinned** | VTBL already present; `SIZE_UNKNOWN → SIZE(0x24)` from AddSessionNode's `RezAlloc(0x24)`. Catalog entry marked REALIZED. |
+
+### DEFERRED walls (audited this batch — terminal or cross-TU, NOT ripped out)
+
+- **Net factory stamps (`g_netPlayerNodeVtbl` 0x5f0760 / `g_netSessionNodeVtbl`
+  0x5f0778 / `g_netSessionNodeDtorVtbl` 0x5e8cb4 in NetMgr.cpp; InterfaceObject own
+  stamp in AddGroupNode)** — TERMINAL transitional. The node classes ARE realized
+  (NetSessionNode.cpp / InterfaceObject.cpp, cl emits their `??_7`, now VTBL-cataloged),
+  but the FACTORIES build via `RezAlloc(N)+manual stamp` (NOT a ctor), so cl has no
+  auto-stamp site — the `*(void**)node=&g_*Vtbl` correctly reloc-masks against the
+  realized `??_7`. Rewriting the factory as ctor-based `new` would change codegen on
+  these `@early-stop` regalloc/EH-scheduling-wall functions (AddSessionNode ~56%,
+  AddPlayerNode ~92%). No further vtable work possible here.
+- **Bute `CButeMgrHelper` (`g_helperVtbl` 0x5f03bc + vbase tables
+  `g_helperVbaseVtblA/B/C/D` 0x5f0374/0x5f0384/0x5f045c/0x5f047c + 0x5f0394)** —
+  VIRTUAL-INHERITANCE class: the vbase tables are `??_8`/construction-vtables, NOT
+  `??_7<Class>@@6B@`, so VTBL can't name them and cl can't reproduce the vbtable/vtordisp
+  layout from a clean model. Terminal until the vbase machinery is modeled.
+- **Bute `g_buteNodeSubVtbl` (0x5e949c)** — the PROMOTED second vtable of the embedded
+  `m_entry` sub-object (raw `*(void**)&m_entry=&...`); a promoted 2nd vtable is not a
+  C++-nameable `??_7` (ctor-handrolled-vptr-store-last.md). Terminal raw write.
+- **Wwd `g_wwdObjVtbl` (0x5f00a8, CWwdGameObject family) / `g_planeRenderVtbl`
+  (0x5f02a8, plane-render CSeverusWorker)** — inline raw-alloc factories
+  (ReadPlaneObjects/RebuildPlanes) that `operator new` + base-`Construct` + re-stamp
+  classes OWNED by src/Gruntz TUs (vptr-not-at-ctor-entry). Converting needs those
+  cross-TU classes modeled; out of Wwd scope. (`g_wwdSubVtbl` 0x5f0128 already
+  realized = CAniAdvanceCursor; `g_severusWorkerDtorVtbl` 0x5e8cb4 = shared CObject
+  base, catalogued as `?g_severusBaseDtorVtbl`.)
+- **Stub/Discovered `ClassUnknown_15/45/50/51/52/53/54`** (stamps 0x5ed36c / 0x5ea2a4 /
+  0x5f04d8 / 0x5e8cb4×4) — tiny ctor / void-init vptr stamps for UNMODELED
+  `ClassUnknown_N` whose slots point cross-TU / share the severus base 0x5e8cb4.
+  Modeling would emit a divergent `??_7` and regress (comdat-inline-ctor-no-standalone.md,
+  vptr-stamp-void-init-not-ctor.md). Correct transitional; per match-queue-priorities,
+  lone `ClassUnknown_N` are skipped.
+- **Stub/MallocConstructors `Node174d00`** (`m_vptr`=0x5f051c + `m_subVptr`=0x5f0518) —
+  has an EXPLICIT `m_vptr` field + a second `m_subVptr`; adding `virtual` shifts every
+  offset by 4 (explicit-mvptr-no-virtuals.md). Terminal manual stamp.
+
+### Rule reinforced (Batch 5)
+
+- **A realized (cl-emitting) class can still leave its retail vtable datum ANONYMOUS**
+  (`Vtbl_<rva>` in UnknownVTables.h) when nobody added the `VTBL(Class, rva)` catalog
+  line — the ctor/dtor auto-stamp reloc-masks either way, so it never shows in a %.
+  The fix is a one-line `VTBL(...)` (matching-neutral); find them by reading the
+  ctor/dtor's vtable-store reloc (dump_target) and cross-checking the datum is
+  uncatalogued (not in symbol_names.csv). CRezDir (0x1ef7a8) + InterfaceObject
+  (0x5f0748) were two such cases.
+- **UnknownVTables.h REALIZED annotations are hand-maintained**, not auto-pruned by
+  vtable_scan when a VTBL is added — update the entry to a `// REALIZED as ??_7…`
+  comment in the same change (this batch cleaned up the two new + two stale Net ones).

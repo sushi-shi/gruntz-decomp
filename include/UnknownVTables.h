@@ -124,17 +124,10 @@ struct Vtbl_1ef788 {
     UnkVfn FUN_0053c8f0;                 // [7] -> 0x13c8f0 FUN_0053c8f0
 };
 
-// ClassWithUnknownVTable14  @ 0x005ef7a8  (8 slots)  refs x2
-struct Vtbl_1ef7a8 {
-    UnkVfn slot0_13c530;                 // [0] -> 0x13c530 sub_13c530
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x13c990 `scalar_deleting_destructor'
-    UnkVfn slot2_13ca40;                 // [2] -> 0x13ca40 sub_13ca40
-    UnkVfn slot3_13ca50;                 // [3] -> 0x13ca50 sub_13ca50
-    UnkVfn slot4_13ca60;                 // [4] -> 0x13ca60 sub_13ca60
-    UnkVfn FUN_0053ca80;                 // [5] -> 0x13ca80 FUN_0053ca80
-    UnkVfn slot6_13caa0;                 // [6] -> 0x13caa0 sub_13caa0
-    UnkVfn slot7_13cab0;                 // [7] -> 0x13cab0 sub_13cab0
-};
+// ClassWithUnknownVTable14  @ 0x005ef7a8
+// REALIZED as ??_7CRezDir@@6B@ (real polymorphic CRezDir : CRezItmBase in
+// include/Rez/RezMgr.h; its ctor 0x13c940 cl-auto-stamps the derived vtable).
+// Cataloged via VTBL(CRezDir, 0x001ef7a8). Placeholder removed.
 
 // ClassWithUnknownVTable15  @ 0x005ef7d0  (8 slots)  refs x2
 struct Vtbl_1ef7d0 {
@@ -757,32 +750,20 @@ struct Vtbl_1f0310 {
 // include/Gruntz/WwdGrid.h; cl auto-emits the 6-slot vtable with __purecall @slot5).
 // VTBL(CWwdGrid, 0x001f0328) pairs it (RVA was unbound). Placeholder removed.
 
-// ClassWithUnknownVTable62  @ 0x005f0748  (5 slots)  refs x2
-struct Vtbl_1f0748 {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x179320 `scalar_deleting_destructor'
-    UnkVfn slot2_0028ec;                 // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
-};
+// ClassWithUnknownVTable62  @ 0x005f0748
+// REALIZED as ??_7InterfaceObject@@6B@ (real polymorphic InterfaceObject :
+// InterfaceObjectBase in src/Net/InterfaceObject.cpp; cl auto-emits it). Cataloged
+// via VTBL(InterfaceObject, 0x005f0748). Placeholder removed.
 
-// ClassWithUnknownVTable63  @ 0x005f0760  (5 slots)  refs x2
-struct Vtbl_1f0760 {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x179390 `scalar_deleting_destructor'
-    UnkVfn slot2_0028ec;                 // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
-};
+// ClassWithUnknownVTable63  @ 0x005f0760
+// REALIZED as ??_7CNetPlayerListNode@@6B@ (real polymorphic CNetPlayerListNode :
+// CNetNodeBase in src/Net/NetSessionNode.cpp; cl auto-emits it). Cataloged via
+// VTBL(CNetPlayerListNode, 0x005f0760). Placeholder removed.
 
-// ClassWithUnknownVTable64  @ 0x005f0778  (5 slots)  refs x2
-struct Vtbl_1f0778 {
-    UnkVfn slot0_1bef01;                 // [0] -> 0x1bef01 sub_1bef01
-    UnkVfn _scalar_deleting_destructor_; // [1] -> 0x179400 `scalar_deleting_destructor'
-    UnkVfn slot2_0028ec;                 // [2] -> 0x0028ec sub_0028ec
-    UnkVfn slot3_00106e;                 // [3] -> 0x00106e sub_00106e
-    UnkVfn slot4_004034;                 // [4] -> 0x004034 sub_004034
-};
+// ClassWithUnknownVTable64  @ 0x005f0778
+// REALIZED as ??_7CNetSessionNode@@6B@ (real polymorphic CNetSessionNode :
+// CNetNodeBase in src/Net/NetSessionNode.cpp; cl auto-emits it). Cataloged via
+// VTBL(CNetSessionNode, 0x005f0778). Placeholder removed.
 
 // ClassWithUnknownVTable65  @ 0x005f0790  (5 slots)  refs x3
 struct Vtbl_1f0790 {

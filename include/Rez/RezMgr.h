@@ -160,7 +160,12 @@ extern "C" u32 RezFWrite(void* buf, u32 size, u32 n, void* fp); // 0x18cb40
 // ---------------------------------------------------------------------------
 // CRezDir (ctor builds 0x38 = 56 bytes; runtime fields extend to +0x68) - a
 // subdirectory node + the directory the loader walks (Load/OpenSub/FindEntry).
+// Own (derived) vtable @0x1ef7a8: cl auto-emits ??_7CRezDir (real polymorphic
+// derived of CRezItmBase, whose ctor 0x13c940 stamps it). Retrofit the retail
+// datum name (was the anonymous Vtbl_1ef7a8 in UnknownVTables.h); reloc-masked,
+// matching-neutral.
 // ---------------------------------------------------------------------------
+VTBL(CRezDir, 0x001ef7a8);
 class CRezDir : public CRezItmBase {
 public:
     CRezDir(void* parent, void* rezMgr);

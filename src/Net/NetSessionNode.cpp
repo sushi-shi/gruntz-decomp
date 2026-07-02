@@ -82,7 +82,7 @@ public:
     CNetSessionDesc m_desc; // +0x04  the deep-copied 0x50-byte DPSESSIONDESC2
                             //        (name/password strdup'd in place)
 };
-SIZE_UNKNOWN(CNetPlayerListNode);     // node view (desc copy pinned); full retail size TBD
+SIZE(CNetPlayerListNode, 0x58);       // AddPlayerNode (NetMgr.cpp 0x1786d0) RezAlloc(0x58)
 VTBL(CNetPlayerListNode, 0x005f0760); // own (most-derived) vtable
 
 // ---------------------------------------------------------------------------
@@ -101,7 +101,7 @@ public:
     i32 m_1c;             // +0x1c
     i32 m_listPosition;   // +0x20  cleared on teardown
 };
-SIZE_UNKNOWN(CNetSessionNode);     // node view (fields to +0x20 pinned); full retail size TBD
+SIZE(CNetSessionNode, 0x24);       // AddSessionNode (NetMgr.cpp 0x178b30) RezAlloc(0x24)
 VTBL(CNetSessionNode, 0x005f0778); // own (final) vtable
 
 // ===========================================================================
