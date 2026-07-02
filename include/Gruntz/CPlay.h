@@ -594,7 +594,7 @@ public:
     // overlay probe + a HUD hit-test + a grid-snapped world marker place/cancel.
     i32 HandleTileClick(i32 a, i32 x, i32 y);
     i32 winapi_0d0b30_CopyRect(i32);
-    void LoadCursorSprites(i32, i32);
+    i32 LoadCursorSprites(i32 frame, i32 flag);
     i32 LoadScrollSpeedOptions();
     i32 BuildGruntTypeNameTable(i32, i32, i32, i32);
 };

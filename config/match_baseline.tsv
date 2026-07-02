@@ -1545,7 +1545,7 @@ cplay	?FreeListTeardown@CPlay@@QAEXXZ	99.1195	99.1195	1	b71aa3bef15e	0xcb480
 cplay	?HandleDragMove@CPlay@@QAEHHHH@Z	34.9732	34.9732	5	b6fa80cc293f	0xd0db0
 cplay	?HandleTileClick@CPlay@@QAEHHHH@Z	80.9500	80.9500	1	d28963ef9e47	0xceae0
 cplay	?LoadActionTileSprites@CPlay@@QAEHH@Z	100.0000	100.0000	2	41ed385ea43f	0xdb600
-cplay	?LoadCursorSprites@CPlay@@QAEXHH@Z	0.1664	0.1664	2	858399a45131	0xd0120
+cplay	?LoadCursorSprites@CPlay@@QAEHHH@Z	93.1281	93.1281	1	c6e37ccc4448	0xd0120
 cplay	?LoadGameAnims@CPlay@@QAEHH@Z	100.0000	100.0000	1	bac9b26c28a0	0xdb9b0
 cplay	?LoadGameImages@CPlay@@QAEHH@Z	100.0000	100.0000	2	47fb25996efa	0xdb8a0
 cplay	?LoadGameSounds@CPlay@@QAEHH@Z	100.0000	100.0000	1	f9e3e82883d9	0xdb930
@@ -1554,7 +1554,7 @@ cplay	?LoadImageBanks@CPlay@@QAEHXZ	100.0000	100.0000	1	f5cca6022e05	0xcffe0
 cplay	?LoadLevelImages@CPlay@@QAEHH@Z	100.0000	100.0000	2	6cce376d6cf0	0xdb7e0
 cplay	?LoadLevelSounds@CPlay@@QAEHH@Z	100.0000	100.0000	1	6500e8a7f24a	0xdb6c0
 cplay	?LoadSBITextEdges@CPlay@@QAEXPAD@Z	97.7831	97.7831	1	382ab9278cff	0xd1710
-cplay	?LoadScrollSpeedOptions@CPlay@@QAEHXZ	85.9200	85.9200	1	6cdabfb50968	0xd12b0
+cplay	?LoadScrollSpeedOptions@CPlay@@QAEHXZ	86.1450	86.1450	1	6cdabfb50968	0xd12b0
 cplay	?ModeCleanup@CPlay@@QAEXXZ	99.6154	99.6154	1	49243b4e5268	0xcb740
 cplay	?NotifyVisibleEntities@CPlay@@QAEHXZ	74.8676	74.8676	2	3cd6ac295b6a	0xd9050
 cplay	?OnExit@CPlay@@QAEXXZ	94.7917	94.7917	1	a2f4e9737e46	0xcb400
@@ -2149,8 +2149,9 @@ gamemode	?BuildVersionString@CMenuState@@QAEXHHHH@Z	100.0000	100.0000	3	7a5141c2
 gamemode	?BuildWarpStoneGlitterAnimation@CState@@QAEHXZ	88.1274	88.1274	1	80744100f058	0x19540
 gamemode	?CheckPerfectBonus@CMultiBootyState@@QAEHXZ	100.0000	100.0000	2	9fc93e05a397	0x1c0f0
 gamemode	?CheckWarpLetterBonus@CBootyState@@QAEXXZ	0.2849	0.2849	1	86e864f54e78	0x1c210
+gamemode	?DrawScrollingCredits@CCreditsState@@QAEHXZ	75.3092	75.3092	1	cc65b8cbb773	0x396f0
 gamemode	?FinishState@CCreditsState@@QAEHXZ	100.0000	100.0000	1	b2c3a49646dc	0x39c40
-gamemode	?FlashColor@CCreditsState@@QAEHXZ	66.5769	66.5769	1	fcd764f9eff7	0x39d00
+gamemode	?FlashColor@CCreditsState@@QAEHXZ	70.4231	70.4231	1	fcd764f9eff7	0x39d00
 gamemode	?FormatHudText@CMenuState@@QAEXPAUCHudBuf@@H@Z	97.4844	97.4844	1	92727a9826e5	0x1af70
 gamemode	?ForwardIdleAnim@CMultiBootyState@@QAEHHH@Z	100.0000	100.0000	1	4efc3adad86f	0x1d420
 gamemode	?FrameSlot24@CMultiBootyState@@UAEHH@Z	100.0000	100.0000	3	d9e4105e2d39	0x1e570
@@ -2158,7 +2159,7 @@ gamemode	?FrameSlot28@CMenuState@@UAEHH@Z	100.0000	100.0000	2	e9d8da09d7f7	0xa06
 gamemode	?GenMenuRandPos@@YGXHPAH0@Z	89.3724	89.3724	3	e5f14c89a313	0x19cd0
 gamemode	?InitAttractTitle@CCreditsState@@QAEHXZ	81.2079	81.2079	2	1cb1c7a9667d	0x39570
 gamemode	?LoadCreditzStateAssets@CCreditsState@@QAEHHHH@Z	100.0000	100.0000	2	5f8f1a3eb875	0x38d20
-gamemode	?LoadGruntEffectSprites@CState@@QAEXXZ	0.2268	0.2268	1	4762f4e00dc7	0x1a040
+gamemode	?LoadGruntEffectSprites@CState@@QAEHXZ	96.3379	96.3379	1	8ce5b625491d	0x1a040
 gamemode	?MoveLettersByDir@CMultiBootyState@@QAEXXZ	59.9241	59.9241	2	6a387478dfd5	0x19b90
 gamemode	?QueryGruntSlots@CMultiBootyState@@QAEHXZ	87.5000	87.5000	2	ba5d94c9711b	0x1ecf0
 gamemode	?ReadyAndPaint@CMultiBootyState@@QAEHXZ	100.0000	100.0000	1	ad3ed64b137e	0x1ce30
@@ -2181,7 +2182,6 @@ gamemode	?Update@CState@@UAEHXZ	100.0000	100.0000	5	657636330e4c	0x8c4b0
 gamemode	?Vfunc3@CState@@UAEHXZ	100.0000	100.0000	1	449f857c8ec1	0x8c490
 gamemode	?Vslot11@CState@@UAEHHHH@Z	100.0000	100.0000	1	84fdcdc12e89	0x8c610
 gamemode	?vfunc_1@CBootyState@@QAEXXZ	0.0417	0.0417	2	6e4ddd578781	0x1d440
-gamemode	?winapi_0396f0_SelectClipRgn_SetBkMode@CCreditsState@@QAEHXZ	0.9662	0.9662	2	60b1ea2ed5b7	0x396f0
 gamemodeobjlifecycle	?ClearPlacedObjects@CGameModeObj@@QAEHXZ	53.9750	53.9750	1	30192eab88a2	0xda030
 gamemodeobjlifecycle	?FlushPendingOps@CGameModeObj@@QAEHXZ	100.0000	100.0000	1	27f585a8a2ff	0xda2d0
 gamemodeobjlifecycle	?ReleaseLevelOverlay@CGameModeObj@@QAEHH@Z	100.0000	100.0000	1	036396bebe2f	0xd6560

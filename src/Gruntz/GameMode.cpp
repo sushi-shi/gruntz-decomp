@@ -32,7 +32,8 @@
 // real per-frame step+draw is slot +0x14 (Render), overridden by each concrete
 // state (carcassed in the long comment at the bottom of this file).
 #include <Gruntz/GameMode.h>
-#include <Rez/RezMgr.h> // RezFree - the engine allocator the video-handle teardown uses
+#include <Rez/RezMgr.h>   // RezFree - the engine allocator the video-handle teardown uses
+#include <Bute/ButeMgr.h> // CButeMgr g_buteMgr (GetIntDef for the SecretColor wormhole tint)
 #include <math.h>
 #include <rva.h>
 
@@ -505,12 +506,139 @@ i32 CCreditsState::InputVirtual() {
 RVA(0x0001d440, 0xd7d)
 void CBootyState::vfunc_1() {}
 
-// @confidence: low
+// DrawScrollingCredits (0x396f0): the credits scroll-text renderer. Each frame it ticks the
+// three overlay timers down by the frame delta, advances the scrolling caption RECT by
+// `delta * speed * 0.001` (wrapping when the RECT scrolls off, reseeding m_1f4 to
+// 480/0.025), then - if the IDirectDrawSurface hands back an HDC - paints the caption
+// (self->m_1f0) transparently into the scrolled RECT, and (when both the m_1c4/m_1c0 gates
+// are live) the static "Now is the time at Monolith when we dance" credit into a fixed
+// 640x480 RECT. GDI (SetBkMode/SelectClipRgn/SetTextColor/DrawTextA) via the IAT; the
+// surface GetDC/ReleaseDC are the DDraw COM slots (+0x44/+0x68). CString temp -> /GX frame.
+extern "C" i32 g_62bf74; // clip-region enable gate
+extern double g_5e96f8;  // 480.0 (screen height) - extern-loaded so the reseed division
+extern double g_5e96f0;  // 0.025 (scroll rate)   - is fld/fdiv, not a folded immediate
+// The credits scroll's DirectDraw surface (prov->m_8): only GetDC/ReleaseDC are used.
+struct CreditsSurf {
+    struct Vtbl {
+        char p0[0x44];
+        i32(__stdcall* GetDC)(CreditsSurf*, HDC* phdc); // +0x44 IDirectDrawSurface::GetDC
+        char p48[0x68 - 0x48];
+        i32(__stdcall* ReleaseDC)(CreditsSurf*, HDC hdc); // +0x68 ReleaseDC
+    }* vtbl;
+};
+struct CreditsHdcProv { // m_c->m_4->m_14->m_2c
+    char p0[0x8];
+    CreditsSurf* m_8; // +0x08 the DDraw surface
+};
+struct CreditsView4M14 {
+    char p0[0x2c];
+    CreditsHdcProv* m_2c; // +0x2c
+};
+struct CreditsView4 {
+    char p0[0x14];
+    CreditsView4M14* m_14; // +0x14
+};
+struct CreditsScrollView {
+    char p0[0x4];
+    CreditsView4* m_4; // +0x04
+};
+struct CreditsGdiObj { // m_1e8 clip region (CGdiObject: m_hObject @+0x4)
+    char p0[0x4];
+    void* m_hObject; // +0x04
+};
+struct CreditsScrollSelf {
+    char m_pad00[0xc];
+    CreditsScrollView* m_c; // +0x0c
+    char m_pad10[0x1bc - 0x10];
+    u32 m_1bc;           // +0x1bc overlay timer B (unsigned countdown)
+    u32 m_1c0;           // +0x1c0 overlay timer C (unsigned countdown)
+    i32 m_1c4;           // +0x1c4 second-caption gate
+    RECT m_src;          // +0x1c8 source caption RECT
+    RECT m_dst;          // +0x1d8 scrolled caption RECT (top +0x1dc / bottom +0x1e4 scroll)
+    CreditsGdiObj m_1e8; // +0x1e8 clip region
+    char* m_1f0;         // +0x1f0 caption CString buffer
+    u32 m_1f4;           // +0x1f4 reseed timer A (unsigned countdown)
+    double m_1f8;        // +0x1f8 scroll accumulator
+    double m_200;        // +0x200 scroll speed
+    i32 GetFlashColor(); // 0x4223 own thiscall (reloc-masked)
+};
+
+// @confidence: med
 // @source: winapi:SelectClipRgn;SetBkMode
-// @stub
+// @early-stop
+// ~75%: complete + correct (timer decrements with matched jb-branch polarity, the
+// scroll accumulator now fadd - the extern reseed constants block the /O2 constant-fold
+// so the reseed is fld/fdiv/ftol like retail - the DDraw GetDC/ReleaseDC COM slots, the
+// CGdiObject::operator-HRGN null-check clip, both DrawTextA paths + the static credit
+// CString). Residual walls: (1) the /GX EH-frame representation (Unwind@ vs $L +
+// __except_list, docs/seh-eh.md); (2) MSVC keeps the accumulator in st0 (fst) and lets
+// ftol reuse it where retail stores-and-reloads (fstp/fld) - a float-consistency (/Op)
+// mode difference, not source-steerable; (3) FP/prov-chain scheduling around the RECT
+// copy. All logic + externs/strings named; the 3 FP-constant relocs stay differently-named.
 RVA(0x000396f0, 0x2b8)
-i32 CCreditsState::winapi_0396f0_SelectClipRgn_SetBkMode() {
-    return 0;
+i32 CCreditsState::DrawScrollingCredits() {
+    CreditsScrollSelf* self = (CreditsScrollSelf*)this;
+    if (self->m_c == 0) {
+        return 0;
+    }
+    CreditsHdcProv* prov = self->m_c->m_4->m_14->m_2c;
+
+    if (g_645584 >= self->m_1f4) {
+        self->m_1f4 = 0;
+    } else {
+        self->m_1f4 -= g_645584;
+    }
+    if (self->m_1c4 != 0) {
+        if (g_645584 >= self->m_1bc) {
+            self->m_1bc = 0;
+        } else {
+            self->m_1bc -= g_645584;
+        }
+        if (g_645584 >= self->m_1c0) {
+            self->m_1c0 = 0;
+        } else {
+            self->m_1c0 -= g_645584;
+        }
+    }
+
+    self->m_dst = self->m_src;
+    double contrib = (double)g_645584 * self->m_200 * 0.001;
+    self->m_1f8 = self->m_1f8 + contrib;
+    i32 scrolled = (i32)self->m_1f8;
+    self->m_dst.top -= scrolled;
+    self->m_dst.bottom -= scrolled;
+    if (self->m_dst.bottom < 0) {
+        self->m_1f8 = 0.0;
+        self->m_dst = self->m_src;
+        self->m_1f4 = (i32)(g_5e96f8 / g_5e96f0);
+    }
+
+    HDC hdc = 0;
+    prov->m_8->vtbl->GetDC(prov->m_8, &hdc);
+    if (hdc != 0) {
+        i32 oldBk = SetBkMode(hdc, TRANSPARENT);
+        if (g_62bf74 != 0) {
+            CreditsGdiObj* pRgn = &self->m_1e8;
+            HRGN rgn = (pRgn != 0) ? (HRGN)pRgn->m_hObject : 0;
+            SelectClipRgn(hdc, rgn);
+        }
+        i32 oldColor = SetTextColor(hdc, self->GetFlashColor());
+        DrawTextA(hdc, self->m_1f0, -1, &self->m_dst, 0x50);
+        SetTextColor(hdc, oldColor);
+        if (self->m_1c4 != 0 && self->m_1c0 != 0) {
+            CString s("Now is the time at Monolith when we dance");
+            RECT r = {0, 0, 0x280, 0x1e0};
+            i32 oldColor2 = SetTextColor(hdc, 0xffffff);
+            DrawTextA(hdc, (const char*)s, -1, &r, 0x75);
+            SetTextColor(hdc, oldColor2);
+        }
+        if (g_62bf74 != 0) {
+            SelectClipRgn(hdc, 0);
+        }
+        SetBkMode(hdc, oldBk);
+        prov->m_8->vtbl->ReleaseDC(prov->m_8, hdc);
+    }
+    return 1;
 }
 
 // -------------------------------------------------------------------------
@@ -530,6 +658,13 @@ struct CGlitterAnim {                       // a created animation object
     void SetCycle(const char* key, i32 z);  // 0x1505b0 (this, key, z)
     char m_pad00[0x40];
     i32 m_40; // +0x40 flag word (bit0 = active)
+    char m_pad44[0x4c - 0x44];
+    i32 m_4c; // +0x4c selection/color handle
+    i32 m_50; // +0x50 mode
+    char m_pad54[0x58 - 0x54];
+    i32 m_58; // +0x58 flag
+    i32 m_5c; // +0x5c id/offset
+    i32 m_60; // +0x60 x-position
 };
 struct CGlitterFactory {
     // 0x1597b0: create a named animation of `kind` from a template ("DoNothing"/"SimpleAnimation").
@@ -543,12 +678,23 @@ struct CGlitterMgrSet {
     char m_pad00[0x4];
     i32 m_4; // +0x04 element count
 };
+// The selection source (m_74): GetSel resolves an active selection handle.
+struct CGlitterSel {
+    i32 GetSel(i32 a, i32 b); // 0x4165 thiscall
+};
+// The color->handle table (m_78): the SecretColor-indexed handle array at +0x14.
+struct CGlitterColorTable {
+    char m_pad00[0x14];
+    i32 m_arr14[1]; // +0x14  color->handle table
+};
 struct CGlitterMgr {
     char m_pad00[0x30];
     CGlitterMgrM30* m_30; // +0x30
-    char m_pad34[0x7c - 0x34];
-    CGlitterMgrSet* m_7c; // +0x7c
-    i32 m_80;             // +0x80  attract frame counter (title rotation source)
+    char m_pad34[0x74 - 0x34];
+    CGlitterSel* m_74;        // +0x74  selection source
+    CGlitterColorTable* m_78; // +0x78  color->handle table
+    CGlitterMgrSet* m_7c;     // +0x7c
+    i32 m_80;                 // +0x80  attract frame counter (title rotation source)
 };
 DATA(0x0024556c)
 extern "C" CGlitterMgr* g_mgrSettings;
@@ -588,11 +734,255 @@ i32 CState::BuildWarpStoneGlitterAnimation() {
     return 1;
 }
 
+// LoadGruntEffectSprites (0x1a040): preload the in-game effect/icon animation set.
+// Really a CPlay-layout method (the trace homed it on the CState base); it walks the
+// same g_mgrSettings->m_30->m_8 SimpleAnimation factory as BuildWarpStoneGlitterAnimation
+// but stores ~15 named effect sprites into the big +0x2fc.. block plus three parallel
+// 8-element sprite arrays (bomb/go-kart/explosion) at +0x224/+0x244/+0x264, positioned
+// from the geometry table. Every factory/lookup/GDI callee is a reloc-masked engine
+// extern; all texture/cycle strings are named. Fields beyond CState are reached by a
+// typed self-view (naming-independent offset access, campaign doctrine).
+extern CButeMgr g_buteMgr;        // ?g_buteMgr@@3VCButeMgr@@A
+extern char* g_wormholeSpawnKey;  // ?g_wormholeSpawnKey@@3PADA ("Wormhole" bute tag @0x60a7ac)
+extern unsigned char g_dat60b588; // ?g_dat60b588@@3EA  (go-kart install byte flag)
+
+// The go-kart install target reached via m_c->m_10 (a vtable-bearing view; slot +0x48
+// installs the resolved image under a name + a byte-flag out-param). Declared-only
+// virtuals (bodies live in another TU) so cl emits NO ??_7 yet dispatches via the vtable.
+struct CEffView10 {
+    virtual void v00();
+    virtual void v01();
+    virtual void v02();
+    virtual void v03();
+    virtual void v04();
+    virtual void v05();
+    virtual void v06();
+    virtual void v07();
+    virtual void v08();
+    virtual void v09();
+    virtual void v10();
+    virtual void v11();
+    virtual void v12();
+    virtual void v13();
+    virtual void v14();
+    virtual void v15();
+    virtual void v16();
+    virtual void v17();
+    virtual void Install(void* img, const char* name, unsigned char* flag); // slot 18 (+0x48)
+};
+struct CEffView { // CState::m_c reinterpreted
+    char p0[0x10];
+    CEffView10* m_10; // +0x10
+};
+// The namespace/image registry at this+0x30 (resolves a named image handle).
+struct CEffNamespace {
+    void* Lookup(const char* name); // 0x13bae0 thiscall
+};
+// The geometry table (0x60b8fc, 0x10-byte rows): the effect sprites' x-position is
+// (row.a + row.c) / 2. The loop init/bound relocs land on &row[0].c / &row[8].c.
+struct CEffGeomRow {
+    i32 a;     // +0x00
+    i32 pad4;  // +0x04 (417, unused)
+    i32 c;     // +0x08
+    i32 pad12; // +0x0c (245, unused)
+};
+DATA(0x0020b8fc)
+extern CEffGeomRow g_effGeom[8]; // 0x60b8fc
+
+// Typed self-view for the big CPlay-layout owner (offsets only; not a class re-decl).
+struct CEffLoaderSelf {
+    char m_pad00[0xc];
+    CEffView* m_c; // +0x0c  view holder
+    char m_pad10[0x30 - 0x10];
+    CEffNamespace* m_30; // +0x30  image namespace
+    char m_pad34[0x224 - 0x34];
+    CGlitterAnim* m_bomb[8];   // +0x224  bomb-grunt sprites
+    CGlitterAnim* m_gokart[8]; // +0x244  go-kart sprites
+    CGlitterAnim* m_expl[8];   // +0x264  explosion sprites
+    char m_pad284[0x2fc - 0x284];
+    CGlitterAnim* m_2fc; // +0x2fc  stopwatch
+    CGlitterAnim* m_300; // +0x300  exit
+    CGlitterAnim* m_304; // +0x304  death twitch
+    CGlitterAnim* m_308; // +0x308  gauntletz
+    CGlitterAnim* m_30c; // +0x30c  beachballz
+    CGlitterAnim* m_310; // +0x310  roidz
+    CGlitterAnim* m_314; // +0x314  coin
+    CGlitterAnim* m_318; // +0x318  wormhole/teleporter
+};
+
 // @confidence: med
 // @source: string-xref
-// @stub
+// @early-stop
+// ~96.3%: complete + correct, dev-authentic shape (natural array indexing throughout -
+// self->m_bomb[i]/m_gokart[i]/m_expl[i] and g_effGeom[i].a/.c - which MSVC fuses into the
+// retail single-pointer inductions). Residual is two scheduling walls: (1) the SecretColor
+// block schedules the g_mgrSettings->m_78 load AFTER the GetIntDef call (retail hoists it
+// into ebp before the call and keeps it across) - an eval-order choice not source-steerable
+// without regressing the frame; (2) the (a+c)/2 geom pair loads a/c in the opposite eax/edx
+// order (commutative). All externs/strings named.
 RVA(0x0001a040, 0x55e)
-void CState::LoadGruntEffectSprites() {}
+i32 CState::LoadGruntEffectSprites() {
+    CEffLoaderSelf* self = (CEffLoaderSelf*)this;
+
+    i32 handleA = g_mgrSettings->m_74->GetSel(0, 0);
+    if (handleA == 0) {
+        return 0;
+    }
+    i32 handleB = g_mgrSettings->m_74->GetSel(0, 1);
+
+    void* img = self->m_30->Lookup("IMAGEZ_GOKARTGRUNT");
+    if (img == 0) {
+        return 0;
+    }
+    self->m_c->m_10->Install(img, "GRUNTZ_GOKARTGRUNT", &g_dat60b588);
+
+    CGlitterFactory* f = g_mgrSettings->m_30->m_8;
+
+    CGlitterAnim* sw = f->Create(0, 0, 0, 0, "SimpleAnimation", 3);
+    self->m_2fc = sw;
+    if (sw == 0) {
+        return 0;
+    }
+    sw->SetTexture("GAME_INGAMEICONZ_POWERUPZ_STOPWATCH");
+    self->m_2fc->SetCycle("GAME_CYCLE100", 0);
+    self->m_2fc->m_40 |= 1;
+
+    CGlitterAnim* wh = g_mgrSettings->m_30->m_8->Create(0, 0, 0, 0, "SimpleAnimation", 3);
+    self->m_318 = wh;
+    if (wh == 0) {
+        return 0;
+    }
+    i32 tint =
+        g_mgrSettings->m_78->m_arr14[g_buteMgr.GetIntDef(g_wormholeSpawnKey, "SecretColor", 1)];
+    self->m_318->SetTexture("GAME_WORMHOLE");
+    self->m_318->SetCycle("GAME_TELEPORTER", 0);
+    CGlitterAnim* p318 = self->m_318;
+    p318->m_58 = 1;
+    p318->m_50 = 7;
+    p318->m_4c = tint;
+
+    CGlitterAnim* ex = g_mgrSettings->m_30->m_8->Create(0, 0, 0, 0, "SimpleAnimation", 3);
+    self->m_300 = ex;
+    if (ex == 0) {
+        return 0;
+    }
+    ex->SetTexture("GRUNTZ_EXITZ");
+    self->m_300->SetCycle("GAME_GRUNTFLEX", 0);
+    CGlitterAnim* p300 = self->m_300;
+    p300->m_58 = 1;
+    p300->m_50 = 0xa;
+    p300->m_4c = handleA;
+    self->m_300->m_40 |= 1;
+
+    CGlitterAnim* dt = g_mgrSettings->m_30->m_8->Create(0, 0, 0, 0, "SimpleAnimation", 3);
+    self->m_304 = dt;
+    if (dt == 0) {
+        return 0;
+    }
+    dt->SetTexture("GRUNTZ_NORMALGRUNT_DEATH");
+    self->m_304->SetCycle("GAME_GRUNTTWITCH", 0);
+    CGlitterAnim* p304 = self->m_304;
+    p304->m_58 = 1;
+    p304->m_50 = 0xa;
+    p304->m_4c = handleA;
+    self->m_304->m_40 |= 1;
+
+    CGlitterAnim* gl = g_mgrSettings->m_30->m_8->Create(0, 0, 0, 0, "SimpleAnimation", 3);
+    self->m_308 = gl;
+    if (gl == 0) {
+        return 0;
+    }
+    gl->SetTexture("GAME_INGAMEICONZ_TOOLZ_GAUNTLETZ");
+    self->m_308->SetCycle("GAME_CYCLE100", 0);
+    CGlitterAnim* p308 = self->m_308;
+    p308->m_58 = 1;
+    p308->m_50 = 0xa;
+    p308->m_4c = handleA;
+    self->m_308->m_40 |= 1;
+
+    CGlitterAnim* bb = g_mgrSettings->m_30->m_8->Create(0, 0, 0, 0, "SimpleAnimation", 3);
+    self->m_30c = bb;
+    if (bb == 0) {
+        return 0;
+    }
+    bb->SetTexture("GAME_INGAMEICONZ_TOYZ_BEACHBALLZ");
+    self->m_30c->SetCycle("GAME_CYCLE100", 0);
+    CGlitterAnim* p30c = self->m_30c;
+    p30c->m_58 = 1;
+    p30c->m_50 = 0xa;
+    p30c->m_4c = handleA;
+    self->m_30c->m_40 |= 1;
+
+    CGlitterAnim* rz = g_mgrSettings->m_30->m_8->Create(0, 0, 0, 0, "SimpleAnimation", 3);
+    self->m_310 = rz;
+    if (rz == 0) {
+        return 0;
+    }
+    rz->SetTexture("GAME_INGAMEICONZ_POWERUPZ_ROIDZ");
+    self->m_310->SetCycle("GAME_CYCLE100", 0);
+    CGlitterAnim* p310 = self->m_310;
+    p310->m_58 = 1;
+    p310->m_50 = 0xa;
+    p310->m_4c = handleA;
+    self->m_310->m_40 |= 1;
+
+    CGlitterAnim* cn = g_mgrSettings->m_30->m_8->Create(0, 0, 0, 0, "SimpleAnimation", 3);
+    self->m_314 = cn;
+    if (cn == 0) {
+        return 0;
+    }
+    cn->SetTexture("GAME_INGAMEICONZ_POWERUPZ_COIN");
+    self->m_314->SetCycle("GAME_CYCLE100", 0);
+    CGlitterAnim* p314 = self->m_314;
+    p314->m_58 = 1;
+    p314->m_50 = 0xa;
+    p314->m_4c = handleA;
+    self->m_314->m_40 |= 1;
+
+    // The three per-direction sprite arrays sit contiguously (bomb/go-kart/explosion),
+    // positioned from the geometry table row's {a,c} midpoint; MSVC fuses the three
+    // parallel array walks + the geom walk into single induction pointers.
+    for (i32 i = 0; i < 8; i++) {
+        CGlitterAnim* b = g_mgrSettings->m_30->m_8->Create(0, 0, 0, 2, "SimpleAnimation", 3);
+        self->m_bomb[i] = b;
+        if (b == 0) {
+            return 0;
+        }
+        b->SetTexture("GRUNTZ_BOMBGRUNT_WEST_ITEM");
+        self->m_bomb[i]->SetCycle("GAME_GRUNTBOMBSPRINT", 0);
+        CGlitterAnim* bp = self->m_bomb[i];
+        bp->m_58 = 1;
+        bp->m_50 = 0xa;
+        bp->m_4c = handleA;
+        self->m_bomb[i]->m_5c = 0x2c6;
+        self->m_bomb[i]->m_60 = (g_effGeom[i].a + g_effGeom[i].c) / 2;
+        self->m_bomb[i]->m_40 |= 1;
+
+        CGlitterAnim* e = g_mgrSettings->m_30->m_8->Create(0, 0, 0, 2, "SimpleAnimation", 3);
+        self->m_expl[i] = e;
+        if (e == 0) {
+            return 0;
+        }
+        e->SetTexture("GAME_EXPLOSION");
+        self->m_expl[i]->m_40 |= 1;
+
+        CGlitterAnim* g = g_mgrSettings->m_30->m_8->Create(0, 0, 0, 2, "SimpleAnimation", 3);
+        self->m_gokart[i] = g;
+        if (g == 0) {
+            return 0;
+        }
+        g->SetTexture("GRUNTZ_GOKARTGRUNT_EAST");
+        self->m_gokart[i]->SetCycle("GAME_CYCLE100", 0);
+        CGlitterAnim* gp = self->m_gokart[i];
+        gp->m_58 = 1;
+        gp->m_50 = 0xa;
+        gp->m_4c = handleB;
+        self->m_gokart[i]->m_5c = -70;
+        self->m_gokart[i]->m_60 = (g_effGeom[i].a + g_effGeom[i].c) / 2;
+        self->m_gokart[i]->m_40 |= 1;
+    }
+    return 1;
+}
 
 // BuildBootyWalkingGruntz (0x1b450) is re-homed to its real class BzState in
 // src/Gruntz/BootyWalkAnim.cpp (beside its per-frame Update sibling).

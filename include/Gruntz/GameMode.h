@@ -287,7 +287,7 @@ public:
     void Sub2();
     void Sub3();
 
-    i32 winapi_0396f0_SelectClipRgn_SetBkMode();
+    i32 DrawScrollingCredits(); // 0x396f0 per-frame credits scroll-text renderer
 
     // ReleaseResources (0x38f00): the credits teardown - free the pooled resource,
     // release the three named registries, tear down + RezFree the video handle,

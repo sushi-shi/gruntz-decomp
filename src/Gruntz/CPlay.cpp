@@ -2285,11 +2285,283 @@ i32 CPlay::ResumeGame() {
     return 1;
 }
 
+// LoadCursorSprites (0xd0120): select + load the on-screen cursor sprite set for a tool
+// `frame`. Early-outs when the requested (frame,flag) already matches the loaded pair.
+// Frame 1..0x26 = the numeric chip cursor; 0 = the plain pointer; 0x66 = the flailing-grunt
+// cursor (which also fires a booty cue + arms the +0x328 one-shot timer); 0xc8..0xe8 = the
+// per-tool cursor table (a dense switch, one GAME_CURSORZ_* per tool). Each path loads via
+// the reloc-masked LoadCursor helper (0x39ea) and, on success, stamps the m_2fc/m_300/m_504/
+// m_2f8 cursor state. Fields beyond CPlay's modeled layout are reached by a typed self-view.
+struct CursorFxObj { // the held cursor-anim object at m_4e4 (its +0x40 flag word toggles)
+    char m_pad00[0x40];
+    i32 m_40; // +0x40 flag word (bit0)
+};
+// The on-screen cue sink (g_64556c->m_60); the flailing-grunt path fires a 6-arg cue.
+struct CursorCueSink {
+    void PlayCue(i32 g, i32 code, i32 a, i32 b, i32 c, i32 d); // 0x39f4 thiscall
+};
+struct CursorSelf {
+    char m_pad00[0x2f8];
+    i32 m_2f8; // +0x2f8 loaded frame id
+    i32 m_2fc; // +0x2fc
+    i32 m_300; // +0x300
+    char m_pad304[0x328 - 0x304];
+    i32 m_328; // +0x328 one-shot timer stamp
+    i32 m_32c; // +0x32c
+    i32 m_330; // +0x330 one-shot interval
+    i32 m_334; // +0x334
+    char m_pad338[0x368 - 0x338];
+    i32 m_368; // +0x368 flailing-grunt gate
+    i32 m_36c; // +0x36c chip-cursor gate
+    char m_pad370[0x4e4 - 0x370];
+    CursorFxObj* m_4e4; // +0x4e4 held cursor-anim object
+    char m_pad4e8[0x504 - 0x4e8];
+    i32 m_504; // +0x504 loaded flag
+    // The named-cursor-set loader (thunk 0x39ea, __thiscall, reloc-masked).
+    i32 LoadCursor(const char* name, i32 a, i32 b, i32 c, i32 d);
+};
+
 // @confidence: med
 // @source: string-xref
-// @stub
+// @early-stop
+// ~93%: complete + correct (the early-out guard, all four dispatch arms - the 1..0x26
+// chip range, the pointer, the flailing-grunt cue arm, and the full 33-case tool-cursor
+// switch - all match, every GAME_CURSORZ_*/helper named). Residual walls: (1) the tool
+// switch's range check - retail emits the signed two-bound form (cmp eax,0xc8;jl + sub;cmp
+// 0x20;ja) where cl folds it to the single unsigned check; (2) the jump-table dispatch is
+// the delinker's `jmp [eax*4+$L]` reloc-typing vs cl's separate DIR32 base (same bytes);
+// (3) the three prefix blocks reload `frame` into a different scratch reg (edx vs eax) for
+// the trailing m_2f8 store. All logic + externs/strings named.
 RVA(0x000d0120, 0x5d8)
-void CPlay::LoadCursorSprites(i32, i32) {}
+i32 CPlay::LoadCursorSprites(i32 frame, i32 flag) {
+    CursorSelf* self = (CursorSelf*)this;
+    if (self->m_2f8 == frame && flag == self->m_504) {
+        return 1;
+    }
+    if (frame >= 1 && frame <= 0x26) {
+        if (self->LoadCursor("GAME_INGAMEICONZ_NORMCHIPZ", frame, 0, 0x64, 0) == 0) {
+            return 0;
+        }
+        if (self->m_4e4 != 0) {
+            self->m_4e4->m_40 |= 1;
+        }
+        self->m_2fc = 0;
+        self->m_300 = 0;
+        self->m_36c = 1;
+        self->m_504 = 0;
+        self->m_2f8 = frame;
+        return 1;
+    }
+    if (frame == 0) {
+        if (self->LoadCursor("GAME_CURSORZ_POINTER", 1, 1, 0x64, 0) == 0) {
+            return 0;
+        }
+        if (self->m_4e4 != 0) {
+            self->m_4e4->m_40 &= ~1;
+        }
+        self->m_2fc = 0x10;
+        self->m_300 = 0x10;
+        self->m_504 = 0;
+        self->m_2f8 = frame;
+        return 1;
+    }
+    if (frame == 0x66) {
+        if (self->LoadCursor("GAME_CURSORZ_FLAILINGGRUNT", 1, 1, 0x64, 1) == 0) {
+            return 0;
+        }
+        if (self->m_4e4 != 0) {
+            self->m_4e4->m_40 |= 1;
+        }
+        self->m_2fc = 0;
+        self->m_300 = 0;
+        self->m_368 = 1;
+        self->m_504 = 0;
+        ((CursorCueSink*)g_64556c->m_60)->PlayCue(0, 0x33e, -1, 1, -1, -1);
+        self->m_330 = 0x2710;
+        self->m_334 = 0;
+        self->m_328 = g_645588;
+        self->m_32c = 0;
+        self->m_2f8 = frame;
+        return 1;
+    }
+    switch (frame) {
+        case 0xc8:
+            if (self->LoadCursor("GAME_CURSORZ_HANDZ", 1, flag, 0x64, 1) == 0) {
+                return 0;
+            }
+            break;
+        case 0xc9:
+            if (self->LoadCursor("GAME_CURSORZ_BOMBZ", 1, flag, 0x64, 0) == 0) {
+                return 0;
+            }
+            break;
+        case 0xca:
+            if (self->LoadCursor("GAME_CURSORZ_BOOMERANGZ", 1, flag, 0x64, 0) == 0) {
+                return 0;
+            }
+            break;
+        case 0xcb:
+            if (self->LoadCursor("GAME_CURSORZ_BRICKZ", 1, flag, 0x64, 0) == 0) {
+                return 0;
+            }
+            break;
+        case 0xcc:
+            if (self->LoadCursor("GAME_CURSORZ_CLUBZ", 1, flag, 0x64, 0) == 0) {
+                return 0;
+            }
+            break;
+        case 0xcd:
+            if (self->LoadCursor("GAME_CURSORZ_GAUNTLETZ", 1, flag, 0x64, 0) == 0) {
+                return 0;
+            }
+            break;
+        case 0xce:
+            if (self->LoadCursor("GAME_CURSORZ_GLOVEZ", 1, flag, 0x64, 0) == 0) {
+                return 0;
+            }
+            break;
+        case 0xcf:
+            if (self->LoadCursor("GAME_CURSORZ_GOOBERZ", 1, flag, 0x64, 0) == 0) {
+                return 0;
+            }
+            break;
+        case 0xd0:
+            if (self->LoadCursor("GAME_CURSORZ_GRAVITYBOOTZ", 1, flag, 0x64, 0) == 0) {
+                return 0;
+            }
+            break;
+        case 0xd1:
+            if (self->LoadCursor("GAME_CURSORZ_GUNHATZ", 1, flag, 0x64, 0) == 0) {
+                return 0;
+            }
+            break;
+        case 0xd2:
+            if (self->LoadCursor("GAME_CURSORZ_NERFGUNZ", 1, flag, 0x64, 0) == 0) {
+                return 0;
+            }
+            break;
+        case 0xd3:
+            if (self->LoadCursor("GAME_CURSORZ_ROCKZ", 1, flag, 0x64, 0) == 0) {
+                return 0;
+            }
+            break;
+        case 0xd4:
+            if (self->LoadCursor("GAME_CURSORZ_SHIELDZ", 1, flag, 0x64, 0) == 0) {
+                return 0;
+            }
+            break;
+        case 0xd5:
+            if (self->LoadCursor("GAME_CURSORZ_SHOVELZ", 1, flag, 0x64, 0) == 0) {
+                return 0;
+            }
+            break;
+        case 0xd6:
+            if (self->LoadCursor("GAME_CURSORZ_SPRINGZ", 1, flag, 0x64, 0) == 0) {
+                return 0;
+            }
+            break;
+        case 0xd7:
+            if (self->LoadCursor("GAME_CURSORZ_SPYZ", 1, flag, 0x64, 0) == 0) {
+                return 0;
+            }
+            break;
+        case 0xd8:
+            if (self->LoadCursor("GAME_CURSORZ_SWORDZ", 1, flag, 0x64, 0) == 0) {
+                return 0;
+            }
+            break;
+        case 0xd9:
+            if (self->LoadCursor("GAME_CURSORZ_TIMEBOMBZ", 1, flag, 0x64, 0) == 0) {
+                return 0;
+            }
+            break;
+        case 0xda:
+            if (self->LoadCursor("GAME_CURSORZ_TOOBZ", 1, flag, 0x64, 0) == 0) {
+                return 0;
+            }
+            break;
+        case 0xdb:
+            if (self->LoadCursor("GAME_CURSORZ_WANDZ", 1, flag, 0x64, 0) == 0) {
+                return 0;
+            }
+            break;
+        case 0xdc:
+            if (self->LoadCursor("GAME_CURSORZ_WARPSTONEZ", 1, flag, 0x64, 0) == 0) {
+                return 0;
+            }
+            break;
+        case 0xdd:
+            if (self->LoadCursor("GAME_CURSORZ_WELDERZ", 1, flag, 0x64, 0) == 0) {
+                return 0;
+            }
+            break;
+        case 0xde:
+            if (self->LoadCursor("GAME_CURSORZ_WINGZ", 1, flag, 0x64, 0) == 0) {
+                return 0;
+            }
+            break;
+        case 0xdf:
+            if (self->LoadCursor("GAME_CURSORZ_BABYWALKERZ", 1, flag, 0x64, 0) == 0) {
+                return 0;
+            }
+            break;
+        case 0xe0:
+            if (self->LoadCursor("GAME_CURSORZ_BEACHBALLZ", 1, flag, 0x64, 0) == 0) {
+                return 0;
+            }
+            break;
+        case 0xe1:
+            if (self->LoadCursor("GAME_CURSORZ_BIGWHEELZ", 1, flag, 0x64, 0) == 0) {
+                return 0;
+            }
+            break;
+        case 0xe2:
+            if (self->LoadCursor("GAME_CURSORZ_GOKARTZ", 1, flag, 0x64, 0) == 0) {
+                return 0;
+            }
+            break;
+        case 0xe3:
+            if (self->LoadCursor("GAME_CURSORZ_JACKINTHEBOXZ", 1, flag, 0x64, 0) == 0) {
+                return 0;
+            }
+            break;
+        case 0xe4:
+            if (self->LoadCursor("GAME_CURSORZ_JUMPROPEZ", 1, flag, 0x64, 0) == 0) {
+                return 0;
+            }
+            break;
+        case 0xe5:
+            if (self->LoadCursor("GAME_CURSORZ_POGOSTICKZ", 1, flag, 0x64, 0) == 0) {
+                return 0;
+            }
+            break;
+        case 0xe6:
+            if (self->LoadCursor("GAME_CURSORZ_SCROLLZ", 1, flag, 0x64, 0) == 0) {
+                return 0;
+            }
+            break;
+        case 0xe7:
+            if (self->LoadCursor("GAME_CURSORZ_SQUEAKTOYZ", 1, flag, 0x64, 0) == 0) {
+                return 0;
+            }
+            break;
+        case 0xe8:
+            if (self->LoadCursor("GAME_CURSORZ_YOYOZ", 1, flag, 0x64, 0) == 0) {
+                return 0;
+            }
+            break;
+        default:
+            return 0;
+    }
+    if (self->m_4e4 != 0) {
+        self->m_4e4->m_40 |= 1;
+    }
+    self->m_2fc = 0;
+    self->m_300 = 0;
+    self->m_504 = flag;
+    self->m_2f8 = frame;
+    return 1;
+}
 
 // CPlay::LoadScrollSpeedOptions (0xd12b0): lazy-load the bute-configured scroll
 // speed range on first use, then run the per-frame edge auto-scroll. Four edge
