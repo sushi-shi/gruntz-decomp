@@ -2701,6 +2701,32 @@ unit = "lutshaderect"
 source = "src/Gruntz/LutShadeRect.cpp"
 flags = "base"
 
+# --- re-homed out of the src/Stub/ApiCallers.cpp aggregate (matching-neutral;
+# flags "eh" == the engine_label_stubs base+/GX the sources were compiled under). ---
+[[unit]]
+# AIL / XMIDI (Miles Sound System) sequence player + driver bring-up (0x138490..0x139030).
+unit = "ailseq"
+source = "src/Dsndmgr/AilSeq.cpp"
+flags = "eh"
+
+[[unit]]
+# Smacker video playback cluster (0x17c510..0x17cd90).
+unit = "smackplayer"
+source = "src/Gruntz/SmackPlayer.cpp"
+flags = "eh"
+
+[[unit]]
+# Centred number/label overlay via a counter window's DC sink (0x164380 / 0x164420).
+unit = "drawcounter"
+source = "src/Gruntz/DrawCounter.cpp"
+flags = "eh"
+
+[[unit]]
+# System-palette builder / tuner (0x176df0..0x1775f0).
+unit = "palettebuild"
+source = "src/DDrawMgr/PaletteBuild.cpp"
+flags = "eh"
+
 [[unit]]
 # matcher-5: non-member engine externs (ILT jmp-islands + RezAssertFail/RelayHwnd)
 # re-homed from src/Stub/EngineExternFns.cpp. base+/GX mirrors the stub-unit env.
