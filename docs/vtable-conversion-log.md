@@ -270,3 +270,61 @@ divergence + build-break risk on already-`@early-stop` functions):
   classes each with its own placement-new ctor — beyond a mechanical stamp swap and
   high build-break risk on the already-`@early-stop` /GX EH-frame archetype. This IS
   the documented "re-attack once the CSBI_* item ctors land" final-sweep work.
+---
+
+## 0x24556c dual-view: `CGameRegistry` / `CGruntzMgr` (MFC/Win32 wall)
+
+**Task:** unify the residual dual-canonical for the game-manager singleton at
+RVA 0x24556c (VA 0x64556c) — `include/Gruntz/CGameRegistry.h` (`CGameRegistry`,
+the plain-struct view; `g_gameReg`/`g_mgrSettings`/`g_64556c`/… ; ~60 TUs) and
+`include/Gruntz/GruntzMgr.h` (`CGruntzMgr`, the MFC derived-class view; 6 direct
++ comment-referencing TUs).
+
+**They ARE one object (verified):** the pointee at *0x24556c is the RTTI-true
+`CGruntzMgr` (`??_7CGruntzMgr@@6B@` @0x5e9b64, `new`'d by
+`CGruntzApp::InitializeGameManager` @0x080a20, `push 0xa30`). Proof of identity:
+`CGameRegistry::Ack` and `CGruntzMgr::ReportError` are the **same function**
+(both RVA 0x08dc60); slot meanings coincide (`m_48`==`m_sound`, `m_2c`==
+`m_curState`, `m_13c..m_148`==`m_viewOrigin{L,T,R,B}`); and the "viewport X/Y"
+guess in the old `CGameRegistry` comments was **wrong** — `RestoreVideoMode`
+(0x08ddd0) does `cmp DWORD PTR [reg+0x8c],0x280` (0x280 = 640), i.e. `m_8c` is the
+video-mode **width** (`m_modeW`), `m_90` the height (`m_modeH`).
+
+**WALL — a single canonical header is build-impossible (not a codegen wall, a
+toolchain/include wall):** `CGameRegistry.h` is included by ~60 TUs, and several
+are **pure-Win32** (they `#include <Win32.h>` → `windows.h`, e.g.
+`TileActionEvent.cpp`, `SaveScreenshot.cpp`). `CGruntzMgr` is an **MFC** class
+(`: public WAP32::CGameMgr`, `CString`/`CByteArray`/`CState*` members) whose header
+pulls `<Mfc.h>`/afx. afx hard-errors on a prior `windows.h`:
+
+```
+afxv_w32.h(14) : fatal error C1189: #error : WINDOWS.H already included.
+                 MFC apps must not #include <windows.h>
+```
+
+Proven empirically: adding `#include <Wap32/Wap32.h>` to `CGameRegistry.h` (the
+minimal step toward one class) breaks `tileactionevent.obj`/`savescreenshot.obj`
+(and the rest of the pure-Win32 includers) with C1189. Therefore the plain,
+MFC-free struct view MUST exist for the Win32 side, and the MFC class view MUST
+stay in its own afx-pulling header. **The dual view is a NECESSARY split** — the
+devs' `?g_gameReg@@3PAUWwdGameReg@@A` global is exactly this: an opaque
+`WwdGameReg*` (MFC-free struct name) for engine/Win32 code, the full `CGruntzMgr`
+for the game code.
+
+**What was done (build stays GREEN, no regressions — 1858/3361 exact / 64.44%
+fuzzy, unchanged):**
+- Designated `CGameRegistry.h` the **field-offset source of truth** and reconciled
+  its field comments with `CGruntzMgr`'s descriptive names (e.g. `m_8c`→`m_modeW`,
+  `m_90`→`m_modeH`, `m_94/m_98`→`m_savedModeW/H`, `m_48`→`m_sound`, `m_2c`→
+  `m_curState`, `m_100`→`m_isVoiceEnabled`, `m_13c..m_148`→`m_viewOrigin*`, and the
+  0x150 region documented as `CGruntzMgr::m_options[4]`). Comment-only, so
+  matching-neutral; the terse `m_<off>` names are kept because the ~60 (incl.
+  untouchable grunt-family) TUs reference them.
+- Cross-linked both headers so each names the other as the same singleton and
+  points here for the wall.
+
+**NOT done (blocked by the wall, deferred):** collapsing to one C++ class /
+deleting `GruntzMgr.h` / re-pointing its includers — any of these requires the
+MFC class in the Win32-shared header, which is the C1189 break above. Not a
+final-sweep item (it is a genuine toolchain constraint, not a steerable codegen
+idiom): the correct end-state is the two reconciled views, kept in sync.

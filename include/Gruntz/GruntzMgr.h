@@ -5,6 +5,17 @@
 // CGruntzMgr ctor.  The base WAP32::CGameMgr is the genuine 0x2c engine class;
 // all the 0xa30 of per-game state lives HERE.
 //
+// SAME OBJECT AS THE g_gameReg SINGLETON (*0x24556c): CGruntzMgr is the RTTI-true,
+// fully-typed MFC VIEW of the very object that <Gruntz/CGameRegistry.h>'s
+// CGameRegistry models as a plain (MFC-free) struct for the ~60 engine/Win32 TUs.
+// Proof: CGruntzMgr::ReportError == CGameRegistry::Ack (both @0x08dc60); m_curState
+// ==CGameRegistry::m_2c, m_sound==m_48, m_modeW==m_8c, etc. The two headers are the
+// ONE canonical layout expressed twice: CGameRegistry.h is the field-offset source
+// of truth (its comments carry these descriptive names). They CANNOT be a single
+// header - CGameRegistry.h is included by pure-Win32 TUs (`<Win32.h>`->windows.h)
+// and this MFC class pulls afx (C1189 "MFC apps must not #include <windows.h>").
+// See docs/vtable-conversion-log.md ("0x24556c dual-view: MFC/Win32 wall").
+//
 // Only the offsets the matched methods touch are load-bearing:
 //   +0xc8 CString, +0xd0 CD drive-letter cache (char) / +0xd4 probed flag,
 //   +0xd8 CByteArray, +0xec/+0xf0 CString, +0x150 a 0x238-byte options object
