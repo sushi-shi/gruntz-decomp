@@ -167,6 +167,17 @@ Re-typing is **matching-NEUTRAL**: a member/return/param type change keeps the s
 member types **don't change a function's mangling**. It also recovers the devs' real shape —
 "what the original devs did" (see [[correctness-not-artifacts]]).
 
+**A `void*` member/field/return cast to a concrete type at its use-sites is a HACK, not an "idiom" —
+type it.** It is `void*` because the real type wasn't recovered, not because the devs wrote it generic.
+Wherever a member/slot/return is cast to the SAME concrete class at its uses, that class IS its type:
+declare it — and if the class isn't modeled yet, *modeling it is the work*, not an excuse to keep the
+`void*`. The ONLY `void*` that survive: a genuine FOREIGN-API slot the SDK itself types `void*` (Win32
+`LPVOID`/`HANDLE`, `CObject*` in an MFC container), a fn-ptr passed to a `void*` param (C++ requires the
+cast), or a PROVEN-heterogeneous slot where the binary stores DIFFERENT concrete types at the SAME
+member across code paths (a real tagged union → model it as a documented union/variant, not a bare
+`void*`). "It's a generic container / trie / a getter that returns `void*`" is NOT a pass: if each
+element/return has a knowable concrete type at its site, type it.
+
 **Reserve casts for reinterpretations the *binary proves* are authentic:**
 - **pointer↔DWORD storage** in a real `CDWordArray` (the engine stores `CPlane*` as raw DWORDs;
   `(CPlane*)m_planes[i]` / `(DWORD)ptr` are the devs' code).
