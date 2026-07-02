@@ -226,7 +226,7 @@ destructbutton	1	1
 dialogs	37	15
 directinputmgr2	41	38
 directsoundmgr	42	33
-dirpal	1	0
+dirpal	3	0
 discoveredarray	1	0
 discoveredeh	2	2
 discoveredsmall	10	10
@@ -234,7 +234,7 @@ drawbattlestats	1	0
 drawdebugstats	1	0
 drawtext	3	0
 dsoundvoice	2	1
-engine_label_stubs	140	106
+engine_label_stubs	132	102
 engstr	3	1
 engstrrendertext	1	0
 eyecandytypetags	4	4
@@ -451,7 +451,7 @@ shadedescrtable	2	0
 shadetablecache	19	4
 siriusworkerhandlers	4	3
 slotcombofill	1	0
-smackervideowindow	1	0
+smackervideowindow	7	4
 soundbankload	1	0
 sounddevice	16	7
 soundfontpath	1	1
@@ -1826,6 +1826,8 @@ directsoundmgr	?Unlock@DirectSoundMgr@@QAEHPAXI0I@Z	100.0000	100.0000	2	1173b7b8
 directsoundmgr	?winapi_136e20_timeGetTime@DirectSoundMgr@@QAEHH@Z	100.0000	100.0000	3	bbbd3b396222	0x136e20
 directsoundmgr	?winapi_137ac0_timeGetTime@DirectSoundMgr@@QAEHH@Z	100.0000	100.0000	3	bdf3b44652a1	0x137ac0
 dirpal	?CaptureSystemPalette@DirPal@@QAEHXZ	68.3871	68.3871	2	1a12177e257f	0x1485b0
+dirpal	?Setup4@PalCtx@@QAEXHHHH@Z	99.6226	99.6226	1	6cf83b31e38e	0x147ff0
+dirpal	?Setup6@PalCtx@@QAEXHHDDDH@Z	99.6552	99.6552	1	104b779c71df	0x147f30
 discoveredarray	?SetSize@CDwArray@@QAEXHH@Z	86.4113	86.4113	1	be6e873f54f3	0x150040
 discoveredeh	??1CButeStore@@UAE@XZ	100.0000	100.0000	1	68fa8bb3d039	0x174d70
 discoveredeh	??1CU55@@UAE@XZ	100.0000	100.0000	1	2340983fe4d8	0x16460
@@ -1846,7 +1848,6 @@ drawtext	?MeasureLabel21f20@DrawHost@m4@@QAEHPAXPBD@Z	72.0179	72.0179	1	03c0979c
 drawtext	?Render22160@PwdHost@m4@@QAEHPAXHPAUtagRECT@@@Z	75.6343	75.6343	1	e8a123ed7800	0x22160
 dsoundvoice	?Stop_1370d0@DSoundVoice@@QAEHXZ	100.0000	100.0000	2	e12755dbeadb	0x1370d0
 dsoundvoice	?Tick_137060@DSoundVoice@@QAEHH@Z	95.6977	95.6977	2	acff89983e5f	0x137060
-engine_label_stubs	?Advance@Movie_17c8e0@ApiCallerStubs@@QAEHHH@Z	100.0000	100.0000	1	cpp:966e3696e854	0x17c8e0
 engine_label_stubs	?Append@EditAppendHost_0c2ce0@ApiCallerStubs@@QAEXPAD@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xc2ce0
 engine_label_stubs	?Apply@PalHost_1775f0@ApiCallerStubs@@QAEHPBDH@Z	100.0000	100.0000	1	cpp:966e3696e854	0x1775f0
 engine_label_stubs	?Begin@ActionHost_0d7220@ApiCallerStubs@@QAEHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xd7220
@@ -1856,7 +1857,6 @@ engine_label_stubs	?Cancel@CmdHost_0de590@ApiCallerStubs@@QAEXXZ	100.0000	100.00
 engine_label_stubs	?Check@KeyHost_01f8a0@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x1f8a0
 engine_label_stubs	?Cleanup@GdiOwner_175c90@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x175c90
 engine_label_stubs	?Clip@ClipHost_02b340@ApiCallerStubs@@QAEXPBUtagRECT@@@Z	81.3000	81.3000	1	cpp:6bf52155264d	0x2b340
-engine_label_stubs	?Close@SmackHost_17c9b0@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:966e3696e854	0x17c9b0
 engine_label_stubs	?Copy@RectHost_115b30@ApiCallerStubs@@QAEPAU12@PBUtagRECT@@@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x115b30
 engine_label_stubs	?Dispatch@Dispatcher_0cfbd0@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:e1535087fe94	0xcfbd0
 engine_label_stubs	?DrawCount@DrawHost_164380@ApiCallerStubs@@QAEXPAUtagRECT@@H@Z	80.6964	80.6964	1	cpp:966e3696e854	0x164380
@@ -1883,14 +1883,11 @@ engine_label_stubs	?OnInitDialog@TimerDlg_0c2cb0@ApiCallerStubs@@QAEHXZ	100.0000
 engine_label_stubs	?OnReset@ReplayDlg_c3e30@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:e832e75e29a5	0xc3e30
 engine_label_stubs	?Open@DPlayHost_0b77a0@ApiCallerStubs@@QAEHXZ	98.3607	98.3607	1	cpp:6bf52155264d	0xb77a0
 engine_label_stubs	?Open@Screen_0fe460@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:e1535087fe94	0xfe460
-engine_label_stubs	?OpenHi@SmkPlayer_17c570@ApiCallerStubs@@QAEHHHHHH@Z	70.7324	70.7324	1	cpp:966e3696e854	0x17c630
-engine_label_stubs	?OpenLo@SmkPlayer_17c570@ApiCallerStubs@@QAEHHHHHH@Z	70.7324	70.7324	1	cpp:966e3696e854	0x17c570
 engine_label_stubs	?Paint@PaintHost_0fac70@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0xfac70
 engine_label_stubs	?Pause@AilSeq@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:966e3696e854	0x138e90
 engine_label_stubs	?Pick0183f0@DlgHost@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x183f0
 engine_label_stubs	?Play@AilSeq@ApiCallerStubs@@QAEHHH@Z	100.0000	100.0000	1	cpp:966e3696e854	0x138e10
 engine_label_stubs	?Post@CmdHost_090220@ApiCallerStubs@@QAEXH@Z	100.0000	100.0000	1	cpp:e1535087fe94	0x90220
-engine_label_stubs	?Pump@Movie_17c8e0@ApiCallerStubs@@QAEHHH@Z	100.0000	100.0000	1	cpp:966e3696e854	0x17c790
 engine_label_stubs	?Quickload@QlHost_092710@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x92710
 engine_label_stubs	?RelayHwnd@@YAXP6AHXZ@Z	100.0000	100.0000	1	cpp:966e3696e854	0x1437e0
 engine_label_stubs	?ReleaseHandle@AilSeq@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:966e3696e854	0x138dd0
@@ -1904,14 +1901,11 @@ engine_label_stubs	?Set@RectHost_08c380@ApiCallerStubs@@QAEXHHHH@Z	100.0000	100.
 engine_label_stubs	?SetLoop@AilSeq@ApiCallerStubs@@QAEHH@Z	100.0000	100.0000	1	cpp:966e3696e854	0x139030
 engine_label_stubs	?SetTempo@AilSeq@ApiCallerStubs@@QAEHHH@Z	100.0000	100.0000	1	cpp:966e3696e854	0x138f90
 engine_label_stubs	?SetVolume@AilSeq@ApiCallerStubs@@QAEHHH@Z	100.0000	100.0000	1	cpp:966e3696e854	0x138fd0
-engine_label_stubs	?Setup4@PalCtx_147f30@ApiCallerStubs@@QAEXHHHH@Z	99.6226	99.6226	1	cpp:6bf52155264d	0x147ff0
-engine_label_stubs	?Setup6@PalCtx_147f30@ApiCallerStubs@@QAEXHHDDDH@Z	99.6552	99.6552	1	cpp:6bf52155264d	0x147f30
 engine_label_stubs	?Show@BlitHost_0d00a0@ApiCallerStubs@@QAEXH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xd00a0
 engine_label_stubs	?Show@MsgHost_08ee70@ApiCallerStubs@@QAEHHH@Z	98.4815	98.4815	1	cpp:6bf52155264d	0x8ee70
 engine_label_stubs	?Shutdown@AilMgr_1384f0@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:966e3696e854	0x1384f0
 engine_label_stubs	?Snapshot@PalCache_17cd90@ApiCallerStubs@@QAEXPAX@Z	100.0000	100.0000	1	cpp:966e3696e854	0x17cd90
 engine_label_stubs	?Stop@AilSeq@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:966e3696e854	0x138e60
-engine_label_stubs	?Teardown@CursHost_17c510@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:966e3696e854	0x17c510
 engine_label_stubs	?Tick@Throttle_137e30@ApiCallerStubs@@QAEHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x137e30
 engine_label_stubs	?Tick@Timer_1380d0@ApiCallerStubs@@QAEHH@Z	100.0000	100.0000	1	cpp:e1535087fe94	0x1380d0
 engine_label_stubs	?Toggle@RosterHost_0c50f0@ApiCallerStubs@@QAEXH@Z	97.6531	97.6531	1	cpp:6bf52155264d	0xc50f0
@@ -3268,7 +3262,13 @@ siriusworkerhandlers	?Handler03d670@@YAHPAUOwner@@@Z	100.0000	100.0000	1	839c531
 siriusworkerhandlers	?Handler07db20@@YAHPAUOwner@@@Z	100.0000	100.0000	1	b23002ac8904	0x7db20
 siriusworkerhandlers	?Handler07dda0@@YAHPAUOwner@@@Z	100.0000	100.0000	1	27f15168f4f5	0x7dda0
 slotcombofill	?Method2a45@CMultiSlotList@@QAEHHH@Z	59.1579	59.1579	1	da5e03287e82	0x37ff0
+smackervideowindow	?Advance@CSmackWin@@QAEHHH@Z	100.0000	100.0000	1	9cd7f5e24eac	0x17c8e0
+smackervideowindow	?CloseSmacker@CSmackWin@@QAEHXZ	100.0000	100.0000	1	79da4def0202	0x17c9b0
 smackervideowindow	?CreateVideoWindow@CSmackWin@@QAEHHH@Z	98.0097	98.0097	2	78294a1a8f51	0x17c2a0
+smackervideowindow	?OpenHi@CSmackWin@@QAEHHHHHH@Z	70.7324	70.7324	1	e3591deb48af	0x17c630
+smackervideowindow	?OpenLo@CSmackWin@@QAEHHHHHH@Z	70.7324	70.7324	1	abeaef7b0ad5	0x17c570
+smackervideowindow	?Pump@CSmackWin@@QAEHHH@Z	100.0000	100.0000	1	ee5fe9f844ec	0x17c790
+smackervideowindow	?Teardown@CSmackWin@@QAEXXZ	100.0000	100.0000	1	e831e4ed61fa	0x17c510
 soundbankload	?Load@CSoundBank@@QAEHPBDH@Z	75.4737	75.4737	2	240d06367d98	0x138aa0
 sounddevice	??0SoundDevice@@QAE@XZ	57.3438	57.3438	3	b7f66a8ceb61	0x136440
 sounddevice	??1SoundDevice@@UAE@XZ	28.2353	28.2353	1	d69f702e7b2b	0x136500
