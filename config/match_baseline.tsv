@@ -430,7 +430,7 @@ sbi_image_eh	1	1
 sbi_imageset	1	0
 sbi_imageset_eh	1	1
 sbi_imagesetani_eh	1	1
-sbi_menuitem	12	8
+sbi_menuitem	12	7
 sbi_menuitem_eh	1	1
 sbi_rectonly	70	33
 sbi_rectonly_eh	2	1
@@ -559,7 +559,7 @@ animworkerhandlers	?Handler03d670@@YAHPAUOwner@@@Z	100.0000	100.0000	1	839c531d4
 animworkerhandlers	?Handler07db20@@YAHPAUOwner@@@Z	100.0000	100.0000	1	b23002ac8904	0x7db20
 animworkerhandlers	?Handler07dda0@@YAHPAUOwner@@@Z	100.0000	100.0000	1	27f15168f4f5	0x7dda0
 aniplayer	?Init@CAniPlayer@@QAEHPAUAniSeq@@0HHHHHHHHHHHH@Z	64.5543	64.5543	1	af4e113bdde4	0xe7980
-aniplayer	?Tick@CAniPlayer@@QAEHXZ	91.4889	91.4889	2	553040f9cf2b	0xe7b00
+aniplayer	?Tick@CAniPlayer@@QAEHXZ	91.2222	91.2222	3	9afa5ef215a6	0xe7b00
 apihicallers	?Init@Builder_168080@@QAEHPAXPAUtagRECT@@PAUPt_168080@@22222@Z	99.5131	99.5131	2	72d5a9d31548	0x168080
 apihicallers	?Init@Fx_17fe00@@QAEHPAUFxDesc_17fe00@@@Z	73.5392	73.5392	1	0e50dd5bc6ca	0x17fe00
 apihicallers	?Init@Handler_17c3f0@@QAEHPAXPAUObjA2_17c3f0@@PAUObjA3_17c3f0@@HHHHHHHHHHHHHHHHHHHHHHHHHHHH@Z	100.0000	100.0000	2	c6159078587d	0x17c3f0
@@ -3118,20 +3118,20 @@ sbi_gruntmachine	?SetFrames@CSBI_GruntMachine@@QAEXHH@Z	100.0000	100.0000	1	90c8
 sbi_gruntmachine_eh	??1CSBI_GruntMachine@@UAE@XZ	100.0000	100.0000	1	39b102f07725	0x104ce0
 sbi_image	?SetupImage@CSBI_Image@@QAEHHPAUCSbiConfigHost@@HHHHHHHHH@Z	66.3125	66.3125	1	7258d661eaab	0xe6c80
 sbi_image_eh	??1CSBI_Image@@UAE@XZ	100.0000	100.0000	1	bb1ec3b102a6	0x100870
-sbi_imageset	?Serialize@CSBI_ImageSet@@QAEHPAUCImageSetStream@@HHH@Z	99.1803	99.1803	3	1c7b5eb31859	0xe74f0
+sbi_imageset	?Serialize@CSBI_ImageSet@@QAEHPAUCImageSetStream@@HHH@Z	99.1803	99.1803	4	08a35579b8ca	0xe74f0
 sbi_imageset_eh	??1CSBI_ImageSet@@UAE@XZ	100.0000	100.0000	1	ba8883e75b4c	0x102000
 sbi_imagesetani_eh	??1CSBI_ImageSetAni@@UAE@XZ	100.0000	100.0000	1	7354647071fa	0x1047f0
 sbi_menuitem	?Blit@CSBI_MenuItem@@QAEHXZ	100.0000	100.0000	1	89b04f10c391	0xe84f0
 sbi_menuitem	?ClearFrame2@CSBI_MenuItem@@QAEXXZ	100.0000	100.0000	1	54de26b0f1b5	0xe81a0
 sbi_menuitem	?ClearFrame@CSBI_MenuItem@@QAEXXZ	100.0000	100.0000	1	b89098c623b9	0xe6d90
-sbi_menuitem	?DecCounter@CSBI_MenuItem@@QAEHXZ	100.0000	100.0000	3	c50a11685877	0xe82a0
+sbi_menuitem	?DecCounter@CSBI_MenuItem@@QAEHXZ	74.0357	74.0357	4	708bd731f007	0xe82a0
 sbi_menuitem	?InitItem@CSBI_MenuItem@@QAEHHHHHHHHHPAXHH@Z	67.8261	67.8261	1	711c194f8a6c	0xe80e0
 sbi_menuitem	?ProbeState@CSBI_MenuItem@@QAEHH@Z	100.0000	100.0000	1	624cf65074d2	0xe8480
 sbi_menuitem	?ResolveFrame@CSBI_MenuItem@@QAEHHH@Z	45.7547	45.7547	2	3cb2c6865db6	0xe81e0
-sbi_menuitem	?Serialize@CSBI_MenuItem@@QAEHPAXHHH@Z	100.0000	100.0000	4	8a0548ec953c	0xe8520
-sbi_menuitem	?SerializeChain@CSBI_MenuItem@@QAEHPAXHHH@Z	84.9697	84.9697	5	dc15f4c057e9	0xe6e40
-sbi_menuitem	?SerializeFields@CSBI_MenuItem@@QAEHPAXHHH@Z	100.0000	100.0000	3	ee54034e05d4	0x10bfc0
-sbi_menuitem	?SetState@CSBI_MenuItem@@QAEHHH@Z	93.1020	93.1020	2	99fda3b17507	0xe8310
+sbi_menuitem	?Serialize@CSBI_MenuItem@@QAEHPAXHHH@Z	100.0000	100.0000	5	504e80c567df	0xe8520
+sbi_menuitem	?SerializeChain@CSBI_MenuItem@@QAEHPAXHHH@Z	84.9697	84.9697	6	78184eb82f72	0xe6e40
+sbi_menuitem	?SerializeFields@CSBI_MenuItem@@QAEHPAXHHH@Z	100.0000	100.0000	4	2bf5014fa1d8	0x10bfc0
+sbi_menuitem	?SetState@CSBI_MenuItem@@QAEHHH@Z	93.1020	93.1020	3	9b4607a94f1f	0xe8310
 sbi_menuitem	?SetSubtype@CSBI_MenuItem@@QAEXXZ	100.0000	100.0000	1	ef8f234ee98d	0x1005b0
 sbi_menuitem_eh	??1CSBI_MenuItem@@UAE@XZ	100.0000	100.0000	1	277d976bfa62	0x1007d0
 sbi_rectonly	??0CSBI_RectOnly@@QAE@XZ	100.0000	100.0000	6	9bee20d45286	0x101fa0
@@ -3207,9 +3207,9 @@ sbi_rectonly	?winapi_107d00_SetRect@CSBI_RectOnly@@QAEHXZ	88.4253	88.4253	3	b37b
 sbi_rectonly_eh	?DtorMembers@CSBI_RectOnly@@QAEXXZ	49.1923	49.1923	1	4c6d76b17d3f	0xc8980
 sbi_rectonly_eh	?EnsureSub@CSBI_RectOnly@@QAEHHHH@Z	100.0000	100.0000	2	de84c5225915	0x109ad0
 sbi_rectonlydtor_eh	??1CSBI_RectOnly@@UAE@XZ	100.0000	100.0000	1	857773112dad	0x100700
-sbi_sidetab	?BuildHandle@CSBI_SideTab@@QAEHXZ	86.0101	86.0101	2	3d98e9161a94	0xe9850
+sbi_sidetab	?BuildHandle@CSBI_SideTab@@QAEHXZ	86.0101	86.0101	3	e63229bf7cdb	0xe9850
 sbi_sidetab	?Refresh@CSBI_SideTab@@QAEHH@Z	100.0000	100.0000	1	333133b9c736	0xe9820
-sbi_sidetab	?Render@CSBI_SideTab@@QAEHH@Z	87.8438	87.8438	2	9b67853de1de	0xe99c0
+sbi_sidetab	?Render@CSBI_SideTab@@QAEHH@Z	87.8438	87.8438	3	5ebedaa63515	0xe99c0
 sbi_sidetab	?Reset@CSBI_SideTab@@QAEXXZ	100.0000	100.0000	1	fc1e8fed52ab	0xe9800
 sbi_sidetab_build	?Build@CStatzTabBuilder@@QAEHXZ	82.5098	82.5098	1	a65c44c2e23c	0x105070
 sbi_sidetab_eh	??1CSBI_SideTab@@UAE@XZ	100.0000	100.0000	1	65f4d63ef8b0	0x105200

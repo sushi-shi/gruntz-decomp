@@ -1,7 +1,7 @@
 #include <rva.h>
 #include <Mfc.h>
 #include <Ints.h>
-#include <Gruntz/CGameRegistry.h>
+#include <Gruntz/ResMgr.h> // canonical g_gameReg->m_30 view (CResMgr + CDrawTarget + CImageRegistry)
 // SBI_SideTab.cpp - Gruntz CSBI_SideTab (C:\Proj\Gruntz), the frameless methods.
 // RTTI .?AVCSBI_SideTab@@; a sibling leaf of the SBI family
 //   CSBI_SideTab : CStatusBarItem  (RTTI hierarchy: {CSBI_SideTab, CStatusBarItem}).
@@ -24,37 +24,10 @@ struct CSideTabFrame {
 };
 SIZE_UNKNOWN(CSideTabFrame);
 
-// The active drawable reached via g_gameReg->m_30->m_4: its +0x14 dword is the
-// surface context passed into every RenderFrame call.
-struct CSideTabDrawable {
-    char m_pad0[0x14];
-    i32 m_14; // +0x14  surface context
-};
-SIZE_UNKNOWN(CSideTabDrawable);
-
-// The embedded CMapStringToPtr (resource-manager +0x10) the glyph builder looks the
-// tab sprite up in. Lookup (0x1b8008, __thiscall) writes the found set to *out.
-struct CSideTabHash {
-    void Lookup(char* key, void** out); // 0x1b8008
-};
-SIZE_UNKNOWN(CSideTabHash);
-// The resource manager reached via the game manager's +0x10; its +0x10 embeds the
-// name->sprite hash the builder resolves glyphs through.
-struct CSideTabResMgr {
-    char m_pad0[0x10];
-    CSideTabHash m_10; // +0x10
-};
-SIZE_UNKNOWN(CSideTabResMgr);
-
-// The render host chain reached via g_gameReg->m_30 (game manager). m_4 is the
-// active drawable supplying the surface context; m_10 is the resource manager.
-struct CSideTabGameMgr {
-    char m_pad0[0x4];
-    CSideTabDrawable* m_4; // +0x04  active drawable
-    char m_pad8[0x10 - 0x8];
-    CSideTabResMgr* m_10; // +0x10  resource manager (name->sprite hash host)
-};
-SIZE_UNKNOWN(CSideTabGameMgr);
+// The render host reached via g_gameReg->m_30 is the canonical CResMgr (ResMgr.h):
+// its m_drawTarget (+0x04) supplies the RenderFrame surface context at +0x14, and
+// its m_10 image registry (+0x10) embeds the name->sprite hash (m_10map) the glyph
+// builder resolves the tab sprite through. The resolved value is a CSprite.
 
 // A sampled grunt record (an element of the registry unit table at g_gameReg+0x68).
 // Only the stat fields BuildHandle reads are modeled.
@@ -69,15 +42,8 @@ struct CSideTabGruntRec {
 };
 SIZE_UNKNOWN(CSideTabGruntRec);
 
-// The glyph map the resolved value indexes: a [m_64..m_68]-gated table at m_14.
-struct CSideTabGlyphMap {
-    char m_pad0[0x14];
-    i32* m_14; // +0x14  glyph table
-    char m_pad18[0x64 - 0x18];
-    i32 m_64; // +0x64  glyph-index range lo gate
-    i32 m_68; // +0x68  glyph-index range hi gate
-};
-SIZE_UNKNOWN(CSideTabGlyphMap);
+// The glyph map the resolved value indexes is the CSprite the image registry yields:
+// its [m_64..m_68] valid range gates the frame table (m_10.m_pData, at +0x14).
 
 // The fallback notified (m_2c) when the sampled unit slot is empty (__thiscall, 1 arg).
 struct CSideTabFallback {
@@ -85,11 +51,19 @@ struct CSideTabFallback {
 };
 SIZE_UNKNOWN(CSideTabFallback);
 
-// The CGameReg singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c); the game
-// manager + the per-frame unit-record table the SideTab paths touch.
-SIZE_UNKNOWN(CGameRegistry);
+// The g_gameReg singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c) viewed by the
+// SideTab paths: m_30 is the canonical resource manager (CResMgr), m_68 the per-frame
+// unit-record table the sampled grunt record is indexed out of. The +0x30 slot is
+// typed CResMgr* here so the render/glyph paths reach it with no reinterpret cast.
+struct CSideTabGameReg {
+    char m_pad00[0x30];
+    CResMgr* m_30; // +0x30  resource manager
+    char m_pad34[0x68 - 0x34];
+    void* m_68; // +0x68  per-frame unit-record table base
+};
+SIZE_UNKNOWN(CSideTabGameReg);
 DATA(0x0024556c)
-extern CGameRegistry* g_gameReg;
+extern CSideTabGameReg* g_gameReg;
 
 // ---------------------------------------------------------------------------
 // CSBI_SideTab - the side-tab status-bar item. Derives directly from
@@ -145,7 +119,7 @@ i32 CSBI_SideTab::Refresh(i32 unused) {
 RVA(0x000e99c0, 0x4c)
 i32 CSBI_SideTab::Render(i32 z) {
     if (m_58) {
-        i32 ctx = ((CSideTabGameMgr*)g_gameReg->m_30)->m_4->m_14;
+        i32 ctx = g_gameReg->m_30->m_drawTarget->m_drawContext;
         m_30->RenderFrame(ctx, m_48, m_4c, z);
         m_34->RenderFrame(ctx, m_48 + m_50, m_4c, z);
     }
@@ -210,15 +184,13 @@ i32 CSBI_SideTab::BuildHandle() {
     if (m_38 == val) {
         return 1;
     }
-    void* found = 0;
-    ((CSideTabGameMgr*)g_gameReg->m_30)
-        ->m_10->m_10.Lookup("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", &found);
-    CSideTabGlyphMap* gm = (CSideTabGlyphMap*)found;
+    CSprite* gm = 0;
+    g_gameReg->m_30->m_10->m_10map.Lookup("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", &gm);
     i32 glyph;
     if (gm == 0 || val < gm->m_64 || val > gm->m_68) {
         glyph = 0;
     } else {
-        glyph = gm->m_14[val];
+        glyph = (i32)gm->m_10.m_pData[val];
     }
     m_38 = val;
     m_34 = (CSideTabFrame*)glyph;

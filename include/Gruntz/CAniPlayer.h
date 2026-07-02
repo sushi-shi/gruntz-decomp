@@ -20,11 +20,17 @@
 #define GRUNTZ_GRUNTZ_CANIPLAYER_H
 
 #include <Ints.h>
-#include <Gruntz/CGameRegistry.h>
+#include <Gruntz/ResMgr.h> // canonical g_gameReg->m_30 view (CResMgr + CDrawTarget)
 
-// The CGameRegistry singleton (g_gameReg, RVA 0x64556c). Tick reaches the active
-// render path through g->m_30->m_4->m_14; reloc-masked DIR32.
-extern CGameRegistry* g_gameReg;
+// The g_gameReg singleton (VA 0x64556c) viewed by Tick: m_30 is the canonical
+// resource manager (CResMgr); Tick reaches the active render context through
+// g->m_30->m_drawTarget->m_drawContext (+0x30 ->+0x04 ->+0x14). Typed CResMgr* so
+// the render path reaches it with no reinterpret cast.
+struct CAniPlayerGameReg {
+    char m_pad00[0x30];
+    CResMgr* m_30; // +0x30  resource manager
+};
+extern CAniPlayerGameReg* g_gameReg;
 
 // The cel-animation sub-object held at CAniPlayer+0x34. Its +0x14 is the cel
 // pointer table, indexed by frame; +0x64/+0x68 are the inclusive frame range.
@@ -36,9 +42,11 @@ struct AniCelTable {
     i32 m_68; // +0x68  last frame
 };
 
-// One cel: +0x18/+0x1c are the x/y draw offsets the render call adds to the
-// player's +0x14/+0x18 base.
+// One cel: it renders itself onto a surface context via RenderFrame (0x153790,
+// the shared frame-worker blit - external, reloc-masked); +0x18/+0x1c are the x/y
+// draw offsets the render call adds to the player's +0x14/+0x18 base.
 struct AniCel {
+    void RenderFrame(i32 surfaceCtx, i32 x, i32 y, i32 z); // 0x153790
     char _pad00[0x18];
     i32 m_18; // +0x18
     i32 m_1c; // +0x1c

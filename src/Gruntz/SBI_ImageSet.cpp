@@ -1,7 +1,7 @@
 #include <rva.h>
 #include <Mfc.h>
 #include <Ints.h>
-#include <Gruntz/CGameRegistry.h>
+#include <Gruntz/ResMgr.h> // canonical g_gameReg->m_30 view (CResMgr + CImageRegistry + CSprite)
 // SBI_ImageSet.cpp - Gruntz CSBI_ImageSet (C:\Proj\Gruntz), the frameless methods.
 // RTTI .?AVCSBI_ImageSet@@; the most-derived of the SBI image chain
 //   CSBI_ImageSet : CSBI_Image : CSBI_RectOnly : CStatusBarItem.
@@ -33,34 +33,21 @@ struct CImageSetStream {
     virtual void WriteBytes(void* buf, i32 len); // slot 0x30
 };
 
-// The resolved config record (Lookup result): its config name string lives at +0x24.
-struct CImageSetCfgRec {
-    char m_pad0[0x24];
-    char m_name[1]; // +0x24  config name (null-terminated)
-};
-SIZE_UNKNOWN(CImageSetCfgRec);
+// The resolved config record (Lookup result) is the CSprite the image registry
+// yields; its config name string lives at record+0x24. The config map is the image
+// registry's embedded m_10map (CSpriteHashTable, Lookup 0x1b8008) - the same map
+// shape SetupImage uses, reached as reg->m_10->m_10map.
 
-// CMapStringToPtr::Lookup-style map (0x1b8008, __thiscall, ret 8) embedded at the
-// config-host object's +0x10 (the same map shape SetupImage uses).
-struct CImageSetCfgMap {
-    i32 Lookup(char* key, CImageSetCfgRec** out); // 0x1b8008
+// The g_gameReg singleton (VA 0x64556c) viewed here: m_30 is the canonical resource
+// manager (CResMgr) carrying the config map sub. Typed CResMgr* so the resolve path
+// reaches it with no reinterpret cast.
+struct CImageSetGameReg {
+    char m_pad00[0x30];
+    CResMgr* m_30; // +0x30  resource manager
 };
-SIZE_UNKNOWN(CImageSetCfgMap);
-struct CImageSetCfgHost {
-    char m_pad0[0x10];
-    CImageSetCfgMap m_10; // +0x10  embedded map at +0x10
-};
-SIZE_UNKNOWN(CImageSetCfgHost);
-struct CImageSetRegSub {
-    char m_pad0[0x10];
-    CImageSetCfgHost* m_10; // +0x10  config host (map embedded at its +0x10)
-};
-SIZE_UNKNOWN(CImageSetRegSub);
-
-// g_gameReg->m_30 = the active registry/game-manager carrying the config map sub.
-SIZE_UNKNOWN(CGameRegistry);
+SIZE_UNKNOWN(CImageSetGameReg);
 DATA(0x0024556c)
-extern CGameRegistry* g_gameReg;
+extern CImageSetGameReg* g_gameReg;
 
 // The serialize-sequence counter bumped once per non-trivial pass.
 DATA(0x00229ad0)
@@ -75,8 +62,8 @@ public:
     i32 BaseSerialize(CImageSetStream* s, i32 mode, i32 a3, i32 a4); // 0xe6e40 base slot 1
 
     char m_pad0[0x34];
-    CImageSetCfgRec* m_34; // +0x34  resolved config record
-    i32 m_38;              // +0x38  serialized config id (4 bytes)
+    CSprite* m_34; // +0x34  resolved config record (the image registry's CSprite)
+    i32 m_38;      // +0x38  serialized config id (4 bytes)
 };
 
 // vtable slot 1 (0xe74f0): serialize the config id + name. mode 7 = load (read id,
@@ -95,7 +82,7 @@ i32 CSBI_ImageSet::Serialize(CImageSetStream* s, i32 mode, i32 a3, i32 a4) {
     if (s == 0) {
         return 0;
     }
-    CImageSetRegSub* reg = (CImageSetRegSub*)g_gameReg->m_30;
+    CResMgr* reg = g_gameReg->m_30;
     if (reg == 0) {
         return 0;
     }
@@ -106,8 +93,8 @@ i32 CSBI_ImageSet::Serialize(CImageSetStream* s, i32 mode, i32 a3, i32 a4) {
             g_serialCounter++;
             s->ReadBytes(buf, 0x80);
             if (strlen(buf)) {
-                CImageSetCfgRec* out;
-                reg->m_10->m_10.Lookup(buf, &out);
+                CSprite* out;
+                reg->m_10->m_10map.Lookup(buf, &out);
                 m_34 = out;
             } else {
                 m_34 = 0;

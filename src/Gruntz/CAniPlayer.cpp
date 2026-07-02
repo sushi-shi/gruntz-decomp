@@ -21,29 +21,15 @@ public:
     i32 Lookup(i32 key, AniCelTable** out); // 0x1b8008
 };
 
-// One cel renders itself onto a surface context (g_gameReg->m_30->m_4->m_14) at
-// (x,y). __thiscall on the cel; this is the shared RenderFrame @0x153790
-// (external, reloc-masked - same callee as SBI_MenuItem/SBI_SideTab/etc.).
-class AniCelDraw {
-public:
-    void RenderFrame(i32 surfaceCtx, i32 x, i32 y, i32 z); // 0x153790
-};
+// The cel renders itself onto the active surface context via AniCel::RenderFrame
+// (0x153790, the shared frame-worker blit reached by SBI_MenuItem/SBI_SideTab/etc.);
+// modeled directly on AniCel (CAniPlayer.h) so no reinterpret cast is needed.
 
-// The active render target reached as g_gameReg->m_30->m_4->m_14.
-// DISPOSITION: g_gameReg->m_30 is the real CSpriteFactoryHolder (<Gruntz/CGameRegistry.h>),
-// but this TU walks its +0x4 render-holder chain (m_4->m_14) which that shared header
-// (owned by the CGruntzMgr singleton view - classifier scope) does not model. Rather
-// than extend the shared registry header from here, the +0x4/+0x14 chain is kept as
-// the sanctioned per-TU sub-object view (the multi-view-singleton idiom CGameRegistry.h
-// endorses). Not a fabricated identity - the concrete render target has no local RTTI.
-struct AniGameMgr {
-    char _pad00[4];
-    void* m_4; // +0x04  -> render holder (+0x14 is the target)
-};
-struct AniRenderHolder {
-    char _pad00[0x14];
-    void* m_14; // +0x14  render target
-};
+// The active render context is reached as g_gameReg->m_30->m_drawTarget->m_drawContext:
+// g_gameReg->m_30 is the canonical CResMgr (ResMgr.h), whose m_drawTarget (+0x04) is the
+// active draw surface and whose +0x14 (m_drawContext) is the surface context handed to
+// RenderFrame - the same chain SBI_SideTab / SBI_MenuItem walk. Previously modeled as a
+// per-TU AniGameMgr/AniRenderHolder view; now consolidated onto CResMgr (no cast).
 
 // ===========================================================================
 // CAniPlayer::Init  (0x0e7980)
@@ -128,10 +114,8 @@ i32 CAniPlayer::Tick() {
         }
         m_30 = cel;
         if (cel != 0) {
-            AniGameMgr* mgr = (AniGameMgr*)g_gameReg->m_30;
-            i32 surfaceCtx = (i32)((AniRenderHolder*)mgr->m_4)->m_14;
-            ((AniCelDraw*)cel)
-                ->RenderFrame(surfaceCtx, cel->m_18 + m_rect[0], cel->m_1c + m_rect[1], 0);
+            i32 surfaceCtx = g_gameReg->m_30->m_drawTarget->m_drawContext;
+            cel->RenderFrame(surfaceCtx, cel->m_18 + m_rect[0], cel->m_1c + m_rect[1], 0);
         }
         u32 now = timeGetTime();
         if (now - (u32)m_40 > (u32)m_3c) {
@@ -164,10 +148,7 @@ i32 CAniPlayer::Tick() {
 }
 
 SIZE_UNKNOWN(AniCel);
-SIZE_UNKNOWN(AniCelDraw);
 SIZE_UNKNOWN(AniCelMap);
 SIZE_UNKNOWN(AniCelTable);
-SIZE_UNKNOWN(AniGameMgr);
-SIZE_UNKNOWN(AniRenderHolder);
 SIZE_UNKNOWN(AniSeq);
 SIZE_UNKNOWN(CAniPlayer);

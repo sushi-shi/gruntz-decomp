@@ -612,7 +612,20 @@ struct CSbiCuePlayer {
 };
 SIZE_UNKNOWN(CSbiCuePlayer);
 
-// The music host chain: g_gameReg->m_gmgr->m_28->{m_30 gate, Lookup map @+0x10}.
+// CONSOLIDATION NOTE (g_gameReg->m_30 world/resource-mgr views): CSbiGameMgr is the
+// canonical CResMgr (<Gruntz/ResMgr.h>) - g_gameReg->m_30, whose m_8 (CKeyTable, the
+// Deserialize seq map @+0x48) and m_28 (the sound object) were verified as the same
+// slots CResMgr models. CSbiMusicHost is the +0x28 sound object viewed as its CUE
+// facet (the same shape as SBI_MenuItem's CMiMusicHost: +0x30 gate, cue map @+0x10),
+// a SIBLING of CResMgr::m_28 (CSoundRegistry, the install facet). The fold to CResMgr
+// is DEFERRED here (documented, not fabricated): this 4469-line, mostly-@early-stop TU
+// reaches m_30 through its own CGameReg singleton, so pulling in <Gruntz/ResMgr.h>
+// risks broad codegen shifts across its ~70 functions, and the m_28 cue access needs a
+// multi-view cast at ~7 sites (the CSoundRegistry-vs-cue-host facet split is not
+// settled by the delinked bytes). Kept as the per-TU view for the final sweep.
+
+// The music host chain: g_gameReg->m_30->m_28->{m_30 gate, Lookup map @+0x10}
+// (== CResMgr::m_28 viewed as its cue facet; see the consolidation note above).
 struct CSbiMusicHost {
     void* FindCue(char* key); // 0x2cca (ecx=host, returns the record directly)
     char m_pad0[0x30];
@@ -620,10 +633,11 @@ struct CSbiMusicHost {
 };
 SIZE_UNKNOWN(CSbiMusicHost);
 
-// The active game manager (g_gameReg->m_gmgr): carries the music host at +0x28.
+// The active game manager (g_gameReg->m_30 == CResMgr): carries the sound object /
+// music host at +0x28. See the consolidation note above (fold to CResMgr deferred).
 struct CSbiGameMgr {
     char m_pad0[0x28];
-    CSbiMusicHost* m_28; // +0x28  music host
+    CSbiMusicHost* m_28; // +0x28  music host (CResMgr::m_28 cue facet)
 };
 SIZE_UNKNOWN(CSbiGameMgr);
 

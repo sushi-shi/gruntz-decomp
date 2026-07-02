@@ -1,7 +1,7 @@
 #include <rva.h>
 #include <Mfc.h>
 #include <Gruntz/SBI_MenuItem.h>
-#include <Gruntz/CGameRegistry.h>
+#include <Gruntz/ResMgr.h> // canonical g_gameReg->m_30 view (CResMgr + CDrawTarget + CImageRegistry + CSprite)
 #include <Gruntz/SbiConfig.h> // canonical config-host family (one shape)
 #include <Image/CImage.h>     // canonical frame-record class (CImage::RenderFrame @0x153790)
 // SBI_MenuItem.cpp - Gruntz CSBI_MenuItem (C:\Proj\Gruntz), the frameless methods.
@@ -22,46 +22,15 @@
 // screen position; m_18/m_1c are the frame's draw-origin offsets. Modeled by the
 // shared <Image/CImage.h> definition; the RenderFrame call is reloc-masked.
 
-// A keyed config record (the map-lookup result) -> shared CSbiConfigRecord
-// (<Gruntz/SbiConfig.h>).
+// The keyed image-registry record (the map-lookup result) is the CSprite the image
+// registry yields (its [m_64..m_68] range gates the frame table m_10.m_pData at
+// +0x14; the config name is at record+0x24). The config-HOST lookup record used by
+// ResolveFrame is the shared CSbiConfigRecord (<Gruntz/SbiConfig.h>), a same-shaped
+// but distinct object reached through the m_24 config host, not through m_30.
 
-// The owning game manager held at g_gameReg->m_30: the draw surface lives at
-// m_4->m_14, and the config/name registry at m_10.
-struct CMiDrawHost {
-    char m_pad0[0x14];
-    i32 m_14; // +0x14  blit surface handle
-};
-SIZE_UNKNOWN(CMiDrawHost);
-struct CMiGameMgr {
-    char m_pad0[0x4];
-    CMiDrawHost* m_4; // +0x04  draw host
-    char m_pad8[0x10 - 0x8];
-    void* m_10; // +0x10  config/name registry (Lookup host @+0x10)
-};
-SIZE_UNKNOWN(CMiGameMgr);
-
-// The music host (mgr->m_28): a non-null +0x30 gate suppresses the cue play; its
-// cue map `this` is host + 0x10.
-struct CMiMusicHost {
-    char m_pad0[0x30];
-    void* m_30; // +0x30  gate
-};
-SIZE_UNKNOWN(CMiMusicHost);
-struct CMiGameMgrFull {
-    char m_pad0[0x28];
-    CMiMusicHost* m_28; // +0x28  music host
-};
-SIZE_UNKNOWN(CMiGameMgrFull);
-// The CGameReg singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c).
-SIZE_UNKNOWN(CGameRegistry);
-DATA(0x0024556c)
-extern CGameRegistry* g_gameReg;
-
-// The cue lookup map (CMapStringToOb::Lookup, 0x1b8438, __thiscall ret 8).
-struct CMiStrMap {
-    i32 Lookup(char* key, void** out); // 0x1b8438
-};
-SIZE_UNKNOWN(CMiStrMap);
+// The owning game manager held at g_gameReg->m_30 is the canonical CResMgr
+// (ResMgr.h): the draw surface context is m_drawTarget->m_drawContext (+0x04 ->
+// +0x14) and the config/name image registry is m_10 (its map embedded at +0x10).
 
 // A resolved cue record: a player at +0x10 plus a draw-clock gate (+0x14 last,
 // +0x18 interval).
@@ -76,6 +45,37 @@ struct CMiCuePlayer {
     void ConfigureItem(i32 item, i32 a, i32 b, i32 c); // 0x1360d0
 };
 SIZE_UNKNOWN(CMiCuePlayer);
+
+// The cue lookup map embedded at the music host's +0x10 (CMapStringToOb::Lookup,
+// 0x1b8438, ret 8) - the cue-facet map, distinct from the image registry's m_10map.
+struct CMiCueMap {
+    i32 Lookup(char* key, CMiCue** out); // 0x1b8438
+};
+SIZE_UNKNOWN(CMiCueMap);
+
+// The music host reached as g_gameReg->m_30->m_28 viewed as its cue facet: a
+// non-null +0x30 gate suppresses the cue play; the cue map is the sub-object at
+// host+0x10 (documented sub-object offset). This is the SAME +0x28 sound object as
+// CResMgr::m_28 (CSoundRegistry, the install facet); its cue map's Lookup (0x1b8438)
+// differs from the install facet's (0x1b8008), so the cue view is reached by a
+// documented multi-view cast on m_28 - the cross-TU merge with SBI_RectOnly's
+// identical CSbiMusicHost is deferred (see report).
+struct CMiMusicHost {
+    char m_pad0[0x30];
+    void* m_30; // +0x30  gate (non-null => skip)
+};
+SIZE_UNKNOWN(CMiMusicHost);
+
+// The g_gameReg singleton (VA 0x64556c) viewed here: m_30 is the canonical resource
+// manager (CResMgr). Typed CResMgr* so the draw/registry paths reach it with no
+// reinterpret cast on the resmgr itself.
+struct CMiGameReg {
+    char m_pad00[0x30];
+    CResMgr* m_30; // +0x30  resource manager
+};
+SIZE_UNKNOWN(CMiGameReg);
+DATA(0x0024556c)
+extern CMiGameReg* g_gameReg;
 
 // The reentrancy gate + cue-item id pair the highlight cue plays through, and the
 // draw-clock mirror (wrap-safe gate compare).
@@ -181,7 +181,7 @@ i32 CSBI_MenuItem::SerializeChain(void* arP, i32 kind, i32 a, i32 b) {
     if (ar == 0) {
         return 0;
     }
-    CMiGameMgr* mgr = (CMiGameMgr*)g_gameReg->m_30;
+    CResMgr* mgr = g_gameReg->m_30;
     if (mgr == 0) {
         return 0;
     }
@@ -196,11 +196,10 @@ i32 CSBI_MenuItem::SerializeChain(void* arP, i32 kind, i32 a, i32 b) {
             ar->Read(name, 0x80);
             ar->Read(&idx, 4);
             if (strlen(name) != 0) {
-                void* found = 0;
-                ((CMiStrMap*)((char*)mgr->m_10 + 0x10))->Lookup(name, &found);
-                CSbiConfigRecord* r = (CSbiConfigRecord*)found;
+                CSprite* r = 0;
+                mgr->m_10->m_10map.Lookup(name, &r);
                 if (r && idx >= r->m_64 && idx <= r->m_68) {
-                    m_30 = r->m_14[idx];
+                    m_30 = (i32)r->m_10.m_pData[idx];
                 } else {
                     m_30 = 0;
                 }
@@ -214,6 +213,10 @@ i32 CSBI_MenuItem::SerializeChain(void* arP, i32 kind, i32 a, i32 b) {
             g_serialCounter++;
             memset(name, 0, sizeof(name));
             if (m_30) {
+                // The registry's reverse name->id helper (0x155630) - reached by viewing
+                // the image registry as a name reader (same idiom as ActionOptionsMenuBar /
+                // SpriteLoaders; CImageRegistry cannot carry the method without a collateral
+                // codegen shift in its other consumers).
                 ((CMiNameReg*)mgr->m_10)->ReadField(m_30, name, &idx);
             }
             ar->Write(name, 0x80);
@@ -321,7 +324,7 @@ i32 CSBI_MenuItem::DecCounter() {
         CImage* f = (CImage*)m_30;
         if (f) {
             f->RenderFrame(
-                (void*)((CMiGameMgr*)g_gameReg->m_30)->m_4->m_14,
+                (void*)g_gameReg->m_30->m_drawTarget->m_drawContext,
                 (void*)(m_14 + f->m_18),
                 (void*)(m_18 + f->m_1c),
                 0
@@ -357,15 +360,17 @@ i32 CSBI_MenuItem::SetState(i32 state, i32 a) {
         host->TabRefresh();
         host->TabCommit();
     } else if (state == 2 && a) {
-        CMiMusicHost* mh = ((CMiGameMgrFull*)g_gameReg->m_30)->m_28;
+        // The +0x28 sound object viewed as its cue host (multi-view cast on m_28; the
+        // cue facet's map @+0x10 differs from CSoundRegistry's install map).
+        CMiMusicHost* mh = (CMiMusicHost*)g_gameReg->m_30->m_28;
         if (mh->m_30 == 0) {
-            void* found = 0;
-            ((CMiStrMap*)((char*)mh + 0x10))->Lookup("GAME_TABHIGHLIGHT2", &found);
+            CMiCue* found = 0;
+            ((CMiCueMap*)((char*)mh + 0x10))->Lookup("GAME_TABHIGHLIGHT2", &found);
             if (found) {
                 i32 gate = g_61ab20;
                 i32 item = g_61ab24;
                 if (gate != 0) {
-                    CMiCue* p = (CMiCue*)found;
+                    CMiCue* p = found;
                     if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
                         p->m_14 = g_6bf3c0;
                         ((CMiCuePlayer*)p->m_10)->ConfigureItem(item, 0, 0, 0);
@@ -427,7 +432,7 @@ i32 CSBI_MenuItem::Serialize(void* arP, i32 kind, i32 a, i32 b) {
     if (ar == 0) {
         return 0;
     }
-    CMiGameMgr* mgr = (CMiGameMgr*)g_gameReg->m_30;
+    CResMgr* mgr = g_gameReg->m_30;
     if (mgr == 0) {
         return 0;
     }
@@ -439,8 +444,8 @@ i32 CSBI_MenuItem::Serialize(void* arP, i32 kind, i32 a, i32 b) {
             g_serialCounter++;
             ar->Read(tmp, 0x80);
             if (strlen(tmp) != 0) {
-                void* found = 0;
-                ((CMiStrMap*)((char*)mgr->m_10 + 0x10))->Lookup(tmp, &found);
+                CSprite* found = 0;
+                mgr->m_10->m_10map.Lookup(tmp, &found);
                 m_38 = found;
             } else {
                 m_38 = 0;
@@ -451,7 +456,7 @@ i32 CSBI_MenuItem::Serialize(void* arP, i32 kind, i32 a, i32 b) {
             g_serialCounter++;
             memset(tmp, 0, sizeof(tmp));
             if (m_38) {
-                strcpy(tmp, (char*)m_38 + 0x24);
+                strcpy(tmp, ((CSprite*)m_38)->m_name);
             }
             ar->Write(tmp, 0x80);
             break;
@@ -475,7 +480,7 @@ i32 CSBI_MenuItem::SerializeFields(void* arP, i32 kind, i32 a, i32 b) {
     if (ar == 0) {
         return 0;
     }
-    CMiGameMgr* mgr = (CMiGameMgr*)g_gameReg->m_30;
+    CResMgr* mgr = g_gameReg->m_30;
     if (mgr == 0) {
         return 0;
     }

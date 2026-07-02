@@ -53,11 +53,11 @@ struct CFrameArray {
 SIZE_UNKNOWN(CSprite);
 struct CSprite {
     char m_pad00[0xc];
-    void* m_c;        // +0x0c  parent context handed to each frame worker
-    CFrameArray m_10; // +0x10  frame CObArray (m_pData @+0x14, m_nSize @+0x18)
-    char m_pad24[0x64 - 0x24];
-    i32 m_64; // +0x64  first valid frame number
-    i32 m_68; // +0x68  last valid frame number
+    void* m_c;                // +0x0c  parent context handed to each frame worker
+    CFrameArray m_10;         // +0x10  frame CObArray (m_pData @+0x14, m_nSize @+0x18)
+    char m_name[0x64 - 0x24]; // +0x24  registry/config name (the sprite's lookup key)
+    i32 m_64;                 // +0x64  first valid frame number
+    i32 m_68;                 // +0x68  last valid frame number
 
     // Insert a frame worker at frame number `n` (0x151f00); bounds-read a frame
     // pointer (0x15cc30). Bodies live in the spriteresource unit.
