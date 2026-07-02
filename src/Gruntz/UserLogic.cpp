@@ -373,32 +373,12 @@ struct CViewRect {
 // here only the +0x5c visible-rect base pointer is read.
 
 // The HUD sprite object the teleporter spawn produces / reads its template from
-// (the trigger's m_10). The spawn copies its tile/teleport-link fields. Only the
-// touched offsets are modeled.
-struct CTeleHudAux {
-    char m_pad0[0xbc];
-    i32 m_bc; // +0xbc  teleport-link id
-};
-struct CTeleHudSprite {
-    char m_pad0[0x5c];
-    i32 m_5c; // +0x5c  screen x
-    i32 m_60; // +0x60  screen y
-    char m_pad64[0x7c - 0x64];
-    CTeleHudAux* m_7c; // +0x7c
-    char m_pad80[0x114 - 0x80];
-    i32 m_114; // +0x114  tile col
-    i32 m_118; // +0x118  tile row
-    i32 m_11c; // +0x11c
-    i32 m_120; // +0x120
-    i32 m_124; // +0x124  state
-    i32 m_128; // +0x128
-    char m_pad12c[0x164 - 0x12c];
-    i32 m_164; // +0x164
-    i32 m_168; // +0x168
-};
+// (the trigger's m_10) is the shared CGameObject (the same engine object as in
+// CTeleporter.cpp) - the spawn copies its tile/teleport-link fields directly (+0x114/
+// +0x118/+0x11c/+0x120/+0x124/+0x128/+0x164/+0x168, and the +0x7c aux's +0xbc link id).
 
 // The HUD sprite factory the spawn calls (g_gameReg->m_30->m_8->CreateSprite) is the
-// shared <Gruntz/CTeleSpriteFactory.h> class; its result is cast to CTeleHudSprite*.
+// shared <Gruntz/CTeleSpriteFactory.h> class; its result is cast to CGameObject*.
 
 // CTrigger (the object the probe returns; its m_10 is the HUD sprite read for the
 // on-screen cue's coordinates) is the shared <Gruntz/CTrigger.h> class.
@@ -834,12 +814,12 @@ CSecretLevelTrigger::CSecretLevelTrigger(CGameObject* obj) : CUserLogic(obj) {
 RVA(0x00042b80, 0x153)
 i32 CSecretTeleporterTrigger::SpawnTeleporter() {
     i32 loc0, loc4;
-    CTeleHudSprite* o = (CTeleHudSprite*)m_10;
+    CGameObject* o = m_10;
     CTrigger* hit = g_gameReg->m_68->Probe(o->m_5c, o->m_60, &loc0, &loc4, 1);
     if (hit) {
-        o = (CTeleHudSprite*)m_10;
+        o = m_10;
         CTeleSpriteFactory* fac = g_gameReg->m_30->m_8;
-        CTeleHudSprite* spr = (CTeleHudSprite*)fac->CreateSprite(
+        CGameObject* spr = (CGameObject*)fac->CreateSprite(
             0,
             (o->m_114 << 5) + 0x10,
             (o->m_118 << 5) + 0x10,
@@ -849,15 +829,15 @@ i32 CSecretTeleporterTrigger::SpawnTeleporter() {
         );
         if (spr) {
             spr->m_124 = 2;
-            spr->m_7c->m_bc = ((CTeleHudSprite*)m_10)->m_7c->m_bc;
-            spr->m_164 = ((CTeleHudSprite*)m_10)->m_164;
-            spr->m_168 = ((CTeleHudSprite*)m_10)->m_168;
-            spr->m_11c = ((CTeleHudSprite*)m_10)->m_11c;
-            spr->m_120 = ((CTeleHudSprite*)m_10)->m_120;
-            spr->m_114 = ((CTeleHudSprite*)m_10)->m_114;
-            spr->m_118 = ((CTeleHudSprite*)m_10)->m_118;
+            spr->m_7c->m_bc = m_10->m_7c->m_bc;
+            spr->m_164 = m_10->m_164;
+            spr->m_168 = m_10->m_168;
+            spr->m_11c = m_10->m_11c;
+            spr->m_120 = m_10->m_120;
+            spr->m_114 = m_10->m_114;
+            spr->m_118 = m_10->m_118;
             spr->m_128 = 0;
-            CTeleHudSprite* eo = hit->m_10;
+            CGameObject* eo = hit->m_10;
             WwdGameReg* g = g_gameReg;
             i32 ey = eo->m_60;
             i32 ex = eo->m_5c;

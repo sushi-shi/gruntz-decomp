@@ -156,7 +156,9 @@ struct CGameObject {
     i32 m_160; // +0x160
     i32 m_164; // +0x164
     i32 m_168; // +0x168
-    char m_pad16c[0x198 - 0x16c];
+    char m_pad16c[0x188 - 0x16c];
+    i32 m_188; // +0x188  object id (warlord battle-event id / game-object archive-cue id)
+    char m_pad18c[0x198 - 0x18c];
     CGameObjLayer* m_198; // +0x198
     char m_pad19c[0x1b4 - 0x19c];
     i32 m_1b4; // +0x1b4

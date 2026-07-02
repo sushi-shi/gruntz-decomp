@@ -9,13 +9,14 @@
 
 #include <rva.h>
 
-// The bound HUD sprite; defined by the sprite-owning TU (UserLogic.cpp). Only the
-// trigger's +0x10 field is typed against it, so a forward declaration suffices.
-struct CTeleHudSprite;
+// The bound HUD sprite is the shared engine game object (CGameObject, from
+// <Gruntz/UserLogic.h>). Only the trigger's +0x10 pointer field is typed against
+// it, so a forward declaration suffices.
+struct CGameObject;
 
 struct CTrigger {
     char m_pad0[0x10];
-    CTeleHudSprite* m_10; // +0x10  bound HUD sprite
+    CGameObject* m_10; // +0x10  bound HUD sprite (game object)
     char m_pad14[0x170 - 0x14];
     i32 m_170; // +0x170  required level id
     char m_pad174[0x198 - 0x174];

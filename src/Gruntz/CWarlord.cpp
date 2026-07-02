@@ -187,8 +187,8 @@ void RegisterWarlordActions() {
 // move (m_28 != 0 && m_20 == 0), resolve the moving animation. Returns 0.
 RVA(0x00044bb0, 0x38)
 i32 CWarlord::RearmMoving() {
-    ((CWarlordAnimPlayer*)m_38)->m_1a0.SetGeoSourceR(g_defaultGeo);
-    CWarlordAnimSub* sub = &((CWarlordAnimPlayer*)m_38)->m_1a0;
+    ((CWarlordAnimSub*)((char*)m_38 + 0x1a0))->SetGeoSourceR(g_defaultGeo);
+    CWarlordAnimSub* sub = (CWarlordAnimSub*)((char*)m_38 + 0x1a0);
     if (sub->m_28 != 0 && sub->m_20 == 0) {
         ResolveMovingAnimation();
     }
@@ -205,13 +205,13 @@ i32 CWarlord::RearmMoving() {
 // Returns int 0 on every path. Plain /O2 leaf (no destructible local, no /GX use).
 RVA(0x00044c00, 0xc6)
 i32 CWarlord::LoadAttributes() {
-    if (((CWarlordAnimPlayer*)m_38)->m_1a0.SetGeoSourceR(g_defaultGeo) != 1) {
+    if (((CWarlordAnimSub*)((char*)m_38 + 0x1a0))->SetGeoSourceR(g_defaultGeo) != 1) {
         return 0;
     }
 
     CGameRegistry* reg = g_gameReg;
     if (reg->m_134 != 1) {
-        CWarlordOwner* o = (CWarlordOwner*)m_10;
+        CGameObject* o = m_10;
         i32 dist = ((CRegThreatHelper*)reg->m_68)->NearestEnemyDist(o->m_124, o->m_5c, o->m_60);
         if (dist < g_buteMgr.GetIntDef("Warlordz", "PanicRadius", 0x40)) {
             NotifyFortUnderAttack();
@@ -247,13 +247,13 @@ i32 CWarlord::LoadAttributes() {
 // m_2c-chain split; all no-change at the same ~91% plateau).
 RVA(0x00044d10, 0x106)
 i32 CWarlord::LoadAttributes2() {
-    if (((CWarlordAnimPlayer*)m_38)->m_1a0.SetGeoSourceR(g_defaultGeo) != 1) {
+    if (((CWarlordAnimSub*)((char*)m_38 + 0x1a0))->SetGeoSourceR(g_defaultGeo) != 1) {
         return 0;
     }
 
     CGameRegistry* reg = g_gameReg;
     if (reg->m_134 != 1) {
-        CWarlordOwner* o = (CWarlordOwner*)m_10;
+        CGameObject* o = m_10;
         i32 dist = ((CRegThreatHelper*)reg->m_68)->NearestEnemyDist(o->m_124, o->m_5c, o->m_60);
         if (dist >= g_buteMgr.GetIntDef("Warlordz", "PanicRadius", 0x40)) {
             RaiseBattleAlert();
@@ -265,8 +265,7 @@ i32 CWarlord::LoadAttributes2() {
             return 0;
         }
         if ((i64)(u32)g_645588 - *(i64*)&m_88 >= *(i64*)&m_90) {
-            ((CRegBattleEvent*)reg->m_60)
-                ->PostBattleEvent(((CWarlordOwner*)m_10)->m_188, 0x436, -1, -1, -1);
+            ((CRegBattleEvent*)reg->m_60)->PostBattleEvent(m_10->m_188, 0x436, -1, -1, -1);
             m_90 = 0x7530;
             m_94 = 0;
             m_88 = g_645588;
@@ -306,8 +305,6 @@ SIZE_UNKNOWN(CRegBattleEvent);
 SIZE_UNKNOWN(CRegThreatHelper);
 SIZE_UNKNOWN(CTypeNameTree);
 SIZE_UNKNOWN(CWarlord);
-SIZE_UNKNOWN(CWarlordAnimPlayer);
 SIZE_UNKNOWN(CWarlordAnimSub);
 SIZE_UNKNOWN(CWarlordMission);
 SIZE_UNKNOWN(CWarlordObjective);
-SIZE_UNKNOWN(CWarlordOwner);

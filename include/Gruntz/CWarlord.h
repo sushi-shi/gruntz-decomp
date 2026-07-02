@@ -22,10 +22,10 @@
 #include <rva.h>
 
 // ---------------------------------------------------------------------------
-// The geometry sub-player embedded in the anim player at +0x1a0. SetGeoSourceR
-// (engine FUN_0055c360, __thiscall ret 4) re-arms it against a geometry source;
-// the anim re-arm method also polls its +0x20 / +0x28 state words. Modeled
-// no-body so the `ecx=&sub; call` reloc-masks.
+// The geometry sub-player at +0x1a0 on the bound game object (reached as
+// (char*)CUserLogic::m_38 + 0x1a0). SetGeoSourceR (engine FUN_0055c360, __thiscall
+// ret 4) re-arms it against a geometry source; the anim re-arm method also polls
+// its +0x20 / +0x28 state words. Modeled no-body so the `ecx=&sub; call` reloc-masks.
 // ---------------------------------------------------------------------------
 class CWarlordAnimSub {
 public:
@@ -35,12 +35,6 @@ public:
     i32 m_20; // +0x20  state word (== 0 gates the moving-anim re-arm)
     char m_pad24[0x28 - 0x24];
     i32 m_28; // +0x28  state word (!= 0 gates the moving-anim re-arm)
-};
-
-class CWarlordAnimPlayer {
-public:
-    char m_pad00[0x1a0];
-    CWarlordAnimSub m_1a0; // +0x1a0  geometry sub-player
 };
 
 // The global default geometry source the re-arm consumes (DATA 0x2bf3bc).
@@ -84,19 +78,6 @@ struct CWarlordMission {
 // 0x64556c). Only the offsets the warlord's per-tick update touches are modeled.
 // ---------------------------------------------------------------------------
 extern CGameRegistry* g_gameReg;
-
-// The warlord's owner/state object reached through CUserLogic::m_10 (a CGameObject
-// in the base model; the warlord casts it to this view for the +0x124/+0x188 it
-// needs past the shared screen-position fields).
-struct CWarlordOwner {
-    char m_pad00[0x5c];
-    i32 m_5c; // +0x5c   position x
-    i32 m_60; // +0x60   position y
-    char m_pad64[0x124 - 0x64];
-    i32 m_124; // +0x124  owner index
-    char m_pad128[0x188 - 0x128];
-    i32 m_188; // +0x188  battle-event id
-};
 
 // ---------------------------------------------------------------------------
 // CWarlord

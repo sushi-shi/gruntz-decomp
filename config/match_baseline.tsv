@@ -1303,8 +1303,8 @@ cgrunthealthsprite	?SetHealthGlyph@CGruntHealthSprite@@QAEHHHH@Z	100.0000	100.00
 cgruntpowerupsprite	??1CGruntPowerupSprite@@UAE@XZ	100.0000	100.0000	1	083563c3491b	0x12370
 cgruntpowerupsprite	?InitActReg@CGruntPowerupSprite@@SAXXZ	100.0000	100.0000	1	ade10531ce1f	0x7ffa0
 cgruntpowerupsprite	?RegisterActs@CGruntPowerupSprite@@SAXXZ	92.9130	92.9130	1	f3c621493d68	0x80180
-cgruntpowerupsprite	?Serialize@CGruntPowerupSprite@@QAEHPAVPupArchive@@HHH@Z	100.0000	100.0000	4	dda900acc7a4	0x80490
-cgruntpowerupsprite	?SetCell@CGruntPowerupSprite@@QAEHHHH@Z	100.0000	100.0000	4	d80283738527	0x80380
+cgruntpowerupsprite	?Serialize@CGruntPowerupSprite@@QAEHPAVPupArchive@@HHH@Z	100.0000	100.0000	5	1f67b7f0595e	0x80490
+cgruntpowerupsprite	?SetCell@CGruntPowerupSprite@@QAEHHHH@Z	100.0000	100.0000	5	f85e600dd1f2	0x80380
 cgruntpowerupsprite	?Update@CGruntPowerupSprite@@QAEHXZ	89.8214	89.8214	4	3b3d2795e9d3	0x80410
 cgruntselectedsprite	??1CGruntSelectedSprite@@UAE@XZ	100.0000	100.0000	1	03f353c22571	0x11e80
 cgruntselectedsprite	?InitActReg@CGruntSelectedSprite@@SAXXZ	100.0000	100.0000	1	87f14737eb97	0x7e5e0
@@ -3672,7 +3672,7 @@ userlogic	?RegisterActs@CTileTrigger@@SAXXZ	92.9130	92.9130	2	f372a21d0d97	0x10e
 userlogic	?RegisterActs@CTileTriggerSwitch@@SAXXZ	92.9130	92.9130	2	05e0a4b4d0b9	0x10e000
 userlogic	?RegisterActs@CWarpStonePad@@SAXXZ	92.9130	92.9130	2	1350863e6a49	0x10da20
 userlogic	?Serialize@CSecretTeleporterTrigger@@QAEHHHHH@Z	100.0000	100.0000	2	a2ea3ad09ee4	0x10a10
-userlogic	?SpawnTeleporter@CSecretTeleporterTrigger@@QAEHXZ	100.0000	100.0000	4	758dc56b8b61	0x42b80
+userlogic	?SpawnTeleporter@CSecretTeleporterTrigger@@QAEHXZ	100.0000	100.0000	5	82b03d7c2a41	0x42b80
 userlogic	?winapi_04d800_CopyRect@CUserLogic@@QAEHHHHHHHHHHHHH@Z	0.6786	0.6786	3	afc4a7cad8e5	0x4d800
 userlogic	?winapi_064540_PostMessageA@CUserLogic@@QAEHXZ	86.4156	86.4156	3	886fcd7c6fd0	0x64540
 userlogic	?winapi_0ee800_IntersectRect_PtInRect@CUserLogic@@QAEHXZ	0.2653	0.2653	2	f2ccbcb9c820	0xee800
@@ -3696,10 +3696,10 @@ warlord	??0CWarlord@@QAE@H@Z	3.5796	3.5796	1	b29f645c5e90	0x42d40
 warlord	??1CWarlord@@UAE@XZ	73.9524	73.9524	1	0524876559f2	0x107f0
 warlord	?BuildFortSplashParticles@CWarlord@@QAEXXZ	1.1905	1.1905	1	46da92888935	0x44f80
 warlord	?InitActReg@CWarlord@@SAXXZ	100.0000	100.0000	1	d3ff00d8c05e	0x445c0
-warlord	?LoadAttributes2@CWarlord@@QAEHXZ	91.6296	91.6296	2	967b0e44a3c8	0x44d10
-warlord	?LoadAttributes@CWarlord@@QAEHXZ	100.0000	100.0000	2	c8e095d6d108	0x44c00
+warlord	?LoadAttributes2@CWarlord@@QAEHXZ	91.6296	91.6296	3	f4b1c721d160	0x44d10
+warlord	?LoadAttributes@CWarlord@@QAEHXZ	100.0000	100.0000	3	2046c1300288	0x44c00
 warlord	?NotifyFortUnderAttack@CWarlord@@QAEXXZ	0.5464	0.5464	1	c2ca723a74ad	0x45270
-warlord	?RearmMoving@CWarlord@@QAEHXZ	100.0000	100.0000	2	636920fedee4	0x44bb0
+warlord	?RearmMoving@CWarlord@@QAEHXZ	100.0000	100.0000	3	3ecdaa320316	0x44bb0
 warlord	?RegisterWarlordActions@@YAXXZ	9.9959	9.9959	1	67ccb8ba741c	0x447a0
 warlord	?ResolveState@CWarlord@@QAEHH@Z	1.8667	1.8667	2	3a30038a541f	0x44640
 warpstonefly	??0CWarpStoneFly@@QAE@XZ	100.0000	100.0000	2	9b5ad652d3cb	0x109bb0

@@ -1,9 +1,9 @@
 // CTeleSpriteFactory.h - the HUD/visual sprite factory reached as mgr->m_30->m_8.
 // CreateSprite (0x1597b0) spawns the named teleporter sprite. The produced sprite
-// is typed per call site (CTeleHudSprite in UserLogic.cpp, the shared CGameObject in
-// CTeleporter.cpp - the same engine object), so it is forward-declared here and each
-// caller casts the result to its own view. External/no-body so the call reloc-masks;
-// the member mangling excludes the return type, so the cast is a no-op.
+// is the shared engine game object (CGameObject; both UserLogic.cpp and
+// CTeleporter.cpp cast the result to CGameObject*), forward-declared here as an
+// opaque return type. External/no-body so the call reloc-masks; the member mangling
+// excludes the return type, so the caller-side cast is a no-op.
 #ifndef GRUNTZ_GRUNTZ_CTELESPRITEFACTORY_H
 #define GRUNTZ_GRUNTZ_CTELESPRITEFACTORY_H
 

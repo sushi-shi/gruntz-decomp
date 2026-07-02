@@ -81,6 +81,9 @@ struct LfxLayerSink {
 
 // The bound object proper (m_38): +0x08 flags, +0x0c the map holder, +0x190..0x198
 // the resolved-node triple, +0x1a0 the layer sub-descriptor, +0x1b4 the layer base.
+// Kept as a per-TU concrete view (NOT folded into CGameObject): +0x198 here is an
+// i32 resolved-node value, conflicting with CGameObject's CGameObjLayer* z-clamp
+// descriptor at the same offset; +0x1a0 is the class-specific LfxLayerSink.
 struct LfxObj {
     char m_pad00[0x8];
     i32 m_08;           // +0x08  flag word (|= 2)
