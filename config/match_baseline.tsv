@@ -2639,13 +2639,13 @@ inftrees	_inflate_trees_dynamic	100.0000	100.0000	1	dfefcb841088	0x18a850
 inftrees	_inflate_trees_fixed	100.0000	100.0000	1	0a70daff599f	0x18a940
 inftrees	_inflate_trees_free	100.0000	100.0000	1	f385d577afa6	0x18aab0
 infutil	_inflate_flush	100.0000	100.0000	1	e0e7519d9f47	0x18b300
-ingameicon	??0CInGameIcon@@QAE@PAUCGameObject@@@Z	89.8288	89.8288	4	cb90733fb874	0x95b10
+ingameicon	??0CInGameIcon@@QAE@PAUCGameObject@@@Z	89.8288	89.8288	5	ed7be6c7a816	0x95b10
 ingameicon	??1CInGameIcon@@UAE@XZ	100.0000	100.0000	1	fde4a2ce1197	0x11d00
 ingameicon	?HandleInput@CInGameIcon@@QAEHXZ	90.8442	90.8442	4	b2cd66e0c76d	0x97680
 ingameicon	?InitIconActionTable@@YAXXZ	100.0000	100.0000	1	e833f3ac9ede	0x97800
 ingameicon	?InitIconStateTable@@YAXXZ	100.0000	100.0000	1	30e4832d02d1	0x97d60
-ingameicon	?PlaceAt@CInGameIcon@@QAEHHH@Z	71.2551	71.2551	5	c2732bd4c5a3	0x986b0
-ingameicon	?RefreshCell@CInGameIcon@@QAEHXZ	100.0000	100.0000	2	eeb1d614773d	0x98340
+ingameicon	?PlaceAt@CInGameIcon@@QAEHHH@Z	71.2551	71.2551	6	2eaaf13c212d	0x986b0
+ingameicon	?RefreshCell@CInGameIcon@@QAEHXZ	100.0000	100.0000	3	cf32fa872af6	0x98340
 ingameicon	?RegisterIconActions@@YAXXZ	87.0000	87.0000	1	1762bee03e85	0x979e0
 ingameicon	?RegisterIconState@@YAXXZ	96.4783	96.4783	1	899dde6a8598	0x97f40
 ingameicon	?Serialize@CInGameIcon@@QAEHPAVCArchive@@HHH@Z	0.6826	0.6826	2	958d1db3464e	0x98c90
@@ -3169,7 +3169,7 @@ sbi_rectonly	?LoadDestructButtonSprite@CSBI_RectOnly@@QAEHH@Z	97.2477	97.2477	1	
 sbi_rectonly	?LoadGooCookingSprite@CSBI_RectOnly@@QAEHH@Z	96.6667	96.6667	1	79f39e0d173d	0x1055b0
 sbi_rectonly	?LoadMainStatusBarSprite@CSBI_RectOnly@@QAEHXZ	95.6403	95.6403	1	f5a83b48dcab	0xfe6b0
 sbi_rectonly	?LoadMultiplayerBattlezConfig@CSBI_RectOnly@@QAEXH@Z	90.4545	90.4545	3	eda67ede5d6d	0x107ae0
-sbi_rectonly	?LoadRezMachineConfig@CSBI_RectOnly@@QAEXXZ	72.0346	72.0346	3	12174ad065c3	0x105e40
+sbi_rectonly	?LoadRezMachineConfig@CSBI_RectOnly@@QAEXXZ	72.0346	72.0346	4	131a08b8b9f4	0x105e40
 sbi_rectonly	?NotifyAllSlots@CSBI_RectOnly@@QAEXXZ	100.0000	100.0000	3	a152a54a21af	0x106a00
 sbi_rectonly	?PlaceCursorTarget@CSBI_RectOnly@@QAEHHH@Z	70.9091	70.9091	1	60410997f593	0x105800
 sbi_rectonly	?RefreshAll@CSBI_RectOnly@@QAEXXZ	100.0000	100.0000	1	88ce04ca73a7	0x1058d0
@@ -3201,7 +3201,7 @@ sbi_rectonly	?UpdateRezConveyorStatusBar@CSBI_RectOnly@@QAEXXZ	84.7770	84.7770	3
 sbi_rectonly	?UpdateRezMachineSnoozeStatusBar@CSBI_RectOnly@@QAEXXZ	100.0000	100.0000	2	42d61a205aef	0x106660
 sbi_rectonly	?UpdateRezMachineWakeStatusBar@CSBI_RectOnly@@QAEHXZ	96.1290	96.1290	1	f5d7f69fc70b	0x107a10
 sbi_rectonly	?UpdateStatusBarTabHighlight@CSBI_RectOnly@@QAEHHHH@Z	47.9319	47.9319	2	8f608bce4035	0xfe910
-sbi_rectonly	?winapi_0fe520_SetRect@CSBI_RectOnly@@QAEHXZ	100.0000	100.0000	1	fcd1ab1376bb	0xfe520
+sbi_rectonly	?winapi_0fe520_SetRect@CSBI_RectOnly@@QAEHXZ	100.0000	100.0000	2	9db18827199a	0xfe520
 sbi_rectonly	?winapi_107d00_SetRect@CSBI_RectOnly@@QAEHXZ	88.4253	88.4253	3	b37b6aa435dd	0x107d00
 sbi_rectonly_eh	?DtorMembers@CSBI_RectOnly@@QAEXXZ	49.1923	49.1923	1	4c6d76b17d3f	0xc8980
 sbi_rectonly_eh	?EnsureSub@CSBI_RectOnly@@QAEHHHH@Z	100.0000	100.0000	2	de84c5225915	0x109ad0

@@ -2613,7 +2613,7 @@ i32 CSBI_RectOnly::winapi_0fe520_SetRect() {
     i32 w = g_gameReg->m_8c;
     volatile POINT pt;
     pt.y = g_gameReg->m_90;
-    SetRect((LPRECT)((char*)this + 0x10), w - 0xa0, 0, w, 0x1e0);
+    SetRect((LPRECT)&m_10, w - 0xa0, 0, w, 0x1e0);
     RectNotify(0);
     g_gameReg->m_2c->Refresh();
     if (RectProbe() == 0) {
@@ -3982,8 +3982,8 @@ void CSBI_RectOnly::UpdateRezConveyorStatusBar() {
 // shared-global DIR32 naming (g_gameReg/g_dat645588/g_buteMgr/g_sndEnabled). Walls.
 RVA(0x00105e40, 0x62c)
 void CSBI_RectOnly::LoadRezMachineConfig() {
-    SbiPhaseSlot* pA = (SbiPhaseSlot*)((char*)this + 0x318);
-    SbiPhaseSlot* pB = (SbiPhaseSlot*)((char*)this + 0x330);
+    SbiPhaseSlot* pA = (SbiPhaseSlot*)&m_hudRectB_x;
+    SbiPhaseSlot* pB = (SbiPhaseSlot*)&m_hudRectA_x;
     SbiPhaseSlot* g = (SbiPhaseSlot*)m_groupSlots;
     if (pA->m_state == 5) {
         if ((i64)(u32)g_dat645588 - pA->m_last >= pA->m_interval) {

@@ -172,14 +172,14 @@ CInGameIcon::~CInGameIcon() {}
 RVA(0x00095b10, 0x15f0)
 CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj) {
     // --- CInGameIcon own-field zero-init (retail store order @0x95c00) ---
-    *(i32*)((char*)this + 0x58) = 0;
-    *(i32*)((char*)this + 0x60) = 0;
-    *(i32*)((char*)this + 0x5c) = 0;
-    *(i32*)((char*)this + 0x64) = 0;
-    *(i32*)((char*)this + 0x68) = 0;
-    *(i32*)((char*)this + 0x70) = 0;
-    *(i32*)((char*)this + 0x6c) = 0;
-    *(i32*)((char*)this + 0x74) = 0;
+    m_58 = 0;
+    m_60 = 0;
+    m_5c = 0;
+    m_64 = 0;
+    m_68 = 0;
+    m_70 = 0;
+    m_6c = 0;
+    m_74 = 0;
 
     // snap owner's screen pos to the 0x20 tile grid centre
     obj->m_5c = (obj->m_5c & ~0x1f) + 0x10;
@@ -201,11 +201,11 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj) {
     SetupSprite(0);
 
     // second zero batch (retail @0x95ca1)
-    *(CIconRecord**)((char*)this + 0x78) = 0;
-    *(i32*)((char*)this + 0x68) = 0;
-    *(i32*)((char*)this + 0x70) = 0;
-    *(i32*)((char*)this + 0x6c) = 0;
-    *(i32*)((char*)this + 0x74) = 0;
+    m_glitterSprite = 0;
+    m_68 = 0;
+    m_70 = 0;
+    m_6c = 0;
+    m_74 = 0;
 
     i32 glitter = 0;
     void* rec = *(void**)((char*)obj + 0x194);
@@ -447,14 +447,14 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj) {
         IconSpriteFactory* fac = *(IconSpriteFactory**)((char*)g_gameReg->m_30 + 8);
         CGameObject* fx =
             fac->CreateSprite(0, m_10->m_5c, m_10->m_60, 0x17319, "SimpleAnimation", 0x40003);
-        *(CGameObject**)((char*)this + 0x78) = fx;
+        m_glitterSprite = fx;
         if (glitter == 2) {
             fx->ApplyName("GAME_GLITTERRED");
         }
         if (glitter == 1) {
-            (*(CGameObject**)((char*)this + 0x78))->ApplyName("GAME_GLITTERGREEN");
+            m_glitterSprite->ApplyName("GAME_GLITTERGREEN");
         }
-        (*(CGameObject**)((char*)this + 0x78))->ApplyLookupGeometry("GAME_CYCLE100", 0);
+        m_glitterSprite->ApplyLookupGeometry("GAME_CYCLE100", 0);
     }
 
     if (Check() == 0) {
@@ -667,7 +667,7 @@ i32 CInGameIcon::RefreshCell() {
             return 0;
         }
     }
-    CGameObject* r = *(CGameObject**)((char*)this + 0x38);
+    CGameObject* r = m_38;
     *(i32*)((char*)r + 0x8) |= 0x10000;
     return 0;
 }
@@ -747,7 +747,7 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
             }
         }
         ClearTileBit(reg, m_10);
-        CGameObject* r = *(CGameObject**)((char*)this + 0x38);
+        CGameObject* r = m_38;
         *(i32*)((char*)r + 0x8) |= 0x10000;
         return 1;
     }
@@ -783,25 +783,25 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
         }
     }
     ClearTileBit(reg, m_10);
-    CGameObject* owner = *(CGameObject**)((char*)this + 0x38);
+    CGameObject* owner = m_38;
     if (*(i32*)((char*)owner + 0x120) > 0) {
         *(i32*)((char*)owner + 0x40) |= 1;
-        void* aux = *(void**)((char*)this + 0x14);
-        m_30 = *(void**)((char*)aux + 0x1c);
-        *(void**)((char*)aux + 0x1c) = g_buteTree.Find(g_iconBute);
-        owner = *(CGameObject**)((char*)this + 0x38);
+        CGameObjAux* aux = m_14;
+        m_30 = aux->m_1c;
+        aux->m_1c = g_buteTree.Find(g_iconBute);
+        owner = m_38;
         m_58 = *(i32*)((char*)owner + 0x120);
         m_5c = 0;
         m_60 = g_iconDefault;
         m_64 = 0;
         return 1;
     }
-    CGameObject* rend = *(CGameObject**)((char*)this + 0x78);
+    CGameObject* rend = m_glitterSprite;
     if (rend != 0) {
         *(i32*)((char*)rend + 0x8) |= 0x10000;
-        *(CGameObject**)((char*)this + 0x78) = 0;
+        m_glitterSprite = 0;
     }
-    CGameObject* r = *(CGameObject**)((char*)this + 0x38);
+    CGameObject* r = m_38;
     *(i32*)((char*)r + 0x8) |= 0x10000;
     return 1;
 }
