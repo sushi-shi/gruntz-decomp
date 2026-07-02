@@ -190,4 +190,3 @@ i32 CMapVisitTarget::Visit(void* buf, i32 mode, i32 a2, i32 a3) {
     }
     return 1;
 }
-

@@ -547,6 +547,36 @@ i32 CSaveGame::FillSlotByIndex(i32 idx, i32 name, void* src) {
     return FillSlot2(GetSlot(idx), name, src);
 }
 
+// A save-slot record probed by the two temp-file helpers below: an int/flag at
+// +0x00 (bit0 = "has a temp file"; cleared to 0 by the closer) and the temp-file
+// path string at +0x35. Only these two offsets are touched.
+struct SaveTempRec {
+    i32 m_00;           // +0x00  flags (bit0) / cleared to 0 by the closer
+    char m_pad04[0x31]; // +0x04..+0x34
+    char m_path[1];     // +0x35  the temp-file path
+};
+
+// DeleteFileA wrapper at 0x1bf559 (__stdcall; throws the OS error on failure).
+extern "C" void __stdcall FileDelete_1bf559(char* lpszFileName);
+
+// ---------------------------------------------------------------------------
+// CloseTempFile  (0x000e5550) - if the record's temp file opens (read), close
+// and delete it, then clear the record's flag. Returns 1 once the record was
+// processed (0 only for a null record). Free __stdcall helper (callee-cleans).
+RVA(0x000e5550, 0x9a)
+int __stdcall CloseTempFile_e5550(SaveTempRec* p) {
+    if (p == 0) {
+        return 0;
+    }
+    CFileIO file;
+    if (file.Open(p->m_path, 0, 0)) {
+        file.Close();
+        FileDelete_1bf559(p->m_path);
+    }
+    p->m_00 = 0;
+    return 1;
+}
+
 // ---------------------------------------------------------------------------
 // CSaveGame::SetField18  (0x000e5620)
 // @early-stop
@@ -595,6 +625,22 @@ RVA(0x000e5690, 0xf)
 i32 CSaveGame::CheckField20() {
     i32 v = m_20;
     return v == 0x42a;
+}
+
+// ---------------------------------------------------------------------------
+// TempFileExists  (0x000e5700) - probe whether the record's flagged temp file
+// can be opened for read: if bit0 is set and the path opens, close it and return
+// 1, else 0. Free __cdecl helper (caller cleans the argument).
+RVA(0x000e5700, 0x9e)
+int TempFileExists_e5700(SaveTempRec* p) {
+    if (p != 0 && (p->m_00 & 1)) {
+        CFileIO file;
+        if (file.Open(p->m_path, 0, 0)) {
+            file.Close();
+            return 1;
+        }
+    }
+    return 0;
 }
 
 // Class-metadata annotations (EOF-hosted).

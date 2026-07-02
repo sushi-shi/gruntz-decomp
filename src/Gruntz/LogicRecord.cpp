@@ -330,4 +330,3 @@ i32 CLogicRecord::Save(LogicArchive* ar) {
     }
     return 1;
 }
-

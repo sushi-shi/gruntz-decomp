@@ -220,13 +220,15 @@ public:
         IDirectSoundZ* m_device; // +0x14  the DirectSound device (manager this)
         u32 m_playFlags;         // +0x14  play/looping flags (per-buffer this)
     };
-    u32 m_freq;         // +0x18  cached frequency (GetFrequency)
-    i32 m_pan;          // +0x1c  cached pan (GetPan)
-    i32 m_volume;       // +0x20  cached volume (GetVolume)
-    u32 m_setFreq;      // +0x24  cached SetFrequency value
-    u32 m_durationMs;   // +0x28  duration (ComputeDuration = m_sampleCount*1000/m_sampleRate)
-    u32 m_sampleCount;  // +0x2c  sample count (set by the clone ctor)
-    i32 m_reacquireCb;  // +0x30  per-buffer reacquire callback
+    u32 m_freq;        // +0x18  cached frequency (GetFrequency)
+    i32 m_pan;         // +0x1c  cached pan (GetPan)
+    i32 m_volume;      // +0x20  cached volume (GetVolume)
+    u32 m_setFreq;     // +0x24  cached SetFrequency value
+    u32 m_durationMs;  // +0x28  duration (ComputeDuration = m_sampleCount*1000/m_sampleRate)
+    u32 m_sampleCount; // +0x2c  sample count (set by the clone ctor)
+    // +0x30  per-buffer reacquire callback (__cdecl fn-ptr taking (this, ctx)); a
+    // pointer is 4 bytes, so this is layout-identical to the raw i32 slot.
+    i32(__cdecl* m_reacquireCb)(DirectSoundMgr*, i32);
     i32 m_reacquireCtx; // +0x34  per-buffer reacquire callback context
     i32 m_rateBase;     // +0x38  SetField2 percent base
     u32 m_sampleRate;   // +0x3c  sample rate (SetField2 sets it; ComputeDuration divides by it)

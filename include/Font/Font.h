@@ -76,7 +76,7 @@ public:
 
     // Accessors matched in this module cluster.
     void** GetSurface(u8 c);
-    void GetGlyph(u8 c, Glyph& out);
+    void GetGlyph(Glyph& out, u8 c);
     i32 GetMaxHeight();
 
     i32 m_ready;       // +0x00
@@ -215,7 +215,8 @@ SIZE_UNKNOWN(CWapNodeB);
 // InterfaceObject - a minimal COM-style object that carries a GUID pointer at
 // +0x04. The IsInterfaceX methods check whether that GUID matches a known iid.
 struct InterfaceObject {
-    const void* iid; // +0x04 (after vtable/first field)
+    void* m_00;      // +0x00 (vtable / first field; iid lives at +0x04)
+    const void* iid; // +0x04
     i32 IsInterface1();
     i32 IsInterface2();
     i32 IsInterface3();

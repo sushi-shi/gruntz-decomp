@@ -121,5 +121,3 @@ i32 CDataBuffer::SaveToFile(CString path) {
     file.Close();
     return 1;
 }
-
-

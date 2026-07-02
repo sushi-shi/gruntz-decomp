@@ -39,19 +39,19 @@
 class CFileMemBase {
 public:
     CFileMemBase();
-    virtual ~CFileMemBase();                        // slot 0  (0x157960 ??_G)
+    virtual ~CFileMemBase();                             // slot 0  (0x157960 ??_G)
     virtual i32 SetName(const char* name, i32 a, i32 b); // slot 1  0x00165e30
-    virtual void Slot2();                           // slot 2  (0x157910)
-    virtual void Reset();                           // slot 3  0x00157a40 (base Close/Reset)
-    virtual void Slot4();                           // slot 4  (0x157920)
-    virtual void Slot5() = 0;                        // slot 5  __purecall
-    virtual void Slot6() = 0;                        // slot 6  __purecall
-    virtual i32 WantRead();                         // slot 7  (0x157940) read-vs-create gate
-    virtual void Slot8();                           // slot 8  (0x157950)
-    virtual i32 Open() = 0;                          // slot 9  __purecall
-    virtual i32 Ready() = 0;                         // slot 10 __purecall
-    virtual i32 Read(void* buf, i32 n) = 0;          // slot 11 __purecall
-    virtual i32 Write(const void* buf, i32 n) = 0;   // slot 12 __purecall
+    virtual void Slot2();                                // slot 2  (0x157910)
+    virtual void Reset();                                // slot 3  0x00157a40 (base Close/Reset)
+    virtual void Slot4();                                // slot 4  (0x157920)
+    virtual void Slot5() = 0;                            // slot 5  __purecall
+    virtual void Slot6() = 0;                            // slot 6  __purecall
+    virtual i32 WantRead();                              // slot 7  (0x157940) read-vs-create gate
+    virtual void Slot8();                                // slot 8  (0x157950)
+    virtual i32 Open() = 0;                              // slot 9  __purecall
+    virtual i32 Ready() = 0;                             // slot 10 __purecall
+    virtual i32 Read(void* buf, i32 n) = 0;              // slot 11 __purecall
+    virtual i32 Write(const void* buf, i32 n) = 0;       // slot 12 __purecall
 
     // vptr implicit @ +0x00
     i32 m_4;        // +0x04
@@ -68,15 +68,15 @@ VTBL(CFileMemBase, 0x005efe68);
 // ---------------------------------------------------------------------------
 class CFileMem : public CFileMemBase {
 public:
-    ~CFileMem();                                       // slot 0  0x00157980 (real ~ / ??_G 0x157a20)
-    void Slot2() OVERRIDE;                             // slot 2  (0x157a70)
-    void Reset() OVERRIDE;                             // slot 3  0x00157a50 (derived Reset)
-    void Slot5() OVERRIDE;                             // slot 5  (0x157a00)
-    void Slot6() OVERRIDE;                             // slot 6  (0x157a10)
-    i32 Open() OVERRIDE;                               // slot 9  0x00165e60
-    i32 Ready() OVERRIDE;                              // slot 10 0x00165ef0
-    i32 Read(void* buf, i32 n) OVERRIDE;               // slot 11 0x00165f00
-    i32 Write(const void* buf, i32 n) OVERRIDE;        // slot 12 0x00165f50
+    ~CFileMem();                                // slot 0  0x00157980 (real ~ / ??_G 0x157a20)
+    void Slot2() OVERRIDE;                      // slot 2  (0x157a70)
+    void Reset() OVERRIDE;                      // slot 3  0x00157a50 (derived Reset)
+    void Slot5() OVERRIDE;                      // slot 5  (0x157a00)
+    void Slot6() OVERRIDE;                      // slot 6  (0x157a10)
+    i32 Open() OVERRIDE;                        // slot 9  0x00165e60
+    i32 Ready() OVERRIDE;                       // slot 10 0x00165ef0
+    i32 Read(void* buf, i32 n) OVERRIDE;        // slot 11 0x00165f00
+    i32 Write(const void* buf, i32 n) OVERRIDE; // slot 12 0x00165f50
 
     CFileIO m_file; // +0x10
     i32 m_length;   // +0x20

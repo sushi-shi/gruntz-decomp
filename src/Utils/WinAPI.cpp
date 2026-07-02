@@ -119,12 +119,133 @@ namespace Utils {
         }
 
         // -------------------------------------------------------------------------
-        // Engine-label backlog stubs.
+        // Toolhelp32 process-scan support. The Toolhelp APIs are resolved at run
+        // time via GetProcAddress (they are Win9x/NT-version dependent, so never
+        // linked directly); the fixed-layout snapshot records are declared here.
         // -------------------------------------------------------------------------
-        // @confidence: high
-        // @source: tomalla
-        // @stub
+        struct ProcEntry32 {         // PROCESSENTRY32 (0x128 bytes)
+            u32 dwSize;              // +0x00
+            u32 cntUsage;            // +0x04
+            u32 th32ProcessID;       // +0x08
+            u32 th32DefaultHeapID;   // +0x0c
+            u32 th32ModuleID;        // +0x10
+            u32 cntThreads;          // +0x14
+            u32 th32ParentProcessID; // +0x18
+            i32 pcPriClassBase;      // +0x1c
+            u32 dwFlags;             // +0x20
+            char szExeFile[260];     // +0x24
+        };
+        struct ModEntry32 {      // MODULEENTRY32 (0x224 bytes)
+            u32 dwSize;          // +0x00
+            u32 th32ModuleID;    // +0x04
+            u32 th32ProcessID;   // +0x08
+            u32 GlblcntUsage;    // +0x0c
+            u32 ProccntUsage;    // +0x10
+            u8* modBaseAddr;     // +0x14
+            u32 modBaseSize;     // +0x18
+            void* hModule;       // +0x1c
+            char szModule[256];  // +0x20
+            char szExePath[260]; // +0x120
+        };
+        typedef HANDLE(__stdcall* PFN_CreateSnapshot)(u32 dwFlags, u32 th32ProcessID);
+        typedef i32(__stdcall* PFN_Process32)(HANDLE hSnapshot, ProcEntry32* pe);
+
+        // Fills a MODULEENTRY32 for the main module of the given process (engine
+        // helper at 0x118f60; Module32First/Next based). Reloc-masked direct call.
+        extern "C" i32 LegacyFindModule(u32 pid, u32 moduleId, ModEntry32* out, u32 size);
+
+        // -------------------------------------------------------------------------
+        // FindProcessByName
+        // Scans running processes via a Toolhelp32 snapshot, case-insensitively
+        // comparing each process's main-module name (its full path when `name`
+        // itself contains a backslash, else its base name) against `name`. Counts
+        // matches; on the first match, opens the process (PROCESS_QUERY_INFORMATION)
+        // into *pHandleOut. Returns 1 once `wantCount` matches are seen, else 0.
+        // @early-stop
+        // memset-lowering + scheduling wall (86.1%): logic + all control flow (the two
+        // duplicated stricmp arms, OpenProcess-on-first, Process32Next loop) byte-exact.
+        // Residual is MSVC /O2 inline-memset shape on the two Toolhelp snapshot records:
+        // retail splits the leading dwSize dword out of the `rep stosd` (count N-1 from
+        // struct+4, dwSize stored via the live zero-reg / DSE'd), and hoists the
+        // th32ModuleID load out of the me-memset region; our build emits the full-width
+        // `rep stosd` from struct+0. Not source-steerable. Final-sweep.
         RVA(0x00118ce0, 0x1f5)
-        void Stub_118ce0() {}
+        i32 FindProcessByName(const char* name, i32 wantCount, HANDLE* pHandleOut) {
+            if (name == 0 || *name == 0) {
+                return 0;
+            }
+            if (pHandleOut != 0) {
+                *pHandleOut = 0;
+            }
+
+            i32 isFullPath = 0;
+            if (strstr(name, "\\") != 0) {
+                isFullPath = 1;
+            }
+
+            HMODULE hK32 = GetModuleHandleA("KERNEL32.DLL");
+            if (hK32 == 0) {
+                return 0;
+            }
+
+            PFN_CreateSnapshot pCreate =
+                (PFN_CreateSnapshot)GetProcAddress(hK32, "CreateToolhelp32Snapshot");
+            if (pCreate == 0) {
+                return 0;
+            }
+            PFN_Process32 pFirst = (PFN_Process32)GetProcAddress(hK32, "Process32First");
+            if (pFirst == 0) {
+                return 0;
+            }
+            PFN_Process32 pNext = (PFN_Process32)GetProcAddress(hK32, "Process32Next");
+            if (pNext == 0) {
+                return 0;
+            }
+
+            HANDLE hSnap = pCreate(2 /*TH32CS_SNAPPROCESS*/, 0);
+            if (hSnap == (HANDLE)-1) {
+                return 0;
+            }
+
+            ProcEntry32 pe;
+            memset(&pe, 0, sizeof(pe));
+            pe.dwSize = sizeof(pe);
+            i32 matchCount = 0;
+            if (!pFirst(hSnap, &pe)) {
+                CloseHandle(hSnap);
+                return 0;
+            }
+
+            do {
+                ModEntry32 me;
+                memset(&me, 0, sizeof(me));
+                if (LegacyFindModule(pe.th32ProcessID, pe.th32ModuleID, &me, sizeof(me))) {
+                    if (isFullPath) {
+                        if (_stricmp(name, me.szExePath) == 0) {
+                            matchCount++;
+                            if (matchCount == 1 && pHandleOut != 0) {
+                                *pHandleOut = OpenProcess(0x400, 0, me.th32ProcessID);
+                            }
+                            if (matchCount >= wantCount) {
+                                return 1;
+                            }
+                        }
+                    } else {
+                        if (_stricmp(name, me.szModule) == 0) {
+                            matchCount++;
+                            if (matchCount == 1 && pHandleOut != 0) {
+                                *pHandleOut = OpenProcess(0x400, 0, me.th32ProcessID);
+                            }
+                            if (matchCount >= wantCount) {
+                                return 1;
+                            }
+                        }
+                    }
+                }
+            } while (pNext(hSnap, &pe));
+
+            CloseHandle(hSnap);
+            return 0;
+        }
     } // namespace WinAPI
 } // namespace Utils

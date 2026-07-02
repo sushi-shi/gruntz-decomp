@@ -279,7 +279,7 @@ i32 DirectSoundMgr::Restore() {
 // ---------------------------------------------------------------------------
 // DirectSoundMgr::ReacquireBuffer (__thiscall). Gated on the owning manager's init
 // flag. If an instance-specific reacquire callback is installed (m_reacquireCb, a __cdecl
-// fn-ptr taking (m_reacquireCtx, this)), invoke it and return 1 on success; otherwise tail
+// fn-ptr taking (this, m_reacquireCtx)), invoke it and return 1 on success; otherwise tail
 // into the owner's ReacquireViaCallback (0x1365e0). m_reacquireCb/m_reacquireCtx are the per-buffer
 // callback + context (zero-inited in the ctor).
 RVA(0x00135340, 0x37)
@@ -287,9 +287,8 @@ i32 DirectSoundMgr::ReacquireBuffer() {
     if (m_owner->m_initialized == 0) {
         return 0;
     }
-    i32(__cdecl * cb)(i32, DirectSoundMgr*) = (i32(__cdecl*)(i32, DirectSoundMgr*))m_reacquireCb;
-    if (cb != 0) {
-        if (cb(m_reacquireCtx, this) != 0) {
+    if (m_reacquireCb != 0) {
+        if (m_reacquireCb(this, m_reacquireCtx) != 0) {
             return 1;
         }
     }
@@ -320,6 +319,12 @@ i32 DirectSoundMgr::StopAndRewind() {
 // ---------------------------------------------------------------------------
 // DirectSoundMgr::IsPlaying (__thiscall). GetStatus, report on failure, return
 // the "playing" status bit.
+// @early-stop
+// byte-AND-width wall (99%): body byte-exact except `and eax,1` (ours) vs retail
+// `and al,1` - retail narrows the mask to the low byte while keeping the dword status
+// load (`mov eax,[esp]`); a (u8) cast flips the AND but wrongly narrows the load too
+// (mov al). Neither pure form is retail's dword-load+byte-and mix; a /O2 partial-
+// register codegen pick, not source-steerable.
 RVA(0x001353f0, 0x4b)
 i32 DirectSoundMgr::IsPlaying() {
     if (m_owner->m_initialized == 0) {
@@ -337,6 +342,10 @@ i32 DirectSoundMgr::IsPlaying() {
 // ---------------------------------------------------------------------------
 // DirectSoundMgr::IsLooping (__thiscall). GetStatus, report on failure, return
 // the "looping" status bit.
+// @early-stop
+// byte-AND-width wall (99%): same as IsPlaying - `and eax,2` (ours) vs retail
+// `and al,2` while both keep the dword status load; /O2 partial-register codegen
+// pick, not source-steerable.
 RVA(0x00135440, 0x4d)
 i32 DirectSoundMgr::IsLooping() {
     if (m_owner->m_initialized == 0) {

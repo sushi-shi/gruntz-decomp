@@ -260,7 +260,7 @@ void** Font::GetSurface(u8 c) {
 // Font::GetGlyph
 //
 RVA(0x00179b80, 0x22)
-void Font::GetGlyph(u8 c, Glyph& out) {
+void Font::GetGlyph(Glyph& out, u8 c) {
     out = m_glyphs[c];
 }
 
@@ -332,8 +332,8 @@ TextExtent FontRenderer::MeasureText(CString text) {
     }
     for (i = 0; i < text.GetLength(); i++) {
         Glyph g;
-        u8 c = ((const u8*)(const char*)text)[i];
-        m_font->GetGlyph(c, g);
+        u8 c = text[i];
+        m_font->GetGlyph(g, c);
         width += g.width;
     }
     ext.width = width;

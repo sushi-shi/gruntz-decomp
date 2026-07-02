@@ -522,7 +522,7 @@ struct GruntBoard {
 struct GruntSoundEntry; // map value: per-effect sound entry (factory at +0x10)
 struct GruntSoundInner; // m_30->m_28: holds the lookup map at +0x10
 SIZE_UNKNOWN(GruntSoundCat);
-struct GruntSoundCat {  // m_30: the sound-category object
+struct GruntSoundCat { // m_30: the sound-category object
     char m_pad0[0x28];
     GruntSoundInner* m_28; // +0x28  -> the lookup map lives at (*m_28)+0x10
 };
@@ -1030,36 +1030,36 @@ public:
 // docs/vtable-conversion-log.md).
 class CUserBase {
 public:
-    virtual ~CUserBase();                                       // slot 0  (0x5e70b4[0])
+    virtual ~CUserBase();                                                   // slot 0  (0x5e70b4[0])
     virtual i32 SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4); // slot 1
-    virtual void UbSlot08();                                    // slot 2
+    virtual void UbSlot08();                                                // slot 2
     char m_pad4[0x10 - 4];
     CGruntHud* m_10;       // +0x10
     CAnimLookupNode* m_14; // +0x14  (anim-set lookup holder)
-};                         // size 0x18
+}; // size 0x18
 inline CUserBase::~CUserBase() {} // final base vptr restamp (0x5e70b4)
 
 class CUserLogic : public CUserBase {
 public:
-    virtual ~CUserLogic() OVERRIDE;                             // slot 0
+    virtual ~CUserLogic() OVERRIDE;                                          // slot 0
     i32 SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) OVERRIDE; // slot 1 (0x16e7f0)
-    void UbSlot08() OVERRIDE;                                   // slot 2
-    virtual void UlSlot0c();                                    // slot 3
-    virtual void UlSlot10();                                    // slot 4
-    virtual void UlSlot14();                                    // slot 5
-    virtual void InitDirVectors();                             // slot 6  (0x88d0)
-    virtual void UlSlot1c();                                    // slot 7  (inherited by CGrunt)
-    virtual void UlSlot20();                                    // slot 8
-    virtual void UlSlot24();                                    // slot 9
-    virtual void UlSlot28();                                    // slot 10 (inherited)
-    virtual void FreeNameList();                               // slot 11 (0x8970)
-    virtual void UlSlot30();                                    // slot 12 (inherited)
-    virtual void UlSlot34();                                    // slot 13 (inherited)
-    virtual void UlSlot38();                                    // slot 14 (inherited)
-    virtual void UlSlot3c();                                    // slot 15 (inherited)
-    GruntLinkSub m_18;         // +0x18  EngStr link (destructible; ~EngStr 0x16d2a0)
-    char m_pad1c[0x30 - 0x1c]; // +0x1c..+0x30
-};                             // size 0x30
+    void UbSlot08() OVERRIDE;                                                // slot 2
+    virtual void UlSlot0c();                                                 // slot 3
+    virtual void UlSlot10();                                                 // slot 4
+    virtual void UlSlot14();                                                 // slot 5
+    virtual void InitDirVectors();                                           // slot 6  (0x88d0)
+    virtual void UlSlot1c();     // slot 7  (inherited by CGrunt)
+    virtual void UlSlot20();     // slot 8
+    virtual void UlSlot24();     // slot 9
+    virtual void UlSlot28();     // slot 10 (inherited)
+    virtual void FreeNameList(); // slot 11 (0x8970)
+    virtual void UlSlot30();     // slot 12 (inherited)
+    virtual void UlSlot34();     // slot 13 (inherited)
+    virtual void UlSlot38();     // slot 14 (inherited)
+    virtual void UlSlot3c();     // slot 15 (inherited)
+    GruntLinkSub m_18;           // +0x18  EngStr link (destructible; ~EngStr 0x16d2a0)
+    char m_pad1c[0x30 - 0x1c];   // +0x1c..+0x30
+}; // size 0x30
 inline CUserLogic::~CUserLogic() {} // auto-destructs m_18, restamps 0x5e705c
 
 // ---------------------------------------------------------------------------
@@ -1067,17 +1067,17 @@ SIZE_UNKNOWN(CGrunt);
 class CGrunt : public CUserLogic {
 public:
     // vtable overrides in slot order (see the base chain above):
-    virtual ~CGrunt() OVERRIDE;                                        // slot 0  @0xf2f0
+    virtual ~CGrunt() OVERRIDE;                                              // slot 0  @0xf2f0
     i32 SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) OVERRIDE; // slot 1  @0x53b80
-    void UbSlot08() OVERRIDE;                                          // slot 2  (0xf2a0)
-    void UlSlot0c() OVERRIDE;                                          // slot 3  (0x5d210)
-    void UlSlot10() OVERRIDE;                                          // slot 4  (0x5bcd0)
-    void UlSlot14() OVERRIDE;                                          // slot 5  (0x5ecd0)
-    void InitDirVectors() OVERRIDE;                                   // slot 6  @0x5caa0
-    void UlSlot20() OVERRIDE;                                          // slot 8  (0x62b40)
-    void UlSlot24() OVERRIDE;                                          // slot 9  (0x61cb0)
-    void FreeNameList() OVERRIDE;                                     // slot 11 @0x48360
-    virtual void StepCoordResolve();                                  // slot 16 @0x5f310
+    void UbSlot08() OVERRIDE;                                                // slot 2  (0xf2a0)
+    void UlSlot0c() OVERRIDE;                                                // slot 3  (0x5d210)
+    void UlSlot10() OVERRIDE;                                                // slot 4  (0x5bcd0)
+    void UlSlot14() OVERRIDE;                                                // slot 5  (0x5ecd0)
+    void InitDirVectors() OVERRIDE;                                          // slot 6  @0x5caa0
+    void UlSlot20() OVERRIDE;                                                // slot 8  (0x62b40)
+    void UlSlot24() OVERRIDE;                                                // slot 9  (0x61cb0)
+    void FreeNameList() OVERRIDE;                                            // slot 11 @0x48360
+    virtual void StepCoordResolve();                                         // slot 16 @0x5f310
 
     i32 CreateHealthSprite();
     i32 CreateToySprite();
@@ -1422,13 +1422,13 @@ public:
     // arrival/entrance bookkeeping + the occupied-slot recycle.
     i32 ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e); // @0x59230 (ret 0x14)
     // (InitDirVectors is the vtable slot-6 override, declared at the top of CGrunt.)
-    i32 UpdateArrival(i32 a1, i32 a2);                        // @0x62110 (ret 0x8)
+    i32 UpdateArrival(i32 a1, i32 a2); // @0x62110 (ret 0x8)
 
     void StepArrivalDrop(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // @0x4b370 (ret 0x18, /GX)
     i32 StepGruntMovement(); // @0x4c170 (ret 0)         - the per-tick move step
     i32 StepAnimDispatchA(i32 a, i32 b, i32 c, i32 d); // @0x52fb0 (ret 0x10)
     // (StepCoordResolve is the vtable slot-16 override, declared at the top of CGrunt.)
-    i32 StepAnimDispatchB();                           // @0x6a6d0 (ret 0)
+    i32 StepAnimDispatchB(); // @0x6a6d0 (ret 0)
     // @0x637a0 (ret 0) - the I-code entrance re-stamp dispatch step: D/L reject,
     // reset the +0x8c0 struck timer, on the "I" anim re-notify the tile mgr, then
     // (if the grunt's head tile / HUD point is unobstructed) re-latch a fresh anim

@@ -294,18 +294,6 @@ void CFileIO::Stub_0bd3e0(char* path) {
     g_obj646778.Open(path, 1, 0);
 }
 
-// @confidence: med
-// @source: call-xref
-// @stub
-RVA(0x000e5550, 0x9a)
-void CFileIO::Stub_0e5550() {}
-
-// @confidence: med
-// @source: call-xref
-// @stub
-RVA(0x000e5700, 0x9e)
-void CFileIO::Stub_0e5700() {}
-
 // ===========================================================================
 // Class-metadata annotations (EOF-hosted: FileStream.h is pulled into /O1+/O2
 // consumers incl. Image, and this /O1 TU is byte-exact-sensitive, so keep every

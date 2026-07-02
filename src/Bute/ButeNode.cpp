@@ -73,7 +73,7 @@ public:
     char m_pad1c[0x28 - 0x1c];
     i32 m_28; // +0x28
 };
-SIZE(CButeNodeBase, 0x2c); // measured: new(0x2c) -> ctor 0x16dff0; matches the layout above
+SIZE(CButeNodeBase, 0x2c);       // measured: new(0x2c) -> ctor 0x16dff0; matches the layout above
 VTBL(CButeNodeBase, 0x005e94ac); // most-derived (whole-object) vtable @+0
 
 // CButeNodeEntry ctor (0x16df70): __thiscall(this, n, desc). cl auto-stamps the

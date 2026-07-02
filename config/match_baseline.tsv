@@ -222,7 +222,7 @@ demosetup	1	1
 destructbutton	1	1
 dialogs	37	15
 directinputmgr2	41	38
-directsoundmgr	41	32
+directsoundmgr	41	33
 dirpal	1	0
 discoveredarray	1	0
 discoveredeh	2	2
@@ -247,10 +247,10 @@ feccrypt	3	2
 filegetstatus	1	0
 filemem	9	8
 filepathinfo	3	0
-filestream	14	10
+filestream	12	10
 finishlevelsprite	1	0
 flashrect	2	0
-font	24	12
+font	24	18
 fontconfig	9	5
 fonts	2	1
 freelibhostdtor	1	1
@@ -419,7 +419,7 @@ rezutil	1	1
 ringbuffer	2	2
 rockbreakparticles	1	0
 rollingball	6	3
-savegame	22	15
+savegame	24	17
 saverecload	1	0
 savescreenshot	1	0
 sbi_gruntmachine	3	2
@@ -1247,7 +1247,7 @@ cfileimage	?LoadFile@CFileImage@@QAEHPAVCFileImageInfo@@PBDH@Z	100.0000	100.0000
 cfileimage	?SaveBmp@CFileImage@@QAEHPBDPAXH@Z	60.8842	60.8842	1	d7bdcf4dd7ed	0x1443b0
 cfileimage	?SaveTga@CFileImage@@QAEHPBDPAXH@Z	60.8182	60.8182	1	c29726d33513	0x144900
 cfileimageblit	?Blit1624@CFileImage@@QAEHPAXH@Z	71.1484	71.1484	1	dbcfd49b6d90	0x13fce0
-cfileimageblit	?Blit168@CFileImage@@QAEHPAX0H@Z	66.0088	66.0088	1	c4a546c7b7fc	0x13fbb0
+cfileimageblit	?Blit168@CFileImage@@QAEHPAX0H@Z	67.5044	67.5044	1	c4a546c7b7fc	0x13fbb0
 cfileimageblit	?Blit2416@CFileImage@@QAEHPAXH@Z	82.0000	82.0000	1	845cad102f7b	0x13ff80
 cfileimageblit	?Blit816@CFileImage@@QAEHPAX0H@Z	66.2889	66.2889	1	d9382ebaeea4	0x140420
 cfileimageblit	?Blit824@CFileImage@@QAEHPAX0H@Z	58.8610	58.8610	1	22f2a3c5f113	0x140110
@@ -1800,7 +1800,7 @@ directsoundmgr	?IsPlaying@DirectSoundMgr@@QAEHXZ	99.8529	99.8529	4	993b4d422d51	
 directsoundmgr	?Lock@DirectSoundMgr@@QAEHIIPAPAXPAI01I@Z	67.6556	67.6556	3	6f09da3efb5e	0x136370
 directsoundmgr	?LockConvert@DirectSoundMgr@@QAEHPAXII@Z	100.0000	100.0000	3	1195b8fc939d	0x135f40
 directsoundmgr	?Play@DirectSoundMgr@@QAEHXZ	95.5172	95.5172	3	9d81f83143af	0x136270
-directsoundmgr	?ReacquireBuffer@DirectSoundMgr@@QAEHXZ	99.6154	99.6154	2	624ff199808e	0x135340
+directsoundmgr	?ReacquireBuffer@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	3	b3d52d6256fc	0x135340
 directsoundmgr	?ReacquireViaCallback@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	3	b562836d8dba	0x1365e0
 directsoundmgr	?RemoveClone@DirectSoundMgr@@QAEXPAV1@@Z	100.0000	100.0000	2	7875878133be	0x135d20
 directsoundmgr	?Restore@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	4	2d71bdf5406d	0x135310
@@ -2082,8 +2082,6 @@ filestream	?Open@CFileIO@@QAEHPBDIPAX@Z	95.7798	95.7798	5	7b51b9c0f9cb	0x1bf200
 filestream	?Read@CFileIO@@QAEIPAXI@Z	100.0000	100.0000	5	a56b90957c6e	0x1bf328
 filestream	?Seek@CFileIO@@QAEJJH@Z	100.0000	100.0000	5	8b8088fe579a	0x1bf3ad
 filestream	?Stub_0bd3e0@CFileIO@@QAEXPAD@Z	79.0625	79.0625	1	0781dab90954	0xbd3e0
-filestream	?Stub_0e5550@CFileIO@@QAEXXZ	0.9302	0.9302	2	6ed1362acefa	0xe5550
-filestream	?Stub_0e5700@CFileIO@@QAEXXZ	2.3256	2.3256	2	ea19cd7ab31f	0xe5700
 filestream	?Write@CFileIO@@QAEXPBXI@Z	100.0000	100.0000	5	0c752c60199f	0x1bf362
 finishlevelsprite	?LoadFinishLevelSprite@CFinishLevelState@@QAEXH@Z	58.1863	58.1863	1	a942491207f6	0x7c3d0
 flashrect	?FlashRect160f0@FlashHost@m4@@QAEXXZ	83.5235	83.5235	1	bbc018c5a18c	0x160f0
@@ -2096,17 +2094,17 @@ font	?DrawLineClipped@FontRenderer@@QAEXVCString@@HURect@@HHH@Z	100.0000	100.000
 font	?FreeMemory@Font@@QAEXXZ	100.0000	100.0000	5	48390f7bd94e	0x1797b0
 font	?FreeStrings@CWapNodeB@@QAEXXZ	100.0000	100.0000	3	4e6dc4459c58	0x179680
 font	?GetChar@FontRenderer@@QAEEH@Z	100.0000	100.0000	4	8f0c6a026b37	0x17b4f0
-font	?GetGlyph@Font@@QAEXEAAUGlyph@@@Z	99.8182	99.8182	4	e7f6752d728d	0x179b80
+font	?GetGlyph@Font@@QAEXAAUGlyph@@E@Z	100.0000	100.0000	1	d9af963272b2	0x179b80
 font	?GetMaxHeight@Font@@QAEHXZ	100.0000	100.0000	4	3ed9edd8fcc3	0x179bd0
 font	?GetSurface@Font@@QAEPAPAXE@Z	100.0000	100.0000	4	625f344c3266	0x179b60
-font	?IsInterface1@InterfaceObject@@QAEHXZ	96.2500	96.2500	4	48c7c587391e	0x1794b0
-font	?IsInterface2@InterfaceObject@@QAEHXZ	96.2500	96.2500	4	6e5c84b86da0	0x1794e0
-font	?IsInterface3@InterfaceObject@@QAEHXZ	96.2500	96.2500	4	fd8baf7ee241	0x179510
-font	?IsInterface4@InterfaceObject@@QAEHXZ	96.2500	96.2500	4	7db3529fc67b	0x179540
-font	?IsInterface5@InterfaceObject@@QAEHXZ	96.2500	96.2500	4	d40604b6a273	0x179570
+font	?IsInterface1@InterfaceObject@@QAEHXZ	100.0000	100.0000	4	48c7c587391e	0x1794b0
+font	?IsInterface2@InterfaceObject@@QAEHXZ	100.0000	100.0000	4	6e5c84b86da0	0x1794e0
+font	?IsInterface3@InterfaceObject@@QAEHXZ	100.0000	100.0000	4	fd8baf7ee241	0x179510
+font	?IsInterface4@InterfaceObject@@QAEHXZ	100.0000	100.0000	4	7db3529fc67b	0x179540
+font	?IsInterface5@InterfaceObject@@QAEHXZ	100.0000	100.0000	4	d40604b6a273	0x179570
 font	?LayoutWrapped@FontRenderer@@QAE?AUTextExtent@@VCString@@HHHHPAH@Z	4.1953	4.1953	2	f97951756e8e	0x17b120
 font	?LoadFont@Font@@QAEHVCString@@@Z	100.0000	100.0000	6	fa7f3fc73a82	0x179830
-font	?MeasureText@FontRenderer@@QAE?AUTextExtent@@VCString@@@Z	66.1936	66.1936	1	34f48e4f97c3	0x17ac50
+font	?MeasureText@FontRenderer@@QAE?AUTextExtent@@VCString@@@Z	69.6613	69.6613	2	7cd8fb556a28	0x17ac50
 font	?SaveFont@Font@@QAEHVCString@@@Z	100.0000	100.0000	1	48e384bb1201	0x1799f0
 font	?SetColor@FontRenderer@@QAEXH@Z	100.0000	100.0000	4	945d607c3be9	0x179c20
 font	?Span@TextRange@@QAEHXZ	100.0000	100.0000	1	742f226ebb92	0x17b500
@@ -2621,7 +2619,7 @@ image	?Clear@CFileImage@@QAEXH@Z	100.0000	100.0000	2	bfee47867379	0x13edb0
 image	?DecodeBlit@CRezImage@@QAEHPAX0HHH0@Z	82.7639	82.7639	1	1dab25229951	0x175930
 image	?DecodeBmp@CFileImage@@QAEPAXPADPAXI@Z	31.2544	31.2544	4	ee7ec349a997	0x143fc0
 image	?DecodeBmpHeader@CRezImage@@QAEHPAXHHH0@Z	95.7395	95.7395	1	54279666e0b3	0x1757c0
-image	?DecodePcx@CFileImage@@QAEPAXPADPAXI@Z	55.6786	55.6786	4	77f8fc32ed4c	0x144ee0
+image	?DecodePcx@CFileImage@@QAEPAXPADPAXI@Z	55.7755	55.7755	4	77f8fc32ed4c	0x144ee0
 image	?DecodePcxData@CFileImage@@QAEHPAX0HHH@Z	86.2370	86.2370	1	ddfed7a9e89e	0x1457a0
 image	?DecodePcxData@CRezImage@@QAEHPAX00@Z	91.2848	91.2848	1	02415d581e6f	0x176000
 image	?DecodePcxEx@CFileImage@@QAEHPAD0PAX1@Z	100.0000	100.0000	5	d07ec29ad6b0	0x1459d0
@@ -3172,10 +3170,11 @@ rollingball	?Serialize@CRollingBall@@QAEHPAUCRbArchive@@HHH@Z	100.0000	100.0000	
 rollingball	?Update@CRollingBall@@QAEHXZ	37.8018	37.8018	2	c4d7cce584e4	0xb0140
 savegame	??1CSaveGame@@QAE@XZ	100.0000	100.0000	1	a26d45c833a7	0x85b50
 savegame	?CheckField20@CSaveGame@@QAEHXZ	100.0000	100.0000	2	3389d231b6f6	0xe5690
+savegame	?CloseTempFile_e5550@@YGHPAUSaveTempRec@@@Z	100.0000	100.0000	1	f5db24153ba5	0xe5550
 savegame	?ComputeAll@CSaveGame@@QAEXXZ	90.8800	90.8800	2	d62fcdc450f1	0xe50a0
 savegame	?CopySlot@CSaveGame@@QAEHPAUSaveSlot@@PBU2@@Z	100.0000	100.0000	2	bd61e3ee90f6	0xe51d0
 savegame	?Decode@CSaveGame@@QAEHPAE@Z	83.7600	83.7600	2	dcc605c87c7d	0xe5460
-savegame	?Encode@CSaveGame@@QAEHPAE@Z	91.4167	91.4167	2	b5d70bbdf923	0xe5410
+savegame	?Encode@CSaveGame@@QAEHPAE@Z	89.2917	89.2917	2	b5d70bbdf923	0xe5410
 savegame	?FillGameInfoDialog@@YAXPAUHWND__@@PAVCSaveGame@@@Z	100.0000	100.0000	2	f10804ac17b7	0x9e0b0
 savegame	?FillSaveDialog@@YAXPAUHWND__@@PAVCSaveGame@@@Z	100.0000	100.0000	2	248399bdcce6	0xe3c60
 savegame	?FillSlot2@CSaveGame@@QAEHPAUSaveSlot@@HPAX@Z	100.0000	100.0000	2	d2b4d97c68ae	0xe5240
@@ -3190,6 +3189,7 @@ savegame	?Save@CSaveGame@@QAEHHH@Z	41.5752	41.5752	2	8dc3f3720c50	0xe4ea0
 savegame	?SaveGameFile@CSaveGame@@QAEHPBD@Z	100.0000	100.0000	2	e33c685d3921	0xe4b60
 savegame	?SetField18@CSaveGame@@QAEXH@Z	96.3333	96.3333	2	805c5816acdb	0xe5620
 savegame	?SetField1c@CSaveGame@@QAEXH@Z	100.0000	100.0000	2	a0994b0515d6	0xe5660
+savegame	?TempFileExists_e5700@@YAHPAUSaveTempRec@@@Z	100.0000	100.0000	1	41d7cdab6744	0xe5700
 savegame	?Verify@CSaveGame@@QAEHXZ	100.0000	100.0000	2	99fbc66be447	0xe50f0
 savegame	?VerifySlot@CSaveGame@@QAEHPAUSaveSlot@@@Z	43.9830	43.9830	3	43dc7b13fb06	0xe52c0
 saverecload	?Load@SaveRecord@@QAEHPAULoadStream@@@Z	95.9116	95.9116	1	8394a0c8957d	0xfaff0
@@ -3790,9 +3790,9 @@ warpstonefly	?Tick@CWarpStoneFly@@QAEHH@Z	79.2857	79.2857	3	8e0404b39f75	0x10a0f
 warptextureblit	?WarpTextureBlit@@YAHPAUWarpVtx@@HPAUWarpSurf@@1HH@Z	50.9407	50.9407	1	c7a36b11143e	0x146a20
 winapi	?ActiveWait@WinAPI@Utils@@YAXI@Z	100.0000	100.0000	7	5a0a133e85f9	0x13dfe0
 winapi	?FileExists@WinAPI@Utils@@YAHPAD@Z	100.0000	100.0000	7	f415daa19593	0x1189c0
+winapi	?FindProcessByName@WinAPI@Utils@@YAHPBDHPAPAX@Z	86.1364	86.1364	1	c020def46765	0x118ce0
 winapi	?GetGruntzDriveLetter@WinAPI@Utils@@YADXZ	98.4234	98.4234	7	9845fffea311	0x1ffe0
 winapi	?IsGruntzCDInAnyDrive@WinAPI@Utils@@YAHXZ	100.0000	100.0000	7	6588fcebd04e	0x1fd50
-winapi	?Stub_118ce0@WinAPI@Utils@@YAXXZ	0.6494	0.6494	5	42e8e8127bdd	0x118ce0
 winapicdrom	?CheckCdRomRegistry@WinAPI@Utils@@YADXZ	76.1429	76.1429	4	c6ba621c6bbe	0x1fde0
 winapimodule	?LegacyFindModule@WinAPI@Utils@@YAHKKPAXK@Z	99.9000	99.9000	4	f574baeadf5f	0x118f60
 winmain	_WinMain@16	100.0000	100.0000	7	6c5fa75446ef	0x11c860

@@ -52,8 +52,6 @@ public:
     // Reopen the shared global file object (0x646778) around a close: open(path,
     // 0x1000), close, open(path, 1). Static-like (ignores `this`).
     void Stub_0bd3e0(char* path);
-    void Stub_0e5550();
-    void Stub_0e5700();
 };
 
 #endif // SRC_IO_FILESTREAM_H

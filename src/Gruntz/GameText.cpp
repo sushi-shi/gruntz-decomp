@@ -119,5 +119,3 @@ CContainerErr::CContainerErr(const char* msg) {
         g_errMsg_BadArg = "Bad argument value";
     }
 }
-
-
