@@ -172,6 +172,7 @@ struct CGMMenuUI {
     void Step(u32 dt);    // (1 arg)
     void Pre();           // (no arg)
     void Post();          // (no arg)
+    void PreDelete();     // FUN_004a0360 - pre-delete release (ReleaseResources teardown)
 };
 // The version-string RECT source globals (4 ints copied to a stack RECT by value).
 SIZE_UNKNOWN(CGMVerRect);

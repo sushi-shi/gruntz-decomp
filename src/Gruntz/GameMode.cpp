@@ -174,13 +174,6 @@ struct CStateResView {
     CResRegistry* m_2c;     // +0x2c  third registry (credits CREDITZ release)
 };
 
-// FUN_00137a80 Free + FUN_004a0360 menu-UI pre-delete are thiscall no-arg
-// externs on their respective objects; model as methods so the `mov ecx,obj;
-// call rel32` falls out with no stack cleanup.
-struct CMenuUIRes {   // CMenuState::m_1b4 object (pre-delete release)
-    void PreDelete(); // FUN_004a0360
-};
-
 // CState::~CState() chains the WAP32 base cleanup; the leaf `??1`s re-stamp the
 // base vtable and call it (compiler-emitted). `operator delete` is reached by
 // the synthesized `??_G`; declare it so /GX tracks the EH state.
@@ -1443,7 +1436,7 @@ void CMenuState::ReleaseResources() {
     // m_1b4 IS cached (retail holds it in edi across the pre-delete + delete).
     CGMMenuUI* ui = m_1b4;
     if (ui) {
-        ((CMenuUIRes*)ui)->PreDelete();
+        ui->PreDelete();
         operator delete(ui);
         m_1b4 = 0;
     }
@@ -1554,9 +1547,6 @@ struct CBootyMusicHost {
 // The cue/player config call (FUN_005360d0 ConfigureItem, __thiscall on found+0x10).
 struct CBootyPlayer {
     void ConfigureItem(i32 item, i32 a, i32 b, i32 c); // FUN_005360d0, ret 0x10
-};
-struct CBootyFlushView {
-    void Flush(); // FUN_00558ee0
 };
 // CMultiBootyState's own FadeInTitle/BuildPage are declared on the class (GameMode.h);
 // they are reached through its own ILT thunks.
@@ -1787,7 +1777,7 @@ void CMultiBootyState::ReleaseResources() {
         r->Free();
     }
     ((CStateResView*)m_c)->m_28->Release("BOOTY", "_");
-    ((CBootyM4Sub*)((CBootyOwnerView*)m_4)->m_60)->Teardown();
+    ((CBootyOwnerView*)m_4)->m_60->Teardown();
     ((CGameModeBase*)this)->BaseCleanup();
 }
 
@@ -1800,7 +1790,7 @@ i32 CMultiBootyState::FrameSlot24(i32) {
     if (!ok) {
         return ok; // eax already 0 (the FadeInTitle result) - no xor/mov re-materialize
     }
-    ((CBootyFlushView*)((CGMView*)m_c)->m_4)->Flush();
+    ((CStateResView*)m_c)->m_4->Flush();
     BuildPage(0x50, 0x3e8, 0, 1);
 
     CBootyMusicHost* host = BOOTY_REG->m_30;
@@ -2063,7 +2053,6 @@ SIZE_UNKNOWN(CFlipTarget);
 SIZE_UNKNOWN(CRenderM10);
 SIZE_UNKNOWN(CRenderM4);
 SIZE_UNKNOWN(CStateResView);
-SIZE_UNKNOWN(CMenuUIRes);
 SIZE_UNKNOWN(CCreditzSubEntry);
 SIZE_UNKNOWN(CCreditzMusicSet);
 SIZE_UNKNOWN(CCreditzRegObj);
@@ -2087,7 +2076,6 @@ SIZE_UNKNOWN(CBootyFound);
 SIZE_UNKNOWN(CBootyLookupMap);
 SIZE_UNKNOWN(CBootyMusicHost);
 SIZE_UNKNOWN(CBootyPlayer);
-SIZE_UNKNOWN(CBootyFlushView);
 SIZE_UNKNOWN(CBootyM4Sub);
 SIZE_UNKNOWN(CBootyOwnerView);
 SIZE_UNKNOWN(CMenuMusicPlayer);
