@@ -28,6 +28,12 @@
 // <Gruntz/CGameRegistry.h> with the CGrunt resolvers in Grunt.h.
 #include <Gruntz/CGameRegistry.h>
 
+// The zoned sound-bank manager (CWorld::m_48) + its currently-playing inner sound
+// (CPlay::m_518). Full defs live in <Dsndmgr/CGruntzSoundZ.h> (included by the TUs
+// that dispatch on them); forward-declared here so the members can be typed.
+class CGruntzSoundZ;
+class CGruntzSoundInnerZ;
+
 // ===========================================================================
 // Sub-object layouts CPlay::Render walks through (only the offsets it reads).
 // ===========================================================================
@@ -50,7 +56,7 @@ struct CRenderer {
     virtual void s0a();
     virtual void s0b();
     virtual void s0c();
-    virtual void Present(i32 a, i32 b); // slot 13 (+0x34)
+    virtual void Present(void* a, void* b); // slot 13 (+0x34)
     // Non-virtual leaf the play-exit path runs on renderer A (reloc-masked).
     void Refresh(); // 0x159ef0 (thiscall, no arg)
 };
@@ -177,7 +183,7 @@ struct CWorld {
         }* m_24;              // +0x24
     }* m_30;                  // +0x30  the render-state holder (ResetGoals)
     char p34[0x48 - 0x34];
-    void* m_48; // +0x48  the sound manager (PlaySound/FindSound/StopSound)
+    CGruntzSoundZ* m_48; // +0x48  the zoned sound-bank manager (PlaySound/FindSound/StopSound)
     char p4c[0x54 - 0x4c];
     CWorldDraw* m_54; // +0x54  the world/level draw object (camera blit)
     char p58[0x5c - 0x58];
@@ -549,7 +555,8 @@ public:
     i32 m_snapshotActive; // +0x4b0  snapshot ACTIVE latch
     char m_pad4b4[0x4bc - 0x4b4];
     i32 m_revealFrame; // +0x4bc  reveal-strip frame counter (BuildHelpReveal)
-    i32 m_revealCapMid, m_revealCapEnd, m_revealCapStart; // +0x4c0  reveal-strip cap sprites
+    // +0x4c0  reveal-strip cap sprite objects (passed by-ptr to the HUD-strip draw).
+    void *m_revealCapMid, *m_revealCapEnd, *m_revealCapStart;
     // +0x4cc: the level/tile frame grid GrabTile/AdvanceTile walk:
     //   m_grid -> a grid object (+0x64 first row, +0x68 last row, +0x14 row table)
     struct CFrameGrid {
@@ -584,7 +591,7 @@ public:
     char m_pad508[0x510 - 0x508];
     i32 m_stepCountdown; // +0x510  per-frame entity-step countdown
     char m_pad514[0x518 - 0x514];
-    void* m_518; // +0x518  saved currently-playing zoned sound (region pause/resume)
+    CGruntzSoundInnerZ* m_518; // +0x518  saved currently-playing zoned sound (region pause/resume)
 
     // Engine-label backlog stubs.
     void Stub_08c9d0();

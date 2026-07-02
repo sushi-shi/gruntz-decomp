@@ -292,9 +292,9 @@ i32 CPlay::Render() {
         g_6bf3bc = g_645584;
 
         // --- shared world-draw block #1 ---
-        m_c->m_8->BeginScene(0);                                     // m_c->m_8->vtbl[+0x24](0)
-        m_c->m_24->PushView(m_c->m_4->m_14, m_c->m_8);               // (thiscall on m_24)
-        m_c->m_c->Present((i32)m_c->m_4->m_14, (i32)m_c->m_4->m_18); // vtbl[+0x34]
+        m_c->m_8->BeginScene(0);                           // m_c->m_8->vtbl[+0x24](0)
+        m_c->m_24->PushView(m_c->m_4->m_14, m_c->m_8);     // (thiscall on m_24)
+        m_c->m_c->Present(m_c->m_4->m_14, m_c->m_4->m_18); // vtbl[+0x34]
         m_4w()->m_54->Blit(m_c->m_24->m_5c->m_84, m_c->m_24->m_5c->m_88);
         if (m_c->m_20 != 0) { // frame profiler
             u32 t = timeGetTime();
@@ -417,12 +417,12 @@ i32 CPlay::Render() {
 
         // --- shared world-draw block #2 ---
         m_c->m_24->PushView(m_c->m_4->m_14, m_c->m_8);
-        m_c->m_c->Present((i32)m_c->m_4->m_14, (i32)m_c->m_4->m_18); // present
+        m_c->m_c->Present(m_c->m_4->m_14, m_c->m_4->m_18); // present
         if (m_region1Gate != 0) {
             StepC(); // alt-input draw
         } else {
             m_c->m_24->PushView(m_c->m_4->m_14, m_c->m_8);
-            m_c->m_c->Present((i32)m_c->m_4->m_14, (i32)m_c->m_4->m_18);
+            m_c->m_c->Present(m_c->m_4->m_14, m_c->m_4->m_18);
         }
         MarkerBegin((i32)g_645584);
         GutsStep();
@@ -547,7 +547,7 @@ alt2:
         if (m_paused != 0) {
             // ---- the paused frame: draw-only ----
             m_c->m_24->PushView(m_c->m_4->m_14, m_c->m_8);
-            m_c->m_c->Present((i32)m_c->m_4->m_14, (i32)m_c->m_4->m_18); // present
+            m_c->m_c->Present(m_c->m_4->m_14, m_c->m_4->m_18); // present
             GutsStep();
             if (m_guts->m_busyA == 0 && m_guts->m_busyB == 0) {
                 PlayCueAt(0x812c, 0x78, 0, 0xff, 0xff, 0, 1, 0); // win/lose
@@ -558,7 +558,7 @@ alt2:
             if (m_stepCountdown > 0) {
                 m_stepCountdown = m_stepCountdown - 1;
                 m_c->m_24->PushView(m_c->m_4->m_14, m_c->m_8);
-                m_c->m_c->Present((i32)m_c->m_4->m_14, (i32)m_c->m_4->m_18); // present
+                m_c->m_c->Present(m_c->m_4->m_14, m_c->m_4->m_18); // present
                 GutsStep();
                 Eng_FrameTimerStep(m_guts, 0x32);
                 PlayCueAt(m_lastCueId, 0x78, 0, 0xff, 0xff, 0, 1, 0); // (cueId=m_lastCueId)
@@ -1009,11 +1009,11 @@ RVA(0x000d88f0, 0x44)
 void CPlay::RegionEnter() {
     if (m_518 == 0) {
         CWorld* w = m_4w();
-        m_518 = (void*)((CGruntzSoundZ*)w->m_48)->m_pCurrent;
-        ((CGruntzSoundZ*)w->m_48)->StopAll_1388f0();
+        m_518 = w->m_48->m_pCurrent;
+        w->m_48->StopAll_1388f0();
     }
     if (g_64556c->m_14 != 0) {
-        ((CGruntzSoundZ*)m_4w()->m_48)->Play_138840((i32) "CURSE", 0);
+        m_4w()->m_48->Play_138840((i32) "CURSE", 0);
     }
 }
 
@@ -1024,10 +1024,10 @@ RVA(0x000d8960, 0x75)
 void CPlay::RegionLeave() {
     if (m_region0Gate == 0 && m_region1Gate == 0 && m_region2Gate == 0 && m_region3Gate == 0
         && m_518 != 0) {
-        ((CGruntzSoundZ*)m_4w()->m_48)->IsPlaying_138920();
-        ((CGruntzSoundZ*)m_4w()->m_48)->m_pCurrent = (CGruntzSoundInnerZ*)m_518;
+        m_4w()->m_48->IsPlaying_138920();
+        m_4w()->m_48->m_pCurrent = m_518;
         if (g_64556c->m_14 != 0) {
-            ((CGruntzSoundZ*)m_4w()->m_48)->Restart_1388c0(1);
+            m_4w()->m_48->Restart_1388c0(1);
         }
         m_518 = 0;
     }
@@ -1480,7 +1480,7 @@ i32 CPlay::ProfileDeltaFrame() {
     m_4w()->m_54->Blit(m_c->m_24->m_5c->m_84, m_c->m_24->m_5c->m_88);
     u32 t2 = tg();
     m_c->m_24->PushView(m_c->m_4->m_14, m_c->m_8);
-    m_c->m_c->Present((i32)m_c->m_4->m_14, (i32)m_c->m_4->m_18);
+    m_c->m_c->Present(m_c->m_4->m_14, m_c->m_4->m_18);
     i32 presentMs = (i32)(tg() - t2);
     ProfLog(
         &g_profSink,
@@ -1550,7 +1550,7 @@ i32 CPlay::ProfileInputFrame() {
     i32 drawMs = (i32)(tg() - t9);
 
     u32 t11 = tg();
-    m_c->m_c->Present((i32)m_c->m_4->m_14, (i32)m_c->m_4->m_18);
+    m_c->m_c->Present(m_c->m_4->m_14, m_c->m_4->m_18);
     i32 fixedMs = (i32)(tg() - t11);
 
     u32 t13 = tg();
@@ -1977,8 +1977,8 @@ i32 CPlay::BuildHelpReveal() {
         return 0;
     }
     if (m_revealFrame == 1) {
-        Eng_HudStrip(view, (void*)m_revealCapStart, 0x140, 0x1a6, 1, 0);
-        Eng_HudStrip(m_c, (void*)m_revealCapMid, 0xe0, 0x1a6, 1, 0);
+        Eng_HudStrip(view, m_revealCapStart, 0x140, 0x1a6, 1, 0);
+        Eng_HudStrip(m_c, m_revealCapMid, 0xe0, 0x1a6, 1, 0);
     }
 
     i32 counter = m_revealFrame;
@@ -1987,14 +1987,14 @@ i32 CPlay::BuildHelpReveal() {
         i32 i = counter;
         do {
             i32 x = 0xe0 - (i32)((float)i * -3.7857143878936768f);
-            Eng_HudStrip(m_c, (void*)m_revealCapMid, x, 0x1a6, 1, 0);
+            Eng_HudStrip(m_c, m_revealCapMid, x, 0x1a6, 1, 0);
             i++;
         } while (i < 0x37);
     } else {
-        Eng_HudStrip(m_c, (void*)m_revealCapMid, col + 0xe0, 0x1a6, 1, 0);
+        Eng_HudStrip(m_c, m_revealCapMid, col + 0xe0, 0x1a6, 1, 0);
     }
 
-    Eng_HudStrip(m_c, (void*)m_revealCapEnd, 0x1b4, 0x1a6, 1, 0);
+    Eng_HudStrip(m_c, m_revealCapEnd, 0x1b4, 0x1a6, 1, 0);
     m_revealFrame = m_revealFrame + 1;
     return 1;
 }
@@ -2164,7 +2164,7 @@ i32 CPlay::DrawWorldPresent() {
     }
     m_c->m_8->BeginScene(1);
     m_c->m_24->PushView(m_c->m_4->m_14, m_c->m_8);
-    m_c->m_c->Present((i32)m_c->m_4->m_14, (i32)m_c->m_4->m_18);
+    m_c->m_c->Present(m_c->m_4->m_14, m_c->m_4->m_18);
     m_4w()->ManagerTick();
     return 1;
 }
@@ -2199,7 +2199,7 @@ i32 CPlay::PresentAndFlush() {
             NotifyVisibleEntities();
         } else {
             m_c->m_24->PushView(m_c->m_4->m_14, m_c->m_8);
-            m_c->m_c->Present((i32)m_c->m_4->m_14, (i32)m_c->m_4->m_18);
+            m_c->m_c->Present(m_c->m_4->m_14, m_c->m_4->m_18);
         }
         Eng_SurfaceFlush(m_c->m_4->m_10->m_2c, 0);
     }

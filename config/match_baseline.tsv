@@ -1525,7 +1525,7 @@ cplay	?BeginGridWalk@CPlay@@QAEHHHHHH@Z	81.1191	81.1191	4	5929326f7458	0xd0920
 cplay	?BuildAnizKeyTable@CPlay@@QAEHPAX@Z	100.0000	100.0000	1	b165ae0cb8b9	0xddaa0
 cplay	?BuildGruntNamespaceList@CPlay@@QAEHH@Z	100.0000	100.0000	1	6652eb40d84c	0xdd050
 cplay	?BuildGruntTypeNameTable@CPlay@@QAEHHHHH@Z	33.2624	33.2624	1	78c83cf0c557	0xdc6d0
-cplay	?BuildHelpReveal@CPlay@@QAEHXZ	67.8125	67.8125	3	d63528a8ea0e	0xd72c0
+cplay	?BuildHelpReveal@CPlay@@QAEHXZ	67.8125	67.8125	4	0c8d5cc3635c	0xd72c0
 cplay	?BuildMusicCategoryTable@CPlay@@QAEHH@Z	100.0000	100.0000	1	9e03b7354b74	0xdba30
 cplay	?BuildSpriteImageKeyTable@CPlay@@QAEHPAX@Z	100.0000	100.0000	2	2201d47f70f1	0xdd540
 cplay	?BuildWarlordNameTable@CPlay@@QAEHH@Z	100.0000	100.0000	1	a4e6377a94b1	0xdd340
@@ -1536,7 +1536,7 @@ cplay	?ClampViewport@CPlay@@QAEHH@Z	93.7887	93.7887	1	bbb07397f61a	0xd8dc0
 cplay	?DispatchHudClick@CPlay@@QAEHHHH@Z	72.0125	72.0125	3	36e8f5c3bdc6	0xce530
 cplay	?DrawWorldFrame@CPlay@@QAEXXZ	94.4118	94.4118	4	44530c630c5b	0xc9c20
 cplay	?DrawWorldFrames@CPlay@@QAEHXZ	88.8529	88.8529	3	78116a60398a	0xc9cc0
-cplay	?DrawWorldPresent@CPlay@@QAEHXZ	98.8333	98.8333	1	b0333d8dcaa6	0xcefc0
+cplay	?DrawWorldPresent@CPlay@@QAEHXZ	98.8333	98.8333	2	88d26997e060	0xcefc0
 cplay	?EnterMode@CPlay@@QAEHH@Z	97.2903	97.2903	2	4c9b392dd17d	0xd6fa0
 cplay	?EnterOverlayDrag@CPlay@@QAEHH@Z	100.0000	100.0000	1	c542438d6e9a	0xd6440
 cplay	?FindStartPointAt@CPlay@@QAEHHHPAH0@Z	83.2237	83.2237	1	39473fdf4fa0	0xd5f90
@@ -1554,7 +1554,7 @@ cplay	?LoadImageBanks@CPlay@@QAEHXZ	100.0000	100.0000	1	f5cca6022e05	0xcffe0
 cplay	?LoadLevelImages@CPlay@@QAEHH@Z	100.0000	100.0000	2	6cce376d6cf0	0xdb7e0
 cplay	?LoadLevelSounds@CPlay@@QAEHH@Z	100.0000	100.0000	1	6500e8a7f24a	0xdb6c0
 cplay	?LoadSBITextEdges@CPlay@@QAEXPAD@Z	97.7831	97.7831	1	382ab9278cff	0xd1710
-cplay	?LoadScrollSpeedOptions@CPlay@@QAEHXZ	86.1450	86.1450	1	6cdabfb50968	0xd12b0
+cplay	?LoadScrollSpeedOptions@CPlay@@QAEHXZ	86.2200	86.2200	1	6cdabfb50968	0xd12b0
 cplay	?ModeCleanup@CPlay@@QAEXXZ	99.6154	99.6154	1	49243b4e5268	0xcb740
 cplay	?NotifyVisibleEntities@CPlay@@QAEHXZ	74.8676	74.8676	2	3cd6ac295b6a	0xd9050
 cplay	?OnExit@CPlay@@QAEXXZ	94.7917	94.7917	1	a2f4e9737e46	0xcb400
@@ -1566,13 +1566,13 @@ cplay	?OnRegion4@CPlay@@QAEHH@Z	100.0000	100.0000	7	edc8c453d057	0xd8bc0
 cplay	?PauseGame@CPlay@@QAEHXZ	100.0000	100.0000	1	add2279bc0de	0xcee90
 cplay	?PlayCueAt@CPlay@@QAEXHHHHHHHH@Z	87.9580	87.9580	8	f61db82265dd	0xd1890
 cplay	?PostHudRect@CPlay@@QAEHXZ	100.0000	100.0000	1	ee065b23a324	0xda440
-cplay	?PresentAndFlush@CPlay@@QAEHXZ	96.5942	96.5942	1	5a33edb55fd8	0xcba10
-cplay	?ProfileDeltaFrame@CPlay@@QAEHXZ	99.8876	99.8876	2	79a09f1acca8	0xca0a0
-cplay	?ProfileInputFrame@CPlay@@QAEHXZ	97.2115	97.2115	2	03057d82e063	0xc9e40
-cplay	?RegionEnter@CPlay@@QAEXXZ	100.0000	100.0000	1	d65c90739db8	0xd88f0
-cplay	?RegionLeave@CPlay@@QAEXXZ	100.0000	100.0000	2	54ec39bb23e4	0xd8960
+cplay	?PresentAndFlush@CPlay@@QAEHXZ	96.5942	96.5942	2	3bc8fd6a6111	0xcba10
+cplay	?ProfileDeltaFrame@CPlay@@QAEHXZ	99.8876	99.8876	3	7d5e0c631ffd	0xca0a0
+cplay	?ProfileInputFrame@CPlay@@QAEHXZ	97.2115	97.2115	3	bd87ada3b5e3	0xc9e40
+cplay	?RegionEnter@CPlay@@QAEXXZ	100.0000	100.0000	2	ba82756a4c29	0xd88f0
+cplay	?RegionLeave@CPlay@@QAEXXZ	100.0000	100.0000	3	e3e4211635dd	0xd8960
 cplay	?RegisterInputBindings@CPlay@@QAEHXZ	100.0000	100.0000	2	2b2e83b92f68	0xd9160
-cplay	?Render@CPlay@@UAEHXZ	0.0000	0.0000	9	8bb8b98a5a0d	0xc8cf0
+cplay	?Render@CPlay@@UAEHXZ	0.0000	0.0000	10	4211b00e571e	0xc8cf0
 cplay	?ResetForMode@CPlay@@QAEHH@Z	100.0000	100.0000	1	0cdeb80fb398	0xc8a10
 cplay	?ResetGoals@CPlay@@QAEHHH@Z	100.0000	100.0000	3	2926f5e5c18f	0xd5f00
 cplay	?ResetPlayState@CPlay@@QAEHXZ	92.0100	92.0100	1	b2f4b850d4e0	0xd60b0
