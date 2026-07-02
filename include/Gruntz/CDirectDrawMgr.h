@@ -108,6 +108,22 @@ struct IDirectDrawPaletteZ {
 };
 
 // ---------------------------------------------------------------------------
+// The pool-item / mode-list CObArray sub-object (an MFC CObArray view): SetSize
+// (0,-1) clears it, SetAtGrow is CObArray::Add's out-of-line tail. The methods
+// are reloc-masked engine calls (the MFC runtime TUs).
+// ---------------------------------------------------------------------------
+struct CDdObArray {
+    void* m_vtbl;                   // +0x00
+    void** m_pData;                 // +0x04
+    i32 m_nSize;                    // +0x08
+    i32 m_nMaxSize;                 // +0x0c
+    i32 m_nGrowBy;                  // +0x10
+    void SetSize(i32 n, i32 grow);  // 0x1b4f75
+    void SetAtGrow(i32 n, void* x); // 0x1b5144
+};
+SIZE(CDdObArray, 0x14);
+
+// ---------------------------------------------------------------------------
 // CDirectDrawMgr (DDRAWMGR.CPP) - the top-level device manager. NON-polymorphic;
 // `this` offset 0 holds the IDirectDraw2 device interface.
 // ---------------------------------------------------------------------------
@@ -138,13 +154,17 @@ public:
     void SetupCaps();                                                 // 0x143240
     void* CreatePoolItem(void* arg0, void* arg1);                     // 0x143630
     i32 SetVideoMode(i32 width, i32 height, i32 bpp, i32 a4, i32 a5); // 0x143c20
+    i32 Compare(void* a, void* b); // 0x1433d0  pool comparator (reloc-masked)
+    void AddPoolItem(void* item);  // 0x142100  pool publisher (reloc-masked)
 
     // --- layout (only touched offsets pinned) ---------------------------------
     IDirectDraw2Z* m_0;  // +0x00  the held IDirectDraw2 device
     IDirectDraw2Z* m_4;  // +0x04  the raw IDirectDraw DirectDrawCreate returns
     i32 m_caps[0x5f];    // +0x08  driver DDCAPS (dwSize 0x17c at +0x08)
     i32 m_helCaps[0x5f]; // +0x184 HEL DDCAPS (dwSize 0x17c at +0x184)
-    char m_pad300[0x534 - 0x300];
+    char m_pad300[0x4b4 - 0x300];
+    CDdObArray m_poolItems; // +0x4b4 pool-item CObArray sub-object
+    char m_pad4c8[0x534 - 0x4c8];
     i32 m_534; // +0x534 caps flag (& 0x8000000)
     i32 m_538; // +0x538 cached bpp
     char m_pad53c[0x93c - 0x53c];
@@ -215,19 +235,26 @@ public:
     void FinishInit();     // 0x17d6b0
 
     // --- layout (only touched offsets pinned) ---------------------------------
-    IDirectDraw2Z* m_0; // +0x00  cached IDirectDraw2 (set last)
-    i32 m_4;            // +0x04  "initialized" flag
+    void* m_0; // +0x00  owner window (HWND; stored last by Init)
+    i32 m_4;   // +0x04  "initialized" flag
     char m_pad8[0x0c - 0x08];
     i32 m_c; // +0x0c
     char m_pad10[0x14 - 0x10];
-    IDirectDraw2Z* m_14;        // +0x14  the QI'd IDirectDraw2
-    IDirectDraw2Z* m_18;        // +0x18  the raw IDirectDraw DirectDrawCreate returns
-    IDirectDrawSurfaceZ* m_1c;  // +0x1c  primary surface (QI'd to Surface3)
-    IDirectDrawSurfaceZ* m_20;  // +0x20  primary surface (raw)
-    i32 m_24;                   // +0x24
-    i32 m_28;                   // +0x28
-    IDirectDrawPaletteZ* m_2c;  // +0x2c  the palette
-    char m_desc[0x6c];          // +0x30  DDSURFACEDESC scratch (0x98 = a desc field)
+    IDirectDraw2Z* m_14;       // +0x14  the QI'd IDirectDraw2
+    IDirectDraw2Z* m_18;       // +0x18  the raw IDirectDraw DirectDrawCreate returns
+    IDirectDrawSurfaceZ* m_1c; // +0x1c  primary surface (QI'd to Surface3)
+    IDirectDrawSurfaceZ* m_20; // +0x20  primary surface (raw)
+    i32 m_24;                  // +0x24
+    i32 m_28;                  // +0x28
+    IDirectDrawPaletteZ* m_2c; // +0x2c  the palette
+    union {                    // +0x30  DDSURFACEDESC scratch (CreateSurface target)
+        char m_desc[0x6c];     //        raw view (Init bulk-clears the desc as dwords)
+        struct {
+            u32 m_descSize; // +0x30  dwSize
+            char m_descpad34[0x98 - 0x34];
+            u32 m_descCaps; // +0x98  ddsCaps.dwCaps
+        };
+    };
     char m_pad9c[0x108 - 0x9c]; // +0x9c
     char m_108[0x510 - 0x108];  // +0x108 PALETTEENTRY init buffer (only &m_108 used)
     i32 m_510;                  // +0x510

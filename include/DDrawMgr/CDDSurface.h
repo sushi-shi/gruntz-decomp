@@ -126,8 +126,17 @@ public:
     char m_pad4[0x08 - 0x04];
     IDirectDrawSurfaceZ* m_8; // +0x08  the held surface (released via IUnknown::Release)
     IDirectDrawSurfaceZ* m_c; // +0x0c  the held back/secondary surface (also released)
-    char m_desc[0x24];        // +0x10  DDSURFACEDESC scratch (m_18/m_1c/m_20 inside)
-    i32 m_34;                 // +0x34  desc lPitch field (returned by Lock)
+    union {                   // +0x10  DDSURFACEDESC scratch (GetSurfaceDesc target)
+        char m_desc[0x24];    //        raw view (Refresh bulk-clears the desc as dwords)
+        struct {
+            i32 m_descSize; // +0x10  dwSize
+            char m_descpad14[0x18 - 0x14];
+            i32 m_height; // +0x18  dwHeight
+            i32 m_width;  // +0x1c  dwWidth
+            i32 m_pitch;  // +0x20  lPitch
+        };
+    };
+    i32 m_34; // +0x34  desc lpSurface (locked bits pointer; returned by Lock)
     char m_desc2[0x64 - 0x38];
     i32 m_64; // +0x64  pixel-format bit depth
     char m_desc3[0x7c - 0x68];

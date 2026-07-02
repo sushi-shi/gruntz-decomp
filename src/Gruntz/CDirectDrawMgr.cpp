@@ -56,8 +56,7 @@ extern void __cdecl DDrawLogLine(char* line); // 0x141cb0
 
 // DDRAW.dll DirectDrawCreate - direct `e8 rel32` to the incremental-link thunk
 // (reloc-masked), like DirectSoundCreate, not an `ff 15 [IAT]` indirect.
-extern "C" i32 __stdcall
-DirectDrawCreate(void* lpGuid, IDirectDrawSurfaceZ** ppDD, void* pUnkOuter);
+extern "C" i32 __stdcall DirectDrawCreate(void* lpGuid, IDirectDraw2Z** ppDD, void* pUnkOuter);
 
 // IID_IDirectDraw2 / IID_IDirectDrawSurface3 - dxguid GUID constants in .rdata,
 // passed to QueryInterface. Reloc-masked DATA() externs.
@@ -315,7 +314,9 @@ i32 CDDSurface::GetColorKey() {
 }
 
 // CDDSurface::Refresh (__thiscall, ret 4 => 1 arg). GetSurfaceDesc into the
-// scratch desc, then derive the row/pixel geometry by a bit-depth switch.
+// scratch desc, then derive the row/pixel geometry by a bit-depth switch. The
+// desc geometry is read through the named DDSURFACEDESC fields (m_descSize/
+// m_height/m_width/m_pitch) of the surface's embedded scratch.
 RVA(0x0013e140, 0x133)
 i32 CDDSurface::Refresh(IDirectDrawSurfaceZ* surf) {
     m_8 = surf;
@@ -324,7 +325,7 @@ i32 CDDSurface::Refresh(IDirectDrawSurfaceZ* surf) {
     for (i = 0x1b; i != 0; i--) {
         *d++ = 0;
     }
-    *(i32*)m_desc = 0x6c; // dwSize
+    m_descSize = 0x6c;
     i32 hr = m_8->GetSurfaceDesc(m_desc);
     if (hr != 0) {
         CDirectDrawMgr::GetErrorString(DIRSURF_FILE, 0x7e, hr);
@@ -342,16 +343,16 @@ i32 CDDSurface::Refresh(IDirectDrawSurfaceZ* surf) {
     // it is the jump-table plateau, same family as GetErrorString's 96.24%.
     switch (bits) {
         case 16:
-            m_ac = *(i32*)(m_desc + 0xc) * 2; // m_1c = dwWidth
+            m_ac = m_width * 2;
             break;
         case 24:
-            m_ac = *(i32*)(m_desc + 0xc) * 3;
+            m_ac = m_width * 3;
             break;
         case 32:
-            m_ac = *(i32*)(m_desc + 0xc) * 4;
+            m_ac = m_width * 4;
             break;
         default:
-            m_ac = *(i32*)(m_desc + 0xc);
+            m_ac = m_width;
             break;
     }
 
@@ -372,11 +373,11 @@ i32 CDDSurface::Refresh(IDirectDrawSurfaceZ* surf) {
     }
     m_b0 = divisor;
 
-    m_88 = *(i32*)(m_desc + 0xc);                     // m_1c (width) cached after switch
-    m_b4 = (u32) * (i32*)(m_desc + 0x10) / (u32)m_b0; // m_20 = lPitch
+    m_88 = m_width;                  // dwWidth cached after switch
+    m_b4 = (u32)m_pitch / (u32)m_b0; // lPitch / divisor
     m_80[0] = 0;
     m_80[1] = 0;
-    i32 height = *(i32*)(m_desc + 8); // m_18 = dwHeight
+    i32 height = m_height;
     m_8c = height;
     m_90 = m_ac * height;
     m_7c = m_7c | 1;
@@ -647,7 +648,7 @@ i32 CDirectDrawMgr::CreateDevice(
     if (dd != 0) {
         m_0 = dd;
     } else {
-        i32 chr = DirectDrawCreate(hwnd, (IDirectDrawSurfaceZ**)&m_4, 0);
+        i32 chr = DirectDrawCreate(hwnd, &m_4, 0);
         if (chr != 0) {
             CDirectDrawMgr::GetErrorString(DDRAWMGR_FILE, 0x88, chr);
             if (m_944 == 0) {
@@ -655,7 +656,7 @@ i32 CDirectDrawMgr::CreateDevice(
             }
             return 0;
         }
-        chr = m_4->QueryInterface(IID_IDirectDraw2, (void**)this);
+        chr = m_4->QueryInterface(IID_IDirectDraw2, (void**)&m_0);
         if (chr != 0) {
             CDirectDrawMgr::GetErrorString(0, 0, chr);
             if (m_944 == 0) {
@@ -1042,7 +1043,8 @@ i32 CDDPalette::SetRange(i32 start, i32 count, u8 r, u8 g, u8 b, u32 flags) {
 // CDDPageMgr::Init (__thiscall, ret 0xc => 3 args). Creates its own DirectDraw,
 // QueryInterfaces IDirectDraw2, sets the cooperative level + display mode,
 // creates the primary surface (QI'd to IDirectDrawSurface3) and, for 8bpp, a
-// palette; caches the geometry and shows the cursor.
+// palette; caches the geometry and shows the cursor. The desc scratch is filled
+// through the named DDSURFACEDESC fields (m_descSize / ddsCaps.dwCaps m_descCaps).
 RVA(0x0017c040, 0x25d)
 i32 CDDPageMgr::Init(void* window, DDModeInfo* mode, u32 coopFlags) {
     if (m_4 != 0) {
@@ -1064,7 +1066,7 @@ i32 CDDPageMgr::Init(void* window, DDModeInfo* mode, u32 coopFlags) {
     }
 
     m_c = 0;
-    if (DirectDrawCreate(0, (IDirectDrawSurfaceZ**)&m_18, 0) != 0) {
+    if (DirectDrawCreate(0, &m_18, 0) != 0) {
         return 0;
     }
     if (m_18->QueryInterface(IID_IDirectDraw2, (void**)&m_14) != 0) {
@@ -1084,9 +1086,9 @@ i32 CDDPageMgr::Init(void* window, DDModeInfo* mode, u32 coopFlags) {
     for (i = 0x1b; i != 0; i--) {
         *d++ = 0;
     }
-    *(i32*)m_desc = 0x6c;
-    m_24 = 1;                       // [esi+0x34]=1 -> desc field? actually m_34; placeholder
-    *(i32*)(m_desc + 0x68) = 0x200; // [esi+0x98]
+    m_descSize = 0x6c;
+    m_24 = 1;
+    m_descCaps = 0x200; // ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE
     if (m_14->CreateSurface(m_desc, &m_20, 0) != 0) {
         HandleError();
         return 0;
@@ -1123,7 +1125,7 @@ i32 CDDPageMgr::Init(void* window, DDModeInfo* mode, u32 coopFlags) {
     m_28 = 0;
     m_51c = h;
     m_520 = bpp;
-    m_0 = (IDirectDraw2Z*)window;
+    m_0 = window;
     m_c = 0;
     ShowCursor(0);
     m_4 = 1;
@@ -1211,27 +1213,11 @@ i32 CDDPageMgr::CheckMode16() {
 extern "C" void RezFree(void* p);             // 0x1b9b82
 extern "C" void* DdOperatorNew(unsigned int); // 0x1b9b46
 
-// The pool-item CObArray sub-object (raw view at +0x4b4): SetSize(0,-1) clears it,
-// SetAtGrow(m_nSize, x) is MFC CObArray::Add's out-of-line tail.
-struct CDdObArray {
-    void* m_vtbl;                   // +0x00
-    void** m_pData;                 // +0x04
-    i32 m_nSize;                    // +0x08
-    i32 m_nMaxSize;                 // +0x0c
-    i32 m_nGrowBy;                  // +0x10
-    void SetSize(i32 n, i32 grow);  // 0x1b4f75
-    void SetAtGrow(i32 n, void* x); // 0x1b5144
-};
-
 // The transient global mode array EnumDisplayModes rebuilds (a CObArray @0x683ec8).
+// CDdObArray + the pool comparator/publisher (Compare/AddPoolItem) live on
+// CDirectDrawMgr in <Gruntz/CDirectDrawMgr.h>.
 DATA(0x00283ec8)
 extern CDdObArray g_modeArray;
-
-// The pool comparator (this->Compare, 0x1433d0) and the AddPoolItem publisher.
-struct CDdPoolThis {
-    i32 Compare(void* a, void* b); // 0x1433d0
-    void AddPoolItem(void* item);  // 0x142100
-};
 
 // The EnumDisplayModes callback (0x143390); only its address is referenced.
 // (EnumDisplayModes is slot 8 / +0x20 on the shared IDirectDraw2Z interface.)
@@ -1244,7 +1230,7 @@ extern "C" void DdEnumModesCallback(); // 0x143390
 // counter, an induction shape the recompile doesn't reproduce.  No EH frame.
 RVA(0x00143240, 0x143)
 void CDirectDrawMgr::SetupCaps() {
-    CDdObArray* arr = (CDdObArray*)((char*)this + 0x4b4);
+    CDdObArray* arr = &m_poolItems;
     for (i32 i = 0; i < arr->m_nSize; i++) {
         RezFree(arr->m_pData[i]);
     }
@@ -1261,7 +1247,7 @@ void CDirectDrawMgr::SetupCaps() {
     i32 n = arr->m_nSize;
     for (i32 a = 0; a < n - 1; a++) {
         for (i32 b = a + 1; b < n; b++) {
-            if (((CDdPoolThis*)this)->Compare(arr->m_pData[a], arr->m_pData[b])) {
+            if (Compare(arr->m_pData[a], arr->m_pData[b])) {
                 void* tmp = arr->m_pData[a];
                 arr->m_pData[a] = arr->m_pData[b];
                 arr->m_pData[b] = tmp;
@@ -1354,7 +1340,7 @@ void* CDirectDrawMgr::CreatePoolItem(void* arg0v, void* arg1) {
         }
         return 0;
     }
-    ((CDdPoolThis*)this)->AddPoolItem(item);
+    AddPoolItem(item);
     return item;
 }
 
@@ -1363,6 +1349,5 @@ SIZE_UNKNOWN(CDdDescSrc);
 SIZE_UNKNOWN(CDdEnumVtbl);
 SIZE_UNKNOWN(CDdPoolItem);
 SIZE_UNKNOWN(CDdPoolSub);
-SIZE_UNKNOWN(CDdPoolThis);
 SIZE_UNKNOWN(CDdPoolVtbl);
 SIZE_UNKNOWN(DDModeDesc);
