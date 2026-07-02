@@ -26,7 +26,7 @@ struct InterfaceObjectBase {
 inline InterfaceObjectBase::~InterfaceObjectBase() {}
 SIZE_UNKNOWN(InterfaceObjectBase); // CObject-like base subobject; retail size TBD
 // No VTBL: this base subobject's vtable is the SHARED CObject-base dtor vtable
-// 0x5e8cb4, already catalogued as ?g_severusBaseDtorVtbl@@3PAXA - a VTBL here would
+// 0x5e8cb4, already catalogued as ?g_wapObjectDtorVtbl@@3PAXA - a VTBL here would
 // collide on that rva / mis-attribute a shared vtable to one modeling-base name.
 
 // Own (most-derived) vtable @0x5f0748: cl auto-emits ??_7InterfaceObject (the dtor

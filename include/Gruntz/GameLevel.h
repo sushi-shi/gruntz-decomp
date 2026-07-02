@@ -61,20 +61,20 @@ struct LevelCoordRect {
 struct RemusParseSource;
 
 // ---------------------------------------------------------------------------
-// CSeverusWorker - the engine base CGameLevel derives from. Its 9-slot base
-// vftable is @0x5efc30 (the same SeverusWorkerBase realized in
+// CLoadable - the engine base CGameLevel derives from. Its 9-slot base
+// vftable is @0x5efc30 (the same CLoadable realized in
 // CDDrawWorkerRegistry.cpp). REAL-POLYMORPHIC: the 9 base virtual slots are
 // declared here (the engine-thunk slots declared-only; the four CGameLevel
 // specializes as overridable virtuals). The INLINE ctor stores the three args
-// (cl AUTO-stamps the base vptr &??_7CSeverusWorker - an orphan reloc-masked
-// against retail 0x5efc30, since 0x5efc30 is already VTBL(SeverusWorkerBase));
+// (cl AUTO-stamps the base vptr &??_7CLoadable - an orphan reloc-masked
+// against retail 0x5efc30, since 0x5efc30 is already VTBL(CLoadable));
 // the INLINE dtor resets the fields then restamps the grand-base teardown vftable
-// (g_severusWorkerDtorVtbl @0x5e8cb4). Both fold into the derived CGameLevel
+// (g_wapObjectDtorVtbl @0x5e8cb4). Both fold into the derived CGameLevel
 // ctor/dtor, giving retail's classic two-phase vptr-store schedule.
 // ---------------------------------------------------------------------------
-extern void* g_severusWorkerDtorVtbl; // base vftable restored by ~CSeverusWorker (@0x5e8cb4)
+extern void* g_wapObjectDtorVtbl; // base vftable restored by ~CLoadable (@0x5e8cb4)
 
-struct CSeverusWorker {
+struct CLoadable {
     virtual void v00();                  // [0] +0x00  engine thunk (0x1bef01)
     virtual void* ScalarDtor(u32 flags); // [1] +0x04  scalar-deleting dtor (CGameLevel overrides)
     virtual void v08();                  // [2] +0x08  engine thunk (0x0028ec)
@@ -85,7 +85,7 @@ struct CSeverusWorker {
     virtual i32 Unload();                // [7] +0x1c  CGameLevel overrides (0x15d1f0)
     virtual i32 GetClassId();            // [8] +0x20  CGameLevel overrides (0x1611b0)
 
-    CSeverusWorker(i32 a1, i32 a2, i32 a3) {
+    CLoadable(i32 a1, i32 a2, i32 a3) {
         m_04 = a2;
         m_flags = a3;
         m_owner = a1;
@@ -94,11 +94,11 @@ struct CSeverusWorker {
     // grand-base teardown vftable. INLINE (in the header) so it folds into
     // ~CGameLevel after the member array dtors, exactly as the retail compiler
     // emitted the base-dtor tail (a different table from the ctor's @0x5efc30).
-    ~CSeverusWorker() {
+    ~CLoadable() {
         m_04 = -1;
         m_flags = 0;
         m_owner = 0;
-        *(void**)this = &g_severusWorkerDtorVtbl;
+        *(void**)this = &g_wapObjectDtorVtbl;
     }
     i32 m_04;    // +0x04  (ctor arg2; reset to -1 on dtor, checked ==-1 by IsLoaded)
     i32 m_flags; // +0x08  (== WwdHeader::flags after LoadWwd; arg3 at ctor)
@@ -124,12 +124,12 @@ struct CSeverusWorker {
 // in GameLevel.cpp; only the pointer type appears in the class below.
 struct ScrollTarget;
 
-class CGameLevel : public CSeverusWorker {
+class CGameLevel : public CLoadable {
 public:
     // The 18-slot derived vtable @0x5f0150. REAL-POLYMORPHIC: each matched slot is
     // the real method (RVA-bound in GameLevel.cpp), so cl emits ??_7CGameLevel@@6B@
     // with those slots pointing at the matched functions; the engine-thunk base
-    // slots (0/2/3/4/6) are inherited declared-only from CSeverusWorker. Slots 9..17
+    // slots (0/2/3/4/6) are inherited declared-only from CLoadable. Slots 9..17
     // are new virtuals CGameLevel adds. cl auto-stamps this vptr in the ctor (the
     // derived phase of the two-phase store); VTBL(CGameLevel, 0x001f0150) binds it.
     //
@@ -262,7 +262,7 @@ public:
 
     // Destructor (the ~CGameLevel @0x1611e0). cl auto-stamps the derived vftable at
     // dtor entry (polymorphic), runs the level cleanup (Unload), then the three array
-    // members destruct and ~CSeverusWorker restores the base subobject. Non-virtual;
+    // members destruct and ~CLoadable restores the base subobject. Non-virtual;
     // ScalarDtor (vtable slot 1) calls it. Declared so the member dtors + EH frame
     // fall out.
     ~CGameLevel();
@@ -297,7 +297,7 @@ private:
 
 public:
     // vptr@+0x00 (implicit, CGameLevel is polymorphic); +0x04..+0x0c are the
-    // CSeverusWorker members (m_04/m_flags/m_owner); the plane-read ctx begins at +0x10.
+    // CLoadable members (m_04/m_flags/m_owner); the plane-read ctx begins at +0x10.
     LevelCoordRect m_planeCtx;     // +0x10  plane-read ctx / coord record (LoadWwd 3rd arg)
     CByteArray m_array20;          // +0x20  (built by the ctor; EH state 0)
     CLevelPtrArray m_planes;       // +0x34  (m_size@+0x3c == m_planeCount; EH state 1)

@@ -238,8 +238,8 @@ source = "src/Gruntz/CRemusEntryList.cpp"
 flags = "eh"
 
 [[unit]]
-unit = "cseverusentrylist"
-source = "src/Gruntz/CSeverusEntryList.cpp"
+unit = "cddrawworker"
+source = "src/Gruntz/CDDrawWorker.cpp"
 flags = "eh"
 
 [[unit]]
@@ -2298,8 +2298,8 @@ unit = "namerecord"
 source = "src/Gruntz/NameRecord.cpp"
 flags = "base"
 [[unit]]
-unit = "cseverusworkerhost"
-source = "src/Gruntz/CSeverusWorkerHost.cpp"
+unit = "cddrawworkerhost"
+source = "src/Gruntz/CDDrawWorkerHost.cpp"
 flags = "eh"
 
 [[unit]]
@@ -2324,12 +2324,12 @@ source = "src/Gruntz/TileTriggerWiring.cpp"
 flags = "base"
 
 [[unit]]
-unit = "cseverusworker"
-source = "src/Gruntz/CSeverusWorker.cpp"
+unit = "cmovieplayer"
+source = "src/Gruntz/CMoviePlayer.cpp"
 flags = "base"
 [[unit]]
-unit = "cseverusworkereh"
-source = "src/Gruntz/CSeverusWorkerEh.cpp"
+unit = "cmovieplayereh"
+source = "src/Gruntz/CMoviePlayerEh.cpp"
 flags = "eh"
 [[unit]]
 unit = "wapuncompress"
@@ -2406,8 +2406,8 @@ unit = "chainforward"
 source = "src/Gruntz/ChainForward.cpp"
 flags = "base"
 [[unit]]
-unit = "severusworkerdtor"
-source = "src/Gruntz/SeverusWorkerDtor.cpp"
+unit = "rezbufferobjectdtor"
+source = "src/Gruntz/RezBufferObjectDtor.cpp"
 flags = "eh"
 
 [[unit]]

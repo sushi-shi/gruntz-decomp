@@ -116,16 +116,16 @@ typedef void (*UnkVfn)(void);
 // REALIZED as ??_7CRemusNode@@6B@ (real polymorphic CRemusNode : CRemusNodeBase in
 // src/Gruntz/CRemusNode.cpp; cl auto-emits the vtable). Placeholder removed.
 
-// ClassWithUnknownVTable25  @ 0x005efbe8  (17 slots)  refs x6  src:g_severusWorkerVtbl
-// REALIZED as ??_7SeverusWorkerObj@@6B@ (real polymorphic SeverusWorkerObj built via
+// ClassWithUnknownVTable25  @ 0x005efbe8  (17 slots)  refs x6  src:g_ddrawWorkerVtbl
+// REALIZED as ??_7CDDrawWorker@@6B@ (real polymorphic CDDrawWorker built via
 // `new` in src/Gruntz/CDDrawWorkerRegistry.cpp; cl auto-emits the 17-slot vtable;
-// VTBL(SeverusWorkerObj, 0x001efbe8)). Same retail class as CSeverusEntryList
+// VTBL(CDDrawWorker, 0x001efbe8)). Same retail class as CDDrawWorker
 // (its dtor 0x1557a0 = slot[1] ??_G phase). Placeholder removed.
 
-// ClassWithUnknownVTable26  @ 0x005efc30  (9 slots)  refs x12  src:g_severusWorkerBaseVtbl
-// REALIZED as ??_7SeverusWorkerBase@@6B@ (real polymorphic base of SeverusWorkerObj in
+// ClassWithUnknownVTable26  @ 0x005efc30  (9 slots)  refs x12  src:g_loadableVtbl
+// REALIZED as ??_7CLoadable@@6B@ (real polymorphic base of CDDrawWorker in
 // src/Gruntz/CDDrawWorkerRegistry.cpp; cl auto-emits the 9-slot base vtable;
-// VTBL(SeverusWorkerBase, 0x001efc30)). Placeholder removed.
+// VTBL(CLoadable, 0x001efc30)). Placeholder removed.
 
 // ClassWithUnknownVTable27  @ 0x005efc58  (8 slots)  refs x2
 // REALIZED as ??_7CVtbl_1efc58@@6B@ (real CObject-style polymorphic tracking class in
@@ -233,10 +233,10 @@ typedef void (*UnkVfn)(void);
 // slot 9 = CDDrawSurfacePair 0x1644a0, slots declared-only; out-of-line-dtor anchor;
 // VTBL(CVtbl_1eff70, 0x001eff70)). Placeholder removed.
 
-// ClassWithUnknownVTable45  @ 0x005effa0  (11 slots)  refs x1  src:g_severusWorker3Vtbl
-// REALIZED as ??_7CSeverusWorker3@@6B@ (real polymorphic leaf-worker whose 3-arg
+// ClassWithUnknownVTable45  @ 0x005effa0  (11 slots)  refs x1  src:g_drawSubWorkerVtbl
+// REALIZED as ??_7CDrawSubWorker@@6B@ (real polymorphic leaf-worker whose 3-arg
 // ctor 0x158f30 cl-auto-stamps the vptr in src/Gruntz/CDDrawSubMgr.cpp;
-// VTBL(CSeverusWorker3, 0x001effa0)). Placeholder removed.
+// VTBL(CDrawSubWorker, 0x001effa0)). Placeholder removed.
 
 // ClassWithUnknownVTable46  @ 0x005effd0  (19 slots)  refs x2
 // REALIZED (stale placeholder removed): 0x1effd0 is already named
@@ -280,9 +280,9 @@ typedef void (*UnkVfn)(void);
 // Placeholder removed.
 
 // ClassWithUnknownVTable52  @ 0x005f0150  (18 slots)  refs x2  src:g_gameLevelVtbl
-// REALIZED as ??_7CGameLevel@@6B@ (real polymorphic CGameLevel : CSeverusWorker in
+// REALIZED as ??_7CGameLevel@@6B@ (real polymorphic CGameLevel : CLoadable in
 // src/Gruntz/GameLevel.cpp; cl auto-emits the 18-slot vtable + the two-phase vptr
-// stamp - base ??_7CSeverusWorker orphan then derived @0x5f0150). The matched slots
+// stamp - base ??_7CLoadable orphan then derived @0x5f0150). The matched slots
 // (ScalarDtor/IsLoaded/Unload/GetClassId + SetCoordsAndLoad38/3C/40/SetCoords/
 // SetCoordExtents/LoadWwd/LoadFromSource/LoadFromFile/ReleaseChildren) point at the
 // real methods; the base-thunk slots (0/2/3/4/6) reloc-mask.
@@ -306,10 +306,10 @@ typedef void (*UnkVfn)(void);
 // (Distinct from the 0xb0-byte collection CImageSet3 in CImageSet3.cpp - same name,
 // different class; that one owns no cl-emitted vtable.)
 
-// ClassWithUnknownVTable56  @ 0x005f0270  (12 slots)  refs x2  src:g_severusWorkerHostVtbl
-// REALIZED as ??_7CSeverusWorkerHost@@6B@ (real polymorphic CSeverusBase-derived host
-// in src/Gruntz/CSeverusWorkerHost.cpp; ctor 0x1615a0 / dtor 0x163af0 cl-auto-stamp;
-// VTBL(CSeverusWorkerHost, 0x001f0270)). Placeholder removed.
+// ClassWithUnknownVTable56  @ 0x005f0270  (12 slots)  refs x2  src:g_ddrawWorkerHostVtbl
+// REALIZED as ??_7CDDrawWorkerHost@@6B@ (real polymorphic CLoadable-derived host
+// in src/Gruntz/CDDrawWorkerHost.cpp; ctor 0x1615a0 / dtor 0x163af0 cl-auto-stamp;
+// VTBL(CDDrawWorkerHost, 0x001f0270)). Placeholder removed.
 
 // ClassWithUnknownVTable57  @ 0x005f02a8  (5 slots)  refs x4  src:g_wwdGridIterVtbl
 // REALIZED as ??_7CWwdGridIter@@6B@ (real polymorphic 5-slot CObject-style cursor in
@@ -374,8 +374,8 @@ typedef void (*UnkVfn)(void);
 //   0x5f07a8 CFader           dtor 0x17e480 / __purecall x2 (slots 1/2, pure) / 0x17e790 / 0x17e7a0
 //   0x5f07c0 CFader17e940     dtor 0x17e970 / 0x17ef00 / 0x17f120 / 0x17e790 / 0x17e7a0
 //   0x5f07d8 CFader17e940Sub  0x1bef01 / dtor 0x17f310 / 0x17f130 / 0x106e(ILT) / 0x4034(ILT)
-//            (this datum is also VTBL-bound as ??_7CSeverusWorkerX@@6B@ via the real
-//             ~CSeverusWorkerX 0x17f330 in src/Gruntz/SeverusWorkerDtor.cpp - same class)
+//            (this datum is also VTBL-bound as ??_7CRezBufferObject@@6B@ via the real
+//             ~CRezBufferObject 0x17f330 in src/Gruntz/RezBufferObjectDtor.cpp - same class)
 //   0x5f07f8 CFaderFlat       dtor 0x17f550 / 0x17f660 / 0x17f950 / 0x17e790 / 0x17e7a0
 //   0x5f0810 CFader17f9a0     dtor 0x17f9d0 / 0x17fc60 / 0x17fda0 / 0x17e790 / 0x17e7a0
 //   0x5f0848 CFaderSine       dtor 0x17fdd0 / 0x17ff30 / 0x180400 / 0x17e790 / 0x17e7a0

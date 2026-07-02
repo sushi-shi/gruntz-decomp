@@ -58,7 +58,7 @@ struct BucketHead {
 // every leaf dtor, and the destructible base subobject gives ~CWwdGrid its /GX
 // frame. The 4 non-dtor virtuals live in sibling TUs (declared, reloc-masked).
 // NO VTBL: ??_7CRemusBase masks the SHARED CObject vtable @0x5e8cb4 (already bound
-// as g_severusWorkerDtorVtbl in reconbatch2) - a per-class VTBL would dup-DATA.
+// as g_wapObjectDtorVtbl in reconbatch2) - a per-class VTBL would dup-DATA.
 SIZE_UNKNOWN(CRemusBase);
 struct CRemusBase {
     virtual void RemusV0(); // slot 0 (sub_1bef01)

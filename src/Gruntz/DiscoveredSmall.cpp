@@ -9,8 +9,8 @@
 // The engine __cdecl deallocator (operator delete; reloc-masked rel32). 0x1b9b82.
 extern "C" void RezFree(void* p);
 
-// The severus-worker teardown grand-base vtable (0x5e8cb4); stamped by address.
-extern void* g_severusWorkerDtorVtbl;
+// The wap-object teardown grand-base vtable (0x5e8cb4); stamped by address.
+extern void* g_wapObjectDtorVtbl;
 
 // ---------------------------------------------------------------------------
 // ClassUnknown_28 @0x0311b0 - a typed free-list push: subtract the node's link
@@ -123,7 +123,7 @@ void ClassUnknown_39::FreeBuffers() {
 }
 
 // ---------------------------------------------------------------------------
-// ClassUnknown_46 @0x1591b0 - severus-worker base init: seed m_4=-1, zero
+// ClassUnknown_46 @0x1591b0 - wap-object base init: seed m_4=-1, zero
 // m_8/m_c/m_10, stamp the grand-base dtor vptr. A void METHOD (keeps this in
 // ecx, eax=0; no mov eax,ecx) - see vptr-stamp-void-init-not-ctor.
 // ---------------------------------------------------------------------------
@@ -142,7 +142,7 @@ void ClassUnknown_46::BaseInit() {
     m_10 = 0;
     m_8 = 0;
     m_c = 0;
-    m_vptr = &g_severusWorkerDtorVtbl;
+    m_vptr = &g_wapObjectDtorVtbl;
 }
 
 // ---------------------------------------------------------------------------

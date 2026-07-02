@@ -201,11 +201,11 @@ fail:
 // + the polymorphic base (docs/patterns/eh-dtor-model-members-as-destructible.md).
 //
 // @early-stop
-// vptr-position wall (~94%, twin of CSeverusEntryList::~CSeverusEntryList): every
+// vptr-position wall (~94%, twin of CDDrawWorker::~CDDrawWorker): every
 // instruction matches retail EXCEPT the grand-base vptr re-stamp POSITION - cl emits
 // `mov [esi],??_7AlbusMapBase` BEFORE the m_04/m_08/m_0c resets (base-dtor entry
 // stamp), retail sinks it AFTER (verified llvm-objdump -dr base vs target on
-// CSeverusEntryList: base 0x41 stamp-then-resets, target 0x9a resets-then-stamp). The
+// CDDrawWorker: base 0x41 stamp-then-resets, target 0x9a resets-then-stamp). The
 // implicit base transition forces stamp-first; not source-steerable (the manual model
 // could write the stamp last, but that is the decompiler hack we are removing - real
 // devs' polymorphic shape per correctness-not-artifacts). Plus the reloc-masked EH

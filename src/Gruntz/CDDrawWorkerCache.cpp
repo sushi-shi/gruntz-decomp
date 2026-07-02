@@ -70,7 +70,7 @@ void operator delete(void*);
 
 // The CObject-like family grand-base (vptr + the three header fields +0x04..+0x0c).
 // Modeled as a REAL polymorphic base (its 5-slot vtable is the shared
-// g_severusWorkerDtorVtbl @0x5e8cb4) so cl emits the implicit grand-base vptr
+// g_wapObjectDtorVtbl @0x5e8cb4) so cl emits the implicit grand-base vptr
 // re-stamp (masks 0x5e8cb4) at the member-teardown dtor's tail - no manual
 // `*(void**)this = &g_*Vtbl`. Slot 1 is a REGULAR virtual (not a C++ dtor) so the
 // derived can override it with its explicit ??_G scalar-deleting destructor WITHOUT
@@ -203,7 +203,7 @@ void* CDDrawWorkerCache::ScalarDtor(i32 flag) {
 // SiriusCacheBase grand-base (field resets + implicit ??_7-base re-stamp masking
 // 0x5e8cb4). No manual stamp. /GX member-teardown frame from the destructible map.
 // @early-stop
-// vptr-position wall (~95%, twin of CDDrawSubMgrLeaf/CSeverusEntryList): every
+// vptr-position wall (~95%, twin of CDDrawSubMgrLeaf/CDDrawWorker): every
 // instruction matches retail EXCEPT the grand-base vptr re-stamp POSITION (cl emits
 // the base-dtor entry stamp before the m_04/m_08/m_0c resets; retail sinks it after)
 // + the reloc-masked EH-state/teardown/vtable symbol names. Logic complete.

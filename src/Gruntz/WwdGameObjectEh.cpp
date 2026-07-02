@@ -3,7 +3,7 @@
 // (docs/patterns/eh-dtor-multilevel-polymorphic-chain.md): a base CWwdGameObject
 // "Mid" level (vtable 0x5f0020) owns the four polymorphic worker pointers, a CString
 // name (+0xdc), and two RAII sentinel-handle members (EdgeA/EdgeB) whose call-free
-// dtors clear the base fields; its grand-base WwdSeverusBase (vtable 0x5e8cb4) just
+// dtors clear the base fields; its grand-base CWapObject (vtable 0x5e8cb4) just
 // re-stamps. The thin factory variants A/C/F derive from Mid (each with its own
 // most-derived vtable) and re-run the worker pass before folding Mid. cl emits the
 // per-level vptr re-stamps + /GX trylevel chain; the stamps reloc-mask against the
@@ -13,7 +13,7 @@
 #include <rva.h>
 
 // Reloc-masked engine vtable still referenced by the WwdSub member dtor (0x5e8cb4).
-extern void* g_severusWorkerDtorVtbl;
+extern void* g_wapObjectDtorVtbl;
 
 // An owned polymorphic worker. Its scalar-deleting destructor is vtable slot 1
 // (`mov eax,[ecx]; push 1; call [eax+4]`); declared-only (foreign vtable).
@@ -37,7 +37,7 @@ struct WwdSub {
     void DtorImpl(); // 0x15c2c0  __thiscall
     ~WwdSub() {
         DtorImpl();
-        m_vptr = &g_severusWorkerDtorVtbl;
+        m_vptr = &g_wapObjectDtorVtbl;
     }
     void* m_vptr; // 0x1a0
     i32 m_04;     // 0x1a4
@@ -84,18 +84,18 @@ inline WwdEdgeA::~WwdEdgeA() {
     b = -1;
 }
 
-// The severus-worker teardown grand-base (vtable 0x5e8cb4 = g_severusWorkerDtorVtbl).
+// The wap-object teardown grand-base (vtable 0x5e8cb4 = g_wapObjectDtorVtbl).
 // Just the vptr; empty explicit body (re-stamps only). Folded LAST, sinking the
-// severus vptr store to the function tail (it is preceded by call-free field writes).
-struct WwdSeverusBase {
-    virtual ~WwdSeverusBase();
+// base vptr store to the function tail (it is preceded by call-free field writes).
+struct CWapObject {
+    virtual ~CWapObject();
 };
-inline WwdSeverusBase::~WwdSeverusBase() {}
+inline CWapObject::~CWapObject() {}
 
 // A's embedded +0x1a0 command sub-object, modeled polymorphically: its own vtable
-// 0x5f0128, a member-teardown helper (0x15c2c0), an EdgeB sentinel, then the severus
+// 0x5f0128, a member-teardown helper (0x15c2c0), an EdgeB sentinel, then the wap-object base
 // base re-stamp folded in.
-struct WwdSubA : public WwdSeverusBase {
+struct WwdSubA : public CWapObject {
     ~WwdSubA();
     void DtorImpl(); // 0x15c2c0
     WwdEdgeB m_04;   // +0x04 (0x1a4/0x1a8/0x1ac)
@@ -107,9 +107,9 @@ inline WwdSubA::~WwdSubA() {
 // ---------------------------------------------------------------------------
 // 0x15b4f0 - the base ~CWwdGameObject ("Mid"): vtable 0x5f0020. Frees the four
 // workers, clears m_c0/m_d8 + the EdgeA shadow (groupX), then the CString member
-// dtor, then folds EdgeA, EdgeB and the severus grand-base (groupY + severus stamp).
+// dtor, then folds EdgeA, EdgeB and the wap-object grand base (groupY + base-vtable stamp).
 // ---------------------------------------------------------------------------
-class CWwdGameObjectE : public WwdSeverusBase {
+class CWwdGameObjectE : public CWapObject {
 public:
     ~CWwdGameObjectE(); // 0x15b4f0
 
@@ -145,7 +145,7 @@ inline CWwdGameObjectE::~CWwdGameObjectE() {
     m_20.c = (i32)0x80000000; // 0x5c
     m_20.a = (i32)0x80000000; // 0x20
     m_20.b = -1;              // 0x38
-    // m_dc (CString) destroyed as a member; then EdgeA, EdgeB, severus fold in.
+    // m_dc (CString) destroyed as a member; then EdgeA, EdgeB, base fold in.
 }
 
 // ---------------------------------------------------------------------------
@@ -167,7 +167,7 @@ public:
 
 // @early-stop
 // zero-register-pinning regalloc wall: three-level fold (A -> WwdSubA member ->
-// Mid -> severus) + trylevel chain reproduced; residual is the callee-saved const
+// Mid -> wap-object base) + trylevel chain reproduced; residual is the callee-saved const
 // register coloring across the two worker passes.
 RVA(0x0015b790, 0x1a6)
 CWwdGameObjectA::~CWwdGameObjectA() {
@@ -189,7 +189,7 @@ CWwdGameObjectA::~CWwdGameObjectA() {
 
 // ---------------------------------------------------------------------------
 // 0x15bad0 - the 0x159440-final variant: thin derived class (vtable 0x5f0060) on top
-// of Mid. Re-runs the worker pass + groupX, then folds Mid + severus.
+// of Mid. Re-runs the worker pass + groupX, then folds Mid + wap-object base.
 // ---------------------------------------------------------------------------
 class CWwdGameObjectF : public CWwdGameObjectE {
 public:
@@ -210,7 +210,7 @@ CWwdGameObjectF::~CWwdGameObjectF() {
     m_20.c = (i32)0x80000000; // 0x5c
     m_20.a = (i32)0x80000000; // 0x20
     m_20.b = -1;              // 0x38
-    // Mid (CWwdGameObjectE) folds the CString member + EdgeA/EdgeB + severus stamp.
+    // Mid (CWwdGameObjectE) folds the CString member + EdgeA/EdgeB + base-vtable stamp.
 }
 
 // ---------------------------------------------------------------------------
@@ -353,7 +353,7 @@ CWwdGameObjectB::~CWwdGameObjectB() {
 // ---------------------------------------------------------------------------
 // 0x15c070 - the 0x159250-final variant: thin derived class (vtable 0x5effd0) on top
 // of Mid; clears the byte flag m_18c, re-runs the worker pass + groupX, then folds
-// Mid + severus.
+// Mid + wap-object base.
 // ---------------------------------------------------------------------------
 class CWwdGameObjectC : public CWwdGameObjectE {
 public:
@@ -378,7 +378,7 @@ CWwdGameObjectC::~CWwdGameObjectC() {
     m_20.c = (i32)0x80000000; // 0x5c
     m_20.a = (i32)0x80000000; // 0x20
     m_20.b = -1;              // 0x38
-    // Mid (CWwdGameObjectE) folds the CString member + EdgeA/EdgeB + severus stamp.
+    // Mid (CWwdGameObjectE) folds the CString member + EdgeA/EdgeB + base-vtable stamp.
 }
 // Exact retail object sizes from the CWwdObjMgrFactories RezAlloc(0xNN) calls:
 // A=0x166640 (0x1dc), B=0x1598d0 (0x1fc), C=0x159250 (0x190), F=0x159440 (0x18c).
@@ -391,7 +391,7 @@ SIZE(CWwdGameObjectF, 0x18c);
 SIZE_UNKNOWN(WwdEdgeA);
 SIZE_UNKNOWN(WwdEdgeB);
 SIZE_UNKNOWN(WwdName);
-SIZE_UNKNOWN(WwdSeverusBase);
+SIZE_UNKNOWN(CWapObject);
 SIZE_UNKNOWN(WwdSub);
 SIZE_UNKNOWN(WwdSubA);
 SIZE_UNKNOWN(WwdWorker);

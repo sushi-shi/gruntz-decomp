@@ -6,9 +6,9 @@
 
 // ---------------------------------------------------------------------------
 // CDDrawSurfacePair - a surface-backed drawing region in the DDrawMgr "Remus"
-// image family. It derives from the engine SeverusWorker base (the same
+// image family. It derives from the engine CLoadable base (the same
 // polymorphic base CGameLevel derives from: its grand-base dtor vtable is
-// g_severusWorkerDtorVtbl == g_remusBaseDtorVtbl @0x5e8cb4). Its own vtable is
+// g_wapObjectDtorVtbl == g_remusBaseDtorVtbl @0x5e8cb4). Its own vtable is
 // @0x5eff30. It owns ONE held DDraw surface (a CPoolItemA, the CDDSurface
 // wrapper) borrowed from the parent CDirectDrawMgr's surface pool, plus a cached
 // pixel geometry (width @+0x10 / height @+0x14 / bpp @+0x18) and an x/y offset
@@ -35,7 +35,7 @@
 // The two vtables in the dtor chain: this class's own (0x5eff30) and the
 // grand-base dtor vtable (0x5e8cb4). Reloc-masked DATA externs (the manual
 // ---------------------------------------------------------------------------
-// CSurfacePairBase - the polymorphic SeverusWorker base. Real C++ virtual: the
+// CSurfacePairBase - the polymorphic CLoadable base. Real C++ virtual: the
 // implicit vptr sits at +0x00, the scalar-deleting dtor is slot 1, and the base
 // subobject dtor is EMPTY so cl emits ONLY the implicit grand-base re-stamp
 // (reloc-masks 0x5e8cb4) folded LAST into the leaf ~CDDrawSurfacePair. The base-

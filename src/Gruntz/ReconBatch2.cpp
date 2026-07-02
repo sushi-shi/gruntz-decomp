@@ -339,17 +339,17 @@ Font* Forward_115630() {
 
 // ===========================================================================
 // 0x0011e8dc (7B) - __thiscall vptr re-stamp: store the base dtor vtable
-// (g_severusWorkerDtorVtbl) into [this].
+// (g_wapObjectDtorVtbl) into [this].
 // ===========================================================================
 DATA(0x001e8cb4)
-extern void* g_severusWorkerDtorVtbl;
+extern void* g_wapObjectDtorVtbl;
 struct Obj_11e8dc {
     void* m_vptr; // +0x00
     void StampVtbl();
 };
 RVA(0x0011e8dc, 0x7)
 void Obj_11e8dc::StampVtbl() {
-    m_vptr = &g_severusWorkerDtorVtbl;
+    m_vptr = &g_wapObjectDtorVtbl;
 }
 // ===========================================================================
 // 0x0016f6e0 (118B) - __stdcall(src, dst): while the descriptor-defined flag bit

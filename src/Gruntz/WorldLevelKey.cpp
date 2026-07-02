@@ -16,7 +16,7 @@ public:
     i32 ResolveQualified(char* name, void* tag); // 0x13be40
 };
 
-// The loaded level record (CGameLevel / CSeverusWorker): Reset at vtable +0x44,
+// The loaded level record (CGameLevel / CLoadable): Reset at vtable +0x44,
 // the namespace-load hook at +0x3c, a dirty-flags word at +0x08, and the
 // non-virtual NotifyAllPlanes.
 class CGameLevel {

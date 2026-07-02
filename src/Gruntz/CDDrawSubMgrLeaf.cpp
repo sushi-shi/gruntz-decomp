@@ -312,7 +312,7 @@ CString CDDrawSubMgrLeaf::KeyOfValue_152d30(CObject* target) {
 // vptr-position wall + reloc-masked EH-state push (~95%): the instruction stream is
 // byte-identical to retail EXCEPT the grand-base re-stamp position (cl emits it before
 // the m_04/m_08/m_0c resets; retail sinks it after - the implicit base transition
-// forces stamp-first; same wall as CSeverusEntryList/CDDrawWorkerMapSmall) + the entry
+// forces stamp-first; same wall as CDDrawWorker/CDDrawWorkerMapSmall) + the entry
 // `push <ehfuncinfo>` reloc operand. docs/patterns/eh-state-numbering-base.md.
 RVA(0x001577e0, 0x68)
 CDDrawSubMgrLeaf::~CDDrawSubMgrLeaf() {

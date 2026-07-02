@@ -13,12 +13,12 @@
 extern "C" void* RezAlloc(u32 n);
 extern "C" void RezFree(void* p);
 
-// The severus-worker teardown grand-base vtable (0x5e8cb4); stamped by address.
-extern void* g_severusWorkerDtorVtbl;
+// The wap-object teardown grand-base vtable (0x5e8cb4); stamped by address.
+extern void* g_wapObjectDtorVtbl;
 
 // ---------------------------------------------------------------------------
 // Embedded base-subobject vptr restamp (member dtor of the grand-base): the
-// 7-byte `mov [this],&g_severusWorkerDtorVtbl; ret` leaf. Three distinct leaf
+// 7-byte `mov [this],&g_wapObjectDtorVtbl; ret` leaf. Three distinct leaf
 // classes share the identical shape.
 // ---------------------------------------------------------------------------
 struct SW_161460 {
@@ -27,7 +27,7 @@ struct SW_161460 {
 SIZE_UNKNOWN(SW_161460);
 RVA(0x00161460, 0x7)
 void SW_161460::Restamp() {
-    *(void**)this = &g_severusWorkerDtorVtbl;
+    *(void**)this = &g_wapObjectDtorVtbl;
 }
 
 struct SW_161560 {
@@ -36,7 +36,7 @@ struct SW_161560 {
 SIZE_UNKNOWN(SW_161560);
 RVA(0x00161560, 0x7)
 void SW_161560::Restamp() {
-    *(void**)this = &g_severusWorkerDtorVtbl;
+    *(void**)this = &g_wapObjectDtorVtbl;
 }
 
 struct SW_163a10 {
@@ -45,7 +45,7 @@ struct SW_163a10 {
 SIZE_UNKNOWN(SW_163a10);
 RVA(0x00163a10, 0x7)
 void SW_163a10::Restamp() {
-    *(void**)this = &g_severusWorkerDtorVtbl;
+    *(void**)this = &g_wapObjectDtorVtbl;
 }
 
 // ---------------------------------------------------------------------------

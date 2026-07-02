@@ -1,23 +1,23 @@
 #include <rva.h>
-// CSeverusEntryList.cpp - the owned-collection node of the DDrawMgr "severus worker"
+// CDDrawWorker.cpp - the owned-collection node of the DDrawMgr "DDraw worker"
 // family (placeholder name; engine "ClassUnknown_35"). Non-RTTI engine class;
-// vtable @0x5efbe8 (g_severusEntryListVtbl), grand-base dtor vtable
-// g_severusBaseDtorVtbl @0x5e8cb4. See include/Gruntz/CSeverusEntryList.h.
+// vtable @0x5efbe8 (g_ddrawWorkerVtbl), grand-base dtor vtable
+// g_wapObjectDtorVtbl @0x5e8cb4. See include/Gruntz/CDDrawWorker.h.
 //
 // Two methods (retail-RVA order):
 //   0x151eb0  DeleteAll        (delete every owned element, RemoveAll, seed sentinels)
-//   0x1557a0  ~CSeverusEntryList (stamp own vtbl, DeleteAll, ~CObArray member, base)
+//   0x1557a0  ~CDDrawWorker (stamp own vtbl, DeleteAll, ~CObArray member, base)
 //
-// The CSeverusWorker-shaped base subobject + the destructible CObArray member give
+// The CLoadable-shaped base subobject + the destructible CObArray member give
 // the dtor its /GX EH frame (cf. CWwdGrid::~CWwdGrid @0x1682a0).
 #include <Mfc.h> // /GX EH-frame helpers
 
-#include <Gruntz/CSeverusEntryList.h>
+#include <Gruntz/CDDrawWorker.h>
 
-// The class is real-polymorphic: cl emits ??_7CSeverusBase (grand-base @0x5e8cb4)
+// The class is real-polymorphic: cl emits ??_7CLoadable (grand-base @0x5e8cb4)
 // + the derived vtable @0x5efbe8 implicitly. Both former manual externs
-// (g_severusEntryListVtbl / g_severusBaseDtorVtbl) were dead here and are removed;
-// the derived vtable 0x1efbe8 is named by VTBL(SeverusWorkerObj) in
+// (g_ddrawWorkerVtbl / g_wapObjectDtorVtbl) were dead here and are removed;
+// the derived vtable 0x1efbe8 is named by VTBL(CDDrawWorker) in
 // CDDrawWorkerRegistry.cpp (same retail class, fuller 17-slot model).
 
 // ===========================================================================
@@ -26,9 +26,9 @@
 // sentinel (99999) and clear +0x68. Plain /O2 leaf (no EH frame).
 // ===========================================================================
 RVA(0x00151eb0, 0x43)
-void CSeverusEntryList::DeleteAll() {
+void CDDrawWorker::DeleteAll() {
     for (i32 i = 0; i < m_items.m_nSize; i++) {
-        SeverusObject* el = m_items.m_pData[i];
+        CWorkerElement* el = m_items.m_pData[i];
         if (el != 0) {
             (el->*(el->m_vptr->m_deleteDtor))(1);
         }
@@ -39,28 +39,28 @@ void CSeverusEntryList::DeleteAll() {
 }
 
 // ===========================================================================
-// 0x1557a0 - ~CSeverusEntryList: stamp own vtable, run DeleteAll (most-derived
-// teardown), then the CObArray member destructs and ~CSeverusBase folds in
+// 0x1557a0 - ~CDDrawWorker: stamp own vtable, run DeleteAll (most-derived
+// teardown), then the CObArray member destructs and ~CLoadable folds in
 // (resets m_04/m_08/m_0c, restores the grand-base vtable). /GX frame from the
 // destructible base+member.
 // ===========================================================================
 // @early-stop
-// Vtable recovery applied (real polymorphic CSeverusBase): own-vptr stamp + trylevel
-// chain now compiler-emitted and byte-identical through ~SeverusObArray. Residual is
-// the grand-base vptr-stamp POSITION: cl places `mov [esi],??_7CSeverusBase` before
+// Vtable recovery applied (real polymorphic CLoadable): own-vptr stamp + trylevel
+// chain now compiler-emitted and byte-identical through ~CWorkerObArray. Residual is
+// the grand-base vptr-stamp POSITION: cl places `mov [esi],??_7CLoadable` before
 // the m_04/m_08/m_0c field writes; retail sinks it after (same stamp-scheduling wall
 // as CWwdGameObjectE 0x15b4f0). Moving the fields to a derived member would sink the
 // stamp but add a trylevel state that mismatches retail's 1->0. ~95%.
 RVA(0x001557a0, 0x68)
-CSeverusEntryList::~CSeverusEntryList() {
+CDDrawWorker::~CDDrawWorker() {
     DeleteAll();
-    // m_items.~SeverusObArray() (trylevel 0) + ~CSeverusBase() (field resets +
+    // m_items.~CWorkerObArray() (trylevel 0) + ~CLoadable() (field resets +
     // grand-base vtable stamp) fold here.
 }
 
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
-SIZE_UNKNOWN(CSeverusBase);
-SIZE_UNKNOWN(CSeverusEntryList);
-SIZE_UNKNOWN(SeverusObArray);
-SIZE_UNKNOWN(SeverusObject);
+SIZE_UNKNOWN(CLoadable);
+SIZE_UNKNOWN(CDDrawWorker);
+SIZE_UNKNOWN(CWorkerObArray);
+SIZE_UNKNOWN(CWorkerElement);

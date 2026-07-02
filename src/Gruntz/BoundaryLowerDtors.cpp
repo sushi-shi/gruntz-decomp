@@ -3,7 +3,7 @@
 // destructible base/member subobjects force the synchronous-EH (/GX) frame the
 // retail compiler emits (push -1 / push handler / fs:0 chain + state writes). The
 // owning class names are placeholders; only OFFSETS + code bytes are load-bearing.
-// Vtable stamps + member-dtor callees reloc-mask. (See SeverusWorkerDtor.cpp.)
+// Vtable stamps + member-dtor callees reloc-mask. (See RezBufferObjectDtor.cpp.)
 #include <Ints.h>
 #include <rva.h>
 
@@ -14,7 +14,7 @@ void RezFree39f20(void* p); // 0x1b9b82
 // ===========================================================================
 // 0x039f20 - ~CWorker39f20 (/GX): stamp the derived vtable (0x5e971c), RezFree the
 // +0x04 heap buffer, then fold the CObject base subobject (restamp the base dtor
-// vtable 0x5e8cb4). Byte-shape identical to ~CSeverusWorkerX. __thiscall.
+// vtable 0x5e8cb4). Byte-shape identical to ~CRezBufferObject. __thiscall.
 // ===========================================================================
 struct WorkerBase39f20 {
     virtual ~WorkerBase39f20(); // base vptr @ +0x00 (folds 0x5e8cb4)

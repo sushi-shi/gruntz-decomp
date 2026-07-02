@@ -110,7 +110,7 @@ public:
 
 // ---------------------------------------------------------------------------
 // The 0x158xxx-0x15c970 discovered cluster is a DISTINCT, LARGER class than the
-// small CDDrawSubMgr above (verified: that class's vtable is g_severusWorkerBaseVtbl
+// small CDDrawSubMgr above (verified: that class's vtable is g_loadableVtbl
 // with fields at 0x04/0x08/0x0c; the cluster reads 0x0c/0x10/0x14/0x18/0x2c/0x48/0x54
 // and is constructed by Constructor_157630, whose vtable is g_remusBaseDtorVtbl).
 // The cluster carries TWO objects:
@@ -2398,37 +2398,37 @@ CWwdSlot9c::CWwdSlot9c() {
     m_08 = 0;
 }
 
-// The severus worker base vtable (stamped last in the wide-object dtors).
+// The DDraw worker base vtable (stamped last in the wide-object dtors).
 // Reloc-masked DATA extern (RVA = VA - 0x400000). The leaf-worker vtable (0x5effa0)
-// is now the cl-emitted ??_7CSeverusWorker3 (real-polymorphic; VTBL below).
+// is now the cl-emitted ??_7CDrawSubWorker (real-polymorphic; VTBL below).
 DATA(0x001e8cb4)
-extern void* g_severusWorkerDtorVtbl; // 0x5e8cb4
+extern void* g_wapObjectDtorVtbl; // 0x5e8cb4
 
 // 0x158f30: 3-arg leaf-worker ctor — store the three args at +0x4/+0x8/+0xc,
 // stamp the leaf vtable (cl-implicit vptr-first), zero +0x10.  __thiscall, ret 0xc.
-// Real-polymorphic now: the single virtual forces cl to emit ??_7CSeverusWorker3 +
-// auto-stamp the vptr in the ctor prologue (was a manual g_severusWorker3Vtbl store,
+// Real-polymorphic now: the single virtual forces cl to emit ??_7CDrawSubWorker +
+// auto-stamp the vptr in the ctor prologue (was a manual g_drawSubWorkerVtbl store,
 // vptr-middle -> vptr-first regression accepted per the all-vtables mandate).
-struct CSeverusWorker3 {
+struct CDrawSubWorker {
     virtual void v0(); // implicit vptr @ +0x00 (own vtable reloc-masks 0x5effa0)
     i32 m_04;          // +0x04
     i32 m_08;          // +0x08
     i32 m_0c;          // +0x0c
     i32 m_10;          // +0x10
-    CSeverusWorker3(i32 a1, i32 a2, i32 a3);
+    CDrawSubWorker(i32 a1, i32 a2, i32 a3);
 };
 RVA(0x00158f30, 0x27)
-CSeverusWorker3::CSeverusWorker3(i32 a1, i32 a2, i32 a3) {
+CDrawSubWorker::CDrawSubWorker(i32 a1, i32 a2, i32 a3) {
     m_04 = a2;
     m_08 = a3;
     m_0c = a1;
     m_10 = 0;
 }
-VTBL(CSeverusWorker3, 0x001effa0); // ??_7CSeverusWorker3 (was g_severusWorker3Vtbl)
+VTBL(CDrawSubWorker, 0x001effa0); // ??_7CDrawSubWorker (was g_drawSubWorkerVtbl)
 
-// 0x158fb0: severus worker base re-init — +0x4 = -1, +0x8/+0xc/+0x10 = 0, stamp
+// 0x158fb0: DDraw worker base re-init — +0x4 = -1, +0x8/+0xc/+0x10 = 0, stamp
 // the base vtable.  A void method (keeps `this` in ecx; not a ctor).  ret 0.
-class CSeverusWorkerBase {
+class CDrawSubWorkerBase {
 public:
     void* m_vtbl; // +0x00
     i32 m_04;     // +0x04
@@ -2438,12 +2438,12 @@ public:
     void Init_158fb0();
 };
 RVA(0x00158fb0, 0x19)
-void CSeverusWorkerBase::Init_158fb0() {
+void CDrawSubWorkerBase::Init_158fb0() {
     m_04 = -1;
     m_10 = 0;
     m_08 = 0;
     m_0c = 0;
-    m_vtbl = &g_severusWorkerDtorVtbl;
+    m_vtbl = &g_wapObjectDtorVtbl;
 }
 
 // 0x15bfb0: rect-overlap predicate (RECT a, RECT b): true iff a.left <= b.right,
@@ -2605,8 +2605,8 @@ SIZE_UNKNOWN(CDDrawWorkerNode);
 SIZE_UNKNOWN(CQueueDrainHost);
 SIZE_UNKNOWN(CQueueProbeData);
 SIZE_UNKNOWN(CQueueProbeNode);
-SIZE_UNKNOWN(CSeverusWorker3);
-SIZE_UNKNOWN(CSeverusWorkerBase);
+SIZE_UNKNOWN(CDrawSubWorker);
+SIZE_UNKNOWN(CDrawSubWorkerBase);
 SIZE_UNKNOWN(CWwdArchive);
 SIZE_UNKNOWN(CWwdBox);
 SIZE_UNKNOWN(CWwdCmdMap);

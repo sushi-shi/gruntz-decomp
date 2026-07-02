@@ -48,7 +48,7 @@ void* operator new(u32 n);
 void operator delete(void* p);
 // The Rez heap free (0x1b9b82, __cdecl). C++ linkage (NOT extern "C") so MSVC5
 // treats it as potentially-throwing and keeps the /GX base-subobject unwind frame
-// in the primary dtor (same convention as SeverusWorkerDtor.cpp / BoundaryUpper*Eh.cpp).
+// in the primary dtor (same convention as RezBufferObjectDtor.cpp / BoundaryUpper*Eh.cpp).
 void RezFree(void* p);
 
 // ---------------------------------------------------------------------------

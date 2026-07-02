@@ -116,14 +116,14 @@ struct PlaneGeom {
     void RecomputePlaneCoords();
 };
 
-// The two-phase vptr stores are now cl-emitted: the inlined CSeverusWorker ctor (in
-// GameLevel.h) auto-stamps the base vptr (&??_7CSeverusWorker, orphan reloc-masked
+// The two-phase vptr stores are now cl-emitted: the inlined CLoadable ctor (in
+// GameLevel.h) auto-stamps the base vptr (&??_7CLoadable, orphan reloc-masked
 // against retail 0x5efc30) and the derived CGameLevel ctor auto-stamps the derived
 // vptr (&??_7CGameLevel, bound @0x5f0150 via VTBL below) after the three array
 // members are constructed. The only remaining manual vtable store is the grand-base
-// teardown vftable ~CSeverusWorker restamps after the member dtors run (@0x5e8cb4).
+// teardown vftable ~CLoadable restamps after the member dtors run (@0x5e8cb4).
 DATA(0x001e8cb4)
-extern void* g_severusWorkerDtorVtbl;
+extern void* g_wapObjectDtorVtbl;
 
 // The "unset" sentinel the ctor writes into the coord record's min corner; the
 // readiness predicate (IsLoaded) tests for it and Unload restores it.
@@ -153,8 +153,8 @@ static inline void StampParamBlock(CGameLevel* o) {
 
 // ===========================================================================
 // CGameLevel ("UnknownRemus") constructor. Three args (ret 0xc): they land at
-// +0x4, +0x8, +0xc. Inlined base ctor (CSeverusWorker, in the header) stamps the
-// SeverusWorker base vftable @0x5efc30 and the args, then the three MFC arrays at
+// +0x4, +0x8, +0xc. Inlined base ctor (CLoadable, in the header) stamps the
+// CLoadable base vftable @0x5efc30 and the args, then the three MFC arrays at
 // +0x20/+0x34/+0x48 are constructed, then the derived CGameLevel vftable @0x5f0150
 // is stamped and the +0x10 sentinel, the +0x5c/+0x60 main-plane fields, the
 // +0x64/+0x68 pair (0x40), and the shared +0xb0..+0xdc default-parameter block are
@@ -163,7 +163,7 @@ static inline void StampParamBlock(CGameLevel* o) {
 //
 // @early-stop
 // store-scheduling / EH-state-base entropy plateau + cl-emitted two-phase vptr.
-// The two vptr stores are now cl-generated (base ??_7CSeverusWorker orphan + derived
+// The two vptr stores are now cl-generated (base ??_7CLoadable orphan + derived
 // ??_7CGameLevel @0x5f0150), the derived store now matching retail's &0x5f0150 exactly.
 // Residue is the same funcinfo EH-state numbering base shift (retail tags the three
 // array ctors 0/1/2; cl uses the -1 entry state then 0/1) plus one immediate (0xfa)
@@ -171,7 +171,7 @@ static inline void StampParamBlock(CGameLevel* o) {
 // all offsets + the two-phase construction + CFG + the EH frame are exact; not
 // source-steerable (matching-patterns.md §entropy).
 RVA(0x0015ccd0, 0x118)
-CGameLevel::CGameLevel(i32 a1, i32 a2, i32 a3) : CSeverusWorker(a1, a2, a3) {
+CGameLevel::CGameLevel(i32 a1, i32 a2, i32 a3) : CLoadable(a1, a2, a3) {
     m_scrollStepX = 0x40;
     m_scrollStepY = 0x40;
     m_b4 = 250;
@@ -467,13 +467,13 @@ void* CGameLevel::ScalarDtor(u32 flags) {
 // ---------------------------------------------------------------------------
 // Destructor: cl auto-stamps the derived vftable @0x5f0150 at dtor entry
 // (polymorphic), then runs the level cleanup, lets the three array members destruct
-// (reverse construction order), then ~CSeverusWorker restores the base subobject
+// (reverse construction order), then ~CLoadable restores the base subobject
 // (resets m_04/m_flags/m_owner + the grand-base dtor vftable @0x5e8cb4). The
 // destructible array members give the /GX EH frame.
 RVA(0x001611e0, 0x82)
 CGameLevel::~CGameLevel() {
     Unload(); // level cleanup (releases children, clears the header)
-    // m_imageSets / m_planes / m_array20 auto-destruct here; ~CSeverusWorker follows.
+    // m_imageSets / m_planes / m_array20 auto-destruct here; ~CLoadable follows.
 }
 
 // ---------------------------------------------------------------------------
@@ -752,10 +752,10 @@ CImageSet* CGameLevel::ReadImageSet(void* record) {
 // CImageSet1::DtorBase (0x161370) - the base-subobject destructor invoked by the
 // scalar-deleting-destructor (g_imageSet1Vtbl slot +0x04, unmatched). The base
 // has no members, so it only restamps the base-subobject (CObject-like) dtor
-// vftable @0x5e8cb4 - the same table the level family's ~CSeverusWorker restores.
+// vftable @0x5e8cb4 - the same table the level family's ~CLoadable restores.
 RVA(0x00161370, 0x7)
 void CImageSet1::DtorBase() {
-    *(void**)this = &g_severusWorkerDtorVtbl;
+    *(void**)this = &g_wapObjectDtorVtbl;
 }
 
 // CImageSet1::Parse (0x166d40, g_imageSet1Vtbl slot +0x14). Copies three dwords

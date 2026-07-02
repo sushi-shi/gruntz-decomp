@@ -21,9 +21,9 @@ inline void* operator new(u32, void* p) {
     return p;
 } // placement new (construct-in-place; no allocation)
 
-// The severus-worker teardown grand-base vtable (0x5e8cb4); stamped by address
+// The wap-object teardown grand-base vtable (0x5e8cb4); stamped by address
 // (named elsewhere, reloc-masked).
-extern void* g_severusWorkerDtorVtbl;
+extern void* g_wapObjectDtorVtbl;
 
 // ---------------------------------------------------------------------------
 // 0x184b70 - global-object tail-forward: load the singleton address into ecx and
@@ -158,7 +158,7 @@ void CDDrawWorkerA::Reset() {
     m_4 = -1;
     m_8 = 0;
     m_c = 0;
-    *(void**)this = &g_severusWorkerDtorVtbl;
+    *(void**)this = &g_wapObjectDtorVtbl;
 }
 
 struct CDDrawWorkerB {
@@ -193,7 +193,7 @@ void CDDrawWorkerB::Reset() {
     m_4 = -1;
     m_8 = 0;
     m_c = 0;
-    *(void**)this = &g_severusWorkerDtorVtbl;
+    *(void**)this = &g_wapObjectDtorVtbl;
 }
 
 // ---------------------------------------------------------------------------

@@ -89,7 +89,9 @@ cddrawsubmgrleafscan	17	6
 cddrawsurfacemgr	9	6
 cddrawsurfacemgrserialize	2	0
 cddrawsurfacepair	9	3
+cddrawworker	2	1
 cddrawworkercache	4	2
+cddrawworkerhost	2	1
 cddrawworkerlist	11	5
 cddrawworkermapsmall	11	6
 cddrawworkerregistry	26	14
@@ -158,6 +160,8 @@ cluster0c	3	2
 cmdscrollapply	2	2
 cmenustate	3	2
 cmgrsettings	1	0
+cmovieplayer	1	1
+cmovieplayereh	1	0
 cmovinglogicctor	1	0
 cmovinglogicdtor	1	1
 cmovinglogicserial	3	1
@@ -185,10 +189,6 @@ cscanlinesurface	4	1
 cscanlinesurfacesave	1	0
 csecretleveltrigger	4	3
 cserialsub34	1	0
-cseverusentrylist	2	1
-cseverusworker	1	1
-cseverusworkereh	1	0
-cseverusworkerhost	2	1
 csimpleanimation	4	3
 csingleanimation	1	1
 csingleframemessage	2	1
@@ -408,6 +408,7 @@ recordfill	1	1
 reghelpers	2	0
 registry23	1	0
 registryhelper	8	8
+rezbufferobjectdtor	1	1
 rezcoll	2	2
 rezfile	6	6
 rezlist	2	2
@@ -445,7 +446,6 @@ sbi_warlordhead_eh	1	1
 sbi_wellgoo	1	0
 sbi_wellgoo_eh	1	1
 scattersamples	2	1
-severusworkerdtor	1	1
 sfselectdevice	1	0
 shadedescrtable	2	0
 shadetablecache	19	4
@@ -689,7 +689,7 @@ boundarylowerthunks	?FontForward115730@@YAXXZ	100.0000	100.0000	1	f375fb2dcb43	0
 boundarylowerthunks	?FontForward1157b0@@YAXXZ	100.0000	100.0000	1	e2e4947ee163	0x1157b0
 boundarylowerthunks	?Forwardb5400@@YAXXZ	100.0000	100.0000	1	293ce7f17772	0xb5400
 boundarylowerthunks	?Forwardbd430@@YAXXZ	100.0000	100.0000	1	952f2eae266a	0xbd430
-boundarylowerthunks	?Init@CInitd5d70@@QAEXXZ	100.0000	100.0000	1	75efecd10623	0xd5d70
+boundarylowerthunks	?Init@CInitd5d70@@QAEXXZ	100.0000	100.0000	2	b778b232fd88	0xd5d70
 boundarylowerthunks	?IsOne@CPred1182f0@@QAEHXZ	100.0000	100.0000	1	b47d0c64ddb0	0x1182f0
 boundarylowerthunks	?NotNull118310@@YAHPAX@Z	100.0000	100.0000	1	9f2ad358fc8e	0x118310
 boundarylowerthunks	?RegRange3a530@@YAXXZ	100.0000	100.0000	1	89448b3c0d30	0x3a530
@@ -769,9 +769,9 @@ boundaryupper	?Get@Snd_137300@@QAEHXZ	100.0000	100.0000	2	003b1784dd1b	0x137300
 boundaryupper	?Notify@B_151d20@@QAEHPAX@Z	100.0000	100.0000	2	5deea663d9cd	0x151d20
 boundaryupper	?PopcountIsOne_145e00@@YAHH@Z	100.0000	100.0000	2	3bcb44686bf8	0x145e00
 boundaryupper	?Release@B_1614b0@@QAEXXZ	100.0000	100.0000	2	f844be0f938f	0x1614b0
-boundaryupper	?Restamp@SW_161460@@QAEXXZ	100.0000	100.0000	2	68ba949f9d55	0x161460
-boundaryupper	?Restamp@SW_161560@@QAEXXZ	100.0000	100.0000	2	7ec9ed2f25ed	0x161560
-boundaryupper	?Restamp@SW_163a10@@QAEXXZ	100.0000	100.0000	2	9f90fad449bc	0x163a10
+boundaryupper	?Restamp@SW_161460@@QAEXXZ	100.0000	100.0000	3	e72dbf763264	0x161460
+boundaryupper	?Restamp@SW_161560@@QAEXXZ	100.0000	100.0000	3	0596ddd8793d	0x161560
+boundaryupper	?Restamp@SW_163a10@@QAEXXZ	100.0000	100.0000	3	a62c6e36874b	0x163a10
 boundaryupper	?Scale@B_1413c0@@QAEHH@Z	100.0000	100.0000	2	93ee77ef7966	0x1413c0
 boundaryupper	?Scan@RezItm@@QAEHXZ	100.0000	100.0000	2	386aa44a1f14	0x13c8a0
 boundaryupper	?Set@B_13dee0@@QAEXH@Z	100.0000	100.0000	2	11b159436744	0x13dee0
@@ -794,8 +794,8 @@ boundaryupper2	?Init@CDDPageMgr@@QAEHXZ	100.0000	100.0000	2	cbd1a910d64f	0x17b51
 boundaryupper2	?Lookup@CDDPageMgr@@QAEHI@Z	100.0000	100.0000	2	bf16a6dde231	0x17b840
 boundaryupper2	?PackTag_13b910@@YGIPBD@Z	100.0000	100.0000	2	8b7d6cc7721d	0x13b910
 boundaryupper2	?Remove@CSymTab13a530@@QAEHPAUSymEntry1@@PAUSymEntry2@@@Z	100.0000	100.0000	1	c07f076aa7b8	0x13a530
-boundaryupper2	?Reset@CDDrawWorkerA@@QAEXXZ	90.3333	90.3333	1	40f37a3cc83b	0x1570d0
-boundaryupper2	?Reset@CDDrawWorkerB@@QAEXXZ	90.3333	90.3333	1	9785dac91f99	0x157240
+boundaryupper2	?Reset@CDDrawWorkerA@@QAEXXZ	90.3333	90.3333	2	da74f4a4ee5a	0x1570d0
+boundaryupper2	?Reset@CDDrawWorkerB@@QAEXXZ	90.3333	90.3333	2	cb36c6012014	0x157240
 boundaryupper2	?Restore@CDDSurf13e7d0@@QAEHPAXH@Z	100.0000	100.0000	2	002663bb3954	0x13e7d0
 boundaryupper2	?Restore@SndDevice@@QAEHXZ	100.0000	100.0000	2	28a376b94187	0x137200
 boundaryupper2	?RestoreLostSurfaces_1437f0@@YAHXZ	100.0000	100.0000	2	4d056768e59c	0x1437f0
@@ -994,7 +994,7 @@ cddrawshadeblit	?ConvertRowDouble@CDDrawShadeBlit@@QAEXPAE0HH@Z	48.5688	48.5688	
 cddrawshadeblit	?ConvertRowDoubleFwd@CDDrawShadeBlit@@QAEXPAE0HH@Z	55.6711	55.6711	2	5ec2c863d65d	0x14d5e0
 cddrawshadeblit	?ConvertRowFlip@CDDrawShadeBlit@@QAEXPAE0H@Z	52.6972	52.6972	2	1e8774686369	0x14cfc0
 cddrawsubmgr	??0CDDrawSubMgr@@QAE@PAVCDDrawSurfaceMgr@@HH@Z	100.0000	100.0000	6	af4f6a250fe2	0x156cb0
-cddrawsubmgr	??0CSeverusWorker3@@QAE@HHH@Z	96.3000	96.3000	2	2ecdb763d4fa	0x158f30
+cddrawsubmgr	??0CDrawSubWorker@@QAE@HHH@Z	96.3000	96.3000	1	905e1c94e386	0x158f30
 cddrawsubmgr	??0CWwdSlot9c@@QAE@XZ	100.0000	100.0000	1	4f0c763b7d4a	0x15b2a0
 cddrawsubmgr	??1CDDrawRegistryDtorHost@@QAE@XZ	94.8750	94.8750	1	5e8b984f549d	0x156e10
 cddrawsubmgr	??1CDDrawSubMgr@@UAE@XZ	100.0000	100.0000	5	450d3140b22a	0x1574d0
@@ -1015,7 +1015,7 @@ cddrawsubmgr	?FindByWorker_15a860@CWwdObjMgr@@QAEPAVCWwdObject@@HPAX@Z	85.9091	8
 cddrawsubmgr	?ForEachDispatch_15ac20@CWwdObjMgr@@QAEHHHH@Z	100.0000	100.0000	1	ad4a80665824	0x15ac20
 cddrawsubmgr	?ForEachProbe_15acb0@CWwdObjMgr@@QAEHHH@Z	100.0000	100.0000	1	bcbd79c191fb	0x15acb0
 cddrawsubmgr	?ForEachSerialize_15b020@CWwdObjMgr@@QAEHPAVCWwdArchive@@H@Z	90.1266	90.1266	1	0dc7dfa03953	0x15b020
-cddrawsubmgr	?Init_158fb0@CSeverusWorkerBase@@QAEXXZ	100.0000	100.0000	1	4a761d47e807	0x158fb0
+cddrawsubmgr	?Init_158fb0@CDrawSubWorkerBase@@QAEXXZ	100.0000	100.0000	1	13ff48d34610	0x158fb0
 cddrawsubmgr	?Init_15c290@CDDrawBlitParam@@QAEXPAVCDDrawBlitParamSrc@@@Z	94.7500	94.7500	2	03cefac5ad07	0x15c290
 cddrawsubmgr	?InsertSorted_159e40@CWwdObjMgr@@QAEXPAVCWwdObject@@H@Z	97.7465	97.7465	1	1019106e2d3d	0x159e40
 cddrawsubmgr	?Method_158b40@CDDrawWorkerMgr@@QAEHHH@Z	100.0000	100.0000	3	bf1eab5bac0f	0x158b40
@@ -1112,10 +1112,14 @@ cddrawsurfacepair	?Probe_164660@CDDrawSurfacePair@@QAEHXZ	99.0909	99.0909	4	4665
 cddrawsurfacepair	?RestoreIfLost@CDDrawSurfacePair@@QAEHXZ	98.6667	98.6667	2	8c6f21f8eece	0x163f00
 cddrawsurfacepair	?TeardownSurface@CDDrawSurfacePair@@QAEXXZ	100.0000	100.0000	2	df8a633d06c8	0x163e20
 cddrawsurfacepair	?directx_wrapper_caller_1644a0_DirectDrawCreate_DirectDrawEnumerateA@CDDrawSurfacePair@@QAEHHHH@Z	87.4172	87.4172	3	69c49b464f06	0x1644a0
+cddrawworker	??1CDDrawWorker@@UAE@XZ	94.8750	94.8750	1	5cdfcc8a13a6	0x1557a0
+cddrawworker	?DeleteAll@CDDrawWorker@@QAEXXZ	100.0000	100.0000	1	40113baa6093	0x151eb0
 cddrawworkercache	??1CDDrawWorkerCache@@QAE@XZ	94.8750	94.8750	1	5336fb38d514	0x157720
 cddrawworkercache	?ScalarDtor@CDDrawWorkerCache@@UAEPAXH@Z	100.0000	100.0000	1	ecfc4338209c	0x157700
 cddrawworkercache	?VirtualMethodUnknown20@CDDrawWorkerCache@@UAEHXZ	100.0000	100.0000	1	8b0bc0260838	0x1576f0
 cddrawworkercache	?VirtualMethodUnknown24@CDDrawWorkerCache@@UAEPAXHPBDH@Z	54.6071	54.6071	1	5d1d5af84489	0x1652c0
+cddrawworkerhost	??0CDDrawWorkerHost@@QAE@HHH@Z	100.0000	100.0000	1	e8aede4e2564	0x1615a0
+cddrawworkerhost	??1CDDrawWorkerHost@@UAE@XZ	85.7500	85.7500	1	9fd90e770fe7	0x163af0
 cddrawworkerlist	??1CDDrawWorkerList@@QAE@XZ	100.0000	100.0000	1	8d1c7e634d56	0x163bc0
 cddrawworkerlist	??1CDDrawWorkerListSib@@QAE@XZ	40.7083	40.7083	1	b17051bafc4d	0x156f50
 cddrawworkerlist	?Stub_156fc0@CDDrawWorkerList@@QAEHXZ	100.0000	100.0000	1	7bbd0db2c3bb	0x156fc0
@@ -1138,32 +1142,32 @@ cddrawworkermapsmall	?VirtualMethodUnknown1C@CDDrawWorkerMapSmall@@UAEXXZ	100.00
 cddrawworkermapsmall	?VirtualMethodUnknown20@CDDrawWorkerMapSmall@@QAEHXZ	100.0000	100.0000	4	c67f64804f62	0x157600
 cddrawworkermapsmall	?VirtualMethodUnknown28@CDDrawWorkerMapSmall@@UAEPAXHPBDH@Z	66.0652	66.0652	2	13cb4511d36f	0x165990
 cddrawworkermapsmall	?VirtualMethodUnknown2C@CDDrawWorkerMapSmall@@UAEPAXHPBDH@Z	66.0652	66.0652	2	8549646001ee	0x165a10
-cddrawworkerregistry	?AnyValueMatches_155630@CDDrawWorkerRegistry@@QAEHHHH@Z	75.8769	75.8769	3	a0cbab8747a3	0x155630
-cddrawworkerregistry	?FindKeyOfValue_165360@CDDrawWorkerRegistry@@QAE?AVCString@@PAVSeverusMapValue@@@Z	79.0556	79.0556	3	217d17f66d4d	0x165360
+cddrawworkerregistry	?AnyValueMatches_155630@CDDrawWorkerRegistry@@QAEHHHH@Z	75.8769	75.8769	4	5a50a258a6a4	0x155630
+cddrawworkerregistry	?FindKeyOfValue_165360@CDDrawWorkerRegistry@@QAE?AVCString@@PAVCWorkerMapValue@@@Z	79.0556	79.0556	1	99180d733d64	0x165360
 cddrawworkerregistry	?HasKeyEqual_155550@CDDrawWorkerRegistry@@QAEHPBD@Z	61.3571	61.3571	3	04c3a39c106a	0x155550
-cddrawworkerregistry	?MapTeardown_1552b0@CDDrawWorkerRegistry@@QAEXXZ	100.0000	100.0000	6	69eae736e69c	0x1552b0
-cddrawworkerregistry	?RemoveKeysEqual_155360@CDDrawWorkerRegistry@@QAEHPBD0@Z	91.6667	91.6667	3	90a3a204f3ac	0x155360
+cddrawworkerregistry	?MapTeardown_1552b0@CDDrawWorkerRegistry@@QAEXXZ	100.0000	100.0000	7	c455b13f51e6	0x1552b0
+cddrawworkerregistry	?RemoveKeysEqual_155360@CDDrawWorkerRegistry@@QAEHPBD0@Z	91.6667	91.6667	4	ac7917eb5b33	0x155360
 cddrawworkerregistry	?StringCopy_155810@CDDrawWorkerRegistry@@QAEHPBD@Z	100.0000	100.0000	4	73922624b2b9	0x155810
-cddrawworkerregistry	?Stub_154f80@CDDrawWorkerRegistry@@QAEHPAVRegDirHandle@@PBD1@Z	62.8269	62.8269	1	d22b306baff2	0x154f80
+cddrawworkerregistry	?Stub_154f80@CDDrawWorkerRegistry@@QAEHPAVRegDirHandle@@PBD1@Z	62.8269	62.8269	2	9e671873c540	0x154f80
 cddrawworkerregistry	?Stub_155160@CDDrawWorkerRegistry@@QAEHPAVRegDirHandle@@PBD1@Z	100.0000	100.0000	1	58e7e69cea7d	0x155160
 cddrawworkerregistry	?Stub_156df0@CDDrawWorkerRegistry@@QAEPAXH@Z	100.0000	100.0000	1	dfa2b8a9e580	0x156df0
 cddrawworkerregistry	?Stub_156e80@CDDrawWorkerRegistry@@QAEHPAVRegProbeChain@@H@Z	73.3333	73.3333	1	1b776dd465ae	0x156e80
-cddrawworkerregistry	?SumSizesEqual_155460@CDDrawWorkerRegistry@@QAEHPBDH@Z	70.1125	70.1125	2	f4bee0c27604	0x155460
+cddrawworkerregistry	?SumSizesEqual_155460@CDDrawWorkerRegistry@@QAEHPBDH@Z	70.1125	70.1125	3	02e3a1a08f81	0x155460
 cddrawworkerregistry	?VirtualMethodUnknown14@CDDrawWorkerRegistry@@QAEHXZ	100.0000	100.0000	5	6457e07e3e77	0x1576d0
 cddrawworkerregistry	?VirtualMethodUnknown18@CDDrawWorkerRegistry@@QAEHXZ	100.0000	100.0000	4	e7e55c1d1ce8	0x154aa0
-cddrawworkerregistry	?VirtualMethodUnknown1C@CDDrawWorkerRegistry@@QAEXXZ	100.0000	100.0000	3	e5fa6ad84ed9	0x154ac0
+cddrawworkerregistry	?VirtualMethodUnknown1C@CDDrawWorkerRegistry@@QAEXXZ	100.0000	100.0000	4	a5af4bda71de	0x154ac0
 cddrawworkerregistry	?VirtualMethodUnknown20@CDDrawWorkerRegistry@@QAEHXZ	100.0000	100.0000	4	07e1e4d6aa33	0x156de0
-cddrawworkerregistry	?VirtualMethodUnknown24@CDDrawWorkerRegistry@@QAEHHHPBDHH@Z	41.2674	41.2674	4	48eec755c850	0x154df0
-cddrawworkerregistry	?VirtualMethodUnknown28@CDDrawWorkerRegistry@@QAEHHHPAUSeverusWorkerObj@@HH@Z	100.0000	100.0000	1	af8001c108bf	0x154f60
-cddrawworkerregistry	?VirtualMethodUnknown2C@CDDrawWorkerRegistry@@QAEHHHPAUSeverusWorkerObj@@HH@Z	100.0000	100.0000	1	cc9f16fadddd	0x154f40
-cddrawworkerregistry	?VirtualMethodUnknown30@CDDrawWorkerRegistry@@QAEHHHPBDHH@Z	41.2674	41.2674	4	a21300dd6305	0x154ce0
-cddrawworkerregistry	?VirtualMethodUnknown34@CDDrawWorkerRegistry@@QAEHHPAUSeverusWorkerObj@@HH@Z	100.0000	100.0000	1	bf3dde31789c	0x154f20
-cddrawworkerregistry	?VirtualMethodUnknown38@CDDrawWorkerRegistry@@QAEHHPBDHH@Z	39.9405	39.9405	4	730db409c6fe	0x154ae0
-cddrawworkerregistry	?VirtualMethodUnknown3C@CDDrawWorkerRegistry@@QAEHHPAUSeverusWorkerObj@@HH@Z	100.0000	100.0000	1	6ac12b66bef9	0x154f00
-cddrawworkerregistry	?VirtualMethodUnknown40@CDDrawWorkerRegistry@@QAEHHPBDHH@Z	39.9405	39.9405	4	b53da2fc7ef5	0x154be0
-cddrawworkerregistry	?VirtualMethodUnknown50@CDDrawWorkerRegistry@@QAEXPAUSeverusWorkerObj@@@Z	100.0000	100.0000	4	8a8258f8194e	0x155280
-cddrawworkerregistry	?VirtualMethodUnknown54@CDDrawWorkerRegistry@@QAEXPBD@Z	77.5185	77.5185	4	8edb4377b749	0x156ec0
-cddrawworkerregistry	?VirtualMethodUnknown58@CDDrawWorkerRegistry@@QAEXXZ	100.0000	100.0000	6	fcb9fed5499f	0x165210
+cddrawworkerregistry	?VirtualMethodUnknown24@CDDrawWorkerRegistry@@QAEHHHPBDHH@Z	41.2674	41.2674	5	e4e1b9365f72	0x154df0
+cddrawworkerregistry	?VirtualMethodUnknown28@CDDrawWorkerRegistry@@QAEHHHPAUCDDrawWorker@@HH@Z	100.0000	100.0000	1	a1036db76e28	0x154f60
+cddrawworkerregistry	?VirtualMethodUnknown2C@CDDrawWorkerRegistry@@QAEHHHPAUCDDrawWorker@@HH@Z	100.0000	100.0000	1	df0ed752761d	0x154f40
+cddrawworkerregistry	?VirtualMethodUnknown30@CDDrawWorkerRegistry@@QAEHHHPBDHH@Z	41.2674	41.2674	5	2da9a2f9204f	0x154ce0
+cddrawworkerregistry	?VirtualMethodUnknown34@CDDrawWorkerRegistry@@QAEHHPAUCDDrawWorker@@HH@Z	100.0000	100.0000	1	47b32b4c43ca	0x154f20
+cddrawworkerregistry	?VirtualMethodUnknown38@CDDrawWorkerRegistry@@QAEHHPBDHH@Z	39.9405	39.9405	5	8b8e42725bd5	0x154ae0
+cddrawworkerregistry	?VirtualMethodUnknown3C@CDDrawWorkerRegistry@@QAEHHPAUCDDrawWorker@@HH@Z	100.0000	100.0000	1	ff8066c2c8d8	0x154f00
+cddrawworkerregistry	?VirtualMethodUnknown40@CDDrawWorkerRegistry@@QAEHHPBDHH@Z	39.9405	39.9405	5	98b0209f82d6	0x154be0
+cddrawworkerregistry	?VirtualMethodUnknown50@CDDrawWorkerRegistry@@QAEXPAUCDDrawWorker@@@Z	100.0000	100.0000	1	a00afc7a1d82	0x155280
+cddrawworkerregistry	?VirtualMethodUnknown54@CDDrawWorkerRegistry@@QAEXPBD@Z	77.5185	77.5185	5	73845abea680	0x156ec0
+cddrawworkerregistry	?VirtualMethodUnknown58@CDDrawWorkerRegistry@@QAEXXZ	100.0000	100.0000	7	0ce10a2a460d	0x165210
 cddrawworkers	?Vfunc2C@CDDrawWorkerA@@QAEHHHH@Z	100.0000	100.0000	6	2a93c347cffa	0x157110
 cddrawworkers	?Vfunc2C@CDDrawWorkerB@@QAEHHHH@Z	100.0000	100.0000	6	8a45134b16f4	0x1572f0
 cddrawworkers	?Vfunc30@CDDrawWorkerB@@QAEHHHHH@Z	100.0000	100.0000	1	e3442c1eb798	0x1572b0
@@ -1448,6 +1452,8 @@ cmenustate	?LoadGameOptionsToDialog@@YAXPAUHWND__@@@Z	100.0000	100.0000	3	4d283d
 cmenustate	?ReadMenuOptionsDialog@@YAXPAUHWND__@@@Z	99.9020	99.9020	2	1ac526fdd4ea	0x36a30
 cmenustate	?ReadyGate@CMenuState@@QAEHXZ	100.0000	100.0000	1	6ea0d4b831d8	0xa0d40
 cmgrsettings	?Serialize@CMgrSettings@@QAEHPAVCMgrArchive@@HHH@Z	89.0526	89.0526	2	4e1834b23b7e	0x109e00
+cmovieplayer	?Open@CMoviePlayer@@QAEHHHHHHH@Z	100.0000	100.0000	1	4426f99d0b09	0x17c6f0
+cmovieplayereh	??1CMoviePlayer@@QAE@XZ	73.5000	73.5000	1	c52be5eb43cf	0x38fc0
 cmovinglogicctor	??0CMovingLogic@@QAE@XZ	98.4158	98.4158	1	22f28f23f317	0x13940
 cmovinglogicdtor	??1CMovingLogic@@UAE@XZ	100.0000	100.0000	1	9d256360ef43	0x13bd0
 cmovinglogicserial	?Serialize@CMovingLogic@@QAEHPAVCMlSerialArchive@@HHH@Z	66.5671	66.5671	1	f4d139f5ece5	0x16f4a0
@@ -1613,12 +1619,6 @@ csecretleveltrigger	?InitActReg@CSecretLevelTrigger@@SAXXZ	100.0000	100.0000	1	3
 csecretleveltrigger	?RegisterActs@CSecretLevelTrigger@@SAXXZ	92.9130	92.9130	1	e412341acec4	0x428c0
 csecretleveltrigger	?Tick@CSecretLevelTrigger@@QAEHXZ	100.0000	100.0000	2	969f09f02d56	0x42ac0
 cserialsub34	?Chain@CSerialSub34@@QAEHPAVCSerialArchive@@HHPAVCSerialObj@@@Z	88.0496	88.0496	1	6d191bedea8f	0x8c00
-cseverusentrylist	??1CSeverusEntryList@@UAE@XZ	94.8750	94.8750	1	0a46d4842985	0x1557a0
-cseverusentrylist	?DeleteAll@CSeverusEntryList@@QAEXXZ	100.0000	100.0000	1	bb02994e8868	0x151eb0
-cseverusworker	?Open@CSeverusWorker@@QAEHHHHHHH@Z	100.0000	100.0000	1	1baa840512e1	0x17c6f0
-cseverusworkereh	??1CSeverusWorker@@QAE@XZ	73.5000	73.5000	1	0360d32ce5bf	0x38fc0
-cseverusworkerhost	??0CSeverusWorkerHost@@QAE@HHH@Z	100.0000	100.0000	1	d41d20ecba6d	0x1615a0
-cseverusworkerhost	??1CSeverusWorkerHost@@UAE@XZ	85.7500	85.7500	1	437f3fb71271	0x163af0
 csimpleanimation	??1CSimpleAnimation@@UAE@XZ	100.0000	100.0000	1	90ed99282119	0xf9d0
 csimpleanimation	?AdvanceAnim@CSimpleAnimation@@QAEHXZ	100.0000	100.0000	1	2a87ef63c834	0xabf70
 csimpleanimation	?InitSimpleAnimDispatch@@YAXXZ	100.0000	100.0000	1	a84ef2c13047	0xabb90
@@ -1832,7 +1832,7 @@ discoveredeh	??1CU55@@UAE@XZ	100.0000	100.0000	1	2340983fe4d8	0x16460
 discoveredsmall	??0ClassUnknown_14@@QAE@HHHH@Z	100.0000	100.0000	1	920d82497fd2	0x29ac0
 discoveredsmall	??0ClassUnknown_21@@QAE@XZ	100.0000	100.0000	1	02d1e26fc661	0x15b2b0
 discoveredsmall	??0ClassUnknown_22@@QAE@XZ	100.0000	100.0000	1	813a50afe631	0x15b270
-discoveredsmall	?BaseInit@ClassUnknown_46@@QAEXXZ	100.0000	100.0000	1	ecf899ae1670	0x1591b0
+discoveredsmall	?BaseInit@ClassUnknown_46@@QAEXXZ	100.0000	100.0000	2	1f8af32c7808	0x1591b0
 discoveredsmall	?ClassUnknown_29_advance@@YGPAXPAPAX@Z	100.0000	100.0000	1	fa79ff4f36bf	0x29a30
 discoveredsmall	?DestroyStr@CU35Host@@QAEXXZ	100.0000	100.0000	1	089c5e769c2e	0x21c40
 discoveredsmall	?FreeBuffers@ClassUnknown_39@@QAEXXZ	100.0000	100.0000	1	a83982aeb681	0x148d10
@@ -2090,8 +2090,8 @@ gameassetnamespaces	?LoadGameAssetNamespaces@CAssetLoader@@QAEXPAUAssetMgr@@HH@Z
 gamechecksum	?ComputeSignature@CGameSyncSig@@QAEHXZ	57.6800	57.6800	1	f73b375e6779	0xc0590
 gameinfostring	?FormatGameInfoString@CGameInfo@@QAEHXZ	100.0000	100.0000	1	e9b5224f1312	0x1183b0
 gamekeyhandler	?DispatchKey@CGamePlayInput@@QAEHHH@Z	5.4164	5.4164	2	8f5ddc83713c	0xcbcc0
-gamelevel	??0CGameLevel@@QAE@HHH@Z	94.4528	94.4528	6	c86f93a062aa	0x15ccd0
-gamelevel	??1CGameLevel@@QAE@XZ	100.0000	100.0000	4	57a801341832	0x1611e0
+gamelevel	??0CGameLevel@@QAE@HHH@Z	94.4528	94.4528	7	0d2bff35ae1b	0x15ccd0
+gamelevel	??1CGameLevel@@QAE@XZ	100.0000	100.0000	5	7e872536db3c	0x1611e0
 gamelevel	?AdvanceA@CGameLevel@@AAEHPAXHHH@Z	93.5194	93.5194	1	ed7962b2eb86	0x15f1c0
 gamelevel	?AdvanceB@CGameLevel@@AAEHPAXHHH@Z	92.2241	92.2241	1	ac1c98577426	0x15ede0
 gamelevel	?AltStepValidate@CGameLevel@@AAEHPAX0HHPAHH@Z	71.9054	71.9054	1	7c1fc1ee8711	0x15fe40
@@ -2101,7 +2101,7 @@ gamelevel	?BroadPhase@CGameLevel@@QAEHPAUScrollTarget@@HH@Z	71.9552	71.9552	1	23
 gamelevel	?BuildAllPlanes@CGameLevel@@QAEXPAULevelCoordRect@@@Z	100.0000	100.0000	1	f9a8f0e1ee87	0x15da80
 gamelevel	?ClampScroll@CGameLevel@@QAEHPAXHHH@Z	70.7413	70.7413	3	3f62b93aa933	0x15de40
 gamelevel	?ClampSpan@CGameLevel@@AAEHHHPAH0@Z	99.8305	99.8305	1	2ca0e3403535	0x15ffe0
-gamelevel	?DtorBase@CImageSet1@@QAEXXZ	100.0000	100.0000	1	a95ce5db1ab7	0x161370
+gamelevel	?DtorBase@CImageSet1@@QAEXXZ	100.0000	100.0000	2	f9907171ecf4	0x161370
 gamelevel	?EditDispatch@CGameLevel@@QAEHPAXHHH@Z	47.8085	47.8085	2	5cfc22d52d40	0x160f70
 gamelevel	?EditHandlerA@CGameLevel@@QAEHPAXHHH@Z	64.9560	64.9560	1	ba4a8952d252	0x15e130
 gamelevel	?EditHandlerB@CGameLevel@@QAEHPAXHHH@Z	78.8602	78.8602	1	5506606c987f	0x15e4b0
@@ -3038,7 +3038,7 @@ reconbatch2	?Reset@CGameModeBase@@QAEXXZ	98.6667	98.6667	1	60aa13ce1cd5	0xf9840
 reconbatch2	?ResetPreview@CGameModeBase@@QAEXXZ	98.8235	98.8235	1	7c0b831bc71d	0xde140
 reconbatch2	?Resolve@OptOwner_c4b30@@QAEHXZ	100.0000	100.0000	1	3513ee3cd2d8	0xc4b30
 reconbatch2	?Run@Host_c2a80@@QAEXXZ	100.0000	100.0000	1	0e366092ef40	0xc2a80
-reconbatch2	?StampVtbl@Obj_11e8dc@@QAEXXZ	100.0000	100.0000	1	b7706f8cc839	0x11e8dc
+reconbatch2	?StampVtbl@Obj_11e8dc@@QAEXXZ	100.0000	100.0000	2	96a57bedaec8	0x11e8dc
 reconbatch2	?Validate_fafa0@@YGHHHHH@Z	93.3333	93.3333	2	12f5fa949edd	0xfafa0
 reconbatch2	?Walk@Tree_193340@@QAEXP6AXHHH@ZHPAUTNode_193340@@@Z	100.0000	100.0000	1	06114a29f728	0x193340
 reconbatch2o1	??0Obj_11e4d0@@QAE@XZ	100.0000	100.0000	2	2e8f745044d7	0x11e4d0
@@ -3058,6 +3058,7 @@ registryhelper	?InitializeLastKey@RegistryHelper@Utils@@QAEHPAD@Z	100.0000	100.0
 registryhelper	?Open@RegistryHelper@Utils@@QAEHPAD000PAUHKEY__@@0@Z	100.0000	100.0000	4	6c22bb630229	0x139210
 registryhelper	?SetValueDword@RegistryHelper@Utils@@QAEHPADK@Z	100.0000	100.0000	6	b6d6a5a685b2	0x139460
 registryhelper	?SetValueString@RegistryHelper@Utils@@QAEHPAD0@Z	100.0000	100.0000	6	be65b55daff7	0x1393b0
+rezbufferobjectdtor	??1CRezBufferObject@@UAE@XZ	100.0000	100.0000	1	9548fbb0c08a	0x17f330
 rezcoll	?First@RezColl@@QAEPAURezNode@@XZ	100.0000	100.0000	2	ad2cadee4eff	0x184ae0
 rezcoll	?Next@RezNode@@QAEPAU1@XZ	100.0000	100.0000	2	33537c9e143d	0x1848b0
 rezfile	?Close@CRezFile@@QAEHXZ	100.0000	100.0000	1	2047e03b5407	0x13ce70
@@ -3240,7 +3241,6 @@ sbi_wellgoo	?Tick@CSBI_WellGoo@@QAEHXZ	83.0000	83.0000	1	34178faa97ab	0xe6380
 sbi_wellgoo_eh	??1CSBI_WellGoo@@UAE@XZ	100.0000	100.0000	2	2a080f8a9c14	0x104bb0
 scattersamples	?IsPrime@@YAHH@Z	100.0000	100.0000	1	3d4ae8c20789	0x182a80
 scattersamples	?ScatterSamples@@YAXPAHHHH@Z	59.2162	59.2162	1	345a3c1c24dd	0x182940
-severusworkerdtor	??1CSeverusWorkerX@@UAE@XZ	100.0000	100.0000	1	ac004e95dba5	0x17f330
 sfselectdevice	?SFManager_SelectBestDevice@@YAHXZ	73.5827	73.5827	2	277831f44be8	0xf8970
 shadedescrtable	?Select@ShadeSelector@@QAEXHPAUShadeDescr@@@Z	68.5938	68.5938	2	980c21c9b21b	0x14dd90
 shadedescrtable	?SetShadeDescr@@YAXPAUShadeDescr@@H@Z	61.8966	61.8966	2	d7ce23754255	0x14dcf0
@@ -3759,7 +3759,7 @@ wwdfile	?Load@CPlaneRender@@QAEHPAUCWwdStream@@@Z	99.9841	99.9841	1	465739db8fa7
 wwdfile	?ReadObjectPlane@CGameLevelPlanes@@QAEPAVCPlane@@HHHHHHH@Z	99.5949	99.5949	1	c608fad16767	0x15d9a0
 wwdfile	?ReadPlane@CGameLevelPlanes@@QAEPAVCPlane@@PAX00@Z	99.5362	99.5362	4	1345c133fc23	0x15d8d0
 wwdfile	?ReadPlaneObjects@WwdFile@@QAEHPBH@Z	77.1667	77.1667	5	27f3528ed152	0x162af0
-wwdfile	?RebuildPlanes@WwdFile@@QAEHHH@Z	50.6600	50.6600	2	42f6a2d260e7	0x1628f0
+wwdfile	?RebuildPlanes@WwdFile@@QAEHHH@Z	50.6600	50.6600	3	e3aac9c2921b	0x1628f0
 wwdfile	?ResolveColorKey@CPlaneRender@@QAEXXZ	66.6078	66.6078	3	aead1d8e7cec	0x163670
 wwdfile	?Save@CPlaneRender@@QAEHPAUCWwdStream@@@Z	100.0000	100.0000	1	0557ec6d7f43	0x163780
 wwdfile	?SetTileSize@CPlaneRender@@QAEXHH@Z	88.3846	88.3846	1	44db117efe97	0x161f00
@@ -3785,9 +3785,9 @@ wwdgameobject	?Sub151780@CWwdGameObject@@QAEHH@Z	100.0000	100.0000	1	a5cc9001a34
 wwdgameobject	?WriteSnapshot@CWwdGameObject@@QAEHH@Z	95.9020	95.9020	2	9fee6fde6abb	0x151c00
 wwdgameobjecteh	??1CWwdGameObjectA@@UAE@XZ	95.5378	95.5378	1	777925195fbe	0x15b790
 wwdgameobjecteh	??1CWwdGameObjectB@@UAE@XZ	79.4545	79.4545	1	595dd1e41894	0x15bd10
-wwdgameobjecteh	??1CWwdGameObjectC@@UAE@XZ	93.6346	93.6346	1	af996333ea4c	0x15c070
-wwdgameobjecteh	??1CWwdGameObjectE@@UAE@XZ	88.7941	88.7941	1	e20ec4de9067	0x15b4f0
-wwdgameobjecteh	??1CWwdGameObjectF@@UAE@XZ	93.4466	93.4466	1	fc1f680ea25f	0x15bad0
+wwdgameobjecteh	??1CWwdGameObjectC@@UAE@XZ	93.6346	93.6346	2	a7231db31062	0x15c070
+wwdgameobjecteh	??1CWwdGameObjectE@@UAE@XZ	88.7941	88.7941	2	5cac17081515	0x15b4f0
+wwdgameobjecteh	??1CWwdGameObjectF@@UAE@XZ	93.4466	93.4466	2	b230a9476ec3	0x15bad0
 wwdgrid	??0CWwdGrid@@QAE@HHHHHH@Z	74.1539	74.1539	2	ad6dbdc254bc	0x1915c0
 wwdgrid	??1CWwdGrid@@UAE@XZ	100.0000	100.0000	1	11d416630cb6	0x1682a0
 wwdgrid	?Add@CWwdGrid@@QAEHPAUWwdRegion@@@Z	100.0000	100.0000	2	a84967689776	0x191840

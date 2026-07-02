@@ -378,7 +378,7 @@ CObject* CDDrawSubMgrLeafScan::Lookup_05b7e0(const char* key) {
 // LeafScanBase grand-base teardown (field resets + implicit ??_7-base re-stamp masking
 // 0x5e8cb4). No manual `m_vptr = &g_*Vtbl`. /GX EH frame (VM18 / map dtor may throw).
 // @early-stop
-// vptr-position wall (~95%, twin of CSeverusEntryList/CDDrawSubMgrLeaf): every code
+// vptr-position wall (~95%, twin of CDDrawWorker/CDDrawSubMgrLeaf): every code
 // byte matches retail EXCEPT the grand-base re-stamp position (cl emits it before the
 // m_04/m_08/m_0c resets; the implicit base transition forces stamp-first, retail sinks
 // it after) + the reloc-masked EH unwind / VM18 / ~CMapStringToOb / vtable symbol

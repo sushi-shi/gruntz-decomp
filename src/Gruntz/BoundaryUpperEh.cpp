@@ -1,9 +1,9 @@
 // BoundaryUpperEh.cpp - upper-half (RVA >= 0x133370) engine_boundary backlog,
-// /GX EH-frame siblings of BoundaryUpper.cpp. These are manual-vtable "severus
+// /GX EH-frame siblings of BoundaryUpper.cpp. These are manual-vtable "wap-object base
 // worker" leaf destructors: stamp the most-derived vtable (cl prologue), tear down
 // the owned member(s), then fold the base subobject (restamp the grand-base dtor
 // vtable @0x5e8cb4). Modeled polymorphically (empty virtual base dtor + derived
-// owned buffer) exactly like SeverusWorkerDtor.cpp (0x17f330, 100%): cl emits the
+// owned buffer) exactly like RezBufferObjectDtor.cpp (0x17f330, 100%): cl emits the
 // /GX base-subobject unwind frame and the stamp-first prologue; the cl-emitted
 // vtable symbols reloc-mask the retail manual vtables. Only OFFSETS + code shape
 // are load-bearing.

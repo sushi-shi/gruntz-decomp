@@ -1,12 +1,12 @@
 #include <rva.h>
-// CSeverusWorker.cpp - the frameless slice of the DDrawMgr "severus worker"
-// movie/stream decode object (placeholder name; see include/Gruntz/CSeverusWorker.h).
+// CMoviePlayer.cpp - the frameless slice of the DDrawMgr "DDraw worker"
+// movie/stream decode object (placeholder name; see include/Gruntz/CMoviePlayer.h).
 // One reconstructed method from the 0x17b500..0x17c790 cluster:
 //   0x17c6f0  Open - orchestrate a decode open through the +0x540 store + OpenHi.
 // The store/worker sibling methods (Begin/OpenA/Abort/OpenB/OpenHi) live elsewhere
 // in the cluster; they are declared (no body) so their rel32 calls reloc-mask.
 
-#include <Gruntz/CSeverusWorker.h>
+#include <Gruntz/CMoviePlayer.h>
 
 // ===========================================================================
 // 0x17c6f0 - Open: bail if the worker is inactive (m_4 == 0). Prepare the +0x540
@@ -16,7 +16,7 @@
 // returns 1.
 // ===========================================================================
 RVA(0x0017c6f0, 0x9c)
-i32 CSeverusWorker::Open(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6) {
+i32 CMoviePlayer::Open(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6) {
     if (m_4 == 0) {
         return 0;
     }
@@ -41,8 +41,8 @@ i32 CSeverusWorker::Open(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6) {
 
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
-SIZE_UNKNOWN(CSeverusEmbed);
-SIZE_UNKNOWN(CSeverusStore);
-SIZE_UNKNOWN(CSeverusWorker);
-SIZE_UNKNOWN(SevByteArray);
-SIZE_UNKNOWN(SevFile);
+SIZE_UNKNOWN(CMovieScratch);
+SIZE_UNKNOWN(CMovieDecodeStore);
+SIZE_UNKNOWN(CMoviePlayer);
+SIZE_UNKNOWN(CMovieByteArray);
+SIZE_UNKNOWN(CMovieFile);

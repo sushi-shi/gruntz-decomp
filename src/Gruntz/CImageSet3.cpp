@@ -1,6 +1,6 @@
 // CImageSet3.cpp - the WWD "imageSet3" collection object (its own vtable is
-// g_imageSet3Vtbl @0x5f0228; the grand-base dtor vtable is g_severusWorkerDtorVtbl
-// @0x5e8cb4, the same SeverusWorker base CDDrawSurfacePair / CGameLevel derive
+// g_imageSet3Vtbl @0x5f0228; the grand-base dtor vtable is g_wapObjectDtorVtbl
+// @0x5e8cb4, the same CLoadable base CDDrawSurfacePair / CGameLevel derive
 // from).  It owns a spatial GRID at +0xb0 (a CWwdGrid: its Prune sweeps the four
 // held object-managers, GetSize sums them, and its dtor runs FreeGrids @0x1682f0)
 // plus two RezAlloc'd buffers at +0x20/+0x24.
@@ -11,7 +11,7 @@
 //   Cleanup_161bf0 (0x161bf0) - prune+destroy+free the grid, free m_20/m_24
 //
 // The /GX manual-vtable destructors (0x161500 ~CImageSet3, 0x163a40 ~CWwdGrid)
-// stay in the boundary backlog: they need the SeverusWorker base modeled as a
+// stay in the boundary backlog: they need the CLoadable base modeled as a
 // non-trivial subobject to emit the retail EH frame (the deferred archetype
 // already documented on CDDrawSurfacePair::~).
 //
@@ -40,7 +40,7 @@ public:
     i32 GetSize_1633e0();  // 0x1633e0
     void Cleanup_161bf0(); // 0x161bf0
 
-    char m_pad00[0x20];        // +0x00 .. +0x1f (vptr + SeverusWorker base + ...)
+    char m_pad00[0x20];        // +0x00 .. +0x1f (vptr + CLoadable base + ...)
     void* m_20;                // +0x20  RezAlloc'd buffer
     void* m_24;                // +0x24  RezAlloc'd buffer
     char m_pad28[0xb0 - 0x28]; // +0x28 .. +0xaf
