@@ -611,3 +611,59 @@ VTBL/SIZE are clang-only, matching-neutral).
 - **UnknownVTables.h REALIZED annotations are hand-maintained**, not auto-pruned by
   vtable_scan when a VTBL is added — update the entry to a `// REALIZED as ??_7…`
   comment in the same change (this batch cleaned up the two new + two stale Net ones).
+## Batch 5 (menu/SBI/status + game-state — UNBLOCK the auto ??_7) — 2026-07-02
+
+Net effect: **13 vtables realized** (manual `g_*Vtbl` DATA symbol → compiler `??_7`),
+build GREEN, **0 regressions** (started-units 1835/3361, 64.39% fuzzy, unchanged; the
+overall headline dips 54.55%→54.24% only because ~19 newly-named `??_7`/dtor-thunk
+symbols joined the denominator — a realization side-effect, not a matched-code loss).
+
+**KEY MECHANISM (new, generalizes the whole all-vtables mandate).** For an
+RTTI-named vtable (`??_7X@@6B@` in config/vtable_names.csv) whose class is ALREADY
+modeled real-polymorphic **with an out-of-line virtual dtor in a compiled base OBJ**
+(so `cl` emits the `??_7` COMDAT), the ONLY thing blocking the auto-pair is a manual
+`DATA(0x..) extern g_*Vtbl` at the SAME rva: the symbol_names generator prefers the
+explicit DATA annotation over the vtable_names.csv `??_7` mapping. **Just delete the
+`DATA(0x..)` pin (keep the bare `extern` so the vptr-middle manual stamps still
+compile as reloc-masked refs) → the compiler `??_7` wins the rva, the vtable is
+realized, and the giant `@early-stop` factory functions that stamp it are untouched.**
+No `new Class` rewrite, no ctor regression, no dup-DATA (the pin is gone). This
+sidesteps the vptr-middle wall entirely: the vtable realizes even though the factory
+keeps its faithful manual stamp.
+
+**Litmus test per candidate (cheap):** delete the pin, `gruntz build`, `grep <rva>
+build/gen/symbol_names.csv`. If it shows `??_7X` → realized, keep. If it shows nothing
+(UNNAMED) → the `??_7` is NOT emitted anywhere; restore the pin (removing it only
+unnames the rva — a net loss).
+
+| Family | Realized (pin removed) | KEPT (??_7 not emitted → pin restored) |
+| :-- | :-- | :-- |
+| CSBI_* hierarchy | `CStatusBarItem` 0x1eabcc, `CSBI_RectOnly` 0x1eab8c, `CSBI_MenuItem` 0x1eab4c, `CSBI_Image` 0x1eac0c, `CSBI_ImageSet` 0x1eac4c, `CSBI_WellGoo` 0x1eadfc (the 6 base/intermediate; the 6 leaves — StatzTabArrow/StatzTabGruntBar/WarlordHead/ImageSetAni/GruntMachine/SideTab — were already realized) | — |
+| game-state (GruntzMgrTransition/CMulti) | `CState` 0x1ea21c, `CAttract` 0x1ea194, `CMenuState` 0x1e9e84, `CBootyState` 0x1e9cec, `CMultiBootyState` 0x1e9bdc | `CMulti` 0x1e9fe4, `CPlay` 0x1ea0bc, `CDemo` 0x1e9f0c, `CHelpState` 0x1e9dfc, `CSplashState` 0x1e9d74, `CCreditsState` 0x1e9c64 |
+| app framework (BoundaryLowerThunks) | `CGameApp` 0x1e9b0c, `CGameWnd` 0x1ea344 | `CGameMgr` 0x1e9b8c |
+| misc (in scope) | — | `CDoNothingNormal` 0x1e859c (CUserLogic-derived, empty out-of-line dtor does NOT force the vtable COMDAT the CSBI chains do), `g_vtbl_1396f0` 0x1ef740 (anonymous, no RTTI) |
+
+**Menu item vtables — KEPT-foreign (unchanged).** `g_menuItemVtbl` 0x1f08c0 /
+`g_menuItem2Vtbl` (`Vtbl_1f08f8`) 0x1f08f8 are ANONYMOUS (no RTTI COL → not in
+vtable_names.csv), their slots point at the CMenuItem TU (0x184670+, unmatched), and
+they are already un-pinned `extern`s (no `g_*Vtbl` DATA symbol to remove). Realizing
+would require modeling CMenuItem/CMenuItem2 fully AND inventing config/vtable_names.csv
+entries for a non-RTTI vtable — out of a matcher's remit; deferred to a dedicated pass.
+`MenuItemVtbl` (MainMenuBuilder.cpp) is NOT a stamp at all — it is the recommended
+typed-vtable-dispatch struct reading a FOREIGN item's slot; nothing to convert.
+
+**Already-realized (no action):** `??_7CGruntzMapMgr` 0x1e9bb4 (RezSync's `g_vtbl5e9bb4`
+is a bare extern), `??_7CSBI_SideTab` 0x1eae3c (SBI_SideTabBuild's `g_vtbl_sideTab` is a
+bare extern).
+
+### Rules learned / reinforced (Batch 5)
+
+- **Pin-removal is the low-risk realization lever for the manual-stamp facet.** When a
+  class's `??_7` already emits (its dtor chain / a sibling TU forces the COMDAT), the
+  manual `g_*Vtbl` `DATA` pin is the ONLY blocker; removing just the pin realizes the
+  vtable and leaves the vptr-middle `@early-stop` factory codegen byte-for-byte intact.
+- **CUserLogic-family bases don't auto-emit like the CSBI chain.** An empty out-of-line
+  leaf dtor (`~CDoNothingNormal(){}`) does NOT force the `??_7` COMDAT the way a
+  multi-virtual `/GX` dtor chain (CSBI, with its 11-slot base + restamp walk) does — so
+  CDoNothingNormal/CGameMgr/CMulti/CPlay stay pinned (removing the pin only unnames the
+  rva). The determinant is whether `cl` actually emits the `??_7` in some base OBJ.

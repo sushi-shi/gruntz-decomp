@@ -73,8 +73,9 @@ void RegRange5bc50() {
 // 0x080cf0 - teardown: stamp the vtable (0x5e9b0c), run the base teardown
 // (0x13d8c0) and decrement the live-instance counter (0x653c6c). __thiscall.
 // ===========================================================================
-DATA(0x001e9b0c)
-extern void* g_vtbl_5e9b0c;
+// 0x1e9b0c REALIZED as ??_7CGameApp@@6B@ (gruntzapp emits it); DATA pin removed so
+// the compiler vtable wins the RVA. Manual stamp below stays reloc-masked.
+extern void* g_vtbl_5e9b0c; // 0x5e9b0c  (CGameApp)
 DATA(0x00253c6c)
 extern i32 g_instCount653c6c;
 struct CTeardown80cf0 {
@@ -133,6 +134,8 @@ void ResetCoordPool82fa0() {
 // 0x085540 - stamp the vtable (0x5e9b8c) then tail-call the base teardown
 // (0x13ddb0). __thiscall.
 // ===========================================================================
+// 0x1e9b8c KEPT: ??_7CGameMgr@@6B@ is not emitted by cl (class not polymorphic-
+// modeled), so removing the DATA pin only unnames the RVA.
 DATA(0x001e9b8c)
 extern void* g_vtbl_5e9b8c;
 struct CTeardown85540 {
@@ -176,8 +179,9 @@ void* CScalarDtor855a0::ScalarDtor(u32 flags) {
 // 0x094c10 - teardown: stamp the vtable (0x5ea344), run the base teardown
 // (0x13cfb0) and clear the singleton pointer (0x653c68). __thiscall.
 // ===========================================================================
-DATA(0x001ea344)
-extern void* g_vtbl_5ea344;
+// 0x1ea344 REALIZED as ??_7CGameWnd@@6B@ (gruntzwnd emits it); DATA pin removed so
+// the compiler vtable wins the RVA. Manual stamp below stays reloc-masked.
+extern void* g_vtbl_5ea344; // 0x5ea344  (CGameWnd)
 DATA(0x00253c68)
 extern i32 g_singleton653c68;
 struct CTeardown94c10 {
@@ -293,7 +297,9 @@ void RegRangefbb70() {
 // 0x100780 - stamp the status-base vtable (0x5eabcc) then tail-call the base
 // init (0x1d6b). __thiscall.
 // ===========================================================================
-DATA(0x001eabcc)
+// 0x1eabcc realized as ??_7CStatusBarItem@@6B@ (direct base of the CSBI_* leaves;
+// their dtor *Eh.cpp TUs emit it). DATA pin removed so the compiler vtable wins the
+// RVA (config/vtable_names.csv); the manual stamp below stays as a reloc-masked ref.
 extern void** g_vtbl_statusBase; // ?g_vtbl_statusBase@@3PAPAXA
 struct CStatusBase100780 {
     void* vptr;

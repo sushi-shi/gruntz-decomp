@@ -91,12 +91,11 @@ public:
 // are not reproduced in this TU, so a polymorphic model would emit a divergent
 // ??_7 - the manual stamp is the transitional workaround).
 // ---------------------------------------------------------------------------
-DATA(0x001e9fe4)
-extern void* g_vtbl_CMulti[]; // 0x5e9fe4
-DATA(0x001ea0bc)
-extern void* g_vtbl_CPlay[]; // 0x5ea0bc
-DATA(0x001ea21c)
-extern void* g_vtbl_CState[]; // 0x5ea21c
+// REALIZED as ??_7CMulti / ??_7CPlay / ??_7CState (gamemode unit emits them). DATA
+// pins removed so the compiler vtables win the RVAs; manual stamps stay reloc-masked.
+extern void* g_vtbl_CMulti[]; // 0x5e9fe4  (CMulti)
+extern void* g_vtbl_CPlay[];  // 0x5ea0bc  (CPlay)
+extern void* g_vtbl_CState[]; // 0x5ea21c  (CState)
 
 // ---------------------------------------------------------------------------
 // The DirectPlay error globals (shared with CNetMgr::ReportError; same .data

@@ -102,10 +102,11 @@ public:
 };
 
 // The retail vtables (manual-stamp model; stamped directly). Reloc-masked DATA().
-DATA(0x001eab4c)
+// 0x1eab4c/0x1eac4c realized as ??_7CSBI_MenuItem@@6B@ / ??_7CSBI_ImageSet@@6B@ (their
+// dtor *Eh.cpp TUs emit them). DATA pins removed so the compiler vtables win the RVAs;
+// the manual stamps below stay as reloc-masked refs (vptr-middle inline-ctor wall).
 extern void* g_vtbl_menuItem; // 0x5eab4c (CSBI_MenuItem, tag 2)
-DATA(0x001eac4c)
-extern void* g_vtbl_t4; // 0x5eac4c (CSBI_ImageSet, tag 4)
+extern void* g_vtbl_t4;       // 0x5eac4c (CSBI_ImageSet, tag 4)
 
 // The game registry singleton (?g_gameReg, DATA 0x64556c). Only the fields the
 // builder touches are modeled.

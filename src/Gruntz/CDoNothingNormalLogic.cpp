@@ -40,6 +40,10 @@ struct CUserLogicOOL {
 
 // The engine CDoNothingNormal vtable (0x5e859c); stamped by address so the DIR32
 // store reloc-masks. Owned by another TU.
+// KEPT hand-rolled: ??_7CDoNothingNormal@@6B@ is NOT emitted by cl (the empty
+// out-of-line ~CDoNothingNormal in CDoNothingNormalDtor.cpp does not force the
+// vtable COMDAT the way the CSBI dtor chains do), so removing the DATA pin only
+// unnames 0x1e859c. See docs/vtable-conversion-log.md Batch 4.
 DATA(0x001e859c)
 extern void* g_vtbl5e859c;
 

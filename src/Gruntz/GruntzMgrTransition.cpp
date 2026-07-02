@@ -21,31 +21,29 @@
 // operator new / the game heap (0x1b9b46), reloc-masked.
 void* operator new(u32);
 
-// The retail state vtables, referenced by address (reloc-masked DATA externs; the
-// classes' real vtables live in other TUs, so a polymorphic model would emit a
-// divergent ??_7 - the manual stamp is the transitional workaround).
-DATA(0x001ea21c)
-extern void* g_vtbl_CState[]; // 0x5ea21c
-DATA(0x001ea194)
-extern void* g_vtbl_5ea194[]; // 0x5ea194
+// The retail state vtables, referenced by address (reloc-masked). REALIZED (DATA pin
+// removed, compiler ??_7 wins the RVA via config/vtable_names.csv): CState (0x1ea21c),
+// CAttract (0x1ea194), CMenuState (0x1e9e84), CBootyState (0x1e9cec), CMultiBootyState
+// (0x1e9bdc) - the gamemode/cattract units model these polymorphic. The other six do
+// NOT emit their ??_7 (their classes aren't polymorphic-modeled), so their DATA pins
+// stay (removing them only unnames the RVA). The manual stamps below stay reloc-masked.
+extern void* g_vtbl_CState[]; // 0x5ea21c  (CState, realized)
+extern void* g_vtbl_5ea194[]; // 0x5ea194  (CAttract, realized)
 DATA(0x001ea0bc)
-extern void* g_vtbl_CPlay[]; // 0x5ea0bc
+extern void* g_vtbl_CPlay[]; // 0x5ea0bc  (CPlay, ??_7 not emitted - KEPT)
 DATA(0x001e9fe4)
-extern void* g_vtbl_CMulti[]; // 0x5e9fe4
+extern void* g_vtbl_CMulti[]; // 0x5e9fe4  (CMulti, ??_7 not emitted - KEPT)
 DATA(0x001e9f0c)
-extern void* g_vtbl_5e9f0c[]; // 0x5e9f0c
-DATA(0x001e9e84)
-extern void* g_vtbl_5e9e84[]; // 0x5e9e84
+extern void* g_vtbl_5e9f0c[]; // 0x5e9f0c  (CDemo, ??_7 not emitted - KEPT)
+extern void* g_vtbl_5e9e84[]; // 0x5e9e84  (CMenuState, realized)
 DATA(0x001e9dfc)
-extern void* g_vtbl_5e9dfc[]; // 0x5e9dfc
+extern void* g_vtbl_5e9dfc[]; // 0x5e9dfc  (CHelpState, ??_7 not emitted - KEPT)
 DATA(0x001e9d74)
-extern void* g_vtbl_5e9d74[]; // 0x5e9d74
-DATA(0x001e9cec)
-extern void* g_vtbl_5e9cec[]; // 0x5e9cec  (CBootyState)
+extern void* g_vtbl_5e9d74[]; // 0x5e9d74  (CSplashState, ??_7 not emitted - KEPT)
+extern void* g_vtbl_5e9cec[]; // 0x5e9cec  (CBootyState, realized)
 DATA(0x001e9c64)
-extern void* g_vtbl_5e9c64[]; // 0x5e9c64
-DATA(0x001e9bdc)
-extern void* g_vtbl_5e9bdc[]; // 0x5e9bdc  (CMultiBootyState)
+extern void* g_vtbl_5e9c64[]; // 0x5e9c64  (CCreditsState, ??_7 not emitted - KEPT)
+extern void* g_vtbl_5e9bdc[]; // 0x5e9bdc  (CMultiBootyState, realized)
 
 // The DirectInputMgr2 singleton (*g_645570) re-armed after the install (ReadAll).
 struct CDInputMgrZ {

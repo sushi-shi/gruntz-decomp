@@ -144,16 +144,18 @@ DATA(0x00244c54)
 extern i32 g_curPlayer; // DAT_00644c54
 
 // The eight concrete CSBI subclass vtables (retail addresses; stamped directly).
-DATA(0x001eac0c)
-extern void* g_vtbl_t3[]; // 0x5eac0c (CSBI_RectOnly, tag 3)
-DATA(0x001eac4c)
+// 0x1eac0c/0x1eac4c realized as ??_7CSBI_Image@@6B@ / ??_7CSBI_ImageSet@@6B@ (their dtor
+// *Eh.cpp TUs emit them). DATA pins removed so the compiler vtables win the RVAs.
+extern void* g_vtbl_t3[]; // 0x5eac0c (CSBI_Image, tag 3)
 extern void* g_vtbl_t4[]; // 0x5eac4c (CSBI_ImageSet, tag 4)
 DATA(0x001eac94)
 extern void* g_vtbl_t5[]; // 0x5eac94 (tag 5)
 DATA(0x001eace4)
 extern void* g_vtbl_t6[]; // 0x5eace4 (tag 6)
-DATA(0x001eadfc)
-extern void* g_vtbl_t7[]; // 0x5eadfc (tag 7)
+// g_vtbl_t7 (0x1eadfc) realized as ??_7CSBI_WellGoo@@6B@ (SBI_WellGooEh.cpp emits it).
+// DATA pin removed so the compiler-emitted vtable wins the RVA (config/vtable_names.csv);
+// the manual stamp below stays (vptr-middle inline-ctor wall) as a reloc-masked ref.
+extern void* g_vtbl_t7[]; // 0x5eadfc (tag 7 = CSBI_WellGoo)
 DATA(0x001ead6c)
 extern void* g_vtbl_t8[]; // 0x5ead6c (tag 8)
 DATA(0x001eadbc)

@@ -56,12 +56,12 @@ void* operator new(u32 n);
 
 // The retail item vtables (manual-stamp model; the vtable CONTENTS live in other
 // unmatched TUs so we stamp the retail addresses directly). Reloc-masked DATA().
-DATA(0x001eac0c)
-extern void* g_vtbl_t3; // 0x5eac0c  (CSBI_Image, tag 3)
-DATA(0x001eab4c)
+// 0x1eac0c/0x1eab4c/0x1eac4c realized as ??_7CSBI_Image / ??_7CSBI_MenuItem /
+// ??_7CSBI_ImageSet (their dtor *Eh.cpp TUs emit them). DATA pins removed so the
+// compiler vtables win the RVAs; the manual stamps stay as reloc-masked refs.
+extern void* g_vtbl_t3;       // 0x5eac0c  (CSBI_Image, tag 3)
 extern void* g_vtbl_menuItem; // 0x5eab4c  (CSBI_MenuItem, tag 2)
-DATA(0x001eac4c)
-extern void* g_vtbl_t4; // 0x5eac4c  (CSBI_ImageSet, tag 4)
+extern void* g_vtbl_t4;       // 0x5eac4c  (CSBI_ImageSet, tag 4)
 
 // The ?g_pCopyRect@@3P6GXPAUtagRECT@@PBU1@@ZA global fn-pointer (VA 0x6c44bc): a
 // __stdcall RECT copier called `call ds:[g_pCopyRect]`. Reloc-masked DATA().

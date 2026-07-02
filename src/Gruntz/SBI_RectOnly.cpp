@@ -2807,9 +2807,11 @@ SIZE_UNKNOWN(CTabList);
 
 // The retail tab vtables (manual-stamp model; g_vtbl_menuItem is DATA-bound by
 // StatusBarGameMenu). Reloc-masked.
-DATA(0x001eab8c)
-extern void* g_vtbl_rectBase; // 0x5eab8c (rect-only sub-widget, tag 1)
-extern void* g_vtbl_menuItem; // 0x5eab4c (tab item, tag 2)
+// 0x1eab8c/0x1eab4c realized as ??_7CSBI_RectOnly@@6B@ / ??_7CSBI_MenuItem@@6B@
+// (SBI_RectOnlyDtorEh.cpp / SBI_MenuItemEh.cpp emit them). DATA pins removed so the
+// compiler vtables win the RVAs; the manual stamps below stay as reloc-masked refs.
+extern void* g_vtbl_rectBase; // 0x5eab8c (CSBI_RectOnly)
+extern void* g_vtbl_menuItem; // 0x5eab4c (CSBI_MenuItem)
 
 // 0xffde0 - build the five top-level status-bar tabs (STATZ/GRUNTZ/RESOURCE/
 // MULTIPLAYER/GAMETAB) plus three rect-only sub-widgets, once (m_358 gate). Each
