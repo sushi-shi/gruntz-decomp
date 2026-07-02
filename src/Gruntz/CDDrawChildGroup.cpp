@@ -1,7 +1,7 @@
 #include <rva.h>
 // CDDrawChildGroup.cpp - six leaf methods of the tomalla-named ddrawmgr
 // sub-manager CDDrawChildGroup (a CDirectDrawMgr surface/page sub-manager in the
-// "Harry Potter" family; see src/Stub/types/ddrawmgr_surface_family.h).
+// "DDraw surface manager" family; see src/Stub/types/ddrawmgr_surface_family.h).
 //
 // All six share ONE shape: walk an intrusive singly-linked list anchored at
 // CDDrawChildGroup+0x14 (each node's first dword is the next-node pointer, and

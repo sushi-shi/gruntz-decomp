@@ -1,6 +1,6 @@
 #include <rva.h>
 // CDDrawSubMgrAni.cpp - the 'ANI' (animation) keyed catalog sub-manager of the
-// CDirectDrawMgr surface/page-manager family (the "Harry Potter" group; see
+// CDirectDrawMgr surface/page-manager family (the "DDraw surface manager" group; see
 // src/Stub/types/ddrawmgr_surface_family.h). Sibling of CDDrawSubMgrLeaf (string
 // catalog) and CDDrawSubMgrLeafScan (sound cache): a CObject/Lucius-derived
 // string-keyed catalog owning a CMapStringToOb at +0x10 whose values are the
@@ -10,7 +10,7 @@
 //   +0x00  vptr (CObject-derived)
 //   +0x04  m_04  (i32, status word, -1 when inactive)
 //   +0x08  m_08  (i32)
-//   +0x0c  m_0c  (the owning CDirectDrawMgr / HarryPotter manager; its +0x28 slot
+//   +0x0c  m_0c  (the owning CDirectDrawMgr / CDDrawSurfaceMgr manager; its +0x28 slot
 //                 is forwarded to the element's Configure)
 //   +0x10  m_10  (CMapStringToOb, 0x1c bytes; keyed by const char* name)
 //
@@ -107,7 +107,7 @@ public:
 
     i32 m_04;            // +0x04  status word
     i32 m_08;            // +0x08
-    void* m_0c;          // +0x0c  owning CDirectDrawMgr / HarryPotter manager
+    void* m_0c;          // +0x0c  owning CDirectDrawMgr / CDDrawSurfaceMgr manager
     CMapStringToOb m_10; // +0x10  keyed animation catalog
 };
 

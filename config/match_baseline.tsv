@@ -83,9 +83,9 @@ cddrawptrcollections	31	15
 cddrawshadeblit	9	1
 cddrawsubmgr	59	34
 cddrawsubmgrani	3	1
-cddrawsubmgrdraco	5	4
 cddrawsubmgrleaf	15	6
 cddrawsubmgrleafscan	17	6
+cddrawsubmgrpages	5	4
 cddrawsurfacemgr	9	6
 cddrawsurfacemgrserialize	2	0
 cddrawsurfacepair	9	3
@@ -993,11 +993,11 @@ cddrawshadeblit	?ConvertRow@CDDrawShadeBlit@@QAEXPAE0H@Z	55.0462	55.0462	2	8c6ed
 cddrawshadeblit	?ConvertRowDouble@CDDrawShadeBlit@@QAEXPAE0HH@Z	48.5688	48.5688	2	392a7216fd6f	0x14d950
 cddrawshadeblit	?ConvertRowDoubleFwd@CDDrawShadeBlit@@QAEXPAE0HH@Z	55.6711	55.6711	2	5ec2c863d65d	0x14d5e0
 cddrawshadeblit	?ConvertRowFlip@CDDrawShadeBlit@@QAEXPAE0H@Z	52.6972	52.6972	2	1e8774686369	0x14cfc0
-cddrawsubmgr	??0CDDrawSubMgr@@QAE@PAVCDDrawSurfaceMgr@@HH@Z	100.0000	100.0000	6	af4f6a250fe2	0x156cb0
+cddrawsubmgr	??0CDDrawSubMgr@@QAE@PAVCDDrawSurfaceMgr@@HH@Z	100.0000	100.0000	7	974a12e533e2	0x156cb0
 cddrawsubmgr	??0CDrawSubWorker@@QAE@HHH@Z	96.3000	96.3000	1	905e1c94e386	0x158f30
 cddrawsubmgr	??0CWwdSlot9c@@QAE@XZ	100.0000	100.0000	1	4f0c763b7d4a	0x15b2a0
 cddrawsubmgr	??1CDDrawRegistryDtorHost@@QAE@XZ	94.8750	94.8750	1	5e8b984f549d	0x156e10
-cddrawsubmgr	??1CDDrawSubMgr@@UAE@XZ	100.0000	100.0000	5	450d3140b22a	0x1574d0
+cddrawsubmgr	??1CDDrawSubMgr@@UAE@XZ	100.0000	100.0000	6	18545f8cf6e7	0x1574d0
 cddrawsubmgr	??1CDDrawSubMgrRemus@@QAE@XZ	95.9000	95.9000	1	e419b5092886	0x157630
 cddrawsubmgr	?AddToMap48_15aba0@CWwdObjMgr@@QAEXPAVCWwdObject@@@Z	100.0000	100.0000	1	cf53df5ddff3	0x15aba0
 cddrawsubmgr	?Advance_15c360@CAniAdvanceCursor@@QAEHI@Z	72.4627	72.4627	1	7782fd96976b	0x15c360
@@ -1055,11 +1055,6 @@ cddrawsubmgr	?VirtualMethodUnknown20@CDDrawSubMgr@@UAEHXZ	100.0000	100.0000	1	04
 cddrawsubmgrani	?CreateAniEntry2_1529b0@CDDrawSubMgrAni@@QAEPAUCAniElementObj@@PBDPAX@Z	96.8696	96.8696	2	14638f46fdbc	0x1529b0
 cddrawsubmgrani	?CreateAniEntry_1528d0@CDDrawSubMgrAni@@QAEPAUCAniElementObj@@PBDPAX@Z	96.8696	96.8696	2	eaf07e56f33e	0x1528d0
 cddrawsubmgrani	?ScanTree_152ad0@CDDrawSubMgrAni@@QAEHPAVCSymTab@@PBD1@Z	100.0000	100.0000	1	4fd0dd36de59	0x152ad0
-cddrawsubmgrdraco	?ScalarDtor@CDDrawSubMgrDraco@@UAEPAXH@Z	100.0000	100.0000	1	75b48f7b7866	0x1574b0
-cddrawsubmgrdraco	?VirtualMethodUnknown14@CDDrawSubMgrDraco@@UAEHXZ	100.0000	100.0000	1	e0c1279f8b67	0x157480
-cddrawsubmgrdraco	?VirtualMethodUnknown1C@CDDrawSubMgrDraco@@UAEXXZ	100.0000	100.0000	1	a41d1b9ad686	0x158ac0
-cddrawsubmgrdraco	?VirtualMethodUnknown20@CDDrawSubMgrDraco@@UAEHXZ	100.0000	100.0000	1	492db0577417	0x1574a0
-cddrawsubmgrdraco	?VirtualMethodUnknown24@CDDrawSubMgrDraco@@UAEHHHHH@Z	65.9748	65.9748	1	ee9cb60f4f9b	0x1588f0
 cddrawsubmgrleaf	??1CDDrawSubMgrLeaf@@QAE@XZ	94.8750	94.8750	4	3082a4996956	0x1577e0
 cddrawsubmgrleaf	?ClearUnknownMap@CDDrawMapHolder@@QAEXXZ	94.6939	94.6939	3	bd55e7db6e86	0x157bc0
 cddrawsubmgrleaf	?FUN_00552640@CDDrawSubMgrLeaf@@UAEHXZ	100.0000	100.0000	1	68e8f697ee3d	0x152640
@@ -1092,6 +1087,11 @@ cddrawsubmgrleafscan	?Release_1587c0@LeafElementObj@@QAEXXZ	100.0000	100.0000	1	
 cddrawsubmgrleafscan	?RemoveKeysEqual_157c70@CDDrawSubMgrLeafScan@@QAEHPBD0@Z	91.6667	91.6667	1	b6899c82851c	0x157c70
 cddrawsubmgrleafscan	?ScanTree_157ee0@CDDrawSubMgrLeafScan@@QAEHPAVDirNode@@PBD1@Z	100.0000	100.0000	2	e7963647e727	0x157ee0
 cddrawsubmgrleafscan	?SumField_1580b0@CDDrawSubMgrLeafScan@@QAEHPBD@Z	68.0233	68.0233	1	d02f4c4286a1	0x1580b0
+cddrawsubmgrpages	?ScalarDtor@CDDrawSubMgrPages@@UAEPAXH@Z	100.0000	100.0000	1	96b5248c8285	0x1574b0
+cddrawsubmgrpages	?VirtualMethodUnknown14@CDDrawSubMgrPages@@UAEHXZ	100.0000	100.0000	1	27c4b1265ac7	0x157480
+cddrawsubmgrpages	?VirtualMethodUnknown1C@CDDrawSubMgrPages@@UAEXXZ	100.0000	100.0000	1	60666017e286	0x158ac0
+cddrawsubmgrpages	?VirtualMethodUnknown20@CDDrawSubMgrPages@@UAEHXZ	100.0000	100.0000	1	7038b411e22c	0x1574a0
+cddrawsubmgrpages	?VirtualMethodUnknown24@CDDrawSubMgrPages@@UAEHHHHH@Z	65.9748	65.9748	1	bac9c26ed5ab	0x1588f0
 cddrawsurfacemgr	??0CDDrawSurfaceMgr@@QAE@XZ	100.0000	100.0000	5	06a0488572fd	0x155840
 cddrawsurfacemgr	??1CDDrawSurfaceMgr@@UAE@XZ	100.0000	100.0000	2	a14f65509f82	0x1558b0
 cddrawsurfacemgr	?Cleanup_155e20@CDDrawSurfaceMgr@@QAEXXZ	96.1236	96.1236	1	f8c53c988eee	0x155e20
@@ -1123,18 +1123,18 @@ cddrawworkerhost	??1CDDrawWorkerHost@@UAE@XZ	85.7500	85.7500	1	9fd90e770fe7	0x16
 cddrawworkerlist	??1CDDrawWorkerList@@QAE@XZ	100.0000	100.0000	1	8d1c7e634d56	0x163bc0
 cddrawworkerlist	??1CDDrawWorkerListSib@@QAE@XZ	40.7083	40.7083	1	b17051bafc4d	0x156f50
 cddrawworkerlist	?Stub_156fc0@CDDrawWorkerList@@QAEHXZ	100.0000	100.0000	1	7bbd0db2c3bb	0x156fc0
-cddrawworkerlist	?VirtualMethodUnknown14@CDDrawWorkerList@@QAEHXZ	100.0000	100.0000	7	a79cfc5db404	0x156f00
+cddrawworkerlist	?VirtualMethodUnknown14@CDDrawWorkerList@@QAEHXZ	100.0000	100.0000	8	59ffb978e43b	0x156f00
 cddrawworkerlist	?VirtualMethodUnknown1C@CDDrawWorkerList@@QAEXXZ	100.0000	100.0000	6	16b238f3d6ec	0x163c60
 cddrawworkerlist	?VirtualMethodUnknown20@CDDrawWorkerList@@QAEHXZ	100.0000	100.0000	6	de20f70bfc8e	0x156f20
-cddrawworkerlist	?VirtualMethodUnknown24@CDDrawWorkerList@@QAEPAXHHH@Z	52.2321	52.2321	7	689279e9053d	0x156fd0
-cddrawworkerlist	?VirtualMethodUnknown28@CDDrawWorkerList@@QAEPAXHHHH@Z	58.8462	58.8462	7	a360a345db43	0x1573e0
-cddrawworkerlist	?VirtualMethodUnknown2C@CDDrawWorkerList@@QAEPAXHHHHH@Z	60.0746	60.0746	7	efa33c9ede1e	0x157330
-cddrawworkerlist	?VirtualMethodUnknown30@CDDrawWorkerList@@QAEPAXHHHHH@Z	60.0746	60.0746	7	b47c6dd37797	0x157150
-cddrawworkerlist	?VirtualMethodUnknown34@CDDrawWorkerList@@QAEXHH@Z	95.2857	95.2857	7	e2759ca686b2	0x163bf0
+cddrawworkerlist	?VirtualMethodUnknown24@CDDrawWorkerList@@QAEPAXHHH@Z	52.2321	52.2321	8	d06bfb39aba1	0x156fd0
+cddrawworkerlist	?VirtualMethodUnknown28@CDDrawWorkerList@@QAEPAXHHHH@Z	58.8462	58.8462	8	aac6ef07f67a	0x1573e0
+cddrawworkerlist	?VirtualMethodUnknown2C@CDDrawWorkerList@@QAEPAXHHHHH@Z	60.0746	60.0746	8	8c905d10746b	0x157330
+cddrawworkerlist	?VirtualMethodUnknown30@CDDrawWorkerList@@QAEPAXHHHHH@Z	60.0746	60.0746	8	8ae5930d8ed1	0x157150
+cddrawworkerlist	?VirtualMethodUnknown34@CDDrawWorkerList@@QAEXHH@Z	95.2857	95.2857	8	bd9e10659f91	0x163bf0
 cddrawworkermapsmall	??1CDDrawWorkerMapSmall@@UAE@XZ	95.9000	95.9000	2	e22f52ebcd2b	0x156d20
 cddrawworkermapsmall	?FUN_00556db0@CDDrawWorkerMapSmall@@UAEHXZ	100.0000	100.0000	1	77542e447bfc	0x156db0
-cddrawworkermapsmall	?Factory_1658c0@CDDrawWorkerMapSmall@@UAEPAXPAVHarrySurface@@PBDH@Z	85.6437	85.6437	1	1dba792a1593	0x1658c0
-cddrawworkermapsmall	?Factory_165a90@CDDrawWorkerMapSmall@@UAEPAXPAVHarrySurface@@HH@Z	76.3750	76.3750	1	2e885c83ae03	0x165a90
+cddrawworkermapsmall	?Factory_1658c0@CDDrawWorkerMapSmall@@UAEPAXPAVCDDrawSurfaceSource@@PBDH@Z	85.6437	85.6437	1	f8705ac81e63	0x1658c0
+cddrawworkermapsmall	?Factory_165a90@CDDrawWorkerMapSmall@@UAEPAXPAVCDDrawSurfaceSource@@HH@Z	76.3750	76.3750	1	4ecba8475b23	0x165a90
 cddrawworkermapsmall	?Stub_157610@CDDrawWorkerMapSmall@@QAEPAXH@Z	100.0000	100.0000	1	d7e89445f0cb	0x157610
 cddrawworkermapsmall	?Stub_165b90@CDDrawWorkerMapSmall@@QAEXXZ	100.0000	100.0000	3	847d9a6d6c0f	0x165b90
 cddrawworkermapsmall	?VirtualMethodUnknown14@CDDrawWorkerMapSmall@@UAEHXZ	100.0000	100.0000	1	32c92a213e59	0x156cd0

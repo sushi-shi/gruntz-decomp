@@ -1,7 +1,7 @@
 #include <rva.h>
 // CDDrawWorkerMapSmall.cpp - leaf factory methods of the tomalla-named ddrawmgr surface-
 // family sub-manager CDDrawWorkerMapSmall (a CDirectDrawMgr surface/page sub-manager in
-// the "Harry Potter" family; see src/Stub/types/ddrawmgr_surface_family.h).
+// the "DDraw surface manager" family; see src/Stub/types/ddrawmgr_surface_family.h).
 //
 // CDDrawWorkerMapSmall owns a CMapStringToOb at +0x10 (m_unknownMap1) keyed by const char*
 // strings. Unknown28/2C share ONE factory shape: allocate a 0x14-byte "worker" with
@@ -83,7 +83,7 @@ struct AlbusWorkerObj : public AlbusWorker {
     AlbusWorkerObj() {}
     i32 m_04; // +0x04  = parent->m_1c (an internal field of map1)
     i32 m_08; // +0x08  = 0
-    i32 m_0c; // +0x0c  = parent->m_0c (the HarryPotter handle)
+    i32 m_0c; // +0x0c  = parent->m_0c (the CDDrawSurfaceMgr handle)
     i32 m_10; // +0x10  = 0
 }; // 0x14
 
@@ -91,7 +91,7 @@ struct AlbusWorkerObj : public AlbusWorker {
 // a __thiscall Lock (0x139960 -> data ptr) / Unlock (0x1399d0), a format-id probe
 // (0x139800), a +0x0c key handle, and a name at +0x00. Reloc-masked __thiscall
 // callees; only the method offsets + the +0x0c/+0x00 reads are load-bearing.
-class HarrySurface {
+class CDDrawSurfaceSource {
 public:
     i32 Probe_139800();   // 0x139800  format id
     i32 Lock_139960();    // 0x139960  -> data ptr
@@ -101,7 +101,7 @@ public:
     const char* m_0c; // +0x0c  key handle
 };
 
-// The CObject-like grand-base shared by the whole "Harry Potter" surface family
+// The CObject-like grand-base shared by the whole "DDraw surface manager" surface family
 // (its dtor vtable is g_remusBaseDtorVtbl @0x5e8cb4 = the 5-slot CObject interface
 // sub_1bef01 / scalar-dtor / sub_0028ec / sub_00106e / sub_004034). Modeled as a
 // REAL polymorphic base so cl emits the implicit grand-base vptr re-stamp (masks
@@ -119,7 +119,7 @@ struct AlbusMapBase {
 
     i32 m_04; // +0x04
     i32 m_08; // +0x08
-    i32 m_0c; // +0x0c  parent HarryPotter handle
+    i32 m_0c; // +0x0c  parent CDDrawSurfaceMgr handle
     AlbusMapBase() {}
 };
 
@@ -149,11 +149,11 @@ public:
     virtual i32 FUN_00556db0();            // [6]  0x156db0 (state predicate, returns 1)
     virtual void VirtualMethodUnknown1C(); // [7]  0x165810
     virtual void FUN_00556cf0();           // [8]  0x156cf0 (shared, declared-only)
-    virtual void* Factory_1658c0(HarrySurface* a1, const char* key, i32 a3); // [9] 0x1658c0
-    virtual void* VirtualMethodUnknown28(i32 a1, const char* key, i32 a3);   // [10] 0x165990
-    virtual void* VirtualMethodUnknown2C(i32 a1, const char* key, i32 a3);   // [11] 0x165a10
-    virtual void* Factory_165a90(HarrySurface* a1, i32 a2, i32 a3);          // [12] 0x165a90
-    virtual ~CDDrawWorkerMapSmall();                                         // overrides slot [1]
+    virtual void* Factory_1658c0(CDDrawSurfaceSource* a1, const char* key, i32 a3); // [9] 0x1658c0
+    virtual void* VirtualMethodUnknown28(i32 a1, const char* key, i32 a3);          // [10] 0x165990
+    virtual void* VirtualMethodUnknown2C(i32 a1, const char* key, i32 a3);          // [11] 0x165a10
+    virtual void* Factory_165a90(CDDrawSurfaceSource* a1, i32 a2, i32 a3);          // [12] 0x165a90
+    virtual ~CDDrawWorkerMapSmall(); // overrides slot [1]
 
     // VirtualMethodUnknown20 (0x157600) is NOT a vtable slot - a plain method.
     i32 VirtualMethodUnknown20();
@@ -237,10 +237,10 @@ CDDrawWorkerMapSmall::~CDDrawWorkerMapSmall() {
 static inline AlbusWorkerObj* MakeAlbusWorker(const CDDrawWorkerMapSmall* parent) {
     AlbusWorkerObj* w = new AlbusWorkerObj;
     if (w != 0) {
-        i32 harryPotter = parent->m_0c;
+        i32 surfaceMgr = parent->m_0c;
         w->m_04 = AlbusReadField1c(parent);
         w->m_08 = 0;
-        w->m_0c = harryPotter;
+        w->m_0c = surfaceMgr;
         w->m_10 = 0;
     }
     return w;
@@ -343,7 +343,7 @@ i32 CDDrawWorkerMapSmall::FUN_00556db0() {
 // field seeds (vptr-last); the polymorphic `new AlbusWorkerObj` stamps vptr-first.
 // Logic/CFG/offsets/the Lock-Unlock/dispatch/inline-strcpy/map-store reproduced.
 RVA(0x001658c0, 0xcc)
-void* CDDrawWorkerMapSmall::Factory_1658c0(HarrySurface* a1, const char* key, i32 a3) {
+void* CDDrawWorkerMapSmall::Factory_1658c0(CDDrawSurfaceSource* a1, const char* key, i32 a3) {
     i32 data = a1->Lock_139960();
     if (data == 0) {
         return 0;
@@ -380,7 +380,7 @@ void* CDDrawWorkerMapSmall::Factory_1658c0(HarrySurface* a1, const char* key, i3
 // format check/Lock/dispatch/inline-strcpy/map-store reproduced; retail stamps the
 // worker vtable vptr-last, the polymorphic `new` stamps vptr-first.
 RVA(0x00165a90, 0xf4)
-void* CDDrawWorkerMapSmall::Factory_165a90(HarrySurface* a1, i32 a2, i32 a3) {
+void* CDDrawWorkerMapSmall::Factory_165a90(CDDrawSurfaceSource* a1, i32 a2, i32 a3) {
     if (a1->Probe_139800() != 0x504358) {
         return 0;
     }
@@ -529,6 +529,6 @@ SIZE_UNKNOWN(AlbusMapBase);
 SIZE_UNKNOWN(AlbusWorker);
 SIZE(AlbusWorkerObj, 0x14);
 SIZE_UNKNOWN(CDDrawSubMgrRemus);
-SIZE_UNKNOWN(HarrySurface);
+SIZE_UNKNOWN(CDDrawSurfaceSource);
 SIZE_UNKNOWN(CDDrawWorkerMapSmall);
 VTBL(CDDrawWorkerMapSmall, 0x001efcc8); // ??_7CDDrawWorkerMapSmall (was g_albusClassVtbl)

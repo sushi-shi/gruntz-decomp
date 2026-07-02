@@ -84,7 +84,7 @@ struct Pair {
 
 // Forward decl for the surface/page-manager family root held at @0x30
 // (HYPOTHESIZED CDirectDrawMgr — see ddrawmgr_surface_family.h).
-class UnknownClassCGruntzMgrHarryPotter;
+class CDDrawSurfaceMgrLayout;
 
 /*
  * CBattlezSpawnMgr_or_CGruntSpawnMgr — nested array bundle inside CGruntSpawnLevel.
@@ -163,10 +163,10 @@ public:
     i32 fieldUnknown02C; // +0x2c  pointer to current game state (a CState subclass)
     // +0x30  HYPOTHESIZED CDirectDrawMgr family root (constructed during init;
     //        its UnknownVirtualMethod18 does the 640x480x16 display-mode init).
-    UnknownClassCGruntzMgrHarryPotter* fieldUnknown030_maybeSurfaceRestoreHandler; // +0x30
-    i32 fieldUnknown034;                                                           // +0x34
-    Utils::RegistryHelper* m_pRegistryHelper;                                      // +0x38
-    i32 fieldUnknown03C, fieldUnknown040, fieldUnknown044, fieldUnknown048;        // +0x3c..
+    CDDrawSurfaceMgrLayout* fieldUnknown030_maybeSurfaceRestoreHandler;     // +0x30
+    i32 fieldUnknown034;                                                    // +0x34
+    Utils::RegistryHelper* m_pRegistryHelper;                               // +0x38
+    i32 fieldUnknown03C, fieldUnknown040, fieldUnknown044, fieldUnknown048; // +0x3c..
     i32 fieldUnknown04C, fieldUnknown050, fieldUnknown054, fieldUnknown058;
     i32 fieldUnknown05C, fieldUnknown060, fieldUnknown064, fieldUnknown068;
     i32 fieldUnknown06C, fieldUnknown070, fieldUnknown074, fieldUnknown078;

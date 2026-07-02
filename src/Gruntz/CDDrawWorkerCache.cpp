@@ -1,6 +1,6 @@
 #include <rva.h>
 // CDDrawWorkerCache.cpp - leaf methods of the tomalla-named class CDDrawWorkerCache
-// (a CDirectDrawMgr surface/page sub-manager in the "Harry Potter" family).
+// (a CDirectDrawMgr surface/page sub-manager in the "DDraw surface manager" family).
 // VirtualMethodUnknown20 is a constant state-ID stub returning 0x13 (19).
 // VirtualMethodUnknown24 is a factory: allocates a 0x17c-byte worker object,
 // seeds it from parent fields, stamps the foreign vftable, calls the
@@ -143,10 +143,10 @@ static inline SiriusWorkerObj* MakeSiriusWorker(const CDDrawWorkerCache* parent)
     SiriusWorkerObj* w = new SiriusWorkerObj;
     if (w != 0) {
         i32 field1c = SiriusReadField1c(parent);
-        i32 harryPotter = parent->m_0c;
+        i32 surfaceMgr = parent->m_0c;
         w->m_04 = field1c;
         w->m_08 = 0;
-        w->m_0c = harryPotter;
+        w->m_0c = surfaceMgr;
         w->m_10 = 0;
         w->m_14 = 0;
         w->m_18 = 0;

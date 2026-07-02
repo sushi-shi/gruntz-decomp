@@ -205,7 +205,7 @@ deferred to the re-anchor.
 | UnknownClassArrays | nested | C:\Proj\Gruntz\GruntzMgr.cpp | layout (~0x144) | tomalla | src/Stub/types/cgruntzmgr.h |
 | UnknownClassInCGruntzMgr | nested | C:\Proj\Gruntz\GruntzMgr.cpp | layout (0x238) | tomalla | src/Stub/types/cgruntzmgr.h |
 
-## HYPOTHESIZED CDirectDrawMgr surface/page-manager family (tomalla "harry_potter")
+## HYPOTHESIZED CDirectDrawMgr surface/page-manager family (placeholder-named)
 
 NOT in RTTI; ALL names are tomalla placeholders. The class IDENTITY (= CDirectDrawMgr
 family, C:\Proj\DDrawMgr) is a HYPOTHESIS; offsets/sizes/inheritance are high
@@ -214,12 +214,12 @@ confidence. `@approx tomalla 1.0.1.77`. Held in CGruntzMgr @0x30. Method address
 
 | Name (placeholder) | Size | Base | Notes | Scaffold |
 |---|---|---|---|---|
-| UnknownClassCGruntzMgrHarryPotter | 0x40 | CObject | family manager; UnknownVirtualMethod18 = 640x480x16 init | src/Stub/types/ddrawmgr_surface_family.h |
+| CDDrawSurfaceMgrLayout | 0x40 | CObject | family manager; UnknownVirtualMethod18 = 640x480x16 init | src/Stub/types/ddrawmgr_surface_family.h |
 | UnknownCGruntzMgrHogwarts | 0x8 | CObject | common base | src/Stub/types/ddrawmgr_surface_family.h |
 | UnknownCGruntzMgrLucius | 0x10 | …Hogwarts | shared sub-manager base | src/Stub/types/ddrawmgr_surface_family.h |
-| UnknownDraco | 0x1c | …Lucius | | src/Stub/types/ddrawmgr_surface_family.h |
+| CDDrawSubMgrPagesLayout | 0x1c | …Lucius | owns trio of surface-pair children | src/Stub/types/ddrawmgr_surface_family.h |
 | UnknownHermiona | 0x6c | …Lucius | CObList + 2×CMapPtrToPtr | src/Stub/types/ddrawmgr_surface_family.h |
-| UnknownHagrid | 0x2c | …Lucius | CObList | src/Stub/types/ddrawmgr_surface_family.h |
+| CDDrawWorkerListLayout | 0x2c | …Lucius | CObList | src/Stub/types/ddrawmgr_surface_family.h |
 | UnknownSeverus | 0x2c | …Lucius | static DDSURFACEDESC-shaped struct | src/Stub/types/ddrawmgr_surface_family.h |
 | UnknownSirius | 0x2c | …Lucius | CMapStringToOb | src/Stub/types/ddrawmgr_surface_family.h |
 | UnknownAlbus | 0x68 | …Lucius | 3×CMapStringToOb | src/Stub/types/ddrawmgr_surface_family.h |

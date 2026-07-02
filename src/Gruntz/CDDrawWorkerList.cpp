@@ -1,7 +1,7 @@
 #include <rva.h>
 // CDDrawWorkerList.cpp - four leaf factory methods of the tomalla-named class
 // CDDrawWorkerList (a CDirectDrawMgr surface/page sub-manager in the ddrawmgr
-// "Harry Potter" family; see src/Stub/types/ddrawmgr_surface_family.h).
+// "DDraw surface manager" family; see src/Stub/types/ddrawmgr_surface_family.h).
 //
 // All four share ONE shape: allocate a 0x7c-byte "worker" object with the global
 // operator new, inline-construct it (zero/seed its
@@ -45,9 +45,9 @@ class CObject;
 //   +0x34 (slot 13) Vfunc34(4 args)
 // Only declarations - never defined, so no ??_7 vtable is emitted here; the real
 // vtable is the foreign engine datum stamped into the object below.
-class HagridWorker {
+class CDDrawWorkerBase {
 public:
-    // Slot RVAs named per HagridWorkerB (0x1efed0, 14 slots); HagridWorkerA
+    // Slot RVAs named per CDDrawWorkerB (0x1efed0, 14 slots); CDDrawWorkerA
     // (0x1efea0, 12 slots) reuses this base but its slots 5/7/8/10/11 differ.
     virtual void FUN_005bef01();                         // [0] 0x1bef01
     virtual i32 ScalarDtor(i32 flag);                    // [1] scalar-deleting destructor
@@ -67,14 +67,14 @@ public:
 
 // The 0x7c-byte worker layouts. Only the seeded offsets are load-bearing; m_78 is
 // the one field whose store width differs between the two workers (BYTE vs int).
-// Real polymorphic: `new HagridWorkerB/A` makes cl auto-emit ??_7HagridWorkerB/A
+// Real polymorphic: `new CDDrawWorkerB/A` makes cl auto-emit ??_7CDDrawWorkerB/A
 // (masks the retail vtables 0x5efed0 / 0x5efea0) and stamp the vptr in the ctor -
-// no manual `*(void**)w = &g_hagridWorkerVtbl*` store (ALL-VTABLES mandate).
-struct HagridWorkerB : public HagridWorker {
-    HagridWorkerB() {}
+// no manual `*(void**)w = &g_ddrawWorkerVtbl*` store (ALL-VTABLES mandate).
+struct CDDrawWorkerB : public CDDrawWorkerBase {
+    CDDrawWorkerB() {}
     i32 m_04;     // +0x04
     i32 m_08;     // +0x08
-    i32 m_parent; // +0x0c  = parent CDDrawWorkerList::m_pHarryPotter (+0xc)
+    i32 m_parent; // +0x0c  = parent CDDrawWorkerList::m_pSurfaceMgr (+0xc)
     char _pad10[0x20 - 0x10];
     i32 m_20; // +0x20  = 0x80000000
     char _pad24[0x38 - 0x24];
@@ -89,8 +89,8 @@ struct HagridWorkerB : public HagridWorker {
     i32 m_78; // +0x78  = 0 (int flag for the int-flag workers)
 }; // 0x7c
 
-struct HagridWorkerA : public HagridWorker {
-    HagridWorkerA() {}
+struct CDDrawWorkerA : public CDDrawWorkerBase {
+    CDDrawWorkerA() {}
     i32 m_04;     // +0x04
     i32 m_08;     // +0x08
     i32 m_parent; // +0x0c
@@ -112,7 +112,7 @@ struct HagridWorkerA : public HagridWorker {
 // The child type used in the work-node linked-list at +0x14.
 // Virtual slot +0x28 (Vfunc28) is dispatched in Unknown34; +0x74 is a
 // reference count. Slot layout matches the child class in the engine.
-class HagridChild {
+class CDDrawWorkerItem {
 public:
     virtual void Slot00();
     virtual i32 ScalarDtor(i32 flag); // +0x04
@@ -131,13 +131,13 @@ public:
 
 // Work nodes (CObList CNode-shaped: +0x00 = next, +0x08 = child pointer).
 struct WorkNode {
-    WorkNode* m_next;     // +0x00
-    i32 m_discard;        // +0x04  (not accessed; prev ptr or padding)
-    HagridChild* m_child; // +0x08
+    WorkNode* m_next;          // +0x00
+    i32 m_discard;             // +0x04  (not accessed; prev ptr or padding)
+    CDDrawWorkerItem* m_child; // +0x08
 };
 
 // ---------------------------------------------------------------------------
-// CDDrawWorkerList - only the load-bearing offsets are modeled: m_pHarryPotter at
+// CDDrawWorkerList - only the load-bearing offsets are modeled: m_pSurfaceMgr at
 // +0x0c (copied into the worker) and the CObList at +0x10. The four factory
 // methods occupy lower vtable slots (their slot numbers are not load-bearing;
 // only their bodies are matched), so they are placed last.
@@ -156,7 +156,7 @@ public:
     void* m_vptr;              // +0x00 (vptr; not stamped by these methods)
     i32 m_status;              // +0x04  initialized to -1 when inactive
     char m_pad08[0x0c - 0x08]; // +0x08..0x0b
-    i32 m_pHarryPotter;        // +0x0c  (CDDrawSubMgr+0xc)
+    i32 m_pSurfaceMgr;         // +0x0c  (CDDrawSubMgr+0xc)
     CObList m_workers;         // +0x10  worker list (CObList)
 
     ~CDDrawWorkerList(); // 0x163bc0 (walk+destroy children, then ~CObList(m_workers))
@@ -201,7 +201,7 @@ public:
 // Same base readiness predicate used by several Lucius-derived managers.
 RVA(0x00156f00, 0x16)
 i32 CDDrawWorkerList::VirtualMethodUnknown14() {
-    if (m_pHarryPotter == 0) {
+    if (m_pSurfaceMgr == 0) {
         goto fail;
     }
     if (m_status != -1) {
@@ -216,14 +216,14 @@ fail:
 // fields THROUGH the allocation register and returns it; the null path returns 0.
 // Defined inline so they fold into each factory, reproducing the target's "init
 // via eax, commit to esi only at the merge" register schedule. The parent's
-// m_pHarryPotter is read INSIDE the init (after the null check), not passed as a
+// m_pSurfaceMgr is read INSIDE the init (after the null check), not passed as a
 // pre-evaluated argument, so its load is not hoisted above the new call.
-static inline HagridWorkerB* MakeWorkerB(const CDDrawWorkerList* parent) {
-    HagridWorkerB* w = new HagridWorkerB;
+static inline CDDrawWorkerB* MakeWorkerB(const CDDrawWorkerList* parent) {
+    CDDrawWorkerB* w = new CDDrawWorkerB;
     if (w != 0) {
-        i32 harryPotter = parent->m_pHarryPotter;
+        i32 surfaceMgr = parent->m_pSurfaceMgr;
         w->m_04 = 0;
-        w->m_parent = harryPotter;
+        w->m_parent = surfaceMgr;
         w->m_08 = 0;
         w->m_20 = (i32)0x80000000;
         w->m_38 = -1;
@@ -236,12 +236,12 @@ static inline HagridWorkerB* MakeWorkerB(const CDDrawWorkerList* parent) {
     return w;
 }
 
-static inline HagridWorkerA* MakeWorkerA(const CDDrawWorkerList* parent) {
-    HagridWorkerA* w = new HagridWorkerA;
+static inline CDDrawWorkerA* MakeWorkerA(const CDDrawWorkerList* parent) {
+    CDDrawWorkerA* w = new CDDrawWorkerA;
     if (w != 0) {
-        i32 harryPotter = parent->m_pHarryPotter;
+        i32 surfaceMgr = parent->m_pSurfaceMgr;
         w->m_04 = 0;
-        w->m_parent = harryPotter;
+        w->m_parent = surfaceMgr;
         w->m_08 = 0;
         w->m_20 = (i32)0x80000000;
         w->m_38 = -1;
@@ -260,7 +260,7 @@ static inline HagridWorkerA* MakeWorkerA(const CDDrawWorkerList* parent) {
 // it; on failure destroys it and returns 0.
 RVA(0x00156fd0, 0x8b)
 void* CDDrawWorkerList::VirtualMethodUnknown24(i32 a1, i32 a2, i32 a3) {
-    HagridWorkerA* w = MakeWorkerA(this);
+    CDDrawWorkerA* w = MakeWorkerA(this);
     if (w->Vfunc2C(a1, a2, a3) == 0) {
         if (w != 0) {
             w->ScalarDtor(1);
@@ -276,7 +276,7 @@ void* CDDrawWorkerList::VirtualMethodUnknown24(i32 a1, i32 a2, i32 a3) {
 // bool selects AddHead vs AddTail.
 RVA(0x001573e0, 0xa0)
 void* CDDrawWorkerList::VirtualMethodUnknown28(i32 a1, i32 a2, i32 a3, i32 addHead) {
-    HagridWorkerB* w = MakeWorkerB(this);
+    CDDrawWorkerB* w = MakeWorkerB(this);
     if (w->Vfunc2C(a1, a2, a3) == 0) {
         if (w != 0) {
             w->ScalarDtor(1);
@@ -296,7 +296,7 @@ void* CDDrawWorkerList::VirtualMethodUnknown28(i32 a1, i32 a2, i32 a3, i32 addHe
 // bool selects AddHead vs AddTail.
 RVA(0x00157330, 0xa5)
 void* CDDrawWorkerList::VirtualMethodUnknown2C(i32 a1, i32 a2, i32 a3, i32 a4, i32 addHead) {
-    HagridWorkerB* w = MakeWorkerB(this);
+    CDDrawWorkerB* w = MakeWorkerB(this);
     if (w->Vfunc30(a1, a2, a3, a4) == 0) {
         if (w != 0) {
             w->ScalarDtor(1);
@@ -315,7 +315,7 @@ void* CDDrawWorkerList::VirtualMethodUnknown2C(i32 a1, i32 a2, i32 a3, i32 a4, i
 // As Unknown2C but dispatches the worker's +0x34 virtual.
 RVA(0x00157150, 0xa5)
 void* CDDrawWorkerList::VirtualMethodUnknown30(i32 a1, i32 a2, i32 a3, i32 a4, i32 addHead) {
-    HagridWorkerB* w = MakeWorkerB(this);
+    CDDrawWorkerB* w = MakeWorkerB(this);
     if (w->Vfunc34(a1, a2, a3, a4) == 0) {
         if (w != 0) {
             w->ScalarDtor(1);
@@ -334,7 +334,7 @@ void* CDDrawWorkerList::VirtualMethodUnknown30(i32 a1, i32 a2, i32 a3, i32 a4, i
 // Engine-label backlog stubs.
 // -------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-// Walks the work-node list at m_pHarryPotter+0x04 (= this+0x14 in the MFC
+// Walks the work-node list at m_pSurfaceMgr+0x04 (= this+0x14 in the MFC
 // CObList's internal head pointer, offset +0x04 from the CObList base due to
 // the inherited vptr).  Destroys each node's child if present, then clears
 // the list.
@@ -401,7 +401,7 @@ void CDDrawWorkerList::VirtualMethodUnknown34(i32 a1, i32 a2) {
     WorkNode* pNode = ((HLayout*)this)->m_head;
     while (pNode) {
         WorkNode* pCurrent = pNode;
-        HagridChild* child = pCurrent->m_child;
+        CDDrawWorkerItem* child = pCurrent->m_child;
         pNode = pNode->m_next;
         child->Vfunc28(a1, a2);
         child->m_refCount--;
@@ -441,11 +441,11 @@ i32 CDDrawWorkerList::Stub_156fc0() {
 SIZE_UNKNOWN(CDDrawWorkerList);
 SIZE_UNKNOWN(CDDrawWorkerListSib);
 SIZE_UNKNOWN(WorkerListSibBase);
-SIZE_UNKNOWN(HagridChild);
-SIZE_UNKNOWN(HagridWorker);
-SIZE(HagridWorkerA, 0x7c);
-SIZE(HagridWorkerB, 0x7c);
+SIZE_UNKNOWN(CDDrawWorkerItem);
+SIZE_UNKNOWN(CDDrawWorkerBase);
+SIZE(CDDrawWorkerA, 0x7c);
+SIZE(CDDrawWorkerB, 0x7c);
 SIZE_UNKNOWN(WorkNode);
-// ??_7HagridWorkerA/B (was g_hagridWorkerVtblA/B). A's emitted vtable carries 2
+// ??_7CDDrawWorkerA/B (was g_ddrawWorkerAVtbl/B). A's emitted vtable carries 2
 // extra slots (shared 14-slot base); only B (14 slots) matches retail size.
-VTBL(HagridWorkerB, 0x001efed0);
+VTBL(CDDrawWorkerB, 0x001efed0);

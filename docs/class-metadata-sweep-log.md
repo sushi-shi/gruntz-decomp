@@ -167,8 +167,8 @@ the preprocessor-unaware text-scan counts them while the compiler skips them.
 The CDDraw family is dominated by hand-rolled vtables; none of the 34 is a clean
 own-`??_7` at an unnamed RVA without a foreign stamp. Categories:
 - **Foreign `g_*Vtbl` worker/element stamps** (ctor stamps a reloc-masked extern,
-  not the class body): `SiriusWorker` (g_siriusWorkerVtbl), `HagridWorker`
-  (g_hagridWorkerVtblA/B), `AlbusWorker`/`CDDrawWorkerMapSmall`/`AlbusMapBase`
+  not the class body): `SiriusWorker` (g_siriusWorkerVtbl), `CDDrawWorkerBase`
+  (g_ddrawWorkerAVtbl/B), `AlbusWorker`/`CDDrawWorkerMapSmall`/`AlbusMapBase`
   (g_albus*), `SeverusWorker`/`SeverusValue`/`UnknownSeverusVtableView`
   (g_severus*), `CWwdWorker`/`CWwdFactoryObject`/`CWwdObject` (g_wwd*),
   `CAniElemView` (g_aniElemVtbl), `LeafElement`/`LeafScanValue` (g_leafElemVtbl).
@@ -176,11 +176,11 @@ own-`??_7` at an unnamed RVA without a foreign stamp. Categories:
   hand-rolled uncertainty; do not migrate to VTBL here.
 - **Shared grand-base dtor vtable 0x5e8cb4** (g_remusBaseDtorVtbl): the CObject-
   like base subobjects `CSurfacePairBase`, `CDDrawSubMgrBase`, `LeafScanBase`,
-  `CCatalogNode`, `HagridChild`, `AlbusMapValue`(#if0). A VTBL here would collide
+  `CCatalogNode`, `CDDrawWorkerItem`, `AlbusMapValue`(#if0). A VTBL here would collide
   on / mis-attribute the one shared vtable (same exception as Net's CNetNodeBase).
 - **Declared-but-undefined virtual "views"** (no vtable emitted in-TU, concrete
   RVA not confidently pinned): `CDDrawSurfaceMgr`, `CDDrawSurfaceMgrBase`,
-  `HermionaChild`/`CDDrawChildGroup`, `DracoChild`, `DDChildSlot0`/`DDChildSlot1`,
+  `HermionaChild`/`CDDrawChildGroup`, `CDDrawSurfaceChild`, `DDChildSlot0`/`DDChildSlot1`,
   `CQueueProbeData`, `CWwdArchive`, `Serializer`, `CDDAttachedSurface`,
   `CDDrawWorkerDisp`, `CDDrawSubMgr`, `CDDrawSubMgrLucius`. No RVA guessed.
 

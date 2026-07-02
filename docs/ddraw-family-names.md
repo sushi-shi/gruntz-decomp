@@ -1,6 +1,9 @@
-# DDraw surface-family class names (was: `Unknown*` Harry-Potter codenames)
+# DDraw surface-family class names (was: `Unknown*` placeholder codenames)
 
-The `Unknown*` "Harry Potter family" has **no RTTI** (their vtables carry no complete-object-locator), so these names are **role inferences
+This family was originally reconstructed under throwaway placeholder class names
+(the "Harry Potter" set); that left column below is kept only as the historical
+old→new mapping record. The classes have **no RTTI** (their vtables carry no
+complete-object-locator), so these names are **role inferences
 from the matched code**, not recovered RTTI names — hence the deliberately
 generic `CDDraw*` prefix (they are CGruntzMgr's DirectDraw surface/page
 sub-manager subsystem). This was a mechanical, match-transparent rename: the
@@ -22,11 +25,16 @@ regressions**.
 | `UnknownPettigrew` | `CDDrawSubMgrLeaf` | leaf readiness-predicate manager |
 | `UnknownFilch` | `CDDrawPtrCollections` | standalone holder of two `CPtrList` + a `CPtrArray` |
 | `UnknownMinerva` | `CDDrawMapHolder` | map holder (`ClearUnknownMap`) |
-| `UnknownDraco` | `CDDrawSubMgrDraco` | leaf, role not yet identified (keeps the codename hint) |
-| `WorkerA` / `WorkerB` | `CDDrawWorkerA` / `CDDrawWorkerB` | 0x7c-byte worker elements created by `CDDrawWorkerList` |
+| `UnknownDraco` | `CDDrawSubMgrPages` | slot `m_04`; builds+owns a fixed trio of geometry-init'd surface children (2 are `CDDrawSurfacePair`, 3rd optional via flag&1) sized to the display (w,h,bpp) |
+| `WorkerA` / `WorkerB` (`Hagrid*`) | `CDDrawWorkerA` / `CDDrawWorkerB` | 0x7c-byte worker elements created by `CDDrawWorkerList` (vtables `??_7CDDrawWorkerA/B`) |
+| `HagridChild` | `CDDrawWorkerItem` | ref-counted worker view walked by `CDDrawWorkerList`'s tick/teardown |
+| `DracoWorkerB` (vtable 0x5eff30) | `CDDrawSurfacePair` | front/back surface-pair child (its own vtable = `CDDrawSurfacePair`) |
+| `DracoWorkerA` (vtable 0x5eff70) | `CDDrawSurfaceChildA` | 0x30-byte type-A child of `CDDrawSubMgrPages` (identity uncertain) |
+| `HarrySurface` | `CDDrawSurfaceSource` | lockable named source surface (Lock/Unlock/format-probe) cached by `CDDrawWorkerMapSmall` |
 
 Files and units were renamed to match (e.g. `UnknownHagrid.cpp`/`unknownhagrid` →
-`CDDrawWorkerList.cpp`/`cddrawworkerlist`), and `UnknownRemus` was merged into the
+`CDDrawWorkerList.cpp`/`cddrawworkerlist`; and `CDDrawSubMgrDraco.cpp`/`cddrawsubmgrdraco`
+→ `CDDrawSubMgrPages.cpp`/`cddrawsubmgrpages`), and `UnknownRemus` was merged into the
 existing `gamelevel` unit as `CGameLevel` (its methods now live in `GameLevel.cpp`,
 using raw `this`-offset casts so the bytes are identical).
 

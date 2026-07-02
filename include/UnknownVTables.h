@@ -177,10 +177,10 @@ typedef void (*UnkVfn)(void);
 // out-of-line-dtor anchor; VTBL(CVtbl_1efdc0, 0x001efdc0)). Placeholder removed.
 
 // ClassWithUnknownVTable35  @ 0x005efe08  (10 slots)  refs x2
-// REALIZED as ??_7CDDrawSubMgrDraco@@6B@ (real polymorphic CDDrawSubMgrDraco in
-// src/Gruntz/CDDrawSubMgrDraco.cpp; dtor 0x1574b0 / VirtualMethodUnknown14 0x157480 /
+// REALIZED as ??_7CDDrawSubMgrPages@@6B@ (real polymorphic CDDrawSubMgrPages in
+// src/Gruntz/CDDrawSubMgrPages.cpp; dtor 0x1574b0 / VirtualMethodUnknown14 0x157480 /
 // VirtualMethodUnknown1C 0x158ac0 cl-auto-emit the 10-slot vtable;
-// VTBL(CDDrawSubMgrDraco, 0x001efe08)). Placeholder removed.
+// VTBL(CDDrawSubMgrPages, 0x001efe08)). Placeholder removed.
 
 // ClassWithUnknownVTable36  @ 0x005efe30  src:g_fileMemVtbl
 // REALIZED as ??_7CFileMem@@6B@ (real polymorphic CFileMem in src/Io/FileMem.cpp;
@@ -203,13 +203,13 @@ typedef void (*UnkVfn)(void);
 // as the real abstract CFileMemBase in src/Io/FileMem.cpp (VTBL(CFileMemBase,
 // 0x005efe68); __purecall in the pure slots); not a separate class. Placeholder removed.
 
-// ClassWithUnknownVTable40  @ 0x005efea0  (12 slots)  refs x1  src:g_hagridWorkerVtblA
-// REALIZED as ??_7HagridWorkerA@@6B@ (real polymorphic HagridWorkerA in
+// ClassWithUnknownVTable40  @ 0x005efea0  (12 slots)  refs x1  src:g_ddrawWorkerAVtbl
+// REALIZED as ??_7CDDrawWorkerA@@6B@ (real polymorphic CDDrawWorkerA in
 // src/Gruntz/CDDrawWorkerList.cpp, built via `new`; vtable_names.csv 0x1efea0/0x30).
 // Placeholder removed.
 
-// ClassWithUnknownVTable41  @ 0x005efed0  (14 slots)  refs x3  src:g_hagridWorkerVtblB
-// REALIZED as ??_7HagridWorkerB@@6B@ (real polymorphic HagridWorkerB in
+// ClassWithUnknownVTable41  @ 0x005efed0  (14 slots)  refs x3  src:g_ddrawWorkerBVtbl
+// REALIZED as ??_7CDDrawWorkerB@@6B@ (real polymorphic CDDrawWorkerB in
 // src/Gruntz/CDDrawWorkerList.cpp, built via `new`; vtable_names.csv 0x1efed0/0x38).
 // Placeholder removed.
 

@@ -83,8 +83,8 @@ stamp lands vptr-MIDDLE and cl's implicit vptr-first ctor cannot reproduce it.
 | `CAniRecordBase2` / `g_albusWorkerVtbl` | 0x1f02d8 (0x5f02d8) | **ALREADY-real (prior)** | — | `CAniRecord.cpp` already models the albus worker as real-polymorphic `CAniRecordBase2` (14 slots, `~CAniRecordBase2` @0x165dd0 = 100%). No action. `CDDrawWorkerMapSmall`'s `AlbusWorkerObj` foreign-stamps a *distinct* raw block it constructs inline — that stamp stays. |
 | `CShadeTableArray` / `g_shadeArrayVtbl` | 0x1efb28 (0x5efb28) | **KEPT-foreign** (final-sweep candidate) | — | CObArray-like element-array base; vptr at subobject +0 with a vptr-FIRST member store (`m_vtbl=&g_shadeArrayVtbl`) — structurally realizable like aniElem — BUT its inline ctor/dtor fold into `CShadeTableCache` ctor/dtor (0x14de30/0x14de50), the cache is 1.9%, and the CObArray base semantics risk a divergent `??_7`. Revisit in the final sweep once the cache ctor/dtor are reconstructed. |
 | `CSiriusWorker` / `g_siriusWorkerVtbl` | 0x1efb80 (0x5efb80) | **KEPT-hand-rolled (vptr-middle)** | — | Built by INLINE manual construction in `CGameObject::EnsureWorker80/88/90` (UserBaseLink.cpp): vptr stamp lands AFTER m_04/m_08/m_0c → vptr-middle. Those factories are already `@early-stop` on the zero-register-pinning wall. Also member-stored (`m_vptr=`) in SiriusWorkerHandlers/CDDrawWorkerCache. Worker virtuals unmatched. |
-| `HagridWorkerA` / `g_hagridWorkerVtblA` | 0x1efea0 (0x5efea0) | **KEPT-hand-rolled (vptr-middle)** | — | `MakeWorkerA` (CDDrawWorkerList.cpp) inline construction stamps vptr AFTER field inits. |
-| `HagridWorkerB` / `g_hagridWorkerVtblB` | 0x1efed0 (0x5efed0) | **KEPT-hand-rolled (vptr-middle)** | — | `MakeWorkerB`, ditto. |
+| `CDDrawWorkerA` / `g_ddrawWorkerAVtbl` | 0x1efea0 (0x5efea0) | **KEPT-hand-rolled (vptr-middle)** | — | `MakeWorkerA` (CDDrawWorkerList.cpp) inline construction stamps vptr AFTER field inits. |
+| `CDDrawWorkerB` / `g_ddrawWorkerBVtbl` | 0x1efed0 (0x5efed0) | **KEPT-hand-rolled (vptr-middle)** | — | `MakeWorkerB`, ditto. |
 | `SeverusWorkerObj` / `g_severusWorkerVtbl` | 0x1efbe8 (0x5efbe8) | **KEPT-hand-rolled (inline two-vptr)** | — | `MakeSeverusWorker` (CDDrawWorkerRegistry.cpp) stamps the BASE vtbl first, then (after m_04/m_08/m_0c + CByteArray ctor) the DERIVED vtbl (vptr-middle for derived), then m_64/m_68. Worker virtuals unmatched. |
 | `SeverusWorkerBase` / `g_severusWorkerBaseVtbl` | 0x1efc30 (0x5efc30) | **KEPT-hand-rolled/foreign** | — | Base subobject vtbl stamped first in `MakeSeverusWorker`; also in `GameLevel.h`'s inline ctor + `CSeverusWorkerHost`. Same inline two-vptr wall; base virtuals unmatched. |
 | `LeafElementObj` / `g_leafElemVtbl` | 0x1eff08 (0x5eff08) | **KEPT-hand-rolled (vptr-middle factory)** | — | `~LeafElementObj` (0x158680) IS reconstructed with a vptr-first stamp, but `CreateEntry_157d70` (0x157d70, 99.81%) constructs the element by INLINE manual raw-alloc with a vptr-MIDDLE stamp. Making the class polymorphic forces vptr-first in the factory too → regresses. A class can't be split (real dtor + manual factory), so it stays. |
@@ -344,8 +344,8 @@ factory regressions with `--accept-regressions`.
 | Class / vtable | RVA | File | Action |
 | :-- | :-- | :-- | :-- |
 | `SiriusWorkerObj` / 0x5efb80 | 0x1efb80 | CDDrawWorkerCache.cpp | `new SiriusWorkerObj` (ctor added), stamp+extern removed. ??_7 orphan (0x1efb80 shared w/ CLogicRecord; left unpaired). |
-| `HagridWorkerA` / 0x5efea0 | 0x1efea0 | CDDrawWorkerList.cpp | `new HagridWorkerA`; **paired** (vtable_names.csv ??_7HagridWorkerA@@6B@,0x1efea0,0x30). |
-| `HagridWorkerB` / 0x5efed0 | 0x1efed0 | CDDrawWorkerList.cpp | `new HagridWorkerB`; **paired** (??_7HagridWorkerB@@6B@,0x1efed0,0x38). |
+| `CDDrawWorkerA` / 0x5efea0 | 0x1efea0 | CDDrawWorkerList.cpp | `new CDDrawWorkerA`; **paired** (vtable_names.csv ??_7CDDrawWorkerA@@6B@,0x1efea0,0x30). |
+| `CDDrawWorkerB` / 0x5efed0 | 0x1efed0 | CDDrawWorkerList.cpp | `new CDDrawWorkerB`; **paired** (??_7CDDrawWorkerB@@6B@,0x1efed0,0x38). |
 | `SeverusWorkerBase`+`SeverusWorkerObj` / 0x5efc30,0x5efbe8 | — | CDDrawWorkerRegistry.cpp | two-level `SeverusWorkerBase`->`SeverusWorkerObj`; `new` stamps base(0x5efc30)-then-derived(0x5efbe8) + auto CByteArray member ctor. ??_7 orphan (0x5efbe8 shared w/ CSeverusEntryList). |
 | `AlbusWorkerObj` / 0x5f02d8 | 0x1f02d8 | CDDrawWorkerMapSmall.cpp | `new AlbusWorkerObj`; ??_7 orphan (shared w/ CAniRecord base-2). |
 | `CAmbientSound`/`CAmbientPosSound`/`CRandomAmbientSound` / 0x5e710c,0x5e7124,0x5e713c | — | CWorldSoundSet.cpp | placement `new (raw) CXxx` (3 real RTTI classes); **PAIRED** — the names were already in vtable_names.csv but no TU emitted them; now the 3 factory vtables pair. |
@@ -353,7 +353,7 @@ factory regressions with `--accept-regressions`.
 | `CRemusNode` (+`CRemusNodeBase`) / 0x5efbc0,0x5e8cb4 | 0x1efbc0 | CRemusNode.cpp | two-level real poly; ctors stamp ??_7CRemusNode vptr-first, ~ folds the ??_7CRemusNodeBase grand-base restamp (masks 0x5e8cb4). **paired** (??_7CRemusNode@@6B@,0x1efbc0,0x28). |
 
 UnknownVTables.h entries removed (realized): ClassWithUnknownVTable24 (RemusNodeVtbl),
-40 (HagridWorkerVtblA), 41 (HagridWorkerVtblB) — replaced with REALIZED comments.
+40 (CDDrawWorkerBaseVtblA), 41 (CDDrawWorkerBaseVtblB) — replaced with REALIZED comments.
 
 ### Already-real-polymorphic (no action, compliant): CSeverusEntryList, CRemusEntryList,
 CSeverusWorkerHost, CSeverusWorkerEh, CDDrawSubMgrLeaf, CDDrawSubMgrLeafScan,
@@ -688,7 +688,7 @@ via a `VTBL(Class, 0x<rva>)` catalog macro, and (B) renaming the anonymous
 | `CAniRecordBase2` | `0x001f02d8` | 14 | CAniRecord.cpp |
 | `SiriusWorkerObj` | `0x001efb80` | 10 | CDDrawWorkerCache.cpp |
 | `CDDrawWorkerMapSmall` | `0x001efcc8` | 13 | CDDrawWorkerMapSmall.cpp |
-| `HagridWorkerB` | `0x001efed0` | 14 | CDDrawWorkerList.cpp |
+| `CDDrawWorkerB` | `0x001efed0` | 14 | CDDrawWorkerList.cpp |
 | `CAniElementObj` | `0x001efba8` | 5 | CDDrawSubMgrAni.cpp |
 | `SeverusWorkerBase` | `0x001efc30` | 9 | CDDrawWorkerRegistry.cpp |
 | `SeverusWorkerObj` | `0x001efbe8` | 17 | CDDrawWorkerRegistry.cpp |
@@ -696,7 +696,7 @@ via a `VTBL(Class, 0x<rva>)` catalog macro, and (B) renaming the anonymous
 - `SeverusWorkerObj` needed **2 extra declared-only slots** (`FUN_005522b0` [15],
   `FUN_005523b0` [16]) so its emitted vtable size (17 slots) matches retail; the
   model had truncated at 15.
-- `HagridWorkerA` (0x1efea0, 12 slots) shares the 14-slot `HagridWorker` base, so its
+- `CDDrawWorkerA` (0x1efea0, 12 slots) shares the 14-slot `CDDrawWorkerBase` base, so its
   emitted vtable carries 2 spurious slots → **skipped VTBL** (size mismatch). Splitting
   A off a 12-slot base is a separate refactor.
 - Two vtables are cross-modeled in two TUs (same retail address): `0x001efbe8`
@@ -707,7 +707,7 @@ via a `VTBL(Class, 0x<rva>)` catalog macro, and (B) renaming the anonymous
 
 ### SIZE(exact) set from the `operator new(0xNN)` / layout
 
-`SiriusWorkerObj` 0x17c, `AlbusWorkerObj` 0x14, `HagridWorkerA/B` 0x7c,
+`SiriusWorkerObj` 0x17c, `AlbusWorkerObj` 0x14, `CDDrawWorkerA/B` 0x7c,
 `SeverusWorkerObj` 0x6c, `CAniElementObj` 0x28.
 
 ### Worklist slot stubs added (RVA-bound `@stub`; slot binds into the `??_7`)
@@ -746,7 +746,7 @@ via a `VTBL(Class, 0x<rva>)` catalog macro, and (B) renaming the anonymous
 ### Rule learned (Batch 5)
 
 - **A `VTBL(Class, rva)` only helps when the emitted vtable is the RIGHT SIZE.** For a
-  shared-base worker (`HagridWorkerA` vs `HagridWorkerB`) or a truncated model
+  shared-base worker (`CDDrawWorkerA` vs `CDDrawWorkerB`) or a truncated model
   (`SeverusWorkerObj` at 15 vs 17), the base's slot count leaks into the derived
   `??_7`; add the missing trailing declared-only slots (size-match) or skip VTBL.
 - **A dtor-only polymorphic base emits a dtor-at-slot-0 vtable**, which does NOT match a
@@ -788,7 +788,7 @@ makes the cosmetic `vtables`-unit data symbol imperfect (tracking, not a match l
   polymorphic class (slot-0 thunk / slot-1 dtor / … / slot-8 VM20 / slot-9 VM24). The
   matched `VirtualMethodUnknown20` (0x1576f0) STAYED 100% (trivial body, virtual-neutral);
   only the stub dtor/VirtualMethod_157720 regressed (were ~0%). Zero exact-fn cost.
-- **`CDDrawSubMgrDraco` @0x1efe08** (`CDDrawSubMgrDraco.cpp`, Vtbl_1efe08) — manual-vptr
+- **`CDDrawSubMgrPages` @0x1efe08** (`CDDrawSubMgrPages.cpp`, Vtbl_1efe08) — manual-vptr
   stub → full 10-slot CObject polymorphic class; `Stub_1574b0` (0x1574b0) is now the
   virtual dtor. Both matched methods `VirtualMethodUnknown14` (0x157480) /
   `VirtualMethodUnknown1C` (0x158ac0) STAYED 100% (bodies don't dispatch on `this`);

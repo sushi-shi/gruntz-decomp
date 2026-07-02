@@ -1,7 +1,7 @@
 #include <rva.h>
 // CDDrawWorkerRegistry.cpp - leaf method(s) of the tomalla-named ddrawmgr surface-family
 // sub-manager CDDrawWorkerRegistry (a CDirectDrawMgr surface/page sub-manager in the
-// "Harry Potter" family; see src/Stub/types/ddrawmgr_surface_family.h).
+// "DDraw surface manager" family; see src/Stub/types/ddrawmgr_surface_family.h).
 //
 // CDDrawWorkerRegistry owns a CMapStringToOb at +0x10 (m_unknownMap) keyed by const char*
 // strings. VirtualMethodUnknown54 is a keyed remove-and-destroy: Lookup the key in
@@ -267,10 +267,10 @@ static inline CDDrawWorker* MakeWorker(const CDDrawWorkerRegistry* parent) {
     CDDrawWorker* w = new CDDrawWorker;
     if (w != 0) {
         i32 field1c = ReadRegistryField1c(parent);
-        i32 harryPotter = parent->m_0c;
+        i32 surfaceMgr = parent->m_0c;
         w->m_04 = field1c;
         w->m_08 = 0;
-        w->m_0c = harryPotter;
+        w->m_0c = surfaceMgr;
         w->m_64 = 99999;
         w->m_68 = 0;
     }

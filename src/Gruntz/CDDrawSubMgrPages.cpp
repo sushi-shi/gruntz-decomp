@@ -1,9 +1,9 @@
 #include <rva.h>
-// CDDrawSubMgrDraco.cpp - one leaf cleanup method of the tomalla-named ddrawmgr
-// sub-manager CDDrawSubMgrDraco (a CDirectDrawMgr surface/page sub-manager in the
-// "Harry Potter" family; see src/Stub/types/ddrawmgr_surface_family.h).
+// CDDrawSubMgrPages.cpp - one leaf cleanup method of the tomalla-named ddrawmgr
+// sub-manager CDDrawSubMgrPages (a CDirectDrawMgr surface/page sub-manager in the
+// "DDraw surface manager" family; see src/Stub/types/ddrawmgr_surface_family.h).
 //
-// CDDrawSubMgrDraco carries three owned-child pointers at +0x10/+0x14/+0x18 (the three
+// CDDrawSubMgrPages carries three owned-child pointers at +0x10/+0x14/+0x18 (the three
 // int fields fieldUnknown10/14/18 of the layout). VirtualMethodUnknown1C is a
 // destruct/reset hook: for each of the three pointers, if non-null it dispatches
 // the child's scalar-deleting destructor (vtable slot +0x4, delete-flag arg 1)
@@ -19,14 +19,14 @@
 
 // The owned-child interface: only the scalar-deleting destructor slot (+0x04)
 // is load-bearing. Declarations only - never defined, so no ??_7 is emitted here.
-class DracoChild {
+class CDDrawSurfaceChild {
 public:
     virtual void FUN_005bef01();      // [0] 0x1bef01 (shared thunk, declared-only)
     virtual i32 ScalarDtor(i32 flag); // +0x04  scalar-deleting destructor
 };
 
 // ---------------------------------------------------------------------------
-// CDDrawSubMgrDraco - real polymorphic now (own 10-slot vtable ??_7CDDrawSubMgrDraco
+// CDDrawSubMgrPages - real polymorphic now (own 10-slot vtable ??_7CDDrawSubMgrPages
 // @0x5efe08, was Vtbl_1efe08 / ClassWithUnknownVTable35). Slots 0/2/3/4/6 are the
 // shared CObject thunks, slot 1 the virtual dtor (0x1574b0), slot 5 =
 // VirtualMethodUnknown14 (0x157480), slot 7 = VirtualMethodUnknown1C (0x158ac0),
@@ -43,9 +43,9 @@ inline void* operator new(u32, void* p) {
 // external base ctor runs (transitional workaround: the workers' virtuals live in
 // other TUs, so cl can't emit these vtables - referenced as reloc-masked DATA externs).
 DATA(0x005eff70)
-extern i32 g_dracoWorkerAVtbl; // 0x5eff70
+extern i32 g_ddrawSurfaceChildAVtbl; // 0x5eff70
 DATA(0x005eff30)
-extern i32 g_dracoWorkerBVtbl; // 0x5eff30
+extern i32 g_ddrawSurfacePairVtbl; // 0x5eff30
 
 // The real member-teardown dtor (0x1574d0) lives in CDDrawSubMgr.cpp as
 // CDDrawSubMgr::~CDDrawSubMgr (SAME retail class, vtable 0x5efe08 - the tomalla
@@ -59,7 +59,7 @@ public:
 // The two spawned worker types built by VirtualMethodUnknown24 (0x1588f0): a 0x30-byte
 // "A" child (ctor 0x158f30, vtable 0x5eff70, dispatch +0x24) and two 0x34-byte "B"
 // children (ctor 0x156cb0 = CDDrawSubMgr::CDDrawSubMgr, vtable 0x5eff30, dispatch +0x30).
-class DracoWorkerA {
+class CDDrawSurfaceChildA {
 public:
     virtual void v00();
     virtual void v04();
@@ -70,13 +70,13 @@ public:
     virtual void v18();
     virtual void v1c();
     virtual void v20();
-    virtual i32 Vfunc24(i32 a1, i32 a2, i32 a3); // slot 9 (@0x24)
-    DracoWorkerA(i32 handle, i32 a2, i32 a3);    // 0x158f30
+    virtual i32 Vfunc24(i32 a1, i32 a2, i32 a3);     // slot 9 (@0x24)
+    CDDrawSurfaceChildA(i32 handle, i32 a2, i32 a3); // 0x158f30
     char m_pad04[0x2c - 0x04];
     i32 m_2c; // +0x2c
 }; // 0x30
 
-class DracoWorkerB {
+class CDDrawSurfacePair {
 public:
     virtual void v00();
     virtual void v04();
@@ -91,7 +91,7 @@ public:
     virtual void v28();
     virtual void v2c();
     virtual i32 Vfunc30(i32 a1, i32 a2, i32 a3, i32 a4); // slot 12 (@0x30)
-    DracoWorkerB(i32 handle, i32 a2, i32 a3);            // 0x156cb0
+    CDDrawSurfacePair(i32 handle, i32 a2, i32 a3);       // 0x156cb0
     char m_pad04[0x10 - 0x04];
     i32 m_10; // +0x10
     char m_pad14[0x2c - 0x14];
@@ -99,16 +99,16 @@ public:
     i32 m_30; // +0x30
 }; // 0x34
 
-// The parent/root handle object at CDDrawSubMgrDraco+0x0c; the factory records an
+// The parent/root handle object at CDDrawSubMgrPages+0x0c; the factory records an
 // error code into its +0x38 field when a child fails.
-class DracoRoot {
+class CDDrawSurfaceMgr {
 public:
     i32 m_pad00[0x0e]; // +0x00..0x37
     i32 m_38;          // +0x38  error code slot
 };
 
 // ---------------------------------------------------------------------------
-class CDDrawSubMgrDraco {
+class CDDrawSubMgrPages {
 public:
     virtual void FUN_005bef01();           // [0] 0x1bef01 (shared thunk, declared-only)
     virtual void* ScalarDtor(i32 flag);    // [1] ??_G scalar-deleting dtor (0x1574b0)
@@ -123,16 +123,17 @@ public:
 
     // vptr implicit @ +0x00
     char m_pad04[0x0c - 0x04];
-    DracoRoot* m_0c;  // +0x0c  parent/root handle
-    DracoChild* m_10; // +0x10  (DracoWorkerA object, viewed as DracoChild by VM1C)
-    DracoChild* m_14; // +0x14  (DracoWorkerB object)
-    DracoChild* m_18; // +0x18  (DracoWorkerB object)
+    CDDrawSurfaceMgr* m_0c; // +0x0c  parent/root handle
+    CDDrawSurfaceChild*
+        m_10; // +0x10  (CDDrawSurfaceChildA object, viewed as CDDrawSurfaceChild by VM1C)
+    CDDrawSurfaceChild* m_14; // +0x14  (CDDrawSurfacePair object)
+    CDDrawSurfaceChild* m_18; // +0x18  (CDDrawSurfacePair object)
 };
 
 // ---------------------------------------------------------------------------
 // Ready when all three owned child pointers are populated.
 RVA(0x00157480, 0x1e)
-i32 CDDrawSubMgrDraco::VirtualMethodUnknown14() {
+i32 CDDrawSubMgrPages::VirtualMethodUnknown14() {
     if (m_14 == 0) {
         goto fail;
     }
@@ -151,7 +152,7 @@ fail:
 // For each owned child at +0x10/+0x14/+0x18: if non-null, run its scalar-deleting
 // destructor (vtbl +0x4, arg 1) and null the slot.
 RVA(0x00158ac0, 0x44)
-void CDDrawSubMgrDraco::VirtualMethodUnknown1C() {
+void CDDrawSubMgrPages::VirtualMethodUnknown1C() {
     if (m_10 != 0) {
         m_10->ScalarDtor(1);
         m_10 = 0;
@@ -169,7 +170,7 @@ void CDDrawSubMgrDraco::VirtualMethodUnknown1C() {
 // ---------------------------------------------------------------------------
 // Constant state id.
 RVA(0x001574a0, 0x6)
-i32 CDDrawSubMgrDraco::VirtualMethodUnknown20() {
+i32 CDDrawSubMgrPages::VirtualMethodUnknown20() {
     return 0xf;
 }
 
@@ -177,9 +178,9 @@ i32 CDDrawSubMgrDraco::VirtualMethodUnknown20() {
 // Scalar-deleting destructor (??_G at 0x1574b0): run the real member-teardown
 // ~CDDrawSubMgr (0x1574d0, the same retail class in CDDrawSubMgr.cpp), then
 // operator delete this if the low flag bit is set. Slot 1 override.
-SYMBOL(??_GCDDrawSubMgrDraco @@UAEPAXI@Z)
+SYMBOL(??_GCDDrawSubMgrPages @@UAEPAXI@Z)
 RVA(0x001574b0, 0x1e)
-void* CDDrawSubMgrDraco::ScalarDtor(i32 flag) {
+void* CDDrawSubMgrPages::ScalarDtor(i32 flag) {
     ((CDDrawSubMgr*)this)->CDDrawSubMgr::~CDDrawSubMgr();
     if (flag & 1) {
         operator delete(this);
@@ -201,34 +202,34 @@ void* CDDrawSubMgrDraco::ScalarDtor(i32 flag) {
 // `new` model stamps vptr-first, and the two child ctors/vtables are foreign engine
 // data (reloc-masked). Logic/CFG/offsets/error-codes reproduced.
 RVA(0x001588f0, 0x1c5)
-i32 CDDrawSubMgrDraco::VirtualMethodUnknown24(i32 a1, i32 a2, i32 a3, i32 a4) {
-    DracoWorkerA* a = (DracoWorkerA*)operator new(0x30);
+i32 CDDrawSubMgrPages::VirtualMethodUnknown24(i32 a1, i32 a2, i32 a3, i32 a4) {
+    CDDrawSurfaceChildA* a = (CDDrawSurfaceChildA*)operator new(0x30);
     if (a != 0) {
-        new (a) DracoWorkerA((i32)m_0c, 0, 0);
-        *(i32**)a = &g_dracoWorkerAVtbl;
+        new (a) CDDrawSurfaceChildA((i32)m_0c, 0, 0);
+        *(i32**)a = &g_ddrawSurfaceChildAVtbl;
         a->m_2c = 0;
     }
-    m_10 = (DracoChild*)a;
+    m_10 = (CDDrawSurfaceChild*)a;
 
-    DracoWorkerB* b = (DracoWorkerB*)operator new(0x34);
+    CDDrawSurfacePair* b = (CDDrawSurfacePair*)operator new(0x34);
     if (b != 0) {
-        new (b) DracoWorkerB((i32)m_0c, 1, 0);
+        new (b) CDDrawSurfacePair((i32)m_0c, 1, 0);
         b->m_10 = 0;
-        *(i32**)b = &g_dracoWorkerBVtbl;
+        *(i32**)b = &g_ddrawSurfacePairVtbl;
         b->m_2c = 0;
         b->m_30 = 1;
     }
-    m_14 = (DracoChild*)b;
+    m_14 = (CDDrawSurfaceChild*)b;
 
-    DracoWorkerB* c = (DracoWorkerB*)operator new(0x34);
+    CDDrawSurfacePair* c = (CDDrawSurfacePair*)operator new(0x34);
     if (c != 0) {
-        new (c) DracoWorkerB((i32)m_0c, 2, 0);
+        new (c) CDDrawSurfacePair((i32)m_0c, 2, 0);
         c->m_10 = 0;
-        *(i32**)c = &g_dracoWorkerBVtbl;
+        *(i32**)c = &g_ddrawSurfacePairVtbl;
         c->m_2c = 0;
         c->m_30 = 1;
     }
-    m_18 = (DracoChild*)c;
+    m_18 = (CDDrawSurfaceChild*)c;
 
     if (a->Vfunc24(a1, a2, a3) == 0) {
         if (m_0c->m_38 == 0) {
@@ -253,13 +254,13 @@ i32 CDDrawSubMgrDraco::VirtualMethodUnknown24(i32 a1, i32 a2, i32 a3, i32 a4) {
     return 1;
 }
 
-SIZE_UNKNOWN(CDDrawSubMgrDraco);
+SIZE_UNKNOWN(CDDrawSubMgrPages);
 SIZE_UNKNOWN(CDDrawSubMgr);
-SIZE_UNKNOWN(DracoChild);
-SIZE_UNKNOWN(DracoRoot);
-SIZE(DracoWorkerA, 0x30);
-SIZE(DracoWorkerB, 0x34);
-// ??_7CDDrawSubMgrDraco (was Vtbl_1efe08 / ClassWithUnknownVTable35; 10 slots). cl
+SIZE_UNKNOWN(CDDrawSurfaceChild);
+SIZE_UNKNOWN(CDDrawSurfaceMgr);
+SIZE(CDDrawSurfaceChildA, 0x30);
+SIZE(CDDrawSurfacePair, 0x34);
+// ??_7CDDrawSubMgrPages (was Vtbl_1efe08 / ClassWithUnknownVTable35; 10 slots). cl
 // auto-emits it from the real-polymorphic class; retail datum reloc-masked ->
 // matching-neutral catalog tracking.
-VTBL(CDDrawSubMgrDraco, 0x001efe08);
+VTBL(CDDrawSubMgrPages, 0x001efe08);

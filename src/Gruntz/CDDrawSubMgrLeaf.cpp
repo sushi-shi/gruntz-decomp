@@ -1,7 +1,7 @@
 #include <rva.h>
 // CDDrawSubMgrLeaf.cpp - the tomalla-named class CDDrawSubMgrLeaf, a CObject-
-// derived string-keyed catalog in the CDirectDrawMgr surface/page-manager ("Harry
-// Potter") family (sibling of CDDrawWorkerRegistry). Its primary vftable is at
+// derived string-keyed catalog in the CDirectDrawMgr surface/page-manager (DDraw
+// surface-manager) family (sibling of CDDrawWorkerRegistry). Its primary vftable is at
 // RVA 0x1efc78; the scalar-deleting destructor (0x1577c0) calls the real
 // ~CDDrawSubMgrLeaf at 0x1577e0.
 //

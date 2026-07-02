@@ -1,6 +1,6 @@
 #include <rva.h>
 // UnknownWorkerFuncs.cpp - flat struct implementations of unnamed leaf
-// functions in the Draco/Lucius region.
+// functions in the CDDrawSubMgrPages/CDDrawSubMgr region.
 //
 // Each struct avoids base-class virtual-inheritance so MSVC5 can resolve
 // member-field references. Field offsets match the target EXACTLY.

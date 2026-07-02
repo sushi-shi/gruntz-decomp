@@ -12,7 +12,7 @@
 #include <Globals.h>
 // UnknownLucius.cpp - tomalla-named DDraw surface/page-manager shared base
 // (CDDrawSubMgr).  This is the polymorphic base for the 10 sub-
-// managers (Draco, Hermiona, Hagrid, etc.).  Two functions:
+// managers (CDDrawSubMgrPages, Hermiona, CDDrawWorkerList, etc.).  Two functions:
 //   ctor  - seeds the three fields + stamps vtable.
 //   dtor  - SEH-framed: calls VirtualMethodUnknown1C
 //           cleanup, resets fields, chains base dtor.
@@ -22,7 +22,7 @@
 // ---------------------------------------------------------------------------
 
 // Forward-declare the family manager (root) stored at CGruntzMgr+0x30.
-// Full definition lives in HarryPotter.cpp (HarryPotter unit) and in
+// Full definition lives in CDDrawSurfaceMgr.cpp (CDDrawSurfaceMgr unit) and in
 // src/Stub/types/ddrawmgr_surface_family.h.
 class CDDrawSurfaceMgr;
 
@@ -40,7 +40,7 @@ public:
 
 class CDDrawSubMgr : public CDDrawSubMgrBase {
 public:
-    CDDrawSubMgr(CDDrawSurfaceMgr* pHarryPotter, i32 unknown2, i32 unknown3);
+    CDDrawSubMgr(CDDrawSurfaceMgr* pSurfaceMgr, i32 unknown2, i32 unknown3);
     virtual ~CDDrawSubMgr() OVERRIDE;
     virtual void VirtualMethodUnknown14();
     virtual i32 VirtualMethodUnknown18();
@@ -50,8 +50,8 @@ public:
     // Engine-label backlog stub (scalar-deleting dtor of a far sibling class).
     void* Stub_155720(i32 flag);
 
-    i32 fieldUnknown8;                // +0x08
-    CDDrawSurfaceMgr* m_pHarryPotter; // +0x0c
+    i32 fieldUnknown8;               // +0x08
+    CDDrawSurfaceMgr* m_pSurfaceMgr; // +0x0c
 };
 
 // operator delete (used indirectly via VirtualMethodUnknown1C; may throw -> /GX).
@@ -320,10 +320,10 @@ public:
 // the Lucius vtable (compiler-generated), then seeds the remaining fields.
 // ---------------------------------------------------------------------------
 RVA(0x00156cb0, 0x20)
-CDDrawSubMgr::CDDrawSubMgr(CDDrawSurfaceMgr* pHarryPotter, i32 unknown2, i32 unknown3)
+CDDrawSubMgr::CDDrawSubMgr(CDDrawSurfaceMgr* pSurfaceMgr, i32 unknown2, i32 unknown3)
     : CDDrawSubMgrBase(unknown2) {
     fieldUnknown8 = unknown3;
-    m_pHarryPotter = pHarryPotter;
+    m_pSurfaceMgr = pSurfaceMgr;
 }
 
 // ---------------------------------------------------------------------------
@@ -339,7 +339,7 @@ CDDrawSubMgr::~CDDrawSubMgr() {
     VirtualMethodUnknown1C();
     m_fieldBaseUnknown = -1;
     fieldUnknown8 = 0;
-    m_pHarryPotter = 0;
+    m_pSurfaceMgr = 0;
 }
 
 // Out-of-line stubs for unmatched virtuals (anchors the vtable in this TU).

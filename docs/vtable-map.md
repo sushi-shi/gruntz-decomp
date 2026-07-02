@@ -43,7 +43,7 @@ unmatched TUs or are foreign/library), so the ctor does a manual `*(void**)this 
 (reloc-masked). 36 of the 75 strong non-RTTI starts are already annotated:
 DinMgr2 `g_deviceConfig{A,B,C}`, the whole Dsndmgr family
 (`g_{DirectSoundMgr,DirectSoundClone,SoundDevice,StreamVoice,SoundStream,StreamFeeder,Pure}Vtbl`),
-WAP `z`-container/worker vtables (`g_{severusWorkerBase,hagridWorkerA,albusWorker,
+WAP `z`-container/worker vtables (`g_{severusWorkerBase,ddrawWorkerA,albusWorker,
 siriusWorker,remusNode,wwdObj,catalog,leafScan}Vtbl`), `g_fileImageVtbl`,
 `g_fileMemBaseVtbl`, `g_zDArrayDtorVtbl`, `g_menuItemVtbl`, `g_faderSineVtbl`, etc.
 The remaining **39 strong non-RTTI starts are not yet annotated** — see the CSV

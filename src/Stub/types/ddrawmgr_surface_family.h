@@ -7,16 +7,16 @@
  * ========================== HYPOTHESIS — NOT CONFIRMED ==========================
  * The "DirectDraw surface / page-manager" class FAMILY.
  *
- * This is tomalla's `harry_potter.{h,cpp}` hierarchy (refs/tomalla-gruntz/gruntz/
- * harry_potter.h). tomalla's class NAMES are throwaway placeholders (Harry-Potter
- * characters) — NONE are real and NONE are in RTTI. We carry them VERBATIM for
- * traceability and tag the whole file as a HYPOTHESIS.
+ * This is tomalla's DDraw surface/page-manager hierarchy. It was originally
+ * reconstructed under throwaway placeholder class NAMES — NONE real, NONE in RTTI.
+ * The names below are now role inferences (CDDraw* prefix); see
+ * docs/ddraw-family-names.md. The file stays tagged as a HYPOTHESIS.
  *
  * HYPOTHESIS (strength: structure/offsets HIGH, identity MEDIUM, names LOW):
  *   This family IS the CDirectDrawMgr surface/page-manager group from
  *   C:\Proj\DDrawMgr\{DDRAWMGR,DIRPAL,DIRSURF}.CPP.
  *   Evidence:
- *     - The root manager (UnknownClassCGruntzMgrHarryPotter) is stored in
+ *     - The root manager (CDDrawSurfaceMgrLayout) is stored in
  *       CGruntzMgr @0x30 (m_..._maybeSurfaceRestoreHandler) and is constructed
  *       during CGruntzMgr init.
  *     - Its UnknownVirtualMethod18(hWnd, 0x280, 0x1e0, 0x10, flags)
@@ -38,14 +38,14 @@
  *   CObject
  *     -> UnknownCGruntzMgrHogwarts (0x8)
  *         -> UnknownCGruntzMgrLucius (0x10)
- *             |- UnknownDraco (0x1c) | UnknownHermiona (0x6c) | UnknownHagrid (0x2c)
+ *             |- CDDrawSubMgrPagesLayout (0x1c) | UnknownHermiona (0x6c) | CDDrawWorkerListLayout (0x2c)
  *             |- UnknownSeverus (0x2c, static DDSURFACEDESC) | UnknownSirius (0x2c)
  *             |- UnknownAlbus (0x68) | UnknownRemus (0x6d4, resolution ladder)
  *             '- UnknownMinerva (0x38) | UnknownPettigrew (0x2c)
  *   Standalone:
  *     UnknownFilch (0x948)
  *     UnknownSalazar (0x94) -> UnknownVoldemort (0x9c, attenuation table)
- *   The manager UnknownClassCGruntzMgrHarryPotter (CObject; 0x40) owns one of each
+ *   The manager CDDrawSurfaceMgrLayout (CObject; 0x40) owns one of each
  *   subclass via 11 pointer fields @4..2c + hWnd @30 + flags @34.
  * ================================================================================
  */
@@ -92,7 +92,7 @@ struct CMapStringToPtr {
     char _raw[0x1c - 4];
 }; // 0x1c
 
-class UnknownClassCGruntzMgrHarryPotter; // the family manager (declared below)
+class CDDrawSurfaceMgrLayout; // the family manager (declared below)
 
 /* Common base (0x8): CObject vptr @0 + one int field @4. */
 class UnknownCGruntzMgrHogwarts : public CObject {
@@ -109,32 +109,28 @@ protected:
 /* The shared polymorphic base for the 10 surface/page sub-managers (0x10). */
 class UnknownCGruntzMgrLucius : public UnknownCGruntzMgrHogwarts {
 public:
-    UnknownCGruntzMgrLucius(
-        UnknownClassCGruntzMgrHarryPotter* pHarryPotter,
-        i32 unknown2,
-        i32 unknown3
-    );
+    UnknownCGruntzMgrLucius(CDDrawSurfaceMgrLayout* pSurfaceMgr, i32 unknown2, i32 unknown3);
     virtual ~UnknownCGruntzMgrLucius() OVERRIDE;
     virtual void VirtualMethodUnknown14();
     virtual bool VirtualMethodUnknown18();
     virtual void VirtualMethodUnknown1C();
     virtual void VirtualMethodUnknown20();
 
-    i32 fieldUnknown8;                                        // +0x08
-    UnknownClassCGruntzMgrHarryPotter* m_pUnknownHarryPotter; // +0x0c
+    i32 fieldUnknown8;                     // +0x08
+    CDDrawSurfaceMgrLayout* m_pSurfaceMgr; // +0x0c
 };
 
-class UnknownDraco : public UnknownCGruntzMgrLucius {
+class CDDrawSubMgrPagesLayout : public UnknownCGruntzMgrLucius {
 public:
-    UnknownDraco(UnknownClassCGruntzMgrHarryPotter* p, i32 u2, i32 u3);
-    virtual ~UnknownDraco() OVERRIDE;
+    CDDrawSubMgrPagesLayout(CDDrawSurfaceMgrLayout* p, i32 u2, i32 u3);
+    virtual ~CDDrawSubMgrPagesLayout() OVERRIDE;
     virtual void VirtualMethodUnknown24();
     i32 fieldUnknown10, fieldUnknown14, fieldUnknown18; // +0x10..+0x1b
 }; // 0x1c
 
 class UnknownHermiona : public UnknownCGruntzMgrLucius {
 public:
-    UnknownHermiona(UnknownClassCGruntzMgrHarryPotter* p, i32 u2, i32 u3);
+    UnknownHermiona(CDDrawSurfaceMgrLayout* p, i32 u2, i32 u3);
     virtual ~UnknownHermiona() OVERRIDE;
     CObList m_unknownObList;            // +0x10
     CMapPtrToPtr m_unknownPtrMap1;      // +0x2c
@@ -142,10 +138,10 @@ public:
     i32 fieldUnknown64, fieldUnknown68; // +0x64..+0x6b
 }; // 0x6c
 
-class UnknownHagrid : public UnknownCGruntzMgrLucius {
+class CDDrawWorkerListLayout : public UnknownCGruntzMgrLucius {
 public:
-    UnknownHagrid(UnknownClassCGruntzMgrHarryPotter* p, i32 u2, i32 u3);
-    virtual ~UnknownHagrid() OVERRIDE;
+    CDDrawWorkerListLayout(CDDrawSurfaceMgrLayout* p, i32 u2, i32 u3);
+    virtual ~CDDrawWorkerListLayout() OVERRIDE;
     CObList m_unknownObList; // +0x10
 }; // 0x2c
 
@@ -157,7 +153,7 @@ struct UnknownDirectDrawStructure {
 
 class UnknownSeverus : public UnknownCGruntzMgrLucius {
 public:
-    UnknownSeverus(UnknownClassCGruntzMgrHarryPotter* p, i32 u2, i32 u3);
+    UnknownSeverus(CDDrawSurfaceMgrLayout* p, i32 u2, i32 u3);
     virtual ~UnknownSeverus() OVERRIDE;
     CMapStringToOb m_unknownMap; // +0x10  (widest sub-manager vtable, 18 slots)
 
@@ -171,14 +167,14 @@ public:
 
 class UnknownSirius : public UnknownCGruntzMgrLucius {
 public:
-    UnknownSirius(UnknownClassCGruntzMgrHarryPotter* p, i32 u2, i32 u3);
+    UnknownSirius(CDDrawSurfaceMgrLayout* p, i32 u2, i32 u3);
     virtual ~UnknownSirius() OVERRIDE;
     CMapStringToOb m_unknownMap; // +0x10
 }; // 0x2c
 
 class UnknownAlbus : public UnknownCGruntzMgrLucius {
 public:
-    UnknownAlbus(UnknownClassCGruntzMgrHarryPotter* p, i32 u2, i32 u3);
+    UnknownAlbus(CDDrawSurfaceMgrLayout* p, i32 u2, i32 u3);
     virtual ~UnknownAlbus() OVERRIDE;
     CMapStringToOb m_unknownMap1; // +0x10
     CMapStringToOb m_unknownMap2; // +0x2c
@@ -189,7 +185,7 @@ public:
 /* Seeds the resolution/scaling ladder in its ctor. */
 class UnknownRemus : public UnknownCGruntzMgrLucius {
 public:
-    UnknownRemus(UnknownClassCGruntzMgrHarryPotter* p, i32 u2, i32 u3);
+    UnknownRemus(CDDrawSurfaceMgrLayout* p, i32 u2, i32 u3);
     virtual ~UnknownRemus() OVERRIDE;
     i32 fieldUnknown10;                                                 // +0x10
     char _pad14[0x20 - 0x14];                                           // +0x14..+0x1f
@@ -206,7 +202,7 @@ public:
 
 class UnknownMinerva : public UnknownCGruntzMgrLucius {
 public:
-    UnknownMinerva(UnknownClassCGruntzMgrHarryPotter* p, i32 u2, i32 u3);
+    UnknownMinerva(CDDrawSurfaceMgrLayout* p, i32 u2, i32 u3);
     virtual ~UnknownMinerva() OVERRIDE;
     void ClearUnknownMap();
     CMapStringToPtr m_unknownMap; // +0x10
@@ -217,7 +213,7 @@ public:
 
 class UnknownPettigrew : public UnknownCGruntzMgrLucius {
 public:
-    UnknownPettigrew(UnknownClassCGruntzMgrHarryPotter* p, i32 u2, i32 u3);
+    UnknownPettigrew(CDDrawSurfaceMgrLayout* p, i32 u2, i32 u3);
     virtual ~UnknownPettigrew() OVERRIDE;
     CMapStringToPtr m_unknownMap; // +0x10
 }; // 0x2c
@@ -267,10 +263,10 @@ public:
  * The family manager — HYPOTHESIZED CDirectDrawMgr. Stored in CGruntzMgr @0x30.
  * Owns one of each sub-manager via 11 pointer slots @4..2c, plus hWnd + flags.
  */
-class UnknownClassCGruntzMgrHarryPotter : public CObject {
+class CDDrawSurfaceMgrLayout : public CObject {
 public:
-    UnknownClassCGruntzMgrHarryPotter();
-    virtual ~UnknownClassCGruntzMgrHarryPotter() OVERRIDE;
+    CDDrawSurfaceMgrLayout();
+    virtual ~CDDrawSurfaceMgrLayout() OVERRIDE;
     virtual void UnknownVirtualMethod14();
     // (hWnd, 640, 480, 16, flags) — the display-mode init call.
     virtual bool
@@ -278,9 +274,9 @@ public:
     virtual void UnknownVirtualMethod1C();
 
     // One owned sub-manager per slot (names = tomalla placeholders).
-    UnknownCGruntzMgrLucius* fieldUnknownDraco;     // +0x04
+    UnknownCGruntzMgrLucius* m_pSubMgrPages;        // +0x04
     UnknownCGruntzMgrLucius* fieldUnknownHermiona;  // +0x08
-    UnknownCGruntzMgrLucius* fieldUnknownHagrid;    // +0x0c
+    UnknownCGruntzMgrLucius* m_pWorkerList;         // +0x0c
     UnknownCGruntzMgrLucius* fieldUnknownSeverus;   // +0x10
     UnknownCGruntzMgrLucius* fieldUnknownSirius;    // +0x14
     UnknownCGruntzMgrLucius* fieldUnknownAlbus;     // +0x18
@@ -311,11 +307,11 @@ SIZE_UNKNOWN(CPtrList);
 SIZE_UNKNOWN(UnknownAlbus);
 SIZE_UNKNOWN(UnknownCGruntzMgrHogwarts);
 SIZE_UNKNOWN(UnknownCGruntzMgrLucius);
-SIZE_UNKNOWN(UnknownClassCGruntzMgrHarryPotter);
+SIZE_UNKNOWN(CDDrawSurfaceMgrLayout);
 SIZE_UNKNOWN(UnknownDirectDrawStructure);
-SIZE_UNKNOWN(UnknownDraco);
+SIZE_UNKNOWN(CDDrawSubMgrPagesLayout);
 SIZE_UNKNOWN(UnknownFilch);
-SIZE_UNKNOWN(UnknownHagrid);
+SIZE_UNKNOWN(CDDrawWorkerListLayout);
 SIZE_UNKNOWN(UnknownHermiona);
 SIZE_UNKNOWN(UnknownMinerva);
 SIZE_UNKNOWN(UnknownPettigrew);

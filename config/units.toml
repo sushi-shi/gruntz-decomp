@@ -1368,8 +1368,8 @@ source = "src/Gruntz/CDDrawWorkerList.cpp"
 flags = "base"
 
 [[unit]]
-unit = "cddrawsubmgrdraco"
-source = "src/Gruntz/CDDrawSubMgrDraco.cpp"
+unit = "cddrawsubmgrpages"
+source = "src/Gruntz/CDDrawSubMgrPages.cpp"
 flags = "eh"
 
 [[unit]]
