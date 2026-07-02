@@ -155,8 +155,8 @@ CSpriteRef* CSpriteRefTable::Add(char* szName, i32 kind) {
 // already present; Install (vtable slot 9) installs the resolved palette. src is
 // the source resolver (FUN_0053bff0 resolves a packed-tag 'PAL'=0x50414c resource
 // by namespaced name); name is the level/name string. Helpers are reloc-masked
-// externals; the typed view-of-`this` (CPaletteOwner) overlays m_spriteMgrHolder as the
-// destination-registry root (a struct-view cast at entry).
+// externals; the destination-registry root is reached through the real member
+// m_spriteMgrHolder (typed as CPaletteDestRoot), whose +0x18 is the sprite mgr.
 //
 // int (BOOL) return: the `!src` and already-present guards return literal 0/1
 // (reusing the zeroed eax / `mov eax,1`); the success path normalizes the
@@ -192,11 +192,6 @@ struct CPaletteDestRoot { // m_spriteMgrHolder points here; +0x18 is the dest re
 struct CPaletteSource {
     void* Resolve(char* szName, i32 tag); // 0x13bff0
 };
-// Typed view of `this`: m_destRoot (== CSpriteRefTable::m_spriteMgrHolder) is the dest registry root.
-struct CPaletteOwner {
-    char m_pad00[0x4];
-    CPaletteDestRoot* m_destRoot; // +0x04
-};
 
 // @early-stop
 // out-param zero-init scheduling wall (docs/patterns/outparam-zeroinit-scheduling.md):
@@ -206,13 +201,12 @@ struct CPaletteOwner {
 // exact (frame 0x40, epilogues, !!x normalize all match).
 RVA(0x000e2d10, 0xa1)
 i32 CSpriteRefTable::LoadGruntzPalette(i32 src, i32 name) {
-    CPaletteOwner* self = (CPaletteOwner*)this;
     if (!src) {
         return 0;
     }
 
     void* found = 0;
-    self->m_destRoot->m_spriteMgr->m_hash.Lookup((char*)name, &found);
+    ((CPaletteDestRoot*)m_spriteMgrHolder)->m_spriteMgr->m_hash.Lookup((char*)name, &found);
     if (found) {
         return 1;
     }
@@ -223,7 +217,7 @@ i32 CSpriteRefTable::LoadGruntzPalette(i32 src, i32 name) {
     if (!pal) {
         return 0;
     }
-    return self->m_destRoot->m_spriteMgr->Install(pal, 0, 0) != 0;
+    return ((CPaletteDestRoot*)m_spriteMgrHolder)->m_spriteMgr->Install(pal, 0, 0) != 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -455,6 +449,5 @@ SIZE_UNKNOWN(CLookupSprite);
 SIZE_UNKNOWN(CPaletteDestRegistry);
 SIZE_UNKNOWN(CPaletteDestRoot);
 SIZE_UNKNOWN(CPaletteHashTable);
-SIZE_UNKNOWN(CPaletteOwner);
 SIZE_UNKNOWN(CPaletteSource);
 SIZE_UNKNOWN(CSpriteMgrHolder);
