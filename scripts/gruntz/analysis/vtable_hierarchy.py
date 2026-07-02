@@ -44,12 +44,15 @@ Usage:
     python3 -m gruntz.analysis.vtable_hierarchy --summary       # one line per class
     python3 -m gruntz.analysis.vtable_hierarchy --class CImage  # one class, full detail
     python3 -m gruntz.analysis.vtable_hierarchy --csv out.csv   # machine-readable, all classes
+    python3 -m gruntz.analysis.vtable_hierarchy --coverage      # completeness: anchored vs UNANCHORED (omitted) src vtables
+    python3 -m gruntz.analysis.vtable_hierarchy --name-audit    # src-name vs RTTI-COL-name mismatches (RTTI authoritative)
 """
 import argparse
 import csv
 import re
 
 from gruntz.analysis import vtable_scan as vs
+from gruntz.match import class_meta, class_vtables
 
 IB = vs.IMAGEBASE
 REPO = vs.REPO
@@ -72,7 +75,23 @@ def load_symbol_names():
     return m
 
 
+def load_symbol_name_to_rva():
+    """emitted MSVC symbol -> rva (inverse of load_symbol_names). Lets us anchor a
+    class through its OWN cl-emitted ``??_7<Name>@@6B@`` vtable datum."""
+    m = {}
+    p = REPO / "build/gen/symbol_names.csv"
+    if p.exists():
+        with open(p) as f:
+            for r in csv.DictReader(f):
+                try:
+                    m[r["name"]] = int(r["rva"], 16)
+                except (ValueError, KeyError):
+                    pass
+    return m
+
+
 SYM = load_symbol_names()
+SYM_BY_NAME = load_symbol_name_to_rva()
 
 
 def slot_name(idx, fn_rva):
@@ -218,6 +237,30 @@ def build_registry():
             p = src_parent.get(cname)
             ci.direct_bases = [(p, 0)] if p else []
         ci.vtables.setdefault(0, (rva, size, slots_of(rva, size)))
+
+    # 3) classes whose OWN cl-emitted ``??_7<Name>@@6B@`` already landed in
+    #    build/gen/symbol_names.csv (a real-polymorphic class whose vtable datum the
+    #    build names) but that carry NO VTBL and no RTTI COL under their own name.
+    #    That emitted symbol IS the class's primary vtable -> anchor it. This closes
+    #    part of the src-only omission gap (see --coverage).
+    sym7 = re.compile(r"^\?\?_7([A-Za-z_]\w*)@@6B@$")
+    for sym, rva in SYM_BY_NAME.items():
+        m = sym7.match(sym)
+        if not m:
+            continue
+        cname = m.group(1)
+        size = start_size.get(rva)
+        if size is None:
+            continue
+        ci = reg.get(cname)
+        if ci is not None and ci.primary():
+            continue
+        if ci is None:
+            ci = reg[cname] = ClassInfo(cname)
+            p = src_parent.get(cname)
+            ci.direct_bases = [(p, 0)] if p else []
+        ci.vtables.setdefault(0, (rva, size, slots_of(rva, size)))
+
     global SRC_PARENT
     SRC_PARENT = src_parent
     return reg, src_parent
@@ -407,6 +450,234 @@ def write_csv(reg, path):
 
 
 # ---------------------------------------------------------------------------
+# coverage + RTTI-name-authority audit
+#
+# The per-class slot tables above only cover a class the registry can ANCHOR
+# (RTTI COL / VTBL / emitted ??_7). A class that declares cl-emitted ``virtual``s
+# but has none of those is silently ABSENT from that output - the "missed src-only
+# vtables" gap. These two modes turn that silent omission into an explicit report,
+# and make the RTTI type-descriptor name (the original dev name) authoritative.
+# ---------------------------------------------------------------------------
+_STAMP_RE = re.compile(r"&\s*(g_\w*(?:[Vv]tbl|vftable))\b")
+_GVTBL_RE = re.compile(r"\b(g_\w*(?:[Vv]tbl|vftable))\b")
+_HEX_RE = re.compile(r"0x([0-9a-fA-F]{5,8})\b")
+_FUN_RE = re.compile(r"\bFUN_([0-9a-fA-F]{6,8})\b")
+_VTBLFIELD_RE = re.compile(r"\*\s*vtbl\s*;")   # hand-rolled COM `SomeVtbl* vtbl;` idiom
+
+
+def col_by_rva():
+    """rva -> authoritative RTTI type-descriptor (COL) name, PRIMARY vtables only.
+    This is the original developers' class name for that vtable."""
+    return {v["start"]: v["rtti"] for v in vs.VTABLES if v["rtti"] and v["base_off"] == 0}
+
+
+def stamp_global_rvas():
+    """{g_*Vtbl global: rva} harvested from any src/ + include/ line that carries
+    EXACTLY ONE ``g_*Vtbl`` token and ONE ``0x<addr>`` (the ``extern ... // 0x<VA>``
+    binding or the stamp-site comment) - the unambiguous address of a manual-stamp
+    vtable datum, so a class that only carries ``*(void**)this = &g_XVtbl`` can be
+    anchored to its base vtable. The one-token/one-hex rule keeps it collision-free."""
+    out = {}
+    for path in class_meta.source_files():
+        try:
+            t = path.read_text(errors="ignore")
+        except OSError:
+            continue
+        for line in t.splitlines():
+            gs = _GVTBL_RE.findall(line)
+            hs = _HEX_RE.findall(line)
+            if len(gs) == 1 and len(hs) == 1:
+                va = int(hs[0], 16)
+                out.setdefault(gs[0], va - IB if va >= IB else va)
+    return out
+
+
+def _struct_slot_rvas(body):
+    """Ordered per-virtual-slot fn rva (or None for a dtor/named/pure slot) parsed
+    from a class body's ``virtual ... FUN_<VA> ...;`` declarations (the FUN_<VA>
+    transcription convention: VA = RVA + 0x400000)."""
+    out = []
+    for m in re.finditer(r"\bvirtual\b", body):
+        seg = body[m.start():]
+        semi = seg.find(";")
+        if semi >= 0:
+            seg = seg[:semi]
+        fm = _FUN_RE.search(seg)
+        out.append(int(fm.group(1), 16) - IB if fm else None)
+    return out
+
+
+def structural_anchor(body, size_by_start, slots_cache):
+    """Locate a class's vtable purely from its transcribed slot fn addresses: the
+    vtable whose size == the declared virtual count AND every concrete FUN_ slot
+    matches at its index. When the concrete slots are all shared base thunks (so
+    several vtables match), the tie is broken toward the one whose vptr-stamp is
+    code-referenced FAR more often - a shared grand-base dominates - and only when
+    that dominance is unambiguous (>= 2x the runner-up). Returns an rva or None."""
+    ss = _struct_slot_rvas(body)
+    if not ss or not any(r is not None for r in ss):
+        return None
+    n = len(ss)
+    cands = [st for st, sz in size_by_start.items() if sz == n
+             and all(r is None or (i < len(slots_cache[st]) and slots_cache[st][i] == r)
+                     for i, r in enumerate(ss))]
+    if not cands:
+        return None
+    if len(cands) == 1:
+        return cands[0]
+    cands.sort(key=lambda s: vs.CODE_REF.get(s, 0), reverse=True)
+    top, second = cands[0], cands[1]
+    if vs.CODE_REF.get(top, 0) >= 2 * max(1, vs.CODE_REF.get(second, 0)):
+        return top
+    return None
+
+
+class Audit:
+    """Everything the coverage / name-audit walks need, computed once. Enumerates
+    every vtable-bearing src class (class_meta/class_vtables scoping) and resolves
+    each to a vtable rva through a layered anchor cascade."""
+
+    def __init__(self):
+        self.reg, _ = build_registry()
+        self.col = col_by_rva()
+        self.size_by_start = {v["start"]: v["size"] for v in vs.VTABLES}
+        self.slots = {v["start"]: slots_of(v["start"], v["size"]) for v in vs.VTABLES}
+        self.stamp = stamp_global_rvas()
+        self.vtbl_ann = class_meta.vtbl_annotated_names()
+        self.rtti_cfg = class_vtables.rtti_vtables()
+        # per-class NAME signals, keeping EVERY per-TU body (the FUN_ transcription
+        # may live in only one of a class's several shim definitions).
+        self.virtual, self.manual, self.vtbl_field = set(), set(), set()
+        self.bodies, self.where = {}, {}
+        for name, path, lineno, body in class_meta.iter_class_defs():
+            self.where.setdefault(name, (class_meta.rel(path), lineno))
+            self.bodies.setdefault(name, []).append(body)
+            if re.search(r"\bvirtual\b", body):
+                self.virtual.add(name)
+            if class_vtables._MANUAL_RE.search(body):
+                self.manual.add(name)
+            if _VTBLFIELD_RE.search(body):
+                self.vtbl_field.add(name)
+
+    def vtable_bearing(self):
+        """Sorted src class NAMES carrying a vtable signal: a real virtual, a manual
+        &g_*Vtbl / m_vtbl / m_vptr stamp, a hand-rolled ``* vtbl;`` field, a VTBL()
+        annotation, or an RTTI ??_7 in config/vtable_names.csv."""
+        return sorted(n for n in self.where
+                      if n in self.virtual or n in self.manual or n in self.vtbl_field
+                      or n in self.vtbl_ann or n in self.rtti_cfg)
+
+    def resolve(self, name):
+        """(rva, source, rtti_col) or (None, None, None). source is one of
+        rtti / vtbl / sym-vtbl / manual-stamp / structural. rtti_col is the COL
+        (dev) name at that rva, or None for a non-RTTI vtable."""
+        ci = self.reg.get(name)
+        if ci and ci.primary():
+            rva = ci.primary()[0]
+            if ci.is_rtti:
+                src = "rtti"
+            elif name in self.vtbl_ann:
+                src = "vtbl"
+            else:
+                src = "sym-vtbl"        # anchored via the emitted ??_7 fallback
+            return rva, src, self.col.get(rva)
+        # manual stamp of a (base) vtable, resolvable to an rva via its extern comment
+        for body in self.bodies.get(name, []):
+            for g in _STAMP_RE.findall(body):
+                if g in self.stamp:
+                    r = self.stamp[g]
+                    return r, "manual-stamp", self.col.get(r)
+        # structural: a unique / dominant slot-sequence match (try each shim body)
+        hits = {structural_anchor(b, self.size_by_start, self.slots)
+                for b in self.bodies.get(name, [])}
+        hits.discard(None)
+        if len(hits) == 1:
+            r = next(iter(hits))
+            return r, "structural", self.col.get(r)
+        return None, None, None
+
+    def reason(self, name):
+        """Why an unanchored class is still omitted: the signal(s) it carries."""
+        sig = []
+        if name in self.virtual:
+            sig.append("virtual")
+        if name in self.manual:
+            sig.append("manual-stamp")
+        if name in self.vtbl_field:
+            sig.append("vtbl-field")
+        if name in self.vtbl_ann:
+            sig.append("VTBL")
+        if name in self.rtti_cfg:
+            sig.append("rtti-cfg")
+        return "+".join(sig) or "?"
+
+
+def cmd_coverage(aud):
+    """Report the COMPLETENESS of vtable coverage: total vtable-bearing classes,
+    how many the analyzer anchors (by source), and the UNANCHORED worklist."""
+    by_src, anchored, unanchored, newly = {}, [], [], []
+    for name in aud.vtable_bearing():
+        rva, src, col = aud.resolve(name)
+        if rva is None:
+            unanchored.append((name, aud.reason(name)))
+            continue
+        by_src[src] = by_src.get(src, 0) + 1
+        anchored.append((name, src, rva, col))
+        if src in ("sym-vtbl", "manual-stamp", "structural"):
+            newly.append((name, src, rva, col))
+    total = len(anchored) + len(unanchored)
+    print("# vtable-coverage audit - every src/+include/ class carrying a vtable")
+    print("# signal (declares a real virtual / a manual &g_*Vtbl|m_vtbl|m_vptr stamp /")
+    print("# named in config/vtable_names.csv), and whether the analyzer can ANCHOR")
+    print("# its vtable rva (RTTI COL / VTBL / emitted ??_7 / resolvable manual stamp /")
+    print("# unique structural slot match).")
+    print(f"# total vtable-bearing classes : {total}")
+    print(f"# anchored                     : {len(anchored)}  "
+          + "(" + ", ".join(f"{k}={v}" for k, v in sorted(by_src.items())) + ")")
+    print(f"# UNANCHORED (silently omitted): {len(unanchored)}  <- add a VTBL() (or the")
+    print("#   class is an abstract intermediate base with no standalone vtable of its own)")
+    print(f"# newly anchored by try-harder : {len(newly)}  (sym-vtbl / manual-stamp / structural)")
+    print()
+    if newly:
+        print("## newly anchored (previously omitted from the hierarchy)")
+        for name, src, rva, col in sorted(newly):
+            tail = ""
+            if col:
+                tail = f"  rtti={col}"
+                if col != name and src != "manual-stamp":
+                    tail += "  [NAME-MISMATCH]"
+            print(f"  {name:<36} {src:<12} vtbl@0x{rva:06x}{tail}")
+        print()
+    print("## UNANCHORED - the src-only omission worklist (add VTBL / locate the vtable)")
+    for name, reason in unanchored:
+        path, ln = aud.where[name]
+        print(f"  {name:<40} [{reason}]  {path}:{ln}")
+
+
+def cmd_name_audit(aud):
+    """Report every src class whose name disagrees with the RTTI type-descriptor
+    (COL) name at the vtable it OWNS. The RTTI name is the original developers'
+    and is authoritative -> these are renames to apply. Manual stamps of a SHARED
+    base vtable are excluded (reusing a base's vtable is not a rename)."""
+    mism = []
+    for name in aud.vtable_bearing():
+        rva, src, col = aud.resolve(name)
+        if rva is None or src == "manual-stamp" or not col or col == name:
+            continue
+        mism.append((name, col, rva, src))
+    print("# RTTI-name authority audit - the RTTI type-descriptor (COL) name is the")
+    print("# original developers' class name and is AUTHORITATIVE. Each line is a src")
+    print("# class whose name disagrees with the RTTI name at the vtable it owns")
+    print("# (via VTBL / its emitted ??_7 / a unique structural slot match).")
+    print(f"# src-vs-RTTI name mismatches : {len(mism)}")
+    print()
+    for name, col, rva, src in sorted(mism):
+        path, ln = aud.where[name]
+        print(f"  name-mismatch: src={name:<22} rtti={col:<16} vtbl@0x{rva:06x}  "
+              f"via={src:<10} {path}:{ln}")
+
+
+# ---------------------------------------------------------------------------
 def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -414,7 +685,22 @@ def main():
     ap.add_argument("--class", dest="klass", metavar="NAME",
                     help="restrict to one class (case-insensitive substring)")
     ap.add_argument("--summary", action="store_true", help="one line per class (no slot tables)")
+    ap.add_argument("--coverage", action="store_true",
+                    help="COMPLETENESS audit: total vtable-bearing classes, # anchored, "
+                         "# UNANCHORED (silently-omitted worklist) with the reason per class")
+    ap.add_argument("--name-audit", dest="name_audit", action="store_true",
+                    help="list every src-class-name vs RTTI-COL-name mismatch (RTTI is authoritative)")
     args = ap.parse_args()
+
+    if args.coverage or args.name_audit:
+        aud = Audit()
+        if args.coverage:
+            cmd_coverage(aud)
+        if args.name_audit:
+            if args.coverage:
+                print()
+            cmd_name_audit(aud)
+        return
 
     reg, _ = build_registry()
     classes = [reg[n] for n in sorted(reg) if reg[n].primary()]
