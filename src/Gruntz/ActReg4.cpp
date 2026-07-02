@@ -10,11 +10,10 @@
 
 #include <Gruntz/CStringNode.h> // the type-name teardown slot
 #include <Globals.h>
+#include <Gruntz/CTypeNameEntryView.h>
+#include <Gruntz/CTypeColl.h>
 
 // The shared type-name registry (R1 @0x6bf650) - identical to the other registrars.
-struct CTypeColl {
-    i32 Find(i32 key, i32 z); // 0x16da80
-};
 struct CTypeColl2 {
     void Insert(void* coll, void* item, i32 n); // 0x16d850
 };
@@ -46,10 +45,6 @@ extern void* g_projActAllocResult;
 extern "C" i32 ProjActAlloc(); // 0x16d990
 DATA(0x002bf620)
 extern CButeTree g_buteTree;
-
-struct CTypeNameEntryView {
-    void Assign(const char* name); // 0x1b9e74
-};
 
 // The R4 per-class activation table (g_actReg4 @0x6446d8 is the collection; the
 // lo/hi/base/cur/stride/scratch fields are separate DATA-pinned BSS globals).

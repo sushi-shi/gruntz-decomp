@@ -11,6 +11,7 @@
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
 #include <Gruntz/CFortressFlag.h>
 #include <Gruntz/Enums.h> // Warlord - the m_124 flag-owner roster (KING/NAPOLEAN/PATTON/VIKING)
+#include <Gruntz/CAnimSink.h>
 
 // The handler entry the per-class registry yields: its first dword receives the
 // per-frame handler PMF (AdvanceAnim, a 4-byte code ptr on this single-inheritance
@@ -54,12 +55,6 @@ struct CFortressFlagActReg {
 DATA(0x00244638)
 extern CFortressFlagActReg g_fortressFlagActReg; // 0x644638
 
-// The animation sub-object embedded at CGameObject+0x1a0 (the bound object is
-// CUserLogic::m_38). Its setter (0x15c360, __thiscall, 1 arg) re-targets the
-// active animation to the draw-delta; modeled NO-body so the call reloc-masks.
-struct CAnimSink {
-    i32 SetAnim(u32 ctx); // 0x15c360
-};
 // The per-frame draw-delta mirror (_g_6bf3bc); the value-load reloc-masks.
 DATA(0x002bf3bc)
 extern "C" u32 g_6bf3bc;

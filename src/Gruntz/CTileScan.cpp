@@ -6,16 +6,11 @@
 // Placeholder names; only OFFSETS + code bytes are load-bearing.
 #include <Ints.h>
 #include <rva.h>
+#include <Gruntz/CScanGrid.h>
 
 struct CScanCell {
     i32 m_0;
     char _pad[0x1c - 4];
-};
-struct CScanGrid {
-    char _00[8];
-    CScanCell** m_8; // +0x08  rows
-    i32 m_c;         // +0x0c  width
-    i32 m_10;        // +0x10  height
 };
 struct CScanPos {
     char _00[0x5c];

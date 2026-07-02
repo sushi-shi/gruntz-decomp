@@ -14,15 +14,7 @@
 #include <Mfc.h>          // CString (the scratch name-vec element)
 #include <Wap32/ZVec.h>   // zDArray<member-fn-ptr> dispatch table + zvec accessors
 #include <Globals.h>
-
-// The animation sub-object embedded at CGameObject+0x1a0 (the bound object is
-// CUserLogic::m_38). Its setter (0x15c360, __thiscall, 1 arg) re-targets the
-// active animation to the draw-delta passed in; modeled NO-body so the call
-// reloc-masks (the body lives in the engine sub-mgr TU). The SAME engine method
-// CGruntPuddleSink::Notify / CProjRenderObj::SetAnim / CPathHazard::Advance call.
-struct CAnimSink {
-    i32 SetAnim(u32 ctx); // 0x15c360
-};
+#include <Gruntz/CAnimSink.h>
 
 // The global the advance hands the sink (_g_6bf3bc; the per-frame draw-delta
 // mirror). Defined in SpriteResource.cpp/Projectile.cpp; declared extern "C"

@@ -12,6 +12,11 @@
 #include <string.h> // inline strcmp of the grunt type name
 
 #include <rva.h>
+#include <Gruntz/MgrSub30.h>
+#include <Gruntz/CStepList2.h>
+#include <Gruntz/MgrSub24.h>
+#include <Gruntz/CTypeColl.h>
+#include <Gruntz/CStepList.h>
 
 #pragma intrinsic(strcmp)
 
@@ -21,12 +26,6 @@
 struct CGruntStep;
 
 // Type-name collection (g_typeColl @0x6bf650): Lookup(key)->node, node->m_0 = name.
-struct CTypeNode {
-    char* m_0;
-};
-struct CTypeColl {
-    CTypeNode* Lookup(i32 key); // 0x40437c (__thiscall)
-};
 DATA(0x006bf650)
 extern CTypeColl g_typeColl;
 
@@ -36,21 +35,10 @@ struct CGruntTileMgr {
 };
 
 // A small owned collection at CGrunt+0x31c that gets RemoveAll'd on commit.
-struct CStepList {
-    void RemoveAll(); // 0x5b48a6 (__thiscall)
-};
 
 // The manager singleton (g_mgrSettings @0x64556c): m_30->m_24->m_5c board base,
 // m_68 grid (slot[] at +0x1c), m_70 dims (m_c/m_10), plus a +0x68 sub the
 // scatter helper (0x14bf) is a __thiscall on.
-struct MgrSub24 {
-    char pad[0x5c];
-    i32 m_5c;
-};
-struct MgrSub30 {
-    char pad[0x24];
-    MgrSub24* m_24;
-};
 struct MgrGrid {
     char pad[0x1c];
     CGruntStep* slot[15];                    // +0x1c
@@ -80,10 +68,6 @@ extern void* g_freeList;
 DATA(0x0064554c)
 extern i32 g_freeListBias;
 
-// A second list the seek variant RemoveAll-equivalent walks (g_645540).
-struct CStepList2 {
-    void Drop(i32 node); // 0x40163b (__thiscall on g_645540)
-};
 DATA(0x00645540)
 extern CStepList2 g_dropList;
 

@@ -7,6 +7,8 @@
 #include <Gruntz/CStringNode.h> // the type-name teardown slot
 #include <Gruntz/UserLogic.h>
 #include <Globals.h>
+#include <Gruntz/CTypeNameEntryView.h>
+#include <Gruntz/CTypeColl.h>
 
 // The leaf game-object whose dtor opens this TU. A CUserLogic leaf: its only
 // destructible member is the inherited +0x18 EngStr link, so the dtor folds the
@@ -102,9 +104,6 @@ void CProjActObj::FireActivation(i32 coord) {
 // Same fast-range/slow-Find/rebuild lookup as the per-class R3 table. All globals
 // are BSS (DATA-pinned so the loads reloc-mask); collection/CString helpers are
 // external/no-body.
-struct CTypeColl {
-    i32 Find(i32 key, i32 z); // 0x16da80
-};
 struct CTypeColl2 {
     void Insert(void* coll, void* item, i32 n); // 0x16d850
 };
@@ -134,11 +133,6 @@ extern i32 g_typeCounter; // 0x61aea8
 // 0x16db90) - the class-name -> type-id map.
 DATA(0x002bf620)
 extern CButeTree g_buteTree;
-
-// The CString helpers the entry teardown/assign reach.
-struct CTypeNameEntryView {
-    void Assign(const char* name); // 0x1b9e74
-};
 
 // R1 lookup: the type-id -> R1 entry resolution shared with the per-class table.
 static inline CTypeNameEntry* TypeLookup(i32 key) {

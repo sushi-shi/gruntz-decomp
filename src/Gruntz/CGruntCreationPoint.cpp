@@ -10,6 +10,7 @@
 // recovered engine identities.
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
 #include <Gruntz/CGruntCreationPoint.h>
+#include <Gruntz/CAnimSink.h>
 
 // The handler entry the per-class registry yields: its first dword receives the
 // per-frame handler PMF (AdvanceAnim, a 4-byte code ptr on this single-inheritance
@@ -52,15 +53,6 @@ struct CCreationPointActReg {
 };
 DATA(0x00244700)
 extern CCreationPointActReg g_creationPointActReg; // 0x644700
-
-// The animation sub-object embedded at CGameObject+0x1a0 (the bound object is
-// CUserLogic::m_38). Its setter (0x15c360, __thiscall, 1 arg) re-targets the
-// active animation to the draw-delta passed in; modeled NO-body so the call
-// reloc-masks (the body lives in the engine sub-mgr TU). The SAME engine method
-// CSimpleAnimation::AdvanceAnim / CGruntPuddleSink::Notify call.
-struct CAnimSink {
-    i32 SetAnim(u32 ctx); // 0x15c360
-};
 
 // The global the advance hands the sink (_g_6bf3bc; the per-frame draw-delta
 // mirror). Defined in SpriteResource.cpp/Projectile.cpp; declared extern "C"

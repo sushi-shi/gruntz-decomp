@@ -16,6 +16,8 @@
 
 #include <Ints.h>
 #include <Win32.h> // RECT + IntersectRect
+#include <Gruntz/CScanRectInit.h>
+#include <Gruntz/CScanGrid.h>
 
 // --- offset-faithful views (offsets + called methods load-bearing; reloc-masked) ---
 struct CScanCoord {
@@ -59,17 +61,6 @@ struct CScanCell { // 0x1c bytes/cell
     char _04[0x10 - 4];
     i32 m_10; // +0x10 type
     char _14[0x1c - 0x14];
-};
-struct CScanGrid {   // this->m_c (CBrickz-shape)
-    char _00[8];     //
-    CScanCell** m_8; // +0x08 row table
-    i32 m_c, m_10;   // +0x0c width, +0x10 height
-    char _14[0x60 - 0x14];
-    RECT m_60;      // +0x60 dirty rect
-    i32 m_70, m_74; // +0x70 width, +0x74 height
-};
-struct CScanRectInit { // 0x34a4 - init a rect + return it
-    RECT* Set34a4(i32 l, i32 t, i32 r, i32 b);
 };
 struct CScanGoal { // this->m_f4[] element
     i32 m_0, m_4;

@@ -13,6 +13,10 @@
 #include <Win32.h> // RECT/POINT/PtInRect (game WinAPI table 0x6c456c, IAT call)
 
 #include <rva.h>
+#include <Gruntz/CStepList2.h>
+#include <Gruntz/MgrSub30.h>
+#include <Gruntz/MgrSub24.h>
+#include <Gruntz/CStepList.h>
 
 #define F(base, o) (*(i32*)((char*)(base) + (o)))
 #define P(base, o) (*(char**)((char*)(base) + (o)))
@@ -25,14 +29,7 @@ struct CGruntTileMgr {
 };
 
 // A small owned collection at CGrunt+0x31c that gets RemoveAll'd on commit.
-struct CStepList {
-    void RemoveAll(); // 0x5b48a6 (__thiscall)
-};
 
-// The move-node drop helper (g_645540, __thiscall) used by phases 0/1.
-struct CStepList2 {
-    void Drop(i32 node); // 0x40163b (__thiscall on g_645540)
-};
 extern CStepList2 g_dropList;
 
 // The grid: slot[] at +0x1c (both the tile mgr and g_mgrSettings->m_68).
@@ -44,14 +41,6 @@ struct MgrDims {
     char pad[0xc];
     i32 m_c;
     i32 m_10;
-};
-struct MgrSub24 {
-    char pad[0x5c];
-    i32 m_5c;
-};
-struct MgrSub30 {
-    char pad[0x24];
-    MgrSub24* m_24;
 };
 // The grunt-cue sound object reached via g_mgrSettings->m_60.
 struct SoundMgr {

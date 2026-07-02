@@ -11,6 +11,7 @@
 
 #include <Ints.h>
 #include <Win32.h> // RECT + IntersectRect
+#include <Gruntz/CScanRectInit.h>
 
 extern "C" char* g_mgrSettings; // _g_mgrSettings @0x64556c (plane at +0x70)
 
@@ -63,9 +64,6 @@ struct CScanPlane { // grid (settings->m_70)
     i32 m_70, m_74;             // +0x70 width, +0x74 height
     i32 Probe20f4(i32 a, i32 b, i32 col, i32 row, void* out, i32 one, i32 f, i32 g); // 0x20f4
     void Method43ea(i32 a);                                                          // 0x43ea
-};
-struct CScanRectInit { // 0x34a4
-    RECT* Set34a4(i32 l, i32 t, i32 r, i32 b);
 };
 struct CGrunt { // this (ebx)
     char _00[0x10];

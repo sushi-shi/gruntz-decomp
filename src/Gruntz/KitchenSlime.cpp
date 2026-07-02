@@ -5,6 +5,7 @@
 #include <Gruntz/UserLogic.h> // CUserLogic base (CKitchenSlime : CUserLogic) for the leaf-dtor fold
 #include <Gruntz/Sprite.h>    // CSprite (frame-data value; the looked-up direction sprite)
 #include <Globals.h>
+#include <Gruntz/CTypeNameEntryView.h>
 // KitchenSlime.cpp - CKitchenSlime::LoadSprites @0x0b3160 (C:\Proj\Gruntz). The
 // kitchen-slime hazard's per-step "advance to the next walkable tile" driver: it
 // probes up to four tiles in the slime's current travel direction (m_10->m_124),
@@ -383,12 +384,6 @@ extern i32 g_typeCounter;
 
 // The global bute store (g_buteTree @0x6bf620; Find 0x16d190 / Insert 0x16db90).
 extern CButeTree g_buteTree;
-
-// The CString helpers the entry teardown/assign reach (free 0x1b9b93 __thiscall,
-// operator= 0x1b9e74 __thiscall) - external/reloc-masked.
-struct CTypeNameEntryView {
-    void Assign(const char* name); // 0x1b9e74 (CString::operator=)
-};
 
 // R1 lookup: the type-id -> R1 entry resolution shared with the per-class table.
 static inline CTypeNameEntry* TypeLookup(i32 key) {

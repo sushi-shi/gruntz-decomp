@@ -17,6 +17,13 @@
 
 #include <Win32.h> // RECT + IntersectRect / PtInRect
 #include <rva.h>
+#include <Gruntz/CStepList2.h>
+#include <Gruntz/CScanRectInit.h>
+#include <Gruntz/MgrSub30.h>
+#include <Gruntz/MgrSub24.h>
+#include <Gruntz/CScanGrid.h>
+#include <Gruntz/CTypeColl.h>
+#include <Gruntz/CStepList.h>
 
 #pragma intrinsic(strcmp)
 
@@ -27,12 +34,6 @@
 struct CGruntStep;
 
 // Type-name collection (g_typeColl @0x6bf650): Lookup(key)->node, node->m_0 = name.
-struct CTypeNode {
-    char* m_0;
-};
-struct CTypeColl {
-    CTypeNode* Lookup(i32 key); // 0x40437c
-};
 extern CTypeColl g_typeColl; // ?g_typeColl@@3UCTypeColl@@A (bound in GruntUpdateStep.cpp)
 
 // A grunt in the tileMgr's live-grunt list (node->m_8): m_54/m_58 = tile col/row,
@@ -59,14 +60,7 @@ extern "C" i32 BoardTest(char* board, i32 x, i32 y); // 0x401127
 extern "C" i32 CellTargetable(i32 col, i32 row);     // 0x40107d
 
 // The owned pending-coord collection at CGrunt+0x31c that gets RemoveAll'd on commit.
-struct CStepList {
-    void RemoveAll(); // 0x5b48a6
-};
 
-// The coord recycle pool (g_dropList/g_coordPool @0x645540); Drop == Recycle163b.
-struct CStepList2 {
-    void Drop(i32 node); // 0x40163b
-};
 extern CStepList2 g_dropList; // ?g_dropList@@3UCStepList2@@A (bound in GruntUpdateStep.cpp)
 
 // The board grid (g_64556c->m_70, CScanGrid-shape): m_8 row table, m_c/m_10 dims, m_60
@@ -76,17 +70,6 @@ struct CScanCell {
     char _04[0x10 - 4];
     i32 m_10; // +0x10 type
     char _14[0x1c - 0x14];
-};
-struct CScanGrid {
-    char _00[8];
-    CScanCell** m_8; // +0x08 row table
-    i32 m_c, m_10;   // +0x0c width, +0x10 height
-    char _14[0x60 - 0x14];
-    RECT m_60;      // +0x60 dirty rect
-    i32 m_70, m_74; // +0x70/0x74 its size
-};
-struct CScanRectInit { // 0x34a4 - init a rect + return it
-    RECT* Set34a4(i32 l, i32 t, i32 r, i32 b);
 };
 
 // Pending-coord list node (CGrunt+0x320) + the active cell node (CGrunt+0x324).
@@ -110,14 +93,6 @@ struct CCueMgr {
 
 // The manager/registry singleton (g_64556c @0x64556c): m_30->m_24->m_5c board base,
 // m_60 cue mgr, m_70 board grid.
-struct MgrSub24 {
-    char pad[0x5c];
-    char* m_5c;
-};
-struct MgrSub30 {
-    char pad[0x24];
-    MgrSub24* m_24;
-};
 struct MgrSettings {
     char pad30[0x30];
     MgrSub30* m_30; // +0x30

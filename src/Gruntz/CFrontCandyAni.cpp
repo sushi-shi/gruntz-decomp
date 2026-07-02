@@ -10,6 +10,7 @@
 // recovered engine identities.
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
 #include <Gruntz/CFrontCandyAni.h>
+#include <Gruntz/CAnimSink.h>
 
 // The handler entry the per-class registry yields: its first dword receives the
 // per-frame handler PMF (AdvanceAnim, a 4-byte code ptr on this single-inheritance
@@ -60,14 +61,6 @@ RVA(0x000ad130, 0x15)
 void CFrontCandyAni::InitActReg() {
     g_frontCandyActReg.Construct(2000, 2010);
 }
-
-// The animation sub-object embedded at CGameObject+0x1a0 (the bound object is
-// CUserLogic::m_38). Its setter (0x15c360, __thiscall, 1 arg) re-targets the
-// active animation to the draw-delta passed in; modeled NO-body so the call
-// reloc-masks. The SAME engine method CBehindCandyAni / CSimpleAnimation call.
-struct CAnimSink {
-    i32 SetAnim(u32 ctx); // 0x15c360
-};
 
 // The global the advance hands the sink (_g_6bf3bc; the per-frame draw-delta
 // mirror). Declared extern "C" here so the value-load reloc-masks.

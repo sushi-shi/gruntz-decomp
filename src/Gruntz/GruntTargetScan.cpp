@@ -25,6 +25,7 @@
 
 #include <Win32.h> // RECT / POINT / PtInRect
 #include <rva.h>
+#include <Gruntz/CScanGrid.h>
 
 #define F(base, o) (*(i32*)((char*)(base) + (o)))
 #define P(base, o) (*(char**)((char*)(base) + (o)))
@@ -113,11 +114,6 @@ struct CScanTileMgr {
 };
 
 // The board grid (g_gameReg->m_70): dims at +0xc/+0x10.
-struct CScanGrid {
-    char m_pad0[0xc];
-    i32 m_c;  // +0x0c width
-    i32 m_10; // +0x10 height
-};
 
 // The on-screen cue mgr (g_gameReg->m_60): fires the grunt entrance cue (0x4039f4).
 struct CScanCueMgr {

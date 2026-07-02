@@ -10,6 +10,7 @@
 // recovered engine identities.
 #include <Gruntz/CParticlez.h>
 #include <Globals.h>
+#include <Gruntz/CAnimSink.h>
 
 // ---------------------------------------------------------------------------
 // The per-coordinate activation registry CParticlez::FireActivation
@@ -120,9 +121,6 @@ struct CPartAnimObj {
     i32 m_1c0; // +0x1c0 latch a
     char m_pad1c4[0x1c8 - 0x1c4];
     i32 m_1c8; // +0x1c8 latch b
-};
-struct CAnimSink {
-    i32 SetAnim(u32 ctx); // 0x15c360
 };
 // The per-frame draw-delta mirror (_g_6bf3bc); the value-load reloc-masks.
 DATA(0x002bf3bc)
