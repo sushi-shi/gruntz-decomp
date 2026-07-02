@@ -232,14 +232,17 @@ public:
     // reloc-masked). Returns nonzero when the pending state commit succeeds.
     i32 CommitState();
 
-    // 0x1af70 - the 960-B HUD-text formatter switch (8 cases of sprintf over the
-    // game-reg clock/score fields). Deferred to the final sweep (see GameMode.cpp).
-    void FormatHudText(i32 sel);
+    // 0x1af70 - the 960-B HUD-text formatter switch: 8 cases of sprintf over the
+    // game-stats object (g_mgrSettings->m_7c), each stat read via the live-getter /
+    // cached-field pair gated by m_1d0 && stats->m_c (the sibling-guard idiom).
+    void FormatHudText(struct CHudBuf* buf, i32 sel);
 
     char m_pad1a8[0x1b4 - 0x1a8];
     CGMMenuUI* m_1b4; // +0x1b4 the menu UI object the scans drive
     i32 m_1b8;        // +0x1b8 fade/poll duration
     i32 m_1bc;        // +0x1bc music sub-object / enable gate
+    char m_pad1c0[0x1d0 - 0x1c0];
+    i32 m_1d0; // +0x1d0  live-game flag (FormatHudText getter-path gate)
 
     void BuildVersionString(i32, i32, i32, i32);
 };

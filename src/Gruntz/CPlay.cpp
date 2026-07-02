@@ -2027,12 +2027,105 @@ i32 CPlay::winapi_0cdb10_PostMessageA(i32, i32, i32) {
     return 0;
 }
 
-// @confidence: low
-// @source: winapi:PostMessageA
-// @stub
+// ===========================================================================
+// CPlay::HandleTileClick (0x0ceae0) - the menu/pause-state pointer-click handler,
+// the mouse-input twin of OnKeyCommand: same hudSuppressed / renderDisabled(resume)
+// / inGame(reset-or-report) / paused(unpause+PostMessage) priority chain, then the
+// no-active-grunt overlay path: probe the overlay object, early-out on the HUD hit
+// rect, run the guts HUD hit-test, else (inside the world rect) snap the click to
+// the tile grid and place/cancel the world marker. Returns 1 in every path.
+// ===========================================================================
+// A tiny view of the overlay object cached at CPlay::m_overlayActive (+0x320): it is
+// a pointer (Render null-checks it as a gate), whose click probe consumes the event.
+struct COverlayClick {
+    i32 Probe(i32 a, i32 x, i32 y); // reloc-masked thiscall
+};
+// @early-stop
+// regalloc coin-flip wall (docs/patterns/zero-register-pinning.md): the whole
+// priority chain, the overlay probe, both HUD/world rect hit-tests, the grid-snap
+// math + PlaceMarker/CancelMarker tail are all byte-faithful (the grid math +
+// 7-arg PlaceMarker push match exactly). Residual: MSVC assigns the x-coord to
+// edi and y to ebx where retail pins x->ebx / y->edi (mirror pair) and defers the
+// y-load to the guts-rect site; because the compare ORDER is byte-matched I cannot
+// reorder to flip the pair without breaking the matched guts rect. The swap also
+// spares retail's rect-field spill, so my frame drops sub esp,0x10 (the 3 arg-load
+// displacements + 7 epilogue add esp shift). Pure allocator choice, no source
+// lever. ~81%.
 RVA(0x000ceae0, 0x268)
-i32 CPlay::winapi_0ceae0_PostMessageA(i32, i32, i32) {
-    return 0;
+i32 CPlay::HandleTileClick(i32 a, i32 x, i32 y) {
+    if (m_hudSuppressed != 0) {
+        return 1;
+    }
+    if (m_renderDisabled != 0) {
+        m_hudSuppressed = 1;
+        m_renderDisabled = 0;
+        EnterMode(3);
+        m_inGame = 1;
+        return 1;
+    }
+    if (m_inGame != 0) {
+        if (ResetPlayState()) {
+            return 1;
+        }
+        m_4w()->ReportError(0x800a, 0x458);
+        return 1;
+    }
+    if (m_paused != 0) {
+        m_paused = 0;
+        PostMessageA(m_4w()->m_4->m_4->m_4, 0x111, 0x816e, 0);
+        return 1;
+    }
+    if (m_overlayDrag != 0) {
+        return 1;
+    }
+    if (((CWorld*)(void*)g_64556c)->m_68->m_400 == 0) {
+        return 1;
+    }
+    if (m_4w()->m_c != 0) {
+        return 1;
+    }
+    if (m_overlayActive != 0 && m_guts->m_state != 2 && m_guts->m_mode != 5) {
+        if (((COverlayClick*)(void*)m_overlayActive)->Probe(a, x, y)) {
+            return 1;
+        }
+    }
+    if (x < m_guts->m_rect10.right && x >= m_guts->m_rect10.left && y < m_guts->m_rect10.bottom
+        && y >= m_guts->m_rect10.top) {
+        return 1;
+    }
+    i32 idx = m_guts->HitTest3ad5(x, y);
+    if (idx != -1) {
+        m_guts->Apply3ebd(idx);
+        CWorld::WorldTimeline* w = m_4w()->m_68;
+        if (w->m_23c != 0) {
+            w->m_23c->m_flags |= 0x10000;
+            w->m_23c = 0;
+        }
+        w->m_230 = 0;
+        return 1;
+    }
+    if (m_4w()->m_68->m_24c == 0) {
+        return 1;
+    }
+    CWorld::RenderStateHolder::PlaneGeomHolder* ph = m_4w()->m_30->m_24;
+    if (x < ph->m_rect10.right && x >= ph->m_rect10.left && y < ph->m_rect10.bottom
+        && y >= ph->m_rect10.top) {
+        CDrawSurface* ds = m_c->m_24;
+        CDrawSurface::CameraGeom* geom = ds->m_5c;
+        i32 rawX = geom->m_originX - ds->m_viewport.left + x;
+        i32 rawY = geom->m_originY - ds->m_viewport.top + y;
+        i32 snapX = (rawX & ~0x1f) + 0x10;
+        i32 snapY = (rawY & ~0x1f) + 0x10;
+        m_360 = snapX;
+        m_364 = snapY;
+        CWorld::WorldTimeline* w = m_4w()->m_68;
+        if (w->m_25c != 0 && w->m_25c->m_2c != 0) {
+            w->CancelMarker();
+            return 1;
+        }
+        w->PlaceMarker(snapX, snapY, rawX, rawY, 1, 0, 1);
+    }
+    return 1;
 }
 
 // @confidence: low

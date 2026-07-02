@@ -170,7 +170,9 @@ struct CWorld {
     struct RenderStateHolder {
         char p0[0x24];
         struct PlaneGeomHolder {
-            char p0[0x5c];
+            char p0[0x10];
+            RECT m_rect10; // +0x10  tile-click bounds (HandleTileClick)
+            char p20[0x5c - 0x20];
             CPlaneGeom* m_5c; // +0x5c
         }* m_24;              // +0x24
     }* m_30;                  // +0x30  the render-state holder (ResetGoals)
@@ -194,6 +196,9 @@ struct CWorld {
         // 0x478a50: a world post (thiscall(a, b)) -> HandleDragMove out-of-box drag.
         void WorldPost(i32 a, i32 b);
         void Reset(); // 0x15c3 thunk (reloc-masked) per-frame/teardown reset
+        // HandleTileClick marker place/cancel (thiscall, reloc-masked):
+        void PlaceMarker(i32 sx, i32 sy, i32 rx, i32 ry, i32 a, i32 b, i32 c);
+        void CancelMarker();
         char p0[0x230];
         i32 m_230; // +0x230  substep gate (cleared by ResetGoals)
         char p234[0x23c - 0x234];
@@ -201,8 +206,17 @@ struct CWorld {
             char p0[0x8];
             i32 m_flags; // +0x8  flags (ResetGoals ORs 0x10000)
         }* m_23c;        // +0x23c  goal object (ResetGoals)
-        char p240[0x2a8 - 0x240];
+        char p240[0x24c - 0x240];
+        i32 m_24c; // +0x24c  marker-place gate (HandleTileClick)
+        char p250[0x25c - 0x250];
+        struct SelSub {
+            char p0[0x2c];
+            i32 m_2c; // +0x2c
+        }* m_25c;     // +0x25c  active-selection sub-object (HandleTileClick)
+        char p260[0x2a8 - 0x260];
         i32 m_2a8; // +0x2a8  drag-end suppress flag (HandleDragMove tail)
+        char p2ac[0x400 - 0x2ac];
+        i32 m_400; // +0x400  active-region gate (HandleTileClick)
     }* m_68;       // +0x68  -> +0x230 substep gate
     void* m_6c;    // +0x6c  a frame-timer object (Eng_FrameTimerStep)
     void* m_70;    // +0x70  an input sub-object
@@ -466,8 +480,13 @@ public:
         void Guts12fd(i32 a);        // (thiscall, 1 arg)
         void Guts16ea();             // (thiscall, no arg)
         void Guts367a();             // (thiscall, no arg)  ResumeGame
-        i32 m_state;                 // +0x0  subsystem state (==2 -> ready)
-        char p4[0x10c - 0x4];
+        // HandleTileClick HUD hit-test dispatch (thiscall, reloc-masked):
+        i32 HitTest3ad5(i32 x, i32 y); // -> slot index or -1
+        void Apply3ebd(i32 idx);       // apply the hit slot
+        i32 m_state;                   // +0x0  subsystem state (==2 -> ready)
+        char p4[0x10 - 0x4];
+        RECT m_rect10; // +0x10  HUD/click bounds (HandleTileClick)
+        char p20[0x10c - 0x20];
         i32 m_mode; // +0x10c  mode word (==5 -> overlay busy)
         char p[0x548 - 0x110];
         i32 m_548; // +0x548  overlay-drag arm latch
@@ -500,7 +519,9 @@ public:
     i32 m_ambientTimerLo, m_ambientTimerHi, m_ambientInterval,
         m_ambientIntervalHi; // +0x338  ambient-init timer
     i32 m_ambientInitDone;   // +0x348  ambient-init DONE latch
-    char m_pad34c[0x368 - 0x34c];
+    char m_pad34c[0x360 - 0x34c];
+    i32 m_360;          // +0x360  tile-click snapped X (HandleTileClick)
+    i32 m_364;          // +0x364  tile-click snapped Y (HandleTileClick)
     i32 m_dragInhibit1; // +0x368  drag/select inhibit gate
     i32 m_dragInhibit2; // +0x36c  drag/select inhibit gate
     char m_pad370[0x3f4 - 0x370];
@@ -568,7 +589,10 @@ public:
     // Engine-label backlog stubs.
     void Stub_08c9d0();
     i32 winapi_0cdb10_PostMessageA(i32, i32, i32);
-    i32 winapi_0ceae0_PostMessageA(i32, i32, i32);
+    // HandleTileClick (0xceae0): the menu/pause-state pointer-click handler - the
+    // mouse-input twin of OnKeyCommand. Gated resume/report/unpause chain, then an
+    // overlay probe + a HUD hit-test + a grid-snapped world marker place/cancel.
+    i32 HandleTileClick(i32 a, i32 x, i32 y);
     i32 winapi_0d0b30_CopyRect(i32);
     void LoadCursorSprites(i32, i32);
     i32 LoadScrollSpeedOptions();

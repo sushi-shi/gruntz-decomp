@@ -1480,18 +1480,117 @@ struct CMenuMusic {
     i32 m_18;               // +0x18  interval
 };
 
-// CMenuState::FormatHudText(int) (0x1af70): the 960-byte HUD-text formatter - an
+// CMenuState::FormatHudText(buf, sel) (0x1af70): the 960-byte HUD-text formatter - an
 // 8-case switch that sprintf()s the game clock (MM:SS via the imul-by-0x10624dd3
-// divide-by-60), score, and "%d of %d" progress into a buffer, each case applying
-// the `redundant-sibling-guard-retest` idiom over g_gameReg->m_7c. Deferred to the
-// final sweep: a >512-byte variadic-sprintf switch is left stubbed rather than
-// half-reconstructed (would diverge its regalloc/schedule). See the orchestrator
-// big-function rule.
-// @confidence: med
-// @source: decomp-xref
-// @stub
+// divide-by-1000 then /60), score, and "%d of %d" progress into `buf`. Every stat is
+// read via STAT(getter, field) = (m_1d0 && stats->m_c) ? getter() : stats->field over
+// the game-stats object g_mgrSettings->m_7c (the sibling-guard idiom). The default
+// case writes "???".
+//
+// Local views: CHudStats = the live-value/score object (g_mgrSettings->m_7c); CHudBuf
+// = the output-buffer arg (Assign = the "???" writer @0x1b9e74). sprintf @0x1b2cf5.
+extern "C" i32 sprintf(char* buf, const char* fmt, ...);
+struct CHudStats { // g_mgrSettings->m_7c - the live-value getters are thiscall on THIS
+    // The 13 reloc-masked live-value getters (thiscall on the stats object):
+    i32 GetC10();
+    i32 GetC1c();
+    i32 GetC20();
+    i32 GetC34();
+    i32 GetC18();
+    i32 GetC30();
+    i32 GetC14();
+    i32 GetC38();
+    i32 GetC24();
+    i32 GetC40();
+    i32 GetC2c();
+    i32 GetC3c();
+    i32 GetC28();
+    char p0[0xc];
+    i32 m_c; // +0xc  live-game flag (getter gate)
+    i32 m_10, m_14, m_18, m_1c, m_20, m_24, m_28, m_2c, m_30, m_34, m_38, m_3c, m_40;
+};
+struct CHudBuf {
+    void Assign(const char* s); // 0x1b9e74 (reloc-masked)
+};
+#define STATS ((CHudStats*)g_mgrSettings->m_7c)
+#define STAT(getter, field) ((m_1d0 != 0 && STATS->m_c != 0) ? STATS->getter() : STATS->field)
+// @early-stop
+// jump-table-data scoring artifact (docs/patterns/jumptable-data-overlap.md): the
+// 960-byte switch body is CODE-BYTE-EXACT (verified llvm-objdump -dr base vs retail:
+// every stat sibling-guard block, the MM:SS unsigned /1000-then-/60 divide magic, the
+// "%d of %d" clamp, the 13 stats-thiscall getters, and the sprintf pushes all match;
+// the ~24 g_mgrSettings loads are the retail A1 moffs32 form). Residual ~2.5% is the
+// inline .rdata jump table (8 case addresses) + the reloc-typed format-string DIR32
+// operands, neither source-steerable. ~97.5%.
 RVA(0x0001af70, 0x3c0)
-void CMenuState::FormatHudText(i32) {}
+void CMenuState::FormatHudText(CHudBuf* buf, i32 sel) {
+    switch (sel) {
+        case 0: {
+            u32 secs = (u32)(STAT(GetC10, m_10) / 1000);
+            sprintf((char*)buf, "%d:%2.2d", secs / 60, secs % 60);
+            return;
+        }
+        case 1:
+            sprintf((char*)buf, "%d", STAT(GetC1c, m_1c));
+            return;
+        case 2:
+            sprintf((char*)buf, "%d", STAT(GetC20, m_20));
+            return;
+        case 3: {
+            i32 total = STAT(GetC34, m_34);
+            i32 cap = STAT(GetC34, m_34);
+            i32 cur = STAT(GetC18, m_18);
+            if (cur >= cap) {
+                cur = cap;
+            }
+            sprintf((char*)buf, "%d of %d", cur, total);
+            return;
+        }
+        case 4: {
+            i32 total = STAT(GetC30, m_30);
+            i32 cap = STAT(GetC30, m_30);
+            i32 cur = STAT(GetC14, m_14);
+            if (cur >= cap) {
+                cur = cap;
+            }
+            sprintf((char*)buf, "%d of %d", cur, total);
+            return;
+        }
+        case 5: {
+            i32 total = STAT(GetC38, m_38);
+            i32 cap = STAT(GetC38, m_38);
+            i32 cur = STAT(GetC24, m_24);
+            if (cur >= cap) {
+                cur = cap;
+            }
+            sprintf((char*)buf, "%d of %d", cur, total);
+            return;
+        }
+        case 6: {
+            i32 total = STAT(GetC40, m_40);
+            i32 cap = STAT(GetC40, m_40);
+            i32 cur = STAT(GetC2c, m_2c);
+            if (cur >= cap) {
+                cur = cap;
+            }
+            sprintf((char*)buf, "%d of %d", cur, total);
+            return;
+        }
+        case 7: {
+            i32 total = STAT(GetC3c, m_3c);
+            i32 cap = STAT(GetC3c, m_3c);
+            i32 cur = STAT(GetC28, m_28);
+            if (cur >= cap) {
+                cur = cap;
+            }
+            sprintf((char*)buf, "%d of %d", cur, total);
+            return;
+        }
+        default:
+            buf->Assign("???");
+            return;
+    }
+}
 
 // The draw-clock mirror + the reentrancy gate the menu music poll save/restores.
 extern "C" u32 g_6bf3c0; // draw-clock mirror
