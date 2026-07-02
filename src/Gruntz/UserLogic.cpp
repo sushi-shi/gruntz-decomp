@@ -1611,20 +1611,231 @@ void CUserLogic::LoadGruntTypeTable(i32, i32, i32, i32) {}
 RVA(0x0005d210, 0x1443)
 void CUserLogic::LoadGruntTuningConstants(i32) {}
 
-// @confidence: med
-// @source: decomp-xref
-// @stub
+// ---------------------------------------------------------------------------
+// The per-frame grunt "decay/wand" AI (0x612a0 / 0x61570 / 0x65a60). These run on
+// a grunt-behavior leaf that extends CUserLogic (base at +0) with a decay-timer +
+// anim state (modeled below as CGruntBehaviorLeaf; placeholder name, only offsets +
+// code bytes are load-bearing). The timer (m_830 start / m_838 duration, both
+// hi=0) drives a 0..256 fixed-point fill bar on the bound object's draw command;
+// m_10 is the real inherited CGameObject. The bute/anim callees are reloc-masked
+// __thiscall externs. g_645588 = running ms clock.
+// ---------------------------------------------------------------------------
+extern "C" u32 g_645588;   // running game clock (ms)
+extern CButeMgr g_buteMgr; // 0x6453d8 - getters reloc-mask
+extern char k_60bebc[];    // interned bute-node name "R"
+
+struct CDecayArrival {         // m_154 + 0x1a0 - arrival probe sub-object
+    i32 Poke15c360(i32 clock); // 0x15c360 (this, clock) -> phase 0..0x63
+    char m_pad00[0x20];
+    i32 m_20; // +0x20 busy gate
+    i32 m_24;
+    i32 m_28; // +0x28 arrived gate
+};
+struct CDecayM194 {           // m_154->m_194
+    void Method152480(i32 a); // 0x152480 (this, a)
+};
+struct CDecayMgr { // m_154 - the bound draw-state manager
+    char m_pad00[0x8];
+    i32 m_8; // +0x08 dirty flags
+    char m_pad0c[0x40 - 0xc];
+    i32 m_40; // +0x40 flags
+    char m_pad44[0x194 - 0x44];
+    CDecayM194* m_194; // +0x194
+    char m_pad198[0x1a0 - 0x198];
+    CDecayArrival m_1a0; // +0x1a0
+};
+struct CDecayAnim {                                            // m_260 - anim/sprite controller
+    void Anim2a72(i32 a, i32 b, i32 c);                        // 0x2a72
+    void Method1073(i32 a, i32 b, i32 c, i32 d);               // 0x1073
+    void Method3003(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // 0x3003
+    void Method2e96(i32 a, i32 b, i32 c, i32 d);               // 0x2e96
+    void Method3945(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // 0x3945
+};
+
+class CGruntBehaviorLeaf : public CUserLogic {
+public:
+    i32 LoadGruntDecayConfig();    // 0x612a0
+    i32 LoadGruntDecayConfig2();   // 0x61570
+    i32 LoadWandGruntItemConfig(); // 0x65a60
+    // Leaf's own reloc-masked __thiscall helpers.
+    void Method22de();                    // 0x22de
+    void Method3c29(i32 a);               // 0x3c29
+    void Method136b(i32 a, i32 b, i32 c); // 0x136b
+
+    // Members beyond CUserLogic's 0x40 base.
+    char m_pad40[0x154 - 0x40];
+    CDecayMgr* m_154; // +0x154 bound draw-state manager
+    char m_pad158[0x170 - 0x158];
+    i32 m_170; // +0x170 grunt sub-state
+    char m_pad174[0x1c0 - 0x174];
+    char* m_1c0; // +0x1c0 grunt-type bute tag
+    i32 m_1c4;   // +0x1c4
+    char m_pad1c8[0x1e4 - 0x1c8];
+    i32 m_1e4; // +0x1e4 latch flag
+    char m_pad1e8[0x1ec - 0x1e8];
+    i32 m_1ec; // +0x1ec anim arg
+    i32 m_1f0; // +0x1f0 anim arg
+    i32 m_1f4; // +0x1f4 anim arg
+    char m_pad1f8[0x258 - 0x1f8];
+    i32 m_258; // +0x258 type discriminator (0x3b = no-downtime)
+    char m_pad25c[0x260 - 0x25c];
+    CDecayAnim* m_260; // +0x260 anim controller
+    char m_pad264[0x360 - 0x264];
+    i32 m_360; // +0x360 grunt mode
+    char m_pad364[0x36c - 0x364];
+    i32 m_36c; // +0x36c anim-suppress gate
+    char m_pad370[0x380 - 0x370];
+    i32 m_380; // +0x380
+    char m_pad384[0x3e4 - 0x384];
+    i32 m_3e4; // +0x3e4
+    i32 m_3e8; // +0x3e8
+    i32 m_3ec; // +0x3ec health
+    i32 m_3f0; // +0x3f0
+    char m_pad3f4[0x460 - 0x3f4];
+    i32 m_460; // +0x460
+    char m_pad464[0x830 - 0x464];
+    i32 m_830; // +0x830 timer start (lo)
+    i32 m_834; // +0x834 (hi, always 0)
+    i32 m_838; // +0x838 timer duration (lo)
+    i32 m_83c; // +0x83c (hi, always 0)
+    char m_pad840[0x860 - 0x840];
+    i32 m_860; // +0x860 wand timer start (lo)
+    i32 m_864; // +0x864 (hi)
+    i32 m_868; // +0x868 wand downtime (lo)
+    i32 m_86c; // +0x86c (hi)
+};
+
+// LoadGruntDecayConfig (0x612a0): advance the arrival probe, drive the walk/idle
+// anim by grunt mode, then (once arrived + not busy) latch the decay timer + fill.
+// @early-stop
+// 90.5%: logic byte-faithful. Residual is CSE/regalloc of the 64-bit timer delta -
+// retail keeps g_645588 pinned in eax and re-does the m_830 subtraction in the fill
+// tail, while cl shares the whole `(i64)clock - m_830` delta, shifting the lo dword
+// off eax and cascading register names + the epilogue merge. Not source-steerable.
 RVA(0x000612a0, 0x23c)
-void CUserLogic::LoadGruntDecayConfig() {}
+i32 CGruntBehaviorLeaf::LoadGruntDecayConfig() {
+    if (m_360 == 0) {
+        return 0;
+    }
+    if (m_154->m_1a0.Poke15c360(g_6bf3bc) == 1) {
+        if (m_170 == 1 && m_360 != 5) {
+            m_260->Method1073(m_10->m_5c, m_10->m_60, 1, m_1ec);
+        } else {
+            m_260->Method3003(m_10->m_5c, m_10->m_60, m_1ec, m_1f4, m_360 != 5, 0x19);
+        }
+    }
+    CDecayArrival* sub = &m_154->m_1a0;
+    if (sub->m_28 == 0) {
+        return 0;
+    }
+    if (sub->m_20 != 0) {
+        return 0;
+    }
+    i32 mode = m_360;
+    if (mode == 1 || mode == 2 || mode == 0xb || mode == 6) {
+        m_30 = m_14->m_1c;
+        m_14->m_1c = g_buteTree.Find(k_60bebc);
+        if (m_36c == 0) {
+            m_260->Anim2a72(m_1ec, m_1f0, 0);
+        }
+        i32 dt = (i32)g_buteMgr.GetDwordDef("Grunt", "DecayTime", 0xbb8);
+        if (m_10->m_50 == 0xb) {
+            m_838 = dt;
+            m_830 = (i32)g_645588 - m_10->m_54 * dt / 256;
+            m_83c = 0;
+        } else {
+            m_838 = dt;
+            m_83c = 0;
+            m_830 = (i32)g_645588;
+        }
+        m_834 = 0;
+        i64 e = (i64)(u32)g_645588 - *(i64*)&m_830;
+        u32 elapsed = e < 0 ? 0 : (u32)e;
+        i32 r = (i32)((double)elapsed * 256.0
+                      / (double)g_buteMgr.GetDwordDef("Grunt", "DecayTime", 0xbb8));
+        m_10->m_58 = 1;
+        m_10->m_50 = 0xb;
+        m_10->m_54 = r;
+        return 0;
+    }
+    if (m_36c == 0) {
+        m_260->Anim2a72(m_1ec, m_1f0, 0);
+    }
+    m_154->m_8 |= 0x10000;
+    return 0;
+}
 
-// @confidence: low
-// @source: decomp-xref
-// @stub
+// LoadGruntDecayConfig2 (0x61570): if the timer has fully elapsed, fire the finish
+// (flag + finish anim); else refresh the 0..256 fill fraction on the draw command.
+// @early-stop
+// ~77%: logic byte-faithful. Same CSE/regalloc wall as LoadGruntDecayConfig -
+// retail loads g_645588 once into eax and recomputes the m_830 subtraction in the
+// fill branch (eax preserved -> lo stays in eax); cl CSEs the whole 64-bit delta and
+// pins lo in ecx, cascading a register-name mismatch through the tail. Hoisting the
+// clock into a local regressed it. Not source-steerable.
 RVA(0x00061570, 0x11d)
-void CUserLogic::LoadGruntDecayConfig2() {}
+i32 CGruntBehaviorLeaf::LoadGruntDecayConfig2() {
+    if ((i64)(u32)g_645588 - *(i64*)&m_830 >= *(i64*)&m_838) {
+        m_154->m_40 |= 1;
+        m_154->m_194->Method152480(1);
+        if (m_36c == 0) {
+            m_260->Anim2a72(m_1ec, m_1f0, 0);
+        }
+        m_154->m_8 |= 0x10000;
+        return 0;
+    }
+    i64 e = (i64)(u32)g_645588 - *(i64*)&m_830;
+    u32 elapsed = e < 0 ? 0 : (u32)e;
+    i32 r =
+        (i32)((double)elapsed * 256.0 / (double)g_buteMgr.GetDwordDef("Grunt", "DecayTime", 0xbb8));
+    m_10->m_58 = 1;
+    m_10->m_50 = 0xb;
+    m_10->m_54 = r;
+    return 0;
+}
 
-// @confidence: med
-// @source: decomp-xref
-// @stub
+// LoadWandGruntItemConfig (0x65a60): per-frame wand-grunt item logic. Advance the
+// arrival probe; on the peak phase (0x63) latch the item downtime timer, tick the
+// wand health loss, and fire the depletion anim; every active frame run the wand
+// projectile step; finally, once arrived + idle, clear the latch + run the reset.
+// @early-stop
+// ~95%: whole body byte-identical (incl. the branchless max(0,hp) sub/sets/dec/and
+// idiom) except cl schedules the `if (m_1c4)` load a few slots earlier than retail
+// (which interleaves it among the timer zero-stores). Pure scheduling; not steerable.
 RVA(0x00065a60, 0x159)
-void CUserLogic::LoadWandGruntItemConfig() {}
+i32 CGruntBehaviorLeaf::LoadWandGruntItemConfig() {
+    i32 phase = m_154->m_1a0.Poke15c360(g_6bf3bc);
+    if (phase > 0) {
+        if (phase == 0x63) {
+            m_1e4 = 1;
+            u32 downtime = g_buteMgr.GetDword(m_1c0, "ItemDowntime");
+            if (m_258 == 0x3b) {
+                downtime = 0;
+            }
+            m_868 = downtime;
+            m_86c = 0;
+            m_860 = g_645588;
+            m_864 = 0;
+            m_460 = 0;
+            m_3f0 = 0;
+            if (m_1c4 != 0) {
+                Method22de();
+            }
+            if (m_170 == 0x13) {
+                Method3c29(m_380);
+                i32 hp = m_3ec - g_buteMgr.GetIntDef("WANDGRUNT", "HealthLoss", 0x19);
+                m_3ec = hp < 0 ? 0 : hp;
+                if (m_3ec <= 0) {
+                    m_260->Method2e96(m_1ec, m_1f0, 1, -1);
+                }
+            }
+        }
+        m_260->Method3945(m_1ec, m_1f0, m_3e4, m_3e8, m_170, phase);
+    }
+    CDecayArrival* sub = &m_154->m_1a0;
+    if (sub->m_28 != 0 && sub->m_20 == 0) {
+        m_1e4 = 0;
+        Method136b(1, 0, 0);
+    }
+    return 0;
+}

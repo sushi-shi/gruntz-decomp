@@ -1259,7 +1259,7 @@ cfileimagerundecode	?RunDecode3@CFileImage@@QAEHPAX0HH@Z	99.5427	99.5427	1	43595
 cfixedptrarray32	?Add@CFixedPtrArray32@@QAEHPAX@Z	100.0000	100.0000	2	2797f241ff3c	0x134c80
 cfixedptrarray32	?Clear@CFixedPtrArray32@@QAEXXZ	100.0000	100.0000	2	096306e621bc	0x134c60
 cfixedptrarray32	?FillFrom@CFixedPtrArray32@@QAEHPAPAXHH@Z	92.3016	92.3016	2	9d1ec6c23328	0x134be0
-cfortressflag	??0CFortressFlag@@QAE@PAUCGameObject@@@Z	87.0296	87.0296	2	724328b62d6c	0x45d30
+cfortressflag	??0CFortressFlag@@QAE@PAUCGameObject@@@Z	87.1482	87.1482	3	7c56fc88b5f0	0x45d30
 cfortressflag	??1CFortressFlag@@UAE@XZ	100.0000	100.0000	1	2055bad4ba8d	0x10e90
 cfortressflag	?AdvanceAnim@CFortressFlag@@QAEHXZ	100.0000	100.0000	1	fe412e5b2595	0x463e0
 cfortressflag	?InitActReg@CFortressFlag@@SAXXZ	100.0000	100.0000	1	87b32004eacf	0x46000
@@ -2380,8 +2380,8 @@ gruntarrivalscan	?ArrivalScanB@CGruntStep@@QAEHXZ	45.3241	45.3241	1	efeccc7d41dd
 gruntarrivalscan	?ArrivalScanC@CGruntStep@@QAEHXZ	45.3710	45.3710	1	33af96ca185c	0xf36a0
 gruntarrivalstep	?StepArrivalDefenseAlt@CGrunt@@QAEHXZ	69.8771	69.8771	2	8b46871a0a25	0xf1c70
 gruntarriveresolve	?Resolve2c690@CArriveMgr@@QAEHPAUCArriveGrunt@@@Z	23.5223	23.5223	1	be17b57152b2	0x2c690
-gruntassetloaders	?LoadGruntAbilityTuning@CGrunt@@QAEHH@Z	90.5457	90.5457	2	7b2421d2cfbd	0x57100
-gruntassetloaders	?LoadGruntDeathAnimations@CGrunt@@QAEHHH@Z	87.0599	87.0599	2	d6d80c6ea759	0x60150
+gruntassetloaders	?LoadGruntAbilityTuning@CGrunt@@QAEHH@Z	90.5457	90.5457	3	ed0856f97ffb	0x57100
+gruntassetloaders	?LoadGruntDeathAnimations@CGrunt@@QAEHHH@Z	87.0599	87.0599	3	fd4be0295a53	0x60150
 gruntassetloaders	?LoadWingzGruntSprites@CGrunt@@QAEHH@Z	75.0193	75.0193	1	69b35c90dfb1	0x68880
 gruntchargestep	?ChargeStep@Grunt@@QAEHXZ	21.4710	21.4710	1	24756a275ed2	0xef6b0
 gruntcmdpercent	?ComputeCmdPercent@@YAHH@Z	100.0000	100.0000	2	32370a43dd27	0x135110
@@ -2608,7 +2608,7 @@ helperhost	?Helper_166040@HelperHost@@QAEHHH@Z	95.0000	95.0000	2	c19517f1187a	0x
 iconloaders	?BuildBootyPerfectAnimation@EngineLabelBacklog@@QAEHXZ	100.0000	100.0000	6	e9baf6d1a7cd	0x1c070
 iconloaders	?LoadCameraSprite@EngineLabelBacklog@@QAEHXZ	86.8000	86.8000	6	f384394dc579	0x78960
 iconloaders	?LoadExplosionSprites@EngineLabelBacklog@@QAEHHHHH@Z	98.0727	98.0727	6	0ededc104450	0x7b330
-iconloaders	?LoadPowerupIconSprites@EngineLabelBacklog@@QAEHHHHHHH@Z	33.8559	33.8559	6	2b1263f47fb6	0x7c620
+iconloaders	?LoadPowerupIconSprites@EngineLabelBacklog@@QAEHHHHHHH@Z	33.8559	33.8559	7	2a2f8f1cdec5	0x7c620
 iconloaders	?LoadToyBoxIcon@EngineLabelBacklog@@QAEHHHHHH@Z	99.9444	99.9444	3	90fabf16a3bf	0x7a3f0
 image	??1CFileImage@@UAE@XZ	100.0000	100.0000	1	7252e7ab41e8	0x141350
 image	??1CFileImageSurface@@UAE@XZ	100.0000	100.0000	1	8f95b4aa6ff0	0x142360
@@ -3077,7 +3077,7 @@ projectile	?DetachRenderObj@CProjectile@@QAEHXZ	100.0000	100.0000	2	5f5b4f60ca08
 projectile	?Dispatch@CProjActDispatcher@@QAEXH@Z	100.0000	100.0000	1	dbdd016866f6	0xade60
 projectile	?LaunchSound@CProjectile@@QAEHPBD@Z	44.4444	44.4444	3	44a604f7e134	0xe2190
 projectile	?LoadProjectileEffects@CProjectile@@QAEXXZ	69.7489	69.7446	2	2ec0daf2f259	0xdfd00
-projectile	?LoadProjectileSprites@CProjectile@@QAEHHHHHHHH@Z	57.7642	57.7642	3	71095d9fb462	0xdf050
+projectile	?LoadProjectileSprites@CProjectile@@QAEHHHHHHHH@Z	57.7642	57.7642	4	914324a6e5ec	0xdf050
 projectile	?RegisterRange@CProjectile@@SAXXZ	100.0000	100.0000	1	661e81357f7b	0xdf920
 projectile	?RegisterType@CProjectile@@SAXXZ	91.1739	91.1739	1	459c0342af3a	0xdfb00
 projectile	?ReleaseDeferred@CProjectile@@QAEXH@Z	100.0000	100.0000	2	ac50b8317e25	0x13c70
@@ -3739,11 +3739,11 @@ userlogic	?InitActReg@CTileTrigger@@SAXXZ	100.0000	100.0000	1	38a3a9c69832	0x10e
 userlogic	?InitActReg@CTileTriggerSwitch@@SAXXZ	100.0000	100.0000	1	18b0022f5bf2	0x10de20
 userlogic	?InitActReg@CWarpStonePad@@SAXXZ	100.0000	100.0000	1	199d7a379d83	0x10d840
 userlogic	?IsAtSavedScreenPos@CUserLogic@@QAEHXZ	100.0000	100.0000	1	874bfc9482ed	0x29a80
-userlogic	?LoadGruntDecayConfig2@CUserLogic@@QAEXXZ	1.2195	1.2195	1	edd8f9929bc3	0x61570
-userlogic	?LoadGruntDecayConfig@CUserLogic@@QAEXXZ	0.6135	0.6135	1	92fac0c4600f	0x612a0
+userlogic	?LoadGruntDecayConfig2@CGruntBehaviorLeaf@@QAEHXZ	77.2439	77.2439	1	b304e01fe298	0x61570
+userlogic	?LoadGruntDecayConfig@CGruntBehaviorLeaf@@QAEHXZ	90.8344	90.8344	1	3d15bf3836e5	0x612a0
 userlogic	?LoadGruntTuningConstants@CUserLogic@@QAEXH@Z	0.0646	0.0646	2	b70d71b09830	0x5d210
 userlogic	?LoadGruntTypeTable@CUserLogic@@QAEXHHHH@Z	0.0415	0.0415	2	57b0cfb95114	0x4dd50
-userlogic	?LoadWandGruntItemConfig@CUserLogic@@QAEXXZ	1.0638	1.0638	1	10cb95c55260	0x65a60
+userlogic	?LoadWandGruntItemConfig@CGruntBehaviorLeaf@@QAEHXZ	95.1277	95.1277	1	1973e624617b	0x65a60
 userlogic	?RegisterActs@CFrontCandyAni@@SAXXZ	92.9130	92.9130	2	d25ea497f128	0xacd10
 userlogic	?RegisterActs@CSecretTeleporterTrigger@@SAXXZ	92.9130	92.9130	1	f286c9cc6563	0x422b0
 userlogic	?RegisterActs@CSingleAnimation@@SAXXZ	92.9130	92.9130	2	6d302026d75d	0xaeb80
@@ -3758,7 +3758,7 @@ userlogic	?winapi_064540_PostMessageA@CUserLogic@@QAEHXZ	86.4156	86.4156	3	886fc
 userlogic	?winapi_0ee800_IntersectRect_PtInRect@CUserLogic@@QAEHXZ	0.2653	0.2653	2	f2ccbcb9c820	0xee800
 userlogicctoremit	??0CUserLogic@@QAE@PAUCGameObject@@@Z	89.0000	89.0000	1	cpp:aca2e8db625f	0x58cd0
 userlogicctoremit	??0CUserLogic@@QAE@XZ	100.0000	100.0000	1	cpp:aca2e8db625f	0x138d0
-vehiclegruntsprites	?LoadVehicleGruntSprites@CGruntCmdObj@@QAEHH@Z	37.2626	37.2626	3	cbee32f077ed	0x50ce0
+vehiclegruntsprites	?LoadVehicleGruntSprites@CGruntCmdObj@@QAEHH@Z	37.2626	37.2626	4	936cf4f8484b	0x50ce0
 videoconfig	?GetResolutionCode@@YAHXZ	100.0000	100.0000	2	d5dadac49ea7	0x363a0
 videoconfig	?LoadVideoResolutionConfig@@YAXPAXHH@Z	97.2737	97.2737	8	e6f5fec6b5c4	0x36f30
 videoconfig	?SaveVideoCheckboxes@@YAXPAX@Z	99.5000	99.5000	1	3ee4b1c6c6fb	0x378c0

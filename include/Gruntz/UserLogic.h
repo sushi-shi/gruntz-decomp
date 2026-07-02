@@ -148,11 +148,11 @@ struct CGameObject {
     i32 m_40; // +0x40
     char m_pad44[0x4c - 0x44];
     i32 m_4c; // +0x4c
-    i32 m_50; // +0x50
-    char m_pad54[0x58 - 0x54];
-    i32 m_58; // +0x58
-    i32 m_5c; // +0x5c
-    i32 m_60; // +0x60
+    i32 m_50; // +0x50  draw-fill command type (0xb = decay fill-bar)
+    i32 m_54; // +0x54  fill fraction (0..256)
+    i32 m_58; // +0x58  dirty/active flag
+    i32 m_5c; // +0x5c  screen x
+    i32 m_60; // +0x60  screen y
     char m_pad64[0x74 - 0x64];
     i32 m_74; // +0x74
     char m_pad78[0x7c - 0x78];
@@ -278,9 +278,6 @@ public:
     i32 winapi_0ee800_IntersectRect_PtInRect();
     void LoadGruntTypeTable(i32, i32, i32, i32);
     void LoadGruntTuningConstants(i32);
-    void LoadGruntDecayConfig();
-    void LoadGruntDecayConfig2();
-    void LoadWandGruntItemConfig();
 
     i32 m_04;             // +0x04
     i32 m_08;             // +0x08
