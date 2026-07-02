@@ -22,17 +22,24 @@ void operator delete(void* p);
 
 // The active pixel-format descriptor (channel shifts/sizes), selecting variant.
 
-struct LutSurf {
-    void (**m_vtbl)(void*, i32); // +0x00 dispatch table (slot 0x80/4 = notify)
+// The held DirectDraw surface (m_8): dispatched thiscall through vtbl slot 0x80
+// (Unlock/notify). Same held surface CFileImage models as CFileImageHeldSurface in
+// <Image/Image.h>; only the notify slot is used here.
+struct HeldDDSurface {
+    void (**m_vtbl)(void*, i32); // +0x00 dispatch table (slot 0x80/4 = Unlock/notify)
 };
-struct LutBlit {
+
+// CFileImage - the DIRSURF.CPP surface (full class in <Image/Image.h>). Modeled as a
+// partial view here: only the shade path's fields + Lock (0x13e6d0) are pinned. m_8
+// is the held DirectDraw surface, m_18/m_1c the surface height/width, m_20 the pitch.
+struct CFileImage {
     char m_pad0[8];
-    LutSurf* m_8; // +0x08
+    HeldDDSurface* m_8; // +0x08 held DirectDraw surface
     char m_padc[0x18 - 0xc];
-    i32 m_18;                           // +0x18 clip bottom bound
-    i32 m_1c;                           // +0x1c clip right bound
-    i32 m_20;                           // +0x20 surface pitch (bytes; /2 = pixels per row)
-    u16* GetSrc(i32);                   // 0x13e6d0 __thiscall -> source pixel buffer
+    i32 m_height;                       // +0x18 surface height (clip bottom bound)
+    i32 m_width;                        // +0x1c surface width  (clip right bound)
+    i32 m_pitch;                        // +0x20 surface pitch (bytes; /2 = pixels per row)
+    u16* Lock(i32);                     // 0x13e6d0 __thiscall -> locked source pixel buffer
     i32 ShadeRect(i32 pct, RECT* clip); // 0x13f460
 };
 
@@ -47,7 +54,7 @@ struct LutBlit {
 // the same compares - so every [this+off] ModRM byte and the channel-split reg
 // choices differ. A regalloc coin-flip, not a codegen miss.
 RVA(0x0013f460, 0x2da)
-i32 LutBlit::ShadeRect(i32 pct, RECT* clip) {
+i32 CFileImage::ShadeRect(i32 pct, RECT* clip) {
     if (pct > 100) {
         return 0;
     }
@@ -56,25 +63,25 @@ i32 LutBlit::ShadeRect(i32 pct, RECT* clip) {
         if (clip->left < 0) {
             return 0;
         }
-        if (clip->right > m_1c) {
+        if (clip->right > m_width) {
             return 0;
         }
         if (clip->top < 0) {
             return 0;
         }
-        if (clip->bottom > m_18) {
+        if (clip->bottom > m_height) {
             return 0;
         }
         CopyRect(&rc, clip);
     } else {
         rc.left = 0;
         rc.top = 0;
-        rc.right = m_1c;
-        rc.bottom = m_18;
+        rc.right = m_width;
+        rc.bottom = m_height;
     }
     i32 scale = pct * 32 / 100;
-    u16* src = GetSrc(0);
-    i32 rowPix = m_20 / 2;
+    u16* src = Lock(0);
+    i32 rowPix = m_pitch / 2;
     u16* srcPix = src + rc.top * rowPix + rc.left;
     i32 stride = rc.left - rc.right + rowPix;
     i32 width = rc.right - rc.left;
@@ -132,5 +139,5 @@ i32 LutBlit::ShadeRect(i32 pct, RECT* clip) {
     return 1;
 }
 
-SIZE_UNKNOWN(LutBlit);
-SIZE_UNKNOWN(LutSurf);
+SIZE_UNKNOWN(CFileImage);
+SIZE_UNKNOWN(HeldDDSurface);

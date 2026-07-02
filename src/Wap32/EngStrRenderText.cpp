@@ -37,9 +37,10 @@ struct CRect {
     CRect(const RECT& r); // 0x115b30
 };
 
-// The global text renderer (DAT_0064ead8): current-font/current-color + the 2028-B
-// EH draw worker. SetFont/SetColor store m_00/m_04. All reloc-masked externs.
-struct TextRenderer {
+// The global text renderer g_textObj (DAT_0064ead8) is a FontRenderer (the WAP32
+// font-render object; full class in <Font/Font.h>). Partial view: current font/color
+// + the draw worker. SetFont/SetColor store m_00/m_04. All reloc-masked externs.
+struct FontRenderer {
     Font* m_00;                                                             // +0x00  current font
     i32 m_04;                                                               // +0x04  current color
     void SetFont(Font* f);                                                  // 0x179c10
@@ -47,7 +48,7 @@ struct TextRenderer {
     void RenderText(CString s, void* drawFn, CRect r, i32 a, i32 b, i32 c); // 0x17a460
 };
 DATA(0x0064ead8)
-extern TextRenderer g_textObj;
+extern FontRenderer g_textObj;
 
 // @early-stop
 // Complete + correct (~53%). Wall = by-value CRect argument materialization: retail
@@ -116,4 +117,4 @@ extern "C" i32 EngStr_RenderText(
 
 // Class metadata (annotate-only; the settled EngStr_RenderText body is untouched).
 SIZE_UNKNOWN(CRect);        // RECT view (left/top/right/bottom + CopyRect ctor)
-SIZE_UNKNOWN(TextRenderer); // global renderer view (current font/color)
+SIZE_UNKNOWN(FontRenderer); // global FontRenderer view (current font/color)

@@ -74,13 +74,6 @@ public:
     void ResetPalette(); // 0x17ca60
 };
 
-// 0x17ca10 (?UploadPalette@CPaletteHost@@QAEXXZ) - the palette re-realize fired
-// after re-attaching the primary surface palette on an 8bpp restore.
-class CPaletteHost {
-public:
-    void UploadPalette(); // 0x17ca10
-};
-
 // The engine heap allocator (NAFXCW operator new replacement) - 16-byte RECT
 // nodes Configure allocates for the explicit-blit case. _RezAlloc (named, rel32).
 extern "C" void* RezAlloc(u32 size); // 0x1b9b46
@@ -113,7 +106,8 @@ public:
     void HandleError();                                                // 0x17cc80
     i32 BlitRegion(i32 col, i32 row, i32 nCols, i32 nRows);            // 0x17cdf0
     i32 Configure(i32 mode, i32 flags, DDPoint* origin, DDRect* rect); // 0x17cfc0
-    i32 CheckGrid(); // 0x17cbe0 (sibling, external)
+    i32 CheckGrid();      // 0x17cbe0 (sibling, external)
+    void UploadPalette(); // 0x17ca10 (palette re-realize on 8bpp restore; body in PaletteCopy.cpp)
 
     char m_pad00[0x0c];
     i32 m_0c;        // +0x0c
@@ -242,7 +236,7 @@ i32 CDDScreen::BlitRegion(i32 col, i32 row, i32 nCols, i32 nRows) {
             if (m_1c->vtbl->IsLost(m_1c) == 0x887601c2 && m_1c->vtbl->Restore(m_1c) == 0) {
                 if (m_520 == 8) {
                     m_1c->vtbl->SetPalette(m_1c, m_2c);
-                    ((CPaletteHost*)this)->UploadPalette();
+                    UploadPalette();
                 }
             } else {
                 hr = m_24->vtbl->IsLost(m_24);
@@ -262,7 +256,7 @@ i32 CDDScreen::BlitRegion(i32 col, i32 row, i32 nCols, i32 nRows) {
             if (m_1c->vtbl->IsLost(m_1c) == 0x887601c2 && m_1c->vtbl->Restore(m_1c) == 0) {
                 if (m_520 == 8) {
                     m_1c->vtbl->SetPalette(m_1c, m_2c);
-                    ((CPaletteHost*)this)->UploadPalette();
+                    UploadPalette();
                 }
             } else {
                 hr = m_24->vtbl->IsLost(m_24);
@@ -413,7 +407,6 @@ i32 CDDScreen::Configure(i32 mode, i32 flags, DDPoint* origin, DDRect* rect) {
 }
 
 SIZE_UNKNOWN(CDDScreen);
-SIZE_UNKNOWN(CPaletteHost);
 SIZE_UNKNOWN(CSurfacePalette);
 SIZE_UNKNOWN(CTileInfo);
 SIZE_UNKNOWN(DDBLTFX_);
