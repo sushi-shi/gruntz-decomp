@@ -2022,8 +2022,9 @@ flashrect	?FlashRectC2e20@FlashHost@m4@@QAEHXZ	94.6266	94.6266	2	d4685be9633e	0x
 font	??0Font@@QAE@XZ	100.0000	100.0000	4	689d6593b435	0x179700
 font	??0FontRenderer@@QAE@XZ	100.0000	100.0000	3	100b652c37b2	0x179be0
 font	?AllocateMemory@Font@@QAEHH@Z	92.1429	92.1429	5	c9cb34d23b1a	0x179720
-font	?DrawLine@FontRenderer@@QAEXPAUDrawRect@@HHVCString@@H@Z	85.5541	85.5541	1	e0a1b2e36297	0x179c30
+font	?DrawLine@FontRenderer@@QAEXVCString@@PAUDrawRect@@HHH@Z	85.6216	85.6216	1	1113fb3f5000	0x179c30
 font	?DrawLineClipped@FontRenderer@@QAEXVCString@@HURect@@HHH@Z	100.0000	100.0000	1	722983ef19f0	0x179d10
+font	?DrawWrapped@FontRenderer@@QAEXVCString@@PAUDrawRect@@HHHHHHH@Z	72.9915	72.9915	1	f33ffe8eacea	0x17a460
 font	?FreeMemory@Font@@QAEXXZ	100.0000	100.0000	5	48390f7bd94e	0x1797b0
 font	?FreeStrings@CWapNodeB@@QAEXXZ	100.0000	100.0000	3	4e6dc4459c58	0x179680
 font	?GetChar@FontRenderer@@QAEEH@Z	100.0000	100.0000	4	8f0c6a026b37	0x17b4f0
@@ -2035,14 +2036,13 @@ font	?IsInterface2@InterfaceObject@@QAEHXZ	100.0000	100.0000	4	6e5c84b86da0	0x17
 font	?IsInterface3@InterfaceObject@@QAEHXZ	100.0000	100.0000	4	fd8baf7ee241	0x179510
 font	?IsInterface4@InterfaceObject@@QAEHXZ	100.0000	100.0000	4	7db3529fc67b	0x179540
 font	?IsInterface5@InterfaceObject@@QAEHXZ	100.0000	100.0000	4	d40604b6a273	0x179570
-font	?LayoutWrapped@FontRenderer@@QAE?AUTextExtent@@VCString@@HHHHPAH@Z	4.1953	4.1953	2	f97951756e8e	0x17b120
+font	?LayoutWrapped@FontRenderer@@QAE?AUTextExtent@@VCString@@HHHHPAH@Z	79.1650	79.1650	3	4e65d988d719	0x17b120
 font	?LoadFont@Font@@QAEHVCString@@@Z	100.0000	100.0000	6	fa7f3fc73a82	0x179830
 font	?MeasureText@FontRenderer@@QAE?AUTextExtent@@VCString@@@Z	69.6613	69.6613	2	7cd8fb556a28	0x17ac50
+font	?MeasureWrapped@FontRenderer@@QAE?AUTextExtent@@VCString@@HHHH@Z	75.5327	75.5327	1	8c1abee600d9	0x17ad10
 font	?SaveFont@Font@@QAEHVCString@@@Z	100.0000	100.0000	1	48e384bb1201	0x1799f0
 font	?SetColor@FontRenderer@@QAEXH@Z	100.0000	100.0000	4	945d607c3be9	0x179c20
 font	?Span@TextRange@@QAEHXZ	100.0000	100.0000	1	742f226ebb92	0x17b500
-font	?Stub_17a460@FontRenderer@@QAEXXZ	0.0684	0.0684	1	cf29e8e947ca	0x17a460
-font	?Stub_17ad10@FontRenderer@@QAEXXZ	0.1307	0.1307	1	8384c09d6a21	0x17ad10
 fontconfig	??1CFontConfig@@UAE@XZ	92.7273	92.7273	1	562d70cadd9b	0x85f40
 fontconfig	?AddItem@CFontConfig@@QAEHPBDHH@Z	100.0000	100.0000	2	0ed05f26e3ca	0x21c60
 fontconfig	?EndInput@CFontConfig@@QAEXXZ	100.0000	100.0000	2	6341eae1e30d	0x21ef0

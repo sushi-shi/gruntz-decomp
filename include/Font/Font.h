@@ -144,16 +144,25 @@ public:
     // ints) reproduces the retail `ret 0x24` and the caller's pushes.
     void DrawGlyphRun(CString text, i32 a1, Rect rc, i32 x, i32 y, i32 z); // 0x179e70
 
-    void DrawLine(DrawRect* p, i32 x, i32 y, CString text, i32 a4);           // 0x179c30
+    void DrawLine(CString text, DrawRect* p, i32 x, i32 y, i32 z);            // 0x179c30
     void DrawLineClipped(CString text, i32 a1, Rect rc, i32 x, i32 y, i32 z); // 0x179d10
 
-    // Word-wrap entry points (the two big methods) deferred to the final sweep:
-    //   Stub_17ad10 = MeasureWrapped (bounding {w,h} of greedily wrapped text)
-    //   Stub_17a460 = DrawWrapped    (lay out + draw each line via DrawLine)
-    // CString-temp-heavy /GX bodies (~1-2 KB); kept as backlog stubs, RVA-tracked
-    // under their real class - see src/Font/Font.cpp.
-    void Stub_17ad10(); // 0x17ad10 (FontRenderer::MeasureWrapped)
-    void Stub_17a460(); // 0x17a460 (FontRenderer::DrawWrapped)
+    // Word-wrap entry points (the two big greedy-wrap methods).
+    //   MeasureWrapped - bounding {w,h} of greedily wrapped text (0x17ad10)
+    //   DrawWrapped    - lay out + draw each line via DrawLine     (0x17a460)
+    // CString-temp-heavy /GX bodies (~1-2 KB) - see src/Font/Font.cpp.
+    TextExtent MeasureWrapped(CString text, i32 x0, i32 top, i32 right, i32 bottom); // 0x17ad10
+    void DrawWrapped(
+        CString text,
+        DrawRect* p,
+        i32 x0,
+        i32 top,
+        i32 right,
+        i32 bottom,
+        i32 z,
+        i32 hcenter,
+        i32 spacing
+    ); // 0x17a460
 
     // 0x17b120 - a third word-wrap entry: greedily lays out `text` from `begin`
     // down to `bottom`, returns the final cursor {x, y + lineHeight + 1} and writes
