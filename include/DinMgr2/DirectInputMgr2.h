@@ -23,23 +23,27 @@
 #define DINMGR2_DIRECTINPUTMGR2_H
 
 #include <Ints.h>
+#include <ComDefs.h> // STDMETHOD / HRESULT - the DirectInput COM interface macros
 
 // ---------------------------------------------------------------------------
 // IDirectInput (DINPUT) - the object DirectInputCreateA returns. COM convention
-// => __stdcall virtuals. Slots pinned to their retail vtable offsets:
+// => __stdcall virtuals, declared the dev-authentic SDK way (STDMETHOD family).
+// Slots pinned to their retail vtable offsets:
 //   +0x0c (slot 3)  CreateDevice (REFGUID, LPDIRECTINPUTDEVICE*, LPUNKNOWN)
 //   +0x10 (slot 4)  EnumDevices  (DWORD, LPDIENUMDEVICESCALLBACKA, LPVOID, DWORD)
 // ---------------------------------------------------------------------------
 struct IDirectInputDeviceZ;
 
 struct IDirectInputZ {
-    virtual i32 __stdcall QueryInterface(const void* riid, void** out); // slot 0 +0x00
-    virtual u32 __stdcall AddRef();                                     // slot 1 +0x04
-    virtual u32 __stdcall Release();                                    // slot 2 +0x08
-    virtual i32 __stdcall
-    CreateDevice(const void* rguid, IDirectInputDeviceZ** outDev, void* unk); // slot 3 +0x0c
-    virtual i32 __stdcall
-    EnumDevices(u32 devType, void* callback, void* ref, u32 flags); // slot 4 +0x10
+    STDMETHOD(QueryInterface)(const void* riid, void** out); // slot 0 +0x00
+    STDMETHOD_(u32, AddRef)();                               // slot 1 +0x04
+    STDMETHOD_(u32, Release)();                              // slot 2 +0x08
+    STDMETHOD(CreateDevice)(
+        const void* rguid,
+        IDirectInputDeviceZ** outDev,
+        void* unk
+    );                                                                         // slot 3 +0x0c
+    STDMETHOD(EnumDevices)(u32 devType, void* callback, void* ref, u32 flags); // slot 4 +0x10
 };
 
 // ---------------------------------------------------------------------------
@@ -56,32 +60,32 @@ struct IDirectInputZ {
 //   +0x64 (slot 25) Poll               () [IDirectInputDevice2]
 // ---------------------------------------------------------------------------
 struct IDirectInputDeviceZ {
-    virtual i32 __stdcall QueryInterface(const void* riid, void** out); // slot 0  +0x00
-    virtual u32 __stdcall AddRef();                                     // slot 1  +0x04
-    virtual u32 __stdcall Release();                                    // slot 2  +0x08
-    virtual void __stdcall Slot3();                                     // slot 3  +0x0c
-    virtual void __stdcall Slot4();                                     // slot 4  +0x10
-    virtual void __stdcall Slot5();                                     // slot 5  +0x14
-    virtual i32 __stdcall SetProperty(const void* rguid, void* prop);   // slot 6  +0x18
-    virtual i32 __stdcall Acquire();                                    // slot 7  +0x1c
-    virtual i32 __stdcall Unacquire();                                  // slot 8  +0x20
-    virtual i32 __stdcall GetDeviceState(u32 cb, void* data);           // slot 9  +0x24
-    virtual void __stdcall Slot10();                                    // slot 10 +0x28
-    virtual i32 __stdcall SetDataFormat(void* fmt);                     // slot 11 +0x2c
-    virtual void __stdcall Slot12();                                    // slot 12 +0x30
-    virtual i32 __stdcall SetCooperativeLevel(void* hwnd, u32 flags);   // slot 13 +0x34
-    virtual void __stdcall Slot14();                                    // slot 14 +0x38
-    virtual void __stdcall Slot15();                                    // slot 15 +0x3c
-    virtual void __stdcall Slot16();                                    // slot 16 +0x40
-    virtual void __stdcall Slot17();                                    // slot 17 +0x44
-    virtual void __stdcall Slot18();                                    // slot 18 +0x48
-    virtual void __stdcall Slot19();                                    // slot 19 +0x4c
-    virtual void __stdcall Slot20();                                    // slot 20 +0x50
-    virtual void __stdcall Slot21();                                    // slot 21 +0x54
-    virtual void __stdcall Slot22();                                    // slot 22 +0x58
-    virtual void __stdcall Slot23();                                    // slot 23 +0x5c
-    virtual void __stdcall Slot24();                                    // slot 24 +0x60
-    virtual i32 __stdcall Poll();                                       // slot 25 +0x64
+    STDMETHOD(QueryInterface)(const void* riid, void** out); // slot 0  +0x00
+    STDMETHOD_(u32, AddRef)();                               // slot 1  +0x04
+    STDMETHOD_(u32, Release)();                              // slot 2  +0x08
+    STDMETHOD_(void, Slot3)();                               // slot 3  +0x0c
+    STDMETHOD_(void, Slot4)();                               // slot 4  +0x10
+    STDMETHOD_(void, Slot5)();                               // slot 5  +0x14
+    STDMETHOD(SetProperty)(const void* rguid, void* prop);   // slot 6  +0x18
+    STDMETHOD(Acquire)();                                    // slot 7  +0x1c
+    STDMETHOD(Unacquire)();                                  // slot 8  +0x20
+    STDMETHOD(GetDeviceState)(u32 cb, void* data);           // slot 9  +0x24
+    STDMETHOD_(void, Slot10)();                              // slot 10 +0x28
+    STDMETHOD(SetDataFormat)(void* fmt);                     // slot 11 +0x2c
+    STDMETHOD_(void, Slot12)();                              // slot 12 +0x30
+    STDMETHOD(SetCooperativeLevel)(void* hwnd, u32 flags);   // slot 13 +0x34
+    STDMETHOD_(void, Slot14)();                              // slot 14 +0x38
+    STDMETHOD_(void, Slot15)();                              // slot 15 +0x3c
+    STDMETHOD_(void, Slot16)();                              // slot 16 +0x40
+    STDMETHOD_(void, Slot17)();                              // slot 17 +0x44
+    STDMETHOD_(void, Slot18)();                              // slot 18 +0x48
+    STDMETHOD_(void, Slot19)();                              // slot 19 +0x4c
+    STDMETHOD_(void, Slot20)();                              // slot 20 +0x50
+    STDMETHOD_(void, Slot21)();                              // slot 21 +0x54
+    STDMETHOD_(void, Slot22)();                              // slot 22 +0x58
+    STDMETHOD_(void, Slot23)();                              // slot 23 +0x5c
+    STDMETHOD_(void, Slot24)();                              // slot 24 +0x60
+    STDMETHOD(Poll)();                                       // slot 25 +0x64
 };
 
 // ---------------------------------------------------------------------------

@@ -16,6 +16,7 @@
 #define DSNDMGR_DIRECTSOUNDMGR_H
 
 #include <rva.h>
+#include <ComDefs.h> // STDMETHOD / HRESULT / REFIID - the DirectSound COM interface macros
 
 // DSBCAPS - the buffer-caps struct GetCaps fills (dwSize 0x14 in, dwFlags out).
 // The ctor reads dwFlags into m_caps and ignores the rest.
@@ -51,20 +52,25 @@ struct IDirectSoundBufferZ; // forward-decl: CreateSoundBuffer's out-param type
 //   +0x18 (slot 6)  SetCooperativeLevel(HWND, DWORD)
 // ---------------------------------------------------------------------------
 struct IDirectSoundZ {
-    // Real COM interface (abstract): every slot is a __stdcall virtual with the
-    // interface pointer as the hidden `this`, so `iface->Method(args)` lowers to the
-    // same `mov eax,[iface]; call [eax+slot]` the manual vtbl-struct dispatch did.
-    virtual i32 __stdcall QueryInterface(void* iid, void** out) = 0; // slot 0
-    virtual u32 __stdcall AddRef() = 0;                              // slot 1
-    virtual i32 __stdcall Release() = 0;                             // slot 2  (+0x08)
-    virtual i32 __stdcall
-    CreateSoundBuffer(void* desc, IDirectSoundBufferZ** out, void* unk) = 0; // slot 3  (+0x0c)
-    virtual i32 __stdcall GetCaps(void* caps) = 0; // slot 4  (+0x10, unused)
-    virtual i32 __stdcall DuplicateSoundBuffer(
+    // Real COM interface (abstract), declared the dev-authentic SDK way with the
+    // STDMETHOD / STDMETHOD_ macros (== `virtual HRESULT __stdcall` / `virtual u32
+    // __stdcall`), so `iface->Method(args)` lowers to the same `mov eax,[iface];
+    // call [eax+slot]` the manual vtbl-struct dispatch did. The IUnknown triad
+    // (QueryInterface/AddRef/Release) heads the vtable.
+    STDMETHOD(QueryInterface)(REFIID riid, void** ppv) PURE; // slot 0
+    STDMETHOD_(u32, AddRef)() PURE;                          // slot 1
+    STDMETHOD_(u32, Release)() PURE;                         // slot 2  (+0x08)
+    STDMETHOD(CreateSoundBuffer)(
+        void* desc,
+        IDirectSoundBufferZ** out,
+        void* unk
+    ) PURE;                              // slot 3  (+0x0c)
+    STDMETHOD(GetCaps)(void* caps) PURE; // slot 4  (+0x10, unused)
+    STDMETHOD(DuplicateSoundBuffer)(
         IDirectSoundBufferZ* original,
         IDirectSoundBufferZ** out
-    ) = 0;                                                                // slot 5  (+0x14)
-    virtual i32 __stdcall SetCooperativeLevel(void* hwnd, u32 level) = 0; // slot 6  (+0x18)
+    ) PURE;                                                     // slot 5  (+0x14)
+    STDMETHOD(SetCooperativeLevel)(void* hwnd, u32 level) PURE; // slot 6  (+0x18)
 };
 SIZE_UNKNOWN(IDirectSoundZ); // COM interface view (single vptr)
 
@@ -87,31 +93,40 @@ SIZE_UNKNOWN(IDirectSoundZ); // COM interface view (single vptr)
 //   +0x50 (slot 20) Restore             ()
 // ---------------------------------------------------------------------------
 struct IDirectSoundBufferZ {
-    // Real COM interface (abstract): __stdcall virtuals dispatched via the vptr, so
-    // `buf->Method(args)` lowers to `mov eax,[buf]; call [eax+slot]` (was the manual
-    // vtbl-struct dispatch). Only the touched slots carry meaningful signatures.
-    virtual i32 __stdcall QueryInterface(void* iid, void** out) = 0;        // slot 0
-    virtual u32 __stdcall AddRef() = 0;                                     // slot 1
-    virtual i32 __stdcall Release() = 0;                                    // slot 2  (+0x08)
-    virtual i32 __stdcall GetCaps(void* caps) = 0;                          // slot 3  (+0x0c)
-    virtual i32 __stdcall GetCurrentPosition(u32* play, u32* write) = 0;    // slot 4  (+0x10)
-    virtual i32 __stdcall GetFormat(void* fmt, u32 size, u32* written) = 0; // slot 5  (+0x14)
-    virtual i32 __stdcall GetVolume(i32* vol) = 0;                          // slot 6  (+0x18)
-    virtual i32 __stdcall GetPan(i32* pan) = 0;                             // slot 7  (+0x1c)
-    virtual i32 __stdcall GetFrequency(u32* freq) = 0;                      // slot 8  (+0x20)
-    virtual i32 __stdcall GetStatus(u32* status) = 0;                       // slot 9  (+0x24)
-    virtual i32 __stdcall Initialize(void* dsound, void* desc) = 0; // slot 10 (+0x28, unused)
-    virtual i32 __stdcall
-    Lock(u32 off, u32 bytes, void** p1, u32* n1, void** p2, u32* n2, u32 fl) = 0; // slot 11 (+0x2c)
-    virtual i32 __stdcall Play(u32 r1, u32 r2, u32 flags) = 0;                    // slot 12 (+0x30)
-    virtual i32 __stdcall SetCurrentPosition(u32 pos) = 0;                        // slot 13 (+0x34)
-    virtual i32 __stdcall SetFormat(void* fmt) = 0;                               // slot 14 (+0x38)
-    virtual i32 __stdcall SetVolume(i32 vol) = 0;                                 // slot 15 (+0x3c)
-    virtual i32 __stdcall SetPan(i32 pan) = 0;                                    // slot 16 (+0x40)
-    virtual i32 __stdcall SetFrequency(u32 freq) = 0;                             // slot 17 (+0x44)
-    virtual i32 __stdcall Stop() = 0;                                             // slot 18 (+0x48)
-    virtual i32 __stdcall Unlock(void* p1, u32 n1, void* p2, u32 n2) = 0;         // slot 19 (+0x4c)
-    virtual i32 __stdcall Restore() = 0;                                          // slot 20 (+0x50)
+    // Real COM interface (abstract), declared the dev-authentic SDK way with the
+    // STDMETHOD / STDMETHOD_ macros (== `virtual HRESULT __stdcall` / `virtual u32
+    // __stdcall`), so `buf->Method(args)` lowers to `mov eax,[buf]; call [eax+slot]`
+    // (was the manual vtbl-struct dispatch). Only the touched slots carry meaningful
+    // signatures; the IUnknown triad heads the vtable.
+    STDMETHOD(QueryInterface)(REFIID riid, void** ppv) PURE;      // slot 0
+    STDMETHOD_(u32, AddRef)() PURE;                               // slot 1
+    STDMETHOD_(u32, Release)() PURE;                              // slot 2  (+0x08)
+    STDMETHOD(GetCaps)(void* caps) PURE;                          // slot 3  (+0x0c)
+    STDMETHOD(GetCurrentPosition)(u32* play, u32* write) PURE;    // slot 4  (+0x10)
+    STDMETHOD(GetFormat)(void* fmt, u32 size, u32* written) PURE; // slot 5  (+0x14)
+    STDMETHOD(GetVolume)(i32* vol) PURE;                          // slot 6  (+0x18)
+    STDMETHOD(GetPan)(i32* pan) PURE;                             // slot 7  (+0x1c)
+    STDMETHOD(GetFrequency)(u32* freq) PURE;                      // slot 8  (+0x20)
+    STDMETHOD(GetStatus)(u32* status) PURE;                       // slot 9  (+0x24)
+    STDMETHOD(Initialize)(void* dsound, void* desc) PURE;         // slot 10 (+0x28, unused)
+    STDMETHOD(Lock)(
+        u32 off,
+        u32 bytes,
+        void** p1,
+        u32* n1,
+        void** p2,
+        u32* n2,
+        u32 fl
+    ) PURE;                                                     // slot 11 (+0x2c)
+    STDMETHOD(Play)(u32 r1, u32 r2, u32 flags) PURE;            // slot 12 (+0x30)
+    STDMETHOD(SetCurrentPosition)(u32 pos) PURE;                // slot 13 (+0x34)
+    STDMETHOD(SetFormat)(void* fmt) PURE;                       // slot 14 (+0x38)
+    STDMETHOD(SetVolume)(i32 vol) PURE;                         // slot 15 (+0x3c)
+    STDMETHOD(SetPan)(i32 pan) PURE;                            // slot 16 (+0x40)
+    STDMETHOD(SetFrequency)(u32 freq) PURE;                     // slot 17 (+0x44)
+    STDMETHOD(Stop)() PURE;                                     // slot 18 (+0x48)
+    STDMETHOD(Unlock)(void* p1, u32 n1, void* p2, u32 n2) PURE; // slot 19 (+0x4c)
+    STDMETHOD(Restore)() PURE;                                  // slot 20 (+0x50)
 };
 SIZE_UNKNOWN(IDirectSoundBufferZ); // COM interface view (single vptr)
 
