@@ -19,12 +19,12 @@ public:
 
 class CDDrawSubMgr {
 public:
-    virtual void Slot00();
+    virtual void FUN_005bef01(); // [0] 0x1bef01 (dispatch view, declared-only)
     virtual void Slot04();
-    virtual void Slot08();
-    virtual void Slot0C();
-    virtual void Slot10();
-    virtual i32 Vfunc14();
+    virtual void FUN_004028ec(); // [2] 0x0028ec
+    virtual void FUN_0040106e(); // [3] 0x00106e
+    virtual void FUN_00404034(); // [4] 0x004034
+    virtual i32 Vfunc14();       // [5] readiness predicate (dispatched)
 
     void* m_04;
     CDDrawSubMgrItem* m_10;
@@ -40,11 +40,11 @@ struct MinervaMgr; // defined below; m_28 points at one
 // EH frame. Placing it here also fixes the derived vtable layout: the dtor lands
 // at slot 1 and UnknownVirtualMethod14 (byte 0x14) at slot 5, etc.
 struct CDDrawSurfaceMgrBase {
-    virtual void V0();               // slot 0 (sub_1bef01)
-    virtual ~CDDrawSurfaceMgrBase(); // slot 1 (scalar-deleting dtor)
-    virtual void V2();               // slot 2 (sub_0028ec)
-    virtual void V3();               // slot 3 (sub_00106e)
-    virtual void V4();               // slot 4 (sub_004034)
+    virtual void FUN_005bef01();     // [0] 0x1bef01
+    virtual ~CDDrawSurfaceMgrBase(); // [1] scalar-deleting dtor
+    virtual void FUN_004028ec();     // [2] 0x0028ec
+    virtual void FUN_0040106e();     // [3] 0x00106e
+    virtual void FUN_00404034();     // [4] 0x004034
 };
 inline CDDrawSurfaceMgrBase::~CDDrawSurfaceMgrBase() {}
 

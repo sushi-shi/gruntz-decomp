@@ -34,16 +34,16 @@ class CObject;
 // at byte offset +0x24. Declarations only - never defined, so no ??_7 emitted.
 class SiriusWorker {
 public:
-    virtual void Slot00();               // +0x00
-    virtual i32 ScalarDtor(i32 flag);    // +0x04  scalar-deleting destructor
-    virtual void Slot08();               // +0x08
-    virtual void Slot0C();               // +0x0c
-    virtual void Slot10();               // +0x10
-    virtual void Slot14();               // +0x14
-    virtual void Slot18();               // +0x18
-    virtual void Slot1C();               // +0x1c
-    virtual void Slot20();               // +0x20
-    virtual i32 Vfunc24(i32 a1, i32 a3); // +0x24
+    virtual void FUN_005bef01();         // [0] 0x1bef01
+    virtual i32 ScalarDtor(i32 flag);    // [1] 0x151d80 scalar-deleting destructor
+    virtual void FUN_004028ec();         // [2] 0x0028ec
+    virtual void FUN_0040106e();         // [3] 0x00106e
+    virtual void FUN_00404034();         // [4] 0x004034
+    virtual void FUN_00551d60();         // [5] 0x151d60
+    virtual void FUN_00401c08();         // [6] 0x001c08
+    virtual void FUN_00551e70();         // [7] 0x151e70
+    virtual void FUN_00551d70();         // [8] 0x151d70
+    virtual i32 Vfunc24(i32 a1, i32 a3); // [9] 0x151e20 (Init)
 };
 
 // The 0x17c-byte worker layout. Only the seeded offsets are load-bearing.
@@ -160,4 +160,5 @@ void CDDrawWorkerCache::VirtualMethod_157720() {}
 
 SIZE_UNKNOWN(CDDrawWorkerCache);
 SIZE_UNKNOWN(SiriusWorker);
-SIZE_UNKNOWN(SiriusWorkerObj);
+SIZE(SiriusWorkerObj, 0x17c);
+VTBL(SiriusWorkerObj, 0x001efb80); // ??_7SiriusWorkerObj (was g_siriusWorkerVtbl)

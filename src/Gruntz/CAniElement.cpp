@@ -43,11 +43,11 @@ public:
 // auto-emit ??_7CAniRecordInit + stamp the vptr in the ctor - no manual
 // `m_vptr = &g_aniRecordVtbl` store.
 struct CAniRecordInit {
-    virtual void Slot00();     // [0] 0x1bef01
-    virtual ~CAniRecordInit(); // [1] scalar-deleting dtor slot (0x165780)
-    virtual void Slot08();     // [2] 0x0028ec
-    virtual void Slot0C();     // [3] 0x00106e
-    virtual void Slot10();     // [4] 0x004034
+    virtual void FUN_005bef01(); // [0] 0x1bef01
+    virtual ~CAniRecordInit();   // [1] scalar-deleting dtor slot (0x165780)
+    virtual void FUN_004028ec(); // [2] 0x0028ec
+    virtual void FUN_0040106e(); // [3] 0x00106e
+    virtual void FUN_00404034(); // [4] 0x004034
 
     inline CAniRecordInit() {
         m_2c = 0;

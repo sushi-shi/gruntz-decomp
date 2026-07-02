@@ -667,3 +667,89 @@ bare extern).
   multi-virtual `/GX` dtor chain (CSBI, with its 11-slot base + restamp walk) does — so
   CDoNothingNormal/CGameMgr/CMulti/CPlay stay pinned (removing the pin only unnames the
   rva). The determinant is whether `cl` actually emits the `??_7` in some base OBJ.
+## Batch 5 (CDDraw worker / sub-mgr cluster — VTBL + slot-RVA retrofit) — 2026-07-02
+
+The worker family (`CDDraw*` / `CSeverusWorker*` / `CAniElement` / `CAniRecord` /
+Albus/Leaf/Catalog/`CDDrawSubMgr*`). These classes were ALREADY real-polymorphic
+(prior batches removed the `m_vptr = &g_*Vtbl` stamps); the residual work was
+(A) naming the compiler-emitted `??_7` so it pairs with the retail vtable datum,
+via a `VTBL(Class, 0x<rva>)` catalog macro, and (B) renaming the anonymous
+`SlotNN` / `vNN` / `Vslot*` placeholder virtuals to their real slot RVA
+(`FUN_00<va>`, read from the retail `.rdata` vtable data). Slot RVAs dumped from
+`$GRUNTZ_EXE` `.rdata` (VA = RVA + 0x400000).
+
+### VTBL macros added (compiler-emitted `??_7` now named; UnknownVTables placeholders removed)
+
+| Class | vtable RVA | slots | TU |
+| --- | --- | --- | --- |
+| `CDDrawSubMgrLeaf` | `0x001efc78` | 9 | CDDrawSubMgrLeaf.cpp |
+| `CDDrawSubMgrLeafScan` | `0x001efca0` | 9 | CDDrawSubMgrLeafScan.cpp |
+| `CAniRecordPrimary` | `0x001f02c0` | 5 | CAniRecord.cpp |
+| `CAniRecordBase2` | `0x001f02d8` | 14 | CAniRecord.cpp |
+| `SiriusWorkerObj` | `0x001efb80` | 10 | CDDrawWorkerCache.cpp |
+| `CDDrawWorkerMapSmall` | `0x001efcc8` | 13 | CDDrawWorkerMapSmall.cpp |
+| `HagridWorkerB` | `0x001efed0` | 14 | CDDrawWorkerList.cpp |
+| `CAniElementObj` | `0x001efba8` | 5 | CDDrawSubMgrAni.cpp |
+| `SeverusWorkerBase` | `0x001efc30` | 9 | CDDrawWorkerRegistry.cpp |
+| `SeverusWorkerObj` | `0x001efbe8` | 17 | CDDrawWorkerRegistry.cpp |
+
+- `SeverusWorkerObj` needed **2 extra declared-only slots** (`FUN_005522b0` [15],
+  `FUN_005523b0` [16]) so its emitted vtable size (17 slots) matches retail; the
+  model had truncated at 15.
+- `HagridWorkerA` (0x1efea0, 12 slots) shares the 14-slot `HagridWorker` base, so its
+  emitted vtable carries 2 spurious slots → **skipped VTBL** (size mismatch). Splitting
+  A off a 12-slot base is a separate refactor.
+- Two vtables are cross-modeled in two TUs (same retail address): `0x001efbe8`
+  (`SeverusWorkerObj` in Registry ↔ `CSeverusEntryList`) and `0x001f02d8`
+  (`CAniRecordBase2` in CAniRecord ↔ truncated `AlbusWorkerObj` in WorkerMapSmall).
+  VTBL is placed on the **fuller** model of each; the other TU is left un-VTBL'd to
+  avoid a keep-last conflict.
+
+### SIZE(exact) set from the `operator new(0xNN)` / layout
+
+`SiriusWorkerObj` 0x17c, `AlbusWorkerObj` 0x14, `HagridWorkerA/B` 0x7c,
+`SeverusWorkerObj` 0x6c, `CAniElementObj` 0x28.
+
+### Worklist slot stubs added (RVA-bound `@stub`; slot binds into the `??_7`)
+
+- `CDDrawSubMgrLeaf::FUN_00552640` (0x152640, 6 B) — CatalogVtbl slot [6].
+- `CDDrawWorkerMapSmall::FUN_00556db0` (0x156db0, 6 B) — slot [6].
+
+### Dead `g_*Vtbl` externs removed (class already real-polymorphic)
+
+- `CSeverusEntryList.cpp`: `g_severusEntryListVtbl` + `g_severusBaseDtorVtbl` (both
+  unused after realization; 0x1efbe8 now named via `SeverusWorkerObj`'s VTBL, 0x5e8cb4
+  still bound in CSeverusWorkerEh.cpp).
+
+### KEPT-hand-rolled / DEFERRED (genuine walls — not converted this batch)
+
+- **`LeafElementObj` (`CDDrawSubMgrLeafScan.cpp`)** — the factory (0x157d70, 99.81%)
+  inline-constructs the 0x1c element with a SINGLE vptr write (raw `operator new` +
+  manual field seed + `StampLeafElemVtbl`). A real `new LeafElementObj` would emit the
+  base-then-derived double vptr write → regress the 99.81% factory. Kept `g_leafElemVtbl`
+  + the base `g_remusBaseDtorVtbl` stamp.
+- **`CSeverusWorkerEh.cpp` / `SeverusWorkerDtor.cpp`** — dtor-only / inline-embed
+  models. The base is modeled with the C++ `~` as the *only/first* virtual, so `cl`
+  emits a dtor-at-slot-0 vtable (retail is a CObject-style slot-0-thunk / slot-1-dtor
+  layout) → a real VTBL would mis-size/mis-lay the emitted `??_7`. The `g_severusEmbedVtbl`
+  / `g_severusWorkerVtbl` / `g_severusBaseDtorVtbl` externs stay as reloc-masked target
+  naming; documented @early-stop.
+- **`CDDrawSubMgr::CreateObject_159600` (wwd factory)** — `RezAlloc(0x1dc)` raw-alloc
+  factory stamping `g_wwdGameObjectVtbl` / `g_wwdObjFinalVtbl` mid-construction; already
+  @early-stop-deferred for the wide-object-ctor / class-`operator new` sweep.
+- **`CDDrawPtrCollections` `CPoolItemAVtbl`** — a pointer-to-member vtable-as-struct
+  (foreign vtable owned/dispatched dynamically); not a removable manual stamp.
+- **Runtime dispatch views** (`CDDAttachedSurface` v00..v10 in CDDrawSurfacePair,
+  `UnknownSeverusVtableView` in CDDrawWorkerRegistry) — the concrete class/vtable RVA
+  is not statically known, so the `vNN`/`SlotNN` names have no RVA to bind to; left.
+
+### Rule learned (Batch 5)
+
+- **A `VTBL(Class, rva)` only helps when the emitted vtable is the RIGHT SIZE.** For a
+  shared-base worker (`HagridWorkerA` vs `HagridWorkerB`) or a truncated model
+  (`SeverusWorkerObj` at 15 vs 17), the base's slot count leaks into the derived
+  `??_7`; add the missing trailing declared-only slots (size-match) or skip VTBL.
+- **A dtor-only polymorphic base emits a dtor-at-slot-0 vtable**, which does NOT match a
+  CObject-style slot-0-thunk / slot-1-dtor retail layout. To realize such a base
+  correctly, model slot 0 as a regular `virtual void FUN_005bef01()` and slot 1 as a
+  regular `virtual ScalarDtor(i32)` (the `CDDrawSubMgrLucius` pattern), not a bare C++ `~`.

@@ -21,7 +21,7 @@
 // is load-bearing. Declarations only - never defined, so no ??_7 is emitted here.
 class DracoChild {
 public:
-    virtual void Slot00();            // +0x00
+    virtual void FUN_005bef01();      // [0] 0x1bef01 (shared thunk, declared-only)
     virtual i32 ScalarDtor(i32 flag); // +0x04  scalar-deleting destructor
 };
 

@@ -36,7 +36,7 @@
 // helpers forward to MatchSub; FindKeyOfValue compares the value pointer itself.
 class LeafScanValue {
 public:
-    virtual void Slot00();            // +0x00 (vptr)
+    virtual void FUN_005bef01();      // [0] 0x1bef01 (shared thunk, declared-only)
     virtual i32 ScalarDtor(i32 flag); // +0x04 scalar-deleting destructor
     char m_pad04[0x10 - 0x04];        // +0x04..0x0f (after the vptr)
     void* m_10;                       // +0x10  held sound-arg (LeafScanSoundArg*)
@@ -143,7 +143,7 @@ struct LeafRootHandle {
 // factory manually stamps the real foreign vtable instead.
 class LeafElement {
 public:
-    virtual void Slot00();            // +0x00
+    virtual void FUN_005bef01();      // [0] 0x1bef01 (shared thunk, declared-only)
     virtual i32 ScalarDtor(i32 flag); // +0x04 scalar-deleting destructor
 };
 // The element's CObject-like base subobject (vptr + status word at +0x04 + root
@@ -216,11 +216,11 @@ void* operator new(u32 n);
 // ---------------------------------------------------------------------------
 class LeafScanBase {
 public:
-    virtual void Slot00();   // [0] sub_1bef01
-    virtual ~LeafScanBase(); // [1] scalar-deleting dtor
-    virtual void Slot08();   // [2] sub_0028ec
-    virtual void Slot0C();   // [3] sub_00106e
-    virtual void Slot10();   // [4] sub_004034
+    virtual void FUN_005bef01(); // [0] 0x1bef01 (shared thunk, declared-only)
+    virtual ~LeafScanBase();     // [1] scalar-deleting dtor
+    virtual void FUN_004028ec(); // [2] 0x0028ec (shared thunk, declared-only)
+    virtual void FUN_0040106e(); // [3] 0x00106e (shared thunk, declared-only)
+    virtual void FUN_00404034(); // [4] 0x004034 (shared thunk, declared-only)
 
     i32 m_04;                  // +0x04  -1 when inactive
     char m_pad08[0x0c - 0x08]; // +0x08..0x0b
@@ -247,10 +247,11 @@ public:
     // virtuals at slots 5..8. Slots 5/7 point to functions in the sibling
     // CDDrawSubMgrLeaf TU (0x157530 / 0x157ae0) and 6/8 are unreconstructed, so all
     // four are declared-only here -> reloc-masked vtable references.
-    virtual i32 Vslot14_157530();  // [5] 0x157530 (CDDrawMapHolder::VirtualMethodUnknown14)
-    virtual void Vslot18_001c08(); // [6] 0x001c08 (declared-only)
-    virtual void Vslot1C_157ae0(); // [7] 0x157ae0 (CDDrawSubMgrLeaf::VirtualMethodUnknown18)
-    virtual void Vslot20_154a00(); // [8] 0x154a00 (declared-only)
+    virtual i32 FUN_00557530();  // [5] 0x157530 (CDDrawMapHolder::VirtualMethodUnknown14, other TU)
+    virtual void FUN_00401c08(); // [6] 0x001c08 (shared thunk, declared-only)
+    virtual void
+    FUN_00557ae0(); // [7] 0x157ae0 (CDDrawSubMgrLeaf::VirtualMethodUnknown18, other TU)
+    virtual void FUN_00554a00(); // [8] 0x154a00 (shared, declared-only)
 
     i32 RefreshAsset_114120(const char* key);
     LeafElementObj* CreateEntry_157d70(const char* key, void* arg2);
@@ -783,3 +784,4 @@ SIZE_UNKNOWN(LeafScanValue);
 SIZE_UNKNOWN(LeafSumSource);
 SIZE_UNKNOWN(RemusParseSource);
 SIZE_UNKNOWN(SoundDeviceStartView);
+VTBL(CDDrawSubMgrLeafScan, 0x001efca0); // ??_7CDDrawSubMgrLeafScan (was g_leafScanVtbl)

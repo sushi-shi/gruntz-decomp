@@ -47,18 +47,18 @@ class CObject;
 // two factory siblings. Declarations only - never defined, so no ??_7 emitted.
 class AlbusWorker {
 public:
-    virtual void Slot00();               // +0x00
-    virtual i32 ScalarDtor(i32 flag);    // +0x04  scalar-deleting destructor
-    virtual void Slot08();               // +0x08
-    virtual void Slot0C();               // +0x0c
-    virtual void Slot10();               // +0x10
-    virtual void Slot14();               // +0x14
-    virtual void Slot18();               // +0x18
-    virtual void Slot1C();               // +0x1c
-    virtual void Slot20();               // +0x20
-    virtual void Slot24();               // +0x24
-    virtual i32 Vfunc28(i32 a1, i32 a3); // +0x28
-    virtual i32 Vfunc2C(i32 a1, i32 a3); // +0x2c
+    virtual void FUN_005bef01();         // [0] 0x1bef01
+    virtual i32 ScalarDtor(i32 flag);    // [1] 0x165db0 scalar-deleting destructor
+    virtual void FUN_004028ec();         // [2] 0x0028ec
+    virtual void FUN_0040106e();         // [3] 0x00106e
+    virtual void FUN_00404034();         // [4] 0x004034
+    virtual void FUN_00565d90();         // [5] 0x165d90
+    virtual void FUN_00401c08();         // [6] 0x001c08
+    virtual void FUN_00568fb0();         // [7] 0x168fb0
+    virtual void FUN_00565da0();         // [8] 0x165da0
+    virtual void FUN_00568f20();         // [9] 0x168f20
+    virtual i32 Vfunc28(i32 a1, i32 a3); // [10] 0x168ee0
+    virtual i32 Vfunc2C(i32 a1, i32 a3); // [11] 0x168ea0
 };
 
 // The 0x14-byte worker layout. Only the seeded offsets are load-bearing.
@@ -83,11 +83,11 @@ struct AlbusWorkerObj : public AlbusWorker {
 // holds the field resets; being polymorphic + having the destructible CMapStringToOb
 // members gives ~CDDrawWorkerMapSmall its /GX frame.
 struct AlbusMapBase {
-    virtual void Slot00();   // [0] grand-base sub_1bef01
-    virtual ~AlbusMapBase(); // [1] scalar-deleting dtor
-    virtual void Slot08();   // [2] sub_0028ec
-    virtual void Slot0C();   // [3] sub_00106e
-    virtual void Slot10();   // [4] sub_004034
+    virtual void FUN_005bef01(); // [0] 0x1bef01 grand-base thunk
+    virtual ~AlbusMapBase();     // [1] scalar-deleting dtor
+    virtual void FUN_004028ec(); // [2] 0x0028ec
+    virtual void FUN_0040106e(); // [3] 0x00106e
+    virtual void FUN_00404034(); // [4] 0x004034
 
     i32 m_04; // +0x04
     i32 m_08; // +0x08
@@ -118,9 +118,9 @@ public:
     // declared here in slot order so cl lays the emitted vtable out byte-for-byte
     // (the unreconstructed slots 6/8 are declared-only -> reloc-masked references).
     virtual i32 VirtualMethodUnknown14();  // [5]  0x156cd0
-    virtual void Slot18_156db0();          // [6]  0x156db0 (declared-only)
+    virtual void FUN_00556db0();           // [6]  0x156db0 (RVA-bound worklist stub)
     virtual void VirtualMethodUnknown1C(); // [7]  0x165810
-    virtual void Slot20_156cf0();          // [8]  0x156cf0 (declared-only)
+    virtual void FUN_00556cf0();           // [8]  0x156cf0 (shared, declared-only)
     virtual void Stub_1658c0();            // [9]  0x1658c0
     virtual void* VirtualMethodUnknown28(i32 a1, const char* key, i32 a3); // [10] 0x165990
     virtual void* VirtualMethodUnknown2C(i32 a1, const char* key, i32 a3); // [11] 0x165a10
@@ -291,6 +291,14 @@ i32 CDDrawWorkerMapSmall::VirtualMethodUnknown20() {
 RVA(0x00157610, 0x1e)
 void CDDrawWorkerMapSmall::Stub_157610() {}
 
+// Leaf vtable slot [6] (0x156db0): a game virtual not yet reconstructed - RVA-bound
+// worklist stub so cl binds the real slot symbol into ??_7CDDrawWorkerMapSmall.
+// @confidence: high
+// @source: vtable-scan
+// @stub
+RVA(0x00156db0, 0x6)
+void CDDrawWorkerMapSmall::FUN_00556db0() {}
+
 // @confidence: high
 // @source: tomalla
 // @stub
@@ -400,5 +408,6 @@ SIZE_UNKNOWN(UnknownAlbusTeardown);
 
 SIZE_UNKNOWN(AlbusMapBase);
 SIZE_UNKNOWN(AlbusWorker);
-SIZE_UNKNOWN(AlbusWorkerObj);
+SIZE(AlbusWorkerObj, 0x14);
 SIZE_UNKNOWN(CDDrawWorkerMapSmall);
+VTBL(CDDrawWorkerMapSmall, 0x001efcc8); // ??_7CDDrawWorkerMapSmall (was g_albusClassVtbl)

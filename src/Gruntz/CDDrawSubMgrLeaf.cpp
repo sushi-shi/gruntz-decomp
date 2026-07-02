@@ -35,7 +35,7 @@
 // is load-bearing. Declarations only - never defined here, so no ??_7 is emitted.
 class CCatalogNode {
 public:
-    virtual void Slot00();            // +0x00
+    virtual void FUN_005bef01();      // [0] 0x1bef01 (shared thunk, declared-only)
     virtual i32 ScalarDtor(i32 flag); // +0x04  scalar-deleting destructor
 };
 
@@ -60,11 +60,11 @@ public:
 // BEFORE the field stores reproduces retail).
 class CDDrawSubMgrLucius {
 public:
-    virtual void Slot00();              // [0] sub_1bef01
+    virtual void FUN_005bef01();        // [0] 0x1bef01 (shared thunk, declared-only)
     virtual void* ScalarDtor(i32 flag); // [1] scalar-deleting dtor (regular virtual)
-    virtual void Slot08();              // [2] sub_0028ec
-    virtual void Slot0C();              // [3] sub_00106e
-    virtual void Slot10();              // [4] sub_004034
+    virtual void FUN_004028ec();        // [2] 0x0028ec (shared thunk, declared-only)
+    virtual void FUN_0040106e();        // [3] 0x00106e (shared thunk, declared-only)
+    virtual void FUN_00404034();        // [4] 0x004034 (shared thunk, declared-only)
     ~CDDrawSubMgrLucius();
 
     i32 m_04; // +0x04  -1 when inactive
@@ -87,9 +87,9 @@ public:
     // slots 6/8 are declared-only -> reloc-masked references).
     void* ScalarDtor(i32 flag) OVERRIDE;   // [1] ??_G scalar-deleting destructor (0x1577c0)
     virtual i32 VirtualMethodUnknown14();  // [5] 0x1577a0
-    virtual void Slot18_152640();          // [6] 0x152640 (declared-only)
+    virtual void FUN_00552640();           // [6] 0x152640 (RVA-bound worklist stub)
     virtual void VirtualMethodUnknown1C(); // [7] 0x152650
-    virtual void Slot20_154a00();          // [8] 0x154a00 (declared-only)
+    virtual void FUN_00554a00();           // [8] 0x154a00 (shared, declared-only)
 
     // Non-vtable members.
     void VirtualMethodUnknown18(); // 0x157ae0 (not a vtable slot)
@@ -328,6 +328,14 @@ void* CDDrawSubMgrLeaf::ScalarDtor(i32 flag) {
 
 // Engine-label backlog stubs (moved from src/Stub/CDDrawMapHolder.cpp).
 
+// Leaf vtable slot [6] (0x152640): a game virtual not yet reconstructed - RVA-bound
+// worklist stub so cl binds the real slot symbol into ??_7CDDrawSubMgrLeaf.
+// @confidence: high
+// @source: vtable-scan
+// @stub
+RVA(0x00152640, 0x6)
+void CDDrawSubMgrLeaf::FUN_00552640() {}
+
 // @confidence: high
 // @source: tomalla
 // @stub
@@ -349,3 +357,5 @@ void CDDrawMapHolder::ClearUnknownMap() {}
 SIZE_UNKNOWN(CCatalogNode);
 SIZE_UNKNOWN(CDDrawMapHolder);
 SIZE_UNKNOWN(CDDrawSubMgrLucius);
+SIZE_UNKNOWN(CDDrawSubMgrLeaf);
+VTBL(CDDrawSubMgrLeaf, 0x001efc78); // ??_7CDDrawSubMgrLeaf (was g_catalogVtbl)

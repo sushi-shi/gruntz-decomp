@@ -14,14 +14,11 @@
 
 #include <Gruntz/CSeverusEntryList.h>
 
-// The node's own primary vtable (foreign engine datum, reloc-masked DATA()).
-DATA(0x001efbe8)
-extern void* g_severusEntryListVtbl; // 0x5efbe8
-
-// The grand-base dtor vtable (declared in the header for the inline ~CSeverusBase);
-// pin its address here (reloc-masked DATA()).
-DATA(0x005e8cb4)
-extern void* g_severusBaseDtorVtbl; // 0x5e8cb4
+// The class is real-polymorphic: cl emits ??_7CSeverusBase (grand-base @0x5e8cb4)
+// + the derived vtable @0x5efbe8 implicitly. Both former manual externs
+// (g_severusEntryListVtbl / g_severusBaseDtorVtbl) were dead here and are removed;
+// the derived vtable 0x1efbe8 is named by VTBL(SeverusWorkerObj) in
+// CDDrawWorkerRegistry.cpp (same retail class, fuller 17-slot model).
 
 // ===========================================================================
 // 0x151eb0 - DeleteAll: delete every owned element via its scalar-deleting dtor

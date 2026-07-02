@@ -47,20 +47,22 @@ class CObject;
 // vtable is the foreign engine datum stamped into the object below.
 class HagridWorker {
 public:
-    virtual void Slot00();                               // +0x00
-    virtual i32 ScalarDtor(i32 flag);                    // +0x04  scalar-deleting destructor
-    virtual void Slot08();                               // +0x08
-    virtual void Slot0C();                               // +0x0c
-    virtual void Slot10();                               // +0x10
-    virtual void Slot14();                               // +0x14
-    virtual void Slot18();                               // +0x18
-    virtual void Slot1C();                               // +0x1c
-    virtual void Slot20();                               // +0x20
-    virtual void Slot24();                               // +0x24
-    virtual void Slot28();                               // +0x28
-    virtual i32 Vfunc2C(i32 a1, i32 a2, i32 a3);         // +0x2c
-    virtual i32 Vfunc30(i32 a1, i32 a2, i32 a3, i32 a4); // +0x30
-    virtual i32 Vfunc34(i32 a1, i32 a2, i32 a3, i32 a4); // +0x34
+    // Slot RVAs named per HagridWorkerB (0x1efed0, 14 slots); HagridWorkerA
+    // (0x1efea0, 12 slots) reuses this base but its slots 5/7/8/10/11 differ.
+    virtual void FUN_005bef01();                         // [0] 0x1bef01
+    virtual i32 ScalarDtor(i32 flag);                    // [1] scalar-deleting destructor
+    virtual void FUN_004028ec();                         // [2] 0x0028ec
+    virtual void FUN_0040106e();                         // [3] 0x00106e
+    virtual void FUN_00404034();                         // [4] 0x004034
+    virtual void FUN_00557200();                         // [5] 0x157200 (B)
+    virtual void FUN_00401c08();                         // [6] 0x001c08
+    virtual void FUN_00557310();                         // [7] 0x157310 (B)
+    virtual void FUN_00557210();                         // [8] 0x157210 (B)
+    virtual void FUN_00557080();                         // [9] 0x157080
+    virtual void FUN_005660b0();                         // [10] 0x1660b0 (B)
+    virtual i32 Vfunc2C(i32 a1, i32 a2, i32 a3);         // [11] 0x1572f0
+    virtual i32 Vfunc30(i32 a1, i32 a2, i32 a3, i32 a4); // [12] 0x1572b0
+    virtual i32 Vfunc34(i32 a1, i32 a2, i32 a3, i32 a4); // [13] 0x157280
 };
 
 // The 0x7c-byte worker layouts. Only the seeded offsets are load-bearing; m_78 is
@@ -397,6 +399,9 @@ void CDDrawWorkerList::Stub_156fc0() {}
 SIZE_UNKNOWN(CDDrawWorkerList);
 SIZE_UNKNOWN(HagridChild);
 SIZE_UNKNOWN(HagridWorker);
-SIZE_UNKNOWN(HagridWorkerA);
-SIZE_UNKNOWN(HagridWorkerB);
+SIZE(HagridWorkerA, 0x7c);
+SIZE(HagridWorkerB, 0x7c);
 SIZE_UNKNOWN(WorkNode);
+// ??_7HagridWorkerA/B (was g_hagridWorkerVtblA/B). A's emitted vtable carries 2
+// extra slots (shared 14-slot base); only B (14 slots) matches retail size.
+VTBL(HagridWorkerB, 0x001efed0);

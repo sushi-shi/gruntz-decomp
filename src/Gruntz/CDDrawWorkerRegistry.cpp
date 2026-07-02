@@ -40,7 +40,7 @@ inline void* operator new(u32, void* p) {
 // bearing. Declarations only - never defined, so no ??_7 is emitted here.
 class SeverusValue {
 public:
-    virtual void Slot00();            // +0x00
+    virtual void FUN_005bef01();      // [0] 0x1bef01 (shared thunk, declared-only)
     virtual i32 ScalarDtor(i32 flag); // +0x04  scalar-deleting destructor
 };
 
@@ -96,25 +96,27 @@ public:
 // (base ctor) then the derived vptr (Obj ctor) - no manual `*(void**)w=&g_*Vtbl`.
 class SeverusWorkerBase {
 public:
-    virtual void Slot00();            // +0x00
-    virtual i32 ScalarDtor(i32 flag); // +0x04
-    virtual void Slot08();            // +0x08
-    virtual void Slot0C();            // +0x0c
-    virtual void Slot10();            // +0x10
-    virtual void Slot14();            // +0x14
-    virtual void Slot18();            // +0x18
-    virtual void Slot1C();            // +0x1c
-    virtual void Slot20();            // +0x20
+    virtual void FUN_005bef01();      // [0] 0x1bef01
+    virtual i32 ScalarDtor(i32 flag); // [1] 0x155780 scalar-deleting dtor
+    virtual void FUN_004028ec();      // [2] 0x0028ec
+    virtual void FUN_0040106e();      // [3] 0x00106e
+    virtual void FUN_00404034();      // [4] 0x004034
+    virtual void FUN_00555750();      // [5] 0x155750
+    virtual void FUN_00401c08();      // [6] 0x001c08
+    virtual void FUN_00551eb0();      // [7] 0x151eb0 (DeleteAll, CSeverusEntryList other TU)
+    virtual void FUN_00555770();      // [8] 0x155770
     SeverusWorkerBase() {}
 };
 
 struct SeverusWorkerObj : public SeverusWorkerBase {
-    virtual i32 Vfunc24(const char* key);                // +0x24
-    virtual void Slot28();                               // +0x28
-    virtual i32 Vfunc2C(i32 a1, i32 a2, i32 a4, i32 a5); // +0x2c
-    virtual i32 Vfunc30(i32 a1, i32 a2, i32 a4, i32 a5); // +0x30
-    virtual i32 Vfunc34(i32 a1, i32 a3, i32 a4);         // +0x34
-    virtual i32 Vfunc38(i32 a1, i32 a3, i32 a4);         // +0x38
+    virtual i32 Vfunc24(const char* key);                // [9]  0x155810
+    virtual void FUN_005521f0();                         // [10] 0x1521f0
+    virtual i32 Vfunc2C(i32 a1, i32 a2, i32 a4, i32 a5); // [11] 0x152110
+    virtual i32 Vfunc30(i32 a1, i32 a2, i32 a4, i32 a5); // [12] 0x152060
+    virtual i32 Vfunc34(i32 a1, i32 a3, i32 a4);         // [13] 0x151fb0
+    virtual i32 Vfunc38(i32 a1, i32 a3, i32 a4);         // [14] 0x151f00
+    virtual void FUN_005522b0();                         // [15] 0x1522b0
+    virtual void FUN_005523b0();                         // [16] 0x1523b0
     SeverusWorkerObj() {}
 
     i32 m_04;        // +0x04  parent+0x1c
@@ -602,6 +604,7 @@ void CDDrawWorkerRegistry::Stub_156e80() {}
 
 SIZE_UNKNOWN(SeverusMapValue);
 SIZE_UNKNOWN(SeverusValue);
-SIZE_UNKNOWN(SeverusWorker);
-SIZE_UNKNOWN(SeverusWorkerObj);
+SIZE(SeverusWorkerObj, 0x6c);
 SIZE_UNKNOWN(UnknownSeverusVtableView);
+VTBL(SeverusWorkerBase, 0x001efc30); // ??_7SeverusWorkerBase (was g_severusWorkerBaseVtbl, 9 slots)
+VTBL(SeverusWorkerObj, 0x001efbe8);  // ??_7SeverusWorkerObj (was g_severusWorkerVtbl, 17 slots)

@@ -54,12 +54,12 @@ extern "C" i32 sprintf(char* buf, const char* fmt, ...);
 // and the CObject base subobject at +8 whose (potentially throwing) init is 0x1b55e9
 // (a __thiscall on element+0x8).
 struct CAniElementBase {
-    virtual void Slot00_1bef01(); // [0] 0x1bef01
-    virtual ~CAniElementBase();   // [1] scalar-deleting dtor slot
-    virtual void Slot08_0028ec(); // [2] 0x0028ec
-    virtual void Slot0C_00106e(); // [3] 0x00106e
-    virtual void Slot10_004034(); // [4] 0x004034
-    void InitBase_1b55e9();       // 0x1b55e9
+    virtual void FUN_005bef01(); // [0] 0x1bef01
+    virtual ~CAniElementBase();  // [1] scalar-deleting dtor slot (0x152e10)
+    virtual void FUN_004028ec(); // [2] 0x0028ec
+    virtual void FUN_0040106e(); // [3] 0x00106e
+    virtual void FUN_00404034(); // [4] 0x004034
+    void InitBase_1b55e9();      // 0x1b55e9
 
     CAniElementBase() {
         ((CAniElementBase*)((char*)this + 0x8))->InitBase_1b55e9();
@@ -220,5 +220,6 @@ i32 CDDrawSubMgrAni::ScanTree_152ad0(CSymTab* tree, const char* prefix, const ch
 }
 
 SIZE_UNKNOWN(CAniElementBase);
-SIZE_UNKNOWN(CAniElementObj);
+SIZE(CAniElementObj, 0x28);
 SIZE_UNKNOWN(CSymTabTag);
+VTBL(CAniElementObj, 0x001efba8); // ??_7CAniElementObj (was g_aniElemVtbl, 5 slots)
