@@ -10,6 +10,7 @@
 // 1375b0") and grouped four sibling methods under it; the distinct vtable
 // (0x5ef6d8 voice / 0x5ef6e0 feeder-override) proves the voice is its own class.
 // Field names are placeholders; offsets + emitted bytes are load-bearing.
+#include <Dsndmgr/SoundStream.h> // the owning SoundStream (m_owner): ParseWave + m_initialized
 #include <Dsndmgr/StreamVoice.h>
 #include <Win32.h>
 #include <rva.h>

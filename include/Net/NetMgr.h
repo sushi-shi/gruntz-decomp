@@ -926,9 +926,9 @@ public:
     // SendStat3 (b9410) + PollSession (b95f0) are matched in this TU. PollSession
     // hands each received message to the engine dispatcher (Stub_0b9750), reached
     // here through an incremental-link thunk; modeled no-body (reloc-masked).
-    i32 SendStat3(i32 id, u32 value, i32 flag);            // 0xb9410
-    i32 PollSession();                                     // 0xb95f0
-    void DispatchRecvMsg(i32 sender, char* buf, i32 size); // 0xb9750
+    i32 SendStat3(i32 id, u32 value, i32 flag);           // 0xb9410
+    i32 PollSession();                                    // 0xb95f0
+    i32 DispatchRecvMsg(i32 sender, char* buf, i32 size); // 0xb9750 (ret used by ProcessCmd)
 
     char m_pad0[4]; // +0x000
     // The engine sub-object reached through several views: ->m_4->m_4 is the HWND

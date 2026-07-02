@@ -164,6 +164,12 @@ public:
     // pop the first. Returns the popped record (or 0 on allocation failure).
     void* PopParseSlot(); // 0x13c0c0
 
+    // MakeSeed: the name-keyed seed builder (0x13ba70) dispatched __thiscall on the
+    // parser (ecx = this) - the same physical seed builder MakeSymSeed calls as a
+    // free cdecl, reached here with a `this` (SymTab.cpp Method4b0). Bare decl (no
+    // RVA - the RVA is carried by MakeSymSeed); the rel32 call reloc-masks.
+    i32 MakeSeed(); // 0x13ba70 (__thiscall view of the seed builder)
+
     // The three path-resolution thunks: forward into GetRoot()'s CSymTab.
     i32 ResolveQualified(const char* name, void* arg); // 0x13bff0 -> root->ResolveQualified
     void* ResolvePath(const char* path);               // 0x13c030 -> root->ResolvePath

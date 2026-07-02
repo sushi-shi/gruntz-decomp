@@ -26,17 +26,11 @@ struct FeederSource {
 };
 SIZE_UNKNOWN(FeederSource); // thin reader view (method-only)
 
-// The feeder's owner (m_owner): a SoundDevice/SoundStream-family object that creates
-// the streaming DirectSound buffer (0x1366f0) and reaps it (RemoveBuffer
-// 0x136d80). Opaque here - its methods are reloc-masked __thiscall calls.
-struct FeederOwner {
-    // 0x1366f0 - build a streaming secondary buffer from the PCM format + size,
-    // return the buffer wrapper (or 0). Caller-side: ecx=owner, (fmt, bytes, flags).
-    void* CreateStreamBuf(void* fmt, u32 bytes, u32 flags);
-    // 0x136d80 - reap voices + release the COM buffer + unlink one wrapper.
-    void RemoveBuffer(void* buf);
-};
-SIZE_UNKNOWN(FeederOwner); // opaque owner view (method-only)
+// The feeder's owner (m_owner): the SoundDevice (base of SoundStream) that creates
+// the streaming DirectSound buffer (CreateBuffer 0x1366f0) and reaps it
+// (RemoveBuffer 0x136d80). Full definition included in StreamFeeder.cpp; its
+// methods are reloc-masked __thiscall calls.
+class SoundDevice;
 
 // The feeder's per-stream buffer wrapper (m_buffer): a DirectSoundMgr-derived voice
 // the feeder Lock/Unlock-fills + Stop/Pause/Resume-drives. Opaque; reloc-masked
@@ -65,7 +59,7 @@ struct StreamFeeder {
     virtual void OnDrain();                                                 // [2] 0x137e20
 
     // vptr @ +0x00 (implicit); first real field at +0x04.
-    FeederOwner* m_owner; // +0x04  owner (SoundStream/SoundDevice)
+    SoundDevice* m_owner; // +0x04  owner (SoundStream, via its SoundDevice base)
     FeederBuf* m_buffer;  // +0x08  per-stream DirectSound buffer wrapper
     u32 m_bufferCursor;   // +0x0c  read cursor into the buffer (write phase)
     u32 m_bufferLength;   // +0x10  loop/buffer length
@@ -87,7 +81,7 @@ struct StreamFeeder {
     StreamFeeder();                              // 0x137cd0
     void Cleanup();                              // 0x137cf0  (dtor body)
     i32 FeederStart(
-        FeederOwner* owner,
+        SoundDevice* owner,
         i32 arg2,
         u32 len,
         WaveFormatX* fmt,

@@ -399,29 +399,13 @@ CSymTab* CSymTab::CreateSub(const char* name) {
 // 0x13ba70 is reached here as a __thiscall on the owning parser (Method4b0 reloads
 // ecx=m_owner before the call), unlike the free-call ctor sites; same physical seed
 // builder, just dispatched with a `this`. RVA-keyed pairing absorbs the mangling.
-struct CSymSeedOwner {
-    i32 MakeSeed(); // 0x13ba70 (__thiscall on m_owner)
-};
-
 RVA(0x0013a4b0, 0x75)
 i32 CSymTab::Method4b0(void* a0, void* a1, void* a2, void* a3) {
     CSymLeafBuilder* slot = (CSymLeafBuilder*)m_owner->PopParseSlot();
     if (slot == 0) {
         return (i32)slot;
     }
-    slot->Build(
-        this,
-        (const char*)a1,
-        a0,
-        a2,
-        0,
-        0,
-        0,
-        (void*)((CSymSeedOwner*)m_owner)->MakeSeed(),
-        0,
-        0,
-        a3
-    );
+    slot->Build(this, (const char*)a1, a0, a2, 0, 0, 0, (void*)m_owner->MakeSeed(), 0, 0, a3);
     ((CHashTable*)((char*)a2 + 0x24))->Insert((char*)slot + 0x1c);
     u32 len = strlen((char*)a1);
     if ((u32)m_owner->m_longestLeafNameLen <= len) {
@@ -769,6 +753,5 @@ SIZE_UNKNOWN(CHashTableEntry);
 SIZE_UNKNOWN(CSymRec);
 SIZE_UNKNOWN(CSymTab);
 SIZE_UNKNOWN(CSymLeafBuilder);
-SIZE_UNKNOWN(CSymSeedOwner);
 SIZE_UNKNOWN(CSymRangeStream); // declared-but-undefined virtual slots; no vtable here (no VTBL)
 SIZE_UNKNOWN(CSymSlotPool);

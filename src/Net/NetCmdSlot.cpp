@@ -77,24 +77,15 @@ public:
 struct CGruntzCmdMgr {
     void EnqueueCommand(i32 a, void* cmd); // 0x23d10
 };
+// The game-manager sub-object hanging off CNetMgr+0x4 (its +0x6c is the grunt
+// command manager). The shared CNetMgr models m_4 as an untyped sub-object ptr (it
+// has "no single clean type" - reached through several per-TU views, see NetMgr.h);
+// this is the command-manager view of it.
 struct CNetMgrSub {
     char m_pad0[0x6c];
     CGruntzCmdMgr* m_cmdMgr; // +0x6c
 };
-SIZE_UNKNOWN(CNetMgrSub); // sub-object view (only +0x6c pinned); retail size TBD
-
-// The CNetMgr the slot caches at +0x1c, seen here through three members: the +0x4
-// sub-object (whose +0x6c is the grunt command manager), the DirectPlay session at
-// +0x520, and DispatchRecvMsg (0xb9750) for the high-bit relay command.
-struct CNetMgrView {
-    char m_pad0[4];
-    CNetMgrSub* m_sub; // +0x04
-    char m_pad8[0x520 - 8];
-    CNetSession* m_session; // +0x520  the session sub-object
-
-    i32 DispatchRecv(i32 sender, void* buf, i32 size); // 0xb9750
-};
-SIZE_UNKNOWN(CNetMgrView); // CNetMgr view (only +0x4/+0x520 pinned); retail size TBD
+SIZE_UNKNOWN(CNetMgrSub); // CNetMgr+0x4 game-sub, command-manager view (only +0x6c pinned)
 
 // The command record's fixed header (after the opcode/parity prefix): a sequence
 // number, two control words and a per-entry count byte; the payload follows.
@@ -191,7 +182,7 @@ i32 CNetCmdSlot::ProcessCmd(i32 playerId, void* rec, i32 size) {
         return 1;
     }
     if (opcode & 0x80) {
-        return ((CNetMgrView*)m_owner)->DispatchRecv(m_cmdHead[6], rec, size);
+        return ((CNetMgr*)m_owner)->DispatchRecvMsg(m_cmdHead[6], (char*)rec, size);
     }
     if (odd == 0) {
         if (m_resetGuard != 0) {
@@ -218,7 +209,7 @@ i32 CNetCmdSlot::ProcessCmd(i32 playerId, void* rec, i32 size) {
     rem -= 13;
 
     if (m_resetGuard != 0 && odd) {
-        CNetCmdSlot* slot = ((CNetMgrView*)m_owner)->m_session->FindCmdSlot(playerId);
+        CNetCmdSlot* slot = ((CNetMgr*)m_owner)->m_session->FindCmdSlot(playerId);
         if (slot == 0) {
             return 0;
         }
@@ -267,7 +258,7 @@ i32 CNetCmdSlot::ProcessCmd(i32 playerId, void* rec, i32 size) {
         }
         i32 consumed = obj->Parse(cursor, rem);
         obj->m_submitted = 1;
-        ((CNetMgrView*)m_owner)->m_sub->m_cmdMgr->EnqueueCommand(0, obj);
+        ((CNetMgrSub*)((CNetMgr*)m_owner)->m_4)->m_cmdMgr->EnqueueCommand(0, obj);
         rem -= consumed;
         cursor += consumed;
     }

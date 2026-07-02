@@ -179,13 +179,13 @@ SoundStream::OpenStream(StreamSource* src, i32 p1, i32 p2, i32 p3, i32 p4, i32 p
     if (voice == 0) {
         return 0;
     }
-    StreamFeederView* feeder = &voice->m_feeder;
-    feeder->m_dataLen = dataOff;
-    feeder->m_dataPtr = (u32)src;
+    StreamFeeder* feeder = &voice->m_feeder;
+    feeder->m_windowStart = dataOff;
+    feeder->m_windowLength = (u32)src;
     feeder->m_source = (u32)src;
-    feeder->m_30 = 0;
-    feeder->m_34 = 0;
-    if (feeder->FeederStart(this, &wf, p1, p2, voice, -1) == 0) {
+    feeder->m_loop = 0;
+    feeder->m_sourceOffset = 0;
+    if (feeder->FeederStart(this, (i32)&wf, p1, (WaveFormatX*)p2, voice, -1) == 0) {
         DestroyVoice(voice);
         return 0;
     }

@@ -6,6 +6,7 @@
 // buffer (CopyWindow / FillBuffer), wrapping + silence-padding the tail.
 //
 // Field names are placeholders; offsets + emitted bytes are load-bearing.
+#include <Dsndmgr/SoundDevice.h> // m_owner: SoundDevice::CreateBuffer / RemoveBuffer
 #include <Dsndmgr/StreamFeeder.h>
 #include <Win32.h>
 #include <rva.h>
@@ -122,7 +123,7 @@ void StreamFeeder::FeederReset(i32 doStop) {
         }
         OnDrain(); // slot 2 (virtual)
         if (doStop != 0) {
-            m_owner->RemoveBuffer(m_buffer);
+            m_owner->RemoveBuffer((SoundBuf*)m_buffer);
         }
         m_buffer = 0;
         m_armed = 0;
@@ -173,7 +174,7 @@ i32 StreamFeeder::Pause() {
 // deferred to the final sweep.
 RVA(0x00137d10, 0xab)
 i32 StreamFeeder::FeederStart(
-    FeederOwner* owner,
+    SoundDevice* owner,
     i32 arg2,
     u32 len,
     WaveFormatX* fmt,
@@ -190,7 +191,7 @@ i32 StreamFeeder::FeederStart(
         m_silenceByte = 0x80;
     }
     if (buf == 0) {
-        m_buffer = (FeederBuf*)owner->CreateStreamBuf(fmt, len, 0x100e0);
+        m_buffer = (FeederBuf*)owner->CreateBuffer(fmt, len, 0x100e0);
     } else {
         m_buffer = (FeederBuf*)buf;
     }

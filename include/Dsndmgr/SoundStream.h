@@ -17,6 +17,7 @@
 #include <rva.h>
 
 #include <Dsndmgr/SoundDevice.h>
+#include <Dsndmgr/StreamFeeder.h> // the real embedded feeder sub-object (StreamVoiceNode+0x6c)
 
 struct StreamVoiceNode;
 class SoundStream;
@@ -38,32 +39,12 @@ struct StreamSource {
 };
 SIZE_UNKNOWN(StreamSource); // partial reader view (only +0x0c/+0x18 pinned)
 
-// The streaming feeder sub-object embedded at StreamVoiceNode+0x6c (a Timer-ish
-// pump the trace tagged Timer_1380d0). Its +0x18 word is a cursor that
-// FeederReset(0x137dc0) zeroes; FeederStart(0x137d10) arms the pump. The creator
-// pre-seeds its data window (+0x2c..+0x3c) before arming.
-struct StreamFeederView {
-    char m_pad00[0x18];
-    u32 m_cursor; // +0x18  cursor
-    char m_pad1c[0x2c - 0x1c];
-    u32 m_source;  // +0x2c  source back-pointer
-    u32 m_30;      // +0x30
-    u32 m_34;      // +0x34
-    u32 m_dataLen; // +0x38  data length
-    u32 m_dataPtr; // +0x3c  data back-pointer
-    char m_pad40[0x44 - 0x40];
-
-    i32 FeederStart(SoundStream* owner, void* fmt, i32 b, i32 c, StreamVoiceNode* voice, i32 d);
-    // 0x137d10
-    void FeederReset(i32 flag); // 0x137dc0
-};
-
 // The per-stream voice object the creator allocates (0xb0 bytes via RezAlloc,
 // ctor 0x1375b0). It is a DirectSoundMgr-derived buffer wrapper: +0x0c holds the
-// IDirectSoundBuffer to release, +0x6c is the embedded StreamFeederView, and the
-// standard +0x04 intrusive link biases +4 (MFC POSITION). On teardown its queued
-// voices are reaped, the COM buffer released, the node unlinked, then its
-// scalar-deleting destructor runs.
+// IDirectSoundBuffer to release, +0x6c is the embedded StreamFeeder (really the
+// derived StreamVoiceFeeder; see StreamFeeder.h), and the standard +0x04 intrusive
+// link biases +4 (MFC POSITION). On teardown its queued voices are reaped, the COM
+// buffer released, the node unlinked, then its scalar-deleting destructor runs.
 struct StreamVoiceNode {
     virtual void
     Slot0(); // +0x00  vptr slot (voice vtable 0x5ef6d8, stamped by the ctor; declared-only)
@@ -77,7 +58,7 @@ struct StreamVoiceNode {
     u32 m_avgBytes;    // +0x38  avg-bytes-per-sec
     u32 m_avgBytesDiv; // +0x3c  avg-bytes-per-sec (divisor)
     char m_pad40[0x6c - 0x40];
-    StreamFeederView m_feeder; // +0x6c  embedded streaming feeder sub-object
+    StreamFeeder m_feeder; // +0x6c  embedded streaming feeder sub-object
 
     // ctor 0x1375b0(IDirectSoundBuffer* buf, SoundStream* owner, int a, int b).
     StreamVoiceNode(IDirectSoundBufferZ* buf, SoundStream* owner, i32 a, i32 b);

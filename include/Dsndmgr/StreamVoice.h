@@ -24,17 +24,12 @@ class DirectSoundMgr;
 // owning SoundStream's ParseWave does the reads.
 struct StreamSource;
 
-// The owning SoundStream as the voice sees it (m_owner @ +0x10): its +0x78 word
-// is the "device up" flag the voice's Configure gates on, and ParseWave (0x137b70)
-// is the RIFF/WAVE parser the voice asks for fmt + data extents. Opaque otherwise -
-// reloc-masked __thiscall calls.
-struct VoiceOwner {
-    char m_pad0[0x78];
-    i32 m_initialized; // +0x78  device-up flag
-    i32 ParseWave(StreamSource* src, WaveFormatX* fmtBuf, u32* outOff,
-                  u32* outLen); // 0x137b70
-};
-SIZE_UNKNOWN(VoiceOwner); // partial owning-SoundStream view (only +0x78 pinned)
+// The owning SoundStream (m_owner @ +0x10) - the real Dsndmgr streaming device
+// that created this voice (SoundStream::CreateStreamBuffer passes `this`); its
+// +0x78 "device up" flag (inherited from SoundDevice) gates the voice's Configure,
+// and ParseWave (0x137b70) is the RIFF/WAVE parser the voice asks for fmt + data
+// extents. Full definition included in StreamVoice.cpp.
+class SoundStream;
 
 // The per-stream voice. Its DirectSoundMgr base index-setters (SetVolumeByIndex
 // 0x1355c0 / SetPanByIndex 0x1357a0 / SetFreqByIndex 0x135920) + the base
@@ -48,7 +43,7 @@ struct StreamVoice {
     // class vtable - the vptr-override-after-manual-BaseInit stays an EH/position wall.
     virtual void Slot0(); // +0x00  vptr slot (declared-only)
     char m_pad04[0x10 - 0x04];
-    VoiceOwner* m_owner; // +0x10  owning SoundStream (also the base m_owner)
+    SoundStream* m_owner; // +0x10  owning SoundStream (also the base m_owner)
     char m_pad14[0x3c - 0x14];
     u32 m_3c; // +0x3c  avg-bytes-per-sec divisor (DirectSoundMgr base field)
     char m_pad40[0x60 - 0x40];

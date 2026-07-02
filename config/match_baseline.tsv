@@ -2839,7 +2839,7 @@ netcmdslot	?GetRange@CNetCmdSlot@@QAEXPAH0@Z	100.0000	100.0000	1	f6a5342b0a43	0x
 netcmdslot	?NetCmdIdAdd@@YGXPAHH@Z	100.0000	100.0000	1	0ea326438a3a	0xc1010
 netcmdslot	?NetCmdIdClear@@YGXPAHH@Z	100.0000	100.0000	1	61ec535a3595	0xc1060
 netcmdslot	?NetCmdIdFind@@YGHPAHH@Z	100.0000	100.0000	1	e06feaba51c4	0xc0fd0
-netcmdslot	?ProcessCmd@CNetCmdSlot@@QAEHHPAXH@Z	74.9950	74.9950	3	b5cd78b7d387	0xc0c70
+netcmdslot	?ProcessCmd@CNetCmdSlot@@QAEHHPAXH@Z	74.9950	74.9950	4	06f854ba353b	0xc0c70
 netcmdslot	?RaiseMax@CNetCmdSlot@@QAEXH@Z	100.0000	100.0000	2	f112acf36202	0xc0fa0
 netcmdslot	?RemoveCmd@CNetCmdSlot@@QAEXH@Z	100.0000	100.0000	1	df62c77e645e	0xc11b0
 netcmdslot	?ResetAll@CNetCmdSlot@@QAEXXZ	73.6667	73.6667	2	420c8f297969	0xc0bb0
@@ -3282,7 +3282,7 @@ soundstream	??0SoundStream@@QAE@XZ	96.8000	96.8000	2	18f8193ac687	0x1376d0
 soundstream	??1SoundStream@@UAE@XZ	100.0000	100.0000	1	153ae3f9d9be	0x137710
 soundstream	?CreateStreamBuffer@SoundStream@@QAEPAUStreamVoiceNode@@PAUWaveFormatX@@IHHH@Z	47.0744	47.0744	3	0aa816594de9	0x137780
 soundstream	?DestroyVoice@SoundStream@@QAEXPAUStreamVoiceNode@@@Z	100.0000	100.0000	2	0d1466776d6a	0x1379d0
-soundstream	?OpenStream@SoundStream@@QAEPAUStreamVoiceNode@@PAUStreamSource@@HHHHH@Z	90.5714	90.5714	2	f191bc6619fd	0x137900
+soundstream	?OpenStream@SoundStream@@QAEPAUStreamVoiceNode@@PAUStreamSource@@HHHHH@Z	90.5714	90.5714	3	09a845258eeb	0x137900
 soundstream	?ParseWave@SoundStream@@QAEHPAUStreamSource@@PAUWaveFormatX@@PAI2@Z	98.2640	98.2640	2	4c3129d38105	0x137b70
 soundstream	?ScalarDtor@SoundStream@@QAEPAXH@Z	76.3636	76.3636	1	be19e171f842	0x1376f0
 soundstreamfree	?Free@SoundStream@@QAEXXZ	100.0000	100.0000	1	37466e3c128f	0x137740
@@ -3347,8 +3347,8 @@ statusbarupdaters	?UpdateWarpStoneStatusBar@EngineLabelBacklog@@QAEHHHHH@Z	81.22
 streamfeeder	??0StreamFeeder@@QAE@XZ	100.0000	100.0000	3	dd5e2b58970e	0x137cd0
 streamfeeder	?Cleanup@StreamFeeder@@QAEXXZ	90.9091	90.9091	3	f5b4a3a5718a	0x137cf0
 streamfeeder	?Feed@StreamVoiceFeeder@@UAEHPAXIPAI0I1@Z	100.0000	100.0000	1	19b49d936aad	0x137380
-streamfeeder	?FeederReset@StreamFeeder@@QAEXH@Z	100.0000	100.0000	4	8799b576d2fd	0x137dc0
-streamfeeder	?FeederStart@StreamFeeder@@QAEHPAUFeederOwner@@HIPAUWaveFormatX@@PAXH@Z	96.8254	96.8254	2	016eb2985c5e	0x137d10
+streamfeeder	?FeederReset@StreamFeeder@@QAEXH@Z	100.0000	100.0000	5	42093a4de81e	0x137dc0
+streamfeeder	?FeederStart@StreamFeeder@@QAEHPAVSoundDevice@@HIPAUWaveFormatX@@PAXH@Z	96.8254	96.8254	1	24c6399bdeba	0x137d10
 streamfeeder	?FillBuffer@StreamFeeder@@QAEHII@Z	88.5679	88.5679	3	09453e106e06	0x137f30
 streamfeeder	?Pause@StreamFeeder@@QAEHXZ	100.0000	100.0000	3	33e1988166b7	0x137f00
 streamfeeder	?Resume@StreamFeeder@@QAEHXZ	100.0000	100.0000	3	86ad0903156c	0x137ed0
@@ -3390,7 +3390,7 @@ symtab	?FindSub@CSymTab@@QAEPAXPBD@Z	100.0000	100.0000	1	a80b960c2c89	0x13a230
 symtab	?FirstSub@CSymTab@@QAEPAXXZ	100.0000	100.0000	1	592426346612	0x13a260
 symtab	?FirstSym@CSymTab@@QAEPAXXZ	100.0000	100.0000	1	b475808448de	0x13a2b0
 symtab	?Insert@CSymTab@@QAEHPBDPAX@Z	100.0000	100.0000	1	f2bbb9367f74	0x13a000
-symtab	?Method4b0@CSymTab@@QAEHPAX000@Z	100.0000	100.0000	2	883bc01b52e9	0x13a4b0
+symtab	?Method4b0@CSymTab@@QAEHPAX000@Z	100.0000	100.0000	3	39cc41b52d24	0x13a4b0
 symtab	?NextSub@CSymTab@@QAEPAXPAX@Z	100.0000	100.0000	1	95a575d69da1	0x13a280
 symtab	?NextSym2@CSymTab@@QAEPAXPAX@Z	100.0000	100.0000	1	57ed8e6344f5	0x13a2f0
 symtab	?NextSym3@CSymTab@@QAEPAXPAX@Z	100.0000	100.0000	1	ab1c3610b536	0x13a310
