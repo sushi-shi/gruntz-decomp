@@ -60,7 +60,6 @@ extern "C" void cb_401bc2();
 extern "C" void cb_403774();
 extern char g_lab504358[]; // 0x504358
 extern char g_lab545854[]; // 0x545854
-extern void* g_vtbl5e9bb4; // 0x5e9bb4
 
 extern "C" i32 Fn2423cdecl(void*);                    // 0x2423
 extern "C" void Fn3526cdecl(void*);                   // 0x3526
