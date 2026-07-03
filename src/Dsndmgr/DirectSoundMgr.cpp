@@ -42,6 +42,10 @@ extern "C" i32 g_msgBoxEnabled; // 0x653c50
 DATA(0x00253c58)
 extern "C" i32 g_thirdEnabled; // 0x653c58
 
+// DSERR_BUFFERLOST (MAKE_DSHRESULT(150)) - the DirectSound error a lost hardware
+// buffer returns; every buffer op that hits it drops into the reacquire-retry path.
+static const i32 DSERR_BUFFERLOST = (i32)0x88780096;
+
 // Empty mutable string in .data copied into the working buffer up front.
 DATA(0x002293f4)
 extern "C" char g_emptyString[]; // 0x6293f4
@@ -831,7 +835,7 @@ i32 DirectSoundMgr::Play() {
     }
     i32 hr = m_buffer->Play(0, 0, m_playFlags) != 0;
     if (hr != 0) {
-        if (hr == (i32)0x88780096) {
+        if (hr == DSERR_BUFFERLOST) {
             if (m_reacquireOwner->ReacquireBuffer() == 0) {
                 return 0;
             }
@@ -896,7 +900,7 @@ i32 DirectSoundMgr::Lock(u32 off, u32 bytes, void** p1, u32* n1, void** p2, u32*
     if (!hr) {
         return 1;
     }
-    if (hr == (i32)0x88780096) {
+    if (hr == DSERR_BUFFERLOST) {
         if (m_reacquireOwner->ReacquireBuffer() == 0) {
             return 0;
         }
@@ -943,8 +947,7 @@ i32 DirectSoundMgr::Create(void* hwnd, u32 level, u32 flags) {
 RVA(0x001365e0, 0xf)
 i32 DirectSoundMgr::ReacquireViaCallback() {
     if (m_reacquireMethod != 0) {
-        i32 (DirectSoundMgr::*cb)() = *(i32(DirectSoundMgr::**)()) & m_reacquireMethod;
-        return (this->*cb)();
+        return (this->*m_reacquireMethod)();
     }
     return 0;
 }
@@ -1060,7 +1063,7 @@ void DirectSoundMgr::GetErrorString(char* file, i32 line, i32 hr) {
             strcpy(szCode, "DSERR_NODRIVER");
             strcpy(szMsg, "No message");
             break;
-        case (i32)0x88780096:
+        case DSERR_BUFFERLOST:
             strcpy(szCode, "DSERR_BUFFERLOST");
             strcpy(szMsg, "No message");
             break;
@@ -1095,7 +1098,7 @@ void DirectSoundMgr::GetErrorString(char* file, i32 line, i32 hr) {
 }
 
 // -------------------------------------------------------------------------
-// winapi_136e20_timeGetTime @0x136e20 - the per-tick voice-list purge. The voice
+// PurgeVoiceList @0x136e20 - the per-tick voice-list purge. The voice
 // list is embedded at this+0xc (a DSoundList head, same list InsertHead/Reap use);
 // each element carries an intrusive link at +0x04, so element == link - 4. Once per
 // tick window (guarded by m_78 + the m_7c timestamp), walk the list and for every
@@ -1117,7 +1120,7 @@ struct TickElem {
     DSoundLink m_link;       // +0x04
 };
 RVA(0x00136e20, 0xa8)
-i32 DirectSoundMgr::winapi_136e20_timeGetTime(i32 time) {
+i32 DirectSoundMgr::PurgeVoiceList(i32 time) {
     if (*(i32*)((char*)this + 0x78) == 0) {
         return 0;
     }
@@ -1149,7 +1152,7 @@ i32 DirectSoundMgr::winapi_136e20_timeGetTime(i32 time) {
 }
 
 // -------------------------------------------------------------------------
-// winapi_137ac0_timeGetTime @0x137ac0 - the per-frame sub-manager tick. Walk the
+// TickSubManagers @0x137ac0 - the per-frame sub-manager tick. Walk the
 // outer sub-object list (this+0x94, link-at-+4 chain), and for each sub-object:
 // advance its inner voice list (sub+0x6c) with the current time (0x137e30), poll
 // its guard (sub->m_74, 0x1353f0); when the guard reports idle (0) and the sub is
@@ -1180,7 +1183,7 @@ struct SubTickMgr {
     void RemoveSub(SubNode* n); // 0x1379d0
 };
 RVA(0x00137ac0, 0xa2)
-i32 DirectSoundMgr::winapi_137ac0_timeGetTime(i32 time) {
+i32 DirectSoundMgr::TickSubManagers(i32 time) {
     if (time == -1) {
         time = (i32)g_pTimeGetTime();
     }

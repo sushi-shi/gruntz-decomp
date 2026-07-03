@@ -80,7 +80,7 @@ void CGruntzSoundZ::StopAndFlush_138530() {
 // ---------------------------------------------------------------------------
 // CreateBank2: the 2-arg twin of CreateBank. Heap-allocate + seed a 0x60-byte
 // inner sound (same field layout), then run its alternate one-time setup via the
-// inner vtable slot +0x18 (Init2, 2 args); on failure destroy it (scalar dtor) and
+// inner vtable slot +0x18 (Load, 2 args); on failure destroy it (scalar dtor) and
 // return 0, on success insert it into the map and return it.
 RVA(0x001385e0, 0x85)
 CGruntzSoundInnerZ* CGruntzSoundZ::CreateBank2_1385e0(i32 a1, i32 a2) {
@@ -91,7 +91,7 @@ CGruntzSoundInnerZ* CGruntzSoundZ::CreateBank2_1385e0(i32 a1, i32 a2) {
     if (inner != 0) {
         new (inner) CGruntzSoundInnerZ();
     }
-    if (inner->Init2(a1, a2) == 0) {
+    if (inner->Load(a1, a2) == 0) {
         if (inner != 0) {
             inner->ScalarDtor(1);
         }
@@ -114,7 +114,7 @@ CGruntzSoundInnerZ* CGruntzSoundZ::CreateBank_138670(i32 a1, i32 a2, i32 a3) {
     if (inner != 0) {
         new (inner) CGruntzSoundInnerZ();
     }
-    if (inner->Init(a1, a2, a3) == 0) {
+    if (inner->DecodeBuf(a1, a2, a3) == 0) {
         if (inner != 0) {
             inner->ScalarDtor(1);
         }
@@ -258,7 +258,7 @@ i32 CGruntzSoundZ::StopAll_1388f0() {
     if (m_pCurrent == 0) {
         return 0;
     }
-    return m_pCurrent->Slot28();
+    return m_pCurrent->StopAll();
 }
 
 // ---------------------------------------------------------------------------
@@ -269,20 +269,20 @@ i32 CGruntzSoundZ::StopBank_138900(i32 a1) {
     if (m_pCurrent == 0) {
         return 0;
     }
-    return m_pCurrent->Slot2C(a1);
+    return m_pCurrent->StopBank(a1);
 }
 
 // ---------------------------------------------------------------------------
 // CGruntzSoundInnerZ::IsBusy: if the bank's "is started" gate (vtable
 // +0x20) is clear, not busy; otherwise query the AIL sequence status of the
-// bank's MIDI handle (m_58) and report busy for PLAYING (4) / PLAYINGBUTRELEASED
+// bank's MIDI handle (m_seqHandle) and report busy for PLAYING (4) / PLAYINGBUTRELEASED
 // (0x10).
 RVA(0x00138f60, 0x2d)
 i32 CGruntzSoundInnerZ::IsBusy() {
-    if (Slot20() == 0) {
+    if (IsStarted() == 0) {
         return 0;
     }
-    i32 status = AIL_sequence_status(m_58);
+    i32 status = AIL_sequence_status(m_seqHandle);
     if (status == 4 || status == 0x10) {
         return 1;
     }

@@ -206,8 +206,8 @@ public:
     static void GetErrorString(char* file, i32 line, i32 hr); // 0x138150
 
     // Engine-label backlog stubs (relocated from src/Stub/ - own this class here).
-    i32 winapi_136e20_timeGetTime(i32);
-    i32 winapi_137ac0_timeGetTime(i32);
+    i32 PurgeVoiceList(i32);
+    i32 TickSubManagers(i32);
 
     // --- layout ---------------------------------------------------------------
     // vptr @ +0x00 (implicit, from the virtual dtor); the first real field is at +0x0c.
@@ -253,11 +253,11 @@ public:
     char m_pad60[0x78 - 0x60];
     i32 m_initialized; // +0x78  device-up flag (manager this)
     i32 m_7c;          // +0x7c  cleared by Create; role unproven
-    // +0x80  reacquire callback fn-ptr (a __thiscall on the manager); the
-    // ReacquireViaCallback dispatch (0x1365e0) tail-jumps through it. Stored as a
-    // raw void* (MSVC5 cannot spell __thiscall on a fn-ptr) and re-typed at the
-    // dispatch site to a member-fn-ptr (which is __thiscall by default).
-    void* m_reacquireMethod;
+    // +0x80  reacquire callback: a pointer-to-member-function on the manager that
+    // ReacquireViaCallback (0x1365e0) tail-dispatches through. A single-inheritance
+    // member-fn-ptr is 4 bytes (just the code address), so this is layout-identical
+    // to the raw slot - and __thiscall by default, matching the retail dispatch.
+    i32 (DirectSoundMgr::*m_reacquireMethod)();
     IDirectSoundBufferZ* m_primaryBuffer; // +0x84  primary buffer
     i32 m_coopLevel;                      // +0x88  cooperative level
     u32 m_bufferFlags;                    // +0x8c  buffer-desc flags
