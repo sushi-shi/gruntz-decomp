@@ -138,23 +138,11 @@ void CFileIO::Close() {
     }
 }
 
-// The CFileException the failure path fills in: m_cause@+0x8, m_lOsError@+0xc,
-// m_strFileName (CString)@+0x10. The os-error -> exception-cause mapper is the
-// NAFXCW static helper (external no-body callee, reloc-masked).
-struct CFileExceptionLite {
-    char pad0[8];          // +0x00  (CObject vtable + base)
-    i32 m_cause;           // +0x08
-    LONG m_lOsError;       // +0x0c
-    CString m_strFileName; // +0x10
-};
-extern "C" i32 __stdcall AfxOsErrorToException(LONG lOsError);
-
-// A minimal SECURITY_ATTRIBUTES (we don't pull in <windows.h>).
-struct SecurityAttributes {
-    DWORD nLength;              // +0x00 (== 0xc)
-    void* lpSecurityDescriptor; // +0x04
-    BOOL bInheritHandle;        // +0x08
-};
+// The failure path fills in the REAL MFC CFileException (m_cause@+0x8,
+// m_lOsError@+0xc, m_strFileName (CString)@+0x10 - CObject vptr + CException's
+// m_bReadyForDelete occupy +0x00..+0x08). The os-error -> cause mapper is the real
+// NAFXCW static CFileException::OsErrorToException (reloc-masked). SECURITY_ATTRIBUTES
+// comes from <windows.h> (pulled via <Mfc.h> in FileStream.h).
 
 // ---------------------------------------------------------------------------
 // CFileIO::Open
@@ -206,7 +194,7 @@ BOOL CFileIO::Open(const char* lpszFileName, u32 nOpenFlags, void* pError) {
             break;
     }
 
-    SecurityAttributes sa;
+    SECURITY_ATTRIBUTES sa;
     sa.nLength = 0xc;
     sa.lpSecurityDescriptor = 0;
     sa.bInheritHandle = ((~nOpenFlags) >> 7) & 1; // !(nOpenFlags & modeNoInherit)
@@ -221,10 +209,10 @@ BOOL CFileIO::Open(const char* lpszFileName, u32 nOpenFlags, void* pError) {
     HANDLE h =
         CreateFileA(lpszFileName, dwAccess, dwShare, (LPSECURITY_ATTRIBUTES)&sa, dwCreate, 0x80, 0);
     if (h == (HANDLE)-1) {
-        CFileExceptionLite* pe = (CFileExceptionLite*)pError;
+        CFileException* pe = (CFileException*)pError;
         if (pe != 0) {
             pe->m_lOsError = (LONG)GetLastError();
-            pe->m_cause = AfxOsErrorToException(pe->m_lOsError);
+            pe->m_cause = CFileException::OsErrorToException(pe->m_lOsError);
             pe->m_strFileName = lpszFileName;
         }
         return 0;
@@ -299,6 +287,4 @@ void CFileIO::Stub_0bd3e0(char* path) {
 // consumers incl. Image, and this /O1 TU is byte-exact-sensitive, so keep every
 // completeness typedef after the last function body).
 // ===========================================================================
-SIZE_UNKNOWN(CFileExceptionLite);
-SIZE(SecurityAttributes, 0xc); // complete Win32 SECURITY_ATTRIBUTES (nLength=0xc)
 SIZE_UNKNOWN(CFileIODispatch); // CFile Seek slot-dispatch view (no emitted vtable)

@@ -9,7 +9,7 @@
 // shadow flag is set, draws a black copy offset by (2,3); then draws the RGB(r,g,b)
 // main pass. Each pass hands the render worker a by-value copy of the string + rect.
 // Field NAMES are placeholders; offsets + call-site bytes load-bearing. NON-EH.
-#include <Win32.h> // RECT, CopyRect, OffsetRect
+#include <Mfc.h> // real MFC CString (copy ctor 0x1b9ba3) + windows.h (RECT/CopyRect/OffsetRect)
 #include <Ints.h>
 #include <rva.h>
 
@@ -24,38 +24,34 @@ extern Font g_smallFont;
 DATA(0x0064ea58)
 extern Font g_tinyFont;
 
-// CString == its 4-byte m_pchData; passed by value -> the copy ctor (0x1b9ba3).
-struct CString {
-    char* m_pchData;
-    CString(const CString& o); // 0x1b9ba3 (copy ctor)
-};
-
-// CRect == a RECT (16 bytes); constructed from a RECT via CopyRect (0x37c4 ILT
-// thunk -> 0x115b30, which does CopyRect(this,&src) then returns this).
-struct CRect {
+// WapRect - the WAP32-LOCAL rect (16 bytes) the render worker takes by value, NOT
+// MFC CRect: its ctor 0x115b30 (via the 0x37c4 ILT thunk) is in the Wap32/EngStr
+// module range, does CopyRect(this,&src) then returns this - a Wap32 helper, not
+// NAFXCW (which lives at 0x1b9xxx). Kept as a local view.
+struct WapRect {
     i32 left, top, right, bottom;
-    CRect(const RECT& r); // 0x115b30
+    WapRect(const RECT& r); // 0x115b30 (Wap32-local, reloc-masked)
 };
 
 // The global text renderer g_textObj (DAT_0064ead8) is a FontRenderer (the WAP32
 // font-render object; full class in <Font/Font.h>). Partial view: current font/color
 // + the draw worker. SetFont/SetColor store m_font/m_color. All reloc-masked externs.
 struct FontRenderer {
-    Font* m_font;                                                           // +0x00  current font
-    i32 m_color;                                                            // +0x04  current color
-    void SetFont(Font* f);                                                  // 0x179c10
-    void SetColor(i32 c);                                                   // 0x179c20
-    void RenderText(CString s, void* drawFn, CRect r, i32 a, i32 b, i32 c); // 0x17a460
+    Font* m_font;          // +0x00  current font
+    i32 m_color;           // +0x04  current color
+    void SetFont(Font* f); // 0x179c10
+    void SetColor(i32 c);  // 0x179c20
+    void RenderText(CString s, void* drawFn, WapRect r, i32 a, i32 b, i32 c); // 0x17a460
 };
 DATA(0x0064ead8)
 extern FontRenderer g_textObj;
 
 // @early-stop
-// Complete + correct (~53%). Wall = by-value CRect argument materialization: retail
-// builds the render's by-value CRect temp *transiently* at each call (inline 4-mov
+// Complete + correct (~53%). Wall = by-value WapRect argument materialization: retail
+// builds the render's by-value rect temp *transiently* at each call (inline 4-mov
 // field copy in the shadow pass; the 0x37c4/0x115b30 CopyRect wrapper in the main
 // pass) so its persistent frame is one 0x10 RECT; MSVC5 here instead calls the
-// external CRect(const RECT&) ctor and hoists a persistent 0x10 CRect slot into the
+// external WapRect(const RECT&) ctor and hoists a persistent 0x10 rect slot into the
 // frame (sub esp,0x20 vs retail's 0x10), which shifts every stack-arg offset and
 // cascades. No source spelling forces MSVC5 to inline the ctor (it is external) /
 // build the temp transiently. The null-guard chain, the font-size byte-index jump
@@ -108,13 +104,13 @@ extern "C" i32 EngStr_RenderText(
         CopyRect(&sh, rc);
         OffsetRect(&sh, 2, 3);
         g_textObj.SetColor(0);
-        g_textObj.RenderText(*str, drawFn, CRect(sh), 1, flag, 0);
+        g_textObj.RenderText(*str, drawFn, WapRect(sh), 1, flag, 0);
     }
     g_textObj.SetColor(((b & 0xff) << 16) | ((g & 0xff) << 8) | (r & 0xff));
-    g_textObj.RenderText(*str, drawFn, CRect(*rc), 1, flag, 0);
+    g_textObj.RenderText(*str, drawFn, WapRect(*rc), 1, flag, 0);
     return 1;
 }
 
 // Class metadata (annotate-only; the settled EngStr_RenderText body is untouched).
-SIZE_UNKNOWN(CRect);        // RECT view (left/top/right/bottom + CopyRect ctor)
+SIZE_UNKNOWN(WapRect);      // Wap32-local RECT view (0x115b30 ctor, not MFC)
 SIZE_UNKNOWN(FontRenderer); // global FontRenderer view (current font/color)

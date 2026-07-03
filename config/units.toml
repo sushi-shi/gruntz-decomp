@@ -2561,7 +2561,9 @@ flags = "eh"
 [[unit]]
 unit = "filegetstatus"
 source = "src/Gruntz/FileGetStatus.cpp"
-flags = "framed"
+# MFC-derived (CFile::GetStatus); NAFXCW ships /ln (favor size): pushes memory
+# operands directly + pins the -1 constant in ebx (both /O2-framed misses here).
+flags = "o1"
 
 
 

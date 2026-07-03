@@ -6,11 +6,11 @@
 // named-namespace registry and feeds it to the sound loader. The idiom mirrors the
 // other asset loaders: look a node up by name through a manager, then recurse to load.
 //
-// Pure-Win32 TU (SetCursor); the gating global CString is modeled as its single
-// LPTSTR m_pszData member, whose CStringData header (at m_pszData-8 == nDataLength)
-// GetLength() reads - kept minimal to preserve the exact GetLength codegen (NOT the
-// MFC CString, which would inline differently).
-#include <Win32.h> // SetCursor
+// The gating global g_assetRoot is the REAL MFC CString (was a hand-rolled single-
+// member shim): CString::GetLength() inlines to GetData()->nDataLength ==
+// ((CStringData*)m_pchData-1)->nDataLength == m_pchData[-2] - byte-identical to the
+// old shim, so LoadSounds' codegen is unchanged.
+#include <Mfc.h> // CString + <windows.h> (SetCursor)
 
 #include <rva.h>
 
@@ -49,15 +49,6 @@ public:
 
 // The global empty C string the sound loader's prefix is seeded from (0x6293f4).
 extern "C" char g_emptyString[]; // 0x6293f4
-
-// MFC CString modeled by its single member (the LPTSTR m_pszData at offset 0);
-// GetLength() reads nDataLength out of the CStringData header at m_pszData - 8.
-struct CString {
-    char* m_pszData;
-    i32 GetLength() const {
-        return ((i32*)m_pszData)[-2];
-    }
-};
 
 // The global asset-root CString whose emptiness gates the load (0x64e25c).
 DATA(0x0064e25c)

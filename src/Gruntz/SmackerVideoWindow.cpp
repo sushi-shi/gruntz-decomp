@@ -10,25 +10,16 @@
 // their real NAFXCW mangled names differ but objdiff pairs the relocs by type. The
 // destructible CString local forces the /GX EH frame (this unit uses the `eh`
 // profile). Field NAMES are placeholders; offsets + call-site bytes load-bearing.
-#include <Win32.h> // HWND, HMENU, GetSystemMetrics
+#include <Mfc.h> // CString + windows.h (afx-first; CWnd.h's <Win32.h> is then a no-op)
 #include <Ints.h>
 #include <rva.h>
 
 #include <Gruntz/CWnd.h>
 
 // LPCTSTR AFXAPI AfxRegisterWndClass(UINT, HCURSOR=0, HBRUSH=0, HICON=0). __stdcall.
+// (In afxwin.h, not the afx.h lean subset, so keep the local decl.)
 extern "C" const char* __stdcall
 AfxRegisterWndClass(u32 style, void* cur, void* brush, void* icon); // 0x1bc09d
-
-// CString == its 4-byte m_pchData; passing it where LPCTSTR is wanted yields that ptr.
-struct CString {
-    char* m_pchData;
-    CString(const char* s); // 0x1b9d4c
-    ~CString();             // 0x1b9cde
-    operator const char*() const {
-        return m_pchData;
-    }
-};
 
 // The created window is the shared MFC CWnd (0x3c bytes, m_hWnd at +0x1c; see
 // <Gruntz/CWnd.h>). Ctor/CreateEx/SetFocus are external (the CObject vtable is
