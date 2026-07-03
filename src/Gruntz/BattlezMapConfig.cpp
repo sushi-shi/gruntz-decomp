@@ -40,6 +40,7 @@
 // CButeMgr getters (butemgr unit).
 #include <Bute/ButeMgr.h>
 #include <Globals.h>
+#include <Gruntz/BattlezMapConfig.h> // the shared CBattlezMapConfig definition (both phases)
 DATA(0x002453d8)
 extern CButeMgr g_buteMgr;
 
@@ -136,13 +137,6 @@ struct CCoordPair {
     i32 m_8;   // +0x08  Y
 };
 
-// The per-map start-coord array sub-object (embedded at this+0xdc and this+0xf0).
-// SetAtGrow takes the inner handle at +0x8.
-struct CStartArray {
-    char m_pad00[8];
-    i32 m_8; // +0x08  array handle passed to SetAtGrow
-};
-
 // The dims object m_c points at: its +0xc word drives the /3 and >>2 fields.
 struct CMapDims {
     char m_pad00[0xc];
@@ -172,103 +166,9 @@ static inline CLevelObj* ListGetNext(CLevelList* list) {
     return n->m_8;
 }
 
-// ---------------------------------------------------------------------------
-// CBattlezMapConfig - the Battlez map-config struct (this). Only the offsets the
-// loader writes are reconstructed; the bulk is opaque padding.
-// ---------------------------------------------------------------------------
-class CBattlezMapConfig {
-public:
-    i32 LoadConfig(CLevelInfo* lvl, i32 id, i32 diff);
-
-    i32 m_0;                 // +0x00  = 1
-    CLevelInfo* m_levelInfo; // +0x04  = lvl
-    void* m_8;               // +0x08  = lvl->m_68
-    CMapDims* m_dims;        // +0x0c  = lvl->m_70
-    CLevelSpawnInfo* m_10;   // +0x10  = lvl->m_2c
-    i32 m_14;                // +0x14  = m_10->m_2e4
-    i32 m_ownerId;           // +0x18  = id (arg2, owner/team id)
-    char m_pad1c[0x30 - 0x1c];
-    DWORD m_defenderChance; // +0x30  DefenderChance
-    char m_pad34[0x48 - 0x34];
-    DWORD m_gruntCreationTime;    // +0x48  GruntCreationTime (rescaled)
-    DWORD m_4c;                   // +0x4c  (zeroed)
-    i32 m_50;                     // +0x50  (zeroed)
-    DWORD m_resourceCreationTime; // +0x54  ResourceCreationTime (rescaled)
-    i32 m_58;                     // +0x58  (zeroed)
-    i32 m_5c;                     // +0x5c  (zeroed)
-    DWORD m_gauntletzChance;      // +0x60  GauntletzChance
-    DWORD m_shovelzChance;        // +0x64  ShovelzChance
-    DWORD m_spyzChance;           // +0x68  SpyzChance
-    DWORD m_brickzChance;         // +0x6c  BrickzChance
-    DWORD m_gooberzChance;        // +0x70  GooberzChance
-    DWORD m_gruntRatio;           // +0x74  GruntRatio
-    i32 m_78;                     // +0x78  (epilogue = 0)
-    i32 m_7c;                     // +0x7c  (epilogue = 0)
-    i32 m_80;                     // +0x80  (epilogue = 0)
-    i32 m_84;                     // +0x84  (epilogue = 0)
-    char m_pad88[0x8c - 0x88];
-    i32 m_8c; // +0x8c  = 6
-    i32 m_90; // +0x90  = 6
-    i32 m_94; // +0x94  = 6
-    i32 m_98; // +0x98  = 6
-    char m_pad9c[0xa4 - 0x9c];
-    i32 m_a4; // +0xa4  = 8
-    char m_pada8[0xac - 0xa8];
-    u32 m_ac; // +0xac  = (m_dims->m_c)/3
-    u32 m_b0; // +0xb0  = (m_dims->m_c)/3
-    char m_padb4[0xc0 - 0xb4];
-    u32 m_c0; // +0xc0  = (m_dims->m_c)>>2
-    char m_padc4[0xd0 - 0xc4];
-    i32 m_markerX; // +0xd0  loop-1 fast-path marker X
-    i32 m_markerY; // +0xd4  loop-1 fast-path marker Y
-    char m_padd8[0xdc - 0xd8];
-    CStartArray m_dc; // +0xdc  loop-1 start-coord array
-    char m_padec[0xf0 - (0xdc + 0xc)];
-    CStartArray m_f0; // +0xf0  loop-2 start-coord array
-    char m_pad100[0x140 - (0xf0 + 0xc)];
-    i32 m_140;              // +0x140 = 0
-    i32 m_144;              // +0x144 = ((rand "mod" 4) + 5) * 25 * 8
-    i32 m_148;              // +0x148 = 0
-    i32 m_14c;              // +0x14c = 0
-    i32 m_toolzPct;         // +0x150 ToolzPercent (running total seed)
-    i32 m_toyzPct;          // +0x154 ToyzPercent
-    i32 m_brickzPct;        // +0x158 BrickzPercent
-    i32 m_redBrickPct;      // +0x15c RedBrick
-    i32 m_blueBrickPct;     // +0x160 BlueBrick
-    i32 m_goldBrickPct;     // +0x164 GoldBrick
-    i32 m_blackBrickPct;    // +0x168 BlackBrick
-    i32 m_babyWalkerzPct;   // +0x16c BabyWalkerz
-    i32 m_beachBallzPct;    // +0x170 BeachBallz
-    i32 m_bigWheelzPct;     // +0x174 BigWheelz
-    i32 m_goKartzPct;       // +0x178 GoKartz
-    i32 m_jackInTheBoxzPct; // +0x17c JackInTheBoxz
-    i32 m_jumpRopezPct;     // +0x180 JumpRopez
-    i32 m_pogoStickzPct;    // +0x184 PogoStickz
-    i32 m_scrollzPct;       // +0x188 Scrollz
-    i32 m_squeakToyzPct;    // +0x18c SqueakToyz
-    i32 m_yoyozPct;         // +0x190 Yoyoz
-    i32 m_bombzPct;         // +0x194 Bombz
-    i32 m_boomerangzPct;    // +0x198 Boomerangz (+ Brickz)
-    i32 m_clubzPct;         // +0x19c Clubz
-    i32 m_gauntletzPct;     // +0x1a0 Gauntletz
-    i32 m_glovezPct;        // +0x1a4 Glovez
-    i32 m_gooberzPct;       // +0x1a8 Gooberz
-    i32 m_gravityBootzPct;  // +0x1ac GravityBootz
-    i32 m_gunHatzPct;       // +0x1b0 GunHatz
-    i32 m_nerfGunzPct;      // +0x1b4 NerfGunz
-    i32 m_rockzPct;         // +0x1b8 Rockz
-    i32 m_shieldzPct;       // +0x1bc Shieldz
-    i32 m_shovelzPct;       // +0x1c0 Shovelz
-    i32 m_springzPct;       // +0x1c4 Springz
-    i32 m_spyzPct;          // +0x1c8 Spyz
-    i32 m_swordzPct;        // +0x1cc Swordz
-    i32 m_timeBombzPct;     // +0x1d0 TimeBombz
-    i32 m_toobzPct;         // +0x1d4 Toobz
-    i32 m_wandzPct;         // +0x1d8 Wandz
-    i32 m_welderzPct;       // +0x1dc Welderz
-    i32 m_wingzPct;         // +0x1e0 Wingz
-    i32 m_1e4;              // +0x1e4 (final running total)
-};
+// CBattlezMapConfig is defined once in <Gruntz/BattlezMapConfig.h> (included above).
+// LoadConfig references the config-phase field view; the run-phase spawn methods
+// (UnknownClassArrays.cpp) reference the run view of the same bytes.
 
 // ===========================================================================
 // CBattlezMapConfig::LoadConfig
@@ -316,7 +216,7 @@ i32 CBattlezMapConfig::LoadConfig(CLevelInfo* lvl, i32 id, i32 diff) {
             }
             slot[0] = cur->m_5c / 32;
             slot[1] = cur->m_60 / 32;
-            SetAtGrow(m_dc.m_8, slot);
+            SetAtGrow(m_candArray.GetSize(), slot);
         }
     }
 
@@ -344,7 +244,7 @@ i32 CBattlezMapConfig::LoadConfig(CLevelInfo* lvl, i32 id, i32 diff) {
             }
             slot[0] = cur3->m_5c >> 5;
             slot[1] = cur3->m_60 >> 5;
-            SetAtGrow(m_f0.m_8, slot);
+            SetAtGrow(m_0f0.GetSize(), slot);
             cur3->m_8 |= 0x10000;
         }
     }
@@ -445,7 +345,6 @@ i32 CBattlezMapConfig::LoadConfig(CLevelInfo* lvl, i32 id, i32 diff) {
     return 1;
 }
 
-SIZE_UNKNOWN(CBattlezMapConfig);
 SIZE_UNKNOWN(CCoordPair);
 SIZE_UNKNOWN(CLevelInfo);
 SIZE_UNKNOWN(CLevelList);
@@ -454,4 +353,3 @@ SIZE_UNKNOWN(CLevelObj);
 SIZE_UNKNOWN(CLevelSpawnInfo);
 SIZE_UNKNOWN(CMapDims);
 SIZE_UNKNOWN(CRttiRec);
-SIZE_UNKNOWN(CStartArray);

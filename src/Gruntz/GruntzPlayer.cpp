@@ -1,7 +1,7 @@
 // GruntzPlayer.cpp - the per-player options/state record CGruntzMgr embeds at
 // +0x150 (a 4-element array; each slot 0x238 bytes). The slot carries a name
-// CString (default "Player"), a scalar config block, an embedded
-// CBattlezSpawnMgr_or_CGruntSpawnMgr config bundle at +0x38, and a trailing scalar block. See
+// CString (default "Player"), a scalar config block, an embedded CBattlezMapConfig
+// spawn/board bundle at +0x38, and a trailing scalar block. See
 // <Gruntz/GruntzPlayer.h> for the layout.
 //
 // The class is non-polymorphic (no vtable). The five reconstructed members:
@@ -56,12 +56,13 @@ struct PlayerArchive {
     virtual void Save(void* buf, i32 n); // +0x30
 };
 
-// The embedded CBattlezSpawnMgr_or_CGruntSpawnMgr config bundle at this+0x38: Serialize forwards
-// its 4-arg command to the bundle's Method_02bfc0 (thunk 0x2df1 -> 0x2bfc0), a
-// __thiscall returning nonzero on success. Modeled as a tiny helper laid over
-// (this+0x38) so the `mov ecx,this+0x38; call` lowers + reloc-masks (no body).
+// The embedded CBattlezMapConfig bundle at this+0x38: Serialize forwards its 4-arg
+// command to the bundle's Method_02bfc0 (thunk 0x2df1 -> 0x2bfc0), a __thiscall
+// returning nonzero on success. Modeled as a tiny helper laid over (this+0x38) - the
+// facet of CBattlezMapConfig this TU touches - so the `mov ecx,this+0x38; call`
+// lowers + reloc-masks (no body; the full class lives in <Gruntz/BattlezMapConfig.h>).
 struct PlayerConfigBundle {
-    i32 Command(void* ar, i32 kind, i32 a3, i32 a4); // 0x2bfc0
+    i32 Command(void* ar, i32 kind, i32 a3, i32 a4); // 0x2bfc0 = CBattlezMapConfig::Method_02bfc0
 };
 
 // ===========================================================================

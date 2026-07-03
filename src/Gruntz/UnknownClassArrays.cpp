@@ -1,8 +1,12 @@
-// CBattlezSpawnMgr_or_CGruntSpawnMgr.cpp - the ctor / dtor / FreeArrays of the (tomalla-named)
-// config-array bundle. The class owns four growable MFC arrays - two CPtrArray
-// (+0xdc / +0xf0) and two CDWordArray (+0x104 / +0x118) - and a block of scalar
-// config fields. See <Gruntz/UnknownClassArrays.h> for the layout and the array
-// type derivation from the retail RTTI/vtable records.
+// UnknownClassArrays.cpp - the RUN-phase methods of CBattlezMapConfig, the Battlez
+// per-team spawn/board manager (ctor / dtor / FreeArrays + the ~40 spawn state-
+// machine methods). Formerly hedged CBattlezSpawnMgr_or_CGruntSpawnMgr; disambiguated
+// to the real RTTI class CBattlezMapConfig by the this/ecx trace (its LoadConfig
+// @0x25020 runs on the same objects; see <Gruntz/BattlezMapConfig.h>). The class owns
+// four growable MFC arrays - two CPtrArray (+0xdc / +0xf0) and two CDWordArray
+// (+0x104 / +0x118) - and a block of scalar config fields. See
+// <Gruntz/BattlezMapConfig.h> for the (dual phase-view) layout + the array type
+// derivation from the retail RTTI/vtable records.
 //
 //   ctor       @0x024dc0 (0x158 B)  - /GX EH frame: member-constructs the four
 //                                      arrays (try-level advances per member),
@@ -19,16 +23,9 @@
 #include <rva.h>
 
 #include <Gruntz/CoordNode.h> // the shared coord-list node
-#include <Gruntz/UnknownClassArrays.h>
+#include <Gruntz/BattlezMapConfig.h>
 #include <Gruntz/CGameRegistry.h>
 #include <Globals.h>
-
-// Forward decls so members can carry their real pointee type though the concrete
-// struct is defined further down this TU (codegen-neutral).
-struct UnitLevel;
-struct CellResolver;
-struct GridCandNode;
-struct GridUnit;
 
 // CRT rand() (RVA 0x11fee0); used by the grid-scan helpers to pick a random
 // neighbour. External, reloc-masked.
@@ -109,8 +106,8 @@ struct Kind4Validator {
 // named. m_state = a state slot, m_mode = a mode, m_targetX/m_targetY = a target coord.
 struct GridUnit {
     char m_pad000[0x10];
-    UnitLevel* m_level; // +0x010  board geometry
-    void* m_anim;       // +0x014  the unit's type/anim sub-object (m_1c = a name index)
+    void* m_level; // +0x010  UnitLevel* (board geometry)
+    void* m_anim;  // +0x014  the unit's type/anim sub-object (m_1c = a name index)
     char m_pad018[0x170 - 0x18];
     i32 m_animPrim; // +0x170  primary anim/state id
     i32 m_packedX;  // +0x174  packed x ((grid<<5)+0x10)
@@ -152,8 +149,8 @@ struct GridUnit {
     i32 m_goalY;      // +0x304  path goal y (-1 = none)
     char m_pad308[0x31c - 0x308];
     char m_coordList[0x320 - 0x31c]; // +0x31c  occupied-coords CObList base
-    CoordNode* m_coordHead;          // +0x320  list head (node->next at +0)
-    CoordNode* m_coordTail;          // +0x324  list tail node
+    void* m_coordHead;               // +0x320  list head (node->next at +0)
+    void* m_coordTail;               // +0x324  list tail node
     i32 m_coordCount;                // +0x328  list count/flag
     char m_pad32c[0x364 - 0x32c];
     i32 m_busy; // +0x364  busy flag (0 = idle/available)
@@ -161,9 +158,9 @@ struct GridUnit {
     char m_pad36c[0x390 - 0x36c];
     i32 m_arrived; // +0x390  "arrived" latch
 
-    // 0x0343f0 (attributed to CBattlezSpawnMgr_or_CGruntSpawnMgr but a __thiscall ON a GridUnit):
-    // recycle every occupied-coord node's payload onto g_freeList, then RemoveAll
-    // the +0x31c CObList. Defined out-of-line with its retail RVA below.
+    // 0x0343f0 (re-homed from the CBattlezMapConfig cluster - it is a __thiscall ON a
+    // GridUnit, not the spawn mgr): recycle every occupied-coord node's payload onto
+    // g_freeList, then RemoveAll the +0x31c CObList. Defined out-of-line (retail RVA below).
     void RecycleCoords(); // 0x0343f0
 };
 
@@ -177,9 +174,9 @@ struct GridUnit {
 class CTriggerMgr {
 public:
     char m_pad00[0x04];
-    GridCandNode* m_objListHead; // +0x04  base object-list head (the candidate list)
+    void* m_objListHead; // +0x04  base object-list head (the candidate list)
     char m_pad08[0x1c - 0x08];
-    GridUnit* m_grid[0x3c];                         // +0x1c  the 4x15 placed-cell grid (stride 4)
+    void* m_grid[0x3c]; // +0x1c  the 4x15 placed-cell grid (GridUnit* cells, stride 4)
     void ApplyTriggerB(i32 a, i32 b, i32 x, i32 y); // 0x06e120
     i32 Probe(
         i32 cell,
@@ -339,8 +336,8 @@ struct ViewMapper {
 // undetermined (Ghidra FUN_ for the queries); file-local view of what this TU touches.
 struct GruntSpawnCtx {
     char m_pad00[0x10];
-    UnitLevel* m_level;           // +0x10  the level geometry object
-    CellResolver* m_cellResolver; // +0x14  the cell resolver
+    void* m_level;        // +0x10  the level geometry object (UnitLevel*)
+    void* m_cellResolver; // +0x14  the cell resolver (CellResolver)
     char m_pad18[0x30 - 0x18];
     void* m_scene; // +0x30  the scene/surface mgr (->m_8 = scene collection,
                    //         ->m_24->m_5c = the ViewMapper)
@@ -458,13 +455,13 @@ struct SceneHit {
 };
 
 // ===========================================================================
-// CBattlezSpawnMgr_or_CGruntSpawnMgr::CBattlezSpawnMgr_or_CGruntSpawnMgr  @0x024dc0
+// CBattlezMapConfig::CBattlezMapConfig  @0x024dc0
 // Member-constructs the four arrays (CPtrArray x2, CDWordArray x2) - the /GX
 // compiler frames the ctor and advances the EH try-level after each constructed
 // member - then seeds the scalar config block. Returns `this`.
 // ===========================================================================
 RVA(0x00024dc0, 0x158)
-CBattlezSpawnMgr_or_CGruntSpawnMgr::CBattlezSpawnMgr_or_CGruntSpawnMgr()
+CBattlezMapConfig::CBattlezMapConfig()
     // The four 0x78..0x87 fields are member-init-list initializations (NOT body
     // assignments): the /GX compiler schedules them into the array-construction
     // region (some land before the first array ctor), which is what retail does -
@@ -508,23 +505,23 @@ CBattlezSpawnMgr_or_CGruntSpawnMgr::CBattlezSpawnMgr_or_CGruntSpawnMgr()
 }
 
 // ===========================================================================
-// CBattlezSpawnMgr_or_CGruntSpawnMgr::~CBattlezSpawnMgr_or_CGruntSpawnMgr  @0x024f80
+// CBattlezMapConfig::~CBattlezMapConfig  @0x024f80
 // Calls FreeArrays() (covered by the full unwind, try-level 3), then the compiler
 // auto-destructs the four arrays in reverse construction order (+0x118, +0x104,
 // +0xf0, +0xdc), lowering the try-level after each.
 // ===========================================================================
 RVA(0x00024f80, 0x7d)
-CBattlezSpawnMgr_or_CGruntSpawnMgr::~CBattlezSpawnMgr_or_CGruntSpawnMgr() {
+CBattlezMapConfig::~CBattlezMapConfig() {
     FreeArrays();
 }
 
 // ===========================================================================
-// CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_025c20  @0x025c20
+// CBattlezMapConfig::Method_025c20  @0x025c20
 // If the current level's CGameRegistry record is not-yet-loaded but active, refresh
 // every element of the first CPtrArray (m_candArray). Returns 1 unconditionally.
 // ===========================================================================
 RVA(0x00025c20, 0x55)
-i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_025c20() {
+i32 CBattlezMapConfig::Method_025c20() {
     if (g_gameReg[m_curCell].m_164 == 0 && g_gameReg[m_curCell].m_170 != 0) {
         for (i32 i = 0; i < m_candArray.GetSize(); i++) {
             ((ElementRefresher*)this)->Refresh(0);
@@ -534,14 +531,14 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_025c20() {
 }
 
 // ===========================================================================
-// CBattlezSpawnMgr_or_CGruntSpawnMgr::FreeArrays  @0x025ca0
+// CBattlezMapConfig::FreeArrays  @0x025ca0
 // For each non-null element of the two CPtrArrays (+0xdc, +0xf0), recover its
 // freelist node (element - bias), push it onto g_freeList. Loop 1 guards on a
 // non-null element; loop 2 does not (the retail asymmetry). Then SetSize(0,-1)
 // empties all four arrays and m_13c is cleared.
 // ===========================================================================
 RVA(0x00025ca0, 0xbf)
-void CBattlezSpawnMgr_or_CGruntSpawnMgr::FreeArrays() {
+void CBattlezMapConfig::FreeArrays() {
     i32 i;
     for (i = 0; i < m_candArray.GetSize(); i++) {
         void* p = m_candArray[i];
@@ -566,7 +563,7 @@ void CBattlezSpawnMgr_or_CGruntSpawnMgr::FreeArrays() {
 }
 
 // ===========================================================================
-// CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02ad40  @0x02ad40
+// CBattlezMapConfig::Method_02ad40  @0x02ad40
 // Pick a random idle unit from one of the four cell-bands: roll a band [0..3]
 // (avoiding the current cell index m_curCell by bumping past it), a random start cell
 // [0..14], then scan the band's 15 units from there (cell index wrapping mod 15),
@@ -581,14 +578,14 @@ void CBattlezSpawnMgr_or_CGruntSpawnMgr::FreeArrays() {
 // counter), and the swap cascades through the small body. Logic + offsets correct;
 // not source-steerable. Deferred to the final sweep.
 RVA(0x0002ad40, 0x71)
-void* CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02ad40(i32) {
+void* CBattlezMapConfig::Method_02ad40(i32) {
     i32 band = rand() % 4;
     if (band == m_curCell) {
         band++;
     }
     band = band % 4;
     i32 cell = rand() % 15;
-    GridUnit** row = &m_triggerMgr->m_grid[band * 15];
+    GridUnit** row = (GridUnit**)&m_triggerMgr->m_grid[band * 15];
     for (i32 i = 0; i < 15; i++) {
         GridUnit* u = *row;
         if (u != 0 && u->m_busy == 0) {
@@ -601,16 +598,16 @@ void* CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02ad40(i32) {
 }
 
 // ===========================================================================
-// CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02c080  @0x02c080
+// CBattlezMapConfig::Method_02c080  @0x02c080
 // Trivial: ignore the one arg, return 1. (mov eax,1; ret 4)
 // ===========================================================================
 RVA(0x0002c080, 0x8)
-i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02c080(i32) {
+i32 CBattlezMapConfig::Method_02c080(i32) {
     return 1;
 }
 
 // ===========================================================================
-// CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_025d90  @0x025d90
+// CBattlezMapConfig::Method_025d90  @0x025d90
 // The per-tick board step. Run the two timers (claim/spawn budget via
 // Method_026470, and a periodic re-pick), level off mode-3 units' countdowns,
 // then scan the current cell-row for the one eligible unit (passes the cached-
@@ -627,7 +624,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02c080(i32) {
 // chosen-unit override local, and the foreign unit/level chains modeled by raw
 // offset. Deferred to the final sweep.
 RVA(0x00025d90, 0x580)
-i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_025d90() {
+i32 CBattlezMapConfig::Method_025d90() {
     if (m_active == 0) {
         return 1;
     }
@@ -640,7 +637,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_025d90() {
     }
     // Level off the mode-3 countdowns: find the minimum, subtract it from each.
     i32 mn = 0x10;
-    GridUnit** row = &m_triggerMgr->m_grid[m_curCell * 15];
+    GridUnit** row = (GridUnit**)&m_triggerMgr->m_grid[m_curCell * 15];
     for (i32 s = 15; s != 0; s--) {
         GridUnit* u = *row;
         if (u != 0 && u->m_state == 3 && u->m_countdown < mn) {
@@ -650,7 +647,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_025d90() {
     }
     if (mn != 0 && mn != 0x10) {
         for (i32 k = 0; k < 15; k++) {
-            GridUnit* u = m_triggerMgr->m_grid[m_curCell * 15 + k];
+            GridUnit* u = (GridUnit*)m_triggerMgr->m_grid[m_curCell * 15 + k];
             if (u != 0 && u->m_state == 3) {
                 u->m_countdown -= mn;
             }
@@ -663,7 +660,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_025d90() {
     GridUnit* forcedUnit = 0;
     if (m_repickTimer - m_repickLastFire > m_repickInterval) {
         i32 r = rand() % 15;
-        GridUnit* u = m_triggerMgr->m_grid[m_curCell * 15 + r];
+        GridUnit* u = (GridUnit*)m_triggerMgr->m_grid[m_curCell * 15 + r];
         forcedUnit = u;
         forced = 0;
         if (u != 0 && u->m_state == 3 && u->m_countdown == 0) {
@@ -672,7 +669,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_025d90() {
         if (!forced) {
             if (rand() % 10 != 0) {
                 i32 r2 = rand() % 15;
-                GridUnit* u2 = m_triggerMgr->m_grid[m_curCell * 15 + r2];
+                GridUnit* u2 = (GridUnit*)m_triggerMgr->m_grid[m_curCell * 15 + r2];
                 if (u2 != 0) {
                     Method_02f620((i32)u2);
                 }
@@ -683,14 +680,14 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_025d90() {
         } else {
             // The eligibility scan: walk the row (the forced unit overrides slot 0).
             for (i32 b = 0; b < 15; b++) {
-                GridUnit* unit = m_triggerMgr->m_grid[m_curCell * 15 + b];
+                GridUnit* unit = (GridUnit*)m_triggerMgr->m_grid[m_curCell * 15 + b];
                 if (forced) {
                     unit = forcedUnit;
                 }
                 if (unit == 0) {
                     continue;
                 }
-                UnitLevel* lvl = unit->m_level;
+                UnitLevel* lvl = (UnitLevel*)unit->m_level;
                 if (lvl->m_worldX != unit->m_cachedX) {
                     continue;
                 }
@@ -784,7 +781,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_025d90() {
                 }
                 ((UnitMutator*)unit)->SetState(unit->m_claimAnim, 0, 0, 1, 1);
                 if (mode == 0x12 || (mode == 0x16 && unit->m_coordCount != 0)) {
-                    CoordNode* n = unit->m_coordHead;
+                    CoordNode* n = (CoordNode*)unit->m_coordHead;
                     while (n != 0) {
                         CoordNode* cur = n;
                         n = n->m_next;
@@ -809,7 +806,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_025d90() {
 }
 
 // ===========================================================================
-// CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_026470  @0x026470
+// CBattlezMapConfig::Method_026470  @0x026470
 // Spawn/claim decision for the current cell-row: if the row is already at/over
 // its per-level unit budget (rec->m_378) return early; otherwise scan the first
 // CPtrArray (m_candArray) of candidate coords, skip ones whose tile carries the
@@ -826,8 +823,8 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_025d90() {
 // the choice cascades through the two 15-slot scans' operands. The foreign render/
 // level chains (m_ctx->m_scene->m_24->m_5c) are modeled by raw offset. Final sweep.
 RVA(0x00026470, 0x29d)
-i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_026470(i32) {
-    GridUnit** row = &m_triggerMgr->m_grid[m_curCell * 15];
+i32 CBattlezMapConfig::Method_026470(i32) {
+    GridUnit** row = (GridUnit**)&m_triggerMgr->m_grid[m_curCell * 15];
     i32 occupied = 0;
     for (i32 c = 15; c != 0; c--) {
         if (*row != 0) {
@@ -895,7 +892,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_026470(i32) {
     }
     slot38 = rand() % 100;
     i32 freeCount = 0;
-    GridUnit** r2 = &m_triggerMgr->m_grid[m_curCell * 15];
+    GridUnit** r2 = (GridUnit**)&m_triggerMgr->m_grid[m_curCell * 15];
     for (i32 k = 15; k != 0; k--) {
         GridUnit* g = *r2;
         if (g != 0 && g->m_mode == 0) {
@@ -930,12 +927,12 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_026470(i32) {
 // @source: winapi:IntersectRect;PtInRect
 // @stub
 RVA(0x000267c0, 0x281d)
-i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_0267c0_IntersectRect_PtInRect() {
+i32 CBattlezMapConfig::winapi_0267c0_IntersectRect_PtInRect() {
     return 0;
 }
 
 // ===========================================================================
-// CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02a570_IntersectRect  @0x02a570  (/GX EH frame)
+// CBattlezMapConfig::winapi_02a570_IntersectRect  @0x02a570  (/GX EH frame)
 // The reserved-tile scatter reroute. For a unit that holds occupied coords, clamp
 // the board dirty-rect to a 13x13 box around its screen coord (IntersectRect copy-
 // back), then scan up to three of its coord-list nodes for one on a blocked (bit 0)
@@ -956,7 +953,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_0267c0_IntersectRect_PtInRect() {
 // the dead maybe-null box branch retail emits (shared with winapi_02c140/02dfa0).
 // Foreign unit/board chains modeled by raw offset. Deferred to the final sweep.
 RVA(0x0002a570, 0x4c6)
-i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02a570_IntersectRect(i32 unitArg) {
+i32 CBattlezMapConfig::winapi_02a570_IntersectRect(i32 unitArg) {
     GridUnit* unit = (GridUnit*)unitArg;
     if (unit->m_coordCount == 0) {
         return 1;
@@ -979,7 +976,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02a570_IntersectRect(i32 unitArg)
     }
     board->m_dirtyW = board->m_dirtyR - board->m_dirtyL;
     board->m_dirtyH = board->m_dirtyB - board->m_dirtyT;
-    Coord* tailCoord = (Coord*)(unit->m_coordTail)->m_coord;
+    Coord* tailCoord = (Coord*)((CoordNode*)unit->m_coordTail)->m_coord;
     i32 tx = tailCoord->m_x;
     i32 ty = tailCoord->m_y;
     i32 iter = 0;
@@ -1037,7 +1034,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02a570_IntersectRect(i32 unitArg)
             if (list.GetCount() != 0) {
                 // Recycle the unit's current path coords onto g_coordPool, empty it.
                 if (unit->m_coordCount != 0) {
-                    CoordNode* p = unit->m_coordHead;
+                    CoordNode* p = (CoordNode*)unit->m_coordHead;
                     while (p != 0) {
                         CoordNode* c2 = p;
                         p = p->m_next;
@@ -1071,7 +1068,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02a570_IntersectRect(i32 unitArg)
                 }
                 board->m_dirtyW = board->m_dirtyR - board->m_dirtyL;
                 board->m_dirtyH = board->m_dirtyB - board->m_dirtyT;
-                Coord* nt = (Coord*)(unit->m_coordTail)->m_coord;
+                Coord* nt = (Coord*)((CoordNode*)unit->m_coordTail)->m_coord;
                 unit->m_packedX = (nt->m_x << 5) + 0x10;
                 unit->m_packedY = (nt->m_y << 5) + 0x10;
                 list.RemoveAll();
@@ -1100,7 +1097,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02a570_IntersectRect(i32 unitArg)
 }
 
 // ===========================================================================
-// CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02ab80_PtInRect  @0x02ab80
+// CBattlezMapConfig::winapi_02ab80_PtInRect  @0x02ab80
 // Build a RECT centered at (cx,cy) with half-extents (halfW,halfH); scan the
 // four cell-bands (15 units each, skipping the current cell band m_curCell) for the
 // nearest idle (m_364==0) unit whose grid coord is inside the rect. On a kind-0x36
@@ -1114,12 +1111,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02a570_IntersectRect(i32 unitArg)
 // set, opposite recolor -> the [esp+N] offsets shift and cascade. Logic + offsets
 // byte-exact otherwise (77.9%). Not source-steerable; deferred to the final sweep.
 RVA(0x0002ab80, 0x15e)
-i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02ab80_PtInRect(
-    i32 cx,
-    i32 cy,
-    i32 halfW,
-    i32 halfH
-) {
+i32 CBattlezMapConfig::winapi_02ab80_PtInRect(i32 cx, i32 cy, i32 halfW, i32 halfH) {
     RECT rect;
     rect.left = cx - halfW;
     rect.right = cx + halfW;
@@ -1132,14 +1124,14 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02ab80_PtInRect(
             continue;
         }
         for (i32 i = 0; i < 15; i++) {
-            GridUnit* u = m_triggerMgr->m_grid[band * 15 + i];
+            GridUnit* u = (GridUnit*)m_triggerMgr->m_grid[band * 15 + i];
             if (u == 0) {
                 continue;
             }
             if (u->m_busy != 0) {
                 continue;
             }
-            UnitLevel* lvl = u->m_level;
+            UnitLevel* lvl = (UnitLevel*)u->m_level;
             POINT pt;
             pt.x = lvl->m_worldX >> 5;
             pt.y = lvl->m_worldY >> 5;
@@ -1155,7 +1147,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02ab80_PtInRect(
             if (keep == 0) {
                 continue;
             }
-            lvl = u->m_level;
+            lvl = (UnitLevel*)u->m_level;
             i32 dx = abs((lvl->m_worldX >> 5) - cx);
             i32 dy = abs((lvl->m_worldY >> 5) - cy);
             i32 dist = dx + dy;
@@ -1173,11 +1165,11 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02ab80_PtInRect(
 }
 
 // ===========================================================================
-// CBattlezSpawnMgr_or_CGruntSpawnMgr::Clear_02ade0  @0x02ade0
+// CBattlezMapConfig::Clear_02ade0  @0x02ade0
 // Single-store setter: zero the first dword. (mov [ecx],0; ret)
 // ===========================================================================
 RVA(0x0002ade0, 0x7)
-void CBattlezSpawnMgr_or_CGruntSpawnMgr::Clear_02ade0() {
+void CBattlezMapConfig::Clear_02ade0() {
     m_active = 0;
 }
 
@@ -1193,7 +1185,7 @@ struct UnitCommit {
 };
 
 // ===========================================================================
-// CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02ae00_IntersectRect  @0x02ae00
+// CBattlezMapConfig::winapi_02ae00_IntersectRect  @0x02ae00
 // Coord hand-off from `unit` to the target `tgt`. Reject unless `unit` is eligible
 // (m_1fc set, its anim name is none of J/C/R/G/L, m_kind != 0x36, m_364 clear). Then,
 // when tgt is armed (m_trigMode != 0) with a 1/4 roll and tgt gates in `unit`'s level
@@ -1213,7 +1205,7 @@ struct UnitCommit {
 // retail emits, shared with winapi_02c140/02dfa0) and the foreign unit/level chains
 // modeled by raw offset. Deferred to the final sweep.
 RVA(0x0002ae00, 0x42e)
-i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02ae00_IntersectRect(i32 unitArg, i32 targetArg) {
+i32 CBattlezMapConfig::winapi_02ae00_IntersectRect(i32 unitArg, i32 targetArg) {
     GridUnit* unit = (GridUnit*)unitArg;
     if (unit->m_1fc == 0) {
         return 0;
@@ -1258,20 +1250,20 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02ae00_IntersectRect(i32 unitArg,
     GridUnit* tgt = (GridUnit*)targetArg;
     i32 roll = rand() % 4;
     if (tgt->m_trigMode != 0 && roll == 0) {
-        UnitLevel* ul = unit->m_level;
+        UnitLevel* ul = (UnitLevel*)unit->m_level;
         if (((UnitRectGate*)tgt)->Contains(ul->m_worldX, ul->m_worldY) != 0) {
             if (tgt->m_trigMode == 0x1e) {
-                UnitLevel* tl = tgt->m_level;
+                UnitLevel* tl = (UnitLevel*)tgt->m_level;
                 m_triggerMgr->ApplyTriggerB(tgt->m_trigA, tgt->m_trigB, tl->m_worldX, tl->m_worldY);
             } else {
-                UnitLevel* ul2 = unit->m_level;
+                UnitLevel* ul2 = (UnitLevel*)unit->m_level;
                 m_triggerMgr
                     ->ApplyTriggerB(tgt->m_trigA, tgt->m_trigB, ul2->m_worldX, ul2->m_worldY);
             }
             return 1;
         }
     }
-    UnitLevel* ul3 = unit->m_level;
+    UnitLevel* ul3 = (UnitLevel*)unit->m_level;
     ((UnitCommit*)tgt)->Commit(unit->m_trigA, unit->m_trigB, ul3->m_worldX, ul3->m_worldY);
     i32 prim = tgt->m_animPrim;
     if (prim > 0x16) {
@@ -1282,10 +1274,10 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02ae00_IntersectRect(i32 unitArg,
     }
     // Clamp the board dirty-rect to an 11x11 box around tgt, then re-path tgt to a
     // random nearby cell.
-    UnitLevel* tl = tgt->m_level;
+    UnitLevel* tl = (UnitLevel*)tgt->m_level;
     i32 ycoord = (tl->m_worldY >> 5) + rand() % 10 - 5;
     i32 r2 = rand() % 10;
-    UnitLevel* tl2 = tgt->m_level;
+    UnitLevel* tl2 = (UnitLevel*)tgt->m_level;
     i32 left = (tl2->m_worldX >> 5) - 5;
     i32 xcoord = (tl->m_worldX >> 5) + r2 - 5;
     i32 right = (tl2->m_worldX >> 5) + 5;
@@ -1313,14 +1305,14 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02ae00_IntersectRect(i32 unitArg,
 }
 
 // ===========================================================================
-// CBattlezSpawnMgr_or_CGruntSpawnMgr::Serialize_02b420  @0x02b420
+// CBattlezMapConfig::Serialize_02b420  @0x02b420
 // Stream every config scalar (then the four growable arrays + the inline 4-dword
 // block) into the archive via its Write(buf, count) vtable slot. Each array
 // section writes the element count first, then each element (the two CPtrArrays'
 // elements are 8-byte payloads; the two CDWordArrays' are 4-byte dwords).
 // ===========================================================================
 RVA(0x0002b420, 0x419)
-i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Serialize_02b420(void* arArg) {
+i32 CBattlezMapConfig::Serialize_02b420(void* arArg) {
     Serializer* ar = (Serializer*)arArg;
     if (ar == 0) {
         return 0;
@@ -1412,7 +1404,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Serialize_02b420(void* arArg) {
 }
 
 // ===========================================================================
-// CBattlezSpawnMgr_or_CGruntSpawnMgr::Deserialize_02b950  @0x02b950
+// CBattlezMapConfig::Deserialize_02b950  @0x02b950
 // The read mirror of Serialize_02b420: pull every config scalar back out of the
 // archive through its Read(buf,count) vtable slot (+0x2c), then the four growable
 // arrays + the inline 4-dword block. The two CDWordArrays read a count then that
@@ -1429,7 +1421,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Serialize_02b420(void* arArg) {
 // identical alloc loops compiling to BOTH (0x7ad40 direct-ecx vs 0x7ad9b
 // edx-copy). ~8 residual bytes across 1299; all logic byte-exact otherwise.
 RVA(0x0002b950, 0x513)
-i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Deserialize_02b950(void* arArg) {
+i32 CBattlezMapConfig::Deserialize_02b950(void* arArg) {
     Serializer* ar = (Serializer*)arArg;
     if (ar == 0) {
         return 0;
@@ -1559,7 +1551,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Deserialize_02b950(void* arArg) {
 }
 
 // ===========================================================================
-// CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02bfc0  @0x02bfc0
+// CBattlezMapConfig::Method_02bfc0  @0x02bfc0
 // Validate an EmitArg by kind (4 or 7); on success, dispatch through its vtable
 // to emit a {x,y} pair into the bundle's m_scratch78/m_scratch80 scratch via slot +0x2c
 // (kind 7) or +0x30 (kind 4).
@@ -1571,7 +1563,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Deserialize_02b950(void* arArg) {
 // inline (cmp 4; jne). No steerable source spelling found (switch would add a
 // jump table). Deferred to the final sweep.
 RVA(0x0002bfc0, 0x8a)
-i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02bfc0(i32 objArg, void* kindArg, i32, i32) {
+i32 CBattlezMapConfig::Method_02bfc0(i32 objArg, void* kindArg, i32, i32) {
     EmitArg* obj = (EmitArg*)objArg;
     i32 kind = (i32)(i32)kindArg;
     if (kind == 4) {
@@ -1597,13 +1589,13 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02bfc0(i32 objArg, void* kindArg,
 }
 
 // ===========================================================================
-// CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02c0a0  @0x02c0a0
+// CBattlezMapConfig::Method_02c0a0  @0x02c0a0
 // Mark a unit as "state 3" with a value, then count how many OTHER units in the
 // current cell-row are also state 3 and record that count on the unit.
 //   grid row = m_triggerMgr->m_grid[m_curCell*15 .. +15) (the CTriggerMgr 4x15 cell grid).
 // ===========================================================================
 RVA(0x0002c0a0, 0x78)
-i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02c0a0(i32 unitArg, i32 value) {
+i32 CBattlezMapConfig::Method_02c0a0(i32 unitArg, i32 value) {
     GridUnit* unit = (GridUnit*)unitArg;
     if (unit->m_state == 3) {
         return 1;
@@ -1611,10 +1603,10 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02c0a0(i32 unitArg, i32 value) {
     m_claimTimer = 0;
     unit->m_state = 3;
     unit->m_claimAnim = value;
-    GridUnit** units = m_triggerMgr->m_grid + m_curCell * 15;
+    void** units = m_triggerMgr->m_grid + m_curCell * 15;
     i32 count = 0;
     for (i32 k = 0; k < 15; k++) {
-        GridUnit* p = units[k];
+        GridUnit* p = (GridUnit*)units[k];
         if (p != 0 && unit != p && p->m_state == 3) {
             count++;
         }
@@ -1670,7 +1662,7 @@ struct SceneObj {
 extern "C" void Handler_0040288d(void);
 
 // ===========================================================================
-// CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02c140_IntersectRect_PtInRect  @0x02c140
+// CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect  @0x02c140
 // For an idle unit (m_kind==0, prim anim clear) clamp the board dirty-rect to an 8x8
 // box centered on the unit (four GetCoord corner reads + the IntersectRect copy-back
 // idiom), then iterate the scene collection (m_ctx->m_scene->m_8) for a kind-matching
@@ -1688,7 +1680,7 @@ extern "C" void Handler_0040288d(void);
 // natural call re-emits it; (2) the dead maybe-null box branch retail emits (shared with
 // winapi_02dfa0). Foreign scene/board chains modeled by raw offset. Deferred to the final sweep.
 RVA(0x0002c140, 0x3e7)
-i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02c140_IntersectRect_PtInRect(i32 unitArg) {
+i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(i32 unitArg) {
     GridUnit* unit = (GridUnit*)unitArg;
     if (unit->m_kind != 0) {
         return 0;
@@ -1827,7 +1819,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02c140_IntersectRect_PtInRect(i32
 }
 
 // ===========================================================================
-// CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02dfa0_IntersectRect  @0x02dfa0
+// CBattlezMapConfig::winapi_02dfa0_IntersectRect  @0x02dfa0
 // The flood-fill launcher. Arm g_stepRun, build a 17x17 box around the unit's
 // (>>5) coord (three GetCoord reads for the corners), clamp the board dirty-rect
 // to that box intersected with the board bounds (the IntersectRect copy-back
@@ -1847,16 +1839,11 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02c140_IntersectRect_PtInRect(i32
 // maybe-null box branch retail emits; foreign unit/board chains modeled by raw
 // offset. Deferred to the final sweep.
 RVA(0x0002dfa0, 0x325)
-i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02dfa0_IntersectRect(
-    i32 unitArg,
-    i32 a1,
-    i32 a2,
-    i32 a3
-) {
+i32 CBattlezMapConfig::winapi_02dfa0_IntersectRect(i32 unitArg, i32 a1, i32 a2, i32 a3) {
     GridUnit* unit = (GridUnit*)unitArg;
     g_stepRun = 1;
     // Build a 17x17 box (corner reads via three GetCoords).
-    UnitLevel* lvl = unit->m_level;
+    UnitLevel* lvl = (UnitLevel*)unit->m_level;
     i32 bottom = (lvl->m_worldY >> 5) + 8;
     Coord g0;
     ((UnitGeom*)unit)->GetCoord(&g0);
@@ -1894,7 +1881,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02dfa0_IntersectRect(
         }
         i32 flag = (tile0 >> 2) & 1;
         if (unit->m_coordCount != 0) {
-            Coord* c = (unit->m_coordTail)->m_coord;
+            Coord* c = ((CoordNode*)unit->m_coordTail)->m_coord;
             i32 cx = c->m_x;
             i32 cy = c->m_y;
             i32 tile1;
@@ -1949,7 +1936,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02dfa0_IntersectRect(
 }
 
 // ===========================================================================
-// CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02e3a0_PtInRect  @0x02e3a0
+// CBattlezMapConfig::winapi_02e3a0_PtInRect  @0x02e3a0
 // The nearest-idle-neighbour retarget. Build a 15x15 box (half-extent 7) around
 // the arg unit's screen coord (4 GetCoord corners), then scan the four cell-bands
 // (15 units each, skipping the current band m_curCell) for the eligible (m_1fc set,
@@ -1973,7 +1960,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02dfa0_IntersectRect(
 // alias the later dist temporaries) + the /GX cond-temp EH state; foreign
 // unit/board/g_gameReg chains modeled by raw offset. Not source-steerable.
 RVA(0x0002e3a0, 0x7e1)
-i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02e3a0_PtInRect(i32 unitArg) {
+i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(i32 unitArg) {
     GridUnit* unit = (GridUnit*)unitArg;
     // Four GetCoord corners -> a 15x15 box (half-extent 7) around the unit.
     RECT box;
@@ -2003,7 +1990,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02e3a0_PtInRect(i32 unitArg) {
             continue;
         }
         for (i32 i = 0; i < 15; i++) {
-            GridUnit* u = m_triggerMgr->m_grid[band * 15 + i];
+            GridUnit* u = (GridUnit*)m_triggerMgr->m_grid[band * 15 + i];
             if (u == 0) {
                 continue;
             }
@@ -2159,7 +2146,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02e3a0_PtInRect(i32 unitArg) {
         __int64 elapsed = (__int64)(u32)g_stepTimer - *(__int64*)&m_scratch78;
         if (elapsed >= *(__int64*)&m_scratch80) {
             unit->m_arrived = 0;
-            UnitLevel* lvl = unit->m_level;
+            UnitLevel* lvl = (UnitLevel*)unit->m_level;
             char* chain = (char*)g_gameReg->m_world->m_24->m_5c;
             RECT* hit = (RECT*)(chain + 0x40);
             if (lvl->m_worldX < hit->right && lvl->m_worldX >= hit->left
@@ -2193,7 +2180,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02e3a0_PtInRect(i32 unitArg) {
 }
 
 // ===========================================================================
-// CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02f620  @0x02f620
+// CBattlezMapConfig::Method_02f620  @0x02f620
 // The grunt idle-behaviour chooser (the cluster's largest method). Gate the unit
 // on the four clear-flag guards, then reject the I/G/L/P/J/C/R type codes (I via
 // GetRecord, the rest via the scratch-teardown GetRecords). For an eligible unit,
@@ -2216,7 +2203,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02e3a0_PtInRect(i32 unitArg) {
 // with Method_034460); (2) the threshold-cascade regalloc (retail pins the rolled
 // value in edx, the band divisors in esi). Deferred to the final sweep.
 RVA(0x0002f620, 0x871)
-i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02f620(i32 unitArg) {
+i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
     GridUnit* unit = (GridUnit*)unitArg;
     if (unit->m_1fc == 0) {
         return 0;
@@ -2406,7 +2393,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02f620(i32 unitArg) {
         }
         if (mode == 3) {
             // Reseed: count idle units in the current cell-row; bail if 2+ already.
-            GridUnit** row = &m_triggerMgr->m_grid[m_curCell * 15];
+            GridUnit** row = (GridUnit**)&m_triggerMgr->m_grid[m_curCell * 15];
             i32 nIdle = 0;
             for (i32 s = 15; s != 0; s--) {
                 GridUnit* u = *row;
@@ -2419,7 +2406,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02f620(i32 unitArg) {
                 return 1;
             }
             for (i32 b = 0; b < 15; b++) {
-                GridUnit* u = m_triggerMgr->m_grid[m_curCell * 15 + b];
+                GridUnit* u = (GridUnit*)m_triggerMgr->m_grid[m_curCell * 15 + b];
                 if (u == 0) {
                     continue;
                 }
@@ -2432,7 +2419,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02f620(i32 unitArg) {
                 ((UnitMutator*)u)->SetState(3, 1, 0, 0, 1);
                 u->m_mode = 3;
                 if (u->m_coordCount != 0) {
-                    CoordNode* n = u->m_coordHead;
+                    CoordNode* n = (CoordNode*)u->m_coordHead;
                     while (n != 0) {
                         CoordNode* curn = n;
                         n = n->m_next;
@@ -2459,7 +2446,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02f620(i32 unitArg) {
         }
         if (mode == 0x12) {
             if (unit->m_coordCount != 0) {
-                CoordNode* n = unit->m_coordHead;
+                CoordNode* n = (CoordNode*)unit->m_coordHead;
                 while (n != 0) {
                     CoordNode* curn = n;
                     n = n->m_next;
@@ -2473,7 +2460,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02f620(i32 unitArg) {
             }
         } else if (mode == 0x16) {
             if (unit->m_coordCount != 0) {
-                CoordNode* n = unit->m_coordHead;
+                CoordNode* n = (CoordNode*)unit->m_coordHead;
                 while (n != 0) {
                     CoordNode* curn = n;
                     n = n->m_next;
@@ -2544,16 +2531,16 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02f620(i32 unitArg) {
 }
 
 // ===========================================================================
-// CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02ed90  @0x02ed90
+// CBattlezMapConfig::Method_02ed90  @0x02ed90
 // One-arg predicate that always returns 0. (xor eax,eax; ret 4)
 // ===========================================================================
 RVA(0x0002ed90, 0x5)
-i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02ed90(i32) {
+i32 CBattlezMapConfig::Method_02ed90(i32) {
     return 0;
 }
 
 // ===========================================================================
-// CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_0300c0  @0x0300c0  (/GX EH frame)
+// CBattlezMapConfig::Method_0300c0  @0x0300c0  (/GX EH frame)
 // Re-path `unit` to (gx,gy): if it is already there (its level geometry's
 // (>>5) coord equals the goal) succeed trivially; otherwise ask the board's
 // A* (FindPath) for a route into a local CObList, then swap the unit's path:
@@ -2571,17 +2558,10 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02ed90(i32) {
 // the ~CObList/xor/jmp at each early return. No steerable source spelling closes
 // either. Deferred to the final sweep.
 RVA(0x000300c0, 0x190)
-i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_0300c0(
-    i32 unitArg,
-    i32 gx,
-    i32 gy,
-    i32 a4,
-    i32 a5,
-    i32 a6
-) {
+i32 CBattlezMapConfig::Method_0300c0(i32 unitArg, i32 gx, i32 gy, i32 a4, i32 a5, i32 a6) {
     CObList list(10);
     GridUnit* unit = (GridUnit*)unitArg;
-    UnitLevel* lvl = unit->m_level;
+    UnitLevel* lvl = (UnitLevel*)unit->m_level;
     if ((lvl->m_worldX >> 5) == gx && (lvl->m_worldY >> 5) == gy) {
         return 0;
     }
@@ -2604,7 +2584,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_0300c0(
     // Recycle the unit's current path-coord nodes onto the coord pool, empty its
     // path list.
     if (unit->m_coordCount != 0) {
-        CoordNode* n = unit->m_coordHead;
+        CoordNode* n = (CoordNode*)unit->m_coordHead;
         while (n != 0) {
             CoordNode* cur = n;
             n = n->m_next;
@@ -2624,14 +2604,14 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_0300c0(
         }
     }
     list.RemoveAll();
-    Coord* tail = (Coord*)(unit->m_coordTail)->m_coord;
+    Coord* tail = (Coord*)((CoordNode*)unit->m_coordTail)->m_coord;
     unit->m_packedX = (tail->m_x << 5) + 0x10;
     unit->m_packedY = (tail->m_y << 5) + 0x10;
     return 1;
 }
 
 // ===========================================================================
-// CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_0302c0  @0x0302c0  (/GX EH frame)
+// CBattlezMapConfig::Method_0302c0  @0x0302c0  (/GX EH frame)
 // Re-path `unit` to (gx, gy) - the GetCoord-fronted twin of Method_0300c0. If the
 // unit is already at the goal (its GetCoord (>>5) == (gx, gy)) bail; scan its path
 // for a node already on the goal; ask the board's A* (FindPath) for a route into a
@@ -2648,7 +2628,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_0300c0(
 // loop-invariant `do/while` in retail (the path-segment recycle) that no source
 // spelling reproduces. Foreign unit chains modeled by raw offset. Final sweep.
 RVA(0x000302c0, 0x1ec)
-i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_0302c0(i32 unitArg, i32 gx, i32 gy, i32 a4, i32 a5) {
+i32 CBattlezMapConfig::Method_0302c0(i32 unitArg, i32 gx, i32 gy, i32 a4, i32 a5) {
     CObList list(10);
     GridUnit* unit = (GridUnit*)unitArg;
     Coord cur;
@@ -2662,7 +2642,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_0302c0(i32 unitArg, i32 gx, i32 g
     }
     // Scan the unit's path for a node already on the goal (match = the node after it).
     CoordNode* match = 0;
-    CoordNode* n = unit->m_coordHead;
+    CoordNode* n = (CoordNode*)unit->m_coordHead;
     while (n != 0) {
         CoordNode* cur3 = n;
         n = n->m_next;
@@ -2672,7 +2652,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_0302c0(i32 unitArg, i32 gx, i32 g
             break;
         }
     }
-    UnitLevel* lvl = unit->m_level;
+    UnitLevel* lvl = (UnitLevel*)unit->m_level;
     if ((m_board)->FindPath(lvl->m_worldX >> 5, lvl->m_worldY >> 5, gx, gy, &list, 0, a5, a5)
         == 0) {
         return 0;
@@ -2697,7 +2677,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_0302c0(i32 unitArg, i32 gx, i32 g
     }
     // Recycle the unit's existing coord nodes onto g_freeList, then empty its path.
     if (unit->m_coordCount != 0) {
-        CoordNode* p = unit->m_coordHead;
+        CoordNode* p = (CoordNode*)unit->m_coordHead;
         while (p != 0) {
             CoordNode* cur4 = p;
             p = p->m_next;
@@ -2723,17 +2703,17 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_0302c0(i32 unitArg, i32 gx, i32 g
 }
 
 // ===========================================================================
-// CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_030530  @0x030530
+// CBattlezMapConfig::Method_030530  @0x030530
 // Returns 1 if ANY occupied coordinate of `unit` lands on a board tile whose
 // flag byte has bit 0x4 set; else 0. Bails to 0 if the unit has no coord list.
 // ===========================================================================
 RVA(0x00030530, 0x56)
-i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_030530(i32 unitArg) {
+i32 CBattlezMapConfig::Method_030530(i32 unitArg) {
     GridUnit* unit = (GridUnit*)unitArg;
     if (unit->m_coordCount == 0) {
         return 0;
     }
-    CoordNode* node = unit->m_coordHead;
+    CoordNode* node = (CoordNode*)unit->m_coordHead;
     if (node == 0) {
         return 0;
     }
@@ -2752,7 +2732,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_030530(i32 unitArg) {
 }
 
 // ===========================================================================
-// CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_0305b0  @0x0305b0
+// CBattlezMapConfig::Method_0305b0  @0x0305b0
 // Scan the current cell-row for any OTHER unit that occupies coordinate
 // (arg1, arg2): either via a "blocked tile" hit on the unit's occupied-coord
 // list, via the unit's own packed coord (m_packedX/m_packedY >> 5), or via its level
@@ -2766,10 +2746,10 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_030530(i32 unitArg) {
 // ebx. The divergence cascades through every register operand. No steerable
 // spelling found. Deferred to the final sweep.
 RVA(0x000305b0, 0x121)
-i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_0305b0(i32 selfUnit, i32 qx, i32 qy) {
-    GridUnit** units = m_triggerMgr->m_grid + m_curCell * 15;
+i32 CBattlezMapConfig::Method_0305b0(i32 selfUnit, i32 qx, i32 qy) {
+    void** units = m_triggerMgr->m_grid + m_curCell * 15;
     for (i32 i = 0; i < 15; i++) {
-        GridUnit* unit = units[i];
+        GridUnit* unit = (GridUnit*)units[i];
         if (unit == 0) {
             continue;
         }
@@ -2781,7 +2761,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_0305b0(i32 selfUnit, i32 qx, i32 
         }
         if (unit->m_coordCount != 0 && unit->m_coordHead != 0) {
             Board* board = m_board;
-            CoordNode* node = unit->m_coordHead;
+            CoordNode* node = (CoordNode*)unit->m_coordHead;
             while (node != 0) {
                 CoordNode* cur = node;
                 node = node->m_next;
@@ -2802,7 +2782,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_0305b0(i32 selfUnit, i32 qx, i32 
         if ((unit->m_packedX >> 5) == qx && (unit->m_packedY >> 5) == qy) {
             return 1;
         }
-        UnitLevel* lvl = unit->m_level;
+        UnitLevel* lvl = (UnitLevel*)unit->m_level;
         if ((lvl->m_worldX >> 5) == qx && (lvl->m_worldY >> 5) == qy) {
             return 1;
         }
@@ -2811,7 +2791,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_0305b0(i32 selfUnit, i32 qx, i32 
 }
 
 // ===========================================================================
-// CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_030730  @0x030730
+// CBattlezMapConfig::Method_030730  @0x030730
 // Cell-claim scan: for the (cellX,cellY) source unit, walk the 15 unit slots of
 // the CURRENT cell-row (m_curCell) and, for each candidate whose mode is 3 (or a
 // 2/3-of-the-time random pick) and whose per-level record lands within distance
@@ -2826,14 +2806,14 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_0305b0(i32 selfUnit, i32 qx, i32 
 // locals (no spill slot) vs retail's 0xc. Cascades through the cellX/cellY
 // reg-vs-memory operand choice. No steerable spelling found; final sweep.
 RVA(0x00030730, 0x1da)
-i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_030730(i32 cellX, i32 cellY, i32, i32) {
+i32 CBattlezMapConfig::Method_030730(i32 cellX, i32 cellY, i32, i32) {
     if (m_active == 0) {
         return 0;
     }
     if (cellX == m_curCell) {
         return 1;
     }
-    GridUnit* src = m_triggerMgr->m_grid[cellX * 15 + cellY];
+    GridUnit* src = (GridUnit*)m_triggerMgr->m_grid[cellX * 15 + cellY];
     if (src == 0) {
         return 0;
     }
@@ -2848,7 +2828,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_030730(i32 cellX, i32 cellY, i32,
         }
     }
     for (i32 i = 0; i < 15; i++) {
-        GridUnit* u = m_triggerMgr->m_grid[m_curCell * 15 + i];
+        GridUnit* u = (GridUnit*)m_triggerMgr->m_grid[m_curCell * 15 + i];
         if (u == 0) {
             continue;
         }
@@ -2870,7 +2850,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_030730(i32 cellX, i32 cellY, i32,
         if (ok == 0) {
             continue;
         }
-        UnitLevel* lvl = u->m_level;
+        UnitLevel* lvl = (UnitLevel*)u->m_level;
         i32 lx = lvl->m_worldX >> 5;
         i32 ly = lvl->m_worldY >> 5;
         if (u->m_mode == 4 && u->m_targetBand != -1) {
@@ -2897,7 +2877,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_030730(i32 cellX, i32 cellY, i32,
 }
 
 // ===========================================================================
-// CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_030990  @0x030990
+// CBattlezMapConfig::Method_030990  @0x030990
 // Try to seed a fresh spawn unit at a screen cell. Count the occupied units in the
 // current cell-row; if that count is at/over the per-level record's budget
 // (rec->m_378) bail. Otherwise probe the screen cell mapped from (arg1,arg2) via the
@@ -2915,8 +2895,8 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_030730(i32 cellX, i32 cellY, i32,
 // reschedules the -1 block. No source lever forces the pinning under /O2 (see
 // docs/patterns/zero-register-pinning.md). Deferred to the final sweep.
 RVA(0x00030990, 0x11b)
-i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_030990(i32 ax, i32 ay) {
-    GridUnit** row = &m_triggerMgr->m_grid[m_curCell * 15];
+i32 CBattlezMapConfig::Method_030990(i32 ax, i32 ay) {
+    GridUnit** row = (GridUnit**)&m_triggerMgr->m_grid[m_curCell * 15];
     i32 occupied = 0;
     for (i32 c = 15; c != 0; c--) {
         if (*row != 0) {
@@ -2968,7 +2948,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_030990(i32 ax, i32 ay) {
 }
 
 // ===========================================================================
-// CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_030f20  @0x030f20
+// CBattlezMapConfig::Method_030f20  @0x030f20
 // Pick a spawn coordinate for `unit` from the per-level record's candidate list
 // (index `kind`, 0..3): start at a random candidate and walk forward (mod count)
 // looking for one not already occupied by any unit in the current cell-row; on
@@ -2983,17 +2963,17 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_030990(i32 ax, i32 ay) {
 // collision loop's register operands (load-then-test vs memory-compare on
 // u->m_coordCount, cand coord regs). No steerable spelling found; final sweep.
 RVA(0x00030f20, 0x16d)
-void* CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_030f20(void* out, i32 unitArg, i32 kind) {
+void* CBattlezMapConfig::Method_030f20(void* out, i32 unitArg, i32 kind) {
     Coord* o = (Coord*)out;
     GridUnit* unit = (GridUnit*)unitArg;
     if (kind < 0 || kind >= 4) {
-        UnitLevel* lvl = unit->m_level;
+        UnitLevel* lvl = (UnitLevel*)unit->m_level;
         o->m_x = lvl->m_worldX >> 5;
         o->m_y = lvl->m_worldY >> 5;
         return o;
     }
     char* rec = (char*)m_ctx + kind * 0x238 + 0x278;
-    UnitLevel* lvl = unit->m_level;
+    UnitLevel* lvl = (UnitLevel*)unit->m_level;
     i32 rx = lvl->m_worldX >> 5;
     i32 ry = lvl->m_worldY >> 5;
     i32 count = *(i32*)(rec + 0x8);
@@ -3009,7 +2989,7 @@ void* CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_030f20(void* out, i32 unitArg, 
                 i32 cx = cand->m_x;
                 i32 cy = cand->m_y;
                 i32 ok = 1;
-                GridUnit** row = &grid->m_grid[cell * 15];
+                GridUnit** row = (GridUnit**)&grid->m_grid[cell * 15];
                 for (i32 j = 15; j != 0; j--) {
                     GridUnit* u = *row;
                     if (u != 0 && u->m_coordCount != 0) {
@@ -3043,7 +3023,7 @@ void* CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_030f20(void* out, i32 unitArg, 
 }
 
 // ===========================================================================
-// CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_031ca0_IntersectRect  @0x031ca0
+// CBattlezMapConfig::winapi_031ca0_IntersectRect  @0x031ca0
 // The queued-unit arrival resolver. For a unit with a live target cell
 // (m_targetX/m_targetY != -1) locate the unit at that cell (grid[m_targetX][m_targetY]); if it is
 // gone, reset the unit (mode 4 / -1 coords) recycling its path onto g_freeList.
@@ -3063,14 +3043,14 @@ void* CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_030f20(void* out, i32 unitArg, 
 // hoists -1 into edi (cmp eax,edi) and keeps tx/ty in registers - the shared-const
 // / spill recolor cascades ~0x40 head bytes. Not source-steerable; final sweep.
 RVA(0x00031ca0, 0x2f2)
-i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_031ca0_IntersectRect(i32 unitArg) {
+i32 CBattlezMapConfig::winapi_031ca0_IntersectRect(i32 unitArg) {
     GridUnit* unit = (GridUnit*)unitArg;
     i32 tx = unit->m_targetX;
     i32 ty = unit->m_targetY;
     if (tx != -1 && ty != -1) {
-        GridUnit* target = m_triggerMgr->m_grid[tx * 15 + ty];
+        GridUnit* target = (GridUnit*)m_triggerMgr->m_grid[tx * 15 + ty];
         if (target != 0) {
-            UnitLevel* lvl = target->m_level;
+            UnitLevel* lvl = (UnitLevel*)target->m_level;
             if (((CoordCheck*)unit)->Occupied(lvl->m_worldX, lvl->m_worldY) != 0) {
                 if (unit->m_coordCount != 0) {
                     void* pos = unit->m_coordHead;
@@ -3107,7 +3087,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_031ca0_IntersectRect(i32 unitArg)
             if ((u32)unit->m_idleTimer > 0x1f4 && unit->m_coordCount == 0) {
                 i32 flags = unit->m_pathCfg;
                 unit->m_pathState = 0x4268;
-                UnitLevel* tl = target->m_level;
+                UnitLevel* tl = (UnitLevel*)target->m_level;
                 ((GridUnitSpawn*)unit)
                     ->Place(tl->m_worldX >> 5, tl->m_worldY >> 5, 0, flags, 0, 0x4268);
                 unit->m_idleTimer = 0;
@@ -3123,7 +3103,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_031ca0_IntersectRect(i32 unitArg)
         unit->m_mode = 4;
         unit->m_goalY = -1;
         if (unit->m_coordCount != 0) {
-            CoordNode* n = unit->m_coordHead;
+            CoordNode* n = (CoordNode*)unit->m_coordHead;
             if (n != 0) {
                 void* head = g_freeList;
                 do {
@@ -3163,7 +3143,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_031ca0_IntersectRect(i32 unitArg)
 }
 
 // ===========================================================================
-// CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_032060_IntersectRect  @0x032060
+// CBattlezMapConfig::winapi_032060_IntersectRect  @0x032060
 // The per-unit spawn-path state machine, keyed on the unit's m_state mode. First
 // resolve the target band (m_targetBand): pick a fresh random one (avoiding the current
 // band m_curCell, requiring the record's +0x170 ready / +0x174 clear) when unset, or
@@ -3190,7 +3170,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_031ca0_IntersectRect(i32 unitArg)
 // differently per arm, the documented Method_0358a0 record-address wall) + the box-stack-slot
 // schedule; foreign board/record chains modeled by raw offset. Not source-steerable.
 RVA(0x00032060, 0x7bd)
-i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_032060_IntersectRect(i32 unitArg) {
+i32 CBattlezMapConfig::winapi_032060_IntersectRect(i32 unitArg) {
     GridUnit* unit = (GridUnit*)unitArg;
     if (unit->m_state == 3) {
         return 1;
@@ -3254,7 +3234,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_032060_IntersectRect(i32 unitArg)
             // Reset the goal: recycle the unit's coords onto g_freeList.
             unit->m_state = 0;
             if (unit->m_coordCount != 0) {
-                CoordNode* n = unit->m_coordHead;
+                CoordNode* n = (CoordNode*)unit->m_coordHead;
                 while (n != 0) {
                     CoordNode* cur = n;
                     n = n->m_next;
@@ -3270,13 +3250,13 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_032060_IntersectRect(i32 unitArg)
             unit->m_goalY = -1;
             return 1;
         }
-        UnitLevel* lvl = unit->m_level;
+        UnitLevel* lvl = (UnitLevel*)unit->m_level;
         i32 dx = abs(gx - (lvl->m_worldX >> 5));
         i32 dy = abs(gy - (lvl->m_worldY >> 5));
         if (dx * dx + dy * dy > 0x10) {
             return 1;
         }
-        CoordNode* n = unit->m_coordHead;
+        CoordNode* n = (CoordNode*)unit->m_coordHead;
         while (n != 0) {
             CoordNode* cur = n;
             n = n->m_next;
@@ -3338,7 +3318,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_032060_IntersectRect(i32 unitArg)
             // Reset the goal: recycle the unit's coords onto g_coordPool.
             unit->m_state = 0;
             if (unit->m_coordCount != 0) {
-                CoordNode* n = unit->m_coordHead;
+                CoordNode* n = (CoordNode*)unit->m_coordHead;
                 while (n != 0) {
                     CoordNode* cur = n;
                     n = n->m_next;
@@ -3352,7 +3332,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_032060_IntersectRect(i32 unitArg)
             unit->m_goalY = -1;
             return 1;
         }
-        UnitLevel* lvl = unit->m_level;
+        UnitLevel* lvl = (UnitLevel*)unit->m_level;
         i32 dx = abs(gx - (lvl->m_worldX >> 5));
         i32 dy = abs(gy - (lvl->m_worldY >> 5));
         if (dx * dx + dy * dy <= 0x10) {
@@ -3466,7 +3446,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_032060_IntersectRect(i32 unitArg)
 }
 
 // ===========================================================================
-// CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_034460  @0x034460
+// CBattlezMapConfig::Method_034460  @0x034460
 // Anim-name gate: a unit is eligible for a "special" anim only when it sits on
 // its cached cell (lvl coord == m_cachedX/m_cachedY) and a block of state flags is clear.
 // Then resolve the unit's anim name and reject the simple type codes (I/G/L/J/C)
@@ -3482,12 +3462,12 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_032060_IntersectRect(i32 unitArg)
 // reconstructed but its global-scratch regalloc and the imul/bounds arithmetic
 // diverge from retail's. Deferred to the final sweep.
 RVA(0x00034460, 0x3fc)
-i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_034460(i32 unitArg) {
+i32 CBattlezMapConfig::Method_034460(i32 unitArg) {
     GridUnit* unit = (GridUnit*)unitArg;
     if (unit == 0) {
         return 0;
     }
-    UnitLevel* lvl = unit->m_level;
+    UnitLevel* lvl = (UnitLevel*)unit->m_level;
     if (lvl->m_worldX != unit->m_cachedX) {
         return 0;
     }
@@ -3622,7 +3602,7 @@ struct UnitMutator2 {
 };
 
 // ===========================================================================
-// CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_029b40  @0x029b40
+// CBattlezMapConfig::Method_029b40  @0x029b40
 // The per-unit tile/coord cleanup step. Recover the unit's first occupied coord +
 // its level geometry; if they have drifted >= 2 cells apart, recycle the unit's
 // coord nodes and bail. Otherwise read the tile under the unit (and a second tile
@@ -3641,12 +3621,12 @@ struct UnitMutator2 {
 // scheduling of the manual 7-dword tile-record copies (rep movs/stos) + the arm
 // regalloc; foreign unit/board chains are modeled by raw offset. Final sweep.
 RVA(0x00029b40, 0x813)
-i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_029b40(i32 unitArg) {
+i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
     GridUnit* unit = (GridUnit*)unitArg;
     if (unit->m_coordCount == 0) {
         return 0;
     }
-    CoordNode* node = unit->m_coordHead;
+    CoordNode* node = (CoordNode*)unit->m_coordHead;
     Coord* c0 = node->m_coord;
     i32 ux = c0->m_x;
     i32 uy = c0->m_y;
@@ -3675,7 +3655,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_029b40(i32 unitArg) {
             if (unit->m_coordCount == 0) {
                 return 0;
             }
-            CoordNode* n = unit->m_coordHead;
+            CoordNode* n = (CoordNode*)unit->m_coordHead;
             while (n != 0) {
                 CoordNode* cur = n;
                 n = n->m_next;
@@ -3784,7 +3764,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_029b40(i32 unitArg) {
             }
         }
         if (flags & 0x20000000) {
-            ((CBattlezSpawnMgr_or_CGruntSpawnMgr*)this)->winapi_02a570_IntersectRect((i32)unit);
+            ((CBattlezMapConfig*)this)->winapi_02a570_IntersectRect((i32)unit);
             return 0;
         }
         i32 pm2 = unit->m_animPrim;
@@ -3795,7 +3775,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_029b40(i32 unitArg) {
             return 1;
         }
         // kind-7: recycle the unit's first list node's coords + advance the timer.
-        CoordNode* head = (CoordNode*)(unit->m_coordHead)->m_coord;
+        CoordNode* head = (CoordNode*)((CoordNode*)unit->m_coordHead)->m_coord;
         // (the kind-7 tail is modeled by the shared recycle + a 0x46/0x4c timer add)
         (void)head;
         return 1;
@@ -3805,7 +3785,7 @@ recycleBail:
         return 0;
     }
     {
-        CoordNode* n = unit->m_coordHead;
+        CoordNode* n = (CoordNode*)unit->m_coordHead;
         while (n != 0) {
             CoordNode* cur = n;
             n = n->m_next;
@@ -3831,7 +3811,7 @@ struct CellResolver {
 };
 
 // ===========================================================================
-// CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02d800  @0x02d800  (/GX EH frame, RECURSIVE)
+// CBattlezMapConfig::Method_02d800  @0x02d800  (/GX EH frame, RECURSIVE)
 // The flood-fill board step. While g_stepRun is set, examine the tile at
 // (col,row): a 0x800000-bit tile tries a direct Board::FindPath (flags 0x4903) and,
 // on a route, recycles the path + returns; a 0x400000-bit tile resolves the cell
@@ -3850,7 +3830,7 @@ struct CellResolver {
 // and the /GX cleanup epilogues funnel differently; the board/cell chains are
 // modeled by raw offset. Deferred to the final sweep.
 RVA(0x0002d800, 0x605)
-i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
+i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
     if (g_stepRun == 0) {
         return 0;
     }
@@ -3861,7 +3841,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02d800(i32 a4, i32 col, i32 row, 
         i32 word = *tile;
         if (word & 0x800000) {
             CObList list(10);
-            UnitLevel* lvl = m_ctx->m_level;
+            UnitLevel* lvl = (UnitLevel*)m_ctx->m_level;
             if ((m_board)->FindPath(
                     lvl->m_worldX >> 5,
                     lvl->m_worldY >> 5,
@@ -3880,7 +3860,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02d800(i32 a4, i32 col, i32 row, 
             list.RemoveAll();
         }
         if (word & 0x400000) {
-            void* cell = (m_ctx->m_cellResolver)->ResolveCell((col << 8) + row);
+            void* cell = ((CellResolver*)m_ctx->m_cellResolver)->ResolveCell((col << 8) + row);
             if (m_curCell != 0) {
                 if (cell == 0) {
                     break;
@@ -3889,7 +3869,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02d800(i32 a4, i32 col, i32 row, 
                     break;
                 }
                 CObList list2(10);
-                UnitLevel* lvl = m_ctx->m_level;
+                UnitLevel* lvl = (UnitLevel*)m_ctx->m_level;
                 if ((m_board)->FindPath(
                         lvl->m_worldX >> 5,
                         lvl->m_worldY >> 5,
@@ -3936,7 +3916,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02d800(i32 a4, i32 col, i32 row, 
                 break;
             }
             CObList list3(10);
-            UnitLevel* lvl = m_ctx->m_level;
+            UnitLevel* lvl = (UnitLevel*)m_ctx->m_level;
             if ((m_board)->FindPath(
                     lvl->m_worldX >> 5,
                     lvl->m_worldY >> 5,
@@ -4049,7 +4029,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02d800(i32 a4, i32 col, i32 row, 
 }
 
 // ===========================================================================
-// CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02edb0  @0x02edb0  (/GX EH frame)
+// CBattlezMapConfig::Method_02edb0  @0x02edb0  (/GX EH frame)
 // Reroute a unit toward a target cell. The target is (arg2,arg3) when `useArg` is
 // set, else the first of the unit's occupied coords that lands on a blocked (bit
 // 0x4) tile. If the unit already collides there (Method_0305b0) recycle its path +
@@ -4069,7 +4049,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02d800(i32 a4, i32 col, i32 row, 
 // (retail pins the slot index in [esp+0x4c] and the candidate in ebp) plus the /GX
 // cleanup epilogue funnel; foreign chains modeled by raw offset. Final sweep.
 RVA(0x0002edb0, 0x6b4)
-i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
+i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
     GridUnit* unit = (GridUnit*)unitArg;
     if (unit->m_coordCount == 0) {
         return 0;
@@ -4083,7 +4063,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02edb0(i32 unitArg, i32 useArg, i
         found = 1;
     } else {
         // Find the unit's first occupied coord that sits on a blocked tile.
-        CoordNode* n = unit->m_coordHead;
+        CoordNode* n = (CoordNode*)unit->m_coordHead;
         while (n != 0) {
             CoordNode* cur = n;
             n = n->m_next;
@@ -4111,7 +4091,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02edb0(i32 unitArg, i32 useArg, i
     if (Method_0305b0(unitArg, tx, ty) != 0) {
         // Already colliding there: recycle the unit's path + reset state.
         if (unit->m_coordCount != 0) {
-            CoordNode* n = unit->m_coordHead;
+            CoordNode* n = (CoordNode*)unit->m_coordHead;
             while (n != 0) {
                 CoordNode* cur = n;
                 n = n->m_next;
@@ -4132,7 +4112,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02edb0(i32 unitArg, i32 useArg, i
     if (Method_030530(unitArg) != 0) {
         // Path is blocked: a reserved-tile bit on the first path coord aborts.
         if (unit->m_coordCount != 0) {
-            CoordNode* p = unit->m_coordHead;
+            CoordNode* p = (CoordNode*)unit->m_coordHead;
             Coord* c = ((CoordNode*)p)->m_coord;
             i32 word;
             Board* b = m_board;
@@ -4154,9 +4134,9 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02edb0(i32 unitArg, i32 useArg, i
     i32 r = rand() % 15;
     i32 scanned = 0;
     for (;;) {
-        GridUnit* cand = m_triggerMgr->m_grid[m_curCell * 15 + r];
+        GridUnit* cand = (GridUnit*)m_triggerMgr->m_grid[m_curCell * 15 + r];
         if (cand != 0) {
-            UnitLevel* lvl = cand->m_level;
+            UnitLevel* lvl = (UnitLevel*)cand->m_level;
             if (lvl->m_worldX == cand->m_cachedX && lvl->m_worldY == cand->m_cachedY
                 && cand->m_1fc != 0 && cand->m_368 == 0 && cand->m_guard1e4 == 0
                 && cand->m_220 == 0) {
@@ -4222,8 +4202,8 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02edb0(i32 unitArg, i32 useArg, i
                          == 0);
                 }
                 if (!eq && cand != unit && cand->m_state != 3 && cand->m_state != 5) {
-                    UnitLevel* ul = unit->m_level;
-                    UnitLevel* cl = cand->m_level;
+                    UnitLevel* ul = (UnitLevel*)unit->m_level;
+                    UnitLevel* cl = (UnitLevel*)cand->m_level;
                     i32 dx = (ul->m_worldX >> 5) - (cl->m_worldX >> 5);
                     i32 dy = (ul->m_worldY >> 5) - (cl->m_worldY >> 5);
                     dx = abs(dx);
@@ -4248,7 +4228,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02edb0(i32 unitArg, i32 useArg, i
                         CObList list(10);
                         Coord oc;
                         ((UnitGeom*)unit)->GetCoord(&oc);
-                        UnitLevel* dl = cand->m_level;
+                        UnitLevel* dl = (UnitLevel*)cand->m_level;
                         if ((m_board)->FindPath(
                                 oc.m_x >> 5,
                                 oc.m_y >> 5,
@@ -4269,7 +4249,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02edb0(i32 unitArg, i32 useArg, i
                                     g_freeList = node;
                                 }
                                 if (unit->m_coordCount != 0) {
-                                    CoordNode* nn = unit->m_coordHead;
+                                    CoordNode* nn = (CoordNode*)unit->m_coordHead;
                                     while (nn != 0) {
                                         CoordNode* cur = nn;
                                         nn = nn->m_next;
@@ -4310,7 +4290,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02edb0(i32 unitArg, i32 useArg, i
 }
 
 // ===========================================================================
-// CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_030b20  @0x030b20  (/GX EH frame)
+// CBattlezMapConfig::Method_030b20  @0x030b20  (/GX EH frame)
 // Best-fit reroute: locate the cell record for (col,row) - directly when its tile
 // dword[4] == 0x67, else via m_ctx->QueryA - then scan its 24-entry sub-cell
 // pointer block for the candidate, not colliding with `unit` (Method_0305b0),
@@ -4329,9 +4309,9 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_02edb0(i32 unitArg, i32 useArg, i
 // upfront and spills) plus the /GX cleanup epilogue funnel; the foreign cell/level
 // chains are modeled by raw offset. Deferred to the final sweep.
 RVA(0x00030b20, 0x328)
-i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_030b20(i32 unitArg, i32 col, i32 row) {
+i32 CBattlezMapConfig::Method_030b20(i32 unitArg, i32 col, i32 row) {
     GridUnit* unit = (GridUnit*)unitArg;
-    UnitLevel* lvl = unit->m_level;
+    UnitLevel* lvl = (UnitLevel*)unit->m_level;
     i32 goalX = lvl->m_worldX >> 5;
     i32 goalY = lvl->m_worldY >> 5;
     // The cell record for (col,row): a direct table slot when its tile marker is
@@ -4411,7 +4391,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_030b20(i32 unitArg, i32 col, i32 
     if (prim == 0x12) {
         flags |= 0x100;
     }
-    UnitLevel* lvl2 = unit->m_level;
+    UnitLevel* lvl2 = (UnitLevel*)unit->m_level;
     if ((m_board)->FindPath(
             lvl2->m_worldX >> 5,
             lvl2->m_worldY >> 5,
@@ -4441,7 +4421,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_030b20(i32 unitArg, i32 col, i32 
     }
     // Recycle the unit's current path-coord nodes onto g_freeList, empty its list.
     if (unit->m_coordCount != 0) {
-        CoordNode* n = unit->m_coordHead;
+        CoordNode* n = (CoordNode*)unit->m_coordHead;
         while (n != 0) {
             CoordNode* cur = n;
             n = n->m_next;
@@ -4460,7 +4440,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_030b20(i32 unitArg, i32 col, i32 
         p = p->m_next;
         ((CObList*)&unit->m_coordList)->AddTail((CObject*)cur->m_coord);
     }
-    Coord* tail = (Coord*)(unit->m_coordTail)->m_coord;
+    Coord* tail = (Coord*)((CoordNode*)unit->m_coordTail)->m_coord;
     unit->m_packedX = (tail->m_x << 5) + 0x10;
     unit->m_packedY = (tail->m_y << 5) + 0x10;
     unit->m_state = 5;
@@ -4485,7 +4465,7 @@ struct GridCand {
 };
 
 // ===========================================================================
-// CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_0350d0  @0x0350d0
+// CBattlezMapConfig::Method_0350d0  @0x0350d0
 // Periodic re-path of `unit` toward the nearest free candidate cell. Gate on the
 // unit's m_idleTimer timer exceeding the bundle's m_repathBudget budget; otherwise walk the grid
 // object's candidate list (head at m_triggerMgr->m_4), and among the unoccupied candidates
@@ -4505,19 +4485,19 @@ struct GridCand {
 // seed + reread-member-view-pointer family). No source lever forces the spill under
 // /O2; the divergence cascades through every loop register operand. Final sweep.
 RVA(0x000350d0, 0xfa)
-i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_0350d0(i32 unitArg) {
+i32 CBattlezMapConfig::Method_0350d0(i32 unitArg) {
     GridUnit* unit = (GridUnit*)unitArg;
     if ((u32)unit->m_idleTimer <= (u32)m_repathBudget) {
         return 1;
     }
     GridCand* best = 0;
     i32 bestDist = 0x7fffffff;
-    GridCandNode* node = m_triggerMgr->m_objListHead;
+    GridCandNode* node = (GridCandNode*)m_triggerMgr->m_objListHead;
     while (node != 0) {
         GridCand* cand = (GridCand*)node->m_payload;
         node = node->m_next;
         if (cand->m_occupied == 0) {
-            UnitLevel* lvl = unit->m_level;
+            UnitLevel* lvl = (UnitLevel*)unit->m_level;
             i32 lx = lvl->m_worldX >> 5;
             i32 ly = lvl->m_worldY >> 5;
             if (cand->m_gridX != lx || cand->m_gridY != ly) {
@@ -4541,8 +4521,8 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_0350d0(i32 unitArg) {
 }
 
 // ===========================================================================
-// GridUnit::RecycleCoords  @0x0343f0  (attributed to CBattlezSpawnMgr_or_CGruntSpawnMgr; __thiscall
-// on a GridUnit). Recycle each occupied-coord node's payload onto g_freeList (head
+// GridUnit::RecycleCoords  @0x0343f0  (re-homed off the CBattlezMapConfig cluster;
+// __thiscall on a GridUnit). Recycle each occupied-coord node's payload onto g_freeList (head
 // cached in a register across the loop, written each iteration), then tail into the
 // +0x31c CObList's RemoveAll. Skips everything when the count (m_coordCount) is zero.
 // ===========================================================================
@@ -4570,7 +4550,7 @@ void GridUnit::RecycleCoords() {
 }
 
 // ===========================================================================
-// CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_034c70  @0x034c70
+// CBattlezMapConfig::Method_034c70  @0x034c70
 // The queued-unit board-tile resolver. For a unit with no live coord list
 // (m_coordCount==0): look up its target tile (board->m_rows[m_targetY][m_targetX]); if the tile
 // carries the 0x20 "reserved" flag, only place (Method_4b320, flags 0xd87) when the
@@ -4588,7 +4568,7 @@ void GridUnit::RecycleCoords() {
 // different stack slots than MSVC5 here. Foreign unit/board chains modeled by raw
 // offset. Deferred to the final sweep.
 RVA(0x00034c70, 0x133)
-i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_034c70(i32 unitArg) {
+i32 CBattlezMapConfig::Method_034c70(i32 unitArg) {
     GridUnit* unit = (GridUnit*)unitArg;
     if (unit->m_coordCount != 0) {
         return 1;
@@ -4606,7 +4586,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_034c70(i32 unitArg) {
         }
         unit->m_mode = 4;
         {
-            CoordNode* n = unit->m_coordHead;
+            CoordNode* n = (CoordNode*)unit->m_coordHead;
             while (n != 0) {
                 CoordNode* cur = n;
                 n = n->m_next;
@@ -4619,7 +4599,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_034c70(i32 unitArg) {
     } else {
         unit->m_mode = 4;
         if (unit->m_coordCount != 0) {
-            CoordNode* n = unit->m_coordHead;
+            CoordNode* n = (CoordNode*)unit->m_coordHead;
             while (n != 0) {
                 CoordNode* cur = n;
                 n = n->m_next;
@@ -4640,8 +4620,9 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_034c70(i32 unitArg) {
 }
 
 // ===========================================================================
-// _zvec error-report wrapper  @0x034960  (attributed to CBattlezSpawnMgr_or_CGruntSpawnMgr;
-// __thiscall on a _zvec/zErrHandling-bearing object, ret 0x8 => 2 args). Capture
+// ZErrTarget::Report - the _zvec error-report wrapper  @0x034960  (re-homed off the
+// CBattlezMapConfig cluster; __thiscall on a _zvec/zErrHandling-bearing object, ret
+// 0x8 => 2 args). Capture
 // the return address into the global error token, then dispatch the error reporter
 // (this->m_err->Error(this, sentinel, code)). This is the inlined zvec overflow
 // path lifted out as a standalone helper.
@@ -4654,16 +4635,16 @@ struct ZErrTarget {
     struct ZErrReporter {
         void Error(void* who, i32 sentinel, i32 code); // 0x16d850
     }* m_err;                                          // +0x04
+    void Report(i32 sentinel, i32 code);               // 0x034960
 };
 RVA(0x00034960, 0x24)
-void CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_034960(i32 sentinel, i32 code) {
-    ZErrTarget* z = (ZErrTarget*)this;
+void ZErrTarget::Report(i32 sentinel, i32 code) {
     g_zvecErrToken = zErr_CaptureRetB();
-    z->m_err->Error(z, sentinel, code);
+    m_err->Error(this, sentinel, code);
 }
 
 // ===========================================================================
-// CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_0358a0  @0x0358a0  (__thiscall ret 4 => 1 GridUnit* arg)
+// CBattlezMapConfig::Method_0358a0  @0x0358a0  (__thiscall ret 4 => 1 GridUnit* arg)
 // The idle-unit policy step: when the unit holds no occupied coords it either
 // retargets to a random band (m_targetX == -1, idle timer past m_moveBudget) or re-places at its
 // band's default coord (timer past 0x7d0); when it DOES hold coords it despawns
@@ -4693,7 +4674,7 @@ struct SelfCommit {
 // wall (cl strength-reduces the idx*0x238 lea-chain + folds the band sub-object offsets
 // differently across the four arms) and the dead saved-m_targetX reload; logic complete.
 RVA(0x000358a0, 0x2d6)
-i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_0358a0(i32 unitArg) {
+i32 CBattlezMapConfig::Method_0358a0(i32 unitArg) {
     GridUnit* unit = (GridUnit*)unitArg;
     char* recA = 0;
     char* recB0 = 0;
@@ -4750,7 +4731,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_0358a0(i32 unitArg) {
         return 1;
     }
     if (*(i32*)(recA + 0x14) == 0 && *(i32*)recB0 == 0) {
-        CoordNode* n = unit->m_coordHead;
+        CoordNode* n = (CoordNode*)unit->m_coordHead;
         while (n != 0) {
             CoordNode* cur = n;
             n = n->m_next;
@@ -4768,7 +4749,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_0358a0(i32 unitArg) {
     if (unit->m_targetY == 1) {
         return 1;
     }
-    UnitLevel* lvl = unit->m_level;
+    UnitLevel* lvl = (UnitLevel*)unit->m_level;
     i32 px = lvl->m_worldX >> 5;
     i32 py = lvl->m_worldY >> 5;
     i32 nearBand = 0;
@@ -4793,7 +4774,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::Method_0358a0(i32 unitArg) {
     if (unit->m_coordCount == 0) {
         return 1;
     }
-    CoordNode* n = unit->m_coordHead;
+    CoordNode* n = (CoordNode*)unit->m_coordHead;
     while (n != 0) {
         CoordNode* cur = n;
         n = n->m_next;
