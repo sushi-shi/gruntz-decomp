@@ -1,10 +1,10 @@
-m_<hex> fields	18241
+m_<hex> fields	15868
 Unknown ids	49
-g_<hex> globals	1245
-Method/Stub/FUN	358
-)this casts	379
-)m_ casts	1188
-(char*) casts	1163
-(const char*) casts	141
-void* m_ members	530
-.cpp-local views	2744
+g_<hex> globals	1244
+Method/Stub/FUN	337
+.cpp-local views	2442
+)this casts	372
+)m_ casts	1167
+(char*) casts	1139
+(const char*) casts	140
+void* m_ members	511
