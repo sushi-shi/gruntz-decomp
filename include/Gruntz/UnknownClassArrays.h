@@ -11,21 +11,23 @@
 // Both are the real MFC afxcoll classes (0x14 B: vptr@0, m_pData@+4, m_nSize@+8,
 // m_nMaxSize@+0xc, m_nGrowBy@+0x10).
 //
-// Field names are placeholders (m_<hexoffset>); only the OFFSETS + the emitted
-// code bytes are load-bearing (campaign doctrine). The class is referenced from
-// CBattlezMapConfig (the Battlez map-config loader operates on this same layout).
+// Fields are named from their observed use across the 41 methods; only OFFSETS +
+// the emitted code bytes are load-bearing (campaign doctrine), so the renames are
+// matching-neutral. The remaining m_<hexoffset> fields are seeded-then-serialized
+// config constants with no read site in this TU (role unprovable from usage). The
+// class is referenced from CBattlezMapConfig (same layout, the map-config loader).
 #ifndef SRC_GRUNTZ_UNKNOWNCLASSARRAYS_H
 #define SRC_GRUNTZ_UNKNOWNCLASSARRAYS_H
 #include <rva.h>
 
 #include <Mfc.h> // CPtrArray, CDWordArray (real afxcoll, 0x14 layout)
 
-// The three TU-shared pointer members below (m_004/m_008/m_00c) point at real engine
+// The three TU-shared pointer members below (m_ctx/m_triggerMgr/m_board) point at real engine
 // objects, modeled as the file-local views defined in UnknownClassArrays.cpp:
-//   m_004 = the level/game spawn context (holds the CTriggerMgr at +0x68 + the
+//   m_ctx = the level/game spawn context (holds the CTriggerMgr at +0x68 + the
 //           per-band records, 0x238 stride);
-//   m_008 = the level's CTriggerMgr (<Gruntz/TriggerMgr.h>, the 4x15 cell grid);
-//   m_00c = the CBrickz pathfinding-grid container.
+//   m_triggerMgr = the level's CTriggerMgr (<Gruntz/TriggerMgr.h>, the 4x15 cell grid);
+//   m_board = the CBrickz pathfinding-grid container.
 // Forward-declared so each member carries its real type (was void*/char* + per-site
 // facet casts). All are 4-byte pointers, so the retype is matching-neutral.
 class CTriggerMgr;
@@ -61,7 +63,7 @@ public:
     i32 Method_02d800(i32, i32, i32, i32);
     i32 Method_02edb0(i32, i32, i32, i32);
     i32 Method_030b20(i32, i32, i32);
-    void* Method_02ad40(i32);     // 0x02ad40  pick a random idle (m_364==0) unit from a band row
+    void* Method_02ad40(i32);     // 0x02ad40  pick a random idle (m_busy==0) unit from a band row
     i32 Method_02c080(i32);       // 0x02c080  trivial: return 1
     i32 Method_034c70(i32);       // 0x034c70  board-tile spawn check for a queued unit
     i32 Method_0358a0(i32);       // 0x0358a0  idle-unit retarget / despawn / near-band keep
@@ -76,39 +78,39 @@ public:
     i32 winapi_031ca0_IntersectRect(i32);
     i32 winapi_032060_IntersectRect(i32);
 
-    i32 m_000;            // +0x000  (vtbl-slot / first dword; some methods test/clear it)
-    GruntSpawnCtx* m_004; // +0x004  the level/game spawn context (records + CTriggerMgr@+0x68)
-    CTriggerMgr* m_008;   // +0x008  the level's CTriggerMgr (the 4x15 cell grid @+0x1c)
-    Board* m_00c;         // +0x00c  the CBrickz pathfinding-grid / tile-map
+    i32 m_active;              // +0x000  active gate (methods bail when 0; Clear_02ade0 zeroes it)
+    GruntSpawnCtx* m_ctx;      // +0x004  the level/game spawn context (records + CTriggerMgr@+0x68)
+    CTriggerMgr* m_triggerMgr; // +0x008  the level's CTriggerMgr (the 4x15 cell grid @+0x1c)
+    Board* m_board;            // +0x00c  the CBrickz pathfinding-grid / tile-map
     char m_pad010[0x18 - 0x10]; // +0x010  (untouched by ctor)
-    i32 m_018;                  // +0x018  = 0  (current cell index)
+    i32 m_curCell;              // +0x018  = 0  (current cell index)
     i32 m_01c;                  // +0x01c  = 1
     i32 m_020;                  // +0x020  = 0x40
     i32 m_024;                  // +0x024  = 0x40
     i32 m_028;                  // +0x028  = 0x40
     i32 m_02c;                  // +0x02c  = 0x32
-    i32 m_030;                  // +0x030  = 0x32
+    i32 m_spawnPct;             // +0x030  = 0x32
     i32 m_034;                  // +0x034  (serialized)
     i32 m_038;                  // +0x038  (serialized)
     i32 m_03c;                  // +0x03c  (serialized)
     i32 m_040;                  // +0x040  (serialized)
     i32 m_044;                  // +0x044  (serialized)
-    i32 m_048;                  // +0x048  = 0
-    i32 m_04c;                  // +0x04c  = 0
-    i32 m_050;                  // +0x050  = 0
-    i32 m_054;                  // +0x054  = 0
-    i32 m_058;                  // +0x058  = 0
-    i32 m_05c;                  // +0x05c  = 0
+    i32 m_spawnInterval;        // +0x048  = 0
+    i32 m_spawnTimer;           // +0x04c  = 0
+    i32 m_spawnLastFire;        // +0x050  = 0
+    i32 m_repickInterval;       // +0x054  = 0
+    i32 m_repickLastFire;       // +0x058  = 0
+    i32 m_repickTimer;          // +0x05c  = 0
     i32 m_060;                  // +0x060  (serialized)
     i32 m_064;                  // +0x064  (serialized)
     i32 m_068;                  // +0x068  (serialized)
     i32 m_06c;                  // +0x06c  (serialized)
     i32 m_070;                  // +0x070  (serialized)
-    i32 m_074;                  // +0x074  = 0x19
-    i32 m_078;                  // +0x078  = 0
-    i32 m_07c;                  // +0x07c  = 0
-    i32 m_080;                  // +0x080  = 0
-    i32 m_084;                  // +0x084  = 0
+    i32 m_budgetMul;            // +0x074  = 0x19
+    i32 m_scratch78;            // +0x078  = 0
+    i32 m_scratch7c;            // +0x07c  = 0
+    i32 m_scratch80;            // +0x080  = 0
+    i32 m_scratch84;            // +0x084  = 0
     i32 m_088;                  // +0x088  = 0x32
     i32 m_08c;                  // +0x08c  = 5
     i32 m_090;                  // +0x090  = 5
@@ -120,17 +122,17 @@ public:
     i32 m_0a8;                  // +0x0a8  = 0x32
     i32 m_0ac;                  // +0x0ac  = 8
     i32 m_0b0;                  // +0x0b0  = 8
-    i32 m_0b4;                  // +0x0b4  = 0x3e8
+    i32 m_reserveBudget;        // +0x0b4  = 0x3e8
     i32 m_0b8;                  // +0x0b8  = 0x7d0
-    i32 m_0bc;                  // +0x0bc  = 0x3e8
+    i32 m_moveBudget;           // +0x0bc  = 0x3e8
     i32 m_0c0;                  // +0x0c0  = 0xa
-    i32 m_0c4;                  // +0x0c4  = 0xbb8
+    i32 m_repathBudget;         // +0x0c4  = 0xbb8
     i32 m_0c8;                  // +0x0c8  = 0x7530
     i32 m_0cc;                  // +0x0cc  = 0xbb8
     i32 m_0d0;                  // +0x0d0  (serialized, 8 B with m_0d4)
     i32 m_0d4;                  // +0x0d4
     i32 m_0d8;                  // +0x0d8  (serialized)
-    CPtrArray m_0dc;            // +0x0dc  CPtrArray  (m_pData@+0xe0, m_nSize@+0xe4)
+    CPtrArray m_candArray;      // +0x0dc  CPtrArray  (m_pData@+0xe0, m_nSize@+0xe4)
     CPtrArray m_0f0;            // +0x0f0  CPtrArray  (m_pData@+0xf4, m_nSize@+0xf8)
     CDWordArray m_104;          // +0x104  CDWordArray
     CDWordArray m_118;          // +0x118  CDWordArray
@@ -141,51 +143,22 @@ public:
     i32 m_13c;                  // +0x13c  = 0
     i32 m_140;                  // +0x140  = 0
     i32 m_144;                  // +0x144
-    i32 m_148;                  // +0x148  (cleared by 02c0a0)
+    i32 m_claimTimer;           // +0x148  (cleared by 02c0a0)
     i32 m_14c;                  // +0x14c  (serialized)
-    // The idle-behaviour chooser config block (config-loaded elsewhere, not by the
-    // ctor). m_150/m_154 split the [1..N] random pick into three behaviour bands;
-    // m_158/m_168/m_190 are the per-band rand divisors; the m_15c.., m_16c..0x18c,
-    // and m_194..0x1e0 runs are ascending probability thresholds mapping the rolled
-    // value to an anim/state index. Read by Method_02f620 / Method_02edb0.
-    i32 m_150; // +0x150
-    i32 m_154; // +0x154
-    i32 m_158; // +0x158  band-A divisor
-    i32 m_15c; // +0x15c
-    i32 m_160; // +0x160
-    i32 m_164; // +0x164
-    i32 m_168; // +0x168  band-C divisor
-    i32 m_16c; // +0x16c
-    i32 m_170; // +0x170
-    i32 m_174; // +0x174
-    i32 m_178; // +0x178
-    i32 m_17c; // +0x17c
-    i32 m_180; // +0x180
-    i32 m_184; // +0x184
-    i32 m_188; // +0x188
-    i32 m_18c; // +0x18c
-    i32 m_190; // +0x190  band-B divisor
-    i32 m_194; // +0x194
-    i32 m_198; // +0x198
-    i32 m_19c; // +0x19c
-    i32 m_1a0; // +0x1a0
-    i32 m_1a4; // +0x1a4
-    i32 m_1a8; // +0x1a8
-    i32 m_1ac; // +0x1ac
-    i32 m_1b0; // +0x1b0
-    i32 m_1b4; // +0x1b4
-    i32 m_1b8; // +0x1b8
-    i32 m_1bc; // +0x1bc
-    i32 m_1c0; // +0x1c0
-    i32 m_1c4; // +0x1c4
-    i32 m_1c8; // +0x1c8
-    i32 m_1cc; // +0x1cc
-    i32 m_1d0; // +0x1d0
-    i32 m_1d4; // +0x1d4
-    i32 m_1d8; // +0x1d8
-    i32 m_1dc; // +0x1dc
-    i32 m_1e0; // +0x1e0
-    i32 m_1e4; // +0x1e4
+    // Idle-behaviour chooser config (config-loaded elsewhere, not ctor/serialized;
+    // read by Method_02f620 / Method_02edb0). m_bandSplitA/B split the top-level
+    // [1..N] roll into three behaviour bands; m_band{,B,C,A}Div are the per-roll
+    // divisors; each m_band{C,B,A}Thresh[] is an ascending probability table mapping
+    // a rolled value to an anim/state index.
+    i32 m_bandSplitA;      // +0x150  band-A/B split bound
+    i32 m_bandSplitB;      // +0x154  band-B/C split bound
+    i32 m_bandDiv;         // +0x158  top-level band-selector roll divisor
+    i32 m_bandCThresh[3];  // +0x15c  band-C thresholds (modes 0x23..0x25)
+    i32 m_bandCDiv;        // +0x168  band-C roll divisor
+    i32 m_bandBThresh[9];  // +0x16c  band-B thresholds (modes 0x17..0x1f)
+    i32 m_bandBDiv;        // +0x190  band-B roll divisor
+    i32 m_bandAThresh[20]; // +0x194  band-A thresholds (modes 1..0x16)
+    i32 m_bandADiv;        // +0x1e4  band-A roll divisor
 };
 
 #endif // SRC_GRUNTZ_UNKNOWNCLASSARRAYS_H
