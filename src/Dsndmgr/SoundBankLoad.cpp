@@ -8,9 +8,6 @@
 #include <Dsndmgr/CGruntzSoundZ.h> // the real CGruntzSoundInnerZ (+ MFC CFile via <Mfc.h>)
 #include <rva.h>
 
-// The engine throwing allocator (global operator new @0x1b9b46, NAFXCW). Reloc-masked.
-void* operator new(u32 n);
-
 // The name compare against the pooled ".." token (0x120090, __cdecl 2-arg; strcmp/
 // _mbscmp). Reloc-masked rel32; the ".." is the shared $SG constant (0x5ee8ec) the
 // ButeMgr parser also references, so reach it by symbol so the DIR32 pairs.
