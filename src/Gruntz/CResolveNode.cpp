@@ -1,4 +1,4 @@
-#include <Wap32/CWapObj.h> // CWapObj : Wap::CObject - the abstract intermediate (slots 5/6)
+#include <Gruntz/CLoadable.h> // canonical CLoadable : CWapObj : Wap::CObject (9-slot base)
 #include <rva.h>
 // CResolveNode.cpp - a leaf node in the CDirectDrawMgr surface/page-manager
 // CDDrawSubMgr family (the Wap::CObject base dtor vtable lineage; the base subobject
@@ -25,31 +25,24 @@
 
 // The 0x68-byte node. Layout recovered from the ctor/dtor/Init stores; the gaps
 // are unread scratch (the family's resolution-ladder block).
-class CResolveNode : public CWapObj {
+class CResolveNode : public CLoadable {
 public:
-    // Slots 5-8 belong to the deeper 9-slot "loadable" base (CLoadable / CDDrawSubMgr
-    // @0x5efc30, itself : CWapObj): slot 5 IsLoaded, slot 6 IsReady, slot 7 the
-    // Unload/reset hook, slot 8 GetClassId (shared default 0x154a00 = `return 0`).
-    // That base is currently triple-modeled (GameLevel.h / CDDrawWorker.h /
-    // CDDrawSubMgr.cpp) and not yet a shared header, so slots 7/8 are declared here as
-    // matching-neutral scaffolding (reloc-masked). TODO: recover CLoadable : CWapObj
-    // as one shared header and re-base this node onto it so GetClassId is INHERITED,
-    // not re-declared (see matcher report). Modeled : CWapObj until then.
-    i32 IsLoaded() OVERRIDE; // [5] 0x154a10  overrides the base (checks m_04!=-1 && m_0c)
-    // slot 6 IsReady inherited from CWapObj (0x001c08)
-    virtual void Reset();          // [7] 0x154a80  overrides the base Unload/reset hook
-    virtual i32 GetClassId();      // [8] 0x154a00  the shared 9-slot-base default (return 0)
+    // Re-based onto the canonical 9-slot CLoadable (fulfils the former TODO): the
+    // m_04/m_08/m_0c header + slots 5..8 (IsLoaded/IsReady/Unload/GetClassId) come
+    // from CLoadable. This node OVERRIDES slot 5 (IsLoaded @0x154a10) and slot 7
+    // (Unload/reset @0x154a80), and INHERITS slot 6 (IsReady @0x001c08) and slot 8
+    // (GetClassId @0x154a00 = CLASSID_NONE) unchanged - GetClassId is no longer
+    // re-declared. Resolve (slot 9) is the node's own new virtual.
+    i32 IsLoaded() OVERRIDE;       // [5] 0x154a10  (checks m_04!=-1 && m_0c)
+    i32 Unload() OVERRIDE;         // [7] 0x154a80  reset/reload hook
     virtual i32 Resolve(i32, i32); // [9] 0x164790  CResolveNode's own new virtual
 
     CResolveNode();
-    CResolveNode(i32 root, i32 a2, i32 a3);
+    CResolveNode(i32 owner, i32 field04, i32 field08);
     virtual ~CResolveNode();
-    i32 Init(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6);
+    i32 Init(i32 owner, i32 field04, i32 resolveX, i32 resolveY, i32 field40, i32 field08);
 
-    // vptr implicit at +0x00
-    i32 m_04;                 // +0x04
-    i32 m_08;                 // +0x08
-    i32 m_0c;                 // +0x0c
+    // vptr @+0x00 + m_04/m_08/m_0c inherited from CLoadable; own scratch from +0x10.
     char _pad10[0x20 - 0x10]; // +0x10..+0x1f
     i32 m_20;                 // +0x20  = 0x80000000
     char _pad24[0x38 - 0x24]; // +0x24..+0x37
@@ -95,10 +88,8 @@ CResolveNode::~CResolveNode() {
     m_5c = (i32)0x80000000;
     m_20 = (i32)0x80000000;
     m_38 = -1;
-    m_04 = -1;
-    m_08 = 0;
-    m_0c = 0;
-    // ~Wap::CObject folds the grand-base vptr re-stamp (masks 0x5e8cb4) here.
+    // ~CLoadable folds here: m_04=-1, m_08=0, m_0c=0, then the grand-base vptr
+    // re-stamp (masks 0x5e8cb4) via ~CWapObj -> ~Wap::CObject.
 }
 
 // @early-stop
@@ -107,10 +98,10 @@ CResolveNode::~CResolveNode() {
 // m_38 (-1) store to different positions than retail; 3 field-order spellings all
 // ~60%. Source steers which arg lands in edx, not the store schedule. Logic complete.
 RVA(0x0015b2c0, 0x3d)
-CResolveNode::CResolveNode(i32 root, i32 a2, i32 a3) {
-    m_04 = a2;
-    m_08 = a3;
-    m_0c = root;
+CResolveNode::CResolveNode(i32 owner, i32 field04, i32 field08) {
+    m_04 = field04;
+    m_08 = field08;
+    m_0c = owner;
     m_20 = (i32)0x80000000;
     m_38 = -1;
     m_5c = (i32)0x80000000;
@@ -119,19 +110,26 @@ CResolveNode::CResolveNode(i32 root, i32 a2, i32 a3) {
     m_40 = 0;
 }
 
-// Init: seeds m_0c/m_04/m_08 from args, clears m_4c/m_58, sets m_50 = 1, then
-// dispatches the node's virtual slot 9 (g_resolveNodeVtbl[9] = 0x164790) with two
-// of the args, finally stores a5 into m_40 and returns TRUE.
+// Init: seeds m_0c/m_04/m_08 (owner/field04/field08), clears m_4c/m_58, sets
+// m_50 = 1, dispatches the node's virtual slot 9 (g_resolveNodeVtbl[9] = 0x164790)
+// with (resolveX, resolveY), finally stores field40 into m_40 and returns TRUE.
 RVA(0x001647e0, 0x48)
-i32 CResolveNode::Init(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6) {
-    m_0c = a1;
-    m_04 = a2;
-    m_08 = a6;
+i32 CResolveNode::Init(
+    i32 owner,
+    i32 field04,
+    i32 resolveX,
+    i32 resolveY,
+    i32 field40,
+    i32 field08
+) {
+    m_0c = owner;
+    m_04 = field04;
+    m_08 = field08;
     m_4c = 0;
     m_58 = 0;
     m_50 = 1;
-    Resolve(a3, a4); // virtual slot 9 (0x164790)
-    m_40 = a5;
+    Resolve(resolveX, resolveY); // virtual slot 9 (0x164790)
+    m_40 = field40;
     return 1;
 }
 

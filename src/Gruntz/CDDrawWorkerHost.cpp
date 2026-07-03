@@ -30,7 +30,8 @@ extern "C" void RezFree(void* p);
 // m_0c=a1) + body store order reproduce the schedule exactly.
 // ===========================================================================
 RVA(0x001615a0, 0x9a)
-CDDrawWorkerHost::CDDrawWorkerHost(i32 a1, i32 a2, i32 a3) : CLoadable(a2, a3, a1) {
+CDDrawWorkerHost::CDDrawWorkerHost(i32 owner, i32 field04, i32 field08)
+    : CLoadable(owner, field04, field08) {
     // m_obArray (CWorkerObArray) default-constructed here (0x1b55e9).
     m_buffer0 = 0;
     m_buffer1 = 0;
@@ -49,11 +50,10 @@ CDDrawWorkerHost::CDDrawWorkerHost(i32 a1, i32 a2, i32 a3) : CLoadable(a2, a3, a
 // buffers; then the +0x9c CWorkerObArray member and ~CLoadable fold in.
 // ===========================================================================
 // @early-stop
-// Vtable recovery applied (real polymorphic CLoadable): own-vptr stamp is now
-// compiler-emitted (82.3%->85.8%). Residual is the multi-member /GX funclet/state
-// ordering across the worker delete + two buffer frees + CWorkerObArray member +
-// ~CLoadable fold (grand-base stamp position + EH state writes), same wall class
-// as the entry-list dtor. Logic complete.
+// Canonical CLoadable re-base lifted this 82.3%->85.8%->88.1%. Residual is the
+// multi-member /GX funclet/state ordering across the worker delete + two buffer
+// frees + CWorkerObArray member + ~CLoadable fold (grand-base stamp position + EH
+// state writes), same wall class as the entry-list dtor. Logic complete.
 RVA(0x00163af0, 0xcd)
 CDDrawWorkerHost::~CDDrawWorkerHost() {
     if (m_spatialWorker != 0) {

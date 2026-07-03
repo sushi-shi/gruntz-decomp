@@ -17,6 +17,7 @@
 #define GRUNTZ_CDDRAWWORKER_H
 
 #include <Ints.h>
+#include <Gruntz/CLoadable.h> // canonical CLoadable : CWapObj : Wap::CObject (9-slot base)
 
 // An owned CObject element: a real polymorphic object whose scalar-deleting
 // destructor is at vtable slot 1 (byte +0x04), __thiscall (flags arg). Declared-
@@ -48,28 +49,14 @@ struct CWorkerObArray {
     void SetSize(i32 newSize, i32 growBy);
 };
 
-// The grand-base (CObject-like) dtor vtable restored at ~CLoadable exit.
+// The grand-base (CObject-like) dtor vtable, restamped manually by CWwdSpatialMgr's
+// teardown (CDDrawWorkerHost.h). Same datum as ??_7CObject @0x5e8cb4.
 extern void* g_wapObjectDtorVtbl; // 0x5e8cb4
 
-// The "DDraw worker" base subobject: vptr @ +0x00 + three managed fields. Its
-// non-trivial dtor resets the fields and restores the grand-base vtable. Inline so
-// the leaf dtor FOLDS the base teardown (the field resets + vptr restore emit
-// inline) and the /GX frame falls out of the destructible base subobject.
-struct CLoadable {
-    virtual ~CLoadable(); // implicit vptr @ +0x00; INLINE-defined below
-    i32 m_04;             // +0x04
-    i32 m_08;             // +0x08
-    i32 m_0c;             // +0x0c
-    CLoadable() {}
-    // Arg-taking base ctor used by CDDrawWorkerHost: cl inlines the vptr stamp +
-    // the three field stores at the head of the derived ctor.
-    CLoadable(i32 a, i32 b, i32 c) {
-        m_04 = a;
-        m_08 = b;
-        m_0c = c;
-    }
-};
-
+// The "DDraw worker" base subobject is the canonical CLoadable (m_04/m_08/m_0c +
+// the field-reset dtor + the grand-base 0x5e8cb4 re-stamp folded via ~CWapObj ->
+// ~Wap::CObject). Its ctor/dtor fold into the leaf's, giving retail's two-phase
+// vptr schedule + the destructible-base /GX frame.
 class CDDrawWorker : public CLoadable {
 public:
     ~CDDrawWorker();
@@ -80,14 +67,5 @@ public:
     i32 m_64;                  // +0x64  cached-index sentinel (DeleteAll seeds 99999)
     i32 m_68;                  // +0x68
 };
-
-// Call-free field resets; cl stamps ??_7CLoadable (masks g_wapObjectDtorVtbl
-// @0x5e8cb4) and sinks the vptr store past the writes so it lands last, matching
-// retail. Folded as the grand-base of every worker node.
-inline CLoadable::~CLoadable() {
-    m_04 = -1;
-    m_08 = 0;
-    m_0c = 0;
-}
 
 #endif // GRUNTZ_CDDRAWWORKER_H

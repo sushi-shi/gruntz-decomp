@@ -44,13 +44,10 @@ void CDDrawWorker::DeleteAll() {
 // (resets m_04/m_08/m_0c, restores the grand-base vtable). /GX frame from the
 // destructible base+member.
 // ===========================================================================
-// @early-stop
-// Vtable recovery applied (real polymorphic CLoadable): own-vptr stamp + trylevel
-// chain now compiler-emitted and byte-identical through ~CWorkerObArray. Residual is
-// the grand-base vptr-stamp POSITION: cl places `mov [esi],??_7CLoadable` before
-// the m_04/m_08/m_0c field writes; retail sinks it after (same stamp-scheduling wall
-// as CWwdGameObjectE 0x15b4f0). Moving the fields to a derived member would sink the
-// stamp but add a trylevel state that mismatches retail's 1->0. ~95%.
+// 100%: re-basing onto the canonical CLoadable : CWapObj : Wap::CObject resolved the
+// grand-base vptr-stamp-position wall - the real CObject grand-base sinks the 0x5e8cb4
+// re-stamp after the m_04/m_08/m_0c resets exactly as retail (was ~95% on the 1-slot
+// CLoadable stand-in that stamped the vptr before the field writes).
 RVA(0x001557a0, 0x68)
 CDDrawWorker::~CDDrawWorker() {
     DeleteAll();
@@ -60,7 +57,7 @@ CDDrawWorker::~CDDrawWorker() {
 
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
-SIZE_UNKNOWN(CLoadable);
+// SIZE(CLoadable) now comes from the canonical <Gruntz/CLoadable.h>.
 SIZE_UNKNOWN(CDDrawWorker);
 SIZE_UNKNOWN(CWorkerObArray);
 SIZE_UNKNOWN(CWorkerElement);

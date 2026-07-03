@@ -35,7 +35,7 @@ inline CWwdSpatialMgr::~CWwdSpatialMgr() {
 
 class CDDrawWorkerHost : public CLoadable {
 public:
-    CDDrawWorkerHost(i32 a1, i32 a2, i32 a3); // 0x1615a0
+    CDDrawWorkerHost(i32 owner, i32 field04, i32 field08); // 0x1615a0
     ~CDDrawWorkerHost();
 
     char m_pad10[0x18 - 0x10];       // +0x10..+0x17
