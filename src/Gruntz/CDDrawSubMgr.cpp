@@ -9,6 +9,7 @@
 // The discovered cluster's surface helpers (Blt/Flip/BltFast on CDDSurface) come
 // from the DDrawMgr group; reuse its real types instead of placeholder casts.
 #include <Gruntz/CDirectDrawMgr.h>
+#include <Gruntz/CDDrawBlitParam.h> // single-source CDDrawBlitParam (also used by WwdGameObject.cpp)
 #include <Globals.h>
 // CDDrawSubMgr.cpp - tomalla-named DDraw surface/page-manager shared base
 // (CDDrawSubMgr).  This is the polymorphic base for the 10 sub-
@@ -288,31 +289,9 @@ public:
     CBlitLabelMap m_labelMap; // +0x10 label -> worker map
 };
 
-class CDDrawBlitParam {
-public:
-    void Init_15c290(CDDrawBlitParamSrc* src);
-    void Reset_15c2c0();
-    void Setup_15c2d0(CDDrawBlitParamSrc* src);
-    void Recompute_15c320(i32 a1);
-    i32 SelectCue_157a80(void* force);
-    i32 Serialize_15c970(CWwdArchive* ar);
-    i32 Deserialize_15ca70(CWwdArchive* ar);
-    i32 Dispatch_15c900(CWwdArchive* ar, i32 type, i32 a3, i32 a4);
-
-    char m_pad00[0x0c];         // +0x00 .. +0x0b
-    CDDrawBlitWorker* m_worker; // +0x0c
-    i32 m_10;                   // +0x10
-    i32 m_srcRef;               // +0x14
-    char* m_element;            // +0x18  current element (transient; not serialized)
-    i32 m_index;                // +0x1c
-    i32 m_20;                   // +0x20
-    i32 m_24;                   // +0x24
-    i32 m_28;                   // +0x28
-    i32 m_2c;                   // +0x2c
-    i32 m_30;                   // +0x30
-    i32 m_34;                   // +0x34
-    float m_scale;              // +0x38
-};
+// CDDrawBlitParam is the single-source shared class in <Gruntz/CDDrawBlitParam.h>
+// (included at the top of this TU); its deps CDDrawBlitParamSrc / CWwdArchive /
+// CDDrawBlitWorker are fully defined above.
 
 // ---------------------------------------------------------------------------
 // CDDrawSubMgr::CDDrawSubMgr
@@ -653,7 +632,8 @@ void CDDrawWorkerMgr::Method_159ef0() {
 // constant `1` in eax, our cl swaps them (eax<->edx phase shift), a regalloc
 // coin-flip with no source lever (docs/patterns/zero-register-pinning.md).
 RVA(0x0015c290, 0x2f)
-void CDDrawBlitParam::Init_15c290(CDDrawBlitParamSrc* src) {
+void CDDrawBlitParam::Init_15c290(void* srcv) {
+    CDDrawBlitParamSrc* src = (CDDrawBlitParamSrc*)srcv;
     m_10 = (i32)src;
     m_28 = 1;
     m_srcRef = 0;

@@ -20,17 +20,12 @@
 #include <rva.h>
 #include <string.h> // inlined memset / strcpy (rep stos / repne scas + rep movs)
 #include <Gruntz/WwdGameObject.h>
+#include <Gruntz/CDDrawBlitParam.h> // the real +0x1a0 sub-object (was the local CmdMap view)
 
-// ---------------------------------------------------------------------------
-// The +0x1a0 command-dispatch sub-object. Ctor 0x15c290 (1 arg = owner),
-// Find 0x15c900 (4 args). Modeled as a tiny class so the __thiscall dispatch
+// The +0x1a0 command-dispatch sub-object is the real CDDrawBlitParam (single-source
+// <Gruntz/CDDrawBlitParam.h>): Init_15c290 (0x15c290) constructs it from the owner,
+// Dispatch_15c900 (0x15c900) routes a request. The __thiscall on the embedded member
 // lowers to `lea ecx,[this+0x1a0]; call` with no cast.
-// ---------------------------------------------------------------------------
-struct CmdMap {
-    void Construct(void* owner);              // 0x15c290
-    i32 Find(i32 a1, i32 a2, i32 a3, i32 a4); // 0x15c900
-    char m_body[0x3c];                        // embedded sub-object body (+0x1a0..+0x1dc)
-};
 
 // The +0x1dc CObList of owned sub-objects (CObject base vtbl@+0, head@+4) and its
 // list nodes {next@0, prev@4, data@8}; RemoveAll (0x1b5a0b) frees the node cells.
@@ -194,61 +189,61 @@ public:
     i32 m_94;             // +0x94
     void* m_98;           // +0x98  linked object (reads its +0x188)
     char m_pad9c[0xac - 0x9c];
-    i32 m_ac;             // +0xac  copy of m_posX
-    i32 m_b0;             // +0xb0  copy of m_posY
-    void* m_self;         // +0xb4  = this
-    char m_b8[0x24];      // +0xb8  serialized state block
-    char* m_name;         // +0xdc  CString name (handle = buffer pointer)
-    i32 m_e0;             // +0xe0
-    i32 m_e4;             // +0xe4
-    i32 m_e8;             // +0xe8
-    i32 m_ec;             // +0xec
-    i32 m_f0;             // +0xf0
-    i32 m_f4;             // +0xf4
-    i32 m_f8;             // +0xf8
-    i32 m_fc;             // +0xfc
-    i32 m_100;            // +0x100
-    i32 m_104;            // +0x104
-    i32 m_108;            // +0x108
-    i32 m_10c;            // +0x10c
-    i32 m_110;            // +0x110
-    i32 m_114;            // +0x114
-    i32 m_118;            // +0x118
-    i32 m_11c;            // +0x11c
-    i32 m_120;            // +0x120
-    i32 m_124;            // +0x124
-    i32 m_128;            // +0x128
-    i32 m_12c;            // +0x12c
-    i32 m_130;            // +0x130
-    i32 m_134;            // +0x134  block head (0x80000000 sentinel)
-    i32 m_138;            // +0x138
-    i32 m_13c;            // +0x13c
-    i32 m_140;            // +0x140
-    i32 m_144;            // +0x144  block head (0x80000000 sentinel)
-    i32 m_148;            // +0x148
-    i32 m_14c;            // +0x14c
-    i32 m_150;            // +0x150
-    i32 m_154;            // +0x154  block head (0x80000000 sentinel)
-    i32 m_158;            // +0x158
-    i32 m_15c;            // +0x15c
-    i32 m_160;            // +0x160
-    i32 m_164;            // +0x164
-    i32 m_168;            // +0x168
-    i32 m_16c;            // +0x16c
-    i32 m_170;            // +0x170
-    i32 m_174;            // +0x174
-    i32 m_178;            // +0x178
-    i32 m_17c;            // +0x17c
-    i32 m_180;            // +0x180
-    i32 m_184;            // +0x184
-    i32 m_188;            // +0x188
-    i32 m_dotColor;       // +0x18c  low byte = dot color / setup flag
-    i32 m_190;            // +0x190
-    void* m_194;          // +0x194  resolved object ref
-    i32 m_198;            // +0x198
-    void* m_19c;          // +0x19c  resolved object ref
-    CmdMap m_cmdMap;      // +0x1a0  command-dispatch sub-object
-    WwdSubList m_subList; // +0x1dc  CObList of owned sub-objects
+    i32 m_ac;                 // +0xac  copy of m_posX
+    i32 m_b0;                 // +0xb0  copy of m_posY
+    void* m_self;             // +0xb4  = this
+    char m_b8[0x24];          // +0xb8  serialized state block
+    char* m_name;             // +0xdc  CString name (handle = buffer pointer)
+    i32 m_e0;                 // +0xe0
+    i32 m_e4;                 // +0xe4
+    i32 m_e8;                 // +0xe8
+    i32 m_ec;                 // +0xec
+    i32 m_f0;                 // +0xf0
+    i32 m_f4;                 // +0xf4
+    i32 m_f8;                 // +0xf8
+    i32 m_fc;                 // +0xfc
+    i32 m_100;                // +0x100
+    i32 m_104;                // +0x104
+    i32 m_108;                // +0x108
+    i32 m_10c;                // +0x10c
+    i32 m_110;                // +0x110
+    i32 m_114;                // +0x114
+    i32 m_118;                // +0x118
+    i32 m_11c;                // +0x11c
+    i32 m_120;                // +0x120
+    i32 m_124;                // +0x124
+    i32 m_128;                // +0x128
+    i32 m_12c;                // +0x12c
+    i32 m_130;                // +0x130
+    i32 m_134;                // +0x134  block head (0x80000000 sentinel)
+    i32 m_138;                // +0x138
+    i32 m_13c;                // +0x13c
+    i32 m_140;                // +0x140
+    i32 m_144;                // +0x144  block head (0x80000000 sentinel)
+    i32 m_148;                // +0x148
+    i32 m_14c;                // +0x14c
+    i32 m_150;                // +0x150
+    i32 m_154;                // +0x154  block head (0x80000000 sentinel)
+    i32 m_158;                // +0x158
+    i32 m_15c;                // +0x15c
+    i32 m_160;                // +0x160
+    i32 m_164;                // +0x164
+    i32 m_168;                // +0x168
+    i32 m_16c;                // +0x16c
+    i32 m_170;                // +0x170
+    i32 m_174;                // +0x174
+    i32 m_178;                // +0x178
+    i32 m_17c;                // +0x17c
+    i32 m_180;                // +0x180
+    i32 m_184;                // +0x184
+    i32 m_188;                // +0x188
+    i32 m_dotColor;           // +0x18c  low byte = dot color / setup flag
+    i32 m_190;                // +0x190
+    void* m_194;              // +0x194  resolved object ref
+    i32 m_198;                // +0x198
+    void* m_19c;              // +0x19c  resolved object ref
+    CDDrawBlitParam m_cmdMap; // +0x1a0  command-dispatch sub-object
+    WwdSubList m_subList;     // +0x1dc  CObList of owned sub-objects
 };
 
 // The sub-object hung off the worker at AnimWorker+0x18 (own vtable; its +0x8
@@ -319,7 +314,7 @@ i32 CWwdGameObject::Dispatch(i32 a1, i32 type, i32 a3, i32 a4) {
     if (a1 == 0) {
         return 0;
     }
-    if (m_cmdMap.Find(a1, type, a3, a4) == 0) {
+    if (m_cmdMap.Dispatch_15c900((CWwdArchive*)a1, type, a3, a4) == 0) {
         return 0;
     }
     switch (type) {
@@ -832,7 +827,7 @@ i32 CWwdGameObject::WriteSnapshot(i32 dst) {
 RVA(0x0015b940, 0x38)
 i32 CWwdGameObject::Init(i32 a1, i32 a2, i32 a3, i32 a4) {
     m_19c = 0;
-    m_cmdMap.Construct(this);
+    m_cmdMap.Init_15c290(this);
     return Setup(a1, a2, a3, a4);
 }
 
@@ -960,7 +955,6 @@ SIZE_UNKNOWN(Archive);
 SIZE_UNKNOWN(CMapStringToObLite);
 SIZE_UNKNOWN(CStringAssign);
 SIZE_UNKNOWN(CStringDtor);
-SIZE(CmdMap, 0x3c);
 SIZE_UNKNOWN(MapLookupA);
 SIZE_UNKNOWN(MapLookupB);
 SIZE_UNKNOWN(MgrSub158570);
