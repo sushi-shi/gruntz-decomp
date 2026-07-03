@@ -514,31 +514,24 @@ i32 CDDrawWorkerRegistry::StringCopy_155810(const char* src) {
 // Map scan: remove every entry whose key strncmp-equals `str` (over its full
 // length), destroying each removed value via its scalar dtor; returns the count.
 // The compare string is a CString built from `base` then assigned `str`.
-// @early-stop
-// regalloc wall (~91.7%) - complete & correct: logic/CFG/all calls/args/offsets
-// reproduced. Residue is the val/loop-flag stack-slot swap (0x10<->0x14 coin-flip,
-// docs/patterns/zero-register-pinning.md) + the reloc-masked EH-state push (0x0 vs
-// 0x8, same as the 100%-matched MapTeardown_1552b0). No source lever flips it.
 RVA(0x00155360, 0xf8)
 i32 CDDrawWorkerRegistry::RemoveKeysEqual_155360(const char* base, const char* str) {
     CString match(base);
     match = str;
     i32 len = match.GetLength();
-    i32 n = 0;
-    CObject* val = 0;
     CString key;
-    POSITION pos = (POSITION)(m_map.GetCount() != 0 ? -1 : 0);
-    if (*(volatile i32*)&pos != 0) {
-        do {
-            m_map.GetNextAssoc(pos, key, val);
-            if (strncmp(key, match, len) == 0) {
-                m_map.RemoveKey(key);
-                if (val != 0) {
-                    ((CWorkerValue*)val)->ScalarDtor(1);
-                }
-                ++n;
+    CObject* val = 0;
+    POSITION pos = m_map.GetStartPosition();
+    i32 n = 0;
+    while (pos != 0) {
+        m_map.GetNextAssoc(pos, key, val);
+        if (strncmp(key, match, len) == 0) {
+            m_map.RemoveKey(key);
+            if (val != 0) {
+                ((CWorkerValue*)val)->ScalarDtor(1);
             }
-        } while (pos != 0);
+            ++n;
+        }
     }
     return n;
 }
@@ -548,28 +541,25 @@ i32 CDDrawWorkerRegistry::RemoveKeysEqual_155360(const char* base, const char* s
 // whose key strncmp-matches `str` (a null/empty `str` matches every entry).
 // Carries a /GX EH frame for the local CString key.
 // @early-stop
-// regalloc/EH-state wall - complete & correct: the GetNextAssoc scan, the
-// str==0/*str==0 match-all guard, the strlen+strncmp compare, and the per-value
-// ComputeSize_1523f0 thiscall accumulation are reproduced. Residue is the same
-// val/key/loop-flag stack-slot schedule + reloc-masked EH-state push as the
-// sibling RemoveKeysEqual_155360. docs/patterns/zero-register-pinning.md.
+// zero-register-pin wall (~69%): map-scan idiom applied (GetStartPosition + the
+// str==0||*str==0||strncmp==0 shared-add || chain replaces the diverging matched-
+// bool neg/sbb/inc; docs/patterns/mfc-map-walk-while-not-guard-dowhile.md). The
+// GetNextAssoc scan, match-all guard, strlen+strncmp compare, and per-value
+// ComputeSize_1523f0 thiscall accumulation all reproduced. Residue: retail pins 0
+// in edi (xor edi,edi + cmp edi,X) and holds a2 in ebx across the body where our
+// cl uses test/immediate + a per-call a2 reload - regalloc coin-flip, no source
+// lever. docs/patterns/zero-register-pinning.md.
 RVA(0x00155460, 0xe2)
 i32 CDDrawWorkerRegistry::SumSizesEqual_155460(const char* str, i32 a2) {
-    i32 total = 0;
-    CObject* val = 0;
     CString key;
-    POSITION pos = (POSITION)(m_map.GetCount() != 0 ? -1 : 0);
-    if (*(volatile i32*)&pos != 0) {
+    CObject* val = 0;
+    POSITION pos = m_map.GetStartPosition();
+    i32 total = 0;
+    if (pos != 0) {
         do {
             m_map.GetNextAssoc(pos, key, val);
             if (val != 0) {
-                i32 matched;
-                if (str != 0 && *str != 0) {
-                    matched = (strncmp(key, str, strlen(str)) == 0);
-                } else {
-                    matched = 1;
-                }
-                if (matched) {
+                if (str == 0 || *str == 0 || strncmp(key, str, strlen(str)) == 0) {
                     total += ((CWorkerMapValue*)val)->ComputeSize_1523f0(a2);
                 }
             }
@@ -580,24 +570,17 @@ i32 CDDrawWorkerRegistry::SumSizesEqual_155460(const char* str, i32 a2) {
 
 // ---------------------------------------------------------------------------
 // Map scan: return 1 if any key strncmp-equals `str` over strlen(str), else 0.
-// @early-stop
-// optimizer loop-peel wall (~61.4%) - complete & correct. MSVC5 peels the first
-// iteration of this `do/while + early return` here (the retail body is a single
-// loop); body/calls/args match. Every restructure tried (break+flag, slot reorder)
-// scored lower. Deferred to the final sweep. docs/patterns/zero-register-pinning.md.
 RVA(0x00155550, 0xdc)
 i32 CDDrawWorkerRegistry::HasKeyEqual_155550(const char* str) {
     i32 len = strlen(str);
-    CObject* val = 0;
     CString key;
-    POSITION pos = (POSITION)(m_map.GetCount() != 0 ? -1 : 0);
-    if (*(volatile i32*)&pos != 0) {
-        do {
-            m_map.GetNextAssoc(pos, key, val);
-            if (strncmp(key, str, len) == 0) {
-                return 1;
-            }
-        } while (pos != 0);
+    CObject* val = 0;
+    POSITION pos = m_map.GetStartPosition();
+    while (pos != 0) {
+        m_map.GetNextAssoc(pos, key, val);
+        if (strncmp(key, str, len) == 0) {
+            return 1;
+        }
     }
     return 0;
 }
@@ -614,43 +597,37 @@ i32 CDDrawWorkerRegistry::AnyValueMatches_155630(i32 a1, i32 a2, i32 a3) {
     if (a1 == 0) {
         return 0;
     }
-    CObject* val = 0;
     CString key;
-    POSITION pos = (POSITION)(m_map.GetCount() != 0 ? -1 : 0);
-    if (*(volatile i32*)&pos != 0) {
-        do {
-            m_map.GetNextAssoc(pos, key, val);
-            if (val != 0 && ((CWorkerMapValue*)val)->Probe_1525c0(a1, a2, a3)) {
-                return 1;
-            }
-        } while (pos != 0);
+    CObject* val = 0;
+    POSITION pos = m_map.GetStartPosition();
+    while (pos != 0) {
+        m_map.GetNextAssoc(pos, key, val);
+        if (val != 0 && ((CWorkerMapValue*)val)->Probe_1525c0(a1, a2, a3)) {
+            return 1;
+        }
     }
     return 0;
 }
 
 // ---------------------------------------------------------------------------
 // Map scan: return (by value) the key of the first entry whose value's +0x10
-// dword equals target's +0x10; empty CString if none.
-// @early-stop
-// NRVO-elision wall (~79.1%) - complete & correct: the whole scan + the +0x10
-// compare + the `return key` copy-ctor path match byte-for-byte. Residue is only
-// the no-match `return CString()` path: retail materializes an empty CString temp
-// then copy-constructs the return (no RVO); MSVC5 here elides it into the return
-// slot directly. An optimizer choice, not a source-steerable one.
+// dword equals target's +0x10; empty CString if none. Closed by the map-scan idiom
+// (top-tested while + real GetStartPosition) plus spelling the no-match return as a
+// named `CString empty; return empty;` so cl materializes the empty temp + copy-
+// ctor exactly as retail (a bare `return CString()` RVOs it into the return slot).
 RVA(0x00165360, 0xf1)
 CString CDDrawWorkerRegistry::FindKeyOfValue_165360(CWorkerMapValue* target) {
     CObject* val = 0;
-    POSITION pos = (POSITION)(m_map.GetCount() != 0 ? -1 : 0);
+    POSITION pos = m_map.GetStartPosition();
     CString key;
-    if (*(volatile i32*)&pos != 0) {
-        do {
-            m_map.GetNextAssoc(pos, key, val);
-            if (val != 0 && ((CWorkerMapValue*)val)->m_10field == target->m_10field) {
-                return key;
-            }
-        } while (pos != 0);
+    while (pos != 0) {
+        m_map.GetNextAssoc(pos, key, val);
+        if (val != 0 && ((CWorkerMapValue*)val)->m_10field == target->m_10field) {
+            return key;
+        }
     }
-    return CString();
+    CString empty;
+    return empty;
 }
 
 // -------------------------------------------------------------------------

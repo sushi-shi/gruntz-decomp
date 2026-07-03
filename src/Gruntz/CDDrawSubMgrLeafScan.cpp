@@ -394,30 +394,24 @@ CDDrawSubMgrLeafScan::~CDDrawSubMgrLeafScan() {
 // length), destroying each removed value via its scalar dtor; returns the count.
 // The compare string is a CString built from `base` then assigned `str`. Twin of
 // CDDrawWorkerRegistry::RemoveKeysEqual_155360.
-// @early-stop
-// 91.67% — identical to the matched twin's wall: the val/loop-flag stack-slot
-// swap (0x10<->0x14 coin-flip) + the reloc-masked EH-state push. Logic/CFG/calls/
-// offsets reproduced; no source lever. docs/patterns/zero-register-pinning.md.
 RVA(0x00157c70, 0xf8)
 i32 CDDrawSubMgrLeafScan::RemoveKeysEqual_157c70(const char* base, const char* str) {
     CString match(base);
     match = str;
     i32 len = match.GetLength();
-    i32 n = 0;
-    CObject* val = 0;
     CString key;
-    POSITION pos = (POSITION)(m_10.GetCount() != 0 ? -1 : 0);
-    if (*(volatile i32*)&pos != 0) {
-        do {
-            m_10.GetNextAssoc(pos, key, val);
-            if (strncmp(key, match, len) == 0) {
-                m_10.RemoveKey(key);
-                if (val != 0) {
-                    ((LeafScanValue*)val)->ScalarDtor(1);
-                }
-                ++n;
+    CObject* val = 0;
+    POSITION pos = m_10.GetStartPosition();
+    i32 n = 0;
+    while (pos != 0) {
+        m_10.GetNextAssoc(pos, key, val);
+        if (strncmp(key, match, len) == 0) {
+            m_10.RemoveKey(key);
+            if (val != 0) {
+                ((LeafScanValue*)val)->ScalarDtor(1);
             }
-        } while (pos != 0);
+            ++n;
+        }
     }
     return n;
 }
@@ -612,29 +606,30 @@ i32 CDDrawSubMgrLeafScan::ScanTree_157ee0(DirNode* tree, const char* prefix, con
 // its count unconditionally, else add it only when the key strncmp-matches `str`
 // over strlen(str). Returns the accumulated count. /GX EH frame for the local key.
 // @early-stop
-// optimizer loop-peel wall (twin of HasKeyEqual_1583c0's 61% wall): MSVC5 peels
-// the first iteration of the do/while; body/calls/args/offsets reproduced. Not
-// source-steerable. docs/patterns/zero-register-pinning.md.
+// zero-register-pin wall (~70%): map-scan idiom applied (top-tested while + real
+// GetStartPosition kills the peel, docs/patterns/mfc-map-walk-while-not-guard-
+// dowhile.md), body/CFG/calls/args/offsets reproduced. Residue: retail pins 0 in
+// ebx (xor ebx,ebx) and uses cmp ebx,X / cmpb bl,(esi) for all 7 null/zero checks
+// where our cl emits test/cmp-imm - regalloc coin-flip, docs/patterns/zero-
+// register-pinning.md. No source lever.
 RVA(0x001580b0, 0xf6)
 i32 CDDrawSubMgrLeafScan::SumField_1580b0(const char* str) {
     if (m_30 != 0) {
         return 0;
     }
-    i32 sum = 0;
-    CObject* val = 0;
     CString key;
-    POSITION pos = (POSITION)(m_10.GetCount() != 0 ? -1 : 0);
-    if (*(volatile i32*)&pos != 0) {
-        do {
-            m_10.GetNextAssoc(pos, key, val);
-            if (val != 0) {
-                if (str == 0 || *str == 0) {
-                    sum += ((LeafSumSource*)((LeafScanValue*)val)->m_10)->m_2c;
-                } else if (strncmp(key, str, strlen(str)) == 0) {
-                    sum += ((LeafSumSource*)((LeafScanValue*)val)->m_10)->m_2c;
-                }
+    CObject* val = 0;
+    POSITION pos = m_10.GetStartPosition();
+    i32 sum = 0;
+    while (pos != 0) {
+        m_10.GetNextAssoc(pos, key, val);
+        if (val != 0) {
+            if (str == 0 || *str == 0) {
+                sum += ((LeafSumSource*)((LeafScanValue*)val)->m_10)->m_2c;
+            } else if (strncmp(key, str, strlen(str)) == 0) {
+                sum += ((LeafSumSource*)((LeafScanValue*)val)->m_10)->m_2c;
             }
-        } while (pos != 0);
+        }
     }
     return sum;
 }
@@ -665,23 +660,17 @@ LeafScanValue* CDDrawSubMgrLeafScan::GetFirstValue_158210() {
 // 0x1583c0: return 1 if any map key strncmp-equals `str` over strlen(str), else
 // 0. Twin of CDDrawWorkerRegistry::HasKeyEqual_155550. /GX EH frame for the local
 // CString key.
-// @early-stop
-// 61.36% — identical to the matched twin's optimizer loop-peel wall: MSVC5 peels
-// the first iteration of this do/while+early-return (retail is a single loop).
-// Body/calls/args match. docs/patterns/zero-register-pinning.md.
 RVA(0x001583c0, 0xdc)
 i32 CDDrawSubMgrLeafScan::HasKeyEqual_1583c0(const char* str) {
     i32 len = strlen(str);
-    CObject* val = 0;
     CString key;
-    POSITION pos = (POSITION)(m_10.GetCount() != 0 ? -1 : 0);
-    if (*(volatile i32*)&pos != 0) {
-        do {
-            m_10.GetNextAssoc(pos, key, val);
-            if (strncmp(key, str, len) == 0) {
-                return 1;
-            }
-        } while (pos != 0);
+    CObject* val = 0;
+    POSITION pos = m_10.GetStartPosition();
+    while (pos != 0) {
+        m_10.GetNextAssoc(pos, key, val);
+        if (strncmp(key, str, len) == 0) {
+            return 1;
+        }
     }
     return 0;
 }
@@ -741,11 +730,8 @@ i32 CDDrawSubMgrLeafScan::MatchSub_1584f0(LeafScanSoundArg* arg1, i32 arg2) {
 // 0x158570: return (by value) the key of the first map entry whose VALUE POINTER
 // equals `target`; the (empty) key if `target` is null or no entry matches.
 // Returns the running `key` CString in every exit (NRVO into the return slot).
-// @early-stop
-// 70.77% — the target==0 guard, the pointer-identity search, and both `return
-// key` copy-ctor paths reproduced. Residual is the optimizer loop-peel + the
-// pos/flag stack-slot/register choice (same family as the twin's NRVO wall).
-// docs/patterns/zero-register-pinning.md.
+// Closed by the map-scan idiom (top-tested while + real GetStartPosition) plus the
+// key.Empty() before the final return that retail emits on the no-match tail.
 RVA(0x00158570, 0xd4)
 CString CDDrawSubMgrLeafScan::FindKeyOfValue_158570(LeafScanValue* target) {
     CString key;
@@ -753,15 +739,14 @@ CString CDDrawSubMgrLeafScan::FindKeyOfValue_158570(LeafScanValue* target) {
         return key;
     }
     CObject* val = 0;
-    POSITION pos = (POSITION)(m_10.GetCount() != 0 ? -1 : 0);
-    if (*(volatile i32*)&pos != 0) {
-        do {
-            m_10.GetNextAssoc(pos, key, val);
-            if (val == (CObject*)target) {
-                return key;
-            }
-        } while (pos != 0);
+    POSITION pos = m_10.GetStartPosition();
+    while (pos != 0) {
+        m_10.GetNextAssoc(pos, key, val);
+        if (val == (CObject*)target) {
+            return key;
+        }
     }
+    key.Empty();
     return key;
 }
 

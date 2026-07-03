@@ -167,27 +167,27 @@ CObject* CDDrawSubMgrLeaf::LookupValue_06b2a0(const char* key) {
 // `target`, RemoveKey it, destroy `target` through its scalar-deleting dtor
 // (vtbl +0x4 arg 1), and stop. /GX EH frame for the local CString key. 1 arg.
 // @early-stop
-// regalloc/loop-peel wall (~same family as RemoveKeysEqual_1527d0): logic/CFG/all
-// calls (GetNextAssoc/RemoveKey/scalar-dtor)/args/offsets reproduced. Residue is
-// the val/pos stack-slot choice + the reloc-masked EH-state push.
-// docs/patterns/zero-register-pinning.md.
+// ~99.85% - map-scan idiom (top-tested while + real GetStartPosition kills the
+// peel, pos declared before key computes it before the ctor like retail; docs/
+// patterns/mfc-map-walk-while-not-guard-dowhile.md). Every instruction byte
+// matches; the sole residue is a key<->pos stack-slot swap (retail key=[esp+0x20]/
+// pos=[esp+0x8], ours the reverse) - the stack-slot-coalesce coin-flip, only the
+// [esp+N] displacement bytes differ. docs/patterns/stack-slot-coalesce-frame-4b.md.
 RVA(0x00152660, 0xb2)
 void CDDrawSubMgrLeaf::RemoveValue_152660(CCatalogNode* target) {
     if (target == 0) {
         return;
     }
-    POSITION pos = (POSITION)(m_10.GetCount() != 0 ? -1 : 0);
-    CObject* val = 0;
+    POSITION pos = m_10.GetStartPosition();
     CString key;
-    if (*(volatile i32*)&pos != 0) {
-        do {
-            m_10.GetNextAssoc(pos, key, val);
-            if ((CObject*)target == val) {
-                m_10.RemoveKey(key);
-                target->ScalarDtor(1);
-                break;
-            }
-        } while (pos != 0);
+    CObject* val = 0;
+    while (pos != 0) {
+        m_10.GetNextAssoc(pos, key, val);
+        if ((CObject*)target == val) {
+            m_10.RemoveKey(key);
+            target->ScalarDtor(1);
+            break;
+        }
     }
 }
 
@@ -232,58 +232,44 @@ i32 CDDrawSubMgrLeaf::RemoveKeysEqual_1527d0(const char* base, const char* str) 
     CString match(base);
     match = str;
     i32 len = match.GetLength();
-    i32 n = 0;
-    CObject* val = 0;
     CString key;
-    POSITION pos = (POSITION)(m_10.GetCount() != 0 ? -1 : 0);
-    if (*(volatile i32*)&pos != 0) {
-        do {
-            m_10.GetNextAssoc(pos, key, val);
-            if (strncmp(key, match, len) == 0) {
-                m_10.RemoveKey(key);
-                if (val != 0) {
-                    ((CCatalogNode*)val)->ScalarDtor(1);
-                }
-                ++n;
+    CObject* val = 0;
+    POSITION pos = m_10.GetStartPosition();
+    i32 n = 0;
+    while (pos != 0) {
+        m_10.GetNextAssoc(pos, key, val);
+        if (strncmp(key, match, len) == 0) {
+            m_10.RemoveKey(key);
+            if (val != 0) {
+                ((CCatalogNode*)val)->ScalarDtor(1);
             }
-        } while (pos != 0);
+            ++n;
+        }
     }
     return n;
 }
 
 // ---------------------------------------------------------------------------
 // Return 1 if any key strncmp-equals `str` over strlen(str), else 0.
-// @early-stop
-// optimizer loop-peel wall (~61%) - complete & correct. MSVC5 peels the first
-// iteration of this `do/while + early return`; body/calls/args match. Same wall
-// as the sibling CDDrawWorkerRegistry::HasKeyEqual_155550.
-// docs/patterns/zero-register-pinning.md.
 RVA(0x00152c50, 0xdc)
 i32 CDDrawSubMgrLeaf::HasKeyPrefix_152c50(const char* str) {
     i32 len = strlen(str);
-    CObject* val = 0;
     CString key;
-    POSITION pos = (POSITION)(m_10.GetCount() != 0 ? -1 : 0);
-    if (*(volatile i32*)&pos != 0) {
-        do {
-            m_10.GetNextAssoc(pos, key, val);
-            if (strncmp(key, str, len) == 0) {
-                return 1;
-            }
-        } while (pos != 0);
+    CObject* val = 0;
+    POSITION pos = m_10.GetStartPosition();
+    while (pos != 0) {
+        m_10.GetNextAssoc(pos, key, val);
+        if (strncmp(key, str, len) == 0) {
+            return 1;
+        }
     }
     return 0;
 }
 
 // ---------------------------------------------------------------------------
 // Reverse lookup: return (by value) the key of the entry whose value pointer ==
-// `target`; an empty key for target==0 or no match.
-// @early-stop
-// NRVO/regalloc wall (~69%) - complete & correct: the empty-key short-circuit,
-// the GetNextAssoc walk, the identity compare, and the `return key` copy-ctor
-// path are reproduced. Residue is the by-value CString return (no-RVO empty-temp
-// materialization on the no-match path) + the surrounding-symbol regalloc roll -
-// the same family as the sibling's FindKeyOfValue_165360. Not source-steerable.
+// `target`; an empty key for target==0 or no match. The map-scan idiom (top-tested
+// while + real GetStartPosition, key.Empty() before the final return key) closes it.
 RVA(0x00152d30, 0xd4)
 CString CDDrawSubMgrLeaf::KeyOfValue_152d30(CObject* target) {
     CString key;
@@ -291,14 +277,12 @@ CString CDDrawSubMgrLeaf::KeyOfValue_152d30(CObject* target) {
         return key;
     }
     CObject* val = 0;
-    POSITION pos = (POSITION)(m_10.GetCount() != 0 ? -1 : 0);
-    if (*(volatile i32*)&pos != 0) {
-        do {
-            m_10.GetNextAssoc(pos, key, val);
-            if (val == target) {
-                return key;
-            }
-        } while (pos != 0);
+    POSITION pos = m_10.GetStartPosition();
+    while (pos != 0) {
+        m_10.GetNextAssoc(pos, key, val);
+        if (val == target) {
+            return key;
+        }
     }
     key.Empty();
     return key;
