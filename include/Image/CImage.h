@@ -74,9 +74,9 @@ public:
     virtual void v18();      // slot 6  (0x001c08)
 
     // vptr @+0x00 (implicit, polymorphic)
-    i32 m_04;           // +0x04  status word (-1 inactive)
-    i32 m_08;           // +0x08
-    CImageParent* m_0c; // +0x0c  parent CDDrawPtrCollections (its surface pool at +0x1c)
+    i32 m_status;           // +0x04  status word (-1 inactive)
+    i32 m_08;               // +0x08
+    CImageParent* m_parent; // +0x0c  parent CDDrawPtrCollections (its surface pool at +0x1c)
 };
 
 // The source sub-object held at CImageSurfaceItem::m_08 (a polymorphic parse-source
@@ -349,15 +349,15 @@ public:
     void BlitShadeFlipH(CBlitInfo* info, CImage* dst);  // 0x154750  X flip, shaded
 
     // --- layout (continues the base; base ends at +0x10) ----------------------
-    i32 m_10;                // +0x10  width  (from item->m_1c)
-    i32 m_14;                // +0x14  height (from item->m_18)
-    i32 m_18;                // +0x18  width>>1
-    i32 m_1c;                // +0x1c  height>>1
-    i32 m_20;                // +0x20  desc->m_10 (or 0)
-    i32 m_24;                // +0x24  desc->m_14 (or 0)
-    i32 m_28;                // +0x28  load-result code (0x10 / 0x11)
-    CImageSurfaceItem* m_2c; // +0x2c  the held surface (CPoolItemA), pool-removed
-    CImageOwned* m_30;       // +0x30  owned object (teardown + RezFree)
+    i32 m_width;                  // +0x10  width  (from item->m_1c)
+    i32 m_height;                 // +0x14  height (from item->m_18)
+    i32 m_anchorX;                // +0x18  draw anchor x (width>>1)
+    i32 m_anchorY;                // +0x1c  draw anchor y (height>>1)
+    i32 m_originX;                // +0x20  origin x (desc->m_10, or 0)
+    i32 m_originY;                // +0x24  origin y (desc->m_14, or 0)
+    i32 m_loadResult;             // +0x28  load-result code (0x10 / 0x11)
+    CImageSurfaceItem* m_surface; // +0x2c  the held surface (CPoolItemA), pool-removed
+    CImageOwned* m_owned;         // +0x30  owned object (teardown + RezFree)
 };
 
 #endif // SRC_IMAGE_CIMAGE_H

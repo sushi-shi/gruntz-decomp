@@ -75,10 +75,10 @@ i32 CMenuItem2::Place(i32 ctx, i32 x, i32 y) {
         return 0;
     }
     f->RenderFrame((void*)ctx, (void*)py, (void*)px, 0);
-    m_34 = py - f->m_18;
-    m_3c = py + f->m_18;
-    m_38 = px - f->m_1c;
-    m_40 = px + f->m_1c;
+    m_34 = py - f->m_anchorX;
+    m_3c = py + f->m_anchorX;
+    m_38 = px - f->m_anchorY;
+    m_40 = px + f->m_anchorY;
     return 1;
 }
 

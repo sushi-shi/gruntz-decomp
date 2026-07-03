@@ -310,7 +310,7 @@ i32 CSBI_MenuItem::ResolveFrame(i32 key, i32 a) {
 // blit the resolved frame at the menu's screen rect. 0-arg __thiscall (ret 1).
 // @early-stop
 // ~92%: byte-exact except a 1-instruction load-schedule coin-flip in the
-// RenderFrame arg setup (retail loads m_18 before f->m_1c; the recompile swaps the
+// RenderFrame arg setup (retail loads m_18 before f->m_anchorY; the recompile swaps the
 // two loads within the sub-expression) + the reloc-naming tail. Not steerable from
 // C (the within-expression evaluation order is the optimizer's); deferred.
 RVA(0x000e82a0, 0x45)
@@ -321,8 +321,8 @@ i32 CSBI_MenuItem::DecCounter() {
         if (f) {
             f->RenderFrame(
                 (void*)((CResMgr*)g_gameReg->m_world)->m_drawTarget->m_drawContext,
-                (void*)(m_14 + f->m_18),
-                (void*)(m_18 + f->m_1c),
+                (void*)(m_14 + f->m_anchorX),
+                (void*)(m_18 + f->m_anchorY),
                 0
             );
         }

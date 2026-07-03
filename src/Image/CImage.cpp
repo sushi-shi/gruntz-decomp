@@ -34,7 +34,7 @@ enum ImageFormatTag {
 // allocate a surface from the parent pool's 3-arg create (CreateC @0x142560) for
 // (desc, capArg, flagsArg) - where flagsArg = keyed ? g_surfaceColorKey : -1 and
 // capArg = g_resourceInstallActive ? 0x800 : 0 - then cache the surface geometry (w/h,
-// halved) and clear the m_20/m_24 origin. __thiscall, ret 8 (2 stack args).
+// halved) and clear the m_originX/m_originY origin. __thiscall, ret 8 (2 stack args).
 // @early-stop
 // 99.09% - structurally identical to the 100% sibling Create24, plus the two
 // g_resourceInstallActive/B DIR32 reloc artifacts. The lone code residual is the geometry
@@ -49,24 +49,24 @@ i32 CImage::Create(CImageFrameDesc* desc, i32 keyed) {
     if (g_resourceInstallActive != 0) {
         capArg = 0x800;
     }
-    CImageSurfaceItem* item = m_0c->m_1c->CreateC((i32)desc, capArg, flagsArg);
-    m_2c = item;
+    CImageSurfaceItem* item = m_parent->m_1c->CreateC((i32)desc, capArg, flagsArg);
+    m_surface = item;
     if (item == 0) {
         return 0;
     }
     i32 w = item->m_1c;
-    m_10 = w;
+    m_width = w;
     i32 h = item->m_18;
-    m_14 = h;
-    m_18 = w >> 1;
-    m_1c = h >> 1;
+    m_height = h;
+    m_anchorX = w >> 1;
+    m_anchorY = h >> 1;
     if (item->m_bc != 0) {
-        m_28 = 0x11;
+        m_loadResult = 0x11;
     } else {
-        m_28 = 0x10;
+        m_loadResult = 0x10;
     }
-    m_20 = 0;
-    m_24 = 0;
+    m_originX = 0;
+    m_originY = 0;
     return 1;
 }
 
@@ -112,7 +112,7 @@ i32 CImage::Resolve(CImageSource* src, i32 arg) {
 // (vtable slot 10): LoadDispatch. The format-index switch (1..4); index 4
 // with the desc's 0x20 flag takes the slot-13 build path (an EH /GX builder),
 // otherwise the default path allocates a surface from the parent pool (CreateA),
-// caching its geometry into m_10..m_28. __thiscall, ret 0x10 (4 stack args).
+// caching its geometry into m_width..m_loadResult. __thiscall, ret 0x10 (4 stack args).
 //
 // The 1..4 range-check lowers to a chain of `cmp;je` (no jump table) -> a sequence
 // of explicit case tests, key unsigned (matches the cmp;ja in the caller).
@@ -131,7 +131,7 @@ i32 CImage::LoadDispatch(CImageFrameDesc* desc, u32 mode, void* a, i32 b) {
         if (!BuildSlot13(desc, a)) {
             return 0;
         }
-        if (m_30 != 0 && (desc->m_04 & 0x40)) {
+        if (m_owned != 0 && (desc->m_04 & 0x40)) {
             ImageNotify(2, 0);
             return 1;
         }
@@ -141,32 +141,32 @@ i32 CImage::LoadDispatch(CImageFrameDesc* desc, u32 mode, void* a, i32 b) {
     if (mode == 4 || mode == 3) {
         i32 g10 = desc->m_10;
         i32 g14 = desc->m_14;
-        m_20 = g10;
-        m_24 = g14;
+        m_originX = g10;
+        m_originY = g14;
     } else {
-        m_20 = 0;
-        m_24 = 0;
+        m_originX = 0;
+        m_originY = 0;
     }
     i32 capArg = 0;
     if (g_resourceInstallActive != 0) {
         capArg = 0x800;
     }
-    CImageSurfaceItem* item = m_0c->m_1c->CreateA((i32)desc, (i32)mode, a, capArg, flagsArg);
-    m_2c = item;
+    CImageSurfaceItem* item = m_parent->m_1c->CreateA((i32)desc, (i32)mode, a, capArg, flagsArg);
+    m_surface = item;
     if (item == 0) {
         return 0;
     }
     i32 w = item->m_1c;
-    m_10 = w;
+    m_width = w;
     i32 h = item->m_18;
-    m_14 = h;
-    m_18 = w >> 1;
-    m_1c = h >> 1;
+    m_height = h;
+    m_anchorX = w >> 1;
+    m_anchorY = h >> 1;
     if (item->m_bc != 0) {
-        m_28 = 0x11;
+        m_loadResult = 0x11;
         return 1;
     }
-    m_28 = 0x10;
+    m_loadResult = 0x10;
     return 1;
 }
 
@@ -174,8 +174,8 @@ i32 CImage::LoadDispatch(CImageFrameDesc* desc, u32 mode, void* a, i32 b) {
 // (vtable slot 9): Create24. Allocate a surface from the parent pool's
 // Create24 variant (CreateB @0x1423c0) for (desc, mode, NULL, capArg, flagsArg) -
 // where flagsArg = keyed ? g_surfaceColorKey : -1 and capArg = g_resourceInstallActive ?
-// 0x800 : 0 - then cache the surface geometry (w/h, halved) and clear the m_20/m_24
-// origin. __thiscall, ret 0xc (3 stack args).
+// 0x800 : 0 - then cache the surface geometry (w/h, halved) and clear the
+// m_originX/m_originY origin. __thiscall, ret 0xc (3 stack args).
 // ---------------------------------------------------------------------------
 RVA(0x001530e0, 0x92)
 i32 CImage::Create24(CImageFrameDesc* desc, i32 mode, i32 keyed) {
@@ -184,24 +184,24 @@ i32 CImage::Create24(CImageFrameDesc* desc, i32 mode, i32 keyed) {
     if (g_resourceInstallActive != 0) {
         capArg = 0x800;
     }
-    CImageSurfaceItem* item = m_0c->m_1c->CreateB((i32)desc, mode, 0, capArg, flagsArg);
-    m_2c = item;
+    CImageSurfaceItem* item = m_parent->m_1c->CreateB((i32)desc, mode, 0, capArg, flagsArg);
+    m_surface = item;
     if (item == 0) {
         return 0;
     }
     i32 w = item->m_1c;
-    m_10 = w;
+    m_width = w;
     i32 h = item->m_18;
-    m_14 = h;
-    m_18 = w >> 1;
-    m_1c = h >> 1;
+    m_height = h;
+    m_anchorX = w >> 1;
+    m_anchorY = h >> 1;
     if (item->m_bc != 0) {
-        m_28 = 0x11;
+        m_loadResult = 0x11;
     } else {
-        m_28 = 0x10;
+        m_loadResult = 0x10;
     }
-    m_20 = 0;
-    m_24 = 0;
+    m_originX = 0;
+    m_originY = 0;
     return 1;
 }
 
@@ -209,7 +209,7 @@ i32 CImage::Create24(CImageFrameDesc* desc, i32 mode, i32 keyed) {
 // The slot-13 build path (non-virtual /GX builder). Allocate the owned
 // +0x30 object (a CImageOwned), decode one frame into it (Build) with the parent's
 // active surface format, then cache the decoded geometry (w/h, halved) and the
-// descriptor's m_10/m_14 origin into the image. m_28 = 0x11 on success.
+// descriptor's m_10/m_14 origin into the image. m_loadResult = 0x11 on success.
 //
 // The `new CImageOwned()` carries the C++ EH state machine (the [esp+0x14] try-
 // level writes 0 then -1 around the ctor), which puts the /GX frame on this method.
@@ -228,50 +228,50 @@ i32 CImage::Create24(CImageFrameDesc* desc, i32 mode, i32 keyed) {
 RVA(0x00153180, 0xda)
 i32 CImage::BuildSlot13(CImageFrameDesc* desc, void* a) {
     CImageOwned* owned = new CImageOwned();
-    m_30 = owned;
+    m_owned = owned;
     if (owned == 0) {
         return 0;
     }
-    if (!owned->Build((CImageBuildDesc*)desc, (i32)a, m_0c->m_04->m_10[0x18 / 4])) {
+    if (!owned->Build((CImageBuildDesc*)desc, (i32)a, m_parent->m_04->m_10[0x18 / 4])) {
         return 0;
     }
-    i32 w = m_30->m_04;
-    m_10 = w;
-    i32 h = m_30->m_08;
-    m_14 = h;
-    m_28 = 0x11;
-    m_18 = w >> 1;
-    m_1c = h >> 1;
-    m_20 = desc->m_10;
-    m_24 = desc->m_14;
+    i32 w = m_owned->m_04;
+    m_width = w;
+    i32 h = m_owned->m_08;
+    m_height = h;
+    m_loadResult = 0x11;
+    m_anchorX = w >> 1;
+    m_anchorY = h >> 1;
+    m_originX = desc->m_10;
+    m_originY = desc->m_14;
     return 1;
 }
 
 // ---------------------------------------------------------------------------
-// The cleanup virtual (vtable slot 7). Remove the held surface (m_2c)
-// from the parent collection's surface pool (m_0c->m_1c), then destroy + free the
-// owned +0x30 object; both handles cleared. m_10/m_14 zeroed up front.
+// The cleanup virtual (vtable slot 7). Remove the held surface (m_surface)
+// from the parent collection's surface pool (m_parent->m_1c), then destroy + free the
+// owned +0x30 object; both handles cleared. m_width/m_height zeroed up front.
 // ---------------------------------------------------------------------------
 RVA(0x00153260, 0x41)
 void CImage::FreeAll() {
-    m_10 = 0;
-    m_14 = 0;
-    if (m_2c != 0) {
-        m_0c->m_1c->RemoveItemA(m_2c);
-        m_2c = 0;
+    m_width = 0;
+    m_height = 0;
+    if (m_surface != 0) {
+        m_parent->m_1c->RemoveItemA(m_surface);
+        m_surface = 0;
     }
-    CImageOwned* owned = m_30;
+    CImageOwned* owned = m_owned;
     if (owned != 0) {
         owned->Teardown();
         RezFree(owned);
-        m_30 = 0;
+        m_owned = 0;
     }
 }
 
 // ---------------------------------------------------------------------------
 // CopyFrom - clone another image's surface into this one. Fails unless
-// both images own a held surface (m_2c) and neither carries an owned object (m_30),
-// and the two geometries match (m_10/m_14). On a match it Prepares the held surface
+// both images own a held surface (m_surface) and neither carries an owned object (m_owned),
+// and the two geometries match (m_width/m_height). On a match it Prepares the held surface
 // (Prepare(0)) then Blts the other image's surface into it, returning whether the
 // blit succeeded. __thiscall, ret 4.
 //
@@ -283,30 +283,30 @@ i32 CImage::CopyFrom(CImage* other) {
     if (other == 0) {
         return 0;
     }
-    if (other->m_30 != 0) {
+    if (other->m_owned != 0) {
         return 0;
     }
-    if (m_2c == 0) {
+    if (m_surface == 0) {
         return 0;
     }
-    if (m_30 != 0) {
+    if (m_owned != 0) {
         return 0;
     }
-    if (m_10 != other->m_10) {
+    if (m_width != other->m_width) {
         return 0;
     }
-    if (m_14 != other->m_14) {
+    if (m_height != other->m_height) {
         return 0;
     }
-    m_2c->Prepare(0);
-    i32 ok = m_2c->Blt(other->m_2c);
+    m_surface->Prepare(0);
+    i32 ok = m_surface->Blt(other->m_surface);
     return ok != 0;
 }
 
 // ---------------------------------------------------------------------------
 // 0x153380 (vtable slot 13): Reload - refresh the held surface from its parse
 // source. If there is no held surface, succeed. If the surface's source sub-object
-// (m_2c->m_08) reports still-clean (IsClean, vtbl[0x60]), succeed. Else if it still
+// (m_surface->m_08) reports still-clean (IsClean, vtbl[0x60]), succeed. Else if it still
 // has a live source descriptor (HasSource, vtbl[0x6c]), re-run FreeAll + Resolve
 // (the slot-7 + slot-11 virtuals) with the caller's args. Otherwise parse the new
 // source directly: read its 3-char tag (BMP=1/CPX=2/RID=3/PID=4), prime it, then
@@ -323,16 +323,16 @@ i32 CImage::CopyFrom(CImage* other) {
 // ---------------------------------------------------------------------------
 RVA(0x00153380, 0xeb)
 i32 CImage::Reload(CImageSource* src, i32 arg) {
-    if (m_2c == 0) {
+    if (m_surface == 0) {
         return 1;
     }
-    CImageSurfaceSrc* s = m_2c->m_08;
+    CImageSurfaceSrc* s = m_surface->m_08;
     if (s != 0) {
         if (s->IsClean() == 0) {
             return 1;
         }
     }
-    s = m_2c->m_08;
+    s = m_surface->m_08;
     if (s->HasSource() != 0) {
         this->FreeAll();
         return this->Resolve(src, arg);
@@ -362,29 +362,30 @@ i32 CImage::Reload(CImageSource* src, i32 arg) {
     if (src->m_0c == 0) {
         return 0;
     }
-    return m_2c->Reload((void*)m_0c->m_1c, resolved, index, (void*)src->m_0c, g_surfaceColorKey);
+    return m_surface
+        ->Reload((void*)m_parent->m_1c, resolved, index, (void*)src->m_0c, g_surfaceColorKey);
 }
 
 // ---------------------------------------------------------------------------
 // The virtual destructor. MSVC stamps this class's own vtable
 // (??_7CImage, catalog auto-named) at entry, runs the cleanup virtual (FreeAll),
-// then the base subobject dtor folds in (sets m_04=-1, zeroes m_08/m_0c, stamps
+// then the base subobject dtor folds in (sets m_status=-1, zeroes m_08/m_parent, stamps
 // the grand-base dtor vtable). Both vptr stamps are compiler-implicit now, so they
 // land in the retail "stamp-first" order. The /GX EH frame falls out of the
 // non-trivial CImageBase subobject.
 RVA(0x000d5e80, 0x5b)
 CImage::~CImage() {
     FreeAll();
-    m_04 = -1; // base-field resets (precede the folded ~CImageBase grand stamp)
+    m_status = -1; // base-field resets (precede the folded ~CImageBase grand stamp)
     m_08 = 0;
-    m_0c = 0;
+    m_parent = 0;
     // ~CImageBase() folds here: emits only the grand-base vptr re-stamp.
 }
 
 // ---------------------------------------------------------------------------
 // 0x153790: render a sprite frame. Resolve a clip context through a shared
 // CResolveNode singleton (a function-local static, built once via MSVC5's guarded
-// magic-static init), feeding it the parent collection (m_0c) and the (b,c,d)
+// magic-static init), feeding it the parent collection (m_parent) and the (b,c,d)
 // geometry; on success dispatch the +0x38 render virtual passing the clip context
 // and the first arg. __thiscall, ret 0x10 (4 stack args).
 // ---------------------------------------------------------------------------
@@ -406,7 +407,7 @@ public:
 RVA(0x00153790, 0x6a)
 void CImage::RenderFrame(void* a, void* b, void* c, void* d) {
     static CResolveNode clip; // magic-static guard @0x6bf314, ctor 0x1549d0 + atexit
-    if (clip.Resolve(m_0c, 0, b, c, d, 0)) {
+    if (clip.Resolve(m_parent, 0, b, c, d, 0)) {
         this->RenderImage(&clip, a);
     }
 }
@@ -426,7 +427,7 @@ static i32 g_imageClipRect[4]; // @0x6bf28c
 RVA(0x00153810, 0x95)
 void CImage::RenderFrameClipped(void* a, void* b, void* c, void* rect, void* d) {
     static CResolveNode clip; // magic-static guard @0x6bf29c, ctor 0x1549d0 + atexit
-    if (clip.Resolve(m_0c, 0, b, c, d, 0)) {
+    if (clip.Resolve(m_parent, 0, b, c, d, 0)) {
         if (rect != 0) {
             g_imageClipRect[0] = ((i32*)rect)[0];
             g_imageClipRect[1] = ((i32*)rect)[1];

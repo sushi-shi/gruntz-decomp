@@ -57,15 +57,20 @@ i32 CSBI_GruntMachine::Render(i32 z) {
 
     CImage* f = m_44;
     if (f) {
-        f->RenderFrame((void*)ctx, (void*)(m_14 + f->m_18), (void*)(m_18 + f->m_1c), 0);
+        f->RenderFrame((void*)ctx, (void*)(m_14 + f->m_anchorX), (void*)(m_18 + f->m_anchorY), 0);
     }
     f = m_3c;
     if (f) {
-        f->RenderFrame((void*)ctx, (void*)(m_14 + f->m_18 + 0x2c), (void*)(m_18 + f->m_1c), 0);
+        f->RenderFrame(
+            (void*)ctx,
+            (void*)(m_14 + f->m_anchorX + 0x2c),
+            (void*)(m_18 + f->m_anchorY),
+            0
+        );
     }
     f = m_34;
     if (f) {
-        f->RenderFrame((void*)ctx, (void*)(m_14 + f->m_18), (void*)(m_18 + f->m_1c), 0);
+        f->RenderFrame((void*)ctx, (void*)(m_14 + f->m_anchorX), (void*)(m_18 + f->m_anchorY), 0);
     }
     return 1;
 }
