@@ -73,9 +73,9 @@ struct CMultiSlotList {
     CMultiSlotList(i32 nBlockSize) : m_list(nBlockSize) {
         m_1c = 0;
     }
-    void Method1546(i32 a);                      // 0x37910
-    void Method2a45(i32 a, i32 b);               // 0x37ff0
-    void Method3396(i32 a, i32 b, i32 c, i32 d); // 0x38150
+    void Method1546(i32 a);                     // 0x37910
+    void Method2a45(i32 a, i32 b);              // 0x37ff0
+    i32 Method3396(i32 a, i32 b, i32 c, i32 d); // 0x38150 (own body below)
 };
 
 // ---------------------------------------------------------------------------
@@ -278,6 +278,39 @@ i32 CMultiStartDlg::UpdateSlot() {
         m_slotList->Method3396(v, 0x527, reg2->m_5a4, reg2->m_5a8);
     }
     return 1;
+}
+
+// CMultiSlotList::Method3396 (0x38150) - re-homed from the ApiCallerStubs stub.
+// Find the list item in control `id` of dialog `hDlg` whose item-data equals
+// MAKELONG(lo, hi) and select it (LB_SETCURSEL); returns 1 if found, else 0. The
+// method ignores `this` (a dialog-item scan) - ecx is unused, so the __thiscall
+// body is byte-identical to the former __stdcall stub. hDlg/id carry the caller's
+// i32 (GetSafe1c/control-id); cast to HWND only at the Win32 boundary.
+RVA(0x00038150, 0x91)
+i32 CMultiSlotList::Method3396(i32 hDlg, i32 id, i32 lo, i32 hi) {
+    HWND list = GetDlgItem((HWND)hDlg, id);
+    if (!list) {
+        return 0;
+    }
+    i32 searching = 1;
+    i32 i = 0;
+    while (searching) {
+        i32 data = SendMessageA(list, 0x150, i, 0);
+        if (data != -1) {
+            i32 itemLo = data & 0xffff;
+            i32 itemHi = (u32)data >> 0x10;
+            if (itemLo == lo && itemHi == hi) {
+                if (SendMessageA(list, 0x147, 0, 0) != i) {
+                    SendMessageA(list, 0x14e, i, 0);
+                }
+                return 1;
+            }
+        } else {
+            searching = 0;
+        }
+        i++;
+    }
+    return 0;
 }
 
 // -------------------------------------------------------------------------
@@ -489,6 +522,35 @@ CWnd* CBattlezDlg::GetCtrlD(i32 index) {
             break;
     }
     return result;
+}
+
+// Listbox helpers over the GetCtrlA/GetCtrlC control families (0x15cc0/d00/d30/
+// d70): each resolves its control via a sibling GetCtrl (ecx=this is preserved
+// across the call, so no reload is emitted - same shape as SetCtrlBText) then
+// drives its listbox via SendMessageA (LB_GETCURSEL 0x147 / LB_SETCURSEL 0x14e).
+// SetCurSelA/C set the selection; Query015d00/Query015d30 read it.
+RVA(0x00015cc0, 0x23)
+i32 CBattlezDlg::SetCurSelA(i32 id, i32 sel) {
+    CWnd* c = GetCtrlA(id);
+    return SendMessageA(c->m_hWnd, 0x14e, sel, 0);
+}
+
+RVA(0x00015d00, 0x20)
+i32 CBattlezDlg::Query015d00(i32 slot) {
+    CWnd* c = GetCtrlA(slot);
+    return SendMessageA(c->m_hWnd, 0x147, 0, 0);
+}
+
+RVA(0x00015d30, 0x21)
+i32 CBattlezDlg::Query015d30(i32 id) {
+    CWnd* c = GetCtrlC(id);
+    return SendMessageA(c->m_hWnd, 0x147, 0, 0) + 1;
+}
+
+RVA(0x00015d70, 0x24)
+i32 CBattlezDlg::SetCurSelC(i32 id, i32 sel) {
+    CWnd* c = GetCtrlC(id);
+    return SendMessageA(c->m_hWnd, 0x14e, sel - 1, 0);
 }
 
 // SetCtrlBText - resolve control `index` via GetCtrlB (through the thunk) and

@@ -118,6 +118,12 @@ public:
     CWnd* GetCtrlB(i32 index);
     CWnd* GetCtrlC(i32 index);
     CWnd* GetCtrlD(i32 index);
+    // Listbox cur-sel helpers over the GetCtrlA/GetCtrlC families (own
+    // RVA-annotated bodies in Dialogs.cpp; 0x15cc0/d30/d70).
+    i32 SetCurSelA(i32 id, i32 sel); // 0x015cc0  LB_SETCURSEL(GetCtrlA)
+    i32 Query015d00(i32 slot);       // 0x015d00  LB_GETCURSEL(GetCtrlA)
+    i32 Query015d30(i32 id);         // 0x015d30  LB_GETCURSEL(GetCtrlC) + 1
+    i32 SetCurSelC(i32 id, i32 sel); // 0x015d70  LB_SETCURSEL(GetCtrlC, sel-1)
     // SetCtrlBText - GetCtrlB(index)->SetWindowTextA(text).
     void SetCtrlBText(i32 index, const char* text);
     // SetSlotValue - store val into slot[index].field@0x158; returns TRUE.
@@ -134,11 +140,9 @@ public:
 
     // Slot/option helpers reached via ILT thunks (own CBattlezDlg methods, owned
     // as RVA stubs in src/Stub/ApiCallers.cpp; external/no-body here so the calls
-    // reloc-mask). Sub015fe0 sets the active option N; Sub0173e0 refreshes; the
-    // Query015d00(slot) probes whether a slot is occupied.
+    // reloc-mask). Sub015fe0 sets the active option N; Sub0173e0 refreshes.
     void Sub015fe0(i32 option); // 0x015fe0
     void Sub0173e0();           // 0x0173e0
-    i32 Query015d00(i32 slot);  // 0x015d00
 
     // The four per-option apply handlers (0x15de0/15e60/15ee0/15f60): set option N,
     // refresh, then enable IDOK when any of slots 1..3 is occupied.

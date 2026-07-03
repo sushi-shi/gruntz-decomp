@@ -48,7 +48,7 @@ struct GameObj510 {
     char m_pad0[0x510];
     i32 m_510; // +0x510
 };
-DATA(0x0064556c)
+DATA(0x0024556c)
 extern CGameReg* g_gameReg;
 
 // Miles Sound System (AIL) imports - reached through the IAT (ff 15 [__imp]).
@@ -71,31 +71,31 @@ extern "C" {
 }
 
 // The AIL MIDI driver handle (DAT_00653c5c), 0 when no driver is open.
-DATA(0x00653c5c)
+DATA(0x00253c5c)
 extern i32 g_ailMidiDriver;
 
 // Monotonic counter naming auto-generated MIDI sequences ("MIDI%i", DAT_00653c60).
-DATA(0x00653c60)
+DATA(0x00253c60)
 extern i32 g_midiSeqCounter;
 
 // Cached AIL driver handle passed to AIL_set_* (DAT_00653c64).
-DATA(0x00653c64)
+DATA(0x00253c64)
 extern i32 g_ailDriver64;
 
 // MS-CRT-style LCG RNG state shared by the timeGetTime random helpers.
-DATA(0x006c127d)
+DATA(0x002c127d)
 extern char g_rngSeeded; // bit0 set once the generator has been seeded
-DATA(0x006c1288)
+DATA(0x002c1288)
 extern i32 g_rngState; // the current 32-bit LCG state
 
 // Per-frame cached random bit used by the deterministic coin-flip helper.
-DATA(0x0064c22c)
+DATA(0x0024c22c)
 extern char g_coinRolled; // bit0 set once this frame's coin was rolled
-DATA(0x0064c26c)
+DATA(0x0024c26c)
 extern i32 g_coinValue; // the cached 0/1 result
 
 // GetDlgItem(hWnd,0x4b6) cache (DAT_00648ce0), shared by several timer wrappers.
-DATA(0x00648ce0)
+DATA(0x00248ce0)
 extern HWND g_dlgItem_648ce0;
 
 // The Rez heap allocator (_RezAlloc, defined in EngineExternFns.cpp).
@@ -103,11 +103,11 @@ extern "C" void* RezAlloc(u32 size);
 
 // USER32 entry points reached through game-owned IAT-style function pointers
 // (ff 15 [ptr]); g_pSendMessageA is the same global BattlezDlgRow.cpp binds.
-DATA(0x006c4520)
+DATA(0x002c4520)
 extern HWND(WINAPI* g_pGetFocus)();
-DATA(0x006c44a4)
+DATA(0x002c44a4)
 extern LRESULT(WINAPI* g_pSendMessageA)(HWND, UINT, WPARAM, LPARAM);
-DATA(0x006c44f0)
+DATA(0x002c44f0)
 extern BOOL(WINAPI* g_pInvalidateRect)(HWND, const RECT*, BOOL);
 
 namespace ApiCallerStubs {
@@ -422,38 +422,7 @@ namespace ApiCallerStubs {
         char m_pad0[0x1c];
         HWND m_hwnd; // +0x1c
     };
-    // Dialog-item resolver at RVA 0x15ac0 (reached through the 0x1e7e jmp-thunk).
-    WndItem* __stdcall ResolveItem_15ac0(i32 id);
-
-    // __stdcall(id, wParam): set the resolved item's listbox selection (0x14e).
-    RVA(0x00015cc0, 0x23)
-    i32 __stdcall winapi_015cc0_SendMessageA(i32 id, i32 wParam) {
-        WndItem* it = ResolveItem_15ac0(id);
-        return SendMessageA(it->m_hwnd, 0x14e, wParam, 0);
-    }
-
-    // __stdcall(id): send 0x147 (clear listbox selection) to the resolved item.
-    RVA(0x00015d00, 0x20)
-    void __stdcall winapi_015d00_SendMessageA(i32 id) {
-        WndItem* it = ResolveItem_15ac0(id);
-        SendMessageA(it->m_hwnd, 0x147, 0, 0);
-    }
-
-    // Dialog-item resolver at RVA 0x33a0 (stdcall, returns a CWnd-ish whose HWND is +0x1c).
-    WndItem* __stdcall ResolveItem_33a0(i32 id);
-    // __stdcall(id): clear listbox selection (0x147) of the resolved item; return +1.
-    RVA(0x00015d30, 0x21)
-    i32 __stdcall winapi_015d30_SendMessageA(i32 id) {
-        WndItem* it = ResolveItem_33a0(id);
-        return SendMessageA(it->m_hwnd, 0x147, 0, 0) + 1;
-    }
-
-    // __stdcall(id, wParam): set the resolved item's listbox selection to wParam-1.
-    RVA(0x00015d70, 0x24)
-    i32 __stdcall winapi_015d70_SendMessageA(i32 id, i32 wParam) {
-        WndItem* it = ResolveItem_33a0(id);
-        return SendMessageA(it->m_hwnd, 0x14e, wParam - 1, 0);
-    }
+    // (0x15cc0/d00/d30/d70 listbox helpers re-homed to CBattlezDlg in Dialogs.cpp.)
 
     // A dialog-host class whose GetItem(id) (RVA 0x1be27d) returns a CWnd-ish
     // whose HWND lives at +0x1c.
@@ -567,34 +536,7 @@ namespace ApiCallerStubs {
         m_h74 = m_rc60.bottom - m_rc60.top;
     }
 
-    // __stdcall(hDlg, id, lo, hi): find the list item whose data == MAKELONG(lo,hi)
-    // and select it. Returns 1 if found.
-    RVA(0x00038150, 0x91)
-    i32 __stdcall winapi_038150_GetDlgItem(HWND hDlg, i32 id, i32 lo, i32 hi) {
-        HWND list = GetDlgItem(hDlg, id);
-        if (!list) {
-            return 0;
-        }
-        i32 searching = 1;
-        i32 i = 0;
-        while (searching) {
-            i32 data = SendMessageA(list, 0x150, i, 0);
-            if (data != -1) {
-                i32 itemLo = data & 0xffff;
-                i32 itemHi = (u32)data >> 0x10;
-                if (itemLo == lo && itemHi == hi) {
-                    if (SendMessageA(list, 0x147, 0, 0) != i) {
-                        SendMessageA(list, 0x14e, i, 0);
-                    }
-                    return 1;
-                }
-            } else {
-                searching = 0;
-            }
-            i++;
-        }
-        return 0;
-    }
+    // (0x38150 find-and-select re-homed to CMultiSlotList::Method3396 in Dialogs.cpp.)
 
     // __stdcall(hDlg, id, *lo, *hi): split the selected listbox item's data into
     // two words. Returns 1 if a valid item is selected.
@@ -800,7 +742,7 @@ namespace ApiCallerStubs {
     }
 
     // The shared caption buffer (DAT_0060aac8) passed as the MessageBoxA title.
-    DATA(0x0060aac8)
+    DATA(0x0020aac8)
     extern char g_msgCaption[];
     struct Poly08 {
         struct PolyVtbl08* m_vptr;
@@ -959,29 +901,29 @@ namespace ApiCallerStubs {
 
     // The settings dialog's 12 numeric edit fields, cached as globals between the
     // WM_INITDIALOG load and the IDOK store.
-    DATA(0x0064526c)
+    DATA(0x0024526c)
     extern i32 g_dlgVal_64526c;
-    DATA(0x006452d0)
+    DATA(0x002452d0)
     extern i32 g_dlgVal_6452d0;
-    DATA(0x00645268)
+    DATA(0x00245268)
     extern i32 g_dlgVal_645268;
-    DATA(0x00645568)
+    DATA(0x00245568)
     extern i32 g_dlgVal_645568;
-    DATA(0x00645538)
+    DATA(0x00245538)
     extern i32 g_dlgVal_645538;
-    DATA(0x006451a4)
+    DATA(0x002451a4)
     extern i32 g_dlgVal_6451a4;
-    DATA(0x006452d4)
+    DATA(0x002452d4)
     extern i32 g_dlgVal_6452d4;
-    DATA(0x006452a8)
+    DATA(0x002452a8)
     extern i32 g_dlgVal_6452a8;
-    DATA(0x00645558)
+    DATA(0x00245558)
     extern i32 g_dlgVal_645558;
-    DATA(0x00645560)
+    DATA(0x00245560)
     extern i32 g_dlgVal_645560;
-    DATA(0x0064555c)
+    DATA(0x0024555c)
     extern i32 g_dlgVal_64555c;
-    DATA(0x00645564)
+    DATA(0x00245564)
     extern i32 g_dlgVal_645564;
     // __stdcall DlgProc(hDlg, msg, wParam, lParam): a numeric settings dialog.
     RVA(0x00092ab0, 0x20d)
@@ -1071,7 +1013,7 @@ namespace ApiCallerStubs {
         return 1;
     }
 
-    DATA(0x00645ca4)
+    DATA(0x00245ca4)
     extern i32 g_dlg645ca4; // DAT_00645ca4 (the active dialog HWND)
     i32 __cdecl DlgFallback_215d(HWND hDlg, i32 wParam, i32 cur); // RVA 0x215d
     void __cdecl DlgInit_2ee6(HWND hDlg, i32 v);                  // RVA 0x2ee6
@@ -1104,9 +1046,9 @@ namespace ApiCallerStubs {
     }
 
     // The DirectPlay application GUID (DAT_0060fab8), passed by value to Connect.
-    DATA(0x0060fab8)
+    DATA(0x0020fab8)
     extern GUID g_dplayAppGuid;
-    DATA(0x00648cf0)
+    DATA(0x00248cf0)
     extern i32 g_isHost_648cf0; // DAT_00648cf0: nonzero when hosting
     struct DPlayConn_0b77a0 {
         i32 Connect(i32 sessionFlags, GUID guid); // thiscall, RVA 0x1780b0
@@ -1233,7 +1175,7 @@ namespace ApiCallerStubs {
     }
 
     // DAT_0064557c: the active modeless dialog HWND, cached on entry/init.
-    DATA(0x0064557c)
+    DATA(0x0024557c)
     extern HWND g_curDlg_64557c;
     // The chat/lobby PeerSession singleton at DAT_006496ac. Defined here (rather than
     // at its natural RVA-order point below) so the lobby DlgProcs earlier in RVA order
@@ -1388,7 +1330,7 @@ namespace ApiCallerStubs {
         ~GameCStr_be2f0(); // dtor RVA 0x1b9cde (thiscall)
     };
     // The "client status" CString global (?g_6473d8@@3VCString@@A).
-    DATA(0x006473d8)
+    DATA(0x002473d8)
     extern GameCStr_be2f0 g_clientStatus;
     void FormatCStr_1b2cf5(GameCStr_be2f0* dst, const char* fmt, const char* a); // RVA 0x1b2cf5
     void InitDropPrompt_be3e0(HWND hWnd, void* ctx); // thunk 0x2185 -> 0xbe3e0 (cdecl)
@@ -1411,7 +1353,7 @@ namespace ApiCallerStubs {
         }
     }
 
-    DATA(0x006496ac)
+    DATA(0x002496ac)
     extern PeerSession_0be490* g_peerSession; // DAT_006496ac (struct defined above)
     extern "C" char g_emptyString[];          // 0x6293f4
     // __cdecl(hWnd, gate): read the chat-edit text and, if non-empty, submit it.
@@ -1439,7 +1381,7 @@ namespace ApiCallerStubs {
         void Stop();                       // RVA 0xb95f0
         void SetStatus(char* text, i32 f); // RVA 0xb7e30 (thunk 0x1af0)
     };
-    DATA(0x006487e0)
+    DATA(0x002487e0)
     extern char g_sessionFlag; // DAT_006487e0
     // __cdecl(hWnd, session): stop the session and end the dialog appropriately.
     RVA(0x000be490, 0x84)
@@ -1462,7 +1404,7 @@ namespace ApiCallerStubs {
 
     // CString-data ptr (DAT_00649618): the pending drop-in player's name; its
     // CString length lives 8 bytes before the data.
-    DATA(0x00649618)
+    DATA(0x00249618)
     extern char* g_playerName_649618;
     i32 __cdecl Format_11f890(char* buf, const char* fmt, ...); // RVA 0x11f890
     void Init_2ed7(HWND hWnd, void* ctx);                       // RVA 0x2ed7 (__cdecl)
@@ -1564,7 +1506,7 @@ namespace ApiCallerStubs {
         CStr_c3e30 m_5b8;     // +0x5b8
         void Commit3ada(i32); // thiscall thunk RVA 0x3ada
     };
-    DATA(0x0064bd5c)
+    DATA(0x0024bd5c)
     extern ReplayModel_64bd5c* g_replayModel;
     extern "C" char g_emptyStr_6293f4[]; // 0x6293f4
     // The host dialog; m_6c is a dirty flag, GetItem27d resolves a child CWnd.
@@ -1607,7 +1549,7 @@ namespace ApiCallerStubs {
         char m_pad52c[0x5c0 - 0x52c];
         i32 m_5c0; // +0x5c0 local player colour id
     };
-    DATA(0x0064bd5c)
+    DATA(0x0024bd5c)
     extern SelOwner_0c50f0* g_64bd5c;
     // MFC CString return value the per-slot name formatter fills; its ~ is 0x1b9cde.
     struct DlgStr_c4230 {
@@ -1992,7 +1934,7 @@ namespace ApiCallerStubs {
         return g_coinValue;
     }
 
-    DATA(0x0064c69c)
+    DATA(0x0024c69c)
     extern i32 g_flag64c69c; // DAT_0064c69c
     struct CmdWnd_0de590 {
         i32 m_0;
@@ -2013,9 +1955,9 @@ namespace ApiCallerStubs {
         PostMessageA(m_4->m_4->m_4, 0x111, 0x8027, 0);
     }
 
-    DATA(0x0064c86c)
+    DATA(0x0024c86c)
     extern i32 g_dlg64c86c; // DAT_0064c86c (the active dialog HWND)
-    DATA(0x00613a9c)
+    DATA(0x00213a9c)
     extern i32 g_dlgSel613a9c;                                    // DAT_00613a9c
     i32 __cdecl DlgFallback_1302(HWND hDlg, i32 wParam, i32 cur); // RVA 0x1302
     void __cdecl DlgInit_2e05(HWND hDlg, i32 v);                  // RVA 0x2e05
@@ -2047,7 +1989,7 @@ namespace ApiCallerStubs {
     // SetDlgItemTextA helper defined below (RVA 0xe4850, reached via thunk 0x103c).
     void winapi_0e4850_SetDlgItemTextA(HWND hWnd, void* gate, char* item);
     // The optional info-line text shown on WM_INITDIALOG (DAT_0064c864).
-    DATA(0x0064c864)
+    DATA(0x0024c864)
     extern char* g_dlgInfoText;
 
     // The gameReg->m_58 dialog helper sub-object; its M1834/M2d97 thunks live in
@@ -2160,15 +2102,15 @@ namespace ApiCallerStubs {
         char m_pad0[0x14];
         void(__cdecl* m_14)(i16); // +0x14 function pointer member
     };
-    DATA(0x0064e0b8)
+    DATA(0x0024e0b8)
     extern i32 g_midiOpen_64e0b8;
-    DATA(0x0064e0b0)
+    DATA(0x0024e0b0)
     extern MidiDrv_0f8e20* g_midiDrv_64e0b0;
-    DATA(0x0064e0a4)
+    DATA(0x0024e0a4)
     extern i16 g_midiPort_64e0a4;
-    DATA(0x0064dd28)
+    DATA(0x0024dd28)
     extern i16 g_midiDev_64dd28;
-    DATA(0x0064e0a8)
+    DATA(0x0024e0a8)
     extern HMODULE g_midiLib_64e0a8;
     void __cdecl MidiShutdown_3382(); // RVA 0x3382
     // __cdecl(): tear the MIDI driver down and free its DLL.
@@ -2865,7 +2807,7 @@ namespace ApiCallerStubs {
     // (destroyed flag) are the CGameWnd ctor-zeroed fields.)
 
     // The app HINSTANCE used as the resource module (DAT_00683ee0).
-    DATA(0x00683ee0)
+    DATA(0x00283ee0)
     extern HINSTANCE g_resModule;
 
     // The header of the locked RT_BITMAP resource (its +0xe must be 8).
@@ -2954,9 +2896,9 @@ namespace ApiCallerStubs {
     }
 
     // A second MS-CRT-style LCG, seeded lazily from timeGetTime.
-    DATA(0x006c278c)
+    DATA(0x002c278c)
     extern char g_rng2Seeded; // bit0 set once seeded
-    DATA(0x006c2798)
+    DATA(0x002c2798)
     extern i32 g_rng2State; // 32-bit LCG state
     // __cdecl rand(): lazily seed from timeGetTime, then advance the MS-CRT LCG.
     RVA(0x0015cbe0, 0x46)
@@ -3107,7 +3049,7 @@ namespace ApiCallerStubs {
     }
 
     // The resource-module handle for palette lookups (DAT_006bf6e0).
-    DATA(0x006bf6e0)
+    DATA(0x002bf6e0)
     extern HINSTANCE g_palModule_6bf6e0;
     struct PalHost_1775f0 {
         i32 Apply(const char* name, i32 arg);
