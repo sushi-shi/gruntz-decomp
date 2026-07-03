@@ -116,7 +116,7 @@ i32 Font::LoadFont(CString szFileName) {
     FreeMemory();
 
     CFile file;
-    if (!file.Open((const char*)szFileName, 0, 0)) {
+    if (!file.Open(szFileName, 0, 0)) {
         return 0;
     }
 
@@ -155,7 +155,7 @@ i32 Font::LoadFont(CString szFileName) {
 RVA(0x001799f0, 0x16d)
 i32 Font::SaveFont(CString szFileName) {
     CFile file;
-    if (!file.Open((const char*)szFileName, 0x1001, 0)) {
+    if (!file.Open(szFileName, 0x1001, 0)) {
         return 0;
     }
 
@@ -296,8 +296,8 @@ void FontRenderer::SetColor(i32 color) {
 // FontRenderer::GetChar
 //
 RVA(0x0017b4f0, 0xc)
-u8 FontRenderer::GetChar(i32 i) {
-    return ((u8*)m_font)[i];
+u8 CharCursor::GetChar(i32 i) {
+    return m_str[i];
 }
 
 // =========================================================================
@@ -472,7 +472,7 @@ void FontRenderer::DrawWrapped(
                 if (head.GetLength() > 0) {
                     while (y < bottom) {
                         i32 chW =
-                            MeasureText(CString((char)((FontRenderer*)&head)->GetChar(0), 1)).width;
+                            MeasureText(CString((char)((CharCursor*)&head)->GetChar(0), 1)).width;
                         if (chW + x > right) {
                             if (hcenter) {
                                 i32 cx = x0 + ((TextRange*)&x0)->Span() / 2
@@ -603,7 +603,7 @@ TextExtent FontRenderer::MeasureWrapped(CString text, i32 x0, i32 top, i32 right
                     i32 j = 0;
                     while (y < bottom) {
                         i32 chW =
-                            MeasureText(CString((char)((FontRenderer*)&head)->GetChar(j), 1)).width;
+                            MeasureText(CString((char)((CharCursor*)&head)->GetChar(j), 1)).width;
                         if (chW + x > right) {
                             y = y + m_font->GetMaxHeight();
                             x = x0;
@@ -710,7 +710,7 @@ FontRenderer::LayoutWrapped(CString text, i32 x0, i32 begin, i32 right, i32 bott
                 if (head.GetLength() > 0) {
                     while (y < bottom) {
                         i32 chW =
-                            MeasureText(CString((char)((FontRenderer*)&head)->GetChar(0), 1)).width;
+                            MeasureText(CString((char)((CharCursor*)&head)->GetChar(0), 1)).width;
                         if (chW + x > right) {
                             y = y + m_font->GetMaxHeight();
                             x = x0;

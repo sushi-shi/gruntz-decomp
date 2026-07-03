@@ -19,12 +19,10 @@
 #define SRC_FONT_FONT_H
 #include <rva.h> // OVERRIDE macro (override under clang, no-op under MSVC 5.0)
 
-// ---------------------------------------------------------------------------
-// Global operator delete (the NAFXCW heap). External / no-body so its
-// `call rel32` displacement reloc-masks in objdiff. The matching global scalar
-// operator new (NAFXCW ??2@YAPAXI@Z) is declared by <Mfc.h> below.
-// ---------------------------------------------------------------------------
-void operator delete(void* p);
+// The global operator new / delete (the NAFXCW heap) are the language's
+// implicitly-declared allocation functions (also surfaced by <Mfc.h>/<new> below);
+// no local re-declaration is needed - their `call rel32` displacements reloc-mask
+// in objdiff exactly the same.
 
 // ---------------------------------------------------------------------------
 // The MFC I/O stack the font file is read through. Each class is reconstructed
@@ -82,8 +80,10 @@ public:
     void** m_surfaces; // +0x08
     Glyph* m_glyphs;   // +0x0c
     i32 m_maxHeight;   // +0x10
+    i32 m_reserved14;  // +0x14  (unread here; present in the retail object)
 };
-SIZE_UNKNOWN(Font);
+SIZE(Font, 0x18); // the four global Font instances are laid out 0x18 apart
+                  // (g_mediumFont 0x24eae8 -> g_smallFont 0x24eb00, adjacent)
 
 // ---------------------------------------------------------------------------
 // The pixel extent of a measured run of text: {total advance width, line
@@ -118,21 +118,19 @@ SIZE(Rect, 0x10); // 16-byte by-value rectangle bundle
 // a destination box plus alignment/limit fields. Only the offsets the matched
 // methods read are load-bearing.
 struct DrawRect {
-    i32 left;     // +0x00
-    i32 top;      // +0x04
-    i32 right;    // +0x08
-    i32 bottom;   // +0x0c
-    i32 m_10;     // +0x10
-    i32 m_14;     // +0x14
-    i32 m_bottom; // +0x18  (vertical limit, clip test in DrawLine)
+    i32 left;                 // +0x00
+    i32 top;                  // +0x04
+    i32 right;                // +0x08
+    i32 bottom;               // +0x0c
+    char _pad10[0x18 - 0x10]; // +0x10..0x17  (not read by the matched draw methods)
+    i32 m_bottom;             // +0x18  (vertical limit, clip test in DrawLine)
 };
-SIZE_UNKNOWN(DrawRect);
+SIZE_UNKNOWN(DrawRect); // caller-owned layout rect (allocated in the draw caller's TU)
 
 class FontRenderer {
 public:
     FontRenderer();
     void SetColor(i32 color);
-    u8 GetChar(i32 i);
 
     // Text geometry + drawing (the ClassUnknown_52 cluster).
     TextExtent MeasureText(CString text); // 0x17ac50
@@ -175,12 +173,17 @@ public:
         i32* outLen
     ); // 0x17b120
 
-    Font* m_font;    // +0x00  (Font* to render with)
-    i32 m_color;     // +0x04  (packed colour, default 0x00ffffff)
-    void* m_surface; // +0x08  (optional dest surface pointer)
-    void* m_clip;    // +0x0c  (optional clip rect pointer)
+    Font* m_font; // +0x00  (Font* to render with)
+    i32 m_color;  // +0x04  (packed colour, default 0x00ffffff)
+    // m_surface / m_clip are optional engine drawing handles (a destination surface
+    // and a clip rect) used here only as present/absent flags in DrawLineClipped;
+    // their concrete engine types are set by an unmatched TU, so they stay void*
+    // (documented opaque-handle keep).
+    void* m_surface; // +0x08  (optional dest surface handle)
+    void* m_clip;    // +0x0c  (optional clip-rect handle)
 };
-SIZE_UNKNOWN(FontRenderer);
+SIZE(FontRenderer, 0x10); // stateful render shim; the ctor inits exactly the four
+                          // fields m_font/m_color/m_surface/m_clip (through +0x0c)
 
 // ---------------------------------------------------------------------------
 // TextRange - a {begin..end} view over a measured run of text, built on the
@@ -195,7 +198,21 @@ struct TextRange {
     char* m_end;   // +0x08
     i32 Span();    // 0x17b500
 };
-SIZE_UNKNOWN(TextRange);
+SIZE_UNKNOWN(TextRange); // {begin..end} view built on three adjacent stack CStrings
+
+// ---------------------------------------------------------------------------
+// CharCursor - the per-character accessor at 0x17b4f0. It reads byte `i` of the
+// char* stored at its +0x00. The word-wrap loops call it on their CString line
+// temps (whose m_pchData sits at +0x00) by reinterpreting the CString as this
+// accessor - the retail bridge between MFC CString storage and the engine's own
+// byte-indexed glyph lookup. GetChar's `this` is therefore always one of those
+// CString temps, never a real FontRenderer.
+// ---------------------------------------------------------------------------
+struct CharCursor {
+    u8* m_str;         // +0x00  (aliases CString::m_pchData)
+    u8 GetChar(i32 i); // 0x17b4f0
+};
+SIZE_UNKNOWN(CharCursor); // reinterpret view over a CString's m_pchData
 
 // ---------------------------------------------------------------------------
 // CWapNodeB - a WAP node carrying packed data + two owned string buffers.
@@ -222,7 +239,7 @@ SIZE_UNKNOWN(CWapNodeB);
 // InterfaceObject - a minimal COM-style object that carries a GUID pointer at
 // +0x04. The IsInterfaceX methods check whether that GUID matches a known iid.
 struct InterfaceObject {
-    void* m_00;      // +0x00 (vtable / first field; iid lives at +0x04)
+    char _pad00[4];  // +0x00  (unread by the iid checks below; iid lives at +0x04)
     const void* iid; // +0x04
     i32 IsInterface1();
     i32 IsInterface2();
@@ -230,7 +247,7 @@ struct InterfaceObject {
     i32 IsInterface4();
     i32 IsInterface5();
 };
-SIZE_UNKNOWN(InterfaceObject); // name shared with Net's polymorphic view; this is
-                               // Font's COM iid-checker (completeness-only)
+SIZE_UNKNOWN(InterfaceObject); // Font's COM iid-checker (completeness-only; allocated
+                               // elsewhere - name shared with Net's polymorphic view)
 
 #endif // SRC_FONT_FONT_H

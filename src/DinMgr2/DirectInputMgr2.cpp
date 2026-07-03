@@ -34,8 +34,6 @@
 // MB_ICONEXCLAMATION (0x30).
 #include <Win32.h>
 
-#include <new> // global scalar operator new / delete (NAFXCW ??2@YAPAXI@Z / ??3@YAXPAX@Z)
-
 // DInput SDK constants (real <dinput.h> names/values; the full header isn't
 // included because its hand-rolled COM interfaces / GUIDs here are matched by
 // shape - see IDirectInputZ above). Same immediates, so matching-neutral.
@@ -44,6 +42,11 @@
 #define DIEDFL_ATTACHEDONLY 1      // EnumDevices flags (attached devices only)
 #define DISCL_NONEXCLUSIVE 2       // SetCooperativeLevel: share the device
 #define DISCL_FOREGROUND 4         // SetCooperativeLevel: foreground-only access
+
+// The DInput property GUIDs SetupAxes uses, as the SDK's MAKEDIPROP(N) magic
+// pointer values ((const GUID*)(N)): DIPROP_RANGE=4, DIPROP_DEADZONE=5.
+#define DIPROP_RANGE ((const void*)4)
+#define DIPROP_DEADZONE ((const void*)5)
 
 // DirectInputMgr2::Create flags: each bit, when SET, SKIPS one sub-initializer.
 #define DIDF_NO_DEVICE_B 2    // skip InitB (device B)
@@ -98,8 +101,9 @@ extern "C" i32 g_thirdEnabled; // 0x653ab0
 DATA(0x002293f4)
 extern "C" char g_emptyString[]; // 0x6293f4
 
-// The engine allocator / deallocator (global operator new / delete) is declared
-// by <new>; reloc-masked rel32 (cdecl: callers `add esp,4`). Same address every TU.
+// The global operator new / delete (the engine allocator) are the language's
+// implicitly-declared allocation functions - no local re-declaration needed; their
+// `call rel32` displacements reloc-mask in objdiff exactly the same.
 
 // The three device-config vtables (0x5ef628 keyboard / 0x5ef640 mouse / 0x5ef658
 // joystick) and their two base-subobject vtables (0x5ef680 / 0x5ef670) are now
@@ -135,20 +139,14 @@ DATA(0x001ef538)
 extern const u8 g_deviceConfigB[]; // 0x5ef538 - device-B CreateDev config blob
 
 // ---------------------------------------------------------------------------
-// Class-metadata catalog: cl EMITS these five ??_7 vtables from the real
-// CInputDev* hierarchy (header). SIZE from the InitA/InitB `new` sizes; the two
-// base-subobject vtables + the joystick leaf are size-unknown (never allocated
-// standalone here / built by another TU).
+// Vtable catalog: cl EMITS these five ??_7 vtables from the real CInputDev*
+// hierarchy (header, where each class also carries its SIZE). Bind each emitted
+// ??_7 at its retail RVA.
 // ---------------------------------------------------------------------------
-SIZE_UNKNOWN(CInputDevRoot);
-VTBL(CInputDevRoot, 0x001ef670); // grand-base vtable (4 slots)
-SIZE_UNKNOWN(CInputDevBase);
-VTBL(CInputDevBase, 0x001ef680); // middle-base vtable (6 slots)
-SIZE(CInputDevice, 0x338);
-VTBL(CInputDevice, 0x001ef628); // keyboard-device vtable
-SIZE(CDeviceConfigB, 0x2c8);
+VTBL(CInputDevRoot, 0x001ef670);  // grand-base vtable (4 slots)
+VTBL(CInputDevBase, 0x001ef680);  // middle-base vtable (6 slots)
+VTBL(CInputDevice, 0x001ef628);   // keyboard-device vtable
 VTBL(CDeviceConfigB, 0x001ef640); // mouse-device vtable
-SIZE_UNKNOWN(CDeviceConfigC);
 VTBL(CDeviceConfigC, 0x001ef658); // joystick-device vtable
 
 // Shared-base ctor: zero the device fields + arm the latch. Inlined into InitA's
@@ -174,21 +172,19 @@ inline CDeviceConfigB::CDeviceConfigB() {
     m_flags = 0;
 }
 
-// The base placeholder virtual slots (declared count-exact in the header). Three of
-// them have real reloc-bound bodies (their retail addresses were previously unbound):
-//   Slot3 = IsValid (0x1332b0), Slot4 = base poll stub (0x133410), Slot5 = reset-state
-//   (0x1332c0). Slot1/Slot2 map to the non-virtual Create/ReleaseDevices helpers, so
-//   their vtable entries are reloc-masked placeholders (declared, not defined).
+// The root/base virtual-slot bodies. IsValid (slot 3, 0x1332b0) reports whether the
+// device came up; Poll (slot 4, 0x133410) is the base per-frame poll stub the leaves
+// override; ResetState (slot 5, 0x1332c0) clears the press-edge latch.
 RVA(0x001332b0, 0xb)
-i32 CInputDevRoot::Slot3() {
+i32 CInputDevRoot::IsValid() {
     return m_device2 != 0;
 }
 RVA(0x00133410, 0x3)
-i32 CInputDevBase::Slot4() {
+i32 CInputDevBase::Poll() {
     return 0;
 }
 RVA(0x001332c0, 0x1e)
-i32 CInputDevBase::Slot5() {
+i32 CInputDevBase::ResetState() {
     m_latchedKeys = -1;
     m_currentKeys = 0;
     m_edgeKeys = 0;
@@ -259,18 +255,18 @@ void DirectInputMgr2::Shutdown() {
         return;
     }
     if (m_deviceB != 0) {
-        m_deviceB->ScalarDtor(1);
+        delete m_deviceB;
         m_deviceB = 0;
     }
     if (m_deviceA != 0) {
-        m_deviceA->ScalarDtor(1);
+        delete m_deviceA;
         m_deviceA = 0;
     }
     i32 n = m_devices.m_size;
     for (i32 i = 0; i < n; i++) {
-        CInputDeviceBase* d = (i >= 0 && i < m_devices.m_size) ? m_devices.m_data[i] : 0;
+        CInputDevBase* d = (i >= 0 && i < m_devices.m_size) ? m_devices.m_data[i] : 0;
         if (d != 0) {
-            d->ScalarDtor(1);
+            delete d;
         }
     }
     m_devices.SetSize(0, -1);
@@ -294,10 +290,10 @@ i32 DirectInputMgr2::InitA(u32 flags) {
         return 0;
     }
     CDeviceConfigA* dev = new CDeviceConfigA;
-    m_deviceA = (CInputDeviceBase*)dev;
+    m_deviceA = dev;
     if (dev->CreateDev(m_directInput, g_deviceConfigA, m_owner, flags) == 0) {
         if (m_deviceA != 0) {
-            m_deviceA->ScalarDtor(1);
+            delete m_deviceA;
         }
         m_deviceA = 0;
         return 0;
@@ -317,10 +313,10 @@ i32 DirectInputMgr2::InitB(u32 flags) {
         return 0;
     }
     CDeviceConfigB* dev = new CDeviceConfigB;
-    m_deviceB = (CInputDeviceBase*)dev;
+    m_deviceB = dev;
     if (dev->CreateDev(m_directInput, g_deviceConfigB, m_owner, flags) == 0) {
         if (m_deviceB != 0) {
-            m_deviceB->ScalarDtor(1);
+            delete m_deviceB;
         }
         m_deviceB = 0;
         return 0;
@@ -338,12 +334,7 @@ i32 DirectInputMgr2::EnumGameControllers(u32) {
     if (di == 0) {
         return 0;
     }
-    i32 hr = di->EnumDevices(
-        DIDEVTYPE_JOYSTICK,
-        (void*)&DinEnumDevicesCallback,
-        (void*)this,
-        DIEDFL_ATTACHEDONLY
-    );
+    i32 hr = di->EnumDevices(DIDEVTYPE_JOYSTICK, DinEnumDevicesCallback, this, DIEDFL_ATTACHEDONLY);
     if (hr != 0) {
         GetErrorString(DINMGR2_FILE, 0xfb, hr);
         return 0;
@@ -357,10 +348,10 @@ i32 DirectInputMgr2::EnumGameControllers(u32) {
 RVA(0x00133080, 0x4a)
 i32 DirectInputMgr2::PollAll() {
     i32 failed = 0;
-    if (m_deviceA != 0 && m_deviceA->PollA() == 0) {
+    if (m_deviceA != 0 && m_deviceA->Poll() == 0) {
         failed = 1;
     }
-    if (m_deviceB != 0 && m_deviceB->PollA() == 0) {
+    if (m_deviceB != 0 && m_deviceB->Poll() == 0) {
         failed = 1;
     }
     if (PollArrayA() == 0) {
@@ -376,8 +367,8 @@ i32 DirectInputMgr2::PollArrayA() {
     i32 failed = 0;
     i32 n = m_devices.m_size;
     for (i32 i = 0; i < n; i++) {
-        CInputDeviceBase* d = m_devices.m_data[i];
-        if (d != 0 && d->PollA() == 0) {
+        CInputDevBase* d = m_devices.m_data[i];
+        if (d != 0 && d->Poll() == 0) {
             failed = 1;
         }
     }
@@ -389,10 +380,10 @@ i32 DirectInputMgr2::PollArrayA() {
 RVA(0x00133110, 0x4a)
 i32 DirectInputMgr2::ReadAll() {
     i32 failed = 0;
-    if (m_deviceA != 0 && m_deviceA->PollA() == 0) {
+    if (m_deviceA != 0 && m_deviceA->Poll() == 0) {
         failed = 1;
     }
-    if (m_deviceB != 0 && m_deviceB->PollA() == 0) {
+    if (m_deviceB != 0 && m_deviceB->Poll() == 0) {
         failed = 1;
     }
     if (PollArrayB() == 0) {
@@ -408,8 +399,8 @@ i32 DirectInputMgr2::PollArrayB() {
     i32 failed = 0;
     i32 n = m_devices.m_size;
     for (i32 i = 0; i < n; i++) {
-        CInputDeviceBase* d = m_devices.m_data[i];
-        if (d != 0 && d->PollB() == 0) {
+        CInputDevBase* d = m_devices.m_data[i];
+        if (d != 0 && d->ResetState() == 0) {
             failed = 1;
         }
     }
@@ -443,15 +434,7 @@ void* DirectInputMgr2::AddController(i32 count, i32 a2, i32 a3) {
     if (count == 0) {
         return 0;
     }
-    void* raw = operator new(0x88);
-    CDeviceListNode* node;
-    if (raw != 0) {
-        ((CDeviceListNode*)raw)->m_next = 0;
-        ((CDeviceListNode*)raw)->m_004 = 0;
-        node = (CDeviceListNode*)raw;
-    } else {
-        node = 0;
-    }
+    CDeviceListNode* node = new CDeviceListNode; // operator new(0x88) + ctor zeroes the links
     if (node->ConfigCreate(count, a2, a3) == 0) {
         if (node != 0) {
             node->ConfigDtor();
@@ -658,7 +641,7 @@ i32 CInputDevice::CreateDev(IDirectInputZ* di, const void* cfg, void* owner, u32
     }
     m_modeFlags = flags;
     SetupKeyTable();
-    if (SetDataFormat((void*)g_keyboardDataFormat) == 0) {
+    if (SetDataFormat(g_keyboardDataFormat) == 0) {
         return 0;
     }
     if (SetCooperativeLevel(DISCL_NONEXCLUSIVE | DISCL_FOREGROUND) == 0) {
@@ -668,7 +651,7 @@ i32 CInputDevice::CreateDev(IDirectInputZ* di, const void* cfg, void* owner, u32
     if (buf == 0) {
         return 0;
     }
-    m_stateBuffer = buf;
+    m_stateBuffer = (DeviceState*)buf;
     m_stateBufferSize = STATE_BUFFER_SIZE;
     return 1;
 }
@@ -683,7 +666,7 @@ void CInputDevice::Teardown() {
         m_stateBuffer = 0;
         m_stateBufferSize = 0;
     }
-    ReleaseDevices();
+    CInputDevRoot::ReleaseDevices(); // qualified -> direct call (reloc-masked)
 }
 
 // CInputDevice::SetupKeyTable (__thiscall, no args). Zeroes the m_keyTable scan-code
@@ -784,7 +767,7 @@ i32 CInputDevice::Poll() {
             m_currentKeys |= 0x80000000;
         }
     } else {
-        u8* buf = (u8*)m_stateBuffer;
+        u8* buf = m_stateBuffer->keys;
         if (buf[m_keyTable[0]] & 0x80) {
             m_currentKeys |= 1;
         }
@@ -962,10 +945,10 @@ i32 CInputDevBase::CreateDeviceWrap(IDirectInputZ* di, const void* guid, void* h
     if (hwnd == 0) {
         return 0;
     }
-    if (Create(di, guid, hwnd) == 0) {
+    if (CInputDevRoot::Create(di, guid, hwnd) == 0) { // qualified -> direct call 0x134cb0
         return 0;
     }
-    Slot5(); // +0x14 configure dispatch (virtual, slot 5)
+    ResetState(); // +0x14 dispatch (virtual, slot 5)
     return 1;
 }
 
@@ -987,14 +970,14 @@ i32 CDeviceConfigB::CreateDev(IDirectInputZ* di, const void* cfg, void* owner, u
         return 0;
     }
     m_flags = flags;
-    if (SetDataFormat((void*)g_mouseDataFormat) == 0) {
+    if (SetDataFormat(g_mouseDataFormat) == 0) {
         return 0;
     }
     void* buf = operator new(0x10);
     if (buf == 0) {
         return 0;
     }
-    m_stateBuffer = buf;
+    m_stateBuffer = (DeviceState*)buf;
     m_stateBufferSize = 0x10;
     if (SetCooperativeLevel(DISCL_NONEXCLUSIVE | DISCL_FOREGROUND) == 0) {
         return 0;
@@ -1008,17 +991,6 @@ RVA(0x001343a0, 0xb)
 i32 CDeviceConfigB::IsReady() {
     return m_device2 != 0;
 }
-
-// The DirectInput mouse snapshot the +0x2a0 buffer holds for a mouse device
-// (DIMOUSESTATE): the relative axis deltas + the four button-down bytes (bit 0x80
-// is "down"). PollMouse reads lX/lY (lZ is ignored) and rgbButtons[0..3].
-SIZE_UNKNOWN(DIMouseStateZ);
-struct DIMouseStateZ {
-    i32 lX;           // +0x00
-    i32 lY;           // +0x04
-    i32 lZ;           // +0x08 (unread)
-    u8 rgbButtons[4]; // +0x0c
-};
 
 // The packed mouse-flag bits PollMouse computes into m_currentKeys: the four
 // button-down bits (low nibble) + the four direction bits (the top nibble).
@@ -1059,7 +1031,7 @@ i32 CInputDevice::PollMouse() {
     if (ReadState() == 0) {
         return 0;
     }
-    DIMouseStateZ* ms = (DIMouseStateZ*)m_stateBuffer;
+    DIMouseStateZ* ms = &m_stateBuffer->mouse;
     if (ms == 0) {
         return 0;
     }
@@ -1099,17 +1071,6 @@ i32 CInputDevice::PollMouse() {
     return 1;
 }
 
-// The DirectInput joystick snapshot the +0x2a0 buffer holds for a joystick device
-// (DIJOYSTATE2): the lX/lY axes then, at +0x30, the 128-button array (bit 0x80 is
-// "down"). PollJoystick reads lX/lY and the first ten buttons.
-SIZE_UNKNOWN(DIJoyState2Z);
-struct DIJoyState2Z {
-    i32 lX; // +0x00
-    i32 lY; // +0x04
-    char pad08[0x30 - 0x08];
-    u8 rgbButtons[10]; // +0x30 (DIJOYSTATE2 has 128; only ten are mapped)
-};
-
 // CInputDevice::PollJoystick (0x1347d0, __thiscall no args). Poll() the device,
 // ReadState the +0x2a0 DIJOYSTATE2, pack the axis-direction + ten button-down bits
 // into m_currentKeys, then edge-reconcile each of the fourteen bits against
@@ -1124,7 +1085,7 @@ i32 CInputDevice::PollJoystick() {
     if (ReadState() == 0) {
         return 0;
     }
-    DIJoyState2Z* js = (DIJoyState2Z*)m_stateBuffer;
+    DIJoyState2Z* js = &m_stateBuffer->joy;
     if (js == 0) {
         return 0;
     }
@@ -1204,14 +1165,14 @@ i32 CDeviceConfigB::CreateDevJoystick(IDirectInputZ* di, const void* cfg, void* 
         return 0;
     }
     m_flags = flags;
-    if (SetDataFormat((void*)g_joystickDataFormat) == 0) {
+    if (SetDataFormat(g_joystickDataFormat) == 0) {
         return 0;
     }
     void* buf = operator new(0x110);
     if (buf == 0) {
         return 0;
     }
-    m_stateBuffer = buf;
+    m_stateBuffer = (DeviceState*)buf;
     m_stateBufferSize = 0x110;
     if (SetCooperativeLevel(DISCL_NONEXCLUSIVE | DISCL_FOREGROUND) == 0) {
         return 0;
@@ -1243,17 +1204,17 @@ i32 CDeviceConfigB::SetupAxes() {
     range.dwHow = 1;
     range.lMin = -1000;
     range.lMax = 1000;
-    if (SetProperty((const void*)4, &range) == 0) {
+    if (SetProperty(DIPROP_RANGE, &range) == 0) {
         return 0;
     }
     range.dwObj = 4;
-    if (SetProperty((const void*)4, &range) == 0) {
+    if (SetProperty(DIPROP_RANGE, &range) == 0) {
         return 0;
     }
-    if (SetPropertyDword((const void*)5, 0, 1, 0x1388) == 0) {
+    if (SetPropertyDword(DIPROP_DEADZONE, 0, 1, 0x1388) == 0) {
         return 0;
     }
-    return SetPropertyDword((const void*)5, 4, 1, 0x1388) != 0;
+    return SetPropertyDword(DIPROP_DEADZONE, 4, 1, 0x1388) != 0;
 }
 
 // CInputDevice::Create (__thiscall, ret 0xc => 3 args). Caches the
@@ -1309,7 +1270,7 @@ void CInputDevRoot::ReleaseDevices() {
 // reported and yields 0. Returns the +0x2a0 buffer pointer on success. (Helper that
 // Poll calls; reloc-masked direct call from 0x133d00.)
 RVA(0x00134d90, 0x60)
-void* CInputDevice::ReadState() {
+DeviceState* CInputDevice::ReadState() {
     if (m_stateBuffer == 0) {
         return 0;
     }
@@ -1329,7 +1290,7 @@ void* CInputDevice::ReadState() {
 // CInputDevice::SetDataFormat (__thiscall, ret 4 => 1 arg). Pass-through to
 // IDirectInputDevice::SetDataFormat; report on failure.
 RVA(0x00134eb0, 0x3b)
-i32 CInputDevRoot::SetDataFormat(void* fmt) {
+i32 CInputDevRoot::SetDataFormat(const void* fmt) {
     if (fmt == 0) {
         return 0;
     }
