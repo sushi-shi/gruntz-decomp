@@ -41,6 +41,17 @@ SIZE_UNKNOWN(CTrigPoint);
 // Read(dst, size)); defined fully in the eh sibling TU.
 struct CTmSerReader;
 
+// The placed grid-cell game object (a CGrunt). The full unified shape is a file-local
+// view in each TU; the grid stores pointers to it, so an incomplete decl suffices here.
+// Same for the level object, sound-channel helper and the two intrusive list-node shapes
+// the record/base lists hang off - each TU completes them as it needs.
+struct CTmCell;
+struct CTmLevel;
+struct CTmSoundChan;
+struct CTmNode;
+struct CTmRecNode;
+struct CTmArchive; // the serialize archive ScanGroup writes through (eh sibling completes it)
+
 class CTriggerMgr {
 public:
     // 0x7abc0: Load(ar) - deserialize the whole trigger-mgr state from the reader
@@ -56,7 +67,7 @@ public:
 
     // 0x6b640: store the supplied object at +0x22c and clear three companion
     // state words; returns 1 (0 when arg is null).
-    i32 SetLevel(void* lvl);
+    i32 SetLevel(CTmLevel* lvl);
 
     // 0x78a30: forward to the overlay sub-object's helper when present, else ret.
     void OverlayTick();
@@ -144,7 +155,7 @@ public:
     // 0x77f80: FindNearestInRow(g) - scan the grid row g->m_1ec (15 cells) for the live
     // cell whose display object is nearest g's tile pos (g->m_17c/m_180 >> 5), within the
     // squared cutoff 2*g->m_2dc; ret the nearest cell pointer or 0. (__thiscall: ret 4.)
-    void* FindNearestInRow(void* g);
+    CTmCell* FindNearestInRow(CTmCell* g);
 
     // 0x78260: RemoveCellRecord(x,y,fromSelection) - unlink the (x,y) node from the
     // selection lists (when fromSelection) and from the record list, clearing the cell's
@@ -157,7 +168,7 @@ public:
 
     // 0x7a240: PlacePuddle(sprite, color) - place the puddle via its CUserLogic and, on
     // success, flag/remove the matching record + selection nodes. ret 1 on success.
-    i32 PlacePuddle(void* sprite, i32 color);
+    i32 PlacePuddle(CTmCell* sprite, i32 color);
 
     // ---- the remaining reconstructed methods (retail-RVA order) ----------------
 
@@ -246,7 +257,11 @@ public:
 
     // 0x7a760: ScanGroup - the magic-group scanner/applier; for each live cell of the
     // group, dispatch its logic and tally. Reconstructed to plateau. (__thiscall.)
-    i32 ScanGroup(i32 ar);
+    i32 ScanGroup(CTmArchive* ar);
+
+    // 0x7df8: the overlay-serialize self-call ScanGroup tails into (writes the overlay into
+    // the archive). Still-UNRECONSTRUCTED; declared so the reloc-masked self-call is clean.
+    i32 SerializeOverlay(CTmArchive* ar, i32 b, i32 c);
 
     // 0x7b1b0: TriggerCell(x, y) - look up the (x,y) cell, switch on its logic kind and
     // spawn the matching fx sprite (+0x2a8), then refresh + record. (ret 0x8.)
@@ -296,6 +311,27 @@ public:
     // list arrays). Reconstructed to plateau (eh sibling TU).
     ~CTriggerMgr();
 
+    // --- self-called helpers the reconstructed leaves dispatch on `this` -----------------
+    // Still-UNRECONSTRUCTED CTriggerMgr methods (no body / RVA here); declared so the leaves'
+    // reloc-masked self-calls mangle onto this class with no `((CTmSelf*)this)` cast. Reset3/
+    // RefreshB cover several retail RVAs of the same shape (all masked).
+    i32 Reset3(i32 a, i32 b, i32 c);
+    void RecallCell(i32 x, i32 y, CTmCell* cell);
+    void RefreshB(i32 a);
+    void RefreshC();
+    i32 Probe4(void* obj);
+    i32 Probe7(void* obj);
+    CTmCell* Hit(i32 arg, i32 a, i32 b, i32* outRow, i32* outCol);
+    void ClearMagic(i32 key);
+    i32 Classify(i32 x, i32 y);
+    void Refresh2();
+    void Record2(i32 x, i32 y);
+    void ReportN(i32 a, i32 b, u8* bytes, i32 c, i32 d, i32 e, i32 f);
+    CTmCell* Hit5(i32 a, i32 b, i32 c, i32 d, i32 e);
+    i32 PlaceA(i32 a, i32 b, i32 c, i32 d);
+    i32 PlaceB(i32 a, i32 b, i32 c);
+    void Fx(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f);
+
     // --- data layout (recovered from the raw this+offset field reads across both TUs) ---
     // The three embedded MFC containers (base CObList @0, record CObList @0x240, byte-table
     // CByteArray @0x260) and the ten-slot selection-list array (@0x2d0, stride 0x1c) are
@@ -303,51 +339,51 @@ public:
     // methods still reinterpret those regions through the file-local CTmPtrList / CTmObArray
     // helpers to drive the reloc-masked engine list bodies. Everything is a plain this+offset
     // field, so naming is byte-neutral.
-    char _pad0[0x4];           // +0x000  base list vptr
-    void* m_objListHead;       // +0x004  base object-list head node
-    char _pad8[0x4];           // +0x008  base list tail
-    i32 m_objListCount;        // +0x00c  base object-list count
-    char _pad10[0xc];          // +0x010  base list free/blocks/blocksize
-    void* m_grid[0x3c];        // +0x01c  the 4x15 placed grid-object cells (stride 4)
-    i32 m_rowCount[4];         // +0x10c  per-row placed count (bumped/serialized 0x10 B)
-    i32 m_cellFlag[0x3c];      // +0x11c  parallel 4x15 per-cell flag grid; also holds the
-                               //         cached origin pair at +0x58/+0x5c (GetOriginXY, raw)
-    i32 m_rowStateB[4];        // +0x20c  per-row state band B
-    i32 m_rowStateC[4];        // +0x21c  per-row state band C
-    void* m_level;             // +0x22c  the active level object (SetLevel)
-    i32 m_230;                 // +0x230  companion state word (cleared by SetLevel)
-    i32 m_recX;                // +0x234  active-record x
-    i32 m_recY;                // +0x238  active-record y
-    void* m_goal;              // +0x23c  the goal object (CTmGoal)
-    char _pad240[0x4];         // +0x240  record list vptr
-    void* m_recHead;           // +0x244  record-list head node
-    char _pad248[0x4];         // +0x248  record list tail
-    i32 m_recCount;            // +0x24c  record-list count
-    char _pad250[0xc];         // +0x250  record list free/blocks/blocksize
-    void* m_overlay;           // +0x25c  the allocated overlay sub-object (0x40 B)
-    char _pad260[0x4];         // +0x260  byte-table array vptr
-    u8* m_byteData;            // +0x264  byte-table data pointer
-    i32 m_byteCount;           // +0x268  byte-table count
-    char _pad26c[0x8];         // +0x26c  byte-table maxsize/growby
-    char m_274[0x10];          // +0x274  serialized 16-byte region
-    i32 m_284;                 // +0x284  build/reinit gate flag
-    i32 m_288;                 // +0x288  serialized scalar
-    char _pad28c[0x4];         // +0x28c
-    char m_overlayDescA[0x10]; // +0x290  overlay descriptor block 0
-    void* m_pendingFx;         // +0x2a0  pending-fx sub-object (CTmPendingFx)
-    i32 m_2a4;                 // +0x2a4  serialized scalar
-    i32 m_pendingFxKind;       // +0x2a8  active pending overlay-fx kind
-    char _pad2ac[0x4];         // +0x2ac
-    char m_overlayDescB[0x10]; // +0x2b0  overlay descriptor block 1
-    char m_overlayDescC[0x10]; // +0x2c0  overlay descriptor block 2
-    char m_selLists[0x118];    // +0x2d0  ten selection lists (CObList, stride 0x1c)
-    i32 m_selSentinel;         // +0x3e8  selection-group latch (-1 when idle)
-    i32 m_3ec;                 // +0x3ec  serialized scalar
-    void* m_soundChanA;        // +0x3f0  DirectSound channel A
-    void* m_soundChanB;        // +0x3f4  DirectSound channel B
-    i32 m_3f8;                 // +0x3f8
-    i32 m_3fc;                 // +0x3fc
-    i32 m_groupFlag;           // +0x400  magic-group active flag
+    char _pad0[0x4];            // +0x000  base list vptr
+    CTmRecNode* m_objListHead;  // +0x004  base object-list head node
+    char _pad8[0x4];            // +0x008  base list tail
+    i32 m_objListCount;         // +0x00c  base object-list count
+    char _pad10[0xc];           // +0x010  base list free/blocks/blocksize
+    CTmCell* m_grid[0x3c];      // +0x01c  the 4x15 placed grid-object cells (stride 4)
+    i32 m_rowCount[4];          // +0x10c  per-row placed count (bumped/serialized 0x10 B)
+    i32 m_cellFlag[0x3c];       // +0x11c  parallel 4x15 per-cell flag grid; also holds the
+                                //         cached origin pair at +0x58/+0x5c (GetOriginXY, raw)
+    i32 m_rowStateB[4];         // +0x20c  per-row state band B
+    i32 m_rowStateC[4];         // +0x21c  per-row state band C
+    CTmLevel* m_level;          // +0x22c  the active level object (SetLevel)
+    i32 m_230;                  // +0x230  companion state word (cleared by SetLevel)
+    i32 m_recX;                 // +0x234  active-record x
+    i32 m_recY;                 // +0x238  active-record y
+    void* m_goal;               // +0x23c  the goal object (CTmGoal)
+    char _pad240[0x4];          // +0x240  record list vptr
+    CTmNode* m_recHead;         // +0x244  record-list head node
+    char _pad248[0x4];          // +0x248  record list tail
+    i32 m_recCount;             // +0x24c  record-list count
+    char _pad250[0xc];          // +0x250  record list free/blocks/blocksize
+    void* m_overlay;            // +0x25c  the allocated overlay sub-object (0x40 B)
+    char _pad260[0x4];          // +0x260  byte-table array vptr
+    u8* m_byteData;             // +0x264  byte-table data pointer
+    i32 m_byteCount;            // +0x268  byte-table count
+    char _pad26c[0x8];          // +0x26c  byte-table maxsize/growby
+    char m_274[0x10];           // +0x274  serialized 16-byte region
+    i32 m_284;                  // +0x284  build/reinit gate flag
+    i32 m_288;                  // +0x288  serialized scalar
+    char _pad28c[0x4];          // +0x28c
+    char m_overlayDescA[0x10];  // +0x290  overlay descriptor block 0
+    void* m_pendingFx;          // +0x2a0  pending-fx sub-object (CTmPendingFx)
+    i32 m_2a4;                  // +0x2a4  serialized scalar
+    i32 m_pendingFxKind;        // +0x2a8  active pending overlay-fx kind
+    char _pad2ac[0x4];          // +0x2ac
+    char m_overlayDescB[0x10];  // +0x2b0  overlay descriptor block 1
+    char m_overlayDescC[0x10];  // +0x2c0  overlay descriptor block 2
+    char m_selLists[0x118];     // +0x2d0  ten selection lists (CObList, stride 0x1c)
+    i32 m_selSentinel;          // +0x3e8  selection-group latch (-1 when idle)
+    i32 m_3ec;                  // +0x3ec  serialized scalar
+    CTmSoundChan* m_soundChanA; // +0x3f0  DirectSound channel A
+    CTmSoundChan* m_soundChanB; // +0x3f4  DirectSound channel B
+    i32 m_3f8;                  // +0x3f8
+    i32 m_3fc;                  // +0x3fc
+    i32 m_groupFlag;            // +0x400  magic-group active flag
 };
 SIZE_UNKNOWN(CTriggerMgr);
 
