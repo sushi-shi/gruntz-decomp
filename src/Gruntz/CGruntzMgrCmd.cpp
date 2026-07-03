@@ -19,8 +19,9 @@ namespace GruntzMgrCmd {
     // Reloc-masked engine callees are modeled as bodyless methods/functions.
     //
     // NOTE: this GruntzMgrCmd::CGruntzMgr is a genuine (but namespaced) view of the
-    // one true CGruntzMgr (see <Gruntz/GruntzMgr.h>): m_2c==m_curState, m_30==m_world,
-    // m_c8==m_strWorldFile, etc. It is NOT merged to the canonical header - the
+    // one true CGruntzMgr (see <Gruntz/GruntzMgr.h>); its members use the canonical
+    // GruntzMgr.h names (m_curState/m_world/m_sound/m_strWorldFile/m_cmdGrid/...).
+    // It is NOT merged to the canonical header - the
     // WM_COMMAND/cheat dispatcher is a documented ~29.7% jump-table+regalloc
     // megafunction wall reached through a dozen local sub-object helper types
     // (GZLogic/GZGateA/GZBoard/GZGrunt/...) canonical does not model; a merge would
@@ -59,7 +60,7 @@ namespace GruntzMgrCmd {
         void Board18e3(i32 n);        // 0x18e3
         void Board3616(i32 a, i32 b); // 0x3616
     };
-    struct GZLogic {             // this->m_2c
+    struct GZLogic {             // this->m_curState
         i32 vf10();              // vtbl+0x10  play-state accessor
         i32 vf54();              // vtbl+0x54
         void StopChain();        // 0x22d9
@@ -127,24 +128,24 @@ namespace GruntzMgrCmd {
         i32 m_10; // 0x10
         i32 m_14; // 0x14
         char _p18[0x2c - 0x18];
-        GZLogic* m_2c; // 0x2c
-        GZGateA* m_30; // 0x30
+        GZLogic* m_curState; // 0x2c
+        GZGateA* m_world;    // 0x30
         char _p34[0x38 - 0x34];
         void* m_38; // 0x38
         char _p3c[0x44 - 0x3c];
-        void* m_44; // 0x44 (has +0x124, +0x1c)
-        void* m_48; // 0x48
+        void* m_44;    // 0x44 (has +0x124, +0x1c)
+        void* m_sound; // 0x48
         char _p4c[0x54 - 0x4c];
-        i32 m_54;   // 0x54
-        void* m_58; // 0x58 (has +0x18)
+        i32 m_inputState; // 0x54
+        void* m_saveSink; // 0x58 (has +0x18)
         char _p5c[0x68 - 0x5c];
-        GZBoard* m_68; // 0x68
+        GZBoard* m_cmdGrid; // 0x68
         char _p6c[0xa0 - 0x6c];
-        i32 m_a0; // 0xa0
+        i32 m_lobbyProbed; // 0xa0
         char _pa4[0xbc - 0xa4];
-        void* m_bc; // 0xbc
+        void* m_saveInfoRec; // 0xbc
         char _pc0[0xc8 - 0xc0];
-        GZStr m_c8; // 0xc8
+        GZStr m_strWorldFile; // 0xc8
         char _pcc[0x114 - 0xcc];
         i32 m_114; // 0x114
         char _p118[0x128 - 0x118];
@@ -197,7 +198,7 @@ namespace GruntzMgrCmd {
     }; // 0x4408 / 0x3463
 
 #define PLAYCUE(TAG)                                                                               \
-    if (m_30->m_28->m_30 == 0) {                                                                   \
+    if (m_world->m_28->m_30 == 0) {                                                                \
         GZSound* _c = CueLookup(TAG);                                                              \
         if (_c)                                                                                    \
             _c->Play(g_sndCueTag, 0, 0, 0);                                                        \
@@ -215,7 +216,7 @@ namespace GruntzMgrCmd {
 #define WARP(N, ERR)                                                                               \
     {                                                                                              \
         m_134 = 1;                                                                                 \
-        m_c8.Empty();                                                                              \
+        m_strWorldFile.Empty();                                                                    \
         if (!PassClick((N), 0, 1))                                                                 \
             ReportErr(0x8005, (ERR));                                                              \
         return 1;                                                                                  \
@@ -242,16 +243,16 @@ namespace GruntzMgrCmd {
                 }
                 return 1;
             case 0x807f:
-                m_c8.Empty();
+                m_strWorldFile.Empty();
                 m_134 = 1;
                 if (!PassClick(p3, 0, 1)) {
                     ReportErr(0x8005, 0x41f);
                 }
                 return 1;
             case 0x8174:
-                m_c8.Empty();
+                m_strWorldFile.Empty();
                 m_134 = 1;
-                if (!PassClick(m_58 ? *(i32*)((char*)m_58 + 0x18) : 0, 0, 1)) {
+                if (!PassClick(m_saveSink ? *(i32*)((char*)m_saveSink + 0x18) : 0, 0, 1)) {
                     ReportErr(0x8005, 0x41f);
                 }
                 return 1;
@@ -265,10 +266,10 @@ namespace GruntzMgrCmd {
                 Base092f00();
                 // fall through to default
             default:
-                if (m_2c->vf10() == 3) {
+                if (m_curState->vf10() == 3) {
                     switch (nID & 0xffff) {
                         case 0x803b: {
-                            if (m_30->m_28->m_30 == 0) {
+                            if (m_world->m_28->m_30 == 0) {
                                 GZSound* _c = CueLookup("GAME_MINORCHEAT");
                                 if (_c) {
                                     _c->Play(g_sndCueTag, 0, 0, 0);
@@ -303,13 +304,13 @@ namespace GruntzMgrCmd {
                             return 1;
                         case 0x8068:
                             g_6455f4 = (g_6455f4 ^ 0x40) & ~0x4000;
-                            m_c8.Empty();
-                            m_c8.Empty();
+                            m_strWorldFile.Empty();
+                            m_strWorldFile.Empty();
                             PLAYCUE("GAME_MINORCHEAT");
                             return 1;
                         case 0x806f:
                             g_6455f4 = (g_6455f4 ^ 0x100) & ~0x40;
-                            m_c8.Empty();
+                            m_strWorldFile.Empty();
                             PLAYCUE("GAME_MINORCHEAT");
                             return 1;
                         case 0x806e:
@@ -325,7 +326,7 @@ namespace GruntzMgrCmd {
                             if (!InPlay()) {
                                 return 0;
                             }
-                            // AMBIENT%d sound (uses m_04->m_4 / m_48)
+                            // AMBIENT%d sound (uses m_04->m_4 / m_sound)
                             PLAYCUE("GAME_MONOLITH");
                             AppendChat("Monolith Rulez...");
                             return 1;
@@ -336,7 +337,7 @@ namespace GruntzMgrCmd {
                             if (!PickState()) {
                                 return 0;
                             }
-                            // monologo sprite via m_68 grid; approximated
+                            // monologo sprite via m_cmdGrid grid; approximated
                             PLAYCUE("GAME_MAJORCHEAT");
                             AppendChat("Hey, where did you go?");
                             return 1;
@@ -419,7 +420,7 @@ namespace GruntzMgrCmd {
                             if (!_g) {
                                 return 0;
                             }
-                            m_68->Board18e3(5);
+                            m_cmdGrid->Board18e3(5);
                             PLAYCUE("GAME_MINORCHEAT");
                             AppendChat("Global thermal nuclear war!");
                             return 1;
@@ -508,7 +509,7 @@ namespace GruntzMgrCmd {
                             if (!PickState()) {
                                 return 0;
                             }
-                            m_68->Board3616(-1, 1);
+                            m_cmdGrid->Board3616(-1, 1);
                             PLAYCUE("GAME_MAJORCHEAT");
                             AppendChat("How about a little color in your Gruntz?");
                             return 1;
@@ -617,7 +618,7 @@ namespace GruntzMgrCmd {
                             if (!_g) {
                                 return 0;
                             }
-                            m_c8.Empty(); // placeholder for m_2dc access
+                            m_strWorldFile.Empty(); // placeholder for m_2dc access
                             AppendChat(
                                 "My name is Kevin Lambert.  You typed in my cheat "
                                 "code.  Prepare to die."
@@ -651,9 +652,9 @@ namespace GruntzMgrCmd {
                             return 1;
                         case 0x81a9:
                             PLAYCUE("GAME_MAJORCHEAT");
-                            if (m_58) {
-                                ((GZObj58*)m_58)->Set58(0x20);
-                                ((GZObj58*)m_58)->Reset58();
+                            if (m_saveSink) {
+                                ((GZObj58*)m_saveSink)->Set58(0x20);
+                                ((GZObj58*)m_saveSink)->Reset58();
                             }
                             AppendChat(
                                 "They should call you Cheat Cheatelson from "
@@ -672,43 +673,43 @@ namespace GruntzMgrCmd {
                         case 0x8240:
                             PLAYCUE("GAME_MINORCHEAT");
                             AppendChat("Warp to High Rollerz activated!");
-                            if (m_58) {
-                                ((GZObj58*)m_58)->Set58(8);
+                            if (m_saveSink) {
+                                ((GZObj58*)m_saveSink)->Set58(8);
                             }
                             return 1;
                         case 0x8241:
                             PLAYCUE("GAME_MINORCHEAT");
                             AppendChat("Warp to High on Sweetz activated!");
-                            if (m_58) {
-                                ((GZObj58*)m_58)->Set58(0xc);
+                            if (m_saveSink) {
+                                ((GZObj58*)m_saveSink)->Set58(0xc);
                             }
                             return 1;
                         case 0x8242:
                             PLAYCUE("GAME_MINORCHEAT");
                             AppendChat("Warp to Trouble in the Tropicz activated!");
-                            if (m_58) {
-                                ((GZObj58*)m_58)->Set58(0x10);
+                            if (m_saveSink) {
+                                ((GZObj58*)m_saveSink)->Set58(0x10);
                             }
                             return 1;
                         case 0x8243:
                             PLAYCUE("GAME_MINORCHEAT");
                             AppendChat("Warp to Honey, I Shrunk the Gruntz activated!");
-                            if (m_58) {
-                                ((GZObj58*)m_58)->Set58(0x14);
+                            if (m_saveSink) {
+                                ((GZObj58*)m_saveSink)->Set58(0x14);
                             }
                             return 1;
                         case 0x8244:
                             PLAYCUE("GAME_MINORCHEAT");
                             AppendChat("Warp to The Miniature Masterz activated!");
-                            if (m_58) {
-                                ((GZObj58*)m_58)->Set58(0x18);
+                            if (m_saveSink) {
+                                ((GZObj58*)m_saveSink)->Set58(0x18);
                             }
                             return 1;
                         case 0x8245:
                             PLAYCUE("GAME_MINORCHEAT");
                             AppendChat("Warp to Gruntz in Space activated!");
-                            if (m_58) {
-                                ((GZObj58*)m_58)->Set58(0x1c);
+                            if (m_saveSink) {
+                                ((GZObj58*)m_saveSink)->Set58(0x1c);
                             }
                             return 1;
                         case 0x8247:
@@ -721,16 +722,16 @@ namespace GruntzMgrCmd {
                 return 0;
             // ---- remaining UI command bodies (physically after the epilogue) ----
             case 0x807e: {
-                void* bc = m_bc;
+                void* bc = m_saveInfoRec;
                 if (!bc || !(*(u8*)bc & 1)) {
                     return 1;
                 }
                 GZStr tmp(*(const char**)&bc + 0x75);
                 m_114 = 1;
-                m_c8 = tmp;
+                m_strWorldFile = tmp;
                 (void)p1;
-                if (*(i32*)((char*)m_bc + 0xfc)) {
-                    if (*(i32*)((char*)m_bc + 0xf8)) {
+                if (*(i32*)((char*)m_saveInfoRec + 0xfc)) {
+                    if (*(i32*)((char*)m_saveInfoRec + 0xf8)) {
                         m_128 = 0;
                         m_130 = 1;
                         m_134 = 3;
@@ -743,10 +744,10 @@ namespace GruntzMgrCmd {
                     m_134 = 1;
                     m_130 = 1;
                 }
-                if (!PassClick(*(i32*)((char*)m_bc + 4), 0, 1)) {
+                if (!PassClick(*(i32*)((char*)m_saveInfoRec + 4), 0, 1)) {
                     ReportErr(0x8005, 0x421);
                 }
-                if (!Board2144(this, (char*)m_bc + 0x35)) {
+                if (!Board2144(this, (char*)m_saveInfoRec + 0x35)) {
                     ReportErr(0x8005, 0x465);
                 }
                 Func12ee();
@@ -754,19 +755,19 @@ namespace GruntzMgrCmd {
                 return 1;
             }
             case 0x80b8:
-                if (m_2c && m_2c->vf10() == 0x11) {
-                    m_2c->Post36e8(p3);
+                if (m_curState && m_curState->vf10() == 0x11) {
+                    m_curState->Post36e8(p3);
                 }
                 return 1;
             case 0x80ce:
-                if (m_2c->vf10() == 3 || m_2c->vf10() == 5) {
+                if (m_curState->vf10() == 3 || m_curState->vf10() == 5) {
                     if (!g_6455ec) {
                         RunLoadGame();
                     }
                 }
                 return 1;
             case 0x80cf:
-                if (m_2c->vf10() == 3) {
+                if (m_curState->vf10() == 3) {
                     GZGrunt* _g = PickState();
                     if (((GZGrunt*)_g)->CanQuickSave()) {
                         Func1a3c();
@@ -774,7 +775,7 @@ namespace GruntzMgrCmd {
                 }
                 return 1;
             case 0x80d8:
-                if (m_2c->vf10() == 3) {
+                if (m_curState->vf10() == 3) {
                     GZGrunt* _g = PickState();
                     if (((GZGrunt*)_g)->CanQuickSave()) {
                         Func196a();
@@ -782,7 +783,7 @@ namespace GruntzMgrCmd {
                 }
                 return 1;
             case 0x80d9:
-                if (m_2c->vf10() == 3 || m_2c->vf10() == 5) {
+                if (m_curState->vf10() == 3 || m_curState->vf10() == 5) {
                     if (!g_6455ec) {
                         Func108c();
                     }
@@ -939,7 +940,7 @@ namespace GruntzMgrCmd {
             case 0x81d5:
                 WARP(0x84, 0x479);
             case 0x8038:
-                if (m_2c->vf10() == 5 || m_2c->vf10() == 2) {
+                if (m_curState->vf10() == 5 || m_curState->vf10() == 2) {
                     while (g_pRand6c44c4(1) < 0) {
                     }
                     LaunchUrl("http://www.gruntzgoo.com/");
@@ -1026,7 +1027,7 @@ namespace GruntzMgrCmd {
                 ReportErr(0x8005, 0x42e);
                 return 1;
             case 0x8007: {
-                i32 st = m_2c->vf10();
+                i32 st = m_curState->vf10();
                 if (st != 3 && st != 0x11) {
                     return 1;
                 }
@@ -1036,7 +1037,7 @@ namespace GruntzMgrCmd {
                 return 1;
             }
             case 0x816e: {
-                i32 st = m_2c->vf10();
+                i32 st = m_curState->vf10();
                 if (st != 3 && st != 0x11) {
                     return 1;
                 }
@@ -1049,20 +1050,20 @@ namespace GruntzMgrCmd {
                 if (!CheckPlay()) {
                     return 1;
                 }
-                if (m_2c->DrawPresent()) {
+                if (m_curState->DrawPresent()) {
                     return 1;
                 }
                 ReportErr(0x8005, 0x42f);
                 return 1;
             case 0x80b7:
-                m_a0 = 0;
+                m_lobbyProbed = 0;
                 g_pPostMessageA(*(void**)((char*)m_04 + 4), 0x111, 0x8025, 0);
                 return 1;
             case 0x800e:
                 if (!CheckPlay()) {
                     return 1;
                 }
-                if (((GZLogic*)m_2c)->vf54()) {
+                if (((GZLogic*)m_curState)->vf54()) {
                     return 1;
                 }
                 if (Dispatch(2, 1, 0, 0)) {
@@ -1084,12 +1085,12 @@ namespace GruntzMgrCmd {
                 ReportErr(0x8007, 0x431);
                 return 1;
             case 0x800f: {
-                i32 st = m_2c->vf10();
+                i32 st = m_curState->vf10();
                 if (st == 3 || st == 0x11) {
                     GoPrev();
                     return 1;
                 }
-                *(i32*)((char*)m_2c + 0x40) = 1;
+                *(i32*)((char*)m_curState + 0x40) = 1;
                 if (Dispatch(5, 1, 0, 0)) {
                     return 1;
                 }
@@ -1100,7 +1101,7 @@ namespace GruntzMgrCmd {
                 Func3f62();
                 return 1;
             case 0x8008: {
-                i32 st = m_2c->vf10();
+                i32 st = m_curState->vf10();
                 if (st == 9 || st == 0xd || st == 0xf || st == 0xe || st == 8 || st == 0xa
                     || st == 0x12 || st == 0x11) {
                     return 1;
@@ -1112,8 +1113,8 @@ namespace GruntzMgrCmd {
                 return 1;
             }
             case 0x8035: {
-                void* logic = m_2c;
-                i32 st = m_2c->vf10();
+                void* logic = m_curState;
+                i32 st = m_curState->vf10();
                 void* mus = 0;
                 if (st == 5) {
                     mus = logic;
@@ -1133,7 +1134,7 @@ namespace GruntzMgrCmd {
                 m_14 = v;
                 i32 pl = CheckPlay();
                 if (!pl) {
-                    i32 st = m_2c->vf10();
+                    i32 st = m_curState->vf10();
                     if (st != 0xb && st != 5) {
                         return 1;
                     }
@@ -1180,8 +1181,9 @@ namespace GruntzMgrCmd {
                 if (!_g) {
                     return 0;
                 }
-                m_c8 = m_c8; // op= on m_c8 (approx of the 0x1b9e25 tail)
-                if (!PassClick(*(i32*)((char*)m_2c + 0x1c), 0, 1)) {
+                m_strWorldFile =
+                    m_strWorldFile; // op= on m_strWorldFile (approx of the 0x1b9e25 tail)
+                if (!PassClick(*(i32*)((char*)m_curState + 0x1c), 0, 1)) {
                     ReportErr(0x8007, 0x434);
                 }
                 return 1;

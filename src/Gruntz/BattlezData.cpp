@@ -43,7 +43,7 @@ void CBattlezData::Init() {
     m_24 = 0;
     m_28 = 0;
     m_2c = 0;
-    m_44 = 0;
+    m_scoreValue = 0;
     m_34 = 0;
     m_30 = 0;
     m_38 = 0;
@@ -194,12 +194,12 @@ i32 CBattlezData::AllRecordsInBounds() {
     return 1;
 }
 
-// 0xfcd70 - gated "within bounds" test: only meaningful when m_44 is set; then
+// 0xfcd70 - gated "within bounds" test: only meaningful when m_scoreValue is set; then
 // the m_30..m_40 band must each stay <= the m_14..m_2c band. Takes one (unused)
 // stack argument (retail cleans 4 bytes on return).
 RVA(0x000fcd70, 0x61)
 i32 CBattlezData::InBounds(i32 unused) {
-    if (m_44 == 0) {
+    if (m_scoreValue == 0) {
         return 0;
     }
     if (m_30 > m_14) {
@@ -390,7 +390,7 @@ i32 CBattlezData::SumGroupField08() {
     return sum;
 }
 
-// 0xfced0 - the record's win/score value at the wrap index, or m_44 when the
+// 0xfced0 - the record's win/score value at the wrap index, or m_scoreValue when the
 // wrapped index lands on the last record.
 // @early-stop
 // ~76%, logic byte-exact. Two non-steerable codegen choices: retail's `lea
@@ -401,13 +401,13 @@ i32 CBattlezData::GetRecordValue(i32 b) {
     i32 last = m_count - 1;
     i32 idx = b + last / 4 * 4;
     if (idx == last) {
-        return m_44;
+        return m_scoreValue;
     }
     return m_records[idx].m_scoreValue;
 }
 
 // 0xfd330 - fill the record at `index` (0x40-byte stride, biased -0x40) from the
-// current m_10..m_44 band; phase 0 writes the head fields (+m_118 from the
+// current m_10..m_scoreValue band; phase 0 writes the head fields (+m_118 from the
 // registry), any other phase writes the tail.
 RVA(0x000fd330, 0x84)
 void CBattlezData::FillRecord(i32 index, i32 phase) {
@@ -422,7 +422,7 @@ void CBattlezData::FillRecord(i32 index, i32 phase) {
         rec[7] = m_24;
         rec[8] = m_28;
         rec[9] = m_2c;
-        rec[10] = m_44;
+        rec[10] = m_scoreValue;
         rec[1] = g_gameReg->m_118;
     } else {
         rec[11] = m_30;
@@ -434,7 +434,7 @@ void CBattlezData::FillRecord(i32 index, i32 phase) {
 }
 
 // 0xfd3f0 - flat serialize: op 7 reads, op 4 writes. The 17 leading scalars
-// (m_count..m_44) are streamed UNROLLED; the m_48 band and the four nested 4xN
+// (m_count..m_scoreValue) are streamed UNROLLED; the m_48 band and the four nested 4xN
 // grids/bands are streamed in counted loops. The op==4 (write) test is the
 // forward `je`; op==7 (read) is the fall-through block.
 // @early-stop
@@ -469,7 +469,7 @@ i32 CBattlezData::Serialize(BattlezStream* s, i32 op, i32 a2, i32 a3) {
             s->Read(&m_38, 4);
             s->Read(&m_3c, 4);
             s->Read(&m_40, 4);
-            s->Read(&m_44, 4);
+            s->Read(&m_scoreValue, 4);
             for (p = m_48, i = 0; i < 4; i++, p++) {
                 s->Read(p, 4);
             }
@@ -528,7 +528,7 @@ i32 CBattlezData::Serialize(BattlezStream* s, i32 op, i32 a2, i32 a3) {
     s->Write(&m_38, 4);
     s->Write(&m_3c, 4);
     s->Write(&m_40, 4);
-    s->Write(&m_44, 4);
+    s->Write(&m_scoreValue, 4);
     for (p = m_48, i = 0; i < 4; i++, p++) {
         s->Write(p, 4);
     }

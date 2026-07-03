@@ -11,8 +11,8 @@
 //   * the elapsed-time clamp: a 64-bit `g_645588 - tab->ts` clamped at 0, then
 //     divided by a CButeMgr-configured delay to drive an animation frame index;
 //   * the "advance status-bar tab" tail: a named-sprite Lookup through the global
-//     status-bar mgr (g_gameReg->m_30->m_28->m_10 -> CSpriteHashTable::Lookup),
-//     a draw-clock window check (g_6bf3c0 - tab->m_14 >= tab->m_18), and a
+//     status-bar mgr (g_gameReg->m_30->m_statusBar->m_10map -> CSpriteHashTable::Lookup),
+//     a draw-clock window check (g_6bf3c0 - t->m_drawClock >= t->m_window), and a
 //     CStatusBarMgr::ConfigureItem push (the shared 0x1360d0 helper, reloc-masked).
 //
 // Only offsets / code bytes are load-bearing; names are placeholders.
@@ -47,9 +47,9 @@ extern "C" double sqrt(double);
 // (+0x18).
 struct CStatusBarTab {
     char m_pad00[0x10];
-    CSoundCueMgr* m_10; // +0x10  the mgr ConfigureItem pushes into
-    u32 m_14;           // +0x14  draw-clock latch
-    u32 m_18;           // +0x18  window width
+    CSoundCueMgr* m_cueMgr; // +0x10  the mgr ConfigureItem pushes into
+    u32 m_drawClock;        // +0x14  draw-clock latch
+    u32 m_window;           // +0x18  window width
 };
 SIZE_UNKNOWN(CStatusBarTab);
 
@@ -60,17 +60,17 @@ struct CStatusBarHolder {
     char m_pad00[0x10];
     CSpriteHashTable m_10map; // +0x10  embedded name->sprite hash table
     char m_pad14[0x30 - 0x14];
-    i32 m_30; // +0x30  live-surface gate
+    i32 m_surfaceGate; // +0x30  live-surface gate
 };
 SIZE_UNKNOWN(CStatusBarHolder);
 
-// The map render grid reached via m_30->m_24->m_5c (two parallel tables: a cell
+// The map render grid reached via m_30->m_tileHolder->m_grid (two parallel tables: a cell
 // state table at +0x20 and a row-offset table at +0x24). Distinct object from the
 // registry +0x70 tile occupancy grid (CTileGrid, <Gruntz/CTileGrid.h>).
 struct CMapTileGrid {
     char m_pad00[0x20];
-    i32* m_20; // +0x20  cell-state table
-    i32* m_24; // +0x24  row-offset table
+    i32* m_cellState; // +0x20  cell-state table
+    i32* m_rowOffset; // +0x24  row-offset table
 };
 // The tile-system notifier at registry +0x70 is the canonical CTileGrid
 // (<Gruntz/CTileGrid.h>), viewed through its Notify facet.
@@ -80,9 +80,9 @@ struct CRegHolder {
     char m_pad00[0x24];
     struct M24 {
         char m_pad00[0x5c];
-        CMapTileGrid* m_5c;
-    }* m_24;                // +0x24 -> +0x5c grid
-    CStatusBarHolder* m_28; // +0x28
+        CMapTileGrid* m_grid;
+    }* m_tileHolder;               // +0x24 -> +0x5c grid
+    CStatusBarHolder* m_statusBar; // +0x28
 };
 SIZE_UNKNOWN(CRegHolder);
 // The canonical CGameRegistry view of the singleton (*0x24556c). The resource
@@ -100,10 +100,10 @@ extern CGameRegistry* g_gameReg; // the game-manager singleton
 // 0x18-byte tab records at +0x220 with a parallel pointer array at +0x204.
 // ---------------------------------------------------------------------------
 struct CTabRec {
-    i32 m_0; // +0x00  state (1 active, 2 finished)
-    i32 m_4; // +0x04  last animation frame index
-    u32 m_8; // +0x08  start-clock lo
-    u32 m_c; // +0x0c  start-clock hi
+    i32 m_state;   // +0x00  state (1 active, 2 finished)
+    i32 m_frame;   // +0x04  last animation frame index
+    u32 m_startLo; // +0x08  start-clock lo
+    u32 m_startHi; // +0x0c  start-clock hi
     char m_pad10[0x18 - 0x10];
 };
 SIZE_UNKNOWN(CTabRec);
@@ -132,13 +132,13 @@ SIZE_UNKNOWN(CTabWidget);
 // +0x558): a 3-state machine (0 idle / 1 warning-down / 2 warning-up) with a
 // frame counter, a 64-bit retrigger clock, the warning delay, and the widget.
 struct CDestructBlock {
-    i32 m_558;         // +0x558  state (0/1/2)
-    i32 m_55c;         // +0x55c  frame counter
-    u32 m_560;         // +0x560  retrigger-clock lo
-    u32 m_564;         // +0x564  retrigger-clock hi
-    u32 m_568;         // +0x568  warning delay lo
-    u32 m_56c;         // +0x56c  warning delay hi (always 0)
-    CTabWidget* m_570; // +0x570  the warning widget
+    i32 m_state;          // +0x558  state (0/1/2)
+    i32 m_frame;          // +0x55c  frame counter
+    u32 m_retriggerLo;    // +0x560  retrigger-clock lo
+    u32 m_retriggerHi;    // +0x564  retrigger-clock hi
+    u32 m_delayLo;        // +0x568  warning delay lo
+    u32 m_delayHi;        // +0x56c  warning delay hi (always 0)
+    CTabWidget* m_widget; // +0x570  the warning widget
 };
 SIZE_UNKNOWN(CDestructBlock);
 
@@ -146,10 +146,10 @@ SIZE_UNKNOWN(CDestructBlock);
 // stamped each step from the scroll origin (m_10/m_14) and the grinder extents.
 struct CGrinderRect {
     char m_pad00[0x14];
-    i32 m_14; // +0x14  left
-    i32 m_18; // +0x18  top
-    i32 m_1c; // +0x1c  right
-    i32 m_20; // +0x20  bottom
+    i32 m_left;   // +0x14  left
+    i32 m_top;    // +0x18  top
+    i32 m_right;  // +0x1c  right
+    i32 m_bottom; // +0x20  bottom
 };
 SIZE_UNKNOWN(CGrinderRect);
 
@@ -157,9 +157,9 @@ SIZE_UNKNOWN(CGrinderRect);
 // the toggle value (+0x44), m_4 is its active flag.
 struct CStatzTabItem {
     char m_pad00[0x4];
-    i32 m_4; // +0x04  active flag
+    i32 m_active; // +0x04  active flag
     char m_pad08[0x44 - 0x08];
-    i32 m_44; // +0x44  toggle value
+    i32 m_toggleValue; // +0x44  toggle value
 };
 SIZE_UNKNOWN(CStatzTabItem);
 
@@ -174,13 +174,13 @@ public:
     void LoadSwitchUpSprite();
     i32 UpdateWarpStoneStatusBar(i32 a0, i32 phase, i32 srcX, i32 srcY);
 
-    // The switch tile-trigger object: m_8/m_c are its grid coords, m_14 its
-    // down/up state flag.
+    // The switch tile-trigger object: m_switchTileX/m_switchTileY are its grid
+    // coords, m_switchState its down(1)/up(0) flag.
     char m_pad00[0x8];
-    i32 m_8; // +0x08  tile X
-    i32 m_c; // +0x0c  tile Y
+    i32 m_switchTileX; // +0x08  tile X
+    i32 m_switchTileY; // +0x0c  tile Y
     char m_pad10[0x14 - 0x10];
-    i32 m_14; // +0x14  down(1)/up(0) flag
+    i32 m_switchState; // +0x14  down/up state
     char m_pad18[0x204 - 0x18];
     CTabWidget* m_slots[5]; // +0x204  the 5 grunt-oven tab widgets
     char m_pad218[0x220 - 0x218];
@@ -190,7 +190,7 @@ public:
 };
 
 // The toggle's sub-helper reached through this[idx*4 + 0x18c] (thunk_FUN_004ea170,
-// external/reloc-masked); __thiscall, two args (this->m_0 and the active flag).
+// external/reloc-masked); __thiscall, two args (this->m_state and the active flag).
 struct CStatzTabSub {
     void Toggle(i32 stateId, i32 on);
 };
@@ -200,9 +200,9 @@ SIZE_UNKNOWN(CStatzTabSub);
 // EngineLabelBacklog::UpdateGruntOvenStatusBar @0x105310
 // ===========================================================================
 //
-// Walks the 5 grunt-oven cooking tabs: while a tab is COOKING (m_0==1) it derives
+// Walks the 5 grunt-oven cooking tabs: while a tab is COOKING (m_state==1) it derives
 // the cooking-progress frame index from the elapsed clock / GruntOvenDelay, caps
-// at 0x1a (completion - flips m_0 to 2 and runs the COOKINGCOMPLETE advance), and
+// at 0x1a (completion - flips m_state to 2 and runs the COOKINGCOMPLETE advance), and
 // pushes the new frame into the widget when it changes (the +0x30 virtual).
 RVA(0x00105310, 0x11a)
 void EngineLabelBacklog::UpdateGruntOvenStatusBar() {
@@ -210,29 +210,29 @@ void EngineLabelBacklog::UpdateGruntOvenStatusBar() {
     CTabRec* tab = m_tabs;
     i32 n = 5;
     do {
-        if (tab->m_0 == 1) {
-            i64 d = (i64)(u32)g_645588 - *(i64*)&tab->m_8;
+        if (tab->m_state == 1) {
+            i64 d = (i64)(u32)g_645588 - *(i64*)&tab->m_startLo;
             i32 elapsed = (d >= 0) ? (i32)d : 0;
             u32 delay = g_buteMgr.GetDwordDef("StatusBar", "GruntOvenDelay", 0xc8);
             i32 frame = (i32)((u32)elapsed / delay) + 1;
             if (frame >= 0x1a) {
-                tab->m_0 = 2;
+                tab->m_state = 2;
                 frame = 0x1a;
-                CStatusBarHolder* h = ((CRegHolder*)g_gameReg->m_30)->m_28;
-                if (h->m_30 == 0) {
+                CStatusBarHolder* h = ((CRegHolder*)g_gameReg->m_30)->m_statusBar;
+                if (h->m_surfaceGate == 0) {
                     CSprite* spr = 0;
                     h->m_10map.Lookup("GAME_COOKINGCOMPLETE", &spr);
                     if (spr) {
                         CStatusBarTab* t = (CStatusBarTab*)spr;
-                        if (g_61ab20 != 0 && g_6bf3c0 - t->m_14 >= t->m_18) {
-                            t->m_14 = g_6bf3c0;
-                            t->m_10->ConfigureItem(g_61ab24, 0, 0, 0);
+                        if (g_61ab20 != 0 && g_6bf3c0 - t->m_drawClock >= t->m_window) {
+                            t->m_drawClock = g_6bf3c0;
+                            t->m_cueMgr->ConfigureItem(g_61ab24, 0, 0, 0);
                         }
                     }
                 }
             }
-            if (frame != tab->m_4) {
-                tab->m_4 = frame;
+            if (frame != tab->m_frame) {
+                tab->m_frame = frame;
                 CTabWidget* w = *slot;
                 if (w) {
                     w->SetFrame(frame);
@@ -256,39 +256,41 @@ void EngineLabelBacklog::UpdateGruntOvenStatusBar() {
 RVA(0x0010b320, 0x167)
 void EngineLabelBacklog::UpdateDestructButtonStatusBar() {
     CDestructBlock* b = &m_destruct;
-    switch (b->m_558) {
+    switch (b->m_state) {
         case 1: {
-            i64 d = (i64)(u32)g_645588 - *(i64*)&b->m_560;
-            if (d >= *(i64*)&b->m_568) {
-                if (++b->m_55c >= 6) {
-                    b->m_55c = 6;
-                    b->m_558 = 2;
+            i64 d = (i64)(u32)g_645588 - *(i64*)&b->m_retriggerLo;
+            if (d >= *(i64*)&b->m_delayLo) {
+                if (++b->m_frame >= 6) {
+                    b->m_frame = 6;
+                    b->m_state = 2;
                 }
-                b->m_568 = g_buteMgr.GetDwordDef("StatusBar", "DestructButtonWarningDelay", 0x32);
-                b->m_56c = 0;
-                b->m_560 = g_645588;
-                b->m_564 = 0;
-                CTabWidget* w = b->m_570;
+                b->m_delayLo =
+                    g_buteMgr.GetDwordDef("StatusBar", "DestructButtonWarningDelay", 0x32);
+                b->m_delayHi = 0;
+                b->m_retriggerLo = g_645588;
+                b->m_retriggerHi = 0;
+                CTabWidget* w = b->m_widget;
                 if (w) {
-                    w->SetFrame(b->m_55c);
+                    w->SetFrame(b->m_frame);
                 }
             }
             break;
         }
         case 2: {
-            i64 d = (i64)(u32)g_645588 - *(i64*)&b->m_560;
-            if (d >= *(i64*)&b->m_568) {
-                if (--b->m_55c <= 2) {
-                    b->m_55c = 2;
-                    b->m_558 = 1;
+            i64 d = (i64)(u32)g_645588 - *(i64*)&b->m_retriggerLo;
+            if (d >= *(i64*)&b->m_delayLo) {
+                if (--b->m_frame <= 2) {
+                    b->m_frame = 2;
+                    b->m_state = 1;
                 }
-                b->m_568 = g_buteMgr.GetDwordDef("StatusBar", "DestructButtonWarningDelay", 0x32);
-                b->m_56c = 0;
-                b->m_560 = g_645588;
-                b->m_564 = 0;
-                CTabWidget* w = b->m_570;
+                b->m_delayLo =
+                    g_buteMgr.GetDwordDef("StatusBar", "DestructButtonWarningDelay", 0x32);
+                b->m_delayHi = 0;
+                b->m_retriggerLo = g_645588;
+                b->m_retriggerHi = 0;
+                CTabWidget* w = b->m_widget;
                 if (w) {
-                    w->SetFrame(b->m_55c);
+                    w->SetFrame(b->m_frame);
                 }
             }
             break;
@@ -326,15 +328,15 @@ void EngineLabelBacklog::UpdateChipGrinderStatusBar() {
         } else if (m[0x510 / 4] >= 0x1bf) {
             if (m[0x4e8 / 4] != 2) {
                 if (m[0x10c / 4] == 3 && m[0] != 2) {
-                    CStatusBarHolder* h = ((CRegHolder*)g_gameReg->m_30)->m_28;
-                    if (h->m_30 == 0) {
+                    CStatusBarHolder* h = ((CRegHolder*)g_gameReg->m_30)->m_statusBar;
+                    if (h->m_surfaceGate == 0) {
                         CSprite* spr = 0;
                         h->m_10map.Lookup("GAME_REZGRINDING", &spr);
                         if (spr) {
                             CStatusBarTab* t = (CStatusBarTab*)spr;
-                            if (g_61ab20 != 0 && g_6bf3c0 - t->m_14 >= t->m_18) {
-                                t->m_14 = g_6bf3c0;
-                                t->m_10->ConfigureItem(g_61ab24, 0, 0, 0);
+                            if (g_61ab20 != 0 && g_6bf3c0 - t->m_drawClock >= t->m_window) {
+                                t->m_drawClock = g_6bf3c0;
+                                t->m_cueMgr->ConfigureItem(g_61ab24, 0, 0, 0);
                             }
                         }
                     }
@@ -355,7 +357,7 @@ void EngineLabelBacklog::UpdateChipGrinderStatusBar() {
             if (w) {
                 i32 sx = m[0x10 / 4];
                 i32 sy = m[0x14 / 4];
-                i32* p = &w->m_14;
+                i32* p = &w->m_left;
                 p[0] = m[0x504 / 4] + sx;
                 p[1] = sy + newLo;
                 p[2] = m[0x50c / 4] + sx;
@@ -398,19 +400,19 @@ i32 EngineLabelBacklog::LoadStatzTabToggleSprite(i32 value, i32 idx) {
     CStatzTabItem* item = (CStatzTabItem*)m[idx + 0x150 / 4];
     i32 one = 1;
     if (item) {
-        item->m_44 = value;
-        item->m_4 = one;
+        item->m_toggleValue = value;
+        item->m_active = one;
         if (m[0x10c / 4] == one) {
             ((CStatzTabSub*)m[idx + 0x18c / 4])->Toggle(m[0], one);
-            CStatusBarHolder* h = ((CRegHolder*)g_gameReg->m_30)->m_28;
-            if (h->m_30 == 0) {
+            CStatusBarHolder* h = ((CRegHolder*)g_gameReg->m_30)->m_statusBar;
+            if (h->m_surfaceGate == 0) {
                 CSprite* spr = 0;
                 h->m_10map.Lookup("GAME_STATZTABTOGGLE", &spr);
                 if (spr) {
                     CStatusBarTab* t = (CStatusBarTab*)spr;
-                    if (g_61ab20 != 0 && g_6bf3c0 - t->m_14 >= t->m_18) {
-                        t->m_14 = g_6bf3c0;
-                        t->m_10->ConfigureItem(g_61ab24, 0, 0, 0);
+                    if (g_61ab20 != 0 && g_6bf3c0 - t->m_drawClock >= t->m_window) {
+                        t->m_drawClock = g_6bf3c0;
+                        t->m_cueMgr->ConfigureItem(g_61ab24, 0, 0, 0);
                     }
                 }
             }
@@ -425,36 +427,36 @@ i32 EngineLabelBacklog::LoadStatzTabToggleSprite(i32 value, i32 idx) {
 // ===========================================================================
 //
 // Drives a tile switch into its DOWN state: it bumps the switch tile's cell-state
-// counter in the map grid (grid->m_20[grid->m_24[m_c] + m_8]) and notifies the
+// counter in the map grid (grid->m_20[grid->m_24[m_switchTileY] + m_switchTileX]) and notifies the
 // tile system, then - if the switch tile is on-screen (its pixel rect inside the
 // view bounds) and the status bar surface is live - runs the GAME_SWITCHDOWN
 // status-bar advance. Latches m_14 = 1 (down). __thiscall.
 RVA(0x00110570, 0xfb)
 void EngineLabelBacklog::LoadSwitchDownSprite() {
-    CMapTileGrid* g = ((CRegHolder*)g_gameReg->m_30)->m_24->m_5c;
-    i32 v = g->m_20[g->m_24[m_c] + m_8] + 1;
-    CMapTileGrid* g2 = ((CRegHolder*)g_gameReg->m_30)->m_24->m_5c;
-    g2->m_20[g2->m_24[m_c] + m_8] = v;
-    g_gameReg->m_70->Notify(m_8, m_c, v);
+    CMapTileGrid* g = ((CRegHolder*)g_gameReg->m_30)->m_tileHolder->m_grid;
+    i32 v = g->m_cellState[g->m_rowOffset[m_switchTileY] + m_switchTileX] + 1;
+    CMapTileGrid* g2 = ((CRegHolder*)g_gameReg->m_30)->m_tileHolder->m_grid;
+    g2->m_cellState[g2->m_rowOffset[m_switchTileY] + m_switchTileX] = v;
+    g_gameReg->m_70->Notify(m_switchTileX, m_switchTileY, v);
 
-    i32 px = (m_8 << 5) + 0x10;
-    i32 py = (m_c << 5) + 0x10;
+    i32 px = (m_switchTileX << 5) + 0x10;
+    i32 py = (m_switchTileY << 5) + 0x10;
     if (px < g_gameReg->m_144 && px >= g_gameReg->m_13c && py < g_gameReg->m_148
         && py >= g_gameReg->m_140) {
-        CStatusBarHolder* h = ((CRegHolder*)g_gameReg->m_30)->m_28;
-        if (h->m_30 == 0) {
+        CStatusBarHolder* h = ((CRegHolder*)g_gameReg->m_30)->m_statusBar;
+        if (h->m_surfaceGate == 0) {
             CSprite* spr = 0;
             h->m_10map.Lookup("GAME_SWITCHDOWN", &spr);
             if (spr) {
                 CStatusBarTab* t = (CStatusBarTab*)spr;
-                if (g_61ab20 != 0 && g_6bf3c0 - t->m_14 >= t->m_18) {
-                    t->m_14 = g_6bf3c0;
-                    t->m_10->ConfigureItem(g_61ab24, 0, 0, 0);
+                if (g_61ab20 != 0 && g_6bf3c0 - t->m_drawClock >= t->m_window) {
+                    t->m_drawClock = g_6bf3c0;
+                    t->m_cueMgr->ConfigureItem(g_61ab24, 0, 0, 0);
                 }
             }
         }
     }
-    m_14 = 1;
+    m_switchState = 1;
 }
 
 // ===========================================================================
@@ -465,30 +467,30 @@ void EngineLabelBacklog::LoadSwitchDownSprite() {
 // the GAME_SWITCHUP advance, and latches m_14 = 0 (up). __thiscall.
 RVA(0x001106b0, 0xf4)
 void EngineLabelBacklog::LoadSwitchUpSprite() {
-    CMapTileGrid* g = ((CRegHolder*)g_gameReg->m_30)->m_24->m_5c;
-    i32 v = g->m_20[g->m_24[m_c] + m_8] - 1;
-    CMapTileGrid* g2 = ((CRegHolder*)g_gameReg->m_30)->m_24->m_5c;
-    g2->m_20[g2->m_24[m_c] + m_8] = v;
-    g_gameReg->m_70->Notify(m_8, m_c, v);
+    CMapTileGrid* g = ((CRegHolder*)g_gameReg->m_30)->m_tileHolder->m_grid;
+    i32 v = g->m_cellState[g->m_rowOffset[m_switchTileY] + m_switchTileX] - 1;
+    CMapTileGrid* g2 = ((CRegHolder*)g_gameReg->m_30)->m_tileHolder->m_grid;
+    g2->m_cellState[g2->m_rowOffset[m_switchTileY] + m_switchTileX] = v;
+    g_gameReg->m_70->Notify(m_switchTileX, m_switchTileY, v);
 
-    i32 px = (m_8 << 5) + 0x10;
-    i32 py = (m_c << 5) + 0x10;
+    i32 px = (m_switchTileX << 5) + 0x10;
+    i32 py = (m_switchTileY << 5) + 0x10;
     if (px < g_gameReg->m_144 && px >= g_gameReg->m_13c && py < g_gameReg->m_148
         && py >= g_gameReg->m_140) {
-        CStatusBarHolder* h = ((CRegHolder*)g_gameReg->m_30)->m_28;
-        if (h->m_30 == 0) {
+        CStatusBarHolder* h = ((CRegHolder*)g_gameReg->m_30)->m_statusBar;
+        if (h->m_surfaceGate == 0) {
             CSprite* spr = 0;
             h->m_10map.Lookup("GAME_SWITCHUP", &spr);
             if (spr) {
                 CStatusBarTab* t = (CStatusBarTab*)spr;
-                if (g_61ab20 != 0 && g_6bf3c0 - t->m_14 >= t->m_18) {
-                    t->m_14 = g_6bf3c0;
-                    t->m_10->ConfigureItem(g_61ab24, 0, 0, 0);
+                if (g_61ab20 != 0 && g_6bf3c0 - t->m_drawClock >= t->m_window) {
+                    t->m_drawClock = g_6bf3c0;
+                    t->m_cueMgr->ConfigureItem(g_61ab24, 0, 0, 0);
                 }
             }
         }
     }
-    m_14 = 0;
+    m_switchState = 0;
 }
 
 // ===========================================================================
@@ -508,7 +510,8 @@ i32 EngineLabelBacklog::UpdateWarpStoneStatusBar(i32 a0, i32 phase, i32 srcX, i3
 
     CSprite* spr = 0;
     i32 n = phase + 1;
-    ((CRegHolder*)g_gameReg->m_30)->m_28->m_10map.Lookup("GAME_STATUSBAR_TABZ_GAMETAB_WARP", &spr);
+    ((CRegHolder*)g_gameReg->m_30)
+        ->m_statusBar->m_10map.Lookup("GAME_STATUSBAR_TABZ_GAMETAB_WARP", &spr);
     i32* frame = (spr && n >= spr->m_64 && n <= spr->m_68) ? spr->m_10.m_pData[n] : 0;
     m[0x38 / 4] = (i32)frame;
     if (frame == 0) {
@@ -552,15 +555,15 @@ i32 EngineLabelBacklog::UpdateWarpStoneStatusBar(i32 a0, i32 phase, i32 srcX, i3
     *(double*)&m[0x28 / 4] = (double)dist2 / dist;
     *(double*)&m[0x30 / 4] = (double)dxv / dist;
 
-    CStatusBarHolder* h = ((CRegHolder*)g_gameReg->m_30)->m_28;
-    if (h->m_30 == 0) {
+    CStatusBarHolder* h = ((CRegHolder*)g_gameReg->m_30)->m_statusBar;
+    if (h->m_surfaceGate == 0) {
         CSprite* fly = 0;
         h->m_10map.Lookup("GAME_WARPSTONEFLY", &fly);
         if (fly) {
             CStatusBarTab* t = (CStatusBarTab*)fly;
-            if (g_61ab20 != 0 && g_6bf3c0 - t->m_14 >= t->m_18) {
-                t->m_14 = g_6bf3c0;
-                t->m_10->ConfigureItem(g_61ab24, 0, 0, 0);
+            if (g_61ab20 != 0 && g_6bf3c0 - t->m_drawClock >= t->m_window) {
+                t->m_drawClock = g_6bf3c0;
+                t->m_cueMgr->ConfigureItem(g_61ab24, 0, 0, 0);
             }
         }
     }

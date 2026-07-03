@@ -112,7 +112,7 @@ public:
 // The bound object the toy-time accessor reads its +0x3f4 timer field out of.
 struct CToyTimeHost {
     char m_pad0[0x3f4];
-    i32 m_3f4; // +0x3f4  toy timer value
+    i32 m_toyTime; // +0x3f4  toy timer value
 };
 
 // GetToyTime (0x7fca0): free __stdcall +0x3f4 accessor (ret 4), sibling of
@@ -187,7 +187,7 @@ CGruntToyTimeSprite::CGruntToyTimeSprite(CSpriteObj* obj) : CGruntSpriteBase(obj
 // toy-timer field (`mov eax,[esp+4]; mov eax,[eax+0x3f4]; ret 4`).
 RVA(0x0007fca0, 0xd)
 i32 __stdcall GetToyTime(CToyTimeHost* o) {
-    return o->m_3f4;
+    return o->m_toyTime;
 }
 
 // @confidence: high

@@ -1,7 +1,7 @@
 // GruntChargeStep.cpp - CGrunt::ChargeStep (0x0ef6b0) re-homed from
 // src/Stub/Discovered.cpp. The per-frame "pursue / charge the target grunt"
-// behavior step: a three-state machine (m_2d4 = scan / move / arrived) over the
-// grunt manager's tile table (m_260), issuing move/attack commands and re-arming
+// behavior step: a three-state machine (m_defenderState = scan / move / arrived) over the
+// grunt manager's tile table (m_tileMgr), issuing move/attack commands and re-arming
 // a random-wander fallback. /base - no destructible locals. Self-contained CGrunt
 // view (own TU) so the shared Grunt.h/CGrunt model stays untouched; only offsets +
 // the reloc-masked engine callees (ILT thunks) are load-bearing.
@@ -23,12 +23,12 @@ struct PosObj {
 
 struct Grunt;
 
-// The grunt manager tile table at this->m_260: Find(grunt) returns the target and
+// The grunt manager tile table at this->m_tileMgr: Find(grunt) returns the target and
 // the +0x1c entry table is a 15-wide grid of grunt slots.
 struct GruntTable {
     Grunt* Find(Grunt* g); // 0x40253b (thiscall, 1 arg)
     char pad0[0x1c];
-    Grunt* entries[1]; // +0x1c (indexed [m_2f4 + m_2f0*15])
+    Grunt* entries[1]; // +0x1c (indexed [m_arrivalRow + m_arrivalCol*15])
 };
 
 // The g_64556c game-manager singleton chain this step walks.
@@ -76,39 +76,39 @@ struct Grunt {
     char pad0[0x10];
     PosObj* m_10; // +0x10
     char pad14[0x17c - 0x14];
-    i32 m_17c; // +0x17c  x
-    i32 m_180; // +0x180  y
+    i32 m_lastTilePxX; // +0x17c  x
+    i32 m_lastTilePxY; // +0x180  y
     char pad184[0x1e4 - 0x184];
-    i32 m_1e4; // +0x1e4
+    i32 m_entranceActive; // +0x1e4
     char pad1e8[0x1ec - 0x1e8];
-    i32 m_1ec; // +0x1ec  (target home x)
-    i32 m_1f0; // +0x1f0  (target home y)
+    i32 m_tileOwnerHi; // +0x1ec  (target home x)
+    i32 m_tileOwnerLo; // +0x1f0  (target home y)
     char pad1f4[0x1fc - 0x1f4];
-    i32 m_1fc; // +0x1fc  (target alive flag)
+    i32 m_entranceCommitted; // +0x1fc  (target alive flag)
     char pad200[0x218 - 0x200];
-    i32 m_218; // +0x218
-    i32 m_21c; // +0x21c
-    i32 m_220; // +0x220
+    i32 m_combatActive;  // +0x218
+    i32 m_neighborValid; // +0x21c
+    i32 m_poweredUp;     // +0x220
     char pad224[0x244 - 0x224];
-    i32 m_244; // +0x244
-    i32 m_248; // +0x248
+    i32 m_resetApplied; // +0x244
+    i32 m_arrivalFlags; // +0x248
     char pad24c[0x260 - 0x24c];
-    GruntTable* m_260; // +0x260
+    GruntTable* m_tileMgr; // +0x260
     char pad264[0x2d4 - 0x264];
-    i32 m_2d4; // +0x2d4  charge state (0=scan,1=move,2=arrived)
+    i32 m_defenderState; // +0x2d4  behavior sub-state (here: 0=scan,1=move,2=arrived)
     char pad2d8[0x2ec - 0x2d8];
-    i32 m_2ec; // +0x2ec  step timer (ms)
-    i32 m_2f0; // +0x2f0  target tile row
-    i32 m_2f4; // +0x2f4  target tile col
+    i32 m_dwell;      // +0x2ec  step/dwell timer (ms)
+    i32 m_arrivalCol; // +0x2f0  arrival grid col (index = 15*col+row)
+    i32 m_arrivalRow; // +0x2f4  arrival grid row
     char pad2f8[0x300 - 0x2f8];
-    i32 m_300; // +0x300  saved x
-    i32 m_304; // +0x304  saved y
+    i32 m_defenderX; // +0x300  saved x (= m_lastTilePxX)
+    i32 m_defenderY; // +0x304  saved y (= m_lastTilePxY)
     char pad308[0x318 - 0x308];
     i32 m_318; // +0x318
     char pad31c[0x328 - 0x31c];
-    i32 m_328; // +0x328  max wander distance
+    i32 m_coordCount; // +0x328  occupied-coord count (here gates a wander-span snap)
     char pad32c[0x3f0 - 0x32c];
-    i32 m_3f0; // +0x3f0  charge cooldown counter
+    i32 m_stamina; // +0x3f0  stamina (>=100 gate)
 
     // reloc-masked engine callees (ILT thunks; thiscall on this):
     i32 AtTile(i32 x, i32 y);                               // 0x403c4c
@@ -135,38 +135,40 @@ struct Grunt {
 // sweep. All member offsets + reloc-masked engine callees are modeled.
 RVA(0x000ef6b0, 0x61d)
 i32 Grunt::ChargeStep() {
-    m_300 = m_17c;
-    m_304 = m_180;
-    Grunt* g = m_260->Find(this);
+    m_defenderX = m_lastTilePxX;
+    m_defenderY = m_lastTilePxY;
+    Grunt* g = m_tileMgr->Find(this);
     i32 hitGate = 0;
     if (g != 0) {
         PosObj* gp = g->m_10;
-        if (gp->m_5c == g->m_17c && gp->m_60 == g->m_180 && AtTile(gp->m_5c, gp->m_60)) {
+        if (gp->m_5c == g->m_lastTilePxX && gp->m_60 == g->m_lastTilePxY
+            && AtTile(gp->m_5c, gp->m_60)) {
             hitGate = 1;
         }
     }
 
-    if (m_220 != 0) {
-        if (m_21c != 0) {
-            m_21c = 0;
+    if (m_poweredUp != 0) {
+        if (m_neighborValid != 0) {
+            m_neighborValid = 0;
             return 1;
         }
-        if (m_218 == 0) {
-            if (m_3f0 < 100) {
-                if (hitGate == 0 && m_220 != 0 && m_21c == 0) {
-                    m_1e4 = 0;
-                    m_218 = 0;
-                    m_21c = 0;
-                    m_220 = 0;
+        if (m_combatActive == 0) {
+            if (m_stamina < 100) {
+                if (hitGate == 0 && m_poweredUp != 0 && m_neighborValid == 0) {
+                    m_entranceActive = 0;
+                    m_combatActive = 0;
+                    m_neighborValid = 0;
+                    m_poweredUp = 0;
                     StopMove(1, 0, 0);
                     return 1;
                 }
             } else {
-                if (IsBusy(1) == 0 && (hitGate == 0 || g != 0) && m_220 != 0 && m_21c == 0) {
-                    m_1e4 = 0;
-                    m_218 = 0;
-                    m_21c = 0;
-                    m_220 = 0;
+                if (IsBusy(1) == 0 && (hitGate == 0 || g != 0) && m_poweredUp != 0
+                    && m_neighborValid == 0) {
+                    m_entranceActive = 0;
+                    m_combatActive = 0;
+                    m_neighborValid = 0;
+                    m_poweredUp = 0;
                     StopMove(1, 0, 0);
                     return 1;
                 }
@@ -175,30 +177,36 @@ i32 Grunt::ChargeStep() {
         return 1;
     }
 
-    // ---- m_220 == 0: the charge state machine ----
-    if (m_2d4 == 0) {
+    // ---- m_poweredUp == 0: the charge state machine ----
+    if (m_defenderState == 0) {
         // scan for a target on the wander tile
         if (g == 0) {
             goto arrive0;
         }
         if (hitGate != 0) {
-            if (m_3f0 >= 100) {
+            if (m_stamina >= 100) {
                 PosObj* gp = g->m_10;
-                if (gp->m_5c == g->m_17c && gp->m_60 == g->m_180 && AtTile(gp->m_60, gp->m_5c)) {
-                    FaceTarget(g->m_1ec, g->m_1f0, g->m_17c, g->m_180);
+                if (gp->m_5c == g->m_lastTilePxX && gp->m_60 == g->m_lastTilePxY
+                    && AtTile(gp->m_60, gp->m_5c)) {
+                    FaceTarget(
+                        g->m_tileOwnerHi,
+                        g->m_tileOwnerLo,
+                        g->m_lastTilePxX,
+                        g->m_lastTilePxY
+                    );
                     return 1;
                 }
             }
         }
-        if (g != 0 && m_2ec > 500) {
-            if (CanReach(g->m_1ec, g->m_1f0) == 0) {
+        if (g != 0 && m_dwell > 500) {
+            if (CanReach(g->m_tileOwnerHi, g->m_tileOwnerLo) == 0) {
                 return 1;
             }
-            if (Attack(g->m_10->m_5c >> 5, g->m_10->m_60 >> 5, 0, m_248, 1, 0) != 0) {
+            if (Attack(g->m_10->m_5c >> 5, g->m_10->m_60 >> 5, 0, m_arrivalFlags, 1, 0) != 0) {
                 Snap(1, 1);
-                m_2f0 = g->m_1ec;
-                m_2f4 = g->m_1f0;
-                m_2d4 = 1;
+                m_arrivalCol = g->m_tileOwnerHi;
+                m_arrivalRow = g->m_tileOwnerLo;
+                m_defenderState = 1;
                 PosObj* mp = m_10;
                 GameMgr* mgr = g_64556c;
                 i32 los = GruntLos1127(mgr->m_30->m_24->m_5c->m_30 + 0x40, mp->m_5c, mp->m_60);
@@ -206,11 +214,11 @@ i32 Grunt::ChargeStep() {
                     mgr->m_60->Notify(this, 0x366, -1, 0, -1, -1);
                 }
             }
-            m_2ec = 0;
+            m_dwell = 0;
             return 1;
         }
     arrive0:
-        if (m_244 == 0 && m_318 != 0 && m_2ec > 3000) {
+        if (m_resetApplied == 0 && m_318 != 0 && m_dwell > 3000) {
             PosObj* mp = m_10;
             i32 baseX = mp->m_134;
             i32 spanX = mp->m_13c - baseX;
@@ -226,73 +234,74 @@ i32 Grunt::ChargeStep() {
             }
             GameMgr* mgr = g_64556c;
             if ((u32)baseX < mgr->m_70->m_c && (u32)baseY < mgr->m_70->m_10) {
-                Attack(baseX, baseY, 0, m_248, 1, 0);
+                Attack(baseX, baseY, 0, m_arrivalFlags, 1, 0);
             }
-            if (m_328 != 0) {
+            if (m_coordCount != 0) {
                 if (spanX <= spanY) {
                     spanX = spanY;
                 }
-                if (spanX < m_328) {
+                if (spanX < m_coordCount) {
                     Snap(1, 1);
                 }
             }
-            m_2ec = 0;
+            m_dwell = 0;
         }
-    } else if (m_2d4 == 1) {
+    } else if (m_defenderState == 1) {
         // moving to the arrival tile
-        Grunt* t = m_260->entries[m_2f4 + m_2f0 * 0xf];
-        Grunt* cur = m_260->Find(this);
+        Grunt* t = m_tileMgr->entries[m_arrivalRow + m_arrivalCol * 0xf];
+        Grunt* cur = m_tileMgr->Find(this);
         if (cur != 0 && cur != t) {
-            m_2f0 = -1;
-            m_2d4 = 0;
-            m_2f4 = -1;
+            m_arrivalCol = -1;
+            m_defenderState = 0;
+            m_arrivalRow = -1;
             return 1;
         }
-        if (t == 0 || t->m_1fc == 0 || CanReach(t->m_1ec, t->m_1f0) == 0) {
-            m_2d4 = 0;
+        if (t == 0 || t->m_entranceCommitted == 0
+            || CanReach(t->m_tileOwnerHi, t->m_tileOwnerLo) == 0) {
+            m_defenderState = 0;
             return 1;
         }
-        if (m_2ec > 500) {
-            MoveTo6(t->m_17c, t->m_180, 0, m_248, 1, 0);
-            m_2ec = 0;
+        if (m_dwell > 500) {
+            MoveTo6(t->m_lastTilePxX, t->m_lastTilePxY, 0, m_arrivalFlags, 1, 0);
+            m_dwell = 0;
         }
-        if (m_220 == 0 && m_3f0 >= 100 && AtTile(t->m_10->m_60, t->m_10->m_5c) != 0
-            && t->m_10->m_5c == t->m_17c && t->m_10->m_60 == t->m_180) {
-            FaceTarget(t->m_1ec, t->m_1f0, t->m_17c, t->m_180);
-            m_2d4 = 2;
+        if (m_poweredUp == 0 && m_stamina >= 100 && AtTile(t->m_10->m_60, t->m_10->m_5c) != 0
+            && t->m_10->m_5c == t->m_lastTilePxX && t->m_10->m_60 == t->m_lastTilePxY) {
+            FaceTarget(t->m_tileOwnerHi, t->m_tileOwnerLo, t->m_lastTilePxX, t->m_lastTilePxY);
+            m_defenderState = 2;
             return 1;
         }
-    } else if (m_2d4 == 2) {
+    } else if (m_defenderState == 2) {
         // arrived: re-check target then hold
-        if (m_220 != 0) {
-            Grunt* t = m_260->entries[m_2f4 + m_2f0 * 0xf];
+        if (m_poweredUp != 0) {
+            Grunt* t = m_tileMgr->entries[m_arrivalRow + m_arrivalCol * 0xf];
             if (t == 0) {
                 goto rearm2;
             }
-            if (CanReach(t->m_1ec, t->m_1f0) == 0) {
+            if (CanReach(t->m_tileOwnerHi, t->m_tileOwnerLo) == 0) {
                 goto rearm2;
             }
-            if (t->m_1fc == 0) {
+            if (t->m_entranceCommitted == 0) {
                 goto rearm2;
             }
-            if (m_21c != 0 || m_218 != 0 || m_3f0 < 100) {
+            if (m_neighborValid != 0 || m_combatActive != 0 || m_stamina < 100) {
                 return 1;
             }
             if (AtTile(t->m_10->m_60, t->m_10->m_5c) == 0) {
                 goto rearm2;
             }
-            if (t->m_10->m_5c != t->m_17c || t->m_10->m_60 != t->m_180) {
+            if (t->m_10->m_5c != t->m_lastTilePxX || t->m_10->m_60 != t->m_lastTilePxY) {
                 goto rearm2;
             }
-            FaceTarget(t->m_1ec, t->m_1f0, t->m_17c, t->m_180);
+            FaceTarget(t->m_tileOwnerHi, t->m_tileOwnerLo, t->m_lastTilePxX, t->m_lastTilePxY);
             return 1;
         rearm2:
-            m_2d4 = 1;
-            m_2ec = 0x1f4;
+            m_defenderState = 1;
+            m_dwell = 0x1f4;
             return 1;
         } else {
-            m_2d4 = 1;
-            m_2ec = 0x1f4;
+            m_defenderState = 1;
+            m_dwell = 0x1f4;
             return 1;
         }
     }

@@ -2,7 +2,7 @@
 // of src/Stub/ApiCallers.cpp (0x000f60f0). __thiscall, no args, always returns 1.
 //
 // Gated on the grunt's resolved type name (g_typeColl lookup of m_14->m_1c vs a fixed
-// type string): for the matching type it drives a small state machine on m_2d4
+// type string): for the matching type it drives a small state machine on m_defenderState
 // (states 0/2/4/0x19/0x1a) that recomputes the grunt's target tile, builds the 16
 // border cells of the 5x5 block around it into a point accumulator, picks a random
 // still-free cell to relocate/arrive on (marking tiles via the tile-manager), and
@@ -100,19 +100,19 @@ namespace gruntphase {
     };
 
     struct CGrunt;
-    // A resolved neighbor node (from tile-mgr): m_10 map obj, m_17c/m_180 dst coords,
-    // m_1ec/m_1f0 owner coords, m_1fc gate.
+    // The neighbor grunt the tile-mgr resolves (shares the CGrunt shape): m_10 hud/map
+    // obj, m_lastTilePx* last-tile pixel pos, m_tileOwner* owner coords, m_entranceCommitted gate.
     struct NeighborNode {
         char m_pad0[0x10];
         MapObj* m_10; // +0x10
         char m_pad14[0x17c - 0x14];
-        i32 m_17c; // +0x17c
-        i32 m_180; // +0x180
+        i32 m_lastTilePxX; // +0x17c
+        i32 m_lastTilePxY; // +0x180
         char m_pad184[0x1ec - 0x184];
-        i32 m_1ec; // +0x1ec
-        i32 m_1f0; // +0x1f0
+        i32 m_tileOwnerHi; // +0x1ec
+        i32 m_tileOwnerLo; // +0x1f0
         char m_pad1f4[0x1fc - 0x1f4];
-        i32 m_1fc; // +0x1fc
+        i32 m_entranceCommitted; // +0x1fc
     };
     struct TileMgr {
         NeighborNode* Resolve253b(CGrunt* g); // 0x0000253b
@@ -123,38 +123,38 @@ namespace gruntphase {
         MapObj* m_10;  // +0x10
         AnimRec* m_14; // +0x14
         char m_pad18[0x17c - 0x18];
-        i32 m_17c; // +0x17c
-        i32 m_180; // +0x180
+        i32 m_lastTilePxX; // +0x17c
+        i32 m_lastTilePxY; // +0x180
         char m_pad184[0x1ec - 0x184];
-        i32 m_1ec; // +0x1ec
-        i32 m_1f0; // +0x1f0
+        i32 m_tileOwnerHi; // +0x1ec
+        i32 m_tileOwnerLo; // +0x1f0
         char m_pad1f4[0x220 - 0x1f4];
-        i32 m_220; // +0x220
+        i32 m_poweredUp; // +0x220
         char m_pad224[0x248 - 0x224];
-        i32 m_248; // +0x248
-        i32 m_24c; // +0x24c
+        i32 m_arrivalFlags; // +0x248
+        i32 m_24c;          // +0x24c
         char m_pad250[0x260 - 0x250];
-        TileMgr* m_260; // +0x260
+        TileMgr* m_tileMgr; // +0x260
         char m_pad264[0x2d4 - 0x264];
-        i32 m_2d4; // +0x2d4 state
+        i32 m_defenderState; // +0x2d4 state
         char m_pad2d8[0x2ec - 0x2d8];
-        i32 m_2ec; // +0x2ec dwell
-        i32 m_2f0; // +0x2f0 tile x
-        i32 m_2f4; // +0x2f4 tile y
+        i32 m_dwell;      // +0x2ec dwell
+        i32 m_arrivalCol; // +0x2f0 tile x
+        i32 m_arrivalRow; // +0x2f4 tile y
         char m_pad2f8[0x300 - 0x2f8];
-        i32 m_300; // +0x300
-        i32 m_304; // +0x304
+        i32 m_defenderX; // +0x300
+        i32 m_defenderY; // +0x304
         char m_pad308[0x31c - 0x308];
         ObList m_31c; // +0x31c
         i32* m_320;   // +0x320
         char m_pad324[0x328 - 0x324];
-        i32 m_328; // +0x328
+        i32 m_coordCount; // +0x328
         char m_pad32c[0x358 - 0x32c];
         i32 m_358; // +0x358
         char m_pad35c[0x390 - 0x35c];
         i32 m_390; // +0x390
         char m_pad394[0x3f0 - 0x394];
-        i32 m_3f0; // +0x3f0
+        i32 m_stamina; // +0x3f0
 
         void GetTilePos36c0(GruntTilePos* out);                     // 0x000036c0
         i32 MarkTile1640(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // 0x00001640
@@ -178,7 +178,7 @@ namespace gruntphase {
 
     // @early-stop
     // regalloc + region-build wall. Complete correct reconstruction: the type-name
-    // gate (inline strcmp of the g_typeColl lookup vs the phase type), the m_2d4 state
+    // gate (inline strcmp of the g_typeColl lookup vs the phase type), the m_defenderState state
     // dispatch (0x19/0x1a re-mark, 0/2/4), the 5x5-border 16-point accumulator build +
     // random-free-cell relocation with tile marking, and the common tail's CObList
     // node recycle onto the shared free list all align by shape (llvm-objdump -dr).
@@ -197,57 +197,57 @@ namespace gruntphase {
         if (strcmp(*g_typeColl.Lookup437c(m_14->m_1c), g_phaseType) == 0) {
             return 1;
         }
-        m_300 = m_17c;
-        m_304 = m_180;
+        m_defenderX = m_lastTilePxX;
+        m_defenderY = m_lastTilePxY;
 
-        if (m_2d4 == 0x19) {
+        if (m_defenderState == 0x19) {
             GetTilePos36c0(&pa);
             i32 ax = pa.x >> 5;
             GetTilePos36c0(&pb);
-            i32 gx = (pb.x >> 5) - m_2f0 + ax;
+            i32 gx = (pb.x >> 5) - m_arrivalCol + ax;
             GetTilePos36c0(&pa);
             i32 ay = pa.y >> 5;
             GetTilePos36c0(&pb);
-            i32 gy = (pb.y >> 5) - m_2f4 + ay;
-            MarkTile1640(gx, gy, 0, m_248, 1, 0);
-            m_2ec = 0;
-            m_2d4 = 4;
+            i32 gy = (pb.y >> 5) - m_arrivalRow + ay;
+            MarkTile1640(gx, gy, 0, m_arrivalFlags, 1, 0);
+            m_dwell = 0;
+            m_defenderState = 4;
         }
-        if (m_2d4 == 0x1a) {
+        if (m_defenderState == 0x1a) {
             GetTilePos36c0(&pa);
             i32 ax = pa.x >> 5;
             GetTilePos36c0(&pb);
             GetTilePos36c0(&pa);
-            i32 gx = (pb.x >> 5) - m_2f0 + ax;
+            i32 gx = (pb.x >> 5) - m_arrivalCol + ax;
             i32 ay = pa.x >> 5;
             GetTilePos36c0(&pb);
-            i32 gy = (pb.y >> 5) - m_2f4 + ay;
-            MarkTile1640(gx, gy, 0, m_248, 1, 0);
-            m_2d4 = 0;
+            i32 gy = (pb.y >> 5) - m_arrivalRow + ay;
+            MarkTile1640(gx, gy, 0, m_arrivalFlags, 1, 0);
+            m_defenderState = 0;
             return 1;
         }
 
-        if (m_2d4 == 0) {
+        if (m_defenderState == 0) {
             goto state0;
         }
-        if (m_2d4 == 2) {
+        if (m_defenderState == 2) {
             goto state2;
         }
-        if (m_2d4 != 4) {
+        if (m_defenderState != 4) {
             goto common;
         }
-        if (m_2ec <= 0x1f40) {
+        if (m_dwell <= 0x1f40) {
             return 1;
         }
-        m_2d4 = 0;
+        m_defenderState = 0;
         return 1;
 
     state2: {
         if (strcmp(*g_typeColl.Lookup437c(m_14->m_1c), g_phaseType) == 0) {
             goto common;
         }
-        i32 x = m_2f0;
-        i32 y = m_2f4;
+        i32 x = m_arrivalCol;
+        i32 y = m_arrivalRow;
         RectSet34a4(&r0, 0, 0, 0, 0);
         RectSet34a4(&r1, 0, 0, 0, 0);
         acc.Ctor1b4b43();
@@ -281,9 +281,9 @@ namespace gruntphase {
                 flag = 1;
             }
             if ((flag & 0x939) == 0) {
-                if (MarkTile1640(px, py, 0, m_248, 1, 0) != 0) {
-                    m_2d4 = 4;
-                    m_2ec = 0;
+                if (MarkTile1640(px, py, 0, m_arrivalFlags, 1, 0) != 0) {
+                    m_defenderState = 4;
+                    m_dwell = 0;
                     goto build_tail;
                 }
             }
@@ -300,33 +300,34 @@ namespace gruntphase {
     }
 
     state0: {
-        NeighborNode* nb = m_260->Resolve253b(this);
+        NeighborNode* nb = m_tileMgr->Resolve253b(this);
         if (nb == 0) {
             goto common;
         }
-        if (nb->m_1fc == 0) {
+        if (nb->m_entranceCommitted == 0) {
             goto common;
         }
-        if (m_220 == 0 && m_3f0 >= 0x64 && nb->m_10->m_5c == nb->m_17c
-            && nb->m_10->m_60 == nb->m_180 && Check3c4c(nb->m_10->m_5c, nb->m_10->m_60) != 0) {
-            Emit302b(nb->m_1ec, nb->m_1f0, nb->m_17c, nb->m_180);
-            m_2f0 = nb->m_10->m_5c >> 5;
-            m_2f4 = nb->m_10->m_60 >> 5;
-            m_2d4 = 2;
+        if (m_poweredUp == 0 && m_stamina >= 0x64 && nb->m_10->m_5c == nb->m_lastTilePxX
+            && nb->m_10->m_60 == nb->m_lastTilePxY
+            && Check3c4c(nb->m_10->m_5c, nb->m_10->m_60) != 0) {
+            Emit302b(nb->m_tileOwnerHi, nb->m_tileOwnerLo, nb->m_lastTilePxX, nb->m_lastTilePxY);
+            m_arrivalCol = nb->m_10->m_5c >> 5;
+            m_arrivalRow = nb->m_10->m_60 >> 5;
+            m_defenderState = 2;
             goto common;
         }
-        if (m_2ec <= 0x1f4) {
+        if (m_dwell <= 0x1f4) {
             goto common;
         }
-        if (Probe1014(nb->m_1ec, nb->m_1f0) == 0) {
+        if (Probe1014(nb->m_tileOwnerHi, nb->m_tileOwnerLo) == 0) {
             goto s0_reset;
         }
-        if (MarkTile1640(nb->m_10->m_5c >> 5, nb->m_10->m_60 >> 5, 0, m_248, 1, 0) == 0) {
+        if (MarkTile1640(nb->m_10->m_5c >> 5, nb->m_10->m_60 >> 5, 0, m_arrivalFlags, 1, 0) == 0) {
             m_24c |= 0x4020;
-            MarkTile1640(nb->m_10->m_5c >> 5, nb->m_10->m_60 >> 5, 0, m_248, 1, 0);
+            MarkTile1640(nb->m_10->m_5c >> 5, nb->m_10->m_60 >> 5, 0, m_arrivalFlags, 1, 0);
             m_24c &= 0xffffbfdf;
         }
-        m_2ec = 0;
+        m_dwell = 0;
         if (m_390 == 0) {
             goto common;
         }
@@ -340,8 +341,8 @@ namespace gruntphase {
     }
 
     common: {
-        i32 st = m_2d4;
-        if (st != 4 && st != 0x19 && m_328 >= 2) {
+        i32 st = m_defenderState;
+        if (st != 4 && st != 0x19 && m_coordCount >= 2) {
             i32* head = m_320;
             i32 bx = ((i32*)head[2])[0];
             i32 by = ((i32*)head[2])[1];
@@ -357,18 +358,24 @@ namespace gruntphase {
                 flag = 1;
             }
             if ((flag & 0x20) != 0) {
-                if (m_328 != 0) {
+                if (m_coordCount != 0) {
                     RecycleNodes(m_320);
                     m_31c.RemoveAll1b48a6();
                 }
-                PlaceTile14bf(g_mgrSettings->m_68, m_1ec, m_1f0, fy * 32 + 16, fx * 32 + 16);
-                m_2f0 = fx;
-                m_2f4 = by;
-                m_2d4 = 0x19;
+                PlaceTile14bf(
+                    g_mgrSettings->m_68,
+                    m_tileOwnerHi,
+                    m_tileOwnerLo,
+                    fy * 32 + 16,
+                    fx * 32 + 16
+                );
+                m_arrivalCol = fx;
+                m_arrivalRow = by;
+                m_defenderState = 0x19;
                 return 1;
             }
         }
-        if (m_328 == 0) {
+        if (m_coordCount == 0) {
             return 1;
         }
         i32* p1 = (i32*)m_320[2];
@@ -384,13 +391,13 @@ namespace gruntphase {
         if ((flag2 & 0x20) == 0) {
             return 1;
         }
-        m_2f0 = gx;
-        m_2f4 = gy;
-        if (m_328 != 0) {
+        m_arrivalCol = gx;
+        m_arrivalRow = gy;
+        if (m_coordCount != 0) {
             RecycleNodes(m_320);
             m_31c.RemoveAll1b48a6();
         }
-        m_2d4 = 0x1a;
+        m_defenderState = 0x1a;
         return 1;
     }
     }
