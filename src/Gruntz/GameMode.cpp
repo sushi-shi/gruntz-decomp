@@ -51,12 +51,12 @@ CState::CState() {
     m_4 = 0;
     m_8 = 0;
     m_c = 0;
-    m_28 = 0;
+    m_levelBank = 0;
     m_2c = 0;
     m_14 = 0;
     m_18 = 0;
     m_38 = 0;
-    m_3c = 0;
+    m_ready = 0;
     m_4c = 0;
     m_24 = 0;
     m_160 = 0;
@@ -77,8 +77,8 @@ CState::CState() {
     m_1a0 = 0;
     m_19c = 0;
     m_1a4 = 0;
-    m_150 = 0;
-    m_154 = 0;
+    m_cursorX = 0;
+    m_cursorY = 0;
 }
 
 // CState::~CState()  - the slot-0 scalar-deleting dtor `??_G`. Restore the
@@ -106,10 +106,10 @@ i32 CState::Render() {
 void CState::Vfunc1() {}
 void CState::ReleaseResources() {}
 
-// CState::Vfunc3() (slot 3 / +0xc): the active/ready gate - returns m_3c.
+// CState::Vfunc3() (slot 3 / +0xc): the active/ready gate - returns m_ready.
 RVA(0x0008c490, 0x4)
 i32 CState::Vfunc3() {
-    return m_3c;
+    return m_ready;
 }
 
 // CState::Vslot11() (slot 17 / +0x44): a 3-arg base default returning 0 (the

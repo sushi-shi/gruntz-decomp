@@ -218,14 +218,14 @@ public:
         return (CWorld*)m_4;
     }
 
-    // The start-point marker array (m_370) is a real CByteArray/CPtrArray whose
+    // The start-point marker array (m_startMarkers) is a real CByteArray/CPtrArray whose
     // data(+0x374)/count(+0x378) FindStartPointAt walks directly (byte-identical to
     // the old raw m_markerData/m_markerCount fields).
     CHitMarker** markerData() {
-        return *(CHitMarker***)((char*)&m_370 + 4);
+        return *(CHitMarker***)((char*)&m_startMarkers + 4);
     }
     i32 markerCount() {
-        return *(i32*)((char*)&m_370 + 8);
+        return *(i32*)((char*)&m_startMarkers + 8);
     }
 
     // CPlay's own per-frame helper methods (the thunks Render dispatches to
@@ -375,7 +375,7 @@ public:
     void FreeListTeardown(); // 0x0cb480
     // CPlayDtorBody (0x0c8700): the ~CPlay teardown body - free the per-frame
     // workers (m_320/m_guts/m_hitTest/m_beginMarker/m_frameMarker), clear the four g_mgrSettings config
-    // rows, flush the m_370/m_3a4[4]/m_488 free-list arrays, then run the base dtor.
+    // rows, flush the m_startMarkers/m_3a4[4]/m_488 free-list arrays, then run the base dtor.
     void CPlayDtorBody(); // 0x0c8700
     // AddLevelGruntz (0x0d5960): walk the registry object list and register each
     // valid grunt object with the session; logs "Could not add Grunt" on failure.
@@ -497,7 +497,7 @@ public:
     // +0x370: a CByteArray/CPtrArray of start-point markers (the 2nd destructible
     // member); FindStartPointAt reads its data(+4)/count(+8) via markerData()/
     // markerCount(). +0x3a4: a CByteArray[4] (the 3rd..? member, one ??_M vector fold).
-    CByteArray m_370; // +0x370  (data@+4 = marker-ptr array, count@+8 = marker count)
+    CByteArray m_startMarkers; // +0x370  (data@+4 = marker-ptr array, count@+8 = marker count)
     char m_pad384[0x3a4 - 0x384];
     CByteArray m_3a4[4]; // +0x3a4  (4 * 0x14)
     void* m_frameMarker; // +0x3f4  frame-marker/timeline object (+0x30..0x4c reset block)
@@ -505,7 +505,8 @@ public:
         m_cueIntervalHi; // +0x3f8  AMBIENT-cue 64-bit timer
     i32 m_cueToggle;     // +0x408  AMBIENT-cue on/off toggle
     i32 m_lastCueId;     // +0x40c  PlayCueAt last-shown cueId (de-dupe gate)
-    CString m_410; // +0x410  4th destructible member (PlayCueAt reads &m_410 as its de-dupe state)
+    CString
+        m_cueText; // +0x410  4th destructible member (PlayCueAt reads &m_cueText as its de-dupe state)
     i32 m_drewThisFrame; // +0x414  per-frame "drew" flag (cleared at entry)
     char m_pad418[0x430 - 0x418];
     i32 m_region0TimerLo, m_region0TimerHi, m_region0Interval, m_region0IntervalHi; // +0x430

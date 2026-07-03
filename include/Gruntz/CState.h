@@ -41,7 +41,7 @@ public:
     } // slot 0
     virtual void Vfunc1();           // slot 1
     virtual void ReleaseResources(); // slot 2  (+0x8)  resource teardown (leaf override)
-    virtual i32 Vfunc3();            // slot 3  (+0xc)  active/ready gate (return m_3c)
+    virtual i32 Vfunc3();            // slot 3  (+0xc)  active/ready gate (return m_ready)
     virtual i32 Update();            // slot 4  (+0x10)  base default = return 1;
     virtual i32 Render();            // slot 5  (+0x14)  base default = return 1;
     virtual i32 Vslot06();           // slot 6  (+0x18)  activation-ready poll
@@ -100,24 +100,24 @@ public:
     i32 m_14; // +0x14
     i32 m_18; // +0x18
     char m_pad1c[0x24 - 0x1c];
-    i32 m_24;         // +0x24
-    CResSource* m_28; // +0x28  level asset bank (TILEZ/IMAGEZ/SOUNDZ/MIDIZ source)
+    i32 m_24;                // +0x24
+    CResSource* m_levelBank; // +0x28  level asset bank (TILEZ/IMAGEZ/SOUNDZ/MIDIZ source)
     // +0x2c  the resolved asset source a state loader caches (CBankMgr::Lookup
     // result): CSplashState/CHelpState store the "STATEZ_*" namespace here and
     // (splash) LoadGroup its "SOUNDZ" set; the attract path stashes its resolved
     // TITLE state here. A 4-byte pointer slot (was modeled i32 + per-site casts).
-    CResSource* m_2c; // +0x2c
-    CResSource* m_30; // +0x30  GRUNTZ asset bank (LoadImageBanks caches here)
-    CResSource* m_34; // +0x34  GAME asset bank (GAME-namespace loaders' source)
-    i32 m_38;         // +0x38
-    i32 m_3c;         // +0x3c
+    CResSource* m_2c;         // +0x2c
+    CResSource* m_gruntzBank; // +0x30  GRUNTZ asset bank (LoadImageBanks caches here)
+    CResSource* m_gameBank;   // +0x34  GAME asset bank (GAME-namespace loaders' source)
+    i32 m_38;                 // +0x38
+    i32 m_ready;              // +0x3c  active/ready gate (Vfunc3 returns it)
     char m_pad40[0x4c - 0x40];
     char m_4c; // +0x4c (byte)
     char m_pad4d[0x150 - 0x4d];
-    i32 m_150; // +0x150 BeginFrameClear arg
-    i32 m_154; // +0x154 BeginFrameClear arg
-    i32 m_158; // +0x158 drag/select snap origin X
-    i32 m_15c; // +0x15c drag/select snap origin Y
+    i32 m_cursorX;     // +0x150 live cursor X (ResetForMode GetCursorPos); BeginFrameClear arg
+    i32 m_cursorY;     // +0x154 live cursor Y
+    i32 m_snapOriginX; // +0x158 drag/select snap origin X
+    i32 m_snapOriginY; // +0x15c drag/select snap origin Y
     // +0x160..+0x1a4: the per-axis scroll/input state block StepInputA walks
     // (two mirrored halves; four extents seeded to 0x40 by the ctor).
     i32 m_160; // +0x160 first-half axis value

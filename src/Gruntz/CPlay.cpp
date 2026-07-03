@@ -12,7 +12,7 @@
 // CString temp in the alt path -> /GX). The three paths share one WORLD-DRAW
 // block and a common return-1 tail.
 //
-//   this->vtbl[+0x7c](0, m_150, m_154);          // BeginFrameClear (a virtual)
+//   this->vtbl[+0x7c](0, m_cursorX, m_cursorY);          // BeginFrameClear (a virtual)
 //   m_drewThisFrame = 0;                                    // per-frame "drew" flag
 //   if (m_renderDisabled) return 1;                          // hard early-out
 //
@@ -275,7 +275,7 @@ i32 CPlay::Render() {
     // --- frame entry: clear the per-frame flag, then a `this`-virtual begin. ---
     // (the m_drewThisFrame=0 store is scheduled INTO the BeginFrameClear arg setup.)
     m_drewThisFrame = 0;
-    BeginFrameClear(0, m_150, m_154); // this->vtbl[+0x7c](0, m_150, m_154)
+    BeginFrameClear(0, m_cursorX, m_cursorY); // this->vtbl[+0x7c](0, m_cursorX, m_cursorY)
 
     if (m_renderDisabled != 0) {
         return 1; // hard early-out
@@ -1224,7 +1224,7 @@ i32 CPlay::NotifyVisibleEntities() {
 // CPlay::StepScroll - per-frame scroll-offset
 // recompute. Reads the draw-surface (m_c->m_24) scroll origin (+0x10/+0x14) and
 // its geom block (+0x5c -> +0x40.{x,y}), adds the BeginFrameClear extents
-// (m_150/m_154), aligns each axis DOWN to a 0x20 boundary (+0x10 bias) and
+// (m_cursorX/m_cursorY), aligns each axis DOWN to a 0x20 boundary (+0x10 bias) and
 // stores the result into the scroll-offset sink m_scrollSink (+0x5c X, +0x60 Y).
 // ===========================================================================
 // @early-stop
@@ -1239,8 +1239,8 @@ void CPlay::StepScroll() {
     CDrawSurface* v = m_c->m_drawSurface;
     CDrawSurface::CameraGeom* geom = v->m_5c;
 
-    i32 y = m_154 + (geom->m_originY - v->m_viewport.top);  // [edx+4]-m_14; +=m_154
-    i32 x = geom->m_originX + (m_150 - v->m_viewport.left); // [edx]; +=m_150-m_10
+    i32 y = m_cursorY + (geom->m_originY - v->m_viewport.top);  // [edx+4]-m_14; +=m_cursorY
+    i32 x = geom->m_originX + (m_cursorX - v->m_viewport.left); // [edx]; +=m_cursorX-m_10
 
     y = (y & ~0x1f) + 0x10; // align down 0x20 (and al,0xe0); + 0x10
     x = (x & ~0x1f) + 0x10; // align down 0x20 (and edi,~0x1f); + 0x10
@@ -1336,7 +1336,7 @@ void CPlay::PlayCueAt(i32 cueId, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7,
     RECT rect;
 
     if (cueId != m_lastCueId) {
-        if (((CCueState*)&m_410)->Probe(cueId) == 0) {
+        if (((CCueState*)&m_cueText)->Probe(cueId) == 0) {
             return; // still-live other cue -> skip
         }
         m_lastCueId = cueId;
@@ -1362,9 +1362,9 @@ void CPlay::PlayCueAt(i32 cueId, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7,
     }
 
     if (a3 != 0) {
-        Eng_CueRenderTop(m_c, &m_410, &rect, a2, 1, a4, a5, a6, a7);
+        Eng_CueRenderTop(m_c, &m_cueText, &rect, a2, 1, a4, a5, a6, a7);
     } else {
-        Eng_CueRenderDef(m_c, &m_410, &rect, a2, 1, a4, a5, a6, a7);
+        Eng_CueRenderDef(m_c, &m_cueText, &rect, a2, 1, a4, a5, a6, a7);
     }
 }
 
@@ -1826,7 +1826,7 @@ i32 CPlay::BeginGridWalk(i32 key, i32 index, i32 e8, i32 delay, i32 hasGrid) {
 // pointer (x,y) with selector `a`. Bails while the primary mode (m_inGame) or the
 // paused flag (m_paused) is set. If an overlay is up (m_overlayActive) and the guts subsystem
 // isn't busy, forwards to the in-rect HUD drag. Then a 3-way:
-//   m_dragSnapActive  -> a drag is being snapped: snap to (m_158+x, m_15c+y) and re-arm m_scrollSink.
+//   m_dragSnapActive  -> a drag is being snapped: snap to (m_snapOriginX+x, m_snapOriginY+y) and re-arm m_scrollSink.
 //   m_overlayDrag  -> an overlay drag: dispatch m_guts->DragSelect and return.
 //   else   -> the world box-drag: point-test against the viewport box
 //             (m_c->m_24+0x10). INSIDE -> finish (clear m_dragInProgress, normalize the sel
@@ -1866,7 +1866,7 @@ i32 CPlay::HandleDragMove(i32 a, i32 x, i32 y) {
         if (m_guts == 0) {
             return 1;
         }
-        DragSnapTo(m_158 + x, m_15c + y);
+        DragSnapTo(m_snapOriginX + x, m_snapOriginY + y);
         goto rearm; // -> shared m_scrollSink re-arm tail
     }
 
@@ -1892,11 +1892,11 @@ i32 CPlay::HandleDragMove(i32 a, i32 x, i32 y) {
         }
         m_dragInProgress = 0;
         if (m_worldReady != 0) {
-            // normalize {m_150,m_154}..{m_dragClampMaxX,m_dragClampMaxY} into min/max:
-            m_hudRect.left = m_150 < m_dragClampMaxX ? m_150 : m_dragClampMaxX;
-            m_hudRect.right = m_150 > m_dragClampMaxX ? m_150 : m_dragClampMaxX;
-            m_hudRect.top = m_154 < m_dragClampMaxY ? m_154 : m_dragClampMaxY;
-            m_hudRect.bottom = m_154 > m_dragClampMaxY ? m_154 : m_dragClampMaxY;
+            // normalize {m_cursorX,m_cursorY}..{m_dragClampMaxX,m_dragClampMaxY} into min/max:
+            m_hudRect.left = m_cursorX < m_dragClampMaxX ? m_cursorX : m_dragClampMaxX;
+            m_hudRect.right = m_cursorX > m_dragClampMaxX ? m_cursorX : m_dragClampMaxX;
+            m_hudRect.top = m_cursorY < m_dragClampMaxY ? m_cursorY : m_dragClampMaxY;
+            m_hudRect.bottom = m_cursorY > m_dragClampMaxY ? m_cursorY : m_dragClampMaxY;
             goto rearm; // -> shared m_scrollSink re-arm tail
         }
 
@@ -1935,22 +1935,22 @@ i32 CPlay::HandleDragMove(i32 a, i32 x, i32 y) {
     m_guts->DragSelect(a, x, y);
     if (m_worldReady != 0) {
         // clamp the selection rect into [box, m_dragClampMaxX/m_dragClampMaxY]:
-        i32 lo = m_150 > left ? m_150 : left;
+        i32 lo = m_cursorX > left ? m_cursorX : left;
         m_hudRect.left = lo;
         if (lo >= m_dragClampMaxX) {
             m_hudRect.left = m_dragClampMaxX;
         }
-        i32 hi = m_150 < right ? m_150 : right;
+        i32 hi = m_cursorX < right ? m_cursorX : right;
         m_hudRect.right = hi;
         if (hi > m_dragClampMaxX) {
             m_hudRect.right = m_dragClampMaxX;
         }
-        i32 tlo = m_154 <= top ? m_154 : top;
+        i32 tlo = m_cursorY <= top ? m_cursorY : top;
         m_hudRect.top = tlo;
         if (tlo < m_dragClampMaxY) {
             m_hudRect.top = m_dragClampMaxY;
         }
-        i32 thi = m_154 < bottom ? m_154 : bottom;
+        i32 thi = m_cursorY < bottom ? m_cursorY : bottom;
         m_hudRect.bottom = thi;
         if (thi > m_dragClampMaxY) {
             m_hudRect.bottom = m_dragClampMaxY;
@@ -2027,8 +2027,8 @@ void CPlay::Stub_08c9d0() {}
 //
 RVA(0x0008c970, 0x1c)
 i32 CState::SetBeginClearParams(i32 unused, i32 arg2, i32 arg3) {
-    m_150 = arg2;
-    m_154 = arg3;
+    m_cursorX = arg2;
+    m_cursorY = arg3;
     return 1;
 }
 
@@ -2624,8 +2624,8 @@ struct ScrollView { // CPlay view for the auto-scroll path (offset access)
     char p0[0x4];
     ScrollWorld* m_4; // +0x04  world/level
     char p8[0x150 - 0x8];
-    i32 m_150; // +0x150  cursor x
-    i32 m_154; // +0x154  cursor y
+    i32 m_cursorX; // +0x150  cursor x
+    i32 m_cursorY; // +0x154  cursor y
     char p158[0x4b4 - 0x158];
     i32 m_scrollEdgeActive; // +0x4b4  edge active bits
     i32 m_scrollEdgeLock;   // +0x4b8  edge lock bits
@@ -2658,7 +2658,7 @@ i32 CPlay::LoadScrollSpeedOptions() {
     i32 extentY = w->m_90;
 
     // LEFT edge
-    if (self->m_150 < 0xc || (self->m_scrollEdgeLock & 1)) {
+    if (self->m_cursorX < 0xc || (self->m_scrollEdgeLock & 1)) {
         if (self->m_scrollEdgeActive & 1) {
             i32 d = (g_pTimeGetTime() - self->m_lastScrollTimeX) * speed / 100;
             if (d) {
@@ -2678,7 +2678,7 @@ i32 CPlay::LoadScrollSpeedOptions() {
     }
 
     // RIGHT edge
-    if (self->m_150 > extentX - 0xc || (self->m_scrollEdgeLock & 4)) {
+    if (self->m_cursorX > extentX - 0xc || (self->m_scrollEdgeLock & 4)) {
         if (self->m_scrollEdgeActive & 4) {
             i32 d = (g_pTimeGetTime() - self->m_lastScrollTimeX) * speed / 100;
             if (d) {
@@ -2698,7 +2698,7 @@ i32 CPlay::LoadScrollSpeedOptions() {
     }
 
     // TOP edge
-    if (self->m_154 < 0xf || (self->m_scrollEdgeLock & 2)) {
+    if (self->m_cursorY < 0xf || (self->m_scrollEdgeLock & 2)) {
         if (self->m_scrollEdgeActive & 2) {
             i32 d = (g_pTimeGetTime() - self->m_lastScrollTimeY) * speed / 100;
             if (d) {
@@ -2718,7 +2718,7 @@ i32 CPlay::LoadScrollSpeedOptions() {
     }
 
     // BOTTOM edge
-    if (self->m_154 > extentY - 0xf || (self->m_scrollEdgeLock & 8)) {
+    if (self->m_cursorY > extentY - 0xf || (self->m_scrollEdgeLock & 8)) {
         if (self->m_scrollEdgeActive & 8) {
             i32 d = (g_pTimeGetTime() - self->m_lastScrollTimeY) * speed / 100;
             if (d) {
@@ -2878,9 +2878,9 @@ i32 CPlay::BuildGruntTypeNameTable(i32 typeIdx, i32 a2, i32 a3, i32 a4) {
 // A small family of asset-namespace loaders. Each reaches the game resource
 // registry through this->m_c (->m_10 image/tile registry [virtual install slot
 // 18 = +0x48], ->m_28 sound registry, ->m_2c animation registry) and looks the
-// level's named set up off a bank source (this->m_28 or this->m_34, both expose
+// level's named set up off a bank source (this->m_levelBank or this->m_gameBank, both expose
 // LookupSet @0x13bae0). LoadImageBanks (the parent) caches the GRUNTZ/GAME banks
-// into this->m_30/m_34 first; the per-type loaders then read this->m_34 as their
+// into this->m_gruntzBank/m_gameBank first; the per-type loaders then read this->m_gameBank as their
 // source. Helpers are modeled NO-body so their `call`s reloc-mask; only OFFSETS +
 // code bytes are load-bearing. The loaders touch sub-object faces (m_c->m_10,
 // m_8->Lookup) that Render's matched member typing models differently, so each
@@ -2890,19 +2890,19 @@ i32 CPlay::BuildGruntTypeNameTable(i32 typeIdx, i32 a2, i32 a3, i32 a4) {
 extern i32 g_resourceInstallActive; // ?g_resourceInstallActive@@3HA @0x6bf37c (mangled-name match)
 extern "C" char g_emptyString[];    // _g_emptyString @0x6293f4
 
-// A level's named-set source (this->m_28 / this->m_34, and the banks cached in
-// m_30/m_34). LookupSet (0x13bae0) resolves "TILEZ"/"IMAGEZ"/"SOUNDZ"/"ANIZ".
+// A level's named-set source (this->m_levelBank / this->m_gameBank, and the banks cached in
+// m_gruntzBank/m_gameBank). LookupSet (0x13bae0) resolves "TILEZ"/"IMAGEZ"/"SOUNDZ"/"ANIZ".
 struct CResSource {
     void* LookupSet(char* szName); // 0x13bae0 __thiscall, ret set ptr
 };
 // The bank manager at this->m_8: Lookup (0x13c030) resolves a "GRUNTZ"/"GAME"
-// bank into a CResSource (LoadImageBanks caches the result in m_30/m_34).
+// bank into a CResSource (LoadImageBanks caches the result in m_gruntzBank/m_gameBank).
 struct CBankMgr {
     CResSource* Lookup(char* szName); // 0x13c030 __thiscall
 };
 // The loader family reaches its resource state directly through `this` (a CPlay):
-// the bank manager (CState::m_8), the level/GRUNTZ/GAME banks (CState::m_28/m_30/
-// m_34) and the shared CView resource registries (CState::m_c->m_10/m_28/m_2c).
+// the bank manager (CState::m_8), the level/GRUNTZ/GAME banks (CState::m_levelBank/
+// m_gruntzBank/m_gameBank) and the shared CView resource registries (CState::m_c->m_10/m_28/m_2c).
 
 // LoadImageBanks (0x0cffe0) - cache the GRUNTZ + GAME asset banks off m_8 into
 // m_30/m_34; the int (BOOL) return reuses the just-loaded value at each guard.
@@ -2912,12 +2912,12 @@ i32 CPlay::LoadImageBanks() {
     if (!self->m_8) {
         return 0;
     }
-    self->m_30 = self->m_8->Lookup("GRUNTZ");
-    if (!self->m_30) {
+    self->m_gruntzBank = self->m_8->Lookup("GRUNTZ");
+    if (!self->m_gruntzBank) {
         return 0;
     }
-    self->m_34 = self->m_8->Lookup("GAME");
-    return self->m_34 != 0;
+    self->m_gameBank = self->m_8->Lookup("GAME");
+    return self->m_gameBank != 0;
 }
 
 // LoadActionTileSprites (0x0db600) - register the ACTION/BACK namespaces then
@@ -2938,7 +2938,7 @@ i32 CPlay::LoadActionTileSprites(i32 force) {
     self->m_c->m_imageRegistry->Register("BACK", g_emptyString);
     g_resourceInstallActive = 0;
 
-    void* tiles = self->m_28->LookupSet("TILEZ");
+    void* tiles = self->m_levelBank->LookupSet("TILEZ");
     if (!tiles) {
         return 0;
     }
@@ -2961,7 +2961,7 @@ i32 CPlay::LoadLevelSounds(i32 force) {
 
     self->m_c->m_soundRegistry->Register("LEVEL", "_");
 
-    void* sounds = self->m_28->LookupSet("SOUNDZ");
+    void* sounds = self->m_levelBank->LookupSet("SOUNDZ");
     if (!sounds) {
         return 0;
     }
@@ -2985,7 +2985,7 @@ i32 CPlay::LoadLevelImages(i32 force) {
     self->m_c->m_imageRegistry->Register("LEVEL", "_");
     g_resourceInstallActive = 0;
 
-    void* images = self->m_28->LookupSet("IMAGEZ");
+    void* images = self->m_levelBank->LookupSet("IMAGEZ");
     if (!images) {
         return 0;
     }
@@ -2995,7 +2995,7 @@ i32 CPlay::LoadLevelImages(i32 force) {
 }
 
 // LoadGameImages (0x0db8a0) - the GAME-namespace image loader. No force gate, no
-// Register; reads m_34 (the cached GAME bank) for the IMAGEZ set, installs through
+// Register; reads m_gameBank (the cached GAME bank) for the IMAGEZ set, installs through
 // the +0x48 virtual slot. Brackets the install with the install-active flag = 1 then 0.
 RVA(0x000db8a0, 0x67)
 i32 CPlay::LoadGameImages(i32 force) {
@@ -3008,7 +3008,7 @@ i32 CPlay::LoadGameImages(i32 force) {
     }
 
     g_resourceInstallActive = 1;
-    void* images = self->m_34->LookupSet("IMAGEZ");
+    void* images = self->m_gameBank->LookupSet("IMAGEZ");
     if (!images) {
         return 0;
     }
@@ -3017,7 +3017,7 @@ i32 CPlay::LoadGameImages(i32 force) {
     return 1;
 }
 
-// LoadGameSounds (0x0db930) - the GAME-namespace sound loader. Reads m_34 for the
+// LoadGameSounds (0x0db930) - the GAME-namespace sound loader. Reads m_gameBank for the
 // SOUNDZ set and installs through m_c->m_28 (non-virtual). No Register, no install-gate.
 RVA(0x000db930, 0x53)
 i32 CPlay::LoadGameSounds(i32 force) {
@@ -3029,7 +3029,7 @@ i32 CPlay::LoadGameSounds(i32 force) {
         return 1;
     }
 
-    void* sounds = self->m_34->LookupSet("SOUNDZ");
+    void* sounds = self->m_gameBank->LookupSet("SOUNDZ");
     if (!sounds) {
         return 0;
     }
@@ -3037,7 +3037,7 @@ i32 CPlay::LoadGameSounds(i32 force) {
     return 1;
 }
 
-// LoadGameAnims (0x0db9b0) - the GAME-namespace animation loader. Reads m_34 for
+// LoadGameAnims (0x0db9b0) - the GAME-namespace animation loader. Reads m_gameBank for
 // the ANIZ set and installs through m_c->m_2c (non-virtual). No Register/install-gate.
 RVA(0x000db9b0, 0x53)
 i32 CPlay::LoadGameAnims(i32 force) {
@@ -3049,7 +3049,7 @@ i32 CPlay::LoadGameAnims(i32 force) {
         return 1;
     }
 
-    void* anims = self->m_34->LookupSet("ANIZ");
+    void* anims = self->m_gameBank->LookupSet("ANIZ");
     if (!anims) {
         return 0;
     }
@@ -3060,7 +3060,7 @@ i32 CPlay::LoadGameAnims(i32 force) {
 // ===========================================================================
 // CPlay::BuildMusicCategoryTable (0x0dba30) - install the level's + game's XMI music
 // categories into the sound manager's category table (m_4->m_48). For each of the
-// two MIDIZ sources (level m_28, game m_34) it resolves a fixed list of category
+// two MIDIZ sources (level m_levelBank, game m_gameBank) it resolves a fixed list of category
 // names ("AMBIENT0/1", "INTRO0/1" for the level; "POWERUP", "CURSE", "MONOLITH" for
 // the game) as 'XMI' resources and, if the resolved entry loads, installs it under
 // its name. The arg (force flag) is unused. __thiscall, ret 4.
@@ -3075,7 +3075,7 @@ struct CMusicEntry {
 struct CMusicSet {
     CMusicEntry* Resolve(char* name, i32 tag); // 0x53a000 (thiscall)
 };
-// A music source (level m_28 / game m_34).
+// A music source (level m_levelBank / game m_gameBank).
 struct CMusicSource {
     CMusicSet* LookupSet(char* name); // 0x53bae0 (thiscall)
 };
@@ -3092,9 +3092,9 @@ struct CMusicOwner {
         CMusicCatTable* m_48; // +0x48
     }* m_4;                   // +0x04
     char p8[0x28 - 0x8];
-    CMusicSource* m_28; // +0x28
+    CMusicSource* m_levelBank; // +0x28  level MIDIZ bank (== CState::m_levelBank)
     char p2c[0x34 - 0x2c];
-    CMusicSource* m_34; // +0x34
+    CMusicSource* m_gameBank; // +0x34  game MIDIZ bank (== CState::m_gameBank)
 };
 
 #define MUSIC_TAG_XMI 0x584d49 // 'XMI'
@@ -3104,7 +3104,7 @@ i32 CPlay::BuildMusicCategoryTable(i32) {
     CMusicOwner* self = (CMusicOwner*)this;
     self->m_4->m_48->Clear();
 
-    CMusicSet* levelSet = self->m_28->LookupSet("MIDIZ");
+    CMusicSet* levelSet = self->m_levelBank->LookupSet("MIDIZ");
     if (levelSet) {
         CMusicEntry* e = levelSet->Resolve("AMBIENT0", MUSIC_TAG_XMI);
         if (e) {
@@ -3136,7 +3136,7 @@ i32 CPlay::BuildMusicCategoryTable(i32) {
         }
     }
 
-    CMusicSource* gameSrc = self->m_34;
+    CMusicSource* gameSrc = self->m_gameBank;
     CMusicSet* gameSet = gameSrc->LookupSet("MIDIZ");
     if (gameSet) {
         CMusicEntry* e = gameSet->Resolve("POWERUP", MUSIC_TAG_XMI);
@@ -3167,7 +3167,7 @@ i32 CPlay::BuildMusicCategoryTable(i32) {
 // ===========================================================================
 // CPlay::LoadGruntSoundNamespaces (0x0dd830) - register the per-grunt sound
 // namespaces (GRUNTZ_<X>) into the level sound registry (m_c->m_28), sourcing each
-// SOUNDZ_<X> set off the GRUNTZ bank (m_30). The first three namespaces load silently;
+// SOUNDZ_<X> set off the GRUNTZ bank (m_gruntzBank). The first three namespaces load silently;
 // the last four also tick the load-notify object (arg) when present. __thiscall.
 // ===========================================================================
 // The per-namespace load-notify sink (arg): OnLoaded() probes its ready flags and
@@ -3184,25 +3184,25 @@ i32 CPlay::LoadGruntSoundNamespaces(void* notify) {
     }
 
     if (!self->m_c->m_soundRegistry->Has("GRUNTZ_NORMALGRUNT")) {
-        void* s = self->m_30->LookupSet("SOUNDZ_NORMALGRUNT");
+        void* s = self->m_gruntzBank->LookupSet("SOUNDZ_NORMALGRUNT");
         if (s) {
             self->m_c->m_soundRegistry->Install(s, "GRUNTZ_NORMALGRUNT", "_");
         }
     }
     if (!self->m_c->m_soundRegistry->Has("GRUNTZ_DEATHZ")) {
-        void* s = self->m_30->LookupSet("SOUNDZ_DEATHZ");
+        void* s = self->m_gruntzBank->LookupSet("SOUNDZ_DEATHZ");
         if (s) {
             self->m_c->m_soundRegistry->Install(s, "GRUNTZ_DEATHZ", "_");
         }
     }
     if (!self->m_c->m_soundRegistry->Has("GRUNTZ_ENTRANCEZ")) {
-        void* s = self->m_30->LookupSet("SOUNDZ_ENTRANCEZ");
+        void* s = self->m_gruntzBank->LookupSet("SOUNDZ_ENTRANCEZ");
         if (s) {
             self->m_c->m_soundRegistry->Install(s, "GRUNTZ_ENTRANCEZ", "_");
         }
     }
     if (!self->m_c->m_soundRegistry->Has("GRUNTZ_EXITZ")) {
-        void* s = self->m_30->LookupSet("SOUNDZ_EXITZ");
+        void* s = self->m_gruntzBank->LookupSet("SOUNDZ_EXITZ");
         if (s) {
             self->m_c->m_soundRegistry->Install(s, "GRUNTZ_EXITZ", "_");
         }
@@ -3211,7 +3211,7 @@ i32 CPlay::LoadGruntSoundNamespaces(void* notify) {
         }
     }
     if (!self->m_c->m_soundRegistry->Has("GRUNTZ_GRUNTPUDDLE")) {
-        void* s = self->m_30->LookupSet("SOUNDZ_GRUNTPUDDLE");
+        void* s = self->m_gruntzBank->LookupSet("SOUNDZ_GRUNTPUDDLE");
         if (s) {
             self->m_c->m_soundRegistry->Install(s, "GRUNTZ_GRUNTPUDDLE", "_");
         }
@@ -3220,7 +3220,7 @@ i32 CPlay::LoadGruntSoundNamespaces(void* notify) {
         }
     }
     if (!self->m_c->m_soundRegistry->Has("GRUNTZ_PICKUPS")) {
-        void* s = self->m_30->LookupSet("SOUNDZ_PICKUPS");
+        void* s = self->m_gruntzBank->LookupSet("SOUNDZ_PICKUPS");
         if (s) {
             self->m_c->m_soundRegistry->Install(s, "GRUNTZ_PICKUPS", "_");
         }
@@ -3229,7 +3229,7 @@ i32 CPlay::LoadGruntSoundNamespaces(void* notify) {
         }
     }
     if (!self->m_c->m_soundRegistry->Has("GRUNTZ_BOMBGRUNT")) {
-        void* s = self->m_30->LookupSet("SOUNDZ_BOMBGRUNT");
+        void* s = self->m_gruntzBank->LookupSet("SOUNDZ_BOMBGRUNT");
         if (s) {
             self->m_c->m_soundRegistry->Install(s, "GRUNTZ_BOMBGRUNT", "_");
         }
@@ -3255,7 +3255,7 @@ i32 CPlay::BuildSpriteImageKeyTable(void* notify) {
     }
     g_resourceInstallActive = 1;
     if (!self->m_c->m_imageRegistry->Has("GRUNTZ_NORMALGRUNT")) {
-        void* s = self->m_30->LookupSet("IMAGEZ_NORMALGRUNT");
+        void* s = self->m_gruntzBank->LookupSet("IMAGEZ_NORMALGRUNT");
         if (!s) {
             return 0;
         }
@@ -3265,7 +3265,7 @@ i32 CPlay::BuildSpriteImageKeyTable(void* notify) {
         }
     }
     if (!self->m_c->m_imageRegistry->Has("GRUNTZ_DEATHZ")) {
-        void* s = self->m_30->LookupSet("IMAGEZ_DEATHZ");
+        void* s = self->m_gruntzBank->LookupSet("IMAGEZ_DEATHZ");
         if (!s) {
             return 0;
         }
@@ -3275,7 +3275,7 @@ i32 CPlay::BuildSpriteImageKeyTable(void* notify) {
         }
     }
     if (!self->m_c->m_imageRegistry->Has("GRUNTZ_ENTRANCEZ")) {
-        void* s = self->m_30->LookupSet("IMAGEZ_ENTRANCEZ");
+        void* s = self->m_gruntzBank->LookupSet("IMAGEZ_ENTRANCEZ");
         if (!s) {
             return 0;
         }
@@ -3285,7 +3285,7 @@ i32 CPlay::BuildSpriteImageKeyTable(void* notify) {
         }
     }
     if (!self->m_c->m_imageRegistry->Has("GRUNTZ_EXITZ")) {
-        void* s = self->m_30->LookupSet("IMAGEZ_EXITZ");
+        void* s = self->m_gruntzBank->LookupSet("IMAGEZ_EXITZ");
         if (!s) {
             return 0;
         }
@@ -3295,7 +3295,7 @@ i32 CPlay::BuildSpriteImageKeyTable(void* notify) {
         }
     }
     if (!self->m_c->m_imageRegistry->Has("GRUNTZ_GRUNTPUDDLE")) {
-        void* s = self->m_30->LookupSet("IMAGEZ_GRUNTPUDDLE");
+        void* s = self->m_gruntzBank->LookupSet("IMAGEZ_GRUNTPUDDLE");
         if (!s) {
             return 0;
         }
@@ -3305,7 +3305,7 @@ i32 CPlay::BuildSpriteImageKeyTable(void* notify) {
         }
     }
     if (!self->m_c->m_imageRegistry->Has("GRUNTZ_PICKUPS")) {
-        void* s = self->m_30->LookupSet("IMAGEZ_PICKUPS");
+        void* s = self->m_gruntzBank->LookupSet("IMAGEZ_PICKUPS");
         if (!s) {
             return 0;
         }
@@ -3315,7 +3315,7 @@ i32 CPlay::BuildSpriteImageKeyTable(void* notify) {
         }
     }
     if (!self->m_c->m_imageRegistry->Has("GRUNTZ_BOMBGRUNT")) {
-        void* s = self->m_30->LookupSet("IMAGEZ_BOMBGRUNT");
+        void* s = self->m_gruntzBank->LookupSet("IMAGEZ_BOMBGRUNT");
         if (!s) {
             return 0;
         }
@@ -3341,7 +3341,7 @@ i32 CPlay::BuildAnizKeyTable(void* notify) {
         return 0;
     }
     if (!self->m_c->m_animRegistry->Has("GRUNTZ_NORMALGRUNT")) {
-        void* s = self->m_30->LookupSet("ANIZ_NORMALGRUNT");
+        void* s = self->m_gruntzBank->LookupSet("ANIZ_NORMALGRUNT");
         if (!s) {
             return 0;
         }
@@ -3351,7 +3351,7 @@ i32 CPlay::BuildAnizKeyTable(void* notify) {
         }
     }
     if (!self->m_c->m_animRegistry->Has("GRUNTZ_DEATHZ")) {
-        void* s = self->m_30->LookupSet("ANIZ_DEATHZ");
+        void* s = self->m_gruntzBank->LookupSet("ANIZ_DEATHZ");
         if (!s) {
             return 0;
         }
@@ -3361,7 +3361,7 @@ i32 CPlay::BuildAnizKeyTable(void* notify) {
         }
     }
     if (!self->m_c->m_animRegistry->Has("GRUNTZ_ENTRANCEZ")) {
-        void* s = self->m_30->LookupSet("ANIZ_ENTRANCEZ");
+        void* s = self->m_gruntzBank->LookupSet("ANIZ_ENTRANCEZ");
         if (!s) {
             return 0;
         }
@@ -3371,7 +3371,7 @@ i32 CPlay::BuildAnizKeyTable(void* notify) {
         }
     }
     if (!self->m_c->m_animRegistry->Has("GRUNTZ_EXITZ")) {
-        void* s = self->m_30->LookupSet("ANIZ_EXITZ");
+        void* s = self->m_gruntzBank->LookupSet("ANIZ_EXITZ");
         if (!s) {
             return 0;
         }
@@ -3381,7 +3381,7 @@ i32 CPlay::BuildAnizKeyTable(void* notify) {
         }
     }
     if (!self->m_c->m_animRegistry->Has("GRUNTZ_GRUNTPUDDLE")) {
-        void* s = self->m_30->LookupSet("ANIZ_GRUNTPUDDLE");
+        void* s = self->m_gruntzBank->LookupSet("ANIZ_GRUNTPUDDLE");
         if (!s) {
             return 0;
         }
@@ -3391,7 +3391,7 @@ i32 CPlay::BuildAnizKeyTable(void* notify) {
         }
     }
     if (!self->m_c->m_animRegistry->Has("GRUNTZ_PICKUPS")) {
-        void* s = self->m_30->LookupSet("ANIZ_PICKUPS");
+        void* s = self->m_gruntzBank->LookupSet("ANIZ_PICKUPS");
         if (!s) {
             return 0;
         }
@@ -3401,7 +3401,7 @@ i32 CPlay::BuildAnizKeyTable(void* notify) {
         }
     }
     if (!self->m_c->m_animRegistry->Has("GRUNTZ_BOMBGRUNT")) {
-        void* s = self->m_30->LookupSet("ANIZ_BOMBGRUNT");
+        void* s = self->m_gruntzBank->LookupSet("ANIZ_BOMBGRUNT");
         if (!s) {
             return 0;
         }
@@ -3424,7 +3424,7 @@ DATA(0x002c44c4)
 extern ShowCursorFn g_ShowCursor;
 
 // ResetForMode (0x0c8a10) - capture the live cursor position into the
-// BeginFrameClear args (m_150/m_154), force the cursor hidden, enter the
+// BeginFrameClear args (m_cursorX/m_cursorY), force the cursor hidden, enter the
 // requested mode (publishing the level-start clock for mode 9), then reset the
 // per-frame drag/world-ready latches and the three world sub-objects.
 RVA(0x000c8a10, 0x119)
@@ -3432,8 +3432,8 @@ i32 CPlay::ResetForMode(i32 mode) {
     POINT pt;
     GetCursorPos(&pt);
     ShowCursorFn showCursor = g_ShowCursor;
-    m_150 = pt.x;
-    m_154 = pt.y;
+    m_cursorX = pt.x;
+    m_cursorY = pt.y;
     if (showCursor(0) >= 0) {
         do {
         } while (showCursor(0) >= 0);
@@ -3767,7 +3767,7 @@ i32 CPlay::ResetPlayState() {
 
 // FreeListTeardown (0x0cb480) - the per-level teardown OnExit runs: flush the
 // world timeline, reset the resource sub-registries / world sub-objects, release
-// every per-level allocation (the m_370/m_3a4[4]/m_488 pointer arrays) back onto
+// every per-level allocation (the m_startMarkers/m_3a4[4]/m_488 pointer arrays) back onto
 // the global node free list, then reset the per-grunt-type config rows.
 // __thiscall, no args, no return. Self-contained view.
 DATA(0x00245544)
@@ -3882,7 +3882,7 @@ struct CRtThis { // view-of-this
     char p2e0[0x2e4 - 0x2e0];
     CRtMarker* m_beginMarker; // +0x2e4  begin marker
     char p2e8[0x370 - 0x2e8];
-    CRtArr m_370; // +0x370  (m_markerData data / m_markerCount count)
+    CRtArr m_startMarkers; // +0x370  (m_markerData data / m_markerCount count)
     char p384[0x3a4 - 0x384];
     CRtArr m_3a4[4];          // +0x3a4  stride 0x14
     CRtMarker* m_frameMarker; // +0x3f4  frame marker
@@ -3939,15 +3939,15 @@ void CPlay::FreeListTeardown() {
     self->m_4->m_68->Reset1b48a6();
     self->m_4->m_68->m_2a0 = 0;
     self->m_c->m_c->Reset163c60();
-    for (i = 0; i < self->m_370.m_count; i++) {
-        void* node = self->m_370.m_data[i];
+    for (i = 0; i < self->m_startMarkers.m_count; i++) {
+        void* node = self->m_startMarkers.m_data[i];
         if (node != 0) {
             void** p = (void**)((char*)node - g_freeListNodeBias);
             *p = g_freeList;
             g_freeList = p;
         }
     }
-    self->m_370.SetSize(0, -1);
+    self->m_startMarkers.SetSize(0, -1);
     for (k = 0; k < 4; k++) {
         for (i = 0; i < self->m_3a4[k].m_count; i++) {
             void* node = self->m_3a4[k].m_data[i];
@@ -4058,7 +4058,7 @@ struct CDtorThis {
     char p2e8[0x320 - 0x2e8];
     DtorWorkerA* m_320; // +0x320
     char p324[0x370 - 0x324];
-    CRtArr m_370; // +0x370
+    CRtArr m_startMarkers; // +0x370
     char p384[0x3a4 - 0x384];
     CRtArr m_3a4[4];            // +0x3a4
     DtorWorkerE* m_frameMarker; // +0x3f4
@@ -4114,15 +4114,15 @@ void CPlay::CPlayDtorBody() {
         ::operator delete(self->m_frameMarker);
         self->m_frameMarker = 0;
     }
-    for (i = 0; i < self->m_370.m_count; i++) {
-        void* node = self->m_370.m_data[i];
+    for (i = 0; i < self->m_startMarkers.m_count; i++) {
+        void* node = self->m_startMarkers.m_data[i];
         if (node != 0) {
             void** p = (void**)((char*)node - g_freeListNodeBias);
             *p = g_freeList;
             g_freeList = p;
         }
     }
-    self->m_370.SetSize(0, -1);
+    self->m_startMarkers.SetSize(0, -1);
     for (i32 k = 0; k < 4; k++) {
         for (i = 0; i < self->m_3a4[k].m_count; i++) {
             void* node = self->m_3a4[k].m_data[i];

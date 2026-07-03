@@ -1,8 +1,8 @@
 // CPlayDtor.cpp - the /GX destructor of the in-game PLAY state CPlay (0x8c830) and
 // of its CPlay-derived sibling state CDemo (0x8d0d0). Uses the ONE canonical CPlay
 // (<Gruntz/CPlay.h>, `class CPlay : public CState`): its five destructible MFC
-// members are typed there (CString m_1b4, CByteArray m_370, CByteArray m_3a4[4],
-// CString m_410, CByteArray m_488), so the dtor's /GX member-teardown machinery +
+// members are typed there (CString m_1b4, CByteArray m_startMarkers, CByteArray m_3a4[4],
+// CString m_cueText, CByteArray m_488), so the dtor's /GX member-teardown machinery +
 // the most-derived vptr stamp fall out from cl. The members fold in reverse decl
 // (= reverse offset) order under descending /GX trylevels:
 //   +0x488  CByteArray   state 4
