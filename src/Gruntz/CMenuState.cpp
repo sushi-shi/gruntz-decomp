@@ -74,19 +74,19 @@ void LoadGameOptionsToDialog(HWND hDlg) {
     }
     g_opt_22bd70 = g_mgrSettings->m_isEasyMode;
     g_opt_22bd6c = g_mgrSettings->m_inputFlag;
-    g_opt_22bd84 = g_mgrSettings->m_10;
+    g_opt_22bd84 = g_mgrSettings->m_soundEnabled;
     g_opt_22bdc4 = g_mgrSettings->m_inputStateVal;
     g_opt_22bdd4 = g_mgrSettings->m_isVoiceEnabled;
     g_opt_22bdcc = g_mgrSettings->m_sound->GetXMidiVolume();
-    g_opt_22bdd0 = g_mgrSettings->m_14;
+    g_opt_22bdd0 = g_mgrSettings->m_musicEnabled;
     g_opt_22bd68 = g_mgrSettings->m_scrollSpeed;
-    g_opt_22bd64 = g_mgrSettings->m_14;
+    g_opt_22bd64 = g_mgrSettings->m_musicEnabled;
     g_opt_22bdc8 = DetectScreenResMode();
     g_videoResolutionMode = DetectScreenResMode();
 
     CheckDlgButton(hDlg, 0x455, g_mgrSettings->m_isEasyMode);
     LoadVideoResolutionConfig(hDlg, 0x52c, g_videoResolutionMode);
-    CheckDlgButton(hDlg, 0x46d, g_mgrSettings->m_10);
+    CheckDlgButton(hDlg, 0x46d, g_mgrSettings->m_soundEnabled);
     ApiCallerStubs::winapi_0371e0_GetDlgItem_SetScrollInfo(
         hDlg,
         0x470,
@@ -100,7 +100,7 @@ void LoadGameOptionsToDialog(HWND hDlg) {
         g_mgrSettings->m_inputStateVal,
         0x50
     );
-    CheckDlgButton(hDlg, 0x471, g_mgrSettings->m_14);
+    CheckDlgButton(hDlg, 0x471, g_mgrSettings->m_musicEnabled);
     ApiCallerStubs::winapi_0371e0_GetDlgItem_SetScrollInfo(
         hDlg,
         0x472,

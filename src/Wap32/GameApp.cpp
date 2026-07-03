@@ -22,10 +22,10 @@ i32 g_gameAppInstanceCount;
 // then bumps the file-scope instance counter.
 RVA(0x0013d590, 0x3c)
 CGameApp::CGameApp() {
-    m_4 = 0;
-    m_8 = 0;
-    m_10 = 0; // the optimiser schedules the +0x10 store before +0x0c
-    m_c = 0;
+    m_gameWnd = 0;
+    m_gameMgr = 0;
+    m_hAccel = 0; // the optimiser schedules the +0x10 store before +0x0c
+    m_hInstance = 0;
     m_appActive = 0;
     m_errorReported = 0;
     m_errorCode = 0;
@@ -38,17 +38,17 @@ CGameApp::CGameApp() {
 // Frees the accelerator table then deletes the two resource objects.
 RVA(0x0013d8c0, 0x42)
 void CGameApp::CloseResources() {
-    if (m_10) {
-        DestroyAcceleratorTable(m_10);
-        m_10 = 0;
+    if (m_hAccel) {
+        DestroyAcceleratorTable(m_hAccel);
+        m_hAccel = 0;
     }
-    if (m_8) {
-        delete m_8;
-        m_8 = 0;
+    if (m_gameMgr) {
+        delete m_gameMgr;
+        m_gameMgr = 0;
     }
-    if (m_4) {
-        delete m_4;
-        m_4 = 0;
+    if (m_gameWnd) {
+        delete m_gameWnd;
+        m_gameWnd = 0;
     }
 }
 
@@ -58,12 +58,12 @@ void CGameApp::CloseResources() {
 RVA(0x0013dc20, 0x49)
 BOOL CGameApp::InitializeAccelerators(LPCSTR lpTable) {
     if (lpTable && *lpTable) {
-        if (m_10) {
-            DestroyAcceleratorTable(m_10);
-            m_10 = 0;
+        if (m_hAccel) {
+            DestroyAcceleratorTable(m_hAccel);
+            m_hAccel = 0;
         }
-        m_10 = LoadAcceleratorsA(m_c, lpTable);
-        return m_10 != 0;
+        m_hAccel = LoadAcceleratorsA(m_hInstance, lpTable);
+        return m_hAccel != 0;
     }
     return 0;
 }
@@ -77,8 +77,8 @@ void CGameApp::ReportError(WPARAM wParam, LPARAM lParam) {
         return;
     }
     m_errorReported = 1;
-    if (m_4 && ((CGameWnd*)m_4)->m_closeGuard == 0) {
-        PostMessageA((HWND)((CGameWnd*)m_4)->m_hwnd, 0x10 /*WM_CLOSE*/, 0, 0);
+    if (m_gameWnd && m_gameWnd->m_closeGuard == 0) {
+        PostMessageA(m_gameWnd->m_hwnd, 0x10 /*WM_CLOSE*/, 0, 0);
     }
     m_running = 0;
     m_errorCode = (i32)wParam;
@@ -87,9 +87,9 @@ void CGameApp::ReportError(WPARAM wParam, LPARAM lParam) {
 
 // -------------------------------------------------------------------------
 // CGameApp::RunMessageLoop - the main Win32 pump (vtbl slot +0x18; WinMain
-// dispatches here). Reads the OS HWND off m_4->m_hwnd; if there is no window,
-// return 0. Otherwise the classic peek/process/idle pump: PeekMessageA
-// (PM_REMOVE) drains all pending messages (WM_QUIT exits with 1); when m_10
+// dispatches here). Reads the OS HWND off m_gameWnd->m_hwnd; if there is no
+// window, return 0. Otherwise the classic peek/process/idle pump: PeekMessageA
+// (PM_REMOVE) drains all pending messages (WM_QUIT exits with 1); when m_hAccel
 // (HACCEL) is set AND the message targets our window, run TranslateAcceleratorA
 // (return ignored); always TranslateMessage + DispatchMessageA; when the queue
 // is empty, call the idle virtual (vtbl +0x20) and loop.
@@ -97,7 +97,7 @@ RVA(0x0013d910, 0x9f)
 i32 CGameApp::RunMessageLoop() {
     MSG msg;
 
-    HWND hwnd = (HWND)((CGameWnd*)m_4)->m_hwnd;
+    HWND hwnd = m_gameWnd->m_hwnd;
     if (!hwnd) {
         return 0;
     }
@@ -108,8 +108,8 @@ i32 CGameApp::RunMessageLoop() {
                 if (msg.message == 0x12 /*WM_QUIT*/) {
                     return 1;
                 }
-                if (m_10 && msg.hwnd == hwnd) {
-                    TranslateAcceleratorA(hwnd, m_10, &msg);
+                if (m_hAccel && msg.hwnd == hwnd) {
+                    TranslateAcceleratorA(hwnd, m_hAccel, &msg);
                 }
                 TranslateMessage(&msg);
                 DispatchMessageA(&msg);
@@ -129,7 +129,7 @@ void CGameApp::InitializeDefaultWindowClass() {
         ((i32*)&m_wc)[i] = 0;
     }
 
-    HCURSOR hCursor = LoadCursorA(m_c, m_gameInfo.szGameIdentifier);
+    HCURSOR hCursor = LoadCursorA(m_hInstance, m_gameInfo.szGameIdentifier);
     if (m_gameInfo.windowClassFlags & 1) {
         hCursor = LoadCursorA(0, (LPCSTR)0x7f00 /*IDC_ARROW*/);
     }
@@ -138,8 +138,8 @@ void CGameApp::InitializeDefaultWindowClass() {
     m_wc.lpfnWndProc = GameWindowProc;
     m_wc.cbClsExtra = 0;
     m_wc.cbWndExtra = 0;
-    m_wc.hInstance = m_c;
-    m_wc.hIcon = LoadIconA(m_c, m_gameInfo.szGameIdentifier);
+    m_wc.hInstance = m_hInstance;
+    m_wc.hIcon = LoadIconA(m_hInstance, m_gameInfo.szGameIdentifier);
     m_wc.hCursor = hCursor;
     m_wc.hbrBackground = (HBRUSH)GetStockObject(4);
     m_wc.lpszMenuName = 0;
@@ -226,7 +226,7 @@ void CGameApp::InitializeDefaultCreateStruct() {
 
     HMENU hMenu = 0;
     if (m_gameInfo.windowClassFlags & 1) {
-        hMenu = LoadMenuA(m_c, m_gameInfo.szGameIdentifier);
+        hMenu = LoadMenuA(m_hInstance, m_gameInfo.szGameIdentifier);
     }
 
     // x and y both == CW_USEDEFAULT (windowed) or 0 (fullscreen). Kept as two
@@ -266,7 +266,7 @@ void CGameApp::InitializeDefaultCreateStruct() {
     }
 
     m_createStruct.style = style;
-    m_createStruct.hInstance = m_c;
+    m_createStruct.hInstance = m_hInstance;
     m_createStruct.hMenu = hMenu;
     m_createStruct.y = y;
     m_createStruct.cx = cx;
@@ -313,7 +313,7 @@ i32 CGameApp::VirtualUnknownMethod02(
         && (!pCreateStruct || !(hInst = pCreateStruct->hInstance))) {
         goto Fail;
     }
-    m_c = hInst;
+    m_hInstance = hInst;
 
     if (!m_gameInfo.szWindowClassName[0]) {
         sprintf(m_gameInfo.szWindowClassName, "%sClass", m_gameInfo.szGameIdentifier);
@@ -340,25 +340,25 @@ i32 CGameApp::VirtualUnknownMethod02(
 
     InitializeAccelerators(m_gameInfo.szGameIdentifier);
 
-    m_4 = (CGameResource*)InitializeGameWindow();
-    if (!m_4) {
+    m_gameWnd = InitializeGameWindow();
+    if (!m_gameWnd) {
         goto Fail;
     }
 
-    if (!((CGameWnd*)m_4)->CreateAndShow((CGameWndCreateParams*)&m_createStruct, this)) {
-        delete m_4;
-        m_4 = 0;
+    if (!m_gameWnd->CreateAndShow(&m_createStruct, this)) {
+        delete m_gameWnd;
+        m_gameWnd = 0;
         return 0;
     }
 
-    m_8 = (CGameResource*)InitializeGameManager();
-    if (!m_8) {
+    m_gameMgr = InitializeGameManager();
+    if (!m_gameMgr) {
         goto Fail;
     }
 
-    if (!((WAP32::CGameMgr*)m_8)->Run((CGameWnd*)m_4, m_gameInfo.szCmdLine)) {
-        delete m_8;
-        m_8 = 0;
+    if (!m_gameMgr->Run(m_gameWnd, m_gameInfo.szCmdLine)) {
+        delete m_gameMgr;
+        m_gameMgr = 0;
         return 0;
     }
     return 1;
@@ -378,7 +378,7 @@ Fail:
 RVA(0x0013dc70, 0x1d)
 void CGameApp::VirtualUnknownMethod09() {
     if (m_appActive && m_running) {
-        m_8->PerFrameTick();
+        m_gameMgr->Tick();
     }
 }
 
@@ -389,43 +389,37 @@ void CGameApp::VirtualUnknownMethod09() {
 // to esi at entry; the null-check skips both when m_8 is already 0.
 RVA(0x0013dc90, 0x19)
 void CGameApp::FreeGameManager() {
-    if (m_8) {
-        delete m_8;
-        m_8 = 0;
+    if (m_gameMgr) {
+        delete m_gameMgr;
+        m_gameMgr = 0;
     }
 }
 
 // ~CGameApp is now inline in Wap32.h (CloseResources() + counter dec); it is
 // still emitted in this TU (the vtable's scalar-deleting dtor references it).
 
-// Out-of-line stubs so referenced symbols are emitted in this TU.
-CGameResource::~CGameResource() {}
-void CGameResource::Wap32GameResVfunc1() {}
-void CGameResource::Wap32GameResVfunc2() {}
-void CGameResource::Wap32GameResVfunc3() {}
-void CGameResource::PerFrameTick() {}
 // CGameMgr vtable anchors (~CGameMgr is now inline in Wap32.h; the three
 // otherwise-unmatched virtuals anchor here).
 i32 WAP32::CGameMgr::Wap32GameMgrVfunc3() {
     return 0;
 }
-void WAP32::CGameMgr::Wap32GameMgrVfunc4() {}
+void WAP32::CGameMgr::Tick() {}
 void WAP32::CGameMgr::Wap32GameMgrVfunc5() {}
 
 // -------------------------------------------------------------------------
 // CGameMgr::CGameMgr()  (__thiscall, returns this in EAX; vftable @0x5e9b8c)
-// Seeds the run-state flags (m_10/m_14 = 1), zeroes the owned pointers, then
+// Seeds the sound/music-on flags (m_soundEnabled/m_musicEnabled = 1), zeroes the owned pointers, then
 // initialises the frame clock via the two time helpers. The optimiser hoists
-// the m_10/m_14 stores (and the InitTimeFields `reset=1` argument push) above
+// the m_soundEnabled/m_musicEnabled stores (and the InitTimeFields `reset=1` argument push) above
 // the vptr store.
 RVA(0x0013dd10, 0x35)
 WAP32::CGameMgr::CGameMgr() {
-    m_10 = 1;
-    m_14 = 1;
-    m_4 = 0;
-    m_8 = 0;
-    m_c = 0;
-    m_1c = 0;
+    m_soundEnabled = 1;
+    m_musicEnabled = 1;
+    m_gameWnd = 0;
+    m_owner = 0;
+    m_frameGate = 0;
+    m_pauseFlag = 0;
     InitTimeFields(1);
     UnknownMethodInitializeTimeGlobal();
 }
@@ -444,9 +438,9 @@ i32 WAP32::CGameMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         return 0;
     }
 
-    m_4 = (i32)pGameWnd;
-    m_8 = (i32)pGameWnd->m_owner;
-    m_1c = 0;
+    m_gameWnd = pGameWnd;
+    m_owner = pGameWnd->m_owner;
+    m_pauseFlag = 0;
     InitTimeFields(1);
     UnknownMethodInitializeTimeGlobal();
     g_wap32Run80 = 0x64;
@@ -459,19 +453,19 @@ i32 WAP32::CGameMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
 // Clears the two manager-owned pointers/handles.
 RVA(0x0013ddb0, 0x9)
 void WAP32::CGameMgr::UnknownClose() {
-    m_4 = 0;
-    m_8 = 0;
+    m_gameWnd = 0;
+    m_owner = 0;
 }
 
 // -------------------------------------------------------------------------
 // CGameMgr::InitTimeFields  (__thiscall; ctor/Run helper @0x13de70)
-// Zeroes m_20, samples the start tick into m_24, and (when reset) arms m_18.
+// Zeroes m_elapsedMs, samples the start tick into m_startTick, and (when reset) arms m_prevTick.
 RVA(0x0013de70, 0x23)
 void WAP32::CGameMgr::InitTimeFields(i32 reset) {
-    m_20 = 0;
-    m_24 = timeGetTime();
+    m_elapsedMs = 0;
+    m_startTick = timeGetTime();
     if (reset) {
-        m_18 = -1;
+        m_prevTick = -1;
     }
 }
 
@@ -554,7 +548,8 @@ SIZE(WAP32::CGameMgr, 0x2c);
 
 // Wap32.h class metadata (hosted here at the owning .cpp's EOF so the hot
 // engine header stays untouched; EOF append is line-/parse-shift-neutral).
-SIZE_UNKNOWN(CGameApp);             // pad-to-last-touched view (m_errorDetail last)
-SIZE_UNKNOWN(CGameResource);        // abstract resource base view
-SIZE_UNKNOWN(CGameWndCreateParams); // CreateWindowExA 12-arg pack (stack)
-SIZE(GameInfo, 0x1d4);              // self-describing: size field == sizeof == 0x1d4
+SIZE(
+    CGameApp,
+    0x254
+); // == SIZE(CGruntzApp): the derived app adds no fields (m_errorDetail@0x250 last)
+SIZE(GameInfo, 0x1d4); // self-describing: size field == sizeof == 0x1d4

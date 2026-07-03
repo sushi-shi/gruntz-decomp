@@ -140,6 +140,11 @@ struct CWorldZ {
 // CGruntzMgr::m_lobby member is a pointer, so a forward declaration suffices here.
 struct IDirectPlayLobbyZ;
 
+// The +0x54 input/state object (Flush/Arm/Disarm/InitInput/Method0/Method1/
+// StoreFlag). Full view lives in GruntzMgr.cpp; the m_inputState member is a
+// pointer, so a forward declaration suffices here.
+struct CInput54;
+
 SIZE(CGruntzMgr, 0xa30);
 class CGruntzMgr : public WAP32::CGameMgr {
 public:
@@ -325,22 +330,22 @@ public:
     i32 m_hudGuard;         // +0x44  HUD first-frame seed guard (HudGuard44; +0x124)
     CGruntzSoundZ* m_sound; // +0x48  sound/bank object (StopBank/StopAll)
     i32 m_4c, m_50;         // +0x4c, +0x50
-    // +0x54..+0x78 sub-controllers (4-byte object pointers; each is reached only
-    // through a reloc-masked thiscall on a TU-local view, so kept i32-wide):
-    i32 m_inputState;     // +0x54  input/state object (Method0/Method1/StoreFlag)
-    i32 m_saveSink;       // +0x58  save-record sink (SaveSink58::Store)
-    i32 m_chatLog;        // +0x5c  chat/message log (CChatLog)
-    i32 m_timer;          // +0x60  per-frame timer/poll controller (Stop/Tick; +0x2c mirror)
-    i32 m_64;             // +0x64
-    i32 m_cmdGrid;        // +0x68  world delta-table grid + command sink (Reset/Flush)
-    i32 m_cmdSubMgr;      // +0x6c  command sub-manager sink
-    i32 m_cmdNotify;      // +0x70  command sink (vtbl slot 1) + cell-height notify
-    i32 m_74, m_78;       // +0x74, +0x78
-    i32 m_scoreHud;       // +0x7c  HUD/score accumulator + command sink
-    i32 m_numRuns;        // +0x80  "Num_Runs"   (launch counter; UnknownClose WriteInt)
-    i32 m_numMovies;      // +0x84  "Num_Movies" (movie-playback counter)
-    i32 m_colorDepth;     // +0x88  live color depth (bpp): 8/16(=HiColor)/24 (=0x10 in ctor)
-    i32 m_modeW, m_modeH; // +0x8c, +0x90  live video mode (w, h)
+    // +0x54..+0x78 sub-controllers (4-byte object pointers; the ones still reached
+    // only through a reloc-masked thiscall on a TU-local view are kept i32-wide):
+    CInput54* m_inputState; // +0x54  input/state object (Flush/Arm/Method0/Method1/StoreFlag)
+    i32 m_saveSink;         // +0x58  save-record sink (SaveSink58::Store)
+    i32 m_chatLog;          // +0x5c  chat/message log (CChatLog)
+    i32 m_timer;            // +0x60  per-frame timer/poll controller (Stop/Tick; +0x2c mirror)
+    i32 m_64;               // +0x64
+    i32 m_cmdGrid;          // +0x68  world delta-table grid + command sink (Reset/Flush)
+    i32 m_cmdSubMgr;        // +0x6c  command sub-manager sink
+    i32 m_cmdNotify;        // +0x70  command sink (vtbl slot 1) + cell-height notify
+    i32 m_74, m_78;         // +0x74, +0x78
+    i32 m_scoreHud;         // +0x7c  HUD/score accumulator + command sink
+    i32 m_numRuns;          // +0x80  "Num_Runs"   (launch counter; UnknownClose WriteInt)
+    i32 m_numMovies;        // +0x84  "Num_Movies" (movie-playback counter)
+    i32 m_colorDepth;       // +0x88  live color depth (bpp): 8/16(=HiColor)/24 (=0x10 in ctor)
+    i32 m_modeW, m_modeH;   // +0x8c, +0x90  live video mode (w, h)
     i32 m_savedModeW, m_savedModeH; // +0x94, +0x98  saved/last-good mode (w, h)
     i32 m_lobbyResult;              // +0x9c  lobby-connect success flag (1/0)
     i32 m_lobbyProbed;              // +0xa0  one-shot lobby-connect guard

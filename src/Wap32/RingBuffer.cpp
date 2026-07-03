@@ -10,21 +10,32 @@
 #include <rva.h>
 #include <string.h>
 
-// zlib deflate_state (internal_state) - only the flush_pending fields are pinned.
+// zlib deflate_state (internal_state) - the opaque per-stream deflate state,
+// allocated by deflateInit2_ (external). Only the flush_pending fields are pinned
+// (this build's layout has pending_out@+0xc, not the standard zlib-1.1.x +0x10);
+// its full size is not recoverable from the matched code, so it stays opaque.
 struct internal_state {
     char pad0[8];
     char* pending_buf; // +0x08 output buffer base
     char* pending_out; // +0x0c next pending byte to output
     unsigned pending;  // +0x10 bytes pending in pending_buf
 };
-// zlib z_stream - only the flush_pending fields are pinned.
+// The zlib public z_stream (the standard 0x38-byte API struct).
 struct z_stream {
-    char pad0[0xc];
-    char* next_out;          // +0x0c next output byte
+    unsigned char* next_in;  // +0x00 next input byte
+    unsigned avail_in;       // +0x04 number of bytes available at next_in
+    unsigned long total_in;  // +0x08 total number of input bytes read so far
+    unsigned char* next_out; // +0x0c next output byte
     unsigned avail_out;      // +0x10 remaining free space at next_out
-    unsigned total_out;      // +0x14 total bytes output so far
-    char pad18[0x1c - 0x18]; // +0x18 msg
-    internal_state* state;   // +0x1c the deflate/inflate state
+    unsigned long total_out; // +0x14 total bytes output so far
+    char* msg;               // +0x18 last error message, or 0
+    internal_state* state;   // +0x1c the deflate/inflate state (opaque)
+    void* zalloc;            // +0x20 alloc callback
+    void* zfree;             // +0x24 free callback
+    void* opaque;            // +0x28 private data for alloc/free
+    int data_type;           // +0x2c ascii/binary hint
+    unsigned long adler;     // +0x30 adler32 of uncompressed data
+    unsigned long reserved;  // +0x34 reserved for future use
 };
 
 // 0x186910 - flush_pending
@@ -55,5 +66,5 @@ int deflateInit_(int strm, int level, int version, int stream_size) {
 }
 
 // Class metadata (hosted at .cpp EOF).
-SIZE_UNKNOWN(z_stream);       // zlib z_stream partial view
-SIZE_UNKNOWN(internal_state); // zlib deflate_state partial view
+SIZE(z_stream, 0x38);         // the standard zlib public z_stream
+SIZE_UNKNOWN(internal_state); // zlib deflate_state: opaque, allocated by deflateInit2_

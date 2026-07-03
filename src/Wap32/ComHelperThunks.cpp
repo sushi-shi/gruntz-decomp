@@ -54,6 +54,6 @@ void ComActivate2f00() {
 }
 
 // Class metadata (hosted at .cpp EOF).
-SIZE_UNKNOWN(ComSingleton2f00); // COM singleton forward view
-SIZE_UNKNOWN(ComSingleton3210); // session-pump singleton forward view
-SIZE_UNKNOWN(CNoTrackObject);   // vptr-stamp base subobject view (??_7 at 0x1ec26c)
+SIZE_UNKNOWN(ComSingleton2f00); // COM singleton forward view (opaque MFC-framework global)
+SIZE_UNKNOWN(ComSingleton3210); // session-pump singleton forward view (opaque global)
+SIZE(CNoTrackObject, 0x4);      // real MFC CNoTrackObject: vptr only (??_7 at 0x1ec26c)

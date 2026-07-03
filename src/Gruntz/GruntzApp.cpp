@@ -45,8 +45,8 @@ static char g_errorText[0x100]; // error message buffer
 // GameApp.cpp; ~CGruntzApp's inlined base ~CGameApp decrements it.)
 
 // CGruntzApp - the game's CGameApp subclass, defined once in <Gruntz/GruntzApp.h>.
-// The matched methods touch only BASE CGameApp fields: ShowError reads m_c
-// (hInstance @+0xc), m_errorCode (error message id @+0x24c) and m_errorDetail (error detail
+// The matched methods touch only BASE CGameApp fields: ShowError reads m_hInstance
+// (@+0xc), m_errorCode (error message id @+0x24c) and m_errorDetail (error detail
 // @+0x250); the dtor / InitializeGameManager touch no CGruntzApp-specific field.
 #include <Gruntz/GruntzApp.h>
 
@@ -110,12 +110,12 @@ CGruntzApp::~CGruntzApp() {
 // message into g_errorText then shows the ERROR dialog:
 //   id = m_errorCode ? m_errorCode : IDS_DEFAULT_ERROR;     // +0x24c, default 0x8009
 //   detail[0] = 0; if (m_errorDetail > 0) sprintf(detail, "(%i)", m_errorDetail);  // +0x250
-//   if (LoadStringA(m_c, id, g_errorText, 0xfa) <= 0 &&
-//       LoadStringA(m_c, 0x8009, g_errorText, 0xfa) <= 0)
+//   if (LoadStringA(m_hInstance, id, g_errorText, 0xfa) <= 0 &&
+//       LoadStringA(m_hInstance, 0x8009, g_errorText, 0xfa) <= 0)
 //       strcpy(g_errorText, "Unable to continue game.");
 //   strcat(g_errorText, detail);
 //   while (ShowCursor(TRUE) < 0) ;              // force the cursor visible
-//   DialogBoxParamA(m_c, "ERROR", 0, ErrorDialogProc, 0);
+//   DialogBoxParamA(m_hInstance, "ERROR", 0, ErrorDialogProc, 0);
 // LoadStringA/ShowCursor/DialogBoxParamA are FF15 [IAT] indirect calls; the
 // ErrorDialogProc address is taken (push imm of its incremental-link thunk).
 // strcpy/strcat are emitted inline (repnz scas / rep movs).
@@ -135,8 +135,8 @@ void CGruntzApp::ShowError() {
         sprintf(detail, "(%i)", detailVal);
     }
 
-    if (LoadStringA(m_c, id, g_errorText, 0xfa) <= 0
-        && LoadStringA(m_c, IDS_DEFAULT_ERROR, g_errorText, 0xfa) <= 0) {
+    if (LoadStringA(m_hInstance, id, g_errorText, 0xfa) <= 0
+        && LoadStringA(m_hInstance, IDS_DEFAULT_ERROR, g_errorText, 0xfa) <= 0) {
         strcpy(g_errorText, "Unable to continue game.");
     }
 
@@ -145,7 +145,7 @@ void CGruntzApp::ShowError() {
     while (ShowCursor(1) < 0)
         ;
 
-    DialogBoxParamA(m_c, "ERROR", 0, &CGruntzApp::ErrorDialogProc, 0);
+    DialogBoxParamA(m_hInstance, "ERROR", 0, &CGruntzApp::ErrorDialogProc, 0);
 }
 
 // ---------------------------------------------------------------------------
@@ -207,7 +207,7 @@ extern "C" INT_PTR CALLBACK MsgDialogProc(HWND, UINT, WPARAM, LPARAM);
 RVA(0x00080c00, 0x48)
 void CGruntzApp::ShowMessage(char* msg, HWND hParent) {
     strcpy(g_errorText, msg);
-    DialogBoxParamA(m_c, "MESSAGE", hParent, &MsgDialogProc, 0);
+    DialogBoxParamA(m_hInstance, "MESSAGE", hParent, &MsgDialogProc, 0);
 }
 
 // ---------------------------------------------------------------------------

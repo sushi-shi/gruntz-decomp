@@ -367,12 +367,6 @@ struct Ctrl68 {
     void Reset(); // (this) reloc-masked (FUN @ 0x15c3 thunk)
 };
 
-// The +0x54 input/state object's reset/flush entrypoints (reloc-masked).
-struct InputState54 {
-    void Method0(); // FUN @ 0x29b9 thunk
-    void Method1(); // FUN @ 0x18e8 thunk
-};
-
 // One player-status slot in the PLAY state's 4-entry status array (m_curState->+0x520),
 // each 0x64 bytes; the status id is at +0x20 (3 == "won/done").
 struct PlayStatusSlot {
@@ -562,6 +556,9 @@ struct CInput54 {
     void Arm();                                     // FUN_0040bcf0 (this) reloc-masked
     void Disarm();                                  // FUN_0040bc80 (this) reloc-masked
     i32 InitInput(void* worldSub28, i32 inputFlag); // FUN_0040b5e0 (this, sub28, flag)
+    void Method0();                                 // FUN @ 0x29b9 thunk (reloc-masked)
+    void Method1();                                 // FUN @ 0x18e8 thunk (reloc-masked)
+    void StoreFlag(i32 v);                          // FUN_004385e0-family (this, v)
 };
 
 // The world's polymorphic mode-set vtable (slot 7 = +0x1c notify; slot 6 = +0x18
@@ -594,11 +591,6 @@ void CreateWorldObjects(void* world);
 // expansion is part of the documented MFC-inline residual on this @early-stop fn).
 void BeginWaitCursor(); // 0x1beafb
 void EndWaitCursor();   // 0x1beb10
-
-// The per-frame input/state object at CGruntzMgr +0x54 (reloc-masked thiscall).
-struct InputStateObj {
-    void StoreFlag(i32 v); // FUN_004385e0-family (this, v)
-};
 
 // One element of the 4-entry options array embedded at CGruntzMgr +0x150 (each
 // 0x238 bytes). AdvanceOptionsCycle reads its arm flag (+0x14) + loaded flag
@@ -830,7 +822,7 @@ i32 CGruntzMgr::GoToPrevLevel() {
 // No-op when there is no app bound yet.
 RVA(0x0008dc60, 0x19)
 void CGruntzMgr::ReportError(WPARAM wParam, LPARAM lParam) {
-    CGameApp* pApp = (CGameApp*)m_8;
+    CGameApp* pApp = m_owner;
     if (pApp) {
         pApp->ReportError(wParam, lParam);
     }
@@ -970,12 +962,7 @@ i32 CGruntzMgr::InitializeLobbyConnectionSettings() {
 
     i32 hr = DirectPlayLobbyCreate(0, &m_lobby, 0, 0, 0);
     if (hr) {
-        CNetMgr::ReportError(
-            "C:\\Proj\\Gruntz\\GruntzMgr.cpp",
-            0x120d,
-            hr,
-            ((CGameWnd*)m_4)->m_hwnd
-        );
+        CNetMgr::ReportError("C:\\Proj\\Gruntz\\GruntzMgr.cpp", 0x120d, hr, m_gameWnd->m_hwnd);
         return 0;
     }
     if (!m_lobby) {
@@ -990,12 +977,7 @@ i32 CGruntzMgr::InitializeLobbyConnectionSettings() {
     u32 dwSize = 0;
     hr = m_lobby->GetConnectionSettings(0, 0, &dwSize);
     if (hr != 0 && hr != (i32)0x8877001e) { // !DPERR_BUFFERTOOSMALL
-        CNetMgr::ReportError(
-            "C:\\Proj\\Gruntz\\GruntzMgr.cpp",
-            0x1221,
-            hr,
-            ((CGameWnd*)m_4)->m_hwnd
-        );
+        CNetMgr::ReportError("C:\\Proj\\Gruntz\\GruntzMgr.cpp", 0x1221, hr, m_gameWnd->m_hwnd);
         m_lobby->Release();
         m_lobby = 0;
         return 0;
@@ -1010,12 +992,7 @@ i32 CGruntzMgr::InitializeLobbyConnectionSettings() {
 
     hr = m_lobby->GetConnectionSettings(0, m_connSettings, &dwSize);
     if (hr) {
-        CNetMgr::ReportError(
-            "C:\\Proj\\Gruntz\\GruntzMgr.cpp",
-            0x1232,
-            hr,
-            ((CGameWnd*)m_4)->m_hwnd
-        );
+        CNetMgr::ReportError("C:\\Proj\\Gruntz\\GruntzMgr.cpp", 0x1232, hr, m_gameWnd->m_hwnd);
         m_lobby->Release();
         m_lobby = 0;
         return 0;
@@ -1125,14 +1102,14 @@ i32 CGruntzMgr::CaptureWorldFile() {
     if (st != 5 && st != 2 && st != 3 && st != 7) {
         return 0;
     }
-    CString name = GetWorldFileFromWindow(((CGameWnd*)m_4)->m_hwnd, 0);
+    CString name = GetWorldFileFromWindow(m_gameWnd->m_hwnd, 0);
     if (name.GetLength() == 0) {
         return 0;
     }
     m_strWorldFile = name;
     m_12c = 0;
     m_128 = 0;
-    g_pPostMessageA((i32)((CGameWnd*)m_4)->m_hwnd, 0x111, 0x8005, 0);
+    g_pPostMessageA((i32)m_gameWnd->m_hwnd, 0x111, 0x8005, 0);
     return 1;
 }
 
@@ -1183,10 +1160,10 @@ void CGruntzMgr::AdvanceFrame(i32 doDraw, i32 /*unused*/) {
 
     if (doDraw) {
         PerFrameTick();
-        if (m_c != 0) {
+        if (m_frameGate != 0) {
             return;
         }
-        if (m_14 == 0) {
+        if (m_musicEnabled == 0) {
             return;
         }
         if (CheckPlayState() == 0 && (m_curState == 0 || m_curState->Update() != 8)) {
@@ -1196,7 +1173,7 @@ void CGruntzMgr::AdvanceFrame(i32 doDraw, i32 /*unused*/) {
         return;
     }
 
-    if (m_14 == 0) {
+    if (m_musicEnabled == 0) {
         return;
     }
     if ((m_sound->m_1c ? m_sound->m_1c->IsBusy() : 0) == 0) {
@@ -1775,7 +1752,7 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
         return 0;
     }
 
-    CInput54* in = (CInput54*)m_inputState;
+    CInput54* in = m_inputState;
     if (in) {
         in->Flush();
         ((CObListSub*)((char*)in + 8))->Dtor();
@@ -1800,7 +1777,7 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
     ((CWorldModeIface*)m_world)->Notify();
     i32 kind = (g_6455b4 == 0) ? 1 : 5;
     if (((CWorldModeIface*)m_world)
-            ->SetVideoMode((i32)((CGameWnd*)m_4)->m_hwnd, 0x280, 0x1e0, m_colorDepth, kind)
+            ->SetVideoMode((i32)m_gameWnd->m_hwnd, 0x280, 0x1e0, m_colorDepth, kind)
         == 0) {
         ReportWorldStatus(0x43f);
         return 0;
@@ -1838,7 +1815,7 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
 
     SetColorDepth(m_colorDepth);
 
-    CInput54* in2 = (CInput54*)m_inputState;
+    CInput54* in2 = m_inputState;
     if (in2) {
         in2->Flush();
         ((CObListSub*)((char*)in2 + 8))->Dtor();
@@ -1856,13 +1833,13 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
     } else {
         ni = 0;
     }
-    m_inputState = (i32)ni;
+    m_inputState = ni;
     if (ni->InitInput(m_world->m_28, m_inputFlag) == 0) {
         ReportError(0x800a, 0x442);
         return 0;
     }
 
-    CInput54* cur = (CInput54*)m_inputState;
+    CInput54* cur = m_inputState;
     if (m_isAmbientEnabled != 0) {
         if (cur->m_24 == 0) {
             cur->m_24 = 1;
@@ -1949,7 +1926,7 @@ i32 CGruntzMgr::ResetWorldState(i32 notify) {
 // level is loaded, tail-calls m_sound->StopAll().
 RVA(0x00092000, 0x16)
 void CGruntzMgr::StopBankIfActive() {
-    if (m_sound && m_14) {
+    if (m_sound && m_musicEnabled) {
         m_sound->StopAll();
     }
 }
@@ -1959,7 +1936,7 @@ void CGruntzMgr::StopBankIfActive() {
 // a level is loaded, stops the bank with flag 0.
 RVA(0x00092030, 0x18)
 void CGruntzMgr::StopBank0IfActive() {
-    if (m_sound && m_14) {
+    if (m_sound && m_musicEnabled) {
         m_sound->StopBank(0);
     }
 }
@@ -1973,7 +1950,7 @@ i32 CGruntzMgr::IsLobbyHostReady() {
     if (m_curState == 0) {
         return 0;
     }
-    CGameApp* app = (CGameApp*)m_8;
+    CGameApp* app = m_owner;
     if (app == 0) {
         return 0;
     }
@@ -2025,10 +2002,10 @@ i32 CGruntzMgr::TickStateMgrs() {
 // flips it (see docs/patterns/select-zero-mask-dest-register.md, regalloc family).
 RVA(0x00092340, 0x49)
 void CGruntzMgr::SetRunState(i32 v) {
-    if (v == m_10) {
+    if (v == m_soundEnabled) {
         return;
     }
-    m_10 = v;
+    m_soundEnabled = v;
     if (m_world == 0) {
         return;
     }
@@ -2036,11 +2013,11 @@ void CGruntzMgr::SetRunState(i32 v) {
     if (sub) {
         sub->Teardown();
     }
-    g_61ab20 = m_10;
-    if (m_10) {
-        ((InputState54*)m_inputState)->Method1();
+    g_61ab20 = m_soundEnabled;
+    if (m_soundEnabled) {
+        m_inputState->Method1();
     } else {
-        ((InputState54*)m_inputState)->Method0();
+        m_inputState->Method0();
     }
 }
 
@@ -2097,10 +2074,10 @@ CState* CGruntzMgr::PickPausedThenPlayState() {
 // docs/patterns/reread-member-view-pointer.md).
 RVA(0x000923b0, 0x47)
 void CGruntzMgr::SetSoundLevelState(i32 loaded) {
-    if (loaded == m_14) {
+    if (loaded == m_musicEnabled) {
         return;
     }
-    m_14 = loaded;
+    m_musicEnabled = loaded;
     CGruntzSoundZ* snd = m_sound;
     if (snd == 0) {
         return;
@@ -2609,16 +2586,16 @@ i32 CGruntzMgr::FinishLevel(i32 full, i32 stopBank) {
             p += 0x64;
         }
         if (done > 0) {
-            m_c = 1;
+            m_frameGate = 1;
             RunWinHook();
-            m_c = 0;
+            m_frameGate = 0;
             return 1;
         }
     }
 
     if (full) {
         if (m_inputState) {
-            ((InputState54*)m_inputState)->Method0();
+            m_inputState->Method0();
         }
         if (m_world) {
             CWorldSub28* sub = m_world->m_28;
@@ -2635,14 +2612,14 @@ i32 CGruntzMgr::FinishLevel(i32 full, i32 stopBank) {
         }
     }
 
-    if (m_14) {
+    if (m_musicEnabled) {
         if (CheckLevelActive()) {
             m_sound->StopBank(1);
         }
     }
-    if (m_10) {
-        ((InputState54*)m_inputState)->Method1();
-        if (m_cmdGrid && m_10) {
+    if (m_soundEnabled) {
+        m_inputState->Method1();
+        if (m_cmdGrid && m_soundEnabled) {
             ((Ctrl68*)m_cmdGrid)->Reset();
         }
     }
@@ -2667,7 +2644,7 @@ i32 CGruntzMgr::FinishLevel(i32 full, i32 stopBank) {
 // ff d7). Not steerable from source; see docs/patterns/zero-register-pinning.md.
 RVA(0x0008ef10, 0x9e)
 void CGruntzMgr::EnterModalUI(i32 arg) {
-    CGameApp* app = (CGameApp*)m_8;
+    CGameApp* app = m_owner;
     if (app == 0) {
         return;
     }
@@ -2686,7 +2663,7 @@ void CGruntzMgr::EnterModalUI(i32 arg) {
     }
 
     m_modalBusy = 1;
-    app->RunModal(arg, ((CGameWnd*)m_4)->m_hwnd);
+    app->RunModal(arg, m_gameWnd->m_hwnd);
     g_64557c = 0;
     m_modalBusy = 0;
     if (shown <= 0) {
@@ -2711,7 +2688,7 @@ i32 CGruntzMgr::ExitModalUI(CModalDialog* dlg, i32 notify) {
     if (m_timer) {
         ((TimerObj*)m_timer)->Stop();
     }
-    if (m_cmdGrid && m_10) {
+    if (m_cmdGrid && m_soundEnabled) {
         ((Ctrl68*)m_cmdGrid)->Flush();
     }
     if (m_world) {
@@ -2787,7 +2764,7 @@ i32 CGruntzMgr::SwitchToNextState() {
     if (m_curState->Vslot09(oldId) == 0 && m_curState->Vslot06() == 0) {
         return 0;
     }
-    ((CGameApp*)m_8)->m_running = 1;
+    m_owner->m_running = 1;
     PostSwitchHook();
     return 1;
 }
@@ -2856,7 +2833,7 @@ void CGruntzMgr::StoreInputFlag(i32 v) {
     if (m_world && m_world->m_28) {
         g_61ab24 = v;
     }
-    InputStateObj* in = (InputStateObj*)m_inputState;
+    CInput54* in = m_inputState;
     if (in) {
         in->StoreFlag(v);
     }
@@ -3021,10 +2998,10 @@ void CGruntzMgr::UnknownClose() {
     if (cfg) {
         cfg->WriteInt("Num_Runs", m_numRuns);
         cfg->WriteInt("Num_Movies", m_numMovies);
-        cfg->WriteInt("Sound", m_10);
+        cfg->WriteInt("Sound", m_soundEnabled);
         cfg->WriteInt("Voice", m_isVoiceEnabled);
         cfg->WriteInt("Ambient", m_isAmbientEnabled);
-        cfg->WriteInt("Music", m_14);
+        cfg->WriteInt("Music", m_musicEnabled);
         cfg->WriteInt("Interlaced", m_isInterlaced);
         cfg->WriteInt("High_Detail", m_isHighDetail);
         cfg->WriteInt("Effects", m_isEffectsEnabled);
@@ -3108,7 +3085,7 @@ void CGruntzMgr::UnknownClose() {
     }
     if (m_inputState) {
         ((EngObj*)m_inputState)->Teardown();
-        operator delete((void*)m_inputState);
+        operator delete(m_inputState);
         m_inputState = 0;
     }
     if (m_40) {
@@ -3216,7 +3193,7 @@ void CGruntzMgr::OnCheckpointReached() {
     }
     CCheckpointDlg dlg(0);
     if (ExitModalUI((CModalDialog*)&dlg, 0) == 1) {
-        g_pSendMessageA((i32)((CGameWnd*)m_4)->m_hwnd, 0x111, 0x80cf, 0);
+        g_pSendMessageA((i32)m_gameWnd->m_hwnd, 0x111, 0x80cf, 0);
     }
 }
 
@@ -3252,11 +3229,11 @@ void CGruntzMgr::DelayedQuit() {
     u32 deadline = base + tgt();
     while (tgt() < deadline) {
     }
-    if (m_8) {
-        ((CGameApp*)m_8)->m_running = 0;
+    if (m_owner) {
+        m_owner->m_running = 0;
     }
-    if (m_4) {
-        g_pPostMessageA((i32)((CGameWnd*)m_4)->m_hwnd, 0x10, 0, 0);
+    if (m_gameWnd) {
+        g_pPostMessageA((i32)m_gameWnd->m_hwnd, 0x10, 0, 0);
     }
 }
 
@@ -3285,7 +3262,7 @@ i32 CGruntzMgr::RunModalDialog(const char* tmpl, void* dlgProc, i32 flag) {
     if (m_timer) {
         ((TimerObj*)m_timer)->Stop();
     }
-    if (m_cmdGrid && m_10) {
+    if (m_cmdGrid && m_soundEnabled) {
         ((Ctrl68*)m_cmdGrid)->Flush();
     }
     if (m_world) {
@@ -3304,13 +3281,8 @@ i32 CGruntzMgr::RunModalDialog(const char* tmpl, void* dlgProc, i32 flag) {
     }
 
     m_modalBusy = 1;
-    i32 result = g_pDialogBoxParamA(
-        (i32)((CGameApp*)m_8)->m_c,
-        tmpl,
-        (i32)((CGameWnd*)m_4)->m_hwnd,
-        dlgProc,
-        0
-    );
+    i32 result =
+        g_pDialogBoxParamA((i32)m_owner->m_hInstance, tmpl, (i32)m_gameWnd->m_hwnd, dlgProc, 0);
     g_64557c = 0;
     m_modalBusy = 0;
     if (m_curState && flag) {
@@ -3377,7 +3349,7 @@ i32 CGruntzMgr::SaveGameAs() {
     if (m_strWorldFile.GetLength() == 0) {
         return 0;
     }
-    g_pPostMessageA((i32)((CGameWnd*)m_4)->m_hwnd, 0x111, 0x80e3, 0);
+    g_pPostMessageA((i32)m_gameWnd->m_hwnd, 0x111, 0x80e3, 0);
     return 1;
 }
 
@@ -3433,8 +3405,8 @@ CGruntzMgr::CGruntzMgr() {
     m_f4 = 1;
     m_f8 = 0;
     m_fc = 0;
-    m_14 = 1;
-    m_10 = 1;
+    m_musicEnabled = 1;
+    m_soundEnabled = 1;
     m_isVoiceEnabled = 1;
     m_isAmbientEnabled = 1;
     m_isInterlaced = 0;
@@ -3738,8 +3710,6 @@ SIZE_UNKNOWN(DirectInputMgr2);
 SIZE_UNKNOWN(EngObj);
 SIZE_UNKNOWN(GameRegHudView);
 SIZE_UNKNOWN(HudGuard44);
-SIZE_UNKNOWN(InputState54);
-SIZE_UNKNOWN(InputStateObj);
 SIZE_UNKNOWN(LevelClock);
 SIZE_UNKNOWN(OptionsSlot);
 SIZE_UNKNOWN(OptionsTickSub);

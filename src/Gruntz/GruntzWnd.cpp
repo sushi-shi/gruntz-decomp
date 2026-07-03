@@ -34,7 +34,7 @@ public:
 
     // Reaches the running game manager through the owning CGameApp.
     CGruntzMgr* GameMgr() {
-        return (CGruntzMgr*)((CGameApp*)m_owner)->m_8;
+        return (CGruntzMgr*)m_owner->m_gameMgr;
     }
 };
 
