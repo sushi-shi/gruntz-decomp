@@ -710,17 +710,18 @@ extern "C" CGlitterMgr* g_mgrSettings;
 // `(i != m_1d8) ? 1 : 3` kind (retail's neg/sbb/and/add form vs cl's) + the per-iteration
 // g_mgrSettings reload scheduling. Not source-steerable.
 RVA(0x00019540, 0x12a)
-i32 CState::BuildWarpStoneGlitterAnimation() {
-    CMultiBootyState* self = (CMultiBootyState*)this;
-    CGlitterAnim** slot = (CGlitterAnim**)((char*)self + 0x1ec);
-    self->m_1dc = 0xc8;
-    self->m_1d8 = (g_mgrSettings->m_7c->m_4 - 1) % 4;
-    self->m_1e0 = 0;
-    self->m_1e4 = 0;
-    self->m_1e8 = 0;
+i32 CMultiBootyState::BuildWarpStoneGlitterAnimation() {
+    // The +0x1ec and +0x204 arrays overlap; reach the letter-sprite array by offset
+    // (naming-independent, campaign doctrine) - the rest are real CMultiBootyState members.
+    CGlitterAnim** slot = (CGlitterAnim**)((char*)this + 0x1ec);
+    m_1dc = 0xc8;
+    m_1d8 = (g_mgrSettings->m_7c->m_4 - 1) % 4;
+    m_1e0 = 0;
+    m_1e4 = 0;
+    m_1e8 = 0;
     for (i32 i = 0; i < 4; i++) {
-        CGlitterAnim* a = g_mgrSettings->m_world->m_8
-                              ->Create(0, 0, 0, (i != self->m_1d8) ? 1 : 3, "DoNothing", 3);
+        CGlitterAnim* a =
+            g_mgrSettings->m_world->m_8->Create(0, 0, 0, (i != m_1d8) ? 1 : 3, "DoNothing", 3);
         slot[i] = a;
         if (a == 0) {
             return 0;
@@ -728,16 +729,16 @@ i32 CState::BuildWarpStoneGlitterAnimation() {
         a->SetName("GAME_STATUSBAR_TABZ_GAMETAB_WARP", i + 2);
         a->m_40 |= 1;
     }
-    for (i32 k = 0; k <= self->m_1d8; k++) {
+    for (i32 k = 0; k <= m_1d8; k++) {
         slot[k]->m_40 &= ~1;
     }
     CGlitterAnim* g = g_mgrSettings->m_world->m_8->Create(0, 0, 0, 4, "SimpleAnimation", 3);
-    self->m_1fc = g;
+    m_1fc = g;
     if (g == 0) {
         return 0;
     }
     g->SetTexture("GAME_GLITTERGOLD");
-    ((CGlitterAnim*)self->m_1fc)->SetCycle("GAME_CYCLE100", 0);
+    ((CGlitterAnim*)m_1fc)->SetCycle("GAME_CYCLE100", 0);
     return 1;
 }
 

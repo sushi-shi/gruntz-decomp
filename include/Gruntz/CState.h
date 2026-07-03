@@ -124,7 +124,9 @@ public:
     i32 m_1a0;
     i32 m_1a4;
 
-    i32 BuildWarpStoneGlitterAnimation();
+    // BuildWarpStoneGlitterAnimation (0x19540) re-homed to its real owner
+    // CMultiBootyState (GameMode.h); LoadGruntEffectSprites (0x1a040) is a
+    // CPlay-layout method the trace mis-homed on the base (kept CState-homed).
     i32 LoadGruntEffectSprites();
     // BuildBootyWalkingGruntz (0x1b450) re-homed to BzState (BootyWalkAnim.cpp).
 };

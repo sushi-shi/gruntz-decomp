@@ -368,10 +368,11 @@ public:
     virtual i32 FrameSlot24(i32 arg); // slot 9 (+0x24) @0x1e570 - per-frame cue poll (ret 4)
 
     // Non-virtual behavioral methods (the rel32 thunks dispatched with mov ecx,this).
-    void StepGlitterAnim();  // 0x196c0 - the trig glitter/spawn positioner
-    void MoveLettersByDir(); // 0x19b90 - the 8-direction letter walk (jump-table)
-    i32 CheckPerfectBonus(); // 0x1c0f0 - "BOOTY_PERFECT" cue + scroll advance
-    i32 QueryGruntSlots();   // 0x1ecf0 - scan 4 reg records for an empty slot
+    i32 BuildWarpStoneGlitterAnimation(); // 0x19540 - build the 4 warp-letter glitter anims
+    void StepGlitterAnim();               // 0x196c0 - the trig glitter/spawn positioner
+    void MoveLettersByDir();              // 0x19b90 - the 8-direction letter walk (jump-table)
+    i32 CheckPerfectBonus();              // 0x1c0f0 - "BOOTY_PERFECT" cue + scroll advance
+    i32 QueryGruntSlots();                // 0x1ecf0 - scan 4 reg records for an empty slot
 
     // Own booty-title tail helpers reached via ILT thunks (reloc-masked self-calls;
     // formerly the CBootyAnimSelf `this`-alias view).

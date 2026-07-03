@@ -3475,11 +3475,6 @@ struct CHitMarker {
     i32 m_0; // x
     i32 m_4; // y
 };
-struct CPlayHitView { // view-of-this (keeps Render's CPlay typing untouched)
-    char p0[0x374];
-    CHitMarker** m_markerData; // +0x374  marker array
-    i32 m_markerCount;         // +0x378  marker count
-};
 // g_64556c view: a per-active-slot config array at +0x150 (stride 0x238) plus the
 // +0x68 sub-object's per-slot value table at +0x10c (gated against slot->m_228).
 struct CRegSlot {
@@ -3514,9 +3509,8 @@ i32 CPlay::FindStartPointAt(i32 x, i32 y, i32* outX, i32* outY) {
     if (reg->m_68->m_10c[id] >= slot->m_228) {
         return 0;
     }
-    CPlayHitView* self = (CPlayHitView*)this;
-    for (i32 i = 0; i < self->m_markerCount; i++) {
-        CHitMarker* m = self->m_markerData[i];
+    for (i32 i = 0; i < m_markerCount; i++) {
+        CHitMarker* m = m_markerData[i];
         if (m != 0) {
             RECT rc;
             SetRect(&rc, m->m_0 - 0x20, m->m_4 - 0x20, m->m_0 + 0x20, m->m_4 + 0x20);
@@ -5046,7 +5040,6 @@ SIZE_UNKNOWN(CMusicSource);
 SIZE_UNKNOWN(CPlaneGeom);
 SIZE_UNKNOWN(CPlay);
 SIZE_UNKNOWN(CPlayEff);
-SIZE_UNKNOWN(CPlayHitView);
 SIZE_UNKNOWN(CPlayRes);
 SIZE_UNKNOWN(CProfFlush);
 SIZE_UNKNOWN(CRegExit);

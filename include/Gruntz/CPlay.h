@@ -38,6 +38,8 @@ class CGruntzSoundInnerZ;
 // Sub-object layouts CPlay::Render walks through (only the offsets it reads).
 // ===========================================================================
 
+struct CHitMarker; // +0x374 start-point marker element {x,y}; defined in CPlay.cpp
+
 // The placed-object display list the warlord-sprite loader walks (hung off
 // renderer A at +0x10; see CRenderer::m_10). Each node's +0x8 is a placed object.
 struct CWarlordListNode; // fully defined in CPlay.cpp
@@ -563,7 +565,12 @@ public:
     i32 m_tileClickY;   // +0x364  tile-click snapped Y (HandleTileClick)
     i32 m_dragInhibit1; // +0x368  drag/select inhibit gate
     i32 m_dragInhibit2; // +0x36c  drag/select inhibit gate
-    char m_pad370[0x3f4 - 0x370];
+    // +0x370: a CPtrArray of start-point markers (raw {data,count} fields, read
+    // directly by FindStartPointAt); its header/tail slots stay padding.
+    char m_pad370[0x374 - 0x370];
+    CHitMarker** m_markerData; // +0x374  marker-ptr array (CPtrArray data)
+    i32 m_markerCount;         // +0x378  marker count (CPtrArray count)
+    char m_pad37c[0x3f4 - 0x37c];
     void* m_frameMarker; // +0x3f4  frame-marker/timeline object (+0x30..0x4c reset block)
     i32 m_cueTimerLo, m_cueTimerHi, m_cueInterval,
         m_cueIntervalHi;            // +0x3f8  AMBIENT-cue 64-bit timer
