@@ -47,7 +47,7 @@
 #include <Globals.h>
 
 // The .PID/.PCX-via-RezMgr flags word (header+4). Monolith's WAP32 layout
-// (libwap32 wap32/pid.h, mirrored in src/Stub/types/wwd.h). Same immediates as
+// (libwap32 wap32/pid.h). Same immediates as
 // the bare masks, so naming them is matching-neutral.
 enum PidFlags {
     PID_TRANSPARENCY = 0x01,     // bit0  install the transparent colour key
@@ -56,6 +56,23 @@ enum PidFlags {
     PID_COMPRESSION = 0x20,      // bit5  "RLE" - skip/fill RLE pixel stream
     PID_EMBEDDED_PALETTE = 0x80, // bit7  trailing 768-byte VGA palette at EOF
 };
+
+// The .PID on-disk image header (32 = 0x20 bytes; 8 dwords). DecodePidData reads
+// this at the head of the RezMgr payload; the RLE/uncompressed 8bpp pixel stream
+// begins right after it (buf + 0x20). Typing the buffer lets the decoder read the
+// header by name instead of raw offsets (matching-neutral - same offsets/widths).
+struct PidHeader {
+    u32 fileDesc; // +0x00  id / file descriptor
+    u32 flags;    // +0x04  PidFlags
+    i32 width;    // +0x08
+    i32 height;   // +0x0c
+    i32 offsetX;  // +0x10  draw anchor X
+    i32 offsetY;  // +0x14  draw anchor Y
+    u32 fill;     // +0x18  fill colour (masked to low word when flags & 0x100)
+    u32 unk1;     // +0x1c
+    // +0x20: the RLE/uncompressed 8bpp pixel stream begins here.
+};
+SIZE_UNKNOWN(PidHeader);
 
 // The CFileImage::Resolve / ResolveEx `type` selector. Same case immediates as the
 // bare 1/2/4 labels (the running-subtract switch chain is value-driven), so naming
@@ -493,11 +510,12 @@ i32 CRezImage::LoadRid(char* name, void* a2, void* a3) {
 // a3's low bit gates the transparency flag at this+0x450.
 RVA(0x00176440, 0x25d)
 i32 CRezImage::DecodePidData(void* buf, void* a2, void* a3) {
-    u8* src = (u8*)buf + 0x20;
-    i32 width = *(i32*)((char*)buf + 8);
-    i32 height = *(i32*)((char*)buf + 0xc);
-    i32 flags = *(i32*)((char*)buf + 4);
-    i32 fill = *(i32*)((char*)buf + 0x18);
+    PidHeader* hdr = (PidHeader*)buf;
+    u8* src = (u8*)(hdr + 1); // pixel stream at buf + 0x20
+    i32 width = hdr->width;
+    i32 height = hdr->height;
+    i32 flags = hdr->flags;
+    i32 fill = hdr->fill;
 
     if (!DecodeBmpHeader(a2, width, height, 8, a3)) {
         return 0;

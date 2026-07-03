@@ -6,8 +6,9 @@
 // WwdFile::ReadPlane per plane) and the image-set descriptors before
 // computing the scaled start coordinates on the main plane.
 //
-// Only the members LoadWwd touches are pinned. The on-disk WWD layout is in
-// src/Stub/types/wwd.h. The plane object (CPlane) + the per-plane block reader
+// Only the members LoadWwd touches are pinned. The on-disk WWD header/plane
+// layout is validated inline by the loaders (WwdFile::IsValidWwd / this LoadWwd:
+// 0x5F4 header signature, 0xA0 plane stride). The plane object (CPlane) + the per-plane block reader
 // + the image-set factory + the coord-recompute helper are UNMATCHED engine code,
 // modeled here as external shells so their calls reloc-mask.
 #ifndef SRC_GRUNTZ_GAMELEVEL_H

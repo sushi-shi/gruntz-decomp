@@ -25,7 +25,7 @@
  *       DDSURFACEDESC-shaped struct (dwSize @0) it zeroes/sizes — classic DDraw.
  *     - CDDrawResolveSubMgrLayout's ctor seeds a resolution/scaling ladder.
  *     - SoundDeviceLayout/SoundStream hold the 101-entry volume->attenuation
- *       lookup table (see enums.h GruntzVolumeAttenuation).
+ *       lookup table (see <Gruntz/Enums.h> GruntzVolumeAttenuation).
  *
  * @approx tomalla 1.0.1.77 — all OFFSETS / SIZES / vtable-SLOTS / INHERITANCE below
  * are version-independent (high confidence). The compilable declarations below
@@ -235,7 +235,7 @@ public:
 
 /* Dsndmgr's SoundDevice (was Ghidra placeholder UnknownSalazar; the real matched
  * class is Dsndmgr/SoundDevice.h::SoundDevice, whose BuildVolumeTable seeds this
- * 101-entry volume->attenuation lookup table, see ../enums.h). This is a Dsndmgr
+ * 101-entry volume->attenuation lookup table, see <Gruntz/Enums.h>). This is a Dsndmgr
  * class mis-parked in the DDraw family hypothesis; re-home is a follow-up. */
 class SoundDeviceLayout {
 public:
@@ -249,7 +249,7 @@ public:
         fieldUnknown90; // +0x80..+0x93
 
     // table[i] = -1000 * log2(100/i); table[0] = -10000, table[100] = 0.
-    // See ../enums.h GruntzVolumeAttenuation for the full 101-value spec.
+    // See <Gruntz/Enums.h> GruntzVolumeAttenuation for the full 101-value spec.
     static i32 unknownLookupTable[101];
     static void initializeUnknownLookupTable();
     static i32 getLookupTableValue(i32 index);
@@ -306,6 +306,7 @@ SIZE_UNKNOWN(CMapStringToPtr);
 SIZE_UNKNOWN(CObArray);
 SIZE_UNKNOWN(CObList);
 SIZE_UNKNOWN(CObject);
+SIZE_UNKNOWN(CPtrArray);
 SIZE_UNKNOWN(CPtrList);
 SIZE_UNKNOWN(CDDrawWorkerMapSmallLayout);
 SIZE_UNKNOWN(CDDrawSubMgrBaseLayout);

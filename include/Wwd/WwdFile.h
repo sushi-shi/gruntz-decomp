@@ -1,7 +1,8 @@
 // WwdFile.h - Gruntz WWD level-file loader (Monolith-faithful reconstruction).
 //
-// On-disk WWD header layout is pinned in src/Stub/types/wwd.h; this header
-// reproduces the load-bearing fields the loaders actually touch.
+// This header reproduces the load-bearing on-disk WWD fields the loaders
+// actually touch (WwdHeader, 0x5F4); the full plane/object on-disk formats are
+// not yet modeled in a matched TU.
 #ifndef SRC_WWD_WWDFILE_H
 #define SRC_WWD_WWDFILE_H
 
@@ -14,11 +15,11 @@ typedef u32 uLong;
 typedef u32 uLongf;
 
 // WWD file header (1524 = 0x5F4 bytes on disk). Only the fields the loaders
-// read are named; the rest is padding to preserve offsets. See formats/wwd.h.
+// read are named; the rest is padding to preserve offsets.
 struct WwdHeader {
     u32 wwdSignature; // +0x000  == 1524 (header size)
     u32 field_4;      // +0x004
-    u32 flags;        // +0x008  bit1 (0x2) = COMPRESS
+    u32 flags;        // +0x008  bit0 (0x1) USE_Z_COORDS, bit1 (0x2) COMPRESS
     u8 pad_c[0x10 - 0x0c];
     char levelName[0x2d0 - 0x10]; // +0x010  (name/author/paths block)
     i32 startX;                   // +0x2D0

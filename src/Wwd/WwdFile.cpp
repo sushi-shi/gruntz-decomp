@@ -277,7 +277,7 @@ i32 __stdcall WwdFile_InflateMainBlock(WwdHeader* src, Bytef* dest, u32 destLen)
     if (src->wwdSignature > 0x5f4) { // header size (== 1524)
         return 0;
     }
-    if ((src->flags & 0x2) == 0) { // require COMPRESS
+    if ((src->flags & 0x2) == 0) { // require COMPRESS (WwdFlags bit1)
         return 0;
     }
     if (src->mainBlockLength == 0) {

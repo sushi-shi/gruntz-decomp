@@ -1,6 +1,6 @@
-// Enums.h - Gruntz game-taxonomy enums, graduated from the comprehension layer
-// (src/Stub/types/enums.h, which stays as the un-matched reference). Lifting the
-// enum definitions into a real include/ header is matching-NEUTRAL: enumerator
+// Enums.h - Gruntz game-taxonomy enums. This is the authoritative home (the old
+// comprehension header src/Stub/types/enums.h has been consumed into here and
+// axed). Lifting the enum definitions into a real include/ header is matching-NEUTRAL: enumerator
 // names do not change /O2 codegen. Where an enumerator's INTEGER value is recovered
 // (Resolution, LaunchModeCode, Commands, GruntType), the reconstructed src/ may use the
 // name in place of the magic constant; for the rosters whose binary numbering is still
