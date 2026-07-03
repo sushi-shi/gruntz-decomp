@@ -20,6 +20,7 @@
 // CDDrawWorkerRegistry / CDDrawWorkerMapSmall / CDDrawSurfacePair) and are NOT
 // redefined here (no dup-RVA) - they stay declared-only.
 #include <Ints.h>
+#include <Wap32/CObject.h> // the shared WAP CObject grand-base (slots 0/2/3/4 base thunks)
 #include <rva.h>
 
 // ---------------------------------------------------------------------------
@@ -51,15 +52,11 @@ SIZE_UNKNOWN(CVtbl_1ef7d0);
 VTBL(CVtbl_1ef7d0, 0x001ef7d0);
 
 // ---------------------------------------------------------------------------
-// 0x5efc58 (RVA 0x1efc58) - 8 slots. CObject-style (slots 0/2/3/4 base thunks),
-// slot 1 dtor 0x155890.
+// 0x5efc58 (RVA 0x1efc58) - 8 slots. CObject-derived (slots 0/2/3/4 are the shared
+// Wap::CObject base thunks), slot 1 dtor 0x155890.
 // ---------------------------------------------------------------------------
-struct CVtbl_1efc58 {
-    virtual void FUN_005bef01(); // [0] 0x1bef01 (base thunk)
-    virtual ~CVtbl_1efc58();     // [1] 0x155890 scalar-deleting dtor (anchor)
-    virtual void FUN_004028ec(); // [2] 0x0028ec (base thunk)
-    virtual void FUN_0040106e(); // [3] 0x00106e (base thunk)
-    virtual void FUN_00404034(); // [4] 0x004034 (base thunk)
+struct CVtbl_1efc58 : Wap::CObject {
+    virtual ~CVtbl_1efc58();     // [1] 0x155890 scalar-deleting dtor (anchor, overrides slot 1)
     virtual void FUN_00555f00(); // [5] 0x155f00
     virtual void FUN_00555900(); // [6] 0x155900
     virtual void FUN_00555e20(); // [7] 0x155e20
@@ -82,12 +79,8 @@ VTBL(CVtbl_1efc58, 0x001efc58);
 // (slot 1 = 0x156df0 = CDDrawWorkerRegistry::Stub_156df0, already matched -> NOT
 // redefined here). CObject-style base thunks at 0/2/3/4.
 // ---------------------------------------------------------------------------
-struct CVtbl_1efd28 {
-    virtual void FUN_005bef01(); // [0] 0x1bef01 (base thunk)
-    virtual ~CVtbl_1efd28();     // [1] 0x156df0 scalar-deleting dtor (anchor)
-    virtual void FUN_004028ec(); // [2] 0x0028ec (base thunk)
-    virtual void FUN_0040106e(); // [3] 0x00106e (base thunk)
-    virtual void FUN_00404034(); // [4] 0x004034 (base thunk)
+struct CVtbl_1efd28 : Wap::CObject {
+    virtual ~CVtbl_1efd28();     // [1] 0x156df0 scalar-deleting dtor (anchor, overrides slot 1)
     virtual void FUN_00556dc0(); // [5] 0x156dc0
     virtual void FUN_00554aa0(); // [6] 0x154aa0
     virtual void FUN_00554ac0(); // [7] 0x154ac0
@@ -124,12 +117,8 @@ VTBL(CVtbl_1efd28, 0x001efd28);
 // 0x5efd88 (RVA 0x1efd88) - 14 slots. CObject-style, slot 1 dtor 0x156f30.
 // Slot 7 (0x163bc0) points at a CDDrawWorkerList method (declared-only).
 // ---------------------------------------------------------------------------
-struct CVtbl_1efd88 {
-    virtual void FUN_005bef01(); // [0] 0x1bef01 (base thunk)
-    virtual ~CVtbl_1efd88();     // [1] 0x156f30 scalar-deleting dtor (anchor)
-    virtual void FUN_004028ec(); // [2] 0x0028ec (base thunk)
-    virtual void FUN_0040106e(); // [3] 0x00106e (base thunk)
-    virtual void FUN_00404034(); // [4] 0x004034 (base thunk)
+struct CVtbl_1efd88 : Wap::CObject {
+    virtual ~CVtbl_1efd88();     // [1] 0x156f30 scalar-deleting dtor (anchor, overrides slot 1)
     virtual void FUN_00556f00(); // [5] 0x156f00
     virtual void FUN_00556fc0(); // [6] 0x156fc0
     virtual void FUN_00563bc0(); // [7] 0x163bc0
@@ -161,12 +150,8 @@ VTBL(CVtbl_1efd88, 0x001efd88);
 // primary names the datum; realizing it AS the MI-secondary of CDDrawWorkerMapSmall
 // would need the +offset construction-vtable machinery). CObject-style thunks.
 // ---------------------------------------------------------------------------
-struct CVtbl_1efdc0 {
-    virtual void FUN_005bef01(); // [0] 0x1bef01 (base thunk)
-    virtual ~CVtbl_1efdc0();     // [1] 0x157610 scalar-deleting dtor (anchor)
-    virtual void FUN_004028ec(); // [2] 0x0028ec (base thunk)
-    virtual void FUN_0040106e(); // [3] 0x00106e (base thunk)
-    virtual void FUN_00404034(); // [4] 0x004034 (base thunk)
+struct CVtbl_1efdc0 : Wap::CObject {
+    virtual ~CVtbl_1efdc0();     // [1] 0x157610 scalar-deleting dtor (anchor, overrides slot 1)
     virtual void FUN_005575e0(); // [5] 0x1575e0
     virtual void FUN_005576c0(); // [6] 0x1576c0
     virtual void FUN_005591e0(); // [7] 0x1591e0

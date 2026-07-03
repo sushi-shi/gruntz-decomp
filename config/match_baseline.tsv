@@ -1339,7 +1339,7 @@ cgrunttoytimesprite	??1CGruntToyTimeSprite@@UAE@XZ	100.0000	100.0000	1	dd4570bd3
 cgruntwingztimesprite	??1CGruntWingzTimeSprite@@UAE@XZ	100.0000	100.0000	1	45cfd716baa5	0x121f0
 cgruntwingztimesprite	?GetTypeTag@CGruntWingzTimeSprite@@QAEHXZ	100.0000	100.0000	1	05a69356373a	0x121a0
 cgruntwingztimesprite	?GetWingzTime@@YGHPAVCGrunt@@@Z	100.0000	100.0000	1	eb3b32cf6214	0x7fd90
-cgruntzmapmgr	??1CGruntzMapMgr@@UAE@XZ	100.0000	100.0000	1	b09c83d42c3c	0x85d10
+cgruntzmapmgr	??1CGruntzMapMgr@@UAE@XZ	100.0000	100.0000	2	b34a5dba3d20	0x85d10
 cgruntzmgrcmd	?HandleCommand@CGruntzMgr@GruntzMgrCmd@@QAEHHHH@Z	29.7155	29.7155	4	7a4b98859731	0x862f0
 cguardpoint	??0CGuardPoint@@QAE@PAUCGameObject@@@Z	95.9909	95.9909	1	c7e0d3067144	0xae5f0
 cguardpoint	??1CGuardPoint@@UAE@XZ	100.0000	100.0000	1	c53d638223a9	0x10410
@@ -2789,7 +2789,7 @@ menupage	?SelectForward@CMenuPage@@QAEHXZ	60.8194	60.8194	2	afe4bbf2a00b	0x1843f
 menupage	?SelectFwd2@CMenuPage@@QAEHXZ	62.0000	62.0000	3	33d6c988dc97	0x184230
 menupage	?SetFocus@CMenuPage@@QAEHPAVCMenuItem@@H@Z	100.0000	100.0000	2	c802472b47c7	0x183ad0
 menupage	?Switch@CMenuPage@@QAEHH@Z	100.0000	100.0000	3	b923133c5380	0x183df0
-menusparkleserial	?Serialize@CMenuSparkle@@QAEHPAUCSerialArchive@@HHH@Z	100.0000	100.0000	1	0012766339d8	0xae1c0
+menusparkleserial	?SerializeMove@CMenuSparkle@@UAEHPAVCGruntArchive@@HHH@Z	100.0000	100.0000	1	36491ddb2240	0xae1c0
 menustateassets	?LoadAssets@CMenuState@@QAEHHHH@Z	89.5216	89.5216	4	0679869aae4c	0x9fe50
 mgrautoscroll	?UpdateMgrScroll@@YAXPAVCGruntzMgr@@PAHHH@Z	59.8226	59.8226	1	fc7d42c4b2a5	0xebd70
 mgrlistfind	?MgrListFind@@YAHHH@Z	73.2188	73.2188	2	2779ef0a81cb	0xf0db0

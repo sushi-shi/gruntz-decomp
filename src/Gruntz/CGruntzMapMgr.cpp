@@ -16,8 +16,8 @@ extern i32 g_freeListNodeBias; // ?g_freeListNodeBias@@3HA (VA 0x64554c)
 
 RVA(0x00085d10, 0xa7)
 CGruntzMapMgr::~CGruntzMapMgr() {
-    for (i32 i = 0; i < m_arr.m_nSize; i++) {
-        void* elem = m_arr.m_pData[i];
+    for (i32 i = 0; i < m_arr.GetSize(); i++) {
+        void* elem = m_arr.GetAt(i);
         if (elem != 0) {
             void** node = (void**)((char*)elem - g_freeListNodeBias);
             *node = g_freeList;

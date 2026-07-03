@@ -1,12 +1,17 @@
 // CGruntWingzTimeSprite.h - the grunt "wingz" time eyecandy sprite (C:\Proj\Gruntz).
 //
-// CGruntWingzTimeSprite : CUserLogic - a tile-logic leaf in the same game-object
-// hierarchy as CSimpleAnimation (proven by its dtor @0x0121f0 stamping the
-// CUserLogic vftable 0x5e705c then the CUserBase vftable 0x5e70b4, tearing down
-// the +0x18 link via the embedded ~EngStr at 0x16d2a0 - byte-identical in shape
-// to the established leaf-dtor archetype). The leaf adds no destructible members
-// beyond CUserLogic, so its dtor folds the bare CUserLogic teardown (the /GX
-// leaf-dtor archetype).
+// RTTI (.?AVCGruntWingzTimeSprite@@, vtbl 0x1e77cc) gives the true base as
+// CGruntHealthSprite (17 slots, slot 16 = origin CGruntHealthSprite overridden).
+// We DELIBERATELY model it as `: CUserLogic` DIRECTLY (documented held-base, the
+// CLightningHazard precedent). Reason: the leaf dtor @0x0121f0 (0x44 B, 100%)
+// stamps the CUserLogic vftable 0x5e705c then the CUserBase vftable 0x5e70b4 and
+// tears the +0x18 link via ~EngStr @0x16d2a0 - it INLINES the full CUserLogic
+// teardown and DEAD-STORE-ELIMINATES the intermediate CGruntHealthSprite/leaf vptr
+// stamps (no CGruntHealthSprite vtable ref, no ~CGruntHealthSprite call). Deriving
+// CGruntHealthSprite (out-of-line dtor @0x00011fb0 in another TU) would force cl to
+// emit a CALL instead of the inlined teardown, regressing the byte-exact dtor. The
+// intermediate base adds NO destructible members, so direct-CUserLogic is
+// byte-identical to the true chain.
 //
 // GetWingzTime (0x07fd90) is a free __stdcall accessor: read the bound grunt's
 // +0x3f8 wingz-timer field and return it (ret 4 -> callee cleanup -> one stack

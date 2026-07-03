@@ -13,6 +13,20 @@
 // CString/CByteArray members at the retail offsets and a manual vtable-stamp
 // (the three retail vtables referenced by address as reloc-masked DATA externs)
 // since CPlay/CState's vtable contents are not reproduced in this TU.
+//
+// INHERITANCE HELD (vtable_hierarchy audit: CMulti -> derive CPlay; the true chain
+// is CMulti : CPlay : CState, single-chain not a diamond - CPlay itself derives
+// CState per <Gruntz/CPlay.h>). We DELIBERATELY do NOT declare `: public CPlay`
+// here: CMulti's low-offset members (m_logic +0x04, m_stateReg +0x08, m_view +0x0c,
+// m_curState +0x2c, ...) occupy exactly the CPlay/CState sub-object range and are
+// read by ~30 methods across this TU. A real `: public CPlay` (CPlay.h pulls Mfc /
+// CGameRegistry / CView / CState) forces removing every one of those members and
+// re-mapping each access through the base sub-objects - reshuffling the /O2 regalloc
+// of a 73%-partial TU whose functions already sit on documented EH/regalloc walls.
+// It also cannot help the sole inheritance-shaped function, ~CMulti @0x8d270, whose
+// residual is the EH-state-machine / vector-dtor wall below (0.65%, not a base issue:
+// the CState/CPlay sub-object restamps are already reproduced via local dtor-views +
+// CPlayDtorBody). So the real-chain modeling stays a final-sweep task, held here.
 #ifndef GRUNTZ_GRUNTZ_CMULTI_H
 #define GRUNTZ_GRUNTZ_CMULTI_H
 
