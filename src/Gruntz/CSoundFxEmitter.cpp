@@ -10,14 +10,14 @@
 // 0xfa410: single-channel type-2 emitter (4 args).
 RVA(0x000fa410, 0xf5)
 i32 CSoundFxEmitter::Method_fa410(i32 a1, i32 a2, i32 a3, i32 a4) {
-    CFaderMgr* mgr = m_10;
+    CFaderMgr* mgr = m_faderMgr;
     if (mgr == 0) {
         return 0;
     }
-    if (m_0c->m_1c == 0) {
+    if (m_resChain->m_gate == 0) {
         return 0;
     }
-    CDDSurface* chan = m_0c->m_04->m_10->m_2c;
+    CDDSurface* chan = m_resChain->m_worker->m_frontPair->m_surface;
     if (chan == 0) {
         return 0;
     }
@@ -28,19 +28,19 @@ i32 CSoundFxEmitter::Method_fa410(i32 a1, i32 a2, i32 a3, i32 a4) {
     t.m_1c = a2;
     t.m_04 = (i32)chan;
     t.m_08 = 0;
-    CFader* f = mgr->Add(1, (CFader*)&t);
+    FaderRun* f = (FaderRun*)mgr->Add(1, (CFader*)&t);
     if (f == 0) {
         return 0;
     }
 
-    m_04->StopBankIfActive();
+    m_gameMgr->StopBankIfActive();
     if (g_fxDirectGate != 0) {
         Utils::WinAPI::ActiveWait(a3);
-        m_0c->m_04->m_10->m_2c->Fill(0);
+        m_resChain->m_worker->m_frontPair->m_surface->Fill(0);
     } else {
-        ((FaderRun*)f)->RunFade(a3, a4, 0);
+        f->RunFade(a3, a4, 0);
     }
-    m_04->StopBank0IfActive();
+    m_gameMgr->StopBank0IfActive();
     mgr->Remove(f);
     return 1;
 }
@@ -54,18 +54,18 @@ i32 CSoundFxEmitter::Method_fa410(i32 a1, i32 a2, i32 a3, i32 a4) {
 // temporaries. Both are /O2 instruction-scheduling choices, not source-steerable.
 RVA(0x000fa550, 0x10c)
 i32 CSoundFxEmitter::Method_fa550(i32 a1, i32 a2, i32 a3, i32 a4) {
-    CFaderMgr* mgr = m_10;
+    CFaderMgr* mgr = m_faderMgr;
     if (mgr == 0) {
         return 0;
     }
-    if (m_0c->m_1c == 0) {
+    if (m_resChain->m_gate == 0) {
         return 0;
     }
-    CDDSurface* chanA = m_0c->m_04->m_10->m_2c;
+    CDDSurface* chanA = m_resChain->m_worker->m_frontPair->m_surface;
     if (chanA == 0) {
         return 0;
     }
-    CDDSurface* chanB = m_0c->m_04->m_14->m_2c;
+    CDDSurface* chanB = m_resChain->m_worker->m_backPair->m_surface;
     if (chanB == 0) {
         return 0;
     }
@@ -76,19 +76,19 @@ i32 CSoundFxEmitter::Method_fa550(i32 a1, i32 a2, i32 a3, i32 a4) {
     t.m_18 = a1;
     t.m_04 = (i32)chanA;
     t.m_08 = (i32)chanB;
-    CFader* f = mgr->Add(1, (CFader*)&t);
+    FaderRun* f = (FaderRun*)mgr->Add(1, (CFader*)&t);
     if (f == 0) {
         return 0;
     }
 
-    m_04->StopBankIfActive();
+    m_gameMgr->StopBankIfActive();
     if (g_fxDirectGate != 0) {
         Utils::WinAPI::ActiveWait(a3);
-        m_0c->m_04->m_10->m_2c->Blt(chanB);
+        m_resChain->m_worker->m_frontPair->m_surface->Blt(chanB);
     } else {
-        ((FaderRun*)f)->RunFade(a3, a4, 0);
+        f->RunFade(a3, a4, 0);
     }
-    m_04->StopBank0IfActive();
+    m_gameMgr->StopBank0IfActive();
     mgr->Remove(f);
     return 1;
 }
@@ -104,18 +104,18 @@ i32 CSoundFxEmitter::Method_fa550(i32 a1, i32 a2, i32 a3, i32 a4) {
 // source-steerable (computation order is pinned by the chain walk).
 RVA(0x000fa790, 0x104)
 i32 CSoundFxEmitter::Method_fa790(i32 a1, i32 a2, i32 a3) {
-    CFaderMgr* mgr = m_10;
+    CFaderMgr* mgr = m_faderMgr;
     if (mgr == 0) {
         return 0;
     }
-    if (m_0c->m_1c == 0) {
+    if (m_resChain->m_gate == 0) {
         return 0;
     }
-    CDDSurface* chanA = m_0c->m_04->m_10->m_2c;
+    CDDSurface* chanA = m_resChain->m_worker->m_frontPair->m_surface;
     if (chanA == 0) {
         return 0;
     }
-    CDDSurface* chanB = m_0c->m_04->m_14->m_2c;
+    CDDSurface* chanB = m_resChain->m_worker->m_backPair->m_surface;
     if (chanB == 0) {
         return 0;
     }
@@ -125,19 +125,19 @@ i32 CSoundFxEmitter::Method_fa790(i32 a1, i32 a2, i32 a3) {
     t.m_10 = a1;
     t.m_04 = (i32)chanA;
     t.m_08 = (i32)chanB;
-    CFader* f = mgr->Add(2, (CFader*)&t);
+    FaderRun* f = (FaderRun*)mgr->Add(2, (CFader*)&t);
     if (f == 0) {
         return 0;
     }
 
-    m_04->StopBankIfActive();
+    m_gameMgr->StopBankIfActive();
     if (g_fxDirectGate != 0) {
         Utils::WinAPI::ActiveWait(a2);
-        m_0c->m_04->m_10->m_2c->Blt(chanB);
+        m_resChain->m_worker->m_frontPair->m_surface->Blt(chanB);
     } else {
-        ((FaderRun*)f)->RunFade(a2, a3, 0);
+        f->RunFade(a2, a3, 0);
     }
-    m_04->StopBank0IfActive();
+    m_gameMgr->StopBank0IfActive();
     mgr->Remove(f);
     return 1;
 }
@@ -151,24 +151,24 @@ i32 CSoundFxEmitter::Method_fa790(i32 a1, i32 a2, i32 a3) {
 // /O2 scheduling/regalloc, not source-steerable.
 RVA(0x000fa8f0, 0x118)
 i32 CSoundFxEmitter::Method_fa8f0(i32 a1, i32 a2, i32 a3, i32 a4) {
-    CFaderMgr* mgr = m_10;
+    CFaderMgr* mgr = m_faderMgr;
     if (mgr == 0) {
         return 0;
     }
-    if (m_0c->m_1c == 0) {
+    if (m_resChain->m_gate == 0) {
         return 0;
     }
-    CDDSurface* chanA = m_0c->m_04->m_10->m_2c;
+    CDDSurface* chanA = m_resChain->m_worker->m_frontPair->m_surface;
     if (chanA == 0) {
         return 0;
     }
-    FxChanHolder* holderB;
-    if (a4 != 0 && ((CDDrawWorkerMgr*)m_0c->m_04)->Method_158d20() != 0) {
-        holderB = m_0c->m_04->m_18;
+    CDDrawSurfacePair* holderB;
+    if (a4 != 0 && m_resChain->m_worker->Method_158d20() != 0) {
+        holderB = m_resChain->m_worker->m_overlayPair;
     } else {
-        holderB = m_0c->m_04->m_14;
+        holderB = m_resChain->m_worker->m_backPair;
     }
-    CDDSurface* chanB = holderB->m_2c;
+    CDDSurface* chanB = holderB->m_surface;
     if (chanB == 0) {
         return 0;
     }
@@ -178,16 +178,16 @@ i32 CSoundFxEmitter::Method_fa8f0(i32 a1, i32 a2, i32 a3, i32 a4) {
     t.m_10 = a1;
     t.m_04 = (i32)chanA;
     t.m_08 = (i32)chanB;
-    CFader* f = mgr->Add(2, (CFader*)&t);
+    FaderRun* f = (FaderRun*)mgr->Add(2, (CFader*)&t);
     if (f == 0) {
         return 0;
     }
 
     if (g_fxDirectGate != 0) {
         Utils::WinAPI::ActiveWait(a2);
-        m_0c->m_04->m_10->m_2c->Blt(chanB);
+        m_resChain->m_worker->m_frontPair->m_surface->Blt(chanB);
     } else {
-        ((FaderRun*)f)->RunFade(a2, a3, 0);
+        f->RunFade(a2, a3, 0);
     }
     mgr->Remove(f);
     return 1;
@@ -197,14 +197,14 @@ i32 CSoundFxEmitter::Method_fa8f0(i32 a1, i32 a2, i32 a3, i32 a4) {
 // 0xfaa60: single-channel type-3 emitter (3 args).
 RVA(0x000faa60, 0xed)
 i32 CSoundFxEmitter::Method_faa60(i32 a1, i32 a2, i32 a3) {
-    CFaderMgr* mgr = m_10;
+    CFaderMgr* mgr = m_faderMgr;
     if (mgr == 0) {
         return 0;
     }
-    if (m_0c->m_1c == 0) {
+    if (m_resChain->m_gate == 0) {
         return 0;
     }
-    CDDSurface* chan = m_0c->m_04->m_10->m_2c;
+    CDDSurface* chan = m_resChain->m_worker->m_frontPair->m_surface;
     if (chan == 0) {
         return 0;
     }
@@ -214,19 +214,19 @@ i32 CSoundFxEmitter::Method_faa60(i32 a1, i32 a2, i32 a3) {
     t.m_10 = a1;
     t.m_04 = (i32)chan;
     t.m_08 = 0;
-    CFader* f = mgr->Add(2, (CFader*)&t);
+    FaderRun* f = (FaderRun*)mgr->Add(2, (CFader*)&t);
     if (f == 0) {
         return 0;
     }
 
-    m_04->StopBankIfActive();
+    m_gameMgr->StopBankIfActive();
     if (g_fxDirectGate != 0) {
         Utils::WinAPI::ActiveWait(a2);
-        m_0c->m_04->m_10->m_2c->Fill(0);
+        m_resChain->m_worker->m_frontPair->m_surface->Fill(0);
     } else {
-        ((FaderRun*)f)->RunFade(a2, a3, 0);
+        f->RunFade(a2, a3, 0);
     }
-    m_04->StopBank0IfActive();
+    m_gameMgr->StopBank0IfActive();
     mgr->Remove(f);
     return 1;
 }
@@ -235,6 +235,5 @@ i32 CSoundFxEmitter::Method_faa60(i32 a1, i32 a2, i32 a3) {
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 #include <rva.h>
 SIZE_UNKNOWN(CSoundFxEmitter);
-SIZE_UNKNOWN(FxChanHolder);
-SIZE_UNKNOWN(FxHolder);
+SIZE_UNKNOWN(CDDrawSurfacePair);
 SIZE_UNKNOWN(FxResource);

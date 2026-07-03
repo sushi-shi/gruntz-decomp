@@ -115,16 +115,16 @@ public:
     i32 Setup(i32 a0, void* sample, i32 a2, i32 a3); // 0x11a7e0
     void Reset();                                    // 0x11a870
 
-    // --- CGruntVoice own fields (placeholders; offsets load-bearing) ---
+    // --- CGruntVoice own fields (offsets load-bearing; roles from Setup/Reset) ---
     char m_pad40[0x54 - 0x40];
-    i32 m_54; // +0x54
-    i32 m_58; // +0x58
-    i32 m_5c; // +0x5c
-    i32 m_60; // +0x60
-    i32 m_64; // +0x64
-    i32 m_68; // +0x68
-    i32 m_6c; // +0x6c
-    i32 m_70; // +0x70
+    i32 m_sample;     // +0x54  the play request's sample object (Setup stores, Reset clears)
+    i32 m_icon;       // +0x58  in-game icon handle (seeded to g_iconDefault)
+    i32 m_5c;         // +0x5c  icon-companion slot (zeroed with m_icon; role unproven)
+    i32 m_durationMs; // +0x60  cached sample play duration (sample->ComputeDuration)
+    i32 m_64;         // +0x64  running/elapsed slot (zeroed on setup; role unproven)
+    i32 m_source;     // +0x68  the play request's source (Setup arg0, cleared by Reset)
+    i32 m_playFlags;  // +0x6c  the play request's flag word (Setup arg2, cleared by Reset)
+    i32 m_owner;      // +0x70  the play request's owner (Setup arg3)
 };
 
 // The registry Entry: its first dword is a pointer-to-member-function of

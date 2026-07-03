@@ -37,41 +37,44 @@ extern i32 g_fxDirectGate;
 // reloc-masked bank-stop methods on the singleton.
 #include <Gruntz/CGameRegistry.h>
 
-class CDDrawWorkerMgr {
-public:
-    i32 Method_158d20(); // 0x158d20 - "is worker ready" predicate
-};
+// The shared DDraw worker manager (FxResource +0x04): its Method_158d20 "worker
+// ready" predicate + the front/back/overlay surface pairs at +0x10/+0x14/+0x18.
+#include <Gruntz/CDDrawWorkerMgr.h>
+
 namespace Utils {
     namespace WinAPI {
         void ActiveWait(u32 milliseconds); // 0x13dfe0 busy-wait
     }
 } // namespace Utils
 
-// The deferred-op driver: the CFader that CFaderMgr::Add() returns is a FaderRun
-// subtype (see src/Gruntz/CFaderRun.cpp); its RunFade (0x17e620) spins the timed
-// fade. Reached by downcasting the returned fader (the two are modeled as separate
-// shapes, so this is the pragmatic bridge to the real named method - it reloc-pairs
-// against ?RunFade@FaderRun@@QAEXIHH@Z instead of a fabricated stub name).
-struct FaderRun {
+// FaderRun is the concrete CFader subclass CFaderMgr::Add(1|2, ..) mints (base at
+// +0x00; RunFade @0x17e620 drives the timed fade). Add's matched retail signature is
+// CFader* Add(int, CFader*) - it takes the init descriptor and returns the new fader
+// both as the base CFader*, so the emitter downcasts the return to the concrete
+// FaderRun once at the Add site (address-preserving, base at 0) and then calls its
+// non-virtual RunFade directly. FaderRun is never constructed here, so no ??_7FaderRun
+// is emitted. (The descriptor-side (CFader*)&t upcast is likewise Add's API: the
+// CFxModeDesc family is a distinct non-polymorphic root, so it cannot derive CFader.)
+struct FaderRun : public CFader {
     void RunFade(u32 dur, i32 lead, i32 notify); // 0x17e620
 };
 
-// The resource chain reached through emitter +0x0c.
-struct FxChanHolder {
+// The DDraw surface pair CDDrawWorkerMgr holds at +0x10/+0x14/+0x18 (front/back/
+// overlay). Forward-declared in <Gruntz/CDDrawWorkerMgr.h>; only its +0x2c channel
+// surface is read here, so this TU completes that forward-declared type.
+class CDDrawSurfacePair {
+public:
     char _00[0x2c];
-    CDDSurface* m_2c; // +0x2c the DirectDraw channel surface
+    CDDSurface* m_surface; // +0x2c the DirectDraw channel surface
 };
-struct FxHolder {
-    char _00[0x10];
-    FxChanHolder* m_10; // +0x10
-    FxChanHolder* m_14; // +0x14
-    FxChanHolder* m_18; // +0x18
-};
+
+// The resource chain reached through emitter +0x0c: the DDraw worker manager
+// (+0x04, whose surface pairs carry the channels) plus a gate flag (+0x1c).
 struct FxResource {
     char _00[0x04];
-    FxHolder* m_04; // +0x04
+    CDDrawWorkerMgr* m_worker; // +0x04 the shared DDraw worker manager
     char _08[0x14];
-    i32 m_1c; // +0x1c gate field (must be set to proceed)
+    i32 m_gate; // +0x1c gate field (must be set to proceed)
 };
 
 class CSoundFxEmitter {
@@ -83,10 +86,10 @@ public:
     i32 Method_faa60(i32 a1, i32 a2, i32 a3);         // 0xfaa60
 
     char _00[0x04];
-    CGameRegistry* m_04; // +0x04 sound/bank manager (the CGruntzMgr singleton)
+    CGameRegistry* m_gameMgr; // +0x04 sound/bank manager (the CGruntzMgr singleton)
     char _08[0x04];
-    FxResource* m_0c; // +0x0c resource chain root
-    CFaderMgr* m_10;  // +0x10 fader manager
+    FxResource* m_resChain; // +0x0c resource chain root
+    CFaderMgr* m_faderMgr;  // +0x10 fader manager
 };
 
 #endif // GRUNTZ_CSOUNDFXEMITTER_H

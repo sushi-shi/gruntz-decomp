@@ -17,8 +17,9 @@
 #include <Bute/ButeMgr.h> // canonical CButeMgr / CButeStore (one shape)
 #include <string.h>
 
-#include <Gruntz/CoordNode.h>    // the shared coord-pool node
-#include <Gruntz/CParseSource.h> // canonical CParseSource (one shape)
+#include <Gruntz/CoordNode.h>      // the shared coord-pool node
+#include <Gruntz/CParseSource.h>   // canonical CParseSource (one shape)
+#include <Dsndmgr/CGruntzSoundZ.h> // canonical CGruntzSoundZ (m_48 audio host; SetXMidiVolume)
 #include <Globals.h>
 
 // retail's global allocator is the nothrow pool alloc; MSVC5 `new T` emits the
@@ -144,14 +145,9 @@ struct H44 {
     i32 Fn1825(i32); // 0x1825
     void Fn15b9();   // 0x15b9
 };
-SIZE(H48, 0x2c);
-struct H48 {
-    char raw[0x2c];
-    H48();
-    ~H48();
-    i32 Init138490(i32, i32, i32); // 0x138490
-    void Fn138950(i32);            // 0x138950
-};
+// m_48 is the audio host = canonical CGruntzSoundZ (Init @0x138490 / SetXMidiVolume
+// @0x138950 / m_enabled @+0x28); `new CGruntzSoundZ` inlines its real CMapStringToOb
+// ctor (<Dsndmgr/CGruntzSoundZ.h>).
 SIZE_UNKNOWN(H50);
 struct H50 {
     H50();
@@ -276,7 +272,7 @@ struct RezSync {
     char _p3c[0x40 - 0x3c];
     CFaderMgr* m_40;
     H44* m_44;
-    H48* m_48;
+    CGruntzSoundZ* m_48; // audio host (Init/SetXMidiVolume/m_enabled)
     char _p4c[0x50 - 0x4c];
     H50* m_50;
     H54* m_54;
@@ -613,16 +609,16 @@ i32 RezSync::Init(void* a1, void* a2) {
     }
 
     // --- Phase 9: audio host (m_48) ---------------------------------
-    m_48 = new H48;
+    m_48 = new CGruntzSoundZ;
     g_653c5c = 0;
-    if (!m_48->Init138490(*(i32*)((char*)m_08 + 0xc), *(i32*)((char*)m_04 + 4), 0)) {
+    if (!m_48->Init(*(i32*)((char*)m_08 + 0xc), *(i32*)((char*)m_04 + 4), 0)) {
         Error2(0x800a, 0x40c);
         return 0;
     }
     if (g_2455b4 == 0 && g_2455c0 == 0) {
-        m_48->Fn138950(vMusic);
+        m_48->SetXMidiVolume(vMusic);
     } else {
-        *(i32*)((char*)m_48 + 0x28) = 0;
+        m_48->m_enabled = 0;
     }
 
     // --- Phase 10: sound-fx list (m_54) -----------------------------

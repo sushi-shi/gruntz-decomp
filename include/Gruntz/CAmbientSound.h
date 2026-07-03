@@ -39,7 +39,7 @@ struct AmbientBox {
 };
 
 // The (re)start path arms the voice through DirectSoundMgr::ApplyAndPlay (0x136300,
-// declared in <Dsndmgr/DirectSoundMgr.h> as m_04->ApplyAndPlay(vol,pan,freq,dur)).
+// declared in <Dsndmgr/DirectSoundMgr.h> as m_voice->ApplyAndPlay(vol,pan,freq,dur)).
 
 // ---------------------------------------------------------------------------
 // The big game registry singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c).
@@ -50,7 +50,7 @@ struct AmbientBox {
 SIZE_UNKNOWN(WwdActiveLevel);
 struct WwdActiveLevel {
     char m_pad0[0x24];
-    i32 m_24; // +0x24  object count (non-zero == playable)
+    i32 m_objectCount; // +0x24  object count (non-zero == playable)
 };
 DATA(0x0024556c)
 extern CGameRegistry* g_gameReg;
@@ -90,15 +90,15 @@ public:
     void Restart(); // 0xbfb0
 
     // +0x00  vptr provided by CUserBase base
-    DirectSoundMgr* m_04; // +0x04  the sound-mgr voice handle
-    i32 m_08;             // +0x08  current level (0..100)
-    i32 m_0c;             // +0x0c  level scale A (compared to 5; -0xf above)
-    i32 m_10;             // +0x10  level scale B (>0 multiplier, percent)
-    i32 m_14;             // +0x14  "is playing" flag
-    AmbientBox m_box1;    // +0x18  primary audible box
-    AmbientBox m_box2;    // +0x28  secondary audible box
-    i32 m_38;             // +0x38  sound id
-    i32 m_3c;             // +0x3c  zero-init in dtor; role unproven
+    DirectSoundMgr* m_voice; // +0x04  the sound-mgr voice handle it drives
+    i32 m_level;             // +0x08  current level (0..100), scaling base
+    i32 m_scaleA;            // +0x0c  level scale A (compared to 5; -0xf above)
+    i32 m_scaleB;            // +0x10  level scale B (>0 multiplier, percent)
+    i32 m_isPlaying;         // +0x14  "is playing" flag
+    AmbientBox m_box1;       // +0x18  primary audible box
+    AmbientBox m_box2;       // +0x28  secondary audible box
+    i32 m_panIndex;          // +0x38  pan index (ApplyAndPlay pan arg; matches CRandomAmbientSound)
+    i32 m_3c;                // +0x3c  zero-init in dtor; role unproven
 };
 SIZE(CAmbientSound, 0x40);
 

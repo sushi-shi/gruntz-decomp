@@ -16,25 +16,13 @@
 #include <Mfc.h>
 #include <rva.h>
 
-// The engine handles the sound pokes through. These are minimal __thiscall shells
-// declared under the SAME mangled names the retail objects carry (the names the
-// delinker assigned at the call targets), so each reloc-masked call pairs by name:
-//   SoundDevice::FreeSamples   @ 0x136ed0
-//   DirectSoundMgr::StopAndRewind       @ 0x135380
-//   DirectSoundMgr::winapi_136e20_timeGetTime @ 0x136e20
-// (The world's +0x2c handle is poked both as a SoundDevice and as a DirectSoundMgr
-// - the engine overlays both views on the one sub-object; the binary proves it.)
-class SoundDevice {
-public:
-    void FreeSamples(); // 0x136ed0  (thiscall, no args)
-};
-
-class DirectSoundMgr {
-public:
-    i32 StopAndRewind();                // 0x135380  (thiscall, no args)
-    i32 winapi_136e20_timeGetTime(i32); // 0x136e20  (thiscall, 1 arg)
-    i32 SetVolumeByIndex(i32 idx);      // 0x1355c0  (thiscall, 1 arg) volume-by-index
-};
+// The world's +0x2c sound sub-object is a SoundDevice: both FreeSamples (0x136ed0)
+// and PurgeVoiceList (0x136e20) are its methods (the earlier "dual SoundDevice /
+// DirectSoundMgr view" was a mis-model - the one handle is a SoundDevice). Each
+// channel's +0x04 voice is a DirectSoundMgr (StopAndRewind 0x135380 /
+// SetVolumeByIndex 0x1355c0). Both come from the canonical Dsndmgr headers so the
+// reloc-masked __thiscall calls pair by symbol.
+#include <Dsndmgr/SoundDevice.h> // real SoundDevice (also pulls DirectSoundMgr)
 
 // One active sound channel hanging off a list node. Polymorphic: the teardown /
 // retune paths dispatch through its vtable (scalar-deleting dtor at slot 0, a
@@ -99,10 +87,10 @@ struct SoundChannelNew {
 };
 
 // The world/level object the sound hangs off. Only its +0x2c slot is read here
-// (a DirectSoundMgr-ish sub-object), then poked via the engine helpers.
+// (the SoundDevice sub-object), then poked via FreeSamples / PurgeVoiceList.
 struct CRandomAmbientWorld {
     char m_pad00[0x2c];
-    DirectSoundMgr* m_soundDev; // +0x2c  sub-object handle (also viewed as SoundDevice)
+    SoundDevice* m_soundDev; // +0x2c  the world's SoundDevice sub-object
 };
 
 class CWorldSoundSet {

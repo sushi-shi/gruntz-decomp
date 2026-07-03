@@ -24,7 +24,7 @@
 // dispatch in the body), matching retail's 15-byte base-restamp-only shape.
 RVA(0x0000b790, 0xf)
 CAmbientSound::~CAmbientSound() {
-    m_04 = 0;
+    m_voice = 0;
     m_3c = 0;
 }
 
@@ -32,44 +32,44 @@ CAmbientSound::~CAmbientSound() {
 // CAmbientSound::Restart  (0x00bfb0)
 // ===========================================================================
 // Re-arm the voice at its current level. Gated on the voice handle, the not-yet-
-// playing flag (m_14==0) and the active level/world (g_gameReg->m_soundEnabled and
-// ->m_54->m_24). Reseed the channel, then inline SetLevel(m_08, 0, 0)'s scale+
-// clamp through SetVolumeByIndex; the level read (m_08) is re-stored unchanged on
+// playing flag (m_isPlaying==0) and the active level/world (g_gameReg->m_soundEnabled and
+// ->m_54->m_objectCount). Reseed the channel, then inline SetLevel(m_level, 0, 0)'s scale+
+// clamp through SetVolumeByIndex; the level read (m_level) is re-stored unchanged on
 // both sides of the voice call (the reseeded channel may have touched it).
 RVA(0x0000bfb0, 0xa9)
 void CAmbientSound::Restart() {
-    DirectSoundMgr* voice = m_04;
-    i32 pos = m_08;
+    DirectSoundMgr* voice = m_voice;
+    i32 pos = m_level;
     if (voice == 0) {
         return;
     }
-    if (m_14 != 0) {
+    if (m_isPlaying != 0) {
         return;
     }
     if (g_gameReg->m_soundEnabled == 0) {
         return;
     }
-    if (((WwdActiveLevel*)g_gameReg->m_54)->m_24 == 0) {
+    if (((WwdActiveLevel*)g_gameReg->m_54)->m_objectCount == 0) {
         return;
     }
-    m_04->ApplyAndPlay(1, m_38, 0, 1);
-    m_08 = pos;
-    i32 scale = m_0c;
+    m_voice->ApplyAndPlay(1, m_panIndex, 0, 1);
+    m_level = pos;
+    i32 scale = m_scaleA;
     if (scale > 5) {
         scale -= 0xf;
     }
     i32 v = (scale * pos) / 100;
-    if (m_10 > 0) {
-        v = (v * m_10) / 100;
+    if (m_scaleB > 0) {
+        v = (v * m_scaleB) / 100;
     }
     if (v < 0) {
         v = 0;
     } else if (v > 0x64) {
         v = 0x64;
     }
-    m_04->SetVolumeByIndex(v);
-    m_08 = pos;
-    m_14 = 1;
+    m_voice->SetVolumeByIndex(v);
+    m_level = pos;
+    m_isPlaying = 1;
 }
 
 // ===========================================================================
@@ -84,7 +84,7 @@ void CAmbientSound::Restart() {
 // @early-stop
 // Tail-merge wall (~77%): retail folds the two identical (re)start tails - the
 // unbounded path's and the bounded `force` path's - into ONE block reached by an
-// unconditional `jmp`, and the merge drags a dead `((WwdActiveLevel*)g_gameReg->m_54)->m_24` probe
+// unconditional `jmp`, and the merge drags a dead `((WwdActiveLevel*)g_gameReg->m_54)->m_objectCount` probe
 // into the unbounded path. Our cl emits the tail TWICE (and DCEs the unused m_24
 // load), so the back half re-permutes. The bounded hit-test + the shared back
 // half are byte-exact; only the duplicate-vs-shared tail + a couple of regalloc
@@ -95,11 +95,11 @@ void CAmbientSound::Update(i32 x, i32 y, i32 force) {
     i32 inRange;
     if (m_box1.left == AMBIENT_BOX_UNBOUNDED) {
         // Unbounded source: nothing to do while already playing.
-        if (m_14 != 0) {
+        if (m_isPlaying != 0) {
             return;
         }
-        DirectSoundMgr* voice = m_04;
-        i32 lvl = m_08;
+        DirectSoundMgr* voice = m_voice;
+        i32 lvl = m_level;
         if (voice == 0) {
             return;
         }
@@ -109,15 +109,15 @@ void CAmbientSound::Update(i32 x, i32 y, i32 force) {
         if (g_gameReg->m_soundEnabled == 0) {
             return;
         }
-        // Retail also probes ((WwdActiveLevel*)g_gameReg->m_54)->m_24 here, then (re)starts
+        // Retail also probes ((WwdActiveLevel*)g_gameReg->m_54)->m_objectCount here, then (re)starts
         // regardless; our cl DCEs that unused load (tail-merge wall, see below).
-        if (m_04 == 0) {
+        if (m_voice == 0) {
             return;
         }
-        m_04->ApplyAndPlay(1, m_38, 0, 1);
+        m_voice->ApplyAndPlay(1, m_panIndex, 0, 1);
         SetLevel(0x64, 0, 0);
-        m_08 = 0x64;
-        m_14 = 1;
+        m_level = 0x64;
+        m_isPlaying = 1;
         return;
     }
 
@@ -130,7 +130,7 @@ void CAmbientSound::Update(i32 x, i32 y, i32 force) {
         inRange = 0;
     }
 
-    if (m_14 != 0) {
+    if (m_isPlaying != 0) {
         // Currently playing: keep running while in range, fade out otherwise.
         if (inRange != 0) {
             return;
@@ -143,17 +143,17 @@ void CAmbientSound::Update(i32 x, i32 y, i32 force) {
     if (inRange == 0) {
         return;
     }
-    if (g_gameReg->m_soundEnabled == 0 || ((WwdActiveLevel*)g_gameReg->m_54)->m_24 == 0) {
+    if (g_gameReg->m_soundEnabled == 0 || ((WwdActiveLevel*)g_gameReg->m_54)->m_objectCount == 0) {
         return;
     }
     if (force != 0) {
-        if (m_04 == 0) {
+        if (m_voice == 0) {
             return;
         }
-        m_04->ApplyAndPlay(1, m_38, 0, 1);
+        m_voice->ApplyAndPlay(1, m_panIndex, 0, 1);
         SetLevel(0x64, 0, 0);
-        m_08 = 0x64;
-        m_14 = 1;
+        m_level = 0x64;
+        m_isPlaying = 1;
     } else {
         Fade(1, 0x64, 0x3e8);
     }
@@ -162,19 +162,19 @@ void CAmbientSound::Update(i32 x, i32 y, i32 force) {
 // ===========================================================================
 // CAmbientSound::SetLevel  (0x00c200)
 // ===========================================================================
-// Scale `value` through the level scale-A (m_0c) and the secondary multiplier
-// (m_10), clamp to 0..100, then drive the voice: mode 0 -> SetVolumeByIndex, else
+// Scale `value` through the level scale-A (m_scaleA) and the secondary multiplier
+// (m_scaleB), clamp to 0..100, then drive the voice: mode 0 -> SetVolumeByIndex, else
 // CloneAndPlay carrying the `extra` arg.
 RVA(0x0000c200, 0x7e)
 i32 CAmbientSound::SetLevel(i32 value, i32 mode, i32 extra) {
-    m_08 = value;
-    i32 scale = m_0c;
+    m_level = value;
+    i32 scale = m_scaleA;
     if (scale > 5) {
         scale -= 0xf;
     }
     i32 v = (scale * value) / 100;
-    if (m_10 > 0) {
-        v = (v * m_10) / 100;
+    if (m_scaleB > 0) {
+        v = (v * m_scaleB) / 100;
     }
     if (v < 0) {
         v = 0;
@@ -182,7 +182,7 @@ i32 CAmbientSound::SetLevel(i32 value, i32 mode, i32 extra) {
         v = 0x64;
     }
     if (mode == 0) {
-        return m_04->SetVolumeByIndex(v);
+        return m_voice->SetVolumeByIndex(v);
     }
-    return m_04->CloneAndPlay(v, mode, extra);
+    return m_voice->CloneAndPlay(v, mode, extra);
 }

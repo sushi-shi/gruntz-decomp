@@ -34,27 +34,27 @@
 // store-schedule + eh-state walls the sibling Setup (0x11a7e0) carries. Final sweep.
 RVA(0x001198a0, 0x195)
 CGruntVoice::CGruntVoice(CGameObject* obj) : CUserLogic(obj) {
-    m_58 = 0;
+    m_icon = 0;
     m_5c = 0;
-    m_60 = 0;
+    m_durationMs = 0;
     m_64 = 0;
     m_38->ApplyName("GAME_EXCLAMATION");
     if (m_object->m_74 != 0xdbba1) {
         m_object->m_74 = 0xdbba1;
         m_object->m_08 |= 0x20000;
     }
-    m_54 = 0;
-    m_58 = 0;
-    m_60 = 0;
+    m_sample = 0;
+    m_icon = 0;
+    m_durationMs = 0;
     m_5c = 0;
     m_64 = 0;
     m_38->m_08 |= 0x4000002;
     m_38->m_40 |= 1;
-    m_6c = 0;
+    m_playFlags = 0;
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find(g_voiceKeyA);
-    m_68 = 0;
-    m_70 = 0;
+    m_source = 0;
+    m_owner = 0;
 }
 
 // ===========================================================================
@@ -120,14 +120,14 @@ i32 CGruntVoice::Setup(i32 a0, void* sample, i32 a2, i32 a3) {
     if (sample == 0) {
         return 0;
     }
-    m_68 = a0;
-    m_70 = a3;
-    m_54 = (i32)sample;
-    m_60 = ((CVoiceSample*)sample)->ComputeDuration();
+    m_source = a0;
+    m_owner = a3;
+    m_sample = (i32)sample;
+    m_durationMs = ((CVoiceSample*)sample)->ComputeDuration();
     m_64 = 0;
-    m_58 = g_iconDefault;
+    m_icon = g_iconDefault;
     m_5c = 0;
-    m_6c = a2;
+    m_playFlags = a2;
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find(g_iconBute);
     return 1;
@@ -141,9 +141,9 @@ i32 CGruntVoice::Setup(i32 a0, void* sample, i32 a2, i32 a3) {
 // then clear the flag/owner slots (+0x6c/+0x68).
 RVA(0x0011a870, 0x38)
 void CGruntVoice::Reset() {
-    m_54 = 0;
+    m_sample = 0;
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find(g_voiceKeyA);
-    m_6c = 0;
-    m_68 = 0;
+    m_playFlags = 0;
+    m_source = 0;
 }
