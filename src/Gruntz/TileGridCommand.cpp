@@ -109,12 +109,12 @@ i32 CTileGridCommand::Deserialize(TgcStream* s) {
 RVA(0x00112970, 0xad)
 i32 CTileGridCommand::Classify(i32 arg) {
     u32 elapsed = g_645588 - m_24;
-    if (elapsed <= (u32)m_2c) {
+    if (elapsed <= m_2c) {
         goto ret1;
     }
     elapsed -= m_2c;
     {
-        u32 period = (u32)m_30 + (u32)m_28;
+        u32 period = m_30 + m_28;
         if (elapsed > period) {
             if (m_typeTag == 0x18) {
                 Tick();
@@ -128,7 +128,7 @@ i32 CTileGridCommand::Classify(i32 arg) {
             }
         }
         u32 rem = elapsed % period;
-        if (rem < (u32)m_28) {
+        if (rem < m_28) {
             if (m_dutyOn != 0) {
                 goto ret1;
             }

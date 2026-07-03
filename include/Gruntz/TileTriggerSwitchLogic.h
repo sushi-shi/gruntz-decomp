@@ -41,6 +41,8 @@ SIZE_UNKNOWN(CSerialStream);
 // cover the touched offsets.  Size ~0x8c (0x2c base + 0x60 m_block).
 class CTileTriggerSwitchLogic {
 public:
+    struct ListNode; // child-list node (defined below); m_20 is a list head
+
     // The 4 retail vtable slots (0x5eae8c). Real virtuals now -> cl emits the
     // ??_7 vftable + the implicit ctor vptr-stamp (replaces the manual struct
     // stamp). Bodies live in unmatched engine TUs; declared-only here, named on
@@ -94,7 +96,7 @@ public:
     i32 m_14;                         // +0x14  link-check gate (VerifyBlockLinks guard)
     i32 m_18;                         // +0x18  (serialized in LoadState)
     i32 m_1c;                         // +0x1c  (serialized in LoadState)
-    i32 m_20;                         // +0x20  child-list head (owner) / cleared before delete
+    ListNode* m_20;                   // +0x20  child-list head (owner) / cleared before delete
     CTileTriggerSwitchLogic* m_owner; // +0x24  back-pointer to the owning switch-logic
     i32 m_28;                         // +0x28  (serialized in LoadState)
     i32 m_block[40];                  // +0x2c..0xcb  (first 24 zeroed in ctor)

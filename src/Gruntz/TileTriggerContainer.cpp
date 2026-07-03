@@ -21,10 +21,11 @@
 
 // The list1/list2 command element: its data is compared against an arg by the
 // CTileGridCommand classifier (RVA 0x112970, a __thiscall returning 0/-1/+1).
+struct TtcElemVtbl; // the command element's vtable (contents owned elsewhere)
 class TtcElem {
 public:
     i32 Classify(void* arg); // 0x112970
-    void* m_vptr;            // +0x00
+    TtcElemVtbl* m_vptr;     // +0x00
     char _pad04[0x18 - 0x04];
     i32 m_18;
     i32 m_1c; // +0x1c  cleared before delete
@@ -348,7 +349,7 @@ CTileTriggerContainer::AddToList3(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6
     m->m_1c = a6;
     m->m_24 = a8;
     m->m_00 = a1;
-    m->m_14 = (i32)this;
+    m->m_14 = this;
     m->m_10 = 1;
     m->m_20 = a7;
     m->Notify((void*)a1);
@@ -389,8 +390,8 @@ CTileTriggerContainer::AddToList1(i32 a1, i32 a2, i32* block9, i32 a4, i32 a5, i
     e->m_0c = a2;
     e->m_04 = 0x16;
     e->m_08 = a1;
-    e->m_10 = (i32)block9;
-    e->m_20 = (i32)this;
+    e->m_10 = block9;
+    e->m_20 = this;
     e->m_1c = 1;
     e->m_38 = 0;
     e->m_24 = (i32)g_645588;
@@ -455,7 +456,7 @@ TtcMark* CTileTriggerContainer::AddToList3Switch(i32 a1, i32 a2, i32 a3, i32 a4,
     m->m_0c = a4;
     m->m_20 = b;
     m->m_00 = a1;
-    m->m_14 = (i32)this;
+    m->m_14 = this;
     m->m_10 = 1;
     m->m_18 = d;
     m->m_1c = c;
@@ -564,7 +565,7 @@ i32 CTileTriggerContainer::Serialize(TtcStream* s, i32 op, i32 a3, i32 a4) {
         if (m->Serialize(s, 7, a3, a4) == 0) {
             return 0;
         }
-        m->m_14 = (i32)this;
+        m->m_14 = this;
         m_list3.AddTail(m);
     }
     if (Method117e70(s) == 0) {

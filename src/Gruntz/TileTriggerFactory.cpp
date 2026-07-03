@@ -63,6 +63,8 @@ SIZE_UNKNOWN(CTrigBoardGeo);
 struct CTrigBoard {
     char m_pad00[0x4c];
     CTileObj** m_4c; // +0x4c  tile-object table (indexed by the resolved tile id & 0xffff)
+    char m_pad50[0x5c - 0x50];
+    i32* m_5c; // +0x5c  board geometry block (bounds @0x28/0x2c, row-base @0x24, cell-map @0x20)
 };
 SIZE_UNKNOWN(CTrigBoard);
 struct CTrigMgrInner {
@@ -88,6 +90,8 @@ extern CTrigMgr* g_mgrSettings; // ?g_mgrSettings (0x64556c)
 // stand for a size bucket, so they are kept as honest size-tagged models; the real
 // per-id leaf classes (CTileMultiTriggerSwitchLogic, CGiantRockLogic, ... in
 // TileTriggerDerivedCtors.cpp) each name themselves where individually reconstructed.
+struct CTileTriggerFactory; // the owning factory (this); back-stamped into m_20/m_24
+
 struct CTrigLogic {
     struct Ctor3206Tag {};
     struct Ctor3eb3Tag {};
@@ -101,15 +105,14 @@ struct CTrigLogic {
     struct Ctor310cTag {};
     struct Ctor2a4fTag {};
 
-    i32 m_00;   // +0x00
-    void* m_04; // +0x04  type id
-    i32 m_08;   // +0x08  (id 21: board x)
-    i32 m_0c;   // +0x0c  (id 21: board y)
+    i32 m_00; // +0x00
+    i32 m_04; // +0x04  type id (the switch id 1..26)
+    i32 m_08; // +0x08  (id 21: board x)
+    i32 m_0c; // +0x0c  (id 21: board y)
     char m_pad10[0x20 - 0x10];
-    void* m_20; // +0x20  owner (1abe / 1d39 group)
-    void* m_24; // +0x24  owner (277f group)
-    char m_pad28[0x70 - 0x28];
-    void* m_70; // +0x70  (unused by the object itself; this->m_70 is what id 21 latches)
+    CTileTriggerFactory* m_20; // +0x20  owner (1abe / 1d39 group)
+    CTileTriggerFactory* m_24; // +0x24  owner (277f group)
+    char m_pad28[0x74 - 0x28]; // +0x28..+0x73 (folds the unused +0x70 owner slot)
 
     CTrigLogic* Ctor3206();                      // 0x3206 (ids 1,2,5)
     CTrigLogic* Ctor3eb3();                      // 0x3eb3 (id 3)
@@ -183,7 +186,7 @@ SIZE_UNKNOWN(CTrigLogicC8);
 // into this->m_70.
 struct CTileTriggerFactory {
     char m_pad00[0x70];
-    void* m_70; // +0x70
+    CTrigLogic* m_70; // +0x70  id-21 latches the built object here
 
     void* Build(CTrigReader* reader, i32 kind, i32 a2, i32 a3); // 0x117800
 };
@@ -202,7 +205,7 @@ static void* Reg277fTail(
         return 0;
     }
     obj->m_24 = self;
-    obj->m_04 = (void*)id;
+    obj->m_04 = id;
     return obj;
 }
 
@@ -219,7 +222,7 @@ static void* Reg1abeTail(
         return 0;
     }
     obj->m_20 = self;
-    obj->m_04 = (void*)id;
+    obj->m_04 = id;
     return obj;
 }
 
@@ -274,12 +277,12 @@ void* CTileTriggerFactory::Build(CTrigReader* reader, i32 kind, i32 a2, i32 a3) 
                 return 0;
             }
             obj->m_20 = this;
-            obj->m_04 = (void*)id;
+            obj->m_04 = id;
             // resolve the board tile under the object; latch on a 0x67/0x68 tile.
             CTrigBoard* board = g_mgrSettings->m_world->m_24;
             i32 x = obj->m_08;
             i32 y = obj->m_0c;
-            i32* geo = *(i32**)((char*)board + 0x5c);
+            i32* geo = board->m_5c;
             if (x < 0) {
                 x = 0;
             } else if (x >= geo[0x28 / 4]) {
@@ -310,7 +313,7 @@ void* CTileTriggerFactory::Build(CTrigReader* reader, i32 kind, i32 a2, i32 a3) 
                 return 0;
             }
             obj->m_20 = this;
-            obj->m_04 = (void*)id;
+            obj->m_04 = id;
             return obj;
         }
         case 23: {

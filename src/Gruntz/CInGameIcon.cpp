@@ -447,9 +447,9 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj) {
         CString levelStr;
         EngFmt(&levelStr, "Level%i", lvl->m_levelNum);
         CString warpName;
-        i32 target = g_buteMgr.GetInt((char*)"WarpStone", (char*)(const char*)levelStr);
+        i32 target = g_buteMgr.GetInt("WarpStone", levelStr);
         EngFmt(&warpName, "GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ%i", target);
-        m_object->ApplyName((const char*)warpName);
+        m_object->ApplyName(warpName);
         m_object->m_placeMode = target;
     }
 
@@ -480,7 +480,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj) {
     }
 
     // mark the owner's tile cell occupied (or clear the occupancy bit)
-    i32 mv = *(i32*)((char*)m_object + 0x188);
+    i32 mv = m_object->m_188;
     CTileGrid* grid = g_gameReg->m_tileGrid;
     i32 col = m_object->m_screenX >> 5;
     i32 row = m_object->m_screenY >> 5;
@@ -539,7 +539,7 @@ i32 CInGameIcon::HandleInput() {
         }
     } else if (cmd == 0x1e || cmd == 0x13) {
         i32 icon;
-        switch (*(i32*)((char*)obj + 0x130)) {
+        switch (obj->m_130) {
             case 1:
                 icon = 0x10;
                 break;
@@ -685,7 +685,7 @@ i32 CInGameIcon::RefreshCell() {
         }
     }
     CGameObject* r = m_38;
-    *(i32*)((char*)r + 0x8) |= 0x10000;
+    r->m_flags |= 0x10000;
     return 0;
 }
 
@@ -740,7 +740,7 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
             matchActive = 1;
             flag = 0;
         }
-        i32 sub = *(i32*)((char*)obj + 0x130);
+        i32 sub = obj->m_130;
         i32 idx = arg0 * 15 + arg1;
         CIconRecord* cell = ((CIconRecord**)((char*)reg->m_68 + 0x1c))[idx];
         i32 ok;
@@ -765,12 +765,12 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
         }
         ClearTileBit(reg, m_object);
         CGameObject* r = m_38;
-        *(i32*)((char*)r + 0x8) |= 0x10000;
+        r->m_flags |= 0x10000;
         return 1;
     }
 
     // ---- full place path (cmd != 0x55) ----
-    i32 sub = *(i32*)((char*)obj + 0x130);
+    i32 sub = obj->m_130;
     i32 cmd = obj->m_124;
     i32 idx = arg0 * 15 + arg1;
     CIconRecord* cell = ((CIconRecord**)((char*)reg->m_68 + 0x1c))[idx];
@@ -801,13 +801,13 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
     }
     ClearTileBit(reg, m_object);
     CGameObject* owner = m_38;
-    if (*(i32*)((char*)owner + 0x120) > 0) {
-        *(i32*)((char*)owner + 0x40) |= 1;
+    if (owner->m_120 > 0) {
+        owner->m_stateFlags |= 1;
         CGameObjAux* aux = m_objAux;
         m_prevAnimSetNode = aux->m_1c;
         aux->m_1c = g_buteTree.Find(g_iconBute);
         owner = m_38;
-        m_driftPos = *(i32*)((char*)owner + 0x120);
+        m_driftPos = owner->m_120;
         m_driftPosHi = 0;
         m_driftThresh = g_iconDefault;
         m_driftThreshHi = 0;
@@ -815,11 +815,11 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
     }
     CGameObject* rend = m_glitterSprite;
     if (rend != 0) {
-        *(i32*)((char*)rend + 0x8) |= 0x10000;
+        rend->m_flags |= 0x10000;
         m_glitterSprite = 0;
     }
     CGameObject* r = m_38;
-    *(i32*)((char*)r + 0x8) |= 0x10000;
+    r->m_flags |= 0x10000;
     return 1;
 }
 

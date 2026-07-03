@@ -244,7 +244,7 @@ i32 CTriggerMgr::Load(CTmSerReader* ar) {
             void* found = 0;
             void* looked = map->Lookup(key, &found) ? found : 0;
             void* obj = (looked != 0 && ((CTmSerMapObj*)looked)->GetTypeId() == 5) ? looked : 0;
-            m_goal = obj;
+            m_goal = (CTmGoal*)obj; // Eh's serialize-view reinterpret of the goal slot
             if (obj == 0) {
                 return 0;
             }
@@ -262,7 +262,7 @@ i32 CTriggerMgr::Load(CTmSerReader* ar) {
                 return 0;
             }
             void* obj = ((CTmSerMapObj*)looked)->m_7c->m_18;
-            m_pendingFx = obj;
+            m_pendingFx = (CTmPendingFx*)obj; // Eh's serialize-view reinterpret
             if (obj == 0) {
                 return 0;
             }
@@ -304,7 +304,7 @@ i32 CTriggerMgr::Load(CTmSerReader* ar) {
     ar->Read(&hasOverlay, 4);
     if (hasOverlay != 0) {
         CTmSerOverlay* ov = new CTmSerOverlay;
-        m_overlay = ov;
+        m_overlay = (CTmOverlay*)ov; // serialize-view of the overlay sub-object
         if (ov->Load(ar) == 0) {
             return 0;
         }
@@ -400,7 +400,7 @@ i32 CTriggerMgr::DestroyGroup(i32 col, i32 row, i32 force) {
     CTmObj* ov = (CTmObj*)m_overlay;
     if (ov == 0) {
         CTmObj* fresh = new CTmObj;
-        m_overlay = fresh;
+        m_overlay = (CTmOverlay*)fresh; // generic-driver view of the overlay sub-object
         if (((CTmObj*)this)->Probe() == 0) {
             CTmObj* o2 = (CTmObj*)m_overlay;
             if (o2 != 0) {

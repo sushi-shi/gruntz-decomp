@@ -28,6 +28,7 @@ struct CTmNode {
 // whose +0x8 flags word gets the 0x10000 done-bit; full CTmGoal is defined below.
 struct CTmGoal;
 struct CTmSpriteDesc;
+struct CTmNotifyHook; // a cell's opaque +0x368 notify hook (only null-tested)
 struct CTmCellConfig {
     char p0[0x1c];
     i32 m_1c; // +0x1c  config-name id
@@ -108,8 +109,8 @@ struct CTmCell {
     i32 m_310; // +0x310
     i32 m_314; // +0x314
     char p318[0x368 - 0x318];
-    void* m_368; // +0x368  notify hook
-    i32 m_36c;   // +0x36c  notified flag
+    CTmNotifyHook* m_368; // +0x368  notify hook (opaque; only null-tested)
+    i32 m_36c;            // +0x36c  notified flag
     char p370[0x384 - 0x370];
     i32 m_384; // +0x384  applier scratch
     char p388[0x3e4 - 0x388];
@@ -147,11 +148,12 @@ struct CTmGoal {
 // RemoveAll/RemoveAt are the reloc-masked engine bodies (@0x1b48a6 / @0x1b4ac7).
 // Modeled as a tiny __thiscall helper so the `mov ecx,list; jmp/call` falls out
 // with no stack cleanup. The intrusive list head sits at +0x04 of the object.
+struct CTmPtrListVtbl; // the embedded CObList's vtable (owned by MFC)
 struct CTmPtrList {
     void RemoveAll();     // 0x1b48a6
     void RemoveAt(void*); // 0x1b4ac7
     void AddTail(void*);  // 0x1b4991  (returns POSITION; ret ignored here)
-    void* m_0;            // +0x00
+    CTmPtrListVtbl* m_0;  // +0x00  vptr
     CTmNode* m_head;      // +0x04  list head node
 };
 
@@ -208,7 +210,7 @@ struct CTmWorld {
     char p3a4[0x3f4 - 0x3a4];
     CTmScoreSub* m_3f4; // +0x3f4  booty/score sub-object
     char p3f8[0x504 - 0x3f8];
-    void* m_504; // +0x504  pending-fx flag
+    i32 m_504; // +0x504  pending-fx flag (only null-tested)
 };
 // The level/plane grid the active-selection center reads its dims from: the chain
 // g_gameReg->m_world->m_24->m_5c lands on a CTmGrid whose +0x30/+0x34 are (cols,rows).
@@ -352,7 +354,7 @@ struct CTmLevel {
 struct CTmListNode {
     CTmListNode* m_0; // +0x00 next
     char p0[0x4];
-    void* m_8; // +0x08 bound object
+    CTmCell* m_8; // +0x08 bound object (a placed game object)
 };
 // The grid-cell object's ReadConfigFromButeMgr method address is the retail's type tag
 // (DestroyAllAnims compares a level-list object's descriptor slot-4 against it, reloc-
@@ -381,7 +383,7 @@ i32 CTriggerMgr::SetLevel(CTmLevel* lvl) {
 // then __cdecl operator delete frees it.
 RVA(0x0006b680, 0x39)
 void CTriggerMgr::Cleanup() {
-    CTmOverlay* ov = (CTmOverlay*)m_overlay;
+    CTmOverlay* ov = m_overlay;
     if (ov != 0) {
         ov->Clear();
         operator delete(ov);
@@ -604,14 +606,14 @@ found:
         cell->ClearAllSprites();
     }
     if (m_recX == p[0] && m_recY == p[1]) {
-        CTmGoal* goal = (CTmGoal*)m_goal;
+        CTmGoal* goal = m_goal;
         if (goal != 0) {
             goal->m_8 |= 0x10000;
             m_goal = 0;
         }
         m_230 = 0;
     }
-    CTmOverlay* ov = (CTmOverlay*)m_overlay;
+    CTmOverlay* ov = m_overlay;
     if (ov != 0 && ov->m_0 == p[0] && ov->m_4 == p[1]) {
         OverlayTick();
     }
@@ -645,7 +647,7 @@ void CTriggerMgr::ResetAll() {
     }
     ((CTmPtrList*)((char*)this + 0x240))->RemoveAll();
     StopPendingFx();
-    CTmGoal* goal = (CTmGoal*)m_goal;
+    CTmGoal* goal = m_goal;
     if (goal != 0) {
         goal->m_8 |= 0x10000;
         m_goal = 0;
@@ -703,7 +705,7 @@ void CTriggerMgr::ClearRecords() {
 // 0x78a30: OverlayTick - dispatch the overlay sub-object's Tick when present.
 RVA(0x00078a30, 0x10)
 void CTriggerMgr::OverlayTick() {
-    CTmOverlay* ov = (CTmOverlay*)m_overlay;
+    CTmOverlay* ov = m_overlay;
     if (ov) {
         ov->Tick();
     }
@@ -712,7 +714,7 @@ void CTriggerMgr::OverlayTick() {
 // 0x79b00: OverlayRelease - release the overlay sub-object when present; ret 1.
 RVA(0x00079b00, 0x15)
 i32 CTriggerMgr::OverlayRelease() {
-    CTmOverlay* ov = (CTmOverlay*)m_overlay;
+    CTmOverlay* ov = m_overlay;
     if (ov) {
         return ov->Release();
     }
@@ -729,7 +731,7 @@ i32 CTriggerMgr::OverlayRelease() {
 RVA(0x00079b30, 0x3e)
 i32 CTriggerMgr::ByteTableHas(i32 b) {
     i32 n = m_byteCount;
-    u8* tbl = (u8*)m_byteData;
+    u8* tbl = m_byteData;
     for (i32 i = 0; i < n; i++) {
         if (b == tbl[i]) {
             return 1;
@@ -901,7 +903,7 @@ void CTriggerMgr::DestroyAllAnims() {
 
     CTmListNode* node = m_level->m_8->m_14;
     while (node != 0) {
-        void* obj = node->m_8;
+        CTmCell* obj = node->m_8;
         node = node->m_0;
         if (obj != 0) {
             char* desc = *(char**)((char*)obj + 0x7c);
@@ -1001,7 +1003,7 @@ i32 CTriggerMgr::SpawnPuddle(i32 x, i32 y, i32 f124, i32 f114, i32 color, i32 f1
 struct CTmPuddleTarget {
     i32 Place(i32 a, i32 b, i32 c, i32 d); // 0x9c3f0
     char p0[0x38];
-    void* m_38; // +0x38  goal object (its +0x8 is the flags word)
+    CTmGoal* m_38; // +0x38  goal object (its +0x8 is the flags word)
     char p1[0x54 - 0x3c];
     i32 m_54; // +0x54  match x
     i32 m_58; // +0x58  match y
@@ -1031,7 +1033,7 @@ i32 CTriggerMgr::PlacePuddle(CTmCell* sprite, i32 color) {
         d = 0x19;
     }
     if (tgt->Place(sprite->m_124, sprite->m_114, color, d) == 0) {
-        *(i32*)((char*)tgt->m_38 + 0x8) |= 0x10000;
+        tgt->m_38->m_8 |= 0x10000;
         g_gameReg->ReportError(0x8009, 0x401);
         return 0;
     }
@@ -1044,10 +1046,10 @@ i32 CTriggerMgr::PlacePuddle(CTmCell* sprite, i32 color) {
         CTmPuddleTarget* o = cur->m_obj;
         if (o->m_54 == tgt->m_54 && o->m_58 == tgt->m_58) {
             if (o->m_5c != 0) {
-                *(i32*)((char*)tgt->m_38 + 0x8) |= 0x10000;
+                tgt->m_38->m_8 |= 0x10000;
                 return 0;
             }
-            *(i32*)((char*)o->m_38 + 0x8) |= 0x10000;
+            o->m_38->m_8 |= 0x10000;
             ((CTmPtrList*)((char*)this))->RemoveAt(cur);
             unlinked = 1;
         }
@@ -1059,7 +1061,7 @@ i32 CTriggerMgr::PlacePuddle(CTmCell* sprite, i32 color) {
             n = n->m_next;
             CTmPuddleTarget* o = cur->m_obj;
             if (o->m_5c == 0) {
-                *(i32*)((char*)o->m_38 + 0x8) |= 0x10000;
+                o->m_38->m_8 |= 0x10000;
                 ((CTmPtrList*)((char*)this))->RemoveAt(cur);
             }
         }
@@ -1262,14 +1264,14 @@ void CTriggerMgr::HitTestApply(i32 x, i32 y, i32 kind) {
 // (world) and esi (cell) differently than retail, and the fx arg pushes spill. topic:wall.
 RVA(0x0007b1b0, 0x12b)
 i32 CTriggerMgr::TriggerCell(i32 x, i32 y) {
-    CTmOverlay* ov = (CTmOverlay*)m_overlay;
+    CTmOverlay* ov = m_overlay;
     m_pendingFxKind = 0;
     if (ov == 0 || ov->m_2c == 0) {
         return 0;
     }
     CTmCell* cell = 0;
     if (m_recCount == 1) {
-        i32* rec = *(i32**)((char*)m_recHead + 0x8);
+        i32* rec = m_recHead->m_payload;
         cell = m_grid[rec[1] + rec[0] * 15];
     }
     CTmWorld* world = g_gameReg->m_curState;
@@ -1525,8 +1527,9 @@ void CTriggerMgr::ReportRecordsB(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i3
 
 // The serialization archive ScanGroup writes through: Write(buf, size) at vtbl slot +0x30,
 // plus the per-object id-write helper @0x5b8760 (writes an object's +0x188 archive id).
+struct CTmArchiveVtbl; // the archive's vtable (Write @slot +0x30; owned elsewhere)
 struct CTmArchive {
-    void* m_vt;
+    CTmArchiveVtbl* m_vt;
     void Write(const void* buf, i32 n); // vtbl +0x30
 };
 void Ar_WriteId(void* id, i32 stride, void* archive); // 0x1b8760
@@ -1571,7 +1574,7 @@ i32 CTriggerMgr::ScanGroup(CTmArchive* ar) {
     i32 cnt = m_byteCount;
     ar->Write(&cnt, 4);
     for (i32 i = 0; i < cnt; i++) {
-        u8 b = ((u8*)m_byteData)[i];
+        u8 b = m_byteData[i];
         ar->Write(&b, 1);
     }
     i32 flag24c = m_recCount;
@@ -1673,7 +1676,7 @@ i32 CTriggerMgr::ResetGroup(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28
     CTmCell* hit = this->Hit5(a14, a18, 0, 0, 5);
     CTmCell* cell = 0;
     if (m_recCount == 1) {
-        i32* rec = *(i32**)((char*)m_recHead + 0x8);
+        i32* rec = m_recHead->m_payload;
         cell = m_grid[rec[1] + rec[0] * 15];
     }
     i32 sel;
@@ -1905,13 +1908,13 @@ RVA(0x00078a50, 0x845)
 i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
     CTmCell* cell = 0;
     if (m_recCount == 1) {
-        i32* rec = *(i32**)((char*)m_recHead + 0x8);
+        i32* rec = m_recHead->m_payload;
         cell = m_grid[rec[1] + rec[0] * 15];
     }
     if (cell == 0 || cell->m_1ec != g_644c54) {
         return 0;
     }
-    CTmOverlay* ov = (CTmOverlay*)m_overlay;
+    CTmOverlay* ov = m_overlay;
     if (ov != 0 && ov->m_2c != 0) {
         ov->Forward(x, y);
         return 1;
@@ -2021,7 +2024,7 @@ void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
     }
     if (k == 0x14) {
         if (g_gameReg->m_134 == 1) {
-            CTmPendingFx* fx = (CTmPendingFx*)m_pendingFx;
+            CTmPendingFx* fx = m_pendingFx;
             if (fx != 0) {
                 fx->Pulse();
             }
@@ -2125,7 +2128,7 @@ void CTriggerMgr::ResetSpawnState() {
         }
     }
     if (g_gameReg->m_134 == 1) {
-        CTmPendingFx* fx = (CTmPendingFx*)m_pendingFx;
+        CTmPendingFx* fx = m_pendingFx;
         if (fx != 0) {
             fx->Pulse();
         }
@@ -2231,7 +2234,7 @@ i32 CTriggerMgr::RebuildSelectionList(i32 idx) {
 RVA(0x0007cd40, 0x18f)
 i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
     ResetAll();
-    CTmOverlay* ov = (CTmOverlay*)m_overlay;
+    CTmOverlay* ov = m_overlay;
     if (ov != 0 && ov->m_2c != 0) {
         OverlayTick();
     }
@@ -2304,7 +2307,7 @@ i32 CTriggerMgr::ToggleRegionA() {
     m_pendingFxKind = 0;
     CTmCell* cell = 0;
     if (m_recCount == 1) {
-        i32* rec = *(i32**)((char*)m_recHead + 0x8);
+        i32* rec = m_recHead->m_payload;
         cell = m_grid[rec[0] * 15 + rec[1]];
     }
     if (cell == 0) {
@@ -2348,7 +2351,7 @@ i32 CTriggerMgr::ToggleRegionB() {
     m_pendingFxKind = 0;
     CTmCell* cell = 0;
     if (m_recCount == 1) {
-        i32* rec = *(i32**)((char*)m_recHead + 0x8);
+        i32* rec = m_recHead->m_payload;
         cell = m_grid[rec[0] * 15 + rec[1]];
     }
     if (cell == 0) {

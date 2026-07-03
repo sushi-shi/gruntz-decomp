@@ -15,6 +15,9 @@
 #include <Ints.h>
 #include <rva.h> // SIZE_UNKNOWN class-metadata macros used below
 
+// The owning container; back-stamped into the list elements (m_14 / m_20).
+class CTileTriggerContainer;
+
 // The Rez heap alloc/free (RVA 0x1b9b46 _RezAlloc / 0x1b9b82 _RezFree);
 // reloc-masked rel32 callees.
 extern "C" void* RezAlloc(u32 n);
@@ -34,9 +37,10 @@ extern void* g_tileTriggerSwitchVtbl; // 0x5eae8c
 // A keyed element found by SetCell's lookup: a 4-slot state-flag array at
 // +0x18..+0x24 and a slot-0 Notify (called with its own vtable pointer).
 // __thiscall callee.
+struct TtcKeyedElemVtbl; // the keyed element's vtable (contents owned elsewhere)
 struct TtcKeyedElem {
-    void Notify(void* a); // 0x149c
-    void* m_vptr;         // +0x00
+    void Notify(void* a);     // 0x149c
+    TtcKeyedElemVtbl* m_vptr; // +0x00
     char _pad04[0x18 - 0x04];
     i32 m_flags[4]; // +0x18..+0x24  state flags [0..3]
 };
@@ -47,12 +51,16 @@ SIZE_UNKNOWN(TtcKeyedElem);
 struct TtcNode {
     TtcNode* m_next; // +0x00
     char _pad04[4];  // +0x04 (prev)
-    void* m_data;    // +0x08
+    // +0x08  the CObList node payload: a genuine heterogeneous CObject* slot - the
+    // four lists store DIFFERENT element types (TtcElem / TtcMark / TtcSwitchObj /
+    // plain i32 records), downcast per walker. Authentic void* (MFC container payload).
+    void* m_data;
 };
 SIZE_UNKNOWN(TtcNode);
 
 // One MFC CObList sub-object (0x1c bytes): only m_pNodeHead (+0x04) is read by
 // the walkers; RemoveAt / AddTail are the reloc-masked rel32 callees.
+struct TtcObListVtbl; // ~CObList vtable (contents owned by MFC)
 class TtcObList {
 public:
     void RemoveAt(void* pos); // 0x1b4ac7
@@ -62,7 +70,7 @@ public:
     ~TtcObList() {
         Dtor();
     } // real subobject dtor: drives the container's /GX frame
-    void* m_vptr;             // +0x00
+    TtcObListVtbl* m_vptr;    // +0x00
     TtcNode* m_pNodeHead;     // +0x04
     char _pad08[0x0c - 0x08]; // +0x08..0x0b
     i32 m_0c;                 // +0x0c  element count (serialized by 117280)
@@ -84,8 +92,8 @@ struct TtcMark {
     i32 m_04;
     i32 m_08;
     i32 m_0c;
-    i32 m_10; // +0x10  init flag
-    i32 m_14; // +0x14  owning container
+    i32 m_10;                    // +0x10  init flag
+    CTileTriggerContainer* m_14; // +0x14  owning container
     i32 m_18;
     i32 m_1c;
     i32 m_20;
@@ -103,12 +111,12 @@ struct TtcBaseElem {
     i32 m_04; // +0x04  type tag (0x16)
     i32 m_08;
     i32 m_0c;
-    i32 m_10;
+    i32* m_10; // +0x10  the 9-dword source block (AddToList1's block9 arg)
     i32 m_14;
     i32 m_18;
-    i32 m_1c; // +0x1c  init flag
-    i32 m_20;
-    i32 m_24; // +0x24  clock snapshot
+    i32 m_1c;                    // +0x1c  init flag
+    CTileTriggerContainer* m_20; // +0x20  owning container
+    i32 m_24;                    // +0x24  clock snapshot
     i32 m_28;
     i32 m_2c;
     i32 m_30;
@@ -144,11 +152,12 @@ SIZE_UNKNOWN(TtcStream);
 // A switch-logic object operated on by the tag-dispatched serialize helpers; m_04
 // is its serialized type tag.  ApplyA/ApplyB are the per-helper appliers
 // (reloc-masked __thiscall callees) returning nonzero on success.
+struct TtcSwitchObjVtbl; // the switch object's vtable (contents owned elsewhere)
 struct TtcSwitchObj {
     i32 ApplyA(TtcStream* s, i32 a2, i32 a3, i32 a4); // 0x277f (117630)
     i32 ApplyB(TtcStream* s, i32 a2, i32 a3, i32 a4); // 0x1d39 (117710)
     i32 ApplyC(TtcStream* s, i32 a2, i32 a3, i32 a4); // 0x1abe (117710)
-    void* m_vptr;
+    TtcSwitchObjVtbl* m_vptr;
     i32 m_04; // +0x04  type tag
 };
 SIZE_UNKNOWN(TtcSwitchObj);
@@ -222,7 +231,7 @@ public:
     TtcObList m_list2; // +0x38 (head @ +0x3c)
     TtcObList m_list3; // +0x54 (head @ +0x58)
     i32 m_70;          // +0x70
-    void* m_74;        // +0x74  gates DtorBase's RemoveAll call, then cleared
+    i32 m_74;          // +0x74  gates DtorBase's RemoveAll call, then cleared (0/nonzero)
 };
 SIZE_UNKNOWN(CTileTriggerContainer);
 

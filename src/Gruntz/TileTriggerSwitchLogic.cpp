@@ -91,7 +91,7 @@ i32 CTileTriggerSwitchLogic::VerifyBlockLinksB() {
     if (m_14 == 0) {
         return 0;
     }
-    ListNode* node = (ListNode*)m_owner->m_20;
+    ListNode* node = m_owner->m_20;
     i32 found = 0;
     CTileTriggerSwitchLogic* child = this;
     while (node != 0) {
@@ -150,7 +150,7 @@ i32 CTileTriggerSwitchLogic::VerifyBlockLinks() {
     if (m_14 == 0) {
         return 0;
     }
-    ListNode* node = (ListNode*)m_owner->m_20;
+    ListNode* node = m_owner->m_20;
     i32 found = 0;
     CTileTriggerSwitchLogic* child = this;
     while (node != 0) {

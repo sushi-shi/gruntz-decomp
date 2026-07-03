@@ -49,7 +49,10 @@ struct CTmLevel;
 struct CTmSoundChan;
 struct CTmNode;
 struct CTmRecNode;
-struct CTmArchive; // the serialize archive ScanGroup writes through (eh sibling completes it)
+struct CTmArchive;   // the serialize archive ScanGroup writes through (eh sibling completes it)
+struct CTmOverlay;   // the allocated overlay sub-object (+0x25c); completed in each TU
+struct CTmGoal;      // the goal object (+0x23c); completed in each TU
+struct CTmPendingFx; // the pending-fx sub-object (+0x2a0); completed in each TU
 
 class CTriggerMgr {
 public:
@@ -353,13 +356,13 @@ public:
     i32 m_230;                  // +0x230  companion state word (cleared by SetLevel)
     i32 m_recX;                 // +0x234  active-record x
     i32 m_recY;                 // +0x238  active-record y
-    void* m_goal;               // +0x23c  the goal object (CTmGoal)
+    CTmGoal* m_goal;            // +0x23c  the goal object
     char _pad240[0x4];          // +0x240  record list vptr
     CTmNode* m_recHead;         // +0x244  record-list head node
     char _pad248[0x4];          // +0x248  record list tail
     i32 m_recCount;             // +0x24c  record-list count
     char _pad250[0xc];          // +0x250  record list free/blocks/blocksize
-    void* m_overlay;            // +0x25c  the allocated overlay sub-object (0x40 B)
+    CTmOverlay* m_overlay;      // +0x25c  the allocated overlay sub-object (0x40 B)
     char _pad260[0x4];          // +0x260  byte-table array vptr
     u8* m_byteData;             // +0x264  byte-table data pointer
     i32 m_byteCount;            // +0x268  byte-table count
@@ -369,7 +372,7 @@ public:
     i32 m_288;                  // +0x288  serialized scalar
     char _pad28c[0x4];          // +0x28c
     char m_overlayDescA[0x10];  // +0x290  overlay descriptor block 0
-    void* m_pendingFx;          // +0x2a0  pending-fx sub-object (CTmPendingFx)
+    CTmPendingFx* m_pendingFx;  // +0x2a0  pending-fx sub-object
     i32 m_2a4;                  // +0x2a4  serialized scalar
     i32 m_pendingFxKind;        // +0x2a8  active pending overlay-fx kind
     char _pad2ac[0x4];          // +0x2ac

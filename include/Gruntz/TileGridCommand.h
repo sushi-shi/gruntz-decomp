@@ -134,9 +134,9 @@ public:
     i32 m_1c;                    // +0x1c
     CTileTriggerContainer* m_20; // +0x20  owning container
     u32 m_24;                    // +0x24  captured game clock
-    i32 m_28;                    // +0x28
-    i32 m_2c;                    // +0x2c
-    i32 m_30;                    // +0x30
+    u32 m_28;                    // +0x28  duty on-span (unsigned duration)
+    u32 m_2c;                    // +0x2c  lead-in span (unsigned duration)
+    u32 m_30;                    // +0x30  duty off-span (unsigned duration)
     i32 m_34;                    // +0x34
     i32 m_dutyOn;                // +0x38  duty-cycle on/off latch (1 = currently on)
     i32 m_grid[24];              // +0x3c..+0x9b  (24-dword block, serialized in a loop)

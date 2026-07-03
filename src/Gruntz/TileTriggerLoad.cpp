@@ -32,22 +32,23 @@ extern CGameRegistry* g_gameReg; // ?g_gameReg (0x64556c)
 
 // The tile trigger-data record being loaded. Reads land at +0x08..+0x20, +0x28
 // (NB: +0x24 is skipped), then a 24-dword run from +0x2c.
+struct CTileTriggerDataVtbl; // the record's own vtable (contents owned elsewhere)
 class CTileTriggerData {
 public:
     i32 LoadV4(CSerialArchive* ar); // 0x1138b0
 
-    void* m_vptr; // +0x00
-    i32 m_04;     // +0x04
-    i32 m_08;     // +0x08
-    i32 m_0c;     // +0x0c
-    i32 m_10;     // +0x10
-    i32 m_14;     // +0x14
-    i32 m_18;     // +0x18
-    i32 m_1c;     // +0x1c
-    i32 m_20;     // +0x20
-    i32 m_24;     // +0x24 (not read here)
-    i32 m_28;     // +0x28
-    i32 m_2c[24]; // +0x2c..+0x88
+    CTileTriggerDataVtbl* m_vptr; // +0x00
+    i32 m_04;                     // +0x04
+    i32 m_08;                     // +0x08
+    i32 m_0c;                     // +0x0c
+    i32 m_10;                     // +0x10
+    i32 m_14;                     // +0x14
+    i32 m_18;                     // +0x18
+    i32 m_1c;                     // +0x1c
+    i32 m_20;                     // +0x20
+    i32 m_24;                     // +0x24 (not read here)
+    i32 m_28;                     // +0x28
+    i32 m_2c[24];                 // +0x2c..+0x88
 };
 SIZE_UNKNOWN(CTileTriggerData);
 
