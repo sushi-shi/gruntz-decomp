@@ -147,6 +147,21 @@ def summarize(report: dict) -> None:
           f"{m.get('fuzzy_match_percent', 0.0):.2f}% fuzzy across "
           f"{len(named)} named unit(s).")
     print(f"  Report: {REPORT}")
+    # Cleanliness scoreboard - part of the report so agents see their cast /
+    # placeholder / view deltas immediately alongside the match %. Comment- and
+    # string-stripped. See docs/cleanliness-metrics.md.
+    try:
+        from gruntz.match.cleanliness import count as _clean_count
+        rows = _clean_count()
+        naming, casts = rows[:4], rows[4:]
+        w = max(len(lbl) for lbl, _ in rows) + 1
+        print("  cleanliness (-> 0 where affordable):")
+        for i in range(max(len(naming), len(casts))):
+            left = f"{naming[i][0]:<{w}}{naming[i][1]:>7}" if i < len(naming) else ""
+            right = f"{casts[i][0]:<{w}}{casts[i][1]:>7}" if i < len(casts) else ""
+            print(f"    {left:<{w + 9}}  {right}")
+    except Exception as exc:  # never let the scoreboard break a build report
+        print(f"  cleanliness: (unavailable: {exc})")
 
 
 # --- subcommands -----------------------------------------------------------
@@ -210,12 +225,6 @@ def cmd_build(args) -> None:
     if n:
         log(f"VTBL: {n} class(es) missing VTBL() "
             f"(python -m gruntz.match.class_vtables for the list)")
-
-    # Cleanliness scoreboard (below the match/gate metrics): cast / placeholder /
-    # view occurrence counts trending to 0. Comment- and string-stripped so prose
-    # doesn't inflate. Non-fatal; see docs/cleanliness-metrics.md.
-    subprocess.run([sys.executable, "-m", "gruntz.match.cleanliness"],
-                   cwd=str(REPO), env=_pkg_env())
 
 
 def cmd_labels(args) -> None:
