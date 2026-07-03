@@ -95,8 +95,8 @@ public:
         u32 flags
     ); // 0x1366f0  CreateSoundBuffer + wrap
     DirectSoundMgr*
-    AcquireFile(char* path, u32, u32);             // 0x136860  fopen+fread whole file -> Acquire
-    DirectSoundMgr* Acquire(void* riff, u32, u32); // 0x136910  parse RIFF + CreateBuffer + load
+    AcquireFile(char* path, u32 flags, u32 reserved); // 0x136860  fopen whole file -> Acquire
+    DirectSoundMgr* Acquire(void* riff, u32, u32);    // 0x136910  parse RIFF + CreateBuffer + load
     i32 ValidateRestore(
         DirectSoundMgr* buf,
         WaveFormatX* fmt,
@@ -105,7 +105,7 @@ public:
     i32 ReloadRiff(
         DirectSoundMgr* buf,
         void* riff,
-        u32 a3
+        u32 reserved
     ); // 0x136bd0  re-parse RIFF, optionally downconvert, into an existing buffer
 
     // Device bring-up (DSNDMGR.CPP; defined in DirectSoundMgr.cpp - they fall in that

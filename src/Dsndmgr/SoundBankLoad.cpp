@@ -23,10 +23,9 @@ extern char g_dotDot[]; // 0x5ee8ec  ".."
 // one-time decode setup (slot 5, DecodeBuf). Each failure tears down the local CFile and
 // returns 0; the CFile's throwing ctor forces the /GX frame. __thiscall, ret 8.
 //
-// a1/a2 are `const char*` name / config args passed as i32 by the shared
-// homogenized-i32 CGruntzSoundInnerZ virtual convention (CreateBank2/PlayCreate all
-// forward i32; retyping the slot signatures cascades cross-TU, so the two leaf casts
-// stay - the same pattern CGruntzSoundZ::Play_138840 uses).
+// path/name are `const char*` (source file / registration name) passed as i32 by the
+// shared homogenized-i32 CGruntzSoundInnerZ virtual convention; retyping the slot
+// signatures cascades cross-TU, so the two leaf casts stay.
 //
 // @early-stop
 // /GX EH-frame wall: the ".."-token branch, the CFile open/GetLength/new/Read/decode
@@ -35,11 +34,11 @@ extern char g_dotDot[]; // 0x5ee8ec  ".."
 // numbering (the documented eh-scoped-local wall) and the differently-named
 // SbNameCmp/operator-new reloc operands diverge. Logic complete; final sweep.
 RVA(0x00138aa0, 0x175)
-i32 CGruntzSoundInnerZ::Load(i32 a1, i32 a2) {
-    const char* name = (const char*)a1;
-    if (SbNameCmp(name, g_dotDot) != 0) {
+i32 CGruntzSoundInnerZ::Load(i32 path, i32 name) {
+    const char* pathStr = (const char*)path;
+    if (SbNameCmp(pathStr, g_dotDot) != 0) {
         CFile file;
-        if (!file.Open(name, 0, 0)) {
+        if (!file.Open(pathStr, 0, 0)) {
             return 0;
         }
         u32 length = file.GetLength();
@@ -53,7 +52,7 @@ i32 CGruntzSoundInnerZ::Load(i32 a1, i32 a2) {
         if (file.Read(m_loadBuffer, length) != length) {
             return 0;
         }
-        return DecodeBuf((i32)m_loadBuffer, length, a2);
+        return DecodeBuf((i32)m_loadBuffer, length, name);
     }
-    return LoadSpecial(name, a2);
+    return LoadSpecial(pathStr, name);
 }
