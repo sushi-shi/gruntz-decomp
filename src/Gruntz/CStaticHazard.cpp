@@ -89,12 +89,6 @@ struct HazSndRoot {
     char m_pad00[0x2c];
     HazSndCat* m_cat; // +0x2c
 };
-struct HazGrid {
-    char m_pad00[0x08];
-    char** m_rows; // +0x08  row table (m_rows[row] -> cell row base; cells are 0x1c B)
-    i32 m_width;   // +0x0c  width  (col bound)
-    i32 m_height;  // +0x10  height (row bound)
-};
 struct HazGridMgr {
     i32 ScreenToCell(i32 x, i32 y, i32* outA, i32* outB, i32 z); // 0x35f3 thunk
     void MarkCell(i32 a, i32 b, i32 id, i32 flag);               // 0x2e96 thunk
@@ -417,9 +411,9 @@ i32 CStaticHazard::LoadAttributes() {
                 m_10->m_08 |= 0x20000;
             }
             // clear the hazard cell's bit-0x8000000
-            HazGrid* grid = (HazGrid*)g_gameReg->m_tileGrid;
-            if ((u32)m_tileCol < (u32)grid->m_width && (u32)m_tileRow < (u32)grid->m_height) {
-                *(i32*)(grid->m_rows[m_tileRow] + m_tileCol * 0x1c) &= 0xf7ffffff;
+            CTileGrid* grid = g_gameReg->m_tileGrid;
+            if ((u32)m_tileCol < (u32)grid->m_c && (u32)m_tileRow < (u32)grid->m_10) {
+                grid->m_8[m_tileRow][m_tileCol * 7] &= 0xf7ffffff;
             }
             return 0;
         }
@@ -471,14 +465,14 @@ dispatch:
             m_10->m_74 = m_10->m_128;
             m_10->m_08 |= 0x20000;
         }
-        HazGrid* grid = (HazGrid*)g_gameReg->m_tileGrid;
-        if ((u32)m_tileCol < (u32)grid->m_width && (u32)m_tileRow < (u32)grid->m_height) {
-            *(i32*)(grid->m_rows[m_tileRow] + m_tileCol * 0x1c) |= 0x8000000;
+        CTileGrid* grid = g_gameReg->m_tileGrid;
+        if ((u32)m_tileCol < (u32)grid->m_c && (u32)m_tileRow < (u32)grid->m_10) {
+            grid->m_8[m_tileRow][m_tileCol * 7] |= 0x8000000;
         }
     } else {
-        HazGrid* grid = (HazGrid*)g_gameReg->m_tileGrid;
-        if ((u32)m_tileCol < (u32)grid->m_width && (u32)m_tileRow < (u32)grid->m_height) {
-            *(i32*)(grid->m_rows[m_tileRow] + m_tileCol * 0x1c) &= 0xf7ffffff;
+        CTileGrid* grid = g_gameReg->m_tileGrid;
+        if ((u32)m_tileCol < (u32)grid->m_c && (u32)m_tileRow < (u32)grid->m_10) {
+            grid->m_8[m_tileRow][m_tileCol * 7] &= 0xf7ffffff;
         }
         if (m_10->m_74 != 0) {
             m_10->m_74 = 0;
@@ -495,9 +489,9 @@ dispatch:
                 HazAnimElem* e = d->m_count > 0 ? *d->m_elems : 0;
                 m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_frameSeed);
             }
-            HazGrid* grid = (HazGrid*)g_gameReg->m_tileGrid;
-            if ((u32)m_tileCol < (u32)grid->m_width && (u32)m_tileRow < (u32)grid->m_height) {
-                *(i32*)(grid->m_rows[m_tileRow] + m_tileCol * 0x1c) &= 0xf7ffffff;
+            CTileGrid* grid = g_gameReg->m_tileGrid;
+            if ((u32)m_tileCol < (u32)grid->m_c && (u32)m_tileRow < (u32)grid->m_10) {
+                grid->m_8[m_tileRow][m_tileCol * 7] &= 0xf7ffffff;
             }
         }
     }

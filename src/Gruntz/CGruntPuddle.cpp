@@ -120,7 +120,7 @@ i32 CGruntPuddle::Remove() {
     if (m_60 != 0) {
         CGameRegistry* reg = g_gameReg;
         i32 ty = m_58;
-        CIconTileGrid* grid = (CIconTileGrid*)reg->m_tileGrid;
+        CTileGrid* grid = reg->m_tileGrid;
         i32 tx = m_54;
         i32 flags;
         if ((u32)tx < (u32)grid->m_c && (u32)ty < (u32)grid->m_10) {

@@ -50,15 +50,23 @@ struct CSideTabFallback {
 };
 SIZE_UNKNOWN(CSideTabFallback);
 
+// The per-frame unit-record table (g_gameReg->m_68): a flat array of grunt-record
+// pointers at +0x1c indexed by (col + 15*row).
+struct CSideTabUnitTable {
+    char m_pad0[0x1c];
+    CSideTabGruntRec* m_units[1]; // +0x1c  per-cell grunt-record pointers
+};
+SIZE_UNKNOWN(CSideTabUnitTable);
+
 // The g_gameReg singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c) viewed by the
 // SideTab paths: m_30 is the canonical resource manager (CResMgr), m_68 the per-frame
-// unit-record table the sampled grunt record is indexed out of. The +0x30 slot is
-// typed CResMgr* here so the render/glyph paths reach it with no reinterpret cast.
+// unit-record table the sampled grunt record is indexed out of. Both slots are typed
+// here so the render/glyph and sampling paths reach them with no reinterpret cast.
 struct CSideTabGameReg {
     char m_pad00[0x30];
     CResMgr* m_world; // +0x30  resource manager
     char m_pad34[0x68 - 0x34];
-    void* m_68; // +0x68  per-frame unit-record table base
+    CSideTabUnitTable* m_68; // +0x68  per-frame unit-record table
 };
 SIZE_UNKNOWN(CSideTabGameReg);
 DATA(0x0024556c)
@@ -146,8 +154,7 @@ i32 CSBI_SideTab::BuildHandle() {
     if (mode == 0) {
         return 0;
     }
-    CSideTabGruntRec* unit =
-        *(CSideTabGruntRec**)((char*)g_gameReg->m_68 + (m_40 + 15 * m_3c) * 4 + 0x1c);
+    CSideTabGruntRec* unit = g_gameReg->m_68->m_units[m_40 + 15 * m_3c];
     if (unit == 0) {
         m_2c->Notify(m_40);
         return 0;

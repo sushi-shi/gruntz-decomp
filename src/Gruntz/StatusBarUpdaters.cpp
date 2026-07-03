@@ -386,6 +386,14 @@ void EngineLabelBacklog::UpdateChipGrinderStatusBar() {
 // the toggle item (this[idx]+0x150), kicks the tab sub-helper when the view mode
 // is 3, runs the STATZTABTOGGLE status-bar advance, and latches the new value.
 // __thiscall ret 8. Always returns 1.
+
+// The registry's per-frame unit-record table (g_gameReg->m_68, poly slot): a flat
+// array of grunt-record pointers at +0x1c indexed by (idx + 15*player).
+struct RegUnitTable {
+    char m_pad0[0x1c];
+    void* m_slots[1]; // +0x1c  per-cell record pointers
+};
+SIZE_UNKNOWN(RegUnitTable);
 RVA(0x00104e60, 0xed)
 i32 EngineLabelBacklog::LoadStatzTabToggleSprite(i32 value, i32 idx) {
     i32* m = (i32*)this;
@@ -394,7 +402,11 @@ i32 EngineLabelBacklog::LoadStatzTabToggleSprite(i32 value, i32 idx) {
     }
 
     i32 slot = idx + 15 * g_644c54;
-    if (*(i32*)((char*)g_gameReg->m_68 + slot * 4 + 0x1c) == 0) {
+    // m_68 is the registry's poly per-mode slot (void* in the shared view); in the
+    // in-game status-bar context it is always the unit-record table. One authentic
+    // downcast to the concrete view, then cast-free field access.
+    RegUnitTable* units = (RegUnitTable*)g_gameReg->m_68;
+    if (units->m_slots[slot] == 0) {
         return 0;
     }
 

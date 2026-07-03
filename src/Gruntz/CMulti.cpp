@@ -14,6 +14,7 @@
 // external no-body fns -> their `call rel32` are reloc-masked.
 #include <rva.h>
 #include <Gruntz/CMulti.h>
+#include <Gruntz/CGameRegistry.h> // g_64556c singleton (0x24556c) canonical view
 #include <stdio.h>  // engine sprintf (reloc-masked)
 #include <stdlib.h> // srand (reloc-masked)
 #include <Globals.h>
@@ -35,7 +36,7 @@ extern "C" u32 g_645588; // 0x645588  accum clock
 
 // The game-manager singleton + a divisor for the TITLE%d index.
 DATA(0x0024556c)
-extern "C" void* g_64556c; // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
+extern "C" CGameRegistry* g_64556c; // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
 DATA(0x00245534)
 extern "C" i32 g_645534; // 0x645534  title-index modulus
 
@@ -514,7 +515,7 @@ i32 CMulti::PumpA() {
         if ((i64)(u32)g_645588 - *(i64*)&m_338 >= *(i64*)&m_340) {
             char name[0x40];
             wsprintfA(name, "AMBIENT%d", PumpAIndex());
-            if (*(i32*)((char*)g_64556c + 0x14) != 0) {
+            if (g_64556c->m_14 != 0) {
                 m_logic->m_48->Play_138840(name, 1);
             } else {
                 CGruntzSoundInnerZ* p = m_logic->m_48->Lookup_138730(name);
@@ -744,8 +745,8 @@ void CMulti::PumpB() {
             if (fx->m_0 == 1) {
                 SetRect(&rc, 20, 5, 140, 125);
             } else {
-                i32 cx = *(i32*)((char*)g_64556c + 0x90);
-                i32 cy = *(i32*)((char*)g_64556c + 0x8c);
+                i32 cx = g_64556c->m_modeH;
+                i32 cy = g_64556c->m_modeW;
                 rc.top = cx;
                 SetRect(&rc, cy - 140, 5, cy - 20, 125);
             }
@@ -818,7 +819,7 @@ i32 CMulti::StartTitle() {
     if (!st) {
         return 0;
     }
-    i32 idx = *(i32*)((char*)g_64556c + 0x80) % g_645534 + 1;
+    i32 idx = g_64556c->m_80 % g_645534 + 1;
     CString title;
     title.Format("TITLE%d", idx);
     if (LoadTitleScreen((char*)(const char*)title, 0, 0, 1, 0) == 0) {

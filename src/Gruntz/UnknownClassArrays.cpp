@@ -2153,8 +2153,7 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02e3a0_PtInRect(i32 unitArg) {
         if (elapsed >= *(__int64*)&m_scratch80) {
             unit->m_arrived = 0;
             UnitLevel* lvl = (UnitLevel*)unit->m_level;
-            char* chain = *(char**)((char*)(void*)g_gameReg->m_world + 0x24);
-            chain = *(char**)(chain + 0x5c);
+            char* chain = (char*)g_gameReg->m_world->m_24->m_5c;
             RECT* hit = (RECT*)(chain + 0x40);
             if (lvl->m_worldX < hit->right && lvl->m_worldX >= hit->left
                 && lvl->m_worldY < hit->bottom && lvl->m_worldY >= hit->top) {

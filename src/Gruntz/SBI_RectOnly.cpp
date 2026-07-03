@@ -633,10 +633,14 @@ struct CSbiMusicHost {
 };
 SIZE_UNKNOWN(CSbiMusicHost);
 
-// The active game manager (g_gameReg->m_world == CResMgr): carries the sound object /
-// music host at +0x28. See the consolidation note above (fold to CResMgr deferred).
+// The active game manager (g_gameReg->m_world == CResMgr): carries the main
+// status-bar draw chain at +0x04 and the sound object / music host at +0x28. See
+// the consolidation note above (fold to CResMgr deferred).
+struct CSbiMainL1; // +0x04 draw chain (defined below); the main-bar sprite path
 struct CSbiGameMgr {
-    char m_pad0[0x28];
+    char m_pad0[0x4];
+    CSbiMainL1* m_4; // +0x04  main-status-bar draw chain (m_4->m_14->m_2c setup)
+    char m_pad8[0x28 - 0x8];
     CSbiMusicHost* m_28; // +0x28  music host (CResMgr::m_28 cue facet)
 };
 SIZE_UNKNOWN(CSbiGameMgr);
@@ -3315,7 +3319,7 @@ i32 CSBI_RectOnly::LoadMainStatusBarSprite() {
             m_rect14.m_c--;
             i32 v = m_barFrameGate;
             if (v > 0x1e0) {
-                CSbiMainSetup* tgt = (*(CSbiMainL1**)((char*)g_gameReg->m_world + 4))->m_14->m_2c;
+                CSbiMainSetup* tgt = g_gameReg->m_world->m_4->m_14->m_2c;
                 struct {
                     i32 a, b, c, d;
                 } rc;
@@ -3333,7 +3337,7 @@ i32 CSBI_RectOnly::LoadMainStatusBarSprite() {
                 CSbiMainBarCfg* cfg = (CSbiMainBarCfg*)found;
                 CSbiFrameEntry* entry = cfg->m_14[cfg->m_64];
                 if (entry) {
-                    CSbiMainL1* l1 = *(CSbiMainL1**)((char*)g_gameReg->m_world + 4);
+                    CSbiMainL1* l1 = g_gameReg->m_world->m_4;
                     MainBarDrawFrame(l1->m_14, entry->m_18 + m_10, entry->m_1c + m_rect14.m_0, 0);
                 }
             }

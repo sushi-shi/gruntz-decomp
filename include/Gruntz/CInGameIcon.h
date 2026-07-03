@@ -46,15 +46,9 @@ struct CGameRegMapHolder {
     CIconMapHolder* m_28; // +0x28  the map holder (Lookup table at +0x10)
 };
 
-// The tile occupancy grid reached as g_gameReg->m_tileGrid. A flat row-table of cell
-// rows (m_8); each cell is 0x1c bytes (7 dwords), indexed by tile (x,y). The
-// place handler clears bit 0x40000 in a cell.
-struct CIconTileGrid {
-    char m_pad00[0x8];
-    i32** m_8; // +0x08  row-pointer table
-    i32 m_c;   // +0x0c  width in tiles
-    i32 m_10;  // +0x10  height in tiles
-};
+// The tile occupancy grid reached as g_gameReg->m_tileGrid is CTileGrid
+// (<Gruntz/CTileGrid.h>, via CGameRegistry.h): m_8 row table, m_c/m_10 bounds;
+// each cell is 0x1c bytes (7 dwords), indexed by tile (x,y).
 
 // The icon/sprite factory (g_gameReg->m_74): GetByIndex(idx, z) returns a
 // per-player icon record (thunk 0x4165 -> FUN_004e23c0, __thiscall). No body.

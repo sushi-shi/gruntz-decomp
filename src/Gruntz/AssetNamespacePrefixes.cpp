@@ -137,7 +137,7 @@ i32 CNamespaceLoader::BuildAssetNamespacePrefixes(
             if (lightGate != 0) {
                 CString cs;
                 cs.LoadString(0x819b);
-                RECT r = *(RECT*)((char*)g_gameReg->m_world->m_24 + 0x10);
+                RECT r = *(RECT*)g_gameReg->m_world->m_24->m_barRect;
                 RECT r2;
                 CopyRect(&r2, &r);
                 DrawPreview((GRAssetMgr*)g_gameReg->m_world, &cs, &r2, 0x82, 1, 0xff, 0xff, 0, 1);

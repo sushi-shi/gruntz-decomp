@@ -36,6 +36,17 @@ struct IconSpriteFactory {
     CreateSprite(i32 a0, i32 x, i32 y, i32 id, const char* desc, i32 flags); // 0x1597b0
 };
 
+// The current game-state (g_gameReg->m_curState) viewed by the icon-setup path as
+// the per-level warp holder: +0x1c the level number, +0x384.. four (x,y) WarpStone
+// target pairs the tool-icon dispatch stores. (Per-mode downcast of CState*.)
+struct IconLevelState {
+    char m_pad00[0x1c];
+    i32 m_levelNum; // +0x1c  the current level number
+    char m_pad20[0x384 - 0x20];
+    i32 m_warpTarget[8]; // +0x384  four (x,y) WarpStone target pairs
+};
+SIZE_UNKNOWN(IconLevelState);
+
 // ===========================================================================
 // The two file-scope command-dispatch tables (zDArray<member-fn-ptr>) the icon
 // registration thunks construct + populate. The ctor (zDArray::Construct, the
@@ -273,30 +284,30 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj) {
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ1") == 0) {
             m_10->m_124 = 0x14;
             m_10->m_128 = 1;
-            char* lvl = (char*)g_gameReg->m_curState;
-            *(i32*)(lvl + 0x384) = m_10->m_5c;
-            *(i32*)(lvl + 0x388) = m_10->m_60;
+            IconLevelState* lvl = (IconLevelState*)g_gameReg->m_curState;
+            lvl->m_warpTarget[0] = m_10->m_5c;
+            lvl->m_warpTarget[1] = m_10->m_60;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ2") == 0) {
             m_10->m_124 = 0x14;
             m_10->m_128 = 2;
-            char* lvl = (char*)g_gameReg->m_curState;
-            *(i32*)(lvl + 0x38c) = m_10->m_5c;
-            *(i32*)(lvl + 0x390) = m_10->m_60;
+            IconLevelState* lvl = (IconLevelState*)g_gameReg->m_curState;
+            lvl->m_warpTarget[2] = m_10->m_5c;
+            lvl->m_warpTarget[3] = m_10->m_60;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ3") == 0) {
             m_10->m_124 = 0x14;
             m_10->m_128 = 3;
-            char* lvl = (char*)g_gameReg->m_curState;
-            *(i32*)(lvl + 0x394) = m_10->m_5c;
-            *(i32*)(lvl + 0x398) = m_10->m_60;
+            IconLevelState* lvl = (IconLevelState*)g_gameReg->m_curState;
+            lvl->m_warpTarget[4] = m_10->m_5c;
+            lvl->m_warpTarget[5] = m_10->m_60;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ4") == 0) {
             m_10->m_124 = 0x14;
             m_10->m_128 = 4;
-            char* lvl = (char*)g_gameReg->m_curState;
-            *(i32*)(lvl + 0x39c) = m_10->m_5c;
-            *(i32*)(lvl + 0x3a0) = m_10->m_60;
+            IconLevelState* lvl = (IconLevelState*)g_gameReg->m_curState;
+            lvl->m_warpTarget[6] = m_10->m_5c;
+            lvl->m_warpTarget[7] = m_10->m_60;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_WELDERZ") == 0) {
             m_10->m_124 = 0x15;
@@ -432,9 +443,9 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj) {
 
     // WarpStone test-mode: re-apply the per-level warp target sprite name.
     if (m_10->m_124 == 0x14 && g_gameReg->m_134 == 1) {
-        char* lvl = (char*)g_gameReg->m_curState;
+        IconLevelState* lvl = (IconLevelState*)g_gameReg->m_curState;
         CString levelStr;
-        EngFmt(&levelStr, "Level%i", *(i32*)(lvl + 0x1c));
+        EngFmt(&levelStr, "Level%i", lvl->m_levelNum);
         CString warpName;
         i32 target = g_buteMgr.GetInt((char*)"WarpStone", (char*)(const char*)levelStr);
         EngFmt(&warpName, "GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ%i", target);
@@ -444,7 +455,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj) {
 
     // glitter overlay sprite for the powerup / curse groups
     if (glitter != 0) {
-        IconSpriteFactory* fac = *(IconSpriteFactory**)((char*)g_gameReg->m_world + 8);
+        IconSpriteFactory* fac = (IconSpriteFactory*)g_gameReg->m_world->m_8;
         CGameObject* fx =
             fac->CreateSprite(0, m_10->m_5c, m_10->m_60, 0x17319, "SimpleAnimation", 0x40003);
         m_glitterSprite = fx;
@@ -464,7 +475,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj) {
 
     // mark the owner's tile cell occupied (or clear the occupancy bit)
     i32 mv = *(i32*)((char*)m_10 + 0x188);
-    CIconTileGrid* grid = (CIconTileGrid*)g_gameReg->m_tileGrid;
+    CTileGrid* grid = g_gameReg->m_tileGrid;
     i32 col = m_10->m_5c >> 5;
     i32 row = m_10->m_60 >> 5;
     if ((u32)col < (u32)grid->m_c && (u32)row < (u32)grid->m_10) {
@@ -655,7 +666,7 @@ i32 CInGameIcon::RefreshCell() {
     i32 tileX = (obj->m_60 + 0x18) >> 5;
     i64 delta = (i64)(u32)g_iconDefault - *(i64*)&m_driftPos;
     if (delta < *(i64*)&m_driftThresh) {
-        CIconTileGrid* grid = (CIconTileGrid*)g_gameReg->m_tileGrid;
+        CTileGrid* grid = g_gameReg->m_tileGrid;
         i32 cell;
         if ((u32)tileY < (u32)grid->m_c && (u32)tileX < (u32)grid->m_10) {
             i32* row = grid->m_8[tileX];
@@ -678,7 +689,7 @@ i32 CInGameIcon::RefreshCell() {
 // (tileX*71)*4 ... matching retail's `eax=tileX*8-tileX` then `<<2` and the
 // `[m_8[tileY] + eax + 8]=0` / `[m_8[tileY] + eax] &= ~0x40000` pair.
 static inline void ClearTileBit(CGameRegistry* reg, CGameObject* owner) {
-    CIconTileGrid* grid = (CIconTileGrid*)reg->m_tileGrid;
+    CTileGrid* grid = reg->m_tileGrid;
     i32 tileX = owner->m_60 >> 5;
     i32 tileY = owner->m_5c >> 5;
     if ((u32)tileY < (u32)grid->m_c && (u32)tileX < (u32)grid->m_10) {
@@ -852,7 +863,6 @@ SIZE_UNKNOWN(CIconFactory);
 SIZE_UNKNOWN(CIconMap);
 SIZE_UNKNOWN(CIconMapHolder);
 SIZE_UNKNOWN(CIconRecord);
-SIZE_UNKNOWN(CIconTileGrid);
 SIZE_UNKNOWN(CInGameIcon);
 SIZE_UNKNOWN(IconSpriteFactory);
 SIZE_UNKNOWN(LogicFnTable);
