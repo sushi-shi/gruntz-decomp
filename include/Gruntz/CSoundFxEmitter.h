@@ -16,9 +16,8 @@
 #include <Ints.h>
 #include <rva.h>
 
-#include <Gruntz/CDDrawWorkerMgr.h> // the ONE CDDrawWorkerMgr shape (Method_158d20)
-#include <Gruntz/CFaderMgr.h>       // CFaderMgr::Add / Remove + the minimal CFader
-#include <Gruntz/CFxModeDesc.h>     // CFxModeT2 / CFxModeT3 transition descriptors
+#include <Gruntz/CFaderMgr.h>   // CFaderMgr::Add / Remove + the minimal CFader
+#include <Gruntz/CFxModeDesc.h> // CFxModeT2 / CFxModeT3 transition descriptors
 
 // Gate global (VA 0x6455c4 = RVA 0x2455c4): nonzero => apply the channel op
 // directly this frame; zero => defer it through the freshly-allocated fader.
@@ -32,10 +31,15 @@ extern i32 g_fxDirectGate;
 // canonical single-source CDDSurface header; reloc-masked engine callees.
 #include <DDrawMgr/CDDSurface.h>
 
-class CGruntzMgr {
+// The game-manager singleton (0x64556c): the emitter's +0x04 holds the CGruntzMgr,
+// reached here through its Win32-safe canonical view (this is a DirectDraw TU, so
+// it cannot pull the MFC CGruntzMgr). StopBankIfActive/StopBank0IfActive are the
+// reloc-masked bank-stop methods on the singleton.
+#include <Gruntz/CGameRegistry.h>
+
+class CDDrawWorkerMgr {
 public:
-    void StopBankIfActive();  // 0x92000
-    void StopBank0IfActive(); // 0x92030
+    i32 Method_158d20(); // 0x158d20 - "is worker ready" predicate
 };
 namespace Utils {
     namespace WinAPI {
@@ -75,7 +79,7 @@ public:
     i32 Method_faa60(i32 a1, i32 a2, i32 a3);         // 0xfaa60
 
     char _00[0x04];
-    CGruntzMgr* m_04; // +0x04 sound/bank manager
+    CGameRegistry* m_04; // +0x04 sound/bank manager (the CGruntzMgr singleton)
     char _08[0x04];
     FxResource* m_0c; // +0x0c resource chain root
     CFaderMgr* m_10;  // +0x10 fader manager

@@ -5,6 +5,7 @@
 // NO-body so their rel32/DIR32 operands reloc-mask. Defined in retail-RVA order.
 #include <Ints.h>
 #include <rva.h>
+#include <Gruntz/CGameRegistry.h> // canonical game-manager singleton (0x24556c) view
 #include <Globals.h>
 
 // ===========================================================================
@@ -571,12 +572,7 @@ struct CArchiveEb {
     virtual void Xfer30(void* p, i32 n); // slot +0x30
 };
 SIZE_UNKNOWN(CArchiveEb);
-struct CMgrEb {
-    char pad0[0x30];
-    void* m_world; // +0x30
-};
-SIZE_UNKNOWN(CMgrEb);
-extern "C" CMgrEb* g_mgrSettings;
+extern "C" CGameRegistry* g_mgrSettings;
 struct Ceb970 {
     char pad0[0x3c];
     i32 m_3c;                                             // +0x3c
@@ -686,12 +682,6 @@ void C104c80::Free() {
 // 0x104dd0 - lazy-create the StatusBarSprite: clamp +0x24/+0x28 to the manager's
 // screen bounds, then build it via the +0x0c factory (0x1597b0). __thiscall.
 // ===========================================================================
-struct CMgr104 {
-    char pad0[0x8c];
-    i32 m_8c; // +0x8c
-    i32 m_90; // +0x90
-};
-SIZE_UNKNOWN(CMgr104);
 struct CFactory104 {
     void* Create(i32 a, i32 b, i32 c, i32 d, const char* name, i32 f); // 0x1597b0
 };
@@ -720,9 +710,8 @@ i32 C104dd0::Create() {
     if (m_sprite != 0) {
         return 0;
     }
-    CMgr104* mg = (CMgr104*)g_mgrSettings;
-    i32 a = mg->m_8c - 0x22;
-    i32 d = mg->m_90;
+    i32 a = g_mgrSettings->m_modeW - 0x22;
+    i32 d = g_mgrSettings->m_modeH;
     if (m_x > a) {
         m_x = a;
     }
@@ -784,13 +773,11 @@ struct CHandler112 {
     void Notify(i32 a, i32 b, i32 c); // 0x33f0
 };
 SIZE_UNKNOWN(CHandler112);
-struct CMgr112 {
-    char pad0[0x30];
-    CGridOuter* m_30; // +0x30
-    char pad34[0x70 - 0x34];
-    CHandler112* m_70; // +0x70
-};
-SIZE_UNKNOWN(CMgr112);
+// The singleton's m_world (viewed here as the height-grid outer CGridOuter) and its
+// m_tileGrid/cmd-notify facet (CHandler112) are reached via the canonical
+// g_mgrSettings; CGridOuter/CGridHolder/CGridData/CHandler112 are per-use facet
+// views of those two sub-objects (not yet modeled in the canonical), so they stay
+// local and are cast from the canonical named slots.
 struct C112bf0 {
     char pad0[8];
     i32 m_col; // +0x08
@@ -806,12 +793,12 @@ SIZE_UNKNOWN(C112bf0);
 // stores. Logic/offsets byte-faithful; the shift vs scaled-index pick is not steerable.
 RVA(0x00112bf0, 0x5e)
 i32 C112bf0::M() {
-    CMgr112* mg = (CMgr112*)g_mgrSettings;
-    CGridData* g = mg->m_30->m_24->m_5c;
+    CGameRegistry* mg = g_mgrSettings;
+    CGridData* g = ((CGridOuter*)mg->m_world)->m_24->m_5c;
     i32 v = g->cells[g->rows[m_row] + m_col] - 1;
-    CGridData* g2 = mg->m_30->m_24->m_5c;
+    CGridData* g2 = ((CGridOuter*)mg->m_world)->m_24->m_5c;
     g2->cells[g2->rows[m_row] + m_col] = v;
-    mg->m_70->Notify(m_col, m_row, v);
+    ((CHandler112*)mg->m_tileGrid)->Notify(m_col, m_row, v);
     m_14 = 0;
     return 1;
 }
@@ -865,11 +852,6 @@ struct CArchive113 {
     virtual void Xfer(void* p, i32 n); // slot +0x2c
 };
 SIZE_UNKNOWN(CArchive113);
-struct CMgr113 {
-    char pad0[0x30];
-    void* m_30; // +0x30
-};
-SIZE_UNKNOWN(CMgr113);
 struct C113e70 {
     char pad0[0x9c];
     i32 m_9c[9]; // +0x9c .. +0xbc
@@ -886,7 +868,7 @@ i32 C113e70::Serialize(CArchive113* ar) {
     if (ar == 0) {
         return 0;
     }
-    if (((CMgr113*)g_mgrSettings)->m_30 == 0) {
+    if (g_mgrSettings->m_world == 0) {
         return 0;
     }
     ar->Xfer(&m_c0, 4);

@@ -4,15 +4,12 @@
 // the CGruntzMgr settings singleton (_g_mgrSettings) being live. Offsets + code
 // bytes are load-bearing; field/class names are best-guess placeholders.
 #include <Mfc.h>
+#include <Gruntz/GruntzMgr.h> // canonical CGruntzMgr (game-manager singleton; one true shape)
 #include <Ints.h>
 #include <rva.h>
 
 // The settings singleton gate: g_mgrSettings->m_world must be non-null to serialize.
-struct CMgrSettingsGate {
-    char m_pad0[0x30];
-    void* m_world; // +0x30
-};
-extern "C" CMgrSettingsGate* g_mgrSettings; // _g_mgrSettings (VA 0x64556c)
+extern "C" CGruntzMgr* g_mgrSettings; // _g_mgrSettings (VA 0x64556c)
 
 // Win32 ShowCursor reached through an import pointer; the loading screen hides the
 // cursor (calls until the display count goes negative).
@@ -26,7 +23,7 @@ struct CMgrReady {
 };
 
 // The image-set the object loads into (m_levelData->m_imageSet); slot 19 (vtbl+0x4c) loads it.
-struct CImageSet {
+struct CMgrImageSet {
     virtual void v0();
     virtual void v1();
     virtual void v2();
@@ -54,7 +51,7 @@ struct CLevelData {
     char pad00[4];
     CMgrReady* m_ready; // +0x04
     char pad08[0x10 - 0x08];
-    CImageSet* m_imageSet; // +0x10
+    CMgrImageSet* m_imageSet; // +0x10
 };
 
 // The display owner (m_displayMgr): its m_8c/m_90 are blitted into the splash params.
@@ -208,10 +205,10 @@ i32 CMgrPersistObj::Init() {
 }
 
 SIZE_UNKNOWN(CDisplayMgr);
+SIZE_UNKNOWN(CMgrImageSet);
 SIZE_UNKNOWN(CLevelData);
 SIZE_UNKNOWN(CMgrPersistObj);
 SIZE_UNKNOWN(CMgrReady);
-SIZE_UNKNOWN(CMgrSettingsGate);
 SIZE_UNKNOWN(CMgrWriter);
 SIZE_UNKNOWN(CRezLocator);
 SIZE_UNKNOWN(SplashParams);

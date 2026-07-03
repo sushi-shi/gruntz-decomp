@@ -5,8 +5,9 @@
 // NO-body so their rel32/DIR32 operands reloc-mask.
 #include <Ints.h>
 #include <rva.h>
-#include <string.h> // inline strlen / memset intrinsics
-#include <Win32.h>  // WINAPI (windows.h) for the g_p* import-pointer types
+#include <string.h>               // inline strlen / memset intrinsics
+#include <Win32.h>                // WINAPI (windows.h) for the g_p* import-pointer types
+#include <Gruntz/CGameRegistry.h> // canonical Win32-safe game-manager singleton view
 #include <Globals.h>
 
 // ===========================================================================
@@ -140,15 +141,7 @@ void Init23960() {
 // slot is non-null (0 when the arg is null). __stdcall, one arg (ret 4). The
 // singleton is the already-pinned _g_mgrSettings (VA 0x64556c / RVA 0x24556c).
 // ===========================================================================
-struct CMgrSettingsView {
-    char m_pad0[0x30];
-    void* m_world; // +0x30
-    char m_pad34[0x10c - 0x34];
-    i32 m_isHighDetail;     // +0x10c
-    i32 m_isEffectsEnabled; // +0x110
-};
-SIZE_UNKNOWN(CMgrSettingsView);
-extern "C" CMgrSettingsView* g_mgrSettings;
+extern "C" CGameRegistry* g_mgrSettings;
 RVA(0x00024ac0, 0x20)
 i32 __stdcall HasMgrSlot30(void* a) {
     if (a == 0) {

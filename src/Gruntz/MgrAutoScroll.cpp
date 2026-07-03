@@ -1,19 +1,23 @@
 // MgrAutoScroll.cpp - the CGruntzMgr camera auto-scroll / clamp update (0x0ebd70).
 // __cdecl helper called from the render path (CPlay::Render etc., via the ILT
 // thunk at 0x2356) with arg0 = g_mgrSettings (the CGruntzMgr singleton). Walks the
-// active view (pm->m_scrollChain->m_sub->m_view), runs a timeGetTime-driven random auto-pan
+// active view (pm->m_world->m_24->m_view), runs a timeGetTime-driven random auto-pan
 // when the countdown timer (g_64cfc4) expires, clamps the scroll to the view
-// bounds (centered on g_mgrSettings->m_viewWidth/m_viewHeight), publishes the scaled scroll to the
+// bounds (centered on g_mgrSettings->m_modeW/m_modeH), publishes the scaled scroll to the
 // view (m_scrollX/m_scrollY) + a second "back plane" view (g_64c27c) eased by 0.05*delta plus
 // the ButeMgr [BackPlane] ScrollDist offsets on a 64-bit ScrollTime cadence, then
-// writes the four scroll-bound fields (pm->m_scrollBoundL..0x148). Field names are
+// writes the four scroll-bound fields (pm->m_viewOriginL..0x148). Field names are
 // placeholders; offsets + code bytes are the load-bearing fact.
-#include <Bute/ButeMgr.h> // canonical CButeMgr (one shape); pulls <Mfc.h> afx-first
+#include <Bute/ButeMgr.h>     // canonical CButeMgr (one shape); pulls <Mfc.h> afx-first
+#include <Gruntz/GruntzMgr.h> // canonical CGruntzMgr (game-manager singleton; one true shape)
 #include <Ints.h>
 #include <rva.h>
 #include <Globals.h>
 
-// The active scroll view (pm->m_scrollChain->m_sub->m_view, and the back-plane g_64c27c).
+// The active scroll view (pm->m_world->m_24->m_view, and the back-plane g_64c27c).
+// MgrSub/MgrSub2 are the CGruntzMgr::m_world sub-chain (a facet of the world/view
+// object) - a SEPARATE consolidation owned by the world/CViewport modeling, so they
+// stay local here and are reached by a documented view of the canonical m_world.
 struct ScrollView {
     char p00[0x08];
     i32 m_flags; // +0x08  flags (&1 => skip the m_scaleX/m_scaleY scale)
@@ -43,19 +47,6 @@ struct MgrSub2 {
 struct MgrSub {
     char p00[0x24];
     MgrSub2* m_sub; // +0x24
-};
-
-struct CGruntzMgr {
-    char p00[0x30];
-    MgrSub* m_scrollChain; // +0x30
-    char p34[0x8c - 0x34];
-    i32 m_viewWidth;  // +0x8c  view half-width source
-    i32 m_viewHeight; // +0x90  view half-height source
-    char p94[0x13c - 0x94];
-    i32 m_scrollBoundL; // +0x13c  scroll bound L
-    i32 m_scrollBoundT; // +0x140 scroll bound T
-    i32 m_scrollBoundR; // +0x144 scroll bound R
-    i32 m_scrollBoundB; // +0x148 scroll bound B
 };
 
 // The retail [BackPlane] config reader (CButeMgr::GetDword, 0x172240, __thiscall)
@@ -100,7 +91,7 @@ static i32 RandRange(i32 lo, i32 hi) {
 // the register/stack-slot assignment is not source-steerable here.
 RVA(0x000ebd70, 0x366)
 void UpdateMgrScroll(CGruntzMgr* pm, i32* pMode, i32 snapFlag, i32 unused) {
-    ScrollView* v = pm->m_scrollChain->m_sub->m_view;
+    ScrollView* v = ((MgrSub*)pm->m_world)->m_sub->m_view;
     i32 scrollX = v->m_curScrollX;
     i32 scrollY = v->m_curScrollY;
 
@@ -117,8 +108,8 @@ void UpdateMgrScroll(CGruntzMgr* pm, i32* pMode, i32 snapFlag, i32 unused) {
         }
     }
 
-    i32 cx = g_mgrSettings->m_viewWidth / 2;
-    i32 cy = g_mgrSettings->m_viewHeight / 2;
+    i32 cx = g_mgrSettings->m_modeW / 2;
+    i32 cy = g_mgrSettings->m_modeH / 2;
     if (*pMode != 2) {
         cx -= 0xa0;
     }
@@ -130,7 +121,7 @@ void UpdateMgrScroll(CGruntzMgr* pm, i32* pMode, i32 snapFlag, i32 unused) {
     if (scrollX < cx - 1) {
         scrollX = cx - 1;
     }
-    ScrollView* v2 = pm->m_scrollChain->m_sub->m_view;
+    ScrollView* v2 = ((MgrSub*)pm->m_world)->m_sub->m_view;
     if (scrollX > v2->m_clampX - cx) {
         scrollX = v2->m_clampX - cx;
     }
@@ -146,7 +137,7 @@ void UpdateMgrScroll(CGruntzMgr* pm, i32* pMode, i32 snapFlag, i32 unused) {
     g_lastScrollX = scrollX;
     g_lastScrollY = scrollY;
 
-    ScrollView* v3 = pm->m_scrollChain->m_sub->m_view;
+    ScrollView* v3 = ((MgrSub*)pm->m_world)->m_sub->m_view;
     {
         float sx = (float)scrollX;
         float sy = (float)scrollY;
@@ -185,11 +176,11 @@ void UpdateMgrScroll(CGruntzMgr* pm, i32* pMode, i32 snapFlag, i32 unused) {
         }
     }
 
-    MgrSub* o = pm->m_scrollChain;
-    pm->m_scrollBoundL = o->m_sub->m_view->m_boundL - 0x60;
-    pm->m_scrollBoundT = o->m_sub->m_view->m_boundT - 0x60;
-    pm->m_scrollBoundR = o->m_sub->m_view->m_boundR + 0x60;
-    pm->m_scrollBoundB = o->m_sub->m_view->m_boundB + 0x60;
+    MgrSub* o = ((MgrSub*)pm->m_world);
+    pm->m_viewOriginL = o->m_sub->m_view->m_boundL - 0x60;
+    pm->m_viewOriginT = o->m_sub->m_view->m_boundT - 0x60;
+    pm->m_viewOriginR = o->m_sub->m_view->m_boundR + 0x60;
+    pm->m_viewOriginB = o->m_sub->m_view->m_boundB + 0x60;
 }
 
 SIZE_UNKNOWN(MgrSub);

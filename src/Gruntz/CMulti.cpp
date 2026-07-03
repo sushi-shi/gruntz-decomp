@@ -239,7 +239,7 @@ i32 CMulti::StartSession(i32 mode, i32 unused) {
         return 0;
     }
     for (i32 i = 0; i < 4; ++i) {
-        CGruntzMgrOptions* e = &m_logic->m_150[i];
+        CMultiMgrOptions* e = &m_logic->m_150[i];
         if (e == 0) {
             return 0;
         }
@@ -449,27 +449,27 @@ struct McHost { // CMulti::m_view
 };
 
 // Per-frame receivers (thiscall, out-of-line -> reloc-masked).
-// CGruntzMgr::m_48 is the CGruntzSoundZ sound object (RECOVERED via xref: 0x138840
-// = CGruntzSoundZ::Play_138840, 0x138730 = CGruntzSoundZ::Lookup_138730 which
-// returns a CGruntzSoundInnerZ* - the +0x1c inner, same shape as GruntzMgr.h).
-class CGruntzSoundInnerZ { // CGruntzSoundZ::m_1c (Lookup_138730 result)
+// CMultiMgr::m_48 is the CMultiSoundZ sound object (RECOVERED via xref: 0x138840
+// = CMultiSoundZ::Play_138840, 0x138730 = CMultiSoundZ::Lookup_138730 which
+// returns a CMultiSoundInnerZ* - the +0x1c inner, same shape as GruntzMgr.h).
+class CMultiSoundInnerZ { // CMultiSoundZ::m_1c (Lookup_138730 result)
 public:
     void Do139030(i32 flag); // 0x139030
 };
-class CGruntzSoundZ { // CGruntzMgr::m_48
+class CMultiSoundZ { // CMultiMgr::m_48
 public:
-    void Play_138840(char* name, i32 flag);        // 0x138840
-    CGruntzSoundInnerZ* Lookup_138730(char* name); // 0x138730
+    void Play_138840(char* name, i32 flag);       // 0x138840
+    CMultiSoundInnerZ* Lookup_138730(char* name); // 0x138730
     char m_pad0[0x1c];
-    CGruntzSoundInnerZ* m_1c; // +0x1c
+    CMultiSoundInnerZ* m_1c; // +0x1c
 };
-class CMultiSub68 { // CGruntzMgr::m_68
+class CMultiSub68 { // CMultiMgr::m_68
 public:
     void Step3017(i32 dt); // 0x3017
 };
-class CMultiSub70 { // CGruntzMgr::m_70
+class CMultiSub70 { // CMultiMgr::m_70
 public:
-    void Step3562(CGruntzMgr* logic); // 0x3562
+    void Step3562(CMultiMgr* logic); // 0x3562
 };
 class CMultiSubDC { // CMulti::m_fxOverlay
 public:
@@ -505,7 +505,7 @@ i32 CMulti::PumpA() {
             if (g_64556c->m_14 != 0) {
                 m_logic->m_48->Play_138840(name, 1);
             } else {
-                CGruntzSoundInnerZ* p = m_logic->m_48->Lookup_138730(name);
+                CMultiSoundInnerZ* p = m_logic->m_48->Lookup_138730(name);
                 if (p) {
                     m_logic->m_48->m_1c = p;
                 }
@@ -640,12 +640,12 @@ public:
     char m_pad10_24[0x24 - 0x10];
     PBComp* m_24; // +0x24
 };
-// The output sink hung off CGruntzMgr::m_54 (thiscall 2-arg blit).
+// The output sink hung off CMultiMgr::m_54 (thiscall 2-arg blit).
 class PBOutput {
 public:
     void Blit1a7d(i32 w, i32 h); // 0x00001a7d
 };
-// CGruntzMgr::m_5c poll target (per-frame tick) and m_68 FX driver.
+// CMultiMgr::m_5c poll target (per-frame tick) and m_68 FX driver.
 class PBListSink {
 public:
     void Tick441c(u32 clock); // 0x0000441c
@@ -1008,16 +1008,16 @@ SIZE_UNKNOWN(CLobbyObjA);
 SIZE_UNKNOWN(CMulti);
 SIZE_UNKNOWN(CMultiDialogHook);
 SIZE_UNKNOWN(CState); // local dtor-view (stamps ??_7CState in ~CMulti)
-SIZE_UNKNOWN(CGruntzMgr);
+SIZE_UNKNOWN(CMultiMgr);
 SIZE_UNKNOWN(CMultiLogicDesc);
-SIZE_UNKNOWN(CGruntzMgrOptions);
+SIZE_UNKNOWN(CMultiMgrOptions);
 SIZE_UNKNOWN(CSlotConfig);
 SIZE_UNKNOWN(CMultiLogicList);
 SIZE_UNKNOWN(CMultiLogicNode);
 SIZE_UNKNOWN(CMultiPlayer);
 SIZE_UNKNOWN(CMultiReportGate);
-SIZE_UNKNOWN(CGruntzSoundZ);
-SIZE_UNKNOWN(CGruntzSoundInnerZ);
+SIZE_UNKNOWN(CMultiSoundZ);
+SIZE_UNKNOWN(CMultiSoundInnerZ);
 SIZE_UNKNOWN(CMultiStateBase);
 SIZE_UNKNOWN(CMultiSub68);
 SIZE_UNKNOWN(CMultiSub70);

@@ -109,6 +109,8 @@ struct CGameRegistry {
     void ReportError(const char* msg); // plane/scan error notifier
     i32 RunModalDialog(const char* tmpl, void* proc, i32 flag); // modal dialog runner
     void* GetRect(void* buf); // dev-stats bounds query (RECT* buf/ret)
+    void StopBankIfActive();  // 0x92000 (== CGruntzMgr::StopBankIfActive; sound-bank stop)
+    void StopBank0IfActive(); // 0x92030 (== CGruntzMgr::StopBank0IfActive; bank-0 stop)
 
     // Well-understood slots are named (the four single-type pointers m_curState/
     // m_world/m_cueSink/m_tileGrid + the scalar config block); the reused per-mode
@@ -148,7 +150,7 @@ struct CGameRegistry {
     void* m_78;            // +0x78  sub-object (per-TU view)
     void* m_7c;            // +0x7c  == m_scoreHud (HUD/score accumulator + cmd sink);
                            //         battlez views it as the CBzData score tracker facet.
-    i32 m_80; // +0x80  attract title-screen index base (CMulti: idx = m_80 % N + 1)
+    i32 m_80;              // +0x80  attract title-screen index base (CMulti: idx = m_80 % N + 1)
     char m_pad84[0x8c - 0x84];
     i32 m_modeW;      // +0x8c  live video-mode width (cmp ...,0x280==640)
     i32 m_modeH;      // +0x90  live video-mode height (==480)
