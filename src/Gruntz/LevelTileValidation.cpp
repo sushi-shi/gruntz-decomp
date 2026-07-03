@@ -438,7 +438,7 @@ i32 CLevelValidator::ValidateLevelTiles() {
                         )) {
                         CString s;
                         s.Format(s_BadSwitch, obj->m_worldX, obj->m_worldY);
-                        g_gameReg->LogTileError((const char*)(LPCSTR)s);
+                        g_gameReg->LogTileError((LPCSTR)s);
                         return 0;
                     }
                     validCount++;
@@ -463,7 +463,7 @@ i32 CLevelValidator::ValidateLevelTiles() {
                         )) {
                         CString s;
                         s.Format(s_BadSwitch, obj->m_worldX, obj->m_worldY);
-                        g_gameReg->LogTileError((const char*)(LPCSTR)s);
+                        g_gameReg->LogTileError((LPCSTR)s);
                         return 0;
                     }
                     validCount++;

@@ -13,7 +13,7 @@ void Format(CString* out, const char* fmt, ...); // 0x1b2cf5 (cdecl)
 
 class CSymTab {
 public:
-    i32 ResolveQualified(char* name, void* tag); // 0x13be40
+    i32 ResolveQualified(const char* name, i32 tag); // 0x13be40
 };
 
 // The loaded level record (CGameLevel / CLoadable): Reset at vtable +0x44,
@@ -65,7 +65,7 @@ i32 CWorldState::BuildWorldLevelKey(i32 unused) {
     m_0c->m_24->Reset();
     CString key;
     Format(&key, "WORLDZ\\LEVEL%i", 1);
-    i32 node = m_28->ResolveQualified((char*)(const char*)key, (void*)0x575744);
+    i32 node = m_28->ResolveQualified(key, 0x575744);
     if (node == 0) {
         return 0;
     }

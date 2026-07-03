@@ -266,7 +266,7 @@ CWorldSoundSet::~CWorldSoundSet() {
 // CAmbientSound (0x40), 6-arg Init (m_world + the owner's m_04 threaded in).
 RVA(0x0000b6a0, 0x83)
 SoundChannelNew* CWorldSoundSet::CreateAmbient6_b6a0(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
-    char* raw = (char*)RezAlloc(0x40);
+    void* raw = RezAlloc(0x40);
     CAmbientSound* obj;
     if (raw != 0) {
         obj = new (raw) CAmbientSound;
@@ -291,7 +291,7 @@ SoundChannelNew* CWorldSoundSet::CreateAmbient6_b6a0(i32 a0, i32 a1, i32 a2, i32
 // CAmbientSound (0x40), 5-arg Init (no m_world).
 RVA(0x0000b7b0, 0x80)
 SoundChannelNew* CWorldSoundSet::CreateAmbient5_b7b0(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
-    char* raw = (char*)RezAlloc(0x40);
+    void* raw = RezAlloc(0x40);
     CAmbientSound* obj;
     if (raw != 0) {
         obj = new (raw) CAmbientSound;
@@ -316,7 +316,7 @@ SoundChannelNew* CWorldSoundSet::CreateAmbient5_b7b0(i32 a0, i32 a1, i32 a2, i32
 // CAmbientPosSound (0x48), 6-arg Init (vtable stamped last).
 RVA(0x0000b850, 0x83)
 SoundChannelNew* CWorldSoundSet::CreatePos6_b850(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
-    char* raw = (char*)RezAlloc(0x48);
+    void* raw = RezAlloc(0x48);
     CAmbientPosSound* obj;
     if (raw != 0) {
         obj = new (raw) CAmbientPosSound;
@@ -341,7 +341,7 @@ SoundChannelNew* CWorldSoundSet::CreatePos6_b850(i32 a0, i32 a1, i32 a2, i32 a3,
 // CAmbientPosSound (0x48), 5-arg Init.
 RVA(0x0000b960, 0x80)
 SoundChannelNew* CWorldSoundSet::CreatePos5_b960(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
-    char* raw = (char*)RezAlloc(0x48);
+    void* raw = RezAlloc(0x48);
     CAmbientPosSound* obj;
     if (raw != 0) {
         obj = new (raw) CAmbientPosSound;
@@ -367,7 +367,7 @@ SoundChannelNew* CWorldSoundSet::CreatePos5_b960(i32 a0, i32 a1, i32 a2, i32 a3,
 RVA(0x0000bb60, 0x9b)
 SoundChannelNew* CWorldSoundSet::
     CreateRandom_bb60(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 a8) {
-    char* raw = (char*)RezAlloc(0x58);
+    void* raw = RezAlloc(0x58);
     CRandomAmbientSound* obj;
     if (raw != 0) {
         obj = new (raw) CRandomAmbientSound;

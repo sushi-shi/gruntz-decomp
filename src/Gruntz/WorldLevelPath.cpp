@@ -14,7 +14,7 @@
 
 class CSymTab {
 public:
-    i32 ResolveQualified(char* name, void* tag); // 0x13be40
+    i32 ResolveQualified(const char* name, i32 tag); // 0x13be40
 };
 
 // The loaded level record (CGameLevel): Reset at vtable +0x44, the namespace-load
@@ -89,7 +89,7 @@ i32 CWorldState::BuildWorldLevelPath(i32 unused) {
     if (m_4->m_c8.GetLength() != 0) {
         if (m_4->m_128 != 0) {
             CString key = "BATTLEZ\\" + m_4->QueryLevelName();
-            i32 node = m_34->ResolveQualified((char*)(const char*)key, (void*)0x575744);
+            i32 node = m_34->ResolveQualified(key, 0x575744);
             if (node == 0) {
                 return 0;
             }
@@ -98,7 +98,7 @@ i32 CWorldState::BuildWorldLevelPath(i32 unused) {
             }
         } else if (m_4->m_12c != 0) {
             CString key = "MULTI\\" + m_4->QueryLevelName();
-            i32 node = m_34->ResolveQualified((char*)(const char*)key, (void*)0x575744);
+            i32 node = m_34->ResolveQualified(key, 0x575744);
             if (node == 0) {
                 return 0;
             }
@@ -106,7 +106,7 @@ i32 CWorldState::BuildWorldLevelPath(i32 unused) {
                 return 0;
             }
         } else {
-            if (m_0c->m_24->LoadHookByName((const char*)m_4->QueryLevelName()) == 0) {
+            if (m_0c->m_24->LoadHookByName(m_4->QueryLevelName()) == 0) {
                 return 0;
             }
         }
@@ -121,7 +121,7 @@ i32 CWorldState::BuildWorldLevelPath(i32 unused) {
         } else {
             key.Format("WORLDZ\\LEVEL%i", sel);
         }
-        i32 node = m_28->ResolveQualified((char*)(const char*)key, (void*)0x575744);
+        i32 node = m_28->ResolveQualified(key, 0x575744);
         if (node == 0) {
             return 0;
         }
