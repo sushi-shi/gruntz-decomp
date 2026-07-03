@@ -3,9 +3,10 @@
 // boundaries across the DinMgr2 / Dsndmgr / DDrawMgr / Rez engine modules; RTTI
 // cannot attribute the COMDAT-folded leaf methods, so the owning class names are
 // placeholders. Only OFFSETS + code shape are load-bearing. The /GX EH-frame
-// siblings live in BoundaryTailEh.cpp.
-#include <Mfc.h> // real MFC CString (copy-ctor 0x1b9ba3 / dtor 0x1b9cde, reloc-masked)
+// siblings live in BoundaryTailEh.cpp. The per-use owner/referent views now live in
+// <Gruntz/BoundaryTailViews.h> (pure code motion).
 #include <rva.h>
+#include <Gruntz/BoundaryTailViews.h> // owner/referent views for this TU (pulls Mfc.h)
 
 #include <string.h> // inline memset intrinsic
 
@@ -61,20 +62,6 @@ void WaitKeyEdge(int vk, int timeoutMs) {
 // `m_42c + m_430[y] + left`, `m_430[y] + left + m_42c`, and a hoisted `off` temp -
 // all keep the same grouping. Pure instruction scheduling.
 // ---------------------------------------------------------------------------
-struct FillRect176d20 {
-    i32 left;   // +0x0
-    i32 top;    // +0x4
-    i32 right;  // +0x8
-    i32 bottom; // +0xc
-};
-SIZE_UNKNOWN(FillRect176d20);
-struct CImg176d20 {
-    char _0[0x42c];
-    u8* m_42c;  // pixel base
-    i32* m_430; // row-offset table
-    void Fill(FillRect176d20* r, int color);
-};
-SIZE_UNKNOWN(CImg176d20);
 RVA(0x00176d20, 0x71)
 void CImg176d20::Fill(FillRect176d20* r, int color) {
     i32 width = r->right - r->left;
@@ -97,45 +84,6 @@ void CImg176d20::Fill(FillRect176d20* r, int color) {
 // direct + `fmulp`. Confirmed NOT /O1 (the o1 profile scored worse, 45%). The
 // difference is pure instruction scheduling/regalloc, not logic.
 // ---------------------------------------------------------------------------
-struct Emitter788d0 {
-    char _0[8];
-    u8 m_8; // flags (bit 0)
-    char _9[0x10 - 9];
-    float m_10, m_14, m_18, m_1c; // 0x10,0x14,0x18,0x1c
-    void Update();                // 0x161c90
-};
-SIZE_UNKNOWN(Emitter788d0);
-struct ElemSrc788d0 {
-    char _0[0x5c];
-    i32 m_5c, m_60; // 0x5c,0x60
-};
-SIZE_UNKNOWN(ElemSrc788d0);
-struct Elem788d0 {
-    char _0[0x10];
-    ElemSrc788d0* m_10; // 0x10
-};
-SIZE_UNKNOWN(Elem788d0);
-struct Holder788d0_24 {
-    char _0[0x5c];
-    Emitter788d0* m_5c; // 0x5c
-};
-SIZE_UNKNOWN(Holder788d0_24);
-struct Holder788d0 {
-    char _0[0x24];
-    Holder788d0_24* m_24; // 0x24
-};
-SIZE_UNKNOWN(Holder788d0);
-struct CSnd788d0 {
-    char _0[0x1c];
-    Elem788d0* m_1c[1]; // 0x1c array
-    char _pad[0x22c - 0x1c - 4];
-    Holder788d0* m_22c; // 0x22c
-    char _230[4];       // 0x230
-    i32 m_234;          // 0x234
-    i32 m_238;          // 0x238
-    i32 PositionUpdate();
-};
-SIZE_UNKNOWN(CSnd788d0);
 RVA(0x000788d0, 0x64)
 i32 CSnd788d0::PositionUpdate() {
     ElemSrc788d0* src = m_1c[m_234 * 15 + m_238]->m_10;
@@ -165,22 +113,11 @@ i32 CSnd788d0::PositionUpdate() {
 // origin of the kept zero store (a return-value cookie / source temp the retail
 // codegen materialised) is not yet spellable; the copy itself is byte-exact.
 // ---------------------------------------------------------------------------
-struct Obj38120 {
-    CString m_0; // 0x0
-    CString GetName();
-};
-SIZE_UNKNOWN(Obj38120);
 RVA(0x00038120, 0x1d)
 CString Obj38120::GetName() {
     return m_0;
 }
 
-struct Obj85500 {
-    char _0[0xec];
-    CString m_ec; // 0xec
-    CString GetName();
-};
-SIZE_UNKNOWN(Obj85500);
 RVA(0x00085500, 0x23)
 CString Obj85500::GetName() {
     return m_ec;
@@ -193,20 +130,6 @@ CString Obj85500::GetName() {
 // M147cd0 passing m_1c plus its byte-shifted views (the engine reads the packed
 // color back out at +1/+2 byte offsets through an 8-byte stack temp). __thiscall.
 // ---------------------------------------------------------------------------
-struct CBlit148250 {
-    char _0[0x14];
-    i32 m_14; // 0x14 fill color
-    char _18[0x1c - 0x18];
-    i32 m_1c; // 0x1c packed color
-    char _20[0x2c - 0x20];
-    i32 m_2c;                                               // 0x2c
-    i32 m_30;                                               // 0x30
-    i32 m_34;                                               // 0x34 pending flag
-    void M147aa0(i32 a, i32 b, i32 c, i32 d);               // 0x147aa0
-    void M147cd0(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // 0x147cd0
-    void Flush();
-};
-SIZE_UNKNOWN(CBlit148250);
 RVA(0x00148250, 0x61)
 void CBlit148250::Flush() {
     if (m_34 == 0) {
@@ -239,34 +162,6 @@ void CBlit148250::Flush() {
 // our full `and eax,~0x1f`; our /O2 evaluates sy fully then sx and pushes args
 // eagerly. Pure x86 instruction scheduling/regalloc.
 // ---------------------------------------------------------------------------
-struct R23d90 {
-    char _0[0x40];
-    i32 m_40, m_44; // 0x40,0x44
-};
-SIZE_UNKNOWN(R23d90);
-struct P23d90 {
-    char _0[0x10];
-    i32 m_10, m_14; // 0x10,0x14 origin
-    char _18[0x5c - 0x18];
-    R23d90* m_5c; // 0x5c bounds
-};
-SIZE_UNKNOWN(P23d90);
-struct Mid23d90 {
-    char _0[0x24];
-    P23d90* m_24; // 0x24
-};
-SIZE_UNKNOWN(Mid23d90);
-struct Outer23d90 {
-    char _0[0x30];
-    Mid23d90* m_30; // 0x30
-};
-SIZE_UNKNOWN(Outer23d90);
-struct CObj23d90 {
-    char _0[0x38];
-    Outer23d90* m_38; // 0x38
-    void Blit(i32 a1, i32 a2, i32 x, i32 y, i32 a5);
-};
-SIZE_UNKNOWN(CObj23d90);
 // The blit primitive reached through ILT thunk 0x2095 (__stdcall, callee-clean).
 void __stdcall Func2095(i32, i32, i32, i32, i32, i32, i32, i32);
 RVA(0x00023d90, 0x64)
@@ -284,25 +179,6 @@ void CObj23d90::Blit(i32 a1, i32 a2, i32 x, i32 y, i32 a5) {
 // the found entry's m_10 plus the four trailing args and return its result.
 // __thiscall, 6 stack args (ret 0x18).
 // ---------------------------------------------------------------------------
-struct Entry_bdd0 {
-    char _0[0x10];
-    void* m_10; // 0x10
-};
-SIZE_UNKNOWN(Entry_bdd0);
-struct Map_bdd0 {
-    i32 Lookup(const char* key, Entry_bdd0** out); // 0x1b8438 (ret 8)
-};
-SIZE_UNKNOWN(Map_bdd0);
-struct Arg1_bdd0 {
-    char _0[0x10];
-    Map_bdd0 m_10; // 0x10 (CMapStringToOb)
-};
-SIZE_UNKNOWN(Arg1_bdd0);
-struct CObj_bdd0 {
-    void* Method3026(void* a, i32 b, i32 c, i32 d, i32 e); // 0x3026
-    void* Dispatch(Arg1_bdd0* a1, const char* key, i32 a3, i32 a4, i32 a5, i32 a6);
-};
-SIZE_UNKNOWN(CObj_bdd0);
 RVA(0x0000bdd0, 0x53)
 void* CObj_bdd0::Dispatch(Arg1_bdd0* a1, const char* key, i32 a3, i32 a4, i32 a5, i32 a6) {
     Entry_bdd0* out = 0;
@@ -326,21 +202,6 @@ void* CObj_bdd0::Dispatch(Arg1_bdd0* a1, const char* key, i32 a3, i32 a4, i32 a5
 // call's `lea ecx` setup, while our /O2 stages it in ecx/edx and stores before the
 // lea. Only the scratch-reg field + store order differ.
 // ---------------------------------------------------------------------------
-struct Node118330 {
-    char _0[0xc];
-    i32 m_c, m_10, m_14; // 0xc,0x10,0x14
-};
-SIZE_UNKNOWN(Node118330);
-struct Iter118330 {
-    void* pos;
-    Node118330* GetNext(int x); // 0x1b30f0 (__thiscall)
-};
-SIZE_UNKNOWN(Iter118330);
-struct Out118330 {
-    char _0[0xc];
-    i32 m_c, m_10, m_14; // 0xc,0x10,0x14
-};
-SIZE_UNKNOWN(Out118330);
 void __stdcall IterInit(Iter118330* it); // 0x1b30b1
 RVA(0x00118330, 0x57)
 i32 BuildRecord118330(Out118330* out) {

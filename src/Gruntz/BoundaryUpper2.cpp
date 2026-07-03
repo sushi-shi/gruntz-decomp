@@ -4,12 +4,12 @@
 // modules; RTTI cannot attribute the COMDAT-folded leaf methods so the owning
 // class names here are placeholders. Only OFFSETS + the code shape are
 // load-bearing (campaign doctrine). Non-EH (base /O2) bodies only; the /GX
-// EH-frame siblings live in BoundaryUpper2Eh.cpp.
-#include <Gruntz/Blk6c.h> // the 0x6c-byte CImageOwned transform descriptor
-
+// EH-frame siblings live in BoundaryUpper2Eh.cpp. The per-use owner/referent
+// views now live in <Gruntz/BoundaryUpper2Views.h> (pure code motion).
 #include <Ints.h>
 #include <string.h> // memset -> rep stos at /O2
 #include <rva.h>
+#include <Gruntz/BoundaryUpper2Views.h> // owner/referent views for this TU (pulls Blk6c.h)
 #include <Globals.h>
 
 // The engine __cdecl allocator/deallocator (operator new/delete; reloc-masked
@@ -30,10 +30,6 @@ extern void* g_wapObjectDtorVtbl;
 // tail-jump the shared teardown (0x185000). The DATA global is named; the callee
 // is reloc-masked.
 // ---------------------------------------------------------------------------
-struct CHashTail {
-    void Clear(); // 0x185000
-};
-SIZE_UNKNOWN(CHashTail);
 DATA(0x002bf848)
 extern CHashTail g_hash184b70; // 0x6bf848
 RVA(0x00184b70, 0xa)
@@ -46,11 +42,6 @@ void ClearHash_184b70() {
 // (@0x5ef670) then tail-jump the base subobject teardown (0x134d50). __thiscall.
 // ---------------------------------------------------------------------------
 extern void* g_deviceConfigVtblC; // 0x5ef670 (named in DirectInputMgr2.cpp)
-struct DICfgC {
-    void BaseTeardown(); // 0x134d50
-    void DtorC();
-};
-SIZE_UNKNOWN(DICfgC);
 RVA(0x00133370, 0xb)
 void DICfgC::DtorC() {
     *(void**)this = &g_deviceConfigVtblC;
@@ -73,24 +64,6 @@ void DICfgC::DtorC() {
 // the manual-vtable-removal mandate). Logic (the stamp + all field inits) complete;
 // ??_7 named via VTBL so the stamp operand still reloc-masks.
 // ---------------------------------------------------------------------------
-struct HashNode1396f0 {
-    virtual void v0();
-    virtual void v1();
-};
-VTBL(HashNode1396f0, 0x001ef740); // ??_7HashNode1396f0 @ 0x5ef740 (reloc-masked)
-SIZE_UNKNOWN(HashNode1396f0);
-struct C1396f0 {
-    void* m_0; // +0x00
-    i32 _4[(0x10 - 0x4) / 4];
-    i32 m_10; // +0x10
-    i32 _14[(0x1c - 0x14) / 4];
-    HashNode1396f0 m_1c; // +0x1c (embedded polymorphic node; ctor stamps its vptr)
-    i32 _20[(0x30 - 0x20) / 4];
-    void* volatile m_30; // +0x30 (0 then self; volatile pins the dead store + order)
-    i32 m_34;            // +0x34
-    C1396f0* Init();
-};
-SIZE_UNKNOWN(C1396f0);
 RVA(0x001396f0, 0x1a)
 C1396f0* C1396f0::Init() {
     new (&m_1c) HashNode1396f0;
@@ -128,27 +101,11 @@ i32 RestoreLostSurfaces_1437f0() {
 }
 
 // ---------------------------------------------------------------------------
-// 0x1570d0 / 0x157240 - CDDrawWorkerA / CDDrawWorkerB reset: clear the worker
-// fields (three inlined timing-resets of +0x20/+0x38, +0x5c, +0x4/+0x8/+0xc) then
-// restamp the grand-base dtor vftable (@0x5e8cb4). A has a byte +0x78; B a dword.
-// __thiscall.
+// 0x1570d0 / 0x157240 - CDDrawWorkerA / CDDrawWorkerB reset (flat volatile-tuned
+// copy, renamed CDDWorkerFlatA/B): clear the worker fields (three inlined
+// timing-resets of +0x20/+0x38, +0x5c, +0x4/+0x8/+0xc) then restamp the grand-base
+// dtor vftable (@0x5e8cb4). A has a byte +0x78; B a dword. __thiscall.
 // ---------------------------------------------------------------------------
-struct CDDrawWorkerA {
-    void* m_0; // +0x00 vptr
-    i32 m_4;   // +0x04
-    i32 m_8;   // +0x08
-    i32 m_c;   // +0x0c
-    i32 _10[(0x20 - 0x10) / 4];
-    volatile i32 m_20; // +0x20 (written thrice - redundant stores kept in retail)
-    i32 _24[(0x38 - 0x24) / 4];
-    volatile i32 m_38; // +0x38
-    i32 _3c[(0x5c - 0x3c) / 4];
-    i32 m_5c; // +0x5c
-    i32 _60[(0x78 - 0x60) / 4];
-    i8 m_78; // +0x78 (byte)
-    void Reset();
-};
-SIZE_UNKNOWN(CDDrawWorkerA);
 // @early-stop
 // redundant-store + scheduling wall (~90%): retail resets the +0x20/+0x38 timer
 // pair THREE times (identical stores MSVC normally DCEs); `volatile` on m_20/m_38
@@ -156,7 +113,7 @@ SIZE_UNKNOWN(CDDrawWorkerA);
 // m_78/m_5c stores then schedule one slot off retail. No source spelling pins both
 // the redundant pairs AND the m_78-first / m_5c-mid order; logic complete.
 RVA(0x001570d0, 0x39)
-void CDDrawWorkerA::Reset() {
+void CDDWorkerFlatA::Reset() {
     m_78 = 0;
     m_20 = (i32)0x80000000;
     m_38 = -1;
@@ -170,28 +127,11 @@ void CDDrawWorkerA::Reset() {
     m_c = 0;
     *(void**)this = &g_wapObjectDtorVtbl;
 }
-
-struct CDDrawWorkerB {
-    void* m_0; // +0x00 vptr
-    i32 m_4;
-    i32 m_8;
-    i32 m_c;
-    i32 _10[(0x20 - 0x10) / 4];
-    volatile i32 m_20;
-    i32 _24[(0x38 - 0x24) / 4];
-    volatile i32 m_38;
-    i32 _3c[(0x5c - 0x3c) / 4];
-    i32 m_5c;
-    i32 _60[(0x78 - 0x60) / 4];
-    i32 m_78; // +0x78 (dword)
-    void Reset();
-};
-SIZE_UNKNOWN(CDDrawWorkerB);
 // @early-stop
-// redundant-store + scheduling wall (~90%): mirror of CDDrawWorkerA::Reset (m_78 here
+// redundant-store + scheduling wall (~90%): mirror of CDDWorkerFlatA::Reset (m_78 here
 // is a dword). Same volatile-pinned redundant pairs; m_78/m_5c schedule one slot off.
 RVA(0x00157240, 0x3c)
-void CDDrawWorkerB::Reset() {
+void CDDWorkerFlatB::Reset() {
     m_78 = 0;
     m_20 = (i32)0x80000000;
     m_38 = -1;
@@ -207,61 +147,13 @@ void CDDrawWorkerB::Reset() {
 }
 
 // ---------------------------------------------------------------------------
-// CDDPageMgr (TextRange/CDDPageMgr boundary) cluster: a page-table object with an
-// embedded polymorphic sub-object at +0x124 (vtbl slots 0x30 and 0x54 are used),
-// a CObArray-like at +0x138 (RemoveAt @0x1b4bad) and an int* table at +0x13c.
+// CDDPageMgr-boundary page-table store (renamed CPageStore17b510; NOT the real
+// CDDPageMgr in CDirectDrawMgr.h): a page-table object with an embedded polymorphic
+// sub-object at +0x124 (vtbl slots 0x30 and 0x54 are used), a CObArray-like at +0x138
+// (RemoveAt @0x1b4bad) and an int* table at +0x13c.
 // ---------------------------------------------------------------------------
-struct DDPageSub {
-    virtual void v0();
-    virtual void v1();
-    virtual void v2();
-    virtual void v3();
-    virtual void v4();
-    virtual void v5();
-    virtual void v6();
-    virtual void v7();
-    virtual void v8();
-    virtual void v9();
-    virtual void v10();
-    virtual void v11();
-    virtual i32 v12(i32, i32); // slot 0x30
-    virtual void v13();
-    virtual void v14();
-    virtual void v15();
-    virtual void v16();
-    virtual void v17();
-    virtual void v18();
-    virtual void v19();
-    virtual void v20();
-    virtual void v21(); // slot 0x54
-};
-SIZE_UNKNOWN(DDPageSub);
-struct DDPageArr {
-    void RemoveAt(i32, i32); // 0x1b4bad
-};
-SIZE_UNKNOWN(DDPageArr);
-struct CDDPageMgr {
-    i32 m_initialized; // +0x00  init-once guard
-    i32 m_4;           // +0x04
-    i32 m_8;           // +0x08
-    i32 m_c;           // +0x0c
-    i32 m_10;          // +0x10
-    u32 m_count;       // +0x14  entry count (bounds the 1-based index)
-    i32 m_18[0x43];    // +0x18 .. +0x123
-    DDPageSub m_sub;   // +0x124  embedded polymorphic sub-object
-    i32 m_128;         // +0x128
-    i32 _12c[(0x134 - 0x12c) / 4];
-    i32 m_134;           // +0x134
-    DDPageArr m_pageArr; // +0x138  CObArray-like page store
-    i32* m_slots;        // +0x13c  index table
-    i32 Init();          // 0x17b510
-    void Close();        // 0x17b570
-    i32 Free();          // 0x17b5a0
-    i32 Lookup(u32);     // 0x17b840
-};
-
 RVA(0x0017b510, 0x55)
-i32 CDDPageMgr::Init() {
+i32 CPageStore17b510::Init() {
     if (m_initialized) {
         return 0;
     }
@@ -276,7 +168,7 @@ i32 CDDPageMgr::Init() {
 }
 
 RVA(0x0017b570, 0x24)
-void CDDPageMgr::Close() {
+void CPageStore17b510::Close() {
     if (!m_initialized) {
         return;
     }
@@ -286,7 +178,7 @@ void CDDPageMgr::Close() {
 }
 
 RVA(0x0017b5a0, 0x48)
-i32 CDDPageMgr::Free() {
+i32 CPageStore17b510::Free() {
     if (m_initialized && (m_4 || m_8)) {
         m_sub.v21();
         m_4 = 0;
@@ -298,7 +190,7 @@ i32 CDDPageMgr::Free() {
 }
 
 RVA(0x0017b840, 0x53)
-i32 CDDPageMgr::Lookup(u32 idx) {
+i32 CPageStore17b510::Lookup(u32 idx) {
     if (m_4 && m_initialized && idx <= m_count && idx != 0) {
         i32* slot = &m_slots[idx - 1];
         if (m_sub.v12(*slot, 0) == *slot) {
@@ -313,28 +205,6 @@ i32 CDDPageMgr::Lookup(u32 idx) {
 // CObArray-like sub at +0x10; the argument object carries m_44c/m_454/m_458 and a
 // teardown D (0x175c90) and a method X (0x176ad0). __thiscall.
 // ---------------------------------------------------------------------------
-struct CImgArg {
-    i32 _0[0x44c / 4];
-    i32 m_44c;        // +0x44c
-    i32 _450;         // +0x450
-    i32 m_454;        // +0x454
-    i32 m_458;        // +0x458
-    void X(i32, i32); // 0x176ad0
-    void D();         // 0x175c90
-};
-SIZE_UNKNOWN(CImgArg);
-struct CImgSub10 {
-    void Add(i32); // 0x1b4ac7
-};
-SIZE_UNKNOWN(CImgSub10);
-struct CImgOwner {
-    i32 _0[4];                  // +0x00 .. +0x0c
-    CImgSub10 m_10;             // +0x10
-    void A(i32);                // 0x174f30
-    void B(CImgArg*, i32, i32); // 0x175780
-    void Free(CImgArg*);        // 0x174ed0
-};
-SIZE_UNKNOWN(CImgOwner);
 RVA(0x00174ed0, 0x5d)
 void CImgOwner::Free(CImgArg* o) {
     if (!o) {
@@ -364,26 +234,7 @@ void CImgOwner::B(CImgArg* o, i32 a, i32 b) {
 // device Probe (0x137260) succeeds, call its Restore (vtbl slot 0xc) and on
 // failure log a Dsndmgr error. __thiscall.
 // ---------------------------------------------------------------------------
-struct ISndBuf;
-struct ISndBufVtbl {
-    i32 _0[0x30 / 4];
-    i32(__stdcall* Restore)(ISndBuf*, i32, i32, i32); // +0x30
-};
-SIZE_UNKNOWN(ISndBufVtbl);
-struct ISndBuf {
-    ISndBufVtbl* vtbl;
-};
-SIZE_UNKNOWN(ISndBuf);
 extern void __cdecl SndErr(const char* file, i32 line, i32 flag); // 0x138150
-struct SndDevice {
-    i32 _0[0x78 / 4];
-    void* m_78; // +0x78
-    i32 _7c[(0x84 - 0x7c) / 4];
-    ISndBuf* m_buffer; // +0x84
-    i32 Probe();       // 0x137260
-    i32 Restore();
-};
-SIZE_UNKNOWN(SndDevice);
 RVA(0x00137200, 0x53)
 i32 SndDevice::Restore() {
     if (!m_78) {
@@ -478,19 +329,7 @@ void __stdcall UnpackTag_13b970(u32 tag, char* dst) {
 // the restore helper (0x13eef0); on failure log a DIRSURF error. Returns success.
 // __thiscall, 2 args.
 // ---------------------------------------------------------------------------
-struct RestoreDesc {
-    i32 size; // +0x00
-    i32 _4[(0x50 - 0x4) / 4];
-    i32 m_50; // +0x50
-    i32 _54[(0x64 - 0x54) / 4];
-};
-SIZE_UNKNOWN(RestoreDesc);
 extern void __cdecl DirSurfLog(const char* file, i32 line, i32 hr); // 0x141400
-struct CDDSurf13e7d0 {
-    i32 Restore(void* arg1, i32 arg2);
-    i32 H(void* a, i32 b, i32 c, i32 flags, RestoreDesc* d); // 0x13eef0
-};
-SIZE_UNKNOWN(CDDSurf13e7d0);
 RVA(0x0013e7d0, 0x73)
 i32 CDDSurf13e7d0::Restore(void* arg1, i32 arg2) {
     if (!arg1) {
@@ -512,40 +351,6 @@ i32 CDDSurf13e7d0::Restore(void* arg1, i32 arg2) {
 // (this->m_0, a, b); on success Add it to this and return it, else Cleanup+free and
 // return 0. __thiscall, 2 args.
 // ---------------------------------------------------------------------------
-struct Node38 {
-    i32 m_0;
-    i32 m_4;
-    i32 m_8;
-    i32 m_c;
-    i32 m_10;
-    i32 m_14;
-    i32 m_18;
-    i32 _1c[(0x2c - 0x1c) / 4];
-    i32 m_2c;
-    i32 m_30;
-    i32 m_34;
-    Node38() {
-        m_4 = 0;
-        m_0 = 0;
-        m_8 = 0;
-        m_c = 0;
-        m_10 = 0;
-        m_34 = 0;
-        m_18 = 0;
-        m_14 = 0;
-        m_2c = 0;
-        m_30 = 0;
-    }
-    i32 Init(i32, i32, i32); // 0x147390
-    void Cleanup();          // 0x147530
-};
-SIZE_UNKNOWN(Node38);
-struct CNodeFactory {
-    i32 m_0;           // +0x00
-    void Add(Node38*); // 0x142eb0
-    Node38* Create(i32 a, i32 b);
-};
-SIZE_UNKNOWN(CNodeFactory);
 RVA(0x00143040, 0x7c)
 Node38* CNodeFactory::Create(i32 a, i32 b) {
     Node38* o = new Node38();
@@ -566,54 +371,6 @@ Node38* CNodeFactory::Create(i32 a, i32 b) {
 // then bounds-check against either the camera rect (+0x40 of m_ctx->m_camera->m_5c,
 // flag 0x40000 set) or the grid extents (m_ctx->m_grid->m_limits). __thiscall, 0 args.
 // ---------------------------------------------------------------------------
-struct WwdExtent {
-    i32 _0[0x18 / 4];
-    i32 m_halfW; // +0x18  half-width
-    i32 m_halfH; // +0x1c  half-height
-};
-SIZE_UNKNOWN(WwdExtent);
-struct WwdCamRect {
-    i32 a; // +0x40 (left)
-    i32 b; // +0x44 (top)
-    i32 c; // +0x48 (right)
-    i32 d; // +0x4c (bottom)
-};
-SIZE_UNKNOWN(WwdCamRect);
-struct WwdCamHolder {
-    i32 _0[0x5c / 4];
-    char* m_5c; // +0x5c -> &m_40 rect via +0x40
-};
-SIZE_UNKNOWN(WwdCamHolder);
-struct WwdGridLim {
-    i32 _0[0x10 / 4];
-    i32 m_width;  // +0x10
-    i32 m_height; // +0x14
-};
-SIZE_UNKNOWN(WwdGridLim);
-struct WwdGridHolder {
-    i32 _0[0x10 / 4];
-    WwdGridLim* m_limits; // +0x10
-};
-SIZE_UNKNOWN(WwdGridHolder);
-struct WwdCtx {
-    i32 _0[1];             // +0x00
-    WwdGridHolder* m_grid; // +0x04
-    i32 _8[(0x24 - 0x8) / 4];
-    WwdCamHolder* m_camera; // +0x24
-};
-SIZE_UNKNOWN(WwdCtx);
-struct CWwdObj1509 {
-    i32 _0[2];     // +0x00
-    u32 m_flags;   // +0x08
-    WwdCtx* m_ctx; // +0x0c
-    i32 _10[(0x5c - 0x10) / 4];
-    i32 m_centerX; // +0x5c
-    i32 m_centerY; // +0x60
-    i32 _64[(0x198 - 0x64) / 4];
-    WwdExtent* m_extent; // +0x198
-    i32 Test();
-};
-SIZE_UNKNOWN(CWwdObj1509);
 // @early-stop
 // regalloc wall (~73%): the four derived edges (right/left/top/bottom) +
 // m_extent/m_ctx/m_flags need 4 callee-saved regs in this reconstruction where retail
@@ -695,37 +452,6 @@ i32 __stdcall Dispatch163710(void* p, i32 kind, i32, i32) {
 // teardown (0x1397a0), drop it from the list (0x13c210) and clear the list's count.
 // __thiscall, 2 args.
 // ---------------------------------------------------------------------------
-struct SymHelper24 {
-    void Unlink(void* p); // 0x184ab0
-};
-SIZE_UNKNOWN(SymHelper24);
-struct SymEntry2 {
-    i32 _0[0xc / 4];
-    i32 m_span; // +0x0c
-    i32 _10[(0x1c - 0x10) / 4];
-    i32 m_1c;        // +0x1c
-    void Teardown(); // 0x1397a0
-};
-SIZE_UNKNOWN(SymEntry2);
-struct SymEntry1 {
-    i32 _0[0x24 / 4];
-    SymHelper24 m_24; // +0x24
-};
-SIZE_UNKNOWN(SymEntry1);
-struct SymList18 {
-    i32 _0[2];
-    i32 m_count;        // +0x08
-    void Drop(void* p); // 0x13c210
-};
-SIZE_UNKNOWN(SymList18);
-struct CSymTab13a530 {
-    i32 _0[4];
-    i32 m_size;        // +0x10  running total span
-    i32 _14;           // +0x14
-    SymList18* m_list; // +0x18
-    i32 Remove(SymEntry1* a1, SymEntry2* a2);
-};
-SIZE_UNKNOWN(CSymTab13a530);
 RVA(0x0013a530, 0x47)
 i32 CSymTab13a530::Remove(SymEntry1* a1, SymEntry2* a2) {
     m_size -= a2->m_span;
@@ -740,11 +466,6 @@ i32 CSymTab13a530::Remove(SymEntry1* a1, SymEntry2* a2) {
 // 0x17e230 - destroy a by-value CDataBuffer-like parameter: the only work is the
 // parameter's own destructor (0x1b9cde) at function exit. __stdcall, 1 arg.
 // ---------------------------------------------------------------------------
-struct DBuf17e230 {
-    void* p;
-    ~DBuf17e230(); // 0x1b9cde
-};
-SIZE_UNKNOWN(DBuf17e230);
 RVA(0x0017e230, 0xc)
 void __stdcall Destroy17e230(DBuf17e230 b) {
     (void)b;
@@ -755,14 +476,6 @@ void __stdcall Destroy17e230(DBuf17e230 b) {
 // table into the object's BGRA0 palette at +0x53c, then mark dirty (+0x93c) and
 // store the tag (+0x940). __thiscall, 2 args.
 // ---------------------------------------------------------------------------
-struct CPalObj143950 {
-    i32 _0[0x53c / 4];
-    u8 m_pal[256][4]; // +0x53c
-    i32 m_dirty;      // +0x93c
-    i32 m_tag;        // +0x940
-    i32 SetPalette(const u8* src, i32 tag);
-};
-SIZE_UNKNOWN(CPalObj143950);
 // @early-stop
 // strength-reduction/regalloc wall (~78%): retail walks the dst palette via a
 // pre-incremented edx (dst+1, -1/-4/-3/-2 displacements) with src in eax and inc;
@@ -792,24 +505,6 @@ i32 CPalObj143950::SetPalette(const u8* src, i32 tag) {
 // fill {size, flags|0x200, fields}, run Apply (0x13e0a0); on success run the commit
 // virtual (slot 10). __thiscall, 4 args.
 // ---------------------------------------------------------------------------
-struct ImgOwnedX {
-    virtual void v0();
-    virtual void v1();
-    virtual void v2();
-    virtual void v3();
-    virtual void v4();
-    virtual void v5();
-    virtual void v6();
-    virtual void v7();
-    virtual void v8();
-    virtual void v9();
-    virtual void Commit(); // slot 10 (+0x28)
-    i32 _4[(0x10 - 0x4) / 4];
-    Blk6c m_10;                           // +0x10
-    i32 Apply(i32 mode, const void* src); // 0x13e0a0
-    i32 Setup(i32 a1, i32 a2, i32 a3, i32 a4);
-};
-SIZE_UNKNOWN(ImgOwnedX);
 RVA(0x00148af0, 0x58)
 i32 ImgOwnedX::Setup(i32 a1, i32 a2, i32 a3, i32 a4) {
     memset(&m_10, 0, 0x6c);
@@ -829,12 +524,6 @@ i32 ImgOwnedX::Setup(i32 a1, i32 a2, i32 a3, i32 a4) {
 // transform descriptor and run Apply with a mode (7 / 0x47), returning success.
 // __thiscall.
 // ---------------------------------------------------------------------------
-struct ImgOwnedY {
-    i32 Apply(i32 mode, const void* src); // 0x13e0a0
-    i32 Blit7(i32 a1, i32 a2, i32 a3, i32 a4);
-    i32 Blit47(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7);
-};
-SIZE_UNKNOWN(ImgOwnedY);
 // @early-stop
 // descriptor-fill scheduling wall (~82%): same Apply path as the 100% ImgOwnedX::Setup
 // but into a stack-local descriptor; retail hoists the a4 load (eax, or al,0x80) ahead
