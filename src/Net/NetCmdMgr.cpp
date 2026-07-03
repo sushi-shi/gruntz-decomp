@@ -1,5 +1,5 @@
 // NetCmdMgr.cpp - CNetSessHost::SelectColor (0x0c4b60, __thiscall): claim the
-// color slot `idx` for player `pid`. When the live-session flag (g_64bd5c->m_528)
+// color slot `idx` for player `pid`. When the live-session flag (g_64bd5c->m_isHost)
 // is set, a color already taken (CheckColorTaken==0) rejects with the chat error;
 // otherwise the prior owner is released and the new one flagged. Slots are the
 // session's 0x238-byte command buffers (matcher-4's CNetCmdBuf); the selection
@@ -30,7 +30,7 @@ extern void SetColorFlag(i32 a, i32 b); // 0xdb2b0 (__cdecl, external)
 RVA(0x000c4b60, 0x77)
 i32 CNetSessHost::SelectColor(i32 colorIndex, i32 playerId) {
     CColorSlot* colorSlot = &m_cmdBuffers[colorIndex].m_sel;
-    if (g_64bd5c->m_528 != 0) {
+    if (g_64bd5c->m_isHost != 0) {
         i32 r = CheckColorTaken(playerId);
         if (r == 0) {
             g_64bd5c->ReportVersionMsg("Someone has already selected that color.", r);

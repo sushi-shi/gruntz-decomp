@@ -7,7 +7,7 @@
 //
 // CARCASS doctrine: only the member OFFSETS + the per-method call/branch
 // structure are load-bearing. Field names are placeholders (m_<hexoffset>);
-// the unmatched engine callees (SendNetStat / SendStatFlag / the m_4 logic
+// the unmatched engine callees (SendNetStat / SendStatFlag / the m_logic
 // object's methods / the heap deleters) are external no-body fns, so their
 // `call rel32` are reloc-masked. CMulti is modeled SELF-CONTAINED with its own
 // CString/CByteArray members at the retail offsets and a manual vtable-stamp
@@ -23,13 +23,14 @@
 
 // Per-frame sub-objects driven by PumpA (0x0b6b40); reconstructed TU-local in
 // CMulti.cpp (thiscall receivers, all out-of-line -> reloc-masked).
-class CMultiSubDC;   // CMulti::m_2dc
+class CMultiSubDC;   // CMulti::m_fxOverlay
 class CMultiSubE4;   // CMulti::m_2e4
 class CGruntzSoundZ; // CGruntzMgr::m_48
 class CMultiSub68;   // CGruntzMgr::m_68
 class CMultiSub70;   // CGruntzMgr::m_70
 class CGruntzMgr;    // CState owner at CMulti+0x04 (fwd for CSlotConfig::Load)
 class CLobbySlot;    // CNetSession2 slot element (fwd for FindSlot's return)
+class PBOutput;      // CGruntzMgr::m_54 output sink (defined TU-local in CMulti.cpp)
 
 // The CState owner at CMulti+0x04 (CState::m_4) is the CGruntzMgr game manager
 // (RECOVERED: its +0x48 sound object is CGruntzSoundZ and its +0x150 4-entry
@@ -45,7 +46,7 @@ class CLobbySlot;    // CNetSession2 slot element (fwd for FindSlot's return)
 class CMultiDialogHook {
 public:
     void PreDialog();      // 0x0051c7b0
-    void StartTitleHook(); // 0x0011c7b0  (m_4->m_60 chain in StartTitle)
+    void StartTitleHook(); // 0x0011c7b0  (m_logic->m_60 chain in StartTitle)
 };
 
 // CGruntzMgrOptions's inner slot-config sub-object (+0x38). StartSession drives it
@@ -96,7 +97,7 @@ public:
 class CMultiLogicDesc {
 public:
     void* m_0;
-    u8 m_flags; // +0x04  bit 0x2 -> m_528 latch
+    u8 m_flags; // +0x04  bit 0x2 -> m_isHost latch
     char m_pad5_8[0x8 - 0x5];
     char* m_8; // +0x08  host-name string
     char* m_c; // +0x0c  ... -> +0x8 string copied into a CString
@@ -110,7 +111,9 @@ public:
     i32 m_c; // +0x0c  active gate (PumpA)
     char m_pad10_48[0x48 - 0x10];
     CGruntzSoundZ* m_48; // +0x48  ambient slot manager (PumpA)
-    char m_pad4c_5c[0x5c - 0x4c];
+    char m_pad4c_54[0x54 - 0x4c];
+    PBOutput* m_54; // +0x54  output sink (PumpB 2-arg blit)
+    char m_pad58_5c[0x5c - 0x58];
     CMultiLogicList* m_5c;  // +0x5c  list manager (StartSession poke target)
     CMultiDialogHook* m_60; // +0x60  the pre-dialog thiscall receiver
     char m_pad64_68[0x68 - 0x64];
@@ -130,17 +133,17 @@ public:
 
     // 1-arg log/append sink (reloc-masked); takes the formatted line.
     void LogLine(char* line);
-    // the 3-arg modal-dialog runner (reloc-masked, thiscall on this=m_4).
+    // the 3-arg modal-dialog runner (reloc-masked, thiscall on this=m_logic).
     i32 RunDialog(char* tmpl, void* handler, i32 lparam);
     // session-start probe (3-arg thiscall): (mode, 0, 0) -> nonzero on success. 0x0048d780
     i32 ProbeSession(i32 mode, i32 a, i32 b);
     // report a netbind failure (2-arg thiscall: code, sub). 0x0008dc60
     void ReportError(i32 code, i32 sub);
-    // resolve the host index from m_5c0 (1-arg thiscall) -> pointer or 0. 0x00492e80
+    // resolve the host index from m_hostIndex (1-arg thiscall) -> pointer or 0. 0x00492e80
     i32* ResolveHost(i32 host);
 };
 
-// Win32 focus restore on the innermost window (m_4->m_4->m_4); __cdecl, reloc-masked.
+// Win32 focus restore on the innermost window (m_logic->m_4->m_4); __cdecl, reloc-masked.
 void MultiRestoreFocus(void* hwnd); // 0x00518930
 
 // The report-gate object at CMulti+0x524: released via its scalar-deleting
@@ -151,11 +154,11 @@ public:
     virtual i32 ScalarDtor(i32 flag); // +0x04  scalar-deleting destructor
 };
 
-// The two lobby heap sub-objects (m_520 / m_320): each torn down by a thiscall
+// The two lobby heap sub-objects (m_session / m_attractOverlay): each torn down by a thiscall
 // method (ecx = the object, no stack args) then handed to the engine free. The
-// CMulti session loop drives the lobby object (m_520) through a set of thiscall
+// CMulti session loop drives the lobby object (m_session) through a set of thiscall
 // entry points (all out-of-line -> reloc-masked); placeholder names.
-class CNetSession2 { // m_520
+class CNetSession2 { // m_session
 public:
     void Teardown();                      // 0x004b6220 (NOT a CMulti method)
     CLobbySlot* FindSlot(i32 key);        // 0x004c0460  scan the +0x20 4x0x64 slot table
@@ -170,7 +173,7 @@ public:
     char m_pad00_10[0x10];
     i32 m_10; // +0x10  slot-count / id base
 };
-class CLobbyObjA { // m_320
+class CLobbyObjA { // m_attractOverlay
 public:
     void Teardown(); // 0x004a3360
 };
@@ -218,14 +221,14 @@ public:
 
     // Teardown helper run first by the dtor (and standalone @0xb6110): drains the
     // lobby sub-objects and pushes the final stat flags.
-    void Teardown();                                           // 0x0b6110
-    CString& ClearString59c(CString& s);                       // 0x0b76c0  (assign m_59c <- empty)
-    CString& ClearString5a0(CString& s);                       // 0x0b7730  (assign m_5a0 <- empty)
-    CString GetString59c();                                    // 0x0b7a90  (return m_59c by value)
-    CString GetString5a0();                                    // 0x0b7ad0  (return m_5a0 by value)
-    void ReportVersionMsg(char* msg, i32 code);                // 0x0b7e30
-    void ReportNetError();                                     // 0x0b7f60
-    i32 JoinSession();                                         // 0x0b7fe0
+    void Teardown();                            // 0x0b6110
+    CString& ClearString59c(CString& s);        // 0x0b76c0  (assign m_groupName <- empty)
+    CString& ClearString5a0(CString& s);        // 0x0b7730  (assign m_hostName <- empty)
+    CString GetString59c();                     // 0x0b7a90  (return m_groupName by value)
+    CString GetString5a0();                     // 0x0b7ad0  (return m_hostName by value)
+    void ReportVersionMsg(char* msg, i32 code); // 0x0b7e30
+    void ReportNetError();                      // 0x0b7f60
+    i32 JoinSession();                          // 0x0b7fe0
     i32 RunErrorDialog(char* tmpl, void* handler, i32 lparam); // 0x0bc250 (_MultiDispatch)
     void AckJoinFailure();                                     // 0x0bc420
 
@@ -272,16 +275,16 @@ public:
     void StepGridWalk(u32 clock);  // 0x0d0a60  advance the grid-walk countdown
     void CopyRect(void* h);        // 0x0d0b30  compute+clamp the pane copy rect (g_pCopyRect)
     void DrawDebugStats();         // 0x0cf770  Fps/Objs/Pos/Timing/Sent debug overlay
-    void OnRegion2(i32 v);         // 0x0d8a00  arm overlay-A (m_470, deadline m_430/+0x438)
-    void OnRegion1(i32 v);         // 0x0d8aa0  arm overlay-B (m_474, deadline m_440/+0x448)
+    void OnRegion2(i32 v); // 0x0d8a00  arm overlay-A (m_overlayAActive, deadline m_430/+0x438)
+    void OnRegion1(i32 v); // 0x0d8aa0  arm overlay-B (m_overlayBActive, deadline m_440/+0x448)
 
     // --- layout (placeholder names; offsets are the load-bearing truth) ---
     // +0x000  vptr (compiler ??_7CMulti; Tick dispatches via vtbl() -> +0x7c/+0x98)
-    CGruntzMgr* m_4; // +0x004  the CState owner / logic object
-    void* m_8;       // +0x008  string registry (FUN_0053c030 lookup)
-    void* m_c;       // +0x00c  manager (vfn host, +0x24 chain, +0x20 sub-window)
+    CGruntzMgr* m_logic; // +0x004  the CState owner / game-manager (logic) object
+    void* m_stateReg;    // +0x008  string/state registry (FUN_0053c030 lookup)
+    void* m_view;        // +0x00c  view manager (vfn host, +0x24 chain, +0x20 sub-window)
     char m_pad10_2c[0x2c - 0x10];
-    i32 m_2c; // +0x02c  saved/restored handle around the title build
+    i32 m_curState; // +0x02c  current-state slot saved/restored around the title build
     char m_pad30_150[0x150 - 0x30];
     i32 m_150; // +0x150  Tick redraw region arg b
     i32 m_154; // +0x154  Tick redraw region arg c
@@ -290,22 +293,25 @@ public:
     char m_pad1b8_1cc[0x1cc - 0x1b8];
     i32 m_1cc; // +0x1cc  reseeded to 0
     char m_pad1d0_2d0[0x2d0 - 0x1d0];
-    i32 m_2d0;          // +0x2d0  Step() result
-    i32 m_2d4;          // +0x2d4  Drain() result
-    i32 m_2d8;          // +0x2d8  rng seed
-    CMultiSubDC* m_2dc; // +0x2dc  per-frame sub (Step34bd)
-    void* m_2e0;        // +0x2e0  per-frame sub (PBSub2e0::Step2bfd)
-    CMultiSubE4* m_2e4; // +0x2e4  per-frame sub (Step2cc0)
+    i32 m_stepResult;         // +0x2d0  Step() result
+    i32 m_drainResult;        // +0x2d4  Drain() result
+    i32 m_rngSeed;            // +0x2d8  rng seed
+    CMultiSubDC* m_fxOverlay; // +0x2dc  per-frame sub (Step34bd)
+    void* m_2e0;              // +0x2e0  per-frame sub (PBSub2e0::Step2bfd)
+    CMultiSubE4* m_2e4;       // +0x2e4  per-frame sub (Step2cc0)
     char m_pad2e8_30c[0x30c - 0x2e8];
-    i32 m_30c;                 // +0x30c  overlay-active flag (PumpB)
-    char m_310[0x320 - 0x310]; // +0x310  blit palette/param block (passed by address)
-    CLobbyObjA* m_320;         // +0x320  heap obj (thiscall teardown + _RezFree)
+    i32 m_paletteActive;           // +0x30c  overlay-active flag (PumpB)
+    char m_palette[0x320 - 0x310]; // +0x310  blit palette/param block (passed by address)
+    CLobbyObjA* m_attractOverlay;  // +0x320  heap obj (thiscall teardown + _RezFree)
     char m_pad324_338[0x338 - 0x324];
-    i32 m_338; // +0x338  ambient-window clock (int64 low, high at m_33c)
-    i32 m_33c; // +0x33c
-    i32 m_340; // +0x340  ambient interval (int64 low, high at m_344)
-    i32 m_344; // +0x344
-    i32 m_348; // +0x348  ambient-armed latch
+    // +0x338 ambient-window start + +0x340 interval: each a 64-bit clock stored as
+    // an aligned DWORD pair and read via *(i64*)& (a true __int64 member forces
+    // 8-byte struct alignment, which is NOT matching-neutral -- authentic shape).
+    i32 m_338;          // +0x338  ambient-window start (int64 low, high at m_33c)
+    i32 m_33c;          // +0x33c
+    i32 m_340;          // +0x340  ambient interval (int64 low, high at m_344)
+    i32 m_344;          // +0x344
+    i32 m_ambientArmed; // +0x348  ambient-armed latch
     char m_pad34c_370[0x370 - 0x34c];
     CByteArray m_370; // +0x370
     char m_pad384_3a4[0x3a4 - 0x384];
@@ -314,6 +320,9 @@ public:
     CString m_410; // +0x410
     i32 m_414;     // +0x414  zeroed each Tick
     char m_pad418_430[0x430 - 0x418];
+    // +0x430/+0x440 overlay-A/B deadline + +0x438/+0x448 interval: 64-bit clocks
+    // stored as aligned DWORD pairs, read via *(i64*)& (authentic -- a real __int64
+    // member forces 8-byte struct alignment and regresses every method).
     i32 m_430; // +0x430  overlay-A deadline clock (int64 low, high at m_434)
     i32 m_434; // +0x434
     i32 m_438; // +0x438  overlay-A interval (int64 low, high at m_43c)
@@ -323,14 +332,15 @@ public:
     i32 m_448; // +0x448  overlay-B interval (int64 low, high at m_44c)
     i32 m_44c; // +0x44c
     char m_pad450_470[0x470 - 0x450];
-    i32 m_470; // +0x470  overlay-A enable flag
-    i32 m_474; // +0x474  overlay-B enable flag
+    i32 m_overlayAActive; // +0x470  overlay-A enable flag
+    i32 m_overlayBActive; // +0x474  overlay-B enable flag
     char m_pad478_488[0x488 - 0x478];
     CByteArray m_488; // +0x488
     char m_pad49c_520[0x520 - 0x49c];
-    CNetSession2* m_520;     // +0x520  heap obj (thiscall teardown + _RezFree)
-    CMultiReportGate* m_524; // +0x524  released via vtable +0x4 scalar dtor; the join/report gate
-    i32 m_528;               // +0x528  is-host latch
+    CNetSession2* m_session; // +0x520  heap obj (thiscall teardown + _RezFree)
+    CMultiReportGate*
+        m_netGate; // +0x524  released via vtable +0x4 scalar dtor; the join/report gate
+    i32 m_isHost;  // +0x528  is-host latch
     char m_pad52c_534[0x534 - 0x52c];
     i32 m_534; // +0x534  reset by Connect
     char m_pad538_564[0x564 - 0x538];
@@ -338,34 +348,34 @@ public:
     char m_pad568_574[0x574 - 0x568];
     i32 m_574; // +0x574  stall latch
     char m_pad578_57c[0x57c - 0x578];
-    i32 m_57c; // +0x57c  pump-active reentrancy guard
-    i32 m_580; // +0x580  gate flag
+    i32 m_pumpGuard; // +0x57c  pump-active reentrancy guard
+    i32 m_connected; // +0x580  gate flag
     char m_pad584_588[0x588 - 0x584];
     i32 m_588; // +0x588  armed flag
     char m_pad58c_590[0x590 - 0x58c];
-    i32 m_590;     // +0x590  copied to m_4->m_110 on teardown
-    i32 m_594;     // +0x594  ambient-enable gate
-    CString m_598; // +0x598
-    CString m_59c; // +0x59c
-    CString m_5a0; // +0x5a0
-    u8 m_5a4;      // +0x5a4  step shift base (used as byte/word; follows m_5a0)
+    i32 m_590;           // +0x590  copied to m_logic->m_110 on teardown
+    i32 m_594;           // +0x594  ambient-enable gate
+    CString m_598;       // +0x598
+    CString m_groupName; // +0x59c
+    CString m_hostName;  // +0x5a0
+    u8 m_5a4;            // +0x5a4  step shift base (used as byte/word; follows m_hostName)
     char m_pad5a5_5a8[0x5a8 - 0x5a5];
-    i32 m_5a8; // +0x5a8  drain reload value
+    i32 m_drainReload; // +0x5a8  drain reload value
     char m_pad5ac_5b4[0x5b4 - 0x5ac];
-    CString m_5b4; // +0x5b4
-    CString m_5b8; // +0x5b8
-    i32 m_5bc;     // +0x5bc  gate flag
-    i32 m_5c0;     // +0x5c0  host index (ResolveHost arg)
+    CString m_5b4;   // +0x5b4
+    CString m_5b8;   // +0x5b8
+    i32 m_5bc;       // +0x5bc  gate flag
+    i32 m_hostIndex; // +0x5c0  host index (ResolveHost arg)
     char m_pad5c4_5cc[0x5cc - 0x5c4];
-    i32 m_5cc; // +0x5cc  current slot id
-    i32 m_5d0; // +0x5d0
-    i32 m_5d4; // +0x5d4  remaining-time accumulator
-    i32 m_5d8; // +0x5d8  frame delta
-    i32 m_5dc; // +0x5dc  last timeGetTime
-    i32 m_5e0; // +0x5e0  accumulated time
-    i32 m_5e4; // +0x5e4  second timeGetTime
-    i32 m_5e8; // +0x5e8
-    i32 m_5ec; // +0x5ec
+    i32 m_curSlotId;  // +0x5cc  current slot id
+    i32 m_5d0;        // +0x5d0
+    i32 m_drainTimer; // +0x5d4  remaining-time accumulator
+    i32 m_frameDelta; // +0x5d8  frame delta
+    i32 m_lastTime;   // +0x5dc  last timeGetTime
+    i32 m_accumTime;  // +0x5e0  accumulated time
+    i32 m_5e4;        // +0x5e4  second timeGetTime
+    i32 m_5e8;        // +0x5e8
+    i32 m_5ec;        // +0x5ec
     char m_pad5f0_604[0x604 - 0x5f0];
     CByteArray m_604; // +0x604
 };

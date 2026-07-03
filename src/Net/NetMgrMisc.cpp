@@ -94,11 +94,11 @@ void CNetConnCoord::Step() {
 RVA(0x000c40b0, 0x42)
 void CNetConnCoord::Drive() {
     CMulti* netMgr = g_64bd5c;
-    if (netMgr->m_528 != 0) {
+    if (netMgr->m_isHost != 0) {
         netMgr->BroadcastChannelTable(0);
         OpC(1);
     } else {
-        i32 transformedPlayerId = m_transform->Transform(netMgr->m_5c0);
+        i32 transformedPlayerId = m_transform->Transform(netMgr->m_hostIndex);
         g_64bd5c->BroadcastOneChannel(transformedPlayerId);
     }
 }

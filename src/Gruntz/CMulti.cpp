@@ -2,7 +2,7 @@
 // from RTTI (.?AVCMulti@@, vtable 0x5e9fe4) after the dynamic-this tracer
 // mis-attributed the 0x08d270 / 0x0b6110-0x0bc420 cluster to CPlay: every method
 // touches the networking/lobby sub-object block at member offsets > +0x510
-// (m_524 / m_580 / m_59c / m_5a0 / m_5bc / m_604) and the MULTI_JOIN /
+// (m_netGate / m_connected / m_groupName / m_hostName / m_5bc / m_604) and the MULTI_JOIN /
 // "Error: %s - %i" / "%s (%i)" lobby strings, which CPlay (layout tops at +0x510)
 // has not got. CMulti : public CPlay, public CState (CHD numBaseClasses=3); the
 // most-derived dtor walks down stamping CMulti -> CPlay -> CState vtables.
@@ -10,7 +10,7 @@
 // Reconstructed in ascending retail-RVA order. Field names are placeholders;
 // only the OFFSETS + the per-method call/branch structure are load-bearing
 // (campaign carcass doctrine). Engine callees (SendNetStat / SendStatFlag / the
-// m_4 logic object / the heap deleters / the MFC CString/CByteArray dtors) are
+// m_logic logic object / the heap deleters / the MFC CString/CByteArray dtors) are
 // external no-body fns -> their `call rel32` are reloc-masked.
 #include <rva.h>
 #include <Gruntz/CMulti.h>
@@ -49,10 +49,10 @@ typedef i32(WINAPI* ShowCursorFn)(i32);
 DATA(0x002c44c4)
 extern ShowCursorFn g_ShowCursor;
 
-// The string registry lookup on CMulti::m_8 (returns a state pointer or 0). 0x0053c030
+// The string registry lookup on CMulti::m_stateReg (returns a state pointer or 0). 0x0053c030
 extern "C" void* RegistryFind(void* reg, char* key); // FUN_0053c030 (__cdecl-ish, see body)
 
-// The CNetMgr report-gate (m_524) net-bind entry points (reloc-masked thiscall).
+// The CNetMgr report-gate (m_netGate) net-bind entry points (reloc-masked thiscall).
 class CMultiNetGate {
 public:
     i32 Bind(i32* tmpl);        // 0x00578170  bind to the host template -> nonzero ok
@@ -60,14 +60,14 @@ public:
     i32 OpenPlayer(char* name); // 0x005786d0 -> player id (0 fail)
 };
 
-// The player record OpenPlayer returns (stashed in m_524->m_74); its group-name
+// The player record OpenPlayer returns (stashed in m_netGate->m_74); its group-name
 // accessor is read in StartTitle. 0x004b76a0.
 class CMultiPlayer {
 public:
     char* GroupName(); // 0x004b76a0
 };
 
-// The sub-window object at m_c->m_20: two thiscall ticks in Tick's present tail.
+// The sub-window object at m_view->m_20: two thiscall ticks in Tick's present tail.
 class CMultiTickWin {
 public:
     void TickWinA(i32 now); // winapi_136e20
@@ -76,7 +76,7 @@ public:
 // Tick's present-finish wait (cdecl free fn). 0x0013dfe0
 extern void ActiveWait(i32 phase);
 
-// The render-sub object reached via m_c->m_24->m_5c (thiscall). FUN_00563300.
+// The render-sub object reached via m_view->m_24->m_5c (thiscall). FUN_00563300.
 class CMultiSubTick {
 public:
     void SubTick(); // 0x00563300
@@ -161,8 +161,8 @@ CMulti::~CMulti() {
     m_604.~CByteArray();
     m_5b8.~CString();
     m_5b4.~CString();
-    m_5a0.~CString();
-    m_59c.~CString();
+    m_hostName.~CString();
+    m_groupName.~CString();
     m_598.~CString();
     // CPlay sub-object: ~CPlay stamps ??_7CPlay then runs CPlayDtorBody.
     ((CPlay*)this)->CPlay::~CPlay();
@@ -180,38 +180,38 @@ CMulti::~CMulti() {
 
 // ===========================================================================
 // CMulti::Teardown  @ 0x0b6110  - drains the lobby state on teardown: if the
-// join gate is fully armed (m_524 && m_5bc && m_520 && m_580) push the two final
-// stat updates, then free the two heap lobby sub-objects (m_520, m_320), release
-// the report gate object (m_524, via its vtable dtor), and hand m_590 back to the
-// logic object (m_4->m_110).
+// join gate is fully armed (m_netGate && m_5bc && m_session && m_connected) push the two final
+// stat updates, then free the two heap lobby sub-objects (m_session, m_attractOverlay), release
+// the report gate object (m_netGate, via its vtable dtor), and hand m_590 back to the
+// logic object (m_logic->m_110).
 // ===========================================================================
 RVA(0x000b6110, 0xc7)
 void CMulti::Teardown() {
-    if (m_524 && m_5bc && m_520 && m_580) {
+    if (m_netGate && m_5bc && m_session && m_connected) {
         SendNetStat(0x402, 0x4d2, 1);
         SendStatFlag(0x3ea, 1);
     }
-    CNetSession2* p520 = m_520;
+    CNetSession2* p520 = m_session;
     if (p520) {
         p520->Teardown();
         RezFree(p520);
-        m_520 = 0;
+        m_session = 0;
     }
-    if (m_524) {
-        m_524->ScalarDtor(1);
-        m_524 = 0;
+    if (m_netGate) {
+        m_netGate->ScalarDtor(1);
+        m_netGate = 0;
     }
-    CLobbyObjA* p320 = m_320;
+    CLobbyObjA* p320 = m_attractOverlay;
     if (p320) {
         p320->Teardown();
         RezFree(p320);
-        m_320 = 0;
+        m_attractOverlay = 0;
     }
-    m_4->m_110 = m_590;
+    m_logic->m_110 = m_590;
     CPlayDtorBody();
 }
 
-// FUN_00021bd0 is invoked both on `this` (CMulti) and on m_4->m_5c; one symbol,
+// FUN_00021bd0 is invoked both on `this` (CMulti) and on m_logic->m_5c; one symbol,
 // so it is modeled on a neutral helper and reached by cast at both sites.
 class CRefresh21bd0 {
 public:
@@ -220,43 +220,43 @@ public:
 
 // ===========================================================================
 // CMulti::StartSession  @ 0x0b6580  - resolve the chosen host, reseed the RNG +
-// the frame timers, prime the per-slot config table (m_4->m_150[0..3]), load the
+// the frame timers, prime the per-slot config table (m_logic->m_150[0..3]), load the
 // level, then re-arm everything for the live session. Returns 1 on success.
 // ===========================================================================
 RVA(0x000b6580, 0x1eb)
 i32 CMulti::StartSession(i32 mode, i32 unused) {
     g_6455fc = 0;
-    i32* host = m_4->ResolveHost(m_5c0);
+    i32* host = m_logic->ResolveHost(m_hostIndex);
     if (!host) {
         return 0;
     }
     g_644c54 = *host;
-    srand(m_2d8);
+    srand(m_rngSeed);
     g_648cec = 0;
     g_645584 = 0;
     g_645580 = 0;
     g_645588 = 0;
     m_1cc = 0;
     m_5d0 = 0;
-    m_5d4 = 0;
-    m_5dc = timeGetTime();
-    m_5d8 = 0;
+    m_drainTimer = 0;
+    m_lastTime = timeGetTime();
+    m_frameDelta = 0;
     m_5ec = 0;
     m_5e8 = 0;
-    m_5e0 = 0;
+    m_accumTime = 0;
     m_5e4 = timeGetTime();
     m_574 = 0;
-    m_5cc = m_520->m_10 - 1;
+    m_curSlotId = m_session->m_10 - 1;
     if (LoadLevelByMode(mode, 0) == 0) {
         return 0;
     }
     for (i32 i = 0; i < 4; ++i) {
-        CGruntzMgrOptions* e = &m_4->m_150[i];
+        CGruntzMgrOptions* e = &m_logic->m_150[i];
         if (e == 0) {
             return 0;
         }
         e->m_inner.FreeSlot();
-        if (e->m_inner.Load(m_4, i, e->m_10) == 0) {
+        if (e->m_inner.Load(m_logic, i, e->m_10) == 0) {
             return 0;
         }
         if (e->m_14 && e->m_20) {
@@ -264,54 +264,54 @@ i32 CMulti::StartSession(i32 mode, i32 unused) {
         }
     }
     this->RefreshSlotTable();
-    srand(m_2d8);
+    srand(m_rngSeed);
     g_645584 = 0;
     g_645580 = 0;
     g_645588 = 0;
     m_1cc = 0;
     m_5d0 = 0;
-    m_5d4 = 0;
-    m_5dc = timeGetTime();
-    m_5d8 = 0;
+    m_drainTimer = 0;
+    m_lastTime = timeGetTime();
+    m_frameDelta = 0;
     m_5ec = 0;
     m_5e8 = 0;
-    m_5e0 = 0;
+    m_accumTime = 0;
     m_5e4 = timeGetTime();
-    m_5cc = m_520->m_10 - 1;
+    m_curSlotId = m_session->m_10 - 1;
     m_574 = 0;
-    ((CRefresh21bd0*)m_4->m_5c)->Refresh();
-    m_520->StartTick();
-    m_4->m_60->StartTitleHook();
+    ((CRefresh21bd0*)m_logic->m_5c)->Refresh();
+    m_session->StartTick();
+    m_logic->m_60->StartTitleHook();
     return 1;
 }
 
 // ===========================================================================
-// CMulti::Connect  @ 0x0b67f0  - probe the chosen session on m_4; on failure
-// report the netbind error, else run the connect-wait pump (m_57c reentrancy
-// guard) and mark m_580 on success.
+// CMulti::Connect  @ 0x0b67f0  - probe the chosen session on m_logic; on failure
+// report the netbind error, else run the connect-wait pump (m_pumpGuard reentrancy
+// guard) and mark m_connected on success.
 // ===========================================================================
 // @early-stop
 // zero-register-pinning wall (docs/patterns/zero-register-pinning.md): the body
 // is the complete, correct reconstruction. Retail pins edi=0 once (xor edi,edi)
-// and reuses it for the two arg pushes AND the m_580/m_534 stores, while our /O2
+// and reuses it for the two arg pushes AND the m_connected/m_534 stores, while our /O2
 // emits immediate `push $0` + `mov [esi+N],$0`. Structure + offsets are
 // byte-exact; only the constant-0 materialization differs, and no source lever
 // (`int z=0;`, reorder) forces the pinning under /O2. Deferred to the final sweep.
 RVA(0x000b67f0, 0x74)
 i32 CMulti::Connect(i32 mode) {
-    m_580 = 0;
+    m_connected = 0;
     m_534 = 0;
-    if (m_4->ProbeSession(mode, 0, 0) == 0) {
-        m_4->ReportError(0x8005, 0x446);
+    if (m_logic->ProbeSession(mode, 0, 0) == 0) {
+        m_logic->ReportError(0x8005, 0x446);
         return 0;
     }
-    m_57c = 1;
+    m_pumpGuard = 1;
     i32 r = PumpA();
-    m_57c = 0;
+    m_pumpGuard = 0;
     if (r == 0) {
         return 0;
     }
-    m_580 = 1;
+    m_connected = 1;
     return 1;
 }
 
@@ -322,8 +322,8 @@ i32 CMulti::Connect(i32 mode) {
 // ===========================================================================
 // @early-stop
 // regalloc / scheduling wall: the body is the complete, correct reconstruction
-// (the redraw vfn call, the timeGetTime delta math into m_5d8/m_5e0, the slot
-// arm via m_520->ArmSlot, the Step/Drain clamp, then the busy/stall branch and
+// (the redraw vfn call, the timeGetTime delta math into m_frameDelta/m_accumTime, the slot
+// arm via m_session->ArmSlot, the Step/Drain clamp, then the busy/stall branch and
 // the present tail). MSVC pins ebp=this and threads the timeGetTime import ptr
 // through a callee-saved reg across the whole body; our /O2 lowering picks a
 // different this/scratch allocation and reorders the m_5dx stores, so the
@@ -333,15 +333,15 @@ RVA(0x000b6890, 0x21b)
 i32 CMulti::Tick() {
     m_414 = 0;
     vtbl()->Redraw(this, 0, m_150, m_154);
-    i32 oldT = m_5dc;
+    i32 oldT = m_lastTime;
     i32 t = timeGetTime();
-    m_5dc = t;
-    m_5d8 = t - oldT;
-    m_5e0 += (t - oldT);
-    i32 newId = m_520->m_10;
-    if (m_5cc != newId) {
-        m_5cc = newId;
-        CMultiLogicList* lst = m_4->m_6c;
+    m_lastTime = t;
+    m_frameDelta = t - oldT;
+    m_accumTime += (t - oldT);
+    i32 newId = m_session->m_10;
+    if (m_curSlotId != newId) {
+        m_curSlotId = newId;
+        CMultiLogicList* lst = m_logic->m_6c;
         CMultiLogicNode* node;
         if (lst->m_28 == 0) {
             node = 0;
@@ -350,58 +350,58 @@ i32 CMulti::Tick() {
         }
         if (node) {
             node->m_c = 1;
-            i32 v = m_5cc + (i32)m_5a4 * 2;
+            i32 v = m_curSlotId + (i32)m_5a4 * 2;
             i32 s = v < 0 ? -v : v;
             s &= 0x7f;
             node->m_6 = (u8)(v < 0 ? -s : s);
         }
-        m_520->ArmSlot(node, (i32)(u8)((u8)m_5a4 << 1));
+        m_session->ArmSlot(node, (i32)(u8)((u8)m_5a4 << 1));
     }
-    i32 dt = m_5d8;
+    i32 dt = m_frameDelta;
     if ((u32)dt >= g_645584) {
         dt = (i32)g_645584;
     }
-    m_2d0 = m_520->Step(dt);
-    m_2d4 = 0;
-    if ((u32)m_5d8 < (u32)m_5d4) {
-        m_5d4 = m_5d4 - m_5d8;
+    m_stepResult = m_session->Step(dt);
+    m_drainResult = 0;
+    if ((u32)m_frameDelta < (u32)m_drainTimer) {
+        m_drainTimer = m_drainTimer - m_frameDelta;
     } else {
-        m_5d4 = 0;
+        m_drainTimer = 0;
     }
-    if (m_5d4 == 0) {
-        m_2d4 = m_520->Drain();
-        m_5d4 = m_5a8;
+    if (m_drainTimer == 0) {
+        m_drainResult = m_session->Drain();
+        m_drainTimer = m_drainReload;
     }
     i32 fin = 0;
-    if (m_520->IsBusy() && m_564 == 0) {
+    if (m_session->IsBusy() && m_564 == 0) {
         fin = 1;
     }
     vtbl()->PostRedraw(this);
-    void* sub = *(void**)((char*)*(void**)((char*)m_c + 0x24) + 0x5c);
+    void* sub = *(void**)((char*)*(void**)((char*)m_view + 0x24) + 0x5c);
     if (sub) {
-        ((CMultiSubTick*)sub)->SubTick(); // FUN_00563300 (thiscall on m_c->m_24->m_5c)
+        ((CMultiSubTick*)sub)->SubTick(); // FUN_00563300 (thiscall on m_view->m_24->m_5c)
     }
     if (fin == 0) {
-        if (m_520->IsStalled() == 0 && m_574 == 0) {
-            if (m_528 != 0) {
+        if (m_session->IsStalled() == 0 && m_574 == 0) {
+            if (m_isHost != 0) {
                 SendStatFlag(0x404, 1);
                 OnOutOfSync();
                 PumpA();
-                m_5d4 = 0;
+                m_drainTimer = 0;
                 return 1;
             }
             SendStatFlag(0x403, 1);
         }
         PumpA();
-        m_5d4 = 0;
+        m_drainTimer = 0;
         return 1;
     }
     PumpB();
     DropTimeout();
-    CMultiTickWin* win = (CMultiTickWin*)*(void**)((char*)m_c + 0x20);
+    CMultiTickWin* win = (CMultiTickWin*)*(void**)((char*)m_view + 0x20);
     if (win) {
         i32 now = timeGetTime();
-        win->TickWinA(now); // winapi_136e20 (thiscall on m_c->m_20, arg now)
+        win->TickWinA(now); // winapi_136e20 (thiscall on m_view->m_20, arg now)
         win->TickWinB(now); // winapi_137ac0 (thiscall, arg now)
     }
     ActiveWait(2); // FUN_0013dfe0 ActiveWait(2)
@@ -434,7 +434,7 @@ extern "C" u32 g_64559c; // 0x64559c  stat timer 4
 DATA(0x002455a0)
 extern "C" u32 g_6455a0; // 0x6455a0  stat timer 5
 
-// The redraw vfn host at (CMulti::m_c)->m_8: two thiscall slots pumped each
+// The redraw vfn host at (CMulti::m_view)->m_8: two thiscall slots pumped each
 // frame (real virtuals so the dispatch is ecx=this, no push).
 struct McObj {
     virtual void v0() = 0;
@@ -455,7 +455,7 @@ struct McObj {
     virtual void v15() = 0;
     virtual void Slot40() = 0; // +0x40
 };
-struct McHost { // CMulti::m_c
+struct McHost { // CMulti::m_view
     char m_pad0[8];
     McObj* m_8; // +0x08
 };
@@ -483,7 +483,7 @@ class CMultiSub70 { // CGruntzMgr::m_70
 public:
     void Step3562(CGruntzMgr* logic); // 0x3562
 };
-class CMultiSubDC { // CMulti::m_2dc
+class CMultiSubDC { // CMulti::m_fxOverlay
 public:
     void Step34bd(i32 dt); // 0x34bd
 };
@@ -493,15 +493,15 @@ public:
 };
 
 // @early-stop
-// large-body regalloc/scheduling wall (~88%). Prologue, the m_594/m_4->m_c/ready
+// large-body regalloc/scheduling wall (~88%). Prologue, the m_594/m_logic->m_c/ready
 // early-out, the shared-clock advance and frame size (sub esp,0x44) are byte-exact
 // (llvm-objdump -dr); the residual is MSVC5's register/branch choices across the
-// five stat-timer decay blocks + the m_c->m_8 vfn-host dispatch on this 670-byte
+// five stat-timer decay blocks + the m_view->m_8 vfn-host dispatch on this 670-byte
 // body (0-in-ebp reuse, g_645584 single-load hoisting), not steerable from source.
 RVA(0x000b6b40, 0x29e)
 i32 CMulti::PumpA() {
     i32 ready = PumpAReady();
-    if (m_594 == 0 && m_4->m_c != 0 && ready == 0) {
+    if (m_594 == 0 && m_logic->m_c != 0 && ready == 0) {
         PumpAReset();
         return 1;
     }
@@ -510,26 +510,26 @@ i32 CMulti::PumpA() {
     g_645584 = 0x21;
     g_killCueClock = g_645580;
     g_6bf3bc = 0x21;
-    if (m_348 == 0) {
+    if (m_ambientArmed == 0) {
         if ((i64)(u32)g_645588 - *(i64*)&m_338 >= *(i64*)&m_340) {
             char name[0x40];
             wsprintfA(name, "AMBIENT%d", PumpAIndex());
             if (*(i32*)((char*)g_64556c + 0x14) != 0) {
-                m_4->m_48->Play_138840(name, 1);
+                m_logic->m_48->Play_138840(name, 1);
             } else {
-                CGruntzSoundInnerZ* p = m_4->m_48->Lookup_138730(name);
+                CGruntzSoundInnerZ* p = m_logic->m_48->Lookup_138730(name);
                 if (p) {
-                    m_4->m_48->m_1c = p;
+                    m_logic->m_48->m_1c = p;
                 }
-                if (m_4->m_48->m_1c) {
-                    m_4->m_48->m_1c->Do139030(1);
+                if (m_logic->m_48->m_1c) {
+                    m_logic->m_48->m_1c->Do139030(1);
                 }
             }
-            m_348 = 1;
+            m_ambientArmed = 1;
         }
     }
-    m_4->m_6c->Step20b3(m_5cc % 128);
-    m_520->Step2437();
+    m_logic->m_6c->Step20b3(m_curSlotId % 128);
+    m_session->Step2437();
     g_64558c++;
     u32 t1 = g_645590 ? g_645590 : 0x32;
     if (g_645584 < t1) {
@@ -561,42 +561,42 @@ i32 CMulti::PumpA() {
     } else {
         g_6455a0 = 0;
     }
-    ((McHost*)m_c)->m_8->Slot24();
-    ((McHost*)m_c)->m_8->Slot40();
-    m_4->m_68->Step3017(g_645584);
-    m_2dc->Step34bd(g_645584);
-    CMultiTickWin* win = (CMultiTickWin*)*(void**)((char*)m_c + 0x20);
+    ((McHost*)m_view)->m_8->Slot24();
+    ((McHost*)m_view)->m_8->Slot40();
+    m_logic->m_68->Step3017(g_645584);
+    m_fxOverlay->Step34bd(g_645584);
+    CMultiTickWin* win = (CMultiTickWin*)*(void**)((char*)m_view + 0x20);
     if (win) {
         i32 now = timeGetTime();
         win->TickWinA(now);
         win->TickWinB(now);
     }
     m_2e4->Step2cc0(g_645584);
-    m_4->m_70->Step3562(m_4);
+    m_logic->m_70->Step3562(m_logic);
     if (ready == 0) {
         PumpAReset();
     }
-    m_4->Step2d33();
+    m_logic->Step2d33();
     return 1;
 }
 
 // ===========================================================================
 // CMulti::PumpB  @ 0x0b6e90  - the lobby/attract render pump. A light path when
-// the game is idle (m_594==0 && m_4->m_c!=0) drives just the compositor + the
+// the game is idle (m_594==0 && m_logic->m_c!=0) drives just the compositor + the
 // primary pane; otherwise the full frame runs: two deadline-gated FX, the
-// m_c manager sub-tree (panes m_10/m_14, the +0xc vfn host, the +0x24 chain),
-// the ambient overlays (m_2dc/m_2e0/m_320) and two int64 clock gates against
+// m_view manager sub-tree (panes m_10/m_14, the +0xc vfn host, the +0x24 chain),
+// the ambient overlays (m_fxOverlay/m_2e0/m_attractOverlay) and two int64 clock gates against
 // g_645588. All callees are out-of-line (reloc-masked); PumpB's members not in
 // CMulti.h are reached through dedicated view structs / documented offsets.
 // ---------------------------------------------------------------------------
 
-// The per-pane render target hung off m_c->m_4->{m_10,m_14}->m_2c (thiscall).
+// The per-pane render target hung off m_view->m_4->{m_10,m_14}->m_2c (thiscall).
 class PBRenderTarget {
 public:
     void Present850(i32 flag); // 0x0013e850
     void Present760(i32 flag); // 0x0013e760
 };
-// A render pane (m_c->m_4->m_10 / ->m_14). m_14 also owns the palette blit.
+// A render pane (m_view->m_4->m_10 / ->m_14). m_14 also owns the palette blit.
 class PBPane {
 public:
     char m_pad00_2c[0x2c];
@@ -621,29 +621,29 @@ public:
     virtual void s12();
     virtual void Blit34(void* a, void* b); // +0x34
 };
-// The m_c->m_24 chain and its +0x5c compositor target.
-class PBCompTarget { // m_c->m_24->m_5c
+// The m_view->m_24 chain and its +0x5c compositor target.
+class PBCompTarget { // m_view->m_24->m_5c
 public:
     char m_pad00_84[0x84];
-    i32 m_84;           // +0x84
-    i32 m_88;           // +0x88
+    i32 m_width;        // +0x84
+    i32 m_height;       // +0x88
     void Flush163370(); // 0x00163370 (thiscall on m_5c)
 };
-class PBComp { // m_c->m_24
+class PBComp { // m_view->m_24
 public:
     char m_pad00_5c[0x5c];
     PBCompTarget* m_5c;                  // +0x5c
     void M15dc90(void* pane, void* ctx); // 0x0015dc90
 };
-// The m_c manager sub-object tree.
-class PBSub4 { // m_c->m_4
+// The m_view manager sub-object tree.
+class PBSub4 { // m_view->m_4
 public:
     char m_pad00_10[0x10];
     PBPane* m_10; // +0x10
     PBPane* m_14; // +0x14
     void* m_18;   // +0x18
 };
-class PBMgr { // CMulti::m_c
+class PBMgr { // CMulti::m_view
 public:
     void* m_0;
     PBSub4* m_4;    // +0x04
@@ -665,16 +665,16 @@ public:
 class PBSub68 {
 public:
     char m_pad00_230[0x230];
-    i32 m_230;        // +0x230  armed gate
+    i32 m_armed;      // +0x230  armed gate
     void Fire1398();  // 0x00001398
     void Reset2b85(); // 0x00002b85
 };
-// m_2dc: the primary FX overlay (state at +0, mode at +0x10c) reached in PumpB.
+// m_fxOverlay: the primary FX overlay (state at +0, mode at +0x10c) reached in PumpB.
 class PBSubDC {
 public:
     i32 m_0; // +0x00  state
     char m_pad04_10c[0x10c - 0x04];
-    i32 m_10c;          // +0x10c mode
+    i32 m_mode;         // +0x10c mode
     void Present21b7(); // 0x000021b7
     void Advance125d(); // 0x0000125d
 };
@@ -682,7 +682,7 @@ class PBSub2e0 { // CMulti::m_2e0
 public:
     void Step2bfd(void* pane); // 0x00002bfd
 };
-class PBSub320 { // CMulti::m_320 (attract-mode overlay)
+class PBSub320 { // CMulti::m_attractOverlay (attract-mode overlay)
 public:
     void Tick1fa0(u32 clock, i32 flag);    // 0x00001fa0
     void Render14dd(void* pane, RECT* rc); // 0x000014dd
@@ -693,19 +693,19 @@ extern "C" void PumpBRefresh2356(void* reg, void* fx, i32 flag);
 // @early-stop
 // large-body regalloc/scheduling wall (~83%). All branch structure is byte-exact
 // (the two int64 deadline gates' jl/jg/jb triples, the small/big split, the
-// m_320 render sub-block all align in llvm-objdump -dr base vs target); the
+// m_attractOverlay render sub-block all align in llvm-objdump -dr base vs target); the
 // residual is MSVC5 reordering the push/mov/call scheduling across this 845-byte
 // body (prologue reg-save order, arg-eval interleave) plus the else-branch's
 // redundant m_90 rc.top store the retail optimizer keeps (rc escaped to SetRect)
 // - not steerable from source. Sibling of the PumpA (~88%) wall.
 RVA(0x000b6e90, 0x34d)
 void CMulti::PumpB() {
-    PBMgr* mgr = (PBMgr*)m_c;
-    if (m_594 == 0 && m_4->m_c != 0) {
+    PBMgr* mgr = (PBMgr*)m_view;
+    if (m_594 == 0 && m_logic->m_c != 0) {
         StepInputA();
         mgr->m_24->M15dc90(mgr->m_4->m_14, mgr->m_8);
         mgr->m_c->Blit34(mgr->m_4->m_14, mgr->m_4->m_18);
-        ((PBSubDC*)m_2dc)->Present21b7();
+        ((PBSubDC*)m_fxOverlay)->Present21b7();
         PBPane* h = mgr->m_4->m_14;
         if (h == 0) {
             return;
@@ -717,29 +717,29 @@ void CMulti::PumpB() {
     }
     StepInputA();
     StepC();
-    if (m_470 != 0) {
+    if (m_overlayAActive != 0) {
         mgr->m_4->m_14->m_2c->Present760(0);
-        ((PBSubDC*)m_2dc)->Advance125d();
+        ((PBSubDC*)m_fxOverlay)->Advance125d();
     }
-    if (m_30c == 0) {
-        if (((PBSub68*)m_4->m_68)->m_230 != 0) {
-            ((PBSub68*)m_4->m_68)->Fire1398();
+    if (m_paletteActive == 0) {
+        if (((PBSub68*)m_logic->m_68)->m_armed != 0) {
+            ((PBSub68*)m_logic->m_68)->Fire1398();
         } else {
             LoadScrollSpeedOptions();
         }
     }
     StepScroll();
-    (*(PBOutput**)((char*)m_4 + 0x54))->Blit1a7d(mgr->m_24->m_5c->m_84, mgr->m_24->m_5c->m_88);
-    if (m_474 != 0) {
+    m_logic->m_54->Blit1a7d(mgr->m_24->m_5c->m_width, mgr->m_24->m_5c->m_height);
+    if (m_overlayBActive != 0) {
         NotifyVisibleEntities();
     } else {
         mgr->m_24->M15dc90(mgr->m_4->m_14, mgr->m_8);
         mgr->m_c->Blit34(mgr->m_4->m_14, mgr->m_4->m_18);
     }
-    ((PBSubDC*)m_2dc)->Present21b7();
-    if (m_320 != 0) {
-        PBSubDC* fx = (PBSubDC*)m_2dc;
-        if (fx->m_0 != 2 && fx->m_10c != 5) {
+    ((PBSubDC*)m_fxOverlay)->Present21b7();
+    if (m_attractOverlay != 0) {
+        PBSubDC* fx = (PBSubDC*)m_fxOverlay;
+        if (fx->m_0 != 2 && fx->m_mode != 5) {
             RECT rc;
             if (fx->m_0 == 1) {
                 SetRect(&rc, 20, 5, 140, 125);
@@ -749,42 +749,42 @@ void CMulti::PumpB() {
                 rc.top = cx;
                 SetRect(&rc, cy - 140, 5, cy - 20, 125);
             }
-            PBSub320* ov = (PBSub320*)m_320;
+            PBSub320* ov = (PBSub320*)m_attractOverlay;
             ov->Tick1fa0(g_645584, 0);
             ov->Render14dd(mgr->m_4->m_14, &rc);
         }
     }
-    ((PBListSink*)m_4->m_5c)->Tick441c(g_645584);
+    ((PBListSink*)m_logic->m_5c)->Tick441c(g_645584);
     PBPane* h = mgr->m_4->m_14;
     if (h == 0) {
         return;
     }
     ((PBSub2e0*)m_2e0)->Step2bfd(h);
     DrawDebugStats();
-    ((PBSub68*)m_4->m_68)->Reset2b85();
+    ((PBSub68*)m_logic->m_68)->Reset2b85();
     StepGridWalk(g_645584);
     CopyRect(h);
-    if (m_30c != 0) {
-        h->Blit163f40(m_310, 0xff);
+    if (m_paletteActive != 0) {
+        h->Blit163f40(m_palette, 0xff);
     }
     mgr->m_4->m_10->m_2c->Present850(0);
-    PumpBRefresh2356(g_64556c, m_2dc, m_470);
+    PumpBRefresh2356(g_64556c, m_fxOverlay, m_overlayAActive);
     if (mgr->m_24->m_5c != 0) {
         mgr->m_24->m_5c->Flush163370();
     }
-    if (m_470 != 0) {
+    if (m_overlayAActive != 0) {
         if ((i64)g_645588 - *(i64*)&m_430 >= *(i64*)&m_438) {
             OnRegion2(0);
         }
     }
-    if (m_474 != 0) {
+    if (m_overlayBActive != 0) {
         if ((i64)g_645588 - *(i64*)&m_440 >= *(i64*)&m_448) {
             OnRegion1(0);
         }
     }
 }
 
-// The m_c->m_4 view-reset target (thiscall). FUN_00558dc0.
+// The m_view->m_4 view-reset target (thiscall). FUN_00558dc0.
 class CMultiViewReset {
 public:
     void Reset(); // 0x00558dc0
@@ -792,14 +792,14 @@ public:
 
 // ===========================================================================
 // CMulti::StartTitle  @ 0x0b72c0  - /GX: pick a randomized "TITLE%d" backdrop,
-// load it, reset the view + cursor, then bind the DirectPlay host (m_524) to the
+// load it, reset the view + cursor, then bind the DirectPlay host (m_netGate) to the
 // resolved descriptor, open the local player, and stash the host/group strings.
 // Returns 1 on a fully-bound session.
 // ===========================================================================
 // @early-stop
 // MFC CString temp + /GX EH wall: the body is the complete, correct
 // reconstruction (the TITLE%d Format, the LoadTitleScreen gate, the view/cursor
-// reset, the m_524 Bind/Activate/OpenPlayer net chain, and the two CString stash
+// reset, the m_netGate Bind/Activate/OpenPlayer net chain, and the two CString stash
 // helpers). Retail interleaves the EH-state stores (the [esp+...]=-1 funclet
 // indices) and the inline strlen+rep-movs CString constructions with a register
 // allocation our MSVC5 /O2 lowering reorders, and the empty-CString Init differs
@@ -807,14 +807,14 @@ public:
 // correct, byte-match deferred to the final sweep.
 RVA(0x000b72c0, 0x30b)
 i32 CMulti::StartTitle() {
-    m_4->m_9c = 0;
+    m_logic->m_9c = 0;
     m_588 = 1;
-    if (!m_524) {
+    if (!m_netGate) {
         return 0;
     }
-    i32 saved = m_2c;
-    void* st = RegistryFind(m_8, "STATEZ_ATTRACT");
-    m_2c = (i32)st;
+    i32 saved = m_curState;
+    void* st = RegistryFind(m_stateReg, "STATEZ_ATTRACT");
+    m_curState = (i32)st;
     if (!st) {
         return 0;
     }
@@ -822,48 +822,48 @@ i32 CMulti::StartTitle() {
     CString title;
     title.Format("TITLE%d", idx);
     if (LoadTitleScreen((char*)(const char*)title, 0, 0, 1, 0) == 0) {
-        m_2c = saved;
+        m_curState = saved;
         return 0;
     }
-    ((CMultiViewReset*)((char*)m_c + 4))->Reset(); // (m_c->m_4)->Reset()
-    void* vobj = *(void**)(*(void**)((char*)m_c + 0x1c));
+    ((CMultiViewReset*)((char*)m_view + 4))->Reset(); // (m_view->m_4)->Reset()
+    void* vobj = *(void**)(*(void**)((char*)m_view + 0x1c));
     (*(void(__stdcall**)(void*))((char*)*(void**)vobj + 0x28))(vobj); // vfn +0x28(vobj)
-    m_2c = saved;
+    m_curState = saved;
     while (g_ShowCursor(1) < 0) {
     }
-    if (!m_4->m_c0) {
+    if (!m_logic->m_c0) {
         return 0;
     }
-    CMultiLogicDesc* desc = m_4->m_c4;
+    CMultiLogicDesc* desc = m_logic->m_c4;
     if (!desc) {
         return 0;
     }
-    m_528 = (desc->m_flags & 2) ? 1 : 0;
+    m_isHost = (desc->m_flags & 2) ? 1 : 0;
     i32 tmpl[4];
     tmpl[0] = g_60fab8[0];
     tmpl[1] = g_60fab8[1];
     tmpl[2] = g_60fab8[2];
     tmpl[3] = g_60fab8[3];
-    if (((CMultiNetGate*)m_524)->Bind(tmpl) == 0) {
+    if (((CMultiNetGate*)m_netGate)->Bind(tmpl) == 0) {
         return 0;
     }
-    ((CMultiNetGate*)m_524)->Activate();
-    i32 id = ((CMultiNetGate*)m_524)->OpenPlayer(desc->m_8);
+    ((CMultiNetGate*)m_netGate)->Activate();
+    i32 id = ((CMultiNetGate*)m_netGate)->OpenPlayer(desc->m_8);
     if (id == 0) {
         return 0;
     }
-    *(i32*)((char*)m_524 + 0x74) = id;
+    *(i32*)((char*)m_netGate + 0x74) = id;
     CString hostName(*(char**)((char*)desc->m_c + 8)); // desc->m_c->m_8
-    ClearString5a0(hostName);                          // clear m_5a0, return the temp
+    ClearString5a0(hostName);                          // clear m_hostName, return the temp
     char* grp = ((CMultiPlayer*)(void*)id)->GroupName();
     CString grpName(grp);
-    ClearString59c(grpName); // clear m_59c, return the temp
-    i32 r = m_528 ? RebindHostAlt() : RebindHost();
+    ClearString59c(grpName); // clear m_groupName, return the temp
+    i32 r = m_isHost ? RebindHostAlt() : RebindHost();
     return r ? 1 : 0;
 }
 
 // ===========================================================================
-// CMulti::ClearString59c  @ 0x0b76c0  - assign an empty CString into m_59c,
+// CMulti::ClearString59c  @ 0x0b76c0  - assign an empty CString into m_groupName,
 // return the caller-supplied reference.
 // ===========================================================================
 // @early-stop
@@ -877,50 +877,50 @@ i32 CMulti::StartTitle() {
 // docs/patterns/cstring-empty-init-version-divergence.md, deferred to final sweep.
 RVA(0x000b76c0, 0x4f)
 CString& CMulti::ClearString59c(CString& s) {
-    m_59c = CString();
+    m_groupName = CString();
     return s;
 }
 
 // ===========================================================================
-// CMulti::ClearString5a0  @ 0x0b7730  - assign an empty CString into m_5a0.
+// CMulti::ClearString5a0  @ 0x0b7730  - assign an empty CString into m_hostName.
 // ===========================================================================
 // @early-stop
 // same MFC-version CString()-empty wall as ClearString59c (see above).
 RVA(0x000b7730, 0x4f)
 CString& CMulti::ClearString5a0(CString& s) {
-    m_5a0 = CString();
+    m_hostName = CString();
     return s;
 }
 
 // ===========================================================================
-// CMulti::GetString59c  @ 0x0b7a90  - return m_59c by value (NRVO copy).
+// CMulti::GetString59c  @ 0x0b7a90  - return m_groupName by value (NRVO copy).
 // ===========================================================================
 RVA(0x000b7a90, 0x23)
 CString CMulti::GetString59c() {
-    return m_59c;
+    return m_groupName;
 }
 
 // ===========================================================================
-// CMulti::GetString5a0  @ 0x0b7ad0  - return m_5a0 by value (NRVO copy).
+// CMulti::GetString5a0  @ 0x0b7ad0  - return m_hostName by value (NRVO copy).
 // ===========================================================================
 RVA(0x000b7ad0, 0x23)
 CString CMulti::GetString5a0() {
-    return m_5a0;
+    return m_hostName;
 }
 
 // ===========================================================================
 // CMulti::ReportVersionMsg  @ 0x0b7e30  - log a message line to the logic object
-// (m_4->LogLine). With code > 0, formats "<msg> (<code>)" first; else logs msg.
+// (m_logic->LogLine). With code > 0, formats "<msg> (<code>)" first; else logs msg.
 // ===========================================================================
 RVA(0x000b7e30, 0x63)
 void CMulti::ReportVersionMsg(char* msg, i32 code) {
     char buf[512];
-    if (msg && *msg && m_4) {
+    if (msg && *msg && m_logic) {
         if (code > 0) {
             sprintf(buf, "%s (%i)", msg, code);
-            m_4->LogLine(buf);
+            m_logic->LogLine(buf);
         } else {
-            m_4->LogLine(msg);
+            m_logic->LogLine(msg);
         }
     }
 }
@@ -933,7 +933,7 @@ void CMulti::ReportVersionMsg(char* msg, i32 code) {
 RVA(0x000b7f60, 0x52)
 void CMulti::ReportNetError() {
     char buf[512];
-    if (m_4 && g_code != 0x118) {
+    if (m_logic && g_code != 0x118) {
         sprintf(buf, "Error: %s - %i", g_szCode, g_code);
         ReportVersionMsg(buf, g_code);
     }
@@ -954,17 +954,17 @@ i32 CMulti::JoinSession() {
 
 // ===========================================================================
 // CMulti::RunErrorDialog  @ 0x0bc250  - run the modal lobby dialog on the logic
-// object (m_4): pre-hook m_4->m_60, run the 3-arg dialog, restore focus to
-// m_4->m_4->m_4, then ack the join failure. Returns the dialog result.
+// object (m_logic): pre-hook m_logic->m_60, run the 3-arg dialog, restore focus to
+// m_logic->m_4->m_4, then ack the join failure. Returns the dialog result.
 // ===========================================================================
 RVA(0x000bc250, 0x55)
 i32 CMulti::RunErrorDialog(char* tmpl, void* handler, i32 lparam) {
-    if (!m_4) {
+    if (!m_logic) {
         return 2;
     }
-    m_4->m_60->PreDialog();
-    i32 r = m_4->RunDialog(tmpl, handler, lparam);
-    MultiRestoreFocus(m_4->m_4->m_4);
+    m_logic->m_60->PreDialog();
+    i32 r = m_logic->RunDialog(tmpl, handler, lparam);
+    MultiRestoreFocus(m_logic->m_4->m_4);
     AckJoinFailure();
     return r;
 }
@@ -985,14 +985,14 @@ i32 CMulti::RunErrorDialog(char* tmpl, void* handler, i32 lparam) {
 // not. Deferred to the final sweep.
 RVA(0x000bc2d0, 0xd2)
 void CMulti::DropTimeout() {
-    if (m_520->FindSlot(0x1388) == 0) {
+    if (m_session->FindSlot(0x1388) == 0) {
         return;
     }
     if (g_648d14 < (u32)timeGetTime()) {
         AckJoinFailure();
         g_648d14 = timeGetTime() + 0x3e8;
     }
-    CLobbySlot* slot = m_520->FindSlot(0x2710);
+    CLobbySlot* slot = m_session->FindSlot(0x2710);
     if (slot == 0) {
         return;
     }
@@ -1005,11 +1005,11 @@ void CMulti::DropTimeout() {
 
 // ===========================================================================
 // CMulti::AckJoinFailure  @ 0x0bc420  - if the join gate is armed
-// (m_524 && m_5bc && m_580), push the join-failure stat flag.
+// (m_netGate && m_5bc && m_connected), push the join-failure stat flag.
 // ===========================================================================
 RVA(0x000bc420, 0x2b)
 void CMulti::AckJoinFailure() {
-    if (m_524 && m_5bc && m_580) {
+    if (m_netGate && m_5bc && m_connected) {
         SendStatFlag(0x3f6, 1);
     }
 }
