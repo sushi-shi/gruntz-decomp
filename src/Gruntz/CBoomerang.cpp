@@ -24,11 +24,11 @@ public:
     CBoomerang(CGameObject* owner);
     // The five slots CBoomerang overrides over CProjectile's vtable (all declared
     // only; their vftable references reloc-mask). slot 0 = scalar-deleting dtor.
-    virtual ~CBoomerang() OVERRIDE;           // slot 0  (origin CUserBase)
-    virtual i32 UserBaseVfunc1() OVERRIDE;    // slot 1  (origin CUserBase)
-    virtual i32 UserBaseVfunc2() OVERRIDE;    // slot 2  (origin CUserBase)
-    virtual i32 MovingLogicVfunc3() OVERRIDE; // slot 16 (origin CMovingLogic)
-    virtual i32 ProjectileVfunc() OVERRIDE;   // slot 17 (origin CProjectile)
+    virtual ~CBoomerang() OVERRIDE;         // slot 0  (origin CUserBase)
+    virtual i32 UserBaseVfunc1() OVERRIDE;  // slot 1  (origin CUserBase)
+    virtual i32 UserBaseVfunc2() OVERRIDE;  // slot 2  (origin CUserBase)
+    virtual void Update() OVERRIDE;         // slot 16 (origin CMovingLogic, overrides ::Update)
+    virtual i32 ProjectileVfunc() OVERRIDE; // slot 17 (origin CProjectile)
 };
 
 // @confidence: high

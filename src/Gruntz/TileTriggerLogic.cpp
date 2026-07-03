@@ -17,14 +17,11 @@ CTileTriggerLogic::CTileTriggerLogic() {
     m_1c = 0;
 }
 
-// Out-of-line stubs anchor the CTileTriggerLogic vftable in this TU (not matched).
-CTileTriggerLogic::~CTileTriggerLogic() {}
-// Scalar-deleting dtor (??_G, slot 0): a compiler-generated thunk wrapping the real
-// ~CTileTriggerLogic cleanup (0x32c bytes - substantial; not reconstructed, so this
-// only NAMES the retail function). MSVC synthesizes ??_G from the virtual dtor above.
-// @rva-symbol: ??_GCTileTriggerLogic@@UAEPAXI@Z 0x00116610 0x32c
-i32 CTileTriggerLogic::TileLogicVfunc0() {
-    return 0;
-}
+// The single slot-0 virtual (0x110c10, reached via ILT thunk 0x402072) is DECLARED
+// ONLY: its body lives in an unmatched engine TU, so the ctor-emitted ??_7 vftable
+// references it as an external reloc-masked slot (exactly retail's shared slot 0).
+// The derived logic classes (TileTriggerDerivedCtors.cpp) inherit this one slot.
+// (No virtual destructor: retail's derived vtables share this slot value, proving it
+// is a normal inherited virtual, not a per-class ??_G.)
 
 // size 0x9c recovered from operator-new sites (gruntz.analysis.news)

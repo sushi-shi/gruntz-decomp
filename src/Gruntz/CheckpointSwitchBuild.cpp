@@ -4,9 +4,21 @@
 //
 // Vtable-proven: 0x112a50 is slot 1 (+0x4) of ??_7CCheckpointTriggerSwitchLogic@@6B@,
 // adjacent to the class ctor at 0x1127f0 (TileTriggerDerivedCtors.cpp). Modeled here
-// with a local non-polymorphic view (slot 0 = the reloc-masked base builder) so its
-// codegen is preserved; the ctor's real polymorphic model lives in the ctor TU. Only
-// offsets / code bytes are load-bearing; helpers are reloc-masked externals.
+// with a local non-polymorphic view (slot 0 = the reloc-masked base builder = the
+// inherited CTileTriggerSwitchLogic slot-0 "build" virtual) so its codegen is
+// preserved; the ctor's real polymorphic model lives in the ctor TU (now derives the
+// real CTileTriggerSwitchLogic). Only offsets / code bytes are load-bearing; helpers
+// are reloc-masked externals.
+//
+// INHERITANCE HELD (final-sweep note): this local view is NOT re-based onto
+// CTileTriggerSwitchLogic because (1) BuildSmall calls slot 0 with an 8-arg build
+// signature the base header's placeholder Vf0 does not carry (would need a base
+// re-signature); (2) the +0x2c region is heterogeneous - an int m_block for the
+// switch family vs the CStatzRect60 here (needs a documented overlay/union); and
+// (3) including <Gruntz/TileTriggerSwitchLogic.h> would pull g_gameReg at RVA
+// 0x24556c, colliding with the local g_statzGameReg dual-view (a REQUIRED split,
+// [[vtable-realization-ctor-boundary]]).  BuildSmall is @early-stop on a codegen
+// wall, so re-basing yields zero match benefit.
 #include <rva.h>
 
 SIZE_UNKNOWN(CStatzRect60);
