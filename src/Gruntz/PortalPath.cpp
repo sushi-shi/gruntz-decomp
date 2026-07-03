@@ -57,3 +57,30 @@ i32 __stdcall LaunchPortalExe(char* outPath) {
     }
     return 1;
 }
+
+// 0x90860: the companion process spawner (paired with LaunchPortalExe above, which
+// resolves the path). __stdcall(exe, dir): build "<dir>\<exe>" (respecting a
+// trailing backslash, or bare exe when dir is empty) and CreateProcessA it with
+// `dir` as the working directory. Re-homed from src/Stub/ApiCallers.cpp.
+RVA(0x00090860, 0xd3)
+i32 __stdcall LaunchProcessInDir(char* exe, char* dir) {
+    char cmdline[256];
+    STARTUPINFOA si;
+    PROCESS_INFORMATION pi;
+    memset(&si, 0, sizeof(si));
+    si.cb = sizeof(si);
+    if (dir && *dir) {
+        i32 len = strlen(dir);
+        if (len > 0 && dir[len - 1] == '\\') {
+            wsprintfA(cmdline, "%s%s", dir, exe);
+        } else {
+            wsprintfA(cmdline, "%s\\%s", dir, exe);
+        }
+    } else {
+        wsprintfA(cmdline, "%s", exe);
+    }
+    if (dir && *dir == 0) {
+        dir = 0;
+    }
+    return CreateProcessA(0, cmdline, 0, 0, 0, 0, 0, dir, &si, &pi);
+}

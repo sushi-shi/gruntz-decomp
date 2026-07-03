@@ -37,13 +37,13 @@ extern "C" void* g_hResModule;
 // pool touches are pinned.
 // ---------------------------------------------------------------------------
 namespace ApiCallerStubs {
-    // The GDI surface node (list +0x10). Cleanup is the foreign teardown; SetPalette
-    // (this TU) latches the associated palette node ptr.
+    // The GDI surface node (list +0x10). Cleanup (this TU) releases its GDI object +
+    // Rez buffer; SetPalette (this TU) latches the associated palette node ptr.
     struct GdiOwner_175c90 {
         char m_pad0[0x428];                // +0x000..+0x427
-        i32 m_428;                         // +0x428
-        i32 m_42c;                         // +0x42c
-        i32 m_430;                         // +0x430
+        HGDIOBJ m_428;                     // +0x428  the cached GDI object
+        void* m_42c;                       // +0x42c
+        void* m_430;                       // +0x430  a Rez-allocated buffer
         i32 m_434;                         // +0x434
         i32 m_438;                         // +0x438
         i32 m_43c;                         // +0x43c
@@ -54,27 +54,40 @@ namespace ApiCallerStubs {
         i32 m_450;                         // +0x450 (not zeroed by the inlined ctor)
         i32 m_454;                         // +0x454  associated scalar
         void* m_paletteNode;               // +0x458  associated palette node
-        void Cleanup();                    // 0x175c90 (foreign, reloc-masked)
+        void Cleanup();                    // 0x175c90 (this TU)
         void SetPalette(void* pal, i32 a); // 0x176ad0 (this TU)
     };
 
-    // The palette node (list +0x2c). Build is the foreign realizer; the three
-    // front-ends are reconstructed in this TU.
+    // The palette node (list +0x2c). Build (this TU) realizes the HPALETTE from a
+    // 256-entry LOGPALETTE it assembles in-place; the front-ends are also here.
     struct PalBuilder_176df0 {
-        i32 m_0;                                     // +0x000  realized HPALETTE
-        char m_pad4[0x40c - 0x4];                    // +0x004..+0x40b
+        HPALETTE m_0;                                // +0x000  realized HPALETTE
+        LOGPALETTE m_pal;                            // +0x004  header + entry[0]
+        char m_pad_entries[0x408 - (4 + 4 + 4)];     // entry[1..255] -> +0x408
+        i32 m_408;                                   // +0x408  Build's stored flags
         i32 m_40c;                                   // +0x40c
         void* m_listPosition;                        // +0x410  cached AddTail POSITION
-        i32 Build(PALETTEENTRY* entries, i32 flags); // 0x176df0 (foreign, reloc-masked)
+        i32 Build(PALETTEENTRY* entries, i32 flags); // 0x176df0 (this TU)
+        void Tune1770e0();                           // 0x1770e0 (this TU)
         i32 ProcessPal(void* rgb, i32 flags);        // 0x176e70 (this TU)
         i32 ParseDispatch(void* buf, u32 size, i32 type, i32 ctrl); // 0x177040 (this TU)
         i32 ParsePaletteTail(void* buf, u32 size, i32 ctrl);        // 0x177400 (this TU)
     };
 
-    // The palette node's free view: Run deletes the realized HPALETTE.
+    // The palette node's free view: Run deletes the realized HPALETTE. Aliases the
+    // same node as PalBuilder (m_obj == m_0, m_408 == m_408).
     struct DeleteObjHost_177070 {
-        void Run(); // 0x177070 (foreign, reloc-masked)
+        HGDIOBJ m_obj;         // +0x000  the realized HPALETTE (as a GDI object)
+        char m_pad[0x408 - 4]; // +0x004..+0x407
+        i32 m_408;             // +0x408
+        void Run();            // 0x177070 (this TU)
     };
+
+    // Two free GDI palette helpers PalBuilder::Build/Tune funnel through (defined at
+    // EOF): 0x1770a0 probes display-palette support; 0x177160 resets the screen
+    // palette to all-black. __cdecl.
+    i32 winapi_1770a0_CreateICA_DeleteDC_GetDeviceCaps();
+    void winapi_177160_CreatePalette_DeleteObject_GetDC_RealizePalette_ReleaseD();
 } // namespace ApiCallerStubs
 
 // The file-backed palette loader (Image.cpp). LoadByExtension is foreign here.
@@ -628,5 +641,117 @@ i32 ApiCallerStubs::PalBuilder_176df0::ParsePaletteTail(void* buf, u32 size, i32
     }
     return Build(pal, ctrl);
 }
+
+// ===========================================================================
+// The node-teardown / palette-realize methods + the two GDI helpers, re-homed from
+// src/Stub/ApiCallers.cpp (CImagePool owns these node types). All GDI callees are
+// GDI32 imports (reloc-masked); RezFree is the pool allocator (0x1b9b82).
+// ===========================================================================
+namespace ApiCallerStubs {
+    // 0x175c90: release the cached GDI object + Rez buffer and clear the slots.
+    RVA(0x00175c90, 0x45)
+    void GdiOwner_175c90::Cleanup() {
+        if (m_428) {
+            DeleteObject(m_428);
+            m_428 = 0;
+        }
+        if (m_430) {
+            RezFree(m_430);
+            m_430 = 0;
+        }
+        m_42c = 0;
+        m_paletteNode = 0;
+    }
+
+    // 0x176df0: build a 256-entry LOGPALETTE from src, optionally reserve the system
+    // range, then realize it into m_0.
+    RVA(0x00176df0, 0x71)
+    i32 PalBuilder_176df0::Build(PALETTEENTRY* src, i32 flags) {
+        m_408 = flags;
+        m_pal.palNumEntries = 0x100;
+        m_pal.palVersion = 0x300;
+        DWORD* s = (DWORD*)src;
+        PALETTEENTRY* d = m_pal.palPalEntry;
+        i32 i = 0x100;
+        do {
+            *(DWORD*)d = *s++;
+            d->peFlags = 0;
+            d++;
+        } while (--i);
+        if (winapi_1770a0_CreateICA_DeleteDC_GetDeviceCaps() && !(flags & 1)) {
+            Tune1770e0();
+            m_40c = 1;
+        }
+        m_0 = CreatePalette(&m_pal);
+        return m_0 != 0;
+    }
+
+    // 0x177070: delete the owned GDI object, then clear a far flag.
+    RVA(0x00177070, 0x22)
+    void DeleteObjHost_177070::Run() {
+        if (m_obj) {
+            DeleteObject(m_obj);
+            m_obj = 0;
+        }
+        m_408 = 0;
+    }
+
+    // 0x1770a0: does the display device support a palette? (RC_PALETTE bit)
+    RVA(0x001770a0, 0x3a)
+    i32 winapi_1770a0_CreateICA_DeleteDC_GetDeviceCaps() {
+        HDC ic = CreateICA("DISPLAY", 0, 0, 0);
+        if (ic) {
+            i32 caps = GetDeviceCaps(ic, RASTERCAPS) & RC_PALETTE;
+            DeleteDC(ic);
+            return caps;
+        }
+        return 0;
+    }
+
+    // 0x1770e0: snapshot the reserved system-palette entries, marking the interior
+    // animatable range PC_RESERVED (peFlags=1).
+    RVA(0x001770e0, 0x7c)
+    void PalBuilder_176df0::Tune1770e0() {
+        winapi_177160_CreatePalette_DeleteObject_GetDC_RealizePalette_ReleaseD();
+        HDC dc = CreateDCA("DISPLAY", 0, 0, 0);
+        i32 sizePal = GetDeviceCaps(dc, SIZEPALETTE);
+        i32 numReserved = GetDeviceCaps(dc, NUMRESERVED);
+        i32 half = numReserved / 2;
+        GetSystemPaletteEntries(dc, 0, half, m_pal.palPalEntry);
+        GetSystemPaletteEntries(
+            dc,
+            sizePal - half,
+            half,
+            &m_pal.palPalEntry[m_pal.palNumEntries - half]
+        );
+        for (i32 i = half; i < sizePal - half; i++) {
+            m_pal.palPalEntry[i].peFlags = 1;
+        }
+        DeleteDC(dc);
+    }
+
+    // 0x177160: realize an all-black 256-entry palette on the screen DC to reset it.
+    RVA(0x00177160, 0x81)
+    void winapi_177160_CreatePalette_DeleteObject_GetDC_RealizePalette_ReleaseD() {
+        char buf[4 + 256 * sizeof(PALETTEENTRY)];
+        LOGPALETTE* lp = (LOGPALETTE*)buf;
+        HDC hdc = GetDC(0);
+        lp->palVersion = 0x300;
+        lp->palNumEntries = 256;
+        for (i32 i = 0; i < 256; i++) {
+            lp->palPalEntry[i].peRed = 0;
+            lp->palPalEntry[i].peGreen = 0;
+            lp->palPalEntry[i].peBlue = 0;
+            lp->palPalEntry[i].peFlags = 4;
+        }
+        HPALETTE hpal = CreatePalette(lp);
+        if (hpal) {
+            HPALETTE old = SelectPalette(hdc, hpal, FALSE);
+            RealizePalette(hdc);
+            DeleteObject(SelectPalette(hdc, old, FALSE));
+        }
+        ReleaseDC(0, hdc);
+    }
+} // namespace ApiCallerStubs
 
 SIZE_UNKNOWN(CImagePool);

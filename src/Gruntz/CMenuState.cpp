@@ -49,20 +49,17 @@ extern "C" {
 // else 1). A free __cdecl no-arg fn (loads its own g_gameReg, ignores ecx).
 i32 DetectScreenResMode(); // 0x0363a0
 
-// The combo/slider dialog-population helpers (external/no-body so the call rel32
-// reloc-masks). LoadVideoResolutionConfig seeds the resolution combo; the slider
-// setter (winapi_0371e0, __cdecl(hDlg, id, pos, page)) fills a scroll/slider ctrl.
+// The combo dialog-population helper (external/no-body so the call rel32
+// reloc-masks). LoadVideoResolutionConfig seeds the resolution combo.
 void LoadVideoResolutionConfig(void* hDlg, i32 nIDCombo, i32 nSel); // 0x036f30
-namespace ApiCallerStubs {
-    void winapi_0371e0_GetDlgItem_SetScrollInfo(void* hDlg, i32 id, i32 pos, i32 page); // 0x0371e0
-}
 
-// The dialog scroll-position getter every slider funnels through (the ILT thunk
-// 0x402595 -> winapi_036ec0_GetDlgItem_GetScrollInfo, __cdecl(hDlg, id)). Declared
-// in its real ApiCallerStubs namespace so the mangled call symbol matches the RVA.
+// The dialog slider-fill setter (0x0371e0) + scroll-position getter (0x036ec0)
+// every options slider funnels through - forward-declared here (the callers
+// precede them in retail-RVA order); DEFINED below after ReadMenuOptionsDialog.
 namespace ApiCallerStubs {
-    i32 winapi_036ec0_GetDlgItem_GetScrollInfo(void* hDlg, i32 id); // 0x036ec0
-}
+    void winapi_0371e0_GetDlgItem_SetScrollInfo(HWND hDlg, i32 id, i32 pos, i32 max); // 0x0371e0
+    i32 winapi_036ec0_GetDlgItem_GetScrollInfo(HWND hDlg, i32 id);                    // 0x036ec0
+} // namespace ApiCallerStubs
 
 // LoadGameOptionsToDialog @0x036860 - the inverse of ReadMenuOptionsDialog: snapshot
 // the live g_gameReg settings into the g_opt_* staging globals (so a later Cancel can
@@ -169,6 +166,83 @@ void ReadMenuOptionsDialog(HWND hDlg) {
         g_mgrSettings->m_scrollSpeed = qv;
     }
 }
+
+// The four per-checkbox WM_COMMAND handlers of the same options dialog: each
+// mirrors one checkbox into the CGruntzMgr settings singleton and enables the
+// paired slider/control. Free __cdecl(hWnd); no-op when the manager is not live.
+// SAME control IDs + commit set as ReadMenuOptionsDialog above (the reader's
+// per-control split-out). g_mgrSettings loads reloc-mask; the commit calls
+// (SetRunState/SetSoundLevelState) go through the thunks 0x492340/0x4923b0.
+
+// 0x36d00: music-enable checkbox (0x46d) -> SetRunState, enable slider 0x470.
+RVA(0x00036d00, 0x40)
+void OnToggleMusicOption(HWND hWnd) {
+    if (g_mgrSettings) {
+        i32 state = IsDlgButtonChecked(hWnd, 0x46d);
+        g_mgrSettings->SetRunState(state);
+        EnableWindow(GetDlgItem(hWnd, 0x470), state);
+    }
+}
+
+// 0x36d50: voice-enable checkbox (0x475) -> m_isVoiceEnabled, enable ctrl 0x476.
+RVA(0x00036d50, 0x3c)
+void OnToggleVoiceOption(HWND hWnd) {
+    if (g_mgrSettings) {
+        i32 checked = IsDlgButtonChecked(hWnd, 0x475);
+        g_mgrSettings->m_isVoiceEnabled = checked;
+        EnableWindow(GetDlgItem(hWnd, 0x476), checked);
+    }
+}
+
+// 0x36da0: speech-enable checkbox (0x471) -> SetSoundLevelState, enable ctrl 0x472.
+RVA(0x00036da0, 0x40)
+void OnToggleSpeechOption(HWND hWnd) {
+    if (g_mgrSettings) {
+        i32 state = IsDlgButtonChecked(hWnd, 0x471);
+        g_mgrSettings->SetSoundLevelState(state);
+        EnableWindow(GetDlgItem(hWnd, 0x472), state);
+    }
+}
+
+// 0x36e10: easy-mode checkbox (0x455) -> m_isEasyMode.
+RVA(0x00036e10, 0x26)
+void OnToggleEasyModeOption(HWND hWnd) {
+    if (g_mgrSettings) {
+        g_mgrSettings->m_isEasyMode = IsDlgButtonChecked(hWnd, 0x455);
+    }
+}
+
+namespace ApiCallerStubs {
+    // __cdecl(hDlg, id): read the scroll position of dialog item `id`.
+    RVA(0x00036ec0, 0x41)
+    i32 winapi_036ec0_GetDlgItem_GetScrollInfo(HWND hDlg, i32 id) {
+        HWND h = GetDlgItem(hDlg, id);
+        if (!h) {
+            return 0;
+        }
+        SCROLLINFO si;
+        si.cbSize = 0x1c;
+        si.fMask = SIF_POS;
+        GetScrollInfo(h, SB_CTL, &si);
+        return si.nPos;
+    }
+
+    // __cdecl(hDlg, id, pos, max): set dialog item `id`'s scroll range/page/pos.
+    RVA(0x000371e0, 0x5b)
+    void winapi_0371e0_GetDlgItem_SetScrollInfo(HWND hDlg, i32 id, i32 pos, i32 max) {
+        HWND h = GetDlgItem(hDlg, id);
+        if (h) {
+            SCROLLINFO si;
+            si.nMax = max;
+            si.cbSize = 0x1c;
+            si.fMask = 0x17;
+            si.nMin = 1;
+            si.nPage = 0xa;
+            si.nPos = pos;
+            SetScrollInfo(h, SB_CTL, &si, FALSE);
+        }
+    }
+} // namespace ApiCallerStubs
 
 // CMenuState::ReadyGate @0x0a0d40 - the &&-chained ready/transition probe: poll
 // the active/ready gate (Vfunc3, slot 3); if ready, attempt the pending state

@@ -14,10 +14,12 @@
 
 #include <rva.h>
 
-// The engine wrappers retail calls here (defined in src/Stub/ApiCallers.cpp). The
-// status reporter (0x118b50) takes the heap status; the heap-walk wrapper (0x1206b0,
-// retail's _heapwalk re-attributed) is declared no-arg but is invoked with &hinfo,
-// so it is reached through a casted pointer to keep its no-arg mangled symbol.
+// The engine wrappers retail calls here. The status reporter (0x118b50) takes the
+// heap status - its real owner is this diagnostic TU (its sole caller), DEFINED
+// below after HeapCheckDump (it follows in retail-RVA order). The heap-walk wrapper
+// (0x1206b0, retail's _heapwalk re-attributed) is declared no-arg but invoked with
+// &hinfo, so it is reached through a casted pointer to keep its no-arg mangled
+// symbol; it stays external / reloc-masked (defined in src/Stub/ApiCallers.cpp).
 namespace ApiCallerStubs {
     void winapi_118b50_OutputDebugStringA(i32 status);
     i32 winapi_1206b0_GetLastError_HeapValidate_HeapWalk();
@@ -60,3 +62,32 @@ int HeapCheckDump(int walkOnBad) {
     OutputDebugStringA("Finished walking heap.");
     return status;
 }
+
+// 0x118b50: the heap-status reporter HeapCheckDump funnels through - trace a
+// _heapchk()/_heapwalk() status code to the debugger. __cdecl(status). Re-homed
+// from src/Stub/ApiCallers.cpp (this is its only caller).
+namespace ApiCallerStubs {
+    RVA(0x00118b50, 0x5b)
+    void winapi_118b50_OutputDebugStringA(i32 status) {
+        switch (status) {
+            case -3:
+                OutputDebugStringA("Heap return value: _HEAPBADBEGIN\n");
+                return;
+            case -4:
+                OutputDebugStringA("Heap return value: _HEAPBADNODE\n");
+                return;
+            case -6:
+                OutputDebugStringA("Heap return value: _HEAPBADPTR\n");
+                return;
+            case -1:
+                OutputDebugStringA("Heap return value: _HEAPEMPTY\n");
+                return;
+            case -2:
+                OutputDebugStringA("Heap return value: _HEAPOK\n");
+                return;
+            default:
+                OutputDebugStringA("Heap return value: Unknown return value!\n");
+                return;
+        }
+    }
+} // namespace ApiCallerStubs

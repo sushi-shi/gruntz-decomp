@@ -567,74 +567,6 @@ namespace ApiCallerStubs {
         m_h74 = m_rc60.bottom - m_rc60.top;
     }
 
-    // __cdecl(hWnd): mirror checkbox 0x46d into the game state + enable ctrl 0x470.
-    RVA(0x00036d00, 0x40)
-    void winapi_036d00_EnableWindow_GetDlgItem_IsDlgButtonChecked(HWND hWnd) {
-        if (g_gameReg) {
-            i32 state = IsDlgButtonChecked(hWnd, 0x46d);
-            g_gameReg->Method92340(state);
-            EnableWindow(GetDlgItem(hWnd, 0x470), state);
-        }
-    }
-
-    // __cdecl(hWnd): mirror checkbox 0x475 into m_100 + enable ctrl 0x476 by it.
-    RVA(0x00036d50, 0x3c)
-    void winapi_036d50_EnableWindow_GetDlgItem_IsDlgButtonChecked(HWND hWnd) {
-        if (g_gameReg) {
-            i32 checked = IsDlgButtonChecked(hWnd, 0x475);
-            g_gameReg->m_isVoiceEnabled = checked;
-            EnableWindow(GetDlgItem(hWnd, 0x476), checked);
-        }
-    }
-
-    // __cdecl(hWnd): mirror checkbox 0x471 into the game state + enable ctrl 0x472.
-    RVA(0x00036da0, 0x40)
-    void winapi_036da0_EnableWindow_GetDlgItem_IsDlgButtonChecked(HWND hWnd) {
-        if (g_gameReg) {
-            i32 state = IsDlgButtonChecked(hWnd, 0x471);
-            g_gameReg->Method3df5(state);
-            EnableWindow(GetDlgItem(hWnd, 0x472), state);
-        }
-    }
-
-    // __cdecl: cache the checkbox state into g_gameReg->m_isEasyMode.
-    RVA(0x00036e10, 0x26)
-    void winapi_036e10_IsDlgButtonChecked(HWND hWnd) {
-        if (g_gameReg) {
-            g_gameReg->m_isEasyMode = IsDlgButtonChecked(hWnd, 0x455);
-        }
-    }
-
-    // __cdecl(hDlg, id): read the scroll position of dialog item `id`.
-    RVA(0x00036ec0, 0x41)
-    i32 winapi_036ec0_GetDlgItem_GetScrollInfo(HWND hDlg, i32 id) {
-        HWND h = GetDlgItem(hDlg, id);
-        if (!h) {
-            return 0;
-        }
-        SCROLLINFO si;
-        si.cbSize = 0x1c;
-        si.fMask = SIF_POS;
-        GetScrollInfo(h, SB_CTL, &si);
-        return si.nPos;
-    }
-
-    // __cdecl(hDlg, id, pos, max): set dialog item `id`'s scroll range/page/pos.
-    RVA(0x000371e0, 0x5b)
-    void winapi_0371e0_GetDlgItem_SetScrollInfo(HWND hDlg, i32 id, i32 pos, i32 max) {
-        HWND h = GetDlgItem(hDlg, id);
-        if (h) {
-            SCROLLINFO si;
-            si.nMax = max;
-            si.cbSize = 0x1c;
-            si.fMask = 0x17;
-            si.nMin = 1;
-            si.nPage = 0xa;
-            si.nPos = pos;
-            SetScrollInfo(h, SB_CTL, &si, FALSE);
-        }
-    }
-
     // __stdcall(hDlg, id, lo, hi): find the list item whose data == MAKELONG(lo,hi)
     // and select it. Returns 1 if found.
     RVA(0x00038150, 0x91)
@@ -745,51 +677,6 @@ namespace ApiCallerStubs {
             cmd = 0x8027;
         }
         PostMessageA((HWND)m_4->m_4->m_4, 0x111, cmd, 0);
-        return 1;
-    }
-
-    // The shared MFC CString scratch globals used to assemble custom-level paths;
-    // m_data (the CString data ptr) is at offset 0.
-    struct GameCStr_62c25c {
-        char* m_data;               // +0x00
-        void Assign(const char* s); // operator=  RVA 0x1b9e74 (thiscall)
-        void Append(const char* s); // operator+= RVA 0x1ba0c8 (thiscall)
-        void Reset();               // RVA 0x1b9c69 (thiscall)
-    };
-    DATA(0x0062c25c)
-    extern GameCStr_62c25c g_customPath;
-    DATA(0x0062c264)
-    extern GameCStr_62c25c g_customName;
-    i32 GetGameRootDir_11fc10(char* buf, i32 size); // RVA 0x11fc10 (cdecl)
-    i32 FileExists_4282(const char* path);          // RVA 0x4282 (cdecl)
-    // __cdecl(hWnd): build "<root>\Custom\<sel>.WWD" for the selected custom level.
-    RVA(0x0003b310, 0x10d)
-    i32 winapi_03b310_GetDlgItem(HWND hWnd) {
-        char itemText[256];
-        char dirBuf[256];
-        HWND lb = GetDlgItem(hWnd, 0x3fc);
-        if (!lb) {
-            return 0;
-        }
-        i32 sel = SendMessageA(lb, 0x188, 0, 0);
-        if (sel == -1) {
-            return 0;
-        }
-        if (SendMessageA(lb, 0x189, sel, (LPARAM)itemText) == -1) {
-            return 0;
-        }
-        if (!GetGameRootDir_11fc10(dirBuf, 0xfe)) {
-            return 0;
-        }
-        g_customPath.Assign(dirBuf);
-        g_customPath.Append("\\Custom\\");
-        g_customPath.Append(itemText);
-        g_customPath.Append(".WWD");
-        if (!FileExists_4282(g_customPath.m_data)) {
-            g_customPath.Reset();
-            return 0;
-        }
-        g_customName.Assign(itemText);
         return 1;
     }
 
@@ -1026,30 +913,6 @@ namespace ApiCallerStubs {
         }
     }
 
-    // __stdcall(exe, dir): build "<dir>\<exe>" and launch it with dir as the cwd.
-    RVA(0x00090860, 0xd3)
-    i32 __stdcall winapi_090860_CreateProcessA_wsprintfA(char* exe, char* dir) {
-        char cmdline[256];
-        STARTUPINFOA si;
-        PROCESS_INFORMATION pi;
-        memset(&si, 0, sizeof(si));
-        si.cb = sizeof(si);
-        if (dir && *dir) {
-            i32 len = strlen(dir);
-            if (len > 0 && dir[len - 1] == '\\') {
-                wsprintfA(cmdline, "%s%s", dir, exe);
-            } else {
-                wsprintfA(cmdline, "%s\\%s", dir, exe);
-            }
-        } else {
-            wsprintfA(cmdline, "%s", exe);
-        }
-        if (dir && *dir == 0) {
-            dir = 0;
-        }
-        return CreateProcessA(0, cmdline, 0, 0, 0, 0, 0, dir, &si, &pi);
-    }
-
     struct QlWnd_092710 {
         char m_pad0[4];
         HWND m_4; // +0x04
@@ -1238,32 +1101,6 @@ namespace ApiCallerStubs {
                 return 1;
             }
         }
-    }
-
-    // A CSaveGame save-slot record (Io/SaveGame.h SaveSlot; here a minimal view
-    // reading only its +0x14 short name). Validity is probed by Check2694.
-    struct SaveSlot {
-        char m_pad0[0x14];
-        char m_14[1]; // +0x14 (name string)
-    };
-    i32 __cdecl Check2694(SaveSlot* item); // RVA 0x2694
-    // "(Empty)" fallback display string (s_(Empty)_006113e0).
-    // __cdecl(hWnd, item, id3, id4, id5, id6): label item into id3, enable 4 ctrls.
-    RVA(0x0009e2d0, 0x84)
-    void
-    winapi_09e2d0_SetDlgItemTextA(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6) {
-        i32 flag;
-        if (Check2694(item)) {
-            SetDlgItemTextA(hWnd, id3, item->m_14);
-            flag = 1;
-        } else {
-            SetDlgItemTextA(hWnd, id3, "(Empty)");
-            flag = 0;
-        }
-        EnableWindow(GetDlgItem(hWnd, id3), flag);
-        EnableWindow(GetDlgItem(hWnd, id4), flag);
-        EnableWindow(GetDlgItem(hWnd, id5), flag);
-        EnableWindow(GetDlgItem(hWnd, id6), flag);
     }
 
     // The DirectPlay application GUID (DAT_0060fab8), passed by value to Connect.
@@ -2292,25 +2129,6 @@ namespace ApiCallerStubs {
         return 0;
     }
 
-    // __cdecl(hWnd, item, id3, id4, id5, id6): label item into id3, then enable the
-    // first two controls unconditionally and the last two only if the item is valid.
-    RVA(0x000e3e80, 0x86)
-    void
-    winapi_0e3e80_SetDlgItemTextA(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6) {
-        i32 flag;
-        if (Check2694(item)) {
-            SetDlgItemTextA(hWnd, id3, item->m_14);
-            flag = 1;
-        } else {
-            SetDlgItemTextA(hWnd, id3, "(Empty)");
-            flag = 0;
-        }
-        EnableWindow(GetDlgItem(hWnd, id3), 1);
-        EnableWindow(GetDlgItem(hWnd, id4), 1);
-        EnableWindow(GetDlgItem(hWnd, id5), flag);
-        EnableWindow(GetDlgItem(hWnd, id6), flag);
-    }
-
     // __cdecl: SetDlgItemTextA(hWnd, 0x40d, &item->text) when all ptrs non-null.
     RVA(0x000e4850, 0x29)
     void winapi_0e4850_SetDlgItemTextA(HWND hWnd, void* gate, char* item) {
@@ -2542,31 +2360,6 @@ namespace ApiCallerStubs {
     void winapi_118930_SetActiveWindow_SetFocus(HWND hWnd) {
         SetActiveWindow(hWnd);
         SetFocus(hWnd);
-    }
-
-    // __cdecl(status): trace a _heapchk() status code.
-    RVA(0x00118b50, 0x5b)
-    void winapi_118b50_OutputDebugStringA(i32 status) {
-        switch (status) {
-            case -3:
-                OutputDebugStringA("Heap return value: _HEAPBADBEGIN\n");
-                return;
-            case -4:
-                OutputDebugStringA("Heap return value: _HEAPBADNODE\n");
-                return;
-            case -6:
-                OutputDebugStringA("Heap return value: _HEAPBADPTR\n");
-                return;
-            case -1:
-                OutputDebugStringA("Heap return value: _HEAPEMPTY\n");
-                return;
-            case -2:
-                OutputDebugStringA("Heap return value: _HEAPOK\n");
-                return;
-            default:
-                OutputDebugStringA("Heap return value: Unknown return value!\n");
-                return;
-        }
     }
 
     // __cdecl(hWnd, msg, wParam): block screen-saver / monitor-power while not iconic.
@@ -3311,137 +3104,6 @@ namespace ApiCallerStubs {
     RVA(0x0016c9f0, 0xc)
     void winapi_16c9f0_LeaveCriticalSection(CRITICAL_SECTION* cs) {
         LeaveCriticalSection(cs);
-    }
-
-    extern "C" void RezFree_call(void* p); // RVA 0x1b9b82 (cdecl)
-    struct GdiOwner_175c90 {
-        char m_pad0[0x428];
-        HGDIOBJ m_428; // +0x428 (a GDI object)
-        void* m_42c;   // +0x42c
-        void* m_430;   // +0x430 (a Rez-allocated buffer)
-        char m_pad434[0x458 - 0x434];
-        i32 m_458; // +0x458
-        void Cleanup();
-    };
-    // __thiscall(): release the cached GDI object + buffer and clear the slots.
-    RVA(0x00175c90, 0x45)
-    void GdiOwner_175c90::Cleanup() {
-        if (m_428) {
-            DeleteObject(m_428);
-            m_428 = 0;
-        }
-        if (m_430) {
-            RezFree_call(m_430);
-            m_430 = 0;
-        }
-        m_42c = 0;
-        m_458 = 0;
-    }
-
-    i32 winapi_1770a0_CreateICA_DeleteDC_GetDeviceCaps(); // RVA 0x1770a0
-    // __thiscall(flags, src): build a 256-entry LOGPALETTE from src and realize it.
-    struct PalBuilder_176df0 {
-        HPALETTE m_0;     // +0x00
-        LOGPALETTE m_pal; // +0x04 (palVersion/palNumEntries/palPalEntry[1])
-        char m_pad_entries[0x408 - (4 + 4 + 4)];
-        i32 m_408; // +0x408
-        i32 m_40c; // +0x40c
-        i32 Build(PALETTEENTRY* src, i32 flags);
-        void Tune1770e0(); // RVA 0x1770e0
-    };
-    RVA(0x00176df0, 0x71)
-    i32 PalBuilder_176df0::Build(PALETTEENTRY* src, i32 flags) {
-        m_408 = flags;
-        m_pal.palNumEntries = 0x100;
-        m_pal.palVersion = 0x300;
-        DWORD* s = (DWORD*)src;
-        PALETTEENTRY* d = m_pal.palPalEntry;
-        i32 i = 0x100;
-        do {
-            *(DWORD*)d = *s++;
-            d->peFlags = 0;
-            d++;
-        } while (--i);
-        if (winapi_1770a0_CreateICA_DeleteDC_GetDeviceCaps() && !(flags & 1)) {
-            Tune1770e0();
-            m_40c = 1;
-        }
-        m_0 = CreatePalette(&m_pal);
-        return m_0 != 0;
-    }
-
-    // __thiscall: delete the owned GDI object, then clear a far flag.
-    struct DeleteObjHost_177070 {
-        HGDIOBJ m_obj; // +0x00
-        char m_pad[0x408 - 4];
-        i32 m_408; // +0x408
-        void Run();
-    };
-    RVA(0x00177070, 0x22)
-    void DeleteObjHost_177070::Run() {
-        if (m_obj) {
-            DeleteObject(m_obj);
-            m_obj = 0;
-        }
-        m_408 = 0;
-    }
-
-    // __cdecl(): does the display device support a palette? (RC_PALETTE bit)
-    RVA(0x001770a0, 0x3a)
-    i32 winapi_1770a0_CreateICA_DeleteDC_GetDeviceCaps() {
-        HDC ic = CreateICA("DISPLAY", 0, 0, 0);
-        if (ic) {
-            i32 caps = GetDeviceCaps(ic, RASTERCAPS) & RC_PALETTE;
-            DeleteDC(ic);
-            return caps;
-        }
-        return 0;
-    }
-
-    void winapi_177160_CreatePalette_DeleteObject_GetDC_RealizePalette_ReleaseD(); // RVA 0x177160
-    // __thiscall(): snapshot the reserved system-palette entries, marking the
-    // interior animatable range PC_RESERVED (peFlags=1).
-    RVA(0x001770e0, 0x7c)
-    void PalBuilder_176df0::Tune1770e0() {
-        winapi_177160_CreatePalette_DeleteObject_GetDC_RealizePalette_ReleaseD();
-        HDC dc = CreateDCA("DISPLAY", 0, 0, 0);
-        i32 sizePal = GetDeviceCaps(dc, SIZEPALETTE);
-        i32 numReserved = GetDeviceCaps(dc, NUMRESERVED);
-        i32 half = numReserved / 2;
-        GetSystemPaletteEntries(dc, 0, half, m_pal.palPalEntry);
-        GetSystemPaletteEntries(
-            dc,
-            sizePal - half,
-            half,
-            &m_pal.palPalEntry[m_pal.palNumEntries - half]
-        );
-        for (i32 i = half; i < sizePal - half; i++) {
-            m_pal.palPalEntry[i].peFlags = 1;
-        }
-        DeleteDC(dc);
-    }
-
-    // __cdecl: realize an all-black 256-entry palette on the screen DC to reset it.
-    RVA(0x00177160, 0x81)
-    void winapi_177160_CreatePalette_DeleteObject_GetDC_RealizePalette_ReleaseD() {
-        char buf[4 + 256 * sizeof(PALETTEENTRY)];
-        LOGPALETTE* lp = (LOGPALETTE*)buf;
-        HDC hdc = GetDC(0);
-        lp->palVersion = 0x300;
-        lp->palNumEntries = 256;
-        for (i32 i = 0; i < 256; i++) {
-            lp->palPalEntry[i].peRed = 0;
-            lp->palPalEntry[i].peGreen = 0;
-            lp->palPalEntry[i].peBlue = 0;
-            lp->palPalEntry[i].peFlags = 4;
-        }
-        HPALETTE hpal = CreatePalette(lp);
-        if (hpal) {
-            HPALETTE old = SelectPalette(hdc, hpal, FALSE);
-            RealizePalette(hdc);
-            DeleteObject(SelectPalette(hdc, old, FALSE));
-        }
-        ReleaseDC(0, hdc);
     }
 
     // The resource-module handle for palette lookups (DAT_006bf6e0).

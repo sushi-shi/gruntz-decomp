@@ -86,5 +86,47 @@ CString RunCustomWorldDialog(i32 id, CString* outSource) {
     return g_str62c25c;
 }
 
+// The game-root-dir resolver + the OpenFile(OF_EXIST) probe RunCustomWorldSelection
+// funnels through (reloc-masked externals).
+i32 GetGameRootDir_11fc10(char* buf, i32 size); // 0x11fc10 (__cdecl)
+i32 FileExists_4282(const char* path);          // 0x4282  (__cdecl)
+
+// ===========================================================================
+// 0x3b310: build "<gameroot>\Custom\<selected>.WWD" for the custom-world list's
+// current selection into g_str62c25c and stash the bare name in g_str62c264;
+// returns 1 iff a valid item is selected and its .WWD file exists. Re-homed from
+// src/Stub/ApiCallers.cpp; de-hacked the GameCStr placeholder view to the real
+// CString exchange globals (in-place operator= / operator+= / Empty).
+// ===========================================================================
+RVA(0x0003b310, 0x10d)
+i32 LoadCustomWorldSelection(HWND hWnd) {
+    char itemText[256];
+    char dirBuf[256];
+    HWND lb = GetDlgItem(hWnd, 0x3fc);
+    if (!lb) {
+        return 0;
+    }
+    i32 sel = SendMessageA(lb, 0x188, 0, 0);
+    if (sel == -1) {
+        return 0;
+    }
+    if (SendMessageA(lb, 0x189, sel, (LPARAM)itemText) == -1) {
+        return 0;
+    }
+    if (!GetGameRootDir_11fc10(dirBuf, 0xfe)) {
+        return 0;
+    }
+    g_str62c25c = dirBuf;
+    g_str62c25c += "\\Custom\\";
+    g_str62c25c += itemText;
+    g_str62c25c += ".WWD";
+    if (!FileExists_4282((const char*)g_str62c25c)) {
+        g_str62c25c.Empty();
+        return 0;
+    }
+    g_str62c264 = itemText;
+    return 1;
+}
+
 SIZE_UNKNOWN(GmInner4);
 SIZE_UNKNOWN(GmInner8);

@@ -16,19 +16,17 @@
 #include <stdlib.h> // _itoa
 #include <string.h> // memset -> inline rep stos
 
-// The save-slot dialog labeller (winapi_0e3e80_SetDlgItemTextA, ApiCallers.cpp):
-// labels one slot into four dialog controls. Declared with its real namespace +
-// signature so the rel32 call pairs by mangled name; the slot pointer flows in as
-// the SaveSlot* it expects (== CSaveGame::GetSlot()'s record; forward-declared in
-// ApiCallerStubs so both this TU and its definer ApiCallers.cpp pair by mangled
-// name - the minimal ApiCallerStubs::SaveSlot view there reads only its +0x14
-// name). Reloc-masked.
+// The two per-slot dialog labellers (0x0e3e80 for the save dialog, 0x9e2d0 for the
+// GAME_INFO dialog): each labels one CSaveGame::GetSlot() record into four dialog
+// controls (same signature, different control-state side effects). Their real owner
+// TU (they walk this file's save slots); forward-declared here (the FillSaveDialog /
+// FillGameInfoDialog callers precede them in retail-RVA order), DEFINED at the end.
+// The slot pointer flows in as the real Io/SaveGame.h SaveSlot* GetSlot() returns.
+// Check2694 (0x2694 -> 0xe5700) is the slot-occupancy probe. All reloc-masked.
 namespace ApiCallerStubs {
-    struct SaveSlot;
+    i32 Check2694(SaveSlot* item); // 0x2694 (jmp-thunk -> 0xe5700)
     void
     winapi_0e3e80_SetDlgItemTextA(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6);
-    // The GAME_INFO dialog's variant of the same per-slot labeller (0x9e2d0); same
-    // signature, different control-state side effects. Reloc-masked no-body callee.
     void
     winapi_09e2d0_SetDlgItemTextA(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6);
 } // namespace ApiCallerStubs
@@ -43,86 +41,16 @@ void FillSaveDialog(HWND hWnd, CSaveGame* sg) {
         return;
     }
     using ApiCallerStubs::winapi_0e3e80_SetDlgItemTextA;
-    winapi_0e3e80_SetDlgItemTextA(
-        hWnd,
-        (ApiCallerStubs::SaveSlot*)sg->GetSlot(0),
-        0x435,
-        0x490,
-        0x49a,
-        0x4a4
-    );
-    winapi_0e3e80_SetDlgItemTextA(
-        hWnd,
-        (ApiCallerStubs::SaveSlot*)sg->GetSlot(1),
-        0x436,
-        0x491,
-        0x49b,
-        0x4a5
-    );
-    winapi_0e3e80_SetDlgItemTextA(
-        hWnd,
-        (ApiCallerStubs::SaveSlot*)sg->GetSlot(2),
-        0x437,
-        0x492,
-        0x49c,
-        0x4a6
-    );
-    winapi_0e3e80_SetDlgItemTextA(
-        hWnd,
-        (ApiCallerStubs::SaveSlot*)sg->GetSlot(3),
-        0x438,
-        0x493,
-        0x49d,
-        0x4a7
-    );
-    winapi_0e3e80_SetDlgItemTextA(
-        hWnd,
-        (ApiCallerStubs::SaveSlot*)sg->GetSlot(4),
-        0x439,
-        0x494,
-        0x49e,
-        0x4a8
-    );
-    winapi_0e3e80_SetDlgItemTextA(
-        hWnd,
-        (ApiCallerStubs::SaveSlot*)sg->GetSlot(5),
-        0x43a,
-        0x495,
-        0x49f,
-        0x4a9
-    );
-    winapi_0e3e80_SetDlgItemTextA(
-        hWnd,
-        (ApiCallerStubs::SaveSlot*)sg->GetSlot(6),
-        0x43b,
-        0x496,
-        0x4a0,
-        0x4aa
-    );
-    winapi_0e3e80_SetDlgItemTextA(
-        hWnd,
-        (ApiCallerStubs::SaveSlot*)sg->GetSlot(7),
-        0x43c,
-        0x497,
-        0x4a1,
-        0x4ab
-    );
-    winapi_0e3e80_SetDlgItemTextA(
-        hWnd,
-        (ApiCallerStubs::SaveSlot*)sg->GetSlot(8),
-        0x43d,
-        0x498,
-        0x4a2,
-        0x4ac
-    );
-    winapi_0e3e80_SetDlgItemTextA(
-        hWnd,
-        (ApiCallerStubs::SaveSlot*)sg->GetSlot(9),
-        0x43e,
-        0x499,
-        0x4a3,
-        0x4ad
-    );
+    winapi_0e3e80_SetDlgItemTextA(hWnd, sg->GetSlot(0), 0x435, 0x490, 0x49a, 0x4a4);
+    winapi_0e3e80_SetDlgItemTextA(hWnd, sg->GetSlot(1), 0x436, 0x491, 0x49b, 0x4a5);
+    winapi_0e3e80_SetDlgItemTextA(hWnd, sg->GetSlot(2), 0x437, 0x492, 0x49c, 0x4a6);
+    winapi_0e3e80_SetDlgItemTextA(hWnd, sg->GetSlot(3), 0x438, 0x493, 0x49d, 0x4a7);
+    winapi_0e3e80_SetDlgItemTextA(hWnd, sg->GetSlot(4), 0x439, 0x494, 0x49e, 0x4a8);
+    winapi_0e3e80_SetDlgItemTextA(hWnd, sg->GetSlot(5), 0x43a, 0x495, 0x49f, 0x4a9);
+    winapi_0e3e80_SetDlgItemTextA(hWnd, sg->GetSlot(6), 0x43b, 0x496, 0x4a0, 0x4aa);
+    winapi_0e3e80_SetDlgItemTextA(hWnd, sg->GetSlot(7), 0x43c, 0x497, 0x4a1, 0x4ab);
+    winapi_0e3e80_SetDlgItemTextA(hWnd, sg->GetSlot(8), 0x43d, 0x498, 0x4a2, 0x4ac);
+    winapi_0e3e80_SetDlgItemTextA(hWnd, sg->GetSlot(9), 0x43e, 0x499, 0x4a3, 0x4ad);
 }
 
 // ---------------------------------------------------------------------------
@@ -137,86 +65,16 @@ void FillGameInfoDialog(HWND hWnd, CSaveGame* sg) {
         return;
     }
     using ApiCallerStubs::winapi_09e2d0_SetDlgItemTextA;
-    winapi_09e2d0_SetDlgItemTextA(
-        hWnd,
-        (ApiCallerStubs::SaveSlot*)sg->GetSlot(0),
-        0x435,
-        0x490,
-        0x49a,
-        0x4a4
-    );
-    winapi_09e2d0_SetDlgItemTextA(
-        hWnd,
-        (ApiCallerStubs::SaveSlot*)sg->GetSlot(1),
-        0x436,
-        0x491,
-        0x49b,
-        0x4a5
-    );
-    winapi_09e2d0_SetDlgItemTextA(
-        hWnd,
-        (ApiCallerStubs::SaveSlot*)sg->GetSlot(2),
-        0x437,
-        0x492,
-        0x49c,
-        0x4a6
-    );
-    winapi_09e2d0_SetDlgItemTextA(
-        hWnd,
-        (ApiCallerStubs::SaveSlot*)sg->GetSlot(3),
-        0x438,
-        0x493,
-        0x49d,
-        0x4a7
-    );
-    winapi_09e2d0_SetDlgItemTextA(
-        hWnd,
-        (ApiCallerStubs::SaveSlot*)sg->GetSlot(4),
-        0x439,
-        0x494,
-        0x49e,
-        0x4a8
-    );
-    winapi_09e2d0_SetDlgItemTextA(
-        hWnd,
-        (ApiCallerStubs::SaveSlot*)sg->GetSlot(5),
-        0x43a,
-        0x495,
-        0x49f,
-        0x4a9
-    );
-    winapi_09e2d0_SetDlgItemTextA(
-        hWnd,
-        (ApiCallerStubs::SaveSlot*)sg->GetSlot(6),
-        0x43b,
-        0x496,
-        0x4a0,
-        0x4aa
-    );
-    winapi_09e2d0_SetDlgItemTextA(
-        hWnd,
-        (ApiCallerStubs::SaveSlot*)sg->GetSlot(7),
-        0x43c,
-        0x497,
-        0x4a1,
-        0x4ab
-    );
-    winapi_09e2d0_SetDlgItemTextA(
-        hWnd,
-        (ApiCallerStubs::SaveSlot*)sg->GetSlot(8),
-        0x43d,
-        0x498,
-        0x4a2,
-        0x4ac
-    );
-    winapi_09e2d0_SetDlgItemTextA(
-        hWnd,
-        (ApiCallerStubs::SaveSlot*)sg->GetSlot(9),
-        0x43e,
-        0x499,
-        0x4a3,
-        0x4ad
-    );
+    winapi_09e2d0_SetDlgItemTextA(hWnd, sg->GetSlot(0), 0x435, 0x490, 0x49a, 0x4a4);
+    winapi_09e2d0_SetDlgItemTextA(hWnd, sg->GetSlot(1), 0x436, 0x491, 0x49b, 0x4a5);
+    winapi_09e2d0_SetDlgItemTextA(hWnd, sg->GetSlot(2), 0x437, 0x492, 0x49c, 0x4a6);
+    winapi_09e2d0_SetDlgItemTextA(hWnd, sg->GetSlot(3), 0x438, 0x493, 0x49d, 0x4a7);
+    winapi_09e2d0_SetDlgItemTextA(hWnd, sg->GetSlot(4), 0x439, 0x494, 0x49e, 0x4a8);
+    winapi_09e2d0_SetDlgItemTextA(hWnd, sg->GetSlot(5), 0x43a, 0x495, 0x49f, 0x4a9);
+    winapi_09e2d0_SetDlgItemTextA(hWnd, sg->GetSlot(6), 0x43b, 0x496, 0x4a0, 0x4aa);
+    winapi_09e2d0_SetDlgItemTextA(hWnd, sg->GetSlot(7), 0x43c, 0x497, 0x4a1, 0x4ab);
+    winapi_09e2d0_SetDlgItemTextA(hWnd, sg->GetSlot(8), 0x43d, 0x498, 0x4a2, 0x4ac);
+    winapi_09e2d0_SetDlgItemTextA(hWnd, sg->GetSlot(9), 0x43e, 0x499, 0x4a3, 0x4ad);
 }
 
 // ---------------------------------------------------------------------------
@@ -634,6 +492,50 @@ int TempFileExists_e5700(SaveTempRec* p) {
     }
     return 0;
 }
+
+// ---------------------------------------------------------------------------
+// The two per-slot dialog labellers (re-homed from src/Stub/ApiCallers.cpp - they
+// walk this file's CSaveGame::GetSlot() records). __cdecl(hWnd, item, id3..id6):
+// label the slot's short name (m_14) into id3, "(Empty)" when Check2694 (0x2694 ->
+// 0xe5700 slot-occupancy probe) fails; then set the four control enables.
+namespace ApiCallerStubs {
+    // 0x9e2d0 (GAME_INFO dialog variant): all four enables track occupancy.
+    RVA(0x0009e2d0, 0x84)
+    void
+    winapi_09e2d0_SetDlgItemTextA(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6) {
+        i32 flag;
+        if (Check2694(item)) {
+            SetDlgItemTextA(hWnd, id3, item->m_14);
+            flag = 1;
+        } else {
+            SetDlgItemTextA(hWnd, id3, "(Empty)");
+            flag = 0;
+        }
+        EnableWindow(GetDlgItem(hWnd, id3), flag);
+        EnableWindow(GetDlgItem(hWnd, id4), flag);
+        EnableWindow(GetDlgItem(hWnd, id5), flag);
+        EnableWindow(GetDlgItem(hWnd, id6), flag);
+    }
+
+    // 0xe3e80 (save dialog variant): first two enables unconditional, last two
+    // track occupancy.
+    RVA(0x000e3e80, 0x86)
+    void
+    winapi_0e3e80_SetDlgItemTextA(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6) {
+        i32 flag;
+        if (Check2694(item)) {
+            SetDlgItemTextA(hWnd, id3, item->m_14);
+            flag = 1;
+        } else {
+            SetDlgItemTextA(hWnd, id3, "(Empty)");
+            flag = 0;
+        }
+        EnableWindow(GetDlgItem(hWnd, id3), 1);
+        EnableWindow(GetDlgItem(hWnd, id4), 1);
+        EnableWindow(GetDlgItem(hWnd, id5), flag);
+        EnableWindow(GetDlgItem(hWnd, id6), flag);
+    }
+} // namespace ApiCallerStubs
 
 // Class-metadata annotations (EOF-hosted).
 SIZE(SaveSlot, 0x100);   // 0x100-byte slot record (m_slots[] array stride)
