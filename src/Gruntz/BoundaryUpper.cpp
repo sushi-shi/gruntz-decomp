@@ -704,21 +704,33 @@ i32 ImgOwned::Commit(i32 a0, const void* a1) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x13dec0 - millisecond busy-wait via the timeGetTime function pointer global:
-// spin until now passes start+ms (unsigned, overflow-guarded). __stdcall, 1 arg;
-// the fn-ptr is cached in a callee-saved reg across the loop.
+// 0x13dec0 - millisecond frame-pacing busy-wait via the timeGetTime function
+// pointer global: spin until now passes start+ms (unsigned, overflow-guarded).
+// Reached __thiscall from RezMgr::UpdateClock (`mov ecx,esi(this); call`), NOT the
+// __stdcall free function Ghidra mislabeled (Delay_13dec0@@YG). Relabeled to the
+// __thiscall member (RezMgr::SpinWaitUntil) so UpdateClock's SpinWaitUntil call
+// reloc pairs with this definition (folds the placeholder symbol). `this` is unused
+// by the body (ecx ignored), so the emitted bytes are identical to the stdcall form;
+// the fn-ptr is cached in a callee-saved reg across the loop. Only a minimal RezMgr
+// view is declared here - the full RezMgr.h is /O2-sensitive when pulled into other
+// TUs, so it is not included.
 // ---------------------------------------------------------------------------
 extern "C" u32(WINAPI* g_pTimeGetTime)(); // _g_pTimeGetTime @0x6c4650
+
+class RezMgr {
+public:
+    void SpinWaitUntil(i32 ms); // 0x13dec0
+};
 // @early-stop
 // ~83.9% regalloc wall: body byte-exact, but retail pins the cached fn-ptr in edi
 // and the deadline in esi (pushing both callee-saves upfront), while MSVC5 swaps
 // them (fn-ptr in esi, deadline in edi, edi shrink-wrapped). No source spelling
 // flips the esi/edi pair; logic complete.
 RVA(0x0013dec0, 0x20)
-void __stdcall Delay_13dec0(u32 ms) {
+void RezMgr::SpinWaitUntil(i32 ms) {
     u32(WINAPI * fn)() = g_pTimeGetTime;
     u32 now = fn();
-    u32 end = now + ms;
+    u32 end = now + (u32)ms;
     if (now <= end) {
         do {
             now = fn();

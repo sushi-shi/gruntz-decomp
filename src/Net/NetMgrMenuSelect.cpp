@@ -16,8 +16,8 @@
 // +0x8 the player/slot id, +0x20/+0x24 the session-add params.
 struct MenuSelectEvent {
     char m_pad0[0x4];
-    i32 m_4; // +0x4  armed gate
-    i32 m_8; // +0x8  id
+    i32 m_armed; // +0x4  armed gate (==1)
+    i32 m_id;    // +0x8  player/slot id
     char m_pad0c[0x20 - 0xc];
     i32 m_20; // +0x20
     i32 m_24; // +0x24
@@ -49,7 +49,7 @@ DATA(0x002bf3c0)
 extern "C" u32 g_killCueClock; // 0x6bf3c0
 
 // --- CNetMgr::LoadMenuSelectSprite (0xba620, __thiscall) -----------------------
-// On an armed (ev->m_4==1) menu-select event: resolve/create the player session
+// On an armed (ev->m_armed==1) menu-select event: resolve/create the player session
 // node, then (unless a paused/over gate m_530/m_connected is set -> a 0x3fd stat)
 // either bail with a 0x3fe stat when the ready-options count is full (>=4), or
 // announce the version and play the cooldown-gated "GAME_MENUS_SELECT" cue.
@@ -66,12 +66,12 @@ i32 CNetMgr::LoadMenuSelectSprite(void* evp) {
     if (ev == 0) {
         return 0;
     }
-    if (ev->m_4 != 1) {
+    if (ev->m_armed != 1) {
         return 0;
     }
-    PlayerNode* node = ((PlayerMgr*)m_peer)->GetPlayerData(ev->m_8);
+    PlayerNode* node = ((PlayerMgr*)m_peer)->GetPlayerData(ev->m_id);
     if (node == 0) {
-        node = ((PlayerMgr*)m_peer)->AddSessionNode(ev->m_8, ev->m_20, ev->m_24, node);
+        node = ((PlayerMgr*)m_peer)->AddSessionNode(ev->m_id, ev->m_20, ev->m_24, node);
         if (node == 0) {
             return 0;
         }
@@ -79,7 +79,7 @@ i32 CNetMgr::LoadMenuSelectSprite(void* evp) {
     if (m_530 == 0 && m_connected == 0) {
         if (m_useChannelLatency != 0) {
             if (m_4->CountActiveChannels(1) >= 4) {
-                SendStat3(ev->m_8, 0x3fe, 1);
+                SendStat3(ev->m_id, 0x3fe, 1);
                 return 0;
             }
             if (m_useChannelLatency != 0) {
@@ -105,6 +105,6 @@ i32 CNetMgr::LoadMenuSelectSprite(void* evp) {
         }
         return 1;
     }
-    SendStat3(ev->m_8, 0x3fd, 1);
+    SendStat3(ev->m_id, 0x3fd, 1);
     return 1;
 }

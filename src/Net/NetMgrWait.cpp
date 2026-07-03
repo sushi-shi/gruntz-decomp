@@ -50,7 +50,7 @@ struct WaitDWordArr {               // this+0x604 (a CDWordArray of per-slot vot
 SIZE_UNKNOWN(WaitDWordArr); // CDWordArray view (only +0x8 pinned); size TBD
 struct WaitReportGate {     // m_peer (+0x524)
     char m_pad0[0x60];
-    i32 m_60; // +0x60  peer-ready gate
+    i32 m_peerReady; // +0x60  peer-ready gate
 };
 SIZE_UNKNOWN(WaitReportGate);             // peer view (only +0x60 pinned); size TBD
 struct WaitSoundZ {                       // m_4->m_48
@@ -64,7 +64,7 @@ struct WaitLogic {        // this->m_4
 SIZE_UNKNOWN(WaitLogic); // logic view (only +0x48 pinned); size TBD
 struct WaitSettings {    // g_mgrSettings (0x64556c)
     char m_pad0[0x14];
-    i32 m_14; // +0x14  ambient-enabled gate
+    i32 m_ambientEnabled; // +0x14  ambient-enabled gate
     char m_pad18[0x30 - 0x18];
     void* m_world; // +0x30  status-text render surface
     char m_pad34[0x8c - 0x34];
@@ -105,7 +105,7 @@ i32 CNetMgr::WaitForOtherPlayers() {
     for (i32 k = 3; k != 0; k--) {
         votes->SetAtGrow(votes->m_8, 0);
     }
-    if (((WaitReportGate*)m_peer)->m_60 == 1) {
+    if (((WaitReportGate*)m_peer)->m_peerReady == 1) {
         m_534 = 1;
         return 1;
     }
@@ -170,7 +170,7 @@ i32 CNetMgr::WaitForOtherPlayers() {
     }
 
     g_648ce8 = timeGetTime();
-    if (g->m_14 != 0) {
+    if (g->m_ambientEnabled != 0) {
         char buf[0x40];
         wsprintfA(buf, "AMBIENT%d", GetAmbientId());
         ((WaitLogic*)m_4)->m_48->Play(buf, 1);
@@ -264,7 +264,7 @@ i32 CNetMgr::Poll(i32 token) {
         CNetGameMgr* mgr = (CNetGameMgr*)g_mgrSettings;
         for (i32 i = 0; i < 4; i++) {
             CNetChannel* ch = &mgr->m_channels[i];
-            if (ch->m_18 != m_localPlayerId && ch->m_20 != 0 && ch->m_14 != 0) {
+            if (ch->m_playerId != m_localPlayerId && ch->m_active != 0 && ch->m_14 != 0) {
                 if (m_recordAcked[i] == 0) {
                     allAcked = 0;
                 } else if (!(m_recordToken[i] == token && token != 0)) {

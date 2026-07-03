@@ -13,8 +13,11 @@
 // (each Close moves the node off the open list, advancing the head). Returns 1.
 RVA(0x0013ca80, 0x1d)
 i32 CRezFileMgr::CloseAllOpen() {
+    // The list stores CRezFile nodes; retrieve the head as its concrete type (the
+    // typed intrusive-list access - CRezFile's node base is at offset 0, so this is a
+    // zero-offset static downcast, matching-neutral). Close() is a direct call.
     while (m_openList.m_head != 0) {
-        m_openList.m_head->Close();
+        ((CRezFile*)m_openList.m_head)->Close();
     }
     return 1;
 }
@@ -103,7 +106,9 @@ i32 CRezFile::Open() {
         return 1;
     }
     if (m_mgr->m_openCount > m_mgr->m_maxOpen) {
-        CRezFile* lru = m_mgr->m_openList.m_tail;
+        // Typed intrusive-list access: the LRU eviction candidate (the open list's
+        // tail) is a CRezFile (zero-offset static downcast; see CloseAllOpen).
+        CRezFile* lru = (CRezFile*)m_mgr->m_openList.m_tail;
         if (lru != 0) {
             lru->Close();
         }
@@ -130,7 +135,7 @@ i32 CRezFile::Open() {
         }
     }
     m_mgr->m_closedList.Remove(this);
-    m_mgr->m_openList.Append(this);
+    m_mgr->m_openList.AddHead(this);
     m_mgr->m_openCount++;
     return 1;
 }
@@ -154,7 +159,7 @@ i32 CRezFile::Close() {
     }
     m_mgr->m_openCount--;
     m_mgr->m_openList.Remove(this);
-    m_mgr->m_closedList.Append(this);
+    m_mgr->m_closedList.AddHead(this);
     m_handle = 0;
     return ok;
 }

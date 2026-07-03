@@ -137,10 +137,10 @@ void CNetCmdSlot::ResetAll() {
     m_maxSeq = 0;
     m_owner = 0;
     ClearCmds();
-    m_3c = 0;
-    m_40 = 0;
-    m_44 = 0;
-    m_48 = 0;
+    m_ackFlags[0] = 0;
+    m_ackFlags[1] = 0;
+    m_ackFlags[2] = 0;
+    m_ackFlags[3] = 0;
     ResetTriple(m_rangeA);
     ResetTriple(m_rangeB);
 }
@@ -211,7 +211,7 @@ i32 CNetCmdSlot::ProcessCmd(i32 playerId, void* rec, i32 size) {
         }
         if (opcode & 2) {
             i32 pid = slot->m_cmdHead[0] & 0xff;
-            (&m_3c)[pid] = 1;
+            m_ackFlags[pid] = 1;
             if (seq > m_latchedSeq) {
                 m_latchedSeq = seq;
             }

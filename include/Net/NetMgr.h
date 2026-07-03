@@ -177,19 +177,19 @@ SIZE_UNKNOWN(CNetPlayerSlot); // m_4-relative slot view (3 gate/latency dwords p
 // pinned. The +0x4 member is a CString (the channel's name); +0x18 a dword id;
 // +0x20 the "active" gate.
 struct CNetChannel {
-    i32 m_0;     // +0x00  id/header dword (serialized at packet+8)
-    CString m_4; // +0x04  channel name (CString)
-    i32 m_8;     // +0x08  net-slot id / player word
-    i32 m_c;     // +0x0c
-    i32 m_10;    // +0x10
-    i32 m_14;    // +0x14  (== m_4+0x164 gate A)
-    i32 m_18;    // +0x18  dword id word
-    i32 m_1c;    // +0x1c  flag (0/1)
-    i32 m_20;    // +0x20  "active" gate (== m_4+0x170 gate B)
+    i32 m_id;       // +0x00  id/header dword (serialized at packet+8)
+    CString m_name; // +0x04  channel name (CString)
+    i32 m_slotId;   // +0x08  net-slot id (SetNetSlot key) / player word
+    i32 m_c;        // +0x0c
+    i32 m_10;       // +0x10
+    i32 m_14;       // +0x14  (== CNetMgr::m_4+0x164 gate A)
+    i32 m_playerId; // +0x18  owner player id (compared vs m_localPlayerId)
+    i32 m_flag;     // +0x1c  flag (0/1)
+    i32 m_active;   // +0x20  "active" gate (== CNetMgr::m_4+0x170 gate B)
     char m_pad24[0x228 - 0x24];
-    i32 m_228; // +0x228
-    i32 m_22c; // +0x22c  the slot's latency value (== m_4+0x37c)
-    i32 m_230; // +0x230
+    i32 m_228;     // +0x228
+    i32 m_latency; // +0x22c  the slot's latency value (== CNetMgr::m_4+0x37c)
+    i32 m_230;     // +0x230
     char m_pad234[0x238 - 0x234];
 
     // The channel's name fetched by value (NRV into the caller's slot); thiscall
@@ -252,12 +252,9 @@ struct CNetCmdSlot {
     i32 m_maxSeq;     // +0x18  high-water sequence (RaiseMax keeps the max)
     CNetMgr* m_owner; // +0x1c  owning CNetMgr back-pointer (Init <- session; drives ProcessCmd)
     CObList m_cmds;   // +0x20  queued-command list (CObList, 0x1c bytes)
-    i32 m_3c;         // +0x3c  ack-flag array base ((&m_3c)[playerIdx])
-    i32 m_40;         // +0x40
-    i32 m_44;         // +0x44
-    i32 m_48;         // +0x48
-    i32 m_rangeA[3];  // +0x4c  command-range A (reset to -1)
-    i32 m_rangeB[3];  // +0x58  command-range B (reset to -1)
+    i32 m_ackFlags[4]; // +0x3c  per-player ack-flag array (ProcessCmd sets m_ackFlags[pid])
+    i32 m_rangeA[3];   // +0x4c  command-range A (reset to -1)
+    i32 m_rangeB[3];   // +0x58  command-range B (reset to -1)
 
     CNetCmdSlot();                       // bbec0  construct m_cmds (/GX EH) + reset fields
     void ResetAll();                     // c0bb0  zero all fields + ranges
@@ -617,13 +614,20 @@ SIZE_UNKNOWN(CNetGameWnd); // window view (only +0x4 HWND pinned); retail size T
 // (CountActiveChannels @0x492e30). The +0x4 sub-object is ALSO the base of the
 // inline per-channel slot array at +0x150 (CNetGameMgr::m_channels, see CNetChannel).
 // ---------------------------------------------------------------------------
+// The +0x38 registry/config store (WriteInt/WriteString/GetInt); the concrete
+// method-carrying view lives in NetMgr.cpp, forward-declared here so CNetGameMgr
+// can expose it as a named typed member instead of a raw m_4+0x38 cast.
+struct CNetConfigStore;
+
 struct CNetGameMgr {
     GruntzPlayer* FindPlayer(i32 id);  // 0x00492e80 -> the leaving player's slot (no storage)
     i32 CountActiveChannels(i32 flag); // 0x00492e30 -> # active channels (RegisterChannel/
                                        //              menu-select "ready options" gate)
     char m_pad0[4];                    // +0x00
     CNetGameWnd* m_wnd;                // +0x04  the window (its +0x4 is the engine HWND)
-    char m_pad8[0x5c - 8];
+    char m_pad8[0x38 - 8];
+    CNetConfigStore* m_configStore; // +0x38  registry/config store (Service/Player_Name/...)
+    char m_pad3c[0x5c - 0x3c];
     CNetChatLog* m_5c; // +0x5c  the chat/text display
     char m_pad60[0x6c - 0x60];
     CGruntzCmdMgr* m_6c; // +0x6c  the grunt command manager (Dispatch/EnqueueCommand)
@@ -811,7 +815,7 @@ public:
     // CreateSession (0xbbc90, /GX EH): enumerate the host group, resolve the
     // local player, allocate + construct the DirectPlay command-session
     // (new CNetSession -> 4-slot vector-ctor + ResetAll), wire it (Init), derive
-    // the resync tick (m_5cc), and seed one command slot per active channel.
+    // the resync tick (m_resyncTick), and seed one command slot per active channel.
     i32 CreateSession(); // 0xbbc90
 
     // VerifyCustomLevel (0xb8fc0, /GX EH): build the level-name rez path from the
@@ -914,7 +918,7 @@ public:
     i32 BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd); // 0xbb190
 
     // The 3-arg record helper AckDropPlayer fires before the slot reset (records
-    // the pending drop into the m_608 id array). __thiscall (id is its 2nd arg);
+    // the pending drop into the m_dropIds id array). __thiscall (id is its 2nd arg);
     // external incremental-link thunk -> no body here.
     void RecordDropPlayer(i32 a, i32 id); // 0xbb5e0
 
@@ -1029,9 +1033,9 @@ public:
     CNetPlayerEntry* m_localPlayer; // +0x5bc  the local player descriptor (gate in WaitForConnect)
     i32 m_localPlayerId; // +0x5c0  local player id (== m_localPlayer->m_4; matched against
                          //         peer player ids in RecordDropPlayer2/CreateSession/Poll)
-    i32 m_5c4;           // +0x5c4  sender-id latch (dispatch id 0x402 records msg->m_8 here)
+    i32 m_lastSenderId;  // +0x5c4  sender-id latch (dispatch id 0x402 records msg->m_8 here)
     char m_pad5c8[0x5cc - 0x5c8];
-    i32 m_5cc; // +0x5cc  the resync "tick" byte derived from the session sub-object
+    i32 m_resyncTick; // +0x5cc  the resync "tick" byte derived from the session sub-object
     char m_pad5d0[0x5e0 - 0x5d0];
     u32 m_lastFrameDelta; // +0x5e0  last frame-sync delta (ms)
     u32 m_lastFrameTime;  // +0x5e4  last frame-sync timestamp (timeGetTime)
@@ -1039,8 +1043,8 @@ public:
     DWORD m_channelLatency[4]; // +0x5f0  per-channel ack-latency values
     i32 m_600;                 // +0x600  a command-timing config word (LoadConfig copies cfg+0x114)
     char m_pad604[0x608 - 0x604];
-    i32* m_608; // +0x608  the pending-drop id array (RecordDropPlayer fills it)
-    i32 m_60c;  // +0x60c  the pending-drop id array element count
+    i32* m_dropIds;    // +0x608  the pending-drop id array (RecordDropPlayer fills it)
+    i32 m_dropIdCount; // +0x60c  the pending-drop id array element count
 
     // The managed-list teardown run of the destructor (~CNetMgr, 0x0b6000) is
     // declared as `virtual ~CNetMgr()` in the vtable block above.

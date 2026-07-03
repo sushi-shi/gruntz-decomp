@@ -623,13 +623,13 @@ i32 CNetMgr::BroadcastChannelTable(CNetPlayerEntry* recipient) {
     for (i32 i = 0; i < 4; i++) {
         CNetChannel* ch = &m_4->m_channels[i];
         if (ch != 0) {
-            rec[-1] = (char)ch->m_20;
-            rec[0] = (char)ch->m_8;
+            rec[-1] = (char)ch->m_active;
+            rec[0] = (char)ch->m_slotId;
             rec[1] = (char)ch->m_14;
             rec[2] = (char)ch->m_10;
-            rec[5] = (char)ch->m_1c;
+            rec[5] = (char)ch->m_flag;
             rec[4] = (char)ch->m_228;
-            *(i32*)(rec + 7) = ch->m_18;
+            *(i32*)(rec + 7) = ch->m_playerId;
             CString name = ch->GetName();
             strcpy(rec + 0xb, (const char*)name);
         }
@@ -667,20 +667,20 @@ i32 CNetMgr::ParseChannelTable(void* packet) {
     for (i32 i = 0; i < 4; i++) {
         CNetChannel* ch = &m_4->m_channels[i];
         if (ch != 0) {
-            ch->m_20 = (u8)rec[-1];
-            ch->m_8 = (u8)rec[0];
+            ch->m_active = (u8)rec[-1];
+            ch->m_slotId = (u8)rec[0];
             ch->m_14 = (u8)rec[1];
             ch->m_10 = (u8)rec[2];
             if (rec[5] != 0) {
-                ch->m_1c = 1;
+                ch->m_flag = 1;
             } else {
-                ch->m_1c = 0;
+                ch->m_flag = 0;
             }
             ch->m_228 = (u8)rec[4];
-            ch->m_4 = rec + 0xb;
-            ch->m_18 = *(i32*)(rec + 7);
-            if (m_useChannelLatency == 0 && ch->m_20 != 0) {
-                SetNetSlot(ch->m_8, 0);
+            ch->m_name = rec + 0xb;
+            ch->m_playerId = *(i32*)(rec + 7);
+            if (m_useChannelLatency == 0 && ch->m_active != 0) {
+                SetNetSlot(ch->m_slotId, 0);
             }
         }
         rec += 0x20;
@@ -720,7 +720,7 @@ i32 CNetMgr::RegisterChannel(const char* name, i32 id, i32 c, i32 d, i32 idx, i3
     CNetChannel* ch = 0;
     if (idx >= 0 && idx <= 4) {
         ch = &m_4->m_channels[idx];
-        if (ch != 0 && ch->m_20 != 0) {
+        if (ch != 0 && ch->m_active != 0) {
             ch = 0;
         }
     }
@@ -728,7 +728,7 @@ i32 CNetMgr::RegisterChannel(const char* name, i32 id, i32 c, i32 d, i32 idx, i3
         CNetChannel* p = m_4->m_channels;
         for (i32 i = 0; i < 4; i++) {
             ch = p;
-            if (p != 0 && p->m_20 == 0) {
+            if (p != 0 && p->m_active == 0) {
                 break;
             }
             ch = 0;
@@ -742,15 +742,15 @@ i32 CNetMgr::RegisterChannel(const char* name, i32 id, i32 c, i32 d, i32 idx, i3
     SetNetSlot(id, 0);
     {
         CString temp(name);
-        ch->m_4 = temp;
+        ch->m_name = temp;
     }
-    ch->m_8 = id;
+    ch->m_slotId = id;
     ch->m_14 = c;
     ch->m_10 = d;
-    ch->m_1c = 0;
-    ch->m_18 = e;
-    ch->m_20 = 1;
-    ch->m_22c = 0;
+    ch->m_flag = 0;
+    ch->m_playerId = e;
+    ch->m_active = 1;
+    ch->m_latency = 0;
     ch->m_230 = 0;
     return 1;
 }
@@ -781,11 +781,11 @@ i32 CNetMgr::RemoveChannel(i32 idx) {
     if (ch == 0) {
         return 0;
     }
-    if (ch->m_20 == 0) {
+    if (ch->m_active == 0) {
         return 0;
     }
-    ch->m_20 = 0;
-    SetNetSlot(ch->m_8, 1);
+    ch->m_active = 0;
+    SetNetSlot(ch->m_slotId, 1);
     return 1;
 }
 
@@ -822,16 +822,16 @@ i32 CNetMgr::BroadcastOneChannel(CNetChannel* ch) {
     memset(packet, 0, 0x2c);
     packet[0] |= 0x80;
     *(i32*)(packet + 4) = STAT_CHANNEL_ONE;
-    *(i32*)(packet + 8) = ch->m_0;
+    *(i32*)(packet + 8) = ch->m_id;
 
-    packet[0xd] = ch->m_8;
+    packet[0xd] = ch->m_slotId;
     packet[0xe] = ch->m_14;
     packet[0xf] = ch->m_10;
-    packet[0x12] = ch->m_1c;
+    packet[0x12] = ch->m_flag;
     packet[0xc] = 1;
     packet[0x11] = ch->m_228;
     {
-        i32 id = ch->m_18;
+        i32 id = ch->m_playerId;
         CString name = ch->GetName();
         *(i32*)(packet + 0x18) = id;
         strcpy(packet + 0x18, (const char*)name);
@@ -861,18 +861,18 @@ i32 CNetMgr::ParseOneChannel(void* rec) {
         return 0;
     }
 
-    ch->m_4 = (char*)(r + 0x18);
-    ch->m_8 = r[0xd];
+    ch->m_name = (char*)(r + 0x18);
+    ch->m_slotId = r[0xd];
     ch->m_10 = r[0xf];
     if (r[0x12] != 0) {
-        ch->m_1c = 1;
+        ch->m_flag = 1;
     } else {
-        ch->m_1c = 0;
+        ch->m_flag = 0;
     }
     ch->m_228 = r[0x11];
     ch->m_14 = r[0xe];
-    ch->m_18 = *(i32*)(r + 0x14);
-    ch->m_20 = 1;
+    ch->m_playerId = *(i32*)(r + 0x14);
+    ch->m_active = 1;
     return 1;
 }
 
@@ -1000,7 +1000,7 @@ i32 CNetMgr::DropChannelPlayer(i32 idx) {
         return 0;
     }
 
-    void* data = m_peer->GetPlayerData(ch->m_18);
+    void* data = m_peer->GetPlayerData(ch->m_playerId);
     i32 active = ch->m_14;
     if (data == 0) {
         if (active != 0) {
@@ -1020,15 +1020,15 @@ i32 CNetMgr::DropChannelPlayer(i32 idx) {
 
 // ---------------------------------------------------------------------------
 // CNetMgr::RecordDropPlayer2  (__thiscall).
-// Records a pending player-drop into the m_608 id array. No-op once the host
+// Records a pending player-drop into the m_dropIds id array. No-op once the host
 // latch m_534 is set, or for the local player (m_localPlayerId). Skips a player already
-// recorded; otherwise fills the first empty m_608 slot, bailing if the array is
+// recorded; otherwise fills the first empty m_dropIds slot, bailing if the array is
 // full. Then, once the number of recorded drops reaches the number of
 // command slots in state 3 (the m_520 sub-object, stride 0x64), it announces the
 // drop twice (stat 0x3e8) and latches m_534.
 // @early-stop
 // regalloc wall (~93%): every instruction matches in the multiset (the m_534/m_localPlayerId
-// guards, the three m_608 scans, the state-3 slot count, the double SendStatFlag and
+// guards, the three m_dropIds scans, the state-3 slot count, the double SendStatFlag and
 // the m_534 latch) but retail pins this->esi / id->edi where cl assigns this->edi /
 // id->esi; the register choice is not steerable from source. Final sweep.
 RVA(0x000bb5e0, 0xd9)
@@ -1040,17 +1040,17 @@ void CNetMgr::RecordDropPlayer2(i32 a, i32 id) {
         return;
     }
 
-    i32 count = m_60c;
+    i32 count = m_dropIdCount;
     i32 i;
     for (i = 0; i < count; i++) {
-        if (m_608[i] == id) {
+        if (m_dropIds[i] == id) {
             return;
         }
     }
 
     i32 slot = 0;
     while (slot < count) {
-        if (m_608[slot] == 0) {
+        if (m_dropIds[slot] == 0) {
             break;
         }
         slot++;
@@ -1058,7 +1058,7 @@ void CNetMgr::RecordDropPlayer2(i32 a, i32 id) {
     if (slot >= count) {
         return;
     }
-    m_608[slot] = id;
+    m_dropIds[slot] = id;
 
     i32 stateThree = 0;
     CNetCmdSlot* p = m_session->m_slots;
@@ -1071,7 +1071,7 @@ void CNetMgr::RecordDropPlayer2(i32 a, i32 id) {
 
     i32 recorded = 0;
     for (i = 0; i < count; i++) {
-        if (m_608[i] != 0) {
+        if (m_dropIds[i] != 0) {
             recorded++;
         }
     }
@@ -1503,7 +1503,7 @@ i32 CNetMgr::SetupServices() {
 
     if (g_hostServicesMode != 0) {
         if (DispatchServices("MULTI_HOSTSERVICES", 0, (void*)&ServicesDispatchCb) != 0) {
-            CNetConfigStore* store = *(CNetConfigStore**)((char*)m_4 + 0x38);
+            CNetConfigStore* store = m_4->m_configStore;
             if (store != 0 && g_serviceId != 0x3e7) {
                 store->WriteInt("Service", g_serviceId);
                 {
@@ -1518,7 +1518,7 @@ i32 CNetMgr::SetupServices() {
         }
     } else {
         if (DispatchServices("MULTI_JOINSERVICES", 0, (void*)&ServicesDispatchCb) != 0) {
-            CNetConfigStore* store = *(CNetConfigStore**)((char*)m_4 + 0x38);
+            CNetConfigStore* store = m_4->m_configStore;
             if (store != 0) {
                 if (g_serviceId != 0x3e7) {
                     store->WriteInt("Service", g_serviceId);
@@ -1668,7 +1668,7 @@ i32 CNetMgr::DetectConnectionConfig() {
         m_resend = 0xa;
     }
 
-    CNetConfigStore* cfg = *(CNetConfigStore**)((char*)m_4 + 0x38);
+    CNetConfigStore* cfg = m_4->m_configStore;
     CString kDelay = m_configSection + "_CmdDelay";
     CString kResend = m_configSection + "_Resend";
     CString kDyn = m_configSection + "_DynCmdDelay";
@@ -1682,9 +1682,9 @@ i32 CNetMgr::DetectConnectionConfig() {
     CNetChannel* ch0 = m_4->m_channels;
     {
         CString name = GetString5a0();
-        ch0->m_4 = name;
+        ch0->m_name = name;
     }
-    ch0->m_8 = 0;
+    ch0->m_slotId = 0;
 
     i32 r = JoinAndRegisterChannel();
     if (r != 0) {
@@ -1716,7 +1716,7 @@ i32 CNetMgr::JoinAndRegisterChannel() {
     Cfg_SetSection(buf, "%s", *(i32*)((char*)this + 0x59c));
     Cfg_AppendKeyVal(buf, "CMDDELAY", m_cmdDelay);
     Cfg_AppendKeyVal(buf, "RESEND", m_resend);
-    Cfg_AppendKeyVal(buf, "LEVEL", *(i32*)((char*)this + 0x1c));
+    Cfg_AppendKeyVal(buf, "LEVEL", m_resyncLParam);
 
     i32 enumResult = g_groupEnumMgr->EnumGroupsInto((void*)4, buf, 0, (i32)g_emptyString);
     if (enumResult == 0) {
@@ -1733,7 +1733,7 @@ i32 CNetMgr::JoinAndRegisterChannel() {
 
     m_localPlayerId = *(i32*)((char*)lp + 4);
     CNetChannel* ch0 = m_4->m_channels;
-    i32 chField = ch0->m_8;
+    i32 chField = ch0->m_slotId;
     CString name = ch0->GetName();
     i32 ok = RegisterChannelFrom(name, chField, -1, m_localPlayerId);
     return ok != 0 ? enumResult : 0;
@@ -2123,7 +2123,7 @@ i32 CNetMgr::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
         }
 
         case 0x402:
-            m_5c4 = msg->m_8;
+            m_lastSenderId = msg->m_8;
             m_584 = 1;
             return 1;
 
@@ -2296,7 +2296,7 @@ i32 CNetMgr::SetupTcpIpConfig() {
     m_cmdDelay = 5;
     m_resend = 0x3c;
 
-    CNetConfigStore* cfg = *(CNetConfigStore**)((char*)m_4 + 0x38);
+    CNetConfigStore* cfg = m_4->m_configStore;
     CString kDelay = m_configSection + "_CmdDelay";
     CString kResend = m_configSection + "_Resend";
     CString kDyn = m_configSection + "_DynCmdDelay";
@@ -2310,9 +2310,9 @@ i32 CNetMgr::SetupTcpIpConfig() {
     CNetChannel* ch0 = m_4->m_channels;
     {
         CString name = GetString5a0();
-        ch0->m_4 = name;
+        ch0->m_name = name;
     }
-    ch0->m_8 = 0;
+    ch0->m_slotId = 0;
 
     void* lp;
     {
@@ -2326,7 +2326,7 @@ i32 CNetMgr::SetupTcpIpConfig() {
     }
 
     m_localPlayerId = *(i32*)((char*)lp + 4);
-    i32 chField = ch0->m_8;
+    i32 chField = ch0->m_slotId;
     CString cn2 = ch0->GetName();
     i32 ok = RegisterChannelFrom(cn2, chField, -1, m_localPlayerId);
     return ok != 0;
@@ -3734,7 +3734,7 @@ i32 CNetMgr::VerifyCustomLevel(i32 a1, i32 a2) {
 // player, then allocate + construct the 0x20bb0-byte CNetSession (operator new +
 // the 4-slot vector-ctor + ResetAll), wire it (Init with the game sub-object,
 // this manager and the peer), latch the local player and derive the resync tick
-// byte (m_5cc), and finally seed one command slot per channel with a per-channel
+// byte (m_resyncTick), and finally seed one command slot per channel with a per-channel
 // owner code (1 inactive, 2 local, 3 remote). The new'd session is the /GX-tracked
 // object. Returns 1 once every slot is created, 0 on any failure.
 // @early-stop
@@ -3773,13 +3773,13 @@ i32 CNetMgr::CreateSession() {
     } else {
         b = b - 1;
     }
-    m_5cc = b;
+    m_resyncTick = b;
 
     for (i32 i = 0; i < 4; i++) {
         CNetChannel* ch = &m_4->m_channels[i];
         i32 code = 1;
-        if (ch->m_20 != 0 && ch->m_14 != 0) {
-            code = (ch->m_18 == m_localPlayerId) ? 2 : 3;
+        if (ch->m_active != 0 && ch->m_14 != 0) {
+            code = (ch->m_playerId == m_localPlayerId) ? 2 : 3;
         }
         if (m_session->CreateSlot(i, code) == 0) {
             return 0;
@@ -3813,10 +3813,10 @@ CNetCmdSlot::CNetCmdSlot() {
     m_maxSeq = 0;
     m_owner = 0;
     ClearCmds();
-    m_3c = 0;
-    m_40 = 0;
-    m_44 = 0;
-    m_48 = 0;
+    m_ackFlags[0] = 0;
+    m_ackFlags[1] = 0;
+    m_ackFlags[2] = 0;
+    m_ackFlags[3] = 0;
     ResetTriple(m_rangeA);
     ResetTriple(m_rangeB);
 }
