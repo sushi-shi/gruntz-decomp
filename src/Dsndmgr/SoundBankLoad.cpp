@@ -8,6 +8,9 @@
 #include <Dsndmgr/CGruntzSoundZ.h> // the real CGruntzSoundInnerZ (+ MFC CFile via <Mfc.h>)
 #include <rva.h>
 
+// (Global scalar operator new - the NAFXCW allocator at 0x1b9b46 - comes from the
+// real <Mfc.h> via CGruntzSoundZ.h; no local forward-decl needed.)
+
 // The name compare against the pooled ".." token (0x120090, __cdecl 2-arg; strcmp/
 // _mbscmp). Reloc-masked rel32; the ".." is the shared $SG constant (0x5ee8ec) the
 // ButeMgr parser also references, so reach it by symbol so the DIR32 pairs.

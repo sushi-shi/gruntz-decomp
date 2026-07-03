@@ -50,7 +50,7 @@ extern "C" __declspec(dllimport) i32 __stdcall AIL_sequence_status(i32 seq);
 // See docs/patterns/eh-dtor-vptr-restamp-presence.md.
 RVA(0x00086040, 0x49)
 CGruntzSoundZ::~CGruntzSoundZ() {
-    Shutdown_1384f0();
+    Shutdown();
 }
 
 // ---------------------------------------------------------------------------
@@ -58,7 +58,7 @@ CGruntzSoundZ::~CGruntzSoundZ() {
 // bank via its scalar-deleting destructor, RemoveAll, and clear m_pCurrent. The
 // per-iteration CString key forces the /GX EH frame.
 RVA(0x00138530, 0xa2)
-void CGruntzSoundZ::StopAndFlush_138530() {
+void CGruntzSoundZ::StopAndFlush() {
     if (m_pCurrent != 0) {
         m_pCurrent->Stop();
     }
@@ -69,7 +69,7 @@ void CGruntzSoundZ::StopAndFlush_138530() {
             CObject* val = 0;
             GetNextAssoc(pos, key, val);
             if (val != 0) {
-                ((CGruntzSoundInnerZ*)val)->ScalarDtor(1);
+                delete (CGruntzSoundInnerZ*)val;
             }
         } while (pos != (POSITION)0);
     }
@@ -83,7 +83,7 @@ void CGruntzSoundZ::StopAndFlush_138530() {
 // inner vtable slot +0x18 (Load, 2 args); on failure destroy it (scalar dtor) and
 // return 0, on success insert it into the map and return it.
 RVA(0x001385e0, 0x85)
-CGruntzSoundInnerZ* CGruntzSoundZ::CreateBank2_1385e0(i32 a1, i32 a2) {
+CGruntzSoundInnerZ* CGruntzSoundZ::CreateBank2(i32 a1, i32 a2) {
     if (m_enabled == 0) {
         return 0;
     }
@@ -93,11 +93,11 @@ CGruntzSoundInnerZ* CGruntzSoundZ::CreateBank2_1385e0(i32 a1, i32 a2) {
     }
     if (inner->Load(a1, a2) == 0) {
         if (inner != 0) {
-            inner->ScalarDtor(1);
+            delete inner;
         }
         return 0;
     }
-    Insert_138700(inner);
+    Insert(inner);
     return inner;
 }
 
@@ -106,7 +106,7 @@ CGruntzSoundInnerZ* CGruntzSoundZ::CreateBank2_1385e0(i32 a1, i32 a2) {
 // and seed its fields, run its one-time Init(+0x14); on failure destroy it and
 // return 0, on success insert it into the map and return it.
 RVA(0x00138670, 0x8a)
-CGruntzSoundInnerZ* CGruntzSoundZ::CreateBank_138670(i32 a1, i32 a2, i32 a3) {
+CGruntzSoundInnerZ* CGruntzSoundZ::CreateBank(i32 a1, i32 a2, i32 a3) {
     if (m_enabled == 0) {
         return 0;
     }
@@ -116,11 +116,11 @@ CGruntzSoundInnerZ* CGruntzSoundZ::CreateBank_138670(i32 a1, i32 a2, i32 a3) {
     }
     if (inner->DecodeBuf(a1, a2, a3) == 0) {
         if (inner != 0) {
-            inner->ScalarDtor(1);
+            delete inner;
         }
         return 0;
     }
-    Insert_138700(inner);
+    Insert(inner);
     return inner;
 }
 
@@ -128,7 +128,7 @@ CGruntzSoundInnerZ* CGruntzSoundZ::CreateBank_138670(i32 a1, i32 a2, i32 a3) {
 // Insert: key the bank into the map by its inline name buffer (+0x04); if there is
 // no currently-playing bank yet, adopt this one as current.
 RVA(0x00138700, 0x2d)
-void CGruntzSoundZ::Insert_138700(CGruntzSoundInnerZ* inner) {
+void CGruntzSoundZ::Insert(CGruntzSoundInnerZ* inner) {
     if (inner == 0) {
         return;
     }
@@ -144,7 +144,7 @@ void CGruntzSoundZ::Insert_138700(CGruntzSoundInnerZ* inner) {
 // ---------------------------------------------------------------------------
 // Lookup a bank by name; gated on the digital driver handle and a non-empty key.
 RVA(0x00138730, 0x41)
-CGruntzSoundInnerZ* CGruntzSoundZ::Lookup_138730(const char* key) {
+CGruntzSoundInnerZ* CGruntzSoundZ::FindBank(const char* key) {
     if (m_digHandle == 0) {
         return 0;
     }
@@ -162,15 +162,15 @@ CGruntzSoundInnerZ* CGruntzSoundZ::Lookup_138730(const char* key) {
 // PlayCreate2: create-or-fail a 2-arg bank, stop the current bank, and start the
 // new one on the digital driver; on success adopt it as current and return 1.
 RVA(0x00138780, 0x5b)
-i32 CGruntzSoundZ::PlayCreate2_138780(i32 a1, i32 a2, i32 a3) {
+i32 CGruntzSoundZ::PlayCreate2(i32 a1, i32 a2, i32 a3) {
     if (m_enabled == 0) {
         return 0;
     }
-    CGruntzSoundInnerZ* inner = CreateBank2_1385e0(a1, a3);
+    CGruntzSoundInnerZ* inner = CreateBank2(a1, a3);
     if (inner == 0) {
         return 0;
     }
-    StopCurrent_1388a0();
+    StopCurrent();
     if (inner->Play(m_digHandle, a2) == 0) {
         return 0;
     }
@@ -181,15 +181,15 @@ i32 CGruntzSoundZ::PlayCreate2_138780(i32 a1, i32 a2, i32 a3) {
 // ---------------------------------------------------------------------------
 // PlayCreate3: the 3-arg twin of PlayCreate2 (creates a 3-arg bank then plays it).
 RVA(0x001387e0, 0x60)
-i32 CGruntzSoundZ::PlayCreate3_1387e0(i32 a1, i32 a2, i32 a3, i32 a4) {
+i32 CGruntzSoundZ::PlayCreate3(i32 a1, i32 a2, i32 a3, i32 a4) {
     if (m_enabled == 0) {
         return 0;
     }
-    CGruntzSoundInnerZ* inner = CreateBank_138670(a1, a2, a4);
+    CGruntzSoundInnerZ* inner = CreateBank(a1, a2, a4);
     if (inner == 0) {
         return 0;
     }
-    StopCurrent_1388a0();
+    StopCurrent();
     if (inner->Play(m_digHandle, a3) == 0) {
         return 0;
     }
@@ -201,15 +201,15 @@ i32 CGruntzSoundZ::PlayCreate3_1387e0(i32 a1, i32 a2, i32 a3, i32 a4) {
 // Play: look the bank up by name, stop whatever is current, start it on the
 // digital driver; on success adopt it as current and return 1.
 RVA(0x00138840, 0x56)
-i32 CGruntzSoundZ::Play_138840(i32 a1, i32 a2) {
+i32 CGruntzSoundZ::PlayByName(const char* name, i32 a2) {
     if (m_enabled == 0) {
         return 0;
     }
-    CGruntzSoundInnerZ* inner = Lookup_138730((const char*)a1);
+    CGruntzSoundInnerZ* inner = FindBank(name);
     if (inner == 0) {
         return 0;
     }
-    StopCurrent_1388a0();
+    StopCurrent();
     if (inner->Play(m_digHandle, a2) == 0) {
         return 0;
     }
@@ -220,7 +220,7 @@ i32 CGruntzSoundZ::Play_138840(i32 a1, i32 a2) {
 // ---------------------------------------------------------------------------
 // StopCurrent: stop the currently-playing bank and forget it.
 RVA(0x001388a0, 0x18)
-void CGruntzSoundZ::StopCurrent_1388a0() {
+void CGruntzSoundZ::StopCurrent() {
     if (m_pCurrent != 0) {
         m_pCurrent->Stop();
         m_pCurrent = 0;
@@ -232,7 +232,7 @@ void CGruntzSoundZ::StopCurrent_1388a0() {
 // the digital driver with the supplied parameter (vtable +0x24). Returns Play's
 // result; 0 when no current bank.
 RVA(0x001388c0, 0x2a)
-i32 CGruntzSoundZ::Restart_1388c0(i32 a1) {
+i32 CGruntzSoundZ::Restart(i32 a1) {
     if (m_pCurrent == 0) {
         return 0;
     }
@@ -243,7 +243,7 @@ i32 CGruntzSoundZ::Restart_1388c0(i32 a1) {
 // ---------------------------------------------------------------------------
 // IsPlaying: forward to the current bank's status query (vtable +0x30); 0 if none.
 RVA(0x00138920, 0xf)
-i32 CGruntzSoundZ::IsPlaying_138920() {
+i32 CGruntzSoundZ::IsPlaying() {
     if (m_pCurrent == 0) {
         return 0;
     }
@@ -254,7 +254,7 @@ i32 CGruntzSoundZ::IsPlaying_138920() {
 // StopAll: forward to the current bank's "stop all" slot (vtable +0x28); 0 if
 // none. Tail-call (mov eax,[m_pCurrent]; jmp [eax+0x28]).
 RVA(0x001388f0, 0xf)
-i32 CGruntzSoundZ::StopAll_1388f0() {
+i32 CGruntzSoundZ::StopAll() {
     if (m_pCurrent == 0) {
         return 0;
     }
@@ -265,7 +265,7 @@ i32 CGruntzSoundZ::StopAll_1388f0() {
 // StopBank: forward `a1` to the current bank's "stop bank" slot (vtable +0x2c);
 // 0 if none.
 RVA(0x00138900, 0x19)
-i32 CGruntzSoundZ::StopBank_138900(i32 a1) {
+i32 CGruntzSoundZ::StopBank(i32 a1) {
     if (m_pCurrent == 0) {
         return 0;
     }

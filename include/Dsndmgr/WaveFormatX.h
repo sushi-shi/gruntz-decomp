@@ -17,6 +17,6 @@ struct WaveFormatX {
     u16 wBitsPerSample;  // +0x0e
     u16 cbSize;          // +0x10
 };
-SIZE_UNKNOWN(WaveFormatX); // WAVEFORMATEX-shaped scratch header
+SIZE(WaveFormatX, 0x14); // WAVEFORMATEX-shaped PCM header (u16 tail padded to a 4-byte multiple)
 
 #endif // DSNDMGR_WAVEFORMATX_H

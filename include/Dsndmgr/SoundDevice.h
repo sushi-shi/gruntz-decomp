@@ -36,18 +36,18 @@ class SoundDevice;
 // these seed fields) would drop the two SoundBuf<->DirectSoundMgr bridge casts in
 // SoundDevice.cpp.
 struct SoundBuf {
-    virtual void* ScalarDtor(i32 flag); // +0x00  slot 0 (scalar-deleting dtor; declared-only)
-    DSoundLink m_link;                  // +0x04  device buffer-list link (next@+4, prev@+8)
-    IDirectSoundBufferZ* m_buffer;      // +0x0c  the IDirectSoundBuffer to release
-    char m_reservedA[0x18 - 0x10];      // +0x10
-    u32 m_formatWord;                   // +0x18  wFormatTag|nChannels of the WAVEFORMATEX
-    char m_reservedB[0x28 - 0x1c];      // +0x1c
-    u32 m_durationMs;                   // +0x28  duration-ms (set by ComputeDuration)
-    u32 m_byteCount;                    // +0x2c
-    char m_reservedC[0x38 - 0x30];      // +0x30
-    u32 m_avgBytesPerSec;               // +0x38
-    u32 m_avgBytesPerSecDivisor;        // +0x3c
-    char m_reservedD[0x60 - 0x40];      // +0x40
+    virtual ~SoundBuf(); // +0x00  slot 0 scalar-deleting dtor (0x5ef6bc; defined externally)
+    DSoundLink m_link;   // +0x04  device buffer-list link (next@+4, prev@+8)
+    IDirectSoundBufferZ* m_buffer; // +0x0c  the IDirectSoundBuffer to release
+    char m_reservedA[0x18 - 0x10]; // +0x10
+    u32 m_formatWord;              // +0x18  wFormatTag|nChannels of the WAVEFORMATEX
+    char m_reservedB[0x28 - 0x1c]; // +0x1c
+    u32 m_durationMs;              // +0x28  duration-ms (set by ComputeDuration)
+    u32 m_byteCount;               // +0x2c
+    char m_reservedC[0x38 - 0x30]; // +0x30
+    u32 m_avgBytesPerSec;          // +0x38
+    u32 m_avgBytesPerSecDivisor;   // +0x3c
+    char m_reservedD[0x60 - 0x40]; // +0x40
 
     void BaseInit(IDirectSoundBufferZ* buf, SoundDevice* owner); // 0x135b10
     void ComputeDuration();                                      // 0x1359a0
@@ -71,6 +71,8 @@ struct ParseFmt {
     u32 m_reservedC;    // +0x10  (zeroed by Acquire)
 };
 SIZE(ParseFmt, 0x14); // 5-DWORD parser scratch descriptor (address escapes)
+
+struct SubNode; // TickSubManagers instance-list node (view; full def in DirectSoundMgr.cpp)
 
 class SoundDevice {
 public:
@@ -106,6 +108,16 @@ public:
         u32 a3
     ); // 0x136bd0  re-parse RIFF, optionally downconvert, into an existing buffer
 
+    // Device bring-up (DSNDMGR.CPP; defined in DirectSoundMgr.cpp - they fall in that
+    // RVA range): DirectSoundCreate + cooperative level, then lazy primary buffer.
+    i32 Create(void* hwnd, u32 level, u32 flags);   // 0x136550  DirectSoundCreate + coop
+    i32 ReacquireViaCallback();                     // 0x1365e0  dispatch m_reacquireProc
+    i32 SetCooperativeLevel(void* hwnd, u32 level); // 0x1365f0
+    // Per-tick device-list housekeeping (also defined in DirectSoundMgr.cpp).
+    i32 PurgeVoiceList(i32 time);  // 0x136e20  reap finished voices from m_voiceList
+    void RemoveSub(SubNode* n);    // 0x1379d0  retire one instance-list sub-object (extern)
+    i32 TickSubManagers(i32 time); // 0x137ac0  tick each derived instance
+
     // The volume->attenuation curve (DSNDMGR.CPP): map a 0..100 volume to a DSound
     // hundredths-of-dB attenuation via an acos/pow transfer (static, x87).
     static i32 VolumeToAttenuation(i32 value); // 0x1350b0
@@ -119,9 +131,13 @@ public:
     // +0x18..+0x78: unused by the device shape (the per-buffer fields DirectSoundMgr
     // uses in the same layout region; the device role never touches them).
     char m_reserved[0x78 - 0x18];
-    i32 m_initialized;   // +0x78  "initialized" flag (gates every op)
-    i32 m_createFlag;    // +0x7c  set by Create (unproven; sibling of DirectSoundMgr::m_7c)
-    i32 m_reacquireProc; // +0x80  reacquire-callback slot (zeroed by ctor; unproven)
+    i32 m_initialized; // +0x78  "initialized" flag (gates every op)
+    i32 m_createFlag;  // +0x7c  cleared by Create; reused by PurgeVoiceList as a tick stamp
+    // +0x80  reacquire callback: a pointer-to-member on the device that
+    // ReacquireViaCallback (0x1365e0) tail-dispatches through. A single-inheritance
+    // member-fn-ptr is 4 bytes (just the code address), so this is layout-identical
+    // to the raw slot - and __thiscall by default, matching the retail dispatch.
+    i32 (SoundDevice::*m_reacquireProc)();
     IDirectSoundBufferZ* m_primaryBuffer; // +0x84  primary buffer
     i32 m_coopLevel;                      // +0x88  cooperative level
     u32 m_bufferFlags;                    // +0x8c  buffer-desc flags

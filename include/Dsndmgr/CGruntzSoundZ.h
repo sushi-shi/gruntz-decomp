@@ -29,11 +29,11 @@
 // slot 0 is sub_1bef01, not __purecall).
 class CGruntzSoundInnerZ {
 public:
-    virtual void Slot00();            // [0]  0x1bef01
-    virtual i32 ScalarDtor(i32 flag); // [1]  0x138a30  scalar deleting dtor
-    virtual void Slot08();            // [2]  0x0028ec
-    virtual void Slot0C();            // [3]  0x00106e
-    virtual void Slot10();            // [4]  0x004034
+    virtual void Slot00();         // [0]  0x1bef01
+    virtual ~CGruntzSoundInnerZ(); // [1]  0x138a30  (scalar-deleting dtor; defined externally)
+    virtual void Slot08();         // [2]  0x0028ec
+    virtual void Slot0C();         // [3]  0x00106e
+    virtual void Slot10();         // [4]  0x004034
     // slot 5 = the in-memory decode (SoundBankLoad's DecodeBuf(buf, len, arg)); the
     // create path also drives it as the 3-arg one-time setup.
     virtual i32 DecodeBuf(i32 a1, i32 a2, i32 a3); // [5]  0x138c20  in-memory decode / setup
@@ -80,21 +80,21 @@ VTBL(CGruntzSoundInnerZ, 0x001ef700); // cl-emitted ??_7CGruntzSoundInnerZ@@6B@ 
 
 class CGruntzSoundZ : public CMapStringToOb {
 public:
-    ~CGruntzSoundZ();           // body at RVA 0x086040
-    i32 Shutdown_1384f0();      // defined in the sibling AIL TU (RVA 0x1384f0)
-    void StopAndFlush_138530(); // stop current + destroy every map entry
-    CGruntzSoundInnerZ* CreateBank2_1385e0(i32 a1, i32 a2);
-    CGruntzSoundInnerZ* CreateBank_138670(i32 a1, i32 a2, i32 a3);
-    void Insert_138700(CGruntzSoundInnerZ* inner);
-    CGruntzSoundInnerZ* Lookup_138730(const char* key);
-    i32 PlayCreate2_138780(i32 a1, i32 a2, i32 a3);
-    i32 PlayCreate3_1387e0(i32 a1, i32 a2, i32 a3, i32 a4);
-    i32 Play_138840(i32 a1, i32 a2);
-    void StopCurrent_1388a0();
-    i32 Restart_1388c0(i32 a1);
-    i32 StopAll_1388f0();
-    i32 StopBank_138900(i32 a1);
-    i32 IsPlaying_138920();
+    ~CGruntzSoundZ();    // body at RVA 0x086040
+    i32 Shutdown();      // defined in the sibling AIL TU (RVA 0x1384f0)
+    void StopAndFlush(); // stop current + destroy every map entry
+    CGruntzSoundInnerZ* CreateBank2(i32 a1, i32 a2);
+    CGruntzSoundInnerZ* CreateBank(i32 a1, i32 a2, i32 a3);
+    void Insert(CGruntzSoundInnerZ* inner);
+    CGruntzSoundInnerZ* FindBank(const char* key);
+    i32 PlayCreate2(i32 a1, i32 a2, i32 a3);
+    i32 PlayCreate3(i32 a1, i32 a2, i32 a3, i32 a4);
+    i32 PlayByName(const char* name, i32 a2);
+    void StopCurrent();
+    i32 Restart(i32 a1);
+    i32 StopAll();
+    i32 StopBank(i32 a1);
+    i32 IsPlaying();
 
     CGruntzSoundInnerZ* m_pCurrent; // +0x1c
     i32 m_digHandle;                // +0x20

@@ -45,10 +45,8 @@ extern "C" i32 ParseWaveChunks(void* riff, ParseFmt* out, void** dataOut, u32* s
 DATA(0x00653ab8)
 i32 g_volumeTable[100];
 
-// The engine global operator new / delete (RezAlloc/RezFree-backed, 0x1b9b46 /
-// 0x1b9b82); reloc-masked rel32. The void* is the operator new/delete ABI.
-void* operator new(u32);     // 0x1b9b46
-void operator delete(void*); // 0x1b9b82
+// (Global scalar operator new / delete - the NAFXCW allocator at 0x1b9b46 / 0x1b9b82
+// - come from the real <Mfc.h> via the shared headers; no local forward-decl needed.)
 
 // ---------------------------------------------------------------------------
 // SoundDevice::VolumeToAttenuation (static __cdecl, x87). Map a 0..100
@@ -148,10 +146,10 @@ SoundDevice::~SoundDevice() {
 RVA(0x00136690, 0x58)
 void SoundDevice::Shutdown() {
     if (m_initialized) {
-        SoundBuf* node = m_bufferList.m_head ? (SoundBuf*)((char*)m_bufferList.m_head - 4) : 0;
+        SoundBuf* node = elemOf<SoundBuf>(m_bufferList.m_head);
         while (node) {
             RemoveBuffer(node);
-            node = m_bufferList.m_head ? (SoundBuf*)((char*)m_bufferList.m_head - 4) : 0;
+            node = elemOf<SoundBuf>(m_bufferList.m_head);
         }
         if (m_primaryBuffer) {
             m_primaryBuffer->Release();
@@ -412,16 +410,15 @@ i32 SoundDevice::ReloadRiff(DirectSoundMgr* buf, void* riff, u32 a3) {
 RVA(0x00136d80, 0x56)
 void SoundDevice::RemoveBuffer(SoundBuf* node) {
     if (m_initialized) {
-        // The voices carry the owning buffer's address as their reap key; the pointer
-        // stored as a DWORD key is the authentic engine identity (pointer<->DWORD pun).
-        m_voiceList.RemoveMatching((u32)node, 0xffff);
+        // The voices carry the owning buffer's address as their reap key.
+        m_voiceList.RemoveMatching(node, 0xffff);
         if (node->m_buffer) {
             node->m_buffer->Release();
             node->m_buffer = 0;
         }
         m_bufferList.Unlink(node ? &node->m_link : 0);
         if (node) {
-            node->ScalarDtor(1);
+            delete node;
         }
     }
 }
@@ -432,11 +429,11 @@ void SoundDevice::RemoveBuffer(SoundBuf* node) {
 RVA(0x00136de0, 0x3c)
 void SoundDevice::StopAll() {
     if (m_initialized) {
-        SoundBuf* node = m_bufferList.m_head ? (SoundBuf*)((char*)m_bufferList.m_head - 4) : 0;
+        SoundBuf* node = elemOf<SoundBuf>(m_bufferList.m_head);
         while (node) {
             node->StopAndRewind();
             node->StopAllClones();
-            node = node->m_link.m_next ? (SoundBuf*)((char*)node->m_link.m_next - 4) : 0;
+            node = elemOf<SoundBuf>(node->m_link.m_next);
         }
     }
 }
@@ -457,18 +454,18 @@ i32 SoundDevice::FreeSamples() {
     if (m_initialized == 0) {
         return 0;
     }
-    DSoundElem* node = m_voiceList.m_head ? (DSoundElem*)((char*)m_voiceList.m_head - 4) : 0;
+    DSoundElem* node = elemOf<DSoundElem>(m_voiceList.m_head);
     while (node) {
         DSoundLink* n = node->m_link.m_next;
-        DSoundElem* next = n ? (DSoundElem*)((char*)n - 4) : 0;
-        node->Slot1(); // slot 1 = the element's "free" virtual
+        DSoundElem* next = elemOf<DSoundElem>(n);
+        node->Stop(); // slot 1: stop the element before freeing it
         m_voiceList.Unlink(node ? &node->m_link : 0);
         if (node) {
-            // Reset the reaped element's vptr to the pure base (0x5ef6c8) before RezFree
-            // - a dead store MSVC's dtor codegen would elide, so it stays explicit (same
-            // as the shared DSoundList home).
-            *(void**)node = (void*)PureSoundElemVtable;
-            RezFree(node);
+            // Free through the pure-base teardown: `delete (PureSoundElem*)node` resets
+            // the vptr to ??_7PureSoundElem (0x5ef6c8) and PureSoundElem::operator delete
+            // RezFree's it (same teardown as the shared DSoundList::RemoveMatching home).
+            PureSoundElem* pure = node;
+            delete pure;
         }
         node = next;
     }

@@ -35,12 +35,12 @@ class SoundStream;
 // orchestrator unifies them (and makes it derive DirectSoundMgr, which the +0x04
 // intrusive-link overlap currently blocks).
 struct StreamVoiceNode {
-    virtual void* ScalarDtor(i32 flag); // +0x00  vtable slot 0 (voice vtable 0x5ef6d8): ??_G
-    DSoundLink m_link;            // +0x04  intrusive link { next@+0x04, prev@+0x08 } (POSITION+4)
-    IDirectSoundBufferZ* m_buf0c; // +0x0c  the IDirectSoundBuffer to release
-    char m_pad10[0x28 - 0x10];    // DirectSoundMgr base region (modeled in StreamVoice.h)
-    u32 m_durationMs;             // +0x28  duration-ms (= m_byteLength*1000/m_avgBytesDiv)
-    u32 m_byteLength;             // +0x2c  byte length
+    virtual ~StreamVoiceNode(); // +0x00  slot 0 scalar-deleting dtor (0x5ef6d8; defined externally)
+    DSoundLink m_link;          // +0x04  intrusive link { next@+0x04, prev@+0x08 } (POSITION+4)
+    IDirectSoundBufferZ* m_buffer; // +0x0c  the IDirectSoundBuffer to release
+    char m_pad10[0x28 - 0x10];     // DirectSoundMgr base region (modeled in StreamVoice.h)
+    u32 m_durationMs;              // +0x28  duration-ms (= m_byteLength*1000/m_avgBytesDiv)
+    u32 m_byteLength;              // +0x2c  byte length
     char m_pad30[0x38 - 0x30];
     u32 m_avgBytes;    // +0x38  avg-bytes-per-sec
     u32 m_avgBytesDiv; // +0x3c  avg-bytes-per-sec (divisor)

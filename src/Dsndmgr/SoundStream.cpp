@@ -169,15 +169,14 @@ RVA(0x001379d0, 0x5f)
 void SoundStream::DestroyVoice(StreamVoiceNode* voice) {
     if (m_initialized) {
         voice->m_feeder.FeederReset(0);
-        // FLAG(shared, matcher-6): reaps the inherited SoundDevice voice sub-list
-        // (+0x0c); its {head,tail} pair is a DSoundList. Model as
-        // `DSoundList SoundDevice::m_voiceList` + RemoveMatching(void* key) to drop these.
-        ((DSoundList*)&m_voiceList)->RemoveMatching((u32)voice, 0xffff);
-        voice->m_buf0c->Release();
-        voice->m_buf0c = 0;
+        // Reap the inherited SoundDevice voice sub-list (m_voiceList @ +0x0c), keyed
+        // by this voice's identity.
+        m_voiceList.RemoveMatching(voice, 0xffff);
+        voice->m_buffer->Release();
+        voice->m_buffer = 0;
         m_voices.Unlink(voice ? &voice->m_link : 0);
         if (voice) {
-            voice->ScalarDtor(1);
+            delete voice;
         }
     }
 }

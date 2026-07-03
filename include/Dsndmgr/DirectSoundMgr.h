@@ -1,22 +1,27 @@
-// DirectSoundMgr.h - the WAP32 DirectSound manager (Dsndmgr module,
+// DirectSoundMgr.h - the WAP32 DirectSound per-buffer wrapper (Dsndmgr module,
 // C:\Proj\Dsndmgr\). Surfaces the layout + COM interface shapes needed to
 // byte-match DirectSoundMgr's DSNDMGR.CPP method run: the HRESULT->error-string
 // diagnostic formatter GetErrorString (the DSound sibling of
 // CDirectDrawMgr::GetErrorString) and the thin IDirectSound / IDirectSoundBuffer
 // wrapper thunks that, on a nonzero HRESULT, route through GetErrorString.
 //
-// The wrappers come in two `this`-shapes that share one class here (the offsets
-// never collide): the device-level methods (m_device = IDirectSound, gated on the
-// m_initialized flag) and the per-buffer methods (m_buffer = IDirectSoundBuffer,
-// m_owner = the owning manager, gated on m_owner->m_initialized, caps in m_caps).
-// Each interface is a real abstract COM class (__stdcall virtuals), so a wrapper's
+// DirectSoundMgr is the per-buffer wrapper BASE (retail vtable 0x5ef6b8, size
+// 0x44): it holds one IDirectSoundBuffer (m_buffer) plus its owning device
+// (m_owner, a SoundDevice) and the cached caps/state. Two concrete leaves derive
+// it (both in DirectSoundMgr.cpp): DSoundBaseSub (0x5ef6c0, 0x58 - the clone
+// object Clone() news) and DSoundCloneInst (0x5ef6bc, 0x60 - the leaf that owns a
+// clone list). The device-level bring-up (Create/SetCooperativeLevel/
+// CreatePrimaryBuffer/ReacquireViaCallback) lives on SoundDevice.
+//
+// Each COM interface is a real abstract class (__stdcall virtuals), so a wrapper's
 // `iface->Method(args...)` lowers to the retail `mov eax,[iface]; call [eax+slot]`
 // COM dispatch; only the called slots carry meaningful signatures, the rest pad.
 #ifndef DSNDMGR_DIRECTSOUNDMGR_H
 #define DSNDMGR_DIRECTSOUNDMGR_H
 
 #include <rva.h>
-#include <ComDefs.h> // STDMETHOD / HRESULT / REFIID - the DirectSound COM interface macros
+#include <ComDefs.h>                // STDMETHOD / HRESULT / REFIID - DirectSound COM macros
+#include <Dsndmgr/SoundVoiceList.h> // DSoundLink / DSoundList intrusive list primitive
 
 // DSBCAPS - the buffer-caps struct GetCaps fills (dwSize 0x14 in, dwFlags out).
 // The ctor reads dwFlags into m_caps and ignores the rest.
@@ -42,6 +47,19 @@ struct DSBUFFERDESC {
 SIZE(DSBUFFERDESC, 0x14); // 0x14-byte DirectSound buffer descriptor
 
 struct IDirectSoundBufferZ; // forward-decl: CreateSoundBuffer's out-param type
+class SoundDevice;          // owning device (m_owner); full def in SoundDevice.h
+class DirectSoundMgr;       // a clone (CloneNode::m_inst back-points at it)
+
+// A clone-list node: a self-referential doubly-linked node whose m_inst back-points
+// at the buffer that owns it. Each buffer embeds one (m_cloneNode) by which it hangs in
+// its parent's clone list; the list threads through these nodes directly, so
+// iteration reads node->m_inst with no container-of arithmetic.
+struct CloneNode {
+    CloneNode* m_next;      // +0x00
+    CloneNode* m_prev;      // +0x04
+    DirectSoundMgr* m_inst; // +0x08  back-pointer to the owning buffer
+};
+SIZE(CloneNode, 0xc); // {next, prev, inst}
 
 // ---------------------------------------------------------------------------
 // IDirectSound (DSOUND) - the device interface DirectSoundCreate returns. Only
@@ -72,7 +90,7 @@ struct IDirectSoundZ {
     ) PURE;                                                     // slot 5  (+0x14)
     STDMETHOD(SetCooperativeLevel)(void* hwnd, u32 level) PURE; // slot 6  (+0x18)
 };
-SIZE_UNKNOWN(IDirectSoundZ); // COM interface view (single vptr)
+SIZE(IDirectSoundZ, 0x4); // COM interface: a single vptr (opaque SDK object, held by ptr)
 
 // ---------------------------------------------------------------------------
 // IDirectSoundBuffer (DSOUND) - the buffer interface the per-buffer wrappers
@@ -128,54 +146,45 @@ struct IDirectSoundBufferZ {
     STDMETHOD(Unlock)(void* p1, u32 n1, void* p2, u32 n2) PURE; // slot 19 (+0x4c)
     STDMETHOD(Restore)() PURE;                                  // slot 20 (+0x50)
 };
-SIZE_UNKNOWN(IDirectSoundBufferZ); // COM interface view (single vptr)
+SIZE(IDirectSoundBufferZ, 0x4); // COM interface: a single vptr (opaque SDK object, held by ptr)
 
 // ---------------------------------------------------------------------------
-// DSoundCloneBase - a tiny polymorphic view used only to dispatch a clone's
-// scalar-deleting destructor (vtable slot 0) as the exact `mov eax,[obj]; push 1;
-// call [eax]` __thiscall call. Its virtuals are never defined here, so no ??_7
-// vtable is emitted in this TU (same idiom as CInputDeviceBase).
-// ---------------------------------------------------------------------------
-class DSoundCloneBase {
-public:
-    virtual void* ScalarDtor(i32 flag); // +0x00 slot 0
-};
-SIZE_UNKNOWN(DSoundCloneBase); // polymorphic slot-0 dispatch view
-
-// ---------------------------------------------------------------------------
-// DirectSoundMgr. Single class spanning both wrapper `this`-shapes; only the
-// touched offsets are pinned (the rest is opaque). Field names are placeholders;
-// the offsets + the COM slot dispatch are the load-bearing facts.
+// DirectSoundMgr - the per-buffer sound-buffer wrapper BASE (vtable 0x5ef6b8,
+// size 0x58). A concrete buffer is a DSoundCloneInst (0x60) whose base subobject
+// is this class; a duplicated clone is a DSoundBaseSub (0x58, adds no fields). Every
+// wrapper method lives here; only the clone-list ownership (Clone/RemoveClone/
+// StopAllClones + its m_cloneList) belongs to the derived leaf. Field names are
+// placeholders; the offsets + the COM slot dispatch are the load-bearing facts.
 // ---------------------------------------------------------------------------
 class DirectSoundMgr {
 public:
-    // --- per-buffer wrappers (this = a buffer object, m_buffer = the buffer) --
-    // ALL-VTABLES phase: real 3-level polymorphic hierarchy
-    // (DirectSoundMgr -> DSoundBaseSub -> DSoundCloneInst) so cl auto-emits
-    // ??_7DirectSoundMgr@@6B@ (0x5ef6b8) / ??_7DSoundBaseSub (0x5ef6c0) /
-    // ??_7DSoundCloneInst (0x5ef6bc) and auto-stamps/auto-resets the vptr. The
-    // former RestampBufferVtbl (0x135300) is now ~DirectSoundMgr (the base
-    // subobject dtor: implicit vptr reset only); BaseDtor (0x136260) is
-    // ~DSoundBaseSub; the clone-drain dtor (0x135bb0) is ~DSoundCloneInst.
-    DirectSoundMgr(IDirectSoundBufferZ* buf, DirectSoundMgr* owner); // 0x1351d0 ctor
-    virtual ~DirectSoundMgr();     // 0x135300  base-subobject dtor (implicit vptr reset)
+    DirectSoundMgr(IDirectSoundBufferZ* buf, SoundDevice* owner); // 0x1351d0 ctor
+    virtual ~DirectSoundMgr(); // 0x135300  base-subobject dtor (implicit vptr reset)
+
     i32 Restore();                 // 0x135310  m_buffer->Restore()
+    i32 ReacquireBuffer();         // 0x135340  callback / owner reacquire (extern)
     i32 StopAndRewind();           // 0x135380  Stop + SetCurrentPosition(0)
     i32 IsPlaying();               // 0x1353f0  GetStatus & DSBSTATUS_PLAYING
     i32 IsLooping();               // 0x135440  GetStatus & DSBSTATUS_LOOPING
-    i32 SetVolume(i32 vol);        // 0x135560  SetVolume (caps DSBCAPS_CTRLVOLUME)
-    i32 GetVolume();               // 0x1355f0  GetVolume
-    i32 SetVolumeByIndex(i32 idx); // 0x1355c0  SetVolume(g_volumeTable[idx])
-    i32 SetPanByIndex(i32 idx);    // 0x1357a0  SetPan(+/-g_panTable[idx]) by sign
-    i32 SetField2(i32 pct);        // 0x135920  freq-percent + duration recompute
     void SetField3(i32 on);        // 0x135510  toggle the +0x14 play-flag bit 0 (looping)
-    void ComputeDuration();        // 0x1359a0  m_durationMs = m_sampleCount*1000/m_sampleRate
-    i32 Play();                    // 0x136270  Play(this looping flag) + reacquire-retry
+    i32 SetVolume(i32 vol);        // 0x135560  SetVolume (caps DSBCAPS_CTRLVOLUME)
+    i32 SetVolumeByIndex(i32 idx); // 0x1355c0  SetVolume(g_volumeTable[idx])
+    i32 GetVolume();               // 0x1355f0  GetVolume
     i32 GetVolumePercent();        // 0x135640  GetVolume -> percent (0x135110)
     i32 CloneAndPlay(i32 key, i32 mode, i32 slot); // 0x135660  reap + spawn a voice
     i32 SetPan(i32 pan);                           // 0x135740  SetPan (caps DSBCAPS_CTRLPAN)
+    i32 SetPanByIndex(i32 idx);                    // 0x1357a0  SetPan(+/-g_panTable[idx]) by sign
     i32 GetPan();                                  // 0x1357f0  GetPan
     i32 SetFrequency(u32 freq); // 0x135880  SetFrequency (caps DSBCAPS_CTRLFREQUENCY)
+    i32 SetField2(i32 pct);     // 0x135920  freq-percent + duration recompute
+    void ComputeDuration();     // 0x1359a0  m_durationMs = m_sampleCount*1000/m_sampleRate
+    i32 Unlock(void* p1, u32 n1, void* p2, u32 n2);         // 0x1359c0
+    i32 GetCurrentPosition(u32* play, u32* write);          // 0x135a20
+    i32 SetCurrentPosition(u32 pos);                        // 0x135a70
+    i32 GetFormat(void* fmt, u32 size, u32* written);       // 0x135ac0
+    i32 LockConvert(void* src, u32 lockBytes, u32 convert); // 0x135f40
+    i32 Play();                                             // 0x136270  Play + reacquire-retry
+    i32 ApplyAndPlay(i32 vol, i32 pan, i32 freq, i32 d);    // 0x136300  apply params + play
     i32 Lock(
         u32 off,
         u32 bytes,
@@ -184,85 +193,34 @@ public:
         void** p2,
         u32* n2,
         u32 flags
-    );                     // 0x136370  Lock + reacquire-on-DSERR_BUFFERLOST retry
-    i32 ReacquireBuffer(); // 0x135340  restore via callback / m_owner reacquire (extern)
-    i32 Unlock(void* p1, u32 n1, void* p2, u32 n2);   // 0x1359c0
-    i32 GetCurrentPosition(u32* play, u32* write);    // 0x135a20
-    i32 SetCurrentPosition(u32 pos);                  // 0x135a70
-    i32 GetFormat(void* fmt, u32 size, u32* written); // 0x135ac0
-    DirectSoundMgr* Clone(i32 a); // 0x135c20  new a clone instance, dup the buffer, link it
-    i32 ApplyAndPlay(i32 vol, i32 pan, i32 freq, i32 d); // 0x136300  apply params + play
-    i32 ReacquireViaCallback();              // 0x1365e0  tail-dispatch through m_reacquireMethod
-    void RemoveClone(DirectSoundMgr* clone); // 0x135d20  release + unlink one clone
-    i32 LockConvert(void* src, u32 lockBytes, u32 convert); // 0x135f40
-    void StopAllClones();                                   // 0x136150
-
-    // --- device-level wrappers (this = the manager, m_device = IDirectSound) --
-    i32 Create(void* hwnd, u32 level,
-               u32 flags);                          // 0x136550  DirectSoundCreate + coop
-    i32 SetCooperativeLevel(void* hwnd, u32 level); // 0x1365f0
-    i32 CreatePrimaryBuffer();                      // 0x137260  m_device->CreateSoundBuffer
+    ); // 0x136370  Lock + reacquire-on-DSERR_BUFFERLOST retry
 
     static void GetErrorString(char* file, i32 line, i32 hr); // 0x138150
 
-    // Engine-label backlog stubs (relocated from src/Stub/ - own this class here).
-    i32 PurgeVoiceList(i32);
-    i32 TickSubManagers(i32);
-
-    // --- layout ---------------------------------------------------------------
-    // vptr @ +0x00 (implicit, from the virtual dtor); the first real field is at +0x0c.
+    // --- layout (per-buffer wrapper base, size 0x58) --------------------------
+    // vptr @ +0x00 (implicit, from the virtual dtor); the first real field is +0x0c.
     char m_pad4[0x0c - 0x04];
-    IDirectSoundBufferZ* m_buffer; // +0x0c  the held sound buffer (per-buffer this)
-    DirectSoundMgr* m_owner;       // +0x10  owning manager back-pointer (per-buffer this)
-    // +0x14 is genuinely two-view: the manager shape holds the IDirectSound device
-    // here; the per-buffer shape uses the same word as the Play/looping flags
-    // (zero-inited via m_device = 0 in the ctor). Modeled as a union so both views
-    // read named members instead of an offset cast.
-    union {
-        IDirectSoundZ* m_device; // +0x14  the DirectSound device (manager this)
-        u32 m_playFlags;         // +0x14  play/looping flags (per-buffer this)
-    };
-    u32 m_freq;        // +0x18  cached frequency (GetFrequency)
-    i32 m_pan;         // +0x1c  cached pan (GetPan)
-    i32 m_volume;      // +0x20  cached volume (GetVolume)
-    u32 m_setFreq;     // +0x24  cached SetFrequency value
-    u32 m_durationMs;  // +0x28  duration (ComputeDuration = m_sampleCount*1000/m_sampleRate)
-    u32 m_sampleCount; // +0x2c  sample count (set by the clone ctor)
+    IDirectSoundBufferZ* m_buffer; // +0x0c  the held sound buffer
+    SoundDevice* m_owner;          // +0x10  owning device back-pointer
+    u32 m_playFlags;               // +0x14  Play/looping flags (bit 0 = loop)
+    u32 m_freq;                    // +0x18  cached frequency (GetFrequency)
+    i32 m_pan;                     // +0x1c  cached pan (GetPan)
+    i32 m_volume;                  // +0x20  cached volume (GetVolume)
+    u32 m_setFreq;                 // +0x24  cached SetFrequency value
+    u32 m_durationMs;              // +0x28  duration (ComputeDuration)
+    u32 m_sampleCount;             // +0x2c  sample count (set by the clone ctor)
     // +0x30  per-buffer reacquire callback (__cdecl fn-ptr taking (this, ctx)); a
     // pointer is 4 bytes, so this is layout-identical to the raw i32 slot.
     i32(__cdecl* m_reacquireCb)(DirectSoundMgr*, i32);
-    i32 m_reacquireCtx; // +0x34  per-buffer reacquire callback context
-    i32 m_rateBase;     // +0x38  SetField2 percent base
-    u32 m_sampleRate;   // +0x3c  sample rate (SetField2 sets it; ComputeDuration divides by it)
-    u32 m_caps;         // +0x40  buffer capability flags (DSBCAPS_CTRLFREQUENCY/PAN/VOLUME)
-    // +0x44  intrusive list-node by which a clone instance hangs in its parent's
-    // clone list (next@+0x44, prev@+0x48, back-pointer to this clone @+0x4c). The
-    // list-helper at 0x1391e0 unlinks the node given &m_node44; the parent walks
-    // the list reading m_node44.m_inst (+0x4c) to reach each clone.
-    struct CloneNode {
-        CloneNode* m_next;      // +0x00 (clone +0x44)
-        CloneNode* m_prev;      // +0x04 (clone +0x48)
-        DirectSoundMgr* m_inst; // +0x08 (clone +0x4c) back-pointer to the clone
-    } m_node44;
-    i32 m_playKey;                    // +0x50  clone play key (SetVolume/CloneAndPlay tag)
+    i32 m_reacquireCtx;    // +0x34  per-buffer reacquire callback context
+    i32 m_rateBase;        // +0x38  SetField2 percent base
+    u32 m_sampleRate;      // +0x3c  sample rate (SetField2 sets it; ComputeDuration divides by it)
+    u32 m_caps;            // +0x40  buffer capability flags (DSBCAPS_CTRLFREQUENCY/PAN/VOLUME)
+    CloneNode m_cloneNode; // +0x44  clone-list node by which this buffer hangs in a parent's list
+    i32 m_playKey;         // +0x50  clone play key
     DirectSoundMgr* m_reacquireOwner; // +0x54  device/owner used to reacquire a lost buffer
-    // +0x58  head of this instance's clone/child list (head@+0x58, tail@+0x5c);
-    // each member is a cloned DirectSoundMgr chained through its m_node44.
-    CloneNode* m_cloneHead;
-    CloneNode* m_cloneTail;
-    char m_pad60[0x78 - 0x60];
-    i32 m_initialized; // +0x78  device-up flag (manager this)
-    i32 m_7c;          // +0x7c  cleared by Create; role unproven
-    // +0x80  reacquire callback: a pointer-to-member-function on the manager that
-    // ReacquireViaCallback (0x1365e0) tail-dispatches through. A single-inheritance
-    // member-fn-ptr is 4 bytes (just the code address), so this is layout-identical
-    // to the raw slot - and __thiscall by default, matching the retail dispatch.
-    i32 (DirectSoundMgr::*m_reacquireMethod)();
-    IDirectSoundBufferZ* m_primaryBuffer; // +0x84  primary buffer
-    i32 m_coopLevel;                      // +0x88  cooperative level
-    u32 m_bufferFlags;                    // +0x8c  buffer-desc flags
 };
-SIZE_UNKNOWN(DirectSoundMgr);     // both wrapper this-shapes; opaque tail past +0x8c
+SIZE(DirectSoundMgr, 0x58);       // per-buffer wrapper base (fields end at +0x58)
 VTBL(DirectSoundMgr, 0x001ef6b8); // cl-emitted ??_7DirectSoundMgr@@6B@ (base subobject dtor)
 
 #endif // DSNDMGR_DIRECTSOUNDMGR_H

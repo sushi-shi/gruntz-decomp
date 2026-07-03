@@ -10,38 +10,35 @@
 #include <Dsndmgr/SoundVoiceList.h>
 #include <rva.h>
 
-// PureSoundElem's vtable (0x5ef6c8) - the reaped-element vptr reset target.
-DATA(0x001ef6c8)
-extern void* const PureSoundElemVtable[];
-
 // ---------------------------------------------------------------------------
 // RemoveMatching (__thiscall, 2 stack args). Walk the chain; unlink +
 // free every element whose key (@+0x10) equals `key` and whose tag (@+0xc) equals
-// `tag` (0xffff is a wildcard). The free restamps the element vptr to the pure
-// base then RezFree's it. The tag-mismatch arm does not advance (it re-tests the
-// current element) - retail's structure; the elements that reach here never trip
-// it, but the source must reproduce the codegen, so spell it as a no-advance
-// `continue`.
+// `tag` (0xffff is a wildcard). The free is `delete (PureSoundElem*)e`: the base-
+// subobject teardown resets the element vptr to the pure base (??_7PureSoundElem =
+// 0x5ef6c8) and PureSoundElem::operator delete RezFree's it. The tag-mismatch arm
+// does not advance (it re-tests the current element) - retail's structure; the
+// elements that reach here never trip it, but the source must reproduce the
+// codegen, so spell it as a no-advance `continue`.
 // @early-stop
 // select-zero-mask-dest-register wall (docs/patterns/select-zero-mask-dest-register.md):
 // byte-exact except the `e ? node : 0` mask (neg/sbb/and) lands in edx (ours) vs eax
 // (retail) - a free-list pick the four obvious source spellings don't move. 99.3%,
 // logic complete; deferred to the final sweep.
 RVA(0x00136f60, 0x74)
-void DSoundList::RemoveMatching(u32 key, u32 tag) {
-    DSoundElem* e = m_head ? (DSoundElem*)((char*)m_head - 4) : 0;
+void DSoundList::RemoveMatching(void* key, u32 tag) {
+    DSoundElem* e = elemOf<DSoundElem>(m_head);
     while (e) {
         DSoundLink* node = &e->m_link;
         DSoundLink* n = e->m_link.m_next;
-        DSoundElem* next = n ? (DSoundElem*)((char*)n - 4) : (DSoundElem*)n;
+        DSoundElem* next = elemOf<DSoundElem>(n);
         if (tag != 0xffff && e->m_tag != tag) {
             continue;
         }
         if (e->m_key == key) {
             Unlink(e ? node : 0);
             if (e) {
-                *(void**)e = (void*)PureSoundElemVtable; // reset vptr to the pure base (0x5ef6c8)
-                RezFree(e);
+                PureSoundElem* pure = e; // up-cast: teardown resets to the pure base
+                delete pure;
             }
         }
         e = next;

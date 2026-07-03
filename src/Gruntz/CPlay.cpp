@@ -1011,10 +1011,10 @@ void CPlay::RegionEnter() {
     if (m_savedZonedSound == 0) {
         CWorld* w = m_4w();
         m_savedZonedSound = w->m_48->m_pCurrent;
-        w->m_48->StopAll_1388f0();
+        w->m_48->StopAll();
     }
     if (g_64556c->m_14 != 0) {
-        m_4w()->m_48->Play_138840((i32) "CURSE", 0);
+        m_4w()->m_48->PlayByName("CURSE", 0);
     }
 }
 
@@ -1025,10 +1025,10 @@ RVA(0x000d8960, 0x75)
 void CPlay::RegionLeave() {
     if (m_region0Gate == 0 && m_region1Gate == 0 && m_region2Gate == 0 && m_region3Gate == 0
         && m_savedZonedSound != 0) {
-        m_4w()->m_48->IsPlaying_138920();
+        m_4w()->m_48->IsPlaying();
         m_4w()->m_48->m_pCurrent = m_savedZonedSound;
         if (g_64556c->m_14 != 0) {
-            m_4w()->m_48->Restart_1388c0(1);
+            m_4w()->m_48->Restart(1);
         }
         m_savedZonedSound = 0;
     }

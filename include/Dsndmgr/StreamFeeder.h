@@ -36,9 +36,10 @@ class DirectSoundMgr;
 // the class stays concrete/embeddable), slot 1 FeedData (0x137e10), slot 2 OnDrain
 // (0x137e20). The voice's embedded feeder overrides slot 0 with CopyWindow (0x137380).
 struct StreamFeeder {
-    virtual i32 Feed(void* d1, u32 n1, u32* g1, void* d2, u32 n2, u32* g2); // [0] feed-two-regions
-    virtual i32 FeedData();                                                 // [1] 0x137e10
-    virtual void OnDrain();                                                 // [2] 0x137e20
+    virtual i32
+    Feed(void* dst1, u32 n1, u32* got1, void* dst2, u32 n2, u32* got2); // [0] feed-two-regions
+    virtual i32 FeedData();                                             // [1] 0x137e10
+    virtual void OnDrain();                                             // [2] 0x137e20
 
     // vptr @ +0x00 (implicit); first real field at +0x04.
     SoundDevice* m_owner;     // +0x04  owner (SoundStream, via its SoundDevice base)
