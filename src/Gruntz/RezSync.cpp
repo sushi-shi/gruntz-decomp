@@ -17,7 +17,8 @@
 #include <Bute/ButeMgr.h> // canonical CButeMgr / CButeStore (one shape)
 #include <string.h>
 
-#include <Gruntz/CoordNode.h> // the shared coord-pool node
+#include <Gruntz/CoordNode.h>    // the shared coord-pool node
+#include <Gruntz/CParseSource.h> // canonical CParseSource (one shape)
 #include <Globals.h>
 
 // retail's global allocator is the nothrow pool alloc; MSVC5 `new T` emits the
@@ -227,14 +228,8 @@ struct H7c {
     i32 Fn10d7(void*); // 0x10d7
 };
 
-// GAME_ATTRIBUTEZ ButeMgr config load helpers (reloc-masked)
-struct CParseSource {
-    i32 BeginParse();                // 0x139960
-    i32 EndParse();                  // 0x1399d0
-    void* Fn169700(void*, i32);      // 0x169700
-    void* Fn1698c0(void*, i32, i32); // 0x1698c0
-    void Fn16f760(void*, void*);     // 0x16f760
-};
+// GAME_ATTRIBUTEZ ButeMgr config load: the parse stream is the canonical
+// CParseSource (BeginParse/EndParse @0x139960/0x1399d0), included above.
 // The bute-config manager + its owned keyed stores are the canonical CButeMgr /
 // CButeStore (include/Bute/ButeMgr.h): SetErrCallback (0x170380), Init (0x170330),
 // GetDwordDef (0x1721e0), ParseGroup (0x171580), CButeStore::ClearRecursive

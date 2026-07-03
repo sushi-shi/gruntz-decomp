@@ -29,6 +29,7 @@
 // mangle to the retail names (the relocs pair instead of staying fuzzy).
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Dsndmgr/SoundDevice.h>
+#include <Gruntz/CParseSource.h> // canonical CParseSource (BeginParse/EndParse)
 
 // The map value: only the scalar-deleting destructor slot (+0x04) is load-
 // bearing for the RemoveKeysEqual/FindKey teardown dispatch. Declared only -
@@ -98,16 +99,10 @@ extern "C" u32 g_6bf3c0; // draw-clock mirror
 // (this+0x1c) and handle (this+0x0c), zeroes the rest, then runs the element's
 // Configure (0x158760) keyed by arg2; on success links it into the map and stamps
 // the redraw arg (this+0x34). LeafElementObj is real-polymorphic now (VTBL at EOF).
-// The element's draw-source the factory passes to Configure: a polymorphic
-// reader whose two virtuals are BeginParse (0x139960 -> the parsed RIFF/WAVE blob,
-// or 0) and EndParse (0x1399d0). Modeled as a layout-compatible view (the
-// `mov ecx,src; call <thunk>` reloc-masks); the trace tagged the same reader
-// CParseSource (the symtab/parse-stream node).
-class CParseSource {
-public:
-    i32 BeginParse(); // 0x139960  parse + return the RIFF/WAVE blob (or 0)
-    void EndParse();  // 0x1399d0  release the parse cursor
-};
+// The element's draw-source the factory passes to Configure is the canonical
+// CParseSource (included above): BeginParse (0x139960 -> the parsed RIFF/WAVE
+// blob, or 0) and EndParse (0x1399d0). The `mov ecx,src; call <thunk>` reloc-
+// masks; the trace tagged the same reader (the symtab/parse-stream node).
 // The parent root handle the base stores at +0x0c (a raw word in the LeafScanBase
 // shape): its +0x20 word is the SoundDevice the element acquires/releases its
 // buffer through. The handle is a raw word in the base, so reaching the device is
@@ -755,7 +750,6 @@ SIZE_UNKNOWN(LeafScanBase);
 SIZE_UNKNOWN(LeafScanSoundArg);
 SIZE_UNKNOWN(LeafScanValue);
 SIZE_UNKNOWN(LeafSumSource);
-SIZE_UNKNOWN(CParseSource);
 VTBL(CDDrawSubMgrLeafScan, 0x001efca0); // ??_7CDDrawSubMgrLeafScan (was g_leafScanVtbl)
 // ??_7LeafElementObj (was g_leafElemVtbl @0x5eff08, LeafElemVtbl / the LeafElementObj vtable).
 // cl auto-emits it from the real-polymorphic element; retail's 9-slot datum is

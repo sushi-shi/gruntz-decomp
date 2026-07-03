@@ -18,10 +18,9 @@
 struct IDirectSoundBufferZ;
 class DirectSoundMgr;
 
-// The streaming source reader SetSource parses + arms the feeder over (the same
-// polymorphic reader SoundStream.h models as CParseSource). Opaque here - the
-// owning SoundStream's ParseWave does the reads.
-struct CParseSource;
+// The streaming source reader SetSource parses + arms the feeder over is the
+// canonical CParseSource (included above); the owning SoundStream's ParseWave
+// does the reads.
 
 // The owning SoundStream (m_owner @ +0x10) - the real Dsndmgr streaming device
 // that created this voice (SoundStream::CreateStreamBuffer passes `this`); its

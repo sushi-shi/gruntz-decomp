@@ -119,9 +119,10 @@ public:
     u8 pad_b8[0x158 - 0xb8]; // pad to the real plane size (0x158)
 };
 
-// The parse-source object passed to LoadFromSource. Defined in
-// GameLevel.cpp; only the pointer type appears here so a forward decl suffices.
-struct CParseSource;
+// The parse-source object passed to LoadFromSource: the canonical CParseSource
+// (include/Gruntz/CParseSource.h); only the pointer type appears here so a
+// forward decl suffices.
+class CParseSource;
 
 // ---------------------------------------------------------------------------
 // CLoadable - the engine base CGameLevel derives from. Its 9-slot base

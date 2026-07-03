@@ -10,11 +10,9 @@
 
 #include <Ints.h>
 
-struct MgrSettings {
-    char m_pad00[0x2c];
-    CPlay* m_curState; // +0x2c active CPlay
-};
-extern "C" MgrSettings* g_mgrSettings; // 0x64556c
+// The game-manager singleton is the canonical CGameRegistry (*0x64556c, via
+// CPlay.h); its +0x2c current game-state downcasts to the active CPlay.
+extern "C" CGameRegistry* g_mgrSettings; // 0x64556c
 
 // The CButeMgr text-config singleton (?g_buteMgr@@3VCButeMgr@@A @ 0x6453d8).
 // GetDwordDef (0x1721e0) is on the canonical CButeMgr (include/Bute/ButeMgr.h).
@@ -38,7 +36,7 @@ public:
 
 RVA(0x0010bc30, 0x78)
 void CSBI_RectOnly::UpdateDestructButton(i32 arg) {
-    CPlay* play = g_mgrSettings->m_curState;
+    CPlay* play = (CPlay*)g_mgrSettings->m_curState;
     m_558 = 1;
     m_55c = 2;
     m_568 = g_buteMgr.GetDwordDef("StatusBar", "DestructButtonWarningDelay", 0x32);

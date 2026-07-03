@@ -5,19 +5,16 @@
 // owning parser at +0x18. See include/Bute/SymTab.h for the full layout.
 #include <rva.h>
 
-#include <Bute/SymParser.h> // full CSymParser (m_owner layout) + CSymTab via SymParser.h
+#include <Bute/SymParser.h>      // full CSymParser (m_owner layout) + CSymTab via SymParser.h
+#include <Gruntz/CParseSource.h> // canonical CParseSource (EndParse @0x1399d0)
 
 // The child-scope hash-node vtable (the key-hash interface a scope exposes to its
 // parent's m_subTabs). Manual-stamp model -> reloc-masked DATA() extern.
 DATA(0x005ef748)
 void* CSymTab_node_vftable;
 
-// A leaf record's parse stream: EndParse releases its inline buffer (0x1399d0,
-// CParseSource); reloc-masked __thiscall, modeled with no body here.
-class CParseSource {
-public:
-    i32 EndParse(); // 0x1399d0
-};
+// A leaf record's parse stream is the canonical CParseSource (included above);
+// EndParse (0x1399d0) releases its inline buffer, reloc-masked __thiscall.
 
 // The tokenizer's "is this character part of a token" predicate, inlined at each
 // scan site. When the parser supplies a delimiter set, a token char is one NOT in

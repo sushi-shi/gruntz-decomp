@@ -8,6 +8,8 @@
 #include <rva.h>
 #include <Win32.h>
 
+#include <Gruntz/CGameRegistry.h> // canonical *0x64556c game-manager singleton
+
 extern int(WINAPI* g_ShowCursor)(int); // ?g_ShowCursor@@3P6GHH@ZA (0x6c44c4)
 extern void* g_64e25c;
 
@@ -30,15 +32,15 @@ int CTitleApp::OnStart(int) {
 }
 
 // ---------------------------------------------------------------------------
+// The +0x78 reused sub-object slot's concrete view here (authentic downcast off
+// the game-registry singleton's void* m_78).
 struct MgrInner {
     char pad[0x28];
     void* m_28; // +0x28
 };
-struct MgrSettings {
-    char pad[0x78];
-    MgrInner* m_78; // +0x78
-};
-extern "C" MgrSettings* g_mgrSettings; // 0x64556c
+// The game-manager singleton is the canonical CGameRegistry (*0x64556c); this
+// routine reaches its +0x78 slot's m_28.
+extern "C" CGameRegistry* g_mgrSettings; // 0x64556c
 
 struct CSub10 {
     char pad[0x4c];
@@ -61,7 +63,7 @@ int CHandlerB4::Handle(int a0, int a1, int a2, int a3) {
         return 0;
     }
     if (a1 == 8) {
-        void* x = g_mgrSettings->m_78->m_28;
+        void* x = ((MgrInner*)g_mgrSettings->m_78)->m_28;
         CSub10* p = m_10;
         p->m_58 = 1;
         p->m_50 = 7;

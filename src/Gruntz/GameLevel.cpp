@@ -34,7 +34,8 @@
 // <Mfc.h> brings real MFC afxcoll: CDWordArray (the engine stores the pointer arrays as DWORDs).
 #include <Mfc.h>
 #include <Gruntz/GameLevel.h>
-#include <Io/FileStream.h> // CFileIO (Open/Read/GetLength/ctor/dtor reloc-masked)
+#include <Gruntz/CParseSource.h> // canonical CParseSource (BeginParse/EndParse)
+#include <Io/FileStream.h>       // CFileIO (Open/Read/GetLength/ctor/dtor reloc-masked)
 #include <rva.h>
 
 #include <string.h> // strcpy, memset
@@ -62,14 +63,10 @@
 
 // (LevelCoordRect - the 4-int coord record at +0x10 - is defined in GameLevel.h.)
 
-// The parse-source object LoadFromSource drives: BeginParse (FUN_00539960
-// @0x139960) opens/primes it and returns a handle; EndParse (FUN_005399d0
-// @0x1399d0) tears it down. Both are unmatched engine leaves taking the source as
-// `this`; declared with no body so the thiscall sites reloc-mask in objdiff.
-struct CParseSource {
-    i32 BeginParse();
-    void EndParse();
-};
+// The parse-source object LoadFromSource drives is the canonical CParseSource
+// (included above): BeginParse (0x139960) opens/primes it and returns a handle;
+// EndParse (0x1399d0) tears it down. Both are unmatched engine leaves taking the
+// source as `this`; declared with no body so the thiscall sites reloc-mask.
 
 // The pointer arrays hold real objects: m_planes -> CLevelPlane* (the level.s typed
 // view of the engine plane, GameLevel.h), m_imageSets -> CImageSet*. Both carry the
