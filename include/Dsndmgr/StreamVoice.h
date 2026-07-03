@@ -19,10 +19,9 @@
 struct IDirectSoundBufferZ;
 class DirectSoundMgr;
 
-// The streaming source reader SetSource parses + arms the feeder over (the same
-// polymorphic reader SoundStream.h models as StreamSource). Opaque here - the
-// owning SoundStream's ParseWave does the reads.
-struct StreamSource;
+// The streaming source reader SetSource parses + arms the feeder over: the real
+// CParseSource byte-reader (include/Gruntz/CParseSource.h, pulled via StreamFeeder.h).
+// The owning SoundStream's ParseWave does the reads.
 
 // The owning SoundStream (m_owner @ +0x10) - the real Dsndmgr streaming device
 // that created this voice (SoundStream::CreateStreamBuffer passes `this`); its
@@ -64,7 +63,7 @@ struct StreamVoice {
     // ordering the EH-modeled hierarchy would reproduce (deferred, see the .cpp).
     StreamVoice(IDirectSoundBufferZ* buf, DirectSoundMgr* owner, i32 a, i32 b);
     ~StreamVoice();                                      // 0x137650
-    i32 SetSource(StreamSource* src);                    // 0x1374c0
+    i32 SetSource(CParseSource* src);                    // 0x1374c0
     i32 Configure(i32 vol, i32 pan, i32 freq, i32 loop); // 0x137520
     u32 ComputeRatio();                                  // 0x137590
 

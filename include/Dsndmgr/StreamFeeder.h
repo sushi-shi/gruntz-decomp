@@ -5,8 +5,8 @@
 // (feeder->FeederStart / FeederReset / window seed) - see SoundStream.h.
 //
 // The feeder owns a per-stream DirectSound buffer wrapper (m_buffer, a
-// DirectSoundMgr-derived voice it Lock/Unlock-fills) and is armed with a data
-// window (+0x2c..+0x40) over the source. Each Tick it copies the window into the
+// DirectSoundMgr it Lock/Unlock-fills) and is armed with a data window
+// (+0x2c..+0x40) over the source. Each Tick it copies the window into the
 // secondary buffer (the circular Lock-fill at FillBuffer 0x137f30), wrapping +
 // padding the tail with the silence byte (+0x24). Field names are placeholders;
 // only OFFSETS + the emitted code bytes are load-bearing.
@@ -16,15 +16,7 @@
 #include <rva.h>
 
 #include <Dsndmgr/WaveFormatX.h> // WAVEFORMATEX-shaped PCM header (FeederStart)
-
-// The streaming source reader the feeder pulls window bytes from (the same
-// polymorphic reader SoundStream.h models as StreamSource; declared here so this
-// TU is self-contained - SoundStream.h's wider view stays in its own TU). Read
-// (0x139af0) returns the byte count actually read at `at` (-1 = current cursor).
-struct FeederSource {
-    i32 Read(void* buf, i32 n, i32 at); // 0x139af0
-};
-SIZE_UNKNOWN(FeederSource); // thin reader view (method-only)
+#include <Gruntz/CParseSource.h> // the positioned byte-reader the feeder pulls from (m_source)
 
 // The feeder's owner (m_owner): the SoundDevice (base of SoundStream) that creates
 // the streaming DirectSound buffer (CreateBuffer 0x1366f0) and reaps it
@@ -32,20 +24,10 @@ SIZE_UNKNOWN(FeederSource); // thin reader view (method-only)
 // methods are reloc-masked __thiscall calls.
 class SoundDevice;
 
-// The feeder's per-stream buffer wrapper (m_buffer): a DirectSoundMgr-derived voice
-// the feeder Lock/Unlock-fills + Stop/Pause/Resume-drives. Opaque; reloc-masked
-// __thiscall calls. Offsets/sizes match DirectSoundMgr but the feeder only ever
-// calls these methods, so a thin view is matching-neutral.
-struct FeederBuf {
-    i32 Lock(u32 off, u32 bytes, void** p1, u32* n1, void** p2, u32* n2,
-             u32 flags);                            // 0x136370
-    i32 Unlock(void* p1, u32 n1, void* p2, u32 n2); // 0x1359c0
-    i32 StopAndRewind();                            // 0x135380
-    i32 IsPlaying();                                // 0x136270  (returns play-state)
-    i32 Resume(i32 flag);                           // 0x135510  (resume/restart playback)
-    i32 Tick(i32 now); // 0x135a70  ... actually SetCurrentPosition pump
-};
-SIZE_UNKNOWN(FeederBuf); // thin DirectSoundMgr-buffer view (method-only)
+// The feeder's per-stream buffer wrapper (m_buffer): a DirectSoundMgr the feeder
+// Lock/Unlock-fills + Stop/Pause/Play-drives. Full definition included in
+// StreamFeeder.cpp; its methods are reloc-masked __thiscall calls.
+class DirectSoundMgr;
 
 // The streaming feeder. ALL-VTABLES phase: REAL polymorphic base - cl auto-emits
 // ??_7StreamFeeder@@6B@ (0x5ef6f0) and auto-stamps the vptr in the ctor (0x137cd0).
@@ -59,33 +41,32 @@ struct StreamFeeder {
     virtual void OnDrain();                                                 // [2] 0x137e20
 
     // vptr @ +0x00 (implicit); first real field at +0x04.
-    SoundDevice* m_owner; // +0x04  owner (SoundStream, via its SoundDevice base)
-    FeederBuf* m_buffer;  // +0x08  per-stream DirectSound buffer wrapper
-    u32 m_bufferCursor;   // +0x0c  read cursor into the buffer (write phase)
-    u32 m_bufferLength;   // +0x10  loop/buffer length
-    u32 m_format;         // +0x14  format / flags
-    u32 m_armed;          // +0x18  armed flag
-    u32 m_drained;        // +0x1c  drained flag
-    u32 m_pendingBytes;   // +0x20  pending-bytes accumulator
-    u8 m_silenceByte;     // +0x24  silence byte (0x80 for 8-bit PCM, else 0)
-    char m_pad25[0x28 - 0x25];
-    u32 m_lastTickMs;   // +0x28  last Tick time
-    u32 m_source;       // +0x2c  source back-pointer (window)
-    u32 m_loop;         // +0x30  loop flag
-    u32 m_sourceOffset; // +0x34  running source offset
-    u32 m_windowStart;  // +0x38  window start offset
-    u32 m_windowLength; // +0x3c  window length
-    u32 m_windowEnd;    // +0x40  window end (start+length)
+    SoundDevice* m_owner;     // +0x04  owner (SoundStream, via its SoundDevice base)
+    DirectSoundMgr* m_buffer; // +0x08  per-stream DirectSound buffer wrapper
+    u32 m_bufferCursor;       // +0x0c  read cursor into the buffer (write phase)
+    u32 m_bufferLength;       // +0x10  loop/buffer length
+    u32 m_format;             // +0x14  format / flags (FeederStart arg4)
+    u32 m_armed;              // +0x18  armed flag
+    u32 m_drained;            // +0x1c  drained flag
+    u32 m_pendingBytes;       // +0x20  pending-bytes accumulator
+    u8 m_silenceByte;         // +0x24  silence byte (0x80 for 8-bit PCM, else 0)
+    u32 m_lastTickMs;         // +0x28  last Tick time (u8 above self-aligns to +0x28)
+    CParseSource* m_source;   // +0x2c  source back-pointer (window)
+    u32 m_loop;               // +0x30  loop flag
+    u32 m_sourceOffset;       // +0x34  running source offset
+    u32 m_windowStart;        // +0x38  window start offset
+    u32 m_windowLength;       // +0x3c  window length
+    u32 m_windowEnd;          // +0x40  window end (start+length)
 
-    i32 SeedWindow(void* src, u32 off, u32 len); // 0x137340
-    StreamFeeder();                              // 0x137cd0
-    void Cleanup();                              // 0x137cf0  (dtor body)
+    i32 SeedWindow(CParseSource* src, u32 off, u32 len); // 0x137340
+    StreamFeeder();                                      // 0x137cd0
+    void Cleanup();                                      // 0x137cf0  (dtor body)
     i32 FeederStart(
         SoundDevice* owner,
-        i32 arg2,
-        u32 len,
         WaveFormatX* fmt,
-        void* buf,
+        u32 len,
+        u32 format,
+        DirectSoundMgr* buf,
         i32 tickArg
     );                                       // 0x137d10
     void FeederReset(i32 doStop);            // 0x137dc0
@@ -102,8 +83,7 @@ VTBL(StreamFeeder, 0x001ef6f0); // cl-emitted ??_7StreamFeeder@@6B@ (3-slot base
 // The DERIVED per-voice feeder (retail vtable 0x5ef6e0) embedded at StreamVoice+0x6c.
 // ALL-VTABLES phase: a real StreamFeeder-derived override so cl auto-emits
 // ??_7StreamVoiceFeeder@@6B@ (0x5ef6e0) via base-then-derived member construction
-// (base ctor stamps 0x5ef6f0, then the derived vptr 0x5ef6e0) - was the manual
-// manual feeder-vptr override store. Adds no fields (size 0x44).
+// (base ctor stamps 0x5ef6f0, then the derived vptr 0x5ef6e0). Adds no fields (size 0x44).
 // Overrides: slot 0 Feed = CopyWindow (0x137380); slots 1/2 (0x137490 / 0x1374b0)
 // are declared-only overrides (bodies external).
 struct StreamVoiceFeeder : StreamFeeder {

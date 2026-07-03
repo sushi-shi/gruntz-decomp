@@ -52,7 +52,7 @@ StreamVoice::StreamVoice(IDirectSoundBufferZ* buf, DirectSoundMgr* owner, i32 a,
 // SoundStream (m_owner) to parse the RIFF/WAVE source into a scratch
 // WAVEFORMATEX + data (off, len), then arm the embedded feeder's window over it.
 RVA(0x001374c0, 0x5d)
-i32 StreamVoice::SetSource(StreamSource* src) {
+i32 StreamVoice::SetSource(CParseSource* src) {
     if (src == 0) {
         return 0;
     }

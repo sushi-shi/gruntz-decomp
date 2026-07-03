@@ -4,7 +4,7 @@
 // tail-calls ~SoundDevice. The streaming half parses a RIFF/WAVE source, asks
 // the inherited IDirectSound device for a secondary buffer, wraps it in a
 // per-stream StreamVoiceNode (the 0xb0-byte DirectSoundMgr-derived voice, ctor
-// 0x1375b0) and threads that voice on the inherited +0x94 instance list.
+// 0x1375b0) and threads that voice on its own +0x94 voice list.
 //
 // Trace called all three Dsndmgr classes "MinervaInner"; the distinct vtables
 // (device 0x5ef6c4 / buffer 0x5ef6b8 / stream 0x5ef6ec) prove they are separate.
@@ -25,36 +25,15 @@ inline void* operator new(u32, void* p) {
     return p;
 }
 
-// ALL-VTABLES phase: the stream vftable (0x5ef6ec) is now cl-emitted as
+// ALL-VTABLES phase: the stream vftable (0x5ef6ec) is cl-emitted as
 // ??_7SoundStream@@6B@ from the real polymorphic SoundStream : SoundDevice (virtual
 // dtor override); the ctor auto-stamps it and the dtor auto-resets it + chains
-// ~SoundDevice (was the manual stream-vptr stamps).
-
-// The inherited intrusive instance-list helpers on the +0x94 head (same engine
-// list family DirectSoundMgr models as the clone list): Insert (0x1390e0, prepend
-// one biased-+4 node) and Unlink (0x1391e0, remove one). __thiscall on the head.
-struct StreamList {
-    void* m_head;
-    void* m_tail;
-    void Insert(void* node); // 0x1390e0
-    void Unlink(void* node); // 0x1391e0
-};
-SIZE_UNKNOWN(StreamList); // {head,tail} list-head view
-
-// The device's per-voice channel sub-list reap helper (0x136f60, __thiscall on
-// the inherited +0x0c head): unlink + free every voice matching (node, mask).
-struct StreamVoiceList {
-    void* m_head;
-    void* m_tail;
-    void Reap(void* node, i32 mask); // 0x136f60
-};
-SIZE_UNKNOWN(StreamVoiceList); // {head,tail} list-head view
+// ~SoundDevice. cl also auto-emits the ??_G scalar-deleting dtor at 0x1376f0 (was
+// the hand-declared ScalarDtor) - now a compiler artifact with no source symbol.
 
 // ---------------------------------------------------------------------------
-// SoundStream::SoundStream (__thiscall). Run the base ctor, zero the
-// two instance words (m_instanceHead list head / m_98), then stamp the stream vptr.
-// The 0x5ef6ec stamp + the 0x137710 shared dtor (via the scalar dtor below)
-// prove it is SoundStream's.
+// SoundStream::SoundStream (__thiscall). Run the base ctor, then zero the
+// voice-list head/tail (+0x94/+0x98).
 // @early-stop
 // vptr-position wall: retail stamps the 0x5ef6ec vptr AFTER the two zero stores
 // (vptr-last), but the ALL-VTABLES real-polymorphic model forces cl's implicit
@@ -62,29 +41,14 @@ SIZE_UNKNOWN(StreamVoiceList); // {head,tail} list-head view
 // + two zeros) otherwise matches; the vptr-position divergence is accepted.
 RVA(0x001376d0, 0x20)
 SoundStream::SoundStream() {
-    // cl auto-stamps ??_7SoundStream@@6B@ (0x5ef6ec) here (was the manual store).
-    m_instanceHead = 0;
-    m_98 = 0;
-}
-
-// ---------------------------------------------------------------------------
-// SoundStream::ScalarDtor (__thiscall) - the scalar-deleting dtor
-// (??_G): run ~SoundStream, then operator delete (the engine RezFree) when the
-// low flag bit is set; returns this. Modeled as a plain method (name-independent
-// at delink) since SoundStream is kept non-polymorphic (manual vptr stamp).
-RVA(0x001376f0, 0x1e)
-void* SoundStream::ScalarDtor(i32 flag) {
-    this->~SoundStream();
-    if (flag & 1) {
-        RezFree(this);
-    }
-    return this;
+    // cl auto-stamps ??_7SoundStream@@6B@ (0x5ef6ec) here.
+    m_voices.m_head = 0;
+    m_voices.m_tail = 0;
 }
 
 // ---------------------------------------------------------------------------
 // SoundStream::~SoundStream (__thiscall). Empty body: cl resets the vptr to
-// ??_7SoundStream@@6B@ (0x5ef6ec) then chains ~SoundDevice (the teardown) - was
-// the hand-rolled restamp + implicit base-dtor tail.
+// ??_7SoundStream@@6B@ (0x5ef6ec) then chains ~SoundDevice (the teardown).
 RVA(0x00137710, 0xb)
 SoundStream::~SoundStream() {}
 
@@ -97,11 +61,9 @@ SoundStream::~SoundStream() {}
 // RezAlloc+placement-new EH-frame wall (docs/patterns/rezalloc-placement-new-no-eh-frame.md):
 // the body (fmt copy, CreateSoundBuffer, RezAlloc, ctor, list insert, ComputeDuration)
 // is byte-exact, but retail's `new`-with-RezAlloc-operator-new emits a /GX
-// ctor-in-flight EH frame (push -1/fs:0 + trylevel) and a single shared `jmp`
-// epilogue that MSVC5's placement-new (no placement operator delete) cannot
-// reproduce - 47% on a documented EH wall. Defer to the final sweep once the
-// StreamVoiceNode ctor (0x1375b0) is modelled and a real `new T` allocator path emits
-// the frame.
+// ctor-in-flight EH frame that MSVC5's placement-new cannot reproduce. Deferred to
+// the final sweep once the StreamVoiceNode ctor (0x1375b0) is modelled and a real
+// `new T` allocator path emits the frame.
 RVA(0x00137780, 0x171)
 StreamVoiceNode* SoundStream::CreateStreamBuffer(WaveFormatX* fmt, u32 bytes, i32 a, i32 b, i32 c) {
     if (m_initialized == 0) {
@@ -119,9 +81,11 @@ StreamVoiceNode* SoundStream::CreateStreamBuffer(WaveFormatX* fmt, u32 bytes, i3
 
     WaveFormatX wf;
     wf.wFormatTag = fmt->wFormatTag;
-    *(u32*)&wf.nChannels = *(u32*)&fmt->nChannels;
+    wf.nChannels = fmt->nChannels;
+    wf.nSamplesPerSec = fmt->nSamplesPerSec;
     wf.nAvgBytesPerSec = fmt->nAvgBytesPerSec;
-    *(u32*)&wf.nBlockAlign = *(u32*)&fmt->nBlockAlign;
+    wf.nBlockAlign = fmt->nBlockAlign;
+    wf.wBitsPerSample = fmt->wBitsPerSample;
     wf.cbSize = fmt->cbSize;
 
     IDirectSoundBufferZ* out = 0;
@@ -141,11 +105,14 @@ StreamVoiceNode* SoundStream::CreateStreamBuffer(WaveFormatX* fmt, u32 bytes, i3
         return 0;
     }
 
-    StreamVoiceNode* voice = (StreamVoiceNode*)RezAlloc(0xb0);
-    if (voice) {
-        voice = new (voice) StreamVoiceNode(out, this, b, c);
+    void* mem = RezAlloc(0xb0);
+    StreamVoiceNode* voice;
+    if (mem == 0) {
+        voice = 0;
+    } else {
+        voice = new (mem) StreamVoiceNode(out, this, b, c);
     }
-    ((StreamList*)&m_instanceHead)->Insert(voice ? &voice->m_link : 0);
+    m_voices.InsertHead(voice ? &voice->m_link : 0);
     voice->m_avgBytes = fmt->nAvgBytesPerSec;
     voice->m_avgBytesDiv = fmt->nAvgBytesPerSec;
     voice->m_byteLength = bytes;
@@ -162,10 +129,10 @@ StreamVoiceNode* SoundStream::CreateStreamBuffer(WaveFormatX* fmt, u32 bytes, i3
 // calls; MSVC here pins it in ebx, shifting the prologue load + the callee-saved
 // cascade (one register choice, body otherwise exact). See
 // docs/patterns/zero-register-pinning.md / pin-local-for-callee-saved-reg.md.
-// 90.6% on a documented regalloc wall - logic complete, deferred to the final sweep.
+// Logic complete, deferred to the final sweep.
 RVA(0x00137900, 0xc6)
 StreamVoiceNode*
-SoundStream::OpenStream(StreamSource* src, i32 p1, i32 p2, i32 p3, i32 p4, i32 p5) {
+SoundStream::OpenStream(CParseSource* src, i32 p1, i32 p2, i32 p3, i32 p4, i32 p5) {
     if (src == 0) {
         return 0;
     }
@@ -181,11 +148,13 @@ SoundStream::OpenStream(StreamSource* src, i32 p1, i32 p2, i32 p3, i32 p4, i32 p
     }
     StreamFeeder* feeder = &voice->m_feeder;
     feeder->m_windowStart = dataOff;
-    feeder->m_windowLength = (u32)src;
-    feeder->m_source = (u32)src;
+    feeder->m_windowLength = dataLen;
+    feeder->m_source = src;
     feeder->m_loop = 0;
     feeder->m_sourceOffset = 0;
-    if (feeder->FeederStart(this, (i32)&wf, p1, (WaveFormatX*)p2, voice, -1) == 0) {
+    // FLAG(shared): voice IS-A DirectSoundMgr buffer wrapper; this upcast is authentic
+    // (StreamVoiceNode should derive DirectSoundMgr - blocked by the +0x04 link overlap).
+    if (feeder->FeederStart(this, &wf, p1, p2, (DirectSoundMgr*)voice, -1) == 0) {
         DestroyVoice(voice);
         return 0;
     }
@@ -195,17 +164,20 @@ SoundStream::OpenStream(StreamSource* src, i32 p1, i32 p2, i32 p3, i32 p4, i32 p
 // ---------------------------------------------------------------------------
 // SoundStream::DestroyVoice (__thiscall, 1 arg). Reset the voice's
 // feeder, reap its queued channel voices, release its IDirectSoundBuffer, unlink
-// it from the +0x94 list, then run its scalar-deleting destructor.
+// it from the +0x94 list, then run its scalar-deleting destructor (vtable slot 0).
 RVA(0x001379d0, 0x5f)
 void SoundStream::DestroyVoice(StreamVoiceNode* voice) {
     if (m_initialized) {
         voice->m_feeder.FeederReset(0);
-        ((StreamVoiceList*)&m_voiceList)->Reap(voice, 0xffff);
+        // FLAG(shared, matcher-6): reaps the inherited SoundDevice voice sub-list
+        // (+0x0c); its {head,tail} pair is a DSoundList. Model as
+        // `DSoundList SoundDevice::m_voiceList` + RemoveMatching(void* key) to drop these.
+        ((DSoundList*)&m_voiceList)->RemoveMatching((u32)voice, 0xffff);
         voice->m_buf0c->Release();
         voice->m_buf0c = 0;
-        ((StreamList*)&m_instanceHead)->Unlink(voice ? &voice->m_link : 0);
+        m_voices.Unlink(voice ? &voice->m_link : 0);
         if (voice) {
-            ((DSoundCloneBase*)voice)->ScalarDtor(1);
+            voice->ScalarDtor(1);
         }
     }
 }
@@ -219,18 +191,18 @@ void SoundStream::DestroyVoice(StreamVoiceNode* voice) {
 // local-coalescing wall: retail reuses the incoming arg stack slots as scratch
 // (sub esp,0xc) for the RIFF/chunk header reads; MSVC here allocates one extra
 // local dword (sub esp,0x10), shifting every [esp+N] local offset by 4. Body +
-// control flow byte-exact; only the frame size / slot assignment differs - 98.3%,
-// the entropy tail. Logic complete, deferred to the final sweep.
+// control flow byte-exact; only the frame size / slot assignment differs - the
+// entropy tail. Logic complete, deferred to the final sweep.
 RVA(0x00137b70, 0x159)
 i32 SoundStream::ParseWave(
-    StreamSource* src,
+    CParseSource* src,
     WaveFormatX* fmtBuf,
     u32* outDataOff,
     u32* outDataLen
 ) {
     i32 gotFmt = 0;
     i32 gotData = 0;
-    src->Seek(0);
+    src->SetPos(0);
 
     u32 riffTag;
     u32 riffSize;
@@ -261,7 +233,7 @@ i32 SoundStream::ParseWave(
                 n = 0x12;
             }
             src->Read(fmtBuf, n, -1);
-            src->Seek(next);
+            src->SetPos(next);
             gotFmt = 1;
         } else if (chunkId == 0x61746164) {
             *outDataOff = src->m_cursor;
@@ -272,7 +244,7 @@ i32 SoundStream::ParseWave(
             return 1;
         }
         if ((src->m_cursor & 1) == 1) {
-            src->Seek(src->m_cursor + 1);
+            src->SetPos(src->m_cursor + 1);
         }
     }
     return 0;

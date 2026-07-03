@@ -6,28 +6,27 @@
 // buffer (CopyWindow / FillBuffer), wrapping + silence-padding the tail.
 //
 // Field names are placeholders; offsets + emitted bytes are load-bearing.
-#include <Dsndmgr/SoundDevice.h> // m_owner: SoundDevice::CreateBuffer / RemoveBuffer
+#include <Dsndmgr/SoundDevice.h> // SoundDevice::CreateBuffer / RemoveBuffer; DirectSoundMgr (via it)
 #include <Dsndmgr/StreamFeeder.h>
 #include <Win32.h>
 #include <rva.h>
 #include <string.h> // memset (inlined to rep stos)
 
-// ALL-VTABLES phase: StreamFeeder is now a REAL polymorphic base (see
-// StreamFeeder.h). The slot dispatches use the declared virtuals directly (slot 0
-// Feed, slot 1 FeedData, slot 2 OnDrain) - `this->Feed(...)` lowers to the same
-// `mov eax,[this]; call [eax+N]` the old pmf-via-union did. cl auto-emits
-// ??_7StreamFeeder@@6B@ (0x5ef6f0) and stamps the vptr in the ctor (was the manual
-// manual feeder-vptr store).
+// ALL-VTABLES phase: StreamFeeder is a REAL polymorphic base (see StreamFeeder.h).
+// The slot dispatches use the declared virtuals directly (slot 0 Feed, slot 1
+// FeedData, slot 2 OnDrain) - `this->Feed(...)` lowers to the same `mov eax,[this];
+// call [eax+N]` the old pmf-via-union did. cl auto-emits ??_7StreamFeeder@@6B@
+// (0x5ef6f0) and stamps the vptr in the ctor.
 
 // ---------------------------------------------------------------------------
 // StreamFeeder::SeedWindow (__thiscall, 3 args). Arm the data window
 // (source + offset + length) over the stream, then prime via Tick(-1).
 RVA(0x00137340, 0x33)
-i32 StreamFeeder::SeedWindow(void* src, u32 off, u32 len) {
+i32 StreamFeeder::SeedWindow(CParseSource* src, u32 off, u32 len) {
     if (src == 0) {
         return 0;
     }
-    m_source = (u32)src;
+    m_source = src;
     m_windowLength = len;
     m_windowStart = off;
     m_sourceOffset = off;
@@ -42,7 +41,7 @@ i32 StreamFeeder::SeedWindow(void* src, u32 off, u32 len) {
 // bytes into each destination region from the running window cursor (m_sourceOffset),
 // reporting the byte count read in *got, and looping back to the window start
 // (m_windowStart) at the end when the loop flag (m_loop) is set. Each chunk is read
-// through StreamSource::Read (0x139af0) at the source back-pointer (m_source).
+// through CParseSource::Read (0x139af0) at the source back-pointer (m_source).
 RVA(0x00137380, 0x10e)
 i32 StreamVoiceFeeder::Feed(void* dst1, u32 n1, u32* got1, void* dst2, u32 n2, u32* got2) {
     if (dst1 != 0 && n1 > 0) {
@@ -50,7 +49,7 @@ i32 StreamVoiceFeeder::Feed(void* dst1, u32 n1, u32* got1, void* dst2, u32 n2, u
         if (m_sourceOffset + n1 > m_windowEnd) {
             want = m_windowEnd - m_sourceOffset;
         }
-        *got1 = ((FeederSource*)m_source)->Read(dst1, want, m_sourceOffset);
+        *got1 = m_source->Read(dst1, want, m_sourceOffset);
         m_sourceOffset += *got1;
         while (*got1 < n1 && m_loop != 0) {
             m_sourceOffset = m_windowStart;
@@ -58,7 +57,7 @@ i32 StreamVoiceFeeder::Feed(void* dst1, u32 n1, u32* got1, void* dst2, u32 n2, u
             if (m_windowStart + n1 > m_windowEnd) {
                 want = m_windowEnd - m_windowStart;
             }
-            *got1 = ((FeederSource*)m_source)->Read(dst1, want, m_sourceOffset);
+            *got1 = m_source->Read(dst1, want, m_sourceOffset);
             m_sourceOffset += *got1;
         }
     }
@@ -67,7 +66,7 @@ i32 StreamVoiceFeeder::Feed(void* dst1, u32 n1, u32* got1, void* dst2, u32 n2, u
         if (m_sourceOffset + n2 > m_windowEnd) {
             want = m_windowEnd - m_sourceOffset;
         }
-        *got2 = ((FeederSource*)m_source)->Read(dst2, want, m_sourceOffset);
+        *got2 = m_source->Read(dst2, want, m_sourceOffset);
         m_sourceOffset += *got2;
         while (*got2 < n2 && m_loop != 0) {
             m_sourceOffset = m_windowStart;
@@ -75,7 +74,7 @@ i32 StreamVoiceFeeder::Feed(void* dst1, u32 n1, u32* got1, void* dst2, u32 n2, u
             if (m_windowStart + n2 > m_windowEnd) {
                 want = m_windowEnd - m_windowStart;
             }
-            *got2 = ((FeederSource*)m_source)->Read(dst2, want, m_sourceOffset);
+            *got2 = m_source->Read(dst2, want, m_sourceOffset);
             m_sourceOffset += *got2;
         }
     }
@@ -87,7 +86,7 @@ i32 StreamVoiceFeeder::Feed(void* dst1, u32 n1, u32* got1, void* dst2, u32 n2, u
 // buffer/cursor/flag fields.
 RVA(0x00137cd0, 0x1a)
 StreamFeeder::StreamFeeder() {
-    // cl auto-stamps ??_7StreamFeeder@@6B@ (0x5ef6f0) here (was the manual store).
+    // cl auto-stamps ??_7StreamFeeder@@6B@ (0x5ef6f0) here.
     m_buffer = 0;
     m_armed = 0;
     m_bufferCursor = 0;
@@ -97,9 +96,7 @@ StreamFeeder::StreamFeeder() {
 
 // ---------------------------------------------------------------------------
 // StreamFeeder::Cleanup (__thiscall - the dtor body). Tear down the armed buffer,
-// clear m_buffer. ALL-VTABLES phase: the leading vptr restamp (was
-// manual feeder-vptr store) is dropped - the vptr is now cl-managed and
-// this is a named teardown method (not the dtor), so it cannot reference ??_7.
+// clear m_buffer.
 // @early-stop
 // vptr-restamp drop: Cleanup no longer emits the leading vptr reset (a plain method
 // can't reference the cl-emitted ??_7StreamFeeder); the teardown body is unchanged.
@@ -123,6 +120,9 @@ void StreamFeeder::FeederReset(i32 doStop) {
         }
         OnDrain(); // slot 2 (virtual)
         if (doStop != 0) {
+            // FLAG(shared, matcher-6): m_buffer (DirectSoundMgr, method-view) and
+            // RemoveBuffer's SoundBuf* (device list-view) are two views of the same
+            // buffer-wrapper object; unify SoundBuf == DirectSoundMgr to drop this cast.
             m_owner->RemoveBuffer((SoundBuf*)m_buffer);
         }
         m_buffer = 0;
@@ -132,18 +132,18 @@ void StreamFeeder::FeederReset(i32 doStop) {
 
 // ---------------------------------------------------------------------------
 // StreamFeeder::Resume (__thiscall). If not already drained, resume
-// the buffer (m_buffer->Resume(1)) and, if it reports playing, mark drained (m_drained=1).
+// the buffer (SetField3(1)) and, if it reports playing, mark drained (m_drained=1).
 RVA(0x00137ed0, 0x30)
 i32 StreamFeeder::Resume() {
     if (m_drained != 0) {
         return 1;
     }
-    m_buffer->Resume(1);
-    i32 r = m_buffer->IsPlaying();
+    m_buffer->SetField3(1);
+    i32 r = m_buffer->Play();
     if (r != 0) {
         m_drained = 1;
     }
-    return r; // fall-through keeps the IsPlaying result in eax (no re-zero)
+    return r; // fall-through keeps the Play result in eax (no re-zero)
 }
 
 // ---------------------------------------------------------------------------
@@ -167,23 +167,23 @@ i32 StreamFeeder::Pause() {
 // depth, create (or adopt) the streaming buffer, arm, FeedData (slot 1) and
 // prime via Tick.
 // @early-stop
-// regalloc eax/edx wall: retail pins len(arg3)->eax, fmt(arg4)->edx; MSVC here
-// assigns the opposite pair (len->edx, fmt->eax). Body + control flow byte-exact,
-// only the two-arg register choice differs - 96.8%, a register-allocation
-// plateau (docs/patterns/zero-register-pinning.md family). Logic complete,
-// deferred to the final sweep.
+// regalloc eax/edx wall: retail pins the format-pointer (arg2) and the format-value
+// (arg4) into a fixed eax/edx pair; MSVC here assigns the opposite pair. Body +
+// control flow byte-exact, only the two-arg register choice differs - a
+// register-allocation plateau (docs/patterns/zero-register-pinning.md family).
+// Logic complete, deferred to the final sweep.
 RVA(0x00137d10, 0xab)
 i32 StreamFeeder::FeederStart(
     SoundDevice* owner,
-    i32 arg2,
-    u32 len,
     WaveFormatX* fmt,
-    void* buf,
+    u32 len,
+    u32 format,
+    DirectSoundMgr* buf,
     i32 tickArg
 ) {
-    m_bufferLength = len;
+    m_format = format;
     m_owner = owner;
-    m_format = (u32)fmt;
+    m_bufferLength = len;
     m_drained = 0;
     if (fmt->wBitsPerSample > 8) {
         m_silenceByte = 0;
@@ -191,9 +191,9 @@ i32 StreamFeeder::FeederStart(
         m_silenceByte = 0x80;
     }
     if (buf == 0) {
-        m_buffer = (FeederBuf*)owner->CreateBuffer(fmt, len, 0x100e0);
+        m_buffer = owner->CreateBuffer(fmt, len, 0x100e0);
     } else {
-        m_buffer = (FeederBuf*)buf;
+        m_buffer = buf;
     }
     if (m_buffer == 0) {
         return 0;
@@ -217,12 +217,11 @@ i32 StreamFeeder::FeederStart(
 // the read cursor (m_bufferCursor) with wraparound, and Unlock.
 // @early-stop
 // local-coalescing / frame-size wall: retail reuses dead local slots for the
-// got1/got2 scratch (sub esp,0x10, 4 dwords); MSVC here keeps them distinct
-// (sub esp,0x14, 5 dwords), shifting every Lock out-pointer slot + the [esp+N]
-// local offsets. Instruction selection + control flow byte-exact; only the
-// stack-slot assignment differs - 88.6%, the documented local-coalescing wall
-// (docs/patterns/stack-buffer-size-drives-frame.md). Logic complete, deferred
-// to the final sweep.
+// got1/got2 scratch (sub esp,0x10); MSVC here keeps them distinct (sub esp,0x14),
+// shifting every Lock out-pointer slot + the [esp+N] local offsets. Instruction
+// selection + control flow byte-exact; only the stack-slot assignment differs -
+// the documented local-coalescing wall (docs/patterns/stack-buffer-size-drives-frame.md).
+// Logic complete, deferred to the final sweep.
 RVA(0x00137f30, 0x197)
 i32 StreamFeeder::FillBuffer(u32 writePos, u32 bytes) {
     void* p1;
@@ -245,6 +244,8 @@ i32 StreamFeeder::FillBuffer(u32 writePos, u32 bytes) {
     }
     if (got1 < n1) {
         m_pendingBytes += n1 - got1;
+        // language-forced: p1 is a void* DirectSound-locked region; the +got1
+        // pointer arithmetic requires a byte-pointer view. Inlines to rep stos.
         memset((char*)p1 + got1, m_silenceByte, n1 - got1);
     }
     if (got2 < n2) {
