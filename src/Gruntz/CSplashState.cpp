@@ -83,7 +83,7 @@ i32 CSplashState::LoadSounds(i32 a, i32 b, i32 c) {
 
     void* soundz = m_2c->LoadGroup("SOUNDZ");
     if (soundz) {
-        m_c->m_28->Install(soundz, g_emptyString, "_");
+        m_c->m_soundRegistry->Install(soundz, g_emptyString, "_");
     }
     return 1;
 }

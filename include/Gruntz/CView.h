@@ -127,11 +127,11 @@ struct CView {
                 void Prepare(i32 z);      // 0x13e760 (thiscall) ClampViewport apply-tail
                 void NotifyClip(RECT* r); // 0x13e7d0 (thiscall) NotifyVisibleEntities
             }* m_2c;
-        }* m_14;    // +0x14 -> +0x2c draw surface (view obj)
-        void* m_18; // +0x18  the present target
-    }* m_4;
-    CRenderer* m_8; // +0x08  renderer A
-    CRenderer* m_c; // +0x0c  renderer B (present) / resource worker holder
+        }* m_14;            // +0x14 -> +0x2c draw surface (view obj)
+        void* m_18;         // +0x18  the present target
+    }* m_renderState;       // +0x04  renderer-state / render-flip view (draw pump)
+    CRenderer* m_rendererA; // +0x08  renderer A (begin-scene / world draw; owns plane list)
+    CRenderer* m_rendererB; // +0x0c  renderer B (present) / resource worker holder
     // +0x10 -> the image/name registry (polymorphic; vptr @+0x00). BeginGridWalk looks
     // up the frame grid in its embedded name->object map (+0x10); the leaf states
     // Release named namespaces (non-virtual FUN_00155360) and Install resolved sets
@@ -168,10 +168,10 @@ struct CView {
         struct CMap {
             void Lookup(i32 key, void*& out); // 0x1b8008 (thiscall)
         } m_10;                               // +0x10  the name->object map / frame grid
-    }* m_10;                                  // +0x10
+    }* m_imageRegistry; // +0x10  image/name registry (Release/Register/Has/Install)
     char p14[0x20 - 0x14];
-    void* m_20;         // +0x20  a frame profiler timer (timeGetTime x2)
-    CDrawSurface* m_24; // +0x24  the draw-surface (PushView / Pre/PostStep)
+    void* m_frameProfiler;       // +0x20  frame profiler timer (timeGetTime x2)
+    CDrawSurface* m_drawSurface; // +0x24  the draw-surface (PushView / Pre/PostStep)
     // Resource facet (offsets the render facet does not touch):
     struct SoundRegistry {                                    // +0x28
         void Release(const char* szName, const char* szKey);  // FUN_00157c70
@@ -180,12 +180,12 @@ struct CView {
         void Install(void* set, const char* szName, const char* szKey); // FUN_00157ee0
         char p0[0x2c];
         CViewPooledRes* m_2c; // +0x2c  pooled resource (Free() if set)
-    }* m_28;                  // +0x28  sound registry + pooled resource
+    }* m_soundRegistry;       // +0x28  sound registry + pooled resource
     struct AnimRegistry {     // +0x2c
         void Release(const char* szName, const char* szKey); // FUN_00152720 (credits reg)
         i32 Has(const char* szName);                         // FUN_00152c50 -> found
         void Install(void* set, const char* szName, const char* szKey); // FUN_00152ad0
-    }* m_2c; // +0x2c  anim/third registry
+    }* m_animRegistry; // +0x2c  anim/third registry
 };
 
 #endif // GRUNTZ_GRUNTZ_CVIEW_H

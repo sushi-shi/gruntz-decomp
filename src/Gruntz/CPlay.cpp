@@ -22,7 +22,7 @@
 //       DRAW_WORLD();                             // shared world-draw block
 //       <AMBIENT-cue timer +0x3f8, 0x1f4ms, toggles m_cueToggle -> PlayCueAt 0x8128>
 //       MarkerBegin(now); GutsStep();             // m_beginMarker marker + m_guts step
-//       if (m_c->m_4->m_14 == 0) return 1;        // no view -> bail
+//       if (m_c->m_renderState->m_14 == 0) return 1;        // no view -> bail
 //       FrameTimerEnd; DrawSurfaceFlush; GutsStepX; ViewPostStep; return 1;
 //   } else if (m_4->m_c==0 && !(reg->m_134!=2 && m_overlayDrag)) {
 //                                 // ---- MENU/PAUSE-OVERLAY frame ----
@@ -45,7 +45,7 @@
 //   } else {                      // ---- m_4->m_c != 0 short path ----
 //       StepInputA();
 //       if (m_c->m_4->m_14==0) return 1;
-//       <cursor profiler m_c->m_20: timeGetTime x2>;
+//       <cursor profiler m_c->m_frameProfiler: timeGetTime x2>;
 //       if (m_paused) DRAW_ONLY()                    // paused: present + win/lose FX
 //       else { if (--m_stepCountdown>0) <entity step + level cue>; if (m_ambientInitDone==0) AmbientInit(); }
 //       MarkerBegin(now); PostHud(0); DrawSurfaceFlushTail(); return 1;
@@ -56,7 +56,7 @@
 //   Eng_PushView(m_c->m_24, m_c->m_4->m_14, m_c->m_8);
 //   m_c->m_c->vtbl[+0x34](m_c->m_4->m_14, m_c->m_4->m_18);          // present
 //   WorldBlit(m_c->m_24->m_5c->m_84, ->m_88) on m_4->m_54;
-//   if (m_c->m_20) { t=timeGetTime(); profiler(m_c->m_20,t) x2; }   // frame profiler
+//   if (m_c->m_frameProfiler) { t=timeGetTime(); profiler(m_c->m_frameProfiler,t) x2; }   // frame profiler
 //   MarkerBegin(g_645584); GutsStep();                             // marker + guts
 //
 // The per-ENTITY layer is one indirection down: g_entityList is walked
@@ -285,22 +285,28 @@ i32 CPlay::Render() {
         // =================================================================
         // ---- MAIN in-game frame ----
         // =================================================================
-        StepInputA();         // poll/sim sub-step A
-        StepWorldB();         // world/camera sub-step B
-        m_c->m_24->PreStep(); // on m_c->m_24 (view pre-step)
+        StepInputA();                  // poll/sim sub-step A
+        StepWorldB();                  // world/camera sub-step B
+        m_c->m_drawSurface->PreStep(); // on m_c->m_24 (view pre-step)
 
         g_6bf3c0 = g_645580; // mirror the draw clock
         g_6bf3bc = g_645584;
 
         // --- shared world-draw block #1 ---
-        m_c->m_8->BeginScene(0);                           // m_c->m_8->vtbl[+0x24](0)
-        m_c->m_24->PushView(m_c->m_4->m_14, m_c->m_8);     // (thiscall on m_24)
-        m_c->m_c->Present(m_c->m_4->m_14, m_c->m_4->m_18); // vtbl[+0x34]
-        m_4w()->m_54->Blit(m_c->m_24->m_5c->m_84, m_c->m_24->m_5c->m_88);
-        if (m_c->m_20 != 0) { // frame profiler
+        m_c->m_rendererA->BeginScene(0); // m_c->m_8->vtbl[+0x24](0)
+        m_c->m_drawSurface->PushView(
+            m_c->m_renderState->m_14,
+            m_c->m_rendererA
+        ); // (thiscall on m_24)
+        m_c->m_rendererB->Present(
+            m_c->m_renderState->m_14,
+            m_c->m_renderState->m_18
+        ); // vtbl[+0x34]
+        m_4w()->m_54->Blit(m_c->m_drawSurface->m_5c->m_84, m_c->m_drawSurface->m_5c->m_88);
+        if (m_c->m_frameProfiler != 0) { // frame profiler
             u32 t = timeGetTime();
-            Eng_Profiler1(m_c->m_20, t);
-            Eng_Profiler2(m_c->m_20, t);
+            Eng_Profiler1(m_c->m_frameProfiler, t);
+            Eng_Profiler2(m_c->m_frameProfiler, t);
         }
         MarkerBegin((i32)g_645584); // m_beginMarker begin-marker
         GutsStep();                 // m_guts step
@@ -320,18 +326,18 @@ i32 CPlay::Render() {
             }
         }
 
-        if (m_c->m_4->m_14 == 0) {
+        if (m_c->m_renderState->m_14 == 0) {
             return 1; // no view -> bail
         }
 
-        FrameTimerBegin((i32)g_645584);            // m_frameMarker begin
-        FrameTimerEnd(0, (i32)g_645584);           // wait: end takes (this,flag)
-        Eng_SurfaceFlush(m_c->m_4->m_10->m_2c, 0); // surface flush
+        FrameTimerBegin((i32)g_645584);                      // m_frameMarker begin
+        FrameTimerEnd(0, (i32)g_645584);                     // wait: end takes (this,flag)
+        Eng_SurfaceFlush(m_c->m_renderState->m_10->m_2c, 0); // surface flush
         // GutsStepX(m_region0Gate, m_guts, reg) -> the post-draw step (modeled via
         // the same external; here as the marker/guts step):
-        GutsStep();            // (post-draw guts)
-        m_c->m_24->PostStep(); // on m_c->m_24
-        return 1;              // -> draw tail
+        GutsStep();                     // (post-draw guts)
+        m_c->m_drawSurface->PostStep(); // on m_c->m_24
+        return 1;                       // -> draw tail
     }
 
     // m_inGame == 0
@@ -393,7 +399,7 @@ i32 CPlay::Render() {
         }
 
         if (m_region0Gate != 0) { // extra HUD/overlay layer
-            Eng_BeginScene(m_c->m_4->m_10->m_2c, 0);
+            Eng_BeginScene(m_c->m_renderState->m_10->m_2c, 0);
             GutsStepB(); // m_guts
         }
 
@@ -417,13 +423,13 @@ i32 CPlay::Render() {
         }
 
         // --- shared world-draw block #2 ---
-        m_c->m_24->PushView(m_c->m_4->m_14, m_c->m_8);
-        m_c->m_c->Present(m_c->m_4->m_14, m_c->m_4->m_18); // present
+        m_c->m_drawSurface->PushView(m_c->m_renderState->m_14, m_c->m_rendererA);
+        m_c->m_rendererB->Present(m_c->m_renderState->m_14, m_c->m_renderState->m_18); // present
         if (m_region1Gate != 0) {
             StepC(); // alt-input draw
         } else {
-            m_c->m_24->PushView(m_c->m_4->m_14, m_c->m_8);
-            m_c->m_c->Present(m_c->m_4->m_14, m_c->m_4->m_18);
+            m_c->m_drawSurface->PushView(m_c->m_renderState->m_14, m_c->m_rendererA);
+            m_c->m_rendererB->Present(m_c->m_renderState->m_14, m_c->m_renderState->m_18);
         }
         MarkerBegin((i32)g_645584);
         GutsStep();
@@ -435,7 +441,7 @@ i32 CPlay::Render() {
         }
 
         WorldBlit((i32)g_645584); // on m_4->m_5c (thiscall)
-        if (m_c->m_4->m_14 == 0) {
+        if (m_c->m_renderState->m_14 == 0) {
             return 1;
         }
 
@@ -497,10 +503,10 @@ i32 CPlay::Render() {
 
         MarkerBegin((i32)g_645584);
         PostHud(0);
-        if (m_worldReady != 0) {                                 // optional HUD overlay draw
-            Eng_HudDraw(m_c->m_4->m_10->m_2c, &m_hudRect, 0xff); // (this=m_4->m_10->m_2c)
+        if (m_worldReady != 0) { // optional HUD overlay draw
+            Eng_HudDraw(m_c->m_renderState->m_10->m_2c, &m_hudRect, 0xff); // (this=m_4->m_10->m_2c)
         }
-        Eng_SurfaceFlush(m_c->m_4->m_10->m_2c, 0);
+        Eng_SurfaceFlush(m_c->m_renderState->m_10->m_2c, 0);
 
         // --- the four screen-region scroll one-shots: each is
         // a 64-bit "inside region" elapsed test that fires its OnRegion handler. ---
@@ -536,19 +542,22 @@ alt2:
     // ---- the m_4->m_c != 0 short path ----
     // =================================================================
     StepInputA();
-    if (m_c->m_4->m_14 == 0) {
+    if (m_c->m_renderState->m_14 == 0) {
         return 1;
     }
     {
-        if (m_c->m_20 != 0) { // cursor/frame profiler
+        if (m_c->m_frameProfiler != 0) { // cursor/frame profiler
             u32 t = timeGetTime();
-            Eng_Profiler1(m_c->m_20, t);
-            Eng_Profiler2(m_c->m_20, t);
+            Eng_Profiler1(m_c->m_frameProfiler, t);
+            Eng_Profiler2(m_c->m_frameProfiler, t);
         }
         if (m_paused != 0) {
             // ---- the paused frame: draw-only ----
-            m_c->m_24->PushView(m_c->m_4->m_14, m_c->m_8);
-            m_c->m_c->Present(m_c->m_4->m_14, m_c->m_4->m_18); // present
+            m_c->m_drawSurface->PushView(m_c->m_renderState->m_14, m_c->m_rendererA);
+            m_c->m_rendererB->Present(
+                m_c->m_renderState->m_14,
+                m_c->m_renderState->m_18
+            ); // present
             GutsStep();
             if (m_guts->m_busyA == 0 && m_guts->m_busyB == 0) {
                 PlayCueAt(0x812c, 0x78, 0, 0xff, 0xff, 0, 1, 0); // win/lose
@@ -558,8 +567,11 @@ alt2:
             // ---- the active short frame: entity step + cues ----
             if (m_stepCountdown > 0) {
                 m_stepCountdown = m_stepCountdown - 1;
-                m_c->m_24->PushView(m_c->m_4->m_14, m_c->m_8);
-                m_c->m_c->Present(m_c->m_4->m_14, m_c->m_4->m_18); // present
+                m_c->m_drawSurface->PushView(m_c->m_renderState->m_14, m_c->m_rendererA);
+                m_c->m_rendererB->Present(
+                    m_c->m_renderState->m_14,
+                    m_c->m_renderState->m_18
+                ); // present
                 GutsStep();
                 Eng_FrameTimerStep(m_guts, 0x32);
                 PlayCueAt(m_lastCueId, 0x78, 0, 0xff, 0xff, 0, 1, 0); // (cueId=m_lastCueId)
@@ -592,7 +604,7 @@ alt2:
         }
         MarkerBegin((i32)g_645584);
         PostHud(0);
-        Eng_SurfaceFlush(m_c->m_4->m_10->m_2c, 0);
+        Eng_SurfaceFlush(m_c->m_renderState->m_10->m_2c, 0);
     }
     return 1; // draw tail
 }
@@ -627,7 +639,7 @@ void CPlay::OnExit() {
     ForwardReady();
     Vslot21();
     if (m_c) {
-        m_c->m_8->Refresh();
+        m_c->m_rendererA->Refresh();
     }
     ((CRegExit*)g_64556c)->m_128 = 0;
     if (((CRegExit*)g_64556c)->m_134 == 3) {
@@ -863,7 +875,7 @@ i32 CPlay::ResetViewport() {
         r.bottom = r.bottom + (0x60 - halfH);
     }
     m_viewMode = VIEW_MODE_IDLE;
-    m_c->m_24->SetClipRect(&r);
+    m_c->m_drawSurface->SetClipRect(&r);
     m_4w()->ClampApply();
     return 1;
 }
@@ -903,7 +915,7 @@ void CPlay::StepC() {
 RVA(0x000d8dc0, 0xce)
 i32 CPlay::ClampViewport(i32 inset) {
     CView* v = m_c;
-    RECT* vp = &v->m_24->m_viewport;
+    RECT* vp = &v->m_drawSurface->m_viewport;
     RECT r;
     r.left = vp->left;
     r.top = vp->top;
@@ -926,8 +938,8 @@ i32 CPlay::ClampViewport(i32 inset) {
         return 0;
     }
 
-    m_c->m_24->SetClipRect(&r);
-    m_c->m_4->m_14->m_2c->Prepare(0);
+    m_c->m_drawSurface->SetClipRect(&r);
+    m_c->m_renderState->m_14->m_2c->Prepare(0);
     m_guts->ClampApply();
     m_4w()->ClampApply();
     return 1;
@@ -957,7 +969,7 @@ i32 CPlay::ClampViewport2(i32 stride) {
     CWorld* w = m_4w();
     GutsSubsystem* guts = m_guts;
 
-    i32* rp = (i32*)&v->m_24->m_viewport;
+    i32* rp = (i32*)&v->m_drawSurface->m_viewport;
     RECT r;
     r.left = rp[0];
     r.top = rp[1];
@@ -995,8 +1007,8 @@ i32 CPlay::ClampViewport2(i32 stride) {
         return 0;
     }
 
-    m_c->m_24->SetClipRect(&r);
-    m_c->m_4->m_14->m_2c->Prepare(0);
+    m_c->m_drawSurface->SetClipRect(&r);
+    m_c->m_renderState->m_14->m_2c->Prepare(0);
     m_guts->ClampApply();
     m_4w()->ClampApply();
     return 1;
@@ -1182,9 +1194,9 @@ extern "C" {
 RVA(0x000d9050, 0xc7)
 i32 CPlay::NotifyVisibleEntities() {
     CView* v = m_c;
-    i32* vp = (i32*)&v->m_24->m_viewport;
-    CView::RenderState::SurfaceB* held = v->m_4->m_14;
-    CVisNode* node = *(CVisNode**)((char*)v->m_8 + 0x14);
+    i32* vp = (i32*)&v->m_drawSurface->m_viewport;
+    CView::RenderState::SurfaceB* held = v->m_renderState->m_14;
+    CVisNode* node = *(CVisNode**)((char*)v->m_rendererA + 0x14);
 
     RECT r;
     r.left = vp[0];
@@ -1224,7 +1236,7 @@ i32 CPlay::NotifyVisibleEntities() {
 // See docs/patterns/zero-register-pinning.md.
 RVA(0x000d1ac0, 0x4f)
 void CPlay::StepScroll() {
-    CDrawSurface* v = m_c->m_24;
+    CDrawSurface* v = m_c->m_drawSurface;
     CDrawSurface::CameraGeom* geom = v->m_5c;
 
     i32 y = m_154 + (geom->m_originY - v->m_viewport.top);  // [edx+4]-m_14; +=m_154
@@ -1269,7 +1281,7 @@ i32 CPlay::StepInputA() {
     }
 
     // null-check the draw surface m_c->m_4->m_14->m_2c (walks through the this reg).
-    void* probeTarget = m_c->m_4->m_14->m_2c;
+    void* probeTarget = m_c->m_renderState->m_14->m_2c;
     if (probeTarget == 0) {
         return 0;
     }
@@ -1298,7 +1310,7 @@ void CPlay::LoadSBITextEdges(char* name) {
     s = name;
 
     RECT rect;
-    RECT& vp = m_c->m_24->m_viewport;
+    RECT& vp = m_c->m_drawSurface->m_viewport;
     i32 l = vp.left, t = vp.top, r = vp.right, b = vp.bottom;
     i32 bottom = b - g_buteText->GetInt("Font", "TextBottomEdge");
     i32 right = r - g_buteText->GetInt("Font", "TextRightEdge");
@@ -1338,9 +1350,9 @@ void CPlay::PlayCueAt(i32 cueId, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7,
         i32 left = src[0] + g_buteText->GetInt("Font", "TextLeftEdge");
         SetRect(&rect, left, top, right, bottom);
     } else {
-        // the viewport rect (m_c->m_24->m_viewport) ptr (edx) does not survive
+        // the viewport rect (m_c->m_drawSurface->m_viewport) ptr (edx) does not survive
         // the GetInt calls, so all 4 corners are read up front.
-        RECT& vp = m_c->m_24->m_viewport;
+        RECT& vp = m_c->m_drawSurface->m_viewport;
         i32 l = vp.left, t = vp.top, r = vp.right, b = vp.bottom;
         i32 bottom = b - g_buteText->GetInt("Font", "TextBottomEdge");
         i32 right = r - g_buteText->GetInt("Font", "TextRightEdge");
@@ -1369,12 +1381,12 @@ void CPlay::PlayCueAt(i32 cueId, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7,
 RVA(0x000c9c20, 0x79)
 void CPlay::DrawWorldFrame() {
     Vslot26(); // this->vtbl[+0x98]()  (begin-frame virtual, thiscall)
-    if (m_c->m_24->m_5c != 0) {
-        m_c->m_24->m_5c->DrawA();
+    if (m_c->m_drawSurface->m_5c != 0) {
+        m_c->m_drawSurface->m_5c->DrawA();
     }
     g_6bf3c0 = g_645580;
     g_6bf3bc = g_645584;
-    m_c->m_8->BeginScene(0);           // m_c->m_8->vtbl[+0x24](0)
+    m_c->m_rendererA->BeginScene(0);   // m_c->m_8->vtbl[+0x24](0)
     m_4w()->m_68->Step((i32)g_645584); // m_4->m_68 frame-timer step
     if (g_64556c->m_134 == 3) {
         g_64556c->PerFrameCue();
@@ -1416,15 +1428,15 @@ i32 CPlay::DrawWorldFrames() {
             now += dt;
             m_4w()->m_68->StepFull(now, dt, accum);
             if (i > 0 && i < last) {
-                if (m_c->m_24->m_5c != 0) {
-                    m_c->m_24->m_5c->DrawB();
+                if (m_c->m_drawSurface->m_5c != 0) {
+                    m_c->m_drawSurface->m_5c->DrawB();
                 }
             }
             Vslot26(); // this->vtbl[+0x98]()
-            if (m_c->m_24->m_5c != 0) {
-                m_c->m_24->m_5c->DrawA();
+            if (m_c->m_drawSurface->m_5c != 0) {
+                m_c->m_drawSurface->m_5c->DrawA();
             }
-            m_c->m_8->BeginScene(0);
+            m_c->m_rendererA->BeginScene(0);
             m_4w()->m_68->Step((i32)g_645584);
             if (g_64556c->m_134 == 3) {
                 g_64556c->PerFrameCue();
@@ -1456,7 +1468,7 @@ extern "C" {
 // The two timing accumulators ProfileInputFrame folds the back-half phases into.
 extern "C" {}
 
-// The draw-surface flush sink (m_c->m_4->m_10->m_2c) torn through a thiscall flush.
+// The draw-surface flush sink (m_c->m_renderState->m_10->m_2c) torn through a thiscall flush.
 struct CProfFlush {
     void Flush(i32 z); // 0x13e850 (thiscall)
 };
@@ -1478,10 +1490,10 @@ i32 CPlay::ProfileDeltaFrame() {
         RenderSlow();
     }
     i32 renderMs = (i32)(tg() - t0);
-    m_4w()->m_54->Blit(m_c->m_24->m_5c->m_84, m_c->m_24->m_5c->m_88);
+    m_4w()->m_54->Blit(m_c->m_drawSurface->m_5c->m_84, m_c->m_drawSurface->m_5c->m_88);
     u32 t2 = tg();
-    m_c->m_24->PushView(m_c->m_4->m_14, m_c->m_8);
-    m_c->m_c->Present(m_c->m_4->m_14, m_c->m_4->m_18);
+    m_c->m_drawSurface->PushView(m_c->m_renderState->m_14, m_c->m_rendererA);
+    m_c->m_rendererB->Present(m_c->m_renderState->m_14, m_c->m_renderState->m_18);
     i32 presentMs = (i32)(tg() - t2);
     ProfLog(
         &g_profSink,
@@ -1492,9 +1504,9 @@ i32 CPlay::ProfileDeltaFrame() {
         updates
     );
     ProfFlushTail();
-    ((CProfFlush*)m_c->m_4->m_10->m_2c)->Flush(0);
-    if (m_c->m_24->m_5c != 0) {
-        m_c->m_24->m_5c->DrawB();
+    ((CProfFlush*)m_c->m_renderState->m_10->m_2c)->Flush(0);
+    if (m_c->m_drawSurface->m_5c != 0) {
+        m_c->m_drawSurface->m_5c->DrawB();
     }
     return 1;
 }
@@ -1524,7 +1536,7 @@ extern "C" void ProfReport(void* mgr, void* guts, i32 gate);
 // to the final sweep. docs/patterns/zero-register-pinning.md.
 RVA(0x000c9e40, 0x1d7)
 i32 CPlay::ProfileInputFrame() {
-    m_4w()->m_54->Blit(m_c->m_24->m_5c->m_84, m_c->m_24->m_5c->m_88); // untimed
+    m_4w()->m_54->Blit(m_c->m_drawSurface->m_5c->m_84, m_c->m_drawSurface->m_5c->m_88); // untimed
     u32(WINAPI * tg)() = g_pTimeGetTime;
 
     u32 t1 = tg();
@@ -1532,13 +1544,13 @@ i32 CPlay::ProfileInputFrame() {
     i32 activateMs = (i32)(tg() - t1);
 
     u32 t3 = tg();
-    if (m_c->m_24->m_5c != 0) {
-        m_c->m_24->m_5c->DrawA();
+    if (m_c->m_drawSurface->m_5c != 0) {
+        m_c->m_drawSurface->m_5c->DrawA();
     }
     i32 deactMs = (i32)(tg() - t3);
 
     u32 t5 = tg();
-    m_c->m_8->BeginScene(1);
+    m_c->m_rendererA->BeginScene(1);
     m_4w()->m_68->Step((i32)g_645584);
     m_guts->Step((i32)g_645584);
     i32 updateMs = (i32)(tg() - t5);
@@ -1547,11 +1559,11 @@ i32 CPlay::ProfileInputFrame() {
     i32 hitTestMs = (i32)(tg() - t7);
 
     u32 t9 = tg();
-    m_c->m_24->PushView(m_c->m_4->m_14, m_c->m_8);
+    m_c->m_drawSurface->PushView(m_c->m_renderState->m_14, m_c->m_rendererA);
     i32 drawMs = (i32)(tg() - t9);
 
     u32 t11 = tg();
-    m_c->m_c->Present(m_c->m_4->m_14, m_c->m_4->m_18);
+    m_c->m_rendererB->Present(m_c->m_renderState->m_14, m_c->m_renderState->m_18);
     i32 fixedMs = (i32)(tg() - t11);
 
     u32 t13 = tg();
@@ -1575,11 +1587,11 @@ i32 CPlay::ProfileInputFrame() {
 
     ProfFlushTail();
     g_profAccB = (i32)tg();
-    ((CProfFlush*)m_c->m_4->m_10->m_2c)->Flush(0);
+    ((CProfFlush*)m_c->m_renderState->m_10->m_2c)->Flush(0);
     g_profAccB = (i32)(tg() - (u32)g_profAccB);
     g_profAccA = (i32)tg();
-    if (m_c->m_24->m_5c != 0) {
-        m_c->m_24->m_5c->DrawB();
+    if (m_c->m_drawSurface->m_5c != 0) {
+        m_c->m_drawSurface->m_5c->DrawB();
     }
     g_profAccA = (i32)(tg() - (u32)g_profAccA);
     ProfReport(g_64556c, m_guts, m_region0Gate);
@@ -1749,7 +1761,7 @@ i32 CPlay::DispatchHudClick(i32 a, i32 x, i32 y) {
     if (m_guts->m_state == 2) {
         return 1;
     }
-    RECT& vp = m_c->m_24->m_viewport;
+    RECT& vp = m_c->m_drawSurface->m_viewport;
     if (x >= vp.left && x <= vp.right && y >= vp.top && y <= vp.bottom) {
         return 1;
     }
@@ -1776,7 +1788,7 @@ i32 CPlay::BeginGridWalk(i32 key, i32 index, i32 e8, i32 delay, i32 hasGrid) {
         return 1;
     }
     void* grid = 0;
-    m_c->m_10->m_10.Lookup(key, grid);
+    m_c->m_imageRegistry->m_10.Lookup(key, grid);
     m_grid = (CFrameGrid*)grid;
     if (grid == 0) {
         return 1;
@@ -1868,7 +1880,7 @@ i32 CPlay::HandleDragMove(i32 a, i32 x, i32 y) {
     //  bottom from [esp+0x14/0x18/0x1c] across the DragSelect call. The INSIDE
     //  path is the fall-through "success" so the OUTSIDE block floats to the
     //  tail; see docs/patterns/nested-if-success-deepest-error-tail.md.)
-    RECT box = m_c->m_24->m_viewport;
+    RECT box = m_c->m_drawSurface->m_viewport;
     left = box.left;
     top = box.top;
     right = box.right;
@@ -1908,7 +1920,7 @@ i32 CPlay::HandleDragMove(i32 a, i32 x, i32 y) {
                 m_scrollSink->m_flags &= ~1;
             }
         }
-        CDrawSurface* v = m_c->m_24;
+        CDrawSurface* v = m_c->m_drawSurface;
         i32 wx = v->m_5c->m_originX - v->m_viewport.left + x;
         i32 wy = v->m_5c->m_originY - v->m_viewport.top + y;
         m_4w()->m_68->WorldPost(wx, wy);
@@ -1973,7 +1985,7 @@ rearm:
 // can't reproduce 1:1, and the x87 fmul/fild ordering diverges. ~68%.
 RVA(0x000d72c0, 0x128)
 i32 CPlay::BuildHelpReveal() {
-    void* view = m_c->m_4->m_14;
+    void* view = m_c->m_renderState->m_14;
     if (view == 0) {
         return 0;
     }
@@ -2112,7 +2124,7 @@ i32 CPlay::HandleTileClick(i32 a, i32 x, i32 y) {
     CWorld::RenderStateHolder::PlaneGeomHolder* ph = m_4w()->m_30->m_24;
     if (x < ph->m_rect10.right && x >= ph->m_rect10.left && y < ph->m_rect10.bottom
         && y >= ph->m_rect10.top) {
-        CDrawSurface* ds = m_c->m_24;
+        CDrawSurface* ds = m_c->m_drawSurface;
         CDrawSurface::CameraGeom* geom = ds->m_5c;
         i32 rawX = geom->m_originX - ds->m_viewport.left + x;
         i32 rawY = geom->m_originY - ds->m_viewport.top + y;
@@ -2151,22 +2163,22 @@ i32 CPlay::winapi_0d0b30_CopyRect(i32) {
 // ManagerTick) which pair once those engine fns are named.
 RVA(0x000cefc0, 0xa2)
 i32 CPlay::DrawWorldPresent() {
-    if (m_c->m_24->m_5c != 0) {
-        m_c->m_24->m_5c->DrawB();
+    if (m_c->m_drawSurface->m_5c != 0) {
+        m_c->m_drawSurface->m_5c->DrawB();
     }
-    if (m_c->m_24->m_5c != 0) {
-        m_c->m_24->m_5c->DrawA();
+    if (m_c->m_drawSurface->m_5c != 0) {
+        m_c->m_drawSurface->m_5c->DrawA();
     }
-    m_c->m_8->BeginScene(1);
-    if (m_c->m_24->m_5c != 0) {
-        m_c->m_24->m_5c->DrawB();
+    m_c->m_rendererA->BeginScene(1);
+    if (m_c->m_drawSurface->m_5c != 0) {
+        m_c->m_drawSurface->m_5c->DrawB();
     }
-    if (m_c->m_24->m_5c != 0) {
-        m_c->m_24->m_5c->DrawA();
+    if (m_c->m_drawSurface->m_5c != 0) {
+        m_c->m_drawSurface->m_5c->DrawA();
     }
-    m_c->m_8->BeginScene(1);
-    m_c->m_24->PushView(m_c->m_4->m_14, m_c->m_8);
-    m_c->m_c->Present(m_c->m_4->m_14, m_c->m_4->m_18);
+    m_c->m_rendererA->BeginScene(1);
+    m_c->m_drawSurface->PushView(m_c->m_renderState->m_14, m_c->m_rendererA);
+    m_c->m_rendererB->Present(m_c->m_renderState->m_14, m_c->m_renderState->m_18);
     m_4w()->ManagerTick();
     return 1;
 }
@@ -2200,10 +2212,10 @@ i32 CPlay::PresentAndFlush() {
         if (m_region1Gate != 0) {
             NotifyVisibleEntities();
         } else {
-            m_c->m_24->PushView(m_c->m_4->m_14, m_c->m_8);
-            m_c->m_c->Present(m_c->m_4->m_14, m_c->m_4->m_18);
+            m_c->m_drawSurface->PushView(m_c->m_renderState->m_14, m_c->m_rendererA);
+            m_c->m_rendererB->Present(m_c->m_renderState->m_14, m_c->m_renderState->m_18);
         }
-        Eng_SurfaceFlush(m_c->m_4->m_10->m_2c, 0);
+        Eng_SurfaceFlush(m_c->m_renderState->m_10->m_2c, 0);
     }
     return 1;
 }
@@ -2918,19 +2930,19 @@ i32 CPlay::LoadActionTileSprites(i32 force) {
     if (!self->m_c) {
         return 0;
     }
-    if (!force && self->m_c->m_10->Has("ACTION")) {
+    if (!force && self->m_c->m_imageRegistry->Has("ACTION")) {
         return 1;
     }
 
-    self->m_c->m_10->Register("ACTION", g_emptyString);
-    self->m_c->m_10->Register("BACK", g_emptyString);
+    self->m_c->m_imageRegistry->Register("ACTION", g_emptyString);
+    self->m_c->m_imageRegistry->Register("BACK", g_emptyString);
     g_resourceInstallActive = 0;
 
     void* tiles = self->m_28->LookupSet("TILEZ");
     if (!tiles) {
         return 0;
     }
-    self->m_c->m_10->Install(tiles, g_emptyString, "_");
+    self->m_c->m_imageRegistry->Install(tiles, g_emptyString, "_");
     return 1;
 }
 
@@ -2943,17 +2955,17 @@ i32 CPlay::LoadLevelSounds(i32 force) {
     if (!self->m_c) {
         return 0;
     }
-    if (!force && self->m_c->m_28->Has("LEVEL")) {
+    if (!force && self->m_c->m_soundRegistry->Has("LEVEL")) {
         return 1;
     }
 
-    self->m_c->m_28->Register("LEVEL", "_");
+    self->m_c->m_soundRegistry->Register("LEVEL", "_");
 
     void* sounds = self->m_28->LookupSet("SOUNDZ");
     if (!sounds) {
         return 0;
     }
-    self->m_c->m_28->Install(sounds, "LEVEL", "_");
+    self->m_c->m_soundRegistry->Install(sounds, "LEVEL", "_");
     return 1;
 }
 
@@ -2966,18 +2978,18 @@ i32 CPlay::LoadLevelImages(i32 force) {
     if (!self->m_c) {
         return 0;
     }
-    if (!force && self->m_c->m_10->Has("LEVEL")) {
+    if (!force && self->m_c->m_imageRegistry->Has("LEVEL")) {
         return 1;
     }
 
-    self->m_c->m_10->Register("LEVEL", "_");
+    self->m_c->m_imageRegistry->Register("LEVEL", "_");
     g_resourceInstallActive = 0;
 
     void* images = self->m_28->LookupSet("IMAGEZ");
     if (!images) {
         return 0;
     }
-    self->m_c->m_10->Install(images, "LEVEL", "_");
+    self->m_c->m_imageRegistry->Install(images, "LEVEL", "_");
     g_resourceInstallActive = 0;
     return 1;
 }
@@ -2991,7 +3003,7 @@ i32 CPlay::LoadGameImages(i32 force) {
     if (!self->m_c) {
         return 0;
     }
-    if (self->m_c->m_10->Has("GAME")) {
+    if (self->m_c->m_imageRegistry->Has("GAME")) {
         return 1;
     }
 
@@ -3000,7 +3012,7 @@ i32 CPlay::LoadGameImages(i32 force) {
     if (!images) {
         return 0;
     }
-    self->m_c->m_10->Install(images, "GAME", "_");
+    self->m_c->m_imageRegistry->Install(images, "GAME", "_");
     g_resourceInstallActive = 0;
     return 1;
 }
@@ -3013,7 +3025,7 @@ i32 CPlay::LoadGameSounds(i32 force) {
     if (!self->m_c) {
         return 0;
     }
-    if (self->m_c->m_28->Has("GAME")) {
+    if (self->m_c->m_soundRegistry->Has("GAME")) {
         return 1;
     }
 
@@ -3021,7 +3033,7 @@ i32 CPlay::LoadGameSounds(i32 force) {
     if (!sounds) {
         return 0;
     }
-    self->m_c->m_28->Install(sounds, "GAME", "_");
+    self->m_c->m_soundRegistry->Install(sounds, "GAME", "_");
     return 1;
 }
 
@@ -3033,7 +3045,7 @@ i32 CPlay::LoadGameAnims(i32 force) {
     if (!self->m_c) {
         return 0;
     }
-    if (self->m_c->m_2c->Has("GAME")) {
+    if (self->m_c->m_animRegistry->Has("GAME")) {
         return 1;
     }
 
@@ -3041,7 +3053,7 @@ i32 CPlay::LoadGameAnims(i32 force) {
     if (!anims) {
         return 0;
     }
-    self->m_c->m_2c->Install(anims, "GAME", "_");
+    self->m_c->m_animRegistry->Install(anims, "GAME", "_");
     return 1;
 }
 
@@ -3171,55 +3183,55 @@ i32 CPlay::LoadGruntSoundNamespaces(void* notify) {
         return 0;
     }
 
-    if (!self->m_c->m_28->Has("GRUNTZ_NORMALGRUNT")) {
+    if (!self->m_c->m_soundRegistry->Has("GRUNTZ_NORMALGRUNT")) {
         void* s = self->m_30->LookupSet("SOUNDZ_NORMALGRUNT");
         if (s) {
-            self->m_c->m_28->Install(s, "GRUNTZ_NORMALGRUNT", "_");
+            self->m_c->m_soundRegistry->Install(s, "GRUNTZ_NORMALGRUNT", "_");
         }
     }
-    if (!self->m_c->m_28->Has("GRUNTZ_DEATHZ")) {
+    if (!self->m_c->m_soundRegistry->Has("GRUNTZ_DEATHZ")) {
         void* s = self->m_30->LookupSet("SOUNDZ_DEATHZ");
         if (s) {
-            self->m_c->m_28->Install(s, "GRUNTZ_DEATHZ", "_");
+            self->m_c->m_soundRegistry->Install(s, "GRUNTZ_DEATHZ", "_");
         }
     }
-    if (!self->m_c->m_28->Has("GRUNTZ_ENTRANCEZ")) {
+    if (!self->m_c->m_soundRegistry->Has("GRUNTZ_ENTRANCEZ")) {
         void* s = self->m_30->LookupSet("SOUNDZ_ENTRANCEZ");
         if (s) {
-            self->m_c->m_28->Install(s, "GRUNTZ_ENTRANCEZ", "_");
+            self->m_c->m_soundRegistry->Install(s, "GRUNTZ_ENTRANCEZ", "_");
         }
     }
-    if (!self->m_c->m_28->Has("GRUNTZ_EXITZ")) {
+    if (!self->m_c->m_soundRegistry->Has("GRUNTZ_EXITZ")) {
         void* s = self->m_30->LookupSet("SOUNDZ_EXITZ");
         if (s) {
-            self->m_c->m_28->Install(s, "GRUNTZ_EXITZ", "_");
+            self->m_c->m_soundRegistry->Install(s, "GRUNTZ_EXITZ", "_");
         }
         if (notify) {
             ((CLoadNotify*)notify)->OnLoaded();
         }
     }
-    if (!self->m_c->m_28->Has("GRUNTZ_GRUNTPUDDLE")) {
+    if (!self->m_c->m_soundRegistry->Has("GRUNTZ_GRUNTPUDDLE")) {
         void* s = self->m_30->LookupSet("SOUNDZ_GRUNTPUDDLE");
         if (s) {
-            self->m_c->m_28->Install(s, "GRUNTZ_GRUNTPUDDLE", "_");
+            self->m_c->m_soundRegistry->Install(s, "GRUNTZ_GRUNTPUDDLE", "_");
         }
         if (notify) {
             ((CLoadNotify*)notify)->OnLoaded();
         }
     }
-    if (!self->m_c->m_28->Has("GRUNTZ_PICKUPS")) {
+    if (!self->m_c->m_soundRegistry->Has("GRUNTZ_PICKUPS")) {
         void* s = self->m_30->LookupSet("SOUNDZ_PICKUPS");
         if (s) {
-            self->m_c->m_28->Install(s, "GRUNTZ_PICKUPS", "_");
+            self->m_c->m_soundRegistry->Install(s, "GRUNTZ_PICKUPS", "_");
         }
         if (notify) {
             ((CLoadNotify*)notify)->OnLoaded();
         }
     }
-    if (!self->m_c->m_28->Has("GRUNTZ_BOMBGRUNT")) {
+    if (!self->m_c->m_soundRegistry->Has("GRUNTZ_BOMBGRUNT")) {
         void* s = self->m_30->LookupSet("SOUNDZ_BOMBGRUNT");
         if (s) {
-            self->m_c->m_28->Install(s, "GRUNTZ_BOMBGRUNT", "_");
+            self->m_c->m_soundRegistry->Install(s, "GRUNTZ_BOMBGRUNT", "_");
         }
         if (notify) {
             ((CLoadNotify*)notify)->OnLoaded();
@@ -3242,72 +3254,72 @@ i32 CPlay::BuildSpriteImageKeyTable(void* notify) {
         return 0;
     }
     g_resourceInstallActive = 1;
-    if (!self->m_c->m_10->Has("GRUNTZ_NORMALGRUNT")) {
+    if (!self->m_c->m_imageRegistry->Has("GRUNTZ_NORMALGRUNT")) {
         void* s = self->m_30->LookupSet("IMAGEZ_NORMALGRUNT");
         if (!s) {
             return 0;
         }
-        self->m_c->m_10->Install(s, "GRUNTZ_NORMALGRUNT", "_");
+        self->m_c->m_imageRegistry->Install(s, "GRUNTZ_NORMALGRUNT", "_");
         if (notify) {
             ((CLoadNotify*)notify)->OnLoaded();
         }
     }
-    if (!self->m_c->m_10->Has("GRUNTZ_DEATHZ")) {
+    if (!self->m_c->m_imageRegistry->Has("GRUNTZ_DEATHZ")) {
         void* s = self->m_30->LookupSet("IMAGEZ_DEATHZ");
         if (!s) {
             return 0;
         }
-        self->m_c->m_10->Install(s, "GRUNTZ_DEATHZ", "_");
+        self->m_c->m_imageRegistry->Install(s, "GRUNTZ_DEATHZ", "_");
         if (notify) {
             ((CLoadNotify*)notify)->OnLoaded();
         }
     }
-    if (!self->m_c->m_10->Has("GRUNTZ_ENTRANCEZ")) {
+    if (!self->m_c->m_imageRegistry->Has("GRUNTZ_ENTRANCEZ")) {
         void* s = self->m_30->LookupSet("IMAGEZ_ENTRANCEZ");
         if (!s) {
             return 0;
         }
-        self->m_c->m_10->Install(s, "GRUNTZ_ENTRANCEZ", "_");
+        self->m_c->m_imageRegistry->Install(s, "GRUNTZ_ENTRANCEZ", "_");
         if (notify) {
             ((CLoadNotify*)notify)->OnLoaded();
         }
     }
-    if (!self->m_c->m_10->Has("GRUNTZ_EXITZ")) {
+    if (!self->m_c->m_imageRegistry->Has("GRUNTZ_EXITZ")) {
         void* s = self->m_30->LookupSet("IMAGEZ_EXITZ");
         if (!s) {
             return 0;
         }
-        self->m_c->m_10->Install(s, "GRUNTZ_EXITZ", "_");
+        self->m_c->m_imageRegistry->Install(s, "GRUNTZ_EXITZ", "_");
         if (notify) {
             ((CLoadNotify*)notify)->OnLoaded();
         }
     }
-    if (!self->m_c->m_10->Has("GRUNTZ_GRUNTPUDDLE")) {
+    if (!self->m_c->m_imageRegistry->Has("GRUNTZ_GRUNTPUDDLE")) {
         void* s = self->m_30->LookupSet("IMAGEZ_GRUNTPUDDLE");
         if (!s) {
             return 0;
         }
-        self->m_c->m_10->Install(s, "GRUNTZ_GRUNTPUDDLE", "_");
+        self->m_c->m_imageRegistry->Install(s, "GRUNTZ_GRUNTPUDDLE", "_");
         if (notify) {
             ((CLoadNotify*)notify)->OnLoaded();
         }
     }
-    if (!self->m_c->m_10->Has("GRUNTZ_PICKUPS")) {
+    if (!self->m_c->m_imageRegistry->Has("GRUNTZ_PICKUPS")) {
         void* s = self->m_30->LookupSet("IMAGEZ_PICKUPS");
         if (!s) {
             return 0;
         }
-        self->m_c->m_10->Install(s, "GRUNTZ_PICKUPS", "_");
+        self->m_c->m_imageRegistry->Install(s, "GRUNTZ_PICKUPS", "_");
         if (notify) {
             ((CLoadNotify*)notify)->OnLoaded();
         }
     }
-    if (!self->m_c->m_10->Has("GRUNTZ_BOMBGRUNT")) {
+    if (!self->m_c->m_imageRegistry->Has("GRUNTZ_BOMBGRUNT")) {
         void* s = self->m_30->LookupSet("IMAGEZ_BOMBGRUNT");
         if (!s) {
             return 0;
         }
-        self->m_c->m_10->Install(s, "GRUNTZ_BOMBGRUNT", "_");
+        self->m_c->m_imageRegistry->Install(s, "GRUNTZ_BOMBGRUNT", "_");
         if (notify) {
             ((CLoadNotify*)notify)->OnLoaded();
         }
@@ -3328,72 +3340,72 @@ i32 CPlay::BuildAnizKeyTable(void* notify) {
     if (!self->m_c) {
         return 0;
     }
-    if (!self->m_c->m_2c->Has("GRUNTZ_NORMALGRUNT")) {
+    if (!self->m_c->m_animRegistry->Has("GRUNTZ_NORMALGRUNT")) {
         void* s = self->m_30->LookupSet("ANIZ_NORMALGRUNT");
         if (!s) {
             return 0;
         }
-        self->m_c->m_2c->Install(s, "GRUNTZ_NORMALGRUNT", "_");
+        self->m_c->m_animRegistry->Install(s, "GRUNTZ_NORMALGRUNT", "_");
         if (notify) {
             ((CLoadNotify*)notify)->OnLoaded();
         }
     }
-    if (!self->m_c->m_2c->Has("GRUNTZ_DEATHZ")) {
+    if (!self->m_c->m_animRegistry->Has("GRUNTZ_DEATHZ")) {
         void* s = self->m_30->LookupSet("ANIZ_DEATHZ");
         if (!s) {
             return 0;
         }
-        self->m_c->m_2c->Install(s, "GRUNTZ_DEATHZ", "_");
+        self->m_c->m_animRegistry->Install(s, "GRUNTZ_DEATHZ", "_");
         if (notify) {
             ((CLoadNotify*)notify)->OnLoaded();
         }
     }
-    if (!self->m_c->m_2c->Has("GRUNTZ_ENTRANCEZ")) {
+    if (!self->m_c->m_animRegistry->Has("GRUNTZ_ENTRANCEZ")) {
         void* s = self->m_30->LookupSet("ANIZ_ENTRANCEZ");
         if (!s) {
             return 0;
         }
-        self->m_c->m_2c->Install(s, "GRUNTZ_ENTRANCEZ", "_");
+        self->m_c->m_animRegistry->Install(s, "GRUNTZ_ENTRANCEZ", "_");
         if (notify) {
             ((CLoadNotify*)notify)->OnLoaded();
         }
     }
-    if (!self->m_c->m_2c->Has("GRUNTZ_EXITZ")) {
+    if (!self->m_c->m_animRegistry->Has("GRUNTZ_EXITZ")) {
         void* s = self->m_30->LookupSet("ANIZ_EXITZ");
         if (!s) {
             return 0;
         }
-        self->m_c->m_2c->Install(s, "GRUNTZ_EXITZ", "_");
+        self->m_c->m_animRegistry->Install(s, "GRUNTZ_EXITZ", "_");
         if (notify) {
             ((CLoadNotify*)notify)->OnLoaded();
         }
     }
-    if (!self->m_c->m_2c->Has("GRUNTZ_GRUNTPUDDLE")) {
+    if (!self->m_c->m_animRegistry->Has("GRUNTZ_GRUNTPUDDLE")) {
         void* s = self->m_30->LookupSet("ANIZ_GRUNTPUDDLE");
         if (!s) {
             return 0;
         }
-        self->m_c->m_2c->Install(s, "GRUNTZ_GRUNTPUDDLE", "_");
+        self->m_c->m_animRegistry->Install(s, "GRUNTZ_GRUNTPUDDLE", "_");
         if (notify) {
             ((CLoadNotify*)notify)->OnLoaded();
         }
     }
-    if (!self->m_c->m_2c->Has("GRUNTZ_PICKUPS")) {
+    if (!self->m_c->m_animRegistry->Has("GRUNTZ_PICKUPS")) {
         void* s = self->m_30->LookupSet("ANIZ_PICKUPS");
         if (!s) {
             return 0;
         }
-        self->m_c->m_2c->Install(s, "GRUNTZ_PICKUPS", "_");
+        self->m_c->m_animRegistry->Install(s, "GRUNTZ_PICKUPS", "_");
         if (notify) {
             ((CLoadNotify*)notify)->OnLoaded();
         }
     }
-    if (!self->m_c->m_2c->Has("GRUNTZ_BOMBGRUNT")) {
+    if (!self->m_c->m_animRegistry->Has("GRUNTZ_BOMBGRUNT")) {
         void* s = self->m_30->LookupSet("ANIZ_BOMBGRUNT");
         if (!s) {
             return 0;
         }
-        self->m_c->m_2c->Install(s, "GRUNTZ_BOMBGRUNT", "_");
+        self->m_c->m_animRegistry->Install(s, "GRUNTZ_BOMBGRUNT", "_");
         if (notify) {
             ((CLoadNotify*)notify)->OnLoaded();
         }
@@ -4585,7 +4597,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
         }
         return 1;
     }
-    CWarlordListHead* head = &this->m_c->m_8->m_10;
+    CWarlordListHead* head = &this->m_c->m_rendererA->m_10;
     if (!head) {
         return 0;
     }

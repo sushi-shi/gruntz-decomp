@@ -228,14 +228,14 @@ void __stdcall GenMenuRandPos(i32 sel, i32* outX, i32* outY) {
 RVA(0x00018c90, 0x72)
 void CBootyState::ReleaseResources() {
     // The view (m_c) is re-read for every access (retail does not cache it).
-    CViewPooledRes* r = m_c->m_28->m_2c;
+    CViewPooledRes* r = m_c->m_soundRegistry->m_2c;
     if (r) {
         r->Free();
     }
-    m_c->m_28->Release("BOOTY", "_");
-    m_c->m_28->Release("GRUNTZ_WANDGRUNT", "_");
-    m_c->m_10->Release("BOOTY", "_");
-    m_c->m_10->Release("GRUNTZ_GOKARTGRUNT", "_");
+    m_c->m_soundRegistry->Release("BOOTY", "_");
+    m_c->m_soundRegistry->Release("GRUNTZ_WANDGRUNT", "_");
+    m_c->m_imageRegistry->Release("BOOTY", "_");
+    m_c->m_imageRegistry->Release("GRUNTZ_GOKARTGRUNT", "_");
     ((CGameModeBase*)this)->BaseCleanup();
 }
 
@@ -269,22 +269,22 @@ i32 CBootyState::Update() {
 // ===========================================================================
 
 // CCreditsState::Render(): the canonical Render spine.
-//   1. INPUT POLL: i = m_c->m_4->m_10->m_2c->m_8; if (i && i->vtbl[+0x60](i))
+//   1. INPUT POLL: i = m_c->m_renderState->m_10->m_2c->m_8; if (i && i->vtbl[+0x60](i))
 //      skip the input-virtual; else
 //   2. INPUT VIRTUAL: if (this->vtbl[+0x20]()) { m_4->Post(0x8006,0xfa0); return 0; }
-//   3. CURSOR ANIM: if (m_c->m_28->m_2c) GM_SimpleAnim(-1);
+//   3. CURSOR ANIM: if (m_c->m_soundRegistry->m_2c) GM_SimpleAnim(-1);
 //   4. ENTITY UPDATE LOOP: for each e in g_entityList: e->Update();
 //   5. MESSAGE SCAN: first e with (e->m_2ac & 0xffffff) -> PostMessageA(hwnd,
 //      WM_COMMAND, m_24==5 ? 0x8023 : 0x8027, 0); m_4->m_8->m_244 = 0;
 //   6. SUB-STEPS: Sub1(); Sub2();
-//   7. DRAW: m_c->m_4->m_10->m_2c->Draw(0); m_c->m_4->m_14->Blit(m_c->m_4->m_18);
+//   7. DRAW: m_c->m_renderState->m_10->m_2c->Draw(0); m_c->m_4->m_14->Blit(m_c->m_4->m_18);
 //   8. ONE-SHOT FX (+0x1b4 latch): if (!m_1b4 && m_4->m_14) {
 //        m_4->m_48->Play("CREDITZ",1); m_1b4 = 1; }
 //   9. CONDITIONAL FX (+0x1c4 gate): if (m_1c4) { s = m_4->m_48->Find("MONOLITH");
 //        if (s && !s->Query()) Sub3(); }   return 1;
 RVA(0x000391d0, 0x17c)
 i32 CCreditsState::Render() {
-    CGMInputObj* in = m_c->m_4->m_10->m_2c->m_8;
+    CGMInputObj* in = m_c->m_renderState->m_10->m_2c->m_8;
     if (!in || in->vtbl->Poll(in)) {
         if (!InputVirtual()) {
             ((CGMOwner*)m_4)->Post(0x8006, 0xfa0);
@@ -292,7 +292,7 @@ i32 CCreditsState::Render() {
         }
     }
 
-    if (m_c->m_28->m_2c) {
+    if (m_c->m_soundRegistry->m_2c) {
         GM_SimpleAnim(-1);
     }
 
@@ -330,7 +330,7 @@ i32 CCreditsState::Render() {
     Sub2();
 
     // draw: cache m_c->m_4 (the target keeps it in esi for the three derefs).
-    CView::RenderState* v4 = m_c->m_4;
+    CView::RenderState* v4 = m_c->m_renderState;
     v4->m_10->m_2c->Draw(0);
     v4->m_14->Blit((i32)v4->m_18);
 
@@ -774,7 +774,7 @@ i32 CState::LoadGruntEffectSprites() {
     if (img == 0) {
         return 0;
     }
-    self->m_c->m_10->Install(img, "GRUNTZ_GOKARTGRUNT", (const char*)&g_dat60b588);
+    self->m_c->m_imageRegistry->Install(img, "GRUNTZ_GOKARTGRUNT", (const char*)&g_dat60b588);
 
     CGlitterFactory* f = g_mgrSettings->m_world->m_8;
 
@@ -1260,13 +1260,13 @@ struct CCreditsDrawRoot {
 RVA(0x00038f00, 0x87)
 void CCreditsState::ReleaseResources() {
     if (m_c) {
-        CViewPooledRes* r = m_c->m_28->m_2c;
+        CViewPooledRes* r = m_c->m_soundRegistry->m_2c;
         if (r) {
             r->Free();
         }
-        m_c->m_28->Release("CREDITZ", "_");
-        m_c->m_10->Release("CREDITZ", "_");
-        m_c->m_2c->Release("CREDITZ", "_");
+        m_c->m_soundRegistry->Release("CREDITZ", "_");
+        m_c->m_imageRegistry->Release("CREDITZ", "_");
+        m_c->m_animRegistry->Release("CREDITZ", "_");
     }
     // Cache the video handle in a local so it stays pinned in edi across the
     // Teardown call (retail reuses the same register for the RezFree push).
@@ -1375,16 +1375,16 @@ RVA(0x000a02c0, 0x7d)
 void CMenuState::ReleaseResources() {
     // m_c re-read for each access (retail does not cache it); the null-guarded
     // block tests m_c once and reuses it for both the Free and DisposeWorkers.
-    m_c->m_10->Release("MENU", "_");
-    m_c->m_28->Release("MENU", "_");
+    m_c->m_imageRegistry->Release("MENU", "_");
+    m_c->m_soundRegistry->Release("MENU", "_");
     if (m_c) {
         // The test value of m_c is reused for the leaf-registry access; the
         // worker-list dispose re-reads m_c fresh (retail does not cache it).
-        CViewPooledRes* r = m_c->m_28->m_2c;
+        CViewPooledRes* r = m_c->m_soundRegistry->m_2c;
         if (r) {
             r->Free();
         }
-        m_c->m_c->DisposeWorkers();
+        m_c->m_rendererB->DisposeWorkers();
     }
     // m_1b4 IS cached (retail holds it in edi across the pre-delete + delete).
     CGMMenuUI* ui = m_1b4;
@@ -1725,11 +1725,11 @@ i32 CMultiBootyState::ForwardIdleAnim(i32 a, i32 b) {
 // the m_4 deref landing in eax vs retail's edx (single-register coin-flip).
 RVA(0x0001e520, 0x3e)
 void CMultiBootyState::ReleaseResources() {
-    CViewPooledRes* r = m_c->m_28->m_2c;
+    CViewPooledRes* r = m_c->m_soundRegistry->m_2c;
     if (r) {
         r->Free();
     }
-    m_c->m_28->Release("BOOTY", "_");
+    m_c->m_soundRegistry->Release("BOOTY", "_");
     ((CBootyOwnerView*)m_4)->m_60->Teardown();
     ((CGameModeBase*)this)->BaseCleanup();
 }
@@ -1743,7 +1743,7 @@ i32 CMultiBootyState::FrameSlot24(i32) {
     if (!ok) {
         return ok; // eax already 0 (the FadeInTitle result) - no xor/mov re-materialize
     }
-    m_c->m_4->Flush();
+    m_c->m_renderState->Flush();
     BuildPage(0x50, 0x3e8, 0, 1);
 
     CBootyMusicHost* host = BOOTY_REG->m_30;
@@ -1980,7 +1980,7 @@ void CMenuState::StopMusicChain() {
         return;
     }
     do {
-        CViewPooledRes* r = m_c->m_28->m_2c;
+        CViewPooledRes* r = m_c->m_soundRegistry->m_2c;
         if (r) {
             r->TickAnim(-1);
         }
@@ -1991,8 +1991,8 @@ void CMenuState::StopMusicChain() {
 // view, stamp the start clock, run the music-stop chain, then busy-wait m_1b8 ms.
 RVA(0x000a06d0, 0x5f)
 i32 CMenuState::FrameSlot28(i32) {
-    m_c->m_4->Flush();
-    m_c->m_4->m_10->m_2c->Flip(0);
+    m_c->m_renderState->Flush();
+    m_c->m_renderState->m_10->m_2c->Flip(0);
     u32 start = timeGetTime();
     StopMusicChain();
     while (timeGetTime() < start + m_1b8)
