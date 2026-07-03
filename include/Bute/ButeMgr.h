@@ -151,6 +151,10 @@ SIZE(ButeRef24, 0x18); // 24-byte kButeRef7 payload
 // own primary vtable ??_7ios @0x5f03bc. The constructor (0x169c00) and the teardown
 // dtor (0x169d70) are modeled as a real C++ ctor/dtor so cl auto-stamps the vptr
 // (== the old manual stamp) and emits the retail `.?AVios@@` descriptor, reloc-masked.
+// The owned +0x4 sub-object (a CRT streambuf): a polymorphic dispatch view whose
+// slot-0 scalar-deleting dtor the ios teardown/SetSub fires. Defined in ButeMgr.cpp.
+struct CButeSub;
+
 VTBL(ios, 0x005f03bc); // ios' own primary vtable (ctor/dtor auto-stamp)
 class ios {
 public:
@@ -177,7 +181,7 @@ public:
     void InitVbaseD();
 
     // vptr implicit @ +0x00 (??_7ios@@6B@ = 0x5f03bc)
-    void* m_pSub;              // +0x04
+    CButeSub* m_pSub;          // +0x04  owned streambuf sub-object (slot-0 scalar dtor)
     i32 m_flags;               // +0x08  flag word (SetSub toggles bit 0x4)
     i32 m_0c;                  // +0x0c
     i32 m_10;                  // +0x10

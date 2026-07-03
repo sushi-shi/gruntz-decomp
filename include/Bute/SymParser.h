@@ -79,12 +79,16 @@ struct CObjList {
 };
 SIZE(CObjList, 0x10); // { vptr, head, tail, count }
 
+// The parse-slot record block CSlotNode owns (an array of n*0x3c-byte slots);
+// full definition in SymParser.cpp.
+struct CParseSlot;
+
 // A node owned by the +0x88 CHashSlotList: its intrusive chain link is at +0x00
 // (so the list head points straight at it) and it owns a buffer at +0x08; the
 // list uses the CHashSlotList::Link/Unlink (0x1390e0/0x1391e0) machinery from Hash.h.
 struct CSlotNode {
-    CHashLink m_link; // +0x00  intrusive chain node { next, prev }
-    void* m_buffer;   // +0x08  owned parse-slot block (RezFree'd)
+    CHashLink m_link;     // +0x00  intrusive chain node { next, prev }
+    CParseSlot* m_buffer; // +0x08  owned parse-slot block (RezFree'd)
 };
 SIZE(CSlotNode, 0xc);
 

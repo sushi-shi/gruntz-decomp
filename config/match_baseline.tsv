@@ -694,8 +694,8 @@ boundarylowermethods	?M@Cdb2f0@@QAEHXZ	100.0000	100.0000	1	f83855148178	0xdb2f0
 boundarylowermethods	?M@Cdb750@@QAEHPAX@Z	100.0000	100.0000	1	39e8cebc8635	0xdb750
 boundarylowermethods	?M@Cea170@@QAEXHH@Z	100.0000	100.0000	1	511242493f60	0xea170
 boundarylowermethods	?Resolve@CTypeColl464@@QAEPAXH@Z	83.7778	83.7778	2	c36defec0b57	0x464e0
-boundarylowermethods	?Serialize@C113e70@@QAEHPAUCSerialArchive@@@Z	95.0909	95.0909	1	cpp:db717ce9cb64	0x113e70
-boundarylowermethods	?Serialize@Ceb970@@QAEHPAUCSerialArchive@@HHH@Z	92.4444	92.4444	1	cpp:db717ce9cb64	0xeb970
+boundarylowermethods	?Serialize@C113e70@@QAEHPAUCSerialArchive@@@Z	95.0909	95.0909	1	b437a090d051	0x113e70
+boundarylowermethods	?Serialize@Ceb970@@QAEHPAUCSerialArchive@@HHH@Z	92.4444	92.4444	1	8a394336e792	0xeb970
 boundarylowermethods	?Set@C77dc0@@QAEXHHH@Z	100.0000	100.0000	1	af13ce28d5a0	0x77dc0
 boundarylowermethods	?Update@C1181d0@@QAEHHHH@Z	100.0000	100.0000	2	46fcfec4e118	0x1181d0
 boundarylowermethods	?Update@C118260@@QAEHPAUCRect118@@H@Z	100.0000	100.0000	2	c39a0a144b47	0x118260
@@ -859,7 +859,7 @@ buildgruntzcrcinfo	?BuildGruntzCrcInfo@CrcOwner@@QAEXXZ	70.9695	70.9695	3	8f39c8
 butemgr	??0ios@@QAE@XZ	100.0000	100.0000	1	3f3309bfcfe8	0x169c00
 butemgr	??1CButeMgr@@QAE@XZ	68.6322	68.6322	1	febe7cdf6ea9	0x213c0
 butemgr	??1CButeValue@@QAE@XZ	68.6364	68.6364	1	44a2235fbbca	0x172160
-butemgr	??1ios@@UAE@XZ	100.0000	100.0000	1	1b8d4a52ac97	0x169d70
+butemgr	??1ios@@UAE@XZ	100.0000	100.0000	2	d2a7b6e20683	0x169d70
 butemgr	?CharClass@CButeMgr@@QAEFD@Z	100.0000	100.0000	2	6b8d1de98cce	0x1703e0
 butemgr	?ClearHelper@CButeMgr@@QAEXXZ	66.8750	66.8750	5	0b3042ae552e	0x171a40
 butemgr	?CopyValue@CButeValue@@QAEPAU1@PAU1@@Z	65.0865	65.0865	1	d4689edf2d09	0x172040
@@ -901,7 +901,7 @@ butemgr	?SetRef5@CButeValue@@QAEPAU1@HPBUButeRef16@@@Z	100.0000	100.0000	1	cb350
 butemgr	?SetRef7@CButeValue@@QAEPAU1@HPBUButeRef24@@@Z	100.0000	100.0000	1	7f70d7682e03	0x174730
 butemgr	?SetRef8@CButeValue@@QAEPAU1@HPBUButeRef16@@@Z	100.0000	100.0000	1	5092d3e2fe65	0x174cb0
 butemgr	?SetString@CButeValue@@QAEPAU1@HABVCString@@@Z	100.0000	100.0000	1	c27f9fcb97b7	0x1736a0
-butemgr	?SetSub@ios@@QAEXPAX@Z	100.0000	100.0000	1	97fcb16c7474	0x169dd0
+butemgr	?SetSub@ios@@QAEXPAX@Z	100.0000	100.0000	2	5b26dd6266a0	0x169dd0
 butemgr	?SkipToTag@CButeMgr@@QAE_NXZ	78.1429	78.1429	2	672209f4feee	0x171160
 butemgrparse	?Parse@CButeMgr@@QAE_NVCString@@H@Z	98.8365	98.8365	2	89f2096c845f	0x3cc20
 butenode	??0CButeCfgNode174d@@QAE@H@Z	100.0000	100.0000	2	d7f02ce2538b	0x174d00
@@ -2215,7 +2215,7 @@ grunt	?BuildEntranceAnimation@CGrunt@@QAEXH@Z	71.4562	71.4562	7	7811dd7e5911	0x6
 grunt	?BuildGruntExitAnimation@CGrunt@@QAEHXZ	99.0509	99.0509	5	d175628d4014	0x641b0
 grunt	?BuildGruntLoseItemAnimation@CGrunt@@QAEHXZ	99.9032	99.9032	3	a7b05c5f0d12	0x57890
 grunt	?CGrunt_IsSameType@@YA_NPAVCGrunt@@0@Z	100.0000	100.0000	1	04ada45b6431	0x3c7f0
-grunt	?CGrunt_SegBoxOverlap@@YGHPAUGruntBox@@PAUGruntSegEnd@@1@Z	78.7723	78.7723	1	bb4ee352e2c0	0x62b70
+grunt	?CGrunt_SegBoxOverlap@@YGHPAUGruntBox@@PAUGruntSegEnd@@1@Z	78.7228	78.7228	1	bb4ee352e2c0	0x62b70
 grunt	?CGrunt_TileSwitch@@YGXHHHHHH@Z	66.2000	66.2000	2	e4d83b1d7834	0x4b320
 grunt	?CanShowStamina@CGrunt@@QAEHXZ	100.0000	100.0000	5	45397f7f939c	0x514a0
 grunt	?ClaimSwitchTile@CGrunt@@QAEHXZ	61.5954	61.5954	4	6dc9c894153f	0x52c70
@@ -2885,7 +2885,7 @@ netmgr	?CreatePlayer@CNetMgr@@QAEHPAXHH@Z	83.4906	83.4906	3	9d49b6bff219	0x178cb
 netmgr	?CreateSession@CNetMgr@@QAEHXZ	95.3546	95.3546	4	15fbd62104ef	0xbbc90
 netmgr	?Destroy@CNetMgr@@QAEXXZ	100.0000	100.0000	3	0afdf2c2462e	0x178230
 netmgr	?DetectConnectionConfig@CNetMgr@@QAEHXZ	85.8924	85.8924	3	f5b420b343e2	0xb82e0
-netmgr	?DispatchRecvMsg@CNetMgr@@QAEHHPADH@Z	77.9193	77.9193	3	33a7d5b2ee2e	0xb9750
+netmgr	?DispatchRecvMsg@CNetMgr@@QAEHHPADH@Z	77.9193	77.9193	4	ffd36c5900e9	0xb9750
 netmgr	?DropChannelPlayer@CNetMgr@@QAEHH@Z	97.8814	97.8814	4	0cf0d28e78e5	0xbb510
 netmgr	?EnumGroupsAll@CNetMgr@@QAEHXZ	100.0000	100.0000	2	059669bdfa3c	0x178a40
 netmgr	?EnumGroupsInto@CNetMgr@@QAEHPAX0HH@Z	91.2308	91.2308	2	c8192b5b5299	0x1788a0
@@ -2955,7 +2955,7 @@ netmgr	?Stub_0b5460@CNetMgr@@QAEHHHH@Z	71.2400	71.2400	1	e9efdc13b60b	0xb5460
 netmgr	?VerifyCustomLevel@CNetMgr@@QAEHHH@Z	7.1702	7.1702	2	f4e26819863c	0xb8fc0
 netmgr	?WaitForConnect@CNetMgr@@QAEHXZ	74.0809	74.0809	5	5676879b5f9c	0xbca50
 netmgrerror	?ReportError@CNetMgr@@SAXPADHHPAX@Z	100.0000	100.0000	1	4c76abe210b0	0x1776a0
-netmgrmenuselect	?LoadMenuSelectSprite@CNetMgr@@QAEHPAX@Z	100.0000	100.0000	4	d9d171dfd9ae	0xba620
+netmgrmenuselect	?LoadMenuSelectSprite@CNetMgr@@QAEHPAX@Z	100.0000	100.0000	5	eb4aa4c0f818	0xba620
 netmgrmisc	?ClearRange@CNetSlotAux@@QAEXXZ	84.2857	84.2857	1	3bf776dc8916	0xbf120
 netmgrmisc	?Drive@CNetConnCoord@@QAEXXZ	100.0000	100.0000	4	a24869a13ab8	0xc40b0
 netmgrmisc	?NetConfigureBe90@@YAXXZ	100.0000	100.0000	1	39468a8eca59	0xc5f00
@@ -3397,12 +3397,12 @@ symparser	?Clear@CSymParser@@QAEPAXH@Z	91.3803	91.3803	4	3893e570e7df	0x13b850
 symparser	?LoadEntry@CSymParser@@QAEHPADH@Z	98.2888	98.2888	2	62a5a535bf3f	0x13b0c0
 symparser	?ParseBuffer@CSymParser@@QAEHPAXHH@Z	77.1300	77.1300	5	62dc0d9ef53a	0x13ad00
 symparser	?ParseRecords@CSymParser@@QAEHPAXPAVCSymTab@@PADH@Z	55.4189	55.4189	2	ab1bf892b25d	0x13b300
-symparser	?PopParseSlot@CSymParser@@QAEPAXXZ	77.1304	77.1304	3	c3219f839acf	0x13c0c0
+symparser	?PopParseSlot@CSymParser@@QAEPAXXZ	77.1304	77.1304	4	545c8bbca199	0x13c0c0
 symparser	?ReParse@CSymParser@@QAEHXZ	100.0000	100.0000	2	93b1d67882d1	0x13c050
 symparser	?Remove@CObjList@@QAEXPAVCObjNode@@@Z	100.0000	100.0000	1	c6b60724f735	0x1852e0
 symparser	?ResolvePath@CSymParser@@QAEPAXPBD@Z	100.0000	100.0000	1	d2f5951f4d21	0x13c030
 symparser	?ResolveQualified@CSymParser@@QAEHPBDPAX@Z	100.0000	100.0000	1	65f97a6deb84	0x13bff0
-symtab	??0CSymTab@@QAE@PAVCSymParser@@PAXPBD111HH@Z	97.3333	97.3333	1	ea01993fe5fa	0x139de0
+symtab	??0CSymTab@@QAE@PAVCSymParser@@PAXPBD111HH@Z	97.3333	97.3333	2	377a1da824cf	0x139de0
 symtab	??1CSymTab@@QAE@XZ	88.7245	88.7245	3	dfa4fe284fc8	0x139ee0
 symtab	?ApplyRange@CSymTab@@QAEHHHHH@Z	75.6782	75.6782	3	84bfe6657c8e	0x13a640
 symtab	?ApplyRecursive@CSymTab@@QAEHHHHH@Z	70.4657	70.4657	1	45e873862fc9	0x13a580

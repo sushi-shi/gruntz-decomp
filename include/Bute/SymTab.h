@@ -118,8 +118,8 @@ public:
         RemoveAll();
     }
 
-    u32 m_count;     // +0x00
-    void* m_buckets; // +0x04
+    u32 m_count;                // +0x00
+    CHashTableEntry* m_buckets; // +0x04  the RezAlloc'd 16-byte-slot bucket array
 };
 SIZE(CHashTable, 0x8); // { count, buckets }
 

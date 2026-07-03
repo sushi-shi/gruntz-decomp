@@ -1558,7 +1558,7 @@ ios::~ios() {
     }
     Helper_DeleteCriticalSection(&m_cs);
     if (m_ownsSub && m_pSub) {
-        ((CButeSub*)m_pSub)->ScalarDtor(1);
+        m_pSub->ScalarDtor(1);
     }
     m_pSub = 0;
     m_flags = 4;
@@ -1572,9 +1572,9 @@ ios::~ios() {
 RVA(0x00169dd0, 0x37)
 void ios::SetSub(void* p) {
     if (m_ownsSub && m_pSub) {
-        ((CButeSub*)m_pSub)->ScalarDtor(1);
+        m_pSub->ScalarDtor(1);
     }
-    m_pSub = p;
+    m_pSub = (CButeSub*)p;
     if (p) {
         m_flags &= ~0x4;
     } else {

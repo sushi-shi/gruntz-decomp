@@ -1955,7 +1955,7 @@ i32 CNetMgr::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
                 return 1;
             }
             m_4->m_5c->AddItem(msg->m_c, 0x30, player->m_008);
-            CSndHost* host = ((CSndSubMgr*)m_c)->m_28;
+            CSndHost* host = m_c->m_28;
             if (host->m_30 != 0) {
                 break;
             }

@@ -43,7 +43,7 @@ SIZE_UNKNOWN(PlayerRecord); // player-record view (only +0x34 pinned); retail si
 // player record.
 struct PlayerNode {
     PlayerNode* m_next;   // +0x00
-    void* m_4;            // +0x04
+    PlayerNode* m_prev;   // +0x04  CObList back-link
     PlayerRecord* m_item; // +0x08 (the player record)
 };
 SIZE_UNKNOWN(PlayerNode); // CObList-shaped list-node view; retail size TBD

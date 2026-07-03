@@ -29,9 +29,10 @@
 // word (`& (failbit|badbit)` open-fail probe), and the 0x50-byte size (so the
 // derived class's vbtable[1] resolves to +0xc and sizeof(stream) == 0x5c).
 // All members external/opaque.
+class streambuf; // the CRT <streambuf.h> foreign type (opaque here)
 struct ButeIos {
     virtual ~ButeIos(); // vptr @ +0
-    void* m_bp;         // +0x04  streambuf*
+    streambuf* m_bp;    // +0x04  the CRT streambuf the ios owns
     int m_state;        // +0x08  io_state (& 6 == failbit|badbit)
     char m_pad0c[0x50 - 0xc];
 };

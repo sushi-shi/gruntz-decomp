@@ -571,7 +571,7 @@ void* CSymParser::PopParseSlot() {
             return 0;
         }
         for (i32 j = 0; (u32)j < (u32)m_parseSlotBlockCount; j++) {
-            CParseSlot* el = (CParseSlot*)((char*)node->m_buffer + j * 0x3c);
+            CParseSlot* el = &node->m_buffer[j];
             el->m_node.m_record = el;
             m_hash.Insert(&el->m_node);
         }

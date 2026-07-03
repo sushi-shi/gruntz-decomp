@@ -153,7 +153,7 @@ CSymTab::CSymTab(
     m_0c = 0;
     m_buf48 = 0;
     m_1c = p1;
-    m_34 = (void*)this;
+    m_34 = this;
 }
 
 // ~CSymTab (0x139ee0): tear down the scope tree. Walk the leaf-symbol table
