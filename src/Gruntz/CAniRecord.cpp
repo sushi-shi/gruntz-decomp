@@ -124,16 +124,16 @@ public:
 };
 
 // ---------------------------------------------------------------------------
-// The shared CObject-like grand-base (vftable @0x5e8cb4, 5 slots: 0x1bef01 /
-// scalar-dtor / 0x0028ec / 0x00106e / 0x004034). Modeled as a REAL polymorphic base
-// with an EMPTY virtual dtor, so cl emits ONLY the implicit grand-base vptr re-stamp
-// (the LAST store at each derived dtor's tail) - no manual `m_vptr = &g_*Vtbl`. The
-// CObject header is the implicit vptr @+0x00 then the +0x04/+0x08/+0x0c fields the
-// base-2 dtor resets. eh-dtor-implicit-vptr-stamp-first.md sub-case 2 (the Wap::CObject family).
-// NAME-AUDIT (vtable_hierarchy --name-audit): maps to RTTI CObject @0x1e8cb4, but
-// KEPT as a real intermediate - it carries the m_04/m_08/m_0c header past the bare
-// vptr and is the SHARED base of CAniRecordBase2 + CAniRecordPrimary, so it is NOT
-// a bare-Wap::CObject fold (Wap32/CObject.h). Do not rename to CObject.
+// The shared WAP grand-base (vftable @0x5e8cb4, 5 slots: 0x1bef01 / scalar-dtor /
+// 0x0028ec / 0x00106e / 0x004034). Modeled as a REAL polymorphic base with an EMPTY
+// virtual dtor, so cl emits ONLY the implicit grand-base vptr re-stamp (the LAST store
+// at the derived dtor's tail). The header is the implicit vptr @+0x00 then +0x04/+0x08/
+// +0x0c the base-2 dtor resets.
+// HELD (vtable_hierarchy correction): CAniRecordBase2 carries slot 6 = 0x001c08, the
+// CWapObj-family marker, so it derives CObject -> CWapObj -> CAniRecordBase2 (NOT CObject
+// directly). Left on this fabricated grand-base pending CWapObj modeling; do NOT flatten
+// to `: public CObject` (that would steal CWapObj's slots 5/6). Only CAniRecordPrimary
+// (pure 5-slot, no CWapObj) was re-based to the real CObject.
 struct CAniRecordObjBase {
     virtual void FUN_005bef01();  // [0] 0x1bef01 (shared GetRuntimeClass thunk)
     virtual ~CAniRecordObjBase(); // [1] scalar-deleting dtor
@@ -143,7 +143,7 @@ struct CAniRecordObjBase {
 
     i32 m_04, m_08, m_0c; // +0x04..+0x0f (CObject header)
 };
-// Empty body => folds as JUST the grand-base re-stamp at each derived dtor's tail.
+// Empty body => folds as JUST the grand-base re-stamp at the derived dtor's tail.
 inline CAniRecordObjBase::~CAniRecordObjBase() {}
 
 // ---------------------------------------------------------------------------
@@ -184,8 +184,8 @@ CAniRecordBase2::~CAniRecordBase2() {
 // layout, no extra slots) destructor. /GX. Real virtual: cl stamps ??_7 (masks 0x5f02c0)
 // at ENTRY (stamp-first), frees the +0x30 resolved-index array (RezFree), clears the owner
 // sentinel (0xffff) / count / array, then the implicit grand-base re-stamp folds LAST.
-struct CAniRecordPrimary : CAniRecordObjBase {
-    virtual ~CAniRecordPrimary(); // [1] overrides; UAE
+struct CAniRecordPrimary : public CObject {
+    virtual ~CAniRecordPrimary() OVERRIDE; // [1] scalar-deleting dtor
 };
 
 RVA(0x001657a0, 0x66)

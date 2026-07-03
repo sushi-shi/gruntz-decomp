@@ -46,50 +46,38 @@ void* operator new(u32 n);
 // sprintf the path join goes through (0x11f890; varargs __cdecl, reloc-masked).
 extern "C" i32 sprintf(char* buf, const char* fmt, ...);
 
-// The element's two construction vtables (reloc-masked DIR32 data): the CObject
-// EXPERIMENT (aniElem realization): model the element as a REAL polymorphic
-// hierarchy so cl auto-emits ??_7CAniElementBase (masks 0x5e8cb4) + ??_7CAniElementObj
-// (masks 0x5efba8) and stamps the vptr implicitly (base then derived, vptr-first).
-// The element's CObject grand-base (+0x00..+0x1b): vptr at +0, a header word at +4,
-// and the CObject base subobject at +8 whose (potentially throwing) init is 0x1b55e9
-// (a __thiscall on element+0x8).
-// NAME-AUDIT (vtable_hierarchy --name-audit): maps to RTTI CObject @0x1e8cb4, but
-// KEPT as a real intermediate - it carries a data header (m_04 + the CObject base
-// subobject) past the bare vptr, so it is NOT a bare-Wap::CObject fold
-// (Wap32/CObject.h). Do not rename to CObject (would ODR-clash + break the dtor).
-struct CAniElementBase {
-    virtual void FUN_005bef01(); // [0] 0x1bef01
-    virtual ~CAniElementBase();  // [1] scalar-deleting dtor slot (0x152e10)
-    virtual void FUN_004028ec(); // [2] 0x0028ec
-    virtual void FUN_0040106e(); // [3] 0x00106e
-    virtual void FUN_00404034(); // [4] 0x004034
-    void InitBase_1b55e9();      // 0x1b55e9
-
-    CAniElementBase() {
-        ((CAniElementBase*)((char*)this + 0x8))->InitBase_1b55e9();
-    }
-
-    i32 m_04;                 // +0x04 = 0 (set by the derived ctor)
-    char m_pad08[0x1c - 0x8]; // +0x08..+0x1b  CObject base subobject (0x14 bytes)
+// The +0x08 "CObject subobject" embedded in the element (0x14 bytes): a real
+// member whose (potentially throwing) ctor is 0x1b55e9 (a __thiscall on element+0x8,
+// the NAFXCW CObArray default ctor). Modeling it as a member auto-runs its ctor
+// during CAniElementObj construction (after the CObject base, before the body) -
+// reproducing retail's base-stamp / CObject-construct / primary-stamp / field-zero
+// order and replacing the former (CAniElementBase*)(this+8) cross-cast hack.
+struct CAniElemSub {
+    CAniElemSub();       // 0x1b55e9 (reloc-masked rel32 callee)
+    void* m_vptr;        // +0x00
+    char _pad[0x14 - 4]; // +0x04..+0x13
 };
-// Empty body -> folds as just the grand-base re-stamp at teardown tail.
-inline CAniElementBase::~CAniElementBase() {}
 
-// The 0x28-byte animation element (tomalla-38; primary vftable @0x5efba8).
-// Overrides the dtor slot (0x152e10). Configure (0x1655c0) reads its arg2's tag via
-// CParseSource and, on a match, links a record; the failure path deletes it via
-// the virtual scalar-deleting dtor (vtable slot+4).
-struct CAniElementObj : public CAniElementBase {
+// The 0x28-byte animation element (tomalla-38; primary vftable @0x5efba8), a real MFC
+// ::CObject leaf (5 slots = CObject's 0/2/3/4 thunks + slot 1 = the cl-auto ??_G
+// scalar-deleting dtor @0x152e10; no new virtuals). cl auto-emits ??_7CAniElementObj
+// (masks 0x5efba8) + stamps the CObject grand-base (masks 0x5e8cb4) then the primary
+// vptr. Configure (0x1655c0) reads its arg2's tag via CParseSource and, on a match,
+// links a record; the failure path deletes it via the virtual scalar-deleting dtor.
+// (vtable_hierarchy: derive CObject; the former fabricated CAniElementBase is deleted.)
+struct CAniElementObj : public CObject {
     CAniElementObj() {
         m_04 = 0;
         m_1c = 0;
     }
-    virtual ~CAniElementObj(); // overrides [1] (0x152e10), declared-only
+    virtual ~CAniElementObj() OVERRIDE; // [1] 0x152e10, declared-only (cl-auto ??_G)
 
     i32 Configure_1655c0(void* sub, void* entry, i32 flag);  // 0x1655c0 __thiscall
     i32 Configure2_165620(void* sub, void* entry, i32 flag); // 0x165620 variant
 
-    i32 m_1c; // +0x1c = 0
+    i32 m_04;         // +0x04 = 0
+    CAniElemSub m_08; // +0x08..+0x1b  embedded CObject subobject
+    i32 m_1c;         // +0x1c = 0
 }; // size = 0x28
 
 // The CSymTab entry's type-tag reader (CParseSource @0x139800, __thiscall on
@@ -128,11 +116,13 @@ static inline void* AniMgrSubObject(void* mgr) {
 // and return 0; on success link into the map under `key`. /GX EH frame.
 // 2 stack args (ret 8). Returns the element (or 0).
 // @early-stop
-// 96.87% - the /GX ctor-in-flight frame + the whole body (incl. the new-merge null
-// shape and the failure-path scalar-deleting dtor dispatch) are byte-identical to
-// retail up to the `ret`; the only residue is the appended exception-cleanup unwind
-// funclet (retail section-splits it out of the delinked range, MSVC5 tacks it after
-// the body). docs/patterns/new-throwing-ctor-unwind-funclet-appended.md.
+// ~99.99% - modeling the +0x08 subobject as a real CObject member (CAniElemSub, ctor
+// 0x1b55e9) + deriving CAniElementObj from real ::CObject reproduces the ctor-in-flight
+// frame exactly (up from 96.87% under the old cross-cast hierarchy). The whole body
+// (new-merge null shape + failure-path scalar-deleting dtor dispatch) is byte-identical
+// to retail; the sole residue is the appended exception-cleanup unwind funclet (retail
+// section-splits it out of the delinked range, MSVC5 tacks it after the body).
+// docs/patterns/new-throwing-ctor-unwind-funclet-appended.md.
 RVA(0x001528d0, 0xdd)
 CAniElementObj* CDDrawSubMgrAni::CreateAniEntry_1528d0(const char* key, void* entry) {
     CAniElementObj* el = new CAniElementObj;
@@ -156,10 +146,11 @@ CAniElementObj* CDDrawSubMgrAni::CreateAniEntry_1528d0(const char* key, void* en
 // +0x28 sub-manager); on failure scalar-delete + return 0, on success link into
 // the map under `key`. /GX EH frame. 2 stack args (ret 8). Returns the element.
 // @early-stop
-// 96.87% - twin of CreateAniEntry_1528d0's wall: the /GX ctor-in-flight frame +
-// the whole body are byte-identical up to the `ret`; the only residue is the
-// appended exception-cleanup unwind funclet (retail section-splits it out of the
-// delinked range). docs/patterns/new-throwing-ctor-unwind-funclet-appended.md.
+// ~99.99% - twin of CreateAniEntry_1528d0's wall (improved by the real CObject-member
+// modeling of CAniElementObj): the /GX ctor-in-flight frame + the whole body are
+// byte-identical up to the `ret`; the only residue is the appended exception-cleanup
+// unwind funclet (retail section-splits it out of the delinked range).
+// docs/patterns/new-throwing-ctor-unwind-funclet-appended.md.
 RVA(0x001529b0, 0xdd)
 CAniElementObj* CDDrawSubMgrAni::CreateAniEntry2_1529b0(const char* key, void* entry) {
     CAniElementObj* el = new CAniElementObj;
@@ -223,7 +214,7 @@ i32 CDDrawSubMgrAni::ScanTree_152ad0(CSymTab* tree, const char* prefix, const ch
     return count;
 }
 
-SIZE_UNKNOWN(CAniElementBase);
+SIZE_UNKNOWN(CAniElemSub);
 SIZE(CAniElementObj, 0x28);
 SIZE_UNKNOWN(CSymTabTag);
 VTBL(CAniElementObj, 0x001efba8); // ??_7CAniElementObj (was g_aniElemVtbl, 5 slots)
