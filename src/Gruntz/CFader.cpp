@@ -10,6 +10,7 @@
 // / 0x14de50 / 0x14fb80) and operator new/delete are external/reloc-masked; the
 // fader subtype vftables are stamped as reloc-masked DIR32 data.
 #include <Gruntz/CFader.h>
+#include <Gruntz/CFaderSubtypes.h> // the six concrete subtypes (declarations)
 
 #include <rva.h>
 #include <Win32.h> // GetTickCount / DWORD (pure-Win32 fader; reloc-masked import)
@@ -76,40 +77,8 @@ void CFader::Set2c(i32 v) {
 // order is base ctors, MEMBER ctors, own vptr, body (cf. CFader::CFader building
 // m_cache before its own stamp). cl inlines the member ctor, so the member vptr +
 // field zeros fall between the CFader base ctor call and the sunk own-vptr stamp.
+// (Class declaration in <Gruntz/CFaderSubtypes.h>.)
 // ===========================================================================
-// Nested sub-object; own vtable 0x1f07d8 (5 slots in retail, ClassWithUnknownVTable68).
-// Only 1 virtual is modeled (the vptr stamp is all that must match) -> no VTBL (a
-// 1-slot emit would mismatch the 5-slot retail datum), SIZE_UNKNOWN (member subobject).
-SIZE_UNKNOWN(CFader17e940Sub);
-struct CFader17e940Sub { // nested sub-object at +0x58 (own vftable 0x5f07d8)
-    virtual void v0();   // one virtual -> its own vtable (reloc-masks 0x5f07d8)
-    i32 m_04;            // +0x5c
-    i32 m_08;            // +0x60
-    i32 m_0c;            // +0x64
-    i32 m_10;            // +0x68
-    CFader17e940Sub() {
-        m_04 = 0;
-        m_10 = 0;
-        m_0c = 0;
-        m_08 = 0;
-    }
-};
-
-// Own vtable 0x1f07c0 (5 slots; was UnknownVTables ClassWithUnknownVTable67). Exact
-// size 0x6c (CFaderMgr::Add allocates new(0x6c) for this subtype). v1/v2 are the
-// base-pure overrides -> C++-mandated shared slot names (not anonymous placeholders).
-SIZE(CFader17e940, 0x6c);
-VTBL(CFader17e940, 0x001f07c0);
-class CFader17e940 : public CFader {
-public:
-    CFader17e940();    // 0x17e940
-    virtual void v1(); // slot 1 -> 0x17ef00 (overrides CFader pure)
-    virtual void v2(); // slot 2 -> 0x17f120 (overrides CFader pure)
-
-    char _pad34[0x58 - 0x34]; // +0x34..+0x57
-    CFader17e940Sub m_58;     // +0x58..+0x6b (member vptr + 4 fields)
-};
-
 RVA(0x0017e940, 0x27)
 CFader17e940::CFader17e940() {}
 
@@ -120,23 +89,7 @@ CFader17e940::CFader17e940() {}
 // the empty ~CFaderSine stamps ??_7CFaderSine then tail-calls ~CFader, and cl emits
 // ??_7CFaderSine (slots reloc-mask the 0x5f0848 target). Name is descriptive.
 // ===========================================================================
-// Own vtable 0x1f0848 (5 slots; was UnknownVTables ClassWithUnknownVTable71 /
-// FaderSineVtbl). Exact size 0x7d5c (CFaderMgr::Add allocates new(0x7d5c); layout
-// modeled to +0x50, the tail is an unmodeled buffer).
-SIZE(CFaderSine, 0x7d5c);
-VTBL(CFaderSine, 0x001f0848);
-class CFaderSine : public CFader {
-public:
-    CFaderSine();          // 0x17fdb0
-    virtual ~CFaderSine(); // 0x17fdf0
-    virtual void v1();     // slot 1 -> 0x17ff30 (overrides CFader pure)
-    virtual void v2();     // slot 2 -> 0x180400 (overrides CFader pure)
-
-    char _pad34[0x4c - 0x34]; // +0x34..+0x4b
-    i32 m_4c;                 // +0x4c
-    i32 m_50;                 // +0x50
-};
-
+// (Class declaration in <Gruntz/CFaderSubtypes.h>.)
 // ===========================================================================
 // 0x17fdb0 - CFaderSine(): chain CFader::CFader, stamp ??_7CFaderSine, zero the
 // two subtype fields. cl auto-emits the base ctor call + the implicit vptr stamp
@@ -159,20 +112,8 @@ CFaderSine::~CFaderSine() {}
 // CFaderFlat - the fader subtype whose ctor (0x17f530) only clears m_4c. Its
 // vftable is 0x5f07f8. Same modeling as CFaderSine.
 // ===========================================================================
-// Own vtable 0x1f07f8 (5 slots; was UnknownVTables ClassWithUnknownVTable69). Exact
-// size 0x50 (CFaderMgr::Add allocates new(0x50); layout ends at m_4c).
-SIZE(CFaderFlat, 0x50);
-VTBL(CFaderFlat, 0x001f07f8);
-class CFaderFlat : public CFader {
-public:
-    CFaderFlat();      // 0x17f530
-    virtual void v1(); // slot 1 -> 0x17f660 (overrides CFader pure)
-    virtual void v2(); // slot 2 -> 0x17f950 (overrides CFader pure)
-
-    char _pad34[0x4c - 0x34]; // +0x34..+0x4b
-    i32 m_4c;                 // +0x4c
-};
-
+// (Class declaration in <Gruntz/CFaderSubtypes.h>.)
+// ===========================================================================
 RVA(0x0017f530, 0x19)
 CFaderFlat::CFaderFlat() {
     m_4c = 0;
@@ -181,20 +122,9 @@ CFaderFlat::CFaderFlat() {
 // ===========================================================================
 // CFader180410 - subtype ctor 0x180410: clears m_40. vftable 0x5f0870.
 // ===========================================================================
-// Own vtable 0x1f0870 (5 slots; was UnknownVTables ClassWithUnknownVTable72). Size
-// not pinned to one CFaderMgr::Add alloc (partial layout) -> SIZE_UNKNOWN.
-SIZE_UNKNOWN(CFader180410);
-VTBL(CFader180410, 0x001f0870);
-class CFader180410 : public CFader {
-public:
-    CFader180410();    // 0x180410
-    virtual void v1(); // slot 1 -> 0x180640 (overrides CFader pure)
-    virtual void v2(); // slot 2 -> 0x1814f0 (overrides CFader pure)
-
-    char _pad34[0x40 - 0x34]; // +0x34..+0x3f
-    i32 m_40;                 // +0x40
-};
-
+// (Class declaration in <Gruntz/CFaderSubtypes.h>; size 0x206c pinned from the
+// CFaderMgr::Add new(0x206c) allocation.)
+// ===========================================================================
 RVA(0x00180410, 0x19)
 CFader180410::CFader180410() {
     m_40 = 0;
@@ -204,24 +134,9 @@ CFader180410::CFader180410() {
 // CFader17f9a0 - subtype ctor 0x17f9a0: m_44/m_40/m_50 = 0, m_48 = 1. vftable
 // 0x5f0810.
 // ===========================================================================
-// Own vtable 0x1f0810 (5 slots; was UnknownVTables ClassWithUnknownVTable70). Size
-// not pinned to one CFaderMgr::Add alloc (partial layout) -> SIZE_UNKNOWN.
-SIZE_UNKNOWN(CFader17f9a0);
-VTBL(CFader17f9a0, 0x001f0810);
-class CFader17f9a0 : public CFader {
-public:
-    CFader17f9a0();    // 0x17f9a0
-    virtual void v1(); // slot 1 -> 0x17fc60 (overrides CFader pure)
-    virtual void v2(); // slot 2 -> 0x17fda0 (overrides CFader pure)
-
-    char _pad34[0x40 - 0x34]; // +0x34..+0x3f
-    i32 m_40;                 // +0x40
-    i32 m_44;                 // +0x44
-    i32 m_48;                 // +0x48
-    char _pad4c[0x50 - 0x4c]; // +0x4c
-    i32 m_50;                 // +0x50
-};
-
+// (Class declaration in <Gruntz/CFaderSubtypes.h>; size 0x5c pinned from the
+// CFaderMgr::Add new(0x5c) allocation.)
+// ===========================================================================
 RVA(0x0017f9a0, 0x24)
 CFader17f9a0::CFader17f9a0() {
     m_44 = 0;
@@ -234,27 +149,8 @@ CFader17f9a0::CFader17f9a0() {
 // CFader1816c0 - subtype ctor 0x1816c0 (size 0x494): zeroes m_478/m_44/m_48/m_4c/
 // m_488/m_48c and the CFader base field m_20. vftable 0x5f0890.
 // ===========================================================================
-// Own vtable 0x1f0890 (5 slots; was UnknownVTables ClassWithUnknownVTable73). Exact
-// size 0x494 (CFaderMgr::Add allocates new(0x494); layout modeled to +0x48c).
-SIZE(CFader1816c0, 0x494);
-VTBL(CFader1816c0, 0x001f0890);
-class CFader1816c0 : public CFader {
-public:
-    CFader1816c0();    // 0x1816c0
-    virtual void v1(); // slot 1 -> 0x181b00 (overrides CFader pure)
-    virtual void v2(); // slot 2 -> 0x182900 (overrides CFader pure)
-
-    char _pad34[0x44 - 0x34];    // +0x34..+0x43
-    i32 m_44;                    // +0x44
-    i32 m_48;                    // +0x48
-    i32 m_4c;                    // +0x4c
-    char _pad50[0x478 - 0x50];   // +0x50..+0x477
-    i32 m_478;                   // +0x478
-    char _pad47c[0x488 - 0x47c]; // +0x47c..+0x487
-    i32 m_488;                   // +0x488
-    i32 m_48c;                   // +0x48c
-};
-
+// (Class declaration in <Gruntz/CFaderSubtypes.h>.)
+// ===========================================================================
 RVA(0x001816c0, 0x32)
 CFader1816c0::CFader1816c0() {
     m_478 = 0;

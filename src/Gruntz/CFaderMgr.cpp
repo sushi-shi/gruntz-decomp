@@ -1,17 +1,20 @@
 // CFaderMgr.cpp - the Gruntz screen-fader manager (tracer placeholder
 // ClassUnknown_48): a polymorphic owner of a growable CPtrArray of CFader*.
-// CFaderMgr::Add is a 7-way factory keyed on nFaderType (0..5): allocate a
-// concrete CFader subclass, prime it from the manager's shared timing fields,
-// default- or copy-init it from pInit, validate, and append it - tracing
-// "CFaderMgr::Add (...) - ..." + deleting the fader on any failure.
+// CFaderMgr::Add is a 7-way factory keyed on nFaderType (0..5): allocate the
+// concrete CFader subtype (CFader1816c0/CFader180410/CFaderSine/CFader17f9a0/
+// CFaderFlat/CFader17e940), prime it from the manager's shared timing fields
+// (SetTimers/Set2c inherited from CFader), default- or copy-init it from pInit,
+// validate, and append it - tracing "CFaderMgr::Add (...) - ..." + deleting the
+// fader on any failure.
+//
+// The subtypes derive from CFader (see <Gruntz/CFaderSubtypes.h>), so the factory
+// upcasts implicitly (fader = f) and calls the inherited setters directly - no
+// (CFader*)/(CFaderImpl*) casts.
 //
 // Methods in ascending retail-RVA order. Field names are placeholders; offsets +
-// code bytes are load-bearing. The CFader subclass ctors / init / validate
-// helpers (0x1816c0, 0x180410, 0x17fdb0, 0x17f9a0, 0x17f530, 0x17e940 and their
-// init/validate siblings), the per-fader SetTimers/Set2c setters (0x17e760 /
-// 0x17e780), operator new/delete, and the CString trace helpers are
-// external/reloc-masked.
+// code bytes are load-bearing.
 #include <Gruntz/CFaderMgr.h>
+#include <Gruntz/CFaderSubtypes.h>
 
 #include <rva.h>
 #include <Mfc.h>
@@ -25,16 +28,30 @@
 // match by content (reloc-masked).
 extern "C" void Fader_Trace(const char* msg); // 0x1b9d4c - CString(const char*)/TRACE
 
-// The CFader subclasses are external; their ctors / shared setters / init /
-// validate methods are modeled on tiny helper shells so the __thiscall call bytes
-// fall out, reloc-masked. Each fader subtype has its own size + ctor + (init,
-// validate) pair; the setter pair SetTimers/Set2c (0x17e760/0x17e780) is shared.
-SIZE_UNKNOWN(CFaderImpl);
-struct CFaderImpl {
-    void* m_vtbl;
-    void SetTimers(i32 a, i32 b); // 0x17e760
-    void Set2c(i32 v);            // 0x17e780
+// The default-init descriptor built on the Add stack when pInit is null: an
+// embedded CString forces the /GX frame, and the subtype's default parameters are
+// filled by one of the six reloc-masked default builders (__thiscall on the
+// descriptor), one per fader type (0..5).
+SIZE_UNKNOWN(CFaderInit);
+struct CFaderInit {
+    char m_blob[0x24]; // +0x00..+0x23
+    CString m_str;     // +0x24  destructible member (forces /GX)
+
+    void BuildDefaultInit0(); // 0x17e7c0  fader type 0
+    void BuildDefaultInit1(); // 0x17e840  fader type 1
+    void BuildDefaultInit2(); // 0x17e880  fader type 2
+    void BuildDefaultInit3(); // 0x17e8b0  fader type 3
+    void BuildDefaultInit4(); // 0x17e8e0  fader type 4
+    void BuildDefaultInit5(); // 0x17e910  fader type 5
 };
+
+// pInit (when non-null) is a CFxMode transition descriptor the caller passes
+// through the retail CFader* interface; Add validates its type-id (stored at the
+// descriptor's +0) against nFaderType. Read here through the CFader* the retail
+// signature carries - a bounded interface-forced reinterpret, not a class miscast.
+static inline i32 InitTypeId(CFader* pInit) {
+    return *(i32*)pInit;
+}
 
 // ===========================================================================
 // 0x17d8f0 - CFaderMgr(): construct the embedded element-array subobject (stamp
@@ -87,147 +104,8 @@ void CFaderMgr::FreeAll() {
     m_active = 0;
 }
 
-// The per-fader init payload (built on the stack by each subtype's default-init
-// helper, e.g. 0x17e7c0). It carries an embedded CString whose ~CString runs on
-// every exit. Modeled as an opaque blob + the CString member so the destructible
-// local forces the same /GX frame. The six subtypes share this shape; the init
-// (default-build) + apply (SetFrom) calls are per-subtype, reloc-masked.
-SIZE_UNKNOWN(CFaderInit);
-struct CFaderInit {
-    char m_blob[0x24];
-    CString m_str; // at +0x24 - the destructible member
-};
-
-// One concrete CFader subtype's externals: ctor (returns this), default-build the
-// payload, and apply it / a pInit. All reloc-masked.
-SIZE_UNKNOWN(CFaderType);
-struct CFaderType {
-    void* m_vtbl;                   // +0 = the type id checked against nFaderType
-    CFaderType* Ctor();             // e.g. 0x1816c0
-    void BuildInit(CFaderInit* p);  // e.g. 0x17e7c0
-    i32 Apply(CFaderInit* p);       // e.g. 0x1817e0 -> bool
-    i32 ApplyFrom(CFaderType* src); // e.g. 0x1817e0 with pInit
-};
-
-// Six concrete subtypes - distinct external ctor/build/apply addresses per case
-// (reloc-masked). Only the call targets must differ; the shapes are identical.
-struct CFader0 {
-    inline CFader0();
-    inline void* operator new(u32);
-
-    CFader0* Ctor();
-    void Build(CFaderInit*);
-    i32 Apply(CFaderInit*);
-    i32 From(CFader*);
-
-    char _pad[0x494]; // shell; real object is 0x494 B (the new(0x494) operand)
-};
-SIZE(CFader0, 0x494);
-struct CFader1 {
-    inline CFader1();
-    inline void* operator new(u32);
-
-    CFader1* Ctor();
-    void Build(CFaderInit*);
-    i32 Apply(CFaderInit*);
-    i32 From(CFader*);
-
-    char _pad[0x206c]; // shell; real object is 0x206c B (the new(0x206c) operand)
-};
-SIZE(CFader1, 0x206c);
-struct CFader2 {
-    inline CFader2();
-    inline void* operator new(u32);
-
-    CFader2* Ctor();
-    void Build(CFaderInit*);
-    i32 Apply(CFaderInit*);
-    i32 From(CFader*);
-
-    char _pad[0x7d5c]; // shell; real object is 0x7d5c B (the new(0x7d5c) operand)
-};
-SIZE(CFader2, 0x7d5c);
-struct CFader3 {
-    inline CFader3();
-    inline void* operator new(u32);
-
-    CFader3* Ctor();
-    void Build(CFaderInit*);
-    i32 Apply(CFaderInit*);
-    i32 From(CFader*);
-
-    char _pad[0x5c]; // shell; real object is 0x5c B (the new(0x5c) operand)
-};
-SIZE(CFader3, 0x5c);
-struct CFader4 {
-    inline CFader4();
-    inline void* operator new(u32);
-
-    CFader4* Ctor();
-    void Build(CFaderInit*);
-    i32 Apply(CFaderInit*);
-    i32 From(CFader*);
-
-    char _pad[0x50]; // shell; real object is 0x50 B (the new(0x50) operand)
-};
-SIZE(CFader4, 0x50);
-struct CFader5 {
-    inline CFader5();
-    inline void* operator new(u32);
-
-    CFader5* Ctor();
-    void Build(CFaderInit*);
-    i32 Apply(CFaderInit*);
-    i32 From(CFader*);
-
-    char _pad[0x6c]; // shell; real object is 0x6c B (the new(0x6c) operand)
-};
-SIZE(CFader5, 0x6c);
-
-inline CFader0::CFader0() {
-    Ctor();
-}
-inline void* CFader0::operator new(u32) {
-    return ::operator new(0x494);
-}
-
-inline CFader1::CFader1() {
-    Ctor();
-}
-inline void* CFader1::operator new(u32) {
-    return ::operator new(0x206c);
-}
-
-inline CFader2::CFader2() {
-    Ctor();
-}
-inline void* CFader2::operator new(u32) {
-    return ::operator new(0x7d5c);
-}
-
-inline CFader3::CFader3() {
-    Ctor();
-}
-inline void* CFader3::operator new(u32) {
-    return ::operator new(0x5c);
-}
-
-inline CFader4::CFader4() {
-    Ctor();
-}
-inline void* CFader4::operator new(u32) {
-    return ::operator new(0x50);
-}
-
-inline CFader5::CFader5() {
-    Ctor();
-}
-inline void* CFader5::operator new(u32) {
-    return ::operator new(0x6c);
-}
-
 // ===========================================================================
-// 0x17d9c0 - Add(nFaderType, pInit): 7-way fader factory. Validate pInit's class
+// 0x17d9c0 - Add(nFaderType, pInit): 7-way fader factory. Validate pInit's type-id
 // against nFaderType, allocate the concrete subtype, prime it (SetTimers from
 // m_timerArgA/m_timerArgB, Set2c from m_sharedSet2cArg), default- or copy-init it, validate, and append it
 // to the array - tracing + deleting the fader on any failure. /GX EH frame; the
@@ -243,126 +121,126 @@ CFader* CFaderMgr::Add(i32 nFaderType, CFader* pInit) {
 
     switch (nFaderType) {
         case 0: {
-            if (pInit && *(i32*)pInit != 0) {
+            if (pInit && InitTypeId(pInit) != 1) {
                 goto wrongclass;
             }
-            CFader0* f = new CFader0;
-            fader = (CFader*)f;
-            ((CFaderImpl*)f)->SetTimers(m_timerArgA, m_timerArgB);
-            ((CFaderImpl*)f)->Set2c(m_sharedSet2cArg);
+            CFader1816c0* f = new CFader1816c0;
+            fader = f;
+            f->SetTimers(m_timerArgA, m_timerArgB);
+            f->Set2c(m_sharedSet2cArg);
             if (!pInit) {
                 CFaderInit init;
-                f->Build(&init);
-                if (!f->Apply(&init)) {
+                init.BuildDefaultInit0();
+                if (!f->ApplyInit(&init)) {
                     goto badinit;
                 }
             } else {
-                if (!f->From(pInit)) {
+                if (!f->CopyFrom(pInit)) {
                     goto append;
                 }
             }
             goto append;
         }
         case 1: {
-            if (pInit && *(i32*)pInit != 1) {
+            if (pInit && InitTypeId(pInit) != 2) {
                 goto wrongclass;
             }
-            CFader1* f = new CFader1;
-            fader = (CFader*)f;
-            ((CFaderImpl*)f)->SetTimers(m_timerArgA, m_timerArgB);
-            ((CFaderImpl*)f)->Set2c(m_sharedSet2cArg);
+            CFader180410* f = new CFader180410;
+            fader = f;
+            f->SetTimers(m_timerArgA, m_timerArgB);
+            f->Set2c(m_sharedSet2cArg);
             if (!pInit) {
                 CFaderInit init;
-                f->Build(&init);
-                if (!f->Apply(&init)) {
+                init.BuildDefaultInit1();
+                if (!f->ApplyInit(&init)) {
                     goto badinit;
                 }
             } else {
-                if (!f->From(pInit)) {
+                if (!f->CopyFrom(pInit)) {
                     goto append;
                 }
             }
             goto append;
         }
         case 2: {
-            if (pInit && *(i32*)pInit != 2) {
+            if (pInit && InitTypeId(pInit) != 3) {
                 goto wrongclass;
             }
-            CFader2* f = new CFader2;
-            fader = (CFader*)f;
-            ((CFaderImpl*)f)->SetTimers(m_timerArgA, m_timerArgB);
-            ((CFaderImpl*)f)->Set2c(m_sharedSet2cArg);
+            CFaderSine* f = new CFaderSine;
+            fader = f;
+            f->SetTimers(m_timerArgA, m_timerArgB);
+            f->Set2c(m_sharedSet2cArg);
             if (!pInit) {
                 CFaderInit init;
-                f->Build(&init);
-                if (!f->Apply(&init)) {
+                init.BuildDefaultInit2();
+                if (!f->ApplyInit(&init)) {
                     goto badinit;
                 }
             } else {
-                if (!f->From(pInit)) {
+                if (!f->CopyFrom(pInit)) {
                     goto append;
                 }
             }
             goto append;
         }
         case 3: {
-            if (pInit && *(i32*)pInit != 3) {
+            if (pInit && InitTypeId(pInit) != 4) {
                 goto wrongclass;
             }
-            CFader3* f = new CFader3;
-            fader = (CFader*)f;
-            ((CFaderImpl*)f)->SetTimers(m_timerArgA, m_timerArgB);
-            ((CFaderImpl*)f)->Set2c(m_sharedSet2cArg);
+            CFader17f9a0* f = new CFader17f9a0;
+            fader = f;
+            f->SetTimers(m_timerArgA, m_timerArgB);
+            f->Set2c(m_sharedSet2cArg);
             if (!pInit) {
                 CFaderInit init;
-                f->Build(&init);
-                if (!f->Apply(&init)) {
+                init.BuildDefaultInit3();
+                if (!f->ApplyInit(&init)) {
                     goto badinit;
                 }
             } else {
-                if (!f->From(pInit)) {
+                if (!f->CopyFrom(pInit)) {
                     goto append;
                 }
             }
             goto append;
         }
         case 4: {
-            if (pInit && *(i32*)pInit != 4) {
+            if (pInit && InitTypeId(pInit) != 5) {
                 goto wrongclass;
             }
-            CFader4* f = new CFader4;
-            fader = (CFader*)f;
-            ((CFaderImpl*)f)->SetTimers(m_timerArgA, m_timerArgB);
-            ((CFaderImpl*)f)->Set2c(m_sharedSet2cArg);
+            CFaderFlat* f = new CFaderFlat;
+            fader = f;
+            f->SetTimers(m_timerArgA, m_timerArgB);
+            f->Set2c(m_sharedSet2cArg);
             if (!pInit) {
                 CFaderInit init;
-                f->Build(&init);
-                if (!f->Apply(&init)) {
+                init.BuildDefaultInit4();
+                if (!f->ApplyInit(&init)) {
                     goto badinit;
                 }
             } else {
-                if (!f->From(pInit)) {
+                if (!f->CopyFrom(pInit)) {
                     goto append;
                 }
             }
             goto append;
         }
         case 5: {
-            if (pInit && *(i32*)pInit != 5) {
+            if (pInit && InitTypeId(pInit) != 6) {
                 goto wrongclass;
             }
-            CFader5* f = new CFader5;
-            fader = (CFader*)f;
-            ((CFaderImpl*)f)->SetTimers(m_timerArgA, m_timerArgB);
-            ((CFaderImpl*)f)->Set2c(m_sharedSet2cArg);
+            CFader17e940* f = new CFader17e940;
+            fader = f;
+            f->SetTimers(m_timerArgA, m_timerArgB);
+            f->Set2c(m_sharedSet2cArg);
             if (!pInit) {
                 CFaderInit init;
-                f->Build(&init);
-                if (!f->Apply(&init)) {
+                init.BuildDefaultInit5();
+                if (!f->ApplyInit(&init)) {
                     goto badinit;
                 }
             } else {
-                if (!f->From(pInit)) {
+                if (!f->CopyFrom(pInit)) {
                     goto append;
                 }
             }
@@ -378,9 +256,7 @@ CFader* CFaderMgr::Add(i32 nFaderType, CFader* pInit) {
 
 badinit:
     Fader_Trace("CFaderMgr::Add (...) - Invalid init class");
-    if (fader) {
-        fader->Delete(1);
-    }
+    delete fader;
     return 0;
 
 append:
@@ -473,9 +349,7 @@ void CFaderMgr::Remove(CFader* pFader) {
             memcpy(dst, dst + 1, cnt * sizeof(CFader*));
         }
         m_arr.m_nSize--;
-        if (pFader) {
-            pFader->Delete(1);
-        }
+        delete pFader;
     }
 }
 
@@ -490,9 +364,7 @@ void CFaderMgr::DeleteAll() {
     if (last >= 0) {
         do {
             CFader* p = m_arr.m_pData[i];
-            if (p) {
-                p->Delete(1);
-            }
+            delete p;
             i++;
             last = m_arr.m_nSize - 1;
         } while (i <= last);

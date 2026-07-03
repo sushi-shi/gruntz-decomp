@@ -38,76 +38,11 @@ class CObject;
 // RemoveAll / RemoveAt are called by VirtualMethodUnknown1C and Unknown34.
 #include <Gruntz/CObList.h>
 
-// The worker virtual interface. Slots are laid out so the dispatched methods land
-// at the byte offsets the target uses:
-//   +0x04 (slot 1)  scalar-deleting destructor (delete-flag arg)
-//   +0x2c (slot 11) Vfunc2C(3 args)   +0x30 (slot 12) Vfunc30(4 args)
-//   +0x34 (slot 13) Vfunc34(4 args)
-// Only declarations - never defined, so no ??_7 vtable is emitted here; the real
-// vtable is the foreign engine datum stamped into the object below.
-class CDDrawWorkerBase {
-public:
-    // Slot RVAs named per CDDrawWorkerB (0x1efed0, 14 slots); CDDrawWorkerA
-    // (0x1efea0, 12 slots) reuses this base but its slots 5/7/8/10/11 differ.
-    virtual void FUN_005bef01();                         // [0] 0x1bef01
-    virtual i32 ScalarDtor(i32 flag);                    // [1] scalar-deleting destructor
-    virtual void FUN_004028ec();                         // [2] 0x0028ec
-    virtual void FUN_0040106e();                         // [3] 0x00106e
-    virtual void FUN_00404034();                         // [4] 0x004034
-    virtual void FUN_00557200();                         // [5] 0x157200 (B)
-    virtual void FUN_00401c08();                         // [6] 0x001c08
-    virtual void FUN_00557310();                         // [7] 0x157310 (B)
-    virtual void FUN_00557210();                         // [8] 0x157210 (B)
-    virtual void FUN_00557080();                         // [9] 0x157080
-    virtual void FUN_005660b0();                         // [10] 0x1660b0 (B)
-    virtual i32 Vfunc2C(i32 a1, i32 a2, i32 a3);         // [11] 0x1572f0
-    virtual i32 Vfunc30(i32 a1, i32 a2, i32 a3, i32 a4); // [12] 0x1572b0
-    virtual i32 Vfunc34(i32 a1, i32 a2, i32 a3, i32 a4); // [13] 0x157280
-};
-
-// The 0x7c-byte worker layouts. Only the seeded offsets are load-bearing; m_78 is
-// the one field whose store width differs between the two workers (BYTE vs int).
-// Real polymorphic: `new CDDrawWorkerB/A` makes cl auto-emit ??_7CDDrawWorkerB/A
-// (masks the retail vtables 0x5efed0 / 0x5efea0) and stamp the vptr in the ctor -
-// no manual `*(void**)w = &g_ddrawWorkerVtbl*` store (ALL-VTABLES mandate).
-struct CDDrawWorkerB : public CDDrawWorkerBase {
-    CDDrawWorkerB() {}
-    i32 m_04;     // +0x04
-    i32 m_08;     // +0x08
-    i32 m_parent; // +0x0c  = parent CDDrawWorkerList::m_pSurfaceMgr (+0xc)
-    char _pad10[0x20 - 0x10];
-    i32 m_20; // +0x20  = 0x80000000
-    char _pad24[0x38 - 0x24];
-    i32 m_38; // +0x38  = -1
-    i32 m_3c; // +0x3c  = 0
-    i32 m_40; // +0x40  = 0
-    char _pad44[0x5c - 0x44];
-    i32 m_5c; // +0x5c  = 0x80000000
-    char _pad60[0x64 - 0x60];
-    i32 m_64; // +0x64  = 0x80000000
-    char _pad68[0x78 - 0x68];
-    i32 m_78; // +0x78  = 0 (int flag for the int-flag workers)
-}; // 0x7c
-
-struct CDDrawWorkerA : public CDDrawWorkerBase {
-    CDDrawWorkerA() {}
-    i32 m_04;     // +0x04
-    i32 m_08;     // +0x08
-    i32 m_parent; // +0x0c
-    char _pad10[0x20 - 0x10];
-    i32 m_20; // +0x20  = 0x80000000
-    char _pad24[0x38 - 0x24];
-    i32 m_38; // +0x38  = -1
-    i32 m_3c; // +0x3c  = 0
-    i32 m_40; // +0x40  = 0
-    char _pad44[0x5c - 0x44];
-    i32 m_5c; // +0x5c  = 0x80000000
-    char _pad60[0x64 - 0x60];
-    i32 m_64; // +0x64  = 0x80000000
-    char _pad68[0x78 - 0x68];
-    char m_78; // +0x78  = 0 (BYTE flag for the BYTE-flag worker)
-    char _pad79[0x7c - 0x79];
-}; // 0x7c
+// The worker hierarchy (CDDrawWorkerBase + CDDrawWorkerA/B) - the elements this
+// list allocates/dispatches. `new CDDrawWorkerB/A` makes cl auto-emit
+// ??_7CDDrawWorkerB/A and stamp the vptr in the ctor (no manual stamp); the
+// slot-11/12/13 relocs name the real Vfunc overrides defined in CDDrawWorkers.cpp.
+#include <Gruntz/CDDrawWorkerNode.h>
 
 // The child type used in the work-node linked-list at +0x14.
 // Virtual slot +0x28 (Vfunc28) is dispatched in Unknown34; +0x74 is a
@@ -149,15 +84,15 @@ public:
     i32 VirtualMethodUnknown20();
     void* VirtualMethodUnknown24(i32 a1, i32 a2, i32 a3);
     void* VirtualMethodUnknown28(i32 a1, i32 a2, i32 a3, i32 addHead);
-    void* VirtualMethodUnknown2C(i32 a1, i32 a2, i32 a3, i32 a4, i32 addHead);
+    void* VirtualMethodUnknown2C(i32 a1, i32 a2, CDDrawFrameSource* a3, i32 a4, i32 addHead);
     void* VirtualMethodUnknown30(i32 a1, i32 a2, i32 a3, i32 a4, i32 addHead);
     void VirtualMethodUnknown34(i32 a1, i32 a2);
 
-    void* m_vptr;              // +0x00 (vptr; not stamped by these methods)
-    i32 m_status;              // +0x04  initialized to -1 when inactive
-    char m_pad08[0x0c - 0x08]; // +0x08..0x0b
-    i32 m_pSurfaceMgr;         // +0x0c  (CDDrawSubMgr+0xc)
-    CObList m_workers;         // +0x10  worker list (CObList)
+    void* m_vptr;                   // +0x00 (vptr; not stamped by these methods)
+    i32 m_status;                   // +0x04  initialized to -1 when inactive
+    char m_pad08[0x0c - 0x08];      // +0x08..0x0b
+    CDDrawWorkerCtx* m_pSurfaceMgr; // +0x0c  (CDDrawSubMgr+0xc; copied into worker m_ctx)
+    CObList m_workers;              // +0x10  worker list (CObList)
 
     ~CDDrawWorkerList(); // 0x163bc0 (walk+destroy children, then ~CObList(m_workers))
 
@@ -221,9 +156,9 @@ fail:
 static inline CDDrawWorkerB* MakeWorkerB(const CDDrawWorkerList* parent) {
     CDDrawWorkerB* w = new CDDrawWorkerB;
     if (w != 0) {
-        i32 surfaceMgr = parent->m_pSurfaceMgr;
+        CDDrawWorkerCtx* surfaceMgr = parent->m_pSurfaceMgr;
         w->m_04 = 0;
-        w->m_parent = surfaceMgr;
+        w->m_ctx = surfaceMgr;
         w->m_08 = 0;
         w->m_20 = (i32)0x80000000;
         w->m_38 = -1;
@@ -239,9 +174,9 @@ static inline CDDrawWorkerB* MakeWorkerB(const CDDrawWorkerList* parent) {
 static inline CDDrawWorkerA* MakeWorkerA(const CDDrawWorkerList* parent) {
     CDDrawWorkerA* w = new CDDrawWorkerA;
     if (w != 0) {
-        i32 surfaceMgr = parent->m_pSurfaceMgr;
+        CDDrawWorkerCtx* surfaceMgr = parent->m_pSurfaceMgr;
         w->m_04 = 0;
-        w->m_parent = surfaceMgr;
+        w->m_ctx = surfaceMgr;
         w->m_08 = 0;
         w->m_20 = (i32)0x80000000;
         w->m_38 = -1;
@@ -295,7 +230,13 @@ void* CDDrawWorkerList::VirtualMethodUnknown28(i32 a1, i32 a2, i32 a3, i32 addHe
 // Int-flag worker; calls the worker's +0x30 virtual with (a1,a2,a3,a4); trailing
 // bool selects AddHead vs AddTail.
 RVA(0x00157330, 0xa5)
-void* CDDrawWorkerList::VirtualMethodUnknown2C(i32 a1, i32 a2, i32 a3, i32 a4, i32 addHead) {
+void* CDDrawWorkerList::VirtualMethodUnknown2C(
+    i32 a1,
+    i32 a2,
+    CDDrawFrameSource* a3,
+    i32 a4,
+    i32 addHead
+) {
     CDDrawWorkerB* w = MakeWorkerB(this);
     if (w->Vfunc30(a1, a2, a3, a4) == 0) {
         if (w != 0) {
@@ -430,10 +371,6 @@ SIZE_UNKNOWN(CDDrawWorkerList);
 SIZE_UNKNOWN(CDDrawWorkerListSib);
 SIZE_UNKNOWN(WorkerListSibBase);
 SIZE_UNKNOWN(CDDrawWorkerItem);
-SIZE_UNKNOWN(CDDrawWorkerBase);
-SIZE(CDDrawWorkerA, 0x7c);
-SIZE(CDDrawWorkerB, 0x7c);
 SIZE_UNKNOWN(WorkNode);
-// ??_7CDDrawWorkerA/B (was g_ddrawWorkerAVtbl/B). A's emitted vtable carries 2
-// extra slots (shared 14-slot base); only B (14 slots) matches retail size.
-VTBL(CDDrawWorkerB, 0x001efed0);
+// CDDrawWorkerBase/A/B SIZE + VTBL(CDDrawWorkerB) now live in
+// <Gruntz/CDDrawWorkerNode.h>.

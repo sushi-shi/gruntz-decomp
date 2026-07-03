@@ -20,15 +20,7 @@
 #include <Ints.h>
 #include <rva.h>
 #include <Wap32/CObject.h> // Wap::CObject - the shared CObject-like grand-base
-
-// The array element. Polymorphic: slot 0 of its vtable is the scalar-deleting
-// destructor, invoked as `pFader->Delete(1)` to free a fader (__thiscall virtual
-// dispatch: ecx=pFader, one stack arg). Declared with a pure virtual so the call
-// lowers to a vtable[0] dispatch with no vtable emitted here. The six concrete
-// subclass ctors/methods live in sibling TUs (reloc-masked).
-struct CFader {
-    virtual void* Delete(i32 flags) = 0; // slot 0 (vptr at +0x00)
-};
+#include <Gruntz/CFader.h> // the real polymorphic CFader element base (virtual ~CFader)
 
 // The growable element-array subobject (lives at manager +0x10). A Wap::CObject-derived
 // polymorphic node: its own vftable (@0x5f0790, uncatalogued -> unpaired ??_7CFaderArray)
