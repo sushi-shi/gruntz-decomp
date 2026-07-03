@@ -43,23 +43,11 @@ struct CGmConfig {
 };
 SIZE_UNKNOWN(CGmConfig);
 
-// The active drawable reached via g_gameReg->m_world->m_4: its +0x14 dword is the
-// surface context passed into RenderFrame.
-struct CGmDrawable {
-    char m_pad0[0x14];
-    i32 m_14; // +0x14  surface context
-};
-SIZE_UNKNOWN(CGmDrawable);
-struct CGmGameMgr {
-    char m_pad0[0x4];
-    CGmDrawable* m_4; // +0x04  active drawable
-};
-SIZE_UNKNOWN(CGmGameMgr);
-struct CGmGameReg {
-    char m_pad0[0x30];
-    CGmGameMgr* m_world; // +0x30  active game manager
-};
-SIZE_UNKNOWN(CGmGameReg);
+// The active surface context Render passes into RenderFrame is reached through the
+// canonical resource manager: g_gameReg->m_world (CSpriteFactoryHolder) ->
+// m_drawTarget (CDrawTarget, +0x04) -> m_drawContext (+0x14). Modeled by the shared
+// <Gruntz/CGameRegistry.h> + <Gruntz/ResMgr.h> types (see SBI_GruntMachine.cpp); no
+// per-TU game-manager facet is kept.
 
 // ---------------------------------------------------------------------------
 // CSBI_GruntMachine - the grunt-machine status-bar item. Real RTTI base is

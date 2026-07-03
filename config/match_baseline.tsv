@@ -3137,7 +3137,7 @@ savegame	?winapi_0e3e80_SetDlgItemTextA@ApiCallerStubs@@YAXPAUHWND__@@PAUSaveSlo
 savegamemenu	?DrawSaveGameMenu@@YAHPAXHPAUCSaveGameMenu@@@Z	62.5704	62.5704	1	22d81452061a	0xe3f40
 saverecload	?Load@SaveRecord@@QAEHPAULoadStream@@@Z	95.9116	95.9116	1	8394a0c8957d	0xfaff0
 savescreenshot	?SaveScreenshot@@YAHHPAUScrConfig@@PAUScrOwner@@HHPADH@Z	96.7564	96.7564	4	31b4216abe75	0x114ff0
-sbi_gruntmachine	?Render@CSBI_GruntMachine@@QAEHH@Z	92.0513	92.0513	4	35063bc9eeeb	0xe8cb0
+sbi_gruntmachine	?Render@CSBI_GruntMachine@@QAEHH@Z	92.0513	92.0513	5	10cbe46e3063	0xe8cb0
 sbi_gruntmachine	?Reset@CSBI_GruntMachine@@QAEXXZ	100.0000	100.0000	1	539d6616e793	0xe8c70
 sbi_gruntmachine	?SetFrames@CSBI_GruntMachine@@QAEXHH@Z	100.0000	100.0000	1	90c8ff4c6d8d	0xe8dc0
 sbi_gruntmachine_eh	??1CSBI_GruntMachine@@UAE@XZ	100.0000	100.0000	1	39b102f07725	0x104ce0
@@ -3244,7 +3244,7 @@ sbi_statztabgruntbar	?Reset@CSBI_StatzTabGruntBar@@QAEXXZ	100.0000	100.0000	2	e0
 sbi_statztabgruntbar	?Update@CSBI_StatzTabGruntBar@@QAEHXZ	91.6923	91.6923	2	f18aa95ff87b	0xea6c0
 sbi_statztabgruntbar_eh	??1CSBI_StatzTabGruntBar@@UAE@XZ	100.0000	100.0000	1	602538baa837	0x104b00
 sbi_tabzdialog_eh	?BuildTabzDialog@CTabzBuilder@@QAEHXZ	83.7185	83.7185	4	dc01d35de24d	0x10a340
-sbi_warlordhead	?Render@CSBI_WarlordHead@@QAEHH@Z	87.0676	87.0676	4	066af4aee4c8	0xeb880
+sbi_warlordhead	?Render@CSBI_WarlordHead@@QAEHH@Z	86.9054	86.9054	5	9915f2256c27	0xeb880
 sbi_warlordhead	?Serialize@CSBI_WarlordHead@@QAEHPAUCImageSetStream@@HHH@Z	100.0000	100.0000	2	5747297d9b55	0xe7cd0
 sbi_warlordhead	?SetState@CSBI_WarlordHead@@QAEHH@Z	100.0000	100.0000	1	034d997853c4	0xeb830
 sbi_warlordhead	?SetupImage@CSBI_WarlordHead@@QAEHHHHHHHHHHHH@Z	46.2105	46.2105	1	16d818a3069c	0xeb6b0

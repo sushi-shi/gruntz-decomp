@@ -46,23 +46,11 @@ struct CWhConfig {
 };
 SIZE_UNKNOWN(CWhConfig);
 
-// The active drawable reached via g_gameReg->m_world->m_4: its +0x14 dword is the
-// surface context passed into RenderFrame.
-struct CWhDrawable {
-    char m_pad0[0x14];
-    i32 m_14; // +0x14  surface context
-};
-SIZE_UNKNOWN(CWhDrawable);
-struct CWhGameMgr {
-    char m_pad0[0x4];
-    CWhDrawable* m_4; // +0x04  active drawable
-};
-SIZE_UNKNOWN(CWhGameMgr);
-struct CWhGameReg {
-    char m_pad0[0x30];
-    CWhGameMgr* m_world; // +0x30  active game manager
-};
-SIZE_UNKNOWN(CWhGameReg);
+// The active surface context Render passes into RenderFrame is reached through the
+// canonical resource manager: g_gameReg->m_world (CSpriteFactoryHolder) ->
+// m_drawTarget (CDrawTarget, +0x04) -> m_drawContext (+0x14). Modeled by the shared
+// <Gruntz/CGameRegistry.h> + <Gruntz/ResMgr.h> types (see SBI_WarlordHead.cpp); no
+// per-TU game-manager facet is kept.
 
 // The base ImageSet SetupImage (CSBI_ImageSet vtable slot 11, 0xe72f0): same
 // 11-arg shape (id, host, a3, a4, then the four rect ints, key, a10, a11). The
