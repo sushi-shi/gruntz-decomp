@@ -16,14 +16,15 @@
 #include <rva.h>
 #include <Globals.h>
 
-// The global CGameRegistry CMultiStartDlg's ctor snapshots: it copies
-// g_gameReg->m_curState into the file-scope sink g_64bd5c (both reloc-masked DIR32).
-// Named externs so the DIR32 loads reloc-match the engine; @data names the
-// delinked target DATA symbol (RVA = VA - 0x400000).
+// The global game-registry CMultiStartDlg's ctor snapshots: it copies
+// g_gameReg->m_curState into the file-scope singleton g_64bd5c (both reloc-masked
+// DIR32). @data names the delinked target DATA symbol (RVA = VA - 0x400000).
+struct CGameReg;  // g_gameReg's pointee (current-state ptr @+0x2c)
+struct CMultiReg; // g_64bd5c's pointee (the multiplayer game-registry state)
 DATA(0x0024556c)
-extern i32* g_gameReg; // the CGameRegistry pointer (reloc-masked DATA symbol)
+extern CGameReg* g_gameReg; // the game-registry pointer (reloc-masked DATA symbol)
 DATA(0x0024bd5c)
-extern i32 g_64bd5c; // the file-scope int sink (reloc-masked DATA symbol)
+extern CMultiReg* g_64bd5c; // the current multiplayer-state singleton (reloc-masked)
 
 // The per-dialog static MFC message maps (each GetMessageMap returns &<map>).
 // Referenced as reloc-masked DATA externs (RVA = VA - 0x400000).
@@ -57,6 +58,12 @@ struct CMultiReg {
     i32 m_600; // +0x600  committed flag
 };
 
+// g_gameReg's pointee: the ctor reads its current-state pointer at +0x2c into g_64bd5c.
+struct CGameReg {
+    char m_pad00[0x2c];
+    CMultiReg* m_curState; // +0x2c  current game-state object (the multi-state singleton)
+};
+
 // A player-slot record in the m_5c slot array (0x238 stride); only the +0x16c
 // occupancy field is read.
 struct CMultiSlot {
@@ -73,9 +80,9 @@ struct CMultiSlotList {
     CMultiSlotList(i32 nBlockSize) : m_list(nBlockSize) {
         m_1c = 0;
     }
-    void Method1546(i32 a);                      // 0x37910
-    void Method2a45(i32 a, i32 b);               // 0x37ff0
-    void Method3396(i32 a, i32 b, i32 c, i32 d); // 0x38150
+    void BuildSlots(i32 count);                          // 0x37910  seed w/ `count` slots
+    void FillCombo(i32 hDlg, i32 ctrlId);                // 0x37ff0  populate a combo control
+    void SelectByData(i32 hDlg, i32 id, i32 lo, i32 hi); // 0x38150  select item == MAKELONG(lo,hi)
 };
 
 // ---------------------------------------------------------------------------
@@ -205,7 +212,7 @@ CMultiStartDlg::CMultiStartDlg(i32 a0, CWnd* pParent) : CDialog(0xc5, pParent), 
     m_5c = a0;
     m_6c = 0;
     m_slotList = 0;
-    g_64bd5c = g_gameReg[0x2c / 4];
+    g_64bd5c = g_gameReg->m_curState;
 }
 
 // CMultiStartDlg::BuildSlotList (0xc1e60): allocate the player-slot list, derive
@@ -219,8 +226,8 @@ CMultiStartDlg::CMultiStartDlg(i32 a0, CWnd* pParent) : CDialog(0xc5, pParent), 
 // count/pi/selection values (ebp-vs-edi choice) cascading into push scheduling. ~89%.
 RVA(0x000c1e60, 0x115)
 void CMultiStartDlg::BuildSlotList() {
-    m_slotList = (i32) new CMultiSlotList(0xa);
-    CMultiReg* reg = (CMultiReg*)g_64bd5c;
+    m_slotList = new CMultiSlotList(0xa);
+    CMultiReg* reg = g_64bd5c;
     i32 count = 5;
     CMultiPlayerInfo* pi = reg->m_524->m_70;
     if (reg->m_588) {
@@ -239,10 +246,10 @@ void CMultiStartDlg::BuildSlotList() {
             count = 4;
         }
     }
-    ((CMultiSlotList*)m_slotList)->Method1546(count);
+    m_slotList->BuildSlots(count);
     i32 v = GetSafe1c();
-    ((CMultiSlotList*)m_slotList)->Method2a45(v, 0x527);
-    ((CMultiSlotList*)m_slotList)->Method3396(v, 0x527, 0, 0);
+    m_slotList->FillCombo(v, 0x527);
+    m_slotList->SelectByData(v, 0x527, 0, 0);
     reg->m_600 = 1;
 }
 
@@ -261,7 +268,7 @@ i32 CMultiStartDlg::UpdateSlot() {
     if (w == 0) {
         return 0;
     }
-    CMultiReg* reg = (CMultiReg*)g_64bd5c;
+    CMultiReg* reg = g_64bd5c;
     i32 enable;
     if (reg->m_528) {
         i32 idx = GetSlotIndex();
@@ -271,11 +278,11 @@ i32 CMultiStartDlg::UpdateSlot() {
     }
     w->EnableWindow(enable);
     i32 v = GetSafe1c();
-    CMultiReg* reg2 = (CMultiReg*)g_64bd5c;
+    CMultiReg* reg2 = g_64bd5c;
     if (reg2->m_600) {
-        ((CMultiSlotList*)m_slotList)->Method3396(v, 0x527, 0, 0);
+        m_slotList->SelectByData(v, 0x527, 0, 0);
     } else {
-        ((CMultiSlotList*)m_slotList)->Method3396(v, 0x527, reg2->m_5a4, reg2->m_5a8);
+        m_slotList->SelectByData(v, 0x527, reg2->m_5a4, reg2->m_5a8);
     }
     return 1;
 }
@@ -814,6 +821,7 @@ CMultiStartDlg::~CMultiStartDlg() {}
 SIZE_UNKNOWN(CMultiPlayerInfo);
 SIZE_UNKNOWN(CMultiRegSub);
 SIZE_UNKNOWN(CMultiReg);
+SIZE_UNKNOWN(CGameReg);
 SIZE_UNKNOWN(CMultiSlot);
 SIZE_UNKNOWN(CMultiSlotList);
 SIZE_UNKNOWN(CImgHolderBase);

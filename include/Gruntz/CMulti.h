@@ -99,8 +99,8 @@ public:
     void* m_0;
     u8 m_flags; // +0x04  bit 0x2 -> m_isHost latch
     char m_pad5_8[0x8 - 0x5];
-    char* m_8; // +0x08  host-name string
-    char* m_c; // +0x0c  ... -> +0x8 string copied into a CString
+    char* m_8;            // +0x08  host-name string
+    CMultiLogicDesc* m_c; // +0x0c  linked descriptor; its m_8 host-name is copied into a CString
 };
 
 class CGruntzMgr {
@@ -146,12 +146,22 @@ public:
 // Win32 focus restore on the innermost window (m_logic->m_4->m_4); __cdecl, reloc-masked.
 void MultiRestoreFocus(void* hwnd); // 0x00518930
 
-// The report-gate object at CMulti+0x524: released via its scalar-deleting
-// destructor (vtable slot +0x04, thiscall, arg 1). Declarations only -> no ??_7.
+// The opened-player object OpenPlayer returns (group-name accessor @0x4b76a0).
+class CMultiPlayer;
+
+// The join/report gate at CMulti+0x524: released via its scalar-deleting destructor
+// (vtable slot +0x04, thiscall, arg 1). ONE struct (was split into a separate
+// CMultiNetGate net-bind view): StartTitle drives its net-bind entry points
+// (non-virtual, reloc-masked thiscall) and stashes the opened player at +0x74.
 class CMultiReportGate {
 public:
-    virtual void Slot00();            // +0x00
-    virtual i32 ScalarDtor(i32 flag); // +0x04  scalar-deleting destructor
+    virtual void Slot00();                // +0x00
+    virtual i32 ScalarDtor(i32 flag);     // +0x04  scalar-deleting destructor
+    i32 Bind(i32* tmpl);                  // 0x578170  bind to host template -> nonzero ok
+    void Activate();                      // 0x578750
+    CMultiPlayer* OpenPlayer(char* name); // 0x5786d0 -> the opened player (0 fail)
+    char m_pad04[0x74 - 0x4];
+    CMultiPlayer* m_player; // +0x74  the player StartTitle opened (OpenPlayer result)
 };
 
 // The two lobby heap sub-objects (m_session / m_attractOverlay): each torn down by a thiscall

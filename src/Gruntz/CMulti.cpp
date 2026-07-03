@@ -53,16 +53,9 @@ extern ShowCursorFn g_ShowCursor;
 // The string registry lookup on CMulti::m_stateReg (returns a state pointer or 0). 0x0053c030
 extern "C" void* RegistryFind(void* reg, char* key); // FUN_0053c030 (__cdecl-ish, see body)
 
-// The CNetMgr report-gate (m_netGate) net-bind entry points (reloc-masked thiscall).
-class CMultiNetGate {
-public:
-    i32 Bind(i32* tmpl);        // 0x00578170  bind to the host template -> nonzero ok
-    void Activate();            // 0x00578750
-    i32 OpenPlayer(char* name); // 0x005786d0 -> player id (0 fail)
-};
-
-// The player record OpenPlayer returns (stashed in m_netGate->m_74); its group-name
-// accessor is read in StartTitle. 0x004b76a0.
+// The player record OpenPlayer returns (stashed in m_netGate->m_player); its
+// group-name accessor is read in StartTitle. 0x004b76a0. (The net-bind entry
+// points Bind/Activate/OpenPlayer are now methods of CMultiReportGate in CMulti.h.)
 class CMultiPlayer {
 public:
     char* GroupName(); // 0x004b76a0
@@ -845,18 +838,18 @@ i32 CMulti::StartTitle() {
     tmpl[1] = g_60fab8[1];
     tmpl[2] = g_60fab8[2];
     tmpl[3] = g_60fab8[3];
-    if (((CMultiNetGate*)m_netGate)->Bind(tmpl) == 0) {
+    if (m_netGate->Bind(tmpl) == 0) {
         return 0;
     }
-    ((CMultiNetGate*)m_netGate)->Activate();
-    i32 id = ((CMultiNetGate*)m_netGate)->OpenPlayer(desc->m_8);
-    if (id == 0) {
+    m_netGate->Activate();
+    CMultiPlayer* player = m_netGate->OpenPlayer(desc->m_8);
+    if (player == 0) {
         return 0;
     }
-    *(i32*)((char*)m_netGate + 0x74) = id;
-    CString hostName(*(char**)((char*)desc->m_c + 8)); // desc->m_c->m_8
-    ClearString5a0(hostName);                          // clear m_hostName, return the temp
-    char* grp = ((CMultiPlayer*)(void*)id)->GroupName();
+    m_netGate->m_player = player;
+    CString hostName(desc->m_c->m_8);
+    ClearString5a0(hostName); // clear m_hostName, return the temp
+    char* grp = player->GroupName();
     CString grpName(grp);
     ClearString59c(grpName); // clear m_groupName, return the temp
     i32 r = m_isHost ? RebindHostAlt() : RebindHost();
@@ -1028,7 +1021,6 @@ SIZE_UNKNOWN(CGruntzMgrOptions);
 SIZE_UNKNOWN(CSlotConfig);
 SIZE_UNKNOWN(CMultiLogicList);
 SIZE_UNKNOWN(CMultiLogicNode);
-SIZE_UNKNOWN(CMultiNetGate);
 SIZE_UNKNOWN(CMultiPlayer);
 SIZE_UNKNOWN(CMultiReportGate);
 SIZE_UNKNOWN(CGruntzSoundZ);

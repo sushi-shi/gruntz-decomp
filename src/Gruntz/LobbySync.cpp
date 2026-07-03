@@ -28,8 +28,8 @@ struct CNetEndpoint {
 // --- CNetMgr (only the slots we call) ------------------------------------------
 struct CNetMgr {
     char pad00[0x18];
-    CNetEndpoint* m_endpoint;                       // +0x18 endpoint
-    i32 SetData(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x178fc0
+    CNetEndpoint* m_endpoint;                             // +0x18 endpoint
+    i32 SetData(i32 a, i32 b, i32 c, void* buf, i32 len); // 0x178fc0
 };
 
 // --- A per-channel serializable grunt object (idMap table element). -----------
@@ -93,7 +93,7 @@ struct CCluster0c {
     void Init();                        // 0xc0c20 (CCluster0c::Init)
     i32 M_c0fd0(void* p, i32 v);        // 0xc0fd0
     void M_c1230(i32* a, i32* b);       // 0xc1230
-    i32 M_c12b0(i32 v);                 // 0xc12b0
+    GruntRec* M_c12b0(i32 v);           // 0xc12b0  find the record for `v`, or 0
     void M_c11b0(i32 v);                // 0xc11b0
     i32 M_c0c70(i32 a, void* b, i32 c); // 0xc0c70
     i32 M_bfc70(i32 seq, GruntRec* rec, i32 flag, i32 slot, i32 gruntId); // 0xbfc70
@@ -350,11 +350,10 @@ i32 CLobbySync::SendAll() {
             do {
                 if (inner && inner->m_state == 3 && inner->m_isRemote == 0) {
                     for (i32 v = lo; v <= hi; v++) {
-                        i32 r = outer->M_c12b0(v);
+                        GruntRec* r = outer->M_c12b0(v);
                         if (r) {
                             i32 flag = (v == hi) ? 3 : 1;
-                            if (m_slots[0]
-                                    .M_bfc70(v, (GruntRec*)r, flag, oi, inner->m_desc->m_netId)) {
+                            if (m_slots[0].M_bfc70(v, r, flag, oi, inner->m_desc->m_netId)) {
                                 count++;
                             }
                         }
@@ -403,7 +402,7 @@ i32 CLobbySync::SendOne(CCluster0c* slot, i32 val) {
                m_localDesc->m_playerId,
                slot->m_desc->m_netId,
                0,
-               (i32)&gB_flag,
+               &gB_flag,
                entry->m_payloadLen + 0xe
            )
            == 0;
@@ -428,7 +427,7 @@ i32 CCluster0c::M_bfc70(i32 seq, GruntRec* rec, i32 flag, i32 slot, i32 gruntId)
     gA_e08 = rec->m_count;
     memcpy(&gA_data, rec->m_payload, rec->m_payloadLen);
     return ((CNetMgr*)m_08)
-               ->SetData(m_desc->m_playerId, gruntId, 0, (i32)&gA_flag, rec->m_payloadLen + 0xf)
+               ->SetData(m_desc->m_playerId, gruntId, 0, &gA_flag, rec->m_payloadLen + 0xf)
            == 0;
 }
 

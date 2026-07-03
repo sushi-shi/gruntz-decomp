@@ -189,6 +189,9 @@ public:
 //   base CDialog(0xc5, pParent); m_5c = a0; m_slotList = 0; m_6c = 0;
 //   CString @+0x70; CObList(0xa) @+0x74; then g_64bd5c = g_gameReg->m_curState.
 // ---------------------------------------------------------------------------
+// The player-slot list (m_slotList) - full definition is TU-local in Dialogs.cpp.
+struct CMultiSlotList;
+
 SIZE_UNKNOWN(CMultiStartDlg);
 class CMultiStartDlg : public CDialog {
 public:
@@ -228,12 +231,12 @@ public:
         return this == 0 ? 0 : *(i32*)((char*)this + 0x1c);
     }
 
-    i32 m_5c;        // +0x5c  (= a0)
-    i32 m_slotList;  // +0x60  (= 0; the CMultiSlotList* built in BuildSlotList)
-    char m_pad64[8]; // +0x64
-    i32 m_6c;        // +0x6c  (= 0)
-    CString m_70;    // +0x70  (default CString)
-    CObList m_74;    // +0x74  (CObList(0xa))
+    i32 m_5c;                   // +0x5c  (= a0; a CNetDlgHost* punned as a CMultiSlot[])
+    CMultiSlotList* m_slotList; // +0x60  (= 0; built in BuildSlotList)
+    char m_pad64[8];            // +0x64
+    i32 m_6c;                   // +0x6c  (= 0)
+    CString m_70;               // +0x70  (default CString)
+    CObList m_74;               // +0x74  (CObList(0xa))
 };
 
 // CCheckpointDlg - trivial CDialog (resource 0xcd); ctor only.

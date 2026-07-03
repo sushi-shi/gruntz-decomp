@@ -77,7 +77,7 @@ SIZE(CNetSessionDesc, 0x50); // the 0x50-byte DPSESSIONDESC2
 class CNetPlayerListNode : public CNetNodeBase {
 public:
     virtual ~CNetPlayerListNode();
-    i32 Init(void* desc);
+    i32 Init(CNetSessionDesc* desc);
 
     CNetSessionDesc m_desc; // +0x04  the deep-copied 0x50-byte DPSESSIONDESC2
                             //        (name/password strdup'd in place)
@@ -155,8 +155,7 @@ CNetSessionNode::~CNetSessionNode() {
 // pointers). Returns 0 on a null desc, 1 otherwise. __thiscall, ret 4.
 // ===========================================================================
 RVA(0x001795a0, 0xdb)
-i32 CNetPlayerListNode::Init(void* desc) {
-    CNetSessionDesc* src = (CNetSessionDesc*)desc;
+i32 CNetPlayerListNode::Init(CNetSessionDesc* src) {
     if (!src) {
         return 0;
     }
