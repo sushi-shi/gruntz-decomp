@@ -21,6 +21,7 @@ SIZE_UNKNOWN(CActName);
 SIZE_UNKNOWN(CGameRegistry);
 SIZE_UNKNOWN(CGameViewport);
 SIZE_UNKNOWN(CSpriteFactoryHolder);
+SIZE(CFocusSlot, 0x238);
 SIZE_UNKNOWN(CTileGrid);
 // CState.h
 SIZE_UNKNOWN(CState);

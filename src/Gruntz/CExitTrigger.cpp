@@ -72,19 +72,9 @@ struct CExitMgr30 {
 };
 SIZE_UNKNOWN(CExitMgr30);
 
-// The focused-warlord cue slot (g_gameReg+0x150, stride 0x238, indexed by the
-// bound object's area index m_124): +0x20 the live gate, +0xc the stored id,
-// +0x220/+0x224 the snapped trigger position.
-struct CExitFocusSlot {
-    char m_pad00[0x0c];
-    i32 m_0c; // +0x0c
-    char m_pad10[0x20 - 0x10];
-    i32 m_20; // +0x20  live gate
-    char m_pad24[0x220 - 0x24];
-    i32 m_220; // +0x220
-    i32 m_224; // +0x224
-};
-SIZE_UNKNOWN(CExitFocusSlot);
+// The focused-warlord cue slot is CFocusSlot, the g_exitGameReg->m_focusSlots[]
+// element (<Gruntz/CGameRegistry.h>), indexed by the bound object's area index
+// m_124: m_20 the live gate, m_0c the stored id, m_220/m_224 the snapped position.
 
 // The cue receiver (g_gameReg->m_68): +0x2a0 holds the active warlord id.
 struct CExitCueSink {
@@ -135,8 +125,7 @@ CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj) {
     m_savedGeoId = m_38->m_geoId;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     m_warlordId = 0;
-    CExitFocusSlot* slot =
-        (CExitFocusSlot*)((char*)g_exitGameReg + m_object->m_124 * 0x238 + 0x150);
+    CFocusSlot* slot = &g_exitGameReg->m_focusSlots[m_object->m_124];
     if (slot->m_20 == 0) {
         m_resolved = 0;
         return;
@@ -153,8 +142,7 @@ CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj) {
         if (m_object->m_124 == g_644c54) {
             ((CExitCueSink*)g_exitGameReg->m_68)->m_2a0 = m_warlordId;
         }
-        CExitFocusSlot* slot2 =
-            (CExitFocusSlot*)((char*)g_exitGameReg + m_object->m_124 * 0x238 + 0x150);
+        CFocusSlot* slot2 = &g_exitGameReg->m_focusSlots[m_object->m_124];
         if (slot2 != 0) {
             slot2->m_0c = e->m_188;
         }

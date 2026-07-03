@@ -565,7 +565,8 @@ CBattlezMapConfig::~CBattlezMapConfig() {
 // ===========================================================================
 RVA(0x00025c20, 0x55)
 i32 CBattlezMapConfig::Method_025c20() {
-    if (g_gameReg[m_curCell].m_164 == 0 && g_gameReg[m_curCell].m_170 != 0) {
+    if (g_gameReg->m_focusSlots[m_curCell].m_14 == 0
+        && g_gameReg->m_focusSlots[m_curCell].m_20 != 0) {
         for (i32 i = 0; i < m_candArray.GetSize(); i++) {
             ((ElementRefresher*)this)->Refresh(0);
         }

@@ -1199,7 +1199,7 @@ void CGrunt::Stub_0633e0() {
         CGameRegistry* g = g_pGameRegistry;
         i32 mode = g->m_134;
         if (mode != 1) {
-            CFocusSlot* slot = (CFocusSlot*)((char*)g + 0x150 + m_tileOwnerHi * 0x238);
+            CFocusSlot* slot = &g->m_focusSlots[m_tileOwnerHi];
             if (slot != 0 && slot->m_14 != 0) {
                 if (m_tileClaimed == 0 && m_arrivalNotified == 0 && mode == 2
                     && g_focusedGruntSentinel == m_tileOwnerHi && m_arrived == 0) {

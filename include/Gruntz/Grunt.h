@@ -732,14 +732,10 @@ public:
 // rect. External/no-body (reloc-masked).
 i32 GruntPointVisible(i32 px, i32 py, i32 cmp);
 
-// The registry focused-grunt slot the arrival gate reads: an array at
-// g_pGameRegistry+0x150, stride 0x238 (= 71*8) indexed by the grunt's m_tileOwnerHi.
-// Each slot's +0x14 is a non-null gate the arrival path checks. External view.
-SIZE_UNKNOWN(CFocusSlot);
-struct CFocusSlot {
-    char m_pad0[0x14];
-    i32 m_14; // +0x14
-};
+// The registry focused-grunt slot the arrival gate reads is CFocusSlot, the
+// canonical element of g_pGameRegistry->m_focusSlots[] (+0x150, stride 0x238),
+// defined in <Gruntz/CGameRegistry.h> (included above). The arrival path checks
+// its +0x14 gate.
 
 // ---------------------------------------------------------------------------
 // The serialization sink CGrunt::Save drives: a custom archive whose vtable

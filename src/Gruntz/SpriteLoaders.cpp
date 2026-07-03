@@ -54,12 +54,9 @@ struct CLevelNotify {
     void Notify(i32 idx);
 };
 
-// One per-player timer slot in the g_gameReg->m_150 array (stride 0x238 bytes);
-// the expiry path sets m_24 = 1.
-struct CTimerSlot {
-    char m_pad00[0x24];
-    i32 m_24; // +0x24
-};
+// The per-player timer slot is CFocusSlot, the g_gameReg->m_focusSlots[] element
+// (<Gruntz/CGameRegistry.h>); the expiry path sets its m_24 = 1, and slot 0's m_0c
+// holds the level/entity key.
 
 // The loading bar reaches the resource object through this->m_resMgr (its own CResMgr).
 // The canonical CGameRegistry view of the singleton (*0x24556c). The resource mgr
@@ -317,11 +314,11 @@ i32 CTimer::Tick(i32 dt) {
         ls->m_3f8 = g_645588;
         ls->m_3fc = 0;
         ((CLevelNotify*)g_gameReg->m_68)->Notify(g_644c54);
-        CTimerSlot* slot = (CTimerSlot*)((char*)g_gameReg + 0x150 + g_644c54 * 0x238);
+        CFocusSlot* slot = &g_gameReg->m_focusSlots[g_644c54];
         if (slot != 0) {
             slot->m_24 = 1;
         }
-        i32* key = *(i32**)((char*)g_gameReg + 0x15c);
+        i32* key = (i32*)g_gameReg->m_focusSlots[0].m_0c;
         if (key != 0) {
             i32 found = 0;
             CTimerNotifyObj* obj = (CTimerNotifyObj*)((CKeyTable*)g_gameReg->m_world->m_8)
@@ -335,7 +332,7 @@ i32 CTimer::Tick(i32 dt) {
     }
 
     if ((u32)v < 0xea60) {
-        i32* key = *(i32**)((char*)g_gameReg + 0x15c);
+        i32* key = (i32*)g_gameReg->m_focusSlots[0].m_0c;
         if (key != 0) {
             i32 found = 0;
             CTimerNotifyObj* obj = (CTimerNotifyObj*)((CKeyTable*)g_gameReg->m_world->m_8)
@@ -619,4 +616,3 @@ SIZE_UNKNOWN(CTimer);
 SIZE_UNKNOWN(CTimerArchive);
 SIZE_UNKNOWN(CTimerFrame);
 SIZE_UNKNOWN(CTimerNotifyObj);
-SIZE_UNKNOWN(CTimerSlot);

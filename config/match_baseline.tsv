@@ -501,7 +501,7 @@ triggersound	1	1
 trirecordserialize	2	2
 typekeycoll	10	5
 uncompr	1	1
-unknownclassarrays	41	9
+unknownclassarrays	41	10
 unknownclassincgruntzmgr	2	0
 unknownfileioctor	1	1
 userbaselink	10	0
@@ -1246,7 +1246,7 @@ cdroppedobject	?RegisterActs@CDroppedObject@@SAXXZ	78.5473	78.5473	1	ddf90768718
 cdroppedobject	?RegisterRange@CDroppedObject@@SAXXZ	100.0000	100.0000	1	f8dddf603c11	0xc6b50
 cdroppedobjectshadow	??0CDroppedObjectShadow@@QAE@PAUCGameObject@@@Z	85.0841	85.0841	4	1d304a73e46a	0xc7490
 cdroppedobjectshadow	??1CDroppedObjectShadow@@UAE@XZ	100.0000	100.0000	1	590f3131b16f	0x12670
-cexittrigger	??0CExitTrigger@@QAE@PAUCGameObject@@@Z	89.3461	89.3461	7	b6161e87abe9	0x3ecf0
+cexittrigger	??0CExitTrigger@@QAE@PAUCGameObject@@@Z	89.3461	89.3461	8	62f34e28540a	0x3ecf0
 cexittrigger	??1CExitTrigger@@UAE@XZ	100.0000	100.0000	1	db4d24e6c64d	0x108c0
 cexittrigger	?GetTypeTag@CExitTrigger@@QAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	b758b1ebc8e1	0x10870
 cexplosion	??0CExplosion@@QAE@PAUCGameObject@@@Z	91.6837	91.6837	3	77cc7ec70c6b	0x470e0
@@ -1466,15 +1466,15 @@ clightfxrender	?DrawBorder@CLightFxRender@@QAEXPAULfxRect@@PAULfxBorderCtx@@H@Z	
 clightfxrender	?FillSpan@CLightFxRender@@QAEXIIG@Z	100.0000	100.0000	3	c55474f29497	0xa4840
 clightfxrender	?FreeSurface@CLightFxRender@@QAEXXZ	100.0000	100.0000	2	da67a5d46b41	0xa33a0
 clightfxrender	?Init@CLightFxRender@@QAEHPAULfxMgr@@H@Z	100.0000	100.0000	6	eab4b3980135	0xa32c0
-clightfxrender	?Resize@CLightFxRender@@QAEHHH@Z	49.0126	49.0126	4	0d5d75ead4f8	0xa3460
-clightfxrender	?Shape1@CLightFxRender@@QAEHXZ	73.7469	73.7469	4	6af232188686	0xa3dc0
-clightfxrender	?Shape2@CLightFxRender@@QAEHXZ	74.5914	74.5914	4	18e314ea32f2	0xa4890
-clightfxrender	?Shape3@CLightFxRender@@QAEHXZ	74.0298	74.0298	4	56c226194d5c	0xa5310
+clightfxrender	?Resize@CLightFxRender@@QAEHHH@Z	47.7773	47.7773	4	0d5d75ead4f8	0xa3460
+clightfxrender	?Shape1@CLightFxRender@@QAEHXZ	73.7857	73.7857	4	6af232188686	0xa3dc0
+clightfxrender	?Shape2@CLightFxRender@@QAEHXZ	74.6170	74.6170	4	18e314ea32f2	0xa4890
+clightfxrender	?Shape3@CLightFxRender@@QAEHXZ	72.7320	72.7320	4	56c226194d5c	0xa5310
 clightfxrender	?Shape4@CLightFxRender@@QAEHXZ	69.8244	69.8244	4	859e6df61580	0xa5d90
-clightfxrender	?Shape5@CLightFxRender@@QAEHXZ	74.0667	74.0667	4	158440af6457	0xa67d0
-clightfxrender	?Shape6@CLightFxRender@@QAEHXZ	77.4473	77.4473	4	e353a843eb8e	0xa7260
-clightfxrender	?Shape7@CLightFxRender@@QAEHXZ	73.8223	73.8223	4	2ac3e51a74b2	0xa7d50
-clightfxrender	?Shape8@CLightFxRender@@QAEHXZ	68.0960	68.0960	4	41419e5ec730	0xa8900
+clightfxrender	?Shape5@CLightFxRender@@QAEHXZ	73.8760	73.8760	4	158440af6457	0xa67d0
+clightfxrender	?Shape6@CLightFxRender@@QAEHXZ	77.4322	77.4322	4	e353a843eb8e	0xa7260
+clightfxrender	?Shape7@CLightFxRender@@QAEHXZ	73.3526	73.3526	4	2ac3e51a74b2	0xa7d50
+clightfxrender	?Shape8@CLightFxRender@@QAEHXZ	70.0243	70.0243	4	41419e5ec730	0xa8900
 clobbyobjb	??1CLobbyObjB@@QAE@XZ	100.0000	100.0000	1	b5b66af40091	0xb6220
 clobbyobjb	??1CLobbySlot@@QAE@XZ	100.0000	100.0000	1	312133bbe621	0xb62a0
 clobbyobjb	?BuildHostName@CLobbySlot@@QAEPAVCString@@PAV2@@Z	67.2727	67.2727	2	289a83c137b6	0xbc3f0
@@ -1590,7 +1590,7 @@ cplay	?LoadImageBanks@CPlay@@QAEHXZ	100.0000	100.0000	3	7961f8394476	0xcffe0
 cplay	?LoadLevelImages@CPlay@@QAEHH@Z	100.0000	100.0000	4	fc889e191936	0xdb7e0
 cplay	?LoadLevelSounds@CPlay@@QAEHH@Z	100.0000	100.0000	3	ae9b351526fa	0xdb6c0
 cplay	?LoadSBITextEdges@CPlay@@QAEXPAD@Z	97.7831	97.7831	2	07c8a5320451	0xd1710
-cplay	?LoadScrollSpeedOptions@CPlay@@QAEHXZ	86.1450	86.1450	3	881a8cd68b99	0xd12b0
+cplay	?LoadScrollSpeedOptions@CPlay@@QAEHXZ	86.2200	86.2200	3	881a8cd68b99	0xd12b0
 cplay	?LoadWarlordSprites@CPlay@@QAEHHPAH@Z	91.0888	91.0888	2	969efe4aecb2	0xd65d0
 cplay	?ModeCleanup@CPlay@@QAEXXZ	99.6154	99.6154	1	49243b4e5268	0xcb740
 cplay	?NotifyVisibleEntities@CPlay@@QAEHXZ	74.8676	74.8676	3	17e3f8d692d4	0xd9050
@@ -1609,7 +1609,7 @@ cplay	?ProfileInputFrame@CPlay@@QAEHXZ	97.2115	97.2115	4	fa8d655d626e	0xc9e40
 cplay	?RegionEnter@CPlay@@QAEXXZ	100.0000	100.0000	4	52641344d364	0xd88f0
 cplay	?RegionLeave@CPlay@@QAEXXZ	100.0000	100.0000	5	99bd9d67810e	0xd8960
 cplay	?RegisterInputBindings@CPlay@@QAEHXZ	100.0000	100.0000	2	2b2e83b92f68	0xd9160
-cplay	?Render@CPlay@@UAEHXZ	0.0000	0.0000	12	fdfe0b5bee85	0xc8cf0
+cplay	?Render@CPlay@@UAEHXZ	0.0000	0.0000	13	067b030d6a66	0xc8cf0
 cplay	?ResetForMode@CPlay@@QAEHH@Z	100.0000	100.0000	3	0ba1da96fa4e	0xc8a10
 cplay	?ResetGoals@CPlay@@QAEHHH@Z	100.0000	100.0000	4	61bbce2789e6	0xd5f00
 cplay	?ResetPlayState@CPlay@@QAEHXZ	92.0100	92.0100	3	774ba45b3dce	0xd60b0
@@ -2215,7 +2215,7 @@ grunt	?BuildEntranceAnimation@CGrunt@@QAEXH@Z	71.4562	71.4562	8	1b10a4a61e60	0x6
 grunt	?BuildGruntExitAnimation@CGrunt@@QAEHXZ	99.0509	99.0509	6	576eed3f032a	0x641b0
 grunt	?BuildGruntLoseItemAnimation@CGrunt@@QAEHXZ	99.9032	99.9032	3	a7b05c5f0d12	0x57890
 grunt	?CGrunt_IsSameType@@YA_NPAVCGrunt@@0@Z	100.0000	100.0000	1	04ada45b6431	0x3c7f0
-grunt	?CGrunt_SegBoxOverlap@@YGHPAUGruntBox@@PAUGruntSegEnd@@1@Z	77.7970	77.7970	1	bb4ee352e2c0	0x62b70
+grunt	?CGrunt_SegBoxOverlap@@YGHPAUGruntBox@@PAUGruntSegEnd@@1@Z	78.7228	78.7228	1	bb4ee352e2c0	0x62b70
 grunt	?CGrunt_TileSwitch@@YGXHHHHHH@Z	66.2000	66.2000	2	e4d83b1d7834	0x4b320
 grunt	?CanShowStamina@CGrunt@@QAEHXZ	100.0000	100.0000	5	45397f7f939c	0x514a0
 grunt	?ClaimSwitchTile@CGrunt@@QAEHXZ	61.5954	61.5954	4	6dc9c894153f	0x52c70
@@ -2290,15 +2290,15 @@ grunt	?StepEntranceReinit@CGrunt@@QAEHXZ	74.9359	74.9359	6	c3b1e5877836	0x637a0
 grunt	?StepGruntMovement@CGrunt@@QAEHXZ	5.1672	5.1672	3	d6bbba644473	0x4c170
 grunt	?Stub_048470@CGrunt@@QAEXHH@Z	99.6420	99.6420	6	536f85bf8f98	0x48470
 grunt	?Stub_062e10@CGrunt@@QAEXHHH@Z	28.9443	28.9443	10	18f18b99bd6c	0x62e10
-grunt	?Stub_0633e0@CGrunt@@QAEXXZ	86.4115	86.4115	9	ca2fbc8b7879	0x633e0
+grunt	?Stub_0633e0@CGrunt@@QAEXXZ	86.4115	86.4115	10	f4758afd4171	0x633e0
 grunt	?TryPowerupAtTile@CGrunt@@QAEHXZ	93.3115	93.3115	2	d49df43e6e75	0x57aa0
 grunt	?UpdateArrival@CGrunt@@QAEHHH@Z	71.2050	71.2050	8	5dee4c3d1d32	0x62110
 grunt	?UpdateEntranceAnim@CGrunt@@QAEHXZ	88.3088	88.3088	6	478c64e17a59	0x690a0
 grunt	?UpdateGruntStatus@CGrunt@@QAEHXZ	94.5000	94.5000	5	4e87d39bdcf0	0x617c0
 grunt	?winapi_04a9f0_CopyRect_OffsetRect@CGrunt@@QAEHXZ	100.0000	100.0000	1	dbbfdbcac471	0x4a9f0
 gruntarrivalscan	?ArrivalScanA@CGruntStep@@QAEHXZ	51.2879	51.2879	3	c35b2dc7bbc8	0xecc90
-gruntarrivalscan	?ArrivalScanB@CGruntStep@@QAEHXZ	45.3241	45.3241	3	6d2783aea21c	0xf0e20
-gruntarrivalscan	?ArrivalScanC@CGruntStep@@QAEHXZ	45.3877	45.3877	3	20119696efc5	0xf36a0
+gruntarrivalscan	?ArrivalScanB@CGruntStep@@QAEHXZ	45.3379	45.3379	3	6d2783aea21c	0xf0e20
+gruntarrivalscan	?ArrivalScanC@CGruntStep@@QAEHXZ	45.3710	45.3710	3	20119696efc5	0xf36a0
 gruntarrivalstep	?StepArrivalDefenseAlt@CGrunt@@QAEHXZ	69.8771	69.8771	5	3fc5aa52df45	0xf1c70
 gruntarriveresolve	?Resolve2c690@CArriveMgr@@QAEHPAUCArriveGrunt@@@Z	23.5223	23.5223	1	be17b57152b2	0x2c690
 gruntassetloaders	?LoadGruntAbilityTuning@CGrunt@@QAEHH@Z	90.5457	90.5457	5	d76bb29395b5	0x57100
@@ -2462,7 +2462,7 @@ gruntzmgr	?SaveGameAs@CGruntzMgr@@QAEHXZ	100.0000	100.0000	2	88a755234127	0x92f0
 gruntzmgr	?SaveState@CGruntzMgr@@QAEHPAVCSerializerZ@@@Z	100.0000	100.0000	5	efedab78bb9d	0x93620
 gruntzmgr	?ScalarDeletingDtor@CGruntzMgr@@QAEPAXI@Z	100.0000	100.0000	1	2b7667fab811	0x83330
 gruntzmgr	?SetCellHeight@CGruntzMgr@@QAEXHHH@Z	100.0000	100.0000	5	3ad7507b7fac	0x111ec0
-gruntzmgr	?SetColorDepth@CGruntzMgr@@QAEHH@Z	80.2766	80.2766	2	10fc25db2ccc	0x91170
+gruntzmgr	?SetColorDepth@CGruntzMgr@@QAEHH@Z	82.8298	82.8298	2	10fc25db2ccc	0x91170
 gruntzmgr	?SetGameClock@CGruntzMgr@@QAEXHHH@Z	100.0000	100.0000	2	6f4e825cb466	0x8f7b0
 gruntzmgr	?SetGruntColor@CGruntzMgr@@QAEHHHH@Z	95.8140	95.8140	2	ed03f5b163ff	0x910d0
 gruntzmgr	?SetRunState@CGruntzMgr@@QAEXH@Z	99.6154	99.6154	2	7961061bdcab	0x92340
@@ -3324,7 +3324,7 @@ spriteloaders	?LoadTimerSprite@CTimer@@QAEHHH@Z	96.5217	96.5217	13	c45a4040f261	
 spriteloaders	?Reset@CTimer@@QAEXXZ	100.0000	100.0000	2	dd0302b1e608	0x9bc70
 spriteloaders	?Serialize@CTimer@@QAEHPAUCTimerArchive@@@Z	100.0000	100.0000	7	be65b86aad5a	0x9c2e0
 spriteloaders	?SetTime@CTimer@@QAEXHH@Z	100.0000	100.0000	2	f288f6e11299	0x9c090
-spriteloaders	?Tick@CTimer@@QAEHH@Z	85.7981	85.7981	9	e5b96b539534	0x9bca0
+spriteloaders	?Tick@CTimer@@QAEHH@Z	85.7981	85.7981	10	a3dcb4ab92e9	0x9bca0
 spriteref	?Build@CSpriteRef@@QAEHHPAXH@Z	93.4364	93.4364	2	51d350cac4d3	0xe2df0
 spriteref	?Free@CSpriteRef@@QAEXXZ	100.0000	100.0000	2	d35509e9f073	0xe32e0
 spritereftable	?Add@CSpriteRefTable@@QAEPAVCSpriteRef@@PADH@Z	97.5000	97.5000	3	b754d6d004ae	0xe2890
@@ -3587,7 +3587,7 @@ unknownclassarrays	??1CBattlezMapConfig@@QAE@XZ	100.0000	100.0000	1	ce3e1b13b0fa
 unknownclassarrays	?Clear_02ade0@CBattlezMapConfig@@QAEXXZ	100.0000	100.0000	1	8db44dca9da5	0x2ade0
 unknownclassarrays	?Deserialize_02b950@CBattlezMapConfig@@QAEHPAX@Z	99.5079	99.5079	1	d1be1d35d0f8	0x2b950
 unknownclassarrays	?FreeArrays@CBattlezMapConfig@@QAEXXZ	100.0000	100.0000	1	c1d6cf47476b	0x25ca0
-unknownclassarrays	?Method_025c20@CBattlezMapConfig@@QAEHXZ	84.9333	84.9333	1	a3ab129ee890	0x25c20
+unknownclassarrays	?Method_025c20@CBattlezMapConfig@@QAEHXZ	100.0000	100.0000	2	0609a50d52b9	0x25c20
 unknownclassarrays	?Method_025d90@CBattlezMapConfig@@QAEHXZ	75.6087	75.6087	2	ac19523724a5	0x25d90
 unknownclassarrays	?Method_026470@CBattlezMapConfig@@QAEHH@Z	83.1071	83.1071	2	f738071bf7eb	0x26470
 unknownclassarrays	?Method_029b40@CBattlezMapConfig@@QAEHH@Z	24.7804	24.7804	3	7a02ee4067ce	0x29b40
@@ -3764,8 +3764,8 @@ wormhole	?ReapplyConfig@CWormhole@@QAEHXZ	100.0000	100.0000	3	69947df2d77f	0x412
 wormhole	?RegisterWormholeLogic@@YAXXZ	96.4783	96.4783	1	81619d8095cc	0x401b0
 wormhole	?Serialize@CWormhole@@QAEHHHHH@Z	100.0000	100.0000	5	93c10bb452a1	0x3fed0
 wormhole	?SpawnPartners@CWormhole@@QAEXXZ	93.1500	93.1500	6	0d51aeeff76e	0x403b0
-wwdfile	?CenterScrollA@CPlaneRender@@QAEHXZ	87.9464	87.9464	1	caafea006407	0x163300
-wwdfile	?CenterScrollB@CPlaneRender@@QAEHXZ	87.8750	87.8750	1	3eb87c589b6b	0x163370
+wwdfile	?CenterScrollA@CPlaneRender@@QAEHXZ	87.8750	87.8750	1	caafea006407	0x163300
+wwdfile	?CenterScrollB@CPlaneRender@@QAEHXZ	87.9464	87.9464	1	3eb87c589b6b	0x163370
 wwdfile	?Draw@CPlaneRender@@QAEXPAX@Z	0.1391	0.1391	1	f705be10435a	0x162010
 wwdfile	?GetMapBaseName@WwdFile@@SA?AVCString@@V2@@Z	83.2887	83.2887	1	83d1487fabc1	0x3bb50
 wwdfile	?GetTileHandle@CPlaneRender@@QAEHHH@Z	100.0000	100.0000	1	4af6f718138d	0xd53a0

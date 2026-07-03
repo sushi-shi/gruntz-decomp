@@ -32,7 +32,6 @@ struct CSoundFactory;
 struct CSoundHandle;
 struct CActivatable;
 struct CBzData;
-struct PlayerSlot;
 
 // The free-running game clock (DAT_00645588), read as an unsigned 32-bit tick and
 // zero-extended into the 64-bit countdown subtracts.
@@ -127,17 +126,9 @@ struct CBzData {
     void MarkFlag(i32, i32); // 0xfcb50
 };
 
-// One player slot (g_gameReg + 0x150, stride 0x238): m_joined, m_done, the
-// m_cleared "already cleared this round" mark, and m_soundId (the row's sound id).
-struct PlayerSlot {
-    char _0[0xc];
-    i32 m_soundId; // +0xc
-    char _10[0x24 - 0x10];
-    i32 m_cleared; // +0x24
-    i32 m_joined;  // +0x28
-    i32 m_done;    // +0x2c
-    char _30[0x238 - 0x30];
-};
+// One player slot is CFocusSlot, the g_gameReg->m_focusSlots[] element
+// (<Gruntz/CGameRegistry.h>): m_28 joined, m_2c done, m_24 the "already cleared
+// this round" mark, m_0c the row's sound id.
 
 // The game-registry singleton, canonical CGameRegistry view. The slots this TU
 // walks are typed there; the local casts below are AUTHENTIC view/downcasts, not
@@ -241,10 +232,10 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
 
     // Count joined-and-alive players; remember the last slot scanned.
     i32 count = 0;
-    PlayerSlot* pslot = 0;
+    CFocusSlot* pslot = 0;
     for (i32 k = 0; k < 4; k++) {
-        pslot = (PlayerSlot*)((char*)g_gameReg + 0x150 + k * 0x238);
-        if (pslot->m_joined && !pslot->m_done && !pslot->m_cleared) {
+        pslot = &g_gameReg->m_focusSlots[k];
+        if (pslot->m_28 && !pslot->m_2c && !pslot->m_24) {
             count++;
         }
     }
@@ -291,19 +282,19 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
         if (g_gameReg->m_134 != 1) {
             i32 idx = obj->ClearPlacedObjects();
             if (idx != -1) {
-                PlayerSlot* lastSlot = pslot;
+                CFocusSlot* lastSlot = pslot;
                 i32 i;
                 for (i = 0, off = 0; off < 0x8e0; i++, off += 0x238) {
                     if (i != idx) {
                         if (g_644c54 == i) {
                             Notify(5);
                         }
-                        PlayerSlot* slot = (PlayerSlot*)((char*)g_gameReg + 0x150 + off);
-                        if (slot && slot->m_joined && !slot->m_done && !slot->m_cleared) {
-                            slot->m_cleared = 1;
+                        CFocusSlot* slot = (CFocusSlot*)((char*)g_gameReg + 0x150 + off);
+                        if (slot && slot->m_28 && !slot->m_2c && !slot->m_24) {
+                            slot->m_24 = 1;
                             CLookObj* out = 0;
                             if (((CMgrHolderX*)g_gameReg->m_world)
-                                    ->m_idMap->m_map48.Lookup(slot->m_soundId, out)
+                                    ->m_idMap->m_map48.Lookup(slot->m_0c, out)
                                 && out) {
                                 if (out->m_host->m_anim) {
                                     out->m_host->m_anim->ResolveDeathAnimation();
@@ -315,11 +306,10 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
                         if (g_644c54 == i) {
                             ((CGooWellMgr*)g_gameReg->m_68)->Notify(2);
                         }
-                        if (lastSlot && lastSlot->m_joined && !lastSlot->m_done
-                            && !lastSlot->m_cleared) {
+                        if (lastSlot && lastSlot->m_28 && !lastSlot->m_2c && !lastSlot->m_24) {
                             CLookObj* out = 0;
                             if (((CMgrHolderX*)g_gameReg->m_world)
-                                    ->m_idMap->m_map48.Lookup(lastSlot->m_soundId, out)
+                                    ->m_idMap->m_map48.Lookup(lastSlot->m_0c, out)
                                 && out) {
                                 if (out->m_host->m_anim) {
                                     out->m_host->m_anim->ResolveAnimation();
@@ -372,8 +362,8 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
             if (i == g_644c54) {
                 continue;
             }
-            PlayerSlot* slot = (PlayerSlot*)((char*)g_gameReg + 0x150 + i * 0x238);
-            if (slot->m_joined && !slot->m_done && !slot->m_cleared) {
+            CFocusSlot* slot = &g_gameReg->m_focusSlots[i];
+            if (slot->m_28 && !slot->m_2c && !slot->m_24) {
                 goto done;
             }
         }
@@ -397,5 +387,4 @@ SIZE_UNKNOWN(CGaugeObj);
 SIZE_UNKNOWN(CGameObj2c);
 SIZE_UNKNOWN(CActivatable);
 SIZE_UNKNOWN(CBzData);
-SIZE_UNKNOWN(PlayerSlot);
 SIZE_UNKNOWN(CGooWellMgr);

@@ -93,6 +93,32 @@ struct CSpriteFactoryHolder {
 // 0x20 in cell byte+3 and writes a packed (m_1ec<<8)|m_1f0 owner word into cell[1].
 #include <Gruntz/CTileGrid.h>
 
+// One per-player focus/registry slot: the element of the +0x150 array (4 records
+// of 0x238 bytes; == the retail CGruntzMgr m_options[4]). It is ONE real record
+// whose fields are REUSED per game-mode - a same-struct field overlay, not a set
+// of distinct types (unlike the +0x68/+0x7c object slots which hold genuinely
+// different classes). The fields named here are the offsets the game-mode
+// consumers read: the two arrival/active gates (+0x14, +0x20), the join/done/
+// cleared round-state trio (+0x24/+0x28/+0x2c), the per-mode id/sound/key word at
+// +0x0c, and the snapped focus position (+0x220/+0x224). The role of m_0c varies
+// by mode (sound id in battlez, entity id in the exit trigger, a key pointer in
+// the sprite loader) so it is a plain i32 the pointer-consumer reinterprets.
+struct CFocusSlot {
+    char m_pad0[0x0c];
+    i32 m_0c; // +0x0c  per-mode id / sound id / key word
+    char m_pad10[0x14 - 0x10];
+    i32 m_14; // +0x14  arrival/load gate (grunt step; not-yet-loaded test)
+    char m_pad18[0x20 - 0x18];
+    i32 m_20; // +0x20  live/active gate
+    i32 m_24; // +0x24  "already cleared this round" mark / timer-expiry flag
+    i32 m_28; // +0x28  joined
+    i32 m_2c; // +0x2c  done
+    char m_pad30[0x220 - 0x30];
+    i32 m_220; // +0x220  snapped focus X
+    i32 m_224; // +0x224  snapped focus Y
+    char m_pad228[0x238 - 0x228];
+};
+
 struct CGameRegistry {
     // The entrance-reset cue-prep call (thunk_FUN_0040cd00, __thiscall ret 0): run
     // once before the focused-grunt cue test. External/no-body (reloc-masked).
@@ -185,15 +211,12 @@ struct CGameRegistry {
     i32 m_viewOriginT; // +0x140  view min Y
     i32 m_viewOriginR; // +0x144  view max X
     i32 m_viewOriginB; // +0x148  view max Y
-    char m_pad14c[0x158 - 0x14c];
-    // 0x150.. is the CGruntzMgr m_options[4] (4 x 0x238 options/registry slots ->
-    // 0xa30 total); grunt TUs view individual scalars inside it:
-    i32 m_158;   // +0x158  base of a per-player / world slot table (in m_options)
-    void* m_15c; // +0x15c  level/entity-tree holder (in m_options[0])
-    char m_pad160[0x164 - 0x160];
-    i32 m_164; // +0x164
-    char m_pad168[0x170 - 0x168];
-    i32 m_170; // +0x170
+    char m_pad14c[0x150 - 0x14c];
+    // The per-player focus/registry slot array (== CGruntzMgr m_options[4]): 4
+    // records of 0x238 bytes -> 0xa30 total, making sizeof(CGameRegistry) exactly
+    // the retail `new` size 0xa30 (CGruntzApp::InitializeGameManager push 0xa30).
+    // Consumers index it cast-free via m_focusSlots[k].
+    CFocusSlot m_focusSlots[4]; // +0x150  stride 0x238
 };
 
 #endif // GRUNTZ_GRUNTZ_CGAMEREGISTRY_H

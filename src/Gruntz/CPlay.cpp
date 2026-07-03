@@ -461,9 +461,9 @@ i32 CPlay::Render() {
                 GutsStepC(); // m_guts
                 m_snapshotActive = 0;
                 // walk the level tree (CMapPtrToPtr::Lookup):
-                if (g_64556c->m_15c != 0) {
+                if (g_64556c->m_focusSlots[0].m_0c != 0) {
                     void* out = 0;
-                    MapLookup(g_64556c->m_world->m_8, g_64556c->m_15c, out);
+                    MapLookup(g_64556c->m_world->m_8, (void*)g_64556c->m_focusSlots[0].m_0c, out);
                     if (out != 0) {
                         SnapWalk();
                     }
