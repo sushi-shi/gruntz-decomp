@@ -114,7 +114,7 @@ public:
 // with fields at 0x04/0x08/0x0c; the cluster reads 0x0c/0x10/0x14/0x18/0x2c/0x48/0x54
 // and is constructed by Constructor_157630, whose vtable is g_wapObjectDtorVtbl).
 // The cluster carries TWO objects:
-//   - the worker MANAGER (this == 0x158xxx methods): m_0c worker, m_10/m_14/m_18
+//   - the worker MANAGER (this == 0x158xxx methods): m_worker worker, m_frontPair/m_backPair/m_overlayPair
 //     polymorphic surface-pairs, m_2c/m_48 CMaps, m_54 bool.
 //   - a small per-frame BLIT-PARAM/element struct (this == 0x15c2xx methods):
 //     fields 0x10..0x38, vtable slot 6 = the 12-byte zero-init at 0x15c2c0.
@@ -161,8 +161,8 @@ public:
 class CDDrawWorkerGeom {
 public:
     char m_pad00[0x14]; // +0x00 .. +0x13
-    i32 m_14;           // +0x14  (1st dispatch arg)
-    i32 m_18;           // +0x18  (2nd dispatch arg)
+    i32 m_width;        // +0x14  (1st dispatch arg)
+    i32 m_height;       // +0x18  (2nd dispatch arg)
 };
 
 // A polymorphic dispatcher held at the node's +0x08: vtable slot 0x2c is a
@@ -187,11 +187,11 @@ public:
 // and a flag word @0x34 (bit1 tested).
 class CDDrawWorkerNode {
 public:
-    char m_pad00[0x04];     // +0x00 .. +0x03
-    CDDrawWorkerGeom* m_04; // +0x04
-    CDDrawWorkerDisp* m_08; // +0x08
+    char m_pad00[0x04];       // +0x00 .. +0x03
+    CDDrawWorkerGeom* m_geom; // +0x04
+    CDDrawWorkerDisp* m_disp; // +0x08
     char m_pad0c[0x34 - 0x0c];
-    i32 m_34flagAt; // +0x34 flag word (bit1 tested)
+    i32 m_flags; // +0x34 flag word (bit1 tested)
 };
 
 // The worker manager (this for the 0x158xxx methods).  Polymorphic: its own
@@ -230,11 +230,11 @@ public:
     i32 Method_158ee0();
     void Method_159ef0();
 
-    char m_pad04[0x0c - 0x04]; // +0x04 .. +0x0b
-    CDDrawWorkerNode* m_0c;    // +0x0c worker (flag at [+0x34])
-    CDDrawSurfacePair* m_10;   // +0x10
-    CDDrawSurfacePair* m_14;   // +0x14
-    CDDrawSurfacePair* m_18;   // +0x18
+    char m_pad04[0x0c - 0x04];        // +0x04 .. +0x0b
+    CDDrawWorkerNode* m_worker;       // +0x0c worker (flag at [+0x34])
+    CDDrawSurfacePair* m_frontPair;   // +0x10
+    CDDrawSurfacePair* m_backPair;    // +0x14
+    CDDrawSurfacePair* m_overlayPair; // +0x18
 };
 
 // The small per-frame blit-param/element struct (this for the 0x15c2xx methods).
@@ -243,10 +243,10 @@ public:
 class CDDrawBlitParamSrc {
 public:
     char m_pad00[0x0c]; // +0x00 .. +0x0b
-    void* m_0c;         // +0x0c -> worker node (read as [+0x34] flag, or [0]->[+0x1c])
-    i32 m_10;           // +0x10 count
+    void* m_elements;   // +0x0c -> worker node (read as [+0x34] flag, or [0]->[+0x1c])
+    i32 m_count;        // +0x10 count
     char m_pad14[0x20 - 0x14];
-    float m_20; // +0x20
+    float m_scale; // +0x20
 };
 
 // __thiscall archive/file sink (vtable slot +0x30 = Write(buf, len)).  Shared by
@@ -272,8 +272,8 @@ public:
 // 0x152d30 method returns a CString (the label written by Serialize).
 class CDDrawBlitWorker {
 public:
-    char m_pad00[0x2c]; // +0x00..0x2b
-    void* m_2c;         // +0x2c sub-object (Method_152d30 -> CString)
+    char m_pad00[0x2c];  // +0x00..0x2b
+    void* m_labelSource; // +0x2c sub-object (Method_152d30 -> CString)
 };
 // The label map embedded at +0x10 in the worker sub-object: Lookup(key, &out)
 // resolves a worker-label string to its worker pointer.  0x1b8438, reloc-masked.
@@ -284,8 +284,8 @@ public:
 class CDDrawBlitLabelSource {
 public:
     CString GetLabel_152d30(i32 a);
-    char m_pad00[0x10]; // +0x00..+0x0f
-    CBlitLabelMap m_10; // +0x10 label -> worker map
+    char m_pad00[0x10];       // +0x00..+0x0f
+    CBlitLabelMap m_labelMap; // +0x10 label -> worker map
 };
 
 class CDDrawBlitParam {
@@ -299,19 +299,19 @@ public:
     i32 Deserialize_15ca70(CWwdArchive* ar);
     i32 Dispatch_15c900(CWwdArchive* ar, i32 type, i32 a3, i32 a4);
 
-    char m_pad00[0x0c];     // +0x00 .. +0x0b
-    CDDrawBlitWorker* m_0c; // +0x0c
-    i32 m_10;               // +0x10
-    i32 m_14;               // +0x14
-    i32 m_18;               // +0x18
-    i32 m_1c;               // +0x1c
-    i32 m_20;               // +0x20
-    i32 m_24;               // +0x24
-    i32 m_28;               // +0x28
-    i32 m_2c;               // +0x2c
-    i32 m_30;               // +0x30
-    i32 m_34;               // +0x34
-    float m_38;             // +0x38
+    char m_pad00[0x0c];         // +0x00 .. +0x0b
+    CDDrawBlitWorker* m_worker; // +0x0c
+    i32 m_10;                   // +0x10
+    i32 m_srcRef;               // +0x14
+    char* m_element;            // +0x18  current element (transient; not serialized)
+    i32 m_index;                // +0x1c
+    i32 m_20;                   // +0x20
+    i32 m_24;                   // +0x24
+    i32 m_28;                   // +0x28
+    i32 m_2c;                   // +0x2c
+    i32 m_30;                   // +0x30
+    i32 m_34;                   // +0x34
+    float m_scale;              // +0x38
 };
 
 // ---------------------------------------------------------------------------
@@ -412,17 +412,17 @@ CDDrawRegistryDtorHost::~CDDrawRegistryDtorHost() {
 // __thiscall engine wrappers on the +0x2c surface proxy.
 // ===========================================================================
 
-// 0x158b40: pick m_18 (arg2==2) or m_14, null-check, dispatch slot 0x34 with arg1.
+// 0x158b40: pick m_overlayPair (arg2==2) or m_backPair, null-check, dispatch slot 0x34 with arg1.
 RVA(0x00158b40, 0x2c)
 i32 CDDrawWorkerMgr::Method_158b40(i32 arg1, i32 arg2) {
     CDDrawSurfacePair* p;
     if (arg2 == 2) {
-        p = m_18;
+        p = m_overlayPair;
         if (!p) {
             return 0;
         }
     } else {
-        p = m_14;
+        p = m_backPair;
         if (!p) {
             return 0;
         }
@@ -430,43 +430,43 @@ i32 CDDrawWorkerMgr::Method_158b40(i32 arg1, i32 arg2) {
     return p->Vfunc34(arg1);
 }
 
-// 0x158b90: flip m_10's surface, then dispatch the node's +0x08 op with the
+// 0x158b90: flip m_frontPair's surface, then dispatch the node's +0x08 op with the
 // node's +0x04 geometry (w,h).
 RVA(0x00158b90, 0x28)
 void CDDrawWorkerMgr::Method_158b90() {
-    m_10->m_surface->Flip(0);
-    CDDrawWorkerNode* n = m_0c;
-    CDDrawWorkerDisp* c = n->m_08;
-    CDDrawWorkerGeom* s = n->m_04;
-    c->Vfunc2C(s->m_14, s->m_18);
+    m_frontPair->m_surface->Flip(0);
+    CDDrawWorkerNode* n = m_worker;
+    CDDrawWorkerDisp* c = n->m_disp;
+    CDDrawWorkerGeom* s = n->m_geom;
+    c->Vfunc2C(s->m_width, s->m_height);
 }
 
-// 0x158bc0: ready predicate over m_10 (Probe_164660) and m_18 (Probe_163f00).
+// 0x158bc0: ready predicate over m_frontPair (Probe_164660) and m_overlayPair (Probe_163f00).
 RVA(0x00158bc0, 0x2e)
 i32 CDDrawWorkerMgr::Method_158bc0() {
-    if (m_10 && !m_10->Probe_164660()) {
+    if (m_frontPair && !m_frontPair->Probe_164660()) {
         return 0;
     }
-    if (m_18 && !m_18->Probe_163f00()) {
+    if (m_overlayPair && !m_overlayPair->Probe_163f00()) {
         return 0;
     }
     return 1;
 }
 
-// 0x158bf0: if m_10's cached geometry already == (a1,a2,a3) return 1; else set
-// geometry on m_10, m_14, and (if ready) m_18, returning 0 on any failure.
+// 0x158bf0: if m_frontPair's cached geometry already == (a1,a2,a3) return 1; else set
+// geometry on m_frontPair, m_backPair, and (if ready) m_overlayPair, returning 0 on any failure.
 RVA(0x00158bf0, 0x7f)
 i32 CDDrawWorkerMgr::Method_158bf0(i32 a1, i32 a2, i32 a3) {
-    CDDrawSurfacePair* p = m_10;
+    CDDrawSurfacePair* p = m_frontPair;
     if (p->m_geom10 != a1 || p->m_geom14 != a2 || p->m_geom18 != a3) {
-        if (!m_10->Vfunc28(a1, a2, a3)) {
+        if (!m_frontPair->Vfunc28(a1, a2, a3)) {
             return 0;
         }
-        if (!m_14->Vfunc28(a1, a2, a3)) {
+        if (!m_backPair->Vfunc28(a1, a2, a3)) {
             return 0;
         }
-        if (m_18 && m_18->Vfunc14()) {
-            if (!m_18->Vfunc28(a1, a2, a3)) {
+        if (m_overlayPair && m_overlayPair->Vfunc14()) {
+            if (!m_overlayPair->Vfunc28(a1, a2, a3)) {
                 return 0;
             }
         }
@@ -474,44 +474,44 @@ i32 CDDrawWorkerMgr::Method_158bf0(i32 a1, i32 a2, i32 a3) {
     return 1;
 }
 
-// 0x158cb0: if m_18 is ready, bail; else copy m_14's geometry into m_18 via slot
-// 0x30 and (if a2) BltFast m_14's surface into m_18's.
+// 0x158cb0: if m_overlayPair is ready, bail; else copy m_backPair's geometry into m_overlayPair via slot
+// 0x30 and (if a2) BltFast m_backPair's surface into m_overlayPair's.
 RVA(0x00158cb0, 0x6a)
 i32 CDDrawWorkerMgr::Method_158cb0(i32 a1, i32 a2) {
-    if (m_18->Vfunc14()) {
+    if (m_overlayPair->Vfunc14()) {
         return 0;
     }
-    CDDrawSurfacePair* s14 = m_14;
-    if (!m_18->Vfunc30(s14->m_geom10, s14->m_geom14, s14->m_geom18, a2)) {
+    CDDrawSurfacePair* s14 = m_backPair;
+    if (!m_overlayPair->Vfunc30(s14->m_geom10, s14->m_geom14, s14->m_geom18, a2)) {
         return 0;
     }
     if (a1) {
-        m_18->m_surface->BltFast(0, 0, m_14->m_surface, m_14->m_rect1c, 0x10);
+        m_overlayPair->m_surface->BltFast(0, 0, m_backPair->m_surface, m_backPair->m_rect1c, 0x10);
     }
     return 1;
 }
 
-// 0x158d50: fill m_14's surface and flip m_10's, twice unconditionally, then once
+// 0x158d50: fill m_backPair's surface and flip m_frontPair's, twice unconditionally, then once
 // more if the node's +0x34 flag bit1 is set.
 RVA(0x00158d50, 0x61)
 void CDDrawWorkerMgr::Method_158d50(i32 a1) {
-    m_14->m_surface->Fill(a1);
-    m_10->m_surface->Flip(0);
-    m_14->m_surface->Fill(a1);
-    m_10->m_surface->Flip(0);
-    if (m_0c->m_34flagAt & 2) {
-        m_14->m_surface->Fill(a1);
-        m_10->m_surface->Flip(0);
+    m_backPair->m_surface->Fill(a1);
+    m_frontPair->m_surface->Flip(0);
+    m_backPair->m_surface->Fill(a1);
+    m_frontPair->m_surface->Flip(0);
+    if (m_worker->m_flags & 2) {
+        m_backPair->m_surface->Fill(a1);
+        m_frontPair->m_surface->Flip(0);
     }
 }
 
-// 0x158c70: blt dst's surface <- m_10's surface; return (hr == 0).
+// 0x158c70: blt dst's surface <- m_frontPair's surface; return (hr == 0).
 RVA(0x00158c70, 0x36)
 i32 CDDrawWorkerMgr::Method_158c70(CDDrawSurfacePair* dst) {
-    if (!m_10) {
+    if (!m_frontPair) {
         return 0;
     }
-    CDDSurface* s = m_10->m_surface;
+    CDDSurface* s = m_frontPair->m_surface;
     if (!s) {
         return 0;
     }
@@ -523,25 +523,25 @@ i32 CDDrawWorkerMgr::Method_158c70(CDDrawSurfacePair* dst) {
     return hr == 0;
 }
 
-// 0x158d20: return m_18->Vfunc14() != 0.
+// 0x158d20: return m_overlayPair->Vfunc14() != 0.
 RVA(0x00158d20, 0x16)
 i32 CDDrawWorkerMgr::Method_158d20() {
-    if (!m_18) {
+    if (!m_overlayPair) {
         return 0;
     }
-    return m_18->Vfunc14() != 0;
+    return m_overlayPair->Vfunc14() != 0;
 }
 
-// 0x158dc0: blt m_14's surface <- m_10's surface; if the m_0c flag bit1 is set,
-// flip m_10 and re-blt.  The first-block boolean (ok) is the carried return value.
+// 0x158dc0: blt m_backPair's surface <- m_frontPair's surface; if the m_worker flag bit1 is set,
+// flip m_frontPair and re-blt.  The first-block boolean (ok) is the carried return value.
 // @early-stop
 // 71% — logic + offsets exact; residual is branch-layout/scheduling of the
 // first-block (Blt-fall-through vs our jmp) and the esi-pop placement, a
 // regalloc/scheduling wall (see docs/patterns/zero-register-pinning.md).
 RVA(0x00158dc0, 0x7d)
 i32 CDDrawWorkerMgr::Method_158dc0() {
-    CDDrawSurfacePair* p10 = m_10;
-    CDDrawSurfacePair* p14 = m_14;
+    CDDrawSurfacePair* p10 = m_frontPair;
+    CDDrawSurfacePair* p14 = m_backPair;
     i32 ok;
     if (p10 && p10->m_surface) {
         CDDSurface* s10 = p10->m_surface;
@@ -558,12 +558,12 @@ i32 CDDrawWorkerMgr::Method_158dc0() {
     if (!ok) {
         return ok;
     }
-    if (!(m_0c->m_34flagAt & 2)) {
+    if (!(m_worker->m_flags & 2)) {
         return ok;
     }
-    m_10->m_surface->Flip(0);
-    CDDrawSurfacePair* a = m_14;
-    CDDrawSurfacePair* b = m_10;
+    m_frontPair->m_surface->Flip(0);
+    CDDrawSurfacePair* a = m_backPair;
+    CDDrawSurfacePair* b = m_frontPair;
     if (!b) {
         return 0;
     }
@@ -578,16 +578,16 @@ i32 CDDrawWorkerMgr::Method_158dc0() {
     return hr2 == 0;
 }
 
-// 0x158e40: if m_18->Vfunc14(): blt m_18's surface <- m_10's surface, return (==0).
+// 0x158e40: if m_overlayPair->Vfunc14(): blt m_overlayPair's surface <- m_frontPair's surface, return (==0).
 // @early-stop
 // 50% — structure/offsets byte-exact; the only residual is the `pop esi`
 // scheduling (retail interleaves it before the test/sete; our cl emits it in
 // the epilogue), a scheduling coin-flip (docs/patterns/zero-register-pinning.md).
 RVA(0x00158e40, 0x4c)
 i32 CDDrawWorkerMgr::Method_158e40() {
-    if (m_18 && m_18->Vfunc14()) {
-        CDDrawSurfacePair* a = m_18;
-        CDDrawSurfacePair* b = m_10;
+    if (m_overlayPair && m_overlayPair->Vfunc14()) {
+        CDDrawSurfacePair* a = m_overlayPair;
+        CDDrawSurfacePair* b = m_frontPair;
         if (!b) {
             return 0;
         }
@@ -605,38 +605,38 @@ i32 CDDrawWorkerMgr::Method_158e40() {
     return 0;
 }
 
-// 0x158e90: if m_14 and m_18->Vfunc14(): BltFast(0,0,m_14 surf, &m_14[+0x1c], 0x10).
+// 0x158e90: if m_backPair and m_overlayPair->Vfunc14(): BltFast(0,0,m_backPair surf, &m_backPair[+0x1c], 0x10).
 RVA(0x00158e90, 0x47)
 i32 CDDrawWorkerMgr::Method_158e90() {
-    if (!m_14) {
+    if (!m_backPair) {
         return 0;
     }
-    if (!m_18) {
+    if (!m_overlayPair) {
         return 0;
     }
-    if (!m_18->Vfunc14()) {
+    if (!m_overlayPair->Vfunc14()) {
         return 0;
     }
-    CDDrawSurfacePair* a = m_14;
-    CDDrawSurfacePair* b = m_18;
+    CDDrawSurfacePair* a = m_backPair;
+    CDDrawSurfacePair* b = m_overlayPair;
     b->m_surface->BltFast(0, 0, a->m_surface, a->m_rect1c, 0x10);
     return 1;
 }
 
-// 0x158ee0: if m_14, m_18 and m_18->Vfunc14(): BltFast(0,0,m_18 surf,&m_18[+0x1c],0x10).
+// 0x158ee0: if m_backPair, m_overlayPair and m_overlayPair->Vfunc14(): BltFast(0,0,m_overlayPair surf,&m_overlayPair[+0x1c],0x10).
 RVA(0x00158ee0, 0x47)
 i32 CDDrawWorkerMgr::Method_158ee0() {
-    if (!m_14) {
+    if (!m_backPair) {
         return 0;
     }
-    if (!m_18) {
+    if (!m_overlayPair) {
         return 0;
     }
-    if (!m_18->Vfunc14()) {
+    if (!m_overlayPair->Vfunc14()) {
         return 0;
     }
-    CDDrawSurfacePair* a = m_18;
-    CDDrawSurfacePair* b = m_14;
+    CDDrawSurfacePair* a = m_overlayPair;
+    CDDrawSurfacePair* b = m_backPair;
     b->m_surface->BltFast(0, 0, a->m_surface, a->m_rect1c, 0x10);
     return 1;
 }
@@ -656,18 +656,18 @@ RVA(0x0015c290, 0x2f)
 void CDDrawBlitParam::Init_15c290(CDDrawBlitParamSrc* src) {
     m_10 = (i32)src;
     m_28 = 1;
-    m_14 = 0;
-    m_38 = 1.0f;
+    m_srcRef = 0;
+    m_scale = 1.0f;
     m_24 = 1;
-    m_2c = *(i32*)((char*)src->m_0c + 0x34) & 0x40;
+    m_2c = *(i32*)((char*)src->m_elements + 0x34) & 0x40;
 }
 
 // 0x15c2c0: blit-param zero-reset (vtable slot 6 of the element class).
 RVA(0x0015c2c0, 0xc)
 void CDDrawBlitParam::Reset_15c2c0() {
     m_10 = 0;
-    m_14 = 0;
-    m_18 = 0;
+    m_srcRef = 0;
+    m_element = 0;
 }
 
 // 0x15c2d0: blit-param setup from a worker source.
@@ -675,36 +675,36 @@ RVA(0x0015c2d0, 0x45)
 void CDDrawBlitParam::Setup_15c2d0(CDDrawBlitParamSrc* src) {
     char* e;
     i32 v;
-    m_14 = (i32)src;
+    m_srcRef = (i32)src;
     if (!src) {
         return;
     }
-    m_1c = 0;
-    if (src->m_10 > 0) {
-        e = *(char**)src->m_0c;
+    m_index = 0;
+    if (src->m_count > 0) {
+        e = *(char**)src->m_elements;
     } else {
         e = 0;
     }
-    m_18 = (i32)e;
+    m_element = e;
     m_20 = 0;
     m_28 = 0;
     v = *(i32*)(e + 0x1c);
     m_30 = v;
     m_34 = v;
     {
-        float f = src->m_20;
-        m_38 = f;
+        float f = src->m_scale;
+        m_scale = f;
     }
 }
 
 extern i32 g_aniCueItem; // 0x61ab24 (DATA-annotated forward decl below)
 
-// 0x157a80: pick the active cue object from m_0c->+0x20.  When `force` is null,
+// 0x157a80: pick the active cue object from m_worker->+0x20.  When `force` is null,
 // require the cue present and its +0x78 set; cache it at m_2c (m_30 = present?
 // 0 : 1), tag the global cue, and report success.  __thiscall, 1 arg (ret 0x4).
 RVA(0x00157a80, 0x51)
 i32 CDDrawBlitParam::SelectCue_157a80(void* force) {
-    char* mgr = (char*)m_0c;
+    char* mgr = (char*)m_worker;
     if (mgr == 0) {
         return 0;
     }
@@ -727,26 +727,26 @@ i32 CDDrawBlitParam::SelectCue_157a80(void* force) {
     return 1;
 }
 
-// 0x15c320: recompute the blit-param from the already-stored m_14 source (the
-// Setup twin that keeps m_14, fixes the scale to 1.0f, and only clears m_20 when
-// `a1` is set).  Reads e = src->m_10 > 0 ? *src->m_0c : 0, then v = *(e+0x1c).
+// 0x15c320: recompute the blit-param from the already-stored m_srcRef source (the
+// Setup twin that keeps m_srcRef, fixes the scale to 1.0f, and only clears m_20 when
+// `a1` is set).  Reads e = src->m_count > 0 ? *src->m_elements : 0, then v = *(e+0x1c).
 RVA(0x0015c320, 0x40)
 void CDDrawBlitParam::Recompute_15c320(i32 a1) {
-    CDDrawBlitParamSrc* src = (CDDrawBlitParamSrc*)m_14;
+    CDDrawBlitParamSrc* src = (CDDrawBlitParamSrc*)m_srcRef;
     if (src == 0) {
         return;
     }
-    m_1c = 0;
+    m_index = 0;
     char* e;
-    if (src->m_10 > 0) {
-        e = *(char**)src->m_0c;
+    if (src->m_count > 0) {
+        e = *(char**)src->m_elements;
     } else {
         e = 0;
     }
-    m_18 = (i32)e;
+    m_element = e;
     m_28 = 0;
     i32 v = *(i32*)(e + 0x1c);
-    m_38 = 1.0f;
+    m_scale = 1.0f;
     m_30 = v;
     m_34 = v;
     if (a1 != 0) {
@@ -755,9 +755,9 @@ void CDDrawBlitParam::Recompute_15c320(i32 a1) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x15c970: serialize the blit-param.  Writes the eight dwords m_1c..m_38 to
+// 0x15c970: serialize the blit-param.  Writes the eight dwords m_index..m_scale to
 // the archive (4 bytes each via slot +0x30), zeroes a 0x80-byte label buffer,
-// and if m_14 is set, fetches the worker label (a returns-by-value CString from
+// and if m_srcRef is set, fetches the worker label (a returns-by-value CString from
 // the +0x2c sub-object's 0x152d30) and strcpy's it into the buffer; then writes
 // the whole 0x80-byte buffer.  Returns 1.
 // @early-stop
@@ -771,20 +771,21 @@ i32 CDDrawBlitParam::Serialize_15c970(CWwdArchive* ar) {
     if (ar == 0) {
         return 0;
     }
-    ar->Write(&m_1c, 4);
+    ar->Write(&m_index, 4);
     ar->Write(&m_20, 4);
     ar->Write(&m_24, 4);
     ar->Write(&m_28, 4);
     ar->Write(&m_2c, 4);
     ar->Write(&m_30, 4);
     ar->Write(&m_34, 4);
-    ar->Write(&m_38, 4);
+    ar->Write(&m_scale, 4);
     char buf[0x80];
     for (i32 i = 0; i < 0x20; ++i) {
         ((i32*)buf)[i] = 0;
     }
-    if (m_14 != 0) {
-        CString label = ((CDDrawBlitLabelSource*)m_0c->m_2c)->GetLabel_152d30(m_14);
+    if (m_srcRef != 0) {
+        CString label =
+            ((CDDrawBlitLabelSource*)m_worker->m_labelSource)->GetLabel_152d30(m_srcRef);
         strcpy(buf, label);
     }
     ar->Write(buf, 0x80);
@@ -834,11 +835,11 @@ i32 CDDrawBlitParam::Dispatch_15c900(CWwdArchive* ar, i32 type, i32 a3, i32 a4) 
 
 // ---------------------------------------------------------------------------
 // 0x15ca70: deserialize the blit-param (the Serialize_15c970 twin).  Reads the
-// eight dwords m_1c..m_38 from the archive (4 bytes each via slot +0x2c), reads
+// eight dwords m_index..m_scale from the archive (4 bytes each via slot +0x2c), reads
 // the 0x80-byte label buffer, and — when the label is non-empty — looks it up in
-// the worker sub-object's +0x10 map to recover the worker into m_14.  Then the
-// Setup_15c2d0-style tail: pick element [m_1c] (falling back to element 0 with
-// m_1c=0) into m_18 and, when valid, reset m_20/m_28, snapshot m_30 into m_34,
+// the worker sub-object's +0x10 map to recover the worker into m_srcRef.  Then the
+// Setup_15c2d0-style tail: pick element [m_index] (falling back to element 0 with
+// m_index=0) into m_element and, when valid, reset m_20/m_28, snapshot m_30 into m_34,
 // and recompute m_30 = elem->+0x1c.  __thiscall, ret 0x4.
 // @early-stop
 // 89.9% — every instruction/CFG/offset present and the logic is byte-faithful;
@@ -853,46 +854,46 @@ i32 CDDrawBlitParam::Deserialize_15ca70(CWwdArchive* ar) {
     if (ar == 0) {
         return 0;
     }
-    ar->Read(&m_1c, 4);
+    ar->Read(&m_index, 4);
     ar->Read(&m_20, 4);
     ar->Read(&m_24, 4);
     ar->Read(&m_28, 4);
     ar->Read(&m_2c, 4);
     ar->Read(&m_30, 4);
     ar->Read(&m_34, 4);
-    ar->Read(&m_38, 4);
+    ar->Read(&m_scale, 4);
     char buf[0x80];
     ar->Read(buf, 0x80);
     if (strlen(buf) == 0) {
-        m_14 = 0;
+        m_srcRef = 0;
     } else {
         void* out = 0;
-        ((CDDrawBlitLabelSource*)m_0c->m_2c)->m_10.Lookup(buf, &out);
-        m_14 = (i32)out;
+        ((CDDrawBlitLabelSource*)m_worker->m_labelSource)->m_labelMap.Lookup(buf, &out);
+        m_srcRef = (i32)out;
     }
-    CDDrawBlitParamSrc* w = (CDDrawBlitParamSrc*)m_14;
+    CDDrawBlitParamSrc* w = (CDDrawBlitParamSrc*)m_srcRef;
     if (w != 0) {
         char* e;
-        if (m_1c >= 0 && m_1c < w->m_10) {
-            e = ((char**)w->m_0c)[m_1c];
+        if (m_index >= 0 && m_index < w->m_count) {
+            e = ((char**)w->m_elements)[m_index];
         } else {
             e = 0;
         }
-        m_18 = (i32)e;
+        m_element = e;
         if (e == 0) {
-            m_1c = 0;
-            if (w->m_10 > 0) {
-                e = *(char**)w->m_0c;
+            m_index = 0;
+            if (w->m_count > 0) {
+                e = *(char**)w->m_elements;
             } else {
                 e = 0;
             }
-            m_18 = (i32)e;
+            m_element = e;
         }
-        if (m_18 != 0) {
+        if (m_element != 0) {
             m_20 = 0;
             m_28 = 0;
             m_34 = m_30;
-            m_30 = *(i32*)((char*)m_18 + 0x1c);
+            m_30 = *(i32*)(m_element + 0x1c);
         }
     }
     return 1;
@@ -933,13 +934,13 @@ public:
     virtual void Slot38();
     virtual i32 Slot3C(i32 a1, i32 a2, i32 a3, void* obj); // +0x3c
     char m_pad04[0x08 - 0x04];
-    i32 m_08;                  // +0x08 flag word
+    i32 m_flags;               // +0x08 flag word
     char m_pad0c[0x74 - 0x0c]; // +0x0c..0x73
-    i32 m_74;                  // +0x74 sort key
-    i32 m_78;                  // +0x78 CPtrList POSITION cache
-    CLogicRecord* m_7c;        // +0x7c kill-cue record (Consume/callback/refcount)
+    i32 m_sortKey;             // +0x74 sort key
+    i32 m_posCache;            // +0x78 CPtrList POSITION cache
+    CLogicRecord* m_killCue;   // +0x7c kill-cue record (Consume/callback/refcount)
     char m_pad80[0x188 - 0x80];
-    void* m_188; // +0x188 map key
+    void* m_key; // +0x188 map key
 };
 
 // A worker held in the +0x2c/+0x48 maps that exposes a __thiscall probe at
@@ -968,8 +969,8 @@ struct CWwdNode {
 RVA(0x0015ab30, 0x38)
 void CWwdObjMgr::RemoveAll_15ab30(i32 pos, CWwdObject* obj) {
     m_10.RemoveAt((POSITION)pos);
-    m_2c.RemoveKey(obj->m_188);
-    m_48.RemoveKey(obj->m_188);
+    m_2c.RemoveKey(obj->m_key);
+    m_48.RemoveKey(obj->m_key);
 }
 
 // ---------------------------------------------------------------------------
@@ -977,14 +978,14 @@ void CWwdObjMgr::RemoveAll_15ab30(i32 pos, CWwdObject* obj) {
 RVA(0x0015ab70, 0x27)
 void CWwdObjMgr::RemoveByPosition_15ab70(i32 pos, CWwdObject* obj) {
     m_10.RemoveAt((POSITION)pos);
-    m_2c.RemoveKey(obj->m_188);
+    m_2c.RemoveKey(obj->m_key);
 }
 
 // ---------------------------------------------------------------------------
 // 0x15aba0: m_48[obj->key] = obj.
 RVA(0x0015aba0, 0x1a)
 void CWwdObjMgr::AddToMap48_15aba0(CWwdObject* obj) {
-    m_48[obj->m_188] = obj;
+    m_48[obj->m_key] = obj;
 }
 
 // ---------------------------------------------------------------------------
@@ -1006,10 +1007,10 @@ void CWwdObjMgr::PruneList_15aa90() {
         CWwdNode* cur = node;
         node = node->m_next;
         CWwdObject* obj = cur->m_obj;
-        if (obj != 0 && !(obj->m_08 & 0x200)) {
+        if (obj != 0 && !(obj->m_flags & 0x200)) {
             m_10.RemoveAt((POSITION)cur);
-            m_2c.RemoveKey(obj->m_188);
-            m_48.RemoveKey(obj->m_188);
+            m_2c.RemoveKey(obj->m_key);
+            m_48.RemoveKey(obj->m_key);
             obj->ScalarDtor(1);
         }
     }
@@ -1026,7 +1027,7 @@ i32 CWwdObjMgr::CountActive_15abc0() {
             void* key = 0;
             CWwdObject* val = 0;
             m_48.GetNextAssoc(pos, key, (void*&)val);
-            if (val != 0 && !(val->m_08 & 0x4000000)) {
+            if (val != 0 && !(val->m_flags & 0x4000000)) {
                 ++n;
             }
         } while (pos != 0);
@@ -1048,7 +1049,7 @@ i32 CWwdObjMgr::ForEachDispatch_15ac20(i32 a1, i32 a2, i32 a3) {
             void* key = 0;
             CWwdObject* val = 0;
             m_48.GetNextAssoc(pos, key, (void*&)val);
-            if (val != 0 && !(val->m_08 & 0x4000000)) {
+            if (val != 0 && !(val->m_flags & 0x4000000)) {
                 val->Slot3C(a1, a2, a3, val);
             }
         } while (pos != 0);
@@ -1070,7 +1071,7 @@ i32 CWwdObjMgr::ForEachProbe_15acb0(i32 a1, i32 a2) {
             void* key = 0;
             CWwdObject* val = 0;
             m_48.GetNextAssoc(pos, key, (void*&)val);
-            if (val != 0 && !(val->m_08 & 0x4000000)) {
+            if (val != 0 && !(val->m_flags & 0x4000000)) {
                 ((CWwdProbeObject*)val)->Probe_151c00(a1, a2);
             }
         } while (pos != 0);
@@ -1097,8 +1098,8 @@ i32 CWwdObjMgr::ForEachSerialize_15b020(CWwdArchive* ar, i32 a2) {
             void* key = 0;
             CWwdObject* val = 0;
             m_48.GetNextAssoc(pos, key, (void*&)val);
-            if (val != 0 && !(val->m_08 & 0x4000000)) {
-                void* k = val->m_188;
+            if (val != 0 && !(val->m_flags & 0x4000000)) {
+                void* k = val->m_key;
                 ar->Write(&k, 4);
                 if (val->Slot3C((i32)ar, 4, a2, val) == 0) {
                     return 0;
@@ -1169,11 +1170,11 @@ i32 CWwdObjMgr::PruneOrphans_15b1d0() {
             m_48.GetNextAssoc(pos, key, (void*&)val);
             if (val != 0) {
                 void* found = 0;
-                if (!m_2c.Lookup(val->m_188, found)) {
+                if (!m_2c.Lookup(val->m_key, found)) {
                     found = 0;
                 }
                 if (found == 0) {
-                    m_48.RemoveKey(val->m_188);
+                    m_48.RemoveKey(val->m_key);
                     if (val != 0) {
                         val->ScalarDtor(1);
                     }
@@ -1239,7 +1240,7 @@ void CWwdObjMgr::TickKillCues_159a70(i32 advance) {
         CWwdNode* cur = node;
         node = node->m_next;
         CWwdObject* obj = cur->m_obj;
-        CLogicRecord* rec = obj->m_7c;
+        CLogicRecord* rec = obj->m_killCue;
         if (rec->Consume((i32)g_6bf3bc) == 0) {
             i32* refc = (i32*)((char*)rec + 0x24);
             if (*refc != 0) {
@@ -1248,7 +1249,7 @@ void CWwdObjMgr::TickKillCues_159a70(i32 advance) {
                 ((KillCueFn)rec->m_10)(obj);
             }
         }
-        i32 flags = obj->m_08;
+        i32 flags = obj->m_flags;
         if (flags & 0x10000) {
             killQueue.Add((CObject*)obj);
         } else if (flags & 0x20000) {
@@ -1259,19 +1260,19 @@ void CWwdObjMgr::TickKillCues_159a70(i32 advance) {
     i32 i;
     for (i = 0; i < killQueue.GetSize(); i++) {
         CWwdObject* obj = (CWwdObject*)killQueue.GetData()[i];
-        if (obj->m_08 & 0x80000) {
-            CLogicRecord* rec = obj->m_7c;
+        if (obj->m_flags & 0x80000) {
+            CLogicRecord* rec = obj->m_killCue;
             rec->m_1c = 0x1d;
             ((KillCueFn)rec->m_10)(obj);
         }
-        if (obj->m_08 & 0x800) {
+        if (obj->m_flags & 0x800) {
             if (obj != 0) {
                 obj->ScalarDtor(1);
             }
         } else {
-            m_10.RemoveAt((POSITION)obj->m_78);
-            m_48.RemoveKey(obj->m_188);
-            m_2c.RemoveKey(obj->m_188);
+            m_10.RemoveAt((POSITION)obj->m_posCache);
+            m_48.RemoveKey(obj->m_key);
+            m_2c.RemoveKey(obj->m_key);
             if (obj != 0) {
                 obj->ScalarDtor(1);
             }
@@ -1280,8 +1281,8 @@ void CWwdObjMgr::TickKillCues_159a70(i32 advance) {
 
     for (i = 0; i < sortQueue.GetSize(); i++) {
         CWwdObject* obj = (CWwdObject*)sortQueue.GetData()[i];
-        obj->m_08 &= ~0x20000;
-        m_10.RemoveAt((POSITION)obj->m_78);
+        obj->m_flags &= ~0x20000;
+        m_10.RemoveAt((POSITION)obj->m_posCache);
         InsertSorted_159e40(obj, 0);
     }
 }
@@ -1297,30 +1298,30 @@ void CWwdObjMgr::TickKillCues_159a70(i32 advance) {
 // differently-named symbol).  docs/patterns + objdiff-reloc-scoring.
 RVA(0x00159e40, 0xaa)
 void CWwdObjMgr::InsertSorted_159e40(CWwdObject* obj, i32 addToMaps) {
-    if (obj->m_08 & 0x800) {
-        obj->m_78 = 0;
+    if (obj->m_flags & 0x800) {
+        obj->m_posCache = 0;
         return;
     }
     if (addToMaps != 0) {
-        m_2c[obj->m_188] = obj;
-        m_48[obj->m_188] = obj;
+        m_2c[obj->m_key] = obj;
+        m_48[obj->m_key] = obj;
     }
     struct HLayout {
         char _pad[0x14];
         CWwdNode* m_head;
     };
     CWwdNode* node = ((HLayout*)this)->m_head;
-    i32 key = obj->m_74;
+    i32 key = obj->m_sortKey;
     while (node != 0) {
         CWwdNode* cur = node;
         CWwdObject* data = cur->m_obj;
         node = node->m_next;
-        if (data->m_74 > key && !(data->m_08 & 0x20000)) {
-            obj->m_78 = (i32)m_10.InsertBefore((POSITION)cur, obj);
+        if (data->m_sortKey > key && !(data->m_flags & 0x20000)) {
+            obj->m_posCache = (i32)m_10.InsertBefore((POSITION)cur, obj);
             return;
         }
     }
-    obj->m_78 = (i32)m_10.AddTail(obj);
+    obj->m_posCache = (i32)m_10.AddTail(obj);
 }
 
 // ---------------------------------------------------------------------------
@@ -1419,8 +1420,8 @@ public:
 class CQueueDrainHost {
 public:
     void* Drain_031250();
-    char m_pad00[0x68];    // +0x00 .. +0x67
-    CQueueProbeNode* m_68; // +0x68 list head
+    char m_pad00[0x68];      // +0x00 .. +0x67
+    CQueueProbeNode* m_head; // +0x68 list head
 };
 
 // @early-stop
@@ -1432,9 +1433,9 @@ public:
 // lever (docs/patterns/reread-member-view-pointer.md).
 RVA(0x00031250, 0x33)
 void* CQueueDrainHost::Drain_031250() {
-    while (m_68 != 0) {
-        CQueueProbeNode* head = m_68;
-        m_68 = head->m_next;
+    while (m_head != 0) {
+        CQueueProbeNode* head = m_head;
+        m_head = head->m_next;
         CQueueProbeData* data = (CQueueProbeData*)head->m_data;
         if (data->Probe20() == 5) {
             return data;
@@ -1452,24 +1453,24 @@ void* CQueueDrainHost::Drain_031250() {
 // position deltas, fires any per-frame draw/sound trigger, reloads the per-frame
 // timer (optionally scaled by a float speed), and selects the NEXT descriptor in
 // the playlist via a 10-way loop-mode switch.  Returns the per-frame draw value
-// (m_34/m_30), consuming it when the cursor owns the buffer (m_2c != 0).
+// (m_curDraw/m_pendingDraw), consuming it when the cursor owns the buffer (m_ownsBuffer != 0).
 //
 // Cursor `this` layout (offsets/sizes load-bearing; names are placeholders):
-//   +0x10  m_10  sprite-render context (the +0x190/+0x194/+0x198 frame cursor,
+//   +0x10  m_ctx  sprite-render context (the +0x190/+0x194/+0x198 frame cursor,
 //                +0x5c/+0x60 screen pos, +0x08 flags, +0x38 anchor, +0x40 byte)
-//   +0x14  m_14  CObArray* of animation descriptors (the playlist)
-//   +0x18  m_18  current descriptor (a CAniElement-ish: +0x04 byte flags, +0x08
+//   +0x14  m_playlist  CObArray* of animation descriptors (the playlist)
+//   +0x18  m_desc  current descriptor (a CAniElement-ish: +0x04 byte flags, +0x08
 //                step-mode, +0x0c loop-mode word, +0x10 pos-mode, +0x14 param,
 //                +0x18 frame-time reload, +0x1c draw-value, +0x20/+0x24 pos
 //                deltas, +0x2c random modulus, +0x30 random-trigger table)
-//   +0x1c  m_1c  playlist index
-//   +0x20  m_20  per-frame timer remaining (ticks)
-//   +0x24  m_24  "decrement-each-tick" flag
-//   +0x28  m_28  paused/done flag
-//   +0x2c  m_2c  owns-buffer flag (consume the draw value on read)
-//   +0x30  m_30  pending draw value
-//   +0x34  m_34  current draw value
-//   +0x38  m_38  float speed multiplier (raw bits; compared to 1.0f)
+//   +0x1c  m_index  playlist index
+//   +0x20  m_timer  per-frame timer remaining (ticks)
+//   +0x24  m_decEachTick  "decrement-each-tick" flag
+//   +0x28  m_paused  paused/done flag
+//   +0x2c  m_ownsBuffer  owns-buffer flag (consume the draw value on read)
+//   +0x30  m_pendingDraw  pending draw value
+//   +0x34  m_curDraw  current draw value
+//   +0x38  m_speed  float speed multiplier (raw bits; compared to 1.0f)
 // ===========================================================================
 
 // The frame sequence held at the render context +0x194: a frame-pointer array at
@@ -1481,10 +1482,10 @@ class CAniFrameSeq {
 public:
     i32 GetFrame_15cc30(i32 n); // 0x15cc30  __thiscall on the +0x194 sequence
     char m_pad00[0x14];         // +0x00..0x13
-    void** m_14;                // +0x14  frame-pointer array
+    void** m_frames;            // +0x14  frame-pointer array
     char m_pad18[0x64 - 0x18];  // +0x18..0x63
-    i32 m_64;                   // +0x64  low frame index
-    i32 m_68;                   // +0x68  high frame index
+    i32 m_lowFrame;             // +0x64  low frame index
+    i32 m_highFrame;            // +0x68  high frame index
 };
 
 // The sprite-render context the cursor drives (held at cursor+0x10).  ClampFirst/
@@ -1495,21 +1496,21 @@ public:
     void ClampFirst_15cc50(); // 0x15cc50  __thiscall on the context
     void ClampLast_15cc90();  // 0x15cc90  __thiscall on the context
     char m_pad00[0x08];       // +0x00..0x07
-    i32 m_08;                 // +0x08  flags (bit 0x2000000 tested)
+    i32 m_flags;              // +0x08  flags (bit 0x2000000 tested)
     char m_pad0c[0x10 - 0x0c];
-    i32 m_10; // +0x10  pos-mode X
-    i32 m_14; // +0x14  pos-mode Y
+    i32 m_posModeX; // +0x10  pos-mode X
+    i32 m_posModeY; // +0x14  pos-mode Y
     char m_pad18[0x38 - 0x18];
-    i32 m_38;                  // +0x38  pos anchor (compared to -1)
+    i32 m_anchor;              // +0x38  pos anchor (compared to -1)
     char m_pad3c[0x40 - 0x3c]; // +0x3c
-    char m_40;                 // +0x40  byte flags (bit 0x2 tested)
+    char m_byteFlags;          // +0x40  byte flags (bit 0x2 tested)
     char m_pad41[0x5c - 0x41];
-    i32 m_5c;                   // +0x5c  screen X
-    i32 m_60;                   // +0x60  screen Y
+    i32 m_screenX;              // +0x5c  screen X
+    i32 m_screenY;              // +0x60  screen Y
     char m_pad64[0x190 - 0x64]; // +0x64..0x18f
-    i32 m_190;                  // +0x190  sequence frame cursor
-    CAniFrameSeq* m_194;        // +0x194  active frame sequence
-    i32 m_198;                  // +0x198  resolved current frame pointer
+    i32 m_frameCursor;          // +0x190  sequence frame cursor
+    CAniFrameSeq* m_frameSeq;   // +0x194  active frame sequence
+    i32 m_curFrame;             // +0x198  resolved current frame pointer
 };
 
 // The animation descriptor (cursor+0x18, a playlist entry).  +0x08 step-mode keys
@@ -1521,19 +1522,19 @@ public:
     i32 Rand_15cbe0(); // 0x15cbe0  engine random (reloc-masked)
     char m_pad00[0x04];
     unsigned char
-        m_04; // +0x04  byte flags (bit1 = no-decrement, bit2 = pos-sub, bit3 = trigger-blit, bit8 = anchor)
+        m_flags; // +0x04  byte flags (bit1 = no-decrement, bit2 = pos-sub, bit3 = trigger-blit, bit8 = anchor)
     char m_pad05[0x08 - 0x05]; // +0x05..0x07
-    i32 m_08;                  // +0x08  step-mode
-    i32 m_0c;                  // +0x0c  loop-mode word
-    i32 m_10;                  // +0x10  pos-mode
-    i32 m_14;                  // +0x14  step param
-    i32 m_18;                  // +0x18  frame-time reload
-    i32 m_1c;                  // +0x1c  draw value
-    i32 m_20;                  // +0x20  pos delta X
-    i32 m_24;                  // +0x24  pos delta Y
+    i32 m_stepMode;            // +0x08  step-mode
+    i32 m_loopMode;            // +0x0c  loop-mode word
+    i32 m_posMode;             // +0x10  pos-mode
+    i32 m_param;               // +0x14  step param
+    i32 m_frameTime;           // +0x18  frame-time reload
+    i32 m_drawValue;           // +0x1c  draw value
+    i32 m_posDX;               // +0x20  pos delta X
+    i32 m_posDY;               // +0x24  pos delta Y
     char m_pad28[0x2c - 0x28]; // +0x28
-    i32 m_2c;                  // +0x2c  random modulus
-    i32* m_30;                 // +0x30  random-trigger table
+    i32 m_randMod;             // +0x2c  random modulus
+    i32* m_randTable;          // +0x30  random-trigger table
 };
 
 // The descriptor playlist (cursor+0x14): a CObArray (data at +0x0c, count at +0x10).
@@ -1543,8 +1544,8 @@ class CAniDescArray {
 public:
     CAniDesc* AtChecked_06b270(i32 i); // 0x06b270  __thiscall bounds-checked fetch
     char m_pad00[0x0c];                // +0x00..0x0b
-    CAniDesc** m_0c;                   // +0x0c  data
-    i32 m_10;                          // +0x10  count
+    CAniDesc** m_data;                 // +0x0c  data
+    i32 m_count;                       // +0x10  count
 };
 
 // The sound-cue enable flag + a float pan/volume scale constant.
@@ -1568,10 +1569,10 @@ public:
         i32 center,
         i32 range1,
         i32 range2
-    );                   // 0x1587f0  __thiscall on the cursor
-    char m_pad00[0x0c];  // +0x00..0x0b
-    void* m_0c;          // +0x0c geometry context
-    CAniSoundPlay* m_10; // +0x10 sound player
+    );                            // 0x1587f0  __thiscall on the cursor
+    char m_pad00[0x0c];           // +0x00..0x0b
+    void* m_ctx;                  // +0x0c geometry context
+    CAniSoundPlay* m_soundPlayer; // +0x10 sound player
 };
 
 // The random-trigger cue table entry (a LeafCue: the gated sound-play entry).
@@ -1586,18 +1587,18 @@ class CAniAdvanceCursor {
 public:
     i32 Advance_15c360(u32 elapsed); // 0x15c360
 
-    char m_pad00[0x10];  // +0x00..0x0f
-    CAniRenderCtx* m_10; // +0x10
-    CAniDescArray* m_14; // +0x14
-    CAniDesc* m_18;      // +0x18
-    i32 m_1c;            // +0x1c
-    u32 m_20;            // +0x20
-    i32 m_24;            // +0x24
-    i32 m_28;            // +0x28
-    i32 m_2c;            // +0x2c
-    i32 m_30;            // +0x30
-    i32 m_34;            // +0x34
-    i32 m_38;            // +0x38  float speed, raw bits
+    char m_pad00[0x10];        // +0x00..0x0f
+    CAniRenderCtx* m_ctx;      // +0x10
+    CAniDescArray* m_playlist; // +0x14
+    CAniDesc* m_desc;          // +0x18
+    i32 m_index;               // +0x1c
+    u32 m_timer;               // +0x20
+    i32 m_decEachTick;         // +0x24
+    i32 m_paused;              // +0x28
+    i32 m_ownsBuffer;          // +0x2c
+    i32 m_pendingDraw;         // +0x30
+    i32 m_curDraw;             // +0x34
+    i32 m_speed;               // +0x38  float speed, raw bits
 };
 
 // __ftol the (int)double scale-cast lowers to (0x11f570).
@@ -1623,14 +1624,14 @@ i32 CAniBlitTrigger::TriggerBlit_1587f0(i32 pos, i32 center, i32 range1, i32 ran
         return 0;
     }
     if (center <= 0) {
-        center = *(i32*)(*(char**)(*(char**)((char*)m_0c + 0x24) + 0x5c) + 0x84);
+        center = *(i32*)(*(char**)(*(char**)((char*)m_ctx + 0x24) + 0x5c) + 0x84);
     }
     if (range1 <= 0) {
-        char* m4 = *(char**)((char*)m_0c + 0x4);
+        char* m4 = *(char**)((char*)m_ctx + 0x4);
         range1 = *(i32*)(*(char**)(m4 + 0x10) + 0x10) << 2;
     }
     if (range2 <= 0) {
-        char* m4 = *(char**)((char*)m_0c + 0x4);
+        char* m4 = *(char**)((char*)m_ctx + 0x4);
         range2 = *(i32*)(*(char**)(m4 + 0x10) + 0x10) / 3;
     }
     i32 d = pos - center;
@@ -1659,7 +1660,7 @@ i32 CAniBlitTrigger::TriggerBlit_1587f0(i32 pos, i32 center, i32 range1, i32 ran
     } else {
         vscale = (i32)(amp * (cue * g_sndPanScale));
     }
-    return m_10->Play_1360d0(vscale, vol, 0, 0);
+    return m_soundPlayer->Play_1360d0(vscale, vol, 0, 0);
 }
 
 // ---------------------------------------------------------------------------
@@ -1668,8 +1669,8 @@ i32 CAniBlitTrigger::TriggerBlit_1587f0(i32 pos, i32 center, i32 range1, i32 ran
 // @early-stop
 // Zero-register-pinning plateau (1365 B, two jump-table switches): the body is a
 // complete, logic-correct reconstruction.  Byte-exact: the entry + timer-decrement
-// block, both jump-table switches (the 7-way frame step on m_18->m_08 and the
-// 10-way loop-mode on m_18->m_0c — both emit the retail .rdata table AND match its
+// block, both jump-table switches (the 7-way frame step on m_desc->m_stepMode and the
+// 10-way loop-mode on m_desc->m_loopMode — both emit the retail .rdata table AND match its
 // physical case-body order, the lever that moved this 54%->72%), the pos-mode
 // update, the random blit/sound trigger (incl. the LCG % mod table index), the
 // float speed scale (fild/fmul/__ftol), the descriptor-advance variants, and the
@@ -1684,124 +1685,124 @@ i32 CAniBlitTrigger::TriggerBlit_1587f0(i32 pos, i32 center, i32 range1, i32 ran
 // + linked-list-walk-node-eax-rotation.md (the twin-copy idiom).
 RVA(0x0015c360, 0x555)
 i32 CAniAdvanceCursor::Advance_15c360(u32 elapsed) {
-    if (m_14 == 0) {
+    if (m_playlist == 0) {
         return -1;
     }
 
     // --- per-frame timer decrement --------------------------------------------
-    if (m_20 > 0) {
-        if (m_24 != 0) {
-            if (elapsed >= m_20) {
-                m_20 = 0;
-                m_34 = m_30;
+    if (m_timer > 0) {
+        if (m_decEachTick != 0) {
+            if (elapsed >= m_timer) {
+                m_timer = 0;
+                m_curDraw = m_pendingDraw;
             } else {
-                m_20 -= elapsed;
-                return m_34;
+                m_timer -= elapsed;
+                return m_curDraw;
             }
         } else {
-            m_20 -= 1;
-            return m_34;
+            m_timer -= 1;
+            return m_curDraw;
         }
     } else {
-        m_34 = m_30;
+        m_curDraw = m_pendingDraw;
     }
 
-    if (m_28 == 0) {
-        CAniRenderCtx* ctx = m_10;
-        CAniDesc* d = m_18;
+    if (m_paused == 0) {
+        CAniRenderCtx* ctx = m_ctx;
+        CAniDesc* d = m_desc;
 
-        // --- step the active frame sequence one step (7-way on d->m_08) --------
-        switch (d->m_08 - 1) {
+        // --- step the active frame sequence one step (7-way on d->m_stepMode) --------
+        switch (d->m_stepMode - 1) {
             case 0: { // advance + wrap-to-first on overrun
-                CAniRenderCtx* c = m_10;
-                CAniFrameSeq* seq = c->m_194;
+                CAniRenderCtx* c = m_ctx;
+                CAniFrameSeq* seq = c->m_frameSeq;
                 if (seq == 0) {
                     break;
                 }
-                i32 idx = c->m_190 + 1;
-                c->m_190 = idx;
-                c->m_198 = seq->GetFrame_15cc30(idx);
-                if (c->m_198 == 0) {
-                    i32 first = c->m_194->m_64;
-                    c->m_190 = first;
-                    c->m_198 = c->m_194->GetFrame_15cc30(first);
+                i32 idx = c->m_frameCursor + 1;
+                c->m_frameCursor = idx;
+                c->m_curFrame = seq->GetFrame_15cc30(idx);
+                if (c->m_curFrame == 0) {
+                    i32 first = c->m_frameSeq->m_lowFrame;
+                    c->m_frameCursor = first;
+                    c->m_curFrame = c->m_frameSeq->GetFrame_15cc30(first);
                 }
                 break;
             }
             case 1: { // wrap-to-last when at first, else step back
-                CAniRenderCtx* c = m_10;
-                CAniFrameSeq* seq = c->m_194;
+                CAniRenderCtx* c = m_ctx;
+                CAniFrameSeq* seq = c->m_frameSeq;
                 if (seq == 0) {
                     break;
                 }
-                i32 idx = c->m_190;
-                if (idx == seq->m_64) {
-                    c->m_190 = seq->m_68;
+                i32 idx = c->m_frameCursor;
+                if (idx == seq->m_lowFrame) {
+                    c->m_frameCursor = seq->m_highFrame;
                 } else {
-                    c->m_190 = idx - 1;
+                    c->m_frameCursor = idx - 1;
                 }
-                c->m_198 = seq->GetFrame_15cc30(c->m_190);
+                c->m_curFrame = seq->GetFrame_15cc30(c->m_frameCursor);
                 break;
             }
-            case 2: { // jump to an explicit frame (d->m_14)
-                CAniRenderCtx* c = m_10;
-                i32 frame = d->m_14;
-                CAniFrameSeq* seq = c->m_194;
+            case 2: { // jump to an explicit frame (d->m_param)
+                CAniRenderCtx* c = m_ctx;
+                i32 frame = d->m_param;
+                CAniFrameSeq* seq = c->m_frameSeq;
                 if (seq == 0) {
                     break;
                 }
-                c->m_198 = seq->GetFrame_15cc30(frame);
-                c->m_190 = frame;
+                c->m_curFrame = seq->GetFrame_15cc30(frame);
+                c->m_frameCursor = frame;
                 break;
             }
             case 3: { // reset to first
-                CAniRenderCtx* c = m_10;
-                CAniFrameSeq* seq = c->m_194;
+                CAniRenderCtx* c = m_ctx;
+                CAniFrameSeq* seq = c->m_frameSeq;
                 if (seq == 0) {
                     break;
                 }
-                i32 first = seq->m_64;
-                c->m_190 = first;
-                c->m_198 = seq->GetFrame_15cc30(first);
+                i32 first = seq->m_lowFrame;
+                c->m_frameCursor = first;
+                c->m_curFrame = seq->GetFrame_15cc30(first);
                 break;
             }
             case 4: { // reset to last
-                CAniRenderCtx* c = m_10;
-                CAniFrameSeq* seq = c->m_194;
+                CAniRenderCtx* c = m_ctx;
+                CAniFrameSeq* seq = c->m_frameSeq;
                 if (seq == 0) {
                     break;
                 }
-                i32 last = seq->m_68;
-                c->m_190 = last;
-                c->m_198 = seq->GetFrame_15cc30(last);
+                i32 last = seq->m_highFrame;
+                c->m_frameCursor = last;
+                c->m_curFrame = seq->GetFrame_15cc30(last);
                 break;
             }
-            case 5: { // advance by d->m_14, clamp-last on overrun
-                CAniRenderCtx* c = m_10;
-                i32 step = d->m_14;
-                CAniFrameSeq* seq = c->m_194;
+            case 5: { // advance by d->m_param, clamp-last on overrun
+                CAniRenderCtx* c = m_ctx;
+                i32 step = d->m_param;
+                CAniFrameSeq* seq = c->m_frameSeq;
                 if (seq == 0) {
                     break;
                 }
-                i32 idx = c->m_190 + step;
-                c->m_190 = idx;
-                c->m_198 = seq->GetFrame_15cc30(idx);
-                if (c->m_198 == 0) {
+                i32 idx = c->m_frameCursor + step;
+                c->m_frameCursor = idx;
+                c->m_curFrame = seq->GetFrame_15cc30(idx);
+                if (c->m_curFrame == 0) {
                     c->ClampLast_15cc90();
                 }
                 break;
             }
-            case 6: { // retreat by d->m_14, clamp-first on underrun
-                CAniRenderCtx* c = m_10;
-                i32 step = d->m_14;
-                CAniFrameSeq* seq = c->m_194;
+            case 6: { // retreat by d->m_param, clamp-first on underrun
+                CAniRenderCtx* c = m_ctx;
+                i32 step = d->m_param;
+                CAniFrameSeq* seq = c->m_frameSeq;
                 if (seq == 0) {
                     break;
                 }
-                i32 idx = c->m_190 - step;
-                c->m_190 = idx;
-                c->m_198 = seq->GetFrame_15cc30(idx);
-                if (c->m_198 == 0) {
+                i32 idx = c->m_frameCursor - step;
+                c->m_frameCursor = idx;
+                c->m_curFrame = seq->GetFrame_15cc30(idx);
+                if (c->m_curFrame == 0) {
                     c->ClampFirst_15cc50();
                 }
                 break;
@@ -1810,59 +1811,59 @@ i32 CAniAdvanceCursor::Advance_15c360(u32 elapsed) {
                 break;
         }
 
-        // --- apply the per-frame position delta (3-way on d->m_10) ------------
-        ctx = m_10;
-        ctx->m_10 = 0;
-        ctx->m_14 = 0;
-        d = m_18;
-        switch (d->m_10) {
+        // --- apply the per-frame position delta (3-way on d->m_posMode) ------------
+        ctx = m_ctx;
+        ctx->m_posModeX = 0;
+        ctx->m_posModeY = 0;
+        d = m_desc;
+        switch (d->m_posMode) {
             case 1:
-                m_10->m_10 = d->m_20;
-                m_10->m_14 = d->m_24;
+                m_ctx->m_posModeX = d->m_posDX;
+                m_ctx->m_posModeY = d->m_posDY;
                 break;
             case 2: {
-                CAniRenderCtx* c = m_10;
-                i32 x = c->m_5c;
-                if (c->m_40 & 0x2) {
-                    i32 dy = d->m_24;
-                    i32 dx = d->m_20;
-                    c->m_5c = x - dx;
-                    c->m_60 = c->m_60 + dy;
+                CAniRenderCtx* c = m_ctx;
+                i32 x = c->m_screenX;
+                if (c->m_byteFlags & 0x2) {
+                    i32 dy = d->m_posDY;
+                    i32 dx = d->m_posDX;
+                    c->m_screenX = x - dx;
+                    c->m_screenY = c->m_screenY + dy;
                 } else {
-                    i32 dy = d->m_24;
-                    i32 dx = d->m_20;
-                    c->m_5c = x + dx;
-                    c->m_60 = c->m_60 + dy;
+                    i32 dy = d->m_posDY;
+                    i32 dx = d->m_posDX;
+                    c->m_screenX = x + dx;
+                    c->m_screenY = c->m_screenY + dy;
                 }
                 break;
             }
             case 3:
-                m_10->m_5c = d->m_20;
-                m_10->m_60 = d->m_24;
+                m_ctx->m_screenX = d->m_posDX;
+                m_ctx->m_screenY = d->m_posDY;
                 break;
             default:
                 break;
         }
 
         // --- per-frame draw/sound trigger -------------------------------------
-        CAniRenderCtx* c = m_10;
+        CAniRenderCtx* c = m_ctx;
         i32 fire = 1;
-        if (!(c->m_08 & 0x2000000) && !(m_18->m_04 & 0x8)) {
-            if (c->m_38 == -1) {
+        if (!(c->m_flags & 0x2000000) && !(m_desc->m_flags & 0x8)) {
+            if (c->m_anchor == -1) {
                 fire = 0;
             }
         }
         if (fire) {
-            CAniDesc* dd = m_18;
-            if (dd->m_04 & 0x4) {
-                i32 cue = c->m_5c;
+            CAniDesc* dd = m_desc;
+            if (dd->m_flags & 0x4) {
+                i32 cue = c->m_screenX;
                 i32* tbl;
                 i32 entry;
-                if (dd->m_2c == 0) {
+                if (dd->m_randMod == 0) {
                     entry = 0;
                 } else {
-                    tbl = dd->m_30;
-                    entry = tbl[dd->Rand_15cbe0() % dd->m_2c];
+                    tbl = dd->m_randTable;
+                    entry = tbl[dd->Rand_15cbe0() % dd->m_randMod];
                 }
                 if (entry != 0) {
                     ((CAniBlitTrigger*)this)->TriggerBlit_1587f0(cue, 0, 0, 0);
@@ -1870,11 +1871,11 @@ i32 CAniAdvanceCursor::Advance_15c360(u32 elapsed) {
             } else {
                 i32* tbl;
                 i32 entry;
-                if (dd->m_2c == 0) {
+                if (dd->m_randMod == 0) {
                     entry = 0;
                 } else {
-                    tbl = dd->m_30;
-                    entry = tbl[dd->Rand_15cbe0() % dd->m_2c];
+                    tbl = dd->m_randTable;
+                    entry = tbl[dd->Rand_15cbe0() % dd->m_randMod];
                 }
                 if (entry != 0) {
                     ((CAniCue*)entry)->PlayIfElapsed_01f940(g_aniCueItem, 0, 0, 0);
@@ -1883,94 +1884,94 @@ i32 CAniAdvanceCursor::Advance_15c360(u32 elapsed) {
         }
 
         // --- reload the per-frame timer (optionally float-scaled) -------------
-        CAniDesc* rd = m_18;
-        i32 reload = rd->m_18;
-        m_20 = reload;
-        m_24 = (~rd->m_04) & 1;
-        if (m_38 != 0x3f800000) {
-            m_20 = (i32)((double)(u32)reload * (*(float*)&m_38));
+        CAniDesc* rd = m_desc;
+        i32 reload = rd->m_frameTime;
+        m_timer = reload;
+        m_decEachTick = (~rd->m_flags) & 1;
+        if (m_speed != 0x3f800000) {
+            m_timer = (i32)((double)(u32)reload * (*(float*)&m_speed));
         }
 
-        // --- select the NEXT descriptor (10-way loop-mode on rd->m_0c) --------
+        // --- select the NEXT descriptor (10-way loop-mode on rd->m_loopMode) --------
         // Cases are ordered to reproduce retail's physical case-body layout
         // (9, 8, 7, 1, 2, 3, 4, 0, 5).  Cases 2/3/4 test a sequence-position
         // predicate and, on a hit, fall into case 0's shared inline loop-restart
         // body (a goto into the single emitted block); the block's locals are
         // declared before the label so no init is bypassed.
-        i32 modeWord = rd->m_0c;
+        i32 modeWord = rd->m_loopMode;
         CAniDescArray* arr;
         i32 i;
         CAniDesc* nd;
         switch (modeWord & 0xffff) {
             case 9: // pause
-                m_28 = 1;
+                m_paused = 1;
                 break;
             case 8: { // reset to the first descriptor and unscaled timing
-                if (m_14 != 0) {
-                    m_1c = 0;
-                    m_18 = m_14->AtChecked_06b270(0);
-                    m_28 = 0;
-                    m_38 = 0x3f800000;
-                    m_30 = m_18->m_1c;
-                    m_34 = m_18->m_1c;
+                if (m_playlist != 0) {
+                    m_index = 0;
+                    m_desc = m_playlist->AtChecked_06b270(0);
+                    m_paused = 0;
+                    m_speed = 0x3f800000;
+                    m_pendingDraw = m_desc->m_drawValue;
+                    m_curDraw = m_desc->m_drawValue;
                 }
                 break;
             }
-            case 7: { // hold on the first two descriptors (m_1c = 1 then 0)
-                m_1c = 1;
-                m_18 = m_14->AtChecked_06b270(1);
-                if (m_18 == 0) {
-                    m_1c = 0;
-                    m_18 = m_14->AtChecked_06b270(0);
+            case 7: { // hold on the first two descriptors (m_index = 1 then 0)
+                m_index = 1;
+                m_desc = m_playlist->AtChecked_06b270(1);
+                if (m_desc == 0) {
+                    m_index = 0;
+                    m_desc = m_playlist->AtChecked_06b270(0);
                 }
-                if (m_18 != 0) {
-                    m_28 = 0;
-                    m_20 = 0;
-                    m_34 = m_30;
-                    m_30 = m_18->m_1c;
+                if (m_desc != 0) {
+                    m_paused = 0;
+                    m_timer = 0;
+                    m_curDraw = m_pendingDraw;
+                    m_pendingDraw = m_desc->m_drawValue;
                 }
                 break;
             }
             case 1: { // advance only when the cursor's frame reached the descriptor param
-                CAniRenderCtx* c2 = m_10;
-                if (c2->m_190 == m_18->m_14) {
+                CAniRenderCtx* c2 = m_ctx;
+                if (c2->m_frameCursor == m_desc->m_param) {
                     if (modeWord != 9) {
-                        CAniDescArray* a = m_14;
-                        i32 j = m_1c + 1;
-                        m_1c = j;
-                        m_18 = a->AtChecked_06b270(j);
-                        if (m_18 == 0) {
-                            m_1c = 0;
-                            m_18 = a->AtChecked_06b270(0);
+                        CAniDescArray* a = m_playlist;
+                        i32 j = m_index + 1;
+                        m_index = j;
+                        m_desc = a->AtChecked_06b270(j);
+                        if (m_desc == 0) {
+                            m_index = 0;
+                            m_desc = a->AtChecked_06b270(0);
                         }
-                        if (m_18 != 0) {
-                            m_34 = m_30;
-                            m_30 = m_18->m_1c;
+                        if (m_desc != 0) {
+                            m_curDraw = m_pendingDraw;
+                            m_pendingDraw = m_desc->m_drawValue;
                         }
                     }
                 }
                 break;
             }
             case 2: { // advance only when the cursor reached the seq low frame
-                CAniRenderCtx* c2 = m_10;
-                CAniFrameSeq* seq = c2->m_194;
-                if (c2->m_190 == seq->m_64) {
+                CAniRenderCtx* c2 = m_ctx;
+                CAniFrameSeq* seq = c2->m_frameSeq;
+                if (c2->m_frameCursor == seq->m_lowFrame) {
                     goto loop_restart;
                 }
                 break;
             }
             case 3: { // advance only when the cursor reached the seq high frame
-                CAniRenderCtx* c2 = m_10;
-                CAniFrameSeq* seq = c2->m_194;
-                if (c2->m_190 == seq->m_68) {
+                CAniRenderCtx* c2 = m_ctx;
+                CAniFrameSeq* seq = c2->m_frameSeq;
+                if (c2->m_frameCursor == seq->m_highFrame) {
                     goto loop_restart;
                 }
                 break;
             }
             case 4: { // advance one past the seq low frame
-                CAniRenderCtx* c2 = m_10;
-                CAniFrameSeq* seq = c2->m_194;
-                if (c2->m_190 == seq->m_64 + 1) {
+                CAniRenderCtx* c2 = m_ctx;
+                CAniFrameSeq* seq = c2->m_frameSeq;
+                if (c2->m_frameCursor == seq->m_lowFrame + 1) {
                     goto loop_restart;
                 }
                 break;
@@ -1978,54 +1979,54 @@ i32 CAniAdvanceCursor::Advance_15c360(u32 elapsed) {
             case 0: // loop the playlist forward, inline bounds-checked fetch
             loop_restart:
                 if (modeWord != 9) {
-                    arr = m_14;
-                    i = m_1c + 1;
-                    m_1c = i;
-                    if (i >= 0 && i < arr->m_10) {
-                        nd = arr->m_0c[i];
+                    arr = m_playlist;
+                    i = m_index + 1;
+                    m_index = i;
+                    if (i >= 0 && i < arr->m_count) {
+                        nd = arr->m_data[i];
                     } else {
                         nd = 0;
                     }
-                    m_18 = nd;
+                    m_desc = nd;
                     if (nd == 0) {
-                        m_1c = 0;
-                        m_18 = arr->AtChecked_06b270(0);
+                        m_index = 0;
+                        m_desc = arr->AtChecked_06b270(0);
                     }
-                    if (m_18 != 0) {
-                        m_34 = m_30;
-                        m_30 = m_18->m_1c;
+                    if (m_desc != 0) {
+                        m_curDraw = m_pendingDraw;
+                        m_pendingDraw = m_desc->m_drawValue;
                     }
                 }
                 break;
             case 5: { // advance only when the cursor reached one before the high frame
-                CAniRenderCtx* c2 = m_10;
-                CAniFrameSeq* seq = c2->m_194;
-                if (c2->m_190 == seq->m_68 - 1) {
+                CAniRenderCtx* c2 = m_ctx;
+                CAniFrameSeq* seq = c2->m_frameSeq;
+                if (c2->m_frameCursor == seq->m_highFrame - 1) {
                     if (modeWord != 9) {
-                        CAniDescArray* a = m_14;
-                        i32 j = m_1c + 1;
-                        m_1c = j;
+                        CAniDescArray* a = m_playlist;
+                        i32 j = m_index + 1;
+                        m_index = j;
                         CAniDesc* p;
-                        if (j >= 0 && j < a->m_10) {
-                            p = a->m_0c[j];
+                        if (j >= 0 && j < a->m_count) {
+                            p = a->m_data[j];
                         } else {
                             p = 0;
                         }
-                        m_18 = p;
+                        m_desc = p;
                         if (p == 0) {
-                            m_1c = 0;
-                            i32 cnt = a->m_10;
+                            m_index = 0;
+                            i32 cnt = a->m_count;
                             CAniDesc* first;
                             if (cnt > 0) {
-                                first = a->m_0c[0];
+                                first = a->m_data[0];
                             } else {
                                 first = 0;
                             }
-                            m_18 = first;
+                            m_desc = first;
                         }
-                        if (m_18 != 0) {
-                            m_34 = m_30;
-                            m_30 = m_18->m_1c;
+                        if (m_desc != 0) {
+                            m_curDraw = m_pendingDraw;
+                            m_pendingDraw = m_desc->m_drawValue;
                         }
                     }
                 }
@@ -2037,20 +2038,20 @@ i32 CAniAdvanceCursor::Advance_15c360(u32 elapsed) {
     }
 
     // --- return the per-frame draw value, consuming it when buffer-owned ------
-    if (m_2c != 0) {
-        if (m_20 != 0) {
-            i32 r = m_34;
-            m_34 = 0;
+    if (m_ownsBuffer != 0) {
+        if (m_timer != 0) {
+            i32 r = m_curDraw;
+            m_curDraw = 0;
             return r;
         }
-        i32 r = m_30;
-        m_30 = 0;
+        i32 r = m_pendingDraw;
+        m_pendingDraw = 0;
         return r;
     }
-    if (m_20 != 0) {
-        return m_34;
+    if (m_timer != 0) {
+        return m_curDraw;
     }
-    return m_30;
+    return m_pendingDraw;
 }
 
 // CAniRenderCtx::ClampFirst (0x15cc50) / ClampLast (0x15cc90): clamp the +0x190
@@ -2063,16 +2064,16 @@ i32 CAniAdvanceCursor::Advance_15c360(u32 elapsed) {
 // prologue and tail-merges the exits. Body byte-exact; not source-steerable.
 RVA(0x0015cc50, 0x38)
 void CAniRenderCtx::ClampFirst_15cc50() {
-    CAniFrameSeq* seq = m_194;
+    CAniFrameSeq* seq = m_frameSeq;
     if (seq == 0) {
         return;
     }
-    i32 n = seq->m_64;
-    m_190 = n;
-    if (n >= seq->m_64 && n <= seq->m_68) {
-        m_198 = (i32)seq->m_14[n];
+    i32 n = seq->m_lowFrame;
+    m_frameCursor = n;
+    if (n >= seq->m_lowFrame && n <= seq->m_highFrame) {
+        m_curFrame = (i32)seq->m_frames[n];
     } else {
-        m_198 = 0;
+        m_curFrame = 0;
     }
 }
 
@@ -2080,16 +2081,16 @@ void CAniRenderCtx::ClampFirst_15cc50() {
 // shrink-wrapped-callee-save-push wall (~62%); twin of ClampFirst above.
 RVA(0x0015cc90, 0x38)
 void CAniRenderCtx::ClampLast_15cc90() {
-    CAniFrameSeq* seq = m_194;
+    CAniFrameSeq* seq = m_frameSeq;
     if (seq == 0) {
         return;
     }
-    i32 n = seq->m_68;
-    m_190 = n;
-    if (n >= seq->m_64 && n <= seq->m_68) {
-        m_198 = (i32)seq->m_14[n];
+    i32 n = seq->m_highFrame;
+    m_frameCursor = n;
+    if (n >= seq->m_lowFrame && n <= seq->m_highFrame) {
+        m_curFrame = (i32)seq->m_frames[n];
     } else {
-        m_198 = 0;
+        m_curFrame = 0;
     }
 }
 
@@ -2181,8 +2182,8 @@ public:
 // The +0x80 notifier: a cdecl callback pointer at +0x10 invoked with the owner.
 class CWwdNotifier {
 public:
-    char m_pad00[0x10];  // +0x00..0x0f
-    void (*m_10)(void*); // +0x10
+    char m_pad00[0x10];        // +0x00..0x0f
+    void (*m_callback)(void*); // +0x10
 };
 
 // ---------------------------------------------------------------------------
@@ -2373,7 +2374,7 @@ void CWwdFactoryObject::Notify_15b650(void* p) {
         CWwdNotifier* h = *(CWwdNotifier**)(o + 0x80);
         if (h != 0) {
             *(void**)(o + 0x84) = p;
-            h->m_10(this);
+            h->m_callback(this);
         }
     }
 }
@@ -2481,34 +2482,34 @@ i32 __stdcall RectsOverlap_15bfb0(CDDrawRect* a, CDDrawRect* b) {
 // pinning family); docs/patterns/zero-register-pinning.md.
 struct CWwdBox {
     char m_pad00[0x5c];
-    i32 m_5c; // screen X
-    i32 m_60; // screen Y
+    i32 m_screenX; // screen X
+    i32 m_screenY; // screen Y
     char m_pad64[0x144 - 0x64];
-    i32 m_144; // a1 AABB: left
-    i32 m_148; // a1 AABB: top
-    i32 m_14c; // a1 AABB: right
-    i32 m_150; // a1 AABB: bottom
-    i32 m_154; // a2 AABB: left
-    i32 m_158; // a2 AABB: top
-    i32 m_15c; // a2 AABB: right
-    i32 m_160; // a2 AABB: bottom
+    i32 m_aabb0Left;   // a1 AABB: left
+    i32 m_aabb0Top;    // a1 AABB: top
+    i32 m_aabb0Right;  // a1 AABB: right
+    i32 m_aabb0Bottom; // a1 AABB: bottom
+    i32 m_aabb1Left;   // a2 AABB: left
+    i32 m_aabb1Top;    // a2 AABB: top
+    i32 m_aabb1Right;  // a2 AABB: right
+    i32 m_aabb1Bottom; // a2 AABB: bottom
 };
 RVA(0x0015a130, 0xdc)
 i32 __stdcall BoxesOverlap_15a130(CWwdBox* a1, CWwdBox* a2) {
-    if (a2->m_154 == (i32)0x80000000) {
+    if (a2->m_aabb1Left == (i32)0x80000000) {
         return 0;
     }
-    if (a1->m_144 == (i32)0x80000000) {
+    if (a1->m_aabb0Left == (i32)0x80000000) {
         return 0;
     }
-    i32 a1L = a1->m_144 + a1->m_5c;
-    i32 a1R = a1->m_14c + a1->m_5c;
-    i32 a1T = a1->m_148 + a1->m_60;
-    i32 a1B = a1->m_150 + a1->m_60;
-    i32 a2L = a2->m_154 + a2->m_5c;
-    i32 a2T = a2->m_158 + a2->m_60;
-    i32 a2B = a2->m_160 + a2->m_60;
-    i32 a2R = a2->m_15c + a2->m_5c;
+    i32 a1L = a1->m_aabb0Left + a1->m_screenX;
+    i32 a1R = a1->m_aabb0Right + a1->m_screenX;
+    i32 a1T = a1->m_aabb0Top + a1->m_screenY;
+    i32 a1B = a1->m_aabb0Bottom + a1->m_screenY;
+    i32 a2L = a2->m_aabb1Left + a2->m_screenX;
+    i32 a2T = a2->m_aabb1Top + a2->m_screenY;
+    i32 a2B = a2->m_aabb1Bottom + a2->m_screenY;
+    i32 a2R = a2->m_aabb1Right + a2->m_screenX;
     if (a1L > a2R) {
         return 0;
     }
