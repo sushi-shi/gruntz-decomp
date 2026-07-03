@@ -522,7 +522,7 @@ build stayed GREEN, `no regressions vs baseline` (1835/3361 exact, 64.39% fuzzy)
 | `CDeviceConfigB` | 0x1ef640 | 0x2c8 | explicit m_vptr, foreign engine vtable ctor-stamped | src/DinMgr2/DirectInputMgr2.cpp |
 | `DSoundVoice` | 0x1ef6d0 | 0x28 | explicit m_vtbl; ctor 0x136fe0 lives in another TU (cl cannot auto-emit) | src/Dsndmgr/DSoundVoice.cpp |
 | `CContainerErr` | 0x1f04cc | (unk) | vptr-LAST ctor store (Batch 1 empirically regressed the real-virtual model) | src/Wap32/EngStr.cpp |
-| `CShadeArrayBase` | (masks CObject 0x1e8cb4) | 0x14 | grand-base vtable is CObject's; already cataloged | src/DDrawMgr/ShadeTableCache.cpp (SIZE only) |
+| `CShadeTableArray` base | (masks CObject 0x1e8cb4) | — | now the shared `Wap::CObject` grand-base (dropped the fabricated `CShadeArrayBase` stand-in); grand-base vtable already cataloged | include/Wap32/CObject.h |
 
 **Not attempted (remaining in scope — documented structural walls / out-of-module):**
 - `PureVtbl` (0x1ef6c8): all-`__purecall` "poison" vtable stamped in a element-reaper

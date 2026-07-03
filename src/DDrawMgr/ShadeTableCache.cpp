@@ -30,7 +30,7 @@ DATA(0x00283eb4)
 extern i32 g_bDown; // 0x683eb4
 
 // ALL-VTABLES phase: the array vtable (0x5efb28) + the CObject grand-base dtor
-// vtable (0x5e8cb4) are now cl-emitted from the real CShadeArrayBase/CShadeTableArray
+// vtable (0x5e8cb4) are now cl-emitted from the real Wap::CObject/CShadeTableArray
 // polymorphic hierarchy - the manual g_shadeArrayVtbl / g_wapObjectDtorVtbl stamps
 // are gone (cl auto-stamps in the array ctor + auto-resets in the array dtor).
 
@@ -72,11 +72,9 @@ struct CStr {
 // ===========================================================================
 // CShadeTableArray - the embedded element-array subobject. Its inline ctor/dtor
 // fold into the cache ctor/dtor: stamp the array vtable, zero/free m_pData.
+// (The empty grand-base dtor Wap::CObject::~CObject - defined inline in
+// Wap32/CObject.h - supplies the tail CObject vptr reset masking 0x5e8cb4.)
 // ===========================================================================
-// Empty grand-base dtor: cl emits just the CObject vptr reset (0x5e8cb4) at the
-// array dtor's tail.
-inline CShadeArrayBase::~CShadeArrayBase() {}
-
 inline CShadeTableArray::CShadeTableArray() {
     // cl auto-stamps ??_7CShadeTableArray (0x5efb28) here (was m_vtbl = &g_shadeArrayVtbl).
     m_pData = 0;
@@ -87,18 +85,17 @@ inline CShadeTableArray::CShadeTableArray() {
 
 inline CShadeTableArray::~CShadeTableArray() {
     // cl resets the vptr to 0x5efb28 (entry), runs the free, then chains
-    // ~CShadeArrayBase which resets the CObject vtable (0x5e8cb4) - was the two
+    // ~Wap::CObject which resets the CObject vtable (0x5e8cb4) - was the two
     // manual m_vtbl stamps.
     if (m_pData) {
         operator delete(m_pData);
     }
 }
 // Class metadata (hosted here, not in ShadeTableCache.h, which is parsed before
-// rva.h and pulls windows.h's SIZE type). CShadeArrayBase's grand-base vtable
-// masks ??_7CObject@@6B@ (0x1e8cb4, already cataloged), so only CShadeTableArray
-// gets a VTBL.
-SIZE(CShadeArrayBase, 0x14);        // CObArray-like grand base (vptr + 4 array fields)
-SIZE(CShadeTableArray, 0x14);       // adds no fields over CShadeArrayBase
+// rva.h and pulls windows.h's SIZE type). Wap::CObject's grand-base vtable masks
+// ??_7CObject@@6B@ (0x1e8cb4, already cataloged), so only CShadeTableArray gets a
+// VTBL.
+SIZE(CShadeTableArray, 0x14);       // vptr + 4 array fields over the Wap::CObject base
 VTBL(CShadeTableArray, 0x001efb28); // cl-emitted ??_7CShadeTableArray@@6B@
 
 // ===========================================================================

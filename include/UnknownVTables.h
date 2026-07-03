@@ -99,9 +99,9 @@ typedef void (*UnkVfn)(void);
 // reloc-mask against the retail RVAs.)
 
 // ClassWithUnknownVTable21  @ 0x005efb28  (5 slots)  refs x3  src:g_shadeArrayVtbl
-// REALIZED as ??_7CShadeTableArray@@6B@ (real CObject-derived array in
-// src/DDrawMgr/ShadeTableCache.{h,cpp}; cl auto-emits it + the CObject-masking
-// ??_7CShadeArrayBase). Placeholder removed.
+// REALIZED as ??_7CShadeTableArray@@6B@ (real Wap::CObject-derived array in
+// src/DDrawMgr/ShadeTableCache.{h,cpp}; cl auto-emits it + the shared CObject-masking
+// grand-base vtable from Wap::CObject). Placeholder removed.
 
 // ClassWithUnknownVTable22  @ 0x005efb80  (10 slots)  refs x7  src:g_animWorkerVtbl
 // REALIZED as ??_7AnimWorkerObj@@6B@ (real polymorphic AnimWorkerObj built via

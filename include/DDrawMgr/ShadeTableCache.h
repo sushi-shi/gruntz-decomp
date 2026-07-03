@@ -20,6 +20,7 @@
 #define GRUNTZ_DDRAWMGR_SHADETABLECACHE_H
 
 #include <Ints.h>
+#include <Wap32/CObject.h> // Wap::CObject - the MFC-free WAP grand-base (no windows.h dep)
 
 // A 0x10-byte memory-buffer wrapper (the array element). The ctor zeros
 // m_alloc/m_size/m_data; 0x1501a0 Alloc(size,key) frees+reallocs m_data; 0x1503c0
@@ -46,42 +47,34 @@ struct CShadeTable {
 };
 
 // The growable element-array subobject (lives at cache +0x04). CShadeTableArray is a
-// real RTTI class (??_7CShadeTableArray @0x5efb28) that derives from CObject: its
-// 5-slot vtable is CObject's prefix (GetRuntimeClass / dtor / Serialize / AssertValid /
-// Dump), overriding slot 1 (dtor 0x150020) + slot 2 (Serialize 0x14fe90). dump_target
-// proves the classic 2-level CObject codegen - the cache ctor (0x14de30) stamps ONLY
-// 0x5efb28 (the dead CObject base stamp elided), the dtor (0x14de50) stamps 0x5efb28
-// then the CObject-destruction base (0x5e8cb4).
+// real RTTI class (??_7CShadeTableArray @0x5efb28) that derives from the shared WAP
+// grand-base Wap::CObject (RTTI "CObject", grand-base vtable @0x5e8cb4). Its 5-slot
+// vtable is CObject's prefix (GetRuntimeClass / dtor / Serialize / AssertValid / Dump):
+// slots 0/3/4 are inherited, and it overrides slot 1 (dtor 0x150020) + slot 2
+// (Serialize 0x14fe90 = FUN_004028ec). dump_target proves the classic 2-level CObject
+// codegen - the cache ctor (0x14de30) stamps ONLY 0x5efb28 (the dead CObject base stamp
+// elided), the dtor (0x14de50) stamps 0x5efb28 then the CObject-destruction base
+// (0x5e8cb4).
 //
-// It CANNOT be modeled `: public CObject` (real MFC CObject): this header is included
-// by PURE-WIN32 TUs (SpriteRef.cpp / LightEffectSetup.cpp pull <Win32.h> = windows.h
-// FIRST) and <Mfc.h> HARD-ERRORS when windows.h precedes it. So CObject is stood in by
-// the mfc-free base CShadeArrayBase, whose 5 slots carry CObject's REAL method names
-// (no Vf<n>/Slot<n>) and whose orphan vtable reloc-masks the CObject grand-base
-// (0x5e8cb4). cl auto-emits both vtables + auto-stamps/resets the vptr, reproducing
+// Wap::CObject is the MFC-free engine CObject (namespace Wap, no windows.h dependency) -
+// the same grand-base the Net nodes / CGruntzSoundInnerZ derive from - so this header
+// compiles in the PURE-WIN32 includers (LightEffectSetup.cpp pulls <Win32.h> = windows.h
+// FIRST, where <Mfc.h>'s real CObject HARD-ERRORS) as well as the MFC ones. cl inherits
+// the 5 base slots, auto-emits both vtables + auto-stamps/resets the vptr, reproducing
 // retail's exact stamp schedule (the cache ctor/dtor are already 100%).
-struct CShadeArrayBase {            // CObArray-like CObject stand-in (mfc-free)
-    virtual void GetRuntimeClass(); // [0] 0x1bef01  CObject slot
-    virtual ~CShadeArrayBase();     // [1]           CObject dtor slot
-    virtual void Serialize();       // [2] 0x0028ec  CObject slot (CShadeTableArray overrides)
-    virtual void AssertValid();     // [3] 0x00106e  CObject slot
-    virtual void Dump();            // [4] 0x004034  CObject slot
-
-    // vptr @ +0x00 (cache +0x04); fields follow.
+struct CShadeTableArray : Wap::CObject {
     CShadeTable** m_pData; // +0x04 (cache +0x08)
     i32 m_nSize;           // +0x08 (cache +0x0c)
     i32 m_nMaxSize;        // +0x0c (cache +0x10)
     i32 m_nGrowBy;         // +0x10 (cache +0x14)
-};
 
-struct CShadeTableArray : CShadeArrayBase {
     CShadeTableArray();
-    ~CShadeTableArray(); // 0x150020  overrides CObject dtor slot 1
-    void Serialize();    // 0x14fe90  overrides CObject Serialize slot 2 (declared-only)
+    virtual ~CShadeTableArray(); // 0x150020  overrides Wap::CObject dtor slot 1
+    virtual void FUN_004028ec(); // 0x14fe90  overrides CObject Serialize slot 2 (declared-only)
     void SetSizeGrow(i32 n, i32 grow); // 0x150040
 };
-// SIZE/VTBL for CShadeArrayBase + CShadeTableArray are in ShadeTableCache.cpp
-// (this header is parsed before rva.h, and pulls windows.h's SIZE type).
+// SIZE/VTBL for CShadeTableArray are in ShadeTableCache.cpp (this header is parsed
+// before rva.h, and pulls windows.h's SIZE type).
 
 // The live 256-entry RGB palette base (0x6bf224), each entry a 4-byte
 // {r,g,b,pad} record. The sort/remap builders publish the working palette here
