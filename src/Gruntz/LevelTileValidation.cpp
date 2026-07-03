@@ -31,6 +31,7 @@
 
 #include <Mfc.h> // CString (Format / ctor / dtor), RECT
 
+#include <Gruntz/WwdGameReg.h> // the canonical WwdGameReg singleton (g_gameReg)
 #include <rva.h>
 
 // ---------------------------------------------------------------------------
@@ -126,16 +127,13 @@ struct PlayfieldMgr {
     void Bridge1d2f(i32 a, i32 b);                            // 0x508410 (via 0x1d2f)
 };
 
-// The big game registry (?g_gameReg@@3PAUWwdGameReg@@A). Reloc-masked DIR32.
+// The coarse-cell tile grid the pressure-pad stamp reaches via g_gameReg->m_tileGrid
+// (the level-validation facet of the +0x70 board). Reloc-masked DIR32.
 struct WwdGameGrid {
     char m_pad00[0x8];
     void** m_08; // +0x08  cell-row base
     i32 m_0c;    // +0x0c  width
     i32 m_10;    // +0x10  height
-};
-struct WwdGameRegInner {
-    char m_pad00[0x3c];
-    i32 m_3c; // +0x3c
 };
 // The trigger-grid manager (g_gameReg->m_68 = CTriggerMgr): PlaceObject builds and
 // registers a tile object, returning its grid index or -1 on failure. 0x6b6d0,
@@ -169,21 +167,10 @@ struct WwdStartPlayer {
     i32 m_228; // +0x228  start-grunt cap
     char m_pad22c[0x238 - 0x22c];
 };
-struct WwdGameReg {
-    void LogTileError(const char* msg); // 0x48ef10 (via 0x417e thunk)
-    char m_pad00[0x68];
-    PlaceGridMgr* m_68; // +0x68  the playfield trigger grid (PlaceObject)
-    StartCmdMgr* m_6c;  // +0x6c  the command queue (EnqueueSingle)
-    WwdGameGrid* m_tileGrid;  // +0x70  coarse-cell grid
-    char m_pad74[0x7c - 0x74];
-    WwdGameRegInner* m_7c; // +0x7c
-    char m_pad80[0x118 - 0x80];
-    i32 m_isEasyMode; // +0x118
-    char m_pad11c[0x134 - 0x11c];
-    i32 m_134; // +0x134
-    char m_pad138[0x150 - 0x138];
-    WwdStartPlayer m_150[8]; // +0x150  per-player start records
-};
+// The game registry singleton (canonical <Gruntz/WwdGameReg.h>). This TU reaches
+// its level-validation facet: m_68/m_6c downcast to PlaceGridMgr*/StartCmdMgr*,
+// m_tileGrid downcast to WwdGameGrid*, and the per-player start records in the
+// m_options block at +0x150 by raw offset (the established 0x150-region idiom).
 DATA(0x0064556c)
 extern WwdGameReg* g_gameReg;
 
@@ -345,21 +332,22 @@ i32 CLevelValidator::PlaceStartGruntz() {
             char* aux = (char*)obj->m_7c;
             void* who = *(void**)(aux + 0x10);
             if (who == (void*)0x4024a5) {
-                i32 idx = reg->m_68->PlaceObject(
-                    obj->m_kind,
-                    (obj->m_worldX & ~0x1f) + 0x10,
-                    (obj->m_worldY & ~0x1f) + 0x10,
-                    100000,
-                    flag14,
-                    obj->m_114,
-                    obj->m_11c,
-                    obj->m_120,
-                    obj->m_118,
-                    obj->m_12c,
-                    *(i32*)(aux + 0x2c),
-                    *(i32*)(aux + 0x30),
-                    (i32)&obj->m_134
-                );
+                i32 idx = ((PlaceGridMgr*)reg->m_68)
+                              ->PlaceObject(
+                                  obj->m_kind,
+                                  (obj->m_worldX & ~0x1f) + 0x10,
+                                  (obj->m_worldY & ~0x1f) + 0x10,
+                                  100000,
+                                  flag14,
+                                  obj->m_114,
+                                  obj->m_11c,
+                                  obj->m_120,
+                                  obj->m_118,
+                                  obj->m_12c,
+                                  *(i32*)(aux + 0x2c),
+                                  *(i32*)(aux + 0x30),
+                                  (i32)&obj->m_134
+                              );
                 if (idx == -1) {
                     CString s;
                     s.Format(
@@ -374,18 +362,19 @@ i32 CLevelValidator::PlaceStartGruntz() {
                 obj->m_flags |= 0x10000;
             } else if (g_gameReg->m_134 != 1 && who == (void*)0x4017e4
                        && obj->m_kind == g_tileKindMagic) {
-                WwdStartPlayer* e = &g_gameReg->m_150[g_tileKindMagic];
+                WwdStartPlayer* e = &((WwdStartPlayer*)((char*)g_gameReg + 0x150))[g_tileKindMagic];
                 if (e != 0 && counter < e->m_228) {
-                    reg->m_6c->EnqueueSingle(
-                        result,
-                        (char)obj->m_kind,
-                        0,
-                        0,
-                        (obj->m_worldX & ~0x1f) + 0x10,
-                        (obj->m_worldY & ~0x1f) + 0x10,
-                        0,
-                        0
-                    );
+                    ((StartCmdMgr*)reg->m_6c)
+                        ->EnqueueSingle(
+                            result,
+                            (char)obj->m_kind,
+                            0,
+                            0,
+                            (obj->m_worldX & ~0x1f) + 0x10,
+                            (obj->m_worldY & ~0x1f) + 0x10,
+                            0,
+                            0
+                        );
                     counter++;
                 }
             }
@@ -543,7 +532,7 @@ i32 CLevelValidator::ValidateLevelTiles() {
                 for (i32 k = 3; k != 0; k--, ofs += 4, row++) {
                     i32 gx = dy + col;
                     i32 gyy = row - 1;
-                    WwdGameGrid* gg = g_gameReg->m_tileGrid;
+                    WwdGameGrid* gg = (WwdGameGrid*)g_gameReg->m_tileGrid;
                     if ((u32)gx >= (u32)gg->m_0c || (u32)gyy >= (u32)gg->m_10) {
                         continue;
                     }
@@ -568,7 +557,7 @@ i32 CLevelValidator::ValidateLevelTiles() {
                         }
                     }
                     counts[kind]++;
-                    gg = g_gameReg->m_tileGrid;
+                    gg = (WwdGameGrid*)g_gameReg->m_tileGrid;
                     if ((u32)gx >= (u32)gg->m_0c || (u32)gyy >= (u32)gg->m_10) {
                         continue;
                     }
@@ -577,7 +566,7 @@ i32 CLevelValidator::ValidateLevelTiles() {
                 }
             }
         } else if (who == (void*)0x40182a) {
-            WwdGameGrid* gg = g_gameReg->m_tileGrid;
+            WwdGameGrid* gg = (WwdGameGrid*)g_gameReg->m_tileGrid;
             i32 cy = obj->m_worldX >> 5;
             i32 cx = obj->m_worldY >> 5;
             if ((u32)cy < (u32)gg->m_0c && (u32)cx < (u32)gg->m_10) {
@@ -708,5 +697,4 @@ SIZE_UNKNOWN(TileObjList);
 SIZE_UNKNOWN(TileObjNode);
 SIZE_UNKNOWN(TriggerRegistrar);
 SIZE_UNKNOWN(WwdGameGrid);
-SIZE_UNKNOWN(WwdGameRegInner);
 SIZE_UNKNOWN(WwdStartPlayer);

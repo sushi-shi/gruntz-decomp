@@ -20,6 +20,7 @@
 #include <rva.h>                   // SIZE_UNKNOWN/VTBL class-metadata macros used below
 #include <Gruntz/EngStr.h>         // shared CUserBaseLink (+0x18 EngStr link; ~EngStr 0x16d2a0)
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (g_gameReg->m_74; GetSel)
+#include <Gruntz/WwdGameReg.h>     // the canonical WwdGameReg singleton layout (g_gameReg)
 
 // ---------------------------------------------------------------------------
 // The receiver the Add* registration call runs on: edi = sprite->m_7c->m_18.
@@ -551,22 +552,9 @@ struct GruntSoundCat { // m_30: the sound-category object
     char m_pad0[0x28];
     GruntSoundInner* m_28; // +0x28  -> the lookup map lives at (*m_28)+0x10
 };
-SIZE_UNKNOWN(WwdGameReg);
-struct WwdGameReg {
-    char m_pad0[0x30];
-    GruntSoundCat* m_world; // +0x30  the sound category (struck-voice lookup root)
-    char m_pad34[0x60 - 0x34];
-    CGruntCueSink* m_cueSink; // +0x60  the on-screen cue receiver (CueA/CueSpawn)
-    char m_pad64[0x68 - 0x64];
-    i32 m_68; // +0x68  (SerializeMove mode-8: -> CGrunt::m_tileMgr)
-    char m_pad6c[0x70 - 0x6c];
-    GruntBoard* m_tileGrid; // +0x70  the level board
-    CSpriteRefTable* m_74;  // +0x74  the sprite/animation reference table (GetSel)
-    char m_pad78[0x11c - 0x78];
-    i32 m_11c; // +0x11c  the sound-channel param (struck-voice Play arg)
-    char m_pad120[0x134 - 0x120];
-    i32 m_134; // +0x134  the view-cull mode gate (==1 -> rand%3, else rand%6)
-};
+// WwdGameReg (the g_gameReg singleton) is the canonical <Gruntz/WwdGameReg.h>;
+// its grunt-facet slot types (m_world=GruntSoundCat, m_cueSink=CGruntCueSink,
+// m_tileGrid=GruntBoard, m_74=CSpriteRefTable) are completed by the defs above.
 extern WwdGameReg* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
 
 // The struck-voice sound model (creator @0x57c40). The lookup returns a

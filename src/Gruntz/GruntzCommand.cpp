@@ -20,6 +20,7 @@
 // flags (a real ??0 emits `mov eax,ecx`; placement-new emits a null guard).
 // They stay in the src/Stub/ backlog as the documented COMDAT-duplication case.
 #include <Gruntz/GruntzCommand.h>
+#include <Gruntz/WwdGameReg.h> // the canonical WwdGameReg singleton (g_gameReg)
 #include <rva.h>
 
 // The network (de)serialization stream (a CArchive/CSocketFile-family object):
@@ -43,12 +44,9 @@ public:
     virtual void Write(void* buf, i32 len); // +0x30  slot 12
 };
 
-// The game registry singleton (?g_gameReg@@3PAUWwdGameReg@@A @0x64556c). Save/Load
-// no-op unless its +0x30 active-game gate is non-null (same gate the cmd-mgr taps).
-struct WwdGameReg {
-    char m_pad0[0x30];
-    void* m_world; // +0x30  active-game gate
-};
+// The game registry singleton (canonical <Gruntz/WwdGameReg.h>). Save/Load no-op
+// unless its +0x30 active-game gate (m_world) is non-null (same gate the cmd-mgr
+// taps); this TU only null-tests it, so the m_world facet type is irrelevant here.
 DATA(0x0024556c)
 extern WwdGameReg* g_gameReg;
 

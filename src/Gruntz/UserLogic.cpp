@@ -16,6 +16,7 @@
 #include <Gruntz/CTrigger.h>           // shared point-probe result object
 #include <Gruntz/CViewport.h>          // shared world->screen transform
 #include <Gruntz/UserLogic.h>
+#include <Gruntz/WwdGameReg.h> // the canonical WwdGameReg singleton (g_gameReg)
 #include <rva.h>
 #include <Globals.h>
 
@@ -402,24 +403,10 @@ struct CTeleResHolder { // the +0x30 resource/sprite-factory holder
     CViewport* m_24; // +0x24  viewport (visible-bounds source)
 };
 
-struct WwdGameReg {
-    // Fills the passed RECT with the on-screen message bounds and returns it
-    // (0x2cb1 thunk; __thiscall). Modeled NO-body so the call reloc-masks.
-    RECT* GetMessageBounds(RECT* out);
-    char m_pad00[0x30];
-    CTeleResHolder* m_world; // +0x30  sprite-factory/viewport holder
-    char m_pad34[0x60 - 0x34];
-    CTeleCueSink* m_cueSink; // +0x60  on-screen cue receiver
-    char m_pad64[0x68 - 0x64];
-    CTriggerProbe* m_68; // +0x68  point-probe sink
-    char m_pad6c[0x7c - 0x6c];
-    WwdGameRegAux* m_7c; // +0x7c
-    char m_pad80[0x118 - 0x80];
-    i32 m_isEasyMode; // +0x118
-    char m_pad11c[0x130 - 0x11c];
-    i32 m_130; // +0x130
-    i32 m_134; // +0x134
-};
+// The game registry singleton (canonical <Gruntz/WwdGameReg.h>). These teleporter
+// tails reach its facet: m_world downcast to CTeleResHolder*, m_cueSink to
+// CTeleCueSink*, m_68 to CTriggerProbe*, m_7c to WwdGameRegAux*; GetMessageBounds
+// returns the on-screen message-bounds RECT.
 extern WwdGameReg* g_gameReg;
 
 // The CRT rand() (0x11fee0); CMenuSparkle seeds its +0x130 timer from it.
@@ -716,7 +703,7 @@ CSecretTeleporterTrigger::CSecretTeleporterTrigger(CGameObject* obj) : CUserLogi
         m_38->m_40 |= 1;
         m_30 = m_14->m_1c;
         m_14->m_1c = g_buteTree.Find("A");
-        g_gameReg->m_7c->m_3c++;
+        ((WwdGameRegAux*)g_gameReg->m_7c)->m_3c++;
     }
 }
 
@@ -803,10 +790,10 @@ RVA(0x00042b80, 0x153)
 i32 CSecretTeleporterTrigger::SpawnTeleporter() {
     i32 loc0, loc4;
     CGameObject* o = m_10;
-    CTrigger* hit = g_gameReg->m_68->Probe(o->m_5c, o->m_60, &loc0, &loc4, 1);
+    CTrigger* hit = ((CTriggerProbe*)g_gameReg->m_68)->Probe(o->m_5c, o->m_60, &loc0, &loc4, 1);
     if (hit) {
         o = m_10;
-        CTeleSpriteFactory* fac = g_gameReg->m_world->m_8;
+        CTeleSpriteFactory* fac = ((CTeleResHolder*)g_gameReg->m_world)->m_8;
         CGameObject* spr = (CGameObject*)fac->CreateSprite(
             0,
             (o->m_114 << 5) + 0x10,
@@ -829,9 +816,9 @@ i32 CSecretTeleporterTrigger::SpawnTeleporter() {
             WwdGameReg* g = g_gameReg;
             i32 ey = eo->m_60;
             i32 ex = eo->m_5c;
-            CViewRect* rc = (CViewRect*)(g->m_world->m_24->m_5c + 0x40);
+            CViewRect* rc = (CViewRect*)(((CTeleResHolder*)g->m_world)->m_24->m_5c + 0x40);
             if (ex < rc->m_right && ex >= rc->m_left && ey < rc->m_bottom && ey >= rc->m_top) {
-                g->m_cueSink->CueA(hit, 0x3fc, -1, 0, -1, -1);
+                ((CTeleCueSink*)g->m_cueSink)->CueA(hit, 0x3fc, -1, 0, -1, -1);
             }
         }
         m_38->m_08 |= 0x10000;

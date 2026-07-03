@@ -32,8 +32,9 @@
 // real per-frame step+draw is slot +0x14 (Render), overridden by each concrete
 // state (carcassed in the long comment at the bottom of this file).
 #include <Gruntz/GameMode.h>
-#include <Rez/RezMgr.h>   // RezFree - the engine allocator the video-handle teardown uses
-#include <Bute/ButeMgr.h> // CButeMgr g_buteMgr (GetIntDef for the SecretColor wormhole tint)
+#include <Gruntz/WwdGameReg.h> // the canonical WwdGameReg singleton (g_gameReg)
+#include <Rez/RezMgr.h>        // RezFree - the engine allocator the video-handle teardown uses
+#include <Bute/ButeMgr.h>      // CButeMgr g_buteMgr (GetIntDef for the SecretColor wormhole tint)
 #include <math.h>
 #include <rva.h>
 
@@ -144,17 +145,9 @@ void operator delete(void*);
 // labels mirror the retail jump-table fall-throughs). Both output pointers must
 // be non-null. Rand() = signed game RNG; RandRange(0,N) = uniform [0,N).
 
-// The global game registry facet these CState helpers read: m_10 a presence gate,
-// m_11c the item passed to ConfigureItem, plus the Rand() / RandRange() __thiscall
-// helpers (all reloc-masked).
-struct WwdGameReg {
-    i32 Rand();                    // FUN_0040cd00, no-arg signed rand
-    i32 RandRange(i32 lo, i32 hi); // FUN_00419f50, ret 8
-    char m_pad00[0x10];
-    i32 m_10; // +0x10  presence gate
-    char m_pad14[0x11c - 0x14];
-    i32 m_11c; // +0x11c  configure item value
-};
+// The global game registry (canonical <Gruntz/WwdGameReg.h>): these CState helpers
+// read m_10 (presence gate) / m_11c (ConfigureItem item) + the Rand()/RandRange()
+// __thiscall helpers (all reloc-masked).
 extern WwdGameReg* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A (reloc-masked)
 
 // @early-stop

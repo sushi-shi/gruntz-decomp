@@ -1,5 +1,6 @@
 #include <Win32.h> // ShowCursor (reloc-masked)
 
+#include <Gruntz/WwdGameReg.h> // the canonical WwdGameReg singleton (g_gameReg)
 #include <rva.h>
 #include <Globals.h>
 // BacklogStateLoaders.cpp - game-state asset/activate loaders + small free
@@ -142,7 +143,7 @@ struct GLSResetMgr {
     void Reset(); // FUN_00533110 __thiscall
 };
 // The game-manager singleton (0x64556c); mangled ?g_gameReg@@3PAUWwdGameReg@@A.
-struct WwdGameReg;
+// Canonical layout in <Gruntz/WwdGameReg.h>; used here only as an opaque pointer.
 DATA(0x0064556c)
 extern WwdGameReg* g_gameReg;
 // cdecl level-init helper (g_gameReg, this->m_2dc, this->m_470).
