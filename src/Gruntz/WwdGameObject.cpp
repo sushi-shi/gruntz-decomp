@@ -49,15 +49,34 @@ struct WwdSubList {
     WwdSubNode* m_head;      // +0x04
 };
 
-// The owning manager at +0x0c and its nested helpers (reached as [[+0xc]+slot]).
-// Modeled via typed vtable-style structs so the chained derefs match exactly.
+// The owning manager at +0x0c, modeled as a real typed object (WwdMgr, below)
+// with its nested reader/map sub-objects, so the chained derefs lower to the
+// exact [[mgr+slot]+off] loads with no cast.
+//
+// The name->object lookup maps each reader sub-object embeds at +0x10 (each a
+// distinct NAFXCW CMapStringTo* instantiation -> distinct Lookup body) and the
+// kill-cue map at +0x48. Reloc-masked no-body callees.
+struct MapLookupA {
+    i32 Lookup(const char* key, void** out); // 0x1b8008
+};
+struct MapLookupB {
+    i32 Lookup(const char* key, void** out); // 0x1b8438
+};
+struct CMapStringToObLite {
+    i32 Lookup(const char* key, void* out); // 0x1b8760  NAFXCW Lookup
+};
+
 // A CString-like value (4-byte handle = pointer to the heap char data). The
 // engine's CString is one pointer; its data starts at the pointed-to address.
 struct EngStr {
     const char* m_data; // +0x00  -> the char buffer
 };
+
+// mgr+0x28 reader: a name-resolver (Op -> CString) with its lookup map at +0x10.
 struct MgrSub158570 {
     EngStr* Op(EngStr* out, i32 a); // 0x158570  __thiscall, returns out (CString)
+    char m_pad00[0x10];
+    MapLookupB m_map; // +0x10  name -> object (0x1b8438)
 };
 
 // The archive/stream passed to ReadState/Serialize/WriteSnapshot. Its op is the
@@ -77,9 +96,32 @@ struct Archive {
     virtual void ReadBuf(void* buf, i32 size); // +0x2c (the read/load direction)
     virtual void Xfer(void* buf, i32 size);    // +0x30 (the write/store direction)
 };
-struct EngStr;
+// mgr+0x14 reader: a name-builder (Build -> CString) with its lookup map at +0x10.
 struct MgrSub165360 {
     EngStr* Build(EngStr* out, void* obj); // 0x165360  __thiscall -> CString
+    char m_pad00[0x10];
+    MapLookupA m_map; // +0x10  name -> object (0x1b8008)
+};
+
+// mgr+0x08 sub-object: holds the per-frame kill-cue name map at +0x48.
+struct WwdMgrSub08 {
+    char m_pad00[0x48];
+    CMapStringToObLite m_map; // +0x48  name -> object (0x1b8760)
+};
+// mgr+0x10 sub-object: a name->object resolver (lookup map at +0x10).
+struct WwdMgrSub10 {
+    char m_pad00[0x10];
+    MapLookupA m_map; // +0x10  (0x1b8008)
+};
+// CWwdGameObject+0x0c owning manager: four typed reader/map sub-objects.
+struct WwdMgr {
+    char m_pad00[0x08];
+    WwdMgrSub08* m_08; // +0x08  kill-cue map holder
+    char m_pad0c[0x10 - 0x0c];
+    WwdMgrSub10* m_10;  // +0x10  name resolver
+    MgrSub165360* m_14; // +0x14  name builder + resolver map
+    char m_pad18[0x28 - 0x18];
+    MgrSub158570* m_28; // +0x28  name resolver (Op) + secondary map
 };
 
 // The 0xa0-byte snapshot record WriteSnapshot assembles on the stack.
@@ -93,20 +135,6 @@ struct WwdSnapshot {
     i32 m_94;          // m_5c
     i32 m_98;          // m_60
     i32 m_9c;          // m_74
-};
-struct CMapStringToObLite {
-    i32 Lookup(const char* key, void* out); // 0x1b8760  NAFXCW Lookup
-};
-
-// The two name->object maps Sub150c30 (the read direction) resolves through,
-// each a distinct NAFXCW CMapStringTo* instantiation (different Lookup body).
-// Found via the owning mgr's sub-objects at mgr+0x10 and mgr+0x28; the map sits
-// 0x10 into each sub-object. Reloc-masked no-body callees.
-struct MapLookupA {
-    i32 Lookup(const char* key, void** out); // 0x1b8008
-};
-struct MapLookupB {
-    i32 Lookup(const char* key, void** out); // 0x1b8438
 };
 
 // CString::operator=(LPCSTR) on the +0xdc name member (NAFXCW, reloc-masked).
@@ -366,7 +394,7 @@ i32 CWwdGameObject::ReadState(i32 src) {
     memset(tmp, 0, sizeof(tmp));
     {
         EngStr str;
-        ((MgrSub158570*)F(m_mgr, 0x28, void*))->Op(&str, (i32)m_19c);
+        m_mgr->m_28->Op(&str, (i32)m_19c);
         strcpy(tmp, str.m_data);
         ((CStringDtor*)&str)->Dtor();
     }
@@ -398,8 +426,8 @@ i32 CWwdGameObject::Sub150c30(i32 src) {
     ar->ReadBuf(name, 0x80);
     if (strlen(name) != 0) {
         void* found = 0;
-        void* mgr = m_mgr;
-        ((MapLookupA*)((char*)F(mgr, 0x10, void*) + 0x10))->Lookup(name, &found);
+        WwdMgr* mgr = m_mgr;
+        mgr->m_10->m_map.Lookup(name, &found);
         m_194 = found;
         if (found != 0 && flag == 1) {
             i32 idx = m_190;
@@ -416,8 +444,8 @@ i32 CWwdGameObject::Sub150c30(i32 src) {
     ar->ReadBuf(name, 0x80);
     if (strlen(name) != 0) {
         void* found = 0;
-        void* mgr = m_mgr;
-        ((MapLookupB*)((char*)F(mgr, 0x28, void*) + 0x10))->Lookup(name, &found);
+        WwdMgr* mgr = m_mgr;
+        mgr->m_28->m_map.Lookup(name, &found);
         m_19c = found;
     }
     return 1;
@@ -562,7 +590,7 @@ i32 CWwdGameObject::Play(i32 a1, i32 type, i32 a3, i32 a4) {
             node = m_184;
             if (node != 0) {
                 void* found = 0;
-                CMapStringToObLite* map = (CMapStringToObLite*)((char*)F(m_mgr, 0x8, void*) + 0x48);
+                CMapStringToObLite* map = &m_mgr->m_08->m_map;
                 if (map->Lookup((const char*)node, &found) == 0) {
                     m_98 = 0;
                 } else {
@@ -653,7 +681,7 @@ i32 CWwdGameObject::Serialize(i32 arParam) {
     memset(tmp, 0, sizeof(tmp));
     if (m_80 != 0) {
         EngStr str;
-        ((MgrSub165360*)F(m_mgr, 0x14, void*))->Build(&str, m_80);
+        m_mgr->m_14->Build(&str, m_80);
         strcpy(tmp, str.m_data);
         ((CStringDtor*)&str)->Dtor();
     }
@@ -662,7 +690,7 @@ i32 CWwdGameObject::Serialize(i32 arParam) {
     memset(tmp, 0, sizeof(tmp));
     if (m_88 != 0) {
         EngStr str;
-        ((MgrSub165360*)F(m_mgr, 0x14, void*))->Build(&str, m_88);
+        m_mgr->m_14->Build(&str, m_88);
         strcpy(tmp, str.m_data);
         ((CStringDtor*)&str)->Dtor();
     }
@@ -671,7 +699,7 @@ i32 CWwdGameObject::Serialize(i32 arParam) {
     memset(tmp, 0, sizeof(tmp));
     if (m_90 != 0) {
         EngStr str;
-        ((MgrSub165360*)F(m_mgr, 0x14, void*))->Build(&str, m_90);
+        m_mgr->m_14->Build(&str, m_90);
         strcpy(tmp, str.m_data);
         ((CStringDtor*)&str)->Dtor();
     }
@@ -747,7 +775,7 @@ i32 CWwdGameObject::Sub151780(i32 arParam) {
     ar->ReadBuf(name, 0x80);
     if (strlen(name) != 0) {
         void* found = 0;
-        ((MapLookupA*)((char*)F(m_mgr, 0x14, void*) + 0x10))->Lookup(name, &found);
+        m_mgr->m_14->m_map.Lookup(name, &found);
         if (Resolve150eb0(found) == 0) {
             return 0;
         }
@@ -756,7 +784,7 @@ i32 CWwdGameObject::Sub151780(i32 arParam) {
     ar->ReadBuf(name, 0x80);
     if (strlen(name) != 0) {
         void* found = 0;
-        ((MapLookupA*)((char*)F(m_mgr, 0x14, void*) + 0x10))->Lookup(name, &found);
+        m_mgr->m_14->m_map.Lookup(name, &found);
         if (Resolve150f90(found) == 0) {
             return 0;
         }
@@ -765,7 +793,7 @@ i32 CWwdGameObject::Sub151780(i32 arParam) {
     ar->ReadBuf(name, 0x80);
     if (strlen(name) != 0) {
         void* found = 0;
-        ((MapLookupA*)((char*)F(m_mgr, 0x14, void*) + 0x10))->Lookup(name, &found);
+        m_mgr->m_14->m_map.Lookup(name, &found);
         if (Resolve151070(found) == 0) {
             return 0;
         }
@@ -819,7 +847,7 @@ i32 CWwdGameObject::WriteSnapshot(i32 dst) {
 
     {
         EngStr str;
-        ((MgrSub165360*)F(m_mgr, 0x14, void*))->Build(&str, m_worker);
+        m_mgr->m_14->Build(&str, m_worker);
         strcpy(rec.m_name, str.m_data);
         ((CStringDtor*)&str)->Dtor();
     }
@@ -967,6 +995,9 @@ SIZE_UNKNOWN(MapLookupB);
 SIZE_UNKNOWN(MgrSub158570);
 SIZE_UNKNOWN(MgrSub165360);
 SIZE_UNKNOWN(WorkerSub);
+SIZE_UNKNOWN(WwdMgr);
+SIZE_UNKNOWN(WwdMgrSub08);
+SIZE_UNKNOWN(WwdMgrSub10);
 SIZE_UNKNOWN(WwdRenderCtx);
 SIZE_UNKNOWN(WwdSelf);
 SIZE_UNKNOWN(WwdSnapshot);
