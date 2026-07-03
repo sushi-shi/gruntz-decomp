@@ -41,8 +41,8 @@ extern "C" u32 g_6bf3bc;
 // CBehindCandyAni::GetTypeTag @0x010030 - the vtable slot-2 logic-type id accessor
 // (the 6-byte `mov eax,<id>; ret` archetype).
 RVA(0x00010030, 0x6)
-i32 CBehindCandyAni::GetTypeTag() {
-    return 0x3f3;
+LogicTypeId CBehindCandyAni::GetTypeTag() {
+    return LOGIC_BEHINDCANDYANI; // 0x3f3
 }
 
 // CBehindCandyAni::Serialize @0x010050 - the vtable slot-1 override: chain the shared

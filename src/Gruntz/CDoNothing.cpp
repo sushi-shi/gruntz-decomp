@@ -14,7 +14,7 @@
 // 6-byte `mov eax,<id>; ret` virtual archetype as CTileTriggerTransition::
 // GetTypeTag (0x011730).
 RVA(0x0000f6b0, 0x6)
-i32 CDoNothing::GetTypeTag() {
+LogicTypeId CDoNothing::GetTypeTag() {
     return LOGIC_DONOTHING; // 0x3ec
 }
 

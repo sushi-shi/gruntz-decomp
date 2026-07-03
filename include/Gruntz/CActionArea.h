@@ -6,6 +6,8 @@
 #define GRUNTZ_CACTIONAREA_H
 
 #include <rva.h>
+
+#include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 #include <Gruntz/UserLogic.h>
 
 SIZE_UNKNOWN(CActionArea);
@@ -14,7 +16,7 @@ public:
     CActionArea(CGameObject* obj); // 0x7da0
     // vtable slot 2 (per-class logic-type id); regular method - the fat CUserLogic
     // base models this slot with a placeholder signature (see CGuardPoint.cpp).
-    i32 GetTypeTag();                // 0x7f80
+    LogicTypeId GetTypeTag();        // 0x7f80
     virtual ~CActionArea() OVERRIDE; // 0x7fd0 (folds the CUserLogic teardown)
 
     char m_pad40[0x54 - 0x40];

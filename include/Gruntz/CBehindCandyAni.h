@@ -20,7 +20,9 @@
 #define GRUNTZ_CBEHINDCANDYANI_H
 
 #include <rva.h>
-#include <Gruntz/UserLogic.h> // CUserLogic base (CBehindCandyAni : CUserLogic)
+
+#include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
+#include <Gruntz/UserLogic.h>   // CUserLogic base (CBehindCandyAni : CUserLogic)
 
 class CBehindCandyAni : public CUserLogic {
 public:
@@ -31,7 +33,7 @@ public:
     // shared name registry (the same archetype as CSecretLevelTrigger::RegisterActs).
     static void RegisterActs(); // 0x0ad9b0
     i32 AdvanceAnim();          // 0x0adbb0 (re-target bound anim to the draw-delta; ret 0)
-    i32 GetTypeTag();           // 0x010030 (vtable slot 2: returns the logic-type id 0x3f3)
+    LogicTypeId GetTypeTag();   // 0x010030 (vtable slot 2: returns the logic-type id 0x3f3)
     i32 Serialize(i32 ar, i32 tag, i32 c, i32 d); // 0x010050 (vtable slot 1: two-chain Serialize)
     virtual ~CBehindCandyAni() OVERRIDE;          // 0x0100f0 (folds the CUserLogic teardown)
 };

@@ -17,7 +17,7 @@
 // base slots 1/2 carry placeholder signatures the leaf overrides cannot match
 // without editing that shared base; the leaf vtable is not a diffed symbol).
 RVA(0x0000fb70, 0x6)
-i32 CBehindCandy::GetTypeTag() {
+LogicTypeId CBehindCandy::GetTypeTag() {
     return LOGIC_BEHINDCANDY; // 0x3f0
 }
 

@@ -1,4 +1,6 @@
 #include <rva.h>
+
+#include <Gruntz/StateId.h> // StateId (GetStateId return type)
 // CDDrawWorkerMapSmall.cpp - leaf factory methods of the tomalla-named ddrawmgr surface-
 // family sub-manager CDDrawWorkerMapSmall (a CDirectDrawMgr surface/page sub-manager in
 // the "DDraw surface manager" family; see docs/ddraw-family-names.md).
@@ -160,7 +162,7 @@ public:
     virtual ~CDDrawWorkerMapSmall(); // overrides slot [1]
 
     // GetStateId (0x157600) is NOT a vtable slot - a plain method.
-    i32 GetStateId();
+    StateId GetStateId();
 
     // m_04/m_08/m_0c (and the implicit vptr) are inherited from CDDrawWorkerMapBase.
     CMapStringToOb m_map1; // +0x10  worker-by-key map 1 (0x10..0x2b)
@@ -310,8 +312,8 @@ void* CDDrawWorkerMapSmall::CreateWorker2C(i32 a1, const char* key, i32 a3) {
 // Constant state id.
 // ---------------------------------------------------------------------------
 RVA(0x00157600, 0x6)
-i32 CDDrawWorkerMapSmall::GetStateId() {
-    return 0x10;
+StateId CDDrawWorkerMapSmall::GetStateId() {
+    return STATE_WORKERMAPSMALL; // 0x10
 }
 
 // -------------------------------------------------------------------------

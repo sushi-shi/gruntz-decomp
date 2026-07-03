@@ -201,8 +201,8 @@ static inline CHaznEntry* HaznLookup(i32 coord) {
 // fat CUserLogic base slot 2 carries a placeholder signature; the leaf vtable is
 // not a diffed symbol, so a plain method reproduces the slot bytes exactly).
 RVA(0x00012ae0, 0x6)
-i32 CStaticHazard::GetTypeTag() {
-    return 0x416;
+LogicTypeId CStaticHazard::GetTypeTag() {
+    return LOGIC_STATICHAZARD; // 0x416
 }
 
 // ---------------------------------------------------------------------------

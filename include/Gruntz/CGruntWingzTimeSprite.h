@@ -26,12 +26,14 @@
 #define GRUNTZ_CGRUNTWINGZTIMESPRITE_H
 
 #include <rva.h>
-#include <Gruntz/Grunt.h> // CUserLogic base + CGrunt (the accessor's bound grunt)
+
+#include <Gruntz/Grunt.h>       // CUserLogic base + CGrunt (the accessor's bound grunt)
+#include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 
 class CGruntWingzTimeSprite : public CUserLogic {
 public:
     // GetTypeTag (0x121a0): the 6-byte per-class logic-type id accessor (0x417).
-    i32 GetTypeTag();
+    LogicTypeId GetTypeTag();
     ~CGruntWingzTimeSprite(); // 0x0121f0 (folds the CUserLogic teardown)
 };
 

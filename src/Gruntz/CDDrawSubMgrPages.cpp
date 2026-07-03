@@ -1,4 +1,6 @@
 #include <rva.h>
+
+#include <Gruntz/StateId.h> // StateId (GetStateId return type)
 // CDDrawSubMgrPages.cpp - one leaf cleanup method of the tomalla-named ddrawmgr
 // sub-manager CDDrawSubMgrPages (a CDirectDrawMgr surface/page sub-manager in the
 // "DDraw surface manager" family; see docs/ddraw-family-names.md).
@@ -136,7 +138,7 @@ public:
     virtual i32 IsReady();               // [5] 0x157480
     virtual void FUN_00401c08();         // [6] 0x001c08 (shared thunk, declared-only)
     virtual void DestroyChildren();      // [7] 0x158ac0
-    virtual i32 GetStateId();            // [8] 0x1574a0 (state id)
+    virtual StateId GetStateId();        // [8] 0x1574a0 (state id)
     virtual i32 CreateChildren(i32 a1, i32 a2, i32 a3, i32 a4); // [9] 0x1588f0
     ~CDDrawSubMgrPages();                                       // 0x1574d0 member-teardown
 
@@ -190,8 +192,8 @@ void CDDrawSubMgrPages::DestroyChildren() {
 // ---------------------------------------------------------------------------
 // Constant state id.
 RVA(0x001574a0, 0x6)
-i32 CDDrawSubMgrPages::GetStateId() {
-    return 0xf;
+StateId CDDrawSubMgrPages::GetStateId() {
+    return STATE_SUBMGRPAGES; // 0xf
 }
 
 // ---------------------------------------------------------------------------

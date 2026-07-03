@@ -13,7 +13,9 @@
 #define GRUNTZ_CBRICKZ_H
 
 #include <rva.h>
-#include <Gruntz/UserLogic.h> // CUserLogic base (CBrickz : CUserLogic)
+
+#include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
+#include <Gruntz/UserLogic.h>   // CUserLogic base (CBrickz : CUserLogic)
 
 class CBrickz : public CUserLogic {
 public:
@@ -21,7 +23,7 @@ public:
     ~CBrickz();                // (folds the CUserLogic teardown; vtable anchor)
     // The class's own CUserLogic slot overrides, reconstructed as regular methods
     // (the fat base models slots 1/2 with placeholder signatures; see the .cpp).
-    i32 GetTypeTag();                          // 0x11300 (vtable slot 2: per-class logic-type id)
+    LogicTypeId GetTypeTag();                  // 0x11300 (vtable slot 2: per-class logic-type id)
     i32 Serialize(i32 a, i32 b, i32 c, i32 d); // 0x11320 (vtable slot 1: serialize chain)
 
     // CBrickz's own data begins at +0x40 (CUserLogic ends at +0x40); the 1-arg

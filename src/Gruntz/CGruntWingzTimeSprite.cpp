@@ -15,7 +15,7 @@
 // The same 6-byte `mov eax,<id>; ret` virtual archetype as CBehindCandy::GetTypeTag
 // (0x00fb70); precedes the [scalar @0x121c0, plain @0x121f0] dtor pair.
 RVA(0x000121a0, 0x6)
-i32 CGruntWingzTimeSprite::GetTypeTag() {
+LogicTypeId CGruntWingzTimeSprite::GetTypeTag() {
     return LOGIC_GRUNTWINGZTIMESPRITE; // 0x417
 }
 

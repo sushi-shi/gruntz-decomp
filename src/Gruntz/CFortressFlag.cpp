@@ -11,6 +11,7 @@
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
 #include <Gruntz/ActReg.h>          // the shared CActReg coordinate-registry archetype
 #include <Gruntz/CFortressFlag.h>
+#include <Gruntz/CSerialObjRef.h> // the shared serialized-object-reference (Chain @0x8c00)
 #include <Gruntz/Enums.h> // Warlord - the m_124 flag-owner roster (KING/NAPOLEAN/PATTON/VIKING)
 #include <Gruntz/CAnimSink.h>
 #include <Gruntz/WwdGameReg.h> // the canonical WwdGameReg singleton (g_gameReg)
@@ -35,14 +36,6 @@ extern CFortressFlagActReg g_fortressFlagActReg; // 0x644638
 // The per-frame draw-delta mirror (_g_6bf3bc); the value-load reloc-masks.
 DATA(0x002bf3bc)
 extern "C" u32 g_6bf3bc;
-
-// The +0x34 serializable sub-object Serialize chains into after the shared
-// CUserLogic::SerializeChain (the SAME archetype as CSecretTeleporterTrigger::
-// Serialize, UserLogic.cpp 0x010a10). Its Chain (0x8c00, via the 0x1aff thunk)
-// is __thiscall ret 0x10; modeled NO-body so the call reloc-masks.
-struct CSerialSub34 {
-    i32 Chain(i32 a, i32 b, i32 c, i32 d); // 0x8c00
-};
 
 // The bound sprite/game-object is the inherited CUserLogic m_10 (a CGameObject*):
 // the tag-8 fixup reads its +0x124 sprite-selector key and re-seeds the
@@ -78,8 +71,8 @@ extern WwdGameReg* g_gameReg;
 // fat CUserLogic base slot 2 carries a placeholder signature; the leaf vtable is
 // not a diffed symbol, so a plain method reproduces the slot bytes exactly).
 RVA(0x00010e40, 0x6)
-i32 CFortressFlag::GetTypeTag() {
-    return 0x427;
+LogicTypeId CFortressFlag::GetTypeTag() {
+    return LOGIC_FORTRESSFLAG; // 0x427
 }
 
 // CFortressFlag::~CFortressFlag @0x010e90 - the leaf adds no destructible members
@@ -221,7 +214,8 @@ i32 CFortressFlag::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
     if (!SerializeChain(ar, tag, c, d)) {
         return 0;
     }
-    if (!((CSerialSub34*)((char*)this + 0x34))->Chain(ar, tag, c, d)) {
+    if (!((CSerialObjRef*)((char*)this + 0x34))
+             ->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d)) {
         return 0;
     }
     if (tag == 8) {

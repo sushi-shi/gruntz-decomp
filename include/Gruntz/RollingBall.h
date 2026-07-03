@@ -26,8 +26,8 @@
 // ---------------------------------------------------------------------------
 // The +0x34 serializable sub-object's chain (0x8c00, __thiscall ret 0x10). Run
 // on `&this->m_34` (reached via `lea ecx,[edi+0x34]`). External/no-body so the
-// call reloc-masks; the body is pinned in src/Stub/Discovered.cpp. Mirror of
-// CSecretTeleporterTrigger's CSerialSub34 (UserLogic.cpp).
+// call reloc-masks; the body is pinned in src/Stub/Discovered.cpp. Mirror of the
+// shared CSerialObjRef sub-object (<Gruntz/CSerialObjRef.h>, Chain @0x8c00).
 // ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CRbSerialSub34);
 struct CRbSerialSub34 {

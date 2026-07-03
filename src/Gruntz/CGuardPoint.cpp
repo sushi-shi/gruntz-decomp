@@ -1,18 +1,8 @@
 // CGuardPoint.cpp - the guard-point marker (C:\Proj\Gruntz), a CUserLogic leaf.
 // The /GX leaf dtor + the 1-arg ctor (the "unrolled" CUserLogic(obj) prologue).
 #include <Gruntz/CGuardPoint.h>
+#include <Gruntz/CSerialObjRef.h> // the shared serialized-object-reference (Chain @0x8c00)
 #include <Gruntz/LogicTypeTableInline.h>
-
-// The +0x34 serializable sub-object chained by the Serialize override; its Chain
-// (0x8c00, __thiscall ret 0x10) is modeled NO-body so the call reloc-masks (the
-// shared "+0x34 sub-object" archetype, cf. CSecretTeleporterTrigger::Serialize).
-// The sub-object overlays CUserLogic's fat-view tail field m_34 (the referenced
-// game object; see the size NOTE in <Gruntz/UserLogic.h>), so the Serialize
-// override reaches it as a struct view over that named base field (&m_34), not a
-// raw this+offset.
-struct CSerialSub34 {
-    i32 Chain(i32 a, i32 b, i32 c, i32 d); // 0x8c00
-};
 
 // CGuardPoint::GetTypeTag (0x10350) - vtable slot 2: return the class's logic-type
 // id (0x42a). The 6-byte `mov eax,<id>; ret` accessor archetype (cf.
@@ -23,8 +13,8 @@ struct CSerialSub34 {
 // editing that shared base - the leaf vtable is not a diffed symbol, so a plain
 // method reproduces the slot function's bytes exactly.
 RVA(0x00010350, 0x6)
-i32 CGuardPoint::GetTypeTag() {
-    return 0x42a;
+LogicTypeId CGuardPoint::GetTypeTag() {
+    return LOGIC_GUARDPOINT; // 0x42a
 }
 
 // CGuardPoint::Serialize (0x10370) - vtable slot 1: chain the shared CUserLogic
@@ -35,7 +25,7 @@ i32 CGuardPoint::Serialize(i32 a, i32 b, i32 c, i32 d) {
     if (!SerializeChain(a, b, c, d)) {
         return 0;
     }
-    return ((CSerialSub34*)&m_34)->Chain(a, b, c, d) != 0;
+    return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)a, b, c, (CSerialObj*)d) != 0;
 }
 
 // CGuardPoint::~CGuardPoint (0x10410) - the /GX leaf dtor folds the bare

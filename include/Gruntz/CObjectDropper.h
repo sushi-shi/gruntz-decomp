@@ -6,13 +6,15 @@
 #define GRUNTZ_COBJECTDROPPER_H
 
 #include <rva.h>
+
+#include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 #include <Gruntz/UserLogic.h>
 
 class CObjectDropper : public CUserLogic {
 public:
     // vtable slot 2 (per-class logic-type id); regular method - the fat CUserLogic
     // base models this slot with a placeholder signature (see CGuardPoint.cpp).
-    i32 GetTypeTag();                   // 0x124a0
+    LogicTypeId GetTypeTag();           // 0x124a0
     CObjectDropper(CGameObject* obj);   // 0xc59f0 (folds CUserLogic(obj) + the drop setup)
     virtual ~CObjectDropper() OVERRIDE; // 0x124f0 (folds the CUserLogic teardown)
     i32 Update();                       // 0xc62e0 (per-frame drop tick + drift/wrap)

@@ -15,7 +15,7 @@
 // 6-byte `mov eax,<id>; ret` virtual archetype as CTileTriggerTransition::
 // GetTypeTag (0x011730).
 RVA(0x00010870, 0x6)
-i32 CExitTrigger::GetTypeTag() {
+LogicTypeId CExitTrigger::GetTypeTag() {
     return LOGIC_EXITTRIGGER; // 0x3f7
 }
 

@@ -116,7 +116,7 @@ CLightningHazard::~CLightningHazard() {}
 // (0x00fb70); sits between CLightningHazard::~ and the [scalar,plain] CPathHazard
 // dtor pair, the canonical [GetTypeTag][scalar-dtor][plain-dtor] per-class layout.
 RVA(0x000132f0, 0x6)
-i32 CPathHazard::GetTypeTag() {
+LogicTypeId CPathHazard::GetTypeTag() {
     return LOGIC_PATHHAZARD; // 0x425
 }
 

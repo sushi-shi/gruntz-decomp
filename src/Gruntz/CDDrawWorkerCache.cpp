@@ -1,4 +1,6 @@
 #include <rva.h>
+
+#include <Gruntz/StateId.h> // StateId (GetStateId return type)
 // CDDrawWorkerCache.cpp - leaf methods of the tomalla-named class CDDrawWorkerCache
 // (a CDirectDrawMgr surface/page sub-manager in the "DDraw surface manager" family).
 // GetStateId is a constant state-ID stub returning 0x13 (19).
@@ -116,7 +118,7 @@ public:
     virtual void FUN_005576d0();         // [5] 0x1576d0 (declared-only)
     virtual void FUN_00557790();         // [6] 0x157790 (declared-only)
     virtual void FUN_00565210();         // [7] 0x165210 (teardown, defined in Registry TU)
-    virtual i32 GetStateId();            // [8] 0x1576f0
+    virtual StateId GetStateId();        // [8] 0x1576f0
     virtual void* CreateWorker(i32 a1, const char* key, i32 a3); // [9] 0x1652c0
 
     // The real member-teardown destructor (0x157720); the ??_G scalar dtor calls it.
@@ -136,8 +138,8 @@ static inline i32 ReadWorkerCacheField1c(const CDDrawWorkerCache* p) {
 // Constant state ID: returns 0x13 (19).
 // ---------------------------------------------------------------------------
 RVA(0x001576f0, 0x6)
-i32 CDDrawWorkerCache::GetStateId() {
-    return 0x13;
+StateId CDDrawWorkerCache::GetStateId() {
+    return STATE_WORKERCACHE; // 0x13
 }
 
 // Inline worker constructor. Real `new AnimWorkerObj`: the ctor stamps the vptr

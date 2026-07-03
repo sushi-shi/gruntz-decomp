@@ -17,16 +17,9 @@
 #define GRUNTZ_CCURSORSNAPSPRITE_H
 
 #include <rva.h>
-#include <Gruntz/UserLogic.h> // CUserLogic base (CCursorSnapSprite : CUserLogic)
 
-// The +0x34 serializable sub-object Serialize chains into after the shared
-// CUserLogic::SerializeChain (the SAME archetype as CFortressFlag::Serialize). Its
-// Chain (0x8c00, via the 0x1aff thunk) is __thiscall ret 0x10; modeled NO-body so
-// the call reloc-masks.
-SIZE_UNKNOWN(CSerialSub34);
-struct CSerialSub34 {
-    i32 Chain(i32 a, i32 b, i32 c, i32 d); // 0x8c00 (via 0x1aff thunk)
-};
+#include <Gruntz/CSerialObjRef.h> // the shared serialized-object-reference (Chain @0x8c00)
+#include <Gruntz/UserLogic.h>     // CUserLogic base (CCursorSnapSprite : CUserLogic)
 
 // ---------------------------------------------------------------------------
 // CCursorSnapSprite : CUserLogic - the cursor-snap sprite leaf. Adds no data

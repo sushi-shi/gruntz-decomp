@@ -21,13 +21,15 @@
 #define GRUNTZ_CSTATICHAZARD_H
 
 #include <rva.h>
-#include <Gruntz/UserLogic.h> // CUserLogic base (CStaticHazard : CUserLogic)
+
+#include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
+#include <Gruntz/UserLogic.h>   // CUserLogic base (CStaticHazard : CUserLogic)
 
 class CStaticHazard : public CUserLogic {
 public:
     // vtable slot 2 (per-class logic-type id); regular method - the fat CUserLogic
     // base models this slot with a placeholder signature (see CGuardPoint.cpp).
-    i32 GetTypeTag();                  // 0x012ae0
+    LogicTypeId GetTypeTag();          // 0x012ae0
     CStaticHazard(CGameObject* obj);   // 0x0fb7a0 (1-arg ctor)
     static void RegisterActs();        // 0x0fbd50 (binds "A"/"B" handlers)
     i32 LoadAttributes2();             // 0x0fc0b0 (time-gated pulse)

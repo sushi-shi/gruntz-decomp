@@ -17,13 +17,15 @@
 #define GRUNTZ_CDONOTHING_H
 
 #include <rva.h>
-#include <Gruntz/UserLogic.h> // CUserLogic base (CDoNothing : CUserLogic)
+
+#include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
+#include <Gruntz/UserLogic.h>   // CUserLogic base (CDoNothing : CUserLogic)
 
 SIZE_UNKNOWN(CDoNothing);
 class CDoNothing : public CUserLogic {
 public:
     CDoNothing(CGameObject* obj);   // 0xac1d0
-    i32 GetTypeTag();               // 0x00f6b0 (returns the class logic-type id 0x3ec)
+    LogicTypeId GetTypeTag();       // 0x00f6b0 (returns the class logic-type id 0x3ec)
     virtual ~CDoNothing() OVERRIDE; // 0x00f770 (folds the CUserLogic teardown)
 };
 

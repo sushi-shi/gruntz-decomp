@@ -11,8 +11,8 @@ extern CButeTree g_buteTree;
 // CEyeCandyAni::GetTypeTag @0x00ff00 - the vtable slot-2 logic-type id accessor
 // (the 6-byte `mov eax,<id>; ret` archetype).
 RVA(0x0000ff00, 0x6)
-i32 CEyeCandyAni::GetTypeTag() {
-    return 0x3f4;
+LogicTypeId CEyeCandyAni::GetTypeTag() {
+    return LOGIC_EYECANDYANI; // 0x3f4
 }
 
 // CEyeCandyAni::Serialize @0x00ff20 - the vtable slot-1 override: chain the shared

@@ -37,8 +37,8 @@ CActionArea::CActionArea(CGameObject* obj) : CUserLogic(obj) {
 // fat CUserLogic base slot 2 carries a placeholder signature; the leaf vtable is
 // not a diffed symbol, so a plain method reproduces the slot bytes exactly).
 RVA(0x00007f80, 0x6)
-i32 CActionArea::GetTypeTag() {
-    return 0x423;
+LogicTypeId CActionArea::GetTypeTag() {
+    return LOGIC_ACTIONAREA; // 0x423
 }
 
 // CActionArea::~CActionArea (0x7fd0) - the leaf adds no destructible members beyond

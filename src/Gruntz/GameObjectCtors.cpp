@@ -105,7 +105,7 @@ class CGruntToyTimeSprite : public CGruntSpriteBase {
 public:
     CGruntToyTimeSprite(CSpriteObj* obj);
     // GetTypeTag (0x120e0): 6-byte per-class logic-type id accessor (0x411).
-    i32 GetTypeTag();
+    LogicTypeId GetTypeTag();
     char m_pad3c[0x5c - 0x3c];
     i32 m_5c; // +0x5c
     i32 m_60; // +0x60
@@ -137,7 +137,7 @@ public:
 // the 6-byte `mov eax,<id>; ret` archetype. RVA-lowest method in this TU; the
 // plain dtor (@0x12130) lives in the engine_discovered stub unit.
 RVA(0x000120e0, 0x6)
-i32 CGruntToyTimeSprite::GetTypeTag() {
+LogicTypeId CGruntToyTimeSprite::GetTypeTag() {
     return LOGIC_GRUNTTOYTIMESPRITE; // 0x411
 }
 

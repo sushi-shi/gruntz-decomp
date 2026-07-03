@@ -15,7 +15,7 @@
 // 6-byte `mov eax,<id>; ret` virtual archetype as CTileTriggerTransition::
 // GetTypeTag (0x011730).
 RVA(0x0000fca0, 0x6)
-i32 CEyeCandy::GetTypeTag() {
+LogicTypeId CEyeCandy::GetTypeTag() {
     return LOGIC_EYECANDY; // 0x3f1
 }
 

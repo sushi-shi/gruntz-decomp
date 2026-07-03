@@ -15,6 +15,7 @@
 #include <Gruntz/CTeleSpriteFactory.h> // shared teleporter HUD-sprite factory
 #include <Gruntz/CTrigger.h>           // shared point-probe result object
 #include <Gruntz/CViewport.h>          // shared world->screen transform
+#include <Gruntz/CSerialObjRef.h>      // the shared serialized-object-reference (Chain @0x8c00)
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/WwdGameReg.h> // the canonical WwdGameReg singleton (g_gameReg)
@@ -93,11 +94,9 @@ i32 CUserLogic::UserLogicVfuncB() {
 // so the calls reloc-mask:
 //   * CUserLogic::SerializeChain (0x16e7f0) - run on `this`.
 //   * the +0x34 serializable sub-object's chain (0x8c00) - run on `&this->m_34`
-//     (reached via `lea ecx,[esi+0x34]`). Modeled as a method on a tiny helper.
+//     (reached via `lea ecx,[esi+0x34]`). Modeled by the shared CSerialObjRef
+//     (Chain @0x8c00, <Gruntz/CSerialObjRef.h>).
 // (Both bodies are pinned in src/Stub/Discovered.cpp.)
-struct CSerialSub34 {
-    i32 Chain(i32 a, i32 b, i32 c, i32 d); // 0x8c00
-};
 // ===========================================================================
 // Class declarations (one vftable each; some have both ctor shapes).
 // ===========================================================================
@@ -153,7 +152,7 @@ public:
 
 class CVoiceTrigger : public CUserLogic {
 public:
-    i32 GetTypeTag(); // 0x133b0 (per-class logic-type id, 0x426)
+    LogicTypeId GetTypeTag(); // 0x133b0 (per-class logic-type id, 0x426)
     CVoiceTrigger();
     virtual ~CVoiceTrigger() OVERRIDE;
 };
@@ -220,7 +219,7 @@ public:
 
 class CParticlez : public CUserLogic {
 public:
-    i32 GetTypeTag();             // 0x12cd0 (per-class logic-type id, 0x41c)
+    LogicTypeId GetTypeTag();     // 0x12cd0 (per-class logic-type id, 0x41c)
     CParticlez(CGameObject* obj); // 0x046ad0
     virtual ~CParticlez() OVERRIDE;
 };
@@ -584,7 +583,8 @@ i32 CSecretTeleporterTrigger::Serialize(i32 a, i32 b, i32 c, i32 d) {
     if (!SerializeChain(a, b, c, d)) {
         return 0;
     }
-    return ((CSerialSub34*)((char*)this + 0x34))->Chain(a, b, c, d) != 0;
+    return ((CSerialObjRef*)((char*)this + 0x34))->Chain((CSerialArchive*)a, b, c, (CSerialObj*)d)
+           != 0;
 }
 
 // --- CSecretTeleporterTrigger::~CSecretTeleporterTrigger (0x010ab0) ---
@@ -641,7 +641,7 @@ CVoiceTrigger::~CVoiceTrigger() {}
 // CVoiceTrigger::GetTypeTag @0x133b0 - the per-class logic-type id (0x426), the
 // 6-byte `mov eax,<id>; ret` archetype (plain dtor @0x13400 still a Boundary stub).
 RVA(0x000133b0, 0x6)
-i32 CVoiceTrigger::GetTypeTag() {
+LogicTypeId CVoiceTrigger::GetTypeTag() {
     return LOGIC_VOICETRIGGER; // 0x426
 }
 RVA(0x00013470, 0x4b)
@@ -833,7 +833,7 @@ CParticlez::~CParticlez() {}
 // CParticlez::GetTypeTag @0x12cd0 - the per-class logic-type id (0x41c), the
 // 6-byte `mov eax,<id>; ret` archetype.
 RVA(0x00012cd0, 0x6)
-i32 CParticlez::GetTypeTag() {
+LogicTypeId CParticlez::GetTypeTag() {
     return LOGIC_PARTICLEZ; // 0x41c
 }
 RVA(0x00046ad0, 0x15e)

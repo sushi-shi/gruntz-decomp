@@ -28,8 +28,8 @@ extern CAniCycleActReg g_aniCycleActReg; // 0x646088
 // CAniCycle::GetTypeTag @0x00f450 - the vtable slot-2 logic-type id accessor
 // (the 6-byte `mov eax,<id>; ret` archetype).
 RVA(0x0000f450, 0x6)
-i32 CAniCycle::GetTypeTag() {
-    return 0x3ea;
+LogicTypeId CAniCycle::GetTypeTag() {
+    return LOGIC_ANICYCLE; // 0x3ea
 }
 
 // CAniCycle::Serialize @0x00f470 - the vtable slot-1 override: chain the shared

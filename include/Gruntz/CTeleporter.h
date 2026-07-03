@@ -19,7 +19,9 @@
 #define GRUNTZ_CTELEPORTER_H
 
 #include <rva.h>
-#include <Gruntz/UserLogic.h> // CUserLogic base (CTeleporter : CUserLogic)
+
+#include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
+#include <Gruntz/UserLogic.h>   // CUserLogic base (CTeleporter : CUserLogic)
 
 // The +0x1a0 animation sub-mgr the bring-up advances once each frame (Advance
 // 0x15c360, __thiscall ret 4, takes the g_6bf3bc draw-delta). Its +0x20/+0x28
@@ -79,7 +81,7 @@ public:
     i32 Update();
     // vtable slot 2 (per-class logic-type id); regular method - the fat CUserLogic
     // base models this slot with a placeholder signature (see CGuardPoint.cpp).
-    i32 GetTypeTag();                // 0x10d80
+    LogicTypeId GetTypeTag();        // 0x10d80
     virtual ~CTeleporter() OVERRIDE; // 0x10dd0 (folds the CUserLogic teardown)
 
     i32 m_40; // +0x40  snapshot of m_38->m_1b4

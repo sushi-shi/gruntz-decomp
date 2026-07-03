@@ -17,15 +17,8 @@
 //
 // Only OFFSETS + the inheritance chain are load-bearing; the empty dtor body and
 // the two-chain Serialize body are enough for cl to reproduce the retail bytes.
-#include <Gruntz/UserLogic.h> // CUserLogic / CUserBase base hierarchy
-
-// The +0x34 serializable sub-object the Serialize overrides chain into after the
-// shared CUserLogic::SerializeChain. Its Chain (0x8c00, via the 0x1aff thunk) is
-// __thiscall ret 0x10; modeled NO-body so the call reloc-masks (same as
-// CCursorSnapSprite.h's CSerialSub34).
-struct CSerialSub34 {
-    i32 Chain(i32 a, i32 b, i32 c, i32 d); // 0x8c00 (via 0x1aff thunk)
-};
+#include <Gruntz/CSerialObjRef.h> // the shared serialized-object-reference (Chain @0x8c00)
+#include <Gruntz/UserLogic.h>     // CUserLogic / CUserBase base hierarchy
 
 // ---------------------------------------------------------------------------
 // Leaf destructors (the /GX leaf-dtor archetype). Each is byte-identical to
@@ -76,7 +69,9 @@ i32 S_fdf0::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
     if (!SerializeChain(ar, tag, c, d)) {
         return 0;
     }
-    return ((CSerialSub34*)((char*)this + 0x34))->Chain(ar, tag, c, d) != 0;
+    return ((CSerialObjRef*)((char*)this + 0x34))
+               ->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d)
+           != 0;
 }
 
 class L_fe90 : public CUserLogic {
@@ -113,7 +108,9 @@ i32 S_104a0::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
     if (!SerializeChain(ar, tag, c, d)) {
         return 0;
     }
-    return ((CSerialSub34*)((char*)this + 0x34))->Chain(ar, tag, c, d) != 0;
+    return ((CSerialObjRef*)((char*)this + 0x34))
+               ->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d)
+           != 0;
 }
 
 class S_105d0 : public CUserLogic {
@@ -126,7 +123,9 @@ i32 S_105d0::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
     if (!SerializeChain(ar, tag, c, d)) {
         return 0;
     }
-    return ((CSerialSub34*)((char*)this + 0x34))->Chain(ar, tag, c, d) != 0;
+    return ((CSerialObjRef*)((char*)this + 0x34))
+               ->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d)
+           != 0;
 }
 
 class L_10fc0 : public CUserLogic {

@@ -20,7 +20,9 @@
 #define GRUNTZ_CFORTRESSFLAG_H
 
 #include <rva.h>
-#include <Gruntz/UserLogic.h> // CUserLogic base (CFortressFlag : CUserLogic)
+
+#include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
+#include <Gruntz/UserLogic.h>   // CUserLogic base (CFortressFlag : CUserLogic)
 
 class CFortressFlag : public CUserLogic {
 public:
@@ -35,7 +37,7 @@ public:
     void HandleFortConquered(); // 0x03f5f0 (per-frame fort-conquest check)
     // vtable slot 2 (per-class logic-type id); regular method - the fat CUserLogic
     // base models this slot with a placeholder signature (see CGuardPoint.cpp).
-    i32 GetTypeTag();                             // 0x010e40
+    LogicTypeId GetTypeTag();                     // 0x010e40
     i32 Serialize(i32 ar, i32 tag, i32 c, i32 d); // 0x046410 (vtable slot 1)
     virtual ~CFortressFlag() OVERRIDE;            // 0x010e90 (folds the CUserLogic teardown)
 

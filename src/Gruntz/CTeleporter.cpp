@@ -88,8 +88,8 @@ extern i32 g_curPlayer;
 // fat CUserLogic base slot 2 carries a placeholder signature; the leaf vtable is
 // not a diffed symbol, so a plain method reproduces the slot bytes exactly).
 RVA(0x00010d80, 0x6)
-i32 CTeleporter::GetTypeTag() {
-    return 0x3fc;
+LogicTypeId CTeleporter::GetTypeTag() {
+    return LOGIC_TELEPORTER; // 0x3fc
 }
 
 // CTeleporter::~CTeleporter @0x010dd0 - the leaf adds no destructible members

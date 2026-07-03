@@ -17,12 +17,14 @@
 #define GRUNTZ_CEXITTRIGGER_H
 
 #include <rva.h>
-#include <Gruntz/UserLogic.h> // CUserLogic base (CExitTrigger : CUserLogic)
+
+#include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
+#include <Gruntz/UserLogic.h>   // CUserLogic base (CExitTrigger : CUserLogic)
 
 class CExitTrigger : public CUserLogic {
 public:
     CExitTrigger(CGameObject* obj);   // 0x03ecf0 (1-arg leaf ctor)
-    i32 GetTypeTag();                 // 0x010870 (returns the class logic-type id 0x3f7)
+    LogicTypeId GetTypeTag();         // 0x010870 (returns the class logic-type id 0x3f7)
     virtual ~CExitTrigger() OVERRIDE; // 0x0108c0 (folds the CUserLogic teardown)
 
     i32 m_savedGeoId; // +0x40  saved m_38->m_1b4 geometry id

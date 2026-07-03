@@ -25,7 +25,9 @@ i32 CCursorSnapSprite::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
     if (!SerializeChain(ar, tag, c, d)) {
         return 0;
     }
-    return ((CSerialSub34*)((char*)this + 0x34))->Chain(ar, tag, c, d) != 0;
+    return ((CSerialObjRef*)((char*)this + 0x34))
+               ->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d)
+           != 0;
 }
 
 // CCursorSnapSprite::~CCursorSnapSprite @0x011920 - the leaf adds no destructible

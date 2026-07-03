@@ -16,7 +16,9 @@
 #define GRUNTZ_CPATHHAZARD_H
 
 #include <rva.h>
+
 #include <Gruntz/CGameRegistry.h>
+#include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 #include <Gruntz/UserLogic.h>
 
 // The waypoint the path array (this+0x90, 8-byte stride) stores: {x:int, y:int}.
@@ -107,7 +109,7 @@ public:
     CPathHazard(CGameObject* obj); // 0xb35a0 (folds CUserLogic(obj) + the waypoint setup)
     i32 StartPath();               // 0x29be thunk (find/seed the first leg; reloc-masked no-body)
     // GetTypeTag (0x132f0): the 6-byte per-class logic-type id accessor (0x425).
-    i32 GetTypeTag();
+    LogicTypeId GetTypeTag();
     // The five virtuals CPathHazard adds over CUserLogic's 16 slots (16..20), so cl
     // emits the real 21-slot ??_7CPathHazard@@6B@ (CRainCloud/CUFO derive it). Tick
     // and BeginLeg carry bodies; slots 17/18/20 are declared-only (reloc-masked).

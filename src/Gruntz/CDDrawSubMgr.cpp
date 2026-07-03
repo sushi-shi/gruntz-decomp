@@ -1,4 +1,6 @@
 #include <rva.h>
+
+#include <Gruntz/StateId.h> // StateId (GetStateId return type)
 // <Mfc.h> brings the real MFC CPtrList / CMapPtrToPtr (afxcoll) used by the
 // CWwdObjMgr collection class below.  Must precede any windows/DirectX header.
 #include <Mfc.h>
@@ -53,8 +55,8 @@ public:
     virtual ~CDDrawSubMgr() {}
     virtual void IsReady();
     virtual i32 Init();
-    virtual i32 OnDestroy();  // 0x1576c0 (state predicate, returns 1)
-    virtual i32 GetStateId(); // 0x157790 (state predicate, returns 1)
+    virtual i32 OnDestroy();      // 0x1576c0 (state predicate, returns 1)
+    virtual StateId GetStateId(); // 0x157790 (state predicate, returns 1)
 
     // Engine-label backlog stub (scalar-deleting dtor of a far sibling class).
     void* Stub_155720(i32 flag);
@@ -289,8 +291,8 @@ i32 CDDrawSubMgr::Init() {
 // ---------------------------------------------------------------------------
 // Constant state predicate returning 1.
 RVA(0x00157790, 0x6)
-i32 CDDrawSubMgr::GetStateId() {
-    return 1;
+StateId CDDrawSubMgr::GetStateId() {
+    return STATE_SUBMGR; // 1
 }
 
 // ---------------------------------------------------------------------------

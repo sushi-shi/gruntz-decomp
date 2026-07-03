@@ -1,4 +1,6 @@
 #include <rva.h>
+
+#include <Gruntz/StateId.h> // StateId (GetStateId return type)
 // CDDrawWorkerRegistry.cpp - leaf method(s) of the tomalla-named ddrawmgr surface-family
 // sub-manager CDDrawWorkerRegistry (a CDirectDrawMgr surface/page sub-manager in the
 // "DDraw surface manager" family; see docs/ddraw-family-names.md).
@@ -143,7 +145,7 @@ public:
     i32 IsReady();
     i32 ResetScratch();
     void Shutdown();
-    i32 GetStateId();
+    StateId GetStateId();
     i32 DispatchKeyed2C(i32 a1, i32 a2, const char* key, i32 a4, i32 a5);
     i32 Forward2C(i32 a1, i32 a2, CDDrawWorker* worker, i32 a4, i32 a5);
     i32 Forward30(i32 a1, i32 a2, CDDrawWorker* worker, i32 a4, i32 a5);
@@ -410,8 +412,8 @@ void CDDrawWorkerRegistry::RemoveWorker(CDDrawWorker* worker) {
 // ---------------------------------------------------------------------------
 // Constant state id.
 RVA(0x00156de0, 0x6)
-i32 CDDrawWorkerRegistry::GetStateId() {
-    return 0x12;
+StateId CDDrawWorkerRegistry::GetStateId() {
+    return STATE_WORKERREGISTRY; // 0x12
 }
 
 // ---------------------------------------------------------------------------

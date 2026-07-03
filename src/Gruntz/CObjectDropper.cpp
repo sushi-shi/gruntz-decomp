@@ -167,8 +167,8 @@ extern "C" u32 g_6bf3bc; // 0x6bf3bc
 // fat CUserLogic base slot 2 carries a placeholder signature; the leaf vtable is
 // not a diffed symbol, so a plain method reproduces the slot bytes exactly).
 RVA(0x000124a0, 0x6)
-i32 CObjectDropper::GetTypeTag() {
-    return 0x40f;
+LogicTypeId CObjectDropper::GetTypeTag() {
+    return LOGIC_OBJECTDROPPER; // 0x40f
 }
 
 // CObjectDropper::~CObjectDropper (0x124f0) - the /GX leaf dtor folds the bare

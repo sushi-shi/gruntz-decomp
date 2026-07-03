@@ -45,7 +45,7 @@ public:
     CTileTriggerTransition(CGameObject* obj); // 0x10faf0
     virtual ~CTileTriggerTransition() OVERRIDE;
 
-    i32 GetTypeTag();                             // 0x011730
+    LogicTypeId GetTypeTag();                     // 0x011730
     void Register_10fc90();                       // 0x10fc90
     void RegisterActs();                          // 0x10fe70  intern "A", bind Handler
     i32 ApplyAnimation(char* sprite, char* geom); // 0x110070
@@ -78,7 +78,7 @@ CTileTriggerTransition::~CTileTriggerTransition() {}
 // GetTypeTag (0x011730) - returns the class's logic-type id.
 // ---------------------------------------------------------------------------
 RVA(0x00011730, 0x6)
-i32 CTileTriggerTransition::GetTypeTag() {
+LogicTypeId CTileTriggerTransition::GetTypeTag() {
     return LOGIC_TILETRIGGERTRANSITION; // 0x405
 }
 

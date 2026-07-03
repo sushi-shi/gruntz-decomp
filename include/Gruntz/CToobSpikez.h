@@ -19,13 +19,15 @@
 #define GRUNTZ_CTOOBSPIKEZ_H
 
 #include <rva.h>
-#include <Gruntz/UserLogic.h> // CUserLogic base (CToobSpikez : CUserLogic)
+
+#include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
+#include <Gruntz/UserLogic.h>   // CUserLogic base (CToobSpikez : CUserLogic)
 
 class CToobSpikez : public CUserLogic {
 public:
     // The class's own CUserLogic slot overrides, reconstructed as regular methods
     // (the fat base models slots 1/2 with placeholder signatures; see the .cpp).
-    i32 GetTypeTag();                          // 0x012ba0 (vtable slot 2: per-class logic-type id)
+    LogicTypeId GetTypeTag();                  // 0x012ba0 (vtable slot 2: per-class logic-type id)
     i32 Serialize(i32 a, i32 b, i32 c, i32 d); // 0x012bc0 (vtable slot 1: serialize chain)
     void Register_1147e0();                    // 0x1147e0 (reserve the activation range)
     void FireActivation(i32 coord);            // 0x114860 (vtable slot 4)
