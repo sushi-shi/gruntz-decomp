@@ -13,9 +13,16 @@
 #include <Ints.h>
 #include <Rez/RezColl.h>
 
-// RezBucket's exact retail size is unproven (First/Next only touch +0/+4/+8);
-// tracked here (its owning TU) so the class carries a SIZE macro.
-SIZE_UNKNOWN(RezBucket);
+// The bucket stride is proven 0x10 from the iterators' `shl eax,0x4` (index * 16)
+// / `add ecx,0x10` bucket-walk in Next (0x1848d5 / 0x1848ee) and First's
+// `add edx,0x10` (0x184af7).
+SIZE(RezBucket, 0x10);
+
+// A chain link stores the address of the *successor's* +4 field (an interior
+// pointer), so recovering the owning node is container_of(link, RezNode, +4) =
+// (char*)link - 4. The char*/RezNode* cast pair is the language-forced
+// container_of reinterpret (`add eax,0xfffffffc` in the disasm); it cannot be
+// expressed without a cast.
 
 // The next node: follow this node's chain link, else scan the collection's later
 // buckets for the next occupied chain head.

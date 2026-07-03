@@ -16,12 +16,21 @@
 #include <Rez/RezMgr.h>
 #include <rva.h>
 
+// The owner's embedded child list a CRezParseNode enrolls itself into is the
+// shared CRezList (AddHead = 0x1851e0). Included in the .cpp only (NOT in RezMgr.h,
+// which is pulled into /O2-sensitive TUs like Image.cpp).
+#include <Rez/RezList.h>
+
 // ---------------------------------------------------------------------------
 // CRezItmBase::CRezItmBase(parent)
 //   mov [this] = base vtbl; mov [this+0xc] = parent. Out-of-line so
 //   the derived ctors emit a `call` to it.
 RVA(0x0013c4e0, 0x12)
 CRezItmBase::CRezItmBase(void* parent) {
+    // Language-forced cast: the ctor's parameter is `void*` in the retail ABI
+    // (mangled ??0CRezItmBase@@QAE@PAX@Z = PAX), while the stored member is the
+    // typed Retry-gate CRezItmOwner*. Storing the void* param into the typed
+    // member requires the reinterpret.
     m_parent = (CRezItmOwner*)parent;
 }
 
@@ -216,6 +225,9 @@ i32 CRezDir::FindEntry(char* name) {
     if (RezStatEntry(name, &rec) != 0) {
         return 0;
     }
+    // Language-forced int-view over the fixed byte record: the entry's attribute
+    // dword sits at the packed (unaligned) offset +6 of the 0x24-byte find-record;
+    // bit 0x4000 marks a directory. Reading a dword from a byte buffer needs the cast.
     return (*(i32*)(rec.raw + 6) & 0x4000) == 0x4000;
 }
 
@@ -253,6 +265,9 @@ i32 CRezDirNode::Load(i32 childFlag) {
 
     if (childFlag != 0) {
         for (RezNode* n = m_kids.First(); n != 0; n = n->Next()) {
+            // RezNode::m_14 is the shared hash-collection's generic (void*) payload
+            // slot - it holds a CSymTab*/CSymRec* in Bute and a CRezDirNode* here;
+            // typed to the concrete element type at this use site.
             ((CRezDirNode*)n->m_14)->Load(1);
         }
     }
@@ -583,45 +598,28 @@ i32 RezMgr::UpdateClock() {
 // `this`. Reconstructed as CSymParser::LoadEntry in src/Bute/SymParser.cpp.)
 
 // -------------------------------------------------------------------------
-// CRezParseNode : CRezItmBase (0x13cac0 = its ctor) - a rez parse-tree node,
-// the third CRezItmBase-derived class alongside CRezItm/CRezDir (its own vtable
-// 0x1ef7d0). xref (gruntz.analysis.xref): built by CSymParser::ParseRecords
-// (0x13b300, the .rez directory/symbol parser; Ghidra name ?Construct - a ctor
-// that returns `this`). Base-ctors CRezItmBase(parent), stamps the derived vtable,
-// records the owner @+0x18, heap-copies its name string into +0x10 (m_14 = 0
-// alongside), and links itself into the owner's child list at owner+0x1c via
-// CRezList::AddHead (0x1851e0). Real-polymorphic (CRezItmBase-derived) so the
-// base-ctor call + derived-vptr stamp + /GX base-cleanup frame fall out; the
-// distinct derived vtable stays a cosmetic/unbound COMDAT here (its retail datum
-// 0x1ef7d0 is emitted by FinalVtables as CVtbl_1ef7d0 - the reloc-masked vptr
-// store matches whichever symbol names it).
-SIZE_UNKNOWN(RezChildList);
-struct RezChildList {         // the owner's child list embedded at owner+0x1c
-    void* m_0;                // +0x00
-    void* m_head;             // +0x04
-    void* m_tail;             // +0x08
-    void AddHead(void* node); // 0x1851e0 (extern, reloc-masked)
-};
-class CRezParseNode : public CRezItmBase {
-public:
-    CRezParseNode(void* parent, char* nameSrc, void* owner);
-    virtual void v0(); // forces a distinct derived vtable (the +0x1ef7d0 stamp)
-
-    char* m_10; // +0x10  heap-copied name
-    i32 m_14;   // +0x14  (= 0)
-    void* m_18; // +0x18  owner (its child list is at owner+0x1c)
-};
-
+// CRezParseNode::CRezParseNode(parent, nameSrc, owner)  (0x13cac0; class in
+// RezMgr.h). Base-ctors CRezItmBase(parent), stamps its distinct derived vtable
+// (0x1ef7d0), records the owner @+0x18, heap-copies the name into +0x10, and links
+// itself into the owner's embedded child list (a CRezList at owner+0x1c) via
+// AddHead. Real-polymorphic (CRezItmBase-derived) so the base-ctor call +
+// derived-vptr stamp + /GX base-cleanup frame fall out; the derived vtable stays a
+// reloc-masked COMDAT here (retail datum 0x1ef7d0 emitted by FinalVtables).
 RVA(0x0013cac0, 0x9b)
 CRezParseNode::CRezParseNode(void* parent, char* nameSrc, void* owner) : CRezItmBase(parent) {
     m_18 = owner;
     m_14 = 0;
+    // operator new returns void*; char* needed for strcpy (language-forced).
     char* buf = (char*)::operator new(strlen(nameSrc) + 1);
     m_10 = buf;
     strcpy(buf, nameSrc);
-    // AddHead reloads the owner from m_18 (this+0x18) rather than keeping the arg
-    // live in a callee-saved reg - matches retail's `mov ecx,[ebx+0x18]; add ecx,0x1c`.
-    ((RezChildList*)((char*)m_18 + 0x1c))->AddHead(this);
+    // Enroll into the owner's child list. The owner (m_18) is a foreign parser
+    // object whose embedded CRezList sits at +0x1c - documented offset access (the
+    // codegen reloads it from this+0x18: `mov ecx,[ebx+0x18]; add ecx,0x1c`). The
+    // node cast is the generic intrusive-list insertion (CRezList links any node
+    // type by its +4/+8 slots, which CRezItmBase carries).
+    CRezList* kids = (CRezList*)((char*)m_18 + 0x1c);
+    kids->AddHead((CRezListNode*)this);
 }
 
 // ===========================================================================
@@ -631,17 +629,17 @@ CRezParseNode::CRezParseNode(void* parent, char* nameSrc, void* owner) : CRezItm
 // (verified). Placed after all function bodies so this TU is unperturbed too.
 // ===========================================================================
 SIZE(RezFindRec, 0x24);        // RE'd WIN32-find-style fixed record
-SIZE_UNKNOWN(CRezItmOwner);    // slot-dispatch gate view (no emitted vtable)
+SIZE_UNKNOWN(CRezItmOwner);    // abstract Retry-gate interface (no storage/vtable here)
 SIZE(CRezItmBase, 0x10);       // "16 bytes" base (derived fields start at +0x10)
 VTBL(CRezItmBase, 0x001ef768); // base vtable stamp from ctor 0x13c4e0
 SIZE(CRezItm, 0x24);           // operator new leaf size 0x24
 VTBL(CRezItm, 0x001ef788);     // derived vtable stamp from ctor 0x13c540
 SIZE(CRezDirList, 0xc);        // embedded child-collection list {vptr,head,tail}
-SIZE_UNKNOWN(CRezDir);         // model pads to +0x68 runtime fields; ctor alloc 0x38
+SIZE(CRezDir, 0x38);           // verified: ParseBuffer `push 0x38; new; call 0x13c940`
+SIZE(CRezParseNode, 0x1c);     // verified: ParseRecords `push 0x1c; new; call 0x13cac0`
 SIZE_UNKNOWN(RezStream);       // abstract slot-view (pure virtuals, no vtable)
-SIZE_UNKNOWN(RezSrc);
-SIZE_UNKNOWN(CRezDirNode);
-SIZE_UNKNOWN(CGameMode); // slot-dispatch view (no emitted vtable)
-SIZE_UNKNOWN(RezMgrOwner);
-SIZE_UNKNOWN(RezMgr);        // model pads to +0xfc; retail alloc is 0xa30
-SIZE_UNKNOWN(CRezParseNode); // 0x13cac0 CRezItmBase-derived parse node (name TBD)
+SIZE_UNKNOWN(RezSrc);          // partial view of the foreign archive-source object
+SIZE_UNKNOWN(CRezDirNode);     // partial view of the loader's recursive dir node
+SIZE_UNKNOWN(CGameMode);       // abstract per-frame mode interface (no storage here)
+SIZE_UNKNOWN(RezMgrOwner);     // partial view of the owning-window holder (+0x04 HWND)
+SIZE(RezMgr, 0xa30);           // the CGruntzMgr (WAP32::CGameMgr); alloc 0xa30, modeled to +0xfc

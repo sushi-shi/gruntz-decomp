@@ -56,9 +56,11 @@ extern const char s_wPlusB[];
 
 class CRezFile;
 
-// The intrusive open/closed LRU list embedded at CRezFileMgr+0x10 / +0x1c. Remove
-// (0x1852e0, the engine CObjList::Remove) unlinks a node; Append (0x1851e0) splices
-// one in. Both __thiscall on the {vptr,head,tail} head; external no-body so the
+// The intrusive open/closed LRU list embedded at CRezFileMgr+0x10 / +0x1c. This is
+// the CRezFile-typed view of the shared intrusive list class (its Append 0x1851e0 /
+// Remove 0x1852e0 are the same engine methods as CRezList::AddHead in RezList.h -
+// an MFC-CTypedPtrList-style typed instantiation, hence typed CRezFile* head/tail).
+// Both __thiscall on the {vptr,head,tail} head; external no-body so the
 // `lea/add ecx,&list; push node; call` shapes fall out, reloc-masked. REAL
 // POLYMORPHIC (ALL-VTABLES): the +0x00 vtable is the implicit vptr (virtual dtor);
 // the list is never constructed in this TU so no ??_7 is emitted here.
@@ -86,7 +88,7 @@ struct CRezFileMgr {
     // @+0x14), Close()-ing each until the list drains. Returns 1.
     i32 CloseAllOpen();
 };
-SIZE_UNKNOWN(CRezFileMgr);
+SIZE_UNKNOWN(CRezFileMgr); // >= 0x38 (fields to +0x34); full alloc size not pinned here
 
 // ---------------------------------------------------------------------------
 // CRezFile - one managed archive FILE*.
@@ -116,11 +118,11 @@ public:
     // (no handle / closed) or 0 (the gate gave up).
     i32 Close();
 
-    char m_pad0[0x10];
-    char* m_name;       // +0x10
-    void* m_handle;     // +0x14  FILE*
-    CRezFileMgr* m_mgr; // +0x18
+    char m_pad0[0x10];  // +0x00..+0x0f  (holds the CObjList intrusive links @+4/+8)
+    char* m_name;       // +0x10  filename passed to fopen
+    void* m_handle;     // +0x14  opaque CRT FILE* (0 = closed); passed to RezF* by value
+    CRezFileMgr* m_mgr; // +0x18  owning handle cache
 };
-SIZE_UNKNOWN(CRezFile);
+SIZE_UNKNOWN(CRezFile); // >= 0x1c; the cache's alloc size is not pinned here
 
 #endif // SRC_REZ_REZFILE_H

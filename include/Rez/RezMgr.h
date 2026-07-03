@@ -16,8 +16,8 @@
 // the parent pointer @+0xc).
 //   +0x00  vptr     : vtable pointer (base; the derived ctor
 //                     overwrites it - two-phase construction).
-//   +0x04  m_4      : (not written by these ctors)
-//   +0x08  m_8      : (not written by these ctors; OpenSub zeroes its owner's +8)
+//   +0x04  m_next   : intrusive sibling link (written by CRezList::AddHead)
+//   +0x08  m_prev   : intrusive sibling link (written by CRezList::AddHead)
 //   +0x0c  m_parent : owning/parent pointer (the one base-ctor arg).
 //
 // ---------------------------------------------------------------------------
@@ -27,24 +27,19 @@
 //   (+0x18/+0x1c set by the virtual load, not the ctor)
 //
 // ---------------------------------------------------------------------------
-// CRezDir : CRezItmBase (>= 0x38; ctor builds 0x38 = 56 bytes) - a subdirectory
-// node (derived vtbl). The ctor inits an embedded child collection
-// sub-object (two vtables at +0x10 and +0x1c) and bookkeeping; the
-// higher fields (+0x40..+0x64) are written by Load/OpenSub at runtime.
+// CRezDir : CRezItmBase (exactly 0x38 = 56 bytes) - a subdirectory node
+// (derived vtbl). The ctor inits an embedded child collection sub-object (two
+// vtables at +0x10 and +0x1c) and bookkeeping. (The +0x38..+0x64 fields an
+// earlier model listed here belong to CRezDirNode, a distinct class the loader
+// walks - see the RezMgr.cpp note - not to this 0x38 ctor's object.)
 //   +0x10  listA   : (embedded child collection #1: vptr,head,tail)
 //   +0x14  ..head  : 0        (collection head)
 //   +0x18  ..tail  : 0        (collection tail)
 //   +0x1c  listB   : (embedded child collection #2: vptr,head,tail)
-//   +0x20  m_20 :0  +0x24 m_24:0  +0x28 m_28:0  +0x34 m_34:0
-//   +0x2c  m_rezMgr : ctor arg2 (the owning RezMgr back-pointer)
+//   +0x28  m_28    : 0
+//   +0x2c  m_rezMgr : ctor arg2 (the owning-manager back-pointer)
 //   +0x30  m_30    : 1        ("valid"/initialized flag)
-// Runtime fields (NOT ctor-initialized; pinned from Load/OpenSub):
-//   +0x38  m_coll2 : a second/child collection base (Load iterates &this+0x38)
-//   +0x40  m_loaded: OpenSub's load gate (return 0 if zero)
-//   +0x44  m_44    : passed to the recursive walker
-//   +0x48  m_loaded2: Load's already-loaded gate (return 1 if nonzero)
-//   +0x54  m_w     +0x58 m_h  +0x5c m_x  +0x60 m_y : running max dims (OpenSub)
-//   +0x64  m_name  : cached lookup-name buffer (operator new'd / freed)
+//   +0x34  m_34    : 0
 #ifndef SRC_REZ_REZMGR_H
 #define SRC_REZ_REZMGR_H
 #include <rva.h> // OVERRIDE macro (override under clang, no-op under MSVC 5.0)
@@ -111,8 +106,12 @@ public:
     CRezItmBase(void* parent);
     virtual ~CRezItmBase();
 
-    void* m_4;              // +0x04
-    void* m_8;              // +0x08
+    // +0x04/+0x08 are the node's intrusive sibling links, written by
+    // CRezList::AddHead (0x1851e0) when the node is enrolled in an owner's child
+    // list (see CRezParseNode below). The ctors here never touch them; typed as
+    // the node base rather than left as raw void*.
+    CRezItmBase* m_next;    // +0x04
+    CRezItmBase* m_prev;    // +0x08
     CRezItmOwner* m_parent; // +0x0c  owning object CRezItm polls via Retry()
 };
 
@@ -142,10 +141,12 @@ public:
     // (vtable slot 5)
     i32 Close();
 
-    void* m_fp;      // +0x10  FILE* (= 0)
-    void* m_readBuf; // +0x14  read buffer (= 0)
-    i32 m_18;        // +0x18  (set by load)
-    i32 m_1c;        // +0x1c  (set by load)
+    // Opaque handles kept as void* (RezMgr.h is pulled into /O2-sensitive TUs like
+    // Image.cpp, so <stdio.h>/FILE cannot be injected without rescheduling them):
+    void* m_fp;      // +0x10  opaque CRT FILE* (= 0); passed to RezF* by value
+    void* m_readBuf; // +0x14  raw heap read buffer (= 0); RezAlloc'd / RezFree'd
+    i32 m_18;        // +0x18  (set by the virtual load, not this TU; role unproven)
+    i32 m_1c;        // +0x1c  (set by the virtual load, not this TU; role unproven)
     i32 m_pos;       // +0x20  position cursor (= -1)
 };
 
@@ -177,8 +178,8 @@ struct CRezDirList {
         m_tail = 0;
     }
     virtual ~CRezDirList(); // +0x00  vptr (external no-body dtor)
-    void* m_head;           // +0x04
-    void* m_tail;           // +0x08
+    CRezItmBase* m_head;    // +0x04  child chain head (CRezItmBase-derived nodes)
+    CRezItmBase* m_tail;    // +0x08  child chain tail
 };
 
 VTBL(CRezDir, 0x001ef7a8);
@@ -190,26 +191,36 @@ public:
     i32 FindEntry(char* name);
     // OpenSub is NOT matched in this TU - see RezMgr.cpp note.
 
+    // Exactly 0x38 bytes (verified: CSymParser::ParseBuffer does `push 0x38; new;
+    // call 0x13c940`). The +0x38..+0x64 "runtime" fields that an earlier model kept
+    // here actually belong to CRezDirNode (a distinct class walked by Load/OpenSub -
+    // see the RezMgr.cpp note); this TU only touches the ctor-set members below.
     // --- ctor-initialized embedded child collection (+0x10..+0x27) ---
     CRezDirList m_listA; // +0x10  {vptr,head,tail}
     CRezDirList m_listB; // +0x1c  {vptr,head,tail}
-    i32 m_28;            // +0x28  (= 0)
-    void* m_rezMgr;      // +0x2c  (= ctor arg2, the owning RezMgr back-pointer)
-    i32 m_30;            // +0x30  (= 1)
-    i32 m_34;            // +0x34  (= 0)
-    // --- runtime-only fields (NOT set by the ctor) ---
-    i32 m_38;      // +0x38  (second collection base; Load walks &this+0x38)
-    i32 m_3c;      // +0x3c
-    i32 m_loaded;  // +0x40  (OpenSub gate)
-    i32 m_44;      // +0x44
-    i32 m_loaded2; // +0x48  (Load gate)
-    i32 m_4c;      // +0x4c
-    i32 m_50;      // +0x50
-    i32 m_54;      // +0x54  (max width)
-    i32 m_58;      // +0x58  (max height)
-    i32 m_5c;      // +0x5c  (max x)
-    i32 m_60;      // +0x60  (max y)
-    void* m_name;  // +0x64  (cached lookup-name buffer)
+    i32 m_28;            // +0x28  (= 0; role unproven)
+    void* m_rezMgr;      // +0x2c  (= ctor arg2; owning-manager back-ptr, stored only)
+    i32 m_30;            // +0x30  (= 1; "valid"/initialized flag)
+    i32 m_34;            // +0x34  (= 0; role unproven)
+};
+
+// ---------------------------------------------------------------------------
+// CRezParseNode : CRezItmBase (0x1c bytes; ctor 0x13cac0) - a .rez parse-tree
+// node, the third CRezItmBase-derived class alongside CRezItm/CRezDir. Built by
+// CSymParser::ParseRecords (`push 0x1c; new; ctor`); base-ctors CRezItmBase(parent),
+// heap-copies its name into +0x10, records the owner @+0x18 and links itself into
+// the owner's child list (a CRezList embedded at owner+0x1c) via AddHead. Real
+// polymorphic (its own derived vtable 0x1ef7d0, whose datum FinalVtables.cpp
+// binds as CVtbl_1ef7d0; the reloc-masked vptr store here matches whichever symbol
+// names that address, so this class carries no VTBL of its own).
+class CRezParseNode : public CRezItmBase {
+public:
+    CRezParseNode(void* parent, char* nameSrc, void* owner);
+    virtual void v0(); // new virtual - forces the distinct derived vtable (+0x1ef7d0)
+
+    char* m_10; // +0x10  heap-copied name
+    i32 m_14;   // +0x14  (= 0; role unproven)
+    void* m_18; // +0x18  owner (its child list is the CRezList at owner+0x1c)
 };
 
 // ---------------------------------------------------------------------------

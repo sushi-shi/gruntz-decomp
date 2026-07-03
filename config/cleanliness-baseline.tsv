@@ -1,9 +1,9 @@
-m_<hex> fields	18361
+m_<hex> fields	18352
 Unknown ids	346
 g_<hex> globals	1246
 Method/Stub/FUN	360
-)this casts	389
+)this casts	390
 )m_ casts	1206
 (char*) casts	1219
 (const char*) casts	177
-void* m_ members	567
+void* m_ members	558

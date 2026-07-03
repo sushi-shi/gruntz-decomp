@@ -137,12 +137,9 @@ i32 CRezFile::Open() {
 
 // Close (0x13ce70): fclose the handle (retrying through the manager's gate); then
 // drop the open count, move the node back to the closed list, and null the handle.
-// Returns 1 (no handle / closed) or 0 (the gate gave up).
-// @early-stop
-// expected regalloc wall (the same esi<->edi callee-save coin-flip CRezItm::Close
-// hits @0x13c830): the structure + the fclose `(==0)` neg/sbb/inc bool-normalize are
-// byte-exact, but MSVC5 may pin this->esi / ok->edi opposite to retail. Logic
-// complete; parked for the final sweep.
+// Returns 1 (no handle / closed) or 0 (the gate gave up). BYTE-EXACT (100%): the
+// anticipated esi<->edi coin-flip did not materialize here - MSVC5 pins the same
+// registers as retail, so this method needs no early-stop marker.
 RVA(0x0013ce70, 0x7c)
 i32 CRezFile::Close() {
     if (m_handle == 0) {
