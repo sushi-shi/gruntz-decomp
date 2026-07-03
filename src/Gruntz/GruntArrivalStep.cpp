@@ -38,7 +38,7 @@ i32 CGrunt::StepArrivalDefenseAlt() {
             m_neighborValid = 0;
             return 1;
         }
-        if (*(i32*)((char*)this + 0x218) != 0) {
+        if (m_combatActive != 0) {
             goto tail;
         }
         if (m_stamina >= 0x64) {
@@ -66,7 +66,7 @@ i32 CGrunt::StepArrivalDefenseAlt() {
             }
         }
         m_entranceActive = 0;
-        *(i32*)((char*)this + 0x218) = 0;
+        m_combatActive = 0;
         m_neighborValid = 0;
         m_poweredUp = 0;
         Stub_062e10(1, 0, 0);
@@ -157,8 +157,7 @@ i32 CGrunt::StepArrivalDefenseAlt() {
         }
 
         case 1: {
-            CGrunt* o =
-                *(CGrunt**)((char*)m_tileMgr + (m_arrivalRow + 15 * m_arrivalCol) * 4 + 0x1c);
+            CGrunt* o = m_tileMgr->m_grid[m_arrivalCol][m_arrivalRow];
             CGrunt* g = m_tileMgr->GetOccupant(this);
             if (g != 0 && g != o) {
                 m_arrivalCol = -1;

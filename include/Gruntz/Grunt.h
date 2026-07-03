@@ -1536,9 +1536,9 @@ public:
     i32 m_poseToyBreak;   // +0x3cc (_TOY-BREAK)
     i32 m_poseItem;       // +0x3d0 (_ITEM)
     i32 m_poseItem2;      // +0x3d4 (_ITEM2)
-    i32 m_3d8;            // +0x3d8
-    i32 m_3dc;            // +0x3dc (serialized)
-    i32 m_3e0;            // +0x3e0 (serialized)
+    i32 m_pickupGeoSrc; // +0x3d8  (LoadPickupSprites: resolved pickup-sprite handle / SetGeometry source; serialized by name)
+    i32 m_3dc;          // +0x3dc (serialized)
+    i32 m_3e0;          // +0x3e0 (serialized)
     i32 m_moveTileX; // +0x3e4 (destination tile X; ArrivalNotify6/Load6 arg, = PlayMoveSoundAtTile x)
     i32 m_moveTileY; // +0x3e8 (destination tile Y; ArrivalNotify6/Load6 arg, = PlayMoveSoundAtTile y)
     i32 m_health;    // +0x3ec

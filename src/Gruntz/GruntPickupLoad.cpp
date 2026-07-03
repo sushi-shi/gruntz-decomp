@@ -47,7 +47,6 @@ struct MegaHolder {
     MegaCounter* m_2dc; // +0x2dc
 };
 
-#define AT_I32(o) (*(i32*)((char*)this + (o)))
 #define GREG_I32(g, o) (*(i32*)((char*)(g) + (o)))
 // The looked-up sprite handle lands in the (otherwise dead) arg4 slot: taking its
 // address pins a4 to its incoming stack slot, exactly as retail reuses [esp+0x20].
@@ -56,7 +55,7 @@ struct MegaHolder {
         a4 = 0;                                                                                    \
         m_154->m_c->m_2c->m_10map.Lookup((key), (CSprite**)&a4);                                   \
         id = (idv);                                                                                \
-        AT_I32(0x3d8) = a4;                                                                        \
+        m_pickupGeoSrc = a4;                                                                       \
     } while (0)
 
 // The object-type id (LoadPickupSprites `type` / the megaphone-announce unit type)
@@ -96,13 +95,13 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
     if (type >= PICKUP_REDBRICK && type <= PICKUP_BLACKBRICK) {
         i32 st = m_entranceReason;
         if (st > 0x16) {
-            st = AT_I32(0x19c);
+            st = m_19c;
         }
         if (st != 3) {
             return 0;
         }
     }
-    if (AT_I32(0x234) != 0) {
+    if (m_coordToggle != 0) {
         return 0;
     }
     if (m_wingzEnabled != 0) {
@@ -110,7 +109,7 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
     }
     if (m_poweredUp != 0 && m_neighborValid == 0) {
         m_entranceActive = 0;
-        AT_I32(0x218) = 0;
+        m_combatActive = 0;
         m_neighborValid = 0;
         m_poweredUp = 0;
         PickupResetB(1, 0, 0);
@@ -258,7 +257,7 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
             MegaHolder* mh = *(MegaHolder**)((char*)g_gameReg + 0x2c);
             a4 = 0;
             m_154->m_c->m_2c->m_10map.Lookup("GRUNTZ_PICKUPS_MEGAPHONE", (CSprite**)&a4);
-            AT_I32(0x3d8) = a4;
+            m_pickupGeoSrc = a4;
             i32 n = mh->m_2dc->Count();
             if (a5 != 0) {
                 if (n >= PICKUP_BOMB && n <= PICKUP_WINGZ && n != PICKUP_WARPSTONE) {
@@ -455,7 +454,7 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
     }
 
     // shared tail
-    if (AT_I32(0x3d8) == 0) {
+    if (m_pickupGeoSrc == 0) {
         return 0;
     }
     if (id != 0) {
@@ -467,9 +466,9 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
             g->m_cueSink->CueA(this, id, -1, 0, -1, -1);
         }
     }
-    AT_I32(0x1a4) = a3;
+    m_1a4 = a3;
     m_entranceActive = 1;
-    AT_I32(0x1a0) = type;
+    m_moveMode = type;
     if (m_healthSprite != 0) {
         m_healthSprite->m_8 |= 0x10000;
         m_healthSprite = 0;
@@ -491,7 +490,7 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
         m_wingzTimeSprite = 0;
     }
     m_prevEntranceDesc = (i32)m_154->m_1b4;
-    m_154->m_1a0.SetGeometry(AT_I32(0x3d8));
+    m_154->m_1a0.SetGeometry(m_pickupGeoSrc);
     m_154->SetAnimName("GRUNTZ_PICKUPS");
     return 1;
 }

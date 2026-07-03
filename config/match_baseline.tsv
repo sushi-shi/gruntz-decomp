@@ -2183,7 +2183,7 @@ glyphtable	?Set@GlyphTable@@QAEXHH@Z	100.0000	100.0000	1	69ba9e995038	0xc03f0
 goowellmgr	?LoadTeleporterGooConfig@CGooWellMgr@@QAEHH@Z	96.3620	96.3620	5	3449ea767cfc	0x6eb80
 groupops	?Broadcast@CGroupBroadcast@@QAEHXZ	84.2364	84.2364	1	4587301968b6	0x112080
 groupops	?CenterOnGroup@CGroupSel@@QAEHH@Z	82.6018	82.6018	4	12a47957cbd6	0x7cf40
-grunt	??0CGrunt@@QAE@PAX@Z	78.2475	78.2475	4	075dab4b0860	0x47a10
+grunt	??0CGrunt@@QAE@PAX@Z	78.2475	78.2475	5	17e9dd3e46c0	0x47a10
 grunt	??1CGrunt@@UAE@XZ	94.9091	94.9091	1	a4a4fdb30606	0xf2f0
 grunt	?ArrivalRecycle@CGrunt@@QAEHHHHHH@Z	52.4272	52.4272	4	fdfcbe154143	0x59230
 grunt	?BeginAttack@CGrunt@@QAEHHH@Z	53.7917	53.7917	3	4dabfb3556ea	0x5b570
@@ -2246,7 +2246,7 @@ grunt	?ResolveIdleAnimation@CGrunt@@QAEHXZ	92.0598	92.0598	8	3fc3a7c7840c	0x4596
 grunt	?ResolveMovingAnimation@CGrunt@@QAEHXZ	92.8816	92.8816	7	d4eb8543379f	0x45100
 grunt	?RunEntranceMove@CGrunt@@QAEHXZ	73.3405	73.3405	3	e130a6bd7790	0x67850
 grunt	?RunMoveConfig@CGrunt@@QAEXHH@Z	72.4823	72.4823	6	4f1babc3aeb1	0x65630
-grunt	?Save@CGrunt@@QAEHPAVCGruntArchive@@@Z	94.2489	94.2489	7	db2e79583f05	0x53f90
+grunt	?Save@CGrunt@@QAEHPAVCGruntArchive@@@Z	94.2489	94.2489	8	14bc2ed5091a	0x53f90
 grunt	?SelectMoveIcon@CGrunt@@QAEXH@Z	100.0000	100.0000	1	03cf2a46ba0e	0x57800
 grunt	?SerializeMove@CGrunt@@UAEHPAVCGruntArchive@@HHH@Z	100.0000	100.0000	3	131641ad2b22	0x53b80
 grunt	?SetArrivalTarget@CGrunt@@QAEXHHHH@Z	64.4000	64.4000	2	9999125e865e	0x52ed0
@@ -2275,7 +2275,7 @@ grunt	?winapi_04a9f0_CopyRect_OffsetRect@CGrunt@@QAEHXZ	100.0000	100.0000	1	dbbf
 gruntarrivalscan	?ArrivalScanA@CGruntStep@@QAEHXZ	51.2879	51.2879	3	c35b2dc7bbc8	0xecc90
 gruntarrivalscan	?ArrivalScanB@CGruntStep@@QAEHXZ	45.3241	45.3241	3	6d2783aea21c	0xf0e20
 gruntarrivalscan	?ArrivalScanC@CGruntStep@@QAEHXZ	45.3877	45.3877	3	20119696efc5	0xf36a0
-gruntarrivalstep	?StepArrivalDefenseAlt@CGrunt@@QAEHXZ	69.8771	69.8771	4	9fd61b457dfc	0xf1c70
+gruntarrivalstep	?StepArrivalDefenseAlt@CGrunt@@QAEHXZ	69.8771	69.8771	5	3fc5aa52df45	0xf1c70
 gruntarriveresolve	?Resolve2c690@CArriveMgr@@QAEHPAUCArriveGrunt@@@Z	23.5223	23.5223	1	be17b57152b2	0x2c690
 gruntassetloaders	?LoadGruntAbilityTuning@CGrunt@@QAEHH@Z	90.5457	90.5457	5	d76bb29395b5	0x57100
 gruntassetloaders	?LoadGruntDeathAnimations@CGrunt@@QAEHHH@Z	87.0599	87.0599	6	0ebfdba3f4fa	0x60150
@@ -2289,7 +2289,7 @@ gruntinfotext	?winapi_0d95f0_wsprintfA@GruntInfoTextHost@@QAEHXZ	88.4979	88.4979
 gruntmovestep	?Step@CGruntMover@@QAEHPAUCGruntM@@@Z	18.1429	18.1429	1	27431664e366	0x31610
 gruntpathscan	?PathScan57db0@CGrunt@@QAEHXZ	39.3829	39.3829	2	6d80437a50ce	0x57db0
 gruntphasestep	?PhaseStep@CGrunt@gruntphase@@QAEHXZ	31.4567	31.4567	4	2cd5e3ce911a	0xf60f0
-gruntpickupload	?LoadPickupSprites@CGrunt@@QAEHHHHHH@Z	47.1890	47.1890	5	25e4ec438dc4	0x65e80
+gruntpickupload	?LoadPickupSprites@CGrunt@@QAEHHHHHH@Z	47.1890	47.1890	6	44d78c6da8b5	0x65e80
 gruntpuddle	??0CGruntPuddle@@QAE@PAUCGameObject@@@Z	91.9504	91.9504	1	f672560977a9	0x40490
 gruntpuddle	??1CGruntPuddle@@UAE@XZ	100.0000	100.0000	1	d8797374243c	0x10d10
 gruntpuddle	?Place@CGruntPuddle@@QAEHHHHH@Z	73.5400	73.5400	3	dcb6baed4642	0x40c30

@@ -699,7 +699,7 @@ CGrunt::CGrunt(void* owner) : CMovingLogic(owner) {
     m_poseToy1 = 0;
     m_poseToy2 = 0;
     m_poseToyBreak = 0;
-    m_3d8 = 0;
+    m_pickupGeoSrc = 0;
     m_arrived = 0;
     m_154->m_e8 = 0x100000;
     m_154->m_ec = 0x3d1;
@@ -3747,7 +3747,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     g_serialCounter++;
     memset(buf, 0, 0x80);
     {
-        i32 id = m_3d8;
+        i32 id = m_pickupGeoSrc;
         if (id) {
             CString nm = catalog->LookupName(id);
             strcpy(buf, nm);
