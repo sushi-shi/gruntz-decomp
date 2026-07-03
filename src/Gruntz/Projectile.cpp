@@ -218,9 +218,9 @@ CProjectile::CProjectile(CGameObject* owner) : CMovingLogic(owner) {
     m_158 = (i32)owner->m_7c;
     m_sprite->m_08 |= 0x2000002;
     m_sprite->m_40 |= 1;
-    if (m_object->m_74 != 0xcf850) {
-        m_object->m_74 = 0xcf850;
-        m_object->m_08 |= 0x20000;
+    if (m_object->m_latchedAnimId != 0xcf850) {
+        m_object->m_latchedAnimId = 0xcf850;
+        m_object->m_flags |= 0x20000;
     }
     memset(&m_frame1, 0, 0x1c); // zero the seven +0x1e0..+0x1fb sprite-frame slots
     m_sound = 0;
@@ -342,8 +342,8 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
     m_ownerId = t1;
 
     CGameObject* owner = m_object;
-    double dx = (double)(m_targetX - owner->m_5c);
-    double dy = (double)(m_targetY - owner->m_60);
+    double dx = (double)(m_targetX - owner->m_screenX);
+    double dy = (double)(m_targetY - owner->m_screenY);
     i32 count = 1;
 
     switch (kind) {
@@ -401,11 +401,11 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
             );
             LaunchSound("GRUNTZ_WINGZGRUNT_WINGZGRUNTLOOP");
             m_isArcing = 0;
-            i32 ddx = (m_targetX >> 5) - (owner->m_5c >> 5);
+            i32 ddx = (m_targetX >> 5) - (owner->m_screenX >> 5);
             if (ddx < 0) {
                 ddx = -ddx;
             }
-            i32 ddy = (m_targetY >> 5) - (owner->m_60 >> 5);
+            i32 ddy = (m_targetY >> 5) - (owner->m_screenY >> 5);
             if (ddy < 0) {
                 ddy = -ddy;
             }
@@ -480,13 +480,14 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
         m_roundYHi = 0;
     }
     m_flightDist = len < 0.0 ? -len : len;
-    m_curX = owner->m_5c;
-    m_curY = owner->m_60;
+    m_curX = owner->m_screenX;
+    m_curY = owner->m_screenY;
     m_arrived = 0;
 
     // Spawn the LightFx shadow companion + activate its two frames.
     CProjSpriteFactory* factory = (CProjSpriteFactory*)g_gameReg->m_world->m_8;
-    m_shadow = factory->CreateSprite(0, owner->m_5c, owner->m_60, 0xcf84f, "LightFx", 0x2040003);
+    m_shadow =
+        factory->CreateSprite(0, owner->m_screenX, owner->m_screenY, 0xcf84f, "LightFx", 0x2040003);
     if (m_shadow != 0) {
         m_shadow->m_7c->Init(m_shadow);
         m_shadow->m_7c->m_18->Activate(key + "_SHADOW", key + "1", 5, 1);
@@ -669,8 +670,8 @@ void CProjectile::LoadProjectileEffects() {
     if (m_kind == 0x16) { // WINGZ: loop the flight sound while over the level
         CGameObject* owner = m_object;
         CGameRegistry* reg = g_gameReg;
-        if (owner->m_5c < reg->m_viewOriginR && owner->m_5c >= reg->m_viewOriginL
-            && owner->m_60 < reg->m_viewOriginB && owner->m_60 >= reg->m_viewOriginT) {
+        if (owner->m_screenX < reg->m_viewOriginR && owner->m_screenX >= reg->m_viewOriginL
+            && owner->m_screenY < reg->m_viewOriginB && owner->m_screenY >= reg->m_viewOriginT) {
             LaunchSound("GRUNTZ_WINGZGRUNT_PROJECTILELOOP");
         } else if (m_sound != 0) {
             m_sound->StopAndRewind();
@@ -769,8 +770,8 @@ void CProjectile::LoadProjectileEffects() {
                 }
             }
         }
-        m_object->m_5c = offX + m_curX;
-        m_object->m_60 = offY + m_curY;
+        m_object->m_screenX = offX + m_curX;
+        m_object->m_screenY = offY + m_curY;
         if (m_shadow != 0) {
             m_shadow->m_5c = localX;
             m_shadow->m_60 = yRes;
@@ -896,8 +897,8 @@ void CProjectile::StepMotion() {
     if (m_launched == 0) {
         if (m_phase > g_projPhase0) {
             // launch frame: snap render objects to the muzzle, mark launched.
-            m_object->m_5c = m_targetX;
-            m_object->m_60 = m_targetY;
+            m_object->m_screenX = m_targetX;
+            m_object->m_screenY = m_targetY;
             if (m_shadow != 0) {
                 m_shadow->m_5c = m_targetX;
                 m_shadow->m_60 = m_targetY;
@@ -928,8 +929,8 @@ step:
     m_posX = px;
     m_posY = py;
     m_phase = px;
-    m_object->m_5c = (i32)m_posX;
-    m_object->m_60 = (i32)m_posY;
+    m_object->m_screenX = (i32)m_posX;
+    m_object->m_screenY = (i32)m_posY;
     if (m_shadow != 0) {
         m_shadow->m_5c = (i32)m_posX;
         m_shadow->m_60 = (i32)m_posY;
@@ -955,14 +956,14 @@ step:
 // ---------------------------------------------------------------------------
 RVA(0x000e0b10, 0x1bd)
 void CProjectile::ScanTargets(i32 impact) {
-    i32 tileY = 0;                       // [esp+0x10]  outer (row) counter
-    i32 projXlo = m_object->m_5c - 0x10; // [esp+0x1c]  m_10 = owner CGameObject
-    i32 projYlo = m_object->m_60 - 0x10; // [esp+0x20]
-    i32 projXhi = projXlo + 0x20;        // [esp+0x24]
-    i32 projYhi = projYlo + 0x20;        // [esp+0x28]
-    i32 rowBase = 0x1c;                  // [esp+0x18]  row byte stride base
-    i32 colOff;                          // [esp+0x14]
-    i32 col;                             // ebp
+    i32 tileY = 0;                            // [esp+0x10]  outer (row) counter
+    i32 projXlo = m_object->m_screenX - 0x10; // [esp+0x1c]  m_10 = owner CGameObject
+    i32 projYlo = m_object->m_screenY - 0x10; // [esp+0x20]
+    i32 projXhi = projXlo + 0x20;             // [esp+0x24]
+    i32 projYhi = projYlo + 0x20;             // [esp+0x28]
+    i32 rowBase = 0x1c;                       // [esp+0x18]  row byte stride base
+    i32 colOff;                               // [esp+0x14]
+    i32 col;                                  // ebp
     do {
         col = 0;
         colOff = rowBase;

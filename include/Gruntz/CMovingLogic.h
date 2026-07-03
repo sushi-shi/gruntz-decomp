@@ -192,8 +192,8 @@ inline CMovingLogic::CMovingLogic(CGameObject* owner) : CUserLogic(owner) {
         m_c8 = (double)hi1;
     }
     Motion()->SetParams(
-        (double)m_object->m_5c,
-        (double)m_object->m_60,
+        (double)m_object->m_screenX,
+        (double)m_object->m_screenY,
         0.0,
         (double)m_object->m_164,
         (double)m_object->m_168,

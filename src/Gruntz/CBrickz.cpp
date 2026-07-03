@@ -32,11 +32,11 @@ RVA(0x0010e800, 0x17d)
 CBrickz::CBrickz(CGameObject* obj) : CUserLogic(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
-    m_38->m_08 |= 2;
-    m_38->m_08 |= 1;
-    m_38->m_40 |= 1;
-    m_object->m_164 = m_object->m_5c >> 5;
-    m_object->m_168 = m_object->m_60 >> 5;
+    m_38->m_flags |= 2;
+    m_38->m_flags |= 1;
+    m_38->m_stateFlags |= 1;
+    m_object->m_164 = m_object->m_screenX >> 5;
+    m_object->m_168 = m_object->m_screenY >> 5;
     m_object->m_04 = (m_object->m_164 << 8) + m_object->m_168;
 }
 

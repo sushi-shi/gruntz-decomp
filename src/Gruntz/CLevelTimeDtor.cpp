@@ -20,7 +20,7 @@ CLevelTime::~CLevelTime() {}
 // /GX leaf-vptr re-stamp position + EH-state ids.
 RVA(0x0009b8b0, 0x18f)
 CLevelTime::CLevelTime(CGameObject* obj) : CUserLogic(obj) {
-    m_38->m_08 |= 2;
+    m_38->m_flags |= 2;
 }
 
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at

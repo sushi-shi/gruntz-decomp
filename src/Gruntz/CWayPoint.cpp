@@ -53,5 +53,5 @@ CWayPoint::~CWayPoint() {}
 // is the /GX leaf-vptr re-stamp position + EH-state ids.
 RVA(0x000ae3f0, 0x18f)
 CWayPoint::CWayPoint(CGameObject* obj) : CUserLogic(obj) {
-    m_38->m_40 |= 1;
+    m_38->m_stateFlags |= 1;
 }

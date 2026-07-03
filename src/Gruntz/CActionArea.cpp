@@ -22,14 +22,14 @@ CActionArea::CActionArea(CGameObject* obj) : CUserLogic(obj) {
     m_38->ApplyName("GAME_ACTIONAREA_RED");
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
-    if (m_object->m_74 != 6) {
-        m_object->m_74 = 6;
-        m_object->m_08 |= 0x20000;
+    if (m_object->m_latchedAnimId != 6) {
+        m_object->m_latchedAnimId = 6;
+        m_object->m_flags |= 0x20000;
     }
     m_54 = 1;
     m_60 = 0;
     m_64 = 0;
-    m_38->m_40 |= 1;
+    m_38->m_stateFlags |= 1;
 }
 
 // CActionArea::GetTypeTag (0x7f80) - vtable slot 2: the class's logic-type id

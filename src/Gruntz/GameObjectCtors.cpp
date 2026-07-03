@@ -328,10 +328,10 @@ RVA(0x000b49b0, 0xa8)
 CRainCloud::CRainCloud(CGameObject* obj) : CPathHazard(obj) {
     CGameObject* o = m_object;
     i32 n = g_gameReg->m_78->m_28;
-    o->m_58 = 1;
-    o->m_50 = 0x7;
-    o->m_4c = n;
-    m_savedGeoId = m_38->m_1b4;
+    o->m_drawActive = 1;
+    o->m_drawFillCmd = 0x7;
+    o->m_drawFillArg = n;
+    m_savedGeoId = m_38->m_geoId;
     m_38->ApplyLookupGeometry("LEVEL_RAINCLOUD", 0);
     m_object->m_144 = 1;
     m_object->m_14c = 1;
@@ -354,9 +354,9 @@ CRainCloud::CRainCloud(CGameObject* obj) : CPathHazard(obj) {
 RVA(0x000b4a90, 0x145)
 CUFO::CUFO(CGameObject* obj) : CPathHazard(obj) {
     CGameObject* o = m_object;
-    i32 sx = o->m_5c;
-    i32 sy = o->m_60;
-    m_savedGeoId = m_38->m_1b4;
+    i32 sx = o->m_screenX;
+    i32 sy = o->m_screenY;
+    m_savedGeoId = m_38->m_geoId;
     m_38->ApplyLookupGeometry("LEVEL_UFO", 0);
     for (i32 i = 0; i < 2; ++i) {
         CSpotLight* sl = g_gameReg->m_78->m_30->m_08.Spawn(0, sx, 0, 0, "SpotLight", 0x40003);
@@ -373,9 +373,9 @@ CUFO::CUFO(CGameObject* obj) : CPathHazard(obj) {
             sl->m_7c->m_18->m_owner = m_object;
         }
     }
-    m_object->m_58 = 1;
-    m_object->m_50 = 0x8;
-    m_object->m_54 = 0x80;
+    m_object->m_drawActive = 1;
+    m_object->m_drawFillCmd = 0x8;
+    m_object->m_fillFraction = 0x80;
     m_object->m_144 = 0;
     m_object->m_14c = 0;
     m_object->m_148 = 0;

@@ -278,7 +278,7 @@ struct CSlimeCtorObj {
 // re-stamp position. Not source-steerable (global regalloc/EH numbering).
 RVA(0x000b23a0, 0x3f8)
 CKitchenSlime::CKitchenSlime(CGameObject* obj) : CUserLogic(obj) {
-    m_38->m_08 |= 0x2000002;
+    m_38->m_flags |= 0x2000002;
 
     CSlimeCtorObj* o = (CSlimeCtorObj*)m_object;
     i32 snapX = (o->m_5c & ~0x1f) + 0x10;
@@ -297,7 +297,7 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj) : CUserLogic(obj) {
     o->m_164 = (o->m_164 << 5) + 0x10;
     o->m_168 = (o->m_168 << 5) + 0x10;
     if (o->m_5c == o->m_164 && o->m_60 == o->m_168) {
-        m_38->m_08 |= 0x10000;
+        m_38->m_flags |= 0x10000;
         return;
     }
     o->m_134 = (o->m_5c < o->m_164) ? o->m_5c : o->m_164;
@@ -324,11 +324,11 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj) : CUserLogic(obj) {
     m_stepMag = 0;
     m_stepMagHi = 0;
     if (LoadSprites() == 0) {
-        m_38->m_08 |= 0x10000;
+        m_38->m_flags |= 0x10000;
     }
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
-    m_savedGeoId = m_38->m_1b4;
+    m_savedGeoId = m_38->m_geoId;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     o->m_144 = 0;
     o->m_14c = 0;

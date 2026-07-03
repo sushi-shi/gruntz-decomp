@@ -95,10 +95,10 @@ i32 CGruntPowerupSprite::SetCell(i32 x, i32 y, i32 powerup) {
     m_powerupId = powerup;
     i32 rec = *(i32*)((char*)g_mgrSettings->m_78 + powerup * 4 + 0x14);
     CGameObject* r = m_object;
-    r->m_58 = 1;
-    r->m_50 = 7;
-    r->m_4c = rec;
-    m_38->m_40 &= ~1;
+    r->m_drawActive = 1;
+    r->m_drawFillCmd = 7;
+    r->m_drawFillArg = rec;
+    m_38->m_stateFlags &= ~1;
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
     return 1;
@@ -119,8 +119,8 @@ i32 CGruntPowerupSprite::Update() {
     ((CIndicatorSyncHelper*)((char*)m_38 + 0x1a0))->Sync(g_6bf3bc);
     CGruntEntry* e = ((CGruntEntry**)((char*)g_mgrSettings->m_68 + 0x1c))[m_cellX * 15 + m_cellY];
     if (e != 0) {
-        m_object->m_5c = e->m_10->m_5c;
-        m_object->m_60 = e->m_10->m_60;
+        m_object->m_screenX = e->m_10->m_5c;
+        m_object->m_screenY = e->m_10->m_60;
     }
     return 0;
 }
@@ -148,9 +148,9 @@ i32 CGruntPowerupSprite::Serialize(PupArchive* ar, i32 mode, i32 a3, i32 a4) {
             i32 id = m_powerupId;
             CGameObject* r = m_object;
             i32 v = *(i32*)((char*)g_mgrSettings->m_78 + id * 4 + 0x14);
-            r->m_58 = 1;
-            r->m_4c = v;
-            r->m_50 = 7;
+            r->m_drawActive = 1;
+            r->m_drawFillArg = v;
+            r->m_drawFillCmd = 7;
             break;
         }
     }

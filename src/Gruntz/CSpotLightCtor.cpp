@@ -80,10 +80,10 @@ RVA(0x000b1200, 0x2cb)
 CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
-    m_38->m_08 |= 2;
+    m_38->m_flags |= 2;
 
-    i32 ax = (m_object->m_5c & ~0x1f) + 0x10;
-    i32 cx = (m_object->m_60 & ~0x1f) + 0x10;
+    i32 ax = (m_object->m_screenX & ~0x1f) + 0x10;
+    i32 cx = (m_object->m_screenY & ~0x1f) + 0x10;
     m_70 = (double)ax;
     m_78 = (double)cx;
     i32 nx;
@@ -92,13 +92,13 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj) {
     } else {
         nx = ax - m_object->m_124 * 32;
     }
-    m_object->m_5c = nx;
-    m_object->m_60 = cx;
+    m_object->m_screenX = nx;
+    m_object->m_screenY = cx;
     m_60 = (double)nx;
     m_68 = m_78;
-    if (m_object->m_74 != 0xcf850) {
-        m_object->m_74 = 0xcf850;
-        m_object->m_08 |= 0x20000;
+    if (m_object->m_latchedAnimId != 0xcf850) {
+        m_object->m_latchedAnimId = 0xcf850;
+        m_object->m_flags |= 0x20000;
     }
     m_80 = m_70 - m_60;
     m_88 = m_78 - m_68;
@@ -119,9 +119,9 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj) {
         m_90 = 0;
     }
     i32 looked = g_mgrSettings->m_78->m_arr[m_object->m_11c];
-    m_object->m_58 = 1;
-    m_object->m_50 = 7;
-    m_object->m_4c = looked;
+    m_object->m_drawActive = 1;
+    m_object->m_drawFillCmd = 7;
+    m_object->m_drawFillArg = looked;
     m_98 = 0;
     m_object->m_144 = 0;
     m_object->m_14c = 0;

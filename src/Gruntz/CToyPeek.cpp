@@ -25,10 +25,10 @@ CToyPeek::CToyPeek(CGameObject* obj) : CUserLogic(obj) {
     m_60 = 0;
     m_5c = 0;
     m_64 = 0;
-    m_object->m_60 -= 0x18;
-    if (m_object->m_74 != 0xdbba0) {
-        m_object->m_74 = 0xdbba0;
-        m_object->m_08 |= 0x20000;
+    m_object->m_screenY -= 0x18;
+    if (m_object->m_latchedAnimId != 0xdbba0) {
+        m_object->m_latchedAnimId = 0xdbba0;
+        m_object->m_flags |= 0x20000;
     }
     m_38->ApplyLookupSprite("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", m_object->m_124);
     m_60 = 0x1388;

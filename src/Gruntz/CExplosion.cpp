@@ -29,11 +29,11 @@ CExplosion::CExplosion(CGameObject* obj) : CUserLogic(obj) {
     m_38->ApplyName("GAME_EXPLOSION");
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
-    m_38->m_08 |= 0x2000002;
+    m_38->m_flags |= 0x2000002;
     CGameObject* o = m_object;
-    if (o->m_74 != 0xf4240) {
-        o->m_74 = 0xf4240;
-        o->m_08 |= 0x20000;
+    if (o->m_latchedAnimId != 0xf4240) {
+        o->m_latchedAnimId = 0xf4240;
+        o->m_flags |= 0x20000;
     }
     m_object->m_38 = 0;
 }

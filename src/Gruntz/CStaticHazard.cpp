@@ -229,40 +229,40 @@ CStaticHazard::~CStaticHazard() {}
 RVA(0x000fb7a0, 0x2d4)
 CStaticHazard::CStaticHazard(CGameObject* obj) : CUserLogic(obj) {
     // re-arm the IDLE geometry + STATICHAZARD sprite (SetAnimEx idiom).
-    m_prevAnimNode = m_38->m_1b4;
+    m_prevAnimNode = m_38->m_geoId;
     m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDIDLE", 0);
     {
-        HazAnimDesc* d = (HazAnimDesc*)m_38->m_1b4;
+        HazAnimDesc* d = (HazAnimDesc*)m_38->m_geoId;
         HazAnimElem* e = d->m_count > 0 ? *d->m_elems : 0;
         m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_frameSeed);
     }
     // snap the bound object's screen position to tile center.
-    m_object->m_5c = (m_object->m_5c & ~0x1f) + 0x10;
-    m_object->m_60 = (m_object->m_60 & ~0x1f) + 0x10;
-    if (m_object->m_74 != 0) {
-        m_object->m_74 = 0;
-        m_object->m_08 |= 0x20000;
+    m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
+    m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
+    if (m_object->m_latchedAnimId != 0) {
+        m_object->m_latchedAnimId = 0;
+        m_object->m_flags |= 0x20000;
     }
-    m_tileCol = m_object->m_5c >> 5;
-    m_tileRow = m_object->m_60 >> 5;
-    m_object->m_128 = 0;
+    m_tileCol = m_object->m_screenX >> 5;
+    m_tileRow = m_object->m_screenY >> 5;
+    m_object->m_placeMode = 0;
     switch (((HazSwitchSrc*)g_gameReg->m_curState)->m_levelKind) {
         case 3:
         case 4:
         case 7:
         case 8:
-            m_object->m_128 = m_object->m_60 + 0x186b0;
+            m_object->m_placeMode = m_object->m_screenY + 0x186b0;
             break;
         default:
             break;
     }
-    m_object->m_144 = m_object->m_5c - 7;
+    m_object->m_144 = m_object->m_screenX - 7;
     m_object->m_14c = m_object->m_144 + 14;
-    m_object->m_148 = m_object->m_60 - 7;
+    m_object->m_148 = m_object->m_screenY - 7;
     m_object->m_150 = m_object->m_148 + 14;
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
-    m_38->m_08 |= 0x2000002;
+    m_38->m_flags |= 0x2000002;
     ((WwdAnimSub*)((char*)m_object + 0x1a0))->m_2c = 0;
     m_object->m_124 = g_64553c;
     m_activeWindow = 0;
@@ -372,10 +372,10 @@ i32 CStaticHazard::LoadAttributes2() {
         return 0;
     }
     m_fired = 1;
-    m_prevAnimNode = m_38->m_1b4;
+    m_prevAnimNode = m_38->m_geoId;
     m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDGO", 0);
     {
-        HazAnimDesc* d = (HazAnimDesc*)m_38->m_1b4;
+        HazAnimDesc* d = (HazAnimDesc*)m_38->m_geoId;
         HazAnimElem* e = d->m_count > 0 ? *d->m_elems : 0;
         m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_frameSeed);
     }
@@ -409,16 +409,16 @@ i32 CStaticHazard::LoadAttributes() {
             // re-arm IDLE (cache the anim-set node first)
             m_prevAnimSetNode = m_objAux->m_1c;
             m_objAux->m_1c = g_buteTree.Find("A");
-            m_prevAnimNode = m_38->m_1b4;
+            m_prevAnimNode = m_38->m_geoId;
             m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDIDLE", 0);
             {
-                HazAnimDesc* d = (HazAnimDesc*)m_38->m_1b4;
+                HazAnimDesc* d = (HazAnimDesc*)m_38->m_geoId;
                 HazAnimElem* e = d->m_count > 0 ? *d->m_elems : 0;
                 m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_frameSeed);
             }
-            if (m_object->m_74 != 0) {
-                m_object->m_74 = 0;
-                m_object->m_08 |= 0x20000;
+            if (m_object->m_latchedAnimId != 0) {
+                m_object->m_latchedAnimId = 0;
+                m_object->m_flags |= 0x20000;
             }
             // clear the hazard cell's bit-0x8000000
             CTileGrid* grid = g_gameReg->m_tileGrid;
@@ -428,16 +428,16 @@ i32 CStaticHazard::LoadAttributes() {
             return 0;
         }
         // m_120 == 0: re-arm GO + clear the fired flag
-        m_prevAnimNode = m_38->m_1b4;
+        m_prevAnimNode = m_38->m_geoId;
         m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDGO", 0);
         {
-            HazAnimDesc* d = (HazAnimDesc*)m_38->m_1b4;
+            HazAnimDesc* d = (HazAnimDesc*)m_38->m_geoId;
             HazAnimElem* e = d->m_count > 0 ? *d->m_elems : 0;
             m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_frameSeed);
         }
-        if (m_object->m_74 != 0) {
-            m_object->m_74 = 0;
-            m_object->m_08 |= 0x20000;
+        if (m_object->m_latchedAnimId != 0) {
+            m_object->m_latchedAnimId = 0;
+            m_object->m_flags |= 0x20000;
         }
         m_fired = 0;
         return 0;
@@ -450,16 +450,16 @@ i32 CStaticHazard::LoadAttributes() {
             goto dispatch;
         }
         // turn on: re-arm GO, latch the fired flag
-        m_prevAnimNode = m_38->m_1b4;
+        m_prevAnimNode = m_38->m_geoId;
         m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDGO", 0);
         {
-            HazAnimDesc* d = (HazAnimDesc*)m_38->m_1b4;
+            HazAnimDesc* d = (HazAnimDesc*)m_38->m_geoId;
             HazAnimElem* e = d->m_count > 0 ? *d->m_elems : 0;
             m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_frameSeed);
         }
-        if (m_object->m_74 != 0) {
-            m_object->m_74 = 0;
-            m_object->m_08 |= 0x20000;
+        if (m_object->m_latchedAnimId != 0) {
+            m_object->m_latchedAnimId = 0;
+            m_object->m_flags |= 0x20000;
         }
         m_fired = 1;
         return 0;
@@ -468,13 +468,14 @@ i32 CStaticHazard::LoadAttributes() {
 dispatch:
     if (((WwdAnimSub*)((char*)m_38 + 0x1a0))->SetAnim(g_6bf3bc) == 2) {
         i32 a = 0, b = 0;
-        if (((HazGridMgr*)g_gameReg->m_68)->ScreenToCell(m_object->m_5c, m_object->m_60, &a, &b, 0)
+        if (((HazGridMgr*)g_gameReg->m_68)
+                ->ScreenToCell(m_object->m_screenX, m_object->m_screenY, &a, &b, 0)
             != 0) {
             ((HazGridMgr*)g_gameReg->m_68)->MarkCell(a, b, m_object->m_124, -1);
         }
-        if (m_object->m_74 != m_object->m_128) {
-            m_object->m_74 = m_object->m_128;
-            m_object->m_08 |= 0x20000;
+        if (m_object->m_latchedAnimId != m_object->m_placeMode) {
+            m_object->m_latchedAnimId = m_object->m_placeMode;
+            m_object->m_flags |= 0x20000;
         }
         CTileGrid* grid = g_gameReg->m_tileGrid;
         if ((u32)m_tileCol < (u32)grid->m_c && (u32)m_tileRow < (u32)grid->m_10) {
@@ -485,18 +486,18 @@ dispatch:
         if ((u32)m_tileCol < (u32)grid->m_c && (u32)m_tileRow < (u32)grid->m_10) {
             grid->m_8[m_tileRow][m_tileCol * 7] &= 0xf7ffffff;
         }
-        if (m_object->m_74 != 0) {
-            m_object->m_74 = 0;
-            m_object->m_08 |= 0x20000;
+        if (m_object->m_latchedAnimId != 0) {
+            m_object->m_latchedAnimId = 0;
+            m_object->m_flags |= 0x20000;
         }
     }
     {
         WwdAnimSub* sub = (WwdAnimSub*)((char*)m_38 + 0x1a0);
         if (sub->m_28 != 0 && sub->m_20 == 0) {
-            m_prevAnimNode = m_38->m_1b4;
+            m_prevAnimNode = m_38->m_geoId;
             m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDIDLE", 0);
             {
-                HazAnimDesc* d = (HazAnimDesc*)m_38->m_1b4;
+                HazAnimDesc* d = (HazAnimDesc*)m_38->m_geoId;
                 HazAnimElem* e = d->m_count > 0 ? *d->m_elems : 0;
                 m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_frameSeed);
             }

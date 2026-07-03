@@ -103,10 +103,10 @@ i32 CTileTriggerTransition::GetTypeTag() {
 // machine ordering). Body byte-identical otherwise.
 RVA(0x0010faf0, 0x128)
 CTileTriggerTransition::CTileTriggerTransition(CGameObject* obj) : CUserLogic(obj) {
-    m_38->m_08 |= 0x1000000;
-    if (m_object->m_74 != 0) {
-        m_object->m_74 = 0;
-        m_object->m_08 |= 0x20000;
+    m_38->m_flags |= 0x1000000;
+    if (m_object->m_latchedAnimId != 0) {
+        m_object->m_latchedAnimId = 0;
+        m_object->m_flags |= 0x20000;
     }
 }
 
@@ -163,11 +163,11 @@ void CTileTriggerTransition::RegisterActs() {
 // ---------------------------------------------------------------------------
 RVA(0x00110070, 0x71)
 i32 CTileTriggerTransition::ApplyAnimation(char* sprite, char* geom) {
-    m_activeAnimDesc = m_38->m_1b4;
+    m_activeAnimDesc = m_38->m_geoId;
     if (m_38->ApplyLookupGeometry(geom, 0) == 0) {
         return 0;
     }
-    CAnimDescColl* desc = (CAnimDescColl*)m_38->m_1b4;
+    CAnimDescColl* desc = (CAnimDescColl*)m_38->m_geoId;
     CAnimElem* elem = desc->m_10 > 0 ? *desc->m_c : 0;
     m_38->ApplyLookupSprite(sprite, elem->m_14);
     m_prevAnimSetNode = m_objAux->m_1c; // save the prev anim-set node (CUserLogic base field)

@@ -193,22 +193,22 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj) {
     m_74 = 0;
 
     // snap owner's screen pos to the 0x20 tile grid centre
-    obj->m_5c = (obj->m_5c & ~0x1f) + 0x10;
-    obj->m_60 = (obj->m_60 & ~0x1f) + 0x10;
+    obj->m_screenX = (obj->m_screenX & ~0x1f) + 0x10;
+    obj->m_screenY = (obj->m_screenY & ~0x1f) + 0x10;
 
-    if (obj->m_74 != 0x17318) {
-        obj->m_74 = 0x17318;
-        obj->m_08 |= 0x20000;
+    if (obj->m_latchedAnimId != 0x17318) {
+        obj->m_latchedAnimId = 0x17318;
+        obj->m_flags |= 0x20000;
     }
 
     // swap the aux bute node (save old into m_30) + seed the cycle geometry
     CGameObjAux* aux = m_objAux;
     m_prevAnimSetNode = aux->m_1c;
     aux->m_1c = g_buteTree.Find(s_iconKeyA);
-    m_savedGeoId = m_38->m_1b4;
+    m_savedGeoId = m_38->m_geoId;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
 
-    m_38->m_08 |= 2;
+    m_38->m_flags |= 2;
     SetupSprite(0);
 
     // second zero batch (retail @0x95ca1)
@@ -283,31 +283,31 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj) {
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ1") == 0) {
             m_object->m_124 = 0x14;
-            m_object->m_128 = 1;
+            m_object->m_placeMode = 1;
             IconLevelState* lvl = (IconLevelState*)g_gameReg->m_curState;
-            lvl->m_warpTarget[0] = m_object->m_5c;
-            lvl->m_warpTarget[1] = m_object->m_60;
+            lvl->m_warpTarget[0] = m_object->m_screenX;
+            lvl->m_warpTarget[1] = m_object->m_screenY;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ2") == 0) {
             m_object->m_124 = 0x14;
-            m_object->m_128 = 2;
+            m_object->m_placeMode = 2;
             IconLevelState* lvl = (IconLevelState*)g_gameReg->m_curState;
-            lvl->m_warpTarget[2] = m_object->m_5c;
-            lvl->m_warpTarget[3] = m_object->m_60;
+            lvl->m_warpTarget[2] = m_object->m_screenX;
+            lvl->m_warpTarget[3] = m_object->m_screenY;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ3") == 0) {
             m_object->m_124 = 0x14;
-            m_object->m_128 = 3;
+            m_object->m_placeMode = 3;
             IconLevelState* lvl = (IconLevelState*)g_gameReg->m_curState;
-            lvl->m_warpTarget[4] = m_object->m_5c;
-            lvl->m_warpTarget[5] = m_object->m_60;
+            lvl->m_warpTarget[4] = m_object->m_screenX;
+            lvl->m_warpTarget[5] = m_object->m_screenY;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ4") == 0) {
             m_object->m_124 = 0x14;
-            m_object->m_128 = 4;
+            m_object->m_placeMode = 4;
             IconLevelState* lvl = (IconLevelState*)g_gameReg->m_curState;
-            lvl->m_warpTarget[6] = m_object->m_5c;
-            lvl->m_warpTarget[7] = m_object->m_60;
+            lvl->m_warpTarget[6] = m_object->m_screenX;
+            lvl->m_warpTarget[7] = m_object->m_screenY;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_WELDERZ") == 0) {
             m_object->m_124 = 0x15;
@@ -387,28 +387,28 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj) {
             glitter = 2;
         } else if (strcmp(name, "GAME_INGAMEICONZ_SECRETW") == 0) {
             if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_134 == 1) {
-                m_38->m_08 |= 0x10000;
+                m_38->m_flags |= 0x10000;
                 return;
             }
             m_object->m_124 = 0x5a;
             SetupSprite("GAME_POWERUP");
         } else if (strcmp(name, "GAME_INGAMEICONZ_SECRETA") == 0) {
             if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_134 == 1) {
-                m_38->m_08 |= 0x10000;
+                m_38->m_flags |= 0x10000;
                 return;
             }
             m_object->m_124 = 0x5b;
             SetupSprite("GAME_POWERUP");
         } else if (strcmp(name, "GAME_INGAMEICONZ_SECRETR") == 0) {
             if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_134 == 1) {
-                m_38->m_08 |= 0x10000;
+                m_38->m_flags |= 0x10000;
                 return;
             }
             m_object->m_124 = 0x5c;
             SetupSprite("GAME_POWERUP");
         } else if (strcmp(name, "GAME_INGAMEICONZ_SECRETP") == 0) {
             if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_134 == 1) {
-                m_38->m_08 |= 0x10000;
+                m_38->m_flags |= 0x10000;
                 return;
             }
             m_object->m_124 = 0x5d;
@@ -450,7 +450,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj) {
         i32 target = g_buteMgr.GetInt((char*)"WarpStone", (char*)(const char*)levelStr);
         EngFmt(&warpName, "GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ%i", target);
         m_object->ApplyName((const char*)warpName);
-        m_object->m_128 = target;
+        m_object->m_placeMode = target;
     }
 
     // glitter overlay sprite for the powerup / curse groups
@@ -458,8 +458,8 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj) {
         IconSpriteFactory* fac = (IconSpriteFactory*)g_gameReg->m_world->m_8;
         CGameObject* fx = fac->CreateSprite(
             0,
-            m_object->m_5c,
-            m_object->m_60,
+            m_object->m_screenX,
+            m_object->m_screenY,
             0x17319,
             "SimpleAnimation",
             0x40003
@@ -475,15 +475,15 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj) {
     }
 
     if (Check() == 0) {
-        m_38->m_08 |= 0x10000;
+        m_38->m_flags |= 0x10000;
         return;
     }
 
     // mark the owner's tile cell occupied (or clear the occupancy bit)
     i32 mv = *(i32*)((char*)m_object + 0x188);
     CTileGrid* grid = g_gameReg->m_tileGrid;
-    i32 col = m_object->m_5c >> 5;
-    i32 row = m_object->m_60 >> 5;
+    i32 col = m_object->m_screenX >> 5;
+    i32 row = m_object->m_screenY >> 5;
     if ((u32)col < (u32)grid->m_c && (u32)row < (u32)grid->m_10) {
         char* cell = (char*)grid->m_8[row] + col * 0x1c;
         *(i32*)(cell + 8) = mv;
@@ -494,7 +494,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj) {
             *(i32*)cell0 &= ~0x40000;
         }
     }
-    m_object->m_40 &= ~1;
+    m_object->m_stateFlags &= ~1;
 }
 
 // ===========================================================================
@@ -570,9 +570,9 @@ i32 CInGameIcon::HandleInput() {
         return 1;
     }
     CGameObject* o = m_object;
-    o->m_58 = 1;
-    o->m_50 = 0xa;
-    o->m_4c = rec;
+    o->m_drawActive = 1;
+    o->m_drawFillCmd = 0xa;
+    o->m_drawFillArg = rec;
     return 1;
 }
 
@@ -668,8 +668,8 @@ void RegisterIconState() {
 RVA(0x00098340, 0x71)
 i32 CInGameIcon::RefreshCell() {
     CGameObject* obj = m_object;
-    i32 tileY = obj->m_5c >> 5;
-    i32 tileX = (obj->m_60 + 0x18) >> 5;
+    i32 tileY = obj->m_screenX >> 5;
+    i32 tileX = (obj->m_screenY + 0x18) >> 5;
     i64 delta = (i64)(u32)g_iconDefault - *(i64*)&m_driftPos;
     if (delta < *(i64*)&m_driftThresh) {
         CTileGrid* grid = g_gameReg->m_tileGrid;
@@ -696,8 +696,8 @@ i32 CInGameIcon::RefreshCell() {
 // `[m_8[tileY] + eax + 8]=0` / `[m_8[tileY] + eax] &= ~0x40000` pair.
 static inline void ClearTileBit(CGameRegistry* reg, CGameObject* owner) {
     CTileGrid* grid = reg->m_tileGrid;
-    i32 tileX = owner->m_60 >> 5;
-    i32 tileY = owner->m_5c >> 5;
+    i32 tileX = owner->m_screenY >> 5;
+    i32 tileY = owner->m_screenX >> 5;
     if ((u32)tileY < (u32)grid->m_c && (u32)tileX < (u32)grid->m_10) {
         i32 rowByte = tileX * 4;
         i32 cellOff = (tileY * 8 - tileY) * 4;
@@ -757,8 +757,8 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
         }
         if (m_cmapId != 0) {
             CGameObject* o = m_object;
-            if (o->m_5c < reg->m_viewOriginR && o->m_5c >= reg->m_viewOriginL
-                && o->m_60 < reg->m_viewOriginB && o->m_60 >= reg->m_viewOriginT) {
+            if (o->m_screenX < reg->m_viewOriginR && o->m_screenX >= reg->m_viewOriginL
+                && o->m_screenY < reg->m_viewOriginB && o->m_screenY >= reg->m_viewOriginT) {
                 Eng_PostCmd(g_inputCtx, 0, 0, 0);
                 reg = g_gameReg;
             }
@@ -787,14 +787,14 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
     if (cmd == 0x14) {
         CIconRecord* placed = ((CIconRecord**)((char*)reg->m_68 + 0x1c))[idx];
         if (placed != 0) {
-            placed->m_38c = m_object->m_128;
+            placed->m_38c = m_object->m_placeMode;
             reg = g_gameReg;
         }
     }
     if (m_cmapId != 0) {
         CGameObject* o = m_object;
-        if (o->m_5c < reg->m_viewOriginR && o->m_5c >= reg->m_viewOriginL
-            && o->m_60 < reg->m_viewOriginB && o->m_60 >= reg->m_viewOriginT) {
+        if (o->m_screenX < reg->m_viewOriginR && o->m_screenX >= reg->m_viewOriginL
+            && o->m_screenY < reg->m_viewOriginB && o->m_screenY >= reg->m_viewOriginT) {
             Eng_PostCmd(g_inputCtx, 0, 0, 0);
             reg = g_gameReg;
         }

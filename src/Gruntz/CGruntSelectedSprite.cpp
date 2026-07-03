@@ -83,8 +83,8 @@ i32 CGruntSelectedSprite::Update() {
     CGruntEntry* e = ((CGruntEntry**)((char*)reg->m_68 + 0x1c))[m_cellX * 15 + m_cellY];
     if (e != 0 && e->m_1d8 != 0) {
         ((CIndicatorSyncHelper*)((char*)m_38 + 0x1a0))->Sync(g_6bf3bc);
-        m_object->m_5c = e->m_10->m_5c;
-        m_object->m_60 = e->m_10->m_60;
+        m_object->m_screenX = e->m_10->m_5c;
+        m_object->m_screenY = e->m_10->m_60;
     }
     return 0;
 }

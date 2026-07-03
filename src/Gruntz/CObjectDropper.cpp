@@ -196,11 +196,11 @@ RVA(0x000c59f0, 0x3e3)
 CObjectDropper::CObjectDropper(CGameObject* obj) : CUserLogic(obj) {
     m_lastDropTime = 0;
     m_dropInterval = 0;
-    m_geomId = m_38->m_1b4;
+    m_geomId = m_38->m_geoId;
     m_38->ApplyLookupGeometry("LEVEL_OBJECTDROPPER", 0);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
-    m_38->m_08 |= 0x2000002;
+    m_38->m_flags |= 0x2000002;
 
     CObjDropObj* o = (CObjDropObj*)m_object;
     i32 snapX = (o->m_screenX & ~0x1f) + 0x10;
@@ -345,7 +345,7 @@ i32 CObjectDropper::Update() {
         }
     }
 
-    m_object->m_5c = (i32)m_posX;
-    m_object->m_60 = (i32)m_posY;
+    m_object->m_screenX = (i32)m_posX;
+    m_object->m_screenY = (i32)m_posY;
     return 0;
 }

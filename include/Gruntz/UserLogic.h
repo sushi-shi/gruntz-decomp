@@ -91,10 +91,10 @@ extern void* g_animWorkerVtbl;
 SIZE_UNKNOWN(CGameObjLayer);
 struct CGameObjLayer {
     char m_pad00[0x10];
-    i32 m_10; // +0x10  z-clamp bound (eyecandy)
-    i32 m_14; // +0x14  z-clamp bound (eyecandy)
-    i32 m_18; // +0x18  layer base X (path/dropper screen-rect origin)
-    i32 m_1c; // +0x1c  layer base Y / base offset
+    i32 m_zClampLo; // +0x10  z-clamp bound (eyecandy)
+    i32 m_zClampHi; // +0x14  z-clamp bound (eyecandy)
+    i32 m_baseX;    // +0x18  layer base X (path/dropper screen-rect origin)
+    i32 m_1c;       // +0x1c  layer base Y / base offset
 };
 
 SIZE_UNKNOWN(CGameObject);
@@ -109,26 +109,26 @@ struct CGameObject {
     void EnsureWorker88(CGameObject* src);              // 0x150f90  (lazy worker @ +0x88, dispatch)
     void EnsureWorker90(CGameObject* src);              // 0x151070  (lazy worker @ +0x90, dispatch)
     char m_pad00[0x04];
-    i32 m_04; // +0x04
-    i32 m_08; // +0x08
-    i32 m_0c; // +0x0c
-    i32 m_10; // +0x10  (worker getters pass src->m_10 through slot 9)
+    i32 m_04;    // +0x04
+    i32 m_flags; // +0x08
+    i32 m_0c;    // +0x0c
+    i32 m_10;    // +0x10  (worker getters pass src->m_10 through slot 9)
     char m_pad14[0x38 - 0x14];
     i32 m_38; // +0x38
     char m_pad3c[0x40 - 0x3c];
-    i32 m_40; // +0x40
+    i32 m_stateFlags; // +0x40
     char m_pad44[0x4c - 0x44];
-    i32 m_4c; // +0x4c
-    i32 m_50; // +0x50  draw-fill command type (0xb = decay fill-bar)
-    i32 m_54; // +0x54  fill fraction (0..256)
-    i32 m_58; // +0x58  dirty/active flag
-    i32 m_5c; // +0x5c  screen x
-    i32 m_60; // +0x60  screen y
-    i32 m_64; // +0x64  captured config triple (checkpoint state slots 12..14)
-    i32 m_68; // +0x68
-    i32 m_6c; // +0x6c
+    i32 m_drawFillArg;  // +0x4c
+    i32 m_drawFillCmd;  // +0x50  draw-fill command type (0xb = decay fill-bar)
+    i32 m_fillFraction; // +0x54  fill fraction (0..256)
+    i32 m_drawActive;   // +0x58  dirty/active flag
+    i32 m_screenX;      // +0x5c  screen x
+    i32 m_screenY;      // +0x60  screen y
+    i32 m_64;           // +0x64  captured config triple (checkpoint state slots 12..14)
+    i32 m_68;           // +0x68
+    i32 m_6c;           // +0x6c
     char m_pad70[0x74 - 0x70];
-    i32 m_74; // +0x74
+    i32 m_latchedAnimId; // +0x74
     char m_pad78[0x7c - 0x78];
     CGameObjAux* m_7c; // +0x7c
     CAnimWorker* m_80; // +0x80  lazily-built worker (EnsureWorker80)
@@ -137,34 +137,34 @@ struct CGameObject {
     char m_pad8c[0x90 - 0x8c];
     CAnimWorker* m_90; // +0x90  lazily-built worker (EnsureWorker90)
     char m_pad94[0x114 - 0x94];
-    i32 m_114; // +0x114  (teleporter spawn: source-tile coordinate mirror)
-    i32 m_118; // +0x118  CSpotLight ctor: pi/0 mode gate
-    i32 m_11c; // +0x11c  CSpotLight ctor: settings-table index
-    i32 m_120; // +0x120  CSpotLight ctor: SpotLightTime override
-    i32 m_124; // +0x124  sprite-selector row key (leaf ctors pass it to ApplyLookupSprite)
-    i32 m_128; // +0x128  visibility/place mode (1 or 2; the on-screen gate discriminator)
-    i32 m_12c; // +0x12c  CSpotLight ctor: m_58 scale gate
-    i32 m_130; // +0x130  (CUFO ctor: seeds the spotlight's m_120)
-    i32 m_134; // +0x134  per-side tile-span config (checkpoint/voice/exit/slime bounds)
-    i32 m_138; // +0x138
-    i32 m_13c; // +0x13c
-    i32 m_140; // +0x140
-    i32 m_144; // +0x144  (CSpotLight ctor zeros 0x144/0x148/0x14c/0x150)
-    i32 m_148; // +0x148
-    i32 m_14c; // +0x14c
-    i32 m_150; // +0x150
-    i32 m_154; // +0x154  captured config block (checkpoint state slots 8..11)
-    i32 m_158; // +0x158
-    i32 m_15c; // +0x15c
-    i32 m_160; // +0x160
-    i32 m_164; // +0x164
-    i32 m_168; // +0x168
+    i32 m_114;       // +0x114  (teleporter spawn: source-tile coordinate mirror)
+    i32 m_118;       // +0x118  CSpotLight ctor: pi/0 mode gate
+    i32 m_11c;       // +0x11c  CSpotLight ctor: settings-table index
+    i32 m_120;       // +0x120  CSpotLight ctor: SpotLightTime override
+    i32 m_124;       // +0x124  sprite-selector row key (leaf ctors pass it to ApplyLookupSprite)
+    i32 m_placeMode; // +0x128  visibility/place mode (1 or 2; the on-screen gate discriminator)
+    i32 m_12c;       // +0x12c  CSpotLight ctor: m_58 scale gate
+    i32 m_130;       // +0x130  (CUFO ctor: seeds the spotlight's m_120)
+    i32 m_134;       // +0x134  per-side tile-span config (checkpoint/voice/exit/slime bounds)
+    i32 m_138;       // +0x138
+    i32 m_13c;       // +0x13c
+    i32 m_140;       // +0x140
+    i32 m_144;       // +0x144  (CSpotLight ctor zeros 0x144/0x148/0x14c/0x150)
+    i32 m_148;       // +0x148
+    i32 m_14c;       // +0x14c
+    i32 m_150;       // +0x150
+    i32 m_154;       // +0x154  captured config block (checkpoint state slots 8..11)
+    i32 m_158;       // +0x158
+    i32 m_15c;       // +0x15c
+    i32 m_160;       // +0x160
+    i32 m_164;       // +0x164
+    i32 m_168;       // +0x168
     char m_pad16c[0x188 - 0x16c];
     i32 m_188; // +0x188  object id (warlord battle-event id / game-object archive-cue id)
     char m_pad18c[0x198 - 0x18c];
-    CGameObjLayer* m_198; // +0x198
+    CGameObjLayer* m_layer; // +0x198
     char m_pad19c[0x1b4 - 0x19c];
-    i32 m_1b4; // +0x1b4
+    i32 m_geoId; // +0x1b4
     char m_pad1b8[0x1c0 - 0x1b8];
     i32 m_1c0; // +0x1c0  the +0x1a0 anim sub-mgr's idle flag  (sink+0x20)
     char m_pad1c4[0x1c8 - 0x1c4];

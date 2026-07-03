@@ -17,27 +17,27 @@ RVA(0x000ac870, 0x20e)
 CEyeCandyAni::CEyeCandyAni(CGameObject* obj) : CUserLogic(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
-    if (m_38->m_1b4 == 0) {
-        m_40 = m_38->m_1b4;
+    if (m_38->m_geoId == 0) {
+        m_40 = m_38->m_geoId;
         m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     }
     CGameObject* o = m_object;
-    if (o->m_74 == 0 && o->m_198 != 0) {
-        i32 v = o->m_198->m_1c + o->m_60 + 0x186a0;
-        if (o->m_74 != v) {
-            o->m_74 = v;
-            o->m_08 |= 0x20000;
+    if (o->m_latchedAnimId == 0 && o->m_layer != 0) {
+        i32 v = o->m_layer->m_1c + o->m_screenY + 0x186a0;
+        if (o->m_latchedAnimId != v) {
+            o->m_latchedAnimId = v;
+            o->m_flags |= 0x20000;
         }
     }
-    CGameObjLayer* aux = m_object->m_198;
+    CGameObjLayer* aux = m_object->m_layer;
     if (aux != 0) {
-        if (aux->m_10 >= g_buteMgr.GetInt("World", "BigActHeight")
-            || m_object->m_198->m_14 >= g_buteMgr.GetInt("World", "BigActHeight")) {
+        if (aux->m_zClampLo >= g_buteMgr.GetInt("World", "BigActHeight")
+            || m_object->m_layer->m_zClampHi >= g_buteMgr.GetInt("World", "BigActHeight")) {
             if (m_object->m_7c != 0) {
                 m_object->m_7c->m_08 &= ~6;
                 m_object->m_7c->m_08 |= 1;
-                m_38->m_08 &= ~0x1000002;
-                m_38->m_08 |= 0x800000;
+                m_38->m_flags &= ~0x1000002;
+                m_38->m_flags |= 0x800000;
             }
         }
     }

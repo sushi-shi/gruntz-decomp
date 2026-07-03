@@ -27,7 +27,7 @@ CGruntStartingPoint::CGruntStartingPoint(CGameObject* obj) : CUserLogic(obj) {
     m_38->ApplyName("GAME_EXIT");
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
-    m_38->m_08 |= 1;
-    m_38->m_08 |= 2;
-    m_38->m_40 |= 1;
+    m_38->m_flags |= 1;
+    m_38->m_flags |= 2;
+    m_38->m_stateFlags |= 1;
 }

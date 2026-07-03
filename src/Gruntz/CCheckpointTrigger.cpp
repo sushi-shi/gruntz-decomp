@@ -63,12 +63,12 @@ RVA(0x0010ee20, 0x27d)
 CCheckpointTrigger::CCheckpointTrigger(CGameObject* obj) : CUserLogic(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find(s_actKeyA);
-    m_38->m_08 |= 2;
-    m_38->m_08 |= 1;
-    i32 zk = m_object->m_198->m_1c + m_object->m_60 + 0x186a0;
-    if (m_object->m_74 != zk) {
-        m_object->m_74 = zk;
-        m_object->m_08 |= 0x20000;
+    m_38->m_flags |= 2;
+    m_38->m_flags |= 1;
+    i32 zk = m_object->m_layer->m_1c + m_object->m_screenY + 0x186a0;
+    if (m_object->m_latchedAnimId != zk) {
+        m_object->m_latchedAnimId = zk;
+        m_object->m_flags |= 0x20000;
     }
     memset(m_state, 0, sizeof(m_state));
     if (m_object->m_134 == 0x80000000) {

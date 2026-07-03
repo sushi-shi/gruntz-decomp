@@ -34,19 +34,19 @@ CGruntPuddle::~CGruntPuddle() {}
 // body byte-identical; residual is the /GX leaf-vptr re-stamp position + EH-state ids.
 RVA(0x00040490, 0x1ab)
 CGruntPuddle::CGruntPuddle(CGameObject* obj) : CUserLogic(obj) {
-    m_38->m_08 |= 2;
-    if (m_object->m_74 != 0xa) {
-        m_object->m_74 = 0xa;
-        m_object->m_08 |= 0x20000;
+    m_38->m_flags |= 2;
+    if (m_object->m_latchedAnimId != 0xa) {
+        m_object->m_latchedAnimId = 0xa;
+        m_object->m_flags |= 0x20000;
     }
     m_38->ApplyName("GRUNTZ_GRUNTPUDDLE");
-    m_40 = m_38->m_1b4;
+    m_40 = m_38->m_geoId;
     m_38->ApplyLookupGeometry("GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE1", 0);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
-    m_38->m_40 |= 1;
-    m_object->m_5c = (m_object->m_5c & ~0x1f) + 0x10;
-    m_object->m_60 = (m_object->m_60 & ~0x1f) + 0x10;
+    m_38->m_stateFlags |= 1;
+    m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
+    m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
     m_5c = 1;
     m_60 = 0;
 }
@@ -73,8 +73,8 @@ CGruntPuddle::CGruntPuddle(CGameObject* obj) : CUserLogic(obj) {
 RVA(0x00040c30, 0xb3)
 i32 CGruntPuddle::Place(i32 a0, i32 a1, i32 a2, i32 a3) {
     CGameObject* o = m_object;
-    m_54 = o->m_5c >> 5;
-    m_58 = o->m_60 >> 5;
+    m_54 = o->m_screenX >> 5;
+    m_58 = o->m_screenY >> 5;
     m_64 = a3;
     m_68 = a0;
     m_6c = a1;
@@ -89,7 +89,7 @@ i32 CGruntPuddle::Place(i32 a0, i32 a1, i32 a2, i32 a3) {
     if (a1 == 0) {
         m_60 = 1;
         m_5c = 0;
-        m_40 = m_38->m_1b4;
+        m_40 = m_38->m_geoId;
         m_38->ApplyLookupGeometry(g_puddleSpriteKey, 0);
     }
     return 1;

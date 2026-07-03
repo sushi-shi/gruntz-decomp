@@ -55,13 +55,13 @@ extern CStatusBarSpriteActReg g_statusBarSpriteActReg; // 0x64e670
 RVA(0x0010c230, 0x178)
 CStatusBarSprite::CStatusBarSprite(CGameObject* obj) : CUserLogic(obj) {
     m_38->ApplyName("GAME_STATUSBARSPRITE");
-    m_40 = m_38->m_1b4;
+    m_40 = m_38->m_geoId;
     m_38->ApplyLookupGeometry("GAME_SINGLEIMAGEANI", 0);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find(s_actKeyA);
-    if (m_object->m_74 != 0xf4240) {
-        m_object->m_74 = 0xf4240;
-        m_object->m_08 |= 0x20000;
+    if (m_object->m_latchedAnimId != 0xf4240) {
+        m_object->m_latchedAnimId = 0xf4240;
+        m_object->m_flags |= 0x20000;
     }
 }
 

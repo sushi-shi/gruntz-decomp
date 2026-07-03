@@ -190,11 +190,11 @@ CRollingBall::CRollingBall(CGameObject* obj) : CUserLogic(obj) {
     m_explodeWindowLo = 0;
     m_explodeStartHi = 0;
     m_explodeWindowHi = 0;
-    m_savedGeoId = m_38->m_1b4;
+    m_savedGeoId = m_38->m_geoId;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
-    m_38->m_08 |= 0x2000002;
+    m_38->m_flags |= 0x2000002;
 
     CRbCtorObj* o = (CRbCtorObj*)m_object;
     i32 snapX = (o->m_5c & ~0x1f) + 0x10;

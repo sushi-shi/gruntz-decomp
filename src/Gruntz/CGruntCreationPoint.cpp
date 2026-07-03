@@ -93,12 +93,12 @@ extern CButeTree g_buteTree;
 // Not source-steerable (global regalloc). ~80%.
 RVA(0x0003e520, 0x1fd)
 CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj) : CUserLogic(obj) {
-    m_38->m_08 |= 2;
-    if (m_object->m_74 != 5) {
-        m_object->m_74 = 5;
-        m_object->m_08 |= 0x20000;
+    m_38->m_flags |= 2;
+    if (m_object->m_latchedAnimId != 5) {
+        m_object->m_latchedAnimId = 5;
+        m_object->m_flags |= 0x20000;
     }
-    m_40 = m_38->m_1b4;
+    m_40 = m_38->m_geoId;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
 
     i32 key = m_object->m_124;
@@ -108,16 +108,16 @@ CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj) : CUserLogic(obj) {
     } else if (g_gameReg->m_158[key * 71 + 3].m_idx != 0) {
         idx = g_gameReg->m_158[key * 71].m_idx;
     } else {
-        m_38->m_08 |= 0x10000;
+        m_38->m_flags |= 0x10000;
         idx = (i32)obj;
     }
     i32 sel = g_gameReg->m_74->GetSel(idx, 0);
 
-    m_object->m_58 = 1;
-    m_object->m_50 = 0xa;
-    m_object->m_4c = sel;
-    m_object->m_5c = (m_object->m_5c & ~0x1f) + 0x10;
-    m_object->m_60 = (m_object->m_60 & ~0x1f) + 0x10;
+    m_object->m_drawActive = 1;
+    m_object->m_drawFillCmd = 0xa;
+    m_object->m_drawFillArg = sel;
+    m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
+    m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
 }

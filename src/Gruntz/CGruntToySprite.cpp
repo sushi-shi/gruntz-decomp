@@ -58,7 +58,7 @@ RVA(0x0007f920, 0x21)
 i32 CGruntToySprite::SetCell(i32 x, i32 y) {
     m_cellX = x;
     m_cellY = y;
-    m_38->m_40 &= ~1;
+    m_38->m_stateFlags &= ~1;
     return 1;
 }
 
@@ -88,7 +88,7 @@ i32 CGruntToySprite::Update() {
             r->m_190 = layer;
         }
     }
-    m_object->m_5c = e->m_10->m_5c;
-    m_object->m_60 = e->m_10->m_60 - 0x20;
+    m_object->m_screenX = e->m_10->m_5c;
+    m_object->m_screenY = e->m_10->m_60 - 0x20;
     return 0;
 }

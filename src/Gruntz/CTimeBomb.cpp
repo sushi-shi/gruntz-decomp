@@ -195,15 +195,15 @@ extern TBombGameReg* g_gameReg;
 // for the final sweep.
 RVA(0x000e1b90, 0x23d)
 CTimeBomb::CTimeBomb(CGameObject* obj) : CUserLogic(obj) {
-    m_38->m_08 |= 0x2000002;
-    if (m_object->m_74 != 0xf) {
-        m_object->m_74 = 0xf;
-        m_object->m_08 |= 0x20000;
+    m_38->m_flags |= 0x2000002;
+    if (m_object->m_latchedAnimId != 0xf) {
+        m_object->m_latchedAnimId = 0xf;
+        m_object->m_flags |= 0x20000;
     }
     m_38->ApplyName("GAME_TIMEBOMB");
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
-    m_prevAnimNode = m_38->m_1b4;
+    m_prevAnimNode = m_38->m_geoId;
     if (m_object->m_120 > 0) {
         m_38->ApplyLookupGeometry("GAME_TIMEBOMBFAST", 0);
         m_durationLo = m_object->m_120;
@@ -219,8 +219,8 @@ CTimeBomb::CTimeBomb(CGameObject* obj) : CUserLogic(obj) {
         m_startTimeHi = 0;
         m_fastPhase = 0;
     }
-    i32 cx = m_object->m_5c >> 5;
-    i32 cy = m_object->m_60 >> 5;
+    i32 cx = m_object->m_screenX >> 5;
+    i32 cy = m_object->m_screenY >> 5;
     TBombGrid* g = g_gameReg->m_grid;
     if (cx < g->m_width && cy < g->m_height) {
         char* row = g->m_rows[cy];
@@ -289,8 +289,8 @@ extern "C" u32 g_6bf3bc;
 // clears. Same grid shape the ctor marks; the bounds compares are UNSIGNED.
 static inline i32 TBombGridCell(CGameObject* obj) {
     TBombGrid* g = g_gameReg->m_grid;
-    i32 cx = obj->m_5c >> 5;
-    i32 cy = obj->m_60 >> 5;
+    i32 cx = obj->m_screenX >> 5;
+    i32 cy = obj->m_screenY >> 5;
     if ((u32)cx < (u32)g->m_width && (u32)cy < (u32)g->m_height) {
         char* row = g->m_rows[cy];
         return *(i32*)(row + cx * 0x1c);
@@ -299,8 +299,8 @@ static inline i32 TBombGridCell(CGameObject* obj) {
 }
 static inline void TBombGridClear(CGameObject* obj) {
     TBombGrid* g = g_gameReg->m_grid;
-    i32 cx = obj->m_5c >> 5;
-    i32 cy = obj->m_60 >> 5;
+    i32 cx = obj->m_screenX >> 5;
+    i32 cy = obj->m_screenY >> 5;
     if ((u32)cx < (u32)g->m_width && (u32)cy < (u32)g->m_height) {
         char* row = g->m_rows[cy];
         *(i32*)(row + cx * 0x1c) &= ~0x1000000;
@@ -329,7 +329,7 @@ RVA(0x000e1e60, 0x1ac)
 i32 CTimeBomb::LoadAttributes() {
     i32 cell = TBombGridCell(m_object);
     if ((cell & 0x939) || (cell & 2)) {
-        m_38->m_08 |= 0x10000;
+        m_38->m_flags |= 0x10000;
         TBombGridClear(m_object);
         return 0;
     }
@@ -338,7 +338,7 @@ i32 CTimeBomb::LoadAttributes() {
         return 0;
     }
     if (m_fastPhase == 0) {
-        m_prevAnimNode = m_38->m_1b4;
+        m_prevAnimNode = m_38->m_geoId;
         m_38->ApplyLookupGeometry("GAME_TIMEBOMBFAST", 0);
         m_durationLo = (i32)g_buteMgr.GetDwordDef("Projectile", "TimeBombFastTime", 0x3e8);
         m_durationHi = 0;
@@ -347,8 +347,9 @@ i32 CTimeBomb::LoadAttributes() {
         m_fastPhase = 1;
         return 0;
     }
-    m_38->m_08 |= 0x10000;
+    m_38->m_flags |= 0x10000;
     TBombGridClear(m_object);
-    g_gameReg->m_tileMgr->NotifyMoveAt(m_object->m_5c, m_object->m_60, m_object->m_124, 1);
+    g_gameReg->m_tileMgr
+        ->NotifyMoveAt(m_object->m_screenX, m_object->m_screenY, m_object->m_124, 1);
     return 0;
 }

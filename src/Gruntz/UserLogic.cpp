@@ -652,8 +652,8 @@ CVoiceTrigger::CVoiceTrigger() {}
 RVA(0x00029a50, 0x15)
 void CUserLogic::GetScreenPos(ScreenPoint* out) {
     CGameObject* o = m_object;
-    i32 y = o->m_60;
-    i32 x = o->m_5c;
+    i32 y = o->m_screenY;
+    i32 x = o->m_screenX;
     out->x = x;
     out->y = y;
 }
@@ -663,7 +663,7 @@ RVA(0x00029a80, 0x29)
 i32 CUserLogic::IsAtSavedScreenPos() {
     CGameObject* o = m_object;
     i32 sx = *(i32*)((char*)this + 0x17c);
-    if (o->m_5c == sx && o->m_60 == *(i32*)((char*)this + 0x180)) {
+    if (o->m_screenX == sx && o->m_screenY == *(i32*)((char*)this + 0x180)) {
         return 1;
     }
     return 0;
@@ -677,13 +677,13 @@ CTeleporter::CTeleporter(CGameObject* obj) : CUserLogic(obj) {
     m_60 = 0;
     m_5c = 0;
     m_64 = 0;
-    m_38->m_08 |= 0x2000002;
-    if (m_object->m_74 != 0x1869f) {
-        m_object->m_74 = 0x1869f;
-        m_object->m_08 |= 0x20000;
+    m_38->m_flags |= 0x2000002;
+    if (m_object->m_latchedAnimId != 0x1869f) {
+        m_object->m_latchedAnimId = 0x1869f;
+        m_object->m_flags |= 0x20000;
     }
-    m_object->m_5c = (m_object->m_5c & ~0x1f) + 0x10;
-    m_object->m_60 = (m_object->m_60 & ~0x1f) + 0x10;
+    m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
+    m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
     EnterField1();
     EnterField2();
 }
@@ -692,16 +692,16 @@ CTeleporter::CTeleporter(CGameObject* obj) : CUserLogic(obj) {
 RVA(0x00041e90, 0x1ac)
 CSecretTeleporterTrigger::CSecretTeleporterTrigger(CGameObject* obj) : CUserLogic(obj) {
     if (g_gameReg->m_isEasyMode == 0 && g_gameReg->m_134 == 1) {
-        m_38->m_08 |= 0x10000;
+        m_38->m_flags |= 0x10000;
     } else {
-        m_object->m_5c = (m_object->m_5c & ~0x1f) + 0x10;
-        m_object->m_60 = (m_object->m_60 & ~0x1f) + 0x10;
-        if (m_object->m_74 != 0) {
-            m_object->m_74 = 0;
-            m_object->m_08 |= 0x20000;
+        m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
+        m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
+        if (m_object->m_latchedAnimId != 0) {
+            m_object->m_latchedAnimId = 0;
+            m_object->m_flags |= 0x20000;
         }
-        m_38->m_08 |= 2;
-        m_38->m_40 |= 1;
+        m_38->m_flags |= 2;
+        m_38->m_stateFlags |= 1;
         m_prevAnimSetNode = m_objAux->m_1c;
         m_objAux->m_1c = g_buteTree.Find("A");
         ((WwdGameRegAux*)g_gameReg->m_7c)->m_3c++;
@@ -766,18 +766,18 @@ void CSecretTeleporterTrigger::RegisterActs() {
 RVA(0x000424b0, 0x1a0)
 CSecretLevelTrigger::CSecretLevelTrigger(CGameObject* obj) : CUserLogic(obj) {
     if (g_gameReg->m_134 == 1 && g_gameReg->m_130 == 0) {
-        m_object->m_5c = (m_object->m_5c & ~0x1f) + 0x10;
-        m_object->m_60 = (m_object->m_60 & ~0x1f) + 0x10;
-        if (m_object->m_74 != 0) {
-            m_object->m_74 = 0;
-            m_object->m_08 |= 0x20000;
+        m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
+        m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
+        if (m_object->m_latchedAnimId != 0) {
+            m_object->m_latchedAnimId = 0;
+            m_object->m_flags |= 0x20000;
         }
-        m_38->m_08 |= 2;
-        m_38->m_40 |= 1;
+        m_38->m_flags |= 2;
+        m_38->m_stateFlags |= 1;
         m_prevAnimSetNode = m_objAux->m_1c;
         m_objAux->m_1c = g_buteTree.Find("A");
     } else {
-        m_38->m_08 |= 0x10000;
+        m_38->m_flags |= 0x10000;
     }
 }
 
@@ -791,7 +791,8 @@ RVA(0x00042b80, 0x153)
 i32 CSecretTeleporterTrigger::SpawnTeleporter() {
     i32 loc0, loc4;
     CGameObject* o = m_object;
-    CTrigger* hit = ((CTriggerProbe*)g_gameReg->m_68)->Probe(o->m_5c, o->m_60, &loc0, &loc4, 1);
+    CTrigger* hit =
+        ((CTriggerProbe*)g_gameReg->m_68)->Probe(o->m_screenX, o->m_screenY, &loc0, &loc4, 1);
     if (hit) {
         o = m_object;
         CTeleSpriteFactory* fac = ((CTeleResHolder*)g_gameReg->m_world)->m_8;
@@ -812,17 +813,17 @@ i32 CSecretTeleporterTrigger::SpawnTeleporter() {
             spr->m_120 = m_object->m_120;
             spr->m_114 = m_object->m_114;
             spr->m_118 = m_object->m_118;
-            spr->m_128 = 0;
+            spr->m_placeMode = 0;
             CGameObject* eo = hit->m_10;
             WwdGameReg* g = g_gameReg;
-            i32 ey = eo->m_60;
-            i32 ex = eo->m_5c;
+            i32 ey = eo->m_screenY;
+            i32 ex = eo->m_screenX;
             CViewRect* rc = (CViewRect*)(((CTeleResHolder*)g->m_world)->m_24->m_5c + 0x40);
             if (ex < rc->m_right && ex >= rc->m_left && ey < rc->m_bottom && ey >= rc->m_top) {
                 ((CTeleCueSink*)g->m_cueSink)->CueA(hit, 0x3fc, -1, 0, -1, -1);
             }
         }
-        m_38->m_08 |= 0x10000;
+        m_38->m_flags |= 0x10000;
     }
     return 0;
 }
@@ -839,10 +840,10 @@ RVA(0x00046ad0, 0x15e)
 CParticlez::CParticlez(CGameObject* obj) : CUserLogic(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
-    m_38->m_08 |= 0x2000002;
-    if (m_object->m_74 != 0xcf84f) {
-        m_object->m_74 = 0xcf84f;
-        m_object->m_08 |= 0x20000;
+    m_38->m_flags |= 0x2000002;
+    if (m_object->m_latchedAnimId != 0xcf84f) {
+        m_object->m_latchedAnimId = 0xcf84f;
+        m_object->m_flags |= 0x20000;
     }
     m_object->m_38 = 0;
 }
@@ -852,13 +853,13 @@ CGruntSelectedSprite::~CGruntSelectedSprite() {}
 RVA(0x0007e3e0, 0x178)
 CGruntSelectedSprite::CGruntSelectedSprite(CGameObject* obj) : CUserLogic(obj) {
     m_38->ApplyName("GAME_GRUNTSELECTEDSPRITE");
-    m_40 = m_38->m_1b4;
+    m_40 = m_38->m_geoId;
     m_38->ApplyLookupGeometry("GAME_GRUNTSELECTEDSPRITE", 0);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
-    if (m_object->m_74 != 0x14) {
-        m_object->m_74 = 0x14;
-        m_object->m_08 |= 0x20000;
+    if (m_object->m_latchedAnimId != 0x14) {
+        m_object->m_latchedAnimId = 0x14;
+        m_object->m_flags |= 0x20000;
     }
 }
 
@@ -869,9 +870,9 @@ CGruntHealthSprite::CGruntHealthSprite(CGameObject* obj) : CUserLogic(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
     m_5c = 0x64;
-    if (m_object->m_74 != 0xdbba0) {
-        m_object->m_74 = 0xdbba0;
-        m_object->m_08 |= 0x20000;
+    if (m_object->m_latchedAnimId != 0xdbba0) {
+        m_object->m_latchedAnimId = 0xdbba0;
+        m_object->m_flags |= 0x20000;
     }
     m_60 = -0x19;
 }
@@ -883,10 +884,10 @@ CGruntToySprite::CGruntToySprite(CGameObject* obj) : CUserLogic(obj) {
     m_38->ApplyLookupSprite("GAME_STATUSBAR_TABZ_STATZTAB_SMALL", 0);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
-    m_38->m_40 |= 1;
-    if (m_object->m_74 != 0xdbba0) {
-        m_object->m_74 = 0xdbba0;
-        m_object->m_08 |= 0x20000;
+    m_38->m_stateFlags |= 1;
+    if (m_object->m_latchedAnimId != 0xdbba0) {
+        m_object->m_latchedAnimId = 0xdbba0;
+        m_object->m_flags |= 0x20000;
     }
     m_5c = 0;
 }
@@ -896,22 +897,22 @@ CGruntPowerupSprite::~CGruntPowerupSprite() {}
 RVA(0x0007fdb0, 0x166)
 CGruntPowerupSprite::CGruntPowerupSprite(CGameObject* obj) : CUserLogic(obj) {
     m_38->ApplyName("GAME_LIGHTING_POWERUP");
-    m_40 = m_38->m_1b4;
+    m_40 = m_38->m_geoId;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
-    if (m_object->m_74 != 0x15) {
-        m_object->m_74 = 0x15;
-        m_object->m_08 |= 0x20000;
+    if (m_object->m_latchedAnimId != 0x15) {
+        m_object->m_latchedAnimId = 0x15;
+        m_object->m_flags |= 0x20000;
     }
-    m_38->m_40 |= 1;
+    m_38->m_stateFlags |= 1;
 }
 
 // --- CAniCycle (0x0aad20), vptr 0x5e86a4 ---
 CAniCycle::~CAniCycle() {}
 RVA(0x000aad20, 0x15c)
 CAniCycle::CAniCycle(CGameObject* obj) : CUserLogic(obj) {
-    m_38->m_08 |= 1;
-    if (m_38->m_1b4 == 0) {
-        m_40 = m_38->m_1b4;
+    m_38->m_flags |= 1;
+    if (m_38->m_geoId == 0) {
+        m_40 = m_38->m_geoId;
         m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     }
     m_prevAnimSetNode = m_objAux->m_1c;
@@ -931,8 +932,8 @@ CSingleFrameMessage::CSingleFrameMessage(CGameObject* obj) : CUserLogic(obj) {
     RECT bounds;
     RECT r;
     CopyRect(&r, g_gameReg->GetMessageBounds(&bounds));
-    m_object->m_5c = r.left + (r.right - r.left) / 2;
-    m_object->m_60 = r.top + (r.bottom - r.top) / 2;
+    m_object->m_screenX = r.left + (r.right - r.left) / 2;
+    m_object->m_screenY = r.top + (r.bottom - r.top) / 2;
 }
 
 // --- CSimpleAnimation (0x0ab940), vptr 0x5e8544 ---
@@ -941,15 +942,15 @@ RVA(0x000ab940, 0x1b8)
 CSimpleAnimation::CSimpleAnimation(CGameObject* obj) : CUserLogic(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
-    CGameObjLayer* aux = m_object->m_198;
+    CGameObjLayer* aux = m_object->m_layer;
     if (aux != 0) {
-        if (aux->m_10 >= g_buteMgr.GetInt("World", "BigActHeight")
-            || m_object->m_198->m_14 >= g_buteMgr.GetInt("World", "BigActHeight")) {
+        if (aux->m_zClampLo >= g_buteMgr.GetInt("World", "BigActHeight")
+            || m_object->m_layer->m_zClampHi >= g_buteMgr.GetInt("World", "BigActHeight")) {
             if (m_object->m_7c != 0) {
                 m_object->m_7c->m_08 &= ~6;
                 m_object->m_7c->m_08 |= 1;
-                m_38->m_08 &= ~0x1000002;
-                m_38->m_08 |= 0x800000;
+                m_38->m_flags &= ~0x1000002;
+                m_38->m_flags |= 0x800000;
             }
         }
     }
@@ -959,19 +960,19 @@ CSimpleAnimation::CSimpleAnimation(CGameObject* obj) : CUserLogic(obj) {
 CFrontCandy::~CFrontCandy() {}
 RVA(0x000abfa0, 0x1b6)
 CFrontCandy::CFrontCandy(CGameObject* obj) : CUserLogic(obj) {
-    if (m_object->m_74 != 0xf4240) {
-        m_object->m_74 = 0xf4240;
-        m_object->m_08 |= 0x20000;
+    if (m_object->m_latchedAnimId != 0xf4240) {
+        m_object->m_latchedAnimId = 0xf4240;
+        m_object->m_flags |= 0x20000;
     }
-    CGameObjLayer* aux = m_object->m_198;
+    CGameObjLayer* aux = m_object->m_layer;
     if (aux != 0) {
-        if (aux->m_10 >= g_buteMgr.GetInt("World", "BigActHeight")
-            || m_object->m_198->m_14 >= g_buteMgr.GetInt("World", "BigActHeight")) {
+        if (aux->m_zClampLo >= g_buteMgr.GetInt("World", "BigActHeight")
+            || m_object->m_layer->m_zClampHi >= g_buteMgr.GetInt("World", "BigActHeight")) {
             if (m_object->m_7c != 0) {
                 m_object->m_7c->m_08 &= ~6;
                 m_object->m_7c->m_08 |= 1;
-                m_38->m_08 &= ~0x1000002;
-                m_38->m_08 |= 0x800000;
+                m_38->m_flags &= ~0x1000002;
+                m_38->m_flags |= 0x800000;
             }
         }
     }
@@ -981,18 +982,18 @@ CFrontCandy::CFrontCandy(CGameObject* obj) : CUserLogic(obj) {
 CBehindCandy::~CBehindCandy() {}
 RVA(0x000ac3f0, 0x1b1)
 CBehindCandy::CBehindCandy(CGameObject* obj) : CUserLogic(obj) {
-    if (m_object->m_74 != 0) {
-        m_object->m_74 = 0;
-        m_object->m_08 |= 0x20000;
+    if (m_object->m_latchedAnimId != 0) {
+        m_object->m_latchedAnimId = 0;
+        m_object->m_flags |= 0x20000;
     }
-    if (m_object->m_198 != 0) {
-        if (m_object->m_198->m_10 >= g_buteMgr.GetInt("World", "BigActHeight")
-            || m_object->m_198->m_14 >= g_buteMgr.GetInt("World", "BigActHeight")) {
+    if (m_object->m_layer != 0) {
+        if (m_object->m_layer->m_zClampLo >= g_buteMgr.GetInt("World", "BigActHeight")
+            || m_object->m_layer->m_zClampHi >= g_buteMgr.GetInt("World", "BigActHeight")) {
             if (m_object->m_7c != 0) {
                 m_object->m_7c->m_08 &= ~6;
                 m_object->m_7c->m_08 |= 1;
-                m_38->m_08 &= ~0x1000002;
-                m_38->m_08 |= 0x800000;
+                m_38->m_flags &= ~0x1000002;
+                m_38->m_flags |= 0x800000;
             }
         }
     }
@@ -1003,22 +1004,22 @@ CEyeCandy::~CEyeCandy() {}
 RVA(0x000ac620, 0x1cf)
 CEyeCandy::CEyeCandy(CGameObject* obj) : CUserLogic(obj) {
     CGameObject* o = m_object;
-    if (o->m_74 == 0 && o->m_198 != 0) {
-        i32 v = o->m_198->m_1c + o->m_60 + 0x186a0;
-        if (o->m_74 != v) {
-            o->m_74 = v;
-            o->m_08 |= 0x20000;
+    if (o->m_latchedAnimId == 0 && o->m_layer != 0) {
+        i32 v = o->m_layer->m_1c + o->m_screenY + 0x186a0;
+        if (o->m_latchedAnimId != v) {
+            o->m_latchedAnimId = v;
+            o->m_flags |= 0x20000;
         }
     }
-    CGameObjLayer* aux = m_object->m_198;
+    CGameObjLayer* aux = m_object->m_layer;
     if (aux != 0) {
-        if (aux->m_10 >= g_buteMgr.GetInt("World", "BigActHeight")
-            || m_object->m_198->m_14 >= g_buteMgr.GetInt("World", "BigActHeight")) {
+        if (aux->m_zClampLo >= g_buteMgr.GetInt("World", "BigActHeight")
+            || m_object->m_layer->m_zClampHi >= g_buteMgr.GetInt("World", "BigActHeight")) {
             if (m_object->m_7c != 0) {
                 m_object->m_7c->m_08 &= ~6;
                 m_object->m_7c->m_08 |= 1;
-                m_38->m_08 &= ~0x1000002;
-                m_38->m_08 |= 0x800000;
+                m_38->m_flags &= ~0x1000002;
+                m_38->m_flags |= 0x800000;
             }
         }
     }
@@ -1064,13 +1065,13 @@ RVA(0x000acf40, 0x16e)
 CFrontCandyAni::CFrontCandyAni(CGameObject* obj) : CUserLogic(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
-    if (m_38->m_1b4 == 0) {
-        m_40 = m_38->m_1b4;
+    if (m_38->m_geoId == 0) {
+        m_40 = m_38->m_geoId;
         m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     }
-    if (m_object->m_74 != 0xf4240) {
-        m_object->m_74 = 0xf4240;
-        m_object->m_08 |= 0x20000;
+    if (m_object->m_latchedAnimId != 0xf4240) {
+        m_object->m_latchedAnimId = 0xf4240;
+        m_object->m_flags |= 0x20000;
     }
 }
 
@@ -1080,22 +1081,22 @@ RVA(0x000ad540, 0x1f0)
 CBehindCandyAni::CBehindCandyAni(CGameObject* obj) : CUserLogic(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
-    if (m_38->m_1b4 == 0) {
-        m_40 = m_38->m_1b4;
+    if (m_38->m_geoId == 0) {
+        m_40 = m_38->m_geoId;
         m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     }
-    if (m_object->m_74 != 0) {
-        m_object->m_74 = 0;
-        m_object->m_08 |= 0x20000;
+    if (m_object->m_latchedAnimId != 0) {
+        m_object->m_latchedAnimId = 0;
+        m_object->m_flags |= 0x20000;
     }
-    if (m_object->m_198 != 0) {
-        if (m_object->m_198->m_10 >= g_buteMgr.GetInt("World", "BigActHeight")
-            || m_object->m_198->m_14 >= g_buteMgr.GetInt("World", "BigActHeight")) {
+    if (m_object->m_layer != 0) {
+        if (m_object->m_layer->m_zClampLo >= g_buteMgr.GetInt("World", "BigActHeight")
+            || m_object->m_layer->m_zClampHi >= g_buteMgr.GetInt("World", "BigActHeight")) {
             if (m_object->m_7c != 0) {
                 m_object->m_7c->m_08 &= ~6;
                 m_object->m_7c->m_08 |= 1;
-                m_38->m_08 &= ~0x1000002;
-                m_38->m_08 |= 0x800000;
+                m_38->m_flags &= ~0x1000002;
+                m_38->m_flags |= 0x800000;
             }
         }
     }
@@ -1106,7 +1107,7 @@ CMenuSparkle::~CMenuSparkle() {}
 RVA(0x000adbe0, 0x178)
 CMenuSparkle::CMenuSparkle(CGameObject* obj) : CUserLogic(obj) {
     m_38->ApplyName("MENU_SPARKLE");
-    m_40 = m_38->m_1b4;
+    m_40 = m_38->m_geoId;
     m_38->ApplyLookupGeometry("MENU_FORWARD100", 0);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
@@ -1117,7 +1118,7 @@ CMenuSparkle::CMenuSparkle(CGameObject* obj) : CUserLogic(obj) {
 CSingleAnimation::~CSingleAnimation() {}
 RVA(0x000ae7f0, 0x13d)
 CSingleAnimation::CSingleAnimation(CGameObject* obj) : CUserLogic(obj) {
-    m_38->m_08 |= 2;
+    m_38->m_flags |= 2;
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
 }
@@ -1168,11 +1169,11 @@ void CSingleAnimation::RegisterActs() {
 CWarpStonePad::~CWarpStonePad() {}
 RVA(0x0010d650, 0x16c)
 CWarpStonePad::CWarpStonePad(CGameObject* obj) : CUserLogic(obj) {
-    m_38->m_08 |= 2;
-    m_38->m_08 |= 1;
+    m_38->m_flags |= 2;
+    m_38->m_flags |= 1;
     if (g_gameReg->m_134 == 1) {
-        m_38->m_40 |= 1;
-        m_38->m_08 |= 0x10000;
+        m_38->m_stateFlags |= 1;
+        m_38->m_flags |= 0x10000;
     }
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
@@ -1245,9 +1246,9 @@ RVA(0x0010dc40, 0x154)
 CTileTriggerSwitch::CTileTriggerSwitch(CGameObject* obj) : CUserLogic(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
-    m_38->m_08 |= 2;
-    m_38->m_08 |= 1;
-    m_38->m_40 |= 1;
+    m_38->m_flags |= 2;
+    m_38->m_flags |= 1;
+    m_38->m_stateFlags |= 1;
 }
 
 // --- CTileTriggerSwitch::InitActReg (0x10de20) ---
@@ -1297,11 +1298,11 @@ RVA(0x0010e220, 0x17d)
 CTileTrigger::CTileTrigger(CGameObject* obj) : CUserLogic(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
-    m_38->m_08 |= 2;
-    m_38->m_08 |= 1;
-    m_38->m_40 |= 1;
-    m_object->m_164 = m_object->m_5c >> 5;
-    m_object->m_168 = m_object->m_60 >> 5;
+    m_38->m_flags |= 2;
+    m_38->m_flags |= 1;
+    m_38->m_stateFlags |= 1;
+    m_object->m_164 = m_object->m_screenX >> 5;
+    m_object->m_168 = m_object->m_screenY >> 5;
     m_object->m_04 = (m_object->m_164 << 8) + m_object->m_168;
 }
 
@@ -1424,16 +1425,16 @@ CCoveredPowerup::CCoveredPowerup(CGameObject* obj) : CTileTrigger(obj) {}
 CToobSpikez::~CToobSpikez() {}
 RVA(0x001145c0, 0x18e)
 CToobSpikez::CToobSpikez(CGameObject* obj) : CUserLogic(obj) {
-    m_40 = m_38->m_1b4;
+    m_40 = m_38->m_geoId;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 2);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
-    m_38->m_08 |= 2;
-    m_object->m_164 = m_object->m_5c >> 5;
-    m_object->m_168 = m_object->m_60 >> 5;
-    if (m_object->m_74 != 0xc) {
-        m_object->m_74 = 0xc;
-        m_object->m_08 |= 0x20000;
+    m_38->m_flags |= 2;
+    m_object->m_164 = m_object->m_screenX >> 5;
+    m_object->m_168 = m_object->m_screenY >> 5;
+    if (m_object->m_latchedAnimId != 0xc) {
+        m_object->m_latchedAnimId = 0xc;
+        m_object->m_flags |= 0x20000;
     }
 }
 
@@ -1689,11 +1690,11 @@ i32 CGruntBehaviorLeaf::LoadGruntDecayConfig() {
     }
     if (m_drawState->m_1a0.Poke15c360(g_6bf3bc) == 1) {
         if (m_gruntSubState == 1 && m_gruntMode != 5) {
-            m_animCtrl->Method1073(m_object->m_5c, m_object->m_60, 1, m_animArg0);
+            m_animCtrl->Method1073(m_object->m_screenX, m_object->m_screenY, 1, m_animArg0);
         } else {
             m_animCtrl->Method3003(
-                m_object->m_5c,
-                m_object->m_60,
+                m_object->m_screenX,
+                m_object->m_screenY,
                 m_animArg0,
                 m_animArg2,
                 m_gruntMode != 5,
@@ -1716,9 +1717,9 @@ i32 CGruntBehaviorLeaf::LoadGruntDecayConfig() {
             m_animCtrl->Anim2a72(m_animArg0, m_animArg1, 0);
         }
         i32 dt = (i32)g_buteMgr.GetDwordDef("Grunt", "DecayTime", 0xbb8);
-        if (m_object->m_50 == 0xb) {
+        if (m_object->m_drawFillCmd == 0xb) {
             m_decayDurationLo = dt;
-            m_decayTimerLo = (i32)g_645588 - m_object->m_54 * dt / 256;
+            m_decayTimerLo = (i32)g_645588 - m_object->m_fillFraction * dt / 256;
             m_decayDurationHi = 0;
         } else {
             m_decayDurationLo = dt;
@@ -1730,9 +1731,9 @@ i32 CGruntBehaviorLeaf::LoadGruntDecayConfig() {
         u32 elapsed = e < 0 ? 0 : (u32)e;
         i32 r = (i32)((double)elapsed * 256.0
                       / (double)g_buteMgr.GetDwordDef("Grunt", "DecayTime", 0xbb8));
-        m_object->m_58 = 1;
-        m_object->m_50 = 0xb;
-        m_object->m_54 = r;
+        m_object->m_drawActive = 1;
+        m_object->m_drawFillCmd = 0xb;
+        m_object->m_fillFraction = r;
         return 0;
     }
     if (m_animSuppress == 0) {
@@ -1765,9 +1766,9 @@ i32 CGruntBehaviorLeaf::LoadGruntDecayConfig2() {
     u32 elapsed = e < 0 ? 0 : (u32)e;
     i32 r =
         (i32)((double)elapsed * 256.0 / (double)g_buteMgr.GetDwordDef("Grunt", "DecayTime", 0xbb8));
-    m_object->m_58 = 1;
-    m_object->m_50 = 0xb;
-    m_object->m_54 = r;
+    m_object->m_drawActive = 1;
+    m_object->m_drawFillCmd = 0xb;
+    m_object->m_fillFraction = r;
     return 0;
 }
 

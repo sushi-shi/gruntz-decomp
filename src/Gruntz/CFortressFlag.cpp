@@ -124,10 +124,10 @@ void CFortressFlag::HandleFortConquered() {}
 RVA(0x00045d30, 0x203)
 CFortressFlag::CFortressFlag(CGameObject* obj) : CUserLogic(obj) {
     CGameObject* o = m_object;
-    i32 v = o->m_198->m_1c + o->m_60 + 0x186a0;
-    if (o->m_74 != v) {
-        o->m_74 = v;
-        o->m_08 |= 0x20000;
+    i32 v = o->m_layer->m_1c + o->m_screenY + 0x186a0;
+    if (o->m_latchedAnimId != v) {
+        o->m_latchedAnimId = v;
+        o->m_flags |= 0x20000;
     }
     const char* name;
     switch (m_object->m_124) {
@@ -144,21 +144,21 @@ CFortressFlag::CFortressFlag(CGameObject* obj) : CUserLogic(obj) {
             name = "GAME_FORTRESSFLAGZ_VIKING";
             break;
         default:
-            m_38->m_08 |= 0x10000;
+            m_38->m_flags |= 0x10000;
             return;
     }
     m_38->ApplyName(name);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find(s_actKeyA);
-    m_prevAnimNode = m_38->m_1b4;
+    m_prevAnimNode = m_38->m_geoId;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
-    m_38->m_08 |= 3;
+    m_38->m_flags |= 3;
     i32 idx = ((WwdRefSlot*)((char*)g_gameReg + 0x158))[m_object->m_124 * 71].m_idx;
     i32 sel = g_gameReg->m_74->GetSel(idx, 0);
     CGameObject* spr = m_object;
-    spr->m_58 = 1;
-    spr->m_50 = 0xa;
-    spr->m_4c = sel;
+    spr->m_drawActive = 1;
+    spr->m_drawFillCmd = 0xa;
+    spr->m_drawFillArg = sel;
 }
 
 // CFortressFlag::InitActReg @0x046000 - construct the class's activation-
@@ -229,9 +229,9 @@ i32 CFortressFlag::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
         i32 idx = ((WwdRefSlot*)((char*)g_gameReg + 0x158))[spr->m_124 * 71].m_idx;
         i32 sel = g_gameReg->m_74->GetSel(idx, 0);
         spr = m_object;
-        spr->m_58 = 1;
-        spr->m_50 = 0xa;
-        spr->m_4c = sel;
+        spr->m_drawActive = 1;
+        spr->m_drawFillCmd = 0xa;
+        spr->m_drawFillArg = sel;
     }
     return 1;
 }

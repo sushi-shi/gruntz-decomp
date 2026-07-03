@@ -122,38 +122,38 @@ extern CGameRegistry* g_gameReg;
 RVA(0x00099110, 0x215)
 CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj) {
     if (g_gameReg->m_134 == 2) {
-        m_38->m_08 |= 0x10000;
+        m_38->m_flags |= 0x10000;
         return;
     }
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
-    m_40 = m_38->m_1b4;
+    m_40 = m_38->m_geoId;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     m_38->ApplyName("GAME_HELPBOX");
-    m_38->m_08 |= 2;
+    m_38->m_flags |= 2;
 
-    i32 vis = m_object->m_128;
+    i32 vis = m_object->m_placeMode;
     if (vis == 1) {
         if (g_gameReg->m_isEasyMode == 0) {
-            m_38->m_08 |= 0x10000;
+            m_38->m_flags |= 0x10000;
             return;
         }
         if (g_gameReg->m_134 != 1) {
-            m_38->m_08 |= 0x10000;
+            m_38->m_flags |= 0x10000;
             return;
         }
     } else if (vis == 2) {
         if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_134 == 1) {
-            m_38->m_08 |= 0x10000;
+            m_38->m_flags |= 0x10000;
             return;
         }
     }
 
-    m_object->m_5c = (m_object->m_5c & ~0x1f) + 0x10;
-    m_object->m_60 = (m_object->m_60 & ~0x1f) + 0x10;
-    if (m_object->m_74 != 0x17318) {
-        m_object->m_74 = 0x17318;
-        m_object->m_08 |= 0x20000;
+    m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
+    m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
+    if (m_object->m_latchedAnimId != 0x17318) {
+        m_object->m_latchedAnimId = 0x17318;
+        m_object->m_flags |= 0x20000;
     }
     m_54 = -1;
     m_58 = -1;

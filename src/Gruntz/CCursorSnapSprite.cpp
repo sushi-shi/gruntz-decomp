@@ -47,12 +47,12 @@ CCursorSnapSprite::~CCursorSnapSprite() {}
 RVA(0x0003a340, 0x16e)
 CCursorSnapSprite::CCursorSnapSprite(CGameObject* obj) : CUserLogic(obj) {
     m_38->ApplyName("GAME_CURSORSNAPSPRITE");
-    m_40 = m_38->m_1b4;
+    m_40 = m_38->m_geoId;
     m_38->ApplyLookupGeometry("GAME_SINGLEIMAGEANI", 0);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
-    m_38->m_08 |= 2;
-    m_38->m_40 |= 1;
+    m_38->m_flags |= 2;
+    m_38->m_stateFlags |= 1;
 }
 
 #include <rva.h>

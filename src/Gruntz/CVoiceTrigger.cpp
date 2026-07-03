@@ -201,16 +201,16 @@ CVoiceTrigger::~CVoiceTrigger() {}
 // source-steerable. Parked for the final sweep.
 RVA(0x00119b50, 0x1ce)
 CVoiceTrigger::CVoiceTrigger(CGameObject* obj) : CUserLogic(obj) {
-    m_38->m_08 |= 2;
-    m_38->m_40 |= 1;
+    m_38->m_flags |= 2;
+    m_38->m_stateFlags |= 1;
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find(s_actKeyA);
-    m_object->m_5c = (m_object->m_5c & ~0x1f) + 0x10;
-    m_object->m_60 = (m_object->m_60 & ~0x1f) + 0x10;
-    m_object->m_144 = m_object->m_5c - (m_object->m_134 << 5) - 7;
-    m_object->m_14c = m_object->m_5c + (m_object->m_13c << 5) + 7;
-    m_object->m_148 = m_object->m_60 - (m_object->m_138 << 5) - 7;
-    m_object->m_150 = m_object->m_60 + (m_object->m_140 << 5) + 7;
+    m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
+    m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
+    m_object->m_144 = m_object->m_screenX - (m_object->m_134 << 5) - 7;
+    m_object->m_14c = m_object->m_screenX + (m_object->m_13c << 5) + 7;
+    m_object->m_148 = m_object->m_screenY - (m_object->m_138 << 5) - 7;
+    m_object->m_150 = m_object->m_screenY + (m_object->m_140 << 5) + 7;
 }
 
 // CVoiceTrigger::InitActReg @0x11a320 - construct the trigger's OWN activation-
@@ -260,8 +260,8 @@ i32 CVoiceTrigger::Tick() {
     i32 outA, outB;
     CVoiceHit* hit = ((CVoiceSink*)g_gameReg->m_68)
                          ->QueryAt(
-                             m_object->m_5c,
-                             m_object->m_60,
+                             m_object->m_screenX,
+                             m_object->m_screenY,
                              &m_object->m_134,
                              &outA,
                              &outB,
@@ -274,8 +274,8 @@ i32 CVoiceTrigger::Tick() {
         if (hx < g_gameReg->m_viewOriginR && hx >= g_gameReg->m_viewOriginL
             && hy < g_gameReg->m_viewOriginB && hy >= g_gameReg->m_viewOriginT) {
             if (((CVoiceSink*)g_gameReg->m_cueSink)
-                    ->CueA(hit, m_object->m_124, m_object->m_128, 0, -1, -1)) {
-                m_38->m_08 |= 0x10000;
+                    ->CueA(hit, m_object->m_124, m_object->m_placeMode, 0, -1, -1)) {
+                m_38->m_flags |= 0x10000;
             }
         }
     }

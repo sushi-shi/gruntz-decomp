@@ -36,16 +36,16 @@ CDoNothing::~CDoNothing() {}
 // body byte-identical; residual is the /GX leaf-vptr re-stamp position + EH-state ids.
 RVA(0x000ac1d0, 0x1a5)
 CDoNothing::CDoNothing(CGameObject* obj) : CUserLogic(obj) {
-    m_38->m_08 |= 1;
-    CGameObjLayer* aux = m_object->m_198;
+    m_38->m_flags |= 1;
+    CGameObjLayer* aux = m_object->m_layer;
     if (aux != 0) {
-        if (aux->m_10 >= g_buteMgr.GetInt("World", "BigActHeight")
-            || m_object->m_198->m_14 >= g_buteMgr.GetInt("World", "BigActHeight")) {
+        if (aux->m_zClampLo >= g_buteMgr.GetInt("World", "BigActHeight")
+            || m_object->m_layer->m_zClampHi >= g_buteMgr.GetInt("World", "BigActHeight")) {
             if (m_object->m_7c != 0) {
                 m_object->m_7c->m_08 &= ~6;
                 m_object->m_7c->m_08 |= 1;
-                m_38->m_08 &= ~0x1000002;
-                m_38->m_08 |= 0x800000;
+                m_38->m_flags &= ~0x1000002;
+                m_38->m_flags |= 0x800000;
             }
         }
     }

@@ -291,7 +291,7 @@ void CWormhole::SpawnPartners() {
     if (g->m_1c8 == 0 || g->m_1c0 != 0) {
         return;
     }
-    g->m_08 |= 0x10000;
+    g->m_flags |= 0x10000;
 
     // The tile coords this wormhole occupies (read from m_10, the bound object).
     i32 tx = m_object->m_164;
@@ -331,18 +331,18 @@ void CWormhole::LoadColors() {
     // target keeps only esi = this).
     if (m_object->m_124 == 2) {
         // SECRET: fixed color id 1; falls through to the shared cache/index tail.
-        if (m_object->m_128 == 0) {
-            m_object->m_128 = g_buteMgr.GetIntDef(s_Wormhole, s_SecretColor, 1);
+        if (m_object->m_placeMode == 0) {
+            m_object->m_placeMode = g_buteMgr.GetIntDef(s_Wormhole, s_SecretColor, 1);
         }
     } else if (m_object->m_124 == 1) {
         // SINGLE-USE.
-        if (m_object->m_128 == 0) {
-            m_object->m_128 = g_buteMgr.GetIntDef(s_Wormhole, s_SingleUseColor, 2);
+        if (m_object->m_placeMode == 0) {
+            m_object->m_placeMode = g_buteMgr.GetIntDef(s_Wormhole, s_SingleUseColor, 2);
         }
     } else {
         // NORMAL (default).
-        if (m_object->m_128 == 0) {
-            m_object->m_128 = g_buteMgr.GetIntDef(s_Wormhole, s_NormalColor, 4);
+        if (m_object->m_placeMode == 0) {
+            m_object->m_placeMode = g_buteMgr.GetIntDef(s_Wormhole, s_NormalColor, 4);
         }
     }
 
@@ -352,10 +352,10 @@ void CWormhole::LoadColors() {
     // (== table[m_128 + 5]). Store order m_58 / m_50 / m_4c.
     CGameObject* s = m_object;
     i32* colorTable = ((i32**)g_gameReg)[0x78 / 4];
-    i32 colorEntry = colorTable[s->m_128 + 0x14 / 4];
-    s->m_58 = 1;
-    s->m_50 = 7;
-    s->m_4c = colorEntry;
+    i32 colorEntry = colorTable[s->m_placeMode + 0x14 / 4];
+    s->m_drawActive = 1;
+    s->m_drawFillCmd = 7;
+    s->m_drawFillArg = colorEntry;
 }
 
 extern char s_actKeyA[]; // "A" (0x60a454)
@@ -376,13 +376,13 @@ extern char s_actKeyA[]; // "A" (0x60a454)
 // CVoiceTrigger / CTimeBomb / the other bute ctors; not source-steerable.
 RVA(0x0003fc70, 0x1db)
 CWormhole::CWormhole(CGameObject* obj) : CUserLogic(obj) {
-    m_38->m_08 |= 0x2000002;
+    m_38->m_flags |= 0x2000002;
     m_38->ApplyName("GAME_WORMHOLE");
-    m_prevAnimNode = m_38->m_1b4;
+    m_prevAnimNode = m_38->m_geoId;
     m_38->ApplyLookupGeometry("GAME_WORMHOLE", 0);
-    if (m_object->m_74 != 0x1869f) {
-        m_object->m_74 = 0x1869f;
-        m_object->m_08 |= 0x20000;
+    if (m_object->m_latchedAnimId != 0x1869f) {
+        m_object->m_latchedAnimId = 0x1869f;
+        m_object->m_flags |= 0x20000;
     }
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find(s_actKeyA);
@@ -396,9 +396,9 @@ CWormhole::CWormhole(CGameObject* obj) : CUserLogic(obj) {
         color = colorTable[kind + 0x14 / 4];
     }
     CGameObject* s = m_object;
-    s->m_58 = 1;
-    s->m_50 = 7;
-    s->m_4c = color;
+    s->m_drawActive = 1;
+    s->m_drawFillCmd = 7;
+    s->m_drawFillArg = color;
 }
 
 // ---------------------------------------------------------------------------
@@ -434,9 +434,9 @@ i32 CWormhole::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
         }
         // Cache m_10 only for the store trio (retail reloads it into esi once here).
         CGameObject* s = m_object;
-        s->m_58 = 1;
-        s->m_50 = 7;
-        s->m_4c = color;
+        s->m_drawActive = 1;
+        s->m_drawFillCmd = 7;
+        s->m_drawFillArg = color;
     }
     return 1;
 }
@@ -451,13 +451,13 @@ extern char s_actKeyA[]; // "A" (0x60a454)
 RVA(0x000412c0, 0x63)
 i32 CWormhole::ReapplyConfig() {
     m_38->ApplyName("GAME_WORMHOLE");
-    m_prevAnimNode = m_38->m_1b4;
+    m_prevAnimNode = m_38->m_geoId;
     m_38->ApplyLookupGeometry("GAME_TELEPORTEROPEN", 0);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find(s_actKeyA);
     m_54 = 1;
     m_68 = 0;
-    m_38->m_40 &= ~1;
+    m_38->m_stateFlags &= ~1;
     return 1;
 }
 SIZE_UNKNOWN(CSpawnAux);

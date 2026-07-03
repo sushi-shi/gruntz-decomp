@@ -145,7 +145,7 @@ i32 CTeleporter::Begin() {
     m_64 = 0;
     m_58 = g_645588;
     m_5c = 0;
-    m_40 = m_38->m_1b4;
+    m_40 = m_38->m_geoId;
     m_object->ApplyLookupGeometry(g_teleporterGeoKey, 0);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find(g_iconBute);
@@ -176,9 +176,9 @@ i32 CTeleporter::Update() {
     CGameObject* a = m_38;
     if (a->m_1c8 != 0 && a->m_1c0 == 0) {
         if (m_object->m_124 == 1) {
-            a->m_08 |= 0x10000;
+            a->m_flags |= 0x10000;
         } else {
-            a->m_40 |= 1;
+            a->m_stateFlags |= 1;
         }
         return 0;
     }
@@ -187,8 +187,8 @@ i32 CTeleporter::Update() {
     if (m_68 == 0) {
         CGameObject* o = m_object;
         mgr = g_gameReg;
-        i32 y = o->m_60;
-        i32 x = o->m_5c;
+        i32 y = o->m_screenY;
+        i32 x = o->m_screenX;
         if (x < mgr->m_viewOriginR && x >= mgr->m_viewOriginL && y < mgr->m_viewOriginB
             && y >= mgr->m_viewOriginT) {
             ((CTeleIconTable*)mgr->m_68)->m_3fc = 1;
@@ -203,7 +203,7 @@ i32 CTeleporter::Update() {
     if (o->m_7c->m_bc != 0) {
         i64 delta = (i64)(u32)g_645588 - *(i64*)&m_58;
         if (delta >= *(i64*)&m_60) {
-            m_40 = m_38->m_1b4;
+            m_40 = m_38->m_geoId;
             m_38->ApplyLookupGeometry(g_teleporterCloseKey, 0);
             m_object->m_7c->m_bc = 0;
             m_68 = 1;
@@ -214,7 +214,7 @@ i32 CTeleporter::Update() {
     i32 outA;
     i32 outB;
     CTeleRecord* found =
-        ((CTeleIconTable*)mgr->m_68)->HitTestCell(o->m_5c, o->m_60, &outB, &outA, 1);
+        ((CTeleIconTable*)mgr->m_68)->HitTestCell(o->m_screenX, o->m_screenY, &outB, &outA, 1);
     if (found == 0) {
         return 0;
     }
@@ -222,7 +222,7 @@ i32 CTeleporter::Update() {
     if (m_object->m_124 == 2) {
         found->StepAnimDispatchA(m_object->m_164, m_object->m_168, 1, 1);
         ((CTeleMgrSub*)g_gameReg->m_7c)->m_28++;
-        m_40 = m_38->m_1b4;
+        m_40 = m_38->m_geoId;
         m_38->ApplyLookupGeometry(g_teleporterCloseKey, 0);
         CGameObject* s = m_object;
         CGameObject* spawned = (CGameObject*)((CTeleSpriteFactory*)g_gameReg->m_world->m_8)
@@ -236,7 +236,7 @@ i32 CTeleporter::Update() {
                                    );
         if (spawned != 0) {
             spawned->m_124 = 1;
-            spawned->m_128 = m_object->m_128;
+            spawned->m_placeMode = m_object->m_placeMode;
             spawned->m_164 = m_object->m_114;
             spawned->m_168 = m_object->m_118;
             spawned->m_7c->m_bc = 0;
@@ -252,11 +252,11 @@ i32 CTeleporter::Update() {
                                        g_wormholeSpawnKey,
                                        0x40003
                                    );
-        spawned->m_164 = m_object->m_5c;
-        spawned->m_168 = m_object->m_60;
-        spawned->m_124 = m_object->m_128;
+        spawned->m_164 = m_object->m_screenX;
+        spawned->m_168 = m_object->m_screenY;
+        spawned->m_124 = m_object->m_placeMode;
         found->StepAnimDispatchA(m_object->m_164, m_object->m_168, 0, 0);
-        m_40 = m_38->m_1b4;
+        m_40 = m_38->m_geoId;
         m_38->ApplyLookupGeometry(g_teleporterCloseKey, 0);
     }
 
@@ -274,7 +274,7 @@ i32 CTeleporter::Update() {
     }
     if (found == current && outB == g_curPlayer) {
         CGameObject* g = found->m_10;
-        ((CTeleScroller*)mgr->m_curState)->ResetGoals(g->m_5c, g->m_60);
+        ((CTeleScroller*)mgr->m_curState)->ResetGoals(g->m_screenX, g->m_screenY);
     }
     return 0;
 }

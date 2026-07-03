@@ -178,7 +178,7 @@ CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj) {
     *(i64*)&m_strikeDeadline = 0;
     *(i64*)&m_strikeWindow = 0;
 
-    m_38->m_08 |= 0x2000002;
+    m_38->m_flags |= 0x2000002;
 
     CPathCtorObj* o = (CPathCtorObj*)m_object;
     i32 snapX = (o->m_5c & ~0x1f) + 0x10;
@@ -239,11 +239,11 @@ CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj) {
     }
 
     if (StartPath() == 0) {
-        m_38->m_08 |= 0x10000;
+        m_38->m_flags |= 0x10000;
     } else {
         m_prevAnimSetNode = m_objAux->m_1c;
         m_objAux->m_1c = g_buteTree.Find("A");
-        m_savedGeoId = m_38->m_1b4;
+        m_savedGeoId = m_38->m_geoId;
         m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     }
 }
@@ -270,16 +270,17 @@ i32 CPathHazard::Tick() {
     // screen position, inset by the layer base (m_198->m_18/m_1c, re-read each
     // component as retail does) and a 7px margin.
     i32 rect[4];
-    rect[0] = obj->m_5c - obj->m_198->m_18 + 7;
-    rect[2] = obj->m_198->m_18 + obj->m_5c - 7;
-    rect[1] = obj->m_60 - obj->m_198->m_1c + 7;
-    rect[3] = obj->m_198->m_1c + obj->m_60 - 7;
+    rect[0] = obj->m_screenX - obj->m_layer->m_baseX + 7;
+    rect[2] = obj->m_layer->m_baseX + obj->m_screenX - 7;
+    rect[1] = obj->m_screenY - obj->m_layer->m_1c + 7;
+    rect[3] = obj->m_layer->m_1c + obj->m_screenY - 7;
 
     CGameRegistry* reg = g_pathGameReg;
     if (reg->m_isEasyMode == 0 || reg->m_134 != 1) {
         i32 outA, outB;
-        CPathEntity* ent = (CPathEntity*)((CPathCueGate*)reg->m_68)
-                               ->QueryAt(obj->m_5c, obj->m_60, &obj->m_144, &outA, &outB, rect);
+        CPathEntity* ent =
+            (CPathEntity*)((CPathCueGate*)reg->m_68)
+                ->QueryAt(obj->m_screenX, obj->m_screenY, &obj->m_144, &outA, &outB, rect);
         if (ent != 0 && ent->m_258 != 0x38) {
             if (g_pathGameReg->m_134 != 1 || outA != 0) {
                 CPathHazardVtbl* vt = *(CPathHazardVtbl**)this;
@@ -292,9 +293,9 @@ i32 CPathHazard::Tick() {
 
     CGameObject* m10 = m_object;
     i32 wx = m_wpX;
-    if (m10->m_5c == wx) {
+    if (m10->m_screenX == wx) {
         i32 wy = m_wpY;
-        if (m10->m_60 == wy) {
+        if (m10->m_screenY == wy) {
             // Arrived at the waypoint tile.
             m_posX = (double)wx;
             m_posY = (double)wy;
@@ -342,8 +343,8 @@ i32 CPathHazard::Tick() {
         }
     }
 
-    m_object->m_5c = newX;
-    m_object->m_60 = newY;
+    m_object->m_screenX = newX;
+    m_object->m_screenY = newY;
     return 0;
 }
 
@@ -374,27 +375,28 @@ i32 CLightningHazard::SiblingTick() {
             sel = 0;
         }
         CGameObject* o = m_object;
-        o->m_58 = 1;
-        o->m_50 = 7;
-        o->m_4c = ((i32*)g_lightGameReg->m_78)[sel + 5]; // [m_78 + sel*4 + 0x14]
+        o->m_drawActive = 1;
+        o->m_drawFillCmd = 7;
+        o->m_drawFillArg = ((i32*)g_lightGameReg->m_78)[sel + 5]; // [m_78 + sel*4 + 0x14]
     }
 
     ((CPathSubMgr*)((char*)m_38 + 0x1a0))->Advance(g_pathTick);
 
     CGameObject* obj = m_object;
     i32 rect[4];
-    rect[0] = obj->m_5c - obj->m_198->m_18 + 7;
-    rect[2] = obj->m_198->m_18 + obj->m_5c - 7;
-    rect[1] = obj->m_60 - obj->m_198->m_1c + 7;
-    rect[3] = obj->m_198->m_1c + obj->m_60 - 7;
+    rect[0] = obj->m_screenX - obj->m_layer->m_baseX + 7;
+    rect[2] = obj->m_layer->m_baseX + obj->m_screenX - 7;
+    rect[1] = obj->m_screenY - obj->m_layer->m_1c + 7;
+    rect[3] = obj->m_layer->m_1c + obj->m_screenY - 7;
 
     CGameRegistry* reg = g_lightGameReg;
     if (reg->m_isEasyMode != 0 && reg->m_134 == 1) {
         // window mode, skip the query
     } else {
         i32 outA, outB;
-        CPathEntity* ent = (CPathEntity*)((CPathCueGate*)reg->m_68)
-                               ->QueryAt(obj->m_5c, obj->m_60, &obj->m_144, &outA, &outB, rect);
+        CPathEntity* ent =
+            (CPathEntity*)((CPathCueGate*)reg->m_68)
+                ->QueryAt(obj->m_screenX, obj->m_screenY, &obj->m_144, &outA, &outB, rect);
         if (ent != 0 && ent->m_258 != 0x38) {
             if (g_lightGameReg->m_134 != 1 || outA != 0) {
                 CLightVtbl* vt = *(CLightVtbl**)this;
@@ -408,9 +410,9 @@ i32 CLightningHazard::SiblingTick() {
     i64 legElapsed = (i64)(u32)g_strikeClock - m_legDeadline;
     if (legElapsed >= m_legWindow) {
         CGameObject* o = m_object;
-        o->m_58 = 1;
-        o->m_50 = 7;
-        o->m_4c = ((i32*)g_lightGameReg->m_78)[0xa]; // [m_78 + 0x28]
+        o->m_drawActive = 1;
+        o->m_drawFillCmd = 7;
+        o->m_drawFillArg = ((i32*)g_lightGameReg->m_78)[0xa]; // [m_78 + 0x28]
         CLightVtbl* vt = *(CLightVtbl**)this;
         (this->*(vt->BeginLeg))();
         m_prevAnimSetNode = (void*)m_objAux->m_1c;
@@ -438,8 +440,8 @@ i32 CLightningHazard::ArmStrike(i32 a, i32 b) {
 
     CGameObject* obj = m_object;
     CGameRegistry* reg = g_lightGameReg;
-    i32 y = obj->m_60;
-    i32 x = obj->m_5c;
+    i32 y = obj->m_screenY;
+    i32 x = obj->m_screenX;
     if (x < reg->m_viewOriginR && x >= reg->m_viewOriginL && y < reg->m_viewOriginB
         && y >= reg->m_viewOriginT) {
         CSndHost* host = (CSndHost*)reg->m_world->m_28;
@@ -480,15 +482,15 @@ i32 CPathHazard::BeginLeg() {
     i32 wy = m_wp[idx].y;
     m_wpY = wy;
 
-    double dx = (double)m_wpX - (double)obj->m_5c;
-    double dy = (double)m_wpY - (double)obj->m_60;
+    double dx = (double)m_wpX - (double)obj->m_screenX;
+    double dy = (double)m_wpY - (double)obj->m_screenY;
     double len = sqrt(dx * dx + dy * dy);
     double ux = dx / len;
     double uy = dy / len;
 
     m_speed = g_pathOne / ((double)obj->m_7c->m_bc * g_pathTimeScale);
-    m_posX = (double)obj->m_5c;
-    m_posY = (double)obj->m_60;
+    m_posX = (double)obj->m_screenX;
+    m_posY = (double)obj->m_screenY;
     m_unitX = ux;
     m_unitY = uy;
 

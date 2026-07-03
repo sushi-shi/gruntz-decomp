@@ -165,17 +165,17 @@ CDroppedObject::CDroppedObject(CGameObject* obj) : CUserLogic(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
     m_38->ApplyName("LEVEL_OBJECTDROPPER_OBJECT");
-    m_40 = m_38->m_1b4;
+    m_40 = m_38->m_geoId;
     m_38->ApplyLookupGeometry("LEVEL_DROPPEDOBJECT", 0);
-    m_38->m_08 |= 0x2000002;
-    i32 adjY = (m_object->m_60 & ~0x1f) + 0x10;
+    m_38->m_flags |= 0x2000002;
+    i32 adjY = (m_object->m_screenY & ~0x1f) + 0x10;
     m_68 = adjY;
-    m_object->m_5c = (m_object->m_5c & ~0x1f) + 0x10;
-    m_object->m_60 = adjY - g_buteMgr.GetIntDef("Hazardz", "DroppedObjectYOffset", 0x140);
-    m_60 = (double)m_object->m_60;
-    if (m_object->m_74 != 0xcf851) {
-        m_object->m_74 = 0xcf851;
-        m_object->m_08 |= 0x20000;
+    m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
+    m_object->m_screenY = adjY - g_buteMgr.GetIntDef("Hazardz", "DroppedObjectYOffset", 0x140);
+    m_60 = (double)m_object->m_screenY;
+    if (m_object->m_latchedAnimId != 0xcf851) {
+        m_object->m_latchedAnimId = 0xcf851;
+        m_object->m_flags |= 0x20000;
     }
     m_58 = 32.0 / (double)(u32)g_buteMgr.GetDwordDef("Hazardz", "DroppedObjectTimePerTile", 0x3e8);
 }
@@ -324,7 +324,7 @@ i32 CDroppedObject::ActA() {
     m_60 = (double)g_645584 * m_58 + m_60;
     i32 landed = (i32)(m_60 - g_dropFallBias);
     if (landed > m_68) {
-        i32 x = m_object->m_5c;
+        i32 x = m_object->m_screenX;
         DropGrid* g = (DropGrid*)g_gameReg->m_tileGrid;
         i32 cell;
         {
@@ -339,13 +339,13 @@ i32 CDroppedObject::ActA() {
         if ((cell & 0x900) == 0) {
             if (cell & 2) {
                 if (cell == 0x40) {
-                    m_38->m_08 |= 0x10000;
+                    m_38->m_flags |= 0x10000;
                 } else {
                     switch (((DropReg2c*)g_gameReg->m_curState)->m_20) {
                         case 4:
                         case 5:
                         case 8:
-                            m_38->m_08 |= 0x10000;
+                            m_38->m_flags |= 0x10000;
                             // fall through
                         case 7:
                         default:
@@ -379,14 +379,14 @@ i32 CDroppedObject::ActA() {
                 }
             }
         }
-        m_40 = m_38->m_1b4;
+        m_40 = m_38->m_geoId;
         m_38->ApplyLookupGeometry("LEVEL_DROPPEDOBJECTHIT", 0);
         m_prevAnimSetNode = m_objAux->m_1c;
         m_objAux->m_1c = g_buteTree.Find(s_actKeyB);
-        ((DropTileMgr*)g_gameReg->m_68)->PostMove(m_object->m_5c, m_68, 1, 7, -1);
+        ((DropTileMgr*)g_gameReg->m_68)->PostMove(m_object->m_screenX, m_68, 1, 7, -1);
         return 0;
     }
-    m_object->m_60 = landed;
+    m_object->m_screenY = landed;
     return 0;
 }
 
