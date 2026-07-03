@@ -1,11 +1,11 @@
-// SoundBankLoad.cpp - the named-resource loader of a WAP32 sound-bank object (the
-// DSoundList/CGruntzSoundZ neighbourhood; engine_boundary 0x138aa0). The method
-// `Load(name, arg)` either forwards to the slot-0x3c handler when the name is the
-// special ".." token, or opens `name` as a file, slurps it whole into the owned
-// +0x5c buffer (operator new), and hands it to the slot-0x14 decode virtual. The
-// local CFile (a throwing ctor) forces the /GX EH frame. Field names are
-// placeholders; only the OFFSETS + the emitted bytes are load-bearing.
-#include <Ints.h>
+// SoundBankLoad.cpp - CGruntzSoundInnerZ::Load (vtable slot 6, +0x18; retail RVA
+// 0x138aa0), the load-a-file setup of an inner sound bank (Dsndmgr module,
+// C:\Proj\Dsndmgr\, the 0x138xxx AIL/DirectSound region). Load(name, arg) either
+// forwards to the special-name handler (slot 15, LoadSpecial) when `name` is the pooled
+// ".." token, or opens `name` as a file, slurps it whole into the owned m_loadBuffer
+// (operator new), and hands it to the one-time decode setup (slot 5, DecodeBuf). The
+// destructible stack CFile forces the /GX EH frame.
+#include <Dsndmgr/CGruntzSoundZ.h> // the real CGruntzSoundInnerZ (+ MFC CFile via <Mfc.h>)
 #include <rva.h>
 
 // The engine throwing allocator (global operator new @0x1b9b46, NAFXCW). Reloc-masked.
@@ -18,76 +18,42 @@ extern "C" i32 SbNameCmp(const char* a, const char* b); // 0x120090
 DATA(0x001ee8ec)
 extern char g_dotDot[]; // 0x5ee8ec  ".."
 
-// The stack CFile temp: ctor/dtor/Open/GetLength/Read act on the object base (the
-// `lea ecx,[file]` shape), all reloc-masked NAFXCW members.
-struct RezFile {
-    RezFile();                                       // 0x1befd7
-    ~RezFile();                                      // 0x1bf121
-    i32 Open(const char* path, i32 mode, i32 share); // 0x1bf200
-    i32 GetLength();                                 // 0x1bf505
-    i32 Read(void* buf, i32 len);                    // 0x1bf328
-};
-SIZE_UNKNOWN(RezFile); // CFile-temp view (NAFXCW members reloc-masked)
-
-// The sound-bank object. Polymorphic with a 0x14-slot vtable: slot 5 (+0x14) is the
-// in-memory decode, slot 15 (+0x3c) the special-name handler. The virtuals are
-// declared (not defined here) so the class never emits a vtable in this TU; the calls
-// lower to `mov eax,[this]; call [eax+N]`. The owned load buffer lives at +0x5c.
-struct CSoundBank {
-    virtual void s00();                               // +0x00
-    virtual void s01();                               // +0x04
-    virtual void s02();                               // +0x08
-    virtual void s03();                               // +0x0c
-    virtual void s04();                               // +0x10
-    virtual i32 DecodeBuf(void* buf, i32 len, i32 a); // slot 5  (+0x14)
-    virtual void s06();                               // +0x18
-    virtual void s07();                               // +0x1c
-    virtual void s08();                               // +0x20
-    virtual void s09();                               // +0x24
-    virtual void s0a();                               // +0x28
-    virtual void s0b();                               // +0x2c
-    virtual void s0c();                               // +0x30
-    virtual void s0d();                               // +0x34
-    virtual void s0e();                               // +0x38
-    virtual i32 LoadSpecial(const char* path, i32 a); // slot 15 (+0x3c)
-
-    char m_pad04[0x5c - 0x04];
-    void* m_loadBuffer; // +0x5c  owned load buffer
-
-    i32 Load(const char* path, i32 decodeArg); // 0x138aa0
-};
-SIZE_UNKNOWN(CSoundBank); // polymorphic; only +0x5c pinned, tail opaque
-
-// Load: the special ".." name forwards to the slot-0x3c handler; otherwise
-// open `path`, require >= 4 bytes, slurp it whole into the owned +0x5c buffer, and run
-// the slot-0x14 decode. Each failure tears down the local CFile and returns 0; the
-// CFile's throwing ctor forces the /GX frame. __thiscall, ret 8.
+// Load: the special ".." name forwards to the slot-15 handler (LoadSpecial); otherwise
+// open `name`, require >= 4 bytes, slurp it whole into m_loadBuffer, and run the
+// one-time decode setup (slot 5, DecodeBuf). Each failure tears down the local CFile and
+// returns 0; the CFile's throwing ctor forces the /GX frame. __thiscall, ret 8.
+//
+// a1/a2 are `const char*` name / config args passed as i32 by the shared
+// homogenized-i32 CGruntzSoundInnerZ virtual convention (CreateBank2/PlayCreate all
+// forward i32; retyping the slot signatures cascades cross-TU, so the two leaf casts
+// stay - the same pattern CGruntzSoundZ::Play_138840 uses).
 //
 // @early-stop
-// /GX EH-frame + reloc-name wall: the ".."-token branch, the CFile open/GetLength/new/
-// Read/decode chain, the slot-0x14/0x3c vtable dispatches and the m_5c store are byte-
-// faithful, but the local CFile's stack-slot scheduling inside the /GX frame + the
-// EH-state numbering (the documented eh-scoped-local wall) and the differently-named
+// /GX EH-frame wall: the ".."-token branch, the CFile open/GetLength/new/Read/decode
+// chain, the slot-5/15 virtual dispatches and the m_loadBuffer store are byte-faithful,
+// but the local CFile's stack-slot scheduling inside the /GX frame + the EH-state
+// numbering (the documented eh-scoped-local wall) and the differently-named
 // SbNameCmp/operator-new reloc operands diverge. Logic complete; final sweep.
 RVA(0x00138aa0, 0x175)
-i32 CSoundBank::Load(const char* path, i32 decodeArg) {
-    if (SbNameCmp(path, g_dotDot) != 0) {
-        RezFile file;
-        if (!file.Open(path, 0, 0)) {
+i32 CGruntzSoundInnerZ::Load(i32 a1, i32 a2) {
+    const char* name = (const char*)a1;
+    if (SbNameCmp(name, g_dotDot) != 0) {
+        CFile file;
+        if (!file.Open(name, 0, 0)) {
             return 0;
         }
-        i32 fileLength = file.GetLength();
-        if (fileLength < 4) {
+        u32 length = file.GetLength();
+        if (length < 4) {
             return 0;
         }
-        m_loadBuffer = operator new(fileLength);
+        m_loadBuffer = (char*)operator new(length);
         if (m_loadBuffer == 0) {
             return 0;
         }
-        if (file.Read(m_loadBuffer, fileLength) != fileLength) {
+        if (file.Read(m_loadBuffer, length) != length) {
             return 0;
         }
-        return DecodeBuf(m_loadBuffer, fileLength, decodeArg);
+        return DecodeBuf((i32)m_loadBuffer, length, a2);
     }
-    return LoadSpecial(path, decodeArg);
+    return LoadSpecial(name, a2);
 }
