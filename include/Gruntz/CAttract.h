@@ -146,32 +146,34 @@ struct CAttractHost {
 // ---------------------------------------------------------------------------
 class CAttract : public CState {
 public:
-    // EH-framed `??1` (slot-0 deleting dtor `??_G` dispatches here): re-stamp the
-    // CAttract vtable, run the slot-2 release (ReleaseResources, statically bound),
-    // re-stamp the CState vtable, chain the base cleanup.
-    virtual ~CAttract() OVERRIDE;              // 0x08cd90
-    virtual void ReleaseResources() OVERRIDE;  // slot 2 (+0x8)   0x0140d0
-    virtual i32 Vslot07() OVERRIDE;            // slot 7 (+0x1c)  0x0147b0 host/paint poll
-    virtual i32 FrameSlot28(i32 arg) OVERRIDE; // slot 10 (+0x28) 0x014340 per-frame poll
+    // Own vtable slots (RTTI vtbl@0x5ea194, 26 slots; slot order anchored by
+    // CState). Every slot CAttract overrides is declared here in slot order; the
+    // two slots whose bodies live elsewhere / are deferred are declared-only (the
+    // vtable references them reloc-masked - the vtable itself is not diffed). The
+    // EH-framed `??1` (slot-0 deleting dtor `??_G` dispatches here) re-stamps the
+    // CAttract vtable, runs the slot-2 release, re-stamps CState, chains base cleanup.
+    virtual ~CAttract() OVERRIDE;             // slot 0  0x08cd90 (??1) / 0x08cd60 (??_G)
+    virtual void ReleaseResources() OVERRIDE; // slot 2  (+0x08) 0x0140d0
+    virtual i32 Update() OVERRIDE;  // slot 4  (+0x10) 0x08cd40  return 2 (attract state id)
+    virtual i32 Render() OVERRIDE;  // slot 5  (+0x14) 0x0143e0  attract per-frame poll/draw
+    virtual i32 Vslot06() OVERRIDE; // slot 6  (+0x18) 0x014630  random-title roll (Vfunc3 gate)
+    virtual i32 Vslot07() OVERRIDE; // slot 7  (+0x1c) 0x0147b0  host/paint poll
+    virtual i32 InputVirtual() OVERRIDE; // slot 8  (+0x20) 0x014520  random-title roll (page gate)
+    virtual i32 Vslot09(i32)
+        OVERRIDE; // slot 9  (+0x24) 0x014120  (declared-only: 426B EH, deferred)
+    virtual i32 FrameSlot28(i32 arg) OVERRIDE; // slot 10 (+0x28) 0x014340  per-frame voice poll
+    virtual i32 Vslot0c(i32, i32)
+        OVERRIDE; // slot 12 (+0x30) 0x014720  (declared-only: ESC/SPACE/ENTER cmd)
+    virtual i32 Vslot0e(i32, i32, i32) OVERRIDE; // slot 14 (+0x38) 0x014770  post-exit command
 
-    // Non-virtual attract methods (the rest of the title/menu logic).
-    i32 EnterAttractMode(i32 a, i32 b, i32 mode);    // slot-1 body 0x13fb0, called non-virtually
+    // Non-virtual attract methods (the rest of the title/menu logic). EnterAttractMode
+    // is the slot-1 body (0x13fb0) but is reached non-virtually; its (int,int,int)
+    // signature differs from CState's slot-1 placeholder, so it stays non-virtual.
+    i32 EnterAttractMode(i32 a, i32 b, i32 mode);    // 0x13fb0 (slot 1, called non-virtually)
     i32 RefreshTitle(i32 unused);                    // 0x39160
     i32 LoadTitleConfig(i32 mode);                   // 0xa03f0
     i32 Activate();                                  // 0xa0a30
     i32 RunTitle(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x0fa300 (5 args, ret 0x14)
-
-    // Two random-title rolls (0x14520/0x14630): gate (page IsLoaded / Vfunc3),
-    // hide cursor, pick a random TITLE%d index off the game-reg counter, then
-    // RunTitleSeq it. Differ only in the entry gate.
-    i32 RollTitleByPage(); // 0x14520 (gate: m_c->m_04->IsLoaded())
-    i32 RollTitleByV3();   // 0x14630 (gate: Vfunc3())
-
-    // 0x143e0 attract-mode per-frame poll (non-virtual; body diffed, vtable not):
-    // gate on the render-busy obj + the InputVirtual slot (report-error/exit on
-    // idle), tick down the m_1b4 timer, Update() every actor, and post the exit
-    // WM_COMMAND when an actor raises its 0x100 flag.
-    i32 FramePoll(); // 0x143e0
 
     // The pre-flight gate for EnterAttractMode (engine FUN_004f9ea0, non-virtual
     // __thiscall ret 0xc, reached via ILT thunk): a zero result aborts the entry.

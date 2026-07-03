@@ -185,19 +185,21 @@ i32 CAttract::FrameSlot28(i32 arg) {
     return 1;
 }
 
-// CAttract::FramePoll (0x143e0): the attract-mode per-frame poll. If the page's
-// render-busy object reports idle AND the InputVirtual slot reports idle, report
-// the exit error (0x8006/0x3e8) and bail. Otherwise stop the registrar's pooled
-// resource, tick the m_idleTimer timeout down by the frame delta, run every actor's
-// Update(), and if any actor raised its 0x100 flag post the exit WM_COMMAND.
+// CAttract::Render (slot 5 / +0x14, 0x143e0): the attract-mode per-frame poll/draw.
+// If the page's render-busy object reports idle AND the InputVirtual slot reports
+// idle, report the exit error (0x8006/0x3e8) and bail. Otherwise stop the registrar's
+// pooled resource, tick the m_idleTimer timeout down by the frame delta, run every
+// actor's Update(), and if any actor raised its 0x100 flag post the exit WM_COMMAND.
 // Code byte-identical to retail (~97% fuzzy = reloc-masked plateau): the residual
 // is purely cross-unit/IAT symbol-naming on three reloc operands - ReportError (a
 // bare delinker label), 0x136e20 (already owned by DirectSoundMgr::winapi_136e20_
 // timeGetTime; the sibling FrameSlot28 names it CAttractPooledRes::Stop too), and
 // the PostMessageA IAT call (target bakes a bare absolute 0x6c44c8, no symbol).
 // Not source-steerable; topic:scoring-artifact (docs/matching-patterns.md).
+// @early-stop
+// reloc-masked IAT/cross-unit operands only (see above); code bytes byte-exact.
 RVA(0x000143e0, 0xfb)
-i32 CAttract::FramePoll() {
+i32 CAttract::Render() {
     AttractBusyObj* busy = ((AttractSurfaceExt*)((CMenuRoot*)m_c)->m_04->m_10->m_2c)->m_8;
     if (busy == 0 || busy->m_vtbl->Poll(busy) != 0) {
         if (InputVirtual() == 0) {
@@ -275,11 +277,12 @@ i32 CAttractIdlePoll::Poll() {
     return 1;
 }
 
-// CAttract::RollTitleByPage (0x14520): gate on the menu page's IsLoaded; if loaded,
-// hide the cursor, pick a random TITLE%d index off the game-reg attract counter, and
-// run that title sequence. The CString format local forces the /GX EH frame.
+// CAttract::InputVirtual (slot 8 / +0x20, 0x14520): the random-title roll gated on
+// the menu page's IsLoaded; if loaded, hide the cursor, pick a random TITLE%d index
+// off the game-reg attract counter, and run that title sequence. The CString format
+// local forces the /GX EH frame. (Render polls this slot each frame.)
 RVA(0x00014520, 0xc3)
-i32 CAttract::RollTitleByPage() {
+i32 CAttract::InputVirtual() {
     if (((CMenuRoot*)m_c)->m_04->IsLoaded() == 0) {
         return 0;
     }
@@ -294,10 +297,10 @@ i32 CAttract::RollTitleByPage() {
     return RunTitleSeq((char*)(const char*)s, 0, 0, 1, 0);
 }
 
-// CAttract::RollTitleByV3 (0x14630): identical to RollTitleByPage but gated on the
-// slot-3 virtual (Vfunc3) instead of the page IsLoaded.
+// CAttract::Vslot06 (slot 6 / +0x18, 0x14630): identical to the InputVirtual roll but
+// gated on the slot-3 virtual (Vfunc3) instead of the page IsLoaded.
 RVA(0x00014630, 0xbd)
-i32 CAttract::RollTitleByV3() {
+i32 CAttract::Vslot06() {
     if (Vfunc3() == 0) {
         return 0;
     }
@@ -334,6 +337,20 @@ i32 CAttract::Vslot07() {
     }
     ((CMenuRoot*)m_c)->m_04->m_10->m_2c->Flip(0);
     ((CMenuRoot*)m_c)->m_04->BlitFrom(((CMenuRoot*)m_c)->m_04->m_14);
+    return 1;
+}
+
+// CAttract::Update() (slot 4 / +0x10, 0x08cd40): the attract state's ID tag = 2.
+RVA(0x0008cd40, 0x6)
+i32 CAttract::Update() {
+    return 2;
+}
+
+// CAttract::Vslot0e(a, b, c) (slot 14 / +0x38, 0x14770): post the exit WM_COMMAND
+// (0x8023) to the top-level HWND (m_4->m_4->m_4) unconditionally, then return 1.
+RVA(0x00014770, 0x24)
+i32 CAttract::Vslot0e(i32, i32, i32) {
+    g_pPostMessageA(((CAttractOwner*)m_4)->m_4->m_4, 0x111, 0x8023, 0);
     return 1;
 }
 

@@ -72,7 +72,7 @@ canicycle	2	1
 canielement	3	2
 canielementeh	1	0
 canirecord	10	8
-cattract	15	8
+cattract	17	10
 cbehindcandy	2	2
 cbehindcandyani	4	3
 cboomerang	1	0
@@ -261,7 +261,7 @@ gamechecksum	1	0
 gameinfostring	1	1
 gamekeyhandler	1	0
 gamelevel	60	23
-gamemode	43	23
+gamemode	44	24
 gamemodeobjlifecycle	4	3
 gamemousehandler	1	0
 gameobjectctors	8	4
@@ -937,17 +937,19 @@ cattract	??1CAttract@@UAE@XZ	100.0000	100.0000	1	8f5b73f92144	0x8cd90
 cattract	?Activate@CAttract@@QAEHXZ	99.0000	99.0000	3	68b70b1d4b45	0xa0a30
 cattract	?EnterAttractMode@CAttract@@QAEHHHH@Z	100.0000	100.0000	3	df077376d876	0x13fb0
 cattract	?FadeInTitle@CAttract@@QAEHPADHHHHH@Z	73.5119	73.5119	1	7e9ba337baab	0xfa1f0
-cattract	?FramePoll@CAttract@@QAEHXZ	97.0833	97.0833	2	cfa12ed2b7ef	0x143e0
 cattract	?FrameSlot28@CAttract@@UAEHH@Z	99.7143	99.7143	2	7c0c7c85e909	0x14340
+cattract	?InputVirtual@CAttract@@UAEHXZ	100.0000	100.0000	1	5cee041af151	0x14520
 cattract	?LoadTitleConfig@CAttract@@QAEHH@Z	99.0991	99.0991	3	b1235e55688e	0xa03f0
 cattract	?Poll@CAttractIdlePoll@@QAEHXZ	99.5455	99.5455	1	160ece44255d	0x3c220
 cattract	?RefreshTitle@CAttract@@QAEHH@Z	100.0000	100.0000	2	a7ccec0a1ee9	0x39160
 cattract	?ReleaseResources@CAttract@@UAEXXZ	100.0000	100.0000	1	7565e627ebc6	0x140d0
-cattract	?RollTitleByPage@CAttract@@QAEHXZ	100.0000	100.0000	2	2a6e5fdab02f	0x14520
-cattract	?RollTitleByV3@CAttract@@QAEHXZ	100.0000	100.0000	2	71c312a6cd49	0x14630
+cattract	?Render@CAttract@@UAEHXZ	97.0833	97.0833	1	466f8c8d708f	0x143e0
 cattract	?RunTitle@CAttract@@QAEHHHHHH@Z	99.5238	99.5238	1	9a5828a77e96	0xfa300
 cattract	?RunTitleSeq@CAttract@@QAEHPADHHHH@Z	100.0000	100.0000	1	972aca3e63d9	0xfa350
+cattract	?Update@CAttract@@UAEHXZ	100.0000	100.0000	1	494a92ca5dea	0x8cd40
+cattract	?Vslot06@CAttract@@UAEHXZ	100.0000	100.0000	1	a3550bea47f9	0x14630
 cattract	?Vslot07@CAttract@@UAEHXZ	100.0000	100.0000	1	91fafb3898fd	0x147b0
+cattract	?Vslot0e@CAttract@@UAEHHHH@Z	100.0000	100.0000	1	c31e32cae312	0x14770
 cbehindcandy	??1CBehindCandy@@UAE@XZ	100.0000	100.0000	1	5c9c55aab0c6	0xfc30
 cbehindcandy	?GetTypeTag@CBehindCandy@@QAEHXZ	100.0000	100.0000	1	32ed38245a17	0xfb70
 cbehindcandyani	??1CBehindCandyAni@@UAE@XZ	100.0000	100.0000	1	f4c855a7d8db	0x100f0
@@ -2112,16 +2114,15 @@ gamemode	??_GCState@@UAEPAXI@Z	100.0000	100.0000	1	cpp:2601fb2a9496	0x8c710
 gamemode	?BuildVersionString@CMenuState@@QAEXHHHH@Z	100.0000	100.0000	3	7a5141c2b00e	0xa0d80
 gamemode	?BuildWarpStoneGlitterAnimation@CMultiBootyState@@QAEHXZ	88.1274	88.1274	1	1d7d094285a4	0x19540
 gamemode	?CheckPerfectBonus@CMultiBootyState@@QAEHXZ	100.0000	100.0000	3	7b3e38e23539	0x1c0f0
-gamemode	?CheckWarpLetterBonus@CBootyState@@QAEXXZ	0.2849	0.2849	1	86e864f54e78	0x1c210
 gamemode	?DrawScrollingCredits@CCreditsState@@QAEHXZ	75.3092	75.3092	2	aca1a81d9102	0x396f0
 gamemode	?FinishState@CCreditsState@@QAEHXZ	100.0000	100.0000	1	b2c3a49646dc	0x39c40
 gamemode	?FlashColor@CCreditsState@@QAEHXZ	66.5769	66.5769	1	fcd764f9eff7	0x39d00
 gamemode	?FormatHudText@CMenuState@@QAEXPAUCHudBuf@@H@Z	97.4844	97.4844	1	92727a9826e5	0x1af70
 gamemode	?ForwardIdleAnim@CMultiBootyState@@QAEHHH@Z	100.0000	100.0000	1	4efc3adad86f	0x1d420
-gamemode	?FrameSlot24@CMultiBootyState@@UAEHH@Z	100.0000	100.0000	7	6b1c272f7774	0x1e570
 gamemode	?FrameSlot28@CMenuState@@UAEHH@Z	100.0000	100.0000	4	ace08f9c6fc1	0xa06d0
 gamemode	?GenMenuRandPos@@YGXHPAH0@Z	89.3724	89.3724	3	e5f14c89a313	0x19cd0
 gamemode	?InitAttractTitle@CCreditsState@@QAEHXZ	81.2079	81.2079	3	bc6d7970e106	0x39570
+gamemode	?InputVirtual@CCreditsState@@UAEHXZ	100.0000	100.0000	1	452b038a8041	0x393b0
 gamemode	?LoadCreditzStateAssets@CCreditsState@@QAEHHHH@Z	100.0000	100.0000	2	5f8f1a3eb875	0x38d20
 gamemode	?LoadGruntEffectSprites@CState@@QAEHXZ	96.3379	96.3379	4	cc066e36a8c2	0x1a040
 gamemode	?MoveLettersByDir@CMultiBootyState@@QAEXXZ	59.9241	59.9241	2	6a387478dfd5	0x19b90
@@ -2131,10 +2132,10 @@ gamemode	?ReleaseResources@CBootyState@@UAEXXZ	98.4375	98.4375	3	e642ac1c3a94	0x
 gamemode	?ReleaseResources@CCreditsState@@UAEXXZ	99.2500	99.2500	4	9006346553a0	0x38f00
 gamemode	?ReleaseResources@CMenuState@@UAEXXZ	99.4737	99.4737	4	3783a138f43c	0xa02c0
 gamemode	?ReleaseResources@CMultiBootyState@@UAEXXZ	98.5000	98.5000	4	e5c194d942a3	0x1e520
+gamemode	?Render@CBootyState@@UAEHXZ	0.5698	0.5698	1	2d523c86c283	0x1c210
 gamemode	?Render@CCreditsState@@UAEHXZ	97.7121	97.7121	7	53b923b2e96d	0x391d0
 gamemode	?Render@CMenuState@@UAEHXZ	100.0000	100.0000	5	c89c91454dc8	0xa0750
 gamemode	?Render@CState@@UAEHXZ	100.0000	100.0000	5	d458185de910	0x8c4d0
-gamemode	?ShowAttractTitle@CCreditsState@@QAEHXZ	100.0000	100.0000	1	c7dbfaa3f611	0x393b0
 gamemode	?StartMusic@CMenuState@@QAEXXZ	94.7561	94.7561	3	d6ccc973ce13	0xa05a0
 gamemode	?StepGlitterAnim@CMultiBootyState@@QAEXXZ	80.1343	80.1343	3	bc8e61e2a888	0x196c0
 gamemode	?StepVideo@CCreditsState@@QAEHXZ	95.0000	95.0000	2	5b5aa234d3f0	0x39c60
@@ -2142,8 +2143,10 @@ gamemode	?StopMusicChain@CMenuState@@QAEXXZ	99.7059	99.7059	4	91bd39aced91	0xa06
 gamemode	?Update@CBootyState@@UAEHXZ	100.0000	100.0000	5	96557d6664de	0x8d3f0
 gamemode	?Update@CCreditsState@@UAEHXZ	100.0000	100.0000	5	c1f02e1607eb	0x8d590
 gamemode	?Update@CMenuState@@UAEHXZ	100.0000	100.0000	5	7d32b0573c0d	0x8ce10
+gamemode	?Update@CMultiBootyState@@UAEHXZ	100.0000	100.0000	1	07dca7060250	0x8d4c0
 gamemode	?Update@CState@@UAEHXZ	100.0000	100.0000	5	657636330e4c	0x8c4b0
 gamemode	?Vfunc3@CState@@UAEHXZ	100.0000	100.0000	2	e4856b333a5c	0x8c490
+gamemode	?Vslot09@CMultiBootyState@@UAEHH@Z	100.0000	100.0000	1	c92007ba161b	0x1e570
 gamemode	?Vslot11@CState@@UAEHHHH@Z	100.0000	100.0000	1	84fdcdc12e89	0x8c610
 gamemode	?vfunc_1@CBootyState@@QAEXXZ	0.0417	0.0417	2	6e4ddd578781	0x1d440
 gamemodeobjlifecycle	?ClearPlacedObjects@CGameModeObj@@QAEHXZ	53.9750	53.9750	3	c5e72306dc81	0xda030
@@ -3073,7 +3076,7 @@ rezmgr	?PerFrameTick@RezMgr@@UAEHXZ	100.0000	100.0000	5	f48f8cfdbf55	0x8b740
 rezmgr	?Read@CRezItm@@QAEHHHIPAX@Z	100.0000	100.0000	4	4cf959e4f6b5	0x13c600
 rezmgr	?UpdateClock@RezMgr@@QAEHXZ	100.0000	100.0000	3	6a03d9facd33	0x13ddc0
 rezmgr	?Write@CRezItm@@QAEHHHIPAX@Z	100.0000	100.0000	4	a315a71e3526	0x13c6c0
-rezsync	?Init@RezSync@@QAEHPAX0@Z	63.4747	63.4747	6	3d3c5e7d33eb	0x83450
+rezsync	?Init@RezSync@@QAEHPAX0@Z	63.4747	63.4747	7	71d73f5f1127	0x83450
 rezutil	_RezFree	100.0000	100.0000	1	fe93430adc1a	0x1b9b82
 ringbuffer	?deflateInit_@@YAHHHHH@Z	100.0000	100.0000	1	488cfe5747f6	0x186180
 ringbuffer	?flush_pending@@YAXPAUz_stream@@@Z	100.0000	100.0000	1	5b40120f1de9	0x186910

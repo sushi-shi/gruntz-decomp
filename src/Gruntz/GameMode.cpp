@@ -416,13 +416,10 @@ tail:
     return 1;
 }
 
-// InputVirtual (slot 8 / +0x20) is the per-frame input poll the Render does an
-// indirect `this->vtbl[+0x20]()` to (its body is irrelevant to the Render match -
-// only the indirect call site is). Out-of-line so the CCreditsState vtable
-// resolves; NOT a byte-matched target. (Slots 6,7 are inherited from CState.)
-i32 CCreditsState::InputVirtual() {
-    return 0;
-}
+// (CCreditsState::InputVirtual is slot 8 / +0x20 == ShowAttractTitle @0x393b0, the
+// per-frame input poll the Render dispatches via `this->vtbl[+0x20]()`; its body is
+// defined below at its real RVA. Slot 6 is CCreditsState's own Vslot06 override,
+// slot 7 is inherited from CState.)
 
 // ===========================================================================
 // REMAINING Render overrides (slot +0x14) NOT matched here (deferred targets):
@@ -927,11 +924,15 @@ i32 CState::LoadGruntEffectSprites() {
 // BuildBootyWalkingGruntz (0x1b450) is re-homed to its real class BzState in
 // src/Gruntz/BootyWalkAnim.cpp (beside its per-frame Update sibling).
 
+// CBootyState::Render (slot 5 / +0x14, 0x1c210): the per-frame bonus-state draw
+// (1205B). Still a reconstruction target - stub body marks the slot.
 // @confidence: med
 // @source: string-xref
 // @stub
 RVA(0x0001c210, 0x4b5)
-void CBootyState::CheckWarpLetterBonus() {}
+i32 CBootyState::Render() {
+    return 0;
+}
 
 // CMenuState::BuildVersionString (0xa0d80): format the on-screen version banner
 // into a transient CString, append " (SPAWN MODE)" when the CD prompt latched the
@@ -1108,11 +1109,12 @@ i32 CCreditsState::LoadCreditzStateAssets(i32 a1, i32 a2, i32 a3) {
     return r;
 }
 
-// CCreditsState::ShowAttractTitle @0x393b0 - gate on the state core (m_c->m_4->
-// IsLoaded); if loaded, force the cursor hidden then prime the attract title.
+// CCreditsState::InputVirtual (slot 8 / +0x20, @0x393b0, formerly ShowAttractTitle) -
+// the per-frame input poll: gate on the state core (m_c->m_4->IsLoaded); if loaded,
+// force the cursor hidden then prime the attract title.
 // Returns 1 (0 when the gate is not yet loaded, reusing the already-zero eax).
 RVA(0x000393b0, 0x3a)
-i32 CCreditsState::ShowAttractTitle() {
+i32 CCreditsState::InputVirtual() {
     CCreditzOwner* self = (CCreditzOwner*)this;
     if (self->m_c->m_4->IsLoaded() == 0) {
         return 0;
@@ -1734,11 +1736,17 @@ void CMultiBootyState::ReleaseResources() {
     ((CGameModeBase*)this)->BaseCleanup();
 }
 
-// CMultiBootyState::FrameSlot24() (slot 9 / +0x24, 0x1e570): on entry build the "multi"
+// CMultiBootyState::Update() (slot 4 / +0x10, 0x08d4c0): the multi-booty state's ID = 0x12.
+RVA(0x0008d4c0, 0x6)
+i32 CMultiBootyState::Update() {
+    return 0x12;
+}
+
+// CMultiBootyState::Vslot09() (slot 9 / +0x24, 0x1e570): on entry build the "multi"
 // title page (fade + page) then, if the menu is live, push the "BOOTY_LOOP" cue into the
 // player on the draw-clock window. Returns 1.
 RVA(0x0001e570, 0xb4)
-i32 CMultiBootyState::FrameSlot24(i32) {
+i32 CMultiBootyState::Vslot09(i32) {
     i32 ok = FadeInTitle("multi", 0, 0, 0, 0, 1);
     if (!ok) {
         return ok; // eax already 0 (the FadeInTitle result) - no xor/mov re-materialize

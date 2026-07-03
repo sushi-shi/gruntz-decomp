@@ -260,13 +260,24 @@ struct CCreditsImageList : CCreditsImgBase {
 SIZE_UNKNOWN(CCreditsState);
 class CCreditsState : public CState {
 public:
-    // Out-of-line dtor (0x8d5e0, GameMode.cpp): runs ReleaseResources then cl auto-
-    // destroys the m_1f0 CString + the m_1e8 image list before chaining ~CState.
-    virtual ~CCreditsState() OVERRIDE;
-    virtual i32 Update() OVERRIDE;       // return 8;  (slot 4)
-    virtual i32 Render() OVERRIDE;       // the per-frame credits draw (this TU)
-    virtual i32 InputVirtual() OVERRIDE; // slot 8 (+0x20) - polled each frame
-                                         // (slots 6,7 inherited from CState)
+    // Own vtable slots (RTTI vtbl@0x5e9c64, 26 slots; slot order anchored by
+    // CState). Out-of-line dtor (0x8d5e0, GameMode.cpp): runs ReleaseResources then
+    // cl auto-destroys the m_1f0 CString + the m_1e8 image list before chaining
+    // ~CState. Slots whose bodies live in another TU (0x39160 shared with
+    // CAttract::RefreshTitle; 0x39440/0x394b0 in ApiCallers) or are deferred are
+    // declared-only (the vtable references them reloc-masked; the vtable isn't diffed).
+    virtual ~CCreditsState() OVERRIDE;        // slot 0  0x08d5e0 (??1) / 0x08d5b0 (??_G)
+    virtual void ReleaseResources() OVERRIDE; // slot 2  (+0x08) 0x038f00 credits teardown
+    virtual i32 Update() OVERRIDE;            // slot 4  (+0x10) 0x08d590 return 8
+    virtual i32 Render() OVERRIDE;            // slot 5  (+0x14) 0x0391d0 per-frame credits draw
+    virtual i32 Vslot06() OVERRIDE; // slot 6  (+0x18) 0x039400 (declared-only: Vfunc3-gated roll)
+    virtual i32 InputVirtual()
+        OVERRIDE;                      // slot 8  (+0x20) 0x0393b0 per-frame input poll (title gate)
+    virtual i32 Vslot09(i32) OVERRIDE; // slot 9  (+0x24) 0x039120 (declared-only)
+    virtual i32 FrameSlot28(i32) OVERRIDE; // slot 10 (+0x28) 0x039160 (declared-only; shared body)
+    virtual i32 Vslot0c(i32, i32)
+        OVERRIDE; // slot 12 (+0x30) 0x039440 (declared-only: ESC/SPC/ENTER cmd)
+    virtual i32 Vslot0e(i32, i32, i32) OVERRIDE; // slot 14 (+0x38) 0x0394b0 (declared-only)
 
     // CCreditsState's own sub-steps (the rel32 thunks Render dispatches to with
     // `mov ecx,this`). External no-body -> reloc-masked.
@@ -276,12 +287,9 @@ public:
 
     i32 DrawScrollingCredits(); // 0x396f0 per-frame credits scroll-text renderer
 
-    // ReleaseResources (0x38f00): the credits teardown - free the pooled resource,
-    // release the three named registries, tear down + RezFree the video handle,
-    // then chain BaseCleanup. FinishState (0x39c40): clear the playing gate, ret 1.
-    // StepVideo (0x39c60): advance the Smacker movie frame + blit it. FlashColor
-    // (0x39d00): re-roll a random RGB flash latch when its timer expires.
-    void ReleaseResources();
+    // FinishState (0x39c40): clear the playing gate, ret 1. StepVideo (0x39c60):
+    // advance the Smacker movie frame + blit it. FlashColor (0x39d00): re-roll a
+    // random RGB flash latch when its timer expires.
     i32 FinishState();
     i32 StepVideo();
     i32 FlashColor();
@@ -301,9 +309,9 @@ public:
     char m_pad20c[0x210 - 0x20c];
     CCreditsVideo* m_210; // +0x210 Smacker video handle
 
-    i32 LoadCreditzStateAssets(i32 a1, i32 a2, i32 a3);
+    i32 LoadCreditzStateAssets(i32 a1, i32 a2, i32 a3); // 0x38d20 (slot 1, called non-virtually)
     i32 InitAttractTitle();
-    i32 ShowAttractTitle(); // 0x393b0 (gate on the state core, hide cursor, init title)
+    // ShowAttractTitle (0x393b0) is the slot-8 InputVirtual override (declared above).
 
     // Own attract-title tail helpers reached via ILT thunks (reloc-masked
     // self-calls; formerly the CAttractSelf `this`-alias view).
@@ -314,17 +322,34 @@ public:
 SIZE_UNKNOWN(CBootyState);
 class CBootyState : public CState {
 public:
-    // ~CBootyState() (EH-framed `??1`): re-stamp the CBootyState vtable, run the
-    // slot-2 release (statically bound), re-stamp the CState vtable, chain the
-    // base cleanup. Out-of-line so MSVC emits a distinct `??1`. See GameMode.cpp.
-    virtual ~CBootyState() OVERRIDE;
-    virtual i32 Update() OVERRIDE;            // return 0xa; (slot 4)
-    virtual void ReleaseResources() OVERRIDE; // slot 2 (+0x8) - booty teardown
+    // Own vtable slots (RTTI vtbl@0x5e9cec, 26 slots; slot order anchored by CState).
+    // CBootyState shares many slot bodies with its siblings CMultiBootyState /
+    // CBootyCheatState (0x1ce30/0x1d420 own CMultiBootyState methods, 0x18830 is
+    // CBootyCheatState::LoadAssets, 0x18d30/0x1c8a0 live in the booty-activate/
+    // state-image TUs); those and the deferred slots are declared-only here (the
+    // vtable references them reloc-masked - the vtable itself is not diffed). The
+    // EH-framed `??1` (slot 0) re-stamps the CBootyState vtable, runs the slot-2
+    // release (statically bound), re-stamps CState, chains base cleanup.
+    virtual ~CBootyState() OVERRIDE;          // slot 0  0x08d440 (??1) / 0x08d410 (??_G)
+    virtual void ReleaseResources() OVERRIDE; // slot 2  (+0x08) 0x018c90 booty teardown
+    virtual i32 Update() OVERRIDE;            // slot 4  (+0x10) 0x08d3f0 return 0xa
+    virtual i32 Render() OVERRIDE;  // slot 5  (+0x14) 0x01c210 per-frame booty draw (stub)
+    virtual i32 Vslot06() OVERRIDE; // slot 6  (+0x18) 0x01ce10 (declared-only)
+    virtual i32 Vslot07() OVERRIDE; // slot 7  (+0x1c) 0x01ce30 (declared-only; sib ReadyAndPaint)
+    virtual i32 InputVirtual() OVERRIDE;   // slot 8  (+0x20) 0x01c8a0 (declared-only; StateImages)
+    virtual i32 Vslot09(i32) OVERRIDE;     // slot 9  (+0x24) 0x018d30 (declared-only; vfunc_9)
+    virtual i32 FrameSlot28(i32) OVERRIDE; // slot 10 (+0x28) 0x018e40 (declared-only)
+    virtual i32 Vslot0c(i32, i32)
+        OVERRIDE; // slot 12 (+0x30) 0x01d420 (declared-only; sib ForwardIdleAnim)
+    virtual i32 Vslot0e(i32, i32, i32) OVERRIDE; // slot 14 (+0x38) 0x01d3e0 (declared-only)
+    virtual i32 Vslot11(i32, i32, i32) OVERRIDE; // slot 17 (+0x44) 0x01d400 (declared-only)
 
-    // Engine-label backlog stub (non-virtual placeholder; vtable-neutral).
-    void vfunc_1(); // stub
+    // Slot 1 (0x18830, CBootyCheatState::LoadAssets, (int,int,int)) is reached
+    // non-virtually and its shape differs from CState's slot-1 placeholder, so it is
+    // not modeled as a CBootyState virtual.
 
-    void CheckWarpLetterBonus();
+    // Non-virtual engine-label backlog stub (0x1d440; vtable-neutral).
+    void vfunc_1();
 };
 
 // CMultiBootyState - the MULTIPLAYER booty/bonus state (RTTI .?AVCMultiBootyState@@,
@@ -337,12 +362,24 @@ public:
 SIZE_UNKNOWN(CMultiBootyState);
 class CMultiBootyState : public CState {
 public:
-    // ~CMultiBootyState() (EH-framed `??1` @0x8d510): re-stamp the CMultiBootyState
-    // vtable, run the slot-2 release (statically bound), re-stamp the CState vtable,
-    // chain BaseCleanup. Out-of-line so MSVC emits a distinct `??1`.
-    virtual ~CMultiBootyState() OVERRIDE;
-    virtual void ReleaseResources() OVERRIDE; // slot 2 (+0x8) @0x1e520 - booty teardown
-    virtual i32 FrameSlot24(i32 arg); // slot 9 (+0x24) @0x1e570 - per-frame cue poll (ret 4)
+    // Own vtable slots (RTTI vtbl@0x5e9bdc, 26 slots; slot order anchored by CState).
+    // The EH-framed `??1` (slot 0, @0x8d510) re-stamps the CMultiBootyState vtable,
+    // runs the slot-2 release (statically bound), re-stamps CState, chains BaseCleanup.
+    // Slots whose bodies live in another TU (slot 8 == OnActivate2 in the booty-activate
+    // TU; slot 1 == 0x1d440, shared with CBootyState::vfunc_1) or are deferred are
+    // declared-only (the vtable references them reloc-masked; the vtable isn't diffed).
+    virtual ~CMultiBootyState() OVERRIDE;     // slot 0  0x08d510 (??1) / 0x08d4e0 (??_G)
+    virtual void ReleaseResources() OVERRIDE; // slot 2  (+0x08) 0x01e520 booty teardown
+    virtual i32 Update() OVERRIDE;            // slot 4  (+0x10) 0x08d4c0 return 0x12
+    virtual i32 Render() OVERRIDE;       // slot 5  (+0x14) 0x01f480 (declared-only; per-frame draw)
+    virtual i32 Vslot06() OVERRIDE;      // slot 6  (+0x18) 0x01f850 (declared-only)
+    virtual i32 Vslot07() OVERRIDE;      // slot 7  (+0x1c) 0x01f870 (declared-only)
+    virtual i32 InputVirtual() OVERRIDE; // slot 8  (+0x20) 0x01f6f0 (declared-only; OnActivate2)
+    virtual i32 Vslot09(i32) OVERRIDE;   // slot 9  (+0x24) 0x01e570 per-frame cue poll (ret 4)
+    virtual i32 FrameSlot28(i32) OVERRIDE;       // slot 10 (+0x28) 0x01e660 (declared-only)
+    virtual i32 Vslot0c(i32, i32) OVERRIDE;      // slot 12 (+0x30) 0x01f920 (declared-only)
+    virtual i32 Vslot0e(i32, i32, i32) OVERRIDE; // slot 14 (+0x38) 0x01f8e0 (declared-only)
+    virtual i32 Vslot11(i32, i32, i32) OVERRIDE; // slot 17 (+0x44) 0x01f900 (declared-only)
 
     // Non-virtual behavioral methods (the rel32 thunks dispatched with mov ecx,this).
     i32 BuildWarpStoneGlitterAnimation(); // 0x19540 - build the 4 warp-letter glitter anims
