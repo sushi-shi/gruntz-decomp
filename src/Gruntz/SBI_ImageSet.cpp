@@ -2,6 +2,7 @@
 #include <Mfc.h>
 #include <Ints.h>
 #include <Gruntz/ResMgr.h> // canonical g_gameReg->m_world view (CResMgr + CImageRegistry + CSprite)
+#include <Gruntz/SBI_ImageSet.h> // canonical CSBI_ImageSet + CImageSetStream (the frameless method view)
 // SBI_ImageSet.cpp - Gruntz CSBI_ImageSet (C:\Proj\Gruntz), the frameless methods.
 // RTTI .?AVCSBI_ImageSet@@; the most-derived of the SBI image chain
 //   CSBI_ImageSet : CSBI_Image : CSBI_RectOnly : CStatusBarItem.
@@ -11,27 +12,8 @@
 
 // ---------------------------------------------------------------------------
 // Shared engine views (modeled minimally; only touched members/methods are
-// load-bearing; every call through them is reloc-masked).
-
-// The serialization stream (arg1): a real polymorphic object with ReadBytes at
-// vtable slot 0x2c (index 0xb) and WriteBytes at slot 0x30 (index 0xc), both
-// __thiscall (buf, len). Modeled as virtuals so the call lowers to
-// `mov edx,[ebx]; call [edx+0x2c|0x30]` with ecx=this (no explicit-self push).
-struct CImageSetStream {
-    virtual void Vf0();
-    virtual void Vf1();
-    virtual void Vf2();
-    virtual void Vf3();
-    virtual void Vf4();
-    virtual void Vf5();
-    virtual void Vf6();
-    virtual void Vf7();
-    virtual void Vf8();
-    virtual void Vf9();
-    virtual void Vfa();
-    virtual void ReadBytes(void* buf, i32 len);  // slot 0x2c
-    virtual void WriteBytes(void* buf, i32 len); // slot 0x30
-};
+// load-bearing; every call through them is reloc-masked). CSBI_ImageSet +
+// CImageSetStream now live in the canonical <Gruntz/SBI_ImageSet.h>.
 
 // The resolved config record (Lookup result) is the CSprite the image registry
 // yields; its config name string lives at record+0x24. The config map is the image
@@ -54,18 +36,6 @@ DATA(0x00229ad0)
 extern i32 g_serialCounter;
 
 // ---------------------------------------------------------------------------
-// CSBI_ImageSet - adds the slot-1 serialize override (save/load of the config id
-// + name) on top of CSBI_Image. Fields are placeholders; offsets are load-bearing.
-class CSBI_ImageSet {
-public:
-    i32 Serialize(CImageSetStream* s, i32 mode, i32 a3, i32 a4);     // vslot 1 (0xe74f0)
-    i32 BaseSerialize(CImageSetStream* s, i32 mode, i32 a3, i32 a4); // 0xe6e40 base slot 1
-
-    char m_pad0[0x34];
-    CSprite* m_34; // +0x34  resolved config record (the image registry's CSprite)
-    i32 m_38;      // +0x38  serialized config id (4 bytes)
-};
-
 // vtable slot 1 (0xe74f0): serialize the config id + name. mode 7 = load (read id,
 // read name, resolve record), mode 4 = save (write id, write name from the record);
 // either way chain to the base serialize and return its normalized truth.

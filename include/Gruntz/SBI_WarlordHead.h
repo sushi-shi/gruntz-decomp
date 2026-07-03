@@ -20,9 +20,10 @@
 #include <Ints.h>
 #include <rva.h>
 
-#include <Image/CImage.h> // the canonical frame-record class (CImage::RenderFrame @0x153790)
+#include <Image/CImage.h>        // the canonical frame-record class (CImage::RenderFrame @0x153790)
+#include <Gruntz/SBI_ImageSet.h> // canonical CSBI_ImageSet (base Serialize external) + CImageSetStream
 
-struct ShadeDescr; // CImage::m_owned->m_palDescr type, latched by ShowFrames (full def in CDDrawShadeBlit.h)
+struct ShadeDescr; // CImage::m_owned->m_palDescr type, latched by ShowFrames (CDDrawShadeBlit.h)
 
 // ---------------------------------------------------------------------------
 // Shared engine views (modeled minimally; only the touched members/methods are
@@ -75,35 +76,10 @@ struct CWhRect {
 };
 SIZE_UNKNOWN(CWhRect);
 
-// The serialization stream (Serialize arg1): a real polymorphic object with
-// ReadBytes at vtable slot 0x2c and WriteBytes at slot 0x30, both __thiscall
-// (buf, len). Same CImageSetStream shape the rest of the SBI image chain uses;
-// every call through it lowers to `mov edx,[s]; call [edx+0x2c|0x30]`.
-struct CImageSetStream {
-    virtual void Vf0();
-    virtual void Vf1();
-    virtual void Vf2();
-    virtual void Vf3();
-    virtual void Vf4();
-    virtual void Vf5();
-    virtual void Vf6();
-    virtual void Vf7();
-    virtual void Vf8();
-    virtual void Vf9();
-    virtual void Vfa();
-    virtual void ReadBytes(void* buf, i32 len);  // slot 0x2c
-    virtual void WriteBytes(void* buf, i32 len); // slot 0x30
-};
-SIZE_UNKNOWN(CImageSetStream);
-
-// The immediate base (CSBI_ImageSet, 0xe74f0 vtable slot 1). Declared only so the
-// base-serialize call emits the real ?Serialize@CSBI_ImageSet@@... external; the
-// reloc pairs against SBI_ImageSet.cpp's definition at 0xe74f0.
-class CSBI_ImageSet {
-public:
-    i32 Serialize(CImageSetStream* s, i32 mode, i32 a3, i32 a4); // 0xe74f0
-};
-SIZE_UNKNOWN(CSBI_ImageSet);
+// The serialization stream (Serialize arg1) + the immediate base CSBI_ImageSet
+// (0xe74f0 vtable slot 1) come from the canonical <Gruntz/SBI_ImageSet.h> above.
+// The base-serialize call emits the real ?Serialize@CSBI_ImageSet@@... external,
+// whose reloc pairs against SBI_ImageSet.cpp's definition at 0xe74f0.
 
 // ---------------------------------------------------------------------------
 // CSBI_WarlordHead - the warlord-head status-bar item.
