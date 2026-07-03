@@ -850,6 +850,81 @@ def cmd_audit(aud):
             print("  %-9s %-30s %s  %s" % (k.lower() + ":", name, detail, loc))
 
 
+def cmd_tree(aud):
+    """Build the full inheritance FOREST from the binary and emit a topological work
+    QUEUE. Edges come from the RTTI Class-Hierarchy-Descriptor spine for RTTI classes
+    (authoritative - includes abstract intermediates like CWapObj that emit no vtable);
+    for src-only classes, from slot-prefix CONTAINMENT oriented by vtable size (a base
+    is the SHORTER prefix - so a base is never derived from its own child, fixing the
+    same-prefix direction ambiguity). The QUEUE lists a base before every class that
+    derives it, so modeling/re-basing can be dispatched in dependency order."""
+    known = known_base_vtables(aud)
+    inter = reconstruct_intermediates(aud)
+    parent, nodes = {}, set()
+    for name in aud.vtable_bearing():
+        rva, src, col = aud.resolve(name)
+        if rva is None:
+            continue
+        ci = aud.reg.get(name)
+        if not (ci and ci.primary()):
+            continue
+        nodes.add(name)
+        p = primary_base_name(ci) if ci.is_rtti else None
+        if not p:
+            db = _deepest_base(ci.primary()[2], rva, known, inter)
+            p = db[0] if db else None
+        if p and p != name:
+            parent[name] = p
+            nodes.add(p)
+    children = {}
+    for c, p in parent.items():
+        children.setdefault(p, []).append(c)
+    roots = sorted(n for n in nodes if n not in parent)
+
+    def modeled(n):
+        src_base = _source_base(aud.bodies.get(n, []))
+        return "" if src_base == parent.get(n, src_base) else "  <- source says %s" % (src_base or "no base")
+
+    def kind(n):
+        if n in inter:
+            return "  [ABSTRACT INTERMEDIATE - no own vtable - MODEL as : CObject]"
+        if n not in aud.reg or not aud.reg[n].primary():
+            return "  [uncataloged]"
+        return modeled(n)
+
+    print("# INHERITANCE FOREST (binary-proven: RTTI spine + size-oriented slot-prefix)")
+    seen = set()
+
+    def walk(n, depth):
+        if n in seen:
+            print("  " + "  " * depth + n + " (*seen)")
+            return
+        seen.add(n)
+        print("  " + "  " * depth + n + kind(n))
+        for c in sorted(children.get(n, [])):
+            walk(c, depth + 1)
+    for r in roots:
+        walk(r, 0)
+
+    print("\n# TOPOLOGICAL QUEUE (model/re-base a base BEFORE its derived classes)")
+    order, done = [], set()
+
+    def emit(n, stack):
+        if n in done or n in stack:
+            return
+        stack = stack | {n}
+        if n in parent:
+            emit(parent[n], stack)
+        done.add(n)
+        order.append(n)
+    for n in sorted(nodes):
+        emit(n, set())
+    for i, n in enumerate(order):
+        needs = kind(n)
+        if needs.strip():
+            print("  %3d  %-32s parent=%-16s%s" % (i, n, parent.get(n, "(root)"), needs))
+
+
 # ---------------------------------------------------------------------------
 def main():
     ap = argparse.ArgumentParser(description=__doc__,
@@ -866,9 +941,12 @@ def main():
     ap.add_argument("--audit", action="store_true",
                     help="SINGLE inheritance/override audit: incorrect inheritance + redeclared "
                          "parent virtuals + non-explicit overrides + missing virtuals, in one report")
+    ap.add_argument("--tree", action="store_true",
+                    help="build the inheritance FOREST (RTTI spine + size-oriented slot-prefix, "
+                         "incl. abstract intermediates) + a topological work QUEUE")
     args = ap.parse_args()
 
-    if args.coverage or args.name_audit or args.audit:
+    if args.coverage or args.name_audit or args.audit or args.tree:
         aud = Audit()
         if args.coverage:
             cmd_coverage(aud)
@@ -880,6 +958,10 @@ def main():
             if args.coverage or args.name_audit:
                 print()
             cmd_audit(aud)
+        if args.tree:
+            if args.coverage or args.name_audit or args.audit:
+                print()
+            cmd_tree(aud)
         return
 
     reg, _ = build_registry()
