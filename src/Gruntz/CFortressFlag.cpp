@@ -71,7 +71,7 @@ struct CSerialSub34 {
 // the tag-8 fixup reads its +0x124 sprite-selector key and re-seeds the
 // +0x4c/+0x50/+0x58 state trio directly (all modeled on CGameObject).
 
-// The level sprite-ref table (g_gameReg->m_74). GetSel(i, bAlt) (0xe23c0) returns
+// The level sprite-ref table (g_gameReg->m_spriteRefTable). GetSel(i, bAlt) (0xe23c0) returns
 // the selected sprite handle for ref-row i; modeled NO-body so the call
 // reloc-masks (the body lives in src/Gruntz/SpriteRefTable.cpp).
 struct CSpriteRefTable {
@@ -92,9 +92,9 @@ struct WwdRefSlot {
 // sprite-ref table at +0x74. Only the touched fields are modeled.
 struct WwdGameReg {
     char m_pad0[0x74];
-    CSpriteRefTable* m_74; // +0x74  level sprite-ref table
+    CSpriteRefTable* m_spriteRefTable; // +0x74  level sprite-ref table
     char m_pad78[0x158 - 0x78];
-    WwdRefSlot m_158[1]; // +0x158 base of the ref-index array
+    WwdRefSlot m_refIndexArray[1]; // +0x158 base of the ref-index array
 };
 DATA(0x0024556c)
 extern WwdGameReg* g_gameReg;
@@ -167,11 +167,11 @@ CFortressFlag::CFortressFlag(CGameObject* obj) : CUserLogic(obj) {
     m_38->ApplyName(name);
     m_30 = m_14->m_1c;
     m_14->m_1c = g_buteTree.Find(s_actKeyA);
-    m_40 = m_38->m_1b4;
+    m_prevAnimNode = m_38->m_1b4;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     m_38->m_08 |= 3;
-    i32 idx = g_gameReg->m_158[m_10->m_124 * 71].m_idx;
-    i32 sel = g_gameReg->m_74->GetSel(idx, 0);
+    i32 idx = g_gameReg->m_refIndexArray[m_10->m_124 * 71].m_idx;
+    i32 sel = g_gameReg->m_spriteRefTable->GetSel(idx, 0);
     CGameObject* spr = m_10;
     spr->m_58 = 1;
     spr->m_50 = 0xa;
@@ -243,8 +243,8 @@ i32 CFortressFlag::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
     }
     if (tag == 8) {
         CGameObject* spr = m_10;
-        i32 idx = g_gameReg->m_158[spr->m_124 * 71].m_idx;
-        i32 sel = g_gameReg->m_74->GetSel(idx, 0);
+        i32 idx = g_gameReg->m_refIndexArray[spr->m_124 * 71].m_idx;
+        i32 sel = g_gameReg->m_spriteRefTable->GetSel(idx, 0);
         spr = m_10;
         spr->m_58 = 1;
         spr->m_50 = 0xa;

@@ -33,14 +33,14 @@ public:
     ~CStaticHazard();                // 0x012b30 (folds the CUserLogic teardown)
 
     // CStaticHazard's own data begins at +0x40 (CUserLogic ends at +0x40).
-    i32 m_40; // +0x40  snapshot of the bound object's active-anim descriptor
+    i32 m_prevAnimNode; // +0x40  snapshot of the bound object's active-anim descriptor
     char m_pad44[0x54 - 0x44];
-    u32 m_54; // +0x54  pulse epoch (latched g_645588 at construction)
-    i32 m_58; // +0x58  active-window length (Hazardz/AniPad bute int + offset)
-    i32 m_5c; // +0x5c  idle-window length
-    i32 m_60; // +0x60  fired flag (0/1)
-    i32 m_64; // +0x64  tile column (bound object screen-X >> 5)
-    i32 m_68; // +0x68  tile row    (bound object screen-Y >> 5)
+    u32 m_pulseEpoch;   // +0x54  pulse epoch (latched g_645588 at construction)
+    i32 m_activeWindow; // +0x58  active-window length (Hazardz/AniPad bute int + offset)
+    i32 m_idleWindow;   // +0x5c  idle-window length
+    i32 m_fired;        // +0x60  fired flag (0/1)
+    i32 m_tileCol;      // +0x64  tile column (bound object screen-X >> 5)
+    i32 m_tileRow;      // +0x68  tile row    (bound object screen-Y >> 5)
 };
 
 #endif // GRUNTZ_CSTATICHAZARD_H

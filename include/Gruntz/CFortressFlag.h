@@ -36,7 +36,7 @@ public:
     i32 Serialize(i32 ar, i32 tag, i32 c, i32 d); // 0x046410 (vtable slot 1)
     ~CFortressFlag();                             // 0x010e90 (folds the CUserLogic teardown)
 
-    i32 m_40; // +0x40  geometry id (m_38->m_1b4 snapshot)
+    i32 m_prevAnimNode; // +0x40  geometry id (m_38->m_1b4 snapshot)
 };
 
 #endif // GRUNTZ_CFORTRESSFLAG_H

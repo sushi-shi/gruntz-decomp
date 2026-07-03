@@ -187,9 +187,9 @@ public:
     // m_c/m_2c at the call site (cast, codegen-neutral). The attract-specific
     // block sits past the CState spine (which ends at +0x1a4).
     char m_pad1a8[0x1b4 - 0x1a8];
-    u32 m_1b4;           // +0x1b4  attract idle/timeout countdown (unsigned: jb tick)
-    CAttractHost* m_1b8; // +0x1b8  host/sound sub-object
-    i32 m_1bc;           // +0x1bc  attract-active flag
+    u32 m_idleTimer;      // +0x1b4  attract idle/timeout countdown (unsigned: jb tick)
+    CAttractHost* m_host; // +0x1b8  host/sound sub-object
+    i32 m_activeFlag;     // +0x1bc  attract-active flag
 };
 
 #endif // GRUNTZ_GRUNTZ_CATTRACT_H

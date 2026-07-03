@@ -37,8 +37,9 @@ extern "C" u32 g_6bf3bc;
 //
 // The one hazard-specific sub-object CGameObject does not model as a member is the
 // +0x1a0 animation sub-object; it is reached via the (char*)m_38 + 0x1a0 byte-arith
-// idiom (same as CTeleporter's CTeleAnimSink).
-// ---------------------------------------------------------------------------
+// idiom (same as CTeleporter's CTeleAnimSink). Its +0x20/+0x28/+0x2c state flags
+// gate the "animation finished -> revert to IDLE" branch; their exact roles are
+// unproven, so they stay placeholders.
 struct WwdAnimSub {
     i32 SetAnim(u32 mode); // 0x15c360 (re-target the active animation)
     char m_pad00[0x20];
@@ -49,15 +50,15 @@ struct WwdAnimSub {
 };
 
 // The active-anim descriptor (m_38->m_1b4): the SetAnimEx idiom reads its first
-// element's m_14 as the sprite frame seed.
+// element's frame seed.
 struct HazAnimElem {
     char m_pad00[0x14];
-    i32 m_14; // +0x14
+    i32 m_frameSeed; // +0x14
 };
 struct HazAnimDesc {
     char m_pad00[0x0c];
-    HazAnimElem** m_c; // +0x0c  element vector (first elem = *m_c)
-    i32 m_10;          // +0x10  element count (>0 gate)
+    HazAnimElem** m_elems; // +0x0c  element vector (first elem = *m_elems)
+    i32 m_count;           // +0x10  element count (>0 gate)
 };
 
 // ---------------------------------------------------------------------------
@@ -71,28 +72,28 @@ struct HazAnimDesc {
 // ---------------------------------------------------------------------------
 struct HazSwitchSrc {
     char m_pad00[0x20];
-    i32 m_20; // +0x20  the level-kind tag the ctor switches on
+    i32 m_levelKind; // +0x20  the level-kind tag the ctor switches on
 };
 struct HazLookupEntry {
     char m_pad00[0x24];
-    i32 m_24; // +0x24  the per-effect AniPad bias
+    i32 m_aniPadBias; // +0x24  the per-effect AniPad bias
 };
 struct HazStrMap {
     i32 Lookup(const char* key, HazLookupEntry** out); // 0x1b8438 (ret 8)
 };
 struct HazSndCat {
     char m_pad00[0x10];
-    HazStrMap m_10; // +0x10  the lookup map
+    HazStrMap m_map; // +0x10  the lookup map
 };
 struct HazSndRoot {
     char m_pad00[0x2c];
-    HazSndCat* m_2c; // +0x2c
+    HazSndCat* m_cat; // +0x2c
 };
 struct HazGrid {
     char m_pad00[0x08];
-    char** m_8; // +0x08  row table (m_8[row] -> cell row base; cells are 0x1c B)
-    i32 m_c;    // +0x0c  width  (col bound)
-    i32 m_10;   // +0x10  height (row bound)
+    char** m_rows; // +0x08  row table (m_rows[row] -> cell row base; cells are 0x1c B)
+    i32 m_width;   // +0x0c  width  (col bound)
+    i32 m_height;  // +0x10  height (row bound)
 };
 struct HazGridMgr {
     i32 ScreenToCell(i32 x, i32 y, i32* outA, i32* outB, i32 z); // 0x35f3 thunk
@@ -224,12 +225,12 @@ CStaticHazard::~CStaticHazard() {}
 RVA(0x000fb7a0, 0x2d4)
 CStaticHazard::CStaticHazard(CGameObject* obj) : CUserLogic(obj) {
     // re-arm the IDLE geometry + STATICHAZARD sprite (SetAnimEx idiom).
-    m_40 = m_38->m_1b4;
+    m_prevAnimNode = m_38->m_1b4;
     m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDIDLE", 0);
     {
         HazAnimDesc* d = (HazAnimDesc*)m_38->m_1b4;
-        HazAnimElem* e = d->m_10 > 0 ? *d->m_c : 0;
-        m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_14);
+        HazAnimElem* e = d->m_count > 0 ? *d->m_elems : 0;
+        m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_frameSeed);
     }
     // snap the bound object's screen position to tile center.
     m_10->m_5c = (m_10->m_5c & ~0x1f) + 0x10;
@@ -238,10 +239,10 @@ CStaticHazard::CStaticHazard(CGameObject* obj) : CUserLogic(obj) {
         m_10->m_74 = 0;
         m_10->m_08 |= 0x20000;
     }
-    m_64 = m_10->m_5c >> 5;
-    m_68 = m_10->m_60 >> 5;
+    m_tileCol = m_10->m_5c >> 5;
+    m_tileRow = m_10->m_60 >> 5;
     m_10->m_128 = 0;
-    switch (((HazSwitchSrc*)g_gameReg->m_2c)->m_20) {
+    switch (((HazSwitchSrc*)g_gameReg->m_2c)->m_levelKind) {
         case 3:
         case 4:
         case 7:
@@ -260,18 +261,18 @@ CStaticHazard::CStaticHazard(CGameObject* obj) : CUserLogic(obj) {
     m_38->m_08 |= 0x2000002;
     ((WwdAnimSub*)((char*)m_10 + 0x1a0))->m_2c = 0;
     m_10->m_124 = g_64553c;
-    m_58 = 0;
-    m_5c = m_10->m_120;
-    m_54 = g_645588;
+    m_activeWindow = 0;
+    m_idleWindow = m_10->m_120;
+    m_pulseEpoch = g_645588;
     HazLookupEntry* entry = 0;
-    ((HazSndRoot*)g_gameReg->m_30)->m_2c->m_10.Lookup("LEVEL_STATICHAZARDGO", &entry);
+    ((HazSndRoot*)g_gameReg->m_30)->m_cat->m_map.Lookup("LEVEL_STATICHAZARDGO", &entry);
     if (entry != 0) {
-        m_58 = g_buteMgr.GetIntDef("Hazardz", "AniPad", 0x64) + entry->m_24;
+        m_activeWindow = g_buteMgr.GetIntDef("Hazardz", "AniPad", 0x64) + entry->m_aniPadBias;
     } else {
         g_gameReg->EmitEvent(0x8009, 0x461);
     }
     if (m_10->m_120 == 0) {
-        m_5c = m_58;
+        m_idleWindow = m_activeWindow;
     }
 }
 
@@ -341,12 +342,12 @@ void CStaticHazard::RegisterActs() {
 // ---------------------------------------------------------------------------
 // CStaticHazard::LoadAttributes2 @0x0fc0b0 - the time-gated pulse: bail when the
 // registry is in the gated state; compute the running phase modulo the window;
-// on a hit latch m_60, re-arm the GO geometry/STATICHAZARD sprite (SetAnimEx
+// on a hit latch m_fired, re-arm the GO geometry/STATICHAZARD sprite (SetAnimEx
 // idiom), and re-resolve the "B" anim-set node through the global bute tree.
 //
 // @early-stop
 // store-vs-load scheduling wall (docs/patterns/statement-schedule-faithful.md):
-// logic 100% correct, all reloc operands named. Retail emits `mov [m_60],1` before
+// logic 100% correct, all reloc operands named. Retail emits `mov [m_fired],1` before
 // reloading m_38; MSVC5 here hoists the m_38 load above the store. The m_38 reload
 // is load-bearing (re-read per call), so the store/load pair can't be pinned.
 // ~98%. Parked for the final sweep.
@@ -356,23 +357,23 @@ i32 CStaticHazard::LoadAttributes2() {
     if (reg->m_118 != 0 && reg->m_134 == 1) {
         return 0;
     }
-    u32 phase = g_645588 - m_54;
+    u32 phase = g_645588 - m_pulseEpoch;
     u32 base = (u32)m_10->m_118;
     if (phase <= base) {
         return 0;
     }
     phase -= base;
-    u32 span = m_5c + m_58;
-    if (phase % span > (u32)m_58) {
+    u32 span = m_idleWindow + m_activeWindow;
+    if (phase % span > (u32)m_activeWindow) {
         return 0;
     }
-    m_60 = 1;
-    m_40 = m_38->m_1b4;
+    m_fired = 1;
+    m_prevAnimNode = m_38->m_1b4;
     m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDGO", 0);
     {
         HazAnimDesc* d = (HazAnimDesc*)m_38->m_1b4;
-        HazAnimElem* e = d->m_10 > 0 ? *d->m_c : 0;
-        m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_14);
+        HazAnimElem* e = d->m_count > 0 ? *d->m_elems : 0;
+        m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_frameSeed);
     }
     m_30 = m_14->m_1c;
     m_14->m_1c = g_buteTree.Find("B");
@@ -382,7 +383,7 @@ i32 CStaticHazard::LoadAttributes2() {
 // ---------------------------------------------------------------------------
 // CStaticHazard::LoadAttributes @0x0fc1a0 - the full periodic tick. Compute the
 // running phase modulo the on/off window; depending on the window half + the
-// fired flag (m_60) + the bound object's gate (m_120), re-arm the GO or IDLE
+// fired flag (m_fired) + the bound object's gate (m_120), re-arm the GO or IDLE
 // animation, drive the per-frame anim sub-object (SetAnim==2 => place + mark the
 // hazard grid cell), and set/clear the cell's bit-0x8000000.
 //
@@ -393,23 +394,23 @@ i32 CStaticHazard::LoadAttributes2() {
 // grid-cell op sites spill against retail's stack-slot schedule. Parked for sweep.
 RVA(0x000fc1a0, 0x33b)
 i32 CStaticHazard::LoadAttributes() {
-    u32 phase = (g_645588 - m_54) - (u32)m_10->m_118;
-    u32 rem = phase % (u32)(m_5c + m_58);
-    if (rem > (u32)m_58) {
+    u32 phase = (g_645588 - m_pulseEpoch) - (u32)m_10->m_118;
+    u32 rem = phase % (u32)(m_idleWindow + m_activeWindow);
+    if (rem > (u32)m_activeWindow) {
         // idle window
-        if (m_60 == 0) {
+        if (m_fired == 0) {
             goto dispatch;
         }
         if (m_10->m_120 != 0) {
             // re-arm IDLE (cache the anim-set node first)
             m_30 = m_14->m_1c;
             m_14->m_1c = g_buteTree.Find("A");
-            m_40 = m_38->m_1b4;
+            m_prevAnimNode = m_38->m_1b4;
             m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDIDLE", 0);
             {
                 HazAnimDesc* d = (HazAnimDesc*)m_38->m_1b4;
-                HazAnimElem* e = d->m_10 > 0 ? *d->m_c : 0;
-                m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_14);
+                HazAnimElem* e = d->m_count > 0 ? *d->m_elems : 0;
+                m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_frameSeed);
             }
             if (m_10->m_74 != 0) {
                 m_10->m_74 = 0;
@@ -417,46 +418,46 @@ i32 CStaticHazard::LoadAttributes() {
             }
             // clear the hazard cell's bit-0x8000000
             HazGrid* grid = (HazGrid*)g_gameReg->m_70;
-            if ((u32)m_64 < (u32)grid->m_c && (u32)m_68 < (u32)grid->m_10) {
-                *(i32*)(grid->m_8[m_68] + m_64 * 0x1c) &= 0xf7ffffff;
+            if ((u32)m_tileCol < (u32)grid->m_width && (u32)m_tileRow < (u32)grid->m_height) {
+                *(i32*)(grid->m_rows[m_tileRow] + m_tileCol * 0x1c) &= 0xf7ffffff;
             }
             return 0;
         }
         // m_120 == 0: re-arm GO + clear the fired flag
-        m_40 = m_38->m_1b4;
+        m_prevAnimNode = m_38->m_1b4;
         m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDGO", 0);
         {
             HazAnimDesc* d = (HazAnimDesc*)m_38->m_1b4;
-            HazAnimElem* e = d->m_10 > 0 ? *d->m_c : 0;
-            m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_14);
+            HazAnimElem* e = d->m_count > 0 ? *d->m_elems : 0;
+            m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_frameSeed);
         }
         if (m_10->m_74 != 0) {
             m_10->m_74 = 0;
             m_10->m_08 |= 0x20000;
         }
-        m_60 = 0;
+        m_fired = 0;
         return 0;
     } else {
         // active window
-        if (m_60 != 0) {
+        if (m_fired != 0) {
             goto dispatch;
         }
         if (m_10->m_120 != 0) {
             goto dispatch;
         }
         // turn on: re-arm GO, latch the fired flag
-        m_40 = m_38->m_1b4;
+        m_prevAnimNode = m_38->m_1b4;
         m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDGO", 0);
         {
             HazAnimDesc* d = (HazAnimDesc*)m_38->m_1b4;
-            HazAnimElem* e = d->m_10 > 0 ? *d->m_c : 0;
-            m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_14);
+            HazAnimElem* e = d->m_count > 0 ? *d->m_elems : 0;
+            m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_frameSeed);
         }
         if (m_10->m_74 != 0) {
             m_10->m_74 = 0;
             m_10->m_08 |= 0x20000;
         }
-        m_60 = 1;
+        m_fired = 1;
         return 0;
     }
 
@@ -471,13 +472,13 @@ dispatch:
             m_10->m_08 |= 0x20000;
         }
         HazGrid* grid = (HazGrid*)g_gameReg->m_70;
-        if ((u32)m_64 < (u32)grid->m_c && (u32)m_68 < (u32)grid->m_10) {
-            *(i32*)(grid->m_8[m_68] + m_64 * 0x1c) |= 0x8000000;
+        if ((u32)m_tileCol < (u32)grid->m_width && (u32)m_tileRow < (u32)grid->m_height) {
+            *(i32*)(grid->m_rows[m_tileRow] + m_tileCol * 0x1c) |= 0x8000000;
         }
     } else {
         HazGrid* grid = (HazGrid*)g_gameReg->m_70;
-        if ((u32)m_64 < (u32)grid->m_c && (u32)m_68 < (u32)grid->m_10) {
-            *(i32*)(grid->m_8[m_68] + m_64 * 0x1c) &= 0xf7ffffff;
+        if ((u32)m_tileCol < (u32)grid->m_width && (u32)m_tileRow < (u32)grid->m_height) {
+            *(i32*)(grid->m_rows[m_tileRow] + m_tileCol * 0x1c) &= 0xf7ffffff;
         }
         if (m_10->m_74 != 0) {
             m_10->m_74 = 0;
@@ -487,16 +488,16 @@ dispatch:
     {
         WwdAnimSub* sub = (WwdAnimSub*)((char*)m_38 + 0x1a0);
         if (sub->m_28 != 0 && sub->m_20 == 0) {
-            m_40 = m_38->m_1b4;
+            m_prevAnimNode = m_38->m_1b4;
             m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDIDLE", 0);
             {
                 HazAnimDesc* d = (HazAnimDesc*)m_38->m_1b4;
-                HazAnimElem* e = d->m_10 > 0 ? *d->m_c : 0;
-                m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_14);
+                HazAnimElem* e = d->m_count > 0 ? *d->m_elems : 0;
+                m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_frameSeed);
             }
             HazGrid* grid = (HazGrid*)g_gameReg->m_70;
-            if ((u32)m_64 < (u32)grid->m_c && (u32)m_68 < (u32)grid->m_10) {
-                *(i32*)(grid->m_8[m_68] + m_64 * 0x1c) &= 0xf7ffffff;
+            if ((u32)m_tileCol < (u32)grid->m_width && (u32)m_tileRow < (u32)grid->m_height) {
+                *(i32*)(grid->m_rows[m_tileRow] + m_tileCol * 0x1c) &= 0xf7ffffff;
             }
         }
     }

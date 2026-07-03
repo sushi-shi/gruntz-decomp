@@ -153,9 +153,9 @@ extern "C" u32 g_645588;
 // cell grid (m_8[row] -> cell-row base; cols 0x1c B apart) bounded by m_c x m_10.
 struct TBombGrid {
     char m_pad00[0x08];
-    char** m_8; // +0x08  row table
-    i32 m_c;    // +0x0c  width  (col bound)
-    i32 m_10;   // +0x10  height (row bound)
+    char** m_rows; // +0x08  row table
+    i32 m_width;   // +0x0c  width  (col bound)
+    i32 m_height;  // +0x10  height (row bound)
 };
 SIZE_UNKNOWN(TBombGrid);
 // The registry's tile-manager (g_gameReg->m_68): the per-frame detonate path
@@ -167,9 +167,9 @@ struct TBombTileMgr {
 SIZE_UNKNOWN(TBombTileMgr);
 struct TBombGameReg {
     char m_pad00[0x68];
-    TBombTileMgr* m_68;        // +0x68  tile-manager (detonate NotifyMoveAt)
+    TBombTileMgr* m_tileMgr;   // +0x68  tile-manager (detonate NotifyMoveAt)
     char m_pad6c[0x70 - 0x6c]; // +0x6c
-    TBombGrid* m_70;           // +0x70
+    TBombGrid* m_grid;         // +0x70
 };
 SIZE_UNKNOWN(TBombGameReg);
 DATA(0x0024556c)
@@ -203,7 +203,7 @@ CTimeBomb::CTimeBomb(CGameObject* obj) : CUserLogic(obj) {
     m_38->ApplyName("GAME_TIMEBOMB");
     m_30 = m_14->m_1c;
     m_14->m_1c = g_buteTree.Find("A");
-    m_40 = m_38->m_1b4;
+    m_prevAnimNode = m_38->m_1b4;
     if (m_10->m_120 > 0) {
         m_38->ApplyLookupGeometry("GAME_TIMEBOMBFAST", 0);
         m_durationLo = m_10->m_120;
@@ -221,9 +221,9 @@ CTimeBomb::CTimeBomb(CGameObject* obj) : CUserLogic(obj) {
     }
     i32 cx = m_10->m_5c >> 5;
     i32 cy = m_10->m_60 >> 5;
-    TBombGrid* g = g_gameReg->m_70;
-    if (cx < g->m_c && cy < g->m_10) {
-        char* row = g->m_8[cy];
+    TBombGrid* g = g_gameReg->m_grid;
+    if (cx < g->m_width && cy < g->m_height) {
+        char* row = g->m_rows[cy];
         *(i32*)(row + cx * 0x1c) |= 0x1000000;
     }
     m_10->m_124 = -1;
@@ -288,21 +288,21 @@ extern "C" u32 g_6bf3bc;
 // initial state read (out-of-bounds reads as 1) and the two detonate-path
 // clears. Same grid shape the ctor marks; the bounds compares are UNSIGNED.
 static inline i32 TBombGridCell(CGameObject* obj) {
-    TBombGrid* g = g_gameReg->m_70;
+    TBombGrid* g = g_gameReg->m_grid;
     i32 cx = obj->m_5c >> 5;
     i32 cy = obj->m_60 >> 5;
-    if ((u32)cx < (u32)g->m_c && (u32)cy < (u32)g->m_10) {
-        char* row = g->m_8[cy];
+    if ((u32)cx < (u32)g->m_width && (u32)cy < (u32)g->m_height) {
+        char* row = g->m_rows[cy];
         return *(i32*)(row + cx * 0x1c);
     }
     return 1;
 }
 static inline void TBombGridClear(CGameObject* obj) {
-    TBombGrid* g = g_gameReg->m_70;
+    TBombGrid* g = g_gameReg->m_grid;
     i32 cx = obj->m_5c >> 5;
     i32 cy = obj->m_60 >> 5;
-    if ((u32)cx < (u32)g->m_c && (u32)cy < (u32)g->m_10) {
-        char* row = g->m_8[cy];
+    if ((u32)cx < (u32)g->m_width && (u32)cy < (u32)g->m_height) {
+        char* row = g->m_rows[cy];
         *(i32*)(row + cx * 0x1c) &= ~0x1000000;
     }
 }
@@ -338,7 +338,7 @@ i32 CTimeBomb::LoadAttributes() {
         return 0;
     }
     if (m_fastPhase == 0) {
-        m_40 = m_38->m_1b4;
+        m_prevAnimNode = m_38->m_1b4;
         m_38->ApplyLookupGeometry("GAME_TIMEBOMBFAST", 0);
         m_durationLo = (i32)g_buteMgr.GetDwordDef("Projectile", "TimeBombFastTime", 0x3e8);
         m_durationHi = 0;
@@ -349,6 +349,6 @@ i32 CTimeBomb::LoadAttributes() {
     }
     m_38->m_08 |= 0x10000;
     TBombGridClear(m_10);
-    g_gameReg->m_68->NotifyMoveAt(m_10->m_5c, m_10->m_60, m_10->m_124, 1);
+    g_gameReg->m_tileMgr->NotifyMoveAt(m_10->m_5c, m_10->m_60, m_10->m_124, 1);
     return 0;
 }

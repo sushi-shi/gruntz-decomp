@@ -26,8 +26,11 @@
 DATA(0x002453d8)
 extern CButeMgr g_attractButeMgr;
 
-// The game registry singleton; its +0x80 attract counter is reached by raw offset.
-struct CGameReg;
+// The game registry singleton; its +0x80 attract counter selects the TITLE state.
+struct CGameReg {
+    char m_pad00[0x80];
+    i32 m_attractCounter; // +0x80  the running attract-title index source
+};
 DATA(0x00245460)
 extern CGameReg* g_gameReg;
 
@@ -110,7 +113,7 @@ struct AttractActorList {
     AttractActor* m_data[1]; // +0x08  inline pointer array
 };
 
-// The per-frame time delta (countdown source for m_1b4). C linkage so the symbol
+// The per-frame time delta (countdown source for m_idleTimer). C linkage so the symbol
 // pairs with the target's _g_645584 (the convention across the gamemode units).
 extern "C" {
     DATA(0x00245584)
@@ -155,24 +158,24 @@ void CAttract::ReleaseResources() {
 }
 
 // CAttract::FrameSlot28(arg) (slot 10 / +0x28, 0x014340): per-frame voice poll.
-// If the host's voice (m_1b8->m_10) is playing, (re)start it (Restart(0,0x1f4,1)),
+// If the host's voice (m_host->m_10) is playing, (re)start it (Restart(0,0x1f4,1)),
 // then if it is still playing stop the registrar's pooled resource (Stop(-1)) and
 // loop while the voice keeps reporting playing. Returns 1.
 // @early-stop
 // regalloc back-edge coin-flip (docs/patterns/zero-register-pinning.md): body
 // byte-identical except the final loop-back IsPlaying load - retail re-reads
-// m_1b8 through eax (8b 86 .. 8b 48 10), the recompile through ecx (8b 8e .. 8b 49
+// m_host through eax (8b 86 .. 8b 48 10), the recompile through ecx (8b 8e .. 8b 49
 // 10). A pure allocator choice on the do-while back-edge; no source lever flips it.
 RVA(0x00014340, 0x71)
 i32 CAttract::FrameSlot28(i32 arg) {
-    if (m_1b8 == 0) {
+    if (m_host == 0) {
         return 1;
     }
-    if (!m_1b8->m_10->IsPlaying()) {
+    if (!m_host->m_10->IsPlaying()) {
         return 1;
     }
-    m_1b8->m_10->Restart(0, 0x1f4, 1);
-    if (!m_1b8->m_10->IsPlaying()) {
+    m_host->m_10->Restart(0, 0x1f4, 1);
+    if (!m_host->m_10->IsPlaying()) {
         return 1;
     }
     do {
@@ -180,14 +183,14 @@ i32 CAttract::FrameSlot28(i32 arg) {
         if (r) {
             r->Stop(-1);
         }
-    } while (m_1b8->m_10->IsPlaying());
+    } while (m_host->m_10->IsPlaying());
     return 1;
 }
 
 // CAttract::FramePoll (0x143e0): the attract-mode per-frame poll. If the page's
 // render-busy object reports idle AND the InputVirtual slot reports idle, report
 // the exit error (0x8006/0x3e8) and bail. Otherwise stop the registrar's pooled
-// resource, tick the m_1b4 timeout down by the frame delta, run every actor's
+// resource, tick the m_idleTimer timeout down by the frame delta, run every actor's
 // Update(), and if any actor raised its 0x100 flag post the exit WM_COMMAND.
 // Code byte-identical to retail (~97% fuzzy = reloc-masked plateau): the residual
 // is purely cross-unit/IAT symbol-naming on three reloc operands - ReportError (a
@@ -210,10 +213,10 @@ i32 CAttract::FramePoll() {
         res->Stop(-1);
     }
 
-    if (g_645584 < m_1b4) {
-        m_1b4 -= g_645584;
+    if (g_645584 < m_idleTimer) {
+        m_idleTimer -= g_645584;
     } else {
-        m_1b4 = 0;
+        m_idleTimer = 0;
     }
 
     AttractActorList* list = g_actorList;
@@ -287,7 +290,7 @@ i32 CAttract::RollTitleByPage() {
         do {
         } while (showCursor(0) >= 0);
     }
-    i32 idx = *(i32*)((char*)g_gameReg + 0x80) % g_attractStateCount + 1;
+    i32 idx = g_gameReg->m_attractCounter % g_attractStateCount + 1;
     CString s;
     s.Format(s_TITLE_d, idx);
     return RunTitleSeq((char*)(const char*)s, 0, 0, 1, 0);
@@ -305,7 +308,7 @@ i32 CAttract::RollTitleByV3() {
         do {
         } while (showCursor(0) >= 0);
     }
-    i32 idx = *(i32*)((char*)g_gameReg + 0x80) % g_attractStateCount + 1;
+    i32 idx = g_gameReg->m_attractCounter % g_attractStateCount + 1;
     CString s;
     s.Format(s_TITLE_d, idx);
     return RunTitleSeq((char*)(const char*)s, 0, 0, 1, 0);
@@ -440,7 +443,7 @@ i32 CAttract::RunTitleSeq(char* name, i32 a, i32 b, i32 c, i32 d) {
 // Otherwise hides the cursor, re-asserts the video mode, resolves the
 // "STATEZ_ATTRACT" state (stored into m_2c), loads its "SOUNDZ" set, registers
 // the sound handle on the menu page under the "ATTRACT"/"_" tags, hides the
-// cursor again, then sets the entry flags: m_1b8 is always cleared, m_1bc is
+// cursor again, then sets the entry flags: m_host is always cleared, m_activeFlag is
 // cleared when mode == 3 (else set to 1). Returns 1 on success, 0 on early-out.
 RVA(0x00013fb0, 0xd5)
 i32 CAttract::EnterAttractMode(i32 a, i32 b, i32 mode) {
@@ -475,11 +478,11 @@ i32 CAttract::EnterAttractMode(i32 a, i32 b, i32 mode) {
     }
 
     if (mode == 3) {
-        m_1bc = 0;
-        m_1b8 = 0;
+        m_activeFlag = 0;
+        m_host = 0;
     } else {
-        m_1bc = 1;
-        m_1b8 = 0;
+        m_activeFlag = 1;
+        m_host = 0;
     }
     return 1;
 }
@@ -508,7 +511,7 @@ i32 CAttract::LoadTitleConfig(i32 mode) {
     char titleName[0x20];
 
     if (mode != 2) {
-        i32 idx = *(i32*)((char*)g_gameReg + 0x80) % g_attractStateCount + 1;
+        i32 idx = g_gameReg->m_attractCounter % g_attractStateCount + 1;
         sprintf(stateName, s_STATEZ_ATTRACT);
         sprintf(titleName, s_TITLE_d, idx);
 
@@ -567,7 +570,7 @@ i32 CAttract::Activate() {
 
     ((CMenuBrightnessReset*)((CMenuRoot*)m_c)->m_04->m_14->m_2c)->Reset(0);
 
-    i32 idx = *(i32*)((char*)g_gameReg + 0x80) % g_attractStateCount + 1;
+    i32 idx = g_gameReg->m_attractCounter % g_attractStateCount + 1;
     sprintf(stateName, s_STATEZ_ATTRACT);
     sprintf(titleName, s_TITLE_d, idx);
 

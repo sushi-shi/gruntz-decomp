@@ -24,8 +24,17 @@ public:
     void SpawnPartners();                         // 0x0403b0
     void LoadColors();                            // 0x0411f0
     i32 Serialize(i32 ar, i32 tag, i32 c, i32 d); // 0x03fed0 (two-chain + tag-8 color fixup)
-    i32 Stub_0412c0();                            // 0x0412c0 (per-partner config re-run)
+    i32 ReapplyConfig();                          // 0x0412c0 (per-partner config re-run)
     virtual ~CWormhole() OVERRIDE;                // 0x010980 (folded leaf teardown, /GX frame)
+
+    // CWormhole's own data begins at +0x40 (CUserLogic base ends at +0x40). Only
+    // the offsets the matched methods write are modeled; +0x54/+0x68 are config
+    // state flags whose exact roles are unproven (kept as offset placeholders).
+    i32 m_prevAnimNode; // +0x40  snapshot of the bound object's active-anim descriptor
+    char m_pad44[0x54 - 0x44];
+    i32 m_54; // +0x54  config flag (set to 1 by ReapplyConfig)
+    char m_pad58[0x68 - 0x58];
+    i32 m_68; // +0x68  config flag (cleared by ReapplyConfig)
 };
 
 #endif // GRUNTZ_CWORMHOLE_H

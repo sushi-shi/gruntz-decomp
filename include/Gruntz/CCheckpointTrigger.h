@@ -14,8 +14,8 @@ public:
     static void InitActReg();               // 0x10ea00 (constructs g_checkpointActReg @0x64e7c0)
 
     char m_pad40[0x54 - 0x40]; // +0x40
-    i32 m_54[15];              // +0x54  the captured checkpoint state (15 dwords)
-    i32 m_90;                  // +0x90  first-empty index
+    i32 m_state[15];           // +0x54  the captured checkpoint state (15 dwords)
+    i32 m_firstEmpty;          // +0x90  first-empty index
 };
 SIZE(CCheckpointTrigger, 0x94);
 

@@ -145,13 +145,13 @@ SIZE_UNKNOWN(CVoiceSink);
 // (+0x5c/+0x60) the on-screen window test reads.
 struct CVoiceHitSprite {
     char m_pad0[0x5c];
-    i32 m_5c; // +0x5c screen x
-    i32 m_60; // +0x60 screen y
+    i32 m_screenX; // +0x5c screen x
+    i32 m_screenY; // +0x60 screen y
 };
 SIZE_UNKNOWN(CVoiceHitSprite);
 struct CVoiceHit {
     char m_pad0[0x10];
-    CVoiceHitSprite* m_10; // +0x10 bound sprite
+    CVoiceHitSprite* m_sprite; // +0x10 bound sprite
 };
 SIZE_UNKNOWN(CVoiceHit);
 
@@ -262,9 +262,9 @@ i32 CVoiceTrigger::Tick() {
         ((CVoiceSink*)g_gameReg->m_68)
             ->QueryAt(m_10->m_5c, m_10->m_60, &m_10->m_134, &outA, &outB, &m_10->m_144);
     if (hit && outA == g_644c54) {
-        CVoiceHitSprite* hs = hit->m_10;
-        i32 hy = hs->m_60;
-        i32 hx = hs->m_5c;
+        CVoiceHitSprite* hs = hit->m_sprite;
+        i32 hy = hs->m_screenY;
+        i32 hx = hs->m_screenX;
         if (hx < g_gameReg->m_144 && hx >= g_gameReg->m_13c && hy < g_gameReg->m_148
             && hy >= g_gameReg->m_140) {
             if (((CVoiceSink*)g_gameReg->m_60)->CueA(hit, m_10->m_124, m_10->m_128, 0, -1, -1)) {

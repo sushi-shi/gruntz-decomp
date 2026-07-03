@@ -86,11 +86,11 @@ struct WorldList {
 };
 struct CSpawnHolder {
     char m_pad00[0x8];
-    WorldList* m_8; // +0x08 (read as (m_8 + 0x10) -> +0x4 = head; modeled directly)
+    WorldList* m_list; // +0x08 (read as (m_list + 0x10) -> +0x4 = head; modeled directly)
 };
 struct CSpawnReg {
     char m_pad00[0x30];
-    CSpawnHolder* m_30; // +0x30
+    CSpawnHolder* m_holder; // +0x30
 };
 
 // The +0x7c sub-object that carries the type marker (its +0x10 slot) and, for a
@@ -98,17 +98,17 @@ struct CSpawnReg {
 class CWormhole; // fwd
 struct CSpawnAux {
     char m_pad00[0x10];
-    void* m_10; // +0x10  type marker (compared to &WormholeTypeMarker)
+    void* m_typeMarker; // +0x10  type marker (compared to &WormholeTypeMarker)
     char m_pad14[4];
-    CWormhole* m_18; // +0x18  the wormhole logic object
+    CWormhole* m_wormhole; // +0x18  the wormhole logic object
 };
 // The candidate game object: tile coords at +0x5c/+0x60 and the aux at +0x7c.
 struct CSpawnObj {
     char m_pad00[0x5c];
-    i32 m_5c; // +0x5c  tile x
-    i32 m_60; // +0x60  tile y
+    i32 m_tileX; // +0x5c  tile x
+    i32 m_tileY; // +0x60  tile y
     char m_pad64[0x7c - 0x64];
-    CSpawnAux* m_7c; // +0x7c
+    CSpawnAux* m_aux; // +0x7c
 };
 
 // The geometry sub-player at m_38->m_1a0 SpawnPartners seeds with g_defaultGeo.
@@ -269,10 +269,10 @@ void RegisterWormholeLogic() {
 // then - only when this wormhole is a freshly-spawned, un-paired open one - walks
 // every game object in the world registry and, for each that is a WORMHOLE
 // (its +0x7c aux's +0x10 type marker == &WormholeTypeMarker) sitting at the same
-// tile coords (m_5c/m_60 == this->m_10->m_164/m_168), re-runs that partner's
-// config (Stub_0412c0) when it has a live logic object (aux->m_18). __thiscall,
-// no args, returns int (0).
-// @source: trace this/ecx (high); calls sibling Stub_0412c0 (0x412c0)
+// tile coords (m_tileX/m_tileY == this->m_10->m_164/m_168), re-runs that partner's
+// config (ReapplyConfig) when it has a live logic object (aux->m_wormhole).
+// __thiscall, no args, returns int (0).
+// @source: trace this/ecx (high); calls sibling ReapplyConfig (0x412c0)
 // @early-stop
 // shrink-wrapped-callee-save-push wall (inverse): body byte-identical, but retail
 // eager-pushes ebp in the prologue while cl shrink-wraps it to the loop preheader;
@@ -299,7 +299,7 @@ void CWormhole::SpawnPartners() {
         return;
     }
 
-    WorldList* list = (WorldList*)((char*)((CSpawnReg*)g_gameReg)->m_30->m_8 + 0x10);
+    WorldList* list = (WorldList*)((char*)((CSpawnReg*)g_gameReg)->m_holder->m_list + 0x10);
     if (list == 0) {
         return;
     }
@@ -311,10 +311,10 @@ void CWormhole::SpawnPartners() {
         CSpawnObj* obj = node->m_obj;
         node = node->m_next;
         if (obj != 0) {
-            CSpawnAux* aux = obj->m_7c;
-            if (aux->m_10 == (void*)&WormholeTypeMarker && obj->m_5c == tx && obj->m_60 == ty
-                && aux->m_18 != 0) {
-                aux->m_18->Stub_0412c0();
+            CSpawnAux* aux = obj->m_aux;
+            if (aux->m_typeMarker == (void*)&WormholeTypeMarker && obj->m_tileX == tx
+                && obj->m_tileY == ty && aux->m_wormhole != 0) {
+                aux->m_wormhole->ReapplyConfig();
             }
         }
     } while (node != 0);
@@ -377,7 +377,7 @@ RVA(0x0003fc70, 0x1db)
 CWormhole::CWormhole(CGameObject* obj) : CUserLogic(obj) {
     m_38->m_08 |= 0x2000002;
     m_38->ApplyName("GAME_WORMHOLE");
-    *(i32*)((char*)this + 0x40) = m_38->m_1b4;
+    m_prevAnimNode = m_38->m_1b4;
     m_38->ApplyLookupGeometry("GAME_WORMHOLE", 0);
     if (m_10->m_74 != 0x1869f) {
         m_10->m_74 = 0x1869f;
@@ -441,21 +441,21 @@ i32 CWormhole::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
 }
 
 // ---------------------------------------------------------------------------
-// CWormhole::Stub_0412c0 - re-apply the bound object's wormhole config (the tail
+// CWormhole::ReapplyConfig - re-apply the bound object's wormhole config (the tail
 // the ctor shares): stamp the WORMHOLE name + TELEPORTEROPEN geometry on m_38,
 // re-cache the "A" act-key node (m_14->m_1c, saving the old into m_30), raise the
-// two local flags, then clear bit0 of the bound object's m_40.
+// two config flags, then clear bit0 of the bound object's m_40.
 // ---------------------------------------------------------------------------
 extern char s_actKeyA[]; // "A" (0x60a454)
 RVA(0x000412c0, 0x63)
-i32 CWormhole::Stub_0412c0() {
+i32 CWormhole::ReapplyConfig() {
     m_38->ApplyName("GAME_WORMHOLE");
-    *(i32*)((char*)this + 0x40) = m_38->m_1b4;
+    m_prevAnimNode = m_38->m_1b4;
     m_38->ApplyLookupGeometry("GAME_TELEPORTEROPEN", 0);
     m_30 = m_14->m_1c;
     m_14->m_1c = g_buteTree.Find(s_actKeyA);
-    *(i32*)((char*)this + 0x54) = 1;
-    *(i32*)((char*)this + 0x68) = 0;
+    m_54 = 1;
+    m_68 = 0;
     m_38->m_40 &= ~1;
     return 1;
 }

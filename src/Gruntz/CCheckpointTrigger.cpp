@@ -70,7 +70,7 @@ CCheckpointTrigger::CCheckpointTrigger(CGameObject* obj) : CUserLogic(obj) {
         m_10->m_74 = zk;
         m_10->m_08 |= 0x20000;
     }
-    memset(m_54, 0, sizeof(m_54));
+    memset(m_state, 0, sizeof(m_state));
     if (m_10->m_134 == 0x80000000) {
         m_10->m_134 = 0;
     }
@@ -83,23 +83,23 @@ CCheckpointTrigger::CCheckpointTrigger(CGameObject* obj) : CUserLogic(obj) {
     if (m_10->m_64 == 0x80000000) {
         m_10->m_64 = 0;
     }
-    m_54[0] = m_10->m_134;
-    m_54[1] = m_10->m_138;
-    m_54[2] = m_10->m_13c;
-    m_54[3] = m_10->m_140;
-    m_54[4] = m_10->m_144;
-    m_54[5] = m_10->m_148;
-    m_54[6] = m_10->m_14c;
-    m_54[7] = m_10->m_150;
-    m_54[8] = m_10->m_154;
-    m_54[9] = m_10->m_158;
-    m_54[10] = m_10->m_15c;
-    m_54[11] = m_10->m_160;
-    m_54[12] = m_10->m_64;
-    m_54[13] = m_10->m_68;
-    m_54[14] = m_10->m_6c;
-    for (m_90 = 0; m_90 < 15; m_90++) {
-        if (m_54[m_90] == 0) {
+    m_state[0] = m_10->m_134;
+    m_state[1] = m_10->m_138;
+    m_state[2] = m_10->m_13c;
+    m_state[3] = m_10->m_140;
+    m_state[4] = m_10->m_144;
+    m_state[5] = m_10->m_148;
+    m_state[6] = m_10->m_14c;
+    m_state[7] = m_10->m_150;
+    m_state[8] = m_10->m_154;
+    m_state[9] = m_10->m_158;
+    m_state[10] = m_10->m_15c;
+    m_state[11] = m_10->m_160;
+    m_state[12] = m_10->m_64;
+    m_state[13] = m_10->m_68;
+    m_state[14] = m_10->m_6c;
+    for (m_firstEmpty = 0; m_firstEmpty < 15; m_firstEmpty++) {
+        if (m_state[m_firstEmpty] == 0) {
             break;
         }
     }

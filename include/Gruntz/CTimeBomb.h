@@ -29,7 +29,7 @@ public:
     i32 LoadAttributes();           // 0x0e1e60 (per-frame timer/detonate step)
     ~CTimeBomb();                   // 0x012a70 (folds the CUserLogic teardown)
 
-    i32 m_40; // +0x40  m_38->m_1b4 snapshot
+    i32 m_prevAnimNode; // +0x40  m_38->m_1b4 snapshot
     char m_pad44[0x54 - 0x44];
     i32 m_fastPhase; // +0x54  0 = slow phase (re-arms to fast on expiry), 1 = fast phase (detonates)
     i32 m_startTimeLo; // +0x58  phase-start running-clock snapshot (lo dword of the i64 base)
