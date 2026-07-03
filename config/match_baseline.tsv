@@ -1404,7 +1404,7 @@ cheatmgr	?AddCheat@CCheatMgr@@QAEHPBDHH@Z	98.5714	98.5714	1	77144daa4699	0x22be0
 cheatmgr	?CheckCode@CCheatMgr@@QAEHVCString@@@Z	82.6351	82.6351	2	5bf6ba8f989a	0x23090
 cheatmgr	?Empty@CCheatMgr@@QAEXXZ	100.0000	100.0000	1	8cc149232bcc	0x22b00
 cheatmgr	?Init@CCheatMgr@@QAEHH@Z	100.0000	100.0000	1	7fab48db9c93	0x22ad0
-cheatmgr	?LoadCheatConfig@CCheatMgr@@QAEXXZ	91.5726	91.5726	2	2a4c3e8ad2ae	0x22e60
+cheatmgr	?LoadCheatConfig@CCheatMgr@@QAEXXZ	91.5726	91.5726	3	f170f63772b5	0x22e60
 cheatmgr	?RegisterCheats@CCheatMgr@@QAEXXZ	100.0000	100.0000	1	368e0d229303	0x22c80
 checkpointswitchbuild	?BuildSmall@CCheckpointTriggerSwitchLogic@@QAEHHHHHHPAUCStatzRect60@@HHH@Z	62.3936	62.3936	2	2c7fc9ac14b4	0x112a50
 cimage	??1CImage@@UAE@XZ	100.0000	100.0000	3	f0baa6c96b83	0xd5e80
@@ -3187,7 +3187,7 @@ sbi_rectonly	?HitTestRects@CSBI_RectOnly@@QAEPAVCSbiRect@@HH@Z	94.0761	94.0761	1
 sbi_rectonly	?HlClickGroup0@CSBI_RectOnly@@QAEHH@Z	94.1884	94.1884	6	fb89d8cdded7	0x10b5d0
 sbi_rectonly	?HlClickGroup1@CSBI_RectOnly@@QAEHH@Z	94.1884	94.1884	6	da7bc901afa6	0x10b6f0
 sbi_rectonly	?HlClickGroup2@CSBI_RectOnly@@QAEHH@Z	94.1884	94.1884	6	d9385c90c125	0x10b810
-sbi_rectonly	?InitTabRects@CSBI_RectOnly@@QAEXXZ	100.0000	100.0000	2	f2c2e624fd8d	0x106900
+sbi_rectonly	?InitTabRects@CSBI_RectOnly@@QAEXXZ	100.0000	100.0000	3	f878b29923ca	0x106900
 sbi_rectonly	?InsertPtr@CSBI_RectOnly@@QAEHHH@Z	75.8491	75.8491	3	b2fd165ca1a8	0x108410
 sbi_rectonly	?LoadBattlezItemConfig@CSBI_RectOnly@@QAEHH@Z	93.6625	93.6625	3	74a2188f713f	0xfdc00
 sbi_rectonly	?LoadChipMachineConfig@CSBI_RectOnly@@QAEXXZ	80.0041	80.0041	8	1030cafa8f7f	0x106bb0
@@ -3590,7 +3590,7 @@ unknownclassarrays	?FreeArrays@CBattlezMapConfig@@QAEXXZ	100.0000	100.0000	1	c1d
 unknownclassarrays	?Method_025c20@CBattlezMapConfig@@QAEHXZ	84.9333	84.9333	1	a3ab129ee890	0x25c20
 unknownclassarrays	?Method_025d90@CBattlezMapConfig@@QAEHXZ	75.6087	75.6087	2	ac19523724a5	0x25d90
 unknownclassarrays	?Method_026470@CBattlezMapConfig@@QAEHH@Z	83.1071	83.1071	2	f738071bf7eb	0x26470
-unknownclassarrays	?Method_029b40@CBattlezMapConfig@@QAEHH@Z	24.7804	24.7804	2	f4fa235a3b86	0x29b40
+unknownclassarrays	?Method_029b40@CBattlezMapConfig@@QAEHH@Z	24.7804	24.7804	3	7a02ee4067ce	0x29b40
 unknownclassarrays	?Method_02ad40@CBattlezMapConfig@@QAEPAXH@Z	58.8333	58.8333	2	153a79ebaa48	0x2ad40
 unknownclassarrays	?Method_02bfc0@CBattlezMapConfig@@QAEHHPAXHH@Z	80.7188	80.7188	1	baabe5a55afc	0x2bfc0
 unknownclassarrays	?Method_02c080@CBattlezMapConfig@@QAEHH@Z	100.0000	100.0000	1	12c95bbed6a4	0x2c080

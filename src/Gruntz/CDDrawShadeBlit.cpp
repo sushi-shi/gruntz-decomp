@@ -30,6 +30,14 @@ DATA(0x00283eb4)
 extern i32 g_bDown; // 0x683eb4
 
 // The three 2048-byte-strided translucency LUT banks selected by the light level.
+//
+// AUTHENTIC-FLOOR NOTE (cast audit): every `(u16*)` in this TU is a PROVEN-authentic
+// pixel-mode reinterpretation and must NOT be reduced. m_palDescr->m_lut and
+// m_lutBank0/1/2 are all `u8*` byte bases: the 8bpp draw-type paths read them as bytes
+// (u8* pal / base), while the RGB565 16bpp paths reinterpret the SAME base as u16* for
+// the channel-split blend LUT reads. Typing the members u16* would break the 8bpp byte
+// reads (verified regressive). The only other cast, `(u8)m_18`, is a numeric fill-byte
+// conversion. This file is at its authentic floor.
 
 RVA(0x001497f0, 0x154)
 i32 CDDrawShadeBlit::Blit(ShadeRect* p0, CDDSurface* src, ShadeRect* clip, i32 sel, i32 p4) {

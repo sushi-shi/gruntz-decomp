@@ -139,6 +139,23 @@ i32 g_focusedGruntSentinel;           // DAT_00644c54
 // local decl (the full ButeMgr.h redefines CString, already pulled in by this
 // TU), with only the typed getter the functions call.
 #include <Bute/ButeMgr.h>
+
+// AUTHENTIC-FLOOR NOTE (cast audit): the casts remaining in this TU are intentional -
+//   * CString-array stride access - GruntStrGetBuffer((char*)this + idx*8 + 0x4NN):
+//     the per-anim CString bags at +0x468/+0x46c/+0x470/+0x000 are 8-byte-strided arrays.
+//   * grid/record stride - ((CGruntCell*)((char*)this + (3*col+row+0xb)*0x68)),
+//     ((CFocusSlot*)((char*)g + 0x150 + owner*0x238)), (double*)((char*)this + 0x4b0)
+//     [0x78-stride]: raw byte arithmetic into stride records, not 2D pointer arrays.
+//   * int-as-pointer pose handles - ((CAnimSetNode*)m_poseToyN)->m_10 / (void*)m_poseIdle[0]:
+//     m_poseIdle/m_poseToy* are i32 handles used dually as null-compared ints and pointers.
+//   * grunt freelist recycle - (void**)((char*)node - g_gruntFreeListBias / g_freePoolBase).
+//   * MFC CString -> char* - (char*)(const char*)m_animSetName for char*-taking bute APIs.
+//   * tiny-method-view over this - ((CGruntUpdateThis/CVtblSlot9*)this)->M() for reloc-masked
+//     external __thiscall engine methods.
+//   * DELIBERATELY-raw member writes - ar->Write((char*)this + 0x400/0x408/0x410, 8): the
+//     m_400/408/410 doubles are modeled but kept raw because &m_400 shifts a neighbor's
+//     regalloc (tested-and-reverted; see the inline m_400 note).
+// numeric-conversion casts ((u32)m_dwell / (i32)m_14->m_1c / (double)...) document width and stay.
 extern CButeMgr g_buteMgr;
 static char s_TimePerTile[] = "TimePerTile";
 static char s_Grunt[] = "Grunt";                               // s_Grunt_0060a9ec

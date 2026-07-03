@@ -33,6 +33,21 @@
 #include <Gruntz/GruntzCmdMgr.h> // CNetGameMgr::m_6c command manager (ResetPlayerCommands Dispatch)
 #include <Gruntz/SoundCue.h>     // DispatchRecvMsg's chat cue (m_c sound sub-mgr -> "GAME_CHAT")
 
+// AUTHENTIC-FLOOR NOTE (cast audit): the casts remaining in this TU are intentional -
+//   * tiny-method-view over this/m_4 - ((CNetConnectThis/CNetGameMgrView/CSymParserView/
+//     CFreeNodesView*)obj)->M(): external reloc-masked __thiscall engine methods (own
+//     RVA) fired on the same object; the view is the modeling mechanism (see the defs
+//     near the connection driver), same idiom as the pmf-through-vtable dispatch below.
+//   * TF(o)/MF(o) deliberate raw-offset macros: the ConnectDriver writes almost all
+//     unnamed padding, so the offset is the load-bearing fact (documented at the driver).
+//   * (char*)(const char*)aCString: MFC CString -> LPCTSTR (operator) -> char* to feed a
+//     char*-taking engine API; both casts are required.
+//   * (IDirectPlay4Z*)m_releaseIface etc.: DirectPlay COM downcast off the abstract
+//     INetReleasable slot; DirectX interfaces are foreign SDK types.
+//   * manual vtable stamps (*(void**)this=&g_netMgrVtbl) and the +0x1c/+0x38/+0x54 CObList
+//     offset dtors are documented terminal @early-stop walls (vtbl un-catalogued / member-
+//     by-value modeling deferred to the final sweep).
+
 CGameMgr* g_pGameMgr;
 
 // File-scope reentrancy guards.
@@ -3454,8 +3469,8 @@ i32 CNetMgr::EnumSessions(void* desc, void* ctx) {
 // access keeps the codegen independent of the dual-purpose field names.
 // ---------------------------------------------------------------------------
 struct CGroupNode {
-    CGroupNode* m_next;      // +0x00
-    void* m_4;               // +0x04
+    CGroupNode* m_next;      // +0x00  CPtrList CNode pNext
+    CGroupNode* m_prev;      // +0x04  CPtrList CNode pPrev (not walked here)
     InterfaceObject* m_data; // +0x08
 };
 SIZE_UNKNOWN(CGroupNode); // traversal view of the +0x1c group list node

@@ -3,8 +3,8 @@ Unknown ids	49
 g_<hex> globals	1244
 Method/Stub/FUN	337
 placeholder classes	391
-)this casts	332
+)this casts	328
 )m_ casts	759
-(char*) casts	929
+(char*) casts	926
 (const char*) casts	111
-void* m_ members	443
+void* m_ members	442

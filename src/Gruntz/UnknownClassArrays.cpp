@@ -19,6 +19,20 @@
 //                                      SetSize(0,-1) on all four arrays.
 //
 // Field names are placeholders; only OFFSETS + code bytes are load-bearing.
+//
+// AUTHENTIC-FLOOR NOTE (cast audit): this is a deliberate raw-offset reconstruction
+// of the Battlez grid/spawn state machine, so nearly every (char*) cast is intentional
+// and NOT reducible without re-modeling engine sub-objects that are only stride-walked:
+//   * freelist recycle - `(void**)((char*)coord - g_freeListNodeBias)`: the global
+//     intrusive coord-node freelist (bias to the list-link header). Authentic.
+//   * grid-record stride - `(char*)m_ctx + cell * 0x238 (+field)`: m_ctx fronts the
+//     0x238-byte CGruntSpawnLevel record array; index*stride is raw byte arithmetic.
+//   * board-row stride - `(i32*)((char*)row + ((x * 7) << 2))`: a 7-tile row of i32.
+//   * tiny-helper-over-`this` - `((ElementRefresher/Kind4Validator/CoordCheck/SelfCommit*)
+//     this)->M()`: an external __thiscall engine method (own RVA) fired on this object;
+//     modeled as a helper method so `mov ecx,this; call` falls out (reloc-masked).
+//   * MFC `(Coord**)m_candArray.GetData()`: CPtrArray::GetData() returns void**.
+// numeric-conversion casts ((u8)/(u32)/(i32)/(double)) document width/int<->float and stay.
 // ---------------------------------------------------------------------------
 #include <rva.h>
 
@@ -3738,7 +3752,7 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
             }
         }
         if (flags & 0x20000000) {
-            ((CBattlezMapConfig*)this)->winapi_02a570_IntersectRect((i32)unit);
+            winapi_02a570_IntersectRect((i32)unit);
             return 0;
         }
         i32 pm2 = unit->m_animPrim;

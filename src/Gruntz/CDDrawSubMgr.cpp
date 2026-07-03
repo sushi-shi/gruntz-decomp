@@ -215,8 +215,10 @@ public:
 class CDDrawBlitParamSrc {
 public:
     char m_pad00[0x0c]; // +0x00 .. +0x0b
-    void* m_elements;   // +0x0c -> worker node (read as [+0x34] flag, or [0]->[+0x1c])
-    i32 m_count;        // +0x10 count
+    // authentic: worker-node-like element ptr; only ever raw-offset read ([+0x34] flag,
+    // [0]->[+0x1c]), exact node class unproven from these sites - kept void*.
+    void* m_elements; // +0x0c -> worker node
+    i32 m_count;      // +0x10 count
     char m_pad14[0x20 - 0x14];
     float m_scale; // +0x20
 };
@@ -880,6 +882,8 @@ public:
     i32 m_posCache;            // +0x78 CPtrList POSITION cache
     CLogicRecord* m_killCue;   // +0x7c kill-cue record (Consume/callback/refcount)
     char m_pad80[0x188 - 0x80];
+    // authentic: the void* key of the CMapPtrToPtr/CMapPtrToOb maps (m_2c/m_48);
+    // MFC types the map key void* - it is passed straight to RemoveKey/operator[].
     void* m_key; // +0x188 map key
 };
 
@@ -1510,8 +1514,10 @@ public:
         i32 center,
         i32 range1,
         i32 range2
-    );                            // 0x1587f0  __thiscall on the cursor
-    char m_pad00[0x0c];           // +0x00..0x0b
+    );                  // 0x1587f0  __thiscall on the cursor
+    char m_pad00[0x0c]; // +0x00..0x0b
+    // authentic: geometry context, reached only by raw offset (+0x24 -> +0x5c -> +0x84,
+    // +0x4); its class is not modeled in this TU - kept void*.
     void* m_ctx;                  // +0x0c geometry context
     CAniSoundPlay* m_soundPlayer; // +0x10 sound player
 };
@@ -2372,6 +2378,9 @@ VTBL(CDrawSubWorker, 0x001effa0); // ??_7CDrawSubWorker (was g_drawSubWorkerVtbl
 // the base vtable.  A void method (keeps `this` in ecx; not a ctor).  ret 0.
 class CDrawSubWorkerBase {
 public:
+    // authentic: manual vtable slot. Init_158fb0 is a re-init (NOT a ctor/dtor), so the
+    // `m_vtbl = &g_wapObjectDtorVtbl` stamp cannot realize to a compiler-emitted vtable
+    // (vtable-realization-ctor-boundary wall) - the manual void* stamp is required.
     void* m_vtbl; // +0x00
     i32 m_04;     // +0x04
     i32 m_08;     // +0x08

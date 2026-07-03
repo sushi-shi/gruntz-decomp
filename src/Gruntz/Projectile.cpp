@@ -278,6 +278,7 @@ CProjectile::~CProjectile() {
     for (POSITION pos = m_hitList.GetHeadPosition(); pos != NULL;) {
         CObject* data = m_hitList.GetNext(pos);
         if (data != 0) {
+            // authentic: freelist recycle - bias the node back to its list-link header
             void** node = (void**)((char*)data - g_freeListNodeBias);
             *node = g_freeList;
             g_freeList = node;
@@ -541,6 +542,8 @@ extern CProjColl g_projActColl;
 // The CString slot teardown (0x1b9b93 __thiscall) + name assign (0x1b9e74).
 SIZE_UNKNOWN(CProjStringNode);
 struct CProjStringNode {
+    // authentic: opaque 4-byte string-slot node; never dereferenced in this TU (only
+    // stride-walked + Free()'d), so its payload type is unrecoverable here - kept void*.
     void* m_0;
     void Free(); // 0x1b9b93
 };
@@ -949,6 +952,8 @@ void CProjectile::ScanTargets(i32 impact) {
         col = 0;
         colOff = rowBase;
         for (; col < 0xf; col++, colOff += 4) {
+            // authentic: sliding-window grid access - 0x1c row-stride overlaps the
+            // 4-byte column pitch, so it is raw byte arithmetic, not a 2D pointer array.
             CGruntTarget* g = *(CGruntTarget**)((char*)g_gameReg->m_68 + colOff);
             if (g == 0) {
                 continue;
@@ -983,6 +988,7 @@ void CProjectile::ScanTargets(i32 impact) {
             i32 keyX = g->m_1ec;
             i32 keyY = g->m_1f0;
             for (POSITION pos = m_hitList.GetHeadPosition(); pos != NULL;) {
+                // authentic: MFC CObList stores raw hit-key nodes; GetNext returns CObject*
                 CHitKey* k = (CHitKey*)m_hitList.GetNext(pos);
                 if (k->m_0 == keyX && k->m_4 == keyY) {
                     return;
@@ -990,14 +996,15 @@ void CProjectile::ScanTargets(i32 impact) {
             }
             // fresh hit: pull a key node off the free-list, record + deliver.
             CHitKey* slot = 0;
-            CHitKey* p = (CHitKey*)g_freeList;
+            CHitKey* p = (CHitKey*)g_freeList; // authentic: freelist head is void*
             if (p->m_0 != 0) {
-                slot = (CHitKey*)&p->m_4;
+                slot =
+                    (CHitKey*)&p->m_4; // authentic: node payload overlays +4 (past the link word)
                 slot->m_0 = keyX;
                 slot->m_4 = keyY;
                 g_freeList = (void*)p->m_0;
             }
-            m_hitList.AddTail((CObject*)slot);
+            m_hitList.AddTail((CObject*)slot); // authentic: MFC AddTail takes CObject*
             g->DeliverHit(m_kind, 1, m_srcRow, m_srcCol, m_targetId, m_ownerId, 1, 0);
         }
         rowBase += 0x3c;

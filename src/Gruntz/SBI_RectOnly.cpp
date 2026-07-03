@@ -1059,10 +1059,11 @@ void CSBI_RectOnly::InitTabRects() {
     }
     m_machinePhase = 1;
     m_extraNotifyArg0 = 0;
-    *(i32*)((char*)this + 0x4e8) = 0;
+    m_fallActive = 0;
     m_extraNotifyArg1 = 0;
-    SetRect((LPRECT)((char*)this + 0x504), 0, 0, 1, 1);
-    SetRect((LPRECT)((char*)this + 0x514), 0x49, 0xd7, 0x61, 0xef);
+    // authentic: the 4-int rect blocks are Win32 RECTs; overlay the modeled first field.
+    SetRect((LPRECT)&m_fallRectL, 0, 0, 1, 1);
+    SetRect((LPRECT)&m_itemRectL, 0x49, 0xd7, 0x61, 0xef);
     m_pendingHlRow = -1;
 }
 

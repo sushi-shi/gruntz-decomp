@@ -39,6 +39,10 @@ extern "C" double sqrt(double);
 
 #pragma intrinsic(strcmp, sqrt)
 
+// authentic: the CGrunt/tile-mgr field bag is deliberately addressed by raw byte
+// offset (naming-independent-codegen exception per the file header). Every (char*)
+// cast in this TU is either one of these two accessors, an inline copy of the same
+// *(T*)((char*)base+o) form, or a freelist node-link recycle - all intentional.
 #define F(base, o) (*(i32*)((char*)(base) + (o)))
 #define P(base, o) (*(char**)((char*)(base) + (o)))
 
