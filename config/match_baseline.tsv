@@ -1236,7 +1236,7 @@ cdroppedobject	?RegisterActs@CDroppedObject@@SAXXZ	78.5473	78.5473	1	ddf90768718
 cdroppedobject	?RegisterRange@CDroppedObject@@SAXXZ	100.0000	100.0000	1	f8dddf603c11	0xc6b50
 cdroppedobjectshadow	??0CDroppedObjectShadow@@QAE@PAUCGameObject@@@Z	85.0841	85.0841	2	66636aa7d352	0xc7490
 cdroppedobjectshadow	??1CDroppedObjectShadow@@UAE@XZ	100.0000	100.0000	1	590f3131b16f	0x12670
-cexittrigger	??0CExitTrigger@@QAE@PAUCGameObject@@@Z	89.3461	89.3461	4	98018bc72318	0x3ecf0
+cexittrigger	??0CExitTrigger@@QAE@PAUCGameObject@@@Z	89.3461	89.3461	5	e5570985162f	0x3ecf0
 cexittrigger	??1CExitTrigger@@UAE@XZ	100.0000	100.0000	1	db4d24e6c64d	0x108c0
 cexittrigger	?GetTypeTag@CExitTrigger@@QAEHXZ	100.0000	100.0000	1	c68ad601ed76	0x10870
 cexplosion	??0CExplosion@@QAE@PAUCGameObject@@@Z	91.6837	91.6837	1	9ef78df53e88	0x470e0
@@ -3078,11 +3078,11 @@ rezutil	_RezFree	100.0000	100.0000	1	fe93430adc1a	0x1b9b82
 ringbuffer	?deflateInit_@@YAHHHHH@Z	100.0000	100.0000	1	488cfe5747f6	0x186180
 ringbuffer	?flush_pending@@YAXPAUz_stream@@@Z	100.0000	100.0000	1	5b40120f1de9	0x186910
 rockbreakparticles	?BuildRockBreakParticles@CRockBreakMgr@@QAEHHHHH@Z	81.0936	81.0936	2	c25d6f414d5c	0x7b440
-rollingball	??0CRollingBall@@QAE@PAUCGameObject@@@Z	78.6804	78.6804	2	3c3145567799	0xaf820
+rollingball	??0CRollingBall@@QAE@PAUCGameObject@@@Z	78.6804	78.6804	3	cc62f30c458a	0xaf820
 rollingball	??1CRollingBall@@UAE@XZ	100.0000	100.0000	1	9f5ff559b5b3	0x12f80
 rollingball	?InitActReg@CRollingBall@@SAXXZ	100.0000	100.0000	1	683351f53157	0xafd60
 rollingball	?RegisterActs@CRollingBall@@SAXXZ	92.9130	92.9130	1	a7984852a451	0xaff40
-rollingball	?Serialize@CRollingBall@@QAEHPAUCRbArchive@@HHH@Z	100.0000	100.0000	1	6aba7ce31cdd	0xb0fe0
+rollingball	?Serialize@CRollingBall@@QAEHPAUCRbArchive@@HHH@Z	100.0000	100.0000	2	d7e02dab8901	0xb0fe0
 rollingball	?Update@CRollingBall@@QAEHXZ	37.8018	37.8018	2	c4d7cce584e4	0xb0140
 savegame	??1CSaveGame@@QAE@XZ	100.0000	100.0000	1	a26d45c833a7	0x85b50
 savegame	?CheckMagic@CSaveGame@@QAEHXZ	100.0000	100.0000	1	02a9801629ea	0xe5690

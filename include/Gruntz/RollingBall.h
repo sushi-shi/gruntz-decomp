@@ -78,24 +78,24 @@ public:
     i32 Serialize(CRbArchive* ar, i32 tag, i32 c, i32 d); // 0x0b0fe0 (vtable slot 1)
     i32 Update();                                         // 0x0b0140
 
-    // --- CRollingBall own fields (placeholders; offsets load-bearing) ---
-    i32 m_40;                  // +0x40  geometry id (m_38->m_1b4 snapshot)
+    // --- CRollingBall own fields (offsets load-bearing) ---
+    i32 m_savedGeoId;          // +0x40  saved m_38->m_1b4 geometry id
     char m_pad44[0x58 - 0x44]; // CUserLogic ends +0x40
-    double m_58;               // +0x58  per-tile move time (1000/RollingBallTimePerTile)
-    double m_60;               // +0x60  sub-tile X position
-    double m_68;               // +0x68  sub-tile Y position
-    i32 m_70;                  // +0x70  X step direction (-1/0/1)
-    i32 m_74;                  // +0x74  Y step direction (-1/0/1)
-    i32 m_78;                  // +0x78  target tile X (<<5)
-    i32 m_7c;                  // +0x7c  target tile Y (<<5)
-    i32 m_80;                  // +0x80  explosion latch
-    i32 m_84;                  // +0x84  fall latch
-    i32 m_88;                  // +0x88  explosion start ms (lo)
-    i32 m_8c;                  // +0x8c  explosion start ms (hi)
-    i32 m_90;                  // +0x90  explosion window lo
-    i32 m_94;                  // +0x94  explosion window hi
-    i32 m_98;                  // +0x98  move delta lo
-    i32 m_9c;                  // +0x9c  move delta hi
+    double m_moveSpeed;        // +0x58  per-frame speed (numerator / RollingBallTimePerTile)
+    double m_subX;             // +0x60  sub-tile X position
+    double m_subY;             // +0x68  sub-tile Y position
+    i32 m_stepDirX;            // +0x70  X step direction (-1/0/1)
+    i32 m_stepDirY;            // +0x74  Y step direction (-1/0/1)
+    i32 m_targetX;             // +0x78  target tile X (<<5)
+    i32 m_targetY;             // +0x7c  target tile Y (<<5)
+    i32 m_explodeLatch;        // +0x80  explosion one-shot latch
+    i32 m_fallLatch;           // +0x84  fall one-shot latch
+    i32 m_explodeStartLo;      // +0x88  explosion start clock (i64 lo)
+    i32 m_explodeStartHi;      // +0x8c  explosion start clock (i64 hi)
+    i32 m_explodeWindowLo;     // +0x90  explosion window (i64 lo)
+    i32 m_explodeWindowHi;     // +0x94  explosion window (i64 hi)
+    i32 m_moveDeltaLo;         // +0x98  move delta (i64 lo)
+    i32 m_moveDeltaHi;         // +0x9c  move delta (i64 hi)
 };
 
 SIZE(CRollingBall, 0xa0);

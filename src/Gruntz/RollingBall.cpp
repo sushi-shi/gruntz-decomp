@@ -138,7 +138,7 @@ struct CRbCtorObj {
     char m_pad78[0x7c - 0x78];
     CRbCtorSub* m_7c; // +0x7c
     char m_pad80[0x118 - 0x80];
-    i32 m_118; // +0x118 active flag (snapshot into m_90)
+    i32 m_118; // +0x118 active flag (snapshot into m_explodeWindowLo)
     char m_pad11c[0x124 - 0x11c];
     i32 m_124; // +0x124 place mode (== 1 -> no time bonus)
     char m_pad128[0x12c - 0x128];
@@ -186,11 +186,11 @@ struct CRbReg {
 // position. Not source-steerable (global regalloc/EH numbering).
 RVA(0x000af820, 0x40d)
 CRollingBall::CRollingBall(CGameObject* obj) : CUserLogic(obj) {
-    m_88 = 0;
-    m_90 = 0;
-    m_8c = 0;
-    m_94 = 0;
-    m_40 = m_38->m_1b4;
+    m_explodeStartLo = 0;
+    m_explodeWindowLo = 0;
+    m_explodeStartHi = 0;
+    m_explodeWindowHi = 0;
+    m_savedGeoId = m_38->m_1b4;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     m_30 = m_14->m_1c;
     m_14->m_1c = g_buteTree.Find("A");
@@ -200,9 +200,9 @@ CRollingBall::CRollingBall(CGameObject* obj) : CUserLogic(obj) {
     i32 snapX = (o->m_5c & ~0x1f) + 0x10;
     i32 snapY = (o->m_60 & ~0x1f) + 0x10;
     o->m_5c = snapX;
-    m_60 = (double)snapX;
+    m_subX = (double)snapX;
     o->m_60 = snapY;
-    m_68 = (double)snapY;
+    m_subY = (double)snapY;
     if (o->m_74 != snapY + 0x186a0) {
         o->m_74 = snapY + 0x186a0;
         o->m_08 |= 0x20000;
@@ -215,20 +215,20 @@ CRollingBall::CRollingBall(CGameObject* obj) : CUserLogic(obj) {
         const char* s = name.m_buf;
         if (strcmp(s, "LEVEL_ROLLINGBALL_NORTH") == 0) {
             o->m_12c = 1;
-            m_70 = 0;
-            m_74 = -1;
+            m_stepDirX = 0;
+            m_stepDirY = -1;
         } else if (strcmp(s, "LEVEL_ROLLINGBALL_EAST") == 0) {
             o->m_12c = 2;
-            m_70 = 1;
-            m_74 = 0;
+            m_stepDirX = 1;
+            m_stepDirY = 0;
         } else if (strcmp(s, "LEVEL_ROLLINGBALL_SOUTH") == 0) {
             o->m_12c = 3;
-            m_70 = 0;
-            m_74 = 1;
+            m_stepDirX = 0;
+            m_stepDirY = 1;
         } else if (strcmp(s, "LEVEL_ROLLINGBALL_WEST") == 0) {
             o->m_12c = 4;
-            m_70 = -1;
-            m_74 = 0;
+            m_stepDirX = -1;
+            m_stepDirY = 0;
         }
     }
 
@@ -240,21 +240,21 @@ CRollingBall::CRollingBall(CGameObject* obj) : CUserLogic(obj) {
     if (reg->m_isEasyMode != 0 && reg->m_134 == 1 && o->m_124 != 1) {
         time += 1000;
     }
-    m_90 = o->m_118;
-    m_94 = 0;
-    m_88 = g_645588;
-    m_8c = 0;
-    m_78 = snapY;
-    m_7c = snapY;
-    m_80 = 0;
-    m_84 = 0;
-    m_58 = g_slimeSpeedNum / (double)(i64)(u32)time;
+    m_explodeWindowLo = o->m_118;
+    m_explodeWindowHi = 0;
+    m_explodeStartLo = g_645588;
+    m_explodeStartHi = 0;
+    m_targetX = snapY;
+    m_targetY = snapY;
+    m_explodeLatch = 0;
+    m_fallLatch = 0;
+    m_moveSpeed = g_slimeSpeedNum / (double)(i64)(u32)time;
     o->m_144 = 0;
     o->m_14c = 0;
     o->m_148 = 0;
     o->m_150 = 0;
-    m_98 = 0;
-    m_9c = 0;
+    m_moveDeltaLo = 0;
+    m_moveDeltaHi = 0;
 }
 
 // CRollingBall::InitActReg @0x0afd60 - construct the class's activation-coordinate
@@ -579,26 +579,26 @@ i32 CRollingBall::Serialize(CRbArchive* ar, i32 tag, i32 c, i32 d) {
     // The move/state field list (+0x58..+0x98).
     switch (tag) {
         case 4:
-            ar->Write(&m_58, 8);
-            ar->Write(&m_60, 8);
-            ar->Write(&m_68, 8);
-            ar->Write(&m_70, 4);
-            ar->Write(&m_74, 4);
-            ar->Write(&m_78, 8);
-            ar->Write(&m_80, 4);
-            ar->Write(&m_84, 4);
-            ar->Write(&m_98, 8);
+            ar->Write(&m_moveSpeed, 8);
+            ar->Write(&m_subX, 8);
+            ar->Write(&m_subY, 8);
+            ar->Write(&m_stepDirX, 4);
+            ar->Write(&m_stepDirY, 4);
+            ar->Write(&m_targetX, 8);
+            ar->Write(&m_explodeLatch, 4);
+            ar->Write(&m_fallLatch, 4);
+            ar->Write(&m_moveDeltaLo, 8);
             break;
         case 7:
-            ar->Read(&m_58, 8);
-            ar->Read(&m_60, 8);
-            ar->Read(&m_68, 8);
-            ar->Read(&m_70, 4);
-            ar->Read(&m_74, 4);
-            ar->Read(&m_78, 8);
-            ar->Read(&m_80, 4);
-            ar->Read(&m_84, 4);
-            ar->Read(&m_98, 8);
+            ar->Read(&m_moveSpeed, 8);
+            ar->Read(&m_subX, 8);
+            ar->Read(&m_subY, 8);
+            ar->Read(&m_stepDirX, 4);
+            ar->Read(&m_stepDirY, 4);
+            ar->Read(&m_targetX, 8);
+            ar->Read(&m_explodeLatch, 4);
+            ar->Read(&m_fallLatch, 4);
+            ar->Read(&m_moveDeltaLo, 8);
             break;
     }
     return 1;

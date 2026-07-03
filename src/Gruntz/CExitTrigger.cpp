@@ -131,12 +131,12 @@ CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj) {
     m_10->m_14c = 1;
     m_10->m_148 = 1;
     m_10->m_150 = 1;
-    m_40 = m_38->m_1b4;
+    m_savedGeoId = m_38->m_1b4;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
-    m_54 = 0;
+    m_warlordId = 0;
     CExitFocusSlot* slot = (CExitFocusSlot*)((char*)g_exitGameReg + m_10->m_124 * 0x238 + 0x150);
     if (slot->m_20 == 0) {
-        m_58 = 0;
+        m_resolved = 0;
         return;
     }
     slot->m_220 = m_10->m_5c;
@@ -146,9 +146,9 @@ CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj) {
     if (e != 0) {
         e->m_124 = m_10->m_124;
         e->m_7c->m_10(e);
-        m_54 = e->m_7c->m_18;
+        m_warlordId = e->m_7c->m_18;
         if (m_10->m_124 == g_644c54) {
-            ((CExitCueSink*)g_exitGameReg->m_68)->m_2a0 = m_54;
+            ((CExitCueSink*)g_exitGameReg->m_68)->m_2a0 = m_warlordId;
         }
         CExitFocusSlot* slot2 =
             (CExitFocusSlot*)((char*)g_exitGameReg + m_10->m_124 * 0x238 + 0x150);
@@ -156,5 +156,5 @@ CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj) {
             slot2->m_0c = e->m_188;
         }
     }
-    m_58 = 1;
+    m_resolved = 1;
 }
