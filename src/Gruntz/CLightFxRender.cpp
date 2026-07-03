@@ -18,6 +18,11 @@
 // IDirectDrawSurface COM interface: `s->m_08->Unlock(0)` dispatches through slot 32
 // (+0x80). The canonical IDirectDrawSurfaceZ lives in <DDrawMgr/CDDSurface.h>.
 
+// Forward declares so LfxMgr / the class members can hold typed pointers to the
+// tile-descriptor bank and the tile grid (full layouts defined further down).
+struct LfxTileBank;
+struct LfxGrid;
+
 // The DirectDraw work surface (this+0x10, callers pass it at +0x2c).
 //   +0x08 unlock interface (Resize's own unlock path)
 //   +0x18 / +0x1c the tile/zoom pixel dims (idiv divisors in Resize/ComputeRect)
@@ -74,13 +79,6 @@ struct LfxSurfMgr {
     LfxView* m_24; // +0x24 the view/world-state object
 };
 
-// The surface-info source (this+0x8): +0xc / +0x10 are the requested w / h.
-struct LfxSurfInfo {
-    char m_pad[0xc];
-    i32 m_0c; // +0xc width
-    i32 m_10; // +0x10 height
-};
-
 // The draw context the apply-paths hand the pixel coords to (FUN_004d5f00).
 struct LfxDrawCtx {
     void DrawAt(i32 px, i32 py); // FUN_004d5f00 (__thiscall on m_00->m_2c)
@@ -107,13 +105,13 @@ struct LfxRefTable {
 // tile colors through +0x74 (the ref table).
 struct LfxMgr {
     char m_pad0[0x2c];
-    LfxDrawCtx* m_2c; // +0x2c draw context
-    void* m_world;    // +0x30 surface manager  -> this+0xc
+    LfxDrawCtx* m_2c;    // +0x2c draw context
+    LfxSurfMgr* m_world; // +0x30 surface manager     -> this+0xc
     char m_pad34[0x68 - 0x34];
-    void* m_68; // +0x68 surface info     -> this+0x4
+    LfxTileBank* m_68; // +0x68 tile-descriptor bank -> this+0x4
     char m_pad6c[0x70 - 0x6c];
-    void* m_tileGrid;  // +0x70                  -> this+0x8
-    LfxRefTable* m_74; // +0x74 sprite/animation ref table
+    LfxGrid* m_tileGrid; // +0x70 tile grid           -> this+0x8
+    LfxRefTable* m_74;   // +0x74 sprite/animation ref table
 };
 
 // A surface the global-apply path blits through (g_gameReg->m_68). The 7-arg
@@ -211,7 +209,7 @@ i32 CLightFxRender::Init(LfxMgr* mgr, i32 arg2) {
     m_mgr = mgr;
     m_tileBank = mgr->m_68;
     m_grid = mgr->m_tileGrid;
-    m_surfMgr = (LfxSurfMgr*)mgr->m_world;
+    m_surfMgr = mgr->m_world;
     m_refreshInterval = arg2;
     m_scale = 1;
     m_refreshRemaining = 0;
@@ -271,7 +269,7 @@ i32 CLightFxRender::AllocSurface() {
         return 0;
     }
     FreeSurface();
-    LfxSurfInfo* info = (LfxSurfInfo*)m_grid;
+    LfxGrid* info = m_grid;
     LfxSurfMgr* mgr = m_surfMgr;
     m_surface = mgr->m_1c->Alloc(info->m_0c, info->m_10, 0, 0, -1);
     if (m_surface == 0) {
@@ -319,7 +317,7 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
             return 0;
         }
     }
-    LfxGrid* grid = (LfxGrid*)m_grid;
+    LfxGrid* grid = m_grid;
     if (m_surface->m_1c != (i32)grid->m_0c || m_surface->m_18 != (i32)grid->m_10) {
         if (!AllocSurface()) {
             return 0;
@@ -329,7 +327,7 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
     if (base == 0) {
         return 0;
     }
-    LfxTileBank* bank = (LfxTileBank*)m_tileBank;
+    LfxTileBank* bank = m_tileBank;
     for (u32 y = 0; y < grid->m_10; y++) {
         for (u32 x = 0; x < grid->m_0c; x++) {
             u16* dst = (u16*)((char*)base + y * m_surface->m_20 + x * m_surface->m_b0);
@@ -1737,7 +1735,6 @@ SIZE_UNKNOWN(LfxGrid);
 SIZE_UNKNOWN(LfxMgr);
 SIZE_UNKNOWN(LfxRect);
 SIZE_UNKNOWN(LfxRefTable);
-SIZE_UNKNOWN(LfxSurfInfo);
 SIZE_UNKNOWN(LfxSurfMgr);
 SIZE_UNKNOWN(LfxSurfPool);
 SIZE_UNKNOWN(LfxSurface);

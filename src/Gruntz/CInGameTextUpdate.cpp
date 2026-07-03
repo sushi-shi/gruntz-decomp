@@ -103,7 +103,7 @@ struct CTypeKeyColl {
 DATA(0x002bf650)
 extern CTypeKeyColl g_typeColl;
 DATA(0x002bf66c)
-extern void* g_typeNodes;
+extern EngStr4* g_typeNodes;
 DATA(0x002bf670)
 extern i32 g_typeCount;
 DATA(0x002bf3bc)
@@ -161,7 +161,7 @@ i32 CInGameText::Update() {
     }
 
     char** node = g_typeColl.IndexToPtr(found->m_14->m_1c);
-    EngStr4* p = (EngStr4*)g_typeNodes;
+    EngStr4* p = g_typeNodes;
     i32 n = g_typeCount;
     while (n-- != 0) {
         if (p != 0) {

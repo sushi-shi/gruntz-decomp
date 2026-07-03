@@ -1,10 +1,10 @@
-m_<hex> fields	15949
+m_<hex> fields	15948
 Unknown ids	49
 g_<hex> globals	1244
 Method/Stub/FUN	337
 placeholder classes	390
-)this casts	342
-)m_ casts	848
-(char*) casts	978
-(const char*) casts	115
-void* m_ members	449
+)this casts	332
+)m_ casts	845
+(char*) casts	969
+(const char*) casts	112
+void* m_ members	444

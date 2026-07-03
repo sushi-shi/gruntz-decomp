@@ -50,6 +50,11 @@ struct CGameReg;
 // work surface (pitch/stride/Lock), +0x08 the unlock interface (vtable[0x20]).
 struct LfxBorderCtx;
 
+// The resize repaint descriptor bank (this+0x04, mgr+0x68) and the tile grid
+// (this+0x08, mgr+0x70: row table + w/h); the full layouts live in the .cpp.
+struct LfxTileBank;
+struct LfxGrid;
+
 class CLightFxRender {
 public:
     // 0x0a32c0  Init - copy mgr fields, validate, zero the rect/state block.
@@ -98,11 +103,11 @@ public:
     i32 ClampRect(i32 x, i32 y, i32* out, i32 margin);
 
     // ----- layout -----
-    LfxMgr* m_mgr;         // +0x00 game/render manager (set by Init)
-    void* m_tileBank;      // +0x04 mgr+0x68 (LfxTileBank; the resize repaint bank)
-    void* m_grid;          // +0x08 mgr+0x70 (LfxGrid / LfxSurfInfo; w/h + row table)
-    LfxSurfMgr* m_surfMgr; // +0x0c mgr+0x30 (the surface manager)
-    LfxSurface* m_surface; // +0x10 the alloc'd work surface
+    LfxMgr* m_mgr;           // +0x00 game/render manager (set by Init)
+    LfxTileBank* m_tileBank; // +0x04 mgr+0x68 (the resize repaint bank)
+    LfxGrid* m_grid;         // +0x08 mgr+0x70 (w/h + row table)
+    LfxSurfMgr* m_surfMgr;   // +0x0c mgr+0x30 (the surface manager)
+    LfxSurface* m_surface;   // +0x10 the alloc'd work surface
     char m_pad14[0x10];
     i32 m_srcL;             // +0x24 source rect L
     i32 m_srcT;             // +0x28 source rect T

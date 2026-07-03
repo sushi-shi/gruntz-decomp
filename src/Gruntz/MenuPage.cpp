@@ -455,7 +455,7 @@ i32 CMenuPage::Switch(i32 refocus) {
     if (m_switchKey.GetLength() == 0) {
         return 0;
     }
-    if (!m_host->SwitchToPage((const char*)m_switchKey)) {
+    if (!m_host->SwitchToPage(m_switchKey)) {
         return 0;
     }
     if (refocus) {
@@ -707,7 +707,7 @@ i32 CMenuPage::SelectFwd2() {
         return 0;
     }
     CString key = m_focus->GetNavFwdName();
-    CMenuItem* item = FindByName((const char*)key);
+    CMenuItem* item = FindByName(key);
     if (item) {
         i32 k = item->m_state;
         if (k != 1 && k != 2) {
@@ -730,7 +730,7 @@ i32 CMenuPage::SelectBack2() {
         return 0;
     }
     CString key = m_focus->GetNavBackName();
-    CMenuItem* item = FindByName((const char*)key);
+    CMenuItem* item = FindByName(key);
     if (item) {
         i32 k = item->m_state;
         if (k != 1 && k != 2) {

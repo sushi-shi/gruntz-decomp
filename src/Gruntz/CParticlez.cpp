@@ -111,17 +111,10 @@ static inline char* ActNameLookup(i32 id) {
     return g_nameRegCur;
 }
 
-// The bound object's on-screen latch fields (m_38): +0x1a0 anim sink, +0x1c0/
-// +0x1c8 latches, +0x8 status bits. Typed view of the CUserLogic m_38 object the
-// Update handler touches.
-struct CPartAnimObj {
-    char m_pad0[0x8];
-    i32 m_8; // +0x08 status bits (bit 0x10000 == on-screen this frame)
-    char m_pad0c[0x1c0 - 0xc];
-    i32 m_1c0; // +0x1c0 latch a
-    char m_pad1c4[0x1c8 - 0x1c4];
-    i32 m_1c8; // +0x1c8 latch b
-};
+// The Update handler touches the bound object (m_38, a CGameObject) directly:
+// its +0x1a0 anim sink (a per-TU CAnimSink view), the +0x1c0/+0x1c8 latches and
+// the +0x08 status flags (all modeled on CGameObject in <Gruntz/UserLogic.h>).
+
 // The per-frame draw-delta mirror (_g_6bf3bc); the value-load reloc-masks.
 DATA(0x002bf3bc)
 extern "C" u32 g_6bf3bc;
@@ -211,9 +204,9 @@ void CParticlez::RegisterActs() {
 RVA(0x00047090, 0x4c)
 i32 CParticlez::Update() {
     ((CAnimSink*)((char*)m_38 + 0x1a0))->SetAnim(g_6bf3bc);
-    CPartAnimObj* o = (CPartAnimObj*)m_38;
+    CGameObject* o = m_38;
     if (o->m_1c8 != 0 && o->m_1c0 == 0) {
-        o->m_8 |= 0x10000;
+        o->m_flags |= 0x10000;
     }
     return 0;
 }
@@ -221,7 +214,6 @@ i32 CParticlez::Update() {
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 #include <rva.h>
-SIZE_UNKNOWN(CPartAnimObj);
 SIZE_UNKNOWN(CPartColl);
 SIZE_UNKNOWN(CPartColl2);
 SIZE_UNKNOWN(CPartEntry);
