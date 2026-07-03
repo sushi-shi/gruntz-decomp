@@ -102,7 +102,11 @@ public:
     char m_pad1c[0x24 - 0x1c];
     i32 m_24;         // +0x24
     CResSource* m_28; // +0x28  level asset bank (TILEZ/IMAGEZ/SOUNDZ/MIDIZ source)
-    i32 m_2c;         // +0x2c
+    // +0x2c  the resolved asset source a state loader caches (CBankMgr::Lookup
+    // result): CSplashState/CHelpState store the "STATEZ_*" namespace here and
+    // (splash) LoadGroup its "SOUNDZ" set; the attract path stashes its resolved
+    // TITLE state here. A 4-byte pointer slot (was modeled i32 + per-site casts).
+    CResSource* m_2c; // +0x2c
     CResSource* m_30; // +0x30  GRUNTZ asset bank (LoadImageBanks caches here)
     CResSource* m_34; // +0x34  GAME asset bank (GAME-namespace loaders' source)
     i32 m_38;         // +0x38

@@ -458,7 +458,7 @@ i32 CAttract::EnterAttractMode(i32 a, i32 b, i32 mode) {
     ((CAttractVideo*)m_4)->RestoreVideoMode(0);
 
     CAttractState* state = ((CAttractStateMgr*)m_8)->LookupState(s_STATEZ_ATTRACT);
-    m_2c = (i32)state;
+    m_2c = (CResSource*)state;
     if (state == 0) {
         return 0;
     }
@@ -493,7 +493,7 @@ RVA(0x00039160, 0x46)
 i32 CAttract::RefreshTitle(i32 unused) {
     ((CAttractVideo*)m_4)->m_48->PrimeScene();
     ((CAttractVideo*)m_4)->m_48->RestoreScene();
-    m_2c = (i32)((CAttractStateMgr*)m_8)->LookupState(s_STATEZ_ATTRACT);
+    m_2c = (CResSource*)((CAttractStateMgr*)m_8)->LookupState(s_STATEZ_ATTRACT);
     RunTitleSeq(s_TITLE, 0, 0, 1, 0);
     return 1;
 }
@@ -515,13 +515,13 @@ i32 CAttract::LoadTitleConfig(i32 mode) {
 
         CAttractState* saved = (CAttractState*)m_2c;
         CAttractState* state = ((CAttractStateMgr*)m_8)->LookupState(stateName);
-        m_2c = (i32)state;
+        m_2c = (CResSource*)state;
         if (state == 0) {
             return 0;
         }
 
         i32 faded = FadeInTitle(titleName, 0, 0, 1, 0, 0);
-        m_2c = (i32)saved;
+        m_2c = (CResSource*)saved;
         if (faded == 0) {
             return 0;
         }
@@ -574,13 +574,13 @@ i32 CAttract::Activate() {
 
     CAttractState* saved = (CAttractState*)m_2c;
     CAttractState* state = ((CAttractStateMgr*)m_8)->LookupState(stateName);
-    m_2c = (i32)state;
+    m_2c = (CResSource*)state;
     if (state == 0) {
         return 0;
     }
 
     i32 faded = FadeInTitle(titleName, 0, 0, 1, 0, 0);
-    m_2c = (i32)saved;
+    m_2c = (CResSource*)saved;
     if (faded == 0) {
         return 0;
     }

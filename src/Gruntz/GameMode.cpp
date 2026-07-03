@@ -1194,12 +1194,12 @@ i32 CCreditsState::InitAttractTitle() {
     sprintf(titleName, "TITLE%d", idx);
     void* saved = (void*)m_2c;
     void* state = ((CAttractStateMgrA*)m_8)->LookupState(stateName);
-    m_2c = (i32)state;
+    m_2c = (CResSource*)state;
     if (state == 0) {
         return 0;
     }
     i32 faded = FadeInTitle(titleName, 0, 0, 1, 0, 0);
-    m_2c = (i32)saved;
+    m_2c = (CResSource*)saved;
     if (faded == 0) {
         return 0;
     }
