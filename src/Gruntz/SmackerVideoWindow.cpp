@@ -93,27 +93,27 @@ struct SmackSub {
 };
 
 struct CSmackWin {
-    i32 m_0; // +0x00
-    i32 m_4; // +0x04 active flag
-    i32 m_8; // +0x08 stream-open flag
+    i32 m_0;          // +0x00
+    i32 m_active;     // +0x04 active flag
+    i32 m_streamOpen; // +0x08 stream-open flag
     char _0c[0x10 - 0xc];
-    i32 m_10; // +0x10 Smacker handle
+    i32 m_smackHandle; // +0x10 Smacker handle
     char _14[0x1c - 0x14];
-    i32 m_1c; // +0x1c pending command
+    i32 m_command; // +0x1c pending command
     char _20[0x24 - 0x20];
     SmkBuf* m_24; // +0x24
     SmkBuf* m_28; // +0x28
     char _2c[0x508 - 0x2c];
-    void* m_508; // +0x508 DirectSound
+    void* m_directSound; // +0x508 DirectSound
     char _50c[0x514 - 0x50c];
     i32 m_514; // +0x514
     char _518[0x534 - 0x518];
-    void* m_534;    // +0x534 Rez buffer
-    i32 m_538;      // +0x538
-    CWnd* m_53c;    // +0x53c  the video window
-    SmackSub m_540; // +0x540 embedded sub-player
+    void* m_rezBuffer; // +0x534 Rez buffer
+    i32 m_useDS;       // +0x538
+    CWnd* m_videoWnd;  // +0x53c  the video window
+    SmackSub m_540;    // +0x540 embedded sub-player
     char _544[0x86a0 - 0x544];
-    i32 m_86a0;                                             // +0x86a0 loop counter
+    i32 m_loopCount;                                        // +0x86a0 loop counter
     int Init(HWND h, i32 a0, i32 a1);                       // 0x17c040
     int CreateVideoWindow(i32 a0, i32 a1);                  // 0x17c2a0
     void Teardown();                                        // 0x17c510
@@ -139,11 +139,11 @@ struct CSmackWin {
 RVA(0x0017c2a0, 0x14e)
 int CSmackWin::CreateVideoWindow(i32 a0, i32 a1) {
     CString cls(AfxRegisterWndClass(3, 0, 0, 0));
-    if (m_53c != 0) {
+    if (m_videoWnd != 0) {
         return 0;
     }
-    m_53c = new CWnd;
-    if (!m_53c->CreateEx(
+    m_videoWnd = new CWnd;
+    if (!m_videoWnd->CreateEx(
             8,
             cls,
             "Smacker Video Window",
@@ -158,30 +158,30 @@ int CSmackWin::CreateVideoWindow(i32 a0, i32 a1) {
         )) {
         return 0;
     }
-    m_53c->SetFocus();
-    HWND h = m_53c ? m_53c->m_hWnd : 0;
+    m_videoWnd->SetFocus();
+    HWND h = m_videoWnd ? m_videoWnd->m_hWnd : 0;
     return Init(h, a0, a1);
 }
 
 // __thiscall(): tear the playback object down and restore the cursor. Re-homed
-// from ApiCallers (placeholder CursHost_17c510): its m_53c (video window at +0x53c)
+// from ApiCallers (placeholder CursHost_17c510): its m_videoWnd (video window at +0x53c)
 // is the same CWnd CreateVideoWindow above `new`s, so this is the same CSmackWin.
 RVA(0x0017c510, 0x5e)
 void CSmackWin::Teardown() {
-    if (!m_4) {
+    if (!m_active) {
         return;
     }
     CloseSmacker();
     Free17d6b0();
     m_0 = 0;
-    m_4 = 0;
+    m_active = 0;
     Free17cc80();
-    if (m_53c) {
-        ((CursSink*)m_53c)->Finish();
-        if (m_53c) {
-            ((CursSink*)m_53c)->Destroy(1);
+    if (m_videoWnd) {
+        ((CursSink*)m_videoWnd)->Finish();
+        if (m_videoWnd) {
+            ((CursSink*)m_videoWnd)->Destroy(1);
         }
-        m_53c = 0;
+        m_videoWnd = 0;
     }
     ShowCursor(1);
 }
@@ -190,25 +190,25 @@ void CSmackWin::Teardown() {
 // 0x100000 when DirectSound is requested), begin playback, roll back on failure.
 RVA(0x0017c570, 0xc0)
 i32 CSmackWin::OpenLo(i32 src, i32 a2, i32 useDS, i32 a4, i32 a5) {
-    if (!m_4) {
+    if (!m_active) {
         return 0;
     }
-    SmackSoundUseDirectSound(m_508);
+    SmackSoundUseDirectSound(m_directSound);
     m_514 = a2;
     u32 flags;
     if (useDS == 1) {
-        m_538 = useDS;
+        m_useDS = useDS;
         flags = 0x100000;
     } else {
-        m_538 = 0;
+        m_useDS = 0;
         flags = 0;
     }
     flags |= 0xfe000;
-    m_10 = SmackOpen(src, flags, -1);
-    if (!m_10) {
+    m_smackHandle = SmackOpen(src, flags, -1);
+    if (!m_smackHandle) {
         return 0;
     }
-    m_8 = 1;
+    m_streamOpen = 1;
     i32 r = Begin(a2, useDS, a4, a5);
     if (r) {
         return r;
@@ -228,25 +228,25 @@ i32 CSmackWin::OpenLo(i32 src, i32 a2, i32 useDS, i32 a4, i32 a5) {
 // __thiscall(src,a2,useDS,a4,a5): same as OpenLo but with the 0xff000 flag set.
 RVA(0x0017c630, 0xc0)
 i32 CSmackWin::OpenHi(i32 src, i32 a2, i32 useDS, i32 a4, i32 a5) {
-    if (!m_4) {
+    if (!m_active) {
         return 0;
     }
-    SmackSoundUseDirectSound(m_508);
+    SmackSoundUseDirectSound(m_directSound);
     m_514 = a2;
     u32 flags;
     if (useDS == 1) {
         flags = 0x100000;
-        m_538 = useDS;
+        m_useDS = useDS;
     } else {
-        m_538 = 0;
+        m_useDS = 0;
         flags = 0;
     }
     flags |= 0xff000;
-    m_10 = SmackOpen(src, flags, -1);
-    if (!m_10) {
+    m_smackHandle = SmackOpen(src, flags, -1);
+    if (!m_smackHandle) {
         return 0;
     }
-    m_8 = 1;
+    m_streamOpen = 1;
     i32 r = Begin(a2, useDS, a4, a5);
     if (r) {
         return r;
@@ -268,10 +268,10 @@ i32 CSmackWin::OpenHi(i32 src, i32 a2, i32 useDS, i32 a4, i32 a5) {
 // frame and re-loop until `count` plays elapse (count==-1 loops forever).
 RVA(0x0017c790, 0x14a)
 i32 CSmackWin::Pump(i32 flags, i32 count) {
-    if (!m_4 || count < -1 || count == 0) {
+    if (!m_active || count < -1 || count == 0) {
         return 0;
     }
-    m_86a0 = 1;
+    m_loopCount = 1;
     MSG msg;
     for (;;) {
         if (PeekMessageA(&msg, 0, 0, 0, PM_REMOVE)) {
@@ -297,18 +297,18 @@ i32 CSmackWin::Pump(i32 flags, i32 count) {
             TranslateMessage(&msg);
             DispatchMessageA(&msg);
         } else {
-            if (SmackWait(m_10)) {
+            if (SmackWait(m_smackHandle)) {
                 continue;
             }
             if (Frame()) {
                 continue;
             }
-            if (count != -1 && ++m_86a0 > count) {
+            if (count != -1 && ++m_loopCount > count) {
                 return 0x11111111;
             }
-            SmackSoundOnOff(m_10, 0);
-            SmackGoto(m_10, 1);
-            SmackSoundOnOff(m_10, 1);
+            SmackSoundOnOff(m_smackHandle, 0);
+            SmackGoto(m_smackHandle, 1);
+            SmackSoundOnOff(m_smackHandle, 1);
         }
     }
 }
@@ -317,29 +317,29 @@ i32 CSmackWin::Pump(i32 flags, i32 count) {
 // back to the start until `loops` is exhausted (loops==-1 loops forever).
 RVA(0x0017c8e0, 0xca)
 i32 CSmackWin::Advance(i32 cmd, i32 loops) {
-    if (!cmd || !m_4 || loops < -1 || loops == 0) {
+    if (!cmd || !m_active || loops < -1 || loops == 0) {
         return 0;
     }
     i32 result = 1;
-    if (m_86a0 == 0) {
-        m_86a0 = result;
+    if (m_loopCount == 0) {
+        m_loopCount = result;
     }
-    if (SmackWait(m_10) == 0) {
-        i32 saved = m_1c;
-        m_1c = cmd;
+    if (SmackWait(m_smackHandle) == 0) {
+        i32 saved = m_command;
+        m_command = cmd;
         result = Frame();
         if (result == 0) {
-            if (loops == -1 || ++m_86a0 <= loops) {
-                SmackSoundOnOff(m_10, 0);
-                SmackGoto(m_10, 1);
-                SmackSoundOnOff(m_10, 1);
+            if (loops == -1 || ++m_loopCount <= loops) {
+                SmackSoundOnOff(m_smackHandle, 0);
+                SmackGoto(m_smackHandle, 1);
+                SmackSoundOnOff(m_smackHandle, 1);
                 result = 1;
             }
         }
-        m_1c = saved;
+        m_command = saved;
     }
     if (result == 0) {
-        m_86a0 = 0;
+        m_loopCount = 0;
     }
     return result;
 }
@@ -347,20 +347,20 @@ i32 CSmackWin::Advance(i32 cmd, i32 loops) {
 // __thiscall: shut the sub-player, close the Smacker stream, free buffers.
 RVA(0x0017c9b0, 0x5b)
 i32 CSmackWin::CloseSmacker() {
-    if (!m_8) {
+    if (!m_streamOpen) {
         return 0;
     }
     m_540.Shutdown();
-    if (!m_10) {
+    if (!m_smackHandle) {
         return 0;
     }
-    SmackClose(m_10);
-    m_10 = 0;
-    if (m_534) {
-        RezFree_call(m_534);
-        m_534 = 0;
+    SmackClose(m_smackHandle);
+    m_smackHandle = 0;
+    if (m_rezBuffer) {
+        RezFree_call(m_rezBuffer);
+        m_rezBuffer = 0;
     }
-    m_8 = 0;
+    m_streamOpen = 0;
     return 1;
 }
 SIZE_UNKNOWN(CSmackWin);

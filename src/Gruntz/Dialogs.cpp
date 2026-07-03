@@ -65,7 +65,7 @@ struct CMultiSlot {
     char m_pad170[0x238 - 0x170];
 };
 
-// The player-slot list (m_60): a CObList member (its ctor sets the vptr) plus one
+// The player-slot list (m_slotList): a CObList member (its ctor sets the vptr) plus one
 // trailing dword; allocated 0x20 bytes. The three add/refresh methods reloc-mask.
 struct CMultiSlotList {
     CObList m_list; // +0x00  (CObList, 0x1c bytes)
@@ -81,7 +81,7 @@ struct CMultiSlotList {
 // ---------------------------------------------------------------------------
 RVA(0x00014b30, 0x64)
 CBattlezDlg::CBattlezDlg(i32 a0, CWnd* pParent) : CDialog(0xc0, pParent) {
-    m_5c = a0;
+    m_slots = a0;
     m_68 = 0;
 }
 
@@ -141,7 +141,7 @@ CImgHolder::~CImgHolder() {
 RVA(0x00018030, 0x56)
 CBattlezDlgCustom::CBattlezDlgCustom(CWnd* pParent) : CDialog(0xc3, pParent) {}
 
-// ~CBattlezDlgCustom @0x17140 - destroy the CString member m_5c, then chain the
+// ~CBattlezDlgCustom @0x17140 - destroy the CString member m_customName, then chain the
 // NAFXCW ~CDialog base dtor. /GX EH frame for the member unwind.
 // @early-stop
 // vptr-restamp-presence wall (docs/patterns/eh-dtor-vptr-restamp-presence.md): same
@@ -151,10 +151,10 @@ RVA(0x00017140, 0x47)
 inline CBattlezDlgCustom::~CBattlezDlgCustom() {}
 
 // ShowCustomDlg (0x17030) - stack-construct a CBattlezDlgCustom and DoModal it;
-// on IDOK, if its custom-name CString m_5c is non-empty, uppercase it and shove it
+// on IDOK, if its custom-name CString m_customName is non-empty, uppercase it and shove it
 // into the child window of the 0x4ff combo (GetWindow(GW_CHILD) -> FromHandle ->
 // SetWindowText), then latch m_68. The /GX EH frame + inlined ~CBattlezDlgCustom
-// (member ~CString m_5c + base ~CDialog) unwind the local dialog. The dialog ctor
+// (member ~CString m_customName + base ~CDialog) unwind the local dialog. The dialog ctor
 // (0x1ccb thunk), DoModal, MakeUpper, GetDlgItem, FromHandle, SetWindowText, and
 // the CString ctor/dtor are all NAFXCW/thunk calls that reloc-mask. Marking
 // ~CBattlezDlgCustom `inline` is what makes /Ob1 inline the teardown here (retail
@@ -171,12 +171,12 @@ RVA(0x00017030, 0xc1)
 void CBattlezDlg::ShowCustomDlg() {
     CBattlezDlgCustom dlg(0);
     if (dlg.DoModal() == 1) {
-        if (dlg.m_5c.GetLength() != 0) {
-            dlg.m_5c.MakeUpper();
+        if (dlg.m_customName.GetLength() != 0) {
+            dlg.m_customName.MakeUpper();
             CWnd* item = GetDlgItem(0x4ff);
             CWnd* child = CWnd::FromHandle(GetWindow(item->m_hWnd, GW_CHILD));
             if (child != 0) {
-                child->SetWindowTextA(dlg.m_5c);
+                child->SetWindowTextA(dlg.m_customName);
                 m_68 = 1;
             }
         }
@@ -189,7 +189,7 @@ CBattlezDlgColors::CBattlezDlgColors(i32 a0, i32 a1, i32 a2, CWnd* pParent)
     : CDialog(0xc2, pParent) {
     m_5c = a0;
     m_60 = a1;
-    m_64 = 0;
+    m_pickedColor = 0;
     m_68 = a2;
 }
 
@@ -204,7 +204,7 @@ RVA(0x000c1750, 0x88)
 CMultiStartDlg::CMultiStartDlg(i32 a0, CWnd* pParent) : CDialog(0xc5, pParent), m_74(0xa) {
     m_5c = a0;
     m_6c = 0;
-    m_60 = 0;
+    m_slotList = 0;
     g_64bd5c = g_gameReg[0x2c / 4];
 }
 
@@ -219,7 +219,7 @@ CMultiStartDlg::CMultiStartDlg(i32 a0, CWnd* pParent) : CDialog(0xc5, pParent), 
 // count/pi/selection values (ebp-vs-edi choice) cascading into push scheduling. ~89%.
 RVA(0x000c1e60, 0x115)
 void CMultiStartDlg::BuildSlotList() {
-    m_60 = (i32) new CMultiSlotList(0xa);
+    m_slotList = (i32) new CMultiSlotList(0xa);
     CMultiReg* reg = (CMultiReg*)g_64bd5c;
     i32 count = 5;
     CMultiPlayerInfo* pi = reg->m_524->m_70;
@@ -239,10 +239,10 @@ void CMultiStartDlg::BuildSlotList() {
             count = 4;
         }
     }
-    ((CMultiSlotList*)m_60)->Method1546(count);
+    ((CMultiSlotList*)m_slotList)->Method1546(count);
     i32 v = GetSafe1c();
-    ((CMultiSlotList*)m_60)->Method2a45(v, 0x527);
-    ((CMultiSlotList*)m_60)->Method3396(v, 0x527, 0, 0);
+    ((CMultiSlotList*)m_slotList)->Method2a45(v, 0x527);
+    ((CMultiSlotList*)m_slotList)->Method3396(v, 0x527, 0, 0);
     reg->m_600 = 1;
 }
 
@@ -273,9 +273,9 @@ i32 CMultiStartDlg::UpdateSlot() {
     i32 v = GetSafe1c();
     CMultiReg* reg2 = (CMultiReg*)g_64bd5c;
     if (reg2->m_600) {
-        ((CMultiSlotList*)m_60)->Method3396(v, 0x527, 0, 0);
+        ((CMultiSlotList*)m_slotList)->Method3396(v, 0x527, 0, 0);
     } else {
-        ((CMultiSlotList*)m_60)->Method3396(v, 0x527, reg2->m_5a4, reg2->m_5a8);
+        ((CMultiSlotList*)m_slotList)->Method3396(v, 0x527, reg2->m_5a4, reg2->m_5a8);
     }
     return 1;
 }
@@ -550,8 +550,8 @@ void CBattlezDlg::ApplyOption3() {
 
 // -------------------------------------------------------------------------
 // Per-color-slot apply handlers (0x16cd0/16dc0/16e90/16f60): pop the modal
-// CBattlezDlgColors picker for slot N (a0=m_5c, a1=N), and on IDOK store the
-// picked value (dlg.m_64) into slot N, refresh (Sub0173e0), then invalidate the
+// CBattlezDlgColors picker for slot N (a0=m_slots, a1=N), and on IDOK store the
+// picked value (dlg.m_pickedColor) into slot N, refresh (Sub0173e0), then invalidate the
 // swatch control (0x501 + 2*N). The /GX EH frame unwinds the local dialog; the
 // ctor/DoModal/dtor + SetSlotValue/Sub0173e0/GetDlgItem chain + InvalidateRect
 // import all reloc-mask. The four bodies differ only in N (the a1 arg, the
@@ -567,9 +567,9 @@ void CBattlezDlg::ApplyOption3() {
 // The InvalidateRect import (call ff 15 [ptr]); reloc-masked DIR32.
 RVA(0x00016cd0, 0x98)
 void CBattlezDlg::ApplyColorSlot0() {
-    CBattlezDlgColors dlg(m_5c, 0, 0, 0);
+    CBattlezDlgColors dlg(m_slots, 0, 0, 0);
     if (dlg.DoModal() == 1) {
-        if (SetSlotValue(0, dlg.m_64)) {
+        if (SetSlotValue(0, dlg.m_pickedColor)) {
             Sub0173e0();
             InvalidateRect(GetDlgItem(0x501)->m_hWnd, 0, 1);
         }
@@ -580,9 +580,9 @@ void CBattlezDlg::ApplyColorSlot0() {
 // eh-dtor vptr-restamp wall (see ApplyColorSlot0); 91.1%, logic byte-exact.
 RVA(0x00016dc0, 0x97)
 void CBattlezDlg::ApplyColorSlot1() {
-    CBattlezDlgColors dlg(m_5c, 1, 0, 0);
+    CBattlezDlgColors dlg(m_slots, 1, 0, 0);
     if (dlg.DoModal() == 1) {
-        if (SetSlotValue(1, dlg.m_64)) {
+        if (SetSlotValue(1, dlg.m_pickedColor)) {
             Sub0173e0();
             InvalidateRect(GetDlgItem(0x503)->m_hWnd, 0, 1);
         }
@@ -593,9 +593,9 @@ void CBattlezDlg::ApplyColorSlot1() {
 // eh-dtor vptr-restamp wall (see ApplyColorSlot0); 91.1%, logic byte-exact.
 RVA(0x00016e90, 0x98)
 void CBattlezDlg::ApplyColorSlot2() {
-    CBattlezDlgColors dlg(m_5c, 2, 0, 0);
+    CBattlezDlgColors dlg(m_slots, 2, 0, 0);
     if (dlg.DoModal() == 1) {
-        if (SetSlotValue(2, dlg.m_64)) {
+        if (SetSlotValue(2, dlg.m_pickedColor)) {
             Sub0173e0();
             InvalidateRect(GetDlgItem(0x505)->m_hWnd, 0, 1);
         }
@@ -606,9 +606,9 @@ void CBattlezDlg::ApplyColorSlot2() {
 // eh-dtor vptr-restamp wall (see ApplyColorSlot0); 91.1%, logic byte-exact.
 RVA(0x00016f60, 0x98)
 void CBattlezDlg::ApplyColorSlot3() {
-    CBattlezDlgColors dlg(m_5c, 3, 0, 0);
+    CBattlezDlgColors dlg(m_slots, 3, 0, 0);
     if (dlg.DoModal() == 1) {
-        if (SetSlotValue(3, dlg.m_64)) {
+        if (SetSlotValue(3, dlg.m_pickedColor)) {
             Sub0173e0();
             InvalidateRect(GetDlgItem(0x507)->m_hWnd, 0, 1);
         }
@@ -649,10 +649,10 @@ void CBattlezDlg::CopyComboSelToChild() {
 
 // ---------------------------------------------------------------------------
 // SetSlotValue - store `val` into the 0x158 field of slot `index` in the slot
-// array based at m_5c (0x238 bytes/slot). Returns TRUE.
+// array based at m_slots (0x238 bytes/slot). Returns TRUE.
 RVA(0x00017460, 0x22)
 i32 CBattlezDlg::SetSlotValue(i32 index, i32 val) {
-    *(i32*)((char*)((CBattlezSlot*)m_5c + index) + 0x158) = val;
+    *(i32*)((char*)((CBattlezSlot*)m_slots + index) + 0x158) = val;
     return 1;
 }
 

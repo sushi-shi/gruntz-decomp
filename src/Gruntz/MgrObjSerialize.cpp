@@ -20,12 +20,12 @@ extern "C" int(WINAPI* g_ShowCursor)(int); // ?g_ShowCursor@@3P6GHH@ZA (0x6c44c4
 DATA(0x0024e35c)
 extern i32 g_64e35c; // 0x64e35c "splash drawn" latch
 
-// A sub-object (m_0c->m_04) whose Method158bc0 must be live to proceed.
+// A sub-object (m_levelData->m_ready) whose Method158bc0 must be live to proceed.
 struct CMgrReady {
     i32 Method158bc0(); // 0x158bc0
 };
 
-// The image-set the object loads into (m_0c->m_10); slot 19 (vtbl+0x4c) loads it.
+// The image-set the object loads into (m_levelData->m_imageSet); slot 19 (vtbl+0x4c) loads it.
 struct CImageSet {
     virtual void v0();
     virtual void v1();
@@ -49,22 +49,22 @@ struct CImageSet {
     virtual i32 Load(char* path, const char* a, const char* b); // slot 19 -> vtbl+0x4c
 };
 
-// The level-data object (m_0c) and the renderer it owns.
+// The level-data object (m_levelData) and the renderer it owns.
 struct CLevelData {
     char pad00[4];
-    CMgrReady* m_04; // +0x04
+    CMgrReady* m_ready; // +0x04
     char pad08[0x10 - 0x08];
-    CImageSet* m_10; // +0x10
+    CImageSet* m_imageSet; // +0x10
 };
 
-// The display owner (m_04): its m_8c/m_90 are blitted into the splash params.
+// The display owner (m_displayMgr): its m_8c/m_90 are blitted into the splash params.
 struct CDisplayMgr {
     char pad00[0x8c];
     i32 m_8c; // +0x8c
     i32 m_90; // +0x90
 };
 
-// The resource locator (m_08): maps a logical name to a rez path.
+// The resource locator (m_rezLocator): maps a logical name to a rez path.
 struct CRezLocator {
     char* ResolvePath(const char* name); // 0x13c030
 };
@@ -107,10 +107,10 @@ struct CMgrWriter {
 
 // The persisted object. Only the serialized fields are named.
 struct CMgrPersistObj {
-    i32 m_00;          // +0x00
-    CDisplayMgr* m_04; // +0x04
-    CRezLocator* m_08; // +0x08
-    CLevelData* m_0c;  // +0x0c
+    i32 m_00;                  // +0x00
+    CDisplayMgr* m_displayMgr; // +0x04
+    CRezLocator* m_rezLocator; // +0x08
+    CLevelData* m_levelData;   // +0x0c
     char m_pad10[0x1c - 0x10];
     i32 m_1c, m_20, m_24;
     char m_pad28[0x38 - 0x28];
@@ -173,32 +173,32 @@ i32 CMgrPersistObj::Save(CMgrWriter* w) {
 // into the image-set, then mark the object started.
 RVA(0x000face0, 0x17c)
 i32 CMgrPersistObj::Init() {
-    if (m_0c == 0) {
+    if (m_levelData == 0) {
         return 0;
     }
     int(WINAPI * sc)(int) = g_ShowCursor;
     while (sc(0) >= 0)
         ;
-    if (m_0c->m_04->Method158bc0() == 0) {
+    if (m_levelData->m_ready->Method158bc0() == 0) {
         return 0;
     }
     if (g_64e35c == 0) {
         SplashParams sp;
         sp.text.LoadString(0x81a9);
-        sp.m_08 = m_04->m_8c;
-        sp.m_0c = m_04->m_90;
+        sp.m_08 = m_displayMgr->m_8c;
+        sp.m_0c = m_displayMgr->m_90;
         sp.m_10 = 0;
         sp.m_14 = 0;
-        EngStr_DrawText(m_0c, &sp, &sp.m_04, 0x78, 1, 0xff, 0, 0xff, 1);
+        EngStr_DrawText(m_levelData, &sp, &sp.m_04, 0x78, 1, 0xff, 0, 0xff, 1);
     }
     while (sc(0) >= 0)
         ;
     g_64e35c = 0;
-    char* path = m_08->ResolvePath("GAME_IMAGEZ");
+    char* path = m_rezLocator->ResolvePath("GAME_IMAGEZ");
     if (path == 0) {
         return 0;
     }
-    if (m_0c->m_10->Load(path, "GAME", "_") == -1) {
+    if (m_levelData->m_imageSet->Load(path, "GAME", "_") == -1) {
         return 0;
     }
     m_1a8 = 0;

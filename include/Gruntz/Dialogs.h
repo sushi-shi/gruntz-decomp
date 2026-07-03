@@ -85,9 +85,9 @@ public:
 
 // ---------------------------------------------------------------------------
 // CBattlezDlg
-//   base CDialog(0xc0, pParent); m_5c = a0; CString @+0x6c; m_68 = 0.
+//   base CDialog(0xc0, pParent); m_slots = a0; CString @+0x6c; m_68 = 0.
 // ---------------------------------------------------------------------------
-// A player-slot record in the battle dialog's slot array (CBattlezDlg::m_5c).
+// A player-slot record in the battle dialog's slot array (CBattlezDlg::m_slots).
 // 0x238 bytes/slot (the disasm scales index by 0x238 = lea x71, *8); only the
 // +0x158 int field (set by SetSlotValue) and the size are load-bearing.
 SIZE_UNKNOWN(CBattlezSlot);
@@ -101,7 +101,7 @@ public:
     CBattlezDlg(i32 a0, CWnd* pParent);
     ~CBattlezDlg(); // 0x14c90 (destroy CString m_6c, chain ~CDialog)
 
-    i32 m_5c;        // +0x5c  (= a0; also reused as the CBattlezSlot* slot-array base)
+    i32 m_slots;     // +0x5c  (= a0; the CBattlezSlot* slot-array base)
     char m_pad60[8]; // +0x60
     i32 m_68;        // +0x68  (= 0)
     CString m_6c;    // +0x6c  (default CString)
@@ -160,14 +160,14 @@ SIZE_UNKNOWN(CBattlezDlgCustom);
 class CBattlezDlgCustom : public CDialog {
 public:
     CBattlezDlgCustom(CWnd* pParent);
-    ~CBattlezDlgCustom(); // 0x17140 (destroy CString m_5c, chain ~CDialog)
+    ~CBattlezDlgCustom(); // 0x17140 (destroy CString m_customName, chain ~CDialog)
 
-    CString m_5c; // +0x5c  (default CString)
+    CString m_customName; // +0x5c  (default CString)
 };
 
 // ---------------------------------------------------------------------------
 // CBattlezDlgColors (NO EH frame - no embedded C++ object).
-//   base CDialog(0xc2, pParent); m_5c = a0; m_60 = a1; m_64 = 0; m_68 = a2.
+//   base CDialog(0xc2, pParent); m_5c = a0; m_60 = a1; m_pickedColor = 0; m_68 = a2.
 // ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CBattlezDlgColors);
 class CBattlezDlgColors : public CDialog {
@@ -178,15 +178,15 @@ public:
     // only its 6 own bytes `mov eax,OFFSET msgmap; ret` are matched).
     const void* GetMessageMap();
 
-    i32 m_5c; // +0x5c  (= a0)
-    i32 m_60; // +0x60  (= a1)
-    i32 m_64; // +0x64  (= 0)
-    i32 m_68; // +0x68  (= a2)
+    i32 m_5c;          // +0x5c  (= a0)
+    i32 m_60;          // +0x60  (= a1)
+    i32 m_pickedColor; // +0x64  (= 0; the picked value read after DoModal)
+    i32 m_68;          // +0x68  (= a2)
 };
 
 // ---------------------------------------------------------------------------
 // CMultiStartDlg
-//   base CDialog(0xc5, pParent); m_5c = a0; m_60 = 0; m_6c = 0;
+//   base CDialog(0xc5, pParent); m_5c = a0; m_slotList = 0; m_6c = 0;
 //   CString @+0x70; CObList(0xa) @+0x74; then g_64bd5c = g_gameReg->m_2c.
 // ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CMultiStartDlg);
@@ -229,7 +229,7 @@ public:
     }
 
     i32 m_5c;        // +0x5c  (= a0)
-    i32 m_60;        // +0x60  (= 0)
+    i32 m_slotList;  // +0x60  (= 0; the CMultiSlotList* built in BuildSlotList)
     char m_pad64[8]; // +0x64
     i32 m_6c;        // +0x6c  (= 0)
     CString m_70;    // +0x70  (default CString)

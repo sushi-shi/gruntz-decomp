@@ -46,13 +46,13 @@ struct CSoundChannel {
     virtual void Slot2();
     virtual void Retune(i32 a1, i32 a2, i32 a3); // slot 3 -> call [vptr+0xc]
 
-    void Recompute(i32 frame); // 0x00bf10  level-scale -> SetVolByIdx on m_04
+    void Recompute(i32 frame); // 0x00bf10  level-scale -> SetVolByIdx on m_voice
 
-    DirectSoundMgr* m_04; // +0x04  DirectSound handle (StopAndRewind / SetVolByIdx)
-    i32 m_08;             // +0x08  level multiplier (scaled by the frame in Recompute)
-    i32 m_0c;             // +0x0c  last frame fed to Recompute (early-out compare)
-    i32 m_10;             // +0x10  secondary multiplier (>0 gate, percent)
-    i32 m_14;             // +0x14  cleared on stop/retune
+    DirectSoundMgr* m_voice; // +0x04  DirectSound handle (StopAndRewind / SetVolByIdx)
+    i32 m_level;             // +0x08  level multiplier (scaled by the frame in Recompute)
+    i32 m_lastFrame;         // +0x0c  last frame fed to Recompute (early-out compare)
+    i32 m_multiplier;        // +0x10  secondary multiplier (>0 gate, percent)
+    i32 m_14;                // +0x14  cleared on stop/retune
 };
 
 // MFC CPtrList node, walked raw: next at +0x00, the channel payload at +0x08.
@@ -81,17 +81,17 @@ struct CSoundChannelList {
 
 // The new sound-channel object the Create* factories allocate + add to the list.
 // Modeled minimally: a polymorphic scalar-deleting dtor at vtable slot 0, the
-// fields the factories seed (m_04/m_08/m_14/m_3c), and the non-virtual one-time
+// fields the factories seed (m_voice/m_level/m_14/m_listNode), and the non-virtual one-time
 // Init overloads (reached by direct rel32 -> ILT thunk, reloc-masked). The retail
 // vtable is referenced only by address when an instance is created.
 struct SoundChannelNew {
     virtual void ScalarDtor(i32 flag); // slot 0
-    i32 m_04;                          // +0x04
-    i32 m_08;                          // +0x08
+    i32 m_voice;                       // +0x04  DirectSound handle
+    i32 m_level;                       // +0x08  level (default 100)
     char m_pad0c[0x14 - 0x0c];
     i32 m_14; // +0x14
     char m_pad18[0x3c - 0x18];
-    i32 m_3c; // +0x3c
+    i32 m_listNode; // +0x3c  the m_list node this channel was added at
 
     i32 Init6(void* world, i32 a1, i32 a2, void* a3, i32 a4, i32 a5);
     i32 Init5(i32 a0, i32 a1, void* a2, i32 a3, i32 a4);
@@ -102,7 +102,7 @@ struct SoundChannelNew {
 // (a DirectSoundMgr-ish sub-object), then poked via the engine helpers.
 struct CRandomAmbientWorld {
     char m_pad00[0x2c];
-    DirectSoundMgr* m_2c; // +0x2c  sub-object handle (also viewed as SoundDevice)
+    DirectSoundMgr* m_soundDev; // +0x2c  sub-object handle (also viewed as SoundDevice)
 };
 
 class CWorldSoundSet {
@@ -130,9 +130,9 @@ public:
     CRandomAmbientWorld* m_world; // +0x00
     void* m_04;                   // +0x04
     CSoundChannelList m_list;     // +0x08  head at +0x0c
-    i32 m_24;                     // +0x24  active flag
-    i32 m_28;                     // +0x28  pan
-    i32 m_2c;                     // +0x2c  vol
+    i32 m_active;                 // +0x24  active flag
+    i32 m_pan;                    // +0x28  pan
+    i32 m_vol;                    // +0x2c  vol
 };
 
 #endif // GRUNTZ_CWORLDSOUNDSET_H
