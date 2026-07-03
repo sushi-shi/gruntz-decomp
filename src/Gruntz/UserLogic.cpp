@@ -364,10 +364,10 @@ struct CTriggerProbe {
 // The viewport rect base reached as g_gameReg->m_30->m_24->m_5c + 0x40; the
 // on-screen test reads its left/top/right/bottom (m_0/m_4/m_8/m_c).
 struct CViewRect {
-    i32 m_0; // left
-    i32 m_4; // top
-    i32 m_8; // right
-    i32 m_c; // bottom
+    i32 m_left;   // +0x00
+    i32 m_top;    // +0x04
+    i32 m_right;  // +0x08
+    i32 m_bottom; // +0x0c
 };
 // CViewport (world->screen transform) is the shared <Gruntz/CViewport.h> class;
 // here only the +0x5c visible-rect base pointer is read.
@@ -842,7 +842,7 @@ i32 CSecretTeleporterTrigger::SpawnTeleporter() {
             i32 ey = eo->m_60;
             i32 ex = eo->m_5c;
             CViewRect* rc = (CViewRect*)(g->m_30->m_24->m_5c + 0x40);
-            if (ex < rc->m_8 && ex >= rc->m_0 && ey < rc->m_c && ey >= rc->m_4) {
+            if (ex < rc->m_right && ex >= rc->m_left && ey < rc->m_bottom && ey >= rc->m_top) {
                 g->m_60->CueA(hit, 0x3fc, -1, 0, -1, -1);
             }
         }
@@ -1498,7 +1498,7 @@ struct CWarpTagObj {
 };
 struct CWarpLevelReg {
     char m_pad00[0x1c];
-    i32 m_1c; // +0x1c base level number
+    i32 m_baseLevel; // +0x1c base level number
     char m_pad20[0x28 - 0x20];
     CWarpTagObj* m_28; // +0x28
 };
@@ -1514,16 +1514,16 @@ struct CWarpMgr {
 };
 struct CWarpLeaf { // offset view of the grunt-logic leaf `this`
     char m_pad000[0x154];
-    CWarpM154* m_154; // +0x154
+    CWarpM154* m_drawState; // +0x154
     char m_pad158[0x1ec - 0x158];
-    i32 m_1ec; // +0x1ec anim arg 0
-    i32 m_1f0; // +0x1f0 anim arg 1
+    i32 m_animArg0; // +0x1ec anim arg 0
+    i32 m_animArg1; // +0x1f0 anim arg 1
     char m_pad1f4[0x260 - 0x1f4];
-    CWarpAnimObj* m_260; // +0x260
+    CWarpAnimObj* m_animObj; // +0x260
     char m_pad264[0x360 - 0x264];
-    i32 m_360; // +0x360 warp mode
+    i32 m_warpMode; // +0x360 warp mode
     char m_pad364[0x36c - 0x364];
-    i32 m_36c; // +0x36c anim-suppress gate
+    i32 m_animSuppress; // +0x36c anim-suppress gate
 };
 // The frame-clock snapshot fed to the arrival poke (ds:0x6bf3bc).
 extern "C" i32 g_6bf3bc;
@@ -1543,31 +1543,31 @@ struct CWarpStr {
 extern "C" void FormatWarpStr(CWarpStr* dst, const char* fmt, ...); // 0x1b2cf5
 // @early-stop
 // 86.4%: logic byte-faithful. Residual is the leaf's offset-view register scheduling
-// (the m_154 reloads) + the /GX CString unwind state ordering; not source-steerable.
+// (the m_drawState reloads) + the /GX CString unwind state ordering; not source-steerable.
 RVA(0x00064540, 0x11c)
 i32 CUserLogic::winapi_064540_PostMessageA() {
     CWarpLeaf* self = (CWarpLeaf*)this;
-    self->m_154->m_1a0.Poke15c360(g_6bf3bc);
-    CWarpArrivalSub* sub = &self->m_154->m_1a0;
+    self->m_drawState->m_1a0.Poke15c360(g_6bf3bc);
+    CWarpArrivalSub* sub = &self->m_drawState->m_1a0;
     if (sub->m_28 == 0) {
         return 0;
     }
     if (sub->m_20 != 0) {
         return 0;
     }
-    if (self->m_360 == 0xc) {
+    if (self->m_warpMode == 0xc) {
         CWarpLevelReg* reg = g_mgrSettings->m_2c;
-        i32 lvl = reg->m_1c + 0x64;
+        i32 lvl = reg->m_baseLevel + 0x64;
         CWarpStr s;
         FormatWarpStr(&s, "WORLDZ\\LEVEL%i", lvl);
         if (reg->m_28->Find13be40(s.m_pchData, 0x575744)) {
             g_pPostMessageA(g_mgrSettings->m_4->m_4, 0x111, 0x807f, lvl);
         }
     }
-    if (self->m_36c == 0) {
-        self->m_260->Anim2a72(self->m_1ec, self->m_1f0, 1);
+    if (self->m_animSuppress == 0) {
+        self->m_animObj->Anim2a72(self->m_animArg0, self->m_animArg1, 1);
     }
-    self->m_154->m_8 |= 0x10000;
+    self->m_drawState->m_8 |= 0x10000;
     return 0;
 }
 
@@ -1644,92 +1644,99 @@ public:
 
     // Members beyond CUserLogic's 0x40 base.
     char m_pad40[0x154 - 0x40];
-    CDecayMgr* m_154; // +0x154 bound draw-state manager
+    CDecayMgr* m_drawState; // +0x154 bound draw-state manager
     char m_pad158[0x170 - 0x158];
-    i32 m_170; // +0x170 grunt sub-state
+    i32 m_gruntSubState; // +0x170 grunt sub-state
     char m_pad174[0x1c0 - 0x174];
-    char* m_1c0; // +0x1c0 grunt-type bute tag
-    i32 m_1c4;   // +0x1c4
+    char* m_gruntTypeTag; // +0x1c0 grunt-type bute tag
+    i32 m_1c4;            // +0x1c4
     char m_pad1c8[0x1e4 - 0x1c8];
-    i32 m_1e4; // +0x1e4 latch flag
+    i32 m_downtimeLatch; // +0x1e4 latch flag
     char m_pad1e8[0x1ec - 0x1e8];
-    i32 m_1ec; // +0x1ec anim arg
-    i32 m_1f0; // +0x1f0 anim arg
-    i32 m_1f4; // +0x1f4 anim arg
+    i32 m_animArg0; // +0x1ec anim arg
+    i32 m_animArg1; // +0x1f0 anim arg
+    i32 m_animArg2; // +0x1f4 anim arg
     char m_pad1f8[0x258 - 0x1f8];
-    i32 m_258; // +0x258 type discriminator (0x3b = no-downtime)
+    i32 m_typeDisc; // +0x258 type discriminator (0x3b = no-downtime)
     char m_pad25c[0x260 - 0x25c];
-    CDecayAnim* m_260; // +0x260 anim controller
+    CDecayAnim* m_animCtrl; // +0x260 anim controller
     char m_pad264[0x360 - 0x264];
-    i32 m_360; // +0x360 grunt mode
+    i32 m_gruntMode; // +0x360 grunt mode
     char m_pad364[0x36c - 0x364];
-    i32 m_36c; // +0x36c anim-suppress gate
+    i32 m_animSuppress; // +0x36c anim-suppress gate
     char m_pad370[0x380 - 0x370];
     i32 m_380; // +0x380
     char m_pad384[0x3e4 - 0x384];
-    i32 m_3e4; // +0x3e4
-    i32 m_3e8; // +0x3e8
-    i32 m_3ec; // +0x3ec health
-    i32 m_3f0; // +0x3f0
+    i32 m_3e4;    // +0x3e4
+    i32 m_3e8;    // +0x3e8
+    i32 m_health; // +0x3ec health
+    i32 m_3f0;    // +0x3f0
     char m_pad3f4[0x460 - 0x3f4];
     i32 m_460; // +0x460
     char m_pad464[0x830 - 0x464];
-    i32 m_830; // +0x830 timer start (lo)
-    i32 m_834; // +0x834 (hi, always 0)
-    i32 m_838; // +0x838 timer duration (lo)
-    i32 m_83c; // +0x83c (hi, always 0)
+    i32 m_decayTimerLo;    // +0x830 timer start (lo)
+    i32 m_decayTimerHi;    // +0x834 (hi, always 0)
+    i32 m_decayDurationLo; // +0x838 timer duration (lo)
+    i32 m_decayDurationHi; // +0x83c (hi, always 0)
     char m_pad840[0x860 - 0x840];
-    i32 m_860; // +0x860 wand timer start (lo)
-    i32 m_864; // +0x864 (hi)
-    i32 m_868; // +0x868 wand downtime (lo)
-    i32 m_86c; // +0x86c (hi)
+    i32 m_wandTimerLo;    // +0x860 wand timer start (lo)
+    i32 m_wandTimerHi;    // +0x864 (hi)
+    i32 m_wandDowntimeLo; // +0x868 wand downtime (lo)
+    i32 m_wandDowntimeHi; // +0x86c (hi)
 };
 
 // LoadGruntDecayConfig (0x612a0): advance the arrival probe, drive the walk/idle
 // anim by grunt mode, then (once arrived + not busy) latch the decay timer + fill.
 // @early-stop
 // 90.5%: logic byte-faithful. Residual is CSE/regalloc of the 64-bit timer delta -
-// retail keeps g_645588 pinned in eax and re-does the m_830 subtraction in the fill
-// tail, while cl shares the whole `(i64)clock - m_830` delta, shifting the lo dword
+// retail keeps g_645588 pinned in eax and re-does the m_decayTimerLo subtraction in the fill
+// tail, while cl shares the whole `(i64)clock - m_decayTimerLo` delta, shifting the lo dword
 // off eax and cascading register names + the epilogue merge. Not source-steerable.
 RVA(0x000612a0, 0x23c)
 i32 CGruntBehaviorLeaf::LoadGruntDecayConfig() {
-    if (m_360 == 0) {
+    if (m_gruntMode == 0) {
         return 0;
     }
-    if (m_154->m_1a0.Poke15c360(g_6bf3bc) == 1) {
-        if (m_170 == 1 && m_360 != 5) {
-            m_260->Method1073(m_10->m_5c, m_10->m_60, 1, m_1ec);
+    if (m_drawState->m_1a0.Poke15c360(g_6bf3bc) == 1) {
+        if (m_gruntSubState == 1 && m_gruntMode != 5) {
+            m_animCtrl->Method1073(m_10->m_5c, m_10->m_60, 1, m_animArg0);
         } else {
-            m_260->Method3003(m_10->m_5c, m_10->m_60, m_1ec, m_1f4, m_360 != 5, 0x19);
+            m_animCtrl->Method3003(
+                m_10->m_5c,
+                m_10->m_60,
+                m_animArg0,
+                m_animArg2,
+                m_gruntMode != 5,
+                0x19
+            );
         }
     }
-    CDecayArrival* sub = &m_154->m_1a0;
+    CDecayArrival* sub = &m_drawState->m_1a0;
     if (sub->m_28 == 0) {
         return 0;
     }
     if (sub->m_20 != 0) {
         return 0;
     }
-    i32 mode = m_360;
+    i32 mode = m_gruntMode;
     if (mode == 1 || mode == 2 || mode == 0xb || mode == 6) {
         m_30 = m_14->m_1c;
         m_14->m_1c = g_buteTree.Find(k_60bebc);
-        if (m_36c == 0) {
-            m_260->Anim2a72(m_1ec, m_1f0, 0);
+        if (m_animSuppress == 0) {
+            m_animCtrl->Anim2a72(m_animArg0, m_animArg1, 0);
         }
         i32 dt = (i32)g_buteMgr.GetDwordDef("Grunt", "DecayTime", 0xbb8);
         if (m_10->m_50 == 0xb) {
-            m_838 = dt;
-            m_830 = (i32)g_645588 - m_10->m_54 * dt / 256;
-            m_83c = 0;
+            m_decayDurationLo = dt;
+            m_decayTimerLo = (i32)g_645588 - m_10->m_54 * dt / 256;
+            m_decayDurationHi = 0;
         } else {
-            m_838 = dt;
-            m_83c = 0;
-            m_830 = (i32)g_645588;
+            m_decayDurationLo = dt;
+            m_decayDurationHi = 0;
+            m_decayTimerLo = (i32)g_645588;
         }
-        m_834 = 0;
-        i64 e = (i64)(u32)g_645588 - *(i64*)&m_830;
+        m_decayTimerHi = 0;
+        i64 e = (i64)(u32)g_645588 - *(i64*)&m_decayTimerLo;
         u32 elapsed = e < 0 ? 0 : (u32)e;
         i32 r = (i32)((double)elapsed * 256.0
                       / (double)g_buteMgr.GetDwordDef("Grunt", "DecayTime", 0xbb8));
@@ -1738,10 +1745,10 @@ i32 CGruntBehaviorLeaf::LoadGruntDecayConfig() {
         m_10->m_54 = r;
         return 0;
     }
-    if (m_36c == 0) {
-        m_260->Anim2a72(m_1ec, m_1f0, 0);
+    if (m_animSuppress == 0) {
+        m_animCtrl->Anim2a72(m_animArg0, m_animArg1, 0);
     }
-    m_154->m_8 |= 0x10000;
+    m_drawState->m_8 |= 0x10000;
     return 0;
 }
 
@@ -1749,22 +1756,22 @@ i32 CGruntBehaviorLeaf::LoadGruntDecayConfig() {
 // (flag + finish anim); else refresh the 0..256 fill fraction on the draw command.
 // @early-stop
 // ~77%: logic byte-faithful. Same CSE/regalloc wall as LoadGruntDecayConfig -
-// retail loads g_645588 once into eax and recomputes the m_830 subtraction in the
+// retail loads g_645588 once into eax and recomputes the m_decayTimerLo subtraction in the
 // fill branch (eax preserved -> lo stays in eax); cl CSEs the whole 64-bit delta and
 // pins lo in ecx, cascading a register-name mismatch through the tail. Hoisting the
 // clock into a local regressed it. Not source-steerable.
 RVA(0x00061570, 0x11d)
 i32 CGruntBehaviorLeaf::LoadGruntDecayConfig2() {
-    if ((i64)(u32)g_645588 - *(i64*)&m_830 >= *(i64*)&m_838) {
-        m_154->m_40 |= 1;
-        m_154->m_194->Method152480(1);
-        if (m_36c == 0) {
-            m_260->Anim2a72(m_1ec, m_1f0, 0);
+    if ((i64)(u32)g_645588 - *(i64*)&m_decayTimerLo >= *(i64*)&m_decayDurationLo) {
+        m_drawState->m_40 |= 1;
+        m_drawState->m_194->Method152480(1);
+        if (m_animSuppress == 0) {
+            m_animCtrl->Anim2a72(m_animArg0, m_animArg1, 0);
         }
-        m_154->m_8 |= 0x10000;
+        m_drawState->m_8 |= 0x10000;
         return 0;
     }
-    i64 e = (i64)(u32)g_645588 - *(i64*)&m_830;
+    i64 e = (i64)(u32)g_645588 - *(i64*)&m_decayTimerLo;
     u32 elapsed = e < 0 ? 0 : (u32)e;
     i32 r =
         (i32)((double)elapsed * 256.0 / (double)g_buteMgr.GetDwordDef("Grunt", "DecayTime", 0xbb8));
@@ -1784,37 +1791,37 @@ i32 CGruntBehaviorLeaf::LoadGruntDecayConfig2() {
 // (which interleaves it among the timer zero-stores). Pure scheduling; not steerable.
 RVA(0x00065a60, 0x159)
 i32 CGruntBehaviorLeaf::LoadWandGruntItemConfig() {
-    i32 phase = m_154->m_1a0.Poke15c360(g_6bf3bc);
+    i32 phase = m_drawState->m_1a0.Poke15c360(g_6bf3bc);
     if (phase > 0) {
         if (phase == 0x63) {
-            m_1e4 = 1;
-            u32 downtime = g_buteMgr.GetDword(m_1c0, "ItemDowntime");
-            if (m_258 == 0x3b) {
+            m_downtimeLatch = 1;
+            u32 downtime = g_buteMgr.GetDword(m_gruntTypeTag, "ItemDowntime");
+            if (m_typeDisc == 0x3b) {
                 downtime = 0;
             }
-            m_868 = downtime;
-            m_86c = 0;
-            m_860 = g_645588;
-            m_864 = 0;
+            m_wandDowntimeLo = downtime;
+            m_wandDowntimeHi = 0;
+            m_wandTimerLo = g_645588;
+            m_wandTimerHi = 0;
             m_460 = 0;
             m_3f0 = 0;
             if (m_1c4 != 0) {
                 Method22de();
             }
-            if (m_170 == 0x13) {
+            if (m_gruntSubState == 0x13) {
                 Method3c29(m_380);
-                i32 hp = m_3ec - g_buteMgr.GetIntDef("WANDGRUNT", "HealthLoss", 0x19);
-                m_3ec = hp < 0 ? 0 : hp;
-                if (m_3ec <= 0) {
-                    m_260->Method2e96(m_1ec, m_1f0, 1, -1);
+                i32 hp = m_health - g_buteMgr.GetIntDef("WANDGRUNT", "HealthLoss", 0x19);
+                m_health = hp < 0 ? 0 : hp;
+                if (m_health <= 0) {
+                    m_animCtrl->Method2e96(m_animArg0, m_animArg1, 1, -1);
                 }
             }
         }
-        m_260->Method3945(m_1ec, m_1f0, m_3e4, m_3e8, m_170, phase);
+        m_animCtrl->Method3945(m_animArg0, m_animArg1, m_3e4, m_3e8, m_gruntSubState, phase);
     }
-    CDecayArrival* sub = &m_154->m_1a0;
+    CDecayArrival* sub = &m_drawState->m_1a0;
     if (sub->m_28 != 0 && sub->m_20 == 0) {
-        m_1e4 = 0;
+        m_downtimeLatch = 0;
         Method136b(1, 0, 0);
     }
     return 0;

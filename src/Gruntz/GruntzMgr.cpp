@@ -186,7 +186,7 @@ struct CWorldMenuHolder {
 // UnknownClose's teardown vocabulary. Most owned sub-objects share a parameterless
 // thiscall teardown then operator delete (modeled as one EngObj type - the per-call
 // displacement reloc-masks). m_30/m_3c are torn down through their own vtable slot 1
-// (a flagged scalar-delete), m_38 is the settings/registry writer (WriteInt per
+// (a flagged scalar-delete), m_settings is the settings/registry writer (WriteInt per
 // named key), and g_645578 is zeroed field-by-field before delete. Each engine
 // entrypoint is out-of-line / reloc-masked.
 struct EngObj {
@@ -536,7 +536,7 @@ void __stdcall RecolorCell(i32 cell);
 // LoadWorldMode's reloc-masked siblings (engine objects reached through the
 // manager's member pointers; all are __thiscall, so each is modeled as a method on
 // its object so `mov ecx,obj; call` falls out - the displacements reloc-mask).
-//   m_34: a 0x94-byte engine surface object built by Build(), configured by
+//   m_recolorSurface: a 0x94-byte engine surface object built by Build(), configured by
 //         Apply(), torn down by Teardown() + the operator-delete wrapper.
 //   m_54: the input/state object (0x30 bytes; an embedded CObList at +8 ctor'd
 //         CObList(0xa); wired by InitInput(world->m_28, inputFlag); torn down by a
@@ -873,7 +873,7 @@ i32 CGruntzMgr::RestoreVideoMode(i32 save) {
 // returning its result; 0 when no log is bound.
 RVA(0x0008f9c0, 0x1d)
 i32 CGruntzMgr::AppendChatMessage(char* msg) {
-    CChatLog* log = (CChatLog*)m_5c;
+    CChatLog* log = (CChatLog*)m_chatLog;
     if (log == 0) {
         return 0;
     }
@@ -1756,7 +1756,7 @@ i32 CGruntzMgr::SetColorDepth(i32 depth) {
 // @early-stop
 // big /GX state-machine reload (~27%): the whole flow + per-stage error ladder
 // are reconstructed and the /GX frame + the head (world/mode/8|16 guards + the
-// m_54/m_34 two-stage teardowns) match. The low % is a big-SEH scoring desync:
+// m_54/m_recolorSurface two-stage teardowns) match. The low % is a big-SEH scoring desync:
 // (a) the long chain of reloc-masked engine thiscalls (RezBuild/Apply/Teardown,
 // CObList ctor/dtor, the world mode-set vtable, MakeRezPath/ResolveRezRow) each
 // fuzzy-mismatch until their whole referent set is named; (b) the entry `push ecx`
@@ -1783,12 +1783,12 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
     }
     m_inputState = 0;
 
-    CRezSurface94* surf = (CRezSurface94*)m_34;
+    CRezSurface94* surf = (CRezSurface94*)m_recolorSurface;
     if (surf) {
         surf->Teardown();
         RezFree(surf);
     }
-    m_34 = 0;
+    m_recolorSurface = 0;
 
     m_colorDepth = mode;
     g_6455e0 = 0;
@@ -1815,11 +1815,11 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
         return 0;
     }
 
-    CRezSurface94* old = (CRezSurface94*)m_34;
+    CRezSurface94* old = (CRezSurface94*)m_recolorSurface;
     if (old) {
         old->Teardown();
         RezFree(old);
-        m_34 = 0;
+        m_recolorSurface = 0;
     }
     CRezSurface94* obj = (CRezSurface94*)RezAlloc(0x94);
     if (obj) {
@@ -1827,11 +1827,11 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
     } else {
         obj = 0;
     }
-    m_34 = (i32)obj;
+    m_recolorSurface = (i32)obj;
 
     CString path;
     i32* row = ResolveRezRow(&path);
-    if (((CRezSurface94*)m_34)->Apply(*row, 1, 0)) {
+    if (((CRezSurface94*)m_recolorSurface)->Apply(*row, 1, 0)) {
         ReportError(0x800b, 0x441);
         return 0;
     }
@@ -2132,7 +2132,7 @@ i32 CGruntzMgr::RunLoadGameDialog() {
 // -------------------------------------------------------------------------
 // CGruntzMgr::Quicksave (0x092530; __thiscall; /GX EH; ret). Quicksaves the game.
 // Bails (0) with no save sink (m_saveSink) or when not in the PLAY state (id 3).
-// When the first-frame guard (m_44->m_124) is already set, it pops a localized
+// When the first-frame guard (m_hudGuard->m_124) is already set, it pops a localized
 // message (resource 0x81aa) through a modal and returns 1. Otherwise, on a valid
 // save record (m_saveInfoRec with bit 0 set) and a live save source
 // (m_curState + 0x1d0), it stops the timer, fills the save info, then commits the
@@ -2152,7 +2152,7 @@ i32 CGruntzMgr::Quicksave() {
     if (m_curState->Update() != 3) {
         return 0;
     }
-    if (((HudGuard44*)m_44)->m_124 != 0) {
+    if (((HudGuard44*)m_hudGuard)->m_124 != 0) {
         CString name;
         name.LoadStringA(0x81aa);
         EnterModalUI((i32)(const char*)name);
@@ -2169,7 +2169,7 @@ i32 CGruntzMgr::Quicksave() {
     }
     FillSaveInfo((SaveInfo*)m_saveInfoRec, 0);
     if (((ScoreNotifier*)g_gameReg->m_58)->Notify((i32)((char*)m_saveInfoRec + 0x35), 0x81a7)) {
-        ((CChatLog*)m_5c)->Insert("Game Quicksaved successfully.", 0, 0x11);
+        ((CChatLog*)m_chatLog)->Insert("Game Quicksaved successfully.", 0, 0x11);
         return 1;
     }
     EnterModalUI((i32) "ERROR - Cannot Save Game.");
@@ -2403,7 +2403,7 @@ i32 CGruntzMgr::BroadcastCmd(i32 a0, i32 cmd, i32 a2, i32 a3) {
 // world's score/time deltas (m_cmdGrid's +0x20c/+0x21c tables, indexed by the active
 // world g_644c54) into the +0x7c HUD accumulators. If a level name is loaded
 // (m_strWorldFile non-empty) it just refreshes the HUD with 1 and marks it dirty;
-// otherwise, on the first frame (m_44->m_124 == 0) it seeds the HUD from the
+// otherwise, on the first frame (m_hudGuard->m_124 == 0) it seeds the HUD from the
 // registry's cumulative score and fires the score-bump / tick / notify chain,
 // then refreshes the HUD with the live score and clears the dirty flag.
 RVA(0x000860b0, 0xe8)
@@ -2422,7 +2422,7 @@ void CGruntzMgr::UpdateScoreHud() {
         return;
     }
 
-    if (((HudGuard44*)m_44)->m_124 == 0) {
+    if (((HudGuard44*)m_hudGuard)->m_124 == 0) {
         ((ScoreHud*)m_scoreHud)->Seed(sub->m_1c, 0);
         ((ScoreNotifier*)g_gameReg->m_58)->Bump(sub->m_1c);
         ((ScoreNotifier*)g_gameReg->m_58)->Tick((sub->m_1c % 0x28) + 1);
@@ -3002,7 +3002,7 @@ void CGruntzMgr::SetCellHeight(i32 row, i32 col, i32 value) {
 // dtor runs: deregister the world's mode-reset callback, flush the live config block
 // (each WriteInt names one setting), clear the state stack + delete the live state,
 // then tear down + delete every owned sub-object (most a parameterless thiscall +
-// operator delete; m_30/m_3c through their own vtable slot 1; m_38 the writer; the
+// operator delete; m_30/m_3c through their own vtable slot 1; m_settings the writer; the
 // two engine state singletons), and finally chain the base CGameMgr::UnknownClose and
 // drop the registry singleton.
 // @early-stop
@@ -3017,7 +3017,7 @@ void CGruntzMgr::UnknownClose() {
         ((CWorldRegistrar*)m_world)->RegisterCallback(0);
     }
     OpenSettingsStore();
-    CSettingsWriter* cfg = (CSettingsWriter*)m_38;
+    CSettingsWriter* cfg = (CSettingsWriter*)m_settings;
     if (cfg) {
         cfg->WriteInt("Num_Runs", m_numRuns);
         cfg->WriteInt("Num_Movies", m_numMovies);
@@ -3096,10 +3096,10 @@ void CGruntzMgr::UnknownClose() {
         operator delete(g_645570);
         g_645570 = 0;
     }
-    if (m_44) {
-        ((EngObj*)m_44)->Teardown();
-        operator delete((void*)m_44);
-        m_44 = 0;
+    if (m_hudGuard) {
+        ((EngObj*)m_hudGuard)->Teardown();
+        operator delete((void*)m_hudGuard);
+        m_hudGuard = 0;
     }
     if (m_sound) {
         ((EngObj*)m_sound)->Teardown();
@@ -3116,10 +3116,10 @@ void CGruntzMgr::UnknownClose() {
         operator delete((void*)m_40);
         m_40 = 0;
     }
-    if (m_5c) {
-        ((EngObj*)m_5c)->Teardown();
-        operator delete((void*)m_5c);
-        m_5c = 0;
+    if (m_chatLog) {
+        ((EngObj*)m_chatLog)->Teardown();
+        operator delete((void*)m_chatLog);
+        m_chatLog = 0;
     }
     if (m_timer) {
         ((EngObj*)m_timer)->Teardown();
@@ -3130,15 +3130,15 @@ void CGruntzMgr::UnknownClose() {
         ((CWorldDelete*)m_world)->Slot1(1);
         m_world = 0;
     }
-    if (m_34) {
-        ((EngObj*)m_34)->Teardown();
-        operator delete((void*)m_34);
-        m_34 = 0;
+    if (m_recolorSurface) {
+        ((EngObj*)m_recolorSurface)->Teardown();
+        operator delete((void*)m_recolorSurface);
+        m_recolorSurface = 0;
     }
-    if (m_38) {
-        ((EngObj*)m_38)->Teardown();
-        operator delete((void*)m_38);
-        m_38 = 0;
+    if (m_settings) {
+        ((EngObj*)m_settings)->Teardown();
+        operator delete((void*)m_settings);
+        m_settings = 0;
     }
     if (m_3c) {
         ((CWorldDelete*)m_3c)->Slot1(1);
@@ -3334,12 +3334,12 @@ i32 CGruntzMgr::RunModalDialog(const char* tmpl, void* dlgProc, i32 flag) {
 
 // -------------------------------------------------------------------------
 // CGruntzMgr::LoadSaveMessageSprite (0x092420; /GX EH; ret 1). The save-feedback
-// path Quicksave falls into: when the first-frame guard (m_44->m_124) is set it pops a
+// path Quicksave falls into: when the first-frame guard (m_hudGuard->m_124) is set it pops a
 // localized message (resource 0x81aa) through a modal; otherwise it runs the GAME_SAVE
 // dialog and, on success, the GAME_SAVEMSG dialog. Returns 1.
 RVA(0x00092420, 0xa4)
 i32 CGruntzMgr::LoadSaveMessageSprite() {
-    if (((HudGuard44*)m_44)->m_124 != 0) {
+    if (((HudGuard44*)m_hudGuard)->m_124 != 0) {
         CString name;
         name.LoadStringA(0x81aa);
         EnterModalUI((i32)(const char*)name);
@@ -3393,12 +3393,12 @@ RVA(0x00083030, 0x1b6)
 CGruntzMgr::CGruntzMgr() {
     m_curState = 0;
     m_world = 0;
-    m_34 = 0;
-    m_38 = 0;
+    m_recolorSurface = 0;
+    m_settings = 0;
     m_scoreHud = 0;
     m_3c = 0;
     m_40 = 0;
-    m_44 = 0;
+    m_hudGuard = 0;
     m_sound = 0;
     m_4c = 0;
     m_50 = 0;
@@ -3406,7 +3406,7 @@ CGruntzMgr::CGruntzMgr() {
     m_lobby = 0;
     m_inputState = 0;
     m_saveSink = 0;
-    m_5c = 0;
+    m_chatLog = 0;
     m_timer = 0;
     m_cmdGrid = 0;
     m_cmdSubMgr = 0;

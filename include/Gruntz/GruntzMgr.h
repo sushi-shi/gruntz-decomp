@@ -206,13 +206,14 @@ public:
     void LogLine(char* s);           // @0x1b54 thunk  log the resolution line
 
     // Level cycle + debug layer toggles (proximity-attributed, reconstructed).
-    i32 GoToNextLevel();              // @0x08d850 (PLAY: advance current level index, wrap)
-    i32 GoToPrevLevel();              // @0x08d910 (PLAY: retreat current level index, wrap)
-    i32 ToggleObjectLayer();          // @0x08efe0 (toggle the "current" object layer visible bit)
-    i32 ToggleHeightLayer();          // @0x08f060 (toggle the m_5c sub-layer visible bit)
+    i32 GoToNextLevel();     // @0x08d850 (PLAY: advance current level index, wrap)
+    i32 GoToPrevLevel();     // @0x08d910 (PLAY: retreat current level index, wrap)
+    i32 ToggleObjectLayer(); // @0x08efe0 (toggle the "current" object layer visible bit)
+    i32
+    ToggleHeightLayer(); // @0x08f060 (toggle the height sub-layer (m_world->m_24->m_5c) visible bit)
     i32 ToggleBaseLayer();            // @0x08f0b0 (toggle layer[0]'s visible bit)
     i32 PollUnlessIdle();             // @0x08f2f0 (CheckPlayState() unless state idle (5); ret 0)
-    i32 AppendChatMessage(char* msg); // @0x08f9c0 (-> m_5c chat-log insert)
+    i32 AppendChatMessage(char* msg); // @0x08f9c0 (-> m_chatLog insert)
     i32 ShowToggleMessage(char* itemName, i32 on); // @0x08f9f0 ("<item> is ON/OFF")
 
     i32 IsMoviePathValid();        // @0x0901d0 (bool-normalized FileExists(m_strMoviePath))
@@ -316,16 +317,19 @@ public:
     i32 ChangeState_8fab0(i32 arg); // @0x08fab0 (deferred / stubbed)
 
     // --- members (offsets relative to `this`; base CGameMgr occupies 0x00..0x2c) ---
-    CState* m_curState;               // +0x2c  current game-state (Update() -> state id)
-    CWorldZ* m_world;                 // +0x30  loaded world/map object (also a draw gate)
-    i32 m_34, m_38, m_3c, m_40, m_44; // +0x34..+0x44  (+0x44 -> HudGuard44 first-frame guard)
-    CGruntzSoundZ* m_sound;           // +0x48  sound/bank object (StopBank/StopAll)
-    i32 m_4c, m_50;                   // +0x4c, +0x50
+    CState* m_curState;     // +0x2c  current game-state (Update() -> state id)
+    CWorldZ* m_world;       // +0x30  loaded world/map object (also a draw gate)
+    i32 m_recolorSurface;   // +0x34  color-depth recolor surface (CRezSurface94)
+    i32 m_settings;         // +0x38  settings/registry writer (CSettingsWriter)
+    i32 m_3c, m_40;         // +0x3c, +0x40  engine sub-objects (teardown-only)
+    i32 m_hudGuard;         // +0x44  HUD first-frame seed guard (HudGuard44; +0x124)
+    CGruntzSoundZ* m_sound; // +0x48  sound/bank object (StopBank/StopAll)
+    i32 m_4c, m_50;         // +0x4c, +0x50
     // +0x54..+0x78 sub-controllers (4-byte object pointers; each is reached only
     // through a reloc-masked thiscall on a TU-local view, so kept i32-wide):
     i32 m_inputState;     // +0x54  input/state object (Method0/Method1/StoreFlag)
     i32 m_saveSink;       // +0x58  save-record sink (SaveSink58::Store)
-    i32 m_5c;             // +0x5c
+    i32 m_chatLog;        // +0x5c  chat/message log (CChatLog)
     i32 m_timer;          // +0x60  per-frame timer/poll controller (Stop/Tick; +0x2c mirror)
     i32 m_64;             // +0x64
     i32 m_cmdGrid;        // +0x68  world delta-table grid + command sink (Reset/Flush)
