@@ -77,6 +77,9 @@ public:
     // grunt, spawn the "Teleporter"/"Wormhole" sprite, close the gate and scroll
     // the camera to the warped grunt. Returns 0.
     i32 Update();
+    // vtable slot 2 (per-class logic-type id); regular method - the fat CUserLogic
+    // base models this slot with a placeholder signature (see CGuardPoint.cpp).
+    i32 GetTypeTag();                // 0x10d80
     virtual ~CTeleporter() OVERRIDE; // 0x10dd0 (folds the CUserLogic teardown)
 
     i32 m_40; // +0x40  snapshot of m_38->m_1b4

@@ -35,8 +35,8 @@ static __inline i32 FxRand(i32 range) {
 // pipeline, then fill four parallel 2000-int arrays (three zeroed, one seeded
 // with rand()%count) and hand the last one to the tick registrar 0x182940.
 // ===========================================================================
-extern const float g_faderScale_5f085c; // 0x5f085c  intensity->magnitude scale
-extern "C" void Fn_182940(i32* arr, i32, i32, i32);
+extern const float g_faderScale_5f085c;       // 0x5f085c  intensity->magnitude scale
+void ScatterSamples(i32* arr, i32, i32, i32); // 0x182940 ?ScatterSamples@@YAXPAHHHH@Z
 
 // @early-stop
 // regalloc coin-flip wall (73.5% fuzzy, was 1.96% stub; the goto-fail single exit
@@ -121,7 +121,7 @@ i32 Fx_17fe00::Init(FxDesc_17fe00* desc) {
         m_arr3[i] = 0;
         m_arr1[i] = FxRand(m_50);
     }
-    Fn_182940(m_arr3, 0, m_50, 1);
+    ScatterSamples(m_arr3, 0, m_50, 1);
     return 1;
 fail:
     return 0;

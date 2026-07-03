@@ -25,11 +25,14 @@
 
 class CStaticHazard : public CUserLogic {
 public:
+    // vtable slot 2 (per-class logic-type id); regular method - the fat CUserLogic
+    // base models this slot with a placeholder signature (see CGuardPoint.cpp).
+    i32 GetTypeTag();                  // 0x012ae0
     CStaticHazard(CGameObject* obj);   // 0x0fb7a0 (1-arg ctor)
     static void RegisterActs();        // 0x0fbd50 (binds "A"/"B" handlers)
     i32 LoadAttributes2();             // 0x0fc0b0 (time-gated pulse)
     i32 LoadAttributes();              // 0x0fc1a0 (periodic tick/update)
-    void FireActivation(i32 coord);    // 0x0fbbf0
+    void FireActivation(i32 coord);    // 0x0fbbf0 (vtable slot 4)
     virtual ~CStaticHazard() OVERRIDE; // 0x012b30 (folds the CUserLogic teardown)
 
     // CStaticHazard's own data begins at +0x40 (CUserLogic ends at +0x40).

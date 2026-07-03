@@ -66,17 +66,17 @@ butesectionctor	1	0
 butestoreclear	1	1
 butetree	2	0
 bzkinddispatch	1	0
-cactionarea	1	0
+cactionarea	2	1
 cambientsound	4	3
 canicycle	2	1
 canielement	3	2
 canielementeh	1	0
 canirecord	10	8
 cattract	17	10
-cbehindcandy	2	2
-cbehindcandyani	4	3
+cbehindcandy	3	3
+cbehindcandyani	6	5
 cboomerang	1	0
-cbrickz	1	0
+cbrickz	3	2
 ccheckpointtrigger	3	2
 ccursorsnapsprite	3	2
 cddpagemgr	2	1
@@ -118,7 +118,7 @@ cfileimageblit	5	0
 cfileimageloadbyext	1	1
 cfileimagerundecode	4	0
 cfixedptrarray32	3	2
-cfortressflag	7	4
+cfortressflag	8	5
 cfrontcandyani	4	3
 cfxmodedesc	7	6
 cgruntcreationpoint	5	3
@@ -133,7 +133,7 @@ cgrunttoytimesprite	1	1
 cgruntwingztimesprite	3	3
 cgruntzmapmgr	1	1
 cgruntzmgrcmd	1	0
-cguardpoint	2	1
+cguardpoint	4	3
 chainforward	1	0
 channelslots	4	4
 chatbox	27	20
@@ -169,7 +169,7 @@ cmovinglogicdtor	1	1
 cmovinglogicserial	3	1
 cmsgdispatch	3	3
 cmulti	18	7
-cobjectdropper	3	2
+cobjectdropper	4	3
 colorhsv	1	0
 comhelperthunks	3	3
 configstore	4	0
@@ -199,14 +199,14 @@ csplashstate	1	1
 cspotlight	1	0
 cspotlightctor	1	0
 cstateleaf8cf30	1	1
-cstatichazard	6	2
+cstatichazard	7	3
 cstatusbarmgr	2	1
 cstatusbarmgrgetitem	1	0
 cstatusbarspriteacts	3	1
-cteleporter	4	2
+cteleporter	5	3
 ctilescan	1	0
 ctimebomb	5	2
-ctoobspikez	5	4
+ctoobspikez	7	6
 ctoypeek	1	0
 customleveldlg	1	0
 customlevellist	1	0
@@ -214,7 +214,7 @@ customworlddialog	2	1
 customworldinfodlg	1	1
 customwwdpath	1	1
 cvoicetrigger	5	3
-cwaypoint	2	1
+cwaypoint	4	3
 cwormholeacts	2	1
 cwwdobjmgr	1	0
 cwwdobjmgrfactories	5	0
@@ -913,6 +913,7 @@ butetree	?Find@CButeTree@@QAEPAXPBD@Z	90.6038	90.6038	3	b873d33bf922	0x16d190
 butetree	?Insert@CButeTree@@QAEPAXPBDPAX@Z	53.3041	53.3041	3	5dfde79e85ea	0x16db90
 bzkinddispatch	?Dispatch@CBzKindDispatch@@QAEHH@Z	79.1379	79.1379	1	89b89a7bb1a2	0x37910
 cactionarea	??0CActionArea@@QAE@PAUCGameObject@@@Z	93.9057	93.9057	2	1bdb8a23c0c8	0x7da0
+cactionarea	?GetTypeTag@CActionArea@@QAEHXZ	100.0000	100.0000	1	ba0864c6fdac	0x7f80
 cambientsound	??1CAmbientSound@@UAE@XZ	100.0000	100.0000	2	985e15feadcb	0xb790
 cambientsound	?Restart@CAmbientSound@@QAEXXZ	100.0000	100.0000	5	f2ed7bbb5721	0xbfb0
 cambientsound	?SetLevel@CAmbientSound@@QAEHHHH@Z	100.0000	100.0000	3	f8806a918041	0xc200
@@ -952,12 +953,17 @@ cattract	?Vslot07@CAttract@@UAEHXZ	100.0000	100.0000	1	91fafb3898fd	0x147b0
 cattract	?Vslot0e@CAttract@@UAEHHHH@Z	100.0000	100.0000	1	c31e32cae312	0x14770
 cbehindcandy	??1CBehindCandy@@UAE@XZ	100.0000	100.0000	1	5c9c55aab0c6	0xfc30
 cbehindcandy	?GetTypeTag@CBehindCandy@@QAEHXZ	100.0000	100.0000	2	d16b4b3f142d	0xfb70
+cbehindcandy	?Serialize@CBehindCandy@@QAEHHHHH@Z	100.0000	100.0000	1	592f3721adb8	0xfb90
 cbehindcandyani	??1CBehindCandyAni@@UAE@XZ	100.0000	100.0000	1	f4c855a7d8db	0x100f0
 cbehindcandyani	?AdvanceAnim@CBehindCandyAni@@QAEHXZ	100.0000	100.0000	1	4d7ee7a13f73	0xadbb0
+cbehindcandyani	?GetTypeTag@CBehindCandyAni@@QAEHXZ	100.0000	100.0000	1	cf4fda6e41ca	0x10030
 cbehindcandyani	?InitActReg@CBehindCandyAni@@SAXXZ	100.0000	100.0000	1	0d9455b8c944	0xad7d0
 cbehindcandyani	?RegisterActs@CBehindCandyAni@@SAXXZ	92.9130	92.9130	2	b1dc7d44c336	0xad9b0
+cbehindcandyani	?Serialize@CBehindCandyAni@@QAEHHHHH@Z	100.0000	100.0000	1	07e545e91aff	0x10050
 cboomerang	??0CBoomerang@@QAE@PAUCGameObject@@@Z	97.3077	97.3077	1	570ab3992793	0xe0650
 cbrickz	??0CBrickz@@QAE@PAUCGameObject@@@Z	91.6759	91.6759	2	1fde9e6cf940	0x10e800
+cbrickz	?GetTypeTag@CBrickz@@QAEHXZ	100.0000	100.0000	1	a9a688c0ec1d	0x11300
+cbrickz	?Serialize@CBrickz@@QAEHHHHH@Z	100.0000	100.0000	1	41b0c1967fdd	0x11320
 ccheckpointtrigger	??0CCheckpointTrigger@@QAE@PAUCGameObject@@@Z	87.2590	87.2590	5	39d3b426578a	0x10ee20
 ccheckpointtrigger	??1CCheckpointTrigger@@UAE@XZ	100.0000	100.0000	1	6af861462cfe	0x11480
 ccheckpointtrigger	?InitActReg@CCheckpointTrigger@@SAXXZ	100.0000	100.0000	1	b1a3bf2c0848	0x10ea00
@@ -1291,6 +1297,7 @@ cfixedptrarray32	?FillFrom@CFixedPtrArray32@@QAEHPAPAXHH@Z	92.3016	92.3016	2	9d1
 cfortressflag	??0CFortressFlag@@QAE@PAUCGameObject@@@Z	87.0296	87.0296	7	9965c54d173f	0x45d30
 cfortressflag	??1CFortressFlag@@UAE@XZ	100.0000	100.0000	1	2055bad4ba8d	0x10e90
 cfortressflag	?AdvanceAnim@CFortressFlag@@QAEHXZ	100.0000	100.0000	1	fe412e5b2595	0x463e0
+cfortressflag	?GetTypeTag@CFortressFlag@@QAEHXZ	100.0000	100.0000	1	4f2a84d9c836	0x10e40
 cfortressflag	?HandleFortConquered@CFortressFlag@@QAEXXZ	0.2710	0.2710	1	9ba6c1dbe70e	0x3f5f0
 cfortressflag	?InitActReg@CFortressFlag@@SAXXZ	100.0000	100.0000	1	87b32004eacf	0x46000
 cfortressflag	?RegisterActs@CFortressFlag@@SAXXZ	92.9130	92.9130	2	3936253f12a9	0x461e0
@@ -1345,6 +1352,8 @@ cgruntzmapmgr	??1CGruntzMapMgr@@UAE@XZ	100.0000	100.0000	2	b34a5dba3d20	0x85d10
 cgruntzmgrcmd	?HandleCommand@CGruntzMgr@GruntzMgrCmd@@QAEHHHH@Z	29.7155	29.7155	4	7a4b98859731	0x862f0
 cguardpoint	??0CGuardPoint@@QAE@PAUCGameObject@@@Z	95.9909	95.9909	1	c7e0d3067144	0xae5f0
 cguardpoint	??1CGuardPoint@@UAE@XZ	100.0000	100.0000	1	c53d638223a9	0x10410
+cguardpoint	?GetTypeTag@CGuardPoint@@QAEHXZ	100.0000	100.0000	1	c0db5a1e62c1	0x10350
+cguardpoint	?Serialize@CGuardPoint@@QAEHHHHH@Z	100.0000	100.0000	1	60502d9a70ed	0x10370
 chainforward	?ChainForward@@YAXHPAUChainRoot@@HHHH@Z	87.6923	87.6923	1	98b57d07e0ef	0x114fa0
 channelslots	?ChannelSlots_FindFree@@YAHXZ	100.0000	100.0000	1	27d73fb7a817	0xdb280
 channelslots	?ChannelSlots_Get@@YAHH@Z	100.0000	100.0000	1	eb06c9e5aa36	0xdb2d0
@@ -1509,6 +1518,7 @@ cmulti	?Teardown@CMulti@@QAEXXZ	100.0000	100.0000	3	8499295ac675	0xb6110
 cmulti	?Tick@CMulti@@QAEHXZ	85.9939	85.9939	4	c91ba236d5fb	0xb6890
 cobjectdropper	??0CObjectDropper@@QAE@PAUCGameObject@@@Z	86.0249	86.0249	4	aa0fcba0de0d	0xc59f0
 cobjectdropper	??1CObjectDropper@@UAE@XZ	100.0000	100.0000	1	c595e9e386aa	0x124f0
+cobjectdropper	?GetTypeTag@CObjectDropper@@QAEHXZ	100.0000	100.0000	1	6880fc9246dd	0x124a0
 cobjectdropper	?Update@CObjectDropper@@QAEHXZ	100.0000	100.0000	4	66afbdcfbe19	0xc62e0
 colorhsv	?RgbToHsv@@YAXPAUColorHSV@@I@Z	45.7699	45.7699	2	671fce63329c	0x14fcc0
 comhelperthunks	??1CNoTrackObject@@UAE@XZ	100.0000	100.0000	1	d617d26c06bd	0x1d4722
@@ -1660,6 +1670,7 @@ cstateleaf8cf30	??1CHelpState@@UAE@XZ	100.0000	100.0000	1	b3e2189a4d39	0x8cf30
 cstatichazard	??0CStaticHazard@@QAE@PAUCGameObject@@@Z	82.5685	82.5685	6	2f4e72dab9b9	0xfb7a0
 cstatichazard	??1CStaticHazard@@UAE@XZ	100.0000	100.0000	1	2c9522f3c281	0x12b30
 cstatichazard	?FireActivation@CStaticHazard@@QAEXH@Z	100.0000	100.0000	1	69cb76687143	0xfbbf0
+cstatichazard	?GetTypeTag@CStaticHazard@@QAEHXZ	100.0000	100.0000	1	28cae105e23a	0x12ae0
 cstatichazard	?LoadAttributes2@CStaticHazard@@QAEHXZ	97.8571	97.8571	6	ccd6ed33c589	0xfc0b0
 cstatichazard	?LoadAttributes@CStaticHazard@@QAEHXZ	49.4528	49.4528	8	9b8b97046332	0xfc1a0
 cstatichazard	?RegisterActs@CStaticHazard@@SAXXZ	78.5473	78.5473	1	0845d748d7be	0xfbd50
@@ -1671,6 +1682,7 @@ cstatusbarspriteacts	?InitActReg@CStatusBarSprite@@SAXXZ	100.0000	100.0000	1	162
 cstatusbarspriteacts	?RegisterActs@CStatusBarSprite@@SAXXZ	92.9130	92.9130	2	dec761b26a46	0x10c610
 cteleporter	??1CTeleporter@@UAE@XZ	100.0000	100.0000	1	0aa6d090845e	0x10dd0
 cteleporter	?Begin@CTeleporter@@QAEHXZ	87.6667	87.6667	3	60f3e0e7dec2	0x419e0
+cteleporter	?GetTypeTag@CTeleporter@@QAEHXZ	100.0000	100.0000	1	97fd59393272	0x10d80
 cteleporter	?InitActReg@CTeleporter@@SAXXZ	100.0000	100.0000	1	16ec1bd1d09e	0x414a0
 cteleporter	?Update@CTeleporter@@QAEHXZ	98.9103	98.9103	6	a4e34d62b44f	0x41aa0
 ctilescan	?Scan@CTileScan@@QAEHPAUCScanArg@@@Z	71.2269	71.2269	1	f98f3f2ec20a	0x35f10
@@ -1681,8 +1693,10 @@ ctimebomb	?LoadAttributes@CTimeBomb@@QAEHXZ	90.5000	90.5000	4	38dffa990b4b	0xe1e
 ctimebomb	?RegisterActs@CTimeBomb@@QAEXXZ	92.9130	92.9130	1	908d9bceacb1	0xe1990
 ctoobspikez	??1CToobSpikez@@UAE@XZ	100.0000	100.0000	1	550e0ced02c4	0x12c60
 ctoobspikez	?FireActivation@CToobSpikez@@QAEXH@Z	100.0000	100.0000	1	44f507f426d2	0x114860
+ctoobspikez	?GetTypeTag@CToobSpikez@@QAEHXZ	100.0000	100.0000	1	56b18821495e	0x12ba0
 ctoobspikez	?RegisterActs@CToobSpikez@@QAEXXZ	92.9130	92.9130	1	753529566a46	0x1149c0
 ctoobspikez	?Register_1147e0@CToobSpikez@@QAEXXZ	100.0000	100.0000	1	5a4beef40a63	0x1147e0
+ctoobspikez	?Serialize@CToobSpikez@@QAEHHHHH@Z	100.0000	100.0000	1	6e2f75e86b3e	0x12bc0
 ctoobspikez	?ToobSpikezLogic@@YAHPAUCGameObjLogic@@@Z	100.0000	100.0000	2	7ce413b3d3a4	0x114480
 ctoypeek	??0CToyPeek@@QAE@PAUCGameObject@@@Z	86.4352	86.4352	2	bd96cf913bec	0x98140
 customleveldlg	?Populate180e0@CustomLevelDlg@m4dlg@@QAEHPAH@Z	71.0248	71.0248	1	e093b53f1442	0x180e0
@@ -1698,6 +1712,8 @@ cvoicetrigger	?RegisterActs@CVoiceTrigger@@QAEXXZ	92.9130	92.9130	1	eb83cede4e29
 cvoicetrigger	?Tick@CVoiceTrigger@@QAEHXZ	100.0000	100.0000	8	fd0cb4d65826	0x11a700
 cwaypoint	??0CWayPoint@@QAE@PAUCGameObject@@@Z	95.9909	95.9909	1	c8d790bf95d7	0xae3f0
 cwaypoint	??1CWayPoint@@UAE@XZ	100.0000	100.0000	1	1792dd04db91	0x102e0
+cwaypoint	?GetTypeTag@CWayPoint@@QAEHXZ	100.0000	100.0000	1	c8a499948040	0x10220
+cwaypoint	?Serialize@CWayPoint@@QAEHHHHH@Z	100.0000	100.0000	1	df93891f94a0	0x10240
 cwormholeacts	?InitActReg@CWormhole@@SAXXZ	100.0000	100.0000	1	e9b8645c7c2a	0x3f210
 cwormholeacts	?RegisterActs@CWormhole@@SAXXZ	92.9130	92.9130	1	836ea1f2bd5a	0x3f3f0
 cwwdobjmgr	?LoadObjects@CWwdObjMgr@@QAEHPAUWwdReader@@IH@Z	54.9009	54.9009	2	a98f37bea643	0x15ad30
@@ -1743,10 +1759,10 @@ dialogs	?ApplyColorSlot0@CBattlezDlg@@QAEXXZ	91.0889	91.0889	2	9ec1670832b2	0x16
 dialogs	?ApplyColorSlot1@CBattlezDlg@@QAEXXZ	91.0889	91.0889	2	c47991fda349	0x16dc0
 dialogs	?ApplyColorSlot2@CBattlezDlg@@QAEXXZ	91.0889	91.0889	2	bc47da6826b4	0x16e90
 dialogs	?ApplyColorSlot3@CBattlezDlg@@QAEXXZ	91.0889	91.0889	2	a37ed17c381d	0x16f60
-dialogs	?ApplyOption0@CBattlezDlg@@QAEXXZ	100.0000	100.0000	1	a2649603d299	0x15de0
-dialogs	?ApplyOption1@CBattlezDlg@@QAEXXZ	100.0000	100.0000	1	4ca2816e5f53	0x15e60
-dialogs	?ApplyOption2@CBattlezDlg@@QAEXXZ	100.0000	100.0000	1	1e85f0a44dab	0x15ee0
-dialogs	?ApplyOption3@CBattlezDlg@@QAEXXZ	100.0000	100.0000	1	e384d2e48285	0x15f60
+dialogs	?ApplyOption0@CBattlezDlg@@QAEXXZ	100.0000	100.0000	2	0655d56db0e4	0x15de0
+dialogs	?ApplyOption1@CBattlezDlg@@QAEXXZ	100.0000	100.0000	2	a0a98e26618c	0x15e60
+dialogs	?ApplyOption2@CBattlezDlg@@QAEXXZ	100.0000	100.0000	2	7517857b11c2	0x15ee0
+dialogs	?ApplyOption3@CBattlezDlg@@QAEXXZ	100.0000	100.0000	2	f8e219cddd6b	0x15f60
 dialogs	?BuildSlotList@CMultiStartDlg@@QAEXXZ	88.8588	88.8588	3	e1edf0d4e014	0xc1e60
 dialogs	?CopyComboSelToChild@CBattlezDlg@@QAEXXZ	96.7581	96.7581	2	fc26168db3b4	0x171b0
 dialogs	?GetCtrlA@CBattlezDlg@@QAEPAVCWnd@@H@Z	70.2941	70.2941	2	f719a29e8f44	0x15ac0

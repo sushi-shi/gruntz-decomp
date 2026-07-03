@@ -32,4 +32,24 @@ CActionArea::CActionArea(CGameObject* obj) : CUserLogic(obj) {
     m_38->m_40 |= 1;
 }
 
+// CActionArea::GetTypeTag (0x7f80) - vtable slot 2: the class's logic-type id
+// (0x423), the 6-byte `mov eax,<id>; ret` accessor archetype. Regular method (the
+// fat CUserLogic base slot 2 carries a placeholder signature; the leaf vtable is
+// not a diffed symbol, so a plain method reproduces the slot bytes exactly).
+RVA(0x00007f80, 0x6)
+i32 CActionArea::GetTypeTag() {
+    return 0x423;
+}
+
+// CActionArea::~CActionArea (0x7fd0) - the leaf adds no destructible members beyond
+// CUserLogic (its own +0x54.. state is plain ints), so its dtor folds the bare
+// CUserLogic teardown (store CUserLogic vptr, inline-destruct the +0x18 link via
+// ~EngStr, store CUserBase vptr; the /GX leaf-dtor archetype). Declaring the virtual
+// dtor gives CActionArea its own most-derived vftable so the ctor stamps it (3rd
+// vptr) like retail. The out-of-line copy is COMDAT-folded onto the byte-identical
+// ~CProjActOwner @0x7fd0 (already RVA-pinned in projactregistry.cpp), so it is left
+// UN-annotated here to avoid a duplicate-RVA (the folded-leaf-dtor convention, cf.
+// CSecretLevelTrigger::~CSecretLevelTrigger in UserLogic.cpp).
+CActionArea::~CActionArea() {}
+
 #include <rva.h>

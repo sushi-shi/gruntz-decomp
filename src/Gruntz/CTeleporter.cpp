@@ -83,6 +83,15 @@ extern i32 g_curPlayer;
 
 // The spawn keys + the close-geometry key (.rdata constants).
 
+// CTeleporter::GetTypeTag @0x010d80 - vtable slot 2: the class's logic-type id
+// (0x3fc), the 6-byte `mov eax,<id>; ret` accessor archetype. Regular method (the
+// fat CUserLogic base slot 2 carries a placeholder signature; the leaf vtable is
+// not a diffed symbol, so a plain method reproduces the slot bytes exactly).
+RVA(0x00010d80, 0x6)
+i32 CTeleporter::GetTypeTag() {
+    return 0x3fc;
+}
+
 // CTeleporter::~CTeleporter @0x010dd0 - the leaf adds no destructible members
 // beyond CUserLogic, so its dtor folds the bare CUserLogic teardown: store the
 // CUserLogic vptr (0x5e705c), inline-destruct the +0x18 link (the embedded

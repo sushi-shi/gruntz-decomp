@@ -24,6 +24,10 @@
 
 class CBehindCandyAni : public CUserLogic {
 public:
+    // The class's own CUserLogic slot overrides, reconstructed as regular methods
+    // (the fat base models slots 1/2 with placeholder signatures; see the .cpp).
+    i32 GetTypeTag();                          // 0x010030 (vtable slot 2: per-class logic-type id)
+    i32 Serialize(i32 a, i32 b, i32 c, i32 d); // 0x010050 (vtable slot 1: serialize chain)
     // Construct the class's activation-coordinate registry (g_behindCandyActReg
     // @0x645f98) over the fixed [2000,2010] range; free init thunk, reloc-masked.
     static void InitActReg(); // 0x0ad7d0

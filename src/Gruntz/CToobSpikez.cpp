@@ -229,6 +229,35 @@ void CToobSpikez::Register_1147e0() {
     g_toobColl.Reserve8710(0x7d0, 0x7da);
 }
 
+// The +0x34 serializable sub-object chained by the Serialize override (0x8c00,
+// __thiscall ret 0x10; NO-body so the call reloc-masks). It overlays CUserLogic's
+// fat-view tail field m_34 (see the size NOTE in <Gruntz/UserLogic.h>), so the
+// override reaches it as a struct view over that named base field (&m_34).
+struct CSerialSub34 {
+    i32 Chain(i32 a, i32 b, i32 c, i32 d); // 0x8c00
+};
+
+// CToobSpikez::GetTypeTag @0x012ba0 - vtable slot 2: the class's logic-type id
+// (0x418), the 6-byte `mov eax,<id>; ret` accessor archetype. Regular method (the
+// fat CUserLogic base slots 1/2 carry placeholder signatures the leaf overrides
+// cannot match without editing that shared base; the leaf vtable is not a diffed
+// symbol, so a plain method reproduces the slot bytes exactly).
+RVA(0x00012ba0, 0x6)
+i32 CToobSpikez::GetTypeTag() {
+    return 0x418;
+}
+
+// CToobSpikez::Serialize @0x012bc0 - vtable slot 1: chain the shared CUserLogic
+// serialize helper on `this`, then (on success) the +0x34 sub-object's chain,
+// normalized to a strict bool. Byte-identical to CSecretTeleporterTrigger::Serialize.
+RVA(0x00012bc0, 0x47)
+i32 CToobSpikez::Serialize(i32 a, i32 b, i32 c, i32 d) {
+    if (!SerializeChain(a, b, c, d)) {
+        return 0;
+    }
+    return ((CSerialSub34*)&m_34)->Chain(a, b, c, d) != 0;
+}
+
 // CToobSpikez::~CToobSpikez @0x012c60 - the leaf adds no destructible members
 // beyond CUserLogic, so its dtor folds the bare CUserLogic teardown: store the
 // CUserLogic vptr (0x5e705c), inline-destruct the +0x18 link (the embedded

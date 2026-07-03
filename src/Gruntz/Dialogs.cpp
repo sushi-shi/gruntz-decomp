@@ -564,11 +564,11 @@ void CBattlezDlg::SetCtrlBText(i32 index, const char* text) {
 // ApplyOption0..3 (0x15de0/15e60/15ee0/15f60): set the active option N, refresh
 // the dialog, then enable IDOK (GetDlgItem(1)) when any of slots 1..3 is occupied
 // (the short-circuit `||` reuses the failed-probe's zero in eax on the false path).
-// The Sub015fe0/Sub0173e0/Query015d00 calls reloc-mask (own CBattlezDlg methods
+// The ToggleRow/Sub0173e0/Query015d00 calls reloc-mask (own CBattlezDlg methods
 // homed as RVA stubs in src/Stub/ApiCallers.cpp).
 RVA(0x00015de0, 0x5f)
 void CBattlezDlg::ApplyOption0() {
-    Sub015fe0(0);
+    ToggleRow(0);
     Sub0173e0();
     if (Query015d00(1) || Query015d00(2) || Query015d00(3)) {
         GetDlgItem(1)->EnableWindow(1);
@@ -579,7 +579,7 @@ void CBattlezDlg::ApplyOption0() {
 
 RVA(0x00015e60, 0x5f)
 void CBattlezDlg::ApplyOption1() {
-    Sub015fe0(1);
+    ToggleRow(1);
     Sub0173e0();
     if (Query015d00(1) || Query015d00(2) || Query015d00(3)) {
         GetDlgItem(1)->EnableWindow(1);
@@ -590,7 +590,7 @@ void CBattlezDlg::ApplyOption1() {
 
 RVA(0x00015ee0, 0x5f)
 void CBattlezDlg::ApplyOption2() {
-    Sub015fe0(2);
+    ToggleRow(2);
     Sub0173e0();
     if (Query015d00(1) || Query015d00(2) || Query015d00(3)) {
         GetDlgItem(1)->EnableWindow(1);
@@ -601,7 +601,7 @@ void CBattlezDlg::ApplyOption2() {
 
 RVA(0x00015f60, 0x5f)
 void CBattlezDlg::ApplyOption3() {
-    Sub015fe0(3);
+    ToggleRow(3);
     Sub0173e0();
     if (Query015d00(1) || Query015d00(2) || Query015d00(3)) {
         GetDlgItem(1)->EnableWindow(1);

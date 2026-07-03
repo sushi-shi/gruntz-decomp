@@ -39,3 +39,31 @@ CBrickz::CBrickz(CGameObject* obj) : CUserLogic(obj) {
     m_object->m_168 = m_object->m_60 >> 5;
     m_object->m_04 = (m_object->m_164 << 8) + m_object->m_168;
 }
+
+// The +0x34 serializable sub-object chained by the Serialize override (0x8c00,
+// __thiscall ret 0x10; NO-body so the call reloc-masks). It overlays CUserLogic's
+// fat-view tail field m_34 (see the size NOTE in <Gruntz/UserLogic.h>), so the
+// override reaches it as a struct view over that named base field (&m_34).
+struct CSerialSub34 {
+    i32 Chain(i32 a, i32 b, i32 c, i32 d); // 0x8c00
+};
+
+// CBrickz::GetTypeTag @0x011300 - vtable slot 2: the class's logic-type id (0x409),
+// the 6-byte `mov eax,<id>; ret` accessor archetype. Regular method (the fat
+// CUserLogic base slots 1/2 carry placeholder signatures the leaf overrides cannot
+// match without editing that shared base; the leaf vtable is not a diffed symbol).
+RVA(0x00011300, 0x6)
+i32 CBrickz::GetTypeTag() {
+    return 0x409;
+}
+
+// CBrickz::Serialize @0x011320 - vtable slot 1: chain the shared CUserLogic
+// serialize helper on `this`, then (on success) the +0x34 sub-object's chain,
+// normalized to a strict bool. Byte-identical to CSecretTeleporterTrigger::Serialize.
+RVA(0x00011320, 0x47)
+i32 CBrickz::Serialize(i32 a, i32 b, i32 c, i32 d) {
+    if (!SerializeChain(a, b, c, d)) {
+        return 0;
+    }
+    return ((CSerialSub34*)&m_34)->Chain(a, b, c, d) != 0;
+}

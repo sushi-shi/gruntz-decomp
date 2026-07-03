@@ -4,7 +4,8 @@
 // the CGruntzMgr settings singleton (_g_mgrSettings) being live. Offsets + code
 // bytes are load-bearing; field/class names are best-guess placeholders.
 #include <Mfc.h>
-#include <Gruntz/GruntzMgr.h> // canonical CGruntzMgr (game-manager singleton; one true shape)
+#include <Gruntz/GruntzMgr.h>       // canonical CGruntzMgr (game-manager singleton; one true shape)
+#include <Gruntz/CDDrawWorkerMgr.h> // canonical CDDrawWorkerMgr (m_levelData->m_ready)
 #include <Ints.h>
 #include <rva.h>
 
@@ -16,11 +17,6 @@ extern "C" CGruntzMgr* g_mgrSettings; // _g_mgrSettings (VA 0x64556c)
 extern "C" int(WINAPI* g_ShowCursor)(int); // ?g_ShowCursor@@3P6GHH@ZA (0x6c44c4)
 DATA(0x0024e35c)
 extern i32 g_64e35c; // 0x64e35c "splash drawn" latch
-
-// A sub-object (m_levelData->m_ready) whose Method158bc0 must be live to proceed.
-struct CMgrReady {
-    i32 Method158bc0(); // 0x158bc0
-};
 
 // The image-set the object loads into (m_levelData->m_imageSet); slot 19 (vtbl+0x4c) loads it.
 struct CMgrImageSet {
@@ -49,7 +45,7 @@ struct CMgrImageSet {
 // The level-data object (m_levelData) and the renderer it owns.
 struct CLevelData {
     char pad00[4];
-    CMgrReady* m_ready; // +0x04
+    CDDrawWorkerMgr* m_ready; // +0x04 (the Method_158bc0 readiness gate)
     char pad08[0x10 - 0x08];
     CMgrImageSet* m_imageSet; // +0x10
 };
@@ -176,7 +172,7 @@ i32 CMgrPersistObj::Init() {
     int(WINAPI * sc)(int) = g_ShowCursor;
     while (sc(0) >= 0)
         ;
-    if (m_levelData->m_ready->Method158bc0() == 0) {
+    if (m_levelData->m_ready->Method_158bc0() == 0) {
         return 0;
     }
     if (g_64e35c == 0) {
@@ -208,7 +204,6 @@ SIZE_UNKNOWN(CDisplayMgr);
 SIZE_UNKNOWN(CMgrImageSet);
 SIZE_UNKNOWN(CLevelData);
 SIZE_UNKNOWN(CMgrPersistObj);
-SIZE_UNKNOWN(CMgrReady);
 SIZE_UNKNOWN(CMgrWriter);
 SIZE_UNKNOWN(CRezLocator);
 SIZE_UNKNOWN(SplashParams);

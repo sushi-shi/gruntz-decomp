@@ -140,9 +140,11 @@ public:
 
     // Slot/option helpers reached via ILT thunks (own CBattlezDlg methods, owned
     // as RVA stubs in src/Stub/ApiCallers.cpp; external/no-body here so the calls
-    // reloc-mask). Sub015fe0 sets the active option N; Sub0173e0 refreshes.
-    void Sub015fe0(i32 option); // 0x015fe0
-    void Sub0173e0();           // 0x0173e0
+    // reloc-mask). ToggleRow sets the active option N; Sub0173e0 refreshes.
+    i32 ToggleRow(
+        i32 option
+    );                // 0x015fe0 (canonical ?ToggleRow@CBattlezDlg, homed in BattlezDlgRow.cpp)
+    void Sub0173e0(); // 0x0173e0
 
     // The four per-option apply handlers (0x15de0/15e60/15ee0/15f60): set option N,
     // refresh, then enable IDOK when any of slots 1..3 is occupied.

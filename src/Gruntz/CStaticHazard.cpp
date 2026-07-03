@@ -196,6 +196,16 @@ static inline CHaznEntry* HaznLookup(i32 coord) {
 }
 
 // ---------------------------------------------------------------------------
+// CStaticHazard::GetTypeTag @0x012ae0 - vtable slot 2: the class's logic-type id
+// (0x416), the 6-byte `mov eax,<id>; ret` accessor archetype. Regular method (the
+// fat CUserLogic base slot 2 carries a placeholder signature; the leaf vtable is
+// not a diffed symbol, so a plain method reproduces the slot bytes exactly).
+RVA(0x00012ae0, 0x6)
+i32 CStaticHazard::GetTypeTag() {
+    return 0x416;
+}
+
+// ---------------------------------------------------------------------------
 // CStaticHazard::~CStaticHazard @0x012b30 - the leaf adds no destructible members
 // beyond CUserLogic, so its dtor folds the bare CUserLogic teardown; the
 // destructible +0x18 link forces the /GX EH frame. Byte-identical in shape to

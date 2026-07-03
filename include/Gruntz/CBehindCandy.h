@@ -22,8 +22,9 @@
 SIZE_UNKNOWN(CBehindCandy);
 class CBehindCandy : public CUserLogic {
 public:
-    i32 GetTypeTag();                 // 0x00fb70 (returns the class logic-type id 0x3f0)
-    virtual ~CBehindCandy() OVERRIDE; // 0x00fc30 (folds the CUserLogic teardown)
+    i32 GetTypeTag(); // 0x00fb70 (vtable slot 2: class logic-type id 0x3f0)
+    i32 Serialize(i32 a, i32 b, i32 c, i32 d); // 0x00fb90 (vtable slot 1: serialize chain)
+    virtual ~CBehindCandy() OVERRIDE;          // 0x00fc30 (folds the CUserLogic teardown)
 };
 
 #endif // GRUNTZ_CBEHINDCANDY_H
