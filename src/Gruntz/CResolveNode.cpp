@@ -1,4 +1,4 @@
-#include <Wap32/CObject.h> // Wap::CObject - the shared engine grand-base
+#include <Wap32/CWapObj.h> // CWapObj : Wap::CObject - the abstract intermediate (slots 5/6)
 #include <rva.h>
 // CResolveNode.cpp - a leaf node in the CDirectDrawMgr surface/page-manager
 // CDDrawSubMgr family (the Wap::CObject base dtor vtable lineage; the base subobject
@@ -25,13 +25,21 @@
 
 // The 0x68-byte node. Layout recovered from the ctor/dtor/Init stores; the gaps
 // are unread scratch (the family's resolution-ladder block).
-class CResolveNode : public Wap::CObject {
+class CResolveNode : public CWapObj {
 public:
-    virtual void Slot5();          // [5] 0x154a10
-    virtual void Slot6();          // [6] 0x001c08
-    virtual void Slot7();          // [7] 0x154a80
-    virtual void Slot8();          // [8] 0x154a00
-    virtual i32 Resolve(i32, i32); // [9] 0x164790
+    // Slots 5-8 belong to the deeper 9-slot "loadable" base (CLoadable / CDDrawSubMgr
+    // @0x5efc30, itself : CWapObj): slot 5 IsLoaded, slot 6 IsReady, slot 7 the
+    // Unload/reset hook, slot 8 GetClassId (shared default 0x154a00 = `return 0`).
+    // That base is currently triple-modeled (GameLevel.h / CDDrawWorker.h /
+    // CDDrawSubMgr.cpp) and not yet a shared header, so slots 7/8 are declared here as
+    // matching-neutral scaffolding (reloc-masked). TODO: recover CLoadable : CWapObj
+    // as one shared header and re-base this node onto it so GetClassId is INHERITED,
+    // not re-declared (see matcher report). Modeled : CWapObj until then.
+    i32 IsLoaded() OVERRIDE; // [5] 0x154a10  overrides the base (checks m_04!=-1 && m_0c)
+    // slot 6 IsReady inherited from CWapObj (0x001c08)
+    virtual void Reset();          // [7] 0x154a80  overrides the base Unload/reset hook
+    virtual i32 GetClassId();      // [8] 0x154a00  the shared 9-slot-base default (return 0)
+    virtual i32 Resolve(i32, i32); // [9] 0x164790  CResolveNode's own new virtual
 
     CResolveNode();
     CResolveNode(i32 root, i32 a2, i32 a3);

@@ -31,7 +31,7 @@
 
 #include <rva.h>
 #include <Ints.h>
-#include <Wap32/CObject.h> // Wap::CObject - the shared engine grand-base (vtbl 0x5e8cb4)
+#include <Wap32/CWapObj.h> // CWapObj : Wap::CObject - the abstract intermediate (slots 5/6)
 
 class CString;   // real MFC CString (4-byte ptr); completed via <Mfc.h> in the .cpp
                  // (forward-decl here so includers needn't choose <Mfc.h> vs <Win32.h>)
@@ -172,20 +172,20 @@ class CResolveNode; // the shared clip/resolve singleton (RenderImage arg); defi
 // uncontrollable butterfly (CImageSpriteBlit::BlitShadeNorm 100->99.94 one esi/edi
 // swap; CSBI_GruntMachine::Render -~4%). Correct form over the artifact per the
 // cleanliness mandate; final-sweep candidates in their own TUs.
-class CImage : public Wap::CObject {
+class CImage : public CWapObj {
 public:
-    // vptr @+0x00 (inherited from Wap::CObject); the base subobject re-stamp
-    // (masks 0x5e8cb4) folds into ~CImage as its last store.
+    // vptr @+0x00 (inherited from Wap::CObject via CWapObj); the base subobject
+    // re-stamp (masks 0x5e8cb4) folds into ~CImage as its last store. CImage keeps
+    // CWapObj's slot 5 (IsLoaded @0x0013b6) and slot 6 (IsReady @0x001c08) defaults
+    // unchanged - it is the only member of the family that overrides neither.
     i32 m_status;           // +0x04  status word (-1 inactive)
     i32 m_08;               // +0x08
     CImageParent* m_parent; // +0x0c  parent CDDrawPtrCollections (its surface pool at +0x1c)
 
     virtual ~CImage(); // 0x0d5e80 (overrides CObject slot 1; cl stamps ??_7CImage at entry)
 
-    virtual void v14();     // slot 5  0x0013b6 (external engine helper, declared-only)
-    virtual void v18();     // slot 6  0x001c08 (external engine helper, declared-only)
-    virtual void FreeAll(); // slot 7  0x153260
-    virtual void* Slot8();  // slot 8  0x0042aa (ILT)
+    virtual void FreeAll();   // slot 7  0x153260
+    virtual i32 GetClassId(); // slot 8  0x0042aa -> 0x0d5de0: return 10 (class type tag)
     virtual i32 Create24(CImageFrameDesc* desc, i32 mode, i32 keyed);          // slot 9  0x1530e0
     virtual i32 LoadDispatch(CImageFrameDesc* desc, u32 mode, void* a, i32 b); // slot 10 0x152fb0
     virtual i32 Resolve(CImageSource* src, i32 arg);                           // slot 11 0x152f20
