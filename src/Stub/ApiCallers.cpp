@@ -51,55 +51,14 @@ struct GameObj510 {
 DATA(0x0024556c)
 extern CGameReg* g_gameReg;
 
-// Miles Sound System (AIL) imports - reached through the IAT (ff 15 [__imp]).
-extern "C" {
-    __declspec(dllimport) i32 __stdcall AIL_set_XMIDI_master_volume(i32 driver, i32 volume);
-    __declspec(dllimport) i32 __stdcall AIL_start_sequence(i32 seq);
-    __declspec(dllimport) i32 __stdcall AIL_set_sequence_loop_count(i32 seq, i32 count);
-    __declspec(dllimport) i32 __stdcall AIL_resume_sequence(i32 seq);
-    __declspec(dllimport) void __stdcall AIL_startup();
-    __declspec(dllimport) i32 __stdcall AIL_midiOutOpen(i32* driver, i32 dunno, i32 devid);
-    __declspec(dllimport) i32 __stdcall AIL_XMIDI_master_volume(i32 driver);
-    __declspec(dllimport) void __stdcall AIL_end_sequence(i32 seq);
-    __declspec(dllimport) void __stdcall AIL_set_sequence_tempo(i32 seq, i32 tempo, i32 ms);
-    __declspec(dllimport) void __stdcall AIL_shutdown();
-    __declspec(dllimport) void __stdcall AIL_stop_sequence(i32 seq);
-    __declspec(dllimport) void __stdcall AIL_set_sequence_volume(i32 seq, i32 volume, i32 ms);
-    __declspec(dllimport) void __stdcall AIL_release_sequence_handle(i32 seq);
-    __declspec(dllimport) i32 __stdcall AIL_allocate_sequence_handle(i32 driver);
-    __declspec(dllimport) i32 __stdcall AIL_init_sequence(i32 seq, void* xmidi, i32 seqNum);
-}
-
-// The AIL MIDI driver handle (DAT_00653c5c), 0 when no driver is open.
-DATA(0x00253c5c)
-extern i32 g_ailMidiDriver;
-
-// Monotonic counter naming auto-generated MIDI sequences ("MIDI%i", DAT_00653c60).
-DATA(0x00253c60)
-extern i32 g_midiSeqCounter;
-
-// Cached AIL driver handle passed to AIL_set_* (DAT_00653c64).
-DATA(0x00253c64)
-extern i32 g_ailDriver64;
-
-// MS-CRT-style LCG RNG state shared by the timeGetTime random helpers.
-DATA(0x002c127d)
-extern char g_rngSeeded; // bit0 set once the generator has been seeded
-DATA(0x002c1288)
-extern i32 g_rngState; // the current 32-bit LCG state
-
-// Per-frame cached random bit used by the deterministic coin-flip helper.
-DATA(0x0024c22c)
-extern char g_coinRolled; // bit0 set once this frame's coin was rolled
-DATA(0x0024c26c)
-extern i32 g_coinValue; // the cached 0/1 result
+// (The Miles Sound System (AIL) imports + g_ailMidiDriver/g_midiSeqCounter/
+// g_ailDriver64, and the RNG/coin state g_rngSeeded/g_rngState/g_coinRolled/
+// g_coinValue, moved with the MIDI sequence + LCG helpers to
+// src/Dsndmgr/AilMidiSeq.cpp and src/Gruntz/Random.cpp.)
 
 // GetDlgItem(hWnd,0x4b6) cache (DAT_00648ce0), shared by several timer wrappers.
 DATA(0x00248ce0)
 extern HWND g_dlgItem_648ce0;
-
-// The Rez heap allocator (_RezAlloc, defined in EngineExternFns.cpp).
-extern "C" void* RezAlloc(u32 size);
 
 // USER32 entry points reached through game-owned IAT-style function pointers
 // (ff 15 [ptr]); g_pSendMessageA is the same global BattlezDlgRow.cpp binds.
@@ -318,67 +277,8 @@ namespace ApiCallerStubs {
         return 1;
     }
 
-    // __cdecl rand(): lazily seed from timeGetTime, then advance the MS-CRT LCG.
-    RVA(0x0000cd00, 0x46)
-    i32 winapi_00cd00_timeGetTime() {
-        i32 seed;
-        if (!(g_rngSeeded & 1)) {
-            g_rngSeeded |= 1;
-            seed = timeGetTime();
-        } else {
-            seed = g_rngState;
-        }
-        g_rngState = seed * 214013 + 2531011;
-        return (g_rngState >> 0x10) & 0x7fff;
-    }
-
-    // __thiscall(lo, hi, a3, a4): roll a random value in [lo,hi] (lazily-seeded
-    // LCG; coin-flip endpoints when the span is empty) and cache it + the params.
-    struct RngBox_00cd70 {
-        char m_pad0[0x40];
-        i32 m_40; // +0x40 lo
-        i32 m_44; // +0x44 hi
-        i32 m_48; // +0x48
-        i32 m_4c; // +0x4c
-        i32 m_50; // +0x50 rolled value
-        i32 m_54; // +0x54 (1 once rolled)
-        void Roll(i32 lo, i32 hi, i32 a3, i32 a4);
-    };
-    RVA(0x0000cd70, 0xe5)
-    void RngBox_00cd70::Roll(i32 lo, i32 hi, i32 a3, i32 a4) {
-        i32 span = hi - lo + 1;
-        m_40 = lo;
-        m_44 = hi;
-        m_48 = a3;
-        m_4c = a4;
-        i32 seed;
-        if (span == 0) {
-            if (!(g_rngSeeded & 1)) {
-                g_rngSeeded |= 1;
-                seed = timeGetTime();
-            } else {
-                seed = g_rngState;
-            }
-            g_rngState = seed * 214013 + 2531011;
-            if (g_rngState & 0x10000) {
-                m_54 = 1;
-                m_50 = lo;
-            } else {
-                m_54 = 1;
-                m_50 = hi;
-            }
-            return;
-        }
-        if (!(g_rngSeeded & 1)) {
-            g_rngSeeded |= 1;
-            seed = timeGetTime();
-        } else {
-            seed = g_rngState;
-        }
-        g_rngState = seed * 214013 + 2531011;
-        m_54 = 1;
-        m_50 = lo + ((g_rngState >> 0x10) & 0x7fff) % span;
-    }
+    // (0xcd00/0xcd70/0x19f50/0x15cbe0 RNG helpers re-homed to Rng in
+    // src/Gruntz/Random.cpp.)
 
     // __thiscall(code, _): on ESC/SPACE/ENTER post a 0x8023 command. Returns 1.
     struct CmdChain_014720 {
@@ -440,34 +340,7 @@ namespace ApiCallerStubs {
         }
     }
 
-    // __stdcall(hi, lo): lazily-seeded LCG random in [lo,hi]. When the span is
-    // empty (hi==lo-1) it coin-flips between the endpoints on bit 0x10000.
-    RVA(0x00019f50, 0xb2)
-    i32 __stdcall winapi_019f50_timeGetTime(i32 lo, i32 hi) {
-        i32 span = hi - lo + 1;
-        i32 seed;
-        if (span != 0) {
-            if (!(g_rngSeeded & 1)) {
-                g_rngSeeded |= 1;
-                seed = timeGetTime();
-            } else {
-                seed = g_rngState;
-            }
-            g_rngState = seed * 214013 + 2531011;
-            return lo + ((g_rngState >> 0x10) & 0x7fff) % span;
-        }
-        if (!(g_rngSeeded & 1)) {
-            g_rngSeeded |= 1;
-            seed = timeGetTime();
-        } else {
-            seed = g_rngState;
-        }
-        g_rngState = seed * 214013 + 2531011;
-        if (g_rngState & 0x10000) {
-            return lo;
-        }
-        return hi;
-    }
+    // (0x19f50 RNG helper re-homed to Rng::RangeStd in src/Gruntz/Random.cpp.)
 
     // @confidence: low
     // @source: winapi:CopyRect
@@ -499,42 +372,7 @@ namespace ApiCallerStubs {
         return 1;
     }
 
-    // __thiscall(src): clip the (0,0,m_c,m_10) box against the optional src rect
-    // (right/bottom inclusive→+1), store the clipped rect at +0x60 and its w/h.
-    struct ClipHost_02b340 {
-        char m_pad0[0xc];
-        i32 m_c;  // +0x0c
-        i32 m_10; // +0x10
-        char m_pad14[0x60 - 0x14];
-        RECT m_rc60; // +0x60
-        i32 m_w70;   // +0x70
-        i32 m_h74;   // +0x74
-        void Clip(const RECT* src);
-    };
-    RVA(0x0002b340, 0xaa)
-    void ClipHost_02b340::Clip(const RECT* src) {
-        RECT a, b;
-        b.left = 0;
-        b.top = 0;
-        b.right = m_c;
-        b.bottom = m_10;
-        if (src) {
-            a.left = src->left;
-            a.top = src->top;
-            a.right = src->right + 1;
-            a.bottom = src->bottom + 1;
-        } else {
-            a.left = 0;
-            a.top = 0;
-            a.right = m_c;
-            a.bottom = m_10;
-        }
-        if (!IntersectRect(&m_rc60, &a, &b)) {
-            m_rc60 = a;
-        }
-        m_w70 = m_rc60.right - m_rc60.left;
-        m_h74 = m_rc60.bottom - m_rc60.top;
-    }
+    // (0x2b340 ClipHost::Clip re-homed to ApiMisc in src/Gruntz/ApiMiscHelpers.cpp.)
 
     // (0x38150 find-and-select re-homed to CMultiSlotList::Method3396 in Dialogs.cpp.)
 
@@ -708,15 +546,7 @@ namespace ApiCallerStubs {
         return best;
     }
 
-    // __thiscall(l, t, r, b): the object IS the RECT being initialised.
-    struct RectHost_08c380 {
-        RECT m_rc;
-        void Set(i32 l, i32 t, i32 r, i32 b);
-    };
-    RVA(0x0008c380, 0x1e)
-    void RectHost_08c380::Set(i32 l, i32 t, i32 r, i32 b) {
-        SetRect(&m_rc, l, t, r, b);
-    }
+    // (0x8c380 RectHost::Set re-homed to ApiMisc in src/Gruntz/ApiMiscHelpers.cpp.)
 
     // __thiscall(out): default to the full 0x280x0x1e0 screen rect, or the active
     // viewport's rect (m_30->m_24 + 0x10) when one is set; write it to *out.
@@ -1906,33 +1736,7 @@ namespace ApiCallerStubs {
         return 1;
     }
 
-    // __thiscall coin-flip: deterministic ((m_1c+1)%2) in replay mode, otherwise a
-    // once-per-frame random bit lazily seeded from timeGetTime.
-    struct CoinHost_0da200 {
-        char m_pad0[0x1c];
-        i32 m_1c; // +0x1c
-        i32 Flip();
-    };
-    RVA(0x000da200, 0x9b)
-    i32 CoinHost_0da200::Flip() {
-        CGameReg* gr = g_gameReg;
-        if (gr->m_134 == 1 && gr->m_130 == 0) {
-            return (m_1c + 1) % 2;
-        }
-        if (!(g_coinRolled & 1)) {
-            i32 seed;
-            g_coinRolled |= 1;
-            if (!(g_rngSeeded & 1)) {
-                g_rngSeeded |= 1;
-                seed = timeGetTime();
-            } else {
-                seed = g_rngState;
-            }
-            g_rngState = seed * 214013 + 2531011;
-            g_coinValue = ((g_rngState >> 0x10) & 0x7fff) % 2;
-        }
-        return g_coinValue;
-    }
+    // (0xda200 coin-flip re-homed to Rng::CoinFlip::Flip in src/Gruntz/Random.cpp.)
 
     DATA(0x0024c69c)
     extern i32 g_flag64c69c; // DAT_0064c69c
@@ -2097,32 +1901,7 @@ namespace ApiCallerStubs {
         return 0;
     }
 
-    struct MidiDrv_0f8e20 {
-        char m_pad0[0x14];
-        void(__cdecl* m_14)(i16); // +0x14 function pointer member
-    };
-    DATA(0x0024e0b8)
-    extern i32 g_midiOpen_64e0b8;
-    DATA(0x0024e0b0)
-    extern MidiDrv_0f8e20* g_midiDrv_64e0b0;
-    DATA(0x0024e0a4)
-    extern i16 g_midiPort_64e0a4;
-    DATA(0x0024dd28)
-    extern i16 g_midiDev_64dd28;
-    DATA(0x0024e0a8)
-    extern HMODULE g_midiLib_64e0a8;
-    void __cdecl MidiShutdown_3382(); // RVA 0x3382
-    // __cdecl(): tear the MIDI driver down and free its DLL.
-    RVA(0x000f8e20, 0x56)
-    void winapi_0f8e20_FreeLibrary() {
-        if (g_midiOpen_64e0b8 && g_midiDrv_64e0b0 && g_midiPort_64e0a4) {
-            MidiShutdown_3382();
-            g_midiDrv_64e0b0->m_14(g_midiDev_64dd28);
-            FreeLibrary(g_midiLib_64e0a8);
-            g_midiLib_64e0a8 = 0;
-            g_midiOpen_64e0b8 = 0;
-        }
-    }
+    // (0xf8e20 MIDI-driver DLL teardown re-homed to src/Dsndmgr/AilMidiSeq.cpp.)
 
     // __thiscall(): begin/end a paint cycle on the top-level window (m_4->m_4->m_4).
     struct PaintWnd_0fac70 {
@@ -2285,37 +2064,8 @@ namespace ApiCallerStubs {
         return 1;
     }
 
-    // __thiscall(src): copy src into this RECT; return this.
-    struct RectHost_115b30 {
-        RECT m_rc;
-        RectHost_115b30* Copy(const RECT* src);
-    };
-    RVA(0x00115b30, 0x15)
-    RectHost_115b30* RectHost_115b30::Copy(const RECT* src) {
-        CopyRect(&m_rc, src);
-        return this;
-    }
-
-    // __cdecl: activate + focus the same window.
-    RVA(0x00118930, 0x15)
-    void winapi_118930_SetActiveWindow_SetFocus(HWND hWnd) {
-        SetActiveWindow(hWnd);
-        SetFocus(hWnd);
-    }
-
-    // __cdecl(hWnd, msg, wParam): block screen-saver / monitor-power while not iconic.
-    RVA(0x001192d0, 0x39)
-    i32 winapi_1192d0_IsIconic(HWND hWnd, i32 msg, i32 wParam) {
-        if (msg == 0x112) {
-            i32 sc = wParam & 0xfff0;
-            if (sc == 0xf140 || sc == 0xf170) {
-                if (!IsIconic(hWnd)) {
-                    return 1;
-                }
-            }
-        }
-        return 0;
-    }
+    // (0x115b30 RectHost::Copy, 0x118930 SetActiveWindow_SetFocus, 0x1192d0 IsIconic
+    // re-homed to ApiMisc in src/Gruntz/ApiMiscHelpers.cpp.)
 
     // 0x11b3b0 + 0x11b7c0 (CGruntSpawnConfig weighted grunt-voice spawn drivers): both
     // re-homed to src/Gruntz/CGruntSpawnConfig.cpp (SpawnVoiceDriver / SpawnVoiceDriverStd).
@@ -2326,75 +2076,8 @@ namespace ApiCallerStubs {
     // matcher policy. HeapDiag.cpp keeps its own reloc-masked extern decl for the
     // former (called through a casted HeapWalkFn pointer).
 
-    struct AppModule_136a30 {
-        char m_pad0[8];
-        HINSTANCE m_8; // +0x08 = the resource module handle
-    };
-    AppModule_136a30* AppModule_1d3631(); // RVA 0x1d3631 (global accessor)
-    struct WaveHost_136a30 {
-        char m_pad0[0x78];
-        i32 m_78; // +0x78
-        i32 LoadWave(const char* name, i32 a, i32 b);
-        i32 Use136910(void* data, i32 a, i32 b); // thiscall, RVA 0x136910
-    };
-    // __thiscall(name, a, b): find/load/lock a WAVE resource, hand it to Use136910.
-    RVA(0x00136a30, 0x76)
-    i32 WaveHost_136a30::LoadWave(const char* name, i32 a, i32 b) {
-        if (!m_78) {
-            return 0;
-        }
-        HINSTANCE mod1 = AppModule_1d3631()->m_8;
-        HRSRC hRsrc = FindResourceA(mod1, name, "WAVE");
-        if (!hRsrc) {
-            return 0;
-        }
-        HINSTANCE mod2 = AppModule_1d3631()->m_8;
-        HGLOBAL hRes = LoadResource(mod2, hRsrc);
-        if (!hRes) {
-            return 0;
-        }
-        void* data = LockResource(hRes);
-        if (!data) {
-            return 0;
-        }
-        return Use136910(data, a, b);
-    }
-
-    // The probe object (arg1) whose Ready (RVA 0x135440) gates loading.
-    struct WaveProbe_136ce0 {
-        i32 Ready(); // thiscall, RVA 0x135440
-    };
-    struct WaveHost2_136ce0 {
-        char m_pad0[0x78];
-        i32 m_78; // +0x78
-        i32 LoadWave(WaveProbe_136ce0* probe, const char* name, i32 arg);
-        i32 Use136bd0(WaveProbe_136ce0* probe, void* data, i32 arg); // thiscall, RVA 0x136bd0
-    };
-    // __thiscall(probe, name, arg): if the probe is ready, find/load/lock the WAVE.
-    RVA(0x00136ce0, 0x92)
-    i32 WaveHost2_136ce0::LoadWave(WaveProbe_136ce0* probe, const char* name, i32 arg) {
-        if (!m_78) {
-            return 0;
-        }
-        if (probe->Ready() == 0) {
-            return 1;
-        }
-        HINSTANCE mod1 = AppModule_1d3631()->m_8;
-        HRSRC hRsrc = FindResourceA(mod1, name, "WAVE");
-        if (!hRsrc) {
-            return 0;
-        }
-        HINSTANCE mod2 = AppModule_1d3631()->m_8;
-        HGLOBAL hRes = LoadResource(mod2, hRsrc);
-        if (!hRes) {
-            return 0;
-        }
-        void* data = LockResource(hRes);
-        if (!data) {
-            return 0;
-        }
-        return Use136bd0(probe, data, arg);
-    }
+    // (0x136a30 WaveHost::LoadWave + 0x136ce0 WaveHost2::LoadWave re-homed to
+    // ResLoaders in src/Gruntz/ResourceLoaders.cpp.)
 
     i32 __stdcall PlaySound3_136550(i32 a, i32 b, i32 flag); // RVA 0x136550
     // __stdcall(a, b): default the 3rd arg to 0.
@@ -2408,621 +2091,26 @@ namespace ApiCallerStubs {
         return PlaySound3_136550(a, b, 0);
     }
 
-    // __thiscall(timestamp): throttle to >0x64 ms since the last tick, query the
-    // source (m_8), wrap localC against m_c into the window, then run the work pass.
-    struct TickSource_137e30 {
-        i32 Read(i32* outHi, i32* outLo); // thiscall, RVA 0x135a20
-    };
-    struct Throttle_137e30 {
-        char m_pad0[8];
-        TickSource_137e30* m_8; // +0x08
-        i32 m_c;                // +0x0c
-        i32 m_10;               // +0x10
-        i32 m_14;               // +0x14
-        char m_pad18[0x1c - 0x18];
-        i32 m_1c; // +0x1c
-        char m_pad20[0x28 - 0x20];
-        i32 m_28; // +0x28
-        i32 Tick(i32 timestamp);
-        i32 Work(i32 a, i32 b); // RVA 0x137f30
-    };
-    RVA(0x00137e30, 0x98)
-    i32 Throttle_137e30::Tick(i32 timestamp) {
-        if (!m_1c) {
-            return 1;
-        }
-        i32 t = (timestamp == -1) ? (i32)timeGetTime() : timestamp;
-        if ((u32)t <= (u32)(m_28 + 0x64)) {
-            return 1;
-        }
-        m_28 = t;
-        i32 hi, lo;
-        if (!m_8->Read(&hi, &lo)) {
-            return 0;
-        }
-        i32 v;
-        if ((u32)hi >= (u32)m_c) {
-            if (hi == m_c) {
-                v = m_10;
-            } else {
-                v = hi - m_c;
-            }
-        } else {
-            v = m_10 + hi - m_c;
-        }
-        if ((u32)v < (u32)m_14) {
-            return 1;
-        }
-        return Work(m_c, v) != 0;
-    }
+    // (0x137e30 Throttle::Tick + 0x1380d0 Timer::Tick re-homed to ApiMisc in
+    // src/Gruntz/ApiMiscHelpers.cpp.)
 
-    // A device object whose Prepare(flag) lives at RVA 0x135a70.
-    struct Device_1380d0 {
-        i32 Prepare(i32 flag); // RVA 0x135a70
-    };
-    // __thiscall(timestamp) host: timestamp -1 means "now"; prep the device, then
-    // run the work pass (RVA 0x137f30) over m_c/m_10. Returns whether it ran.
-    struct Timer_1380d0 {
-        char m_pad0[0x8];
-        Device_1380d0* m_8; // +0x08
-        i32 m_c;            // +0x0c
-        i32 m_10;           // +0x10
-        char m_pad14[0x20 - 0x14];
-        i32 m_20; // +0x20
-        char m_pad24[0x28 - 0x24];
-        i32 m_28; // +0x28
-        i32 Tick(i32 timestamp);
-        i32 Work(i32 a, i32 b); // RVA 0x137f30
-    };
-    RVA(0x001380d0, 0x4e)
-    i32 Timer_1380d0::Tick(i32 timestamp) {
-        i32 t = (timestamp == -1) ? (i32)timeGetTime() : timestamp;
-        m_28 = t;
-        m_c = 0;
-        if (!m_8->Prepare(0)) {
-            return 0;
-        }
-        m_20 = 0;
-        return Work(m_c, m_10) != 0;
-    }
-
-    // __thiscall(driver, seq, skipInit): record the AIL handles, optionally start
-    // the AIL MIDI driver. m_28 = whether the driver is usable.
-    struct AilHost_138490 {
-        char m_pad0[0x1c];
-        i32 m_1c; // +0x1c
-        i32 m_20; // +0x20
-        i32 m_24; // +0x24
-        i32 m_28; // +0x28
-        i32 Init(i32 driver, i32 seq, i32 skipInit);
-    };
-    RVA(0x00138490, 0x5e)
-    i32 AilHost_138490::Init(i32 driver, i32 seq, i32 skipInit) {
-        m_24 = driver;
-        m_20 = seq;
-        m_1c = 0;
-        m_28 = 1;
-        g_ailDriver64 = driver;
-        if (!skipInit) {
-            AIL_startup();
-            if (AIL_midiOutOpen(&g_ailMidiDriver, 0, -1) != 0 || g_ailMidiDriver == 0) {
-                m_28 = 0;
-            }
-        }
-        return 1;
-    }
-
-    // A polymorphic sub whose slot 12 (vtable +0x30) tears down its sequence.
-    struct AilSlot_1384f0 {
-        virtual void v0();
-        virtual void v1();
-        virtual void v2();
-        virtual void v3();
-        virtual void v4();
-        virtual void v5();
-        virtual void v6();
-        virtual void v7();
-        virtual void v8();
-        virtual void v9();
-        virtual void v10();
-        virtual void v11();
-        virtual void Release(); // slot 12 == vtable +0x30
-    };
-    struct AilMgr_1384f0 {
-        char m_pad0[0x1c];
-        AilSlot_1384f0* m_1c; // +0x1c
-        i32 m_20;             // +0x20
-        void Shutdown();
-        void Reset138530(); // thiscall, RVA 0x138530
-    };
-    // __thiscall(): reset, release the active sequence, reset again, shut AIL down.
-    RVA(0x001384f0, 0x3b)
-    void AilMgr_1384f0::Shutdown() {
-        Reset138530();
-        if (m_1c) {
-            m_1c->Release();
-        }
-        Reset138530();
-        m_20 = 0;
-        m_1c = 0;
-        g_ailMidiDriver = 0;
-        AIL_shutdown();
-    }
-
-    // __stdcall(volume 0..100): scale to 0..127 and push to the XMIDI driver.
-    RVA(0x00138950, 0x70)
-    i32 __stdcall thirdparty_138950_AIL_set_XMIDI_master_volume_8(i32 volume) {
-        i32 scaled;
-        if (!g_ailMidiDriver) {
-            return 0;
-        }
-        if (volume <= 0) {
-            scaled = 0;
-        } else if (volume >= 100) {
-            scaled = 0x7f;
-        } else {
-            scaled = volume * 127 / 100;
-        }
-        AIL_set_XMIDI_master_volume(g_ailMidiDriver, scaled);
-        return 1;
-    }
-
-    // __cdecl(): read the XMIDI master volume and rescale 0..127 -> 0..100.
-    RVA(0x001389c0, 0x47)
-    i32 thirdparty_1389c0_AIL_XMIDI_master_volume_4() {
-        if (!g_ailMidiDriver) {
-            return 0x64;
-        }
-        i32 v = AIL_XMIDI_master_volume(g_ailMidiDriver);
-        if (v <= 0) {
-            return 0;
-        }
-        if (v >= 0x7f) {
-            return 0x64;
-        }
-        return v * 100 / 127;
-    }
-
-    // An owned XMIDI sequence: copies the song bytes into a Rez buffer, names it,
-    // and allocates + initialises an AIL sequence handle against the MIDI driver.
-    struct AilSeq_138c20 {
-        char m_pad0[4];
-        char m_name[0x48 - 4]; // +0x04 sequence name buffer
-        i32 m_48;              // +0x48
-        char m_pad4c[0x50 - 0x4c];
-        i32 m_50;   // +0x50
-        i32 m_54;   // +0x54
-        i32 m_58;   // +0x58 AIL sequence handle
-        void* m_5c; // +0x5c owned song bytes
-        i32 Init(void* data, u32 size, char* name);
-    };
-    // __thiscall(data, size, name): seed a sequence record from `size` bytes of
-    // XMIDI at `data`; auto-name "MIDI%i" when `name` is null.
-    RVA(0x00138c20, 0x122)
-    i32 AilSeq_138c20::Init(void* data, u32 size, char* name) {
-        if (!data) {
-            return 0;
-        }
-        if (size < 4) {
-            return 0;
-        }
-        if (!g_ailMidiDriver) {
-            return 0;
-        }
-        ++g_midiSeqCounter;
-        m_48 = 0;
-        m_54 = 100;
-        m_50 = 100;
-        if (name) {
-            strcpy(m_name, name);
-        } else {
-            Format_11f890(m_name, "MIDI%i", g_midiSeqCounter);
-        }
-        if (!m_5c) {
-            m_5c = RezAlloc(size);
-            if (!m_5c) {
-                return 0;
-            }
-            memcpy(m_5c, data, size);
-        }
-        m_58 = AIL_allocate_sequence_handle(g_ailMidiDriver);
-        if (!m_58) {
-            return 0;
-        }
-        if (AIL_init_sequence(m_58, m_5c, 0) == 0) {
-            AIL_release_sequence_handle(m_58);
-            m_58 = 0;
-            return 0;
-        }
-        return 1;
-    }
-
-    // AIL sequence player. The virtual at slot 8 (vtable +0x20) gates playback;
-    // the sequence handle lives at m_58, loop/cursor state at m_44/m_48/m_4c.
-    struct AilSeq {
-        // vptr at +0x00 (compiler-managed). Eight leading virtuals put CanPlay at
-        // vtable offset 0x20; slot 12 (+0x30) is the teardown hook.
-        virtual void v0();
-        virtual void v1();
-        virtual void v2();
-        virtual void v3();
-        virtual void v4();
-        virtual void v5();
-        virtual void v6();
-        virtual void v7();
-        virtual i32 CanPlay(); // slot 8 == vtable +0x20
-        virtual void v9();
-        virtual void v10();
-        virtual void v11();
-        virtual void Teardown(); // slot 12 == vtable +0x30
-        char m_pad4[0x44 - 4];
-        i32 m_44; // +0x44
-        i32 m_48; // +0x48
-        i32 m_4c; // +0x4c
-        i32 m_50; // +0x50
-        i32 m_54; // +0x54
-        i32 m_58; // +0x58
-        i32 m_5c; // +0x5c
-        i32 Play(i32 cursor, i32 loop);
-        i32 Resume(i32 restart);
-        i32 SetLoop(i32 loop);
-        i32 ResumeGate(); // the m_138f60 helper
-        i32 Stop();
-        i32 SetTempo(i32 tempo, i32 unused);
-        void ReleaseHandle();
-        i32 Pause();
-        i32 SetVolume(i32 volume, i32 ms);
-    };
-    extern "C" void RezFree_call(void* p); // RVA 0x1b9b82 (cdecl)
-
-    // __thiscall(): tear down, release the AIL sequence handle + Rez buffer.
-    RVA(0x00138dd0, 0x36)
-    void AilSeq::ReleaseHandle() {
-        Teardown();
-        if (m_58) {
-            AIL_release_sequence_handle(m_58);
-            m_58 = 0;
-        }
-        if (m_5c) {
-            RezFree_call((void*)m_5c);
-            m_5c = 0;
-        }
-    }
-
-    // __thiscall(cursor, loop): start the sequence; if looping, clear loop count.
-    RVA(0x00138e10, 0x4a)
-    i32 AilSeq::Play(i32 cursor, i32 loop) {
-        if (!CanPlay()) {
-            return 0;
-        }
-        m_4c = cursor;
-        m_48 = loop;
-        AIL_start_sequence(m_58);
-        if (loop) {
-            AIL_set_sequence_loop_count(m_58, 0);
-        }
-        m_44 = 0;
-        return 1;
-    }
-
-    // __thiscall(): if playable, end the sequence and clear the paused flag.
-    RVA(0x00138e60, 0x26)
-    i32 AilSeq::Stop() {
-        if (!CanPlay()) {
-            return 0;
-        }
-        AIL_end_sequence(m_58);
-        m_44 = 0;
-        return 1;
-    }
-
-    // __thiscall(): pause the sequence the first time, counting nested pauses.
-    RVA(0x00138e90, 0x3a)
-    i32 AilSeq::Pause() {
-        if (!CanPlay()) {
-            return 0;
-        }
-        if (!ResumeGate()) {
-            return 0;
-        }
-        if (m_44 == 0) {
-            AIL_stop_sequence(m_58);
-        }
-        m_44++;
-        return 1;
-    }
-
-    // __thiscall(restart): count down the resume delay and re-issue the resume.
-    RVA(0x00138ed0, 0x4f)
-    i32 AilSeq::Resume(i32 restart) {
-        if (!CanPlay()) {
-            return 0;
-        }
-        if (ResumeGate()) {
-            return 1;
-        }
-        if (m_44 > 0) {
-            m_44--;
-            if (restart) {
-                m_44 = 0;
-            }
-            if (m_44 <= 0) {
-                AIL_resume_sequence(m_58);
-            }
-        }
-        return 1;
-    }
-
-    // __thiscall(tempo, ms): if playable, set the sequence tempo and cache it.
-    RVA(0x00138f90, 0x32)
-    i32 AilSeq::SetTempo(i32 tempo, i32 ms) {
-        if (!CanPlay()) {
-            return 0;
-        }
-        AIL_set_sequence_tempo(m_58, tempo, ms);
-        m_54 = tempo;
-        return 1;
-    }
-
-    // __thiscall(volume 0..100, ms): scale to 0..127 and set the sequence volume.
-    RVA(0x00138fd0, 0x5e)
-    i32 AilSeq::SetVolume(i32 volume, i32 ms) {
-        if (!CanPlay()) {
-            return 0;
-        }
-        i32 scaled;
-        if (volume <= 0) {
-            scaled = 0;
-        } else if (volume >= 100) {
-            scaled = 0x7f;
-        } else {
-            scaled = volume * 127 / 100;
-        }
-        AIL_set_sequence_volume(m_58, scaled, ms);
-        m_50 = volume;
-        return 1;
-    }
-
-    // __thiscall(loop): update the cached loop flag, re-arming the driver count.
-    RVA(0x00139030, 0x4c)
-    i32 AilSeq::SetLoop(i32 loop) {
-        if (!CanPlay()) {
-            return 0;
-        }
-        if (m_48 != loop) {
-            m_48 = loop;
-            if (loop) {
-                AIL_set_sequence_loop_count(m_58, 0);
-            } else {
-                AIL_set_sequence_loop_count(m_58, 1);
-            }
-        }
-        return 1;
-    }
+    // (The AIL MIDI/XMIDI sequence subsystem - 0x138490/0x1384f0 driver bring-up +
+    // teardown, 0x138950/0x1389c0 XMIDI master volume, 0x138c20 sequence-record
+    // init, and the 0x138dd0-0x139030 AilSeq player methods - re-homed to
+    // src/Dsndmgr/AilMidiSeq.cpp.)
 
     // (0x13d4c0 was WndHolder_13d4c0::Destroy; recovered as CGameWnd::OnClose -
     // the WM_CLOSE handler, vtable slot 4 - and migrated to src/Wap32/GameWnd.cpp.
     // The "WndHolder_13d4c0" placeholder class is CGameWnd: m_4 (HWND) / m_c
     // (destroyed flag) are the CGameWnd ctor-zeroed fields.)
 
-    // The app HINSTANCE used as the resource module (DAT_00683ee0).
-    DATA(0x00283ee0)
-    extern HINSTANCE g_resModule;
+    // (0x144270 ResLoad::Load + 0x1479e0 PalLoad::Load (with g_resModule) and
+    // 0x164380 DrawCount + 0x164420 DrawLabel re-homed to ResLoaders in
+    // src/Gruntz/ResourceLoaders.cpp.)
 
-    // The header of the locked RT_BITMAP resource (its +0xe must be 8).
-    struct ResHdr_144270 {
-        i32 m_0; // +0x00 (payload size; data follows at +m_0+0x400)
-        i32 m_4; // +0x04
-        i32 m_8; // +0x08
-        char m_padc[0xe - 0xc];
-        i16 m_e; // +0x0e (must be 8)
-    };
-    struct ResLoad_144270 {
-        char m_pad0[0x10];
-        i32 m_10; // +0x10 (set to 0x6c after a 0x6c-byte zero-fill)
-        i32 m_14; // +0x14
-        i32 m_18; // +0x18
-        i32 m_1c; // +0x1c
-        char m_pad20[0x78 - 0x20];
-        i32 m_78;                        // +0x78
-        i32 Init(i32 saved);             // thiscall, RVA 0x13e0a0
-        void Parse(char* data, i32 two); // thiscall, RVA 0x13ece0
-        i32 Load(i32 a, char* name, i32 c);
-    };
-    // __thiscall(a, name, c): find/load/lock the named RT_BITMAP, validate its
-    // header (+0xe==8), zero a 0x6c-byte block, seed the loader fields, init it,
-    // then parse the payload that follows the 0x400-byte header.
-    RVA(0x00144270, 0xd2)
-    i32 ResLoad_144270::Load(i32 a, char* name, i32 c) {
-        HRSRC hr = FindResourceA(g_resModule, name, (LPCSTR)2);
-        if (!hr) {
-            return 0;
-        }
-        HGLOBAL hg = LoadResource(g_resModule, hr);
-        if (!hg) {
-            return 0;
-        }
-        ResHdr_144270* p = (ResHdr_144270*)LockResource(hg);
-        if (!p) {
-            return 0;
-        }
-        i32 saved = p->m_8;
-        if (p->m_e != 8) {
-            return 0;
-        }
-        memset(&m_10, 0, 0x6c);
-        m_10 = 0x6c;
-        m_78 = c | 0x40;
-        m_14 = 7;
-        m_1c = p->m_4;
-        m_18 = c;
-        if (!Init(saved)) {
-            return 0;
-        }
-        Parse((char*)p + p->m_0 + 0x400, 2);
-        return 1;
-    }
-
-    struct PalLoad_1479e0 {
-        i32 Apply(i32 a, PALETTEENTRY* pal, i32 c); // thiscall, RVA 0x147390
-        i32 Load(i32 a, char* name, i32 c);
-    };
-    // __thiscall(a, name, c): load the named PALETTE resource as 256 RGB triples,
-    // expand to PALETTEENTRY[256] (flags 0), and apply it.
-    RVA(0x001479e0, 0xbb)
-    i32 PalLoad_1479e0::Load(i32 a, char* name, i32 c) {
-        PALETTEENTRY pal[256];
-        HRSRC hr = FindResourceA(g_resModule, name, "PALETTE");
-        if (!hr) {
-            return 0;
-        }
-        HGLOBAL hg = LoadResource(g_resModule, hr);
-        if (!hg) {
-            return 0;
-        }
-        char* src = (char*)LockResource(hg);
-        if (!src) {
-            return 0;
-        }
-        for (i32 i = 0; i < 256; i++) {
-            pal[i].peRed = src[0];
-            pal[i].peGreen = src[1];
-            pal[i].peBlue = src[2];
-            pal[i].peFlags = 0;
-            src += 3;
-        }
-        return Apply(a, pal, c);
-    }
-
-    // A second MS-CRT-style LCG, seeded lazily from timeGetTime.
-    DATA(0x002c278c)
-    extern char g_rng2Seeded; // bit0 set once seeded
-    DATA(0x002c2798)
-    extern i32 g_rng2State; // 32-bit LCG state
-    // __cdecl rand(): lazily seed from timeGetTime, then advance the MS-CRT LCG.
-    RVA(0x0015cbe0, 0x46)
-    i32 winapi_15cbe0_timeGetTime() {
-        i32 seed;
-        if (!(g_rng2Seeded & 1)) {
-            g_rng2Seeded |= 1;
-            seed = timeGetTime();
-        } else {
-            seed = g_rng2State;
-        }
-        g_rng2State = seed * 214013 + 2531011;
-        return (g_rng2State >> 0x10) & 0x7fff;
-    }
-
-    // __thiscall(RECT*): cache the bounds rect + derived size/center, then recompute.
-    struct GeoHost_161e80 {
-        char m_pad0[0x50];
-        RECT m_50; // +0x50 bounds
-        char m_pad60[0x70 - 0x60];
-        i32 m_70; // +0x70 width
-        i32 m_74; // +0x74 height
-        i32 m_78; // +0x78 half-width
-        i32 m_7c; // +0x7c half-height
-        void Build(RECT* pRect);
-        void Recompute(); // RVA 0x161c90
-    };
-    RVA(0x00161e80, 0x79)
-    void GeoHost_161e80::Build(RECT* pRect) {
-        if (pRect->left != (LONG)0x80000000) {
-            RECT local;
-            CopyRect(&local, pRect);
-            m_50 = local;
-            i32 width = m_50.right - m_50.left + 1;
-            i32 height = m_50.bottom - m_50.top + 1;
-            m_70 = width;
-            m_74 = height;
-            m_78 = width / 2;
-            m_7c = height / 2;
-            Recompute();
-        }
-    }
-
-    // A polymorphic DC source: GetDC is vtable slot 0x44 (#17), Done is slot 0x68 (#26).
-    struct DcSink_164380 {
-        virtual void v0();
-        virtual void v1();
-        virtual void v2();
-        virtual void v3();
-        virtual void v4();
-        virtual void v5();
-        virtual void v6();
-        virtual void v7();
-        virtual void v8();
-        virtual void v9();
-        virtual void v10();
-        virtual void v11();
-        virtual void v12();
-        virtual void v13();
-        virtual void v14();
-        virtual void v15();
-        virtual void v16();
-        virtual i32 GetDC(HDC* out); // slot 17 == vtable +0x44
-        virtual void v18();
-        virtual void v19();
-        virtual void v20();
-        virtual void v21();
-        virtual void v22();
-        virtual void v23();
-        virtual void v24();
-        virtual void v25();
-        virtual void Done(HDC dc); // slot 26 == vtable +0x68
-    };
-    struct CounterWnd_164380 {
-        char m_pad0[8];
-        DcSink_164380* m_8; // +0x08
-    };
-    struct DrawHost_164380 {
-        char m_pad0[0x2c];
-        CounterWnd_164380* m_2c; // +0x2c
-        void DrawCount(RECT* rc, i32 n);
-    };
-    // __thiscall(rc, n): print n centred into rc using the counter window's DC.
-    RVA(0x00164380, 0x98)
-    void DrawHost_164380::DrawCount(RECT* rc, i32 n) {
-        char buf[0x20];
-        Format_11f890(buf, "%i", n);
-        CounterWnd_164380* w = m_2c;
-        if (!w) {
-            return;
-        }
-        HDC hdc = 0;
-        w->m_8->GetDC(&hdc);
-        if (!hdc) {
-            return;
-        }
-        SetBkMode(hdc, TRANSPARENT);
-        SetTextColor(hdc, 0xffffff);
-        DrawTextA(hdc, buf, strlen(buf), rc, 0x25);
-        w->m_8->Done(hdc);
-    }
-
-    struct DrawHost2_164420 {
-        char m_pad0[0x2c];
-        CounterWnd_164380* m_2c; // +0x2c
-        void DrawLabel(RECT* rc, char* text);
-    };
-    // __thiscall(rc, text): print text centred into rc using the counter window's DC.
-    RVA(0x00164420, 0x79)
-    void DrawHost2_164420::DrawLabel(RECT* rc, char* text) {
-        CounterWnd_164380* w = m_2c;
-        if (!w) {
-            return;
-        }
-        HDC hdc = 0;
-        w->m_8->GetDC(&hdc);
-        if (!hdc) {
-            return;
-        }
-        SetBkMode(hdc, TRANSPARENT);
-        SetTextColor(hdc, 0xffffff);
-        DrawTextA(hdc, text, strlen(text), rc, 0x25);
-        w->m_8->Done(hdc);
-    }
-
+    // The four CriticalSection thunks (0x16c9c0/d0/e0/f0) are the intended residual:
+    // per game-not-CRT matcher policy they wrap the Win32 CRITICAL_SECTION primitives
+    // and are not game code to re-home, so they stay here (no owning game class).
     // __cdecl thunk over InitializeCriticalSection.
     RVA(0x0016c9c0, 0xc)
     void winapi_16c9c0_InitializeCriticalSection(CRITICAL_SECTION* cs) {
@@ -3047,34 +2135,8 @@ namespace ApiCallerStubs {
         LeaveCriticalSection(cs);
     }
 
-    // The resource-module handle for palette lookups (DAT_006bf6e0).
-    DATA(0x002bf6e0)
-    extern HINSTANCE g_palModule_6bf6e0;
-    struct PalHost_1775f0 {
-        i32 Apply(const char* name, i32 arg);
-        i32 Use176e70(void* data, i32 arg); // thiscall, RVA 0x176e70
-    };
-    // __thiscall(name, arg): find/load/lock a PALETTE resource, hand it on.
-    RVA(0x001775f0, 0x62)
-    i32 PalHost_1775f0::Apply(const char* name, i32 arg) {
-        HINSTANCE mod = g_palModule_6bf6e0;
-        if (!mod) {
-            return 0;
-        }
-        HRSRC hRsrc = FindResourceA(mod, name, "PALETTE");
-        if (!hRsrc) {
-            return 0;
-        }
-        HGLOBAL hRes = LoadResource(mod, hRsrc);
-        if (!hRes) {
-            return 0;
-        }
-        void* data = LockResource(hRes);
-        if (!data) {
-            return 0;
-        }
-        return Use176e70(data, arg);
-    }
+    // (0x1775f0 PalHost::Apply (with g_palModule_6bf6e0) re-homed to ResLoaders in
+    // src/Gruntz/ResourceLoaders.cpp.)
 
     // @confidence: low
     // @source: winapi:IntersectRect
@@ -3185,25 +2247,8 @@ namespace ApiCallerStubs {
         return 1;
     }
 
-    struct PalCache_17cd90 {
-        char m_pad0[0x108];
-        PALETTEENTRY m_108[0x100]; // +0x108
-        void Snapshot(HWND hWnd);
-    };
-    // __thiscall(hWnd): read the system palette, then blank every entry to a
-    // reserved black so a remap can be rebuilt against it.
-    RVA(0x0017cd90, 0x58)
-    void PalCache_17cd90::Snapshot(HWND hWnd) {
-        HDC hdc = GetDC(hWnd);
-        GetSystemPaletteEntries(hdc, 0, 0x100, m_108);
-        for (i32 i = 0; i < 0x100; i++) {
-            m_108[i].peRed = 0;
-            m_108[i].peBlue = 0;
-            m_108[i].peGreen = 0;
-            m_108[i].peFlags = 4;
-        }
-        ReleaseDC(hWnd, hdc);
-    }
+    // (0x17cd90 PalCache::Snapshot re-homed to ResLoaders in
+    // src/Gruntz/ResourceLoaders.cpp.)
 
     // The source object whose m_4->m_10->m_10 carries the default tile extent.
     struct TileExtent_182ab0 {
@@ -3264,28 +2309,7 @@ namespace ApiCallerStubs {
     //   0x1bb31b  _AfxActivationWndProc    (GetProp AfxOldWndProc subclass chain)
     //   0x1bbff4  AfxRegisterClass         (GetClassInfoA/RegisterClassA)
 
-    // __thiscall: free the owned module handle if present.
-    struct LibHost_1bf577 {
-        HMODULE m_0; // +0x00
-        void Run();
-    };
-    RVA(0x001bf577, 0xe)
-    void LibHost_1bf577::Run() {
-        if (m_0) {
-            FreeLibrary(m_0);
-        }
-    }
-
-    // __thiscall(): free the owned global handle at +0x00 if present.
-    struct GlobalOwner_1c09de {
-        HGLOBAL m_0; // +0x00
-        void Free();
-    };
-    RVA(0x001c09de, 0xe)
-    void GlobalOwner_1c09de::Free() {
-        if (m_0) {
-            GlobalFree(m_0);
-        }
-    }
+    // (0x1bf577 LibHost::Run + 0x1c09de GlobalOwner::Free re-homed to ApiMisc in
+    // src/Gruntz/ApiMiscHelpers.cpp.)
 
 } // namespace ApiCallerStubs
