@@ -144,15 +144,13 @@ const double g_movingLogicMax = 2147483646.0;
 // ---------------------------------------------------------------------------
 // Out-of-line vtable anchors. Give CMovingLogic / CProjectile real vftables in
 // this TU so the inline ctors emit their vptr stores. Bodies are not matched.
+// (slot 16 Update is defined in MovingLogicUpdate.cpp, referenced externally.)
 // ---------------------------------------------------------------------------
 CMovingLogic::~CMovingLogic() {}
-i32 CMovingLogic::MovingLogicVfunc() {
+i32 CMovingLogic::CUserLogicSlot14() {
     return 0;
 }
-i32 CMovingLogic::MovingLogicVfunc2() {
-    return 0;
-}
-i32 CMovingLogic::MovingLogicVfunc3() {
+i32 CMovingLogic::CUserLogicSlot15() {
     return 0;
 }
 
@@ -250,7 +248,7 @@ void CProjectile::ReleaseDeferred(i32) {
         m_04 = 0;
         m_28 = 0x3e9;
     }
-    MovingLogicVfunc3(); // virtual slot 16 (vtable offset 0x40)
+    Update(); // virtual slot 16 (vtable offset 0x40) - CMovingLogic's one new virtual
 }
 
 // ---------------------------------------------------------------------------

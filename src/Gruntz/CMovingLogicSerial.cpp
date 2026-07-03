@@ -11,7 +11,7 @@
 
 // 0x16cdd0 - WriteCurve(accum, curve): 29 doubles + 1 int, returning accum.
 RVA(0x0016cdd0, 0x22f)
-CButeText& WriteCurve(CButeText& accum, const CMovingLogicCurve& c) {
+CButeText& WriteCurve(CButeText& accum, const CMotionState& c) {
     accum.AppendDouble(c.m_00);
     accum.AppendDouble(c.m_08);
     accum.AppendDouble(c.m_10);
@@ -73,7 +73,7 @@ i32 CMovingLogic::Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
         char buf[0x100];
         CButeWriteTemp accum;
         accum.Ctor(buf, 0x100, 2, 1);
-        WriteCurve(*(CButeText*)&accum, m_38);
+        WriteCurve(*(CButeText*)&accum, *Motion());
         i32 len = accum.Length();
         arc->Write(&len, 4);
         arc->Write(accum.GetBuffer(), len);
@@ -91,7 +91,7 @@ i32 CMovingLogic::Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
         arc->Read(buf, len);
         CButeReadTemp accum;
         accum.Ctor(buf, len, 1);
-        ReadCurve(*(CButeText*)&accum, m_38);
+        ReadCurve(*(CButeText*)&accum, *Motion());
         RezFree(buf);
         arc->Read(&m_140, 4);
         arc->Read(&m_144, 4);
@@ -173,4 +173,3 @@ SIZE_UNKNOWN(CButeVbaseTeardown);
 SIZE_UNKNOWN(CButeWriteTemp);
 SIZE_UNKNOWN(CMlSerialCtx);
 SIZE_UNKNOWN(CMovingLogicBase);
-SIZE_UNKNOWN(CMovingLogicCurve);

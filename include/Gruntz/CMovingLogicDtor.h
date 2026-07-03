@@ -1,27 +1,18 @@
-// CMovingLogicDtor.h - matched-world view of CMovingLogic for its leaf destructor
-// (C:\Proj\Gruntz).
+// CMovingLogicDtor.h - hosts CMovingLogic's leaf destructor (0x00013bd0) against
+// the canonical class (C:\Proj\Gruntz).
 //
 // CMovingLogic : CUserLogic (RTTI .?AVCMovingLogic@@) - the moving-object logic
-// base (parent of CProjectile). Owner recovered by caller-trace: the
-// scalar-deleting-destructor @0x00013c40 (CMovingLogic vftable slot 0) tail-calls
-// this plain dtor @0x00013bd0. Although CMovingLogic carries its own most-derived
-// vftable (0x5e87ac), the dtor's most-derived vptr store is dead-eliminated at
-// /O2, leaving only the CUserLogic vftable store (0x5e705c) then the CUserBase
-// vftable store (0x5e70b4) + the +0x18 link teardown (~EngStr @0x16d2a0) - so it
-// is byte-identical to the established leaf-dtor archetype.
+// base. The leaf dtor @0x00013bd0 folds the bare CUserLogic teardown: although
+// CMovingLogic carries its own most-derived vftable (0x5e87ac), the dtor's
+// most-derived vptr store is dead-eliminated at /O2, leaving only the CUserLogic
+// vftable store (0x5e705c) then the CUserBase vftable store (0x5e70b4) + the +0x18
+// link teardown (~EngStr @0x16d2a0) - byte-identical to the leaf-dtor archetype.
 //
-// NOTE: src/Stub/CMovingLogic.cpp still carries the un-matched ctor stub
-// (0x13940) against the stub-world base; this matched-world view exists ONLY to
-// host the leaf dtor against the real CUserLogic teardown.
+// The class is the shared <Gruntz/CMovingLogic.h> canonical (this header only pins
+// the include so the dtor TU compiles against the one true definition).
 #ifndef GRUNTZ_CMOVINGLOGICDTOR_H
 #define GRUNTZ_CMOVINGLOGICDTOR_H
 
-#include <rva.h>
-#include <Gruntz/UserLogic.h> // CUserLogic base (CMovingLogic : CUserLogic)
-
-class CMovingLogic : public CUserLogic {
-public:
-    ~CMovingLogic(); // 0x00013bd0 (folds the CUserLogic teardown)
-};
+#include <Gruntz/CMovingLogic.h>
 
 #endif // GRUNTZ_CMOVINGLOGICDTOR_H

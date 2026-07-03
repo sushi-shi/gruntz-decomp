@@ -1,65 +1,28 @@
 // CMovingLogicCtor.cpp - the out-of-line CMovingLogic constructor (0x13940),
 // re-homed from src/Stub/CMovingLogic.cpp (C:\Proj\Gruntz).
 //
-// CMovingLogic : CUserLogic : CUserBase (see include/Gruntz/Projectile.h). The
-// engine emits TWO copies of this ctor: the inline one that folds into
-// CProjectile::CProjectile (modeled inline in Projectile.h) AND this standalone
-// at 0x13940. The standalone cannot be emitted from src/Gruntz/Projectile.cpp -
+// The engine emits TWO copies of this ctor: the inline one that folds into
+// CProjectile::CProjectile (modeled inline in <Gruntz/CMovingLogic.h>) AND this
+// standalone at 0x13940. The standalone cannot be emitted from Projectile.cpp -
 // forcing it there makes CProjectile call it out-of-line and drops that ctor
 // 99%->19.7% (see the CAVEAT note in Projectile.cpp). So it lives in its OWN TU:
-// here the most-derived class IS CMovingLogic, so the final vptr is its own
-// (0x5e87ac) and the body is identical to the inline version.
-//
-// The CMovingLogic layout is re-declared (matching Projectile.h exactly) so this
-// TU can hang the out-of-line ctor; that is matching-neutral (a separate TU). The
-// throwing CUserBaseLink in the CUserLogic base forces the /GX EH frame -> eh.
-#include <Mfc.h>
-#include <Gruntz/UserLogic.h>
+// CMOVINGLOGIC_STANDALONE_CTOR drops the header's inline no-arg ctor here so this
+// TU can hang the byte-exact out-of-line copy. The throwing CUserBaseLink in the
+// CUserLogic base forces the /GX EH frame -> eh.
+#define CMOVINGLOGIC_STANDALONE_CTOR
+#include <Gruntz/CMovingLogic.h>
 #include <rva.h>
 
-// The default coordinate bounds (retail .rdata 0x5f04b0/0x5f04b8). Defined +
-// DATA-pinned in Projectile.cpp; declared extern here so the ctor's dword loads
-// reloc-mask against the named symbols.
-extern const double g_movingLogicMin; // 0x5f04b0 (-2147483647.0)
-extern const double g_movingLogicMax; // 0x5f04b8 (2147483646.0)
-
 // ---------------------------------------------------------------------------
-// CMovingLogic : CUserLogic - mirrors include/Gruntz/Projectile.h (17 virtuals,
-// vftable 0x5e87ac). Only the offsets the ctor initializes are modeled.
+// Out-of-line vtable anchors - give CMovingLogic a real vftable in this TU so the
+// ctor's vptr store falls out. Bodies are not matched. (slot 16 Update is defined
+// in MovingLogicUpdate.cpp, referenced externally.)
 // ---------------------------------------------------------------------------
-class CMovingLogic : public CUserLogic {
-public:
-    CMovingLogic(); // 0x13940 (standalone, out-of-line)
-    virtual ~CMovingLogic() OVERRIDE;
-    virtual i32 MovingLogicVfunc();
-    virtual i32 MovingLogicVfunc2();
-    virtual i32 MovingLogicVfunc3();
-
-    // CMovingLogic's own data begins at +0x40; the ctor also re-zeroes the
-    // inherited CUserLogic m_38/m_3c.
-    i32 m_40, m_44, m_48, m_4c, m_50, m_54, m_58, m_5c;
-    i32 m_60, m_64, m_68, m_6c, m_70, m_74, m_78, m_7c, m_80, m_84, m_88, m_8c;
-    char m_pad90[0xa8 - 0x90];
-    double m_a8, m_b0, m_b8; // three lo bounds (default MIN)
-    double m_c0, m_c8, m_d0; // three hi bounds (default MAX)
-    char m_padd8[0xf0 - 0xd8];
-    i32 m_f0;
-    char m_padf4[0xf8 - 0xf4];
-    i32 m_f8, m_fc, m_100, m_104;
-    i32 m_108, m_10c;
-    double m_110, m_118, m_120, m_128, m_130, m_138; // all seeded to MAX
-};
-
-// Out-of-line vtable anchors (give CMovingLogic a real vftable in this TU so the
-// ctor's vptr store falls out). Bodies are not matched.
 CMovingLogic::~CMovingLogic() {}
-i32 CMovingLogic::MovingLogicVfunc() {
+i32 CMovingLogic::CUserLogicSlot14() {
     return 0;
 }
-i32 CMovingLogic::MovingLogicVfunc2() {
-    return 0;
-}
-i32 CMovingLogic::MovingLogicVfunc3() {
+i32 CMovingLogic::CUserLogicSlot15() {
     return 0;
 }
 

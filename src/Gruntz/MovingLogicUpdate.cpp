@@ -12,22 +12,16 @@
 // The +0x38 subobject is the SAME CMotionState modeled in Gruntz/MotionState.h;
 // it is reused here (methods Step/ArrivalVelX/ArrivalVelY reloc-mask; the double
 // fields are read/written directly). Trailing ints m_140/m_144/m_148/m_14c live
-// after the 0x108-byte motion block. Kept in a dedicated unit so it can reuse the
-// method-carrying CMotionState without perturbing CMovingLogicSerial's plain
-// CMovingLogicCurve view of the same +0x38 region.
-#include <Gruntz/MotionState.h>
+// after the 0x108-byte motion block. Kept in a dedicated unit; the +0x38 band is
+// the shared CMotionState reached through the canonical CMovingLogic::Motion().
+#include <Gruntz/CMovingLogic.h>
 #include <rva.h>
 #include <Globals.h>
 
 // The ms->units scale the elapsed-clock delta is multiplied by (0x5f04f0, a
 // read-only .rdata double read via `fmul [mem]`); sits just before g_motionNegHalf.
-
-// The shared -0.5 easing constant (0x5f04f8; owner Globals.cpp) used by the tail
-// velocity fix-ups. Declared via MotionState.h (g_motionNegHalf).
-
-// The running game clock (low 32 bits of the engine ms counter, 0x645588; owner
-// Projectile.cpp). Read unsigned -> the (double) conversion is the {lo,0} fild.
-extern "C" u32 g_645588;
+// g_motionNegHalf (0x5f04f8, -0.5) comes via MotionState.h (canonical include).
+// The running game clock g_645588 comes via <Gruntz/CMovingLogic.h>.
 
 // The lazily-built per-object worker at CGameObject+0x98 (the CAnimWorker the
 // UserLogic family builds); only its two per-frame scroll deltas are touched.
@@ -62,21 +56,11 @@ struct MlBoundObject {
     i32 m_e4; // +0xe4  scroll mode (1 = follow, 7 = free)
 };
 
-// CMovingLogic: vptr + the CMotionState kinematic block at +0x38 + four trailing
-// ints. Only the layout + Update are needed here.
-class CMovingLogic {
-public:
-    void Update(); // 0x16ea90
-
-    char _00[0x10];      // +0x00  vptr + spare
-    MlBoundObject* m_10; // +0x10
-    char _14[0x38 - 0x14];
-    CMotionState m_38; // +0x38  (0x108 bytes -> ends at +0x140)
-    i32 m_140;         // +0x140  latched (int)m_38.m_40
-    i32 m_144;         // +0x144  latched (int)m_38.m_48
-    i32 m_148;         // +0x148  ClampScroll result flags
-    i32 m_14c;         // +0x14c  ClampScroll mode arg
-};
+// CMovingLogic is the shared canonical (<Gruntz/CMovingLogic.h>): its +0x38
+// CMotionState band is reached through Motion(); m_10 is the bound CGameObject,
+// viewed here as the richer MlBoundObject (a scoped CGameObject reduced view - the
+// engine-object consolidation, not CMovingLogic's - so its scroll/level fields are
+// reachable). m_140/m_144/m_148/m_14c are the base's trailing ints.
 
 // ---------------------------------------------------------------------------
 // @early-stop
@@ -100,33 +84,36 @@ RVA(0x0016ea90, 0x234)
 void CMovingLogic::Update() {
     // Snapshot the integer positions, then step the kinematic state by the
     // elapsed clock delta.
-    m_140 = (i32)m_38.m_40;
-    m_144 = (i32)m_38.m_48;
-    m_38.Step((double)g_645588 * g_5f04f0 - m_38.m_00);
+    m_140 = (i32)Motion()->m_40;
+    m_144 = (i32)Motion()->m_48;
+    Motion()->Step((double)g_645588 * g_5f04f0 - Motion()->m_00);
 
     // Worker-driven scroll: fold the per-frame scroll deltas into the object's
     // screen position and re-seed the motion targets.
-    if ((m_10->m_8 & 0x10) && m_10->m_98 != 0) {
-        m_10->m_5c += m_10->m_98->m_174;
-        m_38.m_40 = (double)m_10->m_5c;
-        m_10->m_60 += m_10->m_98->m_178;
-        m_38.m_48 = (double)m_10->m_60;
+    if ((((MlBoundObject*)m_10)->m_8 & 0x10) && ((MlBoundObject*)m_10)->m_98 != 0) {
+        ((MlBoundObject*)m_10)->m_5c += ((MlBoundObject*)m_10)->m_98->m_174;
+        Motion()->m_40 = (double)((MlBoundObject*)m_10)->m_5c;
+        ((MlBoundObject*)m_10)->m_60 += ((MlBoundObject*)m_10)->m_98->m_178;
+        Motion()->m_48 = (double)((MlBoundObject*)m_10)->m_60;
     }
 
     // Clamp-scroll the level toward the new position.
-    if (m_10->m_e4 == 1) {
-        m_148 = m_10->m_c->m_24->ClampScroll(m_10, (i32)m_38.m_40, m_10->m_60, m_14c);
-        m_38.m_30 = 0.0;
+    if (((MlBoundObject*)m_10)->m_e4 == 1) {
+        m_148 = ((MlBoundObject*)m_10)
+                    ->m_c->m_24
+                    ->ClampScroll(m_10, (i32)Motion()->m_40, ((MlBoundObject*)m_10)->m_60, m_14c);
+        Motion()->m_30 = 0.0;
     } else {
-        m_10->m_8 &= ~0x10;
-        m_148 = m_10->m_c->m_24->ClampScroll(m_10, (i32)m_38.m_40, (i32)m_38.m_48, m_14c);
+        ((MlBoundObject*)m_10)->m_8 &= ~0x10;
+        m_148 = ((MlBoundObject*)m_10)
+                    ->m_c->m_24->ClampScroll(m_10, (i32)Motion()->m_40, (i32)Motion()->m_48, m_14c);
     }
 
     // X arrival: if the object moved off the motion target, re-solve the X
     // arrival velocity and re-anchor the target.
-    CMotionState* ms = &m_38;
-    i32 sx = m_10->m_5c;
-    if ((i32)m_38.m_40 != sx) {
+    CMotionState* ms = Motion();
+    i32 sx = ((MlBoundObject*)m_10)->m_5c;
+    if ((i32)Motion()->m_40 != sx) {
         double d = (double)sx;
         ms->m_28 = ms->ArrivalVelX(d);
         double a0new = ms->m_a0 - (ms->m_40 - d);
@@ -135,8 +122,8 @@ void CMovingLogic::Update() {
     }
 
     // Y arrival (symmetric).
-    i32 sy = m_10->m_60;
-    if ((i32)m_38.m_48 != sy) {
+    i32 sy = ((MlBoundObject*)m_10)->m_60;
+    if ((i32)Motion()->m_48 != sy) {
         double d = (double)sy;
         ms->m_30 = ms->ArrivalVelY(d);
         double a8new = ms->m_a8 - (ms->m_48 - d);
@@ -145,20 +132,20 @@ void CMovingLogic::Update() {
     }
 
     // Per-mode velocity fix-ups keyed off the ClampScroll result flags.
-    if (m_10->m_e4 != 7) {
+    if (((MlBoundObject*)m_10)->m_e4 != 7) {
         i32 f = m_148;
         if (f & 0x800000) {
-            m_38.m_30 = -m_38.m_30;
+            Motion()->m_30 = -Motion()->m_30;
             return;
         }
         if (f & 0x40000) {
-            m_38.m_88 = (double)m_140;
-            m_38.m_28 = m_38.m_28 * g_motionNegHalf;
+            Motion()->m_88 = (double)m_140;
+            Motion()->m_28 = Motion()->m_28 * g_motionNegHalf;
             return;
         }
         if (f & 0x80000) {
-            m_38.m_70 = (double)m_140;
-            m_38.m_28 = m_38.m_28 * g_motionNegHalf;
+            Motion()->m_70 = (double)m_140;
+            Motion()->m_28 = Motion()->m_28 * g_motionNegHalf;
         }
     }
 }

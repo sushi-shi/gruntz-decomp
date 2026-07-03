@@ -1,7 +1,6 @@
 // CMovingLogicDtor.cpp - CMovingLogic's /GX leaf destructor (C:\Proj\Gruntz).
 //
-// The ctor stub still lives in src/Stub/CMovingLogic.cpp (stub-world base); this
-// TU hosts the leaf dtor against the matched <Gruntz/UserLogic.h> teardown.
+// Hosts the leaf dtor (0x13bd0) against the canonical <Gruntz/CMovingLogic.h>.
 #include <Gruntz/CMovingLogicDtor.h>
 
 // CMovingLogic::~CMovingLogic @0x00013bd0 - the most-derived vptr store is
@@ -11,8 +10,3 @@
 // link forces the /GX EH frame.
 RVA(0x00013bd0, 0x44)
 CMovingLogic::~CMovingLogic() {}
-
-// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
-// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
-#include <rva.h>
-SIZE_UNKNOWN(CMovingLogic);

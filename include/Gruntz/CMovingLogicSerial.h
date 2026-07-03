@@ -12,6 +12,7 @@
 #define GRUNTZ_CMOVINGLOGICSERIAL_H
 
 #include <Ints.h>
+#include <Gruntz/CMovingLogic.h> // the canonical CMovingLogic + CMotionState (+0x38 curve)
 #include <rva.h>
 
 // The bute-text accumulator (an MFC-CString-backed value text). Its formatted
@@ -23,18 +24,12 @@ public:
     CButeText& AppendDouble(double v); // 0x191df0
 };
 
-// CMovingLogic's movement-curve coefficient block (CMovingLogic+0x38). Written
-// runs: [0x00..0x50] 11 doubles, [0x70..0xb0] 9 doubles, the int at 0xb8, then
-// [0xc0..0x100] 9 doubles. The 0x58/0x60/0x68 doubles and the 0xbc int are part
-// of the block but not streamed.
-struct CMovingLogicCurve {
-    double m_00, m_08, m_10, m_18, m_20, m_28, m_30, m_38, m_40, m_48, m_50;
-    double m_58, m_60, m_68; // not streamed
-    double m_70, m_78, m_80, m_88, m_90, m_98, m_a0, m_a8, m_b0;
-    i32 m_b8;
-    i32 m_bc; // not streamed
-    double m_c0, m_c8, m_d0, m_d8, m_e0, m_e8, m_f0, m_f8, m_100;
-};
+// CMovingLogic's movement-curve coefficient block (CMovingLogic+0x38) IS the
+// CMotionState kinematic band (<Gruntz/MotionState.h>): the writer streams its
+// doubles [0x00..0x50], [0x70..0xb0], the int at 0xb8, then [0xc0..0x100]. The
+// 0x58/0x60/0x68 doubles and the 0xbc region are part of the block but not
+// streamed. (Formerly the reduced view `CMovingLogicCurve`; unified onto the one
+// real subobject.)
 
 // ---------------------------------------------------------------------------
 // CMovingLogic::Serialize (0x16f4a0) support. The class persists its 0x108-byte
@@ -52,8 +47,8 @@ struct CMovingLogicCurve {
 void* RezAlloc(i32 size); // 0x1b9b46
 void RezFree(void* p);    // 0x1b9b82
 
-// ReadCurve (0x16d000): parse a CButeText accumulator back into a curve block.
-void ReadCurve(CButeText& accum, CMovingLogicCurve& c); // 0x16d000
+// ReadCurve (0x16d000): parse a CButeText accumulator back into the curve block.
+void ReadCurve(CButeText& accum, CMotionState& c); // 0x16d000
 
 // The vbase-subobject teardown helpers (reloc-masked, the +0xc this used by the
 // retail destruct path).
@@ -119,15 +114,8 @@ public:
     i32 m_30;        // +0x30
 };
 
-// CMovingLogic: vtable + the 0x108-byte curve at +0x38 + four trailing ints.
-class CMovingLogic {
-public:
-    i32 Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4); // 0x16f4a0
-
-    void* _vptr;            // +0x00
-    char _04[0x34];         // +0x04
-    CMovingLogicCurve m_38; // +0x38 (0x108 bytes -> ends at +0x140)
-    i32 m_140, m_144, m_148, m_14c;
-};
+// CMovingLogic itself is the shared canonical (<Gruntz/CMovingLogic.h>): its
+// Serialize (0x16f4a0) streams the +0x38 CMotionState curve (reached via Motion())
+// and the four trailing ints, then chains to CMovingLogicBase::Serialize.
 
 #endif // GRUNTZ_CMOVINGLOGICSERIAL_H
