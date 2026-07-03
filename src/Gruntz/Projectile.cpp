@@ -8,9 +8,10 @@
 // CUserLogic base) + a CObList, so MSVC emits the /GX EH frame -> built eh.
 #include <Gruntz/Projectile.h>
 #include <Gruntz/CGameRegistry.h>
-#include <Bute/ButeMgr.h> // CButeTree (the type-registry funnel)
-#include <math.h>         // sin / cos (StepMotion's parabola)
-#include <string.h>       // memset (1-arg spawn ctor's +0x1e0 zero-fill)
+#include <Gruntz/CTypeNameEntryView.h> // shared type-name-entry Assign view (0x1b9e74)
+#include <Bute/ButeMgr.h>              // CButeTree (the type-registry funnel)
+#include <math.h>                      // sin / cos (StepMotion's parabola)
+#include <string.h>                    // memset (1-arg spawn ctor's +0x1e0 zero-fill)
 #include <rva.h>
 #include <Globals.h>
 
@@ -563,10 +564,6 @@ struct CProjStringNode {
     void* m_0;
     void Free(); // 0x1b9b93
 };
-SIZE_UNKNOWN(CProjTypeEntryView);
-struct CProjTypeEntryView {
-    void Assign(const char* name); // 0x1b9e74
-};
 
 // The projectile's activation handler (LAB_00403896, an ILT thunk).
 extern "C" void ProjActivationHandler(); // 0x403896
@@ -635,7 +632,7 @@ void CProjectile::RegisterType() {
                 nodes++;
             } while (--cnt);
         }
-        ((CProjTypeEntryView*)slot)->Assign("A");
+        ((CTypeNameEntryView*)slot)->Assign("A");
         g_projTypeCounter++;
     }
     *(void**)ProjActLookup(id) = (void*)&ProjActivationHandler;
