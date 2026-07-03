@@ -3385,7 +3385,7 @@ symtab	?Construct@CSymList@@QAEPAU1@H@Z	3.5897	3.5897	1	eb5075d4a3dc	0x184960
 symtab	?CreateSub@CSymTab@@QAEPAV1@PBD@Z	79.5000	79.5000	2	64e2781698d4	0x13a330
 symtab	?Find@CSymTab@@QAEPAXPBD@Z	100.0000	100.0000	1	5c207117a72f	0x13a040
 symtab	?FindOrAddSym@CSymTab@@QAEPAXH@Z	85.7746	85.7746	1	173421f84e4f	0x13a940
-symtab	?FindQualified@CSymTab@@QAEPAXPBD@Z	50.9467	50.9467	1	88b1936740aa	0x13bca0
+symtab	?FindQualified@CSymTab@@QAEPAXPBD@Z	94.5444	94.5444	2	25f64c87ca37	0x13bca0
 symtab	?FindSub@CSymTab@@QAEPAXPBD@Z	100.0000	100.0000	1	a80b960c2c89	0x13a230
 symtab	?FirstSub@CSymTab@@QAEPAXXZ	100.0000	100.0000	1	592426346612	0x13a260
 symtab	?FirstSym@CSymTab@@QAEPAXXZ	100.0000	100.0000	1	b475808448de	0x13a2b0
@@ -3396,8 +3396,8 @@ symtab	?NextSym2@CSymTab@@QAEPAXPAX@Z	100.0000	100.0000	1	57ed8e6344f5	0x13a2f0
 symtab	?NextSym3@CSymTab@@QAEPAXPAX@Z	100.0000	100.0000	1	ab1c3610b536	0x13a310
 symtab	?NextSym@CSymTab@@QAEPAXPAX@Z	100.0000	100.0000	1	64837c542227	0x13a2d0
 symtab	?ReleaseParseBuffers@CSymTab@@QAEHH@Z	100.0000	100.0000	2	782ab30f36d2	0x13a190
-symtab	?ResolvePath@CSymTab@@QAEPAXPBD@Z	32.7876	32.7876	1	5d3e7d2e472f	0x13bae0
-symtab	?ResolveQualified@CSymTab@@QAEHPBDPAX@Z	52.0462	52.0462	1	dd4dfb34a72f	0x13be40
+symtab	?ResolvePath@CSymTab@@QAEPAXPBD@Z	94.6891	94.6891	1	5d3e7d2e472f	0x13bae0
+symtab	?ResolveQualified@CSymTab@@QAEHPBDPAX@Z	91.7399	91.7399	2	ddb4af1ecb07	0x13be40
 terraintileloader	?Load@CTerrainTileLoader@@QAEXHHHHHH@Z	1.0914	1.0914	1	f9d9df5908e9	0x75e90
 tileactionevent	?DeserializeFields@CTileActionEvent@@QAEHPAX@Z	100.0000	100.0000	2	a40e0992e4d9	0x114040
 tileactionevent	?MorphByTool@CTileActionEvent@@QAEHHH@Z	0.0000	0.0000	3	ee7444f51c31	0x113420

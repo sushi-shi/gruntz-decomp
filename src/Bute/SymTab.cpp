@@ -25,7 +25,7 @@ public:
 // punctuation/space .. '.', digits, upper, lower. The `== 0` coercion emits the
 // neg/sbb/inc int->bool normalize that retail uses (docs/patterns/
 // int-to-bool-normalize.md).
-static i32 IsTokenChar(const char* delims, char ch) {
+static __inline i32 IsTokenChar(const char* delims, char ch) {
     if (delims) {
         return strchr(delims, ch) == 0;
     }
@@ -607,9 +607,11 @@ void* CSymTab::FindOrAddSym(i32 key) {
 }
 
 // @early-stop
-// recursive path tokenizer; the inlined IsTokenChar (3x) + the working-pointer arg
-// reuse + the FindSub recursion schedule against a documented regalloc/scheduling
-// wall. Logic complete; byte-match parked for the final sweep.
+// ~95% (was 33% until IsTokenChar was marked __inline - /Ob1 wouldn't inline the plain
+// static, so retail's 3x-inlined tokenizer showed as out-of-line calls). Sole residual:
+// the token-copy loop's induction-variable representation - retail strength-reduces
+// buf[n] to a running [edi+esi] base-offset pointer (edi = &buf - p) where cl keeps the
+// indexed buf[n], plus the this->ebp/ebx regalloc coin-flip. Logic byte-faithful.
 RVA(0x0013bae0, 0x1b9)
 void* CSymTab::ResolvePath(const char* path) {
     char buf[0x30];
@@ -646,9 +648,11 @@ void* CSymTab::ResolvePath(const char* path) {
 }
 
 // @early-stop
-// last-delimiter split + scope resolve; inlined IsTokenChar (2x) + the rep-movs token
-// copy + the Find tail. The read counterpart of ResolveQualified (below) -- same
-// regalloc/scheduling wall (inlined tokenizer + working-pointer reuse). Logic complete.
+// ~95% (was 51%): the two fixes were IsTokenChar __inline (2x) and the `qual` copy as
+// the strcpy intrinsic strcpy(qual,tail) - retail inlines it (repnz-scas strlen +
+// rep-movsd/movsb of strlen+1) where strncpy(...,strlen+1) stayed an out-of-line call.
+// The `key` copy is a genuine strncpy(0x120340) call (kept). Residual is the tokenizer
+// induction-variable + this-register regalloc coin-flip. Read peer of ResolveQualified.
 RVA(0x0013bca0, 0x19c)
 void* CSymTab::FindQualified(const char* name) {
     char qual[0x100];
@@ -672,7 +676,7 @@ void* CSymTab::FindQualified(const char* name) {
         return 0;
     }
     const char* tail = p + i + 1;
-    strncpy(qual, tail, strlen(tail) + 1);
+    strcpy(qual, tail);
     if (i <= 1) {
         return Find(qual);
     }
@@ -686,8 +690,10 @@ void* CSymTab::FindQualified(const char* name) {
 }
 
 // @early-stop
-// last-delimiter split + scope resolve; inlined IsTokenChar + the rep-movs token
-// copy + the SymTab_InsertResolved tail. Logic complete; byte-match parked.
+// ~92% (was 52%): same two fixes as FindQualified - IsTokenChar __inline + the `qual`
+// copy as strcpy(qual,tail) (intrinsic). Residual is the this-register regalloc coin-flip
+// (retail keeps `this` in esi; cl uses edx + extra stack reloads) + the tokenizer
+// induction variable. The write peer (Insert tail) of FindQualified. Logic byte-faithful.
 RVA(0x0013be40, 0x1ac)
 i32 CSymTab::ResolveQualified(const char* name, void* arg) {
     char qual[0x100];
@@ -711,7 +717,7 @@ i32 CSymTab::ResolveQualified(const char* name, void* arg) {
         return 0;
     }
     const char* tail = p + i + 1;
-    strncpy(qual, tail, strlen(tail) + 1);
+    strcpy(qual, tail);
     if (i <= 0) {
         return Insert(qual, arg);
     }
