@@ -12,17 +12,21 @@
 //
 // The state objects are the CState/CPlay/CMulti mode hierarchy (see GameMode.h /
 // CPlay.h / CMulti.h). The param-1 replay path constructs the REAL, fully-modeled
-// CState (`new CState`) - CState alone has a standalone ctor (0x8c750) to call, so no
-// shell or (CState*)this view is needed there. The switch-case LEAF states have NO
-// standalone ctor in retail (their construction exists only inlined here), so each is
-// modeled as a reduced real-polymorphic sized shell (CTsBaseA / CTsBaseB carry the
-// vptr, each StXxx leaf is a distinct polymorphic class) carrying only the
-// destructible members (so the EH-state ladder emits). cl auto-stamps each leaf's
-// ??_7StXxx at ctor entry, which reloc-masks the retail leaf vtable. The St* names
-// are deliberate: naming a leaf after its real class would make cl emit
-// ??_7<RealClass> here and the delinker would STEAL that retail vtable's binding from
-// the real class's TU (see the IDENTITY MAP). Field names are placeholders; offsets +
-// code bytes are load-bearing.
+// CState (`new CState`) - CState alone has a standalone ctor (0x8c750) to call. The
+// switch-case LEAF states have NO standalone ctor in retail (their construction
+// exists only inlined here), so each is modeled as a reduced local layout of its
+// REAL class (CAttract / CPlay / CMulti / ...) carrying only the destructible
+// members (member CStrings/CByteArrays) that force the EH-state ladder.
+//
+// Vtable identity WITHOUT a steal: each leaf layout is NON-polymorphic and its ctor
+// stamps the object's +0x00 vptr MANUALLY from a reloc-masked EXTERNAL vtable symbol
+// (g_st<Class>Vtbl, address = the retail ??_7<Class>). Because the class is not
+// polymorphic, cl emits NO local ??_7<Class> here - so the delinker's binding of the
+// retail vtable RVA stays owned by the real class's TU (cattract/cplaydtor/cmulti/
+// gamemode/...). The g_st<Class>Vtbl externs are DIFFERENTLY-NAMED from those TUs'
+// ??_7<Class> and carry NO DATA() binding, so they only reloc-mask the stamp and
+// never claim the RVA. (Same manual-inline-construction pattern as CButeSection /
+// CNetPeer.) Field names are placeholders; offsets + code bytes are load-bearing.
 #include <Gruntz/GruntzMgr.h>
 #include <rva.h>
 
@@ -71,88 +75,98 @@ struct MfcBytes {
 
 // The two out-of-line base ctors (0x8c750 = CState base; 0x8c9d0 = CPlay base for
 // the multiplayer/param-7 states). Declared no-body -> reloc-masked base calls. Both
-// are polymorphic (a declared-only virtual anchors the vptr at +0x00) so each derived
-// StXxx leaf becomes a distinct polymorphic class whose ctor cl auto-stamps.
+// are NON-polymorphic sized layouts: +0x00 is an explicit vptr slot the derived leaf
+// stamps by hand from its g_st<Class>Vtbl extern (no compiler-emitted ??_7 here).
 struct CTsBaseA {
-    virtual void v0();        // +0x00 vptr anchor
+    void* m_vptr;             // +0x00  stamped per-state (masks the retail vtable)
     CTsBaseA();               // 0x8c750
     char m_cstate[0x1b4 - 4]; // +0x04..+0x1b4
 };
 struct CTsBaseB {
-    virtual void v0();       // +0x00 vptr anchor
+    void* m_vptr;            // +0x00
     CTsBaseB();              // 0x8c9d0 (CPlay layout, 0x520)
     char m_cplay[0x520 - 4]; // +0x04..+0x520
 };
 
-// Two extra member sub-objects the param-8 state builds (a small ctor @0x8c3b0 and
-// the two 4-arg Set @0x8c380 initializers).
+// Two extra member sub-objects the credits state (param 8) builds (a small ctor
+// @0x8c3b0 and the two 4-arg Set @0x8c380 initializers).
 struct CTsSub45 {
     CTsSub45(); // 0x8c3b0
     char m_pad[8];
 };
 void Ts_Set(void* self, i32 a, i32 b, i32 c, i32 d); // 0x8c380 (member Set, 4 args)
 
-// ---- the CState-derived state shells (sized to the retail objects) ----------
-// IDENTITY MAP (recovered: each shell's retail vtable = the named ??_7CxxxState in
-// config/vtable_names.csv; the switch key is the stateId TransitionState is asked
-// for). These are reduced sized-shells kept TU-local (this factory can't share
-// CPlay.h/GameMode.h/CMulti.h's frames - see the file header). The St* names are
-// LOAD-BEARING, not just grep hygiene: naming a shell after its real class would make
-// cl emit `??_7<RealClass>` here, and the delinker would then bind that retail vtable
-// RVA to THIS unit - STEALING it from the real class's TU (gamemode/cplaydtor/cmulti/
-// cattract/...). So each leaf keeps a distinct St* name; only its param + retail
-// vtable are noted:
-//   StPlain2 =CAttract(0x5ea194) StPlay=CPlay(0x5ea0bc) StPlain5=CMenuState(0x5e9e84)
-//   StPlain7 =CDemo(0x5e9f0c)    StParam8=CCreditsState(0x5e9c64)
-//   StPlain9 =CHelpState(0x5e9dfc) StBooty=CBootyState(0x5e9cec)
-//   StPlain14=CSplashState(0x5e9d74) StMulti=CMulti(0x5e9fe4)
-//   StMultiBooty=CMultiBootyState(0x5e9bdc)
-// (The param-1 replay path is NOT a shell: it constructs the REAL, fully-modeled
-// CState via `new CState`, since CState alone has a standalone ctor @0x8c750 to call.)
-struct StPlain2 : CTsBaseA { // param 2, 0x1c0, ??_7StPlain2 (retail 0x5ea194)
+// The ten retail state vtables, referenced by RELOC-MASKED EXTERNAL reference. Each
+// leaf ctor stamps `m_vptr = &g_st<Class>Vtbl`; the extern's address IS the retail
+// ??_7<Class>, but its DIFFERENT name (+ no DATA() binding) means cl emits no local
+// vtable and the delinker keeps the RVA bound to the real class's TU (noted). The
+// switch key is the state id TransitionState is asked for.
+extern void* g_stCAttractVtbl;         // 0x5ea194  ??_7CAttract          (cattract)
+extern void* g_stCPlayVtbl;            // 0x5ea0bc  ??_7CPlay             (cplaydtor)
+extern void* g_stCMenuStateVtbl;       // 0x5e9e84  ??_7CMenuState        (gamemode)
+extern void* g_stCDemoVtbl;            // 0x5e9f0c  ??_7CDemo             (cplaydtor)
+extern void* g_stCCreditsStateVtbl;    // 0x5e9c64  ??_7CCreditsState     (gamemode)
+extern void* g_stCHelpStateVtbl;       // 0x5e9dfc  ??_7CHelpState        (cstateleaf8cf30)
+extern void* g_stCBootyStateVtbl;      // 0x5e9cec  ??_7CBootyState       (gamemode)
+extern void* g_stCSplashStateVtbl;     // 0x5e9d74  ??_7CSplashState      (csplashstate)
+extern void* g_stCMultiVtbl;           // 0x5e9fe4  ??_7CMulti            (cmulti)
+extern void* g_stCMultiBootyStateVtbl; // 0x5e9bdc  ??_7CMultiBootyState  (gamemode)
+
+// ---- the CState-derived state objects (reduced local layouts of the real classes;
+// the retail vtable is stamped by hand from the externals above) ----------------
+struct CAttract : CTsBaseA { // param 2, 0x1c0
     char m_pad[0x1c0 - 0x1b4];
-    StPlain2() {}
+    CAttract() {
+        m_vptr = (void*)&g_stCAttractVtbl;
+    }
 };
-struct StPlain5 : CTsBaseA { // param 5, 0x1c0, ??_7StPlain5 (retail 0x5e9e84)
+struct CMenuState : CTsBaseA { // param 5, 0x1c0
     char m_pad[0x1c0 - 0x1b4];
-    StPlain5() {
+    CMenuState() {
+        m_vptr = (void*)&g_stCMenuStateVtbl;
         *(i32*)((char*)this + 0x1b4) = 0;
     }
 };
-struct StPlain9 : CTsBaseA { // param 9, 0x1b8, ??_7StPlain9 (retail 0x5e9dfc)
+struct CHelpState : CTsBaseA { // param 9, 0x1b8
     char m_pad[0x1b8 - 0x1b4];
-    StPlain9() {}
+    CHelpState() {
+        m_vptr = (void*)&g_stCHelpStateVtbl;
+    }
 };
-struct StPlain14 : CTsBaseA { // param 14, 0x1bc, ??_7StPlain14 (retail 0x5e9d74)
+struct CSplashState : CTsBaseA { // param 14, 0x1bc
     char m_pad[0x1bc - 0x1b4];
-    StPlain14() {
+    CSplashState() {
+        m_vptr = (void*)&g_stCSplashStateVtbl;
         *(i32*)((char*)this + 0x1b4) = 0;
     }
 };
-struct StPlain7 : CTsBaseB { // param 7, 0x528, ??_7StPlain7 (retail 0x5e9f0c)
+struct CDemo : CTsBaseB { // param 7, 0x528
     char m_pad[0x528 - 0x520];
-    StPlain7() {}
+    CDemo() {
+        m_vptr = (void*)&g_stCDemoVtbl;
+    }
 };
-struct StMultiBooty : CTsBaseA { // param 18, 0x244, ??_7StMultiBooty (retail 0x5e9bdc)
+struct CMultiBootyState : CTsBaseA { // param 18, 0x244
     char m_pad[0x244 - 0x1b4];
-    StMultiBooty() {
+    CMultiBootyState() {
+        m_vptr = (void*)&g_stCMultiBootyStateVtbl;
         *(i32*)((char*)this + 0x1b4) = 0;
         *(i32*)((char*)this + 0x1b8) = 0x64;
     }
 };
-struct StBooty : CTsBaseA { // param 10, 0x320, ??_7StBooty (retail 0x5e9cec)
+struct CBootyState : CTsBaseA { // param 10, 0x320
     char m_pad[0x320 - 0x1b4];
-    StBooty();
+    CBootyState();
 };
-struct StParam8 : CTsBaseA { // param 8, 0x218, ??_7StParam8 (retail 0x5e9c64)
+struct CCreditsState : CTsBaseA { // param 8, 0x218
     char m_pad1b4[0x1e8 - 0x1b4];
     CTsSub45 m_1e8; // +0x1e8
     MfcStr m_1f0;   // +0x1f0
     char m_pad1f4[0x218 - 0x1f4];
-    StParam8();
+    CCreditsState();
 };
-struct StPlay : CTsBaseA { // param 3 (CPlay), 0x520, ??_7StPlay (retail 0x5ea0bc)
-    MfcStr m_1b4;          // +0x1b4
+struct CPlay : CTsBaseA { // param 3, 0x520
+    MfcStr m_1b4;         // +0x1b4
     char m_pad1b8[0x370 - 0x1b8];
     MfcBytes m_370; // +0x370
     char m_pad384[0x3a4 - 0x384];
@@ -162,9 +176,9 @@ struct StPlay : CTsBaseA { // param 3 (CPlay), 0x520, ??_7StPlay (retail 0x5ea0b
     char m_pad414[0x488 - 0x414];
     MfcBytes m_488; // +0x488
     char m_pad49c[0x520 - 0x49c];
-    StPlay();
+    CPlay();
 };
-struct StMulti : CTsBaseB { // param 17 (CMulti), 0x660, ??_7StMulti (retail 0x5e9fe4)
+struct CMulti : CTsBaseB { // param 17, 0x660
     char m_pad520[0x598 - 0x520];
     MfcStr m_598, m_59c, m_5a0; // +0x598/+0x59c/+0x5a0
     char m_pad5a4[0x5b4 - 0x5a4];
@@ -172,13 +186,16 @@ struct StMulti : CTsBaseB { // param 17 (CMulti), 0x660, ??_7StMulti (retail 0x5
     char m_pad5bc[0x604 - 0x5bc];
     MfcBytes m_604; // +0x604
     char m_pad618[0x660 - 0x618];
-    StMulti();
+    CMulti();
 };
 
 // Field-heavy leaf ctors defined out-of-line for readability (still inline-folded
-// into the factory's new-expressions).
-StBooty::StBooty() {
+// into the factory's new-expressions). The manual vptr stamp leads each body (the
+// ctor body runs after the base + member sub-object ctors, matching the retail
+// position of the `mov [this],offset ??_7<Class>` store).
+CBootyState::CBootyState() {
     char* p = (char*)this;
+    m_vptr = (void*)&g_stCBootyStateVtbl;
     *(i32*)(p + 0x1c0) = 0;
     *(i32*)(p + 0x1c8) = 0;
     *(i32*)(p + 0x1c4) = 0;
@@ -203,8 +220,9 @@ StBooty::StBooty() {
         *(i32*)(p + 0x2a4 + i * 4) = 0;
     }
 }
-StParam8::StParam8() {
+CCreditsState::CCreditsState() {
     char* p = (char*)this;
+    m_vptr = (void*)&g_stCCreditsStateVtbl;
     *(i32*)(p + 0x1b8) = 0;
     *(i32*)(p + 0x1bc) = 0;
     *(i32*)(p + 0x1c0) = 0;
@@ -221,8 +239,9 @@ StParam8::StParam8() {
     *(i32*)(p + 0x208) = 0;
     *(i32*)(p + 0x1b4) = 0;
 }
-StPlay::StPlay() {
+CPlay::CPlay() {
     char* p = (char*)this;
+    m_vptr = (void*)&g_stCPlayVtbl;
     *(i32*)(p + 0x328) = 0;
     *(i32*)(p + 0x330) = 0;
     *(i32*)(p + 0x32c) = 0;
@@ -267,8 +286,9 @@ StPlay::StPlay() {
     *(i32*)(p + 0x2ec) = 0;
     *(i32*)(p + 0x504) = 0;
 }
-StMulti::StMulti() {
+CMulti::CMulti() {
     char* p = (char*)this;
+    m_vptr = (void*)&g_stCMultiVtbl;
     *(i32*)(p + 0x520) = 0;
     *(i32*)(p + 0x524) = 0;
     *(i32*)(p + 0x590) = 1;
@@ -327,34 +347,34 @@ i32 CGruntzMgr::TransitionState(i32 stateId, i32 a2, i32 keepCurrent, i32 a4) {
     CTsState* obj;
     switch (stateId) {
         case 2:
-            obj = (CTsState*)new StPlain2;
+            obj = (CTsState*)new CAttract;
             break;
         case 3:
-            obj = (CTsState*)new StPlay;
+            obj = (CTsState*)new CPlay;
             break;
         case 5:
-            obj = (CTsState*)new StPlain5;
+            obj = (CTsState*)new CMenuState;
             break;
         case 7:
-            obj = (CTsState*)new StPlain7;
+            obj = (CTsState*)new CDemo;
             break;
         case 8:
-            obj = (CTsState*)new StParam8;
+            obj = (CTsState*)new CCreditsState;
             break;
         case 9:
-            obj = (CTsState*)new StPlain9;
+            obj = (CTsState*)new CHelpState;
             break;
         case 10:
-            obj = (CTsState*)new StBooty;
+            obj = (CTsState*)new CBootyState;
             break;
         case 14:
-            obj = (CTsState*)new StPlain14;
+            obj = (CTsState*)new CSplashState;
             break;
         case 17:
-            obj = (CTsState*)new StMulti;
+            obj = (CTsState*)new CMulti;
             break;
         case 18:
-            obj = (CTsState*)new StMultiBooty;
+            obj = (CTsState*)new CMultiBootyState;
             break;
         default:
             goto install;
@@ -386,20 +406,20 @@ install:
     }
 }
 
+SIZE_UNKNOWN(CAttract);
+SIZE_UNKNOWN(CBootyState);
+SIZE_UNKNOWN(CCreditsState);
 SIZE_UNKNOWN(CDInputMgrZ);
+SIZE_UNKNOWN(CDemo);
+SIZE_UNKNOWN(CHelpState);
+SIZE_UNKNOWN(CMenuState);
+SIZE_UNKNOWN(CMulti);
+SIZE_UNKNOWN(CMultiBootyState);
+SIZE_UNKNOWN(CPlay);
+SIZE_UNKNOWN(CSplashState);
 SIZE_UNKNOWN(CTsBaseA);
 SIZE_UNKNOWN(CTsBaseB);
 SIZE_UNKNOWN(CTsState);
 SIZE_UNKNOWN(CTsSub45);
 SIZE_UNKNOWN(MfcBytes);
 SIZE_UNKNOWN(MfcStr);
-SIZE_UNKNOWN(StBooty);
-SIZE_UNKNOWN(StMulti);
-SIZE_UNKNOWN(StMultiBooty);
-SIZE_UNKNOWN(StParam8);
-SIZE_UNKNOWN(StPlain14);
-SIZE_UNKNOWN(StPlain2);
-SIZE_UNKNOWN(StPlain5);
-SIZE_UNKNOWN(StPlain7);
-SIZE_UNKNOWN(StPlain9);
-SIZE_UNKNOWN(StPlay);
