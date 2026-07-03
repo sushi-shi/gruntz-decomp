@@ -150,6 +150,19 @@ public:
 // (IsValid @0x14, v20 @0x20) go through this pointer-only dispatch interface. It holds
 // NO data (not a second view of the struct) - only the vtable slots, so the call lowers
 // to the exact `mov eax,[this]; call [eax+slot]` the foreign vtable expects.
+//
+// Why not fold this into a polymorphic CFileByte hierarchy (final-sweep worklist):
+// 0x5ef7f0 is the SHARED base vtable of a 4+ class family (bound by address in
+// CDirectDrawMgr.cpp as g_poolItemVtbl; modeled as CPoolItemBase in
+// CDDrawPtrCollections.cpp, CPoolItemA @0x5efa58, CDDSurface, ...). Its slot bodies
+// are CFileImage methods referenced by their Q-mangled (non-virtual) names ACROSS
+// FIVE TUs: e.g. FreeSurfaces (slot 4, 0x13e4d0) is direct-called from the dtors in
+// image / cddrawptrcollections / cddsurfacedtor, and BlitSurf (slot 3, 0x13e0d0) has
+// three direct by-name callers. Virtualizing them here (Q->U mangling) would break
+// every cross-TU by-name reference. The real fix is unifying CFileImage with the
+// DDrawMgr CPoolItemBase base across all 5 TUs - a dedicated multi-TU pass; until
+// then this view is the language-forced device (BlitSurf/SaveFile already byte-exact
+// through it).
 SIZE_UNKNOWN(CFileImageVtblView);
 struct CFileImageVtblView {
     virtual void v00();

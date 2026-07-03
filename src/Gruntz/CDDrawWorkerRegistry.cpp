@@ -195,7 +195,18 @@ public:
 };
 DATA(0x006293f4)
 extern char g_emptyString[]; // 0x6293f4
-DATA(0x0060b588)
+
+// Self-view of CDDrawWorkerRegistry's OWN vtable, reaching slots +0x48/+0x4c/+0x54
+// (Vfunc48/4C/54) that the Stub_154f80/155160/156e80 scans dispatch on `this`.
+// NOT yet folded into a real polymorphic CDDrawWorkerRegistry: the class carries a
+// manual m_vptr@0 and is never constructed in this TU (no vptr stamp here), and its
+// slots interleave with a whole family of adjacent manager vtables (the same slot
+// bodies - VirtualMethodUnknown24 etc. - appear at DIFFERENT offsets across the
+// sibling vtables around 0x5efd00). Virtualizing the 17 VirtualMethodUnknownXX
+// slot bodies (defined here, called by name Q-mangled) would ripple the whole
+// family + emit a vtable that competes with the siblings, regressing Stub_155160
+// (currently 100%). A dedicated vtable-family unification pass owns this; the view
+// is the correct transitional device until then. [final-sweep worklist]
 class RegView48 {
 public:
     virtual void s00();

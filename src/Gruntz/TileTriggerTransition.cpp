@@ -18,46 +18,19 @@
 // (m_14/m_30/m_38/...) keep their m_<hexoffset> placeholders (shared base, named
 // elsewhere). Only OFFSETS + emitted bytes are load-bearing.
 #include <Gruntz/ActNameRegistry.h> // shared activation-name registry archetype (g_buteTree etc.)
+#include <Gruntz/ActReg.h>          // the shared CActReg coordinate-registry archetype
 #include <Gruntz/TileTriggerTransition.h>
 
 #include <rva.h>
 
-// The CTileTriggerTransition activation-coordinate registry @0x64e720 - the same
-// VActLookup / CKSlimeColl coord-map archetype as CSecretActReg (see
-// src/Gruntz/CSecretLevelTrigger.cpp): the [lo,hi] fast path + the slow
-// Find/ActAlloc/Insert rebuild. Its 0x8710 ctor reserves the [0x7d0, 0x7da]
-// coordinate range for this class. The registry object + its methods are external
-// (no body) so the loads/calls reloc-mask. g_buteTree, the shared name registry,
-// and the CActColl/CActColl2/ActAlloc helpers come via <Gruntz/ActNameRegistry.h>.
-struct TileActReg {
-    void* m_vptr;       // +0x00
-    CActColl2* m_coll2; // +0x04
-    i32 m_lo;           // +0x08
-    i32 m_hi;           // +0x0c
-    char* m_base;       // +0x10
-    char* m_cur;        // +0x14
-    i32 m_stride;       // +0x18
-    char m_pad1c[0x20 - 0x1c];
-    i32 m_scratch; // +0x20
-
-    void Reserve8710(i32 lo, i32 hi); // 0x008710 (__thiscall ret 8, the shared ctor)
-
-    // id -> handler-entry resolve (folds the VActLookup archetype): fast [lo,hi]
-    // range, the slow Find path, then the ActAlloc/Insert rebuild.
-    char* ResolveEntry(i32 id) {
-        m_scratch = 0;
-        if (id >= m_lo && id <= m_hi) {
-            return m_base + (id - m_lo) * m_stride;
-        }
-        if (((CActColl*)this)->Find(id, 0)) {
-            return m_base + (id - m_lo) * m_stride;
-        }
-        void* item = g_actCache;
-        g_actAllocResult = (void*)ActAlloc();
-        m_coll2->Insert(this, item, 0xc);
-        return m_cur;
-    }
-};
+// The CTileTriggerTransition activation-coordinate registry @0x64e720: the fixed
+// [0x7d0, 0x7da] (== [2000, 2010]) range built by the shared registry ctor
+// (0x408710). TileActReg is the shared <Gruntz/ActReg.h> CActReg archetype (was a
+// per-file duplicate of its layout + ResolveEntry); it keeps its own placeholder
+// name so the DATA-pinned global symbol is unchanged. g_buteTree, the shared name
+// registry, and the CActColl/CActColl2/ActAlloc helpers come via
+// <Gruntz/ActNameRegistry.h>.
+struct TileActReg : public CActReg {};
 SIZE_UNKNOWN(TileActReg);
 DATA(0x0024e720)
 extern TileActReg g_tileActReg;
@@ -143,7 +116,7 @@ CTileTriggerTransition::CTileTriggerTransition(CGameObject* obj) : CUserLogic(ob
 // ---------------------------------------------------------------------------
 RVA(0x0010fc90, 0x15)
 void CTileTriggerTransition::Register_10fc90() {
-    g_tileActReg.Reserve8710(0x7d0, 0x7da);
+    g_tileActReg.Construct(0x7d0, 0x7da);
 }
 
 // ---------------------------------------------------------------------------

@@ -10,7 +10,8 @@
 // The one out-of-line ctor the family chains is CUserBaseLink::CUserBaseLink
 // (0x16d710, the +0x18 member); it + the EngStr/registrar externs are in
 // src/Gruntz/UserBaseLink.cpp. Functions are defined in ascending-RVA order.
-#include <Mfc.h> // RECT / CopyRect (CSingleFrameMessage centers in a bounds rect)
+#include <Mfc.h>           // RECT / CopyRect (CSingleFrameMessage centers in a bounds rect)
+#include <Gruntz/ActReg.h> // shared CActColl/CActColl2/CActReg activation-registry archetype
 #include <Gruntz/CTeleSpriteFactory.h> // shared teleporter HUD-sprite factory
 #include <Gruntz/CTrigger.h>           // shared point-probe result object
 #include <Gruntz/CViewport.h>          // shared world->screen transform
@@ -434,55 +435,22 @@ extern "C" i32 rand(void);
 // fn-ptr table; a nonzero entry's handler is called __thiscall on `this`.
 // All globals are unnamed BSS (DATA-pinned here so the loads reloc-mask); the
 // collection methods are external/no-body.
+// CActColl / CActColl2 / ActAlloc + g_actCache (0x6bf464) / g_actAllocResult
+// (0x6bf428) are the shared coordinate-registry collection primitives from
+// <Gruntz/ActReg.h>. g_actColl (0x644688) is this TU's own collection singleton.
 struct CActEntry; // an entry: first dword is the registered handler vtable
-struct CActColl {
-    i32 Find(i32 coord, i32 z);     // 0x16da80 (__thiscall ret 8)
-    void Construct(i32 lo, i32 hi); // 0x408710 (shared registry ctor, __thiscall ret 8)
-};
-struct CActColl2 {
-    void Insert(void* coll, void* item, i32 n); // 0x16d850 (__thiscall ret 0xc)
-};
-extern "C" i32 ActAlloc(); // 0x16d990
 
 DATA(0x00244688)
 extern CActColl g_actColl;
-DATA(0x002bf464)
-extern void* g_actCache;
-DATA(0x002bf428)
-extern void* g_actAllocResult;
 
 // The shared per-leaf activation-coordinate registry singleton each CUserLogic
 // leaf's RegisterActs binds its id->handler entry in - same [2000,2010] range
-// shape as g_actColl but a distinct per-class instance. ResolveEntry folds the
-// VActLookup archetype inline (constant `this` -> the field loads become absolute
-// addresses); the slow Insert is __thiscall on m_coll2.
+// shape as g_actColl but a distinct per-class instance. CLeafActReg is the shared
+// <Gruntz/ActReg.h> CActReg archetype (was a per-file duplicate of its layout +
+// ResolveEntry); it keeps its own placeholder name so the DATA-pinned globals below
+// are unchanged.
 SIZE_UNKNOWN(CLeafActReg);
-struct CLeafActReg {
-    void Construct(i32 lo, i32 hi); // 0x408710 (shared registry ctor, __thiscall ret 8)
-    void* m_vptr;                   // +0x00
-    CActColl2* m_coll2;             // +0x04
-    i32 m_lo;                       // +0x08
-    i32 m_hi;                       // +0x0c
-    char* m_base;                   // +0x10
-    char* m_cur;                    // +0x14
-    i32 m_stride;                   // +0x18
-    char m_pad1c[0x20 - 0x1c];
-    i32 m_scratch; // +0x20
-
-    char* ResolveEntry(i32 id) {
-        m_scratch = 0;
-        if (id >= m_lo && id <= m_hi) {
-            return m_base + (id - m_lo) * m_stride;
-        }
-        if (((CActColl*)this)->Find(id, 0)) {
-            return m_base + (id - m_lo) * m_stride;
-        }
-        void* item = g_actCache;
-        g_actAllocResult = (void*)ActAlloc();
-        m_coll2->Insert(this, item, 0xc);
-        return m_cur;
-    }
-};
+struct CLeafActReg : public CActReg {};
 DATA(0x00246060)
 extern CLeafActReg g_frontCandyActReg; // 0x646060
 DATA(0x00245f70)

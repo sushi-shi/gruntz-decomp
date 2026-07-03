@@ -22,8 +22,10 @@
 
 #include <Gruntz/ActColl.h> // CActColl/CActColl2/ActAlloc + g_actCache/g_actAllocResult
 
-struct CActReg {
-    void* m_coll;       // +0x00  the collection (Find's this == this)
+// The registry IS-A CActColl (its +0x00 collection object is the CActColl base);
+// the slow lookup is a direct base Find call, no (CActColl*)this view cast.
+struct CActReg : public CActColl {
+    // m_coll (+0x00) comes from the CActColl base (Find's this == this).
     CActColl2* m_coll2; // +0x04  Insert's this
     i32 m_lo;           // +0x08
     i32 m_hi;           // +0x0c
@@ -42,7 +44,7 @@ struct CActReg {
         if (id >= m_lo && id <= m_hi) {
             return m_base + (id - m_lo) * m_stride;
         }
-        if (((CActColl*)this)->Find(id, 0)) {
+        if (Find(id, 0)) {
             return m_base + (id - m_lo) * m_stride;
         }
         void* item = g_actCache;

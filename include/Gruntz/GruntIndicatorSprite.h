@@ -103,6 +103,7 @@ extern "C" u32 g_6bf3bc; // canonical _g_6bf3bc @ 0x6bf3bc (draw-delta mirror)
 // the RegisterActs id->entry resolve uses.
 #include <Bute/ButeMgr.h>
 #include <Gruntz/ActNameRegistry.h>
+#include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype
 
 // ---------------------------------------------------------------------------
 // CIndicatorActReg - the per-class activation-coordinate registry singleton each
@@ -115,39 +116,13 @@ extern "C" u32 g_6bf3bc; // canonical _g_6bf3bc @ 0x6bf3bc (draw-delta mirror)
 // Construct(lo,hi) method on the registry so `mov ecx,&g_reg; push hi; push lo;
 // call ctor` falls out byte-exact.
 //
-// The full layout (recovered from the RegisterActs id->entry resolve): the
-// fast [m_lo, m_hi] range path yields m_base + (id-m_lo)*m_stride; the slow path
-// Find (0x16da80) / ActAlloc (0x16d990) / coll2 Insert (0x16d850) yields m_cur.
+// CIndicatorActReg is the shared <Gruntz/ActReg.h> CActReg archetype (the fast
+// [m_lo, m_hi] range path yields m_base + (id-m_lo)*m_stride; the slow Find
+// (0x16da80) / ActAlloc (0x16d990) / coll2 Insert (0x16d850) path yields m_cur).
+// It was a per-file duplicate of that layout + ResolveEntry; it keeps its own
+// placeholder name so the DATA-pinned globals below are unchanged.
 // ---------------------------------------------------------------------------
-struct CIndicatorActReg {
-    void* m_vptr;       // +0x00  registry vtable (0x5e70fc)
-    CActColl2* m_coll2; // +0x04  the coll2 ptr the slow Insert is __thiscall on
-    i32 m_lo;           // +0x08  fast-range lo
-    i32 m_hi;           // +0x0c  fast-range hi
-    char* m_base;       // +0x10  fast-range entry base
-    char* m_cur;        // +0x14  slow-path result entry
-    i32 m_stride;       // +0x18  entry stride
-    char m_pad1c[0x20 - 0x1c];
-    i32 m_scratch; // +0x20  zeroed before the slow resolve
-
-    void Construct(i32 lo, i32 hi); // 0x408710 (__thiscall, ret 8)
-
-    // The id->entry resolve RegisterActs folds in (the VActLookup archetype). The
-    // returned slot's first dword receives the handler code address.
-    char* ResolveEntry(i32 id) {
-        m_scratch = 0;
-        if (id >= m_lo && id <= m_hi) {
-            return m_base + (id - m_lo) * m_stride;
-        }
-        if (((CActColl*)this)->Find(id, 0)) {
-            return m_base + (id - m_lo) * m_stride;
-        }
-        void* item = g_actCache;
-        g_actAllocResult = (void*)ActAlloc();
-        m_coll2->Insert(this, item, 0xc);
-        return m_cur;
-    }
-};
+struct CIndicatorActReg : public CActReg {};
 
 DATA(0x00244d80)
 extern CIndicatorActReg g_healthActReg; // 0x644d80

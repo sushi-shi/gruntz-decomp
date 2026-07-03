@@ -13,8 +13,13 @@
 
 #include <rva.h>
 
+// The coordinate collection itself: its first dword is the collection object (a
+// zDArray-family vtable/base). Every registry IS-A CActColl at +0x00 (CActReg
+// derives from it), so the slow Find lookup is a direct base call - no view cast.
 struct CActColl {
-    i32 Find(i32 coord, i32 z); // 0x16da80 (__thiscall ret 8)
+    void* m_coll;                   // +0x00  the collection object (its first dword)
+    i32 Find(i32 coord, i32 z);     // 0x16da80 (__thiscall ret 8)
+    void Construct(i32 lo, i32 hi); // 0x408710 (shared registry ctor, __thiscall ret 8)
 };
 struct CActColl2 {
     void Insert(void* coll, void* item, i32 n); // 0x16d850 (__thiscall ret 0xc)

@@ -37,6 +37,7 @@
 // eh-state-numbering-base.md; o2-optimizer-bailout-framed.md).
 
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
+#include <Gruntz/ActReg.h>          // the shared CActReg coordinate-registry archetype
 #include <Gruntz/RollingBall.h>     // CRollingBall : CUserLogic (+ the /GX CString temps)
 
 #include <rva.h>
@@ -51,37 +52,12 @@ struct CRollingBallActEntry {
     RollingBallHandler m_fn;
 };
 
-// The class's activation-coordinate registry singleton (@0x6461b0). Same
-// [2000,2010] fixed-range shape as CBehindCandyActReg, built by the shared
-// registry ctor (0x408710, __thiscall ret 8). ResolveEntry folds the VActLookup
-// archetype; the slow Insert is __thiscall on m_coll2.
-struct CRollingBallActReg {
-    void* m_vptr;       // +0x00
-    CActColl2* m_coll2; // +0x04
-    i32 m_lo;           // +0x08
-    i32 m_hi;           // +0x0c
-    char* m_base;       // +0x10
-    char* m_cur;        // +0x14
-    i32 m_stride;       // +0x18
-    char m_pad1c[0x20 - 0x1c];
-    i32 m_scratch; // +0x20
-
-    void Construct(i32 lo, i32 hi); // 0x408710 (__thiscall ret 8)
-
-    char* ResolveEntry(i32 id) {
-        m_scratch = 0;
-        if (id >= m_lo && id <= m_hi) {
-            return m_base + (id - m_lo) * m_stride;
-        }
-        if (((CActColl*)this)->Find(id, 0)) {
-            return m_base + (id - m_lo) * m_stride;
-        }
-        void* item = g_actCache;
-        g_actAllocResult = (void*)ActAlloc();
-        m_coll2->Insert(this, item, 0xc);
-        return m_cur;
-    }
-};
+// The class's activation-coordinate registry singleton (@0x6461b0): the fixed
+// [2000,2010] range built by the shared registry ctor (0x408710). CRollingBallActReg
+// is the shared <Gruntz/ActReg.h> CActReg archetype (was a per-file duplicate of its
+// layout + ResolveEntry); it keeps its own placeholder name so the DATA-pinned
+// global symbol is unchanged.
+struct CRollingBallActReg : public CActReg {};
 DATA(0x002461b0)
 extern CRollingBallActReg g_rollingBallActReg; // 0x6461b0
 

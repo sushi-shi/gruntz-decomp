@@ -68,13 +68,6 @@ struct DDBLTFX_ {
     u32 pad54[4];    // 0x54..0x63
 };
 
-// 0x17ca60 lives in another TU as CSurfacePalette::ResetPalette; reference it by
-// its real mangled name so the rel32 call is named (not just reloc-masked).
-class CSurfacePalette {
-public:
-    void ResetPalette(); // 0x17ca60
-};
-
 // The engine heap allocator (NAFXCW operator new replacement) - 16-byte RECT
 // nodes Configure allocates for the explicit-blit case. _RezAlloc (named, rel32).
 extern "C" void* RezAlloc(u32 size); // 0x1b9b46
@@ -104,7 +97,8 @@ struct CTileInfo {
 
 class CDDScreen {
 public:
-    void HandleError();                                                // 0x17cc80
+    void HandleError();  // 0x17cc80
+    void ResetPalette(); // 0x17ca60 (body in PaletteReset.cpp; clears the +0x108 table)
     i32 BlitRegion(i32 col, i32 row, i32 nCols, i32 nRows);            // 0x17cdf0
     i32 Configure(i32 mode, i32 flags, DDPoint* origin, DDRect* rect); // 0x17cfc0
     i32 CheckGrid();      // 0x17cbe0 (sibling, external)
@@ -152,7 +146,7 @@ void CDDScreen::HandleError() {
         m_28 = 0;
     }
     if (m_bpp == 8) {
-        ((CSurfacePalette*)this)->ResetPalette();
+        ResetPalette();
     }
     if (m_primary) {
         DDBLTFX_ fx;
@@ -411,7 +405,6 @@ i32 CDDScreen::Configure(i32 mode, i32 flags, DDPoint* origin, DDRect* rect) {
 }
 
 SIZE_UNKNOWN(CDDScreen);
-SIZE_UNKNOWN(CSurfacePalette);
 SIZE_UNKNOWN(CTileInfo);
 SIZE_UNKNOWN(DDBLTFX_);
 SIZE_UNKNOWN(DDPoint);
