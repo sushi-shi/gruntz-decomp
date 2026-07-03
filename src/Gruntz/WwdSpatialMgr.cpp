@@ -4,6 +4,7 @@
 // reloc-masked engine externs (no bodies here).
 #include <Gruntz/CWwdObjMgr.h> // the shared object-collection manager class
 #include <Mfc.h>
+#include <Wap32/CObject.h> // Wap::CObject - the shared engine grand-base (iterator's CObject prefix)
 
 // ===========================================================================
 // CWwdSpatialMgr - the per-level object-bucket manager held at WwdFile+0xb0.
@@ -104,10 +105,11 @@ public:
 // (optionally unlinking it). REAL POLYMORPHIC now: the retail object's vtable @
 // 0x5f02a8 is the 5-slot CObject-style interface (slot0 sub_1bef01, slot1 the
 // scalar-deleting dtor 0x163a20, slots 2/3/4 the shared sub_0028ec/sub_00106e/
-// sub_004034). Declaring the 5 virtuals makes cl auto-emit ??_7CWwdGridIter + the
-// implicit vptr-FIRST ctor stamp (== the old `m_vptr = g_wwdGridIterVtbl` first-
-// store shape). The 4 non-dtor virtuals are declared-only (bodies in sibling TUs;
-// reloc-masked). This TU OWNS the 0x5f02a8 vtable catalog name via VTBL below:
+// sub_004034) - i.e. the shared engine grand-base Wap::CObject. Deriving from
+// Wap::CObject supplies slots 0/2/3/4 by inheritance and slot 1 is the class's own
+// dtor override; cl auto-emits ??_7CWwdGridIter + the implicit vptr-FIRST ctor
+// stamp (== the old `m_vptr = g_wwdGridIterVtbl` first-store shape). This TU OWNS
+// the 0x5f02a8 vtable catalog name via VTBL below:
 // WwdFile::RebuildPlanes only INLINE-stamps this table into its worker's +0x70
 // embedded cursor (genuine inline-construction, not a ctor call), and now
 // references g_planeRenderVtbl as an UNPINNED extern so its stamp reloc-masks
@@ -120,13 +122,11 @@ public:
 // the live cell-walk counters @ +0x30..+0x3c, with the remove flag @ +0x40.
 SIZE(CWwdGridIter, 0x44);
 VTBL(CWwdGridIter, 0x005f02a8);
-class CWwdGridIter {
+class CWwdGridIter : public Wap::CObject {
 public:
-    virtual void WapV0();    // slot 0 (0x1bef01, declared-only)
+    // slots 0/2/3/4 (0x1bef01 / 0x0028ec / 0x00106e / 0x004034) inherited from
+    // Wap::CObject; slot 1 is the class's own scalar-deleting dtor.
     virtual ~CWwdGridIter(); // slot 1 (scalar-deleting dtor 0x163a20; engine teardown)
-    virtual void WapV2();    // slot 2 (0x0028ec, declared-only)
-    virtual void WapV3();    // slot 3 (0x00106e, declared-only)
-    virtual void WapV4();    // slot 4 (0x004034, declared-only)
 
     CWwdGridIter();
     WwdGridNode* Start(CWwdGrid* grid, i32 remove); // 0x191ad0 init cursor + first

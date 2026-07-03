@@ -1,4 +1,5 @@
 #include <rva.h>
+#include <Wap32/CObject.h> // Wap::CObject - the shared engine grand-base (sub-widget CObject prefix)
 // ApiHiCallers.cpp - reconstructed game API-caller methods, the HIGH-RVA half
 // (RVA >= 0x0e0000). Each was classified as GAME (not CRT/MFC-library) and
 // reconstructed against a best-guess
@@ -142,16 +143,14 @@ struct Pt_168080 {
 // REAL-POLYMORPHIC: the 6-slot sub-widget vtable @0x5f0310 (was g_subVtbl_5f0310)
 // is now cl-emitted (??_7SubWidget_168080@@6B@, bound via VTBL below); the INLINE
 // ctor AUTO-stamps the vptr, so `new SubWidget_168080` keeps the retail
-// `operator new(0x44); if (p) { stamp vptr; m_4=0 }` shape. All 6 slots are engine
-// (base-thunk / 0x168280 scalar dtor / 0x168060) declared-only -> reloc-masked.
-struct SubWidget_168080 {
-    virtual void s00();              // [0] 0x1bef01
-    virtual void* Release(u32 flag); // [1] +0x04  0x168280 scalar-deleting dtor
-    virtual void s08();              // [2] 0x0028ec
-    virtual void s0c();              // [3] 0x00106e
-    virtual void s10();              // [4] 0x004034
-    virtual void s14();              // [5] 0x168060
-    i32 m_4;                         // +0x04
+// `operator new(0x44); if (p) { stamp vptr; m_4=0 }` shape. Slots 0/2/3/4
+// (0x1bef01 / 0x0028ec / 0x00106e / 0x004034) come from the Wap::CObject grand-
+// base; slot 1 is the class's own 0x168280 scalar dtor, slot 5 the 0x168060 new
+// virtual - all declared-only -> reloc-masked.
+struct SubWidget_168080 : public Wap::CObject {
+    virtual ~SubWidget_168080(); // [1] +0x04 0x168280 scalar-deleting dtor
+    virtual void s14();          // [5] 0x168060
+    i32 m_4;                     // +0x04
     char m_pad8[0x44 - 8];
     i32 Setup(RECT rc, i32 a, i32 b); // 0x1915c0 (reloc-masked)
     SubWidget_168080() {
