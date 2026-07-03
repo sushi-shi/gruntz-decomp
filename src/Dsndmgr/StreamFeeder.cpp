@@ -120,10 +120,9 @@ void StreamFeeder::FeederReset(i32 doStop) {
         }
         OnDrain(); // slot 2 (virtual)
         if (doStop != 0) {
-            // FLAG(shared, matcher-6): m_buffer (DirectSoundMgr, method-view) and
-            // RemoveBuffer's SoundBuf* (device list-view) are two views of the same
-            // buffer-wrapper object; unify SoundBuf == DirectSoundMgr to drop this cast.
-            m_owner->RemoveBuffer((SoundBuf*)m_buffer);
+            // m_buffer and RemoveBuffer's param are the same DirectSoundMgr base view now
+            // (matcher-6 unified the former SoundBuf dual-view into DirectSoundMgr).
+            m_owner->RemoveBuffer(m_buffer);
         }
         m_buffer = 0;
         m_armed = 0;

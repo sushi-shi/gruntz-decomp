@@ -66,10 +66,10 @@ VoiceList* CVoiceBuilder::BuildVoiceSoundList(i32 n) {
 
     CString dir, scratch, sub, name;
     EngFmt(&scratch, "SG%i", n);
-    scratch = *g_buteMgr.GetStringDef((char*)(LPCTSTR)scratch, "DIR", &dir);
+    scratch = *g_buteMgr.GetStringDef((LPCTSTR)scratch, "DIR", &dir);
 
     EngFmt(&sub, "S%i", 1);
-    sub = *g_buteMgr.GetStringDef((char*)(LPCTSTR)scratch, (char*)(LPCTSTR)sub, &dir);
+    sub = *g_buteMgr.GetStringDef((LPCTSTR)scratch, (LPCTSTR)sub, &dir);
 
     VoiceList* list = 0;
     if (!scratch.IsEmpty()) {
@@ -90,7 +90,7 @@ VoiceList* CVoiceBuilder::BuildVoiceSoundList(i32 n) {
                 CString tmp = name;
                 list->AddName(tmp);
                 EngFmt(&sub, "S%i", i);
-                sub = *g_buteMgr.GetStringDef((char*)(LPCTSTR)scratch, (char*)(LPCTSTR)sub, &dir);
+                sub = *g_buteMgr.GetStringDef((LPCTSTR)scratch, (LPCTSTR)sub, &dir);
             } else {
                 sub.Empty();
             }

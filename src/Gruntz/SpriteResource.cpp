@@ -71,8 +71,8 @@ struct CFrameWorker {
         m_04 = frameNumber;
         m_08 = 0;
         m_0c = parent;
-        *(i32*)(_10 + 0x00) = 0; // +0x10
-        *(i32*)(_10 + 0x04) = 0; // +0x14
+        m_10 = 0;
+        m_14 = 0;
         m_2c = 0;
         m_30 = 0;
     }
@@ -80,7 +80,9 @@ struct CFrameWorker {
     i32 m_04;              // +0x04  frame number
     i32 m_08;              // +0x08
     void* m_0c;            // +0x0c  parent (sprite->m_c)
-    char _10[0x2c - 0x10]; // +0x10  (m_10/m_14 zeroed, rest untouched)
+    i32 m_10;              // +0x10  (zeroed)
+    i32 m_14;              // +0x14  (zeroed)
+    char _18[0x2c - 0x18]; // +0x18  (untouched)
     i32 m_2c;              // +0x2c
     i32 m_30;              // +0x30
 };
@@ -179,12 +181,17 @@ struct CSprite2Vtbl {
     char _00[0x28];
     CSprite2InitFn Init; // [0x28]
 };
+// The +0x7c fn-ptr sub-table: the post-attach driver entry lives at byte +0x10.
+struct CSprite2SubTable {
+    void* _00[4];             // +0x00..0x0c
+    void (*Entry)(CSprite2*); // +0x10  post-attach driver
+};
 struct CSprite2 {
     CSprite2Vtbl* vptr; // +0x00
     char _04[0x08 - 0x04];
     i32 m_08; // +0x08  flags slot
     char _0c[0x7c - 0x0c];
-    void** m_7c; // +0x7c  fn-ptr sub-table (entry @+0x10)
+    CSprite2SubTable* m_7c; // +0x7c  fn-ptr sub-table (entry @+0x10)
 
     i32 Init(i32 a, i32 b, i32 c, CSprite* tmpl) {
         return (this->*(vptr->Init))(a, b, c, tmpl);
@@ -243,7 +250,7 @@ i32 CSpriteFactory::AttachSprite(
     }
     AddChild(obj, 1);
     if (flags & 0x200000) {
-        (*(void (**)(CSprite2*))((char*)obj->m_7c + 0x10))(obj);
+        obj->m_7c->Entry(obj);
     }
     return 1;
 }
@@ -444,4 +451,5 @@ SIZE_UNKNOWN(CGruntAnimPlayer);
 SIZE_UNKNOWN(CGruntAnimSub2);
 SIZE_UNKNOWN(CGruntSprite);
 SIZE_UNKNOWN(CSprite2);
+SIZE_UNKNOWN(CSprite2SubTable);
 SIZE_UNKNOWN(CSprite2Vtbl);

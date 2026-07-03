@@ -57,51 +57,9 @@ extern "C" i32 ConvertVolumeToPercent(i32 vol);
 extern i32 g_volumeTable[100];
 // The pan table (0x653c48, Globals.h) sits right after: +arg reads the negated entry.
 
-// ---------------------------------------------------------------------------
-// The DirectSoundMgr clone hierarchy (real 3-level polymorphic); fields+methods on the
-// base, the two leaves add only their own vtable/dtor (+ the clone list on the leaf).
-
-// Clone list {head,tail}; InsertHead/Unlink are shared engine helpers (0x1390e0/0x1391e0).
-struct CloneList {
-    CloneNode* m_head;                // +0x00
-    CloneNode* m_tail;                // +0x04
-    void InsertHead(CloneNode* node); // 0x1390e0
-    void Unlink(CloneNode* node);     // 0x1391e0
-};
-SIZE(CloneList, 0x8); // {head, tail}
-
-// DSoundBaseSub - clone/duplicate wrapper Clone() news (vtable 0x5ef6c0, 0x58B, no new
-// fields). dtor 0x136260 resets the vptr + chains ~DirectSoundMgr.
-class DSoundBaseSub : public DirectSoundMgr {
-public:
-    DSoundBaseSub(IDirectSoundBufferZ* buf, SoundDevice* owner); // 0x136230
-    // Clone/dup ctor 0x136180: 2-arg ctor + records source (m_reacquireOwner), copies
-    // its sample/reacquire/rate block, recomputes duration.
-    DSoundBaseSub(
-        IDirectSoundBufferZ* buf,
-        SoundDevice* owner,
-        DirectSoundMgr* original
-    );                        // 0x136180
-    virtual ~DSoundBaseSub(); // 0x136260  base-subobject dtor (vptr reset + chain)
-};
-SIZE(DSoundBaseSub, 0x58);       // clone alloc: Clone() news 0x58 (RezAlloc(0x58))
-VTBL(DSoundBaseSub, 0x001ef6c0); // cl-emitted ??_7DSoundBaseSub@@6B@
-
-// DSoundCloneInst - concrete per-buffer leaf owning a clone list (vtable 0x5ef6bc,
-// 0x60B); dtor 0x135bb0 drains the clone list.
-class DSoundCloneInst : public DSoundBaseSub {
-public:
-    DSoundCloneInst(IDirectSoundBufferZ* buf, SoundDevice* owner); // 0x135b10
-    virtual ~DSoundCloneInst();                                    // 0x135bb0  clone-drain dtor
-
-    DirectSoundMgr* Clone(i32 a);            // 0x135c20  new a clone, dup the buffer, link it
-    void RemoveClone(DirectSoundMgr* clone); // 0x135d20  release + unlink + delete one clone
-    void StopAllClones();                    // 0x136150  StopAndRewind each clone
-
-    CloneList m_cloneList; // +0x58  clone/child list {head@+0x58, tail@+0x5c}
-};
-SIZE(DSoundCloneInst, 0x60);       // buffer leaf: CreateBuffer RezAlloc(0x60)
-VTBL(DSoundCloneInst, 0x001ef6bc); // cl-emitted ??_7DSoundCloneInst@@6B@
+// The DirectSoundMgr clone hierarchy (CloneList / DSoundBaseSub / DSoundCloneInst) is
+// now defined in DirectSoundMgr.h so the device + feeder can name the concrete leaf;
+// the method bodies below are unchanged.
 
 // ---------------------------------------------------------------------------
 // ~DirectSoundMgr - empty base-subobject dtor (just the vptr reset to 0x5ef6b8).

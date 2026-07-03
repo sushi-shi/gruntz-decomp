@@ -256,18 +256,18 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
     local_14.Format("SG%i", (int)index);
     local_10.Format("G%i", param_2);
     if (param_5 == -1) {
-        param_5 = g_buteMgr.GetIntDef((char*)(LPCTSTR)local_14, "Per", -1);
+        param_5 = g_buteMgr.GetIntDef((LPCTSTR)local_14, "Per", -1);
         if (param_5 == -1) {
-            param_5 = g_buteMgr.GetIntDef("GruntPercent", (char*)(LPCTSTR)local_10, 0);
+            param_5 = g_buteMgr.GetIntDef("GruntPercent", (LPCTSTR)local_10, 0);
         }
     }
     if (param_5 < 100 && param_5 < g_gameReg->Rand() % 0x65) {
         return 0;
     }
     if (param_4 == -1) {
-        param_4 = g_buteMgr.GetIntDef((char*)(LPCTSTR)local_14, "Pri", -1);
+        param_4 = g_buteMgr.GetIntDef((LPCTSTR)local_14, "Pri", -1);
         if (param_4 == -1) {
-            param_4 = g_buteMgr.GetIntDef("GruntPriority", (char*)(LPCTSTR)local_10, 1);
+            param_4 = g_buteMgr.GetIntDef("GruntPriority", (LPCTSTR)local_10, 1);
         }
     }
     CSpawnVoice** voices = &m_08;

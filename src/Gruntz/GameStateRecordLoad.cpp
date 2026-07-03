@@ -423,7 +423,7 @@ i32 CGameStateRecord::Load(CRecReader* ar) {
 
     if (*(i32*)(p + 0x258) == 0x36) {
         CCmdBuf* cb2 = *(CCmdBuf**)(p + 0x10);
-        i32 v = g_buteMgr.GetIntDef((char*)s_Powerupz, (char*)s_GruntGhostTransparencyOn, 0xe0);
+        i32 v = g_buteMgr.GetIntDef(s_Powerupz, s_GruntGhostTransparencyOn, 0xe0);
         cb2->m_58 = 1;
         cb2->m_50 = 0xb;
         cb2->m_54 = v;

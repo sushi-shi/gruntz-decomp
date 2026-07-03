@@ -338,7 +338,7 @@ i32 EngineLabelBacklog::LoadPowerupIconSprites(
                 lvl.Format("Level%i", rt->m_levelNumber);
                 name.Format(
                     "GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ%i",
-                    g_buteMgr.GetInt("WarpStone", (char*)(const char*)lvl)
+                    g_buteMgr.GetInt("WarpStone", (const char*)lvl)
                 );
             } else {
                 name.Format("GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ%i", warpIdx);

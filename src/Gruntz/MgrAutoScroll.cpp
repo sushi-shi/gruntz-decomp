@@ -159,8 +159,8 @@ void UpdateMgrScroll(CGruntzMgr* pm, i32* pMode, i32 snapFlag, i32 unused) {
             ny = (i32)((float)ny - (float)deltaY * -0.05f);
         }
         if ((i64)g_frameTime - g_scrollAccum >= g_scrollLimit) {
-            nx += g_buteMgr.GetDword((char*)"BackPlane", (char*)"ScrollDistX");
-            ny += g_buteMgr.GetDword((char*)"BackPlane", (char*)"ScrollDistY");
+            nx += g_buteMgr.GetDword("BackPlane", "ScrollDistX");
+            ny += g_buteMgr.GetDword("BackPlane", "ScrollDistY");
             ScrollView* g2 = g_backView;
             float fx = (float)nx;
             float fy = (float)ny;
@@ -171,7 +171,7 @@ void UpdateMgrScroll(CGruntzMgr* pm, i32* pMode, i32 snapFlag, i32 unused) {
             g2->m_scrollX = fx;
             g2->m_scrollY = fy;
             RecomputePlaneCoords();
-            g_scrollLimit = g_buteMgr.GetDword((char*)"BackPlane", (char*)"ScrollTime");
+            g_scrollLimit = g_buteMgr.GetDword("BackPlane", "ScrollTime");
             g_scrollAccum = g_frameTime;
         }
     }

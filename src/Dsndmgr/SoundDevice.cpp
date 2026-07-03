@@ -1,6 +1,6 @@
 // SoundDevice.cpp - the DirectSound *device* manager (C:\Proj\Dsndmgr\DSNDMGR.CPP,
 // vftable 0x5ef6c4; distinct class from the buffer wrapper DirectSoundMgr 0x5ef6b8).
-// Owns a SoundBuf list (@+0x04, +4-biased links), the IDirectSound device (+0x14) and
+// Owns a buffer list (DSoundCloneInst leaves @+0x04, +4-biased links), the IDirectSound device (+0x14) and
 // the primary buffer (+0x84); teardown releases each buffer then the primary + device.
 #include <Dsndmgr/SoundDevice.h>
 #include <Rez/RezMgr.h> // RezAlloc/RezFree - the engine heap allocator/deallocator
@@ -106,10 +106,10 @@ SoundDevice::~SoundDevice() {
 RVA(0x00136690, 0x58)
 void SoundDevice::Shutdown() {
     if (m_initialized) {
-        SoundBuf* node = elemOf<SoundBuf>(m_bufferList.m_head);
+        DSoundCloneInst* node = elemOf<DSoundCloneInst>(m_bufferList.m_head);
         while (node) {
             RemoveBuffer(node);
-            node = elemOf<SoundBuf>(m_bufferList.m_head);
+            node = elemOf<DSoundCloneInst>(m_bufferList.m_head);
         }
         if (m_primaryBuffer) {
             m_primaryBuffer->Release();
@@ -121,7 +121,7 @@ void SoundDevice::Shutdown() {
 
 // ---------------------------------------------------------------------------
 // CreateBuffer (/GX EH frame): validate PCM fmt, CreateSoundBuffer, RezAlloc+BaseInit a
-// SoundBuf, thread on the +0x04 list, seed fmt/avg-bytes/byte-count + duration.
+// DSoundCloneInst leaf, thread on the +0x04 list, seed fmt/avg-bytes/byte-count + duration.
 // @early-stop
 // RezAlloc+placement-new EH-frame wall (docs/patterns/rezalloc-placement-new-no-eh-frame.md):
 // body byte-exact, but retail's `new`-with-RezAlloc-operator-new emits a /GX
@@ -170,19 +170,20 @@ DirectSoundMgr* SoundDevice::CreateBuffer(WaveFormatX* fmt, u32 bytes, u32 flags
         return 0;
     }
 
-    // RezAlloc the 0x60B leaf, then BaseInit (external ctor 0x135b10) stamps its vptr.
-    SoundBuf* voice = (SoundBuf*)RezAlloc(0x60);
+    // RezAlloc the 0x60B leaf, then BaseInit (the ctor 0x135b10, reached as a method)
+    // stamps its vptr. The buffer's cached format/rate/sample fields (base offsets
+    // +0x18/+0x38/+0x3c/+0x2c) are seeded from the wave header here.
+    DSoundCloneInst* voice = (DSoundCloneInst*)RezAlloc(0x60);
     if (voice) {
         voice->BaseInit(out, this);
     }
-    voice->m_formatWord = *(u32*)&wf.wFormatTag;
+    voice->m_freq = *(u32*)&wf.wFormatTag; // +0x18  format word (wFormatTag|nChannels)
     m_bufferList.InsertHead(voice ? &voice->m_link : 0);
-    voice->m_avgBytesPerSec = fmt->nAvgBytesPerSec;
-    voice->m_avgBytesPerSecDivisor = fmt->nAvgBytesPerSec;
-    voice->m_byteCount = bytes;
+    voice->m_rateBase = fmt->nAvgBytesPerSec;   // +0x38  avg bytes/sec
+    voice->m_sampleRate = fmt->nAvgBytesPerSec; // +0x3c  duration divisor
+    voice->m_sampleCount = bytes;               // +0x2c  byte count
     voice->ComputeDuration();
-    // Bridge SoundBuf -> the DirectSoundMgr wrapper (same object; FIXME unify the types).
-    return (DirectSoundMgr*)voice;
+    return voice; // DSoundCloneInst* -> DirectSoundMgr* base view (CreateBuffer's return)
 }
 
 // Engine fopen 0x11f870 (CRT FILE*) + file-size query 0x18c480 (reads FILE._file fd).
@@ -263,9 +264,7 @@ DirectSoundMgr* SoundDevice::Acquire(void* riff, u32, u32) {
         return 0;
     }
     if (wrapper->LockConvert(data, size, cvt) == 0) {
-        // Bridge DirectSoundMgr -> the SoundBuf list node RemoveBuffer unlinks (FLAG:
-        // same object as CreateBuffer's return; unifying the types drops this cast).
-        RemoveBuffer((SoundBuf*)wrapper);
+        RemoveBuffer(wrapper);
         return 0;
     }
     return wrapper;
@@ -343,7 +342,7 @@ i32 SoundDevice::ReloadRiff(DirectSoundMgr* buf, void* riff, u32 /*reserved*/) {
 // RemoveBuffer: reap the buffer's voices (keyed by its address), Release its COM
 // buffer, unlink from the owned-buffer list, then scalar-delete it.
 RVA(0x00136d80, 0x56)
-void SoundDevice::RemoveBuffer(SoundBuf* node) {
+void SoundDevice::RemoveBuffer(DirectSoundMgr* node) {
     if (m_initialized) {
         // The voices carry the owning buffer's address as their reap key.
         m_voiceList.RemoveMatching(node, 0xffff);
@@ -363,11 +362,11 @@ void SoundDevice::RemoveBuffer(SoundBuf* node) {
 RVA(0x00136de0, 0x3c)
 void SoundDevice::StopAll() {
     if (m_initialized) {
-        SoundBuf* node = elemOf<SoundBuf>(m_bufferList.m_head);
+        DSoundCloneInst* node = elemOf<DSoundCloneInst>(m_bufferList.m_head);
         while (node) {
             node->StopAndRewind();
             node->StopAllClones();
-            node = elemOf<SoundBuf>(node->m_link.m_next);
+            node = elemOf<DSoundCloneInst>(node->m_link.m_next);
         }
     }
 }

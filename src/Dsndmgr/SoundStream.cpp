@@ -152,8 +152,11 @@ SoundStream::OpenStream(CParseSource* src, i32 p1, i32 p2, i32 p3, i32 p4, i32 p
     feeder->m_source = src;
     feeder->m_loop = 0;
     feeder->m_sourceOffset = 0;
-    // FLAG(shared): voice IS-A DirectSoundMgr buffer wrapper; this upcast is authentic
-    // (StreamVoiceNode should derive DirectSoundMgr - blocked by the +0x04 link overlap).
+    // voice IS-A DirectSoundMgr buffer wrapper; this upcast is authentic. The +0x04
+    // link-overlap blocker is now resolved (DirectSoundMgr carries a DSoundLink m_link
+    // at +0x04, matcher-6); making StreamVoiceNode actually derive the per-buffer base
+    // (so this upcast becomes implicit) is a separate StreamVoice class-modeling task
+    // (its ctor/dtor/vtable 0x5ef6d8), left for the StreamVoice matcher.
     if (feeder->FeederStart(this, &wf, p1, p2, (DirectSoundMgr*)voice, -1) == 0) {
         DestroyVoice(voice);
         return 0;

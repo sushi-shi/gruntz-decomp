@@ -30,14 +30,16 @@ class DirectSoundMgr;
 class SoundStream;
 
 // The per-stream voice: a DirectSoundMgr-derived per-buffer object. IDEALLY
-// `struct StreamVoice : DirectSoundMgr`, but the shared DirectSoundMgr is modeled
-// as one dual-this-shape class (sizeof 0x90 spanning both the manager and buffer
-// views), which would push the embedded feeder past its true +0x6c home - so the
-// voice is a flat class over the per-buffer base layout and reaches the base run
-// (SetVolumeByIndex 0x1355c0 / SetPanByIndex 0x1357a0 / SetFreqByIndex 0x135920 and
-// the base init/dtor 0x135b10 / 0x135bb0) through its own reloc-masked __thiscall
-// declarations. (FLAG for matcher-6: splitting DirectSoundMgr into a <=0x60-byte
-// per-buffer base would let this derive.)
+// `struct StreamVoice : DSoundCloneInst` (its base init/dtor are 0x135b10 / 0x135bb0,
+// the DSoundCloneInst ctor/dtor, and its own fields start at the leaf's 0x60). The
+// per-buffer base is now a clean <=0x60 shape (DirectSoundMgr 0x58 -> DSoundCloneInst
+// 0x60, with the device link at +0x04; matcher-6 unified the old dual-this-shape), so
+// the layout blocker is gone - but wiring the real derivation (chaining the base
+// ctor/dtor + reproducing the 0x5ef6d8 vtable, without pushing the embedded feeder past
+// its true +0x6c home) is a StreamVoice class-modeling task, still pending. Until then
+// the voice is a flat class over the per-buffer base layout and reaches the base run
+// (SetVolumeByIndex 0x1355c0 / SetPanByIndex 0x1357a0 / SetFreqByIndex 0x135920 and the
+// base init/dtor 0x135b10 / 0x135bb0) through its own reloc-masked __thiscall decls.
 struct StreamVoice {
     // Real polymorphic voice: the lone virtual is the destructor, so cl emits a
     // 1-slot ??_7StreamVoice (slot 0 = the scalar-deleting dtor, matching retail's

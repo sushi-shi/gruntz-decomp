@@ -198,8 +198,12 @@ public:
     static void GetErrorString(char* file, i32 line, i32 hr); // 0x138150
 
     // --- layout (per-buffer wrapper base, size 0x58) --------------------------
-    // vptr @ +0x00 (implicit, from the virtual dtor); the first real field is +0x0c.
-    char m_pad4[0x0c - 0x04];
+    // vptr @ +0x00 (implicit, from the virtual dtor); the first real field is +0x04.
+    // +0x04 is the device buffer-list link: when the concrete leaf (DSoundCloneInst)
+    // hangs in SoundDevice::m_bufferList, this DSoundLink is the biased element+4 the
+    // list threads (SoundDevice::Shutdown/StopAll/CreateBuffer/RemoveBuffer). Set by
+    // the list helpers, not the ctor.
+    DSoundLink m_link;             // +0x04  device buffer-list link {next@+4, prev@+8}
     IDirectSoundBufferZ* m_buffer; // +0x0c  the held sound buffer
     SoundDevice* m_owner;          // +0x10  owning device back-pointer
     u32 m_playFlags;               // +0x14  Play/looping flags (bit 0 = loop)
@@ -222,5 +226,60 @@ public:
 };
 SIZE(DirectSoundMgr, 0x58);       // per-buffer wrapper base (fields end at +0x58)
 VTBL(DirectSoundMgr, 0x001ef6b8); // cl-emitted ??_7DirectSoundMgr@@6B@ (base subobject dtor)
+
+// ---------------------------------------------------------------------------
+// The DirectSoundMgr clone hierarchy (real 3-level polymorphic): the fields + methods
+// live on the base above, the two leaves add only their own vtable/dtor (+ the clone
+// list on the concrete leaf). Bodies live in DirectSoundMgr.cpp; the definitions live
+// here so the device (SoundDevice.cpp) + the feeder (StreamFeeder.cpp) can name the
+// concrete leaf DSoundCloneInst that its buffer list actually threads.
+
+// Clone list {head,tail}; InsertHead/Unlink are shared engine helpers (0x1390e0/0x1391e0).
+struct CloneList {
+    CloneNode* m_head;                // +0x00
+    CloneNode* m_tail;                // +0x04
+    void InsertHead(CloneNode* node); // 0x1390e0
+    void Unlink(CloneNode* node);     // 0x1391e0
+};
+SIZE(CloneList, 0x8); // {head, tail}
+
+// DSoundBaseSub - clone/duplicate wrapper Clone() news (vtable 0x5ef6c0, 0x58B, no new
+// fields). dtor 0x136260 resets the vptr + chains ~DirectSoundMgr.
+class DSoundBaseSub : public DirectSoundMgr {
+public:
+    DSoundBaseSub(IDirectSoundBufferZ* buf, SoundDevice* owner); // 0x136230
+    // Clone/dup ctor 0x136180: 2-arg ctor + records source (m_reacquireOwner), copies
+    // its sample/reacquire/rate block, recomputes duration.
+    DSoundBaseSub(
+        IDirectSoundBufferZ* buf,
+        SoundDevice* owner,
+        DirectSoundMgr* original
+    );                        // 0x136180
+    virtual ~DSoundBaseSub(); // 0x136260  base-subobject dtor (vptr reset + chain)
+};
+SIZE(DSoundBaseSub, 0x58);       // clone alloc: Clone() news 0x58 (RezAlloc(0x58))
+VTBL(DSoundBaseSub, 0x001ef6c0); // cl-emitted ??_7DSoundBaseSub@@6B@
+
+// DSoundCloneInst - concrete per-buffer leaf owning a clone list (vtable 0x5ef6bc,
+// 0x60B); dtor 0x135bb0 drains the clone list. This is the object SoundDevice mints in
+// CreateBuffer (RezAlloc(0x60)), threads on its buffer list, and reaps in RemoveBuffer.
+class DSoundCloneInst : public DSoundBaseSub {
+public:
+    DSoundCloneInst(IDirectSoundBufferZ* buf, SoundDevice* owner); // 0x135b10
+    virtual ~DSoundCloneInst();                                    // 0x135bb0  clone-drain dtor
+
+    DirectSoundMgr* Clone(i32 a);            // 0x135c20  new a clone, dup the buffer, link it
+    void RemoveClone(DirectSoundMgr* clone); // 0x135d20  release + unlink + delete one clone
+    void StopAllClones();                    // 0x136150  StopAndRewind each clone
+    // BaseInit: the 2-arg ctor (0x135b10) reached as a method so CreateBuffer's
+    // RezAlloc(0x60)+construct path lowers to a reloc-masked __thiscall instead of a
+    // placement-new (which cl would frame differently). Same address as the ctor above;
+    // declared-only here so the call reloc-masks.
+    void BaseInit(IDirectSoundBufferZ* buf, SoundDevice* owner); // 0x135b10 (== ctor)
+
+    CloneList m_cloneList; // +0x58  clone/child list {head@+0x58, tail@+0x5c}
+};
+SIZE(DSoundCloneInst, 0x60);       // buffer leaf: CreateBuffer RezAlloc(0x60)
+VTBL(DSoundCloneInst, 0x001ef6bc); // cl-emitted ??_7DSoundCloneInst@@6B@
 
 #endif // DSNDMGR_DIRECTSOUNDMGR_H

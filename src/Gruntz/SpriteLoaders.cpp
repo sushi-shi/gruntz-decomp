@@ -151,8 +151,8 @@ public:
     i32 Serialize(CTimerArchive* ar);   // 0x9c2e0 (this cluster)
     i32 Deserialize(CTimerArchive* ar); // 0x9c650 (external, declared-not-defined)
 
-    i32* m_baseX;      // +0x00 base x (screen origin)
-    i32* m_baseY;      // +0x04 base y
+    i32 m_baseX;       // +0x00 base x (screen origin)
+    i32 m_baseY;       // +0x04 base y
     CSprite* m_sprite; // +0x08 the looked-up "GAME_TIMER" sprite set
     i32 m_active;      // +0x0c visible/active flag
     // The five cached MM:SS frames, laid out L->R by Draw at x-0x22..x+0x22 and
@@ -232,8 +232,8 @@ i32 CTimer::LoadTimerSprite(i32 a, i32 b) {
         return 0;
     }
 
-    m_baseX = (i32*)a; /* the two args captured at the tail */
-    m_baseY = (i32*)b;
+    m_baseX = a; /* the two args captured at the tail */
+    m_baseY = b;
     m_active = 1;
     m_running = 0;
     return 1;
@@ -386,19 +386,19 @@ i32 CTimer::Draw(i32 pSurf, i32 force) {
         return 1;
     }
     if (m_frameMinTens) {
-        ((CTimerFrame*)m_frameMinTens)->RenderFrame(pSurf, (i32)m_baseX - 0x22, (i32)m_baseY, 0);
+        ((CTimerFrame*)m_frameMinTens)->RenderFrame(pSurf, m_baseX - 0x22, m_baseY, 0);
     }
     if (m_frameMinOnes) {
-        ((CTimerFrame*)m_frameMinOnes)->RenderFrame(pSurf, (i32)m_baseX - 0x10, (i32)m_baseY, 0);
+        ((CTimerFrame*)m_frameMinOnes)->RenderFrame(pSurf, m_baseX - 0x10, m_baseY, 0);
     }
     if (m_frameColon) {
-        ((CTimerFrame*)m_frameColon)->RenderFrame(pSurf, (i32)m_baseX, (i32)m_baseY, 0);
+        ((CTimerFrame*)m_frameColon)->RenderFrame(pSurf, m_baseX, m_baseY, 0);
     }
     if (m_frameSecTens) {
-        ((CTimerFrame*)m_frameSecTens)->RenderFrame(pSurf, (i32)m_baseX + 0x10, (i32)m_baseY, 0);
+        ((CTimerFrame*)m_frameSecTens)->RenderFrame(pSurf, m_baseX + 0x10, m_baseY, 0);
     }
     if (m_frameSecOnes) {
-        ((CTimerFrame*)m_frameSecOnes)->RenderFrame(pSurf, (i32)m_baseX + 0x22, (i32)m_baseY, 0);
+        ((CTimerFrame*)m_frameSecOnes)->RenderFrame(pSurf, m_baseX + 0x22, m_baseY, 0);
     }
     return 1;
 }

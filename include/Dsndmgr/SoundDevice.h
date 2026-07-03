@@ -22,42 +22,15 @@
 
 class SoundDevice;
 
-// SoundBuf - one owned sound buffer, as the device's +0x04 buffer list threads
-// it. It is the 0x60-byte DirectSound buffer object CreateBuffer mints (retail
-// vtable 0x5ef6bc, stamped by BaseInit): slot 0 is its scalar-deleting destructor
-// and its +0x04 word doubles as the intrusive forward link (biased +4, so the
-// owning node is `link - 4`). BaseInit/ComputeDuration/StopAndRewind/StopAllClones
-// live in DirectSoundMgr.cpp; declared no-body here so the __thiscall calls reloc-
-// mask.
-//
-// FLAG (matcher-6): this IS the DirectSoundMgr buffer leaf (DSoundCloneInst,
-// 0x5ef6bc); DirectSoundMgr's +0x04 pad is this device-list link. Kept as a local
-// node view here - unifying it into DirectSoundMgr (a real DSoundLink at +0x04 +
-// these seed fields) would drop the two SoundBuf<->DirectSoundMgr bridge casts in
-// SoundDevice.cpp.
-struct SoundBuf {
-    virtual ~SoundBuf(); // +0x00  slot 0 scalar-deleting dtor (0x5ef6bc; defined externally)
-    DSoundLink m_link;   // +0x04  device buffer-list link (next@+4, prev@+8)
-    IDirectSoundBufferZ* m_buffer; // +0x0c  the IDirectSoundBuffer to release
-    char m_reservedA[0x18 - 0x10]; // +0x10
-    u32 m_formatWord;              // +0x18  wFormatTag|nChannels of the WAVEFORMATEX
-    char m_reservedB[0x28 - 0x1c]; // +0x1c
-    u32 m_durationMs;              // +0x28  duration-ms (set by ComputeDuration)
-    u32 m_byteCount;               // +0x2c
-    char m_reservedC[0x38 - 0x30]; // +0x30
-    u32 m_avgBytesPerSec;          // +0x38
-    u32 m_avgBytesPerSecDivisor;   // +0x3c
-    char m_reservedD[0x60 - 0x40]; // +0x40
-
-    void BaseInit(IDirectSoundBufferZ* buf, SoundDevice* owner); // 0x135b10
-    void ComputeDuration();                                      // 0x1359a0
-    i32 StopAndRewind();                                         // 0x135380
-    void StopAllClones();                                        // 0x136150
-};
-SIZE(SoundBuf, 0x60); // RezAlloc(0x60) in CreateBuffer - the DirectSound buffer leaf. Its
-                      // vtable (0x5ef6bc) is cl-emitted as ??_7DSoundCloneInst by
-                      // DirectSoundMgr.cpp (matcher-6); no VTBL here (SoundBuf is a view -
-                      // never cl-instantiated, so no ??_7SoundBuf is emitted).
+// SoundBuf - the device's owned buffer, as its +0x04 buffer list threads it. This IS
+// the DirectSoundMgr per-buffer wrapper's base view (the concrete leaf minted in
+// CreateBuffer is a DSoundCloneInst; RemoveBuffer only touches the base fields + the
+// virtual dtor, so it takes a DirectSoundMgr*). The former standalone SoundBuf struct
+// was a duplicate view of DSoundCloneInst (matcher-6 unified it - every SoundBuf method
+// mapped to the same RVA as a DirectSoundMgr/DSoundCloneInst method). SoundBuf survives
+// only as this alias so the cross-cluster CDDrawSubMgrLeafScan.cpp (LeafElementObj,
+// owned by another worker) keeps compiling its `RemoveBuffer((SoundBuf*)m_10)`.
+typedef DirectSoundMgr SoundBuf;
 
 // ParseFmt - the fmt-chunk descriptor ParseWaveChunks fills (its `out` param) and
 // Acquire/ReloadRiff read. m_fmt points at the WAVEFORMATEX inside the RIFF blob;
@@ -81,14 +54,14 @@ public:
                             // ??_7SoundDevice@@6B@ + the ??_G scalar-deleting thunk (0x1364c0,
                             // labelled by @rva-symbol in SoundDevice.cpp).
     void Shutdown();        // 0x136690  release every owned buffer, primary, device
-    void RemoveBuffer(SoundBuf* node); // 0x136d80  reap voices + release + unlink one buffer
-    void StopAll();                    // 0x136de0  StopAndRewind+StopAllClones over the list
-    i32 FreeSamples();                 // 0x136ed0  free + unlink every cached voice (+0x0c list)
-    i32 SetPrimaryFormat(void* fmt);   // 0x1371a0  CreatePrimaryBuffer + primary SetFormat; the
-                                       // fmt is an opaque WAVEFORMATEX buffer (callers pass their
-                                       // own pointer type), so it stays void*.
-    i32 StartPrimary();                // 0x137200  (extern) reads +0x78/+0x84, primary
-    i32 CreatePrimaryBuffer();         // 0x137260  (extern, defined elsewhere)
+    void RemoveBuffer(DirectSoundMgr* node); // 0x136d80  reap voices + release + unlink one buffer
+    void StopAll();                          // 0x136de0  StopAndRewind+StopAllClones over the list
+    i32 FreeSamples();               // 0x136ed0  free + unlink every cached voice (+0x0c list)
+    i32 SetPrimaryFormat(void* fmt); // 0x1371a0  CreatePrimaryBuffer + primary SetFormat; the
+                                     // fmt is an opaque WAVEFORMATEX buffer (callers pass their
+                                     // own pointer type), so it stays void*.
+    i32 StartPrimary();              // 0x137200  (extern) reads +0x78/+0x84, primary
+    i32 CreatePrimaryBuffer();       // 0x137260  (extern, defined elsewhere)
     DirectSoundMgr* CreateBuffer(
         WaveFormatX* fmt,
         u32 bytes,
