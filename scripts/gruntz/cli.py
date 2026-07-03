@@ -211,6 +211,12 @@ def cmd_build(args) -> None:
         log(f"VTBL: {n} class(es) missing VTBL() "
             f"(python -m gruntz.match.class_vtables for the list)")
 
+    # Cleanliness scoreboard (below the match/gate metrics): cast / placeholder /
+    # view occurrence counts trending to 0. Comment- and string-stripped so prose
+    # doesn't inflate. Non-fatal; see docs/cleanliness-metrics.md.
+    subprocess.run([sys.executable, "-m", "gruntz.match.cleanliness"],
+                   cwd=str(REPO), env=_pkg_env())
+
 
 def cmd_labels(args) -> None:
     """Regenerate build/gen/symbol_names.csv from src @address + base objs."""
