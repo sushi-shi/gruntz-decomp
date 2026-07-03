@@ -129,6 +129,28 @@ Invariant: a reconstructed method is **either ~100% (unmarked) or carries `@earl
 
 ## Source-writing doctrine
 
+### 0. NEVER define a type in a `.cpp` — reduce every per-TU view to the real header class (TOP RULE)
+
+A `struct`/`class` **definition** inside a `.cpp` is a **fake per-TU view** of a real engine class,
+and it is the campaign's #1 anti-pattern. Do NOT fabricate a local `struct CRpSound {…}` /
+`struct MgrSettings {…}` / `struct FxHolder {…}` to reproduce a callee's layout — that adds a
+SECOND, divergent lie about a class whose one true shape already lives (or belongs) in a header.
+The mandate is the OPPOSITE of chasing %: **reduce all views to real `struct`/`class` in headers.**
+
+- The scoreboard tracks this as **`.cpp-local views`** (printed by `gruntz build`); drive it to ~0.
+- When a fn dereferences a real class, `#include` that class's header and use the real type — never
+  a local shadow. If the real class isn't modeled yet, define it **in `include/<Module>/`** (a real
+  header other TUs share), not inline in your `.cpp`.
+- If two TUs each grew their own view of the same object, that is a DEDUP bug: unify to one header
+  type. Divergent field shapes across views (`+0x14` typed differently in two TUs) is a
+  reconciliation problem to SOLVE, not to freeze behind two structs.
+- A cross-cast of `this` (or an arg) to an unrelated class to satisfy the mangler is the same lie in
+  cast form — it means the caller's real class/hierarchy is mis-modelled. Fix the hierarchy; don't
+  paper it with `((OtherClass*)this)`. See the no-sane-dev test.
+
+Clean modeling (one real shape per class, in a header) is the deliverable — **not** the match %.
+A per-TU view that raises % is a regression in the thing that actually matters here.
+
 ### 1. Almost never reach for a C-style cast — model the real type instead
 
 **You may use placeholder views and casts *while* matching — but they must be GONE when you are
