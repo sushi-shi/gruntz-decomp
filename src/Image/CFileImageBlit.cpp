@@ -65,7 +65,7 @@ i32 CFileImage::Blit168(void* srcv, void* palv, i32 mode) {
         u8 b = (u8)((u8)pal[-2] >> g_bDown);
         *lut++ = (u16)(((u32)r << g_rUp) | ((u32)g << g_gUp) | (u32)b);
     } while (lut < g_lut16 + 256);
-    u8* locked = (u8*)this->Lock(0);
+    u8* locked = (u8*)Lock(0);
     if (locked == 0) {
         return 0;
     }
@@ -101,7 +101,7 @@ i32 CFileImage::Blit168(void* srcv, void* palv, i32 mode) {
 // codegen. Logic exact; documented MSVC5 /O2 register-allocation plateau.
 RVA(0x0013fce0, 0x17f)
 i32 CFileImage::Blit1624(void* srcv, i32 mode) {
-    u8* locked = (u8*)this->Lock(0);
+    u8* locked = (u8*)Lock(0);
     if (locked == 0) {
         return 0;
     }
@@ -147,7 +147,7 @@ i32 CFileImage::Blit1624(void* srcv, i32 mode) {
 // the one stack temp are MSVC5 /O2 register-allocation coin-flips. Logic exact.
 RVA(0x0013ff80, 0x184)
 i32 CFileImage::Blit2416(void* srcv, i32 mode) {
-    u8* locked = (u8*)this->Lock(0);
+    u8* locked = (u8*)Lock(0);
     if (locked == 0) {
         return 0;
     }
@@ -196,7 +196,7 @@ i32 CFileImage::Blit824(void* srcv, void* palv, i32 mode) {
     if (pal == 0) {
         return 0;
     }
-    u8* locked = (u8*)this->Lock(0);
+    u8* locked = (u8*)Lock(0);
     if (locked == 0) {
         return 0;
     }
@@ -283,7 +283,7 @@ i32 CFileImage::Blit816(void* srcv, void* palv, i32 mode) {
     if (pal == 0) {
         return 0;
     }
-    u8* locked = (u8*)this->Lock(0);
+    u8* locked = (u8*)Lock(0);
     if (locked == 0) {
         return 0;
     }

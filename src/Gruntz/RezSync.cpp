@@ -157,7 +157,10 @@ struct H50 {
 };
 SIZE(H54, 0x30);
 struct H54 {
-    char raw[0x30];
+    char raw0[8];            // +0x00
+    char m_8[0x24 - 0x08];   // +0x08  MFC list sub-object (D_1b48c6 dtor)
+    i32 m_24;                // +0x24  muted-state flag
+    char raw28[0x30 - 0x28]; // +0x28
     H54();
     ~H54();
     i32 Fn10b9(i32, i32); // 0x10b9
@@ -624,7 +627,7 @@ i32 RezSync::Init(void* a1, void* a2) {
     // --- Phase 10: sound-fx list (m_54) -----------------------------
     if (m_54) {
         m_54->Fn1082();
-        ((Mfc*)((char*)m_54 + 8))->D_1b48c6();
+        ((Mfc*)&m_54->m_8)->D_1b48c6();
         RezFree(m_54);
         m_54 = 0;
     }
@@ -634,14 +637,14 @@ i32 RezSync::Init(void* a1, void* a2) {
         return 0;
     }
     {
-        i32 f = *(i32*)((char*)m_54 + 0x24);
+        i32 f = m_54->m_24;
         if (vMusVol != 0) {
             if (f == 0) {
-                *(i32*)((char*)m_54 + 0x24) = 1;
+                m_54->m_24 = 1;
                 m_54->Fn18e8();
             }
         } else if (f != 0) {
-            *(i32*)((char*)m_54 + 0x24) = 0;
+            m_54->m_24 = 0;
             m_54->Fn29b9();
         }
     }

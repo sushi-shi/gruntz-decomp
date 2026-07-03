@@ -357,10 +357,10 @@ i32 RezMgr::MakeRezPath() {
     {
         CString rez(s_rezName);
         m_haveRez = 0;
-        RezFormat(&m_pathA, s_join, cwd, (const char*)rez);
+        RezFormat(&m_pathA, s_join, cwd, (LPCTSTR)rez);
         if (!RezFileExists(m_pathA)) {
             if (drive) {
-                RezFormat(&m_pathA, s_dataPath, drive, (const char*)rez);
+                RezFormat(&m_pathA, s_dataPath, drive, (LPCTSTR)rez);
                 if (RezFileExists(m_pathA)) {
                     m_haveRez = 1;
                 } else {
@@ -379,15 +379,15 @@ i32 RezMgr::MakeRezPath() {
 
     m_haveMoviez = 0;
     i32 movFound = 0;
-    RezFormat(&m_pathB, s_join, cwd, (const char*)fec);
+    RezFormat(&m_pathB, s_join, cwd, (LPCTSTR)fec);
     if (!m_inGameDir && !RezFileExists(m_pathB) && !g_rezLowDetail) {
-        RezFormat(&m_pathB, s_join, cwd, (const char*)fecHi);
+        RezFormat(&m_pathB, s_join, cwd, (LPCTSTR)fecHi);
         if (RezFileExists(m_pathB)) {
             movFound = 1;
         }
     }
     if (!movFound && drive) {
-        RezFormat(&m_pathB, s_moviezPath, drive, (const char*)fec);
+        RezFormat(&m_pathB, s_moviezPath, drive, (LPCTSTR)fec);
         if (RezFileExists(m_pathB)) {
             m_haveMoviez = 1;
         }

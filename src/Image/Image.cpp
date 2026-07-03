@@ -683,17 +683,17 @@ i32 CFileImage::Resolve(void* surf, void* buf, i32 type, u32 size, void* surf2) 
     }
     switch (type) {
         case FMT_PID:
-            if (!DecodePid((char*)surf, buf, size, surf2)) {
+            if (!DecodePid(surf, buf, size, surf2)) {
                 return 0;
             }
             break;
         case FMT_PCX:
-            if (!DecodePcx((char*)surf, buf, size)) {
+            if (!DecodePcx(surf, buf, size)) {
                 return 0;
             }
             break;
         case FMT_BMP:
-            if (!DecodeBmp((char*)surf, buf, size)) {
+            if (!DecodeBmp(surf, buf, size)) {
                 return 0;
             }
             break;
@@ -751,7 +751,7 @@ void CFileImage::FillPalette(void* arg) {
 // down. Unlock and return 1.
 RVA(0x0013ece0, 0xc7)
 i32 CFileImage::BlitDirect(void* src, i32 mode) {
-    u8* locked = (u8*)this->Lock(0);
+    u8* locked = (u8*)Lock(0);
     if (locked == 0) {
         return 0;
     }
@@ -843,7 +843,7 @@ i32 CFileImage::Blit248(void* srcv, void* palv, i32 mode) {
     if (pal == 0) {
         return 0;
     }
-    u8* locked = (u8*)this->Lock(0);
+    u8* locked = (u8*)Lock(0);
     if (locked == 0) {
         return 0;
     }
@@ -995,17 +995,26 @@ public:
     virtual void* FUN_00141330(u32 flags); // slot 0 @+0x00  scalar-deleting dtor
     virtual i32 FUN_0013e140(void* src);   // slot 1 @+0x04
     inline CImageSurfaceItemInit() {
-        *(i32*)((char*)this + 0x08) = 0;
-        *(i32*)((char*)this + 0x0c) = 0;
-        *(i32*)((char*)this + 0x04) = 0;
-        *(i32*)((char*)this + 0x7c) = 0;
-        *(i32*)((char*)this + 0xa8) = 0;
-        *(i32*)((char*)this + 0xb8) = 0;
+        m_08 = 0;
+        m_0c = 0;
+        m_04 = 0;
+        m_7c = 0;
+        m_a8 = 0;
+        m_b8 = 0;
     }
 
-    char m_pad04[0x94 - 0x04]; // +0x04
+    i32 m_04;                  // +0x04
+    i32 m_08;                  // +0x08
+    i32 m_0c;                  // +0x0c
+    char m_pad10[0x7c - 0x10]; // +0x10
+    i32 m_7c;                  // +0x7c
+    char m_pad80[0x94 - 0x80]; // +0x80
     CByteArrayMember m_94;     // +0x94
-    char m_pada8[0xc0 - 0x98]; // +0xa8/+0xb8
+    char m_pad98[0xa8 - 0x98]; // +0x98
+    i32 m_a8;                  // +0xa8
+    char m_padac[0xb8 - 0xac]; // +0xac
+    i32 m_b8;                  // +0xb8
+    char m_padbc[0xc0 - 0xbc]; // +0xbc
 };
 
 // The global image cache the new item is filed into.
@@ -1194,7 +1203,7 @@ i32 CFileImage::SaveRle16(void* a1, void* a2, void* a3) {
         return 0;
     }
 
-    u8* locked = (u8*)this->Lock(0);
+    u8* locked = (u8*)Lock(0);
     if (locked == 0) {
         RezFree(line);
         return 0;
@@ -1262,7 +1271,7 @@ i32 CFileImage::LoadKeyed(void* surf, i32 width, i32 height, i32 a4, i32 a5, i32
 // through the remapping Blit; otherwise straight-copy via BlitDirect. The pixel
 // data starts at buf + bfOffBits. Returns 1 on a successful blit, else 0.
 RVA(0x00143fc0, 0x142)
-void* CFileImage::DecodeBmp(char* surf, void* buf, u32 size) {
+void* CFileImage::DecodeBmp(void* surf, void* buf, u32 size) {
     CFileImage* pal = (CFileImage*)surf;
     BITMAPINFOHEADER* ih = (BITMAPINFOHEADER*)((char*)buf + 0xe);
     i32 width = ih->biWidth;
@@ -1358,7 +1367,7 @@ void* CFileImage::LoadBmp(char* name, char* path) {
 // through the palette (built from the PCX trailing 768-byte VGA palette for 8bpp,
 // or the surface palette for 24bpp). Returns 1 on success, 0 on failure.
 RVA(0x00144ee0, 0x225)
-void* CFileImage::DecodePcx(char* surf, void* buf, u32 size) {
+void* CFileImage::DecodePcx(void* surf, void* buf, u32 size) {
     if (!buf) {
         return 0;
     }
@@ -1498,7 +1507,7 @@ void* CFileImage::LoadPcx(char* name, char* path) {
 // (RunDecode1) and blit through the palette. flags&1 (TRANSPARENCY) installs the
 // transparent colour (surf2) via FillPalette. Returns 1 on success, 0 on failure.
 RVA(0x00145b10, 0x1b5)
-void* CFileImage::DecodePid(char* surf, void* buf, u32 size, void* surf2) {
+void* CFileImage::DecodePid(void* surf, void* buf, u32 size, void* surf2) {
     CFileImage* pal = (CFileImage*)surf;
     u8* hdr = (u8*)buf;
     i32 flags = *(i32*)(hdr + 4);
@@ -1713,7 +1722,7 @@ i32 CFileImage::DecodePcxData(void* surf, void* buf, i32 size, i32 a4, i32 a5) {
 // Opens a PCX file, reads data, calls DecodePcxData.
 // ===========================================================================
 RVA(0x001459d0, 0x135)
-i32 CFileImage::DecodePcxEx(char* name, char* path, void* a3, void* a4) {
+i32 CFileImage::DecodePcxEx(void* surf, char* path, void* a3, void* a4) {
     CFileIO file;
 
     if (!file.Open(path, 0, 0)) {
@@ -1731,7 +1740,7 @@ i32 CFileImage::DecodePcxEx(char* name, char* path, void* a3, void* a4) {
         return 0;
     }
 
-    i32 result = DecodePcxData(name, buf, len, (i32)a3, (i32)a4);
+    i32 result = DecodePcxData(surf, buf, len, (i32)a3, (i32)a4);
     operator delete(buf);
     return result;
 }

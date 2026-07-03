@@ -365,8 +365,7 @@ i32 CImage::Reload(CImageSource* src, i32 arg) {
     if (src->m_0c == 0) {
         return 0;
     }
-    return m_surface
-        ->Reload((void*)m_parent->m_1c, resolved, index, (void*)src->m_0c, g_surfaceColorKey);
+    return m_surface->Reload(m_parent->m_1c, resolved, index, (void*)src->m_0c, g_surfaceColorKey);
 }
 
 // ---------------------------------------------------------------------------

@@ -417,8 +417,13 @@ struct CArchiveDefaultSub {
 };
 struct CArchiveMgr {
     char m_pad00[0x10];
-    CArchiveDefaultSub* m_10; // +0x10
+    CArchiveDefaultSub* m_10;   // +0x10
+    char m_pad14[0x24 - 0x14];  //
+    char m_name24[0x80 - 0x24]; // +0x24  inline name string (default-copied into scratch)
 };
+
+// The +0x188 default-int object one raw field seeds from (m_4e4 below).
+struct CArchiveDefInt;
 
 // The global default sink one raw field reads into (DAT_00612618).
 
@@ -474,11 +479,11 @@ struct CArchiveLoadRec {
     char m_pad4a0[0x4b0 - 0x4a0];
     i32 m_4b0; // +0x4b0
     char m_pad4b4[0x4cc - 0x4b4];
-    CArchiveMgr* m_4cc;            // +0x4cc  object whose +0x24 is an inline name string
-    void* m_4d0;                   // +0x4d0  object passed to the default helper
-    i32 m_4d4;                     // +0x4d4
-    i32 m_4d8, m_4dc, m_4e0;       // +0x4d8..+0x4e0
-    CArchiveDefaultSub* m_4e4_obj; // +0x4e4  object whose +0x188 seeds a default int
+    CArchiveMgr* m_4cc;        // +0x4cc  object whose +0x24 is an inline name string
+    void* m_4d0;               // +0x4d0  object passed to the default helper
+    i32 m_4d4;                 // +0x4d4
+    i32 m_4d8, m_4dc, m_4e0;   // +0x4d8..+0x4e0
+    CArchiveDefInt* m_4e4_obj; // +0x4e4  object whose +0x188 seeds a default int
     i32 m_4e8, m_4ec, m_4f0, m_4f4, m_4f8, m_4fc, m_500, m_504; // +0x4e8..+0x504
     char m_pad508[0x514 - 0x508];
     i32 m_514; // +0x514
@@ -524,7 +529,7 @@ i32 CArchiveLoadRec::Load(CArchiveReader* s) {
     i32 c0 = m_elemCount;
     s->Read(&c0, 4);
     for (u32 i0 = 0; i0 < (u32)c0; i0++) {
-        s->Read((void*)m_elemArray[i0], 8);
+        s->Read(m_elemArray[i0], 8);
     }
 
     char* p = m_384;
@@ -538,7 +543,7 @@ i32 CArchiveLoadRec::Load(CArchiveReader* s) {
         i32 cnt = e->m_count;
         s->Read(&cnt, 4);
         for (u32 i1 = 0; i1 < (u32)cnt; i1++) {
-            s->Read((void*)e->m_base[i1], 8);
+            s->Read(e->m_base[i1], 8);
         }
         e++;
     }
@@ -573,7 +578,7 @@ i32 CArchiveLoadRec::Load(CArchiveReader* s) {
         char buf[0x80];
         memset(buf, 0, sizeof(buf));
         if (m_4cc != 0) {
-            strcpy(buf, (char*)m_4cc + 0x24);
+            strcpy(buf, m_4cc->m_name24);
         }
         s->Read(buf, 0x80);
     }
@@ -586,7 +591,7 @@ i32 CArchiveLoadRec::Load(CArchiveReader* s) {
     {
         i32 v = 0;
         if (m_4e4_obj != 0) {
-            v = ((CArchiveDefInt*)m_4e4_obj)->m_188;
+            v = m_4e4_obj->m_188;
         }
         s->Read(&v, 4);
     }
@@ -987,11 +992,11 @@ i32 CProjLoadRec::Load(CSerialArchive* s, i32 mode, i32 a2, CSerialObj* a3) {
             i32 cnt;
             s->Read(&cnt, 4);
             for (i32 ci = 0; ci < cnt; ci++) {
-                void* node = g_freeList;
+                CProjNode* node = (CProjNode*)g_freeList;
                 void* payload = 0;
-                if (*(void**)node != 0) {
-                    g_freeList = *(void**)node;
-                    payload = (char*)node + 4;
+                if (node->m_next != 0) {
+                    g_freeList = node->m_next;
+                    payload = &node->m_04;
                 }
                 s->Read(payload, 8);
                 m_204.AddTail(payload);

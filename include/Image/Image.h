@@ -256,7 +256,12 @@ public:
     void* LoadBmp(char* name, char* path);
     void* LoadPcx(char* name, char* path);
     void* LoadPid(char* name, char* path, void* a3);
-    i32 DecodePcxEx(char* name, char* path, void* a3, void* a4);
+    i32 DecodePcxEx(
+        void* surf,
+        char* path,
+        void* a3,
+        void* a4
+    ); // arg1 = decode-target surface (-> DecodePcxData surf)
 
     // The surface SAVE/export path (DIRSURF.CPP). SaveFile validates the surface +
     // arguments, then SaveDispatch picks the per-bit-depth writer by m_a8 (8/16/24).
@@ -315,9 +320,11 @@ public:
     void FreeSurfaces(); // 0x13e4d0
 
     // Per-format decoders (reconstructed in Image.cpp). __thiscall on CFileImage.
-    void* DecodeBmp(char* surf, void* buf, u32 size);
-    void* DecodePcx(char* surf, void* buf, u32 size);
-    void* DecodePid(char* surf, void* buf, u32 size, void* surf2);
+    // arg1 is the source-palette surface (downcast to CFileImage* in each body); the
+    // class passes surfaces as void* (Resolve/LoadBmp both hand it in untyped).
+    void* DecodeBmp(void* surf, void* buf, u32 size);
+    void* DecodePcx(void* surf, void* buf, u32 size);
+    void* DecodePid(void* surf, void* buf, u32 size, void* surf2);
     i32 DecodePcxData(void* surf, void* buf, i32 size, i32 a4, i32 a5);
 
     // The surface-blit decoders ResolveEx dispatches to (ret 0x10 = 4 args). Same

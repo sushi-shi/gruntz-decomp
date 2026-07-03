@@ -42,7 +42,7 @@ i32 CFileImage::LoadByExt(CFileImage* info, char* path, i32 flags, i32 a4) {
             return 0;
         }
     } else if (ext != 0 && RezStricmp(ext, ".PID") == 0) {
-        if (DecodePcxEx((char*)info, path, (void*)flags, (void*)a4) == 0) {
+        if (DecodePcxEx(info, path, (void*)flags, (void*)a4) == 0) {
             return 0;
         }
         doFill = 0;

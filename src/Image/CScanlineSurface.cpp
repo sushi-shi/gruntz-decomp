@@ -41,6 +41,14 @@ i32 __stdcall SoftSurfaceBlit(void* a0, i32 kind, i32 a2, i32 a3) {
     return 0;
 }
 
+// The palette object handed to Convert8To16: an 8-byte header then the 256-entry
+// RGB table (one u32 per palette index) the 8bpp pixels look up.
+struct ScanlinePalette {
+    char m_pad0[8];    // +0x00  header
+    u32 m_colors[256]; // +0x08  RGB table (indexed by the 8bpp pixel)
+};
+SIZE_UNKNOWN(ScanlinePalette); // partial view of the foreign palette object (pointer-passed)
+
 // ---------------------------------------------------------------------------
 // Build a fresh 16bpp RGB555 copy of the 8bpp `src` surface through the
 // `pal` 256-entry RGB table (8 bytes in). Returns TRUE on success.
@@ -53,7 +61,7 @@ i32 CScanlineSurface::Convert8To16(void* a0, CScanlineSurface* src, void* pal) {
     if (pal == 0) {
         return 0;
     }
-    u32* palette = (u32*)((char*)pal + 8);
+    u32* palette = ((ScanlinePalette*)pal)->m_colors;
     if (palette == 0) {
         return 0;
     }
