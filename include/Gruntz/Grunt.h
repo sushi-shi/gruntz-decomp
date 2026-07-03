@@ -1452,36 +1452,40 @@ public:
     i32 m_284;                // +0x284
     i32 m_288;                // +0x288 (serialized)
     i32 m_28c;                // +0x28c (serialized)
-    i32 m_290;                // +0x290
-    i32 m_294;                // +0x294
-    i32 m_reachRadius; // +0x298 (grunt reach/collision radius; also reach-rect maxX, read via the &m_290 rect view)
-    i32 m_29c;            // +0x29c
-    i32 m_2a0;            // +0x2a0
-    i32 m_2a4;            // +0x2a4
-    i32 m_2a8;            // +0x2a8
-    i32 m_2ac;            // +0x2ac
-    i32 m_2b0;            // +0x2b0
-    i32 m_2b4;            // +0x2b4
-    i32 m_2b8;            // +0x2b8
-    i32 m_2bc;            // +0x2bc
-    i32 m_2c0;            // +0x2c0
-    i32 m_2c4;            // +0x2c4
-    i32 m_2c8;            // +0x2c8
-    i32 m_2cc;            // +0x2cc
-    i32 m_arrivalState;   // +0x2d0 (arrival: = 4)
-    i32 m_defenderState;  // +0x2d4 (arrival defender dispatch sub-state: switch 0/1/2/3)
-    i32 m_2d8;            // +0x2d8
-    i32 m_defenderRadius; // +0x2dc (defender radius / arrival kind)
-    i32 m_2e0;            // +0x2e0 (serialized)
-    i32 m_2e4;            // +0x2e4 (serialized)
-    i32 m_2e8;            // +0x2e8 (serialized)
-    i32 m_dwell;          // +0x2ec
-    i32 m_arrivalCol;     // +0x2f0 (arrival target grid col; grid index = 15*col+row; -1 = none)
-    i32 m_arrivalRow;     // +0x2f4 (arrival target grid row)
-    i32 m_2f8;            // +0x2f8
-    i32 m_2fc;            // +0x2fc
-    i32 m_defenderX;      // +0x300 (arrival: = m_lastTilePxX)
-    i32 m_defenderY;      // +0x304 (arrival: = m_lastTilePxY)
+    // The grunt's reach/collision bounds rect (tile-space {left,top,right,bottom};
+    // RectContains reads it via &m_reachRectLeft). m_reachRadius is the rect's right
+    // edge AND a scalar reach radius (GruntInRadius radius-sum). GruntTubeAnim seeds
+    // it {-1,-1,1,1}.
+    i32 m_reachRectLeft;   // +0x290
+    i32 m_reachRectTop;    // +0x294
+    i32 m_reachRadius;     // +0x298 (grunt reach/collision radius; also reach-rect right edge)
+    i32 m_reachRectBottom; // +0x29c
+    i32 m_2a0;             // +0x2a0
+    i32 m_2a4;             // +0x2a4
+    i32 m_2a8;             // +0x2a8
+    i32 m_2ac;             // +0x2ac
+    i32 m_2b0;             // +0x2b0
+    i32 m_2b4;             // +0x2b4
+    i32 m_2b8;             // +0x2b8
+    i32 m_2bc;             // +0x2bc
+    i32 m_2c0;             // +0x2c0
+    i32 m_2c4;             // +0x2c4
+    i32 m_2c8;             // +0x2c8
+    i32 m_2cc;             // +0x2cc
+    i32 m_arrivalState;    // +0x2d0 (arrival: = 4)
+    i32 m_defenderState;   // +0x2d4 (arrival defender dispatch sub-state: switch 0/1/2/3)
+    i32 m_2d8;             // +0x2d8
+    i32 m_defenderRadius;  // +0x2dc (defender radius / arrival kind)
+    i32 m_2e0;             // +0x2e0 (serialized)
+    i32 m_2e4;             // +0x2e4 (serialized)
+    i32 m_2e8;             // +0x2e8 (serialized)
+    i32 m_dwell;           // +0x2ec
+    i32 m_arrivalCol;      // +0x2f0 (arrival target grid col; grid index = 15*col+row; -1 = none)
+    i32 m_arrivalRow;      // +0x2f4 (arrival target grid row)
+    i32 m_2f8;             // +0x2f8
+    i32 m_2fc;             // +0x2fc
+    i32 m_defenderX;       // +0x300 (arrival: = m_lastTilePxX)
+    i32 m_defenderY;       // +0x304 (arrival: = m_lastTilePxY)
     i32 m_arrivalRerollLo; // +0x308 (arrival re-roll idle timer: anchor clock lo; i64 w/ m_arrivalRerollHi)
     i32 m_arrivalRerollHi;       // +0x30c (arrival re-roll idle timer: anchor clock hi)
     i32 m_arrivalRerollWindowLo; // +0x310 (arrival re-roll idle window lo = GruntRand()%0x7530 + 0x7530)
@@ -1506,15 +1510,15 @@ public:
     i32 m_entranceDropActive; // +0x364 (entrance-drop safe period active; set 1 on drop commit, gates combat reaction)
     i32 m_deathAnimStarted; // +0x368 (death-animation-started latch)
     i32 m_36c;              // +0x36c
-    i32 m_370;          // +0x370 (death-notify arg a2; serialized; also a CObArray view in Load)
-    i32 m_374;          // +0x374
-    i32 m_378;          // +0x378 (serialized)
-    i32 m_moveKind;     // +0x37c (move-kind fallback; randomized if 0, arg to ApplyMoveKind)
-    i32 m_moveVariant;  // +0x380 (selected entrance/move variant index 1..N; from m_374 or rand)
-    i32 m_384;          // +0x384
-    i32 m_toyTileIndex; // +0x388 (toy-tile index; gated < Grunt ToyTiles config count)
-    i32 m_38c;          // +0x38c
-    i32 m_390;          // +0x390
+    i32 m_370;             // +0x370 (death-notify arg a2; serialized; also a CObArray view in Load)
+    i32 m_374;             // +0x374
+    i32 m_378;             // +0x378 (serialized)
+    i32 m_moveKind;        // +0x37c (move-kind fallback; randomized if 0, arg to ApplyMoveKind)
+    i32 m_moveVariant;     // +0x380 (selected entrance/move variant index 1..N; from m_374 or rand)
+    i32 m_coordRetryCount; // +0x384 (StepCoordResolve: head-coord tile-claim retry budget, <=5)
+    i32 m_toyTileIndex;    // +0x388 (toy-tile index; gated < Grunt ToyTiles config count)
+    i32 m_38c;             // +0x38c
+    i32 m_390;             // +0x390
     // The per-pose animation-name index table (LoadAnimNameTable @0x49c60 fills
     // it from "GRUNTZ_"+m_animSetName+"_<POSE>" lookups). The entrance code reads
     // the IDLE1/2/3 slots (m_poseIdle/m_3b0/m_3b4) as its geometry-source triple.
@@ -1536,12 +1540,12 @@ public:
     i32 m_3d8;            // +0x3d8
     i32 m_3dc;            // +0x3dc (serialized)
     i32 m_3e0;            // +0x3e0 (serialized)
-    i32 m_3e4;            // +0x3e4
-    i32 m_3e8;            // +0x3e8
-    i32 m_health;         // +0x3ec
-    i32 m_stamina;        // +0x3f0
-    i32 m_toyTime;        // +0x3f4
-    i32 m_wingzTime;      // +0x3f8
+    i32 m_moveTileX; // +0x3e4 (destination tile X; ArrivalNotify6/Load6 arg, = PlayMoveSoundAtTile x)
+    i32 m_moveTileY; // +0x3e8 (destination tile Y; ArrivalNotify6/Load6 arg, = PlayMoveSoundAtTile y)
+    i32 m_health;    // +0x3ec
+    i32 m_stamina;   // +0x3f0
+    i32 m_toyTime;   // +0x3f4
+    i32 m_wingzTime; // +0x3f8
     char m_pad3fc[0x400 - 0x3fc];
     double m_400;      // +0x400
     double m_408;      // +0x408

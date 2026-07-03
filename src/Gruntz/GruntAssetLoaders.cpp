@@ -71,10 +71,9 @@ static const char s_WG_IDLE3[] = "GRUNTZ_WINGZGRUNT_IDLE3";
 static const char s_WG_IDLE4[] = "GRUNTZ_WINGZGRUNT_IDLE4";
 static const char s_WG_IDLE5[] = "GRUNTZ_WINGZGRUNT_IDLE5";
 
-// The entrance-cell record CString fields: two per m_cells[k] record (0x68 stride),
-// at record +8 (0x470) and +0xc (0x474). Byte-arith into the owned cell sub-object.
-#define CELL_F0(k) (*(CString*)((char*)&m_cells[(k)] + 8))
-#define CELL_F1(k) (*(CString*)((char*)&m_cells[(k)] + 0xc))
+// The entrance-cell record's WALK/IDLE anim-name CStrings (m_cells[k] at +0x08/+0x0c).
+#define CELL_WALK(k) (m_cells[(k)].m_walk)
+#define CELL_IDLE(k) (m_cells[(k)].m_idle)
 #define WLOOKUP(key) (m_154->m_c->m_2c->m_10map.Lookup((key), &_out))
 
 // ---------------------------------------------------------------------------
@@ -106,24 +105,24 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
         m_wingzClockHi = 0;
         CreateWingzTimeSprite();
 
-        CELL_F1(0) = s_NW_ITEM;
-        CELL_F1(1) = s_N_ITEM;
-        CELL_F1(2) = s_NE_ITEM;
-        CELL_F1(3) = s_W_ITEM;
-        CELL_F1(4) = s_N_ITEM;
-        CELL_F1(5) = s_E_ITEM;
-        CELL_F1(6) = s_SW_ITEM;
-        CELL_F1(7) = s_S_ITEM;
-        CELL_F1(8) = s_SE_ITEM;
-        CELL_F0(0) = s_NW_ITEM;
-        CELL_F0(1) = s_N_ITEM;
-        CELL_F0(2) = s_NE_ITEM;
-        CELL_F0(3) = s_W_ITEM;
-        CELL_F0(4) = s_N_ITEM;
-        CELL_F0(5) = s_E_ITEM;
-        CELL_F0(6) = s_SW_ITEM;
-        CELL_F0(7) = s_S_ITEM;
-        CELL_F0(8) = s_SE_ITEM;
+        CELL_IDLE(0) = s_NW_ITEM;
+        CELL_IDLE(1) = s_N_ITEM;
+        CELL_IDLE(2) = s_NE_ITEM;
+        CELL_IDLE(3) = s_W_ITEM;
+        CELL_IDLE(4) = s_N_ITEM;
+        CELL_IDLE(5) = s_E_ITEM;
+        CELL_IDLE(6) = s_SW_ITEM;
+        CELL_IDLE(7) = s_S_ITEM;
+        CELL_IDLE(8) = s_SE_ITEM;
+        CELL_WALK(0) = s_NW_ITEM;
+        CELL_WALK(1) = s_N_ITEM;
+        CELL_WALK(2) = s_NE_ITEM;
+        CELL_WALK(3) = s_W_ITEM;
+        CELL_WALK(4) = s_N_ITEM;
+        CELL_WALK(5) = s_E_ITEM;
+        CELL_WALK(6) = s_SW_ITEM;
+        CELL_WALK(7) = s_S_ITEM;
+        CELL_WALK(8) = s_SE_ITEM;
 
         _out = 0;
         WLOOKUP(s_WG_ITEM);
@@ -152,24 +151,24 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
             m_wingzTimeSprite = 0;
         }
 
-        CELL_F0(0) = s_NW_WALK;
-        CELL_F0(1) = s_N_WALK;
-        CELL_F0(2) = s_NE_WALK;
-        CELL_F0(3) = s_W_WALK;
-        CELL_F0(4) = s_N_WALK;
-        CELL_F0(5) = s_E_WALK;
-        CELL_F0(6) = s_SW_WALK;
-        CELL_F0(7) = s_S_WALK;
-        CELL_F0(8) = s_SE_WALK;
-        CELL_F1(0) = s_NW_IDLE;
-        CELL_F1(1) = s_N_IDLE;
-        CELL_F1(2) = s_NE_IDLE;
-        CELL_F1(3) = s_W_IDLE;
-        CELL_F1(4) = s_N_IDLE;
-        CELL_F1(5) = s_E_IDLE;
-        CELL_F1(6) = s_SW_IDLE;
-        CELL_F1(7) = s_S_IDLE;
-        CELL_F1(8) = s_SE_IDLE;
+        CELL_WALK(0) = s_NW_WALK;
+        CELL_WALK(1) = s_N_WALK;
+        CELL_WALK(2) = s_NE_WALK;
+        CELL_WALK(3) = s_W_WALK;
+        CELL_WALK(4) = s_N_WALK;
+        CELL_WALK(5) = s_E_WALK;
+        CELL_WALK(6) = s_SW_WALK;
+        CELL_WALK(7) = s_S_WALK;
+        CELL_WALK(8) = s_SE_WALK;
+        CELL_IDLE(0) = s_NW_IDLE;
+        CELL_IDLE(1) = s_N_IDLE;
+        CELL_IDLE(2) = s_NE_IDLE;
+        CELL_IDLE(3) = s_W_IDLE;
+        CELL_IDLE(4) = s_N_IDLE;
+        CELL_IDLE(5) = s_E_IDLE;
+        CELL_IDLE(6) = s_SW_IDLE;
+        CELL_IDLE(7) = s_S_IDLE;
+        CELL_IDLE(8) = s_SE_IDLE;
 
         _out = 0;
         WLOOKUP(s_WG_WALK);
@@ -201,7 +200,7 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
         i32* elem = desc->m_10 > 0 ? *desc->m_c : 0;
         i32 frame = elem[0x14 / 4];
         i32 idx = 3 * m_entranceCell[0] + m_entranceCell[1];
-        char* buf = GruntStrGetBuffer((char*)&m_cells[idx] + 8, 0);
+        char* buf = GruntStrGetBuffer(&m_cells[idx].m_walk, 0);
         m_154->GameApplyLookupSprite(buf, frame);
         return 1;
     }
@@ -215,7 +214,7 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
         i32* elem = desc->m_10 > 0 ? *desc->m_c : 0;
         i32 frame = elem[0x14 / 4];
         i32 idx = 3 * m_entranceCell[0] + m_entranceCell[1];
-        char* buf = GruntStrGetBuffer((char*)&m_cells[idx] + 0xc, 0);
+        char* buf = GruntStrGetBuffer(&m_cells[idx].m_idle, 0);
         m_154->GameApplyLookupSprite(buf, frame);
     }
     return 1;
@@ -778,10 +777,10 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
             m_154->GameApplyName(*(char**)&m_44c);
             {
                 CGameRegistry* g = g_pGameRegistry;
-                i32* rect = (i32*)(g->m_30->m_24->m_5c + 0x40);
+                CCueRect* r = (CCueRect*)((char*)g->m_30->m_24->m_5c + 0x40);
                 i32 x = m_10->m_5c;
                 i32 y = m_10->m_60;
-                if (x < rect[2] && x >= rect[0] && y < rect[3] && y >= rect[1]) {
+                if (x < r->right && x >= r->left && y < r->bottom && y >= r->top) {
                     g->m_60->CueSpawn(this, 3, -1, -1, -1);
                 }
             }

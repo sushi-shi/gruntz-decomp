@@ -714,7 +714,7 @@ CGrunt::CGrunt(void* owner) : CMovingLogic(owner) {
     m_neighborRow = -1;
     m_entranceCommitted = 1;
     m_healthSprite = 0;
-    m_290 = -1;
+    m_reachRectLeft = -1;
     m_staminaSprite = 0;
     m_toyTimeSprite = 0;
     m_wingzTimeSprite = 0;
@@ -729,9 +729,9 @@ CGrunt::CGrunt(void* owner) : CMovingLogic(owner) {
     m_wingzEnabled = 0;
     m_tileClaimed = 0;
     m_428 = 0;
-    m_294 = -1;
+    m_reachRectTop = -1;
     m_reachRadius = 1;
-    m_29c = 1;
+    m_reachRectBottom = 1;
     m_2a0 = 0;
     m_2a4 = 0;
     m_2a8 = 0;
@@ -1264,7 +1264,14 @@ i32 CGrunt::StepEntranceReinit() {
     eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeI) == 0);
     if (eq) {
         // code "I": re-notify the tile mgr of the arrival.
-        m_tileMgr->ArrivalNotify6(m_tileOwnerHi, m_tileOwnerLo, m_3e4, m_3e8, m_entranceReason, -1);
+        m_tileMgr->ArrivalNotify6(
+            m_tileOwnerHi,
+            m_tileOwnerLo,
+            m_moveTileX,
+            m_moveTileY,
+            m_entranceReason,
+            -1
+        );
     }
     if (m_poweredUp != 0 && m_neighborValid == 0) {
         m_entranceActive = 0;
@@ -2556,7 +2563,7 @@ i32 CGrunt::RectContains(i32 x, i32 y) {
     i32 px = x >> 5;
     i32 py = y >> 5;
 
-    i32* ra = (i32*)(&m_290);
+    i32* ra = (i32*)(&m_reachRectLeft);
     i32* rb = (i32*)(&m_2a0);
 
     RECT r1;
@@ -3776,7 +3783,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     ar->Write(&m_entranceStamped, 4);
     ar->Write(&m_22c, 4);
     ar->Write(&m_arrivalActive, 4);
-    ar->Write(&m_290, 16);
+    ar->Write(&m_reachRectLeft, 16);
     ar->Write(&m_2a0, 16);
     ar->Write(&m_2b0, 16);
     ar->Write(&m_2c0, 16);
@@ -3806,7 +3813,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     ar->Write(&m_358, 4);
     ar->Write(&m_35c, 4);
     ar->Write(&m_3dc, 8);
-    ar->Write(&m_3e4, 8);
+    ar->Write(&m_moveTileX, 8);
     ar->Write(&m_arrivalPhase, 4);
     ar->Write(&m_timePerTile, 4);
     ar->Write((char*)this + 0x408, 8); // m_408 double (raw: see m_400 note)
@@ -3836,7 +3843,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     ar->Write(&m_374, 4);
     ar->Write(&m_moveKind, 4);
     ar->Write(&m_moveVariant, 4);
-    ar->Write(&m_384, 4);
+    ar->Write(&m_coordRetryCount, 4);
     ar->Write(&m_toyTileIndex, 4);
     ar->Write(&m_390, 4);
     ar->Write(&m_378, 4);
@@ -3920,7 +3927,7 @@ i32 CGrunt::Load(CGruntArchive* ar) {
         }
     }
 
-    ar->Read(&m_384, 8);
+    ar->Read(&m_coordRetryCount, 8);
     ar->Read(&m_38c, 8);
     ar->Read(&m_poseWalk, 8);
     ar->Read(&m_poseAttack2, 8);
@@ -4172,7 +4179,14 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
 
     eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeI) == 0);
     if (eq) {
-        m_tileMgr->ArrivalNotify6(m_tileOwnerHi, m_tileOwnerLo, m_3e4, m_3e8, m_entranceReason, -1);
+        m_tileMgr->ArrivalNotify6(
+            m_tileOwnerHi,
+            m_tileOwnerLo,
+            m_moveTileX,
+            m_moveTileY,
+            m_entranceReason,
+            -1
+        );
     } else {
         eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeN) == 0);
         if (eq) {
@@ -4522,7 +4536,7 @@ void CGrunt::LoadVehicleGruntAnimations() {
 // The move-config / entrance-reason dispatch. If the current anim is the "I"
 // (idle) record it commits the tile load; otherwise (when on-screen) it fires the
 // move cue (8). It then plays the move sound at (a,b), records the move tile
-// (m_3e4/m_3e8), drops the powered-up reset, and dispatches on m_entranceReason:
+// (m_moveTileX/m_moveTileY), drops the powered-up reset, and dispatches on m_entranceReason:
 //   1    -> BOMBGRUNT run config ("M" anim set + RunningTimePerTile bute read)
 //   0x12 -> "N" anim set + toggle m_coordToggle
 //   0x13 -> "I" anim set + random idle/item variant cue (CueA), pose m_3d0[poseIdx]
@@ -4544,7 +4558,8 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
 
     i32 eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeI) == 0);
     if (eq) {
-        m_tileMgr->Load6(m_tileOwnerHi, m_tileOwnerLo, m_3e4, m_3e8, m_entranceReason, -1);
+        m_tileMgr
+            ->Load6(m_tileOwnerHi, m_tileOwnerLo, m_moveTileX, m_moveTileY, m_entranceReason, -1);
     } else {
         CGruntHud* h = m_10;
         CGameRegistry* g = g_pGameRegistry;
@@ -4555,8 +4570,8 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
     }
 
     PlayMoveSoundAtTile(a, b);
-    m_3e4 = a;
-    m_3e8 = b;
+    m_moveTileX = a;
+    m_moveTileY = b;
     if (m_poweredUp != 0 && m_neighborValid == 0) {
         m_entranceActive = 0;
         m_combatActive = 0;
@@ -4758,7 +4773,14 @@ i32 CGrunt::StepArrivalCommit() {
         if (m_entranceReason == 0x13) {
             g_gameReg->m_60->Cue1(m_10->m_188);
         }
-        m_tileMgr->ArrivalNotify6(m_tileOwnerHi, m_tileOwnerLo, m_3e4, m_3e8, m_entranceReason, -1);
+        m_tileMgr->ArrivalNotify6(
+            m_tileOwnerHi,
+            m_tileOwnerLo,
+            m_moveTileX,
+            m_moveTileY,
+            m_entranceReason,
+            -1
+        );
         if (m_entranceReason != 1) {
             goto finalize;
         }
@@ -5216,7 +5238,14 @@ i32 CGrunt::StepAnimDispatchA(i32 x, i32 y, i32 c, i32 d) {
         if (m_entranceReason == 0x13) {
             EmitMoveCueShort(m_10->m_188, 0, 0);
         }
-        m_tileMgr->ArrivalNotify6(m_tileOwnerHi, m_tileOwnerLo, m_3e4, m_3e8, m_entranceReason, -1);
+        m_tileMgr->ArrivalNotify6(
+            m_tileOwnerHi,
+            m_tileOwnerLo,
+            m_moveTileX,
+            m_moveTileY,
+            m_entranceReason,
+            -1
+        );
         if (m_entranceReason != 1) {
             goto applyTail;
         }
@@ -5332,7 +5361,7 @@ modeDispatch: {
 // CGrunt::StepCoordResolve()   @0x5f310   (ret 0)
 // @early-stop
 // large-state-machine plateau: the coord-probe head (claim the head coord's tile if
-// free, else retry within the m_384 budget) and the scratch-resolver D-code reject
+// free, else retry within the m_coordRetryCount budget) and the scratch-resolver D-code reject
 // cascade (the inline-strcmp `bool eq` setcc + the scratch CString teardown) are
 // reconstructed in shape. Residue is the scratch loop-strength-reduction (shared, no
 // source spelling), the deep grid/board chains by raw offset, and cross-arm
@@ -5351,9 +5380,9 @@ void CGrunt::StepCoordResolve() {
                 && (mask == 0 || (m_arrivalNotified & fl) != 0)) {
                 m_entrancePxX = (co->m_x << 5) + 0x10;
                 m_entrancePxY = (co->m_y << 5) + 0x10;
-                m_384 = 0;
+                m_coordRetryCount = 0;
                 NotifyDrop();
-            } else if (m_384 <= 5) {
+            } else if (m_coordRetryCount <= 5) {
                 if (ProbeRetry() != 0) {
                     GruntCoord* h2 = (m_320)->m_coord;
                     m_entrancePxX = (h2->m_x << 5) + 0x10;
@@ -5362,12 +5391,12 @@ void CGrunt::StepCoordResolve() {
                         GruntCoord* h3 = (m_320)->m_coord;
                         i32 fl2 = ((i32*)g_gameReg->m_70->m_8[h3->m_y])[h3->m_x * 7];
                         if (!(fl2 & 0x20000000)) {
-                            m_384 = 0;
+                            m_coordRetryCount = 0;
                             NotifyDrop();
                         }
                     }
                 } else {
-                    (m_384)++;
+                    (m_coordRetryCount)++;
                 }
             }
         }
@@ -5407,7 +5436,14 @@ i32 CGrunt::StepAnimDispatchB() {
         if (m_entranceReason == 0x13) {
             EmitMoveCueShort(m_10->m_188, 0, 0);
         }
-        m_tileMgr->ArrivalNotify6(m_tileOwnerHi, m_tileOwnerLo, m_3e4, m_3e8, m_entranceReason, -1);
+        m_tileMgr->ArrivalNotify6(
+            m_tileOwnerHi,
+            m_tileOwnerLo,
+            m_moveTileX,
+            m_moveTileY,
+            m_entranceReason,
+            -1
+        );
         return 1;
     }
     eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeG) == 0);
@@ -6378,7 +6414,14 @@ i32 CGrunt::StepCombatReaction(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i
         if (m_entranceReason == 0x13) {
             g_gameReg->m_60->Cue1(m_10->m_188);
         }
-        m_tileMgr->ArrivalNotify6(m_tileOwnerHi, m_tileOwnerLo, m_3e4, m_3e8, m_entranceReason, -1);
+        m_tileMgr->ArrivalNotify6(
+            m_tileOwnerHi,
+            m_tileOwnerLo,
+            m_moveTileX,
+            m_moveTileY,
+            m_entranceReason,
+            -1
+        );
         goto tail;
     }
     if (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeG) == 0) {
@@ -7213,8 +7256,8 @@ i32 CGrunt::StartBombGruntRun() {
         dx += h->m_5c >> 5;
     }
     PlayMoveSoundAtTile(dx, dy);
-    m_3e4 = dx;
-    m_3e8 = dy;
+    m_moveTileX = dx;
+    m_moveTileY = dy;
     m_prevAnimSetNode = (i32)m_14->m_1c;
     m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeM);
     m_timePerTile = g_buteMgr.GetIntDef(s_BOMBGRUNT, s_RunningTimePerTile, 0x64);
