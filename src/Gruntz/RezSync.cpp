@@ -322,7 +322,7 @@ struct RezSync {
     char m_150[4 * 0x238];
     char _tail[0xa30 - (0x150 + 4 * 0x238)];
 
-    i32 Init(void* a1, void* a2);
+    i32 Init(void* a1, char* a2);
     i32 Run(void*, void*); // 0x13dd50
     void Error2(u32, u32); // 0x346d
     void Error1(u32);      // 0x3f80
@@ -361,7 +361,7 @@ struct RezSync {
 // rollup understates the faithful carcass. Deferred to the final sweep: model
 // each heap ctor inline once the child classes are reconstructed.
 RVA(0x00083450, 0x192d)
-i32 RezSync::Init(void* a1, void* a2) {
+i32 RezSync::Init(void* a1, char* a2) {
     // --- Phase 1: coord-pool free list -------------------------------
     CoordNode* pool = (CoordNode*)RezAlloc(0x3a980);
     g_coordPool = pool;
@@ -482,7 +482,7 @@ i32 RezSync::Init(void* a1, void* a2) {
     levelName[0] = 0;
     if (a2) {
         char buf[0x130];
-        strcpy(buf, (char*)a2);
+        strcpy(buf, a2);
         StrUpr(buf);
         if (SubstringMatch(buf, "PLAY")) {
             mode = 3;
@@ -535,7 +535,7 @@ i32 RezSync::Init(void* a1, void* a2) {
     // --- Phase 6: surface manager + game level -----------------------
     g_645210 = *(i32*)((char*)m_08 + 0xc);
     char dpBuf[0x114];
-    strcpy(dpBuf, (char*)a2);
+    strcpy(dpBuf, a2);
     Fn1d3eff(*(i32*)((char*)m_08 + 0xc), 0, dpBuf, 1);
     ((Mfc*)&m_c8)->C_1b9c69();
     m_30 = new CDDrawSurfaceMgr;
@@ -671,7 +671,7 @@ i32 RezSync::Init(void* a1, void* a2) {
         return 0;
     }
     m_58 = new H58;
-    if (!m_58->Fn402f((const char*)&g_lab545854)) {
+    if (!m_58->Fn402f(g_lab545854)) {
         // (uses g_emptyString 0x6293f4 in retail)
         Error2(0x800a, 0x412);
         return 0;

@@ -5,6 +5,6 @@ Method/Stub/FUN	337
 placeholder classes	391
 )this casts	328
 )m_ casts	759
-(char*) casts	918
-(const char*) casts	111
+(char*) casts	916
+(const char*) casts	110
 void* m_ members	441

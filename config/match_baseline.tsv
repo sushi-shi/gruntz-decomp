@@ -2204,7 +2204,7 @@ glyphstr	?ShowHudMessage@@YAXPAUHudMsgSink@@HHHHHHHH@Z	94.2857	94.2857	1	fa1a18d
 glyphstr	?ShowHudMessageAlt@@YAXPAUHudMsgSink@@HHHHHHHH@Z	94.2857	94.2857	1	b497a5259073	0x115520
 glyphtable	?Get@GlyphTable@@QAEHH@Z	100.0000	100.0000	1	db897731bcf2	0xc0430
 glyphtable	?Set@GlyphTable@@QAEXHH@Z	100.0000	100.0000	1	69ba9e995038	0xc03f0
-goowellmgr	?LoadTeleporterGooConfig@CGooWellMgr@@QAEHH@Z	96.3620	96.3620	6	42f7cb316bdb	0x6eb80
+goowellmgr	?LoadTeleporterGooConfig@CGooWellMgr@@QAEHH@Z	96.3620	96.3620	7	7080b1764c3e	0x6eb80
 groupops	?Broadcast@CGroupBroadcast@@QAEHXZ	84.2364	84.2364	1	4587301968b6	0x112080
 groupops	?CenterOnGroup@CGroupSel@@QAEHH@Z	82.6018	82.6018	4	12a47957cbd6	0x7cf40
 grunt	??0CGrunt@@QAE@PAX@Z	78.2475	78.2475	5	17e9dd3e46c0	0x47a10
@@ -3097,7 +3097,7 @@ rezmgr	?PerFrameTick@RezMgr@@UAEHXZ	100.0000	100.0000	5	f48f8cfdbf55	0x8b740
 rezmgr	?Read@CRezItm@@QAEHHHIPAX@Z	100.0000	100.0000	4	4cf959e4f6b5	0x13c600
 rezmgr	?UpdateClock@RezMgr@@QAEHXZ	100.0000	100.0000	3	6a03d9facd33	0x13ddc0
 rezmgr	?Write@CRezItm@@QAEHHHIPAX@Z	100.0000	100.0000	4	a315a71e3526	0x13c6c0
-rezsync	?Init@RezSync@@QAEHPAX0@Z	63.4747	63.4747	8	d419a5a4dde4	0x83450
+rezsync	?Init@RezSync@@QAEHPAXPAD@Z	63.4747	63.4747	1	ef7de2f66911	0x83450
 rezutil	_RezFree	100.0000	100.0000	1	fe93430adc1a	0x1b9b82
 ringbuffer	?deflateInit_@@YAHHHHH@Z	100.0000	100.0000	1	488cfe5747f6	0x186180
 ringbuffer	?flush_pending@@YAXPAUz_stream@@@Z	100.0000	100.0000	1	5b40120f1de9	0x186910
