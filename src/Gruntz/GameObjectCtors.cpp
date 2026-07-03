@@ -15,7 +15,8 @@
 //   * the CPathHazard-based ctors (base 0xb35a0 via thunk 0x2fc2):
 //     CRainCloud / CUFO.
 // Functions are defined in ascending-RVA order.
-#include <Bute/ButeTree.h> // canonical CButeTree (one shape)
+#include <Bute/ButeTree.h>      // canonical CButeTree (one shape)
+#include <Gruntz/CPathHazard.h> // real CPathHazard base (: CUserLogic) for CRainCloud/CUFO
 #include <rva.h>
 
 // ---------------------------------------------------------------------------
@@ -223,36 +224,23 @@ CGruntWingzTimeSprite::CGruntWingzTimeSprite(CSpriteObj* obj) : CGruntSpriteBase
 // fields the base leaves uninitialized.
 // ===========================================================================
 
-// The engine game-object the hazard ctors poke (m_10 == m_38 == obj). Only the
-// touched offsets are modeled; ApplyLookupGeometry reloc-masks (0x1505b0).
-struct CHazardObj {
-    i32 ApplyLookupGeometry(const char* key, i32 flag); // 0x1505b0 (__thiscall)
-    char m_pad00[0x08];
-    i32 m_08; // +0x08
-    char m_pad0c[0x4c - 0x0c];
-    i32 m_4c; // +0x4c
-    i32 m_50; // +0x50
-    i32 m_54; // +0x54
-    i32 m_58; // +0x58
-    i32 m_5c; // +0x5c
-    i32 m_60; // +0x60
-    char m_pad64[0x130 - 0x64];
-    i32 m_130; // +0x130
-    char m_pad134[0x144 - 0x134];
-    i32 m_144; // +0x144
-    i32 m_148; // +0x148
-    i32 m_14c; // +0x14c
-    i32 m_150; // +0x150
-    char m_pad154[0x1b4 - 0x154];
-    i32 m_1b4; // +0x1b4
-};
+// The hazard ctors poke the bound engine game-object directly (m_10 == m_38 ==
+// obj), modeled as the real CGameObject (<Gruntz/UserLogic.h>) - no per-TU view.
+// ApplyLookupGeometry (0x1505b0) reloc-masks.
 
 // The global game registry the hazard ctors poll; wwdfile owns the real DATA
 // label (0x24556c). +0x78 is a sub-object whose +0x28 (for the rain cloud) and
 // +0x30 (the spotlight factory, for the UFO) are read.
+// The spotlight-spawn factory embedded at CHazardRegInner+0x08 (Spawn is 0x1597b0).
+// A tiny helper with just the method so the __thiscall lowers cleanly and reloc-
+// masks; embedded (not a cast) so `->m_08.Spawn(...)` takes its address directly.
+struct CSpotLight;
+struct CSpotLightFactory {
+    CSpotLight* Spawn(i32 a, i32 b, i32 c, i32 d, const char* e, i32 f); // 0x1597b0
+};
 struct CHazardRegInner {
     char m_pad00[0x08];
-    i32 m_08; // +0x08 -> the factory `this` for Spawn
+    CSpotLightFactory m_08; // +0x08  embedded spotlight-spawn factory (its `this`)
 };
 struct CHazardRegSub {
     char m_pad00[0x28];
@@ -273,9 +261,8 @@ extern CHazardReg* g_gameReg;
 // (0x150540) and the +0x7c sub-object's vtable poke (slot +0x10) reloc-mask.
 struct CSpotLightSubInner {
     char m_pad00[0x98];
-    i32 m_98; // +0x98
+    CGameObject* m_owner; // +0x98  the bound owner game-object (== CUFO's m_10)
 };
-struct CSpotLight;
 struct CSpotLightSub {
     // The +0x7c sub-object's vtable. Slot +0x10 (Configure) is invoked indirectly
     // on `this` with the parent spotlight pushed as an arg; modeled as a typed
@@ -302,59 +289,31 @@ struct CSpotLight {
     i32 m_12c; // +0x12c
 };
 
-// The spotlight-spawn factory (g_gameReg->m_78->m_30->m_08 is the thiscall
-// `this`; Spawn is 0x1597b0). Modeled as a method on a tiny helper so the
-// thiscall lowers cleanly and reloc-masks.
-struct CSpotLightFactory {
-    CSpotLight* Spawn(i32 a, i32 b, i32 c, i32 d, const char* e, i32 f); // 0x1597b0
-};
+// CRainCloud / CUFO : CPathHazard (RTTI-proven; vtable_hierarchy --tree). The real
+// base is the fully-modeled 21-slot CPathHazard (<Gruntz/CPathHazard.h>); its ctor
+// (0xb35a0) stays DECLARED only (out-of-line; the leaf ctor's `call` reloc-masks
+// to it via thunk 0x2fc2). cl emits each leaf's ??_7 + the implicit post-base-ctor
+// vptr stamp; the inherited m_10/m_38 (CUserLogic, == obj) and m_savedGeoId (+0x40)
+// are read directly. Replaces the old fabricated `CPathHazardBase` stand-in.
 
-// --- out-of-line base shell (reloc-masks to CPathHazard ctor 0xb35a0) -------
-// Real polymorphic base now (21 declared-only virtuals): cl emits each leaf's
-// ??_7 + the implicit post-base-ctor vptr stamp; leaf vtable names auto-derive
-// (RTTI). Replaces the explicit `*(void**)this = &g_...Vtbl`. The base ctor is
-// DECLARED only (out-of-line; its `call` reloc-masks to 0xb35a0).
-struct CPathHazardBase {
-    CPathHazardBase(CHazardObj* obj);
-    ~CPathHazardBase(); // out-of-line; unwound on throw
-    virtual void Vf0();
-    virtual void Vf1();
-    virtual void Vf2();
-    virtual void Vf3();
-    virtual void Vf4();
-    virtual void Vf5();
-    virtual void Vf6();
-    virtual void Vf7();
-    virtual void Vf8();
-    virtual void Vf9();
-    virtual void Vf10();
-    virtual void Vf11();
-    virtual void Vf12();
-    virtual void Vf13();
-    virtual void Vf14();
-    virtual void Vf15();
-    virtual void Vf16();
-    virtual void Vf17();
-    virtual void Vf18();
-    virtual void Vf19();
-    virtual void Vf20();
-    // +0x00  implicit vptr (was an explicit m_vptr struct stamp)
-    char m_pad04[0x10 - 0x04];
-    CHazardObj* m_10; // +0x10  (== obj)
-    char m_pad14[0x38 - 0x14];
-    CHazardObj* m_38; // +0x38  (== obj)
-    char m_pad3c[0x40 - 0x3c];
-    i32 m_40; // +0x40
-};
-
-class CRainCloud : public CPathHazardBase {
+class CRainCloud : public CPathHazard {
 public:
-    CRainCloud(CHazardObj* obj);
+    CRainCloud(CGameObject* obj);
+    // The slots CRainCloud overrides over CPathHazard's vtable (declared only;
+    // reloc-masked). slots 1/2 (origin CUserBase) stay inherited-attributed.
+    virtual ~CRainCloud() OVERRIDE;         // slot 0
+    virtual i32 Tick() OVERRIDE;            // slot 16
+    virtual i32 HitTest(i32, i32) OVERRIDE; // slot 20
 };
 
-class CUFO : public CPathHazardBase {
+class CUFO : public CPathHazard {
 public:
-    CUFO(CHazardObj* obj);
+    CUFO(CGameObject* obj);
+    virtual ~CUFO() OVERRIDE;    // slot 0
+    virtual i32 Tick() OVERRIDE; // slot 16
+    // CUFO's serialize (slot 1 in retail): kept a plain reconstructed method - its
+    // 4-arg shape can't override the base's placeholder slot-1 signature; the
+    // vtable slot stays inherited-attributed (reloc-masked).
     i32 Serialize(void* stream, i32 tag, i32 c, i32 d);      // 0x0b4d30
     i32 SerializeChain(void* stream, i32 tag, i32 c, i32 d); // 0x16e7f0 (base chain; call-only)
 };
@@ -365,13 +324,13 @@ public:
 // @confidence: high
 // @source: rtti-vptr
 RVA(0x000b49b0, 0xa8)
-CRainCloud::CRainCloud(CHazardObj* obj) : CPathHazardBase(obj) {
-    CHazardObj* o = m_10;
+CRainCloud::CRainCloud(CGameObject* obj) : CPathHazard(obj) {
+    CGameObject* o = m_10;
     i32 n = g_gameReg->m_78->m_28;
     o->m_58 = 1;
     o->m_50 = 0x7;
     o->m_4c = n;
-    m_40 = m_38->m_1b4;
+    m_savedGeoId = m_38->m_1b4;
     m_38->ApplyLookupGeometry("LEVEL_RAINCLOUD", 0);
     m_10->m_144 = 1;
     m_10->m_14c = 1;
@@ -392,15 +351,14 @@ CRainCloud::CRainCloud(CHazardObj* obj) : CPathHazardBase(obj) {
 // dead-store half is the entropy-tail artifact of docs/patterns/reloc-typing-vptr-
 // global.md / SBI_ImageSet::Serialize. Deferred to the final sweep.
 RVA(0x000b4a90, 0x145)
-CUFO::CUFO(CHazardObj* obj) : CPathHazardBase(obj) {
-    CHazardObj* o = m_10;
+CUFO::CUFO(CGameObject* obj) : CPathHazard(obj) {
+    CGameObject* o = m_10;
     i32 sx = o->m_5c;
     i32 sy = o->m_60;
-    m_40 = m_38->m_1b4;
+    m_savedGeoId = m_38->m_1b4;
     m_38->ApplyLookupGeometry("LEVEL_UFO", 0);
     for (i32 i = 0; i < 2; ++i) {
-        CSpotLight* sl = ((CSpotLightFactory*)((char*)&g_gameReg->m_78->m_30->m_08))
-                             ->Spawn(0, sx, 0, 0, "SpotLight", 0x40003);
+        CSpotLight* sl = g_gameReg->m_78->m_30->m_08.Spawn(0, sx, 0, 0, "SpotLight", 0x40003);
         if (sl != 0) {
             sl->ApplyName("LEVEL_SPOTLIGHT");
             CSpotLightSub* sub = sl->m_7c;
@@ -411,7 +369,7 @@ CUFO::CUFO(CHazardObj* obj) : CPathHazardBase(obj) {
             sl->m_118 = i;
             sl->m_120 = m_10->m_130;
             sub->m_vptr->Configure(sub, sl);
-            sl->m_7c->m_18->m_98 = (i32)m_10;
+            sl->m_7c->m_18->m_owner = m_10;
         }
     }
     m_10->m_58 = 1;
@@ -541,13 +499,11 @@ SIZE(CGruntWingzTimeSprite, 0x64);
 
 SIZE_UNKNOWN(CButeTree);
 SIZE_UNKNOWN(CGruntSpriteBase);
-SIZE_UNKNOWN(CHazardObj);
 SIZE_UNKNOWN(CHazardReg);
 SIZE_UNKNOWN(CHazardRegInner);
 SIZE_UNKNOWN(CHazardRegSub);
 SIZE_UNKNOWN(CHazardSerialSub);
 SIZE_UNKNOWN(CHazardStream);
-SIZE_UNKNOWN(CPathHazardBase);
 SIZE_UNKNOWN(CRainCloud);
 SIZE_UNKNOWN(CSpotLight);
 SIZE_UNKNOWN(CSpotLightFactory);

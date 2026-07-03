@@ -144,7 +144,7 @@ struct CGameObject {
     i32 m_124; // +0x124  sprite-selector row key (leaf ctors pass it to ApplyLookupSprite)
     i32 m_128; // +0x128  visibility/place mode (1 or 2; the on-screen gate discriminator)
     i32 m_12c; // +0x12c  CSpotLight ctor: m_58 scale gate
-    char m_pad130[0x134 - 0x130];
+    i32 m_130; // +0x130  (CUFO ctor: seeds the spotlight's m_120)
     i32 m_134; // +0x134  per-side tile-span config (checkpoint/voice/exit/slime bounds)
     i32 m_138; // +0x138
     i32 m_13c; // +0x13c

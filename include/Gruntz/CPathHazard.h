@@ -108,15 +108,20 @@ public:
     i32 StartPath();               // 0x29be thunk (find/seed the first leg; reloc-masked no-body)
     // GetTypeTag (0x132f0): the 6-byte per-class logic-type id accessor (0x425).
     i32 GetTypeTag();
-    // Tick (virtual slot 16, body 0xb4020): the per-frame driver.
-    i32 Tick();
-    // BeginLeg (virtual slot 19, body 0xb47e0): compute the unit vector toward
-    // the current waypoint (m_f8) and seed the movement state. Returns 1.
-    i32 BeginLeg();
-    // ForwardTick (0xb5070): a thin non-virtual forwarder to the virtual slot 16
-    // (Tick). Tail-jumps `this->vtbl[16]()`.
+    // The five virtuals CPathHazard adds over CUserLogic's 16 slots (16..20), so cl
+    // emits the real 21-slot ??_7CPathHazard@@6B@ (CRainCloud/CUFO derive it). Tick
+    // and BeginLeg carry bodies; slots 17/18/20 are declared-only (reloc-masked).
+    virtual i32 Tick();    // slot 16 (body 0xb4020): the per-frame driver.
+    virtual void Slot17(); // slot 17 (declared-only)
+    virtual void Arrive(); // slot 18 (declared-only; the "arrived" handler)
+    // BeginLeg (slot 19, body 0xb47e0): compute the unit vector toward the current
+    // waypoint (m_f8) and seed the movement state. Returns 1.
+    virtual i32 BeginLeg();        // slot 19
+    virtual i32 HitTest(i32, i32); // slot 20 (declared-only; per-frame hit test)
+    // ForwardTick (0xb5070): a thin non-virtual forwarder to virtual slot 16 (Tick).
+    // Tail-jumps `this->vtbl[16]()` through the raw vtable view (kept indirect).
     void ForwardTick();
-    ~CPathHazard(); // 0x13340 (folds the CUserLogic teardown)
+    ~CPathHazard(); // 0x13340 (folds the CUserLogic teardown; slot 0)
 
     i32 m_savedGeoId; // +0x40  saved m_38->m_1b4 geometry id (before GAME_CYCLE100)
     char m_pad44[0x58 - 0x44];
