@@ -463,21 +463,15 @@ struct CNetListNode {
 SIZE_UNKNOWN(CNetListNode); // CObList node walk-view; retail size TBD
 
 // ---------------------------------------------------------------------------
-// The shared CObject-like collection-node base (grand-base vtable @0x5e8cb4): the
-// 5-slot CObject-style interface + the implicit vptr @+0x00. Real polymorphic so
-// `new CNetPlayerListNode/CNetSessionNode` two-phase-stamps the base then the
-// derived vtable (cl-emitted, reloc-masking 0x5e8cb4/0x5f0760/0x5f0778) with the
-// compiler's /GX new-cleanup frame - replacing the old manual g_net*NodeVtbl
-// stamps. The emitted node vtables here are orphans (their RVAs are owned by
-// NetSessionNode.cpp's VTBLs), so no VTBL is attached -> no dup-DATA.
-struct CNetNodeBase {
-    virtual void V0();       // slot 0 (sub_1bef01)
-    virtual ~CNetNodeBase(); // slot 1 (scalar-deleting dtor)
-    virtual void V2();       // slot 2 (sub_0028ec)
-    virtual void V3();       // slot 3 (sub_00106e)
-    virtual void V4();       // slot 4 (sub_004034)
-};
-inline CNetNodeBase::~CNetNodeBase() {}
+// Both node types derive from the shared engine grand-base Wap::CObject (RTTI
+// "CObject", 5-slot interface, grand-base vtable @0x5e8cb4). vtable_hierarchy
+// confirms each node's own vtable (0x5f0760 / 0x5f0778) is the CObject interface
+// (slots 0/2/3/4 inherited, slot 1 the destructor override) with no new virtual.
+// Real polymorphic so `new CNetPlayerListNode/CNetSessionNode` two-phase-stamps the
+// base then the derived vtable (cl-emitted, reloc-masking 0x5e8cb4/0x5f0760/
+// 0x5f0778) with the compiler's /GX new-cleanup frame - replacing the old manual
+// g_net*NodeVtbl stamps. The emitted node vtables here are orphans (their RVAs are
+// owned by NetSessionNode.cpp's VTBLs), so no VTBL is attached -> no dup-DATA.
 
 // ---------------------------------------------------------------------------
 // The managed-player object node the +0x38 player list holds. AddPlayerNode
@@ -487,7 +481,7 @@ inline CNetNodeBase::~CNetNodeBase() {}
 // trims its name), and AddTail's it onto the +0x38 CObList, caching the returned
 // __POSITION at +0x54.
 // ---------------------------------------------------------------------------
-class CNetPlayerListNode : public CNetNodeBase {
+class CNetPlayerListNode : public Wap::CObject {
 public:
     char m_body[0x54 - 0x4]; // +0x04  the 0x50-byte player descriptor + name ptr
     __POSITION* m_54;        // +0x54  cached AddTail position
@@ -512,7 +506,7 @@ public:
 // +0x20, then GetData5's (slot 0x74) the session blob and AddTail's the node onto
 // the +0x54 list.
 // ---------------------------------------------------------------------------
-class CNetSessionNode : public CNetNodeBase {
+class CNetSessionNode : public Wap::CObject {
 public:
     i32 m_sessionId;      // +0x04
     CString m_8;          // +0x08  name CString

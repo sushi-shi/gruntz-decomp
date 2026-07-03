@@ -372,17 +372,17 @@ i32 CImage::Reload(CImageSource* src, i32 arg) {
 // ---------------------------------------------------------------------------
 // The virtual destructor. MSVC stamps this class's own vtable
 // (??_7CImage, catalog auto-named) at entry, runs the cleanup virtual (FreeAll),
-// then the base subobject dtor folds in (sets m_status=-1, zeroes m_08/m_parent, stamps
-// the grand-base dtor vtable). Both vptr stamps are compiler-implicit now, so they
-// land in the retail "stamp-first" order. The /GX EH frame falls out of the
-// non-trivial CImageBase subobject.
+// then the Wap::CObject base subobject dtor folds in (sets m_status=-1, zeroes
+// m_08/m_parent, stamps the grand-base dtor vtable). Both vptr stamps are
+// compiler-implicit now, so they land in the retail "stamp-first" order. The /GX EH
+// frame falls out of the non-trivial Wap::CObject subobject.
 RVA(0x000d5e80, 0x5b)
 CImage::~CImage() {
     FreeAll();
-    m_status = -1; // base-field resets (precede the folded ~CImageBase grand stamp)
+    m_status = -1; // base-field resets (precede the folded ~Wap::CObject grand stamp)
     m_08 = 0;
     m_parent = 0;
-    // ~CImageBase() folds here: emits only the grand-base vptr re-stamp.
+    // ~Wap::CObject() folds here: emits only the grand-base vptr re-stamp.
 }
 
 // ---------------------------------------------------------------------------
@@ -444,15 +444,14 @@ void CImage::RenderFrameClipped(void* a, void* b, void* c, void* rect, void* d) 
 // ===========================================================================
 // Class-metadata annotations (EOF-hosted: CImage.h is included by several /O2
 // Image TUs whose leaf decoders are byte-exact-sensitive, so keep the completeness
-// typedefs after the last function). VTBL skips (logged): CImageBase's vtable is
-// the shared grand-base 0x5e8cb4 (the CObject dtor vtable); CImageSource is flagged
-// [virtual] only via its polymorphic Gruntz def, not this view. The held surface
+// typedefs after the last function). VTBL skips (logged): the Wap::CObject base
+// vtable is the shared grand-base 0x5e8cb4 (the CObject dtor vtable); CImageSource is
+// flagged [virtual] only via its polymorphic Gruntz def, not this view. The held surface
 // (CDDSurface) and owned sprite (CDDrawShadeBlit) are annotated in their own headers.
 // CImage itself is RTTI-catalogued (??_7CImage@@ @0x5eaa2c, cl-emitted from the real
 // virtuals declared in CImage.h).
 // ===========================================================================
 // --- CImage.h header classes ---
-SIZE(CImageBase, 0x10); // polymorphic base (CImage fields start at +0x10)
 SIZE_UNKNOWN(CImageSurfacePool);
 SIZE_UNKNOWN(CDDrawSurfaceDesc);
 SIZE(BlitRect, 0x10); // {left,top,right,bottom} RECT

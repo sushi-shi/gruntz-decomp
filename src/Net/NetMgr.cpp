@@ -1154,30 +1154,25 @@ struct CFreeNodesView {
     void FreeNodes(); // 0x128a
 };
 
-// (1) peer CNetMgr (0x8c): CObject grand-base vptr (0x5e8cb4), 3 CObLists, own vptr
-// (0x5ea42c). Both vptr stamps are manual (the class's real vtable is the
-// un-catalogued wall - see TeardownLists) but the 3 CObList members drive the /GX
-// EH states 1..3 exactly.
-// Driver-local inline-peer construction: the connect driver new-builds a peer
-// CNetMgr inline (no ctor call), so its base vptr stamp stays manual + faithful,
-// distinct from the real CNetMgr : Wap::CObject (whose vptrs cl emits).
-extern void* g_netGroupNodeDtorVtbl; // 0x5e8cb4 (Wap::CObject base vtable)
-SIZE_UNKNOWN(CNetPeerBase);
-struct CNetPeerBase {
-    void* m_vptr; // +0x00
-    CNetPeerBase() {
-        m_vptr = &g_netGroupNodeDtorVtbl; // 0x5e8cb4
-    }
-};
+// (1) the 0x8c-byte peer object (RezAlloc 0x8c): a real Wap::CObject-derived class
+// with 3 by-value CObList members at +0x1c/+0x38/+0x54. Retail sequence (dump_target
+// @0x0b560e..0x0b5643): stamp the base vptr 0x5e8cb4, run the 3 CObList ctors, then
+// stamp the FINAL vptr 0x5ea42c (== ??_7CNetMgr@@; the peer shares CNetMgr's vtable
+// but is a distinct 0x8c object). Modeled as `: public Wap::CObject` so cl emits the
+// base-phase vptr stamp (reloc-masks 0x5e8cb4) at ctor entry and runs the CObList
+// member ctors under its /GX new-cleanup frame - only the FINAL stamp stays manual,
+// because 0x5ea42c is CNetMgr's own (un-catalogued) vtable that cl cannot re-emit
+// here (a divergent ??_7CNetPeer would result). This is a genuine terminal manual
+// stamp per docs vtable-realization-ctor-boundary.
 SIZE_UNKNOWN(CNetPeer);
-struct CNetPeer : CNetPeerBase {
+struct CNetPeer : public Wap::CObject {
     char m_pad4[0x1c - 4]; // +0x04 (incl. +0x14 / +0x18)
     CObList m_l0;          // +0x1c
     CObList m_l1;          // +0x38
     CObList m_l2;          // +0x54
     char m_pad_tail[0x8c - (0x1c + 3 * sizeof(CObList))];
     CNetPeer() {
-        *(void**)this = &g_netMgrVtbl; // 0x5ea42c
+        *(void**)this = &g_netMgrVtbl; // 0x5ea42c (final stamp; CNetMgr vtbl un-catalogued)
         *(i32*)((char*)this + 0x14) = 0;
         *(i32*)((char*)this + 0x18) = 0;
     }
@@ -1243,7 +1238,7 @@ struct CNetCmdMgr {
 };
 
 // @early-stop
-// ~71% (0%->70.9%): a COMPLETE, correct reconstruction - the full 18-EH-state connect
+// ~71% (0%->71.2%): a COMPLETE, correct reconstruction - the full 18-EH-state connect
 // sequence, all 4 object constructions, and every call/control-flow arm are byte-
 // structurally present and verified against retail with llvm-objdump -dr (the peer
 // CObList ctors, the dialog flow + rep-stos, the vtable slot PMF dispatches, the
@@ -1253,14 +1248,16 @@ struct CNetCmdMgr {
 //  1. ZERO-REGISTER-PINNING (dominant, docs/patterns/zero-register-pinning.md): retail
 //     pins {this,0,1} in {ebx,ebp,esi}; our cl picks {esi,ebx,ebp} - a proven non-
 //     steerable coin-flip that permutes the reg operand of ~every field store.
-//  2. PEER VTABLE/EH-STATE off-by-one (same family as CNetMgr::TeardownLists): the
-//     peer's manual 0x5e8cb4->0x5ea42c stamps can't be cl-emitted (the class's real
-//     vtable is un-catalogued), so cl folds the first CObList into the new-cleanup
-//     state (0,1,2 vs retail 1,2,3), shifting every downstream /GX state number by 1.
+//  2. PEER FINAL-VPTR/EH-STATE residual: the peer is now `CNetPeer : public
+//     Wap::CObject`, so cl emits its base-phase vptr stamp (reloc-masks 0x5e8cb4) at
+//     ctor entry and drives the 3 CObList /GX new-cleanup states itself. Only the
+//     FINAL stamp 0x5ea42c stays manual (it is CNetMgr's own, un-catalogued vtable
+//     that cl cannot re-emit here). A residual /GX state-numbering delta remains
+//     around that manual final stamp until CNetMgr's own vtable is catalogued.
 //  3. The 0x630 session is a cross-module CSBI_RectOnly whose ~400-byte scalar ctor
 //     init (3 stride-0x18 sub-loops + 3 rep-stos regions) is that class's own leaf,
-//     not reproduced inline. Final sweep: needs the real CSBI_RectOnly + peer-CNetMgr
-//     class models (which would also close walls 2/3).
+//     not reproduced inline. Final sweep: needs the real CSBI_RectOnly + a catalogued
+//     CNetMgr vtable (which would also close walls 2/3).
 RVA(0x000b5460, 0x914)
 i32 CNetMgr::Stub_0b5460(i32 a1, i32 a2, i32 a3) {
 #define TF(o) (*(i32*)((char*)this + (o)))
@@ -2793,24 +2790,16 @@ inline void* operator new(u32, void* p) {
 
 // AddGroupNode's node: the DirectPlay group-list entry (0x10 bytes), the real
 // polymorphic InterfaceObject shape (InterfaceObject.cpp owns ??_7InterfaceObject
-// @0x5f0748). Real polymorphic now (ALL-VTABLES mandate): `new CNetGroupNode()`
-// makes cl emit the two-phase vptr stamp (CObject-base vtbl 0x5e8cb4 then own
-// 0x5f0748) around the +0x8 CString member ctor and the /GX new-cleanup frame - no
-// manual `*(void**)node = &g_net*Vtbl` stamp. The vtables cl emits here are orphans
-// (reloc-mask 0x5e8cb4 / 0x5f0748; the latter owned by InterfaceObject.cpp's VTBL,
-// so no VTBL is attached here -> no dup-DATA).
-SIZE_UNKNOWN(CNetGroupNodeBase);
-struct CNetGroupNodeBase {
-    virtual void V0();            // slot 0 (sub_1bef01)
-    virtual ~CNetGroupNodeBase(); // slot 1 (scalar-deleting dtor)
-    virtual void V2();            // slot 2 (sub_0028ec)
-    virtual void V3();            // slot 3 (sub_00106e)
-    virtual void V4();            // slot 4 (sub_004034)
-};
-inline CNetGroupNodeBase::~CNetGroupNodeBase() {}
-
+// @0x5f0748). Derives from the shared engine grand-base Wap::CObject (5-slot
+// interface, grand-base vtbl 0x5e8cb4) - vtable_hierarchy confirms the CObject slot
+// prefix (0x1bef01/0x0028ec/0x00106e/0x004034 + dtor). Real polymorphic (ALL-VTABLES
+// mandate): `new CNetGroupNode()` makes cl emit the two-phase vptr stamp (Wap::CObject
+// base 0x5e8cb4 then own 0x5f0748) around the +0x8 CString member ctor and the /GX
+// new-cleanup frame - no manual `*(void**)node = &g_net*Vtbl` stamp. The vtables cl
+// emits here are orphans (reloc-mask 0x5e8cb4 / 0x5f0748; the latter owned by
+// InterfaceObject.cpp's VTBL, so no VTBL is attached here -> no dup-DATA).
 SIZE_UNKNOWN(CNetGroupNode);
-struct CNetGroupNode : CNetGroupNodeBase {
+struct CNetGroupNode : public Wap::CObject {
     i32 m_4;        // +0x04  the service-provider GUID (stored raw)
     CString m_name; // +0x08  the provider name
     i32 m_c;        // +0x0c  cached AddTail position

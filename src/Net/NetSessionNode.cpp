@@ -23,34 +23,22 @@
 // Field names are placeholders (m_<hexoffset>); only the OFFSETS + code bytes are
 // load-bearing.
 #include <Ints.h>
-#include <Mfc.h> // /GX EH-frame helpers
+#include <Mfc.h>           // /GX EH-frame helpers
+#include <Wap32/CObject.h> // Wap::CObject - the shared engine grand-base (vtbl 0x5e8cb4)
 #include <rva.h>
 #include <Rez/RezMgr.h> // RezAlloc/RezFree (_RezAlloc 0x1b9b46 / _RezFree 0x1b9b82)
 #include <string.h>     // strlen/memcpy (inlined repne scas / rep movs)
 
-// The two node primary vtables + the shared base dtor vtable (foreign engine
-// data; referenced by address as reloc-masked DATA externs while the classes
-// The node factories (AddPlayerNode/AddSessionNode, NetMgr.cpp) still stamp the
-// own vtables via the extern "C" g_net*NodeVtbl symbols; here the dtors are real
-// polymorphic so cl emits the implicit ??_7 stamps (reloc-mask the same targets).
-
-// The collection-node base (CObject-like, grand-base vtable @0x5e8cb4): the
-// implicit vptr @+0x00 + the 5-slot CObject-style interface. Real polymorphic: the
-// empty inline virtual dtor makes cl emit the implicit grand-base re-stamp
-// (reloc-masks 0x5e8cb4) folded LAST into each leaf dtor, and the destructible
-// base subobject supplies the leaf dtor's /GX EH frame.
-struct CNetNodeBase {
-    virtual void V0();       // slot 0 (sub_1bef01)
-    virtual ~CNetNodeBase(); // slot 1 (scalar-deleting dtor)
-    virtual void V2();       // slot 2 (sub_0028ec)
-    virtual void V3();       // slot 3 (sub_00106e)
-    virtual void V4();       // slot 4 (sub_004034)
-};
-inline CNetNodeBase::~CNetNodeBase() {}
-SIZE_UNKNOWN(CNetNodeBase); // CObject-like collection-node base; retail size TBD
-// No VTBL: this base subobject's vtable is the SHARED CObject grand-base dtor
-// table at 0x5e8cb4 (the DATA symbol already catalogued for that rva) - a VTBL
-// here would collide on that rva / mis-attribute a shared vtable to one base name.
+// Both node types derive from the shared engine grand-base Wap::CObject (RTTI
+// "CObject", 5-slot interface, grand-base dtor vtable @0x5e8cb4). vtable_hierarchy
+// confirms each node's 5 slots are exactly the CObject interface (slots 0/2/3/4 the
+// inherited ILT thunks 0x1bef01/0x0028ec/0x00106e/0x004034, slot 1 the destructor
+// override) - so neither node adds a new virtual. Real polymorphic: cl folds the
+// empty ~CObject grand-base re-stamp (reloc-masks 0x5e8cb4) LAST into each leaf
+// dtor, and the destructible base subobject supplies the leaf dtor's /GX EH frame.
+// The node factories (AddPlayerNode/AddSessionNode, NetMgr.cpp) `new` these classes
+// so cl auto-stamps the own vtables (0x5f0760 / 0x5f0778) in the ctors - no manual
+// stamp anywhere.
 
 // The shared CWapNodeB string-cleanup helper (Font.cpp 0x179680): frees the two
 // owned buffers at +0x34/+0x38 and clears +0x04. Declared here only so
@@ -74,7 +62,7 @@ SIZE(CNetSessionDesc, 0x50); // the 0x50-byte DPSESSIONDESC2
 // ---------------------------------------------------------------------------
 // CNetPlayerListNode - a deep copy of a DPSESSIONDESC2 + its duplicated names.
 // ---------------------------------------------------------------------------
-class CNetPlayerListNode : public CNetNodeBase {
+class CNetPlayerListNode : public Wap::CObject {
 public:
     virtual ~CNetPlayerListNode();
     i32 Init(CNetSessionDesc* desc);
@@ -88,7 +76,7 @@ VTBL(CNetPlayerListNode, 0x005f0760); // own (most-derived) vtable
 // ---------------------------------------------------------------------------
 // CNetSessionNode - two CString members + two raw heap buffers.
 // ---------------------------------------------------------------------------
-class CNetSessionNode : public CNetNodeBase {
+class CNetSessionNode : public Wap::CObject {
 public:
     virtual ~CNetSessionNode();
 
@@ -112,7 +100,7 @@ VTBL(CNetSessionNode, 0x005f0778); // own (final) vtable
 // ===========================================================================
 // Real polymorphic now: cl emits the implicit ??_7CNetPlayerListNode own-vptr
 // stamp in the ENTRY state (stamp-first, == retail), then FreeStrings, then the
-// empty ~CNetNodeBase folds the grand-base re-stamp last. /GX frame from the
+// empty ~Wap::CObject folds the grand-base re-stamp last. /GX frame from the
 // destructible base subobject. (eh-dtor-implicit-vptr-stamp-first.md.)
 RVA(0x001793b0, 0x46)
 CNetPlayerListNode::~CNetPlayerListNode() {
@@ -126,7 +114,7 @@ CNetPlayerListNode::~CNetPlayerListNode() {
 // ===========================================================================
 // Real polymorphic now: cl emits the implicit ??_7CNetSessionNode own-vptr stamp
 // in the ENTRY state, clears m_04/m_20, frees the two raw buffers, then the two
-// CString members + the empty ~CNetNodeBase (grand-base re-stamp) fold in last.
+// CString members + the empty ~Wap::CObject (grand-base re-stamp) fold in last.
 // /GX frame from the destructible CString members + base subobject.
 // @early-stop
 // 97.6% (was 90.6%): own-vptr stamp now compiler-emitted stamp-first; residual is

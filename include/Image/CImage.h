@@ -31,6 +31,7 @@
 
 #include <rva.h>
 #include <Ints.h>
+#include <Wap32/CObject.h> // Wap::CObject - the shared engine grand-base (vtbl 0x5e8cb4)
 
 class CString;   // real MFC CString (4-byte ptr); completed via <Mfc.h> in the .cpp
                  // (forward-decl here so includers needn't choose <Mfc.h> vs <Win32.h>)
@@ -41,43 +42,6 @@ class CBlitInfo; // the sprite blit/draw request (esi); defined in CImageSpriteB
 // compiler-implicit now (no manual vtable stamp); the reloc-masked operands name
 // the emitted / shared vtables.
 class CImageParent; // +0x0c parent (CDDrawPtrCollections); defined below
-
-// ---------------------------------------------------------------------------
-// CImageBase - the polymorphic Wap::CObject base (same one as
-// CSurfacePairBase). POLYMORPHIC with a REAL virtual destructor: its inline body
-// resets the three base fields, and MSVC appends the implicit base-vptr re-stamp
-// (the grand-base dtor vtable @0x5e8cb4) - so the dtor's TWO vptr stamps are both
-// compiler-emitted and land in the retail "stamp-first" order (resolving the
-// eh-dtor-vptr-stamp-vs-trylevel-order wall). ~CImageBase folds into the leaf
-// ~CImage and supplies the /GX EH frame (docs/patterns/
-// eh-dtor-multilevel-polymorphic-chain.md, inline-base-dtor-folds-into-leaves.md).
-// Its emitted vtable reloc-masks against the target's 0x5e8cb4 grand-base stamp
-// (the stamp bytes are identical, the masked operand differs only in symbol name).
-//
-// The seven base virtuals are declared in retail vtable-slot order (0x1eaa2c .rdata):
-// slot 0 is a base helper, slot 1 the destructor (matching retail's dtor-at-slot-1
-// layout), slots 2..6 the remaining base virtuals; CImage adds slots 7..17.
-// ---------------------------------------------------------------------------
-class CImageBase {
-public:
-    // The base-subobject destructor is an EMPTY non-trivial inline dtor: MSVC emits
-    // ONLY the implicit grand-base vptr re-stamp for it, which folds in as the LAST
-    // store of ~CImage (matching retail's stamp-after-resets order). The empty body
-    // is still non-trivial, so it supplies the leaf's /GX EH frame. The base-field
-    // resets live in ~CImage's body (so they precede this fold's stamp).
-    virtual void v00();      // slot 0  (0x1bef01)
-    virtual ~CImageBase() {} // slot 1  (the destructor)
-    virtual void v08();      // slot 2  (0x0028ec)
-    virtual void v0c();      // slot 3  (0x00106e)
-    virtual void v10();      // slot 4  (0x004034)
-    virtual void v14();      // slot 5  (0x0013b6)
-    virtual void v18();      // slot 6  (0x001c08)
-
-    // vptr @+0x00 (implicit, polymorphic)
-    i32 m_status;           // +0x04  status word (-1 inactive)
-    i32 m_08;               // +0x08
-    CImageParent* m_parent; // +0x0c  parent CDDrawPtrCollections (its surface pool at +0x1c)
-};
 
 // The held +0x2c surface IS the DirectDraw surface wrapper CDDSurface
 // (<DDrawMgr/CDDSurface.h>, the DIRSURF.CPP 0xc0 surface; same physical struct the
@@ -188,20 +152,41 @@ void __stdcall ImageNotify(i32 a, i32 b); // 0x14dd90
 
 class CResolveNode; // the shared clip/resolve singleton (RenderImage arg); defined in the .cpp
 
-// CImage - the RTTI polymorphic surface-backed image. REAL-POLYMORPHIC: its own
-// vtable (??_7CImage @0x5eaa2c) is cl-emitted from the virtuals declared below in
-// retail slot order (slots 7..17), and the intra-class virtual dispatches (Resolve
-// -> LoadDispatch, Reload -> FreeAll/Resolve, RenderFrame -> RenderImage) fall out
-// of the language - no manual vtable-view structs. Reconstructed slots (7/9/10/11/
-// 12/13) carry real bodies in CImage.cpp; the ILT/base + external-engine slots are
+// CImage - the RTTI polymorphic surface-backed image. REAL-POLYMORPHIC: it derives
+// from the shared engine grand-base Wap::CObject (5-slot interface, grand-base dtor
+// vtable @0x5e8cb4). vtable_hierarchy confirms slots 0/2/3/4 are the inherited
+// CObject ILT thunks (0x1bef01/0x0028ec/0x00106e/0x004034), slot 1 the destructor
+// override, and slots 5..17 are 13 new virtuals CImage adds. Its own vtable
+// (??_7CImage @0x5eaa2c) is cl-emitted from the virtuals declared below in retail
+// slot order, and the intra-class virtual dispatches (Resolve -> LoadDispatch,
+// Reload -> FreeAll/Resolve, RenderFrame -> RenderImage) fall out of the language -
+// no manual vtable-view structs. Reconstructed slots (7/9/10/11/12/13) carry real
+// bodies in CImage.cpp; the ILT/base + external-engine slots (5/6/8/14/15/16/17) are
 // declared-only (reloc-masked entries in the emitted vtable).
-class CImage : public CImageBase {
+//
+// NOTE (correct-form churn): this header is included by several /O2 blit/status-bar
+// TUs (CImageSpriteBlit.cpp, SBI_GruntMachine, ...). Replacing the fabricated
+// CImageBase intermediate with the real Wap::CObject base (the ground-truth
+// vtable_hierarchy shape) is neutral for every CImage method itself, but the
+// class-structure change perturbs those includers' /O2 register allocation - an
+// uncontrollable butterfly (CImageSpriteBlit::BlitShadeNorm 100->99.94 one esi/edi
+// swap; CSBI_GruntMachine::Render -~4%). Correct form over the artifact per the
+// cleanliness mandate; final-sweep candidates in their own TUs.
+class CImage : public Wap::CObject {
 public:
-    virtual ~CImage(); // 0x0d5e80 (overrides base slot 1; cl stamps ??_7CImage at entry)
+    // vptr @+0x00 (inherited from Wap::CObject); the base subobject re-stamp
+    // (masks 0x5e8cb4) folds into ~CImage as its last store.
+    i32 m_status;           // +0x04  status word (-1 inactive)
+    i32 m_08;               // +0x08
+    CImageParent* m_parent; // +0x0c  parent CDDrawPtrCollections (its surface pool at +0x1c)
 
-    virtual void FreeAll();                                           // slot 7  0x153260
-    virtual void* Slot8();                                            // slot 8  0x0042aa (ILT)
-    virtual i32 Create24(CImageFrameDesc* desc, i32 mode, i32 keyed); // slot 9  0x1530e0
+    virtual ~CImage(); // 0x0d5e80 (overrides CObject slot 1; cl stamps ??_7CImage at entry)
+
+    virtual void v14();     // slot 5  0x0013b6 (external engine helper, declared-only)
+    virtual void v18();     // slot 6  0x001c08 (external engine helper, declared-only)
+    virtual void FreeAll(); // slot 7  0x153260
+    virtual void* Slot8();  // slot 8  0x0042aa (ILT)
+    virtual i32 Create24(CImageFrameDesc* desc, i32 mode, i32 keyed);          // slot 9  0x1530e0
     virtual i32 LoadDispatch(CImageFrameDesc* desc, u32 mode, void* a, i32 b); // slot 10 0x152fb0
     virtual i32 Resolve(CImageSource* src, i32 arg);                           // slot 11 0x152f20
     virtual i32 Create(CImageFrameDesc* desc, i32 keyed);                      // slot 12 0x152e90
@@ -231,7 +216,7 @@ public:
     void BlitShadeFlipV(CBlitInfo* info, CImage* dst);  // 0x1544d0  Y flip, shaded
     void BlitShadeFlipH(CBlitInfo* info, CImage* dst);  // 0x154750  X flip, shaded
 
-    // --- layout (continues the base; base ends at +0x10) ----------------------
+    // --- layout (continues from m_parent at +0x0c) ----------------------------
     i32 m_width;              // +0x10  width  (from item->m_1c)
     i32 m_height;             // +0x14  height (from item->m_18)
     i32 m_anchorX;            // +0x18  draw anchor x (width>>1)
