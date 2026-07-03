@@ -197,17 +197,19 @@ def cmd_build(args) -> None:
 
     # Class-metadata invariants. Every vtable-bearing class should carry a
     # VTBL/manual/RTTI catalog entry, and every class a SIZE/SIZE_UNKNOWN - so a
-    # class added without one is caught here, not later. REPORTING for now (a
-    # backlog of un-annotated per-TU placeholder structs remains); flip each to a
-    # fatal `run(...)` once its count reaches 0. See gruntz.match.class_{vtables,sizes}.
-    for mod, tag in (("class_vtables", "VTBL"), ("class_sizes", "SIZE")):
-        r = subprocess.run([sys.executable, "-m", f"gruntz.match.{mod}"],
-                           cwd=str(REPO), capture_output=True, text=True, env=_pkg_env())
-        n = sum(1 for ln in (r.stdout + r.stderr).splitlines()
-                if re.match(r"\s*\S+:\d+:", ln))
-        if n:
-            log(f"{tag}: {n} class(es) missing {tag}() "
-                f"(python -m gruntz.match.{mod} for the list)")
+    # class added without one is caught here, not later.
+    # SIZE reached 0 (all classes annotated) -> now a FATAL gate: a class added
+    # without SIZE/SIZE_UNKNOWN fails the build (class_sizes exits nonzero).
+    run([sys.executable, "-m", "gruntz.match.class_sizes"])
+    # VTBL still has a backlog (view-scaffolding + terminal manual stamps); REPORT
+    # until it too reaches 0, then flip to a fatal run(...). See gruntz.match.class_vtables.
+    r = subprocess.run([sys.executable, "-m", "gruntz.match.class_vtables"],
+                       cwd=str(REPO), capture_output=True, text=True, env=_pkg_env())
+    n = sum(1 for ln in (r.stdout + r.stderr).splitlines()
+            if re.match(r"\s*\S+:\d+:", ln))
+    if n:
+        log(f"VTBL: {n} class(es) missing VTBL() "
+            f"(python -m gruntz.match.class_vtables for the list)")
 
 
 def cmd_labels(args) -> None:
