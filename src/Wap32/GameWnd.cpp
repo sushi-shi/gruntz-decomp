@@ -96,11 +96,11 @@ i32 CGameWnd::OnClose() {
 
 // -------------------------------------------------------------------------
 // CGameWnd::OnActivateApp (WM_ACTIVATEAPP handler, vtable slot 12). Records the
-// app-active flag (wParam) into the owning CGameApp's m_240 and reports "not
+// app-active flag (wParam) into the owning CGameApp's m_appActive and reports "not
 // handled" (0) so GameWindowProc falls through to DefWindowProcA.
 RVA(0x0013d470, 0xd)
 i32 CGameWnd::OnActivateApp(WPARAM wParam, LPARAM /*lParam*/) {
-    ((CGameApp*)m_owner)->m_240 = wParam;
+    ((CGameApp*)m_owner)->m_appActive = wParam;
     return 0;
 }
 
@@ -111,7 +111,7 @@ i32 CGameWnd::OnActivateApp(WPARAM wParam, LPARAM /*lParam*/) {
 RVA(0x0013d490, 0x29)
 i32 CGameWnd::QuitMessageLoop() {
     ((CGameApp*)m_owner)->FreeGameManager();
-    if (((CGameApp*)m_owner)->m_248) {
+    if (((CGameApp*)m_owner)->m_errorReported) {
         ((CGameApp*)m_owner)->ShowError();
     }
     PostQuitMessage(0);

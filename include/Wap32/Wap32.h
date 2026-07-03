@@ -217,7 +217,7 @@ struct GameInfo {
 //   The ctor zeroes a handful of fields then bumps a file-scope instance
 //   counter.
 //   The ctor schedule emits the +0x10 store BEFORE the +0x0c store, which the
-//   source mirrors (m_10 initialised before m_c).
+//   source mirrors (m_hAccel initialised before m_c).
 //
 //   The dispatch methods (VirtualUnknownMethod02/03, InitializeDefaultCreate-
 //   Struct) call the other CGameApp methods through the vtable (call [vptr+N]),
@@ -283,15 +283,15 @@ public:
     CGameResource* m_4;           // +0x04  deleted by CloseResources (the CGameWnd)
     CGameResource* m_8;           // +0x08  deleted by CloseResources (the CGameMgr)
     HINSTANCE m_c;                // +0x0c  hInstance
-    HACCEL m_10;                  // +0x10  accelerator table
+    HACCEL m_hAccel;              // +0x10  accelerator table
     GameInfo m_gameInfo;          // +0x14  (0x1d4 bytes; szGameIdentifier @ +0xa0 etc.)
     WNDCLASSA m_wc;               // +0x1e8  registered window class
     CREATESTRUCTA m_createStruct; // +0x210  the CreateWindowEx parameters
-    i32 m_240;                    // +0x240
-    i32 m_244;                    // +0x244
-    i32 m_248;                    // +0x248  error-reported guard
-    i32 m_24c;                    // +0x24c  error code
-    i32 m_250;                    // +0x250  error detail
+    i32 m_appActive;              // +0x240  app-active flag (WM_ACTIVATEAPP wParam; idle gate)
+    i32 m_244;                    // +0x244  run/resume gate (paired with m_appActive)
+    i32 m_errorReported;          // +0x248  error-reported guard (report-once)
+    i32 m_errorCode;              // +0x24c  error code (ReportError wParam)
+    i32 m_errorDetail;            // +0x250  error detail (ReportError lParam)
 
     // The CGameApp scalar-deleting destructor (0x080dd0): stamp the vtable, run
     // CloseResources, decrement the live-instance counter, then the delete-flag tail.

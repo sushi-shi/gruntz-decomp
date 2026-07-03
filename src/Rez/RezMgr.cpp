@@ -27,13 +27,13 @@ CRezItmBase::CRezItmBase(void* parent) {
 
 // ---------------------------------------------------------------------------
 // CRezItm::CRezItm(parent)
-// Base ctor (vtbl + parent), then derived vtbl, m_10 = 0,
-// m_14 = 0, m_20 = -1. m_18/m_1c untouched.
+// Base ctor (vtbl + parent), then derived vtbl, m_fp = 0,
+// m_readBuf = 0, m_pos = -1. m_18/m_1c untouched.
 RVA(0x0013c540, 0x28)
 CRezItm::CRezItm(void* parent) : CRezItmBase(parent) {
-    m_10 = 0;
-    m_14 = 0;
-    m_20 = -1;
+    m_fp = 0;
+    m_readBuf = 0;
+    m_pos = -1;
 }
 
 // ---------------------------------------------------------------------------
@@ -51,11 +51,11 @@ CRezItmBase::~CRezItmBase() {
 // the base dtor. A destructible state -> the /GX EH frame (push -1 / handler).
 RVA(0x0013c590, 0x66)
 CRezItm::~CRezItm() {
-    if (m_10 != 0) {
+    if (m_fp != 0) {
         Close();
     }
-    if (m_14 != 0) {
-        RezFree(m_14);
+    if (m_readBuf != 0) {
+        RezFree(m_readBuf);
     }
 }
 
@@ -83,31 +83,31 @@ i32 CRezItm::Read(i32 off, i32 base, u32 count, void* buf) {
 
     i32 pos = base + off;
 
-    if (m_20 != pos) {
-        while (RezFSeek(m_10, pos, 0) != 0) {
+    if (m_pos != pos) {
+        while (RezFSeek(m_fp, pos, 0) != 0) {
             if (((CRezItmOwner*)m_parent)->Retry() == 0) {
-                m_20 = -1;
+                m_pos = -1;
                 return 0;
             }
         }
     }
 
-    u32 got = RezFRead(buf, 1, count, m_10);
+    u32 got = RezFRead(buf, 1, count, m_fp);
     while (got != count) {
         if (((CRezItmOwner*)m_parent)->Retry() == 0) {
-            m_20 = -1;
+            m_pos = -1;
             return 0;
         }
-        got = RezFRead(buf, 1, count, m_10);
+        got = RezFRead(buf, 1, count, m_fp);
     }
 
-    m_20 = got + pos;
+    m_pos = got + pos;
     return got;
 }
 
 // ---------------------------------------------------------------------------
 // CRezItm::Write(base, off, count, buf)
-// The write counterpart of Read: invalidate the cursor (m_20 = -1), seek to the
+// The write counterpart of Read: invalidate the cursor (m_pos = -1), seek to the
 // absolute position (base+off) recovering through the owner's Retry() gate on a
 // seek failure, then fwrite `count` bytes from buf, retrying the write through
 // the same gate on a short write. Returns 0 on a zero count or a gate that gives
@@ -122,25 +122,25 @@ i32 CRezItm::Read(i32 off, i32 base, u32 count, void* buf) {
 // - identical `call rel32`, a delinker bare-name artifact (not steerable from src).
 RVA(0x0013c6c0, 0x97)
 i32 CRezItm::Write(i32 base, i32 off, u32 count, void* buf) {
-    m_20 = -1;
+    m_pos = -1;
     if (count <= 0) {
         return 0;
     }
 
     i32 pos = off + base;
 
-    while (RezFSeek(m_10, pos, 0) != 0) {
+    while (RezFSeek(m_fp, pos, 0) != 0) {
         if (((CRezItmOwner*)m_parent)->Retry() == 0) {
             return 0;
         }
     }
 
-    u32 put = RezFWrite(buf, 1, count, m_10);
+    u32 put = RezFWrite(buf, 1, count, m_fp);
     while (put != count) {
         if (((CRezItmOwner*)m_parent)->Retry() == 0) {
             return 0;
         }
-        put = RezFWrite(buf, 1, count, m_10);
+        put = RezFWrite(buf, 1, count, m_fp);
     }
     return put;
 }
@@ -159,13 +159,13 @@ i32 CRezItm::Write(i32 base, i32 off, u32 count, void* buf) {
 // swap is the documented MSVC5 callee-save coin-flip, not source-steerable.
 RVA(0x0013c830, 0x63)
 i32 CRezItm::Close() {
-    if (m_10 == 0) {
+    if (m_fp == 0) {
         return 0;
     }
 
     i32 ok = 0;
     while (ok == 0) {
-        if (RezFClose(m_10) == 0) {
+        if (RezFClose(m_fp) == 0) {
             ok = 1;
         } else {
             ok = 0;
@@ -175,12 +175,12 @@ i32 CRezItm::Close() {
         }
     }
 
-    m_10 = 0;
-    if (m_14 != 0) {
-        RezFree(m_14);
+    m_fp = 0;
+    if (m_readBuf != 0) {
+        RezFree(m_readBuf);
     }
-    m_14 = 0;
-    m_20 = -1;
+    m_readBuf = 0;
+    m_pos = -1;
     return ok;
 }
 
@@ -188,7 +188,7 @@ i32 CRezItm::Close() {
 // CRezDir::CRezDir(parent, rezMgr)
 // Base ctor, then the two embedded child-collection list members auto-construct
 // (each stamps ??_7CRezDirList @0x1ef7c8 and zeroes head/tail), the derived vtbl
-// is stamped, then m_28=0, m_34=0, m_2c=rezMgr, m_30=1.
+// is stamped, then m_28=0, m_34=0, m_rezMgr=rezMgr, m_30=1.
 // @early-stop
 // vptr-schedule wall (ALL-VTABLES): real-polymorphic list members auto-stamp their
 // vptr FIRST (vptr,head,tail) and the compiler zeroes m_28/m_34 after the derived
@@ -199,7 +199,7 @@ RVA(0x0013c940, 0x46)
 CRezDir::CRezDir(void* parent, void* rezMgr) : CRezItmBase(parent) {
     m_28 = 0;
     m_34 = 0;
-    m_2c = rezMgr;
+    m_rezMgr = rezMgr;
     m_30 = 1;
 }
 
@@ -537,8 +537,8 @@ i32 RezMgr::HandleDebugPosition() {
 // RezMgr::UpdateClock() (0x13ddc0) - the frame-clock advance helper PerFrameTick
 // calls (re-homed from src/Stub/RezMgr.cpp). Sample timeGetTime, derive the
 // per-frame delta into g_now/g_frameDelta, run down the run-state countdown, then
-// (when the pacing gate m_1c is armed) busy-wait to the ms budget and, every ~2s
-// window, fold the frame count into the smoothed m_18 and rearm the window.
+// (when the pacing gate m_pacingGate is armed) busy-wait to the ms budget and, every
+// ~2s window, fold the frame count into m_smoothedFrameCount and rearm the window.
 // @confidence: med
 // @source: reloc-correlation (1 caller)
 RVA(0x0013ddc0, 0xaa)
@@ -556,20 +556,20 @@ i32 RezMgr::UpdateClock() {
         g_run7c = run7c - delta;
     }
 
-    if (m_1c > 0) {
+    if (m_pacingGate > 0) {
         if (g_clockReset > 0) {
             u32 elapsed = timeGetTime() - g_clockReset;
-            if (elapsed < (u32)m_28) {
-                SpinWaitUntil(m_28 - elapsed);
+            if (elapsed < (u32)m_frameBudgetMs) {
+                SpinWaitUntil(m_frameBudgetMs - elapsed);
             }
         }
         g_clockReset = timeGetTime();
     }
 
-    u32 count = m_20 + 1;
-    m_20 = count;
-    if ((u32)g_now - (u32)m_24 >= 0x7d0) {
-        m_18 = count >> 1;
+    u32 count = m_frameCounter + 1;
+    m_frameCounter = count;
+    if ((u32)g_now - (u32)m_windowStartTick >= 0x7d0) {
+        m_smoothedFrameCount = count >> 1;
         InitTimeFields(0);
     }
     return 1;

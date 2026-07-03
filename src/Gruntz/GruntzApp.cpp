@@ -46,8 +46,8 @@ static char g_errorText[0x100]; // error message buffer
 
 // CGruntzApp - the game's CGameApp subclass, defined once in <Gruntz/GruntzApp.h>.
 // The matched methods touch only BASE CGameApp fields: ShowError reads m_c
-// (hInstance @+0xc), m_24c (error message id @+0x24c) and m_250 (error detail
-// @+0x250); the dtor / InitializeGameManager touch no CGruntzApp-specific field.
+// (hInstance @+0xc), m_errorCode (error message id @+0x24c) and m_errorDetail
+// (@+0x250); the dtor / InitializeGameManager touch no CGruntzApp-specific field.
 #include <Gruntz/GruntzApp.h>
 
 // ---------------------------------------------------------------------------
@@ -108,8 +108,8 @@ CGruntzApp::~CGruntzApp() {
 // CGruntzApp::ShowError
 // Virtual override. Builds the error
 // message into g_errorText then shows the ERROR dialog:
-//   id = m_24c ? m_24c : IDS_DEFAULT_ERROR;     // +0x24c, default 0x8009
-//   detail[0] = 0; if (m_250 > 0) sprintf(detail, "(%i)", m_250);  // +0x250
+//   id = m_errorCode ? m_errorCode : IDS_DEFAULT_ERROR;     // +0x24c, default 0x8009
+//   detail[0] = 0; if (m_errorDetail > 0) sprintf(detail, "(%i)", m_errorDetail);  // +0x250
 //   if (LoadStringA(m_c, id, g_errorText, 0xfa) <= 0 &&
 //       LoadStringA(m_c, 0x8009, g_errorText, 0xfa) <= 0)
 //       strcpy(g_errorText, "Unable to continue game.");
@@ -121,10 +121,10 @@ CGruntzApp::~CGruntzApp() {
 // strcpy/strcat are emitted inline (repnz scas / rep movs).
 RVA(0x00080ac0, 0xf3)
 void CGruntzApp::ShowError() {
-    // The two error fields are read up front (the optimiser hoists the m_250
+    // The two error fields are read up front (the optimiser hoists the m_errorDetail
     // load above the id-default branch, keeping it live in eax across it).
-    i32 id = m_24c;
-    i32 detailVal = m_250;
+    i32 id = m_errorCode;
+    i32 detailVal = m_errorDetail;
     if (id == 0) {
         id = IDS_DEFAULT_ERROR;
     }

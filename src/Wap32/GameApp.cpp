@@ -24,12 +24,12 @@ RVA(0x0013d590, 0x3c)
 CGameApp::CGameApp() {
     m_4 = 0;
     m_8 = 0;
-    m_10 = 0; // the optimiser schedules the +0x10 store before +0x0c
+    m_hAccel = 0; // the optimiser schedules the +0x10 store before +0x0c
     m_c = 0;
-    m_240 = 0;
-    m_248 = 0;
-    m_24c = 0;
-    m_250 = 0;
+    m_appActive = 0;
+    m_errorReported = 0;
+    m_errorCode = 0;
+    m_errorDetail = 0;
     g_gameAppInstanceCount++;
 }
 
@@ -38,9 +38,9 @@ CGameApp::CGameApp() {
 // Frees the accelerator table then deletes the two resource objects.
 RVA(0x0013d8c0, 0x42)
 void CGameApp::CloseResources() {
-    if (m_10) {
-        DestroyAcceleratorTable(m_10);
-        m_10 = 0;
+    if (m_hAccel) {
+        DestroyAcceleratorTable(m_hAccel);
+        m_hAccel = 0;
     }
     if (m_8) {
         delete m_8;
@@ -58,38 +58,38 @@ void CGameApp::CloseResources() {
 RVA(0x0013dc20, 0x49)
 BOOL CGameApp::InitializeAccelerators(LPCSTR lpTable) {
     if (lpTable && *lpTable) {
-        if (m_10) {
-            DestroyAcceleratorTable(m_10);
-            m_10 = 0;
+        if (m_hAccel) {
+            DestroyAcceleratorTable(m_hAccel);
+            m_hAccel = 0;
         }
-        m_10 = LoadAcceleratorsA(m_c, lpTable);
-        return m_10 != 0;
+        m_hAccel = LoadAcceleratorsA(m_c, lpTable);
+        return m_hAccel != 0;
     }
     return 0;
 }
 
 // -------------------------------------------------------------------------
 // CGameApp::ReportError
-// Records an error once (guarded by m_248), posting WM_CLOSE to the window.
+// Records an error once (guarded by m_errorReported), posting WM_CLOSE to the window.
 RVA(0x0013dcb0, 0x57)
 void CGameApp::ReportError(WPARAM wParam, LPARAM lParam) {
-    if (m_248) {
+    if (m_errorReported) {
         return;
     }
-    m_248 = 1;
+    m_errorReported = 1;
     if (m_4 && ((CGameWnd*)m_4)->m_closeGuard == 0) {
         PostMessageA((HWND)((CGameWnd*)m_4)->m_hwnd, 0x10 /*WM_CLOSE*/, 0, 0);
     }
     m_244 = 0;
-    m_24c = (i32)wParam;
-    m_250 = (i32)lParam;
+    m_errorCode = (i32)wParam;
+    m_errorDetail = (i32)lParam;
 }
 
 // -------------------------------------------------------------------------
 // CGameApp::RunMessageLoop - the main Win32 pump (vtbl slot +0x18; WinMain
 // dispatches here). Reads the OS HWND off m_4->m_hwnd; if there is no window,
 // return 0. Otherwise the classic peek/process/idle pump: PeekMessageA
-// (PM_REMOVE) drains all pending messages (WM_QUIT exits with 1); when m_10
+// (PM_REMOVE) drains all pending messages (WM_QUIT exits with 1); when m_hAccel
 // (HACCEL) is set AND the message targets our window, run TranslateAcceleratorA
 // (return ignored); always TranslateMessage + DispatchMessageA; when the queue
 // is empty, call the idle virtual (vtbl +0x20) and loop.
@@ -108,8 +108,8 @@ i32 CGameApp::RunMessageLoop() {
                 if (msg.message == 0x12 /*WM_QUIT*/) {
                     return 1;
                 }
-                if (m_10 && msg.hwnd == hwnd) {
-                    TranslateAcceleratorA(hwnd, m_10, &msg);
+                if (m_hAccel && msg.hwnd == hwnd) {
+                    TranslateAcceleratorA(hwnd, m_hAccel, &msg);
                 }
                 TranslateMessage(&msg);
                 DispatchMessageA(&msg);
@@ -303,9 +303,9 @@ i32 CGameApp::VirtualUnknownMethod02(
     }
 
     m_244 = 1;
-    m_248 = 0;
-    m_24c = 0;
-    m_250 = 0;
+    m_errorReported = 0;
+    m_errorCode = 0;
+    m_errorDetail = 0;
     m_gameInfo = *pGameInfo;
 
     hInst = m_gameInfo.hInstance;
@@ -371,13 +371,13 @@ Fail:
 // CGameApp::VirtualUnknownMethod09 - vtbl slot +0x20.
 // The per-frame idle virtual the message pump calls on an empty queue
 // (RunMessageLoop dispatches `call [vtbl+0x20]`). When the app is active -
-// both gate words m_240 and m_244 set - it tail-calls the game manager's
+// both gate words m_appActive and m_244 set - it tail-calls the game manager's
 // per-frame tick (m_8->vtbl +0x10, the 5th vtable slot). The tail call emits
 // `mov ecx,[m_8]; mov eax,[ecx]; jmp [eax+0x10]` (no own epilogue needed since
 // neither gate-load disturbs a callee-saved reg).
 RVA(0x0013dc70, 0x1d)
 void CGameApp::VirtualUnknownMethod09() {
-    if (m_240 && m_244) {
+    if (m_appActive && m_244) {
         m_8->PerFrameTick();
     }
 }
@@ -554,7 +554,7 @@ SIZE(WAP32::CGameMgr, 0x2c);
 
 // Wap32.h class metadata (hosted here at the owning .cpp's EOF so the hot
 // engine header stays untouched; EOF append is line-/parse-shift-neutral).
-SIZE_UNKNOWN(CGameApp);             // pad-to-last-touched view (m_250 last)
+SIZE_UNKNOWN(CGameApp);             // pad-to-last-touched view (m_errorDetail last)
 SIZE_UNKNOWN(CGameResource);        // abstract resource base view
 SIZE_UNKNOWN(CGameWndCreateParams); // CreateWindowExA 12-arg pack (stack)
 SIZE(GameInfo, 0x1d4);              // self-describing: size field == sizeof == 0x1d4

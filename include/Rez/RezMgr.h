@@ -23,7 +23,7 @@
 // ---------------------------------------------------------------------------
 // CRezItm : CRezItmBase (0x24 = 36 bytes) - a leaf resource (file) node.
 // (derived vtbl)
-//   +0x10  m_10  : 0      +0x14  m_14 : 0      +0x20  m_20 : -1
+//   +0x10  m_fp  : 0      +0x14  m_readBuf : 0      +0x20  m_pos : -1
 //   (+0x18/+0x1c set by the virtual load, not the ctor)
 //
 // ---------------------------------------------------------------------------
@@ -36,7 +36,7 @@
 //   +0x18  ..tail  : 0        (collection tail)
 //   +0x1c  listB   : (embedded child collection #2: vptr,head,tail)
 //   +0x20  m_20 :0  +0x24 m_24:0  +0x28 m_28:0  +0x34 m_34:0
-//   +0x2c  m_2c    : ctor arg2 (the owning RezMgr back-pointer)
+//   +0x2c  m_rezMgr : ctor arg2 (the owning RezMgr back-pointer)
 //   +0x30  m_30    : 1        ("valid"/initialized flag)
 // Runtime fields (NOT ctor-initialized; pinned from Load/OpenSub):
 //   +0x38  m_coll2 : a second/child collection base (Load iterates &this+0x38)
@@ -142,11 +142,11 @@ public:
     // (vtable slot 5)
     i32 Close();
 
-    void* m_10; // +0x10  FILE* (= 0)
-    void* m_14; // +0x14  read buffer (= 0)
-    i32 m_18;   // +0x18  (set by load)
-    i32 m_1c;   // +0x1c  (set by load)
-    i32 m_20;   // +0x20  position cursor (= -1)
+    void* m_fp;      // +0x10  FILE* (= 0)
+    void* m_readBuf; // +0x14  read buffer (= 0)
+    i32 m_18;        // +0x18  (set by load)
+    i32 m_1c;        // +0x1c  (set by load)
+    i32 m_pos;       // +0x20  position cursor (= -1)
 };
 
 // The buffered-FILE stdio helpers CRezItm's stream methods call (statically linked
@@ -194,7 +194,7 @@ public:
     CRezDirList m_listA; // +0x10  {vptr,head,tail}
     CRezDirList m_listB; // +0x1c  {vptr,head,tail}
     i32 m_28;            // +0x28  (= 0)
-    void* m_2c;          // +0x2c  (= ctor arg2)
+    void* m_rezMgr;      // +0x2c  (= ctor arg2, the owning RezMgr back-pointer)
     i32 m_30;            // +0x30  (= 1)
     i32 m_34;            // +0x34  (= 0)
     // --- runtime-only fields (NOT set by the ctor) ---
@@ -396,14 +396,14 @@ public:
     i32 CheckDbgVal(const char* key, i32 defVal, i32 flag);
 
     // --- layout (vptr occupies +0x00) ---------------------------------------
-    RezMgrOwner* m_4;          // +0x04  owning window holder (m_4->m_hWnd = HWND)
-    char m_pad8[0x18 - 0x08];  // +0x08..+0x17
-    i32 m_18;                  // +0x18  smoothed frame count (UpdateClock: m_20>>1 window)
-    i32 m_1c;                  // +0x1c  active gate (>0 enables per-frame pacing)
-    i32 m_20;                  // +0x20  frame counter (incremented each tick)
-    i32 m_24;                  // +0x24  window-start tick
-    i32 m_28;                  // +0x28  target ms-per-frame (pacing budget)
-    CGameMode* m_mode;         // +0x2c  (active game-mode driven per frame)
+    RezMgrOwner* m_4;         // +0x04  owning window holder (m_4->m_hWnd = HWND)
+    char m_pad8[0x18 - 0x08]; // +0x08..+0x17
+    i32 m_smoothedFrameCount; // +0x18  smoothed frame count (UpdateClock: m_frameCounter>>1 window)
+    i32 m_pacingGate;         // +0x1c  active gate (>0 enables per-frame pacing)
+    i32 m_frameCounter;       // +0x20  frame counter (incremented each tick)
+    i32 m_windowStartTick;    // +0x24  window-start tick
+    i32 m_frameBudgetMs;      // +0x28  target ms-per-frame (pacing budget)
+    CGameMode* m_mode;        // +0x2c  (active game-mode driven per frame)
     char m_pad30[0xb0 - 0x30]; // +0x30..+0xaf
     i32 m_renderGate;          // +0xb0  (nonzero => skip the post-step)
     char m_padb4[0xec - 0xb4]; // +0xb4..+0xeb

@@ -45,7 +45,7 @@ extern "C" char g_emptyString[];
 // A single 0x100-byte saved-game slot record.
 struct SaveSlot {
     i32 m_type;      // +0x00  (1 = normal, 3 = ...)
-    i32 m_04;        // +0x04  level id
+    i32 m_levelId;   // +0x04  level id (BuildLevelRezPath id arg)
     i32 m_08;        // +0x08
     i32 m_0c;        // +0x0c
     i32 m_checksum;  // +0x10  (Register(this) result)

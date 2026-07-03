@@ -1967,7 +1967,7 @@ void CGruntzMgr::StopBank0IfActive() {
 // -------------------------------------------------------------------------
 // CGruntzMgr::IsLobbyHostReady (0x091500). Null-chain predicate: returns
 // m_curState->ReleaseResources-slot result (slot 7, +0x1c) only when m_curState, the
-// CGameApp (m_8), its +0x240 sub-object and !m_modalBusy all hold; else 0.
+// CGameApp (m_8), its m_appActive flag (+0x240) and !m_modalBusy all hold; else 0.
 RVA(0x00091500, 0x42)
 i32 CGruntzMgr::IsLobbyHostReady() {
     if (m_curState == 0) {
@@ -1977,7 +1977,7 @@ i32 CGruntzMgr::IsLobbyHostReady() {
     if (app == 0) {
         return 0;
     }
-    if (app->m_240 == 0) {
+    if (app->m_appActive == 0) {
         return 0;
     }
     if (m_modalBusy != 0) {
