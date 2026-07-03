@@ -56,6 +56,7 @@ public:
     CObjNode* m_next; // +0x04
     CObjNode* m_prev; // +0x08
 };
+SIZE(CObjNode, 0xc); // base subobject { vptr, next, prev }
 
 // The CObjList sub-object embedded at +0x10: an intrusive doubly-linked list of
 // polymorphic nodes. Its Remove (0x1852e0, __thiscall on the list head) unlinks a
@@ -76,13 +77,16 @@ struct CObjList {
     // Link(node): splice a freshly-built reader node onto the list (0x1851e0).
     void Link(void* node);
 };
+SIZE(CObjList, 0x10); // { vptr, head, tail, count }
 
-// A node owned by the +0x88 CHashSlotList: it owns a buffer at +0x08; the list
-// uses the CHashSlotList::Unlink (0x1391e0) machinery from Hash.h.
+// A node owned by the +0x88 CHashSlotList: its intrusive chain link is at +0x00
+// (so the list head points straight at it) and it owns a buffer at +0x08; the
+// list uses the CHashSlotList::Link/Unlink (0x1390e0/0x1391e0) machinery from Hash.h.
 struct CSlotNode {
-    char m_pad00[0x8];
-    void* m_buffer; // +0x08  owned buffer (RezFree'd)
+    CHashLink m_link; // +0x00  intrusive chain node { next, prev }
+    void* m_buffer;   // +0x08  owned parse-slot block (RezFree'd)
 };
+SIZE(CSlotNode, 0xc);
 
 // The +0x80 hash member. CHashBase carries no destructor (a standalone CHashBase
 // value member in the shared hash/symtab TUs must stay trivially-destructible to
@@ -98,6 +102,7 @@ struct CParserHash : public CHashBase {
         RemoveAll();
     }
 };
+SIZE(CParserHash, 0x8); // derives CHashBase (no new fields)
 
 // ---------------------------------------------------------------------------
 // CSymParser - the ButeMgr parser/owner. REAL POLYMORPHIC (ALL-VTABLES phase):
@@ -187,7 +192,7 @@ public:
     //         resolvers read (SymTab.cpp m_owner->m_delims), RezFree'd in the dtor.
     char* m_delims;
     i32 m_08;                   // +0x08  (=1)
-    void* m_parseArmed;         // +0x0c  Clear guard
+    i32 m_parseArmed;           // +0x0c  Clear guard (0/1 flag)
     CObjList m_list;            // +0x10  (+0x10..+0x1c)
     CObjNode* m_activeNode;     // +0x20  detached+removed+deleted first in Clear
     i32 m_24;                   // +0x24
@@ -206,7 +211,7 @@ public:
     i32 m_longestScopeNameLen;  // +0x58  longest scope-name length seen (SymTab.cpp)
     i32 m_longestLeafNameLen;   // +0x5c  longest leaf-name length seen (SymTab.cpp Method4b0)
     i32 m_60;                   // +0x60
-    void* m_cachedSourceBuffer; // +0x64
+    char* m_cachedSourceBuffer; // +0x64  strdup'd source buffer (RezFree'd)
     i32 m_68;                   // +0x68  flag forwarded to the +0x38 walk (m_68 == 0)
     i32 m_6c;                   // +0x6c  selects the leaf-record ctor variant (Init4 vs Init3)
     i32 m_70;                   // +0x70  leaf-record ctor arg
@@ -217,5 +222,6 @@ public:
     CHashSlotList m_nodes;      // +0x88  { head, tail }
     i32 m_parseSlotBlockCount;  // +0x90  number of parse-slot records per allocated block
 };
+SIZE(CSymParser, 0x94); // fields through m_parseSlotBlockCount @0x90
 
 #endif // SRC_BUTE_SYMPARSER_H

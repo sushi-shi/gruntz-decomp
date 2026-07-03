@@ -73,6 +73,7 @@ CSymParser::~CSymParser() {
         RezFree(m_delims);
         m_delims = 0;
     }
+    // chain head points at &node->m_link (offset 0 in CSlotNode) - direct reinterpret
     CSlotNode* node = (CSlotNode*)m_nodes.m_head;
     m_parseArmed = 0;
     m_activeNode = 0;
@@ -94,7 +95,7 @@ CSymParser::~CSymParser() {
     if (node) {
         do {
             RezFree(node->m_buffer);
-            m_nodes.Unlink(node);
+            m_nodes.Unlink(&node->m_link);
             RezFree(node);
             node = (CSlotNode*)m_nodes.m_head;
         } while (node);
@@ -110,10 +111,12 @@ struct CTextReaderInit {
     char m_storage[0x38];
     CTextReaderInit(CSymParser* p, i32 a); // 0x13c940
 };
+SIZE(CTextReaderInit, 0x38); // text-reader alloc block (operator new)
 struct CBinReaderInit {
     char m_storage[0x24];
     CBinReaderInit(CSymParser* p); // 0x13c540
 };
+SIZE(CBinReaderInit, 0x24); // binary-reader alloc block (operator new)
 
 // CRT strdup-style helpers + the inline strlen/strcpy the buffer-recache emits.
 extern "C" u32 strlen(const char* s);
@@ -157,7 +160,7 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
         if (reader->Read(buf, a, b) == 0) {
             return 0;
         }
-        m_parseArmed = (void*)1;
+        m_parseArmed = 1;
         CSymTab* node = new CSymTab(
             this,
             0,
@@ -169,7 +172,7 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
             m_symbolBucketCount
         );
         m_root = node;
-        ParseRecords(reader, node, (char*)m_cachedSourceBuffer, 0);
+        ParseRecords(reader, node, m_cachedSourceBuffer, 0);
         return 1;
     }
     // binary stream
@@ -185,7 +188,7 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
     if (reader->Read(buf, a, b) == 0) {
         return 0;
     }
-    m_parseArmed = (void*)1;
+    m_parseArmed = 1;
     if (b != 0) {
         m_3c = 0xa8;
         m_4c = 1;
@@ -241,7 +244,7 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
 // modeled as a shared local interface (ctors extern/reloc-masked, no vtable
 // emitted in this TU) so the `call [reg+8]` / `call [reg+0x10]` dispatches and
 // the `new X(...)` operator-new(size)+ctor sequences fall out.
-SIZE_UNKNOWN(CRezNode);
+SIZE(CRezNode, 0x4); // abstract reader base (vptr only)
 struct CRezNode {
     virtual void nv0();                                        // slot 0 (+0x00)
     virtual void nv1();                                        // slot 1 (+0x04)
@@ -249,12 +252,12 @@ struct CRezNode {
     virtual void nv3();                                        // slot 3 (+0x0c)
     virtual i32 Open(char* name, i32 flag, i32 x);             // slot 4 (+0x10)
 };
-SIZE_UNKNOWN(CRezDirNodeN);
+SIZE(CRezDirNodeN, 0x38); // directory reader node (operator new 0x38)
 struct CRezDirNodeN : CRezNode {
     CRezDirNodeN(void* parent, void* rezMgr); // 0x13c940 (extern)
     char m_pad[0x38 - 0x04];
 };
-SIZE_UNKNOWN(CRezFileNodeN);
+SIZE(CRezFileNodeN, 0x24); // file reader node (operator new 0x24)
 struct CRezFileNodeN : CRezNode {
     CRezFileNodeN(void* parent); // 0x13c540 (extern)
     char m_pad[0x24 - 0x04];
@@ -305,8 +308,8 @@ i32 CSymParser::LoadEntry(char* name, i32 flag) {
         if (node->Open(name, 1, 0) == 0) {
             return 0;
         }
-        m_parseArmed = (void*)1;
-        ParseRecords(node, m_root, (char*)m_cachedSourceBuffer, flag);
+        m_parseArmed = 1;
+        ParseRecords(node, m_root, m_cachedSourceBuffer, flag);
         return 1;
     }
 
@@ -355,6 +358,7 @@ struct SymFindData {
     i32 m_size; // +0x1c
     char m_name[0x108];
 };
+SIZE(SymFindData, 0x128); // CRT _finddata_t view { attrib, size @0x1c, name @0x20 }
 extern "C" i32 SymFindFirst(const char* spec, SymFindData* fd);                       // 0x11f900
 extern "C" i32 SymFindNext(i32 h, SymFindData* fd);                                   // 0x11fa30
 extern "C" i32 SymFindClose(i32 h);                                                   // 0x11fb50
@@ -509,26 +513,26 @@ i32 CSymParser::ReParse() {
     return ParseBuffer(m_cachedSourceBuffer, 1, 0);
 }
 
-// AddNode (0x13c210): splice a record's intrusive node (rec+0x1c) into the +0x80
-// hash table, when rec is non-null.
-RVA(0x0013c210, 0x1a)
-void CSymParser::AddNode(void* rec) {
-    if (rec) {
-        m_hash.Insert((CHashInsertNode*)((char*)rec + 0x1c));
-    }
-}
-
 // A parse-slot record (0x3c bytes): a CParseSource whose hash-node prefix is at
-// +0x1c (stamped by Init) and whose self-ptr lives at +0x30. Init (0x1396f0) stamps
-// the node vtable + nulls the body; reloc-masked __thiscall, no body here.
+// +0x1c (stamped by Init) and whose self-ptr lives at +0x30 (= m_node.m_record).
+// Init (0x1396f0) stamps the node vtable + nulls the body; reloc-masked __thiscall,
+// no body here.
 struct CParseSlot {
     char m_pad00[0x1c];
-    void* m_node1c; // +0x1c  hash-node vtable prefix (the insert handle)
-    char m_pad20[0x30 - 0x20];
-    void* m_self; // +0x30
+    CHashElement m_node; // +0x1c  hash-node prefix (m_node.m_record @0x30 = self)
     char m_pad34[0x3c - 0x34];
     void Init(); // 0x1396f0
 };
+SIZE(CParseSlot, 0x3c); // parse-slot record (RezAlloc n*0x3c)
+
+// AddNode (0x13c210): splice a parse-slot record's intrusive node (its m_node @0x1c)
+// into the +0x80 hash table, when rec is non-null.
+RVA(0x0013c210, 0x1a)
+void CSymParser::AddNode(void* rec) {
+    if (rec) {
+        m_hash.Insert(&((CParseSlot*)rec)->m_node);
+    }
+}
 
 // PopParseSlot (0x13c0c0): see SymParser.h. The /GX frame guards the freshly Rez-
 // alloc'd slot block while its elements are being initialized + registered.
@@ -539,7 +543,7 @@ struct CParseSlot {
 // operands are differently named. Banked for the final sweep.
 RVA(0x0013c0c0, 0x14b)
 void* CSymParser::PopParseSlot() {
-    CHashEntry* e = m_hash.First();
+    CHashElement* e = m_hash.First();
     void* rec = e ? e->m_record : 0;
     if (rec == 0) {
         CSlotNode* node = (CSlotNode*)RezAlloc(0xc);
@@ -568,15 +572,15 @@ void* CSymParser::PopParseSlot() {
         }
         for (i32 j = 0; (u32)j < (u32)m_parseSlotBlockCount; j++) {
             CParseSlot* el = (CParseSlot*)((char*)node->m_buffer + j * 0x3c);
-            el->m_self = el;
-            m_hash.Insert((CHashInsertNode*)((char*)el + 0x1c));
+            el->m_node.m_record = el;
+            m_hash.Insert(&el->m_node);
         }
-        m_nodes.Link(node);
+        m_nodes.Link(&node->m_link);
         e = m_hash.First();
         rec = e->m_record;
     }
     if (rec) {
-        m_hash.Remove((CHashEntry*)((char*)rec + 0x1c));
+        m_hash.Remove(&((CParseSlot*)rec)->m_node);
     }
     return rec;
 }
@@ -652,14 +656,5 @@ CSymParser::CSymParser() {
     m_parseSlotBlockCount = 0x64;
 }
 
-// --- class-metadata sweep (Bute module): SymParser.h + .cpp-local SIZE at this .cpp
-// EOF (all SIZE_UNKNOWN). CSymTab (also in SymParser.h) is annotated in SymTab.cpp.
-SIZE_UNKNOWN(CObjNode); // declared-but-undefined virtual slots; no vtable emitted here (no VTBL)
-SIZE_UNKNOWN(CObjList);
-SIZE_UNKNOWN(CSlotNode);
-SIZE_UNKNOWN(CParserHash);
-SIZE_UNKNOWN(CSymParser);
-SIZE_UNKNOWN(CTextReaderInit);
-SIZE_UNKNOWN(CBinReaderInit);
-SIZE_UNKNOWN(SymFindData);
-SIZE_UNKNOWN(CParseSlot);
+// All Bute-module class SIZE()s are annotated atop their class definitions (this
+// TU's .cpp-local structs below, and SymParser.h / SymTab.cpp for the shared ones).

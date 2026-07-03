@@ -44,22 +44,21 @@ struct CButeTreeNode {
 
 // The +0x08 second-base sub-object dtor (0x16dfc0, __thiscall, `this ? this+8 : 0`
 // adjust). Modeled as a tiny receiver so the masked `this+8` lands in ecx.
-SIZE_UNKNOWN(CButeTreeBase2);
 struct CButeTreeBase2 {
     void Dtor(); // 0x16dfc0
 };
+SIZE(CButeTreeBase2, 0x24); // receiver view of the +0x08 second base (spans +0x08..+0x2c)
 
 // CButeTree is multiply-derived (two vptrs), the same 0x2c-byte shape as CButeStore.
 // REAL POLYMORPHIC (ALL-VTABLES): a primary base at +0x00 and a second base at
 // +0x08. The two runtime/dtor-phase vptr stamps (TypeKeyColl.cpp) write these via raw
 // casts; making the class polymorphic keeps the fields flat but drops the manual vptr
 // field names.
-SIZE_UNKNOWN(CButeTreePrimary);
 struct CButeTreePrimary {
     virtual void P0();         // +0x00  primary vptr
     CVariantSlot* m_errorSink; // +0x04
 };
-SIZE_UNKNOWN(CButeTreeSecond);
+SIZE(CButeTreePrimary, 0x8); // { vptr, error-sink }
 struct CButeTreeSecond {
     virtual void S0();              // +0x00 (this+0x08)  second-base vptr
     char m_pad0c[0x14 - 0x0c];      // +0x04 (+0x0c)
@@ -70,6 +69,7 @@ struct CButeTreeSecond {
     i32 m_keyBitLength;             // +0x18 (+0x24)  strlen*8 + 7
     i32 m_lookupPending;            // +0x1c (+0x28)
 };
+SIZE(CButeTreeSecond, 0x20); // second base (spans +0x08..+0x28 of CButeTree)
 
 class CButeTree : public CButeTreePrimary, public CButeTreeSecond {
 public:

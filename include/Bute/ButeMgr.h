@@ -98,19 +98,21 @@ struct CButeValue {
     // this.
     CButeValue* CopyValue(CButeValue* other);
 };
+SIZE(CButeValue, 0x8); // { type @0, pValue @4 }
 
 // The 16-byte (kButeRef5 / kButeRef8) payload, copied as a struct so MSVC lowers
 // it to four memberwise dword stores (SetRef5/SetRef8's op-new'd copy).
-SIZE_UNKNOWN(ButeRef16);
 struct ButeRef16 {
     i32 w[4];
 };
+SIZE(ButeRef16, 0x10); // 16-byte kButeRef5/kButeRef8 payload
 
 // The 24-byte (kButeRef7) payload, copied as a struct so MSVC lowers it to the
 // retail `rep movsd` (6 dwords).
 struct ButeRef24 {
     i32 w[6];
 };
+SIZE(ButeRef24, 0x18); // 24-byte kButeRef7 payload
 
 // The engine helper embedded at CButeMgr+0x14 (the .bute compiler/registry
 // sub-object). FuncA/FuncB are the cleanup pair ClearHelper drives (reloc-masked
@@ -134,10 +136,10 @@ struct ButeRef24 {
 //   +0x34  m_34      : int   - -1
 //   +0x38  m_cs      : CRITICAL_SECTION (per-instance, Initialize/Delete'd)
 // REAL POLYMORPHIC (ALL-VTABLES): the +0x00 vptr is implicit (virtual dtor); its
-// own primary vtable ??_7CButeMgrHelper @0x5f03bc (VTBL cataloged at ButeMgr.cpp
-// EOF). The constructor (0x169c00) and the teardown dtor (0x169d70) are modeled as a
-// real C++ ctor/dtor so cl auto-stamps the vptr (== the old manual stamp),
-// reloc-masked.
+// own primary vtable ??_7CButeMgrHelper @0x5f03bc. The constructor (0x169c00) and the
+// teardown dtor (0x169d70) are modeled as a real C++ ctor/dtor so cl auto-stamps the
+// vptr (== the old manual stamp), reloc-masked.
+VTBL(CButeMgrHelper, 0x005f03bc); // helper's own primary vtable (ctor/dtor auto-stamp)
 class CButeMgrHelper {
 public:
     void FuncA();
@@ -178,6 +180,7 @@ public:
     i32 m_34;                  // +0x34
     CRITICAL_SECTION m_cs;     // +0x38
 };
+SIZE(CButeMgrHelper, 0x50); // fields through m_cs (CRITICAL_SECTION @0x38, 0x18 B)
 
 // CButeTree - the shared crit-bit trie store (Find/Insert/Walk). CButeMgr's owned
 // sub-trees (m_tree/m_tree48/m_tree74) are instances of it, addressed through the
@@ -209,6 +212,7 @@ public:
 struct CButeStoreBase2 {
     void RestoreVptr(); // 0x16dfc0
 };
+SIZE(CButeStoreBase2, 0x24); // receiver view of the +0x08 second base
 
 // A keyed-store tree node the recursive clear (CButeStore::ClearRecursive,
 // ButeStoreClear.cpp) walks: left/right children, the heap-order key, the owned
@@ -217,15 +221,18 @@ struct CButeStoreNode {
     CButeStoreNode* m_left;  // +0x00
     CButeStoreNode* m_right; // +0x04
     i32 m_key;               // +0x08  order key
-    void* m_str;             // +0x0c  owned name string (freed)
-    void* m_val;             // +0x10  value (callback target, freed)
+    char* m_str;             // +0x0c  owned name string (freed)
+    void* m_val;             // +0x10  value the per-value callback consumes (freed);
+                             //        genuinely heterogeneous, so void*
 };
+SIZE(CButeStoreNode, 0x14);
 
 // The primary store base at +0x00 (most-derived scalar-deleting vptr 0x5e94ac).
 struct CButeStorePrimary {
     virtual void P0(); // +0x00  most-derived (scalar-deleting) vptr
     char m_pad04[4];   // +0x04
 };
+SIZE(CButeStorePrimary, 0x8); // { vptr, pad }
 
 // The second base at +0x08 (second-base vptr 0x5e949c); carries the keyed-store
 // interior fields (offsets shown relative to the enclosing CButeStore).
@@ -239,11 +246,12 @@ struct CButeStoreSecond {
     char m_pad14[0x20 - 0x14];  // +0x14 (+0x1c)  opaque
     i32 m_28;                   // +0x20 (+0x28)  reset-to-empty field (Parse zeros it)
 };
+SIZE(CButeStoreSecond, 0x24); // second base (spans +0x08..+0x2c of CButeStore)
 
 struct CButeStore : public CButeStorePrimary, public CButeStoreSecond {
-    // The derived clear body (0x16e070): recursively frees the keyed nodes.
-    // __thiscall(this, recurse); callee-cleans 4.
-    void ClearRecursive(i32 recurse);
+    // The derived clear body (0x16e070): recursively frees the keyed nodes from
+    // `node` (or the tree root when null). __thiscall(this, node); callee-cleans 4.
+    void ClearRecursive(CButeStoreNode* node);
     // Reset-to-empty: free the nodes, then zero the root + the two reset fields.
     // Inlined into CButeMgr::Parse (the tree-base pointer lands in a register).
     void Reset() {
@@ -265,6 +273,7 @@ struct CButeStore : public CButeStorePrimary, public CButeStoreSecond {
         BaseDtor();
     }
 };
+SIZE(CButeStore, 0x2c); // MI: CButeStorePrimary @0 + CButeStoreSecond @8
 
 // The 1-byte embedded object at CButeMgr+0x10f. Its destructor (0x16f6b0) is a
 // bare `ret` (trivial teardown), but it is a NON-trivial member of the mgr (the
@@ -277,6 +286,7 @@ struct CButeTail {
         Dtor();
     }
 };
+SIZE(CButeTail, 0x1); // 1-byte embedded tail object
 
 // ---------------------------------------------------------------------------
 // CButeNode - a per-tag store node allocated by ParseTagLine (0x2c bytes). Built
@@ -300,6 +310,7 @@ class CButeNodeSub {
 public:
     virtual void Slot0(); // +0x00 (this+0x08): second sub-object vptr
 };
+SIZE(CButeNodeSub, 0x4); // second sub-object (vptr only)
 
 // CButeNode - REAL POLYMORPHIC (ALL-VTABLES phase): the derived ctor runs the
 // engine base ctor, then cl auto-stamps ??_7CButeNode @+0x00 and the m_sub member's
@@ -314,6 +325,7 @@ public:
     CButeNodeSub m_sub;       // +0x08  second sub-object (implicit vptr)
     char m_pad0c[0x2c - 0xc]; // pad to 0x2c bytes total
 };
+SIZE(CButeNode, 0x2c); // new CButeNode(0x2c); CButeNodeBase + m_sub @0x08
 
 // CString::operator+= one char. Appends to the accumulator.
 extern "C" void AfxString_AppendChar(void* pStr, char c);
@@ -336,21 +348,25 @@ struct CButeRef5 { // 16 bytes
     ~CButeRef5();
     DWORD a, b, c, d;
 };
+SIZE(CButeRef5, 0x10);
 struct CButeRef6 { // 8 bytes
     CButeRef6() : a(0), b(0) {}
     ~CButeRef6();
     DWORD a, b;
 };
+SIZE(CButeRef6, 0x8);
 struct CButeRef7 { // 24 bytes
     CButeRef7() : a(0), b(0), c(0), d(0), e(0), f(0) {}
     ~CButeRef7();
     DWORD a, b, c, d, e, f;
 };
+SIZE(CButeRef7, 0x18);
 struct CButeRef8 { // 16 bytes
     CButeRef8() : a(0), b(0), c(0), d(0) {}
     ~CButeRef8();
     DWORD a, b, c, d;
 };
+SIZE(CButeRef8, 0x10);
 
 // ---------------------------------------------------------------------------
 // CString member helper - an MFC-style CString (a single char* @+0). Only the
@@ -374,14 +390,14 @@ typedef void(__cdecl* ErrCallback)(const char*);
 // ---------------------------------------------------------------------------
 class CButeMgr {
 public:
-    i32 GetIntDef(char* tag, char* key, i32 def);
-    i32 GetInt(char* tag, char* key);
-    DWORD GetDwordDef(char* tag, char* key, DWORD def);
-    DWORD GetDword(char* tag, char* key);
-    float GetFloat(char* tag, char* key);
-    double GetDouble(char* tag, char* key);
-    CString* GetStringDef(char* tag, char* key, CString* def);
-    char* GetString(char* tag, char* key);
+    i32 GetIntDef(const char* tag, const char* key, i32 def);
+    i32 GetInt(const char* tag, const char* key);
+    DWORD GetDwordDef(const char* tag, const char* key, DWORD def);
+    DWORD GetDword(const char* tag, const char* key);
+    float GetFloat(const char* tag, const char* key);
+    double GetDouble(const char* tag, const char* key);
+    CString* GetStringDef(const char* tag, const char* key, CString* def);
+    char* GetString(const char* tag, const char* key);
 
     bool ScanToken(i32 expectType);
     bool ParseTagLine();
@@ -441,7 +457,7 @@ public:
     bool ParseGroup();
     // Key existence probe: Find(tag); if no key requested, hit on the group;
     // else require the key under it.
-    bool Exists(char* tag, char* key);
+    bool Exists(const char* tag, const char* key);
 
     // The /GX (EH-frame) scalar destructor (0x213c0): tears down the three owned
     // CButeStore sub-trees + the five CStrings + the +0x10f tail object, each at
@@ -492,10 +508,11 @@ public:
     // The typed-reference getters (tag5-8). Each returns a pointer to the typed
     // value record's storage on a type hit, or a shared zero-default static on
     // any miss (no tag / no key / type mismatch), reporting the specific failure.
-    CButeRef5* GetRef5(char* tag, char* key);
-    CButeRef6* GetRef6(char* tag, char* key);
-    CButeRef7* GetRef7(char* tag, char* key);
-    CButeRef8* GetRef8(char* tag, char* key);
+    CButeRef5* GetRef5(const char* tag, const char* key);
+    CButeRef6* GetRef6(const char* tag, const char* key);
+    CButeRef7* GetRef7(const char* tag, const char* key);
+    CButeRef8* GetRef8(const char* tag, const char* key);
 };
+SIZE(CButeMgr, 0x110); // fields through the +0x10f embedded tail object
 
 #endif // SRC_BUTE_BUTEMGR_H

@@ -77,6 +77,7 @@ class CButeStream {
 public:
     i32 ReadByte();
 };
+SIZE(CButeStream, 0x4); // receiver view of the +0xa0 input stream
 
 // The big attribute-file line driver at 0x170750 (the same class as CButeMgr;
 // its retail symbol is ?ParseAttributeFile@ButeMgr@@QAE_NXZ, stubbed in
@@ -86,6 +87,7 @@ class ButeMgr {
 public:
     bool ParseAttributeFile();
 };
+SIZE(ButeMgr, 0x110); // alias view of CButeMgr (same object)
 
 // ParseGroup's recursive node-walk callback (the engine apply-fn passed to the
 // tree walker at 0x193340). Reloc-masked file-scope address.
@@ -113,6 +115,7 @@ struct CButeValueNode {
     i32 type;     // +0x00
     void* pValue; // +0x04
 };
+SIZE(CButeValueNode, 0x8); // { type, pValue }
 
 // CString::operator+= one char (__thiscall(receiver, char)):
 // appends the char to the value-text accumulator. Modeled as an external
@@ -151,6 +154,7 @@ struct CButeTextBuf {
     char m_pad00[0xc]; // +0x00
     CButeText accum;   // +0x0c  the appended value text
 };
+SIZE(CButeTextBuf, 0x10); // pad + the +0xc value-text accumulator (CString)
 
 // The token-length counter (file-scope signed WORD, read with movsx).
 static i16 g_tokenLen;
@@ -268,7 +272,7 @@ bool CButeMgr::ScanToken(i32 expectType) {
 // hit return *(int*)rec->pValue, on type mismatch report + fall through, on any
 // miss return def.
 RVA(0x00171aa0, 0x50)
-i32 CButeMgr::GetIntDef(char* tag, char* key, i32 def) {
+i32 CButeMgr::GetIntDef(const char* tag, const char* key, i32 def) {
     void* grp = Tree()->Find(tag);
     if (grp) {
         CButeValue* rec = (CButeValue*)((CButeTree*)grp)->Find(key);
@@ -287,7 +291,7 @@ i32 CButeMgr::GetIntDef(char* tag, char* key, i32 def) {
 // type-0 getter, no default: returns 0x80000000 on any miss (and reports the
 // specific failure - type mismatch / symbol-not-found / invalid-tag).
 RVA(0x00171af0, 0x86)
-i32 CButeMgr::GetInt(char* tag, char* key) {
+i32 CButeMgr::GetInt(const char* tag, const char* key) {
     void* grp = Tree()->Find(tag);
     if (grp) {
         CButeValue* rec = (CButeValue*)((CButeTree*)grp)->Find(key);
@@ -400,7 +404,7 @@ CButeValue::~CButeValue() {
 // type-1 (dword) getter with default. The type check is `if (--type == 0)` i.e.
 // type == 1 (the disasm `mov ecx,[eax]; dec ecx; je`).
 RVA(0x001721e0, 0x5a)
-DWORD CButeMgr::GetDwordDef(char* tag, char* key, DWORD def) {
+DWORD CButeMgr::GetDwordDef(const char* tag, const char* key, DWORD def) {
     void* grp = Tree()->Find(tag);
     if (grp) {
         CButeValue* rec = (CButeValue*)((CButeTree*)grp)->Find(key);
@@ -419,7 +423,7 @@ DWORD CButeMgr::GetDwordDef(char* tag, char* key, DWORD def) {
 // CButeMgr::GetDword
 // type-1 getter, no default: returns 0 on any miss.
 RVA(0x00172240, 0x7d)
-DWORD CButeMgr::GetDword(char* tag, char* key) {
+DWORD CButeMgr::GetDword(const char* tag, const char* key) {
     void* grp = Tree()->Find(tag);
     if (grp) {
         CButeValue* rec = (CButeValue*)((CButeTree*)grp)->Find(key);
@@ -444,7 +448,7 @@ DWORD CButeMgr::GetDword(char* tag, char* key) {
 // when type==0, `fld` the float when type==3, else report + return 0.0f. Returns
 // in st(0) (an x87 float return).
 RVA(0x00172730, 0x9a)
-float CButeMgr::GetFloat(char* tag, char* key) {
+float CButeMgr::GetFloat(const char* tag, const char* key) {
     void* grp = Tree()->Find(tag);
     if (grp) {
         CButeValue* rec = (CButeValue*)((CButeTree*)grp)->Find(key);
@@ -471,7 +475,7 @@ float CButeMgr::GetFloat(char* tag, char* key) {
 // `fld qword` when type==2, else report + return 0.0. (The disasm tests with
 // `sub ecx,0; je` then `sub ecx,2; je` -> the type==0 and type==2 branches.)
 RVA(0x00172c40, 0x9b)
-double CButeMgr::GetDouble(char* tag, char* key) {
+double CButeMgr::GetDouble(const char* tag, const char* key) {
     void* grp = Tree()->Find(tag);
     if (grp) {
         CButeValue* rec = (CButeValue*)((CButeTree*)grp)->Find(key);
@@ -497,7 +501,7 @@ double CButeMgr::GetDouble(char* tag, char* key) {
 // type-4 (string) getter with default: returns rec->pValue (the char*) on a
 // type-4 hit, reports a type mismatch otherwise, returns def on any miss.
 RVA(0x00173180, 0x4e)
-CString* CButeMgr::GetStringDef(char* tag, char* key, CString* def) {
+CString* CButeMgr::GetStringDef(const char* tag, const char* key, CString* def) {
     void* grp = Tree()->Find(tag);
     if (grp) {
         CButeValue* rec = (CButeValue*)((CButeTree*)grp)->Find(key);
@@ -521,7 +525,7 @@ CString* CButeMgr::GetStringDef(char* tag, char* key, CString* def) {
 // regalloc coin-flip (99.63%): body byte-exact; retail holds tag/key in ebx/edi,
 // cl swaps to edi/ebx (+ the /GX scopetable push immediate, reloc-masked). Final sweep.
 RVA(0x001731d0, 0xb6)
-char* CButeMgr::GetString(char* tag, char* key) {
+char* CButeMgr::GetString(const char* tag, const char* key) {
     static CString s_empty("");
 
     void* grp = Tree()->Find(tag);
@@ -709,7 +713,7 @@ bool ButeMgr::ParseAttributeFile() {
 
     bool bDup = false;
     if (!self->m_writeMode) {
-        if (self->m_pNode->Find((const char*)self->m_str104)) {
+        if (self->m_pNode->Find(self->m_str104)) {
             self->ReportError(s_fmtDupTag, self->m_str104.GetBuffer(0));
             bDup = true;
         }
@@ -731,10 +735,7 @@ bool ButeMgr::ParseAttributeFile() {
         case 6: { // signed int -> type 0
             v = ButeRead_Int(self->m_token);
             if (self->m_writeMode) {
-                accum->AppendInt(self->GetInt(
-                    (char*)(const char*)self->m_tagName,
-                    (char*)(const char*)self->m_str104
-                ));
+                accum->AppendInt(self->GetInt(self->m_tagName, self->m_str104));
             } else if (!bDup) {
                 CButeValueNode* n = (CButeValueNode*)operator new(8);
                 if (n) {
@@ -747,7 +748,7 @@ bool ButeMgr::ParseAttributeFile() {
                         n->pValue = 0;
                     }
                 }
-                self->m_pNode->Insert((const char*)self->m_str104, n);
+                self->m_pNode->Insert(self->m_str104, n);
             }
             break;
         }
@@ -758,10 +759,7 @@ bool ButeMgr::ParseAttributeFile() {
             *(DWORD*)&v = ButeRead_Dword(self->m_token, 0, 10);
             if (self->m_writeMode) {
                 *accum += s_strDword;
-                accum->AppendDword(self->GetDword(
-                    (char*)(const char*)self->m_tagName,
-                    (char*)(const char*)self->m_str104
-                ));
+                accum->AppendDword(self->GetDword(self->m_tagName, self->m_str104));
             } else if (!bDup) {
                 CButeValueNode* n = (CButeValueNode*)operator new(8);
                 if (n) {
@@ -774,7 +772,7 @@ bool ButeMgr::ParseAttributeFile() {
                         n->pValue = 0;
                     }
                 }
-                self->m_pNode->Insert((const char*)self->m_str104, n);
+                self->m_pNode->Insert(self->m_str104, n);
             }
             break;
         }
@@ -785,10 +783,7 @@ bool ButeMgr::ParseAttributeFile() {
             *(float*)&v = (float)ButeRead_Float(self->m_token);
             if (self->m_writeMode) {
                 (*accum += s_strFloat)
-                    .AppendDouble(self->GetFloat(
-                        (char*)(const char*)self->m_tagName,
-                        (char*)(const char*)self->m_str104
-                    ));
+                    .AppendDouble(self->GetFloat(self->m_tagName, self->m_str104));
             } else if (!bDup) {
                 CButeValueNode* n = (CButeValueNode*)operator new(8);
                 if (n) {
@@ -801,17 +796,14 @@ bool ButeMgr::ParseAttributeFile() {
                         n->pValue = 0;
                     }
                 }
-                self->m_pNode->Insert((const char*)self->m_str104, n);
+                self->m_pNode->Insert(self->m_str104, n);
             }
             break;
         }
         case 15: { // float ('f'-tagged) -> type 3
             *(float*)&v = (float)ButeRead_Float(self->m_token);
             if (self->m_writeMode) {
-                (*accum).AppendDouble(self->GetFloat(
-                    (char*)(const char*)self->m_tagName,
-                    (char*)(const char*)self->m_str104
-                ));
+                (*accum).AppendDouble(self->GetFloat(self->m_tagName, self->m_str104));
                 *accum += s_strFloatSuffix;
             } else if (!bDup) {
                 CButeValueNode* n = (CButeValueNode*)operator new(8);
@@ -825,17 +817,14 @@ bool ButeMgr::ParseAttributeFile() {
                         n->pValue = 0;
                     }
                 }
-                self->m_pNode->Insert((const char*)self->m_str104, n);
+                self->m_pNode->Insert(self->m_str104, n);
             }
             break;
         }
         case 7: { // double -> type 2
             double dv = ButeRead_Float(self->m_token);
             if (self->m_writeMode) {
-                accum->AppendDouble(self->GetDouble(
-                    (char*)(const char*)self->m_tagName,
-                    (char*)(const char*)self->m_str104
-                ));
+                accum->AppendDouble(self->GetDouble(self->m_tagName, self->m_str104));
             } else if (!bDup) {
                 CButeValueNode* n = (CButeValueNode*)operator new(8);
                 if (n) {
@@ -848,7 +837,7 @@ bool ButeMgr::ParseAttributeFile() {
                         n->pValue = 0;
                     }
                 }
-                self->m_pNode->Insert((const char*)self->m_str104, n);
+                self->m_pNode->Insert(self->m_str104, n);
             }
             break;
         }
@@ -856,10 +845,7 @@ bool ButeMgr::ParseAttributeFile() {
             i32 a, b, c, d;
             sscanf(self->m_token, s_fmtPoint4, &a, &b, &c, &d);
             if (self->m_writeMode) {
-                CButeRef5* r = self->GetRef5(
-                    (char*)(const char*)self->m_tagName,
-                    (char*)(const char*)self->m_str104
-                );
+                CButeRef5* r = self->GetRef5(self->m_tagName, self->m_str104);
                 (*accum += s_strOpen).AppendElem((i32)r->a);
                 (*accum += s_strComma).AppendElem((i32)r->b);
                 (*accum += s_strComma).AppendElem((i32)r->c);
@@ -880,7 +866,7 @@ bool ButeMgr::ParseAttributeFile() {
                         n->pValue = 0;
                     }
                 }
-                self->m_pNode->Insert((const char*)self->m_str104, n);
+                self->m_pNode->Insert(self->m_str104, n);
             }
             break;
         }
@@ -888,10 +874,7 @@ bool ButeMgr::ParseAttributeFile() {
             i32 a, b;
             sscanf(self->m_token, s_fmtPoint2, &a, &b);
             if (self->m_writeMode) {
-                CButeRef6* r = self->GetRef6(
-                    (char*)(const char*)self->m_tagName,
-                    (char*)(const char*)self->m_str104
-                );
+                CButeRef6* r = self->GetRef6(self->m_tagName, self->m_str104);
                 (*accum += s_strOpen).AppendElem((i32)r->a);
                 (*accum += s_strComma).AppendElem((i32)r->b);
                 *accum += s_strClose;
@@ -908,7 +891,7 @@ bool ButeMgr::ParseAttributeFile() {
                         n->pValue = 0;
                     }
                 }
-                self->m_pNode->Insert((const char*)self->m_str104, n);
+                self->m_pNode->Insert(self->m_str104, n);
             }
             break;
         }
@@ -916,10 +899,7 @@ bool ButeMgr::ParseAttributeFile() {
             double x, y, z;
             sscanf(self->m_token, s_fmtRect3, &x, &y, &z);
             if (self->m_writeMode) {
-                CButeRef7* r = self->GetRef7(
-                    (char*)(const char*)self->m_tagName,
-                    (char*)(const char*)self->m_str104
-                );
+                CButeRef7* r = self->GetRef7(self->m_tagName, self->m_str104);
                 double dx = *(double*)&r->a;
                 double dy = *(double*)&r->c;
                 double dz = *(double*)&r->e;
@@ -941,7 +921,7 @@ bool ButeMgr::ParseAttributeFile() {
                         n->pValue = 0;
                     }
                 }
-                self->m_pNode->Insert((const char*)self->m_str104, n);
+                self->m_pNode->Insert(self->m_str104, n);
             }
             break;
         }
@@ -949,10 +929,7 @@ bool ButeMgr::ParseAttributeFile() {
             double x, y;
             sscanf(self->m_token, s_fmtRect2, &x, &y);
             if (self->m_writeMode) {
-                CButeRef8* r = self->GetRef8(
-                    (char*)(const char*)self->m_tagName,
-                    (char*)(const char*)self->m_str104
-                );
+                CButeRef8* r = self->GetRef8(self->m_tagName, self->m_str104);
                 double dx = *(double*)&r->a;
                 double dy = *(double*)&r->c;
                 (*accum += s_strLBrack).AppendDouble(dx);
@@ -971,16 +948,13 @@ bool ButeMgr::ParseAttributeFile() {
                         n->pValue = 0;
                     }
                 }
-                self->m_pNode->Insert((const char*)self->m_str104, n);
+                self->m_pNode->Insert(self->m_str104, n);
             }
             break;
         }
         case 8: { // quoted string -> type 4
             if (self->m_writeMode) {
-                CString tmp(*(CString*)self->GetString(
-                    (char*)(const char*)self->m_tagName,
-                    (char*)(const char*)self->m_str104
-                ));
+                CString tmp(*(CString*)self->GetString(self->m_tagName, self->m_str104));
                 accum->Trim(0x22);
                 *accum += tmp.GetBuffer(0);
                 accum->Trim(0x22);
@@ -991,7 +965,7 @@ bool ButeMgr::ParseAttributeFile() {
                     n->type = 4;
                     n->pValue = new CString(s);
                 }
-                self->m_pNode->Insert((const char*)self->m_str104, n);
+                self->m_pNode->Insert(self->m_str104, n);
             }
             break;
         }
@@ -1027,7 +1001,7 @@ bool ButeMgr::ParseAttributeFile() {
 // forms all produce identical (ebp-pinned) MSVC codegen; no source lever flips it
 // (see docs/patterns/zero-register-pinning.md - the regalloc wall).
 RVA(0x00173770, 0xc6)
-CButeRef5* CButeMgr::GetRef5(char* tag, char* key) {
+CButeRef5* CButeMgr::GetRef5(const char* tag, const char* key) {
     static CButeRef5 s_default;
 
     void* grp = Tree()->Find(tag);
@@ -1048,7 +1022,7 @@ CButeRef5* CButeMgr::GetRef5(char* tag, char* key) {
 }
 
 RVA(0x00173d00, 0xbb)
-CButeRef6* CButeMgr::GetRef6(char* tag, char* key) {
+CButeRef6* CButeMgr::GetRef6(const char* tag, const char* key) {
     static CButeRef6 s_default;
 
     void* grp = Tree()->Find(tag);
@@ -1075,7 +1049,7 @@ CButeRef6* CButeMgr::GetRef6(char* tag, char* key) {
 // immediate stores + `test eax,eax`. Retail's own codegen is inconsistent across
 // the identical GetRef5/7 pair; not steerable without regressing GetRef5. Final sweep.
 RVA(0x00174240, 0xe3)
-CButeRef7* CButeMgr::GetRef7(char* tag, char* key) {
+CButeRef7* CButeMgr::GetRef7(const char* tag, const char* key) {
     static CButeRef7 s_default;
 
     void* grp = Tree()->Find(tag);
@@ -1099,7 +1073,7 @@ CButeRef7* CButeMgr::GetRef7(char* tag, char* key) {
 // zero-register coin-flip (85.5%): see GetRef7 - retail immediate zero-stores +
 // `test eax,eax`, cl pins 0 in ebp. Not steerable without regressing GetRef5. Final sweep.
 RVA(0x001747c0, 0xcf)
-CButeRef8* CButeMgr::GetRef8(char* tag, char* key) {
+CButeRef8* CButeMgr::GetRef8(const char* tag, const char* key) {
     static CButeRef8 s_default;
 
     void* grp = Tree()->Find(tag);
@@ -1422,7 +1396,7 @@ bool CButeMgr::ParseGroup() {
             return false;
         }
         if (m_writeMode) {
-            CButeTree* grp = (CButeTree*)Tree48()->Find((char*)(const char*)m_tagName);
+            CButeTree* grp = (CButeTree*)Tree48()->Find(m_tagName);
             if (grp) {
                 grp->Walk(&ButeGroup_Apply, m_pText, 0);
             }
@@ -1453,7 +1427,7 @@ bool CButeMgr::ParseGroup() {
 // Probe for a tag (and optionally a key under it): Tree()->Find(tag); on a hit
 // with no key requested return true, else require the key to exist under it.
 RVA(0x00171a60, 0x34)
-bool CButeMgr::Exists(char* tag, char* key) {
+bool CButeMgr::Exists(const char* tag, const char* key) {
     void* grp = Tree()->Find(tag);
     if (grp) {
         if (key == 0) {
@@ -1509,6 +1483,7 @@ extern "C" void* g_helperVbaseSubD; // 0x5f047c
 struct CButeSub {
     virtual void* ScalarDtor(i32 flags);
 };
+SIZE(CButeSub, 0x4); // slot-0-dispatch view (vptr only)
 
 // ---------------------------------------------------------------------------
 // CButeMgrHelper::InitVbaseA (0x1697c0)
@@ -1623,29 +1598,8 @@ void CButeMgrHelper::InitVbaseD() {
     *(void**)((char*)this - 0x8 + vbptr[1]) = &g_helperVbaseSubD;
 }
 
-// --- class-metadata sweep (Bute module): SIZE annotations hosted at this .cpp EOF.
-// ButeMgr.h is a hot header (an in-header SIZE reschedules neighbours), so the
-// header-class annotations live here. All SIZE_UNKNOWN: every Bute class modeled
-// is a partial pad-to-last-touched-field / view, not provably == the full retail
-// object. See docs/class-metadata-sweep-log.md.
-SIZE_UNKNOWN(CButeValue);
-SIZE_UNKNOWN(ButeRef24);
-SIZE_UNKNOWN(CButeMgrHelper);
-VTBL(CButeMgrHelper, 0x005f03bc); // helper's own primary vtable (ctor/dtor auto-stamp)
-SIZE_UNKNOWN(CButeStoreBase2);
-SIZE_UNKNOWN(CButeStorePrimary);
-SIZE_UNKNOWN(CButeStoreSecond);
-SIZE_UNKNOWN(CButeStore);
-SIZE_UNKNOWN(CButeNodeSub);
-SIZE_UNKNOWN(CButeTail);
-SIZE_UNKNOWN(CButeNode);
-SIZE_UNKNOWN(CButeRef5);
-SIZE_UNKNOWN(CButeRef6);
-SIZE_UNKNOWN(CButeRef7);
-SIZE_UNKNOWN(CButeRef8);
-SIZE_UNKNOWN(CButeMgr);
-SIZE_UNKNOWN(CButeStream);
-SIZE_UNKNOWN(ButeMgr);
-SIZE_UNKNOWN(CButeValueNode);
-SIZE_UNKNOWN(CButeTextBuf);
-SIZE_UNKNOWN(CButeSub); // vtable is a declared-but-undefined slot-dispatch view (no VTBL)
+// Every Bute class SIZE()/VTBL() is annotated atop its class definition (ButeMgr.h
+// for the header classes, this .cpp above for the .cpp-local views). SIZE is a
+// clang-only carrier - invisible to the MSVC base objects - so placing it in the
+// header is matching-neutral (the old "hot header reschedules neighbours" caveat
+// applied to real declarations, not to a compiled-out annotation).

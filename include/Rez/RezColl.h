@@ -25,6 +25,7 @@
 #define INCLUDE_REZ_REZCOLL_H
 
 #include <Ints.h>
+#include <rva.h> // SIZE()
 
 struct RezNode;
 
@@ -43,6 +44,7 @@ struct RezColl {
     // The first node: the chain head of the first occupied bucket (0x184ae0).
     RezNode* First();
 };
+SIZE(RezColl, 0x8); // { count, buckets }
 
 // A node/entry in a bucket chain: chain link at +4, owning collection at +0xc,
 // bucket index at +0x10, resolved payload at +0x14.
@@ -58,5 +60,6 @@ struct RezNode {
     // later buckets for the next occupied chain head (0x1848b0).
     RezNode* Next();
 };
+SIZE(RezNode, 0x18); // { .., nextLink @0x04, coll @0x0c, bucketIdx @0x10, payload @0x14 }
 
 #endif // INCLUDE_REZ_REZCOLL_H

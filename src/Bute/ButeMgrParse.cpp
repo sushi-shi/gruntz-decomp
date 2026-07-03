@@ -35,6 +35,7 @@ struct ButeIos {
     int m_state;        // +0x08  io_state (& 6 == failbit|badbit)
     char m_pad0c[0x50 - 0xc];
 };
+SIZE(ButeIos, 0x50); // CRT ios virtual base view (vptr, streambuf, state, ...)
 
 // The file source stream `new`-d at +0xa0: vbptr @ +0, two derived dwords, then
 // the `ios` virtual base @ +0xc -> sizeof 0x5c. The ctor (0x169fb0) takes the
@@ -47,6 +48,7 @@ struct ButeFileStream : virtual ButeIos {
     void Sync();                                                    // 0x16a3b0
     ~ButeFileStream(); // external; the delete runs the vbase vtable's slot-0
 };
+SIZE(ButeFileStream, 0x5c); // vbptr + 2 dwords + the ios virtual base @0xc
 
 // ---------------------------------------------------------------------------
 // CButeMgr::Parse(CString, int)
@@ -86,11 +88,11 @@ bool CButeMgr::Parse(CString filename, int streamBase) {
         result = false;
     }
 
+    // m_stream is a genuinely heterogeneous void* slot (NextChar reads it as
+    // CButeStream* / void** / int); the reload-through-cast here reproduces retail's
+    // two member reloads (using the typed local `s` would keep it in a register and
+    // diverge). Documented reinterpret of the multi-view slot, not a placeholder.
     ((ButeFileStream*)m_stream)->Sync();
     delete (ButeFileStream*)m_stream;
     return result;
 }
-
-// --- class-metadata sweep (Bute module): SIZE at this .cpp EOF (all SIZE_UNKNOWN).
-SIZE_UNKNOWN(ButeIos); // CRT ios view; virtual dtor owned by the CRT (no VTBL)
-SIZE_UNKNOWN(ButeFileStream);

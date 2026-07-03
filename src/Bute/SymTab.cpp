@@ -63,19 +63,19 @@ struct CSymLeafBuilder {
         void* f6,
         void* arr,
         void* stream
-    );                  // 0x139710
-    char* m_name;       // +0x00  strdup(name) (or null)
-    void* m_record;     // +0x04  rec
-    void* m_08;         // +0x08  f2
-    i32 m_0c;           // +0x0c  f3   (read by ApplyRange)
-    void* m_ownerScope; // +0x10  owning scope
-    i32 m_14;           // +0x14  f1   (read by ApplyRange)
-    i32 m_18;           // +0x18  = 0
-    char m_pad1c[0x30 - 0x1c];
-    void* m_self;         // +0x30  self
+    );                    // 0x139710
+    char* m_name;         // +0x00  strdup(name) (or null)
+    void* m_record;       // +0x04  rec
+    void* m_08;           // +0x08  f2
+    i32 m_0c;             // +0x0c  f3   (read by ApplyRange)
+    void* m_ownerScope;   // +0x10  owning scope
+    i32 m_14;             // +0x14  f1   (read by ApplyRange)
+    i32 m_18;             // +0x18  = 0
+    CHashElement m_node;  // +0x1c  hash-node prefix (m_node.m_record @0x30 = this)
     void* m_sourceStream; // +0x34  source stream
     i32 m_38;             // +0x38  = 0
 };
+SIZE(CSymLeafBuilder, 0x3c); // leaf-record parse slot (fields through m_38 @0x38)
 
 // CSymLeafBuilder::Build (0x139710): populate a freshly-popped leaf-record slot from a
 // parse-stream record. The name is duplicated through the throwing ::operator new
@@ -117,7 +117,7 @@ void CSymLeafBuilder::Build(
     m_08 = f2;
     m_38 = 0;
     m_18 = 0;
-    m_self = this;
+    m_node.m_record = this;
 }
 
 // ctor (0x139de0): stamp the +0x20 hash-node vtable + a zeroed +0x34 (both in the
@@ -218,11 +218,11 @@ CSymTab::~CSymTab() {
 // The `m_68 == 0` is the int->bool sete. __thiscall, callee-clean of both args.
 RVA(0x0013a000, 0x37)
 i32 CSymTab::Insert(const char* key, void* arg) {
-    void* rec = m_symbols.Find((const char*)arg);
+    CSymRec* rec = (CSymRec*)m_symbols.Find((const char*)arg);
     if (!rec) {
         return (i32)rec;
     }
-    return (i32)((CHashTable*)((char*)rec + 0x24))->Walk(key, m_owner->m_68 == 0);
+    return (i32)rec->m_valTable.Walk(key, m_owner->m_68 == 0);
 }
 
 // Find (0x13a040): split `path` into its components, derive the leaf record's value
@@ -383,7 +383,7 @@ CSymTab* CSymTab::CreateSub(const char* name) {
     if (!child) {
         return 0;
     }
-    m_subTabs.Insert((char*)child + 0x20);
+    m_subTabs.Insert(&child->m_node20);
     if (m_owner->m_longestScopeNameLen <= (i32)strlen(name)) {
         m_owner->m_longestScopeNameLen = strlen(name) + 1;
     }
@@ -406,7 +406,7 @@ i32 CSymTab::Method4b0(void* a0, void* a1, void* a2, void* a3) {
         return (i32)slot;
     }
     slot->Build(this, (const char*)a1, a0, a2, 0, 0, 0, (void*)m_owner->MakeSeed(), 0, 0, a3);
-    ((CHashTable*)((char*)a2 + 0x24))->Insert((char*)slot + 0x1c);
+    ((CSymRec*)a2)->m_valTable.Insert(&slot->m_node);
     u32 len = strlen((char*)a1);
     if ((u32)m_owner->m_longestLeafNameLen <= len) {
         m_owner->m_longestLeafNameLen = len + 1;
@@ -456,14 +456,13 @@ struct CSymRangeStream {
     virtual void s1();
     virtual i32 Read(i32 pos, i32 zero, i32 len, void* buf); // slot 2 (+0x8)
 };
+SIZE(CSymRangeStream, 0x4); // interface view (vptr only)
 
 // CSymLeafBuilder (the 11-arg leaf-record builder, 0x139710) is defined at the top
 // of this TU in retail-RVA order; ApplyRange below uses it.
 
-// The owner's parse-slot pool (CSymParser::PopParseSlot @0x13c0c0). Reloc-masked.
-struct CSymSlotPool {
-    void* PopParseSlot(); // 0x13c0c0
-};
+// PopParseSlot is CSymParser::PopParseSlot (0x13c0c0); ApplyRange/Method4b0 call it
+// directly on m_owner (SymParser.h is in scope), so no receiver-view struct is needed.
 
 // @early-stop
 // >512 B (0x2f7) /GX leaf-builder loop: the body reproduces both record arms (sub-scope
@@ -476,7 +475,7 @@ struct CSymSlotPool {
 RVA(0x0013a640, 0x2f7)
 i32 CSymTab::ApplyRange(i32 a0, i32 a1, i32 a2, i32 a3) {
     m_10 = 0;
-    m_0c = (void*)-1;
+    m_0c = -1;
     i32 maxVal = 0;
     char* buf = (char*)::operator new((u32)a2);
     if (!buf) {
@@ -512,7 +511,7 @@ i32 CSymTab::ApplyRange(i32 a0, i32 a1, i32 a2, i32 a3) {
                     o->m_subTabBucketCount,
                     o->m_symbolBucketCount
                 );
-                m_subTabs.Insert((char*)node + 0x20);
+                m_subTabs.Insert(&node->m_node20);
             } else {
                 ((CSymTab*)existing)->m_04 = fA;
                 ((CSymTab*)existing)->m_08 = fB;
@@ -532,9 +531,9 @@ i32 CSymTab::ApplyRange(i32 a0, i32 a1, i32 a2, i32 a3) {
             p += 4;
             char* name1 = p;
             p += strlen(name1) + 1;
-            void* rec = (void*)FindOrAddSym((i32)f5);
+            CSymRec* rec = FindOrAddSym((i32)f5);
             i32 skip = 0;
-            void* found = ((CHashTable*)((char*)rec + 0x24))->Walk(name1, 1);
+            void* found = rec->m_valTable.Walk(name1, 1);
             if (found) {
                 if (a3 != 0) {
                     Method530(rec, found);
@@ -560,12 +559,12 @@ i32 CSymTab::ApplyRange(i32 a0, i32 a1, i32 a2, i32 a3) {
                 arr = 0;
             }
             if (!skip) {
-                CSymLeafBuilder* slot = (CSymLeafBuilder*)((CSymSlotPool*)m_owner)->PopParseSlot();
+                CSymLeafBuilder* slot = (CSymLeafBuilder*)m_owner->PopParseSlot();
                 slot->Build(this, name1, f4, rec, str2, f3, f1, f2, f6, arr, (void*)a0);
-                ((CHashTable*)((char*)rec + 0x24))->Insert((char*)slot + 0x1c);
-                m_10 = (void*)((i32)m_10 + slot->m_0c);
-                if ((u32)slot->m_14 < (u32)(i32)m_0c) {
-                    m_0c = (void*)slot->m_14;
+                rec->m_valTable.Insert(&slot->m_node);
+                m_10 = m_10 + slot->m_0c;
+                if ((u32)slot->m_14 < (u32)m_0c) {
+                    m_0c = slot->m_14;
                 }
                 if ((u32)slot->m_14 > (u32)maxVal) {
                     maxVal = slot->m_14;
@@ -589,8 +588,8 @@ i32 CSymTab::ApplyRange(i32 a0, i32 a1, i32 a2, i32 a3) {
 // uses only three and recomputes it, swapping key/&table register roles throughout.
 // Banked for the final sweep.
 RVA(0x0013a940, 0xc2)
-void* CSymTab::FindOrAddSym(i32 key) {
-    void* found = m_symbols.Find((const char*)key);
+CSymRec* CSymTab::FindOrAddSym(i32 key) {
+    CSymRec* found = (CSymRec*)m_symbols.Find((const char*)key);
     if (found) {
         return found;
     }
@@ -601,7 +600,7 @@ void* CSymTab::FindOrAddSym(i32 key) {
         rec = new CSymRec(key, this, m_owner->m_70);
     }
     if (rec) {
-        m_symbols.Insert((char*)rec + 4);
+        m_symbols.Insert(&rec->m_symNode);
     }
     return rec;
 }
@@ -742,6 +741,7 @@ i32 CSymTab::ResolveQualified(const char* name, void* arg) {
 struct CSymList {
     CSymList* Construct(int count); // 0x184960
 };
+SIZE(CSymList, 0x8); // array-backed list container { count, data }
 // @confidence: high
 // @source: xref
 // @stub
@@ -750,14 +750,6 @@ CSymList* CSymList::Construct(int count) {
     return this;
 }
 
-// CSymParser (also in SymTab.h) is annotated in SymParser.cpp.
-SIZE_UNKNOWN(CSymList); // 0x184960 array-backed list container (sym subsystem)
-SIZE_UNKNOWN(RezColl);
-SIZE_UNKNOWN(RezNode);
-SIZE_UNKNOWN(CHashTable);
-SIZE_UNKNOWN(CHashTableEntry);
-SIZE_UNKNOWN(CSymRec);
-SIZE_UNKNOWN(CSymTab);
-SIZE_UNKNOWN(CSymLeafBuilder);
-SIZE_UNKNOWN(CSymRangeStream); // declared-but-undefined virtual slots; no vtable here (no VTBL)
-SIZE_UNKNOWN(CSymSlotPool);
+// All SIZE()s are annotated atop their class definitions (this TU's .cpp-local
+// structs above, SymTab.h for CHashTable/CHashTableEntry/CSymRec/CSymTab,
+// Rez/RezColl.h for RezColl/RezNode). CSymParser is annotated in SymParser.h.

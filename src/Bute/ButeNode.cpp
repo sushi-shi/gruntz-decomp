@@ -47,27 +47,27 @@ public:
     CButeNodeEntry(i32 n, void* desc);
     virtual ~CButeNodeEntry(); // +0x00 vptr; external no-body scalar-deleting dtor
 
-    void* m_4; // +0x04  desc
-    i16 m_8;   // +0x08  (WORD)n
+    void* m_desc; // +0x04  kind descriptor (opaque; a tag pointer)
+    i16 m_kind;   // +0x08  (WORD)n
     char m_pada[2];
-    i32 m_c; // +0x0c
+    i32 m_0c; // +0x0c  zero-init
 };
-SIZE_UNKNOWN(CButeNodeEntry);
+SIZE(CButeNodeEntry, 0x10);       // { vptr, desc, kind, 0 }
 VTBL(CButeNodeEntry, 0x005f04d8); // the entry member's own (base) vtable
 
 // CButeNodeBase layout (multiply-derived, two vptrs):
 //   +0x00  CContainerErr base   (vptr, msg)
 //   +0x08  CButeNodeEntry base  (vptr, desc, kind, 0) - spans +0x08..+0x18
-//   +0x18  m_18 : child link, zeroed
-//   +0x28  m_28 : child link, zeroed
+//   +0x18  m_child18 : child link, zeroed
+//   +0x28  m_child28 : child link, zeroed
 class CButeNodeBase : public CContainerErr, public CButeNodeEntry {
 public:
     CButeNodeBase(void* desc, i32 n);
 
     // CButeNodeEntry base occupies +0x08..+0x18
-    i32 m_18; // +0x18
+    i32 m_child18; // +0x18  child link (zeroed)
     char m_pad1c[0x28 - 0x1c];
-    i32 m_28; // +0x28
+    i32 m_child28; // +0x28  child link (zeroed)
 };
 SIZE(CButeNodeBase, 0x2c);       // measured: new(0x2c) -> ctor 0x16dff0; matches the layout above
 VTBL(CButeNodeBase, 0x005e94ac); // most-derived (whole-object) vtable @+0
@@ -81,9 +81,9 @@ VTBL(CButeNodeBase, 0x005e94ac); // most-derived (whole-object) vtable @+0
 // MSVC5 (same mechanism as CZArray2D). Converted per the ALL-VTABLES mandate.
 RVA(0x0016df70, 0x22)
 CButeNodeEntry::CButeNodeEntry(i32 n, void* desc) {
-    m_4 = desc;
-    m_8 = (i16)n;
-    m_c = 0;
+    m_desc = desc;
+    m_kind = (i16)n;
+    m_0c = 0;
 }
 
 // CButeNodeBase ctor (0x16dff0): run the CContainerErr primary base ctor + the
@@ -99,8 +99,8 @@ CButeNodeEntry::CButeNodeEntry(i32 n, void* desc) {
 RVA(0x0016dff0, 0x73)
 CButeNodeBase::CButeNodeBase(void* desc, i32 n)
     : CContainerErr(&g_buteNodeErrMsg), CButeNodeEntry(n, desc) {
-    m_18 = 0;
-    m_28 = 0;
+    m_child18 = 0;
+    m_child28 = 0;
 }
 
 // ===========================================================================
@@ -119,7 +119,7 @@ class CButeCfgNode174d : public CButeNodeBase {
 public:
     CButeCfgNode174d(i32 kind); // 0x174d00
 };
-SIZE_UNKNOWN(CButeCfgNode174d);
+SIZE(CButeCfgNode174d, 0x2c); // derives CButeNodeBase (no new fields)
 
 // @early-stop
 // vptr-schedule wall (ALL-VTABLES): the base ctor is called first, then cl stamps
