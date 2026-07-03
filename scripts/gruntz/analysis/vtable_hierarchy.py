@@ -548,10 +548,24 @@ class Audit:
         # per-class NAME signals, keeping EVERY per-TU body (the FUN_ transcription
         # may live in only one of a class's several shim definitions).
         self.virtual, self.manual, self.vtbl_field = set(), set(), set()
-        self.bodies, self.where = {}, {}
+        self.bodies, self.where, self.src_base = {}, {}, {}
+        _txt = {}  # per-file line cache, so the base can be read from the DECLARATION
         for name, path, lineno, body in class_meta.iter_class_defs():
             self.where.setdefault(name, (class_meta.rel(path), lineno))
             self.bodies.setdefault(name, []).append(body)
+            if name not in self.src_base:
+                # iter_class_defs' `body` is text AFTER the `{`, so the `: public Base`
+                # lives on the declaration line(s) - read them from the file directly.
+                if path not in _txt:
+                    try:
+                        _txt[path] = path.read_text(errors="ignore").splitlines()
+                    except OSError:
+                        _txt[path] = []
+                lines = _txt[path]
+                decl = " ".join(lines[lineno - 1:lineno + 2]).split("{", 1)[0]
+                m = re.search(r"\b" + re.escape(name) + r"\b\s*:\s*"
+                              r"(?:public\s+|protected\s+|private\s+|virtual\s+)*([\w:]+)", decl)
+                self.src_base[name] = m.group(1).split("::")[-1] if m else None
             if re.search(r"\bvirtual\b", body):
                 self.virtual.add(name)
             if class_vtables._MANUAL_RE.search(body):
@@ -805,7 +819,7 @@ def cmd_audit(aud):
             db = _deepest_base(slots, rva, known, inter)
             if db:
                 truth, via = db[0], ("intermediate" if db[0] in inter else "slot-prefix")
-        source_base = _source_base(aud.bodies.get(name, []))
+        source_base = aud.src_base.get(name)
         bslots = inter.get(truth) or (aud.reg[truth].primary()[2]
                                       if aud.reg.get(truth) and aud.reg[truth].primary() else [])
         nB = len(bslots)
@@ -882,7 +896,7 @@ def cmd_tree(aud):
     roots = sorted(n for n in nodes if n not in parent)
 
     def modeled(n):
-        src_base = _source_base(aud.bodies.get(n, []))
+        src_base = aud.src_base.get(n)
         return "" if src_base == parent.get(n, src_base) else "  <- source says %s" % (src_base or "no base")
 
     def kind(n):
