@@ -716,7 +716,7 @@ i32 CDDrawSubMgrLeafScan::MatchSub_1584f0(LeafScanSoundArg* arg1, i32 arg2) {
         return 0;
     }
     if (arg2 != 0) {
-        if (m_2c->StartPrimary_137200() == 0) {
+        if (m_2c->StartPrimary() == 0) {
             return 0;
         }
     }

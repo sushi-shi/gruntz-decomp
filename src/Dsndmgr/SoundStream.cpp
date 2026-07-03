@@ -52,7 +52,7 @@ SIZE_UNKNOWN(StreamVoiceList); // {head,tail} list-head view
 
 // ---------------------------------------------------------------------------
 // SoundStream::SoundStream (__thiscall). Run the base ctor, zero the
-// two instance words (m_94 list head / m_98), then stamp the stream vptr.
+// two instance words (m_instanceHead list head / m_98), then stamp the stream vptr.
 // The 0x5ef6ec stamp + the 0x137710 shared dtor (via the scalar dtor below)
 // prove it is SoundStream's.
 // @early-stop
@@ -63,7 +63,7 @@ SIZE_UNKNOWN(StreamVoiceList); // {head,tail} list-head view
 RVA(0x001376d0, 0x20)
 SoundStream::SoundStream() {
     // cl auto-stamps ??_7SoundStream@@6B@ (0x5ef6ec) here (was the manual store).
-    m_94 = 0;
+    m_instanceHead = 0;
     m_98 = 0;
 }
 
@@ -145,7 +145,7 @@ StreamVoiceNode* SoundStream::CreateStreamBuffer(WaveFormatX* fmt, u32 bytes, i3
     if (voice) {
         voice = new (voice) StreamVoiceNode(out, this, b, c);
     }
-    ((StreamList*)&m_94)->Insert(voice ? &voice->m_link : 0);
+    ((StreamList*)&m_instanceHead)->Insert(voice ? &voice->m_link : 0);
     voice->m_avgBytes = fmt->nAvgBytesPerSec;
     voice->m_avgBytesDiv = fmt->nAvgBytesPerSec;
     voice->m_byteLength = bytes;
@@ -200,10 +200,10 @@ RVA(0x001379d0, 0x5f)
 void SoundStream::DestroyVoice(StreamVoiceNode* voice) {
     if (m_initialized) {
         voice->m_feeder.FeederReset(0);
-        ((StreamVoiceList*)&m_voiceHead)->Reap(voice, 0xffff);
+        ((StreamVoiceList*)&m_voiceList)->Reap(voice, 0xffff);
         voice->m_buf0c->Release();
         voice->m_buf0c = 0;
-        ((StreamList*)&m_94)->Unlink(voice ? &voice->m_link : 0);
+        ((StreamList*)&m_instanceHead)->Unlink(voice ? &voice->m_link : 0);
         if (voice) {
             ((DSoundCloneBase*)voice)->ScalarDtor(1);
         }

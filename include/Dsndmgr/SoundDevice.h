@@ -1,70 +1,92 @@
 // SoundDevice.h - the WAP32 DirectSound *device* manager (Dsndmgr module,
 // C:\Proj\Dsndmgr\DSNDMGR.CPP). This is the higher-level class that OWNS the
-// per-buffer DirectSoundMgr wrappers (see DirectSoundMgr.h): it holds the
-// IDirectSound device (+0x14), the primary buffer (+0x84), an intrusive list of
-// owned sound-buffer wrappers (head at +0x04, each wrapper chained through its
-// own +0x04 link, the stored pointer biased +4 - an MFC CTypedPtrList POSITION),
-// a voice/channel sub-list (+0x0c), an "initialized" flag (+0x78), and an MFC
-// list of cached samples (+0x90/+0x94).
+// per-buffer sound-buffer wrappers: it holds the IDirectSound device (+0x14),
+// the primary buffer (+0x84), an intrusive list of owned sound-buffer wrappers
+// (a DSoundList value sub-object at +0x04, each buffer chained through its own
+// +0x04 link, the stored pointer biased +4 - an engine POSITION), a voice/channel
+// sub-list (a DSoundList at +0x0c), an "initialized" flag (+0x78) and a
+// per-derived instance-list head (+0x94, used by SoundStream).
 //
 // Its retail vftable is 0x5ef6c4 (the *device* class), distinct from the buffer
-// wrapper's 0x5ef6b8. Trace conflated it with DirectSoundMgr ("MinervaInner");
-// the two vtables prove they are separate classes. Field names are placeholders
-// (m_<hexoffset>); only OFFSETS + emitted code bytes are load-bearing.
+// wrapper's 0x5ef6b8. SoundDevice is never instantiated on its own - it is the
+// base subobject of SoundStream (DSndMgSR.CPP, 0x5ef6ec), the concrete class;
+// every device method runs on a SoundStream `this`.
 #ifndef DSNDMGR_SOUNDDEVICE_H
 #define DSNDMGR_SOUNDDEVICE_H
 
 #include <rva.h>
 
-#include <Dsndmgr/DirectSoundMgr.h>
-#include <Dsndmgr/WaveFormatX.h>
+#include <Dsndmgr/DirectSoundMgr.h> // DirectSoundMgr buffer wrapper + IDirectSound COM
+#include <Dsndmgr/SoundVoiceList.h> // shared DSoundList / DSoundLink / DSoundElem / PureSoundElem
+#include <Dsndmgr/WaveFormatX.h>    // WAVEFORMATEX-shaped PCM header
 
-// One owned sound-buffer wrapper as the device sees it in its +0x04 collection.
-// It is a DirectSoundMgr (buffer wrapper) whose +0x04 word doubles as the
-// intrusive forward link; the stored link value points 4 bytes past the next
-// node (MFC POSITION bias), so node = (link - 4). The +0x0c slot holds the
-// IDirectSoundBuffer to release.
+class SoundDevice;
+
+// SoundBuf - one owned sound buffer, as the device's +0x04 buffer list threads
+// it. It is the 0x60-byte DirectSound buffer object CreateBuffer mints (retail
+// vtable 0x5ef6bc, stamped by BaseInit): slot 0 is its scalar-deleting destructor
+// and its +0x04 word doubles as the intrusive forward link (biased +4, so the
+// owning node is `link - 4`). BaseInit/ComputeDuration/StopAndRewind/StopAllClones
+// live in DirectSoundMgr.cpp; declared no-body here so the __thiscall calls reloc-
+// mask.
+//
+// FLAG (matcher-6): this IS the DirectSoundMgr buffer leaf (DSoundCloneInst,
+// 0x5ef6bc); DirectSoundMgr's +0x04 pad is this device-list link. Kept as a local
+// node view here - unifying it into DirectSoundMgr (a real DSoundLink at +0x04 +
+// these seed fields) would drop the two SoundBuf<->DirectSoundMgr bridge casts in
+// SoundDevice.cpp.
 struct SoundBuf {
-    virtual void Slot0();         // +0x00  vptr slot (DirectSoundMgr buffer vtable; declared-only)
-    SoundBuf* m_link;             // +0x04  next, biased +4 (POSITION)
-    void* m_pad08;                // +0x08
-    IDirectSoundBufferZ* m_buf0c; // +0x0c  the IDirectSoundBuffer to release
-    char m_pad10[0x14 - 0x10];
+    virtual void* ScalarDtor(i32 flag); // +0x00  slot 0 (scalar-deleting dtor; declared-only)
+    DSoundLink m_link;                  // +0x04  device buffer-list link (next@+4, prev@+8)
+    IDirectSoundBufferZ* m_buffer;      // +0x0c  the IDirectSoundBuffer to release
+    char m_reservedA[0x18 - 0x10];      // +0x10
+    u32 m_formatWord;                   // +0x18  wFormatTag|nChannels of the WAVEFORMATEX
+    char m_reservedB[0x28 - 0x1c];      // +0x1c
+    u32 m_durationMs;                   // +0x28  duration-ms (set by ComputeDuration)
+    u32 m_byteCount;                    // +0x2c
+    char m_reservedC[0x38 - 0x30];      // +0x30
+    u32 m_avgBytesPerSec;               // +0x38
+    u32 m_avgBytesPerSecDivisor;        // +0x3c
+    char m_reservedD[0x60 - 0x40];      // +0x40
 
-    i32 StopAndRewind();  // 0x135380  (buffer method)
-    void StopAllClones(); // 0x136150  (buffer method)
+    void BaseInit(IDirectSoundBufferZ* buf, SoundDevice* owner); // 0x135b10
+    void ComputeDuration();                                      // 0x1359a0
+    i32 StopAndRewind();                                         // 0x135380
+    void StopAllClones();                                        // 0x136150
 };
-SIZE_UNKNOWN(SoundBuf); // partial DirectSoundMgr-buffer view (only +0x00..+0x14 pinned)
+SIZE(SoundBuf, 0x60); // RezAlloc(0x60) in CreateBuffer - the DirectSound buffer leaf. Its
+                      // vtable (0x5ef6bc) is cl-emitted as ??_7DSoundCloneInst by
+                      // DirectSoundMgr.cpp (matcher-6); no VTBL here (SoundBuf is a view -
+                      // never cl-instantiated, so no ??_7SoundBuf is emitted).
 
-// One cached sample/resource node hanging off the device's +0x0c list. It is a
-// polymorphic resource object (vtable, slot 1 @ +0x04 = a "free" virtual) whose
-// +0x04 word doubles as the intrusive forward link (the same MFC POSITION +4
-// bias as SoundBuf). On free its vptr is restamped to the abstract base
-// (0x5ef6c8, a __purecall vtable) and the node is released through _RezFree.
-struct SoundSample {
-    virtual void Slot0(); // +0x00  slot 0 (unused here)
-    virtual void Free();  // +0x04  slot 1 -> call [vtbl+4]
-    SoundSample* m_link;  // +0x04  next, biased +4 (POSITION); overlays after vptr
+// ParseFmt - the fmt-chunk descriptor ParseWaveChunks fills (its `out` param) and
+// Acquire/ReloadRiff read. m_fmt points at the WAVEFORMATEX inside the RIFF blob;
+// m_flags carries the parse flags (bit 0 forces an 8-bit downconvert). Its address
+// escapes to the parser, so the pre-zeroed slots stay live (not constant-folded).
+struct ParseFmt {
+    WaveFormatX* m_fmt; // +0x00  fmt-chunk WAVEFORMATEX pointer (into the RIFF blob)
+    u32 m_reservedA;    // +0x04  (zeroed by Acquire; parser output slot, unused for WAVE)
+    u32 m_flags;        // +0x08  parse flags (bit 0 -> force an 8-bit downconvert)
+    u32 m_reservedB;    // +0x0c
+    u32 m_reservedC;    // +0x10  (zeroed by Acquire)
 };
-SIZE_UNKNOWN(SoundSample); // cached-sample node view (real node is larger)
+SIZE(ParseFmt, 0x14); // 5-DWORD parser scratch descriptor (address escapes)
 
 class SoundDevice {
 public:
-    SoundDevice();              // 0x136440  /GX EH base ctor (was the Ghidra placeholder
-                                // "UnknownSalazar"): zero the two intrusive list members,
-                                // stamp the device vptr, BuildVolumeTable, zero the rest.
-    void* ScalarDtor(i32 flag); // 0x1364c0  ??_G vtable slot-0 scalar-deleting dtor:
-                                // ~SoundDevice then (flag&1) operator delete; returns this.
-    virtual ~SoundDevice();     // 0x136500  /GX EH destructor (vtable 0x5ef6c4) -> Shutdown.
-                                // ALL-VTABLES phase: virtual so cl auto-emits ??_7SoundDevice
-                                // @@6B@ (0x5ef6c4) + auto-stamps/resets the vptr.
-    void Shutdown();            // 0x136690  release every owned buffer, primary, device
+    SoundDevice();          // 0x136440  /GX EH base ctor (init lists, BuildVolumeTable, zero)
+    virtual ~SoundDevice(); // 0x136500  /GX EH dtor (vtable 0x5ef6c4) -> Shutdown; cl emits
+                            // ??_7SoundDevice@@6B@ + the ??_G scalar-deleting thunk (0x1364c0,
+                            // labelled by @rva-symbol in SoundDevice.cpp).
+    void Shutdown();        // 0x136690  release every owned buffer, primary, device
     void RemoveBuffer(SoundBuf* node); // 0x136d80  reap voices + release + unlink one buffer
-    void StopAll();                    // 0x136de0  StopAndRewind+StopAllClones over the buffer list
-    i32 FreeSamples(); // 0x136ed0  free + unlink every cached sample in the +0x0c list
-    i32 SetPrimaryFormat(void* fmt); // 0x1371a0  CreatePrimaryBuffer + primary SetFormat
-    i32 StartPrimary_137200();       // 0x137200  (extern) reads +0x78/+0x84, CreatePrimaryBuffer
-    i32 CreatePrimaryBuffer();       // 0x137260  (extern, defined elsewhere)
+    void StopAll();                    // 0x136de0  StopAndRewind+StopAllClones over the list
+    i32 FreeSamples();                 // 0x136ed0  free + unlink every cached voice (+0x0c list)
+    i32 SetPrimaryFormat(void* fmt);   // 0x1371a0  CreatePrimaryBuffer + primary SetFormat; the
+                                       // fmt is an opaque WAVEFORMATEX buffer (callers pass their
+                                       // own pointer type), so it stays void*.
+    i32 StartPrimary();                // 0x137200  (extern) reads +0x78/+0x84, primary
+    i32 CreatePrimaryBuffer();         // 0x137260  (extern, defined elsewhere)
     DirectSoundMgr* CreateBuffer(
         WaveFormatX* fmt,
         u32 bytes,
@@ -86,27 +108,27 @@ public:
 
     // The volume->attenuation curve (DSNDMGR.CPP): map a 0..100 volume to a DSound
     // hundredths-of-dB attenuation via an acos/pow transfer (static, x87).
-    static i32 VolumeToAttenuation(i32 value); // 0x1350b0  (was getLookupTableValue)
+    static i32 VolumeToAttenuation(i32 value); // 0x1350b0
     static void BuildVolumeTable();            // 0x1351a0  fill g_volumeTable[0..100]
 
     // --- layout ---------------------------------------------------------------
-    // vptr @ +0x00 (implicit, from the virtual dtor); first real field at +0x04.
-    SoundBuf* m_bufferHead;  // +0x04  owned-buffer list head (biased +4)
-    void* m_bufferTail;      // +0x08  owned-buffer list tail
-    void* m_voiceHead;       // +0x0c  voice/channel sub-list head (per-buffer remove)
-    void* m_voiceTail;       // +0x10  voice/channel sub-list tail
+    // vptr @ +0x00 (implicit, from the virtual dtor); the first real field is +0x04.
+    DSoundList m_bufferList; // +0x04  owned-buffer list {head@+4, tail@+8} (biased +4 links)
+    DSoundList m_voiceList;  // +0x0c  voice/channel sub-list {head@+0xc, tail@+0x10}
     IDirectSoundZ* m_device; // +0x14  the IDirectSound device
-    char m_pad18[0x78 - 0x18];
-    i32 m_initialized; // +0x78  "initialized" flag
-    char m_pad7c[0x80 - 0x7c];
-    i32 m_80;                             // +0x80
+    // +0x18..+0x78: unused by the device shape (the per-buffer fields DirectSoundMgr
+    // uses in the same layout region; the device role never touches them).
+    char m_reserved[0x78 - 0x18];
+    i32 m_initialized;   // +0x78  "initialized" flag (gates every op)
+    i32 m_createFlag;    // +0x7c  set by Create (unproven; sibling of DirectSoundMgr::m_7c)
+    i32 m_reacquireProc; // +0x80  reacquire-callback slot (zeroed by ctor; unproven)
     IDirectSoundBufferZ* m_primaryBuffer; // +0x84  primary buffer
-    i32 m_coopLevel;                      // +0x88
-    i32 m_bufferFlags;                    // +0x8c
-    i32 m_force8Bit;                      // +0x90
-    void* m_94;                           // +0x94  cached-sample list/map head
+    i32 m_coopLevel;                      // +0x88  cooperative level
+    u32 m_bufferFlags;                    // +0x8c  buffer-desc flags
+    i32 m_force8Bit;                      // +0x90  force-8-bit downconvert flag (Acquire reads)
+    DSoundLink* m_instanceHead;           // +0x94  derived instance-list head (SoundStream)
 };
-SIZE(SoundDevice, 0x98);       // device base (SoundStream's m_98 is the first past-base member)
+SIZE(SoundDevice, 0x98);       // device base (SoundStream's first own member is at +0x98)
 VTBL(SoundDevice, 0x001ef6c4); // cl-emitted ??_7SoundDevice@@6B@ (virtual dtor)
 
 #endif // DSNDMGR_SOUNDDEVICE_H
