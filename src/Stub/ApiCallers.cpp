@@ -6,6 +6,26 @@
 // Auto-generated API-caller stubs from docs/api-caller-name-plan.tsv.
 // Greenfield only: tracked/already-tried and named-untracked library rows are intentionally excluded.
 // One stub is emitted per RVA; rows with multiple API categories are merged.
+//
+// RESIDUAL TAXONOMY (this file is the drained backlog; ~62 of the original ~126
+// stubs already re-homed to their real class TUs - see the inline "re-homed to ..."
+// notes. The 64 that remain are the BLOCKED residual, each parked here for one of):
+//   [CRT]      Win32 CRITICAL_SECTION wrappers 0x16c9c0/d0/e0/f0 - not game code;
+//              STAY per the game-not-CRT matcher policy (no owning game class).
+//   [SPINE]    the g_gameReg / CGameReg spine + CGruntzMgr cluster (settings/menu
+//              DlgProcs + SelHost/RosterHost/Dispatcher/ActionHost/Screen/RectWnd
+//              /BattlezDlg). They deref a PLACEHOLDER CGameReg here; re-homing needs
+//              the REAL spine (GruntzMgr.cpp/.h) typed first - out of this TU's scope.
+//   [NET]      the NetMgr lobby/session DlgProcs (0xbdc00/0xbe0a0/0xbe2f0/0xbe400/
+//              0xbe490/0xbe760) over a placeholder PeerSession_0be490 / SessionHost;
+//              blocked on the NetMgr session class being typed first.
+//   [ORPHAN]   real bodies on ANONYMOUS RVA-named placeholder hosts (CmdHost_*, Grid_*,
+//              QlHost_*, EditAppendHost_*, Region_*, ...) whose true owning class is
+//              not yet recovered; moving them would force-guess an owner - LEFT put.
+//   [BIG]      >512B @early-stop bodies (0x14d00/0x1a700/0x179e70/0xe6020) kept at
+//              their return-0/artifact plateau per the >512B REVERT rule (final sweep).
+//   [DEFER]    MoviePlayer_17caa0::RenderFrame - CMoviePlayer/CSmackWin, deferred by a
+//              documented m_10/m_24 field-typing conflict with its moved siblings.
 
 // A window-host chain hung off the game registry: its m_4 is the top-level HWND.
 SIZE_UNKNOWN(GameWnd);

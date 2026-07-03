@@ -293,6 +293,10 @@ public:
     CGameObject* m_38;    // +0x38
     CGameObjAux* m_3c;    // +0x3c
 };
+SIZE(
+    CUserLogic,
+    0x40
+); // this header's fat-view size (tail absorbed); see the NOTE re the true 0x30
 // NOTE - the ONE TRUE CUserLogic size is 0x30, NOT 0x40. Evidence (retail):
 //   * The base ctor CUserLogic(CGameObject*) @0x58cd0 initializes fields only
 //     through m_2c (the highest write is `mov [esi+0x2c],2`), then returns. It

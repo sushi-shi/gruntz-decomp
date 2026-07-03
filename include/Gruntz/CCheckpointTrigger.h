@@ -12,6 +12,9 @@ public:
     CCheckpointTrigger(CGameObject* obj);   // 0x10ee20 (1-arg leaf ctor)
     virtual ~CCheckpointTrigger() OVERRIDE; // 0x011480 (folds the CUserLogic teardown)
     static void InitActReg();               // 0x10ea00 (constructs g_checkpointActReg @0x64e7c0)
+    static void
+    RegisterActs(); // 0x10ebe0 (binds the "A" activation handler; in ActRegSiblings.cpp)
+    i32 Trigger();  // 0x10ede0 (the activation handler; declared-only, used as a PMF)
 
     char m_pad40[0x54 - 0x40]; // +0x40
     i32 m_state[15];           // +0x54  the captured checkpoint state (15 dwords)

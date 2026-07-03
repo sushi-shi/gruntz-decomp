@@ -37,5 +37,6 @@ public:
     i32 m_durationLo;  // +0x60  phase duration (lo dword of the i64)
     i32 m_durationHi;  // +0x64  (hi dword)
 };
+SIZE(CTimeBomb, 0x68);
 
 #endif // GRUNTZ_CTIMEBOMB_H
