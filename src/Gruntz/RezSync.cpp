@@ -251,8 +251,8 @@ struct RezSync {
     void* m_04;
     void* m_08;
     u32 m_0c;
-    i32 m_10; // Sound
-    i32 m_14; // Music
+    i32 m_sound; // Sound
+    i32 m_music; // Music
     char _p18[0x30 - 0x18];
     CDDrawSurfaceMgr* m_30;
     CSymParser* m_34;
@@ -274,18 +274,18 @@ struct RezSync {
     void* m_74;
     H78* m_78;
     H7c* m_7c;
-    i32 m_80; // Num Runs
-    i32 m_84; // Num Movies
+    i32 m_numRuns;   // Num Runs
+    i32 m_numMovies; // Num Movies
     i32 m_88;
     i32 m_8c;
     i32 m_90;
-    i32 m_94; // width
-    i32 m_98; // height
+    i32 m_width;  // width
+    i32 m_height; // height
     char _p9c[0xac - 0x9c];
     i32 m_ac;
     i32 m_b0;
     i32 m_b4;
-    i32 m_b8; // Checkpoint Prompts
+    i32 m_checkpointPrompts; // Checkpoint Prompts
     char _pbc[0xc8 - 0xbc];
     void* m_c8; // CString
     char _pcc[0xd0 - 0xcc];
@@ -293,16 +293,16 @@ struct RezSync {
     char _pd1[0xd4 - 0xd1];
     i32 m_d4;
     char _pd8[0x100 - 0xd8];
-    i32 m_100; // Voice
-    i32 m_104; // Ambient
-    i32 m_108; // Interlaced
-    i32 m_10c; // High Detail
-    i32 m_110; // High Detail 2
+    i32 m_voice;      // Voice
+    i32 m_ambient;    // Ambient
+    i32 m_interlaced; // Interlaced
+    i32 m_highDetail; // High Detail
+    i32 m_110;        // High Detail 2 (retail store crosses to vEasy; ambiguous, left placeholder)
     char _p114[0x118 - 0x114];
-    i32 m_118; // Easy Mode / resolution
-    i32 m_11c; // Sound Volume
-    i32 m_120; // Voice Volume
-    i32 m_124; // Music Volume
+    i32 m_118; // Easy Mode default / Resolution store (crossed; ambiguous, left placeholder)
+    i32 m_soundVolume; // Sound Volume
+    i32 m_voiceVolume; // Voice Volume
+    i32 m_musicVolume; // Music Volume
     char _p128[0x150 - 0x128];
     char m_150[4 * 0x238];
     char _tail[0xa30 - (0x150 + 4 * 0x238)];
@@ -390,10 +390,10 @@ i32 RezSync::Init(void* a1, void* a2) {
         Error2(0x800a, 0x406);
         return 0;
     }
-    m_94 = 0x280;
-    m_98 = 0x1e0;
-    m_80 = (i32)m_38->GetValueDword("Num Runs", 0);
-    m_84 = (i32)m_38->GetValueDword("Num Movies", 0);
+    m_width = 0x280;
+    m_height = 0x1e0;
+    m_numRuns = (i32)m_38->GetValueDword("Num Runs", 0);
+    m_numMovies = (i32)m_38->GetValueDword("Num Movies", 0);
     g_2455d4 = m_38->GetValueDword("Disable High Quality Movie", 0) ? 1 : 0;
     g_2455b4 = (i32)m_38->GetValueDword("Disable Audio", 0);
     g_2455bc = (i32)m_38->GetValueDword("Disable Sound", 0);
@@ -406,7 +406,7 @@ i32 RezSync::Init(void* a1, void* a2) {
     g_2455dc = (i32)m_38->GetValueDword("Enable HiColor", 0);
     g_2455e0 = (i32)m_38->GetValueDword("Enable TrueColor", 0);
     g_2455e4 = (i32)m_38->GetValueDword("Enable Emulation", 0);
-    m_b8 = (i32)m_38->GetValueDword("Checkpoint Prompts", 1);
+    m_checkpointPrompts = (i32)m_38->GetValueDword("Checkpoint Prompts", 1);
     g_2455dc = 1;
     g_64526c = 0;
     g_6452d0 = 0;
@@ -422,34 +422,34 @@ i32 RezSync::Init(void* a1, void* a2) {
     g_645564 = 0;
 
     // --- Phase 4: audio/video settings -------------------------------
-    i32 vMusic = (i32)m_38->GetValueDword("Music", m_14);
-    i32 vSound = (i32)m_38->GetValueDword("Sound", m_10);
-    i32 vVoice = (i32)m_38->GetValueDword("Voice", m_100);
-    i32 vAmbient = (i32)m_38->GetValueDword("Ambient", m_104);
-    i32 vInterlaced = (i32)m_38->GetValueDword("Interlaced", m_108);
-    i32 vHigh1 = (i32)m_38->GetValueDword("High Detail", m_10c);
-    m_10c = (i32)m_38->GetValueDword("High Detail", m_110);
+    i32 vMusic = (i32)m_38->GetValueDword("Music", m_music);
+    i32 vSound = (i32)m_38->GetValueDword("Sound", m_sound);
+    i32 vVoice = (i32)m_38->GetValueDword("Voice", m_voice);
+    i32 vAmbient = (i32)m_38->GetValueDword("Ambient", m_ambient);
+    i32 vInterlaced = (i32)m_38->GetValueDword("Interlaced", m_interlaced);
+    i32 vHigh1 = (i32)m_38->GetValueDword("High Detail", m_highDetail);
+    m_highDetail = (i32)m_38->GetValueDword("High Detail", m_110);
     i32 vEasy = (i32)m_38->GetValueDword("Easy Mode", m_118);
     i32 res = (i32)m_38->GetValueDword("Resolution", 1);
     m_118 = res;
     if (res == 3) {
-        m_94 = 0x400;
-        m_98 = 0x300;
+        m_width = 0x400;
+        m_height = 0x300;
     } else if (res == 2) {
-        m_94 = 0x320;
-        m_98 = 0x258;
+        m_width = 0x320;
+        m_height = 0x258;
     } else {
-        m_94 = 0x280;
-        m_98 = 0x1e0;
+        m_width = 0x280;
+        m_height = 0x1e0;
     }
     i32 vMusVol = (i32)m_38->GetValueDword("Music Volume", 0x64);
     i32 vSndVol = (i32)m_38->GetValueDword("Sound Volume", 0x3c);
     i32 vVoiVol = (i32)m_38->GetValueDword("Voice Volume", 0x50);
     i32 vScroll = (i32)m_38->GetValueDword("Scroll Speed", 0x14);
-    m_11c = vSndVol;
-    m_120 = vVoiVol;
-    m_124 = vMusVol + 1;
-    m_80 = m_80 + 1;
+    m_soundVolume = vSndVol;
+    m_voiceVolume = vVoiVol;
+    m_musicVolume = vMusVol + 1;
+    m_numRuns = m_numRuns + 1;
     if (g_2455d0 != 0) {
         g_2455c4 = 1;
         g_2455e4 = 1;
@@ -635,7 +635,7 @@ i32 RezSync::Init(void* a1, void* a2) {
     }
     Fn40c0(vSndVol);
     Fn4174(vScroll);
-    m_124 = vMusVol;
+    m_musicVolume = vMusVol;
 
     // --- Phase 11: settings host (m_78, m_58) -----------------------
     m_78 = (H78*)RezAlloc(0x3c);
@@ -779,13 +779,13 @@ i32 RezSync::Init(void* a1, void* a2) {
         return 0;
     }
     *(i32*)((char*)m_60 + 0x2c) = vScroll;
-    m_14 = vMusic;
-    m_10 = vSound;
+    m_music = vMusic;
+    m_sound = vSound;
     g_sndEnabled = vSound;
-    m_100 = vVoice;
-    m_104 = vAmbient;
-    m_108 = vInterlaced;
-    m_10c = vHigh1;
+    m_voice = vVoice;
+    m_ambient = vAmbient;
+    m_interlaced = vInterlaced;
+    m_highDetail = vHigh1;
     m_110 = vEasy;
     if (!((LeafScanZ*)m_30->m_28)->HasKeyEqual("GAME")) {
         void* sz = m_34->ResolvePath("GAME_SOUNDZ");
@@ -801,14 +801,14 @@ i32 RezSync::Init(void* a1, void* a2) {
     }
     Fn1ed8();
     if (!Fn2112()) {
-        if (m_84 > 0 && m_80 > 1) {
+        if (m_numMovies > 0 && m_numRuns > 1) {
             if (m_38->GetValueDword("Skip Logo Movies", 0) == 0 && noLogo == 0) {
                 Fn2cc5();
             }
         } else {
             Fn2cc5();
             if (Fn201d(2)) {
-                ++m_84;
+                ++m_numMovies;
             }
         }
     }

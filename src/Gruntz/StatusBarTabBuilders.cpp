@@ -130,27 +130,27 @@ namespace StatusBarTabBuilders {
         char m_00[0x4];
         i32 m_04; // +0x04
         char m_08[0x4];
-        i32 m_0c;          // +0x0c
-        i32 m_10;          // +0x10
-        CSbGeom m_14;      // +0x14..0x20  (4 geometry anchors, block-copied)
-        CSbOwner* m_24;    // +0x24
-        i32 m_28;          // +0x28
-        CSbParent* m_2c;   // +0x2c
-        CSbImageSet* m_30; // +0x30
-        i32 m_34;          // +0x34
-        i32 m_38;          // +0x38
-        i32 m_3c;          // +0x3c
-        i32 m_40;          // +0x40
-        i32 m_44;          // +0x44
-        i32 m_48;          // +0x48
-        i32 m_4c;          // +0x4c
-        i32 m_50;          // +0x50
-        i32 m_54;          // +0x54
-        i32 m_58;          // +0x58
-        i32 m_5c;          // +0x5c
-        i32 m_60;          // +0x60
-        i32 m_64;          // +0x64
-        i32 m_68;          // +0x68
+        i32 m_0c;            // +0x0c
+        i32 m_10;            // +0x10
+        CSbGeom m_geom;      // +0x14..0x20  (4 geometry anchors, block-copied)
+        CSbOwner* m_owner;   // +0x24
+        i32 m_28;            // +0x28
+        CSbParent* m_parent; // +0x2c
+        CSbImageSet* m_30;   // +0x30
+        i32 m_34;            // +0x34
+        i32 m_38;            // +0x38
+        i32 m_3c;            // +0x3c
+        i32 m_40;            // +0x40
+        i32 m_44;            // +0x44
+        i32 m_48;            // +0x48
+        i32 m_4c;            // +0x4c
+        i32 m_50;            // +0x50
+        i32 m_54;            // +0x54
+        i32 m_58;            // +0x58
+        i32 m_5c;            // +0x5c
+        i32 m_60;            // +0x60
+        i32 m_64;            // +0x64
+        i32 m_68;            // +0x68
         char m_6c[0x70 - 0x6c];
         i32 m_70;          // +0x70
         CSbImageSet* m_74; // +0x74
@@ -185,12 +185,12 @@ namespace StatusBarTabBuilders {
             return 0;
         }
         CSbOwner* owner = statusbar;
-        m_2c = parent;
+        m_parent = parent;
         m_10 = p4;
-        m_24 = owner;
+        m_owner = owner;
         m_28 = 0;
         m_04 = 1;
-        m_14 = g;
+        m_geom = g;
         statusbar = 0;
         m_0c = p3;
         owner->m_10->m_10.Lookup(
@@ -209,7 +209,7 @@ namespace StatusBarTabBuilders {
             return 0;
         }
         statusbar = 0;
-        m_24->m_10->m_10.Lookup(key, (void**)&statusbar);
+        m_owner->m_10->m_10.Lookup(key, (void**)&statusbar);
         m_30 = (CSbImageSet*)statusbar;
         if (statusbar == 0) {
             return 0;
@@ -270,14 +270,14 @@ namespace StatusBarTabBuilders {
         if (statusbar == 0 || parent == 0) {
             return 0;
         }
-        m_24 = statusbar;
+        m_owner = statusbar;
         m_10 = p4;
-        m_2c = parent;
-        m_14.a = p5;
+        m_parent = parent;
+        m_geom.a = p5;
         m_28 = 0;
-        m_14.b = p6;
-        m_14.c = p7;
-        m_14.d = p8;
+        m_geom.b = p6;
+        m_geom.c = p7;
+        m_geom.d = p8;
         m_0c = p3;
         if (p12 == 0) {
             m_04 = 0;
@@ -352,12 +352,12 @@ namespace StatusBarTabBuilders {
             return 0;
         }
         CSbOwner* owner = statusbar;
-        m_2c = parent;
+        m_parent = parent;
         m_10 = p4;
-        m_24 = owner;
+        m_owner = owner;
         m_28 = 0;
         m_04 = 1;
-        m_14 = g;
+        m_geom = g;
         statusbar = 0;
         m_0c = p3;
         owner->m_10->m_10.Lookup(key, (void**)&statusbar);
@@ -389,7 +389,7 @@ namespace StatusBarTabBuilders {
         i32 val;
         if (selMode == 0) {
             statusbar = 0;
-            m_24->m_10->m_10.Lookup(
+            m_owner->m_10->m_10.Lookup(
                 "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_SELECTEDBAR",
                 (void**)&statusbar
             );
@@ -404,7 +404,10 @@ namespace StatusBarTabBuilders {
             }
         } else {
             statusbar = 0;
-            m_24->m_10->m_10.Lookup("GAME_STATUSBAR_TABZ_STATZTAB_SELECTEDBAR", (void**)&statusbar);
+            m_owner->m_10->m_10.Lookup(
+                "GAME_STATUSBAR_TABZ_STATZTAB_SELECTEDBAR",
+                (void**)&statusbar
+            );
             m_68 = (i32)statusbar;
             if (statusbar == 0) {
                 return 0;

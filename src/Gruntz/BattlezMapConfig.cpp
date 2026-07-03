@@ -75,6 +75,12 @@ extern "C" i32 rand(void);
 //                 +0x5c/+0x60 marker coords, +0x124 map id, +0x8 flags.
 //   CLevelList  - the list head: +0x14 first, +0x64 GetNext cursor.
 // ---------------------------------------------------------------------------
+// The object hung off CLevelInfo::m_2c: only its +0x2e4 word is read (into m_14).
+struct CLevelSpawnInfo {
+    char m_pad00[0x2e4];
+    i32 m_2e4; // +0x2e4  read into CBattlezMapConfig::m_14
+};
+
 struct CLevelNode {
     CLevelNode* m_0; // +0x00  next cell
     char m_pad04[4];
@@ -112,8 +118,8 @@ struct CLevelList {
 // The source level-info object (arg1, in EBP). Only the load-bearing reads.
 struct CLevelInfo {
     char m_pad00[0x2c];
-    void* m_2c;       // +0x2c  copied to this+0x10
-    CLevelList* m_30; // +0x30  object-list root (its m_8 is the walked list)
+    CLevelSpawnInfo* m_2c; // +0x2c  copied to this+0x10
+    CLevelList* m_30;      // +0x30  object-list root (its m_8 is the walked list)
     char m_pad34[0x68 - 0x34];
     void* m_68; // +0x68  copied to this+0x8
     char m_pad6c[0x70 - 0x6c];
@@ -172,32 +178,32 @@ class CBattlezMapConfig {
 public:
     i32 LoadConfig(CLevelInfo* lvl, i32 id, i32 diff);
 
-    i32 m_0;         // +0x00  = 1
-    CLevelInfo* m_4; // +0x04  = lvl
-    void* m_8;       // +0x08  = lvl->m_68
-    CMapDims* m_c;   // +0x0c  = lvl->m_70
-    void* m_10;      // +0x10  = lvl->m_2c
-    i32 m_14;        // +0x14  = ((int*)m_10)[0x2e4/4]
-    void* m_18;      // +0x18  = id (arg2)
+    i32 m_0;                 // +0x00  = 1
+    CLevelInfo* m_levelInfo; // +0x04  = lvl
+    void* m_8;               // +0x08  = lvl->m_68
+    CMapDims* m_dims;        // +0x0c  = lvl->m_70
+    CLevelSpawnInfo* m_10;   // +0x10  = lvl->m_2c
+    i32 m_14;                // +0x14  = m_10->m_2e4
+    i32 m_ownerId;           // +0x18  = id (arg2, owner/team id)
     char m_pad1c[0x30 - 0x1c];
-    DWORD m_30; // +0x30  DefenderChance
+    DWORD m_defenderChance; // +0x30  DefenderChance
     char m_pad34[0x48 - 0x34];
-    DWORD m_48; // +0x48  GruntCreationTime (rescaled)
-    DWORD m_4c; // +0x4c  (zeroed)
-    i32 m_50;   // +0x50  (zeroed)
-    DWORD m_54; // +0x54  ResourceCreationTime (rescaled)
-    i32 m_58;   // +0x58  (zeroed)
-    i32 m_5c;   // +0x5c  (zeroed)
-    DWORD m_60; // +0x60  GauntletzChance
-    DWORD m_64; // +0x64  ShovelzChance
-    DWORD m_68; // +0x68  SpyzChance
-    DWORD m_6c; // +0x6c  BrickzChance
-    DWORD m_70; // +0x70  GooberzChance
-    DWORD m_74; // +0x74  GruntRatio
-    i32 m_78;   // +0x78  (epilogue = 0)
-    i32 m_7c;   // +0x7c  (epilogue = 0)
-    i32 m_80;   // +0x80  (epilogue = 0)
-    i32 m_84;   // +0x84  (epilogue = 0)
+    DWORD m_gruntCreationTime;    // +0x48  GruntCreationTime (rescaled)
+    DWORD m_4c;                   // +0x4c  (zeroed)
+    i32 m_50;                     // +0x50  (zeroed)
+    DWORD m_resourceCreationTime; // +0x54  ResourceCreationTime (rescaled)
+    i32 m_58;                     // +0x58  (zeroed)
+    i32 m_5c;                     // +0x5c  (zeroed)
+    DWORD m_gauntletzChance;      // +0x60  GauntletzChance
+    DWORD m_shovelzChance;        // +0x64  ShovelzChance
+    DWORD m_spyzChance;           // +0x68  SpyzChance
+    DWORD m_brickzChance;         // +0x6c  BrickzChance
+    DWORD m_gooberzChance;        // +0x70  GooberzChance
+    DWORD m_gruntRatio;           // +0x74  GruntRatio
+    i32 m_78;                     // +0x78  (epilogue = 0)
+    i32 m_7c;                     // +0x7c  (epilogue = 0)
+    i32 m_80;                     // +0x80  (epilogue = 0)
+    i32 m_84;                     // +0x84  (epilogue = 0)
     char m_pad88[0x8c - 0x88];
     i32 m_8c; // +0x8c  = 6
     i32 m_90; // +0x90  = 6
@@ -206,60 +212,60 @@ public:
     char m_pad9c[0xa4 - 0x9c];
     i32 m_a4; // +0xa4  = 8
     char m_pada8[0xac - 0xa8];
-    u32 m_ac; // +0xac  = (m_c->m_c)/3
-    u32 m_b0; // +0xb0  = (m_c->m_c)/3
+    u32 m_ac; // +0xac  = (m_dims->m_c)/3
+    u32 m_b0; // +0xb0  = (m_dims->m_c)/3
     char m_padb4[0xc0 - 0xb4];
-    u32 m_c0; // +0xc0  = (m_c->m_c)>>2
+    u32 m_c0; // +0xc0  = (m_dims->m_c)>>2
     char m_padc4[0xd0 - 0xc4];
-    i32 m_d0; // +0xd0  loop-1 fast-path marker X
-    i32 m_d4; // +0xd4  loop-1 fast-path marker Y
+    i32 m_markerX; // +0xd0  loop-1 fast-path marker X
+    i32 m_markerY; // +0xd4  loop-1 fast-path marker Y
     char m_padd8[0xdc - 0xd8];
     CStartArray m_dc; // +0xdc  loop-1 start-coord array
     char m_padec[0xf0 - (0xdc + 0xc)];
     CStartArray m_f0; // +0xf0  loop-2 start-coord array
     char m_pad100[0x140 - (0xf0 + 0xc)];
-    i32 m_140; // +0x140 = 0
-    i32 m_144; // +0x144 = ((rand "mod" 4) + 5) * 25 * 8
-    i32 m_148; // +0x148 = 0
-    i32 m_14c; // +0x14c = 0
-    i32 m_150; // +0x150 ToolzPercent (running total seed)
-    i32 m_154; // +0x154 ToyzPercent
-    i32 m_158; // +0x158 BrickzPercent
-    i32 m_15c; // +0x15c RedBrick
-    i32 m_160; // +0x160 BlueBrick
-    i32 m_164; // +0x164 GoldBrick
-    i32 m_168; // +0x168 BlackBrick
-    i32 m_16c; // +0x16c BabyWalkerz
-    i32 m_170; // +0x170 BeachBallz
-    i32 m_174; // +0x174 BigWheelz
-    i32 m_178; // +0x178 GoKartz
-    i32 m_17c; // +0x17c JackInTheBoxz
-    i32 m_180; // +0x180 JumpRopez
-    i32 m_184; // +0x184 PogoStickz
-    i32 m_188; // +0x188 Scrollz
-    i32 m_18c; // +0x18c SqueakToyz
-    i32 m_190; // +0x190 Yoyoz
-    i32 m_194; // +0x194 Bombz
-    i32 m_198; // +0x198 Boomerangz (+ Brickz)
-    i32 m_19c; // +0x19c Clubz
-    i32 m_1a0; // +0x1a0 Gauntletz
-    i32 m_1a4; // +0x1a4 Glovez
-    i32 m_1a8; // +0x1a8 Gooberz
-    i32 m_1ac; // +0x1ac GravityBootz
-    i32 m_1b0; // +0x1b0 GunHatz
-    i32 m_1b4; // +0x1b4 NerfGunz
-    i32 m_1b8; // +0x1b8 Rockz
-    i32 m_1bc; // +0x1bc Shieldz
-    i32 m_1c0; // +0x1c0 Shovelz
-    i32 m_1c4; // +0x1c4 Springz
-    i32 m_1c8; // +0x1c8 Spyz
-    i32 m_1cc; // +0x1cc Swordz
-    i32 m_1d0; // +0x1d0 TimeBombz
-    i32 m_1d4; // +0x1d4 Toobz
-    i32 m_1d8; // +0x1d8 Wandz
-    i32 m_1dc; // +0x1dc Welderz
-    i32 m_1e0; // +0x1e0 Wingz
-    i32 m_1e4; // +0x1e4 (final running total)
+    i32 m_140;              // +0x140 = 0
+    i32 m_144;              // +0x144 = ((rand "mod" 4) + 5) * 25 * 8
+    i32 m_148;              // +0x148 = 0
+    i32 m_14c;              // +0x14c = 0
+    i32 m_toolzPct;         // +0x150 ToolzPercent (running total seed)
+    i32 m_toyzPct;          // +0x154 ToyzPercent
+    i32 m_brickzPct;        // +0x158 BrickzPercent
+    i32 m_redBrickPct;      // +0x15c RedBrick
+    i32 m_blueBrickPct;     // +0x160 BlueBrick
+    i32 m_goldBrickPct;     // +0x164 GoldBrick
+    i32 m_blackBrickPct;    // +0x168 BlackBrick
+    i32 m_babyWalkerzPct;   // +0x16c BabyWalkerz
+    i32 m_beachBallzPct;    // +0x170 BeachBallz
+    i32 m_bigWheelzPct;     // +0x174 BigWheelz
+    i32 m_goKartzPct;       // +0x178 GoKartz
+    i32 m_jackInTheBoxzPct; // +0x17c JackInTheBoxz
+    i32 m_jumpRopezPct;     // +0x180 JumpRopez
+    i32 m_pogoStickzPct;    // +0x184 PogoStickz
+    i32 m_scrollzPct;       // +0x188 Scrollz
+    i32 m_squeakToyzPct;    // +0x18c SqueakToyz
+    i32 m_yoyozPct;         // +0x190 Yoyoz
+    i32 m_bombzPct;         // +0x194 Bombz
+    i32 m_boomerangzPct;    // +0x198 Boomerangz (+ Brickz)
+    i32 m_clubzPct;         // +0x19c Clubz
+    i32 m_gauntletzPct;     // +0x1a0 Gauntletz
+    i32 m_glovezPct;        // +0x1a4 Glovez
+    i32 m_gooberzPct;       // +0x1a8 Gooberz
+    i32 m_gravityBootzPct;  // +0x1ac GravityBootz
+    i32 m_gunHatzPct;       // +0x1b0 GunHatz
+    i32 m_nerfGunzPct;      // +0x1b4 NerfGunz
+    i32 m_rockzPct;         // +0x1b8 Rockz
+    i32 m_shieldzPct;       // +0x1bc Shieldz
+    i32 m_shovelzPct;       // +0x1c0 Shovelz
+    i32 m_springzPct;       // +0x1c4 Springz
+    i32 m_spyzPct;          // +0x1c8 Spyz
+    i32 m_swordzPct;        // +0x1cc Swordz
+    i32 m_timeBombzPct;     // +0x1d0 TimeBombz
+    i32 m_toobzPct;         // +0x1d4 Toobz
+    i32 m_wandzPct;         // +0x1d8 Wandz
+    i32 m_welderzPct;       // +0x1dc Welderz
+    i32 m_wingzPct;         // +0x1e0 Wingz
+    i32 m_1e4;              // +0x1e4 (final running total)
 };
 
 // ===========================================================================
@@ -268,30 +274,30 @@ public:
 RVA(0x00025020, 0x984)
 i32 CBattlezMapConfig::LoadConfig(CLevelInfo* lvl, i32 id, i32 diff) {
     // --- prologue: zero the scratch fields, copy the level-info handles. ---
-    m_48 = 0;
+    m_gruntCreationTime = 0;
     m_4c = 0;
     m_50 = 0;
-    m_54 = 0;
+    m_resourceCreationTime = 0;
     m_58 = 0;
     m_5c = 0;
-    m_4 = lvl;
-    m_18 = (void*)id;
+    m_levelInfo = lvl;
+    m_ownerId = id;
     m_8 = lvl->m_68;
-    m_c = (CMapDims*)lvl->m_70;
+    m_dims = (CMapDims*)lvl->m_70;
     m_10 = lvl->m_2c;
-    m_14 = ((i32*)m_10)[0x2e4 / 4];
+    m_14 = m_10->m_2e4;
     m_0 = 1;
 
     // --- the [Battlez] creation-rate / chance block. ---
-    m_48 = g_buteMgr.GetDwordDef("Battlez", "GruntCreationTime", 10000);
-    m_54 = g_buteMgr.GetDwordDef("Battlez", "ResourceCreationTime", 10000);
-    m_60 = g_buteMgr.GetDwordDef("Battlez", "GauntletzChance", 50);
-    m_64 = g_buteMgr.GetDwordDef("Battlez", "ShovelzChance", 50);
-    m_68 = g_buteMgr.GetDwordDef("Battlez", "SpyzChance", 50);
-    m_6c = g_buteMgr.GetDwordDef("Battlez", "BrickzChance", 50);
-    m_70 = g_buteMgr.GetDwordDef("Battlez", "GooberzChance", 50);
-    m_74 = g_buteMgr.GetDwordDef("Battlez", "GruntRatio", 25);
-    m_30 = g_buteMgr.GetDwordDef("Battlez", "DefenderChance", 50);
+    m_gruntCreationTime = g_buteMgr.GetDwordDef("Battlez", "GruntCreationTime", 10000);
+    m_resourceCreationTime = g_buteMgr.GetDwordDef("Battlez", "ResourceCreationTime", 10000);
+    m_gauntletzChance = g_buteMgr.GetDwordDef("Battlez", "GauntletzChance", 50);
+    m_shovelzChance = g_buteMgr.GetDwordDef("Battlez", "ShovelzChance", 50);
+    m_spyzChance = g_buteMgr.GetDwordDef("Battlez", "SpyzChance", 50);
+    m_brickzChance = g_buteMgr.GetDwordDef("Battlez", "BrickzChance", 50);
+    m_gooberzChance = g_buteMgr.GetDwordDef("Battlez", "GooberzChance", 50);
+    m_gruntRatio = g_buteMgr.GetDwordDef("Battlez", "GruntRatio", 25);
+    m_defenderChance = g_buteMgr.GetDwordDef("Battlez", "DefenderChance", 50);
 
     // --- loop 1: append EVERY type-1 start marker to the +0xdc array. The marker
     //     coords are scaled by signed /32 (round-toward-zero) into a freelist pair.
@@ -312,13 +318,13 @@ i32 CBattlezMapConfig::LoadConfig(CLevelInfo* lvl, i32 id, i32 diff) {
         }
     }
 
-    // --- loop 2: find the FIRST type-2 marker, stamp m_d0/m_d4 with its /32 coords,
+    // --- loop 2: find the FIRST type-2 marker, stamp m_markerX/m_markerY with its /32 coords,
     //     and stop (fall straight into loop 3). ---
     for (CLevelObj* cur2 = ListGetFirst(lvl->m_30->m_8); cur2 != 0;
          cur2 = ListGetNext(lvl->m_30->m_8)) {
         if (cur2->m_7c->m_10 == (i32)(g_typeDesc2 + 5) && cur2->m_124 == id) {
-            m_d0 = cur2->m_5c / 32;
-            m_d4 = cur2->m_60 / 32;
+            m_markerX = cur2->m_5c / 32;
+            m_markerY = cur2->m_60 / 32;
             break;
         }
     }
@@ -351,15 +357,19 @@ i32 CBattlezMapConfig::LoadConfig(CLevelInfo* lvl, i32 id, i32 diff) {
         case 1: { // Normal
             i32 r = g_buteMgr.GetIntDef("Battlez", "NormalDifficulty", 50);
             g_diffTier = 10;
-            m_48 = (i32)((double)r * ((double)(i64)m_48 * g_diffScale));
-            m_54 = (i32)((double)r * ((double)(i64)m_54 * g_diffScale));
+            m_gruntCreationTime =
+                (i32)((double)r * ((double)(i64)m_gruntCreationTime * g_diffScale));
+            m_resourceCreationTime =
+                (i32)((double)r * ((double)(i64)m_resourceCreationTime * g_diffScale));
             break;
         }
         case 2: { // Hard
             i32 r = g_buteMgr.GetIntDef("Battlez", "HardDifficulty", 25);
             g_diffTier = 5;
-            m_48 = (i32)((double)r * ((double)(i64)m_48 * g_diffScale));
-            m_54 = (i32)((double)r * ((double)(i64)m_54 * g_diffScale));
+            m_gruntCreationTime =
+                (i32)((double)r * ((double)(i64)m_gruntCreationTime * g_diffScale));
+            m_resourceCreationTime =
+                (i32)((double)r * ((double)(i64)m_resourceCreationTime * g_diffScale));
             break;
         }
         default:
@@ -379,51 +389,51 @@ i32 CBattlezMapConfig::LoadConfig(CLevelInfo* lvl, i32 id, i32 diff) {
     m_94 = 6;
     m_98 = 6;
     m_a4 = 8;
-    m_ac = m_c->m_c / 3;
-    m_b0 = m_c->m_c / 3;
-    m_c0 = m_c->m_c >> 2;
+    m_ac = m_dims->m_c / 3;
+    m_b0 = m_dims->m_c / 3;
+    m_c0 = m_dims->m_c >> 2;
     m_140 = 0;
 
     // --- the per-item spawn-budget running totals (each = prev_total + GetInt). ---
-    m_150 = g_buteMgr.GetInt("Battlez", "ToolzPercent");
-    m_154 = m_150 + g_buteMgr.GetInt("Battlez", "ToyzPercent");
-    m_158 = m_154 + g_buteMgr.GetInt("Battlez", "BrickzPercent");
-    m_15c = g_buteMgr.GetInt("Battlez", "RedBrick");
-    m_160 = m_15c + g_buteMgr.GetInt("Battlez", "BlueBrick");
-    m_164 = g_buteMgr.GetInt("Battlez", "GoldBrick");
-    m_168 = m_164 + g_buteMgr.GetInt("Battlez", "BlackBrick");
-    m_16c = g_buteMgr.GetInt("Battlez", "BabyWalkerz");
-    m_170 = m_16c + g_buteMgr.GetInt("Battlez", "BeachBallz");
-    m_174 = g_buteMgr.GetInt("Battlez", "BigWheelz");
-    m_178 = m_174 + g_buteMgr.GetInt("Battlez", "GoKartz");
-    m_17c = g_buteMgr.GetInt("Battlez", "JackInTheBoxz");
-    m_180 = m_17c + g_buteMgr.GetInt("Battlez", "JumpRopez");
-    m_184 = g_buteMgr.GetInt("Battlez", "PogoStickz");
-    m_188 = m_184 + g_buteMgr.GetInt("Battlez", "Scrollz");
-    m_18c = g_buteMgr.GetInt("Battlez", "SqueakToyz");
-    m_190 = m_18c + g_buteMgr.GetInt("Battlez", "Yoyoz");
-    m_194 = g_buteMgr.GetInt("Battlez", "Bombz");
-    m_198 = m_194 + g_buteMgr.GetInt("Battlez", "Boomerangz");
+    m_toolzPct = g_buteMgr.GetInt("Battlez", "ToolzPercent");
+    m_toyzPct = m_toolzPct + g_buteMgr.GetInt("Battlez", "ToyzPercent");
+    m_brickzPct = m_toyzPct + g_buteMgr.GetInt("Battlez", "BrickzPercent");
+    m_redBrickPct = g_buteMgr.GetInt("Battlez", "RedBrick");
+    m_blueBrickPct = m_redBrickPct + g_buteMgr.GetInt("Battlez", "BlueBrick");
+    m_goldBrickPct = g_buteMgr.GetInt("Battlez", "GoldBrick");
+    m_blackBrickPct = m_goldBrickPct + g_buteMgr.GetInt("Battlez", "BlackBrick");
+    m_babyWalkerzPct = g_buteMgr.GetInt("Battlez", "BabyWalkerz");
+    m_beachBallzPct = m_babyWalkerzPct + g_buteMgr.GetInt("Battlez", "BeachBallz");
+    m_bigWheelzPct = g_buteMgr.GetInt("Battlez", "BigWheelz");
+    m_goKartzPct = m_bigWheelzPct + g_buteMgr.GetInt("Battlez", "GoKartz");
+    m_jackInTheBoxzPct = g_buteMgr.GetInt("Battlez", "JackInTheBoxz");
+    m_jumpRopezPct = m_jackInTheBoxzPct + g_buteMgr.GetInt("Battlez", "JumpRopez");
+    m_pogoStickzPct = g_buteMgr.GetInt("Battlez", "PogoStickz");
+    m_scrollzPct = m_pogoStickzPct + g_buteMgr.GetInt("Battlez", "Scrollz");
+    m_squeakToyzPct = g_buteMgr.GetInt("Battlez", "SqueakToyz");
+    m_yoyozPct = m_squeakToyzPct + g_buteMgr.GetInt("Battlez", "Yoyoz");
+    m_bombzPct = g_buteMgr.GetInt("Battlez", "Bombz");
+    m_boomerangzPct = m_bombzPct + g_buteMgr.GetInt("Battlez", "Boomerangz");
     g_buteMgr.GetInt("Battlez", "Brickz");
-    m_19c = m_198 + g_buteMgr.GetInt("Battlez", "Clubz");
-    m_1a0 = g_buteMgr.GetInt("Battlez", "Gauntletz");
-    m_1a4 = m_1a0 + g_buteMgr.GetInt("Battlez", "Glovez");
-    m_1a8 = g_buteMgr.GetInt("Battlez", "Gooberz");
-    m_1ac = m_1a8 + g_buteMgr.GetInt("Battlez", "GravityBootz");
-    m_1b0 = g_buteMgr.GetInt("Battlez", "GunHatz");
-    m_1b4 = m_1b0 + g_buteMgr.GetInt("Battlez", "NerfGunz");
-    m_1b8 = g_buteMgr.GetInt("Battlez", "Rockz");
-    m_1bc = m_1b8 + g_buteMgr.GetInt("Battlez", "Shieldz");
-    m_1c0 = g_buteMgr.GetInt("Battlez", "Shovelz");
-    m_1c4 = m_1c0 + g_buteMgr.GetInt("Battlez", "Springz");
-    m_1c8 = g_buteMgr.GetInt("Battlez", "Spyz");
-    m_1cc = m_1c8 + g_buteMgr.GetInt("Battlez", "Swordz");
-    m_1d0 = g_buteMgr.GetInt("Battlez", "TimeBombz");
-    m_1d4 = m_1d0 + g_buteMgr.GetInt("Battlez", "Toobz");
-    m_1d8 = g_buteMgr.GetInt("Battlez", "Wandz");
-    m_1dc = m_1d8 + g_buteMgr.GetInt("Battlez", "Welderz");
-    m_1e0 = g_buteMgr.GetInt("Battlez", "Wingz");
-    m_1e4 = m_1e0 + g_buteMgr.GetInt("Battlez", "Wingz");
+    m_clubzPct = m_boomerangzPct + g_buteMgr.GetInt("Battlez", "Clubz");
+    m_gauntletzPct = g_buteMgr.GetInt("Battlez", "Gauntletz");
+    m_glovezPct = m_gauntletzPct + g_buteMgr.GetInt("Battlez", "Glovez");
+    m_gooberzPct = g_buteMgr.GetInt("Battlez", "Gooberz");
+    m_gravityBootzPct = m_gooberzPct + g_buteMgr.GetInt("Battlez", "GravityBootz");
+    m_gunHatzPct = g_buteMgr.GetInt("Battlez", "GunHatz");
+    m_nerfGunzPct = m_gunHatzPct + g_buteMgr.GetInt("Battlez", "NerfGunz");
+    m_rockzPct = g_buteMgr.GetInt("Battlez", "Rockz");
+    m_shieldzPct = m_rockzPct + g_buteMgr.GetInt("Battlez", "Shieldz");
+    m_shovelzPct = g_buteMgr.GetInt("Battlez", "Shovelz");
+    m_springzPct = m_shovelzPct + g_buteMgr.GetInt("Battlez", "Springz");
+    m_spyzPct = g_buteMgr.GetInt("Battlez", "Spyz");
+    m_swordzPct = m_spyzPct + g_buteMgr.GetInt("Battlez", "Swordz");
+    m_timeBombzPct = g_buteMgr.GetInt("Battlez", "TimeBombz");
+    m_toobzPct = m_timeBombzPct + g_buteMgr.GetInt("Battlez", "Toobz");
+    m_wandzPct = g_buteMgr.GetInt("Battlez", "Wandz");
+    m_welderzPct = m_wandzPct + g_buteMgr.GetInt("Battlez", "Welderz");
+    m_wingzPct = g_buteMgr.GetInt("Battlez", "Wingz");
+    m_1e4 = m_wingzPct + g_buteMgr.GetInt("Battlez", "Wingz");
 
     // --- epilogue: clear the +0x78..+0x84 block, return 1. ---
     m_78 = 0;
@@ -439,6 +449,7 @@ SIZE_UNKNOWN(CLevelInfo);
 SIZE_UNKNOWN(CLevelList);
 SIZE_UNKNOWN(CLevelNode);
 SIZE_UNKNOWN(CLevelObj);
+SIZE_UNKNOWN(CLevelSpawnInfo);
 SIZE_UNKNOWN(CMapDims);
 SIZE_UNKNOWN(CRttiRec);
 SIZE_UNKNOWN(CStartArray);

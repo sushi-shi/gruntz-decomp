@@ -41,28 +41,28 @@ struct GameObjAux7c; // the +0x7c identity sub-object
 
 struct TileLogicObj {
     TileLogicObj* m_00; // +0x00  (data slot in the list node view)
-    i32 m_04;           // +0x04  object key/index
-    i32 m_08;           // +0x08  flags (the 0x10000 "validated" bit is OR'd in)
+    i32 m_key;          // +0x04  object key/index
+    i32 m_flags;        // +0x08  flags (the 0x10000 "validated" bit is OR'd in)
     char m_pad0c[0x5c - 0x0c];
-    i32 m_5c; // +0x5c  world x (pixels)
-    i32 m_60; // +0x60  world y (pixels)
+    i32 m_worldX; // +0x5c  world x (pixels)
+    i32 m_worldY; // +0x60  world y (pixels)
     RECT m_64;
     char m_pad74[0x7c - 0x74];
     GameObjAux7c* m_7c; // +0x7c  identity sub-object
     char m_pad80[0x114 - 0x80];
-    i32 m_114; // +0x114
-    i32 m_118; // +0x118
-    i32 m_11c; // +0x11c
-    i32 m_120; // +0x120
-    i32 m_124; // +0x124  switch kind / tile kind
-    i32 m_128; // +0x128
-    i32 m_12c; // +0x12c
+    i32 m_114;  // +0x114
+    i32 m_118;  // +0x118
+    i32 m_11c;  // +0x11c
+    i32 m_120;  // +0x120
+    i32 m_kind; // +0x124  switch kind / tile kind
+    i32 m_128;  // +0x128
+    i32 m_12c;  // +0x12c
     char m_pad130[0x134 - 0x130];
-    RECT m_134; // +0x134
-    RECT m_144; // +0x144
-    RECT m_154; // +0x154
-    i32 m_164;  // +0x164  tile col
-    i32 m_168;  // +0x168  tile row
+    RECT m_134;    // +0x134
+    RECT m_144;    // +0x144
+    RECT m_154;    // +0x154
+    i32 m_tileCol; // +0x164  tile col
+    i32 m_tileRow; // +0x168  tile row
 };
 
 // The list-node head reached through (m_0c manager). The list is iterated by
@@ -254,9 +254,14 @@ struct StartList {
 static char s_CouldNotAdd[] = "Could not add Grunt: Player=%d, x=%d, y=%d";
 
 // ---------------------------------------------------------------------------
-// The level/world object: m_4 the game-registry back-ptr, m_0c the play manager,
-// m_2dc the playfield grid manager, m_2e4 the trigger registrar.
+// The level/world object: m_gameReg the game-registry back-ptr, m_playMgr the
+// play manager, m_playfieldMgr the playfield grid manager, m_triggerRegistrar
+// the trigger registrar. (m_gameReg is also viewed as an LvWorld in
+// PositionBridgeToggle - the same +0x4 pointer, a second model of that object.)
 // ---------------------------------------------------------------------------
+struct LvBridgeUi;    // this+0x2e0  bridge-toggle UI sub-object (defined below)
+struct LvBridgePoint; // this+0x3f4  bridge-toggle screen point (defined below)
+
 class CLevelValidator {
 public:
     i32 ValidateLevelTiles();
@@ -264,15 +269,15 @@ public:
     i32 PositionBridgeToggle(i32 mode, i32 unused); // 0x0d5b20
 
     char m_pad00[0x4];
-    WwdGameReg* m_4; // +0x04  game registry back-ptr
+    WwdGameReg* m_gameReg; // +0x04  game registry back-ptr
     char m_pad08[0xc - 0x8];
-    PlayMgr* m_0c; // +0x0c
+    PlayMgr* m_playMgr; // +0x0c
     char m_pad10[0x2dc - 0x10];
-    PlayfieldMgr* m_2dc; // +0x2dc
-    char m_pad2e0[0x2e4 - 0x2e0];
-    TriggerRegistrar* m_2e4; // +0x2e4
+    PlayfieldMgr* m_playfieldMgr;         // +0x2dc
+    LvBridgeUi* m_2e0;                    // +0x2e0  bridge-toggle UI sub-object
+    TriggerRegistrar* m_triggerRegistrar; // +0x2e4
     char m_pad2e8[0x3f4 - 0x2e8];
-    i32 m_3f4; // +0x3f4  (bridge-toggle gate)
+    LvBridgePoint* m_bridgePoint; // +0x3f4  bridge-toggle screen point
 };
 
 // The level tile-id lookup: clamp (x,y) to the grid bounds, shift to tile
@@ -313,16 +318,16 @@ static i32 LookupTileType(TileGrid* grid, i32 x, i32 y) {
 // /GX-EH + regalloc wall (~65%): every instruction/branch and the reloc-masked externs
 // (PlaceObject/EnqueueSingle/LogTileError/CString Format+ctor+dtor) reproduce, incl. the
 // two vacuous address-null guards and the stride-568 player-slot `lea` - but retail homes
-// `this` in ebp (re-reading m_4 + spilling counter/flag14 to the EH frame) while our cl
+// `this` in ebp (re-reading m_gameReg + spilling counter/flag14 to the EH frame) while our cl
 // keeps `this` in ecx and enregisters counter/flag14, a systematic register rename across
 // the whole body. Same EH/regalloc wall ValidateLevelTiles (this TU) hits. topic:wall.
 RVA(0x000d2b20, 0x21f)
 i32 CLevelValidator::PlaceStartGruntz() {
-    StartList* list = (StartList*)((char*)m_0c->m_08 + 0x10);
+    StartList* list = (StartList*)((char*)m_playMgr->m_08 + 0x10);
     if (list == 0) {
         return 0;
     }
-    WwdGameReg* reg = m_4;
+    WwdGameReg* reg = m_gameReg;
     StartNode* node = list->m_head;
     i32 result = 1;
     i32 counter = 0;
@@ -341,9 +346,9 @@ i32 CLevelValidator::PlaceStartGruntz() {
             void* who = *(void**)(aux + 0x10);
             if (who == (void*)0x4024a5) {
                 i32 idx = reg->m_68->PlaceObject(
-                    obj->m_124,
-                    (obj->m_5c & ~0x1f) + 0x10,
-                    (obj->m_60 & ~0x1f) + 0x10,
+                    obj->m_kind,
+                    (obj->m_worldX & ~0x1f) + 0x10,
+                    (obj->m_worldY & ~0x1f) + 0x10,
                     100000,
                     flag14,
                     obj->m_114,
@@ -359,25 +364,25 @@ i32 CLevelValidator::PlaceStartGruntz() {
                     CString s;
                     s.Format(
                         s_CouldNotAdd,
-                        obj->m_124,
-                        (obj->m_5c & ~0x1f) + 0x10,
-                        (obj->m_60 & ~0x1f) + 0x10
+                        obj->m_kind,
+                        (obj->m_worldX & ~0x1f) + 0x10,
+                        (obj->m_worldY & ~0x1f) + 0x10
                     );
                     g_gameReg->LogTileError((const char*)(LPCSTR)s);
                     return 0;
                 }
-                obj->m_08 |= 0x10000;
+                obj->m_flags |= 0x10000;
             } else if (g_gameReg->m_134 != 1 && who == (void*)0x4017e4
-                       && obj->m_124 == g_tileKindMagic) {
+                       && obj->m_kind == g_tileKindMagic) {
                 WwdStartPlayer* e = &g_gameReg->m_150[g_tileKindMagic];
                 if (e != 0 && counter < e->m_228) {
                     reg->m_6c->EnqueueSingle(
                         result,
-                        (char)obj->m_124,
+                        (char)obj->m_kind,
                         0,
                         0,
-                        (obj->m_5c & ~0x1f) + 0x10,
-                        (obj->m_60 & ~0x1f) + 0x10,
+                        (obj->m_worldX & ~0x1f) + 0x10,
+                        (obj->m_worldY & ~0x1f) + 0x10,
                         0,
                         0
                     );
@@ -402,7 +407,7 @@ i32 CLevelValidator::ValidateLevelTiles() {
     counts[2] = 0;
     counts[3] = 0;
 
-    TileObjList* list = (TileObjList*)((char*)m_0c->m_08 + 0x10);
+    TileObjList* list = (TileObjList*)((char*)m_playMgr->m_08 + 0x10);
     if (list->m_04 == 0) {
         return 1;
     }
@@ -415,23 +420,23 @@ i32 CLevelValidator::ValidateLevelTiles() {
         }
 
         void* who = obj->m_7c->m_vtbl->m_10;
-        TileGrid* grid = m_0c->m_08->m_10;
+        TileGrid* grid = m_playMgr->m_08->m_10;
 
         if (who == (void*)0x401799) {
-            i32 type = LookupTileType(grid, obj->m_5c, obj->m_60);
-            i32 kind = obj->m_124;
+            i32 type = LookupTileType(grid, obj->m_worldX, obj->m_worldY);
+            i32 kind = obj->m_kind;
             if (type == 0x21) {
                 // off-grid neighbor scan for a matching tile (uses LookupKind)
-                obj->m_124 = type;
+                obj->m_kind = type;
             }
             switch (kind - 0x33) {
                 case 1: // 0x34
                 case 0: // 0x33
-                    if (!m_2e4->RegisterSwitchLogic(
+                    if (!m_triggerRegistrar->RegisterSwitchLogic(
                             3,
-                            obj->m_164,
-                            obj->m_168,
-                            obj->m_04,
+                            obj->m_tileCol,
+                            obj->m_tileRow,
+                            obj->m_key,
                             obj->m_134,
                             obj->m_144,
                             obj->m_154,
@@ -443,20 +448,20 @@ i32 CLevelValidator::ValidateLevelTiles() {
                             0
                         )) {
                         CString s;
-                        s.Format(s_BadSwitch, obj->m_5c, obj->m_60);
+                        s.Format(s_BadSwitch, obj->m_worldX, obj->m_worldY);
                         g_gameReg->LogTileError((const char*)(LPCSTR)s);
                         return 0;
                     }
                     validCount++;
-                    obj->m_08 |= 0x10000;
+                    obj->m_flags |= 0x10000;
                     break;
                 case 5: // 0x38
                 case 4: // 0x37
-                    if (!m_2e4->RegisterSwitchLogic(
+                    if (!m_triggerRegistrar->RegisterSwitchLogic(
                             4,
-                            obj->m_164,
-                            obj->m_168,
-                            obj->m_04,
+                            obj->m_tileCol,
+                            obj->m_tileRow,
+                            obj->m_key,
                             obj->m_134,
                             obj->m_144,
                             obj->m_154,
@@ -468,26 +473,27 @@ i32 CLevelValidator::ValidateLevelTiles() {
                             0
                         )) {
                         CString s;
-                        s.Format(s_BadSwitch, obj->m_5c, obj->m_60);
+                        s.Format(s_BadSwitch, obj->m_worldX, obj->m_worldY);
                         g_gameReg->LogTileError((const char*)(LPCSTR)s);
                         return 0;
                     }
                     validCount++;
-                    obj->m_08 |= 0x10000;
+                    obj->m_flags |= 0x10000;
                     break;
                 default:
                     break;
             }
         } else if (who == (void*)0x403bfc) {
-            i32 type = LookupTileType(grid, obj->m_5c, obj->m_60);
+            i32 type = LookupTileType(grid, obj->m_worldX, obj->m_worldY);
             (void)type;
-            obj->m_08 |= 0x10000;
+            obj->m_flags |= 0x10000;
         } else if (who == (void*)0x4037b0) {
-            i32 type = LookupTileType(grid, obj->m_5c, obj->m_60);
+            i32 type = LookupTileType(grid, obj->m_worldX, obj->m_worldY);
             (void)type;
-            obj->m_08 |= 0x10000;
+            obj->m_flags |= 0x10000;
         } else if (who == (void*)0x401b09) {
-            if (m_3f4 != 0 && obj->m_124 != 2 && g_gameReg->m_118 != 0 && g_gameReg->m_134 == ok) {
+            if (m_bridgePoint != 0 && obj->m_kind != 2 && g_gameReg->m_118 != 0
+                && g_gameReg->m_134 == ok) {
                 i32 a = obj->m_118;
                 i32 b = obj->m_114;
                 a += a;
@@ -496,15 +502,15 @@ i32 CLevelValidator::ValidateLevelTiles() {
                     b++;
                     a -= 0x3c;
                 }
-                m_2dc->Bridge1d2f(a, b);
+                m_playfieldMgr->Bridge1d2f(a, b);
             }
-            obj->m_08 |= 0x10000;
+            obj->m_flags |= 0x10000;
         } else if (who == (void*)0x40288d) {
-            if (obj->m_124 == 0x32) {
-                m_2dc->PlacePuddle(obj, 0);
+            if (obj->m_kind == 0x32) {
+                m_playfieldMgr->PlacePuddle(obj, 0);
             }
         } else if (who == (void*)0x4017e4) {
-            if (obj->m_124 == g_tileKindMagic) {
+            if (obj->m_kind == g_tileKindMagic) {
                 void** cell = g_freeList;
                 void* slot = 0;
                 if (*cell != 0) {
@@ -512,23 +518,23 @@ i32 CLevelValidator::ValidateLevelTiles() {
                     g_freeList = (void**)*cell;
                 }
                 if (slot != 0) {
-                    ((i32*)slot)[0] = (obj->m_5c & ~0x1f) + 0x10;
-                    ((i32*)slot)[1] = (obj->m_60 & ~0x1f) + 0x10;
+                    ((i32*)slot)[0] = (obj->m_worldX & ~0x1f) + 0x10;
+                    ((i32*)slot)[1] = (obj->m_worldY & ~0x1f) + 0x10;
                 }
             }
         } else if (who == (void*)0x4019bf) {
-            i32 type = LookupTileType(grid, obj->m_5c, obj->m_60);
+            i32 type = LookupTileType(grid, obj->m_worldX, obj->m_worldY);
             (void)type;
-            obj->m_08 |= 0x10000;
+            obj->m_flags |= 0x10000;
         } else if (who == (void*)0x402a68) {
-            m_2dc->PlacePuddle(obj, 0);
+            m_playfieldMgr->PlacePuddle(obj, 0);
         } else if (who == (void*)0x40164f) {
             // 3x3 coarse-grid pressure-pad stamp into g_gameReg->m_70: for each
             // of the 3 rows and 3 columns around the object's coarse cell, bounds-
             // check against the registry grid, tally the per-kind counter, and OR
             // a per-kind flag bit (0x100000 << kind) into the grid cell.
-            i32 col = obj->m_5c >> 5;
-            i32 rowBase = obj->m_60 >> 5;
+            i32 col = obj->m_worldX >> 5;
+            i32 rowBase = obj->m_worldY >> 5;
             i32 stride = (col << 3) - col; // col*7
             i32 ebp = stride * 4 - 0x1c;
             for (i32 dy = -1; dy < 2; dy++, ebp += 0x1c) {
@@ -541,7 +547,7 @@ i32 CLevelValidator::ValidateLevelTiles() {
                     if ((u32)gx >= (u32)gg->m_0c || (u32)gyy >= (u32)gg->m_10) {
                         continue;
                     }
-                    i32 kind = obj->m_124;
+                    i32 kind = obj->m_kind;
                     i32 bit;
                     if ((u32)kind > 3) {
                         bit = 0; // fall through with last ebx (matches retail)
@@ -572,8 +578,8 @@ i32 CLevelValidator::ValidateLevelTiles() {
             }
         } else if (who == (void*)0x40182a) {
             WwdGameGrid* gg = g_gameReg->m_70;
-            i32 cy = obj->m_5c >> 5;
-            i32 cx = obj->m_60 >> 5;
+            i32 cy = obj->m_worldX >> 5;
+            i32 cx = obj->m_worldY >> 5;
             if ((u32)cy < (u32)gg->m_0c && (u32)cx < (u32)gg->m_10) {
                 // poke the cell
             }
@@ -624,41 +630,41 @@ struct LvBridgePoint {
 // CLevelValidator::PositionBridgeToggle (0x0d5b20) - place the bridge-toggle UI
 // at a fixed inset from the viewport-clamp limits, with the toggle mode and the
 // X inset selected by `mode` (0 / 1 / other). If the toggle point (+0x3f4) is
-// null, only the mode is set. Then, if a goal object is active (m_4->m_68->m_23c),
+// null, only the mode is set. Then, if a goal object is active (m_gameReg->m_68->m_23c),
 // flag it released, detach it, and run the timeline goal-tail. Migrated from
-// engine_boundary (CLevelValidator: m_4 world, m_2e0 toggle UI, m_3f4 point).
+// engine_boundary (CLevelValidator: m_gameReg world, m_2e0 toggle UI, m_bridgePoint point).
 // ===========================================================================
 // @early-stop
 // ~91%: control flow + offsets byte-identical. Residual is three documented
 // codegen-idiom/regalloc nits: (a) MSVC5 emits `sub edi,K` where retail emits
 // `add edi,-K` for the two X-inset decrements (non-steerable add/sub coin-flip);
-// (b) the tail's m_4 reload lands in eax (ours) vs ecx (retail) - a free-list
+// (b) the tail's m_gameReg reload lands in eax (ours) vs ecx (retail) - a free-list
 // pick; (c) retail keeps a redundant consecutive `test;je` on the goal pointer
 // that MSVC5 collapses in the nested form here (redundant-sibling-guard-retest.md;
 // no intervening call to pin the flag, so de-nesting doesn't apply). Deferred.
 RVA(0x000d5b20, 0xbb)
 i32 CLevelValidator::PositionBridgeToggle(i32 mode, i32) {
-    LvWorld* w = *(LvWorld**)((char*)this + 4);
+    LvWorld* w = (LvWorld*)m_gameReg;
     i32 ex = w->m_8c;
     i32 ey = w->m_90;
     LvBridgePoint* pt;
     if (mode == 1) {
-        (*(LvBridgeUi**)((char*)this + 0x2e0))->Toggle(2);
-        pt = (LvBridgePoint*)m_3f4;
+        m_2e0->Toggle(2);
+        pt = m_bridgePoint;
         if (pt == 0) {
             goto done;
         }
         ex -= 0x37;
     } else if (mode == 0) {
-        (*(LvBridgeUi**)((char*)this + 0x2e0))->Toggle(1);
-        pt = (LvBridgePoint*)m_3f4;
+        m_2e0->Toggle(1);
+        pt = m_bridgePoint;
         if (pt == 0) {
             goto done;
         }
         ex -= 0xd7;
     } else {
-        (*(LvBridgeUi**)((char*)this + 0x2e0))->Toggle(3);
-        pt = (LvBridgePoint*)m_3f4;
+        m_2e0->Toggle(3);
+        pt = m_bridgePoint;
         if (pt == 0) {
             goto done;
         }
@@ -668,14 +674,14 @@ i32 CLevelValidator::PositionBridgeToggle(i32 mode, i32) {
     pt->x = ex;
     pt->y = ey;
 done:
-    LvWorld::LvTimeline* g = (*(LvWorld**)((char*)this + 4))->m_68;
+    LvWorld::LvTimeline* g = ((LvWorld*)m_gameReg)->m_68;
     LvWorld::LvTimeline::LvGoal* goal = g->m_23c;
     if (goal != 0) {
         if (goal != 0) {
             goal->m_8 |= 0x10000;
             g->m_23c = 0;
         }
-        (*(LvWorld**)((char*)this + 4))->m_68->GoalTail();
+        ((LvWorld*)m_gameReg)->m_68->GoalTail();
     }
     return 1;
 }

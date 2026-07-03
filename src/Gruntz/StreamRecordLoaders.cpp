@@ -62,10 +62,10 @@ struct CRegSub30 {
 // array (m_14[m_64 .. m_68]) whose element at the read index becomes the field.
 struct CRegTypeTable {
     char m_pad00[0x14];
-    void** m_14; // +0x14  element array
+    void** m_elems; // +0x14  element array
     char m_pad18[0x64 - 0x18];
-    i32 m_64; // +0x64  lower bound (inclusive)
-    i32 m_68; // +0x68  upper bound (inclusive)
+    i32 m_lowerBound; // +0x64  lower bound (inclusive)
+    i32 m_upperBound; // +0x68  upper bound (inclusive)
 };
 
 // The game registry singleton (0x64556c). The delinker's canonical symbol is the
@@ -174,8 +174,8 @@ i32 CTriggerLoadRec::Load(CStreamReader* s) {
         reg->m_10->m_10map.Lookup(buf, &out);
         CRegTypeTable* tt = (CRegTypeTable*)out;
         void* r;
-        if (tt != 0 && i >= tt->m_64 && i <= tt->m_68) {
-            r = tt->m_14[i];
+        if (tt != 0 && i >= tt->m_lowerBound && i <= tt->m_upperBound) {
+            r = tt->m_elems[i];
         } else {
             r = 0;
         }
@@ -193,8 +193,8 @@ i32 CTriggerLoadRec::Load(CStreamReader* s) {
         reg->m_10->m_10map.Lookup(buf, &out);
         CRegTypeTable* tt = (CRegTypeTable*)out;
         void* r;
-        if (tt != 0 && i >= tt->m_64 && i <= tt->m_68) {
-            r = tt->m_14[i];
+        if (tt != 0 && i >= tt->m_lowerBound && i <= tt->m_upperBound) {
+            r = tt->m_elems[i];
         } else {
             r = 0;
         }
@@ -212,8 +212,8 @@ i32 CTriggerLoadRec::Load(CStreamReader* s) {
         reg->m_10->m_10map.Lookup(buf, &out);
         CRegTypeTable* tt = (CRegTypeTable*)out;
         void* r;
-        if (tt != 0 && i >= tt->m_64 && i <= tt->m_68) {
-            r = tt->m_14[i];
+        if (tt != 0 && i >= tt->m_lowerBound && i <= tt->m_upperBound) {
+            r = tt->m_elems[i];
         } else {
             r = 0;
         }
@@ -291,8 +291,8 @@ i32 CEventLoadRec::Load(CStreamReader* s) {
         reg->m_10->m_10map.Lookup(buf, &out);
         CRegTypeTable* tt = (CRegTypeTable*)out;
         void* r;
-        if (tt != 0 && i >= tt->m_64 && i <= tt->m_68) {
-            r = tt->m_14[i];
+        if (tt != 0 && i >= tt->m_lowerBound && i <= tt->m_upperBound) {
+            r = tt->m_elems[i];
         } else {
             r = 0;
         }
@@ -310,8 +310,8 @@ i32 CEventLoadRec::Load(CStreamReader* s) {
         reg->m_10->m_10map.Lookup(buf, &out);
         CRegTypeTable* tt = (CRegTypeTable*)out;
         void* r;
-        if (tt != 0 && i >= tt->m_64 && i <= tt->m_68) {
-            r = tt->m_14[i];
+        if (tt != 0 && i >= tt->m_lowerBound && i <= tt->m_upperBound) {
+            r = tt->m_elems[i];
         } else {
             r = 0;
         }
@@ -329,8 +329,8 @@ i32 CEventLoadRec::Load(CStreamReader* s) {
         reg->m_10->m_10map.Lookup(buf, &out);
         CRegTypeTable* tt = (CRegTypeTable*)out;
         void* r;
-        if (tt != 0 && i >= tt->m_64 && i <= tt->m_68) {
-            r = tt->m_14[i];
+        if (tt != 0 && i >= tt->m_lowerBound && i <= tt->m_upperBound) {
+            r = tt->m_elems[i];
         } else {
             r = 0;
         }
@@ -348,8 +348,8 @@ i32 CEventLoadRec::Load(CStreamReader* s) {
         reg->m_10->m_10map.Lookup(buf, &out);
         CRegTypeTable* tt = (CRegTypeTable*)out;
         void* r;
-        if (tt != 0 && i >= tt->m_64 && i <= tt->m_68) {
-            r = tt->m_14[i];
+        if (tt != 0 && i >= tt->m_lowerBound && i <= tt->m_upperBound) {
+            r = tt->m_elems[i];
         } else {
             r = 0;
         }
@@ -367,8 +367,8 @@ i32 CEventLoadRec::Load(CStreamReader* s) {
         reg->m_10->m_10map.Lookup(buf, &out);
         CRegTypeTable* tt = (CRegTypeTable*)out;
         void* r;
-        if (tt != 0 && i >= tt->m_64 && i <= tt->m_68) {
-            r = tt->m_14[i];
+        if (tt != 0 && i >= tt->m_lowerBound && i <= tt->m_upperBound) {
+            r = tt->m_elems[i];
         } else {
             r = 0;
         }
@@ -449,26 +449,26 @@ struct CArchiveLoadRec {
     i32 m_2f8;        // +0x2f8
     i32 m_2fc, m_300; // +0x2fc  (8 bytes)
     char m_pad304[0x360 - 0x304];
-    i32 m_360, m_364; // +0x360  (8 bytes)
-    i32 m_368;        // +0x368
-    i32 m_36c;        // +0x36c
-    i32 m_370;        // +0x370
-    void** m_374;     // +0x374  element-ptr array (paired count m_378)
-    i32 m_378;        // +0x378  element count
+    i32 m_360, m_364;   // +0x360  (8 bytes)
+    i32 m_368;          // +0x368
+    i32 m_36c;          // +0x36c
+    i32 m_370;          // +0x370
+    void** m_elemArray; // +0x374  element-ptr array (paired count m_elemCount)
+    i32 m_elemCount;    // +0x378  element count
     char m_pad37c[0x384 - 0x37c];
     char m_384[0x3a8 - 0x384]; // +0x384  4 fixed 8-byte entries
     CArchiveSubArray m_3a8[4]; // +0x3a8  4 nested {base,count} sub-arrays
     char m_pad3f8[0x408 - 0x3f8];
     i32 m_408;                             // +0x408
     i32 m_40c;                             // +0x40c
-    char* m_410;                           // +0x410  default string (copied into the scratch)
+    char* m_defaultStr;                    // +0x410  default string (copied into the scratch)
     i32 m_414, m_418, m_41c, m_420, m_424; // +0x414..+0x424
     i16 m_428;                             // +0x428  (2 bytes)
     char m_pad42a[0x470 - 0x42a];
     i32 m_470, m_474, m_478, m_47c, m_480, m_484; // +0x470..+0x484
     char m_pad488[0x48c - 0x488];
-    void** m_48c; // +0x48c  trailing element-ptr array (paired count m_490)
-    i32 m_490;    // +0x490  trailing element count
+    void** m_tailArray; // +0x48c  trailing element-ptr array (paired count m_tailCount)
+    i32 m_tailCount;    // +0x490  trailing element count
     char m_pad494[0x49c - 0x494];
     i32 m_49c; // +0x49c
     char m_pad4a0[0x4b0 - 0x4a0];
@@ -521,10 +521,10 @@ i32 CArchiveLoadRec::Load(CArchiveReader* s) {
     s->Read(&m_368, 4);
     s->Read(&m_36c, 4);
 
-    i32 c0 = m_378;
+    i32 c0 = m_elemCount;
     s->Read(&c0, 4);
     for (u32 i0 = 0; i0 < (u32)c0; i0++) {
-        s->Read((void*)m_374[i0], 8);
+        s->Read((void*)m_elemArray[i0], 8);
     }
 
     char* p = m_384;
@@ -549,7 +549,7 @@ i32 CArchiveLoadRec::Load(CArchiveReader* s) {
     {
         char buf[0x200];
         memset(buf, 0, sizeof(buf));
-        strcpy(buf, m_410);
+        strcpy(buf, m_defaultStr);
         s->Read(buf, 0x200);
     }
 
@@ -617,10 +617,10 @@ i32 CArchiveLoadRec::Load(CArchiveReader* s) {
     s->Read(&m_49c, 4);
     s->Read(&m_514, 4);
 
-    i32 c1 = m_490;
+    i32 c1 = m_tailCount;
     s->Read(&c1, 4);
-    for (i32 fi = 0; fi < m_490; fi++) {
-        void* el = m_48c[fi];
+    for (i32 fi = 0; fi < m_tailCount; fi++) {
+        void* el = m_tailArray[fi];
         if (el != 0) {
             s->Read(el, 8);
         }
@@ -763,8 +763,8 @@ i32 CGruntStateRec::Load(CDualReader* s, i32 mode, i32 a2, i32 a3) {
         reg->m_10->m_10map.Lookup(buf, &out);                                                      \
         CRegTypeTable* tt = (CRegTypeTable*)out;                                                   \
         void* r;                                                                                   \
-        if (tt != 0 && i >= tt->m_64 && i <= tt->m_68) {                                           \
-            r = tt->m_14[i];                                                                       \
+        if (tt != 0 && i >= tt->m_lowerBound && i <= tt->m_upperBound) {                           \
+            r = tt->m_elems[i];                                                                    \
         } else {                                                                                   \
             r = 0;                                                                                 \
         }                                                                                          \
