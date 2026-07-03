@@ -106,7 +106,7 @@ class CZArrayRoot {
 public:
     CZArrayRoot(void* tag); // 0x16d9c0 (external no-body)
     virtual ~CZArrayRoot(); // [0] ??_G 0x16da40 (external no-body)
-    void* m_owner;          // +0x04  error-sink / owner
+    CZErrSink* m_owner;     // +0x04  error-sink / owner
 };
 
 // The allocating zDArray base (0x16de30 ctor): records [lo,hi] + element stride,
@@ -185,7 +185,7 @@ CZArray2D::CZArray2D(i32 stride, i32 lo, i32 hi, void* scratch)
     m_stride = stride;
     if (lo > hi) {
         g_projActAllocResult = AllocFail();
-        ((CZErrSink*)m_owner)->Report(this, "Inconsistent bounds", 0x16);
+        m_owner->Report(this, "Inconsistent bounds", 0x16);
         return;
     }
     i32 total = (hi - lo + 1) * stride;
@@ -202,7 +202,7 @@ CZArray2D::CZArray2D(i32 stride, i32 lo, i32 hi, void* scratch)
         }
     }
     g_projActAllocResult = AllocFail();
-    ((CZErrSink*)m_owner)->Report(this, "out of memory", 0xc);
+    m_owner->Report(this, "out of memory", 0xc);
 }
 
 // ===========================================================================

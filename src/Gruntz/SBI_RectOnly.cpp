@@ -597,12 +597,13 @@ SIZE_UNKNOWN(CSbiLookupMap);
 
 // A resolved cue record: a player at +0x10 plus a draw-clock gate (+0x14 last,
 // +0x18 interval). Same shape as GameMode's CBootyFound.
+struct CSbiCuePlayer; // defined below
 struct CSbiCueRecord {
     void PlayNow(i32 tag, i32 a, i32 b, i32 c); // 0x25fe (immediate play, no gate)
     char m_pad0[0x10];
-    void* m_10; // +0x10  player (ConfigureItem this)
-    i32 m_14;   // +0x14  last draw-clock
-    i32 m_18;   // +0x18  interval
+    CSbiCuePlayer* m_10; // +0x10  player (ConfigureItem this)
+    i32 m_14;            // +0x14  last draw-clock
+    i32 m_18;            // +0x18  interval
 };
 SIZE_UNKNOWN(CSbiCueRecord);
 
@@ -1430,7 +1431,7 @@ i32 CSBI_RectOnly::HlClickGroup0(i32 row) {
                         CSbiCueRecord* p = (CSbiCueRecord*)found;
                         if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
                             p->m_14 = g_6bf3c0;
-                            ((CSbiCuePlayer*)p->m_10)->ConfigureItem(item, 0, 0, 0);
+                            p->m_10->ConfigureItem(item, 0, 0, 0);
                         }
                     }
                 }
@@ -1466,7 +1467,7 @@ i32 CSBI_RectOnly::HlClickGroup1(i32 row) {
                         CSbiCueRecord* p = (CSbiCueRecord*)found;
                         if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
                             p->m_14 = g_6bf3c0;
-                            ((CSbiCuePlayer*)p->m_10)->ConfigureItem(item, 0, 0, 0);
+                            p->m_10->ConfigureItem(item, 0, 0, 0);
                         }
                     }
                 }
@@ -1501,7 +1502,7 @@ i32 CSBI_RectOnly::HlClickGroup2(i32 row) {
                         CSbiCueRecord* p = (CSbiCueRecord*)found;
                         if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
                             p->m_14 = g_6bf3c0;
-                            ((CSbiCuePlayer*)p->m_10)->ConfigureItem(item, 0, 0, 0);
+                            p->m_10->ConfigureItem(item, 0, 0, 0);
                         }
                     }
                 }
@@ -2372,7 +2373,7 @@ i32 CSBI_RectOnly::ClickHilite(i32 a, i32 x, i32 y) {
                     CSbiCueRecord* p = (CSbiCueRecord*)found;
                     if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
                         p->m_14 = g_6bf3c0;
-                        ((CSbiCuePlayer*)p->m_10)->ConfigureItem(item, 0, 0, 0);
+                        p->m_10->ConfigureItem(item, 0, 0, 0);
                     }
                 }
             }
@@ -2407,7 +2408,7 @@ i32 CSBI_RectOnly::ClearStat(i32 idx) {
                         CSbiCueRecord* p = (CSbiCueRecord*)found;
                         if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
                             p->m_14 = g_6bf3c0;
-                            ((CSbiCuePlayer*)p->m_10)->ConfigureItem(item, 0, 0, 0);
+                            p->m_10->ConfigureItem(item, 0, 0, 0);
                         }
                     }
                 }
@@ -2495,7 +2496,7 @@ i32 CSBI_RectOnly::ActivateSlot(i32 idx) {
                     CSbiCueRecord* p = (CSbiCueRecord*)found;
                     if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
                         p->m_14 = g_6bf3c0;
-                        ((CSbiCuePlayer*)p->m_10)->ConfigureItem(item, 0, 0, 0);
+                        p->m_10->ConfigureItem(item, 0, 0, 0);
                     }
                 }
             }
@@ -2525,7 +2526,7 @@ i32 CSBI_RectOnly::ActivateSlot(i32 idx) {
                 CSbiCueRecord* p = (CSbiCueRecord*)found;
                 if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
                     p->m_14 = g_6bf3c0;
-                    ((CSbiCuePlayer*)p->m_10)->ConfigureItem(item, 0, 0, 0);
+                    p->m_10->ConfigureItem(item, 0, 0, 0);
                 }
             }
         }
@@ -3438,7 +3439,7 @@ static __inline void HiCueTimed() {
             CSbiCueRecord* p = (CSbiCueRecord*)found;
             if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
                 p->m_14 = g_6bf3c0;
-                ((CSbiCuePlayer*)p->m_10)->ConfigureItem(item, 0, 0, 0);
+                p->m_10->ConfigureItem(item, 0, 0, 0);
             }
         }
     }
@@ -3852,7 +3853,7 @@ i32 CSBI_RectOnly::LoadGooCookingSprite(i32 idx) {
                     CSbiCueRecord* p = (CSbiCueRecord*)found;
                     if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
                         p->m_14 = g_6bf3c0;
-                        ((CSbiCuePlayer*)p->m_10)->ConfigureItem(item, 0, 0, 0);
+                        p->m_10->ConfigureItem(item, 0, 0, 0);
                     }
                 }
             }
@@ -3939,7 +3940,7 @@ void CSBI_RectOnly::UpdateRezConveyorStatusBar() {
                                 CSbiCueRecord* p = (CSbiCueRecord*)found;
                                 if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
                                     p->m_14 = g_6bf3c0;
-                                    ((CSbiCuePlayer*)p->m_10)->ConfigureItem(item, 0, 0, 0);
+                                    p->m_10->ConfigureItem(item, 0, 0, 0);
                                 }
                             }
                         }
@@ -3960,7 +3961,7 @@ void CSBI_RectOnly::UpdateRezConveyorStatusBar() {
                                 CSbiCueRecord* p = (CSbiCueRecord*)found;
                                 if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
                                     p->m_14 = g_6bf3c0;
-                                    ((CSbiCuePlayer*)p->m_10)->ConfigureItem(item, 0, 0, 0);
+                                    p->m_10->ConfigureItem(item, 0, 0, 0);
                                 }
                             }
                         }
@@ -4066,7 +4067,7 @@ void CSBI_RectOnly::LoadRezMachineConfig() {
                                 CSbiCueRecord* p = (CSbiCueRecord*)found;
                                 if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
                                     p->m_14 = g_6bf3c0;
-                                    ((CSbiCuePlayer*)p->m_10)->ConfigureItem(item, 0, 0, 0);
+                                    p->m_10->ConfigureItem(item, 0, 0, 0);
                                 }
                             }
                         }
@@ -4124,7 +4125,7 @@ void CSBI_RectOnly::LoadRezMachineConfig() {
                                     CSbiCueRecord* p = (CSbiCueRecord*)fnd;
                                     if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
                                         p->m_14 = g_6bf3c0;
-                                        ((CSbiCuePlayer*)p->m_10)->ConfigureItem(item, 0, 0, 0);
+                                        p->m_10->ConfigureItem(item, 0, 0, 0);
                                     }
                                 }
                             }
@@ -4143,7 +4144,7 @@ void CSBI_RectOnly::LoadRezMachineConfig() {
                                     CSbiCueRecord* p = (CSbiCueRecord*)fnd;
                                     if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
                                         p->m_14 = g_6bf3c0;
-                                        ((CSbiCuePlayer*)p->m_10)->ConfigureItem(item, 0, 0, 0);
+                                        p->m_10->ConfigureItem(item, 0, 0, 0);
                                     }
                                 }
                             }
@@ -4244,7 +4245,7 @@ void CSBI_RectOnly::LoadChipMachineConfig() {
                             CSbiCueRecord* p = (CSbiCueRecord*)found;
                             if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
                                 p->m_14 = g_6bf3c0;
-                                ((CSbiCuePlayer*)p->m_10)->ConfigureItem(item, 0, 0, 0);
+                                p->m_10->ConfigureItem(item, 0, 0, 0);
                             }
                         }
                     }
@@ -4274,7 +4275,7 @@ void CSBI_RectOnly::LoadChipMachineConfig() {
                             CSbiCueRecord* p = (CSbiCueRecord*)found;
                             if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
                                 p->m_14 = g_6bf3c0;
-                                ((CSbiCuePlayer*)p->m_10)->ConfigureItem(item, 0, 0, 0);
+                                p->m_10->ConfigureItem(item, 0, 0, 0);
                             }
                         }
                     }
@@ -4344,7 +4345,7 @@ void CSBI_RectOnly::LoadChipMachineConfig() {
                             CSbiCueRecord* p = (CSbiCueRecord*)found;
                             if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
                                 p->m_14 = g_6bf3c0;
-                                ((CSbiCuePlayer*)p->m_10)->ConfigureItem(item, 0, 0, 0);
+                                p->m_10->ConfigureItem(item, 0, 0, 0);
                             }
                         }
                     }

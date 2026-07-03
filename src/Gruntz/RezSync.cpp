@@ -100,12 +100,13 @@ SIZE_UNKNOWN(SurfWorkerZ);
 struct SurfWorkerZ {
     i32 Cfg(i32, i32); // 0x158cb0
 };
+struct LeafScanZ;         // defined below (m_28's concrete type)
 struct CDDrawSurfaceMgr { // m_30 (0x40); polymorphic - VInit at vtable slot 6
     // vptr @ +0 (extern ctor 0x155840 stamps the real vtable)
     SurfWorkerZ* m_04; // +4
     char _p08[0x24 - 0x08];
     GameLevelZ* m_24; // +0x24
-    void* m_28;       // +0x28
+    LeafScanZ* m_28;  // +0x28
     char _p2c[0x40 - 0x2c];
     CDDrawSurfaceMgr();
     ~CDDrawSurfaceMgr();
@@ -807,17 +808,17 @@ i32 RezSync::Init(void* a1, void* a2) {
     m_interlaced = vInterlaced;
     m_highDetail = vHigh1;
     m_110 = vEasy;
-    if (!((LeafScanZ*)m_30->m_28)->HasKeyEqual("GAME")) {
+    if (!m_30->m_28->HasKeyEqual("GAME")) {
         void* sz = m_34->ResolvePath("GAME_SOUNDZ");
         if (!sz) {
             return 0;
         }
-        ((LeafScanZ*)m_30->m_28)->ScanTree(sz, "GAME", "_");
+        m_30->m_28->ScanTree(sz, "GAME", "_");
     }
     {
         void* mv = 0;
         ((MovieLookup*)((char*)m_30->m_28 + 0x10))->M1b8438("GAME_MOVIE", &mv);
-        ((LeafScanZ*)m_30->m_28)->MatchSub(mv, 0);
+        m_30->m_28->MatchSub(mv, 0);
     }
     Fn1ed8();
     if (!Fn2112()) {

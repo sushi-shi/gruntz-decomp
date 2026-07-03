@@ -3,7 +3,7 @@ Unknown ids	347
 g_<hex> globals	1246
 Method/Stub/FUN	361
 )this casts	400
-)m_ casts	1279
+)m_ casts	1221
 (char*) casts	1219
 (const char*) casts	183
-void* m_ members	607
+void* m_ members	579

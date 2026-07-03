@@ -111,9 +111,9 @@ public:
     CRezItmBase(void* parent);
     virtual ~CRezItmBase();
 
-    void* m_4;      // +0x04
-    void* m_8;      // +0x08
-    void* m_parent; // +0x0c  (a CRezItmOwner*; cast at use in CRezItm's methods)
+    void* m_4;              // +0x04
+    void* m_8;              // +0x08
+    CRezItmOwner* m_parent; // +0x0c  owning object CRezItm polls via Retry()
 };
 
 // ---------------------------------------------------------------------------

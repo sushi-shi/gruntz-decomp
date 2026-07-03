@@ -297,7 +297,6 @@ void Str_Free(void* node);   // CString teardown, 0x1b9b93
 
 // A DirectSound channel helper (?StopAndRewind@DirectSoundMgr, @0x135380, __thiscall,
 // reloc-masked); DestroyAllAnims rewinds three channels.
-SIZE_UNKNOWN(CTmSoundChan);
 struct CTmSoundChan {
     i32 StopAndRewind(); // 0x135380 (reloc-masked)
 };
@@ -323,13 +322,11 @@ struct CTmSpriteDesc {
 // The level view at level->m_24: ScreenToCell biases the input by its scroll origin - the
 // view holds the origin (m_10/m_14) and the scroll object (m_5c), whose +0x40/+0x44 is the
 // current scroll (x,y).
-SIZE_UNKNOWN(CTmScroll);
 struct CTmScroll {
     char p0[0x40];
     i32 m_40; // +0x40  scroll x
     i32 m_44; // +0x44  scroll y
 };
-SIZE_UNKNOWN(CTmLevelView);
 struct CTmLevelView {
     char p0[0x10];
     i32 m_10; // +0x10  view origin x
@@ -2455,3 +2452,6 @@ SIZE_UNKNOWN(CTmArchive);
 SIZE_UNKNOWN(CTmCursorMgr);
 SIZE_UNKNOWN(CTmTileGrid);
 SIZE_UNKNOWN(CTmObArray);
+SIZE_UNKNOWN(CTmSoundChan);
+SIZE_UNKNOWN(CTmScroll);
+SIZE_UNKNOWN(CTmLevelView);

@@ -53,9 +53,9 @@ CSpawnEntry::~CSpawnEntry() {
 RVA(0x0009a450, 0x36)
 void CSpawnEntry::EmptyVoiceList() {
     struct CObNode {
-        CObNode* m_next; // +0x00
-        void* m_prev;    // +0x04
-        void* m_data;    // +0x08
+        CObNode* m_next;     // +0x00
+        void* m_prev;        // +0x04
+        CVoiceSound* m_data; // +0x08
     };
     struct Layout {
         void* m_vptr;    // +0x00
@@ -65,7 +65,7 @@ void CSpawnEntry::EmptyVoiceList() {
     while (node != 0) {
         CObNode* cur = node;
         node = node->m_next;
-        CVoiceSound* v = (CVoiceSound*)cur->m_data;
+        CVoiceSound* v = cur->m_data;
         if (v != 0) {
             delete v;
         }

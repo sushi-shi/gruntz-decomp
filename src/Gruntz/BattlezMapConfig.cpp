@@ -81,10 +81,12 @@ struct CLevelSpawnInfo {
     i32 m_2e4; // +0x2e4  read into CBattlezMapConfig::m_14
 };
 
+struct CLevelObj; // defined below
+struct CMapDims;  // defined below
 struct CLevelNode {
     CLevelNode* m_0; // +0x00  next cell
     char m_pad04[4];
-    void* m_8; // +0x08  payload object (a CLevelObj*)
+    CLevelObj* m_8; // +0x08  payload object
 };
 
 // The +0x7c RTTI record: +0x10 is the engine type-id word the filter compares
@@ -123,7 +125,7 @@ struct CLevelInfo {
     char m_pad34[0x68 - 0x34];
     void* m_68; // +0x68  copied to this+0x8
     char m_pad6c[0x70 - 0x6c];
-    void* m_70; // +0x70  copied to this+0xc
+    CMapDims* m_70; // +0x70  copied to this+0xc
 };
 
 // The 2-int coord-pair node pulled off the freelist (the slot the SetAtGrow array
@@ -158,7 +160,7 @@ static inline CLevelObj* ListGetFirst(CLevelList* list) {
         return 0;
     }
     list->m_64 = n->m_0;
-    return (CLevelObj*)n->m_8;
+    return n->m_8;
 }
 
 static inline CLevelObj* ListGetNext(CLevelList* list) {
@@ -167,7 +169,7 @@ static inline CLevelObj* ListGetNext(CLevelList* list) {
         return 0;
     }
     list->m_64 = n->m_0;
-    return (CLevelObj*)n->m_8;
+    return n->m_8;
 }
 
 // ---------------------------------------------------------------------------
@@ -283,7 +285,7 @@ i32 CBattlezMapConfig::LoadConfig(CLevelInfo* lvl, i32 id, i32 diff) {
     m_levelInfo = lvl;
     m_ownerId = id;
     m_8 = lvl->m_68;
-    m_dims = (CMapDims*)lvl->m_70;
+    m_dims = lvl->m_70;
     m_10 = lvl->m_2c;
     m_14 = m_10->m_2e4;
     m_0 = 1;

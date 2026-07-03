@@ -888,7 +888,7 @@ struct CProjLoadRec {
     CSerialObj* m_150;                     // +0x150  a3
     CSerialObj* m_154;                     // +0x154  a3
     CSerialNameHolder* m_158;              // +0x158  a3->m_7c
-    void* m_15c;                           // +0x15c  resolved value
+    CObject* m_15c;                        // +0x15c  resolved value (CMapStringToOb entry)
     i32 m_160, m_164, m_168, m_16c;        // +0x160  the 0x10-byte blob
     i32 m_170, m_174, m_178, m_17c, m_180; // +0x170
     i32 _184;
@@ -903,7 +903,7 @@ struct CProjLoadRec {
     i32 m_1c0, m_1c4;               // +0x1c0 (8)
     i32 m_1c8, m_1cc;               // +0x1c8 (8)
     i32 m_1d0, m_1d4, m_1d8, m_1dc; // +0x1d0
-    void* m_1e0[7];                 // +0x1e0..+0x1f8  name/idx refs
+    CObject* m_1e0[7];              // +0x1e0..+0x1f8  name refs (CMapStringToOb entries)
     CProjTypeObj* m_1fc;            // +0x1fc  type-5 latch
     i32 m_200;                      // +0x200
     CProjList m_204;                // +0x204  AddTail target
@@ -1025,7 +1025,7 @@ i32 CProjLoadRec::Load(CSerialArchive* s, i32 mode, i32 a2, CSerialObj* a3) {
                 g_serialCounter++;
                 memset(buf, 0, sizeof(buf));
                 if (m_1e0[wi] != 0) {
-                    CString nm = reg->m_2c->KeyOfValue_152d30((CObject*)m_1e0[wi]);
+                    CString nm = reg->m_2c->KeyOfValue_152d30(m_1e0[wi]);
                     strcpy(buf, nm);
                 }
                 s->Write(buf, 0x80);
@@ -1059,7 +1059,7 @@ i32 CProjLoadRec::Load(CSerialArchive* s, i32 mode, i32 a2, CSerialObj* a3) {
         char blob[0x80];
         memset(blob, 0, sizeof(blob));
         if (m_15c != 0) {
-            CString nm = m_158->m_0c->m_2c->KeyOfValue_152d30((CObject*)m_15c);
+            CString nm = m_158->m_0c->m_2c->KeyOfValue_152d30(m_15c);
             strcpy(blob, nm);
         }
         s->Write(blob, 0x80);

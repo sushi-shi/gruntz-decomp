@@ -40,6 +40,8 @@
 // CDDrawSurfaceMgr (partial view): only the members these two methods touch.
 typedef i32(__cdecl* SnapRunCallback)(void* mgr, void* ser, i32 mode, i32, i32);
 
+struct CDDrawChildGroupOps; // defined below (m_08's blit-op target)
+struct CGameLevelBlit;      // defined below (m_24's blit-op target)
 class CDDrawSurfaceMgr {
 public:
     i32 SnapshotChildren(SnapRunCallback cb, i32 arg1, char* name, i32 arg3);
@@ -47,10 +49,10 @@ public:
     // but reads the stream back (Read instead of Write) and replays modes 2/6/7/8.
     i32 RestoreChildren(SnapRunCallback cb, char* name, i32 arg3);
 
-    char m_pad00[0x08]; // +0x00..+0x07 (vptr + slot)
-    void* m_08;         // +0x08  CDDrawChildGroup child (the m_08 blit-op target)
+    char m_pad00[0x08];        // +0x00..+0x07 (vptr + slot)
+    CDDrawChildGroupOps* m_08; // +0x08  CDDrawChildGroup child (the blit-op target)
     char m_pad0c[0x24 - 0x0c];
-    void* m_24; // +0x24  CGameLevel child (the m_24 blit-op target = CGameLevel)
+    CGameLevelBlit* m_24; // +0x24  CGameLevel child (the blit-op target)
     char m_pad28[0x3c - 0x28];
     SnapRunCallback m_3c; // +0x3c  run-callback
 };
@@ -136,7 +138,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(SnapRunCallback cb, i32 arg1, char* name,
     *(i32*)(header + 0x0c) = now.GetLocalTm(0)->tm_mday;
     *(i32*)(header + 0x0c) = now.GetLocalTm(0)->tm_year + 0x76c;
     strcpy(header + 0x10, name);
-    i32 probe = ((CDDrawChildGroupOps*)m_08)->Probe();
+    i32 probe = m_08->Probe();
     *(u32*)(header + 0x114) = g_61ab14;
     *(i32*)(header + 0x118) = probe;
     S.Write(header, 0x120);
@@ -145,34 +147,34 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(SnapRunCallback cb, i32 arg1, char* name,
     if (m_3c && cb(this, &S, 1, 0, 0) == 0) {
         return 0;
     }
-    if (((CDDrawChildGroupOps*)m_08)->BlitA(&S, arg3) == 0) {
+    if (m_08->BlitA(&S, arg3) == 0) {
         return 0;
     }
     if (m_3c && cb(this, &S, 3, 0, 0) == 0) {
         return 0;
     }
-    if (((CDDrawChildGroupOps*)m_08)->BlitB(&S, 3, arg3) == 0) {
+    if (m_08->BlitB(&S, 3, arg3) == 0) {
         return 0;
     }
-    if (((CGameLevelBlit*)m_24)->BlitD(&S, 3, 0, 0) == 0) {
+    if (m_24->BlitD(&S, 3, 0, 0) == 0) {
         return 0;
     }
     if (m_3c && cb(this, &S, 4, 0, 0) == 0) {
         return 0;
     }
-    if (((CDDrawChildGroupOps*)m_08)->BlitC(&S, arg3) == 0) {
+    if (m_08->BlitC(&S, arg3) == 0) {
         return 0;
     }
-    if (((CGameLevelBlit*)m_24)->BlitD(&S, 4, 0, 0) == 0) {
+    if (m_24->BlitD(&S, 4, 0, 0) == 0) {
         return 0;
     }
     if (m_3c && cb(this, &S, 5, 0, 0) == 0) {
         return 0;
     }
-    if (((CDDrawChildGroupOps*)m_08)->BlitB(&S, 5, arg3) == 0) {
+    if (m_08->BlitB(&S, 5, arg3) == 0) {
         return 0;
     }
-    if (((CGameLevelBlit*)m_24)->BlitD(&S, 5, 0, 0) == 0) {
+    if (m_24->BlitD(&S, 5, 0, 0) == 0) {
         return 0;
     }
 
@@ -228,40 +230,40 @@ i32 CDDrawSurfaceMgr::RestoreChildren(SnapRunCallback cb, char* name, i32 arg3) 
         return 0;
     }
     g_61ab14 = *(u32*)(header + 0x114);
-    ((CDDrawChildGroupOps*)m_08)->Refresh();
-    if (((CDDrawChildGroupOps*)m_08)->LoadA(&S, *(i32*)(header + 0x110), arg3) == 0) {
+    m_08->Refresh();
+    if (m_08->LoadA(&S, *(i32*)(header + 0x110), arg3) == 0) {
         return 0;
     }
     if (m_3c == 0 || m_3c(this, &S, 6, arg3, (i32)header) == 0) {
         return 0;
     }
-    if (((CDDrawChildGroupOps*)m_08)->BlitB(&S, 6, arg3) == 0) {
+    if (m_08->BlitB(&S, 6, arg3) == 0) {
         return 0;
     }
-    if (((CGameLevelBlit*)m_24)->BlitD(&S, 6, 0, 0) == 0) {
+    if (m_24->BlitD(&S, 6, 0, 0) == 0) {
         return 0;
     }
     if (m_3c == 0 || m_3c(this, &S, 7, arg3, (i32)header) == 0) {
         return 0;
     }
-    if (((CDDrawChildGroupOps*)m_08)->LoadB(&S, *(i32*)(header + 0x110), arg3) == 0) {
+    if (m_08->LoadB(&S, *(i32*)(header + 0x110), arg3) == 0) {
         return 0;
     }
-    if (((CGameLevelBlit*)m_24)->BlitD(&S, 7, 0, 0) == 0) {
+    if (m_24->BlitD(&S, 7, 0, 0) == 0) {
         return 0;
     }
     if (m_3c == 0 || m_3c(this, &S, 8, arg3, (i32)header) == 0) {
         return 0;
     }
-    if (((CDDrawChildGroupOps*)m_08)->BlitB(&S, 8, arg3) == 0) {
+    if (m_08->BlitB(&S, 8, arg3) == 0) {
         return 0;
     }
-    if (((CGameLevelBlit*)m_24)->BlitD(&S, 8, 0, 0) == 0) {
+    if (m_24->BlitD(&S, 8, 0, 0) == 0) {
         return 0;
     }
 
     S.End();
-    ((CGameLevelBlit*)m_24)->MainPlaneQueryB();
+    m_24->MainPlaneQueryB();
     S.Close();
     return 1;
 }

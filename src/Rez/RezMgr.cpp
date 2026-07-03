@@ -22,7 +22,7 @@
 //   the derived ctors emit a `call` to it.
 RVA(0x0013c4e0, 0x12)
 CRezItmBase::CRezItmBase(void* parent) {
-    m_parent = parent;
+    m_parent = (CRezItmOwner*)parent;
 }
 
 // ---------------------------------------------------------------------------
@@ -85,7 +85,7 @@ i32 CRezItm::Read(i32 off, i32 base, u32 count, void* buf) {
 
     if (m_pos != pos) {
         while (RezFSeek(m_fp, pos, 0) != 0) {
-            if (((CRezItmOwner*)m_parent)->Retry() == 0) {
+            if (m_parent->Retry() == 0) {
                 m_pos = -1;
                 return 0;
             }
@@ -94,7 +94,7 @@ i32 CRezItm::Read(i32 off, i32 base, u32 count, void* buf) {
 
     u32 got = RezFRead(buf, 1, count, m_fp);
     while (got != count) {
-        if (((CRezItmOwner*)m_parent)->Retry() == 0) {
+        if (m_parent->Retry() == 0) {
             m_pos = -1;
             return 0;
         }
@@ -130,14 +130,14 @@ i32 CRezItm::Write(i32 base, i32 off, u32 count, void* buf) {
     i32 pos = off + base;
 
     while (RezFSeek(m_fp, pos, 0) != 0) {
-        if (((CRezItmOwner*)m_parent)->Retry() == 0) {
+        if (m_parent->Retry() == 0) {
             return 0;
         }
     }
 
     u32 put = RezFWrite(buf, 1, count, m_fp);
     while (put != count) {
-        if (((CRezItmOwner*)m_parent)->Retry() == 0) {
+        if (m_parent->Retry() == 0) {
             return 0;
         }
         put = RezFWrite(buf, 1, count, m_fp);
@@ -169,7 +169,7 @@ i32 CRezItm::Close() {
             ok = 1;
         } else {
             ok = 0;
-            if (((CRezItmOwner*)m_parent)->Retry() == 0) {
+            if (m_parent->Retry() == 0) {
                 return 0;
             }
         }

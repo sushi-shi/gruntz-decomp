@@ -46,10 +46,11 @@ public:
 };
 // CPtrArray::RemoveAt @0x1b5200 and CMapPtrToPtr::Lookup @0x1b8760 - MFC; modeled
 // as methods so the __thiscall `mov ecx,this; call` falls out reloc-masked.
+struct CPlacedObj; // defined below
 class CPlacedArray {
 public:
     void RemoveAt(i32 index, i32 count); // 0x1b5200
-    void* m_pData;                       // +0x00  the element pointer table
+    CPlacedObj** m_pData;                // +0x00  the element pointer table
     i32 m_nSize;                         // +0x04  live element count
 };
 class CCellMap {
@@ -80,7 +81,7 @@ struct GmReg {
     struct M30 {
         char m_pad00[0x8];
         char* m_8; // +0x08  the holder the cell map hangs at (+0x48)
-    }* m_world;       // +0x30
+    }* m_world;    // +0x30
     char m_pad34[0x68 - 0x34];
     struct M68 {
         char m_pad00[0x2a8];
@@ -170,7 +171,7 @@ i32 CGameModeObj::ClearPlacedObjects() {
         i32 i = 0;
         i32 restart = 0;
         while (i < rec->m_nSize) {
-            CPlacedObj* obj = ((CPlacedObj**)rec->m_pData)[i];
+            CPlacedObj* obj = rec->m_pData[i];
             CMapGrid* grid = gmReg()->m_tileGrid;
             i32* cellObj = 0;
             if ((u32)obj->m_0 < (u32)grid->m_c && (u32)obj->m_4 < (u32)grid->m_10) {

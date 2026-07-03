@@ -40,6 +40,7 @@ struct CDDrawSubMgrLeafScan; // defined below; m_leafScan points at one
 // ~CDDrawSurfaceMgr, and the destructible base subobject supplies the dtor's /GX
 // EH frame. The base also fixes the derived vtable layout: the dtor lands at slot 1
 // and UnknownVirtualMethod14 (byte 0x14) at slot 5, etc.
+struct CDDrawPtrCollections; // defined below (m_ptrColl's heap object)
 class CDDrawSurfaceMgr : public Wap::CObject {
 public:
     CDDrawSurfaceMgr();
@@ -69,11 +70,11 @@ public:
     CDDrawSubMgr* m_surfaceDesc;      // +0x10  CDDrawSurfaceDesc submgr (static DDSURFACEDESC)
     CDDrawSubMgr* m_workerCache;      // +0x14  CDDrawWorkerCache
     CDDrawSubMgr* m_workerMap;        // +0x18  CDDrawWorkerMapSmall
-    void* m_ptrColl;                  // +0x1c  CDDrawPtrCollections
-    void* m_soundStream;              // +0x20  SoundStream
+    CDDrawPtrCollections* m_ptrColl;  // +0x1c
+    void* m_soundStream;              // +0x20  SoundStream (foreign Dsndmgr; delete-view only)
     CDDrawSubMgr* m_resolveSubMgr;    // +0x24  resolution submgr (CDDrawResolveSubMgr / CGameLevel)
     CDDrawSubMgrLeafScan* m_leafScan; // +0x28  CDDrawSubMgrLeafScan
-    void* m_leaf;                     // +0x2c  CDDrawSubMgrLeaf
+    CDDrawSubMgr* m_leaf;             // +0x2c  CDDrawSubMgrLeaf
     HWND m_hWnd;                      // +0x30
     i32 m_flags;                      // +0x34
     i32 m_initError;                  // +0x38
@@ -195,7 +196,7 @@ void CDDrawSurfaceMgr::Cleanup_155e20() {
         ((DDChildSlot1*)m_leaf)->Destroy(1);
         m_leaf = 0;
     }
-    CDDrawPtrCollections* ptrColl = (CDDrawPtrCollections*)m_ptrColl;
+    CDDrawPtrCollections* ptrColl = m_ptrColl;
     if (ptrColl) {
         ptrColl->Dtor();
         RezFree(ptrColl);

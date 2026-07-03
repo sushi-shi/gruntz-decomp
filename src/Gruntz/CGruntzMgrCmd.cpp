@@ -120,6 +120,7 @@ namespace GruntzMgrCmd {
         char _p0[4];
         void* m_4;
     };
+    struct GZObj58; // defined below (m_saveSink's concrete type)
     struct CGruntzMgr {
         char _p0[0x4];
         GZWndSub* m_04; // 0x04
@@ -136,8 +137,8 @@ namespace GruntzMgrCmd {
         void* m_44;    // 0x44 (has +0x124, +0x1c)
         void* m_sound; // 0x48
         char _p4c[0x54 - 0x4c];
-        i32 m_inputState; // 0x54
-        void* m_saveSink; // 0x58 (has +0x18)
+        i32 m_inputState;    // 0x54
+        GZObj58* m_saveSink; // 0x58 (has +0x18)
         char _p5c[0x68 - 0x5c];
         GZBoard* m_cmdGrid; // 0x68
         char _p6c[0xa0 - 0x6c];
@@ -653,8 +654,8 @@ namespace GruntzMgrCmd {
                         case 0x81a9:
                             PLAYCUE("GAME_MAJORCHEAT");
                             if (m_saveSink) {
-                                ((GZObj58*)m_saveSink)->Set58(0x20);
-                                ((GZObj58*)m_saveSink)->Reset58();
+                                m_saveSink->Set58(0x20);
+                                m_saveSink->Reset58();
                             }
                             AppendChat(
                                 "They should call you Cheat Cheatelson from "
@@ -674,42 +675,42 @@ namespace GruntzMgrCmd {
                             PLAYCUE("GAME_MINORCHEAT");
                             AppendChat("Warp to High Rollerz activated!");
                             if (m_saveSink) {
-                                ((GZObj58*)m_saveSink)->Set58(8);
+                                m_saveSink->Set58(8);
                             }
                             return 1;
                         case 0x8241:
                             PLAYCUE("GAME_MINORCHEAT");
                             AppendChat("Warp to High on Sweetz activated!");
                             if (m_saveSink) {
-                                ((GZObj58*)m_saveSink)->Set58(0xc);
+                                m_saveSink->Set58(0xc);
                             }
                             return 1;
                         case 0x8242:
                             PLAYCUE("GAME_MINORCHEAT");
                             AppendChat("Warp to Trouble in the Tropicz activated!");
                             if (m_saveSink) {
-                                ((GZObj58*)m_saveSink)->Set58(0x10);
+                                m_saveSink->Set58(0x10);
                             }
                             return 1;
                         case 0x8243:
                             PLAYCUE("GAME_MINORCHEAT");
                             AppendChat("Warp to Honey, I Shrunk the Gruntz activated!");
                             if (m_saveSink) {
-                                ((GZObj58*)m_saveSink)->Set58(0x14);
+                                m_saveSink->Set58(0x14);
                             }
                             return 1;
                         case 0x8244:
                             PLAYCUE("GAME_MINORCHEAT");
                             AppendChat("Warp to The Miniature Masterz activated!");
                             if (m_saveSink) {
-                                ((GZObj58*)m_saveSink)->Set58(0x18);
+                                m_saveSink->Set58(0x18);
                             }
                             return 1;
                         case 0x8245:
                             PLAYCUE("GAME_MINORCHEAT");
                             AppendChat("Warp to Gruntz in Space activated!");
                             if (m_saveSink) {
-                                ((GZObj58*)m_saveSink)->Set58(0x1c);
+                                m_saveSink->Set58(0x1c);
                             }
                             return 1;
                         case 0x8247:

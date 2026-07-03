@@ -271,10 +271,11 @@ public:
 
 // The worker held at CDDrawBlitParam+0x0c: holds a sub-object at +0x2c whose
 // 0x152d30 method returns a CString (the label written by Serialize).
+class CDDrawBlitLabelSource;
 class CDDrawBlitWorker {
 public:
-    char m_pad00[0x2c];  // +0x00..0x2b
-    void* m_labelSource; // +0x2c sub-object (Method_152d30 -> CString)
+    char m_pad00[0x2c];                   // +0x00..0x2b
+    CDDrawBlitLabelSource* m_labelSource; // +0x2c sub-object (Method_152d30 -> CString)
 };
 // The label map embedded at +0x10 in the worker sub-object: Lookup(key, &out)
 // resolves a worker-label string to its worker pointer.  0x1b8438, reloc-masked.
@@ -764,8 +765,7 @@ i32 CDDrawBlitParam::Serialize_15c970(CWwdArchive* ar) {
         ((i32*)buf)[i] = 0;
     }
     if (m_srcRef != 0) {
-        CString label =
-            ((CDDrawBlitLabelSource*)m_worker->m_labelSource)->GetLabel_152d30(m_srcRef);
+        CString label = m_worker->m_labelSource->GetLabel_152d30(m_srcRef);
         strcpy(buf, label);
     }
     ar->Write(buf, 0x80);
@@ -848,7 +848,7 @@ i32 CDDrawBlitParam::Deserialize_15ca70(CWwdArchive* ar) {
         m_srcRef = 0;
     } else {
         void* out = 0;
-        ((CDDrawBlitLabelSource*)m_worker->m_labelSource)->m_labelMap.Lookup(buf, &out);
+        m_worker->m_labelSource->m_labelMap.Lookup(buf, &out);
         m_srcRef = (i32)out;
     }
     CDDrawBlitParamSrc* w = (CDDrawBlitParamSrc*)m_srcRef;
@@ -1377,11 +1377,12 @@ CWwdObject* CWwdObjMgr::FindByField_15a940(i32 type, void* key) {
 
 // A queued node: m_next at +0x00, data object at +0x08.  The data object exposes
 // a vtable whose slot +0x20 is a status probe returning an int (5 == "ready").
+class CQueueProbeData;
 class CQueueProbeNode {
 public:
     CQueueProbeNode* m_next; // +0x00
     char m_pad04[0x04];      // +0x04
-    void* m_data;            // +0x08 -> probed object
+    CQueueProbeData* m_data; // +0x08 -> probed object
 };
 
 class CQueueProbeData {
@@ -1416,7 +1417,7 @@ void* CQueueDrainHost::Drain_031250() {
     while (m_head != 0) {
         CQueueProbeNode* head = m_head;
         m_head = head->m_next;
-        CQueueProbeData* data = (CQueueProbeData*)head->m_data;
+        CQueueProbeData* data = head->m_data;
         if (data->Probe20() == 5) {
             return data;
         }

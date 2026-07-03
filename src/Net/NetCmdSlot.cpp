@@ -23,7 +23,7 @@
 struct CObListNode {
     CObListNode* m_next; // +0x0
     CObListNode* m_prev; // +0x4
-    void* m_data;        // +0x8
+    CNetCmd* m_data;     // +0x8  (this queue holds CNetCmd)
 };
 SIZE_UNKNOWN(CObListNode); // CObList node walk-view; retail size TBD
 
@@ -378,7 +378,7 @@ void CNetCmdSlot::RemoveCmd(i32 seq) {
     while (node != 0) {
         CObListNode* cur = node;
         node = node->m_next;
-        CNetCmd* cmd = (CNetCmd*)cur->m_data;
+        CNetCmd* cmd = cur->m_data;
         if (seq == cmd->m_seq) {
             if (node != 0) {
                 m_cmds.RemoveAt((POSITION)node->m_prev);
@@ -414,7 +414,7 @@ void CNetCmdSlot::GetRange(i32* pMin, i32* pMax) {
     do {
         CObListNode* cur = node;
         node = node->m_next;
-        CNetCmd* cmd = (CNetCmd*)cur->m_data;
+        CNetCmd* cmd = cur->m_data;
         if (cmd->m_seq > *pMax) {
             *pMax = cmd->m_seq;
         }
@@ -434,7 +434,7 @@ CNetCmd* CNetCmdSlot::FindCmd(i32 seq) {
     while (node != 0) {
         CObListNode* cur = node;
         node = node->m_next;
-        CNetCmd* cmd = (CNetCmd*)cur->m_data;
+        CNetCmd* cmd = cur->m_data;
         if (seq == cmd->m_seq) {
             return cmd;
         }
