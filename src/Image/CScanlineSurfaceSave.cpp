@@ -95,7 +95,7 @@ i32 CScanlineSurface::SaveBmp(const char* filename, void* paletteObj) {
     file.m_8.Write(fileHdr, 0xe);
     file.m_8.Write(info, 0x428);
     for (i32 row = m_height - 1; row >= 0; row--) {
-        file.m_8.Write((char*)m_pixels + m_scanlineOffsets[row], m_width);
+        file.m_8.Write(m_pixels + m_scanlineOffsets[row], m_width);
     }
     return 1;
 }

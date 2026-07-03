@@ -137,8 +137,8 @@ public:
     i32 m_drawType; // +0x14 draw type / row-convert selector (switch tag; ctor default 1)
     i32 m_18; // +0x18 light level (ctor default 0x80): >>3 selects the LUT bank (Blit); low index into m_palDescr->m_lut (cases 3/4); alpha (case 6); fill byte (case 5)
     ShadeDescr* m_palDescr; // +0x1c palette / source-descriptor pointer (ctor default 0)
-    void* m_20;             // +0x20 256-entry palette buffer (Build/BuildRle; new 0x400 / RezFree)
-    i32 m_24;               // +0x24 color key (ctor default -1)
+    u8* m_20; // +0x20 256-entry (0x400 B) palette byte buffer (Build/BuildRle; new 0x400 / RezFree)
+    i32 m_24; // +0x24 color key (ctor default -1)
     u8 m_srcBpp; // +0x28 source pixel size in bytes (1 or 2); RLE run stride, ==1 gate; ctor default 1
     u8 m_dstBpp; // +0x29 dest pixel size in bytes (= blend mode, used as row stride); ctor default 1
     char m_2a[0x2c - 0x2a];

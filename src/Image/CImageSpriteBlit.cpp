@@ -373,7 +373,7 @@ void CImage::BlitShadeFlipHV(CBlitInfo* info, CImage* dst) {
     }
     i32 right = m_width + x - 1;
     i32 bottom = m_height + y - 1;
-    RECT d;
+    ShadeRect d;
     d.left = x;
     d.top = y;
     d.right = right;
@@ -427,7 +427,7 @@ void CImage::BlitShadeFlipHV(CBlitInfo* info, CImage* dst) {
         info->m_result = -1;
         return;
     }
-    RECT s;
+    ShadeRect s;
     s.left = right - d.right;
     s.top = bottom - d.bottom;
     s.right = s.left + w - 1;
@@ -435,7 +435,7 @@ void CImage::BlitShadeFlipHV(CBlitInfo* info, CImage* dst) {
     if (info->m_notify) {
         m_owned->Notify(info->m_notifyArg0, info->m_notifyArg1);
     }
-    m_owned->Blit((ShadeRect*)&d, dst->m_surface, (ShadeRect*)&s, 0, 0);
+    m_owned->Blit(&d, dst->m_surface, &s, 0, 0);
     info->m_outLeft = d.left;
     info->m_outTop = d.top;
     info->m_outRect = *(BlitRect*)&d;
@@ -462,7 +462,7 @@ void CImage::BlitShadeNorm(CBlitInfo* info, CImage* dst) {
     }
     i32 right = m_width + x - 1;
     i32 bottom = m_height + y - 1;
-    RECT d;
+    ShadeRect d;
     d.left = x;
     d.top = y;
     d.right = right;
@@ -516,7 +516,7 @@ void CImage::BlitShadeNorm(CBlitInfo* info, CImage* dst) {
         info->m_result = -1;
         return;
     }
-    RECT s;
+    ShadeRect s;
     s.left = right - d.right;
     s.top = bottom - d.bottom;
     s.right = s.left + w - 1;
@@ -524,7 +524,7 @@ void CImage::BlitShadeNorm(CBlitInfo* info, CImage* dst) {
     if (info->m_notify) {
         m_owned->Notify(info->m_notifyArg0, info->m_notifyArg1);
     }
-    m_owned->Blit((ShadeRect*)&d, dst->m_surface, (ShadeRect*)&s, 1, 1);
+    m_owned->Blit(&d, dst->m_surface, &s, 1, 1);
     info->m_outLeft = d.left;
     info->m_outTop = d.top;
     info->m_outRect = *(BlitRect*)&d;
@@ -552,7 +552,7 @@ void CImage::BlitShadeFlipV(CBlitInfo* info, CImage* dst) {
     }
     i32 right = m_width + x - 1;
     i32 bottom = m_height + y - 1;
-    RECT d;
+    ShadeRect d;
     d.left = x;
     d.top = y;
     d.right = right;
@@ -606,7 +606,7 @@ void CImage::BlitShadeFlipV(CBlitInfo* info, CImage* dst) {
         info->m_result = -1;
         return;
     }
-    RECT s;
+    ShadeRect s;
     s.left = right - d.right;
     s.top = bottom - d.bottom;
     s.right = s.left + w - 1;
@@ -614,7 +614,7 @@ void CImage::BlitShadeFlipV(CBlitInfo* info, CImage* dst) {
     if (info->m_notify) {
         m_owned->Notify(info->m_notifyArg0, info->m_notifyArg1);
     }
-    m_owned->Blit((ShadeRect*)&d, dst->m_surface, (ShadeRect*)&s, 1, 0);
+    m_owned->Blit(&d, dst->m_surface, &s, 1, 0);
     info->m_outLeft = d.left;
     info->m_outTop = d.top;
     info->m_outRect = *(BlitRect*)&d;
@@ -641,7 +641,7 @@ void CImage::BlitShadeFlipH(CBlitInfo* info, CImage* dst) {
     }
     i32 right = m_width + x - 1;
     i32 bottom = m_height + y - 1;
-    RECT d;
+    ShadeRect d;
     d.left = x;
     d.top = y;
     d.right = right;
@@ -695,7 +695,7 @@ void CImage::BlitShadeFlipH(CBlitInfo* info, CImage* dst) {
         info->m_result = -1;
         return;
     }
-    RECT s;
+    ShadeRect s;
     s.left = right - d.right;
     s.top = bottom - d.bottom;
     s.right = s.left + w - 1;
@@ -703,7 +703,7 @@ void CImage::BlitShadeFlipH(CBlitInfo* info, CImage* dst) {
     if (info->m_notify) {
         m_owned->Notify(info->m_notifyArg0, info->m_notifyArg1);
     }
-    m_owned->Blit((ShadeRect*)&d, dst->m_surface, (ShadeRect*)&s, 0, 1);
+    m_owned->Blit(&d, dst->m_surface, &s, 0, 1);
     info->m_outLeft = d.left;
     info->m_outTop = d.top;
     info->m_outRect = *(BlitRect*)&d;

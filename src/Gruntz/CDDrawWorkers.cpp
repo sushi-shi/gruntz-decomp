@@ -68,7 +68,7 @@ i32 CDDrawWorkerA::Vfunc2C(i32 a1, i32 a2, i32 a3) {
 struct CDDrawWorkerB {
     void Init();
     i32 Vfunc2C(i32 a1, i32 a2, i32 a3);
-    i32 Vfunc30(i32 a1, i32 a2, i32 a3, i32 a4);
+    i32 Vfunc30(i32 a1, i32 a2, CDDrawFrameSource* src, i32 a4);
     i32 Vfunc34(i32 a1, i32 a2, i32 a3, i32 a4);
 
     void* m_vptr; // +0x00
@@ -112,8 +112,7 @@ i32 CDDrawWorkerB::Vfunc34(i32 a1, i32 a2, i32 a3, i32 a4) {
 // 0x1572b0: store frame `a3->m_frameTable[a4]` (0 if a4 out of [m_lowerBound,m_upperBound]) into m_frame,
 // set m_st=2, then forward (a1,a2) to Helper_164790.
 RVA(0x001572b0, 0x38)
-i32 CDDrawWorkerB::Vfunc30(i32 a1, i32 a2, i32 a3, i32 a4) {
-    CDDrawFrameSource* src = (CDDrawFrameSource*)a3;
+i32 CDDrawWorkerB::Vfunc30(i32 a1, i32 a2, CDDrawFrameSource* src, i32 a4) {
     i32 frame;
     if (a4 >= src->m_lowerBound && a4 <= src->m_upperBound) {
         frame = src->m_frameTable[a4];

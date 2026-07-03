@@ -36,14 +36,14 @@ struct PalHolder {
 SIZE_UNKNOWN(PalHolder);
 struct LightDesc {
     char m_pad00[0x4];
-    Surf* m_surface;            // +0x04
-    i32 m_8;                    // +0x08
-    PalHolder* m_paletteHolder; // +0x0c
-    i32 m_10;                   // +0x10
-    i32 m_spanCount;            // +0x14 span count
-    i32 m_centerX;              // +0x18 centre x
-    i32 m_centerY;              // +0x1c centre y
-    i32 m_overrideTable;        // +0x20 override table
+    Surf* m_surface;              // +0x04
+    i32 m_8;                      // +0x08
+    PalHolder* m_paletteHolder;   // +0x0c
+    i32 m_10;                     // +0x10
+    i32 m_spanCount;              // +0x14 span count
+    i32 m_centerX;                // +0x18 centre x
+    i32 m_centerY;                // +0x1c centre y
+    CShadeTable* m_overrideTable; // +0x20 override table (pointer)
 };
 SIZE_UNKNOWN(LightDesc);
 
@@ -51,12 +51,12 @@ class CLightEffect {
 public:
     i32 Setup(LightDesc* d);
 
-    i32 m_00;                 // +0x00
-    CShadeTableCache m_cache; // +0x04  embedded shade-table cache (0x18 B -> +0x1c)
-    void* m_shadeTable;       // +0x1c shade table
-    i32 m_20;                 // +0x20
-    Surf* m_defaultSurface;   // +0x24 default surface
-    i32 m_28;                 // +0x28
+    i32 m_00;                  // +0x00
+    CShadeTableCache m_cache;  // +0x04  embedded shade-table cache (0x18 B -> +0x1c)
+    CShadeTable* m_shadeTable; // +0x1c shade table
+    i32 m_20;                  // +0x20
+    Surf* m_defaultSurface;    // +0x24 default surface
+    i32 m_28;                  // +0x28
     char m_pad2c[0x30 - 0x2c];
     i32 m_30; // +0x30
     char m_pad34[0x38 - 0x34];
@@ -149,7 +149,7 @@ i32 CLightEffect::Setup(LightDesc* d) {
             m_30 = 1;
             return 1;
         }
-        m_shadeTable = (void*)d->m_overrideTable;
+        m_shadeTable = d->m_overrideTable;
     }
     return 1;
 }

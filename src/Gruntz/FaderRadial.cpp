@@ -11,13 +11,22 @@
 
 extern "C" int FrSqrtFn(double v); // 0x11f570  (cdecl-ish post-sqrt step)
 
+struct FrSurface; // defined below; FrConfig holds a FrSurface* surface override
+
+// The image-source descriptor reached via FrConfig::m_imageSrc: dimension/handle
+// at +0x0c that seeds BuildSurface.
+struct FrImageSrc {
+    char p0[0xc];
+    i32 m_0c; // +0x0c  surface dimension/handle
+};
+
 // The source config arg.
 struct FrConfig {
     char p0[0x4];
-    void* m_paletteArg; // +0x04
-    void* m_surfaceArg; // +0x08
+    void* m_paletteArg;      // +0x04
+    FrSurface* m_surfaceArg; // +0x08
     char p0c[0x10 - 0xc];
-    void* m_imageSrc;        // +0x10  (-> m_0c surface)
+    FrImageSrc* m_imageSrc;  // +0x10  (-> m_0c surface)
     void* m_providedSurface; // +0x14
 };
 
@@ -42,13 +51,13 @@ struct FrCell {
 };
 
 struct CFaderRadial {
-    i32 Build(FrConfig* cfg);              // 0x17fa40
-    i32 BuildSurface(i32 a, i32 b, i32 c); // 0x14e830  (this+0x4 helper)
+    i32 Build(FrConfig* cfg);                // 0x17fa40
+    void* BuildSurface(i32 a, i32 b, i32 c); // 0x14e830  (this+0x4 helper)
     char p0[0x1c];
     void* m_workSurface; // +0x1c  resolved surface handle
     char p20[0x24 - 0x20];
-    void* m_defaultPalette; // +0x24  default palette
-    void* m_defaultSurface; // +0x28  default surface
+    void* m_defaultPalette;      // +0x24  default palette
+    FrSurface* m_defaultSurface; // +0x28  default surface
     char p2c[0x30 - 0x2c];
     i32 m_ownsSurface; // +0x30  owns-surface flag
     char p34[0x38 - 0x34];
@@ -77,14 +86,13 @@ i32 CFaderRadial::Build(FrConfig* cfg) {
     }
 
     if (cfg->m_surfaceArg == 0) {
-        self->m_srcSurface = (FrSurface*)self->m_defaultSurface;
+        self->m_srcSurface = self->m_defaultSurface;
     } else {
-        self->m_srcSurface = (FrSurface*)cfg->m_surfaceArg;
+        self->m_srcSurface = cfg->m_surfaceArg;
     }
 
     if (cfg->m_providedSurface == 0) {
-        self->m_workSurface =
-            (void*)self->BuildSurface(*(i32*)((char*)cfg->m_imageSrc + 0xc), 0x10, 0);
+        self->m_workSurface = self->BuildSurface(cfg->m_imageSrc->m_0c, 0x10, 0);
         self->m_ownsSurface = 1;
     } else {
         self->m_workSurface = cfg->m_providedSurface;
@@ -133,6 +141,7 @@ i32 CFaderRadial::Build(FrConfig* cfg) {
     return 1;
 }
 
+SIZE_UNKNOWN(FrImageSrc);
 SIZE_UNKNOWN(FrConfig);
 SIZE_UNKNOWN(FrSurface);
 SIZE_UNKNOWN(FrCell);

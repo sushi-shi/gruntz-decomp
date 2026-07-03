@@ -148,7 +148,7 @@ i32 CDDrawShadeBlit::BuildRle(
         if (m_20 != 0) {
             RezFree(m_20);
         }
-        m_20 = operator new(0x400);
+        m_20 = (u8*)operator new(0x400);
         memcpy(m_20, palette, 0x400);
     }
     return 1;
@@ -232,15 +232,15 @@ i32 CDDrawShadeBlit::Build(CImageBuildDesc* src, i32 size, i32 fmt) {
             if (m_20 != 0) {
                 RezFree(m_20);
             }
-            m_20 = operator new(0x400);
+            m_20 = (u8*)operator new(0x400);
             i32 i = 0;
             i32 d = 0;
             do {
                 d += 4;
-                ((u8*)m_20)[d - 4] = ((u8*)src + m_rleLen)[i + 0x20];
+                m_20[d - 4] = ((u8*)src + m_rleLen)[i + 0x20];
                 i += 3;
-                ((u8*)m_20)[d - 3] = ((u8*)src + m_rleLen)[i + 0x1e];
-                ((u8*)m_20)[d - 2] = ((u8*)src + m_rleLen)[i + 0x1f];
+                m_20[d - 3] = ((u8*)src + m_rleLen)[i + 0x1e];
+                m_20[d - 2] = ((u8*)src + m_rleLen)[i + 0x1f];
             } while (i < 0x300);
         }
     }

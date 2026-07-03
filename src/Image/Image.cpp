@@ -1087,14 +1087,14 @@ i32 CFileImage::SaveFile(char* buf, i32 type, void* a3, void* a4) {
 // retail .text order (24, 16, 8); the near case labels lower to MSVC's compare
 // ladder.
 RVA(0x00144350, 0x5f)
-i32 CFileImage::SaveDispatch(void* a1, void* a2, void* a3) {
+i32 CFileImage::SaveDispatch(char* a1, void* a2, void* a3) {
     switch (m_a8) {
         case 0x18:
-            return SaveTga((const char*)a1, a2, (i32)a3); // 24bpp -> 0x144900
+            return SaveTga(a1, a2, (i32)a3); // 24bpp -> 0x144900
         case 0x10:
             return SaveRle16(a1, a2, a3);
         case 8:
-            return SaveBmp((const char*)a1, a2, (i32)a3); // 8bpp -> 0x1443b0
+            return SaveBmp(a1, a2, (i32)a3); // 8bpp -> 0x1443b0
         default:
             return 0;
     }

@@ -22,6 +22,8 @@
 
 #include <Image/CImage.h> // the canonical frame-record class (CImage::RenderFrame @0x153790)
 
+struct ShadeDescr; // CImage::m_owned->m_palDescr type, latched by ShowFrames (full def in CDDrawShadeBlit.h)
+
 // ---------------------------------------------------------------------------
 // Shared engine views (modeled minimally; only the touched members/methods are
 // load-bearing; every call through them is reloc-masked).
@@ -130,7 +132,7 @@ public:
     i32 BaseSetupImage(i32 a1, i32 host, i32 a3, i32 a4, CWhRect rect, i32 key, i32 a10, i32 a11);
 
     // 0xeb740: drive the show/hide of the two anchor frames (frame table slots 1/2).
-    i32 ShowFrames(i32 show, i32 arg2);
+    i32 ShowFrames(i32 show, ShadeDescr* palDescr);
     // 0xeb830: latch the raw direction (m_3c) + the derived state (m_38 = 1 or 2).
     i32 SetState(i32 dir);
     // vtable slot 5 (0xeb880): the per-frame render of the head's two frames.

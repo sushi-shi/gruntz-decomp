@@ -248,7 +248,7 @@ public:
     // arguments, then SaveDispatch picks the per-bit-depth writer by m_a8 (8/16/24).
     // Clear blanks the surface, LoadKeyed blits + installs a colour key.
     i32 SaveFile(char* buf, i32 type, void* a3, void* a4); // 0x13f910 (ret 0x10)
-    i32 SaveDispatch(void* a1, void* a2, void* a3);        // 0x144350 (ret 0xc)
+    i32 SaveDispatch(char* a1, void* a2, void* a3);        // 0x144350 (ret 0xc)
     void Clear(i32 white);                                 // 0x13edb0 (ret 4)
     i32 LoadKeyed(
         void* surf,

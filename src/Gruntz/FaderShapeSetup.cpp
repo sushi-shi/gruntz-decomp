@@ -43,16 +43,16 @@ struct FInitPal {
 // The config arg (CFaderMgr::Add's pInit).
 struct FInit {
     char p00[0x4];
-    FShadeSurf* m_surfA;  // +0x04 surface A override
-    FShadeSurf* m_surfB;  // +0x08 surface B override
-    void* m_surfC;        // +0x0c surface C override
-    i32 m_rampSize;       // +0x10 ramp size
-    i32 m_mode;           // +0x14 mode (1..3)
-    i32 m_18;             // +0x18
-    i32 m_gate;           // +0x1c gate
-    i32 m_prebuiltTable;  // +0x20 prebuilt table
-    char* m_tableName;    // +0x24 table file/array name
-    FInitPal* m_flashPal; // +0x28 flash palette source
+    FShadeSurf* m_surfA;   // +0x04 surface A override
+    FShadeSurf* m_surfB;   // +0x08 surface B override
+    FShadeSurf* m_surfC;   // +0x0c surface C override
+    i32 m_rampSize;        // +0x10 ramp size
+    i32 m_mode;            // +0x14 mode (1..3)
+    i32 m_18;              // +0x18
+    i32 m_gate;            // +0x1c gate
+    void* m_prebuiltTable; // +0x20 prebuilt shade table (pointer)
+    char* m_tableName;     // +0x24 table file/array name
+    FInitPal* m_flashPal;  // +0x28 flash palette source
 };
 
 struct CFaderShape {
@@ -113,7 +113,7 @@ i32 CFaderShape::Setup(FInit* pInit) {
     if (this->m_surfB == 0) {
         return 0;
     }
-    this->m_surfC = pInit->m_surfC ? (FShadeSurf*)pInit->m_surfC : this->m_surfB;
+    this->m_surfC = pInit->m_surfC ? pInit->m_surfC : this->m_surfB;
 
     if (!this->m_cache.Init()) {
         return 0;
@@ -175,7 +175,7 @@ i32 CFaderShape::Setup(FInit* pInit) {
     if (this->m_active != 0) {
         if (pInit->m_prebuiltTable) {
             this->m_30 = 0;
-            this->m_shadeTable = (void*)pInit->m_prebuiltTable;
+            this->m_shadeTable = pInit->m_prebuiltTable;
         } else if (_access(pInit->m_tableName, 0) == 0) {
             this->m_shadeTable = this->m_cache.AddFromArray(pInit->m_tableName);
             if (this->m_shadeTable == 0) {
