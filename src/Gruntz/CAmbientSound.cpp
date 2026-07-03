@@ -52,7 +52,7 @@ void CAmbientSound::Restart() {
     if (((WwdActiveLevel*)g_gameReg->m_54)->m_24 == 0) {
         return;
     }
-    ((DsndReseed*)m_04)->Reseed(1, m_38, 0, 1);
+    m_04->ApplyAndPlay(1, m_38, 0, 1);
     m_08 = pos;
     i32 scale = m_0c;
     if (scale > 5) {
@@ -114,7 +114,7 @@ void CAmbientSound::Update(i32 x, i32 y, i32 force) {
         if (m_04 == 0) {
             return;
         }
-        ((DsndReseed*)m_04)->Reseed(1, m_38, 0, 1);
+        m_04->ApplyAndPlay(1, m_38, 0, 1);
         SetLevel(0x64, 0, 0);
         m_08 = 0x64;
         m_14 = 1;
@@ -150,7 +150,7 @@ void CAmbientSound::Update(i32 x, i32 y, i32 force) {
         if (m_04 == 0) {
             return;
         }
-        ((DsndReseed*)m_04)->Reseed(1, m_38, 0, 1);
+        m_04->ApplyAndPlay(1, m_38, 0, 1);
         SetLevel(0x64, 0, 0);
         m_08 = 0x64;
         m_14 = 1;

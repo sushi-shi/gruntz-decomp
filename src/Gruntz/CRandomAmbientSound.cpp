@@ -181,7 +181,7 @@ i32 CRandomAmbientSound::Setup(DirectSoundMgr* mgr, i32 a2, i32 a3, AmbientBox* 
 // Update (0x00c2a0, __thiscall, 3 args playFlag/pos/kind): the play/stop driver.
 // Gated on the mgr handle, the playing flag, and the active level
 // (g_gameReg->m_10 and ((WwdActiveLevel*)g_gameReg->m_54)->m_objectCount). On play it reseeds
-// the voice (mgr->Reseed(1,m_panIndex,0,1)), scales pos by (m_scaleA clamped)/100 then
+// the voice (mgr->ApplyAndPlay(1,m_panIndex,0,1)), scales pos by (m_scaleA clamped)/100 then
 // m_scaleB/100 (both signed magic-/100), clamps the
 // result to [0,100], and dispatches SetVolumeByIndex (kind==0) or CloneAndPlay
 // (kind!=0); on stop it StopAndRewind's (kind==0) or CloneAndPlay-stops (kind!=0).
@@ -223,7 +223,7 @@ void CRandomAmbientSound::Update(i32 playFlag, i32 pos, i32 kind) {
     }
 
     if (kind != 0) {
-        ((DsndReseed*)m_mgr)->Reseed(1, m_panIndex, 0, 1);
+        m_mgr->ApplyAndPlay(1, m_panIndex, 0, 1);
         i32 t = m_scaleA;
         m_lastPosition = pos;
         if (t > 5) {
@@ -244,7 +244,7 @@ void CRandomAmbientSound::Update(i32 playFlag, i32 pos, i32 kind) {
         return;
     }
 
-    ((DsndReseed*)m_mgr)->Reseed(1, m_panIndex, 0, 1);
+    m_mgr->ApplyAndPlay(1, m_panIndex, 0, 1);
     i32 t = m_scaleA;
     m_lastPosition = pos;
     if (t > 5) {
@@ -382,10 +382,10 @@ void CRandomAmbientSound::UpdateAt(i32 x, i32 y, i32 force) {
         } else if (v > 0x64) {
             v = 0x64;
         }
-        ((DsndPosVoice*)m_mgr)->SetVolByIdx(v);
+        m_mgr->SetVolumeByIndex(v);
     }
     m_panIndex = pan;
-    ((DsndPosVoice*)m_mgr)->SetPanByIdx(pan);
+    m_mgr->SetPanByIndex(pan);
 
     if (m_isPlaying != 0) {
         return;
@@ -399,7 +399,7 @@ void CRandomAmbientSound::UpdateAt(i32 x, i32 y, i32 force) {
     if (((WwdActiveLevel*)g_gameReg->m_54)->m_objectCount == 0) {
         return;
     }
-    ((DsndReseed*)m_mgr)->Reseed(1, m_panIndex, 0, 1);
+    m_mgr->ApplyAndPlay(1, m_panIndex, 0, 1);
     {
         i32 t = m_scaleA;
         m_lastPosition = vol;
@@ -415,7 +415,7 @@ void CRandomAmbientSound::UpdateAt(i32 x, i32 y, i32 force) {
         } else if (v > 0x64) {
             v = 0x64;
         }
-        ((DsndPosVoice*)m_mgr)->SetVolByIdx(v);
+        m_mgr->SetVolumeByIndex(v);
     }
     m_lastPosition = vol;
     m_isPlaying = 1;
@@ -514,7 +514,6 @@ SIZE_UNKNOWN(AmbSoundMap);
 SIZE_UNKNOWN(AmbSoundMapHolder);
 SIZE_UNKNOWN(AmbSoundRecord);
 SIZE_UNKNOWN(AmbientPoint);
-SIZE_UNKNOWN(DsndPosVoice);
 SIZE_UNKNOWN(PosSoundAux);
 SIZE_UNKNOWN(PosSoundObj);
 SIZE_UNKNOWN(PosSoundSpatial);

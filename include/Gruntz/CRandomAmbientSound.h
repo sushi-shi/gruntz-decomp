@@ -46,20 +46,9 @@ extern i32 g_tickDelta;
 // through the 0x39ae ILT thunk; called as a free function from Step.
 extern "C" i32 winapi_00cd00_timeGetTime();
 
-// The mgr's frame-reseed helper at 0x136300 (FUN_00536300, __thiscall, 4 args).
-// Modeled as a one-method shell so `mov ecx,m_mgr; call` falls out reloc-masked.
-struct DsndReseed {
-    void Reseed(i32 a1, i32 a2, i32 a3, i32 a4); // 0x136300
-};
-
-// The positional driver's voice setters on m_mgr (a DirectSoundMgr): SetVolByIdx
-// (0x1355c0, the SetVolumeByIndex mirror) and SetPanByIdx (0x1357a0, the SetPan
-// table sibling). Modeled as one-method shells so the `mov ecx,m_mgr; call` thiscall
-// dispatch reloc-masks.
-struct DsndPosVoice {
-    i32 SetVolByIdx(i32 idx); // 0x1355c0
-    i32 SetPanByIdx(i32 idx); // 0x1357a0
-};
+// The play/reseed drive goes straight through the real DirectSoundMgr methods on
+// m_mgr: ApplyAndPlay (0x136300 frame-reseed), SetVolumeByIndex (0x1355c0) and
+// SetPanByIndex (0x1357a0) - all declared in <Dsndmgr/DirectSoundMgr.h>.
 
 // The CRT float->int truncation helper (__ftol @ 0x11f570).
 extern "C" i32 __ftol(double v);

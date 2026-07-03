@@ -46,16 +46,20 @@ namespace Utils {
         void ActiveWait(u32 milliseconds); // 0x13dfe0 busy-wait
     }
 } // namespace Utils
-namespace ApiCallerStubs {
-    struct ThisStubOwner {
-        i32 winapi_17e620_GetTickCount(i32, i32, i32); // 0x17e620 (deferred-op method on the fader)
-    };
-} // namespace ApiCallerStubs
+
+// The deferred-op driver: the CFader that CFaderMgr::Add() returns is a FaderRun
+// subtype (see src/Gruntz/CFaderRun.cpp); its RunFade (0x17e620) spins the timed
+// fade. Reached by downcasting the returned fader (the two are modeled as separate
+// shapes, so this is the pragmatic bridge to the real named method - it reloc-pairs
+// against ?RunFade@FaderRun@@QAEXIHH@Z instead of a fabricated stub name).
+struct FaderRun {
+    void RunFade(u32 dur, i32 lead, i32 notify); // 0x17e620
+};
 
 // The resource chain reached through emitter +0x0c.
 struct FxChanHolder {
     char _00[0x2c];
-    void* m_2c; // +0x2c the DirectDraw channel surface
+    CDDSurface* m_2c; // +0x2c the DirectDraw channel surface
 };
 struct FxHolder {
     char _00[0x10];

@@ -3519,16 +3519,11 @@ i32 CPlay::FindStartPointAt(i32 x, i32 y, i32* outX, i32* outY) {
 // "INTRO%d"/"AMBIENT%d" off GetAmbientId), re-seed the ambient timer, reset the
 // goal geometry / per-slot config rows, clear the win-lose/in-game latches and the
 // frame-marker timeline. __thiscall, no args, ret 1 (0 if PrepareReset bails).
-// Self-contained views keep Render's CPlay/CWorld typing untouched.
-struct CRpHandle {       // the found sound object
-    void Play(i32 flag); // 0x139030 __thiscall
-};
-struct CRpSound {                   // m_4->m_48 (the level sound manager)
-    void Cue(char* name, i32 flag); // 0x138840 __thiscall(name, flag)
-    CRpHandle* Find(char* name);    // 0x138730 __thiscall(name) -> handle
-    char p0[0x1c];
-    CRpHandle* m_1c; // +0x1c  last-found sound handle
-};
+// Self-contained views keep Render's CPlay/CWorld typing untouched. The sound
+// manager (m_4->m_48) is the real CGruntzSoundZ (<Dsndmgr/CGruntzSoundZ.h>,
+// included above): FindBank (0x138730), PlayByName (0x138840, discarded here) and
+// m_pCurrent (+0x1c); the found bank is a CGruntzSoundInnerZ and Play(1) is its
+// SetLoop (0x139030).
 struct CRpGeom { // m_4->m_30->m_24 (the goal-geometry block)
     char p0[0x3b0];
     i32 m_3b0; // +0x3b0
@@ -3569,7 +3564,7 @@ struct CRpWorld { // this->m_4
     char p18[0x30 - 0x18];
     CRpM30* m_30; // +0x30
     char p34[0x48 - 0x34];
-    CRpSound* m_48; // +0x48  sound manager
+    CGruntzSoundZ* m_48; // +0x48  the zoned sound-bank manager
     char p4c[0x68 - 0x4c];
     CRpTimeline* m_68; // +0x68
     char p6c[0x7c - 0x6c];
@@ -3663,22 +3658,22 @@ i32 CPlay::ResetPlayState() {
         self->m_ambientTimerHi = 0;
         wsprintfA(buf, "INTRO%d", GetAmbientId());
         if (((CRpReg*)g_64556c)->m_14 != 0) {
-            self->m_4->m_48->Cue(buf, 0);
+            self->m_4->m_48->PlayByName(buf, 0);
         }
         self->m_ambientInitDone = 0;
     } else {
         wsprintfA(buf, "AMBIENT%d", GetAmbientId());
-        CRpSound* snd = self->m_4->m_48;
-        CRpHandle* h = snd->Find(buf);
+        CGruntzSoundZ* snd = self->m_4->m_48;
+        CGruntzSoundInnerZ* h = snd->FindBank(buf);
         if (h != 0) {
-            snd->m_1c = h;
+            snd->m_pCurrent = h;
         }
-        if (self->m_4->m_48->m_1c != 0) {
-            self->m_4->m_48->m_1c->Play(1);
+        if (self->m_4->m_48->m_pCurrent != 0) {
+            self->m_4->m_48->m_pCurrent->SetLoop(1);
         }
         CRpReg* reg = (CRpReg*)g_64556c;
         if (reg->m_14 != 0 && reg->m_134 == 3) {
-            self->m_4->m_48->Cue(buf, 1);
+            self->m_4->m_48->PlayByName(buf, 1);
         }
         self->m_ambientTimerLo = 0;
         self->m_ambientInterval = 0;
@@ -5042,7 +5037,6 @@ SIZE_UNKNOWN(CRenderer);
 SIZE_UNKNOWN(CResSource);
 SIZE_UNKNOWN(CRpFrame);
 SIZE_UNKNOWN(CRpGeom);
-SIZE_UNKNOWN(CRpHandle);
 SIZE_UNKNOWN(CRpM30);
 SIZE_UNKNOWN(CRpReg);
 SIZE_UNKNOWN(CRpReg44);
@@ -5050,7 +5044,6 @@ SIZE_UNKNOWN(CRpReg58);
 SIZE_UNKNOWN(CRpRow);
 SIZE_UNKNOWN(CRpScroll);
 SIZE_UNKNOWN(CRpSlot);
-SIZE_UNKNOWN(CRpSound);
 SIZE_UNKNOWN(CRpThis);
 SIZE_UNKNOWN(CRpTimeline);
 SIZE_UNKNOWN(CRpWho7c);

@@ -17,7 +17,7 @@ i32 CSoundFxEmitter::Method_fa410(i32 a1, i32 a2, i32 a3, i32 a4) {
     if (m_0c->m_1c == 0) {
         return 0;
     }
-    void* chan = m_0c->m_04->m_10->m_2c;
+    CDDSurface* chan = m_0c->m_04->m_10->m_2c;
     if (chan == 0) {
         return 0;
     }
@@ -36,9 +36,9 @@ i32 CSoundFxEmitter::Method_fa410(i32 a1, i32 a2, i32 a3, i32 a4) {
     m_04->StopBankIfActive();
     if (g_fxDirectGate != 0) {
         Utils::WinAPI::ActiveWait(a3);
-        ((CDDSurface*)m_0c->m_04->m_10->m_2c)->Fill(0);
+        m_0c->m_04->m_10->m_2c->Fill(0);
     } else {
-        ((ApiCallerStubs::ThisStubOwner*)f)->winapi_17e620_GetTickCount(a3, a4, 0);
+        ((FaderRun*)f)->RunFade(a3, a4, 0);
     }
     m_04->StopBank0IfActive();
     mgr->Remove(f);
@@ -61,11 +61,11 @@ i32 CSoundFxEmitter::Method_fa550(i32 a1, i32 a2, i32 a3, i32 a4) {
     if (m_0c->m_1c == 0) {
         return 0;
     }
-    void* chanA = m_0c->m_04->m_10->m_2c;
+    CDDSurface* chanA = m_0c->m_04->m_10->m_2c;
     if (chanA == 0) {
         return 0;
     }
-    void* chanB = m_0c->m_04->m_14->m_2c;
+    CDDSurface* chanB = m_0c->m_04->m_14->m_2c;
     if (chanB == 0) {
         return 0;
     }
@@ -84,9 +84,9 @@ i32 CSoundFxEmitter::Method_fa550(i32 a1, i32 a2, i32 a3, i32 a4) {
     m_04->StopBankIfActive();
     if (g_fxDirectGate != 0) {
         Utils::WinAPI::ActiveWait(a3);
-        ((CDDSurface*)m_0c->m_04->m_10->m_2c)->Blt((CDDSurface*)chanB);
+        m_0c->m_04->m_10->m_2c->Blt(chanB);
     } else {
-        ((ApiCallerStubs::ThisStubOwner*)f)->winapi_17e620_GetTickCount(a3, a4, 0);
+        ((FaderRun*)f)->RunFade(a3, a4, 0);
     }
     m_04->StopBank0IfActive();
     mgr->Remove(f);
@@ -111,11 +111,11 @@ i32 CSoundFxEmitter::Method_fa790(i32 a1, i32 a2, i32 a3) {
     if (m_0c->m_1c == 0) {
         return 0;
     }
-    void* chanA = m_0c->m_04->m_10->m_2c;
+    CDDSurface* chanA = m_0c->m_04->m_10->m_2c;
     if (chanA == 0) {
         return 0;
     }
-    void* chanB = m_0c->m_04->m_14->m_2c;
+    CDDSurface* chanB = m_0c->m_04->m_14->m_2c;
     if (chanB == 0) {
         return 0;
     }
@@ -133,9 +133,9 @@ i32 CSoundFxEmitter::Method_fa790(i32 a1, i32 a2, i32 a3) {
     m_04->StopBankIfActive();
     if (g_fxDirectGate != 0) {
         Utils::WinAPI::ActiveWait(a2);
-        ((CDDSurface*)m_0c->m_04->m_10->m_2c)->Blt((CDDSurface*)chanB);
+        m_0c->m_04->m_10->m_2c->Blt(chanB);
     } else {
-        ((ApiCallerStubs::ThisStubOwner*)f)->winapi_17e620_GetTickCount(a2, a3, 0);
+        ((FaderRun*)f)->RunFade(a2, a3, 0);
     }
     m_04->StopBank0IfActive();
     mgr->Remove(f);
@@ -158,7 +158,7 @@ i32 CSoundFxEmitter::Method_fa8f0(i32 a1, i32 a2, i32 a3, i32 a4) {
     if (m_0c->m_1c == 0) {
         return 0;
     }
-    void* chanA = m_0c->m_04->m_10->m_2c;
+    CDDSurface* chanA = m_0c->m_04->m_10->m_2c;
     if (chanA == 0) {
         return 0;
     }
@@ -168,7 +168,7 @@ i32 CSoundFxEmitter::Method_fa8f0(i32 a1, i32 a2, i32 a3, i32 a4) {
     } else {
         holderB = m_0c->m_04->m_14;
     }
-    void* chanB = holderB->m_2c;
+    CDDSurface* chanB = holderB->m_2c;
     if (chanB == 0) {
         return 0;
     }
@@ -185,9 +185,9 @@ i32 CSoundFxEmitter::Method_fa8f0(i32 a1, i32 a2, i32 a3, i32 a4) {
 
     if (g_fxDirectGate != 0) {
         Utils::WinAPI::ActiveWait(a2);
-        ((CDDSurface*)m_0c->m_04->m_10->m_2c)->Blt((CDDSurface*)chanB);
+        m_0c->m_04->m_10->m_2c->Blt(chanB);
     } else {
-        ((ApiCallerStubs::ThisStubOwner*)f)->winapi_17e620_GetTickCount(a2, a3, 0);
+        ((FaderRun*)f)->RunFade(a2, a3, 0);
     }
     mgr->Remove(f);
     return 1;
@@ -204,7 +204,7 @@ i32 CSoundFxEmitter::Method_faa60(i32 a1, i32 a2, i32 a3) {
     if (m_0c->m_1c == 0) {
         return 0;
     }
-    void* chan = m_0c->m_04->m_10->m_2c;
+    CDDSurface* chan = m_0c->m_04->m_10->m_2c;
     if (chan == 0) {
         return 0;
     }
@@ -222,9 +222,9 @@ i32 CSoundFxEmitter::Method_faa60(i32 a1, i32 a2, i32 a3) {
     m_04->StopBankIfActive();
     if (g_fxDirectGate != 0) {
         Utils::WinAPI::ActiveWait(a2);
-        ((CDDSurface*)m_0c->m_04->m_10->m_2c)->Fill(0);
+        m_0c->m_04->m_10->m_2c->Fill(0);
     } else {
-        ((ApiCallerStubs::ThisStubOwner*)f)->winapi_17e620_GetTickCount(a2, a3, 0);
+        ((FaderRun*)f)->RunFade(a2, a3, 0);
     }
     m_04->StopBank0IfActive();
     mgr->Remove(f);

@@ -1,36 +1,23 @@
-// SoundStreamFree.cpp - SoundStream::Free (0x137740): drain the +0x94 streaming-
-// voice list, then Shutdown. SoundStream is the Dsndmgr streaming-DirectSound class
-// (retail vftable 0x5ef6ec; see include/Dsndmgr/SoundStream.h). It inherits the
-// voice-list head at +0x94 from SoundDevice; each StreamVoiceNode is linked via its
-// +0x04 word biased +4, so a head is recovered as (head - 4) and a null head stays
-// null.
+// SoundStreamFree.cpp - SoundStream::Free (0x137740): drain the owned per-stream
+// voice list, then run the base device Shutdown. SoundStream is the Dsndmgr
+// streaming-DirectSound class (retail vftable 0x5ef6ec, derives SoundDevice); see
+// <Dsndmgr/SoundStream.h> for the layout. Its voice list is the typed DSoundList
+// m_voices at +0x94; each StreamVoiceNode threads through its DSoundLink m_link
+// (biased +4 MFC-POSITION-style, recovered with elemOf<>).
 //
-// Free drains the +0x94 list (DestroyVoice pops the head each pass, so the field is
-// re-read every iteration) then runs Shutdown. DestroyVoice (0x1379d0) and Shutdown
-// (0x136690, the inherited SoundDevice::Shutdown) are external __thiscall helpers,
-// modeled with no body so their `call rel32` displacements reloc-mask. Only the
-// +0x94 offset + the (head - 4) recovery are load-bearing.
+// The list HEAD is the inherited SoundDevice::m_instanceHead (+0x94); only the tail
+// lives in the derived class. Free reaps the list (DestroyVoice pops the head each
+// pass, so m_instanceHead is re-read every iteration) then runs the inherited
+// SoundDevice::Shutdown. Both callees are reloc-masked real named symbols
+// (SoundStream::DestroyVoice 0x1379d0, SoundDevice::Shutdown 0x136690).
+#include <Dsndmgr/SoundStream.h>
 #include <rva.h>
 
-#include <Ints.h>
-
-struct StreamVoiceNode;
-
-class SoundStream {
-public:
-    void Free();
-    void DestroyVoice(StreamVoiceNode* voice); // 0x1379d0  unlink+release a voice off +0x94
-    void Shutdown();                           // 0x136690  inherited SoundDevice::Shutdown
-
-    char m_pad00[0x94];
-    void* m_94; // +0x94  voice list head (stores node + 4)
-};
-
-// 0x137740 - drain the +0x94 voice list, then shut the device down.
+// 0x137740 - drain the voice list, then shut the device down.
 RVA(0x00137740, 0x3e)
 void SoundStream::Free() {
-    for (StreamVoiceNode* p = m_94 ? (StreamVoiceNode*)((char*)m_94 - 4) : 0; p != 0;
-         p = m_94 ? (StreamVoiceNode*)((char*)m_94 - 4) : 0) {
+    for (StreamVoiceNode* p = elemOf<StreamVoiceNode>(m_instanceHead); p != 0;
+         p = elemOf<StreamVoiceNode>(m_instanceHead)) {
         DestroyVoice(p);
     }
     Shutdown();

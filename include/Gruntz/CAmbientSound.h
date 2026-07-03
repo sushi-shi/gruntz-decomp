@@ -38,15 +38,8 @@ struct AmbientBox {
     i32 bottom; // +0x0c
 };
 
-// The mgr's frame-reseed helper at 0x136300 (FUN_00536300, __thiscall, 4 args) -
-// the (re)start path runs it to arm the sound id before the first level push. Not
-// a DirectSoundMgr method in its header, so reached through this one-method shell
-// (same device as CRandomAmbientSound::DsndReseed); `mov ecx,m_04; call` falls out
-// reloc-masked.
-SIZE_UNKNOWN(DsndReseed);
-struct DsndReseed {
-    void Reseed(i32 a1, i32 a2, i32 a3, i32 a4); // 0x136300
-};
+// The (re)start path arms the voice through DirectSoundMgr::ApplyAndPlay (0x136300,
+// declared in <Dsndmgr/DirectSoundMgr.h> as m_04->ApplyAndPlay(vol,pan,freq,dur)).
 
 // ---------------------------------------------------------------------------
 // The big game registry singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c).

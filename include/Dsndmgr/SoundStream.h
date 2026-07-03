@@ -63,6 +63,12 @@ public:
     StreamVoiceNode* OpenStream(CParseSource* src, i32 p1, i32 p2, i32 p3, i32 p4, i32 p5);
     // 0x137900
     void DestroyVoice(StreamVoiceNode* voice); // 0x1379d0
+    // Full free: reap (DestroyVoice) every voice off m_voices, then the base
+    // SoundDevice::Shutdown. Called from CDDrawSurfaceMgr::FreeContext.
+    void Free(); // 0x137740
+    // Stop streaming: Pause each voice's embedded feeder (+0x6c), then the base
+    // SoundDevice::StopAll. The wide pause/reset path (menu/level teardown).
+    void Stop(); // 0x137a80
     i32 ParseWave(
         CParseSource* src,
         WaveFormatX* fmtBuf,
