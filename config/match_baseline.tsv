@@ -83,11 +83,11 @@ cddpagemgr	2	1
 cddrawchildgroup	8	6
 cddrawptrcollections	31	15
 cddrawshadeblit	9	1
-cddrawsubmgr	59	34
+cddrawsubmgr	58	33
 cddrawsubmgrani	3	1
 cddrawsubmgrleaf	15	9
 cddrawsubmgrleafscan	17	9
-cddrawsubmgrpages	5	4
+cddrawsubmgrpages	6	5
 cddrawsurfacemgr	9	6
 cddrawsurfacemgrserialize	2	0
 cddrawsurfacepair	9	3
@@ -1017,7 +1017,6 @@ cddrawsubmgr	??0CDrawSubWorker@@QAE@HHH@Z	96.3000	96.3000	1	905e1c94e386	0x158f3
 cddrawsubmgr	??0CWwdSlot9c@@QAE@XZ	100.0000	100.0000	1	4f0c763b7d4a	0x15b2a0
 cddrawsubmgr	??1CDDrawChildGroupDtorHost@@QAE@XZ	95.9000	95.9000	1	3b2ce06b4434	0x157630
 cddrawsubmgr	??1CDDrawRegistryDtorHost@@QAE@XZ	94.8750	94.8750	1	5e8b984f549d	0x156e10
-cddrawsubmgr	??1CDDrawSubMgr@@UAE@XZ	100.0000	100.0000	7	ac6cb4c7486a	0x1574d0
 cddrawsubmgr	?AddToMap48_15aba0@CWwdObjMgr@@QAEXPAVCWwdObject@@@Z	100.0000	100.0000	2	0554663fb63b	0x15aba0
 cddrawsubmgr	?Advance_15c360@CAniAdvanceCursor@@QAEHI@Z	72.4627	72.4627	2	f7ee1492b36e	0x15c360
 cddrawsubmgr	?BoxesOverlap_15a130@@YGHPAUCWwdBox@@0@Z	75.8506	75.8506	2	7fcc0091f20e	0x15a130
@@ -1106,11 +1105,12 @@ cddrawsubmgrleafscan	?Release_1587c0@LeafElementObj@@QAEXXZ	100.0000	100.0000	1	
 cddrawsubmgrleafscan	?RemoveKeysEqual_157c70@CDDrawSubMgrLeafScan@@QAEHPBD0@Z	100.0000	100.0000	2	831524173105	0x157c70
 cddrawsubmgrleafscan	?ScanTree_157ee0@CDDrawSubMgrLeafScan@@QAEHPAVDirNode@@PBD1@Z	100.0000	100.0000	2	e7963647e727	0x157ee0
 cddrawsubmgrleafscan	?SumField_1580b0@CDDrawSubMgrLeafScan@@QAEHPBD@Z	69.6395	69.6395	2	be7d0b01b6b5	0x1580b0
+cddrawsubmgrpages	??1CDDrawSubMgrPages@@QAE@XZ	100.0000	100.0000	1	d3feb2a8af12	0x1574d0
 cddrawsubmgrpages	?CreateChildren@CDDrawSubMgrPages@@UAEHHHHH@Z	65.9748	65.9748	1	73cf3b179fc0	0x1588f0
 cddrawsubmgrpages	?DestroyChildren@CDDrawSubMgrPages@@UAEXXZ	100.0000	100.0000	1	198082846f66	0x158ac0
 cddrawsubmgrpages	?GetStateId@CDDrawSubMgrPages@@UAEHXZ	100.0000	100.0000	1	15b70307b471	0x1574a0
 cddrawsubmgrpages	?IsReady@CDDrawSubMgrPages@@UAEHXZ	100.0000	100.0000	1	77f24b58cd75	0x157480
-cddrawsubmgrpages	?ScalarDtor@CDDrawSubMgrPages@@UAEPAXH@Z	100.0000	100.0000	1	96b5248c8285	0x1574b0
+cddrawsubmgrpages	?ScalarDtor@CDDrawSubMgrPages@@UAEPAXH@Z	100.0000	100.0000	2	9f13c715867b	0x1574b0
 cddrawsurfacemgr	??0CDDrawSurfaceMgr@@QAE@XZ	100.0000	100.0000	6	a3371ca436ea	0x155840
 cddrawsurfacemgr	??1CDDrawSurfaceMgr@@UAE@XZ	100.0000	100.0000	2	a14f65509f82	0x1558b0
 cddrawsurfacemgr	?Cleanup_155e20@CDDrawSurfaceMgr@@QAEXXZ	96.1236	96.1236	5	7fe47dd3e833	0x155e20
@@ -2050,7 +2050,7 @@ gamelevel	?AdvanceB@CGameLevel@@AAEHPAXHHH@Z	92.2241	92.2241	1	ac1c98577426	0x15
 gamelevel	?AltStepValidate@CGameLevel@@AAEHPAX0HHPAHH@Z	71.9054	71.9054	1	7c1fc1ee8711	0x15fe40
 gamelevel	?ApplyScroll@@YGHPAVCGameLevel@@HHH@Z	94.7826	94.7826	1	592b87081e74	0x167130
 gamelevel	?AxisProbe@CGameLevel@@AAEHHH@Z	99.8667	99.8667	2	9864e0a73614	0x161270
-gamelevel	?BroadPhase@CGameLevel@@QAEHPAUScrollTarget@@HH@Z	72.0896	72.0896	2	caa91ac52b2c	0x167ea0
+gamelevel	?BroadPhase@CGameLevel@@QAEHPAUScrollTarget@@HH@Z	72.0896	72.0896	3	02fd95b25bc5	0x167ea0
 gamelevel	?BuildAllPlanes@CGameLevel@@QAEXPAULevelCoordRect@@@Z	100.0000	100.0000	2	45939b338e12	0x15da80
 gamelevel	?ClampScroll@CGameLevel@@QAEHPAXHHH@Z	70.7413	70.7413	3	3f62b93aa933	0x15de40
 gamelevel	?ClampSpan@CGameLevel@@AAEHHHPAH0@Z	99.8305	99.8305	2	8dcb804e4a37	0x15ffe0
@@ -2060,15 +2060,15 @@ gamelevel	?EditHandlerA@CGameLevel@@QAEHPAXHHH@Z	64.9560	64.9560	1	ba4a8952d252	
 gamelevel	?EditHandlerB@CGameLevel@@QAEHPAXHHH@Z	78.8602	78.8602	1	5506606c987f	0x15e4b0
 gamelevel	?EditHandlerC@CGameLevel@@QAEHPAXHHH@Z	80.8854	80.8854	1	6a20eb4ef6d2	0x15e2f0
 gamelevel	?EditHandlerD@CGameLevel@@QAEHPAXHHH@Z	83.0000	83.0000	1	7673b10cc91e	0x15e5b0
-gamelevel	?EditSwitch@CGameLevel@@QAEHPAXHHH@Z	88.8440	88.8440	2	0ff29dc02c1a	0x15dfb0
+gamelevel	?EditSwitch@CGameLevel@@QAEHPAXHHH@Z	88.8440	88.8440	3	61467cd444a2	0x15dfb0
 gamelevel	?FindPlaneByName@CGameLevel@@QAEPAVCPlane@@PBD@Z	100.0000	100.0000	3	55a1da7f0b8e	0x15dde0
 gamelevel	?FreeMove@CGameLevel@@AAEHPAXHHH@Z	80.8200	80.8200	1	3fb3107bd23b	0x15eb00
-gamelevel	?GetClassId@CGameLevel@@UAEHXZ	100.0000	100.0000	1	777905dbee18	0x1611b0
+gamelevel	?GetClassId@CGameLevel@@UAEHXZ	100.0000	100.0000	2	172d439fd347	0x1611b0
 gamelevel	?HoldMove@CGameLevel@@AAEHPAXHHHH@Z	90.3953	90.3953	1	5c4b4f1637f9	0x15ff20
-gamelevel	?IsLoaded@CGameLevel@@UAEHXZ	100.0000	100.0000	1	1cf4b7c05d14	0x161190
+gamelevel	?IsLoaded@CGameLevel@@UAEHXZ	100.0000	100.0000	2	642a2d2b60a4	0x161190
 gamelevel	?LoadFromFile@CGameLevel@@UAEHPBD@Z	100.0000	100.0000	1	df34d8ccfc29	0x15d500
 gamelevel	?LoadFromSource@CGameLevel@@UAEHPAVCParseSource@@@Z	100.0000	100.0000	1	81b1a07ab4f5	0x15d630
-gamelevel	?LoadWwd@CGameLevel@@UAEHPAUWwdHeader@@@Z	32.9207	32.9207	3	589e1fc768c3	0x15d280
+gamelevel	?LoadWwd@CGameLevel@@UAEHPAUWwdHeader@@@Z	32.9207	32.9207	4	eeee95e6c757	0x15d280
 gamelevel	?LookupTile@CGameLevel@@QAEHHH@Z	100.0000	100.0000	4	216fa956115c	0x82600
 gamelevel	?MainPlaneNotify@CGameLevel@@QAEXXZ	100.0000	100.0000	2	e76b99ca6714	0x160ee0
 gamelevel	?MainPlaneQueryA@CGameLevel@@QAEHXZ	100.0000	100.0000	3	36434becd0e7	0xcedf0
@@ -2095,13 +2095,13 @@ gamelevel	?SetCoordsAndLoad3C@CGameLevel@@UAEHHPAULevelCoordRect@@@Z	100.0000	10
 gamelevel	?SetCoordsAndLoad40@CGameLevel@@UAEHHPAULevelCoordRect@@@Z	100.0000	100.0000	1	6ebb370f7ba0	0x15cdf0
 gamelevel	?SetExtentsAndBuildAll@CGameLevel@@QAEHHH@Z	70.6546	70.6546	2	19e5531cef2e	0x15d700
 gamelevel	?SpanCheck@CGameLevel@@AAEHHHHPAH@Z	93.1132	93.1132	1	0dca3d9c6b50	0x15f8d0
-gamelevel	?StepAxisAlt@CGameLevel@@AAEHPAXHHPAHH@Z	100.0000	100.0000	2	7df64b0e1717	0x15fdb0
+gamelevel	?StepAxisAlt@CGameLevel@@AAEHPAXHHPAHH@Z	100.0000	100.0000	3	e909fb5ae3bf	0x15fdb0
 gamelevel	?StepAxisHi@CGameLevel@@AAEHPAXHHPAHH@Z	82.6949	82.6949	1	ca3b47b33d71	0x15e870
 gamelevel	?StepAxisLo@CGameLevel@@AAEHPAXHHPAHH@Z	82.6949	82.6949	1	6d948b316f4c	0x15e720
 gamelevel	?SyncAfterMainIndex@CGameLevel@@QAEXH@Z	100.0000	100.0000	2	57218076c269	0x15db00
 gamelevel	?SyncToMainIndex@CGameLevel@@QAEXH@Z	100.0000	100.0000	2	cae093b5e4be	0x15dad0
 gamelevel	?Unload@CGameLevel@@UAEHXZ	71.0392	71.0392	2	1930149b0294	0x15d1f0
-gamelevel	?VisitVisible@CGameLevel@@QAEXPAXH@Z	92.3282	92.3282	5	bdd8690b12cc	0x15dc90
+gamelevel	?VisitVisible@CGameLevel@@QAEXPAXH@Z	92.3282	92.3282	6	459439598d22	0x15dc90
 gamelevel	?WalkColumnDown@CGameLevel@@QAEHPAXH@Z	92.7579	92.7579	3	9c3d29ab7686	0x160a40
 gamemode	??0CState@@QAE@XZ	100.0000	100.0000	4	a1d9fd8bca62	0x8c750
 gamemode	??1CBootyState@@UAE@XZ	100.0000	100.0000	1	899f9930b960	0x8d440

@@ -47,14 +47,32 @@ extern i32 g_ddrawSurfaceChildAVtbl; // 0x5eff70
 DATA(0x005eff30)
 extern i32 g_ddrawSurfacePairVtbl; // 0x5eff30
 
-// The real member-teardown dtor (0x1574d0) lives in CDDrawSubMgr.cpp as
-// CDDrawSubMgr::~CDDrawSubMgr (SAME retail class, vtable 0x5efe08 - the tomalla
-// "cluster" is split across two TUs). Referenced so the ??_G scalar-dtor below emits
-// a call reloc naming ??1CDDrawSubMgr@@UAE@XZ (matching retail's 0x1574d0 label).
-class CDDrawSubMgr {
-public:
-    virtual ~CDDrawSubMgr();
+// The grand-base teardown vftable restored at ~CDDrawSubMgrPages exit (0x5e8cb4;
+// the delinked retail dtor names its restamp DIR32 ?g_wapObjectDtorVtbl@@3PAXA, so
+// this manual DATA-extern stamp - not a cl-auto ~CObject fold - is what matches).
+DATA(0x005e8cb4)
+extern void* g_wapObjectDtorVtbl;
+
+// CDDrawSubMgrPagesBase - the CObject-like family grand-base (5-slot vtable masks
+// 0x5e8cb4). Slot 1 is a REGULAR virtual (not a C++ dtor) so CDDrawSubMgrPages can
+// override it with its RVA-pinned ??_G ScalarDtor (0x1574b0) WITHOUT cl auto-
+// generating a clashing ??_G - the (B)-form CLoadable leaf shape (same as
+// CDDrawSubMgrGrandBase in CDDrawSubMgrLeaf.cpp). The subobject dtor does ONLY the
+// grand-base vptr restamp (the m_04/m_08/m_0c field resets live in the derived
+// ~CDDrawSubMgrPages body, so they land after DestroyChildren, matching retail);
+// the destructible base is what gives ~CDDrawSubMgrPages its /GX EH frame.
+struct CDDrawSubMgrPagesBase {
+    virtual void FUN_005bef01();        // [0] 0x1bef01 (shared thunk, declared-only)
+    virtual void* ScalarDtor(i32 flag); // [1] scalar-deleting dtor (regular virtual)
+    virtual void FUN_004028ec();        // [2] 0x0028ec (shared thunk, declared-only)
+    virtual void FUN_0040106e();        // [3] 0x00106e (shared thunk, declared-only)
+    virtual void FUN_00404034();        // [4] 0x004034 (shared thunk, declared-only)
+    ~CDDrawSubMgrPagesBase();
+    CDDrawSubMgrPagesBase() {}
 };
+inline CDDrawSubMgrPagesBase::~CDDrawSubMgrPagesBase() {
+    *(void**)this = &g_wapObjectDtorVtbl;
+}
 
 // The two spawned worker types built by CreateChildren (0x1588f0): a 0x30-byte
 // "A" child (ctor 0x158f30, vtable 0x5eff70, dispatch +0x24) and two 0x34-byte "B"
@@ -108,22 +126,24 @@ public:
 };
 
 // ---------------------------------------------------------------------------
-class CDDrawSubMgrPages {
+// CDDrawSubMgrPages (retail RTTI ??_7CDDrawSubMgrDraco @0x5efe08 - proven by the
+// vtable dump: slot 1 = 0x1574b0 = this ScalarDtor, slot 7 = DestroyChildren
+// 0x158ac0). A (B)-form CLoadable leaf: slots 5..9 are its own, slot 1 overrides
+// the grand-base's regular-virtual ScalarDtor with the RVA-pinned ??_G.
+class CDDrawSubMgrPages : public CDDrawSubMgrPagesBase {
 public:
-    virtual void FUN_005bef01();        // [0] 0x1bef01 (shared thunk, declared-only)
-    virtual void* ScalarDtor(i32 flag); // [1] ??_G scalar-deleting dtor (0x1574b0)
-    virtual void FUN_004028ec();        // [2] 0x0028ec (shared thunk, declared-only)
-    virtual void FUN_0040106e();        // [3] 0x00106e (shared thunk, declared-only)
-    virtual void FUN_00404034();        // [4] 0x004034 (shared thunk, declared-only)
-    virtual i32 IsReady();              // [5] 0x157480
-    virtual void FUN_00401c08();        // [6] 0x001c08 (shared thunk, declared-only)
-    virtual void DestroyChildren();     // [7] 0x158ac0
-    virtual i32 GetStateId();           // [8] 0x1574a0 (state id)
+    void* ScalarDtor(i32 flag) OVERRIDE; // [1] ??_G scalar-deleting dtor (0x1574b0)
+    virtual i32 IsReady();               // [5] 0x157480
+    virtual void FUN_00401c08();         // [6] 0x001c08 (shared thunk, declared-only)
+    virtual void DestroyChildren();      // [7] 0x158ac0
+    virtual i32 GetStateId();            // [8] 0x1574a0 (state id)
     virtual i32 CreateChildren(i32 a1, i32 a2, i32 a3, i32 a4); // [9] 0x1588f0
+    ~CDDrawSubMgrPages();                                       // 0x1574d0 member-teardown
 
-    // vptr implicit @ +0x00
-    char m_pad04[0x0c - 0x04];
-    CDDrawSurfaceMgr* m_0c; // +0x0c  parent/root handle
+    // vptr @+0x00 (grand-base); the three-word header at +0x04..+0x0c.
+    i32 m_04;               // +0x04  (reset to -1 on teardown)
+    i32 m_08;               // +0x08  (reset to 0)
+    CDDrawSurfaceMgr* m_0c; // +0x0c  parent/root handle (reset to 0)
     CDDrawSurfaceChild*
         m_10; // +0x10  (CDDrawSurfaceChildA object, viewed as CDDrawSurfaceChild by VM1C)
     CDDrawSurfaceChild* m_14; // +0x14  (CDDrawSurfacePair object)
@@ -176,16 +196,34 @@ i32 CDDrawSubMgrPages::GetStateId() {
 
 // ---------------------------------------------------------------------------
 // Scalar-deleting destructor (??_G at 0x1574b0): run the real member-teardown
-// ~CDDrawSubMgr (0x1574d0, the same retail class in CDDrawSubMgr.cpp), then
-// operator delete this if the low flag bit is set. Slot 1 override.
+// ~CDDrawSubMgrPages (0x1574d0, below), then operator delete this if the low flag
+// bit is set. Slot 1 override.
 SYMBOL(??_GCDDrawSubMgrPages @@UAEPAXI@Z)
 RVA(0x001574b0, 0x1e)
 void* CDDrawSubMgrPages::ScalarDtor(i32 flag) {
-    ((CDDrawSubMgr*)this)->CDDrawSubMgr::~CDDrawSubMgr();
+    this->CDDrawSubMgrPages::~CDDrawSubMgrPages();
     if (flag & 1) {
         operator delete(this);
     }
     return this;
+}
+
+// ---------------------------------------------------------------------------
+// Member-teardown destructor (0x1574d0; retail ??1CDDrawSubMgr / ~CDDrawSubMgrDraco).
+// cl stamps the derived vftable ??_7CDDrawSubMgrPages (masks 0x5efe08) at entry,
+// devirtualizes DestroyChildren (slot 7 -> 0x158ac0) to a direct call, resets the
+// three header words, then the grand-base subobject dtor restamps g_wapObjectDtorVtbl
+// (0x5e8cb4). The destructible grand-base gives the /GX EH frame. This is the DERIVED
+// half of the former mis-modeled "CDDrawSubMgr" (whose ctor 0x156cb0 is the distinct
+// CLoadable base-vtable ctor in CDDrawSubMgr.cpp); DestroyChildren is now the correct
+// devirtualized callee (retail 0x158ac0), not the old ?OnDestroy@CDDrawSubMgr.
+RVA(0x001574d0, 0x5b)
+CDDrawSubMgrPages::~CDDrawSubMgrPages() {
+    DestroyChildren();
+    m_04 = -1;
+    m_08 = 0;
+    m_0c = 0;
+    // ~CDDrawSubMgrPagesBase: *(void**)this = &g_wapObjectDtorVtbl (restamp, last).
 }
 
 // ---------------------------------------------------------------------------
@@ -255,7 +293,7 @@ i32 CDDrawSubMgrPages::CreateChildren(i32 a1, i32 a2, i32 a3, i32 a4) {
 }
 
 SIZE_UNKNOWN(CDDrawSubMgrPages);
-SIZE_UNKNOWN(CDDrawSubMgr);
+SIZE_UNKNOWN(CDDrawSubMgrPagesBase);
 SIZE_UNKNOWN(CDDrawSurfaceChild);
 SIZE_UNKNOWN(CDDrawSurfaceMgr);
 SIZE(CDDrawSurfaceChildA, 0x30);

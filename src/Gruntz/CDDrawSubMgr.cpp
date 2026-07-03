@@ -13,11 +13,13 @@
 #include <Gruntz/CDDrawWorkerMgr.h> // single-source CDDrawWorkerMgr (0x158xxx surface ops)
 #include <Globals.h>
 // CDDrawSubMgr.cpp - tomalla-named DDraw surface/page-manager shared base
-// (CDDrawSubMgr).  This is the polymorphic base for the 10 sub-
-// managers (CDDrawSubMgrPages, CDDrawChildGroup, CDDrawWorkerList, etc.).  Two functions:
-//   ctor  - seeds the three fields + stamps vtable.
-//   dtor  - SEH-framed: calls OnDestroy
-//           cleanup, resets fields, chains base dtor.
+// (CDDrawSubMgr). The ctor 0x156cb0 (??0CDDrawSubMgr) constructs the CLoadable base
+// vtable (0x5efc30) - it is the shared base arg-ctor called by CDDrawSurfaceMgr::Init,
+// CreateChildren, CreateObject_1598d0 and ReadPlaneObjects to build a CLoadable-vtable
+// subobject. The matching-mis-model that put a DERIVED dtor here (0x1574d0, which
+// stamps 0x5efe08 = ??_7CDDrawSubMgrDraco and calls DestroyChildren) has been SPLIT
+// out to CDDrawSubMgrPages.cpp as ~CDDrawSubMgrPages (that IS the CDDrawSubMgrDraco
+// class - vtable dump: 0x5efe08 slot 1 = 0x1574b0 = CDDrawSubMgrPages::ScalarDtor).
 //
 // Field names are tomalla placeholders; only the OFFSETS + the emitted code
 // bytes are load-bearing (campaign doctrine).
@@ -43,7 +45,12 @@ public:
 class CDDrawSubMgr : public CDDrawSubMgrBase {
 public:
     CDDrawSubMgr(CDDrawSurfaceMgr* pSurfaceMgr, i32 a2, i32 a3);
-    virtual ~CDDrawSubMgr() OVERRIDE;
+    // NOTE: the member-teardown dtor at 0x1574d0 was NOT this class's - it is the
+    // DERIVED ~CDDrawSubMgrPages (retail ~CDDrawSubMgrDraco, vtable 0x5efe08); it now
+    // lives in CDDrawSubMgrPages.cpp. This ctor's class carries the CLoadable base
+    // vtable (0x5efc30). The inline empty dtor only keeps the ctor polymorphic so the
+    // (spurious, reloc-masked) ??_7CDDrawSubMgr vptr stamp still falls out.
+    virtual ~CDDrawSubMgr() {}
     virtual void IsReady();
     virtual i32 Init();
     virtual i32 OnDestroy();  // 0x1576c0 (state predicate, returns 1)
@@ -267,21 +274,11 @@ CDDrawSubMgr::CDDrawSubMgr(CDDrawSurfaceMgr* pSurfaceMgr, i32 a2, i32 a3) : CDDr
     m_pSurfaceMgr = pSurfaceMgr;
 }
 
-// ---------------------------------------------------------------------------
-// CDDrawSubMgr::~CDDrawSubMgr
-// Scalar-deleting destructor.  Under /GX the compiler emits a C++ EH frame
-// (push -1 / handler info / fs:0) around the body because VirtualMethod-
-// OnDestroy may throw (it calls operator delete).  After the body runs, the
-// compiler changes the vtable to the base (CObject) and chains
-// through the base destructors.
-// ---------------------------------------------------------------------------
-RVA(0x001574d0, 0x5b)
-CDDrawSubMgr::~CDDrawSubMgr() {
-    OnDestroy();
-    m_base04 = -1;
-    m_field08 = 0;
-    m_pSurfaceMgr = 0;
-}
+// NOTE: the retail member-teardown dtor at 0x1574d0 is ~CDDrawSubMgrPages (it stamps
+// the DERIVED vtable 0x5efe08 = ??_7CDDrawSubMgrDraco and calls DestroyChildren 0x158ac0,
+// NOT this ctor-class's OnDestroy) - see CDDrawSubMgrPages.cpp. The former single
+// "CDDrawSubMgr" conflated the CLoadable base arg-ctor (0x156cb0, above) with that
+// derived dtor; the split re-homes each to its real class.
 
 // Out-of-line stubs for unmatched virtuals (anchors the vtable in this TU).
 void CDDrawSubMgr::IsReady() {}

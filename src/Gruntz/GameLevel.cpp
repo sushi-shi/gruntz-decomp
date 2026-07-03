@@ -197,7 +197,7 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
     }
 
     strcpy(m_levelName, hdr->levelName); // inline strlen + rep movs
-    m_flags = *pflags;
+    m_08 = *pflags;
     m_checksum = hdr->checksum;
 
     i32 result = 0; // image-set result (the >=0 success / -1 failure sentinel)
@@ -319,7 +319,7 @@ i32 CGameLevel::IsLoaded() {
     if (m_planeCtx.minX == LEVEL_COORD_UNSET) {
         goto fail;
     }
-    if (m_owner == 0) {
+    if (m_0c == 0) {
         goto fail;
     }
     if (m_04 != -1) {
@@ -430,7 +430,7 @@ void* CGameLevel::ScalarDtor(u32 flags) {
 // Destructor: cl auto-stamps the derived vftable @0x5f0150 at dtor entry
 // (polymorphic), then runs the level cleanup, lets the three array members destruct
 // (reverse construction order), then ~CLoadable restores the base subobject
-// (resets m_04/m_flags/m_owner + the grand-base dtor vftable @0x5e8cb4). The
+// (resets m_04/m_08/m_0c + the grand-base dtor vftable @0x5e8cb4). The
 // destructible array members give the /GX EH frame.
 RVA(0x001611e0, 0x82)
 CGameLevel::~CGameLevel() {
@@ -496,7 +496,7 @@ void CGameLevel::ReleaseChildren() {
 // ---------------------------------------------------------------------------
 RVA(0x001611b0, 0x6)
 i32 CGameLevel::GetClassId() {
-    return 0x19;
+    return CLASSID_GAMELEVEL;
 }
 
 // --- the SetCoordsAndLoadNN sibling family (do not drop) -------------------
@@ -1452,7 +1452,7 @@ void CGameLevel::VisitVisible(void* visitor, i32 ctx) {
     VisitCtx* c = (VisitCtx*)ctx;
     VisitChain* chain = &c->m_chain;
 
-    if ((m_flags & 1) && chain != 0 && (m_planes.GetSize() > 0 ? m_planes.GetData()[0] : 0) != 0) {
+    if ((m_08 & 1) && chain != 0 && (m_planes.GetSize() > 0 ? m_planes.GetData()[0] : 0) != 0) {
         ((CLevelPlane*)(m_planes.GetSize() > 0 ? m_planes.GetData()[0] : 0))->Sync((i32)visitor);
         ObjNode* node = chain->head;
 
@@ -2041,7 +2041,7 @@ i32 CGameLevel::BroadPhase(ScrollTarget* tp, i32 candX, i32 candY) {
     if (!(t->flags & 0x100)) {
         return 0;
     }
-    BPNode* node = ((BPOwner*)m_owner)->mgr->head;
+    BPNode* node = ((BPOwner*)m_0c)->mgr->head;
     if (node == 0) {
         return 0;
     }
@@ -2139,7 +2139,7 @@ i32 CGameLevel::EditDispatch(void* sink, i32 arg1, i32 arg2, i32 arg3) {
 // Logic/offsets/CFG exact; deferred to the final sweep.
 RVA(0x0015dfb0, 0x15b)
 i32 CGameLevel::EditSwitch(void* target, i32 a1, i32 a2, i32 a3) {
-    if (m_flags & 4) {
+    if (m_08 & 4) {
         return ApplyScroll((CGameLevel*)target, a1, a2, a3);
     }
 
@@ -2748,7 +2748,7 @@ i32 CGameLevel::StepAxisAlt(void* target, i32 a1, i32 a2, i32* outY, i32 a3) {
     // Walk the owner's object chain (the same links BroadPhase models: owner+0x8 -> mgr,
     // mgr+0x14 -> head) and validate each candidate whose collision category (+0xe8) is
     // exactly 0x80.
-    BPNode* node = ((BPOwner*)m_owner)->mgr->head;
+    BPNode* node = ((BPOwner*)m_0c)->mgr->head;
     while (node != 0) {
         BPNode* cur = node;
         node = node->next;

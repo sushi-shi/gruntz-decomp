@@ -21,13 +21,26 @@
 // member-ctor barrier keeps one alive; the surviving store reloc-masks against the
 // retail 0x5efc30 / grand-base 0x5e8cb4 stamp).
 //
-// SLOT-1 CONVENTION: this canonical uses the (A) real-`virtual ~Dtor()` form via
-// Wap::CObject, so cl auto-generates each leaf's ??_G scalar-deleting dtor. Leaves
-// that currently hand-write an explicit `ScalarDtor(i32) OVERRIDE` on a regular-
-// virtual slot-1 (the (B) form: CGameLevel @0x1611c0, CDDrawSubMgr @0x1574d0,
-// CDDrawSubMgrLeaf @0x1577c0 via CDDrawSubMgrGrandBase) pin that ??_G body by RVA;
-// they cannot derive from this (A) base without losing that pinned match, so they
-// stay on their local base for now (documented; a final-sweep item).
+// SLOT-1 CONVENTION (why the (B) leaves stay off this base - MECHANISM): this
+// canonical uses the (A) real-`virtual ~Dtor()` form via Wap::CObject, so cl auto-
+// generates each leaf's ??_G scalar-deleting dtor. The (B) leaves instead hand-write
+// an explicit `ScalarDtor(i32) OVERRIDE` on a REGULAR-virtual slot-1 to pin ??_G by RVA:
+//   CGameLevel          ??_G @0x1611c0  (its own local (B) CLoadable, GameLevel.h)
+//   CDDrawSubMgrPages   ??_G @0x1574b0  (: CDDrawSubMgrPagesBase; the retail
+//                       ??_7CDDrawSubMgrDraco @0x5efe08 - CDDrawSubMgrDraco IS Pages,
+//                       proven by the vtable dump; the ex-"CDDrawSubMgr" dtor 0x1574d0
+//                       is ~CDDrawSubMgrPages after the split)
+//   CDDrawSubMgrLeaf    ??_G @0x1577c0  (: CDDrawSubMgrGrandBase)
+// These CANNOT derive from this (A) base without losing the pinned ??_G, for two
+// hard C++/tooling reasons: (1) a real virtual-dtor slot-1 cannot be OVERRIDDEN by a
+// non-dtor `ScalarDtor` method, so the leaf can't place its explicit ??_G at slot 1;
+// (2) switching them to (A) makes cl AUTO-generate the ??_G, which rva.h cannot RVA-pin
+// (it binds a symbol only through a source function def / @llvm.global.annotations
+// carrier) -> the currently-100% ??_G drops out of the matched set. So the (B) leaves
+// keep a local (B)-form grand-base (regular-virtual slot-1 ScalarDtor:
+// CDDrawSubMgrGrandBase / CDDrawSubMgrPagesBase / GameLevel's CLoadable). Full
+// unification is a final-sweep item that must flip the ENTIRE CLoadable family (incl.
+// matcher-6's (A) leaves) to the (B) explicit-ScalarDtor form.
 //
 // Field names are placeholders; only offsets + emitted bytes are load-bearing.
 #ifndef GRUNTZ_CLOADABLE_H

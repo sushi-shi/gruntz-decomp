@@ -124,17 +124,39 @@ public:
 // forward decl suffices.
 class CParseSource;
 
+// CGameLevel::GetClassId (slot 8) type tag. Mirrors the canonical
+// LoadableClassId enum in <Gruntz/CLoadable.h> (CLASSID_GAMELEVEL = 0x19); named
+// here rather than pulled in because this TU keeps its own (B)-form CLoadable
+// struct below (a second `class CLoadable` would ODR-clash the canonical one).
+// A named enumerator lowers to the same `mov eax,0x19` immediate (matching-neutral).
+enum LoadableClassId {
+    CLASSID_GAMELEVEL = 0x19, // CGameLevel::GetClassId @0x1611b0 (mov eax,0x19)
+};
+
 // ---------------------------------------------------------------------------
-// CLoadable - the engine base CGameLevel derives from. Its 9-slot base
-// vftable is @0x5efc30 (the same CLoadable realized in
-// CDDrawWorkerRegistry.cpp). REAL-POLYMORPHIC: the 9 base virtual slots are
-// declared here (the engine-thunk slots declared-only; the four CGameLevel
-// specializes as overridable virtuals). The INLINE ctor stores the three args
-// (cl AUTO-stamps the base vptr &??_7CLoadable - an orphan reloc-masked
-// against retail 0x5efc30, since 0x5efc30 is already VTBL(CLoadable));
-// the INLINE dtor resets the fields then restamps the grand-base teardown vftable
+// CLoadable - the engine base CGameLevel derives from. Its 9-slot base vftable
+// is @0x5efc30 (the SAME class the canonical <Gruntz/CLoadable.h> models; slots
+// verified against the retail vtable: [1] 0x155720 ??_G, [5] 0x155700 IsLoaded,
+// [7] 0x155740 Unload, [8] 0x154a00 GetClassId).
+//
+// (B)-FORM DEFERRAL (why this local struct, not the canonical CLoadable): this
+// models slot 1 as a REGULAR-virtual `ScalarDtor(u32)` so CGameLevel can OVERRIDE
+// it with an explicit `void* ScalarDtor(u32) OVERRIDE` whose ??_G body is RVA-
+// pinned at 0x1611c0 (100% exact). The canonical CLoadable derives from
+// CWapObj : Wap::CObject whose slot 1 is a REAL `virtual ~()`. A real-dtor slot 1
+// cannot be overridden by a non-dtor `ScalarDtor` in C++; switching CGameLevel to
+// the canonical (A) form would force cl to AUTO-generate the ??_G, which rva.h
+// cannot RVA-pin (it needs a source definition for the @llvm.global.annotations
+// carrier) -> the currently-100% ??_G would drop out of the matched set. So the
+// (B) leaf keeps its local base (documented deferral; a final-sweep item that
+// needs the whole CLoadable family flipped to the (B) explicit-ScalarDtor form).
+//
+// The INLINE ctor stores the three args (cl AUTO-stamps the base vptr
+// &??_7CLoadable - an orphan reloc-masked against retail 0x5efc30); the INLINE
+// dtor resets the fields then restamps the grand-base teardown vftable
 // (g_wapObjectDtorVtbl @0x5e8cb4). Both fold into the derived CGameLevel
-// ctor/dtor, giving retail's classic two-phase vptr-store schedule.
+// ctor/dtor, giving retail's classic two-phase vptr-store schedule. Field names
+// (m_04/m_08/m_0c) mirror the canonical CLoadable header.
 // ---------------------------------------------------------------------------
 extern void* g_wapObjectDtorVtbl; // base vftable restored by ~CLoadable (@0x5e8cb4)
 
@@ -151,8 +173,8 @@ struct CLoadable {
 
     CLoadable(i32 a1, i32 a2, i32 a3) {
         m_04 = a2;
-        m_flags = a3;
-        m_owner = a1;
+        m_08 = a3;
+        m_0c = a1;
     }
     // The base-subobject destructor: resets the three base fields and restores the
     // grand-base teardown vftable. INLINE (in the header) so it folds into
@@ -160,19 +182,19 @@ struct CLoadable {
     // emitted the base-dtor tail (a different table from the ctor's @0x5efc30).
     ~CLoadable() {
         m_04 = -1;
-        m_flags = 0;
-        m_owner = 0;
+        m_08 = 0;
+        m_0c = 0;
         *(void**)this = &g_wapObjectDtorVtbl;
     }
-    i32 m_04;    // +0x04  (ctor arg2; reset to -1 on dtor, checked ==-1 by IsLoaded)
-    i32 m_flags; // +0x08  (== WwdHeader::flags after LoadWwd; arg3 at ctor)
-    i32 m_owner; // +0x0c  (ctor arg1; the owning context, checked nonzero by IsLoaded)
+    i32 m_04; // +0x04  (ctor arg2; reset to -1 on dtor, checked ==-1 by IsLoaded)
+    i32 m_08; // +0x08  (== WwdHeader::flags after LoadWwd; arg3 at ctor)
+    i32 m_0c; // +0x0c  (ctor arg1; the owning context, checked nonzero by IsLoaded)
 };
 
 // ---------------------------------------------------------------------------
 // CGameLevel - the level container. Member offsets pinned from LoadWwd:
 //   +0x00 vtable           (slot 0x44 = the pre-load reset, slot 0x38 = LoadWwd)
-//   +0x08 m_flags          = WwdHeader::flags
+//   +0x08 m_08             = WwdHeader::flags
 //   +0x10 m_planeCtx       &m_planeCtx -> CPlane::Read 3rd arg (the shared ctx)
 //   +0x34 m_planes         CArray<CPlane*>  (m_data@+0x38, m_size@+0x3c)
 //   +0x3c m_planeCount     == m_planes.m_size (the running plane count/index)
@@ -288,7 +310,7 @@ public:
     // Forwards a method (vtable +0x28/+0x2c) across every plane.
     void NotifyAllPlanes();
 
-    // VisitVisible: when this level is flagged origin-fixed (m_flags & 1) walk ctx's
+    // VisitVisible: when this level is flagged origin-fixed (m_08 & 1) walk ctx's
     // object chain dispatching each object's +0x2c hook (above a depth cap) and Sync
     // the planes; otherwise Sync every plane and dispatch ctx's +0x28 hook. `visitor`
     // is the arg every dispatch receives; `ctx` owns the chain.
@@ -356,7 +378,7 @@ private:
 
 public:
     // vptr@+0x00 (implicit, CGameLevel is polymorphic); +0x04..+0x0c are the
-    // CLoadable members (m_04/m_flags/m_owner); the plane-read ctx begins at +0x10.
+    // CLoadable members (m_04/m_08/m_0c); the plane-read ctx begins at +0x10.
     LevelCoordRect m_planeCtx; // +0x10  plane-read ctx / coord record (LoadWwd 3rd arg)
     CByteArray m_array20;      // +0x20  (built by the ctor; EH state 0)
     CArray<CLevelPlane*, CLevelPlane*>
