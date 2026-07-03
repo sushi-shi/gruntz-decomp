@@ -29,7 +29,7 @@ i32 CMenuItem2::Init(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
     if (!CMenuItem::Init(a0, a1, a2, a3, a4, a5)) {
         return 0;
     }
-    m_68 = 0;
+    m_frameIdx = 0;
     m_6c = 0;
     m_70 = 0x64;
 
@@ -38,18 +38,18 @@ i32 CMenuItem2::Init(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
 
     sprintf(name, "%s_NORMAL", (const char*)a2);
     sprite = 0;
-    m_4->m_10->m_10.Lookup(name, sprite);
-    m_5c = (CMenuSprite*)sprite;
+    m_owner->m_10->m_10.Lookup(name, sprite);
+    m_spriteNormal = (CMenuSprite*)sprite;
 
     sprintf(name, "%s_SELECTED", (const char*)a2);
     sprite = 0;
-    m_4->m_10->m_10.Lookup(name, sprite);
-    m_60 = (CMenuSprite*)sprite;
+    m_owner->m_10->m_10.Lookup(name, sprite);
+    m_spriteSelected = (CMenuSprite*)sprite;
 
     sprintf(name, "%s_DISABLED", (const char*)a2);
     sprite = 0;
-    m_4->m_10->m_10.Lookup(name, sprite);
-    m_64 = (CMenuSprite*)sprite;
+    m_owner->m_10->m_10.Lookup(name, sprite);
+    m_spriteDisabled = (CMenuSprite*)sprite;
 
     return 1;
 }
@@ -63,9 +63,9 @@ i32 CMenuItem2::Init(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
 RVA(0x001858d0, 0x72)
 i32 CMenuItem2::Place(i32 ctx, i32 x, i32 y) {
     i32 py, px;
-    if (m_44 != (i32)0xeeeeeeee) {
-        py = m_44;
-        px = m_48;
+    if (m_fixedX != (i32)0xeeeeeeee) {
+        py = m_fixedX;
+        px = m_fixedY;
     } else {
         py = x;
         px = y;
@@ -75,23 +75,23 @@ i32 CMenuItem2::Place(i32 ctx, i32 x, i32 y) {
         return 0;
     }
     f->RenderFrame((void*)ctx, (void*)py, (void*)px, 0);
-    m_34 = py - f->m_anchorX;
-    m_3c = py + f->m_anchorX;
-    m_38 = px - f->m_anchorY;
-    m_40 = px + f->m_anchorY;
+    m_hitLeft = py - f->m_anchorX;
+    m_hitRight = py + f->m_anchorX;
+    m_hitTop = px - f->m_anchorY;
+    m_hitBottom = px + f->m_anchorY;
     return 1;
 }
 
 // pick the sprite for the current visual state (m_24: 1/2/3).
 RVA(0x00185950, 0x1b)
 CMenuSprite* CMenuItem2::GetCurrentSprite() {
-    switch (m_24) {
+    switch (m_state) {
         case 1:
-            return m_5c;
+            return m_spriteNormal;
         case 2:
-            return m_60;
+            return m_spriteSelected;
         case 3:
-            return m_64;
+            return m_spriteDisabled;
     }
     return 0;
 }
@@ -109,12 +109,12 @@ CImage* CMenuItem2::GetCurrentFrame() {
     if (!s) {
         return 0;
     }
-    CImage* f = s->GetAt(m_68);
+    CImage* f = s->GetAt(m_frameIdx);
     if (f) {
         return f;
     }
-    m_68 = s->m_64;
-    return s->GetAt(m_68);
+    m_frameIdx = s->m_firstFrame;
+    return s->GetAt(m_frameIdx);
 }
 
 // advance the cursor one frame; when the looping flag (0x10000) is clear
@@ -124,12 +124,12 @@ i32 CMenuItem2::NextFrame() {
     if (!GetCurrentFrame()) {
         return 0;
     }
-    m_68 = m_68 + 1;
-    if (m_20 & 0x10000) {
+    m_frameIdx = m_frameIdx + 1;
+    if (m_flags & 0x10000) {
         CMenuSprite* s = GetCurrentSprite();
         if (s) {
-            if (m_68 > s->m_68) {
-                m_68 = m_68 - 1;
+            if (m_frameIdx > s->m_lastFrame) {
+                m_frameIdx = m_frameIdx - 1;
                 return 1;
             }
         }

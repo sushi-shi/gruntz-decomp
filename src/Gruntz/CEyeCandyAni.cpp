@@ -15,13 +15,13 @@ extern CButeTree g_buteTree;
 // body byte-identical; residual is the /GX leaf-vptr re-stamp position + EH-state ids.
 RVA(0x000ac870, 0x20e)
 CEyeCandyAni::CEyeCandyAni(CGameObject* obj) : CUserLogic(obj) {
-    m_30 = m_14->m_1c;
-    m_14->m_1c = g_buteTree.Find("A");
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find("A");
     if (m_38->m_1b4 == 0) {
         m_40 = m_38->m_1b4;
         m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     }
-    CGameObject* o = m_10;
+    CGameObject* o = m_object;
     if (o->m_74 == 0 && o->m_198 != 0) {
         i32 v = o->m_198->m_1c + o->m_60 + 0x186a0;
         if (o->m_74 != v) {
@@ -29,13 +29,13 @@ CEyeCandyAni::CEyeCandyAni(CGameObject* obj) : CUserLogic(obj) {
             o->m_08 |= 0x20000;
         }
     }
-    CGameObjLayer* aux = m_10->m_198;
+    CGameObjLayer* aux = m_object->m_198;
     if (aux != 0) {
         if (aux->m_10 >= g_buteMgr.GetInt("World", "BigActHeight")
-            || m_10->m_198->m_14 >= g_buteMgr.GetInt("World", "BigActHeight")) {
-            if (m_10->m_7c != 0) {
-                m_10->m_7c->m_08 &= ~6;
-                m_10->m_7c->m_08 |= 1;
+            || m_object->m_198->m_14 >= g_buteMgr.GetInt("World", "BigActHeight")) {
+            if (m_object->m_7c != 0) {
+                m_object->m_7c->m_08 &= ~6;
+                m_object->m_7c->m_08 |= 1;
                 m_38->m_08 &= ~0x1000002;
                 m_38->m_08 |= 0x800000;
             }

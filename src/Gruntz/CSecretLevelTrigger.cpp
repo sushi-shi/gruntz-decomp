@@ -126,10 +126,10 @@ void CSecretLevelTrigger::RegisterActs() {
 RVA(0x00042ac0, 0x90)
 i32 CSecretLevelTrigger::Tick() {
     i32 outA, outB;
-    CGameObject* spr = m_10;
+    CGameObject* spr = m_object;
     CTrigger* hit = ((CTriggerSink*)g_gameReg->m_68)->Probe(spr->m_5c, spr->m_60, &outB, &outA, 1);
     if (hit) {
-        spr = m_10;
+        spr = m_object;
         i32 ok = 1;
         i32 lvl = spr->m_11c;
         i32 lyr = spr->m_120;

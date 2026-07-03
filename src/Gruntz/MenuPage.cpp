@@ -163,7 +163,7 @@ void* CMenuPage::Append(CMenuItem* item) {
     if (!item) {
         return 0;
     }
-    item->m_2c = m_items.AddTail(item);
+    item->m_listPos = m_items.AddTail(item);
     return (void*)1;
 }
 
@@ -206,7 +206,7 @@ i32 CMenuPage::RestoreFocus() {
                 CString name = item->GetName();
                 bool match = strcmp(name, m_focusName) == 0;
                 if (match) {
-                    i32 k = item->m_24;
+                    i32 k = item->m_state;
                     if (k == 1 || k == 2) {
                         if (SetFocus(item, 0)) {
                             return 1;
@@ -222,7 +222,7 @@ i32 CMenuPage::RestoreFocus() {
         node = node->pNext;
         CMenuItem* item = cur->data;
         if (item) {
-            i32 k = item->m_24;
+            i32 k = item->m_state;
             if (k == 1 || k == 2) {
                 if (SetFocus(item, 0)) {
                     return 1;
@@ -239,7 +239,7 @@ i32 CMenuPage::SetFocus(CMenuItem* item, i32 notify) {
     if (!item) {
         return 0;
     }
-    i32 kind = item->m_24;
+    i32 kind = item->m_state;
     if (kind == 2) {
         return 1;
     }
@@ -280,7 +280,7 @@ i32 CMenuPage::FocusNext() {
     if (!m_focus) {
         return 0;
     }
-    CMenuListNode* pos = (CMenuListNode*)m_focus->m_2c;
+    CMenuListNode* pos = (CMenuListNode*)m_focus->m_listPos;
     if (!pos) {
         return 0;
     }
@@ -291,7 +291,7 @@ i32 CMenuPage::FocusNext() {
         node = node->pPrev;
         found = cur->data;
         if (found) {
-            i32 k = found->m_24;
+            i32 k = found->m_state;
             if (k == 1 || k == 2) {
                 break;
             }
@@ -302,7 +302,7 @@ i32 CMenuPage::FocusNext() {
         if (!CanWrap()) {
             return 0;
         }
-        CMenuListNode* p2 = (CMenuListNode*)m_focus->m_2c;
+        CMenuListNode* p2 = (CMenuListNode*)m_focus->m_listPos;
         if (!p2) {
             return 0;
         }
@@ -312,7 +312,7 @@ i32 CMenuPage::FocusNext() {
             n2 = n2->pNext;
             CMenuItem* it = cur->data;
             if (it) {
-                i32 k = it->m_24;
+                i32 k = it->m_state;
                 if (k == 1 || k == 2) {
                     found = it;
                 }
@@ -322,7 +322,7 @@ i32 CMenuPage::FocusNext() {
             return 0;
         }
     }
-    i32 kind = found->m_24;
+    i32 kind = found->m_state;
     if (kind != 1 && kind != 2) {
         return 0;
     }
@@ -341,7 +341,7 @@ i32 CMenuPage::FocusPrev() {
     if (!m_focus) {
         return 0;
     }
-    CMenuListNode* pos = (CMenuListNode*)m_focus->m_2c;
+    CMenuListNode* pos = (CMenuListNode*)m_focus->m_listPos;
     if (!pos) {
         return 0;
     }
@@ -352,7 +352,7 @@ i32 CMenuPage::FocusPrev() {
         node = node->pNext;
         found = cur->data;
         if (found) {
-            i32 k = found->m_24;
+            i32 k = found->m_state;
             if (k == 1 || k == 2) {
                 break;
             }
@@ -363,7 +363,7 @@ i32 CMenuPage::FocusPrev() {
         if (!CanWrap()) {
             return 0;
         }
-        CMenuListNode* p2 = (CMenuListNode*)m_focus->m_2c;
+        CMenuListNode* p2 = (CMenuListNode*)m_focus->m_listPos;
         if (!p2) {
             return 0;
         }
@@ -373,7 +373,7 @@ i32 CMenuPage::FocusPrev() {
             n2 = n2->pPrev;
             CMenuItem* it = cur->data;
             if (it) {
-                i32 k = it->m_24;
+                i32 k = it->m_state;
                 if (k == 1 || k == 2) {
                     found = it;
                 }
@@ -383,7 +383,7 @@ i32 CMenuPage::FocusPrev() {
             return 0;
         }
     }
-    i32 kind = found->m_24;
+    i32 kind = found->m_state;
     if (kind != 1 && kind != 2) {
         return 0;
     }
@@ -429,7 +429,7 @@ i32 CMenuPage::Layout(i32 ctx) {
         if (item) {
             y += item->GetWidth() / 2;
             item->Place(ctx, x, y);
-            if (item->m_24 == 2 && !(m_flags & 8)) {
+            if (item->m_state == 2 && !(m_flags & 8)) {
                 m_host->Draw(ctx, item, x, y);
             }
             y += item->GetWidth() / 2;
@@ -521,7 +521,7 @@ i32 CMenuPage::LayoutOne(i32 ctx) {
         if (item) {
             y += item->GetWidth() / 2;
             item->Place(ctx, col, y);
-            if (item->m_24 == 2 && !(m_flags & 8)) {
+            if (item->m_state == 2 && !(m_flags & 8)) {
                 m_host->Draw(ctx, item, col, y);
             }
             y += item->GetWidth() / 2;
@@ -549,7 +549,7 @@ i32 CMenuPage::FocusForwardN() {
     if (!(m_flags & 4)) {
         return 0;
     }
-    CMenuListNode* pos = (CMenuListNode*)cur->m_2c;
+    CMenuListNode* pos = (CMenuListNode*)cur->m_listPos;
     if (!pos) {
         return 0;
     }
@@ -570,7 +570,7 @@ i32 CMenuPage::FocusForwardN() {
     if (!found) {
         return 0;
     }
-    i32 k = found->m_24;
+    i32 k = found->m_state;
     if (k != 1 && k != 2) {
         return 0;
     }
@@ -590,7 +590,7 @@ i32 CMenuPage::FocusBackwardN() {
     if (!(m_flags & 4)) {
         return 0;
     }
-    CMenuListNode* pos = (CMenuListNode*)cur->m_2c;
+    CMenuListNode* pos = (CMenuListNode*)cur->m_listPos;
     if (!pos) {
         return 0;
     }
@@ -611,7 +611,7 @@ i32 CMenuPage::FocusBackwardN() {
     if (!found) {
         return 0;
     }
-    i32 k = found->m_24;
+    i32 k = found->m_state;
     if (k != 1 && k != 2) {
         return 0;
     }
@@ -706,10 +706,10 @@ i32 CMenuPage::SelectFwd2() {
     if (!m_focus) {
         return 0;
     }
-    CString key = m_focus->GetField4c();
+    CString key = m_focus->GetNavFwdName();
     CMenuItem* item = FindByName((const char*)key);
     if (item) {
-        i32 k = item->m_24;
+        i32 k = item->m_state;
         if (k != 1 && k != 2) {
             return 0;
         }
@@ -729,10 +729,10 @@ i32 CMenuPage::SelectBack2() {
     if (!m_focus) {
         return 0;
     }
-    CString key = m_focus->GetField50();
+    CString key = m_focus->GetNavBackName();
     CMenuItem* item = FindByName((const char*)key);
     if (item) {
-        i32 k = item->m_24;
+        i32 k = item->m_state;
         if (k != 1 && k != 2) {
             return 0;
         }
@@ -757,7 +757,7 @@ i32 CMenuPage::SelectForward() {
     CString key;
     CMenuItem* item = FindByName(*MenuPage_KeyFwd(this, &key));
     if (item) {
-        i32 k = item->m_24;
+        i32 k = item->m_state;
         if (k != 1 && k != 2) {
             return 0;
         }
@@ -781,7 +781,7 @@ i32 CMenuPage::SelectBackward() {
     CString key;
     CMenuItem* item = FindByName(*MenuPage_KeyBack(this, &key));
     if (item) {
-        i32 k = item->m_24;
+        i32 k = item->m_state;
         if (k != 1 && k != 2) {
             return 0;
         }
@@ -836,7 +836,7 @@ CMenuItem* CMenuPage::AddSubItem(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5)
         return 0;
     }
     item->m_1c = a4;
-    *(i32*)((char*)item + 0x30) = a5;
+    item->m_cmdParam = a5;
     return Append(item) ? item : 0;
 }
 
@@ -882,7 +882,7 @@ CMenuItem2* CMenuPage::AddSubItem2(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a
         return 0;
     }
     item->SetFrame(a7);
-    *(i32*)((char*)item + 0x30) = a2;
+    item->m_cmdParam = a2;
     item->m_1c = a3;
     return Append(item) ? item : 0;
 }

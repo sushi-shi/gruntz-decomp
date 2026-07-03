@@ -78,55 +78,55 @@ RVA(0x000b1200, 0x2cb)
 // ordering is not steerable from C (same wall as CSpotLight::Update @0xb1ee0).
 // Logic complete; deferred to the final sweep.
 CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj) {
-    m_30 = m_14->m_1c;
-    m_14->m_1c = g_buteTree.Find("A");
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find("A");
     m_38->m_08 |= 2;
 
-    i32 ax = (m_10->m_5c & ~0x1f) + 0x10;
-    i32 cx = (m_10->m_60 & ~0x1f) + 0x10;
+    i32 ax = (m_object->m_5c & ~0x1f) + 0x10;
+    i32 cx = (m_object->m_60 & ~0x1f) + 0x10;
     m_70 = (double)ax;
     m_78 = (double)cx;
     i32 nx;
-    if (m_10->m_124 == 0) {
+    if (m_object->m_124 == 0) {
         nx = ax - 0x20;
     } else {
-        nx = ax - m_10->m_124 * 32;
+        nx = ax - m_object->m_124 * 32;
     }
-    m_10->m_5c = nx;
-    m_10->m_60 = cx;
+    m_object->m_5c = nx;
+    m_object->m_60 = cx;
     m_60 = (double)nx;
     m_68 = m_78;
-    if (m_10->m_74 != 0xcf850) {
-        m_10->m_74 = 0xcf850;
-        m_10->m_08 |= 0x20000;
+    if (m_object->m_74 != 0xcf850) {
+        m_object->m_74 = 0xcf850;
+        m_object->m_08 |= 0x20000;
     }
     m_80 = m_70 - m_60;
     m_88 = m_78 - m_68;
 
     u32 v;
-    if (m_10->m_120 == 0) {
+    if (m_object->m_120 == 0) {
         v = g_buteMgr.GetDwordDef("Hazardz", "SpotLightTime", 0xbb8);
     } else {
-        v = m_10->m_120;
+        v = m_object->m_120;
     }
     m_58 = g_spotRateNum / (double)(u32)v;
-    if (m_10->m_12c == 1) {
+    if (m_object->m_12c == 1) {
         m_58 = m_58 * g_spotRateMul;
     }
-    if (m_10->m_118 == 1) {
+    if (m_object->m_118 == 1) {
         m_90 = 3.1415927;
     } else {
         m_90 = 0;
     }
-    i32 looked = g_mgrSettings->m_78->m_arr[m_10->m_11c];
-    m_10->m_58 = 1;
-    m_10->m_50 = 7;
-    m_10->m_4c = looked;
+    i32 looked = g_mgrSettings->m_78->m_arr[m_object->m_11c];
+    m_object->m_58 = 1;
+    m_object->m_50 = 7;
+    m_object->m_4c = looked;
     m_98 = 0;
-    m_10->m_144 = 0;
-    m_10->m_14c = 0;
-    m_10->m_148 = 0;
-    m_10->m_150 = 0;
+    m_object->m_144 = 0;
+    m_object->m_14c = 0;
+    m_object->m_148 = 0;
+    m_object->m_150 = 0;
     m_9c = -1;
     m_a0 = -1;
     m_a4 = 0;

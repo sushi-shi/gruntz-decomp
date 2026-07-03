@@ -211,7 +211,7 @@ i32 CWarlord::LoadAttributes() {
 
     CGameRegistry* reg = g_gameReg;
     if (reg->m_134 != 1) {
-        CGameObject* o = m_10;
+        CGameObject* o = m_object;
         i32 dist = ((CRegThreatHelper*)reg->m_68)->NearestEnemyDist(o->m_124, o->m_5c, o->m_60);
         if (dist < g_buteMgr.GetIntDef("Warlordz", "PanicRadius", 0x40)) {
             NotifyFortUnderAttack();
@@ -253,7 +253,7 @@ i32 CWarlord::LoadAttributes2() {
 
     CGameRegistry* reg = g_gameReg;
     if (reg->m_134 != 1) {
-        CGameObject* o = m_10;
+        CGameObject* o = m_object;
         i32 dist = ((CRegThreatHelper*)reg->m_68)->NearestEnemyDist(o->m_124, o->m_5c, o->m_60);
         if (dist >= g_buteMgr.GetIntDef("Warlordz", "PanicRadius", 0x40)) {
             RaiseBattleAlert();
@@ -265,7 +265,7 @@ i32 CWarlord::LoadAttributes2() {
             return 0;
         }
         if ((i64)(u32)g_645588 - *(i64*)&m_88 >= *(i64*)&m_90) {
-            ((CRegBattleEvent*)reg->m_cueSink)->PostBattleEvent(m_10->m_188, 0x436, -1, -1, -1);
+            ((CRegBattleEvent*)reg->m_cueSink)->PostBattleEvent(m_object->m_188, 0x436, -1, -1, -1);
             m_90 = 0x7530;
             m_94 = 0;
             m_88 = g_645588;

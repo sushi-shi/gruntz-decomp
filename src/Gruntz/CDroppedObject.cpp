@@ -162,20 +162,20 @@ extern CButeMgr g_buteMgr;
 // source-steerable. Parked for the final sweep.
 RVA(0x000c68b0, 0x1f5)
 CDroppedObject::CDroppedObject(CGameObject* obj) : CUserLogic(obj) {
-    m_30 = m_14->m_1c;
-    m_14->m_1c = g_buteTree.Find("A");
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find("A");
     m_38->ApplyName("LEVEL_OBJECTDROPPER_OBJECT");
     m_40 = m_38->m_1b4;
     m_38->ApplyLookupGeometry("LEVEL_DROPPEDOBJECT", 0);
     m_38->m_08 |= 0x2000002;
-    i32 adjY = (m_10->m_60 & ~0x1f) + 0x10;
+    i32 adjY = (m_object->m_60 & ~0x1f) + 0x10;
     m_68 = adjY;
-    m_10->m_5c = (m_10->m_5c & ~0x1f) + 0x10;
-    m_10->m_60 = adjY - g_buteMgr.GetIntDef("Hazardz", "DroppedObjectYOffset", 0x140);
-    m_60 = (double)m_10->m_60;
-    if (m_10->m_74 != 0xcf851) {
-        m_10->m_74 = 0xcf851;
-        m_10->m_08 |= 0x20000;
+    m_object->m_5c = (m_object->m_5c & ~0x1f) + 0x10;
+    m_object->m_60 = adjY - g_buteMgr.GetIntDef("Hazardz", "DroppedObjectYOffset", 0x140);
+    m_60 = (double)m_object->m_60;
+    if (m_object->m_74 != 0xcf851) {
+        m_object->m_74 = 0xcf851;
+        m_object->m_08 |= 0x20000;
     }
     m_58 = 32.0 / (double)(u32)g_buteMgr.GetDwordDef("Hazardz", "DroppedObjectTimePerTile", 0x3e8);
 }
@@ -324,7 +324,7 @@ i32 CDroppedObject::ActA() {
     m_60 = (double)g_645584 * m_58 + m_60;
     i32 landed = (i32)(m_60 - g_dropFallBias);
     if (landed > m_68) {
-        i32 x = m_10->m_5c;
+        i32 x = m_object->m_5c;
         DropGrid* g = (DropGrid*)g_gameReg->m_tileGrid;
         i32 cell;
         {
@@ -381,12 +381,12 @@ i32 CDroppedObject::ActA() {
         }
         m_40 = m_38->m_1b4;
         m_38->ApplyLookupGeometry("LEVEL_DROPPEDOBJECTHIT", 0);
-        m_30 = m_14->m_1c;
-        m_14->m_1c = g_buteTree.Find(s_actKeyB);
-        ((DropTileMgr*)g_gameReg->m_68)->PostMove(m_10->m_5c, m_68, 1, 7, -1);
+        m_prevAnimSetNode = m_objAux->m_1c;
+        m_objAux->m_1c = g_buteTree.Find(s_actKeyB);
+        ((DropTileMgr*)g_gameReg->m_68)->PostMove(m_object->m_5c, m_68, 1, 7, -1);
         return 0;
     }
-    m_10->m_60 = landed;
+    m_object->m_60 = landed;
     return 0;
 }
 

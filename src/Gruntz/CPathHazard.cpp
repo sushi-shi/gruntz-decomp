@@ -133,7 +133,7 @@ CPathHazard::~CPathHazard() {}
 // arrays (the 12 ints at +0x134, the 4 ints at +0x64, and the 8 ints at
 // m_7c->+0xf0). The hazard scales each tile coordinate to a pixel centre
 // (coord*0x20 + 0x10). Only the touched offsets are modeled.
-struct CPathCtorSub { // m_10->m_7c (the per-tile-time + extra waypoint owner)
+struct CPathCtorSub { // m_object->m_7c (the per-tile-time + extra waypoint owner)
     char m_pad00[0xbc];
     i32 m_bc; // +0xbc per-tile time (0 -> read PathHazardTimePerTile)
     char m_padc0[0xf0 - 0xc0];
@@ -179,7 +179,7 @@ CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj) {
 
     m_38->m_08 |= 0x2000002;
 
-    CPathCtorObj* o = (CPathCtorObj*)m_10;
+    CPathCtorObj* o = (CPathCtorObj*)m_object;
     i32 snapX = (o->m_5c & ~0x1f) + 0x10;
     i32 snapY = (o->m_60 & ~0x1f) + 0x10;
     o->m_5c = snapX;
@@ -240,8 +240,8 @@ CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj) {
     if (StartPath() == 0) {
         m_38->m_08 |= 0x10000;
     } else {
-        m_30 = m_14->m_1c;
-        m_14->m_1c = g_buteTree.Find("A");
+        m_prevAnimSetNode = m_objAux->m_1c;
+        m_objAux->m_1c = g_buteTree.Find("A");
         m_savedGeoId = m_38->m_1b4;
         m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     }
@@ -263,7 +263,7 @@ RVA(0x000b4020, 0x26c)
 i32 CPathHazard::Tick() {
     ((CPathSubMgr*)((char*)m_38 + 0x1a0))->Advance(g_pathTick);
 
-    CGameObject* obj = m_10;
+    CGameObject* obj = m_object;
     // The probe rect (a 4-int local) the on-screen query tests, computed
     // unconditionally: {left, top, right, bottom} around the bound object's
     // screen position, inset by the layer base (m_198->m_18/m_1c, re-read each
@@ -289,7 +289,7 @@ i32 CPathHazard::Tick() {
         }
     }
 
-    CGameObject* m10 = m_10;
+    CGameObject* m10 = m_object;
     i32 wx = m_wpX;
     if (m10->m_5c == wx) {
         i32 wy = m_wpY;
@@ -299,14 +299,14 @@ i32 CPathHazard::Tick() {
             m_posY = (double)wy;
             CPathHazardVtbl* vt = *(CPathHazardVtbl**)this;
             (this->*(vt->Arrive))();
-            i32 segs = m_10->m_120;
+            i32 segs = m_object->m_120;
             if (segs > 0) {
                 m_legSegs = segs;
                 m_legSegsHi = 0;
                 m_legTag = g_pathLegTag;
                 m_legTagHi = 0;
-                m_30 = (void*)m_14->m_1c;
-                m_14->m_1c = g_buteTree.Find(g_iconBute);
+                m_prevAnimSetNode = (void*)m_objAux->m_1c;
+                m_objAux->m_1c = g_buteTree.Find(g_iconBute);
                 return 0;
             }
             (this->*(vt->BeginLeg))();
@@ -341,8 +341,8 @@ i32 CPathHazard::Tick() {
         }
     }
 
-    m_10->m_5c = newX;
-    m_10->m_60 = newY;
+    m_object->m_5c = newX;
+    m_object->m_60 = newY;
     return 0;
 }
 
@@ -372,7 +372,7 @@ i32 CLightningHazard::SiblingTick() {
         } else if (g_strikeThresh < 0x64) {
             sel = 0;
         }
-        CGameObject* o = m_10;
+        CGameObject* o = m_object;
         o->m_58 = 1;
         o->m_50 = 7;
         o->m_4c = ((i32*)g_lightGameReg->m_78)[sel + 5]; // [m_78 + sel*4 + 0x14]
@@ -380,7 +380,7 @@ i32 CLightningHazard::SiblingTick() {
 
     ((CPathSubMgr*)((char*)m_38 + 0x1a0))->Advance(g_pathTick);
 
-    CGameObject* obj = m_10;
+    CGameObject* obj = m_object;
     i32 rect[4];
     rect[0] = obj->m_5c - obj->m_198->m_18 + 7;
     rect[2] = obj->m_198->m_18 + obj->m_5c - 7;
@@ -406,14 +406,14 @@ i32 CLightningHazard::SiblingTick() {
 
     i64 legElapsed = (i64)(u32)g_strikeClock - m_legDeadline;
     if (legElapsed >= m_legWindow) {
-        CGameObject* o = m_10;
+        CGameObject* o = m_object;
         o->m_58 = 1;
         o->m_50 = 7;
         o->m_4c = ((i32*)g_lightGameReg->m_78)[0xa]; // [m_78 + 0x28]
         CLightVtbl* vt = *(CLightVtbl**)this;
         (this->*(vt->BeginLeg))();
-        m_30 = (void*)m_14->m_1c;
-        m_14->m_1c = g_buteTree.Find("A");
+        m_prevAnimSetNode = (void*)m_objAux->m_1c;
+        m_objAux->m_1c = g_buteTree.Find("A");
         m_strikeArmed = 0;
     }
     return 0;
@@ -435,7 +435,7 @@ i32 CLightningHazard::ArmStrike(i32 a, i32 b) {
     m_strikeDeadline = (i64)(u32)g_strikeClock;
     ((CPathCueGate*)g_lightGameReg->m_68)->Strike(a, b, 9, -1);
 
-    CGameObject* obj = m_10;
+    CGameObject* obj = m_object;
     CGameRegistry* reg = g_lightGameReg;
     i32 y = obj->m_60;
     i32 x = obj->m_5c;
@@ -472,7 +472,7 @@ i32 CLightningHazard::ArmStrike(i32 a, i32 b) {
 // every offset / immediate / branch matches retail. Logic byte-for-byte correct.
 RVA(0x000b47e0, 0x170)
 i32 CPathHazard::BeginLeg() {
-    CGameObject* obj = m_10;
+    CGameObject* obj = m_object;
     i32 idx = m_wpIndex;
     i32 wx = m_wp[idx].x;
     m_wpX = wx;

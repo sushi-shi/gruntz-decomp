@@ -36,13 +36,13 @@ CDoNothing::~CDoNothing() {}
 RVA(0x000ac1d0, 0x1a5)
 CDoNothing::CDoNothing(CGameObject* obj) : CUserLogic(obj) {
     m_38->m_08 |= 1;
-    CGameObjLayer* aux = m_10->m_198;
+    CGameObjLayer* aux = m_object->m_198;
     if (aux != 0) {
         if (aux->m_10 >= g_buteMgr.GetInt("World", "BigActHeight")
-            || m_10->m_198->m_14 >= g_buteMgr.GetInt("World", "BigActHeight")) {
-            if (m_10->m_7c != 0) {
-                m_10->m_7c->m_08 &= ~6;
-                m_10->m_7c->m_08 |= 1;
+            || m_object->m_198->m_14 >= g_buteMgr.GetInt("World", "BigActHeight")) {
+            if (m_object->m_7c != 0) {
+                m_object->m_7c->m_08 &= ~6;
+                m_object->m_7c->m_08 |= 1;
                 m_38->m_08 &= ~0x1000002;
                 m_38->m_08 |= 0x800000;
             }

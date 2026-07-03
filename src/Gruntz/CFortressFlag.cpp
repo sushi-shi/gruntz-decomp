@@ -114,14 +114,14 @@ void CFortressFlag::HandleFortConquered() {}
 // re-stamp position + EH-state ids.
 RVA(0x00045d30, 0x203)
 CFortressFlag::CFortressFlag(CGameObject* obj) : CUserLogic(obj) {
-    CGameObject* o = m_10;
+    CGameObject* o = m_object;
     i32 v = o->m_198->m_1c + o->m_60 + 0x186a0;
     if (o->m_74 != v) {
         o->m_74 = v;
         o->m_08 |= 0x20000;
     }
     const char* name;
-    switch (m_10->m_124) {
+    switch (m_object->m_124) {
         case WARLORD_KING:
             name = "GAME_FORTRESSFLAGZ_KING";
             break;
@@ -139,14 +139,14 @@ CFortressFlag::CFortressFlag(CGameObject* obj) : CUserLogic(obj) {
             return;
     }
     m_38->ApplyName(name);
-    m_30 = m_14->m_1c;
-    m_14->m_1c = g_buteTree.Find(s_actKeyA);
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find(s_actKeyA);
     m_prevAnimNode = m_38->m_1b4;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     m_38->m_08 |= 3;
-    i32 idx = ((WwdRefSlot*)((char*)g_gameReg + 0x158))[m_10->m_124 * 71].m_idx;
+    i32 idx = ((WwdRefSlot*)((char*)g_gameReg + 0x158))[m_object->m_124 * 71].m_idx;
     i32 sel = g_gameReg->m_74->GetSel(idx, 0);
-    CGameObject* spr = m_10;
+    CGameObject* spr = m_object;
     spr->m_58 = 1;
     spr->m_50 = 0xa;
     spr->m_4c = sel;
@@ -204,7 +204,7 @@ i32 CFortressFlag::AdvanceAnim() {
 // CFortressFlag::Serialize @0x046410 - chain the shared CUserLogic serialize
 // helper on `this`, and (only on success) the +0x34 sub-object's chain; both run
 // the same (ar, tag, c, d) tuple. On the post-load tag (tag == 8), look the
-// flag's sprite selector (m_10->m_124 * 71) up in g_gameReg's ref-index array,
+// flag's sprite selector (m_object->m_124 * 71) up in g_gameReg's ref-index array,
 // resolve it through the level sprite-ref table, and re-seed the bound sprite's
 // state trio. Always returns 1 once the two chains succeed.
 RVA(0x00046410, 0x92)
@@ -216,10 +216,10 @@ i32 CFortressFlag::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
         return 0;
     }
     if (tag == 8) {
-        CGameObject* spr = m_10;
+        CGameObject* spr = m_object;
         i32 idx = ((WwdRefSlot*)((char*)g_gameReg + 0x158))[spr->m_124 * 71].m_idx;
         i32 sel = g_gameReg->m_74->GetSel(idx, 0);
-        spr = m_10;
+        spr = m_object;
         spr->m_58 = 1;
         spr->m_50 = 0xa;
         spr->m_4c = sel;

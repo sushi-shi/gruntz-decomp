@@ -107,10 +107,10 @@ public:
     CBattlezDlg(i32 a0, CWnd* pParent);
     ~CBattlezDlg(); // 0x14c90 (destroy CString m_6c, chain ~CDialog)
 
-    i32 m_slots;     // +0x5c  (= a0; the CBattlezSlot* slot-array base)
-    char m_pad60[8]; // +0x60
-    i32 m_68;        // +0x68  (= 0)
-    CString m_6c;    // +0x6c  (default CString)
+    i32 m_slots;          // +0x5c  (= a0; the CBattlezSlot* slot-array base)
+    char m_pad60[8];      // +0x60
+    i32 m_customNameFlag; // +0x68  1 = custom level name typed, 0 = picked from list
+    CString m_6c;         // +0x6c  (default CString)
 
     // Control accessors: switch(index) -> GetDlgItem(constID). Four families,
     // each over a 4-entry control-ID table.
@@ -177,7 +177,7 @@ public:
 
 // ---------------------------------------------------------------------------
 // CBattlezDlgColors (NO EH frame - no embedded C++ object).
-//   base CDialog(0xc2, pParent); m_5c = a0; m_60 = a1; m_pickedColor = 0; m_68 = a2.
+//   base CDialog(0xc2, pParent); m_slots = a0; m_slotIndex = a1; m_pickedColor = 0; m_68 = a2.
 // ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CBattlezDlgColors);
 class CBattlezDlgColors : public CDialog {
@@ -188,15 +188,15 @@ public:
     // only its 6 own bytes `mov eax,OFFSET msgmap; ret` are matched).
     const void* GetMessageMap();
 
-    i32 m_5c;          // +0x5c  (= a0)
-    i32 m_60;          // +0x60  (= a1)
+    i32 m_slots;       // +0x5c  (= a0; the CBattlezSlot* slot-array base, from parent)
+    i32 m_slotIndex;   // +0x60  (= a1; the slot being colored)
     i32 m_pickedColor; // +0x64  (= 0; the picked value read after DoModal)
-    i32 m_68;          // +0x68  (= a2)
+    i32 m_68;          // +0x68  (= a2; always 0 at call sites; role unproven)
 };
 
 // ---------------------------------------------------------------------------
 // CMultiStartDlg
-//   base CDialog(0xc5, pParent); m_5c = a0; m_slotList = 0; m_6c = 0;
+//   base CDialog(0xc5, pParent); m_host = a0; m_slotList = 0; m_6c = 0;
 //   CString @+0x70; CObList(0xa) @+0x74; then g_64bd5c = g_gameReg->m_curState.
 // ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CMultiStartDlg);
@@ -238,7 +238,7 @@ public:
         return this == 0 ? 0 : *(i32*)((char*)this + 0x1c);
     }
 
-    i32 m_5c;                   // +0x5c  (= a0)
+    i32 m_host;                 // +0x5c  (= a0; the CNetDlgHost*/slot-array base)
     CMultiSlotList* m_slotList; // +0x60  (= 0; built in BuildSlotList)
     char m_pad64[8];            // +0x64
     i32 m_6c;                   // +0x6c  (= 0)

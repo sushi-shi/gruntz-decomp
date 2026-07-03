@@ -253,15 +253,15 @@ public:
     // pinned in src/Stub/Discovered.cpp).
     i32 SerializeChain(i32 a, i32 b, i32 c, i32 d); // 0x16e7f0
 
-    // Copies the bound object's screen position into the out point (m_10->m_5c =
-    // x, m_10->m_60 = y). 0x29a50, __thiscall ret 4.
+    // Copies the bound object's screen position into the out point (m_object->m_5c
+    // = x, m_object->m_60 = y). 0x29a50, __thiscall ret 4.
     struct ScreenPoint {
         i32 x;
         i32 y;
     };
     void GetScreenPos(ScreenPoint* out); // 0x29a50
 
-    // True when the bound object's current screen pos (m_10->m_5c/m_60) still
+    // True when the bound object's current screen pos (m_object->m_5c/m_60) still
     // equals the saved pos at this+0x17c/+0x180 (leaf-class fields beyond
     // CUserLogic's 0x40 - read via offset since the leaf isn't modeled). 0x29a80.
     i32 IsAtSavedScreenPos(); // 0x29a80
@@ -280,18 +280,20 @@ public:
     void LoadGruntTypeTable(i32, i32, i32, i32);
     void LoadGruntTuningConstants(i32);
 
-    i32 m_04;             // +0x04
-    i32 m_08;             // +0x08
-    CGameObject* m_0c;    // +0x0c
-    CGameObject* m_10;    // +0x10
-    CGameObjAux* m_14;    // +0x14
-    CUserBaseLink m_link; // +0x18..+0x27 (ctor 0x16d710, can throw)
-    i32 m_28;             // +0x28
-    i32 m_2c;             // +0x2c
-    void* m_30;           // +0x30
-    CGameObject* m_34;    // +0x34
-    CGameObject* m_38;    // +0x38
-    CGameObjAux* m_3c;    // +0x3c
+    i32 m_04;          // +0x04
+    i32 m_08;          // +0x08
+    CGameObject* m_0c; // +0x0c
+    CGameObject*
+        m_object; // +0x10  bound game object (primary handle: position/logic/draw; == m_38)
+    CGameObjAux* m_objAux; // +0x14  the object's +0x7c aux sub-object (obj->m_7c)
+    CUserBaseLink m_link;  // +0x18..+0x27 (ctor 0x16d710, can throw)
+    i32 m_28;              // +0x28
+    i32 m_2c;              // +0x2c
+    void*
+        m_prevAnimSetNode; // +0x30  saved prior aux lookup node (m_objAux->m_1c) before installing "A"
+    CGameObject* m_34;     // +0x34
+    CGameObject* m_38;     // +0x38
+    CGameObjAux* m_3c;     // +0x3c
 };
 SIZE(
     CUserLogic,
@@ -306,7 +308,7 @@ SIZE(
 //     - proving the base it inherits is exactly 0x30.
 //   * The ??_7CUserLogic@@6B@ vftable is 16 slots (0x40 bytes); ??_7CUserBase is
 //     3 slots (config/vtable_names.csv).
-// m_30/m_34/m_38/m_3c above are NOT base fields: they are the tile-logic leaves'
+// m_prevAnimSetNode/m_34/m_38/m_3c above are NOT base fields: they are the tile-logic leaves'
 // common tail (each LEAF's 1-arg ctor sets m_34/m_38/m_3c itself; the standalone
 // base ctor 0x58cd0 does not). This header folds them into the base purely so the
 // shared inline ctor can spell them once; the layout is byte-identical to a true
@@ -324,16 +326,16 @@ SIZE(
 // an inline base ctor is folded into the derived ctors.
 inline CUserLogic::CUserLogic(CGameObject* obj) {
     m_0c = obj;
-    m_10 = obj;
-    m_14 = obj->m_7c;
+    m_object = obj;
+    m_objAux = obj->m_7c;
     {
         EngStr tmp(g_emptyString, 0);
         m_link.m_str = tmp;
     }
     RegisterLogicTypesOnce();
-    m_10->AddLogicHit("LogicHit");
-    m_10->AddLogicAttack("LogicAttack");
-    m_10->AddLogicBump("LogicBump");
+    m_object->AddLogicHit("LogicHit");
+    m_object->AddLogicAttack("LogicAttack");
+    m_object->AddLogicBump("LogicBump");
     m_04 = 0;
     m_08 = 0;
     m_28 = 0x3e9;

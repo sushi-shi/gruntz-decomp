@@ -227,36 +227,36 @@ CStaticHazard::CStaticHazard(CGameObject* obj) : CUserLogic(obj) {
         m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_frameSeed);
     }
     // snap the bound object's screen position to tile center.
-    m_10->m_5c = (m_10->m_5c & ~0x1f) + 0x10;
-    m_10->m_60 = (m_10->m_60 & ~0x1f) + 0x10;
-    if (m_10->m_74 != 0) {
-        m_10->m_74 = 0;
-        m_10->m_08 |= 0x20000;
+    m_object->m_5c = (m_object->m_5c & ~0x1f) + 0x10;
+    m_object->m_60 = (m_object->m_60 & ~0x1f) + 0x10;
+    if (m_object->m_74 != 0) {
+        m_object->m_74 = 0;
+        m_object->m_08 |= 0x20000;
     }
-    m_tileCol = m_10->m_5c >> 5;
-    m_tileRow = m_10->m_60 >> 5;
-    m_10->m_128 = 0;
+    m_tileCol = m_object->m_5c >> 5;
+    m_tileRow = m_object->m_60 >> 5;
+    m_object->m_128 = 0;
     switch (((HazSwitchSrc*)g_gameReg->m_curState)->m_levelKind) {
         case 3:
         case 4:
         case 7:
         case 8:
-            m_10->m_128 = m_10->m_60 + 0x186b0;
+            m_object->m_128 = m_object->m_60 + 0x186b0;
             break;
         default:
             break;
     }
-    m_10->m_144 = m_10->m_5c - 7;
-    m_10->m_14c = m_10->m_144 + 14;
-    m_10->m_148 = m_10->m_60 - 7;
-    m_10->m_150 = m_10->m_148 + 14;
-    m_30 = m_14->m_1c;
-    m_14->m_1c = g_buteTree.Find("A");
+    m_object->m_144 = m_object->m_5c - 7;
+    m_object->m_14c = m_object->m_144 + 14;
+    m_object->m_148 = m_object->m_60 - 7;
+    m_object->m_150 = m_object->m_148 + 14;
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find("A");
     m_38->m_08 |= 0x2000002;
-    ((WwdAnimSub*)((char*)m_10 + 0x1a0))->m_2c = 0;
-    m_10->m_124 = g_64553c;
+    ((WwdAnimSub*)((char*)m_object + 0x1a0))->m_2c = 0;
+    m_object->m_124 = g_64553c;
     m_activeWindow = 0;
-    m_idleWindow = m_10->m_120;
+    m_idleWindow = m_object->m_120;
     m_pulseEpoch = g_645588;
     HazLookupEntry* entry = 0;
     ((HazSndRoot*)g_gameReg->m_world)->m_cat->m_map.Lookup("LEVEL_STATICHAZARDGO", &entry);
@@ -265,7 +265,7 @@ CStaticHazard::CStaticHazard(CGameObject* obj) : CUserLogic(obj) {
     } else {
         g_gameReg->EmitEvent(0x8009, 0x461);
     }
-    if (m_10->m_120 == 0) {
+    if (m_object->m_120 == 0) {
         m_idleWindow = m_activeWindow;
     }
 }
@@ -352,7 +352,7 @@ i32 CStaticHazard::LoadAttributes2() {
         return 0;
     }
     u32 phase = g_645588 - m_pulseEpoch;
-    u32 base = (u32)m_10->m_118;
+    u32 base = (u32)m_object->m_118;
     if (phase <= base) {
         return 0;
     }
@@ -369,8 +369,8 @@ i32 CStaticHazard::LoadAttributes2() {
         HazAnimElem* e = d->m_count > 0 ? *d->m_elems : 0;
         m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_frameSeed);
     }
-    m_30 = m_14->m_1c;
-    m_14->m_1c = g_buteTree.Find("B");
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find("B");
     return 0;
 }
 
@@ -388,17 +388,17 @@ i32 CStaticHazard::LoadAttributes2() {
 // grid-cell op sites spill against retail's stack-slot schedule. Parked for sweep.
 RVA(0x000fc1a0, 0x33b)
 i32 CStaticHazard::LoadAttributes() {
-    u32 phase = (g_645588 - m_pulseEpoch) - (u32)m_10->m_118;
+    u32 phase = (g_645588 - m_pulseEpoch) - (u32)m_object->m_118;
     u32 rem = phase % (u32)(m_idleWindow + m_activeWindow);
     if (rem > (u32)m_activeWindow) {
         // idle window
         if (m_fired == 0) {
             goto dispatch;
         }
-        if (m_10->m_120 != 0) {
+        if (m_object->m_120 != 0) {
             // re-arm IDLE (cache the anim-set node first)
-            m_30 = m_14->m_1c;
-            m_14->m_1c = g_buteTree.Find("A");
+            m_prevAnimSetNode = m_objAux->m_1c;
+            m_objAux->m_1c = g_buteTree.Find("A");
             m_prevAnimNode = m_38->m_1b4;
             m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDIDLE", 0);
             {
@@ -406,9 +406,9 @@ i32 CStaticHazard::LoadAttributes() {
                 HazAnimElem* e = d->m_count > 0 ? *d->m_elems : 0;
                 m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_frameSeed);
             }
-            if (m_10->m_74 != 0) {
-                m_10->m_74 = 0;
-                m_10->m_08 |= 0x20000;
+            if (m_object->m_74 != 0) {
+                m_object->m_74 = 0;
+                m_object->m_08 |= 0x20000;
             }
             // clear the hazard cell's bit-0x8000000
             CTileGrid* grid = g_gameReg->m_tileGrid;
@@ -425,9 +425,9 @@ i32 CStaticHazard::LoadAttributes() {
             HazAnimElem* e = d->m_count > 0 ? *d->m_elems : 0;
             m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_frameSeed);
         }
-        if (m_10->m_74 != 0) {
-            m_10->m_74 = 0;
-            m_10->m_08 |= 0x20000;
+        if (m_object->m_74 != 0) {
+            m_object->m_74 = 0;
+            m_object->m_08 |= 0x20000;
         }
         m_fired = 0;
         return 0;
@@ -436,7 +436,7 @@ i32 CStaticHazard::LoadAttributes() {
         if (m_fired != 0) {
             goto dispatch;
         }
-        if (m_10->m_120 != 0) {
+        if (m_object->m_120 != 0) {
             goto dispatch;
         }
         // turn on: re-arm GO, latch the fired flag
@@ -447,9 +447,9 @@ i32 CStaticHazard::LoadAttributes() {
             HazAnimElem* e = d->m_count > 0 ? *d->m_elems : 0;
             m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_frameSeed);
         }
-        if (m_10->m_74 != 0) {
-            m_10->m_74 = 0;
-            m_10->m_08 |= 0x20000;
+        if (m_object->m_74 != 0) {
+            m_object->m_74 = 0;
+            m_object->m_08 |= 0x20000;
         }
         m_fired = 1;
         return 0;
@@ -458,12 +458,13 @@ i32 CStaticHazard::LoadAttributes() {
 dispatch:
     if (((WwdAnimSub*)((char*)m_38 + 0x1a0))->SetAnim(g_6bf3bc) == 2) {
         i32 a = 0, b = 0;
-        if (((HazGridMgr*)g_gameReg->m_68)->ScreenToCell(m_10->m_5c, m_10->m_60, &a, &b, 0) != 0) {
-            ((HazGridMgr*)g_gameReg->m_68)->MarkCell(a, b, m_10->m_124, -1);
+        if (((HazGridMgr*)g_gameReg->m_68)->ScreenToCell(m_object->m_5c, m_object->m_60, &a, &b, 0)
+            != 0) {
+            ((HazGridMgr*)g_gameReg->m_68)->MarkCell(a, b, m_object->m_124, -1);
         }
-        if (m_10->m_74 != m_10->m_128) {
-            m_10->m_74 = m_10->m_128;
-            m_10->m_08 |= 0x20000;
+        if (m_object->m_74 != m_object->m_128) {
+            m_object->m_74 = m_object->m_128;
+            m_object->m_08 |= 0x20000;
         }
         CTileGrid* grid = g_gameReg->m_tileGrid;
         if ((u32)m_tileCol < (u32)grid->m_c && (u32)m_tileRow < (u32)grid->m_10) {
@@ -474,9 +475,9 @@ dispatch:
         if ((u32)m_tileCol < (u32)grid->m_c && (u32)m_tileRow < (u32)grid->m_10) {
             grid->m_8[m_tileRow][m_tileCol * 7] &= 0xf7ffffff;
         }
-        if (m_10->m_74 != 0) {
-            m_10->m_74 = 0;
-            m_10->m_08 |= 0x20000;
+        if (m_object->m_74 != 0) {
+            m_object->m_74 = 0;
+            m_object->m_08 |= 0x20000;
         }
     }
     {

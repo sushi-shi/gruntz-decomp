@@ -90,29 +90,34 @@ void CMovingLogic::Update() {
 
     // Worker-driven scroll: fold the per-frame scroll deltas into the object's
     // screen position and re-seed the motion targets.
-    if ((((MlBoundObject*)m_10)->m_8 & 0x10) && ((MlBoundObject*)m_10)->m_98 != 0) {
-        ((MlBoundObject*)m_10)->m_5c += ((MlBoundObject*)m_10)->m_98->m_174;
-        Motion()->m_40 = (double)((MlBoundObject*)m_10)->m_5c;
-        ((MlBoundObject*)m_10)->m_60 += ((MlBoundObject*)m_10)->m_98->m_178;
-        Motion()->m_48 = (double)((MlBoundObject*)m_10)->m_60;
+    if ((((MlBoundObject*)m_object)->m_8 & 0x10) && ((MlBoundObject*)m_object)->m_98 != 0) {
+        ((MlBoundObject*)m_object)->m_5c += ((MlBoundObject*)m_object)->m_98->m_174;
+        Motion()->m_40 = (double)((MlBoundObject*)m_object)->m_5c;
+        ((MlBoundObject*)m_object)->m_60 += ((MlBoundObject*)m_object)->m_98->m_178;
+        Motion()->m_48 = (double)((MlBoundObject*)m_object)->m_60;
     }
 
     // Clamp-scroll the level toward the new position.
-    if (((MlBoundObject*)m_10)->m_e4 == 1) {
-        m_148 = ((MlBoundObject*)m_10)
-                    ->m_c->m_24
-                    ->ClampScroll(m_10, (i32)Motion()->m_40, ((MlBoundObject*)m_10)->m_60, m_14c);
+    if (((MlBoundObject*)m_object)->m_e4 == 1) {
+        m_148 = ((MlBoundObject*)m_object)
+                    ->m_c->m_24->ClampScroll(
+                        m_object,
+                        (i32)Motion()->m_40,
+                        ((MlBoundObject*)m_object)->m_60,
+                        m_14c
+                    );
         Motion()->m_30 = 0.0;
     } else {
-        ((MlBoundObject*)m_10)->m_8 &= ~0x10;
-        m_148 = ((MlBoundObject*)m_10)
-                    ->m_c->m_24->ClampScroll(m_10, (i32)Motion()->m_40, (i32)Motion()->m_48, m_14c);
+        ((MlBoundObject*)m_object)->m_8 &= ~0x10;
+        m_148 =
+            ((MlBoundObject*)m_object)
+                ->m_c->m_24->ClampScroll(m_object, (i32)Motion()->m_40, (i32)Motion()->m_48, m_14c);
     }
 
     // X arrival: if the object moved off the motion target, re-solve the X
     // arrival velocity and re-anchor the target.
     CMotionState* ms = Motion();
-    i32 sx = ((MlBoundObject*)m_10)->m_5c;
+    i32 sx = ((MlBoundObject*)m_object)->m_5c;
     if ((i32)Motion()->m_40 != sx) {
         double d = (double)sx;
         ms->m_28 = ms->ArrivalVelX(d);
@@ -122,7 +127,7 @@ void CMovingLogic::Update() {
     }
 
     // Y arrival (symmetric).
-    i32 sy = ((MlBoundObject*)m_10)->m_60;
+    i32 sy = ((MlBoundObject*)m_object)->m_60;
     if ((i32)Motion()->m_48 != sy) {
         double d = (double)sy;
         ms->m_30 = ms->ArrivalVelY(d);
@@ -132,7 +137,7 @@ void CMovingLogic::Update() {
     }
 
     // Per-mode velocity fix-ups keyed off the ClampScroll result flags.
-    if (((MlBoundObject*)m_10)->m_e4 != 7) {
+    if (((MlBoundObject*)m_object)->m_e4 != 7) {
         i32 f = m_148;
         if (f & 0x800000) {
             Motion()->m_30 = -Motion()->m_30;

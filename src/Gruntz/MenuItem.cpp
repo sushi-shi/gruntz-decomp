@@ -31,22 +31,22 @@ VTBL(CMenuItem2, 0x001f08f8);
 
 // ===========================================================================
 
-// return the item name (m_10) by value.
+// return the item name (m_name) by value.
 RVA(0x001845b0, 0x20)
 CString CMenuItem::GetName() {
-    return m_10;
+    return m_name;
 }
 
-// return m_4c by value.
+// return the forward-nav target name (m_navFwdName) by value.
 RVA(0x001845d0, 0x20)
-CString CMenuItem::GetField4c() {
-    return m_4c;
+CString CMenuItem::GetNavFwdName() {
+    return m_navFwdName;
 }
 
-// return m_50 by value.
+// return the backward-nav target name (m_navBackName) by value.
 RVA(0x001845f0, 0x20)
-CString CMenuItem::GetField50() {
-    return m_50;
+CString CMenuItem::GetNavBackName() {
+    return m_navBackName;
 }
 
 // return m_54 by value.
@@ -78,15 +78,15 @@ inline CMenuItem::~CMenuItem() {
 // reset the scalar fields and clear the four trailing CStrings.
 RVA(0x00184730, 0x41)
 void CMenuItem::Reset() {
-    m_8 = 0;
-    m_c = 0;
-    m_28 = 0;
-    m_4 = 0;
-    m_2c = 0;
-    m_34 = (i32)0xeeeeeeee;
-    m_44 = (i32)0xeeeeeeee;
-    m_4c.Empty();
-    m_50.Empty();
+    m_host = 0;
+    m_template = 0;
+    m_sprite = 0;
+    m_owner = 0;
+    m_listPos = 0;
+    m_hitLeft = (i32)0xeeeeeeee;
+    m_fixedX = (i32)0xeeeeeeee;
+    m_navFwdName.Empty();
+    m_navBackName.Empty();
     m_54.Empty();
     m_58.Empty();
 }
@@ -122,24 +122,24 @@ i32 CMenuItem::Init(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
     if (!t) {
         return 0;
     }
-    m_20 = a5;
-    m_4 = t->m_0;
-    m_8 = t->m_4;
-    m_c = t;
-    m_10 = (const char*)a1;
-    m_14 = (const char*)a4;
-    m_18 = a3;
+    m_flags = a5;
+    m_owner = t->m_0;
+    m_host = t->m_4;
+    m_template = t;
+    m_name = (const char*)a1;
+    m_key = (const char*)a4;
+    m_cmdId = a3;
     m_1c = 0;
-    m_30 = 0;
-    if (m_20 & 1) {
-        m_24 = 3;
+    m_cmdParam = 0;
+    if (m_flags & 1) {
+        m_state = 3;
     } else {
-        m_24 = 1;
+        m_state = 1;
     }
     if (!OnInit()) {
         void* slot = 0;
-        m_4->m_10->m_10.Lookup((const char*)a2, slot);
-        m_28 = slot;
+        m_owner->m_10->m_10.Lookup((const char*)a2, slot);
+        m_sprite = slot;
         if (!slot) {
             return 0;
         }
@@ -157,13 +157,13 @@ void CMenuItem::Dispatch0c() {
 // (Non-virtual internal helper called by Trigger; NOT the slot-8 virtual Notify.)
 RVA(0x00185580, 0x4a)
 i32 CMenuItem::NotifyCmd() {
-    i32 id = m_18;
+    i32 id = m_cmdId;
     if (!id) {
         return id;
     }
-    HWND wnd = m_8->m_wnd;
+    HWND wnd = m_host->m_wnd;
     if (wnd) {
-        PostMessageA(wnd, WM_COMMAND, id, m_30);
+        PostMessageA(wnd, WM_COMMAND, id, m_cmdParam);
     }
     if (m_1c && wnd) {
         PostMessageA(wnd, WM_COMMAND, m_1c, 0);
@@ -181,19 +181,19 @@ i32 CMenuItem::NotifyCmd() {
 // all canonicalize to the same pick). Logic complete; deferred to the final sweep.
 RVA(0x001855f0, 0x94)
 i32 CMenuItem::Place(i32 ctx, i32 x, i32 y) {
-    void* page = m_28;
+    void* page = m_sprite;
     if (!page) {
         return 0;
     }
     i32 py, px;
-    if (m_44 != (i32)0xeeeeeeee) {
-        py = m_44;
-        px = m_48;
+    if (m_fixedX != (i32)0xeeeeeeee) {
+        py = m_fixedX;
+        px = m_fixedY;
     } else {
         py = x;
         px = y;
     }
-    i32 idx = m_24;
+    i32 idx = m_state;
     CMenuItemPlacer* row;
     if (idx >= *(i32*)((char*)page + 0x64) && idx <= *(i32*)((char*)page + 0x68)) {
         row = ((CMenuItemPlacer**)(*(void**)((char*)page + 0x14)))[idx];
@@ -204,36 +204,36 @@ i32 CMenuItem::Place(i32 ctx, i32 x, i32 y) {
         return 0;
     }
     row->Place(ctx, py, px, 0);
-    m_34 = py - *(i32*)((char*)row + 0x18);
-    m_3c = py + *(i32*)((char*)row + 0x18);
-    m_38 = px - *(i32*)((char*)row + 0x1c);
-    m_40 = px + *(i32*)((char*)row + 0x1c);
+    m_hitLeft = py - *(i32*)((char*)row + 0x18);
+    m_hitRight = py + *(i32*)((char*)row + 0x18);
+    m_hitTop = px - *(i32*)((char*)row + 0x1c);
+    m_hitBottom = px + *(i32*)((char*)row + 0x1c);
     return 1;
 }
 
 // trigger: scroll the host row, notify, then re-activate the host node.
 RVA(0x001856d0, 0x25)
 i32 CMenuItem::Trigger() {
-    m_8->Scroll();
+    m_host->Scroll();
     NotifyCmd();
-    m_8->ReplaceNode(*(void**)&m_14);
+    m_host->ReplaceNode(*(void**)&m_key);
     return 1;
 }
 
 // hit-test: is (x,y) inside the cached placed rect?
 RVA(0x00185700, 0x4b)
 i32 CMenuItem::Hit(i32 x, i32 y) {
-    if (m_34 == (i32)0xeeeeeeee) {
+    if (m_hitLeft == (i32)0xeeeeeeee) {
         return 0;
     }
-    if (x < m_34) {
+    if (x < m_hitLeft) {
         return 0;
     }
-    if (x > m_3c) {
+    if (x > m_hitRight) {
         return 0;
     }
-    if (y < m_38) {
+    if (y < m_hitTop) {
         return 0;
     }
-    return y <= m_40;
+    return y <= m_hitBottom;
 }

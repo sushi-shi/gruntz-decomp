@@ -30,12 +30,12 @@ CBrickz::~CBrickz() {}
 // the tail. Not source-steerable; ~92%. Parked for the final sweep.
 RVA(0x0010e800, 0x17d)
 CBrickz::CBrickz(CGameObject* obj) : CUserLogic(obj) {
-    m_30 = m_14->m_1c;
-    m_14->m_1c = g_buteTree.Find("A");
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find("A");
     m_38->m_08 |= 2;
     m_38->m_08 |= 1;
     m_38->m_40 |= 1;
-    m_10->m_164 = m_10->m_5c >> 5;
-    m_10->m_168 = m_10->m_60 >> 5;
-    m_10->m_04 = (m_10->m_164 << 8) + m_10->m_168;
+    m_object->m_164 = m_object->m_5c >> 5;
+    m_object->m_168 = m_object->m_60 >> 5;
+    m_object->m_04 = (m_object->m_164 << 8) + m_object->m_168;
 }

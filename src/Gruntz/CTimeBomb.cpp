@@ -196,17 +196,17 @@ extern TBombGameReg* g_gameReg;
 RVA(0x000e1b90, 0x23d)
 CTimeBomb::CTimeBomb(CGameObject* obj) : CUserLogic(obj) {
     m_38->m_08 |= 0x2000002;
-    if (m_10->m_74 != 0xf) {
-        m_10->m_74 = 0xf;
-        m_10->m_08 |= 0x20000;
+    if (m_object->m_74 != 0xf) {
+        m_object->m_74 = 0xf;
+        m_object->m_08 |= 0x20000;
     }
     m_38->ApplyName("GAME_TIMEBOMB");
-    m_30 = m_14->m_1c;
-    m_14->m_1c = g_buteTree.Find("A");
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find("A");
     m_prevAnimNode = m_38->m_1b4;
-    if (m_10->m_120 > 0) {
+    if (m_object->m_120 > 0) {
         m_38->ApplyLookupGeometry("GAME_TIMEBOMBFAST", 0);
-        m_durationLo = m_10->m_120;
+        m_durationLo = m_object->m_120;
         m_durationHi = 0;
         m_startTimeLo = g_645588;
         m_startTimeHi = 0;
@@ -219,14 +219,14 @@ CTimeBomb::CTimeBomb(CGameObject* obj) : CUserLogic(obj) {
         m_startTimeHi = 0;
         m_fastPhase = 0;
     }
-    i32 cx = m_10->m_5c >> 5;
-    i32 cy = m_10->m_60 >> 5;
+    i32 cx = m_object->m_5c >> 5;
+    i32 cy = m_object->m_60 >> 5;
     TBombGrid* g = g_gameReg->m_grid;
     if (cx < g->m_width && cy < g->m_height) {
         char* row = g->m_rows[cy];
         *(i32*)(row + cx * 0x1c) |= 0x1000000;
     }
-    m_10->m_124 = -1;
+    m_object->m_124 = -1;
 }
 
 // CTimeBomb::FireActivation @0x0e1830 - look the activation coordinate up in the
@@ -321,16 +321,16 @@ static inline void TBombGridClear(CGameObject* obj) {
 // reread-member-view-pointer.md): the body is byte-faithful - the grid lookup,
 // the `(cell&0x939)||(cell&2)` split test, the 64-bit clock-elapsed compare, the
 // FAST re-arm bute read, and both detonate blocks all match. The residue is the
-// coin-flip that pins the bound object (m_10) in eax vs ecx, which cascades into
+// coin-flip that pins the bound object (m_object) in eax vs ecx, which cascades into
 // the screen-coord load order at the three inlined grid sites; plus the i64
 // jl/jg branch-emission order and the NotifyMoveAt arg-push schedule. Not
 // source-steerable (cy-first reordering regressed it). Parked for the final sweep.
 RVA(0x000e1e60, 0x1ac)
 i32 CTimeBomb::LoadAttributes() {
-    i32 cell = TBombGridCell(m_10);
+    i32 cell = TBombGridCell(m_object);
     if ((cell & 0x939) || (cell & 2)) {
         m_38->m_08 |= 0x10000;
-        TBombGridClear(m_10);
+        TBombGridClear(m_object);
         return 0;
     }
     ((TBombAnimSink*)((char*)m_38 + 0x1a0))->Advance(g_6bf3bc);
@@ -348,7 +348,7 @@ i32 CTimeBomb::LoadAttributes() {
         return 0;
     }
     m_38->m_08 |= 0x10000;
-    TBombGridClear(m_10);
-    g_gameReg->m_tileMgr->NotifyMoveAt(m_10->m_5c, m_10->m_60, m_10->m_124, 1);
+    TBombGridClear(m_object);
+    g_gameReg->m_tileMgr->NotifyMoveAt(m_object->m_5c, m_object->m_60, m_object->m_124, 1);
     return 0;
 }

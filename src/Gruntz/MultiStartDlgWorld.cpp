@@ -18,7 +18,7 @@
 // its address is taken (push offset -> DIR32 reloc-masks).
 extern "C" i32 CALLBACK WndProc_c1a10(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-// The GAME_MULTI registry path -> a name registry (m_5c is the CNetDlgHost* the
+// The GAME_MULTI registry path -> a name registry (m_host is the CNetDlgHost* the
 // ctor stored as i32; its m_registry is the world registry). ResolvePath returns a
 // symbol table iterated by FirstSym/NextSym2 (first entry) then NextSym3 (advance).
 struct MpSymItem {
@@ -43,7 +43,7 @@ i32 CMultiStartDlg::SetupWorldCombo() {
     if (combo == 0) {
         return 0;
     }
-    MpSymTable* st = ((MpDlgHost*)m_5c)->m_registry->ResolvePath("GAME_MULTI");
+    MpSymTable* st = ((MpDlgHost*)m_host)->m_registry->ResolvePath("GAME_MULTI");
     if (st == 0) {
         return 0;
     }

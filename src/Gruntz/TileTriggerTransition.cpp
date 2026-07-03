@@ -15,7 +15,7 @@
 //
 // All engine callees are reloc-masked (no body). Functions in ascending retail-RVA
 // order. The leaf's own fields are named from usage; the CUserLogic base fields
-// (m_14/m_30/m_38/...) keep their m_<hexoffset> placeholders (shared base, named
+// (m_14/m_prevAnimSetNode/m_38/...) keep their m_<hexoffset> placeholders (shared base, named
 // elsewhere). Only OFFSETS + emitted bytes are load-bearing.
 #include <Gruntz/ActNameRegistry.h> // shared activation-name registry archetype (g_buteTree etc.)
 #include <Gruntz/ActReg.h>          // the shared CActReg coordinate-registry archetype
@@ -103,9 +103,9 @@ i32 CTileTriggerTransition::GetTypeTag() {
 RVA(0x0010faf0, 0x128)
 CTileTriggerTransition::CTileTriggerTransition(CGameObject* obj) : CUserLogic(obj) {
     m_38->m_08 |= 0x1000000;
-    if (m_10->m_74 != 0) {
-        m_10->m_74 = 0;
-        m_10->m_08 |= 0x20000;
+    if (m_object->m_74 != 0) {
+        m_object->m_74 = 0;
+        m_object->m_08 |= 0x20000;
     }
 }
 
@@ -169,8 +169,8 @@ i32 CTileTriggerTransition::ApplyAnimation(char* sprite, char* geom) {
     CAnimDescColl* desc = (CAnimDescColl*)m_38->m_1b4;
     CAnimElem* elem = desc->m_10 > 0 ? *desc->m_c : 0;
     m_38->ApplyLookupSprite(sprite, elem->m_14);
-    m_30 = m_14->m_1c; // save the prev anim-set node (CUserLogic base field)
-    m_14->m_1c = g_buteTree.Find("A");
+    m_prevAnimSetNode = m_objAux->m_1c; // save the prev anim-set node (CUserLogic base field)
+    m_objAux->m_1c = g_buteTree.Find("A");
     return 1;
 }
 

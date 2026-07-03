@@ -24,7 +24,7 @@
 // the most-derived CGruntVoice vptr (0x5eaf6c, compiler-emitted, reloc-masked),
 // register the "GAME_EXCLAMATION" name on the bound object, set the object's
 // render flags (m_74 sentinel + the +0x8/+0x40 bitsets), then bind the "A" idle-anim
-// bute node (stashing the previous in m_30). Returns this. __thiscall, ret 4.
+// bute node (stashing the previous in m_prevAnimSetNode). Returns this. __thiscall, ret 4.
 //
 // @early-stop
 // /GX EH-state + store-scheduling wall: the CUserLogic(obj) fold, the vptr stamp, the
@@ -39,9 +39,9 @@ CGruntVoice::CGruntVoice(CGameObject* obj) : CUserLogic(obj) {
     m_60 = 0;
     m_64 = 0;
     m_38->ApplyName("GAME_EXCLAMATION");
-    if (m_10->m_74 != 0xdbba1) {
-        m_10->m_74 = 0xdbba1;
-        m_10->m_08 |= 0x20000;
+    if (m_object->m_74 != 0xdbba1) {
+        m_object->m_74 = 0xdbba1;
+        m_object->m_08 |= 0x20000;
     }
     m_54 = 0;
     m_58 = 0;
@@ -51,8 +51,8 @@ CGruntVoice::CGruntVoice(CGameObject* obj) : CUserLogic(obj) {
     m_38->m_08 |= 0x4000002;
     m_38->m_40 |= 1;
     m_6c = 0;
-    m_30 = m_14->m_1c;
-    m_14->m_1c = g_buteTree.Find(g_voiceKeyA);
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find(g_voiceKeyA);
     m_68 = 0;
     m_70 = 0;
 }
@@ -103,7 +103,7 @@ void CGruntVoice::Dispatch(i32 coord) {
 // flag/owner params, snapshot the sample's play duration (sample->ComputeDuration
 // 0x137590, __thiscall), seed the icon to the default, clear the running state,
 // and swap the +0x14 sub-object's bute node to the "B" key (stashing the
-// previous in CUserLogic::m_30). Returns 1.
+// previous in CUserLogic::m_prevAnimSetNode). Returns 1.
 //
 // @early-stop
 // store-scheduling wall (docs/patterns/statement-schedule-faithful.md): the body
@@ -128,8 +128,8 @@ i32 CGruntVoice::Setup(i32 a0, void* sample, i32 a2, i32 a3) {
     m_58 = g_iconDefault;
     m_5c = 0;
     m_6c = a2;
-    m_30 = m_14->m_1c;
-    m_14->m_1c = g_buteTree.Find(g_iconBute);
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find(g_iconBute);
     return 1;
 }
 
@@ -137,13 +137,13 @@ i32 CGruntVoice::Setup(i32 a0, void* sample, i32 a2, i32 a3) {
 // CGruntVoice::Reset  (0x11a870)
 // ===========================================================================
 // Clear the voice: zero the sample slot (+0x54), swap the +0x14 sub-object's
-// bute node to the "A" idle-anim key (stashing the previous in CUserLogic::m_30),
+// bute node to the "A" idle-anim key (stashing the previous in CUserLogic::m_prevAnimSetNode),
 // then clear the flag/owner slots (+0x6c/+0x68).
 RVA(0x0011a870, 0x38)
 void CGruntVoice::Reset() {
     m_54 = 0;
-    m_30 = m_14->m_1c;
-    m_14->m_1c = g_buteTree.Find(g_voiceKeyA);
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find(g_voiceKeyA);
     m_6c = 0;
     m_68 = 0;
 }

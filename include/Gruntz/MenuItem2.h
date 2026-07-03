@@ -16,12 +16,12 @@
 // and the new SetFrame slot are declared-only -> reloc-masked external references.
 //
 // Layout (CMenuItem base is 0x5c; offsets + code bytes load-bearing):
-//   +0x5c m_5c  - CImageSet* NORMAL-state sprite
-//   +0x60 m_60  - CImageSet* SELECTED-state sprite
-//   +0x64 m_64  - CImageSet* DISABLED-state sprite
-//   +0x68 m_68  - i32 current frame index
-//   +0x6c m_6c  - i32 (zeroed by Init)
-//   +0x70 m_70  - i32 (Init writes 0x64)
+//   +0x5c m_spriteNormal   - CImageSet* NORMAL-state sprite
+//   +0x60 m_spriteSelected - CImageSet* SELECTED-state sprite
+//   +0x64 m_spriteDisabled - CImageSet* DISABLED-state sprite
+//   +0x68 m_frameIdx       - i32 current frame cursor
+//   +0x6c m_6c             - i32 (zeroed by Init; role unproven)
+//   +0x70 m_70             - i32 (Init writes 0x64; role unproven)
 #ifndef GRUNTZ_MENUITEM2_H
 #define GRUNTZ_MENUITEM2_H
 
@@ -42,16 +42,16 @@
 // helpers inline (same shape as CImageSet::GetAt).
 struct CMenuSprite {
     char m_pad0[0x14];
-    CImage** m_14; // +0x14  frame table
+    CImage** m_frames; // +0x14  frame table
     char m_pad18[0x64 - 0x18];
-    i32 m_64; // +0x64  frame-index range lo
-    i32 m_68; // +0x68  frame-index range hi
+    i32 m_firstFrame; // +0x64  frame-index range lo
+    i32 m_lastFrame;  // +0x68  frame-index range hi
 
     CImage* GetAt(i32 idx) {
-        if (idx < m_64 || idx > m_68) {
+        if (idx < m_firstFrame || idx > m_lastFrame) {
             return 0;
         }
-        return m_14[idx];
+        return m_frames[idx];
     }
 };
 SIZE_UNKNOWN(CMenuSprite);
@@ -75,22 +75,22 @@ public:
     CImage* GetCurrentFrame();       // 0x185970
     i32 NextFrame();                 // 0x1859c0
 
-    CMenuSprite* m_5c; // +0x5c  NORMAL sprite
-    CMenuSprite* m_60; // +0x60  SELECTED sprite
-    CMenuSprite* m_64; // +0x64  DISABLED sprite
-    i32 m_68;          // +0x68  current frame index
-    i32 m_6c;          // +0x6c
-    i32 m_70;          // +0x70  seeded to 0x64
+    CMenuSprite* m_spriteNormal;   // +0x5c  NORMAL-state sprite (m_state 1)
+    CMenuSprite* m_spriteSelected; // +0x60  SELECTED-state sprite (m_state 2)
+    CMenuSprite* m_spriteDisabled; // +0x64  DISABLED-state sprite (m_state 3)
+    i32 m_frameIdx;                // +0x68  current frame cursor
+    i32 m_6c;                      // +0x6c  (zeroed by Init; role unproven)
+    i32 m_70;                      // +0x70  seeded to 0x64 (role unproven)
 };
 
 // The derived ctor MSVC inlines into the page's AddItem2/AddSubItem2: the base
 // CMenuItem() ctor (base vptr + CStrings + sentinels) runs first, then the implicit
 // derived vptr stamp, then this body seeds the sprite/cursor fields.
 inline CMenuItem2::CMenuItem2() {
-    m_5c = 0;
-    m_60 = 0;
-    m_64 = 0;
-    m_68 = 0;
+    m_spriteNormal = 0;
+    m_spriteSelected = 0;
+    m_spriteDisabled = 0;
+    m_frameIdx = 0;
     m_6c = 0;
     m_70 = 0x64;
 }

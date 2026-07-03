@@ -74,7 +74,7 @@ i32 CGruntToySprite::Update() {
     }
     i32 layer = e->m_198;
     if (m_lastLayer != layer) {
-        CGruntRenderable* r = (CGruntRenderable*)m_10;
+        CGruntRenderable* r = (CGruntRenderable*)m_object;
         m_lastLayer = layer;
         CGruntLayerHolder* h = r->m_194;
         if (h != 0) {
@@ -88,7 +88,7 @@ i32 CGruntToySprite::Update() {
             r->m_190 = layer;
         }
     }
-    m_10->m_5c = e->m_10->m_5c;
-    m_10->m_60 = e->m_10->m_60 - 0x20;
+    m_object->m_5c = e->m_10->m_5c;
+    m_object->m_60 = e->m_10->m_60 - 0x20;
     return 0;
 }

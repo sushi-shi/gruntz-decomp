@@ -82,7 +82,7 @@ struct CMultiSlotList {
 RVA(0x00014b30, 0x64)
 CBattlezDlg::CBattlezDlg(i32 a0, CWnd* pParent) : CDialog(0xc0, pParent) {
     m_slots = a0;
-    m_68 = 0;
+    m_customNameFlag = 0;
 }
 
 // ~CBattlezDlg @0x14c90 - destroy the CString member m_6c, then chain the NAFXCW
@@ -177,7 +177,7 @@ void CBattlezDlg::ShowCustomDlg() {
             CWnd* child = CWnd::FromHandle(GetWindow(item->m_hWnd, GW_CHILD));
             if (child != 0) {
                 child->SetWindowTextA(dlg.m_customName);
-                m_68 = 1;
+                m_customNameFlag = 1;
             }
         }
     }
@@ -187,8 +187,8 @@ void CBattlezDlg::ShowCustomDlg() {
 RVA(0x00017930, 0x3a)
 CBattlezDlgColors::CBattlezDlgColors(i32 a0, i32 a1, i32 a2, CWnd* pParent)
     : CDialog(0xc2, pParent) {
-    m_5c = a0;
-    m_60 = a1;
+    m_slots = a0;
+    m_slotIndex = a1;
     m_pickedColor = 0;
     m_68 = a2;
 }
@@ -202,7 +202,7 @@ const void* CBattlezDlgColors::GetMessageMap() {
 // ---------------------------------------------------------------------------
 RVA(0x000c1750, 0x88)
 CMultiStartDlg::CMultiStartDlg(i32 a0, CWnd* pParent) : CDialog(0xc5, pParent), m_74(0xa) {
-    m_5c = a0;
+    m_host = a0;
     m_6c = 0;
     m_slotList = 0;
     g_64bd5c = g_gameReg[0x2c / 4];
@@ -265,7 +265,7 @@ i32 CMultiStartDlg::UpdateSlot() {
     i32 enable;
     if (reg->m_528) {
         i32 idx = GetSlotIndex();
-        enable = (((CMultiSlot*)m_5c)[idx].m_16c == 0);
+        enable = (((CMultiSlot*)m_host)[idx].m_16c == 0);
     } else {
         enable = 0;
     }
@@ -704,7 +704,7 @@ void CBattlezDlg::CopyComboSelToChild() {
         CWnd* child = CWnd::FromHandle(GetWindow(GetDlgItem(0x4ff)->m_hWnd, 5));
         if (child != 0) {
             child->SetWindowTextA(s);
-            m_68 = 0;
+            m_customNameFlag = 0;
         }
     }
 }

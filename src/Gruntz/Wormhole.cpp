@@ -46,7 +46,7 @@ extern CButeMgr g_buteMgr;
 
 // The global game-registry pointer (an int*). Its +0x78 slot is a
 // pointer to the color table; the wormhole color id (m_128) indexes it at
-// [m_128*4 + 0x14]. SpawnPartners walks it through m_30 -> [+8] -> [+0x14] list.
+// [m_128*4 + 0x14]. SpawnPartners walks it through m_prevAnimSetNode -> [+8] -> [+0x14] list.
 // Declared int* to match g_gameReg (the target's reloc).
 DATA(0x0024556c)
 extern i32* g_gameReg;
@@ -270,7 +270,7 @@ void RegisterWormholeLogic() {
 // then - only when this wormhole is a freshly-spawned, un-paired open one - walks
 // every game object in the world registry and, for each that is a WORMHOLE
 // (its +0x7c aux's +0x10 type marker == &WormholeTypeMarker) sitting at the same
-// tile coords (m_tileX/m_tileY == this->m_10->m_164/m_168), re-runs that partner's
+// tile coords (m_tileX/m_tileY == this->m_object->m_164/m_168), re-runs that partner's
 // config (ReapplyConfig) when it has a live logic object (aux->m_wormhole).
 // __thiscall, no args, returns int (0).
 // @source: trace this/ecx (high); calls sibling ReapplyConfig (0x412c0)
@@ -294,8 +294,8 @@ void CWormhole::SpawnPartners() {
     g->m_08 |= 0x10000;
 
     // The tile coords this wormhole occupies (read from m_10, the bound object).
-    i32 tx = m_10->m_164;
-    i32 ty = m_10->m_168;
+    i32 tx = m_object->m_164;
+    i32 ty = m_object->m_168;
     if (tx == 0 || ty == 0) {
         return;
     }
@@ -329,20 +329,20 @@ void CWormhole::LoadColors() {
     // NB: do NOT cache m_10 in a local for the if-chain, or MSVC
     // pins it in a 2nd callee-saved reg (edi) and the schedule diverges (the
     // target keeps only esi = this).
-    if (m_10->m_124 == 2) {
+    if (m_object->m_124 == 2) {
         // SECRET: fixed color id 1; falls through to the shared cache/index tail.
-        if (m_10->m_128 == 0) {
-            m_10->m_128 = g_buteMgr.GetIntDef(s_Wormhole, s_SecretColor, 1);
+        if (m_object->m_128 == 0) {
+            m_object->m_128 = g_buteMgr.GetIntDef(s_Wormhole, s_SecretColor, 1);
         }
-    } else if (m_10->m_124 == 1) {
+    } else if (m_object->m_124 == 1) {
         // SINGLE-USE.
-        if (m_10->m_128 == 0) {
-            m_10->m_128 = g_buteMgr.GetIntDef(s_Wormhole, s_SingleUseColor, 2);
+        if (m_object->m_128 == 0) {
+            m_object->m_128 = g_buteMgr.GetIntDef(s_Wormhole, s_SingleUseColor, 2);
         }
     } else {
         // NORMAL (default).
-        if (m_10->m_128 == 0) {
-            m_10->m_128 = g_buteMgr.GetIntDef(s_Wormhole, s_NormalColor, 4);
+        if (m_object->m_128 == 0) {
+            m_object->m_128 = g_buteMgr.GetIntDef(s_Wormhole, s_NormalColor, 4);
         }
     }
 
@@ -350,7 +350,7 @@ void CWormhole::LoadColors() {
     // The TAIL caches m_10 once (eax) and reuses it for the id read + all three
     // stores; g_gameReg[+0x78] is the color table, indexed at [m_128*4 + 0x14]
     // (== table[m_128 + 5]). Store order m_58 / m_50 / m_4c.
-    CGameObject* s = m_10;
+    CGameObject* s = m_object;
     i32* colorTable = ((i32**)g_gameReg)[0x78 / 4];
     i32 colorEntry = colorTable[s->m_128 + 0x14 / 4];
     s->m_58 = 1;
@@ -380,13 +380,13 @@ CWormhole::CWormhole(CGameObject* obj) : CUserLogic(obj) {
     m_38->ApplyName("GAME_WORMHOLE");
     m_prevAnimNode = m_38->m_1b4;
     m_38->ApplyLookupGeometry("GAME_WORMHOLE", 0);
-    if (m_10->m_74 != 0x1869f) {
-        m_10->m_74 = 0x1869f;
-        m_10->m_08 |= 0x20000;
+    if (m_object->m_74 != 0x1869f) {
+        m_object->m_74 = 0x1869f;
+        m_object->m_08 |= 0x20000;
     }
-    m_30 = m_14->m_1c;
-    m_14->m_1c = g_buteTree.Find(s_actKeyA);
-    i32 kind = m_10->m_124;
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find(s_actKeyA);
+    i32 kind = m_object->m_124;
     i32 color;
     if (kind == -1) {
         i32* colorTable = ((i32**)g_gameReg)[0x78 / 4];
@@ -395,7 +395,7 @@ CWormhole::CWormhole(CGameObject* obj) : CUserLogic(obj) {
         i32* colorTable = ((i32**)g_gameReg)[0x78 / 4];
         color = colorTable[kind + 0x14 / 4];
     }
-    CGameObject* s = m_10;
+    CGameObject* s = m_object;
     s->m_58 = 1;
     s->m_50 = 7;
     s->m_4c = color;
@@ -422,7 +422,7 @@ i32 CWormhole::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
     if (tag == 8) {
         // Do NOT cache m_10 in a pointer local (pins it in esi); read the kind into
         // a value local (reused by the else index) and reload m_10 for the stores.
-        i32 kind = m_10->m_124;
+        i32 kind = m_object->m_124;
         i32 color;
         if (kind == -1) {
             i32* colorTable = ((i32**)g_gameReg)[0x78 / 4];
@@ -433,7 +433,7 @@ i32 CWormhole::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
             color = colorTable[kind + 0x14 / 4];
         }
         // Cache m_10 only for the store trio (retail reloads it into esi once here).
-        CGameObject* s = m_10;
+        CGameObject* s = m_object;
         s->m_58 = 1;
         s->m_50 = 7;
         s->m_4c = color;
@@ -444,7 +444,7 @@ i32 CWormhole::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
 // ---------------------------------------------------------------------------
 // CWormhole::ReapplyConfig - re-apply the bound object's wormhole config (the tail
 // the ctor shares): stamp the WORMHOLE name + TELEPORTEROPEN geometry on m_38,
-// re-cache the "A" act-key node (m_14->m_1c, saving the old into m_30), raise the
+// re-cache the "A" act-key node (m_objAux->m_1c, saving the old into m_prevAnimSetNode), raise the
 // two config flags, then clear bit0 of the bound object's m_40.
 // ---------------------------------------------------------------------------
 extern char s_actKeyA[]; // "A" (0x60a454)
@@ -453,8 +453,8 @@ i32 CWormhole::ReapplyConfig() {
     m_38->ApplyName("GAME_WORMHOLE");
     m_prevAnimNode = m_38->m_1b4;
     m_38->ApplyLookupGeometry("GAME_TELEPORTEROPEN", 0);
-    m_30 = m_14->m_1c;
-    m_14->m_1c = g_buteTree.Find(s_actKeyA);
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find(s_actKeyA);
     m_54 = 1;
     m_68 = 0;
     m_38->m_40 &= ~1;

@@ -202,8 +202,8 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj) {
     }
 
     // swap the aux bute node (save old into m_30) + seed the cycle geometry
-    CGameObjAux* aux = m_14;
-    m_30 = aux->m_1c;
+    CGameObjAux* aux = m_objAux;
+    m_prevAnimSetNode = aux->m_1c;
     aux->m_1c = g_buteTree.Find(s_iconKeyA);
     m_savedGeoId = m_38->m_1b4;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
@@ -225,164 +225,164 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj) {
         name = (const char*)rec + 0x24;
 
         if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_BOMBZ") == 0) {
-            m_10->m_124 = 1;
+            m_object->m_124 = 1;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_BOOMERANGZ") == 0) {
-            m_10->m_124 = 2;
+            m_object->m_124 = 2;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_BRICKZ") == 0) {
-            m_10->m_124 = 3;
+            m_object->m_124 = 3;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_CLUBZ") == 0) {
-            m_10->m_124 = 4;
+            m_object->m_124 = 4;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_GAUNTLETZ") == 0) {
-            m_10->m_124 = 5;
+            m_object->m_124 = 5;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_GLOVEZ") == 0) {
-            m_10->m_124 = 6;
+            m_object->m_124 = 6;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_GOOBERZ") == 0) {
-            m_10->m_124 = 7;
+            m_object->m_124 = 7;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_GRAVITYBOOTZ") == 0) {
-            m_10->m_124 = 8;
+            m_object->m_124 = 8;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_GUNHATZ") == 0) {
-            m_10->m_124 = 9;
+            m_object->m_124 = 9;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_NERFGUNZ") == 0) {
-            m_10->m_124 = 0xa;
+            m_object->m_124 = 0xa;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_ROCKZ") == 0) {
-            m_10->m_124 = 0xb;
+            m_object->m_124 = 0xb;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_SHIELDZ") == 0) {
-            m_10->m_124 = 0xc;
+            m_object->m_124 = 0xc;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_SHOVELZ") == 0) {
-            m_10->m_124 = 0xd;
+            m_object->m_124 = 0xd;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_SPRINGZ") == 0) {
-            m_10->m_124 = 0xe;
+            m_object->m_124 = 0xe;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_SPYZ") == 0) {
-            m_10->m_124 = 0xf;
+            m_object->m_124 = 0xf;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_SWORDZ") == 0) {
-            m_10->m_124 = 0x10;
+            m_object->m_124 = 0x10;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_TIMEBOMBZ") == 0) {
-            m_10->m_124 = 0x11;
+            m_object->m_124 = 0x11;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_TOOBZ") == 0) {
-            m_10->m_124 = 0x12;
+            m_object->m_124 = 0x12;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_WANDZ") == 0) {
-            m_10->m_124 = 0x13;
+            m_object->m_124 = 0x13;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ1") == 0) {
-            m_10->m_124 = 0x14;
-            m_10->m_128 = 1;
+            m_object->m_124 = 0x14;
+            m_object->m_128 = 1;
             IconLevelState* lvl = (IconLevelState*)g_gameReg->m_curState;
-            lvl->m_warpTarget[0] = m_10->m_5c;
-            lvl->m_warpTarget[1] = m_10->m_60;
+            lvl->m_warpTarget[0] = m_object->m_5c;
+            lvl->m_warpTarget[1] = m_object->m_60;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ2") == 0) {
-            m_10->m_124 = 0x14;
-            m_10->m_128 = 2;
+            m_object->m_124 = 0x14;
+            m_object->m_128 = 2;
             IconLevelState* lvl = (IconLevelState*)g_gameReg->m_curState;
-            lvl->m_warpTarget[2] = m_10->m_5c;
-            lvl->m_warpTarget[3] = m_10->m_60;
+            lvl->m_warpTarget[2] = m_object->m_5c;
+            lvl->m_warpTarget[3] = m_object->m_60;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ3") == 0) {
-            m_10->m_124 = 0x14;
-            m_10->m_128 = 3;
+            m_object->m_124 = 0x14;
+            m_object->m_128 = 3;
             IconLevelState* lvl = (IconLevelState*)g_gameReg->m_curState;
-            lvl->m_warpTarget[4] = m_10->m_5c;
-            lvl->m_warpTarget[5] = m_10->m_60;
+            lvl->m_warpTarget[4] = m_object->m_5c;
+            lvl->m_warpTarget[5] = m_object->m_60;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ4") == 0) {
-            m_10->m_124 = 0x14;
-            m_10->m_128 = 4;
+            m_object->m_124 = 0x14;
+            m_object->m_128 = 4;
             IconLevelState* lvl = (IconLevelState*)g_gameReg->m_curState;
-            lvl->m_warpTarget[6] = m_10->m_5c;
-            lvl->m_warpTarget[7] = m_10->m_60;
+            lvl->m_warpTarget[6] = m_object->m_5c;
+            lvl->m_warpTarget[7] = m_object->m_60;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_WELDERZ") == 0) {
-            m_10->m_124 = 0x15;
+            m_object->m_124 = 0x15;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_WINGZ") == 0) {
-            m_10->m_124 = 0x16;
+            m_object->m_124 = 0x16;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOYZ_BABYWALKERZ") == 0) {
-            m_10->m_124 = 0x17;
+            m_object->m_124 = 0x17;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOYZ_BEACHBALLZ") == 0) {
-            m_10->m_124 = 0x18;
+            m_object->m_124 = 0x18;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOYZ_BIGWHEELZ") == 0) {
-            m_10->m_124 = 0x19;
+            m_object->m_124 = 0x19;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOYZ_GOKARTZ") == 0) {
-            m_10->m_124 = 0x1a;
+            m_object->m_124 = 0x1a;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOYZ_JACKINTHEBOXZ") == 0) {
-            m_10->m_124 = 0x1b;
+            m_object->m_124 = 0x1b;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOYZ_JUMPROPEZ") == 0) {
-            m_10->m_124 = 0x1c;
+            m_object->m_124 = 0x1c;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOYZ_POGOSTICKZ") == 0) {
-            m_10->m_124 = 0x1d;
+            m_object->m_124 = 0x1d;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOYZ_SCROLLZ") == 0) {
-            m_10->m_124 = 0x1e;
+            m_object->m_124 = 0x1e;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOYZ_SQUEAKTOYZ") == 0) {
-            m_10->m_124 = 0x1f;
+            m_object->m_124 = 0x1f;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOYZ_YOYOZ") == 0) {
-            m_10->m_124 = 0x20;
+            m_object->m_124 = 0x20;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_POWERUPZ_MEGAPHONEZ") == 0) {
-            m_10->m_124 = 0x32;
+            m_object->m_124 = 0x32;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_POWERUPZ_HEALTH1") == 0) {
-            m_10->m_124 = 0x33;
+            m_object->m_124 = 0x33;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_POWERUPZ_HEALTH2") == 0) {
-            m_10->m_124 = 0x34;
+            m_object->m_124 = 0x34;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_POWERUPZ_HEALTH3") == 0) {
-            m_10->m_124 = 0x35;
+            m_object->m_124 = 0x35;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_POWERUPZ_CONVERSION") == 0) {
-            m_10->m_124 = 0x39;
+            m_object->m_124 = 0x39;
             SetupSprite("GAME_POWERUP");
             glitter = 2;
         } else if (strcmp(name, "GAME_INGAMEICONZ_POWERUPZ_DEATHTOUCH") == 0) {
-            m_10->m_124 = 0x3a;
+            m_object->m_124 = 0x3a;
             SetupSprite("GAME_POWERUP");
             glitter = 2;
         } else if (strcmp(name, "GAME_INGAMEICONZ_POWERUPZ_GHOST") == 0) {
-            m_10->m_124 = 0x36;
+            m_object->m_124 = 0x36;
             SetupSprite("GAME_POWERUP");
             glitter = 2;
         } else if (strcmp(name, "GAME_INGAMEICONZ_POWERUPZ_INVULNERABILITY") == 0) {
-            m_10->m_124 = 0x38;
+            m_object->m_124 = 0x38;
             SetupSprite("GAME_POWERUP");
             glitter = 2;
         } else if (strcmp(name, "GAME_INGAMEICONZ_POWERUPZ_REACTIVEARMOR") == 0) {
-            m_10->m_124 = 0x3c;
+            m_object->m_124 = 0x3c;
             SetupSprite("GAME_POWERUP");
             glitter = 2;
         } else if (strcmp(name, "GAME_INGAMEICONZ_POWERUPZ_ROIDZ") == 0) {
-            m_10->m_124 = 0x3b;
+            m_object->m_124 = 0x3b;
             SetupSprite("GAME_POWERUP");
             glitter = 2;
         } else if (strcmp(name, "GAME_INGAMEICONZ_POWERUPZ_SUPERSPEED") == 0) {
-            m_10->m_124 = 0x37;
+            m_object->m_124 = 0x37;
             SetupSprite("GAME_POWERUP");
             glitter = 2;
         } else if (strcmp(name, "GAME_INGAMEICONZ_SECRETW") == 0) {
@@ -390,74 +390,80 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj) {
                 m_38->m_08 |= 0x10000;
                 return;
             }
-            m_10->m_124 = 0x5a;
+            m_object->m_124 = 0x5a;
             SetupSprite("GAME_POWERUP");
         } else if (strcmp(name, "GAME_INGAMEICONZ_SECRETA") == 0) {
             if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_134 == 1) {
                 m_38->m_08 |= 0x10000;
                 return;
             }
-            m_10->m_124 = 0x5b;
+            m_object->m_124 = 0x5b;
             SetupSprite("GAME_POWERUP");
         } else if (strcmp(name, "GAME_INGAMEICONZ_SECRETR") == 0) {
             if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_134 == 1) {
                 m_38->m_08 |= 0x10000;
                 return;
             }
-            m_10->m_124 = 0x5c;
+            m_object->m_124 = 0x5c;
             SetupSprite("GAME_POWERUP");
         } else if (strcmp(name, "GAME_INGAMEICONZ_SECRETP") == 0) {
             if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_134 == 1) {
                 m_38->m_08 |= 0x10000;
                 return;
             }
-            m_10->m_124 = 0x5d;
+            m_object->m_124 = 0x5d;
             SetupSprite("GAME_POWERUP");
         } else if (strcmp(name, "GAME_INGAMEICONZ_POWERUPZ_STOPWATCH") == 0) {
-            m_10->m_124 = 0x4b;
+            m_object->m_124 = 0x4b;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_POWERUPZ_COIN") == 0) {
-            m_10->m_124 = 0x50;
+            m_object->m_124 = 0x50;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_TOYBOX") == 0) {
-            m_10->m_124 = 0x55;
+            m_object->m_124 = 0x55;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_POWERUPZ_MINICAM") == 0) {
-            m_10->m_124 = 0x40;
+            m_object->m_124 = 0x40;
             glitter = 1;
             SetupSprite("GAME_CURSE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_POWERUPZ_SCREENSHAKE") == 0) {
-            m_10->m_124 = 0x3e;
+            m_object->m_124 = 0x3e;
             glitter = 1;
             SetupSprite("GAME_CURSE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_POWERUPZ_RANDOMCOLORZ") == 0) {
-            m_10->m_124 = 0x3d;
+            m_object->m_124 = 0x3d;
             glitter = 1;
             SetupSprite("GAME_CURSE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_POWERUPZ_BLACKSCREEN") == 0) {
-            m_10->m_124 = 0x3f;
+            m_object->m_124 = 0x3f;
             glitter = 1;
             SetupSprite("GAME_CURSE");
         }
     }
 
     // WarpStone test-mode: re-apply the per-level warp target sprite name.
-    if (m_10->m_124 == 0x14 && g_gameReg->m_134 == 1) {
+    if (m_object->m_124 == 0x14 && g_gameReg->m_134 == 1) {
         IconLevelState* lvl = (IconLevelState*)g_gameReg->m_curState;
         CString levelStr;
         EngFmt(&levelStr, "Level%i", lvl->m_levelNum);
         CString warpName;
         i32 target = g_buteMgr.GetInt((char*)"WarpStone", (char*)(const char*)levelStr);
         EngFmt(&warpName, "GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ%i", target);
-        m_10->ApplyName((const char*)warpName);
-        m_10->m_128 = target;
+        m_object->ApplyName((const char*)warpName);
+        m_object->m_128 = target;
     }
 
     // glitter overlay sprite for the powerup / curse groups
     if (glitter != 0) {
         IconSpriteFactory* fac = (IconSpriteFactory*)g_gameReg->m_world->m_8;
-        CGameObject* fx =
-            fac->CreateSprite(0, m_10->m_5c, m_10->m_60, 0x17319, "SimpleAnimation", 0x40003);
+        CGameObject* fx = fac->CreateSprite(
+            0,
+            m_object->m_5c,
+            m_object->m_60,
+            0x17319,
+            "SimpleAnimation",
+            0x40003
+        );
         m_glitterSprite = fx;
         if (glitter == 2) {
             fx->ApplyName("GAME_GLITTERRED");
@@ -474,10 +480,10 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj) {
     }
 
     // mark the owner's tile cell occupied (or clear the occupancy bit)
-    i32 mv = *(i32*)((char*)m_10 + 0x188);
+    i32 mv = *(i32*)((char*)m_object + 0x188);
     CTileGrid* grid = g_gameReg->m_tileGrid;
-    i32 col = m_10->m_5c >> 5;
-    i32 row = m_10->m_60 >> 5;
+    i32 col = m_object->m_5c >> 5;
+    i32 row = m_object->m_60 >> 5;
     if ((u32)col < (u32)grid->m_c && (u32)row < (u32)grid->m_10) {
         char* cell = (char*)grid->m_8[row] + col * 0x1c;
         *(i32*)(cell + 8) = mv;
@@ -488,7 +494,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj) {
             *(i32*)cell0 &= ~0x40000;
         }
     }
-    m_10->m_40 &= ~1;
+    m_object->m_40 &= ~1;
 }
 
 // ===========================================================================
@@ -513,7 +519,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj) {
 // jump-table reloc-typing fix.
 RVA(0x00097680, 0xf5)
 i32 CInGameIcon::HandleInput() {
-    CGameObject* obj = m_10;
+    CGameObject* obj = m_object;
     i32 cmd = obj->m_124;
     i32 rec;
     if (cmd == 0x55) {
@@ -563,7 +569,7 @@ i32 CInGameIcon::HandleInput() {
     } else {
         return 1;
     }
-    CGameObject* o = m_10;
+    CGameObject* o = m_object;
     o->m_58 = 1;
     o->m_50 = 0xa;
     o->m_4c = rec;
@@ -661,7 +667,7 @@ void RegisterIconState() {
 // flag the +0x38 render object dirty (|= 0x10000). Returns 0.
 RVA(0x00098340, 0x71)
 i32 CInGameIcon::RefreshCell() {
-    CGameObject* obj = m_10;
+    CGameObject* obj = m_object;
     i32 tileY = obj->m_5c >> 5;
     i32 tileX = (obj->m_60 + 0x18) >> 5;
     i64 delta = (i64)(u32)g_iconDefault - *(i64*)&m_driftPos;
@@ -721,10 +727,10 @@ static inline void ClearTileBit(CGameRegistry* reg, CGameObject* owner) {
 RVA(0x000986b0, 0x30c)
 i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
     CGameRegistry* reg = g_gameReg;
-    if (reg->m_134 == 1 && arg0 != g_curPlayer && m_10->m_124 != 0x55) {
+    if (reg->m_134 == 1 && arg0 != g_curPlayer && m_object->m_124 != 0x55) {
         return 0;
     }
-    CGameObject* obj = m_10;
+    CGameObject* obj = m_object;
     if (obj->m_124 == 0x55) {
         // ---- selection/preview path ----
         i32 param = obj->m_118;
@@ -750,14 +756,14 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
             return 0;
         }
         if (m_cmapId != 0) {
-            CGameObject* o = m_10;
+            CGameObject* o = m_object;
             if (o->m_5c < reg->m_viewOriginR && o->m_5c >= reg->m_viewOriginL
                 && o->m_60 < reg->m_viewOriginB && o->m_60 >= reg->m_viewOriginT) {
                 Eng_PostCmd(g_inputCtx, 0, 0, 0);
                 reg = g_gameReg;
             }
         }
-        ClearTileBit(reg, m_10);
+        ClearTileBit(reg, m_object);
         CGameObject* r = m_38;
         *(i32*)((char*)r + 0x8) |= 0x10000;
         return 1;
@@ -781,24 +787,24 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
     if (cmd == 0x14) {
         CIconRecord* placed = ((CIconRecord**)((char*)reg->m_68 + 0x1c))[idx];
         if (placed != 0) {
-            placed->m_38c = m_10->m_128;
+            placed->m_38c = m_object->m_128;
             reg = g_gameReg;
         }
     }
     if (m_cmapId != 0) {
-        CGameObject* o = m_10;
+        CGameObject* o = m_object;
         if (o->m_5c < reg->m_viewOriginR && o->m_5c >= reg->m_viewOriginL
             && o->m_60 < reg->m_viewOriginB && o->m_60 >= reg->m_viewOriginT) {
             Eng_PostCmd(g_inputCtx, 0, 0, 0);
             reg = g_gameReg;
         }
     }
-    ClearTileBit(reg, m_10);
+    ClearTileBit(reg, m_object);
     CGameObject* owner = m_38;
     if (*(i32*)((char*)owner + 0x120) > 0) {
         *(i32*)((char*)owner + 0x40) |= 1;
-        CGameObjAux* aux = m_14;
-        m_30 = aux->m_1c;
+        CGameObjAux* aux = m_objAux;
+        m_prevAnimSetNode = aux->m_1c;
         aux->m_1c = g_buteTree.Find(g_iconBute);
         owner = m_38;
         m_driftPos = *(i32*)((char*)owner + 0x120);

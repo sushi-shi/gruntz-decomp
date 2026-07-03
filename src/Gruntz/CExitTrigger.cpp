@@ -119,39 +119,40 @@ extern CGameRegistry* g_exitGameReg;
 RVA(0x0003ecf0, 0x292)
 CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj) {
     m_38->m_08 |= 2;
-    m_30 = m_14->m_1c;
-    m_14->m_1c = g_buteTree.Find(s_actKeyA);
-    m_10->m_5c = (m_10->m_5c & ~0x1f) + 0x10;
-    m_10->m_60 = (m_10->m_60 & ~0x1f) + 0x10;
-    if (m_10->m_74 != 0x124f8) {
-        m_10->m_74 = 0x124f8;
-        m_10->m_08 |= 0x20000;
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find(s_actKeyA);
+    m_object->m_5c = (m_object->m_5c & ~0x1f) + 0x10;
+    m_object->m_60 = (m_object->m_60 & ~0x1f) + 0x10;
+    if (m_object->m_74 != 0x124f8) {
+        m_object->m_74 = 0x124f8;
+        m_object->m_08 |= 0x20000;
     }
-    m_10->m_144 = 1;
-    m_10->m_14c = 1;
-    m_10->m_148 = 1;
-    m_10->m_150 = 1;
+    m_object->m_144 = 1;
+    m_object->m_14c = 1;
+    m_object->m_148 = 1;
+    m_object->m_150 = 1;
     m_savedGeoId = m_38->m_1b4;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     m_warlordId = 0;
-    CExitFocusSlot* slot = (CExitFocusSlot*)((char*)g_exitGameReg + m_10->m_124 * 0x238 + 0x150);
+    CExitFocusSlot* slot =
+        (CExitFocusSlot*)((char*)g_exitGameReg + m_object->m_124 * 0x238 + 0x150);
     if (slot->m_20 == 0) {
         m_resolved = 0;
         return;
     }
-    slot->m_220 = m_10->m_5c;
-    slot->m_224 = m_10->m_60;
+    slot->m_220 = m_object->m_5c;
+    slot->m_224 = m_object->m_60;
     CExitEntity* e = ((CExitMgr30*)g_exitGameReg->m_world)
-                         ->m_8->Probe(0, m_10->m_5c, m_10->m_60, 0, "Warlord", 0x40003);
+                         ->m_8->Probe(0, m_object->m_5c, m_object->m_60, 0, "Warlord", 0x40003);
     if (e != 0) {
-        e->m_124 = m_10->m_124;
+        e->m_124 = m_object->m_124;
         e->m_7c->m_10(e);
         m_warlordId = e->m_7c->m_18;
-        if (m_10->m_124 == g_644c54) {
+        if (m_object->m_124 == g_644c54) {
             ((CExitCueSink*)g_exitGameReg->m_68)->m_2a0 = m_warlordId;
         }
         CExitFocusSlot* slot2 =
-            (CExitFocusSlot*)((char*)g_exitGameReg + m_10->m_124 * 0x238 + 0x150);
+            (CExitFocusSlot*)((char*)g_exitGameReg + m_object->m_124 * 0x238 + 0x150);
         if (slot2 != 0) {
             slot2->m_0c = e->m_188;
         }

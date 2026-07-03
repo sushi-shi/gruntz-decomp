@@ -325,17 +325,17 @@ public:
 // @source: rtti-vptr
 RVA(0x000b49b0, 0xa8)
 CRainCloud::CRainCloud(CGameObject* obj) : CPathHazard(obj) {
-    CGameObject* o = m_10;
+    CGameObject* o = m_object;
     i32 n = g_gameReg->m_78->m_28;
     o->m_58 = 1;
     o->m_50 = 0x7;
     o->m_4c = n;
     m_savedGeoId = m_38->m_1b4;
     m_38->ApplyLookupGeometry("LEVEL_RAINCLOUD", 0);
-    m_10->m_144 = 1;
-    m_10->m_14c = 1;
-    m_10->m_148 = 1;
-    m_10->m_150 = 1;
+    m_object->m_144 = 1;
+    m_object->m_14c = 1;
+    m_object->m_148 = 1;
+    m_object->m_150 = 1;
 }
 
 // @confidence: high
@@ -352,7 +352,7 @@ CRainCloud::CRainCloud(CGameObject* obj) : CPathHazard(obj) {
 // global.md / SBI_ImageSet::Serialize. Deferred to the final sweep.
 RVA(0x000b4a90, 0x145)
 CUFO::CUFO(CGameObject* obj) : CPathHazard(obj) {
-    CGameObject* o = m_10;
+    CGameObject* o = m_object;
     i32 sx = o->m_5c;
     i32 sy = o->m_60;
     m_savedGeoId = m_38->m_1b4;
@@ -367,18 +367,18 @@ CUFO::CUFO(CGameObject* obj) : CPathHazard(obj) {
             sl->m_124 = 2;
             sl->m_11c = 0;
             sl->m_118 = i;
-            sl->m_120 = m_10->m_130;
+            sl->m_120 = m_object->m_130;
             sub->m_vptr->Configure(sub, sl);
-            sl->m_7c->m_18->m_owner = m_10;
+            sl->m_7c->m_18->m_owner = m_object;
         }
     }
-    m_10->m_58 = 1;
-    m_10->m_50 = 0x8;
-    m_10->m_54 = 0x80;
-    m_10->m_144 = 0;
-    m_10->m_14c = 0;
-    m_10->m_148 = 0;
-    m_10->m_150 = 0;
+    m_object->m_58 = 1;
+    m_object->m_50 = 0x8;
+    m_object->m_54 = 0x80;
+    m_object->m_144 = 0;
+    m_object->m_14c = 0;
+    m_object->m_148 = 0;
+    m_object->m_150 = 0;
 }
 
 // ---------------------------------------------------------------------------

@@ -211,16 +211,16 @@ RVA(0x000dec60, 0x255)
 CProjectile::CProjectile(CGameObject* owner) : CMovingLogic(owner) {
     m_148 = 0;
     m_14c = 0;
-    *(i32*)((char*)m_10 + 0xe4) = 7; // CGameObject+0xe4 not modeled (needs UserLogic.h)
+    *(i32*)((char*)m_object + 0xe4) = 7; // CGameObject+0xe4 not modeled (needs UserLogic.h)
     Fn16ea90();
     m_150 = (i32)owner;
     m_sprite = (CProjRenderObj*)owner;
     m_158 = (i32)owner->m_7c;
     m_sprite->m_08 |= 0x2000002;
     m_sprite->m_40 |= 1;
-    if (m_10->m_74 != 0xcf850) {
-        m_10->m_74 = 0xcf850;
-        m_10->m_08 |= 0x20000;
+    if (m_object->m_74 != 0xcf850) {
+        m_object->m_74 = 0xcf850;
+        m_object->m_08 |= 0x20000;
     }
     memset(&m_frame1, 0, 0x1c); // zero the seven +0x1e0..+0x1fb sprite-frame slots
     m_sound = 0;
@@ -240,7 +240,7 @@ typedef void (CProjectile::*ProjCallback)();
 RVA(0x00013c70, 0x47)
 void CProjectile::ReleaseDeferred(i32) {
     if (m_04 != 0) {
-        if (m_08 != 0 && (i32)m_14->m_1c == m_28) {
+        if (m_08 != 0 && (i32)m_objAux->m_1c == m_28) {
             (this->*(ProjCallback&)m_08)();
             m_08 = 0;
         }
@@ -341,7 +341,7 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
     m_targetId = t0;
     m_ownerId = t1;
 
-    CGameObject* owner = m_10;
+    CGameObject* owner = m_object;
     double dx = (double)(m_targetX - owner->m_5c);
     double dy = (double)(m_targetY - owner->m_60);
     i32 count = 1;
@@ -493,8 +493,8 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
     }
 
     // Latch the class act key ("A"): save the old registry node, then re-point it.
-    m_30 = m_14->m_1c;
-    m_14->m_1c = g_buteTree.Find("A");
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find("A");
     return 1;
 }
 
@@ -667,7 +667,7 @@ void CProjectile::LoadProjectileEffects() {
     }
 
     if (m_kind == 0x16) { // WINGZ: loop the flight sound while over the level
-        CGameObject* owner = m_10;
+        CGameObject* owner = m_object;
         CGameRegistry* reg = g_gameReg;
         if (owner->m_5c < reg->m_viewOriginR && owner->m_5c >= reg->m_viewOriginL
             && owner->m_60 < reg->m_viewOriginB && owner->m_60 >= reg->m_viewOriginT) {
@@ -769,8 +769,8 @@ void CProjectile::LoadProjectileEffects() {
                 }
             }
         }
-        m_10->m_5c = offX + m_curX;
-        m_10->m_60 = offY + m_curY;
+        m_object->m_5c = offX + m_curX;
+        m_object->m_60 = offY + m_curY;
         if (m_shadow != 0) {
             m_shadow->m_5c = localX;
             m_shadow->m_60 = yRes;
@@ -896,8 +896,8 @@ void CProjectile::StepMotion() {
     if (m_launched == 0) {
         if (m_phase > g_projPhase0) {
             // launch frame: snap render objects to the muzzle, mark launched.
-            m_10->m_5c = m_targetX;
-            m_10->m_60 = m_targetY;
+            m_object->m_5c = m_targetX;
+            m_object->m_60 = m_targetY;
             if (m_shadow != 0) {
                 m_shadow->m_5c = m_targetX;
                 m_shadow->m_60 = m_targetY;
@@ -928,8 +928,8 @@ step:
     m_posX = px;
     m_posY = py;
     m_phase = px;
-    m_10->m_5c = (i32)m_posX;
-    m_10->m_60 = (i32)m_posY;
+    m_object->m_5c = (i32)m_posX;
+    m_object->m_60 = (i32)m_posY;
     if (m_shadow != 0) {
         m_shadow->m_5c = (i32)m_posX;
         m_shadow->m_60 = (i32)m_posY;
@@ -955,14 +955,14 @@ step:
 // ---------------------------------------------------------------------------
 RVA(0x000e0b10, 0x1bd)
 void CProjectile::ScanTargets(i32 impact) {
-    i32 tileY = 0;                   // [esp+0x10]  outer (row) counter
-    i32 projXlo = m_10->m_5c - 0x10; // [esp+0x1c]  m_10 = owner CGameObject
-    i32 projYlo = m_10->m_60 - 0x10; // [esp+0x20]
-    i32 projXhi = projXlo + 0x20;    // [esp+0x24]
-    i32 projYhi = projYlo + 0x20;    // [esp+0x28]
-    i32 rowBase = 0x1c;              // [esp+0x18]  row byte stride base
-    i32 colOff;                      // [esp+0x14]
-    i32 col;                         // ebp
+    i32 tileY = 0;                       // [esp+0x10]  outer (row) counter
+    i32 projXlo = m_object->m_5c - 0x10; // [esp+0x1c]  m_10 = owner CGameObject
+    i32 projYlo = m_object->m_60 - 0x10; // [esp+0x20]
+    i32 projXhi = projXlo + 0x20;        // [esp+0x24]
+    i32 projYhi = projYlo + 0x20;        // [esp+0x28]
+    i32 rowBase = 0x1c;                  // [esp+0x18]  row byte stride base
+    i32 colOff;                          // [esp+0x14]
+    i32 col;                             // ebp
     do {
         col = 0;
         colOff = rowBase;

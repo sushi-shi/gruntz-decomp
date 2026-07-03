@@ -15,24 +15,24 @@
 // stamp needed. The eight game slots without a reconstructed body (4/5/6/7/8/10/
 // 11/13) are declared-only virtuals -> external reloc-masked references.
 //
-// Layout (offsets + code bytes are load-bearing; field names are placeholders):
-//   +0x00 vptr  -> 0x5f08c0
-//   +0x04 m_4   - template->[0] (the owner / catalog host)
-//   +0x08 m_8   - template->[4] (the on-screen chatbox host)
-//   +0x0c m_c   - the template pointer itself
-//   +0x10 m_10  - CString (item name; GetName returns it)
-//   +0x14 m_14  - CString (the key string Init stores)
-//   +0x18 m_18  - i32 (Init arg a3; Place x base)
-//   +0x1c m_1c  - i32 (row, zeroed by Init)
-//   +0x20 m_20  - i32 flags (Init arg a5; bit0 -> kind 3 vs 1)
-//   +0x24 m_24  - i32 kind (1 or 3; 1/2 focusable to the page)
-//   +0x28 m_28  - sub-page pointer (catalog Lookup result)
-//   +0x2c m_2c  - cached AddTail POSITION (set by the page)
-//   +0x30 m_30  - i32
-//   +0x34..+0x40 - geometry rect written by Place (m_34 sentinel 0xeeeeeeee)
-//   +0x44 m_44  - i32 (sentinel 0xeeeeeeee; placed-x cache)
-//   +0x48 m_48  - i32 (placed-y cache)
-//   +0x4c..+0x58 - CString m_4c/m_50/m_54/m_58
+// Layout (offsets + code bytes are load-bearing; recovered from usage):
+//   +0x00 vptr        -> 0x5f08c0
+//   +0x04 m_owner     - template->[0] (the owner / catalog host)
+//   +0x08 m_host      - template->[4] (the on-screen chatbox host)
+//   +0x0c m_template  - the template pointer itself
+//   +0x10 m_name      - CString (item name; GetName)
+//   +0x14 m_key       - CString (the key string Init stores; Trigger payload)
+//   +0x18 m_cmdId     - i32 primary WM_COMMAND id (NotifyCmd wParam)
+//   +0x1c m_1c        - i32 secondary cmd / sub-index (role dual; left placeholder)
+//   +0x20 m_flags     - i32 flags (Init arg a5; bit0 -> disabled, 0x10000 -> loop)
+//   +0x24 m_state     - i32 visual state (1 normal, 2 selected, 3 disabled)
+//   +0x28 m_sprite    - resolved sprite/placer (catalog Lookup result)
+//   +0x2c m_listPos   - cached AddTail POSITION (set by the page)
+//   +0x30 m_cmdParam  - i32 WM_COMMAND lParam
+//   +0x34..+0x40 - placed hit rect (m_hitLeft/Top/Right/Bottom; m_hitLeft sentinel 0xeeeeeeee)
+//   +0x44 m_fixedX    - i32 placement x override (sentinel 0xeeeeeeee = use arg)
+//   +0x48 m_fixedY    - i32 placement y override
+//   +0x4c..+0x58 - CString m_navFwdName/m_navBackName/m_54/m_58
 #ifndef GRUNTZ_MENUITEM_H
 #define GRUNTZ_MENUITEM_H
 
@@ -101,52 +101,52 @@ public:
     virtual i32 OnInit();                           // 0x184660  slot 13 (declared-only)
 
     // Non-virtual __thiscall helpers/accessors (bodies in MenuItem.cpp):
-    CString GetName();     // 0x1845b0  return m_10
-    CString GetField4c();  // 0x1845d0  return m_4c
-    CString GetField50();  // 0x1845f0  return m_50
-    CString GetField54();  // 0x184610  return m_54
-    CString GetField58();  // 0x184630  return m_58
-    i32 NotifyCmd();       // 0x185580  PostMessage WM_COMMAND (called by Trigger)
-    i32 Hit(i32 x, i32 y); // 0x185700  bounds test
+    CString GetName();        // 0x1845b0  return m_name
+    CString GetNavFwdName();  // 0x1845d0  return m_navFwdName
+    CString GetNavBackName(); // 0x1845f0  return m_navBackName
+    CString GetField54();     // 0x184610  return m_54
+    CString GetField58();     // 0x184630  return m_58
+    i32 NotifyCmd();          // 0x185580  PostMessage WM_COMMAND (called by Trigger)
+    i32 Hit(i32 x, i32 y);    // 0x185700  bounds test
 
-    // implicit vptr           // +0x00
-    CMenuItemHostOwner* m_4; // +0x04  owner / catalog host (template->[0])
-    CMenuItemHost* m_8;      // +0x08
-    void* m_c;               // +0x0c
-    CString m_10;            // +0x10
-    CString m_14;            // +0x14
-    i32 m_18;                // +0x18
-    i32 m_1c;                // +0x1c
-    i32 m_20;                // +0x20
-    i32 m_24;                // +0x24
-    void* m_28;              // +0x28
-    void* m_2c;              // +0x2c
-    i32 m_30;                // +0x30
-    i32 m_34;                // +0x34
-    i32 m_38;                // +0x38
-    i32 m_3c;                // +0x3c
-    i32 m_40;                // +0x40
-    i32 m_44;                // +0x44
-    i32 m_48;                // +0x48
-    CString m_4c;            // +0x4c
-    CString m_50;            // +0x50
-    CString m_54;            // +0x54
-    CString m_58;            // +0x58
+    // implicit vptr                  // +0x00
+    CMenuItemHostOwner* m_owner;   // +0x04  owner / catalog host (template->[0])
+    CMenuItemHost* m_host;         // +0x08  chatbox host (command window + Scroll/ReplaceNode)
+    CMenuItemTemplate* m_template; // +0x0c  the source template (Init arg a0)
+    CString m_name;                // +0x10  item name (GetName)
+    CString m_key;                 // +0x14  key string (Trigger ReplaceNode payload)
+    i32 m_cmdId;                   // +0x18  primary WM_COMMAND id (NotifyCmd wParam)
+    i32 m_1c;                      // +0x1c  secondary cmd / sub-index (role dual; unproven)
+    i32 m_flags;                   // +0x20  flags: bit0 -> disabled state, 0x10000 -> loop
+    i32 m_state;                   // +0x24  visual state: 1 normal, 2 selected, 3 disabled
+    void* m_sprite;                // +0x28  resolved sprite/placer (catalog Lookup result)
+    void* m_listPos;               // +0x2c  cached POSITION in the page's item list
+    i32 m_cmdParam;                // +0x30  WM_COMMAND lParam (NotifyCmd)
+    i32 m_hitLeft;                 // +0x34  placed hit rect left (sentinel 0xeeeeeeee = unplaced)
+    i32 m_hitTop;                  // +0x38  placed hit rect top
+    i32 m_hitRight;                // +0x3c  placed hit rect right
+    i32 m_hitBottom;               // +0x40  placed hit rect bottom
+    i32 m_fixedX;                  // +0x44  placement x override (sentinel 0xeeeeeeee = use arg)
+    i32 m_fixedY;                  // +0x48  placement y override
+    CString m_navFwdName;          // +0x4c  forward-nav target item name (SelectFwd2)
+    CString m_navBackName;         // +0x50  backward-nav target item name (SelectBack2)
+    CString m_54;                  // +0x54  (GetField54 only; role unproven)
+    CString m_58;                  // +0x58  (GetField58 only; role unproven)
 };
 
 // The leaf ctor MSVC inlines into the page's AddItem/AddSubItem: the six CString
 // members + implicit vptr stamp fall out of the ctor prologue; the body zeroes the
 // scalar fields, sets the two sentinels, and clears the four trailing CStrings.
 inline CMenuItem::CMenuItem() {
-    m_8 = 0;
-    m_c = 0;
-    m_28 = 0;
-    m_4 = 0;
-    m_2c = 0;
-    m_34 = (i32)0xeeeeeeee;
-    m_44 = (i32)0xeeeeeeee;
-    m_4c.Empty();
-    m_50.Empty();
+    m_host = 0;
+    m_template = 0;
+    m_sprite = 0;
+    m_owner = 0;
+    m_listPos = 0;
+    m_hitLeft = (i32)0xeeeeeeee;
+    m_fixedX = (i32)0xeeeeeeee;
+    m_navFwdName.Empty();
+    m_navBackName.Empty();
     m_54.Empty();
     m_58.Empty();
 }

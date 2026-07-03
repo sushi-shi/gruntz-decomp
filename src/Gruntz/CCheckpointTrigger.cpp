@@ -61,43 +61,43 @@ extern char s_actKeyA[]; // "A"
 // ctors; not source-steerable. Parked for the final sweep.
 RVA(0x0010ee20, 0x27d)
 CCheckpointTrigger::CCheckpointTrigger(CGameObject* obj) : CUserLogic(obj) {
-    m_30 = m_14->m_1c;
-    m_14->m_1c = g_buteTree.Find(s_actKeyA);
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find(s_actKeyA);
     m_38->m_08 |= 2;
     m_38->m_08 |= 1;
-    i32 zk = m_10->m_198->m_1c + m_10->m_60 + 0x186a0;
-    if (m_10->m_74 != zk) {
-        m_10->m_74 = zk;
-        m_10->m_08 |= 0x20000;
+    i32 zk = m_object->m_198->m_1c + m_object->m_60 + 0x186a0;
+    if (m_object->m_74 != zk) {
+        m_object->m_74 = zk;
+        m_object->m_08 |= 0x20000;
     }
     memset(m_state, 0, sizeof(m_state));
-    if (m_10->m_134 == 0x80000000) {
-        m_10->m_134 = 0;
+    if (m_object->m_134 == 0x80000000) {
+        m_object->m_134 = 0;
     }
-    if (m_10->m_144 == 0x80000000) {
-        m_10->m_144 = 0;
+    if (m_object->m_144 == 0x80000000) {
+        m_object->m_144 = 0;
     }
-    if (m_10->m_154 == 0x80000000) {
-        m_10->m_154 = 0;
+    if (m_object->m_154 == 0x80000000) {
+        m_object->m_154 = 0;
     }
-    if (m_10->m_64 == 0x80000000) {
-        m_10->m_64 = 0;
+    if (m_object->m_64 == 0x80000000) {
+        m_object->m_64 = 0;
     }
-    m_state[0] = m_10->m_134;
-    m_state[1] = m_10->m_138;
-    m_state[2] = m_10->m_13c;
-    m_state[3] = m_10->m_140;
-    m_state[4] = m_10->m_144;
-    m_state[5] = m_10->m_148;
-    m_state[6] = m_10->m_14c;
-    m_state[7] = m_10->m_150;
-    m_state[8] = m_10->m_154;
-    m_state[9] = m_10->m_158;
-    m_state[10] = m_10->m_15c;
-    m_state[11] = m_10->m_160;
-    m_state[12] = m_10->m_64;
-    m_state[13] = m_10->m_68;
-    m_state[14] = m_10->m_6c;
+    m_state[0] = m_object->m_134;
+    m_state[1] = m_object->m_138;
+    m_state[2] = m_object->m_13c;
+    m_state[3] = m_object->m_140;
+    m_state[4] = m_object->m_144;
+    m_state[5] = m_object->m_148;
+    m_state[6] = m_object->m_14c;
+    m_state[7] = m_object->m_150;
+    m_state[8] = m_object->m_154;
+    m_state[9] = m_object->m_158;
+    m_state[10] = m_object->m_15c;
+    m_state[11] = m_object->m_160;
+    m_state[12] = m_object->m_64;
+    m_state[13] = m_object->m_68;
+    m_state[14] = m_object->m_6c;
     for (m_firstEmpty = 0; m_firstEmpty < 15; m_firstEmpty++) {
         if (m_state[m_firstEmpty] == 0) {
             break;

@@ -125,14 +125,14 @@ CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj) {
         m_38->m_08 |= 0x10000;
         return;
     }
-    m_30 = m_14->m_1c;
-    m_14->m_1c = g_buteTree.Find("A");
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find("A");
     m_40 = m_38->m_1b4;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     m_38->ApplyName("GAME_HELPBOX");
     m_38->m_08 |= 2;
 
-    i32 vis = m_10->m_128;
+    i32 vis = m_object->m_128;
     if (vis == 1) {
         if (g_gameReg->m_isEasyMode == 0) {
             m_38->m_08 |= 0x10000;
@@ -149,11 +149,11 @@ CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj) {
         }
     }
 
-    m_10->m_5c = (m_10->m_5c & ~0x1f) + 0x10;
-    m_10->m_60 = (m_10->m_60 & ~0x1f) + 0x10;
-    if (m_10->m_74 != 0x17318) {
-        m_10->m_74 = 0x17318;
-        m_10->m_08 |= 0x20000;
+    m_object->m_5c = (m_object->m_5c & ~0x1f) + 0x10;
+    m_object->m_60 = (m_object->m_60 & ~0x1f) + 0x10;
+    if (m_object->m_74 != 0x17318) {
+        m_object->m_74 = 0x17318;
+        m_object->m_08 |= 0x20000;
     }
     m_54 = -1;
     m_58 = -1;

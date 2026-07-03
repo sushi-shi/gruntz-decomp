@@ -87,20 +87,20 @@ void CGruntPowerupSprite::RegisterActs() {
 // renderable's display fields (visible=1, state=7, bute-set record from the
 // registry's +0x78 table indexed by the powerup id), clear bit 0 of the +0x38
 // game object's flags, then point the +0x14 aux's bute node at the "A" node
-// (saving the old node into m_30). Returns 1.
+// (saving the old node into m_prevAnimSetNode). Returns 1.
 RVA(0x00080380, 0x6c)
 i32 CGruntPowerupSprite::SetCell(i32 x, i32 y, i32 powerup) {
     m_cellX = x;
     m_cellY = y;
     m_powerupId = powerup;
     i32 rec = *(i32*)((char*)g_mgrSettings->m_78 + powerup * 4 + 0x14);
-    CGameObject* r = m_10;
+    CGameObject* r = m_object;
     r->m_58 = 1;
     r->m_50 = 7;
     r->m_4c = rec;
     m_38->m_40 &= ~1;
-    m_30 = m_14->m_1c;
-    m_14->m_1c = g_buteTree.Find("A");
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find("A");
     return 1;
 }
 
@@ -119,8 +119,8 @@ i32 CGruntPowerupSprite::Update() {
     ((CIndicatorSyncHelper*)((char*)m_38 + 0x1a0))->Sync(g_6bf3bc);
     CGruntEntry* e = ((CGruntEntry**)((char*)g_mgrSettings->m_68 + 0x1c))[m_cellX * 15 + m_cellY];
     if (e != 0) {
-        m_10->m_5c = e->m_10->m_5c;
-        m_10->m_60 = e->m_10->m_60;
+        m_object->m_5c = e->m_10->m_5c;
+        m_object->m_60 = e->m_10->m_60;
     }
     return 0;
 }
@@ -146,7 +146,7 @@ i32 CGruntPowerupSprite::Serialize(PupArchive* ar, i32 mode, i32 a3, i32 a4) {
             ar->Read(&m_cellX, 8);
             ar->Read(&m_powerupId, 4);
             i32 id = m_powerupId;
-            CGameObject* r = m_10;
+            CGameObject* r = m_object;
             i32 v = *(i32*)((char*)g_mgrSettings->m_78 + id * 4 + 0x14);
             r->m_58 = 1;
             r->m_4c = v;

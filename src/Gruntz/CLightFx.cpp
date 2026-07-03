@@ -4,7 +4,7 @@
 //   * Activate  (0x9d520) - bind the effect spec from the object bute map.
 //   * RebindNode(0x9d770) - re-point the object bute map at the "A" section.
 //
-// The spine (CUserLogic base, m_14/m_30/m_38/m_3c) is in <Gruntz/UserLogic.h>;
+// The spine (CUserLogic base, m_14/m_prevAnimSetNode/m_38/m_3c) is in <Gruntz/UserLogic.h>;
 // CLightFx adds the +0x40/+0x54/+0x58 leaf words. Engine callees (the bute-map
 // Lookup, the per-frame logic-table push, the layer SetNode) are modeled NO-body
 // so their call displacements reloc-mask. Field names are placeholders; only the
@@ -208,12 +208,12 @@ i32 CLightFx::Activate(i32 spec, i32 anchorA, i32 effect, i32 anchorB) {
 
 // ===========================================================================
 // CLightFx::RebindNode  (0x9d770)  - save the object map's current bute node into
-// m_30, re-point it at the "A" section of g_buteTree, return 0.
+// m_prevAnimSetNode, re-point it at the "A" section of g_buteTree, return 0.
 // ===========================================================================
 RVA(0x0009d770, 0x25)
 i32 CLightFx::RebindNode() {
-    m_30 = m_14->m_1c;
-    m_14->m_1c = g_buteTree.Find("A");
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find("A");
     return 0;
 }
 

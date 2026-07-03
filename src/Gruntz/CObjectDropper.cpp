@@ -189,11 +189,11 @@ CObjectDropper::CObjectDropper(CGameObject* obj) : CUserLogic(obj) {
     m_dropInterval = 0;
     m_geomId = m_38->m_1b4;
     m_38->ApplyLookupGeometry("LEVEL_OBJECTDROPPER", 0);
-    m_30 = m_14->m_1c;
-    m_14->m_1c = g_buteTree.Find("A");
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find("A");
     m_38->m_08 |= 0x2000002;
 
-    CObjDropObj* o = (CObjDropObj*)m_10;
+    CObjDropObj* o = (CObjDropObj*)m_object;
     i32 snapX = (o->m_screenX & ~0x1f) + 0x10;
     i32 snapY = (o->m_screenY & ~0x1f) + 0x10;
     o->m_screenX = snapX;
@@ -262,7 +262,7 @@ RVA(0x000c62e0, 0x2dd)
 i32 CObjectDropper::Update() {
     if ((i64)g_645588 - m_lastDropTime >= m_dropInterval) {
         if (g_gameReg->m_editGate == 0 || g_gameReg->m_mode != 1) {
-            CObjDropObj* o = (CObjDropObj*)m_10;
+            CObjDropObj* o = (CObjDropObj*)m_object;
             DropperBox box;
             box.left = o->m_screenX - o->m_footprint->m_halfWidth + 7;
             box.right = o->m_screenX + o->m_footprint->m_halfWidth - 7;
@@ -336,7 +336,7 @@ i32 CObjectDropper::Update() {
         }
     }
 
-    m_10->m_5c = (i32)m_posX;
-    m_10->m_60 = (i32)m_posY;
+    m_object->m_5c = (i32)m_posX;
+    m_object->m_60 = (i32)m_posY;
     return 0;
 }

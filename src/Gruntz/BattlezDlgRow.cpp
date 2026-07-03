@@ -23,7 +23,7 @@ public:
     i32 ToggleRow(i32 row);
 
     char m_pad00[0x5c];
-    char* m_5c; // +0x5c row-record base
+    char* m_slots; // +0x5c row-record (slot-array) base
 };
 
 // @early-stop
@@ -38,7 +38,7 @@ i32 CBattlezDlg::ToggleRow(i32 row) {
     CWnd* d = GetCtrlD(row);
     CWnd* c = GetCtrlC(row);
     if (row != 0) {
-        char* rec = m_5c + row * 0x238 + 0x150;
+        char* rec = m_slots + row * 0x238 + 0x150;
         if (g_pSendMessageA(a->m_hWnd, 0x147, 0, 0) != 0) {
             b->EnableWindow(1);
             d->EnableWindow(1);

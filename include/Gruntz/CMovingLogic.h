@@ -167,36 +167,36 @@ inline CMovingLogic::CMovingLogic(CGameObject* owner) : CUserLogic(owner) {
     // Each bound: 0 => the shared MIN/MAX double copied dword-wise; else the int
     // widened via fild. Written as if/else (not ?:) so the constant branch stays a
     // mov/mov dword copy instead of being unified into an x87 fld/fstp.
-    i32 lo0 = ((CProjBoundCfg*)m_14)->m_2c;
+    i32 lo0 = ((CProjBoundCfg*)m_objAux)->m_2c;
     if (lo0 == 0) {
         m_a8 = g_movingLogicMin;
     } else {
         m_a8 = (double)lo0;
     }
-    i32 lo1 = ((CProjBoundCfg*)m_14)->m_34;
+    i32 lo1 = ((CProjBoundCfg*)m_objAux)->m_34;
     if (lo1 == 0) {
         m_b0 = g_movingLogicMin;
     } else {
         m_b0 = (double)lo1;
     }
-    i32 hi0 = ((CProjBoundCfg*)m_14)->m_30;
+    i32 hi0 = ((CProjBoundCfg*)m_objAux)->m_30;
     if (hi0 == 0) {
         m_c0 = g_movingLogicMax;
     } else {
         m_c0 = (double)hi0;
     }
-    i32 hi1 = ((CProjBoundCfg*)m_14)->m_38;
+    i32 hi1 = ((CProjBoundCfg*)m_objAux)->m_38;
     if (hi1 == 0) {
         m_c8 = g_movingLogicMax;
     } else {
         m_c8 = (double)hi1;
     }
     Motion()->SetParams(
-        (double)m_10->m_5c,
-        (double)m_10->m_60,
+        (double)m_object->m_5c,
+        (double)m_object->m_60,
         0.0,
-        (double)m_10->m_164,
-        (double)m_10->m_168,
+        (double)m_object->m_164,
+        (double)m_object->m_168,
         0.0,
         0.0,
         0.0,

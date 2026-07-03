@@ -134,9 +134,9 @@ extern i32 VTrigLogic_11a700();
 // modeled NO-body so the calls reloc-mask.
 struct CVoiceHit; // the entity QueryAt returns
 struct CVoiceSink {
-    // QueryAt(x, y, &m_10->m_134, &outA, &outB, &m_10->m_144) -> entity* (or 0).
+    // QueryAt(x, y, &m_object->m_134, &outA, &outB, &m_object->m_144) -> entity* (or 0).
     CVoiceHit* QueryAt(i32 x, i32 y, i32* rect, i32* outA, i32* outB, i32* z); // 0x75c60
-    // CueA(hit, m_10->m_124, m_10->m_128, 0, -1, -1) -> nonzero on fire.
+    // CueA(hit, m_object->m_124, m_object->m_128, 0, -1, -1) -> nonzero on fire.
     i32 CueA(CVoiceHit* hit, i32 b, i32 c, i32 d, i32 e, i32 f); // 0x11b3b0
 };
 SIZE_UNKNOWN(CVoiceSink);
@@ -203,14 +203,14 @@ RVA(0x00119b50, 0x1ce)
 CVoiceTrigger::CVoiceTrigger(CGameObject* obj) : CUserLogic(obj) {
     m_38->m_08 |= 2;
     m_38->m_40 |= 1;
-    m_30 = m_14->m_1c;
-    m_14->m_1c = g_buteTree.Find(s_actKeyA);
-    m_10->m_5c = (m_10->m_5c & ~0x1f) + 0x10;
-    m_10->m_60 = (m_10->m_60 & ~0x1f) + 0x10;
-    m_10->m_144 = m_10->m_5c - (m_10->m_134 << 5) - 7;
-    m_10->m_14c = m_10->m_5c + (m_10->m_13c << 5) + 7;
-    m_10->m_148 = m_10->m_60 - (m_10->m_138 << 5) - 7;
-    m_10->m_150 = m_10->m_60 + (m_10->m_140 << 5) + 7;
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find(s_actKeyA);
+    m_object->m_5c = (m_object->m_5c & ~0x1f) + 0x10;
+    m_object->m_60 = (m_object->m_60 & ~0x1f) + 0x10;
+    m_object->m_144 = m_object->m_5c - (m_object->m_134 << 5) - 7;
+    m_object->m_14c = m_object->m_5c + (m_object->m_13c << 5) + 7;
+    m_object->m_148 = m_object->m_60 - (m_object->m_138 << 5) - 7;
+    m_object->m_150 = m_object->m_60 + (m_object->m_140 << 5) + 7;
 }
 
 // CVoiceTrigger::InitActReg @0x11a320 - construct the trigger's OWN activation-
@@ -258,9 +258,15 @@ void CVoiceTrigger::RegisterActs() {
 RVA(0x0011a700, 0xae)
 i32 CVoiceTrigger::Tick() {
     i32 outA, outB;
-    CVoiceHit* hit =
-        ((CVoiceSink*)g_gameReg->m_68)
-            ->QueryAt(m_10->m_5c, m_10->m_60, &m_10->m_134, &outA, &outB, &m_10->m_144);
+    CVoiceHit* hit = ((CVoiceSink*)g_gameReg->m_68)
+                         ->QueryAt(
+                             m_object->m_5c,
+                             m_object->m_60,
+                             &m_object->m_134,
+                             &outA,
+                             &outB,
+                             &m_object->m_144
+                         );
     if (hit && outA == g_644c54) {
         CVoiceHitSprite* hs = hit->m_sprite;
         i32 hy = hs->m_screenY;
@@ -268,7 +274,7 @@ i32 CVoiceTrigger::Tick() {
         if (hx < g_gameReg->m_viewOriginR && hx >= g_gameReg->m_viewOriginL
             && hy < g_gameReg->m_viewOriginB && hy >= g_gameReg->m_viewOriginT) {
             if (((CVoiceSink*)g_gameReg->m_cueSink)
-                    ->CueA(hit, m_10->m_124, m_10->m_128, 0, -1, -1)) {
+                    ->CueA(hit, m_object->m_124, m_object->m_128, 0, -1, -1)) {
                 m_38->m_08 |= 0x10000;
             }
         }

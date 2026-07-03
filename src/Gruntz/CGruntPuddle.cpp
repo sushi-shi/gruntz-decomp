@@ -35,18 +35,18 @@ CGruntPuddle::~CGruntPuddle() {}
 RVA(0x00040490, 0x1ab)
 CGruntPuddle::CGruntPuddle(CGameObject* obj) : CUserLogic(obj) {
     m_38->m_08 |= 2;
-    if (m_10->m_74 != 0xa) {
-        m_10->m_74 = 0xa;
-        m_10->m_08 |= 0x20000;
+    if (m_object->m_74 != 0xa) {
+        m_object->m_74 = 0xa;
+        m_object->m_08 |= 0x20000;
     }
     m_38->ApplyName("GRUNTZ_GRUNTPUDDLE");
     m_40 = m_38->m_1b4;
     m_38->ApplyLookupGeometry("GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE1", 0);
-    m_30 = m_14->m_1c;
-    m_14->m_1c = g_buteTree.Find("A");
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find("A");
     m_38->m_40 |= 1;
-    m_10->m_5c = (m_10->m_5c & ~0x1f) + 0x10;
-    m_10->m_60 = (m_10->m_60 & ~0x1f) + 0x10;
+    m_object->m_5c = (m_object->m_5c & ~0x1f) + 0x10;
+    m_object->m_60 = (m_object->m_60 & ~0x1f) + 0x10;
     m_5c = 1;
     m_60 = 0;
 }
@@ -72,20 +72,20 @@ CGruntPuddle::CGruntPuddle(CGameObject* obj) : CUserLogic(obj) {
 // No init-list/assignment/reorder lever flips the allocator. Deferred.
 RVA(0x00040c30, 0xb3)
 i32 CGruntPuddle::Place(i32 a0, i32 a1, i32 a2, i32 a3) {
-    CGameObject* o = m_10;
+    CGameObject* o = m_object;
     m_54 = o->m_5c >> 5;
     m_58 = o->m_60 >> 5;
     m_64 = a3;
     m_68 = a0;
     m_6c = a1;
     i32 rec = ((CIconFactory*)g_gameReg->m_74)->GetByIndex(a1, 0);
-    CGameObject* obj = m_10;
+    CGameObject* obj = m_object;
     *(i32*)((char*)obj + 0x58) = 1;
     *(i32*)((char*)obj + 0x50) = 0xa;
     *(i32*)((char*)obj + 0x4c) = rec;
     *(i32*)((char*)m_38 + 0x40) &= ~1;
-    m_30 = m_14->m_1c;
-    m_14->m_1c = g_buteTree.Find(g_iconBute);
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find(g_iconBute);
     if (a1 == 0) {
         m_60 = 1;
         m_5c = 0;
@@ -161,9 +161,9 @@ i32 CGruntPuddle::Remove() {
 // CGruntPuddle::SetBute  (0x07d810)
 // ===========================================================================
 // Swap the +0x14 sub-object's bute node for the one keyed by `key`, stashing the
-// previous node in CUserLogic::m_30. The shared tail of Place's bute re-bind.
+// previous node in CUserLogic::m_prevAnimSetNode. The shared tail of Place's bute re-bind.
 RVA(0x0007d810, 0x25)
 void CGruntPuddle::SetBute(char* key) {
-    m_30 = m_14->m_1c;
-    m_14->m_1c = g_buteTree.Find(key);
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find(key);
 }

@@ -27,13 +27,13 @@ CExplosion::~CExplosion() {}
 RVA(0x000470e0, 0x16b)
 CExplosion::CExplosion(CGameObject* obj) : CUserLogic(obj) {
     m_38->ApplyName("GAME_EXPLOSION");
-    m_30 = m_14->m_1c;
-    m_14->m_1c = g_buteTree.Find("A");
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find("A");
     m_38->m_08 |= 0x2000002;
-    CGameObject* o = m_10;
+    CGameObject* o = m_object;
     if (o->m_74 != 0xf4240) {
         o->m_74 = 0xf4240;
         o->m_08 |= 0x20000;
     }
-    m_10->m_38 = 0;
+    m_object->m_38 = 0;
 }

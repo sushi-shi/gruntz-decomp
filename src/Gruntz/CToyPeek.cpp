@@ -25,18 +25,18 @@ CToyPeek::CToyPeek(CGameObject* obj) : CUserLogic(obj) {
     m_60 = 0;
     m_5c = 0;
     m_64 = 0;
-    m_10->m_60 -= 0x18;
-    if (m_10->m_74 != 0xdbba0) {
-        m_10->m_74 = 0xdbba0;
-        m_10->m_08 |= 0x20000;
+    m_object->m_60 -= 0x18;
+    if (m_object->m_74 != 0xdbba0) {
+        m_object->m_74 = 0xdbba0;
+        m_object->m_08 |= 0x20000;
     }
-    m_38->ApplyLookupSprite("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", m_10->m_124);
+    m_38->ApplyLookupSprite("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", m_object->m_124);
     m_60 = 0x1388;
     m_64 = 0;
     m_58 = g_645588;
     m_5c = 0;
-    m_30 = m_14->m_1c;
-    m_14->m_1c = g_buteTree.Find("A");
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find("A");
 }
 
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at

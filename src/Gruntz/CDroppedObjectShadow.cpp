@@ -8,7 +8,7 @@
 extern CButeTree g_buteTree;
 
 // The game-registry singleton (?g_gameReg@@3PAUWwdGameReg@@A @0x64556c). The ctor
-// reads its +0x78 sub-object's +0x28 field into m_10->m_4c. Modeled minimally with
+// reads its +0x78 sub-object's +0x28 field into m_object->m_4c. Modeled minimally with
 // only the touched offsets; address-pinned so the `mov ds:g_gameReg` reloc-masks.
 struct WwdGameRegSub {
     char m_pad00[0x28];
@@ -35,18 +35,18 @@ extern CGameRegistry* g_gameReg;
 // CBrickz::CBrickz (~92%); not source-steerable. Parked for the final sweep.
 RVA(0x000c7490, 0x1a6)
 CDroppedObjectShadow::CDroppedObjectShadow(CGameObject* obj) : CUserLogic(obj) {
-    m_30 = m_14->m_1c;
-    m_14->m_1c = g_buteTree.Find("A");
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find("A");
     m_38->ApplyName("LEVEL_OBJECTDROPPER_SHADOW");
     m_40 = m_38->m_1b4;
     m_38->ApplyLookupGeometry("LEVEL_DROPPEDOBJECTSHADOW", 0);
     m_38->m_08 |= 0x2000002;
-    m_10->m_4c = ((WwdGameRegSub*)g_gameReg->m_78)->m_28;
-    m_10->m_58 = 1;
-    m_10->m_50 = 7;
-    if (m_10->m_74 != 0xcf84f) {
-        m_10->m_74 = 0xcf84f;
-        m_10->m_08 |= 0x20000;
+    m_object->m_4c = ((WwdGameRegSub*)g_gameReg->m_78)->m_28;
+    m_object->m_58 = 1;
+    m_object->m_50 = 7;
+    if (m_object->m_74 != 0xcf84f) {
+        m_object->m_74 = 0xcf84f;
+        m_object->m_08 |= 0x20000;
     }
 }
 

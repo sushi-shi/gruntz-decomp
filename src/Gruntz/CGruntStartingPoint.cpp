@@ -25,8 +25,8 @@ CGruntStartingPoint::~CGruntStartingPoint() {}
 RVA(0x0003df30, 0x161)
 CGruntStartingPoint::CGruntStartingPoint(CGameObject* obj) : CUserLogic(obj) {
     m_38->ApplyName("GAME_EXIT");
-    m_30 = m_14->m_1c;
-    m_14->m_1c = g_buteTree.Find("A");
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find("A");
     m_38->m_08 |= 1;
     m_38->m_08 |= 2;
     m_38->m_40 |= 1;
