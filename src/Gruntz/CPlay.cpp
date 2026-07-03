@@ -1662,8 +1662,8 @@ i32 CPlay::ArmSnapshot(i32 active, i32 dur) {
 RVA(0x000da3b0, 0x6e)
 i32 CPlay::CanQuickSave() {
     if (m_renderDisabled == 0 && m_inGame == 0 && m_overlayDrag == 0 && m_snapshotActive == 0
-        && m_guts->m_548 == 0 && m_guts->m_busyA == 0 && m_guts->m_busyB == 0 && g_64556c->m_c == 0
-        && ((CRegSub68*)g_64556c->m_68)->m_400 != 0) {
+        && m_guts->m_548 == 0 && m_guts->m_busyA == 0 && m_guts->m_busyB == 0
+        && g_64556c->m_frameGate == 0 && ((CRegSub68*)g_64556c->m_68)->m_400 != 0) {
         return 1;
     }
     return 0;

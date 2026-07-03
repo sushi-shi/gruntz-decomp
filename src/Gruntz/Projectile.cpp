@@ -1044,7 +1044,7 @@ i32 CProjectile::LaunchSound(const char* key) {
         return 0;
     }
     CGameRegistry* reg = g_gameReg;
-    if (reg->m_10 == 0) {
+    if (reg->m_soundEnabled == 0) {
         return 0;
     }
     CProjSoundCat* cat = (CProjSoundCat*)reg->m_world;

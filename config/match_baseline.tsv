@@ -583,7 +583,7 @@ apiwrappers	?FindGruntAt@GruntHitMgr@m4@@QAEPAUHitGrunt@2@HHPAUHitTileRect@2@PAH
 apiwrappers	?LaunchWebBrowser@m4@@YGHPAD@Z	100.0000	100.0000	1	ed3eacdf3b3a	0x8f120
 apiwrappers	?ScrollDialog@m4@@YAXPAUHWND__@@HHH@Z	84.5833	84.5833	4	033794d002c6	0x37260
 apiwrappers	?SetupDlgCommand@m4@@YAHPAUHWND__@@HPAUSetupDlg@1@@Z	79.2708	79.2708	2	6d04d6db451c	0x9e390
-appdialogs	?WarpDialogProc@@YGHPAXIIJ@Z	100.0000	100.0000	7	29a62cc31f9f	0x8e4e0
+appdialogs	?WarpDialogProc@@YGHPAXIIJ@Z	100.0000	100.0000	8	a59aeb3c2300	0x8e4e0
 apphelpers	?Handle@CHandlerB4@@QAEHHHHH@Z	100.0000	100.0000	2	d5a7507c7adf	0xb4cb0
 apphelpers	?OnStart@CTitleApp@@QAEHH@Z	100.0000	100.0000	2	6e064a9a13ad	0xf9880
 apphelpers	?Unmatched_be030@@YAXPAXPAUDlgData@@@Z	100.0000	100.0000	1	37cff8f1518d	0xbe030
@@ -914,9 +914,9 @@ butetree	?Insert@CButeTree@@QAEPAXPBDPAX@Z	53.3041	53.3041	3	5dfde79e85ea	0x16db
 bzkinddispatch	?Dispatch@CBzKindDispatch@@QAEHH@Z	79.1379	79.1379	1	89b89a7bb1a2	0x37910
 cactionarea	??0CActionArea@@QAE@PAUCGameObject@@@Z	93.9057	93.9057	1	c13beac04fcc	0x7da0
 cambientsound	??1CAmbientSound@@UAE@XZ	100.0000	100.0000	1	67c5e0cc3ab6	0xb790
-cambientsound	?Restart@CAmbientSound@@QAEXXZ	100.0000	100.0000	3	995a65ab1713	0xbfb0
+cambientsound	?Restart@CAmbientSound@@QAEXXZ	100.0000	100.0000	4	9da4b4049c31	0xbfb0
 cambientsound	?SetLevel@CAmbientSound@@QAEHHHH@Z	100.0000	100.0000	2	82d554c23b21	0xc200
-cambientsound	?Update@CAmbientSound@@UAEXHHH@Z	76.7857	76.7857	2	4ca5b5405e23	0xc090
+cambientsound	?Update@CAmbientSound@@UAEXHHH@Z	76.7857	76.7857	3	c956cc9977d0	0xc090
 canicycle	?InitActReg@CAniCycle@@SAXXZ	100.0000	100.0000	1	5d76d9347b15	0xaaf00
 canicycle	?RegisterActs@CAniCycle@@SAXXZ	92.9130	92.9130	1	17ca46567be1	0xab0e0
 canielement	?AtChecked_06b270@CAniElement@@QBEPAVCObject@@H@Z	100.0000	100.0000	1	2278365ee372	0x6b270
@@ -1419,7 +1419,7 @@ cimagespriteblit	?BlitShadeFlipHV@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	71.4789	71.4
 cimagespriteblit	?BlitShadeFlipV@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	73.2297	73.2297	4	26c1a0f6216f	0x1544d0
 cimagespriteblit	?BlitShadeNorm@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	100.0000	100.0000	4	a81d92669fca	0x154270
 cingametextupdate	?Update@CInGameText@@QAEHXZ	75.7485	75.7485	2	822357d0556e	0x997c0
-circleshadeblit	?Render@CircleShadeBlit@@QAEXHHHHHH@Z	54.5197	54.5197	1	cb51e9919710	0x180fb0
+circleshadeblit	?Render@CircleShadeBlit@@QAEXHHHHHH@Z	54.5197	54.5197	2	81a8776b5e44	0x180fb0
 ckeyedlist	??1CNode@@QAE@XZ	100.0000	100.0000	1	7894cc5a002b	0x379f0
 ckeyedlist	?AddNode@CKeyedList@@QAEPAUCNode@@PBDHH@Z	83.7778	83.7778	1	58602dffad36	0x37a70
 ckeyedlist	?Clear@CKeyedList@@QAEXXZ	100.0000	100.0000	1	ef11cb79e338	0x379a0
@@ -1502,7 +1502,7 @@ cmulti	?ReportNetError@CMulti@@QAEXXZ	95.2000	95.2000	2	8d9000a90521	0xb7f60
 cmulti	?ReportVersionMsg@CMulti@@QAEXPADH@Z	100.0000	100.0000	2	e891856ac86f	0xb7e30
 cmulti	?RunErrorDialog@CMulti@@QAEHPADPAXH@Z	100.0000	100.0000	2	fc46f3fc7a12	0xbc250
 cmulti	?StartSession@CMulti@@QAEHHH@Z	98.4571	98.4571	5	2549f48134c2	0xb6580
-cmulti	?StartTitle@CMulti@@QAEHXZ	36.2880	36.2880	4	e920618112d4	0xb72c0
+cmulti	?StartTitle@CMulti@@QAEHXZ	36.2880	36.2880	5	3dcaa7ea4b2e	0xb72c0
 cmulti	?Teardown@CMulti@@QAEXXZ	100.0000	100.0000	3	8499295ac675	0xb6110
 cmulti	?Tick@CMulti@@QAEHXZ	85.9939	85.9939	4	c91ba236d5fb	0xb6890
 cobjectdropper	??0CObjectDropper@@QAE@PAUCGameObject@@@Z	86.0249	86.0249	3	f66eeda08360	0xc59f0
@@ -1686,7 +1686,7 @@ ctoypeek	??0CToyPeek@@QAE@PAUCGameObject@@@Z	86.4352	86.4352	1	5a92518e8b9e	0x98
 customleveldlg	?Populate180e0@CustomLevelDlg@m4dlg@@QAEHPAH@Z	71.0248	71.0248	1	e093b53f1442	0x180e0
 customlevellist	?FillCustomLevelList@m4@@YAHPAUHWND__@@@Z	73.9508	73.9508	1	2bdfbb3a9268	0x3af90
 customworlddialog	?LoadCustomWorldSelection@@YAHPAUHWND__@@@Z	100.0000	100.0000	1	973547bb84a4	0x3b310
-customworlddialog	?RunCustomWorldDialog@@YA?AVCString@@HPAV1@@Z	72.6905	72.6905	3	8e2e26d40604	0x3ad90
+customworlddialog	?RunCustomWorldDialog@@YA?AVCString@@HPAV1@@Z	72.6905	72.6905	4	b698ba8d6aa0	0x3ad90
 customworldinfodlg	?LoadCustomWorldInfo@@YAHPAX@Z	100.0000	100.0000	1	7279864a0176	0x3b7c0
 customwwdpath	?BuildCustomWwdPath@@YA?AVCString@@V1@@Z	100.0000	100.0000	1	5fdf7d205a8d	0x3b940
 cvoicetrigger	??0CVoiceTrigger@@QAE@PAUCGameObject@@@Z	88.5833	88.5833	3	1a1e86c332c2	0x119b50
@@ -2180,7 +2180,7 @@ glyphstr	?ShowHudMessage@@YAXPAUHudMsgSink@@HHHHHHHH@Z	94.2857	94.2857	1	fa1a18d
 glyphstr	?ShowHudMessageAlt@@YAXPAUHudMsgSink@@HHHHHHHH@Z	94.2857	94.2857	1	b497a5259073	0x115520
 glyphtable	?Get@GlyphTable@@QAEHH@Z	100.0000	100.0000	1	db897731bcf2	0xc0430
 glyphtable	?Set@GlyphTable@@QAEXHH@Z	100.0000	100.0000	1	69ba9e995038	0xc03f0
-goowellmgr	?LoadTeleporterGooConfig@CGooWellMgr@@QAEHH@Z	96.3620	96.3620	5	3449ea767cfc	0x6eb80
+goowellmgr	?LoadTeleporterGooConfig@CGooWellMgr@@QAEHH@Z	96.3620	96.3620	6	42f7cb316bdb	0x6eb80
 groupops	?Broadcast@CGroupBroadcast@@QAEHXZ	84.2364	84.2364	1	4587301968b6	0x112080
 groupops	?CenterOnGroup@CGroupSel@@QAEHH@Z	82.6018	82.6018	4	12a47957cbd6	0x7cf40
 grunt	??0CGrunt@@QAE@PAX@Z	78.2475	78.2475	5	17e9dd3e46c0	0x47a10
@@ -2981,7 +2981,7 @@ projectile	??0CProjectile@@QAE@XZ	99.0472	99.0472	3	433255f57d6e	0x126e0
 projectile	??1CProjectile@@UAE@XZ	89.8367	89.8367	2	09e62e24baf9	0xdef60
 projectile	?DetachRenderObj@CProjectile@@QAEHXZ	100.0000	100.0000	3	4e7f6b25cd9f	0xe05e0
 projectile	?Dispatch@CProjActDispatcher@@QAEXH@Z	100.0000	100.0000	1	dbdd016866f6	0xade60
-projectile	?LaunchSound@CProjectile@@QAEHPBD@Z	44.4444	44.4444	5	c86723647914	0xe2190
+projectile	?LaunchSound@CProjectile@@QAEHPBD@Z	44.4444	44.4444	6	49f5434b5315	0xe2190
 projectile	?LoadProjectileEffects@CProjectile@@QAEXXZ	69.7446	69.7446	5	499da69dfaf0	0xdfd00
 projectile	?LoadProjectileSprites@CProjectile@@QAEHHHHHHHH@Z	57.7642	57.7642	7	4eaf69752d5e	0xdf050
 projectile	?RegisterRange@CProjectile@@SAXXZ	100.0000	100.0000	1	661e81357f7b	0xdf920
@@ -3000,8 +3000,8 @@ randomambientsound	?SetupPos@CRandomAmbientSound@@QAEHPAVDirectSoundMgr@@HHPAUAm
 randomambientsound	?SpawnPosSound@@YAXPAUPosSoundObj@@@Z	75.9638	75.9638	3	dde63a73c69c	0xca00
 randomambientsound	?Step@CRandomAmbientSound@@QAEXHHH@Z	93.6594	93.6594	3	901751a58820	0xcb30
 randomambientsound	?StopPosSound@@YAXPAUPosSoundObj@@@Z	100.0000	100.0000	1	40c068eecb35	0xc9d0
-randomambientsound	?Update@CRandomAmbientSound@@QAEXHHH@Z	35.3264	35.3264	4	5bab3c008053	0xc2a0
-randomambientsound	?UpdateAt@CRandomAmbientSound@@QAEXHHH@Z	89.2586	89.2586	4	c8df871545c4	0xc5b0
+randomambientsound	?Update@CRandomAmbientSound@@QAEXHHH@Z	35.3264	35.3264	5	f6cbf0165885	0xc2a0
+randomambientsound	?UpdateAt@CRandomAmbientSound@@QAEXHHH@Z	89.2586	89.2586	5	14f4273d6ce9	0xc5b0
 reconbatch2	?AddItem@Worker181x_181x@@QAEXXZ	100.0000	100.0000	1	f2872b7d2b85	0x181660
 reconbatch2	?AddTail_bf580@@YAXPAX@Z	100.0000	100.0000	1	9776abae25ab	0xbf580
 reconbatch2	?Copy_16f6e0@@YGXPAUSrc_16f6e0@@PAUDst_16f6e0@@@Z	84.8696	84.8696	1	a504b750f0c2	0x16f6e0
@@ -3231,7 +3231,7 @@ sbi_wellgoo_eh	??1CSBI_WellGoo@@UAE@XZ	100.0000	100.0000	4	55273fc4f0ba	0x104bb0
 scattersamples	?IsPrime@@YAHH@Z	100.0000	100.0000	1	3d4ae8c20789	0x182a80
 scattersamples	?ScatterSamples@@YAXPAHHHH@Z	59.2162	59.2162	1	345a3c1c24dd	0x182940
 sfselectdevice	?SFManager_SelectBestDevice@@YAHXZ	73.5827	73.5827	3	9d46e5a9f855	0xf8970
-shadedescrtable	?Select@ShadeSelector@@QAEXHPAUShadeDescr@@@Z	68.5938	68.5938	2	980c21c9b21b	0x14dd90
+shadedescrtable	?Select@ShadeSelector@@QAEXHPAUShadeDescr@@@Z	68.5938	68.5938	3	6848e62a3d09	0x14dd90
 shadedescrtable	?SetShadeDescr@@YAXPAUShadeDescr@@H@Z	61.8966	61.8966	2	d7ce23754255	0x14dcf0
 shadetablecache	??0CShadeTableCache@@QAE@XZ	100.0000	100.0000	2	877851623bba	0x14de30
 shadetablecache	??1CShadeTableCache@@QAE@XZ	100.0000	100.0000	3	dc4bfb9af1fc	0x14de50
@@ -3332,7 +3332,7 @@ statemgrbz	?Flush@StateMgrBZ@@QAEHXZ	74.0612	74.0612	2	6dc0743b6fd8	0x385e0
 statemgrbz	?Init@StateMgrBZ@@QAEHPAUSbzInputManager@@H@Z	100.0000	100.0000	2	12e97377255a	0x382c0
 statemgrbz	?Reset@StateMgrBZ@@QAEHXZ	100.0000	100.0000	2	899b20785515	0x386b0
 statemgrbz	?Setup@StateMgrBZ@@QAEXXZ	100.0000	100.0000	2	76e3a3c435f8	0x38340
-statusbargamemenu	?BuildGameMenu@CGameMenuMgr@@QAEXXZ	62.9137	62.9137	5	207321c7be2e	0x101580
+statusbargamemenu	?BuildGameMenu@CGameMenuMgr@@QAEXXZ	62.9137	62.9137	6	eb0f6bb3cfcb	0x101580
 statusbaritem	??0CStatusBarItem@@QAE@XZ	100.0000	100.0000	3	5a450f5db35b	0x1005d0
 statusbaritem	??_GCStatusBarItem@@UAEPAXI@Z	91.6667	91.6667	1	cpp:08500b778fe1	0x100620
 statusbartabbuilders	?BuildMultiplayerTabStatusBar@CSbTab@StatusBarTabBuilders@@QAEHPAUCSbParent@2@PAUCSbOwner@2@HHUCSbGeom@2@PADHHH@Z	77.8011	77.8011	4	9297bf0cfe0e	0xea1f0

@@ -32,7 +32,7 @@ CAmbientSound::~CAmbientSound() {
 // CAmbientSound::Restart  (0x00bfb0)
 // ===========================================================================
 // Re-arm the voice at its current level. Gated on the voice handle, the not-yet-
-// playing flag (m_14==0) and the active level/world (g_gameReg->m_10 and
+// playing flag (m_14==0) and the active level/world (g_gameReg->m_soundEnabled and
 // ->m_54->m_24). Reseed the channel, then inline SetLevel(m_08, 0, 0)'s scale+
 // clamp through SetVolumeByIndex; the level read (m_08) is re-stored unchanged on
 // both sides of the voice call (the reseeded channel may have touched it).
@@ -46,7 +46,7 @@ void CAmbientSound::Restart() {
     if (m_14 != 0) {
         return;
     }
-    if (g_gameReg->m_10 == 0) {
+    if (g_gameReg->m_soundEnabled == 0) {
         return;
     }
     if (((WwdActiveLevel*)g_gameReg->m_54)->m_24 == 0) {
@@ -106,7 +106,7 @@ void CAmbientSound::Update(i32 x, i32 y, i32 force) {
         if (lvl == 0) {
             return;
         }
-        if (g_gameReg->m_10 == 0) {
+        if (g_gameReg->m_soundEnabled == 0) {
             return;
         }
         // Retail also probes ((WwdActiveLevel*)g_gameReg->m_54)->m_24 here, then (re)starts
@@ -143,7 +143,7 @@ void CAmbientSound::Update(i32 x, i32 y, i32 force) {
     if (inRange == 0) {
         return;
     }
-    if (g_gameReg->m_10 == 0 || ((WwdActiveLevel*)g_gameReg->m_54)->m_24 == 0) {
+    if (g_gameReg->m_soundEnabled == 0 || ((WwdActiveLevel*)g_gameReg->m_54)->m_24 == 0) {
         return;
     }
     if (force != 0) {

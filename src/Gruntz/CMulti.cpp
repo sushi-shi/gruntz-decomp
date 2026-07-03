@@ -806,7 +806,7 @@ i32 CMulti::StartTitle() {
     if (!st) {
         return 0;
     }
-    i32 idx = g_64556c->m_80 % g_645534 + 1;
+    i32 idx = g_64556c->m_numRuns % g_645534 + 1;
     CString title;
     title.Format("TITLE%d", idx);
     if (LoadTitleScreen((char*)(const char*)title, 0, 0, 1, 0) == 0) {

@@ -33,7 +33,7 @@ namespace Utils {
 
 // The game-registry singleton. Only the offsets this proc walks are modeled:
 //   ((CGameRegLevel*)g_gameReg->m_curState)->m_1c   the current level number
-//   g_gameReg->m_38         the Utils::RegistryHelper the values persist through
+//   g_gameReg->m_settings   the Utils::RegistryHelper the values persist through
 //   g_gameReg->m_world->m_24->m_5c->m_84 / ->m_88   the seed X/Y for WM_INITDIALOG
 struct CGameRegLevel {
     char m_pad00[0x1c];
@@ -90,14 +90,14 @@ INT_PTR CALLBACK WarpDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         "Level %i Warp X",
                         ((CGameRegLevel*)g_gameReg->m_curState)->m_1c
                     );
-                    ((Utils::RegistryHelper*)g_gameReg->m_38)->SetValueDword(szValue, valX);
+                    ((Utils::RegistryHelper*)g_gameReg->m_settings)->SetValueDword(szValue, valX);
                     sprintf(
                         szValue,
                         "Level %i Warp Y",
                         ((CGameRegLevel*)g_gameReg->m_curState)->m_1c
                     );
-                    ((Utils::RegistryHelper*)g_gameReg->m_38)->SetValueDword(szValue, valY);
-                    ((Utils::RegistryHelper*)g_gameReg->m_38)
+                    ((Utils::RegistryHelper*)g_gameReg->m_settings)->SetValueDword(szValue, valY);
+                    ((Utils::RegistryHelper*)g_gameReg->m_settings)
                         ->SetValueDword(
                             "Last Warp Level",
                             ((CGameRegLevel*)g_gameReg->m_curState)->m_1c

@@ -6,7 +6,7 @@
 // InitializeGameManager (@0x080a20, push 0xa30). CGameRegistry (this struct) and
 // CGruntzMgr (<Gruntz/GruntzMgr.h>) are TWO VIEWS OF ONE OBJECT, proven by shared
 // method RVAs (CGameRegistry::Ack == CGruntzMgr::ReportError, both @0x08dc60) and
-// coincident slot meanings (m_48==m_sound, m_2c==m_curState, m_8c==m_modeW: the
+// coincident slot meanings (+0x48 m_sound, m_2c m_curState, m_8c m_modeW: the
 // mode-width cmp [reg+0x8c],0x280 (640) in RestoreVideoMode 0x08ddd0).
 //
 // WHY TWO HEADERS (a NECESSARY split, not a mistake): CGruntzMgr is an MFC class
@@ -32,7 +32,7 @@
 // object TYPES defined in <Gruntz/ResMgr.h>/<Gruntz/CViewport.h> are forward-
 // declared (not included) to keep this ~60-TU-wide header light.
 //
-// The REUSED slots at 0x38/0x48/0x58/0x68/0x6c/0x74/0x78/0x7c genuinely hold a
+// The REUSED slots at 0x54/0x58/0x68/0x6c/0x74/0x78/0x7c genuinely hold a
 // *different concrete object per game-mode* (e.g. +0x68 is a placement/cue grid in
 // single-player, the goo-well mgr in battlez, a light-fx target in the fx TUs; +0x7c
 // is the score/HUD sink under several battlez/teleporter facets). Fabricating one
@@ -115,27 +115,33 @@ struct CGameRegistry {
     void StopBankIfActive();  // 0x92000 (== CGruntzMgr::StopBankIfActive; sound-bank stop)
     void StopBank0IfActive(); // 0x92030 (== CGruntzMgr::StopBank0IfActive; bank-0 stop)
 
-    // Well-understood slots are named (the four single-type pointers m_curState/
-    // m_world/m_cueSink/m_tileGrid + the scalar config block); the reused per-mode
-    // void* slots (0x38/48/58/68/6c/74/78/7c) and the per-TU outcome discriminator
-    // (0x134) keep m_<off> - their concrete role differs per game-mode/TU, so one
-    // name would mislead. The `== <name>` tags cross-ref the GruntzMgr MFC view
-    // (<Gruntz/GruntzMgr.h>, CGruntzMgr) where a reconciled name exists.
-    char m_pad0[0x4]; // +0x00  CGameMgr vptr slot (base ??_7CGameMgr@@6B@)
-    void* m_4;        // +0x04  window/host sub-object
-    void* m_8;        // +0x08
-    void* m_c;        // +0x0c  active-selection / busy gate (CanQuickSave)
-    i32 m_10;         // +0x10  base m_10 run-state (level/state discriminator)
-    i32 m_14;         // +0x14  base m_14 run-state (has-window / level-loaded gate)
+    // Well-understood slots are named (the base CGameMgr region m_gameWnd/m_owner/
+    // m_frameGate/m_soundEnabled, the four single-type pointers m_curState/m_world/
+    // m_cueSink/m_tileGrid, m_settings/m_sound/m_numRuns + the scalar config block);
+    // the genuinely reused per-mode void* slots (0x54/58/68/6c/74/78/7c) and the per-TU
+    // outcome discriminator (0x134) keep m_<off> - their concrete role differs per
+    // game-mode/TU, so one name would mislead. m_11c/m_120 and m_14 also stay m_<off>:
+    // their manager-side name (GruntzMgr input flags / m_musicEnabled) conflicts with
+    // the consumer-side use (sound volume / level-loaded gate) - flagged, not guessed.
+    char m_pad0[0x4];   // +0x00  CGameMgr vptr slot (base ??_7CGameMgr@@6B@)
+    void* m_gameWnd;    // +0x04  bound game window (base CGameMgr::m_gameWnd; window/host)
+    void* m_owner;      // +0x08  owning app (base CGameMgr::m_owner)
+    i32 m_frameGate;    // +0x0c  nonzero suppresses per-frame advance / busy-pause gate
+                        //         (base CGameMgr::m_frameGate; toggled, CanQuickSave gate)
+    i32 m_soundEnabled; // +0x10  sound-on flag (base CGameMgr::m_soundEnabled "Sound"; every
+                        //         ambient/goo consumer guards its sound work on it)
+    i32 m_14;           // +0x14  base names it m_musicEnabled ("Music"); GruntzMgr uses it as a
+                        //         level-loaded gate (StopBankIfActive) - role unresolved, kept m_14
     char m_pad18[0x2c - 0x18];
     CState* m_curState;            // +0x2c  current game-state (concrete states
                                    //         downcast to their play/level view)
     CSpriteFactoryHolder* m_world; // +0x30  world/map resource holder (grunt reaches
                                    //         the sprite factory via m_world->m_8)
     char m_pad34[0x38 - 0x34];
-    void* m_38; // +0x38  registry-helper / logger sub-object (grunt view)
+    void* m_settings; // +0x38  settings/registry writer (== GruntzMgr m_settings; consumers cast
+    //         to RegistryHelper: SetValueDword/LogPos/QueryPos). void* -> cast at use.
     char m_pad3c[0x48 - 0x3c];
-    void* m_48; // +0x48  == m_sound (sound/bank object)
+    void* m_sound; // +0x48  sound/bank object (== GruntzMgr m_sound, CGruntzSoundZ*)
     char m_pad4c[0x54 - 0x4c];
     void* m_54; // +0x54  == m_inputState (grunt: active-world view)
     void* m_58; // +0x58  == m_saveSink (grunt: progress / notifier)
@@ -153,7 +159,8 @@ struct CGameRegistry {
     void* m_78;            // +0x78  sub-object (per-TU view)
     void* m_7c;            // +0x7c  == m_scoreHud (HUD/score accumulator + cmd sink);
                            //         battlez views it as the CBzData score tracker facet.
-    i32 m_80;              // +0x80  attract title-screen index base (CMulti: idx = m_80 % N + 1)
+    i32 m_numRuns;         // +0x80  launch counter "Num_Runs" (== GruntzMgr m_numRuns; CMulti
+                           //         varies the attract title screen by m_numRuns % N + 1)
     char m_pad84[0x8c - 0x84];
     i32 m_modeW;      // +0x8c  live video-mode width (cmp ...,0x280==640)
     i32 m_modeH;      // +0x90  live video-mode height (==480)

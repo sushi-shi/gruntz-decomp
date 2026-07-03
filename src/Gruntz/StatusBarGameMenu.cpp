@@ -188,7 +188,7 @@ void CGameMenuMgr::BuildGameMenu() {
     // widget out of line.
     if (m_briefingGate != 0x1fb) {
         // ---- RESUME or PAUSE in the first slot ----
-        if (m_showResume != 0 && g_gameReg->m_c != 0) {
+        if (m_showResume != 0 && g_gameReg->m_frameGate != 0) {
             it = new CSBI_MenuItem;
             r.left = bx;
             r.top = by + 0xd5;

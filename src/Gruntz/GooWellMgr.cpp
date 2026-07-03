@@ -200,7 +200,7 @@ struct CGooWellMgr {
 // `g + 0x150 + off` slot lea picks the opposite base/index register pair.
 RVA(0x0006eb80, 0x5ef)
 i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
-    if (g_gameReg->m_10) {
+    if (g_gameReg->m_soundEnabled) {
         // LEVEL_ROLLINGBALL loop (m_rollingballLoop), wanted by m_rollingballWanted.
         if (m_rollingballWanted) {
             if (!m_rollingballLoop) {

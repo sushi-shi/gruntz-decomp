@@ -180,7 +180,7 @@ i32 CRandomAmbientSound::Setup(DirectSoundMgr* mgr, i32 a2, i32 a3, AmbientBox* 
 // ---------------------------------------------------------------------------
 // Update (0x00c2a0, __thiscall, 3 args playFlag/pos/kind): the play/stop driver.
 // Gated on the mgr handle, the playing flag, and the active level
-// (g_gameReg->m_10 and ((WwdActiveLevel*)g_gameReg->m_54)->m_objectCount). On play it reseeds
+// (g_gameReg->m_soundEnabled and ((WwdActiveLevel*)g_gameReg->m_54)->m_objectCount). On play it reseeds
 // the voice (mgr->ApplyAndPlay(1,m_panIndex,0,1)), scales pos by (m_scaleA clamped)/100 then
 // m_scaleB/100 (both signed magic-/100), clamps the
 // result to [0,100], and dispatches SetVolumeByIndex (kind==0) or CloneAndPlay
@@ -215,7 +215,7 @@ void CRandomAmbientSound::Update(i32 playFlag, i32 pos, i32 kind) {
     if (m_isPlaying != 0) {
         return;
     }
-    if (g_gameReg->m_10 == 0) {
+    if (g_gameReg->m_soundEnabled == 0) {
         return;
     }
     if (((WwdActiveLevel*)g_gameReg->m_54)->m_objectCount == 0) {
@@ -393,7 +393,7 @@ void CRandomAmbientSound::UpdateAt(i32 x, i32 y, i32 force) {
     if (m_mgr == 0) {
         return;
     }
-    if (g_gameReg->m_10 == 0) {
+    if (g_gameReg->m_soundEnabled == 0) {
         return;
     }
     if (((WwdActiveLevel*)g_gameReg->m_54)->m_objectCount == 0) {

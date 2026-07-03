@@ -69,11 +69,11 @@ CString RunCustomWorldDialog(i32 id, CString* outSource) {
     g_str62c25c.Empty();
     i32 v = id;
     if (id == 0) {
-        v = ((GmInner4*)g_mgrSettings->m_4)->m_4;
+        v = ((GmInner4*)g_mgrSettings->m_gameWnd)->m_4;
     }
     g_dat62c26c = v;
     g_dat62c268 = (i32)g_mgrSettings->m_world;
-    g_dat62c270 = ((GmInner8*)g_mgrSettings->m_8)->m_c;
+    g_dat62c270 = ((GmInner8*)g_mgrSettings->m_owner)->m_c;
     if (g_mgrSettings->RunModalDialog("CUSTOM_WORLD", (void*)CustomWorldInfoDlgProc, 0) == 0) {
         g_str62c25c.Empty();
     }
