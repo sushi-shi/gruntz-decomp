@@ -1079,7 +1079,7 @@ cddrawsubmgr	?Serialize_15c970@CDDrawBlitParam@@QAEHPAVCWwdArchive@@@Z	99.4175	9
 cddrawsubmgr	?Setup_15c2d0@CDDrawBlitParam@@QAEXPAVCDDrawBlitParamSrc@@@Z	100.0000	100.0000	4	2099a0c7aedb	0x15c2d0
 cddrawsubmgr	?Stub_155720@CDDrawSubMgr@@QAEPAXH@Z	100.0000	100.0000	1	db478b273a65	0x155720
 cddrawsubmgr	?TickKillCues_159a70@CWwdObjMgr@@QAEXH@Z	93.0414	93.0414	2	0eaf8bac72e3	0x159a70
-cddrawsubmgr	?TriggerBlit_1587f0@CAniBlitTrigger@@QAEHHHHH@Z	71.9167	71.9167	3	cb5504ecd36d	0x1587f0
+cddrawsubmgr	?TriggerBlit_1587f0@CAniBlitTrigger@@QAEHHHHH@Z	71.9167	71.9167	4	4bc6a3e544bb	0x1587f0
 cddrawsubmgrani	?CreateAniEntry2_1529b0@CDDrawSubMgrAni@@QAEPAUCAniElementObj@@PBDPAX@Z	99.9855	99.9855	2	14638f46fdbc	0x1529b0
 cddrawsubmgrani	?CreateAniEntry_1528d0@CDDrawSubMgrAni@@QAEPAUCAniElementObj@@PBDPAX@Z	99.9855	99.9855	2	eaf07e56f33e	0x1528d0
 cddrawsubmgrani	?ScanTree_152ad0@CDDrawSubMgrAni@@QAEHPAVCSymTab@@PBD1@Z	100.0000	100.0000	1	4fd0dd36de59	0x152ad0
@@ -1558,12 +1558,12 @@ cplay	?AddLevelGruntz@CPlay@@QAEHXZ	79.4107	79.4107	3	3b3372435aa9	0xd5960
 cplay	?ApplyGameOptions@CPlay@@QAEXXZ	76.0784	76.0784	3	baa575fa9e17	0x36be0
 cplay	?ArmSnapshot@CPlay@@QAEHHH@Z	99.2000	99.2000	1	896666303e5b	0xd9240
 cplay	?BeginGridWalk@CPlay@@QAEHHHHHH@Z	81.1191	81.1191	5	b58cd1c893ae	0xd0920
-cplay	?BuildAnizKeyTable@CPlay@@QAEHPAX@Z	100.0000	100.0000	3	98ff678ab1be	0xddaa0
+cplay	?BuildAnizKeyTable@CPlay@@QAEHPAUCLoadNotify@@@Z	100.0000	100.0000	1	543cac2fc1f7	0xddaa0
 cplay	?BuildGruntNamespaceList@CPlay@@QAEHH@Z	100.0000	100.0000	1	6652eb40d84c	0xdd050
 cplay	?BuildGruntTypeNameTable@CPlay@@QAEHHHHH@Z	33.2624	33.2624	1	78c83cf0c557	0xdc6d0
 cplay	?BuildHelpReveal@CPlay@@QAEHXZ	67.8125	67.8125	5	e63a2a51c134	0xd72c0
 cplay	?BuildMusicCategoryTable@CPlay@@QAEHH@Z	100.0000	100.0000	2	a5bc3fd73617	0xdba30
-cplay	?BuildSpriteImageKeyTable@CPlay@@QAEHPAX@Z	100.0000	100.0000	4	fb40854fcc93	0xdd540
+cplay	?BuildSpriteImageKeyTable@CPlay@@QAEHPAUCLoadNotify@@@Z	100.0000	100.0000	1	c5f2170eee7f	0xdd540
 cplay	?BuildWarlordNameTable@CPlay@@QAEHH@Z	100.0000	100.0000	1	a4e6377a94b1	0xdd340
 cplay	?CPlayDtorBody@CPlay@@QAEXXZ	91.4540	91.4540	3	3d2729e27910	0xc8700
 cplay	?CanQuickSave@CPlay@@QAEHXZ	100.0000	100.0000	3	5f78ebbb2c75	0xda3b0
@@ -1585,12 +1585,12 @@ cplay	?LoadCursorSprites@CPlay@@QAEHHH@Z	93.1281	93.1281	2	73b34054775c	0xd0120
 cplay	?LoadGameAnims@CPlay@@QAEHH@Z	100.0000	100.0000	3	e6fb6efde36d	0xdb9b0
 cplay	?LoadGameImages@CPlay@@QAEHH@Z	100.0000	100.0000	4	5c61c6394b87	0xdb8a0
 cplay	?LoadGameSounds@CPlay@@QAEHH@Z	100.0000	100.0000	3	ae30daa3ebb0	0xdb930
-cplay	?LoadGruntSoundNamespaces@CPlay@@QAEHPAX@Z	100.0000	100.0000	3	e8679a8d74d0	0xdd830
+cplay	?LoadGruntSoundNamespaces@CPlay@@QAEHPAUCLoadNotify@@@Z	100.0000	100.0000	1	ec7dab244bab	0xdd830
 cplay	?LoadImageBanks@CPlay@@QAEHXZ	100.0000	100.0000	3	7961f8394476	0xcffe0
 cplay	?LoadLevelImages@CPlay@@QAEHH@Z	100.0000	100.0000	4	fc889e191936	0xdb7e0
 cplay	?LoadLevelSounds@CPlay@@QAEHH@Z	100.0000	100.0000	3	ae9b351526fa	0xdb6c0
 cplay	?LoadSBITextEdges@CPlay@@QAEXPAD@Z	97.7831	97.7831	2	07c8a5320451	0xd1710
-cplay	?LoadScrollSpeedOptions@CPlay@@QAEHXZ	86.2200	86.2200	3	881a8cd68b99	0xd12b0
+cplay	?LoadScrollSpeedOptions@CPlay@@QAEHXZ	86.1450	86.1450	3	881a8cd68b99	0xd12b0
 cplay	?LoadWarlordSprites@CPlay@@QAEHHPAH@Z	91.0888	91.0888	2	969efe4aecb2	0xd65d0
 cplay	?ModeCleanup@CPlay@@QAEXXZ	99.6154	99.6154	1	49243b4e5268	0xcb740
 cplay	?NotifyVisibleEntities@CPlay@@QAEHXZ	74.8676	74.8676	3	17e3f8d692d4	0xd9050
@@ -3002,7 +3002,7 @@ projactregistry	?ProjActRegisterDefaults@@YAXXZ	100.0000	100.0000	1	a25c8147a240
 projactregistry	?RegisterType@CProjActObj@@QAEXXZ	91.1739	91.1739	1	8fb0cc7540b3	0x8240
 projectile	??0CProjectile@@QAE@PAUCGameObject@@@Z	55.2278	55.2278	5	31e1f837308d	0xdec60
 projectile	??0CProjectile@@QAE@XZ	99.0472	99.0472	6	31e1f837308d	0x126e0
-projectile	??1CProjectile@@UAE@XZ	89.8367	89.8367	2	09e62e24baf9	0xdef60
+projectile	??1CProjectile@@UAE@XZ	89.8367	89.8367	3	9836540293c3	0xdef60
 projectile	?DetachRenderObj@CProjectile@@QAEHXZ	100.0000	100.0000	3	4e7f6b25cd9f	0xe05e0
 projectile	?Dispatch@CProjActDispatcher@@QAEXH@Z	100.0000	100.0000	1	dbdd016866f6	0xade60
 projectile	?LaunchSound@CProjectile@@QAEHPBD@Z	44.4444	44.4444	6	49f5434b5315	0xe2190
@@ -3011,7 +3011,7 @@ projectile	?LoadProjectileSprites@CProjectile@@QAEHHHHHHHH@Z	57.7642	57.7642	10	
 projectile	?RegisterRange@CProjectile@@SAXXZ	100.0000	100.0000	1	661e81357f7b	0xdf920
 projectile	?RegisterType@CProjectile@@SAXXZ	91.1739	91.1739	2	5ec12adb51a3	0xdfb00
 projectile	?ReleaseDeferred@CProjectile@@QAEXH@Z	100.0000	100.0000	4	1a51cbb4f5dd	0x13c70
-projectile	?ScanTargets@CProjectile@@QAEXH@Z	93.9254	93.9254	7	5352d4225614	0xe0b10
+projectile	?ScanTargets@CProjectile@@QAEXH@Z	93.9254	93.9254	8	d0dde82d958b	0xe0b10
 projectile	?StepMotion@CProjectile@@QAEXXZ	70.6977	70.6977	5	bd20be68a63a	0xe08b0
 projectileupdate	?Update@CProjectile@@QAEHXZ	15.9027	15.9027	6	90d58a9ccffc	0x61cb0
 pulsehighlight	?Serialize@CPulseHighlight@@QAEHPAUCSerialArchive@@HHH@Z	100.0000	100.0000	2	18f9d3e94c58	0x8600

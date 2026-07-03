@@ -3177,7 +3177,7 @@ struct CLoadNotify {
 };
 
 RVA(0x000dd830, 0x1e3)
-i32 CPlay::LoadGruntSoundNamespaces(void* notify) {
+i32 CPlay::LoadGruntSoundNamespaces(CLoadNotify* notify) {
     CPlay* self = this;
     if (!self->m_c) {
         return 0;
@@ -3207,7 +3207,7 @@ i32 CPlay::LoadGruntSoundNamespaces(void* notify) {
             self->m_c->m_soundRegistry->Install(s, "GRUNTZ_EXITZ", "_");
         }
         if (notify) {
-            ((CLoadNotify*)notify)->OnLoaded();
+            notify->OnLoaded();
         }
     }
     if (!self->m_c->m_soundRegistry->Has("GRUNTZ_GRUNTPUDDLE")) {
@@ -3216,7 +3216,7 @@ i32 CPlay::LoadGruntSoundNamespaces(void* notify) {
             self->m_c->m_soundRegistry->Install(s, "GRUNTZ_GRUNTPUDDLE", "_");
         }
         if (notify) {
-            ((CLoadNotify*)notify)->OnLoaded();
+            notify->OnLoaded();
         }
     }
     if (!self->m_c->m_soundRegistry->Has("GRUNTZ_PICKUPS")) {
@@ -3225,7 +3225,7 @@ i32 CPlay::LoadGruntSoundNamespaces(void* notify) {
             self->m_c->m_soundRegistry->Install(s, "GRUNTZ_PICKUPS", "_");
         }
         if (notify) {
-            ((CLoadNotify*)notify)->OnLoaded();
+            notify->OnLoaded();
         }
     }
     if (!self->m_c->m_soundRegistry->Has("GRUNTZ_BOMBGRUNT")) {
@@ -3234,7 +3234,7 @@ i32 CPlay::LoadGruntSoundNamespaces(void* notify) {
             self->m_c->m_soundRegistry->Install(s, "GRUNTZ_BOMBGRUNT", "_");
         }
         if (notify) {
-            ((CLoadNotify*)notify)->OnLoaded();
+            notify->OnLoaded();
         }
     }
     return 1;
@@ -3248,7 +3248,7 @@ i32 CPlay::LoadGruntSoundNamespaces(void* notify) {
 // set aborts (return 0, install-active flag left set). __thiscall.
 // ===========================================================================
 RVA(0x000dd540, 0x241)
-i32 CPlay::BuildSpriteImageKeyTable(void* notify) {
+i32 CPlay::BuildSpriteImageKeyTable(CLoadNotify* notify) {
     CPlay* self = this;
     if (!self->m_c) {
         return 0;
@@ -3261,7 +3261,7 @@ i32 CPlay::BuildSpriteImageKeyTable(void* notify) {
         }
         self->m_c->m_imageRegistry->Install(s, "GRUNTZ_NORMALGRUNT", "_");
         if (notify) {
-            ((CLoadNotify*)notify)->OnLoaded();
+            notify->OnLoaded();
         }
     }
     if (!self->m_c->m_imageRegistry->Has("GRUNTZ_DEATHZ")) {
@@ -3271,7 +3271,7 @@ i32 CPlay::BuildSpriteImageKeyTable(void* notify) {
         }
         self->m_c->m_imageRegistry->Install(s, "GRUNTZ_DEATHZ", "_");
         if (notify) {
-            ((CLoadNotify*)notify)->OnLoaded();
+            notify->OnLoaded();
         }
     }
     if (!self->m_c->m_imageRegistry->Has("GRUNTZ_ENTRANCEZ")) {
@@ -3281,7 +3281,7 @@ i32 CPlay::BuildSpriteImageKeyTable(void* notify) {
         }
         self->m_c->m_imageRegistry->Install(s, "GRUNTZ_ENTRANCEZ", "_");
         if (notify) {
-            ((CLoadNotify*)notify)->OnLoaded();
+            notify->OnLoaded();
         }
     }
     if (!self->m_c->m_imageRegistry->Has("GRUNTZ_EXITZ")) {
@@ -3291,7 +3291,7 @@ i32 CPlay::BuildSpriteImageKeyTable(void* notify) {
         }
         self->m_c->m_imageRegistry->Install(s, "GRUNTZ_EXITZ", "_");
         if (notify) {
-            ((CLoadNotify*)notify)->OnLoaded();
+            notify->OnLoaded();
         }
     }
     if (!self->m_c->m_imageRegistry->Has("GRUNTZ_GRUNTPUDDLE")) {
@@ -3301,7 +3301,7 @@ i32 CPlay::BuildSpriteImageKeyTable(void* notify) {
         }
         self->m_c->m_imageRegistry->Install(s, "GRUNTZ_GRUNTPUDDLE", "_");
         if (notify) {
-            ((CLoadNotify*)notify)->OnLoaded();
+            notify->OnLoaded();
         }
     }
     if (!self->m_c->m_imageRegistry->Has("GRUNTZ_PICKUPS")) {
@@ -3311,7 +3311,7 @@ i32 CPlay::BuildSpriteImageKeyTable(void* notify) {
         }
         self->m_c->m_imageRegistry->Install(s, "GRUNTZ_PICKUPS", "_");
         if (notify) {
-            ((CLoadNotify*)notify)->OnLoaded();
+            notify->OnLoaded();
         }
     }
     if (!self->m_c->m_imageRegistry->Has("GRUNTZ_BOMBGRUNT")) {
@@ -3321,7 +3321,7 @@ i32 CPlay::BuildSpriteImageKeyTable(void* notify) {
         }
         self->m_c->m_imageRegistry->Install(s, "GRUNTZ_BOMBGRUNT", "_");
         if (notify) {
-            ((CLoadNotify*)notify)->OnLoaded();
+            notify->OnLoaded();
         }
     }
     g_resourceInstallActive = 0;
@@ -3335,7 +3335,7 @@ i32 CPlay::BuildSpriteImageKeyTable(void* notify) {
 // set aborts (return 0). __thiscall.
 // ===========================================================================
 RVA(0x000ddaa0, 0x228)
-i32 CPlay::BuildAnizKeyTable(void* notify) {
+i32 CPlay::BuildAnizKeyTable(CLoadNotify* notify) {
     CPlay* self = this;
     if (!self->m_c) {
         return 0;
@@ -3347,7 +3347,7 @@ i32 CPlay::BuildAnizKeyTable(void* notify) {
         }
         self->m_c->m_animRegistry->Install(s, "GRUNTZ_NORMALGRUNT", "_");
         if (notify) {
-            ((CLoadNotify*)notify)->OnLoaded();
+            notify->OnLoaded();
         }
     }
     if (!self->m_c->m_animRegistry->Has("GRUNTZ_DEATHZ")) {
@@ -3357,7 +3357,7 @@ i32 CPlay::BuildAnizKeyTable(void* notify) {
         }
         self->m_c->m_animRegistry->Install(s, "GRUNTZ_DEATHZ", "_");
         if (notify) {
-            ((CLoadNotify*)notify)->OnLoaded();
+            notify->OnLoaded();
         }
     }
     if (!self->m_c->m_animRegistry->Has("GRUNTZ_ENTRANCEZ")) {
@@ -3367,7 +3367,7 @@ i32 CPlay::BuildAnizKeyTable(void* notify) {
         }
         self->m_c->m_animRegistry->Install(s, "GRUNTZ_ENTRANCEZ", "_");
         if (notify) {
-            ((CLoadNotify*)notify)->OnLoaded();
+            notify->OnLoaded();
         }
     }
     if (!self->m_c->m_animRegistry->Has("GRUNTZ_EXITZ")) {
@@ -3377,7 +3377,7 @@ i32 CPlay::BuildAnizKeyTable(void* notify) {
         }
         self->m_c->m_animRegistry->Install(s, "GRUNTZ_EXITZ", "_");
         if (notify) {
-            ((CLoadNotify*)notify)->OnLoaded();
+            notify->OnLoaded();
         }
     }
     if (!self->m_c->m_animRegistry->Has("GRUNTZ_GRUNTPUDDLE")) {
@@ -3387,7 +3387,7 @@ i32 CPlay::BuildAnizKeyTable(void* notify) {
         }
         self->m_c->m_animRegistry->Install(s, "GRUNTZ_GRUNTPUDDLE", "_");
         if (notify) {
-            ((CLoadNotify*)notify)->OnLoaded();
+            notify->OnLoaded();
         }
     }
     if (!self->m_c->m_animRegistry->Has("GRUNTZ_PICKUPS")) {
@@ -3397,7 +3397,7 @@ i32 CPlay::BuildAnizKeyTable(void* notify) {
         }
         self->m_c->m_animRegistry->Install(s, "GRUNTZ_PICKUPS", "_");
         if (notify) {
-            ((CLoadNotify*)notify)->OnLoaded();
+            notify->OnLoaded();
         }
     }
     if (!self->m_c->m_animRegistry->Has("GRUNTZ_BOMBGRUNT")) {
@@ -3407,7 +3407,7 @@ i32 CPlay::BuildAnizKeyTable(void* notify) {
         }
         self->m_c->m_animRegistry->Install(s, "GRUNTZ_BOMBGRUNT", "_");
         if (notify) {
-            ((CLoadNotify*)notify)->OnLoaded();
+            notify->OnLoaded();
         }
     }
     return 1;
