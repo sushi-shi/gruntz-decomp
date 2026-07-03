@@ -96,8 +96,8 @@ SIZE_UNKNOWN(CNetCmdHdr); // record header prefix (payload follows); full record
 // The recycled command packet AddCmd queues: sequence, owning slot, a flag byte,
 // the payload length and the inline payload copy.
 struct CNetCmdPacket {
-    i32 m_sequence; // +0x0  sequence
-    void* m_owner;  // +0x4  owning slot (this)
+    i32 m_sequence;       // +0x0  sequence
+    CNetCmdSlot* m_owner; // +0x4  owning slot (this)
     u8 m_flags;     // +0x8  flag byte
     char m_pad9[0xc - 9];
     i32 m_payloadLength; // +0xc  payload length

@@ -900,9 +900,7 @@ RVA(0x0013e4d0, 0x7e)
 void CFileImage::FreeSurfaces() {
     for (u32 i = 0; i < (u32)m_elements.GetSize(); i++) {
         CFileImageElement* e = (CFileImageElement*)m_elements[i];
-        if (e != 0) {
-            e->ScalarDtor(1);
-        }
+        delete e;
     }
     m_elements.SetSize(0, -1);
     if (this->m_8 != 0) {

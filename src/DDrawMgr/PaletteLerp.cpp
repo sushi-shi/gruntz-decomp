@@ -7,6 +7,7 @@
 // only offsets + code bytes are load-bearing.
 #include <rva.h>
 
+#include <ComDefs.h> // STDMETHOD - the IDirectDrawPalette COM interface the lerp drives
 #include <Ints.h>
 #include <Win32.h> // WINAPI (windows.h) for the g_pTimeGetTime import-pointer type
 
@@ -15,25 +16,26 @@
 DATA(0x006c4650)
 extern u32(WINAPI* g_pTimeGetTime)();
 
-// The owning palette object (external, class in another TU). Real polymorphic
-// interface: only SetEntries (slot 6, +0x18) is invoked. Slots 0..5 are
-// declared-only placeholders to land SetEntries at byte offset 0x18. The object
-// is never constructed here (pointer-only), so no ??_7 is emitted. SetEntries is
-// __stdcall (COM-style: the palette object is pushed as the explicit first arg).
-struct PalObj {
-    virtual void Slot00();
-    virtual void Slot04();
-    virtual void Slot08();
-    virtual void Slot0c();
-    virtual void Slot10();
-    virtual void Slot14();
-    virtual void __stdcall SetEntries(i32 flags, i32 first, i32 count, void* entries); // +0x18
+// The owning palette object is the DirectDraw palette COM interface
+// (IDirectDrawPalette): only SetEntries (slot 6, +0x18) is invoked. Declared the
+// dev-authentic SDK way with STDMETHOD so `m_paletteObj->SetEntries(...)` lowers to
+// the same `mov eax,[iface]; call [eax+0x18]` COM dispatch the manual vtbl-slot view
+// did. The object is external (pointer-only, never constructed here) so no ??_7 is
+// emitted. COM => __stdcall with the interface pointer as the hidden first arg.
+SIZE_UNKNOWN(IDirectDrawPaletteZ);
+struct IDirectDrawPaletteZ {
+    STDMETHOD(QueryInterface)(const void* riid, void** out) PURE;               // slot 0
+    STDMETHOD_(u32, AddRef)() PURE;                                             // slot 1
+    STDMETHOD_(u32, Release)() PURE;                                            // slot 2  (+0x08)
+    STDMETHOD(GetCaps)(u32* caps) PURE;                                         // slot 3
+    STDMETHOD(GetEntries)(u32 flags, u32 start, u32 count, void* entries) PURE; // slot 4
+    STDMETHOD(Initialize)(void* dd, u32 flags, void* colorTable) PURE;          // slot 5
+    STDMETHOD(SetEntries)(u32 flags, u32 start, u32 count, void* entries) PURE; // slot 6  (+0x18)
 };
-SIZE_UNKNOWN(PalObj);
 
 struct PaletteLerp {
     char m_pad00[4];
-    PalObj* m_paletteObj; // +0x04 owning palette object (vtable SetEntries at +0x18)
+    IDirectDrawPaletteZ* m_paletteObj; // +0x04 owning DirectDraw palette (SetEntries at +0x18)
     char m_pad08[4];
     u8* m_livePalette; // +0x0c live palette bytes (destination)
     char m_pad10[4];

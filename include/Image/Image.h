@@ -113,13 +113,14 @@ public:
 // ---------------------------------------------------------------------------
 
 // A heap element held in CFileImage::m_elements (the +0x94 CPtrArray). FreeSurfaces
-// walks the array calling each element's slot-0 scalar-deleting destructor
-// (vtbl[0](1)). Only that one slot is invoked; the element type itself lives in
-// another (unmatched) TU, so it is modeled as a tiny polymorphic stand-in (no
-// vtable emitted here - address never taken).
+// walks the array `delete`-ing each element, which lowers to its slot-0
+// scalar-deleting destructor (`??_G`, vtbl[0](1)). Real polymorphic stand-in: a
+// real virtual destructor (declared-only) so `delete e` emits the canonical
+// null-guarded slot-0 dispatch. The element type itself lives in another
+// (unmatched) TU, so no ??_7/dtor body is emitted here - address never taken.
 class CFileImageElement {
 public:
-    virtual void* ScalarDtor(i32 flag); // slot 0, @0x00
+    virtual ~CFileImageElement(); // slot 0, @0x00 (scalar-deleting dtor ??_G)
 };
 
 // ---------------------------------------------------------------------------

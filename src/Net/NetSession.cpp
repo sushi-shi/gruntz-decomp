@@ -35,7 +35,7 @@ void AppendInt(char* dst, const char* sep, i32 n) {
 // at +0x34 (NetFormatKeyed reads NAME out of it, else it is used raw as the text).
 struct PlayerRecord {
     char m_pad[0x34];
-    void* m_profile; // +0x34  the profile/name source
+    char* m_profile; // +0x34  keyed text buffer (NetFormatKeyed reads NAME; else used raw as text)
 };
 SIZE_UNKNOWN(PlayerRecord); // player-record view (only +0x34 pinned); retail size TBD
 
@@ -95,7 +95,7 @@ void FillPlayerList(HWND hList, Session* sess) {
         if (NetFormatKeyed(buf + 4, player->m_profile, "NAME")) {
             str = buf;
         } else {
-            str = (const char*)player->m_profile;
+            str = player->m_profile;
         }
         i32 idx = (i32)SendMessageA(hList, LB_ADDSTRING, 0, (LPARAM)str);
         if (idx != -1) {
