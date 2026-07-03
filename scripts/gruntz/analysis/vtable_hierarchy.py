@@ -689,21 +689,76 @@ def known_base_vtables(aud):
     return out
 
 
-def _prefix_base(slots, self_rva, known):
-    """The known base whose vtable slots are a PREFIX of `slots` (slot 1 = the
-    scalar-deleting dtor is class-specific, allowed to differ). Returns the LONGEST
-    such (name, rva, nslots) other than the class itself, or None."""
+def reconstruct_intermediates(aud):
+    """{name: slots} for ABSTRACT intermediate bases with NO own vtable (so
+    col_by_rva/known_base_vtables miss them) but which ARE the RTTI mdisp-0 base of
+    some class - e.g. CObject -> CWapObj -> CImage, where CWapObj emits no standalone
+    ??_7. Slots are recovered from a derived RTTI class's vtable PREFIX, extended past
+    CObject's 5 while each slot rva is SHARED across >=2 classes at that index (the
+    hallmark of an INHERITED base virtual vs a class-OWN new virtual). Without this,
+    the slot-prefix match would wrongly infer the grand-base CObject and skip CWapObj."""
+    idxcount = {}
+    for sl in aud.slots.values():
+        for i, r in enumerate(sl):
+            idxcount[(i, r)] = idxcount.get((i, r), 0) + 1
+    out = {}
+    for name in list(aud.reg):
+        ci = aud.reg.get(name)
+        if not (ci and ci.primary() and ci.is_rtti):
+            continue
+        _, meta = diff_primary(aud.reg, ci)
+        inter = meta["declared_base"]
+        if not (meta["base_inferred"] and inter and inter not in out):
+            continue
+        b = aud.reg.get(inter)
+        if b and b.primary():
+            continue  # it HAS a vtable -> not an uncataloged abstract intermediate
+        slots = ci.primary()[2]
+        k = 5
+        while k < len(slots) and idxcount.get((k, slots[k]), 0) >= 2:
+            k += 1
+        out[inter] = slots[:k]
+    return out
+
+
+def _deepest_base(slots, self_rva, known, inter):
+    """The DEEPEST base whose vtable slots are a PREFIX of `slots` - prefers an
+    abstract intermediate (CWapObj, 7 slots) over the grand-base it derives (CObject,
+    5). Cataloged bases need an EXACT prefix; a reconstructed intermediate tolerates
+    OVERRIDDEN middle slots (a derived class may override an intermediate virtual) -
+    it matches on the grand-base prefix (slots 0-4) PLUS the intermediate's distinctive
+    last slot at its index (0x1c08 for CWapObj, which the family doesn't override).
+    slot 1 (the scalar-deleting dtor) is always class-specific, allowed to differ.
+    Returns (name, nslots) or None."""
     best = None
-    for rva, (name, bslots) in known.items():
+    for rva, (nm, bslots) in known.items():
         if rva == self_rva:
             continue
         n = len(bslots)
-        if n == 0 or n > len(slots):
+        if 5 <= n <= len(slots) and all(i == 1 or slots[i] == bslots[i] for i in range(n)):
+            if best is None or n > best[1]:
+                best = (nm, n)
+    for nm, bslots in inter.items():
+        n = len(bslots)
+        if n < 6 or n > len(slots):
             continue
-        if all(i == 1 or slots[i] == bslots[i] for i in range(n)):
-            if best is None or n > best[2]:
-                best = (name, rva, n)
+        head_ok = all(i == 1 or slots[i] == bslots[i] for i in range(5))  # CObject prefix
+        tail_ok = any(slots[i] == bslots[i] for i in range(5, n))         # >=1 intermediate slot (rest may be overridden)
+        if head_ok and tail_ok and (best is None or n > best[1]):
+            best = (nm, n)
     return best
+
+
+_SRCBASE_RE = re.compile(r"\bclass\s+\w+\s*:\s*(?:public\s+|protected\s+|private\s+|virtual\s+)*([\w:]+)")
+
+
+def _source_base(bodies):
+    """The base our SOURCE actually writes (`class X : public Y`), or None."""
+    for b in bodies:
+        m = _SRCBASE_RE.search(b)
+        if m:
+            return m.group(1).split("::")[-1]
+    return None
 
 
 def _body_counts(bodies):
@@ -729,6 +784,7 @@ def cmd_audit(aud):
     INHERIT/RENAME are exact; REDECLARE/OVERRIDE/MISSING are slot-count checks (see
     clang -Wsuggest-override for the precise per-method missing-override list)."""
     known = known_base_vtables(aud)
+    inter = reconstruct_intermediates(aud)
     F = {k: [] for k in ("INHERIT", "RENAME", "REDECLARE", "OVERRIDE", "MISSING")}
     for name in aud.vtable_bearing():
         rva, src, col = aud.resolve(name)
@@ -738,25 +794,38 @@ def cmd_audit(aud):
         if not (ci and ci.primary()):
             continue
         rows, meta = diff_primary(aud.reg, ci)
-        declared = meta["declared_base"]
-        inferred, via = meta["base"], "rtti"
         slots = ci.primary()[2]
-        n_inh = sum(1 for r in rows if r[4] == "inherited")
-        n_ovr = sum(1 for r in rows if r[4] == "override")
-        n_new = sum(1 for r in rows if r[4] == "new")
-        if not inferred:  # (B) gap: no declared/RTTI base - infer from the slot-prefix
-            pb = _prefix_base(slots, rva, known)
-            if pb and pb[0] in aud.reg and aud.reg[pb[0]].primary():
-                inferred, via = pb[0], "slot-prefix"
-                bslots, nB = aud.reg[inferred].primary()[2], pb[2]
-                n_inh = sum(1 for i in range(min(nB, len(slots))) if i != 1 and slots[i] == bslots[i])
-                n_ovr = sum(1 for i in range(min(nB, len(slots))) if i == 1 or slots[i] != bslots[i])
-                n_new = max(0, len(slots) - nB)
+        # TRUTH = the RTTI mdisp-0 direct base (the real base, incl. an uncataloged
+        # abstract intermediate like CWapObj); for src-only classes, the DEEPEST prefix
+        # base incl. reconstructed intermediates. NOT `meta["base"]` (beff) - that skips
+        # uncataloged intermediates and wrongly points at the grand-base (the old bug).
+        truth = meta["declared_base"] if ci.is_rtti else None
+        via = "rtti" if truth else ""
+        if not truth:
+            db = _deepest_base(slots, rva, known, inter)
+            if db:
+                truth, via = db[0], ("intermediate" if db[0] in inter else "slot-prefix")
+        source_base = _source_base(aud.bodies.get(name, []))
+        bslots = inter.get(truth) or (aud.reg[truth].primary()[2]
+                                      if aud.reg.get(truth) and aud.reg[truth].primary() else [])
+        nB = len(bslots)
+        if nB:
+            n_inh = sum(1 for i in range(min(nB, len(slots))) if i != 1 and slots[i] == bslots[i])
+            n_ovr = sum(1 for i in range(min(nB, len(slots))) if i == 1 or slots[i] != bslots[i])
+            n_new = max(0, len(slots) - nB)
+        else:
+            n_inh = sum(1 for r in rows if r[4] == "inherited")
+            n_ovr = sum(1 for r in rows if r[4] == "override")
+            n_new = sum(1 for r in rows if r[4] == "new")
         own = n_ovr + n_new
         n_virt, n_macro = _body_counts(aud.bodies.get(name, []))
         loc = "%s:%d" % aud.where[name]
-        if inferred and inferred != declared:
-            F["INHERIT"].append((name, "declared=%s -> derive %s (via %s)" % (declared or "(none)", inferred, via), loc))
+        # (1) INCORRECT INHERITANCE: our source's WRITTEN base != the binary-true base
+        if truth and source_base != truth:
+            note = " [uncataloged intermediate - model it]" if (
+                via == "intermediate" or (ci.is_rtti and meta["base_inferred"])) else ""
+            F["INHERIT"].append((name, "source=%s -> derive %s (%s)%s"
+                                 % (source_base or "(none)", truth, via, note), loc))
         if src != "manual-stamp" and col and col != name:
             F["RENAME"].append((name, "-> RTTI name %s" % col, loc))
         if n_inh and n_virt > own:
