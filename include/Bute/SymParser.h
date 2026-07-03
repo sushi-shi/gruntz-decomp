@@ -114,10 +114,10 @@ public:
     virtual void V1(); // slot 1 (sub_13ba00)
     virtual void V2(); // slot 2 (sub_13ba10)
 
-    // The default ctor (0x13aa10) lives in another (unmatched) TU - declared (no body)
-    // so the 3-arg ctor's discarded temp `CSymParser tmp;` lowers to a reloc-masked
-    // call; and the 3-arg buffer ctor (0x13ab00) defined in SymParser.cpp.
-    CSymParser();                          // 0x13aa10 (external)
+    // The default ctor (0x13aa10, defined in SymParser.cpp) seeds the parse-config
+    // defaults; the 3-arg buf-ctor's discarded temp `CSymParser tmp;` lowers to a
+    // (reloc-masked) call to it. The 3-arg buffer ctor (0x13ab00) is also in the .cpp.
+    CSymParser();                          // 0x13aa10
     CSymParser(void* buf, i32 a2, i32 a3); // 0x13ab00
 
     // ~CSymParser (0x13abc0): the /GX scalar destructor. Clear(0) if armed, tear
