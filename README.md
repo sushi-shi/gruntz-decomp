@@ -108,10 +108,20 @@ as a CI gate. **`vendor/` is kept verbatim and never formatted.** See
 
 ## The pipeline
 
+**Target side** — built **once** and cached in `build/`. The retail EXE never
+changes, so Ghidra is **not** re-analysed per iteration (this whole leg is skipped
+on an incremental `gruntz build`):
+
 ```
 GRUNTZ.EXE → Ghidra (auto-analyse + RTTI + FLIRT + import leaked names)
            → fake PDB  (synth_pdb.py: llvm-pdbutil yaml2pdb over the Ghidra exports + a DBI-header patch)
            → vostok-delinker  → per-symbol COFF "target" objects
-           → objdiff  (x86/COFF)  vs "base" objects compiled with MSVC 5.0 / Wine
-           → iterate the C++ until each function matches
+```
+
+**The matching loop** — the only part that re-runs each `gruntz build`:
+
+```
+edit C++ in src/  →  compile "base" objs (MSVC 5.0 under Wine)
+                  →  objdiff  (x86/COFF)  base  vs  the cached "target" objs
+                  →  iterate the C++ until each function matches byte-for-byte
 ```
