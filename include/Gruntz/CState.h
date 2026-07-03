@@ -23,6 +23,7 @@
 
 #include <Ints.h>
 #include <Gruntz/GameModeBase.h>
+#include <Gruntz/GameStateId.h> // Update()'s per-state id return type
 
 struct CView;      // +0x0c view holder; defined fully in CView.h, opaque elsewhere
 struct CBankMgr;   // +0x08 asset-bank manager (resolves a "GRUNTZ"/"GAME"/level bank)
@@ -42,7 +43,7 @@ public:
     virtual void Vfunc1();           // slot 1
     virtual void ReleaseResources(); // slot 2  (+0x8)  resource teardown (leaf override)
     virtual i32 Vfunc3();            // slot 3  (+0xc)  active/ready gate (return m_ready)
-    virtual i32 Update();            // slot 4  (+0x10)  base default = return 1;
+    virtual GameStateId Update();    // slot 4  (+0x10)  base default = GAMESTATE_BASE (1)
     virtual i32 Render();            // slot 5  (+0x14)  base default = return 1;
     virtual i32 Vslot06();           // slot 6  (+0x18)  activation-ready poll
     virtual i32 Vslot07();           // slot 7  (+0x1c)  lobby-host-ready poll

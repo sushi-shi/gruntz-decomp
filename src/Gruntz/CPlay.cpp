@@ -263,8 +263,8 @@ void CPlay::ApplyGameOptions() {
 
 // CPlay::Update() (slot 4): the PLAY state's ID = 3.
 RVA(0x0008c910, 0x6)
-i32 CPlay::Update() {
-    return 3;
+GameStateId CPlay::Update() {
+    return GAMESTATE_PLAY;
 }
 
 // ===========================================================================

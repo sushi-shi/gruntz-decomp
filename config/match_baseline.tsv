@@ -433,7 +433,7 @@ sbi_image_eh	1	1
 sbi_imageset	1	0
 sbi_imageset_eh	1	1
 sbi_imagesetani_eh	1	1
-sbi_menuitem	12	8
+sbi_menuitem	12	7
 sbi_menuitem_eh	1	1
 sbi_rectonly	70	33
 sbi_rectonly_eh	2	1
@@ -949,7 +949,7 @@ cattract	?ReleaseResources@CAttract@@UAEXXZ	100.0000	100.0000	1	7565e627ebc6	0x1
 cattract	?Render@CAttract@@UAEHXZ	97.0833	97.0833	1	466f8c8d708f	0x143e0
 cattract	?RunTitle@CAttract@@QAEHHHHHH@Z	99.5238	99.5238	1	9a5828a77e96	0xfa300
 cattract	?RunTitleSeq@CAttract@@QAEHPADHHHH@Z	100.0000	100.0000	1	972aca3e63d9	0xfa350
-cattract	?Update@CAttract@@UAEHXZ	100.0000	100.0000	1	494a92ca5dea	0x8cd40
+cattract	?Update@CAttract@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	d57b012bca63	0x8cd40
 cattract	?Vslot06@CAttract@@UAEHXZ	100.0000	100.0000	1	a3550bea47f9	0x14630
 cattract	?Vslot07@CAttract@@UAEHXZ	100.0000	100.0000	1	91fafb3898fd	0x147b0
 cattract	?Vslot0e@CAttract@@UAEHHHH@Z	100.0000	100.0000	1	c31e32cae312	0x14770
@@ -1622,7 +1622,7 @@ cplay	?StepGridWalk@CPlay@@QAEHH@Z	66.6667	66.6667	3	1875a002ef47	0xd0a60
 cplay	?StepInputA@CPlay@@QAEHXZ	89.8077	89.8077	8	fe6a4f316f7b	0xd11e0
 cplay	?StepScroll@CPlay@@QAEXXZ	81.6207	81.6207	7	8f842fe9bf57	0xd1ac0
 cplay	?Stub_08c9d0@CPlay@@QAEXXZ	0.7407	0.7407	2	18e3eb4c7dcd	0x8c9d0
-cplay	?Update@CPlay@@UAEHXZ	100.0000	100.0000	4	1c6efda4cb9e	0x8c910
+cplay	?Update@CPlay@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	54cdf2be5595	0x8c910
 cplay	?winapi_0cdb10_PostMessageA@CPlay@@QAEHHHH@Z	0.2946	0.2946	2	db8d57057a6f	0xcdb10
 cplay	?winapi_0d0b30_CopyRect@CPlay@@QAEHH@Z	1.2270	1.2270	2	edf43ed7aef3	0xd0b30
 cplaydtor	??1CDemo@@UAE@XZ	100.0000	100.0000	1	8fa4234bbabb	0x8d0d0
@@ -2161,11 +2161,11 @@ gamemode	?StartMusic@CMenuState@@QAEXXZ	94.7561	94.7561	3	d6ccc973ce13	0xa05a0
 gamemode	?StepGlitterAnim@CMultiBootyState@@QAEXXZ	80.1343	80.1343	3	bc8e61e2a888	0x196c0
 gamemode	?StepVideo@CCreditsState@@QAEHXZ	95.0000	95.0000	2	5b5aa234d3f0	0x39c60
 gamemode	?StopMusicChain@CMenuState@@QAEXXZ	99.7059	99.7059	4	91bd39aced91	0xa0640
-gamemode	?Update@CBootyState@@UAEHXZ	100.0000	100.0000	5	96557d6664de	0x8d3f0
-gamemode	?Update@CCreditsState@@UAEHXZ	100.0000	100.0000	5	c1f02e1607eb	0x8d590
-gamemode	?Update@CMenuState@@UAEHXZ	100.0000	100.0000	5	7d32b0573c0d	0x8ce10
-gamemode	?Update@CMultiBootyState@@UAEHXZ	100.0000	100.0000	1	07dca7060250	0x8d4c0
-gamemode	?Update@CState@@UAEHXZ	100.0000	100.0000	5	657636330e4c	0x8c4b0
+gamemode	?Update@CBootyState@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	7a039f7e9981	0x8d3f0
+gamemode	?Update@CCreditsState@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	8cc88a6bd089	0x8d590
+gamemode	?Update@CMenuState@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	37f386a25900	0x8ce10
+gamemode	?Update@CMultiBootyState@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	0a0494b9799a	0x8d4c0
+gamemode	?Update@CState@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	487811d25774	0x8c4b0
 gamemode	?Vfunc3@CState@@UAEHXZ	100.0000	100.0000	2	e4856b333a5c	0x8c490
 gamemode	?Vslot09@CMultiBootyState@@UAEHH@Z	100.0000	100.0000	1	c92007ba161b	0x1e570
 gamemode	?Vslot11@CState@@UAEHHHH@Z	100.0000	100.0000	1	84fdcdc12e89	0x8c610
@@ -2462,7 +2462,7 @@ gruntzmgr	?SaveGameAs@CGruntzMgr@@QAEHXZ	100.0000	100.0000	2	88a755234127	0x92f0
 gruntzmgr	?SaveState@CGruntzMgr@@QAEHPAVCSerializerZ@@@Z	100.0000	100.0000	5	efedab78bb9d	0x93620
 gruntzmgr	?ScalarDeletingDtor@CGruntzMgr@@QAEPAXI@Z	100.0000	100.0000	1	2b7667fab811	0x83330
 gruntzmgr	?SetCellHeight@CGruntzMgr@@QAEXHHH@Z	100.0000	100.0000	4	58b1dbbafe22	0x111ec0
-gruntzmgr	?SetColorDepth@CGruntzMgr@@QAEHH@Z	82.8298	82.8298	2	10fc25db2ccc	0x91170
+gruntzmgr	?SetColorDepth@CGruntzMgr@@QAEHH@Z	80.2766	80.2766	2	10fc25db2ccc	0x91170
 gruntzmgr	?SetGameClock@CGruntzMgr@@QAEXHHH@Z	100.0000	100.0000	2	6f4e825cb466	0x8f7b0
 gruntzmgr	?SetGruntColor@CGruntzMgr@@QAEHHHH@Z	95.8140	95.8140	2	ed03f5b163ff	0x910d0
 gruntzmgr	?SetRunState@CGruntzMgr@@QAEXH@Z	99.6154	99.6154	2	7961061bdcab	0x92340
@@ -3149,7 +3149,7 @@ sbi_imagesetani_eh	??1CSBI_ImageSetAni@@UAE@XZ	100.0000	100.0000	1	7354647071fa	
 sbi_menuitem	?Blit@CSBI_MenuItem@@QAEHXZ	100.0000	100.0000	1	89b04f10c391	0xe84f0
 sbi_menuitem	?ClearFrame2@CSBI_MenuItem@@QAEXXZ	100.0000	100.0000	1	54de26b0f1b5	0xe81a0
 sbi_menuitem	?ClearFrame@CSBI_MenuItem@@QAEXXZ	100.0000	100.0000	1	b89098c623b9	0xe6d90
-sbi_menuitem	?DecCounter@CSBI_MenuItem@@QAEHXZ	100.0000	100.0000	6	c93d7b401eb6	0xe82a0
+sbi_menuitem	?DecCounter@CSBI_MenuItem@@QAEHXZ	92.0357	92.0357	6	c93d7b401eb6	0xe82a0
 sbi_menuitem	?InitItem@CSBI_MenuItem@@QAEHHHHHHHHHPAXHH@Z	67.8261	67.8261	2	c7f4449ce82d	0xe80e0
 sbi_menuitem	?ProbeState@CSBI_MenuItem@@QAEHH@Z	100.0000	100.0000	1	624cf65074d2	0xe8480
 sbi_menuitem	?ResolveFrame@CSBI_MenuItem@@QAEHHH@Z	45.7547	45.7547	3	47486f9c52db	0xe81e0

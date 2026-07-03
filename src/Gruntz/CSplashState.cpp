@@ -42,7 +42,7 @@ public:
     virtual ~CSplashState() OVERRIDE;            // slot 0
     virtual void Vfunc1() OVERRIDE;              // slot 1
     virtual void ReleaseResources() OVERRIDE;    // slot 2
-    virtual i32 Update() OVERRIDE;               // slot 4
+    virtual GameStateId Update() OVERRIDE;       // slot 4
     virtual i32 Render() OVERRIDE;               // slot 5
     virtual i32 Vslot06() OVERRIDE;              // slot 6
     virtual i32 InputVirtual() OVERRIDE;         // slot 8

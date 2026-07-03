@@ -210,8 +210,8 @@ public:
     CPlay();
     virtual ~CPlay(); // slot 0 (0x8c830)
 
-    virtual i32 Update() OVERRIDE; // return 3;  (slot 4)
-    virtual i32 Render() OVERRIDE; // THE per-frame heart (this TU)
+    virtual GameStateId Update() OVERRIDE; // GAMESTATE_PLAY (3);  (slot 4)
+    virtual i32 Render() OVERRIDE;         // THE per-frame heart (this TU)
 
     // typed views of the inherited CState owner back-ptr (+0x4):
     CWorld* m_4w() {

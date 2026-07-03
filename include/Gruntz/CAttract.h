@@ -154,7 +154,7 @@ public:
     // CAttract vtable, runs the slot-2 release, re-stamps CState, chains base cleanup.
     virtual ~CAttract() OVERRIDE;             // slot 0  0x08cd90 (??1) / 0x08cd60 (??_G)
     virtual void ReleaseResources() OVERRIDE; // slot 2  (+0x08) 0x0140d0
-    virtual i32 Update() OVERRIDE;  // slot 4  (+0x10) 0x08cd40  return 2 (attract state id)
+    virtual GameStateId Update() OVERRIDE;    // slot 4 (+0x10) 0x08cd40 GAMESTATE_ATTRACT (2)
     virtual i32 Render() OVERRIDE;  // slot 5  (+0x14) 0x0143e0  attract per-frame poll/draw
     virtual i32 Vslot06() OVERRIDE; // slot 6  (+0x18) 0x014630  random-title roll (Vfunc3 gate)
     virtual i32 Vslot07() OVERRIDE; // slot 7  (+0x1c) 0x0147b0  host/paint poll

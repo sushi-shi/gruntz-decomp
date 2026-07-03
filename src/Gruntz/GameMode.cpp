@@ -91,8 +91,8 @@ CState::CState() {
 
 // CState::Update()  (slot 4 / +0x10): the base default = return 1.
 RVA(0x0008c4b0, 0x6)
-i32 CState::Update() {
-    return 1;
+GameStateId CState::Update() {
+    return GAMESTATE_BASE;
 }
 
 // CState::Render()  (slot 5 / +0x14): the base default = return 1.
@@ -247,20 +247,20 @@ void CBootyState::ReleaseResources() {
 
 // CMenuState::Update(): the MENU state's ID = 5.
 RVA(0x0008ce10, 0x6)
-i32 CMenuState::Update() {
-    return 5;
+GameStateId CMenuState::Update() {
+    return GAMESTATE_MENU;
 }
 
 // CCreditsState::Update(): the CREDITS state's ID = 8.
 RVA(0x0008d590, 0x6)
-i32 CCreditsState::Update() {
-    return 8;
+GameStateId CCreditsState::Update() {
+    return GAMESTATE_CREDITS;
 }
 
 // CBootyState::Update(): the BOOTY state's ID = 0xa.
 RVA(0x0008d3f0, 0x6)
-i32 CBootyState::Update() {
-    return 0xa;
+GameStateId CBootyState::Update() {
+    return GAMESTATE_BOOTY;
 }
 
 // ===========================================================================
@@ -1738,8 +1738,8 @@ void CMultiBootyState::ReleaseResources() {
 
 // CMultiBootyState::Update() (slot 4 / +0x10, 0x08d4c0): the multi-booty state's ID = 0x12.
 RVA(0x0008d4c0, 0x6)
-i32 CMultiBootyState::Update() {
-    return 0x12;
+GameStateId CMultiBootyState::Update() {
+    return GAMESTATE_MULTIBOOTY;
 }
 
 // CMultiBootyState::Vslot09() (slot 9 / +0x24, 0x1e570): on entry build the "multi"

@@ -342,8 +342,8 @@ i32 CAttract::Vslot07() {
 
 // CAttract::Update() (slot 4 / +0x10, 0x08cd40): the attract state's ID tag = 2.
 RVA(0x0008cd40, 0x6)
-i32 CAttract::Update() {
-    return 2;
+GameStateId CAttract::Update() {
+    return GAMESTATE_ATTRACT;
 }
 
 // CAttract::Vslot0e(a, b, c) (slot 14 / +0x38, 0x14770): post the exit WM_COMMAND
