@@ -49,12 +49,21 @@ SIZE_UNKNOWN(SbiRect);
 
 class CStatusBarItem {
 public:
+    // The ctor is INLINE in every builder/ctor-side TU (so the derived CSBI_RectOnly
+    // folds it). The standalone complete-object ctor COMDAT (0x1005d0) is labeled by
+    // src/Gruntz/StatusBarItem.cpp, which #defines SBI_ITEM_OWN_CTOR to take the
+    // out-of-line declaration + supply the RVA-keyed body (mirrors SbiDtorChain.h's
+    // SBI_OWN_*_DTOR device); NOT a second class.
+#ifdef SBI_ITEM_OWN_CTOR
+    CStatusBarItem();
+#else
     CStatusBarItem() {
         m_4 = 0;
         m_8 = 0;
         m_24 = 0;
         m_28 = 0;
     }
+#endif
     virtual ~CStatusBarItem();
     virtual i32 SbiVfunc0();
 

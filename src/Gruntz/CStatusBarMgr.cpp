@@ -40,14 +40,21 @@
 
 class CStatusBarMgr;
 
-// FACET 1 of the status-bar item family (CSbConfigItem here / CSbBuildItem in
-// SBI_SideTabBuild.cpp / CSbDialogItem in SBI_TabzDialogEh.cpp). These are the SAME
-// retail class modeled three genuinely-incompatible ways that CANNOT be one C++
-// spelling: FACET 1 = REAL C++ virtuals (native `call [edx+0x2c]` Configure/ConfigureEx
-// dispatch); FACET 2 = a member-fn-ptr vtable (`vptr->Delete` scalar-dtor dispatch);
-// FACET 3 = a manual-stamp base with an OUT-OF-LINE ctor for the /GX ctor-in-flight EH
-// frame. One MSVC5 spelling emits only one of the three shapes, so the facets are
-// renamed apart (documented) rather than merged.
+// VERDICT (step-2 of the SBI base-family consolidation): CSbConfigItem is NOT a
+// distinct class - it is a per-TU builder VIEW of the ONE retail CSBI_Image level.
+// Its key virtual Configure lands at vtable slot +0x2c, which RTTI shows is
+// CSBI_Image's own new virtual (ConfigureRect, origin CSBI_Image @0x5eac0c); the
+// eleven leading placeholder virtuals just line it up. Its two sibling views model
+// the SAME level with the SAME slot: CSbDialogItem (SBI_TabzDialogEh.cpp) and
+// CSbMenuItem (StatusBarGameMenu.cpp). They are the same retail class in three
+// genuinely-incompatible builder spellings that CANNOT collapse to one:
+//   * CSbConfigItem - INLINE base ctor (LoadTabSprites is a large PARTIAL; an
+//     out-of-line ctor allocates the wrong /GX Order-B layout and REGRESSES it).
+//   * CSbDialogItem / CSbMenuItem - OUT-OF-LINE base ctor so `new` emits the
+//     throwing base-ctor `call` + the /GX ctor-in-flight frame their builders need.
+// One MSVC5 spelling emits only one shape, so the views stay renamed apart
+// (measured-regression wall, docs/patterns/gx-frame-outofline-ctor.md), NOT merged.
+// (SBI_SideTabBuild.cpp builds a flat auto-stamped CSBI_SideTab directly - no facet.)
 //
 // CSbConfigItem is the shared base "view": polymorphic so MSVC emits native
 // __thiscall vtable dispatch (call [edx+0x2c] etc.). The eleven leading placeholder

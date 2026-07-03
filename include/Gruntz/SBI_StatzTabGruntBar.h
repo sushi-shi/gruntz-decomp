@@ -19,6 +19,7 @@
 
 #include <Ints.h>
 #include <rva.h>
+#include <Gruntz/StatusBarItem.h> // canonical frameless CStatusBarItem base (real RTTI base)
 
 // ---------------------------------------------------------------------------
 // Shared engine views (modeled minimally; only the touched members/methods are
@@ -94,14 +95,15 @@ SIZE_UNKNOWN(CStatzGlyphMap);
 // ---------------------------------------------------------------------------
 // CSBI_StatzTabGruntBar - the per-grunt stat tab. Derives directly from
 // CStatusBarItem (vtable @0x5eace4).
-class CSBI_StatzTabGruntBar {
+class CSBI_StatzTabGruntBar : public CStatusBarItem {
 public:
     void Reset();      // 0xea470  drop the five tracked values (also the dtor teardown)
     i32 Poll(i32 arg); // 0xea4b0  Update + conditional vfunc-10 redraw (arg unused)
     i32 Update();      // 0xea6c0  resample the grunt and latch any changed value
 
     // ----- layout (offsets are the load-bearing fact) -----
-    char m_pad0[0x30];
+    // base region m_0..0x2b comes from CStatusBarItem; leaf fields start at +0x30.
+    char m_pad2c[0x30 - 0x2c];
     i32 m_statusGlyph;               // +0x30  status glyph
     i32 m_statusGlyphLatched;        // +0x34  status glyph (resolved by Update)
     i32 m_statusValue;               // +0x38  status value (tracked)

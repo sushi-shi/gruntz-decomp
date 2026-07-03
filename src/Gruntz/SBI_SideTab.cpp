@@ -2,7 +2,8 @@
 #include <Mfc.h>
 #include <Ints.h>
 #include <Gruntz/ResMgr.h> // canonical g_gameReg->m_world view (CResMgr + CDrawTarget + CImageRegistry)
-#include <Image/CImage.h> // the m_30/m_34 frame handles ARE CImage (RenderFrame @0x153790)
+#include <Gruntz/StatusBarItem.h> // canonical frameless CStatusBarItem base (real RTTI base)
+#include <Image/CImage.h>         // the m_30/m_34 frame handles ARE CImage (RenderFrame @0x153790)
 // SBI_SideTab.cpp - Gruntz CSBI_SideTab (C:\Proj\Gruntz), the frameless methods.
 // RTTI .?AVCSBI_SideTab@@; a sibling leaf of the SBI family
 //   CSBI_SideTab : CStatusBarItem  (RTTI hierarchy: {CSBI_SideTab, CStatusBarItem}).
@@ -77,14 +78,14 @@ extern CSideTabGameReg* g_gameReg;
 // CStatusBarItem. Fields are placeholders; the offsets + code bytes are the
 // load-bearing fact, the mangled (?<method>@CSBI_SideTab@@...) name is
 // layout-independent.
-class CSBI_SideTab {
+class CSBI_SideTab : public CStatusBarItem {
 public:
     void Reset();            // vslot 3 (0xe9800)  drop the two frame handles
     i32 Refresh(i32 unused); // vslot 4 (0xe9820)  rebuild the +0x58 draw gate (ret int 0)
     i32 Render(i32 z);       // vslot 5 (0xe99c0)  draw the two side frames
     i32 BuildHandle();       // 0xe9850  sibling: build the +0x58 draw gate
 
-    char m_pad0[0x2c];
+    // base region m_0..0x2b comes from CStatusBarItem; leaf fields start at +0x2c.
     CSideTabFallback* m_2c; // +0x2c  empty-slot fallback notify target
     CImage* m_30;           // +0x30  top frame handle
     CImage* m_34;           // +0x34  bottom frame handle (resolved glyph)

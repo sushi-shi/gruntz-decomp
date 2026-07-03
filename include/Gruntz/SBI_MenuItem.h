@@ -27,6 +27,10 @@ struct CSbiConfigHost;
 // +0x38) holds: a config-host pointer at +0x24, an item-counter at +0x28, an
 // owning rect-only host at +0x2c, the resolved frame at +0x30, the menu state
 // tag at +0x34, and a resolved cue/config record at +0x38.
+//
+// Real RTTI base is CSBI_Image (see top comment); kept FLAT (frameless method-view)
+// because the matched methods read nearly the whole base region (m_4..m_30) under
+// menu-item-specific names, so deriving CSBI_Image would erase those recovered names.
 // ---------------------------------------------------------------------------
 class CSBI_MenuItem {
 public:

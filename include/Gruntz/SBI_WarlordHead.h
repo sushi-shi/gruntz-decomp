@@ -82,7 +82,10 @@ SIZE_UNKNOWN(CWhRect);
 // whose reloc pairs against SBI_ImageSet.cpp's definition at 0xe74f0.
 
 // ---------------------------------------------------------------------------
-// CSBI_WarlordHead - the warlord-head status-bar item.
+// CSBI_WarlordHead - the warlord-head status-bar item. Real RTTI base is
+// CSBI_ImageSet (see top comment); kept FLAT (frameless method-view) because the
+// render/serialize methods read base-region storage (m_14/m_18/m_28/m_30/m_34/m_38)
+// under head-specific names spanning all four base levels.
 class CSBI_WarlordHead {
 public:
     // vtable slot 1 (0xe7cd0): serialize the head's six persistent ints

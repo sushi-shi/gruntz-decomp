@@ -62,8 +62,10 @@ struct CGmGameReg {
 SIZE_UNKNOWN(CGmGameReg);
 
 // ---------------------------------------------------------------------------
-// CSBI_GruntMachine - the grunt-machine status-bar item. Derives directly from
-// CStatusBarItem (vtable @0x5eadbc).
+// CSBI_GruntMachine - the grunt-machine status-bar item. Real RTTI base is
+// CStatusBarItem (vtable @0x5eadbc); kept FLAT (frameless method-view) because the
+// render methods read base-region storage (m_14/m_18/m_28) under machine-specific
+// names that CStatusBarItem models as the m_rect14 aggregate.
 class CSBI_GruntMachine {
 public:
     // vtable slot 3 (0xe8c70): drop the standalone frame handle + the two resolved

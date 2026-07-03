@@ -65,7 +65,10 @@ struct CGooGameReg {
 SIZE_UNKNOWN(CGooGameReg);
 
 // ---------------------------------------------------------------------------
-// CSBI_WellGoo - the well-goo status-bar item.
+// CSBI_WellGoo - the well-goo status-bar item. Real RTTI base is CSBI_Image (see
+// top comment); kept FLAT (frameless method-view) because Tick reads base-region
+// storage (m_18/m_20/m_28) under goo-specific names that CStatusBarItem models as
+// the m_rect14 aggregate - deriving it would erase those recovered semantics.
 class CSBI_WellGoo {
 public:
     // vtable slot 5 (0xe6380): the per-frame goo Tick.

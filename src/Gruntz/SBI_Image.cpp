@@ -2,7 +2,7 @@
 #include <Mfc.h>
 #include <Ints.h>
 #include <Gruntz/SbiConfig.h> // canonical config-host family (one shape)
-#include <Gruntz/StatusBarItem.h>
+#include <Gruntz/SBI_Image.h> // canonical frameless CSBI_Image (: CSBI_RectOnly : CStatusBarItem)
 // SBI_Image.cpp - Gruntz CSBI_Image (C:\Proj\Gruntz), the frameless methods.
 // RTTI .?AVCSBI_Image@@; in the SBI family
 //   CSBI_Image : CSBI_RectOnly : CStatusBarItem  (CSBI_ImageSet derives from this).
@@ -20,31 +20,8 @@
 // The config host + its lookup map + record now come from the shared canonical
 // family (<Gruntz/SbiConfig.h>): CSbiConfigHost / CSbiConfigMap / CSbiConfigRecord.
 
-// ---------------------------------------------------------------------------
-// CSBI_Image - the image status-bar item. Inherits the CSBI_RectOnly base-region
-// fields; adds the vslot-11 image setup. Fields are placeholders; offsets are the
-// load-bearing fact.
-class CSBI_Image : public CStatusBarItem {
-public:
-    // vtable slot 11 (0xe6c80): the 11-arg image setup; arg1 = id, arg2 = config
-    // host, args 3..8 = the rect block, arg9 = the lookup key (args 10/11 unused).
-    i32 SetupImage(
-        i32 a1,
-        CSbiConfigHost* host,
-        i32 a3,
-        i32 a4,
-        i32 a5,
-        i32 a6,
-        i32 a7,
-        i32 a8,
-        i32 key,
-        i32 a10,
-        i32 a11
-    );
-
-    i32 m_2c; // +0x2c  Setup id (== a1)
-    i32 m_30; // +0x30  latched config value
-};
+// CSBI_Image (+ its CSBI_RectOnly intermediate) now come from the canonical
+// frameless header <Gruntz/SBI_Image.h>. SetupImage is defined below.
 
 // vtable slot 11 (0xe6c80): store the live config args into the base-region
 // fields, then (if a key is supplied) look up the config record through the host

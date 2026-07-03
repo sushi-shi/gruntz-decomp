@@ -70,11 +70,12 @@ extern void(WINAPI* g_pCopyRect)(RECT* dst, const RECT* src);
 // ctor-in-flight EH frame; the derived ctors are inline (the tag + field clears
 // that land at each new-site). The virtual dtor (slot 0) is the scalar-deleting dtor
 // the fail-path `delete` dispatches; Setup is slot 0x2c (`call [edx+0x2c]`).
-// FACET 3 of the status-bar item family (CSbDialogItem here / CSbConfigItem in
-// CStatusBarMgr.cpp / CSbBuildItem in SBI_SideTabBuild.cpp) - the SAME retail class,
-// three incompatible C++ dispatch models (see CStatusBarMgr.cpp for the rationale).
-// FACET 3 = an out-of-line base ctor so `new` emits the throwing base-ctor `call` +
-// the /GX ctor-in-flight EH frame.
+// CSbDialogItem is a per-TU builder VIEW of the ONE retail CSBI_Image level (its
+// Setup lands at slot +0x2c = CSBI_Image's own virtual), the same level modeled by
+// CSbConfigItem (CStatusBarMgr.cpp) and CSbMenuItem (StatusBarGameMenu.cpp) - see
+// the VERDICT note in CStatusBarMgr.cpp. This view uses an OUT-OF-LINE base ctor so
+// `new` emits the throwing base-ctor `call` + the /GX ctor-in-flight EH frame; it
+// cannot merge with CSbConfigItem's inline-ctor view (measured-regression wall).
 // ---------------------------------------------------------------------------
 class CSbDialogItem {
 public:

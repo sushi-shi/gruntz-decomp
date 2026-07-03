@@ -19,6 +19,7 @@
 
 #include <Ints.h>
 #include <rva.h>
+#include <Gruntz/SBI_Image.h> // canonical frameless CSBI_Image base (real RTTI base)
 
 struct CSprite; // full def in <Gruntz/Sprite.h>; only a CSprite* member is needed here
 
@@ -44,13 +45,12 @@ struct CImageSetStream {
 SIZE_UNKNOWN(CImageSetStream);
 
 // CSBI_ImageSet - adds the slot-1 serialize override (save/load of the config id +
-// name) on top of CSBI_Image. Offsets are load-bearing.
-class CSBI_ImageSet {
+// name) on top of CSBI_Image (its real RTTI base). Offsets are load-bearing.
+class CSBI_ImageSet : public CSBI_Image {
 public:
     i32 Serialize(CImageSetStream* s, i32 mode, i32 a3, i32 a4);     // vslot 1 (0xe74f0)
     i32 BaseSerialize(CImageSetStream* s, i32 mode, i32 a3, i32 a4); // 0xe6e40 base slot 1
 
-    char m_pad0[0x34];
     CSprite* m_34; // +0x34  resolved config record (the image registry's CSprite)
     i32 m_38;      // +0x38  serialized config id (4 bytes)
 };
