@@ -15,11 +15,11 @@ extern "C" void* RezAlloc(u32 size);
 extern "C" void RezFree(void* p);
 
 // ===========================================================================
-// 0x139800 - GetEntryTag: return the first dword of the keyed-store entry m_04.
+// 0x139800 - GetEntryTag: return the first dword of the keyed-store entry m_entry.
 // ===========================================================================
 RVA(0x00139800, 0x6)
 i32 CParseSource::GetEntryTag() {
-    return *(i32*)m_04;
+    return *(i32*)m_entry;
 }
 
 // ===========================================================================
@@ -30,24 +30,24 @@ i32 CParseSource::GetEntryTag() {
 // ===========================================================================
 RVA(0x00139960, 0x6b)
 i32 CParseSource::BeginParse() {
-    if (m_10->m_48 != 0) {
-        return m_14 - m_10->m_0c + m_10->m_48;
+    if (m_mapped->m_mapping != 0) {
+        return m_base - m_mapped->m_baseOffset + m_mapped->m_mapping;
     }
-    if (m_38 != 0) {
-        return m_38;
+    if (m_buffer != 0) {
+        return m_buffer;
     }
-    if (m_0c == 0) {
+    if (m_length == 0) {
         return 0;
     }
-    m_38 = (i32)RezAlloc(m_0c);
-    if (m_38 == 0) {
+    m_buffer = (i32)RezAlloc(m_length);
+    if (m_buffer == 0) {
         return 0;
     }
-    if (m_34->Read(m_14, 0, m_0c, (void*)m_38) != (i32)m_0c) {
-        RezFree((void*)m_38);
-        m_38 = 0;
+    if (m_reader->Read(m_base, 0, m_length, (void*)m_buffer) != (i32)m_length) {
+        RezFree((void*)m_buffer);
+        m_buffer = 0;
     }
-    return m_38;
+    return m_buffer;
 }
 
 // ===========================================================================
@@ -55,9 +55,9 @@ i32 CParseSource::BeginParse() {
 // ===========================================================================
 RVA(0x001399d0, 0x21)
 i32 CParseSource::EndParse() {
-    if (m_38 != 0) {
-        RezFree((void*)m_38);
-        m_38 = 0;
+    if (m_buffer != 0) {
+        RezFree((void*)m_buffer);
+        m_buffer = 0;
     }
     return 1;
 }
@@ -70,16 +70,16 @@ i32 CParseSource::EndParse() {
 // ===========================================================================
 RVA(0x00139a40, 0x95)
 i32 CParseSource::ReadAt(void* dst, i32 pos, u32 len) {
-    ParseMappedSource* sd = m_10;
-    if (sd->m_48 != 0) {
-        memcpy(dst, (const void*)(m_14 - sd->m_0c + pos + sd->m_48), len);
+    ParseMappedSource* sd = m_mapped;
+    if (sd->m_mapping != 0) {
+        memcpy(dst, (const void*)(m_base - sd->m_baseOffset + pos + sd->m_mapping), len);
         return 1;
     }
-    if (m_38 != 0) {
-        memcpy(dst, (const void*)(m_38 + pos), len);
+    if (m_buffer != 0) {
+        memcpy(dst, (const void*)(m_buffer + pos), len);
         return 1;
     }
-    return m_34->Read(m_14, pos, len, dst) == (i32)len;
+    return m_reader->Read(m_base, pos, len, dst) == (i32)len;
 }
 
 // ===========================================================================
@@ -87,7 +87,7 @@ i32 CParseSource::ReadAt(void* dst, i32 pos, u32 len) {
 // ===========================================================================
 RVA(0x00139ae0, 0xf)
 i32 CParseSource::SetPos(i32 pos) {
-    m_18 = pos;
+    m_cursor = pos;
     return 1;
 }
 
@@ -103,7 +103,7 @@ i32 CParseSource::SetPos(i32 pos) {
 // dispatch, shared return-0 epilogue, both inline rep movsd/movsb memcpys, the
 // vtable call). Residue is allocator/selection only: retail holds the mapped-
 // source ptr in edx and folds `sub esi,[edx+0xc]` (1 instr) where cl loads
-// sd->m_0c to a reg first, plus a je-vs-jbe 1-byte branch encoding on the empty
+// sd->m_baseOffset to a reg first, plus a je-vs-jbe 1-byte branch encoding on the empty
 // check. Not source-steerable. ~89%; SetPos is 100%.
 RVA(0x00139af0, 0xcc)
 i32 CParseSource::Read(void* dst, u32 len, i32 seekPos) {
@@ -111,27 +111,27 @@ i32 CParseSource::Read(void* dst, u32 len, i32 seekPos) {
         SetPos(seekPos);
     }
 
-    u32 pos = (u32)m_18;
+    u32 pos = (u32)m_cursor;
     u32 want = len;
-    if (pos + want > m_0c) {
-        want = m_0c - pos;
+    if (pos + want > m_length) {
+        want = m_length - pos;
     }
     if (want != 0) {
-        ParseMappedSource* sd = m_10;
-        if (sd->m_48) {
-            const char* base = (const char*)(m_14 - sd->m_0c + sd->m_48 + pos);
+        ParseMappedSource* sd = m_mapped;
+        if (sd->m_mapping) {
+            const char* base = (const char*)(m_base - sd->m_baseOffset + sd->m_mapping + pos);
             memcpy(dst, base, want);
-            m_18 += want;
+            m_cursor += want;
             return want;
         }
-        if (m_38) {
-            const char* base = (const char*)(m_38 + pos);
+        if (m_buffer) {
+            const char* base = (const char*)(m_buffer + pos);
             memcpy(dst, base, want);
-            m_18 += want;
+            m_cursor += want;
             return want;
         }
-        if (m_34->Read(m_14, pos, want, dst) == (i32)want) {
-            m_18 += want;
+        if (m_reader->Read(m_base, pos, want, dst) == (i32)want) {
+            m_cursor += want;
             return want;
         }
     }

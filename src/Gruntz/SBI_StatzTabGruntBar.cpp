@@ -24,22 +24,22 @@ extern i32 g_645588;
 // ---------------------------------------------------------------------------
 
 // 0xea470: drop the five tracked values' glyphs + the glyph maps (also reached by
-// the destructor as the member teardown). Zeroes both columns of glyphs (m_30..m_58)
-// and the two glyph-map pointers (m_68 timer, m_74 main) - the tracked VALUES and the
-// table indices survive so the next Update re-resolves them.
+// the destructor as the member teardown). Zeroes both columns of glyphs (status..select)
+// and the two glyph-map pointers (m_timerGlyphMap, m_glyphMap) - the tracked VALUES and
+// the table indices survive so the next Update re-resolves them.
 RVA(0x000ea470, 0x24)
 void CSBI_StatzTabGruntBar::Reset() {
-    m_34 = 0;
-    m_40 = 0;
-    m_4c = 0;
-    m_58 = 0;
-    m_30 = 0;
-    m_3c = 0;
-    m_48 = 0;
-    m_54 = 0;
-    m_74 = 0;
-    m_68 = 0;
-    m_6c = 0;
+    m_statusGlyphLatched = 0;
+    m_abilityGlyphLatched = 0;
+    m_overrideGlyphLatched = 0;
+    m_selectGlyph = 0;
+    m_statusGlyph = 0;
+    m_abilityGlyph = 0;
+    m_overrideGlyph = 0;
+    m_selectKey = 0;
+    m_glyphMap = 0;
+    m_timerGlyphMap = 0;
+    m_timerGlyph = 0;
 }
 
 // 0xea4b0: the per-frame poll (one unused stack arg, ret 4) - resample (Update); if
@@ -54,7 +54,7 @@ i32 CSBI_StatzTabGruntBar::Poll(i32 arg) {
 }
 
 // 0xea6c0: resample the selected grunt and latch every changed value. Looks up the
-// grunt record in the registry unit table by (m_60, m_64); derives five values -
+// grunt record in the registry unit table by (m_unitRow, m_unitCol); derives five values -
 // status (health bands), ability (level/cap/badge), an override, a selection-list
 // glyph, and a self-bumping anim timer - and for each, when it differs from the
 // tracked copy, resolves a glyph through the gated glyph map and flags dirty. Returns
@@ -64,7 +64,7 @@ i32 CSBI_StatzTabGruntBar::Poll(i32 arg) {
 // topic:regalloc): the whole control flow, the five derive blocks, the health bands,
 // the 64-bit timer-window compare and the five compare-and-latch glyph blocks are all
 // byte-correct, BUT retail spills the unit-table base to a stack home ([esp+0x20],
-// `subl $0x14`) and pins m_64/the -1/0 inits across ebp/ebx/edx in the opposite
+// `subl $0x14`) and pins m_unitCol/the -1/0 inits across ebp/ebx/edx in the opposite
 // rotation; my recompile keeps the base in ebp (`subl $0x10`) and swaps the
 // override/select stack slots ([0x18]<->[0x1c]). No init order / local-decl order
 // flips the slot numbering or the base spill (the table is used twice so the compiler
@@ -73,8 +73,9 @@ i32 CSBI_StatzTabGruntBar::Poll(i32 arg) {
 RVA(0x000ea6c0, 0x237)
 i32 CSBI_StatzTabGruntBar::Update() {
     i32 dirty = 0;
-    CStatzSelHost* table = g_gameReg->m_68;
-    CStatzGruntRec* unit = *(CStatzGruntRec**)((char*)table + (m_64 + 15 * m_60) * 4 + 0x1c);
+    CStatzSelHost* table = g_gameReg->m_unitTable;
+    CStatzGruntRec* unit =
+        *(CStatzGruntRec**)((char*)table + (m_unitCol + 15 * m_unitRow) * 4 + 0x1c);
 
     i32 statusVal;
     i32 abilityVal; // ebx
@@ -90,7 +91,7 @@ i32 CSBI_StatzTabGruntBar::Update() {
         timerVal = -1;
     } else {
         // status: health bands
-        i32 hp = unit->m_3ec;
+        i32 hp = unit->m_health;
         if (hp >= 0x50) {
             statusVal = 0x24;
         } else if (hp >= 0x28) {
@@ -100,32 +101,32 @@ i32 CSBI_StatzTabGruntBar::Update() {
         }
 
         // ability + override
-        i32 level = unit->m_170;
+        i32 level = unit->m_abilityLevel;
         abilityVal = -1;
         overrideVal = -1;
         selectVal = 0;
-        i32 cap = (level > 0x16) ? unit->m_19c : level;
+        i32 cap = (level > 0x16) ? unit->m_abilityCap : level;
         if (cap != 0) {
-            abilityVal = (level > 0x16) ? unit->m_19c : level;
+            abilityVal = (level > 0x16) ? unit->m_abilityCap : level;
             if (abilityVal == 3) {
-                abilityVal = unit->m_194 + 0x11;
+                abilityVal = unit->m_abilitySub + 0x11;
             }
         }
-        i32 badge = unit->m_198;
+        i32 badge = unit->m_badge;
         if (badge != 0) {
             overrideVal = badge;
         }
 
         // selection-list glyph
-        if (m_54 != 0) {
-            selectVal = table->SelectionListFind(m_64, m_60);
+        if (m_selectKey != 0) {
+            selectVal = table->SelectionListFind(m_unitCol, m_unitRow);
         }
 
         // self-bumping anim timer
-        timerVal = m_70;
-        if (unit->m_1d8 == 0) {
+        timerVal = m_timerValue;
+        if (unit->m_alive == 0) {
             timerVal = -1;
-        } else if ((i64)(u32)g_645588 - *(i64*)&m_78 >= *(i64*)&m_80) {
+        } else if ((i64)(u32)g_645588 - *(i64*)&m_timerAnchorLo >= *(i64*)&m_timerWindowLo) {
             if (timerVal > 0) {
                 timerVal++;
                 if (timerVal > 0xa) {
@@ -134,51 +135,58 @@ i32 CSBI_StatzTabGruntBar::Update() {
             } else {
                 timerVal = 1;
             }
-            m_80 = 0x32;
-            m_84 = 0;
-            m_78 = g_645588;
-            m_7c = 0;
+            m_timerWindowLo = 0x32;
+            m_timerWindowHi = 0;
+            m_timerAnchorLo = g_645588;
+            m_timerAnchorHi = 0;
         }
     }
 
-    // value 0: status (m_34/m_38, glyph map m_74)
-    if (m_38 != statusVal) {
-        CStatzGlyphMap* gm = (CStatzGlyphMap*)m_74;
-        m_34 = (statusVal < gm->m_64 || statusVal > gm->m_68) ? 0 : gm->m_14[statusVal];
-        m_38 = statusVal;
+    // value 0: status (glyph/value, main glyph map)
+    if (m_statusValue != statusVal) {
+        CStatzGlyphMap* gm = m_glyphMap;
+        m_statusGlyphLatched = (statusVal < gm->m_minIndex || statusVal > gm->m_maxIndex)
+                                   ? 0
+                                   : gm->m_glyphs[statusVal];
+        m_statusValue = statusVal;
         dirty = 1;
     }
-    // value 1: ability (m_40/m_44, glyph map m_74)
-    if (m_44 != abilityVal) {
-        CStatzGlyphMap* gm = (CStatzGlyphMap*)m_74;
-        m_40 = (abilityVal < gm->m_64 || abilityVal > gm->m_68) ? 0 : gm->m_14[abilityVal];
-        m_44 = abilityVal;
+    // value 1: ability (glyph/value, main glyph map)
+    if (m_abilityValue != abilityVal) {
+        CStatzGlyphMap* gm = m_glyphMap;
+        m_abilityGlyphLatched = (abilityVal < gm->m_minIndex || abilityVal > gm->m_maxIndex)
+                                    ? 0
+                                    : gm->m_glyphs[abilityVal];
+        m_abilityValue = abilityVal;
         dirty = 1;
     }
-    // value 2: override (m_4c/m_50, glyph map m_74)
-    if (m_50 != overrideVal) {
-        CStatzGlyphMap* gm = (CStatzGlyphMap*)m_74;
-        m_4c = (overrideVal < gm->m_64 || overrideVal > gm->m_68) ? 0 : gm->m_14[overrideVal];
-        m_50 = overrideVal;
+    // value 2: override (glyph/value, main glyph map)
+    if (m_overrideValue != overrideVal) {
+        CStatzGlyphMap* gm = m_glyphMap;
+        m_overrideGlyphLatched = (overrideVal < gm->m_minIndex || overrideVal > gm->m_maxIndex)
+                                     ? 0
+                                     : gm->m_glyphs[overrideVal];
+        m_overrideValue = overrideVal;
         dirty = 1;
     }
-    // value 3: selection (m_58/m_5c, glyph map m_74; +0x28 row offset on lookup)
-    if (m_5c != selectVal) {
+    // value 3: selection (glyph/value, main glyph map; +0x28 row offset on lookup)
+    if (m_selectValue != selectVal) {
         if (selectVal == 0) {
-            m_58 = selectVal;
+            m_selectGlyph = selectVal;
         } else {
-            CStatzGlyphMap* gm = (CStatzGlyphMap*)m_74;
+            CStatzGlyphMap* gm = m_glyphMap;
             i32 key = selectVal + 0x28;
-            m_58 = (key < gm->m_64 || key > gm->m_68) ? 0 : gm->m_14[key];
+            m_selectGlyph = (key < gm->m_minIndex || key > gm->m_maxIndex) ? 0 : gm->m_glyphs[key];
         }
-        m_5c = selectVal;
+        m_selectValue = selectVal;
         dirty = 1;
     }
-    // value 4: timer (m_6c/m_70, glyph map m_68)
-    if (m_70 != timerVal) {
-        CStatzGlyphMap* gm = (CStatzGlyphMap*)m_68;
-        m_6c = (timerVal < gm->m_64 || timerVal > gm->m_68) ? 0 : gm->m_14[timerVal];
-        m_70 = timerVal;
+    // value 4: timer (glyph/value, timer glyph map)
+    if (m_timerValue != timerVal) {
+        CStatzGlyphMap* gm = m_timerGlyphMap;
+        m_timerGlyph =
+            (timerVal < gm->m_minIndex || timerVal > gm->m_maxIndex) ? 0 : gm->m_glyphs[timerVal];
+        m_timerValue = timerVal;
         dirty = 1;
     }
     return dirty;

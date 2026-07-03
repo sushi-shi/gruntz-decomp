@@ -30,15 +30,15 @@
 // load-bearing facts.
 struct CStatzGruntRec {
     char m_pad0[0x170];
-    i32 m_170; // +0x170  ability level
+    i32 m_abilityLevel; // +0x170  ability level
     char m_pad174[0x194 - 0x174];
-    i32 m_194; // +0x194  ability sub-value
-    i32 m_198; // +0x198  override badge (non-zero => use directly)
-    i32 m_19c; // +0x19c  ability cap (used when m_170 > 0x16)
+    i32 m_abilitySub; // +0x194  ability sub-value
+    i32 m_badge;      // +0x198  override badge (non-zero => use directly)
+    i32 m_abilityCap; // +0x19c  ability cap (used when m_abilityLevel > 0x16)
     char m_pad1a0[0x1d8 - 0x1a0];
-    i32 m_1d8; // +0x1d8  alive/active gate (0 => skip the timer block)
+    i32 m_alive; // +0x1d8  alive/active gate (0 => skip the timer block)
     char m_pad1dc[0x3ec - 0x1dc];
-    i32 m_3ec; // +0x3ec  health
+    i32 m_health; // +0x3ec  health
 };
 SIZE_UNKNOWN(CStatzGruntRec);
 
@@ -54,7 +54,7 @@ SIZE_UNKNOWN(CStatzSelHost);
 // the +0x68 unit-table base the Statz tab samples is modeled (rows of 15 dwords).
 struct CStatzGameReg {
     char m_pad0[0x68];
-    CStatzSelHost* m_68; // +0x68  unit/record table base + selection host
+    CStatzSelHost* m_unitTable; // +0x68  unit/record table base + selection host
 };
 SIZE_UNKNOWN(CStatzGameReg);
 
@@ -79,14 +79,15 @@ public:
 };
 SIZE_UNKNOWN(CStatzSelf);
 
-// The glyph map a changed value is resolved through (this+0x74 for the first four
-// values, this+0x68 for the timer value): a [m_64..m_68]-gated table at m_14.
+// The glyph map a changed value is resolved through (m_glyphMap for the first four
+// values, m_timerGlyphMap for the timer value): a [m_minIndex..m_maxIndex]-gated
+// table at m_glyphs.
 struct CStatzGlyphMap {
     char m_pad0[0x14];
-    i32* m_14; // +0x14  glyph table
+    i32* m_glyphs; // +0x14  glyph table
     char m_pad18[0x64 - 0x18];
-    i32 m_64; // +0x64  glyph-index range lo gate
-    i32 m_68; // +0x68  glyph-index range hi gate
+    i32 m_minIndex; // +0x64  glyph-index range lo gate
+    i32 m_maxIndex; // +0x68  glyph-index range hi gate
 };
 SIZE_UNKNOWN(CStatzGlyphMap);
 
@@ -99,30 +100,30 @@ public:
     i32 Poll(i32 arg); // 0xea4b0  Update + conditional vfunc-10 redraw (arg unused)
     i32 Update();      // 0xea6c0  resample the grunt and latch any changed value
 
-    // ----- layout (placeholders; offsets are the load-bearing fact) -----
+    // ----- layout (offsets are the load-bearing fact) -----
     char m_pad0[0x30];
-    i32 m_30; // +0x30  status glyph
-    i32 m_34; // +0x34  status glyph (latched)
-    i32 m_38; // +0x38  status value (tracked)
-    i32 m_3c; // +0x3c  ability glyph
-    i32 m_40; // +0x40  ability glyph (latched)
-    i32 m_44; // +0x44  ability value (tracked)
-    i32 m_48; // +0x48  override glyph
-    i32 m_4c; // +0x4c  override glyph (latched)
-    i32 m_50; // +0x50  override value (tracked)
-    i32 m_54; // +0x54  selection key (0 => skip selection sample)
-    i32 m_58; // +0x58  selection glyph (latched)
-    i32 m_5c; // +0x5c  selection value (tracked)
-    i32 m_60; // +0x60  unit-table column index (== SelectionListFind y)
-    i32 m_64; // +0x64  unit-table row index   (== SelectionListFind key)
-    i32 m_68; // +0x68  timer glyph map pointer (CStatzGlyphMap*)
-    i32 m_6c; // +0x6c  timer glyph (latched)
-    i32 m_70; // +0x70  timer value (tracked)
-    i32 m_74; // +0x74  glyph map pointer (CStatzGlyphMap*) for the first four values
-    i32 m_78; // +0x78  timer anchor lo (g_645588 at last bump)
-    i32 m_7c; // +0x7c  timer anchor hi
-    i32 m_80; // +0x80  timer window lo
-    i32 m_84; // +0x84  timer window hi
+    i32 m_statusGlyph;               // +0x30  status glyph
+    i32 m_statusGlyphLatched;        // +0x34  status glyph (resolved by Update)
+    i32 m_statusValue;               // +0x38  status value (tracked)
+    i32 m_abilityGlyph;              // +0x3c  ability glyph
+    i32 m_abilityGlyphLatched;       // +0x40  ability glyph (resolved by Update)
+    i32 m_abilityValue;              // +0x44  ability value (tracked)
+    i32 m_overrideGlyph;             // +0x48  override glyph
+    i32 m_overrideGlyphLatched;      // +0x4c  override glyph (resolved by Update)
+    i32 m_overrideValue;             // +0x50  override value (tracked)
+    i32 m_selectKey;                 // +0x54  selection key (0 => skip selection sample)
+    i32 m_selectGlyph;               // +0x58  selection glyph (resolved by Update)
+    i32 m_selectValue;               // +0x5c  selection value (tracked)
+    i32 m_unitRow;                   // +0x60  unit-table row index (stride 15 records)
+    i32 m_unitCol;                   // +0x64  unit-table column index (within the 15-dword record)
+    CStatzGlyphMap* m_timerGlyphMap; // +0x68  timer glyph map
+    i32 m_timerGlyph;                // +0x6c  timer glyph (resolved by Update)
+    i32 m_timerValue;                // +0x70  timer value (tracked)
+    CStatzGlyphMap* m_glyphMap;      // +0x74  glyph map for the first four values
+    i32 m_timerAnchorLo;             // +0x78  timer anchor lo (g_645588 at last bump)
+    i32 m_timerAnchorHi;             // +0x7c  timer anchor hi
+    i32 m_timerWindowLo;             // +0x80  timer window lo
+    i32 m_timerWindowHi;             // +0x84  timer window hi
 };
 SIZE_UNKNOWN(CSBI_StatzTabGruntBar);
 
