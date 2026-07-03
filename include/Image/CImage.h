@@ -79,153 +79,36 @@ public:
     CImageParent* m_parent; // +0x0c  parent CDDrawPtrCollections (its surface pool at +0x1c)
 };
 
-// The source sub-object held at CImageSurfaceItem::m_08 (a polymorphic parse-source
-// parse-node). Reload (slot 13) probes it via two vtable slots: +0x60 reports
-// whether the surface is still clean (skip rebuild), +0x6c returns whether it has
-// a live source descriptor (re-run Resolve) vs none (parse the new source). Its
-// vtable contents are external engine code; only the two slots are evidenced.
-//
-// The two slots are called `mov ecx,[obj]; push obj; call [ecx+N]` - the object is
-// pushed as an explicit stack arg (the slots are __stdcall(this), not this-in-ecx).
-// Modeled REAL-POLYMORPHIC with __stdcall virtuals so the dispatch falls out of the
-// language; the source is never constructed here, so cl emits no ??_7 for it.
-struct CImageSurfaceSrc {
-    virtual i32 __stdcall v00();
-    virtual i32 __stdcall v04();
-    virtual i32 __stdcall v08();
-    virtual i32 __stdcall v0c();
-    virtual i32 __stdcall v10();
-    virtual i32 __stdcall v14();
-    virtual i32 __stdcall v18();
-    virtual i32 __stdcall v1c();
-    virtual i32 __stdcall v20();
-    virtual i32 __stdcall v24();
-    virtual i32 __stdcall v28();
-    virtual i32 __stdcall v2c();
-    virtual i32 __stdcall v30();
-    virtual i32 __stdcall v34();
-    virtual i32 __stdcall v38();
-    virtual i32 __stdcall v3c();
-    virtual i32 __stdcall v40();
-    virtual i32 __stdcall v44();
-    virtual i32 __stdcall v48();
-    virtual i32 __stdcall v4c();
-    virtual i32 __stdcall v50();
-    virtual i32 __stdcall v54();
-    virtual i32 __stdcall v58();
-    virtual i32 __stdcall v5c();
-    virtual i32 __stdcall IsClean();   // slot 24 @0x60  (surface still clean => skip rebuild)
-    virtual i32 __stdcall v64();       // slot 25 @0x64
-    virtual i32 __stdcall v68();       // slot 26 @0x68
-    virtual i32 __stdcall HasSource(); // slot 27 @0x6c  (has a live source descriptor)
-};
+// The held +0x2c surface IS the DirectDraw surface wrapper CDDSurface
+// (<DDrawMgr/CDDSurface.h>, the DIRSURF.CPP 0xc0 surface; same physical struct the
+// Image.cpp CFileImage view models): LoadDispatch reads its geometry (m_height +0x18
+// / m_width +0x1c) and the +0xbc keyed flag; Reload (slot 13) probes the held
+// IDirectDrawSurface at +0x08 (IsLost @0x60 / Restore @0x6c), Fill (0x13e760) and Blt
+// (0x13ee60) drive a clone. The former CImageSurfaceItem/CImageSurfaceSrc placeholders
+// were that same surface + its COM interface; unified so m_surface carries no facet
+// cast. Forward-declared here (pointer member only) so this header stays lean.
+class CDDSurface;
 
-// The held +0x2c surface (a CDDrawPtrCollections CPoolItemA): LoadDispatch reads
-// its geometry (+0x18 / +0x1c) and the +0xbc keyed flag; Reload (slot 13) reaches
-// the parse-source at +0x08, Prepare (0x13e760) and Blt (0x13ee60) drive a clone.
-// Only those offsets are load-bearing here; the rest of the 0xc0-byte item lives in
-// CDDrawPtrCollections.
-class CImageSurfaceItem {
-public:
-    char _00[0x08];
-    CImageSurfaceSrc* m_08; // +0x08  parse-source sub-object (Reload path)
-    char _0c[0x18 - 0x0c];
-    i32 m_18; // +0x18  height
-    i32 m_1c; // +0x1c  width
-    char _20[0xbc - 0x20];
-    i32 m_bc; // +0xbc  has-color-key flag
-
-    i32 Prepare(i32 z);                // 0x13e760  (__thiscall, ret 4)
-    i32 Blt(CImageSurfaceItem* other); // 0x13ee60  (__thiscall, ret 4)
-    i32
-    Reload(void* pool, i32 src, i32 index, void* data, i32 flag); // 0x13e550 (__thiscall, ret 0x14)
-};
-
-// The parent CDDrawPtrCollections surface pool, reached through CImage::m_0c->m_1c.
+// The parent CDDrawPtrCollections surface pool, reached through CImage::m_parent->m_1c.
 // RemoveItemA (0x142160) frees a held surface; CreateA (0x142260) allocates one;
 // CreateB (0x1423c0) is the Create24 variant. Reloc-masked __thiscall engine callees
 // modeled on a tiny view so each lowers to `mov ecx,pool; call` with callee-side
 // stack cleanup.
 class CImageSurfacePool {
 public:
-    void RemoveItemA(void* item);                                          // 0x142160
-    CImageSurfaceItem* CreateA(i32 desc, i32 mode, void* a, i32 b, i32 c); // 0x142260
-    CImageSurfaceItem* CreateB(i32 desc, i32 mode, void* a, i32 b, i32 c); // 0x1423c0
-    CImageSurfaceItem* CreateC(i32 desc, i32 cap, i32 flags);              // 0x142560
+    void RemoveItemA(void* item);                                   // 0x142160
+    CDDSurface* CreateA(i32 desc, i32 mode, void* a, i32 b, i32 c); // 0x142260
+    CDDSurface* CreateB(i32 desc, i32 mode, void* a, i32 b, i32 c); // 0x1423c0
+    CDDSurface* CreateC(i32 desc, i32 cap, i32 flags);              // 0x142560
 };
 
-// The owned +0x30 object (a 0x3c-byte buffer holder built by BuildSlot13): a
-// decoded-pixel buffer (+0x0c) and a 256-entry hardware palette (+0x20), plus the
-// dimensions/format metadata copied out of the CImageFrameDesc. The ctor primes
-// the defaults; Build (0x1490d0) decodes a frame from the desc into the two owned
-// buffers; Teardown (0x148d10) RezFree's both. CImageBuildDesc (below) holds the
-// desc fields Build reads. Reloc-masked __thiscall throughout.
-class CImageBuildDesc;
-
-// The 8-dword (0x20) by-value frame descriptor Rebuild builds on the stack and
-// hands to DecodeFrame: [0]=0, [1]=flags, [2]=m_04 (width), [3]=m_08 (height),
-// [4]/[5]=the two int args, [6]=the low byte of m_24 (key, 0 when m_24==-1),
-// [7]=0. Only the layout is load-bearing (passed whole via rep movs).
-struct CImageFrameRebuildDesc {
-    i32 f0;
-    i32 f1;
-    i32 f2;
-    i32 f3;
-    i32 f4;
-    i32 f5;
-    i32 f6;
-    i32 f7;
-};
-
-class CImageOwned {
-public:
-    CImageOwned(); // 0x148ce0
-    i32 BuildRle(
-        void* pixels,
-        i32 width,
-        i32 height,
-        i32 stride,
-        i32 keyVal,
-        void* palette
-    );                                                  // 0x148d40  (/GX, CByteArray RLE encode)
-    i32 LoadFromFile(CString name, i32 fmt);            // 0x148fc0  (/GX, open + slurp + Build)
-    i32 Build(CImageBuildDesc* src, i32 size, i32 fmt); // 0x1490d0
-    void* Remap(void* pixels);                          // 0x1495d0  (palette-remap, external)
-    void Teardown();                                    // 0x148d10
-    // 0x149250 (external/reloc-masked) and 0x1493b0 (Rebuild): when the owned
-    // object is in format-state 1, build the descriptor and decode a frame.
-    i32 DecodeFrame(CString name, CImageFrameRebuildDesc desc); // 0x149250
-    i32 Rebuild(CString name, i32 a1, i32 a2);                  // 0x1493b0
-
-    i32 m_00;              // +0x00
-    i32 m_04;              // +0x04  src->m_08
-    i32 m_08;              // +0x08  src->m_0c
-    void* m_0c;            // +0x0c  decoded pixel buffer (new / RezFree)
-    i32 m_10;              // +0x10  pixel byte count
-    i32 m_14;              // +0x14  (1)
-    i32 m_18;              // +0x18  (0x80)
-    i32 m_1c;              // +0x1c  (0)
-    void* m_20;            // +0x20  256-entry palette buffer (new 0x400 / RezFree)
-    i32 m_24;              // +0x24  (-1 / src->m_18)
-    u8 m_28;               // +0x28  format flag a
-    u8 m_29;               // +0x29  format flag b
-    char _2a[0x3c - 0x2a]; // +0x2a  pad to the 0x3c allocation size (operator new(0x3c))
-};
-
-// The CImageFrameDesc as seen by CImageOwned::Build: a flag word at +0x04 (bits
-// 0x40/0x80/0x100/0x200 steer the decode), two ints copied to the owned object's
-// +0x04/+0x08, a +0x18 byte, and the raw frame data starting at +0x20.
-class CImageBuildDesc {
-public:
-    char _00[0x04];
-    i32 m_04; // +0x04  decode flags
-    i32 m_08; // +0x08  -> owned m_04
-    i32 m_0c; // +0x0c  -> owned m_08
-    char _10[0x18 - 0x10];
-    u8 m_18; // +0x18  -> owned m_24 when 0x100 set
-    char _19[0x20 - 0x19];
-    u8 m_20[1]; // +0x20  raw frame data (palette + pixels)
-};
+// The owned +0x30 object is a CDDrawShadeBlit (<Gruntz/CDDrawShadeBlit.h>) - the
+// 0x3c-byte shaded sprite: a decoded-pixel/RLE buffer (+0x0c) and a 256-entry palette
+// (+0x20), plus the blit-descriptor metadata. BuildSlot13 news it and decodes a frame
+// into it (Build); the sprite blitters draw it (Blit). The former CImageOwned view was
+// that same physical struct; unified so m_owned carries no facet cast. Forward-declared
+// here (pointer member only) so this header stays lean.
+class CDDrawShadeBlit;
 
 // The display-mode descriptor reached through CImageParent::m_04 in BuildSlot13:
 // m_04->m_10 is the active CDDrawSurface, whose +0x18 holds the format/pitch the
@@ -349,15 +232,15 @@ public:
     void BlitShadeFlipH(CBlitInfo* info, CImage* dst);  // 0x154750  X flip, shaded
 
     // --- layout (continues the base; base ends at +0x10) ----------------------
-    i32 m_width;                  // +0x10  width  (from item->m_1c)
-    i32 m_height;                 // +0x14  height (from item->m_18)
-    i32 m_anchorX;                // +0x18  draw anchor x (width>>1)
-    i32 m_anchorY;                // +0x1c  draw anchor y (height>>1)
-    i32 m_originX;                // +0x20  origin x (desc->m_10, or 0)
-    i32 m_originY;                // +0x24  origin y (desc->m_14, or 0)
-    i32 m_loadResult;             // +0x28  load-result code (0x10 / 0x11)
-    CImageSurfaceItem* m_surface; // +0x2c  the held surface (CPoolItemA), pool-removed
-    CImageOwned* m_owned;         // +0x30  owned object (teardown + RezFree)
+    i32 m_width;              // +0x10  width  (from item->m_1c)
+    i32 m_height;             // +0x14  height (from item->m_18)
+    i32 m_anchorX;            // +0x18  draw anchor x (width>>1)
+    i32 m_anchorY;            // +0x1c  draw anchor y (height>>1)
+    i32 m_originX;            // +0x20  origin x (desc->m_10, or 0)
+    i32 m_originY;            // +0x24  origin y (desc->m_14, or 0)
+    i32 m_loadResult;         // +0x28  load-result code (0x10 / 0x11)
+    CDDSurface* m_surface;    // +0x2c  the held DirectDraw surface (CPoolItemA), pool-removed
+    CDDrawShadeBlit* m_owned; // +0x30  owned shaded sprite (teardown + RezFree)
 };
 
 #endif // SRC_IMAGE_CIMAGE_H

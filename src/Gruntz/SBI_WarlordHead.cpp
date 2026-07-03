@@ -2,6 +2,7 @@
 #include <Mfc.h>
 #include <Ints.h>
 #include <Gruntz/SBI_WarlordHead.h>
+#include <Gruntz/CDDrawShadeBlit.h> // full CImage::m_owned (CDDrawShadeBlit) for the +0x1c latch
 // SBI_WarlordHead.cpp - Gruntz CSBI_WarlordHead (C:\Proj\Gruntz), the frameless
 // methods. RTTI .?AVCSBI_WarlordHead@@; the most-derived leaf of the SBI image
 // chain CSBI_WarlordHead : CSBI_ImageSet : CSBI_Image : CSBI_RectOnly :
@@ -116,7 +117,7 @@ i32 CSBI_WarlordHead::ShowFrames(i32 show, i32 arg2) {
         WhShowItem(show, 0);
     }
     if (arg2 && f->m_owned) {
-        f->m_owned->m_1c = arg2;
+        f->m_owned->m_palDescr = (ShadeDescr*)arg2;
     }
 
     f = (cfg->m_64 <= 2 && cfg->m_68 >= 2) ? cfg->m_14[2] : 0;
@@ -127,7 +128,7 @@ i32 CSBI_WarlordHead::ShowFrames(i32 show, i32 arg2) {
         WhShowItem(show, 0);
     }
     if (arg2 && f->m_owned) {
-        f->m_owned->m_1c = arg2;
+        f->m_owned->m_palDescr = (ShadeDescr*)arg2;
     }
     return 1;
 }

@@ -144,7 +144,7 @@ cimage	11	7
 cimageowned	5	2
 cimageprobe	1	1
 cimageset3	3	3
-cimagespriteblit	7	0
+cimagespriteblit	7	1
 cingametextupdate	1	0
 circleshadeblit	1	0
 ckeyedlist	3	2
@@ -355,7 +355,7 @@ maplogic	5	4
 mapmgr	9	7
 menuitem	14	13
 menuitem2	5	2
-menupage	31	16
+menupage	31	17
 menusparkleserial	1	1
 menustateassets	1	0
 mgrautoscroll	1	0
@@ -990,15 +990,15 @@ cddrawptrcollections	?MakeB3@CDDrawPtrCollections@@QAEPAUCPoolItemB@@HHH@Z	100.0
 cddrawptrcollections	?MakeB@CDDrawPtrCollections@@QAEPAUCPoolItemB@@HH@Z	100.0000	100.0000	2	f0053e8f6933	0x142fc0
 cddrawptrcollections	?RemoveItemA@CDDrawPtrCollections@@QAEXPAVCPoolItemBase@@@Z	100.0000	100.0000	1	90206f2b6907	0x142160
 cddrawptrcollections	?RemoveItemB@CDDrawPtrCollections@@QAEXPAUCPoolItemB@@@Z	100.0000	100.0000	2	945ec6f0b8bd	0x142f10
-cddrawshadeblit	?Blit@CDDrawShadeBlit@@QAEHPAUShadeRect@@PAUShadeSrc@@0HH@Z	100.0000	100.0000	3	b7eae8c62d1b	0x1497f0
-cddrawshadeblit	?BlitLoop@CDDrawShadeBlit@@QAEXPAUShadeRect@@PAUShadeSrc@@0H@Z	0.0556	0.0556	1	c4a744d07210	0x14a200
-cddrawshadeblit	?BlitMode_149950@CDDrawShadeBlit@@QAEXPAUShadeRect@@PAUShadeSrc@@0H@Z	31.4438	31.4438	5	26fa28971772	0x149950
-cddrawshadeblit	?BlitMode_149d00@CDDrawShadeBlit@@QAEXPAUShadeRect@@PAUShadeSrc@@0H@Z	29.3712	29.3712	4	fe86a011eb30	0x149d00
-cddrawshadeblit	?BlitMode_14b770@CDDrawShadeBlit@@QAEXPAUShadeRect@@PAUShadeSrc@@0H@Z	0.0637	0.0637	1	17d63d847449	0x14b770
+cddrawshadeblit	?Blit@CDDrawShadeBlit@@QAEHPAUShadeRect@@PAVCDDSurface@@0HH@Z	100.0000	100.0000	1	dfd521e9c4c8	0x1497f0
+cddrawshadeblit	?BlitLoop@CDDrawShadeBlit@@QAEXPAUShadeRect@@PAVCDDSurface@@0H@Z	0.0556	0.0556	1	71fe759d216d	0x14a200
+cddrawshadeblit	?BlitMode_149950@CDDrawShadeBlit@@QAEXPAUShadeRect@@PAVCDDSurface@@0H@Z	31.4438	31.4438	1	bea7178db945	0x149950
+cddrawshadeblit	?BlitMode_149d00@CDDrawShadeBlit@@QAEXPAUShadeRect@@PAVCDDSurface@@0H@Z	29.3712	29.3712	1	be2d747fa6fa	0x149d00
+cddrawshadeblit	?BlitMode_14b770@CDDrawShadeBlit@@QAEXPAUShadeRect@@PAVCDDSurface@@0H@Z	0.0637	0.0637	1	f9ac29166f2e	0x14b770
 cddrawshadeblit	?ConvertRow@CDDrawShadeBlit@@QAEXPAE0H@Z	55.7058	55.7058	3	1d55753736ca	0x14c9f0
-cddrawshadeblit	?ConvertRowDouble@CDDrawShadeBlit@@QAEXPAE0HH@Z	51.2031	51.2031	3	2d0ccec2beb7	0x14d950
+cddrawshadeblit	?ConvertRowDouble@CDDrawShadeBlit@@QAEXPAE0HH@Z	49.8813	49.8813	3	2d0ccec2beb7	0x14d950
 cddrawshadeblit	?ConvertRowDoubleFwd@CDDrawShadeBlit@@QAEXPAE0HH@Z	57.5395	57.5395	3	b23001113a36	0x14d5e0
-cddrawshadeblit	?ConvertRowFlip@CDDrawShadeBlit@@QAEXPAE0H@Z	53.9835	53.9835	3	3f9d163cccfd	0x14cfc0
+cddrawshadeblit	?ConvertRowFlip@CDDrawShadeBlit@@QAEXPAE0H@Z	53.9835	53.9743	3	3f9d163cccfd	0x14cfc0
 cddrawsubmgr	??0CDDrawSubMgr@@QAE@PAVCDDrawSurfaceMgr@@HH@Z	100.0000	100.0000	7	974a12e533e2	0x156cb0
 cddrawsubmgr	??0CDrawSubWorker@@QAE@HHH@Z	96.3000	96.3000	1	905e1c94e386	0x158f30
 cddrawsubmgr	??0CWwdSlot9c@@QAE@XZ	100.0000	100.0000	1	4f0c763b7d4a	0x15b2a0
@@ -1252,7 +1252,7 @@ cfadermgr	?FreeAll@CFaderMgr@@QAEXXZ	100.0000	100.0000	2	2030f94b54ba	0x17d9a0
 cfadermgr	?Remove@CFaderMgr@@QAEXPAUCFader@@@Z	67.1111	67.1111	1	7c395e00a7e3	0x17e170
 cfadermgr	?SetConfig@CFaderMgr@@QAEHHHH@Z	100.0000	100.0000	3	c6c61071ef03	0x17d980
 cfaderrun	?RunFade@FaderRun@@QAEXIHH@Z	86.4057	86.4057	1	ce9ba500dac5	0x17e620
-cfileimage	?Decode@CFileImage@@QAEHPAV1@PAVCFileImageSrc@@HH@Z	87.4065	87.4065	1	ba52b87b8a3c	0x144b30
+cfileimage	?Decode@CFileImage@@QAEHPAV1@PAVCFileImageSrc@@HH@Z	87.4720	87.4720	1	ba52b87b8a3c	0x144b30
 cfileimage	?DecodeRun@CFileImage@@QAEHPAV1@PAXHH@Z	72.3929	72.3929	1	7471263667a7	0x143cf0
 cfileimage	?DecodeThunk@CFileImage@@QAEXHHHHHHHHHH@Z	48.1538	48.1538	3	c920a14a70fe	0x141280
 cfileimage	?FlipVertical@CFileImage@@QAEXXZ	62.4649	62.4649	2	ca810b9278de	0x13ebb0
@@ -1379,32 +1379,32 @@ cheatmgr	?LoadCheatConfig@CCheatMgr@@QAEXXZ	91.5726	91.5726	2	2a4c3e8ad2ae	0x22e
 cheatmgr	?RegisterCheats@CCheatMgr@@QAEXXZ	100.0000	100.0000	1	368e0d229303	0x22c80
 checkpointswitchbuild	?BuildSmall@CCheckpointTriggerSwitchLogic@@QAEHHHHHHPAUCStatzRect60@@HHH@Z	62.3936	62.3936	1	bc78e2ec25a2	0x112a50
 cimage	??1CImage@@UAE@XZ	100.0000	100.0000	2	bfa4aebae37a	0xd5e80
-cimage	?BuildSlot13@CImage@@QAEHPAVCImageFrameDesc@@PAX@Z	98.7000	98.7000	2	e84b6551f175	0x153180
-cimage	?CopyFrom@CImage@@QAEHPAV1@@Z	100.0000	100.0000	2	23afee855f68	0x1532b0
-cimage	?Create24@CImage@@UAEHPAVCImageFrameDesc@@HH@Z	100.0000	100.0000	2	2cedcd85c585	0x1530e0
-cimage	?Create@CImage@@UAEHPAVCImageFrameDesc@@H@Z	99.0909	99.0909	2	323bda27d1b9	0x152e90
-cimage	?FreeAll@CImage@@UAEXXZ	100.0000	100.0000	2	005723598065	0x153260
-cimage	?LoadDispatch@CImage@@UAEHPAVCImageFrameDesc@@IPAXH@Z	99.8611	99.8611	2	a1f181fc2ea4	0x152fb0
-cimage	?Reload@CImage@@UAEHPAVCImageSource@@H@Z	99.4000	99.4000	2	a7a0af71e539	0x153380
+cimage	?BuildSlot13@CImage@@QAEHPAVCImageFrameDesc@@PAX@Z	98.7000	98.7000	3	941d813dc5e9	0x153180
+cimage	?CopyFrom@CImage@@QAEHPAV1@@Z	100.0000	100.0000	3	72d7d2305418	0x1532b0
+cimage	?Create24@CImage@@UAEHPAVCImageFrameDesc@@HH@Z	100.0000	100.0000	3	6de2a06b6983	0x1530e0
+cimage	?Create@CImage@@UAEHPAVCImageFrameDesc@@H@Z	99.0909	99.0909	3	5eb85d8fa75c	0x152e90
+cimage	?FreeAll@CImage@@UAEXXZ	100.0000	100.0000	3	cd23a848ee49	0x153260
+cimage	?LoadDispatch@CImage@@UAEHPAVCImageFrameDesc@@IPAXH@Z	99.8611	99.8611	3	4dd9b298048d	0x152fb0
+cimage	?Reload@CImage@@UAEHPAVCImageSource@@H@Z	99.4000	99.4000	3	d19379382c11	0x153380
 cimage	?RenderFrame@CImage@@QAEXPAX000@Z	100.0000	100.0000	4	92729710f619	0x153790
 cimage	?RenderFrameClipped@CImage@@QAEXPAX0000@Z	100.0000	100.0000	4	4ae2a6f26d44	0x153810
 cimage	?Resolve@CImage@@UAEHPAVCImageSource@@H@Z	100.0000	100.0000	1	5324216b8e59	0x152f20
-cimageowned	??0CImageOwned@@QAE@XZ	100.0000	100.0000	1	27471851f4c1	0x148ce0
-cimageowned	?Build@CImageOwned@@QAEHPAVCImageBuildDesc@@HH@Z	79.6791	79.6791	1	63cfd0efa565	0x1490d0
-cimageowned	?BuildRle@CImageOwned@@QAEHPAXHHHH0@Z	97.7528	97.7528	2	a734902d2f42	0x148d40
-cimageowned	?LoadFromFile@CImageOwned@@QAEHVCString@@H@Z	100.0000	100.0000	1	503f5fd8f54d	0x148fc0
-cimageowned	?Rebuild@CImageOwned@@QAEHVCString@@HH@Z	89.8816	89.8816	1	bd18d7988403	0x1493b0
+cimageowned	??0CDDrawShadeBlit@@QAE@XZ	100.0000	100.0000	1	9e41c099735b	0x148ce0
+cimageowned	?Build@CDDrawShadeBlit@@QAEHPAVCImageBuildDesc@@HH@Z	79.6791	79.6791	1	165ba40da8b2	0x1490d0
+cimageowned	?BuildRle@CDDrawShadeBlit@@QAEHPAXHHHH0@Z	97.7528	97.7528	1	4b27c405f394	0x148d40
+cimageowned	?LoadFromFile@CDDrawShadeBlit@@QAEHVCString@@H@Z	100.0000	100.0000	1	ff903e3a0a97	0x148fc0
+cimageowned	?Rebuild@CDDrawShadeBlit@@QAEHVCString@@HH@Z	89.8816	89.8816	1	35004db4d812	0x1493b0
 cimageprobe	?Init@CImageProbe@@QAEHXZ	100.0000	100.0000	1	2b46baccc913	0x17cbe0
 cimageset3	?Cleanup_161bf0@CImageSet3@@QAEXXZ	100.0000	100.0000	1	e6669699495e	0x161bf0
 cimageset3	?GetSize_1633e0@CImageSet3@@QAEHXZ	100.0000	100.0000	1	33643861e3a8	0x1633e0
 cimageset3	?Prune_1628d0@CImageSet3@@QAEHXZ	100.0000	100.0000	1	b81263dd19cb	0x1628d0
-cimagespriteblit	?BlitFlipH@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	82.7413	82.7413	5	f633488a1cd4	0x153d90
-cimagespriteblit	?BlitFlipV@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	80.5411	80.5411	5	e7c58df99db8	0x153b20
-cimagespriteblit	?BlitNorm@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	98.5829	98.5829	5	a3aa72d1e358	0x1538c0
-cimagespriteblit	?BlitShadeFlipH@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	83.8708	83.8708	2	be670325b484	0x154750
-cimagespriteblit	?BlitShadeFlipHV@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	71.5352	71.5352	2	f7d56dc11304	0x153ff0
-cimagespriteblit	?BlitShadeFlipV@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	73.2823	73.2823	2	37da658c597a	0x1544d0
-cimagespriteblit	?BlitShadeNorm@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	99.8571	99.8571	2	53bc58443d00	0x154270
+cimagespriteblit	?BlitFlipH@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	82.8060	82.8060	6	f8ca75920297	0x153d90
+cimagespriteblit	?BlitFlipV@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	80.5700	80.5700	6	76a79523ed16	0x153b20
+cimagespriteblit	?BlitNorm@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	98.5829	98.5829	6	79d3e8977f78	0x1538c0
+cimagespriteblit	?BlitShadeFlipH@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	83.8947	83.8947	3	7459be653f59	0x154750
+cimagespriteblit	?BlitShadeFlipHV@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	69.6150	69.6150	3	d1206b51dc61	0x153ff0
+cimagespriteblit	?BlitShadeFlipV@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	73.2297	73.2297	3	26321bda16bd	0x1544d0
+cimagespriteblit	?BlitShadeNorm@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	100.0000	100.0000	3	99ed97457692	0x154270
 cingametextupdate	?Update@CInGameText@@QAEHXZ	75.7485	75.7485	1	6eff206da2ac	0x997c0
 circleshadeblit	?Render@CircleShadeBlit@@QAEXHHHHHH@Z	54.5197	54.5197	1	cb51e9919710	0x180fb0
 ckeyedlist	??1CNode@@QAE@XZ	100.0000	100.0000	1	7894cc5a002b	0x379f0
@@ -1437,14 +1437,14 @@ clightfxrender	?DrawBorder@CLightFxRender@@QAEXPAULfxRect@@PAULfxBorderCtx@@H@Z	
 clightfxrender	?FillSpan@CLightFxRender@@QAEXIIG@Z	100.0000	100.0000	3	c55474f29497	0xa4840
 clightfxrender	?FreeSurface@CLightFxRender@@QAEXXZ	100.0000	100.0000	2	da67a5d46b41	0xa33a0
 clightfxrender	?Init@CLightFxRender@@QAEHPAULfxMgr@@H@Z	100.0000	100.0000	4	9cfc6a1f7088	0xa32c0
-clightfxrender	?Resize@CLightFxRender@@QAEHHH@Z	49.0126	49.0126	3	74dac6ea556e	0xa3460
+clightfxrender	?Resize@CLightFxRender@@QAEHHH@Z	47.7773	47.7773	3	74dac6ea556e	0xa3460
 clightfxrender	?Shape1@CLightFxRender@@QAEHXZ	73.7857	73.7857	4	6af232188686	0xa3dc0
 clightfxrender	?Shape2@CLightFxRender@@QAEHXZ	74.6170	74.6170	4	18e314ea32f2	0xa4890
 clightfxrender	?Shape3@CLightFxRender@@QAEHXZ	72.7320	72.7320	4	56c226194d5c	0xa5310
 clightfxrender	?Shape4@CLightFxRender@@QAEHXZ	69.8244	69.8244	4	859e6df61580	0xa5d90
 clightfxrender	?Shape5@CLightFxRender@@QAEHXZ	73.8760	73.8760	4	158440af6457	0xa67d0
-clightfxrender	?Shape6@CLightFxRender@@QAEHXZ	77.4322	77.4322	4	e353a843eb8e	0xa7260
-clightfxrender	?Shape7@CLightFxRender@@QAEHXZ	73.3526	73.3526	4	2ac3e51a74b2	0xa7d50
+clightfxrender	?Shape6@CLightFxRender@@QAEHXZ	77.4488	77.4488	4	e353a843eb8e	0xa7260
+clightfxrender	?Shape7@CLightFxRender@@QAEHXZ	73.3766	73.3766	4	2ac3e51a74b2	0xa7d50
 clightfxrender	?Shape8@CLightFxRender@@QAEHXZ	70.0243	70.0243	4	41419e5ec730	0xa8900
 clobbyobjb	??1CLobbyObjB@@QAE@XZ	100.0000	100.0000	1	b5b66af40091	0xb6220
 clobbyobjb	??1CLobbySlot@@QAE@XZ	100.0000	100.0000	1	312133bbe621	0xb62a0
@@ -2556,9 +2556,9 @@ image	?Clear@CFileImage@@QAEXH@Z	100.0000	100.0000	4	668fff39468f	0x13edb0
 image	?DecodeBlit@CRezImage@@QAEHPAX0HHH0@Z	82.7361	82.7361	1	1dab25229951	0x175930
 image	?DecodeBmp@CFileImage@@QAEPAXPADPAXI@Z	31.2544	31.2544	4	ee7ec349a997	0x143fc0
 image	?DecodeBmpHeader@CRezImage@@QAEHPAXHHH0@Z	95.7395	95.7395	1	54279666e0b3	0x1757c0
-image	?DecodePcx@CFileImage@@QAEPAXPADPAXI@Z	55.6786	55.6786	4	77f8fc32ed4c	0x144ee0
+image	?DecodePcx@CFileImage@@QAEPAXPADPAXI@Z	55.7755	55.7755	4	77f8fc32ed4c	0x144ee0
 image	?DecodePcxData@CFileImage@@QAEHPAX0HHH@Z	86.2370	86.2370	1	ddfed7a9e89e	0x1457a0
-image	?DecodePcxData@CRezImage@@QAEHPAX00@Z	91.3291	91.3291	1	02415d581e6f	0x176000
+image	?DecodePcxData@CRezImage@@QAEHPAX00@Z	91.2848	91.2848	1	02415d581e6f	0x176000
 image	?DecodePcxEx@CFileImage@@QAEHPAD0PAX1@Z	100.0000	100.0000	5	d07ec29ad6b0	0x1459d0
 image	?DecodePid@CFileImage@@QAEPAXPADPAXI1@Z	35.4204	35.4204	4	5a4b4aeca089	0x145b10
 image	?DecodePidData@CRezImage@@QAEHPAX00@Z	72.7817	72.7817	1	97bb62b54635	0x176440
@@ -2787,7 +2787,7 @@ menupage	?FocusPrev@CMenuPage@@QAEHXZ	77.1277	77.1277	4	9b0aa5bc434e	0x183d10
 menupage	?GetKey@CMenuPage@@QAE?AVCString@@XZ	100.0000	100.0000	2	b4d4f5e1c984	0x1832d0
 menupage	?HitTest@CMenuPage@@QAEPAVCMenuItem@@HH@Z	100.0000	100.0000	3	ed20d55ac5c2	0x184100
 menupage	?InitDefaults@CMenuPage@@QAEXXZ	100.0000	100.0000	2	f23509cb1155	0x1833a0
-menupage	?Layout@CMenuPage@@QAEHH@Z	99.9806	99.9806	5	1a389655acc1	0x183b60
+menupage	?Layout@CMenuPage@@QAEHH@Z	100.0000	100.0000	5	1a389655acc1	0x183b60
 menupage	?LayoutOne@CMenuPage@@QAEHH@Z	99.9825	99.9825	6	299cfcac6907	0x183e50
 menupage	?NotifyAll@CMenuPage@@QAEHPAX@Z	100.0000	100.0000	3	44789e5f9682	0x183b30
 menupage	?ReleaseAll@CMenuPage@@QAEHXZ	100.0000	100.0000	3	e2c3d4a86873	0x183990
@@ -3218,11 +3218,11 @@ sbi_statztabgruntbar	?Reset@CSBI_StatzTabGruntBar@@QAEXXZ	100.0000	100.0000	1	77
 sbi_statztabgruntbar	?Update@CSBI_StatzTabGruntBar@@QAEHXZ	91.6923	91.6923	1	065f88460c02	0xea6c0
 sbi_statztabgruntbar_eh	??1CSBI_StatzTabGruntBar@@UAE@XZ	100.0000	100.0000	1	602538baa837	0x104b00
 sbi_tabzdialog_eh	?BuildTabzDialog@CTabzBuilder@@QAEHXZ	83.7185	83.7185	4	dc01d35de24d	0x10a340
-sbi_warlordhead	?Render@CSBI_WarlordHead@@QAEHH@Z	86.9054	86.9054	3	6c8e2618227f	0xeb880
+sbi_warlordhead	?Render@CSBI_WarlordHead@@QAEHH@Z	87.0676	87.0676	3	6c8e2618227f	0xeb880
 sbi_warlordhead	?Serialize@CSBI_WarlordHead@@QAEHPAUCImageSetStream@@HHH@Z	100.0000	100.0000	1	b6cb91fa6424	0xe7cd0
 sbi_warlordhead	?SetState@CSBI_WarlordHead@@QAEHH@Z	100.0000	100.0000	1	034d997853c4	0xeb830
 sbi_warlordhead	?SetupImage@CSBI_WarlordHead@@QAEHHHHHHHHHHHH@Z	46.2105	46.2105	1	16d818a3069c	0xeb6b0
-sbi_warlordhead	?ShowFrames@CSBI_WarlordHead@@QAEHHH@Z	92.2716	92.2716	3	2e7b924f9a88	0xeb740
+sbi_warlordhead	?ShowFrames@CSBI_WarlordHead@@QAEHHH@Z	92.2716	92.2716	4	1a7afeda225b	0xeb740
 sbi_warlordhead_eh	??1CSBI_WarlordHead@@UAE@XZ	100.0000	100.0000	1	7b4689ef7bd9	0x104a00
 sbi_wellgoo	?Tick@CSBI_WellGoo@@QAEHXZ	83.0000	83.0000	1	34178faa97ab	0xe6380
 sbi_wellgoo_eh	??1CSBI_WellGoo@@UAE@XZ	100.0000	100.0000	3	ab3f7a404f15	0x104bb0

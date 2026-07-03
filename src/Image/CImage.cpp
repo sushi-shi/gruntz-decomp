@@ -14,6 +14,9 @@
 
 #include <Image/CImage.h>
 
+#include <DDrawMgr/CDDSurface.h> // canonical CDDSurface (m_surface geometry/Fill/Blt/Reload/m_8 COM)
+#include <Gruntz/CDDrawShadeBlit.h> // canonical CDDrawShadeBlit (m_owned: new/Build/Teardown)
+
 // The engine __cdecl deallocator (reloc-masked rel32). _RezFree @0x1b9b82.
 extern "C" void RezFree(void* p);
 
@@ -49,14 +52,14 @@ i32 CImage::Create(CImageFrameDesc* desc, i32 keyed) {
     if (g_resourceInstallActive != 0) {
         capArg = 0x800;
     }
-    CImageSurfaceItem* item = m_parent->m_1c->CreateC((i32)desc, capArg, flagsArg);
+    CDDSurface* item = m_parent->m_1c->CreateC((i32)desc, capArg, flagsArg);
     m_surface = item;
     if (item == 0) {
         return 0;
     }
-    i32 w = item->m_1c;
+    i32 w = item->m_width;
     m_width = w;
-    i32 h = item->m_18;
+    i32 h = item->m_height;
     m_height = h;
     m_anchorX = w >> 1;
     m_anchorY = h >> 1;
@@ -151,14 +154,14 @@ i32 CImage::LoadDispatch(CImageFrameDesc* desc, u32 mode, void* a, i32 b) {
     if (g_resourceInstallActive != 0) {
         capArg = 0x800;
     }
-    CImageSurfaceItem* item = m_parent->m_1c->CreateA((i32)desc, (i32)mode, a, capArg, flagsArg);
+    CDDSurface* item = m_parent->m_1c->CreateA((i32)desc, (i32)mode, a, capArg, flagsArg);
     m_surface = item;
     if (item == 0) {
         return 0;
     }
-    i32 w = item->m_1c;
+    i32 w = item->m_width;
     m_width = w;
-    i32 h = item->m_18;
+    i32 h = item->m_height;
     m_height = h;
     m_anchorX = w >> 1;
     m_anchorY = h >> 1;
@@ -184,14 +187,14 @@ i32 CImage::Create24(CImageFrameDesc* desc, i32 mode, i32 keyed) {
     if (g_resourceInstallActive != 0) {
         capArg = 0x800;
     }
-    CImageSurfaceItem* item = m_parent->m_1c->CreateB((i32)desc, mode, 0, capArg, flagsArg);
+    CDDSurface* item = m_parent->m_1c->CreateB((i32)desc, mode, 0, capArg, flagsArg);
     m_surface = item;
     if (item == 0) {
         return 0;
     }
-    i32 w = item->m_1c;
+    i32 w = item->m_width;
     m_width = w;
-    i32 h = item->m_18;
+    i32 h = item->m_height;
     m_height = h;
     m_anchorX = w >> 1;
     m_anchorY = h >> 1;
@@ -227,7 +230,7 @@ i32 CImage::Create24(CImageFrameDesc* desc, i32 mode, i32 keyed) {
 // ---------------------------------------------------------------------------
 RVA(0x00153180, 0xda)
 i32 CImage::BuildSlot13(CImageFrameDesc* desc, void* a) {
-    CImageOwned* owned = new CImageOwned();
+    CDDrawShadeBlit* owned = new CDDrawShadeBlit();
     m_owned = owned;
     if (owned == 0) {
         return 0;
@@ -235,9 +238,9 @@ i32 CImage::BuildSlot13(CImageFrameDesc* desc, void* a) {
     if (!owned->Build((CImageBuildDesc*)desc, (i32)a, m_parent->m_04->m_10[0x18 / 4])) {
         return 0;
     }
-    i32 w = m_owned->m_04;
+    i32 w = m_owned->m_width;
     m_width = w;
-    i32 h = m_owned->m_08;
+    i32 h = m_owned->m_height;
     m_height = h;
     m_loadResult = 0x11;
     m_anchorX = w >> 1;
@@ -260,7 +263,7 @@ void CImage::FreeAll() {
         m_parent->m_1c->RemoveItemA(m_surface);
         m_surface = 0;
     }
-    CImageOwned* owned = m_owned;
+    CDDrawShadeBlit* owned = m_owned;
     if (owned != 0) {
         owned->Teardown();
         RezFree(owned);
@@ -298,7 +301,7 @@ i32 CImage::CopyFrom(CImage* other) {
     if (m_height != other->m_height) {
         return 0;
     }
-    m_surface->Prepare(0);
+    m_surface->Fill(0);
     i32 ok = m_surface->Blt(other->m_surface);
     return ok != 0;
 }
@@ -326,14 +329,14 @@ i32 CImage::Reload(CImageSource* src, i32 arg) {
     if (m_surface == 0) {
         return 1;
     }
-    CImageSurfaceSrc* s = m_surface->m_08;
+    IDirectDrawSurfaceZ* s = m_surface->m_8;
     if (s != 0) {
-        if (s->IsClean() == 0) {
+        if (s->IsLost() == 0) {
             return 1;
         }
     }
-    s = m_surface->m_08;
-    if (s->HasSource() != 0) {
+    s = m_surface->m_8;
+    if (s->Restore() != 0) {
         this->FreeAll();
         return this->Resolve(src, arg);
     }
@@ -442,19 +445,15 @@ void CImage::RenderFrameClipped(void* a, void* b, void* c, void* rect, void* d) 
 // Class-metadata annotations (EOF-hosted: CImage.h is included by several /O2
 // Image TUs whose leaf decoders are byte-exact-sensitive, so keep the completeness
 // typedefs after the last function). VTBL skips (logged): CImageBase's vtable is
-// the shared grand-base 0x5e8cb4 (the CObject dtor vtable); CImageSurfaceItem
-// / CImageSource are flagged [virtual] only via their polymorphic Gruntz defs, not
-// this view. CImage itself is RTTI-catalogued (??_7CImage@@ @0x5eaa2c, cl-emitted
-// from the real virtuals declared in CImage.h).
+// the shared grand-base 0x5e8cb4 (the CObject dtor vtable); CImageSource is flagged
+// [virtual] only via its polymorphic Gruntz def, not this view. The held surface
+// (CDDSurface) and owned sprite (CDDrawShadeBlit) are annotated in their own headers.
+// CImage itself is RTTI-catalogued (??_7CImage@@ @0x5eaa2c, cl-emitted from the real
+// virtuals declared in CImage.h).
 // ===========================================================================
 // --- CImage.h header classes ---
 SIZE(CImageBase, 0x10); // polymorphic base (CImage fields start at +0x10)
-SIZE_UNKNOWN(CImageSurfaceSrc);
-SIZE(CImageSurfaceItem, 0xc0); // RE'd CPoolItemA item size (0xc0)
 SIZE_UNKNOWN(CImageSurfacePool);
-SIZE(CImageFrameRebuildDesc, 0x20); // 8-dword by-value frame descriptor
-SIZE(CImageOwned, 0x3c);            // operator new(0x3c) owned object
-SIZE_UNKNOWN(CImageBuildDesc);
 SIZE_UNKNOWN(CDDrawSurfaceDesc);
 SIZE(BlitRect, 0x10); // {left,top,right,bottom} RECT
 SIZE_UNKNOWN(CBlitClipOwner);

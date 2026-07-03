@@ -22,8 +22,8 @@
 #include <Image/CImage.h>
 #include <Win32.h> // RECT, CopyRect
 
-#include <DDrawMgr/CDDSurface.h>    // canonical CDDSurface (BltEx blit backend)
-#include <Gruntz/CDDrawShadeBlit.h> // canonical CDDrawShadeBlit (+ ShadeRect/ShadeSrc)
+#include <DDrawMgr/CDDSurface.h>    // canonical CDDSurface (m_surface: BltEx / shaded-blit src)
+#include <Gruntz/CDDrawShadeBlit.h> // canonical CDDrawShadeBlit (m_owned: Blit/Notify + ShadeRect)
 #include <Globals.h>
 
 // The 25-int g_bltFxScratch block (shared with CDDrawWorkerRegistry); [1] carries
@@ -157,7 +157,7 @@ void CImage::BlitNorm(CBlitInfo* info, CImage* dst) {
     d.right += 1;
     d.bottom += 1;
     g_bltFxScratch[1] = 6;
-    ((CDDSurface*)dst->m_surface)->BltEx(&d, (CDDSurface*)m_surface, &s, 0x8800, g_bltFxScratch);
+    dst->m_surface->BltEx(&d, m_surface, &s, 0x8800, g_bltFxScratch);
     d.right -= 1;
     d.bottom -= 1;
     info->m_outLeft = d.left;
@@ -251,7 +251,7 @@ void CImage::BlitFlipV(CBlitInfo* info, CImage* dst) {
     d.right += 1;
     d.bottom += 1;
     g_bltFxScratch[1] = 2;
-    ((CDDSurface*)dst->m_surface)->BltEx(&d, (CDDSurface*)m_surface, &s, 0x8800, g_bltFxScratch);
+    dst->m_surface->BltEx(&d, m_surface, &s, 0x8800, g_bltFxScratch);
     d.right -= 1;
     d.bottom -= 1;
     info->m_outLeft = d.left;
@@ -341,7 +341,7 @@ void CImage::BlitFlipH(CBlitInfo* info, CImage* dst) {
     d.right += 1;
     d.bottom += 1;
     g_bltFxScratch[1] = 4;
-    ((CDDSurface*)dst->m_surface)->BltEx(&d, (CDDSurface*)m_surface, &s, 0x8800, g_bltFxScratch);
+    dst->m_surface->BltEx(&d, m_surface, &s, 0x8800, g_bltFxScratch);
     d.right -= 1;
     d.bottom -= 1;
     info->m_outLeft = d.left;
@@ -433,10 +433,9 @@ void CImage::BlitShadeFlipHV(CBlitInfo* info, CImage* dst) {
     s.right = s.left + w - 1;
     s.bottom = s.top + h - 1;
     if (info->m_notify) {
-        ((CDDrawShadeBlit*)m_owned)->Notify(info->m_notifyArg0, info->m_notifyArg1);
+        m_owned->Notify(info->m_notifyArg0, info->m_notifyArg1);
     }
-    ((CDDrawShadeBlit*)m_owned)
-        ->Blit((ShadeRect*)&d, (ShadeSrc*)dst->m_surface, (ShadeRect*)&s, 0, 0);
+    m_owned->Blit((ShadeRect*)&d, dst->m_surface, (ShadeRect*)&s, 0, 0);
     info->m_outLeft = d.left;
     info->m_outTop = d.top;
     info->m_outRect = *(BlitRect*)&d;
@@ -523,10 +522,9 @@ void CImage::BlitShadeNorm(CBlitInfo* info, CImage* dst) {
     s.right = s.left + w - 1;
     s.bottom = s.top + h - 1;
     if (info->m_notify) {
-        ((CDDrawShadeBlit*)m_owned)->Notify(info->m_notifyArg0, info->m_notifyArg1);
+        m_owned->Notify(info->m_notifyArg0, info->m_notifyArg1);
     }
-    ((CDDrawShadeBlit*)m_owned)
-        ->Blit((ShadeRect*)&d, (ShadeSrc*)dst->m_surface, (ShadeRect*)&s, 1, 1);
+    m_owned->Blit((ShadeRect*)&d, dst->m_surface, (ShadeRect*)&s, 1, 1);
     info->m_outLeft = d.left;
     info->m_outTop = d.top;
     info->m_outRect = *(BlitRect*)&d;
@@ -614,10 +612,9 @@ void CImage::BlitShadeFlipV(CBlitInfo* info, CImage* dst) {
     s.right = s.left + w - 1;
     s.bottom = s.top + h - 1;
     if (info->m_notify) {
-        ((CDDrawShadeBlit*)m_owned)->Notify(info->m_notifyArg0, info->m_notifyArg1);
+        m_owned->Notify(info->m_notifyArg0, info->m_notifyArg1);
     }
-    ((CDDrawShadeBlit*)m_owned)
-        ->Blit((ShadeRect*)&d, (ShadeSrc*)dst->m_surface, (ShadeRect*)&s, 1, 0);
+    m_owned->Blit((ShadeRect*)&d, dst->m_surface, (ShadeRect*)&s, 1, 0);
     info->m_outLeft = d.left;
     info->m_outTop = d.top;
     info->m_outRect = *(BlitRect*)&d;
@@ -704,10 +701,9 @@ void CImage::BlitShadeFlipH(CBlitInfo* info, CImage* dst) {
     s.right = s.left + w - 1;
     s.bottom = s.top + h - 1;
     if (info->m_notify) {
-        ((CDDrawShadeBlit*)m_owned)->Notify(info->m_notifyArg0, info->m_notifyArg1);
+        m_owned->Notify(info->m_notifyArg0, info->m_notifyArg1);
     }
-    ((CDDrawShadeBlit*)m_owned)
-        ->Blit((ShadeRect*)&d, (ShadeSrc*)dst->m_surface, (ShadeRect*)&s, 0, 1);
+    m_owned->Blit((ShadeRect*)&d, dst->m_surface, (ShadeRect*)&s, 0, 1);
     info->m_outLeft = d.left;
     info->m_outTop = d.top;
     info->m_outRect = *(BlitRect*)&d;

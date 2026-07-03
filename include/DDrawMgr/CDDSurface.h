@@ -110,12 +110,19 @@ public:
     virtual i32 RestoreLost(); // slot 7, @0x1c
     virtual i32 v20(void* a);  // slot 8, @0x20 (the surface's own blit-into-desc)
 
-    i32 Flip(CDDSurface* target);                                                  // 0x13e850
-    i32 Fill(i32 color);                                                           // 0x13e760
-    i32 Lock(void* rect);                                                          // 0x13e6d0
-    i32 SetPalette(CDDPalette* pal, i32 unused);                                   // 0x13e690
-    i32 SetColorKey(u32 flags, void* key);                                         // 0x13eaa0
-    i32 Blt(CDDSurface* src);                                                      // 0x13ee60
+    i32 Flip(CDDSurface* target);                // 0x13e850
+    i32 Fill(i32 color);                         // 0x13e760
+    i32 Lock(void* rect);                        // 0x13e6d0
+    i32 SetPalette(CDDPalette* pal, i32 unused); // 0x13e690
+    i32 SetColorKey(u32 flags, void* key);       // 0x13eaa0
+    i32 Blt(CDDSurface* src);                    // 0x13ee60
+    i32 Reload(
+        void* pool,
+        i32 src,
+        i32 index,
+        void* data,
+        i32 flag
+    ); // 0x13e550 (rebuild from parse source; ret 0x14)
     i32 BltEx(void* dstRect, CDDSurface* src, void* srcRect, u32 flags, void* fx); // 0x13eef0
     i32 BltFast(u32 x, u32 y, CDDSurface* src, void* srcRect,
                 u32 trans);                 // 0x13ef90
@@ -154,5 +161,6 @@ public:
     i32 m_b8;                  // +0xb8  cleared by the surface teardown
     i32 m_bc;                  // +0xbc  cleared
 };
+SIZE(CDDSurface, 0xc0); // DIRSURF.CPP surface item (== CImageSurfaceItemInit alloc)
 
 #endif // DDRAWMGR_CDDSURFACE_H

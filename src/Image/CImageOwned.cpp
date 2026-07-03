@@ -1,17 +1,19 @@
 #include <rva.h>
-// CImageOwned.cpp - the +0x30 owned buffer-holder of the RTTI CImage (built by
-// CImage::BuildSlot13). Two methods in retail-RVA order: the ctor (0x148ce0) that
-// primes the defaults, and Build (0x1490d0) - decodes one frame out of a
-// CImageFrameDesc into the owned decoded-pixel buffer (+0x0c) and a 256-entry
-// hardware palette (+0x20), copying the desc's dimension/format metadata. Teardown
-// (0x148d10) and the palette-remap helper (0x1495d0) are external engine callees
-// (reloc-masked); see include/Image/CImage.h for the layout.
+// CImageOwned.cpp - the build/decode methods of the RTTI CImage's +0x30 owned
+// object, which IS a CDDrawShadeBlit (the shaded sprite; former placeholder name
+// "CImageOwned"). Methods in retail-RVA order: the ctor (0x148ce0) that primes the
+// blit-descriptor defaults, and Build (0x1490d0) - decodes one frame out of a
+// CImageBuildDesc into the decoded RLE pixel buffer (+0x0c) and a 256-entry palette
+// (+0x20), copying the desc's dimension/format metadata. Teardown (0x148d10) and the
+// palette-remap helper (0x1495d0) are external engine callees (reloc-masked). The
+// blit side of the same class lives in src/Gruntz/CDDrawShadeBlit.cpp; see
+// <Gruntz/CDDrawShadeBlit.h> for the shared layout.
 //
 // Field names are placeholders; only the OFFSETS + emitted bytes are load-bearing.
 // No destructible stack local -> no /GX frame (flags="base").
 // ---------------------------------------------------------------------------
 
-#include <Image/CImage.h>
+#include <Gruntz/CDDrawShadeBlit.h>
 #include <Io/FileStream.h> // CFileIO (Open/Read/GetLength/Close, reloc-masked) + CString
 
 #include <string.h> // memcpy (inlined to rep movs)
@@ -22,20 +24,20 @@ void* operator new(u32 n);
 extern "C" void RezFree(void* p);
 
 // ---------------------------------------------------------------------------
-// The constructor. Zero the buffers/counters; prime m_14=1, m_18=0x80,
-// m_24=-1, and both format-flag bytes m_28/m_29=1. __thiscall.
+// The constructor. Zero the buffers/counters; prime m_drawType=1, m_18=0x80,
+// m_24=-1, and both format-flag bytes m_srcBpp/m_dstBpp=1. __thiscall.
 // ---------------------------------------------------------------------------
 RVA(0x00148ce0, 0x2f)
-CImageOwned::CImageOwned() {
-    m_0c = 0;
-    m_10 = 0;
-    m_1c = 0;
-    m_14 = 1;
+CDDrawShadeBlit::CDDrawShadeBlit() {
+    m_rleData = 0;
+    m_rleLen = 0;
+    m_palDescr = 0;
+    m_drawType = 1;
     m_18 = 0x80;
     m_00 = 0;
     m_20 = 0;
-    m_28 = 1;
-    m_29 = 1;
+    m_srcBpp = 1;
+    m_dstBpp = 1;
     m_24 = -1;
 }
 
@@ -60,17 +62,17 @@ struct CRleByteArray {
 // buffer (+0x0c). Each row of `width` pixels is scanned: a run of NON-key bytes
 // emits the run length then the literal bytes; a run of key (== keyVal) bytes
 // emits (length | 0x80). Runs cap at 0x7e. The encoding accumulates in a transient
-// CByteArray, which is then copied into a fresh operator-new'd m_0c; finally, if a
-// palette source was supplied, 256 DWORDs are copied into a fresh m_20. Returns 1
+// CByteArray, which is then copied into a fresh operator-new'd m_rleData; finally, if
+// a palette source was supplied, 256 DWORDs are copied into a fresh m_20. Returns 1
 // (0 only if the source pointer is null). __thiscall, ret 0x18 (6 stack args).
 //
-// The CByteArray local -> /GX EH frame; SetAtGrow per byte; m_0c/m_20 copies are
+// The CByteArray local -> /GX EH frame; SetAtGrow per byte; m_rleData/m_20 copies are
 // inline byte/dword loops. width/height/stride come from args (stride defaults to
 // width when -1). The run discriminator is `if (px != key) {literal} else {key}`
 // so the literal path falls through inline and the key path floats to the tail via
 // the forward `je` (docs/patterns/nested-if-success-deepest-error-tail.md).
 // @early-stop
-// 97.75% - the whole RLE state machine + the two run-scan extend loops + the m_0c
+// 97.75% - the whole RLE state machine + the two run-scan extend loops + the m_rleData
 // byte-copy + the m_20 palette dword-copy are byte-identical to retail. The only
 // residual is the /GX scope-table EH-frame artifact: retail emits `sub esp,0x18` /
 // `push 0x8` (scope cookie) / `add esp,0x24` where MSVC5 here emits `sub esp,0x14` /
@@ -78,7 +80,7 @@ struct CRleByteArray {
 // steerable (docs/patterns/gx-scoped-local-eh-frame-size.md). Logic complete.
 // ---------------------------------------------------------------------------
 RVA(0x00148d40, 0x202)
-i32 CImageOwned::BuildRle(
+i32 CDDrawShadeBlit::BuildRle(
     void* pixels,
     i32 width,
     i32 height,
@@ -94,22 +96,22 @@ i32 CImageOwned::BuildRle(
     if (stride == -1) {
         stride = width;
     }
-    m_04 = width;
-    m_08 = height;
+    m_width = width;
+    m_height = height;
 
     CRleByteArray ba;
     ba.SetSize(0x3e8, 0);
 
     i32 row = 0;
-    if (m_08 > 0) {
+    if (m_height > 0) {
         do {
             i32 i = 0;
             i32 runStart = 0;
-            if (m_04 > 0) {
+            if (m_width > 0) {
                 do {
                     if ((i32)src[i] != keyVal) {
                         // literal run (the fall-through / primary path)
-                        while (i < m_04 && (i - runStart) < 0x7e && (i32)src[i] != keyVal) {
+                        while (i < m_width && (i - runStart) < 0x7e && (i32)src[i] != keyVal) {
                             i++;
                         }
                         ba.SetAtGrow(ba.m_size, (u8)(i - runStart));
@@ -119,27 +121,27 @@ i32 CImageOwned::BuildRle(
                         runStart = i;
                     } else {
                         // key run (floated to the tail)
-                        while (i < m_04 && (i - runStart) < 0x7e && (i32)src[i] == keyVal) {
+                        while (i < m_width && (i - runStart) < 0x7e && (i32)src[i] == keyVal) {
                             i++;
                         }
                         ba.SetAtGrow(ba.m_size, (u8)((i - runStart) | 0x80));
                         runStart = i;
                     }
-                } while (i < m_04);
+                } while (i < m_width);
             }
             row++;
             src += stride;
-        } while (row < m_08);
+        } while (row < m_height);
     }
 
-    if (m_0c != 0) {
-        RezFree(m_0c);
+    if (m_rleData != 0) {
+        RezFree(m_rleData);
     }
-    m_10 = ba.m_size;
-    m_0c = operator new(ba.m_size);
-    i32 n = m_10;
+    m_rleLen = ba.m_size;
+    m_rleData = (u8*)operator new(ba.m_size);
+    i32 n = m_rleLen;
     for (i32 k = 0; k < n; k++) {
-        ((u8*)m_0c)[k] = ba.m_data[k];
+        m_rleData[k] = ba.m_data[k];
     }
 
     if (palette != 0) {
@@ -159,7 +161,7 @@ i32 CImageOwned::BuildRle(
 // ret 8 (name + fmt). Returns Build's result, or 0 if the open failed.
 // ---------------------------------------------------------------------------
 RVA(0x00148fc0, 0x104)
-i32 CImageOwned::LoadFromFile(CString name, i32 fmt) {
+i32 CDDrawShadeBlit::LoadFromFile(CString name, i32 fmt) {
     CFileIO file;
     if (!file.Open(name, 0x8000, 0)) {
         return 0;
@@ -174,41 +176,41 @@ i32 CImageOwned::LoadFromFile(CString name, i32 fmt) {
 
 // ---------------------------------------------------------------------------
 // Decode a frame from the descriptor. The desc flag word (+0x04) and the
-// format code steer two flag bytes (m_28/m_29) and the palette/pixel layout; on a
-// 16-bit palette frame the 768-byte RGB palette is unpacked into a padded 0x400
-// hardware buffer, then the pixels are copied into a fresh m_0c. When m_28 came out
-// as 2 the pixels are run through the palette-remap helper. __thiscall, ret 0xc.
+// format code steer two flag bytes (m_srcBpp/m_dstBpp) and the palette/pixel layout;
+// on a 16-bit palette frame the 768-byte RGB palette is unpacked into a padded 0x400
+// hardware buffer, then the pixels are copied into a fresh m_rleData. When m_srcBpp
+// came out as 2 the pixels are run through the palette-remap helper. __thiscall, ret 0xc.
 // @early-stop
 // 79.7% - body byte-faithful through the palette-loop entry (prologue, flag-byte
-// branches, m_24/m_10 setup, the operator-new + 0xfffffd00 stride, the do-while
+// branches, m_24/m_rleLen setup, the operator-new + 0xfffffd00 stride, the do-while
 // counter structure with the mid-body `i += 3` and `cmp 0x300/jl` all exact). The
 // residual is the zero/const-register-pinning wall (docs/patterns/
 // zero-register-pinning.md): retail pins the constant 2 in `bl` across the whole
-// body (used for the m_28/m_29 byte stores AND the trailing `cmp [0x28],bl`) and
-// keeps the m_20 palette pointer in `edi` inside the loop; our cl puts m_20 in
+// body (used for the m_srcBpp/m_dstBpp byte stores AND the trailing `cmp [0x28],bl`)
+// and keeps the m_20 palette pointer in `edi` inside the loop; our cl puts m_20 in
 // `ebx` (clobbering bl -> a reload `mov bl,2` before the compare) and folds the
-// induction var `i` into the address base (`lea (i,src)` + `m_10` as index) where
-// retail forms `src+m_10` as the base + `i` as the scaled index. The downstream
+// induction var `i` into the address base (`lea (i,src)` + `m_rleLen` as index) where
+// retail forms `src+m_rleLen` as the base + `i` as the scaled index. The downstream
 // memcpy-remainder + Remap-tail register naming all cascade from that one loop
 // allocation. No source lever flips it under /O2. Logic complete; deferred to the
 // final sweep.
 RVA(0x001490d0, 0x173)
-i32 CImageOwned::Build(CImageBuildDesc* src, i32 size, i32 fmt) {
+i32 CDDrawShadeBlit::Build(CImageBuildDesc* src, i32 size, i32 fmt) {
     i32 flags = src->m_04;
     if ((flags & 0x40) || (flags & 0x200)) {
         if ((u8)fmt == 0x10) {
-            m_28 = 1;
-            m_29 = 2;
+            m_srcBpp = 1;
+            m_dstBpp = 2;
         } else {
-            m_28 = 1;
-            m_29 = 1;
+            m_srcBpp = 1;
+            m_dstBpp = 1;
         }
     } else if ((u8)fmt == 0x10) {
-        m_28 = 2;
-        m_29 = 2;
+        m_srcBpp = 2;
+        m_dstBpp = 2;
     } else {
-        m_28 = 1;
-        m_29 = 1;
+        m_srcBpp = 1;
+        m_dstBpp = 1;
     }
 
     if (src->m_04 & 0x100) {
@@ -218,14 +220,14 @@ i32 CImageOwned::Build(CImageBuildDesc* src, i32 size, i32 fmt) {
     }
 
     i32 stride = size - 0x20;
-    m_10 = stride;
+    m_rleLen = stride;
     if ((u8)fmt != 0x8 && (u8)fmt != 0x10) {
         return 0;
     }
 
     if (src->m_04 & 0x80) {
         stride -= 0x300;
-        m_10 = stride;
+        m_rleLen = stride;
         if ((u8)fmt == 0x10) {
             if (m_20 != 0) {
                 RezFree(m_20);
@@ -235,26 +237,26 @@ i32 CImageOwned::Build(CImageBuildDesc* src, i32 size, i32 fmt) {
             i32 d = 0;
             do {
                 d += 4;
-                ((u8*)m_20)[d - 4] = ((u8*)src + m_10)[i + 0x20];
+                ((u8*)m_20)[d - 4] = ((u8*)src + m_rleLen)[i + 0x20];
                 i += 3;
-                ((u8*)m_20)[d - 3] = ((u8*)src + m_10)[i + 0x1e];
-                ((u8*)m_20)[d - 2] = ((u8*)src + m_10)[i + 0x1f];
+                ((u8*)m_20)[d - 3] = ((u8*)src + m_rleLen)[i + 0x1e];
+                ((u8*)m_20)[d - 2] = ((u8*)src + m_rleLen)[i + 0x1f];
             } while (i < 0x300);
         }
     }
 
-    m_04 = src->m_08;
-    m_08 = src->m_0c;
-    if (m_0c != 0) {
-        RezFree(m_0c);
+    m_width = src->m_08;
+    m_height = src->m_0c;
+    if (m_rleData != 0) {
+        RezFree(m_rleData);
     }
-    m_0c = operator new(m_10);
-    memcpy(m_0c, src->m_20, m_10);
+    m_rleData = (u8*)operator new(m_rleLen);
+    memcpy(m_rleData, src->m_20, m_rleLen);
 
-    if (m_28 == 2) {
-        void* remapped = Remap(m_0c);
-        RezFree(m_0c);
-        m_0c = remapped;
+    if (m_srcBpp == 2) {
+        void* remapped = Remap(m_rleData);
+        RezFree(m_rleData);
+        m_rleData = (u8*)remapped;
         RezFree(m_20);
         m_20 = 0;
     }
@@ -262,19 +264,19 @@ i32 CImageOwned::Build(CImageBuildDesc* src, i32 size, i32 fmt) {
 }
 
 // ---------------------------------------------------------------------------
-// Rebuild - when the owned object is in format-state 1, build an 8-dword
+// Rebuild - when the sprite is in format-state 1, build an 8-dword
 // frame descriptor out of the current dimensions/key + the two caller ints and the
 // by-value name, then hand it to DecodeFrame (0x149250). The `name` CString arrives
 // by value -> the callee destroys it (the early-return path also runs ~CString),
 // which forces the /GX EH frame. __thiscall, ret 0xc. Returns DecodeFrame's result,
-// or 0 when m_28 != 1.
+// or 0 when m_srcBpp != 1.
 //
 // The descriptor's flags word (desc.f1) is computed in a register but its store was
 // eliminated in retail (a partial-dead-store the optimizer left half-done): the
 // branch chain (0x3d/0xbd | 0x100 | 0x80) is emitted, the result clobbered without a
 // write. We keep the assignment (the only faithful source) so the chain stays live.
 // @early-stop
-// ~90% dead-store + regalloc wall: the m_28 guard, the whole descriptor build, the
+// ~90% dead-store + regalloc wall: the m_srcBpp guard, the whole descriptor build, the
 // by-value CString + rep-movs desc passing, and the DecodeFrame tail are byte-exact.
 // The residual is a register coin-flip in the (dead) flags computation: retail pins
 // m_20 in eax and the flags accumulator in esi (so `or esi,0x100` / `or esi,0x80`,
@@ -284,8 +286,8 @@ i32 CImageOwned::Build(CImageBuildDesc* src, i32 size, i32 fmt) {
 // Neither the register pinning nor the half-DCE is source-steerable under /O2.
 // ---------------------------------------------------------------------------
 RVA(0x001493b0, 0xfd)
-i32 CImageOwned::Rebuild(CString name, i32 a1, i32 a2) {
-    if (m_28 != 1) {
+i32 CDDrawShadeBlit::Rebuild(CString name, i32 a1, i32 a2) {
+    if (m_srcBpp != 1) {
         return 0;
     }
     CImageFrameRebuildDesc desc;
@@ -294,9 +296,9 @@ i32 CImageOwned::Rebuild(CString name, i32 a1, i32 a2) {
         flags = 0xbd;
     }
     desc.f0 = 0;
-    desc.f2 = m_04;
+    desc.f2 = m_width;
     desc.f4 = a1;
-    desc.f3 = m_08;
+    desc.f3 = m_height;
     desc.f5 = a2;
     desc.f6 = 0;
     desc.f7 = 0;
@@ -312,3 +314,5 @@ i32 CImageOwned::Rebuild(CString name, i32 a1, i32 a2) {
 }
 
 SIZE_UNKNOWN(CRleByteArray);
+SIZE_UNKNOWN(CImageBuildDesc);
+SIZE(CImageFrameRebuildDesc, 0x20); // 8-dword by-value frame descriptor

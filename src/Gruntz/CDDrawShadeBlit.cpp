@@ -8,7 +8,7 @@
 // Field names are placeholders; offsets + code bytes are load-bearing. The three
 // other mode-loop callees (0x149950/0x149d00/0x14b770) and the surface Lock are
 // external/reloc-masked. See <Gruntz/CDDrawShadeBlit.h> for the layout.
-#include <DDrawMgr/CDDSurface.h> // IDirectDrawSurfaceZ (ShadeSrc::m_surface->Unlock)
+#include <DDrawMgr/CDDSurface.h> // CDDSurface src arg (m_pitch/m_b0/Lock; m_8->Unlock COM)
 #include <Gruntz/CDDrawShadeBlit.h>
 
 #include <rva.h>
@@ -32,13 +32,13 @@ extern i32 g_bDown; // 0x683eb4
 // The three 2048-byte-strided translucency LUT banks selected by the light level.
 
 RVA(0x001497f0, 0x154)
-i32 CDDrawShadeBlit::Blit(ShadeRect* p0, ShadeSrc* src, ShadeRect* clip, i32 sel, i32 p4) {
+i32 CDDrawShadeBlit::Blit(ShadeRect* p0, CDDSurface* src, ShadeRect* clip, i32 sel, i32 p4) {
     if (clip->left < 0 || clip->right > m_width - 1 || clip->top < 0
         || clip->bottom > m_height - 1) {
         return 0;
     }
 
-    i32 mode = src->m_blendMode;
+    i32 mode = src->m_b0;
     m_dstBpp = (u8)mode;
     if ((u8)mode == 2) {
         if (g_rDown == 3 && g_gDown == 3 && g_bDown == 3 && g_rUp == 0xa && g_gUp == 5) {
@@ -104,9 +104,14 @@ i32 CDDrawShadeBlit::Blit(ShadeRect* p0, ShadeSrc* src, ShadeRect* clip, i32 sel
 // near-identical sub-loops. Inlining the W/clip caches lifted it from ~15% to
 // ~31%; the rest is the zero-register-pinning family. Deferred to the final sweep.
 RVA(0x00149950, 0x3a1)
-void CDDrawShadeBlit::BlitMode_149950(ShadeRect* dst, ShadeSrc* surf, ShadeRect* clip, i32 vflip) {
+void CDDrawShadeBlit::BlitMode_149950(
+    ShadeRect* dst,
+    CDDSurface* surf,
+    ShadeRect* clip,
+    i32 vflip
+) {
     i32 pitch = surf->m_pitch;
-    u8* base = surf->Lock(0);
+    u8* base = (u8*)surf->Lock(0);
 
     i32 row = 0, pos = 0, x = 0;
     // Prepass: skip the top clip->top rows of the RLE stream.
@@ -232,7 +237,7 @@ void CDDrawShadeBlit::BlitMode_149950(ShadeRect* dst, ShadeSrc* surf, ShadeRect*
         }
     }
 
-    surf->m_surface->Unlock(0);
+    surf->m_8->Unlock(0);
 }
 
 // ===========================================================================
@@ -250,9 +255,14 @@ void CDDrawShadeBlit::BlitMode_149950(ShadeRect* dst, ShadeSrc* surf, ShadeRect*
 // count-down, and the cross-sub-loop register pinning diverges as in 149950.
 // Deferred to the final sweep.
 RVA(0x00149d00, 0x4f8)
-void CDDrawShadeBlit::BlitMode_149d00(ShadeRect* dst, ShadeSrc* surf, ShadeRect* clip, i32 vflip) {
+void CDDrawShadeBlit::BlitMode_149d00(
+    ShadeRect* dst,
+    CDDSurface* surf,
+    ShadeRect* clip,
+    i32 vflip
+) {
     i32 pitch = surf->m_pitch;
-    u8* base = surf->Lock(0);
+    u8* base = (u8*)surf->Lock(0);
 
     i32 row = 0, pos = 0, x = 0;
     if (clip->top > 0) {
@@ -423,7 +433,7 @@ void CDDrawShadeBlit::BlitMode_149d00(ShadeRect* dst, ShadeSrc* surf, ShadeRect*
         }
     }
 
-    surf->m_surface->Unlock(0);
+    surf->m_8->Unlock(0);
 }
 
 // @early-stop
@@ -441,7 +451,7 @@ void CDDrawShadeBlit::BlitMode_149d00(ShadeRect* dst, ShadeSrc* surf, ShadeRect*
 // DAT_006bf218 is a secondary surface/format descriptor. Identity, switch tags,
 // and the LUT plumbing are confirmed; the per-case blend bodies remain.
 RVA(0x0014a200, 0x14f3)
-void CDDrawShadeBlit::BlitLoop(ShadeRect* p0, ShadeSrc* src, ShadeRect* clip, i32 p4) {}
+void CDDrawShadeBlit::BlitLoop(ShadeRect* p0, CDDSurface* src, ShadeRect* clip, i32 p4) {}
 
 // The global scratch line the row converter saves the destination into before an
 // in-place blend (DAT_006bed08), and the secondary palette/format descriptor
@@ -465,7 +475,12 @@ extern ShadeDescr* g_blendDescr; // 0x6bf218
 // tags, LUT plumbing and the clip control flow are confirmed; the per-case reverse
 // blend bodies remain. See docs/patterns/jumptable-data-overlap.md.
 RVA(0x0014b770, 0x121d)
-void CDDrawShadeBlit::BlitMode_14b770(ShadeRect* dst, ShadeSrc* surf, ShadeRect* clip, i32 vflip) {}
+void CDDrawShadeBlit::BlitMode_14b770(
+    ShadeRect* dst,
+    CDDSurface* surf,
+    ShadeRect* clip,
+    i32 vflip
+) {}
 
 // @early-stop
 // ~56% (logic complete + correct). 1446 B dense-jump-table per-row format/blend
