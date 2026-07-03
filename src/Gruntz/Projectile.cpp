@@ -338,8 +338,8 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
     m_srcCol = b;
     m_kind = kind;
     m_targetY = (sy & ~0x1f) + 0x10;
-    m_220 = t0;
-    m_224 = t1;
+    m_targetId = t0;
+    m_ownerId = t1;
 
     CGameObject* owner = m_10;
     double dx = (double)(m_targetX - owner->m_5c);
@@ -436,10 +436,10 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
     m_frame3 = out;
     out = 0;
     map.Lookup(key + "4", &out);
-    m_frame4 = (i32)out;
+    m_frame4 = out;
     out = 0;
     map.Lookup(key + "5", &out);
-    m_frame5 = (i32)out;
+    m_frame5 = out;
     out = 0;
     map.Lookup(key + "IMPACT", &out);
     m_impactSprite = out;
@@ -750,21 +750,21 @@ void CProjectile::LoadProjectileEffects() {
             } else if (dist >= mag * 0.6 || dist < mag * 0.4) {
                 offX = 0x10;
                 offY = -0x10;
-                if (m_sprite->m_1b4 != m_frame4) {
+                if (m_sprite->m_1b4 != (i32)m_frame4) {
                     m_savedFrameGeo = m_sprite->m_1b4;
-                    m_sprite->m_1a0.Setup((void*)m_frame4);
+                    m_sprite->m_1a0.Setup(m_frame4);
                     if (m_shadow != 0) {
-                        m_shadow->m_1a0.Setup((void*)m_frame4);
+                        m_shadow->m_1a0.Setup(m_frame4);
                     }
                 }
             } else {
                 offX = 0x14;
                 offY = -0x14;
-                if (m_sprite->m_1b4 != m_frame5) {
+                if (m_sprite->m_1b4 != (i32)m_frame5) {
                     m_savedFrameGeo = m_sprite->m_1b4;
-                    m_sprite->m_1a0.Setup((void*)m_frame5);
+                    m_sprite->m_1a0.Setup(m_frame5);
                     if (m_shadow != 0) {
-                        m_shadow->m_1a0.Setup((void*)m_frame5);
+                        m_shadow->m_1a0.Setup(m_frame5);
                     }
                 }
             }
@@ -1016,7 +1016,7 @@ void CProjectile::ScanTargets(i32 impact) {
                 g_freeList = (void*)p->m_0;
             }
             m_hitList.AddTail((CObject*)slot);
-            g->DeliverHit(m_kind, 1, m_srcRow, m_srcCol, m_220, m_224, 1, 0);
+            g->DeliverHit(m_kind, 1, m_srcRow, m_srcCol, m_targetId, m_ownerId, 1, 0);
         }
         rowBase += 0x3c;
         tileY++;

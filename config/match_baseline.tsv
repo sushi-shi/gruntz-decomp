@@ -2982,12 +2982,12 @@ projectile	??1CProjectile@@UAE@XZ	89.8367	89.8367	2	09e62e24baf9	0xdef60
 projectile	?DetachRenderObj@CProjectile@@QAEHXZ	100.0000	100.0000	3	4e7f6b25cd9f	0xe05e0
 projectile	?Dispatch@CProjActDispatcher@@QAEXH@Z	100.0000	100.0000	1	dbdd016866f6	0xade60
 projectile	?LaunchSound@CProjectile@@QAEHPBD@Z	44.4444	44.4444	5	c86723647914	0xe2190
-projectile	?LoadProjectileEffects@CProjectile@@QAEXXZ	69.7446	69.7446	4	3fecb4468bec	0xdfd00
-projectile	?LoadProjectileSprites@CProjectile@@QAEHHHHHHHH@Z	57.7642	57.7642	6	7da5f6382d45	0xdf050
+projectile	?LoadProjectileEffects@CProjectile@@QAEXXZ	69.7446	69.7446	5	499da69dfaf0	0xdfd00
+projectile	?LoadProjectileSprites@CProjectile@@QAEHHHHHHHH@Z	57.7642	57.7642	7	4eaf69752d5e	0xdf050
 projectile	?RegisterRange@CProjectile@@SAXXZ	100.0000	100.0000	1	661e81357f7b	0xdf920
 projectile	?RegisterType@CProjectile@@SAXXZ	91.1739	91.1739	2	5ec12adb51a3	0xdfb00
 projectile	?ReleaseDeferred@CProjectile@@QAEXH@Z	100.0000	100.0000	3	aa807b11549d	0x13c70
-projectile	?ScanTargets@CProjectile@@QAEXH@Z	93.9254	93.9254	4	7094cfe0e813	0xe0b10
+projectile	?ScanTargets@CProjectile@@QAEXH@Z	93.9254	93.9254	5	2c7c720ca9a7	0xe0b10
 projectile	?StepMotion@CProjectile@@QAEXXZ	70.6977	70.6977	3	91ee7a39c55d	0xe08b0
 projectileupdate	?Update@CProjectile@@QAEHXZ	15.9027	15.9027	5	548085956b60	0x61cb0
 pulsehighlight	?Serialize@CPulseHighlight@@QAEHPAUCSerialArchive@@HHH@Z	100.0000	100.0000	1	cpp:4214f7e37b18	0x8600

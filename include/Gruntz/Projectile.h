@@ -158,13 +158,13 @@ public:
     void* m_frame1;               // +0x1e0  sprite frame "<base>1"
     void* m_frame2;               // +0x1e4  sprite frame "<base>2"
     void* m_frame3;               // +0x1e8  sprite frame "<base>3"
-    i32 m_frame4, m_frame5;       // +0x1ec/+0x1f0  frames "<base>4"/"5" (held as i32)
+    void *m_frame4, *m_frame5;    // +0x1ec/+0x1f0  sprite frames "<base>4"/"5"
     void* m_impactSprite;         // +0x1f4  "<base>IMPACT" sprite
     void* m_fallSprite;           // +0x1f8  "<base>FALL" sprite
     CProjRenderObj* m_shadow;     // +0x1fc  LightFx shadow render companion
     CProjSample* m_sound;         // +0x200  launch sound sample
     CObList m_hitList;            // +0x204  tracked-hit list (block size 10)
-    i32 m_220, m_224;             // +0x220/+0x224  hit-delivery ids passed to DeliverHit
+    i32 m_targetId, m_ownerId;    // +0x220/+0x224  target/owner ids passed to DeliverHit
     char m_pad228[0x230 - 0x228]; //
     double m_dirX, m_dirY;        // +0x230/+0x238  trajectory direction basis
     double m_originX, m_originY;  // +0x240/+0x248  trajectory origin (base position)
