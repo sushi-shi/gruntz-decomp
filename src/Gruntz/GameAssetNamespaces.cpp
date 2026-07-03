@@ -6,6 +6,7 @@
 #include <rva.h>
 
 #include <stdio.h>
+#include <Gruntz/CDDrawPtrCollections.h> // the ONE CDDrawPtrCollections shape (MakeAndAddB)
 #include <Globals.h>
 
 DATA(0x006bf37c)
@@ -57,11 +58,6 @@ public:
 class CSpriteRefTable {
 public:
     i32 BuildToolToyColorTable(void* arg); // 0x0e2400 (thunk 0x32d8)
-};
-
-class CDDrawPtrCollections {
-public:
-    void* MakeAndAddB(i32 w, i32 h, i32 a, i32 b, i32 c); // 0x142e60
 };
 
 SIZE_UNKNOWN(WorkerHolder);

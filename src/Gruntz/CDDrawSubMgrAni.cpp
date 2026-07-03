@@ -1,7 +1,7 @@
 #include <rva.h>
 // CDDrawSubMgrAni.cpp - the 'ANI' (animation) keyed catalog sub-manager of the
 // CDirectDrawMgr surface/page-manager family (the "DDraw surface manager" group; see
-// src/Stub/types/ddrawmgr_surface_family.h). Sibling of CDDrawSubMgrLeaf (string
+// docs/ddraw-family-names.md). Sibling of CDDrawSubMgrLeaf (string
 // catalog) and CDDrawSubMgrLeafScan (sound cache): a CObject/CDDrawSubMgr-derived
 // string-keyed catalog owning a CMapStringToOb at +0x10 whose values are the
 // 0x28-byte tomalla-38 animation elements (primary vftable @0x5efba8).

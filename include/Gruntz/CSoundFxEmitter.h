@@ -16,8 +16,9 @@
 #include <Ints.h>
 #include <rva.h>
 
-#include <Gruntz/CFaderMgr.h>   // CFaderMgr::Add / Remove + the minimal CFader
-#include <Gruntz/CFxModeDesc.h> // CFxModeT2 / CFxModeT3 transition descriptors
+#include <Gruntz/CDDrawWorkerMgr.h> // the ONE CDDrawWorkerMgr shape (Method_158d20)
+#include <Gruntz/CFaderMgr.h>       // CFaderMgr::Add / Remove + the minimal CFader
+#include <Gruntz/CFxModeDesc.h>     // CFxModeT2 / CFxModeT3 transition descriptors
 
 // Gate global (VA 0x6455c4 = RVA 0x2455c4): nonzero => apply the channel op
 // directly this frame; zero => defer it through the freshly-allocated fader.
@@ -31,10 +32,6 @@ extern i32 g_fxDirectGate;
 // canonical single-source CDDSurface header; reloc-masked engine callees.
 #include <DDrawMgr/CDDSurface.h>
 
-class CDDrawWorkerMgr {
-public:
-    i32 Method_158d20(); // 0x158d20 - "is worker ready" predicate
-};
 class CGruntzMgr {
 public:
     void StopBankIfActive();  // 0x92000

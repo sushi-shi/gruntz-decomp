@@ -1,7 +1,7 @@
 #include <rva.h>
 // CDDrawWorkerList.cpp - four leaf factory methods of the tomalla-named class
 // CDDrawWorkerList (a CDirectDrawMgr surface/page sub-manager in the ddrawmgr
-// "DDraw surface manager" family; see src/Stub/types/ddrawmgr_surface_family.h).
+// "DDraw surface manager" family; see docs/ddraw-family-names.md).
 //
 // All four share ONE shape: allocate a 0x7c-byte "worker" object with the global
 // operator new, inline-construct it (zero/seed its

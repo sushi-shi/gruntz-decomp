@@ -8,6 +8,7 @@
 #include <Win32.h> // WINAPI (windows.h) for the g_ShowCursor import-pointer type
 
 #include <Bute/SymTab.h>
+#include <Gruntz/CDDrawWorkerMgr.h> // the ONE CDDrawWorkerMgr shape (Method_158ee0)
 
 // The engine helper at 0xface0 (returns nonzero when the state may load images).
 i32 Unmatched_0face0(); // ?Unmatched_0face0@@YA...XZ
@@ -41,11 +42,6 @@ public:
     virtual void Slot44();
     virtual void Slot48();
     virtual i32 LoadNamespace(void* tree, char* a, char* b); // +0x4c
-};
-
-class CDDrawWorkerMgr {
-public:
-    i32 Method_158ee0(); // 0x158ee0
 };
 
 SIZE_UNKNOWN(StateMgr);

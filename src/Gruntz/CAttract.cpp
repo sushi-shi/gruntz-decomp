@@ -14,6 +14,7 @@
 #include <Gruntz/CString.h> // MFC CString (the title-roll formats into one); MFC-first
 #include <Bute/ButeMgr.h>   // canonical CButeMgr (one shape)
 #include <Gruntz/CAttract.h>
+#include <Gruntz/CDDrawWorkerMgr.h> // the ONE CDDrawWorkerMgr shape (Method_158b40)
 #include <rva.h>
 #include <Globals.h>
 
@@ -68,11 +69,7 @@ public:
 
 // The menu page worker (m_c->m_04 re-typed): its fader (0x158b40, ret 8) runs the
 // title fade, returning non-zero when the fade is still in progress. Named to retail
-// (?Method_158b40@CDDrawWorkerMgr) so the call pairs exactly.
-class CDDrawWorkerMgr {
-public:
-    i32 Method_158b40(i32 page, i32 mode); // 0x158b40
-};
+// (?Method_158b40@CDDrawWorkerMgr) so the call pairs exactly. See CDDrawWorkerMgr.h.
 
 // ---------------------------------------------------------------------------
 // FramePoll (0x143e0) sub-object models.

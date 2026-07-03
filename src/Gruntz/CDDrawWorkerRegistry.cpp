@@ -1,7 +1,7 @@
 #include <rva.h>
 // CDDrawWorkerRegistry.cpp - leaf method(s) of the tomalla-named ddrawmgr surface-family
 // sub-manager CDDrawWorkerRegistry (a CDirectDrawMgr surface/page sub-manager in the
-// "DDraw surface manager" family; see src/Stub/types/ddrawmgr_surface_family.h).
+// "DDraw surface manager" family; see docs/ddraw-family-names.md).
 //
 // CDDrawWorkerRegistry owns a CMapStringToOb at +0x10 (m_map) keyed by const char*
 // strings. RemoveByKey is a keyed remove-and-destroy: Lookup the key in

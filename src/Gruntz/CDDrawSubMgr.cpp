@@ -10,6 +10,7 @@
 // from the DDrawMgr group; reuse its real types instead of placeholder casts.
 #include <Gruntz/CDirectDrawMgr.h>
 #include <Gruntz/CDDrawBlitParam.h> // single-source CDDrawBlitParam (also used by WwdGameObject.cpp)
+#include <Gruntz/CDDrawWorkerMgr.h> // single-source CDDrawWorkerMgr (0x158xxx surface ops)
 #include <Globals.h>
 // CDDrawSubMgr.cpp - tomalla-named DDraw surface/page-manager shared base
 // (CDDrawSubMgr).  This is the polymorphic base for the 10 sub-
@@ -23,8 +24,8 @@
 // ---------------------------------------------------------------------------
 
 // Forward-declare the family manager (root) stored at CGruntzMgr+0x30.
-// Full definition lives in CDDrawSurfaceMgr.cpp (CDDrawSurfaceMgr unit) and in
-// src/Stub/types/ddrawmgr_surface_family.h.
+// Full definition lives in CDDrawSurfaceMgr.cpp (CDDrawSurfaceMgr unit); role
+// names are documented in docs/ddraw-family-names.md.
 class CDDrawSurfaceMgr;
 
 // The CDDrawSubMgr and CObject vtables are used in the dtor vtable chain, emitted
@@ -195,48 +196,9 @@ public:
     i32 m_flags; // +0x34 flag word (bit1 tested)
 };
 
-// The worker manager (this for the 0x158xxx methods).  Polymorphic: its own
-// vtable holds a slot at +0x3c that Method_159ef0 tail-calls.
-class CDDrawWorkerMgr {
-public:
-    virtual void Vfunc00();
-    virtual void Vfunc04();
-    virtual void Vfunc08();
-    virtual void Vfunc0c();
-    virtual void Vfunc10();
-    virtual void Vfunc14();
-    virtual void Vfunc18();
-    virtual void Vfunc1c();
-    virtual void Vfunc20();
-    virtual void Vfunc24();
-    virtual void Vfunc28();
-    virtual void Vfunc2c();
-    virtual void Vfunc30();
-    virtual void Vfunc34();
-    virtual void Vfunc38();
-    virtual void Vfunc3c(); // slot 15 (@0x3c): Method_159ef0 forwards here
-
-    // Surface ops.
-    i32 Method_158b40(i32 arg1, i32 arg2);
-    void Method_158b90();
-    i32 Method_158bc0();
-    i32 Method_158bf0(i32 a1, i32 a2, i32 a3);
-    i32 Method_158cb0(i32 a1, i32 a2);
-    void Method_158d50(i32 a1);
-    i32 Method_158c70(CDDrawSurfacePair* dst);
-    i32 Method_158d20();
-    i32 Method_158dc0();
-    i32 Method_158e40();
-    i32 Method_158e90();
-    i32 Method_158ee0();
-    void Method_159ef0();
-
-    char m_pad04[0x0c - 0x04];        // +0x04 .. +0x0b
-    CDDrawWorkerNode* m_worker;       // +0x0c worker (flag at [+0x34])
-    CDDrawSurfacePair* m_frontPair;   // +0x10
-    CDDrawSurfacePair* m_backPair;    // +0x14
-    CDDrawSurfacePair* m_overlayPair; // +0x18
-};
+// The worker manager (this for the 0x158xxx methods) is now the single-source
+// CDDrawWorkerMgr from <Gruntz/CDDrawWorkerMgr.h> (included above); its owned
+// CDDrawWorkerNode / CDDrawSurfacePair members are the local defs above.
 
 // The small per-frame blit-param/element struct (this for the 0x15c2xx methods).
 // Field +0x0c on the arg points at a worker-node-like object; +0x10 is a count,

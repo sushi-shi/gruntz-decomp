@@ -1,7 +1,7 @@
 #include <rva.h>
 // CDDrawSubMgrPages.cpp - one leaf cleanup method of the tomalla-named ddrawmgr
 // sub-manager CDDrawSubMgrPages (a CDirectDrawMgr surface/page sub-manager in the
-// "DDraw surface manager" family; see src/Stub/types/ddrawmgr_surface_family.h).
+// "DDraw surface manager" family; see docs/ddraw-family-names.md).
 //
 // CDDrawSubMgrPages carries three owned-child pointers at +0x10/+0x14/+0x18 (the three
 // int fields m_10/14/18 of the layout). DestroyChildren is a
