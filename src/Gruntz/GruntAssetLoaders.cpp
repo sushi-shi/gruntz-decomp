@@ -100,10 +100,10 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
     CSprite* _out;
     if (enable != 0) {
         m_wingzEnabled = 1;
-        m_898 = (i32)((double)m_wingzTime * g_wingzScale - g_wingzBias);
-        m_89c = 0;
-        m_890 = (i32)g_645588;
-        m_894 = 0;
+        m_wingzDurationLo = (i32)((double)m_wingzTime * g_wingzScale - g_wingzBias);
+        m_wingzDurationHi = 0;
+        m_wingzClockLo = (i32)g_645588;
+        m_wingzClockHi = 0;
         CreateWingzTimeSprite();
 
         CELL_F1(0) = s_NW_ITEM;
@@ -145,8 +145,8 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
         }
     } else {
         m_wingzEnabled = 0;
-        m_898 = 0;
-        m_89c = 0;
+        m_wingzDurationLo = 0;
+        m_wingzDurationHi = 0;
         if (m_wingzTimeSprite != 0) {
             m_wingzTimeSprite->m_8 |= 0x10000;
             m_wingzTimeSprite = 0;
@@ -526,7 +526,7 @@ enum GruntDeathType {
 // the final sweep.
 RVA(0x00060150, 0xd90)
 i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
-    if (m_368 != 0) {
+    if (m_deathAnimStarted != 0) {
         return 0;
     }
 
@@ -535,7 +535,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
     ClearSubB();         // 0x57ce0
 
     m_10->m_40 &= ~8;
-    m_368 = 1;
+    m_deathAnimStarted = 1;
     m_health = 0;
     m_entranceCommitted = 0;
 
@@ -570,7 +570,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
 
     if (m_poweredUp != 0 && m_neighborValid == 0) {
         m_entranceActive = 0;
-        m_218 = 0;
+        m_combatActive = 0;
         m_neighborValid = 0;
         m_poweredUp = 0;
         Stub_062e10(1, 0, 0); // 0x62e10

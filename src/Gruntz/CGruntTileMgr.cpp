@@ -54,7 +54,7 @@ i32 CGruntTileMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
             if (g->m_entranceCommitted == 0) {
                 continue;
             }
-            if (g->m_364 != 0) {
+            if (g->m_entranceDropActive != 0) {
                 continue;
             }
             i32 gx = g->m_10->m_5c;
@@ -106,10 +106,11 @@ i32 CGruntTileMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
                         }
                         g->m_health = 0x64;
                         g->UpdateCombatTimer();
-                        g->m_878 = g_buteMgr.GetIntDef(s_Grunt, s_CombatTimeout, 0x1388);
-                        g->m_87c = 0;
-                        g->m_870 = g_645588;
-                        g->m_874 = 0;
+                        g->m_combatTimeoutLo =
+                            g_buteMgr.GetIntDef(s_Grunt, s_CombatTimeout, 0x1388);
+                        g->m_combatTimeoutHi = 0;
+                        g->m_combatClockLo = g_645588;
+                        g->m_combatClockHi = 0;
                         CHudSprite* spr =
                             g_pGameRegistry->m_30->m_8
                                 ->CreateSprite(0, gx, gy, 0xf4240, s_LightFx, 0x40003);
