@@ -12,9 +12,8 @@
 #include <string.h> // inline strcmp of the grunt type name
 
 #include <rva.h>
-#include <Gruntz/MgrSub30.h>
+#include <Gruntz/CGameRegistry.h>
 #include <Gruntz/CStepList2.h>
-#include <Gruntz/MgrSub24.h>
 #include <Gruntz/CTypeColl.h>
 #include <Gruntz/CStepList.h>
 
@@ -36,30 +35,19 @@ struct CGruntTileMgr {
 
 // A small owned collection at CGrunt+0x31c that gets RemoveAll'd on commit.
 
-// The manager singleton (g_mgrSettings @0x64556c): m_30->m_24->m_5c board base,
-// m_68 grid (slot[] at +0x1c), m_70 dims (m_c/m_10), plus a +0x68 sub the
-// scatter helper (0x14bf) is a __thiscall on.
+// The grunt's own tile-mgr grid (CGrunt+0x260): a slot-table with slot[] at +0x1c
+// and the scatter helper (0x14bf) as a __thiscall on it.
 struct MgrGrid {
     char pad[0x1c];
     CGruntStep* slot[15];                    // +0x1c
     i32 Scatter(i32 a, i32 b, i32 c, i32 d); // 0x4014bf (__thiscall on this grid)
 };
-struct MgrDims {
-    char pad[0x8];
-    i32 m_8;
-    i32 m_c;
-    i32 m_10;
-};
-struct MgrSettings {
-    char pad30[0x30];
-    MgrSub30* m_world; // +0x30
-    char pad34[0x68 - 0x34];
-    MgrGrid* m_68; // +0x68 (grid; slot[] at +0x1c)
-    char pad6c[0x70 - 0x6c];
-    MgrDims* m_tileGrid; // +0x70
-};
-DATA(0x0064556c)
-extern MgrSettings* g_mgrSettings;
+// The game-manager singleton is the canonical CGameRegistry (*0x64556c). The board
+// base is reached as m_world->m_24->+0x5c (the CSpriteFactoryHolder -> CGameViewport
+// chain); the +0x70 tile grid via m_tileGrid (m_8 row table / m_c,m_10 dims); the
+// +0x68 reused slot's grid table via raw +0x1c reads.
+DATA(0x0024556c)
+extern CGameRegistry* g_gameReg;
 
 DATA(0x00645588)
 extern u32 g_clock; // game clock (g_645588)
@@ -185,7 +173,7 @@ i32 CGruntStep::UpdateArrival() {
                         F(this, 0x2f4) = F(g, 0x1f0);
                         F(this, 0x2d4) = 1;
                         i32 r = BoardTest(
-                            F(P(g_mgrSettings->m_world->m_24, 0x5c), 0) + 0x40,
+                            F(P(g_gameReg->m_world->m_24, 0x5c), 0) + 0x40,
                             F(P(this, 0x10), 0x5c),
                             F(P(this, 0x10), 0x60)
                         );
@@ -226,8 +214,8 @@ i32 CGruntStep::UpdateArrival() {
                 if (ay != 0) {
                     lo2 = lo2 + GameRand() % ay;
                 }
-                if (lo < (u32)F(g_mgrSettings->m_tileGrid, 0xc)
-                    && lo2 < (u32)F(g_mgrSettings->m_tileGrid, 0x10)) {
+                if (lo < (u32)F(g_gameReg->m_tileGrid, 0xc)
+                    && lo2 < (u32)F(g_gameReg->m_tileGrid, 0x10)) {
                     ProbeMove((i32)lo, (i32)lo2, 0, F(this, 0x248), 1, 0);
                 }
                 if (F(this, 0x328) != 0) {
@@ -274,7 +262,7 @@ tail:
         // The active-move cell: (head node)->link is a [col,row]; gate on the grid
         // cell's flag byte (&0x20).
         i32* cell = (i32*)P(P(this, 0x320), 0x8);
-        u8* flags = (u8*)(F(F(g_mgrSettings->m_tileGrid, 0x8) + cell[1] * 4, 0) + cell[0] * 0x1c);
+        u8* flags = (u8*)(F(F(g_gameReg->m_tileGrid, 0x8) + cell[1] * 4, 0) + cell[0] * 0x1c);
         if ((flags[0] & 0x20) != 0) {
             StampMove(1, 1);
             if (F(this, 0x328) != 0) {
@@ -308,7 +296,7 @@ RVA(0x000f71c0, 0x721)
 i32 CGruntStep::SeekTarget() {
     F(this, 0x300) = F(this, 0x17c);
     F(this, 0x304) = F(this, 0x180);
-    if (F(this, 0x328) != 0 && F(F(g_mgrSettings->m_68, 0x1c) + F(this, 0x2f0) * 4, 0) == 0) {
+    if (F(this, 0x328) != 0 && F(F(g_gameReg->m_68, 0x1c) + F(this, 0x2f0) * 4, 0) == 0) {
         void* p = (void*)P(this, 0x320);
         while (p != 0) {
             void* next = *(void**)p;
@@ -327,7 +315,7 @@ i32 CGruntStep::SeekTarget() {
         reason = F(this, 0x19c);
     }
     if (reason == 0 && (reason = F(this, 0x2f0), reason >= 0) && reason < 0xf) {
-        CGruntStep* slot = (CGruntStep*)F(F(g_mgrSettings->m_68, 0x1c) + reason * 4, 0);
+        CGruntStep* slot = (CGruntStep*)F(F(g_gameReg->m_68, 0x1c) + reason * 4, 0);
         if (slot == 0 || F(slot, 0x1fc) == 0) {
             if (F(this, 0x328) != 0) {
                 void* p = (void*)P(this, 0x320);
@@ -395,7 +383,7 @@ i32 CGruntStep::SeekTarget() {
             }
             i32 best = 0x7fffffff;
             i32 bestIdx = -1;
-            i32* slots = (i32*)(F(g_mgrSettings->m_68, 0x1c) + (char*)0);
+            i32* slots = (i32*)(F(g_gameReg->m_68, 0x1c) + (char*)0);
             i32 i = 0;
             do {
                 i32 sv = slots[i];
@@ -426,7 +414,7 @@ i32 CGruntStep::SeekTarget() {
                     != 0) {
                     i32 by = F(P(this, 0x10), 0x60);
                     i32 bx = F(P(this, 0x10), 0x5c);
-                    i32 board = F(P(g_mgrSettings->m_world->m_24, 0x5c), 0);
+                    i32 board = F(P(g_gameReg->m_world->m_24, 0x5c), 0);
                     if (bx < F(board, 0x48) && F(board, 0x40) <= bx && by < F(board, 0x4c)
                         && F(board, 0x44) <= by) {
                         GruntCue(this, 0x366, -1, 0, -1, -1);
@@ -442,7 +430,7 @@ i32 CGruntStep::SeekTarget() {
         if ((u32)F(this, 0x2ec) < 0x3e9) {
             return 1;
         }
-        i32 base = F((i32)F(F(g_mgrSettings->m_68, 0x1c) + F(this, 0x2f0) * 4, 0), 0x10);
+        i32 base = F((i32)F(F(g_gameReg->m_68, 0x1c) + F(this, 0x2f0) * 4, 0), 0x10);
         ProbeMove(F(base, 0x5c) >> 5, F(base, 0x60) >> 5, 0, F(this, 0x248), 1, 0);
     } else {
         CGruntStep* g = ((CGruntTileMgr*)P(this, 0x260))->FindGrunt(this);
@@ -517,7 +505,7 @@ i32 CGruntStep::SeekTarget() {
         }
         if (F(this, 0x390) != 0) {
             i32 r = BoardTest(
-                F(P(g_mgrSettings->m_world->m_24, 0x5c), 0) + 0x40,
+                F(P(g_gameReg->m_world->m_24, 0x5c), 0) + 0x40,
                 F(P(this, 0x10), 0x5c),
                 F(P(this, 0x10), 0x60)
             );
@@ -532,5 +520,3 @@ i32 CGruntStep::SeekTarget() {
     F(this, 0x2ec) = 0;
     return 1;
 }
-
-SIZE_UNKNOWN(MgrDims);

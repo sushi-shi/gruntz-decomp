@@ -46,7 +46,10 @@
 #include <Ints.h>
 
 struct CSpriteFactory; // +0x30 -> +0x08 factory (CreateSprite); Grunt.h completes it
-class CGruntCueSink;   // +0x60 on-screen cue receiver; Grunt.h completes it
+class CGruntCueSink;   // +0x60 on-screen cue receiver; Grunt.h completes it (or, in
+                       // the pure-Win32 grunt-step TUs that can't pull Grunt.h,
+                       // completed locally with just the 0x4039f4 6-arg cue - a
+                       // data-less method handle, so layout-neutral, no cross-cast)
 class CState;          // +0x2c current game-state; CState.h completes it
 // Sub-objects of the +0x30 resource manager, defined in <Gruntz/ResMgr.h> /
 // <Gruntz/CViewport.h>; forward-declared here so consumers reach them typed

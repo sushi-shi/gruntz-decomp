@@ -10,17 +10,16 @@
 // and Scatter / ProbeMove to it, and on commit fire the grunt cue (0x39f4). All engine
 // helpers + the manager/grid globals are external (reloc-masked); the CGrunt field bag
 // is addressed by raw offset exactly as retail does. Data globals are named to the
-// current symbol_names.csv bindings: g_64556c (extern "C" _g_64556c), g_typeColl
-// (?g_typeColl@@3UCTypeColl@@A), g_dropList (?g_dropList@@3UCStepList2@@A).
+// current symbol_names.csv bindings: g_gameReg (canonical CGameRegistry* @0x24556c),
+// g_typeColl (?g_typeColl@@3UCTypeColl@@A), g_dropList (?g_dropList@@3UCStepList2@@A).
 #include <Ints.h>
 #include <string.h> // inline strcmp of the grunt type name
 
 #include <Win32.h> // RECT + IntersectRect / PtInRect
 #include <rva.h>
+#include <Gruntz/CGameRegistry.h>
 #include <Gruntz/CStepList2.h>
 #include <Gruntz/CScanRectInit.h>
-#include <Gruntz/MgrSub30.h>
-#include <Gruntz/MgrSub24.h>
 #include <Gruntz/CScanGrid.h>
 #include <Gruntz/CTypeColl.h>
 #include <Gruntz/CStepList.h>
@@ -63,7 +62,7 @@ extern "C" i32 CellTargetable(i32 col, i32 row);     // 0x40107d
 
 extern CStepList2 g_dropList; // ?g_dropList@@3UCStepList2@@A (bound in GruntUpdateStep.cpp)
 
-// The board grid (g_64556c->m_tileGrid, CScanGrid-shape): m_8 row table, m_c/m_10 dims, m_60
+// The board grid (g_gameReg->m_tileGrid, CScanGrid-shape): m_8 row table, m_c/m_10 dims, m_60
 // dirty rect, m_70/m_74 its size.
 struct CScanCell {
     i32 m_0; // +0x00 flags
@@ -86,22 +85,20 @@ struct CScanListNode {
     i32 m_8; // +0x08 link value
 };
 
-// The cue mgr (g_64556c->m_cueSink): fires the grunt entrance cue (0x39f4, __thiscall).
-struct CCueMgr {
+// The +0x60 on-screen cue receiver (CGruntCueSink, forward-declared by
+// CGameRegistry.h): its 6-arg grunt entrance cue is at 0x4039f4 (__thiscall).
+// Completed here with just that method (data-less class, layout-neutral).
+class CGruntCueSink {
+public:
     void PlayCue(CGruntStep* g, i32 code, i32 a, i32 b, i32 c, i32 d); // 0x4039f4
 };
 
-// The manager/registry singleton (g_64556c @0x64556c): m_30->m_24->m_5c board base,
-// m_60 cue mgr, m_70 board grid.
-struct MgrSettings {
-    char pad30[0x30];
-    MgrSub30* m_world; // +0x30
-    char pad34[0x60 - 0x34];
-    CCueMgr* m_cueSink; // +0x60
-    char pad64[0x70 - 0x64];
-    CScanGrid* m_tileGrid; // +0x70
-};
-extern "C" MgrSettings* g_64556c; // _g_64556c (bound in gruntchargestep)
+// The game-manager singleton is the canonical CGameRegistry (*0x64556c): the board
+// base via m_world->m_24->+0x5c (CSpriteFactoryHolder -> CGameViewport), the +0x60
+// cue receiver (m_cueSink), and the +0x70 tile grid downcast to the richer CScanGrid
+// view (dirty rect + row table).
+DATA(0x0024556c)
+extern CGameRegistry* g_gameReg; // 0x64556c
 
 struct CGruntStep {
     i32 ArrivalScanA(); // 0xecc90
@@ -186,7 +183,7 @@ i32 CGruntStep::ArrivalScanA() {
     }
     F(this, 0x300) = F(this, 0x17c);
     F(this, 0x304) = F(this, 0x180);
-    CScanGrid* grid = g_64556c->m_tileGrid;
+    CScanGrid* grid = (CScanGrid*)g_gameReg->m_tileGrid;
     GRID_RECT_BOUNDS(grid);
 
     i32 c1[4];
@@ -286,11 +283,11 @@ L_ed006:
         goto L_ed153;
     }
     if (F(this, 0x390) != 0) {
-        char* board = P(g_64556c->m_world->m_24, 0x5c) + 0x40;
+        char* board = P(g_gameReg->m_world->m_24, 0x5c) + 0x40;
         i32 x = F(P(this, 0x10), 0x5c);
         i32 y = F(P(this, 0x10), 0x60);
         if (x < F(board, 8) && F(board, 0) <= x && y < F(board, 0xc) && F(board, 4) <= y) {
-            g_64556c->m_cueSink->PlayCue(this, 0x366, -1, 0, -1, -1);
+            g_gameReg->m_cueSink->PlayCue(this, 0x366, -1, 0, -1, -1);
         }
         F(this, 0x390) = 0;
     }
@@ -404,7 +401,7 @@ i32 CGruntStep::ArrivalScanB() {
     }
     F(this, 0x300) = F(this, 0x17c);
     F(this, 0x304) = F(this, 0x180);
-    CScanGrid* grid = g_64556c->m_tileGrid;
+    CScanGrid* grid = (CScanGrid*)g_gameReg->m_tileGrid;
     GRID_RECT_BOUNDS(grid);
 
     i32 c1[4];
@@ -507,8 +504,8 @@ L_ed006b:
             if (F(this, 0x390) != 0) {
                 i32 x = F(P(this, 0x10), 0x5c);
                 i32 y = F(P(this, 0x10), 0x60);
-                if (BoardTest(P(g_64556c->m_world->m_24, 0x5c) + 0x40, x, y) != 0) {
-                    g_64556c->m_cueSink->PlayCue(this, 0x366, -1, 0, -1, -1);
+                if (BoardTest(P(g_gameReg->m_world->m_24, 0x5c) + 0x40, x, y) != 0) {
+                    g_gameReg->m_cueSink->PlayCue(this, 0x366, -1, 0, -1, -1);
                 }
                 F(this, 0x390) = 0;
             }
@@ -627,7 +624,7 @@ i32 CGruntStep::ArrivalScanC() {
     if (strcmp(g_typeColl.Lookup(F(P(this, 0x14), 0x1c))->m_0, "I") == 0) {
         return 1;
     }
-    CScanGrid* grid = g_64556c->m_tileGrid;
+    CScanGrid* grid = (CScanGrid*)g_gameReg->m_tileGrid;
     GRID_RECT_BOUNDS(grid);
 
     i32 c1[4];
@@ -718,11 +715,11 @@ i32 CGruntStep::ArrivalScanC() {
     if (this->ProbeMove(F(P(g, 0x10), 0x5c) >> 5, F(P(g, 0x10), 0x60) >> 5, 0, F(this, 0x248), 1, 0)
         != 0) {
         if (F(this, 0x390) != 0) {
-            char* board = P(g_64556c->m_world->m_24, 0x5c) + 0x40;
+            char* board = P(g_gameReg->m_world->m_24, 0x5c) + 0x40;
             i32 x = F(P(this, 0x10), 0x5c);
             i32 y = F(P(this, 0x10), 0x60);
             if (x < F(board, 8) && F(board, 0) <= x && y < F(board, 0xc) && F(board, 4) <= y) {
-                g_64556c->m_cueSink->PlayCue(this, 0x366, -1, 0, -1, -1);
+                g_gameReg->m_cueSink->PlayCue(this, 0x366, -1, 0, -1, -1);
             }
             F(this, 0x390) = 0;
         }
@@ -821,7 +818,7 @@ L_tailc:
     return 1;
 }
 
-SIZE_UNKNOWN(CCueMgr);
+SIZE_UNKNOWN(CGruntCueSink);
 SIZE_UNKNOWN(CGruntStep);
 SIZE_UNKNOWN(CScanCell);
 SIZE_UNKNOWN(CScanCoord);
@@ -834,6 +831,3 @@ SIZE_UNKNOWN(CStepList);
 SIZE_UNKNOWN(CStepList2);
 SIZE_UNKNOWN(CTypeColl);
 SIZE_UNKNOWN(CTypeNode);
-SIZE_UNKNOWN(MgrSettings);
-SIZE_UNKNOWN(MgrSub24);
-SIZE_UNKNOWN(MgrSub30);

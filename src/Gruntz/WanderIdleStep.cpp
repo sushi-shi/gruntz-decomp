@@ -13,9 +13,8 @@
 #include <Win32.h> // RECT/POINT/PtInRect (game WinAPI table 0x6c456c, IAT call)
 
 #include <rva.h>
+#include <Gruntz/CGameRegistry.h>
 #include <Gruntz/CStepList2.h>
-#include <Gruntz/MgrSub30.h>
-#include <Gruntz/MgrSub24.h>
 #include <Gruntz/CStepList.h>
 
 #define F(base, o) (*(i32*)((char*)(base) + (o)))
@@ -32,35 +31,28 @@ struct CGruntTileMgr {
 
 extern CStepList2 g_dropList;
 
-// The grid: slot[] at +0x1c (both the tile mgr and g_mgrSettings->m_68).
+// The tile-mgr grunt board (CGrunt+0x260) and the registry's +0x68 reused slot
+// share this slot-table shape (slot[] at +0x1c).
 struct MgrGrid {
     char pad[0x1c];
     CGruntWander* slot[15]; // +0x1c
 };
-struct MgrDims {
-    char pad[0xc];
-    i32 m_c;
-    i32 m_10;
-};
-// The grunt-cue sound object reached via g_mgrSettings->m_cueSink.
-SIZE_UNKNOWN(SoundMgr);
-struct SoundMgr {
+// The +0x60 on-screen cue receiver (CGruntCueSink, forward-declared by
+// CGameRegistry.h): its 6-arg grunt-cue is at 0x4039f4 (__thiscall). Completed
+// here with just that method (the class is data-less, so this is layout-neutral).
+SIZE_UNKNOWN(CGruntCueSink);
+class CGruntCueSink {
+public:
     void GruntCue(CGruntWander* g, i32 code, i32 a, i32 b, i32 c, i32 d); // 0x4039f4 (__thiscall)
 };
-struct MgrSettings {
-    char pad30[0x30];
-    MgrSub30* m_world; // +0x30
-    char pad34[0x60 - 0x34];
-    SoundMgr* m_cueSink; // +0x60 grunt-cue sound obj
-    char pad64[0x68 - 0x64];
-    MgrGrid* m_68; // +0x68 grid (slot[] at +0x1c)
-    char pad6c[0x70 - 0x6c];
-    MgrDims* m_tileGrid; // +0x70
-};
-extern MgrSettings* g_mgrSettings; // 0x64556c
-extern u32 g_clock;                // game clock (0x645588)
-extern void* g_freeList;           // 0x645544
-extern i32 g_freeListBias;         // 0x64554c
+// The game-manager singleton is the canonical CGameRegistry (*0x64556c): the board
+// base via m_world->m_24->+0x5c, the +0x60 cue receiver (m_cueSink), the +0x70 tile
+// grid (m_tileGrid; m_c/m_10 dims), and the +0x68 reused slot downcast to MgrGrid.
+DATA(0x0024556c)
+extern CGameRegistry* g_gameReg; // 0x64556c
+extern u32 g_clock;              // game clock (0x645588)
+extern void* g_freeList;         // 0x645544
+extern i32 g_freeListBias;       // 0x64554c
 
 extern "C" {
     i32 BoardTest(i32 a, i32 b, i32 c); // 0x401127 (__cdecl)
@@ -177,12 +169,12 @@ i32 CGruntWander::WanderStep() {
                             F(this, 0x2f4) = F(g, 0x1f0);
                             F(this, 0x2d4) = 1;
                             if (BoardTest(
-                                    F(g_mgrSettings->m_world->m_24, 0x5c) + 0x40,
+                                    F(g_gameReg->m_world->m_24, 0x5c) + 0x40,
                                     F(P(this, 0x10), 0x5c),
                                     F(P(this, 0x10), 0x60)
                                 )
                                 != 0) {
-                                g_mgrSettings->m_cueSink->GruntCue(this, 0x366, -1, 0, -1, -1);
+                                g_gameReg->m_cueSink->GruntCue(this, 0x366, -1, 0, -1, -1);
                             }
                         }
                     }
@@ -319,7 +311,7 @@ i32 CGruntWander::WanderStep() {
             i32 px = GameRand() % 4 + (F(base, 0x5c) >> 5) - 2;
             if ((u32)F(this, 0x2f0) < 4 && (u32)F(this, 0x2f4) < 0xf) {
                 CGruntWander* entry =
-                    g_mgrSettings->m_68->slot[F(this, 0x2f0) * 0xf + F(this, 0x2f4)];
+                    ((MgrGrid*)g_gameReg->m_68)->slot[F(this, 0x2f0) * 0xf + F(this, 0x2f4)];
                 if (entry != 0) {
                     i32 e10 = F(entry, 0x10);
                     RECT rc;
@@ -338,7 +330,7 @@ i32 CGruntWander::WanderStep() {
             if (clip == 0) {
                 return 1;
             }
-            MgrDims* grid = g_mgrSettings->m_tileGrid;
+            CTileGrid* grid = g_gameReg->m_tileGrid;
             if ((u32)px >= (u32)grid->m_c) {
                 return 1;
             }
@@ -381,8 +373,8 @@ timeout:
             if (ay != 0) {
                 ly += GameRand() % ay;
             }
-            if (lx < (u32)F(g_mgrSettings->m_tileGrid, 0xc)
-                && ly < (u32)F(g_mgrSettings->m_tileGrid, 0x10)) {
+            if (lx < (u32)F(g_gameReg->m_tileGrid, 0xc)
+                && ly < (u32)F(g_gameReg->m_tileGrid, 0x10)) {
                 ProbeMove((i32)lx, (i32)ly, 0, F(this, 0x248), 1, 0);
             }
             if (F(this, 0x328) != 0) {
