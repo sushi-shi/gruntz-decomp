@@ -76,37 +76,37 @@ namespace m4 {
 
     struct GruntCombatMgr;
 
-    struct CombatViewport { // CombatView::m_5c points here (a CRect at +0x40)
+    struct CombatViewport { // CombatView::m_viewport points here (a CRect at +0x40)
         char m_pad0[0x40];
         RECT m_rect; // +0x40
     };
-    struct CombatView { // (this->m_22c)->m_24
+    struct CombatView { // (this->m_viewHost)->m_view
         char m_pad0[0x10];
-        i32 m_10; // +0x10
-        i32 m_14; // +0x14
+        i32 m_originX; // +0x10  view origin x
+        i32 m_originY; // +0x14  view origin y
         char m_pad18[0x5c - 0x18];
-        CombatViewport* m_5c; // +0x5c
+        CombatViewport* m_viewport; // +0x5c
     };
-    struct CombatViewHost { // this->m_22c
+    struct CombatViewHost { // this->m_viewHost
         char m_pad0[0x24];
-        CombatView* m_24; // +0x24
+        CombatView* m_view; // +0x24
     };
-    struct GruntPos { // CombatGrunt::m_10
+    struct GruntPos { // CombatGrunt::m_pos
         char m_pad0[0x5c];
-        i32 m_5c; // +0x5c (screen x)
-        i32 m_60; // +0x60 (screen y)
+        i32 m_screenX; // +0x5c (screen x)
+        i32 m_screenY; // +0x60 (screen y)
     };
-    struct CombatGrunt { // element of GruntCombatMgr::m_1c
+    struct CombatGrunt { // element of GruntCombatMgr::m_grunts
         char m_pad0[0x10];
-        GruntPos* m_10; // +0x10
+        GruntPos* m_pos; // +0x10
         char m_pad14[0x1fc - 0x14];
         i32 m_1fc; // +0x1fc
         char m_pad200[0x880 - 0x200];
-        i32 m_880;          // +0x880
-        i32 m_884;          // +0x884
-        i32 m_888;          // +0x888
-        i32 m_88c;          // +0x88c
-        void Method_243c(); // RVA 0x243c
+        i32 m_880;           // +0x880
+        i32 m_884;           // +0x884
+        i32 m_combatTimeout; // +0x888
+        i32 m_88c;           // +0x88c
+        void Method_243c();  // RVA 0x243c
     };
     // Canonical CButeMgr (::CButeMgr); GetDwordDef (0x1721e0) is reloc-masked.
     extern CButeMgr g_buteMgr; // 0x6453d8
@@ -115,9 +115,9 @@ namespace m4 {
 
     struct GruntCombatMgr {
         char m_pad0[0x1c];
-        CombatGrunt* m_1c[16]; // +0x1c
+        CombatGrunt* m_grunts[16]; // +0x1c
         char m_pad5c[0x22c - 0x5c];
-        CombatViewHost* m_22c;                        // +0x22c
+        CombatViewHost* m_viewHost;                   // +0x22c
         void Method_36ed();                           // RVA 0x36ed
         void Method_29cd(i32 a, i32 j, i32 c, i32 d); // RVA 0x29cd
         void CheckCombatRegion(i32 a, i32 b, i32 c, i32 d, i32 flag);
@@ -125,23 +125,23 @@ namespace m4 {
 
     // @early-stop
     // regalloc/CSE wall: identical logic + instruction selection, but MSVC5 pins
-    // `this`->ebx (retail: ebp) and `view` is dropped from eax after the m_24
-    // load; that pressure lets cl CSE (view->m_5c->rect.left - m_10) once whereas
-    // retail reloads view->m_5c per rect pair. Consistent ebx<->ebp swap + the
+    // `this`->ebx (retail: ebp) and `view` is dropped from eax after the m_view
+    // load; that pressure lets cl CSE (view->m_viewport->rect.left - m_originX) once whereas
+    // retail reloads view->m_viewport per rect pair. Consistent ebx<->ebp swap + the
     // reload-vs-CSE shape are the only residuals (llvm-objdump -dr). ~80%.
     RVA(0x00078060, 0x18d)
     void GruntCombatMgr::CheckCombatRegion(i32 a, i32 b, i32 c, i32 d, i32 flag) {
-        CombatView* view = m_22c->m_24;
-        a += view->m_5c->m_rect.left - view->m_10;
-        b += view->m_5c->m_rect.top - view->m_14;
-        c += view->m_5c->m_rect.left - view->m_10;
-        d += view->m_5c->m_rect.top - view->m_14;
+        CombatView* view = m_viewHost->m_view;
+        a += view->m_viewport->m_rect.left - view->m_originX;
+        b += view->m_viewport->m_rect.top - view->m_originY;
+        c += view->m_viewport->m_rect.left - view->m_originX;
+        d += view->m_viewport->m_rect.top - view->m_originY;
         for (i32 i = 0; i < 4; i++) {
             for (i32 j = 0; j < 15; j++) {
-                CombatGrunt* g = m_1c[j];
+                CombatGrunt* g = m_grunts[j];
                 if (g) {
-                    i32 cx = g->m_10->m_5c;
-                    i32 cy = g->m_10->m_60;
+                    i32 cx = g->m_pos->m_screenX;
+                    i32 cy = g->m_pos->m_screenY;
                     RECT box;
                     SetRect(&box, cx - 0xf, cy - 0xf, cx + 0xf, cy + 0xf);
                     if (a <= box.right && c >= box.left && b <= box.bottom && d >= box.top) {
@@ -153,7 +153,8 @@ namespace m4 {
                             Method_29cd(g_644c54, j, 1, 1);
                         } else {
                             g->Method_243c();
-                            g->m_888 = g_buteMgr.GetDwordDef("Grunt", "CombatTimeout", 0x1388);
+                            g->m_combatTimeout =
+                                g_buteMgr.GetDwordDef("Grunt", "CombatTimeout", 0x1388);
                             g->m_88c = 0;
                             g->m_880 = g_645588;
                             g->m_884 = 0;
@@ -169,9 +170,9 @@ namespace m4 {
     // config store into the scroll CString, measure it against the offscreen DC,
     // and set up the scroll rect + per-frame scroll step. thiscall, returns BOOL.
 
-    struct CreditzText { // config section handle (this->m_2c->GetSection result)
+    struct CreditzText { // config section handle (this->m_sectionSrc->GetSection result)
         char m_pad0[0xc];
-        i32 m_c;         // +0xc  byte length
+        i32 m_length;    // +0xc  byte length
         char* GetData(); // RVA 0x139960
         void Release();  // RVA 0x1399d0
     };
@@ -180,7 +181,7 @@ namespace m4 {
         char* m_data;
         void Assign(const char* s); // RVA 0x1b9e74
     };
-    struct CreditzRgn { // CRgn / CGdiObject at this->m_1e8
+    struct CreditzRgn { // CRgn / CGdiObject at this->m_clipRgn
         char m_pad0[8];
         i32 Attach(void* hrgn); // RVA 0x1c6a05
     };
@@ -194,7 +195,7 @@ namespace m4 {
         char m_pad48[0x68 - 0x48];
         void (*ReleaseDC)(CreditzDc*, i32 hdc); // +0x68
     };
-    struct CreditzSectionSrc {                              // this->m_2c
+    struct CreditzSectionSrc {                              // this->m_sectionSrc
         CreditzText* GetSection(const char* name, i32 tag); // RVA 0x13a000
     };
 
@@ -204,18 +205,18 @@ namespace m4 {
 
     struct CreditzScreen {
         char m_pad0[0xc];
-        char* m_c; // +0xc  (chain to the offscreen-DC object)
+        char* m_dcChain; // +0xc  (chain to the offscreen-DC object)
         char m_pad10[0x2c - 0x10];
-        CreditzSectionSrc* m_2c; // +0x2c
+        CreditzSectionSrc* m_sectionSrc; // +0x2c
         char m_pad30[0x1c8 - 0x30];
-        RECT m_1c8;       // +0x1c8
-        RECT m_1d8;       // +0x1d8
-        CreditzRgn m_1e8; // +0x1e8
-        CreditzStr m_1f0; // +0x1f0
-        i32 m_1f4;        // +0x1f4
-        i32 m_1f8;        // +0x1f8
-        i32 m_1fc;        // +0x1fc
-        double m_200;     // +0x200
+        RECT m_scrollRect;    // +0x1c8
+        RECT m_textRect;      // +0x1d8
+        CreditzRgn m_clipRgn; // +0x1e8
+        CreditzStr m_text;    // +0x1f0
+        i32 m_1f4;            // +0x1f4
+        i32 m_1f8;            // +0x1f8
+        i32 m_1fc;            // +0x1fc
+        double m_scrollStep;  // +0x200
         i32 BuildText();
     };
 
@@ -226,40 +227,40 @@ namespace m4 {
     // fmul; cl reverses). All other bytes identical (llvm-objdump -dr).
     RVA(0x00039a60, 0x179)
     i32 CreditzScreen::BuildText() {
-        CreditzText* sect = m_2c->GetSection("CREDITZ", 0x545854);
+        CreditzText* sect = m_sectionSrc->GetSection("CREDITZ", 0x545854);
         if (sect) {
             char* src = sect->GetData();
             if (!src) {
                 return 0;
             }
-            i32 len = sect->m_c;
+            i32 len = sect->m_length;
             char* buf = (char*)operator new(len + 1);
             if (!buf) {
                 return 0;
             }
             memcpy(buf, src, len);
             buf[len] = 0;
-            m_1f0.Assign(buf);
+            m_text.Assign(buf);
             sect->Release();
             operator delete(buf);
         }
-        m_1e8.Attach(CreateRectRgn(0x32, 0, 0x24e, 0x1e0));
-        char* b = *(char**)(m_c + 4);
+        m_clipRgn.Attach(CreateRectRgn(0x32, 0, 0x24e, 0x1e0));
+        char* b = *(char**)(m_dcChain + 4);
         char* c2 = *(char**)(b + 0x14);
         char* d = *(char**)(c2 + 0x2c);
         CreditzDc* dc = *(CreditzDc**)(d + 8);
         i32 hdc = 0;
         dc->vtbl->GetDC(dc, &hdc);
         if (hdc) {
-            i32 h = DrawTextA((HDC)hdc, m_1f0.m_data, -1, &m_1d8, 0x450);
-            SetRect(&m_1c8, 0x32, 0x1e0, 0x24e, h + 0x1e0);
+            i32 h = DrawTextA((HDC)hdc, m_text.m_data, -1, &m_textRect, 0x450);
+            SetRect(&m_scrollRect, 0x32, 0x1e0, 0x24e, h + 0x1e0);
             CreditzDc* dc2 = *(CreditzDc**)(d + 8);
             dc2->vtbl->ReleaseDC(dc2, hdc);
         }
         m_1f8 = 0;
         m_1fc = 0;
         m_1f4 = (i32)(g_5e96f8 / g_5e96f0);
-        m_200 = (g_5e96f8 * g_5e9708) / (double)(unsigned)m_1f4;
+        m_scrollStep = (g_5e96f8 * g_5e9708) / (double)(unsigned)m_1f4;
         return 1;
     }
 
@@ -269,36 +270,36 @@ namespace m4 {
     // grid; return the first live grunt whose 15x15 screen box hits the rect, and
     // report its packed (col,row) via out-params. thiscall, returns HitGrunt*.
 
-    struct HitGruntPos { // HitGrunt::m_10
+    struct HitGruntPos { // HitGrunt::m_pos
         char m_pad0[0x5c];
-        i32 m_5c; // +0x5c  screen x
-        i32 m_60; // +0x60  screen y
+        i32 m_screenX; // +0x5c  screen x
+        i32 m_screenY; // +0x60  screen y
     };
     struct HitGrunt {
         char m_pad0[0x10];
-        HitGruntPos* m_10; // +0x10
+        HitGruntPos* m_pos; // +0x10
         char m_pad14[0x1fc - 0x14];
         i32 m_1fc; // +0x1fc
     };
     struct HitTileRect { // tile-span rect param
-        i32 m_0;
-        i32 m_4;
-        i32 m_8;
-        i32 m_c;
+        i32 m_left;
+        i32 m_top;
+        i32 m_right;
+        i32 m_bottom;
     };
-    struct HitGrid { // g_mgrSettings->m_70 (the level cell grid)
+    struct HitGrid { // g_mgrSettings->m_cellGrid (the level cell grid)
         char m_pad0[8];
-        char** m_8; // +0x8  array of 0x1c-byte-cell rows
-        i32 m_c;    // +0xc  width
-        i32 m_10;   // +0x10 height
+        char** m_cells; // +0x8  array of 0x1c-byte-cell rows
+        i32 m_width;    // +0xc  width
+        i32 m_height;   // +0x10 height
     };
     struct LevelInfo { // filled by the config accessor at RVA 0x160530 (0x5f4 B)
         char m_pad0[0x10];
-        char m_10[0x40];         // +0x10  version/number string (scanned for a digit)
+        char m_versionStr[0x40]; // +0x10  version/number string (scanned for a digit)
         char m_50[0x40];         // +0x50  (dialog item 0x428)
         char m_90[0x5f4 - 0x90]; // +0x90  (dialog item 0x429)
     };
-    struct LevelInfoSrc {                       // g_mgrSettings->m_30->m_24
+    struct LevelInfoSrc {                       // g_mgrSettings->m_30->m_levelInfoSrc
         i32 GetInfo(void* key, LevelInfo* out); // RVA 0x160530
     };
     struct SoundPlayer {
@@ -306,41 +307,41 @@ namespace m4 {
     };
     struct SoundCue { // config-section result handed back by GetSection
         char m_pad0[0x10];
-        SoundPlayer* m_10; // +0x10
-        i32 m_14;          // +0x14
-        i32 m_18;          // +0x18
+        SoundPlayer* m_player; // +0x10
+        i32 m_lastTime;        // +0x14
+        i32 m_interval;        // +0x18
     };
     struct CfgAccessor {                                  // embedded at MgrM28+0x10
         i32 GetSection(const char* name, SoundCue** out); // thiscall thunk 0x1b8438
     };
-    struct MgrM28 { // g_mgrSettings->m_30->m_28 (config accessor host)
+    struct MgrM28 { // g_mgrSettings->m_30->m_configHost (config accessor host)
         char m_pad0[0x10];
-        CfgAccessor m_10; // +0x10 (GetSection receiver)
+        CfgAccessor m_cfg; // +0x10 (GetSection receiver)
         char m_pad11[0x30 - 0x11];
         MgrM28* m_30; // +0x30
     };
     struct MgrM30 {
         char m_pad0[0x24];
-        LevelInfoSrc* m_24; // +0x24
-        MgrM28* m_28;       // +0x28
+        LevelInfoSrc* m_levelInfoSrc; // +0x24
+        MgrM28* m_configHost;         // +0x28
     };
     struct MgrM48 {              // g_mgrSettings->m_48 (scroll target)
         void Set138950(i32 pos); // thiscall thunk 0x138950
     };
-    struct MgrWnd { // g_mgrSettings->m_4 (window holder)
+    struct MgrWnd { // g_mgrSettings->m_wnd (window holder)
         char m_pad0[4];
-        HWND m_4; // +0x4
+        HWND m_hWnd; // +0x4
     };
     struct MgrM48;       // g_mgrSettings->m_48 (scroll target)
     struct MgrSettings { // g_mgrSettings (0x64556c)
         char m_pad0[4];
-        MgrWnd* m_4; // +0x4
+        MgrWnd* m_wnd; // +0x4
         char m_pad8[0x30 - 8];
         MgrM30* m_30; // +0x30
         char m_pad34[0x48 - 0x34];
         MgrM48* m_48; // +0x48
         char m_pad4c[0x70 - 0x4c];
-        HitGrid* m_70; // +0x70
+        HitGrid* m_cellGrid; // +0x70
         char m_pad74[0xbc - 0x74];
         i32 m_bc; // +0xbc
         char m_padc0[0x124 - 0xc0];
@@ -353,7 +354,7 @@ namespace m4 {
 
     struct GruntHitMgr {
         char m_pad0[0x1c];
-        HitGrunt* m_1c[1]; // +0x1c  grunt slots, indexed by (col + row*15)
+        HitGrunt* m_grunts[1]; // +0x1c  grunt slots, indexed by (col + row*15)
         HitGrunt* FindGruntAt(i32 px, i32 py, HitTileRect* tr, i32* outCol, i32* outRow, RECT* src);
     };
 
@@ -374,26 +375,26 @@ namespace m4 {
         } else {
             SetRect(
                 &rc,
-                px - tr->m_0 * 32 - 7,
-                py - tr->m_4 * 32 - 7,
-                tr->m_8 * 32 + px + 7,
-                tr->m_c * 32 + py + 7
+                px - tr->m_left * 32 - 7,
+                py - tr->m_top * 32 - 7,
+                tr->m_right * 32 + px + 7,
+                tr->m_bottom * 32 + py + 7
             );
         }
-        i32 xEnd = tr->m_8 + tcol + 1;
-        for (i32 x = tcol - tr->m_0 - 1; (u32)x <= (u32)xEnd; x++) {
-            i32 yEnd = tr->m_c + trow + 1;
-            for (i32 y = trow - tr->m_4 - 1; (u32)y <= (u32)yEnd; y++) {
-                if ((u32)x >= (u32)g_mgrSettings->m_70->m_c) {
+        i32 xEnd = tr->m_right + tcol + 1;
+        for (i32 x = tcol - tr->m_left - 1; (u32)x <= (u32)xEnd; x++) {
+            i32 yEnd = tr->m_bottom + trow + 1;
+            for (i32 y = trow - tr->m_top - 1; (u32)y <= (u32)yEnd; y++) {
+                if ((u32)x >= (u32)g_mgrSettings->m_cellGrid->m_width) {
                     continue;
                 }
-                HitGrid* grid = g_mgrSettings->m_70;
-                if ((u32)y >= (u32)grid->m_10) {
+                HitGrid* grid = g_mgrSettings->m_cellGrid;
+                if ((u32)y >= (u32)grid->m_height) {
                     continue;
                 }
                 i32 val;
-                if ((u32)x < (u32)grid->m_c && (u32)y < (u32)grid->m_10) {
-                    val = *(i32*)(grid->m_8[y] + x * 0x1c + 4);
+                if ((u32)x < (u32)grid->m_width && (u32)y < (u32)grid->m_height) {
+                    val = *(i32*)(grid->m_cells[y] + x * 0x1c + 4);
                 } else {
                     val = -1;
                 }
@@ -402,15 +403,15 @@ namespace m4 {
                 }
                 i32 col = val & 0xff;
                 i32 row = (val >> 8) & 0xff;
-                HitGrunt* g = m_1c[col + row * 15];
+                HitGrunt* g = m_grunts[col + row * 15];
                 if (!g) {
                     continue;
                 }
                 if (!g->m_1fc) {
                     continue;
                 }
-                i32 sx = g->m_10->m_5c - 7;
-                i32 sy = g->m_10->m_60 - 7;
+                i32 sx = g->m_pos->m_screenX - 7;
+                i32 sy = g->m_pos->m_screenY - 7;
                 if (rc.left <= sx + 0xe && rc.right >= sx && rc.top <= sy + 0xe
                     && rc.bottom >= sy) {
                     *outCol = row;
@@ -441,8 +442,8 @@ namespace m4 {
         }
         char num[0x20];
         LevelInfo info;
-        if (g_mgrSettings->m_30->m_24->GetInfo(g_62c25c, &info)) {
-            char* p = info.m_10;
+        if (g_mgrSettings->m_30->m_levelInfoSrc->GetInfo(g_62c25c, &info)) {
+            char* p = info.m_versionStr;
             while (*p && (*p < '0' || *p > '9')) {
                 p++;
             }
@@ -617,7 +618,7 @@ namespace m4 {
                 EnableWindow(hwnd, TRUE);
                 if (r) {
                     g_mgrSettings->m_bc = h;
-                    PostMessageA(g_mgrSettings->m_4->m_4, 0x111, 0x807e, 0);
+                    PostMessageA(g_mgrSettings->m_wnd->m_hWnd, 0x111, 0x807e, 0);
                     EndDialog(hwnd, 1);
                 }
                 return 1;
@@ -699,23 +700,23 @@ namespace m4 {
             if (code == 5) {
                 return;
             }
-            MgrM28* m28 = g_mgrSettings->m_30->m_28;
+            MgrM28* m28 = g_mgrSettings->m_30->m_configHost;
             if (m28->m_30) {
                 return;
             }
             SoundCue* cue = 0;
-            m28->m_10.GetSection("GAME_VOICE", &cue);
+            m28->m_cfg.GetSection("GAME_VOICE", &cue);
             if (!cue) {
                 return;
             }
             if (!g_sndEnabled) {
                 return;
             }
-            if (g_killCueClock - cue->m_14 < cue->m_18) {
+            if (g_killCueClock - cue->m_lastTime < cue->m_interval) {
                 return;
             }
-            cue->m_14 = g_killCueClock;
-            cue->m_10->Play1360d0(newpos, 0, 0, 0);
+            cue->m_lastTime = g_killCueClock;
+            cue->m_player->Play1360d0(newpos, 0, 0, 0);
             return;
         }
         if (hwnd == GetDlgItem(hwnd, 0x470)) {
@@ -723,23 +724,23 @@ namespace m4 {
             if (code == 5) {
                 return;
             }
-            MgrM28* m28 = g_mgrSettings->m_30->m_28;
+            MgrM28* m28 = g_mgrSettings->m_30->m_configHost;
             if (m28->m_30) {
                 return;
             }
             SoundCue* cue = 0;
-            m28->m_10.GetSection("GAME_CHIPFALLOUT", &cue);
+            m28->m_cfg.GetSection("GAME_CHIPFALLOUT", &cue);
             if (!cue) {
                 return;
             }
             if (!g_sndEnabled) {
                 return;
             }
-            if (g_killCueClock - cue->m_14 < cue->m_18) {
+            if (g_killCueClock - cue->m_lastTime < cue->m_interval) {
                 return;
             }
-            cue->m_14 = g_killCueClock;
-            cue->m_10->Play1360d0(g_sndCueTag, 0, 0, 0);
+            cue->m_lastTime = g_killCueClock;
+            cue->m_player->Play1360d0(g_sndCueTag, 0, 0, 0);
             return;
         }
     }

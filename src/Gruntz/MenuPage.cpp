@@ -3,7 +3,7 @@
 // Recovered from the ClassUnknown_45 trace cluster (0x183250..0x1844d0): the
 // per-page object the main-menu builder fills with named items and the menu host
 // drives with Draw + focus navigation. It owns three CStrings (name/key/label),
-// a CPtrList of child items (m_14, head @+0x18), a flag byte (+0x30), layout
+// a CPtrList of child items (m_items, head @+0x18), a flag byte (+0x30), layout
 // scalars, a sub-page/name-cache pointer (+0x60) and a current-focus item (+0x64).
 //
 // The child-item class (0x5c bytes, vtable 0x5f08c0, methods 0x184670+) lives in
@@ -36,18 +36,18 @@ struct CMenuListNode {
     CMenuItem* data;
 };
 
-// The catalog map reached through m_0->m_10->m_10 (CMapStringToPtr::Lookup, 0x1b8008).
+// The catalog map reached through m_owner->m_catalog->m_map (CMapStringToPtr::Lookup, 0x1b8008).
 struct CMenuMap {
     i32 Lookup(const char* key, void*& out);
 };
 struct CMenuCatalog {
     char pad0[0x10];
-    CMenuMap m_10; // +0x10 the string->item map base
+    CMenuMap m_map; // +0x10 the string->item map base
 };
 SIZE_UNKNOWN(CMenuCatalog);
 struct CMenuHost {
     char pad0[0x10];
-    CMenuCatalog* m_10; // +0x10 -> the catalog
+    CMenuCatalog* m_catalog; // +0x10 -> the catalog
 };
 SIZE_UNKNOWN(CMenuHost);
 
@@ -55,11 +55,11 @@ SIZE_UNKNOWN(CMenuHost);
 extern CString* MenuPage_KeyFwd(CMenuPage* p, CString* out);  // 0x184610
 extern CString* MenuPage_KeyBack(CMenuPage* p, CString* out); // 0x184630
 
-// The host (m_4) the page renders selected items through and asks to switch
+// The host (m_host) the page renders selected items through and asks to switch
 // pages (CChatBox region, __thiscall). Its +0x20 byte gates focus-wrapping.
 struct CMenuRenderHost {
     char pad0[0x20];
-    char m_20; // +0x20  wrap-enable flag (read as signed char by CanWrap)
+    char m_wrapFlag; // +0x20  wrap-enable flag (read as signed char by CanWrap)
     i32 Draw(i32 ctx, CMenuItem* item, i32 x, i32 y); // 0x182f90
     i32 SwitchToPage(const char* key);                // 0x182dd0
     void NotifySwitch();                              // 0x1830b0
@@ -84,37 +84,37 @@ CMenuPage::~CMenuPage() {
     Clear();
 }
 
-// return the page/item key (m_c) by value.
+// return the page/item key (m_key) by value.
 RVA(0x001832d0, 0x20)
 CString CMenuPage::GetKey() {
-    return m_c;
+    return m_key;
 }
 
 // configure this page from a template item, then resolve its catalog
-// slot via m_0->m_10's CMapStringToPtr::Lookup.
+// slot via m_owner->m_catalog->m_map CMapStringToPtr::Lookup.
 RVA(0x001832f0, 0xa5)
 i32 CMenuPage::Configure(CMenuItem* tmpl, i32 a1, i32 a2, i32 a3, i32 a4) {
     if (!tmpl) {
         return 0;
     }
     i32* t = (i32*)tmpl;
-    m_0 = (void*)t[0];
-    m_4 = tmpl;
-    m_c = (const char*)a1;
-    m_8 = (const char*)a3;
+    m_owner = (void*)t[0];
+    m_host = tmpl;
+    m_key = (const char*)a1;
+    m_switchKey = (const char*)a3;
     m_rowSpacing = t[7]; // tmpl+0x1c
     m_headGap = t[6];    // tmpl+0x18
-    m_30 = a4;
+    m_flags = a4;
     // 4-dword block copy tmpl+0x8 -> this+0x34 (the layout rect L,T,R,B).
     struct Geom4 {
         i32 a, b, c, d;
     };
     *(Geom4*)&m_rectLeft = *(Geom4*)((char*)tmpl + 0x8);
-    m_58 = 0;
-    m_5c = 0;
+    m_offsetX = 0;
+    m_offsetY = 0;
     void* slot = 0;
-    ((CMenuHost*)m_0)->m_10->m_10.Lookup((const char*)a2, slot);
-    m_60 = (CMenuPage*)slot;
+    ((CMenuHost*)m_owner)->m_catalog->m_map.Lookup((const char*)a2, slot);
+    m_subPage = (CMenuPage*)slot;
     return slot != 0;
 }
 
@@ -122,17 +122,17 @@ i32 CMenuPage::Configure(CMenuItem* tmpl, i32 a1, i32 a2, i32 a3, i32 a4) {
 RVA(0x001833a0, 0x1a)
 void CMenuPage::InitDefaults() {
     Clear();
-    m_0 = 0;
-    m_4 = 0;
-    m_60 = 0;
-    m_64 = 0;
-    m_30 = 0;
+    m_owner = 0;
+    m_host = 0;
+    m_subPage = 0;
+    m_focus = 0;
+    m_flags = 0;
 }
 
 // free every child item (its deleting dtor), then RemoveAll the list.
 RVA(0x001833c0, 0x2b)
 void CMenuPage::Clear() {
-    CMenuListNode* node = (CMenuListNode*)m_14.GetHeadPosition();
+    CMenuListNode* node = (CMenuListNode*)m_items.GetHeadPosition();
     while (node) {
         CMenuListNode* cur = node;
         node = node->pNext;
@@ -141,7 +141,7 @@ void CMenuPage::Clear() {
             delete item;
         }
     }
-    m_14.RemoveAll();
+    m_items.RemoveAll();
 }
 
 // append an item to the list; cache its POSITION at item+0x2c.
@@ -150,18 +150,18 @@ void* CMenuPage::Append(CMenuItem* item) {
     if (!item) {
         return 0;
     }
-    item->m_2c = m_14.AddTail(item);
+    item->m_2c = m_items.AddTail(item);
     return (void*)1;
 }
 
 // release the current focus item, then detach every child item.
 RVA(0x00183990, 0x38)
 i32 CMenuPage::ReleaseAll() {
-    if (m_64) {
-        m_64->Release();
-        m_64 = 0;
+    if (m_focus) {
+        m_focus->Release();
+        m_focus = 0;
     }
-    CMenuListNode* node = (CMenuListNode*)m_14.GetHeadPosition();
+    CMenuListNode* node = (CMenuListNode*)m_items.GetHeadPosition();
     while (node) {
         CMenuListNode* cur = node;
         node = node->pNext;
@@ -173,7 +173,7 @@ i32 CMenuPage::ReleaseAll() {
     return 1;
 }
 
-// restore focus: if a name (m_10) was saved, focus the item matching
+// restore focus: if a name (m_focusName) was saved, focus the item matching
 // it; otherwise (or if not found) focus the first focusable item.
 // @early-stop
 // regalloc + frameless-CString-temp wall (~61%): the saved-name scan (GetName +
@@ -183,15 +183,15 @@ i32 CMenuPage::ReleaseAll() {
 // retail. Logic complete; deferred (same family as FocusNext/FindByName).
 RVA(0x001839d0, 0xff)
 i32 CMenuPage::RestoreFocus() {
-    if (!m_10.IsEmpty()) {
-        CMenuListNode* node = (CMenuListNode*)m_14.GetHeadPosition();
+    if (!m_focusName.IsEmpty()) {
+        CMenuListNode* node = (CMenuListNode*)m_items.GetHeadPosition();
         while (node) {
             CMenuListNode* cur = node;
             node = node->pNext;
             CMenuItem* item = cur->data;
             if (item) {
                 CString name = item->GetName();
-                bool match = strcmp(name, m_10) == 0;
+                bool match = strcmp(name, m_focusName) == 0;
                 if (match) {
                     i32 k = item->m_24;
                     if (k == 1 || k == 2) {
@@ -203,7 +203,7 @@ i32 CMenuPage::RestoreFocus() {
             }
         }
     }
-    CMenuListNode* node = (CMenuListNode*)m_14.GetHeadPosition();
+    CMenuListNode* node = (CMenuListNode*)m_items.GetHeadPosition();
     while (node) {
         CMenuListNode* cur = node;
         node = node->pNext;
@@ -233,17 +233,17 @@ i32 CMenuPage::SetFocus(CMenuItem* item, i32 notify) {
     if (kind != 1) {
         return 0;
     }
-    if (m_64) {
-        m_64->Release();
+    if (m_focus) {
+        m_focus->Release();
     }
-    m_64 = item;
+    m_focus = item;
     return item->Configure((void*)notify) != 0;
 }
 
 // notify every child item.
 RVA(0x00183b30, 0x2c)
 i32 CMenuPage::NotifyAll(void* arg) {
-    CMenuListNode* node = (CMenuListNode*)m_14.GetHeadPosition();
+    CMenuListNode* node = (CMenuListNode*)m_items.GetHeadPosition();
     while (node) {
         CMenuListNode* cur = node;
         node = node->pNext;
@@ -264,10 +264,10 @@ i32 CMenuPage::NotifyAll(void* arg) {
 // and the per-loop node pointer. Logic complete; deferred to the final sweep.
 RVA(0x00183c50, 0xbc)
 i32 CMenuPage::FocusNext() {
-    if (!m_64) {
+    if (!m_focus) {
         return 0;
     }
-    CMenuListNode* pos = (CMenuListNode*)m_64->m_2c;
+    CMenuListNode* pos = (CMenuListNode*)m_focus->m_2c;
     if (!pos) {
         return 0;
     }
@@ -289,7 +289,7 @@ i32 CMenuPage::FocusNext() {
         if (!CanWrap()) {
             return 0;
         }
-        CMenuListNode* p2 = (CMenuListNode*)m_64->m_2c;
+        CMenuListNode* p2 = (CMenuListNode*)m_focus->m_2c;
         if (!p2) {
             return 0;
         }
@@ -313,7 +313,7 @@ i32 CMenuPage::FocusNext() {
     if (kind != 1 && kind != 2) {
         return 0;
     }
-    if (found == m_64) {
+    if (found == m_focus) {
         return 0;
     }
     return SetFocus(found, 1) != 0;
@@ -325,10 +325,10 @@ i32 CMenuPage::FocusNext() {
 // complete, deferred.
 RVA(0x00183d10, 0xbc)
 i32 CMenuPage::FocusPrev() {
-    if (!m_64) {
+    if (!m_focus) {
         return 0;
     }
-    CMenuListNode* pos = (CMenuListNode*)m_64->m_2c;
+    CMenuListNode* pos = (CMenuListNode*)m_focus->m_2c;
     if (!pos) {
         return 0;
     }
@@ -350,7 +350,7 @@ i32 CMenuPage::FocusPrev() {
         if (!CanWrap()) {
             return 0;
         }
-        CMenuListNode* p2 = (CMenuListNode*)m_64->m_2c;
+        CMenuListNode* p2 = (CMenuListNode*)m_focus->m_2c;
         if (!p2) {
             return 0;
         }
@@ -374,7 +374,7 @@ i32 CMenuPage::FocusPrev() {
     if (kind != 1 && kind != 2) {
         return 0;
     }
-    if (found == m_64) {
+    if (found == m_focus) {
         return 0;
     }
     return SetFocus(found, 1) != 0;
@@ -386,18 +386,18 @@ i32 CMenuPage::FocusPrev() {
 // @early-stop
 // scheduling tail (~99.98%, 231/232 B): the whole body is byte-identical except
 // MSVC swaps which of two interchangeable registers (edx/edi) holds the two
-// commutative `m_5c + m_38` operands at the y-init; not source-steerable (operand
+// commutative `m_offsetY + m_rectTop` operands at the y-init; not source-steerable (operand
 // order, hoisting, and raw-vs-member access all canonicalize to the same pick).
 RVA(0x00183b60, 0xe8)
 i32 CMenuPage::Layout(i32 ctx) {
-    if (m_30 & 4) {
+    if (m_flags & 4) {
         return LayoutOne(ctx);
     }
     i32 x0 = m_rectLeft;
     i32 x1 = m_rectRight;
-    i32 x = (((x1 - x0 + 1) / 2)) + m_58 + x0;
-    i32 y = m_5c + m_rectTop;
-    CMenuPage* sub = m_60;
+    i32 x = (((x1 - x0 + 1) / 2)) + m_offsetX + x0;
+    i32 y = m_offsetY + m_rectTop;
+    CMenuPage* sub = m_subPage;
     if (sub) {
         i32 idx = *(i32*)((char*)sub + 0x64);
         CMenuItem** tab = *(CMenuItem***)((char*)sub + 0x14);
@@ -408,7 +408,7 @@ i32 CMenuPage::Layout(i32 ctx) {
             y += m_headGap + head->m_1c;
         }
     }
-    CMenuListNode* node = (CMenuListNode*)m_14.GetHeadPosition();
+    CMenuListNode* node = (CMenuListNode*)m_items.GetHeadPosition();
     while (node) {
         CMenuListNode* cur = node;
         node = node->pNext;
@@ -416,8 +416,8 @@ i32 CMenuPage::Layout(i32 ctx) {
         if (item) {
             y += item->GetWidth() / 2;
             item->Place(ctx, x, y);
-            if (item->m_24 == 2 && !(m_30 & 8)) {
-                ((CMenuRenderHost*)m_4)->Draw(ctx, item, x, y);
+            if (item->m_24 == 2 && !(m_flags & 8)) {
+                ((CMenuRenderHost*)m_host)->Draw(ctx, item, x, y);
             }
             y += item->GetWidth() / 2;
             y += m_rowSpacing;
@@ -429,24 +429,24 @@ i32 CMenuPage::Layout(i32 ctx) {
 // activate (trigger) the focused item.
 RVA(0x00183dd0, 0x16)
 i32 CMenuPage::Activate() {
-    if (!m_64) {
+    if (!m_focus) {
         return 0;
     }
-    return m_64->Trigger() != 0;
+    return m_focus->Trigger() != 0;
 }
 
-// if the page key (m_8) is non-empty, ask the host to switch to it;
+// if the page key (m_switchKey) is non-empty, ask the host to switch to it;
 // on success (and if refocus requested) notify the host.
 RVA(0x00183df0, 0x3d)
 i32 CMenuPage::Switch(i32 refocus) {
-    if (m_8.GetLength() == 0) {
+    if (m_switchKey.GetLength() == 0) {
         return 0;
     }
-    if (!((CMenuRenderHost*)m_4)->SwitchToPage((const char*)m_8)) {
+    if (!((CMenuRenderHost*)m_host)->SwitchToPage((const char*)m_switchKey)) {
         return 0;
     }
     if (refocus) {
-        ((CMenuRenderHost*)m_4)->NotifySwitch();
+        ((CMenuRenderHost*)m_host)->NotifySwitch();
     }
     return 1;
 }
@@ -462,19 +462,19 @@ i32 CMenuPage::Switch(i32 refocus) {
 // See docs/patterns/char-and1-movb-vs-movsx.md. Logic complete; deferred.
 RVA(0x00183e30, 0x1f)
 i32 CMenuPage::CanWrap() {
-    i32 f = m_30;
+    i32 f = m_flags;
     if (f & 2) {
         return 0;
     }
     if (f & 1) {
         return 1;
     }
-    return ((CMenuRenderHost*)m_4)->m_20 & 1;
+    return ((CMenuRenderHost*)m_host)->m_wrapFlag & 1;
 }
 
 // single-list grid layout: center each child in the page rect, place
 // it (vtable +0x24), render the selected one (host Draw) and advance x/y, wrapping
-// to a new column every m_50 rows.
+// to a new column every m_rowsPerCol rows.
 // @early-stop
 // scheduling tail (~99.98%, 1 B): the whole body incl. the now byte-exact `sub
 // esp,0xc` prologue matches; the residual is the same edx/edi commutative
@@ -484,9 +484,9 @@ RVA(0x00183e50, 0x11c)
 i32 CMenuPage::LayoutOne(i32 ctx) {
     i32 x0 = m_rectLeft;
     i32 x1 = m_rectRight;
-    i32 x = (((x1 - x0 + 1) / 2)) + m_58 + x0;
-    i32 y = m_5c + m_rectTop;
-    CMenuPage* sub = m_60;
+    i32 x = (((x1 - x0 + 1) / 2)) + m_offsetX + x0;
+    i32 y = m_offsetY + m_rectTop;
+    CMenuPage* sub = m_subPage;
     if (sub) {
         i32 idx = *(i32*)((char*)sub + 0x64);
         CMenuItem** tab = *(CMenuItem***)((char*)sub + 0x14);
@@ -500,7 +500,7 @@ i32 CMenuPage::LayoutOne(i32 ctx) {
     i32 col = ((m_colWidth / 2)) + m_rectLeft + m_colOffset;
     i32 ytop = y;
     i32 row = 0;
-    CMenuListNode* node = (CMenuListNode*)m_14.GetHeadPosition();
+    CMenuListNode* node = (CMenuListNode*)m_items.GetHeadPosition();
     while (node) {
         CMenuListNode* cur = node;
         node = node->pNext;
@@ -508,8 +508,8 @@ i32 CMenuPage::LayoutOne(i32 ctx) {
         if (item) {
             y += item->GetWidth() / 2;
             item->Place(ctx, col, y);
-            if (item->m_24 == 2 && !(m_30 & 8)) {
-                ((CMenuRenderHost*)m_4)->Draw(ctx, item, col, y);
+            if (item->m_24 == 2 && !(m_flags & 8)) {
+                ((CMenuRenderHost*)m_host)->Draw(ctx, item, col, y);
             }
             y += item->GetWidth() / 2;
             y += m_rowSpacing;
@@ -525,15 +525,15 @@ i32 CMenuPage::LayoutOne(i32 ctx) {
     return 1;
 }
 
-// step focus forward by m_50 list nodes from the focused item, then
+// step focus forward by m_rowsPerCol list nodes from the focused item, then
 // focus the landed (focusable) item.
 RVA(0x00183f70, 0x74)
 i32 CMenuPage::FocusForwardN() {
-    CMenuItem* cur = m_64;
+    CMenuItem* cur = m_focus;
     if (!cur) {
         return 0;
     }
-    if (!(m_30 & 4)) {
+    if (!(m_flags & 4)) {
         return 0;
     }
     CMenuListNode* pos = (CMenuListNode*)cur->m_2c;
@@ -567,14 +567,14 @@ i32 CMenuPage::FocusForwardN() {
     return SetFocus(found, 1) != 0;
 }
 
-// mirror of FocusForwardN walking node->prev (m_50 nodes backward).
+// mirror of FocusForwardN walking node->prev (m_rowsPerCol nodes backward).
 RVA(0x00183ff0, 0x75)
 i32 CMenuPage::FocusBackwardN() {
-    CMenuItem* cur = m_64;
+    CMenuItem* cur = m_focus;
     if (!cur) {
         return 0;
     }
-    if (!(m_30 & 4)) {
+    if (!(m_flags & 4)) {
         return 0;
     }
     CMenuListNode* pos = (CMenuListNode*)cur->m_2c;
@@ -638,7 +638,7 @@ i32 CMenuPage::Click(i32 a0, i32 a1) {
 // hit-test: first child item whose own Hit(x,y) returns true.
 RVA(0x00184100, 0x4a)
 CMenuItem* CMenuPage::HitTest(i32 x, i32 y) {
-    CMenuListNode* node = (CMenuListNode*)m_14.GetHeadPosition();
+    CMenuListNode* node = (CMenuListNode*)m_items.GetHeadPosition();
     while (node) {
         CMenuListNode* cur = node;
         node = node->pNext;
@@ -665,7 +665,7 @@ CMenuItem* CMenuPage::FindByName(const char* s) {
         return 0;
     }
     CString key(s);
-    CMenuListNode* node = (CMenuListNode*)m_14.GetHeadPosition();
+    CMenuListNode* node = (CMenuListNode*)m_items.GetHeadPosition();
     while (node) {
         CMenuListNode* cur = node;
         node = node->pNext;
@@ -682,25 +682,25 @@ CMenuItem* CMenuPage::FindByName(const char* s) {
 }
 
 // focus the item named by the focused item's forward key (GetKey1),
-// else step focus backward by m_50 nodes.
+// else step focus backward by m_rowsPerCol nodes.
 // @early-stop
-// /GX EH-state wall (~61%, same family as SelectForward): m_64->GetKey1() ->
+// /GX EH-state wall (~61%, same family as SelectForward): m_focus->GetKey1() ->
 // FindByName -> SetFocus / FocusBackwardN is byte-aligned; the residual is the
 // __try state index (push $8 vs $0) + the per-return CString-temp teardown
 // threading. See docs/seh-eh.md + eh-dtor-vptr-stamp-vs-trylevel-order.md.
 RVA(0x00184230, 0xd2)
 i32 CMenuPage::SelectFwd2() {
-    if (!m_64) {
+    if (!m_focus) {
         return 0;
     }
-    CString key = m_64->GetField4c();
+    CString key = m_focus->GetField4c();
     CMenuItem* item = FindByName((const char*)key);
     if (item) {
         i32 k = item->m_24;
         if (k != 1 && k != 2) {
             return 0;
         }
-        if (item == m_64) {
+        if (item == m_focus) {
             return 0;
         }
         return SetFocus(item, 1);
@@ -713,17 +713,17 @@ i32 CMenuPage::SelectFwd2() {
 // same /GX EH-state wall as SelectFwd2 (~61%). Logic complete; deferred.
 RVA(0x00184310, 0xd2)
 i32 CMenuPage::SelectBack2() {
-    if (!m_64) {
+    if (!m_focus) {
         return 0;
     }
-    CString key = m_64->GetField50();
+    CString key = m_focus->GetField50();
     CMenuItem* item = FindByName((const char*)key);
     if (item) {
         i32 k = item->m_24;
         if (k != 1 && k != 2) {
             return 0;
         }
-        if (item == m_64) {
+        if (item == m_focus) {
             return 0;
         }
         return SetFocus(item, 1);
@@ -738,7 +738,7 @@ i32 CMenuPage::SelectBack2() {
 // per-return CString-temp teardown threading. Logic complete; deferred.
 RVA(0x001843f0, 0xd2)
 i32 CMenuPage::SelectForward() {
-    if (!m_64) {
+    if (!m_focus) {
         return 0;
     }
     CString key;
@@ -748,7 +748,7 @@ i32 CMenuPage::SelectForward() {
         if (k != 1 && k != 2) {
             return 0;
         }
-        if (item == m_64) {
+        if (item == m_focus) {
             return 0;
         }
         return SetFocus(item, 1);
@@ -762,7 +762,7 @@ i32 CMenuPage::SelectForward() {
 // SetFocus/FocusPrev. Logic complete; deferred.
 RVA(0x001844d0, 0xd2)
 i32 CMenuPage::SelectBackward() {
-    if (!m_64) {
+    if (!m_focus) {
         return 0;
     }
     CString key;
@@ -772,7 +772,7 @@ i32 CMenuPage::SelectBackward() {
         if (k != 1 && k != 2) {
             return 0;
         }
-        if (item == m_64) {
+        if (item == m_focus) {
             return 0;
         }
         return SetFocus(item, 1);
@@ -828,7 +828,7 @@ CMenuItem* CMenuPage::AddSubItem(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5)
 }
 
 // allocate (RezAlloc 0x74) + construct the derived item (the CMenuItem2() ctor runs
-// the base ctor -> derived vptr stamp -> seeds m_5c..m_70), Init it (vtable +0x4),
+// the base ctor -> derived vptr stamp -> seeds the item's +0x5c..+0x70), Init it (vtable +0x4),
 // then on success run its slot-14 setter (SetFrame) and append (else delete).
 // @early-stop
 // /GX placement-new wall (~34%): retail INLINES the 6-CString base ctor raising a
@@ -852,7 +852,7 @@ CMenuItem2* CMenuPage::AddItem2(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
     return Append(item) ? item : 0;
 }
 
-// like AddItem2, but the new item links its parent context (m_30/m_1c) on success.
+// like AddItem2, but the new item links its parent context (item+0x30/m_1c) on success.
 // @early-stop
 // same /GX placement-new wall as AddItem2 (the inlined 6-CString base ctor + the
 // EH trylevel chain). Logic complete; deferred to the final sweep.

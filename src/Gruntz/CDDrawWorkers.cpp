@@ -17,13 +17,13 @@ struct HelperHost {
 };
 
 // The frame-source passed as Vfunc30's a3: an int array @0x14 indexed by a4,
-// bounded by [m_64, m_68].
+// bounded by [m_lowerBound, m_upperBound].
 struct CDDrawFrameSource {
     char _pad00[0x14];
-    i32* m_14; // +0x14  frame table
+    i32* m_frameTable; // +0x14  frame table
     char _pad18[0x64 - 0x18];
-    i32 m_64; // +0x64  lower bound
-    i32 m_68; // +0x68  upper bound
+    i32 m_lowerBound; // +0x64  lower bound
+    i32 m_upperBound; // +0x68  upper bound
 };
 
 // =========================================================================
@@ -48,8 +48,8 @@ struct CDDrawWorkerA {
     char _pad60[0x64 - 0x60];
     i32 m_64; // +0x64
     char _pad68[0x74 - 0x68];
-    i32 m_st;  // +0x74
-    char m_78; // +0x78 (BYTE)
+    i32 m_st;     // +0x74
+    char m_frame; // +0x78 (BYTE)
     char _pad79[0x7c - 0x79];
 };
 
@@ -57,7 +57,7 @@ struct CDDrawWorkerA {
 RVA(0x00157110, 0x20)
 i32 CDDrawWorkerA::Vfunc2C(i32 a1, i32 a2, i32 a3) {
     HelperHost* h = (HelperHost*)this;
-    m_78 = (char)a3;
+    m_frame = (char)a3;
     m_st = 2;
     return h->Helper_164790(a1, a2);
 }
@@ -86,15 +86,15 @@ struct CDDrawWorkerB {
     char _pad60[0x64 - 0x60];
     i32 m_64; // +0x64
     char _pad68[0x74 - 0x68];
-    i32 m_st; // +0x74
-    i32 m_78; // +0x78 (int)
+    i32 m_st;    // +0x74
+    i32 m_frame; // +0x78 (int)
 };
 
 // ---------------------------------------------------------------------------
 RVA(0x001572f0, 0x20)
 i32 CDDrawWorkerB::Vfunc2C(i32 a1, i32 a2, i32 a3) {
     HelperHost* h = (HelperHost*)this;
-    m_78 = a3;
+    m_frame = a3;
     m_st = 2;
     return h->Helper_164790(a1, a2);
 }
@@ -109,18 +109,18 @@ i32 CDDrawWorkerB::Vfunc34(i32 a1, i32 a2, i32 a3, i32 a4) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x1572b0: store frame `a3->m_14[a4]` (0 if a4 out of [m_64,m_68]) into m_78,
+// 0x1572b0: store frame `a3->m_frameTable[a4]` (0 if a4 out of [m_lowerBound,m_upperBound]) into m_frame,
 // set m_st=2, then forward (a1,a2) to Helper_164790.
 RVA(0x001572b0, 0x38)
 i32 CDDrawWorkerB::Vfunc30(i32 a1, i32 a2, i32 a3, i32 a4) {
     CDDrawFrameSource* src = (CDDrawFrameSource*)a3;
     i32 frame;
-    if (a4 >= src->m_64 && a4 <= src->m_68) {
-        frame = src->m_14[a4];
+    if (a4 >= src->m_lowerBound && a4 <= src->m_upperBound) {
+        frame = src->m_frameTable[a4];
     } else {
         frame = 0;
     }
-    m_78 = frame;
+    m_frame = frame;
     m_st = 2;
     return ((HelperHost*)this)->Helper_164790(a1, a2);
 }

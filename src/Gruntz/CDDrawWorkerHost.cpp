@@ -24,22 +24,22 @@ extern "C" void RezFree(void* p);
 // +0x9c CWorkerObArray member (0x1b55e9; its destructible-member trylevel supplies
 // the EH frame), stamps the own vftable (0x5f0270), then arms the scalar fields
 // (buffers/worker = 0, m_18/m_1c = 1.0f, m_50 = -1) and zero-fills the +0xf4 pool
-// (25 dwords) with m_f4[0] = 100. Byte-exact (100%): the retail intermediate base
+// (25 dwords) with m_pool[0] = 100. Byte-exact (100%): the retail intermediate base
 // stamp 0x5efc30 is reloc-masked, so the compiler-emitted ??_7CLoadable stamp
 // matches at the byte level; the CLoadable ctor arg-order (m_04=a2/m_08=a3/
 // m_0c=a1) + body store order reproduce the schedule exactly.
 // ===========================================================================
 RVA(0x001615a0, 0x9a)
 CDDrawWorkerHost::CDDrawWorkerHost(i32 a1, i32 a2, i32 a3) : CLoadable(a2, a3, a1) {
-    // m_9c (CWorkerObArray) default-constructed here (0x1b55e9).
-    m_20 = 0;
-    m_24 = 0;
-    m_b0 = 0;
+    // m_obArray (CWorkerObArray) default-constructed here (0x1b55e9).
+    m_buffer0 = 0;
+    m_buffer1 = 0;
+    m_spatialWorker = 0;
     m_18 = 1.0f;
     m_1c = 1.0f;
     m_50 = -1;
-    memset(m_f4, 0, sizeof(m_f4));
-    m_f4[0] = 100;
+    memset(m_pool, 0, sizeof(m_pool));
+    m_pool[0] = 100;
 }
 
 // ===========================================================================
@@ -56,21 +56,21 @@ CDDrawWorkerHost::CDDrawWorkerHost(i32 a1, i32 a2, i32 a3) : CLoadable(a2, a3, a
 // as the entry-list dtor. Logic complete.
 RVA(0x00163af0, 0xcd)
 CDDrawWorkerHost::~CDDrawWorkerHost() {
-    if (m_b0 != 0) {
-        m_b0->PruneCount();
+    if (m_spatialWorker != 0) {
+        m_spatialWorker->PruneCount();
     }
-    if (m_b0 != 0) {
-        delete m_b0;
+    if (m_spatialWorker != 0) {
+        delete m_spatialWorker;
     }
-    if (m_20 != 0) {
-        RezFree(m_20);
-        m_20 = 0;
+    if (m_buffer0 != 0) {
+        RezFree(m_buffer0);
+        m_buffer0 = 0;
     }
-    if (m_24 != 0) {
-        RezFree(m_24);
-        m_24 = 0;
+    if (m_buffer1 != 0) {
+        RezFree(m_buffer1);
+        m_buffer1 = 0;
     }
-    // m_9c.~CWorkerObArray() (0x1b561c) + ~CLoadable() (field resets + grand-base
+    // m_obArray.~CWorkerObArray() (0x1b561c) + ~CLoadable() (field resets + grand-base
     // vtable restore) fold here under the /GX frame.
 }
 

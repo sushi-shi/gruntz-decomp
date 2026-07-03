@@ -1,7 +1,7 @@
 // StateImages.cpp - a CState/CAttract-family vfunc-8 image loader (RVA 0xa09a0).
 //
 // Resolves the "IMAGEZ" namespace in the state's symbol table and asks the active
-// DDraw worker registry (mgr->m_10) to load it (vtable slot +0x4c); on success it
+// DDraw worker registry (mgr->m_workerReg) to load it (vtable slot +0x4c); on success it
 // runs the per-state image hook (this vtable slot +0x18) and forces the cursor
 // hidden. Field names are placeholders; only offsets + code bytes are load-bearing.
 #include <rva.h>
@@ -16,7 +16,7 @@ i32 Unmatched_0face0(); // ?Unmatched_0face0@@YA...XZ
 DATA(0x006c44c4)
 extern i32(WINAPI* g_ShowCursor)(i32);
 
-// The active DDraw worker registry (mgr->m_10): only slot +0x4c (load namespace)
+// The active DDraw worker registry (mgr->m_workerReg): only slot +0x4c (load namespace)
 // is reached; the lower slots pad the vtable to the right index.
 class WorkerReg {
 public:
@@ -49,9 +49,9 @@ public:
 
 struct StateMgr {
     char m_pad00[0x4];
-    CDDrawWorkerMgr* m_4; // +0x04
+    CDDrawWorkerMgr* m_workerMgr; // +0x04
     char m_pad08[0x10 - 0x8];
-    WorkerReg* m_10; // +0x10 active worker registry
+    WorkerReg* m_workerReg; // +0x10 active worker registry
 };
 
 class CImageState {
@@ -64,9 +64,9 @@ public:
     virtual void V14();
     virtual i32 RunImageHook(); // slot 6 (+0x18)
     char m_pad04[0x0c - 0x04];
-    StateMgr* m_0c; // +0x0c
+    StateMgr* m_stateMgr; // +0x0c
     char m_pad10[0x2c - 0x10];
-    CSymTab* m_2c; // +0x2c state symbol table
+    CSymTab* m_symTab; // +0x2c state symbol table
     i32 LoadStateImages();
 };
 
@@ -75,11 +75,11 @@ i32 CImageState::LoadStateImages() {
     if (Unmatched_0face0() == 0) {
         return 0;
     }
-    void* tree = m_2c->ResolvePath("IMAGEZ");
+    void* tree = m_symTab->ResolvePath("IMAGEZ");
     if (tree == 0) {
         return 0;
     }
-    if (m_0c->m_10->LoadNamespace(tree, "MENU", "_") == -1) {
+    if (m_stateMgr->m_workerReg->LoadNamespace(tree, "MENU", "_") == -1) {
         return 0;
     }
     if (RunImageHook() == 0) {
@@ -95,7 +95,7 @@ i32 CImageState::LoadStateImages() {
 
 // CBootyState::OnActivate2 (slot-8 vfunc, RVA 0x1c8a0): hide the cursor, load the
 // BOOTY + GRUNTZ image namespaces, then either pop the secret-bonus toast (when
-// m_1bc==200) or fade the "bg" title and show the level-complete toast.
+// m_activation==200) or fade the "bg" title and show the level-complete toast.
 class CBootyState {
 public:
     i32 FadeInTitle(char* name, i32 a, i32 b, i32 c, i32 d, i32 e); // 0x0fa1f0
@@ -105,12 +105,12 @@ public:
     i32 OnActivate2();
 
     char m_pad00[0x0c];
-    StateMgr* m_0c; // +0x0c
+    StateMgr* m_stateMgr; // +0x0c
     char m_pad10[0x2c - 0x10];
-    CSymTab* m_2c; // +0x2c BOOTY symbol table
-    CSymTab* m_30; // +0x30 GRUNTZ symbol table
+    CSymTab* m_bootySymTab;  // +0x2c BOOTY symbol table
+    CSymTab* m_gruntzSymTab; // +0x30 GRUNTZ symbol table
     char m_pad34[0x1bc - 0x34];
-    i32 m_1bc; // +0x1bc activation discriminator
+    i32 m_activation; // +0x1bc activation discriminator
 };
 
 RVA(0x0001c8a0, 0xec)
@@ -123,21 +123,21 @@ i32 CBootyState::OnActivate2() {
     while (r >= 0) {
         r = sc(0);
     }
-    void* booty = m_2c->ResolvePath("IMAGEZ");
+    void* booty = m_bootySymTab->ResolvePath("IMAGEZ");
     if (booty == 0) {
         return 0;
     }
-    if (m_0c->m_10->LoadNamespace(booty, "BOOTY", "_") == -1) {
+    if (m_stateMgr->m_workerReg->LoadNamespace(booty, "BOOTY", "_") == -1) {
         return 0;
     }
-    void* gruntz = m_30->ResolvePath("IMAGEZ");
+    void* gruntz = m_gruntzSymTab->ResolvePath("IMAGEZ");
     if (gruntz == 0) {
         return 0;
     }
-    if (m_0c->m_10->LoadNamespace(gruntz, "GRUNTZ", "_") == -1) {
+    if (m_stateMgr->m_workerReg->LoadNamespace(gruntz, "GRUNTZ", "_") == -1) {
         return 0;
     }
-    if (m_1bc != 200) {
+    if (m_activation != 200) {
         if (FadeInTitle("bg", 0, 0, 0, 0, 1) == 0) {
             return 0;
         }
@@ -145,7 +145,7 @@ i32 CBootyState::OnActivate2() {
     } else {
         ShowSecretBonusMessage();
     }
-    m_0c->m_4->Method_158ee0();
+    m_stateMgr->m_workerMgr->Method_158ee0();
     RetireScene(0x50, 0x3e8, 0, 1);
     return 1;
 }
