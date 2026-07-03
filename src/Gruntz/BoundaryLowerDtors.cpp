@@ -23,7 +23,7 @@ SIZE_UNKNOWN(WorkerBase39f20);
 inline WorkerBase39f20::~WorkerBase39f20() {}
 struct CWorker39f20 : WorkerBase39f20 {
     char* m_4; // +0x04  heap buffer
-    ~CWorker39f20();
+    ~CWorker39f20() OVERRIDE;
 };
 SIZE_UNKNOWN(CWorker39f20);
 RVA(0x00039f20, 0x51)
@@ -45,7 +45,7 @@ SIZE_UNKNOWN(WorkerBase8c400);
 inline WorkerBase8c400::~WorkerBase8c400() {}
 struct CHolder8c400 : WorkerBase8c400 {
     void Teardown1c6a5c(); // 0x1c6a5c
-    ~CHolder8c400();
+    ~CHolder8c400() OVERRIDE;
 };
 SIZE_UNKNOWN(CHolder8c400);
 RVA(0x0008c400, 0x46)
@@ -92,7 +92,7 @@ struct CStateBase8d000 {
 SIZE_UNKNOWN(CStateBase8d000);
 struct CMenuState8d000 : CStateBase8d000 {
     void Teardown2919(); // 0x2919
-    ~CMenuState8d000();
+    ~CMenuState8d000() OVERRIDE;
 };
 SIZE_UNKNOWN(CMenuState8d000);
 // @early-stop
@@ -124,7 +124,7 @@ struct CButeBase2_21 {
 };
 SIZE_UNKNOWN(CButeBase2_21);
 struct CButeTree21a : CButeBase1_21, CButeBase2_21 {
-    ~CButeTree21a();
+    ~CButeTree21a() OVERRIDE;
 };
 SIZE_UNKNOWN(CButeTree21a);
 RVA(0x00021310, 0x70)
@@ -132,7 +132,7 @@ CButeTree21a::~CButeTree21a() {
     Teardown16e070(0);
 }
 struct CButeTree21b : CButeBase1_21, CButeBase2_21 {
-    ~CButeTree21b();
+    ~CButeTree21b() OVERRIDE;
 };
 SIZE_UNKNOWN(CButeTree21b);
 RVA(0x00021570, 0x70)

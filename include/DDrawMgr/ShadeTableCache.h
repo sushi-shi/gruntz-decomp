@@ -19,7 +19,7 @@
 #ifndef GRUNTZ_DDRAWMGR_SHADETABLECACHE_H
 #define GRUNTZ_DDRAWMGR_SHADETABLECACHE_H
 
-#include <Ints.h>
+#include <rva.h>           // Ints + the OVERRIDE/SIZE/VTBL label macros
 #include <Wap32/CObject.h> // Wap::CObject - the MFC-free WAP grand-base (no windows.h dep)
 
 // A 0x10-byte memory-buffer wrapper (the array element). The ctor zeros
@@ -69,12 +69,13 @@ struct CShadeTableArray : Wap::CObject {
     i32 m_nGrowBy;         // +0x10 (cache +0x14)
 
     CShadeTableArray();
-    virtual ~CShadeTableArray(); // 0x150020  overrides Wap::CObject dtor slot 1
-    virtual void FUN_004028ec(); // 0x14fe90  overrides CObject Serialize slot 2 (declared-only)
+    virtual ~CShadeTableArray() OVERRIDE; // 0x150020  overrides Wap::CObject dtor slot 1
+    virtual void FUN_004028ec()
+        OVERRIDE; // 0x14fe90  overrides CObject Serialize slot 2 (declared-only)
     void SetSizeGrow(i32 n, i32 grow); // 0x150040
 };
-// SIZE/VTBL for CShadeTableArray are in ShadeTableCache.cpp (this header is parsed
-// before rva.h, and pulls windows.h's SIZE type).
+// SIZE/VTBL for CShadeTableArray are kept in ShadeTableCache.cpp (out of this
+// windows.h-adjacent header, whose includers pull the Win32 SIZE struct type).
 
 // The live 256-entry RGB palette base (0x6bf224), each entry a 4-byte
 // {r,g,b,pad} record. The sort/remap builders publish the working palette here

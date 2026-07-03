@@ -126,7 +126,7 @@ class CWwdGridIter : public Wap::CObject {
 public:
     // slots 0/2/3/4 (0x1bef01 / 0x0028ec / 0x00106e / 0x004034) inherited from
     // Wap::CObject; slot 1 is the class's own scalar-deleting dtor.
-    virtual ~CWwdGridIter(); // slot 1 (scalar-deleting dtor 0x163a20; engine teardown)
+    virtual ~CWwdGridIter() OVERRIDE; // slot 1 (scalar-deleting dtor 0x163a20; engine teardown)
 
     CWwdGridIter();
     WwdGridNode* Start(CWwdGrid* grid, i32 remove); // 0x191ad0 init cursor + first

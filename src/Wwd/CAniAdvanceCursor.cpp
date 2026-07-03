@@ -21,9 +21,9 @@
 class CAniAdvanceCursor : public CLoadable {
 public:
     CAniAdvanceCursor(i32 owner, i32 field04, i32 field08);
-    virtual ~CAniAdvanceCursor(); // slot 1  (scalar-deleting dtor 0x15b6b0)
-    i32 IsLoaded() OVERRIDE;      // slot 5  0x15b6a0
-    i32 Unload() OVERRIDE;        // slot 7  0x15c2c0 (the Reset/reload hook)
+    virtual ~CAniAdvanceCursor() OVERRIDE; // slot 1  (scalar-deleting dtor 0x15b6b0)
+    i32 IsLoaded() OVERRIDE;               // slot 5  0x15b6a0
+    i32 Unload() OVERRIDE;                 // slot 7  0x15c2c0 (the Reset/reload hook)
     // slot 6 IsReady (0x1c08) + slot 8 GetClassId (0x154a00) inherited unchanged.
 
     i32 m_10; // +0x10

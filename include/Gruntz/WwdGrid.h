@@ -74,7 +74,7 @@ class CWwdGrid : public Wap::CObject {
 public:
     // ctor: build the grid over rect (x0,y0,x1,y1) with cell sizes cellW/cellH.
     CWwdGrid(i32 x0, i32 y0, i32 x1, i32 y1, i32 cellW, i32 cellH);
-    virtual ~CWwdGrid();
+    virtual ~CWwdGrid() OVERRIDE;
     virtual void OnFound(WwdRegion* r) = 0; // slot 5 (vtbl+0x14, __purecall)
 
     void FreeBuckets();

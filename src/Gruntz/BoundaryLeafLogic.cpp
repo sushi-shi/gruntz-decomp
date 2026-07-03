@@ -35,7 +35,7 @@ struct CSerialSub34 {
 
 class L_8860 : public CUserLogic {
 public:
-    ~L_8860();
+    ~L_8860() OVERRIDE;
 };
 SIZE_UNKNOWN(L_8860);
 RVA(0x00008860, 0x44)
@@ -43,7 +43,7 @@ L_8860::~L_8860() {}
 
 class L_f510 : public CUserLogic {
 public:
-    ~L_f510();
+    ~L_f510() OVERRIDE;
 };
 SIZE_UNKNOWN(L_f510);
 RVA(0x0000f510, 0x44)
@@ -51,7 +51,7 @@ L_f510::~L_f510() {}
 
 class L_f640 : public CUserLogic {
 public:
-    ~L_f640();
+    ~L_f640() OVERRIDE;
 };
 SIZE_UNKNOWN(L_f640);
 RVA(0x0000f640, 0x44)
@@ -59,7 +59,7 @@ L_f640::~L_f640() {}
 
 class L_fb00 : public CUserLogic {
 public:
-    ~L_fb00();
+    ~L_fb00() OVERRIDE;
 };
 SIZE_UNKNOWN(L_fb00);
 RVA(0x0000fb00, 0x44)
@@ -81,7 +81,7 @@ i32 S_fdf0::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
 
 class L_fe90 : public CUserLogic {
 public:
-    ~L_fe90();
+    ~L_fe90() OVERRIDE;
 };
 SIZE_UNKNOWN(L_fe90);
 RVA(0x0000fe90, 0x44)
@@ -89,7 +89,7 @@ L_fe90::~L_fe90() {}
 
 class L_ffc0 : public CUserLogic {
 public:
-    ~L_ffc0();
+    ~L_ffc0() OVERRIDE;
 };
 SIZE_UNKNOWN(L_ffc0);
 RVA(0x0000ffc0, 0x44)
@@ -97,7 +97,7 @@ L_ffc0::~L_ffc0() {}
 
 class L_101b0 : public CUserLogic {
 public:
-    ~L_101b0();
+    ~L_101b0() OVERRIDE;
 };
 SIZE_UNKNOWN(L_101b0);
 RVA(0x000101b0, 0x44)
@@ -131,7 +131,7 @@ i32 S_105d0::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
 
 class L_10fc0 : public CUserLogic {
 public:
-    ~L_10fc0();
+    ~L_10fc0() OVERRIDE;
 };
 SIZE_UNKNOWN(L_10fc0);
 RVA(0x00010fc0, 0x44)
@@ -139,7 +139,7 @@ L_10fc0::~L_10fc0() {}
 
 class L_11b80 : public CUserLogic {
 public:
-    ~L_11b80();
+    ~L_11b80() OVERRIDE;
 };
 SIZE_UNKNOWN(L_11b80);
 RVA(0x00011b80, 0x44)
@@ -147,7 +147,7 @@ L_11b80::~L_11b80() {}
 
 class L_11c40 : public CUserLogic {
 public:
-    ~L_11c40();
+    ~L_11c40() OVERRIDE;
 };
 SIZE_UNKNOWN(L_11c40);
 RVA(0x00011c40, 0x44)
@@ -155,7 +155,7 @@ L_11c40::~L_11c40() {}
 
 class L_13040 : public CUserLogic {
 public:
-    ~L_13040();
+    ~L_13040() OVERRIDE;
 };
 SIZE_UNKNOWN(L_13040);
 RVA(0x00013040, 0x44)
@@ -163,7 +163,7 @@ L_13040::~L_13040() {}
 
 class L_13400 : public CUserLogic {
 public:
-    ~L_13400();
+    ~L_13400() OVERRIDE;
 };
 SIZE_UNKNOWN(L_13400);
 RVA(0x00013400, 0x44)

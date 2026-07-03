@@ -321,7 +321,7 @@ SIZE(CInputDevBase, 0x2b4); // middle-base subobject (adds no fields)
 class CInputDevBase : public CInputDevRoot {
 public:
     CInputDevBase();
-    virtual ~CInputDevBase() {
+    virtual ~CInputDevBase() OVERRIDE {
         CInputDevRoot::ReleaseDevices();
     } // slot 0 (inline: base cleanup)
     // The two poll slots. Poll (slot 4) is the per-frame device poll: the base body
@@ -342,7 +342,7 @@ SIZE(CInputDevice, 0x338);
 class CInputDevice : public CInputDevBase {
 public:
     CInputDevice();
-    virtual ~CInputDevice(); // 0x133300 (the /GX multilevel deleting-dtor)
+    virtual ~CInputDevice() OVERRIDE; // 0x133300 (the /GX multilevel deleting-dtor)
 
     i32 CreateDev(IDirectInputZ* di, const void* cfg, void* owner, u32 flags); // 0x133b50
     void Teardown();                                                           // 0x133bf0
@@ -365,7 +365,7 @@ SIZE(CDeviceConfigB, 0x2c8);
 class CDeviceConfigB : public CInputDevBase {
 public:
     CDeviceConfigB();
-    virtual ~CDeviceConfigB(); // 0x1334f0 (the /GX multilevel deleting-dtor)
+    virtual ~CDeviceConfigB() OVERRIDE; // 0x1334f0 (the /GX multilevel deleting-dtor)
 
     i32 CreateDev(IDirectInputZ* di, const void* cfg, void* owner, u32 flags);         // 0x1342c0
     i32 IsReady();                                                                     // 0x1343a0
@@ -384,8 +384,8 @@ public:
 SIZE_UNKNOWN(CDeviceConfigC);
 class CDeviceConfigC : public CInputDevBase {
 public:
-    virtual ~CDeviceConfigC(); // 0x133460 (the /GX multilevel deleting-dtor)
-    void Free6d0();            // 0x1346d0 (joystick leaf teardown; body in BoundaryUpper.cpp)
+    virtual ~CDeviceConfigC() OVERRIDE; // 0x133460 (the /GX multilevel deleting-dtor)
+    void Free6d0(); // 0x1346d0 (joystick leaf teardown; body in BoundaryUpper.cpp)
 };
 
 #endif // DINMGR2_DIRECTINPUTMGR2_H
