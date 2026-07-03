@@ -1,61 +1,61 @@
 // MgrAutoScroll.cpp - the CGruntzMgr camera auto-scroll / clamp update (0x0ebd70).
 // __cdecl helper called from the render path (CPlay::Render etc., via the ILT
 // thunk at 0x2356) with arg0 = g_mgrSettings (the CGruntzMgr singleton). Walks the
-// active view (pm->m_30->m_24->m_5c), runs a timeGetTime-driven random auto-pan
+// active view (pm->m_scrollChain->m_sub->m_view), runs a timeGetTime-driven random auto-pan
 // when the countdown timer (g_64cfc4) expires, clamps the scroll to the view
-// bounds (centered on g_mgrSettings->m_8c/m_90), publishes the scaled scroll to the
-// view (m_10/m_14) + a second "back plane" view (g_64c27c) eased by 0.05*delta plus
+// bounds (centered on g_mgrSettings->m_viewWidth/m_viewHeight), publishes the scaled scroll to the
+// view (m_scrollX/m_scrollY) + a second "back plane" view (g_64c27c) eased by 0.05*delta plus
 // the ButeMgr [BackPlane] ScrollDist offsets on a 64-bit ScrollTime cadence, then
-// writes the four scroll-bound fields (pm->m_13c..0x148). Field names are
+// writes the four scroll-bound fields (pm->m_scrollBoundL..0x148). Field names are
 // placeholders; offsets + code bytes are the load-bearing fact.
 #include <Bute/ButeMgr.h> // canonical CButeMgr (one shape); pulls <Mfc.h> afx-first
 #include <Ints.h>
 #include <rva.h>
 #include <Globals.h>
 
-// The active scroll view (pm->m_30->m_24->m_5c, and the back-plane g_64c27c).
+// The active scroll view (pm->m_scrollChain->m_sub->m_view, and the back-plane g_64c27c).
 struct ScrollView {
     char p00[0x08];
-    i32 m_08; // +0x08  flags (&1 => skip the m_18/m_1c scale)
+    i32 m_flags; // +0x08  flags (&1 => skip the m_scaleX/m_scaleY scale)
     char p0c[0x10 - 0x0c];
-    float m_10; // +0x10  scaled scroll X
-    float m_14; // +0x14  scaled scroll Y
-    float m_18; // +0x18  X scale
-    float m_1c; // +0x1c  Y scale
+    float m_scrollX; // +0x10  scaled scroll X
+    float m_scrollY; // +0x14  scaled scroll Y
+    float m_scaleX;  // +0x18  X scale
+    float m_scaleY;  // +0x1c  Y scale
     char p20[0x30 - 0x20];
-    i32 m_30; // +0x30  X clamp extent
-    i32 m_34; // +0x34  Y clamp extent
+    i32 m_clampX; // +0x30  X clamp extent
+    i32 m_clampY; // +0x34  Y clamp extent
     char p38[0x40 - 0x38];
-    i32 m_40; // +0x40  bound source 0
-    i32 m_44; // +0x44  bound source 1
-    i32 m_48; // +0x48  bound source 2
-    i32 m_4c; // +0x4c  bound source 3
+    i32 m_boundL; // +0x40  bound source 0
+    i32 m_boundT; // +0x44  bound source 1
+    i32 m_boundR; // +0x48  bound source 2
+    i32 m_boundB; // +0x4c  bound source 3
     char p50[0x84 - 0x50];
-    i32 m_84; // +0x84  current scroll X
-    i32 m_88; // +0x88  current scroll Y
+    i32 m_curScrollX; // +0x84  current scroll X
+    i32 m_curScrollY; // +0x88  current scroll Y
 };
 
 struct MgrSub2 {
     char p00[0x5c];
-    ScrollView* m_5c; // +0x5c
+    ScrollView* m_view; // +0x5c
 };
 
 struct MgrSub {
     char p00[0x24];
-    MgrSub2* m_24; // +0x24
+    MgrSub2* m_sub; // +0x24
 };
 
 struct CGruntzMgr {
     char p00[0x30];
-    MgrSub* m_30; // +0x30
+    MgrSub* m_scrollChain; // +0x30
     char p34[0x8c - 0x34];
-    i32 m_8c; // +0x8c  view half-width source
-    i32 m_90; // +0x90  view half-height source
+    i32 m_viewWidth;  // +0x8c  view half-width source
+    i32 m_viewHeight; // +0x90  view half-height source
     char p94[0x13c - 0x94];
-    i32 m_13c; // +0x13c  scroll bound L
-    i32 m_140; // +0x140 scroll bound T
-    i32 m_144; // +0x144 scroll bound R
-    i32 m_148; // +0x148 scroll bound B
+    i32 m_scrollBoundL; // +0x13c  scroll bound L
+    i32 m_scrollBoundT; // +0x140 scroll bound T
+    i32 m_scrollBoundR; // +0x144 scroll bound R
+    i32 m_scrollBoundB; // +0x148 scroll bound B
 };
 
 // The retail [BackPlane] config reader (CButeMgr::GetDword, 0x172240, __thiscall)
@@ -94,15 +94,15 @@ static i32 RandRange(i32 lo, i32 hi) {
 // @early-stop
 // ~60% regalloc wall: logic + control flow are byte-isomorphic to retail (the
 // int64 ScrollTime compare, the x87 view/back-plane stores, the [BackPlane]
-// ScrollDist plumbing and the m_13c..0x148 bound writes all match instruction for
+// ScrollDist plumbing and the m_scrollBoundL..0x148 bound writes all match instruction for
 // instruction), but retail pins `pm` in ebx (loaded early between the pushes) and
 // keeps scrollY in its stack home while this cl pins `pm` in ebp / scrollY in ebx;
 // the register/stack-slot assignment is not source-steerable here.
 RVA(0x000ebd70, 0x366)
 void UpdateMgrScroll(CGruntzMgr* pm, i32* pMode, i32 snapFlag, i32 unused) {
-    ScrollView* v = pm->m_30->m_24->m_5c;
-    i32 scrollX = v->m_84;
-    i32 scrollY = v->m_88;
+    ScrollView* v = pm->m_scrollChain->m_sub->m_view;
+    i32 scrollX = v->m_curScrollX;
+    i32 scrollY = v->m_curScrollY;
 
     if (g_scrollClock > g_frameTime) {
         if (g_frameDelta < g_scrollTimer) {
@@ -117,8 +117,8 @@ void UpdateMgrScroll(CGruntzMgr* pm, i32* pMode, i32 snapFlag, i32 unused) {
         }
     }
 
-    i32 cx = g_mgrSettings->m_8c / 2;
-    i32 cy = g_mgrSettings->m_90 / 2;
+    i32 cx = g_mgrSettings->m_viewWidth / 2;
+    i32 cy = g_mgrSettings->m_viewHeight / 2;
     if (*pMode != 2) {
         cx -= 0xa0;
     }
@@ -130,15 +130,15 @@ void UpdateMgrScroll(CGruntzMgr* pm, i32* pMode, i32 snapFlag, i32 unused) {
     if (scrollX < cx - 1) {
         scrollX = cx - 1;
     }
-    ScrollView* v2 = pm->m_30->m_24->m_5c;
-    if (scrollX > v2->m_30 - cx) {
-        scrollX = v2->m_30 - cx;
+    ScrollView* v2 = pm->m_scrollChain->m_sub->m_view;
+    if (scrollX > v2->m_clampX - cx) {
+        scrollX = v2->m_clampX - cx;
     }
     if (scrollY < cy - 1) {
         scrollY = cy - 1;
     }
-    if (scrollY > v2->m_34 - cy) {
-        scrollY = v2->m_34 - cy;
+    if (scrollY > v2->m_clampY - cy) {
+        scrollY = v2->m_clampY - cy;
     }
 
     i32 deltaY = scrollY - g_lastScrollY;
@@ -146,23 +146,23 @@ void UpdateMgrScroll(CGruntzMgr* pm, i32* pMode, i32 snapFlag, i32 unused) {
     g_lastScrollX = scrollX;
     g_lastScrollY = scrollY;
 
-    ScrollView* v3 = pm->m_30->m_24->m_5c;
+    ScrollView* v3 = pm->m_scrollChain->m_sub->m_view;
     {
         float sx = (float)scrollX;
         float sy = (float)scrollY;
-        if (!(v3->m_08 & 1)) {
-            sx = sx * v3->m_18;
-            sy = sy * v3->m_1c;
+        if (!(v3->m_flags & 1)) {
+            sx = sx * v3->m_scaleX;
+            sy = sy * v3->m_scaleY;
         }
-        v3->m_10 = sx;
-        v3->m_14 = sy;
+        v3->m_scrollX = sx;
+        v3->m_scrollY = sy;
     }
     RecomputePlaneCoords();
 
     ScrollView* gm = g_backView;
     if (gm != 0) {
-        i32 nx = gm->m_84;
-        i32 ny = gm->m_88;
+        i32 nx = gm->m_curScrollX;
+        i32 ny = gm->m_curScrollY;
         if (deltaX != 0 || deltaY != 0) {
             nx = (i32)((float)nx - (float)deltaX * -0.05f);
             ny = (i32)((float)ny - (float)deltaY * -0.05f);
@@ -173,23 +173,23 @@ void UpdateMgrScroll(CGruntzMgr* pm, i32* pMode, i32 snapFlag, i32 unused) {
             ScrollView* g2 = g_backView;
             float fx = (float)nx;
             float fy = (float)ny;
-            if (!(g2->m_08 & 1)) {
-                fx = fx * g2->m_18;
-                fy = fy * g2->m_1c;
+            if (!(g2->m_flags & 1)) {
+                fx = fx * g2->m_scaleX;
+                fy = fy * g2->m_scaleY;
             }
-            g2->m_10 = fx;
-            g2->m_14 = fy;
+            g2->m_scrollX = fx;
+            g2->m_scrollY = fy;
             RecomputePlaneCoords();
             g_scrollLimit = g_buteMgr.GetDword((char*)"BackPlane", (char*)"ScrollTime");
             g_scrollAccum = g_frameTime;
         }
     }
 
-    MgrSub* o = pm->m_30;
-    pm->m_13c = o->m_24->m_5c->m_40 - 0x60;
-    pm->m_140 = o->m_24->m_5c->m_44 - 0x60;
-    pm->m_144 = o->m_24->m_5c->m_48 + 0x60;
-    pm->m_148 = o->m_24->m_5c->m_4c + 0x60;
+    MgrSub* o = pm->m_scrollChain;
+    pm->m_scrollBoundL = o->m_sub->m_view->m_boundL - 0x60;
+    pm->m_scrollBoundT = o->m_sub->m_view->m_boundT - 0x60;
+    pm->m_scrollBoundR = o->m_sub->m_view->m_boundR + 0x60;
+    pm->m_scrollBoundB = o->m_sub->m_view->m_boundB + 0x60;
 }
 
 SIZE_UNKNOWN(MgrSub);
