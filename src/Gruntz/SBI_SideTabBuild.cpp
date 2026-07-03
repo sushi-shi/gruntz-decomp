@@ -1,6 +1,7 @@
 #include <rva.h>
 #include <Mfc.h>
 #include <Ints.h>
+#include <Gruntz/SbiSideTabBuildViews.h> // CSBI_SideTab (ctor view) + CStatzTabBuilder + settings
 // SBI_SideTabBuild.cpp - the STATZTAB "Build" factory (0x105070), re-homed
 // from src/Stub/CSBI_SideTab.cpp (C:\Proj\Gruntz).
 //
@@ -19,89 +20,13 @@
 // The throwing global operator new (_RezAlloc @0x1b9b46) is declared by <Mfc.h>.
 void* RezAlloc(i32 size); // 0x1b9b46
 
-// The built status-bar item: a REAL polymorphic CSBI_SideTab child (0x5c bytes).
-// `new CSBI_SideTab` (operator new == RezAlloc) makes MSVC auto-stamp the retail
-// ??_7CSBI_SideTab@@6B@ vtable (0x5eae3c, catalogued in config/vtable_names.csv) - no
-// manual stamp; the virtual dtor at slot 0 is the scalar-deleting dtor the fail-path
-// `delete` dispatches. BuildStatzTabStatusBar (0xe9600, reached via ILT 0x33c3)
-// populates it. The inline ctor writes the same field init retail's inline ctor did.
-class CSBI_SideTab {
-public:
-    CSBI_SideTab() {
-        m_4 = 0;
-        m_8 = 0;
-        m_24 = 0;
-        m_28 = 0;
-        m_30 = 0;
-        m_34 = 0;
-        m_38 = -1;
-        m_44 = -1;
-    }
-    virtual ~CSBI_SideTab(); // slot 0 (scalar-deleting dtor)
-
-    // 0xe9600 (CSBI_SideTab::BuildStatzTabStatusBar), __thiscall ret 13 args.
-    i32 BuildStatzTabStatusBar(
-        CSBI_SideTab* parent,
-        void* statusbar,
-        i32 p3,
-        i32 p4,
-        i32 p5,
-        i32 p6,
-        i32 p7,
-        i32 p8,
-        const char* key,
-        i32 p10,
-        i32 p11,
-        i32 p12,
-        i32 onLeft
-    );
-
-    i32 m_4, m_8; // +0x04, +0x08
-    char m_pad0c[0x24 - 0x0c];
-    i32 m_24, m_28; // +0x24, +0x28
-    char m_pad2c[0x30 - 0x2c];
-    i32 m_30, m_34; // +0x30, +0x34
-    i32 m_38;       // +0x38
-    char m_pad3c[0x44 - 0x3c];
-    i32 m_44; // +0x44
-    char m_pad48[0x5c - 0x48];
-};
-SIZE(CSBI_SideTab, 0x5c);
+// CSBI_SideTab (ctor/builder view), CSbBuildSettings + CStatzTabBuilder moved to
+// <Gruntz/SbiSideTabBuildViews.h>.
 
 // The current area index global the builder folds in as arg10 (0x644c54).
 extern "C" i32 g_644c54; // 0x644c54
 
-// The settings/registry singleton (0x64556c); its +0x30 is the level's status-bar
-// owner passed as the StatzTab arg2.
-struct CSbBuildSettings {
-    char m_pad00[0x30];
-    void* m_world; // +0x30
-};
-SIZE_UNKNOWN(CSbBuildSettings);
 extern "C" CSbBuildSettings* g_mgrSettings; // 0x64556c
-
-// ---------------------------------------------------------------------------
-// CStatzTabBuilder - the STATZTAB CONTAINER Build runs on (0x105070 was MISLABELED
-// ~CSBI_SideTab by the rtti-vptr heuristic; the CSBI_SideTab is the CHILD it builds,
-// not this container - see the file header). A gate at +0x00, two geometry-base
-// pointers at +0x10/+0x18, the +0x2c child CObList, and the parallel +0x114 key /
-// +0x150 child-slot arrays (15 entries, 0x3c apart).
-class CStatzTabBuilder {
-public:
-    i32 Build(); // 0x105070
-
-    i32 m_0; // +0x00  gate (0 => geometry from m_10, else from m_18)
-    char m_pad04[0x10 - 0x04];
-    i32 m_10; // +0x10
-    char m_pad14[0x18 - 0x14];
-    i32 m_18; // +0x18
-    char m_pad1c[0x2c - 0x1c];
-    CObList m_2c; // +0x2c  child list (sizeof CObList == 0x1c -> ends +0x48)
-    char m_pad48[0x114 - 0x48];
-    i32 m_114[15];           // +0x114  per-slot key inputs
-    CSBI_SideTab* m_150[15]; // +0x150  built child slots
-};
-SIZE_UNKNOWN(CStatzTabBuilder);
 
 // @early-stop
 // this/newobj callee-saved register-pinning wall (docs/patterns/

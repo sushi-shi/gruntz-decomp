@@ -3,6 +3,7 @@
 #include <Ints.h>
 #include <Gruntz/ResMgr.h> // canonical g_gameReg->m_world view (CResMgr + CImageRegistry + CSprite)
 #include <Gruntz/SBI_ImageSet.h> // canonical CSBI_ImageSet + CImageSetStream (the frameless method view)
+#include <Gruntz/SbiImageSetViews.h> // CImageSetGameReg (g_gameReg singleton view)
 // SBI_ImageSet.cpp - Gruntz CSBI_ImageSet (C:\Proj\Gruntz), the frameless methods.
 // RTTI .?AVCSBI_ImageSet@@; the most-derived of the SBI image chain
 //   CSBI_ImageSet : CSBI_Image : CSBI_RectOnly : CStatusBarItem.
@@ -20,14 +21,8 @@
 // registry's embedded m_10map (CSpriteHashTable, Lookup 0x1b8008) - the same map
 // shape SetupImage uses, reached as reg->m_10->m_10map.
 
-// The g_gameReg singleton (VA 0x64556c) viewed here: m_30 is the canonical resource
-// manager (CResMgr) carrying the config map sub. Typed CResMgr* so the resolve path
-// reaches it with no reinterpret cast.
-struct CImageSetGameReg {
-    char m_pad00[0x30];
-    CResMgr* m_world; // +0x30  resource manager
-};
-SIZE_UNKNOWN(CImageSetGameReg);
+// CImageSetGameReg (the g_gameReg singleton view) moved to
+// <Gruntz/SbiImageSetViews.h>.
 DATA(0x0024556c)
 extern CImageSetGameReg* g_gameReg;
 

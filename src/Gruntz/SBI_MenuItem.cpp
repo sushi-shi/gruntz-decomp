@@ -33,39 +33,7 @@
 // (ResMgr.h): the draw surface context is m_drawTarget->m_drawContext (+0x04 ->
 // +0x14) and the config/name image registry is m_10 (its map embedded at +0x10).
 
-// A resolved cue record: a player at +0x10 plus a draw-clock gate (+0x14 last,
-// +0x18 interval).
-struct CMiCue {
-    char m_pad0[0x10];
-    void* m_10; // +0x10  player (ConfigureItem this)
-    i32 m_14;   // +0x14  last draw-clock
-    i32 m_18;   // +0x18  interval
-};
-SIZE_UNKNOWN(CMiCue);
-struct CMiCuePlayer {
-    void ConfigureItem(i32 item, i32 a, i32 b, i32 c); // 0x1360d0
-};
-SIZE_UNKNOWN(CMiCuePlayer);
-
-// The cue lookup map embedded at the music host's +0x10 (CMapStringToOb::Lookup,
-// 0x1b8438, ret 8) - the cue-facet map, distinct from the image registry's m_10map.
-struct CMiCueMap {
-    i32 Lookup(char* key, CMiCue** out); // 0x1b8438
-};
-SIZE_UNKNOWN(CMiCueMap);
-
-// The music host reached as g_gameReg->m_world->m_28 viewed as its cue facet: a
-// non-null +0x30 gate suppresses the cue play; the cue map is the sub-object at
-// host+0x10 (documented sub-object offset). This is the SAME +0x28 sound object as
-// CResMgr::m_28 (CSoundRegistry, the install facet); its cue map's Lookup (0x1b8438)
-// differs from the install facet's (0x1b8008), so the cue view is reached by a
-// documented multi-view cast on m_28 - the cross-TU merge with SBI_RectOnly's
-// identical CSbiMusicHost is deferred (see report).
-struct CMiMusicHost {
-    char m_pad0[0x30];
-    void* m_30; // +0x30  gate (non-null => skip)
-};
-SIZE_UNKNOWN(CMiMusicHost);
+// CMiCue/CMiCuePlayer/CMiCueMap/CMiMusicHost moved to <Gruntz/SBI_MenuItem.h>.
 
 // The g_gameReg singleton (*0x24556c) - the canonical MFC-side CGruntzMgr view
 // (<Gruntz/GruntzMgr.h>). Its +0x30 world slot (m_world) is the resource manager
@@ -82,36 +50,7 @@ extern i32 g_61ab24;
 DATA(0x002bf3c0)
 extern "C" u32 g_6bf3c0;
 
-// The owning rect-only host at m_2c: SetState drives its tab state through three
-// sibling thunks (all ILT-reloc-masked). m_10c is the active-tab latch.
-struct CMiTabHost {
-    void TabBegin();   // 0x100b00 (call 0x2329)
-    void TabRefresh(); // 0x102250 (call 0x1690)
-    void TabCommit();  // 0x100cb0 (call 0x125d)
-    char m_pad0[0x10c];
-    i32 m_10c; // +0x10c  active-tab latch
-};
-SIZE_UNKNOWN(CMiTabHost);
-
-// A polymorphic view of `this` used only for the self-virtual slot-0x28 dispatch:
-// 10 leading slots + Refresh at index 10 (byte 0x28). Declared (never defined) so
-// no ??_7 is emitted here; `((CMiSelf*)this)->Refresh()` lowers to the exact
-// mov eax,[this]; mov ecx,this; call [eax+0x28] __thiscall dispatch.
-class CMiSelf {
-public:
-    virtual void v0();
-    virtual void v4();
-    virtual void v8();
-    virtual void vc();
-    virtual void v10();
-    virtual void v14();
-    virtual void v18();
-    virtual void v1c();
-    virtual void v20();
-    virtual void v24();
-    virtual void Refresh(); // +0x28 (slot 10)
-};
-SIZE_UNKNOWN(CMiSelf);
+// CMiTabHost/CMiSelf moved to <Gruntz/SBI_MenuItem.h>.
 
 // The config host + its lookup map + record come from the shared canonical family
 // (<Gruntz/SbiConfig.h>): CSbiConfigHost / CSbiConfigMap / CSbiConfigRecord.
@@ -120,30 +59,7 @@ SIZE_UNKNOWN(CMiSelf);
 DATA(0x00229ad0)
 extern i32 g_serialCounter;
 
-// The frame-name reverse-lookup helper (0x155630) on the config registry.
-struct CMiNameReg {
-    void ReadField(i32 handle, char* tmp, i32* outZero); // 0x155630
-};
-SIZE_UNKNOWN(CMiNameReg);
-
-// The archive object passed to Serialize: field-transfer virtuals at vtable
-// byte-offsets 0x2c (Read) and 0x30 (Write).
-struct CMiArchive {
-    virtual void Slot00();
-    virtual void Slot04();
-    virtual void Slot08();
-    virtual void Slot0C();
-    virtual void Slot10();
-    virtual void Slot14();
-    virtual void Slot18();
-    virtual void Slot1C();
-    virtual void Slot20();
-    virtual void Slot24();
-    virtual void Slot28();
-    virtual void Read(void* buf, i32 n);  // +0x2c
-    virtual void Write(void* buf, i32 n); // +0x30
-};
-SIZE_UNKNOWN(CMiArchive);
+// CMiNameReg/CMiArchive moved to <Gruntz/SBI_MenuItem.h>.
 
 // ---------------------------------------------------------------------------
 // CSBI_MenuItem::ClearFrame() - zero the resolved frame handle.
