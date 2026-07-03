@@ -29,7 +29,7 @@ extern CButeTree g_buteTree;
 // formats "Level%i" and "GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ%i".
 void EngFmt(CString* out, const char* fmt, ...);
 
-// The sprite/animation factory reached as g_gameReg->m_30->m_8 (its +0x8 field);
+// The sprite/animation factory reached as g_gameReg->m_world->m_8 (its +0x8 field);
 // CreateSprite (0x1597b0, __thiscall) builds a "SimpleAnimation" glitter sprite.
 struct IconSpriteFactory {
     CGameObject*
@@ -143,7 +143,7 @@ CInGameIcon::~CInGameIcon() {}
 //     a code id into owner->m_124 and a category-configure call (SetupSprite), with
 //     the treasure / powerup(red glitter) / secret(mission gate) / curse(green
 //     glitter) groups; the WarpStonez items also stash the waypoint {x,y} into the
-//     level record (g_gameReg->m_2c +0x384.. per index) and stamp m_128,
+//     level record (g_gameReg->m_curState +0x384.. per index) and stamp m_128,
 //   - for a WarpStone in test mode, formats the per-level warp target name and
 //     re-applies it,
 //   - builds the glitter overlay sprite, then a Check() gate either marks the
@@ -273,28 +273,28 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj) {
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ1") == 0) {
             m_10->m_124 = 0x14;
             m_10->m_128 = 1;
-            char* lvl = (char*)*(void**)((char*)g_gameReg + 0x2c);
+            char* lvl = (char*)g_gameReg->m_curState;
             *(i32*)(lvl + 0x384) = m_10->m_5c;
             *(i32*)(lvl + 0x388) = m_10->m_60;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ2") == 0) {
             m_10->m_124 = 0x14;
             m_10->m_128 = 2;
-            char* lvl = (char*)*(void**)((char*)g_gameReg + 0x2c);
+            char* lvl = (char*)g_gameReg->m_curState;
             *(i32*)(lvl + 0x38c) = m_10->m_5c;
             *(i32*)(lvl + 0x390) = m_10->m_60;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ3") == 0) {
             m_10->m_124 = 0x14;
             m_10->m_128 = 3;
-            char* lvl = (char*)*(void**)((char*)g_gameReg + 0x2c);
+            char* lvl = (char*)g_gameReg->m_curState;
             *(i32*)(lvl + 0x394) = m_10->m_5c;
             *(i32*)(lvl + 0x398) = m_10->m_60;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ4") == 0) {
             m_10->m_124 = 0x14;
             m_10->m_128 = 4;
-            char* lvl = (char*)*(void**)((char*)g_gameReg + 0x2c);
+            char* lvl = (char*)g_gameReg->m_curState;
             *(i32*)(lvl + 0x39c) = m_10->m_5c;
             *(i32*)(lvl + 0x3a0) = m_10->m_60;
             SetupSprite("GAME_TREASURE");
@@ -375,28 +375,28 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj) {
             SetupSprite("GAME_POWERUP");
             glitter = 2;
         } else if (strcmp(name, "GAME_INGAMEICONZ_SECRETW") == 0) {
-            if (*(i32*)((char*)g_gameReg + 0x118) != 0 && g_gameReg->m_134 == 1) {
+            if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_134 == 1) {
                 m_38->m_08 |= 0x10000;
                 return;
             }
             m_10->m_124 = 0x5a;
             SetupSprite("GAME_POWERUP");
         } else if (strcmp(name, "GAME_INGAMEICONZ_SECRETA") == 0) {
-            if (*(i32*)((char*)g_gameReg + 0x118) != 0 && g_gameReg->m_134 == 1) {
+            if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_134 == 1) {
                 m_38->m_08 |= 0x10000;
                 return;
             }
             m_10->m_124 = 0x5b;
             SetupSprite("GAME_POWERUP");
         } else if (strcmp(name, "GAME_INGAMEICONZ_SECRETR") == 0) {
-            if (*(i32*)((char*)g_gameReg + 0x118) != 0 && g_gameReg->m_134 == 1) {
+            if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_134 == 1) {
                 m_38->m_08 |= 0x10000;
                 return;
             }
             m_10->m_124 = 0x5c;
             SetupSprite("GAME_POWERUP");
         } else if (strcmp(name, "GAME_INGAMEICONZ_SECRETP") == 0) {
-            if (*(i32*)((char*)g_gameReg + 0x118) != 0 && g_gameReg->m_134 == 1) {
+            if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_134 == 1) {
                 m_38->m_08 |= 0x10000;
                 return;
             }
@@ -432,7 +432,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj) {
 
     // WarpStone test-mode: re-apply the per-level warp target sprite name.
     if (m_10->m_124 == 0x14 && g_gameReg->m_134 == 1) {
-        char* lvl = (char*)*(void**)((char*)g_gameReg + 0x2c);
+        char* lvl = (char*)g_gameReg->m_curState;
         CString levelStr;
         EngFmt(&levelStr, "Level%i", *(i32*)(lvl + 0x1c));
         CString warpName;
@@ -444,7 +444,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj) {
 
     // glitter overlay sprite for the powerup / curse groups
     if (glitter != 0) {
-        IconSpriteFactory* fac = *(IconSpriteFactory**)((char*)g_gameReg->m_30 + 8);
+        IconSpriteFactory* fac = *(IconSpriteFactory**)((char*)g_gameReg->m_world + 8);
         CGameObject* fx =
             fac->CreateSprite(0, m_10->m_5c, m_10->m_60, 0x17319, "SimpleAnimation", 0x40003);
         m_glitterSprite = fx;
@@ -464,7 +464,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj) {
 
     // mark the owner's tile cell occupied (or clear the occupancy bit)
     i32 mv = *(i32*)((char*)m_10 + 0x188);
-    CIconTileGrid* grid = (CIconTileGrid*)g_gameReg->m_70;
+    CIconTileGrid* grid = (CIconTileGrid*)g_gameReg->m_tileGrid;
     i32 col = m_10->m_5c >> 5;
     i32 row = m_10->m_60 >> 5;
     if ((u32)col < (u32)grid->m_c && (u32)row < (u32)grid->m_10) {
@@ -655,7 +655,7 @@ i32 CInGameIcon::RefreshCell() {
     i32 tileX = (obj->m_60 + 0x18) >> 5;
     i64 delta = (i64)(u32)g_iconDefault - *(i64*)&m_driftPos;
     if (delta < *(i64*)&m_driftThresh) {
-        CIconTileGrid* grid = (CIconTileGrid*)g_gameReg->m_70;
+        CIconTileGrid* grid = (CIconTileGrid*)g_gameReg->m_tileGrid;
         i32 cell;
         if ((u32)tileY < (u32)grid->m_c && (u32)tileX < (u32)grid->m_10) {
             i32* row = grid->m_8[tileX];
@@ -673,12 +673,12 @@ i32 CInGameIcon::RefreshCell() {
 }
 
 // Clear the "occupied" bit (0x40000) in the tile cell the owning object stands
-// on. The grid is g_gameReg->m_70: m_8[tileY] is a row base (each row a flat
+// on. The grid is g_gameReg->m_tileGrid: m_8[tileY] is a row base (each row a flat
 // array of 0x1c-byte cells = 7 dwords), the cell for tileX sits at offset
 // (tileX*71)*4 ... matching retail's `eax=tileX*8-tileX` then `<<2` and the
 // `[m_8[tileY] + eax + 8]=0` / `[m_8[tileY] + eax] &= ~0x40000` pair.
 static inline void ClearTileBit(CGameRegistry* reg, CGameObject* owner) {
-    CIconTileGrid* grid = (CIconTileGrid*)reg->m_70;
+    CIconTileGrid* grid = (CIconTileGrid*)reg->m_tileGrid;
     i32 tileX = owner->m_60 >> 5;
     i32 tileY = owner->m_5c >> 5;
     if ((u32)tileY < (u32)grid->m_c && (u32)tileX < (u32)grid->m_10) {
@@ -740,8 +740,8 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
         }
         if (m_cmapId != 0) {
             CGameObject* o = m_10;
-            if (o->m_5c < reg->m_144 && o->m_5c >= reg->m_13c && o->m_60 < reg->m_148
-                && o->m_60 >= reg->m_140) {
+            if (o->m_5c < reg->m_viewOriginR && o->m_5c >= reg->m_viewOriginL
+                && o->m_60 < reg->m_viewOriginB && o->m_60 >= reg->m_viewOriginT) {
                 Eng_PostCmd(g_inputCtx, 0, 0, 0);
                 reg = g_gameReg;
             }
@@ -776,8 +776,8 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
     }
     if (m_cmapId != 0) {
         CGameObject* o = m_10;
-        if (o->m_5c < reg->m_144 && o->m_5c >= reg->m_13c && o->m_60 < reg->m_148
-            && o->m_60 >= reg->m_140) {
+        if (o->m_5c < reg->m_viewOriginR && o->m_5c >= reg->m_viewOriginL
+            && o->m_60 < reg->m_viewOriginB && o->m_60 >= reg->m_viewOriginT) {
             Eng_PostCmd(g_inputCtx, 0, 0, 0);
             reg = g_gameReg;
         }
@@ -833,14 +833,14 @@ i32 CInGameIcon::Serialize(CArchive*, i32, i32, i32) {
 // ===========================================================================
 // CInGameIcon::SetField54  (0x099b10)
 // ===========================================================================
-// When v != 0, look it up in the registry's CMap (g_gameReg->m_30->m_28, Lookup
+// When v != 0, look it up in the registry's CMap (g_gameReg->m_world->m_28, Lookup
 // at +0x10) into a local, then store the located value (or 0) into +0x54.
 RVA(0x00099b10, 0x36)
 void CInGameIcon::SetField54(i32 v) {
     void* found = 0;
     if (v != 0) {
         found = 0;
-        ((CGameRegMapHolder*)g_gameReg->m_30)->m_28->m_10map.Lookup((void*)v, &found);
+        ((CGameRegMapHolder*)g_gameReg->m_world)->m_28->m_10map.Lookup((void*)v, &found);
     }
     m_cmapId = (i32)found;
 }

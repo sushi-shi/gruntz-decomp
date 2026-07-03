@@ -3,7 +3,7 @@
 //
 //   pings the projectile's sub-logic clock (m_154->m_1a0.Tick(g_6bf3bc)); when it
 //   fires (==2) it spawns the type's eye-candy sprite through the HUD sprite
-//   factory (g_gameReg->m_30->m_8->CreateSprite) via a 5-slot dense switch on the
+//   factory (g_gameReg->m_world->m_8->CreateSprite) via a 5-slot dense switch on the
 //   projectile type m_170:
 //     type 2            -> "Projectile"/"Boomerang" impact sprite ("Boomerang")
 //     type 9,10,11,21,22 -> "Projectile" impact sprite
@@ -71,7 +71,7 @@ struct CProjSprite {
     i32 m_120; // +0x120
     i32 m_124; // +0x124
 };
-// The HUD sprite factory (g_gameReg->m_30->m_8), CreateSprite by class NAME.
+// The HUD sprite factory (g_gameReg->m_world->m_8), CreateSprite by class NAME.
 struct CProjFactory {
     CProjSprite*
     CreateSprite(i32 kind, i32 px, i32 py, i32 hint, const char* name, i32 flags); // 0x1597b0
@@ -87,7 +87,7 @@ struct CProjFactoryHolder {
 SIZE_UNKNOWN(CProjGameReg);
 struct CProjGameReg {
     char m_pad00[0x30];
-    CProjFactoryHolder* m_30; // +0x30
+    CProjFactoryHolder* m_world; // +0x30
 };
 DATA(0x0024556c)
 extern CProjGameReg* g_gameReg; // *0x64556c
@@ -210,7 +210,7 @@ i32 CProjectile::Update() {
             case 10:
             case 11: {
                 CProjSprite* spr =
-                    g_gameReg->m_30->m_8
+                    g_gameReg->m_world->m_8
                         ->CreateSprite(0, m_10->m_5c, m_10->m_60, 0, "Projectile", 0x40003);
                 spr->m_7c->Init(spr);
                 CProjSetup* s = spr->m_7c->m_18;
@@ -221,7 +221,7 @@ i32 CProjectile::Update() {
             }
             case 2: {
                 CProjSprite* spr =
-                    g_gameReg->m_30->m_8
+                    g_gameReg->m_world->m_8
                         ->CreateSprite(0, m_10->m_5c, m_10->m_60, 0, "Boomerang", 0x40003);
                 spr->m_7c->Init(spr);
                 CProjSetup* s = spr->m_7c->m_18;
@@ -234,7 +234,7 @@ i32 CProjectile::Update() {
                 i32 pos[2];
                 GetSpawnPos(pos);
                 CProjSprite* spr =
-                    g_gameReg->m_30->m_8->CreateSprite(0, pos[0], pos[1], 0xf, "TimeBomb", 0x40003);
+                    g_gameReg->m_world->m_8->CreateSprite(0, pos[0], pos[1], 0xf, "TimeBomb", 0x40003);
                 spr->m_120 = 0;
                 spr->m_7c->Init(spr);
                 spr->m_124 = m_1ec;
@@ -243,7 +243,7 @@ i32 CProjectile::Update() {
             case 21:
             case 22: {
                 CProjSprite* spr =
-                    g_gameReg->m_30->m_8
+                    g_gameReg->m_world->m_8
                         ->CreateSprite(0, m_10->m_5c, m_10->m_60, 0, "Projectile", 0x40003);
                 spr->m_7c->Init(spr);
                 CProjSetup* s = spr->m_7c->m_18;

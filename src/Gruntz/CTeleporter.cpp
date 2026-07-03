@@ -40,12 +40,12 @@ struct CTeleRecord {
     CGameObject* m_10; // +0x10
 };
 
-// The camera/scroll sub-mgr at mgr->m_2c (ResetGoals 0xd5f00 via the 0x2e28 thunk).
+// The camera/scroll sub-mgr at mgr->m_curState (ResetGoals 0xd5f00 via the 0x2e28 thunk).
 struct CTeleScroller {
     void ResetGoals(i32 x, i32 y); // 0xd5f00
 };
-// The sprite factory reached as mgr->m_30->m_8 (CreateSprite 0x1597b0) is the shared
-// <Gruntz/CTeleSpriteFactory.h> class. g_gameReg->m_30 is already the real
+// The sprite factory reached as mgr->m_world->m_8 (CreateSprite 0x1597b0) is the shared
+// <Gruntz/CTeleSpriteFactory.h> class. g_gameReg->m_world is already the real
 // CSpriteFactoryHolder (<Gruntz/CGameRegistry.h>); its m_8 (CSpriteFactory*) is cast to
 // the complete CTeleSpriteFactory at the call site - no separate local holder view.
 
@@ -180,7 +180,8 @@ i32 CTeleporter::Update() {
         mgr = g_gameReg;
         i32 y = o->m_60;
         i32 x = o->m_5c;
-        if (x < mgr->m_144 && x >= mgr->m_13c && y < mgr->m_148 && y >= mgr->m_140) {
+        if (x < mgr->m_viewOriginR && x >= mgr->m_viewOriginL && y < mgr->m_viewOriginB
+            && y >= mgr->m_viewOriginT) {
             ((CTeleIconTable*)mgr->m_68)->m_3fc = 1;
         }
     }
@@ -215,7 +216,7 @@ i32 CTeleporter::Update() {
         m_40 = m_38->m_1b4;
         m_38->ApplyLookupGeometry(g_teleporterCloseKey, 0);
         CGameObject* s = m_10;
-        CGameObject* spawned = (CGameObject*)((CTeleSpriteFactory*)g_gameReg->m_30->m_8)
+        CGameObject* spawned = (CGameObject*)((CTeleSpriteFactory*)g_gameReg->m_world->m_8)
                                    ->CreateSprite(
                                        0,
                                        s->m_11c * 32 + 16,
@@ -233,7 +234,7 @@ i32 CTeleporter::Update() {
         }
     } else {
         CGameObject* s = m_10;
-        CGameObject* spawned = (CGameObject*)((CTeleSpriteFactory*)g_gameReg->m_30->m_8)
+        CGameObject* spawned = (CGameObject*)((CTeleSpriteFactory*)g_gameReg->m_world->m_8)
                                    ->CreateSprite(
                                        0,
                                        s->m_164 * 32 + 16,
@@ -264,7 +265,7 @@ i32 CTeleporter::Update() {
     }
     if (found == current && outB == g_curPlayer) {
         CGameObject* g = found->m_10;
-        ((CTeleScroller*)mgr->m_2c)->ResetGoals(g->m_5c, g->m_60);
+        ((CTeleScroller*)mgr->m_curState)->ResetGoals(g->m_5c, g->m_60);
     }
     return 0;
 }

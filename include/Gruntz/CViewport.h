@@ -1,5 +1,5 @@
 // CViewport.h - the world->screen transform (reached as
-// g_gameReg->m_resMgr->m_view->m_viewport, and g_gameReg->m_30->m_24). One class,
+// g_gameReg->m_resMgr->m_view->m_viewport, and g_gameReg->m_world->m_24). One class,
 // two views recovered from different call sites:
 //   WrapCoord  clamp a screen coord into the world (ActionOptionsMenuBar.cpp)
 //   +0x30      the world width used to clamp the bar position

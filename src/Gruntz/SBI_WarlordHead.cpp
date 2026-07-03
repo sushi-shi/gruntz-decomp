@@ -24,13 +24,13 @@ extern CWhGameReg* g_gameReg;
 // through the stream's Read/WriteBytes, then chain to the CSBI_ImageSet base
 // serialize and normalize its result to a bool. mode 7 = load, mode 4 = save;
 // any other mode just chains to the base. Bails early when the stream is null or
-// the active game manager (g_gameReg->m_30) is gone.
+// the active game manager (g_gameReg->m_world) is gone.
 RVA(0x000e7cd0, 0xf8)
 i32 CSBI_WarlordHead::Serialize(CImageSetStream* s, i32 mode, i32 a3, i32 a4) {
     if (s == 0) {
         return 0;
     }
-    if (g_gameReg->m_30 == 0) {
+    if (g_gameReg->m_world == 0) {
         return 0;
     }
     switch (mode) {
@@ -162,7 +162,7 @@ i32 CSBI_WarlordHead::Render(i32 z) {
         return 1;
     }
     m_28--;
-    i32 ctx = g_gameReg->m_30->m_4->m_14;
+    i32 ctx = g_gameReg->m_world->m_4->m_14;
 
     CWhConfig* cfg = m_34;
     CImage* f;

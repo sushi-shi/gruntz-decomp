@@ -142,10 +142,10 @@ void Init23960() {
 // ===========================================================================
 struct CMgrSettingsView {
     char m_pad0[0x30];
-    void* m_30; // +0x30
+    void* m_world; // +0x30
     char m_pad34[0x10c - 0x34];
-    i32 m_10c; // +0x10c
-    i32 m_110; // +0x110
+    i32 m_isHighDetail;     // +0x10c
+    i32 m_isEffectsEnabled; // +0x110
 };
 SIZE_UNKNOWN(CMgrSettingsView);
 extern "C" CMgrSettingsView* g_mgrSettings;
@@ -154,7 +154,7 @@ i32 __stdcall HasMgrSlot30(void* a) {
     if (a == 0) {
         return 0;
     }
-    return g_mgrSettings->m_30 != 0;
+    return g_mgrSettings->m_world != 0;
 }
 
 // ===========================================================================
@@ -176,8 +176,8 @@ void DialogInit37870(void* hwnd) {
         return;
     }
     PFN_CheckDlgButton fn = p_CheckDlgButton; // retail caches the import ptr in edi
-    fn(hwnd, 0x46f, g_mgrSettings->m_10c);
-    fn(hwnd, 0x4d5, g_mgrSettings->m_110);
+    fn(hwnd, 0x46f, g_mgrSettings->m_isHighDetail);
+    fn(hwnd, 0x4d5, g_mgrSettings->m_isEffectsEnabled);
 }
 
 // ===========================================================================

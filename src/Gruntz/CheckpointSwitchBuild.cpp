@@ -26,7 +26,7 @@ struct CStatzFactoryHolder {
 };
 struct CStatzGameReg {
     char m_pad0[0x30];
-    CStatzFactoryHolder* m_30; // +0x30
+    CStatzFactoryHolder* m_world; // +0x30
 };
 DATA(0x0024556c)
 extern CStatzGameReg* g_statzGameReg; // *0x64556c
@@ -85,7 +85,7 @@ i32 CCheckpointTriggerSwitchLogic::
         return 1;
     }
     CStatzSprite* spr =
-        g_statzGameReg->m_30->m_8->CreateSprite(0, px, py, 0, g_statzTabSpriteName, 0x40001);
+        g_statzGameReg->m_world->m_8->CreateSprite(0, px, py, 0, g_statzTabSpriteName, 0x40001);
     if (!spr) {
         return 0;
     }

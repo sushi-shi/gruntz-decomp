@@ -299,7 +299,7 @@ namespace m4 {
         char m_50[0x40];         // +0x50  (dialog item 0x428)
         char m_90[0x5f4 - 0x90]; // +0x90  (dialog item 0x429)
     };
-    struct LevelInfoSrc {                       // g_mgrSettings->m_30->m_levelInfoSrc
+    struct LevelInfoSrc {                       // g_mgrSettings->m_world->m_levelInfoSrc
         i32 GetInfo(void* key, LevelInfo* out); // RVA 0x160530
     };
     struct SoundPlayer {
@@ -314,7 +314,7 @@ namespace m4 {
     struct CfgAccessor {                                  // embedded at MgrM28+0x10
         i32 GetSection(const char* name, SoundCue** out); // thiscall thunk 0x1b8438
     };
-    struct MgrM28 { // g_mgrSettings->m_30->m_configHost (config accessor host)
+    struct MgrM28 { // g_mgrSettings->m_world->m_configHost (config accessor host)
         char m_pad0[0x10];
         CfgAccessor m_cfg; // +0x10 (GetSection receiver)
         char m_pad11[0x30 - 0x11];
@@ -337,7 +337,7 @@ namespace m4 {
         char m_pad0[4];
         MgrWnd* m_wnd; // +0x4
         char m_pad8[0x30 - 8];
-        MgrM30* m_30; // +0x30
+        MgrM30* m_world; // +0x30
         char m_pad34[0x48 - 0x34];
         MgrM48* m_48; // +0x48
         char m_pad4c[0x70 - 0x4c];
@@ -345,7 +345,7 @@ namespace m4 {
         char m_pad74[0xbc - 0x74];
         i32 m_bc; // +0xbc
         char m_padc0[0x124 - 0xc0];
-        i32 m_124;                                               // +0x124
+        i32 m_scrollSpeed;                                       // +0x124
         i32 Send2bb7(const char* section, void* proc, i32 flag); // thiscall thunk 0x2bb7
         void Voice4174(i32 pos);                                 // thiscall thunk 0x4174
         void Chip40c0(i32 pos);                                  // thiscall thunk 0x40c0
@@ -442,7 +442,7 @@ namespace m4 {
         }
         char num[0x20];
         LevelInfo info;
-        if (g_mgrSettings->m_30->m_levelInfoSrc->GetInfo(g_62c25c, &info)) {
+        if (g_mgrSettings->m_world->m_levelInfoSrc->GetInfo(g_62c25c, &info)) {
             char* p = info.m_versionStr;
             while (*p && (*p < '0' || *p > '9')) {
                 p++;
@@ -692,7 +692,7 @@ namespace m4 {
             return;
         }
         if (hwnd == GetDlgItem(hwnd, 0x478)) {
-            g_mgrSettings->m_124 = newpos;
+            g_mgrSettings->m_scrollSpeed = newpos;
             return;
         }
         if (hwnd == GetDlgItem(hwnd, 0x476)) {
@@ -700,7 +700,7 @@ namespace m4 {
             if (code == 5) {
                 return;
             }
-            MgrM28* m28 = g_mgrSettings->m_30->m_configHost;
+            MgrM28* m28 = g_mgrSettings->m_world->m_configHost;
             if (m28->m_30) {
                 return;
             }
@@ -724,7 +724,7 @@ namespace m4 {
             if (code == 5) {
                 return;
             }
-            MgrM28* m28 = g_mgrSettings->m_30->m_configHost;
+            MgrM28* m28 = g_mgrSettings->m_world->m_configHost;
             if (m28->m_30) {
                 return;
             }

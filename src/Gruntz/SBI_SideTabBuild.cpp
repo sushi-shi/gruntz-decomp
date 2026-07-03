@@ -75,7 +75,7 @@ extern "C" i32 g_644c54; // 0x644c54
 // owner passed as the StatzTab arg2.
 struct CSbBuildSettings {
     char m_pad00[0x30];
-    void* m_30; // +0x30
+    void* m_world; // +0x30
 };
 SIZE_UNKNOWN(CSbBuildSettings);
 extern "C" CSbBuildSettings* g_mgrSettings; // 0x64556c
@@ -128,7 +128,7 @@ i32 CStatzTabBuilder::Build() {
         CSBI_SideTab* newobj = new CSBI_SideTab;
         i32 ok = newobj->BuildStatzTabStatusBar(
             (CSBI_SideTab*)this,
-            g_mgrSettings->m_30,
+            g_mgrSettings->m_world,
             i + 0xb,
             0,
             geomBase,

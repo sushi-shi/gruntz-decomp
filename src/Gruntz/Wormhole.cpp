@@ -70,7 +70,7 @@ extern "C" void WormholeTypeMarker();
 #define s_NormalColor "NormalColor"
 
 // ---------------------------------------------------------------------------
-// The game-object registry list SpawnPartners walks. g_gameReg->m_30 (offset
+// The game-object registry list SpawnPartners walks. g_gameReg->m_world (offset
 // 0x30) -> [+8] -> a node header whose [+0x14] is the list head; each WorldNode
 // chains via m_next and holds a game object at +0x8.
 // ---------------------------------------------------------------------------

@@ -6,7 +6,7 @@
 #include <Bute/ButeMgr.h>
 // IconLoaders.cpp - the in-game-icon / powerup / explosion / camera / booty-perfect
 // sprite loaders (C:\Proj\Gruntz). Each builds a named sprite-set key, asks the
-// global HUD sprite factory (g_gameReg->m_30->m_8->CreateSprite) for the sprite,
+// global HUD sprite factory (g_gameReg->m_world->m_8->CreateSprite) for the sprite,
 // then caches/forwards something off it through the shared sprite-resource leaves
 // (CGruntSprite::CacheFirstFrame, CGruntAnimPlayer::ApplyLookupGeometry - both in
 // the spriteresource unit, reloc-masked). Only offsets / code bytes are
@@ -119,7 +119,7 @@ public:
 RVA(0x0001c070, 0x59)
 i32 EngineLabelBacklog::BuildBootyPerfectAnimation() {
     CIconSprite* spr =
-        g_gameReg->m_30->m_8->CreateSprite(0, (i32)0xffffff7e, 0xf0, 0x64, "SimpleAnimation", 3);
+        g_gameReg->m_world->m_8->CreateSprite(0, (i32)0xffffff7e, 0xf0, 0x64, "SimpleAnimation", 3);
     m_bootyPerfectSprite = spr;
     if (!spr) {
         return 0;
@@ -145,9 +145,9 @@ i32 EngineLabelBacklog::LoadCameraSprite() {
         return 0;
     }
 
-    i32 vx = g_gameReg->m_8c;
-    i32 vy = g_gameReg->m_90;
-    i32 count = *(*(i32**)((char*)g_gameReg->m_2c + 0x2dc));
+    i32 vx = g_gameReg->m_modeW;
+    i32 vy = g_gameReg->m_modeH;
+    i32 count = *(*(i32**)((char*)g_gameReg->m_curState + 0x2dc));
 
     i32 ax, cx;
     if (count == 0) {
@@ -333,7 +333,7 @@ i32 EngineLabelBacklog::LoadPowerupIconSprites(
             break;
         case PICKUP_WARPSTONE:
             if (g_gameReg->m_134 == 1) {
-                CResourceTracker* rt = (CResourceTracker*)g_gameReg->m_2c;
+                CResourceTracker* rt = (CResourceTracker*)g_gameReg->m_curState;
                 CString lvl;
                 lvl.Format("Level%i", rt->m_levelNumber);
                 name.Format(
@@ -433,7 +433,7 @@ i32 EngineLabelBacklog::LoadPowerupIconSprites(
             break;
         case PICKUP_COVEREDTIMEBOMB: {
             CIconSprite* tb =
-                g_gameReg->m_30->m_8->CreateSprite(0, geoB, geoA, 0xf, "TimeBomb", 0x40003);
+                g_gameReg->m_world->m_8->CreateSprite(0, geoB, geoA, 0xf, "TimeBomb", 0x40003);
             if (tb) {
                 tb->m_120 = g_buteMgr.GetDwordDef("Powerupz", "CoveredTimeBombTime", 0x7d0);
             }
@@ -444,7 +444,7 @@ i32 EngineLabelBacklog::LoadPowerupIconSprites(
     }
 
     CIconSprite* spr =
-        g_gameReg->m_30->m_8->CreateSprite(0, geoB, geoA, 0x17318, "InGameIcon", 0x40003);
+        g_gameReg->m_world->m_8->CreateSprite(0, geoB, geoA, 0x17318, "InGameIcon", 0x40003);
     if (!spr) {
         return 0;
     }

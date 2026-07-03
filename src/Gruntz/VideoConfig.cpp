@@ -66,8 +66,8 @@ extern CGameRegistry* g_mgrSettings;
 // resolution combo index (1024x768 -> 3, 800x600 -> 2, else 1).
 RVA(0x000363a0, 0x41)
 i32 GetResolutionCode() {
-    i32 w = g_mgrSettings->m_94;
-    i32 h = g_mgrSettings->m_98;
+    i32 w = g_mgrSettings->m_savedModeW;
+    i32 h = g_mgrSettings->m_savedModeH;
     if (w == 0x400 && h == 0x300) {
         return RES_1024x768;
     }
@@ -174,7 +174,7 @@ void SaveVideoCheckboxes(HWND hDlg) {
     if (g_mgrSettings == 0) {
         return;
     }
-    g_mgrSettings->m_10c = IsDlgButtonChecked(hDlg, 0x46f);
-    g_mgrSettings->m_110 = IsDlgButtonChecked(hDlg, 0x4d5);
+    g_mgrSettings->m_isHighDetail = IsDlgButtonChecked(hDlg, 0x46f);
+    g_mgrSettings->m_isEffectsEnabled = IsDlgButtonChecked(hDlg, 0x4d5);
 }
 SIZE_UNKNOWN(CSliderCtrl);

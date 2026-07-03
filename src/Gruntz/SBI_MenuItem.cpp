@@ -2,7 +2,7 @@
 #include <Mfc.h>
 #include <Gruntz/GruntzMgr.h> // canonical MFC-side g_gameReg singleton view (CGruntzMgr)
 #include <Gruntz/SBI_MenuItem.h>
-#include <Gruntz/ResMgr.h> // canonical g_gameReg->m_30 (m_world) view (CResMgr + CDrawTarget + CImageRegistry + CSprite)
+#include <Gruntz/ResMgr.h> // canonical g_gameReg->m_world (m_world) view (CResMgr + CDrawTarget + CImageRegistry + CSprite)
 #include <Gruntz/SbiConfig.h> // canonical config-host family (one shape)
 #include <Image/CImage.h>     // canonical frame-record class (CImage::RenderFrame @0x153790)
 // SBI_MenuItem.cpp - Gruntz CSBI_MenuItem (C:\Proj\Gruntz), the frameless methods.
@@ -29,7 +29,7 @@
 // ResolveFrame is the shared CSbiConfigRecord (<Gruntz/SbiConfig.h>), a same-shaped
 // but distinct object reached through the m_24 config host, not through m_30.
 
-// The owning game manager held at g_gameReg->m_30 is the canonical CResMgr
+// The owning game manager held at g_gameReg->m_world is the canonical CResMgr
 // (ResMgr.h): the draw surface context is m_drawTarget->m_drawContext (+0x04 ->
 // +0x14) and the config/name image registry is m_10 (its map embedded at +0x10).
 
@@ -54,7 +54,7 @@ struct CMiCueMap {
 };
 SIZE_UNKNOWN(CMiCueMap);
 
-// The music host reached as g_gameReg->m_30->m_28 viewed as its cue facet: a
+// The music host reached as g_gameReg->m_world->m_28 viewed as its cue facet: a
 // non-null +0x30 gate suppresses the cue play; the cue map is the sub-object at
 // host+0x10 (documented sub-object offset). This is the SAME +0x28 sound object as
 // CResMgr::m_28 (CSoundRegistry, the install facet); its cue map's Lookup (0x1b8438)

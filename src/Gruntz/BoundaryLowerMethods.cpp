@@ -573,7 +573,7 @@ struct CArchiveEb {
 SIZE_UNKNOWN(CArchiveEb);
 struct CMgrEb {
     char pad0[0x30];
-    void* m_30; // +0x30
+    void* m_world; // +0x30
 };
 SIZE_UNKNOWN(CMgrEb);
 extern "C" CMgrEb* g_mgrSettings;
@@ -593,7 +593,7 @@ i32 Ceb970::Serialize(CArchiveEb* ar, i32 mode, i32 a3, i32 a4) {
     if (ar == 0) {
         return 0;
     }
-    if (g_mgrSettings->m_30 == 0) {
+    if (g_mgrSettings->m_world == 0) {
         return 0;
     }
     if (mode == 4) {

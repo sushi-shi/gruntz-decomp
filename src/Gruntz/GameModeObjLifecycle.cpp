@@ -63,7 +63,7 @@ struct CPlacedObj {
     i32 m_4; // +0x04  cell Y
 };
 
-// The tile/map grid notifier reached at g_gameReg->m_70. m_8 is the row table
+// The tile/map grid notifier reached at g_gameReg->m_tileGrid. m_8 is the row table
 // (a per-row cell array), m_c/m_10 the (width,height) bounds; each cell is 0x1c
 // bytes (x*7 dwords) with the occupant object at +0x8 and the flags word at +0x0.
 struct CMapGrid {
@@ -80,14 +80,14 @@ struct GmReg {
     struct M30 {
         char m_pad00[0x8];
         char* m_8; // +0x08  the holder the cell map hangs at (+0x48)
-    }* m_30;       // +0x30
+    }* m_world;       // +0x30
     char m_pad34[0x68 - 0x34];
     struct M68 {
         char m_pad00[0x2a8];
         i32 m_2a8; // +0x2a8  a pending-flag the teardown clears
     }* m_68;       // +0x68
     char m_pad6c[0x70 - 0x6c];
-    CMapGrid* m_70; // +0x70  the tile/map grid
+    CMapGrid* m_tileGrid; // +0x70  the tile/map grid
 };
 
 // ---------------------------------------------------------------------------
@@ -171,7 +171,7 @@ i32 CGameModeObj::ClearPlacedObjects() {
         i32 restart = 0;
         while (i < rec->m_nSize) {
             CPlacedObj* obj = ((CPlacedObj**)rec->m_pData)[i];
-            CMapGrid* grid = gmReg()->m_70;
+            CMapGrid* grid = gmReg()->m_tileGrid;
             i32* cellObj = 0;
             if ((u32)obj->m_0 < (u32)grid->m_c && (u32)obj->m_4 < (u32)grid->m_10) {
                 i32 stride = obj->m_0 * 7;
@@ -183,14 +183,14 @@ i32 CGameModeObj::ClearPlacedObjects() {
                 break;
             }
             void* out = 0;
-            CCellMap* map = (CCellMap*)(gmReg()->m_30->m_8 + 0x48);
+            CCellMap* map = (CCellMap*)(gmReg()->m_world->m_8 + 0x48);
             i32* result = cellObj;
             if (map->Lookup(cellObj, &out)) {
                 result = (i32*)out;
             }
             if (result == 0) {
                 // cell vacated: clear the cell's occupant + flag bit and unlink.
-                CMapGrid* g = gmReg()->m_70;
+                CMapGrid* g = gmReg()->m_tileGrid;
                 if ((u32)obj->m_0 < (u32)g->m_c && (u32)obj->m_4 < (u32)g->m_10) {
                     i32 stride = obj->m_0 * 7;
                     i32* row = g->m_8[obj->m_4];

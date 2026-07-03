@@ -103,7 +103,7 @@ void CPlaneRender::WrapCoord(i32* px, i32* py) {
 // for the three reject paths, else the integer parsed from the first digit run
 // of the validated header:
 //   1. the CString must be non-empty (its length, at pszData-8, != 0);
-//   2. ((WwdGameRegSlot*)g_gameReg->m_30)->m_wwdPath (a filename) must be non-null;
+//   2. ((WwdGameRegSlot*)g_gameReg->m_world)->m_wwdPath (a filename) must be non-null;
 //   3. CheckHeader(that filename) into a 0x100 stack buffer must succeed.
 // Then skip leading non-digits and atoi() the first digit run. The CString is
 // unused beyond its non-empty check; `this` is never touched -> static.
@@ -114,11 +114,11 @@ i32 WwdFile::ValidateMainBlock(CString name) {
     if (name.GetLength() == 0) {
         return -1;
     }
-    if (((WwdGameRegSlot*)g_gameReg->m_30)->m_wwdPath == 0) {
+    if (((WwdGameRegSlot*)g_gameReg->m_world)->m_wwdPath == 0) {
         return -1;
     }
 
-    if (WwdFile_CheckHeader(((WwdGameRegSlot*)g_gameReg->m_30)->m_wwdPath, header) == 0) {
+    if (WwdFile_CheckHeader(((WwdGameRegSlot*)g_gameReg->m_world)->m_wwdPath, header) == 0) {
         return -1;
     }
 

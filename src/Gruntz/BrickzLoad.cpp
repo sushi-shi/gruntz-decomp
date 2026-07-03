@@ -58,7 +58,7 @@ struct BzAttr {
     BzGrid* m_5c; // +0x5c  the terrain grid descriptor
 };
 
-// The level manager reached as g_mgrSettings->m_30: the attribute manager at
+// The level manager reached as g_mgrSettings->m_world: the attribute manager at
 // +0x24 and the moving-object manager at +0x8.
 struct BzMovingObj;
 struct BzObjMgr {
@@ -78,9 +78,9 @@ struct BzLevelMgr {
 // m_134 = the editor / test-mode flags.
 struct BzSettings {
     char m_pad0[0x30];
-    BzLevelMgr* m_30; // +0x30
+    BzLevelMgr* m_world; // +0x30
     char m_pad34[0x118 - 0x34];
-    i32 m_118; // +0x118  editor flag
+    i32 m_isEasyMode; // +0x118  editor flag
     char m_pad11c[0x134 - 0x11c];
     i32 m_134; // +0x134  test-mode flag (1 => test)
 };
@@ -145,7 +145,7 @@ public:
     char m_pad14[0x5c - 0x14];
     i32 m_5c; // +0x5c  dirty flag (stamped 1 at the end)
     char m_pad60[0x78 - 0x60];
-    BzLevelMgr* m_78;       // +0x78  level manager (= g_mgrSettings->m_30)
+    BzLevelMgr* m_78;       // +0x78  level manager (= g_mgrSettings->m_world)
     BzPtrArray m_footprint; // +0x7c  footprint CPtrArray (m_80 data, m_84 count)
     void** m_80;            // +0x80  footprint array data
     i32 m_84;               // +0x84  footprint array count
@@ -222,7 +222,7 @@ static i32 PickC(i32 total, i32 t1, i32 t2, i32 t3, i32 t4) {
 
 // @early-stop
 // jump-table-data scoring artifact + regalloc-cascade wall (verified base-vs-target
-// with llvm-objdump -dr): the head is byte-faithful (g_mgrSettings->m_30 / m_78,
+// with llvm-objdump -dr): the head is byte-faithful (g_mgrSettings->m_world / m_78,
 // the m_24->m_5c grid gate + early return, the AllocGrid call, the five
 // Brickz-section GetInt threshold sums with the correct pooled strings). Two
 // divergences drag the whole symbol to ~0% and neither is source-steerable here:
@@ -235,7 +235,7 @@ static i32 PickC(i32 total, i32 t1, i32 t2, i32 t3, i32 t4) {
 // complete correct body. Parked for the final sweep (a leaf-first redo).
 RVA(0x000810f0, 0x8b4)
 i32 CBrickz::LoadAttributes(i32 width, i32 height) {
-    m_78 = g_mgrSettings->m_30;
+    m_78 = g_mgrSettings->m_world;
     BzGrid* grid = m_78->m_24->m_5c;
     if (grid == 0) {
         return 0;
@@ -263,7 +263,7 @@ i32 CBrickz::LoadAttributes(i32 width, i32 height) {
             cell->m_c = -1;
 
             // Editor mode: remap the two placeholder tiles in-place.
-            if (g_mgrSettings->m_118 != 0 && g_mgrSettings->m_134 == 1) {
+            if (g_mgrSettings->m_isEasyMode != 0 && g_mgrSettings->m_134 == 1) {
                 if (tileId == 0x105) {
                     tileId = 0x101;
                     grid->m_20[grid->m_24[col] + row] = 0x101;
@@ -465,7 +465,7 @@ i32 CBrickz::LoadAttributes(i32 width, i32 height) {
 
     // Freelist-recycle pass: for each moving object of the footprint kind, seed a
     // 3x3 footprint of recycled free nodes, then commit them into the grid.
-    BzObjMgr* mgr = g_mgrSettings->m_30->m_8;
+    BzObjMgr* mgr = g_mgrSettings->m_world->m_8;
     mgr->m_64 = mgr->m_14;
     BzMovingObj* obj;
     if (mgr->m_64 != 0) {

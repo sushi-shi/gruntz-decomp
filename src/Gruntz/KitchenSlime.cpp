@@ -68,7 +68,7 @@ struct CSlimeLevel {
     i32 m_144; // +0x144 on-screen rect base (Tick passes &m_144 to the cue gate)
 };
 
-// The level tile map reached via g_gameReg->m_70 is the canonical CTileGrid
+// The level tile map reached via g_gameReg->m_tileGrid is the canonical CTileGrid
 // (<Gruntz/CTileGrid.h>): m_c/m_10 = grid extents, m_8 = the row table
 // (row[gy][gx*7] is the tile-flags word).
 // The on-screen object reached as g_gameReg->m_68 (the visibility/cue gate). Its
@@ -466,7 +466,7 @@ i32 CKitchenSlime::Tick() {
     ((CSlimeAnimPlayer*)m_38)->m_1a0.Advance(g_slimeTick);
 
     CGameRegistry* reg = g_gameReg;
-    if (reg->m_118 == 0 || reg->m_134 != 1) {
+    if (reg->m_isEasyMode == 0 || reg->m_134 != 1) {
         CSlimeLevel* lvl = (CSlimeLevel*)m_10;
         i32 outX, outY;
         CSlimeEntity* ent = (CSlimeEntity*)((CSlimeCueGate*)reg->m_68)
@@ -640,7 +640,7 @@ i32 CKitchenSlime::LoadSprites() {
         i32 gx = tileX >> 5;
         i32 gy = tileY >> 5;
         i32 tileFlags;
-        CTileGrid* map = g_gameReg->m_70;
+        CTileGrid* map = g_gameReg->m_tileGrid;
         if ((u32)gx >= (u32)map->m_c || (u32)gy >= (u32)map->m_10) {
             tileFlags = 1;
         } else {

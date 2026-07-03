@@ -63,7 +63,7 @@ struct TgcGameMgr {
 };
 SIZE_UNKNOWN(TgcGameMgr);
 
-// A redraw-region helper (g_gameReg->m_70): MarkCell pushes a dirty cell so the
+// A redraw-region helper (g_gameReg->m_tileGrid): MarkCell pushes a dirty cell so the
 // renderer repaints it.  __thiscall engine callee, reloc-masked.
 struct TgcRedraw {
     void MarkCell(i32 x, i32 y, i32 val); // 0x33f0

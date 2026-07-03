@@ -43,7 +43,7 @@ struct CWhConfig {
 };
 SIZE_UNKNOWN(CWhConfig);
 
-// The active drawable reached via g_gameReg->m_30->m_4: its +0x14 dword is the
+// The active drawable reached via g_gameReg->m_world->m_4: its +0x14 dword is the
 // surface context passed into RenderFrame.
 struct CWhDrawable {
     char m_pad0[0x14];
@@ -57,7 +57,7 @@ struct CWhGameMgr {
 SIZE_UNKNOWN(CWhGameMgr);
 struct CWhGameReg {
     char m_pad0[0x30];
-    CWhGameMgr* m_30; // +0x30  active game manager
+    CWhGameMgr* m_world; // +0x30  active game manager
 };
 SIZE_UNKNOWN(CWhGameReg);
 

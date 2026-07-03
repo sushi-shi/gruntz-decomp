@@ -242,7 +242,7 @@ extern i32 g_movingSeed;
 extern "C" i32 GruntRand(); // stub
 
 // ---------------------------------------------------------------------------
-// The on-screen-cue receiver reached via g_pGameRegistry->m_60 (a __thiscall
+// The on-screen-cue receiver reached via g_pGameRegistry->m_cueSink (a __thiscall
 // ret 0x14 = 5 stack args). The resolvers fire a 5-arg cue when the
 // grunt is on-screen (m_134 == 1 -> 4-way visible-bounds test) or unconditionally
 // otherwise. External/no-body (reloc-masked; reached via incremental-link thunk).
@@ -519,7 +519,7 @@ extern const char g_codeH[]; // 0x60d7fc "H"  (arrival-recycle reject code)
 // The WwdGameReg per-level registry singleton
 // (see the duplicate g_focusedGruntSentinel below; declared once at block end)
 // --------------------------------------------------------------------------- (?g_gameReg @0x64556c). The grunt
-// movement/arrival machines reach the level board via g_gameReg->m_70 (a Board*),
+// movement/arrival machines reach the level board via g_gameReg->m_tileGrid (a Board*),
 // whose m_8 is the row-pointer table (rows[y][x] -> a 0x1c-byte tile record whose
 // first dword carries the occupancy/flag bits) and m_c/m_10 the x/y in-bounds
 // limits. Reloc-masked DATA; a struct (mangles `U`) gives the retail name.
@@ -531,7 +531,7 @@ struct GruntBoard {
     i32 m_c;    // +0x0c  x bound
     i32 m_10;   // +0x10  y bound
 };
-// The per-effect sound-table object reached via g_gameReg->m_30 (the sound
+// The per-effect sound-table object reached via g_gameReg->m_world (the sound
 // category), whose m_28 holds a CMapStringToOb at +0x10 (the launch-sound lookup
 // the struck-voice creator @0x57c40 queries). Same shape Projectile's LaunchSound
 // reaches. All external (reloc-masked).
@@ -545,13 +545,13 @@ struct GruntSoundCat { // m_30: the sound-category object
 SIZE_UNKNOWN(WwdGameReg);
 struct WwdGameReg {
     char m_pad0[0x30];
-    GruntSoundCat* m_30; // +0x30  the sound category (struck-voice lookup root)
+    GruntSoundCat* m_world; // +0x30  the sound category (struck-voice lookup root)
     char m_pad34[0x60 - 0x34];
-    CGruntCueSink* m_60; // +0x60  the on-screen cue receiver (CueA/CueSpawn)
+    CGruntCueSink* m_cueSink; // +0x60  the on-screen cue receiver (CueA/CueSpawn)
     char m_pad64[0x68 - 0x64];
     i32 m_68; // +0x68  (SerializeMove mode-8: -> CGrunt::m_tileMgr)
     char m_pad6c[0x70 - 0x6c];
-    GruntBoard* m_70;      // +0x70  the level board
+    GruntBoard* m_tileGrid;      // +0x70  the level board
     CSpriteRefTable* m_74; // +0x74  the sprite/animation reference table (GetSel)
     char m_pad78[0x11c - 0x78];
     i32 m_11c; // +0x11c  the sound-channel param (struck-voice Play arg)
@@ -816,7 +816,7 @@ class CArchive; // (unused MFC fwd; Save uses CGruntArchive)
 // CGrunt::Load(ar) @0xd8060 support - the symmetric inverse of Save (each member
 // read back via ar->Read, vtable slot +0x2c). It rebuilds the grunt's owned
 // node-collections from the global coord free-list and re-resolves anim/object
-// names through the resource manager (g_gameReg->m_30).
+// names through the resource manager (g_gameReg->m_world).
 //
 // The CObArray-family collections it rebuilds (this+0x370, the 4x stride-0x14
 // group at this+0x3a4, this+0x488). Each is the engine CObArray {vtbl, m_data,
@@ -875,7 +875,7 @@ SIZE_UNKNOWN(GruntObjMap);
 struct GruntObjMap {                            // res->m_8 + 0x48
     i32 Lookup(void* key, GruntObjEntry** out); // 0x1b8760
 };
-// The resource manager (g_gameReg->m_30): m_8 owns the object map, m_10 the
+// The resource manager (g_gameReg->m_world): m_8 owns the object map, m_10 the
 // sprite/name manager (with the CMapStringToOb at +0x10).
 SIZE_UNKNOWN(GruntResMgr);
 struct GruntResMgr {

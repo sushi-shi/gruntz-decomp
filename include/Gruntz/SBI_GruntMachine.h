@@ -43,7 +43,7 @@ struct CGmConfig {
 };
 SIZE_UNKNOWN(CGmConfig);
 
-// The active drawable reached via g_gameReg->m_30->m_4: its +0x14 dword is the
+// The active drawable reached via g_gameReg->m_world->m_4: its +0x14 dword is the
 // surface context passed into RenderFrame.
 struct CGmDrawable {
     char m_pad0[0x14];
@@ -57,7 +57,7 @@ struct CGmGameMgr {
 SIZE_UNKNOWN(CGmGameMgr);
 struct CGmGameReg {
     char m_pad0[0x30];
-    CGmGameMgr* m_30; // +0x30  active game manager
+    CGmGameMgr* m_world; // +0x30  active game manager
 };
 SIZE_UNKNOWN(CGmGameReg);
 

@@ -39,7 +39,7 @@ struct CTrigReader {
 };
 SIZE_UNKNOWN(CTrigReader);
 
-// A board tile-object reached via g_mgrSettings->m_30->m_24->m_4c[tile]; slot 8 (+0x20)
+// A board tile-object reached via g_mgrSettings->m_world->m_24->m_4c[tile]; slot 8 (+0x20)
 // returns the tile's gameplay type id. Reloc-masked virtual.
 struct CTileObj {
     virtual void s0();
@@ -54,7 +54,7 @@ struct CTileObj {
 };
 SIZE_UNKNOWN(CTileObj);
 
-// The board geometry (g_mgrSettings->m_30->m_24): m_5c->m_28 / m_5c->m_2c are the x/y
+// The board geometry (g_mgrSettings->m_world->m_24): m_5c->m_28 / m_5c->m_2c are the x/y
 // bounds, m_5c->m_24 the row base, m_5c->m_20 the cell->tile map, m_4c the tile-object
 // table. Reached by raw offset (engine struct, modeled minimally).
 struct CTrigBoardGeo {
@@ -75,7 +75,7 @@ struct CTrigMgrInner {
 SIZE_UNKNOWN(CTrigMgrInner);
 struct CTrigMgr {
     char m_pad00[0x30];
-    CTrigMgrInner* m_30; // +0x30
+    CTrigMgrInner* m_world; // +0x30
 };
 SIZE_UNKNOWN(CTrigMgr);
 extern CTrigMgr* g_mgrSettings; // ?g_mgrSettings (0x64556c)
@@ -279,7 +279,7 @@ void* CTileTriggerFactory::Build(CTrigReader* reader, i32 kind, i32 a2, i32 a3) 
             obj->m_20 = this;
             obj->m_04 = (void*)id;
             // resolve the board tile under the object; latch on a 0x67/0x68 tile.
-            CTrigBoard* board = g_mgrSettings->m_30->m_24;
+            CTrigBoard* board = g_mgrSettings->m_world->m_24;
             i32 x = obj->m_08;
             i32 y = obj->m_0c;
             i32* geo = *(i32**)((char*)board + 0x5c);

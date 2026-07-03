@@ -187,7 +187,7 @@ public:
 // ---------------------------------------------------------------------------
 // CMultiStartDlg
 //   base CDialog(0xc5, pParent); m_5c = a0; m_slotList = 0; m_6c = 0;
-//   CString @+0x70; CObList(0xa) @+0x74; then g_64bd5c = g_gameReg->m_2c.
+//   CString @+0x70; CObList(0xa) @+0x74; then g_64bd5c = g_gameReg->m_curState.
 // ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CMultiStartDlg);
 class CMultiStartDlg : public CDialog {

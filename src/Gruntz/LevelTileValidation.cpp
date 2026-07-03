@@ -174,11 +174,11 @@ struct WwdGameReg {
     char m_pad00[0x68];
     PlaceGridMgr* m_68; // +0x68  the playfield trigger grid (PlaceObject)
     StartCmdMgr* m_6c;  // +0x6c  the command queue (EnqueueSingle)
-    WwdGameGrid* m_70;  // +0x70  coarse-cell grid
+    WwdGameGrid* m_tileGrid;  // +0x70  coarse-cell grid
     char m_pad74[0x7c - 0x74];
     WwdGameRegInner* m_7c; // +0x7c
     char m_pad80[0x118 - 0x80];
-    i32 m_118; // +0x118
+    i32 m_isEasyMode; // +0x118
     char m_pad11c[0x134 - 0x11c];
     i32 m_134; // +0x134
     char m_pad138[0x150 - 0x138];
@@ -492,7 +492,7 @@ i32 CLevelValidator::ValidateLevelTiles() {
             (void)type;
             obj->m_flags |= 0x10000;
         } else if (who == (void*)0x401b09) {
-            if (m_bridgePoint != 0 && obj->m_kind != 2 && g_gameReg->m_118 != 0
+            if (m_bridgePoint != 0 && obj->m_kind != 2 && g_gameReg->m_isEasyMode != 0
                 && g_gameReg->m_134 == ok) {
                 i32 a = obj->m_118;
                 i32 b = obj->m_114;
@@ -529,7 +529,7 @@ i32 CLevelValidator::ValidateLevelTiles() {
         } else if (who == (void*)0x402a68) {
             m_playfieldMgr->PlacePuddle(obj, 0);
         } else if (who == (void*)0x40164f) {
-            // 3x3 coarse-grid pressure-pad stamp into g_gameReg->m_70: for each
+            // 3x3 coarse-grid pressure-pad stamp into g_gameReg->m_tileGrid: for each
             // of the 3 rows and 3 columns around the object's coarse cell, bounds-
             // check against the registry grid, tally the per-kind counter, and OR
             // a per-kind flag bit (0x100000 << kind) into the grid cell.
@@ -543,7 +543,7 @@ i32 CLevelValidator::ValidateLevelTiles() {
                 for (i32 k = 3; k != 0; k--, ofs += 4, row++) {
                     i32 gx = dy + col;
                     i32 gyy = row - 1;
-                    WwdGameGrid* gg = g_gameReg->m_70;
+                    WwdGameGrid* gg = g_gameReg->m_tileGrid;
                     if ((u32)gx >= (u32)gg->m_0c || (u32)gyy >= (u32)gg->m_10) {
                         continue;
                     }
@@ -568,7 +568,7 @@ i32 CLevelValidator::ValidateLevelTiles() {
                         }
                     }
                     counts[kind]++;
-                    gg = g_gameReg->m_70;
+                    gg = g_gameReg->m_tileGrid;
                     if ((u32)gx >= (u32)gg->m_0c || (u32)gyy >= (u32)gg->m_10) {
                         continue;
                     }
@@ -577,7 +577,7 @@ i32 CLevelValidator::ValidateLevelTiles() {
                 }
             }
         } else if (who == (void*)0x40182a) {
-            WwdGameGrid* gg = g_gameReg->m_70;
+            WwdGameGrid* gg = g_gameReg->m_tileGrid;
             i32 cy = obj->m_worldX >> 5;
             i32 cx = obj->m_worldY >> 5;
             if ((u32)cy < (u32)gg->m_0c && (u32)cx < (u32)gg->m_10) {

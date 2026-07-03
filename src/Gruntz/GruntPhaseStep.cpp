@@ -39,7 +39,7 @@ namespace gruntphase {
         void Dtor1b4b76();               // 0x001b4b76
     };
 
-    // A tile-grid plane (g_mgrSettings->m_70): m_8 = row table, m_c/m_10 = width/height.
+    // A tile-grid plane (g_mgrSettings->m_tileGrid): m_8 = row table, m_c/m_10 = width/height.
     struct TilePlane {
         char m_pad0[8];
         i32** m_8; // +0x08 row table
@@ -61,13 +61,13 @@ namespace gruntphase {
     };
     struct MgrSettings {
         char m_pad0[0x30];
-        LevelSub* m_30; // +0x30
+        LevelSub* m_world; // +0x30
         char m_pad34[0x60 - 0x34];
         i32 m_60; // +0x60
         char m_pad64[0x68 - 0x64];
         void* m_68; // +0x68
         char m_pad6c[0x70 - 0x6c];
-        TilePlane* m_70; // +0x70
+        TilePlane* m_tileGrid; // +0x70
     };
     extern MgrSettings* g_mgrSettings; // 0x0064556c
 
@@ -272,7 +272,7 @@ namespace gruntphase {
             i32 pt = acc.m_4[sel];
             i32 px = (u32)pt >> 0x10;
             i32 py = pt & 0xffff;
-            TilePlane* pl = g_mgrSettings->m_70;
+            TilePlane* pl = g_mgrSettings->m_tileGrid;
             i32 flag;
             if ((u32)px < (u32)pl->m_c && (u32)py < (u32)pl->m_10 && px < pl->m_c
                 && py < pl->m_10) {
@@ -290,7 +290,7 @@ namespace gruntphase {
             acc.Remove1b4e38(sel, 1);
         }
     build_tail: {
-        TilePlane* pl2 = g_mgrSettings->m_70;
+        TilePlane* pl2 = g_mgrSettings->m_tileGrid;
         RectSet34a4(&r0, 0, 0, pl2->m_c, pl2->m_10);
         pl2->m_c = r1.right - r1.left;
         pl2->m_10 = r1.bottom - r1.top;
@@ -331,7 +331,7 @@ namespace gruntphase {
         if (m_390 == 0) {
             goto common;
         }
-        if (GridTest1127(g_mgrSettings->m_30->m_24->m_5c + 0x40, m_10->m_5c, m_10->m_60) == 0) {
+        if (GridTest1127(g_mgrSettings->m_world->m_24->m_5c + 0x40, m_10->m_5c, m_10->m_60) == 0) {
             goto s0_reset;
         }
         Notify39f4(0x366, -1, 0, -1, -1);
@@ -349,7 +349,7 @@ namespace gruntphase {
             i32* p0 = (i32*)((i32*)head[0])[2];
             i32 fx = p0[0];
             i32 fy = p0[1];
-            TilePlane* pl = g_mgrSettings->m_70;
+            TilePlane* pl = g_mgrSettings->m_tileGrid;
             i32 flag;
             (void)bx;
             if ((u32)fx < (u32)pl->m_c && (u32)fy < (u32)pl->m_10) {
@@ -379,7 +379,7 @@ namespace gruntphase {
             return 1;
         }
         i32* p1 = (i32*)m_320[2];
-        TilePlane* pl2 = g_mgrSettings->m_70;
+        TilePlane* pl2 = g_mgrSettings->m_tileGrid;
         i32 gx = p1[0];
         i32 gy = p1[1];
         i32 flag2;

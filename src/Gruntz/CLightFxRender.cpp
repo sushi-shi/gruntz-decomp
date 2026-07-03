@@ -108,11 +108,11 @@ struct LfxRefTable {
 struct LfxMgr {
     char m_pad0[0x2c];
     LfxDrawCtx* m_2c; // +0x2c draw context
-    void* m_30;       // +0x30 surface manager  -> this+0xc
+    void* m_world;       // +0x30 surface manager  -> this+0xc
     char m_pad34[0x68 - 0x34];
     void* m_68; // +0x68 surface info     -> this+0x4
     char m_pad6c[0x70 - 0x6c];
-    void* m_70;        // +0x70                  -> this+0x8
+    void* m_tileGrid;        // +0x70                  -> this+0x8
     LfxRefTable* m_74; // +0x74 sprite/animation ref table
 };
 
@@ -210,8 +210,8 @@ i32 CLightFxRender::Init(LfxMgr* mgr, i32 arg2) {
     }
     m_mgr = mgr;
     m_tileBank = mgr->m_68;
-    m_grid = mgr->m_70;
-    m_surfMgr = (LfxSurfMgr*)mgr->m_30;
+    m_grid = mgr->m_tileGrid;
+    m_surfMgr = (LfxSurfMgr*)mgr->m_world;
     m_refreshInterval = arg2;
     m_scale = 1;
     m_refreshRemaining = 0;

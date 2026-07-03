@@ -17,7 +17,7 @@ public:
 
 struct MgrSettings {
     char m_pad00[0x2c];
-    CPlay* m_2c; // +0x2c active CPlay
+    CPlay* m_curState; // +0x2c active CPlay
 };
 extern "C" MgrSettings* g_mgrSettings; // 0x64556c
 
@@ -44,7 +44,7 @@ public:
 
 RVA(0x0010bc30, 0x78)
 void CSBI_RectOnly::UpdateDestructButton(i32 arg) {
-    CPlay* play = g_mgrSettings->m_2c;
+    CPlay* play = g_mgrSettings->m_curState;
     m_558 = 1;
     m_55c = 2;
     m_568 = g_buteMgr.GetDwordDef("StatusBar", "DestructButtonWarningDelay", 0x32);

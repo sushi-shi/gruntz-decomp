@@ -67,7 +67,7 @@ struct CombatSprCat {
     CombatSprInner* m_28; // +0x28
 };
 
-// The board tile grid (g->m_70): row table at +0x8, dims at +0xc/+0x10. Each cell is
+// The board tile grid (g->m_tileGrid): row table at +0x8, dims at +0xc/+0x10. Each cell is
 // 7 dwords (28 bytes); cell[0] is the occupancy word, byte cell+3 the 0x20 flag, cell+4
 // the owner id.
 struct CombatGrid {
@@ -81,18 +81,18 @@ struct CombatGrid {
 // visible-bounds rect.
 struct CombatReg {
     char m_pad0[0x30];
-    CombatSprCat* m_30; // +0x30
+    CombatSprCat* m_world; // +0x30
     char m_pad34[0x70 - 0x34];
-    CombatGrid* m_70; // +0x70 the tile grid
+    CombatGrid* m_tileGrid; // +0x70 the tile grid
     char m_pad74[0x118 - 0x74];
-    i32 m_118; // +0x118 handicap enable
+    i32 m_isEasyMode; // +0x118 handicap enable
     char m_pad11c[0x134 - 0x11c];
     i32 m_134; // +0x134 handicap side
     char m_pad138[0x13c - 0x138];
-    i32 m_13c; // +0x13c view left
-    i32 m_140; // +0x140 view top
-    i32 m_144; // +0x144 view right
-    i32 m_148; // +0x148 view bottom
+    i32 m_viewOriginL; // +0x13c view left
+    i32 m_viewOriginT; // +0x140 view top
+    i32 m_viewOriginR; // +0x144 view right
+    i32 m_viewOriginB; // +0x148 view bottom
 };
 extern "C" CombatReg* g_mgrSettings; // _g_mgrSettings @0x64556c
 extern "C" i32 g_644c54;             // _g_644c54 handicap owner id
@@ -181,7 +181,7 @@ static const char s_gruntSec[] = "Grunt";
 #define LK(key)                                                                                    \
     do {                                                                                           \
         CombatCue* out = 0;                                                                        \
-        reg->m_30->m_28->m_10.Lookup((key), &out);                                                 \
+        reg->m_world->m_28->m_10.Lookup((key), &out);                                                 \
         cue = out;                                                                                 \
     } while (0)
 
@@ -239,7 +239,7 @@ i32 CGruntCombat::LoadGruntCombatAnimations(
     // Hit-type byte-table lookup + optional handicap halving.
     i32 hit = g_hitTable[F(this, 0x170) * 23 + a0];
     CombatReg* reg = g_mgrSettings;
-    if (reg->m_118 != 0 && reg->m_134 == 1 && F(this, 0x1ec) == g_644c54) {
+    if (reg->m_isEasyMode != 0 && reg->m_134 == 1 && F(this, 0x1ec) == g_644c54) {
         i32 t = hit / 2;
         hit = t + t % 5;
     }
@@ -283,7 +283,8 @@ i32 CGruntCombat::LoadGruntCombatAnimations(
     CombatCue* cue = 0;
     i32 vx = F(P(this, 0x10), 0x5c);
     i32 vy = F(P(this, 0x10), 0x60);
-    if (vx < reg->m_144 && vx >= reg->m_13c && vy < reg->m_148 && vy >= reg->m_140) {
+    if (vx < reg->m_viewOriginR && vx >= reg->m_viewOriginL && vy < reg->m_viewOriginB
+        && vy >= reg->m_viewOriginT) {
         if (a7 == 0x3a) {
             LK(s_DEATHTOUCHHIT);
             goto L_cue;
@@ -552,7 +553,7 @@ i32 CGruntCombat::LoadGruntCombatAnimations(
     // Tile-to-tile occupancy + diagonal-corner move check.
     {
         i32 flags = F(this, 0x248) | 0x20000000;
-        CombatGrid* grid = g_mgrSettings->m_70;
+        CombatGrid* grid = g_mgrSettings->m_tileGrid;
         i32 nyt = newY >> 5;
         i32 nxt = newX >> 5;
         i32 oxt = F(this, 0x17c) >> 5;
@@ -617,7 +618,7 @@ i32 CGruntCombat::LoadGruntCombatAnimations(
         if (F(this, 0x1e8) == 0) {
             ((CombatTileMgr*)P(this, 0x260))->ApplySwitch(this, F(this, 0x17c), F(this, 0x180));
         }
-        CombatGrid* g2 = g_mgrSettings->m_70;
+        CombatGrid* g2 = g_mgrSettings->m_tileGrid;
         i32 ox = F(this, 0x17c) >> 5;
         i32 oy = F(this, 0x180) >> 5;
         i32* oc = g2->m_8[oy] + ox * 7;

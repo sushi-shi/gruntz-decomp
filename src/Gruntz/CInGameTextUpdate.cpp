@@ -79,7 +79,7 @@ struct HbSndMgr {
 SIZE_UNKNOWN(HbMgr);
 struct HbMgr { // the *0x64556c singleton, this method's view
     char m_pad00[0x30];
-    HbSndMgr* m_30; // +0x30  sound mgr
+    HbSndMgr* m_world; // +0x30  sound mgr
     char m_pad34[0x68 - 0x34];
     HbCellMgr* m_68; // +0x68  cell hit-tester
     char m_pad6c[0x13c - 0x6c];
@@ -183,7 +183,7 @@ i32 CInGameText::Update() {
     i32 y = o->m_60;
     if (x < g_mgrSettings->m_144 && x >= g_mgrSettings->m_13c && y < g_mgrSettings->m_148
         && y >= g_mgrSettings->m_140) {
-        HbSndSet* set = g_mgrSettings->m_30->m_28;
+        HbSndSet* set = g_mgrSettings->m_world->m_28;
         if (set->m_30 == 0) {
             HbSndEntry* res = 0;
             set->m_10.Find("GAME_HELPBOOK", &res);

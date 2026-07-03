@@ -18,7 +18,7 @@
 // ===========================================================================
 // CenterOnGroup (0x7cf40)
 // ===========================================================================
-// The view-centre helper reached as g_gameReg->m_2c->Center(x, y) (0x2e28 thunk).
+// The view-centre helper reached as g_gameReg->m_curState->Center(x, y) (0x2e28 thunk).
 struct CCenterTarget {
     i32 Center(i32 x, i32 y); // 0x2e28
 };
@@ -84,7 +84,7 @@ i32 CGroupSel::CenterOnGroup(i32 doSelect) {
     if (n == 0) {
         return 0;
     }
-    CMapDims* dims = (CMapDims*)g_gameRegSel->m_30->m_24->m_5c;
+    CMapDims* dims = (CMapDims*)g_gameRegSel->m_world->m_24->m_5c;
     i32 minX = dims->m_30 - 1;
     i32 minY = dims->m_34 - 1;
     i32 maxX = 0;
@@ -115,7 +115,7 @@ i32 CGroupSel::CenterOnGroup(i32 doSelect) {
     } while (n != 0);
     i32 cy = minY + (maxY - minY) / 2;
     i32 cx = minX + (maxX - minX) / 2;
-    i32 r = ((CCenterTarget*)g_gameRegSel->m_2c)->Center(cx, cy);
+    i32 r = ((CCenterTarget*)g_gameRegSel->m_curState)->Center(cx, cy);
     if (r != 0 && count == 1 && *(i32*)((char*)this + 0x24c) == 1) {
         CSelKey* head = (*(CSelNode**)((char*)this + 0x244))->m_8;
         CSelGridCell* cell2 = m_grid[head->m_0 * 15 + head->m_4];

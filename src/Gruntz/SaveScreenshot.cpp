@@ -6,7 +6,7 @@
 //     "Screen Dump Count" key in the registry/config object (bute->GetInt /
 //     WriteInt) and formats "Gruntz%04i.BMP" into a local buffer.
 //   - grabs the back-surface (owner->m_30->m_1c), asks it to build a capture image
-//     sized to the screen (g_mgrSettings->m_8c x m_90), blits the screen rect into
+//     sized to the screen (g_mgrSettings->m_modeW x m_modeH), blits the screen rect into
 //     it, and saves it to the BMP path; the surface frees the image on both paths.
 // Frameless (no destructible C++ local) - lives in a base /O2 unit. Only offsets /
 // code bytes are load-bearing; the surface/image/config callees are reloc-masked
@@ -48,7 +48,7 @@ struct ScrOwner { // arg3
     ScrSurfHost* m_30; // +0x30
 };
 
-// The global game/manager settings singleton (*0x64556c); m_8c/m_90 = the screen
+// The global game/manager settings singleton (*0x64556c); m_modeW/m_modeH = the screen
 // capture width/height.
 DATA(0x0024556c)
 extern CGameRegistry* g_mgrSettings;
@@ -60,7 +60,7 @@ extern CGameRegistry* g_mgrSettings;
 // offsets), but MSVC colored the two callee-saved registers oppositely - retail
 // pins the persistent zero (and the reused return temp) in esi and cnt/img in edi,
 // while this /O2 recompile pins them edi<->esi swapped; that propagates through
-// every null-compare/push. The descriptor fill also CSEs the g_mgrSettings m_8c/m_90
+// every null-compare/push. The descriptor fill also CSEs the g_mgrSettings m_modeW/m_modeH
 // loads where retail re-reads each twice (a scheduling choice). Logic complete; the
 // coloring/scheduling is the allocator's, not source-steerable. See
 // docs/patterns/zero-register-pinning.md + pin-local-for-callee-saved-reg.md.
@@ -115,10 +115,10 @@ i32 SaveScreenshot(
     descB[1] = 0;
     descB[2] = 0;
     descB[3] = 0;
-    descA[2] = mgr->m_8c;
-    descB[5] = mgr->m_90;
-    descA[3] = mgr->m_90;
-    descB[4] = mgr->m_8c;
+    descA[2] = mgr->m_modeW;
+    descB[5] = mgr->m_modeH;
+    descA[3] = mgr->m_modeH;
+    descB[4] = mgr->m_modeW;
     descB[2] = arg4;
     descB[3] = arg5;
     if (img->Capture(descB, arg1, descA, 0x1000000, 0)) {

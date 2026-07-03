@@ -20,12 +20,12 @@
 #include <Gruntz/ResMgr.h>
 #include <Gruntz/Sprite.h>
 
-// CViewport (world->screen transform, g_gameReg->m_30->m_24->m_5c) is the shared
+// CViewport (world->screen transform, g_gameReg->m_world->m_24->m_5c) is the shared
 // <Gruntz/CViewport.h> class: m_worldWidth (+0x30) clamps the bar position;
 // WrapCoord is NO-body so its __thiscall `call 0xa000` reloc-masks
 // (WwdFile::WwdFile_00a000).
 
-// The level/view object (g_gameReg->m_30->m_24) is the canonical CGameViewport
+// The level/view object (g_gameReg->m_world->m_24) is the canonical CGameViewport
 // (<Gruntz/CGameRegistry.h>): +0x10 the on-screen bar RECT, +0x5c the viewport.
 // CDrawTarget + CImageRegistry (the m_10 image registry) come from <Gruntz/ResMgr.h>.
 
@@ -58,7 +58,7 @@ struct CMenuBarFrame {
 DATA(0x00229ad0)
 extern i32 g_serialCounter;
 
-// The CString-read helper (0x155630): receiver = g_gameReg->m_30->m_10.
+// The CString-read helper (0x155630): receiver = g_gameReg->m_world->m_10.
 // NO-body -> reloc-masks (CDDrawWorkerRegistry::CDDrawWorkerRegistry_155630).
 struct CStrReader {
     void ReadField(i32 dst, char* tmp, i32* outZero);
@@ -155,28 +155,28 @@ i32 CActionOptionsMenuBar::LoadAssets() {
     CSprite* spr = 0;
 
     m_active = 0;
-    g_gameReg->m_30->m_10->m_10map.Lookup("GAME_ACTIONOPTIONZMENUBAR", &spr);
+    g_gameReg->m_world->m_10->m_10map.Lookup("GAME_ACTIONOPTIONZMENUBAR", &spr);
     m_frame = (spr && spr->m_64 <= 1 && spr->m_68 >= 1) ? spr->m_10.m_pData[1] : 0;
     if (!m_frame) {
         return 0;
     }
 
     spr = 0;
-    g_gameReg->m_30->m_10->m_10map.Lookup("GAME_INGAMEICONZ_NORMCHIPZ", &spr);
+    g_gameReg->m_world->m_10->m_10map.Lookup("GAME_INGAMEICONZ_NORMCHIPZ", &spr);
     m_normChipSprite = spr;
     if (!spr) {
         return 0;
     }
 
     spr = 0;
-    g_gameReg->m_30->m_10->m_10map.Lookup("GAME_INGAMEICONZ_HIGHCHIPZ", &spr);
+    g_gameReg->m_world->m_10->m_10map.Lookup("GAME_INGAMEICONZ_HIGHCHIPZ", &spr);
     m_highChipSprite = spr;
     if (!spr) {
         return 0;
     }
 
     spr = 0;
-    g_gameReg->m_30->m_10->m_10map.Lookup("GAME_INGAMEICONZ_GREYCHIPZ", &spr);
+    g_gameReg->m_world->m_10->m_10map.Lookup("GAME_INGAMEICONZ_GREYCHIPZ", &spr);
     m_greyChipSprite = spr;
     if (!spr) {
         return 0;
@@ -198,7 +198,7 @@ void CActionOptionsMenuBar::Init(i32 gx, i32 a, i32 x, i32 y, i32 b, i32 gy) {
     if (x - 0x25 < 0) {
         x = 0x25;
     } else {
-        i32 limit = ((CViewport*)g_gameReg->m_30->m_24->m_5c)->m_worldWidth;
+        i32 limit = ((CViewport*)g_gameReg->m_world->m_24->m_5c)->m_worldWidth;
         if (x + 0x25 >= limit) {
             x = limit - 0x26;
         }
@@ -317,11 +317,11 @@ i32 CActionOptionsMenuBar::Render() {
     }
     i32 sx = m_screenX;
     i32 sy = m_screenY;
-    ((CViewport*)g_gameReg->m_30->m_24->m_5c)->WrapCoord(&sx, &sy);
+    ((CViewport*)g_gameReg->m_world->m_24->m_5c)->WrapCoord(&sx, &sy);
 
     i32 r[4];
-    i32* src = g_gameReg->m_30->m_24->m_barRect;
-    i32 ctx = g_gameReg->m_30->m_drawTarget->m_drawContext;
+    i32* src = g_gameReg->m_world->m_24->m_barRect;
+    i32 ctx = g_gameReg->m_world->m_drawTarget->m_drawContext;
     r[0] = src[0];
     r[1] = src[1];
     r[2] = src[2];
@@ -329,7 +329,7 @@ i32 CActionOptionsMenuBar::Render() {
     ((CMenuBarFrame*)m_frame)->Draw(ctx, sy, sx, r, 0);
 
     if (m_button0Frame) {
-        i32* src2 = g_gameReg->m_30->m_24->m_barRect;
+        i32* src2 = g_gameReg->m_world->m_24->m_barRect;
         r[0] = src2[0];
         r[1] = src2[1];
         r[2] = src2[2];
@@ -337,7 +337,7 @@ i32 CActionOptionsMenuBar::Render() {
         ((CMenuBarFrame*)m_frame)->Draw(ctx, sy - 0xc, sx + 2, r, 0);
     }
     if (m_button1Frame) {
-        i32* src3 = g_gameReg->m_30->m_24->m_barRect;
+        i32* src3 = g_gameReg->m_world->m_24->m_barRect;
         r[0] = src3[0];
         r[1] = src3[1];
         r[2] = src3[2];
@@ -427,7 +427,7 @@ void CActionOptionsMenuBar::Deactivate() {
 // CActionOptionsMenuBar::Serialize - read this bar's state from an archive.
 // ---------------------------------------------------------------------------
 // @early-stop
-// Stack-packing wall (~96%): retail reuses the dead g_gameReg->m_30 spill slot
+// Stack-packing wall (~96%): retail reuses the dead g_gameReg->m_world spill slot
 // ([esp+0x10]) for the per-block `zero` int, giving a 0x84 frame; our cl gives
 // `zero` its own slot -> 0x88 frame, which shifts every frame-size immediate and
 // arg offset by 4. Body (vtable Transfer dispatch + inlined memset/strcpy) exact.
@@ -440,7 +440,7 @@ i32 CActionOptionsMenuBar::Serialize(CMenuArchive* ar) {
     if (reg == 0) {
         return 0;
     }
-    CSpriteFactoryHolder* mgr = reg->m_30;
+    CSpriteFactoryHolder* mgr = reg->m_world;
     if (mgr == 0) {
         return 0;
     }

@@ -37,7 +37,7 @@
 // CResMgr (image registry at m_10, key table at m_8) + CKeyTable from ResMgr.h.
 // The registry's embedded name->sprite hash table is <registry>->m_10map.
 
-// The per-level state object hung off g_gameReg->m_2c: the expiry path stamps a
+// The per-level state object hung off g_gameReg->m_curState: the expiry path stamps a
 // "time up" command (m_4f4/m_400/m_404) and the clock snapshot (m_3f8/m_3fc).
 struct CLevelState {
     char m_pad00[0x3f8];
@@ -205,7 +205,7 @@ CTimer* CTimer::Init() {
 RVA(0x0009bb00, 0x119)
 i32 CTimer::LoadTimerSprite(i32 a, i32 b) {
     CSprite* spr = 0;
-    g_gameReg->m_30->m_10->m_10map.Lookup("GAME_TIMER", &spr);
+    g_gameReg->m_world->m_10->m_10map.Lookup("GAME_TIMER", &spr);
     m_sprite = spr;
     if (!spr) {
         return 0;
@@ -310,7 +310,7 @@ i32 CTimer::Tick(i32 dt) {
         m_accumHi = 0;
         m_running = 0;
         m_currentMs = 0;
-        CLevelState* ls = (CLevelState*)g_gameReg->m_2c;
+        CLevelState* ls = (CLevelState*)g_gameReg->m_curState;
         ls->m_4f4 = 1;
         ls->m_400 = 0x1f4;
         ls->m_404 = 0;
@@ -325,7 +325,7 @@ i32 CTimer::Tick(i32 dt) {
         if (key != 0) {
             i32 found = 0;
             CTimerNotifyObj* obj =
-                (CTimerNotifyObj*)((CKeyTable*)g_gameReg->m_30->m_8)->FindByKey((i32)key, &found);
+                (CTimerNotifyObj*)((CKeyTable*)g_gameReg->m_world->m_8)->FindByKey((i32)key, &found);
             CTimerNotifyObj* hit = found ? obj : (CTimerNotifyObj*)key;
             if (hit != 0 && hit->m_7c->m_18 != 0) {
                 hit->m_7c->m_18->ResolveDeathAnimation();
@@ -339,7 +339,7 @@ i32 CTimer::Tick(i32 dt) {
         if (key != 0) {
             i32 found = 0;
             CTimerNotifyObj* obj =
-                (CTimerNotifyObj*)((CKeyTable*)g_gameReg->m_30->m_8)->FindByKey((i32)key, &found);
+                (CTimerNotifyObj*)((CKeyTable*)g_gameReg->m_world->m_8)->FindByKey((i32)key, &found);
             CTimerNotifyObj* hit = found ? obj : (CTimerNotifyObj*)key;
             if (hit != 0 && hit->m_7c->m_18 != 0) {
                 hit->m_7c->m_18->NotifyFortUnderAttack();
@@ -509,7 +509,7 @@ i32 CTimer::HandleEvent(CTimerArchive* ar, i32 kind, i32 a3, i32 a4) {
 
 // Per-serialize round counter the CString archive helpers bump (g_serialCounter,
 // = DAT_00629ad0). The frame-name reverse-lookup helper (0x155630) lives on the
-// sprite registry (g_gameReg->m_30->m_10); modeled with NO body -> reloc-masks.
+// sprite registry (g_gameReg->m_world->m_10); modeled with NO body -> reloc-masks.
 DATA(0x00629ad0)
 extern i32 g_serialCounter;
 struct CStrReader {
@@ -533,7 +533,7 @@ i32 CTimer::Serialize(CTimerArchive* ar) {
     if (ar == 0) {
         return 0;
     }
-    CSpriteFactoryHolder* mgr = g_gameReg->m_30;
+    CSpriteFactoryHolder* mgr = g_gameReg->m_world;
     if (mgr == 0) {
         return 0;
     }

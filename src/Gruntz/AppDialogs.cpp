@@ -32,9 +32,9 @@ namespace Utils {
 } // namespace Utils
 
 // The game-registry singleton. Only the offsets this proc walks are modeled:
-//   ((CGameRegLevel*)g_gameReg->m_2c)->m_1c   the current level number
+//   ((CGameRegLevel*)g_gameReg->m_curState)->m_1c   the current level number
 //   g_gameReg->m_38         the Utils::RegistryHelper the values persist through
-//   g_gameReg->m_30->m_24->m_5c->m_84 / ->m_88   the seed X/Y for WM_INITDIALOG
+//   g_gameReg->m_world->m_24->m_5c->m_84 / ->m_88   the seed X/Y for WM_INITDIALOG
 struct CGameRegLevel {
     char m_pad00[0x1c];
     i32 m_1c;
@@ -66,7 +66,7 @@ INT_PTR CALLBACK WarpDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
     switch (msg) {
         case WM_INITDIALOG: {
-            CGameRegWarp* warp = (CGameRegWarp*)g_gameReg->m_30->m_24->m_5c;
+            CGameRegWarp* warp = (CGameRegWarp*)g_gameReg->m_world->m_24->m_5c;
             i32 seedX = warp->m_84;
             i32 seedY = warp->m_88;
             SetDlgItemInt(hDlg, 0x40e, seedX, 0);
@@ -85,12 +85,23 @@ INT_PTR CALLBACK WarpDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 g_warpX = valX;
                 g_warpY = valY;
                 if (IsDlgButtonChecked(hDlg, 0x410)) {
-                    sprintf(szValue, "Level %i Warp X", ((CGameRegLevel*)g_gameReg->m_2c)->m_1c);
+                    sprintf(
+                        szValue,
+                        "Level %i Warp X",
+                        ((CGameRegLevel*)g_gameReg->m_curState)->m_1c
+                    );
                     ((Utils::RegistryHelper*)g_gameReg->m_38)->SetValueDword(szValue, valX);
-                    sprintf(szValue, "Level %i Warp Y", ((CGameRegLevel*)g_gameReg->m_2c)->m_1c);
+                    sprintf(
+                        szValue,
+                        "Level %i Warp Y",
+                        ((CGameRegLevel*)g_gameReg->m_curState)->m_1c
+                    );
                     ((Utils::RegistryHelper*)g_gameReg->m_38)->SetValueDword(szValue, valY);
                     ((Utils::RegistryHelper*)g_gameReg->m_38)
-                        ->SetValueDword("Last Warp Level", ((CGameRegLevel*)g_gameReg->m_2c)->m_1c);
+                        ->SetValueDword(
+                            "Last Warp Level",
+                            ((CGameRegLevel*)g_gameReg->m_curState)->m_1c
+                        );
                 }
                 EndDialog(hDlg, 1);
                 return 1;

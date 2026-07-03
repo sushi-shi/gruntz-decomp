@@ -242,7 +242,7 @@ CStaticHazard::CStaticHazard(CGameObject* obj) : CUserLogic(obj) {
     m_tileCol = m_10->m_5c >> 5;
     m_tileRow = m_10->m_60 >> 5;
     m_10->m_128 = 0;
-    switch (((HazSwitchSrc*)g_gameReg->m_2c)->m_levelKind) {
+    switch (((HazSwitchSrc*)g_gameReg->m_curState)->m_levelKind) {
         case 3:
         case 4:
         case 7:
@@ -265,7 +265,7 @@ CStaticHazard::CStaticHazard(CGameObject* obj) : CUserLogic(obj) {
     m_idleWindow = m_10->m_120;
     m_pulseEpoch = g_645588;
     HazLookupEntry* entry = 0;
-    ((HazSndRoot*)g_gameReg->m_30)->m_cat->m_map.Lookup("LEVEL_STATICHAZARDGO", &entry);
+    ((HazSndRoot*)g_gameReg->m_world)->m_cat->m_map.Lookup("LEVEL_STATICHAZARDGO", &entry);
     if (entry != 0) {
         m_activeWindow = g_buteMgr.GetIntDef("Hazardz", "AniPad", 0x64) + entry->m_aniPadBias;
     } else {
@@ -354,7 +354,7 @@ void CStaticHazard::RegisterActs() {
 RVA(0x000fc0b0, 0xb2)
 i32 CStaticHazard::LoadAttributes2() {
     CGameRegistry* reg = g_gameReg;
-    if (reg->m_118 != 0 && reg->m_134 == 1) {
+    if (reg->m_isEasyMode != 0 && reg->m_134 == 1) {
         return 0;
     }
     u32 phase = g_645588 - m_pulseEpoch;
@@ -417,7 +417,7 @@ i32 CStaticHazard::LoadAttributes() {
                 m_10->m_08 |= 0x20000;
             }
             // clear the hazard cell's bit-0x8000000
-            HazGrid* grid = (HazGrid*)g_gameReg->m_70;
+            HazGrid* grid = (HazGrid*)g_gameReg->m_tileGrid;
             if ((u32)m_tileCol < (u32)grid->m_width && (u32)m_tileRow < (u32)grid->m_height) {
                 *(i32*)(grid->m_rows[m_tileRow] + m_tileCol * 0x1c) &= 0xf7ffffff;
             }
@@ -471,12 +471,12 @@ dispatch:
             m_10->m_74 = m_10->m_128;
             m_10->m_08 |= 0x20000;
         }
-        HazGrid* grid = (HazGrid*)g_gameReg->m_70;
+        HazGrid* grid = (HazGrid*)g_gameReg->m_tileGrid;
         if ((u32)m_tileCol < (u32)grid->m_width && (u32)m_tileRow < (u32)grid->m_height) {
             *(i32*)(grid->m_rows[m_tileRow] + m_tileCol * 0x1c) |= 0x8000000;
         }
     } else {
-        HazGrid* grid = (HazGrid*)g_gameReg->m_70;
+        HazGrid* grid = (HazGrid*)g_gameReg->m_tileGrid;
         if ((u32)m_tileCol < (u32)grid->m_width && (u32)m_tileRow < (u32)grid->m_height) {
             *(i32*)(grid->m_rows[m_tileRow] + m_tileCol * 0x1c) &= 0xf7ffffff;
         }
@@ -495,7 +495,7 @@ dispatch:
                 HazAnimElem* e = d->m_count > 0 ? *d->m_elems : 0;
                 m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_frameSeed);
             }
-            HazGrid* grid = (HazGrid*)g_gameReg->m_70;
+            HazGrid* grid = (HazGrid*)g_gameReg->m_tileGrid;
             if ((u32)m_tileCol < (u32)grid->m_width && (u32)m_tileRow < (u32)grid->m_height) {
                 *(i32*)(grid->m_rows[m_tileRow] + m_tileCol * 0x1c) &= 0xf7ffffff;
             }

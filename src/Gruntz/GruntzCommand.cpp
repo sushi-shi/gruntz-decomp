@@ -47,7 +47,7 @@ public:
 // no-op unless its +0x30 active-game gate is non-null (same gate the cmd-mgr taps).
 struct WwdGameReg {
     char m_pad0[0x30];
-    void* m_30; // +0x30  active-game gate
+    void* m_world; // +0x30  active-game gate
 };
 DATA(0x0024556c)
 extern WwdGameReg* g_gameReg;
@@ -300,7 +300,7 @@ i32 CGruntzCommand::Save(CmdStream* s) {
     if (!s) {
         return 0;
     }
-    if (!g_gameReg->m_30) {
+    if (!g_gameReg->m_world) {
         return 0;
     }
     s->Write(&m_4, 1);
@@ -323,7 +323,7 @@ i32 CGruntzCommand::Load(CmdStream* s) {
     if (!s) {
         return 0;
     }
-    if (!g_gameReg->m_30) {
+    if (!g_gameReg->m_world) {
         return 0;
     }
     s->Read(&m_4, 1);
@@ -348,7 +348,7 @@ i32 CGruntzMultiCommand::NetLoad(CmdStream* s) {
     if (!s) {
         return 0;
     }
-    if (!g_gameReg->m_30) {
+    if (!g_gameReg->m_world) {
         return 0;
     }
     s->Read(&m_4, 1);

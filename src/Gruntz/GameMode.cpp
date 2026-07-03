@@ -648,7 +648,7 @@ i32 CCreditsState::DrawScrollingCredits() {
 // BuildWarpStoneGlitterAnimation (0x19540): a CMultiBootyState (booty) method - the
 // trace mis-homed it on CState (the `this` is really a CMultiBootyState, whose
 // glitter block sits at +0x1d8..+0x1fc). Build 4 "DoNothing" warp-letter animations
-// through the mgr-settings animation factory (g_mgrSettings->m_30->m_8), stash them in
+// through the mgr-settings animation factory (g_mgrSettings->m_world->m_8), stash them in
 // the +0x1ec ptr array (naming-independent offset access), set/clear their active bit,
 // then build the trailing "SimpleAnimation" glitter sprite. The factory Create/SetName/
 // SetTexture/SetCycle are reloc-masked __thiscall externs.
@@ -696,7 +696,7 @@ struct CGlitterColorTable {
 SIZE_UNKNOWN(CGlitterMgr);
 struct CGlitterMgr {
     char m_pad00[0x30];
-    CGlitterMgrM30* m_30; // +0x30
+    CGlitterMgrM30* m_world; // +0x30
     char m_pad34[0x74 - 0x34];
     CGlitterSel* m_74;        // +0x74  selection source
     CGlitterColorTable* m_78; // +0x78  color->handle table
@@ -720,7 +720,7 @@ i32 CState::BuildWarpStoneGlitterAnimation() {
     self->m_1e8 = 0;
     for (i32 i = 0; i < 4; i++) {
         CGlitterAnim* a =
-            g_mgrSettings->m_30->m_8->Create(0, 0, 0, (i != self->m_1d8) ? 1 : 3, "DoNothing", 3);
+            g_mgrSettings->m_world->m_8->Create(0, 0, 0, (i != self->m_1d8) ? 1 : 3, "DoNothing", 3);
         slot[i] = a;
         if (a == 0) {
             return 0;
@@ -731,7 +731,7 @@ i32 CState::BuildWarpStoneGlitterAnimation() {
     for (i32 k = 0; k <= self->m_1d8; k++) {
         slot[k]->m_40 &= ~1;
     }
-    CGlitterAnim* g = g_mgrSettings->m_30->m_8->Create(0, 0, 0, 4, "SimpleAnimation", 3);
+    CGlitterAnim* g = g_mgrSettings->m_world->m_8->Create(0, 0, 0, 4, "SimpleAnimation", 3);
     self->m_1fc = g;
     if (g == 0) {
         return 0;
@@ -743,7 +743,7 @@ i32 CState::BuildWarpStoneGlitterAnimation() {
 
 // LoadGruntEffectSprites (0x1a040): preload the in-game effect/icon animation set.
 // Really a CPlay-layout method (the trace homed it on the CState base); it walks the
-// same g_mgrSettings->m_30->m_8 SimpleAnimation factory as BuildWarpStoneGlitterAnimation
+// same g_mgrSettings->m_world->m_8 SimpleAnimation factory as BuildWarpStoneGlitterAnimation
 // but stores ~15 named effect sprites into the big +0x2fc.. block plus three parallel
 // 8-element sprite arrays (bomb/go-kart/explosion) at +0x224/+0x244/+0x264, positioned
 // from the geometry table. Every factory/lookup/GDI callee is a reloc-masked engine
@@ -848,7 +848,7 @@ i32 CState::LoadGruntEffectSprites() {
     }
     self->m_c->m_10->Install(img, "GRUNTZ_GOKARTGRUNT", &g_dat60b588);
 
-    CGlitterFactory* f = g_mgrSettings->m_30->m_8;
+    CGlitterFactory* f = g_mgrSettings->m_world->m_8;
 
     CGlitterAnim* sw = f->Create(0, 0, 0, 0, "SimpleAnimation", 3);
     self->m_2fc = sw;
@@ -859,7 +859,7 @@ i32 CState::LoadGruntEffectSprites() {
     self->m_2fc->SetCycle("GAME_CYCLE100", 0);
     self->m_2fc->m_40 |= 1;
 
-    CGlitterAnim* wh = g_mgrSettings->m_30->m_8->Create(0, 0, 0, 0, "SimpleAnimation", 3);
+    CGlitterAnim* wh = g_mgrSettings->m_world->m_8->Create(0, 0, 0, 0, "SimpleAnimation", 3);
     self->m_318 = wh;
     if (wh == 0) {
         return 0;
@@ -873,7 +873,7 @@ i32 CState::LoadGruntEffectSprites() {
     p318->m_50 = 7;
     p318->m_4c = tint;
 
-    CGlitterAnim* ex = g_mgrSettings->m_30->m_8->Create(0, 0, 0, 0, "SimpleAnimation", 3);
+    CGlitterAnim* ex = g_mgrSettings->m_world->m_8->Create(0, 0, 0, 0, "SimpleAnimation", 3);
     self->m_300 = ex;
     if (ex == 0) {
         return 0;
@@ -886,7 +886,7 @@ i32 CState::LoadGruntEffectSprites() {
     p300->m_4c = handleA;
     self->m_300->m_40 |= 1;
 
-    CGlitterAnim* dt = g_mgrSettings->m_30->m_8->Create(0, 0, 0, 0, "SimpleAnimation", 3);
+    CGlitterAnim* dt = g_mgrSettings->m_world->m_8->Create(0, 0, 0, 0, "SimpleAnimation", 3);
     self->m_304 = dt;
     if (dt == 0) {
         return 0;
@@ -899,7 +899,7 @@ i32 CState::LoadGruntEffectSprites() {
     p304->m_4c = handleA;
     self->m_304->m_40 |= 1;
 
-    CGlitterAnim* gl = g_mgrSettings->m_30->m_8->Create(0, 0, 0, 0, "SimpleAnimation", 3);
+    CGlitterAnim* gl = g_mgrSettings->m_world->m_8->Create(0, 0, 0, 0, "SimpleAnimation", 3);
     self->m_308 = gl;
     if (gl == 0) {
         return 0;
@@ -912,7 +912,7 @@ i32 CState::LoadGruntEffectSprites() {
     p308->m_4c = handleA;
     self->m_308->m_40 |= 1;
 
-    CGlitterAnim* bb = g_mgrSettings->m_30->m_8->Create(0, 0, 0, 0, "SimpleAnimation", 3);
+    CGlitterAnim* bb = g_mgrSettings->m_world->m_8->Create(0, 0, 0, 0, "SimpleAnimation", 3);
     self->m_30c = bb;
     if (bb == 0) {
         return 0;
@@ -925,7 +925,7 @@ i32 CState::LoadGruntEffectSprites() {
     p30c->m_4c = handleA;
     self->m_30c->m_40 |= 1;
 
-    CGlitterAnim* rz = g_mgrSettings->m_30->m_8->Create(0, 0, 0, 0, "SimpleAnimation", 3);
+    CGlitterAnim* rz = g_mgrSettings->m_world->m_8->Create(0, 0, 0, 0, "SimpleAnimation", 3);
     self->m_310 = rz;
     if (rz == 0) {
         return 0;
@@ -938,7 +938,7 @@ i32 CState::LoadGruntEffectSprites() {
     p310->m_4c = handleA;
     self->m_310->m_40 |= 1;
 
-    CGlitterAnim* cn = g_mgrSettings->m_30->m_8->Create(0, 0, 0, 0, "SimpleAnimation", 3);
+    CGlitterAnim* cn = g_mgrSettings->m_world->m_8->Create(0, 0, 0, 0, "SimpleAnimation", 3);
     self->m_314 = cn;
     if (cn == 0) {
         return 0;
@@ -955,7 +955,7 @@ i32 CState::LoadGruntEffectSprites() {
     // positioned from the geometry table row's {a,c} midpoint; MSVC fuses the three
     // parallel array walks + the geom walk into single induction pointers.
     for (i32 i = 0; i < 8; i++) {
-        CGlitterAnim* b = g_mgrSettings->m_30->m_8->Create(0, 0, 0, 2, "SimpleAnimation", 3);
+        CGlitterAnim* b = g_mgrSettings->m_world->m_8->Create(0, 0, 0, 2, "SimpleAnimation", 3);
         self->m_bomb[i] = b;
         if (b == 0) {
             return 0;
@@ -970,7 +970,7 @@ i32 CState::LoadGruntEffectSprites() {
         self->m_bomb[i]->m_60 = (g_effGeom[i].a + g_effGeom[i].c) / 2;
         self->m_bomb[i]->m_40 |= 1;
 
-        CGlitterAnim* e = g_mgrSettings->m_30->m_8->Create(0, 0, 0, 2, "SimpleAnimation", 3);
+        CGlitterAnim* e = g_mgrSettings->m_world->m_8->Create(0, 0, 0, 2, "SimpleAnimation", 3);
         self->m_expl[i] = e;
         if (e == 0) {
             return 0;
@@ -978,7 +978,7 @@ i32 CState::LoadGruntEffectSprites() {
         e->SetTexture("GAME_EXPLOSION");
         self->m_expl[i]->m_40 |= 1;
 
-        CGlitterAnim* g = g_mgrSettings->m_30->m_8->Create(0, 0, 0, 2, "SimpleAnimation", 3);
+        CGlitterAnim* g = g_mgrSettings->m_world->m_8->Create(0, 0, 0, 2, "SimpleAnimation", 3);
         self->m_gokart[i] = g;
         if (g == 0) {
             return 0;
@@ -1560,7 +1560,7 @@ struct CBootyLookupMap {
     i32 Lookup(char* key, void** out); // FUN_005b8438 CMapStringToOb::Lookup, ret 8
 };
 
-// The music host chain g_gameReg->m_30->m_28->{m_30 gate, Lookup map @+0x10}.
+// The music host chain g_gameReg->m_world->m_28->{m_30 gate, Lookup map @+0x10}.
 struct CBootyMusicHost {
     char m_pad00[0x28];
     struct M28 {

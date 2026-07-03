@@ -1,7 +1,7 @@
 // GruntSprintAnim.cpp - BuildGruntSprintAnimation @0x019920 (graduated from
 // src/Stub/Backlog.cpp). The per-direction grunt "sprint" animation builder: for
 // each of the 8 compass directions it asks the HUD sprite factory
-// (g_gameReg->m_30->m_8) for a "SimpleAnimation" sprite, caches its first frame
+// (g_gameReg->m_world->m_8) for a "SimpleAnimation" sprite, caches its first frame
 // from the directional walk-cycle name "GRUNTZ_NORMALGRUNT_<DIR>_WALK", applies
 // the "GAME_GRUNTSPRINT" cycle geometry, stamps a few fixed fields (the
 // g_gameReg->m_74 sound handle at +0x4c, rate 10 at +0x50, the active flag 1 at
@@ -27,7 +27,7 @@
 
 struct CGsSprite;
 
-// The HUD sprite factory reached via g_gameReg->m_30->m_8 (CreateSprite looks the
+// The HUD sprite factory reached via g_gameReg->m_world->m_8 (CreateSprite looks the
 // template up by class-NAME, the 5th arg; __thiscall ret 0x18). Same shape as the
 // IconLoaders factory.
 struct CGsSpriteFactory {
@@ -107,7 +107,7 @@ i32 CGruntSprintAnim::BuildGruntSprintAnimation() {
     }
 
     for (i32 i = 1; i <= 8; i++) {
-        m_204[i - 1] = ((CGsFactoryHolder*)g_mgrSettings->m_30)
+        m_204[i - 1] = ((CGsFactoryHolder*)g_mgrSettings->m_world)
                            ->m_8->CreateSprite(0, 0, 0, 2, "SimpleAnimation", 3);
         if (m_204[i - 1] == 0) {
             return 0;

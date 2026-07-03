@@ -354,7 +354,7 @@ struct WwdGameRegAux {
     i32 m_3c; // +0x3c
 };
 
-// The on-screen-cue receiver (g_gameReg->m_60). The teleporter spawn fires a
+// The on-screen-cue receiver (g_gameReg->m_cueSink). The teleporter spawn fires a
 // 6-arg cue (CueA, ret 0x18, via the 0x39f4 thunk). External/no-body
 // (reloc-masked).
 SIZE_UNKNOWN(CTeleCueSink);
@@ -371,7 +371,7 @@ struct CTriggerProbe {
     CTrigger* Probe(i32 x, i32 y, i32* outA, i32* outB, i32 flag); // 0x75af0
 };
 
-// The viewport rect base reached as g_gameReg->m_30->m_24->m_5c + 0x40; the
+// The viewport rect base reached as g_gameReg->m_world->m_24->m_5c + 0x40; the
 // on-screen test reads its left/top/right/bottom (m_0/m_4/m_8/m_c).
 SIZE_UNKNOWN(CViewRect);
 struct CViewRect {
@@ -388,7 +388,7 @@ struct CViewRect {
 // CTeleporter.cpp) - the spawn copies its tile/teleport-link fields directly (+0x114/
 // +0x118/+0x11c/+0x120/+0x124/+0x128/+0x164/+0x168, and the +0x7c aux's +0xbc link id).
 
-// The HUD sprite factory the spawn calls (g_gameReg->m_30->m_8->CreateSprite) is the
+// The HUD sprite factory the spawn calls (g_gameReg->m_world->m_8->CreateSprite) is the
 // shared <Gruntz/CTeleSpriteFactory.h> class; its result is cast to CGameObject*.
 
 // CTrigger (the object the probe returns; its m_10 is the HUD sprite read for the
@@ -406,15 +406,15 @@ struct WwdGameReg {
     // (0x2cb1 thunk; __thiscall). Modeled NO-body so the call reloc-masks.
     RECT* GetMessageBounds(RECT* out);
     char m_pad00[0x30];
-    CTeleResHolder* m_30; // +0x30  sprite-factory/viewport holder
+    CTeleResHolder* m_world; // +0x30  sprite-factory/viewport holder
     char m_pad34[0x60 - 0x34];
-    CTeleCueSink* m_60; // +0x60  on-screen cue receiver
+    CTeleCueSink* m_cueSink; // +0x60  on-screen cue receiver
     char m_pad64[0x68 - 0x64];
     CTriggerProbe* m_68; // +0x68  point-probe sink
     char m_pad6c[0x7c - 0x6c];
     WwdGameRegAux* m_7c; // +0x7c
     char m_pad80[0x118 - 0x80];
-    i32 m_118; // +0x118
+    i32 m_isEasyMode; // +0x118
     char m_pad11c[0x130 - 0x11c];
     i32 m_130; // +0x130
     i32 m_134; // +0x134
@@ -735,7 +735,7 @@ CTeleporter::CTeleporter(CGameObject* obj) : CUserLogic(obj) {
 // --- CSecretTeleporterTrigger (0x041e90), vptr 0x5e7564 ---
 RVA(0x00041e90, 0x1ac)
 CSecretTeleporterTrigger::CSecretTeleporterTrigger(CGameObject* obj) : CUserLogic(obj) {
-    if (g_gameReg->m_118 == 0 && g_gameReg->m_134 == 1) {
+    if (g_gameReg->m_isEasyMode == 0 && g_gameReg->m_134 == 1) {
         m_38->m_08 |= 0x10000;
     } else {
         m_10->m_5c = (m_10->m_5c & ~0x1f) + 0x10;
@@ -838,7 +838,7 @@ i32 CSecretTeleporterTrigger::SpawnTeleporter() {
     CTrigger* hit = g_gameReg->m_68->Probe(o->m_5c, o->m_60, &loc0, &loc4, 1);
     if (hit) {
         o = m_10;
-        CTeleSpriteFactory* fac = g_gameReg->m_30->m_8;
+        CTeleSpriteFactory* fac = g_gameReg->m_world->m_8;
         CGameObject* spr = (CGameObject*)fac->CreateSprite(
             0,
             (o->m_114 << 5) + 0x10,
@@ -861,9 +861,9 @@ i32 CSecretTeleporterTrigger::SpawnTeleporter() {
             WwdGameReg* g = g_gameReg;
             i32 ey = eo->m_60;
             i32 ex = eo->m_5c;
-            CViewRect* rc = (CViewRect*)(g->m_30->m_24->m_5c + 0x40);
+            CViewRect* rc = (CViewRect*)(g->m_world->m_24->m_5c + 0x40);
             if (ex < rc->m_right && ex >= rc->m_left && ey < rc->m_bottom && ey >= rc->m_top) {
-                g->m_60->CueA(hit, 0x3fc, -1, 0, -1, -1);
+                g->m_cueSink->CueA(hit, 0x3fc, -1, 0, -1, -1);
             }
         }
         m_38->m_08 |= 0x10000;
@@ -1537,7 +1537,7 @@ struct CWarpMgr {
     char m_pad00[0x4];
     CWarpMgrWnd* m_4; // +0x04
     char m_pad08[0x2c - 0x8];
-    CWarpLevelReg* m_2c; // +0x2c
+    CWarpLevelReg* m_curState; // +0x2c
 };
 SIZE_UNKNOWN(CWarpLeaf);
 struct CWarpLeaf { // offset view of the grunt-logic leaf `this`
@@ -1585,7 +1585,7 @@ i32 CUserLogic::winapi_064540_PostMessageA() {
         return 0;
     }
     if (self->m_warpMode == 0xc) {
-        CWarpLevelReg* reg = g_mgrSettings->m_2c;
+        CWarpLevelReg* reg = g_mgrSettings->m_curState;
         i32 lvl = reg->m_baseLevel + 0x64;
         CWarpStr s;
         FormatWarpStr(&s, "WORLDZ\\LEVEL%i", lvl);

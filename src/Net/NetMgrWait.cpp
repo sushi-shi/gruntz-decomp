@@ -66,10 +66,10 @@ struct WaitSettings {    // g_mgrSettings (0x64556c)
     char m_pad0[0x14];
     i32 m_14; // +0x14  ambient-enabled gate
     char m_pad18[0x30 - 0x18];
-    void* m_30; // +0x30  status-text render surface
+    void* m_world; // +0x30  status-text render surface
     char m_pad34[0x8c - 0x34];
-    i32 m_8c; // +0x8c  screen width
-    i32 m_90; // +0x90  screen height
+    i32 m_modeW; // +0x8c  screen width
+    i32 m_modeH; // +0x90  screen height
 };
 SIZE_UNKNOWN(WaitSettings); // settings view (only touched offsets pinned); size TBD
 
@@ -128,9 +128,9 @@ i32 CNetMgr::WaitForOtherPlayers() {
     RECT rc;
     rc.left = 0;
     rc.top = 0;
-    rc.right = g->m_8c;
-    rc.bottom = g->m_90;
-    EngStr_DrawText(g->m_30, &waitStr, &rc, 0x82, 1, 0xff, 0xff, 0, 1);
+    rc.right = g->m_modeW;
+    rc.bottom = g->m_modeH;
+    EngStr_DrawText(g->m_world, &waitStr, &rc, 0x82, 1, 0xff, 0xff, 0, 1);
 
     i32 resend = 0x1388;
     i32 abort = 0x1d4c0;

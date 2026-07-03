@@ -53,7 +53,7 @@ struct ResMgrCfgEntry { // g_mgrSettings + 0x150 + type*0x238
 };
 struct ResSprite;
 SIZE_UNKNOWN(ResSpriteFactory);
-struct ResSpriteFactory { // g_mgrSettings->m_30->m_8
+struct ResSpriteFactory { // g_mgrSettings->m_world->m_8
     // FUN_001597b0 __thiscall, ret 0x18: build the named eye-candy sprite.
     ResSprite* CreateSprite(i32 kind, i32 px, i32 py, i32 hint, char* name, i32 flags);
 };
@@ -65,7 +65,7 @@ struct ResFactoryHost {
 SIZE_UNKNOWN(ResSettings);
 struct ResSettings {
     char m_pad00[0x30];
-    ResFactoryHost* m_30; // +0x30
+    ResFactoryHost* m_world; // +0x30
     char m_pad34[0x134 - 0x34];
     i32 m_134; // +0x134  resurrect mode
     char m_pad138[0x150 - 0x138];
@@ -180,7 +180,7 @@ i32 CGruntResurrector::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
             g->m_38->m_8 |= 0x10000;
             Notify(node);
             ResSprite* spr =
-                g_resSettings->m_30->m_8->CreateSprite(0, px, py, 0xf4240, "LightFx", 0x40003);
+                g_resSettings->m_world->m_8->CreateSprite(0, px, py, 0xf4240, "LightFx", 0x40003);
             spr->m_7c->Init(spr);
             spr->m_7c->m_18->Configure("GAME_LIGHTING_FLASH", "GAME_FLASH", 8, 1);
         }

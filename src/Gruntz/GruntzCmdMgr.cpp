@@ -17,7 +17,7 @@
 SIZE_UNKNOWN(MgrSettings30);
 struct MgrSettings30 {
     char m_pad0[0x30];
-    i32 m_30; // +0x30
+    i32 m_world; // +0x30
 };
 DATA(0x0024556c)
 extern "C" MgrSettings30* g_mgrSettings;
@@ -293,7 +293,7 @@ i32 CGruntzCmdMgr::IsActive(i32 enable) {
     if (!enable) {
         return 0;
     }
-    return g_mgrSettings->m_30 != 0;
+    return g_mgrSettings->m_world != 0;
 }
 
 // ---------------------------------------------------------------------------

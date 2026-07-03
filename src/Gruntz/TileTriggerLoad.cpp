@@ -61,7 +61,7 @@ i32 CTileTriggerData::LoadV4(CSerialArchive* ar) {
     if (ar == 0) {
         return 0;
     }
-    if (g_gameReg->m_30 == 0) {
+    if (g_gameReg->m_world == 0) {
         return 0;
     }
     ar->Read(&m_08, 4);

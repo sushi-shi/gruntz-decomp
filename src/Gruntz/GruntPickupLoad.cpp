@@ -37,7 +37,7 @@ struct GruntPickupStats {
 };
 #define STATS (*(GruntPickupStats**)((char*)g_gameReg + 0x7c))
 
-// The MEGAPHONE announce path resolves a unit-type count through g_gameReg->m_2c
+// The MEGAPHONE announce path resolves a unit-type count through g_gameReg->m_curState
 // (+0x2dc), a __thiscall counter (thunk 0x15fa). Reloc-masked.
 struct MegaCounter {
     i32 Count(); // thunk 0x15fa (__thiscall ret 0)
@@ -464,7 +464,7 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
         if ((hud->m_5c < GREG_I32(g, 0x144) && hud->m_5c >= GREG_I32(g, 0x13c)
              && hud->m_60 < GREG_I32(g, 0x148) && hud->m_60 >= GREG_I32(g, 0x140))
             || a2 != 0) {
-            g->m_60->CueA(this, id, -1, 0, -1, -1);
+            g->m_cueSink->CueA(this, id, -1, 0, -1, -1);
         }
     }
     AT_I32(0x1a4) = a3;

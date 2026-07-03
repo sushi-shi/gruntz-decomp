@@ -132,15 +132,15 @@ i32 CNamespaceLoader::BuildAssetNamespacePrefixes(
     i32 result;
     if (mode != 0) {
         if (m_c->m_10->HasKeyEqual("GRUNTZ_" + name) == 0) {
-            ((GRLightObj*)g_gameReg->m_60)->Tick();
+            ((GRLightObj*)g_gameReg->m_cueSink)->Tick();
             ((GRFxObj*)g_gameReg->m_68)->Update();
             if (lightGate != 0) {
                 CString cs;
                 cs.LoadString(0x819b);
-                RECT r = *(RECT*)((char*)g_gameReg->m_30->m_24 + 0x10);
+                RECT r = *(RECT*)((char*)g_gameReg->m_world->m_24 + 0x10);
                 RECT r2;
                 CopyRect(&r2, &r);
-                DrawPreview((GRAssetMgr*)g_gameReg->m_30, &cs, &r2, 0x82, 1, 0xff, 0xff, 0, 1);
+                DrawPreview((GRAssetMgr*)g_gameReg->m_world, &cs, &r2, 0x82, 1, 0xff, 0xff, 0, 1);
             }
             g_resourceInstallActive = 1;
             void* tree = m_30->ResolvePath("IMAGEZ_" + name);

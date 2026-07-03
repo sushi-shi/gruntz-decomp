@@ -198,7 +198,7 @@ i32 CTileTriggerSwitchLogic::LoadState(CSerialStream* s) {
     if (s == 0) {
         return 0;
     }
-    if (g_gameReg->m_30 == 0) {
+    if (g_gameReg->m_world == 0) {
         return 0;
     }
     s->TransferIn(&m_08, 4);
@@ -289,7 +289,7 @@ i32 CTileTriggerSwitchLogic::SerializeMatrix(CSerialStream* s) {
     if (s == 0) {
         return 0;
     }
-    if (g_gameReg->m_30 == 0) {
+    if (g_gameReg->m_world == 0) {
         return 0;
     }
     s->Transfer(&m_block[37], 4); // +0xc0
@@ -401,7 +401,7 @@ i32 CTileTriggerSwitchLogic::TransferFlag74(CSerialStream* s) {
     if (s == 0) {
         return 0;
     }
-    if (g_gameReg->m_30 == 0) {
+    if (g_gameReg->m_world == 0) {
         return 0;
     }
     s->Transfer(&m_block[18], 4);
@@ -419,7 +419,7 @@ i32 CTileTriggerSwitchLogic::LoadFlag74(CSerialStream* s) {
     if (s == 0) {
         return 0;
     }
-    if (g_gameReg->m_30 == 0) {
+    if (g_gameReg->m_world == 0) {
         return 0;
     }
     s->TransferIn(&m_block[18], 4);

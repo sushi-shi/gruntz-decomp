@@ -149,7 +149,7 @@ extern "C" u32 g_645588;
 // active-anim descriptor, and ApplyName/ApplyLookupGeometry) - all modeled on
 // CGameObject (<Gruntz/UserLogic.h>). Re-reads m_10/m_38 per access, matching retail.
 
-// The game registry singleton's collision grid (g_gameReg->m_70): an 0x1c-byte
+// The game registry singleton's collision grid (g_gameReg->m_tileGrid): an 0x1c-byte
 // cell grid (m_8[row] -> cell-row base; cols 0x1c B apart) bounded by m_c x m_10.
 struct TBombGrid {
     char m_pad00[0x08];

@@ -275,7 +275,7 @@ i32 CPathHazard::Tick() {
     rect[3] = obj->m_198->m_1c + obj->m_60 - 7;
 
     CGameRegistry* reg = g_pathGameReg;
-    if (reg->m_118 == 0 || reg->m_134 != 1) {
+    if (reg->m_isEasyMode == 0 || reg->m_134 != 1) {
         i32 outA, outB;
         CPathEntity* ent = (CPathEntity*)((CPathCueGate*)reg->m_68)
                                ->QueryAt(obj->m_5c, obj->m_60, &obj->m_144, &outA, &outB, rect);
@@ -388,7 +388,7 @@ i32 CLightningHazard::SiblingTick() {
     rect[3] = obj->m_198->m_1c + obj->m_60 - 7;
 
     CGameRegistry* reg = g_lightGameReg;
-    if (reg->m_118 != 0 && reg->m_134 == 1) {
+    if (reg->m_isEasyMode != 0 && reg->m_134 == 1) {
         // window mode, skip the query
     } else {
         i32 outA, outB;
@@ -439,8 +439,9 @@ i32 CLightningHazard::ArmStrike(i32 a, i32 b) {
     CGameRegistry* reg = g_lightGameReg;
     i32 y = obj->m_60;
     i32 x = obj->m_5c;
-    if (x < reg->m_144 && x >= reg->m_13c && y < reg->m_148 && y >= reg->m_140) {
-        CSndHost* host = (CSndHost*)reg->m_30->m_28;
+    if (x < reg->m_viewOriginR && x >= reg->m_viewOriginL && y < reg->m_viewOriginB
+        && y >= reg->m_viewOriginT) {
+        CSndHost* host = (CSndHost*)reg->m_world->m_28;
         if (host->m_30 == 0) {
             CSndEmitter* out = 0;
             host->m_10.Lookup("LEVEL_CLOUDHAZARDKILL", &out);

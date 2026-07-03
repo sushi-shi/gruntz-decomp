@@ -119,7 +119,7 @@ i32 CGruntTube::SetupTubeAnim(i32 isWater) {
     m_2a0[2] = 0;
     m_2a0[3] = 0;
     m_1c0 = isWater ? "TOOBWATERGRUNT" : "TOOBGRUNT";
-    ((CTubeMgr2c*)g_mgrSettings->m_2c)->Register2bc1(&m_1c0, 1, 1, 0);
+    ((CTubeMgr2c*)g_mgrSettings->m_curState)->Register2bc1(&m_1c0, 1, 1, 0);
     Reset30ee();
     Reset1677(0, 0);
     Reset160e(0, 0);

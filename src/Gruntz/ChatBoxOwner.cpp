@@ -1,6 +1,6 @@
 // ChatBoxOwner.cpp - the on-screen chat/text-box owner page (C:\Proj\Gruntz):
 // place/clear/configure/hit-test/render helpers. The box origin comes from the
-// active viewport (g_gameReg->m_8c/m_90, the viewport X/Y). Only offsets / code
+// active viewport (g_gameReg->m_modeW/m_90, the viewport X/Y). Only offsets / code
 // bytes are load-bearing; helpers are reloc-masked externals.
 #include <rva.h>
 
@@ -91,15 +91,15 @@ CString CChatBoxOwner::GetField1c() {
 RVA(0x00020530, 0x61)
 void CChatBoxOwner::Configure(i32 mode) {
     m_8 = mode;
-    // The dev read both viewport coords (g_gameReg->m_8c width + m_90 height) but
+    // The dev read both viewport coords (g_gameReg->m_modeW width + m_90 height) but
     // uses only height here; retail keeps the dead width load+spill (see the marker
     // above + docs/patterns/dead-global-read-spill-dce.md).
     if (mode == 1 || mode == 3) {
         m_0 = 0;
-        m_4 = g_gameReg->m_90 - 66;
+        m_4 = g_gameReg->m_modeH - 66;
     } else if (mode == 2) {
         m_0 = 0xa0;
-        m_4 = g_gameReg->m_90 - 66;
+        m_4 = g_gameReg->m_modeH - 66;
     }
     m_14->m_34 = 1;
 }
@@ -119,20 +119,20 @@ i32 CChatBoxOwner::HitTest(i32 x, i32 y) {
     // + docs/patterns/dead-global-read-spill-dce.md).
     if (m_8 == 3) {
         if (x < 0x40) {
-            if (y >= g_gameReg->m_90 - 0x40) {
+            if (y >= g_gameReg->m_modeH - 0x40) {
                 return 1;
             }
         }
         if (x <= 0x40) {
             return 0;
         }
-        if (y < g_gameReg->m_90 - 0x20) {
+        if (y < g_gameReg->m_modeH - 0x20) {
             return 0;
         }
         return 1;
     }
     if (x < 0x40) {
-        if (y >= g_gameReg->m_90 - 0x40) {
+        if (y >= g_gameReg->m_modeH - 0x40) {
             return 1;
         }
     }
@@ -142,7 +142,7 @@ i32 CChatBoxOwner::HitTest(i32 x, i32 y) {
     if (x >= m_0 + 0x1e0) {
         return 0;
     }
-    if (y < g_gameReg->m_90 - 0x20) {
+    if (y < g_gameReg->m_modeH - 0x20) {
         return 0;
     }
     return 1;
@@ -155,7 +155,7 @@ i32 CChatBoxOwner::HitTest(i32 x, i32 y) {
 // final sweep; see the disasm at RVA 0x205c0):
 //
 //   if (m_14->IsAcceptingInput() == 0) goto done;       // 0x3508 on m_14
-//   mode = g_gameReg->m_2c->vtbl->GetInputMode();        // [m_2c]->[vtbl+0x10]
+//   mode = g_gameReg->m_curState->vtbl->GetInputMode();        // [m_2c]->[vtbl+0x10]
 //   if (mode == 0x11) {                                  // a "paste/special" key
 //       CString s = m_14->GetText();                     // 0x12a3
 //       m_14->host->Dispatch(s, 1, 1, 0);                // 0x2243

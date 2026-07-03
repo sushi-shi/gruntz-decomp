@@ -52,11 +52,11 @@ struct MgrDims {
 };
 struct MgrSettings {
     char pad30[0x30];
-    MgrSub30* m_30; // +0x30
+    MgrSub30* m_world; // +0x30
     char pad34[0x68 - 0x34];
     MgrGrid* m_68; // +0x68 (grid; slot[] at +0x1c)
     char pad6c[0x70 - 0x6c];
-    MgrDims* m_70; // +0x70
+    MgrDims* m_tileGrid; // +0x70
 };
 DATA(0x0064556c)
 extern MgrSettings* g_mgrSettings;
@@ -185,7 +185,7 @@ i32 CGruntStep::UpdateArrival() {
                         F(this, 0x2f4) = F(g, 0x1f0);
                         F(this, 0x2d4) = 1;
                         i32 r = BoardTest(
-                            F(P(g_mgrSettings->m_30->m_24, 0x5c), 0) + 0x40,
+                            F(P(g_mgrSettings->m_world->m_24, 0x5c), 0) + 0x40,
                             F(P(this, 0x10), 0x5c),
                             F(P(this, 0x10), 0x60)
                         );
@@ -226,8 +226,8 @@ i32 CGruntStep::UpdateArrival() {
                 if (ay != 0) {
                     lo2 = lo2 + GameRand() % ay;
                 }
-                if (lo < (u32)F(g_mgrSettings->m_70, 0xc)
-                    && lo2 < (u32)F(g_mgrSettings->m_70, 0x10)) {
+                if (lo < (u32)F(g_mgrSettings->m_tileGrid, 0xc)
+                    && lo2 < (u32)F(g_mgrSettings->m_tileGrid, 0x10)) {
                     ProbeMove((i32)lo, (i32)lo2, 0, F(this, 0x248), 1, 0);
                 }
                 if (F(this, 0x328) != 0) {
@@ -274,7 +274,7 @@ tail:
         // The active-move cell: (head node)->link is a [col,row]; gate on the grid
         // cell's flag byte (&0x20).
         i32* cell = (i32*)P(P(this, 0x320), 0x8);
-        u8* flags = (u8*)(F(F(g_mgrSettings->m_70, 0x8) + cell[1] * 4, 0) + cell[0] * 0x1c);
+        u8* flags = (u8*)(F(F(g_mgrSettings->m_tileGrid, 0x8) + cell[1] * 4, 0) + cell[0] * 0x1c);
         if ((flags[0] & 0x20) != 0) {
             StampMove(1, 1);
             if (F(this, 0x328) != 0) {
@@ -426,7 +426,7 @@ i32 CGruntStep::SeekTarget() {
                     != 0) {
                     i32 by = F(P(this, 0x10), 0x60);
                     i32 bx = F(P(this, 0x10), 0x5c);
-                    i32 board = F(P(g_mgrSettings->m_30->m_24, 0x5c), 0);
+                    i32 board = F(P(g_mgrSettings->m_world->m_24, 0x5c), 0);
                     if (bx < F(board, 0x48) && F(board, 0x40) <= bx && by < F(board, 0x4c)
                         && F(board, 0x44) <= by) {
                         GruntCue(this, 0x366, -1, 0, -1, -1);
@@ -517,7 +517,7 @@ i32 CGruntStep::SeekTarget() {
         }
         if (F(this, 0x390) != 0) {
             i32 r = BoardTest(
-                F(P(g_mgrSettings->m_30->m_24, 0x5c), 0) + 0x40,
+                F(P(g_mgrSettings->m_world->m_24, 0x5c), 0) + 0x40,
                 F(P(this, 0x10), 0x5c),
                 F(P(this, 0x10), 0x60)
             );

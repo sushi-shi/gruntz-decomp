@@ -113,9 +113,9 @@ struct CScanTileMgr {
     CGruntScan* m_grid[4][15]; // +0x1c
 };
 
-// The board grid (g_gameReg->m_70): dims at +0xc/+0x10.
+// The board grid (g_gameReg->m_tileGrid): dims at +0xc/+0x10.
 
-// The on-screen cue mgr (g_gameReg->m_60): fires the grunt entrance cue (0x4039f4).
+// The on-screen cue mgr (g_gameReg->m_cueSink): fires the grunt entrance cue (0x4039f4).
 struct CScanCueMgr {
     void PlayCue(CGruntScan* g, i32 code, i32 a, i32 b, i32 c, i32 d); // 0x4039f4
 };
@@ -129,13 +129,13 @@ struct CScanSub30 {
 };
 struct CScanReg {
     char m_pad0[0x30];
-    CScanSub30* m_30; // +0x30
+    CScanSub30* m_world; // +0x30
     char m_pad34[0x60 - 0x34];
-    CScanCueMgr* m_60; // +0x60
+    CScanCueMgr* m_cueSink; // +0x60
     char m_pad64[0x68 - 0x64];
     CScanTileMgr* m_68; // +0x68 the tile-mgr grunt board
     char m_pad6c[0x70 - 0x6c];
-    CScanGrid* m_70; // +0x70 the board grid (dims)
+    CScanGrid* m_tileGrid; // +0x70 the board grid (dims)
 };
 extern "C" CScanReg* g_mgrSettings; // _g_mgrSettings @0x64556c
 extern "C" u32 g_clock;             // _g_645588 @0x645588 running game clock
@@ -418,9 +418,9 @@ i32 CGruntScan::ScanNearestTarget() {
     F(this, 0x2d4) = 1;
     {
         CScanReg* g = g_mgrSettings;
-        if (BoardTest(g->m_30->m_24->m_5c + 0x40, F(P(this, 0x10), 0x5c), F(P(this, 0x10), 0x60))
+        if (BoardTest(g->m_world->m_24->m_5c + 0x40, F(P(this, 0x10), 0x5c), F(P(this, 0x10), 0x60))
             != 0) {
-            g->m_60->PlayCue(this, 0x366, -1, 0, -1, -1);
+            g->m_cueSink->PlayCue(this, 0x366, -1, 0, -1, -1);
         }
     }
 L_scanDone:
@@ -462,7 +462,7 @@ L_wander:
             if (spanY != 0) {
                 baseRow += ScanRand() % spanY;
             }
-            CScanGrid* grid = g_mgrSettings->m_70;
+            CScanGrid* grid = g_mgrSettings->m_tileGrid;
             if ((u32)baseCol < (u32)grid->m_c && (u32)baseRow < (u32)grid->m_10) {
                 this->ProbeMove(baseCol, baseRow, 0, F(this, 0x248), 1, 0);
             }

@@ -59,7 +59,7 @@ struct CExitEntity {
 };
 SIZE_UNKNOWN(CExitEntity);
 
-// The registry probe sink (g_gameReg->m_30->m_8): Probe (0x1597b0, the 0x60a668
+// The registry probe sink (g_gameReg->m_world->m_8): Probe (0x1597b0, the 0x60a668
 // "Warlord" lookup at the bound screen pos) resolves the exit entity or 0.
 struct CExitProbeSink {
     CExitEntity* Probe(i32 a, i32 x, i32 y, i32 b, const char* key, i32 flag); // 0x1597b0
@@ -141,7 +141,7 @@ CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj) {
     }
     slot->m_220 = m_10->m_5c;
     slot->m_224 = m_10->m_60;
-    CExitEntity* e = ((CExitMgr30*)g_exitGameReg->m_30)
+    CExitEntity* e = ((CExitMgr30*)g_exitGameReg->m_world)
                          ->m_8->Probe(0, m_10->m_5c, m_10->m_60, 0, "Warlord", 0x40003);
     if (e != 0) {
         e->m_124 = m_10->m_124;

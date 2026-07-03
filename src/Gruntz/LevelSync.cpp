@@ -91,7 +91,7 @@ i32 CLevelSync::Sync(SyncStream* s, i32 op, i32 p4, i32 p5) {
             return 0;
         }
     } else if (op == 8) {
-        ((MgrReset*)g_gameReg->m_2c)->Reset();
+        ((MgrReset*)g_gameReg->m_curState)->Reset();
         if (m[0] == 0) {
             SubResetA();
             SubResetB();

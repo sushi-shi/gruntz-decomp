@@ -2,7 +2,7 @@
 // unrelated game classes deserialize a fixed field sequence from a stream-reader
 // object (a virtual Read at vtable +0x2c), with string-valued fields read into a
 // scratch buffer and interned against the game registry's name->object map
-// (g_gameReg->m_30->m_10 + 0x10, CMapStringToPtr::Lookup @0x1b8008). A global
+// (g_gameReg->m_world->m_10 + 0x10, CMapStringToPtr::Lookup @0x1b8008). A global
 // sequence counter (g_serialCounter) ticks once per string read. Each Load is a
 // __thiscall taking the reader (ret 4); names are placeholders, only the field
 // offsets + code bytes are load-bearing.
@@ -43,7 +43,7 @@ public:
 // ---------------------------------------------------------------------------
 // The game registry's string->object name map (CMapStringToPtr::Lookup @0x1b8008,
 // __thiscall): Lookup(key, &out) writes the found object (or leaves out untouched).
-// Reached as g_gameReg->m_30->m_10 + 0x10.
+// Reached as g_gameReg->m_world->m_10 + 0x10.
 // ---------------------------------------------------------------------------
 struct CRegNameMap {
     i32 Lookup(char* key, void** out); // 0x1b8008
@@ -118,7 +118,7 @@ i32 CTriggerLoadRec::Load(CStreamReader* s) {
     if (gr == 0) {
         return 0;
     }
-    CRegSub30* reg = (CRegSub30*)gr->m_30;
+    CRegSub30* reg = (CRegSub30*)gr->m_world;
     if (reg == 0) {
         return 0;
     }
@@ -258,7 +258,7 @@ i32 CEventLoadRec::Load(CStreamReader* s) {
     if (s == 0) {
         return 0;
     }
-    CRegSub30* reg = (CRegSub30*)g_mgrSettings->m_30;
+    CRegSub30* reg = (CRegSub30*)g_mgrSettings->m_world;
     if (reg == 0) {
         return 0;
     }
@@ -632,7 +632,7 @@ i32 CArchiveLoadRec::Load(CArchiveReader* s) {
 // ===========================================================================
 // CGruntStateRec::Load (0x0ea990) - the dual-mode grunt-state record loader. A
 // __thiscall taking (reader, mode, a2, a3), ret 0x10. Bails (0) when the reader
-// or the registry sub-object (g_mgrSettings->m_30) is absent. Mode 7 loads the
+// or the registry sub-object (g_mgrSettings->m_world) is absent. Mode 7 loads the
 // fields as registry refs (the CEventLoadRec indexed-type-ref / name-ref idiom,
 // the reader's Read at vtable +0x2c); mode 4 loads them as nested sub-records (the
 // CArchiveLoadRec FillDefault + sub-reader idiom, Read at vtable +0x30). Either
@@ -695,7 +695,7 @@ i32 CGruntStateRec::Load(CDualReader* s, i32 mode, i32 a2, i32 a3) {
     if (s == 0) {
         return 0;
     }
-    CRegSub30* reg = (CRegSub30*)g_mgrSettings->m_30;
+    CRegSub30* reg = (CRegSub30*)g_mgrSettings->m_world;
     if (reg == 0) {
         return 0;
     }
@@ -811,7 +811,7 @@ i32 CGruntStateRec::Load(CDualReader* s, i32 mode, i32 a2, i32 a3) {
 // ===========================================================================
 // CProjLoadRec::Load (0x0e0d40) - a CProjectile/CTimeBomb-family dual-mode record
 // loader. A __thiscall(reader, mode, a2, a3), ret 0x10, bailing (0) when the
-// registry sub-object (g_mgrSettings->m_30) is absent. Mode 7 = READ: a fixed run
+// registry sub-object (g_mgrSettings->m_world) is absent. Mode 7 = READ: a fixed run
 // of raw fields, a 7-entry name-ref loop (CMapStringToOb::Lookup @0x1b8438 through
 // reg->m_2c->m_10), a single CMapPtrToPtr::Lookup @0x1b8760 (through reg->m_8->m_48)
 // gated on the looked-up object's type code (virtual +0x20 == 5), then a g_freeList
@@ -833,7 +833,7 @@ struct CProjObjReg {
     CMapPtrToPtr m_48; // +0x48
 };
 
-// g_mgrSettings->m_30 (the game registry's +0x30 sub-registry) viewed by this
+// g_mgrSettings->m_world (the game registry's +0x30 sub-registry) viewed by this
 // loader: the projectile-object map at +0x8 and the name leaf at +0x2c (the same
 // CDDrawSubMgrLeaf type CSerialSub34 resolves through). +0x8 is a CProjObjReg*
 // (the retail-correct type). Distinct object from CProjReg in ProjActRegistry.cpp.
@@ -924,7 +924,7 @@ struct CProjLoadRec {
 // source-steerable.
 RVA(0x000e0d40, 0x6c2)
 i32 CProjLoadRec::Load(CSerialArchive* s, i32 mode, i32 a2, CSerialObj* a3) {
-    CProjRegSub30* reg = (CProjRegSub30*)(void*)g_mgrSettings->m_30;
+    CProjRegSub30* reg = (CProjRegSub30*)(void*)g_mgrSettings->m_world;
     if (reg == 0) {
         return 0;
     }

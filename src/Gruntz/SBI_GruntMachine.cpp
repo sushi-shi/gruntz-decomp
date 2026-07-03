@@ -53,7 +53,7 @@ i32 CSBI_GruntMachine::Render(i32 z) {
     idx = m_40;
     m_3c = (idx < cfg->m_64 || idx > cfg->m_68) ? 0 : cfg->m_14[idx];
 
-    i32 ctx = g_gameReg->m_30->m_4->m_14;
+    i32 ctx = g_gameReg->m_world->m_4->m_14;
 
     CImage* f = m_44;
     if (f) {

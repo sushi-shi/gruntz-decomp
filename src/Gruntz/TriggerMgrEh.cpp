@@ -15,7 +15,7 @@
 struct CTmGameRegE {
     void ReportError(i32 code, i32 flags); // 0x8dc60 (reloc-masked)
     char p0[0x2c];
-    char* m_2c; // +0x2c  the active world/play object
+    char* m_curState; // +0x2c  the active world/play object
 };
 SIZE_UNKNOWN(CTmGameRegE);
 extern CTmGameRegE* g_gameReg;
@@ -337,7 +337,7 @@ i32 CTriggerMgr::Load(CTmSerReader* ar) {
 // topic:wall topic:eh.
 RVA(0x0006d300, 0x5b2)
 i32 CTriggerMgr::ApplySwitch(i32 sx, i32 sy) {
-    char* plane = g_gameReg->m_2c;
+    char* plane = g_gameReg->m_curState;
     char* view = *(char**)((char*)m_level + 0x24);
     i32 x = sx;
     i32 y = sy;
@@ -446,7 +446,7 @@ i32 CTriggerMgr::ReinitGroup(i32 col, i32 row) {
     if (*(i32*)((char*)g_gameReg + 0x134) != 1) {
         return 0;
     }
-    char* lvl = g_gameReg->m_2c;
+    char* lvl = g_gameReg->m_curState;
     CTmStr name;
     name.Format("Level%i", *(i32*)(lvl + 0x1c), 0);
     i32 color = g_buteMgr.GetIntDef((char*)name.c_str(), "WarpStone", 0);

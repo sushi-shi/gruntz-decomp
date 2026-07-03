@@ -7,10 +7,10 @@
 #include <Ints.h>
 #include <rva.h>
 
-// The settings singleton gate: g_mgrSettings->m_30 must be non-null to serialize.
+// The settings singleton gate: g_mgrSettings->m_world must be non-null to serialize.
 struct CMgrSettingsGate {
     char m_pad0[0x30];
-    void* m_30; // +0x30
+    void* m_world; // +0x30
 };
 extern "C" CMgrSettingsGate* g_mgrSettings; // _g_mgrSettings (VA 0x64556c)
 
@@ -135,7 +135,7 @@ i32 CMgrPersistObj::Save(CMgrWriter* w) {
     if (w == 0) {
         return 0;
     }
-    if (g_mgrSettings->m_30 == 0) {
+    if (g_mgrSettings->m_world == 0) {
         return 0;
     }
     w->Write(&m_1c, 4);

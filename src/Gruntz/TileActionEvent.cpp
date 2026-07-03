@@ -173,13 +173,13 @@ i32 CTileActionEvent::SetActionCode(i32 code) {
         }
     }
     {
-        CActionGrid* grid = (CActionGrid*)g_gameReg->m_30->m_24->m_5c;
+        CActionGrid* grid = (CActionGrid*)g_gameReg->m_world->m_24->m_5c;
         i32* cell = &grid->m_20[grid->m_24[m_tileY] + m_tileX];
         if (*cell == code) {
             return 0;
         }
         *cell = code;
-        ((CActionGridMgr*)g_gameReg->m_70)->RefreshTile();
+        ((CActionGridMgr*)g_gameReg->m_tileGrid)->RefreshTile();
         return 1;
     }
 }
@@ -318,8 +318,9 @@ i32 CTileActionEvent::Process(i32 arg) {
         } else if (effect == 0x13e) {
             i32 px = (m_tileX << 5) + 0x10;
             i32 py = (m_tileY << 5) + 0x10;
-            if (px < g_gameReg->m_144 && px >= g_gameReg->m_13c && py < g_gameReg->m_148
-                && py >= g_gameReg->m_140 && ((WwdGrSprHolder*)g_gameReg->m_30)->m_28->m_30 == 0) {
+            if (px < g_gameReg->m_viewOriginR && px >= g_gameReg->m_viewOriginL
+                && py < g_gameReg->m_viewOriginB && py >= g_gameReg->m_viewOriginT
+                && ((WwdGrSprHolder*)g_gameReg->m_world)->m_28->m_30 == 0) {
                 CImpactSound* snd = (CImpactSound*)Eng_FindSound("GRUNTZ_NORMALGRUNT_IMPACTMM3");
                 if (snd != 0) {
                     snd->Play((void*)g_scrollDelta, 0, 0, 0);
@@ -344,10 +345,10 @@ i32 CTileActionEvent::Process(i32 arg) {
 
     i32 px = (m_tileX << 5) + 0x10;
     i32 py = (m_tileY << 5) + 0x10;
-    if (px < g_gameReg->m_144 && px >= g_gameReg->m_13c && py < g_gameReg->m_148
-        && py >= g_gameReg->m_140) {
+    if (px < g_gameReg->m_viewOriginR && px >= g_gameReg->m_viewOriginL
+        && py < g_gameReg->m_viewOriginB && py >= g_gameReg->m_viewOriginT) {
         CBreakSprite* spr =
-            (CBreakSprite*)((WwdGrSprHolder*)g_gameReg->m_30)
+            (CBreakSprite*)((WwdGrSprHolder*)g_gameReg->m_world)
                 ->m_8->CreateSprite(0, px, py, 0xcf84f, (void*)"Particlez", 0x40003);
         if (spr != 0) {
             spr->ApplyAnim((void*)"GAME_BRICKBREAK", 0);
@@ -601,7 +602,7 @@ i32 CTileActionEvent::SerializeFields(void* ar) {
     if (a == 0) {
         return 0;
     }
-    if (g_gameReg->m_30 == 0) {
+    if (g_gameReg->m_world == 0) {
         return 0;
     }
     a->Write(&m_actionCode, 4);
@@ -629,7 +630,7 @@ i32 CTileActionEvent::DeserializeFields(void* ar) {
     if (a == 0) {
         return 0;
     }
-    if (g_gameReg->m_30 == 0) {
+    if (g_gameReg->m_world == 0) {
         return 0;
     }
     a->Read(&m_actionCode, 4);

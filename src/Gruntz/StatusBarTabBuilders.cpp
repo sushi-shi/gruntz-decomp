@@ -291,7 +291,7 @@ namespace StatusBarTabBuilders {
         m_54 = onLeft;
         if (onLeft == 0) {
             void* out = 0;
-            ((CSbOwner*)g_gameReg->m_30)
+            ((CSbOwner*)g_gameReg->m_world)
                 ->m_mapHost->m_map.Lookup("GAME_STATUSBAR_TABZ_STATZTAB_TABONRIGHT", &out);
             CSbImageSet* n = (CSbImageSet*)out;
             i32 v;
@@ -305,7 +305,7 @@ namespace StatusBarTabBuilders {
             m_48 = (p7 - p5) / 2 + parent->m_18;
         } else {
             void* out = 0;
-            ((CSbOwner*)g_gameReg->m_30)
+            ((CSbOwner*)g_gameReg->m_world)
                 ->m_mapHost->m_map.Lookup("GAME_STATUSBAR_TABZ_STATZTAB_TABONLEFT", &out);
             CSbImageSet* n = (CSbImageSet*)out;
             i32 v;

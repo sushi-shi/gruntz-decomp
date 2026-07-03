@@ -1,7 +1,7 @@
 #include <rva.h>
 #include <Mfc.h>
 #include <Ints.h>
-#include <Gruntz/ResMgr.h> // canonical g_gameReg->m_30 view (CResMgr + CDrawTarget + CImageRegistry)
+#include <Gruntz/ResMgr.h> // canonical g_gameReg->m_world view (CResMgr + CDrawTarget + CImageRegistry)
 #include <Image/CImage.h>  // the m_30/m_34 frame handles ARE CImage (RenderFrame @0x153790)
 // SBI_SideTab.cpp - Gruntz CSBI_SideTab (C:\Proj\Gruntz), the frameless methods.
 // RTTI .?AVCSBI_SideTab@@; a sibling leaf of the SBI family
@@ -23,7 +23,7 @@
 // view; unified so the two call rel32s co-name with retail). No body -> reloc-
 // masked.
 
-// The render host reached via g_gameReg->m_30 is the canonical CResMgr (ResMgr.h):
+// The render host reached via g_gameReg->m_world is the canonical CResMgr (ResMgr.h):
 // its m_drawTarget (+0x04) supplies the RenderFrame surface context at +0x14, and
 // its m_10 image registry (+0x10) embeds the name->sprite hash (m_10map) the glyph
 // builder resolves the tab sprite through. The resolved value is a CSprite.
@@ -56,7 +56,7 @@ SIZE_UNKNOWN(CSideTabFallback);
 // typed CResMgr* here so the render/glyph paths reach it with no reinterpret cast.
 struct CSideTabGameReg {
     char m_pad00[0x30];
-    CResMgr* m_30; // +0x30  resource manager
+    CResMgr* m_world; // +0x30  resource manager
     char m_pad34[0x68 - 0x34];
     void* m_68; // +0x68  per-frame unit-record table base
 };
@@ -120,7 +120,7 @@ i32 CSBI_SideTab::Refresh(i32 unused) {
 RVA(0x000e99c0, 0x4c)
 i32 CSBI_SideTab::Render(i32 z) {
     if (m_58) {
-        i32 ctx = g_gameReg->m_30->m_drawTarget->m_drawContext;
+        i32 ctx = g_gameReg->m_world->m_drawTarget->m_drawContext;
         m_30->RenderFrame((void*)ctx, (void*)m_48, (void*)m_4c, 0);
         m_34->RenderFrame((void*)ctx, (void*)(m_48 + m_50), (void*)m_4c, 0);
     }
@@ -186,7 +186,7 @@ i32 CSBI_SideTab::BuildHandle() {
         return 1;
     }
     CSprite* gm = 0;
-    g_gameReg->m_30->m_10->m_10map.Lookup("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", &gm);
+    g_gameReg->m_world->m_10->m_10map.Lookup("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", &gm);
     i32 glyph;
     if (gm == 0 || val < gm->m_64 || val > gm->m_68) {
         glyph = 0;

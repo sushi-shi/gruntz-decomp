@@ -1,5 +1,5 @@
 // GruntPathScan.cpp - CGrunt::PathScan57db0 (0x057db0, __thiscall ret 0, /GX). The
-// per-tick grunt path-cell scan over the level plane (g_mgrSettings->m_70): recompute
+// per-tick grunt path-cell scan over the level plane (g_mgrSettings->m_tileGrid): recompute
 // the 5x5 dirty rect around the grunt tile, walk the tracked-coord list (m_31c)
 // firing the plane trigger (Probe20f4, flags m_248|0x20000000 / m_24c) on flagged
 // cells, and on a hit recycle the pending-coord nodes back onto g_freeList /

@@ -1,7 +1,7 @@
 // MgrSlotSwap.cpp - 0x1128b0 (__thiscall) on a small game object holding a token at
 // +0x34 plus the (group m_08, index m_0c) coordinates. If the token is live it swaps
 // the token currently parked in the global registry's plane table
-// (((RegM30*)g_mgrSettings->m_30)->m_24->m_5c->m_20[ m_24[m_0c] + m_08 ]) with its own, notifies
+// (((RegM30*)g_mgrSettings->m_world)->m_24->m_5c->m_20[ m_24[m_0c] + m_08 ]) with its own, notifies
 // the registry's m_70 sub-manager, and adopts the previously-parked token. An empty
 // token reports the 0x8009/0x451 diagnostic and returns 0. Every callee + the global
 // are reloc-masked.
@@ -16,7 +16,7 @@ struct RegPlane {
     i32* m_24; // +0x24  per-group offset table
 };
 
-struct RegLevel { // g_mgrSettings->m_30->m_24
+struct RegLevel { // g_mgrSettings->m_world->m_24
     char m_pad0[0x5c];
     RegPlane* m_5c; // +0x5c
 };
@@ -26,7 +26,7 @@ struct RegM30 {
     RegLevel* m_24; // +0x24
 };
 
-struct RegSubMgr {                                // g_mgrSettings->m_70
+struct RegSubMgr {                                // g_mgrSettings->m_tileGrid
     void Notify(i32 group, i32 index, i32 token); // 0x33f0 (thiscall)
 };
 
@@ -53,13 +53,13 @@ i32 CSlotHolder::DoSwap() {
         return 0;
     }
     i32 newTok =
-        ((RegM30*)g_mgrSettings->m_30)
+        ((RegM30*)g_mgrSettings->m_world)
             ->m_24->m_5c
-            ->m_20[((RegM30*)g_mgrSettings->m_30)->m_24->m_5c->m_24[this->m_0c] + this->m_08];
-    ((RegM30*)g_mgrSettings->m_30)
+            ->m_20[((RegM30*)g_mgrSettings->m_world)->m_24->m_5c->m_24[this->m_0c] + this->m_08];
+    ((RegM30*)g_mgrSettings->m_world)
         ->m_24->m_5c
-        ->m_20[((RegM30*)g_mgrSettings->m_30)->m_24->m_5c->m_24[this->m_0c] + this->m_08] = oldTok;
-    ((RegSubMgr*)g_mgrSettings->m_70)->Notify(this->m_08, this->m_0c, oldTok);
+        ->m_20[((RegM30*)g_mgrSettings->m_world)->m_24->m_5c->m_24[this->m_0c] + this->m_08] = oldTok;
+    ((RegSubMgr*)g_mgrSettings->m_tileGrid)->Notify(this->m_08, this->m_0c, oldTok);
     this->m_34 = newTok;
     return 1;
 }

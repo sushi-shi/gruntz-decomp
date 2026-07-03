@@ -6,7 +6,7 @@
 //      (sound handles cached in m_rollingballLoop/m_teleportLoop, gated by the m_rollingballWanted/m_teleportWanted flags);
 //   2. drive the 64-bit "match over" countdown (m_countdownBase/m_countdownLength) once one player is
 //      left, dispatched on the game-mode (g_gameReg->m_134) value;
-//   3. on a resolved winner (g_gameReg->m_2c->ClearPlacedObjects() != -1), walk
+//   3. on a resolved winner (g_gameReg->m_curState->ClearPlacedObjects() != -1), walk
 //      the player rows clearing/refreshing the HUD and resolving death anims;
 //   4. run the goo (m_gooTimerBase/m_gooInterval, "TimePerGoo") and resource (m_resourceTimerBase/m_resourceInterval,
 //      "TimePerResource") respawn timers, reading the intervals from g_buteMgr.
@@ -73,7 +73,7 @@ struct CLookObj {
     CObj7c* m_host; // +0x7c
 };
 
-// The two keyed stores reached through g_gameReg->m_30: a name->record map at
+// The two keyed stores reached through g_gameReg->m_world: a name->record map at
 // (->m_nameMap + 0x10) and an id->record map at (->m_idMap + 0x48).
 struct CResMapStr {
     i32 Lookup(const char* key, CLookObj*& out); // 0x1b8438
@@ -96,7 +96,7 @@ struct CMgrHolderX {
     CResHolder* m_nameMap; // +0x28
 };
 
-// The gauge/HUD sub-object (g_gameReg->m_2c->m_gauge) the respawn timers poke.
+// The gauge/HUD sub-object (g_gameReg->m_curState->m_gauge) the respawn timers poke.
 struct CGaugeObj {
     char _0[0x550];
     i32 m_550;                            // +0x550
@@ -105,7 +105,7 @@ struct CGaugeObj {
     void UpdateRezMachineWakeStatusBar(); // 0x107a10
 };
 
-// The active game-mode object (g_gameReg->m_2c).
+// The active game-mode object (g_gameReg->m_curState).
 struct CGameObj2c {
     char _0[0x2dc];
     CGaugeObj* m_gauge; // +0x2dc
@@ -205,7 +205,7 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
         if (m_rollingballWanted) {
             if (!m_rollingballLoop) {
                 CLookObj* out = 0;
-                ((CMgrHolderX*)g_gameReg->m_30)
+                ((CMgrHolderX*)g_gameReg->m_world)
                     ->m_nameMap->m_map10.Lookup("LEVEL_ROLLINGBALL", out);
                 if (out && out->m_soundFactory) {
                     m_rollingballLoop = out->m_soundFactory->GetItem();
@@ -222,7 +222,7 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
         if (m_teleportWanted) {
             if (!m_teleportLoop) {
                 CLookObj* out = 0;
-                ((CMgrHolderX*)g_gameReg->m_30)
+                ((CMgrHolderX*)g_gameReg->m_world)
                     ->m_nameMap->m_map10.Lookup("GAME_TELEPORTLOOP", out);
                 if (out && out->m_soundFactory) {
                     m_teleportLoop = out->m_soundFactory->GetItem();
@@ -248,10 +248,10 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
             count++;
         }
     }
-    if (count <= 1 && m_phase == 2 && ((CGameObj2c*)g_gameReg->m_2c)->m_gauge->m_550 == 0
-        && ((CGameObj2c*)g_gameReg->m_2c)->m_gauge->m_554 == 0 && m_2a0 == 0) {
+    if (count <= 1 && m_phase == 2 && ((CGameObj2c*)g_gameReg->m_curState)->m_gauge->m_550 == 0
+        && ((CGameObj2c*)g_gameReg->m_curState)->m_gauge->m_554 == 0 && m_2a0 == 0) {
         if ((i64)g_645588 - m_countdownBase >= m_countdownLength) {
-            ((CGameObj2c*)g_gameReg->m_2c)->EnterOverlayDrag(0);
+            ((CGameObj2c*)g_gameReg->m_curState)->EnterOverlayDrag(0);
         }
     }
 
@@ -265,9 +265,9 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
         }
         if ((i64)g_645588 - m_countdownBase >= m_countdownLength) {
             if (g_gameReg->m_134 == 2) {
-                ((CGameObj2c*)g_gameReg->m_2c)->m_594 = 1;
+                ((CGameObj2c*)g_gameReg->m_curState)->m_594 = 1;
             }
-            ((CGameObj2c*)g_gameReg->m_2c)->EnterOverlayDrag(0);
+            ((CGameObj2c*)g_gameReg->m_curState)->EnterOverlayDrag(0);
             m_countdownActive = 0;
             return 0;
         }
@@ -281,13 +281,13 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
         if (g_gameReg->m_134 == 1 && m_2a0 != 0) {
             goto done;
         }
-        ((CGameObj2c*)g_gameReg->m_2c)->EnterOverlayDrag(0);
+        ((CGameObj2c*)g_gameReg->m_curState)->EnterOverlayDrag(0);
         m_countdownActive = 0;
         return 0;
     }
 
     {
-        CGameObj2c* obj = (CGameObj2c*)g_gameReg->m_2c;
+        CGameObj2c* obj = (CGameObj2c*)g_gameReg->m_curState;
         if (g_gameReg->m_134 != 1) {
             i32 idx = obj->ClearPlacedObjects();
             if (idx != -1) {
@@ -302,7 +302,7 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
                         if (slot && slot->m_joined && !slot->m_done && !slot->m_cleared) {
                             slot->m_cleared = 1;
                             CLookObj* out = 0;
-                            if (((CMgrHolderX*)g_gameReg->m_30)
+                            if (((CMgrHolderX*)g_gameReg->m_world)
                                     ->m_idMap->m_map48.Lookup(slot->m_soundId, out)
                                 && out) {
                                 if (out->m_host->m_anim) {
@@ -318,7 +318,7 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
                         if (lastSlot && lastSlot->m_joined && !lastSlot->m_done
                             && !lastSlot->m_cleared) {
                             CLookObj* out = 0;
-                            if (((CMgrHolderX*)g_gameReg->m_30)
+                            if (((CMgrHolderX*)g_gameReg->m_world)
                                     ->m_idMap->m_map48.Lookup(lastSlot->m_soundId, out)
                                 && out) {
                                 if (out->m_host->m_anim) {

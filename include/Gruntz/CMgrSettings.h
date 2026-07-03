@@ -16,7 +16,7 @@
 #include <Ints.h>
 #include <rva.h>
 
-// The registry leaf reached as g_gameReg->m_30->m_10: a CDDrawWorkerRegistry with
+// The registry leaf reached as g_gameReg->m_world->m_10: a CDDrawWorkerRegistry with
 // the name map at +0x10 (read path) and the reverse name+index probe (write path).
 class CDDrawWorkerRegistry {
 public:

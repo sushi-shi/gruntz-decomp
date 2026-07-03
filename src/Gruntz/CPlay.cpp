@@ -204,11 +204,11 @@ struct CGameMgrSettings {
     char p0[0x48];
     CSound* m_48; // +0x48  sound object
     char p4c[0x100 - 0x4c];
-    i32 m_100; // +0x100
+    i32 m_isVoiceEnabled; // +0x100
     char p104[0x118 - 0x104];
-    i32 m_118; // +0x118
+    i32 m_isEasyMode; // +0x118
     char p11c[0x124 - 0x11c];
-    i32 m_124; // +0x124
+    i32 m_scrollSpeed; // +0x124
 };
 
 // The option-source globals ApplyGameOptions pushes/stores (uninitialized .bss).
@@ -244,13 +244,13 @@ void CPlay::ApplyGameOptions() {
     if (g_mgrSettings == 0) {
         return;
     }
-    g_mgrSettings->m_118 = g_opt_22bd70;
+    g_mgrSettings->m_isEasyMode = g_opt_22bd70;
     g_videoResolutionMode = g_opt_22bdc8;
     if (g_gate_2455b4 == 0) {
         if (g_gate_2455bc == 0) {
             g_mgrSettings->ApplyOpt(g_opt_22bd84);
             g_mgrSettings->StoreInputFlag(g_opt_22bd6c);
-            g_mgrSettings->m_100 = g_opt_22bdd4;
+            g_mgrSettings->m_isVoiceEnabled = g_opt_22bdd4;
             g_mgrSettings->StoreInputState(g_opt_22bdc4);
         }
         if (g_gate_2455b4 == 0 && g_gate_2455c0 == 0 && g_mgrSettings->m_48->m_28 != 0) {
@@ -258,7 +258,7 @@ void CPlay::ApplyGameOptions() {
             g_mgrSettings->m_48->SetXMidiVolume(g_opt_22bdcc);
         }
     }
-    g_mgrSettings->m_124 = g_opt_22bd68;
+    g_mgrSettings->m_scrollSpeed = g_opt_22bd68;
 }
 
 // CPlay::Update() (slot 4): the PLAY state's ID = 3.
@@ -356,7 +356,7 @@ i32 CPlay::Render() {
         if (m_levelId == 0x66) { // booty-region one-shot
             u32 elapsed = g_645588 - (u32)m_bootyTimerLo;
             if (elapsed >= (u32)m_bootyInterval) {
-                RegCue(g_64556c->m_60, 0x33e); // reg->m_60 cue
+                RegCue(g_64556c->m_cueSink, 0x33e); // reg->m_cueSink cue
                 m_bootyInterval = BOOTY_INTERVAL_MS;
                 m_bootyIntervalHi = 0;
                 m_bootyTimerLo = (i32)g_645588;
@@ -457,7 +457,7 @@ i32 CPlay::Render() {
                 // walk the level tree (CMapPtrToPtr::Lookup):
                 if (g_64556c->m_15c != 0) {
                     void* out = 0;
-                    MapLookup(g_64556c->m_30->m_8, g_64556c->m_15c, out);
+                    MapLookup(g_64556c->m_world->m_8, g_64556c->m_15c, out);
                     if (out != 0) {
                         SnapWalk();
                     }
@@ -469,8 +469,8 @@ i32 CPlay::Render() {
                 tmp.Format("%s", "");
                 // m_30 is the shared CSpriteFactoryHolder; this WIP path reads it
                 // as a resource map whose +0x24 holds the CopyRect-source rect.
-                CopyRect(&m_hudRect, (const RECT*)((char*)g_64556c->m_30 + 0x24));
-                Eng_HudDraw(g_64556c->m_30, &m_hudRect, 1);
+                CopyRect(&m_hudRect, (const RECT*)((char*)g_64556c->m_world + 0x24));
+                Eng_HudDraw(g_64556c->m_world, &m_hudRect, 1);
             }
             // (CString temp dtor runs here under the EH frame)
         }
@@ -2299,7 +2299,7 @@ struct CursorFxObj { // the held cursor-anim object at m_4e4 (its +0x40 flag wor
     char m_pad00[0x40];
     i32 m_40; // +0x40 flag word (bit0)
 };
-// The on-screen cue sink (g_64556c->m_60); the flailing-grunt path fires a 6-arg cue.
+// The on-screen cue sink (g_64556c->m_cueSink); the flailing-grunt path fires a 6-arg cue.
 SIZE_UNKNOWN(CursorCueSink);
 struct CursorCueSink {
     void PlayCue(i32 g, i32 code, i32 a, i32 b, i32 c, i32 d); // 0x39f4 thiscall
@@ -2381,7 +2381,7 @@ i32 CPlay::LoadCursorSprites(i32 frame, i32 flag) {
         self->m_300 = 0;
         self->m_368 = 1;
         self->m_504 = 0;
-        ((CursorCueSink*)g_64556c->m_60)->PlayCue(0, 0x33e, -1, 1, -1, -1);
+        ((CursorCueSink*)g_64556c->m_cueSink)->PlayCue(0, 0x33e, -1, 1, -1, -1);
         self->m_330 = 0x2710;
         self->m_334 = 0;
         self->m_328 = g_645588;

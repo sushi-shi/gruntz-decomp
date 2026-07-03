@@ -234,9 +234,9 @@ i32 CGrunt::StepArrivalDefenseAlt() {
                 CGruntHud* h = m_10;
                 i32 x = h->m_5c;
                 i32 y = h->m_60;
-                i32* rect = (i32*)(g_pGameRegistry->m_30->m_24->m_5c + 0x40);
+                i32* rect = (i32*)(g_pGameRegistry->m_world->m_24->m_5c + 0x40);
                 if (x < rect[2] && x >= rect[0] && y < rect[3] && y >= rect[1]) {
-                    g_pGameRegistry->m_60->CueA(this, 0x366, -1, 0, -1, -1);
+                    g_pGameRegistry->m_cueSink->CueA(this, 0x366, -1, 0, -1, -1);
                 }
             }
             goto tail;

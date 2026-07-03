@@ -84,7 +84,7 @@ struct BootySndMgr {
 // A typed view of the *0x64556c game-registry singleton for the sound chain.
 struct BzGameReg {
     char m_pad00[0x30];
-    BootySndMgr* m_30; // +0x30
+    BootySndMgr* m_world; // +0x30
     char m_pad34[0x11c - 0x34];
     i32 m_11c; // +0x11c  sound token
 };
@@ -114,7 +114,7 @@ public:
 // rate-limited timer keyed off the g_6bf3c0 frame counter vs the entry's last-played
 // stamp + interval.
 // @early-stop
-// regalloc wall (~95%): retail holds `set` (reg->m_30->m_28) in eax and the play
+// regalloc wall (~95%): retail holds `set` (reg->m_world->m_28) in eax and the play
 // entry `res` live in eax with no reload; the /O2 recompile pins `set` in ecx and
 // spills/reloads `res` at the Play call. Logic + all externs/strings named.
 RVA(0x00018d30, 0xcd)
@@ -128,7 +128,7 @@ i32 CBootyState::vfunc_9(i32) {
     StartTimer(0x50, 0x3e8, 0, 1);
 
     BzGameReg* reg = g_bzReg;
-    BootySndSet* set = reg->m_30->m_28;
+    BootySndSet* set = reg->m_world->m_28;
     i32 token = reg->m_11c;
     if (set->m_30 == 0) {
         BootySndEntry* res = 0;

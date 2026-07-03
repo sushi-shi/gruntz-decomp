@@ -182,7 +182,7 @@ struct CRbCtorObj {
 // m_118 the has-window gate; m_134 the mode discriminator (the time-bonus gate).
 struct CRbReg {
     char m_pad00[0x118];
-    i32 m_118; // +0x118
+    i32 m_isEasyMode; // +0x118
     char m_pad11c[0x134 - 0x11c];
     i32 m_134; // +0x134
 };
@@ -261,7 +261,7 @@ CRollingBall::CRollingBall(CGameObject* obj) : CUserLogic(obj) {
         time = g_buteMgr.GetDwordDef("Hazardz", "RollingBallTimePerTile", 1000);
     }
     CRbReg* reg = (CRbReg*)g_64556c;
-    if (reg->m_118 != 0 && reg->m_134 == 1 && o->m_124 != 1) {
+    if (reg->m_isEasyMode != 0 && reg->m_134 == 1 && o->m_124 != 1) {
         time += 1000;
     }
     m_90 = o->m_118;

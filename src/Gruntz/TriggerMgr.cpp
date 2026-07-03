@@ -81,7 +81,7 @@ struct CTmWorld {
     void* m_504; // +0x504  pending-fx flag
 };
 // The level/plane grid the active-selection center reads its dims from: the chain
-// g_gameReg->m_30->m_24->m_5c lands on a CTmGrid whose +0x30/+0x34 are (cols,rows).
+// g_gameReg->m_world->m_24->m_5c lands on a CTmGrid whose +0x30/+0x34 are (cols,rows).
 struct CTmGrid {
     char p0[0x30];
     i32 m_30; // +0x30  grid cols
@@ -100,8 +100,8 @@ struct CTmGameReg {
     void* PickPausedThenPlayState();       // 0x929b0 (reloc-masked) - the play/pause state obj
     void ReportError(i32 code, i32 flags); // 0x8dc60 (reloc-masked)
     char p0[0x2c];
-    CTmWorld* m_2c;    // +0x2c  the active world/play object
-    CTmRegSub30* m_30; // +0x30  the level/plane grid holder
+    CTmWorld* m_curState; // +0x2c  the active world/play object
+    CTmRegSub30* m_world;    // +0x30  the level/plane grid holder
     char p1[0x34];
     CTriggerMgr* m_68;   // +0x68  the active trigger manager
     CGruntzCmdMgr* m_6c; // +0x6c  the command queue
@@ -172,7 +172,7 @@ public:
     i32 CanShowStamina();       // 0x514a0 (reloc-masked) - region-toggle gate
 };
 
-// CPlay (= the active world, g_gameReg->m_2c): the two reconstructed leaves call its
+// CPlay (= the active world, g_gameReg->m_curState): the two reconstructed leaves call its
 // LoadCursorSprites (the +0x2a8 pending-fx loader, 0xd0120) and OnRegion4 (0xd8bc0).
 // Modeled with the real names so the calls pair exactly (reloc-masked DIR32 otherwise).
 class CPlay {
@@ -577,7 +577,7 @@ i32 CTriggerMgr::ByteTableHas(i32 b) {
 // pending flag (world+0x504), stop the world's fx and clear +0x2a8.
 RVA(0x0007be10, 0x34)
 void CTriggerMgr::StopPendingFx() {
-    CTmWorld* world = g_gameReg->m_2c;
+    CTmWorld* world = g_gameReg->m_curState;
     if (m_pendingFxKind == 0 && world->m_504 == 0) {
         return;
     }
@@ -631,7 +631,7 @@ i32 CTriggerMgr::ClearRow(i32 row) {
     if (row == g_644c54) {
         m_groupFlag = 0;
     }
-    g_gameReg->m_2c->Refresh();
+    g_gameReg->m_curState->Refresh();
     return 1;
 }
 
@@ -805,7 +805,7 @@ i32 CTriggerMgr::ClearRowAndRefresh(i32 startRow) {
     if (startRow == g_644c54) {
         m_groupFlag = 0;
     }
-    CTmWorld* world = g_gameReg->m_2c;
+    CTmWorld* world = g_gameReg->m_curState;
     world->Refresh();
     world->SetStat(0, 0xbb7);
     world->m_2dc->SetMode(1);
@@ -1115,7 +1115,7 @@ i32 CTriggerMgr::HitTestApply(i32 x, i32 y, i32 kind) {
     if (k != 0x14) {
         return 0;
     }
-    CTmWorld* world = g_gameReg->m_2c;
+    CTmWorld* world = g_gameReg->m_curState;
     char* sub = *(char**)((char*)world + 0x3f4);
     u32 lo = (u32)g_645588 - (u32) * (i32*)(sub + 0x38);
     i32 hi = 0 - *(i32*)(sub + 0x3c) - (g_645588 < *(i32*)(sub + 0x38) ? 1 : 0);
@@ -1169,7 +1169,7 @@ i32 CTriggerMgr::TriggerCell(i32 x, i32 y) {
         i32* rec = *(i32**)((char*)m_recHead + 0x8);
         cell = (CTmCell*)m_grid[rec[1] + rec[0] * 15];
     }
-    CTmWorld2* world = (CTmWorld2*)((char*)g_gameReg->m_2c);
+    CTmWorld2* world = (CTmWorld2*)((char*)g_gameReg->m_curState);
     i32 kind = ((CTmSelf5*)this)->Classify(x, y);
     if (kind == 2) {
         i32 alt = *(i32*)((char*)cell + 0x170);
@@ -1610,7 +1610,7 @@ i32 CTriggerMgr::ResetGroup(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28
         } else if (hit == cell) {
             // toggle off the pending-fx and rewind
             m_pendingFxKind = 0;
-            ((CTmWorld2*)((char*)g_gameReg->m_2c))->StopFx2(0, 0);
+            ((CTmWorld2*)((char*)g_gameReg->m_curState))->StopFx2(0, 0);
             char* o = *(char**)((char*)hit + 0x10);
             self->PlaceA(*(i32*)(o + 0x5c), *(i32*)(o + 0x60), a18, a14);
             return 1;
@@ -1866,7 +1866,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
         ((CTmOvFwd*)ov)->Forward(x, y);
         return 1;
     }
-    CTmWorld2* world = (CTmWorld2*)g_gameReg->m_2c;
+    CTmWorld2* world = (CTmWorld2*)g_gameReg->m_curState;
     if (m_pendingFxKind == 0) {
         if (((CTmTrigCell*)cell)->Type13Check() == 0) {
             world->StopFx2(0, 0);
@@ -2098,7 +2098,7 @@ void CTriggerMgr::ResetSpawnState() {
     if (m_284 == 0) {
         return;
     }
-    CTmWorld* world = g_gameReg->m_2c;
+    CTmWorld* world = g_gameReg->m_curState;
     CTmStatusBuf* st = *(CTmStatusBuf**)((char*)world + 0x2dc);
     if (st->m_54c != 0) {
         operator delete(st->m_54c);
@@ -2144,7 +2144,7 @@ i32 CTriggerMgr::CycleMoveIcons(i32 skipRow, i32 enable) {
                             *(i32*)((char*)g + 0x1f8) = *(i32*)((char*)g + 0x1f4);
                         }
                         ((CGrunt*)g)->SelectMoveIcon(t);
-                        ((CPlay*)g_gameReg->m_2c)->OnRegion4(1);
+                        ((CPlay*)g_gameReg->m_curState)->OnRegion4(1);
                     } else if (*(i32*)((char*)g + 0x1f8) != -1) {
                         ((CGrunt*)g)->SelectMoveIcon(*(i32*)((char*)g + 0x1f8));
                         *(i32*)((char*)g + 0x1f8) = -1;
@@ -2233,7 +2233,7 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
     }
     i32 maxX = 0;
     i32 maxY = 0;
-    CTmGrid* grid = g_gameReg->m_30->m_24->m_5c;
+    CTmGrid* grid = g_gameReg->m_world->m_24->m_5c;
     i32 minX = grid->m_30 - 1;
     i32 minY = grid->m_34 - 1;
     do {
@@ -2269,7 +2269,7 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
         }
     } while (n != 0);
     if (*(i32*)(self + 0x3e8) == slot) {
-        g_gameReg->m_2c->Center(minX + (maxX - minX) / 2, minY + (maxY - minY) / 2);
+        g_gameReg->m_curState->Center(minX + (maxX - minX) / 2, minY + (maxY - minY) / 2);
         *(i32*)(self + 0x3e8) = -1;
         return 1;
     }
@@ -2289,7 +2289,7 @@ RVA(0x0007d450, 0x112)
 i32 CTriggerMgr::ToggleRegionA() {
     if (m_pendingFxKind != 0) {
         m_pendingFxKind = 0;
-        ((CPlay*)g_gameReg->m_2c)->LoadCursorSprites(0, 0);
+        ((CPlay*)g_gameReg->m_curState)->LoadCursorSprites(0, 0);
         return 0;
     }
     m_pendingFxKind = 0;
@@ -2314,7 +2314,7 @@ i32 CTriggerMgr::ToggleRegionA() {
     }
     if (v != 0x13) {
         m_pendingFxKind = v + 0xc8;
-        ((CPlay*)g_gameReg->m_2c)->LoadCursorSprites(v + 0xc8, 0);
+        ((CPlay*)g_gameReg->m_curState)->LoadCursorSprites(v + 0xc8, 0);
         OverlayTick();
         return 1;
     }
@@ -2334,7 +2334,7 @@ RVA(0x0007d5c0, 0xdc)
 i32 CTriggerMgr::ToggleRegionB() {
     if (m_pendingFxKind != 0) {
         m_pendingFxKind = 0;
-        ((CPlay*)g_gameReg->m_2c)->LoadCursorSprites(0, 0);
+        ((CPlay*)g_gameReg->m_curState)->LoadCursorSprites(0, 0);
         return 0;
     }
     m_pendingFxKind = 0;
@@ -2365,7 +2365,7 @@ i32 CTriggerMgr::ToggleRegionB() {
         return 1;
     }
     m_pendingFxKind = kind + 0xc8;
-    ((CPlay*)g_gameReg->m_2c)->LoadCursorSprites(kind + 0xc8, 0);
+    ((CPlay*)g_gameReg->m_curState)->LoadCursorSprites(kind + 0xc8, 0);
     OverlayTick();
     return 1;
 }

@@ -46,7 +46,7 @@ struct CGameRegMapHolder {
     CIconMapHolder* m_28; // +0x28  the map holder (Lookup table at +0x10)
 };
 
-// The tile occupancy grid reached as g_gameReg->m_70. A flat row-table of cell
+// The tile occupancy grid reached as g_gameReg->m_tileGrid. A flat row-table of cell
 // rows (m_8); each cell is 0x1c bytes (7 dwords), indexed by tile (x,y). The
 // place handler clears bit 0x40000 in a cell.
 struct CIconTileGrid {

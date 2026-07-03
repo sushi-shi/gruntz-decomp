@@ -19,14 +19,14 @@ struct CGameReg {
     char m_pad0[4];
     GameWnd* m_4; // +0x04 (m_4->m_4 is the top-level HWND)
     char m_pad8[0x2c - 8];
-    void* m_2c; // +0x2c
+    void* m_curState; // +0x2c
     char m_pad30[0x54 - 0x30];
     void* m_54; // +0x54
     void* m_58; // +0x58
     char m_pad5c[0x100 - 0x5c];
-    i32 m_100; // +0x100
+    i32 m_isVoiceEnabled; // +0x100
     char m_pad104[0x118 - 0x104];
-    i32 m_118; // +0x118
+    i32 m_isEasyMode; // +0x118
     char m_pad11c[0x130 - 0x11c];
     i32 m_130; // +0x130
     i32 m_134; // +0x134
@@ -585,7 +585,7 @@ namespace ApiCallerStubs {
     void winapi_036d50_EnableWindow_GetDlgItem_IsDlgButtonChecked(HWND hWnd) {
         if (g_gameReg) {
             i32 checked = IsDlgButtonChecked(hWnd, 0x475);
-            g_gameReg->m_100 = checked;
+            g_gameReg->m_isVoiceEnabled = checked;
             EnableWindow(GetDlgItem(hWnd, 0x476), checked);
         }
     }
@@ -600,11 +600,11 @@ namespace ApiCallerStubs {
         }
     }
 
-    // __cdecl: cache the checkbox state into g_gameReg->m_118.
+    // __cdecl: cache the checkbox state into g_gameReg->m_isEasyMode.
     RVA(0x00036e10, 0x26)
     void winapi_036e10_IsDlgButtonChecked(HWND hWnd) {
         if (g_gameReg) {
-            g_gameReg->m_118 = IsDlgButtonChecked(hWnd, 0x455);
+            g_gameReg->m_isEasyMode = IsDlgButtonChecked(hWnd, 0x455);
         }
     }
 
@@ -1437,7 +1437,7 @@ namespace ApiCallerStubs {
         switch (msg) {
             case 0x110:
                 g_curDlg_64557c = hWnd;
-                g_peerSession = (PeerSession_0be490*)g_gameReg->m_2c;
+                g_peerSession = (PeerSession_0be490*)g_gameReg->m_curState;
                 OnLobbyInit_2c66(hWnd, g_peerSession);
                 return 1;
             case 0x111:
@@ -1504,7 +1504,7 @@ namespace ApiCallerStubs {
         switch (msg) {
             case 0x110:
                 g_curDlg_64557c = hWnd;
-                g_peerSession = (PeerSession_0be490*)g_gameReg->m_2c;
+                g_peerSession = (PeerSession_0be490*)g_gameReg->m_curState;
                 OnLobbyInit_371f(hWnd, g_peerSession);
                 return 1;
             case 0x111:
@@ -2394,7 +2394,7 @@ namespace ApiCallerStubs {
 
     // Free init helper at RVA 0x500930 (__stdcall(int)).
     void __stdcall Prep_500930(i32 flag);
-    // A sub-object reached via g_gameReg->m_2c whose Refresh() is at RVA 0x4d8c60.
+    // A sub-object reached via g_gameReg->m_curState whose Refresh() is at RVA 0x4d8c60.
     struct SubMgr_0fe460 {
         void Refresh(); // RVA 0x4d8c60
     };
@@ -2419,7 +2419,7 @@ namespace ApiCallerStubs {
             Prep_500930(1);
             SetRect(&m_10, 0, 0, 0xa0, 0x1e0);
             Resize(1);
-            ((SubMgr_0fe460*)g_gameReg->m_2c)->Refresh();
+            ((SubMgr_0fe460*)g_gameReg->m_curState)->Refresh();
             if (!Validate()) {
                 g_gameReg->ReportError(0x80e4, 0x448);
                 return 0;
@@ -2431,7 +2431,7 @@ namespace ApiCallerStubs {
 
     void __stdcall Prep_12fd(i32 mode); // RVA 0x12fd
     struct CGameWnd_fe600 {
-        i32 Sub3d55(); // thiscall, RVA 0x3d55 (on g_gameReg->m_2c)
+        i32 Sub3d55(); // thiscall, RVA 0x3d55 (on g_gameReg->m_curState)
     };
     struct RectWnd_fe600 {
         i32 m_0; // +0x00
@@ -2448,7 +2448,7 @@ namespace ApiCallerStubs {
             Prep_12fd(1);
             SetRect(&m_10, -1, -1, -1, -1);
             Sub194c(2);
-            ((CGameWnd_fe600*)g_gameReg->m_2c)->Sub3d55();
+            ((CGameWnd_fe600*)g_gameReg->m_curState)->Sub3d55();
         }
         return 1;
     }

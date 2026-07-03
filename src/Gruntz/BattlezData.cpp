@@ -423,7 +423,7 @@ void CBattlezData::FillRecord(i32 index, i32 phase) {
         rec[8] = m_28;
         rec[9] = m_2c;
         rec[10] = m_scoreValue;
-        rec[1] = g_gameReg->m_118;
+        rec[1] = g_gameReg->m_isEasyMode;
     } else {
         rec[11] = m_30;
         rec[12] = m_34;

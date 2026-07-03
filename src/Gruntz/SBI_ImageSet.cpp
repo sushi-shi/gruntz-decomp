@@ -1,7 +1,7 @@
 #include <rva.h>
 #include <Mfc.h>
 #include <Ints.h>
-#include <Gruntz/ResMgr.h> // canonical g_gameReg->m_30 view (CResMgr + CImageRegistry + CSprite)
+#include <Gruntz/ResMgr.h> // canonical g_gameReg->m_world view (CResMgr + CImageRegistry + CSprite)
 // SBI_ImageSet.cpp - Gruntz CSBI_ImageSet (C:\Proj\Gruntz), the frameless methods.
 // RTTI .?AVCSBI_ImageSet@@; the most-derived of the SBI image chain
 //   CSBI_ImageSet : CSBI_Image : CSBI_RectOnly : CStatusBarItem.
@@ -43,7 +43,7 @@ struct CImageSetStream {
 // reaches it with no reinterpret cast.
 struct CImageSetGameReg {
     char m_pad00[0x30];
-    CResMgr* m_30; // +0x30  resource manager
+    CResMgr* m_world; // +0x30  resource manager
 };
 SIZE_UNKNOWN(CImageSetGameReg);
 DATA(0x0024556c)
@@ -82,7 +82,7 @@ i32 CSBI_ImageSet::Serialize(CImageSetStream* s, i32 mode, i32 a3, i32 a4) {
     if (s == 0) {
         return 0;
     }
-    CResMgr* reg = g_gameReg->m_30;
+    CResMgr* reg = g_gameReg->m_world;
     if (reg == 0) {
         return 0;
     }

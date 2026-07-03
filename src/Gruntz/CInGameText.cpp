@@ -134,7 +134,7 @@ CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj) {
 
     i32 vis = m_10->m_128;
     if (vis == 1) {
-        if (g_gameReg->m_118 == 0) {
+        if (g_gameReg->m_isEasyMode == 0) {
             m_38->m_08 |= 0x10000;
             return;
         }
@@ -143,7 +143,7 @@ CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj) {
             return;
         }
     } else if (vis == 2) {
-        if (g_gameReg->m_118 != 0 && g_gameReg->m_134 == 1) {
+        if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_134 == 1) {
             m_38->m_08 |= 0x10000;
             return;
         }

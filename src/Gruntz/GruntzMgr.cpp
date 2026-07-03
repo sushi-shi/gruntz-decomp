@@ -287,7 +287,7 @@ struct ScoreNotifier {         // g_gameReg->m_58
     void Tick(i32 wp);         // FUN @ 0x1c53 thunk (this, wp)
     i32 Notify(i32 a, i32 wp); // FUN @ 0x2d97 thunk (this, a, wp) -> nonzero=ok
 };
-struct ScoreSub2c { // g_gameReg->m_2c
+struct ScoreSub2c { // g_gameReg->m_curState
     char m_pad0[0x1c];
     i32 m_1c; // +0x1c  cumulative score
 };
@@ -2411,7 +2411,7 @@ void CGruntzMgr::UpdateScoreHud() {
     if (g_gameReg->m_134 != 1) {
         return;
     }
-    ScoreSub2c* sub = (ScoreSub2c*)g_gameReg->m_2c;
+    ScoreSub2c* sub = (ScoreSub2c*)g_gameReg->m_curState;
 
     ((ScoreHud*)m_scoreHud)->m_1c += ((WorldDeltaTables*)m_cmdGrid)->m_arr20c[g_644c54];
     ((ScoreHud*)m_scoreHud)->m_20 += ((WorldDeltaTables*)m_cmdGrid)->m_arr21c[g_644c54];

@@ -38,28 +38,28 @@ extern "C" u32 g_6bf3bc;
 // the offsets the projectile sound/hit-scan paths touch; the DATA pin reloc-masks
 // the `mov ecx,ds:g_gameReg` load against the already-named symbol.
 struct CProjSoundEntry; // map value: the per-effect sound table entry
-struct CProjSoundInner; // reg->m_30->m_28: holds the CMapStringToOb at +0x10
+struct CProjSoundInner; // reg->m_world->m_28: holds the CMapStringToOb at +0x10
 SIZE_UNKNOWN(CProjSpriteFactory);
 struct CProjSpriteFactory {
-    // The HUD sprite factory (reg->m_30->m_8); CreateSprite @0x1597b0, __thiscall.
+    // The HUD sprite factory (reg->m_world->m_8); CreateSprite @0x1597b0, __thiscall.
     CProjRenderObj*
     CreateSprite(i32 kind, i32 geoB, i32 geoA, i32 hint, const char* name, i32 flags);
 };
 SIZE_UNKNOWN(CProjSoundCat);
-struct CProjSoundCat { // reg->m_30: the sound-category object
+struct CProjSoundCat { // reg->m_world: the sound-category object
     char m_pad00[0x8];
     CProjSpriteFactory* m_8; // +0x8  the HUD sprite factory (LightFx shadow)
     char m_pad0c[0x28 - 0xc];
     CProjSoundInner* m_28; // +0x28  -> the lookup map lives at (*m_28)+0x10
 };
-// The level "type" descriptor (reg->m_2c); LoadProjectileEffects switches on its
+// The level "type" descriptor (reg->m_curState); LoadProjectileEffects switches on its
 // +0x20 terrain-class id to pick the level death effect.
 SIZE_UNKNOWN(CProjLevelInfo);
 struct CProjLevelInfo {
     char m_pad00[0x20];
     i32 m_20; // +0x20  terrain-class id (switch key)
 };
-// The level terrain plane (reg->m_70): a width x height grid of 28-byte tiles
+// The level terrain plane (reg->m_tileGrid): a width x height grid of 28-byte tiles
 // reached row-major through the +0x8 row-pointer array; tile dword 0 is the
 // terrain flags LoadProjectileEffects tests (water 0x900 / death 0x2 / gate 0x40).
 SIZE_UNKNOWN(CTerrainTile);
@@ -122,7 +122,7 @@ struct CProjSoundEntry {
     CProjSampleFactory* m_10; // +0x10
 };
 // The CMapStringToOb the category exposes (its Lookup is the engine method
-// 0x1b8438). Embedded inside reg->m_30->m_28 at +0x10.
+// 0x1b8438). Embedded inside reg->m_world->m_28 at +0x10.
 SIZE_UNKNOWN(CProjSoundMap);
 struct CProjSoundMap {
     i32 Lookup(const char* key, CProjSoundEntry** out); // 0x1b8438 (ret 8)
@@ -487,7 +487,7 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
     m_arrived = 0;
 
     // Spawn the LightFx shadow companion + activate its two frames.
-    CProjSpriteFactory* factory = (CProjSpriteFactory*)g_gameReg->m_30->m_8;
+    CProjSpriteFactory* factory = (CProjSpriteFactory*)g_gameReg->m_world->m_8;
     m_shadow = factory->CreateSprite(0, owner->m_5c, owner->m_60, 0xcf84f, "LightFx", 0x2040003);
     if (m_shadow != 0) {
         m_shadow->m_7c->Init(m_shadow);
@@ -660,7 +660,7 @@ void CProjectile::RegisterType() {
 // (0xdffd7..0xe00e9) - MSVC5 keeps `dist` live on the x87 stack across the eight
 // tier comparisons and pre-computes m_flightDist*0.9 interleaved with the fsqrt, which
 // is not steerable from C source - plus the effect-spawn regalloc (ecx vs edx for
-// reg->m_30) and the unnamed engine-call relocs. Logic complete; parked.
+// reg->m_world) and the unnamed engine-call relocs. Logic complete; parked.
 // ===========================================================================
 RVA(0x000dfd00, 0x6f5)
 void CProjectile::LoadProjectileEffects() {
@@ -671,8 +671,8 @@ void CProjectile::LoadProjectileEffects() {
     if (m_kind == 0x16) { // WINGZ: loop the flight sound while over the level
         CGameObject* owner = m_10;
         CGameRegistry* reg = g_gameReg;
-        if (owner->m_5c < reg->m_144 && owner->m_5c >= reg->m_13c && owner->m_60 < reg->m_148
-            && owner->m_60 >= reg->m_140) {
+        if (owner->m_5c < reg->m_viewOriginR && owner->m_5c >= reg->m_viewOriginL
+            && owner->m_60 < reg->m_viewOriginB && owner->m_60 >= reg->m_viewOriginT) {
             LaunchSound("GRUNTZ_WINGZGRUNT_PROJECTILELOOP");
         } else if (m_sound != 0) {
             m_sound->StopAndRewind();
@@ -794,7 +794,7 @@ void CProjectile::LoadProjectileEffects() {
     i32 tier = 0;
     if (m_kind != 0x16) {
         CGameRegistry* reg = g_gameReg;
-        CTerrainPlane* plane = (CTerrainPlane*)reg->m_70;
+        CTerrainPlane* plane = (CTerrainPlane*)reg->m_tileGrid;
         i32 tileX = m_targetX >> 5;
         i32 tileY = m_targetY >> 5;
         u32 flags;
@@ -805,10 +805,10 @@ void CProjectile::LoadProjectileEffects() {
         }
         if (flags & 0x900) {
             // water tile: spill a splash then hide the projectile
-            if (m_targetX < reg->m_144 && m_targetX >= reg->m_13c && m_targetY < reg->m_148
-                && m_targetY >= reg->m_140) {
+            if (m_targetX < reg->m_viewOriginR && m_targetX >= reg->m_viewOriginL
+                && m_targetY < reg->m_viewOriginB && m_targetY >= reg->m_viewOriginT) {
                 CProjRenderObj* fx =
-                    ((CProjSoundCat*)reg->m_30)
+                    ((CProjSoundCat*)reg->m_world)
                         ->m_8->CreateSprite(0, m_targetX, m_targetY, 0xcf84f, "Particlez", 0x40003);
                 if (fx != 0) {
                     fx->CacheFirstFrame("GAME_WATER");
@@ -822,7 +822,7 @@ void CProjectile::LoadProjectileEffects() {
             if (flags & 0x40) {
                 tier = 1;
             } else {
-                switch (((CProjLevelInfo*)reg->m_2c)->m_20) {
+                switch (((CProjLevelInfo*)reg->m_curState)->m_20) {
                     case 4:
                     case 5:
                     case 8:
@@ -832,9 +832,9 @@ void CProjectile::LoadProjectileEffects() {
                         break;
                     default:
                         // level death tile: spill the death-splash then hide
-                        if (m_targetX < reg->m_144 && m_targetX >= reg->m_13c
-                            && m_targetY < reg->m_148 && m_targetY >= reg->m_140) {
-                            CProjRenderObj* fx = ((CProjSoundCat*)reg->m_30)
+                        if (m_targetX < reg->m_viewOriginR && m_targetX >= reg->m_viewOriginL
+                            && m_targetY < reg->m_viewOriginB && m_targetY >= reg->m_viewOriginT) {
+                            CProjRenderObj* fx = ((CProjSoundCat*)reg->m_world)
                                                      ->m_8->CreateSprite(
                                                          0,
                                                          m_targetX,
@@ -1049,7 +1049,7 @@ i32 CProjectile::LaunchSound(const char* key) {
     if (reg->m_10 == 0) {
         return 0;
     }
-    CProjSoundCat* cat = (CProjSoundCat*)reg->m_30;
+    CProjSoundCat* cat = (CProjSoundCat*)reg->m_world;
     CProjSoundEntry* entry = 0;
     cat->m_28->m_10.Lookup(key, &entry);
     if (entry == 0) {

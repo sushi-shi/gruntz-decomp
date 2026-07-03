@@ -110,10 +110,12 @@ struct CGameRegistry {
     i32 RunModalDialog(const char* tmpl, void* proc, i32 flag); // modal dialog runner
     void* GetRect(void* buf); // dev-stats bounds query (RECT* buf/ret)
 
-    // Field comments carry the GruntzMgr descriptive name (== <name>) after the
-    // offset - the reconciled "real" names; see <Gruntz/GruntzMgr.h> (CGruntzMgr)
-    // for the fully-typed MFC view. Terse m_<off> names are kept because ~60 TUs
-    // (incl. pure-Win32 ones) reference them and stay untouched.
+    // Well-understood slots are named (the four single-type pointers m_curState/
+    // m_world/m_cueSink/m_tileGrid + the scalar config block); the reused per-mode
+    // void* slots (0x38/48/58/68/6c/74/78/7c) and the per-TU outcome discriminator
+    // (0x134) keep m_<off> - their concrete role differs per game-mode/TU, so one
+    // name would mislead. The `== <name>` tags cross-ref the GruntzMgr MFC view
+    // (<Gruntz/GruntzMgr.h>, CGruntzMgr) where a reconciled name exists.
     char m_pad0[0x4]; // +0x00  CGameMgr vptr slot (base ??_7CGameMgr@@6B@)
     void* m_4;        // +0x04  window/host sub-object
     void* m_8;        // +0x08
@@ -121,10 +123,10 @@ struct CGameRegistry {
     i32 m_10;         // +0x10  base m_10 run-state (level/state discriminator)
     i32 m_14;         // +0x14  base m_14 run-state (has-window / level-loaded gate)
     char m_pad18[0x2c - 0x18];
-    CState* m_2c;               // +0x2c  == m_curState (current game-state; concrete
-                                //         states downcast to their play/level view)
-    CSpriteFactoryHolder* m_30; // +0x30  == m_world (world/map; grunt reaches the
-                                //         sprite factory via m_30->m_8)
+    CState* m_curState;            // +0x2c  current game-state (concrete states
+                                   //         downcast to their play/level view)
+    CSpriteFactoryHolder* m_world; // +0x30  world/map resource holder (grunt reaches
+                                   //         the sprite factory via m_world->m_8)
     char m_pad34[0x38 - 0x34];
     void* m_38; // +0x38  registry-helper / logger sub-object (grunt view)
     char m_pad3c[0x48 - 0x3c];
@@ -133,42 +135,43 @@ struct CGameRegistry {
     void* m_54; // +0x54  == m_inputState (grunt: active-world view)
     void* m_58; // +0x58  == m_saveSink (grunt: progress / notifier)
     char m_pad5c[0x60 - 0x5c];
-    CGruntCueSink* m_60; // +0x60  == m_timer (grunt: cue sink / ->Cue receiver)
+    CGruntCueSink* m_cueSink; // +0x60  on-screen cue receiver (Cue/CueA/CueSpawn;
+                              //         GruntzMgr m_timer per-frame poll view)
     char m_pad64[0x68 - 0x64];
-    void* m_68;      // +0x68  == m_cmdGrid. REUSED slot (authentic per-mode downcast):
-                     //         placement/cue grid (CGruntRec**) in single-player, the
-                     //         goo-well mgr in battlez, a light-fx target in the fx TUs.
-    void* m_6c;      // +0x6c  == m_cmdSubMgr (secondary grid/cmd sub-object)
-    CTileGrid* m_70; // +0x70  == m_cmdNotify (tile occupancy grid + tile-system
-                     //         notifier; the cmd sink writes cell heights into it)
-    void* m_74;      // +0x74  sprite factory / ref-table (BeginGridWalk retry path)
-    void* m_78;      // +0x78  sub-object (per-TU view)
-    void* m_7c;      // +0x7c  == m_scoreHud (HUD/score accumulator + cmd sink);
-                     //         battlez views it as the CBzData score tracker facet.
+    void* m_68;            // +0x68  == m_cmdGrid. REUSED slot (authentic per-mode downcast):
+                           //         placement/cue grid (CGruntRec**) in single-player, the
+                           //         goo-well mgr in battlez, a light-fx target in the fx TUs.
+    void* m_6c;            // +0x6c  == m_cmdSubMgr (secondary grid/cmd sub-object)
+    CTileGrid* m_tileGrid; // +0x70  tile occupancy grid + tile-system notifier
+                           //         (GruntzMgr m_cmdNotify: cmd sink writes cell heights)
+    void* m_74;            // +0x74  sprite factory / ref-table (BeginGridWalk retry path)
+    void* m_78;            // +0x78  sub-object (per-TU view)
+    void* m_7c;            // +0x7c  == m_scoreHud (HUD/score accumulator + cmd sink);
+                           //         battlez views it as the CBzData score tracker facet.
     char m_pad80[0x8c - 0x80];
-    i32 m_8c; // +0x8c  == m_modeW (live video-mode width; cmp ...,0x280==640)
-    i32 m_90; // +0x90  == m_modeH (live video-mode height; ==480)
-    i32 m_94; // +0x94  == m_savedModeW (last-good mode width)
-    i32 m_98; // +0x98  == m_savedModeH (last-good mode height)
+    i32 m_modeW;      // +0x8c  live video-mode width (cmp ...,0x280==640)
+    i32 m_modeH;      // +0x90  live video-mode height (==480)
+    i32 m_savedModeW; // +0x94  last-good mode width
+    i32 m_savedModeH; // +0x98  last-good mode height
     char m_pad9c[0x100 - 0x9c];
-    i32 m_100; // +0x100  == m_isVoiceEnabled ("Voice")
+    i32 m_isVoiceEnabled; // +0x100  "Voice"
     char m_pad104[0x10c - 0x104];
-    i32 m_10c; // +0x10c  == m_isHighDetail ("High_Detail")
-    i32 m_110; // +0x110  == m_isEffectsEnabled ("Effects")
+    i32 m_isHighDetail;     // +0x10c  "High_Detail"
+    i32 m_isEffectsEnabled; // +0x110  "Effects"
     char m_pad114[0x118 - 0x114];
-    i32 m_118; // +0x118  == m_isEasyMode ("Easy_Mode")
-    i32 m_11c; // +0x11c  == m_inputFlag
-    i32 m_120; // +0x120  == m_inputStateVal
-    i32 m_124; // +0x124  == m_scrollSpeed ("Scroll_Speed")
+    i32 m_isEasyMode;  // +0x118  "Easy_Mode" (hazard gate: m_isEasyMode && m_134==1)
+    i32 m_11c;         // +0x11c  == m_inputFlag
+    i32 m_120;         // +0x120  == m_inputStateVal
+    i32 m_scrollSpeed; // +0x124  "Scroll_Speed"
     char m_pad128[0x130 - 0x128];
     i32 m_130; // +0x130  (m_128..m_134 game-outcome block; m_134==3 -> "won")
     i32 m_134; // +0x134  gate/outcome discriminator (grunt: ==1 visible-bounds,
                //         ==2 alt path; GruntzMgr: ==3 "won")
     char m_pad138[0x13c - 0x138];
-    i32 m_13c; // +0x13c  == m_viewOriginL (view min X)
-    i32 m_140; // +0x140  == m_viewOriginT (view min Y)
-    i32 m_144; // +0x144  == m_viewOriginR (view max X)
-    i32 m_148; // +0x148  == m_viewOriginB (view max Y)
+    i32 m_viewOriginL; // +0x13c  view min X
+    i32 m_viewOriginT; // +0x140  view min Y
+    i32 m_viewOriginR; // +0x144  view max X
+    i32 m_viewOriginB; // +0x148  view max Y
     char m_pad14c[0x158 - 0x14c];
     // 0x150.. is the CGruntzMgr m_options[4] (4 x 0x238 options/registry slots ->
     // 0xa30 total); grunt TUs view individual scalars inside it:

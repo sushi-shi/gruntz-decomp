@@ -217,7 +217,7 @@ i32 CMenuState::LoadAssets(i32 a1, i32 a2, i32 a3) {
     }
 
     MenuSndEntry* fm;
-    ((MenuMgrSndHost*)g_menuMgrSettings->m_30)->m_28->m_10.Find("MENU_MENU", &fm);
+    ((MenuMgrSndHost*)g_menuMgrSettings->m_world)->m_28->m_10.Find("MENU_MENU", &fm);
     m_1bc = (i32)fm;
     return 1;
 }

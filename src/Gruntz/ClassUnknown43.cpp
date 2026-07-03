@@ -3,7 +3,7 @@
 // (m_17c/m_180 -> m_300/m_304), early-outs when m_198 is clear, otherwise pulls a
 // peer object from m_260 and either re-syncs its position via g_mgrSettings->m_68
 // or (after a >1000 throttle) re-snaps + screen-bounds-checks before firing
-// g_mgrSettings->m_60. Field names are placeholders (offsets are load-bearing);
+// g_mgrSettings->m_cueSink. Field names are placeholders (offsets are load-bearing);
 // engine callees + g_mgrSettings are external (reloc-masked).
 #include <rva.h>
 #include <Gruntz/CGameRegistry.h>
@@ -124,9 +124,9 @@ int ClassUnknown_43::Update_0f7d90() {
         CGameRegistry* g = g_mgrSettings;
         int y = c->m_60;
         int x = c->m_5c;
-        Rect4* r = &((Reg30*)g->m_30)->m_24->m_5c->rect;
+        Rect4* r = &((Reg30*)g->m_world)->m_24->m_5c->rect;
         if (x < r->right && x >= r->left && y < r->bottom && y >= r->top) {
-            ((MgrObj*)g->m_60)->Func39f4(this, 0x366, -1, 0, -1, -1);
+            ((MgrObj*)g->m_cueSink)->Func39f4(this, 0x366, -1, 0, -1, -1);
         }
     }
     m_390 = 0;

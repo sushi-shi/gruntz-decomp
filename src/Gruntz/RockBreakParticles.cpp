@@ -78,13 +78,13 @@ struct RockCellVtbl {
 inline i32 RockCellObj::GetType(i32 a, i32 b) {
     return (this->*(m_vptr->GetType))(a, b);
 }
-struct RockBoard { // this->m_22c->m_24 (and g_mgrSettings->m_30->m_24)
+struct RockBoard { // this->m_22c->m_24 (and g_mgrSettings->m_world->m_24)
     char m_pad00[0x4c];
     RockCellObj** m_4c; // +0x4c  cell type-object table
     char m_pad50[0x5c - 0x50];
     RockGrid* m_5c; // +0x5c
 };
-struct RockMapHost { // this->m_22c (== g_mgrSettings->m_30)
+struct RockMapHost { // this->m_22c (== g_mgrSettings->m_world)
     char m_pad00[0x8];
     RockSpriteFactory* m_8; // +0x08
     char m_pad0c[0x24 - 0xc];
@@ -98,26 +98,26 @@ struct RockLogicObj {
     void SetType(i32);  // FUN_00001a00 __thiscall
     i32 Reconcile(i32); // FUN_00003adf __thiscall
 };
-struct RockLogicMgr {                         // g_mgrSettings->m_2c->m_2e4
+struct RockLogicMgr {                         // g_mgrSettings->m_curState->m_2e4
     RockLogicObj* FindAt(i32 x, i32 y);       // FUN @ 0x377e __thiscall
     RockLogicObj* FindCell(i32 cellId);       // FUN @ 0x2838 __thiscall
     RockLogicObj* Acquire(i32 cellId, i32 f); // FUN @ 0x21df __thiscall
     void Release(RockLogicObj* o);            // FUN @ 0x2581 __thiscall
     void Reap(RockLogicObj* o);               // FUN @ 0x3aa8 __thiscall
 };
-struct RockSettingsRoot { // g_mgrSettings->m_2c
+struct RockSettingsRoot { // g_mgrSettings->m_curState
     char m_pad00[0x2e4];
     RockLogicMgr* m_2e4; // +0x2e4
 };
-struct RockNotify {                        // g_mgrSettings->m_70
+struct RockNotify {                        // g_mgrSettings->m_tileGrid
     void OnCellSet(i32 x, i32 y, i32 val); // FUN @ 0x33f0 __thiscall
 };
 struct RockMgr { // g_mgrSettings (*0x64556c), this method's typed alias
     char m_pad00[0x2c];
-    RockSettingsRoot* m_2c; // +0x2c
-    RockMapHost* m_30;      // +0x30  write-grid host
+    RockSettingsRoot* m_curState; // +0x2c
+    RockMapHost* m_world;            // +0x30  write-grid host
     char m_pad34[0x70 - 0x34];
-    RockNotify* m_70; // +0x70
+    RockNotify* m_tileGrid; // +0x70
     char m_pad74[0x13c - 0x74];
     RECT m_13c;                    // +0x13c  visible rect
     void Log(const char* s);       // FUN @ 0x417e __thiscall
@@ -160,7 +160,7 @@ RVA(0x0007b440, 0x3f0)
 i32 CRockBreakMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
     Prepare(cx, cy, r, 6, a4);
 
-    RockSettingsRoot* root = g_mgrSettings->m_2c;
+    RockSettingsRoot* root = g_mgrSettings->m_curState;
     i32 tileCx = cx >> 5;
     i32 tileCy = cy >> 5;
     i32 hiX = tileCx + r;
@@ -224,14 +224,14 @@ i32 CRockBreakMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
                 lo->SetType(type);
                 root->m_2e4->Release(lo);
             } else {
-                RockGrid* wg = g_mgrSettings->m_30->m_24->m_5c;
+                RockGrid* wg = g_mgrSettings->m_world->m_24->m_5c;
                 i32 off = wg->m_24[ty];
                 if (type == 0x1e) {
                     wg->m_20[off + tx] = 0x5a;
-                    g_mgrSettings->m_70->OnCellSet(tx, ty, 0x5a);
+                    g_mgrSettings->m_tileGrid->OnCellSet(tx, ty, 0x5a);
                 } else {
                     wg->m_20[off + tx] = 0x5b;
-                    g_mgrSettings->m_70->OnCellSet(tx, ty, 0x5b);
+                    g_mgrSettings->m_tileGrid->OnCellSet(tx, ty, 0x5b);
                 }
             }
 

@@ -258,22 +258,22 @@ void CDroppedObject::RegisterActs() {
 // modeled: the fx-mode selector (m_2c->m_20), the sprite factory (m_30->m_08), the
 // tile-event sink (m_68), the collision grid (m_70), and the on-screen bounds
 // (m_13c..m_148). Address-pinned so the ds:g_gameReg loads reloc-mask.
-struct DropGrid { // g_gameReg->m_70 (0x1c-byte cells; row table @ +8) - the SAME
+struct DropGrid { // g_gameReg->m_tileGrid (0x1c-byte cells; row table @ +8) - the SAME
                   // grid shape CTimeBomb marks/reads.
     char m_pad00[0x08];
     char** m_8; // +0x08  row table
     i32 m_c;    // +0x0c  width
     i32 m_10;   // +0x10  height
 };
-struct DropSpriteFactory { // g_gameReg->m_30->m_08
+struct DropSpriteFactory { // g_gameReg->m_world->m_08
     CGameObject*
     CreateSprite(i32 a0, i32 x, i32 y, i32 id, const char* desc, i32 flags); // 0x1597b0
 };
-struct DropReg30 { // g_gameReg->m_30
+struct DropReg30 { // g_gameReg->m_world
     char m_pad00[0x08];
     DropSpriteFactory* m_08; // +0x08
 };
-struct DropReg2c { // g_gameReg->m_2c
+struct DropReg2c { // g_gameReg->m_curState
     char m_pad00[0x20];
     i32 m_20; // +0x20  fx-mode selector (the splash switch key)
 };
@@ -325,7 +325,7 @@ i32 CDroppedObject::ActA() {
     i32 landed = (i32)(m_60 - g_dropFallBias);
     if (landed > m_68) {
         i32 x = m_10->m_5c;
-        DropGrid* g = (DropGrid*)g_gameReg->m_70;
+        DropGrid* g = (DropGrid*)g_gameReg->m_tileGrid;
         i32 cell;
         {
             i32 cx = x >> 5;
@@ -341,7 +341,7 @@ i32 CDroppedObject::ActA() {
                 if (cell == 0x40) {
                     m_38->m_08 |= 0x10000;
                 } else {
-                    switch (((DropReg2c*)g_gameReg->m_2c)->m_20) {
+                    switch (((DropReg2c*)g_gameReg->m_curState)->m_20) {
                         case 4:
                         case 5:
                         case 8:
@@ -349,10 +349,11 @@ i32 CDroppedObject::ActA() {
                             // fall through
                         case 7:
                         default:
-                            if (x < g_gameReg->m_144 && x >= g_gameReg->m_13c
-                                && m_68 < g_gameReg->m_148 && m_68 >= g_gameReg->m_140) {
+                            if (x < g_gameReg->m_viewOriginR && x >= g_gameReg->m_viewOriginL
+                                && m_68 < g_gameReg->m_viewOriginB
+                                && m_68 >= g_gameReg->m_viewOriginT) {
                                 CGameObject* s =
-                                    ((DropReg30*)g_gameReg->m_30)
+                                    ((DropReg30*)g_gameReg->m_world)
                                         ->m_08
                                         ->CreateSprite(0, x, m_68, 0xcf84f, "Particlez", 0x40003);
                                 if (s != 0) {
@@ -367,10 +368,10 @@ i32 CDroppedObject::ActA() {
                 }
             }
         } else {
-            if (x < g_gameReg->m_144 && x >= g_gameReg->m_13c && m_68 < g_gameReg->m_148
-                && m_68 >= g_gameReg->m_140) {
+            if (x < g_gameReg->m_viewOriginR && x >= g_gameReg->m_viewOriginL
+                && m_68 < g_gameReg->m_viewOriginB && m_68 >= g_gameReg->m_viewOriginT) {
                 CGameObject* s =
-                    ((DropReg30*)g_gameReg->m_30)
+                    ((DropReg30*)g_gameReg->m_world)
                         ->m_08->CreateSprite(0, x, m_68, 0xcf84f, "Particlez", 0x40003);
                 if (s != 0) {
                     s->ApplyName("GAME_WATER");

@@ -99,7 +99,7 @@ i32 CGruntPuddle::Place(i32 a0, i32 a1, i32 a2, i32 a3) {
 // CGruntPuddle::Remove  (0x040d20)
 // ===========================================================================
 // Tear the puddle off a cell. When placed (+0x60), read the tile cell's terrain
-// flags from g_gameReg->m_70 (out-of-bounds -> a synthetic 1); if the cell is
+// flags from g_gameReg->m_tileGrid (out-of-bounds -> a synthetic 1); if the cell is
 // passable (flags & 0x939 or & 0x2) mark the owner dirty (+0x8 |= 0x10000) and
 // unlink this puddle's node from g_gameReg->m_68. Either way notify the owner's
 // +0x1a0 sink, then re-bind/finalize: if the owner is fully constructed
@@ -120,7 +120,7 @@ i32 CGruntPuddle::Remove() {
     if (m_60 != 0) {
         CGameRegistry* reg = g_gameReg;
         i32 ty = m_58;
-        CIconTileGrid* grid = (CIconTileGrid*)reg->m_70;
+        CIconTileGrid* grid = (CIconTileGrid*)reg->m_tileGrid;
         i32 tx = m_54;
         i32 flags;
         if ((u32)tx < (u32)grid->m_c && (u32)ty < (u32)grid->m_10) {

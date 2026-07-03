@@ -104,7 +104,7 @@ i32 CWarpStoneFly::Tick(i32 dt) {
 RVA(0x0010a2f0, 0x35)
 i32 CWarpStoneFly::Draw() {
     m_sprite->Draw(
-        ((CWsfGameMgr*)g_gameReg->m_30)->m_drawable->m_context,
+        ((CWsfGameMgr*)g_gameReg->m_world)->m_drawable->m_context,
         (i32)m_currentX,
         (i32)m_currentY,
         0

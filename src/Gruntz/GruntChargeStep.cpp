@@ -55,11 +55,11 @@ struct MgrNotifySink {
 };
 struct GameMgr {
     char pad0[0x30];
-    MgrSubA* m_30; // +0x30
+    MgrSubA* m_world; // +0x30
     char pad34[0x60 - 0x34];
-    MgrNotifySink* m_60; // +0x60
+    MgrNotifySink* m_cueSink; // +0x60
     char pad64[0x70 - 0x64];
-    MgrBounds* m_70; // +0x70
+    MgrBounds* m_tileGrid; // +0x70
 };
 extern "C" {
     DATA(0x0064556c)
@@ -209,9 +209,9 @@ i32 Grunt::ChargeStep() {
                 m_defenderState = 1;
                 PosObj* mp = m_10;
                 GameMgr* mgr = g_64556c;
-                i32 los = GruntLos1127(mgr->m_30->m_24->m_5c->m_30 + 0x40, mp->m_5c, mp->m_60);
+                i32 los = GruntLos1127(mgr->m_world->m_24->m_5c->m_30 + 0x40, mp->m_5c, mp->m_60);
                 if (los != 0) {
-                    mgr->m_60->Notify(this, 0x366, -1, 0, -1, -1);
+                    mgr->m_cueSink->Notify(this, 0x366, -1, 0, -1, -1);
                 }
             }
             m_dwell = 0;
@@ -233,7 +233,7 @@ i32 Grunt::ChargeStep() {
                 baseY += rand() % spanY;
             }
             GameMgr* mgr = g_64556c;
-            if ((u32)baseX < mgr->m_70->m_c && (u32)baseY < mgr->m_70->m_10) {
+            if ((u32)baseX < mgr->m_tileGrid->m_c && (u32)baseY < mgr->m_tileGrid->m_10) {
                 Attack(baseX, baseY, 0, m_arrivalFlags, 1, 0);
             }
             if (m_coordCount != 0) {

@@ -260,12 +260,12 @@ i32 CWarlord::LoadAttributes2() {
             return 0;
         }
     } else {
-        if (((CWarlordMission*)reg->m_2c)->m_3f4->m_4c == 0) {
+        if (((CWarlordMission*)reg->m_curState)->m_3f4->m_4c == 0) {
             ResolveMovingAnimation();
             return 0;
         }
         if ((i64)(u32)g_645588 - *(i64*)&m_88 >= *(i64*)&m_90) {
-            ((CRegBattleEvent*)reg->m_60)->PostBattleEvent(m_10->m_188, 0x436, -1, -1, -1);
+            ((CRegBattleEvent*)reg->m_cueSink)->PostBattleEvent(m_10->m_188, 0x436, -1, -1, -1);
             m_90 = 0x7530;
             m_94 = 0;
             m_88 = g_645588;

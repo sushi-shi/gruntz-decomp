@@ -74,7 +74,7 @@ struct CNameMap {
     i32 Lookup(const char* key, void** out); // 0x1b8438
 };
 
-// The engine object directory (g_mgrSettings->m_30): the serial-map host at +8
+// The engine object directory (g_mgrSettings->m_world): the serial-map host at +8
 // (map at +0x48), the name-map host at +0x2c (map at +0x10).
 struct CObjDir {
     char _00[8];

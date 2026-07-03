@@ -63,7 +63,7 @@ extern "C" i32 CellTargetable(i32 col, i32 row);     // 0x40107d
 
 extern CStepList2 g_dropList; // ?g_dropList@@3UCStepList2@@A (bound in GruntUpdateStep.cpp)
 
-// The board grid (g_64556c->m_70, CScanGrid-shape): m_8 row table, m_c/m_10 dims, m_60
+// The board grid (g_64556c->m_tileGrid, CScanGrid-shape): m_8 row table, m_c/m_10 dims, m_60
 // dirty rect, m_70/m_74 its size.
 struct CScanCell {
     i32 m_0; // +0x00 flags
@@ -86,7 +86,7 @@ struct CScanListNode {
     i32 m_8; // +0x08 link value
 };
 
-// The cue mgr (g_64556c->m_60): fires the grunt entrance cue (0x39f4, __thiscall).
+// The cue mgr (g_64556c->m_cueSink): fires the grunt entrance cue (0x39f4, __thiscall).
 struct CCueMgr {
     void PlayCue(CGruntStep* g, i32 code, i32 a, i32 b, i32 c, i32 d); // 0x4039f4
 };
@@ -95,11 +95,11 @@ struct CCueMgr {
 // m_60 cue mgr, m_70 board grid.
 struct MgrSettings {
     char pad30[0x30];
-    MgrSub30* m_30; // +0x30
+    MgrSub30* m_world; // +0x30
     char pad34[0x60 - 0x34];
-    CCueMgr* m_60; // +0x60
+    CCueMgr* m_cueSink; // +0x60
     char pad64[0x70 - 0x64];
-    CScanGrid* m_70; // +0x70
+    CScanGrid* m_tileGrid; // +0x70
 };
 extern "C" MgrSettings* g_64556c; // _g_64556c (bound in gruntchargestep)
 
@@ -186,7 +186,7 @@ i32 CGruntStep::ArrivalScanA() {
     }
     F(this, 0x300) = F(this, 0x17c);
     F(this, 0x304) = F(this, 0x180);
-    CScanGrid* grid = g_64556c->m_70;
+    CScanGrid* grid = g_64556c->m_tileGrid;
     GRID_RECT_BOUNDS(grid);
 
     i32 c1[4];
@@ -286,11 +286,11 @@ L_ed006:
         goto L_ed153;
     }
     if (F(this, 0x390) != 0) {
-        char* board = P(g_64556c->m_30->m_24, 0x5c) + 0x40;
+        char* board = P(g_64556c->m_world->m_24, 0x5c) + 0x40;
         i32 x = F(P(this, 0x10), 0x5c);
         i32 y = F(P(this, 0x10), 0x60);
         if (x < F(board, 8) && F(board, 0) <= x && y < F(board, 0xc) && F(board, 4) <= y) {
-            g_64556c->m_60->PlayCue(this, 0x366, -1, 0, -1, -1);
+            g_64556c->m_cueSink->PlayCue(this, 0x366, -1, 0, -1, -1);
         }
         F(this, 0x390) = 0;
     }
@@ -404,7 +404,7 @@ i32 CGruntStep::ArrivalScanB() {
     }
     F(this, 0x300) = F(this, 0x17c);
     F(this, 0x304) = F(this, 0x180);
-    CScanGrid* grid = g_64556c->m_70;
+    CScanGrid* grid = g_64556c->m_tileGrid;
     GRID_RECT_BOUNDS(grid);
 
     i32 c1[4];
@@ -507,8 +507,8 @@ L_ed006b:
             if (F(this, 0x390) != 0) {
                 i32 x = F(P(this, 0x10), 0x5c);
                 i32 y = F(P(this, 0x10), 0x60);
-                if (BoardTest(P(g_64556c->m_30->m_24, 0x5c) + 0x40, x, y) != 0) {
-                    g_64556c->m_60->PlayCue(this, 0x366, -1, 0, -1, -1);
+                if (BoardTest(P(g_64556c->m_world->m_24, 0x5c) + 0x40, x, y) != 0) {
+                    g_64556c->m_cueSink->PlayCue(this, 0x366, -1, 0, -1, -1);
                 }
                 F(this, 0x390) = 0;
             }
@@ -627,7 +627,7 @@ i32 CGruntStep::ArrivalScanC() {
     if (strcmp(g_typeColl.Lookup(F(P(this, 0x14), 0x1c))->m_0, "I") == 0) {
         return 1;
     }
-    CScanGrid* grid = g_64556c->m_70;
+    CScanGrid* grid = g_64556c->m_tileGrid;
     GRID_RECT_BOUNDS(grid);
 
     i32 c1[4];
@@ -718,11 +718,11 @@ i32 CGruntStep::ArrivalScanC() {
     if (this->ProbeMove(F(P(g, 0x10), 0x5c) >> 5, F(P(g, 0x10), 0x60) >> 5, 0, F(this, 0x248), 1, 0)
         != 0) {
         if (F(this, 0x390) != 0) {
-            char* board = P(g_64556c->m_30->m_24, 0x5c) + 0x40;
+            char* board = P(g_64556c->m_world->m_24, 0x5c) + 0x40;
             i32 x = F(P(this, 0x10), 0x5c);
             i32 y = F(P(this, 0x10), 0x60);
             if (x < F(board, 8) && F(board, 0) <= x && y < F(board, 0xc) && F(board, 4) <= y) {
-                g_64556c->m_60->PlayCue(this, 0x366, -1, 0, -1, -1);
+                g_64556c->m_cueSink->PlayCue(this, 0x366, -1, 0, -1, -1);
             }
             F(this, 0x390) = 0;
         }

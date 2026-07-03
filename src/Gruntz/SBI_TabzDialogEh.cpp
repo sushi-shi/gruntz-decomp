@@ -151,7 +151,7 @@ SIZE(CSBI_ImageSet, 0x3c);
 // reason code (m_68->m_3ec), the test-mode gate (m_134) and the 4-player active
 // table at +0x174 (stride 0x238).
 //
-// SPLIT VERDICT (conflation check vs the g_gameReg->m_30 resource manager, CResMgr):
+// SPLIT VERDICT (conflation check vs the g_gameReg->m_world resource manager, CResMgr):
 // TabzGmFactory is reached through TabzGameReg::m_68 (+0x68), NOT +0x30, and reads
 // FAR-out fields (+0x288 mission-complete selector, +0x3ec reason code) well beyond
 // CResMgr's ~0x30 span. It is the g_gameReg->m_68 ACTIVE-LEVEL / mission object (the

@@ -55,14 +55,14 @@ public:
     i32 NearestEnemyDist(i32 owner, i32 x, i32 y);
 };
 
-// The registry's battle-event sink (g_gameReg->m_60): fires a fort battle-cry /
+// The registry's battle-event sink (g_gameReg->m_cueSink): fires a fort battle-cry /
 // event message. Engine __thiscall at RVA 0x11b7c0. External/no-body.
 class CRegBattleEvent {
 public:
     void PostBattleEvent(i32 id, i32 event, i32 a, i32 b, i32 c);
 };
 
-// The single-player "level done?" chain: g_gameReg->m_2c (a level/mission object)
+// The single-player "level done?" chain: g_gameReg->m_curState (a level/mission object)
 // -> m_3f4 (its objective tracker) -> m_4c (non-zero "complete" flag).
 struct CWarlordObjective {
     char m_pad00[0x4c];

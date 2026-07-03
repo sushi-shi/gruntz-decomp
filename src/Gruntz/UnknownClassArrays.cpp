@@ -441,7 +441,7 @@ extern i32 g_spawnState;
 DATA(0x00245588)
 extern i32 g_stepTimer;
 
-// The scene-hit dispatcher reached via g_gameReg->m_60 (RVA 0x11b3b0, thunk
+// The scene-hit dispatcher reached via g_gameReg->m_cueSink (RVA 0x11b3b0, thunk
 // 0x039f4): a __thiscall taking (unit, 0x366, -1, 0, -1, -1). External, reloc-
 // masked (no body); modeled as a method on a tiny object (the same idiom as
 // UnitMutator/UnitCommit) so `mov ecx,[reg+0x60]; call` falls out.
@@ -2153,12 +2153,12 @@ i32 CBattlezSpawnMgr_or_CGruntSpawnMgr::winapi_02e3a0_PtInRect(i32 unitArg) {
         if (elapsed >= *(__int64*)&m_scratch80) {
             unit->m_arrived = 0;
             UnitLevel* lvl = (UnitLevel*)unit->m_level;
-            char* chain = *(char**)((char*)*(void**)((char*)g_gameReg + 0x30) + 0x24);
+            char* chain = *(char**)((char*)(void*)g_gameReg->m_world + 0x24);
             chain = *(char**)(chain + 0x5c);
             RECT* hit = (RECT*)(chain + 0x40);
             if (lvl->m_worldX < hit->right && lvl->m_worldX >= hit->left
                 && lvl->m_worldY < hit->bottom && lvl->m_worldY >= hit->top) {
-                ((SceneHit*)*(void**)((char*)g_gameReg + 0x60))->Fire(unit, 0x366, -1, 0, -1, -1);
+                ((SceneHit*)(void*)g_gameReg->m_cueSink)->Fire(unit, 0x366, -1, 0, -1, -1);
             }
             *(__int64*)&m_scratch78 = 0;
             m_scratch80 = 0x1388;

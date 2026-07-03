@@ -265,9 +265,9 @@ i32 CVoiceTrigger::Tick() {
         CVoiceHitSprite* hs = hit->m_sprite;
         i32 hy = hs->m_screenY;
         i32 hx = hs->m_screenX;
-        if (hx < g_gameReg->m_144 && hx >= g_gameReg->m_13c && hy < g_gameReg->m_148
-            && hy >= g_gameReg->m_140) {
-            if (((CVoiceSink*)g_gameReg->m_60)->CueA(hit, m_10->m_124, m_10->m_128, 0, -1, -1)) {
+        if (hx < g_gameReg->m_viewOriginR && hx >= g_gameReg->m_viewOriginL
+            && hy < g_gameReg->m_viewOriginB && hy >= g_gameReg->m_viewOriginT) {
+            if (((CVoiceSink*)g_gameReg->m_cueSink)->CueA(hit, m_10->m_124, m_10->m_128, 0, -1, -1)) {
                 m_38->m_08 |= 0x10000;
             }
         }
