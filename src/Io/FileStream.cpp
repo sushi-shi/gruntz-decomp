@@ -226,16 +226,14 @@ BOOL CFileIO::Open(const char* lpszFileName, u32 nOpenFlags, void* pError) {
 // ---------------------------------------------------------------------------
 // CFileIO::GetLength
 // Snapshot the current position (Seek 0,current), seek to the end for the length
-// (Seek 0,end), then restore (Seek cur,begin); return the length. Seek is the
-// CFile-family virtual at vtable slot 12 (+0x30), reached through the shared
-// CFileIODispatch view (FileStream.h) so each Seek reloads the vptr (matching the
-// retail virtual call) without cl emitting CFileIO's full CFile vtable.
+// (Seek 0,end), then restore (Seek cur,begin); return the length. Seek is a real
+// CFileIO virtual (slot 12, +0x30); `this` has unknown dynamic type so each
+// this->Seek() lowers to the retail `mov eax,[this]; call [eax+0x30]`.
 RVA(0x001bf505, 0x2d)
 u32 CFileIO::GetLength() {
-    CFileIODispatch* f = (CFileIODispatch*)this;
-    LONG cur = f->Seek(0, 1 /*current*/);
-    LONG len = f->Seek(0, 2 /*end*/);
-    f->Seek(cur, 0 /*begin*/);
+    LONG cur = Seek(0, 1 /*current*/);
+    LONG len = Seek(0, 2 /*end*/);
+    Seek(cur, 0 /*begin*/);
     return (u32)len;
 }
 

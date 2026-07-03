@@ -45,21 +45,27 @@ struct CShadeTable {
     i32 LoadFile(void* buf, i32 size, i32 k); // 0x150330  CDataBuffer::LoadFromMem
 };
 
-// The growable element-array subobject (lives at cache +0x04). ALL-VTABLES phase:
-// modeled as a REAL 2-level polymorphic hierarchy (like CAniElementBase) so cl
-// auto-emits both vtables + auto-stamps/resets the vptr:
-//   CShadeArrayBase  - the CObArray-like grand base, masks ??_7CObject@@6B@
-//                      (g_wapObjectDtorVtbl @0x5e8cb4); 5 CObject-interface slots.
-//   CShadeTableArray - the element array, masks ??_7CShadeTableArray (0x5efb28);
-//                      overrides slot 1 (dtor 0x150020) + slot 2 (0x14fe90).
-// The cache ctor/dtor inline the array ctor/dtor: cl stamps 0x5efb28 in the ctor,
-// resets 0x5efb28 then chains the CObject grand-base reset (0x5e8cb4) in the dtor.
-struct CShadeArrayBase {
-    virtual void Vf0();         // [0] 0x1bef01
-    virtual ~CShadeArrayBase(); // [1] CObject dtor slot
-    virtual void Vf2();         // [2] 0x0028ec
-    virtual void Vf3();         // [3] 0x00106e
-    virtual void Vf4();         // [4] 0x004034
+// The growable element-array subobject (lives at cache +0x04). CShadeTableArray is a
+// real RTTI class (??_7CShadeTableArray @0x5efb28) that derives from CObject: its
+// 5-slot vtable is CObject's prefix (GetRuntimeClass / dtor / Serialize / AssertValid /
+// Dump), overriding slot 1 (dtor 0x150020) + slot 2 (Serialize 0x14fe90). dump_target
+// proves the classic 2-level CObject codegen - the cache ctor (0x14de30) stamps ONLY
+// 0x5efb28 (the dead CObject base stamp elided), the dtor (0x14de50) stamps 0x5efb28
+// then the CObject-destruction base (0x5e8cb4).
+//
+// It CANNOT be modeled `: public CObject` (real MFC CObject): this header is included
+// by PURE-WIN32 TUs (SpriteRef.cpp / LightEffectSetup.cpp pull <Win32.h> = windows.h
+// FIRST) and <Mfc.h> HARD-ERRORS when windows.h precedes it. So CObject is stood in by
+// the mfc-free base CShadeArrayBase, whose 5 slots carry CObject's REAL method names
+// (no Vf<n>/Slot<n>) and whose orphan vtable reloc-masks the CObject grand-base
+// (0x5e8cb4). cl auto-emits both vtables + auto-stamps/resets the vptr, reproducing
+// retail's exact stamp schedule (the cache ctor/dtor are already 100%).
+struct CShadeArrayBase {            // CObArray-like CObject stand-in (mfc-free)
+    virtual void GetRuntimeClass(); // [0] 0x1bef01  CObject slot
+    virtual ~CShadeArrayBase();     // [1]           CObject dtor slot
+    virtual void Serialize();       // [2] 0x0028ec  CObject slot (CShadeTableArray overrides)
+    virtual void AssertValid();     // [3] 0x00106e  CObject slot
+    virtual void Dump();            // [4] 0x004034  CObject slot
 
     // vptr @ +0x00 (cache +0x04); fields follow.
     CShadeTable** m_pData; // +0x04 (cache +0x08)
@@ -70,8 +76,8 @@ struct CShadeArrayBase {
 
 struct CShadeTableArray : CShadeArrayBase {
     CShadeTableArray();
-    ~CShadeTableArray();               // 0x150020  overrides slot 1
-    void Vf2();                        // 0x14fe90  overrides slot 2 (declared-only)
+    ~CShadeTableArray(); // 0x150020  overrides CObject dtor slot 1
+    void Serialize();    // 0x14fe90  overrides CObject Serialize slot 2 (declared-only)
     void SetSizeGrow(i32 n, i32 grow); // 0x150040
 };
 // SIZE/VTBL for CShadeArrayBase + CShadeTableArray are in ShadeTableCache.cpp
