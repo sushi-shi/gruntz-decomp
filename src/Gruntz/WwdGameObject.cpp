@@ -154,21 +154,21 @@ public:
     i32 Resolve150f90(void* obj); // 0x150f90
     i32 Resolve151070(void* obj); // 0x151070
 
-    void* m_00;    // +0x00  vptr (self virtuals dispatched via WwdSelf cast)
-    i32 m_04;      // +0x04
-    i32 m_flags;   // +0x08  bit flags (|=0x800000 / 0x1000000)
-    WwdMgr* m_mgr; // +0x0c  owning manager
-    i32 m_10;      // +0x10
-    i32 m_14;      // +0x14
-    i32 m_lastX;   // +0x18  last-drawn column (cached by RenderDot)
-    i32 m_lastY;   // +0x1c  last-drawn row
-    i32 m_20;      // +0x20
-    i32 m_24;      // +0x24
-    i32 m_28;      // +0x28
-    i32 m_2c;      // +0x2c
-    i32 m_30;      // +0x30  set 1 on a successful plot
-    i32 m_34;      // +0x34  set 1 on a successful plot
-    i32 m_38;      // +0x38  clip result (0 plotted / -1 rejected)
+    void* m_00;       // +0x00  vptr (self virtuals dispatched via WwdSelf cast)
+    i32 m_04;         // +0x04
+    i32 m_flags;      // +0x08  bit flags (|=0x800000 / 0x1000000)
+    WwdMgr* m_mgr;    // +0x0c  owning manager
+    i32 m_10;         // +0x10
+    i32 m_14;         // +0x14
+    i32 m_lastX;      // +0x18  last-drawn column (cached by RenderDot)
+    i32 m_lastY;      // +0x1c  last-drawn row
+    i32 m_20;         // +0x20
+    i32 m_24;         // +0x24
+    i32 m_28;         // +0x28
+    i32 m_2c;         // +0x2c
+    i32 m_30;         // +0x30  set 1 on a successful plot
+    i32 m_34;         // +0x34  set 1 on a successful plot
+    i32 m_clipResult; // +0x38  clip result (0 plotted / -1 rejected)
     char m_pad3c[0x40 - 0x3c];
     i32 m_40; // +0x40
     i32 m_44; // +0x44
@@ -242,7 +242,7 @@ public:
     i32 m_180;            // +0x180
     i32 m_184;            // +0x184
     i32 m_188;            // +0x188
-    i32 m_18c;            // +0x18c  low byte = dot color / setup flag
+    i32 m_dotColor;       // +0x18c  low byte = dot color / setup flag
     i32 m_190;            // +0x190
     void* m_194;          // +0x194  resolved object ref
     i32 m_198;            // +0x198
@@ -347,7 +347,7 @@ i32 CWwdGameObject::ReadState(i32 src) {
     if (ar == 0) {
         return 0;
     }
-    ar->Xfer(&m_18c, 4);
+    ar->Xfer(&m_dotColor, 4);
     ar->Xfer(&m_190, 4);
     i32 flag = 0;
     if (m_198 != 0) {
@@ -387,7 +387,7 @@ i32 CWwdGameObject::Sub150c30(i32 src) {
     if (ar == 0) {
         return 0;
     }
-    ar->ReadBuf(&m_18c, 4);
+    ar->ReadBuf(&m_dotColor, 4);
     ar->ReadBuf(&m_190, 4);
     i32 flag;
     ar->ReadBuf(&flag, 4);
@@ -869,7 +869,7 @@ i32 CWwdGameObject::ResetAndSetup(i32 a1, i32 a2, i32 a3, i32 a4) {
 // ---------------------------------------------------------------------------
 RVA(0x0015c1d0, 0x26)
 i32 CWwdGameObject::SetupFlagged(i32 a1, i32 a2, i32 a3, i32 a4, i32 flag) {
-    *(char*)&m_18c = (char)flag;
+    *(char*)&m_dotColor = (char)flag;
     return Setup(a1, a2, a3, a4);
 }
 
@@ -939,7 +939,7 @@ void CWwdGameObject::RenderDot(WwdRenderCtx* a) {
         if (base != 0) {
             i32 row = surf->m_20 * y;
             i32 col = surf->m_b0 * x;
-            *(char*)(base + row + col) = *(char*)&m_18c;
+            *(char*)(base + row + col) = *(char*)&m_dotColor;
             void* n = surf->m_08;
             (*(void (**)(void*, i32))((char*)*(void**)n + 0x80))(n, 0);
         }
@@ -948,10 +948,10 @@ void CWwdGameObject::RenderDot(WwdRenderCtx* a) {
     m_lastY = m_posY;
     m_30 = 1;
     m_34 = 1;
-    m_38 = 0;
+    m_clipResult = 0;
     return;
 reject:
-    m_38 = -1;
+    m_clipResult = -1;
 }
 
 // class-metadata sweep: grunt/game-object family size annotations (SIZE_UNKNOWN = retail size TBD, at .cpp EOF).

@@ -1,19 +1,22 @@
 // ChatBox.cpp - a two-row scrolling on-screen text/chat display (C:\Proj\Gruntz).
 //
 // Trace-discovered as Region_182ab0. Two text rows, each with a CString font key
-// (m_44 / m_48), a "current message node" pointer (m_4c / m_64) and per-row
-// horizontal-scroll counters (m_50.. / m_68..). Owns a CPtrList of message nodes
-// (m_24, head at m_28) whose stored payloads it frees on Reset/teardown; a
-// parent/page back pointer (m_0); and a queued-node slot (m_40).
+// (m_row0Key / m_row1Key), a "current message/animation record" pointer
+// (m_row0Anim / m_row1Anim) and per-row frame-animation state (current frame
+// handle + reload period + countdown timer + draw offset + frame index). Owns a
+// CPtrList of message nodes (m_nodeList) whose stored payloads it frees on
+// Reset/teardown; a parent/page back pointer (m_page); and a queued/active node
+// slot (m_activeNode).
 //
-// Only offsets + code bytes are load-bearing; field names are placeholders. The
-// message-node accessor methods (Configure/scroll-step/etc.) live in another TU
-// and are modeled here as no-body externs so their calls are reloc-masked.
+// Field names are recovered from the member writes; only offsets + code bytes are
+// load-bearing (rename is /O2 name-independent). The message-node accessor methods
+// (Configure/scroll-step/etc.) live in another TU and are modeled here as no-body
+// externs so their calls are reloc-masked.
 #include <rva.h>
 
 #include <Gruntz/ChatBox.h>
 // The menu-drive methods (0x182c70..0x183150) forward to the owned menu page
-// (m_40 is a CMenuPage - the same class ChatBox.cpp's node-walks view as
+// (m_activeNode is a CMenuPage - the same class ChatBox.cpp's node-walks view as
 // CChatNode) and blit the menu surface set (CDDSurface) hung off the owner.
 #include <Gruntz/CDirectDrawMgr.h>
 #include <Gruntz/MenuPage.h>
@@ -51,8 +54,8 @@ struct CChatNode {
 
 struct CChatCatalog;
 
-// The on-screen page/owner reached through CChatBox::m_0. Its key->node catalog
-// hangs off m_10; the scroll-step helpers reach a sprite roster via m_0->m_28.
+// The on-screen page/owner reached through CChatBox::m_page. Its key->node catalog
+// hangs off m_10; the scroll-step helpers reach a sprite roster via m_page->m_28.
 struct CChatPage {
     char m_pad0[0x10 - 0x0];
     CChatCatalog* m_10; // -> the key->node catalog
@@ -147,7 +150,7 @@ struct CChatRoster {
     i32 m_30; // +0x30 busy gate
 };
 
-// The menu surface set the Post() flip/blit reaches via the owner (m_0->m_4):
+// The menu surface set the Post() flip/blit reaches via the owner (m_page->m_4):
 // three surface holders (a back buffer to Flip, a target + a source to BltFast),
 // each carrying its CDDSurface at +0x2c; the source holder also carries the blit
 // RECT at +0x1c. Field names are placeholders (offsets are load-bearing).
@@ -179,15 +182,15 @@ struct CMenuOwner {
 // re-zero both rows (no list teardown; Reset minus the Clear()).
 RVA(0x000a0280, 0x2b)
 void CChatBox::Init() {
-    m_0 = 0;
+    m_page = 0;
     m_4 = 0;
-    m_40 = 0;
-    m_4c = 0;
-    m_64 = 0;
-    m_50 = 0;
-    m_68 = 0;
-    m_44.Empty();
-    m_48.Empty();
+    m_activeNode = 0;
+    m_row0Anim = 0;
+    m_row1Anim = 0;
+    m_row0Frame = 0;
+    m_row1Frame = 0;
+    m_row0Key.Empty();
+    m_row1Key.Empty();
 }
 
 // destructor lives in ChatBoxDtor.cpp (the /GX EH-frame TU; it is the
@@ -197,21 +200,21 @@ void CChatBox::Init() {
 RVA(0x00182b30, 0x30)
 void CChatBox::Reset() {
     Clear();
-    m_0 = 0;
+    m_page = 0;
     m_4 = 0;
-    m_40 = 0;
-    m_4c = 0;
-    m_64 = 0;
-    m_50 = 0;
-    m_68 = 0;
-    m_44.Empty();
-    m_48.Empty();
+    m_activeNode = 0;
+    m_row0Anim = 0;
+    m_row1Anim = 0;
+    m_row0Frame = 0;
+    m_row1Frame = 0;
+    m_row0Key.Empty();
+    m_row1Key.Empty();
 }
 
 // free every node's owned payload, empty the list, clear the queue slot.
 RVA(0x00182b60, 0x3e)
 void CChatBox::Clear() {
-    CChatListNode* node = (CChatListNode*)m_24.GetHeadPosition();
+    CChatListNode* node = (CChatListNode*)m_nodeList.GetHeadPosition();
     while (node) {
         CChatListNode* cur = node;
         node = node->pNext;
@@ -221,8 +224,8 @@ void CChatBox::Clear() {
             RezFree(payload);
         }
     }
-    m_24.RemoveAll();
-    m_40 = 0;
+    m_nodeList.RemoveAll();
+    m_activeNode = 0;
 }
 
 // append a node to the list; first node also becomes the active one.
@@ -231,8 +234,8 @@ i32 CChatBox::AddNode(void* node) {
     if (!node) {
         return 0;
     }
-    m_24.AddTail(node);
-    if (!m_40) {
+    m_nodeList.AddTail(node);
+    if (!m_activeNode) {
         AttachNode(node);
     }
     return 1;
@@ -246,7 +249,7 @@ i32 CChatBox::AddNode(void* node) {
 // find the message node whose key matches s (linear scan + strcmp).
 RVA(0x00182be0, 0x8d)
 i32 CChatBox::Find(const char* s) {
-    CChatListNode* node = (CChatListNode*)m_24.GetHeadPosition();
+    CChatListNode* node = (CChatListNode*)m_nodeList.GetHeadPosition();
     while (node) {
         CChatListNode* cur = node;
         node = node->pNext;
@@ -263,7 +266,7 @@ i32 CChatBox::Find(const char* s) {
 
 // ---------------------------------------------------------------------------
 // The front-end menu drive (CMenuState::Render fires these on its m_1b4 CChatBox).
-// Each guards on the owned menu page (m_40, a CMenuPage) and forwards one
+// Each guards on the owned menu page (m_activeNode, a CMenuPage) and forwards one
 // navigation; the page methods are reloc-masked rel32 callees (MenuPage.cpp).
 // ---------------------------------------------------------------------------
 
@@ -272,10 +275,10 @@ i32 CChatBox::Find(const char* s) {
 // takes i32, so this is the Step(u32) overload that calls Step(i32).
 RVA(0x00182c70, 0x38)
 i32 CChatBox::Step(u32 dt) {
-    if (!m_40) {
+    if (!m_activeNode) {
         return 0;
     }
-    if (!((CMenuPage*)m_40)->NotifyAll((void*)dt)) {
+    if (!((CMenuPage*)m_activeNode)->NotifyAll((void*)dt)) {
         return 0;
     }
     return Step((i32)dt) != 0;
@@ -284,20 +287,20 @@ i32 CChatBox::Step(u32 dt) {
 // lay out the page using the owner's first surface holder as the ctx.
 RVA(0x00182cb0, 0x26)
 i32 CChatBox::Pre() {
-    if (!m_40) {
+    if (!m_activeNode) {
         return 0;
     }
-    i32 ctx = (i32)((CMenuOwner*)m_0)->m_4->m_14;
+    i32 ctx = (i32)((CMenuOwner*)m_page)->m_4->m_14;
     if (!ctx) {
         return ctx;
     }
-    return ((CMenuPage*)m_40)->Layout(ctx) != 0;
+    return ((CMenuPage*)m_activeNode)->Layout(ctx) != 0;
 }
 
 // flip the menu back buffer, then blit the source onto the target.
 RVA(0x00182ce0, 0x36)
 i32 CChatBox::Post() {
-    CMenuRenderSet* s = ((CMenuOwner*)m_0)->m_4;
+    CMenuRenderSet* s = ((CMenuOwner*)m_page)->m_4;
     s->m_10->m_2c->Flip(0);
     s->m_14->m_2c->BltFast(0, 0, s->m_18->m_2c, &s->m_18->m_1c, 0x10);
     return 1;
@@ -306,55 +309,55 @@ i32 CChatBox::Post() {
 // entity-flag 0x40000000 scan -> advance the page focus.
 RVA(0x00182d20, 0x16)
 i32 CChatBox::OnFlag40000000() {
-    if (!m_40) {
+    if (!m_activeNode) {
         return 0;
     }
-    return ((CMenuPage*)m_40)->FocusNext() != 0;
+    return ((CMenuPage*)m_activeNode)->FocusNext() != 0;
 }
 
 // entity-flag 0x80000000 scan -> retreat the page focus.
 RVA(0x00182d40, 0x16)
 i32 CChatBox::OnFlag80000000() {
-    if (!m_40) {
+    if (!m_activeNode) {
         return 0;
     }
-    return ((CMenuPage*)m_40)->FocusPrev() != 0;
+    return ((CMenuPage*)m_activeNode)->FocusPrev() != 0;
 }
 
 // entity-flag 0x00000003 scan -> activate the focused item.
 RVA(0x00182d60, 0x16)
 i32 CChatBox::OnFlag00000003() {
-    if (!m_40) {
+    if (!m_activeNode) {
         return 0;
     }
-    return ((CMenuPage*)m_40)->Activate() != 0;
+    return ((CMenuPage*)m_activeNode)->Activate() != 0;
 }
 
 // entity-flag 0x00000100 scan -> switch the page (refocus).
 RVA(0x00182d80, 0x18)
 i32 CChatBox::OnFlag00000100() {
-    if (!m_40) {
+    if (!m_activeNode) {
         return 0;
     }
-    return ((CMenuPage*)m_40)->Switch(1) != 0;
+    return ((CMenuPage*)m_activeNode)->Switch(1) != 0;
 }
 
 // entity-flag 0x10000000 scan -> step the focus back N nodes.
 RVA(0x00183130, 0x16)
 i32 CChatBox::OnFlag10000000() {
-    if (!m_40) {
+    if (!m_activeNode) {
         return 0;
     }
-    return ((CMenuPage*)m_40)->FocusBackwardN() != 0;
+    return ((CMenuPage*)m_activeNode)->FocusBackwardN() != 0;
 }
 
 // entity-flag 0x20000000 scan -> step the focus forward N nodes.
 RVA(0x00183150, 0x16)
 i32 CChatBox::OnFlag20000000() {
-    if (!m_40) {
+    if (!m_activeNode) {
         return 0;
     }
-    return ((CMenuPage*)m_40)->FocusForwardN() != 0;
+    return ((CMenuPage*)m_activeNode)->FocusForwardN() != 0;
 }
 
 // make `n` the active node (detach + rebuild it).
@@ -363,9 +366,9 @@ i32 CChatBox::AttachNode(void* n) {
     if (!n) {
         return 0;
     }
-    m_40 = n;
+    m_activeNode = n;
     ((CChatNode*)n)->Detach();
-    ((CChatNode*)m_40)->Rebuild();
+    ((CChatNode*)m_activeNode)->Rebuild();
     return 1;
 }
 
@@ -381,20 +384,20 @@ i32 CChatBox::ReplaceNode(void* n) {
 // advance row0 to the message keyed by `key`; cache its frame state.
 RVA(0x00182df0, 0x69)
 i32 CChatBox::AdvanceRow0(void* key, i32 x, i32 y) {
-    if (!m_0) {
+    if (!m_page) {
         return 0;
     }
     CChatAnim* a = 0;
-    ((CChatPage*)m_0)->m_10->m_10map.Lookup(key, (void**)&a);
-    m_4c = a;
+    ((CChatPage*)m_page)->m_10->m_10map.Lookup(key, (void**)&a);
+    m_row0Anim = a;
     if (!a) {
         return 0;
     }
-    m_50 = a->m_14[a->m_64];
-    m_60 = a->m_64;
-    m_54 = x;
-    m_58 = x;
-    m_5c = y;
+    m_row0Frame = a->m_14[a->m_64];
+    m_row0FrameIdx = a->m_64;
+    m_row0Period = x;
+    m_row0Timer = x;
+    m_row0Offset = y;
     return 1;
 }
 
@@ -404,20 +407,20 @@ i32 CChatBox::AdvanceRow0(void* key, i32 x, i32 y) {
 // advance row1 to the message keyed by `key`; cache its frame state.
 RVA(0x00182e60, 0x69)
 i32 CChatBox::AdvanceRow1(void* key, i32 x, i32 y) {
-    if (!m_0) {
+    if (!m_page) {
         return 0;
     }
     CChatAnim* a = 0;
-    ((CChatPage*)m_0)->m_10->m_10map.Lookup(key, (void**)&a);
-    m_64 = a;
+    ((CChatPage*)m_page)->m_10->m_10map.Lookup(key, (void**)&a);
+    m_row1Anim = a;
     if (!a) {
         return 0;
     }
-    m_68 = a->m_14[a->m_64];
-    m_78 = a->m_64;
-    m_6c = x;
-    m_70 = x;
-    m_74 = y;
+    m_row1Frame = a->m_14[a->m_64];
+    m_row1FrameIdx = a->m_64;
+    m_row1Period = x;
+    m_row1Timer = x;
+    m_row1Offset = y;
     return 1;
 }
 
@@ -428,46 +431,46 @@ i32 CChatBox::AdvanceRow1(void* key, i32 x, i32 y) {
 // per-frame advance of both rows' scroll counters & frame indices.
 RVA(0x00182ed0, 0xbc)
 i32 CChatBox::Step(i32 delta) {
-    CChatAnim* a = (CChatAnim*)m_4c;
+    CChatAnim* a = (CChatAnim*)m_row0Anim;
     if (a) {
-        if ((u32)m_58 > (u32)delta) {
-            m_58 -= delta;
+        if ((u32)m_row0Timer > (u32)delta) {
+            m_row0Timer -= delta;
         } else {
-            m_58 = m_54;
-            i32 f = m_60 + 1;
-            m_60 = f;
+            m_row0Timer = m_row0Period;
+            i32 f = m_row0FrameIdx + 1;
+            m_row0FrameIdx = f;
             i32 v;
             if (f >= a->m_64 && f <= a->m_68) {
                 v = a->m_14[f];
             } else {
                 v = 0;
             }
-            m_50 = v;
+            m_row0Frame = v;
             if (v == 0) {
-                m_50 = a->m_14[a->m_64];
-                m_60 = a->m_64;
+                m_row0Frame = a->m_14[a->m_64];
+                m_row0FrameIdx = a->m_64;
             }
         }
     }
-    CChatAnim* b = (CChatAnim*)m_64;
+    CChatAnim* b = (CChatAnim*)m_row1Anim;
     if (b) {
-        if ((u32)m_70 > (u32)delta) {
-            m_70 -= delta;
+        if ((u32)m_row1Timer > (u32)delta) {
+            m_row1Timer -= delta;
             return 1;
         }
-        m_70 = m_6c;
-        i32 f = m_78 + 1;
-        m_78 = f;
+        m_row1Timer = m_row1Period;
+        i32 f = m_row1FrameIdx + 1;
+        m_row1FrameIdx = f;
         i32 v;
         if (f >= b->m_64 && f <= b->m_68) {
             v = b->m_14[f];
         } else {
             v = 0;
         }
-        m_68 = v;
+        m_row1Frame = v;
         if (v == 0) {
-            m_68 = b->m_14[b->m_64];
-            m_78 = b->m_64;
+            m_row1Frame = b->m_14[b->m_64];
+            m_row1FrameIdx = b->m_64;
         }
     }
     return 1;
@@ -492,13 +495,13 @@ i32 CChatBox::Draw(i32 a0, i32 sprite_, i32 arg2, i32 arg3) {
         anchorY = arg3;
         anchorX = arg2;
     }
-    if (m_50) {
-        i32 x = -(sprite->Measure() / 2) - m_5c + anchorX;
-        ((CChatFrame*)m_50)->Blit(arg2, x, anchorY, 0);
+    if (m_row0Frame) {
+        i32 x = -(sprite->Measure() / 2) - m_row0Offset + anchorX;
+        ((CChatFrame*)m_row0Frame)->Blit(arg2, x, anchorY, 0);
     }
-    if (m_68) {
-        i32 x = sprite->Measure() / 2 + m_74 + anchorX;
-        ((CChatFrame*)m_68)->Blit(arg2, x, anchorY, 0);
+    if (m_row1Frame) {
+        i32 x = sprite->Measure() / 2 + m_row1Offset + anchorX;
+        ((CChatFrame*)m_row1Frame)->Blit(arg2, x, anchorY, 0);
     }
     return 1;
 }
@@ -511,15 +514,15 @@ i32 CChatBox::Draw(i32 a0, i32 sprite_, i32 arg2, i32 arg3) {
 // scroll row0's sprite one tick if its scroll interval has elapsed.
 RVA(0x00183030, 0x7b)
 i32 CChatBox::ScrollRow0() {
-    if (m_44.GetLength() == 0) {
+    if (m_row0Key.GetLength() == 0) {
         return 0;
     }
-    CChatRoster* roster = (CChatRoster*)((CChatPage*)m_0)->m_28;
+    CChatRoster* roster = (CChatRoster*)((CChatPage*)m_page)->m_28;
     if (roster->m_30) {
         return 0;
     }
     CChatTimer* t = 0;
-    roster->m_10.Lookup((void*)(const char*)m_44, (void**)&t);
+    roster->m_10.Lookup((void*)(const char*)m_row0Key, (void**)&t);
     if (!t) {
         return 0;
     }
@@ -543,15 +546,15 @@ i32 CChatBox::ScrollRow0() {
 // scroll row1's sprite one tick if its scroll interval has elapsed.
 RVA(0x001830b0, 0x7b)
 i32 CChatBox::ScrollRow1() {
-    if (m_48.GetLength() == 0) {
+    if (m_row1Key.GetLength() == 0) {
         return 0;
     }
-    CChatRoster* roster = (CChatRoster*)((CChatPage*)m_0)->m_28;
+    CChatRoster* roster = (CChatRoster*)((CChatPage*)m_page)->m_28;
     if (roster->m_30) {
         return 0;
     }
     CChatTimer* t = 0;
-    roster->m_10.Lookup((void*)(const char*)m_48, (void**)&t);
+    roster->m_10.Lookup((void*)(const char*)m_row1Key, (void**)&t);
     if (!t) {
         return 0;
     }
@@ -572,7 +575,7 @@ i32 CChatBox::ScrollRow1() {
 // forward a hit-test to the active node (slot 0x1840a0).
 RVA(0x001831a0, 0x24)
 i32 CChatBox::HitTest0(i32 x, i32 y) {
-    CChatNode* n = (CChatNode*)m_40;
+    CChatNode* n = (CChatNode*)m_activeNode;
     if (!n) {
         return 0;
     }
@@ -582,7 +585,7 @@ i32 CChatBox::HitTest0(i32 x, i32 y) {
 // forward a hit-test to the active node (slot 0x1843f0).
 RVA(0x00183210, 0x16)
 i32 CChatBox::HitTest1() {
-    CChatNode* n = (CChatNode*)m_40;
+    CChatNode* n = (CChatNode*)m_activeNode;
     if (!n) {
         return 0;
     }
@@ -592,7 +595,7 @@ i32 CChatBox::HitTest1() {
 // forward a hit-test to the active node (slot 0x1844d0).
 RVA(0x00183230, 0x16)
 i32 CChatBox::HitTest2() {
-    CChatNode* n = (CChatNode*)m_40;
+    CChatNode* n = (CChatNode*)m_activeNode;
     if (!n) {
         return 0;
     }
@@ -602,7 +605,7 @@ i32 CChatBox::HitTest2() {
 // forward a query to the active node (callee 0x184230); bool-normalize.
 RVA(0x001831d0, 0x16)
 i32 CChatBox::HitTest3() {
-    CChatNode* n = (CChatNode*)m_40;
+    CChatNode* n = (CChatNode*)m_activeNode;
     if (!n) {
         return 0;
     }
@@ -612,7 +615,7 @@ i32 CChatBox::HitTest3() {
 // forward a query to the active node (callee 0x184310); bool-normalize.
 RVA(0x001831f0, 0x16)
 i32 CChatBox::HitTest4() {
-    CChatNode* n = (CChatNode*)m_40;
+    CChatNode* n = (CChatNode*)m_activeNode;
     if (!n) {
         return 0;
     }

@@ -33,16 +33,18 @@ SIZE_UNKNOWN(CKSlimeColl464);
 extern void* g_projActCache;       // 0x6bf464 (pinned in CStaticHazard.cpp)
 extern void* g_projActAllocResult; // 0x6bf428 (pinned in CVoiceTrigger.cpp)
 extern "C" i32 ProjActAlloc();     // 0x16d990
+// Field layout is the attributed sibling CTypeKeyColl : CZArray2D (TypeKeyColl.cpp)
+// - it shares Find (0x16da80); this is the projectile/act instance.
 struct CTypeColl464 {
-    void* m_0;           // +0x00
-    CKSlimeColl464* m_4; // +0x04
-    i32 m_8;             // +0x08  lo
-    i32 m_c;             // +0x0c  hi
-    char* m_10;          // +0x10  base
-    i32 m_14;            // +0x14  miss result
-    i32 m_18;            // +0x18  stride
-    char pad1c[0x20 - 0x1c];
-    i32 m_20;                 // +0x20
+    void* m_0;                // +0x00  vptr
+    CKSlimeColl464* m_4;      // +0x04  grow-path node inserter
+    i32 m_lo;                 // +0x08  index low bound
+    i32 m_hi;                 // +0x0c  index high bound
+    char* m_buf;              // +0x10  primary element buffer (base)
+    i32 m_buf2;               // +0x14  scratch element (returned as the miss fallback)
+    i32 m_stride;             // +0x18  element size
+    char pad1c[0x20 - 0x1c];  // +0x1c cursor (== m_buf, unused here)
+    i32 m_20;                 // +0x20 (== m_count, but reset to 0 on entry; role unproven)
     i32 Find(i32 key, i32 z); // 0x16da80
     void* Resolve(i32 key);
 };
@@ -54,16 +56,16 @@ SIZE_UNKNOWN(CTypeColl464);
 RVA(0x000464e0, 0x74)
 void* CTypeColl464::Resolve(i32 key) {
     m_20 = 0;
-    if (key >= m_8 && key <= m_c) {
-        return m_10 + (key - m_8) * m_18;
+    if (key >= m_lo && key <= m_hi) {
+        return m_buf + (key - m_lo) * m_stride;
     }
     if (Find(key, 0)) {
-        return m_10 + (key - m_8) * m_18;
+        return m_buf + (key - m_lo) * m_stride;
     }
     void* item = g_projActCache;
     g_projActAllocResult = (void*)ProjActAlloc();
     m_4->Insert(this, item, 0xc);
-    return (void*)m_14;
+    return (void*)m_buf2;
 }
 
 // ===========================================================================
@@ -701,34 +703,34 @@ struct CHolder104 {
 SIZE_UNKNOWN(CHolder104);
 struct C104dd0 {
     char pad0[8];
-    void* m_8;       // +0x08
-    CHolder104* m_c; // +0x0c
+    void* m_sprite;              // +0x08
+    CHolder104* m_factoryHolder; // +0x0c
     char pad10[0x24 - 0x10];
-    i32 m_24; // +0x24
-    i32 m_28; // +0x28
+    i32 m_x; // +0x24
+    i32 m_y; // +0x28
     i32 Create();
 };
 SIZE_UNKNOWN(C104dd0);
 // @early-stop
-// scheduling wall: retail computes m_8c-0x22 via lea eax,[ecx-0x22] and loads m_24
-// late; cl uses sub + an earlier m_24 load. Clamp logic, the factory call and the
+// scheduling wall: retail computes m_8c-0x22 via lea eax,[ecx-0x22] and loads m_x
+// late; cl uses sub + an earlier m_x load. Clamp logic, the factory call and the
 // StatusBarSprite literal are byte-faithful.
 RVA(0x00104dd0, 0x6b)
 i32 C104dd0::Create() {
-    if (m_8 != 0) {
+    if (m_sprite != 0) {
         return 0;
     }
     CMgr104* mg = (CMgr104*)g_mgrSettings;
     i32 a = mg->m_8c - 0x22;
     i32 d = mg->m_90;
-    if (m_24 > a) {
-        m_24 = a;
+    if (m_x > a) {
+        m_x = a;
     }
-    if (m_28 > d - 9) {
-        m_28 = d - 0x22;
+    if (m_y > d - 9) {
+        m_y = d - 0x22;
     }
-    m_8 = m_c->m_8->Create(0, m_24, m_28, 0xf4240, "StatusBarSprite", 1);
-    return m_8 != 0;
+    m_sprite = m_factoryHolder->m_8->Create(0, m_x, m_y, 0xf4240, "StatusBarSprite", 1);
+    return m_sprite != 0;
 }
 
 // ===========================================================================
@@ -737,23 +739,23 @@ i32 C104dd0::Create() {
 // ===========================================================================
 struct C10bbe0 {
     char pad0[0x4cc];
-    i32 m_4cc; // +0x4cc
+    i32 m_fallback; // +0x4cc
     char pad4d0[0x528 - 0x4d0];
-    i32 m_528; // +0x528
-    i32 m_52c; // +0x52c
+    i32 m_528;   // +0x528
+    i32 m_index; // +0x52c
     char pad530[0x534 - 0x530];
-    i32** m_534; // +0x534
-    i32 m_538;   // +0x538
+    i32** m_entries; // +0x534
+    i32 m_count;     // +0x538
     i32 M();
 };
 SIZE_UNKNOWN(C10bbe0);
 RVA(0x0010bbe0, 0x34)
 i32 C10bbe0::M() {
     if (m_528 == 0) {
-        return m_4cc;
+        return m_fallback;
     }
-    if (m_538 > 0 && m_538 > m_52c) {
-        return *m_534[m_52c];
+    if (m_count > 0 && m_count > m_index) {
+        return *m_entries[m_index];
     }
     return 0;
 }
@@ -791,25 +793,25 @@ struct CMgr112 {
 SIZE_UNKNOWN(CMgr112);
 struct C112bf0 {
     char pad0[8];
-    i32 m_8; // +0x08
-    i32 m_c; // +0x0c
+    i32 m_col; // +0x08
+    i32 m_row; // +0x0c
     char pad10[0x14 - 0x10];
     i32 m_14; // +0x14
     i32 M();
 };
 SIZE_UNKNOWN(C112bf0);
 // @early-stop
-// strength-reduction wall: cl materializes m_c<<2 (shl ecx,2) and reuses scale-1
-// addressing; retail keeps m_c in ecx and uses *4 scaled addressing in both cell
+// strength-reduction wall: cl materializes m_row<<2 (shl ecx,2) and reuses scale-1
+// addressing; retail keeps m_row in ecx and uses *4 scaled addressing in both cell
 // stores. Logic/offsets byte-faithful; the shift vs scaled-index pick is not steerable.
 RVA(0x00112bf0, 0x5e)
 i32 C112bf0::M() {
     CMgr112* mg = (CMgr112*)g_mgrSettings;
     CGridData* g = mg->m_30->m_24->m_5c;
-    i32 v = g->cells[g->rows[m_c] + m_8] - 1;
+    i32 v = g->cells[g->rows[m_row] + m_col] - 1;
     CGridData* g2 = mg->m_30->m_24->m_5c;
-    g2->cells[g2->rows[m_c] + m_8] = v;
-    mg->m_70->Notify(m_8, m_c, v);
+    g2->cells[g2->rows[m_row] + m_col] = v;
+    mg->m_70->Notify(m_col, m_row, v);
     m_14 = 0;
     return 1;
 }
@@ -964,7 +966,7 @@ SIZE_UNKNOWN(CBox118);
 extern "C" void Func3661(CBox118* p); // 0x3661
 struct C1181d0 {
     char pad0[0xb8];
-    CBox118 m_b8; // +0xb8
+    CBox118 m_bounds; // +0xb8
     char padd4[0xd4 - 0xb8 - 0xc];
     i32 m_d4; // +0xd4
     i32 Update(i32 a1, i32 a2, i32 a3);
@@ -978,7 +980,7 @@ i32 C1181d0::Update(i32 a1, i32 a2, i32 a3) {
     if (a2 == 0) {
         return 0;
     }
-    CBox118* b = &m_b8;
+    CBox118* b = &m_bounds;
     if (b == 0) {
         return 0;
     }
@@ -1008,8 +1010,8 @@ struct CRect118 {
 SIZE_UNKNOWN(CRect118);
 struct C118260 {
     char pad0[0xb8];
-    CRect118 m_b8; // +0xb8 (7 dwords, ends at 0xd4)
-    i32 m_d4;      // +0xd4
+    CRect118 m_bounds; // +0xb8 (7 dwords, ends at 0xd4)
+    i32 m_d4;          // +0xd4
     i32 Update(CRect118* src, i32 arg2);
 };
 SIZE_UNKNOWN(C118260);
@@ -1018,7 +1020,7 @@ i32 C118260::Update(CRect118* src, i32 arg2) {
     if (src == 0) {
         return 0;
     }
-    CRect118* dst = &m_b8;
+    CRect118* dst = &m_bounds;
     if (dst == 0) {
         return 0;
     }

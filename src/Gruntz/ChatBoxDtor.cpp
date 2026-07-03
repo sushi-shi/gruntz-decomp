@@ -1,7 +1,7 @@
 // ChatBoxDtor.cpp - CChatBox::~CChatBox in its own /GX (eh) TU. It is the only
-// CChatBox method needing the exception frame (the CString members m_44/m_48 + the
-// CPtrList m_24 are unwound on teardown); the frameless siblings stay in ChatBox.cpp
-// under base flags so this frame is not forced onto them.
+// CChatBox method needing the exception frame (the CString members m_row0Key/
+// m_row1Key + the CPtrList m_nodeList are unwound on teardown); the frameless
+// siblings stay in ChatBox.cpp under base flags so this frame is not forced onto them.
 #include <rva.h>
 
 #include <Gruntz/ChatBox.h>
