@@ -9,6 +9,7 @@
 // untouched. /GX EH frame: CPlay_0d53d0 has a stack CString error temp, and
 // CPlay_0d9290 has a stack CByteArray shuffle temp - both destructible.
 #include <Ints.h>
+#include <Gruntz/CPlay.h> // canonical CPlay (one shape)
 #include <Gruntz/CGameRegistry.h>
 #include <rva.h>
 #include <Gruntz/CString.h>
@@ -112,8 +113,10 @@ struct Renderer {
     // +0x10 -> the embedded plane list (head at +0x14).
 };
 
-// The CView at CPlay+0xc.
-struct CView {
+// The plane-scan facet of CPlay's m_c (the CView at CPlay+0xc); the plane list +
+// draw surface it walks are not modeled by the shared CView.h, so this TU keeps
+// its own facet view and reaches it by cast on the canonical CState::m_c.
+struct PSView {
     char pad0[0x8];
     Renderer* m_renderer; // +0x08 renderer (owns the plane list)
     char padc[0x24 - 0xc];
@@ -194,26 +197,16 @@ extern "C" {
     void PlaneQuadF(); // 0x4019bf (the 4-corner permute type)
 }
 
-// ===========================================================================
-// CPlay.
-// ===========================================================================
-class CPlay {
-public:
-    char pad0[0xc];
-    CView* m_view; // +0x0c
-    char padc[0x2dc - 0x10];
-    ObjSink2dc* m_ptrSink; // +0x2dc
-    char pad2e0[0x2e4 - 0x2e0];
-    ObjSink2e4* m_recordSink; // +0x2e4
-
-    i32 ScanBuildTiles();   // 0x0d53d0
-    i32 ScanShuffleQuads(); // 0x0d9290
-};
+// CPlay's plane-scan sub-objects live on the canonical CState/CPlay members,
+// reached through this TU's local facet views: m_c (+0x0c) is the CView the plane
+// list hangs off; the guts sink at +0x2dc (m_guts) receives the extra pointer
+// insert, the begin-marker sink at +0x2e4 (m_beginMarker) the rebuilt records.
 
 // ---------------------------------------------------------------------------
 // ScanBuildTiles (0x0d53d0): walk the renderer plane list; for each rock plane
-// rebuild its record onto m_recordSink->AddToList1, for each covered-tile plane sample
-// the tile grid then feed the big draw. Reports "Bad rock"/"Bad covered powerup"
+// rebuild its record onto the record sink (m_beginMarker->AddToList1), for each
+// covered-tile plane sample the tile grid then feed the big draw. Reports "Bad
+// rock"/"Bad covered powerup"
 // (and bails) on a failed insert.
 // ---------------------------------------------------------------------------
 // @early-stop
@@ -224,6 +217,7 @@ public:
 // struct-copy and array spellings both still hoist. All logic/relocs byte-match.
 RVA(0x000d53d0, 0x466)
 i32 CPlay::ScanBuildTiles() {
+    PSView* m_view = (PSView*)m_c;
     PlaneList* pl = (PlaneList*)((char*)m_view->m_renderer + 0x10);
     if (pl == 0) {
         return 0;
@@ -256,15 +250,16 @@ i32 CPlay::ScanBuildTiles() {
             buf.v0 = *(Vec3*)&p->m_blockF;
             buf.v1 = *(Vec3*)&p->m_blockE;
             buf.v2 = *(Vec3*)&p->m_blockD;
-            if (m_recordSink->AddToList1(
-                    p->m_164,
-                    p->m_168,
-                    p->m_4,
-                    (i32*)&buf,
-                    p->m_11c,
-                    p->m_118,
-                    p->m_130
-                )
+            if (((ObjSink2e4*)m_beginMarker)
+                    ->AddToList1(
+                        p->m_164,
+                        p->m_168,
+                        p->m_4,
+                        (i32*)&buf,
+                        p->m_11c,
+                        p->m_118,
+                        p->m_130
+                    )
                 == 0) {
                 CString s;
                 PlaneErrFmt(&s, "Bad rock at: x=%d, y=%d", p->m_x, p->m_y);
@@ -272,7 +267,7 @@ i32 CPlay::ScanBuildTiles() {
                 return 0;
             }
             if (p->m_11c == 0x32) {
-                m_ptrSink->InsertPtr(p->m_118, p->m_114);
+                ((ObjSink2dc*)m_guts)->InsertPtr(p->m_118, p->m_114);
             }
             p->m_flags |= 0x10000;
         } else if (vf == (void*)PlaneType_Covered) {
@@ -309,23 +304,24 @@ i32 CPlay::ScanBuildTiles() {
             } else {
                 tile = ds->m_objTable[cell & 0xffff]->Query(subX, subY);
             }
-            if (m_recordSink->BigDraw(
-                    tile,
-                    0x1a,
-                    p->m_164,
-                    p->m_168,
-                    p->m_4,
-                    p->m_blockF,
-                    p->m_blockE,
-                    p->m_blockD,
-                    p->m_blockC,
-                    p->m_desc->m_f0,
-                    p->m_desc->m_100,
-                    p->m_quadIndex,
-                    p->m_11c,
-                    p->m_118,
-                    p->m_130
-                )
+            if (((ObjSink2e4*)m_beginMarker)
+                    ->BigDraw(
+                        tile,
+                        0x1a,
+                        p->m_164,
+                        p->m_168,
+                        p->m_4,
+                        p->m_blockF,
+                        p->m_blockE,
+                        p->m_blockD,
+                        p->m_blockC,
+                        p->m_desc->m_f0,
+                        p->m_desc->m_100,
+                        p->m_quadIndex,
+                        p->m_11c,
+                        p->m_118,
+                        p->m_130
+                    )
                 == 0) {
                 CString s;
                 PlaneErrFmt(&s, "Bad covered powerup at: x=%d, y=%d", p->m_x, p->m_y);
@@ -333,7 +329,7 @@ i32 CPlay::ScanBuildTiles() {
                 return 0;
             }
             if (p->m_11c == 0x32) {
-                m_ptrSink->InsertPtr(p->m_118, p->m_114);
+                ((ObjSink2dc*)m_guts)->InsertPtr(p->m_118, p->m_114);
             }
             p->m_flags |= 0x10000;
         }
@@ -358,6 +354,7 @@ i32 CPlay::ScanBuildTiles() {
 // RNG-helper idiom is deferred to the final sweep.
 RVA(0x000d9290, 0x2a7)
 i32 CPlay::ScanShuffleQuads() {
+    PSView* m_view = (PSView*)m_c;
     PlaneList* pl = (PlaneList*)((char*)m_view->m_renderer + 0x10);
     if (pl == 0) {
         return 0;
@@ -433,6 +430,7 @@ SIZE_UNKNOWN(Plane);
 SIZE_UNKNOWN(PlaneDesc);
 SIZE_UNKNOWN(PlaneList);
 SIZE_UNKNOWN(PlaneNode);
+SIZE_UNKNOWN(PSView);
 SIZE_UNKNOWN(Renderer);
 SIZE_UNKNOWN(TileObj);
 SIZE_UNKNOWN(Vec3);

@@ -1324,7 +1324,7 @@ void CPlay::PlayCueAt(i32 cueId, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7,
     RECT rect;
 
     if (cueId != m_lastCueId) {
-        if (((CCueState*)&m_cueState)->Probe(cueId) == 0) {
+        if (((CCueState*)&m_410)->Probe(cueId) == 0) {
             return; // still-live other cue -> skip
         }
         m_lastCueId = cueId;
@@ -1350,9 +1350,9 @@ void CPlay::PlayCueAt(i32 cueId, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7,
     }
 
     if (a3 != 0) {
-        Eng_CueRenderTop(m_c, &m_cueState, &rect, a2, 1, a4, a5, a6, a7);
+        Eng_CueRenderTop(m_c, &m_410, &rect, a2, 1, a4, a5, a6, a7);
     } else {
-        Eng_CueRenderDef(m_c, &m_cueState, &rect, a2, 1, a4, a5, a6, a7);
+        Eng_CueRenderDef(m_c, &m_410, &rect, a2, 1, a4, a5, a6, a7);
     }
 }
 
@@ -1602,7 +1602,7 @@ i32 CPlay::ResetGoals(i32 x, i32 y) {
         g->m_23c = 0;
     }
     g->m_230 = 0;
-    CPlaneGeom* pg = m_4w()->m_30->m_24->m_5c;
+    CPlayPlaneGeom* pg = m_4w()->m_30->m_24->m_5c;
     if ((pg->m_8 & 1) == 0) {
         pg->m_10 = (float)x * pg->m_18;
         pg->m_14 = (float)y * pg->m_1c;
@@ -3499,8 +3499,8 @@ i32 CPlay::FindStartPointAt(i32 x, i32 y, i32* outX, i32* outY) {
     if (reg->m_68->m_10c[id] >= slot->m_228) {
         return 0;
     }
-    for (i32 i = 0; i < m_markerCount; i++) {
-        CHitMarker* m = m_markerData[i];
+    for (i32 i = 0; i < markerCount(); i++) {
+        CHitMarker* m = markerData()[i];
         if (m != 0) {
             RECT rc;
             SetRect(&rc, m->m_0 - 0x20, m->m_4 - 0x20, m->m_0 + 0x20, m->m_4 + 0x20);
@@ -5027,7 +5027,7 @@ SIZE_UNKNOWN(CMusicEntry);
 SIZE_UNKNOWN(CMusicOwner);
 SIZE_UNKNOWN(CMusicSet);
 SIZE_UNKNOWN(CMusicSource);
-SIZE_UNKNOWN(CPlaneGeom);
+SIZE_UNKNOWN(CPlayPlaneGeom);
 SIZE_UNKNOWN(CPlay);
 SIZE_UNKNOWN(CPlayEff);
 SIZE_UNKNOWN(CProfFlush);

@@ -70,7 +70,7 @@ struct CWorldSub60 {
 // The plane/render geom block reached as m_4->m_30->m_24->m_5c (ResetGoals'
 // float target). +0x8 flags bit0 gates the scale-multiply; +0x10/+0x14 receive
 // the recomputed coords; +0x18/+0x1c hold the scale factors.
-struct CPlaneGeom {
+struct CPlayPlaneGeom {
     void Recompute(); // 0x161c90  RecomputePlaneCoords (thiscall, no arg)
     char p0[0x8];
     i32 m_8; // +0x8  flags
@@ -115,9 +115,9 @@ struct CWorld {
             char p0[0x10];
             RECT m_rect10; // +0x10  tile-click bounds (HandleTileClick)
             char p20[0x5c - 0x20];
-            CPlaneGeom* m_5c; // +0x5c
-        }* m_24;              // +0x24
-    }* m_30;                  // +0x30  the render-state holder (ResetGoals)
+            CPlayPlaneGeom* m_5c; // +0x5c
+        }* m_24;                  // +0x24
+    }* m_30;                      // +0x30  the render-state holder (ResetGoals)
     char p34[0x48 - 0x34];
     CGruntzSoundZ* m_48; // +0x48  the zoned sound-bank manager (PlaySound/FindSound/StopSound)
     char p4c[0x54 - 0x4c];
@@ -204,12 +204,28 @@ struct Edge {
 // ===========================================================================
 class CPlay : public CState {
 public:
+    // Construction is inlined into CGruntzMgr::TransitionState (no standalone retail
+    // ctor); ~CPlay is the real 0x8c830 /GX dtor. Both defined out-of-class in their
+    // owning TUs (GruntzMgrTransition.cpp / CPlayDtor.cpp).
+    CPlay();
+    virtual ~CPlay(); // slot 0 (0x8c830)
+
     virtual i32 Update() OVERRIDE; // return 3;  (slot 4)
     virtual i32 Render() OVERRIDE; // THE per-frame heart (this TU)
 
     // typed views of the inherited CState owner back-ptr (+0x4):
     CWorld* m_4w() {
         return (CWorld*)m_4;
+    }
+
+    // The start-point marker array (m_370) is a real CByteArray/CPtrArray whose
+    // data(+0x374)/count(+0x378) FindStartPointAt walks directly (byte-identical to
+    // the old raw m_markerData/m_markerCount fields).
+    CHitMarker** markerData() {
+        return *(CHitMarker***)((char*)&m_370 + 4);
+    }
+    i32 markerCount() {
+        return *(i32*)((char*)&m_370 + 8);
     }
 
     // CPlay's own per-frame helper methods (the thunks Render dispatches to
@@ -400,7 +416,10 @@ public:
     i32 m_inputWarmup1; // +0x1a8  StepInputA first-frame one-shot latch
     i32 m_inputWarmup2; // +0x1ac  StepInputA second-frame one-shot latch
     i32 m_inputHalfSel; // +0x1b0  StepInputA mirrored-half selector (0/1)
-    char m_pad1b4[0x1cc - 0x1b4];
+    // +0x1b4: the first of five destructible MFC members ~CPlay tears down (reverse
+    // decl order); typed here so the dtor's /GX member fold falls out (CPlayDtor.cpp).
+    CString m_1b4; // +0x1b4
+    char m_pad1b8[0x1cc - 0x1b8];
     i32 m_savedClock; // +0x1cc  saved game clock (PauseGame stashes / ResumeGame + teardown restore to g_645588)
     char m_pad1d0[0x2dc - 0x1d0];
     // +0x2dc: the "guts"/UI subsystem the per-frame Step + the HUD/drag-select
@@ -475,19 +494,19 @@ public:
     i32 m_tileClickY;   // +0x364  tile-click snapped Y (HandleTileClick)
     i32 m_dragInhibit1; // +0x368  drag/select inhibit gate
     i32 m_dragInhibit2; // +0x36c  drag/select inhibit gate
-    // +0x370: a CPtrArray of start-point markers (raw {data,count} fields, read
-    // directly by FindStartPointAt); its header/tail slots stay padding.
-    char m_pad370[0x374 - 0x370];
-    CHitMarker** m_markerData; // +0x374  marker-ptr array (CPtrArray data)
-    i32 m_markerCount;         // +0x378  marker count (CPtrArray count)
-    char m_pad37c[0x3f4 - 0x37c];
+    // +0x370: a CByteArray/CPtrArray of start-point markers (the 2nd destructible
+    // member); FindStartPointAt reads its data(+4)/count(+8) via markerData()/
+    // markerCount(). +0x3a4: a CByteArray[4] (the 3rd..? member, one ??_M vector fold).
+    CByteArray m_370; // +0x370  (data@+4 = marker-ptr array, count@+8 = marker count)
+    char m_pad384[0x3a4 - 0x384];
+    CByteArray m_3a4[4]; // +0x3a4  (4 * 0x14)
     void* m_frameMarker; // +0x3f4  frame-marker/timeline object (+0x30..0x4c reset block)
     i32 m_cueTimerLo, m_cueTimerHi, m_cueInterval,
-        m_cueIntervalHi;            // +0x3f8  AMBIENT-cue 64-bit timer
-    i32 m_cueToggle;                // +0x408  AMBIENT-cue on/off toggle
-    i32 m_lastCueId;                // +0x40c  PlayCueAt last-shown cueId (de-dupe gate)
-    char m_cueState[0x414 - 0x410]; // +0x410  PlayCueAt per-cue de-dupe state object (addr taken)
-    i32 m_drewThisFrame;            // +0x414  per-frame "drew" flag (cleared at entry)
+        m_cueIntervalHi; // +0x3f8  AMBIENT-cue 64-bit timer
+    i32 m_cueToggle;     // +0x408  AMBIENT-cue on/off toggle
+    i32 m_lastCueId;     // +0x40c  PlayCueAt last-shown cueId (de-dupe gate)
+    CString m_410; // +0x410  4th destructible member (PlayCueAt reads &m_410 as its de-dupe state)
+    i32 m_drewThisFrame; // +0x414  per-frame "drew" flag (cleared at entry)
     char m_pad418[0x430 - 0x418];
     i32 m_region0TimerLo, m_region0TimerHi, m_region0Interval, m_region0IntervalHi; // +0x430
     i32 m_region1TimerLo, m_region1TimerHi, m_region1Interval, m_region1IntervalHi; // +0x440
@@ -499,7 +518,8 @@ public:
     i32 m_region3Gate;   // +0x47c  region-3 gate (OnRegion4)
     i32 m_viewMode;      // +0x480  StepC/OnRegion view-mode discriminator (0=idle/1/2)
     i32 m_hudSuppressed; // +0x484  HUD-suppress gate (DispatchHudClick early-out)
-    char m_pad488[0x4a0 - 0x488];
+    CByteArray m_488;    // +0x488  5th destructible member (0x14 bytes)
+    char m_pad49c[0x4a0 - 0x49c];
     i32 m_snapBaseLo, m_snapBaseHi, m_snapDur,
         m_snapDurHi;      // +0x4a0  snapshot 64-bit base + duration
     i32 m_snapshotActive; // +0x4b0  snapshot ACTIVE latch
@@ -555,6 +575,18 @@ public:
     i32 LoadCursorSprites(i32 frame, i32 flag);
     i32 LoadScrollSpeedOptions();
     i32 BuildGruntTypeNameTable(i32, i32, i32, i32);
+
+    // HandleMousePress (0x0ce660): vtable slot 16 (+0x40) - the in-game
+    // pointer/click dispatcher (mouse sibling of OnKeyCommand). Re-homed from
+    // GameMouseHandler.cpp; reaches the guts/status-bar sub-objects at m_guts /
+    // m_hitTest / m_4 / m_c which that TU casts to its local facet views.
+    i32 HandleMousePress(i32 msg, i32 x, i32 y); // 0x0ce660
+
+    // The two per-frame plane-list sub-steps re-homed from CPlayPlaneScan.cpp: walk
+    // the renderer's embedded plane list (m_c->renderer+0x10) and dispatch on each
+    // plane descriptor's type. Both take a stack MFC temp -> /GX.
+    i32 ScanBuildTiles();   // 0x0d53d0
+    i32 ScanShuffleQuads(); // 0x0d9290
 };
 
 // ===========================================================================

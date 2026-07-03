@@ -8,7 +8,10 @@
 // status-bar sub-objects it reaches (the active tab child m_2dc, the sound set, the
 // area probe, the spawner) are modeled minimally; only offsets / code bytes are
 // load-bearing and every helper is a reloc-masked external.
-#include <Win32.h> // SetRect / RECT / POINT
+// <Gruntz/CPlay.h> (canonical CPlay) pulls <Mfc.h> -> <windows.h> the afx-first
+// way, giving SetRect / RECT / POINT; a bare <Win32.h> here would make MFC hard-
+// error ("MFC apps must not #include <windows.h>").
+#include <Gruntz/CPlay.h>
 
 #include <rva.h>
 
@@ -126,40 +129,12 @@ DATA(0x00244c54)
 extern "C" i32 g_644c54; // current area index
 // sub_1c44 (0x1c44 thunk) __stdcall: is the hot point inside the mode-2 child?
 i32 __stdcall SbiPointInChild(i32 x, i32 y);
-struct SbiVtbl; // completed below (carries the base-handler PMF at slot +0x38)
 
-SIZE_UNKNOWN(CPlay);
-class CPlay {
-public:
-    i32 vfunc_16(i32 msg, i32 x, i32 y); // slot 16 (+0x40) @0xce660
-
-    SbiVtbl* m_vptr; // +0x000
-    SbiHost* m_4;    // +0x004
-    char m_pad08[0xc - 0x8];
-    SbiRectHost* m_c; // +0x00c
-    char m_pad10[0x2dc - 0x10];
-    SbiChild* m_2dc;  // +0x2dc
-    SbiToggle* m_2e0; // +0x2e0
-    char m_pad2e4[0x368 - 0x2e4];
-    i32 m_368; // +0x368
-    i32 m_36c; // +0x36c
-    char m_pad370[0x374 - 0x370];
-    SbiEntry** m_374; // +0x374
-    i32 m_378;        // +0x378
-    char m_pad37c[0x484 - 0x37c];
-    i32 m_484; // +0x484
-    char m_pad488[0x4fc - 0x488];
-    i32 m_4fc; // +0x4fc
-};
-// The base-class handler at vtable slot +0x38, modeled as a 4-byte PMF off the
-// vtable so MSVC emits `mov edx,[this]; mov ecx,this; call [edx+0x38]`. The class
-// must be COMPLETE before this typedef - see docs/patterns/pmf-complete-class-4byte.md.
-typedef i32 (CPlay::*SbiSlot38Fn)(i32, i32, i32);
-SIZE_UNKNOWN(SbiVtbl);
-struct SbiVtbl {
-    char m_pad00[0x38];
-    SbiSlot38Fn slot38; // +0x38
-};
+// The CPlay members this dispatcher reaches map onto the canonical CState/CPlay
+// layout, cast to this TU's status-bar facet views: m_4 (CState owner) -> SbiHost,
+// m_c (CView) -> SbiRectHost, m_guts (+0x2dc) -> SbiChild, m_hitTest (+0x2e0) ->
+// SbiToggle, m_markerData (+0x374) -> SbiEntry**. The base-handler at vtable slot
+// +0x38 (CState::Vslot0e) is now a real virtual call.
 
 // @early-stop
 // regalloc/frame-slot wall (~52%): logic complete + verified instruction-by-
@@ -171,25 +146,25 @@ struct SbiVtbl {
 // a 0x14 frame that +4-shifts every [esp+N] operand. Not source-steerable. See
 // docs/patterns/zero-register-pinning.md + identical-return-epilogue-tailmerge.md.
 RVA(0x000ce660, 0x362)
-i32 CPlay::vfunc_16(i32 msg, i32 x, i32 y) {
-    if (m_484 != 0) {
+i32 CPlay::HandleMousePress(i32 msg, i32 x, i32 y) {
+    if (m_hudSuppressed != 0) {
         return 1;
     }
-    if (m_2dc == 0) {
+    if (m_guts == 0) {
         return 1;
     }
-    if (m_4fc != 0) {
-        return m_2dc->Dispatch(msg, x, y);
+    if (m_overlayDrag != 0) {
+        return ((SbiChild*)m_guts)->Dispatch(msg, x, y);
     }
     if (g_sbiMgr->m_68->m_400 == 0) {
-        return m_2dc->Dispatch(msg, x, y);
+        return ((SbiChild*)m_guts)->Dispatch(msg, x, y);
     }
-    if (m_368 != 0 || m_36c != 0) {
-        return (this->*(m_vptr->slot38))(msg, x, y);
+    if (m_dragInhibit1 != 0 || m_dragInhibit2 != 0) {
+        return this->Vslot0e(msg, x, y); // base handler at vtable slot +0x38
     }
 
-    if (m_2dc->m_0 == 2 && SbiPointInChild(x, y)) {
-        SbiSndSet* set = m_4->m_30->m_28;
+    if (((SbiChild*)m_guts)->m_0 == 2 && SbiPointInChild(x, y)) {
+        SbiSndSet* set = ((SbiHost*)m_4)->m_30->m_28;
         if (set->m_30 == 0) {
             SbiSndEntry* e = 0;
             set->m_10.Find("GAME_TABHIGHLIGHT1", &e);
@@ -197,38 +172,38 @@ i32 CPlay::vfunc_16(i32 msg, i32 x, i32 y) {
                 e->PlayCue(g_sndCueTag, 0, 0, 0);
             }
         }
-        m_2dc->Refresh();
-        if (m_2dc->m_0 == 1) {
-            m_2e0->Set(2);
+        ((SbiChild*)m_guts)->Refresh();
+        if (((SbiChild*)m_guts)->m_0 == 1) {
+            ((SbiToggle*)m_hitTest)->Set(2);
         } else {
-            m_2e0->Set(1);
+            ((SbiToggle*)m_hitTest)->Set(1);
         }
         return 1;
     }
 
-    i32 idx = m_2dc->HitTest(x, y);
+    i32 idx = ((SbiChild*)m_guts)->HitTest(x, y);
     if (idx != -1) {
-        m_2dc->Select(idx, 1);
+        ((SbiChild*)m_guts)->Select(idx, 1);
         return 1;
     }
 
-    RECT* rc = &m_c->m_24->m_10;
+    RECT* rc = &((SbiRectHost*)m_c)->m_24->m_10;
     i32 rl = rc->left;
     i32 rt = rc->top;
     i32 rr = rc->right;
     i32 rb = rc->bottom;
     if (x < rl || x > rr || y < rt || y > rb) {
-        return m_2dc->Dispatch(msg, x, y);
+        return ((SbiChild*)m_guts)->Dispatch(msg, x, y);
     }
 
     i32 outArea;
     i32 outVal;
-    if (m_4->m_68->Probe(x, y, &outArea, &outVal, 5) && g_644c54 == outArea) {
-        m_2dc->Notify(outVal);
+    if (((SbiHost*)m_4)->m_68->Probe(x, y, &outArea, &outVal, 5) && g_644c54 == outArea) {
+        ((SbiChild*)m_guts)->Notify(outVal);
         return 1;
     }
 
-    if (m_368 != 0) {
+    if (m_dragInhibit1 != 0) {
         return 1;
     }
     i32 area = g_644c54;
@@ -240,24 +215,24 @@ i32 CPlay::vfunc_16(i32 msg, i32 x, i32 y) {
         return 0;
     }
 
-    SbiHost24* h = m_4->m_30->m_24;
+    SbiHost24* h = ((SbiHost*)m_4)->m_30->m_24;
     i32 px = h->m_5c->m_40.x - h->m_10 + x;
     i32 py = h->m_5c->m_40.y - h->m_14 + y;
-    for (i32 i = 0; i < m_378; i++) {
-        SbiEntry* e = m_374[i];
+    for (i32 i = 0; i < markerCount(); i++) {
+        SbiEntry* e = ((SbiEntry**)markerData())[i];
         if (e == 0) {
             continue;
         }
         RECT er;
         SetRect(&er, e->m_0 - 0x10, e->m_4 - 0x10, e->m_0 + 0x10, e->m_4 + 0x10);
         if (px < er.right && px >= er.left && py < er.bottom && py >= er.top) {
-            if (!m_2dc->Check()) {
+            if (!((SbiChild*)m_guts)->Check()) {
                 return 1;
             }
             char ab = (char)g_644c54;
             px = (px & 0xffe0) + 0x10;
             py = (py & 0xffe0) + 0x10;
-            m_4->m_6c->Spawn(1, ab, 0, 0, px, py, 0, 0);
+            ((SbiHost*)m_4)->m_6c->Spawn(1, ab, 0, 0, px, py, 0, 0);
             return 1;
         }
     }

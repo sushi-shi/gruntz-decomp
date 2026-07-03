@@ -1247,6 +1247,7 @@ CString WwdFile::GetMapBaseName(CString path) {
 // --- WwdFile.h header classes ---
 SIZE(WwdHeader, 0x5f4);     // on-disk WWD header (RE'd 0x5F4 bytes)
 SIZE(WwdInputStream, 0x10); // 16-byte file-stream object (full layout to +0xc)
+SIZE_UNKNOWN(CPlaneGeom);   // WwdFile's plane-geom (CPlay.h's render-geom facet is CPlayPlaneGeom)
 SIZE_UNKNOWN(CPlaneScroll);
 SIZE_UNKNOWN(CPlaneSurfDesc);
 SIZE_UNKNOWN(CPlaneSurf);

@@ -15,8 +15,8 @@
 #include <rva.h>
 #include <Gruntz/CMulti.h>
 #include <Gruntz/CGameRegistry.h> // g_64556c singleton (0x24556c) canonical view
-#include <stdio.h>  // engine sprintf (reloc-masked)
-#include <stdlib.h> // srand (reloc-masked)
+#include <stdio.h>                // engine sprintf (reloc-masked)
+#include <stdlib.h>               // srand (reloc-masked)
 #include <Globals.h>
 
 // ---------------------------------------------------------------------------
@@ -77,21 +77,15 @@ public:
 };
 
 // ---------------------------------------------------------------------------
-// Real-polymorphic dtor views of the CPlay / CState sub-objects the most-derived
-// ~CMulti walks. Each has a virtual dtor whose auto vptr-restore stamps ??_7CPlay@@6B@
-// (0x5ea0bc) / ??_7CState@@6B@ (0x5ea21c) - name-matching config/vtable_names.csv -
-// in place of the old manual vtable stamps. Each is STANDALONE (not : the other) so
-// its inline dtor stamps + runs ONLY its own base teardown (CPlayDtorBody / BaseCleanup);
-// ~CMulti keeps the explicit member teardown between them in retail order. The inlined
-// dtor lowers to `mov [this],offset ??_7X; mov ecx,this; call <BaseTeardown>` - the
-// same two instructions the manual stamp + call produced, only the reloc names change.
+// The CState sub-object dtor-view the most-derived ~CMulti walks: a virtual dtor
+// whose auto vptr-restore stamps ??_7CState@@6B@ (0x5ea21c, name-matching
+// config/vtable_names.csv) then runs the CState base teardown (BaseCleanup). ~CMulti
+// keeps the explicit member teardown in retail order. (The CPlay sub-object teardown
+// is CMulti's own CPlayDtorBody() - the ONE canonical CPlay <Gruntz/CPlay.h> can't be
+// used as a sub-object dtor-view here because its ~CPlay would double-tear the CPlay
+// members ~CMulti already unwinds; giving ~CMulti the ??_7CPlay restamp would require
+// modeling CMulti : public CPlay for real, out of this CPlay-consolidation's scope.)
 // (~CMulti itself already auto-stamps ??_7CMulti at dtor entry via CMulti's virtual dtor.)
-struct CPlay {
-    void CPlayDtorBody(); // 0x04c8700 (the CPlay sub-object teardown, thiscall)
-    virtual ~CPlay() {
-        CPlayDtorBody();
-    }
-};
 struct CState {
     void BaseCleanup(); // 0x00403f53 (CState's base teardown, thiscall)
     virtual ~CState() {
@@ -158,8 +152,8 @@ CMulti::~CMulti() {
     m_hostName.~CString();
     m_groupName.~CString();
     m_598.~CString();
-    // CPlay sub-object: ~CPlay stamps ??_7CPlay then runs CPlayDtorBody.
-    ((CPlay*)this)->CPlay::~CPlay();
+    // CPlay sub-object teardown (the ??_7CPlay restamp is elided - see the note above).
+    CPlayDtorBody();
     m_488.~CByteArray();
     m_410.~CString();
     // the CByteArray[4] vector at +0x3a4.
@@ -1013,7 +1007,6 @@ void CMulti::AckJoinFailure() {
 SIZE_UNKNOWN(CLobbyObjA);
 SIZE_UNKNOWN(CMulti);
 SIZE_UNKNOWN(CMultiDialogHook);
-SIZE_UNKNOWN(CPlay);  // local dtor-view (stamps ??_7CPlay in ~CMulti)
 SIZE_UNKNOWN(CState); // local dtor-view (stamps ??_7CState in ~CMulti)
 SIZE_UNKNOWN(CGruntzMgr);
 SIZE_UNKNOWN(CMultiLogicDesc);

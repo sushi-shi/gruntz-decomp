@@ -28,6 +28,7 @@
 // never claim the RVA. (Same manual-inline-construction pattern as CButeSection /
 // CNetPeer.) Field names are placeholders; offsets + code bytes are load-bearing.
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/CPlay.h> // canonical CPlay (the case-3 `new CPlay` uses the one shape)
 #include <rva.h>
 
 // operator new / the game heap (0x1b9b46), reloc-masked.
@@ -101,8 +102,9 @@ void Ts_Set(void* self, i32 a, i32 b, i32 c, i32 d); // 0x8c380 (member Set, 4 a
 // ??_7<Class>, but its DIFFERENT name (+ no DATA() binding) means cl emits no local
 // vtable and the delinker keeps the RVA bound to the real class's TU (noted). The
 // switch key is the state id TransitionState is asked for.
-extern void* g_stCAttractVtbl;         // 0x5ea194  ??_7CAttract          (cattract)
-extern void* g_stCPlayVtbl;            // 0x5ea0bc  ??_7CPlay             (cplaydtor)
+extern void* g_stCAttractVtbl; // 0x5ea194  ??_7CAttract          (cattract)
+// (CPlay uses the canonical `class CPlay : public CState` - cl auto-stamps
+// ??_7CPlay in its ctor, so no g_stCPlayVtbl manual-stamp extern is needed.)
 extern void* g_stCMenuStateVtbl;       // 0x5e9e84  ??_7CMenuState        (gamemode)
 extern void* g_stCDemoVtbl;            // 0x5e9f0c  ??_7CDemo             (cplaydtor)
 extern void* g_stCCreditsStateVtbl;    // 0x5e9c64  ??_7CCreditsState     (gamemode)
@@ -165,19 +167,10 @@ struct CCreditsState : CTsBaseA { // param 8, 0x218
     char m_pad1f4[0x218 - 0x1f4];
     CCreditsState();
 };
-struct CPlay : CTsBaseA { // param 3, 0x520
-    MfcStr m_1b4;         // +0x1b4
-    char m_pad1b8[0x370 - 0x1b8];
-    MfcBytes m_370; // +0x370
-    char m_pad384[0x3a4 - 0x384];
-    MfcBytes m_3a4[4]; // +0x3a4
-    char m_pad3f4[0x410 - 0x3f4];
-    MfcStr m_410; // +0x410
-    char m_pad414[0x488 - 0x414];
-    MfcBytes m_488; // +0x488
-    char m_pad49c[0x520 - 0x49c];
-    CPlay();
-};
+// CPlay (param 3, 0x520) is the canonical `class CPlay : public CState` from
+// <Gruntz/CPlay.h>; its five destructible MFC members + CState base give the same
+// inline-construction shape the factory needs, and its ctor (defined below) stamps
+// ??_7CPlay via cl (no manual g_stCPlayVtbl stamp).
 struct CMulti : CTsBaseB { // param 17, 0x660
     char m_pad520[0x598 - 0x520];
     MfcStr m_598, m_59c, m_5a0; // +0x598/+0x59c/+0x5a0
@@ -240,8 +233,9 @@ CCreditsState::CCreditsState() {
     *(i32*)(p + 0x1b4) = 0;
 }
 CPlay::CPlay() {
+    // cl runs the CState base ctor + the five member ctors, then auto-stamps
+    // ??_7CPlay, then this field-init body (matching the retail inlined construction).
     char* p = (char*)this;
-    m_vptr = (void*)&g_stCPlayVtbl;
     *(i32*)(p + 0x328) = 0;
     *(i32*)(p + 0x330) = 0;
     *(i32*)(p + 0x32c) = 0;
@@ -415,7 +409,6 @@ SIZE_UNKNOWN(CHelpState);
 SIZE_UNKNOWN(CMenuState);
 SIZE_UNKNOWN(CMulti);
 SIZE_UNKNOWN(CMultiBootyState);
-SIZE_UNKNOWN(CPlay);
 SIZE_UNKNOWN(CSplashState);
 SIZE_UNKNOWN(CTsBaseA);
 SIZE_UNKNOWN(CTsBaseB);

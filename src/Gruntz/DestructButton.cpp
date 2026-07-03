@@ -5,15 +5,10 @@
 // StatusBar/DestructButtonWarningDelay bute setting, then drop the item to mode 0.
 // Field names are placeholders; only offsets + code bytes are load-bearing.
 #include <Bute/ButeMgr.h> // canonical CButeMgr (one shape)
+#include <Gruntz/CPlay.h> // canonical CPlay (one shape; ArmSnapshot is reached here)
 #include <rva.h>
 
 #include <Ints.h>
-
-// CPlay (active game-mode object): only ArmSnapshot is reached here.
-class CPlay {
-public:
-    i32 ArmSnapshot(i32 active, i32 dur); // 0x0d9240
-};
 
 struct MgrSettings {
     char m_pad00[0x2c];
@@ -26,8 +21,7 @@ extern "C" MgrSettings* g_mgrSettings; // 0x64556c
 DATA(0x006453d8)
 extern CButeMgr g_buteMgr;
 
-DATA(0x00645588)
-extern i32 g_645588; // free-running clock global
+// g_645588 (the free-running clock global) comes from <Gruntz/CPlay.h>.
 
 class CSBI_RectOnly {
 public:
