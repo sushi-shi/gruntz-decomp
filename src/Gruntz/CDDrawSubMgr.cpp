@@ -632,7 +632,7 @@ void CDDrawWorkerMgr::Method_159ef0() {
 // constant `1` in eax, our cl swaps them (eax<->edx phase shift), a regalloc
 // coin-flip with no source lever (docs/patterns/zero-register-pinning.md).
 RVA(0x0015c290, 0x2f)
-void CDDrawBlitParam::Init_15c290(void* srcv) {
+void CDDrawBlitParam::Construct(void* srcv) {
     CDDrawBlitParamSrc* src = (CDDrawBlitParamSrc*)srcv;
     m_10 = (i32)src;
     m_28 = 1;
@@ -784,7 +784,7 @@ i32 CDDrawBlitParam::Serialize_15c970(CWwdArchive* ar) {
 // cases into a cmp/je-subtract chain.  Not source-steerable — the lowering
 // follows case-value density.  docs/patterns/switch-cmpje-tree-vs-jumptable.md.
 RVA(0x0015c900, 0x42)
-i32 CDDrawBlitParam::Dispatch_15c900(CWwdArchive* ar, i32 type, i32 a3, i32 a4) {
+i32 CDDrawBlitParam::Find(CWwdArchive* ar, i32 type, i32 a3, i32 a4) {
     if (ar == 0) {
         return 0;
     }

@@ -23,8 +23,8 @@
 #include <Gruntz/CDDrawBlitParam.h> // the real +0x1a0 sub-object (was the local CmdMap view)
 
 // The +0x1a0 command-dispatch sub-object is the real CDDrawBlitParam (single-source
-// <Gruntz/CDDrawBlitParam.h>): Init_15c290 (0x15c290) constructs it from the owner,
-// Dispatch_15c900 (0x15c900) routes a request. The __thiscall on the embedded member
+// <Gruntz/CDDrawBlitParam.h>): Construct (0x15c290) constructs it from the owner,
+// Find (0x15c900) routes a request. The __thiscall on the embedded member
 // lowers to `lea ecx,[this+0x1a0]; call` with no cast.
 
 // The +0x1dc CObList of owned sub-objects (CObject base vtbl@+0, head@+4) and its
@@ -314,7 +314,7 @@ i32 CWwdGameObject::Dispatch(i32 a1, i32 type, i32 a3, i32 a4) {
     if (a1 == 0) {
         return 0;
     }
-    if (m_cmdMap.Dispatch_15c900((CWwdArchive*)a1, type, a3, a4) == 0) {
+    if (m_cmdMap.Find((CWwdArchive*)a1, type, a3, a4) == 0) {
         return 0;
     }
     switch (type) {
@@ -827,7 +827,7 @@ i32 CWwdGameObject::WriteSnapshot(i32 dst) {
 RVA(0x0015b940, 0x38)
 i32 CWwdGameObject::Init(i32 a1, i32 a2, i32 a3, i32 a4) {
     m_19c = 0;
-    m_cmdMap.Init_15c290(this);
+    m_cmdMap.Construct(this);
     return Setup(a1, a2, a3, a4);
 }
 

@@ -11,18 +11,18 @@ class CDDrawBlitWorker;
 
 class CDDrawBlitParam {
 public:
-    // Init_15c290's argument is a generic owner/source object with a +0x0c
+    // Construct's argument is a generic owner/source object with a +0x0c
     // "elements" pointer; it arrives as a CDDrawBlitParamSrc from the worker path
     // and as the owning CWwdGameObject from the game-object path, so it is modeled
     // as void* (reinterpreted internally) to keep one mangled symbol across both.
-    void Init_15c290(void* src);
+    void Construct(void* src);
     void Reset_15c2c0();
     void Setup_15c2d0(CDDrawBlitParamSrc* src);
     void Recompute_15c320(i32 a1);
     i32 SelectCue_157a80(void* force);
     i32 Serialize_15c970(CWwdArchive* ar);
     i32 Deserialize_15ca70(CWwdArchive* ar);
-    i32 Dispatch_15c900(CWwdArchive* ar, i32 type, i32 a3, i32 a4);
+    i32 Find(CWwdArchive* ar, i32 type, i32 a3, i32 a4);
 
     char m_pad00[0x0c];         // +0x00 .. +0x0b
     CDDrawBlitWorker* m_worker; // +0x0c
