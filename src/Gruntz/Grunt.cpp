@@ -652,7 +652,7 @@ CGrunt::CGrunt(void* owner) : CMovingLogic(owner) {
     // base ctor above did the CMotionState band @+0x38 + coordinate bounds) ---
     m_148 = 0;
     m_14c = 0;
-    *(i32*)((char*)m_10 + 0xe4) = 7;
+    m_10->m_e4 = 7;
     ((CGruntUpdateThis*)this)->Update();
     m_150 = owner;
     m_154 = (CEntranceAnimPlayer*)owner;
@@ -677,9 +677,9 @@ CGrunt::CGrunt(void* owner) : CMovingLogic(owner) {
     m_entranceCell[0] = g_gruntDefEntranceCell[0];
     m_entranceCell[1] = g_gruntDefEntranceCell[1];
     m_entranceCell[2] = g_gruntDefEntranceCell[2];
-    m_434 = *(i32*)((char*)m_10 + 0x11c);
+    m_434 = m_10->m_11c;
     m_438 = g_gruntCtor64558c;
-    *(i32*)((char*)m_10 + 0xe4) = 1;
+    m_10->m_e4 = 1;
     m_430 = 0;
     m_42c = 0;
     m_poseWalk = 0;
@@ -701,11 +701,11 @@ CGrunt::CGrunt(void* owner) : CMovingLogic(owner) {
     m_poseToyBreak = 0;
     m_3d8 = 0;
     m_arrived = 0;
-    *(i32*)((char*)m_154 + 0xe8) = 0x100000;
-    *(i32*)((char*)m_154 + 0xec) = 0x3d1;
-    *(i32*)((char*)m_154 + 8) |= 0x2000100;
-    *(i32*)((char*)m_154 + 0xf4) |= 0x103f;
-    *(i32*)((char*)m_154 + 0xf0) = 1;
+    m_154->m_e8 = 0x100000;
+    m_154->m_ec = 0x3d1;
+    m_154->m_8 |= 0x2000100;
+    m_154->m_f4 |= 0x103f;
+    m_154->m_f0 = 1;
     m_tileOwnerHi = -1;
     m_tileOwnerLo = -1;
     m_neighborCol = -1;
@@ -2389,13 +2389,13 @@ i32 CGrunt::ClaimSwitchTile() {
     GruntBoard* gb = g_gameReg->m_tileGrid;
     i32 oldTx = m_lastTilePxX >> 5;
     i32 oldTy = m_lastTilePxY >> 5;
-    ((char*)gb->m_8[oldTy])[oldTx * 7 * 4 + 3] &= 0xdf;
-    *(i32*)&((char*)gb->m_8[oldTy])[oldTx * 7 * 4 + 4] = -1;
+    gb->m_8[oldTy][oldTx * 7 * 4 + 3] &= 0xdf;
+    *(i32*)&gb->m_8[oldTy][oldTx * 7 * 4 + 4] = -1;
 
     // Claim the new tile: set bit 5 of its flag byte, stamp the owner id.
     i32 owner = (m_tileOwnerHi << 8) | m_tileOwnerLo;
-    ((char*)gb->m_8[ty])[tx * 7 * 4 + 3] |= 0x20;
-    *(i32*)&((char*)gb->m_8[ty])[tx * 7 * 4 + 4] = owner;
+    gb->m_8[ty][tx * 7 * 4 + 3] |= 0x20;
+    *(i32*)&gb->m_8[ty][tx * 7 * 4 + 4] = owner;
 
     m_lastTilePxX = x;
     m_lastTilePxY = y;
@@ -2713,7 +2713,7 @@ static __inline i32 s_CanCommitMove(CGrunt* g, i32 moveX, i32 moveY) {
     if (dx == 0 || dy == 0) {
         return 1;
     }
-    char* cur = (char*)&((i32*)board->m_8[ty])[tx * 7];
+    char* cur = board->m_8[ty] + tx * 7 * 4;
     char* tg = (char*)tgt;
     i32 stride = board->m_c * 7 * 4; // bytes per board row
     if (dx > 0) {
@@ -2993,16 +2993,16 @@ commit:
         GruntBoard* b = g_gameReg->m_tileGrid;
         i32 ox = m_lastTilePxX >> 5;
         i32 oy = m_lastTilePxY >> 5;
-        ((char*)b->m_8[oy])[ox * 7 * 4 + 3] &= 0xdf;
-        *(i32*)&((char*)b->m_8[oy])[ox * 7 * 4 + 4] = -1;
+        b->m_8[oy][ox * 7 * 4 + 3] &= 0xdf;
+        *(i32*)&b->m_8[oy][ox * 7 * 4 + 4] = -1;
     }
     {
         GruntBoard* b = g_gameReg->m_tileGrid;
         i32 nx = moveX >> 5;
         i32 ny = moveY >> 5;
         i32 owner = (m_tileOwnerHi << 8) | m_tileOwnerLo;
-        ((char*)b->m_8[ny])[nx * 7 * 4 + 3] |= 0x20;
-        *(i32*)&((char*)b->m_8[ny])[nx * 7 * 4 + 4] = owner;
+        b->m_8[ny][nx * 7 * 4 + 3] |= 0x20;
+        *(i32*)&b->m_8[ny][nx * 7 * 4 + 4] = owner;
     }
     m_lastTilePxX = moveX;
     m_lastTilePxY = moveY;
@@ -4164,7 +4164,7 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
     m_combatClockHi = 0;
     m_358 = 1;
 
-    CGrunt* nb = (CGrunt*)(*(i32*)((char*)m_tileMgr + (15 * a + b) * 4 + 0x1c));
+    CGrunt* nb = m_tileMgr->m_grid[a][b];
     if (nb == 0 || nb->m_entranceCommitted == 0 || m_entranceCommitted == 0) {
         return 0;
     }
@@ -4256,7 +4256,7 @@ CGrunt* CGrunt::FindGridNeighbor(i32 validate) {
         return 0;
     }
 
-    CGrunt* n = *(CGrunt**)((char*)m_tileMgr + (m_neighborRow + 15 * m_neighborCol) * 4 + 0x1c);
+    CGrunt* n = m_tileMgr->m_grid[m_neighborCol][m_neighborRow];
     if (n != 0 && n->m_entranceCommitted != 0) {
         if (validate != 0) {
             if (n->m_10->m_5c != n->m_lastTilePxX) {
@@ -5057,7 +5057,7 @@ i32 CGrunt::UpdateGruntStatus() {
             return 0;
         }
         m_neighborValid = 0;
-        CGrunt* n = *(CGrunt**)((char*)m_tileMgr + (m_neighborRow + 15 * m_neighborCol) * 4 + 0x1c);
+        CGrunt* n = m_tileMgr->m_grid[m_neighborCol][m_neighborRow];
         if (n == 0 || n->m_entranceCommitted == 0) {
             return 0;
         }
@@ -5598,10 +5598,9 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
 
         i32 phase = m_arrivalPhase;
         if ((phase == 3 || phase == 2) && m_arrivalActive != 0) {
-            i32 idx = 15 * m_arrivalCol + m_arrivalRow;
-            void* obj = *(void**)((char*)m_tileMgr + idx * 4 + 0x1c);
-            if (obj != 0) {
-                CGruntHud* inner = *(CGruntHud**)((char*)obj + 0x10);
+            CGrunt* occ = m_tileMgr->m_grid[m_arrivalCol][m_arrivalRow];
+            if (occ != 0) {
+                CGruntHud* inner = occ->m_10;
                 i32 yMasked = (inner->m_60 & ~0x1f) + 0x10;
                 i32 xMasked = (inner->m_5c & ~0x1f) + 0x10;
                 i32 hit;
@@ -5821,10 +5820,9 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
     if (a2 != 0) {
         ClearSubA();
         if (m_arrivalPhase == 3 && m_arrivalActive != 0) {
-            i32 idx = 15 * m_arrivalCol + m_arrivalRow;
-            void* obj = *(void**)((char*)m_tileMgr + idx * 4 + 0x1c);
-            if (obj != 0) {
-                CGruntHud* inner = *(CGruntHud**)((char*)obj + 0x10);
+            CGrunt* occ = m_tileMgr->m_grid[m_arrivalCol][m_arrivalRow];
+            if (occ != 0) {
+                CGruntHud* inner = occ->m_10;
                 i32 yMasked = (inner->m_60 & ~0x1f) + 0x10;
                 i32 xMasked = (inner->m_5c & ~0x1f) + 0x10;
                 if (RectContainsGated(xMasked, yMasked) != 0) {
@@ -6373,7 +6371,7 @@ i32 CGrunt::FinishEntranceMove() {
     if (m_36c == 0) {
         m_tileMgr->NotifyEntranceDrop(m_tileOwnerHi, m_tileOwnerLo, 0);
     }
-    *(i32*)((char*)m_154 + 8) |= 0x10000;
+    m_154->m_8 |= 0x10000;
     return 0;
 }
 
@@ -6587,7 +6585,7 @@ tail:
         } else {
             elem = 0;
         }
-        frame = *(i32*)((char*)elem + 0x14);
+        frame = elem[0x14 / 4];
     }
     {
         i32* cell = m_entranceCell;
@@ -6742,7 +6740,7 @@ i32 CGrunt::StepArrivalDefense() {
                 m_defenderState = 1;
                 return 1;
             }
-            occ = *(CGrunt**)((char*)m_tileMgr + (m_arrivalRow + 15 * m_arrivalCol) * 4 + 0x1c);
+            occ = m_tileMgr->m_grid[m_arrivalCol][m_arrivalRow];
             if (occ == 0) {
                 m_defenderState = 0;
                 return 1;
@@ -6808,7 +6806,7 @@ i32 CGrunt::StepArrivalDefense() {
             return 1;
 
         case 1: {
-            occ = *(CGrunt**)((char*)m_tileMgr + (m_arrivalRow + 15 * m_arrivalCol) * 4 + 0x1c);
+            occ = m_tileMgr->m_grid[m_arrivalCol][m_arrivalRow];
             CGrunt* g = m_tileMgr->GetOccupant(this);
             if (g != 0 && g != occ) {
                 m_arrivalCol = -1;
@@ -7013,7 +7011,7 @@ i32 CGrunt::StepArrivalDefenseLean() {
                 m_defenderState = 1;
                 return 1;
             }
-            occ = *(CGrunt**)((char*)m_tileMgr + (m_arrivalRow + 15 * m_arrivalCol) * 4 + 0x1c);
+            occ = m_tileMgr->m_grid[m_arrivalCol][m_arrivalRow];
             if (occ == 0) {
                 m_defenderState = 0;
                 return 1;
@@ -7079,7 +7077,7 @@ i32 CGrunt::StepArrivalDefenseLean() {
             return 1;
 
         case 1: {
-            occ = *(CGrunt**)((char*)m_tileMgr + (m_arrivalRow + 15 * m_arrivalCol) * 4 + 0x1c);
+            occ = m_tileMgr->m_grid[m_arrivalCol][m_arrivalRow];
             CGrunt* g = m_tileMgr->GetOccupant(this);
             if (g != 0 && g != occ) {
                 m_arrivalCol = -1;

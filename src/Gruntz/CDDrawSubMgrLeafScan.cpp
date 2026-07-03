@@ -384,7 +384,10 @@ CObject* CDDrawSubMgrLeafScan::Lookup_05b7e0(const char* key) {
 // names. objdiff-reloc-scoring.
 RVA(0x00157570, 0x68)
 CDDrawSubMgrLeafScan::~CDDrawSubMgrLeafScan() {
-    ((LeafScanVM18Sink*)this)->VM18();
+    // VM18 (0x157ae0) is slot [7] of this class's own vtable (FUN_00557ae0); a
+    // virtual call on `this` inside the dtor devirtualizes to the retail direct
+    // rel32, so no view cast is needed.
+    FUN_00557ae0();
     // m_10 (CMapStringToOb) member dtor auto-fires here, then the LeafScanBase
     // destructor resets +0x04/+0x08/+0x0c and restamps the grand-base vtable.
 }

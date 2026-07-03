@@ -114,7 +114,11 @@ struct CGruntHud {
     i32 m_60; // +0x60
     char m_pad64[0x74 - 0x64];
     i32 m_74; // +0x74   (entrance: latched anim id; cmp 0xcf850)
-    char m_pad78[0x134 - 0x78];
+    char m_pad78[0xe4 - 0x78];
+    i32 m_e4; // +0xe4   (CGameObject dirty/update state; ctor stamps 7 then 1)
+    char m_pade8[0x11c - 0xe8];
+    i32 m_11c; // +0x11c  (ctor snapshot -> m_434)
+    char m_pad120[0x134 - 0x120];
     i32 m_134; // +0x134  (arrival: view-cull mode cleared)
     i32 m_138; // +0x138  (arrival: view-cull, cleared)
     i32 m_13c; // +0x13c  (arrival: view-cull, cleared)
@@ -366,7 +370,12 @@ public:
     char m_pad0[0x8];
     i32 m_8;              // +0x08  state-flag word (death loader |= 1 / |= 0x10000)
     CEntranceResMgr* m_c; // +0x0c  resource object (lookup table holder)
-    char m_pad10[0x148 - 0x10];
+    char m_pad10[0xe8 - 0x10];
+    i32 m_e8; // +0xe8  (ctor = 0x100000)
+    i32 m_ec; // +0xec  (ctor = 0x3d1)
+    i32 m_f0; // +0xf0  (ctor = 1)
+    i32 m_f4; // +0xf4  (ctor |= 0x103f)
+    char m_padf8[0x148 - 0xf8];
     i32 m_148;   // +0x148
     i32 m_14c;   // +0x14c
     void* m_150; // +0x150
@@ -551,8 +560,8 @@ struct WwdGameReg {
     char m_pad64[0x68 - 0x64];
     i32 m_68; // +0x68  (SerializeMove mode-8: -> CGrunt::m_tileMgr)
     char m_pad6c[0x70 - 0x6c];
-    GruntBoard* m_tileGrid;      // +0x70  the level board
-    CSpriteRefTable* m_74; // +0x74  the sprite/animation reference table (GetSel)
+    GruntBoard* m_tileGrid; // +0x70  the level board
+    CSpriteRefTable* m_74;  // +0x74  the sprite/animation reference table (GetSel)
     char m_pad78[0x11c - 0x78];
     i32 m_11c; // +0x11c  the sound-channel param (struck-voice Play arg)
     char m_pad120[0x134 - 0x120];

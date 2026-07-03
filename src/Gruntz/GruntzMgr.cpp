@@ -1439,11 +1439,11 @@ i32 CGruntzMgr::PopTopIfMatches(CState* s) {
     if (!s) {
         return 0;
     }
-    i32 n = *(i32*)((char*)&m_stateStack + 8);
+    i32 n = ((CStateStackZ*)&m_stateStack)->m_nSize;
     if (n <= 0) {
         return 0;
     }
-    CState* top = (*(CState***)((char*)&m_stateStack + 4))[n - 1];
+    CState* top = ((CStateStackZ*)&m_stateStack)->m_pData[n - 1];
     ((CStateStackZ*)&m_stateStack)->RemoveAt(n - 1, 1);
     return top == s;
 }
@@ -1454,8 +1454,8 @@ i32 CGruntzMgr::PopTopIfMatches(CState* s) {
 // (+0xe0/+0xdc) so the array base is not hoisted into a register.
 RVA(0x00090a50, 0x40)
 void CGruntzMgr::ClearStateStack() {
-    for (i32 i = 0; i < *(i32*)((char*)&m_stateStack + 8); i++) {
-        CState* s = (*(CState***)((char*)&m_stateStack + 4))[i];
+    for (i32 i = 0; i < ((CStateStackZ*)&m_stateStack)->m_nSize; i++) {
+        CState* s = ((CStateStackZ*)&m_stateStack)->m_pData[i];
         if (s) {
             delete s;
         }
@@ -2451,7 +2451,7 @@ i32 CGruntzMgr::SaveState(CSerializerZ* ar) {
 
     char buf[0x80];
     memset(buf, 0, 0x80);
-    strcpy(buf, (const char*)m_strWorldFile);
+    strcpy(buf, m_strWorldFile);
     ar->Serialize(buf, 0x80);
 
     ar->Serialize(&m_114, 4);
@@ -2568,7 +2568,7 @@ i32 CGruntzMgr::FillSaveInfo(SaveInfo* dst, void* snapshot) {
     // edi,[eax]`) instead of re-addressing a stack slot, and - with no throwing
     // call live during the temp's range (the strcpy is inlined rep-movs) - /GX
     // still elides the EH frame, matching retail's frameless body.
-    strcpy(dst->m_75, (const char*)GetLevelName());
+    strcpy(dst->m_75, GetLevelName());
     dst->m_fc = (m_134 == 3);
     dst->m_f8 = m_130;
     ((SaveSink58*)m_saveSink)->Store(dst, src + 0x1d0);
@@ -2931,7 +2931,7 @@ i32 CGruntzMgr::SyncOptionsState() {
     CString s;
     if (s.LoadString(0x81ab)) {
         bool eq;
-        eq = (strcmp((const char*)s, (const char*)m_strWorldFile) == 0);
+        eq = (strcmp(s, m_strWorldFile) == 0);
         if (eq) {
             matched = 1;
         }
