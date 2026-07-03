@@ -1002,14 +1002,14 @@ i32 CPlay::ClampViewport2(i32 stride) {
 }
 
 // CPlay::RegionEnter (0x0d88f0) - on entering a special region, save the
-// currently-playing zoned sound (m_518) and silence the bank, then (when the dev
+// currently-playing zoned sound (m_savedZonedSound) and silence the bank, then (when the dev
 // window is up) start the "CURSE" cue. The shared on-enter sub-step the OnRegion
 // one-shots call. Migrated from engine_boundary (CPlay).
 RVA(0x000d88f0, 0x44)
 void CPlay::RegionEnter() {
-    if (m_518 == 0) {
+    if (m_savedZonedSound == 0) {
         CWorld* w = m_4w();
-        m_518 = w->m_48->m_pCurrent;
+        m_savedZonedSound = w->m_48->m_pCurrent;
         w->m_48->StopAll_1388f0();
     }
     if (g_64556c->m_14 != 0) {
@@ -1023,13 +1023,13 @@ void CPlay::RegionEnter() {
 RVA(0x000d8960, 0x75)
 void CPlay::RegionLeave() {
     if (m_region0Gate == 0 && m_region1Gate == 0 && m_region2Gate == 0 && m_region3Gate == 0
-        && m_518 != 0) {
+        && m_savedZonedSound != 0) {
         m_4w()->m_48->IsPlaying_138920();
-        m_4w()->m_48->m_pCurrent = m_518;
+        m_4w()->m_48->m_pCurrent = m_savedZonedSound;
         if (g_64556c->m_14 != 0) {
             m_4w()->m_48->Restart_1388c0(1);
         }
-        m_518 = 0;
+        m_savedZonedSound = 0;
     }
 }
 
@@ -2116,8 +2116,8 @@ i32 CPlay::HandleTileClick(i32 a, i32 x, i32 y) {
         i32 rawY = geom->m_originY - ds->m_viewport.top + y;
         i32 snapX = (rawX & ~0x1f) + 0x10;
         i32 snapY = (rawY & ~0x1f) + 0x10;
-        m_360 = snapX;
-        m_364 = snapY;
+        m_tileClickX = snapX;
+        m_tileClickY = snapY;
         CWorld::WorldTimeline* w = m_4w()->m_68;
         if (w->m_25c != 0 && w->m_25c->m_2c != 0) {
             w->CancelMarker();
@@ -2212,7 +2212,7 @@ i32 CPlay::PresentAndFlush() {
 // world-ready / drag-snap gates, run the prep sub-step, and (only when `arg`==0)
 // reset the guts subsystem (state/mode resync + two configure calls). Then arm
 // the guts busy words (m_busyA=1, m_busyB=arg, m_548=1) and republish the level
-// clock into m_1cc. Migrated from engine_boundary (CPlay). Returns 1.
+// clock into m_savedClock. Migrated from engine_boundary (CPlay). Returns 1.
 // ===========================================================================
 RVA(0x000d6440, 0xd3)
 i32 CPlay::EnterOverlayDrag(i32 arg) {
@@ -2242,7 +2242,7 @@ i32 CPlay::EnterOverlayDrag(i32 arg) {
     g->Guts16ea();
     g->m_548 = 1;
     g->Guts125d();
-    m_1cc = g_645588;
+    m_savedClock = g_645588;
     return 1;
 }
 
@@ -2256,7 +2256,7 @@ i32 CPlay::ForwardReady() {
 // CPlay::PauseGame (0x0cee90) - vtable slot 24 (shared by CDemo/CMulti). Flush
 // the pending mode ops, freeze the guts subsystem (passing whether we were
 // running), clear the world-ready / drag-snap gates, and save the running game
-// clock into m_1cc. Migrated from engine_boundary (CPlay).
+// clock into m_savedClock. Migrated from engine_boundary (CPlay).
 RVA(0x000cee90, 0x49)
 i32 CPlay::PauseGame() {
     Helper2c7f();
@@ -2267,17 +2267,17 @@ i32 CPlay::PauseGame() {
     }
     m_worldReady = 0;
     m_dragSnapActive = 0;
-    m_1cc = g_645588;
+    m_savedClock = g_645588;
     return 1;
 }
 
 // CPlay::ResumeGame (0x0cef00) - vtable slot 25. Step the guts subsystem, restore
-// the saved game clock from m_1cc, clear the paused flag, and (if the guts object
+// the saved game clock from m_savedClock, clear the paused flag, and (if the guts object
 // is live) run its resume sub-step. Migrated from engine_boundary (CPlay).
 RVA(0x000cef00, 0x39)
 i32 CPlay::ResumeGame() {
     m_guts->Guts367a();
-    g_645588 = m_1cc;
+    g_645588 = m_savedClock;
     m_paused = 0;
     if (m_guts != 0) {
         m_guts->Guts125d();
@@ -2608,11 +2608,11 @@ struct ScrollView { // CPlay view for the auto-scroll path (offset access)
     i32 m_150; // +0x150  cursor x
     i32 m_154; // +0x154  cursor y
     char p158[0x4b4 - 0x158];
-    i32 m_4b4; // +0x4b4  edge active bits
-    i32 m_4b8; // +0x4b8  edge lock bits
+    i32 m_scrollEdgeActive; // +0x4b4  edge active bits
+    i32 m_scrollEdgeLock;   // +0x4b8  edge lock bits
     char p4bc[0x508 - 0x4bc];
-    i32 m_508;                      // +0x508  last-scroll time (horizontal)
-    i32 m_50c;                      // +0x50c  last-scroll time (vertical)
+    i32 m_lastScrollTimeX;          // +0x508  last-scroll time (horizontal)
+    i32 m_lastScrollTimeY;          // +0x50c  last-scroll time (vertical)
     void ApplyScroll(i32 x, i32 y); // 0x2e28 thunk (thiscall, reloc-masked)
 };
 RVA(0x000d12b0, 0x2d5)
@@ -2639,83 +2639,83 @@ i32 CPlay::LoadScrollSpeedOptions() {
     i32 extentY = w->m_90;
 
     // LEFT edge
-    if (self->m_150 < 0xc || (self->m_4b8 & 1)) {
-        if (self->m_4b4 & 1) {
-            i32 d = (g_pTimeGetTime() - self->m_508) * speed / 100;
+    if (self->m_150 < 0xc || (self->m_scrollEdgeLock & 1)) {
+        if (self->m_scrollEdgeActive & 1) {
+            i32 d = (g_pTimeGetTime() - self->m_lastScrollTimeX) * speed / 100;
             if (d) {
                 if (d > 0x64) {
                     d = 0x64;
                 }
                 sx -= d;
-                self->m_508 = g_pTimeGetTime();
+                self->m_lastScrollTimeX = g_pTimeGetTime();
                 changed = 1;
             }
         } else {
-            self->m_4b4 |= 1;
-            self->m_508 = g_pTimeGetTime();
+            self->m_scrollEdgeActive |= 1;
+            self->m_lastScrollTimeX = g_pTimeGetTime();
         }
     } else {
-        self->m_4b4 &= ~1;
+        self->m_scrollEdgeActive &= ~1;
     }
 
     // RIGHT edge
-    if (self->m_150 > extentX - 0xc || (self->m_4b8 & 4)) {
-        if (self->m_4b4 & 4) {
-            i32 d = (g_pTimeGetTime() - self->m_508) * speed / 100;
+    if (self->m_150 > extentX - 0xc || (self->m_scrollEdgeLock & 4)) {
+        if (self->m_scrollEdgeActive & 4) {
+            i32 d = (g_pTimeGetTime() - self->m_lastScrollTimeX) * speed / 100;
             if (d) {
                 if (d > 0x64) {
                     d = 0x64;
                 }
                 sx += d;
-                self->m_508 = g_pTimeGetTime();
+                self->m_lastScrollTimeX = g_pTimeGetTime();
                 changed = 1;
             }
         } else {
-            self->m_4b4 |= 4;
-            self->m_508 = g_pTimeGetTime();
+            self->m_scrollEdgeActive |= 4;
+            self->m_lastScrollTimeX = g_pTimeGetTime();
         }
     } else {
-        self->m_4b4 &= ~4;
+        self->m_scrollEdgeActive &= ~4;
     }
 
     // TOP edge
-    if (self->m_154 < 0xf || (self->m_4b8 & 2)) {
-        if (self->m_4b4 & 2) {
-            i32 d = (g_pTimeGetTime() - self->m_50c) * speed / 100;
+    if (self->m_154 < 0xf || (self->m_scrollEdgeLock & 2)) {
+        if (self->m_scrollEdgeActive & 2) {
+            i32 d = (g_pTimeGetTime() - self->m_lastScrollTimeY) * speed / 100;
             if (d) {
                 if (d > 0x64) {
                     d = 0x64;
                 }
                 sy -= d;
-                self->m_50c = g_pTimeGetTime();
+                self->m_lastScrollTimeY = g_pTimeGetTime();
                 changed = 1;
             }
         } else {
-            self->m_4b4 |= 2;
-            self->m_50c = g_pTimeGetTime();
+            self->m_scrollEdgeActive |= 2;
+            self->m_lastScrollTimeY = g_pTimeGetTime();
         }
     } else {
-        self->m_4b4 &= ~2;
+        self->m_scrollEdgeActive &= ~2;
     }
 
     // BOTTOM edge
-    if (self->m_154 > extentY - 0xf || (self->m_4b8 & 8)) {
-        if (self->m_4b4 & 8) {
-            i32 d = (g_pTimeGetTime() - self->m_50c) * speed / 100;
+    if (self->m_154 > extentY - 0xf || (self->m_scrollEdgeLock & 8)) {
+        if (self->m_scrollEdgeActive & 8) {
+            i32 d = (g_pTimeGetTime() - self->m_lastScrollTimeY) * speed / 100;
             if (d) {
                 if (d > 0x64) {
                     d = 0x64;
                 }
                 sy += d;
-                self->m_50c = g_pTimeGetTime();
+                self->m_lastScrollTimeY = g_pTimeGetTime();
                 changed = 1;
             }
         } else {
-            self->m_4b4 |= 8;
-            self->m_50c = g_pTimeGetTime();
+            self->m_scrollEdgeActive |= 8;
+            self->m_lastScrollTimeY = g_pTimeGetTime();
         }
     } else {
-        self->m_4b4 &= ~8;
+        self->m_scrollEdgeActive &= ~8;
     }
 
     if (changed) {
@@ -3430,7 +3430,7 @@ i32 CPlay::ResetForMode(i32 mode) {
         } while (showCursor(0) >= 0);
     }
     if (mode == 9) {
-        g_645588 = m_1cc;
+        g_645588 = m_savedClock;
         if (!EnterMode(9)) {
             return 0;
         }
@@ -3460,7 +3460,7 @@ i32 CPlay::ResetForMode(i32 mode) {
     return 1;
 }
 
-// FindStartPointAt (0x0d5f90) - a registry-gated hit-test over this->m_374[]
+// FindStartPointAt (0x0d5f90) - a registry-gated hit-test over this->m_markerData[]
 // markers: bail unless the active config slot's per-slot counter is below its
 // cap, then return the first marker whose +-0x20 box contains (x, y), reporting
 // its coords. __thiscall(x, y, outX, outY), ret 0x10.
@@ -3470,8 +3470,8 @@ struct CHitMarker {
 };
 struct CPlayHitView { // view-of-this (keeps Render's CPlay typing untouched)
     char p0[0x374];
-    CHitMarker** m_374; // +0x374  marker array
-    i32 m_378;          // +0x378  marker count
+    CHitMarker** m_markerData; // +0x374  marker array
+    i32 m_markerCount;         // +0x378  marker count
 };
 // g_64556c view: a per-active-slot config array at +0x150 (stride 0x238) plus the
 // +0x68 sub-object's per-slot value table at +0x10c (gated against slot->m_228).
@@ -3508,8 +3508,8 @@ i32 CPlay::FindStartPointAt(i32 x, i32 y, i32* outX, i32* outY) {
         return 0;
     }
     CPlayHitView* self = (CPlayHitView*)this;
-    for (i32 i = 0; i < self->m_378; i++) {
-        CHitMarker* m = self->m_374[i];
+    for (i32 i = 0; i < self->m_markerCount; i++) {
+        CHitMarker* m = self->m_markerData[i];
         if (m != 0) {
             RECT rc;
             SetRect(&rc, m->m_0 - 0x20, m->m_4 - 0x20, m->m_0 + 0x20, m->m_4 + 0x20);
@@ -3586,7 +3586,7 @@ struct CRpWorld { // this->m_4
     char p80[0x134 - 0x80];
     i32 m_134; // +0x134  mode word
 };
-struct CRpFrame { // this->m_3f4 (the frame-marker timeline)
+struct CRpFrame { // this->m_frameMarker (the frame-marker timeline)
     char p0[0x28];
     i32 m_28; // +0x28
     i32 m_2c; // +0x2c
@@ -3609,18 +3609,18 @@ struct CRpThis { // view-of-this
     char p8[0x1c - 0x8];
     i32 m_1c; // +0x1c  cue id
     char p20[0x338 - 0x20];
-    i32 m_338; // +0x338  ambient timer base lo
-    i32 m_33c; // +0x33c  base hi
-    i32 m_340; // +0x340  interval lo
-    i32 m_344; // +0x344  interval hi
-    i32 m_348; // +0x348  ambient-init done
+    i32 m_ambientTimerLo;    // +0x338  ambient timer base lo
+    i32 m_ambientTimerHi;    // +0x33c  base hi
+    i32 m_ambientInterval;   // +0x340  interval lo
+    i32 m_ambientIntervalHi; // +0x344  interval hi
+    i32 m_ambientInitDone;   // +0x348  ambient-init done
     char p34c[0x3f4 - 0x34c];
-    CRpFrame* m_3f4; // +0x3f4
+    CRpFrame* m_frameMarker; // +0x3f4
     char p3f8[0x4e4 - 0x3f8];
     CRpScroll* m_4e4; // +0x4e4
     char p4e8[0x4f4 - 0x4e8];
-    i32 m_4f4; // +0x4f4  win/lose banner
-    i32 m_4f8; // +0x4f8  in-game
+    i32 m_winLoseBanner; // +0x4f4  win/lose banner
+    i32 m_inGame;        // +0x4f8  in-game
 };
 // reg = g_64556c view.
 struct CRpReg58 {
@@ -3666,15 +3666,15 @@ i32 CPlay::ResetPlayState() {
     CRpThis* self = (CRpThis*)this;
     char buf[0x40];
     if (self->m_4->m_14 != 0 && ((CRpReg*)g_64556c)->m_134 == 1) {
-        self->m_340 = 0x1f40;
-        self->m_344 = 0;
-        self->m_338 = g_645588;
-        self->m_33c = 0;
+        self->m_ambientInterval = 0x1f40;
+        self->m_ambientIntervalHi = 0;
+        self->m_ambientTimerLo = g_645588;
+        self->m_ambientTimerHi = 0;
         wsprintfA(buf, "INTRO%d", GetAmbientId());
         if (((CRpReg*)g_64556c)->m_14 != 0) {
             self->m_4->m_48->Cue(buf, 0);
         }
-        self->m_348 = 0;
+        self->m_ambientInitDone = 0;
     } else {
         wsprintfA(buf, "AMBIENT%d", GetAmbientId());
         CRpSound* snd = self->m_4->m_48;
@@ -3689,11 +3689,11 @@ i32 CPlay::ResetPlayState() {
         if (reg->m_14 != 0 && reg->m_134 == 3) {
             self->m_4->m_48->Cue(buf, 1);
         }
-        self->m_338 = 0;
-        self->m_340 = 0;
-        self->m_33c = 0;
-        self->m_344 = 0;
-        self->m_348 = 1;
+        self->m_ambientTimerLo = 0;
+        self->m_ambientInterval = 0;
+        self->m_ambientTimerHi = 0;
+        self->m_ambientIntervalHi = 0;
+        self->m_ambientInitDone = 1;
     }
     if (self->m_4->m_134 == 1) {
         CRpReg* reg = (CRpReg*)g_64556c;
@@ -3723,15 +3723,15 @@ i32 CPlay::ResetPlayState() {
     if (self->m_4e4 != 0) {
         self->m_4e4->m_40 &= ~1;
     }
-    self->m_4f8 = 0;
+    self->m_inGame = 0;
     if (!PrepareReset()) {
         return 0;
     }
     for (i32 off = 0; off < 0x8e0; off += 0x238) {
         ((CRpRow*)((char*)g_64556c + 0x188 + off))->Reset();
     }
-    self->m_4f4 = 0;
-    CRpFrame* fm = self->m_3f4;
+    self->m_winLoseBanner = 0;
+    CRpFrame* fm = self->m_frameMarker;
     if (fm != 0) {
         fm->m_40 = -1;
         fm->m_44 = 0;
@@ -3863,12 +3863,12 @@ struct CRtResMgr { // this->m_c
     CRtImageReg* m_24; // +0x24
     CRtSoundReg* m_28; // +0x28
 };
-struct CRtGuts {          // this->m_2dc
+struct CRtGuts {          // this->m_guts
     void Guts12fd(i32 a); // 0x12fd thunk(a)
 };
 struct CRtMarker {     // a no-arg-reset leaf (begin/frame markers)
-    void ResetBegin(); // 0x1d7f thunk (this->m_2e4)
-    void ResetFrame(); // 0x14ce thunk (this->m_3f4)
+    void ResetBegin(); // 0x1d7f thunk (this->m_beginMarker)
+    void ResetFrame(); // 0x14ce thunk (this->m_frameMarker)
 };
 struct CRtReg { // g_64556c (only its +0x68 timeline is touched here)
     char p0[0x68];
@@ -3880,14 +3880,14 @@ struct CRtThis { // view-of-this
     char p8[0xc - 0x8];
     CRtResMgr* m_c; // +0x0c
     char p10[0x2dc - 0x10];
-    CRtGuts* m_2dc; // +0x2dc  guts subsystem
+    CRtGuts* m_guts; // +0x2dc  guts subsystem
     char p2e0[0x2e4 - 0x2e0];
-    CRtMarker* m_2e4; // +0x2e4  begin marker
+    CRtMarker* m_beginMarker; // +0x2e4  begin marker
     char p2e8[0x370 - 0x2e8];
-    CRtArr m_370; // +0x370  (m_374 data / m_378 count)
+    CRtArr m_370; // +0x370  (m_markerData data / m_markerCount count)
     char p384[0x3a4 - 0x384];
-    CRtArr m_3a4[4];  // +0x3a4  stride 0x14
-    CRtMarker* m_3f4; // +0x3f4  frame marker
+    CRtArr m_3a4[4];          // +0x3a4  stride 0x14
+    CRtMarker* m_frameMarker; // +0x3f4  frame marker
     char p3f8[0x488 - 0x3f8];
     CRtArr m_488; // +0x488  (m_48c data / m_490 count)
     i32 m_49c;    // +0x49c
@@ -3924,14 +3924,14 @@ void CPlay::FreeListTeardown() {
     ((CRtReg*)g_64556c)->m_68->Reset15c3();
     self->m_c->m_24->Teardown();
     self->m_c->m_8->Reset15aa90();
-    if (self->m_2dc != 0) {
-        self->m_2dc->Guts12fd(0);
+    if (self->m_guts != 0) {
+        self->m_guts->Guts12fd(0);
     }
-    if (self->m_2e4 != 0) {
-        self->m_2e4->ResetBegin();
+    if (self->m_beginMarker != 0) {
+        self->m_beginMarker->ResetBegin();
     }
-    if (self->m_3f4 != 0) {
-        self->m_3f4->ResetFrame();
+    if (self->m_frameMarker != 0) {
+        self->m_frameMarker->ResetFrame();
     }
     self->m_4e4 = 0;
     self->m_4->m_68->Reset1514();
@@ -3981,22 +3981,22 @@ void CPlay::FreeListTeardown() {
 // CPlayDtorBody (0x0c8700): the ~CPlay teardown body. Frees the per-frame
 // workers, clears the four g_mgrSettings config rows, flushes the free-list
 // arrays, then chains the base (CState) dtor. Same free-list idiom as
-// FreeListTeardown (the m_374/m_3a4[4]/m_48c flush).
+// FreeListTeardown (the m_markerData/m_3a4[4]/m_48c flush).
 // ---------------------------------------------------------------------------
 struct DtorWorkerA {
     void Dtor(); // 0x10be thunk  (m_320)
 };
 struct DtorWorkerB {
-    void Dtor(); // 0x1438 thunk  (m_2dc)
+    void Dtor(); // 0x1438 thunk  (m_guts)
 };
 struct DtorWorkerC {
-    void Dtor(); // 0x285b thunk  (m_2e0)
+    void Dtor(); // 0x285b thunk  (m_hitTest)
 };
 struct DtorWorkerD {
-    void Dtor(); // 0x1cad thunk  (m_2e4)
+    void Dtor(); // 0x1cad thunk  (m_beginMarker)
 };
 struct DtorWorkerE {
-    void Dtor(); // 0x14ce thunk  (m_3f4)
+    void Dtor(); // 0x14ce thunk  (m_frameMarker)
 };
 struct DtorObList {
     void Dtor(); // 0x1b9c69 thunk  (m_4 + 0xc8 CObList)
@@ -4054,16 +4054,16 @@ struct CDtorThis {
     char p8[0x1d0 - 0x8];
     i32 m_1d0; // +0x1d0
     char p1d4[0x2dc - 0x1d4];
-    DtorWorkerB* m_2dc; // +0x2dc
-    DtorWorkerC* m_2e0; // +0x2e0
-    DtorWorkerD* m_2e4; // +0x2e4
+    DtorWorkerB* m_guts;        // +0x2dc
+    DtorWorkerC* m_hitTest;     // +0x2e0
+    DtorWorkerD* m_beginMarker; // +0x2e4
     char p2e8[0x320 - 0x2e8];
     DtorWorkerA* m_320; // +0x320
     char p324[0x370 - 0x324];
     CRtArr m_370; // +0x370
     char p384[0x3a4 - 0x384];
-    CRtArr m_3a4[4];    // +0x3a4
-    DtorWorkerE* m_3f4; // +0x3f4
+    CRtArr m_3a4[4];            // +0x3a4
+    DtorWorkerE* m_frameMarker; // +0x3f4
     char p3f8[0x488 - 0x3f8];
     CRtArr m_488; // +0x488
     i32 m_49c;    // +0x49c
@@ -4071,7 +4071,7 @@ struct CDtorThis {
 
 // @early-stop
 // hard-regalloc wall: ebp pinned to the zero-const + the cached free-list head
-// in edx across the m_374/m_3a4/m_48c flush loops are not source-steerable
+// in edx across the m_markerData/m_3a4/m_48c flush loops are not source-steerable
 // (same coloring plateau as FreeListTeardown 0xcb480, ~99%).
 RVA(0x000c8700, 0x1f4)
 void CPlay::CPlayDtorBody() {
@@ -4096,25 +4096,25 @@ void CPlay::CPlayDtorBody() {
     if (self->m_4 && self->m_4->m_5c) {
         self->m_4->m_5c->Dtor();
     }
-    if (self->m_2dc) {
-        self->m_2dc->Dtor();
-        ::operator delete(self->m_2dc);
-        self->m_2dc = 0;
+    if (self->m_guts) {
+        self->m_guts->Dtor();
+        ::operator delete(self->m_guts);
+        self->m_guts = 0;
     }
-    if (self->m_2e0) {
-        self->m_2e0->Dtor();
-        ::operator delete(self->m_2e0);
-        self->m_2e0 = 0;
+    if (self->m_hitTest) {
+        self->m_hitTest->Dtor();
+        ::operator delete(self->m_hitTest);
+        self->m_hitTest = 0;
     }
-    if (self->m_2e4) {
-        self->m_2e4->Dtor();
-        ::operator delete(self->m_2e4);
-        self->m_2e4 = 0;
+    if (self->m_beginMarker) {
+        self->m_beginMarker->Dtor();
+        ::operator delete(self->m_beginMarker);
+        self->m_beginMarker = 0;
     }
-    if (self->m_3f4) {
-        self->m_3f4->Dtor();
-        ::operator delete(self->m_3f4);
-        self->m_3f4 = 0;
+    if (self->m_frameMarker) {
+        self->m_frameMarker->Dtor();
+        ::operator delete(self->m_frameMarker);
+        self->m_frameMarker = 0;
     }
     for (i = 0; i < self->m_370.m_count; i++) {
         void* node = self->m_370.m_data[i];
@@ -4154,7 +4154,7 @@ void CPlay::CPlayDtorBody() {
 // run the deferred draw, (re)install the renderer view, then re-arm the guts and
 // (mode 9) latch the saved game clock. A dense chain of CPlay/registry thunks.
 // ---------------------------------------------------------------------------
-struct EmGuts {      // this->m_2dc
+struct EmGuts {      // this->m_guts
     void Pause();    // 0x125d
     void StepZ(i32); // 0x34bd
     void Resume();   // 0x21b7
@@ -4221,13 +4221,13 @@ struct EmThis {
     char p8[0xc - 0x8];
     EmResMgr* m_c; // +0x0c
     char p10[0x1a8 - 0x10];
-    i32 m_1a8, m_1ac, m_1b0; // +0x1a8..
+    i32 m_inputWarmup1, m_inputWarmup2, m_inputHalfSel; // +0x1a8..
     char p1b4[0x1c4 - 0x1b4];
     i32 m_1c4; // +0x1c4
     char p1c8[0x1cc - 0x1c8];
-    i32 m_1cc; // +0x1cc
+    i32 m_savedClock; // +0x1cc
     char p1d0[0x2dc - 0x1d0];
-    EmGuts* m_2dc; // +0x2dc
+    EmGuts* m_guts; // +0x2dc
     char p2e0[0x470 - 0x2e0];
     i32 m_470; // +0x470
     i32 m_474; // +0x474
@@ -4248,14 +4248,14 @@ RVA(0x000d6fa0, 0x1fa)
 i32 CPlay::EnterMode(i32 mode) {
     EmThis* self = (EmThis*)this;
     ((EmRegN*)g_64556c)->Notify();
-    self->m_2dc->Pause();
-    self->m_2dc->StepZ(0);
+    self->m_guts->Pause();
+    self->m_guts->StepZ(0);
     self->m_4->Refresh();
 
     if (self->m_1c4 != 0) {
         self->m_1c4 = 0;
         self->m_c->m_4->m_14->m_2c->Recede(0);
-        EmRegWorldStep((EmRegN*)g_64556c, self->m_2dc, self->m_470);
+        EmRegWorldStep((EmRegN*)g_64556c, self->m_guts, self->m_470);
         if (self->m_474 != 0) {
             self->DeferredDraw();
         } else {
@@ -4263,8 +4263,8 @@ i32 CPlay::EnterMode(i32 mode) {
             self->m_c->m_c->vtbl
                 ->Present(self->m_c->m_c, self->m_c->m_4->m_14, self->m_c->m_4->m_18);
         }
-        self->m_2dc->Pause();
-        self->m_2dc->Resume();
+        self->m_guts->Pause();
+        self->m_guts->Resume();
     } else {
         if (self->m_474 != 0) {
             self->DeferredDraw();
@@ -4273,8 +4273,8 @@ i32 CPlay::EnterMode(i32 mode) {
             self->m_c->m_c->vtbl
                 ->Present(self->m_c->m_c, self->m_c->m_4->m_14, self->m_c->m_4->m_18);
         }
-        self->m_2dc->Pause();
-        self->m_2dc->Resume();
+        self->m_guts->Pause();
+        self->m_guts->Resume();
         if (mode == 9) {
             if (self->m_c->m_4->Sub158d20() != 0) {
                 goto finish;
@@ -4294,16 +4294,16 @@ finish:
         ((EmSink5c*)self->m_c->m_24->m_5c)->Notify();
     }
     self->m_4->Refresh();
-    self->m_1a8 = 0;
-    self->m_1ac = 0;
-    self->m_1b0 = 0;
+    self->m_inputWarmup1 = 0;
+    self->m_inputWarmup2 = 0;
+    self->m_inputHalfSel = 0;
     if (self->m_4->m_10 != 0 && mode != 9) {
         ((EmSub54*)self->m_4->m_54)->Reset();
     }
     if (mode == 9) {
-        g_645588_clk = self->m_1cc;
+        g_645588_clk = self->m_savedClock;
     }
-    self->m_2dc->Pause();
+    self->m_guts->Pause();
     self->FinishMode();
     self->m_484 = 0;
     return 1;

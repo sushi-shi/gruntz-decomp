@@ -29,8 +29,8 @@
 #include <Gruntz/CGameRegistry.h>
 
 // The zoned sound-bank manager (CWorld::m_48) + its currently-playing inner sound
-// (CPlay::m_518). Full defs live in <Dsndmgr/CGruntzSoundZ.h> (included by the TUs
-// that dispatch on them); forward-declared here so the members can be typed.
+// (CPlay::m_savedZonedSound). Full defs live in <Dsndmgr/CGruntzSoundZ.h> (included by
+// the TUs that dispatch on them); forward-declared here so the members can be typed.
 class CGruntzSoundZ;
 class CGruntzSoundInnerZ;
 
@@ -359,7 +359,7 @@ public:
     // Tiny vtable forwarder: tail-call the slot-3 ready gate (Vfunc3).
     i32 ForwardReady(); // 0x0cee70
     // Region pause/resume pair (vtable slots 24/25, shared by CDemo/CMulti):
-    // PauseGame saves the game clock into m_1cc + freezes the world; ResumeGame
+    // PauseGame saves the game clock into m_savedClock + freezes the world; ResumeGame
     // restores the clock + unpauses. Migrated from engine_boundary (CPlay).
     i32 PauseGame();  // 0x0cee90
     i32 ResumeGame(); // 0x0cef00
@@ -420,7 +420,7 @@ public:
     // global free list (m_374[]/m_3ac[]/m_48c[] arrays + the per-type config rows).
     void FreeListTeardown(); // 0x0cb480
     // CPlayDtorBody (0x0c8700): the ~CPlay teardown body - free the per-frame
-    // workers (m_320/m_2dc/m_2e0/m_2e4/m_3f4), clear the four g_mgrSettings config
+    // workers (m_320/m_guts/m_hitTest/m_beginMarker/m_frameMarker), clear the four g_mgrSettings config
     // rows, flush the m_370/m_3a4[4]/m_488 free-list arrays, then run the base dtor.
     void CPlayDtorBody(); // 0x0c8700
     // AddLevelGruntz (0x0d5960): walk the registry object list and register each
@@ -456,7 +456,7 @@ public:
     i32 m_inputWarmup2; // +0x1ac  StepInputA second-frame one-shot latch
     i32 m_inputHalfSel; // +0x1b0  StepInputA mirrored-half selector (0/1)
     char m_pad1b4[0x1cc - 0x1b4];
-    i32 m_1cc; // +0x1cc  level start clock (republished to g_645588 on teardown)
+    i32 m_savedClock; // +0x1cc  saved game clock (PauseGame stashes / ResumeGame + teardown restore to g_645588)
     char m_pad1d0[0x2dc - 0x1d0];
     // +0x2dc: the "guts"/UI subsystem the per-frame Step + the HUD/drag-select
     // dispatches run on (the click/drag/clear entry points + the busy-state words).
@@ -526,8 +526,8 @@ public:
         m_ambientIntervalHi; // +0x338  ambient-init timer
     i32 m_ambientInitDone;   // +0x348  ambient-init DONE latch
     char m_pad34c[0x360 - 0x34c];
-    i32 m_360;          // +0x360  tile-click snapped X (HandleTileClick)
-    i32 m_364;          // +0x364  tile-click snapped Y (HandleTileClick)
+    i32 m_tileClickX;   // +0x360  tile-click snapped X (HandleTileClick)
+    i32 m_tileClickY;   // +0x364  tile-click snapped Y (HandleTileClick)
     i32 m_dragInhibit1; // +0x368  drag/select inhibit gate
     i32 m_dragInhibit2; // +0x36c  drag/select inhibit gate
     char m_pad370[0x3f4 - 0x370];
@@ -591,7 +591,8 @@ public:
     char m_pad508[0x510 - 0x508];
     i32 m_stepCountdown; // +0x510  per-frame entity-step countdown
     char m_pad514[0x518 - 0x514];
-    CGruntzSoundInnerZ* m_518; // +0x518  saved currently-playing zoned sound (region pause/resume)
+    CGruntzSoundInnerZ*
+        m_savedZonedSound; // +0x518  saved currently-playing zoned sound (region pause/resume)
 
     // Engine-label backlog stubs.
     void Stub_08c9d0();
