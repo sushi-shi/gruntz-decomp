@@ -172,10 +172,10 @@ CInGameIcon::~CInGameIcon() {}
 RVA(0x00095b10, 0x15f0)
 CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj) {
     // --- CInGameIcon own-field zero-init (retail store order @0x95c00) ---
-    m_58 = 0;
-    m_60 = 0;
-    m_5c = 0;
-    m_64 = 0;
+    m_driftPos = 0;
+    m_driftThresh = 0;
+    m_driftPosHi = 0;
+    m_driftThreshHi = 0;
     m_68 = 0;
     m_70 = 0;
     m_6c = 0;
@@ -194,7 +194,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj) {
     CGameObjAux* aux = m_14;
     m_30 = aux->m_1c;
     aux->m_1c = g_buteTree.Find(s_iconKeyA);
-    m_40 = m_38->m_1b4;
+    m_savedGeoId = m_38->m_1b4;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
 
     m_38->m_08 |= 2;
@@ -645,16 +645,16 @@ void RegisterIconState() {
 // CInGameIcon::RefreshCell  (0x098340)
 // ===========================================================================
 // If the icon's tracked position has drifted at least g_iconDefault past the
-// owning object's stored position (a 64-bit signed compare of {m_5c:m_58}
-// against {m_64:m_60}), OR the owning object's tile cell is empty/off-grid,
+// owning object's stored position (a 64-bit signed compare of {m_driftPosHi:m_driftPos}
+// against {m_driftThreshHi:m_driftThresh}), OR the owning object's tile cell is empty/off-grid,
 // flag the +0x38 render object dirty (|= 0x10000). Returns 0.
 RVA(0x00098340, 0x71)
 i32 CInGameIcon::RefreshCell() {
     CGameObject* obj = m_10;
     i32 tileY = obj->m_5c >> 5;
     i32 tileX = (obj->m_60 + 0x18) >> 5;
-    i64 delta = (i64)(u32)g_iconDefault - *(i64*)&m_58;
-    if (delta < *(i64*)&m_60) {
+    i64 delta = (i64)(u32)g_iconDefault - *(i64*)&m_driftPos;
+    if (delta < *(i64*)&m_driftThresh) {
         CIconTileGrid* grid = (CIconTileGrid*)g_gameReg->m_70;
         i32 cell;
         if ((u32)tileY < (u32)grid->m_c && (u32)tileX < (u32)grid->m_10) {
@@ -738,7 +738,7 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
         if (ok == 0) {
             return 0;
         }
-        if (m_54 != 0) {
+        if (m_cmapId != 0) {
             CGameObject* o = m_10;
             if (o->m_5c < reg->m_144 && o->m_5c >= reg->m_13c && o->m_60 < reg->m_148
                 && o->m_60 >= reg->m_140) {
@@ -774,7 +774,7 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
             reg = g_gameReg;
         }
     }
-    if (m_54 != 0) {
+    if (m_cmapId != 0) {
         CGameObject* o = m_10;
         if (o->m_5c < reg->m_144 && o->m_5c >= reg->m_13c && o->m_60 < reg->m_148
             && o->m_60 >= reg->m_140) {
@@ -790,10 +790,10 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
         m_30 = aux->m_1c;
         aux->m_1c = g_buteTree.Find(g_iconBute);
         owner = m_38;
-        m_58 = *(i32*)((char*)owner + 0x120);
-        m_5c = 0;
-        m_60 = g_iconDefault;
-        m_64 = 0;
+        m_driftPos = *(i32*)((char*)owner + 0x120);
+        m_driftPosHi = 0;
+        m_driftThresh = g_iconDefault;
+        m_driftThreshHi = 0;
         return 1;
     }
     CGameObject* rend = m_glitterSprite;
@@ -842,7 +842,7 @@ void CInGameIcon::SetField54(i32 v) {
         found = 0;
         ((CGameRegMapHolder*)g_gameReg->m_30)->m_28->m_10map.Lookup((void*)v, &found);
     }
-    m_54 = (i32)found;
+    m_cmapId = (i32)found;
 }
 
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at

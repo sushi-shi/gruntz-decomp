@@ -77,8 +77,8 @@ RVA(0x00077790, 0x37d)
 void CBrickz::ComputeCellFlags(i32 x, i32 y, i32 id3) {
     // The target cell pointer is computed first and held in a callee-saved register
     // across the whole body (retail's esi).
-    BrickzCell* cell = &m_8[y][x];
-    BrickzAttrMgr* attr = m_78->m_24;
+    BrickzCell* cell = &m_rows[y][x];
+    BrickzAttrMgr* attr = m_attrMgr->m_24;
     // Clamp the lookup coordinate into the grid descriptor's extent.
     i32 cx = x;
     if (x < 0) {
@@ -205,22 +205,22 @@ void CBrickz::ComputeCellFlags(i32 x, i32 y, i32 id3) {
     cell->m_c = id3;
     cell->m_10 = typeCode;
     // 8-neighbour edge-update walk over the 3x3 block around (x,y).
-    i32 colCount = (i32)m_c;
+    i32 colCount = (i32)m_width;
     for (i32 r = y - 1; r <= y + 1; r++) {
-        if (r < 0 || (u32)r >= (u32)m_10) {
+        if (r < 0 || (u32)r >= (u32)m_height) {
             continue;
         }
         for (i32 c = x - 1; c <= x + 1; c++) {
-            if (c < 0 || (u32)c >= (u32)m_c) {
+            if (c < 0 || (u32)c >= (u32)m_width) {
                 continue;
             }
-            BrickzCell* nc = &m_8[r][c];
+            BrickzCell* nc = &m_rows[r][c];
             i32 nf = nc->m_0;
             if ((nf & 0x100) == 0) {
                 continue;
             }
             BrickzCell* up = (r != 0) ? nc - colCount : 0;
-            BrickzCell* down = (r < (i32)m_10 - 1) ? nc + colCount : 0;
+            BrickzCell* down = (r < (i32)m_height - 1) ? nc + colCount : 0;
             BrickzCell* right = (c < colCount - 1) ? nc + 1 : 0;
             BrickzCell* left = (c != 0) ? nc - 1 : 0;
             BrickzCell* ur = (up && right) ? up + 1 : 0;
@@ -271,11 +271,11 @@ i32 CBrickz::SearchEdge(
     i32 maskA,
     i32 maskC
 ) {
-    if ((u32)xA >= m_c || (u32)yA >= m_10 || (u32)xB >= m_c || (u32)yB >= m_10) {
+    if ((u32)xA >= m_width || (u32)yA >= m_height || (u32)xB >= m_width || (u32)yB >= m_height) {
         return 0;
     }
-    BrickzCell* cellB = &m_8[yB][xB];
-    BrickzCell* cellA = &m_8[yA][xA];
+    BrickzCell* cellB = &m_rows[yB][xB];
+    BrickzCell* cellA = &m_rows[yA][xA];
     i32 savedB0 = cellB->m_0;
     i32 savedA4 = cellA->m_4;
     i32 savedA0 = cellA->m_0;
@@ -286,23 +286,23 @@ i32 CBrickz::SearchEdge(
     }
     // Punch the edge open: re-index m_8[row][col] for each write (retail keeps the
     // col byte-offset factored and re-reads the row base rather than caching cell).
-    m_8[yA][xA].m_4 = -1;
-    m_8[yB][xB].m_4 = -1;
-    m_4c = maskA & 0x20000000;
+    m_rows[yA][xA].m_4 = -1;
+    m_rows[yB][xB].m_4 = -1;
+    m_edgeMask = maskA & 0x20000000;
     if (clearFlag != 0) {
-        m_8[yA][xA].m_0 = 0;
-        m_8[yB][xB].m_0 = 0;
+        m_rows[yA][xA].m_0 = 0;
+        m_rows[yB][xB].m_0 = 0;
     }
     i32 ret = Search(xA, yA, xB, yB, list, maskA, 0x2000, maskC);
-    m_4c = 0;
-    m_8[yA][xA].m_4 = savedA4;
-    m_8[yB][xB].m_4 = savedB4;
+    m_edgeMask = 0;
+    m_rows[yA][xA].m_4 = savedA4;
+    m_rows[yB][xB].m_4 = savedB4;
     if (clearFlag != 0) {
-        m_8[yA][xA].m_0 = savedA0;
-        m_8[yB][xB].m_0 = savedB0;
+        m_rows[yA][xA].m_0 = savedA0;
+        m_rows[yB][xB].m_0 = savedB0;
     }
     if (bBit29 != 0) {
-        m_8[yB][xB].m_0 |= 0x20000000;
+        m_rows[yB][xB].m_0 |= 0x20000000;
     }
     return ret;
 }
@@ -321,17 +321,17 @@ i32 CBrickz::SearchEdge(
 // neighbour layout; neither is source-steerable. Parked for the final sweep.
 RVA(0x00082030, 0x1a1)
 i32 CBrickz::UpdateDiagonals(i32 unused) {
-    BrickzCell* cell = m_4;
-    if (m_5c == 0) {
+    BrickzCell* cell = m_cellPool;
+    if (m_dirty == 0) {
         return 1;
     }
-    for (u32 r = 0; r < m_10; r++) {
-        for (u32 c = 0; c < m_c; c++) {
+    for (u32 r = 0; r < m_height; r++) {
+        for (u32 c = 0; c < m_width; c++) {
             i32 nf = cell->m_0;
             if ((nf & 0x100) != 0) {
-                BrickzCell* up = (r != 0) ? cell - m_c : 0;
-                BrickzCell* down = (r < m_10 - 1) ? cell + m_c : 0;
-                BrickzCell* right = (c < m_c - 1) ? cell + 1 : 0;
+                BrickzCell* up = (r != 0) ? cell - m_width : 0;
+                BrickzCell* down = (r < m_height - 1) ? cell + m_width : 0;
+                BrickzCell* right = (c < m_width - 1) ? cell + 1 : 0;
                 BrickzCell* left = (c != 0) ? cell - 1 : 0;
                 BrickzCell* ur = (up && right) ? up + 1 : 0;
                 BrickzCell* dl = (down && left) ? down - 1 : 0;
@@ -356,7 +356,7 @@ i32 CBrickz::UpdateDiagonals(i32 unused) {
             cell++;
         }
     }
-    m_5c = 0;
+    m_dirty = 0;
     return 1;
 }
 
@@ -396,31 +396,31 @@ i32 CBrickz::Serialize(i32 a0, i32 a1, i32 a2, i32 a3) {
 RVA(0x0009ea60, 0x168)
 i32 CBrickz::AllocGrid(i32 width, i32 height, i32 callback) {
     i32 count = height * width;
-    m_c = width;
-    m_10 = height;
-    m_14 = count;
-    m_4 = (BrickzCell*)BrickzGridAlloc(count * 0x1c);
-    if (m_4 == 0) {
+    m_width = width;
+    m_height = height;
+    m_cellCount = count;
+    m_cellPool = (BrickzCell*)BrickzGridAlloc(count * 0x1c);
+    if (m_cellPool == 0) {
         return 0;
     }
-    m_8 = (BrickzCell**)BrickzGridAlloc(height * 4);
-    if (m_8 == 0) {
+    m_rows = (BrickzCell**)BrickzGridAlloc(height * 4);
+    if (m_rows == 0) {
         return 0;
     }
-    memset(m_4, 0, count * 0x1c);
+    memset(m_cellPool, 0, count * 0x1c);
     i32 stride = width * 0x1c;
     i32 off = 0;
     for (i32 i = 0; i < height; i++) {
-        m_8[i] = (BrickzCell*)((char*)m_4 + off);
+        m_rows[i] = (BrickzCell*)((char*)m_cellPool + off);
         off += stride;
     }
-    if (((BrickzNodePoolA*)&m_30)->Init(count * 5) == 0) {
+    if (((BrickzNodePoolA*)&m_nodePool)->Init(count * 5) == 0) {
         return 0;
     }
     if (((BrickzNodePoolB*)((char*)this + 0x3c))->Init(count * 5) == 0) {
         return 0;
     }
-    m_48 = (void (*)())callback;
+    m_stepCb = (void (*)())callback;
     // Build the grid bounding rect: intersect the {0,0,width,height} box with
     // itself into m_60 (the {left,top,right,bottom} at +0x60); on an empty result
     // fall back to the box. m_70/m_74 = the resulting width/height.
@@ -434,12 +434,12 @@ i32 CBrickz::AllocGrid(i32 width, i32 height, i32 callback) {
     b.top = 0;
     b.right = width;
     b.bottom = height;
-    RECT* out = (RECT*)&m_60;
+    RECT* out = (RECT*)&m_originX;
     if (!IntersectRect(out, &a, &b)) {
         *out = a;
     }
-    m_70 = out->right - out->left;
-    m_74 = out->bottom - out->top;
+    m_gridW = out->right - out->left;
+    m_gridH = out->bottom - out->top;
     return 1;
 }
 
@@ -457,52 +457,52 @@ i32 CBrickz::AllocGrid(i32 width, i32 height, i32 callback) {
 // loop's reg/zero choice; no source spelling flips MSVC5's allocator here.
 RVA(0x0009eca0, 0x2bd)
 i32 CBrickz::Search(i32 x1, i32 y1, i32 x2, i32 y2, void* list, i32 maskA, i32 maskB, i32 maskC) {
-    i32 ox = m_60;
-    if ((u32)(x1 - ox) >= (u32)m_70) {
+    i32 ox = m_originX;
+    if ((u32)(x1 - ox) >= (u32)m_gridW) {
         return 0;
     }
-    i32 oy = m_64;
-    i32 hgt = m_74;
+    i32 oy = m_originY;
+    i32 hgt = m_gridH;
     if ((u32)(y1 - oy) >= (u32)hgt) {
         return 0;
     }
-    if ((u32)(x2 - ox) >= (u32)m_70) {
+    if ((u32)(x2 - ox) >= (u32)m_gridW) {
         return 0;
     }
     if ((u32)(y2 - oy) >= (u32)hgt) {
         return 0;
     }
-    m_54 = maskC;
-    m_58 = maskB;
-    m_50 = maskA;
-    i32 flags = *(i32*)&m_8[y2][x2];
+    m_maskC = maskC;
+    m_maskB = maskB;
+    m_maskA = maskA;
+    i32 flags = *(i32*)&m_rows[y2][x2];
     if ((maskA & flags) != 0 && (maskC & flags) != 0) {
         return 0;
     }
     // Reset the per-cell open counts across all m_14 cells.
-    if (m_14 != 0) {
+    if (m_cellCount != 0) {
         u32 i = 0;
         i32 off = 0;
         do {
-            *(i32*)((char*)m_4 + off + 0x14) = 0;
+            *(i32*)((char*)m_cellPool + off + 0x14) = 0;
             i++;
             off += 0x1c;
-        } while (i < m_14);
+        } while (i < m_cellCount);
     }
     if (x1 == x2 && y1 == y2) {
         return 1;
     }
-    m_28 = x2;
-    m_20 = x1;
-    m_2c = y2;
-    m_24 = y1;
+    m_goalX = x2;
+    m_startX = x1;
+    m_goalY = y2;
+    m_startY = y1;
     // Pop the seed record off the closed (m_30) list head.
-    BrickzNode* seed = m_30;
+    BrickzNode* seed = m_nodePool;
     BrickzNode* slot = seed->m_14;
     if (slot == 0) {
-        m_30 = 0;
+        m_nodePool = 0;
     } else {
-        m_30 = slot;
+        m_nodePool = slot;
         slot->m_18 = 0;
     }
     if (seed == 0) {
@@ -511,8 +511,8 @@ i32 CBrickz::Search(i32 x1, i32 y1, i32 x2, i32 y2, void* list, i32 maskA, i32 m
     seed->m_0 = x1;
     seed->m_4 = y1;
     seed->m_8 = 0;
-    i32 dx = abs(m_2c - y1);
-    i32 dxx = abs(m_28 - x1);
+    i32 dx = abs(m_goalY - y1);
+    i32 dxx = abs(m_goalX - x1);
     i32 h = (dx + dxx) * 2;
     seed->m_c = h;
     seed->m_10 = h;
@@ -520,12 +520,12 @@ i32 CBrickz::Search(i32 x1, i32 y1, i32 x2, i32 y2, void* list, i32 maskA, i32 m
     seed->m_18 = 0;
     seed->m_1c = 0;
     Insert(seed);
-    (&m_8[y1][x1])->m_count++;
+    (&m_rows[y1][x1])->m_count++;
     BrickzNode* node = 0;
-    while (m_18 != 0) {
+    while (m_openList != 0) {
         node = PopFront();
-        (&m_8[node->m_4][node->m_0])->m_count--;
-        if (node->m_0 == m_28 && node->m_4 == m_2c) {
+        (&m_rows[node->m_4][node->m_0])->m_count--;
+        if (node->m_0 == m_goalX && node->m_4 == m_goalY) {
             goto reached;
         }
         Expand(node, 0, 1, 2, 0);
@@ -541,8 +541,8 @@ i32 CBrickz::Search(i32 x1, i32 y1, i32 x2, i32 y2, void* list, i32 maskA, i32 m
     node = 0;
     Drain();
     Reset();
-    if (m_48 != 0) {
-        m_48();
+    if (m_stepCb != 0) {
+        m_stepCb();
     }
     return 0;
 
@@ -560,13 +560,13 @@ reached:
         ((BrickzResultList*)list)->AddHead(slot);
         p = (BrickzNode*)p->m_1c;
     } while (p != 0);
-    if (m_48 != 0) {
-        m_48();
+    if (m_stepCb != 0) {
+        m_stepCb();
     }
     node->m_18 = 0;
-    node->m_14 = m_30;
-    m_30->m_18 = node;
-    m_30 = node;
+    node->m_14 = m_nodePool;
+    m_nodePool->m_18 = node;
+    m_nodePool = node;
     Drain();
     Reset();
     return 1;
@@ -593,39 +593,39 @@ i32 CBrickz::Expand(BrickzNode* node, i32 dx, i32 dy, i32 cost, i32 diag) {
     i32 ncol = node->m_0 + dx;
     i32 nrow = node->m_4 + dy;
     BrickzNode* found0 = 0;
-    if ((u32)(ncol - m_60) >= (u32)m_70) {
+    if ((u32)(ncol - m_originX) >= (u32)m_gridW) {
         return 1;
     }
-    if ((u32)(nrow - m_64) >= (u32)m_74) {
+    if ((u32)(nrow - m_originY) >= (u32)m_gridH) {
         return 1;
     }
-    i32* ncell = (i32*)&m_8[nrow][ncol];
+    i32* ncell = (i32*)&m_rows[nrow][ncol];
     i32 nflags = *ncell;
-    i32* cell = (i32*)&m_8[node->m_4][node->m_0];
-    if ((m_4c & nflags) != 0) {
+    i32* cell = (i32*)&m_rows[node->m_4][node->m_0];
+    if ((m_edgeMask & nflags) != 0) {
         return 1;
     }
-    if ((m_50 & nflags) != 0 && (m_54 & nflags) == 0) {
+    if ((m_maskA & nflags) != 0 && (m_maskC & nflags) == 0) {
         return 1;
     }
-    if (diag != 0 && m_58 != 0) {
+    if (diag != 0 && m_maskB != 0) {
         i32 *cellA, *cellB;
         if (dx > 0 && dy > 0) {
-            cellB = cell + (m_c * 7);
+            cellB = cell + (m_width * 7);
             cellA = cell + 7;
         } else if (dx < 0 && dy > 0) {
-            cellB = cell + (m_c * 7);
+            cellB = cell + (m_width * 7);
             cellA = cell - 7;
         } else if (dx > 0 && dy < 0) {
-            cellB = cell - (m_c * 7);
+            cellB = cell - (m_width * 7);
             cellA = cell + 7;
         } else if (dx < 0 && dy < 0) {
-            cellB = cell - (m_c * 7);
+            cellB = cell - (m_width * 7);
             cellA = cell - 7;
         } else {
             goto relax;
         }
-        if ((m_58 & *cellA) != 0 || (m_58 & *cellB) != 0) {
+        if ((m_maskB & *cellA) != 0 || (m_maskB & *cellB) != 0) {
             return 1;
         }
     }
@@ -678,12 +678,12 @@ relax:
     if (open != 0) {
         return 1;
     }
-    BrickzNode* rec = m_30;
+    BrickzNode* rec = m_nodePool;
     BrickzNode* nx = rec->m_14;
     if (nx == 0) {
         rec = 0;
     } else {
-        m_30 = nx;
+        m_nodePool = nx;
         nx->m_18 = 0;
     }
     if (rec == 0) {
@@ -692,8 +692,8 @@ relax:
     rec->m_0 = ncol;
     rec->m_4 = nrow;
     rec->m_8 = (BrickzNode*)ng;
-    i32 hy = abs(m_2c - nrow);
-    i32 hx = abs(m_28 - ncol);
+    i32 hy = abs(m_goalY - nrow);
+    i32 hx = abs(m_goalX - ncol);
     i32 h = (hy + hx) * 2;
     rec->m_1c = (i32)node;
     rec->m_c = h;
@@ -711,11 +711,11 @@ relax:
 // m_10. Links: m_14 = forward (next), m_18 = backward (prev). Always returns 1.
 RVA(0x0009f370, 0x8a)
 i32 CBrickz::Insert(BrickzNode* node) {
-    BrickzNode* cur = m_18;
+    BrickzNode* cur = m_openList;
     node->m_18 = 0;
     node->m_14 = 0;
     if (cur == 0) {
-        m_18 = node;
+        m_openList = node;
         return 1;
     }
     i32 key = node->m_10;
@@ -727,7 +727,7 @@ i32 CBrickz::Insert(BrickzNode* node) {
                 cur->m_18->m_14 = node;
                 cur->m_18 = node;
             } else {
-                m_18 = node;
+                m_openList = node;
                 node->m_14 = cur;
                 cur->m_18 = node;
             }
@@ -753,14 +753,14 @@ i32 CBrickz::Insert(BrickzNode* node) {
 // in eax, recompile lands it in edx); logic byte-correct, 97% (no source steer).
 RVA(0x0009f430, 0x2a)
 BrickzNode* CBrickz::PopFront() {
-    BrickzNode* head = m_18;
+    BrickzNode* head = m_openList;
     if (head != 0) {
         BrickzNode* next = head->m_14;
         if (next != 0) {
-            m_18 = next;
+            m_openList = next;
             next->m_18 = 0;
         } else {
-            m_18 = 0;
+            m_openList = 0;
         }
         head->m_14 = 0;
         head->m_18 = 0;
@@ -785,11 +785,11 @@ void CBrickz::Unlink(BrickzNode* node) {
             node->m_14->m_18 = node->m_18;
         }
     } else if (node->m_14 == 0) {
-        m_18 = 0;
+        m_openList = 0;
     } else if (node->m_18 == 0) {
         BrickzNode* next = node->m_14;
         if (next != 0) {
-            m_18 = next;
+            m_openList = next;
             next->m_18 = 0;
         }
     }
@@ -809,13 +809,13 @@ void CBrickz::Unlink(BrickzNode* node) {
 // recompile loads it pre-push -> edx) and the dependent reg chain differ, ~86%.
 RVA(0x0009f470, 0x62)
 void CBrickz::CellPush(BrickzNode* node) {
-    BrickzNode** head = &m_8[node->m_4][node->m_0].m_head;
-    BrickzNode* slot = m_40;
+    BrickzNode** head = &m_rows[node->m_4][node->m_0].m_head;
+    BrickzNode* slot = m_freeList;
     BrickzNode* nx = slot->m_8;
     if (nx == 0) {
         slot = 0;
     } else {
-        m_40 = nx;
+        m_freeList = nx;
         nx->m_4 = 0;
     }
     BrickzNode* old = *head;
@@ -844,21 +844,21 @@ void CBrickz::CellPush(BrickzNode* node) {
 // byte-correct (loop structure + unsigned counter match), ~65%.
 RVA(0x0009f5d0, 0x81)
 void CBrickz::Reset() {
-    BrickzCell* cell = m_4;
-    for (u32 i = 0; i < m_10 * m_c; i++) {
+    BrickzCell* cell = m_cellPool;
+    for (u32 i = 0; i < m_height * m_width; i++) {
         BrickzNode* node = cell->m_head;
         while (node != 0) {
             BrickzNode** link = &node->m_8;
             BrickzNode* next = *link;
             BrickzNode* child = (BrickzNode*)node->m_0;
-            child->m_14 = m_30;
+            child->m_14 = m_nodePool;
             child->m_18 = 0;
-            m_30->m_18 = child;
-            m_30 = child;
+            m_nodePool->m_18 = child;
+            m_nodePool = child;
             node->m_4 = 0;
-            *link = m_40;
-            m_40->m_4 = (i32)node;
-            m_40 = node;
+            *link = m_freeList;
+            m_freeList->m_4 = (i32)node;
+            m_freeList = node;
             node = next;
         }
         cell->m_head = 0;
@@ -876,7 +876,7 @@ void CBrickz::Reset() {
 // the flag. Logic byte-correct, container shape proven; parked for the sweep.
 RVA(0x0009f710, 0xa7)
 void CBrickz::CellPop(BrickzNode* node, i32 flag) {
-    BrickzNode** head = &m_8[node->m_4][node->m_0].m_head;
+    BrickzNode** head = &m_rows[node->m_4][node->m_0].m_head;
     BrickzNode* slot = node->m_20;
     if ((BrickzNode*)slot->m_4 != 0) {
         if (slot->m_8 != 0) {
@@ -898,15 +898,15 @@ void CBrickz::CellPop(BrickzNode* node, i32 flag) {
     node->m_18 = 0;
     node->m_14 = 0;
     node->m_20 = 0;
-    slot->m_8 = m_40;
+    slot->m_8 = m_freeList;
     slot->m_4 = 0;
-    m_40->m_4 = (i32)slot;
-    m_40 = slot;
+    m_freeList->m_4 = (i32)slot;
+    m_freeList = slot;
     if (flag != 0) {
         node->m_18 = 0;
-        node->m_14 = m_30;
-        m_30->m_18 = node;
-        m_30 = node;
+        node->m_14 = m_nodePool;
+        m_nodePool->m_18 = node;
+        m_nodePool = node;
     }
 }
 
@@ -915,7 +915,7 @@ void CBrickz::CellPop(BrickzNode* node, i32 flag) {
 // whose (m_0,m_4) pair equals (key1,key2); 0 if absent.
 RVA(0x0009f500, 0x24)
 BrickzNode* CBrickz::Find(i32 key1, i32 key2) {
-    BrickzNode* p = m_18;
+    BrickzNode* p = m_openList;
     if (p == 0) {
         return 0;
     }
@@ -937,18 +937,18 @@ BrickzNode* CBrickz::Find(i32 key1, i32 key2) {
 // byte-correct, ~67% (no source spelling forces the 3rd reg / lea base).
 RVA(0x0009f590, 0x2f)
 void CBrickz::Drain() {
-    BrickzNode* p = m_18;
+    BrickzNode* p = m_openList;
     if (p != 0) {
         do {
             BrickzNode* next = p->m_14;
-            p->m_14 = m_30;
+            p->m_14 = m_nodePool;
             p->m_18 = 0;
-            m_30->m_18 = p;
-            m_30 = p;
+            m_nodePool->m_18 = p;
+            m_nodePool = p;
             p = next;
         } while (p != 0);
     }
-    m_18 = 0;
+    m_openList = 0;
 }
 
 SIZE_UNKNOWN(BrickzAttrMgr);

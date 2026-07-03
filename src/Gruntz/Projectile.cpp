@@ -195,25 +195,25 @@ extern void Fn16ea90();
 // with-ctor (would regress the banked 99% no-arg ctor - task-forbidden).
 // Secondary residues: +0x38 Init (0x136d0) emits after the CMovingLogic vptr
 // stamp vs retail's member-init position (EH state 0); the EH-state numbering
-// (retail 0/1/2/3 over +0x38 + CObList) and the m_204-vs-body order differ.
+// (retail 0/1/2/3 over +0x38 + CObList) and the m_hitList-vs-body order differ.
 RVA(0x000dec60, 0x255)
 CProjectile::CProjectile(CGameObject* owner) : CMovingLogic(owner) {
     m_148 = 0;
     m_14c = 0;
-    *(i32*)((char*)m_10 + 0xe4) = 7;
+    *(i32*)((char*)m_10 + 0xe4) = 7; // CGameObject+0xe4 not modeled (needs UserLogic.h)
     Fn16ea90();
     m_150 = (i32)owner;
-    m_154 = (CProjRenderObj*)owner;
+    m_sprite = (CProjRenderObj*)owner;
     m_158 = (i32)owner->m_7c;
-    m_154->m_08 |= 0x2000002;
-    m_154->m_40 |= 1;
-    if (*(i32*)((char*)m_10 + 0x74) != 0xcf850) {
-        *(i32*)((char*)m_10 + 0x74) = 0xcf850;
+    m_sprite->m_08 |= 0x2000002;
+    m_sprite->m_40 |= 1;
+    if (m_10->m_74 != 0xcf850) {
+        m_10->m_74 = 0xcf850;
         m_10->m_08 |= 0x20000;
     }
-    memset((char*)this + 0x1e0, 0, 0x1c);
-    m_200 = 0;
-    m_1fc = 0;
+    memset(&m_frame1, 0, 0x1c); // zero the seven +0x1e0..+0x1fb sprite-frame slots
+    m_sound = 0;
+    m_shadow = 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -249,7 +249,7 @@ void CProjectile::ReleaseDeferred(i32) {
 //
 // @early-stop
 // EH-state-numbering / base-dtor-inlining wall (docs/patterns/eh-state-numbering-base.md):
-// the body is byte-identical through `m_204.RemoveAll()` (the m_200 stop, the
+// the body is byte-identical through `m_hitList.RemoveAll()` (the m_sound stop, the
 // free-list recycle walk, the AddTail/RemoveAll). The residue is the base-dtor
 // tail: retail INLINES the whole CMovingLogic/CUserLogic/CUserBaseLink chain (vptr
 // restamp 0x5e705c, ~EngStr on +0x18, vptr 0x5e70b4) and numbers the EH states
@@ -260,27 +260,27 @@ void CProjectile::ReleaseDeferred(i32) {
 // ---------------------------------------------------------------------------
 RVA(0x000def60, 0xbc)
 CProjectile::~CProjectile() {
-    if (m_200 != 0) {
-        m_200->StopAndRewind();
-        m_200 = 0;
+    if (m_sound != 0) {
+        m_sound->StopAndRewind();
+        m_sound = 0;
     }
-    for (POSITION pos = m_204.GetHeadPosition(); pos != NULL;) {
-        CObject* data = m_204.GetNext(pos);
+    for (POSITION pos = m_hitList.GetHeadPosition(); pos != NULL;) {
+        CObject* data = m_hitList.GetNext(pos);
         if (data != 0) {
             void** node = (void**)((char*)data - g_freeListNodeBias);
             *node = g_freeList;
             g_freeList = node;
         }
     }
-    m_204.RemoveAll();
+    m_hitList.RemoveAll();
 }
 
 // ===========================================================================
 // CProjectile::LoadProjectileSprites (0xdf050, /GX) - resolve the projectile's
 // per-type sprite frames + launch trajectory at spawn. Snap the two grid
-// endpoints to tile centres (m_17c/m_180), record the target/owner ids, then
+// endpoints to tile centres (m_targetX/m_targetY), record the target/owner ids, then
 // switch on the projectile kind to pick the sprite-set base name + the
-// "<Kind>ProjectileTimePerTile" bute value (m_190) and the arc flag (m_1d8; Wingz
+// "<Kind>ProjectileTimePerTile" bute value (m_timePerTile) and the arc flag (m_isArcing; Wingz
 // also loops a launch sound + measures the tile distance). Look up the six frame
 // sprites ("<base>1".."<base>5", "<base>IMPACT") + "<base>FALL", install the
 // resolved frame-0 geometry, cache the object frame, compute the normalised
@@ -322,79 +322,79 @@ enum ProjectileKind {
 RVA(0x000df050, 0x6ba)
 i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i32 t0, i32 t1) {
     CString key;
-    m_174 = a;
-    m_17c = (sx & ~0x1f) + 0x10;
-    m_178 = b;
-    m_170 = kind;
-    m_180 = (sy & ~0x1f) + 0x10;
+    m_srcRow = a;
+    m_targetX = (sx & ~0x1f) + 0x10;
+    m_srcCol = b;
+    m_kind = kind;
+    m_targetY = (sy & ~0x1f) + 0x10;
     m_220 = t0;
     m_224 = t1;
 
     CGameObject* owner = m_10;
-    double dx = (double)(m_17c - owner->m_5c);
-    double dy = (double)(m_180 - owner->m_60);
+    double dx = (double)(m_targetX - owner->m_5c);
+    double dy = (double)(m_targetY - owner->m_60);
     i32 count = 1;
 
     switch (kind) {
         case PROJ_ROCK: // ROCK
             key = "GRUNTZ_ROCKGRUNT_PROJECTILE";
-            m_190 = g_buteMgr.GetDwordDef(
+            m_timePerTile = g_buteMgr.GetDwordDef(
                 (char*)"Projectile",
                 (char*)"RockProjectileTimePerTile",
                 0xbb8
             );
-            m_1d8 = 1;
+            m_isArcing = 1;
             break;
         case PROJ_GUNHAT: // GUNHAT
             key = "GRUNTZ_GUNHATGRUNT_PROJECTILE";
-            m_190 = g_buteMgr.GetDwordDef(
+            m_timePerTile = g_buteMgr.GetDwordDef(
                 (char*)"Projectile",
                 (char*)"GunhatProjectileTimePerTile",
                 0xbb8
             );
-            m_1d8 = 1;
+            m_isArcing = 1;
             break;
         case PROJ_BOOMERANG: // BOOMERANG
             key = "GRUNTZ_BOOMERANGGRUNT_PROJECTILE";
-            m_190 = g_buteMgr.GetDwordDef(
+            m_timePerTile = g_buteMgr.GetDwordDef(
                 (char*)"Projectile",
                 (char*)"BoomerangProjectileTimePerTile",
                 0xbb8
             );
-            m_1d8 = 0;
+            m_isArcing = 0;
             break;
         case PROJ_NERFGUN: // NERFGUN
             key = "GRUNTZ_NERFGUNGRUNT_PROJECTILE";
-            m_190 = g_buteMgr.GetDwordDef(
+            m_timePerTile = g_buteMgr.GetDwordDef(
                 (char*)"Projectile",
                 (char*)"NerfGunProjectileTimePerTile",
                 0xbb8
             );
-            m_1d8 = 1;
+            m_isArcing = 1;
             break;
         case PROJ_WELDER: // WELDER
             key = "GRUNTZ_WELDERGRUNT_PROJECTILE";
-            m_190 = g_buteMgr.GetDwordDef(
+            m_timePerTile = g_buteMgr.GetDwordDef(
                 (char*)"Projectile",
                 (char*)"WelderProjectileTimePerTile",
                 0xbb8
             );
-            m_1d8 = 1;
+            m_isArcing = 1;
             break;
         case PROJ_WINGZ: { // WINGZ
             key = "GRUNTZ_WINGZGRUNT_PROJECTILE";
-            m_190 = g_buteMgr.GetDwordDef(
+            m_timePerTile = g_buteMgr.GetDwordDef(
                 (char*)"Projectile",
                 (char*)"WingzProjectileTimePerTile",
                 0xbb8
             );
             LaunchSound("GRUNTZ_WINGZGRUNT_WINGZGRUNTLOOP");
-            m_1d8 = 0;
-            i32 ddx = (m_17c >> 5) - (owner->m_5c >> 5);
+            m_isArcing = 0;
+            i32 ddx = (m_targetX >> 5) - (owner->m_5c >> 5);
             if (ddx < 0) {
                 ddx = -ddx;
             }
-            i32 ddy = (m_180 >> 5) - (owner->m_60 >> 5);
+            i32 ddy = (m_targetY >> 5) - (owner->m_60 >> 5);
             if (ddy < 0) {
                 ddy = -ddy;
             }
@@ -409,76 +409,76 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
     }
 
     // Resolve the six numbered frame sprites; frame "1" is required.
-    CProjSpriteMap& map = m_154->m_c->m_2c->m_10;
+    CProjSpriteMap& map = m_sprite->m_c->m_2c->m_10;
     void* out;
     out = 0;
     map.Lookup(key + "1", &out);
-    m_1e0 = out;
-    if (m_1e0 == 0) {
+    m_frame1 = out;
+    if (m_frame1 == 0) {
         return 0;
     }
     out = 0;
     map.Lookup(key + "2", &out);
-    m_1e4 = out;
+    m_frame2 = out;
     out = 0;
     map.Lookup(key + "3", &out);
-    m_1e8 = out;
+    m_frame3 = out;
     out = 0;
     map.Lookup(key + "4", &out);
-    m_1ec = (i32)out;
+    m_frame4 = (i32)out;
     out = 0;
     map.Lookup(key + "5", &out);
-    m_1f0 = (i32)out;
+    m_frame5 = (i32)out;
     out = 0;
     map.Lookup(key + "IMPACT", &out);
-    m_1f4 = out;
+    m_impactSprite = out;
     out = 0;
     map.Lookup(key + "FALL", &out);
-    m_1f8 = out;
+    m_fallSprite = out;
 
-    m_15c = m_154->m_1b4;
-    m_154->m_1a0.Setup(m_1e0);
-    m_154->CacheFirstFrame(key + "_OBJECT");
+    m_savedFrameGeo = m_sprite->m_1b4;
+    m_sprite->m_1a0.Setup(m_frame1);
+    m_sprite->CacheFirstFrame(key + "_OBJECT");
 
     // Normalise the launch trajectory into the per-frame velocity + sign vectors.
-    u32 totalTime = (u32)(count * m_190);
+    u32 totalTime = (u32)(count * m_timePerTile);
     double len = sqrt(dx * dx + dy * dy);
     double t = (double)totalTime;
     double vx = dx / len;
-    m_188 = len;
-    m_198 = len / t;
-    m_1a0 = vx;
-    m_1a8 = dy / len;
-    m_1b0 = vx;
-    m_1b8 = dy / len;
+    m_flightDist = len;
+    m_velScale = len / t;
+    m_posX = vx;
+    m_posY = dy / len;
+    m_velX = vx;
+    m_velY = dy / len;
     // sign(dx): +0.5 / 0.0 / -0.5 stored as a double {lo=0, hi=+-0x3fe00000}
-    m_1c0 = 0;
+    m_roundXLo = 0;
     if (vx > 0.0) {
-        m_1c4 = 0x3fe00000;
+        m_roundXHi = 0x3fe00000;
     } else if (vx < 0.0) {
-        m_1c4 = (i32)0xbfe00000;
+        m_roundXHi = (i32)0xbfe00000;
     } else {
-        m_1c4 = 0;
+        m_roundXHi = 0;
     }
-    m_1c8 = 0;
+    m_roundYLo = 0;
     if (dy > 0.0) {
-        m_1cc = 0x3fe00000;
+        m_roundYHi = 0x3fe00000;
     } else if (dy < 0.0) {
-        m_1cc = (i32)0xbfe00000;
+        m_roundYHi = (i32)0xbfe00000;
     } else {
-        m_1cc = 0;
+        m_roundYHi = 0;
     }
-    m_188 = len < 0.0 ? -len : len;
-    m_1d0 = owner->m_5c;
-    m_1d4 = owner->m_60;
-    m_1dc = 0;
+    m_flightDist = len < 0.0 ? -len : len;
+    m_curX = owner->m_5c;
+    m_curY = owner->m_60;
+    m_arrived = 0;
 
     // Spawn the LightFx shadow companion + activate its two frames.
     CProjSpriteFactory* factory = (CProjSpriteFactory*)g_gameReg->m_30->m_8;
-    m_1fc = factory->CreateSprite(0, owner->m_5c, owner->m_60, 0xcf84f, "LightFx", 0x2040003);
-    if (m_1fc != 0) {
-        m_1fc->m_7c->Init(m_1fc);
-        m_1fc->m_7c->m_18->Activate(key + "_SHADOW", key + "1", 5, 1);
+    m_shadow = factory->CreateSprite(0, owner->m_5c, owner->m_60, 0xcf84f, "LightFx", 0x2040003);
+    if (m_shadow != 0) {
+        m_shadow->m_7c->Init(m_shadow);
+        m_shadow->m_7c->m_18->Activate(key + "_SHADOW", key + "1", 5, 1);
     }
 
     // Latch the class act key ("A"): save the old registry node, then re-point it.
@@ -628,13 +628,13 @@ void CProjectile::RegisterType() {
 // ===========================================================================
 // CProjectile::LoadProjectileEffects (0xdfd00) - per-frame trajectory advance +
 // impact-effect select. Runs each frame until the projectile reaches its target
-// tile (m_1d0/m_1d4 catch up to m_17c/m_180): integrate the parabola into the
-// render position (m_1a0/m_1a8), clamp the muzzle-tracked position against the
-// target, and for the arc kinds (m_1d8) select one of five impact-effect sprite
+// tile (m_curX/m_curY catch up to m_targetX/m_targetY): integrate the parabola into the
+// render position (m_posX/m_posY), clamp the muzzle-tracked position against the
+// target, and for the arc kinds (m_isArcing) select one of five impact-effect sprite
 // tiers by the fractional distance-to-target. On arrival it stops the loop
 // sound, runs a final hit-scan, then - by the destination terrain flags - spills
 // the water / level death splash effect or installs the IMPACT/FALL sprite. The
-// one-shot m_1dc latch (0 while in flight; set on arrival) gates re-entry.
+// one-shot m_arrived latch (0 while in flight; set on arrival) gates re-entry.
 // (WINGZ, kind 0x16, additionally loops its flight sound while over the level.)
 //
 // @early-stop
@@ -645,145 +645,145 @@ void CProjectile::RegisterType() {
 // are reconstructed. The residue is the dense fxch/fcompp FP schedule of the
 // parabola integration (0xdfeb6..0xdff37) and the distance/sqrt tier ladder
 // (0xdffd7..0xe00e9) - MSVC5 keeps `dist` live on the x87 stack across the eight
-// tier comparisons and pre-computes m_188*0.9 interleaved with the fsqrt, which
+// tier comparisons and pre-computes m_flightDist*0.9 interleaved with the fsqrt, which
 // is not steerable from C source - plus the effect-spawn regalloc (ecx vs edx for
 // reg->m_30) and the unnamed engine-call relocs. Logic complete; parked.
 // ===========================================================================
 RVA(0x000dfd00, 0x6f5)
 void CProjectile::LoadProjectileEffects() {
-    if (m_1dc != 0) {
+    if (m_arrived != 0) {
         return;
     }
 
-    if (m_170 == 0x16) { // WINGZ: loop the flight sound while over the level
+    if (m_kind == 0x16) { // WINGZ: loop the flight sound while over the level
         CGameObject* owner = m_10;
         CGameRegistry* reg = g_gameReg;
         if (owner->m_5c < reg->m_144 && owner->m_5c >= reg->m_13c && owner->m_60 < reg->m_148
             && owner->m_60 >= reg->m_140) {
             LaunchSound("GRUNTZ_WINGZGRUNT_PROJECTILELOOP");
-        } else if (m_200 != 0) {
-            m_200->StopAndRewind();
-            m_200 = 0;
+        } else if (m_sound != 0) {
+            m_sound->StopAndRewind();
+            m_sound = 0;
         }
     }
 
-    if (m_1d0 != m_17c || m_1d4 != m_180) {
+    if (m_curX != m_targetX || m_curY != m_targetY) {
         // -- in flight: integrate one frame + select the impact tier ----------
-        if (m_170 == 0x16) {
+        if (m_kind == 0x16) {
             ScanTargets(0);
         }
-        m_1a0 = m_1a0 + (double)(u32)g_645584 * m_1b0 * m_198;
-        m_1a8 = m_1a8 + (double)(u32)g_645584 * m_1b8 * m_198;
-        i32 xRes = (i32)(*(double*)&m_1c0 + m_1a0);
-        i32 yRes = (i32)(*(double*)&m_1c8 + m_1a8);
+        m_posX = m_posX + (double)(u32)g_645584 * m_velX * m_velScale;
+        m_posY = m_posY + (double)(u32)g_645584 * m_velY * m_velScale;
+        i32 xRes = (i32)(*(double*)&m_roundXLo + m_posX);
+        i32 yRes = (i32)(*(double*)&m_roundYLo + m_posY);
         i32 localX = xRes;
-        if (m_1b0 > 0.0) {
-            if (xRes > m_17c) {
-                localX = m_17c;
-                xRes = m_17c;
+        if (m_velX > 0.0) {
+            if (xRes > m_targetX) {
+                localX = m_targetX;
+                xRes = m_targetX;
             }
-        } else if (m_1b0 < 0.0) {
-            if (xRes < m_17c) {
-                localX = m_17c;
-                xRes = m_17c;
-            }
-        }
-        if (m_1b8 > 0.0) {
-            if (yRes > m_180) {
-                yRes = m_180;
-            }
-        } else if (m_1b8 < 0.0) {
-            if (yRes < m_180) {
-                yRes = m_180;
+        } else if (m_velX < 0.0) {
+            if (xRes < m_targetX) {
+                localX = m_targetX;
+                xRes = m_targetX;
             }
         }
-        m_1d0 = xRes;
-        m_1d4 = yRes;
+        if (m_velY > 0.0) {
+            if (yRes > m_targetY) {
+                yRes = m_targetY;
+            }
+        } else if (m_velY < 0.0) {
+            if (yRes < m_targetY) {
+                yRes = m_targetY;
+            }
+        }
+        m_curX = xRes;
+        m_curY = yRes;
         i32 offX = 0;
         i32 offY = 0;
-        if (m_1d8 != 0) {
-            double dx = fabs((double)m_17c - m_1a0);
-            double dy = fabs((double)m_180 - m_1a8);
+        if (m_isArcing != 0) {
+            double dx = fabs((double)m_targetX - m_posX);
+            double dy = fabs((double)m_targetY - m_posY);
             double dist = sqrt(dx * dx + dy * dy);
-            double mag = m_188;
+            double mag = m_flightDist;
             if (dist >= mag * 0.9 || dist < mag * 0.1) {
                 offX = 0x4;
                 offY = -0x4;
-                if (m_154->m_1b4 != (i32)m_1e0) {
-                    m_15c = m_154->m_1b4;
-                    m_154->m_1a0.Setup(m_1e0);
-                    if (m_1fc != 0) {
-                        m_1fc->m_1a0.Setup(m_1e0);
+                if (m_sprite->m_1b4 != (i32)m_frame1) {
+                    m_savedFrameGeo = m_sprite->m_1b4;
+                    m_sprite->m_1a0.Setup(m_frame1);
+                    if (m_shadow != 0) {
+                        m_shadow->m_1a0.Setup(m_frame1);
                     }
                 }
             } else if (dist >= mag * 0.8 || dist < mag * 0.2) {
                 offX = 0x8;
                 offY = -0x8;
-                if (m_154->m_1b4 != (i32)m_1e4) {
-                    m_15c = m_154->m_1b4;
-                    m_154->m_1a0.Setup(m_1e4);
-                    if (m_1fc != 0) {
-                        m_1fc->m_1a0.Setup(m_1e4);
+                if (m_sprite->m_1b4 != (i32)m_frame2) {
+                    m_savedFrameGeo = m_sprite->m_1b4;
+                    m_sprite->m_1a0.Setup(m_frame2);
+                    if (m_shadow != 0) {
+                        m_shadow->m_1a0.Setup(m_frame2);
                     }
                 }
             } else if (dist >= mag * 0.7 || dist < mag * 0.3) {
                 offX = 0xc;
                 offY = -0xc;
-                if (m_154->m_1b4 != (i32)m_1e8) {
-                    m_15c = m_154->m_1b4;
-                    m_154->m_1a0.Setup(m_1e8);
-                    if (m_1fc != 0) {
-                        m_1fc->m_1a0.Setup(m_1e8);
+                if (m_sprite->m_1b4 != (i32)m_frame3) {
+                    m_savedFrameGeo = m_sprite->m_1b4;
+                    m_sprite->m_1a0.Setup(m_frame3);
+                    if (m_shadow != 0) {
+                        m_shadow->m_1a0.Setup(m_frame3);
                     }
                 }
             } else if (dist >= mag * 0.6 || dist < mag * 0.4) {
                 offX = 0x10;
                 offY = -0x10;
-                if (m_154->m_1b4 != m_1ec) {
-                    m_15c = m_154->m_1b4;
-                    m_154->m_1a0.Setup((void*)m_1ec);
-                    if (m_1fc != 0) {
-                        m_1fc->m_1a0.Setup((void*)m_1ec);
+                if (m_sprite->m_1b4 != m_frame4) {
+                    m_savedFrameGeo = m_sprite->m_1b4;
+                    m_sprite->m_1a0.Setup((void*)m_frame4);
+                    if (m_shadow != 0) {
+                        m_shadow->m_1a0.Setup((void*)m_frame4);
                     }
                 }
             } else {
                 offX = 0x14;
                 offY = -0x14;
-                if (m_154->m_1b4 != m_1f0) {
-                    m_15c = m_154->m_1b4;
-                    m_154->m_1a0.Setup((void*)m_1f0);
-                    if (m_1fc != 0) {
-                        m_1fc->m_1a0.Setup((void*)m_1f0);
+                if (m_sprite->m_1b4 != m_frame5) {
+                    m_savedFrameGeo = m_sprite->m_1b4;
+                    m_sprite->m_1a0.Setup((void*)m_frame5);
+                    if (m_shadow != 0) {
+                        m_shadow->m_1a0.Setup((void*)m_frame5);
                     }
                 }
             }
         }
-        m_10->m_5c = offX + m_1d0;
-        m_10->m_60 = offY + m_1d4;
-        if (m_1fc != 0) {
-            m_1fc->m_5c = localX;
-            m_1fc->m_60 = yRes;
+        m_10->m_5c = offX + m_curX;
+        m_10->m_60 = offY + m_curY;
+        if (m_shadow != 0) {
+            m_shadow->m_5c = localX;
+            m_shadow->m_60 = yRes;
         }
         return;
     }
 
     // -- arrived at the target tile ------------------------------------------
-    if (m_200 != 0) {
-        m_200->StopAndRewind();
-        m_200 = 0;
+    if (m_sound != 0) {
+        m_sound->StopAndRewind();
+        m_sound = 0;
     }
     ScanTargets(0);
-    if (m_1fc != 0) {
-        m_1fc->m_08 |= 0x10000;
-        m_1fc = 0;
+    if (m_shadow != 0) {
+        m_shadow->m_08 |= 0x10000;
+        m_shadow = 0;
     }
-    m_1dc = 1;
+    m_arrived = 1;
     i32 tier = 0;
-    if (m_170 != 0x16) {
+    if (m_kind != 0x16) {
         CGameRegistry* reg = g_gameReg;
         CTerrainPlane* plane = (CTerrainPlane*)reg->m_70;
-        i32 tileX = m_17c >> 5;
-        i32 tileY = m_180 >> 5;
+        i32 tileX = m_targetX >> 5;
+        i32 tileY = m_targetY >> 5;
         u32 flags;
         if ((u32)tileX >= (u32)plane->m_c || (u32)tileY >= (u32)plane->m_10) {
             flags = 1;
@@ -792,17 +792,17 @@ void CProjectile::LoadProjectileEffects() {
         }
         if (flags & 0x900) {
             // water tile: spill a splash then hide the projectile
-            if (m_17c < reg->m_144 && m_17c >= reg->m_13c && m_180 < reg->m_148
-                && m_180 >= reg->m_140) {
+            if (m_targetX < reg->m_144 && m_targetX >= reg->m_13c && m_targetY < reg->m_148
+                && m_targetY >= reg->m_140) {
                 CProjRenderObj* fx =
                     ((CProjSoundCat*)reg->m_30)
-                        ->m_8->CreateSprite(0, m_17c, m_180, 0xcf84f, "Particlez", 0x40003);
+                        ->m_8->CreateSprite(0, m_targetX, m_targetY, 0xcf84f, "Particlez", 0x40003);
                 if (fx != 0) {
                     fx->CacheFirstFrame("GAME_WATER");
                     fx->ApplyLookupGeometry("GAME_WATER", 0);
                 }
             }
-            m_154->m_08 |= 0x10000;
+            m_sprite->m_08 |= 0x10000;
             return;
         }
         if (flags & 0x2) {
@@ -819,30 +819,35 @@ void CProjectile::LoadProjectileEffects() {
                         break;
                     default:
                         // level death tile: spill the death-splash then hide
-                        if (m_17c < reg->m_144 && m_17c >= reg->m_13c && m_180 < reg->m_148
-                            && m_180 >= reg->m_140) {
-                            CProjRenderObj* fx =
-                                ((CProjSoundCat*)reg->m_30)
-                                    ->m_8
-                                    ->CreateSprite(0, m_17c, m_180, 0xcf84f, "Particlez", 0x40003);
+                        if (m_targetX < reg->m_144 && m_targetX >= reg->m_13c
+                            && m_targetY < reg->m_148 && m_targetY >= reg->m_140) {
+                            CProjRenderObj* fx = ((CProjSoundCat*)reg->m_30)
+                                                     ->m_8->CreateSprite(
+                                                         0,
+                                                         m_targetX,
+                                                         m_targetY,
+                                                         0xcf84f,
+                                                         "Particlez",
+                                                         0x40003
+                                                     );
                             if (fx != 0) {
                                 fx->CacheFirstFrame("LEVEL_DEATHSPLASH");
                                 fx->ApplyLookupGeometry("LEVEL_DEATHSPLASH", 0);
                             }
                         }
-                        m_154->m_08 |= 0x10000;
+                        m_sprite->m_08 |= 0x10000;
                         return;
                 }
             }
         }
     }
-    void* sprite = (tier != 0) ? m_1f8 : m_1f4;
+    void* sprite = (tier != 0) ? m_fallSprite : m_impactSprite;
     if (sprite == 0) {
-        m_154->m_08 |= 0x10000;
+        m_sprite->m_08 |= 0x10000;
         return;
     }
-    m_15c = m_154->m_1b4;
-    m_154->m_1a0.Setup(sprite);
+    m_savedFrameGeo = m_sprite->m_1b4;
+    m_sprite->m_1a0.Setup(sprite);
 }
 
 // ---------------------------------------------------------------------------
@@ -852,9 +857,9 @@ void CProjectile::LoadProjectileEffects() {
 // ---------------------------------------------------------------------------
 RVA(0x000e05e0, 0x4e)
 i32 CProjectile::DetachRenderObj() {
-    m_154->m_40 &= ~1u;
-    m_154->m_1a0.SetAnim(g_6bf3bc);
-    CProjRenderObj* r = m_154;
+    m_sprite->m_40 &= ~1u;
+    m_sprite->m_1a0.SetAnim(g_6bf3bc);
+    CProjRenderObj* r = m_sprite;
     if (r->m_1c8 != 0 && r->m_1c0 == 0) {
         r->m_08 |= 0x10000;
     }
@@ -863,7 +868,7 @@ i32 CProjectile::DetachRenderObj() {
 
 // ---------------------------------------------------------------------------
 // CProjectile::StepMotion (0xe08b0) - advance the projectile one frame. On the
-// launch frame it snaps the render objects to the muzzle (m_17c/m_180); once past
+// launch frame it snaps the render objects to the muzzle (m_targetX/m_targetY); once past
 // the second phase threshold it expires (scan for the terminal impact, raise the
 // hide bit on the shadow + owner). Otherwise it integrates the sin/cos parabola
 // into the render position and rounds it into the render objects' screen coords.
@@ -877,46 +882,46 @@ i32 CProjectile::DetachRenderObj() {
 RVA(0x000e08b0, 0x1de)
 void CProjectile::StepMotion() {
     i32 impact = 0;
-    if (m_258 == 0) {
-        if (m_250 > g_projPhase0) {
+    if (m_launched == 0) {
+        if (m_phase > g_projPhase0) {
             // launch frame: snap render objects to the muzzle, mark launched.
-            m_10->m_5c = m_17c;
-            m_10->m_60 = m_180;
-            if (m_1fc != 0) {
-                m_1fc->m_5c = m_17c;
-                m_1fc->m_60 = m_180;
+            m_10->m_5c = m_targetX;
+            m_10->m_60 = m_targetY;
+            if (m_shadow != 0) {
+                m_shadow->m_5c = m_targetX;
+                m_shadow->m_60 = m_targetY;
             }
-            m_258 = 1;
+            m_launched = 1;
             goto step;
         }
-    } else if (m_250 > g_projPhase1) {
+    } else if (m_phase > g_projPhase1) {
         // past the terminal threshold: deliver the impact scan + expire.
         ScanTargets(1);
-        if (m_1fc != 0) {
-            m_1fc->m_08 |= 0x10000;
-            m_1fc = 0;
+        if (m_shadow != 0) {
+            m_shadow->m_08 |= 0x10000;
+            m_shadow = 0;
         }
-        m_154->m_08 |= 0x10000;
+        m_sprite->m_08 |= 0x10000;
         return;
     }
 step:
     ScanTargets(impact);
     // integrate the sin/cos parabola into the render position.
-    double s = sin(m_250);
-    double c = cos(m_250);
+    double s = sin(m_phase);
+    double c = cos(m_phase);
     double amp = (double)g_645584;
-    double vx = -m_230;
-    double vy = m_238;
-    double px = m_240 + vy * m_198 * s - vx * amp * c + m_250;
-    double py = m_248 + vy * amp * c + vx * m_198 * s;
-    m_1a0 = px;
-    m_1a8 = py;
-    m_250 = px;
-    m_10->m_5c = (i32)m_1a0;
-    m_10->m_60 = (i32)m_1a8;
-    if (m_1fc != 0) {
-        m_1fc->m_5c = (i32)m_1a0;
-        m_1fc->m_60 = (i32)m_1a8;
+    double vx = -m_dirX;
+    double vy = m_dirY;
+    double px = m_originX + vy * m_velScale * s - vx * amp * c + m_phase;
+    double py = m_originY + vy * amp * c + vx * m_velScale * s;
+    m_posX = px;
+    m_posY = py;
+    m_phase = px;
+    m_10->m_5c = (i32)m_posX;
+    m_10->m_60 = (i32)m_posY;
+    if (m_shadow != 0) {
+        m_shadow->m_5c = (i32)m_posX;
+        m_shadow->m_60 = (i32)m_posY;
     }
 }
 
@@ -974,7 +979,7 @@ void CProjectile::ScanTargets(i32 impact) {
             if (projYhi < gy) {
                 continue;
             }
-            if (m_174 == tileY && m_178 == col) {
+            if (m_srcRow == tileY && m_srcCol == col) {
                 // self cell
                 if (impact != 0 && g->m_1fc != 0 && g->m_170 == 0) {
                     g->SelfImpact(2, 1, 0, 0);
@@ -984,8 +989,8 @@ void CProjectile::ScanTargets(i32 impact) {
             // already-tracked? walk the hit list for this grunt's cell key.
             i32 keyX = g->m_1ec;
             i32 keyY = g->m_1f0;
-            for (POSITION pos = m_204.GetHeadPosition(); pos != NULL;) {
-                CHitKey* k = (CHitKey*)m_204.GetNext(pos);
+            for (POSITION pos = m_hitList.GetHeadPosition(); pos != NULL;) {
+                CHitKey* k = (CHitKey*)m_hitList.GetNext(pos);
                 if (k->m_0 == keyX && k->m_4 == keyY) {
                     return;
                 }
@@ -999,8 +1004,8 @@ void CProjectile::ScanTargets(i32 impact) {
                 slot->m_4 = keyY;
                 g_freeList = (void*)p->m_0;
             }
-            m_204.AddTail((CObject*)slot);
-            g->DeliverHit(m_170, 1, m_174, m_178, m_220, m_224, 1, 0);
+            m_hitList.AddTail((CObject*)slot);
+            g->DeliverHit(m_kind, 1, m_srcRow, m_srcCol, m_220, m_224, 1, 0);
         }
         rowBase += 0x3c;
         tileY++;
@@ -1010,7 +1015,7 @@ void CProjectile::ScanTargets(i32 impact) {
 // ---------------------------------------------------------------------------
 // CProjectile::LaunchSound (0xe2190) - lazily create + play the launch sound the
 // first time. Look the effect up in the game-registry sound map by name, clone a
-// sample off the matched entry, store it at m_200, and start it on the configured
+// sample off the matched entry, store it at m_sound, and start it on the configured
 // channel. Returns 1 on success, 0 if already launched / any lookup gate fails.
 //
 // @early-stop
@@ -1024,7 +1029,7 @@ void CProjectile::ScanTargets(i32 impact) {
 // ---------------------------------------------------------------------------
 RVA(0x000e2190, 0x83)
 i32 CProjectile::LaunchSound(const char* key) {
-    if (m_200 != 0) {
+    if (m_sound != 0) {
         return 0;
     }
     CGameRegistry* reg = g_gameReg;
@@ -1040,11 +1045,11 @@ i32 CProjectile::LaunchSound(const char* key) {
     if (entry->m_10 == 0) {
         return 0;
     }
-    m_200 = entry->m_10->GetItem();
-    if (m_200 == 0) {
+    m_sound = entry->m_10->GetItem();
+    if (m_sound == 0) {
         return 0;
     }
-    m_200->Play(g_gameReg->m_11c, 0, 0, 1);
+    m_sound->Play(g_gameReg->m_11c, 0, 0, 1);
     return 1;
 }
 

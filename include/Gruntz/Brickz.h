@@ -155,34 +155,34 @@ public:
 
     // container fields (offsets recovered from the field stores above)
     char m_pad0[0x04];
-    BrickzCell* m_4;  // +0x04  flat cell pool (width*height cells)
-    BrickzCell** m_8; // +0x08  column table  (m_8[row] -> cell row base)
-    u32 m_c;          // +0x0c  height
-    u32 m_10;         // +0x10  width
-    u32 m_14;         // +0x14  total cell count (width*height)
-    BrickzNode* m_18; // +0x18  sorted/lookup list head (open list)
-    i32 m_1c;         // +0x1c  (container scratch)
-    i32 m_20;         // +0x20  search rect x1
-    i32 m_24;         // +0x24  search rect y1
-    i32 m_28;         // +0x28  search goal x2
-    i32 m_2c;         // +0x2c  search goal y2
-    BrickzNode* m_30; // +0x30  list head (active / closed)
+    BrickzCell* m_cellPool; // +0x04  flat cell pool (width*height cells)
+    BrickzCell** m_rows;    // +0x08  row table (m_rows[row] -> cell row base)
+    u32 m_width;            // +0x0c  grid width (columns; AllocGrid: m_c = width)
+    u32 m_height;           // +0x10  grid height (rows; AllocGrid: m_10 = height)
+    u32 m_cellCount;        // +0x14  total cell count (width*height)
+    BrickzNode* m_openList; // +0x18  sorted open/lookup list head (ascending by BrickzNode::m_10 f)
+    i32 m_1c;               // +0x1c  (container scratch; unused in this TU)
+    i32 m_startX;           // +0x20  search start x1
+    i32 m_startY;           // +0x24  search start y1
+    i32 m_goalX;            // +0x28  search goal x2
+    i32 m_goalY;            // +0x2c  search goal y2
+    BrickzNode* m_nodePool; // +0x30  search-record recycling pool (linked via BrickzNode::m_14)
     char m_pad34[0x40 - 0x34];
-    BrickzNode* m_40; // +0x40  free list head
+    BrickzNode* m_freeList; // +0x40  bucket-node free list (linked via BrickzNode::m_8)
     char m_pad44[0x48 - 0x44];
-    void (*m_48)(); // +0x48  per-step callback (engine hook)
-    i32 m_4c;       // +0x4c  passability mask used by Expand
-    i32 m_50;       // +0x50  mask A (start-cell test / Expand)
-    i32 m_54;       // +0x54  mask B
-    i32 m_58;       // +0x58  mask C (diagonal-corner test)
-    i32 m_5c;       // +0x5c  dirty flag (UpdateDiagonals re-walk gate)
-    i32 m_60;       // +0x60  grid origin x
-    i32 m_64;       // +0x64  grid origin y
+    void (*m_stepCb)(); // +0x48  per-step callback (engine hook)
+    i32 m_edgeMask;     // +0x4c  edge-punch reject mask (SearchEdge; Expand pre-filter)
+    i32 m_maskA;        // +0x50  Search maskA: cell blocked when set (unless m_maskC bit)
+    i32 m_maskC;        // +0x54  Search maskC: allow-override for m_maskA
+    i32 m_maskB;        // +0x58  Search maskB: diagonal corner-cut reject mask
+    i32 m_dirty;        // +0x5c  dirty flag (UpdateDiagonals re-walk gate)
+    i32 m_originX;      // +0x60  grid origin x (also RECT.left of the +0x60 bound rect)
+    i32 m_originY;      // +0x64  grid origin y (RECT.top)
     char m_pad68[0x70 - 0x68];
-    i32 m_70;            // +0x70  grid width (cells)
-    i32 m_74;            // +0x74  grid height (cells)
-    BrickzAttrMgr* m_78; // +0x78  attribute/bute-type manager (ComputeCellFlags)
-    BrickzSerObj* m_7c;  // +0x7c  serialize sub-object (Serialize wrapper)
+    i32 m_gridW;              // +0x70  grid width extent (cells)
+    i32 m_gridH;              // +0x74  grid height extent (cells)
+    BrickzAttrMgr* m_attrMgr; // +0x78  attribute/bute-type manager (ComputeCellFlags)
+    BrickzSerObj* m_7c;       // +0x7c  serialize sub-object (unused in this TU)
 };
 
 #endif // GRUNTZ_BRICKZ_H

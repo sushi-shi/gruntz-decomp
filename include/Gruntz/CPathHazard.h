@@ -118,34 +118,30 @@ public:
     void ForwardTick();
     ~CPathHazard(); // 0x13340 (folds the CUserLogic teardown)
 
-    i32 m_40; // +0x40  geometry id (m_38->m_1b4 snapshot)
+    i32 m_savedGeoId; // +0x40  saved m_38->m_1b4 geometry id (before GAME_CYCLE100)
     char m_pad44[0x58 - 0x44];
-    double m_58;            // +0x58  per-frame speed (1 / (m_bc * 1/32))
-    double m_60;            // +0x60  accumulated x (double)
-    double m_68;            // +0x68  accumulated y (double)
-    double m_70;            // +0x70  unit-vector x
-    double m_78;            // +0x78  unit-vector y
-    double m_80;            // +0x80  sign(ux) * 0.5  (the round-to-tile bias)
-    double m_88;            // +0x88  sign(uy) * 0.5
+    double m_speed;         // +0x58  per-frame speed (1 / (m_bc / 32))
+    double m_posX;          // +0x60  sub-pixel X position accumulator
+    double m_posY;          // +0x68  sub-pixel Y position accumulator
+    double m_unitX;         // +0x70  unit-vector x (toward waypoint)
+    double m_unitY;         // +0x78  unit-vector y
+    double m_roundBiasX;    // +0x80  sign(unitX) * 0.5 (round-to-tile bias)
+    double m_roundBiasY;    // +0x88  sign(unitY) * 0.5
     CPathWaypoint m_wp[13]; // +0x90  waypoint path (wp[0]=start, wp[1..12]=scaled)
-    i32 m_f8;               // +0xf8  current waypoint index
-    i32 m_fc;               // +0xfc  current waypoint X (int)
-    i32 m_100;              // +0x100 current waypoint Y (int)
-    i32 m_104;              // +0x104 waypoint count (path length)
-    i32 m_108;              // +0x108 leg bute tag (i64 lo)
-    i32 m_10c;              // +0x10c          (i64 hi)
-    i32 m_110;              // +0x110 leg segments remaining (i64 lo)
-    i32 m_114;              // +0x114          (i64 hi)
+    i32 m_wpIndex;          // +0xf8  current waypoint index
+    i32 m_wpX;              // +0xfc  current waypoint X (int)
+    i32 m_wpY;              // +0x100 current waypoint Y (int)
+    i32 m_wpCount;          // +0x104 waypoint count (path length)
+    i32 m_legTag;           // +0x108 leg bute tag (i64 lo)
+    i32 m_legTagHi;         // +0x10c          (i64 hi)
+    i32 m_legSegs;          // +0x110 leg segments remaining (i64 lo)
+    i32 m_legSegsHi;        // +0x114          (i64 hi)
     char m_pad118[0x120 - 0x118];
-    i32 m_120; // +0x120 strike deadline (i64 lo)
-    i32 m_124; // +0x124          (i64 hi)
-    i32 m_128; // +0x128 strike window (i64 lo)
-    i32 m_12c; // +0x12c          (i64 hi)
+    i32 m_strikeDeadline;   // +0x120 strike deadline (i64 lo; used by CLightningHazard view)
+    i32 m_strikeDeadlineHi; // +0x124          (i64 hi)
+    i32 m_strikeWindow;     // +0x128 strike window (i64 lo)
+    i32 m_strikeWindowHi;   // +0x12c          (i64 hi)
 };
 SIZE(CPathHazard, 0x130);
-
-// The waypoint path array at this+0x90 (8-byte stride). Accessed as
-// ((CPathWaypoint*)((char*)this + 0x90))[m_f8].
-#define PATH_WAYPOINTS(self) ((CPathWaypoint*)((char*)(self) + 0x90))
 
 #endif // GRUNTZ_CPATHHAZARD_H

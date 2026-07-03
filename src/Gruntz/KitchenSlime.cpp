@@ -41,7 +41,7 @@ struct CSlimeAnimPlayer {
 };
 
 // The slime's resource/level holder (this->m_10). m_124 = travel direction
-// (1..4); m_5c/m_60 = per-step pixel deltas; m_134..m_140 = the on-screen tile
+// (1..4); m_5c/m_posX = per-step pixel deltas; m_134..m_140 = the on-screen tile
 // window; m_12c = a "lock direction" flag; m_7c = the level/timing object whose
 // +0xbc overrides the per-tile time.
 // The level/timing object at CSlimeLevel+0x7c; its +0xbc overrides the per-tile time.
@@ -80,7 +80,7 @@ struct CSlimeCueGate {
     void ScrollTo(i32 a, i32 b, i32 mode, i32 flags);                    // 0x6bcb0
 };
 
-// The canonical CGameRegistry view of the singleton; m_68 (cue gate) and m_70
+// The canonical CGameRegistry view of the singleton; m_posY (cue gate) and m_dirX
 // (tile map) are void*/CTileGrid* here, cast locally at the deref sites.
 DATA(0x0024556c)
 extern CGameRegistry* g_gameReg;
@@ -94,7 +94,7 @@ struct CSlimeEntity {
 
 // 32.0 (the per-tile-time -> per-frame-speed reciprocal numerator).
 
-// Per-frame scroll/scale factor (.data int) Tick multiplies into m_58 to get the
+// Per-frame scroll/scale factor (.data int) Tick multiplies into m_speed to get the
 // per-frame pixel step.
 DATA(0x00245584)
 extern i32 g_slimeFrameScale; // VA 0x645584
@@ -127,17 +127,17 @@ public:
     CKitchenSlime(CGameObject* obj); // 0x0b23a0 (folds CUserLogic(obj) + the slime setup)
     ~CKitchenSlime();                // 0x013100 (folds the CUserLogic teardown)
 
-    i32 m_40; // +0x40  geometry id (m_38->m_1b4 snapshot)
+    i32 m_savedGeoId; // +0x40  saved m_38->m_1b4 geometry id (before GAME_CYCLE100)
     char m_pad44[0x58 - 0x44];
-    double m_58; // +0x58  per-frame speed
-    double m_60; // +0x60  accumulated dx (double)
-    double m_68; // +0x68  accumulated dy (double)
-    double m_70; // +0x70  (cleared)
-    double m_78; // +0x78  (cleared)
-    i32 m_80;    // +0x80  current tile X
-    i32 m_84;    // +0x84  current tile Y
-    i32 m_88;    // +0x88  (per-step magnitude / cleared)
-    i32 m_8c;    // +0x8c  (cleared)
+    double m_speed;  // +0x58  per-frame speed (g_slimeSpeedNum / timePerTile)
+    double m_posX;   // +0x60  sub-pixel X position accumulator
+    double m_posY;   // +0x68  sub-pixel Y position accumulator
+    double m_dirX;   // +0x70  unit X travel direction (-1.0 / 0.0 / +1.0)
+    double m_dirY;   // +0x78  unit Y travel direction (-1.0 / 0.0 / +1.0)
+    i32 m_tileX;     // +0x80  current target tile X (pixels)
+    i32 m_tileY;     // +0x84  current target tile Y (pixels)
+    i32 m_stepMag;   // +0x88  per-step magnitude double {lo,hi}, overlaid as int pair
+    i32 m_stepMagHi; // +0x8c  per-step magnitude, hi dword
 };
 
 // ---------------------------------------------------------------------------
@@ -229,7 +229,7 @@ struct CSlimeMiniStr {
 };
 
 // The bound CGameObject viewed by the ctor (m_10 == m_38). The slime reads the
-// screen position (m_5c/m_60), the layer key (m_74), the flags (m_08), the travel
+// screen position (m_5c/m_posX), the layer key (m_74), the flags (m_08), the travel
 // window (m_134..m_140) clamped from the raw target tile (m_164/m_168), the
 // direction name (m_194+0x24), and re-seeds the rect (m_144..m_150). Only the
 // touched offsets are modeled.
@@ -262,8 +262,8 @@ struct CSlimeCtorObj {
 };
 
 // CKitchenSlime::CKitchenSlime @0x0b23a0 - fold the shared CUserLogic(obj) init,
-// snap the bound object to the tile grid (m_60/m_68 doubles + m_74 layer key +
-// the m_80/m_84 tile coords), scale the raw target tile (m_164/m_168) to pixels
+// snap the bound object to the tile grid (m_posX/m_posY doubles + m_74 layer key +
+// the m_tileX/m_tileY tile coords), scale the raw target tile (m_164/m_168) to pixels
 // and compute the travel window (min/max of the start and target), match the
 // slime's direction name (LEVEL_KITCHENSLIME_{NORTH,EAST,SOUTH,WEST}) into the
 // direction id, then run LoadSprites for the first leg, bind the "A" bute node +
@@ -284,15 +284,15 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj) : CUserLogic(obj) {
     i32 snapX = (o->m_5c & ~0x1f) + 0x10;
     i32 snapY = (o->m_60 & ~0x1f) + 0x10;
     o->m_5c = snapX;
-    m_60 = (double)snapX;
+    m_posX = (double)snapX;
     o->m_60 = snapY;
-    m_68 = (double)snapY;
+    m_posY = (double)snapY;
     if (o->m_74 != 0x13) {
         o->m_74 = 0x13;
         o->m_08 |= 0x20000;
     }
-    m_84 = snapY;
-    m_80 = snapX;
+    m_tileY = snapY;
+    m_tileX = snapX;
 
     o->m_164 = (o->m_164 << 5) + 0x10;
     o->m_168 = (o->m_168 << 5) + 0x10;
@@ -321,14 +321,14 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj) : CUserLogic(obj) {
         }
     }
 
-    m_88 = 0;
-    m_8c = 0;
+    m_stepMag = 0;
+    m_stepMagHi = 0;
     if (LoadSprites() == 0) {
         m_38->m_08 |= 0x10000;
     }
     m_30 = m_14->m_1c;
     m_14->m_1c = g_buteTree.Find("A");
-    m_40 = m_38->m_1b4;
+    m_savedGeoId = m_38->m_1b4;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     o->m_144 = 0;
     o->m_14c = 0;
@@ -453,7 +453,7 @@ void CKitchenSlime::FireActivation(i32 coord) {
 // sub-mgr, runs the on-screen visibility/scroll gate (unless the registry is in
 // the no-scroll mode), and if the slime has reached its destination tile asks
 // LoadSprites for the next leg; otherwise integrates the sub-pixel movement
-// vector (m_70/m_78 unit signs * the per-frame step) into m_60/m_68, snapping to
+// vector (m_dirX/m_dirY unit signs * the per-frame step) into m_posX/m_posY, snapping to
 // the target tile on overshoot and writing the new grid position back to m_10.
 // The integer scaffolding + visibility/already-arrived blocks are byte-exact.
 // @early-stop
@@ -477,61 +477,61 @@ i32 CKitchenSlime::Tick() {
     }
 
     CSlimeLevel* lvl = (CSlimeLevel*)m_10;
-    if (lvl->m_5c == m_80 && lvl->m_60 == m_84 && LoadSprites() == 0) {
+    if (lvl->m_5c == m_tileX && lvl->m_60 == m_tileY && LoadSprites() == 0) {
         ((CSlimeAnimPlayer*)m_38)->m_8 |= 0x10000;
         return 0;
     }
 
-    double step = (double)(i64)(u64)(u32)g_slimeFrameScale * m_58;
-    double* m88d = (double*)&m_88;
+    double step = (double)(i64)(u64)(u32)g_slimeFrameScale * m_speed;
+    double* m88d = (double*)&m_stepMag;
 
     i32 newX;
-    if (m_70 > g_slimeZero) {
-        double t = (m_60 = m_60 + step);
+    if (m_dirX > g_slimeZero) {
+        double t = (m_posX = m_posX + step);
         newX = (i32)floor(t);
-        i32 tx = m_80;
-        *m88d = fabs(m_60 - (double)tx);
+        i32 tx = m_tileX;
+        *m88d = fabs(m_posX - (double)tx);
         // The X axis never clamps (unlike Y), but retail still emits the compare
         // (a min/max fold whose result equals the input); the empty-body test
-        // reproduces the cmp + m_80 stack-spill shared with the fabs.
+        // reproduces the cmp + m_tileX stack-spill shared with the fabs.
         if (newX > tx) {
             newX = newX;
         }
-    } else if (m_70 < g_slimeZero) {
-        double t = (m_60 = m_60 - step);
+    } else if (m_dirX < g_slimeZero) {
+        double t = (m_posX = m_posX - step);
         newX = (i32)ceil(t);
-        i32 tx = m_80;
-        *m88d = fabs(m_60 - (double)tx);
+        i32 tx = m_tileX;
+        *m88d = fabs(m_posX - (double)tx);
         if (newX < tx) {
             newX = newX;
         }
     } else {
-        newX = (i32)floor(m_60);
+        newX = (i32)floor(m_posX);
     }
 
     i32 newY;
-    if (m_78 > g_slimeZero) {
-        double t = (m_68 = m_68 + step);
+    if (m_dirY > g_slimeZero) {
+        double t = (m_posY = m_posY + step);
         newY = (i32)floor(t);
-        i32 ty = m_84;
-        *m88d = fabs(m_68 - (double)ty);
+        i32 ty = m_tileY;
+        *m88d = fabs(m_posY - (double)ty);
         if (newY > ty) {
             ((CSlimeLevel*)m_10)->m_5c = newX;
             ((CSlimeLevel*)m_10)->m_60 = ty;
             return 0;
         }
-    } else if (m_78 < g_slimeZero) {
-        double t = (m_68 = m_68 - step);
+    } else if (m_dirY < g_slimeZero) {
+        double t = (m_posY = m_posY - step);
         newY = (i32)ceil(t);
-        i32 ty = m_84;
-        *m88d = fabs(m_68 - (double)ty);
+        i32 ty = m_tileY;
+        *m88d = fabs(m_posY - (double)ty);
         if (newY < ty) {
             ((CSlimeLevel*)m_10)->m_5c = newX;
             ((CSlimeLevel*)m_10)->m_60 = ty;
             return 0;
         }
     } else {
-        newY = (i32)floor(m_68);
+        newY = (i32)floor(m_posY);
     }
 
     ((CSlimeLevel*)m_10)->m_5c = newX;
@@ -566,12 +566,12 @@ struct CSlimeSerialSub {
 };
 
 // CKitchenSlime::Serialize @0x0b2ff0 - the slime's serialize override. For the
-// read tag (7) read the seven motion quadwords (m_58..m_88) through the stream's
+// read tag (7) read the seven motion quadwords (m_speed..m_88) through the stream's
 // Read slot; for the transfer tag (4) transfer them through the Transfer slot.
 // Then chain the shared CUserLogic serialize on `this` (bail on failure) and the
 // +0x34 sub-object's chain, returning whether that chain succeeded.
-// The seven 8-byte fields span the doubles m_58..m_78 plus the (m_80,m_84) and
-// (m_88,m_8c) int pairs, so they are addressed by offset (codegen-neutral here).
+// The seven 8-byte fields span the doubles m_speed..m_78 plus the (m_tileX,m_tileY) and
+// (m_stepMag,m_stepMagHi) int pairs, so they are addressed by offset (codegen-neutral here).
 RVA(0x000b2ff0, 0x11b)
 i32 CKitchenSlime::Serialize(void* stream, i32 tag, i32 c, i32 d) {
     char* B = (char*)this;
@@ -620,20 +620,20 @@ i32 CKitchenSlime::LoadSprites() {
         i32 sw = lvl->m_124 - 1;
         switch (sw) {
             case 0:
-                tileX = m_80;
-                tileY = m_84 - 0x20;
+                tileX = m_tileX;
+                tileY = m_tileY - 0x20;
                 break; // north
             case 1:
-                tileX = m_80 + 0x20;
-                tileY = m_84;
+                tileX = m_tileX + 0x20;
+                tileY = m_tileY;
                 break; // east
             case 2:
-                tileX = m_80;
-                tileY = m_84 + 0x20;
+                tileX = m_tileX;
+                tileY = m_tileY + 0x20;
                 break; // south
             case 3:
-                tileX = m_80 - 0x20;
-                tileY = m_84;
+                tileX = m_tileX - 0x20;
+                tileY = m_tileY;
                 break; // west
         }
 
@@ -673,57 +673,57 @@ i32 CKitchenSlime::LoadSprites() {
         return 0;
     }
 
-    m_60 = 0;
-    m_68 = 0;
+    m_posX = 0;
+    m_posY = 0;
     i32 changed = (((CSlimeLevel*)m_10)->m_124 != savedDir);
     switch (((CSlimeLevel*)m_10)->m_124 - 1) {
         case 0: // north
-            m_68 = -(double)*(i32*)&m_88;
-            m_70 = 0;
-            m_78 = 0;
-            *(i32*)&m_78 = 0;
-            *((i32*)&m_70 + 1) = 0;
-            *((i32*)&m_78 + 1) = 0xbff00000;
+            m_posY = -(double)*(i32*)&m_stepMag;
+            m_dirX = 0;
+            m_dirY = 0;
+            *(i32*)&m_dirY = 0;
+            *((i32*)&m_dirX + 1) = 0;
+            *((i32*)&m_dirY + 1) = 0xbff00000;
             if (changed) {
                 ((CSlimeAnimPlayer*)m_38)->CacheFirstFrame("LEVEL_KITCHENSLIME_NORTH");
             }
             break;
         case 1: // east
-            *(i32*)&m_60 = m_88;
-            *((i32*)&m_60 + 1) = *((i32*)&m_88 + 1);
-            m_70 = 0;
-            m_78 = 0;
-            *((i32*)&m_70 + 1) = 0x3ff00000;
-            *((i32*)&m_78 + 1) = 0;
+            *(i32*)&m_posX = m_stepMag;
+            *((i32*)&m_posX + 1) = *((i32*)&m_stepMag + 1);
+            m_dirX = 0;
+            m_dirY = 0;
+            *((i32*)&m_dirX + 1) = 0x3ff00000;
+            *((i32*)&m_dirY + 1) = 0;
             if (changed) {
                 ((CSlimeAnimPlayer*)m_38)->CacheFirstFrame("LEVEL_KITCHENSLIME_EAST");
             }
             break;
         case 2: // south
-            *(i32*)&m_68 = m_88;
-            *((i32*)&m_68 + 1) = *((i32*)&m_88 + 1);
-            m_70 = 0;
-            m_78 = 0;
-            *((i32*)&m_78 + 1) = 0x3ff00000;
-            *((i32*)&m_70 + 1) = 0;
+            *(i32*)&m_posY = m_stepMag;
+            *((i32*)&m_posY + 1) = *((i32*)&m_stepMag + 1);
+            m_dirX = 0;
+            m_dirY = 0;
+            *((i32*)&m_dirY + 1) = 0x3ff00000;
+            *((i32*)&m_dirX + 1) = 0;
             if (changed) {
                 ((CSlimeAnimPlayer*)m_38)->CacheFirstFrame("LEVEL_KITCHENSLIME_SOUTH");
             }
             break;
         case 3: // west
-            m_60 = -(double)*(i32*)&m_88;
-            m_70 = 0;
-            m_78 = 0;
-            *((i32*)&m_70 + 1) = 0xbff00000;
-            *((i32*)&m_78 + 1) = 0;
+            m_posX = -(double)*(i32*)&m_stepMag;
+            m_dirX = 0;
+            m_dirY = 0;
+            *((i32*)&m_dirX + 1) = 0xbff00000;
+            *((i32*)&m_dirY + 1) = 0;
             if (changed) {
                 ((CSlimeAnimPlayer*)m_38)->CacheFirstFrame("LEVEL_KITCHENSLIME_WEST");
             }
             break;
     }
 
-    m_60 = (double)((CSlimeLevel*)m_10)->m_5c + m_60;
-    m_68 = (double)((CSlimeLevel*)m_10)->m_60 + m_68;
+    m_posX = (double)((CSlimeLevel*)m_10)->m_5c + m_posX;
+    m_posY = (double)((CSlimeLevel*)m_10)->m_60 + m_posY;
 
     u32 time;
     if (((CSlimeLevel*)m_10)->m_7c->m_bc != 0) {
@@ -732,9 +732,9 @@ i32 CKitchenSlime::LoadSprites() {
         time = g_buteMgr.GetDwordDef("Hazardz", "KitchenSlimeTimePerTile", 1000);
     }
 
-    m_58 = g_slimeSpeedNum / (double)(i64)(u64)time;
-    m_80 = tileX;
-    m_84 = tileY;
+    m_speed = g_slimeSpeedNum / (double)(i64)(u64)time;
+    m_tileX = tileX;
+    m_tileY = tileY;
 
     CSlimeAnimPlayer* player = (CSlimeAnimPlayer*)m_38;
     CSprite* spr = player->m_194;
@@ -742,18 +742,18 @@ i32 CKitchenSlime::LoadSprites() {
         if (spr->m_64 <= 1 && spr->m_68 >= 1) {
             player->m_190 = 1;
             player->m_198 = spr->m_10.m_pData[1];
-            m_88 = 0;
-            m_8c = 0;
+            m_stepMag = 0;
+            m_stepMagHi = 0;
             return 1;
         }
         player->m_190 = 1;
         player->m_198 = 0;
-        m_88 = 0;
-        m_8c = 0;
+        m_stepMag = 0;
+        m_stepMagHi = 0;
         return 1;
     }
-    m_88 = 0;
-    m_8c = 0;
+    m_stepMag = 0;
+    m_stepMagHi = 0;
     return 1;
 }
 // size 0x90 from operator-new vtable attribution (gruntz.analysis.news)

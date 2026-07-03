@@ -148,7 +148,7 @@ struct CProjRenderObj {
     char m_pad80[0x1a0 - 0x80];
     CProjAnim m_1a0; // +0x1a0  animation sub-object (SetAnim(g_6bf3bc))
     char m_pad1a4[0x1b4 - 0x1a4];
-    i32 m_1b4; // +0x1b4  geometry word (copied into CProjectile::m_15c)
+    i32 m_1b4; // +0x1b4  geometry word (saved into CProjectile::m_savedFrameGeo)
     char m_pad1b8[0x1c0 - 0x1b8];
     i32 m_1c0; // +0x1c0
     char m_pad1c4[0x1c8 - 0x1c4];
@@ -205,43 +205,45 @@ public:
     void LoadProjectileEffects();                                                      // 0xdfd00
 
     char m_pad140[0x148 - 0x140];
-    i32 m_148;                    // +0x148  (1-arg ctor zeroes)
-    i32 m_14c;                    // +0x14c  (1-arg ctor zeroes)
-    i32 m_150;                    // +0x150
-    CProjRenderObj* m_154;        // +0x154  primary sprite/render object
-    i32 m_158;                    // +0x158
-    i32 m_15c;                    // +0x15c  copied from m_154->m_1b4 in LoadProjectileSprites
+    i32 m_148;                    // +0x148  (1-arg ctor zeroes; role unproven)
+    i32 m_14c;                    // +0x14c  (1-arg ctor zeroes; role unproven)
+    i32 m_150;                    // +0x150  (= owner; write-only here, role unproven)
+    CProjRenderObj* m_sprite;     // +0x154  primary sprite/render object (== owner)
+    i32 m_158;                    // +0x158  (= owner->m_7c; write-only here)
+    i32 m_savedFrameGeo;          // +0x15c  saved m_sprite->m_1b4 before each anim Setup
     char m_pad160[0x170 - 0x160]; //
-    i32 m_170, m_174, m_178;      // +0x170..+0x17b  (grid cell + target id)
-    i32 m_17c, m_180;             // +0x17c/+0x180   (last screen position)
-    i32 m_184;                    // +0x184
-    double m_188;                 // +0x188  velocity magnitude (fabs)
-    i32 m_190;                    // +0x190  ProjectileTimePerTile (GetDwordDef)
-    i32 m_194;                    // +0x194
-    double m_198;                 // +0x198  per-frame scale
-    double m_1a0;                 // +0x1a0  render X (double)
-    double m_1a8;                 // +0x1a8  render Y (double)
-    double m_1b0;                 // +0x1b0  velocity X basis
-    double m_1b8;                 // +0x1b8  velocity Y basis
-    i32 m_1c0, m_1c4;             // +0x1c0/+0x1c4  X-sign double {lo,hi} (0.0/+-0.5)
-    i32 m_1c8, m_1cc;             // +0x1c8/+0x1cc  Y-sign double {lo,hi}
-    i32 m_1d0, m_1d4;             // +0x1d0/+0x1d4  muzzle screen X/Y (owner)
-    i32 m_1d8;                    // +0x1d8  arc/loop flag (per-type)
-    i32 m_1dc;                    // +0x1dc  "effects loaded" latch
-    void* m_1e0;                  // +0x1e0  sprite frame 1 ("<base>1")
-    void* m_1e4;                  // +0x1e4  sprite frame 2
-    void* m_1e8;                  // +0x1e8  sprite frame 3
-    i32 m_1ec, m_1f0;             // +0x1ec/+0x1f0  frames 4/5 (spawn cell key elsewhere)
-    void* m_1f4;                  // +0x1f4  IMPACT sprite
-    void* m_1f8;                  // +0x1f8  FALL sprite
-    CProjRenderObj* m_1fc;        // +0x1fc  shadow render companion
-    CProjSample* m_200;           // +0x200  launch sound sample
-    CObList m_204;                // +0x204  tracked-hit list (block size 10)
-    i32 m_220, m_224;             // +0x220/+0x224  read by ScanTargets
+    i32 m_kind;                   // +0x170  projectile kind (ProjectileKind; 0x16=WINGZ)
+    i32 m_srcRow, m_srcCol;       // +0x174/+0x178  launcher grid cell (row/col)
+    i32 m_targetX, m_targetY;     // +0x17c/+0x180  destination tile-centre screen pos
+    i32 m_184;                    // +0x184  (unreferenced in this TU)
+    double m_flightDist;          // +0x188  launch distance sqrt(dx^2+dy^2), kept as fabs
+    i32 m_timePerTile;            // +0x190  <Kind>ProjectileTimePerTile (GetDwordDef ms)
+    i32 m_194;                    // +0x194  (unreferenced in this TU)
+    double m_velScale;            // +0x198  per-frame velocity scale (dist / totalTime)
+    double m_posX;                // +0x1a0  render position X (double)
+    double m_posY;                // +0x1a8  render position Y (double)
+    double m_velX;                // +0x1b0  velocity X basis (unit dir)
+    double m_velY;                // +0x1b8  velocity Y basis (unit dir)
+    i32 m_roundXLo, m_roundXHi;   // +0x1c0/+0x1c4  X round-bias double {lo,hi} (0.0/+-0.5)
+    i32 m_roundYLo, m_roundYHi;   // +0x1c8/+0x1cc  Y round-bias double {lo,hi}
+    i32 m_curX, m_curY;           // +0x1d0/+0x1d4  current screen pos (init = owner muzzle)
+    i32 m_isArcing;               // +0x1d8  arced trajectory (per-type; drives 5-tier sprites)
+    i32 m_arrived;                // +0x1dc  one-shot arrival latch (gates LoadProjectileEffects)
+    void* m_frame1;               // +0x1e0  sprite frame "<base>1"
+    void* m_frame2;               // +0x1e4  sprite frame "<base>2"
+    void* m_frame3;               // +0x1e8  sprite frame "<base>3"
+    i32 m_frame4, m_frame5;       // +0x1ec/+0x1f0  frames "<base>4"/"5" (held as i32)
+    void* m_impactSprite;         // +0x1f4  "<base>IMPACT" sprite
+    void* m_fallSprite;           // +0x1f8  "<base>FALL" sprite
+    CProjRenderObj* m_shadow;     // +0x1fc  LightFx shadow render companion
+    CProjSample* m_sound;         // +0x200  launch sound sample
+    CObList m_hitList;            // +0x204  tracked-hit list (block size 10)
+    i32 m_220, m_224;             // +0x220/+0x224  hit-delivery ids passed to DeliverHit
     char m_pad228[0x230 - 0x228]; //
-    double m_230, m_238;          // +0x230/+0x238  velocity basis
-    double m_240, m_248, m_250;   // +0x240/+0x248/+0x250  position accumulators
-    i32 m_258;                    // +0x258  "launched" flag
+    double m_dirX, m_dirY;        // +0x230/+0x238  trajectory direction basis
+    double m_originX, m_originY;  // +0x240/+0x248  trajectory origin (base position)
+    double m_phase;               // +0x250  trajectory parameter (sin/cos arg; phase gate)
+    i32 m_launched;               // +0x258  launched flag
 };
 
 // Inline CMovingLogic init - folds into every leaf (and the out-of-line ctor).

@@ -97,27 +97,27 @@ public:
     // 0x0a9660  ClampRect - bounds-check + snap (x,y), emit tile-cell out.
     i32 ClampRect(i32 x, i32 y, i32* out, i32 margin);
 
-    // ----- layout (placeholders; offsets are load-bearing) -----
-    LfxMgr* m_00;     // +0x00 game/render manager (set by Init)
-    void* m_04;       // +0x04 mgr+0x68
-    void* m_08;       // +0x08 mgr+0x70
-    LfxSurfMgr* m_0c; // +0x0c mgr+0x30 (the surface manager)
-    LfxSurface* m_10; // +0x10 the alloc'd work surface
+    // ----- layout -----
+    LfxMgr* m_mgr;         // +0x00 game/render manager (set by Init)
+    void* m_tileBank;      // +0x04 mgr+0x68 (LfxTileBank; the resize repaint bank)
+    void* m_grid;          // +0x08 mgr+0x70 (LfxGrid / LfxSurfInfo; w/h + row table)
+    LfxSurfMgr* m_surfMgr; // +0x0c mgr+0x30 (the surface manager)
+    LfxSurface* m_surface; // +0x10 the alloc'd work surface
     char m_pad14[0x10];
-    i32 m_24;         // +0x24 source rect L
-    i32 m_28;         // +0x28 source rect T
-    i32 m_2c;         // +0x2c source rect R
-    i32 m_30;         // +0x30 source rect B
-    i32 m_34;         // +0x34 screen rect L
-    i32 m_38;         // +0x38 screen rect T
-    i32 m_3c;         // +0x3c screen rect R
-    i32 m_40;         // +0x40 screen rect B
-    i32 m_44;         // +0x44 scale level (0..3) / valid flag
-    i32 m_48;         // +0x48 cached handle
-    u16 m_buf[0x1f4]; // +0x4c .. +0x433  the 16-bit pixel buffer (500 words)
-    i32 m_434;        // +0x434 buffer total
-    i32 m_438;        // +0x438 remaining
-    i32 m_43c;
+    i32 m_srcL;             // +0x24 source rect L
+    i32 m_srcT;             // +0x28 source rect T
+    i32 m_srcR;             // +0x2c source rect R
+    i32 m_srcB;             // +0x30 source rect B
+    i32 m_dstL;             // +0x34 dest/screen rect L
+    i32 m_dstT;             // +0x38 dest/screen rect T
+    i32 m_dstR;             // +0x3c dest/screen rect R
+    i32 m_dstB;             // +0x40 dest/screen rect B
+    i32 m_scale;            // +0x44 scale level (0..3) / valid flag
+    i32 m_handle;           // +0x48 cached handle (ApplyA latch / ApplyB gate)
+    u16 m_buf[0x1f4];       // +0x4c .. +0x433  the 16-bit pixel buffer (500 words)
+    i32 m_refreshInterval;  // +0x434 decay-refresh reset value (Resize)
+    i32 m_refreshRemaining; // +0x438 decay-refresh countdown
+    i32 m_43c;              // +0x43c (role unproven)
 };
 
 #endif

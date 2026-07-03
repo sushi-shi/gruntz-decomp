@@ -208,24 +208,24 @@ i32 CLightFxRender::Init(LfxMgr* mgr, i32 arg2) {
     if (mgr == 0) {
         return 0;
     }
-    m_00 = mgr;
-    m_04 = mgr->m_68;
-    m_08 = mgr->m_70;
-    m_0c = (LfxSurfMgr*)mgr->m_30;
-    m_434 = arg2;
-    m_44 = 1;
-    m_438 = 0;
+    m_mgr = mgr;
+    m_tileBank = mgr->m_68;
+    m_grid = mgr->m_70;
+    m_surfMgr = (LfxSurfMgr*)mgr->m_30;
+    m_refreshInterval = arg2;
+    m_scale = 1;
+    m_refreshRemaining = 0;
     if (!AllocSurface()) {
         return 0;
     }
-    m_34 = 0;
-    m_38 = 0;
-    m_3c = 0;
-    m_40 = 0;
-    m_24 = 0;
-    m_28 = 0;
-    m_2c = 0;
-    m_30 = 0;
+    m_dstL = 0;
+    m_dstT = 0;
+    m_dstR = 0;
+    m_dstB = 0;
+    m_srcL = 0;
+    m_srcT = 0;
+    m_srcR = 0;
+    m_srcB = 0;
     return 1;
 }
 
@@ -235,14 +235,14 @@ i32 CLightFxRender::Init(LfxMgr* mgr, i32 arg2) {
 RVA(0x000a3360, 0x29)
 void CLightFxRender::Ctor() {
     FreeSurface();
-    m_00 = 0;
-    m_04 = 0;
-    m_08 = 0;
-    m_0c = 0;
-    m_10 = 0;
-    m_48 = 0;
-    m_434 = 0;
-    m_438 = 0;
+    m_mgr = 0;
+    m_tileBank = 0;
+    m_grid = 0;
+    m_surfMgr = 0;
+    m_surface = 0;
+    m_handle = 0;
+    m_refreshInterval = 0;
+    m_refreshRemaining = 0;
 }
 
 // ===========================================================================
@@ -250,9 +250,9 @@ void CLightFxRender::Ctor() {
 // ===========================================================================
 RVA(0x000a33a0, 0x23)
 void CLightFxRender::FreeSurface() {
-    if (m_0c != 0 && m_10 != 0) {
-        m_0c->m_1c->Free(m_10);
-        m_10 = 0;
+    if (m_surfMgr != 0 && m_surface != 0) {
+        m_surfMgr->m_1c->Free(m_surface);
+        m_surface = 0;
     }
 }
 
@@ -264,20 +264,20 @@ void CLightFxRender::FreeSurface() {
 // swapped registers vs retail (edx<->eax); values + push order identical.
 RVA(0x000a33e0, 0x55)
 i32 CLightFxRender::AllocSurface() {
-    if (m_08 == 0) {
+    if (m_grid == 0) {
         return 0;
     }
-    if (m_0c == 0) {
+    if (m_surfMgr == 0) {
         return 0;
     }
     FreeSurface();
-    LfxSurfInfo* info = (LfxSurfInfo*)m_08;
-    LfxSurfMgr* mgr = m_0c;
-    m_10 = mgr->m_1c->Alloc(info->m_0c, info->m_10, 0, 0, -1);
-    if (m_10 == 0) {
+    LfxSurfInfo* info = (LfxSurfInfo*)m_grid;
+    LfxSurfMgr* mgr = m_surfMgr;
+    m_surface = mgr->m_1c->Alloc(info->m_0c, info->m_10, 0, 0, -1);
+    if (m_surface == 0) {
         return 0;
     }
-    m_10->Init0(0);
+    m_surface->Init0(0);
     return 1;
 }
 
@@ -303,36 +303,36 @@ i32 CLightFxRender::AllocSurface() {
 RVA(0x000a3460, 0x2f3)
 i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
     if (rebuild == 0) {
-        if ((u32)delta < (u32)m_438) {
-            m_438 -= delta;
+        if ((u32)delta < (u32)m_refreshRemaining) {
+            m_refreshRemaining -= delta;
         } else {
-            m_438 = 0;
+            m_refreshRemaining = 0;
         }
-        if (m_438 != 0) {
+        if (m_refreshRemaining != 0) {
             return 1;
         }
-        m_438 = m_434;
+        m_refreshRemaining = m_refreshInterval;
     }
-    m_438 = m_434;
-    if (m_10 == 0) {
+    m_refreshRemaining = m_refreshInterval;
+    if (m_surface == 0) {
         if (!AllocSurface()) {
             return 0;
         }
     }
-    LfxGrid* grid = (LfxGrid*)m_08;
-    if (m_10->m_1c != (i32)grid->m_0c || m_10->m_18 != (i32)grid->m_10) {
+    LfxGrid* grid = (LfxGrid*)m_grid;
+    if (m_surface->m_1c != (i32)grid->m_0c || m_surface->m_18 != (i32)grid->m_10) {
         if (!AllocSurface()) {
             return 0;
         }
     }
-    u16* base = m_10->Lock(0);
+    u16* base = m_surface->Lock(0);
     if (base == 0) {
         return 0;
     }
-    LfxTileBank* bank = (LfxTileBank*)m_04;
+    LfxTileBank* bank = (LfxTileBank*)m_tileBank;
     for (u32 y = 0; y < grid->m_10; y++) {
         for (u32 x = 0; x < grid->m_0c; x++) {
-            u16* dst = (u16*)((char*)base + y * m_10->m_20 + x * m_10->m_b0);
+            u16* dst = (u16*)((char*)base + y * m_surface->m_20 + x * m_surface->m_b0);
             i32 tile;
             if (x < grid->m_0c && y < grid->m_10) {
                 tile = grid->m_08[y][x].m_04;
@@ -362,7 +362,7 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
                 alt = 1;
             }
             if ((i64)(u32)g_645588 - desc->m_870 >= desc->m_878 || desc->m_1ec != g_644c54) {
-                LfxColorNode* node = m_00->m_74->GetA(desc->m_1f4);
+                LfxColorNode* node = m_mgr->m_74->GetA(desc->m_1f4);
                 if (node == 0) {
                     *dst = 0;
                     continue;
@@ -379,7 +379,7 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
                 continue;
             }
             if (g_645594 >= 0x32) {
-                LfxColorNode* node = m_00->m_74->GetA(desc->m_1f4);
+                LfxColorNode* node = m_mgr->m_74->GetA(desc->m_1f4);
                 if (node == 0) {
                     *dst = 0;
                     continue;
@@ -400,7 +400,7 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
             }
         }
     }
-    m_10->m_08->Unlock(0);
+    m_surface->m_08->Unlock(0);
     return 1;
 }
 
@@ -420,11 +420,11 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
 // first idiv, +1 frame slot). Logic 100% correct; deferred to the final sweep.
 RVA(0x000a3820, 0x18e)
 i32 CLightFxRender::ComputeRect(LfxBorderCtx* ctx, LfxRect* src) {
-    LfxSurface* surf = m_10;
+    LfxSurface* surf = m_surface;
     if (surf == 0) {
         return 0;
     }
-    LfxRect* srcRect = (LfxRect*)&m_24;
+    LfxRect* srcRect = (LfxRect*)&m_srcL;
     *srcRect = *src;
     i32 w = src->right - src->left + 1;
     i32 h = src->bottom - src->top + 1;
@@ -436,32 +436,32 @@ i32 CLightFxRender::ComputeRect(LfxBorderCtx* ctx, LfxRect* src) {
     if (scale > 3) {
         scale = 3;
     }
-    m_44 = scale;
+    m_scale = scale;
     i32 wpx = surf->m_1c * scale;
     i32 hpx = surf->m_18 * scale;
-    m_34 = cx - ((wpx - (wpx >> 31)) >> 1);
-    m_38 = cy - ((hpx - (hpx >> 31)) >> 1);
-    m_3c = surf->m_1c * scale + m_34;
-    m_40 = surf->m_18 * scale + m_38;
-    if (ctx->m_2c->BltEx(&m_34, m_10, 0, 0x1000000, 0) != 0) {
+    m_dstL = cx - ((wpx - (wpx >> 31)) >> 1);
+    m_dstT = cy - ((hpx - (hpx >> 31)) >> 1);
+    m_dstR = surf->m_1c * scale + m_dstL;
+    m_dstB = surf->m_18 * scale + m_dstT;
+    if (ctx->m_2c->BltEx(&m_dstL, m_surface, 0, 0x1000000, 0) != 0) {
         return 0;
     }
-    LfxRect* world = &m_0c->m_24->m_5c->m_40;
+    LfxRect* world = &m_surfMgr->m_24->m_5c->m_40;
     i32 l = world->left >> 5;
     i32 t = world->top >> 5;
     i32 rr = world->right >> 5;
     i32 b = world->bottom >> 5;
-    if (m_44 != 1) {
-        l *= m_44;
-        t *= m_44;
-        rr = rr * m_44 + m_44 - 1;
-        b = b * m_44 + m_44 - 1;
+    if (m_scale != 1) {
+        l *= m_scale;
+        t *= m_scale;
+        rr = rr * m_scale + m_scale - 1;
+        b = b * m_scale + m_scale - 1;
     }
     LfxRect box;
-    box.left = l + m_34;
-    box.right = rr + m_34;
-    box.top = t + m_38;
-    box.bottom = b + m_38;
+    box.left = l + m_dstL;
+    box.right = rr + m_dstL;
+    box.top = t + m_dstT;
+    box.bottom = b + m_dstT;
     DrawBorder(&box, ctx, 0xffff);
     return 1;
 }
@@ -573,7 +573,7 @@ i32 CLightFxRender::BuildShape(i32 shape) {
             }
             break;
     }
-    m_438 = 0;
+    m_refreshRemaining = 0;
     return 1;
 }
 
@@ -1637,11 +1637,11 @@ i32 CLightFxRender::ApplyA(i32, i32 x, i32 y) {
     if (!ClampRect(x, y, cell, 0x20)) {
         return 0;
     }
-    LfxDrawCtx* ctx = m_00->m_2c;
+    LfxDrawCtx* ctx = m_mgr->m_2c;
     if (ctx != 0) {
         ctx->DrawAt(cell[0] * 32 + 16, cell[1] * 32 + 16);
     }
-    m_48 = 1;
+    m_handle = 1;
     return 1;
 }
 
@@ -1650,8 +1650,8 @@ i32 CLightFxRender::ApplyA(i32, i32 x, i32 y) {
 // ===========================================================================
 RVA(0x000a9500, 0x16)
 i32 CLightFxRender::ClearHandle(i32, i32, i32) {
-    if (m_48 != 0) {
-        m_48 = 0;
+    if (m_handle != 0) {
+        m_handle = 0;
     }
     return 1;
 }
@@ -1675,14 +1675,14 @@ i32 CLightFxRender::ApplyGlobal(i32, i32 x, i32 y) {
 // ===========================================================================
 RVA(0x000a95d0, 0x69)
 i32 CLightFxRender::ApplyB(i32, i32 x, i32 y) {
-    if (m_48 == 0) {
+    if (m_handle == 0) {
         return 0;
     }
     i32 cell[2];
     if (!ClampRect(x, y, cell, 0x20)) {
         return 0;
     }
-    LfxDrawCtx* ctx = m_00->m_2c;
+    LfxDrawCtx* ctx = m_mgr->m_2c;
     if (ctx != 0) {
         ctx->DrawAt(cell[0] * 32 + 16, cell[1] * 32 + 16);
     }
@@ -1700,28 +1700,28 @@ i32 CLightFxRender::ApplyB(i32, i32 x, i32 y) {
 // pins x in edx / y in eax - a pervasive register rename through every instr.
 RVA(0x000a9660, 0xca)
 i32 CLightFxRender::ClampRect(i32 x, i32 y, i32* out, i32 margin) {
-    if (x < m_24 || x > m_2c || y < m_28 || y > m_30) {
+    if (x < m_srcL || x > m_srcR || y < m_srcT || y > m_srcB) {
         return 0;
     }
     if (margin > 0) {
-        if (x < m_34 && m_34 - x <= margin) {
-            x = m_34;
+        if (x < m_dstL && m_dstL - x <= margin) {
+            x = m_dstL;
         }
-        if (x > m_3c && x - m_3c <= margin) {
-            x = m_3c;
+        if (x > m_dstR && x - m_dstR <= margin) {
+            x = m_dstR;
         }
-        if (y < m_38 && m_38 - y <= margin) {
-            y = m_38;
+        if (y < m_dstT && m_dstT - y <= margin) {
+            y = m_dstT;
         }
-        if (y > m_40 && y - m_40 <= margin) {
-            y = m_40;
+        if (y > m_dstB && y - m_dstB <= margin) {
+            y = m_dstB;
         }
     }
-    if (x < m_34 || x > m_3c || y < m_38 || y > m_40) {
+    if (x < m_dstL || x > m_dstR || y < m_dstT || y > m_dstB) {
         return 0;
     }
-    out[0] = (x - m_34) / m_44;
-    out[1] = (y - m_38) / m_44;
+    out[0] = (x - m_dstL) / m_scale;
+    out[1] = (y - m_dstT) / m_scale;
     return 1;
 }
 
