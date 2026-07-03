@@ -270,46 +270,61 @@ CShadeTable* CShadeTableCache::FlashTable(PalEntry* pal, i32 nA, i32 nB, i32 sta
 }
 
 // ===========================================================================
-// 0x14e540 - HsvShiftTable: a (256 x steps)-byte luma-gamma shift table. For each
-// palette color and each step, compute the luminance (0.586 R + 0.297 G +
-// 0.109 B), drive a pow()-based gamma factor from the per-step level, scale each
-// channel by it with a 255 clamp, and map back to the nearest palette index.
-// EH frame + x87 (pow via __CIpow, __ftol). @early-stop
-// ===========================================================================
+// 0x14e540 - HsvShiftTable: a (256 x steps)-byte per-palette luma-gamma ramp
+// (__thiscall, ret 0x14 => FIVE args; Ghidra mis-derived the 3-arg `...HH@Z`
+// prototype). For each palette color i and each step j: compute the luminance
+// (r*lumaR + g*lumaG + b*lumaB), derive a pow()-based factor from the luminance
+// byte and the `gamma` exponent, blend it toward full over the step ratio scaled
+// by `pct`, offset each channel by `base` (arg5 & 0xff), 255-clamp, and map to the
+// nearest palette index. The luma/factor are recomputed inside the j loop exactly
+// as retail (MSVC5 /O2 does not hoist the pal reads across FindNearestColor).
+// EH frame + x87 (pow via __CIpow, channels via __ftol).
 // @early-stop
-// EH-frame wall (rezalloc-placement-new-no-eh-frame.md) + dense x87 schedule
-// (x87-fp-stack-schedule.md): the luma/pow/per-channel gamma is reconstructed but
-// retail's fld/fxch/faddp ordering across the luma sum, the __CIpow call, and the
-// three clamped channel scales does not reproduce from C; ~50-60%.
+// x87-fp-stack-schedule wall (x87-fp-stack-schedule.md): the 5-arg prototype, the
+// control flow, the FindNearestColor(pal,rn,gn,bn) arg order, and the whole
+// instruction SELECTION (fild/fmuls g_lumaR/G/B/faddp luma sum, __CIpow, per-channel
+// fmuls + fcomp g_255 clamp, __ftol) now match retail in sequence (30% wrong-arg-count
+// -> 62%). The residual is the spill layout: retail uses a 0x44 frame (rematerialises
+// the invariant floats + 3 channel pointers to fresh slots each i) while MSVC5 here
+// uses a 0x20 frame keeping more on the x87 stack, so the clamp emits fcom(+fstp)
+// vs retail's fcomp(+recompute-in-branch). Register/x87-stack allocation; not
+// source-steerable. Final-sweep candidate.
 RVA(0x0014e540, 0x2ea)
-CShadeTable* CShadeTableCache::HsvShiftTable(PalEntry* pal, i32 steps, i32 packedColor) {
+CShadeTable*
+CShadeTableCache::HsvShiftTable(PalEntry* pal, i32 steps, i32 pct, i32 gamma, i32 baseArg) {
     CShadeTable* t = new CShadeTable;
     if (!t) {
         return 0;
     }
     if (!t->Alloc(steps << 8, 0)) {
-        t->Free();
-        operator delete(t);
         return 0;
     }
     i32 idx = m_arr.m_nSize;
     m_arr.SetSizeGrow(idx + 1, -1);
     m_arr.m_pData[idx] = t;
     u8* data = t->m_data;
-    float gamma = (float)((packedColor & 0xff)) * g_p01;
+    i32 base = baseArg & 0xff;
+    double dGamma = (double)gamma;
+    float fPct = (float)(pct - 100);
+    float fSteps = (float)steps;
     for (i32 i = 0; i < 0x100; i++) {
         PalEntry* p = &pal[i];
-        float fr = (float)(i32)p->r;
-        float fg = (float)(i32)p->g;
-        float fb = (float)(i32)p->b;
-        float luma = fr * g_lumaR + fg * g_lumaG + fb * g_lumaB;
         for (i32 j = 0; j < steps; j++) {
-            float level = (float)j / (float)steps;
-            float factor = (float)pow((double)(luma * g_inv255), (double)(level * gamma));
-            i32 rn = (i32)(fr * factor < g_255 ? fr * factor : g_255);
-            i32 gn = (i32)(fg * factor < g_255 ? fg * factor : g_255);
-            i32 bn = (i32)(fb * factor < g_255 ? fb * factor : g_255);
-            data[i * steps + j] = NearestPaletteIndex(rn, pal, gn, bn);
+            i32 r = p->r;
+            i32 g = p->g;
+            i32 b = p->b;
+            float luma = (float)r * g_lumaR + (float)g * g_lumaG + (float)b * g_lumaB;
+            i32 lumaByte = (i32)luma & 0xff;
+            float x = g_one / ((float)lumaByte * g_inv255 - g_negone);
+            float factor = (float)pow((double)x, dGamma);
+            float scale = (float)j / fSteps * (factor * fPct * g_p01) - g_negone;
+            float fr = (float)(base + r) * scale;
+            i32 rn = (i32)(fr < g_255 ? fr : g_255);
+            float fg = (float)(base + g) * scale;
+            i32 gn = (i32)(fg < g_255 ? fg : g_255);
+            float fb = (float)(base + b) * scale;
+            i32 bn = (i32)(fb < g_255 ? fb : g_255);
+            data[i * steps + j] = FindNearestColor(pal, rn, gn, bn);
         }
     }
     return t;

@@ -936,11 +936,24 @@ struct CTmPendingFx {
 };
 
 // The overlay snapshot source `obj`: a sprite whose +0x2c / +0x30 vtable slots are the
-// 8-byte field getters RebuildOverlay copies into the manager's three pose blocks.
+// 8-byte field getters RebuildOverlay copies into the manager's three pose blocks. Modeled
+// polymorphic so `src->GetA/GetB` lower to the retail `mov eax,[esi]; call [eax+0x2c/0x30]`
+// virtual dispatch (GetA at slot 11=+0x2c, GetB at slot 12=+0x30); slots 0..10 are unused
+// placeholders that only pin the vtable layout.
 struct CTmOverlaySrc {
-    void* m_vt;
-    void GetA(void* dst, i32 n); // vtbl +0x2c
-    void GetB(void* dst, i32 n); // vtbl +0x30
+    virtual void vf00();
+    virtual void vf01();
+    virtual void vf02();
+    virtual void vf03();
+    virtual void vf04();
+    virtual void vf05();
+    virtual void vf06();
+    virtual void vf07();
+    virtual void vf08();
+    virtual void vf09();
+    virtual void vf10();
+    virtual void GetA(void* dst, i32 n); // [11] vtbl +0x2c
+    virtual void GetB(void* dst, i32 n); // [12] vtbl +0x30
 };
 
 // A self-method pair RebuildOverlay early-exits on (reloc-masked self-calls).
@@ -949,51 +962,67 @@ struct CTmSelf2 {
     i32 Probe7(void* obj); // 0x7a605 path
 };
 
-// 0x7a5e0: RebuildOverlay(obj, kind) - copy the source object's two pose getters into the
-// manager's three 0x8-byte pose blocks (+0x290/+0x2b0/+0x2c0), selecting getter +0x30 for
+// 0x7a5e0: RebuildOverlay(obj, kind, ., .) - copy the source object's two pose getters into
+// the manager's three 0x8-byte pose blocks (+0x290/+0x2b0/+0x2c0), selecting getter +0x30 for
 // kind 4 and +0x2c for kind 7; ret 0 when obj null, 1 otherwise. Early-out when the kind-4/7
-// self-probe is non-zero. (__thiscall: ret 0x10.)
+// self-probe is non-zero. (__thiscall: ret 0x10 => 4 args; Ghidra mis-derived the 2-arg
+// `...PAXH@Z` prototype - only obj/kind are used, the trailing two slots are dead.)
+// BYTE-EXACT after: (1) the 4-arg prototype, (2) the probe polarity (retail continues
+// when Probe!=0, bails to return 0 when Probe==0), (3) virtual GetA/GetB dispatch (slots
+// +0x2c/+0x30 -> a real 13-slot vtable view), and (4) the negated-outer-condition idiom
+// (docs/patterns/negated-condition-far-block.md): writing each kind dispatch as
+// `if (kind != 4) { if (kind == 7) {..7..} } else {..4..}` places the kind==4 body FAR,
+// matching retail's block layout (the natural `if(kind==4)else if(kind==7)` lays it inline).
 RVA(0x0007a5e0, 0x121)
-i32 CTriggerMgr::RebuildOverlay(void* obj, i32 kind) {
+i32 CTriggerMgr::RebuildOverlay(void* obj, i32 kind, i32 /*unusedC*/, i32 /*unusedD*/) {
     if (obj == 0) {
         return 0;
     }
     CTmSelf2* self = (CTmSelf2*)this;
-    if (kind == 4) {
-        if (self->Probe4(obj) != 0) {
-            return 0;
+    // Negated outer test (kind!=4 ... else kind==4): reproduces retail's block layout
+    // where the kind==4 body is placed FAR (after the kind==7 body).
+    if (kind != 4) {
+        if (kind == 7) {
+            if (self->Probe7(obj) == 0) {
+                return 0;
+            }
         }
-    } else if (kind == 7) {
-        if (self->Probe7(obj) != 0) {
+    } else {
+        if (self->Probe4(obj) == 0) {
             return 0;
         }
     }
     CTmOverlaySrc* src = (CTmOverlaySrc*)obj;
     char* blk0 = m_overlayDescA;
-    if (kind == 4) {
+    if (kind != 4) {
+        if (kind == 7) {
+            src->GetA(blk0, 8);
+            src->GetA(blk0 + 8, 8);
+        }
+    } else {
         src->GetB(blk0, 8);
         src->GetB(blk0 + 8, 8);
-    } else if (kind == 7) {
-        src->GetA(blk0, 8);
-        src->GetA(blk0 + 8, 8);
     }
     char* blk1 = m_overlayDescB;
-    if (kind == 4) {
+    if (kind != 4) {
+        if (kind == 7) {
+            src->GetA(blk1, 8);
+            src->GetA(blk1 + 8, 8);
+        }
+    } else {
         src->GetB(blk1, 8);
         src->GetB(blk1 + 8, 8);
-    } else if (kind == 7) {
-        src->GetA(blk1, 8);
-        src->GetA(blk1 + 8, 8);
     }
     char* blk2 = m_overlayDescC;
-    if (kind == 4) {
+    if (kind != 4) {
+        if (kind == 7) {
+            src->GetA(blk2, 8);
+            src->GetA(blk2 + 8, 8);
+        }
+    } else {
         src->GetB(blk2, 8);
         src->GetB(blk2 + 8, 8);
         return 1;
-    }
-    if (kind == 7) {
-        src->GetA(blk2, 8);
-        src->GetA(blk2 + 8, 8);
     }
     return 1;
 }

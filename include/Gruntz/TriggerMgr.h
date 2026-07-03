@@ -242,7 +242,7 @@ public:
     // 0x7a5e0: RebuildOverlay(kind) - for the overlay sub-object (+0x290..+0x2c0 in 0x8
     // strides), copy two descriptor fields via its vtable getter/setter per kind. ret 1.
     // (__thiscall: ret 0x10.)
-    i32 RebuildOverlay(void* obj, i32 kind);
+    i32 RebuildOverlay(void* obj, i32 kind, i32 unusedC, i32 unusedD);
 
     // 0x7a760: ScanGroup - the magic-group scanner/applier; for each live cell of the
     // group, dispatch its logic and tally. Reconstructed to plateau. (__thiscall.)
