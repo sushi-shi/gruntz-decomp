@@ -1,5 +1,5 @@
 // Obj5f0890Dtor.cpp - 0x181720, the virtual destructor of the class whose vtable
-// lives at 0x5f0890 (ClassWithUnknownVTable73). Stamp-first vptr, then free the six
+// lives at 0x5f0890 (vtbl-cluster-73). Stamp-first vptr, then free the six
 // owned heap buffers (m_478, m_44, m_48, m_4c, m_488, m_48c) with operator delete,
 // then chain to the base destructor at 0x17e4a0. The base subobject's non-trivial
 // dtor gives the /GX unwind frame (state 0 -> -1 around the base-dtor call). The

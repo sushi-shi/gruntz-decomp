@@ -3,8 +3,8 @@
 //
 // The four handlers (0x0a9cc0 / 0x0aa5a0 / 0x0aa960 / 0x0af0a0) are __cdecl FREE
 // functions (the owner is a stack arg at [esp+0x18]; ecx is never touched - the
-// trace-clusterer's ClassUnknown_75/76/109/106 "classes" are a false grouping,
-// just like ClassUnknown_72). Each reads owner->m_7c (the worker), then runs a
+// trace-clusterer's tomalla-75/76/109/106 "classes" are a false grouping,
+// just like tomalla-72). Each reads owner->m_7c (the worker), then runs a
 // /GX message pump keyed on the worker's state tag worker->m_1c:
 //   state 0      -> `new <SubRecord>(owner)`; activate it (sub->vtbl[0x18]); stow
 //                   it at worker->m_18; advance the state tag to 0x3e8.

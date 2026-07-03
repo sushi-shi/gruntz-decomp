@@ -1,5 +1,5 @@
 // DataBuffer.cpp - the small RezAlloc-backed serialized buffer holder
-// (tracer placeholder ClassUnknown_4). Four self-contained methods; the only
+// (tracer placeholder tomalla-4). Four self-contained methods; the only
 // externals are the Rez heap allocator/freer (RezAlloc 0x1b9b46 / RezFree
 // 0x1b9b82), modeled no-body so their `call rel32` displacements are
 // reloc-masked. Methods in ascending retail-RVA order.

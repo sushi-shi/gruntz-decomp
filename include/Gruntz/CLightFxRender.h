@@ -7,7 +7,7 @@
 // buffer with computed 16-bit (565/555) colors using the screen RGB shift globals
 // (0x683ea0..0x683eb4), and blits.
 //
-// Recovered from a tracer placeholder (ClassUnknown_68). Non-polymorphic: NONE of
+// Recovered from a tracer placeholder (tomalla-68). Non-polymorphic: NONE of
 // the method addresses appear as data anywhere in the EXE (no vtable), so every
 // method is a plain __thiscall. Field names are placeholders (m_<hexoffset>); only
 // the OFFSETS + code bytes are load-bearing (campaign doctrine). Layout recovered

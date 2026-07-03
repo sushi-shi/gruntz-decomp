@@ -15,7 +15,7 @@
 // (CDDrawSubMgr).  This is the polymorphic base for the 10 sub-
 // managers (CDDrawSubMgrPages, CDDrawChildGroup, CDDrawWorkerList, etc.).  Two functions:
 //   ctor  - seeds the three fields + stamps vtable.
-//   dtor  - SEH-framed: calls VirtualMethodUnknown1C
+//   dtor  - SEH-framed: calls OnDestroy
 //           cleanup, resets fields, chains base dtor.
 //
 // Field names are tomalla placeholders; only the OFFSETS + the emitted code
@@ -33,29 +33,29 @@ class CDDrawSubMgrBase {
 public:
     CDDrawSubMgrBase() {}
     CDDrawSubMgrBase(i32 x) {
-        m_fieldBaseUnknown = x;
+        m_base04 = x;
     }
     virtual ~CDDrawSubMgrBase() {}
-    i32 m_fieldBaseUnknown; // +0x04
+    i32 m_base04; // +0x04
 };
 
 class CDDrawSubMgr : public CDDrawSubMgrBase {
 public:
-    CDDrawSubMgr(CDDrawSurfaceMgr* pSurfaceMgr, i32 unknown2, i32 unknown3);
+    CDDrawSubMgr(CDDrawSurfaceMgr* pSurfaceMgr, i32 a2, i32 a3);
     virtual ~CDDrawSubMgr() OVERRIDE;
-    virtual void VirtualMethodUnknown14();
-    virtual i32 VirtualMethodUnknown18();
-    virtual i32 VirtualMethodUnknown1C(); // 0x1576c0 (state predicate, returns 1)
-    virtual i32 VirtualMethodUnknown20(); // 0x157790 (state predicate, returns 1)
+    virtual void IsReady();
+    virtual i32 Init();
+    virtual i32 OnDestroy();  // 0x1576c0 (state predicate, returns 1)
+    virtual i32 GetStateId(); // 0x157790 (state predicate, returns 1)
 
     // Engine-label backlog stub (scalar-deleting dtor of a far sibling class).
     void* Stub_155720(i32 flag);
 
-    i32 fieldUnknown8;               // +0x08
+    i32 m_field08;                   // +0x08
     CDDrawSurfaceMgr* m_pSurfaceMgr; // +0x0c
 };
 
-// operator delete (used indirectly via VirtualMethodUnknown1C; may throw -> /GX).
+// operator delete (used indirectly via OnDestroy; may throw -> /GX).
 void operator delete(void*);
 
 // ---- Mis-homed family member-teardown destructors (from the vtable scan) --------
@@ -296,13 +296,12 @@ public:
 
 // ---------------------------------------------------------------------------
 // CDDrawSubMgr::CDDrawSubMgr
-// Chains the Hogwarts(int) base ctor (inlined: this+0x04 = unknown2), stamps
+// Chains the Hogwarts(int) base ctor (inlined: this+0x04 = a2), stamps
 // the CDDrawSubMgr vtable (compiler-generated), then seeds the remaining fields.
 // ---------------------------------------------------------------------------
 RVA(0x00156cb0, 0x20)
-CDDrawSubMgr::CDDrawSubMgr(CDDrawSurfaceMgr* pSurfaceMgr, i32 unknown2, i32 unknown3)
-    : CDDrawSubMgrBase(unknown2) {
-    fieldUnknown8 = unknown3;
+CDDrawSubMgr::CDDrawSubMgr(CDDrawSurfaceMgr* pSurfaceMgr, i32 a2, i32 a3) : CDDrawSubMgrBase(a2) {
+    m_field08 = a3;
     m_pSurfaceMgr = pSurfaceMgr;
 }
 
@@ -310,35 +309,35 @@ CDDrawSubMgr::CDDrawSubMgr(CDDrawSurfaceMgr* pSurfaceMgr, i32 unknown2, i32 unkn
 // CDDrawSubMgr::~CDDrawSubMgr
 // Scalar-deleting destructor.  Under /GX the compiler emits a C++ EH frame
 // (push -1 / handler info / fs:0) around the body because VirtualMethod-
-// Unknown1C may throw (it calls operator delete).  After the body runs, the
+// OnDestroy may throw (it calls operator delete).  After the body runs, the
 // compiler changes the vtable to the base (CObject) and chains
 // through the base destructors.
 // ---------------------------------------------------------------------------
 RVA(0x001574d0, 0x5b)
 CDDrawSubMgr::~CDDrawSubMgr() {
-    VirtualMethodUnknown1C();
-    m_fieldBaseUnknown = -1;
-    fieldUnknown8 = 0;
+    OnDestroy();
+    m_base04 = -1;
+    m_field08 = 0;
     m_pSurfaceMgr = 0;
 }
 
 // Out-of-line stubs for unmatched virtuals (anchors the vtable in this TU).
-void CDDrawSubMgr::VirtualMethodUnknown14() {}
-i32 CDDrawSubMgr::VirtualMethodUnknown18() {
+void CDDrawSubMgr::IsReady() {}
+i32 CDDrawSubMgr::Init() {
     return 0;
 }
 
 // ---------------------------------------------------------------------------
 // Constant state predicate returning 1.
 RVA(0x00157790, 0x6)
-i32 CDDrawSubMgr::VirtualMethodUnknown20() {
+i32 CDDrawSubMgr::GetStateId() {
     return 1;
 }
 
 // ---------------------------------------------------------------------------
 // Constant state predicate returning 1 (0x1576c0).
 RVA(0x001576c0, 0x6)
-i32 CDDrawSubMgr::VirtualMethodUnknown1C() {
+i32 CDDrawSubMgr::OnDestroy() {
     return 1;
 }
 

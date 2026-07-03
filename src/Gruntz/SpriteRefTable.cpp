@@ -1,5 +1,5 @@
 // SpriteRefTable.cpp - the game-registry sprite/animation reference table (trace
-// placeholder ClassUnknown_10). Methods in ascending retail-RVA order. The table
+// placeholder tomalla-10). Methods in ascending retail-RVA order. The table
 // shape (two 17-slot CSpriteRef buckets at +0x08 / +0x4c) and the CSpriteRef /
 // CSpriteRefHashTable helpers come from <Gruntz/SpriteRefTable.h>; every cross-
 // cluster callee (the node ctor/dtor, the hash Lookup, the engine alloc/free) is

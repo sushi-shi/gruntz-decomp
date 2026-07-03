@@ -750,7 +750,7 @@ i32 CDDPalette::Create(IDirectDraw2Z* dd, void* entries, u32 flags) {
     return 0;
 }
 
-// CDDPalette::LoadDefault (0x1479e0) is the no-extension / unknown-extension
+// CDDPalette::LoadDefault (0x1479e0) is the no-extension / unresolved-extension
 // fallback loader - a separate DIRPAL.CPP method defined in another base obj. It
 // is declared on the class (header) but NOT defined here, so the dispatcher's
 // tail call to it reloc-masks (resolved by the engine_label_stubs unit).
@@ -758,7 +758,7 @@ i32 CDDPalette::Create(IDirectDraw2Z* dd, void* entries, u32 flags) {
 // CDDPalette::LoadFromFile (__thiscall, ret 0xc => 3 args). Pick the palette
 // loader by file extension: take ext = strrchr(filename,'.') then a stricmp
 // ladder on .BMP/.PCX/.PAL, forwarding (dd, filename, flags) verbatim to the
-// matching loader; no/unknown extension -> LoadDefault. Same idiom as
+// matching loader; no/unresolved extension -> LoadDefault. Same idiom as
 // CImage::LoadFromRez. Each branch re-tests `ext != 0` (the target's per-case
 // `test esi; je default`).
 RVA(0x00147410, 0xbc)

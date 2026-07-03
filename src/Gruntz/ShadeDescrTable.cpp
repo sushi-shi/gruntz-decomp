@@ -1,5 +1,5 @@
 // ShadeDescrTable.cpp - the global ShadeDescr* selector pair (RVAs 0x14dcf0 /
-// 0x14dd90), trace-attributed to ClassUnknown_2 / ClassUnknown_11. 0x14dcf0 is a
+// 0x14dd90), trace-attributed to tomalla-2 / tomalla-11. 0x14dcf0 is a
 // __stdcall setter that stashes a descriptor pointer into one of the seven global
 // ShadeDescr* slots (0x6bf208..0x6bf220, with g_blendDescr the named one at
 // 0x6bf218) keyed by a mode id; 0x14dd90 is the __thiscall selector that copies a

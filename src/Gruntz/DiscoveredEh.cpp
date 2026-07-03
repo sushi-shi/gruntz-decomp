@@ -1,12 +1,12 @@
 // DiscoveredEh.cpp - trace-discovered /GX leaf destructors re-homed from
 // src/Stub/Discovered.cpp (engine_discovered is base-profile; these dtors carry a
 // C++ exception-handling frame, so they need the eh profile). Each placeholder
-// class's true name is unknown; only OFFSETS + code bytes are load-bearing.
+// class's true name is unresolved; only OFFSETS + code bytes are load-bearing.
 #include <Ints.h>
 #include <rva.h>
 
 // ---------------------------------------------------------------------------
-// ClassUnknown_55 @0x016460 - a byte-identical twin of ~CImgHolder (0x16500,
+// tomalla-55 @0x016460 - a byte-identical twin of ~CImgHolder (0x16500,
 // Dialogs.cpp): a derived holder whose /GX dtor frees an embedded CImageList
 // (DeleteImageList 0x1c6a5c) between the implicit own vptr stamp (0x5e8cd4) and the
 // folded base re-stamp (0x5e8cb4). The empty inline base dtor folds as the LAST

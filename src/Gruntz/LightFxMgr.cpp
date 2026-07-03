@@ -1,6 +1,6 @@
 // LightFxMgr.cpp - CLightFxMgr, the light-FX / translucency shade-table manager
 // hung off the game registry at g_gameReg->m_78 (tracer placeholder
-// ClassUnknown_3). Init builds the engine's pre-computed RGB565 color tables out
+// tomalla-3). Init builds the engine's pre-computed RGB565 color tables out
 // of the shade-table cache (reg->m_50): one identity "grey" remap, one additive
 // glow table, and eight subtractive color tables (one per fixed effect color),
 // then registers the grey table globally (key 9). Reset zeroes the slots. Push

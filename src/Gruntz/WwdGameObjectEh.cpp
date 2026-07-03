@@ -211,7 +211,7 @@ CWwdGameObjectF::~CWwdGameObjectF() {
 // ---------------------------------------------------------------------------
 // 0x15bd10 - the CResolveNode-derived variant (extra +0x1dc CObList, leading init call
 // 0x166810, trailing base CResolveNode dtor 0x429b). REAL-POLYMORPHIC 4-level chain
-// (the vtable @0x5f00e8 was g_wwd1598d0FinalVtbl / UnknownVTable50): the destructor's
+// (the vtable @0x5f00e8 was g_wwd1598d0FinalVtbl / vtbl-50): the destructor's
 // four manual vtable restamps become the cl-emitted per-level vptr stamps of
 //   CWwdGameObjectB (0x5f00e8) : WwdBLevel2 (0x5f00a8) : WwdBMid (0x5f0020)
 //                             : WwdBResolve (0x5efbc0, virtual dtor -> DtorBase 0x429b)
@@ -377,7 +377,7 @@ CWwdGameObjectC::~CWwdGameObjectC() {
 }
 // Exact retail object sizes from the CWwdObjMgrFactories RezAlloc(0xNN) calls:
 // A=0x166640 (0x1dc), B=0x1598d0 (0x1fc), C=0x159250 (0x190), F=0x159440 (0x18c).
-// E (Mid) is the shared base subobject, not directly allocated -> size unknown.
+// E (Mid) is the shared base subobject, not directly allocated -> size unresolved.
 SIZE(CWwdGameObjectA, 0x1dc);
 SIZE(CWwdGameObjectB, 0x1fc);
 SIZE(CWwdGameObjectC, 0x190);

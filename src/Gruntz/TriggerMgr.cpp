@@ -1,5 +1,5 @@
 // TriggerMgr.cpp - CTriggerMgr, the playfield tile-object / switch-trigger grid
-// manager (trace placeholder ClassUnknown_23, C:\Proj\Gruntz). See TriggerMgr.h.
+// manager (trace placeholder tomalla-23, C:\Proj\Gruntz). See TriggerMgr.h.
 //
 // CTriggerMgr's fields are named data members (see TriggerMgr.h); void*/char members are
 // cast to the file-local opaque shells (CTmCell/CTmGrunt/CTmLevel/...) at their use sites

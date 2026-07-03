@@ -1,5 +1,5 @@
 // FinalVtables.cpp - realizes the last six anonymous retail vtables that had no
-// class/stamp/name anywhere in src/ (the residual UnknownVTables.h placeholders).
+// class/stamp/name anywhere in src/ (the residual vtbl-placeholders.h placeholders).
 //
 // Each is modeled as a REAL polymorphic tracking class (CVtbl_<rva>) whose virtual
 // slots are declared in retail-.rdata slot order (VA = RVA + 0x400000). cl auto-

@@ -1,7 +1,7 @@
 // MenuItem.cpp - the polymorphic menu-item leaf (C:\Proj\Gruntz).
 //
 // The 0x5c-byte child item a CMenuPage owns and dispatches through its vtable
-// (0x5f08c0). Recovered from the 0x1845b0..0x185700 cluster (was ClassUnknown_46).
+// (0x5f08c0). Recovered from the 0x1845b0..0x185700 cluster (was tomalla-46).
 // The page (src/Gruntz/MenuPage.cpp) constructs one per named menu entry, Init()s
 // it from a template + key/label strings, and drives Place / Trigger / Hit / the
 // teardown through the vtable. CMenuItem / CMenuItem2 are now REAL polymorphic
@@ -19,12 +19,12 @@
 
 // Own base vtable (14 slots): dtor + Init + Dispatch0c + Reset + 8 game slots +
 // Place + Trigger. cl emits ??_7CMenuItem@@6B@; VTBL pairs the 0x1f08c0 datum (was
-// UnknownVTables ClassWithUnknownVTable74 / g_menuItemVtbl).
+// vtbl-placeholders vtbl-cluster-74 / g_menuItemVtbl).
 SIZE(CMenuItem, 0x5c);
 VTBL(CMenuItem, 0x001f08c0);
 
 // Derived vtable (15 slots): the visual overrides + one new setter slot. cl emits
-// ??_7CMenuItem2@@6B@; VTBL pairs the 0x1f08f8 datum (was ClassWithUnknownVTable75
+// ??_7CMenuItem2@@6B@; VTBL pairs the 0x1f08f8 datum (was vtbl-cluster-75
 // / g_menuItem2Vtbl).
 SIZE(CMenuItem2, 0x74);
 VTBL(CMenuItem2, 0x001f08f8);

@@ -9,7 +9,7 @@
 // for a multiplier `step` in [1, count) that is coprime with `count` (a value
 // whose multiples (step*k) mod count visit every residue), and scatters
 // `count` clamped samples `start + ((step*count*k) mod count) - 1` into `out`.
-// Ghidra grouped these as ClassUnknown_49; they are free __cdecl functions, not
+// Ghidra grouped these as tomalla-49; they are free __cdecl functions, not
 // class methods (the caller passes a buffer pointer, there is no `this`).
 #include <Ints.h>
 #include <rva.h>

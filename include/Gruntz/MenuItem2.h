@@ -10,7 +10,7 @@
 // cursor. Recovered from the 0x185750..0x185a10 cluster.
 //
 // CMenuItem2 is a REAL polymorphic derived class: MSVC emits ??_7CMenuItem2@@6B@
-// (VTBL() catalogs the 0x1f08f8 datum, was UnknownVTables ClassWithUnknownVTable75
+// (VTBL() catalogs the 0x1f08f8 datum, was vtbl-placeholders vtbl-cluster-75
 // / g_menuItem2Vtbl) and auto-stamps the derived vptr after the base ctor/dtor.
 // The overrides without a reconstructed body (Reset/GetWidth/Vf5/Vf6/Notify/OnInit)
 // and the new SetFrame slot are declared-only -> reloc-masked external references.

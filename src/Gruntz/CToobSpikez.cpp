@@ -60,7 +60,7 @@ struct CGameObjLogic {
     CToobLogicRec* m_7c; // +0x7c
 };
 
-// The shared logic-error reporter (0x16e4f0, __cdecl) for an unknown phase.
+// The shared logic-error reporter (0x16e4f0, __cdecl) for an unresolved phase.
 extern void ToobLogicError(CToobLogicInst* inst);
 
 // 0x114480: dispatch the bound object's current logic phase.

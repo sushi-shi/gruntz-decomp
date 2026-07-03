@@ -1,6 +1,6 @@
 // CAniElement.h - the 0x28-byte 'ANI' animation element (primary vftable
 // @0x5efba8) cataloged by CDDrawSubMgrAni. It owns a CObArray of 0x34-byte frame
-// records (ClassUnknown_39, vtable @0x5f02c0) plus a name buffer and a scale.
+// records (tomalla-39, vtable @0x5f02c0) plus a name buffer and a scale.
 //
 // Layout (offsets/sizes load-bearing; field NAMES are placeholders):
 //   +0x00  vptr (CObject-derived element; not modeled here - none of these three
@@ -37,7 +37,7 @@ struct CAniSource {
     char m_data[1]; // +0x20 name bytes followed by the record stream
 };
 
-// A 0x34-byte frame record (ClassUnknown_39; vtable @0x5f02c0). Modeled minimally:
+// A 0x34-byte frame record (tomalla-39; vtable @0x5f02c0). Modeled minimally:
 // only the fields the builder zeroes/sets, plus its parse entry and a scalar dtor
 // (vtable slot+4) for the failure-path teardown. Parse/GetSize live in their own
 // cluster (external/no-body); the vtable contents are not modeled, so the builder

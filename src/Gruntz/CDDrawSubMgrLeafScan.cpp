@@ -65,7 +65,6 @@ public:
 // (below), so its grand-base dtor vtable (0x5e8cb4) is the cl-emitted
 // ??_7LeafElementBase - the manual g_wapObjectDtorVtbl stamp is gone from this TU.
 
-
 // ----- The throttled per-asset refresh (RefreshAsset_114120) -----
 // The map value, when refreshed, is a draw-cue record: its +0x10 player drives
 // ConfigureItem (0x1360d0); +0x14 is the last draw-clock, +0x18 the throttle
@@ -250,10 +249,9 @@ public:
     // virtuals at slots 5..8. Slots 5/7 point to functions in the sibling
     // CDDrawSubMgrLeaf TU (0x157530 / 0x157ae0) and 6/8 are unreconstructed, so all
     // four are declared-only here -> reloc-masked vtable references.
-    virtual i32 FUN_00557530();  // [5] 0x157530 (CDDrawMapHolder::VirtualMethodUnknown14, other TU)
+    virtual i32 FUN_00557530();  // [5] 0x157530 (CDDrawMapHolder::IsReady, other TU)
     virtual void FUN_00401c08(); // [6] 0x001c08 (shared thunk, declared-only)
-    virtual void
-    FUN_00557ae0(); // [7] 0x157ae0 (CDDrawSubMgrLeaf::VirtualMethodUnknown18, other TU)
+    virtual void FUN_00557ae0(); // [7] 0x157ae0 (CDDrawSubMgrLeaf::ClearContext, other TU)
     virtual void FUN_00554a00(); // [8] 0x154a00 (shared, declared-only)
 
     i32 RefreshAsset_114120(const char* key);
@@ -759,7 +757,7 @@ SIZE_UNKNOWN(LeafScanValue);
 SIZE_UNKNOWN(LeafSumSource);
 SIZE_UNKNOWN(CParseSource);
 VTBL(CDDrawSubMgrLeafScan, 0x001efca0); // ??_7CDDrawSubMgrLeafScan (was g_leafScanVtbl)
-// ??_7LeafElementObj (was g_leafElemVtbl @0x5eff08, LeafElemVtbl / ClassWithUnknownVTable42).
+// ??_7LeafElementObj (was g_leafElemVtbl @0x5eff08, LeafElemVtbl / the LeafElementObj vtable).
 // cl auto-emits it from the real-polymorphic element; retail's 9-slot datum is
 // reloc-masked -> matching-neutral catalog tracking.
 VTBL(LeafElementObj, 0x001eff08);

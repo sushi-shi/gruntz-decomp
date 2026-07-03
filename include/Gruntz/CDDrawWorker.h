@@ -1,5 +1,5 @@
 // CDDrawWorker.h - an owned-collection node of the DDrawMgr "DDraw worker"
-// family (placeholder name; engine "ClassUnknown_35"). Non-RTTI engine class; its
+// family (placeholder name; engine "tomalla-35"). Non-RTTI engine class; its
 // own primary vtable is at RVA 0x1efbe8 (g_ddrawWorkerVtbl). It derives from a
 // CLoadable-shaped base subobject (m_04/m_08/m_0c reset on teardown, then the
 // CObject-like grand-base dtor vtable g_wapObjectDtorVtbl @0x5e8cb4 restored).

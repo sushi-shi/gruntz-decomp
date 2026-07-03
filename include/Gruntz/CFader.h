@@ -62,7 +62,7 @@ public:
 SIZE(CFader, 0x34);
 // Own class-private base vtable (5 slots: dtor + 2 pure virtuals + 2 engine
 // virtuals). cl emits ??_7CFader; catalogs/pairs the 0x1f07a8 datum (was
-// UnknownVTables ClassWithUnknownVTable66). Slots 1/2 are __purecall (pure); a
+// vtbl-placeholders vtbl-cluster-66). Slots 1/2 are __purecall (pure); a
 // per-slot FUN_<rva> is impossible for overridden virtuals - subtypes must share
 // the base slot name (v1/v2), so those slot names are C++-mandated, not anonymous.
 VTBL(CFader, 0x001f07a8);

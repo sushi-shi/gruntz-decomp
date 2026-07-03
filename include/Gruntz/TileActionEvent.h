@@ -1,5 +1,5 @@
 // TileActionEvent.h - the per-tile game-action event record (trace placeholder
-// ClassUnknown_108; recovered from the 5-method __thiscall cluster at 0x112d80,
+// tomalla-108; recovered from the 5-method __thiscall cluster at 0x112d80,
 // 0x112da0, 0x112ee0, 0x113f10, 0x113f60).
 //
 // A small data record describing a game action that fires at a tile: m_actionCode

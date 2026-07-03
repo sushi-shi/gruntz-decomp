@@ -1,5 +1,5 @@
 // DiscoveredArray.cpp - a trace-discovered MFC CArray<TYPE,ARG>::SetSize
-// instantiation re-homed from src/Stub/Discovered.cpp (ClassUnknown_1 @0x150040).
+// instantiation re-homed from src/Stub/Discovered.cpp (tomalla-1 @0x150040).
 // The element is a 4-byte POD (DWORD), so the grow/shrink/realloc paths inline
 // memset/memcpy (rep stosd/movsd) around the engine operator new (0x1b9b46) /
 // operator delete (0x1b9b82). Self-contained; owner class is unidentified.

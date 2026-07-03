@@ -4,7 +4,7 @@
 // src/Stub/types/ddrawmgr_surface_family.h). Sibling of CDDrawSubMgrLeaf (string
 // catalog) and CDDrawSubMgrLeafScan (sound cache): a CObject/CDDrawSubMgr-derived
 // string-keyed catalog owning a CMapStringToOb at +0x10 whose values are the
-// 0x28-byte ClassUnknown_38 animation elements (primary vftable @0x5efba8).
+// 0x28-byte tomalla-38 animation elements (primary vftable @0x5efba8).
 //
 // Layout (offsets/sizes load-bearing; field NAMES are placeholders):
 //   +0x00  vptr (CObject-derived)
@@ -18,7 +18,7 @@
 //   - CreateAniEntry (0x1528d0): the 0x28-byte element factory. Allocates the
 //     element, CObject-constructs it (base dtor vtable @0x5e8cb4 then the element
 //     primary vtable @0x5efba8), zeroes its fields, then runs the element's
-//     Configure (0x1655c0, ClassUnknown_38) keyed by the CSymTab entry, forwarding
+//     Configure (0x1655c0, tomalla-38) keyed by the CSymTab entry, forwarding
 //     the owning manager's +0x28 sub-manager. On success links it into the map
 //     under `key`; on failure destroys it via its scalar dtor. /GX EH frame.
 //   - ScanTree (0x152ad0): the recursive CSymTab directory walker. Allocates a
@@ -75,7 +75,7 @@ struct CAniElementBase {
 // Empty body -> folds as just the grand-base re-stamp at teardown tail.
 inline CAniElementBase::~CAniElementBase() {}
 
-// The 0x28-byte animation element (ClassUnknown_38; primary vftable @0x5efba8).
+// The 0x28-byte animation element (tomalla-38; primary vftable @0x5efba8).
 // Overrides the dtor slot (0x152e10). Configure (0x1655c0) reads its arg2's tag via
 // CParseSource and, on a match, links a record; the failure path deletes it via
 // the virtual scalar-deleting dtor (vtable slot+4).

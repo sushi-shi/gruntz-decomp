@@ -1,5 +1,5 @@
 // SpriteRefTable.h - the game-registry sprite/animation reference table (trace
-// placeholder ClassUnknown_10; recovered from the 7-method __thiscall cluster at
+// placeholder tomalla-10; recovered from the 7-method __thiscall cluster at
 // 0xe2250, 0xe2290, 0xe22d0, 0xe2360, 0xe2390, 0xe23c0, 0xe2890).
 //
 // A WAP32 game-registry sub-object (lives at g_gameReg+0x74; built in the game
@@ -21,7 +21,7 @@
 #include <Ints.h>
 #include <rva.h>
 
-// The 0x10-byte sprite/animation reference node (trace placeholder ClassUnknown_42,
+// The 0x10-byte sprite/animation reference node (trace placeholder tomalla-42,
 // the +0x8/+0x4c bucket element). Build (0xe2df0) caches a CShadeTableCache (m_cache)
 // + its CShadeTable alpha key (m_alphaKey) and bakes a 3-shade team-color triple
 // (m_teamColor1 / m_teamColor3 / m_teamColor2, each an RGB565 pixel) from the `kind` enum (0..16); Free (0xe32e0)

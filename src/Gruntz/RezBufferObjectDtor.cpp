@@ -40,7 +40,7 @@ CRezBufferObject::~CRezBufferObject() {
 }
 SIZE_UNKNOWN(CRezBufferObject);
 SIZE_UNKNOWN(Wap::CObject);
-// ??_7CRezBufferObject (was g_rezBufferObjectVtbl @0x5f07d8, ClassWithUnknownVTable
+// ??_7CRezBufferObject (was g_rezBufferObjectVtbl @0x5f07d8, vtbl-cluster
 // entry). cl auto-emits it from the real-polymorphic CRezBufferObject; retail's
 // 5-slot datum is reloc-masked, so this VTBL is matching-neutral catalog tracking.
 VTBL(CRezBufferObject, 0x001f07d8);

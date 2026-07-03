@@ -1,4 +1,4 @@
-// ClassUnknown43.cpp - 0x0f7d90 is a per-tick Update on the ClassUnknown_43
+// 0x0f7d90 is a per-tick Update on the Obj0f7d90
 // manager: it mirrors a coord pair
 // (m_17c/m_180 -> m_300/m_304), early-outs when m_198 is clear, otherwise pulls a
 // peer object from m_260 and either re-syncs its position via g_mgrSettings->m_68
@@ -9,7 +9,7 @@
 #include <Gruntz/CGameRegistry.h>
 #include <Mfc.h>
 
-class ClassUnknown_43;
+class Obj0f7d90;
 
 struct Box5c {
     char pad[0x5c];
@@ -18,7 +18,7 @@ struct Box5c {
 };
 
 struct Obj260 {
-    ClassUnknown_43* Get253b(ClassUnknown_43* self);
+    Obj0f7d90* Get253b(Obj0f7d90* self);
 };
 
 struct Rect4 {
@@ -47,8 +47,8 @@ struct MgrObj {
 DATA(0x0024556c)
 extern "C" CGameRegistry* g_mgrSettings; // 0x64556c
 
-SIZE_UNKNOWN(ClassUnknown_43);
-class ClassUnknown_43 {
+SIZE_UNKNOWN(Obj0f7d90);
+class Obj0f7d90 {
 public:
     char pad00[0x10];
     Box5c* m_10; // 0x10
@@ -88,7 +88,7 @@ public:
 // pins m_248 in ecx + reuses edi for b->m_60 while the recompile picks
 // eax/ecx/edx; pure regalloc selection in the push sequence, not steerable.
 RVA(0x000f7d90, 0x171)
-int ClassUnknown_43::Update_0f7d90() {
+int Obj0f7d90::Update_0f7d90() {
     m_300 = m_17c;
     m_304 = m_180;
     if (m_198 == 0) {
@@ -97,7 +97,7 @@ int ClassUnknown_43::Update_0f7d90() {
         m_2ec = 0;
         return 1;
     }
-    ClassUnknown_43* p = m_260->Get253b(this);
+    Obj0f7d90* p = m_260->Get253b(this);
     if (p == 0) {
         return 1;
     }

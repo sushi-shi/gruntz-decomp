@@ -1,5 +1,5 @@
 // SpriteRef.cpp - the CSpriteRef bucket-element node of CSpriteRefTable (trace
-// placeholder ClassUnknown_42). Build() bakes the per-`kind` team-color triple
+// placeholder tomalla-42). Build() bakes the per-`kind` team-color triple
 // into the node (three RGB565 pixels at +0x08/+0x0a/+0x0c) and caches the shade
 // cache + alpha table; Free() returns the table to the cache. The class shape +
 // the shared RGB-format shift globals come from <Gruntz/SpriteRefTable.h> /

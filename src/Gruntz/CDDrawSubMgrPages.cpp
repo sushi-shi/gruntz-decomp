@@ -4,7 +4,7 @@
 // "DDraw surface manager" family; see src/Stub/types/ddrawmgr_surface_family.h).
 //
 // CDDrawSubMgrPages carries three owned-child pointers at +0x10/+0x14/+0x18 (the three
-// int fields fieldUnknown10/14/18 of the layout). VirtualMethodUnknown1C is a
+// int fields m_10/14/18 of the layout). DestroyChildren is a
 // destruct/reset hook: for each of the three pointers, if non-null it dispatches
 // the child's scalar-deleting destructor (vtable slot +0x4, delete-flag arg 1)
 // and then nulls the slot. Plain /O2 /MT leaf: NO SEH frame, NO relocations -
@@ -27,9 +27,9 @@ public:
 
 // ---------------------------------------------------------------------------
 // CDDrawSubMgrPages - real polymorphic now (own 10-slot vtable ??_7CDDrawSubMgrPages
-// @0x5efe08, was Vtbl_1efe08 / ClassWithUnknownVTable35). Slots 0/2/3/4/6 are the
+// @0x5efe08, was Vtbl_1efe08 / the CDDrawSubMgrPages vtable). Slots 0/2/3/4/6 are the
 // shared CObject thunks, slot 1 the virtual dtor (0x1574b0), slot 5 =
-// VirtualMethodUnknown14 (0x157480), slot 7 = VirtualMethodUnknown1C (0x158ac0),
+// IsReady (0x157480), slot 7 = DestroyChildren (0x158ac0),
 // slots 8/9 the backlog stubs. cl auto-emits the vtable; the implicit vptr-stamp
 // replaces the explicit m_vptr. Three owned-child pointers at +0x10/+0x14/+0x18.
 // ---------------------------------------------------------------------------
@@ -56,7 +56,7 @@ public:
     virtual ~CDDrawSubMgr();
 };
 
-// The two spawned worker types built by VirtualMethodUnknown24 (0x1588f0): a 0x30-byte
+// The two spawned worker types built by CreateChildren (0x1588f0): a 0x30-byte
 // "A" child (ctor 0x158f30, vtable 0x5eff70, dispatch +0x24) and two 0x34-byte "B"
 // children (ctor 0x156cb0 = CDDrawSubMgr::CDDrawSubMgr, vtable 0x5eff30, dispatch +0x30).
 class CDDrawSurfaceChildA {
@@ -110,16 +110,16 @@ public:
 // ---------------------------------------------------------------------------
 class CDDrawSubMgrPages {
 public:
-    virtual void FUN_005bef01();           // [0] 0x1bef01 (shared thunk, declared-only)
-    virtual void* ScalarDtor(i32 flag);    // [1] ??_G scalar-deleting dtor (0x1574b0)
-    virtual void FUN_004028ec();           // [2] 0x0028ec (shared thunk, declared-only)
-    virtual void FUN_0040106e();           // [3] 0x00106e (shared thunk, declared-only)
-    virtual void FUN_00404034();           // [4] 0x004034 (shared thunk, declared-only)
-    virtual i32 VirtualMethodUnknown14();  // [5] 0x157480
-    virtual void FUN_00401c08();           // [6] 0x001c08 (shared thunk, declared-only)
-    virtual void VirtualMethodUnknown1C(); // [7] 0x158ac0
-    virtual i32 VirtualMethodUnknown20();  // [8] 0x1574a0 (state id)
-    virtual i32 VirtualMethodUnknown24(i32 a1, i32 a2, i32 a3, i32 a4); // [9] 0x1588f0
+    virtual void FUN_005bef01();        // [0] 0x1bef01 (shared thunk, declared-only)
+    virtual void* ScalarDtor(i32 flag); // [1] ??_G scalar-deleting dtor (0x1574b0)
+    virtual void FUN_004028ec();        // [2] 0x0028ec (shared thunk, declared-only)
+    virtual void FUN_0040106e();        // [3] 0x00106e (shared thunk, declared-only)
+    virtual void FUN_00404034();        // [4] 0x004034 (shared thunk, declared-only)
+    virtual i32 IsReady();              // [5] 0x157480
+    virtual void FUN_00401c08();        // [6] 0x001c08 (shared thunk, declared-only)
+    virtual void DestroyChildren();     // [7] 0x158ac0
+    virtual i32 GetStateId();           // [8] 0x1574a0 (state id)
+    virtual i32 CreateChildren(i32 a1, i32 a2, i32 a3, i32 a4); // [9] 0x1588f0
 
     // vptr implicit @ +0x00
     char m_pad04[0x0c - 0x04];
@@ -133,7 +133,7 @@ public:
 // ---------------------------------------------------------------------------
 // Ready when all three owned child pointers are populated.
 RVA(0x00157480, 0x1e)
-i32 CDDrawSubMgrPages::VirtualMethodUnknown14() {
+i32 CDDrawSubMgrPages::IsReady() {
     if (m_14 == 0) {
         goto fail;
     }
@@ -152,7 +152,7 @@ fail:
 // For each owned child at +0x10/+0x14/+0x18: if non-null, run its scalar-deleting
 // destructor (vtbl +0x4, arg 1) and null the slot.
 RVA(0x00158ac0, 0x44)
-void CDDrawSubMgrPages::VirtualMethodUnknown1C() {
+void CDDrawSubMgrPages::DestroyChildren() {
     if (m_10 != 0) {
         m_10->ScalarDtor(1);
         m_10 = 0;
@@ -170,7 +170,7 @@ void CDDrawSubMgrPages::VirtualMethodUnknown1C() {
 // ---------------------------------------------------------------------------
 // Constant state id.
 RVA(0x001574a0, 0x6)
-i32 CDDrawSubMgrPages::VirtualMethodUnknown20() {
+i32 CDDrawSubMgrPages::GetStateId() {
     return 0xf;
 }
 
@@ -202,7 +202,7 @@ void* CDDrawSubMgrPages::ScalarDtor(i32 flag) {
 // `new` model stamps vptr-first, and the two child ctors/vtables are foreign engine
 // data (reloc-masked). Logic/CFG/offsets/error-codes reproduced.
 RVA(0x001588f0, 0x1c5)
-i32 CDDrawSubMgrPages::VirtualMethodUnknown24(i32 a1, i32 a2, i32 a3, i32 a4) {
+i32 CDDrawSubMgrPages::CreateChildren(i32 a1, i32 a2, i32 a3, i32 a4) {
     CDDrawSurfaceChildA* a = (CDDrawSurfaceChildA*)operator new(0x30);
     if (a != 0) {
         new (a) CDDrawSurfaceChildA((i32)m_0c, 0, 0);
@@ -260,7 +260,7 @@ SIZE_UNKNOWN(CDDrawSurfaceChild);
 SIZE_UNKNOWN(CDDrawSurfaceMgr);
 SIZE(CDDrawSurfaceChildA, 0x30);
 SIZE(CDDrawSurfacePair, 0x34);
-// ??_7CDDrawSubMgrPages (was Vtbl_1efe08 / ClassWithUnknownVTable35; 10 slots). cl
+// ??_7CDDrawSubMgrPages (was Vtbl_1efe08 / the CDDrawSubMgrPages vtable; 10 slots). cl
 // auto-emits it from the real-polymorphic class; retail datum reloc-masked ->
 // matching-neutral catalog tracking.
 VTBL(CDDrawSubMgrPages, 0x001efe08);

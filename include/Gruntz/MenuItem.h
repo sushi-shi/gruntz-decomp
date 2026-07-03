@@ -9,8 +9,8 @@
 // CMenuItem is a REAL polymorphic class (vftable @0x5f08c0, 14 slots): declaring
 // the 14 virtuals in slot order makes MSVC emit ??_7CMenuItem@@6B@ + the scalar
 // deleting destructor (slot 0) + the implicit vptr stamp in the ctor/dtor. VTBL()
-// (in MenuItem.cpp) catalogs the 0x1f08c0 datum (was UnknownVTables
-// ClassWithUnknownVTable74 / g_menuItemVtbl); the slot relocs + the stamp
+// (in MenuItem.cpp) catalogs the 0x1f08c0 datum (was vtbl-placeholders
+// vtbl-cluster-74 / g_menuItemVtbl); the slot relocs + the stamp
 // reloc-mask against the (differently-named) retail symbols. No manual g_*Vtbl
 // stamp needed. The eight game slots without a reconstructed body (4/5/6/7/8/10/
 // 11/13) are declared-only virtuals -> external reloc-masked references.

@@ -1,4 +1,4 @@
-// ClassUnknown48.cpp (filename historical) - CSymRec, the CSymTab leaf symbol
+// CSymRec.cpp (filename historical) - CSymRec, the CSymTab leaf symbol
 // record (the node CSymTab::FindOrAddSym builds into m_symbols). XREF: both ctors
 // (0x139bf0/0x139c80) and the teardown (0x139cf0) are called only by
 // ?FindOrAddSym@CSymTab@@QAEPAXH@Z (0x13a940); the same three RVAs are what

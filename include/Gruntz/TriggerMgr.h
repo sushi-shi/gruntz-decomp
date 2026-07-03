@@ -1,5 +1,5 @@
 // TriggerMgr.h - CTriggerMgr, the playfield tile-object / switch-trigger grid
-// manager (trace placeholder ClassUnknown_23, C:\Proj\Gruntz). NON-POLYMORPHIC
+// manager (trace placeholder tomalla-23, C:\Proj\Gruntz). NON-POLYMORPHIC
 // (no RTTI, no vtable): a plain __thiscall manager that owns a 15-column grid of
 // placed game-object pointers (base +0x1c, element stride 4), a per-cell undo /
 // record list (+0x244), a 10-entry array of selection lists (+0x2d0, stride 0x1c),

@@ -49,7 +49,7 @@ extern CGameRegistry* g_gameReg;
 
 // The menu-bar frame (this->m_frame) doubles as the engine drawable that paints the
 // bar/chips; +0x10 is its draw entry. NO-body so `call 0x153810` reloc-masks
-// (ClassUnknown_31::ClassUnknown_31_153810).
+// (tomalla-31::Ctor_153810).
 struct CMenuBarFrame {
     void Draw(i32 ctx, i32 x, i32 y, i32* rect, i32 flag);
 };

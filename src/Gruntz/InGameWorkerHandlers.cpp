@@ -5,7 +5,7 @@
 //
 // The three handlers (0x095750 / 0x095890 / 0x0aa6e0) are __cdecl FREE functions
 // (the owner is a stack arg at [esp+0x18], ecx is never `this` - the trace
-// clusterer's ClassUnknown_65 grouping was a false grouping; these are not class
+// clusterer's tomalla-65 grouping was a false grouping; these are not class
 // members). Each reads owner->m_7c (the worker), then runs a /GX message pump
 // keyed on the worker's state tag worker->m_1c:
 //   state 0      -> `new <SubRecord>(owner)`; activate it (sub->vtbl[0x18]); stow

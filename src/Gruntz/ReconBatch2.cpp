@@ -124,15 +124,15 @@ class SoundStream {
 public:
     void Free(); // 0x137a80
 };
-// The map holder: ClearUnknownMap lives in the CDDrawMapHolder base; the keyed
+// The map holder: ClearMap lives in the CDDrawMapHolder base; the keyed
 // prune RemoveKeysEqual_157c70 is on the CDDrawSubMgrLeafScan view. m_2c is the
 // freeable inner at +0x2c.
 SIZE_UNKNOWN(CDDrawMapHolder);
 class CDDrawMapHolder {
 public:
     char m_pad0[0x2c];
-    SoundStream* m_2c;      // +0x2c
-    void ClearUnknownMap(); // 0x157bc0
+    SoundStream* m_2c; // +0x2c
+    void ClearMap();   // 0x157bc0
 };
 class CDDrawSubMgrLeafScan {
 public:
@@ -198,7 +198,7 @@ void CGameModeBase::Reset() {
     if (m_c->m_28->m_2c != 0) {
         m_c->m_28->m_2c->Free();
     }
-    m_c->m_28->ClearUnknownMap();
+    m_c->m_28->ClearMap();
     BaseCleanup();
 }
 

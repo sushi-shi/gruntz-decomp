@@ -46,7 +46,7 @@ namespace Utils {
     }
 } // namespace Utils
 namespace ApiCallerStubs {
-    struct ThisStubOwnerUnknown {
+    struct ThisStubOwner {
         i32 winapi_17e620_GetTickCount(i32, i32, i32); // 0x17e620 (deferred-op method on the fader)
     };
 } // namespace ApiCallerStubs

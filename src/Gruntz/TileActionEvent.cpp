@@ -1,5 +1,5 @@
 // TileActionEvent.cpp - the per-tile game-action event record (trace placeholder
-// ClassUnknown_108). Methods in ascending retail-RVA order. The record shape and
+// tomalla-108). Methods in ascending retail-RVA order. The record shape and
 // the CTileActionArchive serializer come from <Gruntz/TileActionEvent.h>; the game
 // registry singleton (g_gameReg) is modeled here with only the offsets these paths
 // touch. All engine callees are reloc-masked (no body).

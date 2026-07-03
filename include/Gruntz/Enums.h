@@ -226,7 +226,7 @@ enum LaunchMode {
 
 /* ------------------------------------------------------------------ *
  * LaunchModeCode - the INTEGER mode code the binary actually stores after
- * parsing the command line (the internal "unknownMode"), distinct from the string
+ * parsing the command line (the internal "unnamedMode"), distinct from the string
  * LaunchMode tokens above. Recovered from the dispatch (version-independent).
  * ------------------------------------------------------------------ */
 enum LaunchModeCode {

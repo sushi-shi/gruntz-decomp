@@ -3,8 +3,8 @@
 // sub-manager CDDrawWorkerRegistry (a CDirectDrawMgr surface/page sub-manager in the
 // "DDraw surface manager" family; see src/Stub/types/ddrawmgr_surface_family.h).
 //
-// CDDrawWorkerRegistry owns a CMapStringToOb at +0x10 (m_unknownMap) keyed by const char*
-// strings. VirtualMethodUnknown54 is a keyed remove-and-destroy: Lookup the key in
+// CDDrawWorkerRegistry owns a CMapStringToOb at +0x10 (m_map) keyed by const char*
+// strings. RemoveByKey is a keyed remove-and-destroy: Lookup the key in
 // the map; if present, RemoveKey it and run the found value's scalar-deleting
 // destructor (vtable +0x4, arg 1). Plain /O2 /MT leaf: NO SEH frame, NO data
 // relocations - the only relocations are the reloc-masked rel32 thunk calls
@@ -140,21 +140,21 @@ extern i32 g_resourceInstallActive;
 // ---------------------------------------------------------------------------
 class CDDrawWorkerRegistry {
 public:
-    i32 VirtualMethodUnknown14();
-    i32 VirtualMethodUnknown18();
-    void VirtualMethodUnknown1C();
-    i32 VirtualMethodUnknown20();
-    i32 VirtualMethodUnknown24(i32 a1, i32 a2, const char* key, i32 a4, i32 a5);
-    i32 VirtualMethodUnknown28(i32 a1, i32 a2, CDDrawWorker* worker, i32 a4, i32 a5);
-    i32 VirtualMethodUnknown2C(i32 a1, i32 a2, CDDrawWorker* worker, i32 a4, i32 a5);
-    i32 VirtualMethodUnknown30(i32 a1, i32 a2, const char* key, i32 a4, i32 a5);
-    i32 VirtualMethodUnknown34(i32 a1, CDDrawWorker* worker, i32 a3, i32 a4);
-    i32 VirtualMethodUnknown38(i32 a1, const char* key, i32 a3, i32 a4);
-    i32 VirtualMethodUnknown3C(i32 a1, CDDrawWorker* worker, i32 a3, i32 a4);
-    i32 VirtualMethodUnknown40(i32 a1, const char* key, i32 a3, i32 a4);
-    void VirtualMethodUnknown50(CDDrawWorker* worker);
-    void VirtualMethodUnknown54(const char* key);
-    void VirtualMethodUnknown58();
+    i32 IsReady();
+    i32 ResetScratch();
+    void Shutdown();
+    i32 GetStateId();
+    i32 DispatchKeyed2C(i32 a1, i32 a2, const char* key, i32 a4, i32 a5);
+    i32 Forward2C(i32 a1, i32 a2, CDDrawWorker* worker, i32 a4, i32 a5);
+    i32 Forward30(i32 a1, i32 a2, CDDrawWorker* worker, i32 a4, i32 a5);
+    i32 DispatchKeyed30(i32 a1, i32 a2, const char* key, i32 a4, i32 a5);
+    i32 Forward38(i32 a1, CDDrawWorker* worker, i32 a3, i32 a4);
+    i32 DispatchKeyed38(i32 a1, const char* key, i32 a3, i32 a4);
+    i32 Forward34(i32 a1, CDDrawWorker* worker, i32 a3, i32 a4);
+    i32 DispatchKeyed34(i32 a1, const char* key, i32 a3, i32 a4);
+    void RemoveWorker(CDDrawWorker* worker);
+    void RemoveByKey(const char* key);
+    void DestroyAll();
     void MapTeardown_1552b0();
     i32 StringCopy_155810(const char* src);
 
@@ -201,8 +201,8 @@ extern char g_emptyString[]; // 0x6293f4
 // NOT yet folded into a real polymorphic CDDrawWorkerRegistry: the class carries a
 // manual m_vptr@0 and is never constructed in this TU (no vptr stamp here), and its
 // slots interleave with a whole family of adjacent manager vtables (the same slot
-// bodies - VirtualMethodUnknown24 etc. - appear at DIFFERENT offsets across the
-// sibling vtables around 0x5efd00). Virtualizing the 17 VirtualMethodUnknownXX
+// bodies - DispatchKeyed2C etc. - appear at DIFFERENT offsets across the
+// sibling vtables around 0x5efd00). Virtualizing the 17 keyed
 // slot bodies (defined here, called by name Q-mangled) would ripple the whole
 // family + emit a vtable that competes with the siblings, regressing Stub_155160
 // (currently 100%). A dedicated vtable-family unification pass owns this; the view
@@ -308,7 +308,7 @@ static inline CDDrawWorker* FindOrCreateWorker(CDDrawWorkerRegistry* parent, con
 // ---------------------------------------------------------------------------
 // Clears the 25-dword scratch table and seeds the first entry to 100.
 RVA(0x00154aa0, 0x20)
-i32 CDDrawWorkerRegistry::VirtualMethodUnknown18() {
+i32 CDDrawWorkerRegistry::ResetScratch() {
     for (i32 i = 0; i < 25; ++i) {
         g_bltFxScratch[i] = 0;
     }
@@ -319,7 +319,7 @@ i32 CDDrawWorkerRegistry::VirtualMethodUnknown18() {
 // ---------------------------------------------------------------------------
 // Runs the +0x58 hook, then clears the two counters.
 RVA(0x00154ac0, 0x12)
-void CDDrawWorkerRegistry::VirtualMethodUnknown1C() {
+void CDDrawWorkerRegistry::Shutdown() {
     ((CWorkerVtableView*)this)->Slot58();
     g_resourceInstallActive = 0;
     g_surfaceColorKey = 0;
@@ -328,7 +328,7 @@ void CDDrawWorkerRegistry::VirtualMethodUnknown1C() {
 // ---------------------------------------------------------------------------
 // Finds or creates the keyed worker, then forwards to worker slot +0x38.
 RVA(0x00154ae0, 0xfc)
-i32 CDDrawWorkerRegistry::VirtualMethodUnknown38(i32 a1, const char* key, i32 a3, i32 a4) {
+i32 CDDrawWorkerRegistry::DispatchKeyed38(i32 a1, const char* key, i32 a3, i32 a4) {
     CDDrawWorker* worker = FindOrCreateWorker(this, key);
     if (worker == 0) {
         return 0;
@@ -339,7 +339,7 @@ i32 CDDrawWorkerRegistry::VirtualMethodUnknown38(i32 a1, const char* key, i32 a3
 // ---------------------------------------------------------------------------
 // Finds or creates the keyed worker, then forwards to worker slot +0x34.
 RVA(0x00154be0, 0xfc)
-i32 CDDrawWorkerRegistry::VirtualMethodUnknown40(i32 a1, const char* key, i32 a3, i32 a4) {
+i32 CDDrawWorkerRegistry::DispatchKeyed34(i32 a1, const char* key, i32 a3, i32 a4) {
     CDDrawWorker* worker = FindOrCreateWorker(this, key);
     if (worker == 0) {
         return 0;
@@ -350,7 +350,7 @@ i32 CDDrawWorkerRegistry::VirtualMethodUnknown40(i32 a1, const char* key, i32 a3
 // ---------------------------------------------------------------------------
 // Finds or creates the keyed worker, then forwards to worker slot +0x30.
 RVA(0x00154ce0, 0x101)
-i32 CDDrawWorkerRegistry::VirtualMethodUnknown30(i32 a1, i32 a2, const char* key, i32 a4, i32 a5) {
+i32 CDDrawWorkerRegistry::DispatchKeyed30(i32 a1, i32 a2, const char* key, i32 a4, i32 a5) {
     CDDrawWorker* worker = FindOrCreateWorker(this, key);
     if (worker == 0) {
         return 0;
@@ -361,7 +361,7 @@ i32 CDDrawWorkerRegistry::VirtualMethodUnknown30(i32 a1, i32 a2, const char* key
 // ---------------------------------------------------------------------------
 // Finds or creates the keyed worker, then forwards to worker slot +0x2c.
 RVA(0x00154df0, 0x101)
-i32 CDDrawWorkerRegistry::VirtualMethodUnknown24(i32 a1, i32 a2, const char* key, i32 a4, i32 a5) {
+i32 CDDrawWorkerRegistry::DispatchKeyed2C(i32 a1, i32 a2, const char* key, i32 a4, i32 a5) {
     CDDrawWorker* worker = FindOrCreateWorker(this, key);
     if (worker == 0) {
         return 0;
@@ -372,47 +372,35 @@ i32 CDDrawWorkerRegistry::VirtualMethodUnknown24(i32 a1, i32 a2, const char* key
 // ---------------------------------------------------------------------------
 // Thin forwarder to worker slot +0x34.
 RVA(0x00154f00, 0x1b)
-i32 CDDrawWorkerRegistry::VirtualMethodUnknown3C(i32 a1, CDDrawWorker* worker, i32 a3, i32 a4) {
+i32 CDDrawWorkerRegistry::Forward34(i32 a1, CDDrawWorker* worker, i32 a3, i32 a4) {
     return worker->Vfunc34(a1, a3, a4);
 }
 
 // ---------------------------------------------------------------------------
 // Thin forwarder to worker slot +0x38.
 RVA(0x00154f20, 0x1b)
-i32 CDDrawWorkerRegistry::VirtualMethodUnknown34(i32 a1, CDDrawWorker* worker, i32 a3, i32 a4) {
+i32 CDDrawWorkerRegistry::Forward38(i32 a1, CDDrawWorker* worker, i32 a3, i32 a4) {
     return worker->Vfunc38(a1, a3, a4);
 }
 
 // ---------------------------------------------------------------------------
 // Thin forwarder to worker slot +0x30.
 RVA(0x00154f40, 0x20)
-i32 CDDrawWorkerRegistry::VirtualMethodUnknown2C(
-    i32 a1,
-    i32 a2,
-    CDDrawWorker* worker,
-    i32 a4,
-    i32 a5
-) {
+i32 CDDrawWorkerRegistry::Forward30(i32 a1, i32 a2, CDDrawWorker* worker, i32 a4, i32 a5) {
     return worker->Vfunc30(a1, a2, a4, a5);
 }
 
 // ---------------------------------------------------------------------------
 // Thin forwarder to worker slot +0x2c.
 RVA(0x00154f60, 0x20)
-i32 CDDrawWorkerRegistry::VirtualMethodUnknown28(
-    i32 a1,
-    i32 a2,
-    CDDrawWorker* worker,
-    i32 a4,
-    i32 a5
-) {
+i32 CDDrawWorkerRegistry::Forward2C(i32 a1, i32 a2, CDDrawWorker* worker, i32 a4, i32 a5) {
     return worker->Vfunc2C(a1, a2, a4, a5);
 }
 
 // ---------------------------------------------------------------------------
 // Removes a non-null worker from the map by its key at +0x24, then destroys it.
 RVA(0x00155280, 0x22)
-void CDDrawWorkerRegistry::VirtualMethodUnknown50(CDDrawWorker* worker) {
+void CDDrawWorkerRegistry::RemoveWorker(CDDrawWorker* worker) {
     if (worker != 0) {
         m_map.RemoveKey((const char*)((char*)worker + 0x24));
         worker->ScalarDtor(1);
@@ -422,14 +410,14 @@ void CDDrawWorkerRegistry::VirtualMethodUnknown50(CDDrawWorker* worker) {
 // ---------------------------------------------------------------------------
 // Constant state id.
 RVA(0x00156de0, 0x6)
-i32 CDDrawWorkerRegistry::VirtualMethodUnknown20() {
+i32 CDDrawWorkerRegistry::GetStateId() {
     return 0x12;
 }
 
 // ---------------------------------------------------------------------------
 // Same base readiness predicate used by several CDDrawSubMgr-derived managers.
 RVA(0x001576d0, 0x16)
-i32 CDDrawWorkerRegistry::VirtualMethodUnknown14() {
+i32 CDDrawWorkerRegistry::IsReady() {
     if (m_0c == 0) {
         goto fail;
     }
@@ -458,7 +446,7 @@ fail:
 // volatile val) produced the identical schedule; the surrounding symbol-set is what
 // re-rolls the allocation, so no in-function lever flips it. Left as the plateau.
 RVA(0x00156ec0, 0x40)
-void CDDrawWorkerRegistry::VirtualMethodUnknown54(const char* key) {
+void CDDrawWorkerRegistry::RemoveByKey(const char* key) {
     CObject* val = 0;
     if (m_map.Lookup(key, val)) {
         m_map.RemoveKey(key);
@@ -469,13 +457,13 @@ void CDDrawWorkerRegistry::VirtualMethodUnknown54(const char* key) {
 // ---------------------------------------------------------------------------
 // Map teardown: iterate all entries in m_map via GetNextAssoc, destroying each
 // CObject* value via its scalar-deleting destructor (vtbl +0x4 arg 1), then
-// RemoveAll the map. Same pattern as CDDrawWorkerMapSmall::VirtualMethodUnknown1C but
+// RemoveAll the map. Same pattern as CDDrawWorkerMapSmall::DestroyAll but
 // without the final m_64 clear (that field does not exist in this class).
 //
 // Carries a /GX EH frame for the local CString key (destructor must fire on
 // unwind through the iteration loop).
 RVA(0x00165210, 0xa2)
-void CDDrawWorkerRegistry::VirtualMethodUnknown58() {
+void CDDrawWorkerRegistry::DestroyAll() {
     CObject* val = 0;
     POSITION pos = (POSITION)(m_map.GetCount() != 0 ? -1 : 0);
     CString key;

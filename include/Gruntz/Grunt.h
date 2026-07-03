@@ -1796,7 +1796,7 @@ public:
     // random in-region target / resets the idle timer.
     i32 StepArrivalDefenseLean();
     // @0xf1c70 (ret 0 -> 1) - the powered-up arrival-defender variant (trace
-    // mis-attributed to "ClassUnknown_42"; every offset/helper proves CGrunt). Sets
+    // mis-attributed to "tomalla-42"; every offset/helper proves CGrunt). Sets
     // m_arrivalFlags |= 0x40000, then either runs the powered-up release gate
     // (m_poweredUp!=0: FindGridNeighbor + clear-state) or the m_2d4 (0/1/2/3) defender
     // dispatch: GetOccupant/grid-occupant settle + CommitNeighbor, the 4-way

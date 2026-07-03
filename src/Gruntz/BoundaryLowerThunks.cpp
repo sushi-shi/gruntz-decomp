@@ -132,7 +132,7 @@ struct CoordPool {
     void Recycle(void* elem); // 0x0311b0
 };
 SIZE_UNKNOWN(CoordPool);
-extern CoordPool g_coordPool;  // 0x645540 (UnknownClassArrays.cpp)
+extern CoordPool g_coordPool;  // 0x645540 (the BattlezMapConfig RUN-phase unit)
 extern void* g_freeList;       // 0x645544 (Projectile.cpp)
 extern i32 g_freeListNodeBias; // 0x64554c (Projectile.cpp)
 RVA(0x00082fa0, 0x17)

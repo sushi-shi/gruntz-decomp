@@ -39,27 +39,25 @@ struct CDDrawSubMgrLeafScan; // defined below; m_leafScan points at one
 // emit the implicit grand-base re-stamp (reloc-masks 0x5e8cb4) folded LAST into
 // ~CDDrawSurfaceMgr, and the destructible base subobject supplies the dtor's /GX
 // EH frame. The base also fixes the derived vtable layout: the dtor lands at slot 1
-// and UnknownVirtualMethod14 (byte 0x14) at slot 5, etc.
+// and IsReady (byte 0x14) at slot 5, etc.
 struct CDDrawPtrCollections; // defined below (m_ptrColl's heap object)
 class CDDrawSurfaceMgr : public Wap::CObject {
 public:
     CDDrawSurfaceMgr();
     virtual ~CDDrawSurfaceMgr();
-    virtual i32 UnknownVirtualMethod14();
-    virtual i32 UnknownVirtualMethod18(HWND hWnd, i32 width, i32 height, i32 bpp, i32 flagsUnknown);
-    virtual void UnknownVirtualMethod1C();
-    virtual void UnknownVirtualMethod20();
-    virtual i32 UnknownVirtualMethod24(i32 x, i32 y, i32 flags);
-    virtual void UnknownVirtualMethod28(void* hWnd);
-    virtual i32 UnknownVirtualMethod2C(i32 unknown);
-    virtual i32
-    UnknownVirtualMethod30(i32 width, i32 height, i32 bpp, i32 flagsUnknown, void* callback);
-    virtual i32
-    UnknownVirtualMethod34(i32 width, i32 height, i32 bpp, i32 flagsUnknown, void* callback);
-    virtual i32 UnknownVirtualMethod38(void* arg1, i32 arg2, i32 arg3, i32 arg4);
+    virtual i32 IsReady();
+    virtual i32 Init(HWND hWnd, i32 width, i32 height, i32 bpp, i32 flags);
+    virtual void Slot1C();
+    virtual void FreeContext();
+    virtual i32 SetDimensions(i32 x, i32 y, i32 flags);
+    virtual void SetHwnd(void* hWnd);
+    virtual i32 Slot2C(i32 arg);
+    virtual i32 Slot30(i32 width, i32 height, i32 bpp, i32 flags, void* callback);
+    virtual i32 Slot34(i32 width, i32 height, i32 bpp, i32 flags, void* callback);
+    virtual i32 InvokeCallback(void* arg1, i32 arg2, i32 arg3, i32 arg4);
 
     // Engine-label backlog stubs.
-    void UnknownVirtualMethod18();
+    void Init();
 
     // Owned-child teardown helper, called by ~CDDrawSurfaceMgr (0x1558b0).
     void Cleanup_155e20();
@@ -206,11 +204,11 @@ void CDDrawSurfaceMgr::Cleanup_155e20() {
 }
 
 // ---------------------------------------------------------------------------
-// CDDrawSurfaceMgr::UnknownVirtualMethod14()
+// CDDrawSurfaceMgr::IsReady()
 // Returns whether the core child managers are present and the first child accepts
 // its +0x14 virtual readiness check.
 RVA(0x00155f00, 0x41)
-i32 CDDrawSurfaceMgr::UnknownVirtualMethod14() {
+i32 CDDrawSurfaceMgr::IsReady() {
     CDDrawSubMgr* first = m_pages;
 
     if (first == 0) {
@@ -257,10 +255,10 @@ struct CDDrawResolveSubMgr {
 typedef i32(__cdecl* HP_Callback)(void*, void*, i32, i32, i32);
 
 // ---------------------------------------------------------------------------
-// CDDrawSurfaceMgr::UnknownVirtualMethod20()
+// CDDrawSurfaceMgr::FreeContext()
 // Frees context — cleans up the SoundStream (m_soundStream) and the CDDrawSubMgrLeafScan map.
 RVA(0x00155fc0, 0x2e)
-void CDDrawSurfaceMgr::UnknownVirtualMethod20() {
+void CDDrawSurfaceMgr::FreeContext() {
     if (m_leafScan != 0) {
         SoundStream* inner = m_leafScan->m_inner;
         if (inner != 0) {
@@ -274,10 +272,10 @@ void CDDrawSurfaceMgr::UnknownVirtualMethod20() {
 }
 
 // ---------------------------------------------------------------------------
-// CDDrawSurfaceMgr::UnknownVirtualMethod24()
+// CDDrawSurfaceMgr::SetDimensions()
 // Validates/sets surface dimensions.
 RVA(0x00155f60, 0x56)
-i32 CDDrawSurfaceMgr::UnknownVirtualMethod24(i32 x, i32 y, i32 flags) {
+i32 CDDrawSurfaceMgr::SetDimensions(i32 x, i32 y, i32 flags) {
     CDDrawSubMgrItem* child = m_pages->m_item;
     if (child->m_width != x || child->m_height != y) {
         if (CreateChildSurface(x, y, flags) == 0) {
@@ -293,19 +291,19 @@ i32 CDDrawSurfaceMgr::UnknownVirtualMethod24(i32 x, i32 y, i32 flags) {
 }
 
 // ---------------------------------------------------------------------------
-// CDDrawSurfaceMgr::UnknownVirtualMethod28()
+// CDDrawSurfaceMgr::SetHwnd()
 // Relays the hWnd argument to an external manager function.
 RVA(0x00155f50, 0x10)
-void CDDrawSurfaceMgr::UnknownVirtualMethod28(void* hWnd) {
+void CDDrawSurfaceMgr::SetHwnd(void* hWnd) {
     RelayHwnd(hWnd);
 }
 
 // ---------------------------------------------------------------------------
-// CDDrawSurfaceMgr::UnknownVirtualMethod38()
+// CDDrawSurfaceMgr::InvokeCallback()
 // Dispatches arguments through the m_callback callback function pointer,
 // returning 1 on success / 0 on failure.
 RVA(0x00156a90, 0x3a)
-i32 CDDrawSurfaceMgr::UnknownVirtualMethod38(void* arg1, i32 arg2, i32 arg3, i32 arg4) {
+i32 CDDrawSurfaceMgr::InvokeCallback(void* arg1, i32 arg2, i32 arg3, i32 arg4) {
     if (!arg1) {
         return 0;
     }
@@ -317,23 +315,23 @@ i32 CDDrawSurfaceMgr::UnknownVirtualMethod38(void* arg1, i32 arg2, i32 arg3, i32
 
 // Out-of-line stubs so the vftable is emitted in this TU. They are not claimed
 // as matched in symbol_names.csv.
-i32 CDDrawSurfaceMgr::UnknownVirtualMethod18(HWND, i32, i32, i32, i32) {
+i32 CDDrawSurfaceMgr::Init(HWND, i32, i32, i32, i32) {
     return 0;
 }
-void CDDrawSurfaceMgr::UnknownVirtualMethod1C() {}
-i32 CDDrawSurfaceMgr::UnknownVirtualMethod2C(i32) {
+void CDDrawSurfaceMgr::Slot1C() {}
+i32 CDDrawSurfaceMgr::Slot2C(i32) {
     return 0;
 }
-i32 CDDrawSurfaceMgr::UnknownVirtualMethod30(i32, i32, i32, i32, void*) {
+i32 CDDrawSurfaceMgr::Slot30(i32, i32, i32, i32, void*) {
     return 0;
 }
-i32 CDDrawSurfaceMgr::UnknownVirtualMethod34(i32, i32, i32, i32, void*) {
+i32 CDDrawSurfaceMgr::Slot34(i32, i32, i32, i32, void*) {
     return 0;
 }
 
 // Engine-label backlog stubs (moved from src/Stub/CDDrawSurfaceMgr.cpp).
 
-// 0x155900 IS the real 5-arg virtual UnknownVirtualMethod18(hWnd,w,h,bpp,flags) —
+// 0x155900 IS the real 5-arg virtual Init(hWnd,w,h,bpp,flags) —
 // the SurfaceMgr Init that heap-allocates all 11 owned sub-managers, validates
 // each, and configures the display.  Deferred to the final sweep: it is a 1305-B
 // /GX method whose FULL nested construction-EH funclet can only be reproduced once
@@ -369,7 +367,7 @@ i32 CDDrawSurfaceMgr::UnknownVirtualMethod34(i32, i32, i32, i32, void*) {
 // @source: tomalla
 // @stub
 RVA(0x00155900, 0x519)
-void CDDrawSurfaceMgr::UnknownVirtualMethod18() {}
+void CDDrawSurfaceMgr::Init() {}
 
 SIZE_UNKNOWN(CDDrawSubMgrItem);
 SIZE_UNKNOWN(Wap::CObject);

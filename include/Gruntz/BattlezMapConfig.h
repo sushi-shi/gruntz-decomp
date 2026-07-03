@@ -5,7 +5,7 @@
 //
 //   * BattlezMapConfig.cpp  - the LOAD phase: CBattlezMapConfig::LoadConfig reads
 //     the [Battlez] bute-config group + the level start markers into the object.
-//   * UnknownClassArrays.cpp - the RUN phase: the ~40 spawn/board state-machine
+//   * the BattlezMapConfig RUN-phase unit - the RUN phase: the ~40 spawn/board state-machine
 //     methods that drive the loaded object each tick.
 //
 // DISAMBIGUATION EVIDENCE (this/ecx Frida trace, gruntz.analysis.this_cluster):
@@ -44,7 +44,7 @@
 
 // ---- Run-phase engine object pointers (spawn view) --------------------------
 // The three TU-shared pointer members (m_ctx/m_triggerMgr/m_board) point at real
-// engine objects, modeled as the file-local views defined in UnknownClassArrays.cpp:
+// engine objects, modeled as the file-local views defined in the BattlezMapConfig RUN-phase unit:
 //   m_ctx        = the level/game spawn context (CTriggerMgr@+0x68 + per-band
 //                  records, 0x238 stride);
 //   m_triggerMgr = the level's CTriggerMgr (the 4x15 cell grid);
@@ -65,7 +65,7 @@ public:
     // ---- load phase (BattlezMapConfig.cpp) --------------------------------
     i32 LoadConfig(CLevelInfo* lvl, i32 id, i32 diff); // 0x025020
 
-    // ---- run phase (UnknownClassArrays.cpp) -------------------------------
+    // ---- run phase (the BattlezMapConfig RUN-phase unit) -------------------------------
     CBattlezMapConfig();
     ~CBattlezMapConfig();
     void FreeArrays();

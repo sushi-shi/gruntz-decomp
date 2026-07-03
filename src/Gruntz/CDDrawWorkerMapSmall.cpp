@@ -3,11 +3,11 @@
 // family sub-manager CDDrawWorkerMapSmall (a CDirectDrawMgr surface/page sub-manager in
 // the "DDraw surface manager" family; see src/Stub/types/ddrawmgr_surface_family.h).
 //
-// CDDrawWorkerMapSmall owns a CMapStringToOb at +0x10 (m_unknownMap1) keyed by const char*
-// strings. Unknown28/2C share ONE factory shape: allocate a 0x14-byte "worker" with
+// CDDrawWorkerMapSmall owns a CMapStringToOb at +0x10 (m_map1) keyed by const char*
+// strings. CreateWorker28/2C share ONE factory shape: allocate a 0x14-byte "worker" with
 // the global operator new, inline-construct it (seed its
 // fields from the parent + stamp the foreign worker vftable), then call one
-// of the worker's sibling virtuals (+0x28 for Unknown28, +0x2c for Unknown2C)
+// of the worker's sibling virtuals (+0x28 for CreateWorker28, +0x2c for CreateWorker2C)
 // forwarding (arg1, arg3). On a 0 result the worker is destroyed via its scalar-
 // deleting destructor (vtable +0x4, arg 1) and 0 is returned; on a nonzero result
 // the worker is stored into the map under `key` (arg2) via CMapStringToOb::operator[]
@@ -23,13 +23,13 @@
 // is the foreign engine datum stamped manually into the heap block.
 //
 // The TU is /GX ("eh" flag): besides the frameless /O2 factory leaves it now also
-// carries the map-teardown VirtualMethodUnknown1C (0x165810, a /GX CString-iteration
+// carries the map-teardown DestroyAll (0x165810, a /GX CString-iteration
 // loop, byte-exact) and the /GX member-teardown destructor ~CDDrawWorkerMapSmall
 // (0x156d20). /GX adds a frame only to the functions that need one; the factory
-// leaves + VirtualMethodUnknown14/20 stay frameless and byte-exact. The full class
+// leaves + IsReady/20 stay frameless and byte-exact. The full class
 // shape recovered from the destructor: a base sub-object at +0x00..+0x0f (vptr + 3
 // fields) and THREE CMapStringToOb maps at +0x10/+0x2c/+0x48, then an i32 counter at
-// +0x64 (the factories + VirtualMethodUnknown14/20 only touch <=+0x2b).
+// +0x64 (the factories + IsReady/20 only touch <=+0x2b).
 // ---------------------------------------------------------------------------
 
 // --- MFC placeholders (only the call symbols + the 0x10 map offset matter) -----
@@ -149,18 +149,18 @@ public:
     // CObject slots from CDDrawWorkerMapBase, then 8 leaf virtuals at slots 5..12. They are
     // declared here in slot order so cl lays the emitted vtable out byte-for-byte
     // (the unreconstructed slots 6/8 are declared-only -> reloc-masked references).
-    virtual i32 VirtualMethodUnknown14();  // [5]  0x156cd0
-    virtual i32 FUN_00556db0();            // [6]  0x156db0 (state predicate, returns 1)
-    virtual void VirtualMethodUnknown1C(); // [7]  0x165810
-    virtual void FUN_00556cf0();           // [8]  0x156cf0 (shared, declared-only)
+    virtual i32 IsReady();       // [5]  0x156cd0
+    virtual i32 FUN_00556db0();  // [6]  0x156db0 (state predicate, returns 1)
+    virtual void DestroyAll();   // [7]  0x165810
+    virtual void FUN_00556cf0(); // [8]  0x156cf0 (shared, declared-only)
     virtual void* Factory_1658c0(CDDrawSurfaceSource* a1, const char* key, i32 a3); // [9] 0x1658c0
-    virtual void* VirtualMethodUnknown28(i32 a1, const char* key, i32 a3);          // [10] 0x165990
-    virtual void* VirtualMethodUnknown2C(i32 a1, const char* key, i32 a3);          // [11] 0x165a10
+    virtual void* CreateWorker28(i32 a1, const char* key, i32 a3);                  // [10] 0x165990
+    virtual void* CreateWorker2C(i32 a1, const char* key, i32 a3);                  // [11] 0x165a10
     virtual void* Factory_165a90(CDDrawSurfaceSource* a1, i32 a2, i32 a3);          // [12] 0x165a90
     virtual ~CDDrawWorkerMapSmall(); // overrides slot [1]
 
-    // VirtualMethodUnknown20 (0x157600) is NOT a vtable slot - a plain method.
-    i32 VirtualMethodUnknown20();
+    // GetStateId (0x157600) is NOT a vtable slot - a plain method.
+    i32 GetStateId();
 
     // m_04/m_08/m_0c (and the implicit vptr) are inherited from CDDrawWorkerMapBase.
     CMapStringToOb m_map1; // +0x10  worker-by-key map 1 (0x10..0x2b)
@@ -183,7 +183,7 @@ static inline i32 MapReadField1c(const CDDrawWorkerMapSmall* p) {
 // Reports ready when the parent/root handle is present and the base status word
 // is no longer the inactive -1 sentinel.
 RVA(0x00156cd0, 0x16)
-i32 CDDrawWorkerMapSmall::VirtualMethodUnknown14() {
+i32 CDDrawWorkerMapSmall::IsReady() {
     if (m_0c == 0) {
         goto fail;
     }
@@ -198,7 +198,7 @@ fail:
 // ---------------------------------------------------------------------------
 // ~CDDrawWorkerMapSmall (0x156d20, __thiscall, /GX): now a REAL virtual dtor. cl
 // stamps ??_7CDDrawWorkerMapSmall (masks the retail vtable @0x5efcc8) at entry, runs
-// the map teardown (VirtualMethodUnknown1C), then destructs the three CMapStringToOb
+// the map teardown (DestroyAll), then destructs the three CMapStringToOb
 // members (reverse decl order, descending trylevels) and the CDDrawWorkerMapBase grand-base
 // (field resets + implicit ??_7-base re-stamp masking 0x5e8cb4). No manual stamp.
 // The /GX member-teardown frame falls out of the destructible CMapStringToOb members
@@ -216,7 +216,7 @@ fail:
 // Unwind/handler/member-dtor/vtable symbol names. Logic complete.
 RVA(0x00156d20, 0x82)
 CDDrawWorkerMapSmall::~CDDrawWorkerMapSmall() {
-    VirtualMethodUnknown1C();
+    DestroyAll();
     // m_map3 / m_map2 / m_map1 (reverse decl order) and the CDDrawWorkerMapBase grand-base
     // auto-destruct here under the /GX member-teardown trylevels.
 }
@@ -254,11 +254,11 @@ static inline CDDrawMapWorkerObj* MakeMapWorker(const CDDrawWorkerMapSmall* pare
 // Map teardown (0x165810, __thiscall, /GX): iterate every entry of m_map1 via
 // GetNextAssoc, destroying each CObject* value through its scalar-deleting
 // destructor (vtbl +0x4, arg 1), RemoveAll the map, then clear the +0x64 counter.
-// Same shape as CDDrawWorkerRegistry::VirtualMethodUnknown58, plus the m_64 clear.
+// Same shape as CDDrawWorkerRegistry::DestroyAll, plus the m_64 clear.
 // Carries a /GX EH frame for the local CString key (must be unwound through the
 // iteration loop).
 RVA(0x00165810, 0xa9)
-void CDDrawWorkerMapSmall::VirtualMethodUnknown1C() {
+void CDDrawWorkerMapSmall::DestroyAll() {
     CObject* val = 0;
     POSITION pos = (POSITION)(m_map1.GetCount() != 0 ? -1 : 0);
     CString key;
@@ -279,7 +279,7 @@ void CDDrawWorkerMapSmall::VirtualMethodUnknown1C() {
 // success store it into the map under `key` and return it; on failure run its
 // scalar-deleting dtor and return 0.
 RVA(0x00165990, 0x77)
-void* CDDrawWorkerMapSmall::VirtualMethodUnknown28(i32 a1, const char* key, i32 a3) {
+void* CDDrawWorkerMapSmall::CreateWorker28(i32 a1, const char* key, i32 a3) {
     CDDrawMapWorkerObj* w = MakeMapWorker(this);
     if (w->Vfunc28(a1, a3) == 0) {
         if (w != 0) {
@@ -292,9 +292,9 @@ void* CDDrawWorkerMapSmall::VirtualMethodUnknown28(i32 a1, const char* key, i32 
 }
 
 // ---------------------------------------------------------------------------
-// As Unknown28 but dispatches the worker's +0x2c virtual.
+// As CreateWorker28 but dispatches the worker's +0x2c virtual.
 RVA(0x00165a10, 0x77)
-void* CDDrawWorkerMapSmall::VirtualMethodUnknown2C(i32 a1, const char* key, i32 a3) {
+void* CDDrawWorkerMapSmall::CreateWorker2C(i32 a1, const char* key, i32 a3) {
     CDDrawMapWorkerObj* w = MakeMapWorker(this);
     if (w->Vfunc2C(a1, a3) == 0) {
         if (w != 0) {
@@ -310,7 +310,7 @@ void* CDDrawWorkerMapSmall::VirtualMethodUnknown2C(i32 a1, const char* key, i32 
 // Constant state id.
 // ---------------------------------------------------------------------------
 RVA(0x00157600, 0x6)
-i32 CDDrawWorkerMapSmall::VirtualMethodUnknown20() {
+i32 CDDrawWorkerMapSmall::GetStateId() {
     return 0x10;
 }
 
@@ -414,7 +414,7 @@ void* CDDrawWorkerMapSmall::Factory_165a90(CDDrawSurfaceSource* a1, i32 a2, i32 
 }
 
 // ---------------------------------------------------------------------------
-// 0x165b90: map teardown twin of VirtualMethodUnknown1C (0x165810) - iterate every
+// 0x165b90: map teardown twin of DestroyAll (0x165810) - iterate every
 // entry of m_map1 via GetNextAssoc destroying each value through its scalar-deleting
 // destructor (vtbl +0x4 arg 1), RemoveAll the map, then clear the +0x64 counter. /GX
 // EH frame for the local CString key.
@@ -441,7 +441,7 @@ void CDDrawWorkerMapSmall::Stub_165b90() {
 }
 
 // ---------------------------------------------------------------------------
-// WIP (DO NOT ENABLE AS-IS): reconstructed CDDrawWorkerMapSmall::VirtualMethodUnknown1C
+// WIP (DO NOT ENABLE AS-IS): reconstructed CDDrawWorkerMapSmall::DestroyAll
 // reaches ~82% objdiff here; the EH-frame register/layout schedule is TU-context
 // dependent (it reached 100% only in its original TU layout). Kept for future reuse:
 // re-enable, remove Stub_165b90, and reconcile this TU's symbol/layout context.
@@ -484,7 +484,7 @@ public:
 // active class above, with the m_map1 map typed for the teardown signatures.
 class CDDrawWorkerMapSmallTeardown {
 public:
-    void  VirtualMethodUnknown1C();
+    void  DestroyAll();
 
     void                  *m_vptr;                  // +0x00
     i32                    m_04;                     // +0x04
@@ -507,7 +507,7 @@ public:
 // on re-enable, annotate this definition with the retail address 0x165b90
 // size 0xa9 (the macro literal is omitted here so verify_stub_labels' text
 // scan does not treat this preserved WIP copy as a duplicate of Stub_165b90)
-void CDDrawWorkerMapSmallTeardown::VirtualMethodUnknown1C()
+void CDDrawWorkerMapSmallTeardown::DestroyAll()
 {
     CObject *val = 0;
     i32 pos = (m_map1.m_nCount != 0) ? -1 : 0;

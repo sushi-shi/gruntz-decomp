@@ -38,7 +38,7 @@ i32 CSoundFxEmitter::Method_fa410(i32 a1, i32 a2, i32 a3, i32 a4) {
         Utils::WinAPI::ActiveWait(a3);
         ((CDDSurface*)m_0c->m_04->m_10->m_2c)->Fill(0);
     } else {
-        ((ApiCallerStubs::ThisStubOwnerUnknown*)f)->winapi_17e620_GetTickCount(a3, a4, 0);
+        ((ApiCallerStubs::ThisStubOwner*)f)->winapi_17e620_GetTickCount(a3, a4, 0);
     }
     m_04->StopBank0IfActive();
     mgr->Remove(f);
@@ -86,7 +86,7 @@ i32 CSoundFxEmitter::Method_fa550(i32 a1, i32 a2, i32 a3, i32 a4) {
         Utils::WinAPI::ActiveWait(a3);
         ((CDDSurface*)m_0c->m_04->m_10->m_2c)->Blt((CDDSurface*)chanB);
     } else {
-        ((ApiCallerStubs::ThisStubOwnerUnknown*)f)->winapi_17e620_GetTickCount(a3, a4, 0);
+        ((ApiCallerStubs::ThisStubOwner*)f)->winapi_17e620_GetTickCount(a3, a4, 0);
     }
     m_04->StopBank0IfActive();
     mgr->Remove(f);
@@ -135,7 +135,7 @@ i32 CSoundFxEmitter::Method_fa790(i32 a1, i32 a2, i32 a3) {
         Utils::WinAPI::ActiveWait(a2);
         ((CDDSurface*)m_0c->m_04->m_10->m_2c)->Blt((CDDSurface*)chanB);
     } else {
-        ((ApiCallerStubs::ThisStubOwnerUnknown*)f)->winapi_17e620_GetTickCount(a2, a3, 0);
+        ((ApiCallerStubs::ThisStubOwner*)f)->winapi_17e620_GetTickCount(a2, a3, 0);
     }
     m_04->StopBank0IfActive();
     mgr->Remove(f);
@@ -187,7 +187,7 @@ i32 CSoundFxEmitter::Method_fa8f0(i32 a1, i32 a2, i32 a3, i32 a4) {
         Utils::WinAPI::ActiveWait(a2);
         ((CDDSurface*)m_0c->m_04->m_10->m_2c)->Blt((CDDSurface*)chanB);
     } else {
-        ((ApiCallerStubs::ThisStubOwnerUnknown*)f)->winapi_17e620_GetTickCount(a2, a3, 0);
+        ((ApiCallerStubs::ThisStubOwner*)f)->winapi_17e620_GetTickCount(a2, a3, 0);
     }
     mgr->Remove(f);
     return 1;
@@ -224,7 +224,7 @@ i32 CSoundFxEmitter::Method_faa60(i32 a1, i32 a2, i32 a3) {
         Utils::WinAPI::ActiveWait(a2);
         ((CDDSurface*)m_0c->m_04->m_10->m_2c)->Fill(0);
     } else {
-        ((ApiCallerStubs::ThisStubOwnerUnknown*)f)->winapi_17e620_GetTickCount(a2, a3, 0);
+        ((ApiCallerStubs::ThisStubOwner*)f)->winapi_17e620_GetTickCount(a2, a3, 0);
     }
     m_04->StopBank0IfActive();
     mgr->Remove(f);

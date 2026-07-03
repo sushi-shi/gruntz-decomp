@@ -1,5 +1,5 @@
 // CLightFxRender.cpp - software light/glow effect renderer (tracer placeholder
-// ClassUnknown_68), a non-polymorphic helper in the lighting module. Methods in
+// tomalla-68), a non-polymorphic helper in the lighting module. Methods in
 // ascending retail-RVA order. The class owns an embedded 16-bit pixel buffer at
 // +0x4c that the shape generators fill; it allocates a DirectDraw work surface
 // via the surface manager and blits the computed light. Engine callees (Lock /
@@ -108,11 +108,11 @@ struct LfxRefTable {
 struct LfxMgr {
     char m_pad0[0x2c];
     LfxDrawCtx* m_2c; // +0x2c draw context
-    void* m_world;       // +0x30 surface manager  -> this+0xc
+    void* m_world;    // +0x30 surface manager  -> this+0xc
     char m_pad34[0x68 - 0x34];
     void* m_68; // +0x68 surface info     -> this+0x4
     char m_pad6c[0x70 - 0x6c];
-    void* m_tileGrid;        // +0x70                  -> this+0x8
+    void* m_tileGrid;  // +0x70                  -> this+0x8
     LfxRefTable* m_74; // +0x74 sprite/animation ref table
 };
 

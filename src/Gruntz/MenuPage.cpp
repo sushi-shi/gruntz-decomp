@@ -1,6 +1,6 @@
 // MenuPage.cpp - a named menu/list page node (C:\Proj\Gruntz).
 //
-// Recovered from the ClassUnknown_45 trace cluster (0x183250..0x1844d0): the
+// Recovered from the tomalla-45 trace cluster (0x183250..0x1844d0): the
 // per-page object the main-menu builder fills with named items and the menu host
 // drives with Draw + focus navigation. It owns three CStrings (name/key/label),
 // a CPtrList of child items (m_items, head @+0x18), a flag byte (+0x30), layout

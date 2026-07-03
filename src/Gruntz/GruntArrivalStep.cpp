@@ -1,5 +1,5 @@
 // GruntArrivalStep.cpp - CGrunt::StepArrivalDefenseAlt (@0xf1c70), the powered-up
-// arrival-defender variant. Trace mis-attributed to "ClassUnknown_42"; every member
+// arrival-defender variant. Trace mis-attributed to "tomalla-42"; every member
 // offset (m_248/m_260/m_220/m_21c/m_3f0/m_defenderState/m_arrivalCol/m_arrivalRow/m_300/m_304/m_174..m_180)
 // and every engine helper (GetOccupant, RectContains, FindGridNeighbor, CommitNeighbor,
 // StepArrivalDrop, GruntInRadius, the on-screen CueA) is a CGrunt member/method, so it

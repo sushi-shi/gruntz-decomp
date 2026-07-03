@@ -1,5 +1,5 @@
 // Registry23.cpp - global fixed-capacity (32) keyed record table insert/update/
-// remove (RVA 0x16e360), trace-attributed to ClassUnknown_23. The records live in
+// remove (RVA 0x16e360), trace-attributed to tomalla-23. The records live in
 // a global 12-byte-stride array (key @0x6bf498, val @0x6bf49c, flag @0x6bf4a0) with
 // a global count @0x6bf618; the object only supplies the working slot index m_4.
 #include <rva.h>

@@ -1,5 +1,5 @@
 // LightFxMgr.h - the light-FX / translucency shade-table manager (tracer
-// placeholder ClassUnknown_3). A heap object hung off the game registry at
+// placeholder tomalla-3). A heap object hung off the game registry at
 // g_gameReg->m_78 (created in the registry Init at 0x83450, torn down in the
 // registry close at 0x855e0). It owns the engine's pre-built RGB565 color /
 // translucency lookup tables: an identity "grey" remap (CShadeTableCache::GreyTable),

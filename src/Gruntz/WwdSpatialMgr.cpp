@@ -1,6 +1,6 @@
 #include <rva.h>
 // <Mfc.h> brings the real CObject/CRect types. This cluster's three spatial
-// grids (ClassUnknown_64), the master CWwdObjMgr, and the grid iterator are all
+// grids (tomalla-64), the master CWwdObjMgr, and the grid iterator are all
 // reloc-masked engine externs (no bodies here).
 #include <Gruntz/CWwdObjMgr.h> // the shared object-collection manager class
 #include <Mfc.h>
@@ -9,7 +9,7 @@
 // CWwdSpatialMgr - the per-level object-bucket manager held at WwdFile+0xb0.
 //
 // Owns a master CWwdObjMgr (m_mgr @ +0x00) plus THREE spatial grids
-// (CWwdGrid / ClassUnknown_64, one per plane: m_grid0/1/2 @ +0x04/+0x08/+0x0c).
+// (CWwdGrid / tomalla-64, one per plane: m_grid0/1/2 @ +0x04/+0x08/+0x0c).
 // An object is routed into a grid by its flag bits (0x800000 -> grid1,
 // 0x1000000 -> grid2, else grid0). Origin pairs at +0x40.. track each grid's
 // scroll offset; the world bbox is +0x58.., the cached scroll pos +0x68/+0x6c.
@@ -71,7 +71,7 @@ struct WwdBucketHead {
     void Unlink_1391e0(WwdGridNode* node);
 };
 
-// CWwdGrid (ClassUnknown_64) - one plane's spatial bucket index. Polymorphic
+// CWwdGrid (tomalla-64) - one plane's spatial bucket index. Polymorphic
 // CObject-style: scalar deleting dtor @ vtbl+4. Data fields (offsets per
 // WwdGrid.h) are read by the iterator: the rect bounds, the log2 cell shifts,
 // the column count, and the 8-byte bucket-head array.
@@ -473,7 +473,7 @@ CWwdObject* CWwdSpatialMgr::GetNextObject() {
 }
 
 // ===========================================================================
-// CWwdGridIter cursor methods (the ClassUnknown_67 cluster). The iterator walks
+// CWwdGridIter cursor methods (the tomalla-67 cluster). The iterator walks
 // every grid cell overlapping the query rect, visiting each node truly inside it
 // (optionally unlinking it). Self-contained / reloc-free apart from the bucket
 // Unlink helper.

@@ -78,6 +78,6 @@ CDDrawWorkerHost::~CDDrawWorkerHost() {
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 SIZE_UNKNOWN(CDDrawWorkerHost);
 // ??_7CDDrawWorkerHost (was g_ddrawWorkerHostVtbl @0x5f0270, Vtbl_1f0270 /
-// ClassWithUnknownVTable56). cl auto-emits it from the real-polymorphic host;
+// vtbl-cluster-56). cl auto-emits it from the real-polymorphic host;
 // retail's 12-slot datum is reloc-masked -> matching-neutral catalog tracking.
 VTBL(CDDrawWorkerHost, 0x001f0270);

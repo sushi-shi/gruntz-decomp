@@ -1,5 +1,5 @@
 // CWwdGrid - one plane's spatial bucket-index grid (placeholder name; engine
-// class is the "ClassUnknown_64" cluster the matched CWwdSpatialMgr holds three
+// class is the "tomalla-64" cluster the matched CWwdSpatialMgr holds three
 // of). Abstract base: vtable @ 0x5f0328, scalar-deleting dtor @ vtbl+4, a pure
 // virtual callback @ vtbl+0x14 invoked per object found inside a query rect.
 // Derives from the engine Wap::CObject base (g_wapObjectDtorVtbl @ 0x5e8cb4).

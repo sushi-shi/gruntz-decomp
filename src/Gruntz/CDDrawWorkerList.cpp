@@ -11,8 +11,8 @@
 // nonzero result the worker is appended to CDDrawWorkerList's CObList (+0x10) - either
 // AddHead or AddTail, selected by a trailing bool arg - and the worker is returned.
 //
-// Two distinct worker vftables appear: one used by Unknown24, whose +0x78
-// flag is a BYTE, and one used by Unknown28/2C/30, whose +0x78 flag is an
+// Two distinct worker vftables appear: one used by CreateWorkerA, whose +0x78
+// flag is a BYTE, and one used by CreateWorkerB28/2C/30, whose +0x78 flag is an
 // int. Both worker layouts are otherwise identical and both carry a scalar-
 // deleting destructor at vtable slot +0x4 (the delinker tags slot +0x4 of each as
 // the MFC delete-this thunk). The vftables are foreign
@@ -35,7 +35,7 @@ class CObject;
 // CObList lives at CDDrawWorkerList+0x10. AddHead/AddTail are out-of-line NAFXCW
 // thunks (reloc-masked rel32 calls); declared with the exact MFC signatures so
 // clang mangles them to the MFC-canonical names.
-// RemoveAll / RemoveAt are called by VirtualMethodUnknown1C and Unknown34.
+// RemoveAll / RemoveAt are called by ClearWorkers and PruneWorkers.
 #include <Gruntz/CObList.h>
 
 // The worker hierarchy (CDDrawWorkerBase + CDDrawWorkerA/B) - the elements this
@@ -45,7 +45,7 @@ class CObject;
 #include <Gruntz/CDDrawWorkerNode.h>
 
 // The child type used in the work-node linked-list at +0x14.
-// Virtual slot +0x28 (Vfunc28) is dispatched in Unknown34; +0x74 is a
+// Virtual slot +0x28 (Vfunc28) is dispatched in PruneWorkers; +0x74 is a
 // reference count. Slot layout matches the child class in the engine.
 class CDDrawWorkerItem {
 public:
@@ -79,14 +79,14 @@ struct WorkNode {
 // ---------------------------------------------------------------------------
 class CDDrawWorkerList {
 public:
-    i32 VirtualMethodUnknown14();
-    void VirtualMethodUnknown1C();
-    i32 VirtualMethodUnknown20();
-    void* VirtualMethodUnknown24(i32 a1, i32 a2, i32 a3);
-    void* VirtualMethodUnknown28(i32 a1, i32 a2, i32 a3, i32 addHead);
-    void* VirtualMethodUnknown2C(i32 a1, i32 a2, CDDrawFrameSource* a3, i32 a4, i32 addHead);
-    void* VirtualMethodUnknown30(i32 a1, i32 a2, i32 a3, i32 a4, i32 addHead);
-    void VirtualMethodUnknown34(i32 a1, i32 a2);
+    i32 IsReady();
+    void ClearWorkers();
+    i32 GetStateId();
+    void* CreateWorkerA(i32 a1, i32 a2, i32 a3);
+    void* CreateWorkerB28(i32 a1, i32 a2, i32 a3, i32 addHead);
+    void* CreateWorkerB2C(i32 a1, i32 a2, CDDrawFrameSource* a3, i32 a4, i32 addHead);
+    void* CreateWorkerB30(i32 a1, i32 a2, i32 a3, i32 a4, i32 addHead);
+    void PruneWorkers(i32 a1, i32 a2);
 
     void* m_vptr;                   // +0x00 (vptr; not stamped by these methods)
     i32 m_status;                   // +0x04  initialized to -1 when inactive
@@ -135,7 +135,7 @@ public:
 // ---------------------------------------------------------------------------
 // Same base readiness predicate used by several CDDrawSubMgr-derived managers.
 RVA(0x00156f00, 0x16)
-i32 CDDrawWorkerList::VirtualMethodUnknown14() {
+i32 CDDrawWorkerList::IsReady() {
     if (m_pSurfaceMgr == 0) {
         goto fail;
     }
@@ -194,7 +194,7 @@ static inline CDDrawWorkerA* MakeWorkerA(const CDDrawWorkerList* parent) {
 // virtual with (a1,a2,a3). On success appends it to the list (AddTail) and returns
 // it; on failure destroys it and returns 0.
 RVA(0x00156fd0, 0x8b)
-void* CDDrawWorkerList::VirtualMethodUnknown24(i32 a1, i32 a2, i32 a3) {
+void* CDDrawWorkerList::CreateWorkerA(i32 a1, i32 a2, i32 a3) {
     CDDrawWorkerA* w = MakeWorkerA(this);
     if (w->Vfunc2C(a1, a2, a3) == 0) {
         if (w != 0) {
@@ -207,10 +207,10 @@ void* CDDrawWorkerList::VirtualMethodUnknown24(i32 a1, i32 a2, i32 a3) {
 }
 
 // ---------------------------------------------------------------------------
-// As Unknown24 but the int-flag worker; on success the trailing
+// As CreateWorkerA but the int-flag worker; on success the trailing
 // bool selects AddHead vs AddTail.
 RVA(0x001573e0, 0xa0)
-void* CDDrawWorkerList::VirtualMethodUnknown28(i32 a1, i32 a2, i32 a3, i32 addHead) {
+void* CDDrawWorkerList::CreateWorkerB28(i32 a1, i32 a2, i32 a3, i32 addHead) {
     CDDrawWorkerB* w = MakeWorkerB(this);
     if (w->Vfunc2C(a1, a2, a3) == 0) {
         if (w != 0) {
@@ -230,7 +230,7 @@ void* CDDrawWorkerList::VirtualMethodUnknown28(i32 a1, i32 a2, i32 a3, i32 addHe
 // Int-flag worker; calls the worker's +0x30 virtual with (a1,a2,a3,a4); trailing
 // bool selects AddHead vs AddTail.
 RVA(0x00157330, 0xa5)
-void* CDDrawWorkerList::VirtualMethodUnknown2C(
+void* CDDrawWorkerList::CreateWorkerB2C(
     i32 a1,
     i32 a2,
     CDDrawFrameSource* a3,
@@ -253,9 +253,9 @@ void* CDDrawWorkerList::VirtualMethodUnknown2C(
 }
 
 // ---------------------------------------------------------------------------
-// As Unknown2C but dispatches the worker's +0x34 virtual.
+// As CreateWorkerB2C but dispatches the worker's +0x34 virtual.
 RVA(0x00157150, 0xa5)
-void* CDDrawWorkerList::VirtualMethodUnknown30(i32 a1, i32 a2, i32 a3, i32 a4, i32 addHead) {
+void* CDDrawWorkerList::CreateWorkerB30(i32 a1, i32 a2, i32 a3, i32 a4, i32 addHead) {
     CDDrawWorkerB* w = MakeWorkerB(this);
     if (w->Vfunc34(a1, a2, a3, a4) == 0) {
         if (w != 0) {
@@ -280,7 +280,7 @@ void* CDDrawWorkerList::VirtualMethodUnknown30(i32 a1, i32 a2, i32 a3, i32 a4, i
 // the inherited vptr).  Destroys each node's child if present, then clears
 // the list.
 RVA(0x00163c60, 0x2c)
-void CDDrawWorkerList::VirtualMethodUnknown1C() {
+void CDDrawWorkerList::ClearWorkers() {
     WorkNode* pNode = (WorkNode*)m_workers.GetHeadPosition();
     while (pNode) {
         WorkNode* pCurrent = pNode;
@@ -295,7 +295,7 @@ void CDDrawWorkerList::VirtualMethodUnknown1C() {
 // ---------------------------------------------------------------------------
 // Returns constant 0x11 (17).
 RVA(0x00156f20, 0x6)
-i32 CDDrawWorkerList::VirtualMethodUnknown20() {
+i32 CDDrawWorkerList::GetStateId() {
     return 0x11;
 }
 
@@ -326,7 +326,7 @@ CDDrawWorkerList::~CDDrawWorkerList() {
 //    OR child->m_refCount <= 0                          → free
 //    Otherwise                                     → skip, keep node
 RVA(0x00163bf0, 0x6d)
-void CDDrawWorkerList::VirtualMethodUnknown34(i32 a1, i32 a2) {
+void CDDrawWorkerList::PruneWorkers(i32 a1, i32 a2) {
     WorkNode* pNode = (WorkNode*)m_workers.GetHeadPosition();
     while (pNode) {
         WorkNode* pCurrent = pNode;

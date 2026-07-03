@@ -725,7 +725,7 @@ i32 CBattlezDlg::SetSlotValue(i32 index, i32 val) {
 // trailing inlined-strlen block unmodeled (~69%): after GetWindowText, retail measures
 // the filled buffer with an inline `repnz scas` (using edi as the scan pointer, hence an
 // extra `push edi`) and DISCARDS the result. MSVC drops a discarded intrinsic strlen, so
-// the scas can't be re-emitted without the original (unknown) use of the length. The
+// the scas can't be re-emitted without the original (unresolved) use of the length. The
 // missing `push edi` shifts every [esp+N] reference by 4, depressing the byte score even
 // though the CString ctor/dtor + GetCtrlB->GetWindowText + /GX frame are structurally exact.
 RVA(0x00017340, 0x73)

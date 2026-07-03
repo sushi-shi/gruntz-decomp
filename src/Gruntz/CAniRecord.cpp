@@ -1,16 +1,16 @@
 #include <rva.h>
 // CAniRecord.cpp - the 0x34-byte 'ANI' animation FRAME RECORD cataloged by
 // CAniElement (src/Gruntz/CAniElement.cpp) into a CObArray of these. The
-// orchestrator placeholders ClassUnknown_39 / _40 / _41 are ALL this ONE class
+// orchestrator placeholders tomalla-39 / _40 / _41 are ALL this ONE class
 // (consolidated here):
 //
-//   ClassUnknown_39: 0x168c60 Parse (read a packed 9-short record header off a
+//   tomalla-39: 0x168c60 Parse (read a packed 9-short record header off a
 //                    binary cursor, then resolve the name string), 0x168e50
 //                    GetSize (frame-count -> byte accumulator).
-//   ClassUnknown_40: 0x168d00 ResolveIndices (whitespace-split the name string
+//   tomalla-40: 0x168d00 ResolveIndices (whitespace-split the name string
 //                    into tokens, look each up in the owner's CMapStringToPtr, and
 //                    store the resolved indices in a RezAlloc'd array). /GX frame.
-//   ClassUnknown_41: 0x165dd0 the base-2 (CAniRecordBase2) destructor (frees the
+//   tomalla-41: 0x165dd0 the base-2 (CAniRecordBase2) destructor (frees the
 //                    +0x10 buffer-virtual, resets the base subobject to CObject),
 //                    0x168ee0 / 0x168fb0 the two buffer (de)allocation virtuals
 //                    that go through the owner's pool allocator (owner+0x1c).

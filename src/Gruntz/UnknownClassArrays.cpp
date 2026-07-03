@@ -1,4 +1,4 @@
-// UnknownClassArrays.cpp - the RUN-phase methods of CBattlezMapConfig, the Battlez
+// the BattlezMapConfig RUN-phase unit - the RUN-phase methods of CBattlezMapConfig, the Battlez
 // per-team spawn/board manager (ctor / dtor / FreeArrays + the ~40 spawn state-
 // machine methods). Formerly hedged CBattlezSpawnMgr_or_CGruntSpawnMgr; disambiguated
 // to the real RTTI class CBattlezMapConfig by the this/ecx trace (its LoadConfig

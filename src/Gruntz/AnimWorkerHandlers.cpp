@@ -5,7 +5,7 @@
 //
 // The three 0xf1 handlers (0x03d670 / 0x07db20 / 0x07dda0) are __cdecl FREE
 // functions (the owner is a stack arg at [esp+0x18], ecx is never touched - the
-// trace-clusterer's ClassUnknown_72 "class" is a false grouping; see the report).
+// trace-clusterer's tomalla-72 "class" is a false grouping; see the report).
 // Each reads owner->m_7c (the worker), then runs a /GX message pump keyed on the
 // worker's state tag worker->m_1c:
 //   state 0      -> `new <SubRecord>(owner)`; activate it (sub->vtbl[0x18]); stow
@@ -20,7 +20,7 @@
 // (CGruntSelectedSprite), 0x60 (CGruntToySprite).
 //
 // The 0x15b300 ctor is the out-of-line 3-arg AnimWorker constructor (the body
-// the 0x150eb0 factory / VirtualMethodUnknown24 inline): stamp the foreign vptr,
+// the 0x150eb0 factory / CreateWorker24 inline): stamp the foreign vptr,
 // seed +0x04/+0x08/+0x0c from the args, zero the working fields.
 //
 // Field names are placeholders (m_<hexoffset>); only OFFSETS + emitted code

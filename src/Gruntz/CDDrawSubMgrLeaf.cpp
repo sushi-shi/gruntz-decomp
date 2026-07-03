@@ -20,9 +20,9 @@
 // as the sibling CDDrawWorkerRegistry. Several methods carry a /GX EH frame for a
 // local CString key, so the TU is flags="eh".
 //
-// VirtualMethodUnknown14 is the standard CDDrawSubMgr-derived readiness predicate (ready
-// when +0x0c is present and +0x04 is not the -1 sentinel). VirtualMethodUnknown18
-// clears a separate map then zeroes the handle. VirtualMethodUnknown1C is the
+// IsReady is the standard CDDrawSubMgr-derived readiness predicate (ready
+// when +0x0c is present and +0x04 is not the -1 sentinel). ClearContext
+// clears a separate map then zeroes the handle. Cleanup is the
 // cleanup virtual (tail-calls FreeAll).
 //
 // Field names are placeholders (m_<hexoffset>); only the OFFSETS + emitted code
@@ -49,8 +49,8 @@ public:
 class CDDrawSubMgrLeafScan {
 public:
     virtual ~CDDrawSubMgrLeafScan(); // 0x157570 (member-teardown, own TU)
-    i32 VirtualMethodUnknown14();    // 0x157530  (vtable slot [5], readiness predicate)
-    void ClearUnknownMap();          // 0x157bc0
+    i32 IsReady();                   // 0x157530  (vtable slot [5], readiness predicate)
+    void ClearMap();                 // 0x157bc0
     void* ScalarDtor(i32 flag);      // 0x157550  (??_G scalar-deleting dtor)
 
     // vptr @+0x00 (implicit)
@@ -101,14 +101,14 @@ public:
     // slots from CDDrawSubMgrGrandBase (slot 1 overridden below by ScalarDtor_1577c0),
     // then 4 leaf virtuals at slots 5..8 in declaration order (the unreconstructed
     // slots 6/8 are declared-only -> reloc-masked references).
-    void* ScalarDtor(i32 flag) OVERRIDE;   // [1] ??_G scalar-deleting destructor (0x1577c0)
-    virtual i32 VirtualMethodUnknown14();  // [5] 0x1577a0
-    virtual i32 FUN_00552640();            // [6] 0x152640 (state predicate, returns 1)
-    virtual void VirtualMethodUnknown1C(); // [7] 0x152650
-    virtual void FUN_00554a00();           // [8] 0x154a00 (shared, declared-only)
+    void* ScalarDtor(i32 flag) OVERRIDE; // [1] ??_G scalar-deleting destructor (0x1577c0)
+    virtual i32 IsReady();               // [5] 0x1577a0
+    virtual i32 FUN_00552640();          // [6] 0x152640 (state predicate, returns 1)
+    virtual void Cleanup();              // [7] 0x152650
+    virtual void FUN_00554a00();         // [8] 0x154a00 (shared, declared-only)
 
     // Non-vtable members.
-    void VirtualMethodUnknown18(); // 0x157ae0 (not a vtable slot)
+    void ClearContext(); // 0x157ae0 (not a vtable slot)
     CObject* LookupValue_06b2a0(const char* key);
     void RemoveValue_152660(CCatalogNode* target);
     void FreeAll_152720();
@@ -124,7 +124,7 @@ public:
 // Ready when the parent handle is present and the status word is not -1.
 // ---------------------------------------------------------------------------
 RVA(0x001577a0, 0x16)
-i32 CDDrawSubMgrLeaf::VirtualMethodUnknown14() {
+i32 CDDrawSubMgrLeaf::IsReady() {
     if (m_0c == 0) {
         goto fail;
     }
@@ -140,15 +140,15 @@ fail:
 // Clears the parent map then zeroes a member field.
 // ---------------------------------------------------------------------------
 RVA(0x00157ae0, 0x11)
-void CDDrawSubMgrLeaf::VirtualMethodUnknown18() {
-    ((CDDrawSubMgrLeafScan*)this)->ClearUnknownMap();
+void CDDrawSubMgrLeaf::ClearContext() {
+    ((CDDrawSubMgrLeafScan*)this)->ClearMap();
     m_0c = 0;
 }
 
 // ---------------------------------------------------------------------------
 // Cleanup virtual: tail-calls FreeAll (frees every value + RemoveAll the map).
 RVA(0x00152650, 0x5)
-void CDDrawSubMgrLeaf::VirtualMethodUnknown1C() {
+void CDDrawSubMgrLeaf::Cleanup() {
     FreeAll_152720();
 }
 
@@ -302,7 +302,7 @@ CString CDDrawSubMgrLeaf::KeyOfValue_152d30(CObject* target) {
 // `push <ehfuncinfo>` reloc operand. docs/patterns/eh-state-numbering-base.md.
 RVA(0x001577e0, 0x68)
 CDDrawSubMgrLeaf::~CDDrawSubMgrLeaf() {
-    VirtualMethodUnknown1C();
+    Cleanup();
     // implicit: ~m_10 (CMapStringToOb), then ~CDDrawSubMgrGrandBase (resets the three
     // header fields + restamps the base vtable) - reproduces retail's teardown order.
 }
@@ -337,7 +337,7 @@ i32 CDDrawSubMgrLeaf::FUN_00552640() {
 // ---------------------------------------------------------------------------
 // Readiness predicate: ready when either flag field (+0x2c / +0x30) is set.
 RVA(0x00157530, 0x17)
-i32 CDDrawSubMgrLeafScan::VirtualMethodUnknown14() {
+i32 CDDrawSubMgrLeafScan::IsReady() {
     if (m_2c != 0) {
         return 1;
     }
@@ -369,7 +369,7 @@ void* CDDrawSubMgrLeafScan::ScalarDtor(i32 flag) {
 // store position + the reloc-masked EH-state push (same family wall as FreeAll_152720).
 // docs/patterns/zero-register-pinning.md.
 RVA(0x00157bc0, 0xa2)
-void CDDrawSubMgrLeafScan::ClearUnknownMap() {
+void CDDrawSubMgrLeafScan::ClearMap() {
     CObject* val = 0;
     POSITION pos = (POSITION)(m_10.GetCount() != 0 ? -1 : 0);
     CString key;

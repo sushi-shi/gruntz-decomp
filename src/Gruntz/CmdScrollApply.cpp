@@ -23,7 +23,7 @@ void Cmd_ApplyScrollParams_0ec1c0(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
 }
 
 // Cmd_ResetScroll - zero the auto-scroll clock/timer + the two 64-bit accumulators
-// (ClassUnknown_17; __cdecl free function). Six dword stores.
+// (tomalla-17; __cdecl free function). Six dword stores.
 RVA(0x000ebd30, 0x21)
 void Cmd_ResetScroll_0ebd30() {
     g_scrollClock = 0;

@@ -317,7 +317,7 @@ void CDDrawSurfacePair::DrawCross(i32 x, i32 y) {
 // surface through the pool (mode 0x11 for w>320 else 0x51; fullscreen bit from
 // mgr->m_capsFlags), then attach + validate it. Each failure path stashes an error code
 // in mgr->m_lastError (only if not already set): 0x80e9..0x80ed for the five pool error
-// codes, 0xbb9 for an unknown/zero pool error, 0xbba for an attach/validate miss.
+// codes, 0xbb9 for an unresolved/zero pool error, 0xbba for an attach/validate miss.
 // ---------------------------------------------------------------------------
 // A minimal vtable view of the attached surface (slot 5 @+0x14 = the readiness
 // predicate). Declared-only virtuals fix the slot; never instantiated here.

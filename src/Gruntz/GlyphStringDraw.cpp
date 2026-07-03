@@ -71,7 +71,7 @@ SIZE_UNKNOWN(GlyphFont);
 // ---------------------------------------------------------------------------
 // ShowHudMessage (0x1154b0) + its +0x14-slot twin (0x115520): the shared HUD
 // message-sprite helpers (re-homed from src/Stub/Discovered.cpp, where the this/ecx
-// trace mis-attributed them to a placeholder "ClassUnknown_13"). Identity recovered
+// trace mis-attributed them to a placeholder "tomalla-13"). Identity recovered
 // from GameMode.cpp / BootyMessages.cpp, which already call 0x1154b0 as
 // `ShowHudMessage` ("push a transient text sprite carrying `text` into `rect`");
 // Ghidra places both in this font/text-draw cluster (between EngStr_DrawText @0x115440

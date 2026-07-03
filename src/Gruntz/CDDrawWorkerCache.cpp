@@ -1,8 +1,8 @@
 #include <rva.h>
 // CDDrawWorkerCache.cpp - leaf methods of the tomalla-named class CDDrawWorkerCache
 // (a CDirectDrawMgr surface/page sub-manager in the "DDraw surface manager" family).
-// VirtualMethodUnknown20 is a constant state-ID stub returning 0x13 (19).
-// VirtualMethodUnknown24 is a factory: allocates a 0x17c-byte worker object,
+// GetStateId is a constant state-ID stub returning 0x13 (19).
+// CreateWorker is a factory: allocates a 0x17c-byte worker object,
 // seeds it from parent fields, stamps the foreign vftable, calls the
 // worker's vtable+0x24 virtual with (arg1, arg3), on failure destroys the
 // worker and returns 0, on success stores the worker into the CMapStringToOb
@@ -106,18 +106,18 @@ inline CDDrawWorkerCacheBase::~CDDrawWorkerCacheBase() {
 // into the worker (m_0c, m_1c from inside the map's internal area).
 // ---------------------------------------------------------------------------
 // Real polymorphic now (own 10-slot vtable ??_7CDDrawWorkerCache @0x5efd00, was
-// Vtbl_1efd00 / ClassWithUnknownVTable31). Slots 0/2/3/4 are the shared CObject
+// Vtbl_1efd00 / the CDDrawWorkerCache vtable). Slots 0/2/3/4 are the shared CObject
 // thunks, slot 1 the ??_G scalar-deleting dtor (0x157700), slots 5/6/7 unreconstructed
-// leaf virtuals (declared-only, reloc-masked), slot 8 = VirtualMethodUnknown20
-// (0x1576f0) and slot 9 = VirtualMethodUnknown24 (0x1652c0). cl auto-emits the vtable.
+// leaf virtuals (declared-only, reloc-masked), slot 8 = GetStateId
+// (0x1576f0) and slot 9 = CreateWorker (0x1652c0). cl auto-emits the vtable.
 class CDDrawWorkerCache : public CDDrawWorkerCacheBase {
 public:
-    void* ScalarDtor(i32 flag) OVERRIDE;  // [1] ??_G scalar-deleting dtor (0x157700)
-    virtual void FUN_005576d0();          // [5] 0x1576d0 (declared-only)
-    virtual void FUN_00557790();          // [6] 0x157790 (declared-only)
-    virtual void FUN_00565210();          // [7] 0x165210 (teardown, defined in Registry TU)
-    virtual i32 VirtualMethodUnknown20(); // [8] 0x1576f0
-    virtual void* VirtualMethodUnknown24(i32 a1, const char* key, i32 a3); // [9] 0x1652c0
+    void* ScalarDtor(i32 flag) OVERRIDE; // [1] ??_G scalar-deleting dtor (0x157700)
+    virtual void FUN_005576d0();         // [5] 0x1576d0 (declared-only)
+    virtual void FUN_00557790();         // [6] 0x157790 (declared-only)
+    virtual void FUN_00565210();         // [7] 0x165210 (teardown, defined in Registry TU)
+    virtual i32 GetStateId();            // [8] 0x1576f0
+    virtual void* CreateWorker(i32 a1, const char* key, i32 a3); // [9] 0x1652c0
 
     // The real member-teardown destructor (0x157720); the ??_G scalar dtor calls it.
     ~CDDrawWorkerCache();
@@ -136,7 +136,7 @@ static inline i32 ReadWorkerCacheField1c(const CDDrawWorkerCache* p) {
 // Constant state ID: returns 0x13 (19).
 // ---------------------------------------------------------------------------
 RVA(0x001576f0, 0x6)
-i32 CDDrawWorkerCache::VirtualMethodUnknown20() {
+i32 CDDrawWorkerCache::GetStateId() {
     return 0x13;
 }
 
@@ -172,7 +172,7 @@ static inline AnimWorkerObj* MakeAnimWorker(const CDDrawWorkerCache* parent) {
 // the target asm (the NAFXCW operator new practically never fails).
 // ---------------------------------------------------------------------------
 RVA(0x001652c0, 0x92)
-void* CDDrawWorkerCache::VirtualMethodUnknown24(i32 a1, const char* key, i32 a3) {
+void* CDDrawWorkerCache::CreateWorker(i32 a1, const char* key, i32 a3) {
     AnimWorkerObj* w = MakeAnimWorker(this);
 
     if (w->Vfunc24(a1, a3) == 0) {
@@ -204,7 +204,7 @@ void* CDDrawWorkerCache::ScalarDtor(i32 flag) {
 // ---------------------------------------------------------------------------
 // The real member-teardown destructor (0x157720, /GX): cl stamps ??_7CDDrawWorkerCache
 // (masks 0x5efd00) at entry, runs the map teardown (FUN_00565210, the shared
-// VirtualMethodUnknown58 @0x165210), then destructs the CMapStringToOb member and the
+// DestroyAll @0x165210), then destructs the CMapStringToOb member and the
 // CDDrawWorkerCacheBase grand-base (field resets + implicit ??_7-base re-stamp masking
 // 0x5e8cb4). No manual stamp. /GX member-teardown frame from the destructible map.
 // @early-stop
@@ -223,7 +223,7 @@ SIZE_UNKNOWN(CDDrawWorkerCache);
 SIZE_UNKNOWN(AnimWorker);
 SIZE(AnimWorkerObj, 0x17c);
 VTBL(AnimWorkerObj, 0x001efb80); // ??_7AnimWorkerObj (was g_animWorkerVtbl)
-// ??_7CDDrawWorkerCache (was Vtbl_1efd00 / ClassWithUnknownVTable31; 10 slots). cl
+// ??_7CDDrawWorkerCache (was Vtbl_1efd00 / the CDDrawWorkerCache vtable; 10 slots). cl
 // auto-emits it from the real-polymorphic class; retail datum is reloc-masked ->
 // matching-neutral catalog tracking.
 VTBL(CDDrawWorkerCache, 0x001efd00);

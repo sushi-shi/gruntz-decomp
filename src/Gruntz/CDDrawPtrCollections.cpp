@@ -313,12 +313,12 @@ public:
     CPtrList m_poolB;  // +0x498  (block size 0xa) - CPoolItemB*
     CPtrArray m_array; // +0x4b4  (default ctor); m_pData@+0x4b8 / m_nSize@+0x4bc
     char _pad4C8[0x534 - 0x4c8];
-    i32 fieldUnknown534; // +0x534  - zeroed in ctor / Clear
-    i32 fieldUnknown538; // +0x538  - zeroed in ctor
+    i32 m_534; // +0x534  - zeroed in ctor / Clear
+    i32 m_538; // +0x538  - zeroed in ctor
     char _pad53C[0x93c - 0x53c];
-    i32 fieldUnknown93C; // +0x93c  - zeroed in ctor
-    i32 fieldUnknown940; // +0x940  - zeroed in ctor
-    i32 fieldUnknown944; // +0x944  - zeroed in ctor
+    i32 m_93c; // +0x93c  - zeroed in ctor
+    i32 m_940; // +0x940  - zeroed in ctor
+    i32 m_944; // +0x944  - zeroed in ctor
 }; // 0x948
 
 // ---------------------------------------------------------------------------
@@ -328,11 +328,11 @@ RVA(0x00141cc0, 0x84)
 CDDrawPtrCollections::CDDrawPtrCollections() : m_poolA(0xa), m_poolB(0xa), m_array() {
     m_surf0 = 0;
     m_surf4 = 0;
-    fieldUnknown534 = 0;
-    fieldUnknown538 = 0;
-    fieldUnknown93C = 0;
-    fieldUnknown940 = 0;
-    fieldUnknown944 = 0;
+    m_534 = 0;
+    m_538 = 0;
+    m_93c = 0;
+    m_940 = 0;
+    m_944 = 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -369,7 +369,7 @@ void CDDrawPtrCollections::Clear(i32 mode) {
         m_surf4->vtbl->Release(m_surf4);
         m_surf4 = 0;
     }
-    fieldUnknown534 = 0;
+    m_534 = 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -554,7 +554,7 @@ CPoolItemBase* CDDrawPtrCollections::Createa88_1(i32 a) {
 
 // ---------------------------------------------------------------------------
 // Createab8_3 (0x142940).  new 0xc0 item; ctor (vtbl 0x5efab8); dispatch vtbl[0x24]
-// with 3 args; AddItemA + cache item->m_a8 into host->fieldUnknown538 on success.
+// with 3 args; AddItemA + cache item->m_a8 into host->m_538 on success.
 // /GX. ret 0xc.
 // ---------------------------------------------------------------------------
 // @early-stop
@@ -564,7 +564,7 @@ CPoolItemBase* CDDrawPtrCollections::Createab8_3(i32 a, i32 b, i32 c) {
     CPoolItemAB8* item = new CPoolItemAB8;
     if (item->v24(this, a, b, c, 0, 0)) {
         AddItemA(item);
-        fieldUnknown538 = item->m_a8;
+        m_538 = item->m_a8;
         return item;
     }
     delete item;
@@ -573,7 +573,7 @@ CPoolItemBase* CDDrawPtrCollections::Createab8_3(i32 a, i32 b, i32 c) {
 
 // ---------------------------------------------------------------------------
 // Createab8_1 (0x142aa0).  new 0xc0 item; ctor (vtbl 0x5efab8); dispatch vtbl[0x08]
-// with 1 arg; AddItemA + cache item->m_a8 into host->fieldUnknown538 on success.
+// with 1 arg; AddItemA + cache item->m_a8 into host->m_538 on success.
 // /GX. ret 0x4.
 // ---------------------------------------------------------------------------
 // @early-stop
@@ -583,7 +583,7 @@ CPoolItemBase* CDDrawPtrCollections::Createab8_1(i32 a) {
     CPoolItemAB8* item = new CPoolItemAB8;
     if (item->Init1(this, a)) {
         AddItemA(item);
-        fieldUnknown538 = item->m_a8;
+        m_538 = item->m_a8;
         return item;
     }
     delete item;
@@ -593,7 +593,7 @@ CPoolItemBase* CDDrawPtrCollections::Createab8_1(i32 a) {
 // ---------------------------------------------------------------------------
 // Createab8_24_3 (0x142b70).  new 0xc0 item; ctor (vtbl 0x5efab8); dispatch
 // vtbl[0x24] as a 3-arg init with the two literal tags (0x18, 0x21) + the incoming
-// arg; AddItemA + cache item->m_a8 into host->fieldUnknown538 on success. /GX. ret 0x4.
+// arg; AddItemA + cache item->m_a8 into host->m_538 on success. /GX. ret 0x4.
 // ---------------------------------------------------------------------------
 // @early-stop
 // EH-state wall + arity: this call site invokes ab8 slot 9 with only 3 game args, but
@@ -605,7 +605,7 @@ CPoolItemBase* CDDrawPtrCollections::Createab8_24_3(i32 a) {
     CPoolItemAB8* item = new CPoolItemAB8;
     if (item->v24(this, 0x18, 0x21, a, 0, 0)) {
         AddItemA(item);
-        fieldUnknown538 = item->m_a8;
+        m_538 = item->m_a8;
         return item;
     }
     delete item;
@@ -894,8 +894,8 @@ i32 CDDrawPtrCollections::ComputeColorMasks() {
 // ---------------------------------------------------------------------------
 // ConfigureSurface (0x143c20).  Reconfigure the cached surface through its vtbl +0x54
 // slot (the five args forwarded verbatim).  On a non-zero HRESULT, report through
-// GetErrorString, latch fieldUnknown944 = 0x3ec if unset, and return the HRESULT.
-// Otherwise recompute the color masks; if that fails, latch fieldUnknown944 = 0x3ed
+// GetErrorString, latch m_944 = 0x3ec if unset, and return the HRESULT.
+// Otherwise recompute the color masks; if that fails, latch m_944 = 0x3ed
 // if unset and return E_FAIL (0x80004005).  __thiscall, ret 0x14 (5 stack args). No EH.
 // ---------------------------------------------------------------------------
 RVA(0x00143c20, 0x84)
@@ -903,15 +903,15 @@ i32 CDDrawPtrCollections::ConfigureSurface(i32 a0, i32 a1, i32 a2, i32 a3, i32 a
     i32 hr = m_surf0->vtbl->Configure(m_surf0, a0, a1, a2, a3, a4);
     if (hr != 0) {
         CDirectDrawMgr::GetErrorString(DDRAWMGR_FILE, 0x8a2, hr);
-        if (fieldUnknown944 == 0) {
-            fieldUnknown944 = 0x3ec;
+        if (m_944 == 0) {
+            m_944 = 0x3ec;
         }
         return hr;
     }
     if (ComputeColorMasks() == 0) {
         hr = (i32)0x80004005;
-        if (fieldUnknown944 == 0) {
-            fieldUnknown944 = 0x3ed;
+        if (m_944 == 0) {
+            m_944 = 0x3ed;
         }
     }
     return hr;

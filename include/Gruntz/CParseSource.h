@@ -1,5 +1,5 @@
 // CParseSource.h - a positioned byte-reader over a ButeMgr parse source (the
-// 0x139xxx stream family; trace placeholder ClassUnknown_85). It serves bytes
+// 0x139xxx stream family; trace placeholder tomalla-85). It serves bytes
 // from one of three backing stores, in priority order:
 //   - a memory-mapped source object at m_mapped (when its m_mapping is live),
 //   - an inline byte buffer at m_buffer,

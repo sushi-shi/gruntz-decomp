@@ -1,7 +1,7 @@
 // DiscoveredSmall.cpp - trace-discovered small leaf methods re-homed from
-// src/Stub/Discovered.cpp (matcher-1). Each ClassUnknown_N is a placeholder
-// class whose true name is unknown; only the OFFSETS + code bytes are
-// load-bearing. These are the self-contained (no/one-reloc) leaves: simple
+// src/Stub/Discovered.cpp (matcher-1). Each class here is a trace-discovered
+// placeholder whose true identity is unrecovered; only the OFFSETS + code bytes
+// are load-bearing. These are the self-contained (no/one-reloc) leaves: simple
 // ctors / inits / free-list ops / a key-compare helper.
 #include <Ints.h>
 #include <rva.h>
@@ -13,12 +13,12 @@ extern "C" void RezFree(void* p);
 extern void* g_wapObjectDtorVtbl;
 
 // ---------------------------------------------------------------------------
-// ClassUnknown_28 @0x0311b0 - a typed free-list push: subtract the node's link
+// FreeNodePool @0x0311b0 - a typed free-list push: subtract the node's link
 // offset (m_c) from the freed pointer, chain it onto the head (m_4). __thiscall,
 // 1 stack arg.
 // ---------------------------------------------------------------------------
-SIZE_UNKNOWN(ClassUnknown_28);
-class ClassUnknown_28 {
+SIZE_UNKNOWN(FreeNodePool);
+class FreeNodePool {
 public:
     void Push(char* p);
     i32 m_0;
@@ -27,39 +27,39 @@ public:
     i32 m_c; // node link offset
 };
 RVA(0x000311b0, 0x14)
-void ClassUnknown_28::Push(char* p) {
+void FreeNodePool::Push(char* p) {
     char* node = p - m_c;
     *(void**)node = m_4;
     m_4 = node;
 }
 
 // ---------------------------------------------------------------------------
-// ClassUnknown_29 @0x029a30 - a list iterator advance: read the current node
+// ListNodeAdvance @0x029a30 - a list iterator advance: read the current node
 // (*it), step the cursor to its link (*cur), return a pointer into the current
 // node's payload (cur+8). __stdcall, 1 stack arg.
 // ---------------------------------------------------------------------------
 RVA(0x00029a30, 0x10)
-void* __stdcall ClassUnknown_29_advance(void** it) {
+void* __stdcall ListNodeAdvance(void** it) {
     char* cur = (char*)*it;
     *it = *(void**)cur;
     return cur + 8;
 }
 
 // ---------------------------------------------------------------------------
-// ClassUnknown_14 @0x029ac0 - 4-field initializer (ctor returning this).
+// QuadIntRecord @0x029ac0 - 4-field initializer (ctor returning this).
 // __thiscall, 4 stack args, ret 0x10.
 // ---------------------------------------------------------------------------
-SIZE_UNKNOWN(ClassUnknown_14);
-class ClassUnknown_14 {
+SIZE_UNKNOWN(QuadIntRecord);
+class QuadIntRecord {
 public:
-    ClassUnknown_14(i32 a, i32 b, i32 c, i32 d);
+    QuadIntRecord(i32 a, i32 b, i32 c, i32 d);
     i32 m_0;
     i32 m_4;
     i32 m_8;
     i32 m_c;
 };
 RVA(0x00029ac0, 0x20)
-ClassUnknown_14::ClassUnknown_14(i32 a, i32 b, i32 c, i32 d) {
+QuadIntRecord::QuadIntRecord(i32 a, i32 b, i32 c, i32 d) {
     m_0 = a;
     m_4 = b;
     m_8 = c;
@@ -67,12 +67,12 @@ ClassUnknown_14::ClassUnknown_14(i32 a, i32 b, i32 c, i32 d) {
 }
 
 // ---------------------------------------------------------------------------
-// ClassUnknown_21 @0x15b2b0 - zero three fields (ctor returning this).
+// Obj15b2b0 @0x15b2b0 - zero three fields (ctor returning this).
 // ---------------------------------------------------------------------------
-SIZE_UNKNOWN(ClassUnknown_21);
-class ClassUnknown_21 {
+SIZE_UNKNOWN(Obj15b2b0);
+class Obj15b2b0 {
 public:
-    ClassUnknown_21();
+    Obj15b2b0();
     char m_pad0[0x8];
     i32 m_8;
     i32 m_c;
@@ -80,36 +80,36 @@ public:
     i32 m_18;
 };
 RVA(0x0015b2b0, 0xe)
-ClassUnknown_21::ClassUnknown_21() {
+Obj15b2b0::Obj15b2b0() {
     m_c = 0;
     m_8 = 0;
     m_18 = 0;
 }
 
 // ---------------------------------------------------------------------------
-// ClassUnknown_22 @0x15b270 - seed two fields (ctor returning this).
+// Obj15b270 @0x15b270 - seed two fields (ctor returning this).
 // ---------------------------------------------------------------------------
-SIZE_UNKNOWN(ClassUnknown_22);
-class ClassUnknown_22 {
+SIZE_UNKNOWN(Obj15b270);
+class Obj15b270 {
 public:
-    ClassUnknown_22();
+    Obj15b270();
     char m_pad0[0x8];
     i32 m_8;
     char m_pad0c[0x20 - 0xc];
     i32 m_20;
 };
 RVA(0x0015b270, 0x11)
-ClassUnknown_22::ClassUnknown_22() {
+Obj15b270::Obj15b270() {
     m_8 = (i32)0x80000000;
     m_20 = -1;
 }
 
 // ---------------------------------------------------------------------------
-// ClassUnknown_39 @0x148d10 - free two owned heap blocks (m_c, m_20) if set.
+// DualBufferOwner @0x148d10 - free two owned heap blocks (m_c, m_20) if set.
 // __thiscall, void.
 // ---------------------------------------------------------------------------
-SIZE_UNKNOWN(ClassUnknown_39);
-class ClassUnknown_39 {
+SIZE_UNKNOWN(DualBufferOwner);
+class DualBufferOwner {
 public:
     void FreeBuffers();
     char m_pad0[0xc];
@@ -118,7 +118,7 @@ public:
     void* m_20;
 };
 RVA(0x00148d10, 0x25)
-void ClassUnknown_39::FreeBuffers() {
+void DualBufferOwner::FreeBuffers() {
     if (m_c) {
         RezFree(m_c);
     }
@@ -128,15 +128,15 @@ void ClassUnknown_39::FreeBuffers() {
 }
 
 // ---------------------------------------------------------------------------
-// ClassUnknown_46 @0x1591b0 - wap-object base init: seed m_4=-1, zero
-// m_8/m_c/m_10, stamp the grand-base dtor vptr. A void METHOD (keeps this in
-// ecx, eax=0; no mov eax,ecx) - see vptr-stamp-void-init-not-ctor.
+// WapObjBase @0x1591b0 - wap-object base init: seed m_4=-1, zero m_8/m_c/m_10,
+// stamp the grand-base dtor vptr. A void METHOD (keeps this in ecx, eax=0; no
+// mov eax,ecx) - see vptr-stamp-void-init-not-ctor.
 // TERMINAL manual stamp (not convertible to `: public Wap::CObject`): this is a
 // standalone void re-init method, not a ctor, so the store IS retail's own body -
 // cl's auto-stamp only lands in a ctor. Identity is a placeholder besides.
 // ---------------------------------------------------------------------------
-SIZE_UNKNOWN(ClassUnknown_46);
-class ClassUnknown_46 {
+SIZE_UNKNOWN(WapObjBase);
+class WapObjBase {
 public:
     void BaseInit();
     void* m_vptr;
@@ -146,7 +146,7 @@ public:
     i32 m_10;
 };
 RVA(0x001591b0, 0x19)
-void ClassUnknown_46::BaseInit() {
+void WapObjBase::BaseInit() {
     m_4 = -1;
     m_10 = 0;
     m_8 = 0;
@@ -155,7 +155,7 @@ void ClassUnknown_46::BaseInit() {
 }
 
 // ---------------------------------------------------------------------------
-// ClassUnknown_49 @0x1397a0 - teardown: free m_0; then free m_38 unless the
+// Obj1397a0 @0x1397a0 - teardown: free m_0; then free m_38 unless the
 // m_10 target is live (m_10 && m_10->m_48 != 0); then clear nine fields.
 // __thiscall, void. (The two `if (m_38) free` arms tail-merge to one call.)
 // ---------------------------------------------------------------------------
@@ -163,8 +163,8 @@ struct Obj49Target {
     char m_pad[0x48];
     i32 m_48;
 };
-SIZE_UNKNOWN(ClassUnknown_49);
-class ClassUnknown_49 {
+SIZE_UNKNOWN(Obj1397a0);
+class Obj1397a0 {
 public:
     void Teardown();
     void* m_0;
@@ -180,7 +180,7 @@ public:
     void* m_38;
 };
 RVA(0x001397a0, 0x57)
-void ClassUnknown_49::Teardown() {
+void Obj1397a0::Teardown() {
     if (m_0) {
         RezFree(m_0);
     }
@@ -207,7 +207,7 @@ void ClassUnknown_49::Teardown() {
 }
 
 // ---------------------------------------------------------------------------
-// ClassUnknown_8 @0x16e480 - the bit-level common-prefix length of two byte
+// KeyPrefixBits @0x16e480 - the bit-level common-prefix length of two byte
 // keys: 8 per matching leading byte, plus the trailing-zero-bit count of the
 // first differing pair's xor. __cdecl.
 // ---------------------------------------------------------------------------
@@ -230,9 +230,9 @@ i32 KeyPrefixBits_16e480(const char* a, const char* b) {
 }
 
 // ---------------------------------------------------------------------------
-// ClassUnknown_35 @0x021c40 - tail-call the CString dtor (0x1b9cde) on the
-// embedded string member at +8 (`add ecx,8; jmp ~CString`). The dtor is external
-// (no body) so its `jmp rel32` reloc-masks. Re-homed from Discovered.cpp.
+// CU35Host @0x021c40 - tail-call the CString dtor (0x1b9cde) on the embedded
+// string member at +8 (`add ecx,8; jmp ~CString`). The dtor is external (no
+// body) so its `jmp rel32` reloc-masks. Re-homed from Discovered.cpp.
 // ---------------------------------------------------------------------------
 struct CU35Str {
     ~CU35Str(); // 0x1b9cde  (~CString)

@@ -168,7 +168,7 @@ static inline CLevelObj* ListGetNext(CLevelList* list) {
 
 // CBattlezMapConfig is defined once in <Gruntz/BattlezMapConfig.h> (included above).
 // LoadConfig references the config-phase field view; the run-phase spawn methods
-// (UnknownClassArrays.cpp) reference the run view of the same bytes.
+// (the BattlezMapConfig RUN-phase unit) reference the run view of the same bytes.
 
 // ===========================================================================
 // CBattlezMapConfig::LoadConfig

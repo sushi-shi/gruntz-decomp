@@ -115,7 +115,7 @@ namespace ApiCallerStubs {
     // they take `this` in ecx) but their real owning class isn't recovered yet.
     // Membership surfaces the implicit `this` + __thiscall ABI; explicit args are
     // the N/4 from the callee's `ret N`.
-    struct ThisStubOwnerUnknown {
+    struct ThisStubOwner {
         i32 winapi_015fe0_SendMessageA(i32);
         i32 winapi_0c7ec0_timeGetTime(i32, i32, i32);
         i32 winapi_0e6020_SetRect(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32);
@@ -192,7 +192,7 @@ namespace ApiCallerStubs {
     };
 
     // ---- Proximity-attributed owners (HIGH, both-sides RVA bracket;
-    // docs/tu-spatial-structure.md). These stubs were ThisStubOwnerUnknown;
+    // docs/tu-spatial-structure.md). These stubs were ThisStubOwner;
     // their real classes live in their own TUs - these are minimal placeholder
     // hosts so each stub files under its attributed class (matching-neutral). ----
     struct CGrunt {
@@ -2093,8 +2093,7 @@ namespace ApiCallerStubs {
     // artifact stub is kept so as not to regress the headline.
     // proximity: CFileIO@-0x920 | CSBI_WellGoo@+0x360
     RVA(0x000e6020, 0x288)
-    i32
-    ThisStubOwnerUnknown::winapi_0e6020_SetRect(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32) {
+    i32 ThisStubOwner::winapi_0e6020_SetRect(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32) {
         return 0;
     }
 

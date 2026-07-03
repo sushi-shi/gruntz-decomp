@@ -59,7 +59,7 @@ public:
     virtual void Vfunc34(i32 a1, i32 a2, i32 a3); // +0x34
     virtual void Vfunc38(i32 a1, i32 a2, i32 a3); // +0x38
 
-    // Data member used by VirtualMethodUnknown38 (write to +0xd8).
+    // Data member used by ResetChildD8 (write to +0xd8).
     // vtable pointer at +0x00 (4 B); pad from +0x04 to +0xd7.
     char m_pad04[0xd8 - 4];
     i32 m_d8; // +0xd8
@@ -81,27 +81,27 @@ struct CDDrawGroupNode {
 // ---------------------------------------------------------------------------
 class CDDrawChildGroup {
 public:
-    i32 VirtualMethodUnknown14();
-    void VirtualMethodUnknown30(i32 a1, i32 a2, i32 a3);
-    void VirtualMethodUnknown34(i32 a1, i32 a2, i32 a3);
+    i32 IsReady();
+    void WalkDispatch34(i32 a1, i32 a2, i32 a3);
+    void WalkDispatch38(i32 a1, i32 a2, i32 a3);
 
     // --- vtable padding so the leaf virtuals land at their target slots ---
-    virtual void Slot00();                               // +0x00
-    virtual void Slot04();                               // +0x04
-    virtual void Slot08();                               // +0x08
-    virtual void Slot0C();                               // +0x0c
-    virtual void Slot10();                               // +0x10
-    virtual void Slot14();                               // +0x14
-    virtual void Slot18();                               // +0x18
-    virtual void VirtualMethodUnknown1C();               // +0x1c  thunk -> +0x3c
-    virtual void Slot20();                               // +0x20
-    virtual void Slot24();                               // +0x24
-    virtual void VirtualMethodUnknown28(i32 a1);         // +0x28
-    virtual void VirtualMethodUnknown2C(i32 a1, i32 a2); // +0x2c
-    virtual void Slot30();                               // +0x30
-    virtual void Slot34();                               // +0x34
-    virtual void VirtualMethodUnknown38();               // +0x38
-    virtual void Slot3C();                               // +0x3c  (referenced by +0x1c thunk)
+    virtual void Slot00();                       // +0x00
+    virtual void Slot04();                       // +0x04
+    virtual void Slot08();                       // +0x08
+    virtual void Slot0C();                       // +0x0c
+    virtual void Slot10();                       // +0x10
+    virtual void Slot14();                       // +0x14
+    virtual void Slot18();                       // +0x18
+    virtual void ForwardTo3C();                  // +0x1c  thunk -> +0x3c
+    virtual void Slot20();                       // +0x20
+    virtual void Slot24();                       // +0x24
+    virtual void WalkDispatch2C(i32 a1);         // +0x28
+    virtual void WalkDispatch30(i32 a1, i32 a2); // +0x2c
+    virtual void Slot30();                       // +0x30
+    virtual void Slot34();                       // +0x34
+    virtual void ResetChildD8();                 // +0x38
+    virtual void Slot3C();                       // +0x3c  (referenced by +0x1c thunk)
 
     i32 m_status;              // +0x04  initialized to -1 when inactive
     char m_pad08[0x0c - 0x08]; // +0x08..0x0b
@@ -116,7 +116,7 @@ public:
 // ---------------------------------------------------------------------------
 // Same base readiness predicate used by several CDDrawSubMgr-derived managers.
 RVA(0x001575e0, 0x16)
-i32 CDDrawChildGroup::VirtualMethodUnknown14() {
+i32 CDDrawChildGroup::IsReady() {
     if (m_parent == 0) {
         goto fail;
     }
@@ -131,7 +131,7 @@ fail:
 // ---------------------------------------------------------------------------
 // Thunk: tail-calls the object's own virtual at vtable slot +0x3c.
 RVA(0x001591e0, 0x5)
-void CDDrawChildGroup::VirtualMethodUnknown1C() {
+void CDDrawChildGroup::ForwardTo3C() {
     this->Slot3C();
 }
 
@@ -139,10 +139,10 @@ void CDDrawChildGroup::VirtualMethodUnknown1C() {
 // Walk the +0x14 list dispatching child->Slot2C(a1) per node. No post-loop
 // dispatch.
 //
-// RESIDUE: same loop-advance scheduling plateau as Unknown30/34 — see comment
+// RESIDUE: same loop-advance scheduling plateau as WalkDispatch34/34 — see comment
 // below for details.
 RVA(0x00159c90, 0x23)
-void CDDrawChildGroup::VirtualMethodUnknown28(i32 a1) {
+void CDDrawChildGroup::WalkDispatch2C(i32 a1) {
     CDDrawGroupNode* n = m_head;
     if (n != 0) {
         do {
@@ -157,7 +157,7 @@ void CDDrawChildGroup::VirtualMethodUnknown28(i32 a1) {
 // Walk the +0x14 list dispatching child->Slot30(a1,a2) per node. No post-loop
 // dispatch.
 RVA(0x00159cc0, 0x2a)
-void CDDrawChildGroup::VirtualMethodUnknown2C(i32 a1, i32 a2) {
+void CDDrawChildGroup::WalkDispatch30(i32 a1, i32 a2) {
     CDDrawGroupNode* n = m_head;
     if (n != 0) {
         do {
@@ -189,7 +189,7 @@ void CDDrawChildGroup::VirtualMethodUnknown2C(i32 a1, i32 a2) {
 // For each node in the +0x14 list, dispatch child +0x34 with (a1,a2,a3); then
 // dispatch this->+0x2c with (a2,a3).
 RVA(0x00159cf0, 0x42)
-void CDDrawChildGroup::VirtualMethodUnknown30(i32 a1, i32 a2, i32 a3) {
+void CDDrawChildGroup::WalkDispatch34(i32 a1, i32 a2, i32 a3) {
     CDDrawGroupNode* n = m_head;
     if (n != 0) {
         do {
@@ -197,13 +197,13 @@ void CDDrawChildGroup::VirtualMethodUnknown30(i32 a1, i32 a2, i32 a3) {
             n = n->m_next;
         } while (n != 0);
     }
-    VirtualMethodUnknown2C(a2, a3);
+    WalkDispatch30(a2, a3);
 }
 
 // ---------------------------------------------------------------------------
-// As Unknown30 but the loop dispatches child +0x38.
+// As WalkDispatch34 but the loop dispatches child +0x38.
 RVA(0x00159d40, 0x42)
-void CDDrawChildGroup::VirtualMethodUnknown34(i32 a1, i32 a2, i32 a3) {
+void CDDrawChildGroup::WalkDispatch38(i32 a1, i32 a2, i32 a3) {
     CDDrawGroupNode* n = m_head;
     if (n != 0) {
         do {
@@ -211,14 +211,14 @@ void CDDrawChildGroup::VirtualMethodUnknown34(i32 a1, i32 a2, i32 a3) {
             n = n->m_next;
         } while (n != 0);
     }
-    VirtualMethodUnknown2C(a2, a3);
+    WalkDispatch30(a2, a3);
 }
 
 // ---------------------------------------------------------------------------
 // Walk the +0x14 list setting each child's field at +0xd8 to -1. No vtable
 // dispatch, no stack args.
 RVA(0x00159d90, 0x1c)
-void CDDrawChildGroup::VirtualMethodUnknown38() {
+void CDDrawChildGroup::ResetChildD8() {
     CDDrawGroupNode* n = m_head;
     if (n != 0) {
         do {

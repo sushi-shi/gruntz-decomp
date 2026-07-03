@@ -308,7 +308,7 @@ fail:
 // they only touch member offsets (written as raw casts on `this`), an argument
 // struct, and sibling virtuals via the object's own vtable.
 //
-// The three 184-byte siblings (Unknown24/28/2C) are identical except for which
+// The three 184-byte siblings (variant24/28/2C) are identical except for which
 // sibling virtual they dispatch to: vtable +0x38 / +0x3c / +0x40 respectively.
 // Each loads the +0x10 record from a caller struct, stamps the param block, then
 // calls that sibling virtual with arg1; on a 0 result it invokes the +0x1c
@@ -1061,7 +1061,7 @@ struct ProbeObj {
         if (tile_ == TILE_UNINIT || tile_ == TILE_CLEAR) {                                         \
             (RESULT) = 0;                                                                          \
         } else {                                                                                   \
-            CImageSet* set_ = m_imageSets[tile_ & 0xffff];                             \
+            CImageSet* set_ = m_imageSets[tile_ & 0xffff];                                         \
             (RESULT) = set_->dummy8(subX_, subY_);                                                 \
         }                                                                                          \
     } while (0)
@@ -1462,8 +1462,7 @@ void CGameLevel::VisitVisible(void* visitor, i32 ctx) {
         i32 i = 1;
         if (m_planes.GetSize() > i) {
             do {
-                CLevelPlane* p =
-                    (i >= 0 && i < m_planes.GetSize()) ? m_planes.GetData()[i] : 0;
+                CLevelPlane* p = (i >= 0 && i < m_planes.GetSize()) ? m_planes.GetData()[i] : 0;
                 i32 cap = p->m_cap;
                 i32 blocked = 0;
                 while (node != 0 && blocked == 0) {
@@ -3025,7 +3024,7 @@ i32 CGameLevel::WalkColumnDown(void* target, i32 unused) {
 }
 
 // --- class-metadata: the FORCE-REALIZED vtables (were the g_gameLevelVtbl /
-// g_imageSet1/2/3Vtbl manual stamps + UnknownVTables placeholders). cl now emits
+// g_imageSet1/2/3Vtbl manual stamps + vtbl-placeholders placeholders). cl now emits
 // each ??_7 (18 slots), matched slots pointing at the real methods (RVA-bound), the
 // base-thunk/engine slots reloc-masked declared-only externs. -------------------
 VTBL(CGameLevel, 0x001f0150); // ??_7CGameLevel (was g_gameLevelVtbl)

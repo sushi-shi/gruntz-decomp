@@ -2,7 +2,7 @@
 //
 // A plain (non-CObject) helper that loads grunt-spawn parameters from the bute
 // config (g_buteMgr) and the game registry (g_gameReg), then builds + serves a
-// CArray of voice/spawn entries (ClassUnknown_25 / element @0x99ca0). Recovered
+// CArray of voice/spawn entries (tomalla-25 / element @0x99ca0). Recovered
 // from the spawn-config method family at 0x11axxx-0x11cxxx: LoadGruntSpawnConfig
 // (0x11afb0) reads "GruntPercent"/"GruntPriority"/"GruntVoice", BuildVoiceSoundList
 // (0x11c210) reads the "VOICES_%s" bute sections, and the random-weighted picker
@@ -32,8 +32,8 @@
 
 // ---------------------------------------------------------------------------
 // The per-grunt voice/spawn record (the CGruntSpawnConfig CDWordArray element;
-// trace-placeholder ClassUnknown_25). It IS a CObList (block size 0xa) of voice-
-// sound nodes (CVoiceSound, ClassUnknown_26) plus two trailing ints: m_1c (= 0 at
+// trace-placeholder tomalla-25). It IS a CObList (block size 0xa) of voice-
+// sound nodes (CVoiceSound, tomalla-26) plus two trailing ints: m_1c (= 0 at
 // ctor, the CObList count overlaps its own m_nCount at +0xc) and m_20 (= -1, the
 // last-picked index the random picker reads).
 //
@@ -51,7 +51,7 @@
 
 // A voice-sound node held in the CSpawnEntry CObList. 12 bytes: a CString name +
 // an int + a cached char* of the name's data. Its ctor (FUN_0051c630, the
-// ClassUnknown_26 placeholder) is reloc-masked (defined in another TU); its
+// tomalla-26 placeholder) is reloc-masked (defined in another TU); its
 // teardown is `~CString + operator delete` (no vtable - a plain value node).
 struct CVoiceSound {
     CVoiceSound(CString s); // 0x11c630 (__thiscall, ret 8)

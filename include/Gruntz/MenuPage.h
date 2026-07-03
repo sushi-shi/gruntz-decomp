@@ -1,6 +1,6 @@
 // MenuPage.h - a named menu/list page node (C:\Proj\Gruntz).
 //
-// Recovered from the ClassUnknown_45 trace cluster (0x183250..0x1844d0). The
+// Recovered from the tomalla-45 trace cluster (0x183250..0x1844d0). The
 // main-menu builder (src/Gruntz/MainMenuBuilder.cpp, 0xa11d0) constructs one of
 // these per menu page ("MAINMENU", "SINGLEPLAYER", "MULTIPLAYER", "MOVIEZ",
 // "QUESTZ", the AREAS sub-pages) and fills it with named items; the on-screen

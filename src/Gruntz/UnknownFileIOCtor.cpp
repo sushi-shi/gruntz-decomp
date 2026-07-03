@@ -1,9 +1,9 @@
-// UnknownFileIOCtor.cpp - a fresh-object constructor (0x8fea0) mis-attributed to
+// FileIOOwner: a fresh-object constructor (0x8fea0) mis-attributed to
 // CGruntzMgr::InitCFileIOMember by the call-xref heuristic. It is NOT a CGruntzMgr
 // method: it constructs a destructible CFileIO at +0x124 and a CByteArray at +0x138,
 // zeros four scalars, and seeds the CRT rng - which contradicts the CGruntzMgr ctor's
 // int store at +0x138 and overwrites +0x00 (a vptr). Its true owner class is not yet
-// identified, so it lives in its own TU (like UnknownClassInCGruntzMgr) rather than
+// identified, so it lives in its own TU (like GruntzMgrHelper) rather than
 // the wrong class's file. Re-homed from src/Stub/CGruntzMgr.cpp.
 //
 // The destructible CFileIO forces the /GX EH frame (one EH state). Modeled as the
@@ -23,8 +23,8 @@ struct UfoByteArray {
 extern "C" void srand(unsigned seed); // 0x11fed0
 extern "C" long time(long* t);        // 0x120210
 
-struct UnknownFileIOOwner {
-    UnknownFileIOOwner();
+struct FileIOOwner {
+    FileIOOwner();
     i32 m_0;
     i32 m_4;
     i32 m_8;
@@ -37,7 +37,7 @@ struct UnknownFileIOOwner {
 // @confidence: med
 // @source: call-xref
 RVA(0x0008fea0, 0x6d)
-UnknownFileIOOwner::UnknownFileIOOwner() {
+FileIOOwner::FileIOOwner() {
     m_0 = 0;
     m_4 = 0;
     m_8 = 0;
@@ -46,4 +46,4 @@ UnknownFileIOOwner::UnknownFileIOOwner() {
 }
 SIZE_UNKNOWN(UfoByteArray);
 SIZE_UNKNOWN(UfoFileIO);
-SIZE_UNKNOWN(UnknownFileIOOwner);
+SIZE_UNKNOWN(FileIOOwner);

@@ -580,7 +580,7 @@ public:
 // callback is an external function whose pushed address reloc-masks.
 extern "C" void ModeResetCallback(); // LAB_00403193
 struct CWorldRegistrar {
-    void RegisterCallback(void* cb); // UnknownVirtualMethod28 (0x155f50) (this, cb)
+    void RegisterCallback(void* cb); // SetHwnd (0x155f50) (this, cb)
 };
 // The per-load world-object factory (CreateGameObjectByName, __cdecl, reloc-masked).
 void CreateWorldObjects(void* world);
@@ -1140,7 +1140,7 @@ void CGruntzMgr::PerFrameTick() {
 
 // -------------------------------------------------------------------------
 // CGruntzMgr::AdvanceFrame  (__thiscall; `ret 8`)
-// Retail Ghidra labels this ?VirtualUnknownMethod06@CGruntzMgr@@QAEXXZ (a
+// Retail Ghidra labels this ?VirtualMethod06@CGruntzMgr@@QAEXXZ (a
 // void(void) mistype), but the body reads its first arg ([esp+8]) and `ret 8`s
 // two args, so the true shape is void(int,int). The natural MS mangle of that
 // signature (?AdvanceFrame@CGruntzMgr@@QAEXHH@Z) is what the base obj emits and
@@ -1188,7 +1188,7 @@ void CGruntzMgr::AdvanceFrame(i32 doDraw, i32 /*unused*/) {
 // id to its file name, then probes first the working directory ("<cwd>\<name>")
 // and, failing that, the Movies\ folder on the Gruntz CD ("<letter>:\Movies\
 // <name>"), returning the first that exists (empty CString if neither, or for an
-// unknown id). The two CString temps + the szPath buffer give the /GX frame.
+// unresolved id). The two CString temps + the szPath buffer give the /GX frame.
 RVA(0x0008ff30, 0x1ca)
 CString CGruntzMgr::BuildMoviePath(i32 movie) {
     CString name;
@@ -1227,7 +1227,7 @@ CString CGruntzMgr::BuildMoviePath(i32 movie) {
     }
 
     if (name.GetLength() == 0) {
-        return name; // unknown id
+        return name; // unresolved id
     }
 
     CString path;
