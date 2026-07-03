@@ -36,23 +36,29 @@ def _strip(text: str) -> str:
     return text
 
 
-# (label, regex). Occurrences summed over stripped code. Tight patterns so a member
-# cast `(T*)m_x` (clang-format writes it tight) doesn't collide with `if (c) m_x`.
+# (label, regex, cpp_only). Occurrences summed over stripped code. Tight patterns so
+# a member cast `(T*)m_x` (clang-format writes it tight) doesn't collide with
+# `if (c) m_x`. cpp_only=True counts ONLY in .cpp TUs (not headers): a `struct/class
+# X {...}` DEFINITION inside a .cpp is a per-TU "fake view" of a real engine class -
+# the mandate is to reduce every one to the real struct/class in a header, so this
+# metric drives to ~0 (headers are where types belong; `.cpp` files define methods).
+_CPP = {".cpp", ".cc", ".cxx"}
 METRICS = (
-    ("m_<hex> fields", re.compile(r"\bm_[0-9a-f]{2,}\b")),
-    ("Unknown ids", re.compile(r"\b\w*[Uu]nknown\w*\b")),
-    ("g_<hex> globals", re.compile(r"\bg_[0-9a-f]{4,}\b")),
-    ("Method/Stub/FUN", re.compile(r"\b(?:Method[0-9a-f]{3,}|Stub_[0-9a-f]+|vfunc_[0-9]+|FUN_[0-9a-f]+)\b")),
-    (")this casts", re.compile(r"\)this\b")),
-    (")m_ casts", re.compile(r"\)m_[A-Za-z0-9_]")),
-    ("(char*) casts", re.compile(r"\(char ?\*\)")),
-    ("(const char*) casts", re.compile(r"\(const char ?\*\)")),
-    ("void* m_ members", re.compile(r"\bvoid ?\* m_")),
+    ("m_<hex> fields", re.compile(r"\bm_[0-9a-f]{2,}\b"), False),
+    ("Unknown ids", re.compile(r"\b\w*[Uu]nknown\w*\b"), False),
+    ("g_<hex> globals", re.compile(r"\bg_[0-9a-f]{4,}\b"), False),
+    ("Method/Stub/FUN", re.compile(r"\b(?:Method[0-9a-f]{3,}|Stub_[0-9a-f]+|vfunc_[0-9]+|FUN_[0-9a-f]+)\b"), False),
+    (".cpp-local views", re.compile(r"\b(?:struct|class)\s+\w+\s*(?::[^{;]*)?\{"), True),
+    (")this casts", re.compile(r"\)this\b"), False),
+    (")m_ casts", re.compile(r"\)m_[A-Za-z0-9_]"), False),
+    ("(char*) casts", re.compile(r"\(char ?\*\)"), False),
+    ("(const char*) casts", re.compile(r"\(const char ?\*\)"), False),
+    ("void* m_ members", re.compile(r"\bvoid ?\* m_"), False),
 )
 
 
 def count() -> list[tuple[str, int]]:
-    totals = {label: 0 for label, _ in METRICS}
+    totals = {label: 0 for label, _, _ in METRICS}
     for root in ROOTS:
         base = REPO / root
         if not base.is_dir():
@@ -60,13 +66,16 @@ def count() -> list[tuple[str, int]]:
         for path in base.rglob("*"):
             if path.suffix not in EXTS or not path.is_file():
                 continue
+            is_cpp = path.suffix in _CPP
             try:
                 code = _strip(path.read_text(errors="ignore"))
             except OSError:
                 continue
-            for label, rx in METRICS:
+            for label, rx, cpp_only in METRICS:
+                if cpp_only and not is_cpp:
+                    continue
                 totals[label] += len(rx.findall(code))
-    return [(label, totals[label]) for label, _ in METRICS]
+    return [(label, totals[label]) for label, _, _ in METRICS]
 
 
 def load_baseline() -> dict[str, int]:
@@ -98,7 +107,7 @@ def report_lines(rows: list[tuple[str, int]] | None = None) -> list[str]:
     """Formatted scoreboard lines (two columns) for the build report."""
     rows = rows if rows is not None else count()
     base = load_baseline()
-    naming, casts = rows[:4], rows[4:]
+    naming, casts = rows[:5], rows[5:]
     width = max(len(lbl) for lbl, _ in rows) + 1
     lines = ["cleanliness (-> 0 where affordable; delta vs baseline, down = good):"]
     for i in range(max(len(naming), len(casts))):
