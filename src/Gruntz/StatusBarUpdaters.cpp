@@ -171,8 +171,8 @@ public:
     void UpdateChipGrinderStatusBar();
     void ChipGrinderFinishStep(); // thunk_FUN_00506a00 (external, reloc-masked)
     i32 LoadStatzTabToggleSprite(i32 value, i32 idx);
-    void LoadSwitchDownSprite();
-    void LoadSwitchUpSprite();
+    i32 LoadSwitchDownSprite();
+    i32 LoadSwitchUpSprite();
     i32 UpdateWarpStoneStatusBar(i32 a0, i32 phase, i32 srcX, i32 srcY);
 
     // The switch tile-trigger object: m_switchTileX/m_switchTileY are its grid
@@ -431,9 +431,16 @@ i32 EngineLabelBacklog::LoadStatzTabToggleSprite(i32 value, i32 idx) {
 // counter in the map grid (grid->m_20[grid->m_24[m_switchTileY] + m_switchTileX]) and notifies the
 // tile system, then - if the switch tile is on-screen (its pixel rect inside the
 // view bounds) and the status bar surface is live - runs the GAME_SWITCHDOWN
-// status-bar advance. Latches m_14 = 1 (down). __thiscall.
+// status-bar advance. Latches m_14 = 1 (down). __thiscall, returns 1.
+// @early-stop
+// ~72% CSE/regalloc wall: the int(1) return (was void) is now correct, but retail
+// RE-DERIVES `g_gameReg->m_30->m_tileHolder->m_grid` for the store leg (pinning
+// g_gameReg in edi), while our cl CSEs the two identical grid chains into one eax
+// (keeping grid, not g_gameReg, in a callee-saved reg). The whole register layout
+// cascades from that CSE choice. No source spelling defeats MSVC5's CSE of the two
+// identical multi-level loads without an intervening store. Logic byte-correct.
 RVA(0x00110570, 0xfb)
-void EngineLabelBacklog::LoadSwitchDownSprite() {
+i32 EngineLabelBacklog::LoadSwitchDownSprite() {
     CMapTileGrid* g = ((CRegHolder*)g_gameReg->m_30)->m_tileHolder->m_grid;
     i32 v = g->m_cellState[g->m_rowOffset[m_switchTileY] + m_switchTileX] + 1;
     CMapTileGrid* g2 = ((CRegHolder*)g_gameReg->m_30)->m_tileHolder->m_grid;
@@ -458,6 +465,7 @@ void EngineLabelBacklog::LoadSwitchDownSprite() {
         }
     }
     m_switchState = 1;
+    return 1;
 }
 
 // ===========================================================================
@@ -465,9 +473,12 @@ void EngineLabelBacklog::LoadSwitchDownSprite() {
 // ===========================================================================
 //
 // The UP mirror of LoadSwitchDownSprite: decrements the cell-state counter, runs
-// the GAME_SWITCHUP advance, and latches m_14 = 0 (up). __thiscall.
+// the GAME_SWITCHUP advance, and latches m_14 = 0 (up). __thiscall, returns 1.
+// @early-stop
+// ~70% CSE/regalloc wall (same as LoadSwitchDownSprite): int(1) return now correct;
+// residual is the grid-chain CSE that pins grid instead of g_gameReg. Logic exact.
 RVA(0x001106b0, 0xf4)
-void EngineLabelBacklog::LoadSwitchUpSprite() {
+i32 EngineLabelBacklog::LoadSwitchUpSprite() {
     CMapTileGrid* g = ((CRegHolder*)g_gameReg->m_30)->m_tileHolder->m_grid;
     i32 v = g->m_cellState[g->m_rowOffset[m_switchTileY] + m_switchTileX] - 1;
     CMapTileGrid* g2 = ((CRegHolder*)g_gameReg->m_30)->m_tileHolder->m_grid;
@@ -492,6 +503,7 @@ void EngineLabelBacklog::LoadSwitchUpSprite() {
         }
     }
     m_switchState = 0;
+    return 1;
 }
 
 // ===========================================================================

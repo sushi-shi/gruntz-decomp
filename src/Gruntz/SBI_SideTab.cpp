@@ -2,6 +2,7 @@
 #include <Mfc.h>
 #include <Ints.h>
 #include <Gruntz/ResMgr.h> // canonical g_gameReg->m_30 view (CResMgr + CDrawTarget + CImageRegistry)
+#include <Image/CImage.h>  // the m_30/m_34 frame handles ARE CImage (RenderFrame @0x153790)
 // SBI_SideTab.cpp - Gruntz CSBI_SideTab (C:\Proj\Gruntz), the frameless methods.
 // RTTI .?AVCSBI_SideTab@@; a sibling leaf of the SBI family
 //   CSBI_SideTab : CStatusBarItem  (RTTI hierarchy: {CSBI_SideTab, CStatusBarItem}).
@@ -16,13 +17,11 @@
 // Shared engine views (modeled minimally; the methods/fields touched are the only
 // load-bearing facts - every call through them is reloc-masked).
 
-// The per-frame draw handle held at m_30 / m_34: RenderFrame (0x153790,
-// __thiscall) blits the frame at a screen rect through the supplied surface
-// context. No body -> reloc-masked.
-struct CSideTabFrame {
-    void RenderFrame(i32 surfaceCtx, i32 x, i32 y, i32 z); // 0x153790
-};
-SIZE_UNKNOWN(CSideTabFrame);
+// The per-frame draw handles held at m_30 / m_34 ARE the RTTI CImage
+// (CImage::RenderFrame @0x153790, __thiscall) which blits the frame at a screen
+// rect through the supplied surface context (was the CSideTabFrame placeholder
+// view; unified so the two call rel32s co-name with retail). No body -> reloc-
+// masked.
 
 // The render host reached via g_gameReg->m_30 is the canonical CResMgr (ResMgr.h):
 // its m_drawTarget (+0x04) supplies the RenderFrame surface context at +0x14, and
@@ -79,8 +78,8 @@ public:
 
     char m_pad0[0x2c];
     CSideTabFallback* m_2c; // +0x2c  empty-slot fallback notify target
-    CSideTabFrame* m_30;    // +0x30  top frame handle
-    CSideTabFrame* m_34;    // +0x34  bottom frame handle (resolved glyph)
+    CImage* m_30;           // +0x30  top frame handle
+    CImage* m_34;           // +0x34  bottom frame handle (resolved glyph)
     i32 m_38;               // +0x38  tracked sampled value
     i32 m_3c;               // +0x3c  unit-table row index (stride 15)
     i32 m_40;               // +0x40  unit-table column index
@@ -113,15 +112,17 @@ i32 CSBI_SideTab::Refresh(i32 unused) {
 // vslot 5: if the draw gate is set, blit the two side frames through the game
 // manager's active drawable surface. Returns 1.
 // @early-stop
-// 87.8%: code bytes byte-identical; the two `call RenderFrame` rel32 + the
-// g_gameReg DIR32 are reloc-masked against differently-named symbols
-// (0x153790 / WwdGameReg) -> reloc-residual plateau.
+// ~98.1% reloc-residual plateau: CODE BYTES byte-identical to retail (verified
+// llvm-objdump base vs target). Raised from 87.8% by unifying the CSideTabFrame
+// view to CImage (the two RenderFrame rel32s now co-name) and fixing the 4th
+// RenderFrame arg to the literal 0 (was `z` - passing the arg forced an extra
+// `push ebx` to stage it). Residual is only the g_gameReg DIR32 name artifact.
 RVA(0x000e99c0, 0x4c)
 i32 CSBI_SideTab::Render(i32 z) {
     if (m_58) {
         i32 ctx = g_gameReg->m_30->m_drawTarget->m_drawContext;
-        m_30->RenderFrame(ctx, m_48, m_4c, z);
-        m_34->RenderFrame(ctx, m_48 + m_50, m_4c, z);
+        m_30->RenderFrame((void*)ctx, (void*)m_48, (void*)m_4c, 0);
+        m_34->RenderFrame((void*)ctx, (void*)(m_48 + m_50), (void*)m_4c, 0);
     }
     return 1;
 }
@@ -193,6 +194,6 @@ i32 CSBI_SideTab::BuildHandle() {
         glyph = (i32)gm->m_10.m_pData[val];
     }
     m_38 = val;
-    m_34 = (CSideTabFrame*)glyph;
+    m_34 = (CImage*)glyph;
     return 1;
 }
