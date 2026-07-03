@@ -18,6 +18,10 @@
 #include <Ints.h>
 #include <rva.h>
 
+// The +0x24 config host is the shared canonical CSbiConfigHost (SbiConfig.h, pulled
+// in the .cpp); only a pointer is needed here, so forward-declare it.
+struct CSbiConfigHost;
+
 // ---------------------------------------------------------------------------
 // CSBI_MenuItem - a single status-bar menu entry. The small layout (fields up to
 // +0x38) holds: a config-host pointer at +0x24, an item-counter at +0x28, an
@@ -53,21 +57,21 @@ public:
     i32 SerializeFields(void* ar, i32 kind, i32 a, i32 b); // 0x10bfc0  field block
 
     // ----- layout (placeholders; offsets are the load-bearing fact) -----
-    void* m_vptr; // +0x00  manual-stamp vtable pointer (slot 0x28 = Refresh)
-    i32 m_4;      // +0x04  active/valid flag
-    i32 m_8;      // +0x08  subtype tag (=2)
-    i32 m_c;      // +0x0c  command/tab id
-    i32 m_10;     // +0x10  arg0
-    i32 m_14;     // +0x14  rect x0 / arg block start
-    i32 m_18;     // +0x18  rect y0
-    i32 m_1c;     // +0x1c  rect x1
-    i32 m_20;     // +0x20  rect y1
-    void* m_24;   // +0x24  config host
-    i32 m_28;     // +0x28  counter / subtype
-    void* m_2c;   // +0x2c  owning rect-only host (CSBI_Image-like)
-    i32 m_30;     // +0x30  resolved frame handle
-    i32 m_34;     // +0x34  menu state tag
-    void* m_38;   // +0x38  resolved cue/config record
+    void* m_vptr;         // +0x00  manual-stamp vtable pointer (slot 0x28 = Refresh)
+    i32 m_4;              // +0x04  active/valid flag
+    i32 m_8;              // +0x08  subtype tag (=2)
+    i32 m_c;              // +0x0c  command/tab id
+    i32 m_10;             // +0x10  arg0
+    i32 m_14;             // +0x14  rect x0 / arg block start
+    i32 m_18;             // +0x18  rect y0
+    i32 m_1c;             // +0x1c  rect x1
+    i32 m_20;             // +0x20  rect y1
+    CSbiConfigHost* m_24; // +0x24  config host
+    i32 m_28;             // +0x28  counter / subtype
+    void* m_2c;           // +0x2c  owning rect-only host (CSBI_Image-like)
+    i32 m_30;             // +0x30  resolved frame handle
+    i32 m_34;             // +0x34  menu state tag
+    void* m_38;           // +0x38  resolved cue/config record
 };
 SIZE_UNKNOWN(CSBI_MenuItem);
 

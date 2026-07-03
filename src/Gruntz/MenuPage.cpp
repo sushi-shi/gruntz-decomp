@@ -94,20 +94,30 @@ CString CMenuPage::GetKey() {
 }
 
 // configure this page from a template item, then resolve its catalog
-// slot via m_owner->m_catalog->m_map CMapStringToPtr::Lookup.
+// slot via m_owner->m_catalog->m_map CMapStringToPtr::Lookup. The string args are
+// const char* (label/key/parent) - the sibling MainMenuBuilder.cpp view of this
+// same 0x1832f0 fn spells them so. Typing them (vs the old i32 + (const char*)
+// casts) reorders this TU's COMDATs and nudges the adjacent Layout 100->99.98%
+// (1 byte); accepted per "chase the real dev types" - the casts were the artifact.
 RVA(0x001832f0, 0xa5)
-i32 CMenuPage::Configure(CMenuItem* tmpl, i32 a1, i32 a2, i32 a3, i32 a4) {
+i32 CMenuPage::Configure(
+    CMenuItem* tmpl,
+    const char* label,
+    const char* key,
+    const char* parent,
+    i32 flags
+) {
     if (!tmpl) {
         return 0;
     }
     i32* t = (i32*)tmpl;
-    m_owner = (void*)t[0];
-    m_host = tmpl;
-    m_key = (const char*)a1;
-    m_switchKey = (const char*)a3;
+    m_owner = (CMenuHost*)t[0];
+    m_host = (CMenuRenderHost*)tmpl;
+    m_key = label;
+    m_switchKey = parent;
     m_rowSpacing = t[7]; // tmpl+0x1c
     m_headGap = t[6];    // tmpl+0x18
-    m_flags = a4;
+    m_flags = flags;
     // 4-dword block copy tmpl+0x8 -> this+0x34 (the layout rect L,T,R,B).
     struct Geom4 {
         i32 a, b, c, d;
@@ -116,7 +126,7 @@ i32 CMenuPage::Configure(CMenuItem* tmpl, i32 a1, i32 a2, i32 a3, i32 a4) {
     m_offsetX = 0;
     m_offsetY = 0;
     void* slot = 0;
-    ((CMenuHost*)m_owner)->m_catalog->m_map.Lookup((const char*)a2, slot);
+    m_owner->m_catalog->m_map.Lookup(key, slot);
     m_subPage = (CMenuPage*)slot;
     return slot != 0;
 }
@@ -420,7 +430,7 @@ i32 CMenuPage::Layout(i32 ctx) {
             y += item->GetWidth() / 2;
             item->Place(ctx, x, y);
             if (item->m_24 == 2 && !(m_flags & 8)) {
-                ((CMenuRenderHost*)m_host)->Draw(ctx, item, x, y);
+                m_host->Draw(ctx, item, x, y);
             }
             y += item->GetWidth() / 2;
             y += m_rowSpacing;
@@ -445,11 +455,11 @@ i32 CMenuPage::Switch(i32 refocus) {
     if (m_switchKey.GetLength() == 0) {
         return 0;
     }
-    if (!((CMenuRenderHost*)m_host)->SwitchToPage((const char*)m_switchKey)) {
+    if (!m_host->SwitchToPage((const char*)m_switchKey)) {
         return 0;
     }
     if (refocus) {
-        ((CMenuRenderHost*)m_host)->NotifySwitch();
+        m_host->NotifySwitch();
     }
     return 1;
 }
@@ -472,7 +482,7 @@ i32 CMenuPage::CanWrap() {
     if (f & 1) {
         return 1;
     }
-    return ((CMenuRenderHost*)m_host)->m_wrapFlag & 1;
+    return m_host->m_wrapFlag & 1;
 }
 
 // single-list grid layout: center each child in the page rect, place
@@ -512,7 +522,7 @@ i32 CMenuPage::LayoutOne(i32 ctx) {
             y += item->GetWidth() / 2;
             item->Place(ctx, col, y);
             if (item->m_24 == 2 && !(m_flags & 8)) {
-                ((CMenuRenderHost*)m_host)->Draw(ctx, item, col, y);
+                m_host->Draw(ctx, item, col, y);
             }
             y += item->GetWidth() / 2;
             y += m_rowSpacing;

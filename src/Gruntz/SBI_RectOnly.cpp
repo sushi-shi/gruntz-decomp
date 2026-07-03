@@ -561,24 +561,24 @@ public:
     void** m_ptrTable;           // +0x534  pointer to the pooled-ptr table (elements streamed 8B)
     i32 m_ptrCount;              // +0x538  count for m_ptrTable
     char m_pad53c[0x548 - 0x53c];
-    i32 m_hlBusy;              // +0x548
-    void* m_retabNotify;       // +0x54c  a notifier object (freed on retab; Refresh()/Notify0())
-    i32 m_toggleActive;        // +0x550  toggle-mode active flag
-    i32 m_toggleHandle;        // +0x554  toggle-mode tab handle
-    i32 m_destructWarnActive;  // +0x558
-    i32 m_modeState;           // +0x55c
-    i32 m_destructWarnLast;    // +0x560  destruct-warning last draw-clock
-    i32 m_destructWarnLastHi;  // +0x564
-    i32 m_destructWarnDelay;   // +0x568  destruct-warning delay (config)
-    i32 m_destructWarnDelayHi; // +0x56c
-    CSbiSlotPtr* m_modeNotify; // +0x570  notify target
-    i32 m_modeArmed;           // +0x574
-    i32 m_578;                 // +0x578  (cleared on multiplayer/battlez reset)
-    i32 m_battlezPct[38];      // +0x57c  running-sum item-percent table (battlez cfg)
-    i32 m_barFrameGate;        // +0x614  main-status-bar frame gate
-    void* m_destructButton;    // +0x618  destruct-button display object
-    i32 m_61c[4];              // +0x61c  trailing dword block (cleared on reset)
-    i32 m_tabCycle;            // +0x62c  4-state highlight cursor (AdvanceTab cycles 0..3)
+    i32 m_hlBusy;               // +0x548
+    CSbiMode54c* m_retabNotify; // +0x54c  a notifier object (freed on retab; Refresh()/Notify0())
+    i32 m_toggleActive;         // +0x550  toggle-mode active flag
+    i32 m_toggleHandle;         // +0x554  toggle-mode tab handle
+    i32 m_destructWarnActive;   // +0x558
+    i32 m_modeState;            // +0x55c
+    i32 m_destructWarnLast;     // +0x560  destruct-warning last draw-clock
+    i32 m_destructWarnLastHi;   // +0x564
+    i32 m_destructWarnDelay;    // +0x568  destruct-warning delay (config)
+    i32 m_destructWarnDelayHi;  // +0x56c
+    CSbiSlotPtr* m_modeNotify;  // +0x570  notify target
+    i32 m_modeArmed;            // +0x574
+    i32 m_578;                  // +0x578  (cleared on multiplayer/battlez reset)
+    i32 m_battlezPct[38];       // +0x57c  running-sum item-percent table (battlez cfg)
+    i32 m_barFrameGate;         // +0x614  main-status-bar frame gate
+    CSbiDisplayObj* m_destructButton; // +0x618  destruct-button display object
+    i32 m_61c[4];                     // +0x61c  trailing dword block (cleared on reset)
+    i32 m_tabCycle;                   // +0x62c  4-state highlight cursor (AdvanceTab cycles 0..3)
 };
 
 // An unnamed engine DWORD global read by the HUD-rect group setters.
@@ -733,7 +733,7 @@ struct CGameReg {
     void* m_10; // +0x10  presence gate (destruct-button build guard)
     char m_pad14[0x2c - 0x14];
     CSbiSubMgr* m_curState; // +0x2c  highlight sub-manager
-    CSbiGameMgr* m_world;      // +0x30  active game-manager (null-guard in Serialize)
+    CSbiGameMgr* m_world;   // +0x30  active game-manager (null-guard in Serialize)
     char m_pad34[0x38 - 0x34];
     CSbiLogger* m_38; // +0x38  diagnostics logger
     char m_pad3c[0x68 - 0x3c];
@@ -3361,7 +3361,7 @@ i32 CSBI_RectOnly::LoadMainStatusBarSprite() {
             }
         }
         if (m_retabNotify) {
-            ((CSbiMode54c*)m_retabNotify)->Refresh();
+            m_retabNotify->Refresh();
         }
     }
 
@@ -3724,17 +3724,17 @@ i32 CSBI_RectOnly::LoadDestructButtonSprite(i32 arg) {
                 if (found) {
                     CSbiSpriteFactory* f = ((CSbiSpriteCfg*)found)->m_10;
                     if (f) {
-                        void* obj = f->Build();
+                        CSbiDisplayObj* obj = (CSbiDisplayObj*)f->Build();
                         m_destructButton = obj;
                         if (obj) {
-                            ((CSbiDisplayObj*)obj)->Configure(g_gameReg->m_11c, 0, 0, 1);
+                            obj->Configure(g_gameReg->m_11c, 0, 0, 1);
                         }
                     }
                 }
             }
         } else {
             if (m_destructButton) {
-                ((CSbiDisplayObj*)m_destructButton)->Release();
+                m_destructButton->Release();
                 m_destructButton = 0;
             }
         }
@@ -3767,7 +3767,7 @@ i32 CSBI_RectOnly::LoadDestructButtonSprite(i32 arg) {
         }
     }
     if (m_retabNotify) {
-        ((CSbiMode54c*)m_retabNotify)->Notify0(arg);
+        m_retabNotify->Notify0(arg);
         TabCommit();
     }
     return 1;

@@ -110,6 +110,12 @@ CMenuItem2::~CMenuItem2() {
 
 // configure the item from a template (a0) + strings; resolve the
 // sub-page via the catalog Lookup; the post-config hook (slot 0x34) can short it.
+// The args stay i32 (with (const char*)/(template) casts) DELIBERATELY: unlike
+// CMenuPage::Configure, Init's callers forward its params with INCONSISTENT order
+// AND semantics - AddItem/AddSubItem pass a0..a5 in order, but AddItem2/AddSubItem2
+// call Init(a4,a3,a2,a1,a0,(i32)this) (reversed, with `this` landing in a5). No one
+// typed signature is correct across those call sites, so the int-model is the honest
+// shape; typing the params would just relocate the casts to the tangled callers.
 RVA(0x00185460, 0xa9)
 i32 CMenuItem::Init(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
     CMenuItemTemplate* t = (CMenuItemTemplate*)a0;
@@ -118,7 +124,7 @@ i32 CMenuItem::Init(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
     }
     m_20 = a5;
     m_4 = t->m_0;
-    m_8 = (CMenuItemHost*)t->m_4;
+    m_8 = t->m_4;
     m_c = t;
     m_10 = (const char*)a1;
     m_14 = (const char*)a4;
@@ -132,7 +138,7 @@ i32 CMenuItem::Init(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
     }
     if (!OnInit()) {
         void* slot = 0;
-        ((CMenuItemHostOwner*)m_4)->m_10->m_10.Lookup((const char*)a2, slot);
+        m_4->m_10->m_10.Lookup((const char*)a2, slot);
         m_28 = slot;
         if (!slot) {
             return 0;
@@ -155,7 +161,7 @@ i32 CMenuItem::NotifyCmd() {
     if (!id) {
         return id;
     }
-    HWND wnd = *(HWND*)((char*)m_8 + 4);
+    HWND wnd = m_8->m_wnd;
     if (wnd) {
         PostMessageA(wnd, WM_COMMAND, id, m_30);
     }

@@ -19,23 +19,24 @@
 
 #include <Mfc.h>
 
-// ---------------------------------------------------------------------------
-// The message-node class (defined in another TU - its ctor/dtor/accessors at
-// 0x1833a0 / 0x183990 / 0x1839d0 / 0x1840a0 / 0x1843f0 / 0x1844d0 / ...). Modeled
-// here only enough to name the methods our ChatBox rows dispatch into, so their
-// `mov ecx,this+0x40; call rel32` is reloc-masked. __thiscall by default.
-// ---------------------------------------------------------------------------
-class CChatNode;
+// The active/queued node slot IS a CMenuPage (MenuPage.h): the node accessors this
+// box dispatches into (dtor 0x183250, ReleaseAll 0x183990, RestoreFocus 0x1839d0,
+// Click 0x1840a0, SelectForward 0x1843f0, SelectBackward 0x1844d0, SelectFwd2
+// 0x184230, SelectBack2 0x184310, GetKey 0x1832d0) are the same RVAs as CMenuPage's.
+class CMenuPage;
 
-// The on-screen "page"/owner object reached through m_page (its message-text
-// table is read in AdvanceRow0/AdvanceRow1 via m_page->m_28). External - opaque view.
+// The on-screen "page"/owner object reached through m_page (render surface set at
+// +0x04, key->node catalog at +0x10, sprite roster at +0x28). Defined in ChatBox.cpp.
 struct CChatPage;
+
+// Per-row animation record (frame table + clamp range) and per-row frame drawable
+// (Blit 0x153790); both defined in ChatBox.cpp.
+struct CChatAnim;
+struct CChatFrame;
 
 // ---------------------------------------------------------------------------
 // CChatBox
 // ---------------------------------------------------------------------------
-class CChatNode;
-
 class CChatBox {
 public:
     void Init();                              // 0xa0280 - re-zero the rows (no list teardown)
@@ -72,25 +73,25 @@ public:
     i32 OnFlag10000000(); // 0x183130  page FocusBackwardN
     i32 OnFlag20000000(); // 0x183150  page FocusForwardN
 
-    void* m_page; // +0x00 parent/page back pointer (CChatPage / CMenuOwner view)
-    i32 m_4;      // +0x04  (only ever zeroed; role unproven)
+    CChatPage* m_page; // +0x00 parent/page back pointer (render set / catalog / roster)
+    i32 m_4;           // +0x04  (only ever zeroed; role unproven)
     char m_pad8[0x24 - 0x08];
-    CPtrList m_nodeList; // +0x24 message-node list (head at +0x28)
-    void* m_activeNode;  // +0x40 queued/active node slot (CChatNode / CMenuPage view)
-    CString m_row0Key;   // +0x44 row0 font/asset key
-    CString m_row1Key;   // +0x48 row1 font/asset key
-    void* m_row0Anim;    // +0x4c row0 current message/animation record (CChatAnim)
-    i32 m_row0Frame;     // +0x50 row0 current frame handle (drawn)
-    i32 m_row0Period;    // +0x54 row0 frame-advance reload period
-    i32 m_row0Timer;     // +0x58 row0 frame-advance countdown
-    i32 m_row0Offset;    // +0x5c row0 horizontal draw offset
-    i32 m_row0FrameIdx;  // +0x60 row0 index into the frame table
-    void* m_row1Anim;    // +0x64 row1 current message/animation record (CChatAnim)
-    i32 m_row1Frame;     // +0x68 row1 current frame handle (drawn)
-    i32 m_row1Period;    // +0x6c row1 frame-advance reload period
-    i32 m_row1Timer;     // +0x70 row1 frame-advance countdown
-    i32 m_row1Offset;    // +0x74 row1 horizontal draw offset
-    i32 m_row1FrameIdx;  // +0x78 row1 index into the frame table
+    CPtrList m_nodeList;     // +0x24 message-node list (head at +0x28)
+    CMenuPage* m_activeNode; // +0x40 queued/active node slot (a CMenuPage)
+    CString m_row0Key;       // +0x44 row0 font/asset key
+    CString m_row1Key;       // +0x48 row1 font/asset key
+    CChatAnim* m_row0Anim;   // +0x4c row0 current message/animation record
+    CChatFrame* m_row0Frame; // +0x50 row0 current frame drawable (Blit)
+    i32 m_row0Period;        // +0x54 row0 frame-advance reload period
+    i32 m_row0Timer;         // +0x58 row0 frame-advance countdown
+    i32 m_row0Offset;        // +0x5c row0 horizontal draw offset
+    i32 m_row0FrameIdx;      // +0x60 row0 index into the frame table
+    CChatAnim* m_row1Anim;   // +0x64 row1 current message/animation record
+    CChatFrame* m_row1Frame; // +0x68 row1 current frame drawable (Blit)
+    i32 m_row1Period;        // +0x6c row1 frame-advance reload period
+    i32 m_row1Timer;         // +0x70 row1 frame-advance countdown
+    i32 m_row1Offset;        // +0x74 row1 horizontal draw offset
+    i32 m_row1FrameIdx;      // +0x78 row1 index into the frame table
 };
 SIZE_UNKNOWN(CChatBox);
 

@@ -16,15 +16,14 @@
 #include <rva.h>
 #include <Globals.h>
 
-// The global game-registry CMultiStartDlg's ctor snapshots: it copies
-// g_gameReg->m_curState into the file-scope singleton g_64bd5c (both reloc-masked
-// DIR32). @data names the delinked target DATA symbol (RVA = VA - 0x400000).
-struct CGameReg;  // g_gameReg's pointee (current-state ptr @+0x2c)
-struct CMultiReg; // g_64bd5c's pointee (the multiplayer game-registry state)
+// The global CGameRegistry CMultiStartDlg's ctor snapshots: it copies
+// g_gameReg->m_curState into the file-scope sink g_64bd5c (both reloc-masked DIR32).
+// Named externs so the DIR32 loads reloc-match the engine; @data names the
+// delinked target DATA symbol (RVA = VA - 0x400000).
 DATA(0x0024556c)
-extern CGameReg* g_gameReg; // the game-registry pointer (reloc-masked DATA symbol)
+extern i32* g_gameReg; // the CGameRegistry pointer (reloc-masked DATA symbol)
 DATA(0x0024bd5c)
-extern CMultiReg* g_64bd5c; // the current multiplayer-state singleton (reloc-masked)
+extern i32 g_64bd5c; // the file-scope int sink (reloc-masked DATA symbol)
 
 // The per-dialog static MFC message maps (each GetMessageMap returns &<map>).
 // Referenced as reloc-masked DATA externs (RVA = VA - 0x400000).
@@ -58,12 +57,6 @@ struct CMultiReg {
     i32 m_600; // +0x600  committed flag
 };
 
-// g_gameReg's pointee: the ctor reads its current-state pointer at +0x2c into g_64bd5c.
-struct CGameReg {
-    char m_pad00[0x2c];
-    CMultiReg* m_curState; // +0x2c  current game-state object (the multi-state singleton)
-};
-
 // A player-slot record in the m_5c slot array (0x238 stride); only the +0x16c
 // occupancy field is read.
 struct CMultiSlot {
@@ -80,9 +73,9 @@ struct CMultiSlotList {
     CMultiSlotList(i32 nBlockSize) : m_list(nBlockSize) {
         m_1c = 0;
     }
-    void BuildSlots(i32 count);                          // 0x37910  seed w/ `count` slots
-    void FillCombo(i32 hDlg, i32 ctrlId);                // 0x37ff0  populate a combo control
-    void SelectByData(i32 hDlg, i32 id, i32 lo, i32 hi); // 0x38150  select item == MAKELONG(lo,hi)
+    void Method1546(i32 a);                      // 0x37910
+    void Method2a45(i32 a, i32 b);               // 0x37ff0
+    void Method3396(i32 a, i32 b, i32 c, i32 d); // 0x38150
 };
 
 // ---------------------------------------------------------------------------
@@ -212,7 +205,7 @@ CMultiStartDlg::CMultiStartDlg(i32 a0, CWnd* pParent) : CDialog(0xc5, pParent), 
     m_5c = a0;
     m_6c = 0;
     m_slotList = 0;
-    g_64bd5c = g_gameReg->m_curState;
+    g_64bd5c = g_gameReg[0x2c / 4];
 }
 
 // CMultiStartDlg::BuildSlotList (0xc1e60): allocate the player-slot list, derive
@@ -227,7 +220,7 @@ CMultiStartDlg::CMultiStartDlg(i32 a0, CWnd* pParent) : CDialog(0xc5, pParent), 
 RVA(0x000c1e60, 0x115)
 void CMultiStartDlg::BuildSlotList() {
     m_slotList = new CMultiSlotList(0xa);
-    CMultiReg* reg = g_64bd5c;
+    CMultiReg* reg = (CMultiReg*)g_64bd5c;
     i32 count = 5;
     CMultiPlayerInfo* pi = reg->m_524->m_70;
     if (reg->m_588) {
@@ -246,10 +239,10 @@ void CMultiStartDlg::BuildSlotList() {
             count = 4;
         }
     }
-    m_slotList->BuildSlots(count);
+    m_slotList->Method1546(count);
     i32 v = GetSafe1c();
-    m_slotList->FillCombo(v, 0x527);
-    m_slotList->SelectByData(v, 0x527, 0, 0);
+    m_slotList->Method2a45(v, 0x527);
+    m_slotList->Method3396(v, 0x527, 0, 0);
     reg->m_600 = 1;
 }
 
@@ -268,7 +261,7 @@ i32 CMultiStartDlg::UpdateSlot() {
     if (w == 0) {
         return 0;
     }
-    CMultiReg* reg = g_64bd5c;
+    CMultiReg* reg = (CMultiReg*)g_64bd5c;
     i32 enable;
     if (reg->m_528) {
         i32 idx = GetSlotIndex();
@@ -278,11 +271,11 @@ i32 CMultiStartDlg::UpdateSlot() {
     }
     w->EnableWindow(enable);
     i32 v = GetSafe1c();
-    CMultiReg* reg2 = g_64bd5c;
+    CMultiReg* reg2 = (CMultiReg*)g_64bd5c;
     if (reg2->m_600) {
-        m_slotList->SelectByData(v, 0x527, 0, 0);
+        m_slotList->Method3396(v, 0x527, 0, 0);
     } else {
-        m_slotList->SelectByData(v, 0x527, reg2->m_5a4, reg2->m_5a8);
+        m_slotList->Method3396(v, 0x527, reg2->m_5a4, reg2->m_5a8);
     }
     return 1;
 }
@@ -659,7 +652,7 @@ void CBattlezDlg::CopyComboSelToChild() {
 // array based at m_slots (0x238 bytes/slot). Returns TRUE.
 RVA(0x00017460, 0x22)
 i32 CBattlezDlg::SetSlotValue(i32 index, i32 val) {
-    *(i32*)((char*)((CBattlezSlot*)m_slots + index) + 0x158) = val;
+    ((CBattlezSlot*)m_slots)[index].m_158 = val;
     return 1;
 }
 
@@ -730,8 +723,10 @@ struct CRegBute {
     i32 Lookup(const char* key, CNetCueRec** out);
 };
 struct CNetCfgSub { // m_c->m_28
-    char m_pad0[0x30];
-    i32 m_30; // +0x30
+    char m_pad0[0x10];
+    CRegBute m_10;             // +0x10  embedded registry/bute (Lookup 0x1b8438)
+    char m_pad11[0x30 - 0x11]; // to +0x30
+    i32 m_30;                  // +0x30
 };
 struct CNetCfg { // m_c
     char m_pad0[0x28];
@@ -790,7 +785,7 @@ i32 CNetMgrLite::ShowMultiStartDlg() {
     } else {
         if (m_c->m_28->m_30 == 0) {
             CNetCueRec* rec = 0;
-            ((CRegBute*)((char*)m_c->m_28 + 0x10))->Lookup(s_GameKey, &rec);
+            m_c->m_28->m_10.Lookup(s_GameKey, &rec);
             if (rec != 0) {
                 i32 snd = g_sndEnabled;
                 i32 cue = g_sndCueTag;
@@ -821,7 +816,6 @@ CMultiStartDlg::~CMultiStartDlg() {}
 SIZE_UNKNOWN(CMultiPlayerInfo);
 SIZE_UNKNOWN(CMultiRegSub);
 SIZE_UNKNOWN(CMultiReg);
-SIZE_UNKNOWN(CGameReg);
 SIZE_UNKNOWN(CMultiSlot);
 SIZE_UNKNOWN(CMultiSlotList);
 SIZE_UNKNOWN(CImgHolderBase);

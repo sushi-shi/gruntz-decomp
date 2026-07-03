@@ -253,7 +253,7 @@ i32 CSBI_MenuItem::InitItem(
         return 0;
     }
     m_2c = (void*)cfg;
-    m_24 = (void*)host;
+    m_24 = (CSbiConfigHost*)host;
     m_10 = r0;
     m_8 = 2;
     m_30 = 0;
@@ -284,7 +284,7 @@ i32 CSBI_MenuItem::ResolveFrame(i32 key, i32 a) {
         return key;
     }
     CSbiConfigRecord* rec = 0;
-    CSbiConfigHost* host = (CSbiConfigHost*)m_24;
+    CSbiConfigHost* host = m_24;
     host->m_10->m_10map.Lookup(key, &rec);
     m_38 = rec;
     if (rec == 0) {

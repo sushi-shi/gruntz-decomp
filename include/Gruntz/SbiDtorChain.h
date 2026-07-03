@@ -38,6 +38,10 @@
 #include <Ints.h>
 #include <rva.h>
 
+// The +0x24 config host is the shared canonical CSbiConfigHost (SbiConfig.h); only a
+// pointer is needed here, so forward-declare it (the sole deref is ~CSBI_WellGoo).
+struct CSbiConfigHost;
+
 // CStatusBarItem grand-base (vtable 0x5eabcc, 11 slots = vdtor + 10 virtuals).
 // The +0x24 config-host pointer and +0x34 owned surface are named because
 // ~CSBI_WellGoo (the one leaf whose teardown reads base storage) touches them;
@@ -56,7 +60,7 @@ struct CStatusBarItem {
     virtual void Sf10();
     void DtorStatus(); // 0x10bfa0  CStatusBarItem member teardown (reloc-masked)
     char m_pad4[0x24 - 0x04];
-    void* m_configHost; // +0x24  config host (CSBI_WellGoo: the surface-pool owner)
+    CSbiConfigHost* m_configHost; // +0x24  config host (CSBI_WellGoo: surface-pool owner)
     char m_pad28[0x34 - 0x28];
     void* m_ownedSurface; // +0x34  owned draw surface freed by ~CSBI_WellGoo
     char m_pad38[0x60 - 0x38];

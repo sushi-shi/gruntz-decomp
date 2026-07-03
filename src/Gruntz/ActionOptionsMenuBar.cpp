@@ -105,7 +105,7 @@ public:
     i32 m_gridY;               // +0x04  grid Y
     i32 m_screenX;             // +0x08  screen X (clamped)
     i32 m_screenY;             // +0x0c  screen Y (adjusted)
-    i32* m_frame;              // +0x10  menu-bar frame 1 (the drawable)
+    CMenuBarFrame* m_frame;    // +0x10  menu-bar frame 1 (the drawable)
     i32 m_button0State;        // +0x14  button[0] state
     i32 m_button1State;        // +0x18  button[1] state
     i32 m_button0Frame;        // +0x1c  button[0] resolved frame
@@ -156,7 +156,7 @@ i32 CActionOptionsMenuBar::LoadAssets() {
 
     m_active = 0;
     g_gameReg->m_world->m_10->m_10map.Lookup("GAME_ACTIONOPTIONZMENUBAR", &spr);
-    m_frame = (spr && spr->m_64 <= 1 && spr->m_68 >= 1) ? spr->m_10.m_pData[1] : 0;
+    m_frame = (spr && spr->m_64 <= 1 && spr->m_68 >= 1) ? (CMenuBarFrame*)spr->m_10.m_pData[1] : 0;
     if (!m_frame) {
         return 0;
     }
@@ -326,7 +326,7 @@ i32 CActionOptionsMenuBar::Render() {
     r[1] = src[1];
     r[2] = src[2];
     r[3] = src[3];
-    ((CMenuBarFrame*)m_frame)->Draw(ctx, sy, sx, r, 0);
+    m_frame->Draw(ctx, sy, sx, r, 0);
 
     if (m_button0Frame) {
         i32* src2 = g_gameReg->m_world->m_24->m_barRect;
@@ -334,7 +334,7 @@ i32 CActionOptionsMenuBar::Render() {
         r[1] = src2[1];
         r[2] = src2[2];
         r[3] = src2[3];
-        ((CMenuBarFrame*)m_frame)->Draw(ctx, sy - 0xc, sx + 2, r, 0);
+        m_frame->Draw(ctx, sy - 0xc, sx + 2, r, 0);
     }
     if (m_button1Frame) {
         i32* src3 = g_gameReg->m_world->m_24->m_barRect;
@@ -342,7 +342,7 @@ i32 CActionOptionsMenuBar::Render() {
         r[1] = src3[1];
         r[2] = src3[2];
         r[3] = src3[3];
-        ((CMenuBarFrame*)m_frame)->Draw(ctx, sy + 0x10, sx + 2, r, 0);
+        m_frame->Draw(ctx, sy + 0x10, sx + 2, r, 0);
     }
     return 1;
 }

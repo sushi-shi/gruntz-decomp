@@ -49,8 +49,10 @@ struct CMenuItemPlacer {
 };
 SIZE_UNKNOWN(CMenuItemPlacer);
 
-// The chatbox host (m_8) Trigger drives.
+// The chatbox host (m_8) Trigger drives; its +0x04 is the command-target window.
 struct CMenuItemHost {
+    char pad0[0x4];
+    HWND m_wnd;                  // +0x04 command-target window (NotifyCmd)
     i32 Scroll();                // 0x1830b0 __thiscall
     i32 ReplaceNode(void* node); // 0x182dd0 __thiscall
 };
@@ -76,7 +78,7 @@ SIZE_UNKNOWN(CMenuItemHostOwner);
 // The template Init reads (its [0] is the catalog host, [4] the chatbox host).
 struct CMenuItemTemplate {
     CMenuItemHostOwner* m_0; // +0x00 -> owner/catalog host
-    void* m_4;               // +0x04 -> chatbox host
+    CMenuItemHost* m_4;      // +0x04 -> chatbox host
 };
 SIZE_UNKNOWN(CMenuItemTemplate);
 
@@ -107,29 +109,29 @@ public:
     i32 NotifyCmd();       // 0x185580  PostMessage WM_COMMAND (called by Trigger)
     i32 Hit(i32 x, i32 y); // 0x185700  bounds test
 
-    // implicit vptr    // +0x00
-    void* m_4;          // +0x04
-    CMenuItemHost* m_8; // +0x08
-    void* m_c;          // +0x0c
-    CString m_10;       // +0x10
-    CString m_14;       // +0x14
-    i32 m_18;           // +0x18
-    i32 m_1c;           // +0x1c
-    i32 m_20;           // +0x20
-    i32 m_24;           // +0x24
-    void* m_28;         // +0x28
-    void* m_2c;         // +0x2c
-    i32 m_30;           // +0x30
-    i32 m_34;           // +0x34
-    i32 m_38;           // +0x38
-    i32 m_3c;           // +0x3c
-    i32 m_40;           // +0x40
-    i32 m_44;           // +0x44
-    i32 m_48;           // +0x48
-    CString m_4c;       // +0x4c
-    CString m_50;       // +0x50
-    CString m_54;       // +0x54
-    CString m_58;       // +0x58
+    // implicit vptr           // +0x00
+    CMenuItemHostOwner* m_4; // +0x04  owner / catalog host (template->[0])
+    CMenuItemHost* m_8;      // +0x08
+    void* m_c;               // +0x0c
+    CString m_10;            // +0x10
+    CString m_14;            // +0x14
+    i32 m_18;                // +0x18
+    i32 m_1c;                // +0x1c
+    i32 m_20;                // +0x20
+    i32 m_24;                // +0x24
+    void* m_28;              // +0x28
+    void* m_2c;              // +0x2c
+    i32 m_30;                // +0x30
+    i32 m_34;                // +0x34
+    i32 m_38;                // +0x38
+    i32 m_3c;                // +0x3c
+    i32 m_40;                // +0x40
+    i32 m_44;                // +0x44
+    i32 m_48;                // +0x48
+    CString m_4c;            // +0x4c
+    CString m_50;            // +0x50
+    CString m_54;            // +0x54
+    CString m_58;            // +0x58
 };
 
 // The leaf ctor MSVC inlines into the page's AddItem/AddSubItem: the six CString

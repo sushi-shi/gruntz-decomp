@@ -38,17 +38,17 @@ i32 CMenuItem2::Init(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
 
     sprintf(name, "%s_NORMAL", (const char*)a2);
     sprite = 0;
-    ((CMenuItemHostOwner*)m_4)->m_10->m_10.Lookup(name, sprite);
+    m_4->m_10->m_10.Lookup(name, sprite);
     m_5c = (CMenuSprite*)sprite;
 
     sprintf(name, "%s_SELECTED", (const char*)a2);
     sprite = 0;
-    ((CMenuItemHostOwner*)m_4)->m_10->m_10.Lookup(name, sprite);
+    m_4->m_10->m_10.Lookup(name, sprite);
     m_60 = (CMenuSprite*)sprite;
 
     sprintf(name, "%s_DISABLED", (const char*)a2);
     sprite = 0;
-    ((CMenuItemHostOwner*)m_4)->m_10->m_10.Lookup(name, sprite);
+    m_4->m_10->m_10.Lookup(name, sprite);
     m_64 = (CMenuSprite*)sprite;
 
     return 1;
