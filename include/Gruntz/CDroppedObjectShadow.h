@@ -13,9 +13,9 @@
 
 class CDroppedObjectShadow : public CUserLogic {
 public:
-    CDroppedObjectShadow(CGameObject* obj); // 0xc7490 (1-arg leaf ctor)
-    ~CDroppedObjectShadow();                // 0x12670 (folds the CUserLogic teardown)
-    i32 m_40;                               // +0x40
+    CDroppedObjectShadow(CGameObject* obj);   // 0xc7490 (1-arg leaf ctor)
+    virtual ~CDroppedObjectShadow() OVERRIDE; // 0x12670 (folds the CUserLogic teardown)
+    i32 m_40;                                 // +0x40
     char m_pad44[0x54 - 0x44];
 };
 SIZE(CDroppedObjectShadow, 0x54);

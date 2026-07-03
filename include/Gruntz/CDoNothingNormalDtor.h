@@ -23,7 +23,7 @@
 SIZE_UNKNOWN(CDoNothingNormal);
 class CDoNothingNormal : public CUserLogic {
 public:
-    ~CDoNothingNormal(); // 0x0000f8a0 (folds the CUserLogic teardown)
+    virtual ~CDoNothingNormal() OVERRIDE; // 0x0000f8a0 (folds the CUserLogic teardown)
 };
 
 #endif // GRUNTZ_CDONOTHINGNORMALDTOR_H

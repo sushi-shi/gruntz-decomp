@@ -19,8 +19,8 @@
 
 class CLevelTime : public CUserLogic {
 public:
-    CLevelTime(CGameObject* obj); // 0x9b8b0
-    ~CLevelTime();                // 0x00011a50 (folds the CUserLogic teardown)
+    CLevelTime(CGameObject* obj);   // 0x9b8b0
+    virtual ~CLevelTime() OVERRIDE; // 0x00011a50 (folds the CUserLogic teardown)
 };
 
 #endif // GRUNTZ_CLEVELTIMEDTOR_H

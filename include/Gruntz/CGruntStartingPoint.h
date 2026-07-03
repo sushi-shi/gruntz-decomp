@@ -10,8 +10,8 @@
 
 class CGruntStartingPoint : public CUserLogic {
 public:
-    CGruntStartingPoint(CGameObject* obj); // 0x3df30
-    ~CGruntStartingPoint();                // 0x10670 (folds the CUserLogic teardown)
+    CGruntStartingPoint(CGameObject* obj);   // 0x3df30
+    virtual ~CGruntStartingPoint() OVERRIDE; // 0x10670 (folds the CUserLogic teardown)
     char m_pad40[0x54 - 0x40];
 };
 SIZE(CGruntStartingPoint, 0x54);

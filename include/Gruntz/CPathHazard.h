@@ -121,7 +121,7 @@ public:
     // ForwardTick (0xb5070): a thin non-virtual forwarder to virtual slot 16 (Tick).
     // Tail-jumps `this->vtbl[16]()` through the raw vtable view (kept indirect).
     void ForwardTick();
-    ~CPathHazard(); // 0x13340 (folds the CUserLogic teardown; slot 0)
+    virtual ~CPathHazard() OVERRIDE; // 0x13340 (folds the CUserLogic teardown; slot 0)
 
     i32 m_savedGeoId; // +0x40  saved m_38->m_1b4 geometry id (before GAME_CYCLE100)
     char m_pad44[0x58 - 0x44];

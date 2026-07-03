@@ -39,7 +39,7 @@ public:
     // 0x12430  the /GX leaf dtor - shares CUserLogic's vtable (adds no own
     // virtuals), so the most-derived vptr store is dead-eliminated and only the
     // folded CUserLogic teardown remains (the 0x44 leaf-dtor archetype).
-    ~CLightFx();
+    virtual ~CLightFx() OVERRIDE;
 
     // ----- leaf layout over CUserLogic(0x40) (placeholders; offsets load-bearing)
     i32 m_40; // +0x40  cached object layer base (m_38->m_1b4)

@@ -10,9 +10,9 @@
 
 class CObjectDropper : public CUserLogic {
 public:
-    CObjectDropper(CGameObject* obj); // 0xc59f0 (folds CUserLogic(obj) + the drop setup)
-    ~CObjectDropper();                // 0x124f0 (folds the CUserLogic teardown)
-    i32 Update();                     // 0xc62e0 (per-frame drop tick + drift/wrap)
+    CObjectDropper(CGameObject* obj);   // 0xc59f0 (folds CUserLogic(obj) + the drop setup)
+    virtual ~CObjectDropper() OVERRIDE; // 0x124f0 (folds the CUserLogic teardown)
+    i32 Update();                       // 0xc62e0 (per-frame drop tick + drift/wrap)
 
     i32 m_geomId; // +0x40  geometry id (m_38->m_1b4 snapshot)
     char m_pad44[0x58 - 0x44];

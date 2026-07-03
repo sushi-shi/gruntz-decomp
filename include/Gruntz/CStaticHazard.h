@@ -25,12 +25,12 @@
 
 class CStaticHazard : public CUserLogic {
 public:
-    CStaticHazard(CGameObject* obj); // 0x0fb7a0 (1-arg ctor)
-    static void RegisterActs();      // 0x0fbd50 (binds "A"/"B" handlers)
-    i32 LoadAttributes2();           // 0x0fc0b0 (time-gated pulse)
-    i32 LoadAttributes();            // 0x0fc1a0 (periodic tick/update)
-    void FireActivation(i32 coord);  // 0x0fbbf0
-    ~CStaticHazard();                // 0x012b30 (folds the CUserLogic teardown)
+    CStaticHazard(CGameObject* obj);   // 0x0fb7a0 (1-arg ctor)
+    static void RegisterActs();        // 0x0fbd50 (binds "A"/"B" handlers)
+    i32 LoadAttributes2();             // 0x0fc0b0 (time-gated pulse)
+    i32 LoadAttributes();              // 0x0fc1a0 (periodic tick/update)
+    void FireActivation(i32 coord);    // 0x0fbbf0
+    virtual ~CStaticHazard() OVERRIDE; // 0x012b30 (folds the CUserLogic teardown)
 
     // CStaticHazard's own data begins at +0x40 (CUserLogic ends at +0x40).
     i32 m_prevAnimNode; // +0x40  snapshot of the bound object's active-anim descriptor

@@ -19,10 +19,10 @@
 
 class CSecretLevelTrigger : public CUserLogic {
 public:
-    static void InitActReg();   // 0x0426e0 (construct g_secretActReg over [2000,2010])
-    static void RegisterActs(); // 0x0428c0 (register the class's activation handlers)
-    i32 Tick();                 // 0x042ac0
-    ~CSecretLevelTrigger();     // 0x010c50 (folds the CUserLogic teardown)
+    static void InitActReg();                // 0x0426e0 (construct g_secretActReg over [2000,2010])
+    static void RegisterActs();              // 0x0428c0 (register the class's activation handlers)
+    i32 Tick();                              // 0x042ac0
+    virtual ~CSecretLevelTrigger() OVERRIDE; // 0x010c50 (folds the CUserLogic teardown)
 };
 SIZE_UNKNOWN(CSecretLevelTrigger);
 

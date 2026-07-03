@@ -153,7 +153,7 @@ void ReadMenuOptionsDialog(HWND hDlg) {
                 g_mgrSettings->StoreInputState(sv);
             }
         }
-        if (g_gate_2455b4 == 0 && g_gate_2455c0 == 0 && g_mgrSettings->m_sound->m_28 != 0) {
+        if (g_gate_2455b4 == 0 && g_gate_2455c0 == 0 && g_mgrSettings->m_sound->m_enabled != 0) {
             g_mgrSettings->SetSoundLevelState(IsDlgButtonChecked(hDlg, 0x471));
             i32 pv = ApiCallerStubs::winapi_036ec0_GetDlgItem_GetScrollInfo(hDlg, 0x472);
             if (pv >= 0 && pv <= 100) {

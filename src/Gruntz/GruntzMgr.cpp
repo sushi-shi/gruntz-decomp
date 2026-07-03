@@ -1176,7 +1176,7 @@ void CGruntzMgr::AdvanceFrame(i32 doDraw, i32 /*unused*/) {
     if (m_musicEnabled == 0) {
         return;
     }
-    if ((m_sound->m_1c ? m_sound->m_1c->IsBusy() : 0) == 0) {
+    if ((m_sound->m_pCurrent ? m_sound->m_pCurrent->IsBusy() : 0) == 0) {
         return;
     }
     m_sound->StopAll();
@@ -2083,12 +2083,12 @@ void CGruntzMgr::SetSoundLevelState(i32 loaded) {
         return;
     }
     if (loaded != 0) {
-        CGruntzSoundInnerZ* cur = snd->m_1c;
+        CGruntzSoundInnerZ* cur = snd->m_pCurrent;
         if (cur == 0) {
             return;
         }
-        if (cur->m_48 != 0) {
-            snd->Restart_1388c0(1);
+        if (cur->m_playMode != 0) {
+            snd->Restart(1);
         } else if (cur != 0) {
             snd->StopBank(1);
         }
@@ -2603,7 +2603,7 @@ i32 CGruntzMgr::FinishLevel(i32 full, i32 stopBank) {
                 sub->m_2c->Teardown();
             }
         }
-        if ((m_sound->m_1c ? m_sound->m_1c->IsBusy() : 0) && stopBank) {
+        if ((m_sound->m_pCurrent ? m_sound->m_pCurrent->IsBusy() : 0) && stopBank) {
             m_sound->StopAll();
         }
         m_curState->Vslot18();
@@ -2818,8 +2818,8 @@ void CGruntzMgr::UnloadSoundChain() {
         }
     }
     CGruntzSoundZ* snd = m_sound;
-    if (snd && (snd->m_1c ? snd->m_1c->IsBusy() : 0)) {
-        m_sound->StopBank2();
+    if (snd && (snd->m_pCurrent ? snd->m_pCurrent->IsBusy() : 0)) {
+        m_sound->IsPlaying();
     }
 }
 
@@ -3007,7 +3007,7 @@ void CGruntzMgr::UnknownClose() {
         cfg->WriteInt("Effects", m_isEffectsEnabled);
         cfg->WriteInt("Disable_Joystick", g_6455c8);
         if (m_sound) {
-            cfg->WriteInt("Music_Volume", m_sound->GetMusicVolume());
+            cfg->WriteInt("Music_Volume", m_sound->GetXMidiVolume());
         }
         if (m_timer) {
             cfg->WriteInt("Voice_Volume", ((TimerObj*)m_timer)->m_inputMirror);

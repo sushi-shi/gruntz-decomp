@@ -27,8 +27,9 @@
 #include <rva.h> // OVERRIDE macro (override under clang, no-op under MSVC 5.0)
 #include <Wap32/Wap32.h>
 #include <Gruntz/CString.h>
-#include <Gruntz/GameLevel.h> // CByteArray
-#include <Gruntz/CState.h>    // CState (m_curState game-state; Update() at slot 4)
+#include <Gruntz/GameLevel.h>      // CByteArray
+#include <Gruntz/CState.h>         // CState (m_curState game-state; Update() at slot 4)
+#include <Dsndmgr/CGruntzSoundZ.h> // CGruntzSoundZ / CGruntzSoundInnerZ (m_sound @ +0x48)
 
 // The 0x238-byte options/registry-backed sub-object embedded at +0x150. Its
 // ctor (FUN_0051f5a0) takes (this, 0x238, 4, &thunk_FUN_00431250, &LoadOptions)
@@ -40,15 +41,6 @@ struct CGruntzMgrOptions {
     CGruntzMgrOptions();
     ~CGruntzMgrOptions();
     char m_pad[0x238];
-};
-
-// Minimal sound/DirectSound-ish object held at CGruntzMgr +0x48. Its two
-// reloc-masked __thiscall helpers (this in ecx) only need the right call shape;
-// the inner object at +0x1c carries the per-frame busy poll.
-struct CGruntzSoundInnerZ {
-    char m_pad0[0x48];
-    i32 m_48;     // +0x48  per-bank restart flag
-    i32 IsBusy(); // FUN_00538f60 (this) -> ret (busy state-id 4/0x10)
 };
 
 // A typed VIEW of the state-stack array at CGruntzMgr +0xd8. The member itself
@@ -69,20 +61,6 @@ struct CStateStackZ {
     void SetAtGrow(i32 i, CState* elem); // @0x5b5144
     void RemoveAt(i32 i, i32 n);         // @0x5b5200
 };
-struct CGruntzSoundZ {
-    void StopBank(i32 flag);    // FUN_00538900 (this, 1)  -> ret 4
-    void StopAll();             // FUN_005388f0 (this)
-    void StopBank2();           // FUN_00538920 (this)     -> ret 4 (busy-driven stop)
-    i32 Restart_1388c0(i32 a1); // FUN_005388c0 (this, 1) re-launch current bank
-    i32 GetMusicVolume();       // FUN_005389c0 (this) -> current music volume (UnknownClose save)
-    void SetXMidiVolume(i32 v); // 0x138950 (this, v) push the XMIDI master volume
-    i32 GetXMidiVolume();       // 0x1389c0 (this) read the XMIDI master volume
-    char m_pad0[0x1c];          // +0x00..+0x1c
-    CGruntzSoundInnerZ* m_1c;   // +0x1c  inner object IsBusy/StopAll deref / m_pCurrent
-    char m_pad20[0x28 - 0x20];  // +0x20..+0x28
-    i32 m_28;                   // +0x28  speech-channel present gate (skip XMIDI push when 0)
-};
-
 // The level/world object held at CGruntzMgr +0x30 (the loaded map + its active
 // CWorld view). Reached as `m_world->...`; every method is reloc-masked. +0x24 is
 // the active world view (the scroll/camera holder the FP scaler reads); +0x28 a

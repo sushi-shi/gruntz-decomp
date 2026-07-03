@@ -41,8 +41,8 @@ public:
     // then (only on success) the +0x34 sub-object's chain; both run the same
     // (ar, tag, c, d) tuple. Returns the second chain's success as a bool.
     i32 Serialize(i32 ar, i32 tag, i32 c, i32 d);
-    CCursorSnapSprite(CGameObject* obj); // 0x3a340
-    ~CCursorSnapSprite();                // 0x11920 (folds the CUserLogic teardown)
+    CCursorSnapSprite(CGameObject* obj);   // 0x3a340
+    virtual ~CCursorSnapSprite() OVERRIDE; // 0x11920 (folds the CUserLogic teardown)
 
     i32 m_40; // +0x40  geometry id (m_38->m_1b4 snapshot)
 };

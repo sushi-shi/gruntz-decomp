@@ -247,7 +247,7 @@ struct CCreditsImageList : CCreditsImgBase {
     void DeleteImageList(); // 0x1c6a5c (NAFXCW, reloc-masked)
     // Inline so ~CCreditsState folds the stamp/DeleteImageList/base-restore teardown
     // (retail inlines it; an out-of-line ??1 would emit a `call` and shrink the frame).
-    virtual ~CCreditsImageList() {
+    virtual ~CCreditsImageList() OVERRIDE {
         DeleteImageList();
     }
     void* m_hImageList; // +0x04

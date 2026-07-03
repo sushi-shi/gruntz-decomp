@@ -27,7 +27,7 @@ public:
     void FireActivation(i32 coord); // 0x0e1830
     void RegisterActs();            // 0x0e1990 (binds the logic handler to key "A")
     i32 LoadAttributes();           // 0x0e1e60 (per-frame timer/detonate step)
-    ~CTimeBomb();                   // 0x012a70 (folds the CUserLogic teardown)
+    virtual ~CTimeBomb() OVERRIDE;  // 0x012a70 (folds the CUserLogic teardown)
 
     i32 m_prevAnimNode; // +0x40  m_38->m_1b4 snapshot
     char m_pad44[0x54 - 0x44];

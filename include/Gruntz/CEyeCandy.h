@@ -22,8 +22,8 @@
 SIZE_UNKNOWN(CEyeCandy);
 class CEyeCandy : public CUserLogic {
 public:
-    i32 GetTypeTag(); // 0x00fca0 (returns the class logic-type id 0x3f1)
-    ~CEyeCandy();     // 0x00fd60 (folds the CUserLogic teardown)
+    i32 GetTypeTag();              // 0x00fca0 (returns the class logic-type id 0x3f1)
+    virtual ~CEyeCandy() OVERRIDE; // 0x00fd60 (folds the CUserLogic teardown)
 };
 
 #endif // GRUNTZ_CEYECANDY_H

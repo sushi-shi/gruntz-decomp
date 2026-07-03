@@ -5,7 +5,8 @@
 // combat-region scan. Placeholder class/field names (m_<hexoffset>); only the
 // offsets + code bytes are load-bearing. Compiled base+/GX to mirror the
 // original stub-unit environment.
-#include <Bute/ButeMgr.h> // canonical CButeMgr (one shape); MFC-first
+#include <Bute/ButeMgr.h>          // canonical CButeMgr (one shape); MFC-first (pulls afx)
+#include <Dsndmgr/CGruntzSoundZ.h> // canonical CGruntzSoundZ (g_mgrSettings->m_48 sound bank)
 #include <Win32.h>
 
 #include <Ints.h>
@@ -325,21 +326,17 @@ namespace m4 {
         LevelInfoSrc* m_levelInfoSrc; // +0x24
         MgrM28* m_configHost;         // +0x28
     };
-    struct MgrM48 {              // g_mgrSettings->m_48 (scroll target)
-        void Set138950(i32 pos); // thiscall thunk 0x138950
-    };
     struct MgrWnd { // g_mgrSettings->m_wnd (window holder)
         char m_pad0[4];
         HWND m_hWnd; // +0x4
     };
-    struct MgrM48;       // g_mgrSettings->m_48 (scroll target)
     struct MgrSettings { // g_mgrSettings (0x64556c)
         char m_pad0[4];
         MgrWnd* m_wnd; // +0x4
         char m_pad8[0x30 - 8];
         MgrM30* m_world; // +0x30
         char m_pad34[0x48 - 0x34];
-        MgrM48* m_48; // +0x48
+        CGruntzSoundZ* m_48; // +0x48  sound-bank manager (canonical)
         char m_pad4c[0x70 - 0x4c];
         HitGrid* m_cellGrid; // +0x70
         char m_pad74[0xbc - 0x74];
@@ -688,7 +685,7 @@ namespace m4 {
         si.nPos = newpos;
         SetScrollInfo(hwnd, SB_CTL, &si, TRUE);
         if (hwnd == GetDlgItem(hwnd, 0x472)) {
-            g_mgrSettings->m_48->Set138950(newpos);
+            g_mgrSettings->m_48->SetXMidiVolume(newpos);
             return;
         }
         if (hwnd == GetDlgItem(hwnd, 0x478)) {

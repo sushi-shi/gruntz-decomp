@@ -10,8 +10,8 @@
 
 class CGuardPoint : public CUserLogic {
 public:
-    CGuardPoint(CGameObject* obj); // 0xae5f0
-    ~CGuardPoint();                // 0x10410 (folds the CUserLogic teardown)
+    CGuardPoint(CGameObject* obj);   // 0xae5f0
+    virtual ~CGuardPoint() OVERRIDE; // 0x10410 (folds the CUserLogic teardown)
     char m_pad40[0x54 - 0x40];
 };
 SIZE(CGuardPoint, 0x54);

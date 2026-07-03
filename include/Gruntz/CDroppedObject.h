@@ -23,12 +23,12 @@
 
 class CDroppedObject : public CUserLogic {
 public:
-    CDroppedObject(CGameObject* obj); // 0x0c68b0 (1-arg leaf ctor)
-    static void RegisterRange();      // 0x0c6b50 (seed the activation table's fast range)
-    static void RegisterActs();       // 0x0c6d30
-    void FireActivation(i32 coord);   // 0x0c6bd0
-    i32 ActA();                       // 0x0c7090 (per-frame "A" activation handler)
-    ~CDroppedObject();                // 0x0125b0 (folds the CUserLogic teardown)
+    CDroppedObject(CGameObject* obj);   // 0x0c68b0 (1-arg leaf ctor)
+    static void RegisterRange();        // 0x0c6b50 (seed the activation table's fast range)
+    static void RegisterActs();         // 0x0c6d30
+    void FireActivation(i32 coord);     // 0x0c6bd0
+    i32 ActA();                         // 0x0c7090 (per-frame "A" activation handler)
+    virtual ~CDroppedObject() OVERRIDE; // 0x0125b0 (folds the CUserLogic teardown)
 
     i32 m_40; // +0x40  m_38->m_1b4 snapshot
     char m_pad44[0x58 - 0x44];

@@ -19,7 +19,7 @@
 
 class CSingleAnimation : public CUserLogic {
 public:
-    ~CSingleAnimation(); // 0x010540 (folds the CUserLogic teardown)
+    virtual ~CSingleAnimation() OVERRIDE; // 0x010540 (folds the CUserLogic teardown)
 };
 
 #endif // GRUNTZ_CSINGLEANIMATION_H

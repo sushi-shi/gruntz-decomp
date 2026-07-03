@@ -29,9 +29,9 @@ public:
     static void InitActReg(); // 0x0ad7d0
     // Bind the per-frame handler (AdvanceAnim) to the activation key "A" via the
     // shared name registry (the same archetype as CSecretLevelTrigger::RegisterActs).
-    static void RegisterActs(); // 0x0ad9b0
-    i32 AdvanceAnim();          // 0x0adbb0 (re-target bound anim to the draw-delta; ret 0)
-    ~CBehindCandyAni();         // 0x0100f0 (folds the CUserLogic teardown)
+    static void RegisterActs();          // 0x0ad9b0
+    i32 AdvanceAnim();                   // 0x0adbb0 (re-target bound anim to the draw-delta; ret 0)
+    virtual ~CBehindCandyAni() OVERRIDE; // 0x0100f0 (folds the CUserLogic teardown)
 };
 
 #endif // GRUNTZ_CBEHINDCANDYANI_H

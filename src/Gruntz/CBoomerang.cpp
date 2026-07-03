@@ -27,7 +27,7 @@ public:
     virtual ~CBoomerang() OVERRIDE;         // slot 0  (origin CUserBase)
     virtual i32 UserBaseVfunc1() OVERRIDE;  // slot 1  (origin CUserBase)
     virtual i32 UserBaseVfunc2() OVERRIDE;  // slot 2  (origin CUserBase)
-    virtual void Update() OVERRIDE;         // slot 16 (origin CMovingLogic, overrides ::Update)
+    virtual void Update() OVERRIDE;         // slot 16 (origin CMovingLogic::Update)
     virtual i32 ProjectileVfunc() OVERRIDE; // slot 17 (origin CProjectile)
 };
 

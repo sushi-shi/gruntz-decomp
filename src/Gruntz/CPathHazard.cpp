@@ -51,9 +51,9 @@ struct CPathHazardVtbl {
 // vtable/layout only at the byte level (Tick reads the vtable raw).
 class CLightningHazard : public CUserLogic {
 public:
-    i32 SiblingTick();       // 0x0b43f0 (virtual slot 16 override)
-    i32 ArmStrike(i32, i32); // 0x0b4640 (arm the strike window + kill cue)
-    ~CLightningHazard();     // 0x013280 (folds the CUserLogic teardown)
+    i32 SiblingTick();                    // 0x0b43f0 (virtual slot 16 override)
+    i32 ArmStrike(i32, i32);              // 0x0b4640 (arm the strike window + kill cue)
+    virtual ~CLightningHazard() OVERRIDE; // 0x013280 (folds the CUserLogic teardown)
 
     char m_pad40[0x108 - 0x40];
     i64 m_legDeadline; // +0x108 leg start-clock deadline (i64)

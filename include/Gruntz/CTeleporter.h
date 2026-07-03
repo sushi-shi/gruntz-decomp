@@ -77,7 +77,7 @@ public:
     // grunt, spawn the "Teleporter"/"Wormhole" sprite, close the gate and scroll
     // the camera to the warped grunt. Returns 0.
     i32 Update();
-    ~CTeleporter(); // 0x10dd0 (folds the CUserLogic teardown)
+    virtual ~CTeleporter() OVERRIDE; // 0x10dd0 (folds the CUserLogic teardown)
 
     i32 m_40; // +0x40  snapshot of m_38->m_1b4
     char m_pad44[0x54 - 0x44];

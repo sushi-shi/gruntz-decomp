@@ -84,8 +84,8 @@ extern CGameRegistry* g_gameReg;
 // ---------------------------------------------------------------------------
 class CWarlord : public CUserLogic {
 public:
-    CWarlord(i32); // 0x42d40 (the warlord ctor: base init + name/state setup)
-    ~CWarlord();   // 0x107f0 (the home-TU dtor: ~CString(m_54) + the base teardown)
+    CWarlord(i32);                // 0x42d40 (the warlord ctor: base init + name/state setup)
+    virtual ~CWarlord() OVERRIDE; // 0x107f0 (the home-TU dtor: ~CString(m_54) + the base teardown)
 
     // construct the file-static per-action handler table (g_actionTable @0x644610)
     // over the fixed [2000, 2010] range via the shared registry ctor (0x408710).
