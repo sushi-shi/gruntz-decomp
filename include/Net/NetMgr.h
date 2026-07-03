@@ -90,8 +90,9 @@ extern "C" void MultiOutOfSyncCallback();
 extern "C" void MultiDropPlayerCallback(); // OnDropPlayer (MULTI_DROPPLAYER)
 
 // The pending drop's player id (-999 == none), an external engine global in
-// .data at 0x611d88 (DIR32 reloc-masked).
-extern "C" i32 g_dropPlayerId; // 0x611d88
+// .data at 0x611d88 (DIR32 reloc-masked). CANONICAL name (shared with CMulti.cpp
+// / Globals.cpp): one symbol per RVA so the whole-game link binds a single decl.
+extern "C" i32 g_611d88; // 0x611d88  saved dropped-player id
 
 // ---------------------------------------------------------------------------
 // Reentrancy guards (file-scope globals).
@@ -680,7 +681,8 @@ extern "C" char g_chatPacket_buf; // 0x6473ec  (strcpy dest)
 // the active-player refcount the leave path decrements (DAT_00648cec). External
 // engine globals; DIR32 reloc-masked.
 extern "C" i32 g_playerLeftFlag; // 0x648ce4
-extern "C" i32 g_activePlayers;  // 0x648cec
+// CANONICAL name (shared with CMulti.cpp / Globals.cpp): one symbol per RVA.
+extern "C" i32 g_648cec; // 0x648cec  active-player refcount
 
 // The multiplayer-create context singleton (DAT_00648cf4): CreateSession reads
 // its +0x74 group-enumeration record and hands it to the peer's EnumGroupsRange.

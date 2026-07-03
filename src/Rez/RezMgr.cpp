@@ -546,7 +546,11 @@ i32 RezMgr::HandleDebugPosition() {
     return r != 0;
 }
 
-// WINMM timeGetTime (the frame clock) comes from <Mfc.h> (via RezMgr.h).
+// The frame clock. Retail does NOT call the WINMM import thunk directly; it caches
+// timeGetTime in a game-owned global pointer (_g_pTimeGetTime @ RVA 0x2c4650, pinned
+// in cplay/globals) and calls through it (ff 15). extern "C" so the reloc binds the
+// canonical one-symbol-per-RVA at whole-game link (was the raw __imp__timeGetTime@0).
+extern "C" u32(WINAPI* g_pTimeGetTime)();
 
 // -------------------------------------------------------------------------
 // RezMgr::UpdateClock() (0x13ddc0) - the frame-clock advance helper PerFrameTick
@@ -558,7 +562,10 @@ i32 RezMgr::HandleDebugPosition() {
 // @source: reloc-correlation (1 caller)
 RVA(0x0013ddc0, 0xaa)
 i32 RezMgr::UpdateClock() {
-    u32 now = timeGetTime();
+    // Cache the fnptr in a local so cl loads it once (mov edi,[_g_pTimeGetTime]) and
+    // reuses it across the three samples (call edi), exactly as retail does.
+    u32(WINAPI * pTGT)() = g_pTimeGetTime;
+    u32 now = pTGT();
     u32 delta = now - (u32)g_now;
     g_now = now;
     g_frameDelta = delta;
@@ -573,12 +580,12 @@ i32 RezMgr::UpdateClock() {
 
     if (m_pacingGate > 0) {
         if (g_clockReset > 0) {
-            u32 elapsed = timeGetTime() - g_clockReset;
+            u32 elapsed = pTGT() - g_clockReset;
             if (elapsed < (u32)m_frameBudgetMs) {
                 SpinWaitUntil(m_frameBudgetMs - elapsed);
             }
         }
-        g_clockReset = timeGetTime();
+        g_clockReset = pTGT();
     }
 
     u32 count = m_frameCounter + 1;

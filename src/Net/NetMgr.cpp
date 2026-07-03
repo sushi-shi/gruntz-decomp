@@ -513,7 +513,7 @@ i32 CNetMgr::HandleControlMsg(CNetCtrlMsg* msg, i32 arg2) {
 // in the peer (GetPlayerData); ignores the local player. Resolves the player's
 // slot (m_4->FindPlayer); requires its +0x20 / +0x14 gates set. Releases the
 // slot's global flag (g_netSlotTable[slot->m_008] via SetNetSlot, decrement
-// g_activePlayers if armed), clears its list link, builds "<name> has left the
+// the active-player refcount g_648cec if armed), clears its list link, builds "<name> has left the
 // game." and appends it to the chat log (m_4->m_5c->AddItem, type 0x20 data
 // 0x11), and unlinks the blob (RemovePlayerObj). If the channel selector is set
 // and not yet connected, fires the rejoin finalizer and sets g_playerLeftFlag.
@@ -539,7 +539,7 @@ i32 CNetMgr::OnPlayerLeft(i32 playerId) {
 
     if (slot->m_030 != 0) {
         slot->m_030 = 0;
-        g_activePlayers--;
+        g_648cec--;
     }
     slot->m_020 = 0;
     SetNetSlot(slot->m_008, 1);
@@ -1920,7 +1920,7 @@ i32 CNetMgr::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             }
             if (player->m_030 == 0) {
                 player->m_030 = 1;
-                g_activePlayers++;
+                g_648cec++;
             }
             OnMultiOptions();
             break;
@@ -1938,7 +1938,7 @@ i32 CNetMgr::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
                 break;
             }
             player->m_030 = 0;
-            g_activePlayers--;
+            g_648cec--;
             break;
         }
 
@@ -2264,13 +2264,13 @@ void CNetMgr::OnDropPlayer() {
             break;
         }
         case DISPATCH_PLAYERLEFT:
-            if (g_dropPlayerId != -999) {
-                if (m_peer->FindPlayerById(g_dropPlayerId)) {
-                    SendStat3(g_dropPlayerId, STAT_PLAYERLEFT_LOCAL, 1);
+            if (g_611d88 != -999) {
+                if (m_peer->FindPlayerById(g_611d88)) {
+                    SendStat3(g_611d88, STAT_PLAYERLEFT_LOCAL, 1);
                 }
             }
-            SendNetStat(STAT_PLAYERLEFT, g_dropPlayerId, 1);
-            AckDropPlayer(g_dropPlayerId);
+            SendNetStat(STAT_PLAYERLEFT, g_611d88, 1);
+            AckDropPlayer(g_611d88);
             m_session->ResetCmdBuffers();
             break;
     }

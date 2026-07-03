@@ -12,9 +12,11 @@
 #include <Win32.h> // WINAPI (windows.h) for the g_pTimeGetTime import-pointer type
 
 // Retail caches the timeGetTime entry point in a game-owned global pointer and
-// calls through it (ff 15), not via the import thunk.
-DATA(0x006c4650)
-extern u32(WINAPI* g_pTimeGetTime)();
+// calls through it (ff 15), not via the import thunk. CANONICAL: _g_pTimeGetTime
+// @ RVA 0x2c4650 (pinned in cplay/globals) - extern "C" so the reloc binds the one
+// symbol per RVA at whole-game link (was a C++-mangled decl pinned at the VA-as-RVA
+// 0x6c4650, an orphan symbol_names row).
+extern "C" u32(WINAPI* g_pTimeGetTime)();
 
 // The owning palette object is the DirectDraw palette COM interface
 // (IDirectDrawPalette): only SetEntries (slot 6, +0x18) is invoked. Declared the
