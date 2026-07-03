@@ -123,6 +123,25 @@ struct IDirectPlayLobbyZ;
 // pointer, so a forward declaration suffices here.
 struct CInput54;
 
+// The manager's owned engine sub-objects, each a real class reached only through a
+// reloc-masked thiscall / vtable slot from GruntzMgr.cpp; the members are pointers,
+// so forward declarations suffice here. Each unifies what were previously several
+// per-method facet views of the SAME object into its one real class (defined in
+// GruntzMgr.cpp): the teardown-only slots share EngObj (Teardown()), and the
+// multi-facet slots carry all their facets' fields + methods.
+struct EngObj;          // teardown-only sub-object (Teardown())
+class CWorldDelete;     // +0x3c world sub-object torn down via vtable slot 1
+struct CRezSurface94;   // +0x34 recolor surface (Build/Apply/Teardown)
+struct CSettingsWriter; // +0x38 settings/registry writer (WriteInt/Teardown)
+struct HudGuard44;      // +0x44 HUD first-frame guard (m_124)
+struct SaveSink58;      // +0x58 save-record sink (Store)
+struct CChatLog;        // +0x5c chat/message log (Insert)
+struct TimerObj;        // +0x60 per-frame timer/poll (m_inputMirror/Stop/Tick)
+struct CCmdGrid;        // +0x68 world delta-table grid + command sink
+struct CmdSink;         // +0x6c command sub-manager sink (Command)
+class CmdSinkV;         // +0x70 polymorphic command sink (slot 1) + cell-height notify
+struct ScoreHud;        // +0x7c HUD/score accumulator + command sink
+
 SIZE(CGruntzMgr, 0xa30);
 class CGruntzMgr : public WAP32::CGameMgr {
 public:
@@ -300,26 +319,29 @@ public:
     i32 ChangeState_8fab0(i32 arg); // @0x08fab0 (deferred / stubbed)
 
     // --- members (offsets relative to `this`; base CGameMgr occupies 0x00..0x2c) ---
-    CState* m_curState;     // +0x2c  current game-state (Update() -> state id)
-    CWorldZ* m_world;       // +0x30  loaded world/map object (also a draw gate)
-    i32 m_recolorSurface;   // +0x34  color-depth recolor surface (CRezSurface94)
-    i32 m_settings;         // +0x38  settings/registry writer (CSettingsWriter)
-    i32 m_3c, m_40;         // +0x3c, +0x40  engine sub-objects (teardown-only)
-    i32 m_hudGuard;         // +0x44  HUD first-frame seed guard (HudGuard44; +0x124)
-    CGruntzSoundZ* m_sound; // +0x48  sound/bank object (StopBank/StopAll)
-    i32 m_4c, m_50;         // +0x4c, +0x50
-    // +0x54..+0x78 sub-controllers (4-byte object pointers; the ones still reached
-    // only through a reloc-masked thiscall on a TU-local view are kept i32-wide):
+    CState* m_curState;              // +0x2c  current game-state (Update() -> state id)
+    CWorldZ* m_world;                // +0x30  loaded world/map object (also a draw gate)
+    CRezSurface94* m_recolorSurface; // +0x34  color-depth recolor surface
+    CSettingsWriter* m_settings;     // +0x38  settings/registry writer (WriteInt)
+    CWorldDelete* m_3c;              // +0x3c  engine sub-object (vtable-slot-1 teardown)
+    EngObj* m_40;                    // +0x40  engine sub-object (teardown-only)
+    HudGuard44* m_hudGuard;          // +0x44  HUD first-frame seed guard (+0x124)
+    CGruntzSoundZ* m_sound;          // +0x48  sound/bank object (StopBank/StopAll)
+    i32 m_4c;                        // +0x4c
+    EngObj* m_50;                    // +0x50  engine sub-object (teardown-only)
+    // +0x54..+0x78 sub-controllers (real engine sub-object pointers reached through
+    // reloc-masked thiscalls / vtable slots from GruntzMgr.cpp):
     CInput54* m_inputState; // +0x54  input/state object (Flush/Arm/Method0/Method1/StoreFlag)
-    i32 m_saveSink;         // +0x58  save-record sink (SaveSink58::Store)
-    i32 m_chatLog;          // +0x5c  chat/message log (CChatLog)
-    i32 m_timer;            // +0x60  per-frame timer/poll controller (Stop/Tick; +0x2c mirror)
+    SaveSink58* m_saveSink; // +0x58  save-record sink (SaveSink58::Store)
+    CChatLog* m_chatLog;    // +0x5c  chat/message log (Insert)
+    TimerObj* m_timer;      // +0x60  per-frame timer/poll controller (Stop/Tick; +0x2c mirror)
     i32 m_64;               // +0x64
-    i32 m_cmdGrid;          // +0x68  world delta-table grid + command sink (Reset/Flush)
-    i32 m_cmdSubMgr;        // +0x6c  command sub-manager sink
-    i32 m_cmdNotify;        // +0x70  command sink (vtbl slot 1) + cell-height notify
-    i32 m_74, m_78;         // +0x74, +0x78
-    i32 m_scoreHud;         // +0x7c  HUD/score accumulator + command sink
+    CCmdGrid* m_cmdGrid;    // +0x68  world delta-table grid + command sink (Reset/Flush)
+    CmdSink* m_cmdSubMgr;   // +0x6c  command sub-manager sink
+    CmdSinkV* m_cmdNotify;  // +0x70  command sink (vtbl slot 1) + cell-height notify
+    EngObj* m_74;           // +0x74  engine sub-object (teardown-only)
+    EngObj* m_78;           // +0x78  engine sub-object (teardown-only)
+    ScoreHud* m_scoreHud;   // +0x7c  HUD/score accumulator + command sink
     i32 m_numRuns;          // +0x80  "Num_Runs"   (launch counter; UnknownClose WriteInt)
     i32 m_numMovies;        // +0x84  "Num_Movies" (movie-playback counter)
     i32 m_colorDepth;       // +0x88  live color depth (bpp): 8/16(=HiColor)/24 (=0x10 in ctor)

@@ -157,10 +157,7 @@ struct StateScoreView {
     char m_pad20[0x3f4 - 0x20];
     LevelClock* m_3f4; // +0x3f4
 };
-struct CmdGridFlagView {
-    char m_pad0[0x288];
-    i32 m_288; // +0x288  per-grid scored flag
-};
+// (m_cmdGrid's scored flag +0x288 is a field of the unified CCmdGrid, defined below.)
 
 // DelayedQuit's menu lookup. The world's +0x28 sub-object holds a keyed map at
 // +0x10; Lookup(key, &out) resolves a named menu node, whose +0x10 sub-object's
@@ -199,11 +196,7 @@ public:
 };
 struct CSettingsWriter {
     void WriteInt(const char* key, i32 value); // FUN_00539460 (this, key, value) reloc-masked
-};
-struct StateMgr578Z {
-    i32 m_0, m_4, m_8; // +0x00..+0x08
-    char m_padc[0x10 - 0xc];
-    i32 m_10, m_14; // +0x10, +0x14
+    void Teardown();                           // (this) reloc-masked (UnknownClose)
 };
 // The settings store open/close brackets around the WriteInt block (reloc-masked
 // __cdecl free fns; no this).
@@ -294,29 +287,44 @@ struct ScoreSub2c { // g_gameReg->m_curState
 DATA(0x0024556c)
 extern CGameRegistry* g_gameReg;
 
-// The +0x68 per-world delta tables: two parallel int arrays at +0x20c / +0x21c
-// indexed by g_644c54.
-struct WorldDeltaTables {
+// The +0x68 world command-grid object (CGruntzMgr::m_cmdGrid). One object; each
+// manager method reads a different facet: the two per-world delta tables at
+// +0x20c/+0x21c (UpdateScoreHud, indexed by g_644c54), the "scored" flag at +0x288
+// (AccrueScoreTime), the 4-arg command sink (BroadcastCmd), the Reset/Flush sub-
+// controller (ResetWorldState/UnloadSoundChain), and the shared Teardown +
+// operator-delete (UnknownClose). All engine entrypoints are reloc-masked thiscalls.
+struct CCmdGrid {
     char m_pad0[0x20c];
-    i32 m_arr20c[4]; // +0x20c..+0x21c
-    i32 m_arr21c[4]; // +0x21c
+    i32 m_arr20c[4]; // +0x20c..+0x21c  score delta table
+    i32 m_arr21c[4]; // +0x21c          time delta table
+    char m_pad22c[0x288 - 0x22c];
+    i32 m_288;                               // +0x288  per-grid scored flag
+    i32 Command(i32 a, i32 b, i32 c, i32 d); // (this, a..d) reloc-masked
+    void Flush();                            // (this) reloc-masked
+    void Reset();                            // (this) reloc-masked (FUN @ 0x15c3 thunk)
+    void Teardown();                         // (this) reloc-masked
 };
 
-// The +0x7c HUD/score accumulator object.
+// The +0x7c HUD/score accumulator object (CGruntzMgr::m_scoreHud). One object: the
+// score/refresh fields + Refresh/Seed (UpdateScoreHud/AccrueScoreTime), the 4-arg
+// command sink (BroadcastCmd), and the shared Teardown (UnknownClose).
 struct ScoreHud {
     char m_pad0[0x8];
     i32 m_8; // +0x08  refresh flag
     char m_padc[0x1c - 0xc];
-    i32 m_1c;                // +0x1c  accumulator A
-    i32 m_20;                // +0x20  accumulator B
-    void Refresh(i32 score); // FUN @ 0x1884 thunk (this, score)
-    void Seed(i32 v, i32 z); // FUN @ 0x1c8f thunk (this, v, z)
+    i32 m_1c;                                // +0x1c  accumulator A
+    i32 m_20;                                // +0x20  accumulator B
+    void Refresh(i32 score);                 // FUN @ 0x1884 thunk (this, score)
+    void Seed(i32 v, i32 z);                 // FUN @ 0x1c8f thunk (this, v, z)
+    i32 Command(i32 a, i32 b, i32 c, i32 d); // (this, a..d) reloc-masked (BroadcastCmd)
+    void Teardown();                         // (this) reloc-masked (UnknownClose)
 };
 
 // The +0x44 object carrying a one-shot guard at +0x124.
 struct HudGuard44 {
     char m_pad0[0x124];
-    i32 m_124; // +0x124
+    i32 m_124;       // +0x124
+    void Teardown(); // (this) reloc-masked (UnknownClose)
 };
 
 // The archive/serializer object SaveState streams every clock/scroll/warp field
@@ -353,18 +361,16 @@ void RedrawMapIndex(i32 idx); // FUN_00558c70
 // `push a3..a0; call; add esp,0x10`).
 i32 CmdHook(i32 a, i32 b, i32 c, i32 d); // FUN @ 0x17da thunk
 
-// The +0x60 timer/poll object (reloc-masked thiscall). StoreInputState mirrors
-// the latest input-state value into its +0x2c field.
+// The +0x60 timer/poll object (CGruntzMgr::m_timer; reloc-masked thiscalls).
+// StoreInputState mirrors the latest input-state value into its +0x2c field; Stop
+// pauses it (Quicksave/AdvanceFrame/UnloadSoundChain); Tick fires it during a cmd-4/7
+// broadcast (BroadcastCmd); Teardown + operator delete tear it down (UnknownClose).
 struct TimerObj {
     char m_pad0[0x2c];
     i32 m_inputMirror; // +0x2c
     void Stop();       // (this) reloc-masked
-};
-
-// The +0x68 sub-controller (gated on m_10; reloc-masked thiscall).
-struct Ctrl68 {
-    void Flush(); // (this) reloc-masked
-    void Reset(); // (this) reloc-masked (FUN @ 0x15c3 thunk)
+    void Tick();       // (this) reloc-masked (BroadcastCmd cmd 4/7)
+    void Teardown();   // (this) reloc-masked (UnknownClose)
 };
 
 // One player-status slot in the PLAY state's 4-entry status array (m_curState->+0x520),
@@ -397,6 +403,7 @@ struct SaveInfo {
 // (reloc-masked thiscall).
 struct SaveSink58 {
     void Store(SaveInfo* dst, char* src); // (this, dst, src) reloc-masked
+    void Teardown();                      // (this) reloc-masked (UnknownClose)
 };
 
 // The engine's out-of-line block copy (FUN_00520340). Retail calls it here (not
@@ -559,6 +566,7 @@ struct CInput54 {
     void Method0();                                 // FUN @ 0x29b9 thunk (reloc-masked)
     void Method1();                                 // FUN @ 0x18e8 thunk (reloc-masked)
     void StoreFlag(i32 v);                          // FUN_004385e0-family (this, v)
+    void Teardown();                                // (this) reloc-masked (UnknownClose)
 };
 
 // The world's polymorphic mode-set vtable (slot 7 = +0x1c notify; slot 6 = +0x18
@@ -619,22 +627,25 @@ struct OptionsSlot {
 };
 
 // The downstream command sinks BroadcastCmd fans the 4-arg command out to: the
-// +0x68 grid, the live source object (via GetSaveSource), the +0x6c sub-mgr, the
-// +0x70 polymorphic object (vtbl slot 1), and the +0x7c HUD. Each returns
-// nonzero to keep broadcasting. All reloc-masked.
+// +0x68 grid (CCmdGrid), the live source object (via GetSaveSource), the +0x6c
+// sub-mgr (m_cmdSubMgr), the +0x70 polymorphic object (m_cmdNotify, vtbl slot 1),
+// and the +0x7c HUD (ScoreHud). Each returns nonzero to keep broadcasting. The
+// +0x6c sub-mgr also shares the Teardown + operator delete (UnknownClose). All
+// reloc-masked.
 struct CmdSink {
     i32 Command(i32 a, i32 b, i32 c, i32 d); // (this, a..d) reloc-masked
+    void Teardown();                         // (this) reloc-masked (UnknownClose)
 };
-// The +0x60 controller's 0-arg tick fired before the broadcast (reloc-masked).
-struct CmdTimer60 {
-    void Tick(); // (this) reloc-masked
-};
-// The +0x70 object dispatches the command through vtbl slot 1 (+0x04) as a
-// thiscall; model it as a 2-slot polymorphic class.
+// The +0x70 object (CGruntzMgr::m_cmdNotify): dispatches the 4-arg command through
+// vtbl slot 1 (+0x04) as a thiscall (BroadcastCmd), takes a cell-height notify
+// through a non-virtual Set (SetCellHeight), and shares the Teardown + operator
+// delete (UnknownClose). Model it as a polymorphic class with anchor slot 0.
 class CmdSinkV {
 public:
     virtual void s0();
     virtual i32 Command(i32 a, i32 b, i32 c, i32 d); // slot 1 (+0x04)
+    void Set(i32 row, i32 col, i32 value);           // (this, row, col, value) reloc-masked
+    void Teardown();                                 // (this) reloc-masked (UnknownClose)
 };
 
 // The world's layer/plane object: an element of the active view's +0x38 layer array
@@ -677,10 +688,7 @@ struct CWorldView {
     void Notify();  // FUN @ 0x160ee0 (this) reloc-masked
 };
 
-// The +0x70 notify object (reloc-masked 3-arg thiscall setter).
-struct CNotify70 {
-    void Set(i32 row, i32 col, i32 value); // (this, row, col, value) reloc-masked
-};
+// (m_cmdNotify's cell-height Set() is a method of the unified CmdSinkV, above.)
 
 // The engine's __cdecl CString-formatting helper (sprintf-style into a CString
 // destination; reloc-masked - only the call shape is load-bearing).
@@ -718,11 +726,17 @@ extern "C" {
 // is a second mgr (Flush @0x4385e0). Each call is a single reloc-masked
 // __thiscall, so only the one-method shape on a tiny helper is load-bearing.
 struct DirectInputMgr2 {
-    i32 PollAll(); // FUN_00533080
-    i32 Flush();   // FUN_00533110 (a second per-frame entrypoint)
+    i32 PollAll();   // FUN_00533080
+    i32 Flush();     // FUN_00533110 (a second per-frame entrypoint)
+    void Teardown(); // (this) reloc-masked (UnknownClose)
 };
+// The +0x578 state manager (g_645578). One object: TickStateMgrs drives its Flush;
+// UnknownClose zeroes its field block (+0x00..+0x14) before delete.
 struct StateMgrBZ {
-    void Flush(); // FUN_004385e0
+    i32 m_0, m_4, m_8; // +0x00..+0x08
+    char m_padc[0x10 - 0xc];
+    i32 m_10, m_14; // +0x10, +0x14
+    void Flush();   // FUN_004385e0
 };
 extern "C" {
     extern DirectInputMgr2* g_645570; // DAT_00645570
@@ -753,6 +767,7 @@ struct CLevelState {
 // (with type 0 / channel 0x11) into its insert slot (FUN_00421c60, reloc-masked).
 struct CChatLog {
     i32 Insert(char* msg, i32 type, i32 channel); // (this, msg, type, channel)
+    void Teardown();                              // (this) reloc-masked (UnknownClose)
 };
 
 // The shared scratch buffer the toggle-message formatter renders "<item> is
@@ -865,7 +880,7 @@ i32 CGruntzMgr::RestoreVideoMode(i32 save) {
 // returning its result; 0 when no log is bound.
 RVA(0x0008f9c0, 0x1d)
 i32 CGruntzMgr::AppendChatMessage(char* msg) {
-    CChatLog* log = (CChatLog*)m_chatLog;
+    CChatLog* log = m_chatLog;
     if (log == 0) {
         return 0;
     }
@@ -1760,7 +1775,7 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
     }
     m_inputState = 0;
 
-    CRezSurface94* surf = (CRezSurface94*)m_recolorSurface;
+    CRezSurface94* surf = m_recolorSurface;
     if (surf) {
         surf->Teardown();
         RezFree(surf);
@@ -1792,7 +1807,7 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
         return 0;
     }
 
-    CRezSurface94* old = (CRezSurface94*)m_recolorSurface;
+    CRezSurface94* old = m_recolorSurface;
     if (old) {
         old->Teardown();
         RezFree(old);
@@ -1804,11 +1819,11 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
     } else {
         obj = 0;
     }
-    m_recolorSurface = (i32)obj;
+    m_recolorSurface = obj;
 
     CString path;
     i32* row = ResolveRezRow(&path);
-    if (((CRezSurface94*)m_recolorSurface)->Apply(*row, 1, 0)) {
+    if (m_recolorSurface->Apply(*row, 1, 0)) {
         ReportError(0x800b, 0x441);
         return 0;
     }
@@ -1969,7 +1984,7 @@ i32 CGruntzMgr::IsLobbyHostReady() {
 RVA(0x00091a10, 0x17)
 i32 CGruntzMgr::StoreInputState(i32 v) {
     m_inputStateVal = v;
-    TimerObj* timer = (TimerObj*)m_timer;
+    TimerObj* timer = m_timer;
     if (timer) {
         timer->m_inputMirror = v;
     }
@@ -2129,7 +2144,7 @@ i32 CGruntzMgr::Quicksave() {
     if (m_curState->Update() != 3) {
         return 0;
     }
-    if (((HudGuard44*)m_hudGuard)->m_124 != 0) {
+    if (m_hudGuard->m_124 != 0) {
         CString name;
         name.LoadStringA(0x81aa);
         EnterModalUI((i32)(const char*)name);
@@ -2142,11 +2157,11 @@ i32 CGruntzMgr::Quicksave() {
         return 0;
     }
     if (m_timer) {
-        ((TimerObj*)m_timer)->Stop();
+        m_timer->Stop();
     }
     FillSaveInfo((SaveInfo*)m_saveInfoRec, 0);
     if (((ScoreNotifier*)g_gameReg->m_58)->Notify((i32)((char*)m_saveInfoRec + 0x35), 0x81a7)) {
-        ((CChatLog*)m_chatLog)->Insert("Game Quicksaved successfully.", 0, 0x11);
+        m_chatLog->Insert("Game Quicksaved successfully.", 0, 0x11);
         return 1;
     }
     EnterModalUI((i32) "ERROR - Cannot Save Game.");
@@ -2338,13 +2353,13 @@ i32 CGruntzMgr::BroadcastCmd(i32 a0, i32 cmd, i32 a2, i32 a3) {
             if (PrepCmd4(a0) == 0) {
                 return 0;
             }
-            ((CmdTimer60*)m_timer)->Tick();
+            m_timer->Tick();
             break;
         case 7:
             if (PrepCmd7(a0) == 0) {
                 return 0;
             }
-            ((CmdTimer60*)m_timer)->Tick();
+            m_timer->Tick();
             break;
     }
 
@@ -2356,22 +2371,22 @@ i32 CGruntzMgr::BroadcastCmd(i32 a0, i32 cmd, i32 a2, i32 a3) {
         slot = (OptionsSlot*)((char*)slot + 0x238);
     }
 
-    if (((CmdSink*)m_cmdGrid)->Command(a0, cmd, a2, a3) == 0) {
+    if (m_cmdGrid->Command(a0, cmd, a2, a3) == 0) {
         return 0;
     }
     if (((CmdSink*)GetSaveSource())->Command(a0, cmd, a2, a3) == 0) {
         return 0;
     }
-    if (((CmdSink*)m_cmdSubMgr)->Command(a0, cmd, a2, a3) == 0) {
+    if (m_cmdSubMgr->Command(a0, cmd, a2, a3) == 0) {
         return 0;
     }
-    if (((CmdSinkV*)m_cmdNotify)->Command(a0, cmd, a2, a3) == 0) {
+    if (m_cmdNotify->Command(a0, cmd, a2, a3) == 0) {
         return 0;
     }
     if (CmdHook(a0, cmd, a2, a3) == 0) {
         return 0;
     }
-    return ((CmdSink*)m_scoreHud)->Command(a0, cmd, a2, a3) != 0;
+    return m_scoreHud->Command(a0, cmd, a2, a3) != 0;
 }
 
 // -------------------------------------------------------------------------
@@ -2390,23 +2405,23 @@ void CGruntzMgr::UpdateScoreHud() {
     }
     ScoreSub2c* sub = (ScoreSub2c*)g_gameReg->m_curState;
 
-    ((ScoreHud*)m_scoreHud)->m_1c += ((WorldDeltaTables*)m_cmdGrid)->m_arr20c[g_644c54];
-    ((ScoreHud*)m_scoreHud)->m_20 += ((WorldDeltaTables*)m_cmdGrid)->m_arr21c[g_644c54];
+    m_scoreHud->m_1c += m_cmdGrid->m_arr20c[g_644c54];
+    m_scoreHud->m_20 += m_cmdGrid->m_arr21c[g_644c54];
 
     if (m_strWorldFile.GetLength() != 0) {
-        ((ScoreHud*)m_scoreHud)->Refresh(1);
-        ((ScoreHud*)m_scoreHud)->m_8 = 1;
+        m_scoreHud->Refresh(1);
+        m_scoreHud->m_8 = 1;
         return;
     }
 
-    if (((HudGuard44*)m_hudGuard)->m_124 == 0) {
-        ((ScoreHud*)m_scoreHud)->Seed(sub->m_1c, 0);
+    if (m_hudGuard->m_124 == 0) {
+        m_scoreHud->Seed(sub->m_1c, 0);
         ((ScoreNotifier*)g_gameReg->m_58)->Bump(sub->m_1c);
         ((ScoreNotifier*)g_gameReg->m_58)->Tick((sub->m_1c % 0x28) + 1);
         ((ScoreNotifier*)g_gameReg->m_58)->Notify(0, 0x81a6);
     }
-    ((ScoreHud*)m_scoreHud)->Refresh(sub->m_1c);
-    ((ScoreHud*)m_scoreHud)->m_8 = 0;
+    m_scoreHud->Refresh(sub->m_1c);
+    m_scoreHud->m_8 = 0;
 }
 
 // -------------------------------------------------------------------------
@@ -2548,7 +2563,7 @@ i32 CGruntzMgr::FillSaveInfo(SaveInfo* dst, void* snapshot) {
     strcpy(dst->m_75, GetLevelName());
     dst->m_fc = (m_134 == 3);
     dst->m_f8 = m_130;
-    ((SaveSink58*)m_saveSink)->Store(dst, src + 0x1d0);
+    m_saveSink->Store(dst, src + 0x1d0);
     m_saveInfoRec = (i32)dst;
     if (snapshot) {
         EngineCopy(dst->m_14, snapshot, 0x20);
@@ -2620,7 +2635,7 @@ i32 CGruntzMgr::FinishLevel(i32 full, i32 stopBank) {
     if (m_soundEnabled) {
         m_inputState->Method1();
         if (m_cmdGrid && m_soundEnabled) {
-            ((Ctrl68*)m_cmdGrid)->Reset();
+            m_cmdGrid->Reset();
         }
     }
     m_curState->Vslot19();
@@ -2649,7 +2664,7 @@ void CGruntzMgr::EnterModalUI(i32 arg) {
         return;
     }
     if (m_timer) {
-        ((TimerObj*)m_timer)->Stop();
+        m_timer->Stop();
     }
     if (m_world) {
         RedrawMapIndex(m_world->m_4->m_14);
@@ -2686,10 +2701,10 @@ void CGruntzMgr::EnterModalUI(i32 arg) {
 RVA(0x000903f0, 0x10c)
 i32 CGruntzMgr::ExitModalUI(CModalDialog* dlg, i32 notify) {
     if (m_timer) {
-        ((TimerObj*)m_timer)->Stop();
+        m_timer->Stop();
     }
     if (m_cmdGrid && m_soundEnabled) {
-        ((Ctrl68*)m_cmdGrid)->Flush();
+        m_cmdGrid->Flush();
     }
     if (m_world) {
         if (notify && m_curState && m_curState->Update() != 5) {
@@ -2971,7 +2986,7 @@ void CGruntzMgr::SetCellHeight(i32 row, i32 col, i32 value) {
     CWorldLayer* grid = m_world->m_24->m_5c;
     i32 idx = grid->m_24[col] + row;
     grid->m_20[idx] = value;
-    ((CNotify70*)m_cmdNotify)->Set(row, col, value);
+    m_cmdNotify->Set(row, col, value);
 }
 
 // -------------------------------------------------------------------------
@@ -2994,7 +3009,7 @@ void CGruntzMgr::UnknownClose() {
         ((CWorldRegistrar*)m_world)->RegisterCallback(0);
     }
     OpenSettingsStore();
-    CSettingsWriter* cfg = (CSettingsWriter*)m_settings;
+    CSettingsWriter* cfg = m_settings;
     if (cfg) {
         cfg->WriteInt("Num_Runs", m_numRuns);
         cfg->WriteInt("Num_Movies", m_numMovies);
@@ -3010,7 +3025,7 @@ void CGruntzMgr::UnknownClose() {
             cfg->WriteInt("Music_Volume", m_sound->GetXMidiVolume());
         }
         if (m_timer) {
-            cfg->WriteInt("Voice_Volume", ((TimerObj*)m_timer)->m_inputMirror);
+            cfg->WriteInt("Voice_Volume", m_timer->m_inputMirror);
         }
         if (m_world && m_world->m_28) {
             cfg->WriteInt("Sound_Volume", g_61ab24);
@@ -3034,32 +3049,32 @@ void CGruntzMgr::UnknownClose() {
         m_curState = 0;
     }
     if (m_74) {
-        ((EngObj*)m_74)->Teardown();
-        operator delete((void*)m_74);
+        m_74->Teardown();
+        operator delete(m_74);
         m_74 = 0;
     }
     if (m_cmdGrid) {
-        ((EngObj*)m_cmdGrid)->Teardown();
-        operator delete((void*)m_cmdGrid);
+        m_cmdGrid->Teardown();
+        operator delete(m_cmdGrid);
         m_cmdGrid = 0;
     }
     if (m_cmdNotify) {
-        ((EngObj*)m_cmdNotify)->Teardown();
-        operator delete((void*)m_cmdNotify);
+        m_cmdNotify->Teardown();
+        operator delete(m_cmdNotify);
         m_cmdNotify = 0;
     }
     if (m_scoreHud) {
-        ((EngObj*)m_scoreHud)->Teardown();
-        operator delete((void*)m_scoreHud);
+        m_scoreHud->Teardown();
+        operator delete(m_scoreHud);
         m_scoreHud = 0;
     }
     if (m_cmdSubMgr) {
-        ((EngObj*)m_cmdSubMgr)->Teardown();
-        operator delete((void*)m_cmdSubMgr);
+        m_cmdSubMgr->Teardown();
+        operator delete(m_cmdSubMgr);
         m_cmdSubMgr = 0;
     }
     if (g_645578) {
-        StateMgr578Z* v = (StateMgr578Z*)g_645578;
+        StateMgrBZ* v = g_645578;
         v->m_0 = 0;
         v->m_4 = 0;
         v->m_8 = 0;
@@ -3069,38 +3084,38 @@ void CGruntzMgr::UnknownClose() {
         g_645578 = 0;
     }
     if (g_645570) {
-        ((EngObj*)g_645570)->Teardown();
+        g_645570->Teardown();
         operator delete(g_645570);
         g_645570 = 0;
     }
     if (m_hudGuard) {
-        ((EngObj*)m_hudGuard)->Teardown();
-        operator delete((void*)m_hudGuard);
+        m_hudGuard->Teardown();
+        operator delete(m_hudGuard);
         m_hudGuard = 0;
     }
     if (m_sound) {
-        ((EngObj*)m_sound)->Teardown();
+        m_sound->Shutdown();
         operator delete(m_sound);
         m_sound = 0;
     }
     if (m_inputState) {
-        ((EngObj*)m_inputState)->Teardown();
+        m_inputState->Teardown();
         operator delete(m_inputState);
         m_inputState = 0;
     }
     if (m_40) {
-        ((EngObj*)m_40)->Teardown();
-        operator delete((void*)m_40);
+        m_40->Teardown();
+        operator delete(m_40);
         m_40 = 0;
     }
     if (m_chatLog) {
-        ((EngObj*)m_chatLog)->Teardown();
-        operator delete((void*)m_chatLog);
+        m_chatLog->Teardown();
+        operator delete(m_chatLog);
         m_chatLog = 0;
     }
     if (m_timer) {
-        ((EngObj*)m_timer)->Teardown();
-        operator delete((void*)m_timer);
+        m_timer->Teardown();
+        operator delete(m_timer);
         m_timer = 0;
     }
     if (m_world) {
@@ -3108,32 +3123,32 @@ void CGruntzMgr::UnknownClose() {
         m_world = 0;
     }
     if (m_recolorSurface) {
-        ((EngObj*)m_recolorSurface)->Teardown();
-        operator delete((void*)m_recolorSurface);
+        m_recolorSurface->Teardown();
+        operator delete(m_recolorSurface);
         m_recolorSurface = 0;
     }
     if (m_settings) {
-        ((EngObj*)m_settings)->Teardown();
-        operator delete((void*)m_settings);
+        m_settings->Teardown();
+        operator delete(m_settings);
         m_settings = 0;
     }
     if (m_3c) {
-        ((CWorldDelete*)m_3c)->Slot1(1);
+        m_3c->Slot1(1);
         m_3c = 0;
     }
     if (m_50) {
-        ((EngObj*)m_50)->Teardown();
-        operator delete((void*)m_50);
+        m_50->Teardown();
+        operator delete(m_50);
         m_50 = 0;
     }
     if (m_saveSink) {
-        ((EngObj*)m_saveSink)->Teardown();
-        operator delete((void*)m_saveSink);
+        m_saveSink->Teardown();
+        operator delete(m_saveSink);
         m_saveSink = 0;
     }
     if (m_78) {
-        ((EngObj*)m_78)->Teardown();
-        operator delete((void*)m_78);
+        m_78->Teardown();
+        operator delete(m_78);
         m_78 = 0;
     }
     CloseSettingsStore();
@@ -3161,7 +3176,7 @@ RVA(0x000861e0, 0xc5)
 void CGruntzMgr::AccrueScoreTime() {
     CState* st = m_curState;
     if (m_134 == 1) {
-        if (((CmdGridFlagView*)m_cmdGrid)->m_288 == 1) {
+        if (m_cmdGrid->m_288 == 1) {
             UpdateScoreHud();
         }
         SwitchModeState(0xa, 1, 0, 0);
@@ -3260,10 +3275,10 @@ i32 CGruntzMgr::RunModalDialog(const char* tmpl, void* dlgProc, i32 flag) {
         return 0;
     }
     if (m_timer) {
-        ((TimerObj*)m_timer)->Stop();
+        m_timer->Stop();
     }
     if (m_cmdGrid && m_soundEnabled) {
-        ((Ctrl68*)m_cmdGrid)->Flush();
+        m_cmdGrid->Flush();
     }
     if (m_world) {
         if (flag && m_curState && m_curState->Update() != 5) {
@@ -3311,7 +3326,7 @@ i32 CGruntzMgr::RunModalDialog(const char* tmpl, void* dlgProc, i32 flag) {
 // dialog and, on success, the GAME_SAVEMSG dialog. Returns 1.
 RVA(0x00092420, 0xa4)
 i32 CGruntzMgr::LoadSaveMessageSprite() {
-    if (((HudGuard44*)m_hudGuard)->m_124 != 0) {
+    if (m_hudGuard->m_124 != 0) {
         CString name;
         name.LoadStringA(0x81aa);
         EnterModalUI((i32)(const char*)name);
@@ -3684,7 +3699,6 @@ SIZE_UNKNOWN(CMonoEntry);
 SIZE_UNKNOWN(CMonoSprite);
 SIZE_UNKNOWN(CMonoView);
 SIZE_UNKNOWN(CMonoWorld);
-SIZE_UNKNOWN(CNotify70);
 SIZE_UNKNOWN(CObListSub);
 SIZE_UNKNOWN(CPlayStateView);
 SIZE_UNKNOWN(CPointXY);
@@ -3701,11 +3715,9 @@ SIZE_UNKNOWN(CWorldMenuHolder);
 SIZE_UNKNOWN(CWorldModeIface);
 SIZE_UNKNOWN(CWorldRegistrar);
 SIZE_UNKNOWN(CWorldView);
-SIZE_UNKNOWN(CmdGridFlagView);
+SIZE_UNKNOWN(CCmdGrid);
 SIZE_UNKNOWN(CmdSink);
 SIZE_UNKNOWN(CmdSinkV);
-SIZE_UNKNOWN(CmdTimer60);
-SIZE_UNKNOWN(Ctrl68);
 SIZE_UNKNOWN(DirectInputMgr2);
 SIZE_UNKNOWN(EngObj);
 SIZE_UNKNOWN(GameRegHudView);
@@ -3720,11 +3732,9 @@ SIZE_UNKNOWN(SaveSink58);
 SIZE_UNKNOWN(ScoreHud);
 SIZE_UNKNOWN(ScoreNotifier);
 SIZE_UNKNOWN(ScoreSub2c);
-SIZE_UNKNOWN(StateMgr578Z);
 SIZE_UNKNOWN(StateMgrBZ);
 SIZE_UNKNOWN(StateScoreView);
 SIZE_UNKNOWN(SvmGuts);
 SIZE_UNKNOWN(SvmStateView);
 SIZE_UNKNOWN(TimerObj);
-SIZE_UNKNOWN(WorldDeltaTables);
 SIZE_UNKNOWN(CGameRegistry);

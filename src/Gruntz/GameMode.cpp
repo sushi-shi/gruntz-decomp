@@ -601,19 +601,27 @@ i32 CCreditsState::DrawScrollingCredits() {
 // then build the trailing "SimpleAnimation" glitter sprite. The factory Create/SetName/
 // SetTexture/SetCycle are reloc-masked __thiscall externs.
 SIZE_UNKNOWN(CGlitterAnim);
+// The created "SimpleAnimation"/"DoNothing" sprite (the factory return). The WARP
+// booty-letter draw (StepGlitterAnim/MoveLettersByDir) walks the very same objects
+// as position/flag records, so its former CBootyLetter facet (m_8 flag word, m_5c/m_60
+// = x/y, m_40 out-of-bounds flag, m_74 one-shot latch) is folded in here - one class.
 struct CGlitterAnim {                       // a created animation object
     void SetName(const char* key, i32 idx); // 0x1504d0 (this, key, idx)
     void SetTexture(const char* key);       // 0x150540 (this, key)
     void SetCycle(const char* key, i32 z);  // 0x1505b0 (this, key, z)
-    char m_pad00[0x40];
-    i32 m_40; // +0x40 flag word (bit0 = active)
+    char m_pad00[0x8];
+    i32 m_8; // +0x08 flag word (booty draw: |= 0x20000 latch bit)
+    char m_pad0c[0x40 - 0xc];
+    i32 m_40; // +0x40 flag word (bit0 = active / out-of-bounds)
     char m_pad44[0x4c - 0x44];
     i32 m_4c; // +0x4c selection/color handle
     i32 m_50; // +0x50 mode
     char m_pad54[0x58 - 0x54];
     i32 m_58; // +0x58 flag
-    i32 m_5c; // +0x5c id/offset
-    i32 m_60; // +0x60 x-position
+    i32 m_5c; // +0x5c id/offset (booty draw: x)
+    i32 m_60; // +0x60 x-position (booty draw: y)
+    char m_pad64[0x74 - 0x64];
+    i32 m_74; // +0x74 one-shot latch (booty draw)
 };
 SIZE_UNKNOWN(CGlitterFactory);
 struct CGlitterFactory {
@@ -686,7 +694,7 @@ i32 CMultiBootyState::BuildWarpStoneGlitterAnimation() {
         return 0;
     }
     g->SetTexture("GAME_GLITTERGOLD");
-    ((CGlitterAnim*)m_1fc)->SetCycle("GAME_CYCLE100", 0);
+    m_1fc->SetCycle("GAME_CYCLE100", 0);
     return 1;
 }
 
@@ -1420,19 +1428,8 @@ CBootyState::~CBootyState() {
 // (StepGlitterAnim) lays eight letter sprites on a sine spiral that shrinks per frame.
 // ===========================================================================
 
-// A letter sprite the booty animators position: m_5c/m_60 = {x,y}, m_40 = a flag
-// word OR'd in on out-of-bounds, m_74 a one-shot latch, m_8 a flag word.
-struct CBootyLetter {
-    char m_pad00[0x8];
-    i32 m_8; // +0x08 flag word
-    char m_pad0c[0x40 - 0xc];
-    i32 m_40; // +0x40 out-of-bounds flag word
-    char m_pad44[0x5c - 0x44];
-    i32 m_5c; // +0x5c x
-    i32 m_60; // +0x60 y
-    char m_pad64[0x74 - 0x64];
-    i32 m_74; // +0x74 one-shot latch
-};
+// (The booty letter sprites are CGlitterAnim - the same created "SimpleAnimation"
+// objects the factory builds, walked here as position/flag records. See CGlitterAnim.)
 
 // The packed {x,y} spawn-coordinate table the animator indexes by m_1d8 (DAT_005e8fe8;
 // the disasm reads x via [tbl] and y via [tbl+4], stride 8). The +0x1ec / +0x204 sprite
@@ -1535,14 +1532,14 @@ RVA(0x000196c0, 0x1d3)
 void CMultiBootyState::StepGlitterAnim() {
     if (m_1b4) {
         if (m_1d8 >= 0) {
-            i32* tbl = g_5e8fe8 + 1;                   // walks: tbl[-1]=x, tbl[0]=y; advances by 2
-            void** ap = (void**)((char*)this + 0x1ec); // walks arr1ec by 1
+            i32* tbl = g_5e8fe8 + 1; // walks: tbl[-1]=x, tbl[0]=y; advances by 2
+            CGlitterAnim** ap = (CGlitterAnim**)((char*)this + 0x1ec); // walks arr1ec by 1
             for (i32 i = 0; i <= m_1d8; i++) {
-                CBootyLetter* e = (CBootyLetter*)*ap;
+                CGlitterAnim* e = *ap;
                 e->m_5c = tbl[-1];
-                e = (CBootyLetter*)*ap;
+                e = *ap;
                 e->m_60 = tbl[0];
-                e = (CBootyLetter*)*ap;
+                e = *ap;
                 if (e->m_74 != 1) {
                     e->m_74 = 1;
                     e->m_8 |= 0x20000;
@@ -1551,8 +1548,8 @@ void CMultiBootyState::StepGlitterAnim() {
                 tbl += 2;
             }
         }
-        ((CBootyLetter*)m_1fc)->m_5c = g_5e8fe8[m_1d8 * 2];
-        ((CBootyLetter*)m_1fc)->m_60 = g_5e8fe8[m_1d8 * 2 + 1];
+        m_1fc->m_5c = g_5e8fe8[m_1d8 * 2];
+        m_1fc->m_60 = g_5e8fe8[m_1d8 * 2 + 1];
         return;
     }
 
@@ -1567,30 +1564,30 @@ void CMultiBootyState::StepGlitterAnim() {
 
     // Snap the leading sprites (0..m_1d8-1) to their static table coords (pointer walk).
     i32 i = 0;
-    void** arr1ec = (void**)((char*)this + 0x1ec);
+    CGlitterAnim** arr1ec = (CGlitterAnim**)((char*)this + 0x1ec);
     if (idx > 0) {
-        i32* tbl = g_5e8fe8 + 1; // ecx: tbl[-1]=x, tbl[0]=y
-        void** ap = arr1ec;      // eax
+        i32* tbl = g_5e8fe8 + 1;    // ecx: tbl[-1]=x, tbl[0]=y
+        CGlitterAnim** ap = arr1ec; // eax
         do {
-            CBootyLetter* e = (CBootyLetter*)*ap;
+            CGlitterAnim* e = *ap;
             i++;
             ap++;
             e->m_5c = tbl[-1];
-            e = (CBootyLetter*)ap[-1];
+            e = ap[-1];
             e->m_60 = tbl[0];
             tbl += 2;
         } while (i < m_1d8);
     }
     // The trailing sprite + the i'th (== m_1d8) sprite get the computed scratch coords.
-    ((CBootyLetter*)m_1fc)->m_5c = m_1e4;
-    ((CBootyLetter*)m_1fc)->m_60 = m_1e8;
-    ((CBootyLetter*)arr1ec[i])->m_5c = m_1e4;
-    ((CBootyLetter*)arr1ec[i])->m_60 = m_1e8;
+    m_1fc->m_5c = m_1e4;
+    m_1fc->m_60 = m_1e8;
+    arr1ec[i]->m_5c = m_1e4;
+    arr1ec[i]->m_60 = m_1e8;
 
     MoveLettersByDir();
 
     if (m_1dc == 0) {
-        CBootyLetter* e = (CBootyLetter*)arr1ec[i];
+        CGlitterAnim* e = arr1ec[i];
         if (e->m_74 != 1) {
             e->m_74 = 1;
             e->m_8 |= 0x20000;
@@ -1610,18 +1607,18 @@ void CMultiBootyState::StepGlitterAnim() {
 RVA(0x00019b90, 0xd7)
 void CMultiBootyState::MoveLettersByDir() {
     if (m_1b4) {
-        void** p = (void**)((char*)this + 0x204);
+        CGlitterAnim** p = (CGlitterAnim**)((char*)this + 0x204);
         i32 n = 8;
         do {
-            CBootyLetter* e = (CBootyLetter*)*p;
+            CGlitterAnim* e = *p;
             p++;
             e->m_40 |= 1;
         } while (--n);
         return;
     }
-    void** p = (void**)((char*)this + 0x204);
+    CGlitterAnim** p = (CGlitterAnim**)((char*)this + 0x204);
     for (i32 i = 0; i < 8; i++, p++) {
-        CBootyLetter* e = (CBootyLetter*)*p;
+        CGlitterAnim* e = *p;
         i32 x = e->m_5c;
         i32 y = e->m_60;
         if (x < 0 || x > 0x280 || y < 0 || y > 0x1e0) {
@@ -1630,35 +1627,35 @@ void CMultiBootyState::MoveLettersByDir() {
             switch (i) {
                 case 0:
                     e->m_5c = x;
-                    ((CBootyLetter*)*p)->m_60 = y - 4;
+                    (*p)->m_60 = y - 4;
                     break;
                 case 1:
                     e->m_5c = x + 4;
-                    ((CBootyLetter*)*p)->m_60 = y - 4;
+                    (*p)->m_60 = y - 4;
                     break;
                 case 2:
                     e->m_5c = x + 4;
-                    ((CBootyLetter*)*p)->m_60 = y;
+                    (*p)->m_60 = y;
                     break;
                 case 3:
                     e->m_5c = x + 4;
-                    ((CBootyLetter*)*p)->m_60 = y + 4;
+                    (*p)->m_60 = y + 4;
                     break;
                 case 4:
                     e->m_5c = x;
-                    ((CBootyLetter*)*p)->m_60 = y + 4;
+                    (*p)->m_60 = y + 4;
                     break;
                 case 5:
                     e->m_5c = x - 4;
-                    ((CBootyLetter*)*p)->m_60 = y + 4;
+                    (*p)->m_60 = y + 4;
                     break;
                 case 6:
                     e->m_5c = x - 4;
-                    ((CBootyLetter*)*p)->m_60 = y;
+                    (*p)->m_60 = y;
                     break;
                 case 7:
                     e->m_5c = x - 4;
-                    ((CBootyLetter*)*p)->m_60 = y - 4;
+                    (*p)->m_60 = y - 4;
                     break;
             }
         }
@@ -2023,7 +2020,6 @@ SIZE_UNKNOWN(CCreditsSurface);
 SIZE_UNKNOWN(CCreditsDrawHolder);
 SIZE_UNKNOWN(CCreditsDrawView);
 SIZE_UNKNOWN(CCreditsDrawRoot);
-SIZE_UNKNOWN(CBootyLetter);
 SIZE_UNKNOWN(CBootyBonusState);
 SIZE_UNKNOWN(CBootyDrawObj);
 SIZE_UNKNOWN(CBootyGameReg);

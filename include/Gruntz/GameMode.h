@@ -176,6 +176,9 @@ extern "C" char g_60ce74[]; // "MONOLITH" (FindSound name)
 struct CMenuMusic;       // CMenuState::m_1bc       - menu music controller
 struct CCreditsVideo;    // CCreditsState::m_210    - Smacker video handle
 struct CBootyBonusState; // CMultiBootyState::m_2f8 - bonus scroll/flags object
+struct CGlitterAnim;     // CMultiBootyState::m_1fc + the +0x1ec/+0x204 letter-sprite arrays
+                         // (the "SimpleAnimation" sprite the factory builds; the booty
+                         //  draw walks the same objects as position/flag records)
 
 // ---------------------------------------------------------------------------
 // The concrete leaf states. Each overrides Update() to return its own state-ID
@@ -414,7 +417,7 @@ public:
     i32 m_1e4; // +0x1e4 scratch X (ftol)
     i32 m_1e8; // +0x1e8 scratch Y (ftol)
     char m_pad1ec[0x1fc - 0x1ec];
-    void* m_1fc; // +0x1fc the trailing/cursor letter sprite
+    CGlitterAnim* m_1fc; // +0x1fc the trailing/cursor letter sprite
     char m_pad200[0x2f8 - 0x200];
     CBootyBonusState* m_2f8; // +0x2f8 the bonus state object (m_5c phase / m_8 flags)
 };
