@@ -10,36 +10,10 @@
 #include <Io/FileMem.h>
 #include <rva.h>
 
-// The inner CFileIO presents its file ops virtually. MSVC5 rejects a __thiscall
-// fn-ptr typedef (C4234), so model the dispatch with a polymorphic VIEW class:
-// dummy virtuals place the real slots at the right indices, and a call through it
-// emits `mov eax,[file];call [eax+N]` with the thiscall convention for free.
-// (See docs/patterns/dummy-virtual-slots.md.) The view is reinterpreted over the
-// inner file's vptr; it is never constructed, so no vtable is emitted for it.
-struct CFileIOView {
-    virtual void v0();
-    virtual void v1();
-    virtual void v2();
-    virtual void v3();
-    virtual void v4();
-    virtual void v5();
-    virtual void v6();
-    virtual void v7();
-    virtual void v8();
-    virtual void v9();
-    virtual i32 Open(const char* name, u32 flags, void* err); // +0x28 (slot 10)
-    virtual void v11();
-    virtual void v12();
-    virtual void v13();
-    virtual i32 GetLength();                    // +0x38 (slot 14)
-    virtual i32 Read(void* buf, u32 n);         // +0x3c (slot 15)
-    virtual void Write(const void* buf, u32 n); // +0x40 (slot 16)
-    virtual void v17();
-    virtual void v18();
-    virtual void v19();
-    virtual void v20();
-    virtual i32 Status(); // +0x54 (slot 21)
-};
+// The embedded CFileIO m_file presents its file ops virtually; they are reached
+// through the shared CFileIODispatch view (FileStream.h) so a call lowers to the
+// retail `mov eax,[m_file]; call [eax+N]` __thiscall dispatch without cl emitting
+// CFileIO's full CFile vtable. (docs/patterns/dummy-virtual-slots.md.)
 
 // ---------------------------------------------------------------------------
 // CFileMemBase::CFileMemBase  (0x00157850)
@@ -120,15 +94,15 @@ i32 CFileMem::Open() {
     }
 
     if (WantRead()) {
-        if (!((CFileIOView*)&m_file)->Open((const char*)m_name, 0, 0)) {
+        if (!((CFileIODispatch*)&m_file)->Open(m_name, 0, 0)) {
             return 0;
         }
-        m_length = ((CFileIOView*)&m_file)->GetLength();
+        m_length = ((CFileIODispatch*)&m_file)->GetLength();
         m_offset = 0;
         return 1;
     }
 
-    if (!((CFileIOView*)&m_file)->Open((const char*)m_name, 0x1001, 0)) {
+    if (!((CFileIODispatch*)&m_file)->Open(m_name, 0x1001, 0)) {
         return 0;
     }
     m_length = 0;
@@ -141,7 +115,7 @@ i32 CFileMem::Open() {
 // Poke the inner file's status slot (+0x54) and report ready (1).
 RVA(0x00165ef0, 0xf)
 i32 CFileMem::Ready() {
-    ((CFileIOView*)&m_file)->Status();
+    ((CFileIODispatch*)&m_file)->Status();
     return 1;
 }
 
@@ -158,7 +132,7 @@ i32 CFileMem::Read(void* buf, i32 n) {
     if (n == 0) {
         return 0;
     }
-    if (((CFileIOView*)&m_file)->Read(buf, n) != n) {
+    if (((CFileIODispatch*)&m_file)->Read(buf, n) != n) {
         return 0;
     }
     m_offset += n;
@@ -177,16 +151,11 @@ i32 CFileMem::Write(const void* buf, i32 n) {
     if (n == 0) {
         return 0;
     }
-    ((CFileIOView*)&m_file)->Write(buf, n);
+    ((CFileIODispatch*)&m_file)->Write(buf, n);
     m_length += n;
     m_offset += n;
     return 1;
 }
 
-// ===========================================================================
-// Class-metadata annotations (EOF-hosted; /O1+/GX MFC TU). CFileMemBase/CFileMem
-// are real polymorphic (SIZE_UNKNOWN + VTBL live atop the class in FileMem.h);
-// CFileIOView is a dummy-virtual reinterpret view (never constructed -> no
-// emitted vtable).
-// ===========================================================================
-SIZE_UNKNOWN(CFileIOView);
+// Class-metadata (CFileMemBase / CFileMem SIZE + VTBL) lives atop their decls in
+// FileMem.h; the shared CFileIODispatch dispatch view is in FileStream.h.

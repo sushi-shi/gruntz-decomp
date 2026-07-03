@@ -101,7 +101,7 @@ i32 CSaveGame::SaveGameFile(const char* dir) {
     }
     m_str0 = dir;
     m_name = m_str0 + "Gruntz.sav";
-    memset(m_08, 0, 0xa1c);
+    memset(m_header, 0, 0xa1c);
     Init();
     Load();
     for (i32 i = 0; i < 10; i++) {
@@ -109,7 +109,7 @@ i32 CSaveGame::SaveGameFile(const char* dir) {
         if (slot != 0) {
             char numbuf[16];
             _itoa(i + 1, numbuf, 10);
-            wsprintfA(slot->m_35, (const char*)(m_str0 + "Slot" + numbuf + ".sav"));
+            wsprintfA(slot->m_savePath, m_str0 + "Slot" + numbuf + ".sav");
         }
     }
     return 1;
@@ -129,7 +129,7 @@ void CSaveGame::Reset() {
 // Header field @+0x18 = 0x25, then zero all ten 0x100-byte slot records.
 RVA(0x000e4d50, 0x2f)
 void CSaveGame::Init() {
-    m_18 = 0x25;
+    m_maxLevel = 0x25;
     for (i32 i = 0; i < 10; i++) {
         SaveSlot* p = GetSlot(i);
         if (p != 0) {
@@ -146,10 +146,10 @@ void CSaveGame::Init() {
 RVA(0x000e4d90, 0xcc)
 i32 CSaveGame::Load() {
     CFileIO file;
-    if (!file.Open((const char*)m_name, 0, 0)) {
+    if (!file.Open(m_name, 0, 0)) {
         return 0;
     }
-    file.Read(m_08, 0xa1c);
+    file.Read(m_header, 0xa1c);
     file.Read(m_slots, 0xa00);
     file.Close();
     if (!Verify()) {
@@ -169,11 +169,11 @@ RVA(0x000e4ea0, 0x18c)
 i32 CSaveGame::Save(i32 a, i32 b) {
     CFileIO file;
     i32 ok = 0;
-    if (file.Open((const char*)m_name, 0x1000, 0)) {
+    if (file.Open(m_name, 0x1000, 0)) {
         file.Close();
-        if (file.Open((const char*)m_name, 1, 0)) {
+        if (file.Open(m_name, 1, 0)) {
             ComputeAll();
-            file.Write(m_08, 0xa1c);
+            file.Write(m_header, 0xa1c);
             file.Write(m_slots, 0xa00);
             file.Close();
             ok = 1;
@@ -197,10 +197,10 @@ void CSaveGame::ComputeAll() {
     for (i32 i = 0; i < 10; i++) {
         sum += Encode((u8*)GetSlot(i));
     }
-    *(i32*)&m_08[0] = 0;
-    *(i32*)&m_08[4] = 1;
-    *(i32*)&m_08[8] = sum;
-    *(i32*)&m_08[0xc] = 0;
+    *(i32*)&m_header[0] = 0;
+    *(i32*)&m_header[4] = 1;
+    *(i32*)&m_header[8] = sum;
+    *(i32*)&m_header[0xc] = 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -212,11 +212,16 @@ i32 CSaveGame::Verify() {
     for (i32 i = 0; i < 10; i++) {
         sum += Decode((u8*)GetSlot(i));
     }
-    return *(i32*)&m_08[8] == sum;
+    return *(i32*)&m_header[8] == sum;
 }
 
 // ---------------------------------------------------------------------------
 // CSaveGame::FillSlot  (0x000e5130)
+// `src` is the live game-state object being captured; only two of its members are
+// probed here (a level ptr @+0x2c whose +0x1c is the level id, and a world ptr
+// @+0x44 whose +0x124 flags a custom world). That object's class is not modeled in
+// this TU, so the two fields are read as binary-proven pointer arithmetic (the same
+// forced opaque cross-class read the doctrine allows for un-recovered externs).
 RVA(0x000e5130, 0x78)
 i32 CSaveGame::FillSlot(SaveSlot* dst, const char* name, void* src) {
     if (dst == 0) {
@@ -227,12 +232,12 @@ i32 CSaveGame::FillSlot(SaveSlot* dst, const char* name, void* src) {
     }
     dst->m_type = 1;
     dst->m_levelId = *(i32*)((char*)*(void**)((char*)src + 0x2c) + 0x1c);
-    dst->m_08 = 0;
-    dst->m_0c = 1;
+    dst->m_count = 0;
+    dst->m_active = 1;
     if (*(i32*)((char*)*(void**)((char*)src + 0x44) + 0x124) != 0) {
         dst->m_type = 3;
     }
-    strncpy(dst->m_14, name, 0x20);
+    strncpy(dst->m_name, name, 0x20);
     dst->m_checksum = Register(dst);
     return 1;
 }
@@ -249,8 +254,8 @@ i32 CSaveGame::CopySlot(SaveSlot* dst, const SaveSlot* src) {
     }
     dst->m_type = src->m_type;
     dst->m_levelId = src->m_levelId;
-    dst->m_08 = src->m_08;
-    dst->m_0c = src->m_0c;
+    dst->m_count = src->m_count;
+    dst->m_active = src->m_active;
     dst->m_checksum = src->m_checksum;
     dst->m_checksum = Register(dst);
     return 1;
@@ -268,7 +273,7 @@ i32 CSaveGame::FillSlot2(SaveSlot* dst, i32 name, void* src) {
     }
     dst->m_type = 1;
     dst->m_levelId = name;
-    dst->m_08 = 0;
+    dst->m_count = 0;
     if (*(i32*)((char*)*(void**)((char*)src + 0x44) + 0x124) != 0) {
         dst->m_type = 3;
     }
@@ -295,9 +300,9 @@ i32 CSaveGame::VerifySlot(SaveSlot* slot) {
     if (slot == 0) {
         return 0;
     }
-    i32 fc = slot->m_fc;
-    i32 f8 = slot->m_f8;
-    const char* name = (fc == 0 && f8 == 0) ? g_emptyString : slot->m_75;
+    i32 fc = slot->m_pathHi;
+    i32 f8 = slot->m_pathLo;
+    const char* name = (fc == 0 && f8 == 0) ? g_emptyString : slot->m_levelName;
     CString s(name);
     i32 r = g_gameReg->BuildLevelRezPath(fc == 0, fc, f8, slot->m_levelId);
     if (r == 0) {
@@ -332,9 +337,9 @@ i32 CSaveGame::Register(SaveSlot* slot) {
     if (slot == 0) {
         return 0;
     }
-    i32 fc = slot->m_fc;
-    i32 f8 = slot->m_f8;
-    const char* name = (fc == 0 && f8 == 0) ? g_emptyString : slot->m_75;
+    i32 fc = slot->m_pathHi;
+    i32 f8 = slot->m_pathLo;
+    const char* name = (fc == 0 && f8 == 0) ? g_emptyString : slot->m_levelName;
     CString s(name);
     return g_gameReg->BuildLevelRezPath(fc == 0, fc, f8, slot->m_levelId);
 }
@@ -364,6 +369,12 @@ i32 CSaveGame::Encode(u8* buf) {
 
 // ---------------------------------------------------------------------------
 // CSaveGame::Decode  (0x000e5460)
+// @early-stop
+// regalloc-tiebreak churn (~84%): body byte-identical to the pre-pristine 100%
+// match; the pristine field renames elsewhere in the TU perturbed MSVC5's
+// identifier-interning-driven register coloring, tipping this Encode/Decode
+// checksum-loop family's fragile edi/edx spill choice (same wall as Encode). Not
+// source-steerable; deferred to the final sweep (recover the edi/edx pin).
 RVA(0x000e5460, 0x3f)
 i32 CSaveGame::Decode(u8* buf) {
     if (buf == 0) {
@@ -401,7 +412,7 @@ i32 CSaveGame::FillSlotByIndex(i32 idx, i32 name, void* src) {
 // path string at +0x35. Only these two offsets are touched.
 SIZE_UNKNOWN(SaveTempRec);
 struct SaveTempRec {
-    i32 m_00;           // +0x00  flags (bit0) / cleared to 0 by the closer
+    i32 m_flags;        // +0x00  flags (bit0) / cleared to 0 by the closer
     char m_pad04[0x31]; // +0x04..+0x34
     char m_path[1];     // +0x35  the temp-file path
 };
@@ -423,57 +434,57 @@ int __stdcall CloseTempFile_e5550(SaveTempRec* p) {
         file.Close();
         FileDelete_1bf559(p->m_path);
     }
-    p->m_00 = 0;
+    p->m_flags = 0;
     return 1;
 }
 
 // ---------------------------------------------------------------------------
-// CSaveGame::SetField18  (0x000e5620)
+// CSaveGame::SetMaxLevel  (0x000e5620)
 // @early-stop
 // regalloc wall (~96%): logic + all (unsigned) comparisons exact; retail holds
-// the param in edx and m_18 in eax, recompile swaps them (eax<->edx). 1-2 bytes.
+// the param in edx and m_maxLevel in eax, recompile swaps them (eax<->edx). 1-2 bytes.
 RVA(0x000e5620, 0x27)
-void CSaveGame::SetField18(i32 v) {
+void CSaveGame::SetMaxLevel(i32 v) {
     if (v < 0x21) {
-        if ((u32)v > m_18) {
-            m_18 = v;
+        if ((u32)v > m_maxLevel) {
+            m_maxLevel = v;
             return;
         }
-        if (m_18 > 0x24) {
-            m_18 = v;
+        if (m_maxLevel > 0x24) {
+            m_maxLevel = v;
             return;
         }
     }
-    if (m_18 <= 0x24) {
+    if (m_maxLevel <= 0x24) {
         return;
     }
-    if ((u32)v <= m_18) {
+    if ((u32)v <= m_maxLevel) {
         return;
     }
-    m_18 = v;
+    m_maxLevel = v;
 }
 
 // ---------------------------------------------------------------------------
-// CSaveGame::SetField1c  (0x000e5660)
+// CSaveGame::SetCurLevel  (0x000e5660)
 RVA(0x000e5660, 0x1e)
-void CSaveGame::SetField1c(i32 v) {
+void CSaveGame::SetCurLevel(i32 v) {
     if (v >= 0x21) {
         return;
     }
-    if (v <= m_1c) {
+    if (v <= m_curLevel) {
         return;
     }
-    m_1c = v;
+    m_curLevel = v;
     if (v == 0x20) {
         Init();
     }
 }
 
 // ---------------------------------------------------------------------------
-// CSaveGame::CheckField20  (0x000e5690)
+// CSaveGame::CheckMagic  (0x000e5690)
 RVA(0x000e5690, 0xf)
-i32 CSaveGame::CheckField20() {
-    i32 v = m_20;
+i32 CSaveGame::CheckMagic() {
+    i32 v = m_magic;
     return v == 0x42a;
 }
 
@@ -483,7 +494,7 @@ i32 CSaveGame::CheckField20() {
 // 1, else 0. Free __cdecl helper (caller cleans the argument).
 RVA(0x000e5700, 0x9e)
 int TempFileExists_e5700(SaveTempRec* p) {
-    if (p != 0 && (p->m_00 & 1)) {
+    if (p != 0 && (p->m_flags & 1)) {
         CFileIO file;
         if (file.Open(p->m_path, 0, 0)) {
             file.Close();
@@ -496,7 +507,7 @@ int TempFileExists_e5700(SaveTempRec* p) {
 // ---------------------------------------------------------------------------
 // The two per-slot dialog labellers (re-homed from src/Stub/ApiCallers.cpp - they
 // walk this file's CSaveGame::GetSlot() records). __cdecl(hWnd, item, id3..id6):
-// label the slot's short name (m_14) into id3, "(Empty)" when Check2694 (0x2694 ->
+// label the slot's short name (m_name) into id3, "(Empty)" when Check2694 (0x2694 ->
 // 0xe5700 slot-occupancy probe) fails; then set the four control enables.
 namespace ApiCallerStubs {
     // 0x9e2d0 (GAME_INFO dialog variant): all four enables track occupancy.
@@ -505,7 +516,7 @@ namespace ApiCallerStubs {
     winapi_09e2d0_SetDlgItemTextA(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6) {
         i32 flag;
         if (Check2694(item)) {
-            SetDlgItemTextA(hWnd, id3, item->m_14);
+            SetDlgItemTextA(hWnd, id3, item->m_name);
             flag = 1;
         } else {
             SetDlgItemTextA(hWnd, id3, "(Empty)");
@@ -524,7 +535,7 @@ namespace ApiCallerStubs {
     winapi_0e3e80_SetDlgItemTextA(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6) {
         i32 flag;
         if (Check2694(item)) {
-            SetDlgItemTextA(hWnd, id3, item->m_14);
+            SetDlgItemTextA(hWnd, id3, item->m_name);
             flag = 1;
         } else {
             SetDlgItemTextA(hWnd, id3, "(Empty)");

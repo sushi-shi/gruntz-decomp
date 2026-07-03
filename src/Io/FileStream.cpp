@@ -85,11 +85,11 @@ void CFileIO::Write(const void* lpBuf, u32 nCount) {
     }
 
     if (!WriteFile(m_handle, (LPVOID)lpBuf, nCount, &nWritten, 0)) {
-        AfxThrowOsError((LONG)GetLastError(), (const char*)m_name);
+        AfxThrowOsError((LONG)GetLastError(), m_name);
     }
 
     if (nWritten != nCount) {
-        AfxThrowFileError(0xd /*diskFull*/, (LONG)-1, (const char*)m_name);
+        AfxThrowFileError(0xd /*diskFull*/, (LONG)-1, m_name);
     }
 }
 
@@ -227,26 +227,9 @@ BOOL CFileIO::Open(const char* lpszFileName, u32 nOpenFlags, void* pError) {
 // CFileIO::GetLength
 // Snapshot the current position (Seek 0,current), seek to the end for the length
 // (Seek 0,end), then restore (Seek cur,begin); return the length. Seek is the
-// CFile-family virtual at vtable slot 12 (+0x30) - dispatched through a small
-// placeholder-virtual view (slots 0-11 fix the offset) so each Seek reloads the
-// vptr (matching the retail virtual call) without disturbing CFileIO's own
-// reloc-masked vtable.
-class CFileIODispatch {
-public:
-    virtual void Slot0();
-    virtual void Slot1();
-    virtual void Slot2();
-    virtual void Slot3();
-    virtual void Slot4();
-    virtual void Slot5();
-    virtual void Slot6();
-    virtual void Slot7();
-    virtual void Slot8();
-    virtual void Slot9();
-    virtual void Slot10();
-    virtual void Slot11();
-    virtual LONG Seek(LONG off, i32 from); // +0x30  slot 12
-};
+// CFile-family virtual at vtable slot 12 (+0x30), reached through the shared
+// CFileIODispatch view (FileStream.h) so each Seek reloads the vptr (matching the
+// retail virtual call) without cl emitting CFileIO's full CFile vtable.
 RVA(0x001bf505, 0x2d)
 u32 CFileIO::GetLength() {
     CFileIODispatch* f = (CFileIODispatch*)this;
@@ -268,7 +251,7 @@ struct C646778 {
 };
 extern C646778 g_obj646778;
 
-// CFileIO::Stub_0bd3e0 - reopen the shared file object around a close. Ignores
+// CFileIO::ReopenSharedFile - reopen the shared file object around a close. Ignores
 // `this`; the single stack arg is the path.
 // @early-stop
 // regalloc-tiebreak wall: both `path` (3x push arg) and `&g_obj646778` (3x ecx) are
@@ -276,15 +259,10 @@ extern C646778 g_obj646778;
 // immediate each call, cl pins the global address in esi + re-pushes path from the
 // stack. Same code shape, opposite callee-saved pick; not source-steerable (~79%).
 RVA(0x000bd3e0, 0x34)
-void CFileIO::Stub_0bd3e0(char* path) {
+void CFileIO::ReopenSharedFile(char* path) {
     g_obj646778.Open(path, 0x1000, 0);
     g_obj646778.M1bf426();
     g_obj646778.Open(path, 1, 0);
 }
 
-// ===========================================================================
-// Class-metadata annotations (EOF-hosted: FileStream.h is pulled into /O1+/O2
-// consumers incl. Image, and this /O1 TU is byte-exact-sensitive, so keep every
-// completeness typedef after the last function body).
-// ===========================================================================
-SIZE_UNKNOWN(CFileIODispatch); // CFile Seek slot-dispatch view (no emitted vtable)
+// Class-metadata (CFileIO / CFileIODispatch) lives atop their decls in FileStream.h.
