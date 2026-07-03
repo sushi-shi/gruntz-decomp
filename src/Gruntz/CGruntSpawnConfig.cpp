@@ -335,6 +335,33 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
 }
 
 // ===========================================================================
+// CGruntSpawnConfig::SpawnVoiceDriver (0x11b3b0) + SpawnVoiceDriverStd (0x11b7c0)
+// ===========================================================================
+// The two sibling weighted grunt-voice spawn drivers (percent LCG gate @0x6c1288,
+// priority reject, weighted pick, lazy sprite create, CSpawnVoice::Setup tail).
+// Re-homed from the ApiCaller backlog by RVA proximity (dead-centre of the
+// 0x11axxx-0x11cxxx CGruntSpawnConfig family).
+//
+// @early-stop
+// /GX EH single-epilogue wall: the complete weighted-spawn body was reconstructed
+// and builds, but caps at ~47% because cl duplicates the frame-teardown per
+// return-site while retail funnels to one shared `jmp` epilogue. The return-0 stub
+// scores 73-83% via the smaller-fn normalization artifact, so the highest-% version
+// (this stub) is kept per the REVERT rule. Final-sweep candidates.
+RVA(0x0011b3b0, 0x338)
+i32 CGruntSpawnConfig::SpawnVoiceDriver(i32, i32, i32, i32, i32, i32) {
+    return 0;
+}
+
+// @early-stop
+// twin of 0x11b3b0: same /GX EH single-epilogue wall; file-scope __stdcall sibling,
+// stub kept as the highest-% version (full body ~47% vs stub-artifact 73-83%).
+RVA(0x0011b7c0, 0x304)
+i32 __stdcall SpawnVoiceDriverStd(i32, i32, i32, i32, i32) {
+    return 0;
+}
+
+// ===========================================================================
 // CGruntSpawnConfig::GetButeSlot  (0x11bba0)
 // ===========================================================================
 // Return a pointer to one of `target`'s fields, chosen by config->m_170 (a switch

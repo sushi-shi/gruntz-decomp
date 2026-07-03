@@ -38,6 +38,26 @@ class CGruntzSoundInnerZ;
 // Sub-object layouts CPlay::Render walks through (only the offsets it reads).
 // ===========================================================================
 
+// The placed-object display list the warlord-sprite loader walks (hung off
+// renderer A at +0x10; see CRenderer::m_10). Each node's +0x8 is a placed object.
+struct CWarlordListNode; // fully defined in CPlay.cpp
+SIZE_UNKNOWN(CWarlordListHead);
+struct CWarlordListHead {
+    char p0[0x4];
+    CWarlordListNode* m_4; // +0x04  first node
+};
+// The world's per-kind warlord counter block (CWorld::m_7c). LoadWarlordSprites
+// bumps m_30/m_34/m_38/m_40 by object-type range.
+SIZE_UNKNOWN(CWarlordCounters);
+struct CWarlordCounters {
+    char p0[0x30];
+    i32 m_30; // +0x30
+    i32 m_34; // +0x34
+    i32 m_38; // +0x38
+    char p3c[0x40 - 0x3c];
+    i32 m_40; // +0x40
+};
+
 // The renderer/draw object (m_c->m_8 = renderer A, m_c->m_c = renderer B). Its
 // vtable carries the per-frame draw slots: +0x24 begin-scene (1 arg), +0x34
 // present (2 args). Modeled with a padded virtual interface so the indirect
@@ -59,6 +79,10 @@ struct CRenderer {
     virtual void Present(void* a, void* b); // slot 13 (+0x34)
     // Non-virtual leaf the play-exit path runs on renderer A (reloc-masked).
     void Refresh(); // 0x159ef0 (thiscall, no arg)
+    // Renderer A owns the placed-object display list at +0x10 (LoadWarlordSprites
+    // walks it in-level; vptr is at +0x00, so data starts at +0x04).
+    char p04[0x10 - 0x4];
+    CWarlordListHead m_10; // +0x10  placed-object list head
 };
 
 // The draw-surface object at m_c->m_24 (the target of the thiscall PushView +
@@ -232,7 +256,9 @@ struct CWorld {
     struct SpriteLoader {
         void* LoadSprite(void* desc, i32 flag); // 0x4e23c0 (thiscall)
     }* m_74;
-    char p78[0x8c - 0x78];
+    char p78[0x7c - 0x78];
+    CWarlordCounters* m_7c; // +0x7c  per-kind warlord counter block (LoadWarlordSprites)
+    char p80[0x8c - 0x80];
     i32 m_8c; // +0x8c  viewport-clamp horizontal limit (ClampViewport2) / live mode W
     i32 m_90; // +0x90  viewport-clamp vertical limit (ClampViewport2) / live mode H
     i32 m_94; // +0x94  saved/last-good mode W (PresentAndFlush restore test)
@@ -440,6 +466,13 @@ public:
     // BuildWarlordNameTable's reloc-masked CPlay-thiscall leaves (external):
     i32 ProbeWarlord(i32 id, i32 a, i32 b, i32 c);                 // 0x12da thunk  -> found
     i32 BindWarlordName(const CString& name, i32 a, i32 b, i32 c); // 0x2bc1 thunk
+    // LoadWarlordSprites (0x0d65d0): ensure every sprite set a placed warlord needs is
+    // loaded - full campaign preload (registry m_134 != 1) or the in-level walk of the
+    // placed-object display list (renderer A's m_10). Re-homed from the ApiCaller
+    // backlog; reuses ProbeWarlord (0x12da) + BindWarlordName (0x2bc1). WarlordLoadTick
+    // (0x1019) is the per-set progress tick.
+    i32 LoadWarlordSprites(i32 ctx, i32* loaded); // 0x0d65d0
+    void WarlordLoadTick(i32);                    // 0x1019 thunk (progress tick)
 
     // SyncState (0x0d7520): the mode-dispatched serialize/round-trip of the play
     // state's 64-bit timer blocks + three child sync sub-objects (guts / frame

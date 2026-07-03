@@ -4505,6 +4505,310 @@ i32 CPlay::BuildWarlordNameTable(i32 arg) {
     return 1;
 }
 
+// The four placed-object dynamic-type markers LoadWarlordSprites tests obj->m_7c->m_10
+// against: each is the address of that object class's vtable slot-4 (+0x10) method
+// thunk. Named so the `cmp eax,<thunk>` emits its DIR32 reloc (retail relocates the
+// immediate) instead of a bare number - the reloc is what the match needs.
+DATA(0x000024a5)
+extern char g_objVtblThunk_24a5[]; // "multi-sprite warlord" object (m_11c/m_120 + m_118 switch)
+DATA(0x0000288d)
+extern char g_objVtblThunk_288d[]; // counted object keyed on m_124
+DATA(0x00003d0f)
+extern char g_objVtblThunk_3d0f[]; // counted object keyed on m_11c
+DATA(0x0000137a)
+extern char g_objVtblThunk_137a[]; // counted object keyed on m_11c (sibling of 3d0f)
+
+// A placed object walked in the in-level branch: its +0x7c dynamic-type vtable
+// (whose +0x10 slot carries the type marker) + its sprite/type ids.
+SIZE_UNKNOWN(CWarlordVtbl);
+struct CWarlordVtbl {
+    char p0[0x10];
+    void* m_10; // +0x10  dynamic-type marker (a vtable slot method thunk)
+};
+SIZE_UNKNOWN(CWarlordObj);
+struct CWarlordObj {
+    char p0[0x7c];
+    CWarlordVtbl* m_7c; // +0x7c
+    char p80[0x118 - 0x80];
+    i32 m_118; // +0x118  primary sprite/type id
+    i32 m_11c; // +0x11c
+    i32 m_120; // +0x120
+    i32 m_124; // +0x124
+};
+SIZE_UNKNOWN(CWarlordListNode);
+struct CWarlordListNode {
+    CWarlordListNode* m_0; // +0x00  next
+    char p4[0x8 - 0x4];
+    CWarlordObj* m_8; // +0x08  object
+};
+
+// LoadWarlordSprites (0x0d65d0) - ensure every sprite set a placed warlord needs is
+// loaded. Two modes: the full campaign preload (registry m_134 != 1) loads sets
+// 2..0x20 + 0x39/0x3a + the three named warlord banks; the in-level mode walks the
+// placed-object display list (renderer A's m_10) and, per object type (its vtable
+// marker), loads the sets that object uses + bumps the world's per-kind counters
+// (m_4->m_7c). `loaded[]` guards each set so its progress tick fires once. Reuses
+// ProbeWarlord (0x12da) + BindWarlordName (0x2bc1), like BuildWarlordNameTable above.
+// @early-stop  (0.x% -> 91.06%)
+// EH/frame wall: retail reuses the dead incoming-arg slots for the CString `s` (no
+// `sub esp` for locals) while the recompile allocates a fresh frame, so the
+// cleanup/dtor tail shifts + a few esi/edx/ecx spill recolors. Code shape + every
+// data/marker reloc match.
+RVA(0x000d65d0, 0x7a4)
+i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
+    if (g_64556c->m_134 != 1) {
+        for (i32 id = 2; id <= 0x20; id++) {
+            if (loaded[id] == 0) {
+                WarlordLoadTick(0);
+                loaded[id] = 1;
+            }
+            if (!ProbeWarlord(id, 1, 0, ctx)) {
+                return 0;
+            }
+        }
+        if (!ProbeWarlord(0x39, 1, 0, ctx)) {
+            return 0;
+        }
+        if (loaded[0x21] == 0) {
+            WarlordLoadTick(0);
+            loaded[0x21] = 1;
+        }
+        if (!ProbeWarlord(0x3a, 1, 0, ctx)) {
+            return 0;
+        }
+        if (loaded[0x22] == 0) {
+            WarlordLoadTick(0);
+            loaded[0x22] = 1;
+        }
+        CString s("WARLORDZ_NAPOLEAN");
+        if (!BindWarlordName(s, 1, 0, ctx)) {
+            return 0;
+        }
+        if (loaded[0x23] == 0) {
+            WarlordLoadTick(0);
+            loaded[0x23] = 1;
+        }
+        s = "WARLORDZ_VIKING";
+        if (!BindWarlordName(s, 1, 0, ctx)) {
+            return 0;
+        }
+        if (loaded[0x24] == 0) {
+            WarlordLoadTick(0);
+            loaded[0x24] = 1;
+        }
+        s = "WARLORDZ_PATTON";
+        if (!BindWarlordName(s, 1, 0, ctx)) {
+            return 0;
+        }
+        if (loaded[0x25] == 0) {
+            WarlordLoadTick(0);
+            loaded[0x25] = 1;
+        }
+        return 1;
+    }
+    CWarlordListHead* head = &this->m_c->m_8->m_10;
+    if (!head) {
+        return 0;
+    }
+    CWarlordListNode* node = head->m_4;
+    while (node) {
+        CWarlordObj* obj = node->m_8;
+        CWarlordListNode* nxt = node->m_0;
+        if (obj) {
+            void* marker = obj->m_7c->m_10;
+            if (marker == (void*)g_objVtblThunk_24a5) {
+                i32 v = obj->m_11c;
+                if (v) {
+                    if (!ProbeWarlord(v, 1, 0, ctx)) {
+                        return 0;
+                    }
+                    if (loaded[v] == 0) {
+                        WarlordLoadTick(0);
+                        loaded[v] = 1;
+                    }
+                }
+                v = obj->m_120;
+                if (v) {
+                    if (!ProbeWarlord(v, 1, 0, ctx)) {
+                        return 0;
+                    }
+                    if (loaded[v] == 0) {
+                        WarlordLoadTick(0);
+                        loaded[v] = 1;
+                    }
+                }
+                switch (obj->m_118) {
+                    case 0x7:
+                        if (!ProbeWarlord(1, 1, 0, ctx)) {
+                            return 0;
+                        }
+                        if (loaded[1] == 0) {
+                            WarlordLoadTick(0);
+                            loaded[1] = 1;
+                        }
+                        break;
+                    case 0x8:
+                        if (!ProbeWarlord(3, 1, 0, ctx)) {
+                            return 0;
+                        }
+                        if (loaded[3] == 0) {
+                            WarlordLoadTick(0);
+                            loaded[3] = 1;
+                        }
+                        break;
+                    case 0x9:
+                        if (!ProbeWarlord(5, 1, 0, ctx)) {
+                            return 0;
+                        }
+                        if (loaded[5] == 0) {
+                            WarlordLoadTick(0);
+                            loaded[5] = 1;
+                        }
+                        break;
+                    case 0xa:
+                        if (!ProbeWarlord(7, 1, 0, ctx)) {
+                            return 0;
+                        }
+                        if (loaded[7] == 0) {
+                            WarlordLoadTick(0);
+                            loaded[7] = 1;
+                        }
+                        break;
+                    case 0xb:
+                        if (!ProbeWarlord(0xd, 1, 0, ctx)) {
+                            return 0;
+                        }
+                        if (loaded[0xd] == 0) {
+                            WarlordLoadTick(0);
+                            loaded[0xd] = 1;
+                        }
+                        break;
+                    case 0xc:
+                        if (!ProbeWarlord(0x11, 1, 0, ctx)) {
+                            return 0;
+                        }
+                        if (loaded[0x11] == 0) {
+                            WarlordLoadTick(0);
+                            loaded[0x11] = 1;
+                        }
+                        break;
+                    case 0xf:
+                        if (!ProbeWarlord(0x13, 1, 0, ctx)) {
+                            return 0;
+                        }
+                        if (loaded[0x13] == 0) {
+                            WarlordLoadTick(0);
+                            loaded[0x13] = 1;
+                        }
+                        break;
+                    case 0x10:
+                        if (!ProbeWarlord(0x1e, 1, 0, ctx)) {
+                            return 0;
+                        }
+                        if (loaded[0x1e] == 0) {
+                            WarlordLoadTick(0);
+                            loaded[0x1e] = 1;
+                        }
+                        break;
+                }
+            } else if (marker == (void*)g_objVtblThunk_288d) {
+                i32 cv = obj->m_124 == 0x32 ? obj->m_118 : obj->m_124;
+                if (cv >= 1 && cv <= 0x16 && cv != 0x14) {
+                    m_4w()->m_7c->m_34++;
+                } else if (cv >= 0x17 && cv <= 0x20) {
+                    m_4w()->m_7c->m_30++;
+                } else if (cv >= 0x36 && cv <= 0x3c) {
+                    m_4w()->m_7c->m_38++;
+                } else if (cv == 0x50) {
+                    m_4w()->m_7c->m_40++;
+                }
+                i32 d = obj->m_124;
+                if (d <= 0x20) {
+                    if (!ProbeWarlord(d, 1, 0, ctx)) {
+                        return 0;
+                    }
+                    if (loaded[obj->m_124] == 0) {
+                        WarlordLoadTick(0);
+                        loaded[obj->m_124] = 1;
+                    }
+                } else if (d == 0x39) {
+                    if (!ProbeWarlord(0x39, 1, 0, ctx)) {
+                        return 0;
+                    }
+                    if (loaded[0x21] == 0) {
+                        WarlordLoadTick(0);
+                        loaded[0x21] = 1;
+                    }
+                } else if (d == 0x3a) {
+                    if (!ProbeWarlord(0x3a, 1, 0, ctx)) {
+                        return 0;
+                    }
+                    if (loaded[0x22] == 0) {
+                        WarlordLoadTick(0);
+                        loaded[0x22] = 1;
+                    }
+                } else if (d == 0x55 || d == 0x32) {
+                    if (!ProbeWarlord(obj->m_118, 1, 0, ctx)) {
+                        return 0;
+                    }
+                    if (loaded[obj->m_118] == 0) {
+                        WarlordLoadTick(0);
+                        loaded[obj->m_118] = 1;
+                    }
+                }
+            } else if (marker == (void*)g_objVtblThunk_3d0f
+                       || marker == (void*)g_objVtblThunk_137a) {
+                i32 cv = obj->m_11c == 0x32 ? obj->m_118 : obj->m_11c;
+                if (cv >= 1 && cv <= 0x16 && cv != 0x14) {
+                    m_4w()->m_7c->m_34++;
+                } else if (cv >= 0x17 && cv <= 0x20) {
+                    m_4w()->m_7c->m_30++;
+                } else if (cv >= 0x36 && cv <= 0x3c) {
+                    m_4w()->m_7c->m_38++;
+                } else if (cv == 0x50) {
+                    m_4w()->m_7c->m_40++;
+                }
+                i32 e = obj->m_11c;
+                if (e <= 0x20) {
+                    if (!ProbeWarlord(e, 1, 0, ctx)) {
+                        return 0;
+                    }
+                    if (loaded[obj->m_11c] == 0) {
+                        WarlordLoadTick(0);
+                        loaded[obj->m_11c] = 1;
+                    }
+                } else if (obj->m_124 == 0x39) {
+                    if (!ProbeWarlord(0x39, 1, 0, ctx)) {
+                        return 0;
+                    }
+                    if (loaded[0x21] == 0) {
+                        WarlordLoadTick(0);
+                        loaded[0x21] = 1;
+                    }
+                } else if (obj->m_124 == 0x3a) {
+                    if (!ProbeWarlord(0x3a, 1, 0, ctx)) {
+                        return 0;
+                    }
+                    if (loaded[0x22] == 0) {
+                        WarlordLoadTick(0);
+                        loaded[0x22] = 1;
+                    }
+                } else if (e == 0x55 || e == 0x32) {
+                    if (!ProbeWarlord(obj->m_118, 1, 0, ctx)) {
+                        return 0;
+                    }
+                    if (loaded[obj->m_118] == 0) {
+                        WarlordLoadTick(0);
+                        loaded[obj->m_118] = 1;
+                    }
+                }
+            }
+        }
+        node = nxt;
+    }
+    return 1;
+}
+
 // SetEffectSpriteDurations (0x0dc060) - stamp the per-effect display duration
 // (+0x18) onto each named effect-sound descriptor looked up by name in the sound
 // registry's embedded CMapStringToOb. __thiscall, no args, ret 1. Self-contained
