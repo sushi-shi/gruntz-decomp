@@ -2,9 +2,17 @@
 
 Tracked targets for the reconstruction's **type/call/name layer** — the goal is a
 clean, portable C++ source (the single source of truth), not just byte-matches.
-Each metric is matching-neutral to drive toward its target unless noted. Re-count
-with the command shown; snapshot dated **2026-07-05** (main `88bb96e5`, exact
-1829/3279 · 55.78% · fuzzy 68.51%).
+Each metric is matching-neutral to drive toward its target unless noted.
+
+**Live tracking.** These counts are computed by `gruntz.match.cleanliness`
+(comment- and string-stripped, so prose/`//` annotations don't inflate) and printed
+in the **`gruntz build` report** right under the match summary, each with a **delta
+vs the committed baseline** (`config/cleanliness-baseline.tsv`) — `down = good`. So a
+matcher sees its own cast/placeholder/view change the moment it builds and steers on
+it. Bless a new baseline with `python -m gruntz.match.cleanliness --update` (the
+orchestrator refreshes it at integration, like `match_baseline.tsv`). The counts in
+the tables below are a **snapshot** (2026-07-05, comment-stripped) — the report is
+authoritative.
 
 The **hard rule** these encode: *there should be no casts, no `void*` members, no
 `m_<hex>`/`Unknown`/`g_<hex>`/`Method<N>` placeholders, and no per-TU/fabricated

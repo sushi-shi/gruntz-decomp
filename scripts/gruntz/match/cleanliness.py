@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 """Cleanliness scoreboard - cast / placeholder / view counts that should trend to
-0 as the reconstruction's type/call/name layer is cleaned up.
+0 as the reconstruction's type/call/name layer is cleaned up, shown WITH a delta
+vs the committed baseline so a matcher can steer on its own change.
 
-Printed by ``gruntz build`` below the match summary; runnable as
-``python -m gruntz.match.cleanliness [--csv]``. See docs/cleanliness-metrics.md.
+Printed by ``gruntz build`` in the report block (below the match summary); runnable
+as ``python -m gruntz.match.cleanliness`` (shows counts + delta),
+``--update`` (bless: write the baseline), ``--csv``. See docs/cleanliness-metrics.md.
 
 Counts OCCURRENCES over ``src/`` + ``include/`` C++ sources with comments AND
 string/char literals stripped first, so the extensive ``//`` RVA/analysis
-annotations (which mention "unknown", casts, ``m_<hex>`` offsets in prose) and any
-string data do NOT inflate the counts - only real code tokens are counted.
+annotations and string data do NOT inflate the counts - only real code tokens.
 """
 from __future__ import annotations
 
@@ -19,10 +20,8 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[3]
 ROOTS = ("src", "include")
 EXTS = {".cpp", ".cc", ".cxx", ".h", ".hpp", ".inl"}
+BASELINE = REPO / "config" / "cleanliness-baseline.tsv"
 
-# Strip order matters: block comments, then line comments, then string/char
-# literals (so a "//" or "(char*)" inside a string is already gone). Replace with
-# a space to avoid gluing tokens across the removed span.
 _BLOCK = re.compile(r"/\*.*?\*/", re.DOTALL)
 _LINE = re.compile(r"//[^\n]*")
 _STR = re.compile(r'"(?:\\.|[^"\\\n])*"')
@@ -37,9 +36,8 @@ def _strip(text: str) -> str:
     return text
 
 
-# (label, regex). Occurrences summed over the stripped code. Patterns are kept
-# tight to avoid false positives (a member cast `(T*)m_x` is written tight by
-# clang-format, so `)m_` does not collide with a spaced `if (c) m_x`).
+# (label, regex). Occurrences summed over stripped code. Tight patterns so a member
+# cast `(T*)m_x` (clang-format writes it tight) doesn't collide with `if (c) m_x`.
 METRICS = (
     ("m_<hex> fields", re.compile(r"\bm_[0-9a-f]{2,}\b")),
     ("Unknown ids", re.compile(r"\b\w*[Uu]nknown\w*\b")),
@@ -71,21 +69,58 @@ def count() -> list[tuple[str, int]]:
     return [(label, totals[label]) for label, _ in METRICS]
 
 
+def load_baseline() -> dict[str, int]:
+    if not BASELINE.is_file():
+        return {}
+    out: dict[str, int] = {}
+    for line in BASELINE.read_text().splitlines():
+        if "\t" in line:
+            lbl, n = line.rsplit("\t", 1)
+            try:
+                out[lbl] = int(n)
+            except ValueError:
+                pass
+    return out
+
+
+def save_baseline(rows: list[tuple[str, int]]) -> None:
+    BASELINE.write_text("".join(f"{lbl}\t{n}\n" for lbl, n in rows))
+
+
+def _cell(label: str, n: int, base: dict[str, int], width: int) -> str:
+    """`label   NNN (+d)` - delta vs baseline (down = good). Blank delta if 0/new."""
+    d = n - base[label] if label in base else 0
+    tag = f" ({d:+d})" if d else ""
+    return f"{label:<{width}}{n:>7}{tag:>7}"
+
+
+def report_lines(rows: list[tuple[str, int]] | None = None) -> list[str]:
+    """Formatted scoreboard lines (two columns) for the build report."""
+    rows = rows if rows is not None else count()
+    base = load_baseline()
+    naming, casts = rows[:4], rows[4:]
+    width = max(len(lbl) for lbl, _ in rows) + 1
+    lines = ["cleanliness (-> 0 where affordable; delta vs baseline, down = good):"]
+    for i in range(max(len(naming), len(casts))):
+        left = _cell(*naming[i], base, width) if i < len(naming) else ""
+        right = _cell(*casts[i], base, width) if i < len(casts) else ""
+        lines.append(f"  {left:<{width + 14}}  {right}")
+    return lines
+
+
 def main() -> int:
     rows = count()
-    if "--csv" in sys.argv:
-        for label, n in rows:
-            print(f"{label},{n}")
+    if "--update" in sys.argv:
+        save_baseline(rows)
+        print(f"cleanliness baseline updated: {sum(n for _, n in rows)} total across {len(rows)} metrics")
         return 0
-    # Two grouped columns so the block stays compact under the match summary.
-    naming = rows[:4]
-    casts = rows[4:]
-    print("cleanliness (-> 0 where affordable; see docs/cleanliness-metrics.md):")
-    width = max(len(lbl) for lbl, _ in rows) + 1
-    for i in range(max(len(naming), len(casts))):
-        left = f"{naming[i][0]:<{width}}{naming[i][1]:>7}" if i < len(naming) else ""
-        right = f"{casts[i][0]:<{width}}{casts[i][1]:>7}" if i < len(casts) else ""
-        print(f"  {left:<{width + 9}}  {right}")
+    if "--csv" in sys.argv:
+        base = load_baseline()
+        for label, n in rows:
+            print(f"{label},{n},{n - base.get(label, n)}")
+        return 0
+    for line in report_lines(rows):
+        print(line)
     return 0
 
 
