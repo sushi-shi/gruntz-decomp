@@ -677,6 +677,110 @@ def cmd_name_audit(aud):
               f"via={src:<10} {path}:{ln}")
 
 
+def known_base_vtables(aud):
+    """rva -> (rtti_name, slots) for every RTTI base vtable, so a derived class that
+    declares NO base can still be matched to the base it silently inherits from by
+    its vtable slot-PREFIX (the CObject-slots-but-standalone gap)."""
+    out = {}
+    for rva, name in aud.col.items():
+        sl = aud.slots.get(rva)
+        if sl:
+            out[rva] = (name, sl)
+    return out
+
+
+def _prefix_base(slots, self_rva, known):
+    """The known base whose vtable slots are a PREFIX of `slots` (slot 1 = the
+    scalar-deleting dtor is class-specific, allowed to differ). Returns the LONGEST
+    such (name, rva, nslots) other than the class itself, or None."""
+    best = None
+    for rva, (name, bslots) in known.items():
+        if rva == self_rva:
+            continue
+        n = len(bslots)
+        if n == 0 or n > len(slots):
+            continue
+        if all(i == 1 or slots[i] == bslots[i] for i in range(n)):
+            if best is None or n > best[2]:
+                best = (name, rva, n)
+    return best
+
+
+def _body_counts(bodies):
+    """(virtual-decl count, OVERRIDE-macro count) from the class's MOST-complete
+    shim body (max virtuals), so multiple per-TU views don't double-count."""
+    best = (0, 0)
+    for b in bodies:
+        nv = len(re.findall(r"\bvirtual\b", b))
+        if nv >= best[0]:
+            best = (nv, len(re.findall(r"\bOVERRIDE\b", b)))
+    return best
+
+
+def cmd_audit(aud):
+    """SINGLE inheritance/override audit - diff every vtable-bearing class's SOURCE
+    against the binary-proven vtable and report, in one pass:
+      INHERIT   incorrect/absent inheritance (declared base != the base the vtable
+                proves, via the RTTI spine OR a shared slot-prefix)
+      RENAME    src class name != authoritative RTTI type-descriptor name
+      REDECLARE parent (inherited) virtuals redeclared in the derived class (drop them)
+      OVERRIDE  override slots lacking the OVERRIDE macro (make overrides explicit)
+      MISSING   fewer virtual decls than the class's own (override+new) slots
+    INHERIT/RENAME are exact; REDECLARE/OVERRIDE/MISSING are slot-count checks (see
+    clang -Wsuggest-override for the precise per-method missing-override list)."""
+    known = known_base_vtables(aud)
+    F = {k: [] for k in ("INHERIT", "RENAME", "REDECLARE", "OVERRIDE", "MISSING")}
+    for name in aud.vtable_bearing():
+        rva, src, col = aud.resolve(name)
+        if rva is None:
+            continue
+        ci = aud.reg.get(name)
+        if not (ci and ci.primary()):
+            continue
+        rows, meta = diff_primary(aud.reg, ci)
+        declared = meta["declared_base"]
+        inferred, via = meta["base"], "rtti"
+        slots = ci.primary()[2]
+        n_inh = sum(1 for r in rows if r[4] == "inherited")
+        n_ovr = sum(1 for r in rows if r[4] == "override")
+        n_new = sum(1 for r in rows if r[4] == "new")
+        if not inferred:  # (B) gap: no declared/RTTI base - infer from the slot-prefix
+            pb = _prefix_base(slots, rva, known)
+            if pb and pb[0] in aud.reg and aud.reg[pb[0]].primary():
+                inferred, via = pb[0], "slot-prefix"
+                bslots, nB = aud.reg[inferred].primary()[2], pb[2]
+                n_inh = sum(1 for i in range(min(nB, len(slots))) if i != 1 and slots[i] == bslots[i])
+                n_ovr = sum(1 for i in range(min(nB, len(slots))) if i == 1 or slots[i] != bslots[i])
+                n_new = max(0, len(slots) - nB)
+        own = n_ovr + n_new
+        n_virt, n_macro = _body_counts(aud.bodies.get(name, []))
+        loc = "%s:%d" % aud.where[name]
+        if inferred and inferred != declared:
+            F["INHERIT"].append((name, "declared=%s -> derive %s (via %s)" % (declared or "(none)", inferred, via), loc))
+        if src != "manual-stamp" and col and col != name:
+            F["RENAME"].append((name, "-> RTTI name %s" % col, loc))
+        if n_inh and n_virt > own:
+            F["REDECLARE"].append((name, "%d virtual decls, only %d own (ovr+new): drop ~%d inherited parent virtuals" % (n_virt, own, n_virt - own), loc))
+        if n_ovr and n_macro < n_ovr:
+            F["OVERRIDE"].append((name, "%d override slots, %d OVERRIDE macros: %d unmarked" % (n_ovr, n_macro, n_ovr - n_macro), loc))
+        if own and n_virt < own:
+            F["MISSING"].append((name, "%d own virtuals (ovr+new), source declares %d" % (own, n_virt), loc))
+    print("# INHERITANCE / OVERRIDE AUDIT - our source vs the binary-proven vtable (one report)")
+    for k in ("INHERIT", "RENAME", "REDECLARE", "OVERRIDE", "MISSING"):
+        print("# %-9s : %d" % (k, len(F[k])))
+    print("# (INHERIT/RENAME exact; REDECLARE/OVERRIDE/MISSING = slot-count; -Wsuggest-override = precise per-method)")
+    for k, hdr in (("INHERIT", "declare the real base / fix wrong-absent inheritance"),
+                   ("RENAME", "rename to the authoritative RTTI name"),
+                   ("REDECLARE", "parent virtuals redeclared - remove (compiler re-emits inherited slots)"),
+                   ("OVERRIDE", "overrides not explicit - add the OVERRIDE macro"),
+                   ("MISSING", "fewer virtual decls than own slots - a virtual is unmodeled")):
+        if not F[k]:
+            continue
+        print("\n## %s - %s" % (k, hdr))
+        for name, detail, loc in sorted(F[k]):
+            print("  %-9s %-30s %s  %s" % (k.lower() + ":", name, detail, loc))
+
+
 # ---------------------------------------------------------------------------
 def main():
     ap = argparse.ArgumentParser(description=__doc__,
@@ -690,9 +794,12 @@ def main():
                          "# UNANCHORED (silently-omitted worklist) with the reason per class")
     ap.add_argument("--name-audit", dest="name_audit", action="store_true",
                     help="list every src-class-name vs RTTI-COL-name mismatch (RTTI is authoritative)")
+    ap.add_argument("--audit", action="store_true",
+                    help="SINGLE inheritance/override audit: incorrect inheritance + redeclared "
+                         "parent virtuals + non-explicit overrides + missing virtuals, in one report")
     args = ap.parse_args()
 
-    if args.coverage or args.name_audit:
+    if args.coverage or args.name_audit or args.audit:
         aud = Audit()
         if args.coverage:
             cmd_coverage(aud)
@@ -700,6 +807,10 @@ def main():
             if args.coverage:
                 print()
             cmd_name_audit(aud)
+        if args.audit:
+            if args.coverage or args.name_audit:
+                print()
+            cmd_audit(aud)
         return
 
     reg, _ = build_registry()
