@@ -1253,8 +1253,8 @@ cfader	??0CFaderFlat@@QAE@XZ	100.0000	100.0000	1	4b714874e15f	0x17f530
 cfader	??0CFaderSine@@QAE@XZ	100.0000	100.0000	1	641b1e0111f1	0x17fdb0
 cfader	??1CFader@@UAE@XZ	100.0000	100.0000	1	33aebdeede51	0x17e4a0
 cfader	??1CFaderSine@@UAE@XZ	100.0000	100.0000	1	983830fb6b19	0x17fdf0
-cfader	?Set2c@CFader@@QAEXH@Z	100.0000	100.0000	1	ede94c0e181f	0x17e780
-cfader	?SetTimers@CFader@@QAEXHH@Z	100.0000	100.0000	1	f5abacb4e2fd	0x17e760
+cfader	?Set2c@CFader@@QAEXH@Z	100.0000	100.0000	2	42d19eaaeed0	0x17e780
+cfader	?SetTimers@CFader@@QAEXHH@Z	100.0000	100.0000	2	c0801f821a5d	0x17e760
 cfader	?Wait@CFader@@QAEXH@Z	100.0000	100.0000	1	22403b8571db	0x17e510
 cfadermgr	??0CFaderMgr@@QAE@XZ	100.0000	100.0000	2	9cb95492edb8	0x17d8f0
 cfadermgr	??1CFaderMgr@@QAE@XZ	100.0000	100.0000	1	9bd8a535fa45	0x17d910
@@ -1431,11 +1431,11 @@ classunknown48	??1CSymRec@@QAE@XZ	98.3099	98.3099	1	173329cb7e04	0x139cf0
 classunknown9	??0Obj11c630@@QAE@VCString@@PAX@Z	100.0000	100.0000	1	d26351c8be17	0x11c630
 cleveltimedtor	??0CLevelTime@@QAE@PAUCGameObject@@@Z	95.9909	95.9909	1	1d88f24ea10b	0x9b8b0
 cleveltimedtor	??1CLevelTime@@UAE@XZ	100.0000	100.0000	1	baf48340916e	0x11a50
-clightfx	?Activate@CLightFx@@QAEHHHHH@Z	86.7407	86.7407	2	b7beff985fb3	0x9d520
+clightfx	?Activate@CLightFx@@QAEHHHHH@Z	86.7407	86.7407	3	54036925d6c6	0x9d520
 clightfx	?InitActReg@CLightFx@@SAXXZ	100.0000	100.0000	1	4b1f90b40c30	0x9d140
 clightfx	?RebindNode@CLightFx@@QAEHXZ	100.0000	100.0000	1	d9610ef994d0	0x9d770
 clightfx	?RegisterActs@CLightFx@@SAXXZ	92.9130	92.9130	1	f6e4618b35c5	0x9d320
-clightfxeh	??0CLightFx@@QAE@PAUCGameObject@@@Z	92.8230	92.8230	1	485beb6b39e0	0x9cf00
+clightfxeh	??0CLightFx@@QAE@PAUCGameObject@@@Z	92.8230	92.8230	2	8e869e9f810a	0x9cf00
 clightfxeh	??1CLightFx@@UAE@XZ	100.0000	100.0000	1	70f7940497b3	0x12430
 clightfxrender	?AllocSurface@CLightFxRender@@QAEHXZ	99.6842	99.6842	4	e59e1d384e84	0xa33e0
 clightfxrender	?ApplyA@CLightFxRender@@QAEHHHH@Z	100.0000	100.0000	4	66e906afef8c	0xa9480
@@ -2675,9 +2675,9 @@ leveltilevalidation	?PlaceStartGruntz@CLevelValidator@@QAEHXZ	65.2349	65.2349	3	
 leveltilevalidation	?PositionBridgeToggle@CLevelValidator@@QAEHHH@Z	91.2321	91.2321	2	64249e682039	0xd5b20
 leveltilevalidation	?ValidateLevelTiles@CLevelValidator@@QAEHXZ	17.0098	17.0098	5	3a1baecf540a	0xd2dd0
 lighteffectsetup	?Setup@CLightEffect@@QAEHPAULightDesc@@@Z	92.2465	92.2465	2	05ae39e3f657	0x1804a0
-lightfxmgr	?Init@CLightFxMgr@@QAEHPAVCGameRegistry@@PAX@Z	100.0000	100.0000	1	cabaf9fef223	0x9dad0
-lightfxmgr	?Push@CLightFxMgr@@QAEHPAVCImageSet@@HH@Z	100.0000	100.0000	1	230e8d70c35c	0x9dcb0
-lightfxmgr	?Reset@CLightFxMgr@@QAEXXZ	100.0000	100.0000	1	9e70786cf034	0x9dc80
+lightfxmgr	?Init@CLightFxMgr@@QAEHPAVCGameRegistry@@PAX@Z	100.0000	100.0000	2	eabb47d672ea	0x9dad0
+lightfxmgr	?Push@CLightFxMgr@@QAEHPAVCImageSet@@HH@Z	100.0000	100.0000	2	4f5765b7276f	0x9dcb0
+lightfxmgr	?Reset@CLightFxMgr@@QAEXXZ	100.0000	100.0000	2	313efa91e420	0x9dc80
 loadlevelbymode	?LoadByMode@CPlayLevelLoad@@QAEHH@Z	34.8503	34.8503	3	f51e1da44410	0xca200
 loadobjectresources	?LoadObjectAnimResources@CObjResTree@@QAEHPAUObjSpawnEntry@@PAUObjResLookup@@@Z	88.3103	88.3103	1	3f06cd9e89f7	0x9ac20
 loadobjectresources	?LoadObjectImageResources@CObjResTree@@QAEHPAUObjSpawnEntry@@PAUObjResLookup@@@Z	88.6611	88.6611	2	7108924e4055	0x9a510

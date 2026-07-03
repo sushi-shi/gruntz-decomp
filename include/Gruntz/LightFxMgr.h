@@ -20,6 +20,7 @@
 #include <Ints.h>
 
 class CShadeTableCache;
+struct CShadeTable;
 class CGameRegistry;
 class CImageSet;
 
@@ -37,12 +38,12 @@ public:
     // resolved format word. __thiscall, 3 args, ret 0xc.
     i32 Push(CImageSet* imgSet, i32 anchor, i32 slot);
 
-    void* m_00;             // +0x00  owner (Init arg1)
-    CGameRegistry* m_04;    // +0x04  the game registry (Init arg0)
-    void* m_08;             // +0x08  reg->m_30 (sprite-factory holder)
-    CShadeTableCache* m_0c; // +0x0c  reg->m_50 (the shade-table cache)
-    void* m_10;             // +0x10  the identity "grey" table (registered key 9)
-    void* m_tables[10];     // +0x14  the 10 color tables (1 add + 9 sub)
+    void* m_owner;             // +0x00  owner (Init arg1)
+    CGameRegistry* m_reg;      // +0x04  the game registry (Init arg0)
+    void* m_spriteFactory;     // +0x08  reg->m_30 (sprite-factory holder)
+    CShadeTableCache* m_cache; // +0x0c  reg->m_50 (the shade-table cache)
+    CShadeTable* m_greyTable;  // +0x10  the identity "grey" table (registered key 9)
+    CShadeTable* m_tables[10]; // +0x14  the 10 color tables (1 add + 9 sub)
 };
 SIZE(CLightFxMgr, 0x3c);
 

@@ -193,13 +193,13 @@ i32 CLightFx::Activate(i32 spec, i32 anchorA, i32 effect, i32 anchorB) {
     }
     node = 0;
     ((LfxObj*)m_38)->m_08 |= 2;
-    m_54 = anchorA;
-    m_58 = anchorB;
+    m_anchorA = anchorA;
+    m_anchorB = anchorB;
     ((LfxObj*)m_38)->m_0c->m_2c->m_10.Lookup(effect, &node);
     if (node != 0) {
         node = 0;
         ((LfxObj*)m_38)->m_0c->m_2c->m_10.Lookup(effect, &node);
-        m_40 = ((LfxObj*)m_38)->m_1b4;
+        m_layerBase = ((LfxObj*)m_38)->m_1b4;
         ((LfxObj*)m_38)->m_1a0.SetNode(node);
         RebindNode();
     }

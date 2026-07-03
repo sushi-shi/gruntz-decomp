@@ -18,13 +18,13 @@ CLightFx::~CLightFx() {}
 // CLightFx::CLightFx (0x9cf00) - the /GX EH-framed ctor (the EngStr temp the shared
 // CUserLogic(obj) prologue builds forces the frame). This TU inlines the built-in
 // logic-type registration (the "unrolled" prologue); the per-class tail seeds the
-// leaf anchors (+0x54 = 2, +0x58 = 1).
+// leaf anchors (m_anchorA = 2, m_anchorB = 1).
 // @early-stop
 // eh-ctor-vptr-restamp-position wall (docs/patterns/eh-ctor-vptr-restamp-position.md):
 // body byte-identical (incl. the unrolled logic-type registration); residual is the
 // /GX leaf-vptr re-stamp position + EH-state ids.
 RVA(0x0009cf00, 0x1a5)
 CLightFx::CLightFx(CGameObject* obj) : CUserLogic(obj) {
-    m_54 = 2;
-    m_58 = 1;
+    m_anchorA = 2;
+    m_anchorB = 1;
 }

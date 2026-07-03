@@ -41,11 +41,11 @@ public:
     // folded CUserLogic teardown remains (the 0x44 leaf-dtor archetype).
     virtual ~CLightFx() OVERRIDE;
 
-    // ----- leaf layout over CUserLogic(0x40) (placeholders; offsets load-bearing)
-    i32 m_40; // +0x40  cached object layer base (m_38->m_1b4)
+    // ----- leaf layout over CUserLogic(0x40) (offsets load-bearing)
+    i32 m_layerBase; // +0x40  cached object layer base (m_38->m_1b4)
     char m_pad44[0x54 - 0x44];
-    i32 m_54; // +0x54  latched anchor A
-    i32 m_58; // +0x58  latched anchor B
+    i32 m_anchorA; // +0x54  latched anchor A
+    i32 m_anchorB; // +0x58  latched anchor B
 };
 SIZE(CLightFx, 0x5c);
 

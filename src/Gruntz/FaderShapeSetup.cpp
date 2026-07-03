@@ -13,11 +13,15 @@
 extern "C" void* RezAlloc(i32 n);                   // 0x1b9b46
 extern "C" int _access(const char* path, int mode); // 0x193900 CRT
 
+// The 0x10-byte shade-table buffer the cache builders return (full def in
+// <DDrawMgr/ShadeTableCache.h>); referenced only by pointer here.
+struct CShadeTable;
+
 // The embedded shade-table cache subobject (CFader base, at this+0x04).
 struct ShadeCache {
-    i32 Init();                                                // 0x14dec0
-    void* AddFromArray(char* name);                            // 0x14f6c0
-    void* FlashTable(void* pal, i32 nA, i32 nB, i32 s, i32 e); // 0x14df40
+    i32 Init();                                                       // 0x14dec0
+    CShadeTable* AddFromArray(char* name);                            // 0x14f6c0
+    CShadeTable* FlashTable(void* pal, i32 nA, i32 nB, i32 s, i32 e); // 0x14df40
     char pad[0x18];
 };
 
@@ -43,22 +47,22 @@ struct FInitPal {
 // The config arg (CFaderMgr::Add's pInit).
 struct FInit {
     char p00[0x4];
-    FShadeSurf* m_surfA;   // +0x04 surface A override
-    FShadeSurf* m_surfB;   // +0x08 surface B override
-    FShadeSurf* m_surfC;   // +0x0c surface C override
-    i32 m_rampSize;        // +0x10 ramp size
-    i32 m_mode;            // +0x14 mode (1..3)
-    i32 m_18;              // +0x18
-    i32 m_gate;            // +0x1c gate
-    void* m_prebuiltTable; // +0x20 prebuilt shade table (pointer)
-    char* m_tableName;     // +0x24 table file/array name
-    FInitPal* m_flashPal;  // +0x28 flash palette source
+    FShadeSurf* m_surfA;          // +0x04 surface A override
+    FShadeSurf* m_surfB;          // +0x08 surface B override
+    FShadeSurf* m_surfC;          // +0x0c surface C override
+    i32 m_rampSize;               // +0x10 ramp size
+    i32 m_mode;                   // +0x14 mode (1..3)
+    i32 m_18;                     // +0x18
+    i32 m_gate;                   // +0x1c gate
+    CShadeTable* m_prebuiltTable; // +0x20 prebuilt shade table
+    char* m_tableName;            // +0x24 table file/array name
+    FInitPal* m_flashPal;         // +0x28 flash palette source
 };
 
 struct CFaderShape {
     char p00[0x4];
     ShadeCache m_cache;         // +0x04 cache subobject (0x18)
-    void* m_shadeTable;         // +0x1c resolved shade table
+    CShadeTable* m_shadeTable;  // +0x1c resolved shade table
     i32 m_20;                   // +0x20
     FShadeSurf* m_defaultSurfA; // +0x24 default surface A
     FShadeSurf* m_defaultSurfB; // +0x28 default surface B

@@ -50,9 +50,9 @@ void SetShadeDescr(ShadeDescr* v, int mode) {
 class ShadeSelector {
 public:
     char m_pad[0x14];
-    int m_14;
-    int m_18;
-    ShadeDescr* m_1c;
+    i32 m_mode;          // +0x14  latched mode id
+    i32 m_18;            // +0x18  (role unproven)
+    ShadeDescr* m_descr; // +0x1c  selected descriptor
     void Select(int mode, ShadeDescr* descr);
 };
 
@@ -62,33 +62,33 @@ public:
 // wall (MSVC $L table symbol vs delinker inline-at-fn+0x74).
 RVA(0x0014dd90, 0x74)
 void ShadeSelector::Select(int mode, ShadeDescr* descr) {
-    m_14 = mode;
+    m_mode = mode;
     if (descr == 0) {
         switch (mode) {
             case 2:
-                m_1c = g_shadeDescr208;
+                m_descr = g_shadeDescr208;
                 break;
             case 3:
-                m_1c = g_shadeDescr20c;
+                m_descr = g_shadeDescr20c;
                 break;
             case 4:
-                m_1c = g_shadeDescr210;
+                m_descr = g_shadeDescr210;
                 break;
             case 6:
-                m_1c = g_shadeDescr214;
+                m_descr = g_shadeDescr214;
                 break;
             case 7:
-                m_1c = g_shadeDescr21c;
+                m_descr = g_shadeDescr21c;
                 break;
             case 10:
-                m_1c = g_shadeDescr220;
+                m_descr = g_shadeDescr220;
                 break;
             case 11:
-                m_1c = g_shadeDescr220;
+                m_descr = g_shadeDescr220;
                 break;
         }
     } else {
-        m_1c = descr;
+        m_descr = descr;
     }
 }
 SIZE_UNKNOWN(ShadeSelector);
