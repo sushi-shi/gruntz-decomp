@@ -44,6 +44,8 @@ namespace GruntzMgrCmd {
         void G3792(i32 n);   // 0x3792
         void G3a85(i32 n);   // 0x3a85
         i32 CanQuickSave();  // 0x3da5
+        char _p0[0x3f4];
+        i32* m_3f4; // +0x3f4  timer/state sub-object (i32[] the timer-cheat clears)
     };
     struct GZCell {
         char _p[0x1ec];
@@ -68,6 +70,26 @@ namespace GruntzMgrCmd {
         void ChangeState(i32 n); // 0x201d  (on this actually) - unused here
         void Post36e8(i32 a);    // 0x36e8
         i32 DrawPresent();       // 0x326f
+        char _p0[0x1c];
+        i32 m_1c; // +0x1c  paused-select gate (PassClick source)
+        char _p20[0x40 - 0x20];
+        i32 m_40; // +0x40  state notify latch
+    };
+
+    // The manager's +0x44 engine sub-object (only its +0x124 flag is touched here).
+    struct GZM44 {
+        char _p0[0x124];
+        i32 m_124; // +0x124
+    };
+    // The last-save snapshot record at manager +0xbc.
+    struct GZSaveInfo {
+        char _p0[4];
+        i32 m_4; // +0x04  quick-load target id
+        char _p8[0x35 - 0x8];
+        char m_35; // +0x35  name buffer (passed to Board2144)
+        char _p36[0xf8 - 0x36];
+        i32 m_f8; // +0xf8  save-valid flag
+        i32 m_fc; // +0xfc  save-present flag
     };
 
     extern "C" GZSound* __stdcall CueLookup(const char* name); // 0x2cca
@@ -134,7 +156,7 @@ namespace GruntzMgrCmd {
         char _p34[0x38 - 0x34];
         void* m_38; // 0x38
         char _p3c[0x44 - 0x3c];
-        void* m_44;    // 0x44 (has +0x124, +0x1c)
+        GZM44* m_44;   // 0x44 (engine sub-object; +0x124 flag)
         void* m_sound; // 0x48
         char _p4c[0x54 - 0x4c];
         i32 m_inputState;    // 0x54
@@ -144,7 +166,7 @@ namespace GruntzMgrCmd {
         char _p6c[0xa0 - 0x6c];
         i32 m_lobbyProbed; // 0xa0
         char _pa4[0xbc - 0xa4];
-        void* m_saveInfoRec; // 0xbc
+        GZSaveInfo* m_saveInfoRec; // 0xbc
         char _pc0[0xc8 - 0xc0];
         GZStr m_strWorldFile; // 0xc8
         char _pcc[0x114 - 0xcc];
@@ -194,6 +216,8 @@ namespace GruntzMgrCmd {
     // free/cdecl helpers reached from a couple of first-switch bodies
     extern "C" i32 Board2144(CGruntzMgr* self, void* p); // 0x2144  __cdecl
     struct GZObj58 {
+        char _p0[0x18];
+        i32 m_18; // +0x18  paused-select gate (PassClick source)
         void Set58(i32 n);
         void Reset58();
     }; // 0x4408 / 0x3463
@@ -253,7 +277,7 @@ namespace GruntzMgrCmd {
             case 0x8174:
                 m_strWorldFile.Empty();
                 m_134 = 1;
-                if (!PassClick(m_saveSink ? *(i32*)((char*)m_saveSink + 0x18) : 0, 0, 1)) {
+                if (!PassClick(m_saveSink ? m_saveSink->m_18 : 0, 0, 1)) {
                     ReportErr(0x8005, 0x41f);
                 }
                 return 1;
@@ -431,7 +455,7 @@ namespace GruntzMgrCmd {
                             if (!_g) {
                                 return 0;
                             }
-                            i32* _t = *(i32**)((char*)_g + 0x3f4);
+                            i32* _t = _g->m_3f4;
                             _t[0x10] = 0;
                             _t[0x11] = 0;
                             _t[0xc] = 0;
@@ -668,7 +692,7 @@ namespace GruntzMgrCmd {
                             return 1;
                         case 0x81d7:
                             PLAYCUE("GAME_MINORCHEAT");
-                            *(i32*)((char*)m_44 + 0x124) = 0;
+                            m_44->m_124 = 0;
                             AppendChat("Cheatz cleared");
                             return 1;
                         case 0x8240:
@@ -731,8 +755,8 @@ namespace GruntzMgrCmd {
                 m_114 = 1;
                 m_strWorldFile = tmp;
                 (void)p1;
-                if (*(i32*)((char*)m_saveInfoRec + 0xfc)) {
-                    if (*(i32*)((char*)m_saveInfoRec + 0xf8)) {
+                if (m_saveInfoRec->m_fc) {
+                    if (m_saveInfoRec->m_f8) {
                         m_128 = 0;
                         m_130 = 1;
                         m_134 = 3;
@@ -745,10 +769,10 @@ namespace GruntzMgrCmd {
                     m_134 = 1;
                     m_130 = 1;
                 }
-                if (!PassClick(*(i32*)((char*)m_saveInfoRec + 4), 0, 1)) {
+                if (!PassClick(m_saveInfoRec->m_4, 0, 1)) {
                     ReportErr(0x8005, 0x421);
                 }
-                if (!Board2144(this, (char*)m_saveInfoRec + 0x35)) {
+                if (!Board2144(this, &m_saveInfoRec->m_35)) {
                     ReportErr(0x8005, 0x465);
                 }
                 Func12ee();
@@ -1013,7 +1037,7 @@ namespace GruntzMgrCmd {
                     ReportErr(0x8005, 0x42c);
                     return 1;
                 }
-                g_pPostMessageA(*(void**)((char*)m_04 + 4), 0x111, 0x8023, 0);
+                g_pPostMessageA(m_04->m_4, 0x111, 0x8023, 0);
                 return 1;
             case 0x80ab:
                 if (Dispatch(0xe, 1, 0, 0)) {
@@ -1058,20 +1082,20 @@ namespace GruntzMgrCmd {
                 return 1;
             case 0x80b7:
                 m_lobbyProbed = 0;
-                g_pPostMessageA(*(void**)((char*)m_04 + 4), 0x111, 0x8025, 0);
+                g_pPostMessageA(m_04->m_4, 0x111, 0x8025, 0);
                 return 1;
             case 0x800e:
                 if (!CheckPlay()) {
                     return 1;
                 }
-                if (((GZLogic*)m_curState)->vf54()) {
+                if (m_curState->vf54()) {
                     return 1;
                 }
                 if (Dispatch(2, 1, 0, 0)) {
                     return 1;
                 }
                 ReportErr(0x8005, 0x430);
-                g_pPostMessageA(*(void**)((char*)m_04 + 4), 0x111, 0x8023, 0);
+                g_pPostMessageA(m_04->m_4, 0x111, 0x8023, 0);
                 return 1;
             case 0x8042:
                 if (g_6455ec) {
@@ -1091,7 +1115,7 @@ namespace GruntzMgrCmd {
                     GoPrev();
                     return 1;
                 }
-                *(i32*)((char*)m_curState + 0x40) = 1;
+                m_curState->m_40 = 1;
                 if (Dispatch(5, 1, 0, 0)) {
                     return 1;
                 }
@@ -1184,7 +1208,7 @@ namespace GruntzMgrCmd {
                 }
                 m_strWorldFile =
                     m_strWorldFile; // op= on m_strWorldFile (approx of the 0x1b9e25 tail)
-                if (!PassClick(*(i32*)((char*)m_curState + 0x1c), 0, 1)) {
+                if (!PassClick(m_curState->m_1c, 0, 1)) {
                     ReportErr(0x8007, 0x434);
                 }
                 return 1;

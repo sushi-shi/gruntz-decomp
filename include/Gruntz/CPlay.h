@@ -197,6 +197,17 @@ struct Edge {
     i32 m_4;
 };
 
+// The two serialize sub-objects SyncState (0x0d7520) round-trips through the
+// archive via a reloc-masked 4-arg serialize entry. Real classes:
+// m_frameMarker = CTimer (HandleEvent 0x9c1c0), m_beginMarker =
+// CTileTriggerContainer (Serialize 0x117280); unified here as one serialize-entry
+// interface because the call is reloc-masked and the archive arg is passed
+// through unchanged (no per-class archive-view is needed at the call site).
+SIZE_UNKNOWN(CPlaySerialChild);
+struct CPlaySerialChild {
+    i32 Sync(struct CSerialArchive* ar, i32 mode, i32 a2, i32 a3);
+};
+
 // ===========================================================================
 // CPlay - the in-game PLAY state. Extends CState from +0x1a8. The per-frame
 // Render reads a large block of CPlay-specific members (camera/scroll rects,
@@ -453,7 +464,10 @@ public:
         // HandleTileClick HUD hit-test dispatch (thiscall, reloc-masked):
         i32 HitTest3ad5(i32 x, i32 y); // -> slot index or -1
         void Apply3ebd(i32 idx);       // apply the hit slot
-        i32 m_state;                   // +0x0  subsystem state (==2 -> ready)
+        // SyncState (0x0d7520) round-trips the guts state through the archive via
+        // this reloc-masked 4-arg serialize entry (CLevelSync::Sync 0x1084d0).
+        i32 Sync(struct CSerialArchive* ar, i32 mode, i32 a2, i32 a3);
+        i32 m_state; // +0x0  subsystem state (==2 -> ready)
         char p4[0x10 - 0x4];
         RECT m_rect10; // +0x10  HUD/click bounds (HandleTileClick)
         char p20[0x10c - 0x20];
@@ -472,9 +486,9 @@ public:
         char p0[0x10];
         i32 m_10; // +0x10  active-overlay gate (OnKeyCommand forward)
     }* m_hitTest;
-    void* m_beginMarker;  // +0x2e4  begin-marker sink (MarkerBegin)
-    i32 m_dragSnapActive; // +0x2e8  drag-snap-active latch (HandleDragMove snap path)
-    i32 m_dragInProgress; // +0x2ec  box-drag-in-progress latch (HandleDragMove)
+    CPlaySerialChild* m_beginMarker; // +0x2e4  begin-marker sink (MarkerBegin; SyncState serialize)
+    i32 m_dragSnapActive;            // +0x2e8  drag-snap-active latch (HandleDragMove snap path)
+    i32 m_dragInProgress;            // +0x2ec  box-drag-in-progress latch (HandleDragMove)
     char m_pad2f0[0x2f8 - 0x2f0];
     i32 m_levelId; // +0x2f8  level/region id (==0x66 -> booty-region init)
     char m_pad2fc[0x304 - 0x2fc];
@@ -489,18 +503,20 @@ public:
     i32 m_ambientTimerLo, m_ambientTimerHi, m_ambientInterval,
         m_ambientIntervalHi; // +0x338  ambient-init timer
     i32 m_ambientInitDone;   // +0x348  ambient-init DONE latch
-    char m_pad34c[0x360 - 0x34c];
-    i32 m_tileClickX;   // +0x360  tile-click snapped X (HandleTileClick)
-    i32 m_tileClickY;   // +0x364  tile-click snapped Y (HandleTileClick)
-    i32 m_dragInhibit1; // +0x368  drag/select inhibit gate
-    i32 m_dragInhibit2; // +0x36c  drag/select inhibit gate
+    char m_pad34c[0x350 - 0x34c];
+    i32 m_syncTimerLo, m_syncTimerHi, m_syncInterval,
+        m_syncIntervalHi; // +0x350  play-state 64-bit sync timer (SyncState first block)
+    i32 m_tileClickX;     // +0x360  tile-click snapped X (HandleTileClick)
+    i32 m_tileClickY;     // +0x364  tile-click snapped Y (HandleTileClick)
+    i32 m_dragInhibit1;   // +0x368  drag/select inhibit gate
+    i32 m_dragInhibit2;   // +0x36c  drag/select inhibit gate
     // +0x370: a CByteArray/CPtrArray of start-point markers (the 2nd destructible
     // member); FindStartPointAt reads its data(+4)/count(+8) via markerData()/
     // markerCount(). +0x3a4: a CByteArray[4] (the 3rd..? member, one ??_M vector fold).
     CByteArray m_startMarkers; // +0x370  (data@+4 = marker-ptr array, count@+8 = marker count)
     char m_pad384[0x3a4 - 0x384];
-    CByteArray m_3a4[4]; // +0x3a4  (4 * 0x14)
-    void* m_frameMarker; // +0x3f4  frame-marker/timeline object (+0x30..0x4c reset block)
+    CByteArray m_3a4[4];             // +0x3a4  (4 * 0x14)
+    CPlaySerialChild* m_frameMarker; // +0x3f4  frame-marker/timeline object (SyncState serialize)
     i32 m_cueTimerLo, m_cueTimerHi, m_cueInterval,
         m_cueIntervalHi; // +0x3f8  AMBIENT-cue 64-bit timer
     i32 m_cueToggle;     // +0x408  AMBIENT-cue on/off toggle

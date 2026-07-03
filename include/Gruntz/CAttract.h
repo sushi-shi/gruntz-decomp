@@ -139,10 +139,18 @@ struct CAttractHost {
     CAttractVoice* m_10; // +0x10  voice/host object
 };
 
+// Two more attract facets whose full model lives in CAttract.cpp (m_4 as the game
+// manager's error/HWND owner; m_2c as the fade screen-resolver). Forward-declared
+// here so the typed slot accessors below can name them (cast to an incomplete
+// pointer type is well-formed; the call sites in CAttract.cpp see the full type).
+class CAttractOwner;
+class CAttractScreenObj;
+
 // ---------------------------------------------------------------------------
 // CAttract - the attract/title state. Derives from CState (RTTI ground truth);
 // the few slots it implements are overridden, the rest inherited. Member offsets
-// are reached by re-typing CState's m_4/m_8/m_c plus the attract-specific block.
+// are reached through typed accessors that re-type CState's m_4/m_8/m_c/m_2c to
+// the attract facets that share those slots (codegen-neutral inline).
 // ---------------------------------------------------------------------------
 class CAttract : public CState {
 public:
@@ -180,14 +188,35 @@ public:
     i32 LoadAttractScene(i32 a, i32 b, i32 mode); // FUN_004f9ea0
 
     // engine tail helpers (__thiscall, reached via ILT thunks).
-    i32 FadeInTitle(char* name, i32 a, i32 b, i32 c, i32 d, i32 e); // FUN_004fa1f0
-    i32 RunTitleSeq(char* name, i32 a, i32 b, i32 c, i32 d);        // FUN_004fa350
-    i32 BuildMenuPage(i32 x, i32 w, i32 h, i32 flag);               // FUN_004fa8f0
-    void CommitStage();                                             // FUN_004a05a0
+    i32 FadeInTitle(const char* name, i32 a, i32 b, i32 c, i32 d, i32 e); // FUN_004fa1f0
+    i32 RunTitleSeq(const char* name, i32 a, i32 b, i32 c, i32 d);        // FUN_004fa350
+    i32 BuildMenuPage(i32 x, i32 w, i32 h, i32 flag);                     // FUN_004fa8f0
+    void CommitStage();                                                   // FUN_004a05a0
 
-    // The inherited CState sub-object pointers are reached by re-typing m_4/m_8/
-    // m_c/m_2c at the call site (cast, codegen-neutral). The attract-specific
-    // block sits past the CState spine (which ends at +0x1a4).
+    // Typed views of the inherited CState slots re-typed to the attract facets that
+    // share them (the object at each slot IS that facet in the attract state; the
+    // base declares them generically because other states put other types there).
+    // Inline -> the same `mov reg,[this+off]` falls out with no extra codegen.
+    CMenuRoot* menuRoot() {
+        return (CMenuRoot*)m_c;
+    }
+    CAttractStateMgr* stateMgr() {
+        return (CAttractStateMgr*)m_8;
+    }
+    CAttractVideo* video() {
+        return (CAttractVideo*)m_4;
+    }
+    CAttractOwner* owner() {
+        return (CAttractOwner*)m_4;
+    }
+    CAttractState* attractState() {
+        return (CAttractState*)m_2c;
+    }
+    CAttractScreenObj* screenObj() {
+        return (CAttractScreenObj*)m_2c;
+    }
+
+    // The attract-specific block sits past the CState spine (which ends at +0x1a4).
     char m_pad1a8[0x1b4 - 0x1a8];
     u32 m_idleTimer;      // +0x1b4  attract idle/timeout countdown (unsigned: jb tick)
     CAttractHost* m_host; // +0x1b8  host/sound sub-object

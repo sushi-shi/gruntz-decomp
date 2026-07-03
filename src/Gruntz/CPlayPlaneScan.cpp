@@ -29,7 +29,7 @@ struct Vec4 {
 // +0xf0/+0x100 are two by-value 4-vectors the covered-tile draw passes.
 struct PlaneDesc {
     char pad0[0x10];
-    void* m_typeId; // +0x10 type-id fn ptr
+    void (*m_typeId)(); // +0x10 type-id fn ptr (compared against the plane-type fns)
     char pad14[0xf0 - 0x14];
     Vec4 m_f0;  // +0xf0
     Vec4 m_100; // +0x100
@@ -68,7 +68,7 @@ struct PlaneNode {
 };
 
 struct PlaneList {
-    void* m_0;       // +0x00
+    char m_pad0[4];  // +0x00  (list-head guard word)
     PlaneNode* head; // +0x04
 };
 
@@ -107,21 +107,11 @@ struct DrawSurf {
     GridGeom* m_grid; // +0x5c grid geometry
 };
 
-// The renderer at m_view->m_renderer: an embedded plane list at +0x10.
-struct Renderer {
-    char pad0[0x10];
-    // +0x10 -> the embedded plane list (head at +0x14).
-};
-
-// The plane-scan facet of CPlay's m_c (the CView at CPlay+0xc); the plane list +
-// draw surface it walks are not modeled by the shared CView.h, so this TU keeps
-// its own facet view and reaches it by cast on the canonical CState::m_c.
-struct PSView {
-    char pad0[0x8];
-    Renderer* m_renderer; // +0x08 renderer (owns the plane list)
-    char padc[0x24 - 0xc];
-    DrawSurf* m_drawSurf; // +0x24 draw surface
-};
+// The plane list the scans walk is the SAME placed-object display list the warlord
+// loader walks (shared CRenderer::m_10 CWarlordListHead, at rendererA+0x10); this TU
+// reaches it through the canonical CView (m_c->m_rendererA / m_c->m_drawSurface).
+// The draw surface's +0x5c tile-grid facet (GridGeom) differs from the shared
+// CDrawSurface's +0x5c camera facet, so the draw-surface facet is reached by cast.
 
 // The per-level sinks the scans feed. m_recordSink receives the rebuilt tile/plane
 // records (AddToList1 / the big covered-tile draw); m_ptrSink receives the extra
@@ -217,8 +207,8 @@ extern "C" {
 // struct-copy and array spellings both still hoist. All logic/relocs byte-match.
 RVA(0x000d53d0, 0x466)
 i32 CPlay::ScanBuildTiles() {
-    PSView* m_view = (PSView*)m_c;
-    PlaneList* pl = (PlaneList*)((char*)m_view->m_renderer + 0x10);
+    CView* v = m_c;
+    PlaneList* pl = (PlaneList*)&v->m_rendererA->m_10;
     if (pl == 0) {
         return 0;
     }
@@ -242,8 +232,8 @@ i32 CPlay::ScanBuildTiles() {
         if (p->m_blockC.a == (i32)0x80000000) {
             p->m_blockC.a = 0;
         }
-        void* vf = p->m_desc->m_typeId;
-        if (vf == (void*)PlaneType_Rock) {
+        void (*vf)() = p->m_desc->m_typeId;
+        if (vf == PlaneType_Rock) {
             struct {
                 Vec3 v0, v1, v2;
             } buf;
@@ -270,8 +260,8 @@ i32 CPlay::ScanBuildTiles() {
                 ((ObjSink2dc*)m_guts)->InsertPtr(p->m_118, p->m_114);
             }
             p->m_flags |= 0x10000;
-        } else if (vf == (void*)PlaneType_Covered) {
-            DrawSurf* ds = m_view->m_drawSurf;
+        } else if (vf == PlaneType_Covered) {
+            DrawSurf* ds = (DrawSurf*)(v->m_drawSurface);
             i32 x = p->m_x;
             i32 y = p->m_y;
             if (x < 0) {
@@ -354,8 +344,8 @@ i32 CPlay::ScanBuildTiles() {
 // RNG-helper idiom is deferred to the final sweep.
 RVA(0x000d9290, 0x2a7)
 i32 CPlay::ScanShuffleQuads() {
-    PSView* m_view = (PSView*)m_c;
-    PlaneList* pl = (PlaneList*)((char*)m_view->m_renderer + 0x10);
+    CView* v = m_c;
+    PlaneList* pl = (PlaneList*)&v->m_rendererA->m_10;
     if (pl == 0) {
         return 0;
     }
@@ -387,11 +377,11 @@ i32 CPlay::ScanShuffleQuads() {
         if (p == 0) {
             continue;
         }
-        void* vf = p->m_desc->m_typeId;
-        if (vf == (void*)PlaneQuadA || vf == (void*)PlaneQuadB || vf == (void*)PlaneQuadC
-            || vf == (void*)PlaneQuadD || vf == (void*)PlaneQuadE) {
+        void (*vf)() = p->m_desc->m_typeId;
+        if (vf == PlaneQuadA || vf == PlaneQuadB || vf == PlaneQuadC || vf == PlaneQuadD
+            || vf == PlaneQuadE) {
             p->m_quadIndex = perm[p->m_quadIndex];
-        } else if (vf == (void*)PlaneQuadF) {
+        } else if (vf == PlaneQuadF) {
             if (p->m_blockF.a == (i32)0x80000000) {
                 p->m_blockF.a = 0;
             }
@@ -430,8 +420,6 @@ SIZE_UNKNOWN(Plane);
 SIZE_UNKNOWN(PlaneDesc);
 SIZE_UNKNOWN(PlaneList);
 SIZE_UNKNOWN(PlaneNode);
-SIZE_UNKNOWN(PSView);
-SIZE_UNKNOWN(Renderer);
 SIZE_UNKNOWN(TileObj);
 SIZE_UNKNOWN(Vec3);
 SIZE_UNKNOWN(Vec4);

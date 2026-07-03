@@ -9,32 +9,23 @@
 // The archive Read/Write, the header/pre-step serializes and the child syncs are
 // external (reloc-masked). Field names are placeholders; only offsets + emitted
 // bytes are load-bearing (campaign doctrine).
+#include <Dsndmgr/CGruntzSoundZ.h> // CWorld::m_48 zoned sound bank (PlayByName @0x138840)
 #include <Gruntz/CPlay.h>
 #include <Gruntz/SerialArchive.h> // shared CSerialArchive stream (Read @ +0x2c, Write @ +0x30)
 
-// A child sync sub-object: the three sync-able children (m_guts / m_frameMarker /
-// m_beginMarker) each expose the same 4-arg sync entry (reloc-masked, no body).
-struct CPlaySyncChild {
-    i32 Sync(CSerialArchive* ar, i32 mode, i32 a2, i32 a3); // reloc-masked
-};
-
-// The world sound manager reached as m_4->m_48 (play a named cue). reloc-masked.
-struct CPlaySoundMgr {
-    void Cue(char* name, i32 flag); // 0x138840
-};
-
-// Round-trip a 16-byte (two 8-byte halves) timer block through the archive. The
-// mode-4 (write) body is emitted out-of-line (retail checks mode==4 first via je,
-// keeps the mode-7 read body inline).
+// Round-trip a 16-byte (two 4-int halves) timer block through the archive; `p` is
+// an i32* into the block, so `p + 2` is the second 8-byte half. The mode-4 (write)
+// body is emitted out-of-line (retail checks mode==4 first via je, keeps the
+// mode-7 read body inline).
 #define SYNC_PAIR(ar, mode, p)                                                                     \
     if ((mode) != 4) {                                                                             \
         if ((mode) == 7) {                                                                         \
             (ar)->Read((p), 8);                                                                    \
-            (ar)->Read((p) + 8, 8);                                                                \
+            (ar)->Read((p) + 2, 8);                                                                \
         }                                                                                          \
     } else {                                                                                       \
         (ar)->Write((p), 8);                                                                       \
-        (ar)->Write((p) + 8, 8);                                                                   \
+        (ar)->Write((p) + 2, 8);                                                                   \
     }
 
 // ===========================================================================
@@ -73,44 +64,38 @@ i32 CPlay::SyncState(CSerialArchive* ar, i32 mode, i32 a2, i32 a3) {
             char buf[0x40];
             wsprintfA(buf, "AMBIENT%d", GetAmbientId());
             if (g_64556c->m_14) {
-                ((CPlaySoundMgr*)m_4w()->m_48)->Cue(buf, 1);
+                m_4w()->m_48->PlayByName(buf, 1);
             }
             m_ambientInitDone = 1;
             break;
         }
     }
 
-    char* p;
-    p = (char*)this + 0x350;
+    i32* p;
+    p = &m_syncTimerLo;
     SYNC_PAIR(ar, mode, p);
-    if (!((CPlaySyncChild*)m_guts)->Sync(ar, mode, a2, a3)) {
+    if (!m_guts->Sync(ar, mode, a2, a3)) {
         return 0;
     }
-    if (!((CPlaySyncChild*)m_frameMarker)->Sync(ar, mode, a2, a3)) {
+    if (!m_frameMarker->Sync(ar, mode, a2, a3)) {
         return 0;
     }
-    p = (char*)this + 0x3f8;
+    p = &m_cueTimerLo;
     SYNC_PAIR(ar, mode, p);
-    if (!((CPlaySyncChild*)m_beginMarker)->Sync(ar, mode, a2, a3)) {
+    if (!m_beginMarker->Sync(ar, mode, a2, a3)) {
         return 0;
     }
-    p = (char*)this + 0x430;
+    p = &m_region0TimerLo;
     SYNC_PAIR(ar, mode, p);
-    p = (char*)this + 0x440;
+    p = &m_region1TimerLo;
     SYNC_PAIR(ar, mode, p);
-    p = (char*)this + 0x4a0;
+    p = &m_snapBaseLo;
     SYNC_PAIR(ar, mode, p);
-    p = (char*)this + 0x450;
+    p = &m_region2TimerLo;
     SYNC_PAIR(ar, mode, p);
-    p = (char*)this + 0x460;
+    p = &m_region3TimerLo;
     SYNC_PAIR(ar, mode, p);
-    p = (char*)this + 0x328;
+    p = &m_bootyTimerLo;
     SYNC_PAIR(ar, mode, p);
     return 1;
 }
-
-// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
-// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
-#include <rva.h>
-SIZE_UNKNOWN(CPlaySoundMgr);
-SIZE_UNKNOWN(CPlaySyncChild);

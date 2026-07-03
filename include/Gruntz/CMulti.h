@@ -41,6 +41,7 @@ class CMultiSubDC;  // CMulti::m_fxOverlay
 class CMultiSubE4;  // CMulti::m_2e4
 class CMultiSoundZ; // CMultiMgr::m_48
 class CMultiSub68;  // CMultiMgr::m_68
+class PBSub2e0;     // CMulti::m_2e0 (per-frame Step2bfd sub, defined in CMulti.cpp)
 class CMultiSub70;  // CMultiMgr::m_70
 class CMultiMgr;    // CState owner at CMulti+0x04 (fwd for CSlotConfig::Load)
 class CLobbySlot;   // CNetSession2 slot element (fwd for FindSlot's return)
@@ -299,8 +300,8 @@ public:
     void RefreshSlotTable();              // 0x021bd0  (free fn-ish thiscall on this)
     // Out-of-line CMulti bodies reached by thiscall on `this` (reloc-masked): the
     // mode-driven level loader (StartSession) and the title-screen loader (StartTitle).
-    i32 LoadLevelByMode(i32 mode, i32 flags);                    // 0x000ca200
-    i32 LoadTitleScreen(char* name, i32 a, i32 b, i32 c, i32 d); // 0x004fa350
+    i32 LoadLevelByMode(i32 mode, i32 flags);                          // 0x000ca200
+    i32 LoadTitleScreen(const char* name, i32 a, i32 b, i32 c, i32 d); // 0x004fa350
     // Inherited CPlay per-frame helpers PumpB dispatches to (CMulti : public
     // CPlay). CMulti.cpp is modeled self-contained (no CPlay.h), so the helpers
     // are re-declared here; all thiscall on `this`, out-of-line -> reloc-masked.
@@ -335,7 +336,7 @@ public:
     i32 m_drainResult;        // +0x2d4  Drain() result
     i32 m_rngSeed;            // +0x2d8  rng seed
     CMultiSubDC* m_fxOverlay; // +0x2dc  per-frame sub (Step34bd)
-    void* m_2e0;              // +0x2e0  per-frame sub (PBSub2e0::Step2bfd)
+    PBSub2e0* m_2e0;          // +0x2e0  per-frame sub (PBSub2e0::Step2bfd)
     CMultiSubE4* m_2e4;       // +0x2e4  per-frame sub (Step2cc0)
     char m_pad2e8_30c[0x30c - 0x2e8];
     i32 m_paletteActive;           // +0x30c  overlay-active flag (PumpB)

@@ -122,7 +122,7 @@ extern "C" {
 // WM_COMMAND on idle (0x8006/0x3e8) and m_4->m_4 chains to the top-level HWND.
 struct AttractWndHolder {
     char m_pad00[0x4];
-    void* m_4; // +0x04  top-level HWND
+    HWND m_4; // +0x04  top-level HWND
 };
 class CAttractOwner {
 public:
@@ -147,11 +147,11 @@ extern PostMessageFn g_pPostMessageA;
 // Release access (retail does not cache it).
 RVA(0x000140d0, 0x33)
 void CAttract::ReleaseResources() {
-    CAttractRegistrar* reg = ((CMenuRoot*)m_c)->m_28;
+    CAttractRegistrar* reg = menuRoot()->m_28;
     if (reg->m_2c) {
         reg->m_2c->Free();
     }
-    ((CMenuRoot*)m_c)->m_28->Release(s_ATTRACT, s_UNDERSCORE);
+    menuRoot()->m_28->Release(s_ATTRACT, s_UNDERSCORE);
     CState::ReleaseResources();
 }
 
@@ -177,7 +177,7 @@ i32 CAttract::FrameSlot28(i32 arg) {
         return 1;
     }
     do {
-        CAttractPooledRes* r = ((CMenuRoot*)m_c)->m_28->m_2c;
+        CAttractPooledRes* r = menuRoot()->m_28->m_2c;
         if (r) {
             r->Stop(-1);
         }
@@ -200,15 +200,15 @@ i32 CAttract::FrameSlot28(i32 arg) {
 // reloc-masked IAT/cross-unit operands only (see above); code bytes byte-exact.
 RVA(0x000143e0, 0xfb)
 i32 CAttract::Render() {
-    AttractBusyObj* busy = ((AttractSurfaceExt*)((CMenuRoot*)m_c)->m_04->m_10->m_2c)->m_8;
+    AttractBusyObj* busy = ((AttractSurfaceExt*)menuRoot()->m_04->m_10->m_2c)->m_8;
     if (busy == 0 || busy->m_vtbl->Poll(busy) != 0) {
         if (InputVirtual() == 0) {
-            ((CAttractOwner*)m_4)->ReportError(0x8006, 0x3e8);
+            owner()->ReportError(0x8006, 0x3e8);
             return 0;
         }
     }
 
-    CAttractPooledRes* res = ((CMenuRoot*)m_c)->m_28->m_2c;
+    CAttractPooledRes* res = menuRoot()->m_28->m_2c;
     if (res) {
         res->Stop(-1);
     }
@@ -228,7 +228,7 @@ i32 CAttract::Render() {
     i32 n = g_actorList->m_count;
     for (i = 0; i < n; i++) {
         if (g_actorList->m_data[i]->m_2ac & 0x100) {
-            g_pPostMessageA(((CAttractOwner*)m_4)->m_4->m_4, 0x111, 0x8023, 0);
+            g_pPostMessageA(owner()->m_4->m_4, 0x111, 0x8023, 0);
             return 1;
         }
     }
@@ -283,7 +283,7 @@ i32 CAttractIdlePoll::Poll() {
 // local forces the /GX EH frame. (Render polls this slot each frame.)
 RVA(0x00014520, 0xc3)
 i32 CAttract::InputVirtual() {
-    if (((CMenuRoot*)m_c)->m_04->IsLoaded() == 0) {
+    if (menuRoot()->m_04->IsLoaded() == 0) {
         return 0;
     }
     ShowCursorFn showCursor = g_ShowCursor;
@@ -294,7 +294,7 @@ i32 CAttract::InputVirtual() {
     i32 idx = g_gameReg->m_attractCounter % g_attractStateCount + 1;
     CString s;
     s.Format(s_TITLE_d, idx);
-    return RunTitleSeq((char*)(const char*)s, 0, 0, 1, 0);
+    return RunTitleSeq(s, 0, 0, 1, 0);
 }
 
 // CAttract::Vslot06 (slot 6 / +0x18, 0x14630): identical to the InputVirtual roll but
@@ -312,7 +312,7 @@ i32 CAttract::Vslot06() {
     i32 idx = g_gameReg->m_attractCounter % g_attractStateCount + 1;
     CString s;
     s.Format(s_TITLE_d, idx);
-    return RunTitleSeq((char*)(const char*)s, 0, 0, 1, 0);
+    return RunTitleSeq(s, 0, 0, 1, 0);
 }
 
 // CAttract::Vslot07() (slot 7 / +0x1c, 0x0147b0): the host/paint poll. Gate on the
@@ -335,8 +335,8 @@ i32 CAttract::Vslot07() {
         do {
         } while (showCursor(0) >= 0);
     }
-    ((CMenuRoot*)m_c)->m_04->m_10->m_2c->Flip(0);
-    ((CMenuRoot*)m_c)->m_04->BlitFrom(((CMenuRoot*)m_c)->m_04->m_14);
+    menuRoot()->m_04->m_10->m_2c->Flip(0);
+    menuRoot()->m_04->BlitFrom(menuRoot()->m_04->m_14);
     return 1;
 }
 
@@ -350,7 +350,7 @@ GameStateId CAttract::Update() {
 // (0x8023) to the top-level HWND (m_4->m_4->m_4) unconditionally, then return 1.
 RVA(0x00014770, 0x24)
 i32 CAttract::Vslot0e(i32, i32, i32) {
-    g_pPostMessageA(((CAttractOwner*)m_4)->m_4->m_4, 0x111, 0x8023, 0);
+    g_pPostMessageA(owner()->m_4->m_4, 0x111, 0x8023, 0);
     return 1;
 }
 
@@ -386,7 +386,7 @@ i32 CAttract::RunTitle(i32 a, i32 b, i32 c, i32 d, i32 e) {
     if (!m_2c) {
         return 0;
     }
-    ((CMenuRoot*)m_c)->m_04->m_10->m_2c->Flip(0);
+    menuRoot()->m_04->m_10->m_2c->Flip(0);
     return 1;
 }
 
@@ -400,7 +400,7 @@ i32 CAttract::RunTitle(i32 a, i32 b, i32 c, i32 d, i32 e) {
 // 0x34 buf, and the ResolveScreen callee (FUN_00520120) is an unnamed body that can't pair
 // (reloc-masked DIR32). Not source-steerable. topic:wall.
 RVA(0x000fa1f0, 0xc6)
-i32 CAttract::FadeInTitle(char* name, i32 a, i32 b, i32 c, i32 d, i32 e) {
+i32 CAttract::FadeInTitle(const char* name, i32 a, i32 b, i32 c, i32 d, i32 e) {
     (void)a;
     (void)b;
     (void)c;
@@ -416,11 +416,11 @@ i32 CAttract::FadeInTitle(char* name, i32 a, i32 b, i32 c, i32 d, i32 e) {
     }
     char buf[0x34];
     sprintf(buf, s_SCREENZ_PCT_S, name);
-    void* page = ((CAttractScreenObj*)m_2c)->ResolveScreen(buf, &g_screenTag);
+    void* page = screenObj()->ResolveScreen(buf, &g_screenTag);
     if (page == 0) {
         return 0;
     }
-    CDDrawWorkerMgr* w = (CDDrawWorkerMgr*)((CMenuRoot*)m_c)->m_04;
+    CDDrawWorkerMgr* w = (CDDrawWorkerMgr*)menuRoot()->m_04;
     if (w->Method_158b40((i32)page, e != 0 ? 2 : 1) != 0) {
         return 1;
     }
@@ -437,7 +437,7 @@ i32 CAttract::FadeInTitle(char* name, i32 a, i32 b, i32 c, i32 d, i32 e) {
 // entry. Bail (0) if the menu root/state-machine/active-state is null; FadeInTitle the
 // screen (mode 0); on success return RunTitle() != 0.
 RVA(0x000fa350, 0x84)
-i32 CAttract::RunTitleSeq(char* name, i32 a, i32 b, i32 c, i32 d) {
+i32 CAttract::RunTitleSeq(const char* name, i32 a, i32 b, i32 c, i32 d) {
     if (!m_c) {
         return 0;
     }
@@ -472,9 +472,9 @@ i32 CAttract::EnterAttractMode(i32 a, i32 b, i32 mode) {
         } while (showCursor(0) >= 0);
     }
 
-    ((CAttractVideo*)m_4)->RestoreVideoMode(0);
+    video()->RestoreVideoMode(0);
 
-    CAttractState* state = ((CAttractStateMgr*)m_8)->LookupState(s_STATEZ_ATTRACT);
+    CAttractState* state = stateMgr()->LookupState(s_STATEZ_ATTRACT);
     m_2c = (CResSource*)state;
     if (state == 0) {
         return 0;
@@ -485,7 +485,7 @@ i32 CAttract::EnterAttractMode(i32 a, i32 b, i32 mode) {
         return 0;
     }
 
-    ((CMenuRoot*)m_c)->m_28->Register(sound, s_ATTRACT, s_UNDERSCORE);
+    menuRoot()->m_28->Register(sound, s_ATTRACT, s_UNDERSCORE);
 
     if (showCursor(0) >= 0) {
         do {
@@ -508,9 +508,9 @@ i32 CAttract::EnterAttractMode(i32 a, i32 b, i32 mode) {
 // tag, and returns 1.
 RVA(0x00039160, 0x46)
 i32 CAttract::RefreshTitle(i32 unused) {
-    ((CAttractVideo*)m_4)->m_48->PrimeScene();
-    ((CAttractVideo*)m_4)->m_48->RestoreScene();
-    m_2c = (CResSource*)((CAttractStateMgr*)m_8)->LookupState(s_STATEZ_ATTRACT);
+    video()->m_48->PrimeScene();
+    video()->m_48->RestoreScene();
+    m_2c = (CResSource*)stateMgr()->LookupState(s_STATEZ_ATTRACT);
     RunTitleSeq(s_TITLE, 0, 0, 1, 0);
     return 1;
 }
@@ -530,8 +530,8 @@ i32 CAttract::LoadTitleConfig(i32 mode) {
         sprintf(stateName, s_STATEZ_ATTRACT);
         sprintf(titleName, s_TITLE_d, idx);
 
-        CAttractState* saved = (CAttractState*)m_2c;
-        CAttractState* state = ((CAttractStateMgr*)m_8)->LookupState(stateName);
+        CAttractState* saved = attractState();
+        CAttractState* state = stateMgr()->LookupState(stateName);
         m_2c = (CResSource*)state;
         if (state == 0) {
             return 0;
@@ -543,14 +543,14 @@ i32 CAttract::LoadTitleConfig(i32 mode) {
             return 0;
         }
 
-        CMenuBrightnessTarget* tgt = ((CMenuRoot*)m_c)->m_04->m_14->m_2c;
+        CMenuBrightnessTarget* tgt = menuRoot()->m_04->m_14->m_2c;
         tgt->SetBrightness(g_attractButeMgr.GetIntDef(s_Menu, s_BrightnessPercent, 0x32), 0);
-        ((CMenuRoot*)m_c)->m_04->TransTitle();
+        menuRoot()->m_04->TransTitle();
     } else {
-        ((CMenuRoot*)m_c)->m_04->TransEnter();
-        CMenuBrightnessTarget* tgt = ((CMenuRoot*)m_c)->m_04->m_18->m_2c;
+        menuRoot()->m_04->TransEnter();
+        CMenuBrightnessTarget* tgt = menuRoot()->m_04->m_18->m_2c;
         tgt->SetBrightness(g_attractButeMgr.GetIntDef(s_Menu, s_BrightnessPercent, 0x32), 0);
-        ((CMenuRoot*)m_c)->m_04->TransExit();
+        menuRoot()->m_04->TransExit();
     }
 
     BuildMenuPage(0x50, 0x3e8, 0, 1);
@@ -583,14 +583,14 @@ i32 CAttract::Activate() {
         return gate;
     }
 
-    ((CMenuBrightnessReset*)((CMenuRoot*)m_c)->m_04->m_14->m_2c)->Reset(0);
+    ((CMenuBrightnessReset*)menuRoot()->m_04->m_14->m_2c)->Reset(0);
 
     i32 idx = g_gameReg->m_attractCounter % g_attractStateCount + 1;
     sprintf(stateName, s_STATEZ_ATTRACT);
     sprintf(titleName, s_TITLE_d, idx);
 
-    CAttractState* saved = (CAttractState*)m_2c;
-    CAttractState* state = ((CAttractStateMgr*)m_8)->LookupState(stateName);
+    CAttractState* saved = attractState();
+    CAttractState* state = stateMgr()->LookupState(stateName);
     m_2c = (CResSource*)state;
     if (state == 0) {
         return 0;
@@ -602,9 +602,9 @@ i32 CAttract::Activate() {
         return 0;
     }
 
-    CMenuBrightnessTarget* tgt = ((CMenuRoot*)m_c)->m_04->m_14->m_2c;
+    CMenuBrightnessTarget* tgt = menuRoot()->m_04->m_14->m_2c;
     tgt->SetBrightness(g_attractButeMgr.GetIntDef(s_Menu, s_BrightnessPercent, 0x32), 0);
-    ((CMenuRoot*)m_c)->m_04->TransTitle();
+    menuRoot()->m_04->TransTitle();
 
     BuildMenuPage(0x50, 0x3e8, 0, 1);
     ShowCursorFn showCursor = g_ShowCursor;

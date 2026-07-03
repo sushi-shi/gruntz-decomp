@@ -471,9 +471,14 @@ class CMultiSub70 { // CMultiMgr::m_70
 public:
     void Step3562(CMultiMgr* logic); // 0x3562
 };
-class CMultiSubDC { // CMulti::m_fxOverlay
+class CMultiSubDC { // CMulti::m_fxOverlay (the primary FX overlay)
 public:
-    void Step34bd(i32 dt); // 0x34bd
+    i32 m_0; // +0x00  state
+    char m_pad04_10c[0x10c - 0x04];
+    i32 m_mode;            // +0x10c mode
+    void Step34bd(i32 dt); // 0x34bd  (PumpA)
+    void Present21b7();    // 0x21b7  (PumpB)
+    void Advance125d();    // 0x125d  (PumpB)
 };
 class CMultiSubE4 { // CMulti::m_2e4
 public:
@@ -657,15 +662,6 @@ public:
     void Fire1398();  // 0x00001398
     void Reset2b85(); // 0x00002b85
 };
-// m_fxOverlay: the primary FX overlay (state at +0, mode at +0x10c) reached in PumpB.
-class PBSubDC {
-public:
-    i32 m_0; // +0x00  state
-    char m_pad04_10c[0x10c - 0x04];
-    i32 m_mode;         // +0x10c mode
-    void Present21b7(); // 0x000021b7
-    void Advance125d(); // 0x0000125d
-};
 class PBSub2e0 { // CMulti::m_2e0
 public:
     void Step2bfd(void* pane); // 0x00002bfd
@@ -693,7 +689,7 @@ void CMulti::PumpB() {
         StepInputA();
         mgr->m_24->M15dc90(mgr->m_4->m_14, mgr->m_8);
         mgr->m_c->Blit34(mgr->m_4->m_14, mgr->m_4->m_18);
-        ((PBSubDC*)m_fxOverlay)->Present21b7();
+        m_fxOverlay->Present21b7();
         PBPane* h = mgr->m_4->m_14;
         if (h == 0) {
             return;
@@ -707,7 +703,7 @@ void CMulti::PumpB() {
     StepC();
     if (m_overlayAActive != 0) {
         mgr->m_4->m_14->m_2c->Present760(0);
-        ((PBSubDC*)m_fxOverlay)->Advance125d();
+        m_fxOverlay->Advance125d();
     }
     if (m_paletteActive == 0) {
         if (((PBSub68*)m_logic->m_68)->m_armed != 0) {
@@ -724,9 +720,9 @@ void CMulti::PumpB() {
         mgr->m_24->M15dc90(mgr->m_4->m_14, mgr->m_8);
         mgr->m_c->Blit34(mgr->m_4->m_14, mgr->m_4->m_18);
     }
-    ((PBSubDC*)m_fxOverlay)->Present21b7();
+    m_fxOverlay->Present21b7();
     if (m_attractOverlay != 0) {
-        PBSubDC* fx = (PBSubDC*)m_fxOverlay;
+        CMultiSubDC* fx = m_fxOverlay;
         if (fx->m_0 != 2 && fx->m_mode != 5) {
             RECT rc;
             if (fx->m_0 == 1) {
@@ -747,7 +743,7 @@ void CMulti::PumpB() {
     if (h == 0) {
         return;
     }
-    ((PBSub2e0*)m_2e0)->Step2bfd(h);
+    m_2e0->Step2bfd(h);
     DrawDebugStats();
     ((PBSub68*)m_logic->m_68)->Reset2b85();
     StepGridWalk(g_645584);
@@ -809,7 +805,7 @@ i32 CMulti::StartTitle() {
     i32 idx = g_64556c->m_numRuns % g_645534 + 1;
     CString title;
     title.Format("TITLE%d", idx);
-    if (LoadTitleScreen((char*)(const char*)title, 0, 0, 1, 0) == 0) {
+    if (LoadTitleScreen(title, 0, 0, 1, 0) == 0) {
         m_curState = saved;
         return 0;
     }
@@ -1041,5 +1037,4 @@ SIZE_UNKNOWN(PBSub2e0);
 SIZE_UNKNOWN(PBSub320);
 SIZE_UNKNOWN(PBSub4);
 SIZE_UNKNOWN(PBSub68);
-SIZE_UNKNOWN(PBSubDC);
 SIZE_UNKNOWN(PBVfnHost);
