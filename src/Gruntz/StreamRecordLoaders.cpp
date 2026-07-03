@@ -13,7 +13,7 @@
 #include <rva.h>
 #include <string.h> // inline strlen (repne scasb) over the scratch buffer
 
-#include <Gruntz/CSerialSub34.h> // CSerialArchive (reader), CDDrawSubMgrLeaf (registry
+#include <Gruntz/CSerialObjRef.h> // CSerialArchive (reader), CDDrawSubMgrLeaf (registry
 #include <Gruntz/CGameRegistry.h>
 #include <Globals.h>
 // leaf + KeyOfValue), CSerialObj - shared with the
@@ -818,7 +818,7 @@ i32 CGruntStateRec::Load(CDualReader* s, i32 mode, i32 a2, i32 a3) {
 // node-splice loop appending 8-byte payloads onto m_204 (CObList::AddTail @0x1b4991).
 // Mode 4 = WRITE: re-derives each ref's name via reg->m_2c->KeyOfValue_152d30 and
 // writes it back. Either way it tail-chains the base loader (0x16f4a0), then runs an
-// embedded CSerialSub34 record at +0x150 (read/write a key name + 0x10 blob, resolve
+// embedded CSerialObjRef record at +0x150 (read/write a key name + 0x10 blob, resolve
 // through a3->m_7c->m_c->m_2c). Names are placeholders; offsets + bytes load-bearing.
 // ===========================================================================
 
@@ -835,7 +835,7 @@ struct CProjObjReg {
 
 // g_mgrSettings->m_world (the game registry's +0x30 sub-registry) viewed by this
 // loader: the projectile-object map at +0x8 and the name leaf at +0x2c (the same
-// CDDrawSubMgrLeaf type CSerialSub34 resolves through). +0x8 is a CProjObjReg*
+// CDDrawSubMgrLeaf type CSerialObjRef resolves through). +0x8 is a CProjObjReg*
 // (the retail-correct type). Distinct object from CProjReg in ProjActRegistry.cpp.
 SIZE_UNKNOWN(CProjRegSub30);
 struct CProjRegSub30 {

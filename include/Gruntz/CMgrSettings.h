@@ -5,7 +5,7 @@
 // the record's bounded element array into m_38; WRITE re-derives the name+index
 // from m_38 via CDDrawWorkerRegistry::AnyValueMatches and writes them back.
 //
-// Same registry round-trip shape as CSerialSub34/the g_gameReg singleton; field
+// Same registry round-trip shape as CSerialObjRef/the g_gameReg singleton; field
 // names are placeholders (offsets + code bytes load-bearing).
 #ifndef GRUNTZ_CMGRSETTINGS_H
 #define GRUNTZ_CMGRSETTINGS_H

@@ -6,6 +6,7 @@
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
 #include <Gruntz/ActReg.h>          // the shared CActReg coordinate-registry archetype
 #include <Gruntz/CAniCycle.h>
+#include <Gruntz/CSerialObjRef.h> // the shared serialized-object-reference (Chain @0x8c00)
 
 // The handler entry the per-class registry yields: its first dword receives the
 // per-frame handler PMF (AdvanceAnim, a 4-byte code ptr on this single-inheritance
@@ -23,6 +24,26 @@ struct CAniCycleActEntry {
 struct CAniCycleActReg : public CActReg {};
 DATA(0x00246088)
 extern CAniCycleActReg g_aniCycleActReg; // 0x646088
+
+// CAniCycle::GetTypeTag @0x00f450 - the vtable slot-2 logic-type id accessor
+// (the 6-byte `mov eax,<id>; ret` archetype).
+RVA(0x0000f450, 0x6)
+i32 CAniCycle::GetTypeTag() {
+    return 0x3ea;
+}
+
+// CAniCycle::Serialize @0x00f470 - the vtable slot-1 override: chain the shared
+// CUserLogic serialize helper on `this`, and (only on success) the +0x34 sub-object's
+// chain; both run the same (ar, tag, c, d) tuple. Returns the second chain's success
+// normalized to a bool. Byte-identical to CCursorSnapSprite::Serialize (0x011880)
+// save the two call displacements.
+RVA(0x0000f470, 0x47)
+i32 CAniCycle::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
+    if (!SerializeChain(ar, tag, c, d)) {
+        return 0;
+    }
+    return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d) != 0;
+}
 
 // CAniCycle::InitActReg @0x0aaf00 - construct the class's activation-coordinate
 // registry singleton (g_aniCycleActReg @0x646088) over the fixed range

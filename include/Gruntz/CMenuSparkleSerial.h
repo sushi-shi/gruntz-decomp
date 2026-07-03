@@ -21,7 +21,7 @@
 #include <Gruntz/Grunt.h>
 
 // The +0x34 sub-object that also serializes (0x8c00); reloc-masked (no body). This
-// is the shared "+0x34 serializable sub-object" (cf. CSerialSub34); typed to the
+// is the shared "+0x34 serialized-object-reference" (cf. CSerialObjRef); typed to the
 // real archive so the chain call carries no cast.
 class CMenuSparkleSub {
 public:

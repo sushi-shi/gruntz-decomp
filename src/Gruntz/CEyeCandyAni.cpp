@@ -1,11 +1,32 @@
 // CEyeCandyAni.cpp - the animated eyecandy game-object (C:\Proj\Gruntz), a
 // CUserLogic leaf. Only the 1-arg ctor is reconstructed here.
 #include <Gruntz/CEyeCandyAni.h>
+#include <Gruntz/CSerialObjRef.h> // the shared serialized-object-reference (Chain @0x8c00)
 
 // The global bute store (g_buteTree @0x6bf620; Find 0x16d190 __thiscall ret 4);
 // pinned in src/Gruntz/UserLogic.cpp, re-declared so the "A" node lookup masks.
 DATA(0x002bf620)
 extern CButeTree g_buteTree;
+
+// CEyeCandyAni::GetTypeTag @0x00ff00 - the vtable slot-2 logic-type id accessor
+// (the 6-byte `mov eax,<id>; ret` archetype).
+RVA(0x0000ff00, 0x6)
+i32 CEyeCandyAni::GetTypeTag() {
+    return 0x3f4;
+}
+
+// CEyeCandyAni::Serialize @0x00ff20 - the vtable slot-1 override: chain the shared
+// CUserLogic serialize helper on `this`, and (only on success) the +0x34 sub-object's
+// chain; both run the same (ar, tag, c, d) tuple. Returns the second chain's success
+// normalized to a bool. Byte-identical to CCursorSnapSprite::Serialize (0x011880)
+// save the two call displacements.
+RVA(0x0000ff20, 0x47)
+i32 CEyeCandyAni::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
+    if (!SerializeChain(ar, tag, c, d)) {
+        return 0;
+    }
+    return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d) != 0;
+}
 
 // CEyeCandyAni::CEyeCandyAni (0xac870) - fold the shared CUserLogic(obj) init, bind
 // the "A" bute node, apply the cycle geometry, then run the shared eyecandy z-clamp

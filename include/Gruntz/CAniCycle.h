@@ -14,6 +14,11 @@
 
 class CAniCycle : public CUserLogic {
 public:
+    // The vtable slot-2 logic-type id accessor (returns 0x3ea).
+    i32 GetTypeTag(); // 0x00f450
+    // The vtable slot-1 override (two-chain Serialize): the shared CUserLogic
+    // serialize helper on `this`, then the +0x34 sub-object's chain.
+    i32 Serialize(i32 ar, i32 tag, i32 c, i32 d); // 0x00f470
     // Construct the class's activation-coordinate registry singleton over the
     // fixed [2000, 2010] range via the shared registry ctor (0x408710).
     static void InitActReg(); // 0x0aaf00

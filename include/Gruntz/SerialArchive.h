@@ -1,6 +1,6 @@
 // SerialArchive.h - the shared WAP32 serialization/archive stream interface driven
 // by every CUserLogic-derived Serialize override (CMenuSparkle, CMovingLogic,
-// CMgrSettings, CSerialSub34, ...). A polymorphic CArchive-like stream whose vtable
+// CMgrSettings, CSerialObjRef, ...). A polymorphic CArchive-like stream whose vtable
 // holds the general read slot @ +0x2c (mode 7) and write slot @ +0x30 (mode 4).
 //
 // Modeled declared-only real-virtual (11 padder slots then Read/Write, never defined

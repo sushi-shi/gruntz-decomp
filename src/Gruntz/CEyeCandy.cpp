@@ -9,6 +9,7 @@
 // recovered engine identities.
 #include <Gruntz/CEyeCandy.h>
 #include <Gruntz/LogicTypeId.h>
+#include <Gruntz/CSerialObjRef.h> // the shared serialized-object-reference (Chain @0x8c00)
 
 // CEyeCandy::GetTypeTag @0x00fca0 - return the class's logic-type id. The same
 // 6-byte `mov eax,<id>; ret` virtual archetype as CTileTriggerTransition::
@@ -16,6 +17,19 @@
 RVA(0x0000fca0, 0x6)
 i32 CEyeCandy::GetTypeTag() {
     return LOGIC_EYECANDY; // 0x3f1
+}
+
+// CEyeCandy::Serialize @0x00fcc0 - the vtable slot-1 override: chain the shared
+// CUserLogic serialize helper on `this`, and (only on success) the +0x34 sub-object's
+// chain; both run the same (ar, tag, c, d) tuple. Returns the second chain's success
+// normalized to a bool. Byte-identical to CCursorSnapSprite::Serialize (0x011880)
+// save the two call displacements.
+RVA(0x0000fcc0, 0x47)
+i32 CEyeCandy::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
+    if (!SerializeChain(ar, tag, c, d)) {
+        return 0;
+    }
+    return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d) != 0;
 }
 
 // CEyeCandy::~CEyeCandy @0x00fd60 - the leaf adds no destructible members beyond

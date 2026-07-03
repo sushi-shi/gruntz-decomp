@@ -1415,8 +1415,8 @@ source = "src/Gruntz/CDDrawSurfaceMgrSerialize.cpp"
 flags = "eh"
 
 [[unit]]
-unit = "cserialsub34"
-source = "src/Gruntz/CSerialSub34.cpp"
+unit = "cserialobjref"
+source = "src/Gruntz/CSerialObjRef.cpp"
 flags = "eh"
 
 [[unit]]

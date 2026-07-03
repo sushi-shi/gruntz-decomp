@@ -7,10 +7,10 @@
 // The owning class is an orphan-COMDAT pair with no surviving vtable reference, so
 // the class name is a PLACEHOLDER; only the OFFSETS + emitted code bytes are
 // load-bearing (campaign doctrine). All callees (the brightness setter 0x1524d0,
-// SerializeChain 0x16e7f0, CSerialSub34::Chain, the archive Read/Write slots) are
+// SerializeChain 0x16e7f0, CSerialObjRef::Chain, the archive Read/Write slots) are
 // external/no-body so their call rel32 / DIR32 reloc-mask.
-#include <Gruntz/UserLogic.h>    // CUserLogic + SerializeChain (0x16e7f0)
-#include <Gruntz/CSerialSub34.h> // CSerialArchive (Read @+0x2c / Write @+0x30) + CSerialSub34
+#include <Gruntz/UserLogic.h>     // CUserLogic + SerializeChain (0x16e7f0)
+#include <Gruntz/CSerialObjRef.h> // CSerialArchive (Read @+0x2c / Write @+0x30) + CSerialObjRef
 
 // The global millisecond tick (_g_645588). The DWORD load reloc-masks.
 DATA(0x00245588)
@@ -66,7 +66,7 @@ i32 CPulseHighlight::Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d) {
     if (!SerializeChain((i32)ar, tag, c, d)) {
         return 0;
     }
-    if (!((CSerialSub34*)((char*)this + 0x34))->Chain(ar, tag, c, (CSerialObj*)d)) {
+    if (!((CSerialObjRef*)((char*)this + 0x34))->Chain(ar, tag, c, (CSerialObj*)d)) {
         return 0;
     }
     char* p = (char*)this + 0x58;

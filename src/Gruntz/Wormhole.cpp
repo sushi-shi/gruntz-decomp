@@ -409,13 +409,13 @@ CWormhole::CWormhole(CGameObject* obj) : CUserLogic(obj) {
 // "EntranceColor", 3)), else the cached kind index; look it up in g_gameReg's color
 // table (+0x78) at [id*4 + 0x14] and re-seed the bound object's draw trio.
 // ---------------------------------------------------------------------------
-#include <Gruntz/CSerialSub34.h>
+#include <Gruntz/CSerialObjRef.h>
 RVA(0x0003fed0, 0xa9)
 i32 CWormhole::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
     if (!SerializeChain(ar, tag, c, d)) {
         return 0;
     }
-    if (!((CSerialSub34*)((char*)this + 0x34))
+    if (!((CSerialObjRef*)((char*)this + 0x34))
              ->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d)) {
         return 0;
     }

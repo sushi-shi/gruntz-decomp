@@ -13,6 +13,7 @@
 #include <Gruntz/ActReg.h>          // the shared CActReg coordinate-registry archetype
 #include <Gruntz/CBehindCandyAni.h>
 #include <Gruntz/CAnimSink.h>
+#include <Gruntz/CSerialObjRef.h> // the shared serialized-object-reference (Chain @0x8c00)
 
 // The handler entry the per-class registry yields: its first dword receives the
 // per-frame handler PMF (AdvanceAnim, a 4-byte code ptr on this single-inheritance
@@ -37,33 +38,24 @@ extern CBehindCandyActReg g_behindCandyActReg; // 0x645f98
 DATA(0x002bf3bc)
 extern "C" u32 g_6bf3bc;
 
-// The +0x34 serializable sub-object chained by the Serialize override (0x8c00,
-// __thiscall ret 0x10; NO-body so the call reloc-masks). It overlays CUserLogic's
-// fat-view tail field m_34 (see the size NOTE in <Gruntz/UserLogic.h>), so the
-// override reaches it as a struct view over that named base field (&m_34).
-struct CSerialSub34 {
-    i32 Chain(i32 a, i32 b, i32 c, i32 d); // 0x8c00
-};
-
-// CBehindCandyAni::GetTypeTag @0x010030 - vtable slot 2: the class's logic-type id
-// (0x3f3), the 6-byte `mov eax,<id>; ret` accessor archetype. Regular method (the
-// fat CUserLogic base slots 1/2 carry placeholder signatures the leaf overrides
-// cannot match without editing that shared base; the leaf vtable is not a diffed
-// symbol, so a plain method reproduces the slot bytes exactly).
+// CBehindCandyAni::GetTypeTag @0x010030 - the vtable slot-2 logic-type id accessor
+// (the 6-byte `mov eax,<id>; ret` archetype).
 RVA(0x00010030, 0x6)
 i32 CBehindCandyAni::GetTypeTag() {
     return 0x3f3;
 }
 
-// CBehindCandyAni::Serialize @0x010050 - vtable slot 1: chain the shared CUserLogic
-// serialize helper on `this`, then (on success) the +0x34 sub-object's chain,
-// normalized to a strict bool. Byte-identical to CSecretTeleporterTrigger::Serialize.
+// CBehindCandyAni::Serialize @0x010050 - the vtable slot-1 override: chain the shared
+// CUserLogic serialize helper on `this`, and (only on success) the +0x34 sub-object's
+// chain; both run the same (ar, tag, c, d) tuple. Returns the second chain's success
+// normalized to a bool. Byte-identical to CCursorSnapSprite::Serialize (0x011880)
+// save the two call displacements.
 RVA(0x00010050, 0x47)
-i32 CBehindCandyAni::Serialize(i32 a, i32 b, i32 c, i32 d) {
-    if (!SerializeChain(a, b, c, d)) {
+i32 CBehindCandyAni::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
+    if (!SerializeChain(ar, tag, c, d)) {
         return 0;
     }
-    return ((CSerialSub34*)&m_34)->Chain(a, b, c, d) != 0;
+    return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d) != 0;
 }
 
 // CBehindCandyAni::~CBehindCandyAni @0x0100f0 - the leaf adds no destructible
