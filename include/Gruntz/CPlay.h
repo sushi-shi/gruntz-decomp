@@ -40,14 +40,10 @@ class CGruntzSoundInnerZ;
 
 struct CHitMarker; // +0x374 start-point marker element {x,y}; defined in CPlay.cpp
 
-// The placed-object display list the warlord-sprite loader walks (hung off
-// renderer A at +0x10; see CRenderer::m_10). Each node's +0x8 is a placed object.
-struct CWarlordListNode; // fully defined in CPlay.cpp
-SIZE_UNKNOWN(CWarlordListHead);
-struct CWarlordListHead {
-    char p0[0x4];
-    CWarlordListNode* m_4; // +0x04  first node
-};
+// The CState +0x0c view/render/resource context (the real RTTI class CView) and
+// its render sub-objects (CRenderer, CDrawSurface, the placed-object warlord list)
+// now live in the shared <Gruntz/CView.h> so the leaf-state TUs share the one shape.
+#include <Gruntz/CView.h>
 // The world's per-kind warlord counter block (CWorld::m_7c). LoadWarlordSprites
 // bumps m_30/m_34/m_38/m_40 by object-type range.
 SIZE_UNKNOWN(CWarlordCounters);
@@ -58,92 +54,6 @@ struct CWarlordCounters {
     i32 m_38; // +0x38
     char p3c[0x40 - 0x3c];
     i32 m_40; // +0x40
-};
-
-// The renderer/draw object (m_c->m_8 = renderer A, m_c->m_c = renderer B). Its
-// vtable carries the per-frame draw slots: +0x24 begin-scene (1 arg), +0x34
-// present (2 args). Modeled with a padded virtual interface so the indirect
-// `call [vtbl+0x24]` / `[vtbl+0x34]` shapes fall out.
-struct CRenderer {
-    virtual void s00();
-    virtual void s01();
-    virtual void s02();
-    virtual void s03();
-    virtual void s04();
-    virtual void s05();
-    virtual void s06();
-    virtual void s07();
-    virtual void s08();
-    virtual void BeginScene(i32 z); // slot 9  (+0x24)
-    virtual void s0a();
-    virtual void s0b();
-    virtual void s0c();
-    virtual void Present(void* a, void* b); // slot 13 (+0x34)
-    // Non-virtual leaf the play-exit path runs on renderer A (reloc-masked).
-    void Refresh(); // 0x159ef0 (thiscall, no arg)
-    // Renderer A owns the placed-object display list at +0x10 (LoadWarlordSprites
-    // walks it in-level; vptr is at +0x00, so data starts at +0x04).
-    char p04[0x10 - 0x4];
-    CWarlordListHead m_10; // +0x10  placed-object list head
-};
-
-// The draw-surface object at m_c->m_24 (the target of the thiscall PushView +
-// the ViewPreStep/PostStep sub-steps). Its +0x5c holds the camera geometry the
-// world blit reads (+0x84 / +0x88).
-struct CDrawSurface {
-    void PushView(void* view, void* renderer);
-    void PreStep();
-    void PostStep();
-    void SetClipRect(RECT* r); // 0x15da80 (thiscall) ClampViewport apply-tail
-    char p0[0x10];
-    // +0x10: the viewport rect {left,top,right,bottom}; StepScroll reads .left/.top
-    // as the scroll origin, DispatchHudClick reads all four as the bounds box.
-    RECT m_viewport; // +0x10  viewport rect (also the scroll origin .left/.top)
-    char p20[0x5c - 0x20];
-    // +0x5c -> a geom block: StepScroll reads (m_5c+0x40).{m_originX,m_originY};
-    // the world blit reads (m_5c).{m_84,m_88}.
-    struct CameraGeom {
-        void DrawA(); // 0x563300  per-frame world-draw sub-step A
-        void DrawB(); // 0x563370  per-frame world-draw sub-step B
-        char p0[0x40];
-        i32 m_originX; // +0x40
-        i32 m_originY; // +0x44
-        char p48[0x84 - 0x48];
-        i32 m_84;
-        i32 m_88;
-    }* m_5c; // +0x5c camera geom
-};
-
-// m_c (the view/anim sub-object holder).
-struct CView {
-    char p0[0x4];
-    struct RenderState { // +0x04  the renderer-state object
-        char p0[0x10];
-        struct SurfaceA {
-            char p0[0x2c];
-            void* m_2c;
-        }* m_10; // +0x10 -> +0x2c surface
-        struct SurfaceB {
-            char p0[0x2c];
-            struct Held {
-                void Prepare(i32 z);      // 0x13e760 (thiscall) ClampViewport apply-tail
-                void NotifyClip(RECT* r); // 0x13e7d0 (thiscall) NotifyVisibleEntities
-            }* m_2c;
-        }* m_14;    // +0x14 -> +0x2c draw surface (view obj)
-        void* m_18; // +0x18  the present target
-    }* m_4;
-    CRenderer* m_8; // +0x08  renderer A
-    CRenderer* m_c; // +0x0c  renderer B (present)
-    // +0x10 -> +0x10 is a CMapPtrToPtr (BeginGridWalk looks up the frame grid).
-    struct GridMapHolder {
-        char p0[0x10];
-        struct CMap {
-            void Lookup(i32 key, void*& out); // 0x1b8008 (thiscall)
-        } m_10;                               // +0x10  the grid map
-    }* m_10;                                  // +0x10
-    char p14[0x20 - 0x14];
-    void* m_20;         // +0x20  a frame profiler timer (timeGetTime x2)
-    CDrawSurface* m_24; // +0x24  the draw-surface (PushView / Pre/PostStep)
 };
 
 // The world/level draw object at m_4->m_54 (the camera blit thiscall).

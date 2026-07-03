@@ -129,35 +129,10 @@ struct CGMOwner {
 // cleaned (no `add esp,4` at the call site) -> __stdcall.
 extern "C" void __stdcall GM_SimpleAnim(i32 z); // (stdcall, 1 arg)
 
-// The view/draw holder (CState+0xc). The credits input poll reaches
-// m_c->m_4->m_10->m_2c->m_8 (the input obj); the draw block walks
-// m_c->m_4->{m_10->m_2c (Draw this), m_14 (blit this), m_18 (blit arg)}.
-SIZE_UNKNOWN(CGMBlitTarget);
-struct CGMBlitTarget {
-    void Blit(i32 arg);
-}; // (thiscall)
-SIZE_UNKNOWN(CGMView);
-struct CGMView {
-    char p0[0x4]; // +0x00
-    struct M4 {
-        char p0[0x10];
-        struct M10 {
-            char p0[0x2c];
-            struct M2c { // +0x2c the draw target (also holds the input obj)
-                char p0[0x8];
-                CGMInputObj* m_8; // +0x08 input obj (credits poll source)
-                void Draw(i32 z); // (thiscall on this M2c)
-            }* m_2c;
-        }* m_10;             // +0x10
-        CGMBlitTarget* m_14; // +0x14 blit this
-        void* m_18;          // +0x18 blit arg
-    }* m_4;                  // +0x04
-    char p8[0x28 - 0x8];
-    struct M28 {
-        char p0[0x2c];
-        i32 m_2c;
-    }* m_28; // +0x28 cursor/anim gate
-};
+// The view/draw holder (CState+0xc) render facet the credits poll walks is the same
+// shared CView (<Gruntz/CView.h>): m_c->m_4->m_10->m_2c->m_8 (input obj), the draw
+// block m_c->m_4->{m_10->m_2c (Draw), m_14 (Blit), m_18 (blit arg)}, m_28->m_2c
+// (cursor gate). Reached through m_c directly (no cast).
 
 // The CMenuState UI object (m_1b4): each entity-flag scan fires a distinct no-arg
 // method on it; the tail steps it (one arg = g_645584) + draws the version RECT.
@@ -189,9 +164,11 @@ extern "C" char g_60ce74[]; // "MONOLITH" (FindSound name)
 // ---------------------------------------------------------------------------
 // CState - the base game-state class. One canonical definition, shared via
 // <Gruntz/CState.h> (full 41-slot vftable + ctor-pinned layout). The leaf states
-// below derive from it; the gamemode TU casts the owner/view members (void* m_4,
-// CView* m_c) to its own CGMOwner/CGMView reconstructions.
+// below derive from it; the gamemode TU casts the owner member (CGruntzMgr* m_4)
+// to its own CGMOwner reconstruction and reaches the +0x0c CView resource facet
+// (m_c, the shared <Gruntz/CView.h> class) directly.
 #include <Gruntz/CState.h>
+#include <Gruntz/CView.h> // the shared CState::m_c view/render/resource class
 
 // Single-type leaf-state sub-object views, defined in GameMode.cpp; forward-
 // declared so the leaf members below are typed to their real class (no per-site

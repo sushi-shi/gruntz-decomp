@@ -2888,25 +2888,15 @@ struct CResSource {
 struct CBankMgr {
     CResSource* Lookup(char* szName); // 0x13c030 __thiscall
 };
-// CResMgr and its three sub-registries (image @m_10, sound @m_28, anim @m_2c)
-// now live in the shared <Gruntz/ResMgr.h> (included at the top of this TU).
-// Typed view-of-`this` for the loader family.
-struct CPlayRes {
-    char m_pad00[0x8];
-    CBankMgr* m_8; // +0x08  the bank manager (LoadImageBanks)
-    CResMgr* m_c;  // +0x0c  the resource manager
-    char m_pad10[0x28 - 0x10];
-    CResSource* m_28; // +0x28  level bank source (TILEZ/IMAGEZ/SOUNDZ)
-    char m_pad2c[0x30 - 0x2c];
-    CResSource* m_30; // +0x30  GRUNTZ bank (LoadImageBanks out)
-    CResSource* m_34; // +0x34  GAME bank (LoadImageBanks out; GAME-loaders' source)
-};
+// The loader family reaches its resource state directly through `this` (a CPlay):
+// the bank manager (CState::m_8), the level/GRUNTZ/GAME banks (CState::m_28/m_30/
+// m_34) and the shared CView resource registries (CState::m_c->m_10/m_28/m_2c).
 
 // LoadImageBanks (0x0cffe0) - cache the GRUNTZ + GAME asset banks off m_8 into
 // m_30/m_34; the int (BOOL) return reuses the just-loaded value at each guard.
 RVA(0x000cffe0, 0x3c)
 i32 CPlay::LoadImageBanks() {
-    CPlayRes* self = (CPlayRes*)this;
+    CPlay* self = this;
     if (!self->m_8) {
         return 0;
     }
@@ -2924,7 +2914,7 @@ i32 CPlay::LoadImageBanks() {
 // eax,1`; a void return tail-merges the bare epilogues and never emits eax=1.
 RVA(0x000db600, 0x8f)
 i32 CPlay::LoadActionTileSprites(i32 force) {
-    CPlayRes* self = (CPlayRes*)this;
+    CPlay* self = this;
     if (!self->m_c) {
         return 0;
     }
@@ -2949,7 +2939,7 @@ i32 CPlay::LoadActionTileSprites(i32 force) {
 // reset. Same int-return idiom as its siblings.
 RVA(0x000db6c0, 0x70)
 i32 CPlay::LoadLevelSounds(i32 force) {
-    CPlayRes* self = (CPlayRes*)this;
+    CPlay* self = this;
     if (!self->m_c) {
         return 0;
     }
@@ -2972,7 +2962,7 @@ i32 CPlay::LoadLevelSounds(i32 force) {
 // Brackets the install with two install-active resets.
 RVA(0x000db7e0, 0x84)
 i32 CPlay::LoadLevelImages(i32 force) {
-    CPlayRes* self = (CPlayRes*)this;
+    CPlay* self = this;
     if (!self->m_c) {
         return 0;
     }
@@ -2997,7 +2987,7 @@ i32 CPlay::LoadLevelImages(i32 force) {
 // the +0x48 virtual slot. Brackets the install with the install-active flag = 1 then 0.
 RVA(0x000db8a0, 0x67)
 i32 CPlay::LoadGameImages(i32 force) {
-    CPlayRes* self = (CPlayRes*)this;
+    CPlay* self = this;
     if (!self->m_c) {
         return 0;
     }
@@ -3019,7 +3009,7 @@ i32 CPlay::LoadGameImages(i32 force) {
 // SOUNDZ set and installs through m_c->m_28 (non-virtual). No Register, no install-gate.
 RVA(0x000db930, 0x53)
 i32 CPlay::LoadGameSounds(i32 force) {
-    CPlayRes* self = (CPlayRes*)this;
+    CPlay* self = this;
     if (!self->m_c) {
         return 0;
     }
@@ -3039,7 +3029,7 @@ i32 CPlay::LoadGameSounds(i32 force) {
 // the ANIZ set and installs through m_c->m_2c (non-virtual). No Register/install-gate.
 RVA(0x000db9b0, 0x53)
 i32 CPlay::LoadGameAnims(i32 force) {
-    CPlayRes* self = (CPlayRes*)this;
+    CPlay* self = this;
     if (!self->m_c) {
         return 0;
     }
@@ -3176,7 +3166,7 @@ struct CLoadNotify {
 
 RVA(0x000dd830, 0x1e3)
 i32 CPlay::LoadGruntSoundNamespaces(void* notify) {
-    CPlayRes* self = (CPlayRes*)this;
+    CPlay* self = this;
     if (!self->m_c) {
         return 0;
     }
@@ -3247,7 +3237,7 @@ i32 CPlay::LoadGruntSoundNamespaces(void* notify) {
 // ===========================================================================
 RVA(0x000dd540, 0x241)
 i32 CPlay::BuildSpriteImageKeyTable(void* notify) {
-    CPlayRes* self = (CPlayRes*)this;
+    CPlay* self = this;
     if (!self->m_c) {
         return 0;
     }
@@ -3334,7 +3324,7 @@ i32 CPlay::BuildSpriteImageKeyTable(void* notify) {
 // ===========================================================================
 RVA(0x000ddaa0, 0x228)
 i32 CPlay::BuildAnizKeyTable(void* notify) {
-    CPlayRes* self = (CPlayRes*)this;
+    CPlay* self = this;
     if (!self->m_c) {
         return 0;
     }
@@ -5040,7 +5030,6 @@ SIZE_UNKNOWN(CMusicSource);
 SIZE_UNKNOWN(CPlaneGeom);
 SIZE_UNKNOWN(CPlay);
 SIZE_UNKNOWN(CPlayEff);
-SIZE_UNKNOWN(CPlayRes);
 SIZE_UNKNOWN(CProfFlush);
 SIZE_UNKNOWN(CRegExit);
 SIZE_UNKNOWN(CRegHitGate);

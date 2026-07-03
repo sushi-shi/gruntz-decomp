@@ -127,52 +127,10 @@ i32 CState::Vslot11(i32, i32, i32) {
 // registry @+0x28, worker list @+0x0c, ddraw @+0x04) - field names placeholder.
 // ===========================================================================
 
-// The named-resource registries the release path drives. Each `Release*` is a
-// __thiscall(this, szName, szKey) that callee-cleans 8 bytes (reloc-masked).
-struct CResRegistry { // m_c->m_10  (FUN_00155360)
-    void Release(const char* szName, const char* szKey);
-};
-// The pooled resource Free (FUN_00137a80) + the per-frame tick (FUN_00136e20),
-// both __thiscall on the resource object (reloc-masked).
-struct CPooledRes {
-    void Free();          // FUN_00137a80, no-arg
-    void TickAnim(i32 z); // FUN_00136e20, ret 4
-};
-struct CResLeafRegistry { // m_c->m_28  (FUN_00157c70 + the m_2c resource)
-    void Release(const char* szName, const char* szKey); // FUN_00157c70
-    char m_pad00[0x2c];
-    CPooledRes* m_2c; // +0x2c  pooled resource (Free() if set)
-};
-struct CResWorkerList {    // m_c->m_c  (FUN_00163c60)
-    void DisposeWorkers(); // FUN_00163c60, thiscall no-arg
-};
-
-// The flip target the slot-10 poll drives: m_c->m_4->m_10->m_2c->Flip(0), with a
-// Flush() on m_4 first (both reloc-masked __thiscall).
-struct CFlipTarget {
-    void Flip(i32 z); // FUN_0013e850, ret 4
-};
-struct CRenderM10 {
-    char m_pad00[0x2c];
-    CFlipTarget* m_2c; // +0x2c  flip target
-};
-struct CRenderM4 {
-    void Flush(); // FUN_00558ee0, no-arg
-    char m_pad00[0x10];
-    CRenderM10* m_10; // +0x10
-};
-
-// The CState+0xc resource view, as the teardown / poll paths walk it.
-struct CStateResView {
-    char m_pad00[0x04];
-    CRenderM4* m_4; // +0x04  render/flip view (slot-10 poll)
-    char m_pad08[0x0c - 0x08];
-    CResWorkerList* m_c; // +0x0c  worker list (CMenuState dispose)
-    CResRegistry* m_10;  // +0x10  name registry
-    char m_pad14[0x28 - 0x14];
-    CResLeafRegistry* m_28; // +0x28  leaf registry + pooled resource
-    CResRegistry* m_2c;     // +0x2c  third registry (credits CREDITZ release)
-};
+// The CState +0x0c resource-release facet (registry @+0x10, sound registry +
+// pooled resource @+0x28, third registry @+0x2c, worker list @+0x0c, render/flip
+// view @+0x04) is the RESOURCE facet of the one shared CView (<Gruntz/CView.h>);
+// the leaf-state teardown paths reach it through m_c directly (no cast).
 
 // CState::~CState() chains the WAP32 base cleanup; the leaf `??1`s re-stamp the
 // base vtable and call it (compiler-emitted). `operator delete` is reached by
@@ -277,14 +235,14 @@ void __stdcall GenMenuRandPos(i32 sel, i32* outX, i32* outY) {
 RVA(0x00018c90, 0x72)
 void CBootyState::ReleaseResources() {
     // The view (m_c) is re-read for every access (retail does not cache it).
-    CPooledRes* r = ((CStateResView*)m_c)->m_28->m_2c;
+    CViewPooledRes* r = m_c->m_28->m_2c;
     if (r) {
         r->Free();
     }
-    ((CStateResView*)m_c)->m_28->Release("BOOTY", "_");
-    ((CStateResView*)m_c)->m_28->Release("GRUNTZ_WANDGRUNT", "_");
-    ((CStateResView*)m_c)->m_10->Release("BOOTY", "_");
-    ((CStateResView*)m_c)->m_10->Release("GRUNTZ_GOKARTGRUNT", "_");
+    m_c->m_28->Release("BOOTY", "_");
+    m_c->m_28->Release("GRUNTZ_WANDGRUNT", "_");
+    m_c->m_10->Release("BOOTY", "_");
+    m_c->m_10->Release("GRUNTZ_GOKARTGRUNT", "_");
     ((CGameModeBase*)this)->BaseCleanup();
 }
 
@@ -333,7 +291,7 @@ i32 CBootyState::Update() {
 //        if (s && !s->Query()) Sub3(); }   return 1;
 RVA(0x000391d0, 0x17c)
 i32 CCreditsState::Render() {
-    CGMInputObj* in = ((CGMView*)m_c)->m_4->m_10->m_2c->m_8;
+    CGMInputObj* in = m_c->m_4->m_10->m_2c->m_8;
     if (!in || in->vtbl->Poll(in)) {
         if (!InputVirtual()) {
             ((CGMOwner*)m_4)->Post(0x8006, 0xfa0);
@@ -341,7 +299,7 @@ i32 CCreditsState::Render() {
         }
     }
 
-    if (((CGMView*)m_c)->m_28->m_2c) {
+    if (m_c->m_28->m_2c) {
         GM_SimpleAnim(-1);
     }
 
@@ -379,7 +337,7 @@ i32 CCreditsState::Render() {
     Sub2();
 
     // draw: cache m_c->m_4 (the target keeps it in esi for the three derefs).
-    CGMView::M4* v4 = ((CGMView*)m_c)->m_4;
+    CView::RenderState* v4 = m_c->m_4;
     v4->m_10->m_2c->Draw(0);
     v4->m_14->Blit((i32)v4->m_18);
 
@@ -754,36 +712,8 @@ extern CButeMgr g_buteMgr;        // ?g_buteMgr@@3VCButeMgr@@A
 extern char* g_wormholeSpawnKey;  // ?g_wormholeSpawnKey@@3PADA ("Wormhole" bute tag @0x60a7ac)
 extern unsigned char g_dat60b588; // ?g_dat60b588@@3EA  (go-kart install byte flag)
 
-// The go-kart install target reached via m_c->m_10 (a vtable-bearing view; slot +0x48
-// installs the resolved image under a name + a byte-flag out-param). Declared-only
-// virtuals (bodies live in another TU) so cl emits NO ??_7 yet dispatches via the vtable.
-SIZE_UNKNOWN(CEffView10);
-struct CEffView10 {
-    virtual void v00();
-    virtual void v01();
-    virtual void v02();
-    virtual void v03();
-    virtual void v04();
-    virtual void v05();
-    virtual void v06();
-    virtual void v07();
-    virtual void v08();
-    virtual void v09();
-    virtual void v10();
-    virtual void v11();
-    virtual void v12();
-    virtual void v13();
-    virtual void v14();
-    virtual void v15();
-    virtual void v16();
-    virtual void v17();
-    virtual void Install(void* img, const char* name, unsigned char* flag); // slot 18 (+0x48)
-};
-SIZE_UNKNOWN(CEffView);
-struct CEffView { // CState::m_c reinterpreted
-    char p0[0x10];
-    CEffView10* m_10; // +0x10
-};
+// The go-kart install target reached via m_c->m_10 is the shared CView image
+// registry (Install at vtable slot 18 / +0x48; <Gruntz/CView.h>).
 // The namespace/image registry at this+0x30 (resolves a named image handle).
 SIZE_UNKNOWN(CEffNamespace);
 struct CEffNamespace {
@@ -801,11 +731,15 @@ struct CEffGeomRow {
 DATA(0x0020b8fc)
 extern CEffGeomRow g_effGeom[8]; // 0x60b8fc
 
-// Typed self-view for the big CPlay-layout owner (offsets only; not a class re-decl).
+// Typed self-view for this in-game effect loader. The +0x0c view is the shared
+// CView; but its effect-sprite members below (m_224/m_2fc.. arrays) sit at offsets
+// (0x304..0x318) that CPlay's own reconstruction models as drag-clamp/HUD-rect
+// scalars - a genuine unresolved offset-reuse ambiguity, so the sprite block stays a
+// documented self-view (offset access) rather than being folded into CPlay's layout.
 SIZE_UNKNOWN(CEffLoaderSelf);
 struct CEffLoaderSelf {
     char m_pad00[0xc];
-    CEffView* m_c; // +0x0c  view holder
+    CView* m_c; // +0x0c  the shared view/render/resource context
     char m_pad10[0x30 - 0x10];
     CEffNamespace* m_30; // +0x30  image namespace
     char m_pad34[0x224 - 0x34];
@@ -847,7 +781,7 @@ i32 CState::LoadGruntEffectSprites() {
     if (img == 0) {
         return 0;
     }
-    self->m_c->m_10->Install(img, "GRUNTZ_GOKARTGRUNT", &g_dat60b588);
+    self->m_c->m_10->Install(img, "GRUNTZ_GOKARTGRUNT", (const char*)&g_dat60b588);
 
     CGlitterFactory* f = g_mgrSettings->m_world->m_8;
 
@@ -1333,13 +1267,13 @@ struct CCreditsDrawRoot {
 RVA(0x00038f00, 0x87)
 void CCreditsState::ReleaseResources() {
     if (m_c) {
-        CPooledRes* r = ((CStateResView*)m_c)->m_28->m_2c;
+        CViewPooledRes* r = m_c->m_28->m_2c;
         if (r) {
             r->Free();
         }
-        ((CStateResView*)m_c)->m_28->Release("CREDITZ", "_");
-        ((CStateResView*)m_c)->m_10->Release("CREDITZ", "_");
-        ((CStateResView*)m_c)->m_2c->Release("CREDITZ", "_");
+        m_c->m_28->Release("CREDITZ", "_");
+        m_c->m_10->Release("CREDITZ", "_");
+        m_c->m_2c->Release("CREDITZ", "_");
     }
     // Cache the video handle in a local so it stays pinned in edi across the
     // Teardown call (retail reuses the same register for the RezFree push).
@@ -1448,16 +1382,16 @@ RVA(0x000a02c0, 0x7d)
 void CMenuState::ReleaseResources() {
     // m_c re-read for each access (retail does not cache it); the null-guarded
     // block tests m_c once and reuses it for both the Free and DisposeWorkers.
-    ((CStateResView*)m_c)->m_10->Release("MENU", "_");
-    ((CStateResView*)m_c)->m_28->Release("MENU", "_");
+    m_c->m_10->Release("MENU", "_");
+    m_c->m_28->Release("MENU", "_");
     if (m_c) {
         // The test value of m_c is reused for the leaf-registry access; the
         // worker-list dispose re-reads m_c fresh (retail does not cache it).
-        CPooledRes* r = ((CStateResView*)m_c)->m_28->m_2c;
+        CViewPooledRes* r = m_c->m_28->m_2c;
         if (r) {
             r->Free();
         }
-        ((CStateResView*)m_c)->m_c->DisposeWorkers();
+        m_c->m_c->DisposeWorkers();
     }
     // m_1b4 IS cached (retail holds it in edi across the pre-delete + delete).
     CGMMenuUI* ui = m_1b4;
@@ -1798,11 +1732,11 @@ i32 CMultiBootyState::ForwardIdleAnim(i32 a, i32 b) {
 // the m_4 deref landing in eax vs retail's edx (single-register coin-flip).
 RVA(0x0001e520, 0x3e)
 void CMultiBootyState::ReleaseResources() {
-    CPooledRes* r = ((CStateResView*)m_c)->m_28->m_2c;
+    CViewPooledRes* r = m_c->m_28->m_2c;
     if (r) {
         r->Free();
     }
-    ((CStateResView*)m_c)->m_28->Release("BOOTY", "_");
+    m_c->m_28->Release("BOOTY", "_");
     ((CBootyOwnerView*)m_4)->m_60->Teardown();
     ((CGameModeBase*)this)->BaseCleanup();
 }
@@ -1816,7 +1750,7 @@ i32 CMultiBootyState::FrameSlot24(i32) {
     if (!ok) {
         return ok; // eax already 0 (the FadeInTitle result) - no xor/mov re-materialize
     }
-    ((CStateResView*)m_c)->m_4->Flush();
+    m_c->m_4->Flush();
     BuildPage(0x50, 0x3e8, 0, 1);
 
     CBootyMusicHost* host = BOOTY_REG->m_30;
@@ -2053,7 +1987,7 @@ void CMenuState::StopMusicChain() {
         return;
     }
     do {
-        CPooledRes* r = ((CStateResView*)m_c)->m_28->m_2c;
+        CViewPooledRes* r = m_c->m_28->m_2c;
         if (r) {
             r->TickAnim(-1);
         }
@@ -2064,8 +1998,8 @@ void CMenuState::StopMusicChain() {
 // view, stamp the start clock, run the music-stop chain, then busy-wait m_1b8 ms.
 RVA(0x000a06d0, 0x5f)
 i32 CMenuState::FrameSlot28(i32) {
-    ((CStateResView*)m_c)->m_4->Flush();
-    ((CStateResView*)m_c)->m_4->m_10->m_2c->Flip(0);
+    m_c->m_4->Flush();
+    m_c->m_4->m_10->m_2c->Flip(0);
     u32 start = timeGetTime();
     StopMusicChain();
     while (timeGetTime() < start + m_1b8)
@@ -2073,14 +2007,6 @@ i32 CMenuState::FrameSlot28(i32) {
     return 1;
 }
 
-SIZE_UNKNOWN(CResRegistry);
-SIZE_UNKNOWN(CPooledRes);
-SIZE_UNKNOWN(CResLeafRegistry);
-SIZE_UNKNOWN(CResWorkerList);
-SIZE_UNKNOWN(CFlipTarget);
-SIZE_UNKNOWN(CRenderM10);
-SIZE_UNKNOWN(CRenderM4);
-SIZE_UNKNOWN(CStateResView);
 SIZE_UNKNOWN(CCreditzSubEntry);
 SIZE_UNKNOWN(CCreditzMusicSet);
 SIZE_UNKNOWN(CCreditzRegObj);

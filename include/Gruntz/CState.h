@@ -6,9 +6,10 @@
 // Layout is the ctor ground truth (CState::CState at 0x08c750 zeroes a flat
 // scalar list and seeds four fields to 0x40). The two reconstructions modeled
 // the same owner/view sub-objects under different names: the +0x04 owner back-
-// ptr is `void *` here (gamemode casts it to CGMOwner, cplay to CWorld); the
-// +0x0c view holder is `CView *` (cplay dereferences it directly, gamemode casts
-// to CGMView). Both are 4-byte pointer slots, so the casts are codegen-neutral.
+// ptr is the game-manager singleton `CGruntzMgr *` (gamemode/cplay downcast it to
+// their local CGMOwner/CWorld facet views); the +0x0c view holder is `CView *`
+// (cplay dereferences it directly, gamemode casts to CGMView). Both are 4-byte
+// pointer slots, so the casts are codegen-neutral.
 //
 // The virtual interface is ~41 slots. Most are out-of-line stubs that only
 // anchor the vftable order so the meaningful slots land at the right offset:
@@ -23,7 +24,12 @@
 #include <Ints.h>
 #include <Gruntz/GameModeBase.h>
 
-struct CView; // +0x0c view holder; defined fully in CPlay.h, opaque elsewhere
+struct CView;      // +0x0c view holder; defined fully in CView.h, opaque elsewhere
+struct CBankMgr;   // +0x08 asset-bank manager (resolves a "GRUNTZ"/"GAME"/level bank)
+struct CResSource; // +0x28/+0x30/+0x34 resolved asset banks (LookupSet a named set)
+class CGruntzMgr;  // +0x04 owner back-ptr: the game-manager singleton (*g_64556c).
+                   // Forward-declared (MFC-free) so this widely-included header stays
+                   // afx-neutral; GruntzMgr.h/CGameRegistry.h complete the two views.
 
 class CState {
 public:
@@ -83,17 +89,22 @@ public:
     void NotifyExit(i32 code);
 
     // --- scalar members, at the offsets CState::CState pins ---
-    void* m_4;  // +0x04  owner back-ptr (CGMOwner / CWorld view)
-    i32 m_8;    // +0x08
-    CView* m_c; // +0x0c  view/anim holder (CGMView / CView view)
+    // +0x04  owner back-ptr == the game-manager singleton (*g_64556c). PROVEN one
+    // object: m_4->m_c is the SAME field as g_64556c->m_c (the active-selection gate),
+    // m_4->m_48 the same sound bank, m_4->m_8c..m_98 the same live video mode. The
+    // gamemode/cplay TUs still downcast it to their local CGMOwner/CWorld facet views.
+    CGruntzMgr* m_4;
+    CBankMgr* m_8; // +0x08  asset-bank manager (CPlay loaders: Lookup GRUNTZ/GAME banks)
+    CView* m_c;    // +0x0c  view/render/resource context (the shared CView)
     char m_pad10[0x14 - 0x10];
     i32 m_14; // +0x14
     i32 m_18; // +0x18
     char m_pad1c[0x24 - 0x1c];
-    i32 m_24; // +0x24
-    i32 m_28; // +0x28
-    i32 m_2c; // +0x2c
-    char m_pad30[0x38 - 0x30];
+    i32 m_24;         // +0x24
+    CResSource* m_28; // +0x28  level asset bank (TILEZ/IMAGEZ/SOUNDZ/MIDIZ source)
+    i32 m_2c;         // +0x2c
+    CResSource* m_30; // +0x30  GRUNTZ asset bank (LoadImageBanks caches here)
+    CResSource* m_34; // +0x34  GAME asset bank (GAME-namespace loaders' source)
     i32 m_38; // +0x38
     i32 m_3c; // +0x3c
     char m_pad40[0x4c - 0x40];
