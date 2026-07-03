@@ -137,7 +137,7 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
         }
     }
 
-    m_prevAnimSetNode = (i32)m_14->m_1c;
+    m_prevAnimSetNode = m_14->m_1c;
     m_14->m_1c = g_buteTree.Find(s_codeJ);
 
     i32 id = 0;
@@ -489,7 +489,7 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
         m_wingzTimeSprite->m_8 |= 0x10000;
         m_wingzTimeSprite = 0;
     }
-    m_prevEntranceDesc = (i32)m_154->m_1b4;
+    m_prevEntranceDesc = m_154->m_1b4;
     m_154->m_1a0.SetGeometry(m_pickupGeoSrc);
     m_154->SetAnimName("GRUNTZ_PICKUPS");
     return 1;

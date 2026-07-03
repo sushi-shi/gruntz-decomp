@@ -76,6 +76,11 @@ struct CGrunt { // this (ebx)
     CScanNode324* m_324; // +0x324 current node
     i32 m_328;           // +0x328 pending latch
     i32 PathScan57db0();
+    // The +0x31c CObList viewed as the scratch scan-list (the raw m_31c slot stays
+    // 4 bytes so m_320 keeps its offset); one reinterpret here, no cast at the uses.
+    CScanList* ScanList() {
+        return (CScanList*)m_31c;
+    }
 };
 
 // Recompute the plane dirty rect (m_60) as {0,0,w,h} intersected with a copy.
@@ -185,24 +190,24 @@ i32 CGrunt::PathScan57db0() {
                 fn[0] = (void*)co->m_0;
                 fn[1] = (void*)co->m_4;
                 g_freeList = *fn;
-                ((CScanList*)m_31c)->Add1b4991(fn);
+                ScanList()->Add1b4991(fn);
             }
         }
         if (m_328 != 0) {
             CScanNode* nd = m_320;
             while (nd != 0) {
-                void* r = ((CScanList*)m_31c)->Find1de8((void**)&nd);
+                void* r = ScanList()->Find1de8((void**)&nd);
                 if (*(void**)r != 0) {
                     g_coordPool.Recycle163b(*(void**)r);
                 }
             }
-            ((CScanList*)m_31c)->RemoveAll1b48a6();
+            ScanList()->RemoveAll1b48a6();
         }
-        void* elem = ((CScanList*)m_31c)->Head1b4a03();
+        void* elem = ScanList()->Head1b4a03();
         if (elem != 0) {
             FREELIST_PUSH(elem);
         }
-        ((CScanList*)m_31c)->RemoveAll1b48a6();
+        ScanList()->RemoveAll1b48a6();
         SCAN_BOUNDS(grid);
         return 1;
     }

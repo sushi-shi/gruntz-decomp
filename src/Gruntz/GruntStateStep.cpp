@@ -96,13 +96,18 @@ struct CStepGrid { // this->m_c
 struct CStepGoal { // this->m_f4[] element
     i32 m_0, m_4;
 };
+// The step mgr's board (m_8): a 4x15 grunt-pointer grid at +0x1c, indexed [15*col+row].
+struct CStepBoard {
+    char _00[0x1c];
+    CStepGrunt* m_grid[60]; // +0x1c
+};
 struct CStepMgr {                                          // this (ebp)
     CStepGrunt* QueryTile4098(i32 x, i32 y, i32 a, i32 b); // 0x4098
     void Finish3e4f(CStepGrunt* g, CStepGrunt* cur);       // 0x3e4f
     i32 Method2626(CStepGrunt* g);                         // 0x2626
     char _00[0x8];
-    void* m_8;      // +0x08 board (CStepGrunt*[])
-    CStepGrid* m_c; // +0x0c grid
+    CStepBoard* m_8; // +0x08 board (CStepGrunt*[] grid at +0x1c)
+    CStepGrid* m_c;  // +0x0c grid
     char _10[0x8c - 0x10];
     i32 m_8c, m_90; // +0x8c, +0x90
     char _94[0xa0 - 0x94];
@@ -236,7 +241,7 @@ i32 CStepMgr::Step33520(CStepGrunt* g) {
     {
         i32 col = g->m_2f0;
         i32 row = g->m_2f4;
-        CStepGrunt* cur = *(CStepGrunt**)((char*)m_8 + (15 * col + row) * 4 + 0x1c);
+        CStepGrunt* cur = m_8->m_grid[15 * col + row];
         if (cur == 0) {
             // clear path
             g->m_2f0 = -1;
@@ -343,6 +348,7 @@ tail:
     return 1;
 }
 
+SIZE_UNKNOWN(CStepBoard);
 SIZE_UNKNOWN(CStepCoord);
 SIZE_UNKNOWN(CStepCoordPool);
 SIZE_UNKNOWN(CStepGoal);

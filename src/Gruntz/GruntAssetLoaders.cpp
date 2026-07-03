@@ -194,7 +194,7 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
     CAnimNameRecord* rec = g_animNameResolver.ScratchResolve(m_14->m_1c);
     GruntScratchTeardown();
     if (strcmp(rec->m_name, g_codeD) == 0) {
-        m_prevEntranceDesc = (i32)m_154->m_1b4;
+        m_prevEntranceDesc = m_154->m_1b4;
         m_154->m_1a0.SetGeometry(m_poseWalk);
         CEntranceAnimDescColl* desc = m_154->m_1b4;
         i32* elem = desc->m_10 > 0 ? *desc->m_c : 0;
@@ -208,7 +208,7 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
     CAnimNameRecord* rec2 = g_animNameResolver.ScratchResolve(m_14->m_1c);
     GruntScratchTeardown();
     if (strcmp(rec2->m_name, g_codeA) == 0) {
-        m_prevEntranceDesc = (i32)m_154->m_1b4;
+        m_prevEntranceDesc = m_154->m_1b4;
         m_154->m_1a0.SetGeometry(m_poseIdle[0]);
         CEntranceAnimDescColl* desc = m_154->m_1b4;
         i32* elem = desc->m_10 > 0 ? *desc->m_c : 0;
@@ -576,7 +576,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
     }
     m_tileMgr->CommitStruckTile(m_tileOwnerHi, m_tileOwnerLo, 1); // 0x78260
 
-    m_prevAnimSetNode = (i32)m_14->m_1c;
+    m_prevAnimSetNode = m_14->m_1c;
     m_14->m_1c = (void*)EntranceLookupAnimSet(s_dAnimKeyC);
 
     m_154->m_8 |= 1;
@@ -593,12 +593,12 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
     switch (deathType) {
         case DEATH_SQUASH: // GRUNTZ_DEATHZ_SQUASH
             if (m_entranceReason == 1) {
-                m_prevEntranceDesc = (i32)m_154->m_1b4;
+                m_prevEntranceDesc = m_154->m_1b4;
                 m_154->SetGeometryEx(m_poseDeath, 0);
                 goto pathA;
             }
             m_poseDeath = (i32)m_154->m_c->m_2c->LookupValue(s_DEATHZ_SQUASH);
-            m_prevEntranceDesc = (i32)m_154->m_1b4;
+            m_prevEntranceDesc = m_154->m_1b4;
             m_154->SetGeometryEx(m_poseDeath, 0);
             m_154->GameApplyLookupSprite(s_DEATHZ_SQUASH, DEATH_FRAME());
             DEATH_CUE(0x35b);
@@ -611,7 +611,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
 
         case DEATH_SINK: // GRUNTZ_DEATHZ_SINK
             m_poseDeath = (i32)m_154->m_c->m_2c->LookupValue(s_DEATHZ_SINK);
-            m_prevEntranceDesc = (i32)m_154->m_1b4;
+            m_prevEntranceDesc = m_154->m_1b4;
             m_154->SetGeometryEx(m_poseDeath, 0);
             m_154->GameApplyLookupSprite(s_DEATHZ_SINK, DEATH_FRAME());
             DEATH_CUE(0x35a);
@@ -621,7 +621,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
 
         case DEATH_HOLE: // GRUNTZ_DEATHZ_HOLE
             m_poseDeath = (i32)m_154->m_c->m_2c->LookupValue(s_DEATHZ_HOLE);
-            m_prevEntranceDesc = (i32)m_154->m_1b4;
+            m_prevEntranceDesc = m_154->m_1b4;
             m_154->SetGeometryEx(m_poseDeath, 0);
             m_154->GameApplyLookupSprite(s_DEATHZ_HOLE, DEATH_FRAME());
             DEATH_CUE(0x357);
@@ -629,7 +629,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
 
         case DEATH_SHATTER: // GRUNTZ_DEATHZ_SHATTER (apply FREEZE)
             m_poseDeath = (i32)m_154->m_c->m_2c->LookupValue(s_DEATHZ_SHATTER);
-            m_prevEntranceDesc = (i32)m_154->m_1b4;
+            m_prevEntranceDesc = m_154->m_1b4;
             m_154->SetGeometryEx(m_poseDeath, 0);
             m_154->GameApplyLookupSprite(s_DEATHZ_FREEZE, DEATH_FRAME());
             DEATH_CUE(0x354);
@@ -637,7 +637,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
 
         case DEATH_BURN: // GRUNTZ_DEATHZ_BURN
             m_poseDeath = (i32)m_154->m_c->m_2c->LookupValue(s_DEATHZ_BURN);
-            m_prevEntranceDesc = (i32)m_154->m_1b4;
+            m_prevEntranceDesc = m_154->m_1b4;
             m_154->SetGeometryEx(m_poseDeath, 0);
             m_154->GameApplyLookupSprite(s_DEATHZ_BURN, DEATH_FRAME());
             DEATH_CUE(0x352);
@@ -647,7 +647,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
             m_10->m_5c = (m_10->m_5c & ~0x1f) + 0x10;
             m_10->m_60 = (m_10->m_60 & ~0x1f) + 0x10;
             m_poseDeath = (i32)m_154->m_c->m_2c->LookupValue(s_DEATHZ_QUICKFALL);
-            m_prevEntranceDesc = (i32)m_154->m_1b4;
+            m_prevEntranceDesc = m_154->m_1b4;
             m_154->SetGeometryEx(m_poseDeath, 0);
             m_154->GameApplyLookupSprite(s_DEATHZ_FALL, DEATH_FRAME());
             if (m_10->m_74 != -1) {
@@ -673,7 +673,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
             } else {
                 m_poseDeath = (i32)m_154->m_c->m_2c->LookupValue(s_DEATHZ_FALL);
             }
-            m_prevEntranceDesc = (i32)m_154->m_1b4;
+            m_prevEntranceDesc = m_154->m_1b4;
             m_154->SetGeometryEx(m_poseDeath, 0);
             m_154->GameApplyLookupSprite(s_DEATHZ_FALL, DEATH_FRAME());
             DEATH_CUE(tag);
@@ -700,7 +700,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
                 m_154->m_c->m_2c->m_10map.Lookup(s_DEATHZ_FALL2, &out);
                 m_poseDeath = (i32)out;
             }
-            m_prevEntranceDesc = (i32)m_154->m_1b4;
+            m_prevEntranceDesc = m_154->m_1b4;
             m_154->SetGeometryEx(m_poseDeath, 0);
             m_154->GameApplyLookupSprite(s_DEATHZ_FALL, DEATH_FRAME());
             DEATH_CUE(tag);
@@ -713,7 +713,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
             CSprite* out = 0;
             m_154->m_c->m_2c->m_10map.Lookup(s_DEATHZ_ELECTROCUTE, &out);
             m_poseDeath = (i32)out;
-            m_prevEntranceDesc = (i32)m_154->m_1b4;
+            m_prevEntranceDesc = m_154->m_1b4;
             m_154->SetGeometryEx(m_poseDeath, 0);
             m_154->GameApplyLookupSprite(s_DEATHZ_ELECTROCUTE, DEATH_FRAME());
             DEATH_CUE(0x353);
@@ -725,7 +725,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
             CSprite* out = 0;
             m_154->m_c->m_2c->m_10map.Lookup(s_DEATHZ_MELT, &out);
             m_poseDeath = (i32)out;
-            m_prevEntranceDesc = (i32)m_154->m_1b4;
+            m_prevEntranceDesc = m_154->m_1b4;
             m_154->SetGeometryEx(m_poseDeath, 0);
             m_154->GameApplyLookupSprite(s_DEATHZ_MELT, DEATH_FRAME());
             DEATH_CUE(0x359);
@@ -736,7 +736,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
             CSprite* out = 0;
             m_154->m_c->m_2c->m_10map.Lookup(s_DEATHZ_KAROKE, &out);
             m_poseDeath = (i32)out;
-            m_prevEntranceDesc = (i32)m_154->m_1b4;
+            m_prevEntranceDesc = m_154->m_1b4;
             m_154->SetGeometryEx(m_poseDeath, 0);
             m_154->GameApplyLookupSprite(s_DEATHZ_KAROKE, DEATH_FRAME());
             DEATH_CUE(0x358);
@@ -745,14 +745,14 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
 
         case DEATH_EXPLODE: { // GRUNTZ_DEATHZ_EXPLODE
             if (m_entranceReason == 1) {
-                m_prevEntranceDesc = (i32)m_154->m_1b4;
+                m_prevEntranceDesc = m_154->m_1b4;
                 m_154->m_1a0.SetGeometry(m_poseDeath);
                 goto pathA;
             }
             CSprite* out = 0;
             m_154->m_c->m_2c->m_10map.Lookup(s_DEATHZ_EXPLODE, &out);
             m_poseDeath = (i32)out;
-            m_prevEntranceDesc = (i32)m_154->m_1b4;
+            m_prevEntranceDesc = m_154->m_1b4;
             m_154->m_1a0.SetGeometry(m_poseDeath);
             m_154->GameApplyLookupSprite(s_DEATHZ_EXPLODE, DEATH_FRAME());
             DEATH_CUE(0x354);
@@ -763,16 +763,16 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
             CSprite* out = 0;
             m_154->m_c->m_2c->m_10map.Lookup(s_EXITZ_DRAIN, &out);
             m_poseDeath = (i32)out;
-            m_prevEntranceDesc = (i32)m_154->m_1b4;
+            m_prevEntranceDesc = m_154->m_1b4;
             m_154->m_1a0.SetGeometry(m_poseDeath);
             m_154->GameApplyLookupSprite(s_dEXITZ, DEATH_FRAME());
-            m_prevAnimSetNode = (i32)m_14->m_1c;
+            m_prevAnimSetNode = m_14->m_1c;
             m_14->m_1c = (void*)EntranceLookupAnimSet(s_dExitKeyB);
             goto tail;
         }
 
         default:
-            m_prevEntranceDesc = (i32)m_154->m_1b4;
+            m_prevEntranceDesc = m_154->m_1b4;
             m_154->m_1a0.SetGeometry(m_poseDeath);
             m_154->GameApplyName(*(char**)&m_44c);
             {

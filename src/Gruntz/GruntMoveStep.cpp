@@ -60,6 +60,12 @@ struct CMoveGridDims { // mover->m_c
     i32 m_c, m_10; // +0x0c grid width, +0x10 grid height
 };
 
+// The mover's board (m_8): a 4x15 grunt-pointer grid at +0x1c, indexed [15*col+row].
+struct CMoveBoard {
+    char _00[0x1c];
+    CGruntM* m_grid[60]; // +0x1c
+};
+
 struct CGruntMover {                                              // this (edi)
     i32 Step(CGruntM* g);                                         // 0x031610
     CGruntM* QueryTile4098(i32 x, i32 y, i32 dx, i32 dy);         // 0x4098
@@ -68,7 +74,7 @@ struct CGruntMover {                                              // this (edi)
     void Finish3e4f(CGruntM* g, CGruntM* a);                      // 0x3e4f
 
     char _00[0x8];
-    void* m_8;          // +0x08  board (CGruntM*[])
+    CMoveBoard* m_8;    // +0x08  board (CGruntM*[] grid at +0x1c)
     CMoveGridDims* m_c; // +0x0c
     char _10[0x94 - 0x10];
     i32 m_94, m_98; // +0x94, +0x98
@@ -122,7 +128,7 @@ i32 CGruntMover::Step(CGruntM* g) {
         // ---- in-flight: advance / reroute along the path ----
         i32 col = g->m_2f0;
         i32 row = g->m_2f4;
-        CGruntM* cur = *(CGruntM**)((char*)m_8 + (15 * col + row) * 4 + 0x1c);
+        CGruntM* cur = m_8->m_grid[15 * col + row];
         i32 dimX3 = (i32)((u32)m_c->m_c / 3);
         i32 dimY3 = (i32)((u32)m_c->m_10 / 3);
         CCoordXY c0;
@@ -255,6 +261,7 @@ SIZE_UNKNOWN(CCoordXY);
 SIZE_UNKNOWN(CGruntM);
 SIZE_UNKNOWN(CGruntMover);
 SIZE_UNKNOWN(CGruntSub10);
+SIZE_UNKNOWN(CMoveBoard);
 SIZE_UNKNOWN(CMoveCoordPool);
 SIZE_UNKNOWN(CMoveGridDims);
 SIZE_UNKNOWN(CMoveListNode);

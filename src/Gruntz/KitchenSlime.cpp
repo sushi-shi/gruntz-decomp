@@ -127,6 +127,17 @@ public:
     CKitchenSlime(CGameObject* obj);   // 0x0b23a0 (folds CUserLogic(obj) + the slime setup)
     virtual ~CKitchenSlime() OVERRIDE; // 0x013100 (folds the CUserLogic teardown)
 
+    // The bound CGameObject (inherited m_object==m_38) viewed as the slime's typed
+    // level / anim-player data (same object, non-overlapping field windows). The one
+    // reinterpret lives here so the bodies read Level()->/Anim()-> with no cast;
+    // codegen-neutral (each call is the same `mov reg,[this+0x10]` / `+0x38`).
+    CSlimeLevel* Level() {
+        return (CSlimeLevel*)m_object;
+    }
+    CSlimeAnimPlayer* Anim() {
+        return (CSlimeAnimPlayer*)m_38;
+    }
+
     i32 m_savedGeoId; // +0x40  saved m_38->m_1b4 geometry id (before GAME_CYCLE100)
     char m_pad44[0x58 - 0x44];
     double m_speed;  // +0x58  per-frame speed (g_slimeSpeedNum / timePerTile)
@@ -305,7 +316,7 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj) : CUserLogic(obj) {
     o->m_138 = (o->m_60 >= o->m_168) ? o->m_168 : o->m_60;
     o->m_140 = (o->m_60 <= o->m_168) ? o->m_168 : o->m_60;
 
-    CSlimeCtorObj* obj38 = (CSlimeCtorObj*)m_38;
+    CSlimeAnimPlayer* obj38 = Anim();
     if (obj38->m_194 != 0) {
         CSlimeMiniStr name;
         name = (char*)obj38->m_194 + 0x24;
@@ -463,11 +474,11 @@ void CKitchenSlime::FireActivation(i32 coord) {
 // schedule. Logic byte-for-byte correct; ~95%, above the documented 60-75% range.
 RVA(0x000b2ca0, 0x29c)
 i32 CKitchenSlime::Tick() {
-    ((CSlimeAnimPlayer*)m_38)->m_1a0.Advance(g_slimeTick);
+    Anim()->m_1a0.Advance(g_slimeTick);
 
     CGameRegistry* reg = g_gameReg;
     if (reg->m_isEasyMode == 0 || reg->m_134 != 1) {
-        CSlimeLevel* lvl = (CSlimeLevel*)m_object;
+        CSlimeLevel* lvl = Level();
         i32 outX, outY;
         CSlimeEntity* ent = (CSlimeEntity*)((CSlimeCueGate*)reg->m_68)
                                 ->QueryAt(lvl->m_5c, lvl->m_60, &lvl->m_144, &outY, &outX, 0);
@@ -476,9 +487,9 @@ i32 CKitchenSlime::Tick() {
         }
     }
 
-    CSlimeLevel* lvl = (CSlimeLevel*)m_object;
+    CSlimeLevel* lvl = Level();
     if (lvl->m_5c == m_tileX && lvl->m_60 == m_tileY && LoadSprites() == 0) {
-        ((CSlimeAnimPlayer*)m_38)->m_8 |= 0x10000;
+        Anim()->m_8 |= 0x10000;
         return 0;
     }
 
@@ -516,8 +527,8 @@ i32 CKitchenSlime::Tick() {
         i32 ty = m_tileY;
         *m88d = fabs(m_posY - (double)ty);
         if (newY > ty) {
-            ((CSlimeLevel*)m_object)->m_5c = newX;
-            ((CSlimeLevel*)m_object)->m_60 = ty;
+            Level()->m_5c = newX;
+            Level()->m_60 = ty;
             return 0;
         }
     } else if (m_dirY < g_slimeZero) {
@@ -526,16 +537,16 @@ i32 CKitchenSlime::Tick() {
         i32 ty = m_tileY;
         *m88d = fabs(m_posY - (double)ty);
         if (newY < ty) {
-            ((CSlimeLevel*)m_object)->m_5c = newX;
-            ((CSlimeLevel*)m_object)->m_60 = ty;
+            Level()->m_5c = newX;
+            Level()->m_60 = ty;
             return 0;
         }
     } else {
         newY = (i32)floor(m_posY);
     }
 
-    ((CSlimeLevel*)m_object)->m_5c = newX;
-    ((CSlimeLevel*)m_object)->m_60 = newY;
+    Level()->m_5c = newX;
+    Level()->m_60 = newY;
     return 0;
 }
 
@@ -611,12 +622,12 @@ i32 CKitchenSlime::Serialize(void* stream, i32 tag, i32 c, i32 d) {
 // our 0x14 - an extra direction-magnitude stack temp). ~69%, logic exact.
 RVA(0x000b3160, 0x339)
 i32 CKitchenSlime::LoadSprites() {
-    i32 savedDir = ((CSlimeLevel*)m_object)->m_124;
+    i32 savedDir = Level()->m_124;
 
     i32 tileX, tileY;
     i32 found = 0;
     for (i32 i = 0; i <= 4;) {
-        CSlimeLevel* lvl = (CSlimeLevel*)m_object;
+        CSlimeLevel* lvl = Level();
         i32 sw = lvl->m_124 - 1;
         switch (sw) {
             case 0:
@@ -659,13 +670,13 @@ i32 CKitchenSlime::LoadSprites() {
 
         if (lvl->m_12c == 1) {
             lvl->m_124 = sw;
-            if (((CSlimeLevel*)m_object)->m_124 <= 0) {
-                ((CSlimeLevel*)m_object)->m_124 = 4;
+            if (Level()->m_124 <= 0) {
+                Level()->m_124 = 4;
             }
         } else {
             lvl->m_124++;
-            if (((CSlimeLevel*)m_object)->m_124 > 4) {
-                ((CSlimeLevel*)m_object)->m_124 = 1;
+            if (Level()->m_124 > 4) {
+                Level()->m_124 = 1;
             }
         }
     }
@@ -675,8 +686,8 @@ i32 CKitchenSlime::LoadSprites() {
 
     m_posX = 0;
     m_posY = 0;
-    i32 changed = (((CSlimeLevel*)m_object)->m_124 != savedDir);
-    switch (((CSlimeLevel*)m_object)->m_124 - 1) {
+    i32 changed = (Level()->m_124 != savedDir);
+    switch (Level()->m_124 - 1) {
         case 0: // north
             m_posY = -(double)*(i32*)&m_stepMag;
             m_dirX = 0;
@@ -685,7 +696,7 @@ i32 CKitchenSlime::LoadSprites() {
             *((i32*)&m_dirX + 1) = 0;
             *((i32*)&m_dirY + 1) = 0xbff00000;
             if (changed) {
-                ((CSlimeAnimPlayer*)m_38)->CacheFirstFrame("LEVEL_KITCHENSLIME_NORTH");
+                Anim()->CacheFirstFrame("LEVEL_KITCHENSLIME_NORTH");
             }
             break;
         case 1: // east
@@ -696,7 +707,7 @@ i32 CKitchenSlime::LoadSprites() {
             *((i32*)&m_dirX + 1) = 0x3ff00000;
             *((i32*)&m_dirY + 1) = 0;
             if (changed) {
-                ((CSlimeAnimPlayer*)m_38)->CacheFirstFrame("LEVEL_KITCHENSLIME_EAST");
+                Anim()->CacheFirstFrame("LEVEL_KITCHENSLIME_EAST");
             }
             break;
         case 2: // south
@@ -707,7 +718,7 @@ i32 CKitchenSlime::LoadSprites() {
             *((i32*)&m_dirY + 1) = 0x3ff00000;
             *((i32*)&m_dirX + 1) = 0;
             if (changed) {
-                ((CSlimeAnimPlayer*)m_38)->CacheFirstFrame("LEVEL_KITCHENSLIME_SOUTH");
+                Anim()->CacheFirstFrame("LEVEL_KITCHENSLIME_SOUTH");
             }
             break;
         case 3: // west
@@ -717,17 +728,17 @@ i32 CKitchenSlime::LoadSprites() {
             *((i32*)&m_dirX + 1) = 0xbff00000;
             *((i32*)&m_dirY + 1) = 0;
             if (changed) {
-                ((CSlimeAnimPlayer*)m_38)->CacheFirstFrame("LEVEL_KITCHENSLIME_WEST");
+                Anim()->CacheFirstFrame("LEVEL_KITCHENSLIME_WEST");
             }
             break;
     }
 
-    m_posX = (double)((CSlimeLevel*)m_object)->m_5c + m_posX;
-    m_posY = (double)((CSlimeLevel*)m_object)->m_60 + m_posY;
+    m_posX = (double)Level()->m_5c + m_posX;
+    m_posY = (double)Level()->m_60 + m_posY;
 
     u32 time;
-    if (((CSlimeLevel*)m_object)->m_7c->m_bc != 0) {
-        time = ((CSlimeLevel*)m_object)->m_7c->m_bc;
+    if (Level()->m_7c->m_bc != 0) {
+        time = Level()->m_7c->m_bc;
     } else {
         time = g_buteMgr.GetDwordDef("Hazardz", "KitchenSlimeTimePerTile", 1000);
     }
@@ -736,7 +747,7 @@ i32 CKitchenSlime::LoadSprites() {
     m_tileX = tileX;
     m_tileY = tileY;
 
-    CSlimeAnimPlayer* player = (CSlimeAnimPlayer*)m_38;
+    CSlimeAnimPlayer* player = Anim();
     CSprite* spr = player->m_194;
     if (changed != 0 && spr != 0) {
         if (spr->m_64 <= 1 && spr->m_68 >= 1) {

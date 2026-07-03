@@ -219,10 +219,10 @@ i32 CGrunt::ResolveMovingAnimation() {
 
     m_38->SetAnim(s_GRUNTZ_ + TypeName() + s__MOVING);
 
-    m_activeAnimDesc = (i32)m_38->m_1b4;
+    m_activeAnimDesc = m_38->m_1b4;
     m_38->m_1a0.SetGeometry(m_movingGeoSrc);
 
-    m_prevAnimSetNode = (i32)m_14->m_1c;
+    m_prevAnimSetNode = m_14->m_1c;
     m_14->m_1c = g_animLookupTree.Find(s_keyB);
 
     m_moveStartTime = (GruntRand() % 0x5dc1 + 0x1770) * 10;
@@ -256,12 +256,12 @@ i32 CGrunt::ResolveDeathAnimation() {
         g->m_cueSink->Cue(m_10->m_188, m_deathCueArg, -1, -1, -1);
     }
 
-    m_activeAnimDesc = (i32)m_38->m_1b4;
+    m_activeAnimDesc = m_38->m_1b4;
     m_38->m_1a0.SetGeometry(m_deathGeoSrc);
 
     m_38->SetAnim(s_GRUNTZ_ + TypeName() + s__DEATH);
 
-    m_prevAnimSetNode = (i32)m_14->m_1c;
+    m_prevAnimSetNode = m_14->m_1c;
     m_14->m_1c = g_animLookupTree.Find(s_keyC);
     return 1;
 }
@@ -289,12 +289,12 @@ i32 CGrunt::ResolveAnimation() {
         g->m_cueSink->Cue(m_10->m_188, 0x43f, -1, -1, -1);
     }
 
-    m_activeAnimDesc = (i32)m_38->m_1b4;
+    m_activeAnimDesc = m_38->m_1b4;
     m_38->m_1a0.SetGeometry(m_joyGeoSrc);
 
     m_38->SetAnim(s_GRUNTZ_ + TypeName() + s__JOY);
 
-    m_prevAnimSetNode = (i32)m_14->m_1c;
+    m_prevAnimSetNode = m_14->m_1c;
     m_14->m_1c = g_animLookupTree.Find(s_keyE);
     return 1;
 }
@@ -326,7 +326,7 @@ i32 CGrunt::ResolveIdleAnimation() {
         g->m_cueSink->Cue(m_10->m_188, idx + 0x43b, -1, -1, -1);
     }
 
-    m_activeAnimDesc = (i32)m_38->m_1b4;
+    m_activeAnimDesc = m_38->m_1b4;
     m_38->m_1a0.SetGeometry(m_idleGeoSrc[idx]);
 
     CAnimDescColl* desc = m_38->m_1b4;
@@ -335,7 +335,7 @@ i32 CGrunt::ResolveIdleAnimation() {
 
     m_38->SetAnimEx(s_GRUNTZ_ + TypeName() + s__IDLE, frame);
 
-    m_prevAnimSetNode = (i32)m_14->m_1c;
+    m_prevAnimSetNode = m_14->m_1c;
     m_14->m_1c = g_animLookupTree.Find(s_keyA);
     return 1;
 }
@@ -366,12 +366,12 @@ i32 CGrunt::ResolveBattlecryAnimation() {
         g->m_cueSink->Cue(m_10->m_188, idx + 0x438, -1, -1, -1);
     }
 
-    m_activeAnimDesc = (i32)m_38->m_1b4;
+    m_activeAnimDesc = m_38->m_1b4;
     m_38->m_1a0.SetGeometry(m_battlecryGeoSrc[idx]);
 
     m_38->SetAnim(s_GRUNTZ_ + TypeName() + s__BATTLECRY);
 
-    m_prevAnimSetNode = (i32)m_14->m_1c;
+    m_prevAnimSetNode = m_14->m_1c;
     m_14->m_1c = g_animLookupTree.Find(s_keyF);
     return 1;
 }
@@ -468,11 +468,11 @@ i32 CGrunt::CreateToyTimeSprite() {
     }
 
     if (m_staminaSprite) {
-        ((CSpriteRegRecord*)m_staminaSprite)->m_8 |= 0x10000;
+        m_staminaSprite->m_8 |= 0x10000;
         m_staminaSprite = 0;
     }
     if (m_wingzTimeSprite) {
-        ((CSpriteRegRecord*)m_wingzTimeSprite)->m_8 |= 0x10000;
+        m_wingzTimeSprite->m_8 |= 0x10000;
         m_wingzTimeSprite = 0;
     }
 
@@ -508,7 +508,7 @@ i32 CGrunt::CreateWingzTimeSprite() {
     }
 
     if (m_toyTimeSprite) {
-        ((CSpriteRegRecord*)m_toyTimeSprite)->m_8 |= 0x10000;
+        m_toyTimeSprite->m_8 |= 0x10000;
         m_toyTimeSprite = 0;
     }
 
@@ -1032,7 +1032,7 @@ void CGrunt::Stub_062e10(i32 apply, i32 cycle, i32 cue) {
 
     if (notIdle && cycle == 0) {
         // Re-anchor the idle timer to a randomized IdleDelay window.
-        m_prevEntranceDesc = (i32)m_154->m_1b4;
+        m_prevEntranceDesc = m_154->m_1b4;
         m_154->m_1a0.SetGeometry(m_poseIdle[0]);
         m_idleWindowLo = 0x3a98;
         m_idleWindowHi = 0;
@@ -1046,14 +1046,14 @@ void CGrunt::Stub_062e10(i32 apply, i32 cycle, i32 cue) {
         applied = 1;
     } else if (m_poseIdle[1] == 0) {
         // Single geometry source: re-arm it (no flag set).
-        m_prevEntranceDesc = (i32)m_154->m_1b4;
+        m_prevEntranceDesc = m_154->m_1b4;
         m_154->m_1a0.SetGeometry(m_poseIdle[0]);
     } else if (cycle == 0) {
         // Already on this source? nothing to do.
         if ((void*)m_154->m_1b4 == (void*)m_poseIdle[0]) {
             goto latch;
         }
-        m_prevEntranceDesc = (i32)m_154->m_1b4;
+        m_prevEntranceDesc = m_154->m_1b4;
         m_154->m_1a0.SetGeometry(m_poseIdle[0]);
         {
             i32 d = (i32)g_buteMgr.GetDwordDef(s_Grunt, s_IdleDelay, 0x7530);
@@ -1087,14 +1087,14 @@ void CGrunt::Stub_062e10(i32 apply, i32 cycle, i32 cue) {
                 }
             }
         }
-        m_prevEntranceDesc = (i32)m_154->m_1b4;
+        m_prevEntranceDesc = m_154->m_1b4;
         m_154->m_1a0.SetGeometry(m_poseIdle[idx]);
         m_resetApplied = 1;
         applied = 1;
     }
 
 latch:
-    m_prevAnimSetNode = (i32)m_14->m_1c;
+    m_prevAnimSetNode = m_14->m_1c;
     m_14->m_1c = (void*)EntranceLookupAnimSet(s_animKeyA);
 
     if (!applied && apply == 0) {
@@ -1302,9 +1302,9 @@ i32 CGrunt::StepEntranceReinit() {
     }
     i32* cell;
     if (!(flag & 0x20000000)) {
-        m_prevAnimSetNode = (i32)m_14->m_1c;
+        m_prevAnimSetNode = m_14->m_1c;
         m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeD);
-        m_prevEntranceDesc = (i32)m_154->m_1b4;
+        m_prevEntranceDesc = m_154->m_1b4;
         m_154->m_1a0.SetGeometry(m_poseWalk);
         cell = m_entranceCell;
     } else {
@@ -1321,9 +1321,9 @@ i32 CGrunt::StepEntranceReinit() {
             return 0;
         }
         m_entranceActive = 1;
-        m_prevAnimSetNode = (i32)m_14->m_1c;
+        m_prevAnimSetNode = m_14->m_1c;
         m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeD);
-        m_prevEntranceDesc = (i32)m_154->m_1b4;
+        m_prevEntranceDesc = m_154->m_1b4;
         m_154->m_1a0.SetGeometry(m_poseWalk);
         cell = m_entranceCell;
     }
@@ -1359,7 +1359,7 @@ i32 CGrunt::RunEntranceMove() {
     }
 
     m_entranceActive = 0;
-    char* nm0 = g_animNameResolver.GetNameRecords((void*)m_prevAnimSetNode)->m_name;
+    char* nm0 = g_animNameResolver.GetNameRecords(m_prevAnimSetNode)->m_name;
     GruntScratchTeardown();
     bool eq;
     eq = (strcmp(nm0, g_codeD) == 0);
@@ -1372,9 +1372,9 @@ i32 CGrunt::RunEntranceMove() {
             ReseedIdleReset(1, 0, 0);
         }
         m_35c = 0;
-        m_prevAnimSetNode = (i32)m_14->m_1c;
+        m_prevAnimSetNode = m_14->m_1c;
         m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeD);
-        m_prevEntranceDesc = (i32)m_154->m_1b4;
+        m_prevEntranceDesc = m_154->m_1b4;
         m_154->m_1a0.SetGeometry(m_poseWalk);
         i32* cell = m_entranceCell;
         i32 col = cell[1] + cell[0] * 2;
@@ -1451,7 +1451,7 @@ static const char s_GRUNTZ_BIGWHEELGRUNT[] = "GRUNTZ_BIGWHEELGRUNT_BIGWHEELGRUNT
 
 RVA(0x00067bd0, 0x2ef)
 void CGrunt::BuildEntranceAnimation(i32 mode) {
-    m_prevAnimSetNode = (i32)m_14->m_1c;
+    m_prevAnimSetNode = m_14->m_1c;
     m_14->m_1c = (void*)EntranceLookupAnimSet(s_animKeyK);
 
     m_entranceArmed = 1;
@@ -1532,7 +1532,7 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
     if (!found) {
         Stub_062e10(1, 0, 0);
     } else {
-        m_prevEntranceDesc = (i32)m_154->m_1b4;
+        m_prevEntranceDesc = m_154->m_1b4;
         m_154->m_1a0.SetGeometry((i32)found);
         CEntranceAnimDescColl* desc = m_154->m_1b4;
         i32* elem = desc->m_10 > 0 ? *desc->m_c : 0;
@@ -1918,7 +1918,7 @@ i32 CGrunt::LoadGruntMovingDeathConfig() {
 #undef MV_SE
 #undef MV_SW
 
-    m_prevAnimSetNode = (i32)m_14->m_1c;
+    m_prevAnimSetNode = m_14->m_1c;
     m_14->m_1c = (void*)g_entranceAnimSrc.LookupAnimSet(s_animKeyS);
     return 1;
 }
@@ -2094,7 +2094,7 @@ void CGrunt::PlaySound(i32 range, CGruntVoiceRec rec) {
     if (eq) {
         // code "E": drive the ATTACK-IDLE geometry, stamp the cell frame from the
         // latched m_entranceCell triple (cell table base 0x468).
-        m_prevEntranceDesc = (i32)m_154->m_1b4;
+        m_prevEntranceDesc = m_154->m_1b4;
         m_154->m_1a0.SetGeometry(m_poseAttackIdle);
         {
             CEntranceAnimDescColl* desc = m_154->m_1b4;
@@ -2123,7 +2123,7 @@ codeI:
     m_entranceCell[0] = rec.m_0;
     m_entranceCell[1] = rec.m_4;
     m_entranceCell[2] = rec.m_8;
-    m_prevEntranceDesc = (i32)m_154->m_1b4;
+    m_prevEntranceDesc = m_154->m_1b4;
     m_154->m_1a0.SetGeometry(m_poseIdle[1]);
     ReseedIdleReset(1, 0, 0);
     return;
@@ -2131,7 +2131,7 @@ codeI:
 idle:
     // codes "A"/"K": drive the IDLE1 geometry (the forwarding setter), stamp the
     // cell frame from the incoming record (cell table base 0x474).
-    m_prevEntranceDesc = (i32)m_154->m_1b4;
+    m_prevEntranceDesc = m_154->m_1b4;
     m_154->SetGeometryEx(m_poseIdle[0], 0);
     {
         CEntranceAnimDescColl* desc = m_154->m_1b4;
@@ -2148,7 +2148,7 @@ idle:
 walk:
     // codes "D"/"M" (and the default): drive the WALK geometry, stamp the cell name
     // from the incoming record (cell table base 0x470), set it by name only.
-    m_prevEntranceDesc = (i32)m_154->m_1b4;
+    m_prevEntranceDesc = m_154->m_1b4;
     m_154->m_1a0.SetGeometry(m_poseWalk);
     {
         i32 col = rec.m_0;
@@ -2171,28 +2171,28 @@ store:
 RVA(0x0004b240, 0xaa)
 void CGrunt::ClearAllSprites() {
     if (m_selectedSprite) {
-        ((CSpriteRegRecord*)m_selectedSprite)->m_8 |= 0x10000;
+        m_selectedSprite->m_8 |= 0x10000;
         m_selectedSprite = 0;
     }
     if (m_healthSprite) {
-        ((CSpriteRegRecord*)m_healthSprite)->m_8 |= 0x10000;
+        m_healthSprite->m_8 |= 0x10000;
         m_healthSprite = 0;
     }
     if (m_toySprite) {
-        ((CSpriteRegRecord*)m_toySprite)->m_8 |= 0x10000;
+        m_toySprite->m_8 |= 0x10000;
         m_toySprite = 0;
     }
     if (m_entranceCommitted == 0) {
         if (m_staminaSprite) {
-            ((CSpriteRegRecord*)m_staminaSprite)->m_8 |= 0x10000;
+            m_staminaSprite->m_8 |= 0x10000;
             m_staminaSprite = 0;
         }
         if (m_toyTimeSprite) {
-            ((CSpriteRegRecord*)m_toyTimeSprite)->m_8 |= 0x10000;
+            m_toyTimeSprite->m_8 |= 0x10000;
             m_toyTimeSprite = 0;
         }
         if (m_wingzTimeSprite) {
-            ((CSpriteRegRecord*)m_wingzTimeSprite)->m_8 |= 0x10000;
+            m_wingzTimeSprite->m_8 |= 0x10000;
             m_wingzTimeSprite = 0;
         }
     }
@@ -4094,7 +4094,7 @@ i32 CGrunt::Load(CGruntArchive* ar) {
 // node (g_entranceAnimSrc.LookupAnimSet) into m_14->m_1c. __thiscall, ret 0.
 RVA(0x000616e0, 0xa8)
 i32 CGrunt::ResetGeometry() {
-    m_prevEntranceDesc = (i32)m_154->m_1b4;
+    m_prevEntranceDesc = m_154->m_1b4;
     m_154->m_1a0.SetGeometry(m_poseAttackIdle);
 
     CEntranceAnimDescColl* desc = m_154->m_1b4;
@@ -4107,7 +4107,7 @@ i32 CGrunt::ResetGeometry() {
     const char* name = ((CGruntCell*)&m_cells[index])->GetName(0);
     m_154->SetAnimFrame(name, frame);
 
-    m_prevAnimSetNode = (i32)m_14->m_1c;
+    m_prevAnimSetNode = m_14->m_1c;
     m_14->m_1c = (void*)EntranceLookupAnimSet(s_animKeyA);
     return 0;
 }
@@ -4207,7 +4207,7 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
             }
             SnapToLastTile(1);
             if (redo) {
-                m_prevAnimSetNode = (i32)m_14->m_1c;
+                m_prevAnimSetNode = m_14->m_1c;
                 m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeD);
                 OnCoordCommit(m_coordToggle);
             }
@@ -4296,7 +4296,7 @@ void CGrunt::RearmEntranceDrop() {
 
     if (*(i32*)((char*)m_154 + 0x1a0 + 0x28) != 0 && *(i32*)((char*)m_154 + 0x1a0 + 0x20) == 0) {
         m_22c = 0;
-        m_prevEntranceDesc = (i32)m_154->m_1b4;
+        m_prevEntranceDesc = m_154->m_1b4;
         m_154->m_1a0.SetGeometry(m_poseItem2);
 
         CEntranceAnimDescColl* desc = m_154->m_1b4;
@@ -4391,7 +4391,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
     m_entranceActive = 1;
     m_tileMgr->CommitStruckTile(m_tileOwnerHi, m_tileOwnerLo, 1);
 
-    m_prevAnimSetNode = (i32)m_14->m_1c;
+    m_prevAnimSetNode = m_14->m_1c;
     m_14->m_1c = (void*)EntranceLookupAnimSet(s_exitKeyB);
 
     CSprite* found;
@@ -4454,7 +4454,7 @@ void CGrunt::LoadVehicleGruntAnimations() {
             CreateStaminaSprite();
             CreateToySprite();
         }
-        m_prevAnimSetNode = (i32)m_14->m_1c;
+        m_prevAnimSetNode = m_14->m_1c;
         m_14->m_1c = (void*)EntranceLookupAnimSet(s_animKeyA);
         LoadGruntTypeTable(m_19c, 1, 0, 0);
         m_entranceActive = 0;
@@ -4484,7 +4484,7 @@ void CGrunt::LoadVehicleGruntAnimations() {
             }
             SetEntrancePos(1, 1);
             m_entranceStamped = 1;
-            m_prevEntranceDesc = (i32)m_154->m_1b4;
+            m_prevEntranceDesc = m_154->m_1b4;
             m_154->SetGeometryEx(m_poseToyBreak, 0);
 
             CEntranceAnimDescColl* desc = m_154->m_1b4;
@@ -4588,7 +4588,7 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
     }
 
     if (m_entranceReason == 1) {
-        m_prevAnimSetNode = (i32)m_14->m_1c;
+        m_prevAnimSetNode = m_14->m_1c;
         m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeM);
         m_10->m_40 &= ~8;
         m_timePerTile = g_buteMgr.GetDwordDef(s_BOMBGRUNT, s_RunningTimePerTile, 0x64);
@@ -4597,7 +4597,7 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
         SetEntrancePos(1, 1);
     } else if (m_entranceReason == 0x12) {
         m_entranceActive = 1;
-        m_prevAnimSetNode = (i32)m_14->m_1c;
+        m_prevAnimSetNode = m_14->m_1c;
         m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeN);
         m_coordToggle = (m_coordToggle == 0);
     } else if (m_entranceReason == 0x13) {
@@ -4627,17 +4627,17 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
             g->m_cueSink->CueA(this, cueId, -1, 0, -1, -1);
         }
 
-        m_prevAnimSetNode = (i32)m_14->m_1c;
+        m_prevAnimSetNode = m_14->m_1c;
         m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeI);
         m_entranceActive = 1;
         SetEntrancePos(1, 1);
     } else {
-        m_prevAnimSetNode = (i32)m_14->m_1c;
+        m_prevAnimSetNode = m_14->m_1c;
         m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeI);
         SetEntrancePos(1, 1);
     }
 
-    m_prevEntranceDesc = (i32)m_154->m_1b4;
+    m_prevEntranceDesc = m_154->m_1b4;
     m_154->m_1a0.SetGeometry((&m_poseItem)[poseIdx]);
 
     i32 col = m_entranceCell[0];
@@ -4679,7 +4679,7 @@ i32 CGrunt::UpdateEntranceAnim() {
     }
 
     if (m_entranceStamped == 0) {
-        m_prevEntranceDesc = (i32)m_154->m_1b4;
+        m_prevEntranceDesc = m_154->m_1b4;
         m_154->m_1a0.SetGeometry(m_poseToyBreak);
 
         CEntranceAnimDescColl* desc = m_154->m_1b4;
@@ -4705,7 +4705,7 @@ i32 CGrunt::UpdateEntranceAnim() {
         CreateToySprite();
     }
 
-    m_prevAnimSetNode = (i32)m_14->m_1c;
+    m_prevAnimSetNode = m_14->m_1c;
     m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeA);
     SetMoveStateA(m_19c, 1, 0, 0);
     m_entranceActive = 0;
@@ -4817,7 +4817,7 @@ i32 CGrunt::StepArrivalCommit() {
         // code "J": clear the entrance gate; if the PREVIOUS anim set was "D",
         // re-latch a fresh "D" set + drive the WALK geometry + stamp the cell frame.
         m_entranceActive = 0;
-        eq = (strcmp(*g_animNameResolver.GetNameRecord((void*)m_prevAnimSetNode), g_codeD) == 0);
+        eq = (strcmp(*g_animNameResolver.GetNameRecord(m_prevAnimSetNode), g_codeD) == 0);
         if (eq) {
             if (m_poweredUp == 0 && m_neighborValid == 0) {
                 m_entranceActive = 0;
@@ -4827,9 +4827,9 @@ i32 CGrunt::StepArrivalCommit() {
                 Stub_062e10(1, 0, 0);
             }
             m_35c = 0;
-            m_prevAnimSetNode = (i32)m_14->m_1c;
+            m_prevAnimSetNode = m_14->m_1c;
             m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeD);
-            m_prevEntranceDesc = (i32)m_154->m_1b4;
+            m_prevEntranceDesc = m_154->m_1b4;
             m_154->m_1a0.SetGeometry(m_poseWalk);
             i32* cell = m_entranceCell;
             i32 base = 3 * cell[0] + cell[1];
@@ -4855,7 +4855,7 @@ i32 CGrunt::StepArrivalCommit() {
         }
         SnapToLastTile(1);
         if (redo) {
-            m_prevAnimSetNode = (i32)m_14->m_1c;
+            m_prevAnimSetNode = m_14->m_1c;
             m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeD);
             OnCoordCommit(m_coordToggle);
         }
@@ -4885,7 +4885,7 @@ idleReseed:
         }
     }
     if (m_toyTimeSprite != 0) {
-        ((CSpriteRegRecord*)m_toyTimeSprite)->m_8 |= 0x10000;
+        m_toyTimeSprite->m_8 |= 0x10000;
         m_toyTimeSprite = 0;
     }
     m_toyTime = 0;
@@ -4945,7 +4945,7 @@ finalize:
     }
     m_entranceActive = 1;
     m_tileMgr->CommitStruckTile(m_tileOwnerHi, m_tileOwnerLo, 1);
-    m_prevAnimSetNode = (i32)m_14->m_1c;
+    m_prevAnimSetNode = m_14->m_1c;
     m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeQ);
     {
         i32 z = m_10->m_60 + 0x186a0;
@@ -4954,7 +4954,7 @@ finalize:
             m_10->m_8 |= 0x20000;
         }
     }
-    m_prevEntranceDesc = (i32)m_154->m_1b4;
+    m_prevEntranceDesc = m_154->m_1b4;
     m_154->ApplyLookupGeometry(s_GRUNTZ_DEATHZ_FREEZE, 0);
     {
         CEntranceAnimDescColl* desc = m_154->m_1b4;
@@ -5292,9 +5292,9 @@ i32 CGrunt::StepAnimDispatchA(i32 x, i32 y, i32 c, i32 d) {
             ReseedIdleReset(1, 0, 0);
         }
         m_35c = 0;
-        m_prevAnimSetNode = (i32)m_14->m_1c;
+        m_prevAnimSetNode = m_14->m_1c;
         m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeD);
-        m_prevEntranceDesc = (i32)m_154->m_1b4;
+        m_prevEntranceDesc = m_154->m_1b4;
         m_154->m_1a0.SetGeometry(m_poseWalk);
         // Stamp the first entrance-cell frame from the m_474 cell table.
         i32* cell = m_entranceCell;
@@ -5323,7 +5323,7 @@ idleReseed:
         }
     }
     if (m_toyTimeSprite != 0) {
-        ((CSpriteRegRecord*)m_toyTimeSprite)->m_8 |= 0x10000;
+        m_toyTimeSprite->m_8 |= 0x10000;
         m_toyTimeSprite = 0;
     }
     m_toyTime = 0;
@@ -5479,9 +5479,9 @@ i32 CGrunt::StepAnimDispatchB() {
             ReseedIdleReset(1, 0, 0);
         }
         m_35c = 0;
-        m_prevAnimSetNode = (i32)m_14->m_1c;
+        m_prevAnimSetNode = m_14->m_1c;
         m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeD);
-        m_prevEntranceDesc = (i32)m_154->m_1b4;
+        m_prevEntranceDesc = m_154->m_1b4;
         m_154->m_1a0.SetGeometry(m_poseWalk);
         i32* cell = m_entranceCell;
         i32 col = cell[1] + cell[0] * 2;
@@ -5869,10 +5869,10 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
         }
 
         if (m_entranceReason == 0x1e) {
-            m_prevAnimSetNode = (i32)m_14->m_1c;
+            m_prevAnimSetNode = m_14->m_1c;
             m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeP);
             i32 toyIdx = rand() % 2;
-            m_prevEntranceDesc = (i32)m_154->m_1b4;
+            m_prevEntranceDesc = m_154->m_1b4;
             m_154->SetGeometryEx((&m_poseToy1)[toyIdx], 0);
 
             CEntranceAnimDescColl* desc = m_154->m_1b4;
@@ -5923,9 +5923,9 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
             m_poweredUp = 0;
             ReseedIdleReset(1, 0, 0);
         }
-        m_prevAnimSetNode = (i32)m_14->m_1c;
+        m_prevAnimSetNode = m_14->m_1c;
         m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeL);
-        m_prevEntranceDesc = (i32)m_154->m_1b4;
+        m_prevEntranceDesc = m_154->m_1b4;
         m_154->m_1a0.SetGeometry(m_poseWalk);
         i32* cell = m_entranceCell;
         i32 colv = cell[1] + cell[0] * 2;
@@ -5943,7 +5943,7 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
     }
 
     // a1 == 0: the "G" re-latch + HUD z-clamp + toy-timer pose select + visible-bounds cue.
-    m_prevAnimSetNode = (i32)m_14->m_1c;
+    m_prevAnimSetNode = m_14->m_1c;
     m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeG);
 
     CGruntHud* h = m_10;
@@ -5977,7 +5977,7 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
     CEntranceAnimDescColl* cur = m_154->m_1b4;
     i32 want = (&m_poseToy1)[sel];
     if ((i32)cur != want) {
-        m_prevEntranceDesc = (i32)m_154->m_1b4;
+        m_prevEntranceDesc = m_154->m_1b4;
         m_154->m_1a0.SetGeometry(want);
         CEntranceAnimDescColl* desc = m_154->m_1b4;
         i32* el = desc->m_10 > 0 ? *desc->m_c : 0;
@@ -6086,7 +6086,7 @@ i32 CGrunt::RearmAttackAnim(i32 col, i32 row) {
 
     m_neighborCol = col;
     m_neighborRow = row;
-    m_prevAnimSetNode = (i32)m_14->m_1c;
+    m_prevAnimSetNode = m_14->m_1c;
     m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeF);
 
     m_combatActive = 1;
@@ -6141,7 +6141,7 @@ i32 CGrunt::RearmAttackAnim(i32 col, i32 row) {
     }
 
     CEntranceAnimPlayer* p = m_154;
-    m_prevEntranceDesc = (i32)p->m_1b4;
+    m_prevEntranceDesc = p->m_1b4;
     p->m_1a0.SetGeometry((&m_poseAttack1)[idx]);
 
     CEntranceAnimDescColl* desc = m_154->m_1b4;
@@ -6173,11 +6173,11 @@ i32 CGrunt::RearmAttackAnim(i32 col, i32 row) {
 // the cell-base register; source-invariant. Deferred to the final sweep.
 RVA(0x00061bc0, 0xb2)
 i32 CGrunt::RearmAttackAnim2() {
-    m_prevAnimSetNode = (i32)m_14->m_1c;
+    m_prevAnimSetNode = m_14->m_1c;
     m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeF);
 
     CEntranceAnimPlayer* p = m_154;
-    m_prevEntranceDesc = (i32)p->m_1b4;
+    m_prevEntranceDesc = p->m_1b4;
     p->m_1a0.SetGeometry(m_poseAttack2);
 
     CEntranceAnimDescColl* desc = m_154->m_1b4;
@@ -6328,7 +6328,7 @@ i32 CGrunt::LoadFreezeSpellAssets() {
             }
             return 0;
         }
-        m_prevEntranceDesc = (i32)m_154->m_1b4;
+        m_prevEntranceDesc = m_154->m_1b4;
         m_154->GameApplyLookupGeometry(s_GRUNTZ_DEATHZ_SPARKLE, 0);
         m_idleDelayLo = g_buteMgr.GetIntDef(s_Spellz, s_FreezeDelay, 0x2710);
         m_idleDelayHi = 0;
@@ -6338,7 +6338,7 @@ i32 CGrunt::LoadFreezeSpellAssets() {
     }
     if (m_freezeDelayDone == 0) {
         if ((i64)(u32)g_645588 - *(i64*)&m_idleAnchorLo >= *(i64*)&m_idleDelayLo) {
-            m_prevEntranceDesc = (i32)m_154->m_1b4;
+            m_prevEntranceDesc = m_154->m_1b4;
             m_154->GameApplyLookupGeometry(s_GRUNTZ_DEATHZ_UNFREEZE, 0);
             CGruntHud* h = m_10;
             i32 vx = h->m_5c;
@@ -6449,7 +6449,7 @@ i32 CGrunt::StepCombatReaction(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i
     }
     if (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeJ) == 0) {
         m_entranceActive = 0;
-        if (strcmp(*g_animNameResolver.GetNameRecord((void*)m_prevAnimSetNode), g_codeD) == 0) {
+        if (strcmp(*g_animNameResolver.GetNameRecord(m_prevAnimSetNode), g_codeD) == 0) {
             if (m_poweredUp != 0 && m_neighborValid == 0) {
                 m_entranceActive = 0;
                 m_combatActive = 0;
@@ -6458,9 +6458,9 @@ i32 CGrunt::StepCombatReaction(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i
                 ReseedIdleReset(1, 0, 0);
             }
             m_35c = 0;
-            m_prevAnimSetNode = (i32)m_14->m_1c;
+            m_prevAnimSetNode = m_14->m_1c;
             m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeD);
-            m_prevEntranceDesc = (i32)m_154->m_1b4;
+            m_prevEntranceDesc = m_154->m_1b4;
             m_154->m_1a0.SetGeometry(m_poseWalk);
             i32* cell = m_entranceCell;
             i32 col = cell[1] + cell[0] * 2;
@@ -6501,7 +6501,7 @@ i32 CGrunt::StepCombatReaction(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i
         }
         ApplySetState1(1);
         if (flag != 0) {
-            m_prevAnimSetNode = (i32)m_14->m_1c;
+            m_prevAnimSetNode = m_14->m_1c;
             m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeD);
             OnCoordCommit(m_coordToggle);
         }
@@ -6555,7 +6555,7 @@ tail:
         CAnimNameRecord* rec = g_animNameResolver.GetNameRecords(m_14->m_1c);
         GruntScratchTeardown();
         if (strcmp(rec->m_name, g_codeO) != 0) {
-            m_prevAnimSetNode = (i32)m_14->m_1c;
+            m_prevAnimSetNode = m_14->m_1c;
             m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeH);
             void* cellObj = m_tileMgr->m_grid[a2][a3];
             if (cellObj != 0) {
@@ -6574,7 +6574,7 @@ tail:
 
     m_combatActive = 0;
     i32 pose = (&m_poseStruck1)[a1];
-    m_prevEntranceDesc = (i32)m_154->m_1b4;
+    m_prevEntranceDesc = m_154->m_1b4;
     m_154->m_1a0.SetGeometry(pose);
     i32 frame;
     {
@@ -7206,31 +7206,31 @@ RVA(0x00068520, 0x2a2)
 i32 CGrunt::StartBombGruntRun() {
     StepAnimDispatchB();
     if (m_healthSprite != 0) {
-        ((CSpriteRegRecord*)m_healthSprite)->m_8 |= 0x10000;
+        m_healthSprite->m_8 |= 0x10000;
         m_healthSprite = 0;
     }
     if (m_staminaSprite != 0) {
-        ((CSpriteRegRecord*)m_staminaSprite)->m_8 |= 0x10000;
+        m_staminaSprite->m_8 |= 0x10000;
         m_staminaSprite = 0;
     }
     if (m_toySprite != 0) {
-        ((CSpriteRegRecord*)m_toySprite)->m_8 |= 0x10000;
+        m_toySprite->m_8 |= 0x10000;
         m_toySprite = 0;
     }
     if (m_toyTimeSprite != 0) {
-        ((CSpriteRegRecord*)m_toyTimeSprite)->m_8 |= 0x10000;
+        m_toyTimeSprite->m_8 |= 0x10000;
         m_toyTimeSprite = 0;
     }
     if (m_wingzTimeSprite != 0) {
-        ((CSpriteRegRecord*)m_wingzTimeSprite)->m_8 |= 0x10000;
+        m_wingzTimeSprite->m_8 |= 0x10000;
         m_wingzTimeSprite = 0;
     }
     if (m_powerupSprite != 0) {
-        ((CSpriteRegRecord*)m_powerupSprite)->m_8 |= 0x10000;
+        m_powerupSprite->m_8 |= 0x10000;
         m_powerupSprite = 0;
     }
     if (m_selectedSprite != 0) {
-        ((CSpriteRegRecord*)m_selectedSprite)->m_8 |= 0x10000;
+        m_selectedSprite->m_8 |= 0x10000;
         m_selectedSprite = 0;
     }
     m_gruntKind = 0;
@@ -7263,7 +7263,7 @@ i32 CGrunt::StartBombGruntRun() {
     PlayMoveSoundAtTile(dx, dy);
     m_moveTileX = dx;
     m_moveTileY = dy;
-    m_prevAnimSetNode = (i32)m_14->m_1c;
+    m_prevAnimSetNode = m_14->m_1c;
     m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeM);
     m_timePerTile = g_buteMgr.GetIntDef(s_BOMBGRUNT, s_RunningTimePerTile, 0x64);
     m_22c = 1;
@@ -7277,7 +7277,7 @@ i32 CGrunt::StartBombGruntRun() {
             g_gameReg->m_cueSink->CueSpawn(this, 8, -1, -1, -1);
         }
     }
-    m_prevEntranceDesc = (i32)m_154->m_1b4;
+    m_prevEntranceDesc = m_154->m_1b4;
     m_154->m_1a0.SetGeometry(m_poseItem);
     i32 col = m_entranceCell[1] + m_entranceCell[0] * 2;
     i32 base = m_entranceCell[0] + col + 0xb;

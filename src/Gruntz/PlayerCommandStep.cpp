@@ -16,6 +16,12 @@
 #define F(base, o) (*(i32*)((char*)(base) + (o)))
 #define P(base, o) (*(char**)((char*)(base) + (o)))
 
+// .rodata string literals (were bare (char*)0xADDR immediates; named so the operand
+// relocates like retail's `push offset` instead of an unrelocated `push imm32`).
+static const char s_gameBadSelect[] = "GAME_BADSELECT";              // 0x612c28
+static const char s_grunt[] = "Grunt";                               // 0x60a9ec
+static const char s_playerDefenderRadius[] = "PlayerDefenderRadius"; // 0x60e1ac
+
 struct CGrid;
 struct CGruntObj;
 
@@ -128,7 +134,7 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
                 return 1;
             }
             if (F(F(P(this, 0xc), 0x28), 0x30) == 0) {
-                if (BadSelect((const char*)0x612c28) != 0) {
+                if (BadSelect(s_gameBadSelect) != 0) {
                     g_sndCueTag.Complain(0, 0, 0);
                 }
             }
@@ -267,7 +273,7 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
                             break;
                         default:
                             F(g, 0x2dc) =
-                                g_buteMgr.GetIntDef((char*)0x60a9ec, (char*)0x60e1ac, 3) + 1;
+                                g_buteMgr.GetIntDef(s_grunt, s_playerDefenderRadius, 3) + 1;
                     }
                     F(g, 0x248) |= 0x18040402;
                     F(g, 0x2f0) = -1;

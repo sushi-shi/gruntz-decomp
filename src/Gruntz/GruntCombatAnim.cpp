@@ -650,7 +650,7 @@ i32 CGruntCombat::LoadGruntCombatAnimations(
         double ddx = (double)newX - F(P(this, 0x10), 0x5c);
         double ddy = (double)newY - F(P(this, 0x10), 0x60);
         double dist = sqrt(ddx * ddx + ddy * ddy);
-        u32 kb = g_buteMgr.GetDwordDef((char*)s_gruntSec, (char*)s_knockKey, 200);
+        u32 kb = g_buteMgr.GetDwordDef(s_gruntSec, s_knockKey, 200);
         *(double*)((char*)this + 0x400) = dist / (double)kb;
         *(double*)((char*)this + 0x408) = (double)F(P(this, 0x10), 0x5c);
         *(double*)((char*)this + 0x410) = (double)F(P(this, 0x10), 0x60);

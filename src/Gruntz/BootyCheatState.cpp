@@ -139,20 +139,19 @@ i32 CBootyCheatState::LoadAssets(i32 a1, i32 a2, i32 a3) {
 
     if (g_bootyCheatBuilt == 0) {
         CString bootyCheatz("BootyCheatz");
-        CString empty((const char*)g_emptyString);
+        CString empty(g_emptyString);
         CString grp;
         CString text;
         CString desc;
         i32 i = 0;
         for (char* p = g_cheatTable; (i32)p < (i32)g_cheatTableEnd; p += 0xa0) {
             grp.Format("A%dC%d", i / 3 + 1, i % 3 + 1);
-            i32 id =
-                g_buteMgr.GetIntDef((char*)(const char*)bootyCheatz, (char*)(const char*)grp, 1);
+            i32 id = g_buteMgr.GetIntDef(bootyCheatz, grp, 1);
             grp.Format("Cheat%i", id);
-            text = *g_buteMgr.GetStringDef((char*)(const char*)grp, "Text", &empty);
-            desc = *g_buteMgr.GetStringDef((char*)(const char*)grp, "Desc", &empty);
-            strcpy(p - 0x20, (const char*)text);
-            strcpy(p, (const char*)desc);
+            text = *g_buteMgr.GetStringDef(grp, "Text", &empty);
+            desc = *g_buteMgr.GetStringDef(grp, "Desc", &empty);
+            strcpy(p - 0x20, text);
+            strcpy(p, desc);
             i++;
         }
         g_bootyCheatBuilt = 1;

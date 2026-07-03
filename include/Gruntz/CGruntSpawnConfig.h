@@ -30,6 +30,13 @@
 #include <Gruntz/CGameRegistry.h> // WwdGameReg / g_gameReg
 #include <Gruntz/SpriteFactory.h> // the shared CSpriteFactory (CreateSprite @0x1597b0)
 
+// Forward decls so the manager's typed slots need no view-casts (defs below / in
+// the .cpp). m_04 is ONE config tree (its +0x08 sprite factory + +0x20 collection),
+// m_08/m_0c hold voice sprites, m_10/m_14 owned voice streams.
+struct CSpawnVoice;
+struct CSpawnStream;
+struct CSpawnTree;
+
 // ---------------------------------------------------------------------------
 // The per-grunt voice/spawn record (the CGruntSpawnConfig CDWordArray element;
 // trace-placeholder tomalla-25). It IS a CObList (block size 0xa) of voice-
@@ -95,7 +102,7 @@ struct CSpawnButeTarget {
 // and m_30 (the config tree m_04) are touched by this class.
 struct CSpawnOwner {
     char m_00[0x30];
-    void* m_30; // +0x30  -> the config tree stashed in m_04
+    CSpawnTree* m_30; // +0x30  -> the config tree stashed in m_04
     char m_34[0x100 - 0x34];
     i32 m_100; // +0x100 the "ready" flag the @0x11c830 probe tests
 };
@@ -129,14 +136,14 @@ public:
     ~CGruntSpawnConfig();             // 0x85df0
 
     // --- fields (placeholders; offsets load-bearing) ---
-    CSpawnOwner* m_00; // +0x00
-    void* m_04;        // +0x04  = owner->m_30 (config tree)
-    void* m_08;        // +0x08  sprite-pair
-    void* m_0c;        // +0x0c
-    void* m_10;        // +0x10  owned-object pair
-    void* m_14;        // +0x14
-    CDWordArray m_18;  // +0x18  (vptr@0x18, m_pData@0x1c, m_nSize@0x20) - 0x14 bytes
-    i32 m_2c;          // +0x2c  = 0x64
+    CSpawnOwner* m_00;  // +0x00
+    CSpawnTree* m_04;   // +0x04  = owner->m_30 (config tree)
+    CSpawnVoice* m_08;  // +0x08  voice-sprite pair
+    CSpawnVoice* m_0c;  // +0x0c
+    CSpawnStream* m_10; // +0x10  owned voice-stream pair
+    CSpawnStream* m_14; // +0x14
+    CDWordArray m_18;   // +0x18  (vptr@0x18, m_pData@0x1c, m_nSize@0x20) - 0x14 bytes
+    i32 m_2c;           // +0x2c  = 0x64
 };
 
 // --- the per-method helper externs (reloc-masked; no body) ---
@@ -155,10 +162,6 @@ struct CSpriteHandle {
     char m_00[0x7c];
     CSpriteHandleSub* m_7c; // +0x7c  vtable-ish slot bag (Activate + result)
 };
-struct CSpawnSpriteSource {
-    char m_00[8];
-    CSpriteFactory* m_08; // +0x08  the factory
-};
 
 // The voice-sprite stored in the m_08/m_0c pair. The teardown (0x11c7b0) calls
 // its Reset (0x11a870, __thiscall); reloc-masked. m_68 holds the voice id the
@@ -175,12 +178,21 @@ struct CSpawnVoice {
 // The collection Clear() removes the m_08/m_0c entries from (reached as
 // m_04->m_20). Remove is __thiscall on that collection (ecx) with the item as
 // the one stack arg; modeled as a method so the call shape falls out.
+// The config-tree collection at m_04+0x20: Clear() removes owned objects from it
+// (Remove), and the spawn driver opens a voice stream through it (OpenStream). One
+// collection, both methods (was split across CSpawnRemoveColl/CSpawnStreamFactory).
 struct CSpawnRemoveColl {
-    void Remove(void* item); // 0x1379d0
+    void Remove(void* item);                                              // 0x1379d0
+    CSpawnStream* OpenStream(i32 src, i32 a, i32 b, i32 c, i32 d, i32 e); // 0x137900
 };
+// The one config tree stashed in m_04 (= owner->m_30): its +0x08 is the sprite
+// factory LoadGruntVoices builds voices through, its +0x20 the remove/stream
+// collection (was three overlapping views: CSpawnTree/CSpawnConfigTree/CSpawnSpriteSource).
 struct CSpawnTree {
-    char m_00[0x20];
-    CSpawnRemoveColl* m_20; // +0x20  the collection Clear() removes from
+    char m_pad00[8];
+    CSpriteFactory* m_08; // +0x08  the sprite factory (LoadGruntVoices)
+    char m_pad0c[0x20 - 0xc];
+    CSpawnRemoveColl* m_20; // +0x20  the remove/stream collection
 };
 
 // The sprite-release helper (FUN_00537f00) is __thiscall on the sub-object at

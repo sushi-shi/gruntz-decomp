@@ -154,8 +154,8 @@ public:
     char m_pad158[0x170 - 0x158];
     i32 m_170; // +0x170  projectile type
     char m_pad174[0x1c0 - 0x174];
-    i32 m_1c0; // +0x1c0  bute section
-    i32 m_1c4; // +0x1c4
+    char* m_1c0; // +0x1c0  bute section (name string)
+    i32 m_1c4;   // +0x1c4
     char m_pad1c8[0x1e4 - 0x1c8];
     i32 m_1e4; // +0x1e4
     char m_pad1e8[0x1ec - 0x1e8];
@@ -273,7 +273,7 @@ i32 CProjectile::Update() {
 
         // impact tail (0x61f08)
         m_1e4 = 1;
-        i32 dt = g_buteMgr.GetDword((char*)m_1c0, "AttackDowntime");
+        i32 dt = g_buteMgr.GetDword(m_1c0, "AttackDowntime");
         if (m_258 == 0x3b) {
             dt = 0;
         }

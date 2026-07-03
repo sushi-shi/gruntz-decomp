@@ -1339,11 +1339,15 @@ public:
 
     // Data members. vptr(+0), m_10(+0x10), m_14(+0x14) are in CUserBase; the +0x18
     // EngStr link is CUserLogic::m_18. CGrunt's own members begin at +0x30.
-    i32 m_prevAnimSetNode; // +0x30  (saved old m_14->m_1c before re-latch)
+    // +0x30 opaque anim-set node handle (m_14->m_1c). The shared CUserLogic base
+    // (<Gruntz/UserLogic.h>) authoritatively types this +0x30 slot void*; it is a
+    // bute-tree node token passed straight to g_animNameResolver.GetNameRecord(void*),
+    // so void* is the authentic recovered type (not a placeholder).
+    void* m_prevAnimSetNode; // +0x30  (saved old m_14->m_1c before re-latch)
     char m_pad34[0x38 - 0x34];
     CGruntAnimState* m_38; // +0x38  (animation player)
     char m_pad3c[0x40 - 0x3c];
-    i32 m_activeAnimDesc; // +0x40  (cached m_38->m_1b4)
+    CAnimDescColl* m_activeAnimDesc; // +0x40  (cached m_38->m_1b4)
     char m_pad44[0x54 - 0x44];
     // +0x54 grunt-type name. Stored as a raw CString body (a single char* -
     // m_pszData) so ~CGrunt does NOT auto-destruct it (retail's leaf dtor tears
@@ -1372,12 +1376,12 @@ public:
     i32 m_animResolved; // +0xa8  (resolve gate / dirty flag; == moveMinX double lo)
     i32 m_deathCueArg;  // +0xac  (cue arg; == moveMinX double hi)
     char m_padb0[0x148 - 0xb0];
-    i32 m_148;                     // +0x148
-    i32 m_14c;                     // +0x14c
-    void* m_150;                   // +0x150
-    CEntranceAnimPlayer* m_154;    // +0x154 (entrance animation player)
-    struct CGruntSndResMgr* m_158; // +0x158 (ability/sound resource mgr)
-    i32 m_prevEntranceDesc;        // +0x15c (= m_154->m_1b4 cache)
+    i32 m_148;                                 // +0x148
+    i32 m_14c;                                 // +0x14c
+    void* m_150;                               // +0x150
+    CEntranceAnimPlayer* m_154;                // +0x154 (entrance animation player)
+    struct CGruntSndResMgr* m_158;             // +0x158 (ability/sound resource mgr)
+    CEntranceAnimDescColl* m_prevEntranceDesc; // +0x15c (= m_154->m_1b4 cache)
     char m_pad160[0x170 - 0x160];
     i32 m_entranceReason; // +0x170 (entrance-reason / movement state)
     i32 m_entrancePxX;    // +0x174 (SetEntrancePos: committed entrance position X, pixel)

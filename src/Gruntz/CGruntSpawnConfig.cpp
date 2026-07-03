@@ -126,11 +126,11 @@ void CGruntSpawnConfig::Clear() {
         }
     }
     m_18.SetSize(0, -1);
-    if (m_04 != 0 && ((CSpawnTree*)m_04)->m_20 != 0) {
-        void** p = &m_10;
+    if (m_04 != 0 && m_04->m_20 != 0) {
+        void** p = (void**)&m_10;
         for (i32 k = 0; k < 2; k++) {
             if (p[0] != 0) {
-                ((CSpawnTree*)m_04)->m_20->Remove(p[0]);
+                m_04->m_20->Remove(p[0]);
                 p[0] = 0;
             }
             p++;
@@ -155,10 +155,10 @@ RVA(0x0011af00, 0x62)
 BOOL CGruntSpawnConfig::LoadGruntVoices() {
     ClearSprites();
     i32 i = 0;
-    void** slot = &m_08;
+    void** slot = (void**)&m_08;
     for (; i < 2; i++, slot++) {
-        CSpriteHandle* spr = (CSpriteHandle*)((CSpawnSpriteSource*)m_04)
-                                 ->m_08->CreateSprite(0, 0, 0, 0xdbba1, "GruntVoice", 0x4040003);
+        CSpriteHandle* spr =
+            (CSpriteHandle*)m_04->m_08->CreateSprite(0, 0, 0, 0xdbba1, "GruntVoice", 0x4040003);
         spr->m_7c->Activate(spr);
         void* got = spr->m_7c->m_18;
         *slot = got;
@@ -226,14 +226,7 @@ struct CSpawnStream {
     char m_pad00[0x6c];
     CSpriteReleasable m_6c; // +0x6c  (Release, 0x137f00)
 };
-// The stream factory hung off the config tree (m_04->m_20).
-struct CSpawnStreamFactory {
-    CSpawnStream* OpenStream(i32 src, i32 a, i32 b, i32 c, i32 d, i32 e); // 0x137900
-};
-struct CSpawnConfigTree {
-    char m_pad00[0x20];
-    CSpawnStreamFactory* m_20; // +0x20
-};
+// (OpenStream lives on the unified CSpawnRemoveColl at m_04->m_20; see the header.)
 
 // The game registry pointer at *0x64556c (reloc-masked DATA; DATA label owned by
 // another TU, but a fresh decl here is byte-neutral - the reference is by address).
@@ -277,23 +270,23 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
             param_4 = g_buteMgr.GetIntDef("GruntPriority", (char*)(LPCTSTR)local_10, 1);
         }
     }
-    CSpawnVoice** voices = (CSpawnVoice**)&m_08;
+    CSpawnVoice** voices = &m_08;
     for (i32 i = 0; i < 2; i++) {
         if (param_4 <= voices[i]->m_6c) {
             return 0;
         }
     }
     i32 src = PickWeighted((i32)index, param_3);
-    if (src == 0 || ((CSpawnConfigTree*)m_04)->m_20 == 0) {
+    if (src == 0 || m_04->m_20 == 0) {
         return 0;
     }
-    CSpawnVoice* v8 = (CSpawnVoice*)m_08;
-    CSpawnVoice* v0c = (CSpawnVoice*)m_0c;
+    CSpawnVoice* v8 = m_08;
+    CSpawnVoice* v0c = m_0c;
     i32 a = v8->m_6c;
     i32 b = v0c->m_6c;
     i32 c = v8->m_68;
     i32 d = v0c->m_68;
-    CSpawnStream** streams = (CSpawnStream**)&m_10;
+    CSpawnStream** streams = &m_10;
     CSpawnGate* gate = (CSpawnGate*)param_1;
     i32 chosen;
     if (b < a) {
@@ -318,8 +311,7 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
         }
     }
     if (streams[chosen] == 0) {
-        streams[chosen] =
-            ((CSpawnConfigTree*)m_04)->m_20->OpenStream(src, 0x5000, 0x1400, 0x100e0, 0, 0);
+        streams[chosen] = m_04->m_20->OpenStream(src, 0x5000, 0x1400, 0x100e0, 0, 0);
         if (streams[chosen] == 0) {
             return 0;
         }
@@ -524,21 +516,21 @@ void CSpawnEntry::AddVoiceSound(CString s, i32 flag) {
 // (m_08/m_0c) is set, reset it. Both ->m_68 are read eagerly (no null guard).
 RVA(0x0011c730, 0x5c)
 void CGruntSpawnConfig::StopVoice(i32 id) {
-    i32 tag08 = ((CSpawnVoice*)m_08)->m_68;
-    i32 tag0c = ((CSpawnVoice*)m_0c)->m_68;
+    i32 tag08 = m_08->m_68;
+    i32 tag0c = m_0c->m_68;
     if (tag08 == id) {
         if (m_10 != 0) {
-            ((CSpriteReleasable*)((char*)m_10 + 0x6c))->Release();
+            m_10->m_6c.Release();
         }
         if (m_08 != 0) {
-            ((CSpawnVoice*)m_08)->Reset();
+            m_08->Reset();
         }
     } else if (tag0c == id) {
         if (m_14 != 0) {
-            ((CSpriteReleasable*)((char*)m_14 + 0x6c))->Release();
+            m_14->m_6c.Release();
         }
         if (m_0c != 0) {
-            ((CSpawnVoice*)m_0c)->Reset();
+            m_0c->Reset();
         }
     }
 }
@@ -551,10 +543,10 @@ void CGruntSpawnConfig::StopVoice(i32 id) {
 // (m_08/m_0c) is set, reset it (CGruntVoice::Reset @0x11a870).
 RVA(0x0011c7b0, 0x2d)
 void CGruntSpawnConfig::DtorBody() {
-    void** p = &m_08;
+    void** p = (void**)&m_08;
     for (i32 k = 0; k < 2; k++) {
         if (p[2] != 0) {
-            ((CSpriteReleasable*)((char*)p[2] + 0x6c))->Release();
+            ((CSpawnStream*)p[2])->m_6c.Release();
         }
         if (p[0] != 0) {
             ((CSpawnVoice*)p[0])->Reset();
@@ -591,16 +583,13 @@ BOOL CGruntSpawnConfig::IsReady() {
 SIZE_UNKNOWN(CGruntSpawnConfig);
 SIZE_UNKNOWN(CSpawnButeConfig);
 SIZE_UNKNOWN(CSpawnButeTarget);
-SIZE_UNKNOWN(CSpawnConfigTree);
 SIZE_UNKNOWN(CSpawnEntry);
 SIZE_UNKNOWN(CSpawnGate);
 SIZE_UNKNOWN(CSpawnGateInner);
 SIZE_UNKNOWN(CSpawnOwner);
 SIZE_UNKNOWN(CGameRegistry);
 SIZE_UNKNOWN(CSpawnRemoveColl);
-SIZE_UNKNOWN(CSpawnSpriteSource);
 SIZE_UNKNOWN(CSpawnStream);
-SIZE_UNKNOWN(CSpawnStreamFactory);
 SIZE_UNKNOWN(CSpawnTree);
 SIZE_UNKNOWN(CSpawnVoice);
 SIZE_UNKNOWN(CSpriteHandle);

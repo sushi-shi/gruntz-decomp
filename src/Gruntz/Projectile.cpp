@@ -349,56 +349,37 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
     switch (kind) {
         case PROJ_ROCK: // ROCK
             key = "GRUNTZ_ROCKGRUNT_PROJECTILE";
-            m_timePerTile = g_buteMgr.GetDwordDef(
-                (char*)"Projectile",
-                (char*)"RockProjectileTimePerTile",
-                0xbb8
-            );
+            m_timePerTile = g_buteMgr.GetDwordDef("Projectile", "RockProjectileTimePerTile", 0xbb8);
             m_isArcing = 1;
             break;
         case PROJ_GUNHAT: // GUNHAT
             key = "GRUNTZ_GUNHATGRUNT_PROJECTILE";
-            m_timePerTile = g_buteMgr.GetDwordDef(
-                (char*)"Projectile",
-                (char*)"GunhatProjectileTimePerTile",
-                0xbb8
-            );
+            m_timePerTile =
+                g_buteMgr.GetDwordDef("Projectile", "GunhatProjectileTimePerTile", 0xbb8);
             m_isArcing = 1;
             break;
         case PROJ_BOOMERANG: // BOOMERANG
             key = "GRUNTZ_BOOMERANGGRUNT_PROJECTILE";
-            m_timePerTile = g_buteMgr.GetDwordDef(
-                (char*)"Projectile",
-                (char*)"BoomerangProjectileTimePerTile",
-                0xbb8
-            );
+            m_timePerTile =
+                g_buteMgr.GetDwordDef("Projectile", "BoomerangProjectileTimePerTile", 0xbb8);
             m_isArcing = 0;
             break;
         case PROJ_NERFGUN: // NERFGUN
             key = "GRUNTZ_NERFGUNGRUNT_PROJECTILE";
-            m_timePerTile = g_buteMgr.GetDwordDef(
-                (char*)"Projectile",
-                (char*)"NerfGunProjectileTimePerTile",
-                0xbb8
-            );
+            m_timePerTile =
+                g_buteMgr.GetDwordDef("Projectile", "NerfGunProjectileTimePerTile", 0xbb8);
             m_isArcing = 1;
             break;
         case PROJ_WELDER: // WELDER
             key = "GRUNTZ_WELDERGRUNT_PROJECTILE";
-            m_timePerTile = g_buteMgr.GetDwordDef(
-                (char*)"Projectile",
-                (char*)"WelderProjectileTimePerTile",
-                0xbb8
-            );
+            m_timePerTile =
+                g_buteMgr.GetDwordDef("Projectile", "WelderProjectileTimePerTile", 0xbb8);
             m_isArcing = 1;
             break;
         case PROJ_WINGZ: { // WINGZ
             key = "GRUNTZ_WINGZGRUNT_PROJECTILE";
-            m_timePerTile = g_buteMgr.GetDwordDef(
-                (char*)"Projectile",
-                (char*)"WingzProjectileTimePerTile",
-                0xbb8
-            );
+            m_timePerTile =
+                g_buteMgr.GetDwordDef("Projectile", "WingzProjectileTimePerTile", 0xbb8);
             LaunchSound("GRUNTZ_WINGZGRUNT_WINGZGRUNTLOOP");
             m_isArcing = 0;
             i32 ddx = (m_targetX >> 5) - (owner->m_screenX >> 5);
