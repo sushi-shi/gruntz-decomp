@@ -206,7 +206,7 @@ public:
 
     // 0x6ea00: HitTestApply(x, y, kind) - hit-test then, when the magic kind, compare the
     // config string and adjust the world score + status item. (__stdcall: ret 0xc.)
-    i32 HitTestApply(i32 x, i32 y, i32 kind);
+    void HitTestApply(i32 x, i32 y, i32 kind);
 
     // 0x75af0: HitTestCell(x, y, outRow, outCol, exact) - sample the tile-attr index, map
     // it to (row,col), bounds-test the cell object, write (row,col). (ret 0x14.)

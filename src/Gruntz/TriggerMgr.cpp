@@ -553,23 +553,19 @@ i32 CTriggerMgr::OverlayRelease() {
 // 0x79b30: ByteTableHas(b) - linear search the byte table (+0x264, count +0x268)
 // for `b`; ret 1 on hit, 0 otherwise.
 // @early-stop
-// loop-peel + push-split wall: retail emits a single un-peeled indexed loop
-// (`mov dl,[eax+ecx]`, edx hoisted-zeroed) and splits the two prologue pushes around
-// the count load; our cl peels the i==0 iteration. docs/patterns/zero-store-before-loop-inline-bound.md
+// register-coloring wall (~85%): the un-peeled indexed loop now matches retail (plain for-loop,
+// no explicit n<=0 guard so the count is tested once). The residual is pure regalloc - retail
+// colors count in esi and the table in ecx (SIB `[eax+ecx]`, dl temp); our cl parks count in edx
+// and the table in esi (SIB `[esi+eax]`, cl temp). Not source-steerable. topic:wall.
 RVA(0x00079b30, 0x3e)
 i32 CTriggerMgr::ByteTableHas(i32 b) {
     i32 n = m_byteCount;
-    i32 i = 0;
-    if (n <= 0) {
-        return 0;
-    }
     u8* tbl = (u8*)m_byteData;
-    do {
+    for (i32 i = 0; i < n; i++) {
         if (b == tbl[i]) {
             return 1;
         }
-        i++;
-    } while (i < n);
+    }
     return 0;
 }
 
@@ -1090,39 +1086,42 @@ struct CTmSelf4 {
 };
 
 // 0x6ea00: HitTestApply(x, y, kind) - hit-test the cell at (x,y); only for the magic group
-// (out-row == g_644c54) and a cell whose config name is "B" and kind 0x14, add the world's
+// (out-col == g_644c54) and a cell whose config name is NOT "B" and kind 0x14, add the world's
 // score delta, zero the status fields, SetStat(0,0xbb7), re-arm the status item (SetMode 1)
-// and ClearMagic(g_644c54). (__stdcall: ret 0xc.)
+// and ClearMagic(g_644c54). void - no path materialises a return value. (__stdcall: ret 0xc.)
 // @early-stop
-// regalloc + inline-strcmp wall: the "B" compare inlines as a byte loop and the 64-bit
-// world-score sub/sbb pins ecx/eax differently than retail. Logic + offsets byte-exact.
+// inline-strcmp result-register coloring wall (~80%): void return + strcmp `!= 0` bool steer +
+// i64 score sub are byte-exact and size now matches retail (0x125). The residual is the inline
+// strcmp landing its sbb result in ecx (retail eax) with the `differ` bool in al vs retail's cl,
+// so the `setne`+null-test colors as `cmpb bl,al` vs retail `testb cl,cl`. Not source-steerable
+// (the `bool` local is required for the setne form but shifts the result register). topic:wall.
 RVA(0x0006ea00, 0x125)
-i32 CTriggerMgr::HitTestApply(i32 x, i32 y, i32 kind) {
+void CTriggerMgr::HitTestApply(i32 x, i32 y, i32 kind) {
     i32 outRow = 0;
     i32 outCol = 0;
     CTmCell* cell = (CTmCell*)((CTmSelf4*)this)->Hit(kind, y, y, &outRow, &outCol);
     if (cell == 0 || outCol != g_644c54) {
-        return 0;
+        return;
     }
     char* name = *g_nameReg.Lookup(*(i32*)(*(char**)((char*)cell + 0x14) + 0x1c));
-    if (strcmp(name, "B") != 0) {
-        return 0;
+    bool differ = strcmp(name, "B") != 0;
+    if (!differ) {
+        return;
     }
     i32 k = *(i32*)((char*)cell + 0x170);
     if (k > 0x16) {
         k = *(i32*)((char*)cell + 0x19c);
     }
     if (k != 0x14) {
-        return 0;
+        return;
     }
     CTmWorld* world = g_gameReg->m_curState;
     char* sub = *(char**)((char*)world + 0x3f4);
-    u32 lo = (u32)g_645588 - (u32) * (i32*)(sub + 0x38);
-    i32 hi = 0 - *(i32*)(sub + 0x3c) - (g_645588 < *(i32*)(sub + 0x38) ? 1 : 0);
-    if (hi > 0 || (hi == 0 && lo >= 0)) {
-        lo = 0;
+    i64 diff = (i64)(u32)g_645588 - *(i64*)(sub + 0x38);
+    if (diff < 0) {
+        diff = 0;
     }
-    *(i32*)(*(char**)((char*)g_gameReg + 0x7c) + 0x10) += (i32)lo;
+    *(i32*)(*(char**)((char*)g_gameReg + 0x7c) + 0x10) += (i32)diff;
     *(i32*)(sub + 0x40) = 0;
     *(i32*)(sub + 0x44) = 0;
     *(i32*)(sub + 0x30) = 0;
@@ -1132,7 +1131,6 @@ i32 CTriggerMgr::HitTestApply(i32 x, i32 y, i32 kind) {
     world->SetStat(0, 0xbb7);
     world->m_2dc->SetMode(1);
     ((CTmSelf4*)this)->ClearMagic(g_644c54);
-    return 1;
 }
 
 // The world's fx-spawner (gameReg+0x68 sub-mgr) + the stop-fx hook the TriggerCell driver
@@ -1371,23 +1369,25 @@ struct CTmSelf6 {
 // if exactly one matched, hand it to the world's single-record reporter, else hand the whole
 // collected array to the manager's multi-record reporter. (__stdcall: ret 0xc.)
 // @early-stop
-// regalloc + collected-byte-array spill wall: the count register cl and the 0x88-byte stack
-// scratch slots differ from retail's. Logic + offsets byte-exact. topic:wall.
+// reporter-dispatch arg-shape wall (~72%): the record scan is now byte-exact (u8 count +
+// `bytes[count]=payload[4]` collected byte, size matches retail 0x106). The residual is the
+// trailing count==1/else dispatch: retail calls two 8-arg reporter methods on g_gameReg->m_6c
+// passing a per-iter firstByte dword slot (`*(u8*)payload` stored beside count) + the count/
+// array as separate args; our 7-arg self-call ReportN/Report1 shape approximates it. topic:wall.
 RVA(0x00078520, 0x106)
 void CTriggerMgr::ReportRecordsA(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24) {
     if (m_groupFlag == 0) {
         return;
     }
     u8 bytes[0x88];
-    i32 count = 0;
+    u8 count = 0;
     CTmNode* n = (CTmNode*)m_recHead;
     while (n != 0) {
-        i32* p = (i32*)((char*)n + 0x8);
         CTmNode* next = n->m_next;
-        i32* payload = (i32*)*(void**)((char*)n + 0x8);
-        CTmCell* cell = (CTmCell*)m_grid[payload[1] + payload[0] * 15];
+        u8* payload = *(u8**)((char*)n + 0x8);
+        CTmCell* cell = (CTmCell*)m_grid[*(i32*)(payload + 4) + *(i32*)payload * 15];
         if (*(i32*)((char*)cell + 0x1ec) == g_644c54 && *(i32*)((char*)cell + 0x1e4) == 0) {
-            bytes[count] = *(u8*)(p + 1);
+            bytes[count] = payload[4];
             count++;
         }
         n = next;
@@ -1404,22 +1404,24 @@ void CTriggerMgr::ReportRecordsA(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24) {
 // ReportRecordsA: same magic-group byte scan, then dispatch by (count==1, a14!=0) to one of
 // four (single/multi x kind 3/9) report calls. (__stdcall: ret 0x10.)
 // @early-stop
-// regalloc + 4-way dispatch wall: the count/flag branch ladder pins differently than retail.
+// reporter-dispatch arg-shape wall (~62%): same fixed record scan as ReportRecordsA (u8 count +
+// payload[4] collected byte). The residual is the 4-way (count==1 x a28) dispatch to the two
+// 8-arg g_gameReg->m_6c reporter methods with the firstByte dword slot; our self-call shape
+// approximates it. topic:wall.
 RVA(0x00078680, 0x189)
 void CTriggerMgr::ReportRecordsB(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28) {
     if (m_groupFlag == 0) {
         return;
     }
     u8 bytes[0x88];
-    i32 count = 0;
+    u8 count = 0;
     CTmNode* n = (CTmNode*)m_recHead;
     while (n != 0) {
-        i32* p = (i32*)((char*)n + 0x8);
         CTmNode* next = n->m_next;
-        i32* payload = (i32*)*(void**)((char*)n + 0x8);
-        CTmCell* cell = (CTmCell*)m_grid[payload[1] + payload[0] * 15];
+        u8* payload = *(u8**)((char*)n + 0x8);
+        CTmCell* cell = (CTmCell*)m_grid[*(i32*)(payload + 4) + *(i32*)payload * 15];
         if (*(i32*)((char*)cell + 0x1ec) == g_644c54 && *(i32*)((char*)cell + 0x1e4) == 0) {
-            bytes[count] = *(u8*)(p + 1);
+            bytes[count] = payload[4];
             count++;
         }
         n = next;
