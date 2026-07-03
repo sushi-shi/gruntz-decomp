@@ -114,44 +114,56 @@ struct ButeRef24 {
 };
 SIZE(ButeRef24, 0x18); // 24-byte kButeRef7 payload
 
-// The engine helper embedded at CButeMgr+0x14 (the .bute compiler/registry
-// sub-object). FuncA/FuncB are the cleanup pair ClearHelper drives (reloc-masked
-// __thiscall externs, no body). The rest is the constructor + the sub-object
-// setter (SetSub) + the virtual-base vtable-init thunks reconstructed below.
+// ios - the CRT/MSVC 5.0 <iostream.h> `ios` base class (the .bute parser reads
+// its config files through C++ iostreams). RTTI-PROVEN: the vtable at 0x5f03bc
+// carries the Complete-Object-Locator whose type descriptor is `.?AVios@@`
+// (gruntz.analysis.vtable_hierarchy --class ios), a ROOT class (no base).
+// Corroborated by the reconstructed bodies below: the ctor seeds the ios defaults
+// (precision 6 @+0x28, fill ' '=0x20 @+0x2c, x_width -1 @+0x34), inits a
+// per-instance CRITICAL_SECTION (ios::x_lock) + ref-counts a shared one (the CRT
+// _mtlock), and InitVbaseA..D are the virtual-base-construction thunks (ios is the
+// shared virtual base of the iostream MI diamond istream/ostream). The former
+// fabricated name "CButeMgrHelper" is replaced by the real library name.
+//
+// This is the hand-reconstructed, byte-matched view of the statically-linked CRT
+// ios (its ctor/dtor/vbase-thunks are matched at 100%); we do NOT pull the real
+// <ios.h> because that would drop those matched methods (the library ios ctor +
+// vbase thunks are not emitted as standalone annotatable symbols) and the layout
+// here is a matching device (field names placeholders; only OFFSETS/bytes bind).
 //
 // Layout recovered from the ctor's field-init list (0x169c00):
 //   +0x00  vptr      : vptr (0x5f03bc, shared with the dtor's vtable restore)
-//   +0x04  m_pSub    : void* - a sub-object pointer (the dtor/Set delete-and-
-//                      replace target; its slot-0 is a scalar deleting dtor)
-//   +0x08  m_flags   : int   - flag word (Set toggles bit 0x4 from sub nullness)
+//   +0x04  m_pSub    : void* - the streambuf/sub-object pointer (dtor/SetSub
+//                      delete-and-replace target; its slot-0 is a scalar deleting dtor)
+//   +0x08  m_flags   : int   - flag word (SetSub toggles bit 0x4 from sub nullness)
 //   +0x0c  m_0c      : int   - zero-init
 //   +0x10  m_10      : int   - zero-init
 //   +0x14  m_14[8]   : padding to +0x1c
-//   +0x1c  m_ownsSub : int   - "owns sub-object" guard (Set checks it)
+//   +0x1c  m_ownsSub : int   - "owns sub-object" guard (SetSub checks it; ios x_delbuf)
 //   +0x20  m_20      : int   - zero-init
 //   +0x24  m_24      : int   - zero-init
-//   +0x28  m_28      : int   - 6
-//   +0x2c  m_2c      : char  - 0x20
+//   +0x28  m_28      : int   - 6   (default precision)
+//   +0x2c  m_2c      : char  - 0x20 (default fill ' ')
 //   +0x30  m_30      : int   - zero-init
-//   +0x34  m_34      : int   - -1
+//   +0x34  m_34      : int   - -1  (default width)
 //   +0x38  m_cs      : CRITICAL_SECTION (per-instance, Initialize/Delete'd)
 // REAL POLYMORPHIC (ALL-VTABLES): the +0x00 vptr is implicit (virtual dtor); its
-// own primary vtable ??_7CButeMgrHelper @0x5f03bc. The constructor (0x169c00) and the
-// teardown dtor (0x169d70) are modeled as a real C++ ctor/dtor so cl auto-stamps the
-// vptr (== the old manual stamp), reloc-masked.
-VTBL(CButeMgrHelper, 0x005f03bc); // helper's own primary vtable (ctor/dtor auto-stamp)
-class CButeMgrHelper {
+// own primary vtable ??_7ios @0x5f03bc. The constructor (0x169c00) and the teardown
+// dtor (0x169d70) are modeled as a real C++ ctor/dtor so cl auto-stamps the vptr
+// (== the old manual stamp) and emits the retail `.?AVios@@` descriptor, reloc-masked.
+VTBL(ios, 0x005f03bc); // ios' own primary vtable (ctor/dtor auto-stamp)
+class ios {
 public:
     void FuncA();
 
     // The constructor: zero-init the fields, stamp the vptr (auto), set the
     // constants, init the per-instance critical section, and one-time-init the
     // shared critical section under a ref-count guard. (0x169c00, was Construct.)
-    CButeMgrHelper();
+    ios();
     // The teardown/cleanup dtor (0x169d70, was FuncB): restore the vptr (auto),
     // reset m_34, drop the shared crit-sec under the ref-count guard, delete the
     // per-instance one, tear down the owned +0x4 sub-object, reset sub + flag word.
-    virtual ~CButeMgrHelper();
+    virtual ~ios();
     // Replace the sub-object at +0x4 (delete the old one through its vtable when
     // owned), then toggle bit 0x4 of m_flags from the new pointer's nullness.
     void SetSub(void* p);
@@ -164,7 +176,7 @@ public:
     void InitVbaseC();
     void InitVbaseD();
 
-    // vptr implicit @ +0x00 (??_7CButeMgrHelper@@6B@ = 0x5f03bc)
+    // vptr implicit @ +0x00 (??_7ios@@6B@ = 0x5f03bc)
     void* m_pSub;              // +0x04
     i32 m_flags;               // +0x08  flag word (SetSub toggles bit 0x4)
     i32 m_0c;                  // +0x0c
@@ -180,7 +192,7 @@ public:
     i32 m_34;                  // +0x34
     CRITICAL_SECTION m_cs;     // +0x38
 };
-SIZE(CButeMgrHelper, 0x50); // fields through m_cs (CRITICAL_SECTION @0x38, 0x18 B)
+SIZE(ios, 0x50); // fields through m_cs (CRITICAL_SECTION @0x38, 0x18 B)
 
 // CButeTree - the shared crit-bit trie store (Find/Insert/Walk). CButeMgr's owned
 // sub-trees (m_tree/m_tree48/m_tree74) are instances of it, addressed through the
@@ -295,12 +307,14 @@ SIZE(CButeTail, 0x1); // 1-byte embedded tail object
 // with two vptrs). REAL POLYMORPHIC (ALL-VTABLES): the derived ctor auto-stamps
 // ??_7CButeNode @+0x00 and the second sub-object's vptr @+0x08.
 
-// CButeNodeBase - the engine base subobject ctor (__thiscall(this,
-// desc, n)). Declared external/no-body so the `mov ecx,this; call` __thiscall
-// shape (callee-cleanup) falls out reloc-masked.
-class CButeNodeBase {
+// zPTree - the engine base subobject ctor (__thiscall(this, desc, n), retail
+// 0x16dff0). RTTI-real name (was fabricated "CButeNodeBase"; see ButeNode.cpp for
+// the full multiply-derived zPTree model + the vtable_hierarchy evidence). Here it
+// is only the call-site stand-in for the `new CButeNode` path (empty external base,
+// ctor reloc-masked), a separate model from ButeNode.cpp's to avoid an ODR conflict.
+class zPTree {
 public:
-    CButeNodeBase(void* desc, i32 n);
+    zPTree(void* desc, i32 n);
 };
 
 // The +0x08 second sub-object: a small polymorphic node subobject whose implicit
@@ -315,17 +329,17 @@ SIZE(CButeNodeSub, 0x4); // second sub-object (vptr only)
 // CButeNode - REAL POLYMORPHIC (ALL-VTABLES phase): the derived ctor runs the
 // engine base ctor, then cl auto-stamps ??_7CButeNode @+0x00 and the m_sub member's
 // implicit vptr @+0x08 (== the old two hand-rolled node vtable stores).
-class CButeNode : public CButeNodeBase {
+class CButeNode : public zPTree {
 public:
     virtual ~CButeNode(); // +0x00 vptr; external no-body dtor
 
-    CButeNode(void* desc, i32 n) : CButeNodeBase(desc, n) {}
+    CButeNode(void* desc, i32 n) : zPTree(desc, n) {}
     // vptr implicit @ +0x00 (??_7CButeNode@@6B@)
     char m_pad04[4];          // +0x04
     CButeNodeSub m_sub;       // +0x08  second sub-object (implicit vptr)
     char m_pad0c[0x2c - 0xc]; // pad to 0x2c bytes total
 };
-SIZE(CButeNode, 0x2c); // new CButeNode(0x2c); CButeNodeBase + m_sub @0x08
+SIZE(CButeNode, 0x2c); // new CButeNode(0x2c); zPTree base + m_sub @0x08
 
 // CString::operator+= one char. Appends to the accumulator.
 extern "C" void AfxString_AppendChar(void* pStr, char c);

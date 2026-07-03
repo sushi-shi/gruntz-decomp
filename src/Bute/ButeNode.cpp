@@ -1,12 +1,23 @@
 #include <rva.h>
-// ButeNode.cpp - CButeNodeBase, a ButeMgr config-tree node base (dedicated unit).
+// ButeNode.cpp - zPTree, the ButeMgr config-tree node base (dedicated unit).
+//
+// RTTI-PROVEN NAME: the whole-object vtable 0x5e94ac carries the Complete-Object-
+// Locator type descriptor `.?AVzPTree@@` (gruntz.analysis.vtable_hierarchy --class
+// zPTree, aka the fabricated CButeNodeBase). zPTree's RTTI base-class-array names
+// its primary base `zErrHandling` with a SECOND base (MI, secondary vtable @+8) -
+// which is exactly our modeled shape (CContainerErr @+0, CButeNodeEntry @+8). The
+// former fabricated name "CButeNodeBase" is replaced by the real library name
+// zPTree here; its primary base is the shared engine class we call CContainerErr,
+// whose own RTTI-real name is `zErrHandling` (used cross-module by zBitVec/EngStr/
+// GameText, so a global CContainerErr -> zErrHandling rename is a separate,
+// out-of-Bute-scope change).
 //
 // This is its own self-contained class model (CContainerErr base, CButeNodeEntry
 // subobject); it cannot fold into ButeMgr.cpp, which carries a different minimal
-// `class CButeNodeBase` decl (ButeMgr.h) for the ParseTagLine `new CButeNode` path
-// -> ODR conflict. So it lives in its own unit, flags="eh".
+// `class zPTree` decl (ButeMgr.h, the empty call-site stand-in) for the ParseTagLine
+// `new CButeNode` path -> ODR conflict. So it lives in its own unit, flags="eh".
 //
-// CButeNodeBase derives from CContainerErr (the container-library exception
+// zPTree derives from CContainerErr (=zErrHandling, the container-library exception
 // base, ctor @0x16d9c0, modeled in GameText) and embeds a small node subobject
 // at +0x8 (the keyed-store entry: a ptr + a 16-bit kind + a vtbl). The ctor
 // runs the CContainerErr base ctor (passing the node's error-message global),
@@ -19,13 +30,15 @@
 //
 // Field names are placeholders; only OFFSETS + code bytes are load-bearing.
 
-// CContainerErr - the container-library exception base (vptr@0, msg@4). Its
-// ctor (RVA 0x16d9c0, real body in GameText) is __thiscall(this, msg); declared
-// no-body here so the `push msg; call` shape is reloc-masked. REAL POLYMORPHIC
-// (ALL-VTABLES phase): the vtbl@0 field is now the implicit vptr (virtual dtor);
-// the derived CButeNodeBase ctor auto-stamps ??_7CButeNodeBase @+0 after the
-// external base ctor returns (== the old manual whole-object restamp). The base
-// stays destructible so the derived ctor keeps its /GX unwind frame.
+// CContainerErr (RTTI-real name zErrHandling) - the container-library exception
+// base (vptr@0, msg@4). Its ctor (RVA 0x16d9c0, real body in GameText) is
+// __thiscall(this, msg); declared no-body here so the `push msg; call` shape is
+// reloc-masked. Shared across modules under the CContainerErr name (zBitVec/EngStr/
+// GameText), so kept as CContainerErr here (a global rename to zErrHandling is a
+// separate cross-module task). REAL POLYMORPHIC (ALL-VTABLES phase): the vtbl@0
+// field is now the implicit vptr (virtual dtor); the derived zPTree ctor auto-stamps
+// ??_7zPTree @+0 after the external base ctor returns (== the old manual whole-object
+// restamp). The base stays destructible so the derived ctor keeps its /GX unwind frame.
 extern void* g_buteNodeErrMsg; // DAT_006bf480 - the node's error-message global
 
 class CContainerErr {
@@ -36,10 +49,10 @@ public:
     void* m_msg; // +0x04
 };
 
-// The node subobject at CButeNodeBase+0x8 (a small keyed-store entry): the SECOND
-// polymorphic base of CButeNodeBase. REAL POLYMORPHIC: its ctor (0x16df70) auto-
+// The node subobject at zPTree+0x8 (a small keyed-store entry): the SECOND
+// polymorphic base of zPTree. REAL POLYMORPHIC: its ctor (0x16df70) auto-
 // stamps ??_7CButeNodeEntry (retail 0x5f04d8) at +0x0, then stores desc@+4,
-// (WORD)n@+8, 0@+0xc. As CButeNodeBase's second base it lands at +0x08 and its vptr
+// (WORD)n@+8, 0@+0xc. As zPTree's second base it lands at +0x08 and its vptr
 // is promoted to the second-base-in-derived vtable (0x5e949c) automatically by cl
 // (== the old manual raw sub-vtable write).
 class CButeNodeEntry {
@@ -55,26 +68,26 @@ public:
 SIZE(CButeNodeEntry, 0x10);       // { vptr, desc, kind, 0 }
 VTBL(CButeNodeEntry, 0x005f04d8); // the entry member's own (base) vtable
 
-// CButeNodeBase layout (multiply-derived, two vptrs):
+// zPTree layout (multiply-derived, two vptrs):
 //   +0x00  CContainerErr base   (vptr, msg)
 //   +0x08  CButeNodeEntry base  (vptr, desc, kind, 0) - spans +0x08..+0x18
 //   +0x18  m_child18 : child link, zeroed
 //   +0x28  m_child28 : child link, zeroed
-class CButeNodeBase : public CContainerErr, public CButeNodeEntry {
+class zPTree : public CContainerErr, public CButeNodeEntry {
 public:
-    CButeNodeBase(void* desc, i32 n);
+    zPTree(void* desc, i32 n);
 
     // CButeNodeEntry base occupies +0x08..+0x18
     i32 m_child18; // +0x18  child link (zeroed)
     char m_pad1c[0x28 - 0x1c];
     i32 m_child28; // +0x28  child link (zeroed)
 };
-SIZE(CButeNodeBase, 0x2c);       // measured: new(0x2c) -> ctor 0x16dff0; matches the layout above
-VTBL(CButeNodeBase, 0x005e94ac); // most-derived (whole-object) vtable @+0
+SIZE(zPTree, 0x2c);       // measured: new(0x2c) -> ctor 0x16dff0; matches the layout above
+VTBL(zPTree, 0x005e94ac); // most-derived (whole-object) vtable @+0
 
 // CButeNodeEntry ctor (0x16df70): __thiscall(this, n, desc). cl auto-stamps the
 // ??_7CButeNodeEntry vptr@+0, then stores desc@+4, (WORD)n@+8, 0@+0xc. Clean leaf
-// ctor. Called out-of-line by the CButeNodeBase ctor's m_entry member-init.
+// ctor. Called out-of-line by the zPTree ctor's m_entry member-init.
 // @early-stop
 // vptr-position wall (~82.9%, was 100% hand-rolled): real polymorphism sinks the
 // implicit ??_7 vptr stamp to FIRST; the hand-rolled last-store cannot be sunk in
@@ -86,9 +99,9 @@ CButeNodeEntry::CButeNodeEntry(i32 n, void* desc) {
     m_0c = 0;
 }
 
-// CButeNodeBase ctor (0x16dff0): run the CContainerErr primary base ctor + the
+// zPTree ctor (0x16dff0): run the CContainerErr primary base ctor + the
 // CButeNodeEntry second-base ctor, then cl auto-stamps the two most-derived vptrs
-// (??_7CButeNodeBase @+0 = 0x5e94ac, and the second-base-in-derived vtable @+8 =
+// (??_7zPTree @+0 = 0x5e94ac, and the second-base-in-derived vtable @+8 =
 // 0x5e949c) and zeroes the two child links. /GX unwind frame from the two
 // destructible base sub-objects. (Was 100% hand-rolled; the auto-vptr stamps are
 // accepted per the ALL-VTABLES mandate.)
@@ -97,29 +110,28 @@ CButeNodeEntry::CButeNodeEntry(i32 n, void* desc) {
 // vptrs FIRST, shifting the stamp schedule vs the hand-rolled last-stores. Logic
 // byte-faithful; converted per the ALL-VTABLES mandate.
 RVA(0x0016dff0, 0x73)
-CButeNodeBase::CButeNodeBase(void* desc, i32 n)
-    : CContainerErr(&g_buteNodeErrMsg), CButeNodeEntry(n, desc) {
+zPTree::zPTree(void* desc, i32 n) : CContainerErr(&g_buteNodeErrMsg), CButeNodeEntry(n, desc) {
     m_child18 = 0;
     m_child28 = 0;
 }
 
 // ===========================================================================
-// CButeCfgNode174d - a concrete CButeNodeBase-derived config-tree node ctor
+// CButeCfgNode174d - a concrete zPTree-derived config-tree node ctor
 // (0x174d00), re-homed from src/Stub/MallocConstructors (was "Node174d00"). A
-// zPTree-family node. REAL POLYMORPHIC (ALL-VTABLES): derives from CButeNodeBase so
+// zPTree-family node. REAL POLYMORPHIC (ALL-VTABLES): derives from zPTree so
 // cl auto-stamps its two most-derived vftables (primary @0x5f051c at +0x00 and the
 // second-base-in-derived vtable @0x5f0518 at +0x08) after the external base ctor
 // runs (== the old manual double stamp). The concrete class has no RTTI
 // type-descriptor in retail so the name stays a placeholder; base + module
-// (CButeNodeBase, the .bute config tree) are proven.
+// (zPTree, the .bute config tree) are proven.
 extern u8 g_node174df0Tag; // 0x574df0  kind descriptor (in .text)
 
 VTBL(CButeCfgNode174d, 0x005f051c); // node primary (most-derived) vtable @+0x00
-class CButeCfgNode174d : public CButeNodeBase {
+class CButeCfgNode174d : public zPTree {
 public:
     CButeCfgNode174d(i32 kind); // 0x174d00
 };
-SIZE(CButeCfgNode174d, 0x2c); // derives CButeNodeBase (no new fields)
+SIZE(CButeCfgNode174d, 0x2c); // derives zPTree (no new fields)
 
 // @early-stop
 // vptr-schedule wall (ALL-VTABLES): the base ctor is called first, then cl stamps
@@ -127,4 +139,4 @@ SIZE(CButeCfgNode174d, 0x2c); // derives CButeNodeBase (no new fields)
 // own vptr-position wall shift the store order vs the hand-rolled double-stamp. Was
 // 100% hand-rolled; converted per the ALL-VTABLES mandate (regression OK).
 RVA(0x00174d00, 0x25)
-CButeCfgNode174d::CButeCfgNode174d(i32 kind) : CButeNodeBase(&g_node174df0Tag, kind) {}
+CButeCfgNode174d::CButeCfgNode174d(i32 kind) : zPTree(&g_node174df0Tag, kind) {}

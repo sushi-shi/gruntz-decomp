@@ -561,7 +561,7 @@ char* CButeMgr::GetString(const char* tag, const char* key) {
 // the value, so MSVC re-canonicalizes the bool after restoring fs:[0]).
 // @early-stop
 // vtable-mandate wall (99.29%): body byte-exact but the inlined `new CButeNode`
-// base-ctor call site is `lea 0x4(edi),ecx` (CButeNodeBase at +4, behind the
+// base-ctor call site is `lea 0x4(edi),ecx` (zPTree base at +4, behind the
 // ALL-VTABLES-mandated implicit vptr) vs retail `mov edi,ecx` (base at +0). Reverting
 // CButeNode to a manual vtable would flip it but violates the ALL-VTABLES mandate. Final sweep.
 RVA(0x001711b0, 0xf5)
@@ -1115,9 +1115,9 @@ void* CButeMgr::InvokeCallback(void* (*fn)(CButeMgr*)) {
 // slot, or does the helper start past +0x14?).
 RVA(0x00171a40, 0x14)
 void CButeMgr::ClearHelper() {
-    CButeMgrHelper* h = (CButeMgrHelper*)((char*)this + 0x14);
+    ios* h = (ios*)((char*)this + 0x14);
     h->FuncA();
-    h->~CButeMgrHelper();
+    h->~ios();
 }
 
 // ===========================================================================
@@ -1441,8 +1441,10 @@ bool CButeMgr::Exists(const char* tag, const char* key) {
 }
 
 // ===========================================================================
-// CButeMgrHelper cluster (0x1697c0-0x16c0c0). The helper sub-object embedded at
-// CButeMgr+0x14 (a .bute registry/compiler object). All __thiscall.
+// ios cluster (0x1697c0-0x16c0c0) - the CRT/MSVC <iostream.h> `ios` base (was the
+// fabricated "CButeMgrHelper"; RTTI descriptor `.?AVios@@`, vtable 0x5f03bc). The
+// .bute parser reads its files through iostreams; these are the statically-linked
+// CRT ios methods, hand-reconstructed + byte-matched. All __thiscall.
 //   0x1697c0 / 0x1699c0  - virtual-base vtable-init thunks (set one vbase vptr,
 //                          then jmp the matching ret-only thunk to set another)
 //   0x169c00 Construct   - the constructor (field-init + per-instance crit-sec +
@@ -1467,7 +1469,7 @@ extern "C" CRITICAL_SECTION g_helperSharedCS; // 0x6bf3c8
 // (TERMINAL virtual-inheritance wall - these ??_8-style construction tables can't be
 // reproduced from a clean C++ model, so the vbase thunks keep their raw writes; the
 // referents are DATA-bound so the writes reloc-mask). The helper's OWN primary vtable
-// (0x5f03bc) is now the cl-emitted ??_7CButeMgrHelper (ctor/dtor auto-stamp).
+// (0x5f03bc) is now the cl-emitted ??_7ios (ctor/dtor auto-stamp).
 DATA(0x005f0374)
 extern "C" void* g_helperVbaseSubA; // 0x5f0374
 DATA(0x005f0384)
@@ -1486,42 +1488,42 @@ struct CButeSub {
 SIZE(CButeSub, 0x4); // slot-0-dispatch view (vptr only)
 
 // ---------------------------------------------------------------------------
-// CButeMgrHelper::InitVbaseA (0x1697c0)
+// ios::InitVbaseA (0x1697c0)
 // Virtual-base vtable-init thunk: read the vbtable pointer at this-0xc, follow
 // its [+4] displacement to the virtual base subobject, stamp its vptr, then tail
 // (jmp) into InitVbaseC to stamp the next vbase's vptr. The this-relative offset
 // arithmetic reproduces the `mov eax,[ecx-0xc]; mov edx,[eax+4]; mov
 // [edx+ecx-0xc],vtbl` form exactly; the tail call folds to the `jmp`.
 RVA(0x001697c0, 0x13)
-void CButeMgrHelper::InitVbaseA() {
+void ios::InitVbaseA() {
     i32* vbptr = *(i32**)((char*)this - 0xc);
     *(void**)((char*)this - 0xc + vbptr[1]) = &g_helperVbaseSubA;
     InitVbaseC();
 }
 
 // ---------------------------------------------------------------------------
-// CButeMgrHelper::InitVbaseB (0x1699c0)
+// ios::InitVbaseB (0x1699c0)
 // As InitVbaseA but for the vbtable at this-0x8, then tail into InitVbaseD.
 RVA(0x001699c0, 0x13)
-void CButeMgrHelper::InitVbaseB() {
+void ios::InitVbaseB() {
     i32* vbptr = *(i32**)((char*)this - 0x8);
     *(void**)((char*)this - 0x8 + vbptr[1]) = &g_helperVbaseSubB;
     InitVbaseD();
 }
 
 // ---------------------------------------------------------------------------
-// CButeMgrHelper::CButeMgrHelper (0x169c00, was Construct)
+// ios::ios (0x169c00, was Construct)
 // Constructor: zero-init the data fields, stamp the vptr (cl auto @+0) + the type
 // constants, init the per-instance critical section, and one-time-init the shared
 // critical section under a ref-count guard.
 // @early-stop
-// vptr-schedule wall (ALL-VTABLES): as a real ctor cl auto-stamps ??_7CButeMgrHelper
+// vptr-schedule wall (ALL-VTABLES): as a real ctor cl auto-stamps ??_7ios
 // @+0 at entry (was the hand-rolled mid-body primary-vtable store), shifting the store
 // schedule. Logic byte-faithful; converted per the ALL-VTABLES mandate. (Also this is
 // a virtual-inheritance class - see the vbase thunks below - so a fully clean ctor is
 // terminal; the primary vptr is now cl-emitted, the vbase tables stay raw.)
 RVA(0x00169c00, 0x67)
-CButeMgrHelper::CButeMgrHelper() {
+ios::ios() {
     m_pSub = 0;
     m_0c = 0;
     m_10 = 0;
@@ -1540,16 +1542,16 @@ CButeMgrHelper::CButeMgrHelper() {
 }
 
 // ---------------------------------------------------------------------------
-// CButeMgrHelper::~CButeMgrHelper (0x169d70, was FuncB) - the helper cleanup dtor:
+// ios::~ios (0x169d70, was FuncB) - the ios cleanup dtor:
 // restore the vptr (cl auto @+0), reset m_34, drop the shared critical section under
 // the ref-count guard, delete the per-instance one, tear down the owned +0x4
 // sub-object through its slot-0 scalar dtor, then reset the sub pointer + the flag
 // word. ClearHelper drives FuncA then this dtor.
 // @early-stop
-// vptr-schedule wall (ALL-VTABLES): as a real dtor cl auto-stamps ??_7CButeMgrHelper
+// vptr-schedule wall (ALL-VTABLES): as a real dtor cl auto-stamps ??_7ios
 // @+0 at entry (was the hand-rolled primary-vtable restore). Logic byte-faithful.
 RVA(0x00169d70, 0x5a)
-CButeMgrHelper::~CButeMgrHelper() {
+ios::~ios() {
     m_34 = -1;
     if (--g_helperRefCount == 0) {
         Helper_DeleteCriticalSection(&g_helperSharedCS);
@@ -1563,12 +1565,12 @@ CButeMgrHelper::~CButeMgrHelper() {
 }
 
 // ---------------------------------------------------------------------------
-// CButeMgrHelper::SetSub (0x169dd0)
+// ios::SetSub (0x169dd0)
 // Replace the +0x4 sub-object: if it is owned (m_ownsSub) and present (m_pSub),
 // delete it through its slot-0 scalar-deleting dtor; store the new pointer;
 // toggle bit 0x4 of the flag word from the new pointer's nullness.
 RVA(0x00169dd0, 0x37)
-void CButeMgrHelper::SetSub(void* p) {
+void ios::SetSub(void* p) {
     if (m_ownsSub && m_pSub) {
         ((CButeSub*)m_pSub)->ScalarDtor(1);
     }
@@ -1581,19 +1583,19 @@ void CButeMgrHelper::SetSub(void* p) {
 }
 
 // ---------------------------------------------------------------------------
-// CButeMgrHelper::InitVbaseC (0x16b650)
+// ios::InitVbaseC (0x16b650)
 // Ret-only virtual-base vtable-init thunk: stamp the vbase at this-0xc.
 RVA(0x0016b650, 0xf)
-void CButeMgrHelper::InitVbaseC() {
+void ios::InitVbaseC() {
     i32* vbptr = *(i32**)((char*)this - 0xc);
     *(void**)((char*)this - 0xc + vbptr[1]) = &g_helperVbaseSubC;
 }
 
 // ---------------------------------------------------------------------------
-// CButeMgrHelper::InitVbaseD (0x16c0c0)
+// ios::InitVbaseD (0x16c0c0)
 // Ret-only virtual-base vtable-init thunk: stamp the vbase at this-0x8.
 RVA(0x0016c0c0, 0xf)
-void CButeMgrHelper::InitVbaseD() {
+void ios::InitVbaseD() {
     i32* vbptr = *(i32**)((char*)this - 0x8);
     *(void**)((char*)this - 0x8 + vbptr[1]) = &g_helperVbaseSubD;
 }
